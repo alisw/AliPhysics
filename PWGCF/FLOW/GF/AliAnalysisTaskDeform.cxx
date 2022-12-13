@@ -139,6 +139,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fUse2DEff(kFALSE),
   fUsePIDNUA(kFALSE),
   fFillMptPowers(kFALSE),
+  fUseMcParticleForEfficiency(kTRUE),
   EventNo(0),
   fEventWeight(PtSpace::kOne),
   wpPt(0),
@@ -242,6 +243,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fUse2DEff(kFALSE),
   fUsePIDNUA(kFALSE),
   fFillMptPowers(kFALSE),
+  fUseMcParticleForEfficiency(kTRUE),
   EventNo(0),
   fEventWeight(PtSpace::kOne),
   wpPt(0),
@@ -941,15 +943,23 @@ void AliAnalysisTaskDeform::FillWeightsMC(AliAODEvent *fAOD, const Double_t &vz,
   for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp)) continue;
-    lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
-    if(!lPart) continue;
-    if(!lPart->IsPhysicalPrimary()) continue;
-    if(TMath::Abs(lTrack->Eta())>fEta) continue;
-    if(!fGFWSelection->AcceptTrack(lTrack,dummyDouble)) continue;
-    fWeights[0]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,1);
-    if(fDisablePID) continue;
-    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
-    if(PIDIndex) fWeights[PIDIndex]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,1);
+    if(fUseMcParticleForEfficiency) {
+      lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
+      if(!lPart) continue;
+      if(!lPart->IsPhysicalPrimary()) continue;
+      if(TMath::Abs(lTrack->Eta())>fEta) continue;
+      if(!fGFWSelection->AcceptTrack(lTrack,dummyDouble)) continue;
+      fWeights[0]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,1);
+      if(fDisablePID) continue;
+      Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
+      if(PIDIndex) fWeights[PIDIndex]->Fill(lPart->Phi(),lPart->Eta(),vz,lPart->Pt(),l_Cent,1);
+    }
+    else {
+      fWeights[0]->Fill(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),l_Cent,1);
+      if(fDisablePID) continue;
+      Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
+      if(PIDIndex) fWeights[PIDIndex]->Fill(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),l_Cent,1);
+    }
   };
   PostData(1,fWeightList);
 }
@@ -1011,21 +1021,36 @@ void AliAnalysisTaskDeform::FillSpectraMC(AliAODEvent *fAOD, const Double_t &vz,
   for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
     lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
     if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp)) continue;
-    lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
-    if(!lPart) continue;
-    if(!lPart->IsPhysicalPrimary()) continue;
-    if(fRequirePositive && lPart->Charge()<0) continue;
-    if(TMath::Abs(lTrack->Eta())>fEtaBins[fNEtaBins]) continue;
-    if(!fGFWSelection->AcceptTrack(lTrack,dummyDouble)) continue;
-    nTotNchReco++;
-    fSpectraRec[0]->Fill(lPart->Pt(),lPart->Eta(),l_Cent);
-    if(fDisablePID) continue;
-    Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
-    if(PIDIndex) fSpectraRec[PIDIndex]->Fill(lPart->Pt(),lPart->Eta(),l_Cent);
-    switch(PIDIndex) {
-      case 1: nTotNpiReco++; break;
-      case 2: nTotNkaReco++; break;
-      case 3: nTotNprReco++; break;
+    if(fUseMcParticleForEfficiency){
+      lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
+      if(!lPart) continue;
+      if(!lPart->IsPhysicalPrimary()) continue;
+      if(fRequirePositive && lPart->Charge()<0) continue;
+      if(TMath::Abs(lTrack->Eta())>fEtaBins[fNEtaBins]) continue;
+      if(!fGFWSelection->AcceptTrack(lTrack,dummyDouble)) continue;
+      nTotNchReco++;
+      fSpectraRec[0]->Fill(lPart->Pt(),lPart->Eta(),l_Cent);
+      if(fDisablePID) continue;
+      Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
+      if(PIDIndex) fSpectraRec[PIDIndex]->Fill(lPart->Pt(),lPart->Eta(),l_Cent);
+      switch(PIDIndex) {
+        case 1: nTotNpiReco++; break;
+        case 2: nTotNkaReco++; break;
+        case 3: nTotNprReco++; break;
+      }
+    }
+    else {
+      if(TMath::Abs(lTrack->Eta())>fEtaBins[fNEtaBins]) continue;
+      nTotNchReco++;
+      fSpectraRec[0]->Fill(lTrack->Pt(),lTrack->Eta(),l_Cent);
+      if(fDisablePID) continue;
+      Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
+      if(PIDIndex) fSpectraRec[PIDIndex]->Fill(lTrack->Pt(),lTrack->Eta(),l_Cent);
+      switch(PIDIndex) {
+        case 1: nTotNpiReco++; break;
+        case 2: nTotNkaReco++; break;
+        case 3: nTotNprReco++; break;
+      }
     }
   };
   fDetectorResponse[0]->Fill(nTotNchMC,nTotNchReco);
