@@ -215,6 +215,8 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQAJetAreaVsJetPt", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 200, 0., 2.);
   fHistos->CreateTH2("hQAJetAreaVsNEF", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 200, 0., 2.);
   fHistos->CreateTH2("hQAJetAreaVsNConst", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 200, 0., 2.);
+  fHistos->CreateTH1("hQAPosTrVsPt", "N_{tr}^{+} vs. p_{t,tr}", 350., 0., 350.);
+  fHistos->CreateTH1("hQANegTrVsPt", "N_{tr}^{-} vs. p_{t,tr}", 350., 0., 350.);
   // Cluster constituent QA
   fHistos->CreateTH2("hQAClusterTimeVsE", "Cluster time vs. energy; time (ns); E (GeV)", 1200, -600, 600, 200, 0., 200);
   fHistos->CreateTH2("hQAClusterTimeVsEFine", "Cluster time vs. energy (main region); time (ns); E (GeV)", 1000, -100, 100, 200, 0., 200);
@@ -454,6 +456,12 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
         fHistos->FillTH2("hQAZchPt", ptjet, j->GetZ(track->Px(), track->Py(), track->Pz()), weight);
         fHistos->FillTH2("hQAEtaPhiConstCh", track->Eta(), TVector2::Phi_0_2pi(track->Phi()), weight);
         fHistos->FillTH2("hQADeltaRCharged", ptjet, j->DeltaR(track), weight);
+        if(track->Charge() > 0)      fHistos->FillTH1("hQAPosTrVsPt", track->Pt(), weight);
+        else if(track->Charge() < 0) fHistos->FillTH1("hQANegTrVsPt", track->Pt(), weight);
+        else{
+          AliErrorStream() << "Found track with zero charge! Returning..." << std::endl;
+          return false;
+        }
       }
     }
     fHistos->FillTH2("hQANChPt", ptjet, j->GetNumberOfTracks(), weight);
