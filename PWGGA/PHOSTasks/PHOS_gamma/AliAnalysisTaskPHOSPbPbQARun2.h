@@ -41,6 +41,8 @@ private:
   AliPHOSGeometry  *fPHOSGeo; //! PHOS geometry
   Int_t fEventCounter;        // number of analyzed events
 
+  TClonesArray *       fMCArray;  // MC array
+
   ClassDef(AliAnalysisTaskPHOSPbPbQARun2, 1); // PHOS analysis task
 };
 

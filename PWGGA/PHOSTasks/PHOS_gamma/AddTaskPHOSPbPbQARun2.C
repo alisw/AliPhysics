@@ -1,5 +1,5 @@
-AliAnalysisTaskPHOSPbPbQARun2* AddTaskPHOSPbPbQARun2(const char* fname="AnalysisResults_PHOSPbPbQA.root",
-					             const char* contname=NULL)
+AliAnalysisTaskPHOSPbPbQARun2* AddTaskPHOSPbPbQARun2( const char* filename="AnalysisResults_PHOSPbPbQA.root",
+					              const char* containername=NULL)
 {
   //Add PHOS PbPb QA task to the PWGPP QA train.
   //See PHOSPbPb.C how to run it locally or standalone.
@@ -20,10 +20,9 @@ AliAnalysisTaskPHOSPbPbQARun2* AddTaskPHOSPbPbQARun2(const char* fname="Analysis
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
 
-  if(!contname) contname = "PHOSPbPbQAResults";
-  if(!fname)    fname =  mgr->GetCommonFileName();
+  if(!containername) containername = "PHOSPbPbQAResults";
+  if(!filename)     filename =  mgr->GetCommonFileName();
 
-  mgr->ConnectOutput(task, 1, mgr->CreateContainer(contname,TList::Class(), AliAnalysisManager::kOutputContainer, fname));
+  mgr->ConnectOutput(task, 1, mgr->CreateContainer(containername,TList::Class(), AliAnalysisManager::kOutputContainer, filename));
   return task;
-  
 }
