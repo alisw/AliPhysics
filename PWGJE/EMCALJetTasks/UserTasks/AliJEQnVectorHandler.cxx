@@ -313,10 +313,10 @@ bool AliJEQnVectorHandler::LoadOADBCalibrations() {
         fOADBFile = nullptr;
     }
 
-    TString pathToFileCMVFNS = AliDataFile::GetFileName(fOADBFileName.Data());
+    //TString pathToFileCMVFNS = AliDataFile::GetFileName(fOADBFileName.Data());
     TString pathToFileLocal = fOADBFileName;
     // Check access to CVMFS (will only be displayed locally)
-    if (fOADBFileName.BeginsWith("alien://") && !gGrid)
+    /*if (fOADBFileName.BeginsWith("alien://") && !gGrid)
        {
           AliInfo("Trying to connect to AliEn ...");
           TGrid::Connect("alien://");
@@ -328,11 +328,13 @@ bool AliJEQnVectorHandler::LoadOADBCalibrations() {
     if (pathToFileCMVFNS.IsNull()) {
       cout<<"loading local file "<<pathToFileLocal.Data()<<endl;
       fOADBFile = TFile::Open(pathToFileLocal.Data());
-    }
+    } */
     //if (!pathToFileCMVFNS.IsNull())  fOADBFile = TFile::Open(pathToFileCMVFNS.Data());
     //if (pathToFileCMVFNS.IsNull())  fOADBFile = TFile::Open(pathToFileLocal.Data());
         //AliFatal("Cannot access data files from CVMFS: please export ALICE_DATA=root://eospublic.cern.ch//eos/experiment/alice/analysis-data and run again");
 
+    cout<<"loading local file "<<pathToFileLocal.Data()<<endl;
+    fOADBFile = TFile::Open(pathToFileLocal.Data());
 
     if(!fOADBFile) {
         //AliWarning(Form("OADB V0-TPC calibration file cannot be opened. Attempted to open %s\n"));

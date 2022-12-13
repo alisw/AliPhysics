@@ -42,6 +42,7 @@ AliAnalysisTaskJetQnVectors* AddTaskJEQnVectors(TString taskname = "JetQnVectors
 		TString fAODBfileName1_Local = AODBfileName1(1+iDirLastIndex1,AODBfileName1.Length()-iDirLastIndex1-1);
 		TString fAODBfileName2_Local = AODBfileName2(1+iDirLastIndex2,AODBfileName2.Length()-iDirLastIndex2-1);
 
+
 		printf("AddTaskJEQnVectors.C: local OADB filename1 = %s\n",fAODBfileName1_Local.Data());
 		printf("AddTaskJEQnVectors.C: local OADB filename2 = %s\n",fAODBfileName1_Local.Data());
 		// debug
@@ -82,6 +83,9 @@ AliAnalysisTaskJetQnVectors* AddTaskJEQnVectors(TString taskname = "JetQnVectors
         coutputQvecdistr[1] = mgr->CreateContainer("coutputQnVectorTenderQvecDistrPosEta", TH2F::Class(),AliAnalysisManager::kOutputContainer,Form("%sPhiDistr",outputfile.Data()));
         coutputQvecdistr[2] = mgr->CreateContainer("coutputQnVectorTenderQvecDistrNegEta", TH2F::Class(),AliAnalysisManager::kOutputContainer,Form("%sPhiDistr",outputfile.Data()));
     }
+
+		// Adding the calibration files
+		task->CreateQnVectorHandlers();
 
     //connect containers
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
