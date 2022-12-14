@@ -11,6 +11,7 @@ void AddTask_ConvCaloTree(
   TString   corrTaskSetting               = "",
   Int_t     enableExtMatchAndQA           = 0,
   Int_t     doSaveSurroundingTracks       = 1,        // 1: save track eta, phi and E on calo surface ; 2: Save all tracks px,py,py and eta,phi on calo
+  Int_t     doSaveJets                    = 0,        // 1: save jet eta, phi, pt ; 2: Same, but only store events with jets
   Bool_t    doSaveMCInfo                  = 0,
   Float_t   minTrackMomentum              = 0.3,
   Bool_t    enableTriggerOverlapRej       = kTRUE,
@@ -169,6 +170,7 @@ void AddTask_ConvCaloTree(
   if(isMC && doSaveMCInfo) fConvCaloTree->SetSaveMCInformation(kTRUE);
   fConvCaloTree->SetMinTrackPt(minTrackMomentum);
   fConvCaloTree->SetV0ReaderName(V0ReaderName);
+  fConvCaloTree->SetSaveJets(doSaveJets);
   mgr->AddTask(fConvCaloTree);
 
   //create AliCaloTrackMatcher instance, if there is none present
