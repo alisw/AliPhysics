@@ -307,8 +307,8 @@ Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *event)
   if (event->IsPileupFromSPD()) {
     fEventPileup = kTRUE;
     FillHistogram("hNPileupVtx", event->GetNumberOfPileupVerticesSPD());
-    for (Int_t puVtx = 0;  puVtx < fEvent->GetNumberOfPileupVerticesSPD(); puVtx++) {
-      Double_t dZpileup = aodVertexSPD->GetZ() - fEvent->GetPileupVertexSPD(puVtx)->GetZ();
+    for (Int_t puVtx = 0;  puVtx < event->GetNumberOfPileupVerticesSPD(); puVtx++) {
+      Double_t dZpileup = aodVertexSPD->GetZ() - event->GetPileupVertexSPD(puVtx)->GetZ();
       FillHistogram("hZPileupVtx", dZpileup);
     }
   }
@@ -694,6 +694,11 @@ void AliAnalysisTaskGammaPHOSPP::FillOnePhotonHistograms(AliCaloPhoton *ph)
    if (fMCArray) {
      pdg = ((AliAODMCParticle*)fMCArray->At(ph->GetPrimaryAtVertex())) -> GetPdgCode();
      pdg_naive = ((AliAODMCParticle*)fMCArray->At(ph->GetPrimary())) -> GetPdgCode(); //
+
+     Double_t enMC   = ((AliAODMCParticle*)fMCArray->At(ph->GetPrimary()))->E();
+     Double_t enMeas = ph->E();
+
+     FillHistogram("hEnergyResolution", enMC, enMeas - enMC);
    }
    
    Int_t sm1 = ph->Module();
@@ -983,6 +988,8 @@ Int_t AliAnalysisTaskGammaPHOSPP::GetPrimaryLabelAtVertex(AliVCluster *clu) //Re
       
    Int_t iPrimaryAtVertex = clu->GetLabel();
    AliAODMCParticle *particle0 =  (AliAODMCParticle*) fMCArray->At(iPrimaryAtVertex);
+
+
    
    if (particle0-> IsSecondaryFromMaterial()) {
     // Printf("Secondary from the material, Epart = %f, Eclust = %f" , particle0 ->E(), clu->E());
@@ -1809,6 +1816,8 @@ void AliAnalysisTaskGammaPHOSPP::AddQAHistograms()
   fOutputContainer->Add(new TH1I("hPHOSClusterMult"  ,"PHOS cluster multiplicity"    , 100, 0, 100));
   fOutputContainer->Add(new TH1F("hCellEnergy"  ,"Cell energy"            ,5000, 0.,50.));
   fOutputContainer->Add(new TH1F("hClusterEnergy"  ,"Cluster energy"      ,5000, 0.,50.));
+
+  fOutputContainer->Add(new TH2F("hEnergyResolution", "Energy resolution;E_{MC};E_{meas}-E_{MC}", 400, 0, 40, 320, -1.6, 1.6));
 
   for (Int_t imod = 1; imod < 5; imod ++) {
     fOutputContainer->Add(new TH1I(Form("hCellMultEventM%d", imod),Form("PHOS cell multiplicity per event, M%id", imod), 2000, 0, 2000));

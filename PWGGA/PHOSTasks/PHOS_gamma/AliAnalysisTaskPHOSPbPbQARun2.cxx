@@ -103,6 +103,9 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserCreateOutputObjects()
 
   fOutputContainer->Add(new TH1F("hZvertex","Z vertex",400, -20.,+20.));
   fOutputContainer->Add(new TH1F("hNContributors","N of primary tracks from the primary vertex", 1e4, 0., 1e4));
+
+  fOutputContainer->Add(new TH1I("hNPileupVtx", "Number of pileup vertices", 10, 0, 10));
+  fOutputContainer->Add(new TH1F("hZPileupVtx", "Location of pileup vertices", 400, -20, 20));
   
   //pi0 spectrum
   Int_t nPtPhot = 300 ;
@@ -132,14 +135,13 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserCreateOutputObjects()
     fOutputContainer->Add(new  TH2F(key, "MC #gamma;p_{T};y", nPtPhot, 0, ptPhotMax, 240, -1.2, 1.2));
 
     for (Int_t sm = 1; sm < 5; sm ++) {
-
-       snprintf(key,55, "hClusterE%d_cen%d", sm, cent);
+       snprintf(key,55, "hClusterEM%d_cen%d", sm, cent);
        fOutputContainer->Add(new TH1F(key, "cluster energy", nPtPhot, 0., ptPhotMax));
        
-       snprintf(key,55, "hClusterPt%d_cen%d", sm, cent);
+       snprintf(key,55, "hClusterPtM%d_cen%d", sm, cent);
        fOutputContainer->Add(new TH1F(key, "cluster p_{T}", nPtPhot, 0., ptPhotMax));
        
-       snprintf(key,55, "hNcellvsEcl%d_cen%d", sm, cent);
+       snprintf(key,55, "hNcellvsEclM%d_cen%d", sm, cent);
        fOutputContainer->Add(new TH2F(key, "ncells vs cluster energy", nPtPhot, 0., ptPhotMax, 40, 0, 40));
 
       snprintf(key,55,"hPi0AllSM%d_cen%d",sm,cent) ;
@@ -149,7 +151,6 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserCreateOutputObjects()
       fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
     }
   }
-
   PostData(1, fOutputContainer);
 }
 
@@ -173,6 +174,7 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
   FillHistogram("hSelEvent", iSel++);
  
   const AliAODVertex *aodVertex =  event->GetPrimaryVertex();
+  const AliAODVertex *aodVertexSPD  = event->GetPrimaryVertexSPD();
 
   FillHistogram("hSelEvent", iSel++);
 
@@ -193,7 +195,14 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
   
   FillHistogram("hSelEvent", iSel++);
 
-  if (event->IsPileupFromSPD()) return;
+  if (event->IsPileupFromSPD()) {
+    FillHistogram("hNPileupVtx", event->GetNumberOfPileupVerticesSPD());
+    for (Int_t puVtx = 0;  puVtx < event->GetNumberOfPileupVerticesSPD(); puVtx++) {
+      Double_t dZpileup = aodVertexSPD->GetZ() - event->GetPileupVertexSPD(puVtx)->GetZ();
+      FillHistogram("hZPileupVtx", dZpileup);
+    }
+    return;
+  }
   
   FillHistogram("hSelEvent", iSel++);
 
@@ -265,9 +274,9 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
     if (clu->GetM02() < 0.1) continue;    
 
     FillHistogram(Form("hClusterE_cen%d", fCenBin), clu->E());
-    FillHistogram(Form("hClusterE%d_cen%d", mod, fCenBin), clu->E());
+    FillHistogram(Form("hClusterEM%d_cen%d", mod, fCenBin), clu->E());
     FillHistogram(Form("hNcellvsEcl_cen%d", fCenBin), clu->E(), clu->GetNCells()); 
-    FillHistogram(Form("hNcellvsEcl%d_cen%d", mod, fCenBin), clu->E(), clu->GetNCells()); 
+    FillHistogram(Form("hNcellvsEclM%d_cen%d", mod, fCenBin), clu->E(), clu->GetNCells()); 
     
     TLorentzVector pv1 ;
     clu->GetMomentum(pv1 ,vtx);
@@ -281,6 +290,7 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
     ph->SetModule(mod) ;
     ph->SetMomV2(&pv1) ;
     ph->SetNCells(clu->GetNCells());
+    ph->SetPrimary(fMCArray ? clu->GetLabel() : 0);
   
     ph->SetEMCx(float(cellX)) ;
     ph->SetEMCz(float(cellZ)) ;
@@ -291,11 +301,11 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
   FillHistogram("hCenPHOS",fCentrality, inPHOS) ;
   
   //photons
-  for (Int_t i=0; i<inPHOS-1; i++) {
+  for (Int_t i = 0; i < inPHOS-1; i++) {
     AliCaloPhoton * ph=(AliCaloPhoton*)fPHOSEvent->At(i) ;
     Int_t sm = ph->Module();
     FillHistogram(Form("hClusterPt_cen%d", fCenBin), ph->Pt());
-    FillHistogram(Form("hClusterPt%d_cen%d", sm, fCenBin), ph->Pt());
+    FillHistogram(Form("hClusterPtM%d_cen%d", sm, fCenBin), ph->Pt());
   }
 
   //pi0
@@ -362,12 +372,29 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
 
 
   if (fMCArray) {
-     for (Int_t i = 0; i < fMCArray->GetEntriesFast(); i++) {
-       AliAODMCParticle* particle =  (AliAODMCParticle*) fMCArray->At(i);
-       if (particle->GetPdgCode() == 22 && TMath::Hypot(particle->Xv(), particle->Yv()) < 1.0) { // simplest form
-             FillHistogram(Form("hGammaMC_cen%d", fCenBin), particle->Pt(), particle->Y());
-          }
-     }
+    for (Int_t i = 0; i < fMCArray->GetEntriesFast(); i++) {
+      auto particle =  (AliAODMCParticle*) fMCArray->At(i);
+      Int_t pdg = particle->GetPdgCode();
+      Double_t xv = particle->Xv(), yv = particle->Yv();
+      Double_t rv = TMath::Hypot(xv, yv);
+      if (particle->IsSecondaryFromMaterial()) continue;
+      if (pdg == 22 && rv < 1.0 && particle->GetLabel() > -1) {
+         Int_t iMother = particle->GetMother();
+	 if (iMother > -1) {
+           auto mparticle = (AliAODMCParticle*)fMCArray->At(iMother);
+	   Int_t pdgm = mparticle->GetPdgCode();
+	   if (pdgm == 111 && mparticle->GetLabel() > -1) {
+             Int_t iMother2 = mparticle->GetMother();
+	     if (iMother2 > -1) {
+	       auto mparticle2 = (AliAODMCParticle*)fMCArray->At(iMother2);
+	       Int_t pdg2 = mparticle2->GetPdgCode();
+	       if (pdg2 == 310 || pdg2 == 130) continue;
+	     }  
+	   }
+         }
+	 FillHistogram(Form("hGammaMC_cen%d", fCenBin), particle->Pt(), particle->Y());
+      }
+    }
   }
   
 
