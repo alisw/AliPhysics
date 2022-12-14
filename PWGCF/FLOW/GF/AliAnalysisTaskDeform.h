@@ -123,6 +123,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetFillMptPowers(bool newval) { fFillMptPowers = newval; }
   void SetIPBins(Int_t nBins, Double_t *multibins);
   void SetUsePIDNUA(bool newval) { fUsePIDNUA = newval; }
+  void SetAMPTCentralityMap(vector<double> b, vector<double> cent) { for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i]; }
+  void SetUseMcParticleForEfficiency(bool newval) { fUseMcParticleForEfficiency = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -149,7 +151,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Double_t *fPtBins; //!
   Int_t fNPtBins; //!
   Int_t fNEtaBins; //!
-  Double_t *fEtaBins;
+  Double_t *fEtaBins; //!
   Double_t *fMultiBins; //!
   Int_t fNMultiBins; //!
   Double_t fV0MCentMin;
@@ -209,6 +211,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH1D *fV0MMulti;
   TH2D *fITSvsTPCMulti;
   TH1D *fV2dPtMulti;
+  TH1D* fIP;
   Double_t fCorrPar[2]; //Yes need to store
   Bool_t fUseCorrCuts; //Yes need to store
   TF1 *fSPDCutPU; //Store these
@@ -220,6 +223,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   int EventNo;
   unsigned int fEventWeight; 
   vector<vector<vector<double>>>  wpPt;
+  vector<vector<vector<double>>>  wpPtSubP;
+  vector<vector<vector<double>>>  wpPtSubN;
   std::map<double,double> centralitymap;  
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
@@ -243,6 +248,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fUse2DEff;
   Bool_t fUsePIDNUA;
   Bool_t fFillMptPowers;
+  Bool_t fUseMcParticleForEfficiency;
   Double_t *GetBinsFromAxis(TAxis *inax);
   ClassDef(AliAnalysisTaskDeform,1);
 };

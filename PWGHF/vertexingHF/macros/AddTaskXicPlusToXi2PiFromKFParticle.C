@@ -87,6 +87,9 @@ AliAnalysisTaskSEXicPlusToXi2PifromKFP* AddTaskXicPlusToXi2PiFromKFParticle(TStr
     mgr->ConnectOutput(task,9,mgr->CreateContainer(Form("tree_%s_QA_%s_wMassConstForLam_woMassConstForXi", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,10,mgr->CreateContainer(Form("tree_%s_QA_%s_woMassConstForLam_wMassConstForXi", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,11,mgr->CreateContainer(Form("tree_%s_QA_%s_wMassConstForLamAndXi", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,12,mgr->CreateContainer(Form("tree_%s_QA_%s_wMassAndTopoConstForLam_wMassConstForXi", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,13,mgr->CreateContainer(Form("tree_%s_QA_%s_wMassAndTopoConstForLam_wMassAndTopoConstForXi", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,14,mgr->CreateContainer(Form("tree_%s_QA_%s_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid

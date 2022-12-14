@@ -80,7 +80,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
         AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, true);  // DCAplots,CombSigma,ContribSplitting
     TrackPosKaonCuts->SetFilterBit(fFilterBit);
     TrackPosKaonCuts->SetCutCharge(1);  /// positive particle
-    TrackPosKaonCuts->SetPtRange(0.15, 4);
+    TrackPosKaonCuts->SetPtRange(0.15, 1.4);
         
     if (CutKaon == 0) {
         TrackPosKaonCuts->SetPIDkd();  // Oton
@@ -107,7 +107,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
     AliFemtoDreamTrackCuts *TrackNegKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, true);
     TrackNegKaonCuts->SetFilterBit(fFilterBit);
     TrackNegKaonCuts->SetCutCharge(-1);  /// negative particle
-    TrackNegKaonCuts->SetPtRange(0.15, 4);
+    TrackNegKaonCuts->SetPtRange(0.15, 1.4);
     
     if (CutKaon == 0) {
         TrackNegKaonCuts->SetPIDkd();  // Oton
@@ -1229,8 +1229,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
 
         }       
         else if(suffix == "105"){
-            TrackPosKaonCuts->SetPtRange(1.0, 4.0);
-            TrackNegKaonCuts->SetPtRange(1.0, 4.0);
+            TrackPosKaonCuts->SetPtRange(1.0, 1.4);
+            TrackNegKaonCuts->SetPtRange(1.0, 1.4);
 
         }
            
