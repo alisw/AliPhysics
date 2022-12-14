@@ -67,6 +67,7 @@ fEvaluateDifferential3pCorrelator(kFALSE),
 fCorrectForDetectorEffects(kFALSE),
 fPrintOnTheScreen(kTRUE),
 fCalculateVsM(kFALSE),
+fCalculateVsZDC(kFALSE),
 fShowBinLabelsVsM(kFALSE),
 fCommonHists(NULL),
 fnBinsPhi(0),
@@ -99,6 +100,9 @@ f5pCorrelatorPro(NULL),
 fNonIsotropicTermsPro(NULL),
 f3pCorrelatorVsMPro(NULL),
 f3pPOICorrelatorVsM(NULL),
+f3pCorrelatorVsZPA(NULL),  
+f3pCorrelatorVsZPC(NULL),  
+f3pCorrelatorVsZP(NULL),  
 fNonIsotropicTermsVsMPro(NULL),
 fNonIsotropicTermsList(NULL),
 f2pCorrelatorCosPsiDiffPtDiff(NULL),
@@ -229,6 +233,11 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
                                            // nPOI  = # of particles of interest for a detailed flow analysis ("Particles of Interest");
 
  Int_t nRefMult = anEvent->GetReferenceMultiplicity();
+
+ //Get the ZDC energies
+ Double_t gZPA = anEvent->GetZPAEnergy()/1000;
+ Double_t gZPC = anEvent->GetZPCEnergy()/1000;
+ Double_t gZP = (anEvent->GetZPAEnergy() + anEvent->GetZPCEnergy())/1000;
 
  // Start loop over data:
  for(Int_t i=0;i<nPrim;i++) 
@@ -427,9 +436,16 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
    this->CalculateDifferential3pCorrelator(gIntegrated3pCorrelator); // to be improved - add relevant if statements for the min # POIs as well
    f3pCorrelatorPOIIntegratedPro->Fill(0.5, gIntegrated3pCorrelator);
    
-  //3particle correlator vs ref. mult
+   //3particle correlator vs ref. mult
    if(fCalculateVsM)
      f3pPOICorrelatorVsM->Fill(nRefMult,gIntegrated3pCorrelator);
+
+   //3particle correlator vs ZDC-P energy
+   if(fCalculateVsZDC) {
+     f3pCorrelatorVsZPA->Fill(gZPA,gIntegrated3pCorrelator);
+     f3pCorrelatorVsZPC->Fill(gZPC,gIntegrated3pCorrelator);
+     f3pCorrelatorVsZP->Fill(gZP,gIntegrated3pCorrelator);
+   }
  }
  
  // g) Reset all event-by-event quantities: 
@@ -585,6 +601,23 @@ void AliFlowAnalysisWithMixedHarmonics::GetPointersForAllEventProfiles()
  {
   this->Set3pPOICorrelatorVsM(p3pPOICorrelatorVsM);  
  }
+
+ TString s3pCorrelatorVsZPAName = "f3pCorrelatorVsZPA";
+ TProfile *p3pCorrelatorVsZPA = dynamic_cast<TProfile*>(profileList->FindObject(s3pCorrelatorVsZPAName.Data()));
+ if(p3pCorrelatorVsZPA)
+  this->Set3pCorrelatorVsZPA(p3pCorrelatorVsZPA);
+ 
+ TString s3pCorrelatorVsZPCName = "f3pCorrelatorVsZPC";
+ TProfile *p3pCorrelatorVsZPC = dynamic_cast<TProfile*>(profileList->FindObject(s3pCorrelatorVsZPCName.Data()));
+ if(p3pCorrelatorVsZPC)
+  this->Set3pCorrelatorVsZPC(p3pCorrelatorVsZPC);  
+
+ TString s3pCorrelatorVsZPName = "f3pCorrelatorVsZP";
+ TProfile *p3pCorrelatorVsZP = dynamic_cast<TProfile*>(profileList->FindObject(s3pCorrelatorVsZPName.Data()));
+ if(p3pCorrelatorVsZP)
+  this->Set3pCorrelatorVsZP(p3pCorrelatorVsZP);  
+
+
  TString nonIsotropicTermsProName = "fNonIsotropicTermsPro";
  TProfile *nonIsotropicTermsPro = dynamic_cast<TProfile*>(profileList->FindObject(nonIsotropicTermsProName.Data()));
  if(nonIsotropicTermsPro)
@@ -1246,6 +1279,58 @@ void AliFlowAnalysisWithMixedHarmonics::BookVsM()
  fResultsList->Add(fDetectorBiasVsMHist);
 
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookVsM()
+      
+//================================================================================================================
+
+void AliFlowAnalysisWithMixedHarmonics::BookVsZDC()
+{
+  // Book histos and profiles holding results vs ZDC-P energy deposition
+  
+  // a) 3-p correlator <<cos[n*(phi1+phi2-2phi3)]>> for all events (not corrected for detector effects) vs ZDC:
+  TString s3pCorrelatorVsZPAName = "f3pCorrelatorVsZPA";
+  f3pCorrelatorVsZPA = new TProfile(s3pCorrelatorVsZPAName.Data(),"",301,-0.5,300.5);
+  f3pCorrelatorVsZPA->SetStats(kFALSE); 
+  if(fHarmonic == 1) {
+    f3pCorrelatorVsZPA->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZPA");
+    f3pCorrelatorVsZPA->GetYaxis()->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZPA");
+  }
+  else {
+    f3pCorrelatorVsZPA->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZPA",fHarmonic)); 
+    f3pCorrelatorVsZPA->GetYaxis()->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZPA",fHarmonic)); 
+  }
+  f3pCorrelatorVsZPA->GetXaxis()->SetTitle("ZPA (#times 10^{3}) [a.u.]");
+
+  TString s3pCorrelatorVsZPCName = "f3pCorrelatorVsZPC";
+  f3pCorrelatorVsZPC = new TProfile(s3pCorrelatorVsZPCName.Data(),"",301,-0.5,300.5);
+  f3pCorrelatorVsZPC->SetStats(kFALSE); 
+  if(fHarmonic == 1) {
+    f3pCorrelatorVsZPC->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZPC");
+    f3pCorrelatorVsZPC->GetYaxis()->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZPC");
+  }
+  else {
+    f3pCorrelatorVsZPC->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZPC",fHarmonic)); 
+    f3pCorrelatorVsZPC->GetYaxis()->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZPC",fHarmonic)); 
+  }
+  f3pCorrelatorVsZPC->GetXaxis()->SetTitle("ZPC (#times 10^{3}) [a.u.]");
+
+  TString s3pCorrelatorVsZPName = "f3pCorrelatorVsZP";
+  f3pCorrelatorVsZP = new TProfile(s3pCorrelatorVsZPName.Data(),"",601,-0.5,600.5);
+  f3pCorrelatorVsZP->SetStats(kFALSE); 
+  if(fHarmonic == 1) {
+    f3pCorrelatorVsZP->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZP");
+    f3pCorrelatorVsZP->GetYaxis()->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZP");
+  }
+  else {
+    f3pCorrelatorVsZP->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZP",fHarmonic)); 
+    f3pCorrelatorVsZP->GetYaxis()->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZP",fHarmonic)); 
+  }
+  f3pCorrelatorVsZP->GetXaxis()->SetTitle("ZP (#times 10^{3}) [a.u.]");
+
+  fProfileList->Add(f3pCorrelatorVsZPA); 
+  fProfileList->Add(f3pCorrelatorVsZPC); 
+  fProfileList->Add(f3pCorrelatorVsZP); 
+ 
+} // end of void AliFlowAnalysisWithMixedHarmonics::BookVsZDC()
       
 //================================================================================================================
 

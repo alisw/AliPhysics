@@ -18,7 +18,8 @@ void AddTaskCMEAnalysis(Bool_t isPbPb,
 			Bool_t doQA,
 			Bool_t doHigherHarmonic,
 			Int_t harmonicMH,
-			Int_t vnHarmonic, 
+			Int_t vnHarmonic,
+			Bool_t kZDCStudy,
 			TString sLabel);
 AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin,
                                            Int_t gCentralityMax,
@@ -67,8 +68,9 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 			Bool_t doQA = kFALSE,
 			Bool_t doHigherHarmonic = kFALSE,
 			Int_t harmonicMH = 3,
-			Int_t vnHarmonic = 6, TString sLabel = "FB96") 
-{
+			Int_t vnHarmonic = 6,
+			Bool_t kZDCStudy = kFALSE,
+			TString sLabel = "FB96") {
   //Macro to be used for studies of CME for charged particles
   //The macro uses as an input a configuration macro that
   //creates the AliFlowEventCuts and AliFlowTrackCuts objects
@@ -836,6 +838,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHLS_PP[iCentralityBin]->SetCorrectForDetectorEffects(kTRUE);
 	taskMHLS_PP[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHLS_PP[iCentralityBin]->SetOppositeChargesPOI(kFALSE); //
+	if(kZDCStudy) taskMHLS_PP[iCentralityBin]->SetCalculateVsZDC(kTRUE);
 	if(isPbPb){
 	  taskMHLS_PP[iCentralityBin]->SetRejectPileUp(checkPileup);
 	  taskMHLS_PP[iCentralityBin]->SetRejectPileUpTight(checkPileup);
@@ -863,6 +866,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHLS_PP2[iCentralityBin]->SetCorrectForDetectorEffects(kTRUE);
 	taskMHLS_PP2[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHLS_PP2[iCentralityBin]->SetOppositeChargesPOI(kFALSE); //
+	if(kZDCStudy) taskMHLS_PP2[iCentralityBin]->SetCalculateVsZDC(kTRUE);
 	if(isPbPb){
 	  taskMHLS_PP2[iCentralityBin]->SetRejectPileUp(checkPileup);
 	  taskMHLS_PP2[iCentralityBin]->SetRejectPileUpTight(checkPileup);
@@ -892,6 +896,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHLS_NN[iCentralityBin]->SetCorrectForDetectorEffects(kTRUE);
 	taskMHLS_NN[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHLS_NN[iCentralityBin]->SetOppositeChargesPOI(kFALSE); //
+	if(kZDCStudy) taskMHLS_NN[iCentralityBin]->SetCalculateVsZDC(kTRUE);
 	if(isPbPb){
 	  taskMHLS_NN[iCentralityBin]->SetRejectPileUp(checkPileup);
 	  taskMHLS_NN[iCentralityBin]->SetRejectPileUpTight(checkPileup);
@@ -919,6 +924,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHLS_NN2[iCentralityBin]->SetCorrectForDetectorEffects(kTRUE);
 	taskMHLS_NN2[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHLS_NN2[iCentralityBin]->SetOppositeChargesPOI(kFALSE); //
+	if(kZDCStudy) taskMHLS_NN2[iCentralityBin]->SetCalculateVsZDC(kTRUE);
 	if(isPbPb){
 	  taskMHLS_NN2[iCentralityBin]->SetRejectPileUp(checkPileup);
 	  taskMHLS_NN2[iCentralityBin]->SetRejectPileUpTight(checkPileup);
@@ -950,6 +956,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHUS[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHUS[iCentralityBin]->SetOppositeChargesPOI(kTRUE); //
  	taskMHUS[iCentralityBin]->SetFillQAHistograms(doQA);
+	if(kZDCStudy) taskMHUS[iCentralityBin]->SetCalculateVsZDC(kTRUE);
 	if(isPbPb){
 	  taskMHUS[iCentralityBin]->SetRejectPileUp(checkPileup);
 	  taskMHUS[iCentralityBin]->SetRejectPileUpTight(checkPileup);
@@ -979,6 +986,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 	taskMHUS2[iCentralityBin]->SetEvaluateDifferential3pCorrelator(kTRUE); // evaluate <<cos[n(psi1+psi2-2phi3)]>> (Remark: two nested loops)
 	taskMHUS2[iCentralityBin]->SetOppositeChargesPOI(kTRUE); //
  	taskMHUS2[iCentralityBin]->SetFillQAHistograms(doQA);
+	if(kZDCStudy) taskMHUS2[iCentralityBin]->SetCalculateVsZDC(kTRUE);
 	if(isPbPb){
 	  taskMHUS2[iCentralityBin]->SetRejectPileUp(checkPileup);
 	  taskMHUS2[iCentralityBin]->SetRejectPileUpTight(checkPileup);
