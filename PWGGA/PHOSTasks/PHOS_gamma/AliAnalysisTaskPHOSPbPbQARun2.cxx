@@ -101,7 +101,9 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserCreateOutputObjects()
   fOutputContainer->Add(new TH2F("hCenPHOSCells","Centrality vs PHOS cells", 100,0.,100.,100,0.,1000.)) ;
   fOutputContainer->Add(new TH2F("hCenTrack","Centrality vs tracks", 100,0.,100.,100,0.,15000.)) ;  
 
-  fOutputContainer->Add(new TH1F("hZvertex","Z vertex",400, -20.,+20.));
+  fOutputContainer->Add(new TH1F("hZvertex","vertex z coordinate",400, -20.,+20.));
+  fOutputContainer->Add(new TH1F("hZvertexSPD","SPD vertex z coordinate",400, -20.,+20.));
+  fOutputContainer->Add(new TH1F("hDistanceVSPD","distance between vertices",400, -20.,+20.));
   fOutputContainer->Add(new TH1F("hNContributors","N of primary tracks from the primary vertex", 1e4, 0., 1e4));
 
   fOutputContainer->Add(new TH1I("hNPileupVtx", "Number of pileup vertices", 10, 0, 10));
@@ -191,6 +193,8 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
 
   const Double_t vtx[3] = {aodVertex->GetX(), aodVertex->GetY(), aodVertex->GetZ()}; // vertex coordinated
   FillHistogram("hZvertex", vtx[2]);
+  FillHistogram("hZvertexSPD", aodVertexSPD->GetZ());
+  FillHistogram("hDistanceVSPD", vtx[2] - aodVertexSPD->GetZ());
   if (TMath::Abs(vtx[2]) > 10.) return;
   
   FillHistogram("hSelEvent", iSel++);
