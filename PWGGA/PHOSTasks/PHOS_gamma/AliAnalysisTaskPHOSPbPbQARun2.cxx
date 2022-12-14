@@ -171,25 +171,23 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
     return;
   }
 
-  Int_t iSel = 0;
-
-  FillHistogram("hSelEvent", iSel++);
+  FillHistogram("hSelEvent", 0.5);
  
   const AliAODVertex *aodVertex =  event->GetPrimaryVertex();
   const AliAODVertex *aodVertexSPD  = event->GetPrimaryVertexSPD();
 
-  FillHistogram("hSelEvent", iSel++);
+  FillHistogram("hSelEvent", 1.5);
 
   if (!aodVertex) return;
 
-  FillHistogram("hSelEvent", iSel++);
+  FillHistogram("hSelEvent", 2.5);
 
 
   const Int_t ncont = aodVertex->GetNContributors();
   FillHistogram("hNContributors", ncont);
   if (ncont < 1) return;
 
-  FillHistogram("hSelEvent", iSel++);
+  FillHistogram("hSelEvent", 3.5);
 
   const Double_t vtx[3] = {aodVertex->GetX(), aodVertex->GetY(), aodVertex->GetZ()}; // vertex coordinated
   FillHistogram("hZvertex", vtx[2]);
@@ -197,7 +195,7 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
   FillHistogram("hDistanceVSPD", vtx[2] - aodVertexSPD->GetZ());
   if (TMath::Abs(vtx[2]) > 10.) return;
   
-  FillHistogram("hSelEvent", iSel++);
+  FillHistogram("hSelEvent", 4.5);
 
   if (event->IsPileupFromSPD()) {
     FillHistogram("hNPileupVtx", event->GetNumberOfPileupVerticesSPD());
@@ -208,7 +206,7 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
     return;
   }
   
-  FillHistogram("hSelEvent", iSel++);
+  FillHistogram("hSelEvent", 5.5);
 
   char key[55] ;  
    

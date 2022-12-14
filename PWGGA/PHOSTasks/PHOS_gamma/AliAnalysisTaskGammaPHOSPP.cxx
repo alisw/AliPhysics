@@ -321,7 +321,7 @@ Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *event)
   if (trigClasses.Contains("CINT1C")) fnCINT1C++;
   if (trigClasses.Contains("CINT1-E")) fnCINT1E++;
 
-  ULong64_t trigmask = event->GetTriggerMask();
+  // ULong64_t trigmask = event->GetTriggerMask();
   fEventV0AND = fTriggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kV0AND);
 
   if (!fEventV0AND) return kFALSE;

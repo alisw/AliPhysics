@@ -5,10 +5,15 @@
 #include <TString.h>
 #include <TList.h>
 #include <THashList.h>
+#include <AliTender.h>
 #endif
 
-AliAnalysisTaskGammaPHOSPP* AddTaskGammaPHOSPP( Bool_t isMC,
-                                                TString name = "name")
+AliAnalysisTaskGammaPHOSPP* AddTaskGammaPHOSPP( Bool_t isMC = kFALSE,
+                                                TString tenderOption = "Run2Tune",
+						Int_t tenderPass = 1,
+						TString nonlinearity = "Run2Tune",
+						Int_t recoPass = 1,
+                                                TString name = "GammaAnalysis")
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -22,6 +27,20 @@ AliAnalysisTaskGammaPHOSPP* AddTaskGammaPHOSPP( Bool_t isMC,
     if (!mgr->GetInputEventHandler()) {
         return 0x0;
     }
+
+    //Tender & response
+    
+    const Double_t zsSimulation = isMC ? 0.020 : 0;
+ 
+    AliPHOSTenderTask *tenderPHOS = reinterpret_cast<AliPHOSTenderTask *>
+        (gInterpreter->ExecuteMacro(
+         Form("$ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_PbPb/AddAODPHOSTender.C(\"%s\", \"%s\", \"%s\", %d, %d, \"%s\", %f)", 
+                           "PHOSTenderTask","PHOStender",tenderOption.Data(), tenderPass, isMC, nonlinearity.Data(), zsSimulation)));
+
+    TMacro addresp(gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"));
+    addresp.Exec(Form("%d", isMC));
+    addresp.Exec(Form("%d", recoPass));
+
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
     //fileName += ":MyTask";      // create a subfolder in the file
