@@ -50,14 +50,14 @@ private:
 
     	bool AcceptTrack(AliAODTrack* aodtrack) const;    
  
-     	int                   	ftrackBit; //!
-     	float                   vzmin;    //! 	
-      	float                   vzmax;    //! 	
-      	float                   fevtvrtxz;    //! 	
-   		float				  	ptmin;//!
-     	float					ptmax;//!
-		int						TPCrows;//!
-		TString					Nameoftree;//!
+     	int                   	ftrackBit; 
+     	float                   vzmin;     	
+      	float                   vzmax;     	
+      	float                   fevtvrtxz;     	
+   		float				  	ptmin;
+     	float					ptmax;
+		int						TPCrows;
+		TString					Nameoftree;
      
         
        AliAODEvent*            fAOD;           //! input event

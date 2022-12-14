@@ -24,6 +24,7 @@ class TRandom3;
 class AliAnalysisTaskSE;
 class TString;
 class AliESDpid;
+class AliAODEvent;
 
 class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
  public:
@@ -110,6 +111,9 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   void SetFlow( Double_t v1, Double_t v2, Double_t v3=0.0, Double_t v4=0.0, Double_t v5=0.0)
                {fV1=v1;fV2=v2;fV3=v3;fV4=v4;fV5=v5;}
   // end setters afterburner
+
+  //ZDC filler
+  void FillZDCInfo(AliAODEvent* myAOD);
 
  private:
 
