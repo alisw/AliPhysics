@@ -60,7 +60,6 @@ class AliESDtrackCuts;
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
-#include "THnSparse.h"
 #include "TLegend.h"
 #include "TList.h"
 #include "TMath.h"
@@ -82,56 +81,12 @@ using std::endl;
 
 #include "AliAnalysisTaskSpectraFlatenicity.h"
 
-const Int_t nPtbinsFlatSpecFlatSpec = 56;
-Double_t PtbinsFlatSpec[nPtbinsFlatSpecFlatSpec+1] = {
-		 0.25, 0.30, 0.35, 0.40, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 
-         0.75, 0.80, 0.85, 0.90, 0.95, 1.0, 1.10, 1.2, 1.30, 1.4, 
-         1.50, 1.60, 1.70, 1.80, 1.90, 2.0, 2.20, 2.4, 2.60, 2.8, 
-         3.00, 3.20, 3.40, 3.60, 3.80, 4.0, 4.50, 5.0, 5.50, 6.0, 
-         6.50, 7.00, 8.00, 9.00,10.00,11.0,12.00,13.0,14.00,15.0, 
-        16.00,18.00,20.00,22.00,24.00,26.0,30.00
-};    
-    
-const Int_t nRbins = 360;
-Double_t rRbins[nRbins + 1] = { 
-                             0.000, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.010, 
-                                    0.011, 0.012, 0.013, 0.014, 0.015, 0.016, 0.017, 0.018, 0.019, 0.020, 
-                                    0.021, 0.022, 0.023, 0.024, 0.025, 0.026, 0.027, 0.028, 0.029, 0.030, 
-                                    0.031, 0.032, 0.033, 0.034, 0.035, 0.036, 0.037, 0.038, 0.039, 0.040, 
-                                    0.041, 0.042, 0.043, 0.044, 0.045, 0.046, 0.047, 0.048, 0.049, 0.050, 
-                                    0.051, 0.052, 0.053, 0.054, 0.055, 0.056, 0.057, 0.058, 0.059, 0.060, 
-                                    0.061, 0.062, 0.063, 0.064, 0.065, 0.066, 0.067, 0.068, 0.069, 0.070, 
-                                    0.071, 0.072, 0.073, 0.074, 0.075, 0.076, 0.077, 0.078, 0.079, 0.080, 
-                                    0.081, 0.082, 0.083, 0.084, 0.085, 0.086, 0.087, 0.088, 0.089, 0.090, 
-                                    0.091, 0.092, 0.093, 0.094, 0.095, 0.096, 0.097, 0.098, 0.099, 0.100, 
-                                    0.101, 0.102, 0.103, 0.104, 0.105, 0.106, 0.107, 0.108, 0.109, 0.110, 
-                                    0.111, 0.112, 0.113, 0.114, 0.115, 0.116, 0.117, 0.118, 0.119, 0.120, 
-                                    0.121, 0.122, 0.123, 0.124, 0.125, 0.126, 0.127, 0.128, 0.129, 0.130, 
-                                    0.131, 0.132, 0.133, 0.134, 0.135, 0.136, 0.137, 0.138, 0.139, 0.140, 
-                                    0.141, 0.142, 0.143, 0.144, 0.145, 0.146, 0.147, 0.148, 0.149, 0.150, 
-                                    0.151, 0.152, 0.153, 0.154, 0.155, 0.156, 0.157, 0.158, 0.159, 0.160, 
-                                    0.161, 0.162, 0.163, 0.164, 0.165, 0.166, 0.167, 0.168, 0.169, 0.170, 
-                                    0.171, 0.172, 0.173, 0.174, 0.175, 0.176, 0.177, 0.178, 0.179, 0.180, 
-                                    0.181, 0.182, 0.183, 0.184, 0.185, 0.186, 0.187, 0.188, 0.189, 0.190, 
-                                    0.191, 0.192, 0.193, 0.194, 0.195, 0.196, 0.197, 0.198, 0.199, 0.200,                                    
-                                    0.205, 0.210, 0.215, 0.220, 0.225, 0.230, 0.235, 0.240, 0.245, 0.250,
-                                    0.255, 0.260, 0.265, 0.270, 0.275, 0.280, 0.285, 0.290, 0.295, 0.300,
-                                    0.305, 0.310, 0.315, 0.320, 0.325, 0.330, 0.335, 0.340, 0.345, 0.350,
-                                    0.355, 0.360, 0.365, 0.370, 0.375, 0.380, 0.385, 0.390, 0.395, 0.400,
-                                    0.405, 0.410, 0.415, 0.420, 0.425, 0.430, 0.435, 0.440, 0.445, 0.450,
-                                    0.455, 0.460, 0.465, 0.470, 0.475, 0.480, 0.485, 0.490, 0.495, 0.500,
-                                    0.505, 0.510, 0.515, 0.520, 0.525, 0.530, 0.535, 0.540, 0.545, 0.550, 
-                                    0.555, 0.560, 0.565, 0.570, 0.575, 0.580, 0.585, 0.590, 0.595, 0.600,
-                                    0.605, 0.610, 0.615, 0.620, 0.625, 0.630, 0.635, 0.640, 0.645, 0.650,
-                                    0.655, 0.660, 0.665, 0.670, 0.675, 0.680, 0.685, 0.690, 0.695, 0.700,
-                                    0.705, 0.710, 0.715, 0.720, 0.725, 0.730, 0.735, 0.740, 0.745, 0.750,
-                                    0.755, 0.760, 0.765, 0.770, 0.775, 0.780, 0.785, 0.790, 0.795, 0.800,
-                                    0.805, 0.810, 0.815, 0.820, 0.825, 0.830, 0.835, 0.840, 0.845, 0.850,
-                                    0.855, 0.860, 0.865, 0.870, 0.875, 0.880, 0.885, 0.890, 0.895, 0.900,
-                                    0.905, 0.910, 0.915, 0.920, 0.925, 0.930, 0.935, 0.940, 0.945, 0.950,
-                                    0.955, 0.960, 0.965, 0.970, 0.975, 0.980, 0.985, 0.990, 0.995, 1.000
-                                };                                  
-  
+const Int_t nPtbinsFlatSpecFlatSpec = 36;
+Double_t PtbinsFlatSpec[nPtbinsFlatSpecFlatSpec + 1] = {
+    0.0, 0.1, 0.15, 0.2,  0.25, 0.3,  0.35, 0.4,  0.45, 0.5,  0.6, 0.7, 0.8,
+    0.9, 1.0, 1.25, 1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5,  5.0, 6.0, 7.0,
+    8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 30.0, 40.0, 50.0};
+
 const int DCAxyNBins = 121;
 double DCAxyBins[DCAxyNBins + 1] = {
     -3.025, -2.975, -2.925, -2.875, -2.825, -2.775, -2.725, -2.675, -2.625,
@@ -149,8 +104,6 @@ double DCAxyBins[DCAxyNBins + 1] = {
     2.375,  2.425,  2.475,  2.525,  2.575,  2.625,  2.675,  2.725,  2.775,
     2.825,  2.875,  2.925,  2.975,  3.025};
 
-    
-    
 const Int_t nCent = 9;
 Double_t centClassFlatSpec[nCent + 1] = {0.0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
 
@@ -386,19 +339,19 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
   fOutputList = new TList(); // this is a list which will contain all of your histograms
   fOutputList->SetOwner(kTRUE); // memory stuff: the list is owner of all
 
-  hFlatenicity = new TH1D("hFlatenicity", "counter", nRbins, rRbins);
+  hFlatenicity = new TH1D("hFlatenicity", "counter", 1020, -0.01, 1.01);
   fOutputList->Add(hFlatenicity);
 
   hEta = new TH1D("hEta", "Eta rec; #eta; counts", 200, -1.0, 1.0); hEta->Sumw2();
   fOutputList->Add(hEta);      
   
-  hFlatVsPt = new TH2D("hFlatVsPt", "Measured; Flatenicity; #it{p}_{T} (GeV/#it{c})", nRbins, rRbins, nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+  hFlatVsPt = new TH2D("hFlatVsPt", "Measured; Flatenicity; #it{p}_{T} (GeV/#it{c})", 1020, -0.01, 1.01, nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
   fOutputList->Add(hFlatVsPt);
 
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
-    hFlatVsPtV0M[i_c] = new TH2D(Form("hFlatVsPtV0M_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{p}_{T} (GeV/#it{c})",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]),nRbins, rRbins, nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    hFlatVsPtV0M[i_c] = new TH2D(Form("hFlatVsPtV0M_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{p}_{T} (GeV/#it{c})",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]),1020, -0.01, 1.01, nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
     fOutputList->Add(hFlatVsPtV0M[i_c]);
-    hFlatVsNchTPCV0M[i_c] = new TH2D(Form("hFlatVsNchTPCV0M_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{N}_{ch}",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]),nRbins, rRbins, 100, -0.5, 99.5);
+    hFlatVsNchTPCV0M[i_c] = new TH2D(Form("hFlatVsNchTPCV0M_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{N}_{ch}",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]),1020, -0.01, 1.01, 100, -0.5, 99.5);
     fOutputList->Add(hFlatVsNchTPCV0M[i_c]);    
   }
 
@@ -412,9 +365,9 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
     fOutputList->Add(hEtamc);      
     
     for (Int_t i_c = 0; i_c < nCent; ++i_c) {
-        hFlatVsPtV0MMC[i_c] = new TH2D( Form("hFlatVsPtV0MMC_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{p}_{T} (GeV/#it{c})",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]), nRbins, rRbins, nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+        hFlatVsPtV0MMC[i_c] = new TH2D( Form("hFlatVsPtV0MMC_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{p}_{T} (GeV/#it{c})",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]), 1020, -0.01, 1.01, nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
         fOutputList->Add(hFlatVsPtV0MMC[i_c]);
-        hFlatVsNchTPCV0MMC[i_c] = new TH2D( Form("hFlatVsNchTPCV0MMC_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{N}_{ch}",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]), nRbins, rRbins, 100, -0.5, 99.5);
+        hFlatVsNchTPCV0MMC[i_c] = new TH2D( Form("hFlatVsNchTPCV0MMC_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{N}_{ch}",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]), 1020, -0.01, 1.01, 100, -0.5, 99.5);
         fOutputList->Add(hFlatVsNchTPCV0MMC[i_c]);        
     }
 
@@ -490,16 +443,16 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
     hPtOutPrimRest = new TH1D("hPtOutPrimRest", "pT prim rec; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
     fOutputList->Add(hPtOutPrimRest);
     
-    hFlatenicityMC = new TH1D("hFlatenicityMC", "counter", nRbins, rRbins);
+    hFlatenicityMC = new TH1D("hFlatenicityMC", "counter", 1020, -0.01, 1.01);
     fOutputList->Add(hFlatenicityMC);
 
-    hFlatResponse = new TH2D("hFlatResponse", "; true flat; measured flat", nRbins, rRbins, nRbins, rRbins);
+    hFlatResponse = new TH2D("hFlatResponse", "; true flat; measured flat", 1020, -0.01, 1.01, 1020, -0.01, 1.01);
     fOutputList->Add(hFlatResponse);
 
-    hFlatVsPtMC = new TH2D("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})", nRbins, rRbins, nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    hFlatVsPtMC = new TH2D("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})", 1020, -0.01, 1.01, nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
     fOutputList->Add(hFlatVsPtMC);
 
-    hFlatVsNchMC = new TH2D("hFlatVsNchMC", "; true flat; true Nch", nRbins, rRbins, 100, -0.5, 99.5);
+    hFlatVsNchMC = new TH2D("hFlatVsNchMC", "; true flat; true Nch", 1020, -0.01, 1.01, 100, -0.5, 99.5);
     fOutputList->Add(hFlatVsNchMC);
     
     /// Added V0M multiplicity distribtion 
@@ -536,10 +489,10 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
   hPtVsDCAAll = new TH2D("hPtVsDCAAll", "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} all", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec, DCAxyNBins, DCAxyBins);
   fOutputList->Add(hPtVsDCAAll);
   
-  hFlatVsNch = new TH2D("hFlatVsNch", "; rec flat; rec Nch", nRbins, rRbins, 100, -0.5, 99.5);
+  hFlatVsNch = new TH2D("hFlatVsNch", "; rec flat; rec Nch", 1020, -0.01, 1.01, 100, -0.5, 99.5);
   fOutputList->Add(hFlatVsNch);
   
-  hFlatVsV0M = new TH2D("hFlatVsV0M", "", nCent, centClassFlatSpec, nRbins, rRbins);
+  hFlatVsV0M = new TH2D("hFlatVsV0M", "", nCent, centClassFlatSpec, 1020, -0.01, 1.01);
   fOutputList->Add(hFlatVsV0M);
 
   hNchV0M = new TH1D("hNchV0M", ";rec Nch; counts", 400, -0.5, 399.5);
@@ -594,7 +547,7 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
     if (genHeader) {
       genHeader->PrimaryVertex(vtxMC);
     }
-    if (TMath::Abs(vtxMC[2]) <= 10)
+    if (TMath::Abs(vtxMC[2]) <= 10.)
       isGoodVtxPosMC = kTRUE;
 
     fnGen = FillArrayMC(ptMc, idMc);
@@ -603,20 +556,19 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
   // w/ DCA cut
   vector<Float_t> ptWDCA;
   vector<Float_t> dcaxyWDCA;
-  vector<Float_t> dcazWDCA;
   vector<Int_t> isprimWDCA;
   vector<Int_t> idWDCA;
 
-  fnRec = FillArray(ptWDCA, dcaxyWDCA, dcazWDCA, isprimWDCA, idWDCA, kTRUE);
+  fnRec = FillArray(ptWDCA, dcaxyWDCA, isprimWDCA, idWDCA, kTRUE);
+  
 
   // w/o DCA cut
   vector<Float_t> ptWoDCA;
   vector<Float_t> dcaxyWoDCA;
-  vector<Float_t> dcazWoDCA;
   vector<Int_t> isprimWoDCA;
   vector<Int_t> idWoDCA;
 
-  fnRecWoDCA = FillArray(ptWoDCA, dcaxyWoDCA, dcazWoDCA, isprimWoDCA, idWoDCA, kFALSE);
+  fnRecWoDCA = FillArray(ptWoDCA, dcaxyWoDCA, isprimWoDCA, idWoDCA, kFALSE);
 
   // Trigger selection
   UInt_t fSelectMask = fInputHandler->IsEventSelected();
@@ -1193,13 +1145,13 @@ Int_t AliAnalysisTaskSpectraFlatenicity::FillArrayMC(vector<Float_t> &ptArray, v
   return nNchGen;
 }
 
+
 //______________________________________________________________________________
-Int_t AliAnalysisTaskSpectraFlatenicity::FillArray(vector<Float_t> &ptArray, vector<Float_t> &dcaxyArray, vector<Float_t> &dcazArray, vector<Int_t> &isprimArray, vector<Int_t> &idArray, const Bool_t wDcaCut)
+Int_t AliAnalysisTaskSpectraFlatenicity::FillArray(vector<Float_t> &ptArray, vector<Float_t> &dcaxyArray, vector<Int_t> &isprimArray, vector<Int_t> &idArray, const Bool_t wDcaCut)
 {
 //      id 0: pion, 1: kaon, 2: proton, 3: sigma plus, 4: sigma minus, 5: Omega, 6: Xi, 7: other charged
   ptArray.clear();
   dcaxyArray.clear();
-  dcazArray.clear();
   isprimArray.clear();
   idArray.clear();
 
@@ -1266,7 +1218,6 @@ Int_t AliAnalysisTaskSpectraFlatenicity::FillArray(vector<Float_t> &ptArray, vec
 
       ptArray.push_back(newTrack->Pt());
       dcaxyArray.push_back(fdcaxy);
-      dcazArray.push_back(fdcaz);
         
       if (fUseMC) {
           // get label: 0: prim, 1: weak decays, 2: material
@@ -1343,7 +1294,6 @@ Int_t AliAnalysisTaskSpectraFlatenicity::FillArray(vector<Float_t> &ptArray, vec
 
       ptArray.push_back(newTrack->Pt());
       dcaxyArray.push_back(fdcaxy);
-      dcazArray.push_back(fdcaz);
 
       if (fUseMC) { // get label: 0: prim, 1: weak decays, 2: material
           if (fMC->IsPhysicalPrimary(mcLabel))
@@ -1364,6 +1314,7 @@ Int_t AliAnalysisTaskSpectraFlatenicity::FillArray(vector<Float_t> &ptArray, vec
   }
   return nNchRec;
 }
+
 
 //______________________________________________________________________________
 void AliAnalysisTaskSpectraFlatenicity::SetCutsFilterWoDCA(AliESDtrackCuts *cFilt) 
@@ -1405,12 +1356,12 @@ void AliAnalysisTaskSpectraFlatenicity::GetCorrections(Int_t multGen, Int_t mult
           hPtInPrimSigmap->Fill(ptGen[i]); // sigma plus
       else if (idGen[i] == 5)
           hPtInPrimSigmam->Fill(ptGen[i]); // sigma minus
+      else if (idGen[i] == 6)
+          hPtInPrimOmega->Fill(ptGen[i]); // Omega
+      else if (idGen[i] == 7)
+          hPtInPrimXi->Fill(ptGen[i]); // Xi
       else
           hPtInPrimRest->Fill(ptGen[i]); // rest of the charged particles
-      if (idGen[i] == 6)
-          hPtInPrimOmega->Fill(ptGen[i]); // Omega
-      if (idGen[i] == 7)
-          hPtInPrimXi->Fill(ptGen[i]); // Xi
     }
   }
 
@@ -1421,27 +1372,28 @@ void AliAnalysisTaskSpectraFlatenicity::GetCorrections(Int_t multGen, Int_t mult
         hPtOutPrim->Fill(ptRec[i]);
 
         if (idRec[i] == 0)
-            hPtOutPrimLambda->Fill(ptGen[i]); // lambdas
+            hPtOutPrimLambda->Fill(ptRec[i]); // lambdas
         else if (idRec[i] == 1)
-            hPtOutPrimPion->Fill(ptGen[i]); // pions
+            hPtOutPrimPion->Fill(ptRec[i]); // pions
         else if (idRec[i] == 2)
-            hPtOutPrimKaon->Fill(ptGen[i]); // kaons
+            hPtOutPrimKaon->Fill(ptRec[i]); // kaons
         else if (idRec[i] == 3)
-            hPtOutPrimProton->Fill(ptGen[i]); // protons
+            hPtOutPrimProton->Fill(ptRec[i]); // protons
         else if (idRec[i] == 4)
-            hPtOutPrimSigmap->Fill(ptGen[i]); // sigma plus
+            hPtOutPrimSigmap->Fill(ptRec[i]); // sigma plus
         else if (idRec[i] == 5)
-            hPtOutPrimSigmam->Fill(ptGen[i]); // sigma minus
+            hPtOutPrimSigmam->Fill(ptRec[i]); // sigma minus
+        else if (idRec[i] == 6)
+            hPtOutPrimOmega->Fill(ptRec[i]); // Omega
+        else if (idRec[i] == 7)
+            hPtOutPrimXi->Fill(ptRec[i]); // Xi
         else
-            hPtOutPrimRest->Fill(ptGen[i]); // rest of the charged particles
-        if (idRec[i] == 6)
-            hPtOutPrimOmega->Fill(ptGen[i]); // Omega
-        if (idRec[i] == 7)
-            hPtOutPrimXi->Fill(ptGen[i]); // Xi
+            hPtOutPrimRest->Fill(ptRec[i]); // rest of the charged particles
       }
     }
     if (isprimRec[i] == 1 || isprimRec[i] == 2) {
-      hPtOutSec->Fill(ptGen[i]);
+      hPtOutSec->Fill(ptRec[i]);
     }
   }
 }
+
