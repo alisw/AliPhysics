@@ -1,8 +1,4 @@
 AliAnalysisTaskPHOSPbPbQARun2* AddTaskPHOSPbPbQARun2( Bool_t isMC = kFALSE,
-                                                      TString tenderOption = "Run2Tune",
-   						      Int_t tenderPass = 1,
-   						      TString nonlinearity = "Run2Tune",
-						      Int_t recoPass = 1,
                                                       TString name = "PbPbQA")
 {
   //Add PHOS PbPb QA task to the PWGPP QA train.
@@ -19,22 +15,7 @@ AliAnalysisTaskPHOSPbPbQARun2* AddTaskPHOSPbPbQARun2( Bool_t isMC = kFALSE,
     return NULL;
   }
 
-  //Add multitplicity, tender etc.
-  TMacro multadd=(gSystem->ExpandPathName("$ALICE_PHYSICS/OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C"));
-  AliMultSelectionTask* multSelectionTask = reinterpret_cast<AliMultSelectionTask*>(multadd.Exec(Form("%d", 0)));
- 
-  AliPHOSTenderTask *tenderPHOS = reinterpret_cast<AliPHOSTenderTask *>
-      (gInterpreter->ExecuteMacro(
-        Form("$ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_PbPb/AddAODPHOSTender.C(\"%s\", \"%s\", \"%s\", %d, %d, \"%s\", %f)", 
-                                                                    "PHOSTenderTask","PHOStender",
-								    tenderOption.Data(), tenderPass, 
-								    isMC, nonlinearity.Data(), 0.020)));
-
-  TMacro addresp(gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"));
-  addresp.Exec(Form("%d", isMC));
-  addresp.Exec(Form("%d", recoPass));
-
-  AliAnalysisTaskPHOSPbPbQARun2* task = new AliAnalysisTaskPHOSPbPbQARun2("PbPbQA");
+  AliAnalysisTaskPHOSPbPbQARun2* task = new AliAnalysisTaskPHOSPbPbQARun2(name.Data());
   mgr->AddTask(task);
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
