@@ -3,6 +3,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliConversionPhotonBase.h"
+#include "AliAnalysisTaskConvJet.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TString.h"
@@ -54,6 +55,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     void SetSaveConversions                 ( Int_t val  )                                { fSaveConversions    = val          ; }
     void SetSaveTracks                      ( Int_t  val  )                               { fSaveTracks         = val          ; }
     void SetUseClusterIsolation             ( Bool_t val  )                               { fUseClusterIsolation= val          ; }
+    void SetSaveJets                        ( int  val )                                  { fSaveJets           = val          ; }
 
     void SetMinTrackPt                      ( Double_t tmp )                              { fMinTrackPt         = tmp          ; }
 
@@ -73,10 +75,13 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     void ResetBuffer();
     void ResetBufferVectors();
 
+    void InitJets();
+
 
   protected:
     AliV0ReaderV1*                  fV0Reader;                      ///< V0 Reader
     TString                         fV0ReaderName;                  ///< V0 Reader Name
+    AliAnalysisTaskConvJet*         fConvJetReader;                 ///< Jet reader
     AliPhotonIsolation*             fCaloIsolation;                 ///< Isolation Task
     TString                         fCaloIsolationName;             ///< Photon Isolation task Name
     TClonesArray*                   fReaderGammas;                  ///< Array with conversion photons selected by V0Reader Cut
@@ -107,6 +112,7 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     Int_t                           fSaveConversions;               ///< flag to decide to save conversions
     Int_t                           fSaveTracks;                    ///< flag to decide to save tracks
     Bool_t                          fUseClusterIsolation;           ///< flag to decide if isolation should be checked
+    int                             fSaveJets;                      ///< flag to decide if jets should be saved, if set to 2, only events with jets are saved
 
     // track cuts
     Double_t                        fMinTrackPt;                                   //!<! minimum required track pT
@@ -176,7 +182,11 @@ class AliAnalysisTaskConvCaloTree : public AliAnalysisTaskSE{
     std::vector<Short_t>                 fVBuffer_Track_Calo_eta;                   //!<! vector buffer: track eta on Calo surface (*10000)
     std::vector<UShort_t>                fVBuffer_Track_Calo_phi;                   //!<! vector buffer: track eta on Calo surface (*10000)
 
-    ClassDef(AliAnalysisTaskConvCaloTree, 9);
+    std::vector<float>                  fVBuffer_Jet_Pt;                            //!<! vector buffer: Jet pt
+    std::vector<float>                  fVBuffer_Jet_Eta;                           //!<! vector buffer: Jet eta
+    std::vector<float>                  fVBuffer_Jet_Phi;                           //!<! vector buffer: Jet phi
+
+    ClassDef(AliAnalysisTaskConvCaloTree, 10);
 };
 
 

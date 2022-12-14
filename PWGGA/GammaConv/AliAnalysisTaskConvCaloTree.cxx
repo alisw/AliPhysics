@@ -42,6 +42,7 @@ ClassImp(AliAnalysisTaskConvCaloTree)
 AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree() : AliAnalysisTaskSE(),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
+  fConvJetReader(NULL),
   fCaloIsolation(NULL),
   fCaloIsolationName("PhotonIsolation"),
   fReaderGammas(NULL),
@@ -71,6 +72,7 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree() : AliAnalysisTaskSE()
   fSaveConversions(0),
   fSaveTracks(0),
   fUseClusterIsolation(0),
+  fSaveJets(0),
   fMinTrackPt(0),
   fInfoList(NULL),
   fHistoNEvents(NULL),
@@ -126,13 +128,17 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree() : AliAnalysisTaskSE()
   fVBuffer_Track_pz(),
   fVBuffer_Track_P(),
   fVBuffer_Track_Calo_eta(),
-  fVBuffer_Track_Calo_phi()
+  fVBuffer_Track_Calo_phi(),
+  fVBuffer_Jet_Pt(),
+  fVBuffer_Jet_Eta(),
+  fVBuffer_Jet_Phi()
 {
 }
 
 AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char *name) : AliAnalysisTaskSE(name),
   fV0Reader(NULL),
   fV0ReaderName("V0ReaderV1"),
+  fConvJetReader(NULL),
   fCaloIsolation(NULL),
   fCaloIsolationName("PhotonIsolation"),
   fReaderGammas(NULL),
@@ -162,6 +168,7 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char *name) : Ali
   fSaveConversions(0),
   fSaveTracks(0),
   fUseClusterIsolation(0),
+  fSaveJets(0),
   fMinTrackPt(0),
   fInfoList(0),
   fHistoNEvents(NULL),
@@ -217,7 +224,10 @@ AliAnalysisTaskConvCaloTree::AliAnalysisTaskConvCaloTree(const char *name) : Ali
   fVBuffer_Track_pz(),
   fVBuffer_Track_P(),
   fVBuffer_Track_Calo_eta(),
-  fVBuffer_Track_Calo_phi()
+  fVBuffer_Track_Calo_phi(),
+  fVBuffer_Jet_Pt(),
+  fVBuffer_Jet_Eta(),
+  fVBuffer_Jet_Phi()
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -235,6 +245,14 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
 {
   fV0Reader = (AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask(fV0ReaderName.Data());
   if(!fV0Reader){printf("Error: No V0 Reader");return;}// GetV0Reader
+
+  if(fSaveJets){
+    fConvJetReader = (AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskConvJet");
+    if (!fConvJetReader) {
+      printf("Error: No AliAnalysisTaskConvJet");
+      return;
+    }
+  }
 
   //retrieve pointer to CaloIsolation Instance
   if(fUseClusterIsolation) fCaloIsolation = (AliPhotonIsolation*)AliAnalysisManager::GetAnalysisManager()->GetTask(fCaloIsolationName.Data());
@@ -354,12 +372,18 @@ void AliAnalysisTaskConvCaloTree::UserCreateOutputObjects()
     fPhotonTree->Branch("Track_TracketaCalo",               &fVBuffer_Track_Calo_eta);
     fPhotonTree->Branch("Track_TrackphiCalo",               &fVBuffer_Track_Calo_phi);
   }
+  if(fSaveJets){
+    fPhotonTree->Branch("Jet_Pt",                         &fVBuffer_Jet_Pt);
+    fPhotonTree->Branch("Jet_Eta",                        &fVBuffer_Jet_Eta);
+    fPhotonTree->Branch("Jet_Phi",                        &fVBuffer_Jet_Phi);
+  }
 
 
 
-  fHistoNEvents     = new TH1F("NEvents", "NEvents", 2, -0.5, 1.5);
+  fHistoNEvents     = new TH1F("NEvents", "NEvents", 3, -0.5, 2.5);
   fHistoNEvents->GetXaxis()->SetBinLabel(1,"Accepted");
   fHistoNEvents->GetXaxis()->SetBinLabel(2,"Not Accepted");
+  fHistoNEvents->GetXaxis()->SetBinLabel(3,"No jet in event");
   fInfoList->Add(fHistoNEvents);
 
   if(fIsMC > 0){
@@ -400,8 +424,10 @@ void AliAnalysisTaskConvCaloTree::UserExec(Option_t *){
   if(fIsMC>0) fMCEvent                = MCEvent();
   Int_t eventNotAccepted              = fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(),fInputEvent,fMCEvent,fIsHeavyIon,kFALSE);
 
-  fHistoNEvents->Fill(eventNotAccepted);
-  if(eventNotAccepted) return; // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
+  if(eventNotAccepted) {
+    fHistoNEvents->Fill(1);
+    return; // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
+  }
 
   const AliVVertex* primVtxMC   = fInputEvent->GetPrimaryVertex();
   fBuffer_Event_Vertex_Z = primVtxMC->GetZ();
@@ -421,6 +447,17 @@ void AliAnalysisTaskConvCaloTree::UserExec(Option_t *){
     fBuffer_EventWeight = fWeightJetJetMC;
   }
 
+  if(fSaveJets){
+    InitJets();
+    if(fSaveJets == 2){
+      if(fVBuffer_Jet_Pt.size() == 0){
+        fHistoNEvents->Fill(2);
+        return;
+      }
+    }
+  }
+
+  fHistoNEvents->Fill(0);
 
   if(fSaveClusters)
   {
@@ -874,6 +911,16 @@ void AliAnalysisTaskConvCaloTree::ProcessAODMCParticles()
 }
 
 //________________________________________________________________________
+void AliAnalysisTaskConvCaloTree::InitJets()
+{
+  for(unsigned int i = 0; i < (fConvJetReader->GetVectorJetPt()).size(); ++i){
+    fVBuffer_Jet_Pt.push_back((fConvJetReader->GetVectorJetPt())[i]);
+    fVBuffer_Jet_Eta.push_back((fConvJetReader->GetVectorJetEta())[i]);
+    fVBuffer_Jet_Phi.push_back((fConvJetReader->GetVectorJetPhi())[i]);
+  }
+}
+
+//________________________________________________________________________
 void AliAnalysisTaskConvCaloTree::Terminate(Option_t *){
 
 }
@@ -1010,5 +1057,9 @@ void AliAnalysisTaskConvCaloTree::ResetBufferVectors(){
   fVBuffer_Track_P.clear();
   fVBuffer_Track_Calo_eta.clear();
   fVBuffer_Track_Calo_phi.clear();
+
+  fVBuffer_Jet_Pt.clear();
+  fVBuffer_Jet_Eta.clear();
+  fVBuffer_Jet_Phi.clear();
 
 }
