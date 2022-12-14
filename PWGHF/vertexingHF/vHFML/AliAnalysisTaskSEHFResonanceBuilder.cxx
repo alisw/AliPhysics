@@ -608,10 +608,13 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                     for(auto iHypo{0u}; iHypo<kPdgV0IDs.size(); ++iHypo) {
                         if (isSignal[iHypo]) {
                             double massV0 = -1.;
+                            AliAODMCParticle *partV0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcLab[iHypo]));
+                            if (!partV0->IsPhysicalPrimary()) {
+                                isSignal[iHypo] = false;
+                            }
                             if (iHypo == kK0S) {
                                 massV0 = v0->MassK0Short();
                             } else if (iHypo == kLambda) {
-                                AliAODMCParticle *partV0 = dynamic_cast<AliAODMCParticle*>(arrayMC->At(mcLab[kLambda]));
                                 if (partV0->GetPdgCode() > 0) {
                                     massV0 = v0->MassLambda();
                                 } else {
@@ -621,7 +624,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                             double radV0 = std::sqrt(v0->Xv()*v0->Xv() + v0->Yv()*v0->Yv());
                             double minDCAV0 = (std::abs(v0->DcaPosToPrimVertex()) < std::abs(v0->DcaNegToPrimVertex())) ? std::abs(v0->DcaPosToPrimVertex()) : std::abs(v0->DcaNegToPrimVertex());
                             double array4Sparse[7] = {v0->Pt(), v0->Y(kPdgV0IDs[iHypo]), v0->Phi(), massV0, v0->CosPointingAngle(posPrimVtx), radV0, minDCAV0};
-                            fHistMCRecoV0[iHypo]->Fill(array4Sparse);
+                            if (isSignal[iHypo]) { // if not PhysicalPrimary, it is not signal for us
+                                fHistMCRecoV0[iHypo]->Fill(array4Sparse);
+                            }
                             break;
                         }
                     }
@@ -1549,6 +1554,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
 
             for (auto iV0{0u}; iV0<kPdgV0IDs.size(); ++iV0) {
                 if (std::abs(pdgPart) == kPdgV0IDs[iV0] && fEnableV0[iV0]) {
+                    if (!mcPart->IsPhysicalPrimary())
+                        continue;
                     switch(iV0) {
                         case kK0S:
                         {

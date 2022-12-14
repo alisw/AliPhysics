@@ -199,10 +199,6 @@ AliAnalysisTaskJetQnVectors::~AliAnalysisTaskJetQnVectors()
 //________________________________________________________________________
 void AliAnalysisTaskJetQnVectors::UserCreateOutputObjects()
 {
-    fJEQnVecHandler1 = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName1);
-    fJEQnVecHandler2 = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName2);
-    fJEQnVecHandler1->EnablePhiDistrHistos();
-    fJEQnVecHandler2->EnablePhiDistrHistos();
     
     fOutputList = new TList();
     fOutputList->SetOwner(true);
@@ -469,6 +465,19 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
 
     // Post output data
     PostData(1, fOutputList);
+}
+
+//
+// Creates the QnVector Handlers. Needs to be run in add task so that calibration
+// files are loaded at job creation.
+//________________________________________________________________________
+void AliAnalysisTaskJetQnVectors::CreateQnVectorHandlers() {
+
+    fJEQnVecHandler1 = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName1);
+    fJEQnVecHandler2 = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName2);
+    fJEQnVecHandler1->EnablePhiDistrHistos();
+    fJEQnVecHandler2->EnablePhiDistrHistos();
+
 }
 
 //________________________________________________________________________

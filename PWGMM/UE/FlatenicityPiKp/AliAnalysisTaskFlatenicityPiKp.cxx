@@ -86,8 +86,8 @@ static const Int_t nEta = 4;
 static Double_t centClass[nCent + 1] = {0.0,  1.0,  5.0,  10.0, 20.0,
 	30.0, 40.0, 50.0, 70.0, 100.0};
 
-static const Char_t* V0MClass[nCent] = {"0_1","1_5","5_10","10_20",
-	"20_30","30_40","40_50","50_70","70_100"};
+/* static const Char_t* V0MClass[nCent] = {"0_1","1_5","5_10","10_20", */
+/* 	"20_30","30_40","40_50","50_70","70_100"}; */
 
 static const Char_t* etaClass[nEta] = {"02","24","46","68"};
 static const Char_t* ParticleType[3] = {"Primaries","MaterialInt","WeakDecays"};
@@ -100,15 +100,15 @@ ClassImp(AliAnalysisTaskFlatenicityPiKp) // classimp: necessary for root
 
 AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 	: AliAnalysisTaskSE(), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-	fUseMC(kFALSE), fV0Mindex(-1), fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
+	fUseMC(kFALSE), /*fV0Mindex(-1),*/ fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
 	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fV0MEqualisation(kTRUE) ,fdEdxCalibrated(kTRUE),
 	fSaveDCAxyHistograms(kFALSE), 
 	fEtaCalibrationPos(0x0), fEtaCalibrationNeg(0x0), fV0CCalibration(0x0), fV0ACalibration(0x0), 
 	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
 	ftrackmult08(0), fv0mpercentile(0), fMidRapidityMult(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
-	fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
-	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0), hFlatVsPtMC(0), hActivityV0CV0A(0),
+	fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0), hFlatVsV0MVsMult(0),
+	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0), hFlatVsPtMC(0),
 	hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
 	hMCPtPionPos(0),hMCPtKaonPos(0),hMCPtProtonPos(0),
 	hMCPtPionNeg(0),hMCPtKaonNeg(0),hMCPtProtonNeg(0),
@@ -119,52 +119,45 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 	hrTPCRecTracksPion(0), hrTPCRecTracksKaon(0), hrTPCRecTracksProton(0),
 	hPionTPCDCAxyNegData(0), hPionTPCDCAxyPosData(0), hProtonTPCDCAxyNegData(0), hProtonTPCDCAxyPosData(0),
 	hPionTOFDCAxyNegData(0), hPionTOFDCAxyPosData(0), hProtonTOFDCAxyNegData(0), hProtonTOFDCAxyPosData(0),
-	hMIPVsEta(0), pMIPVsEta(0), hPlateauVsEta(0), pPlateauVsEta(0)
+	pMIPVsEta(0), pPlateauVsEta(0)
 
 
 {
-	for (Int_t i_c = 0; i_c < nCent; ++i_c) {
-		hFlatVsV0MVsMult[i_c] = 0;
-		hFlatVsPtV0M[i_c] = 0;
 
-		for (Int_t i_eta = 0; i_eta < nEta; ++i_eta){
+	for (int i_eta = 0; i_eta < nEta; ++i_eta)
+	{
+		hNsigmaPiPos[i_eta] = 0;
+		hNsigmaKPos[i_eta] = 0;
+		hNsigmaPPos[i_eta] = 0;
+		hNsigmaPiNeg[i_eta] = 0;
+		hNsigmaKNeg[i_eta] = 0;
+		hNsigmaPNeg[i_eta] = 0;
+		hPtTPCEtaPos[i_eta] = 0;
+		hPtTPCEtaNeg[i_eta] = 0;
 
-			hNsigmaPiPos[i_c][i_eta] = 0;
-			hNsigmaKPos[i_c][i_eta] = 0;
-			hNsigmaPPos[i_c][i_eta] = 0;
-			hPtTPCEtaPos[i_c][i_eta] = 0;
+		hNsigmaTOFPiPos[i_eta] = 0;
+		hNsigmaTOFKPos[i_eta] = 0;
+		hNsigmaTOFPPos[i_eta] = 0;
+		hNsigmaTOFPiNeg[i_eta] = 0;
+		hNsigmaTOFKNeg[i_eta] = 0;
+		hNsigmaTOFPNeg[i_eta] = 0;
+		hBetaPos[i_eta] = 0;
+		hMomentumTOFEtaPos[i_eta] = 0;
+		hPtTOFEtaPos[i_eta] = 0;
+		hBetaNeg[i_eta] = 0;
+		hMomentumTOFEtaNeg[i_eta] = 0;
+		hPtTOFEtaNeg[i_eta] = 0;
 
-			hNsigmaPiNeg[i_c][i_eta] = 0;
-			hNsigmaKNeg[i_c][i_eta] = 0;
-			hNsigmaPNeg[i_c][i_eta] = 0;
-			hPtTPCEtaNeg[i_c][i_eta] = 0;
+		hdEdx[i_eta] = 0;
+		hPtrTPC[i_eta] = 0;
+		hPtVsP[i_eta] = 0;	
 
-			hBetaPos[i_c][i_eta] = 0;
-			hMomentumTOFEtaPos[i_c][i_eta] = 0;
-			hPtTOFEtaPos[i_c][i_eta] = 0;
-
-			hBetaNeg[i_c][i_eta] = 0;
-			hMomentumTOFEtaNeg[i_c][i_eta] = 0;
-			hPtTOFEtaNeg[i_c][i_eta] = 0;
-
-			hdEdx[i_c][i_eta] = 0;
-			hPtrTPC[i_c][i_eta] = 0;
-			if (i_c==0){
-				hPtVsP[i_eta] = 0;	
-				random_cont_in_kaon_h[i_eta] = 0;
-				pion_cont_in_kaon_h[i_eta] = 0;
-				electron_cont_in_kaon_h[i_eta] = 0;
-				nsigma_kaon_h[i_eta] = 0;
-				random_cont_in_proton_h[i_eta] = 0;
-				pion_cont_in_proton_h[i_eta] = 0;
-				electron_cont_in_proton_h[i_eta] = 0;
-				nsigma_proton_h[i_eta] = 0;
-				random_cont_in_pion_h[i_eta] = 0;
-				kaon_cont_in_pion_h[i_eta] = 0;
-				electron_cont_in_pion_h[i_eta] = 0;
-				nsigma_pion_h[i_eta] = 0;
-			}
-		}
+		nsigma_kaon_h[i_eta] = 0;
+		random_cont_in_kaon_h[i_eta] = 0;
+		nsigma_proton_h[i_eta] = 0;
+		random_cont_in_proton_h[i_eta] = 0;
+		nsigma_pion_h[i_eta] = 0;
+		random_cont_in_pion_h[i_eta] = 0;
 	}
 
 	for(Int_t i = 0; i < 3; ++i){
@@ -183,15 +176,15 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 	: AliAnalysisTaskSE(name), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-	fUseMC(kFALSE), fV0Mindex(-1), fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
+	fUseMC(kFALSE), /*fV0Mindex(-1),*/ fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
 	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fV0MEqualisation(kTRUE), fdEdxCalibrated(kTRUE), 
 	fSaveDCAxyHistograms(kFALSE), 
 	fEtaCalibrationPos(0x0), fEtaCalibrationNeg(0x0), fV0CCalibration(0x0), fV0ACalibration(0x0), 
 	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
 	ftrackmult08(0), fv0mpercentile(0), fMidRapidityMult(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
-	fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
-	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0), hFlatVsPtMC(0), hActivityV0CV0A(0),
+	fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0), hFlatVsV0MVsMult(0),
+	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0), hFlatVsPtMC(0),
 	hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
 	hMCPtPionPos(0),hMCPtKaonPos(0),hMCPtProtonPos(0),
 	hMCPtPionNeg(0),hMCPtKaonNeg(0),hMCPtProtonNeg(0),
@@ -202,51 +195,43 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 	hrTPCRecTracksPion(0), hrTPCRecTracksKaon(0), hrTPCRecTracksProton(0),
 	hPionTPCDCAxyNegData(0), hPionTPCDCAxyPosData(0), hProtonTPCDCAxyNegData(0), hProtonTPCDCAxyPosData(0),
 	hPionTOFDCAxyNegData(0), hPionTOFDCAxyPosData(0), hProtonTOFDCAxyNegData(0), hProtonTOFDCAxyPosData(0),
-	hMIPVsEta(0), pMIPVsEta(0), hPlateauVsEta(0), pPlateauVsEta(0)
+	pMIPVsEta(0), pPlateauVsEta(0)
 
 {
-	for (Int_t i_c = 0; i_c < nCent; ++i_c) {
-		hFlatVsV0MVsMult[i_c] = 0;
-		hFlatVsPtV0M[i_c] = 0;
+	for (int i_eta = 0; i_eta < nEta; ++i_eta)
+	{
+		hNsigmaPiPos[i_eta] = 0;
+		hNsigmaKPos[i_eta] = 0;
+		hNsigmaPPos[i_eta] = 0;
+		hNsigmaPiNeg[i_eta] = 0;
+		hNsigmaKNeg[i_eta] = 0;
+		hNsigmaPNeg[i_eta] = 0;
+		hPtTPCEtaPos[i_eta] = 0;
+		hPtTPCEtaNeg[i_eta] = 0;
 
-		for (Int_t i_eta = 0; i_eta < nEta; ++i_eta){
+		hNsigmaTOFPiPos[i_eta] = 0;
+		hNsigmaTOFKPos[i_eta] = 0;
+		hNsigmaTOFPPos[i_eta] = 0;
+		hNsigmaTOFPiNeg[i_eta] = 0;
+		hNsigmaTOFKNeg[i_eta] = 0;
+		hNsigmaTOFPNeg[i_eta] = 0;
+		hBetaPos[i_eta] = 0;
+		hMomentumTOFEtaPos[i_eta] = 0;
+		hPtTOFEtaPos[i_eta] = 0;
+		hBetaNeg[i_eta] = 0;
+		hMomentumTOFEtaNeg[i_eta] = 0;
+		hPtTOFEtaNeg[i_eta] = 0;
 
-			hNsigmaPiPos[i_c][i_eta] = 0;
-			hNsigmaKPos[i_c][i_eta] = 0;
-			hNsigmaPPos[i_c][i_eta] = 0;
-			hPtTPCEtaPos[i_c][i_eta] = 0;
+		hdEdx[i_eta] = 0;
+		hPtrTPC[i_eta] = 0;
+		hPtVsP[i_eta] = 0;	
 
-			hNsigmaPiNeg[i_c][i_eta] = 0;
-			hNsigmaKNeg[i_c][i_eta] = 0;
-			hNsigmaPNeg[i_c][i_eta] = 0;
-			hPtTPCEtaNeg[i_c][i_eta] = 0;
-
-			hBetaPos[i_c][i_eta] = 0;
-			hMomentumTOFEtaPos[i_c][i_eta] = 0;
-			hPtTOFEtaPos[i_c][i_eta] = 0;
-
-			hBetaNeg[i_c][i_eta] = 0;
-			hMomentumTOFEtaNeg[i_c][i_eta] = 0;
-			hPtTOFEtaNeg[i_c][i_eta] = 0;
-
-			hdEdx[i_c][i_eta] = 0;
-			hPtrTPC[i_c][i_eta] = 0;
-			if (i_c==0){
-				hPtVsP[i_eta] = 0;	
-				random_cont_in_kaon_h[i_eta] = 0;
-				pion_cont_in_kaon_h[i_eta] = 0;
-				electron_cont_in_kaon_h[i_eta] = 0;
-				nsigma_kaon_h[i_eta] = 0;
-				random_cont_in_proton_h[i_eta] = 0;
-				pion_cont_in_proton_h[i_eta] = 0;
-				electron_cont_in_proton_h[i_eta] = 0;
-				nsigma_proton_h[i_eta] = 0;
-				random_cont_in_pion_h[i_eta] = 0;
-				kaon_cont_in_pion_h[i_eta] = 0;
-				electron_cont_in_pion_h[i_eta] = 0;
-				nsigma_pion_h[i_eta] = 0;
-			}
-		}
+		nsigma_kaon_h[i_eta] = 0;
+		random_cont_in_kaon_h[i_eta] = 0;
+		nsigma_proton_h[i_eta] = 0;
+		random_cont_in_proton_h[i_eta] = 0;
+		nsigma_pion_h[i_eta] = 0;
+		random_cont_in_pion_h[i_eta] = 0;
 	}
 
 	for(Int_t i = 0; i < 3; ++i){
@@ -503,123 +488,93 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 	OpenFile(1);
 	fOutputList = new TList(); // this is a list which will contain all of your histograms
 	fOutputList->SetOwner(kTRUE); // memory stuff: the list is owner of all
-				      //
-	int save_this_mult_bin = -1;
-	if (fV0MBin == "0_1") save_this_mult_bin = 0;
-	else if (fV0MBin == "1_5") save_this_mult_bin = 1;
-	else if (fV0MBin == "5_10") save_this_mult_bin = 2;
-	else if (fV0MBin == "10_20") save_this_mult_bin = 3;
-	else if (fV0MBin == "20_30") save_this_mult_bin = 4;
-	else if (fV0MBin == "30_40") save_this_mult_bin = 5;
-	else if (fV0MBin == "40_50") save_this_mult_bin = 6;
-	else if (fV0MBin == "50_70") save_this_mult_bin = 7;
-	else save_this_mult_bin = 8;
 
-	hPionTPCDCAxyNegData = new TH2F("hPionTPCDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
-	hPionTPCDCAxyPosData = new TH2F("hPionTPCDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
-	hProtonTPCDCAxyNegData = new TH2F("hProtonTPCDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
-	hProtonTPCDCAxyPosData = new TH2F("hProtonTPCDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
+	hPionTPCDCAxyNegData = new TH2F("hPionTPCDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
+	hPionTPCDCAxyPosData = new TH2F("hPionTPCDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
+	hProtonTPCDCAxyNegData = new TH2F("hProtonTPCDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
+	hProtonTPCDCAxyPosData = new TH2F("hProtonTPCDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
+	hPionTOFDCAxyNegData = new TH2F("hPionTOFDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
+	hPionTOFDCAxyPosData = new TH2F("hPionTOFDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
+	hProtonTOFDCAxyNegData = new TH2F("hProtonTOFDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
+	hProtonTOFDCAxyPosData = new TH2F("hProtonTOFDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
 
-	hPionTOFDCAxyNegData = new TH2F("hPionTOFDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
-	hPionTOFDCAxyPosData = new TH2F("hPionTOFDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
-	hProtonTOFDCAxyNegData = new TH2F("hProtonTOFDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
-	hProtonTOFDCAxyPosData = new TH2F("hProtonTOFDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
-
-	hMIPVsEta = new TH2F("hMIPVsEta","; #eta; dE/dx_{MIP, primary tracks}", 50, -0.8, 0.8, 60-40, 40.0, 60.0);
 	pMIPVsEta = new TProfile("pMIPVsEta","; #eta; #LT dE/dx #GT_{MIP, primary tracks}", 50, -0.8, 0.8, 40.0, 60.0);
-	hPlateauVsEta = new TH2F("hPlateauVsEta","; #eta; dE/dx_{Plateau, primary tracks}",50, -0.8, 0.8, 50, 60.0, 110.0);
 	pPlateauVsEta = new TProfile("pPlateauVsEta","; #eta; #LT dE/dx #GT_{Plateau, primary tracks}", 50, -0.8, 0.8, 60.0, 110.0);
+	hFlatVsV0MVsMult = new TH2F(Form("hFlatVsNch_V0_%s",fV0MBin.c_str()), "; Flatenicity; #it{N}_{ch} (|#eta| < 0.8)", nFlatbins, Flatbins, nMultbins, Multbins);
+	hActivityV0DataSect = new TProfile("hActivityV0DataSect", "rec; V0 sector; #LTmultiplicity#GT", 64, -0.5, 63.5);
+	fOutputList->Add(hActivityV0DataSect);
 
-	for (int i_c = 0; i_c < nCent; ++i_c) 
+	if (!fUseMC && fV0MEqualisation && !fSaveDCAxyHistograms) { 
+		fOutputList->Add(hFlatVsV0MVsMult);
+		fOutputList->Add(pMIPVsEta);
+		fOutputList->Add(pPlateauVsEta);
+
+		if (fSaveDCAxyHistograms) {
+			fOutputList->Add(hPionTPCDCAxyNegData);
+			fOutputList->Add(hPionTPCDCAxyPosData);
+			fOutputList->Add(hProtonTPCDCAxyNegData);
+			fOutputList->Add(hProtonTPCDCAxyPosData);
+			fOutputList->Add(hPionTOFDCAxyNegData);
+			fOutputList->Add(hPionTOFDCAxyPosData);
+			fOutputList->Add(hProtonTOFDCAxyNegData);
+			fOutputList->Add(hProtonTOFDCAxyPosData);
+		}
+	}
+
+	for (int i_eta = 0; i_eta < nEta; ++i_eta) 
 	{
 
-		hFlatVsV0MVsMult[i_c] = new TH2F(Form("hFlatVsNch_V0_%s",V0MClass[i_c]), "; Flatenicity; #it{N}_{ch} (|#eta| < 0.8)", nFlatbins, Flatbins, nMultbins, Multbins);
+		hNsigmaPiPos[i_eta] = new TH3F(Form("hNsigmaPiPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaKPos[i_eta] = new TH3F(Form("hNsigmaKPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaPPos[i_eta] = new TH3F(Form("hNsigmaPPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaPiNeg[i_eta] = new TH3F(Form("hNsigmaPiNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaKNeg[i_eta] = new TH3F(Form("hNsigmaKNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaPNeg[i_eta] = new TH3F(Form("hNsigmaPNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hPtTPCEtaPos[i_eta] = new TH2F(Form("hPtTPCEtaPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}; Flatenicity;)", nPtbins_low_pT, Ptbins_low_pT, nFlatbins, Flatbins);
+		hPtTPCEtaNeg[i_eta] = new TH2F(Form("hPtTPCEtaNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); Flatenicity;)", nPtbins_low_pT, Ptbins_low_pT, nFlatbins, Flatbins);
+		hNsigmaTOFPiPos[i_eta] = new TH3F(Form("hNsigmaTOFPiPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaTOFKPos[i_eta] = new TH3F(Form("hNsigmaTOFKPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaTOFPPos[i_eta] = new TH3F(Form("hNsigmaTOFPPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaTOFPiNeg[i_eta] = new TH3F(Form("hNsigmaTOFPiNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaTOFKNeg[i_eta] = new TH3F(Form("hNsigmaTOFKNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaTOFPNeg[i_eta] = new TH3F(Form("hNsigmaTOFPNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hBetaPos[i_eta] = new TH3F(Form("hBetaPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p} (GeV/#it{c}); #beta; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT,nBetabins,Betabins,nFlatbins,Flatbins);
+		hBetaNeg[i_eta] = new TH3F(Form("hBetaNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p} (GeV/#it{c}); #beta; Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nBetabins,Betabins, nFlatbins, Flatbins);
+		hMomentumTOFEtaPos[i_eta] = new TH2F(Form("hMomentumTOFEtaPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p} (GeV/#it{c}); Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nFlatbins, Flatbins);
+		hMomentumTOFEtaNeg[i_eta] = new TH2F(Form("hMomentumTOFEtaNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p} (GeV/#it{c}); Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nFlatbins, Flatbins);
+		hPtTOFEtaPos[i_eta] = new TH2F(Form("hPtTOFEtaPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nFlatbins, Flatbins);
+		hPtTOFEtaNeg[i_eta] = new TH2F(Form("hPtTOFEtaNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nFlatbins, Flatbins);
 
-		hFlatVsPtV0M[i_c] = new TH2F(Form("hPtVsFlatV0M_c%d", i_c),"; Flat. V0M; #it{p}_{T} (GeV/#it{c})", nFlatbins, Flatbins, nPtbins, Ptbins);
-		//fOutputList->Add(hFlatVsPtV0M[i_c]);
+		hdEdx[i_eta] = new TH3F(Form("hdEdx_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]), ";#it{p} (GeV/#it{c}); dE/dx; Flatenicity", nPtbins_high_pT, Ptbins_high_pT, ndEdxbins, dEdxbins, nFlatbins, Flatbins);
+		hPtrTPC[i_eta] = new TH2F(Form("hPtrTPC_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); Flatenicity", nPtbins_high_pT, Ptbins_high_pT, nFlatbins, Flatbins);
+		hPtVsP[i_eta] = new TH2F(Form("hPtVsP_eta_%s",etaClass[i_eta]), ";#it{p} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})", nPtbins, Ptbins, nPtbins, Ptbins);
 
-		for (Int_t i_eta = 0; i_eta < nEta; ++i_eta) {
+		if (!fUseMC && fV0MEqualisation && !fSaveDCAxyHistograms) { 
 
-			hNsigmaPiPos[i_c][i_eta] = new TH3F(Form("hNsigmaPiPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
-			hNsigmaKPos[i_c][i_eta] = new TH3F(Form("hNsigmaKPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
-			hNsigmaPPos[i_c][i_eta] = new TH3F(Form("hNsigmaPPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
-			hPtTPCEtaPos[i_c][i_eta] = new TH2F(Form("hPtTPCEtaPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}; Flatenicity;)", nPtbins_low_pT, Ptbins_low_pT, nFlatbins, Flatbins);
-
-			hNsigmaPiNeg[i_c][i_eta] = new TH3F(Form("hNsigmaPiNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
-			hNsigmaKNeg[i_c][i_eta] = new TH3F(Form("hNsigmaKNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
-			hNsigmaPNeg[i_c][i_eta] = new TH3F(Form("hNsigmaPNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
-			hPtTPCEtaNeg[i_c][i_eta] = new TH2F(Form("hPtTPCEtaNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); Flatenicity;)", nPtbins_low_pT, Ptbins_low_pT, nFlatbins, Flatbins);
-
-			hBetaPos[i_c][i_eta] = new TH3F(Form("hBetaPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p} (GeV/#it{c}); #beta; Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nBetabins,Betabins, nFlatbins, Flatbins);
-			hMomentumTOFEtaPos[i_c][i_eta] = new TH2F(Form("hMomentumTOFEtaPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p} (GeV/#it{c}); Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nFlatbins, Flatbins);
-			hPtTOFEtaPos[i_c][i_eta] = new TH2F(Form("hPtTOFEtaPos_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nFlatbins, Flatbins);
-
-			hBetaNeg[i_c][i_eta] = new TH3F(Form("hBetaNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}; #beta; Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nBetabins,Betabins, nFlatbins, Flatbins);
-			hMomentumTOFEtaNeg[i_c][i_eta] = new TH2F(Form("hMomentumTOFEtaNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p} (GeV/#it{c}); Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nFlatbins, Flatbins);
-			hPtTOFEtaNeg[i_c][i_eta] = new TH2F(Form("hPtTOFEtaNeg_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nFlatbins, Flatbins);
-
-			hdEdx[i_c][i_eta] = new TH3F(Form("hdEdx_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]), ";#it{p} (GeV/#it{c}); dE/dx; Flatenicity", nPtbins_high_pT, Ptbins_high_pT, ndEdxbins, dEdxbins, nFlatbins, Flatbins);
-			hPtrTPC[i_c][i_eta] = new TH2F(Form("hPtrTPC_c%s_eta_%s",V0MClass[i_c],etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); Flatenicity", nPtbins_high_pT, Ptbins_high_pT, nFlatbins, Flatbins);
-
-			if (i_c==0) { hPtVsP[i_eta] = new TH2F(Form("hPtVsP_eta_%s",etaClass[i_eta]), ";#it{p} (GeV/#it{c}); #it{p}_{T} (GeV/#it{c})", nPtbins, Ptbins, nPtbins, Ptbins); }
-
-			if (!fUseMC && fV0MEqualisation && !fSaveDCAxyHistograms) { 
-
-				if (save_this_mult_bin != i_c) { continue; }
-
-				fOutputList->Add(hNsigmaPiPos[i_c][i_eta]);
-				fOutputList->Add(hNsigmaKPos[i_c][i_eta]);
-				fOutputList->Add(hNsigmaPPos[i_c][i_eta]);
-				fOutputList->Add(hPtTPCEtaPos[i_c][i_eta]);
-				fOutputList->Add(hNsigmaPiNeg[i_c][i_eta]);
-				fOutputList->Add(hNsigmaKNeg[i_c][i_eta]);
-				fOutputList->Add(hNsigmaPNeg[i_c][i_eta]);
-				fOutputList->Add(hPtTPCEtaNeg[i_c][i_eta]);
-
-				fOutputList->Add(hBetaPos[i_c][i_eta]);
-				fOutputList->Add(hMomentumTOFEtaPos[i_c][i_eta]);
-				fOutputList->Add(hPtTOFEtaPos[i_c][i_eta]);
-				fOutputList->Add(hBetaNeg[i_c][i_eta]);
-				fOutputList->Add(hMomentumTOFEtaNeg[i_c][i_eta]);
-				fOutputList->Add(hPtTOFEtaNeg[i_c][i_eta]);
-				fOutputList->Add(hdEdx[i_c][i_eta]);
-				fOutputList->Add(hPtrTPC[i_c][i_eta]);
-
-				fOutputList->Add(hPtVsP[i_eta]);
-
-				if (i_eta==0) {
-					if (fSaveDCAxyHistograms) {
-						fOutputList->Add(hPionTPCDCAxyNegData);
-						fOutputList->Add(hPionTPCDCAxyPosData);
-						fOutputList->Add(hProtonTPCDCAxyNegData);
-						fOutputList->Add(hProtonTPCDCAxyPosData);
-						fOutputList->Add(hPionTOFDCAxyNegData);
-						fOutputList->Add(hPionTOFDCAxyPosData);
-						fOutputList->Add(hProtonTOFDCAxyNegData);
-						fOutputList->Add(hProtonTOFDCAxyPosData);
-					}
-
-					/* fOutputList->Add(hMIPVsEta); */
-					fOutputList->Add(pMIPVsEta);
-					/* fOutputList->Add(hPlateauVsEta); */
-					fOutputList->Add(pPlateauVsEta);
-					fOutputList->Add(hFlatVsV0MVsMult[i_c]);
-				}
-			} 
-
-			if (!fUseMC && fSaveDCAxyHistograms) { 
-				if (i_eta==0) {
-					fOutputList->Add(hPionTPCDCAxyNegData);
-					fOutputList->Add(hPionTPCDCAxyPosData);
-					fOutputList->Add(hProtonTPCDCAxyNegData);
-					fOutputList->Add(hProtonTPCDCAxyPosData);
-					fOutputList->Add(hPionTOFDCAxyNegData);
-					fOutputList->Add(hPionTOFDCAxyPosData);
-					fOutputList->Add(hProtonTOFDCAxyNegData);
-					fOutputList->Add(hProtonTOFDCAxyPosData);
-				}
-			}
-		} // eta loop
+			fOutputList->Add(hNsigmaPiPos[i_eta]);
+			fOutputList->Add(hNsigmaKPos[i_eta]);
+			fOutputList->Add(hNsigmaPPos[i_eta]);
+			fOutputList->Add(hNsigmaPiNeg[i_eta]);
+			fOutputList->Add(hNsigmaKNeg[i_eta]);
+			fOutputList->Add(hNsigmaPNeg[i_eta]);
+			fOutputList->Add(hPtTPCEtaPos[i_eta]);
+			fOutputList->Add(hPtTPCEtaNeg[i_eta]);
+			fOutputList->Add(hNsigmaTOFPiPos[i_eta]);
+			fOutputList->Add(hNsigmaTOFKPos[i_eta]);
+			fOutputList->Add(hNsigmaTOFPPos[i_eta]);
+			fOutputList->Add(hNsigmaTOFPiNeg[i_eta]);
+			fOutputList->Add(hNsigmaTOFKNeg[i_eta]);
+			fOutputList->Add(hNsigmaTOFPNeg[i_eta]);
+			fOutputList->Add(hBetaPos[i_eta]);
+			fOutputList->Add(hMomentumTOFEtaPos[i_eta]);
+			fOutputList->Add(hPtTOFEtaPos[i_eta]);
+			fOutputList->Add(hBetaNeg[i_eta]);
+			fOutputList->Add(hMomentumTOFEtaNeg[i_eta]);
+			fOutputList->Add(hPtTOFEtaNeg[i_eta]);
+			fOutputList->Add(hdEdx[i_eta]);
+			fOutputList->Add(hPtrTPC[i_eta]);
+			fOutputList->Add(hPtVsP[i_eta]);
+		}
 	}
 
 	if (fUseMC) {
@@ -734,51 +689,41 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 
 		}
 
-		for (Int_t i_eta = 0; i_eta < nEta; ++i_eta) 
+		for (int i_eta = 0; i_eta < nEta; ++i_eta) 
 		{	
-			pion_cont_in_kaon_h[i_eta] = new TH2F(Form("pion_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
-			fOutputList->Add(pion_cont_in_kaon_h[i_eta]);
+			/* pion_cont_in_kaon_h[i_eta] = new TH2F(Form("pion_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins); */
+			/* fOutputList->Add(pion_cont_in_kaon_h[i_eta]); */
 			nsigma_kaon_h[i_eta] = new TH2F(Form("nsigma_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(nsigma_kaon_h[i_eta]);
-			electron_cont_in_kaon_h[i_eta] = new TH2F(Form("electron_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
-			fOutputList->Add(electron_cont_in_kaon_h[i_eta]);
+			/* electron_cont_in_kaon_h[i_eta] = new TH2F(Form("electron_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins); */
+			/* fOutputList->Add(electron_cont_in_kaon_h[i_eta]); */
 			random_cont_in_kaon_h[i_eta] = new TH2F(Form("random_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(random_cont_in_kaon_h[i_eta]);
 
-			pion_cont_in_proton_h[i_eta] = new TH2F(Form("pion_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
-			fOutputList->Add(pion_cont_in_proton_h[i_eta]);
+			/* pion_cont_in_proton_h[i_eta] = new TH2F(Form("pion_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins); */
+			/* fOutputList->Add(pion_cont_in_proton_h[i_eta]); */
 			nsigma_proton_h[i_eta] = new TH2F(Form("nsigma_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(nsigma_proton_h[i_eta]);
-			electron_cont_in_proton_h[i_eta] = new TH2F(Form("electron_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
-			fOutputList->Add(electron_cont_in_proton_h[i_eta]);
+			/* electron_cont_in_proton_h[i_eta] = new TH2F(Form("electron_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins); */
+			/* fOutputList->Add(electron_cont_in_proton_h[i_eta]); */
 			random_cont_in_proton_h[i_eta] = new TH2F(Form("random_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(random_cont_in_proton_h[i_eta]);
 
-			kaon_cont_in_pion_h[i_eta] = new TH2F(Form("kaon_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
-			fOutputList->Add(kaon_cont_in_pion_h[i_eta]);
+			/* kaon_cont_in_pion_h[i_eta] = new TH2F(Form("kaon_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins); */
+			/* fOutputList->Add(kaon_cont_in_pion_h[i_eta]); */
 			nsigma_pion_h[i_eta] = new TH2F(Form("nsigma_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(nsigma_pion_h[i_eta]);
-			electron_cont_in_pion_h[i_eta] = new TH2F(Form("electron_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
-			fOutputList->Add(electron_cont_in_pion_h[i_eta]);
+			/* electron_cont_in_pion_h[i_eta] = new TH2F(Form("electron_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins); */
+			/* fOutputList->Add(electron_cont_in_pion_h[i_eta]); */
 			random_cont_in_pion_h[i_eta] = new TH2F(Form("random_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(random_cont_in_pion_h[i_eta]);
 		}
 	}
 
-	// x: Sector y: Multiplicity z: V0M Multiplicity
-	hActivityV0CV0A = new TH3F("hActivityV0CV0A", "; VZERO channel; #it{N}_{ch} per VZERO cahnnel; V0M quantile", nV0Sectorsbins, V0Sectorsbins, nV0Multbins, V0Multbins, nCent, centClass);
-	//fOutputList->Add(hActivityV0CV0A);
-
-	hActivityV0DataSect = new TProfile("hActivityV0DataSect", "rec; V0 sector; #LTmultiplicity#GT", 64, -0.5, 63.5);
-	fOutputList->Add(hActivityV0DataSect);
-
 	if (fUseMC) {
 		hActivityV0McSect = new TProfile("hActivityV0McSect", "true; V0 sector; #LTmultiplicity#GT", 64, -0.5, 63.5);
 		fOutputList->Add(hActivityV0McSect);
 	}
-
-	/* hFlatVsV0MVsMult = new TH3F("hFlatVsV0MVsMult", "; Flatenicity; #it{N}_{ch}; V0M Percentile", nFlatbins, Flatbins, nMultbins, Multbins, nCent, centClass); */
-	/* fOutputList->Add(hFlatVsV0MVsMult); */
 
 	/* fEventCuts.AddQAplotsToList(fOutputList); */
 	PostData(1, fOutputList); // postdata will notify the analysis manager of
@@ -859,14 +804,38 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 			<< fMultSelection << endl;
 	fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
 
-	for (Int_t i_c = 0; i_c < nCent; ++i_c) {
-		if (fv0mpercentile >= centClass[i_c] &&
-				fv0mpercentile < centClass[i_c + 1]) {
-			fV0Mindex = i_c;
-		} else {
-			continue;
-		}
+	if (fV0MBin=="0_1"){
+		if (!(fv0mpercentile >= 0.0 && fv0mpercentile < 1.0)) { return; }
 	}
+	else if (fV0MBin=="1_5"){
+		if (!(fv0mpercentile >= 1.0 && fv0mpercentile < 5.0)) { return; }
+	}
+	else if (fV0MBin=="5_10"){
+		if (!(fv0mpercentile >= 5.0 && fv0mpercentile < 10.0)) { return; }
+	}
+	else if (fV0MBin=="10_20"){
+		if (!(fv0mpercentile >= 10.0 && fv0mpercentile < 20.0)) { return; }
+	}
+	else if (fV0MBin=="20_30"){
+		if (!(fv0mpercentile >= 20.0 && fv0mpercentile < 30.0)) { return; }
+	}
+	else if (fV0MBin=="30_40"){
+		if (!(fv0mpercentile >= 30.0 && fv0mpercentile < 40.0)) { return; }
+	}
+	else if (fV0MBin=="40_50"){
+		if (!(fv0mpercentile >= 40.0 && fv0mpercentile < 50.0)) { return; }
+	}
+	else if (fV0MBin=="50_70"){
+		if (!(fv0mpercentile >= 50.0 && fv0mpercentile < 70.0)) { return; }
+	}
+	else{
+		if (!(fv0mpercentile >= 70.0 && fv0mpercentile < 100.0)) { return; }
+	}
+
+	/* for (Int_t i_c = 0; i_c < nCent; ++i_c) { */
+	/* 	if (fv0mpercentile >= centClass[i_c] && fv0mpercentile < centClass[i_c + 1]) { fV0Mindex = i_c;} */ 
+	/* 	else { continue; } */
+	/* } */
 
 	fMidRapidityMult = GetMidRapidityMultiplicity();
 	//fFlatTPC = GetFlatenicityTPC(); 
@@ -886,11 +855,10 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 		//	}
 	}
 
-	if (fFlat > 0 && fV0Mindex >= 0) {
+	if (fFlat > 0) {
 
-		/* hFlatVsV0MVsMult->Fill(fFlat, fMidRapidityMult, fv0mpercentile); */
-		hFlatVsV0MVsMult[fV0Mindex]->Fill(fFlat, fMidRapidityMult);
-		//MakeDataanalysis();
+		hFlatVsV0MVsMult->Fill(fFlat, fMidRapidityMult);
+		/* MakeDataanalysis(); */
 		MakePIDanalysis();
 	}
 
@@ -933,7 +901,7 @@ void AliAnalysisTaskFlatenicityPiKp::MakeDataanalysis() {
 			continue;
 		if (esdtrack->Pt() < fPtMin)
 			continue;
-		hFlatVsPtV0M[fV0Mindex]->Fill(fFlat, esdtrack->Pt());
+		/* hFlatVsPtV0M[fV0Mindex]->Fill(fFlat, esdtrack->Pt()); */
 	}
 }
 
@@ -972,8 +940,9 @@ void AliAnalysisTaskFlatenicityPiKp::MakePIDanalysis() {
 		Float_t nSigmaPi = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion);
 		Float_t nSigmaK = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon);
 		Float_t nSigmaP = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton);
-		Float_t nSigmaPiTOF = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion);
-		Float_t nSigmaPTOF = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton);
+		float nSigmaPiTOF = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion);
+		float nSigmaKTOF = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion);
+		float nSigmaPTOF = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton);
 
 		Int_t nh = -1;
 		if (TMath::Abs(eta)<0.2)
@@ -1017,30 +986,36 @@ void AliAnalysisTaskFlatenicityPiKp::MakePIDanalysis() {
 			continue;
 
 		if( charge < 0.0){
-			hNsigmaPiNeg[fV0Mindex][nh]->Fill(pt,nSigmaPi,fFlat);
-			hNsigmaKNeg[fV0Mindex][nh]->Fill(pt,nSigmaK,fFlat);
-			hNsigmaPNeg[fV0Mindex][nh]->Fill(pt,nSigmaP,fFlat);
-			hPtTPCEtaNeg[fV0Mindex][nh]->Fill(pt,fFlat);
+			hNsigmaPiNeg[nh]->Fill(pt,nSigmaPi,fFlat);
+			hNsigmaKNeg[nh]->Fill(pt,nSigmaK,fFlat);
+			hNsigmaPNeg[nh]->Fill(pt,nSigmaP,fFlat);
+			hPtTPCEtaNeg[nh]->Fill(pt,fFlat);
 		}else{
-			hNsigmaPiPos[fV0Mindex][nh]->Fill(pt,nSigmaPi,fFlat);
-			hNsigmaKPos[fV0Mindex][nh]->Fill(pt,nSigmaK,fFlat);
-			hNsigmaPPos[fV0Mindex][nh]->Fill(pt,nSigmaP,fFlat);
-			hPtTPCEtaPos[fV0Mindex][nh]->Fill(pt,fFlat);
+			hNsigmaPiPos[nh]->Fill(pt,nSigmaPi,fFlat);
+			hNsigmaKPos[nh]->Fill(pt,nSigmaK,fFlat);
+			hNsigmaPPos[nh]->Fill(pt,nSigmaP,fFlat);
+			hPtTPCEtaPos[nh]->Fill(pt,fFlat);
 		} 
 
 		if( TOFPID(esdTrack) ){
 
-			Double_t trkLength = esdTrack->GetIntegratedLength();
-			Double_t beta = trkLength/((esdTrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(esdTrack->P()))*C_Value);
+			double trkLength = esdTrack->GetIntegratedLength();
+			double beta = trkLength/((esdTrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(esdTrack->P()))*C_Value);
 
 			if(esdTrack->Charge() < 0.0){
-				hBetaNeg[fV0Mindex][nh]->Fill(momentum,beta,fFlat);
-				hMomentumTOFEtaNeg[fV0Mindex][nh]->Fill(momentum,fFlat);
-				hPtTOFEtaNeg[fV0Mindex][nh]->Fill(pt,fFlat);
+				hNsigmaTOFPiNeg[nh]->Fill(pt,nSigmaPiTOF,fFlat);
+				hNsigmaTOFKNeg[nh]->Fill(pt,nSigmaKTOF,fFlat);
+				hNsigmaTOFPNeg[nh]->Fill(pt,nSigmaPTOF,fFlat);
+				hBetaNeg[nh]->Fill(momentum,beta,fFlat);
+				hMomentumTOFEtaNeg[nh]->Fill(momentum,fFlat);
+				hPtTOFEtaNeg[nh]->Fill(pt,fFlat);
 			}else{ 
-				hBetaPos[fV0Mindex][nh]->Fill(momentum,beta,fFlat);
-				hMomentumTOFEtaPos[fV0Mindex][nh]->Fill(momentum,fFlat);
-				hPtTOFEtaPos[fV0Mindex][nh]->Fill(pt,fFlat);
+				hNsigmaTOFPiPos[nh]->Fill(pt,nSigmaPiTOF,fFlat);
+				hNsigmaTOFKPos[nh]->Fill(pt,nSigmaKTOF,fFlat);
+				hNsigmaTOFPPos[nh]->Fill(pt,nSigmaPTOF,fFlat);
+				hBetaPos[nh]->Fill(momentum,beta,fFlat);
+				hMomentumTOFEtaPos[nh]->Fill(momentum,fFlat);
+				hPtTOFEtaPos[nh]->Fill(pt,fFlat);
 			}
 		}
 
@@ -1054,8 +1029,8 @@ void AliAnalysisTaskFlatenicityPiKp::MakePIDanalysis() {
 
 		if (fdEdxCalibrated) dEdx *= 50.0/EtaCalibration(eta);
 
-		hdEdx[fV0Mindex][nh]->Fill(momentum,dEdx,fFlat);
-		hPtrTPC[fV0Mindex][nh]->Fill(pt,fFlat);
+		hdEdx[nh]->Fill(momentum,dEdx,fFlat);
+		hPtrTPC[nh]->Fill(pt,fFlat);
 
 		Bool_t IsTOFout=kFALSE;
 		if ((esdTrack->GetStatus()&AliESDtrack::kTOFout)==0)
@@ -1073,12 +1048,12 @@ void AliAnalysisTaskFlatenicityPiKp::MakePIDanalysis() {
 
 		if ( momentum <= 0.6 && momentum >= 0.4 ){ //only p:0.4-0.6 GeV, pion MIP
 			if( dEdx < 60.0 && dEdx > 40.0 ){
-				hMIPVsEta->Fill(eta,dEdx);
+				/* hMIPVsEta->Fill(eta,dEdx); */
 				pMIPVsEta->Fill(eta,dEdx);
 			}
 			if( dEdx > 70.0 && dEdx < 90.0 ){
 				if(TMath::Abs(beta-1)<0.1){
-					hPlateauVsEta->Fill(eta,dEdx);
+					/* hPlateauVsEta->Fill(eta,dEdx); */
 					pPlateauVsEta->Fill(eta,dEdx);
 				}
 			}
@@ -1492,7 +1467,7 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityV0() {
 
 	// Filling histos with mult info
 	for (Int_t iCh = 0; iCh < nCells; iCh++) {
-		hActivityV0CV0A->Fill(iCh,RhoLattice[iCh],fv0mpercentile);
+		/* hActivityV0CV0A->Fill(iCh,RhoLattice[iCh],fv0mpercentile); */
 		hActivityV0DataSect->Fill(iCh, RhoLattice[iCh]);
 	}
 
@@ -1869,24 +1844,27 @@ void AliAnalysisTaskFlatenicityPiKp::nSigmaContamination() {
 
 		//	if (TMath::Abs(nsigma_k) <= 4.0){
 		if (pidCode==2) { nsigma_kaon_h[nh]->Fill(pt,nsigma_k); }
-		else if (pidCode==1) { pion_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); }
-		else if (pidCode==7) { electron_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); }
-		else { random_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); }
+		if (!(pidCode==2)) { random_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); }
+		/* else if (pidCode==1) { pion_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); } */
+		/* else if (pidCode==7) { electron_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); } */
+		/* else { random_cont_in_kaon_h[nh]->Fill(pt,nsigma_k); } */
 		//	}
 
 		//	if (TMath::Abs(nsigma_p) <= 4.0){	
 		if (pidCode==3) { nsigma_proton_h[nh]->Fill(pt,nsigma_p); }
-		else if (pidCode==1) { pion_cont_in_proton_h[nh]->Fill(pt,nsigma_p); }
-		else if (pidCode==7) { electron_cont_in_proton_h[nh]->Fill(pt,nsigma_p); }
-		else { random_cont_in_proton_h[nh]->Fill(pt,nsigma_p); }
-		//	}
+		if (!(pidCode==3)) { random_cont_in_proton_h[nh]->Fill(pt,nsigma_p); }
+		/* else if (pidCode==1) { pion_cont_in_proton_h[nh]->Fill(pt,nsigma_p); } */
+		/* else if (pidCode==7) { electron_cont_in_proton_h[nh]->Fill(pt,nsigma_p); } */
+		/* else { random_cont_in_proton_h[nh]->Fill(pt,nsigma_p); } */
+		/* //	} */
 
 		//	if (TMath::Abs(nsigma_pi) <= 3.0){	
 		if (pidCode==1) { nsigma_pion_h[nh]->Fill(pt,nsigma_pi); }
-		else if (pidCode==2) { kaon_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); }
-		else if (pidCode==7) { electron_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); }
-		else { random_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); }
-		//	}
+		if (!(pidCode==1)) { random_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); }
+		/* else if (pidCode==2) { kaon_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); } */
+		/* else if (pidCode==7) { electron_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); } */
+		/* else { random_cont_in_pion_h[nh]->Fill(pt,nsigma_pi); } */
+		/* //	} */
 	} 
 
 }

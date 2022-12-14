@@ -110,7 +110,6 @@ vzmax(10.),
 ptmin(0.15),
 ptmax(2.0),
 TPCrows(70),
-Nameoftree("a"),
 htrk(0)
 {
     
@@ -162,13 +161,12 @@ vzmax(10.),
 ptmin(0.15),
 ptmax(2.0),
 TPCrows(70),
-Nameoftree("a"),
 htrk(0)
 {
   
     //constructor
     DefineOutput(1, TList::Class());
-    DefineOutput(2, TTree::Class());
+    //DefineOutput(2, TTree::Class());
     
 }
 //--------------Destructor----------------------------------
@@ -176,7 +174,7 @@ htrk(0)
 AliAnalysisMeanPt::~AliAnalysisMeanPt()
 {
 	if(fOutputList) 			    delete fOutputList;
-	if(fTreept) 			        delete fTreept;	
+	//if(fTreept) 			        delete fTreept;	
 }
 //--------------UserCreateOutputObjects-----------------------
 
@@ -309,14 +307,14 @@ void AliAnalysisMeanPt::UserCreateOutputObjects()
     fHistVz = new TH1D("fHistVz","Primary vertex distribution - z coordinate;V_{z} (cm)",200,-20,20);
     fOutputList->Add(fHistVz);
 
-    fTreept = new TTree(Nameoftree,"making"); 
+    /*fTreept = new TTree(Nameoftree,"making"); 
     fTreept->Branch("nch",&nch,"nch/I");
     fTreept->Branch("sample",&sample,"sample/I");     
     fTreept->Branch("charge",&charge,"charge[nch]/I");
-    fTreept->Branch("pt", &pt,"pt[nch]/F");
+    fTreept->Branch("pt", &pt,"pt[nch]/F");*/
 
     PostData(1, fOutputList);         
-    PostData(2, fTreept);         
+    //PostData(2, fTreept);         
 
 }
 //----------------------UserExec------------------------------
@@ -421,8 +419,8 @@ void AliAnalysisMeanPt::UserExec(Option_t *){
        	fHistPhi->Fill(track->Phi()); 
 
 		//TPCrows[trk] = track->GetTPCCrossedRows();
-		pt[trk] 	= track->Pt();
-		charge[trk] = track->Charge();
+		//pt[trk] 	= track->Pt();
+		//charge[trk] = track->Charge();
 
 		sum_trackpt = sum_trackpt + track->Pt() ;
 		sum_ptiptj  = sum_ptiptj + ( track->Pt() * track->Pt() ) ;
@@ -447,9 +445,9 @@ void AliAnalysisMeanPt::UserExec(Option_t *){
 	//===tree=========
 	if(trk < 2) return;
 	
-	nch = trk;
+	//nch = trk;
 	
-	fTreept->Fill();
+	//fTreept->Fill();
 			
 	double trksq = trk * trk;
     double meanpt = sum_trackpt / trk;
@@ -488,7 +486,7 @@ void AliAnalysisMeanPt::UserExec(Option_t *){
 	//cout << ftrackBit <<"\t"<< vzmax <<"\t"<< Nameoftree<< endl;
 
 	PostData(1, fOutputList);
-	PostData(2, fTreept);                           
+	//PostData(2, fTreept);                           
                                                     
 }
 //---------------------------------------------------------------------------------------

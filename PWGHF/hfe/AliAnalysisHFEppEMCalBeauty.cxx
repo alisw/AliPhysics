@@ -863,11 +863,11 @@ void AliAnalysisHFEppEMCalBeauty::UserCreateOutputObjects()
   fOutputList->Add(fEtaWeight);
 
   fFuncPtDepEta = new TF1("fFuncPtDepEta", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-  fFuncPtDepEta->SetParameters(0.03, 0.010, 2.5);
+  fFuncPtDepEta->SetParameters(0.04, 0.010, 2.5); //default (0.04, 0.010, 2.5) vary only first two for syst.
   fOutputList->Add(fFuncPtDepEta);
 
   fFuncPtDepPhi = new TF1("fFuncPtDepPhi", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
-  fFuncPtDepPhi->SetParameters(0.08, 0.015, 2.);
+  fFuncPtDepPhi->SetParameters(0.09, 0.015, 2.); //default (0.04, 0.010, 2.5) vary only first two for syst.
   fOutputList->Add(fFuncPtDepPhi);
 
   fHistEvent=new TH1F("fHistEvent","",20,0,20);
