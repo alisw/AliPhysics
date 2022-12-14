@@ -40,7 +40,7 @@ public:
   void CheckMultiplicitiesMC(const std::vector<Float_t> &ptRecwodca, const std::vector<Float_t> &dcaxyRecwodca, const std::vector<Int_t> &isprimwodca, Int_t multRecwodca);
   void GetCorrections(Int_t multGen, Int_t multRec, const std::vector<Float_t> &ptGen, const std::vector<Float_t> &ptRec, const std::vector<Int_t> &idGen, const std::vector<Int_t> &idRec, const std::vector<Int_t> &isprimRec);
   Int_t FillArrayMC(std::vector<Float_t> &pt, std::vector<Int_t> &id);
-  Int_t FillArray(std::vector<Float_t> &pt, std::vector<Float_t> &dcaxy, std::vector<Float_t> &dcaz, std::vector<Int_t> &isprim, std::vector<Int_t> &id, const bool wDCA);
+  Int_t FillArray(std::vector<Float_t> &pt, std::vector<Float_t> &dcaxy, std::vector<Int_t> &isprim, std::vector<Int_t> &id, const bool wDCA);
   void MakeMCanalysis();
   void MakeDataanalysis();
 
