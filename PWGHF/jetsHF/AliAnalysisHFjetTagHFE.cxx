@@ -146,6 +146,9 @@ ClassImp(AliAnalysisHFjetTagHFE)
       fsubV0ATPCcos2(0),
       fsubV0CTPCcos2(0),
       // ------------------------------------------------------
+      fUEv2(0),
+      fUE(0),
+      // ------------------------------------------------------
       fJetPhicos2_ele(0),
       fJetPhisin2_ele(0),
       fInPlane_eJet(0),
@@ -176,6 +179,7 @@ ClassImp(AliAnalysisHFjetTagHFE)
       fOutPlane_Hadjet(0),
       fInPlane_Hadjet_2D(0),
       fOutPlane_Hadjet_2D(0),
+      fHistJetBGflow(0),
       // ------------------------------------------------------
       fHistMultCent(0),
       fHistZcorr(0),
@@ -470,6 +474,9 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name)
       fsubV0ATPCcos2(0),
       fsubV0CTPCcos2(0),
       // ------------------------------------------------------
+      fUEv2(0), 
+      fUE(0),
+      // ------------------------------------------------------
       fJetPhicos2_ele(0),
       fJetPhisin2_ele(0),
       fInPlane_eJet(0),
@@ -500,6 +507,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name)
       fOutPlane_Hadjet(0),
       fInPlane_Hadjet_2D(0),
       fOutPlane_Hadjet_2D(0),
+      fHistJetBGflow(0),
       // ------------------------------------------------------
       fHistMultCent(0),
       fHistZcorr(0),
@@ -872,6 +880,13 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects() {
 
     fsubV0CTPCcos2 = new TH2F("fsubV0CTPCcos2", "fsubV0CTPCcos2 vs cetrality", 40, 0, 80, 200, -1, 1);
     fOutput->Add(fsubV0CTPCcos2);
+    
+    // ------------------------------------------------------
+    fUEv2 = new TProfile("fUEv2", "fUEv2", 1, 0.5, 1.5, -10., 10.);
+    fOutput->Add(fUEv2);
+
+    fUE = new TF1("fUE", "1. + 2. * [0] * cos(2. * x)");
+    fUE->SetParameter(0, 0.2);
 
     // ------------------------------------------------------
     fJetPhicos2_ele = new TH2F("fJetPhicos2_ele", "fJetPhicos2_ele", 600, -100., 500., 20, -1., 1.);
@@ -963,6 +978,10 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects() {
 
     fOutPlane_Hadjet_2D = new TH2F("fOutPlane_Hadjet_2D", "correlation between pT vs HadJetpT in Out-of-plane;track p_{T};Had Jet p_{T}", 20, 0., 20., 600, -100., 500.);
     fOutput->Add(fOutPlane_Hadjet_2D);
+
+    fHistJetBGflow = new TH2F("fHistJetBGflow", "undelying event;p_{T}^{w.o. flow} (GeV/c);p_{T}^{w. flow} (GeV/c)", 600, 100., 500., 600, -100., 500.);
+    fOutput->Add(fHistJetBGflow);
+
     // ------------------------------------------------------
 
     fHistMultCent = new TH1F("fHistMultCent", "centrality distribution", 100, 0, 100);
@@ -2216,6 +2235,12 @@ Bool_t AliAnalysisHFjetTagHFE::Run() {
                     jetcont = static_cast<AliVParticle *>(jet->TrackAt(j, fTracks));
                     Double_t TrPhiJet = jetcont->Phi();
                     fQAHistTrPhiJet->Fill(TrPhiJet);
+                    
+                    // Background flow in Jet constituent
+                    Double_t TrPtJet = jetcont->Pt();
+                    if (TrPtJet > 0.15 && TrPtJet < 5.) {
+                        if (Njet > 1) fUEv2->Fill(1, TMath::Cos(2. * (TrPhiJet - PsinV0A)));
+                    }
                 }
 
                 jet = fJetsCont->GetNextAcceptJet();
@@ -2420,7 +2445,8 @@ Bool_t AliAnalysisHFjetTagHFE::Run() {
                 eopJet = eop;
                 if (pt > 2.0) fHistEopNsig->Fill(fTPCnSigma, eop);
 
-                if (fTPCnSigma < -4) {
+                // if (fTPCnSigma < -4) {
+                if (fTPCnSigma < - 3.5) {
                     fHistEopHad->Fill(pt, eop);
                     Double_t EopHadvals[3];
                     EopHadvals[0] = correctednAcc;
@@ -2672,6 +2698,14 @@ Bool_t AliAnalysisHFjetTagHFE::Run() {
                         Float_t pTeJetBG = rho * jet->Area();
                         Float_t corrPt = pTeJet - pTeJetBG;
                         Float_t efrac = pt / corrPt;
+			
+                        // Background flow contribution
+                        Float_t rho_tmp = fUE->Integral(Phi_eJet - PsinV0A - 0.2, Phi_eJet - PsinV0A + 0.2);
+                        Float_t rho_local = 2.5 * rho * rho_tmp;
+                        Float_t pTeJetBG_flow = rho_local * jet->Area();
+                        Float_t corrPt_flow = pTeJet - pTeJetBG_flow;
+
+                        fHistJetBGflow->Fill(pTeJetBG,pTeJetBG_flow);
 
                         if (matchJet == 0.0) matchJet = corrPt;
                         if (matchJet > 10.0 && iTagHFjet && matchJet == corrPt && pt > 4.0) NmatchJet++;
@@ -2715,12 +2749,12 @@ Bool_t AliAnalysisHFjetTagHFE::Run() {
 
                             // yield
                             if (-TMath::Pi() / 4. < JetPhiEPV0A_ele && JetPhiEPV0A_ele < TMath::Pi() / 4.) {
-                                fInPlane_eJet->Fill(corrPt);
-                                fInPlane_eJet_2D->Fill(pt, corrPt);
+                                fInPlane_eJet->Fill(corrPt_flow);
+                                fInPlane_eJet_2D->Fill(pt, corrPt_flow);
                             }
                             if (TMath::Pi() / 4. < JetPhiEPV0A_ele || JetPhiEPV0A_ele < -TMath::Pi() / 4.) {
-                                fOutPlane_eJet->Fill(corrPt);
-                                fOutPlane_eJet_2D->Fill(pt, corrPt);
+                                fOutPlane_eJet->Fill(corrPt_flow);
+                                fOutPlane_eJet_2D->Fill(pt, corrPt_flow);
                             }
 
                             ///////////////////
@@ -2742,13 +2776,13 @@ Bool_t AliAnalysisHFjetTagHFE::Run() {
                                 // yield
                                 if (-TMath::Pi() / 4. < JetPhiEPV0A_ele && JetPhiEPV0A_ele < TMath::Pi() / 4.) {
                                     // In-plane
-                                    fInPlane_HFjet->Fill(corrPt);
-                                    fInPlane_HFjet_2D->Fill(pt, corrPt);
+                                    fInPlane_HFjet->Fill(corrPt_flow);
+                                    fInPlane_HFjet_2D->Fill(pt, corrPt_flow);
                                 }
                                 if (TMath::Pi() / 4. < JetPhiEPV0A_ele || JetPhiEPV0A_ele < -TMath::Pi() / 4.) {
                                     // Out-of-plane
-                                    fOutPlane_HFjet->Fill(corrPt);
-                                    fOutPlane_HFjet_2D->Fill(pt, corrPt);
+                                    fOutPlane_HFjet->Fill(corrPt_flow);
+                                    fOutPlane_HFjet_2D->Fill(pt, corrPt_flow);
                                 }
 
 
@@ -2832,12 +2866,12 @@ Bool_t AliAnalysisHFjetTagHFE::Run() {
 
                                 // yield
                                 if (JetPhiEPV0A_ele > -TMath::Pi() / 4. && JetPhiEPV0A_ele < TMath::Pi() / 4.) {
-                                    fInPlane_phoLS->Fill(corrPt);
-                                    fInPlane_phoLS_2D->Fill(pt, corrPt);
+                                    fInPlane_phoLS->Fill(corrPt_flow);
+                                    fInPlane_phoLS_2D->Fill(pt, corrPt_flow);
                                 }
                                 if (JetPhiEPV0A_ele > TMath::Pi() / 4. || JetPhiEPV0A_ele < -TMath::Pi() / 4.) {
-                                    fOutPlane_phoLS->Fill(corrPt);
-                                    fOutPlane_phoLS_2D->Fill(pt, corrPt);
+                                    fOutPlane_phoLS->Fill(corrPt_flow);
+                                    fOutPlane_phoLS_2D->Fill(pt, corrPt_flow);
                                 }
                             }
 
@@ -2848,12 +2882,12 @@ Bool_t AliAnalysisHFjetTagHFE::Run() {
 
                                 // yield
                                 if (JetPhiEPV0A_ele > -TMath::Pi() / 4. && JetPhiEPV0A_ele < TMath::Pi() / 4.) {
-                                    fInPlane_phoULS->Fill(corrPt);
-                                    fInPlane_phoULS_2D->Fill(pt, corrPt);
+                                    fInPlane_phoULS->Fill(corrPt_flow);
+                                    fInPlane_phoULS_2D->Fill(pt, corrPt_flow);
                                 }
                                 if (JetPhiEPV0A_ele > TMath::Pi() / 4. || JetPhiEPV0A_ele < -TMath::Pi() / 4.) {
-                                    fOutPlane_phoULS->Fill(corrPt);
-                                    fOutPlane_phoULS_2D->Fill(pt, corrPt);
+                                    fOutPlane_phoULS->Fill(corrPt_flow);
+                                    fOutPlane_phoULS_2D->Fill(pt, corrPt_flow);
                                 }
                             }
 
@@ -3544,8 +3578,15 @@ void AliAnalysisHFjetTagHFE::GetFakeHadronJet(Double_t pthad, Double_t *hpTarray
         if (iTagHadjet) {
             Float_t pThJet = jethad->Pt();
             Float_t Eta_hJet = jethad->Eta();
+            Float_t Phi_hJet = jethad->Phi();
             Float_t pThJetBG = rho * jethad->Area();
             Float_t corrPtHad = pThJet - pThJetBG;
+	    
+            // Background flow subtraction
+            Float_t rho_tmp = fUE->Integral(Phi_hJet - PsinV0A - 0.2, Phi_hJet - PsinV0A + 0.2);
+            Float_t rho_local = 2.5 * rho * rho_tmp;
+            Float_t pThJetBG_flow = rho_local * jethad->Area();
+            Float_t corrPtHad_flow = pThJet - pThJetBG_flow;
 
             // if(TMath::Abs(Eta_hJet)<0.6)fHistHadjet->Fill(pthad,corrPtHad);
             if (TMath::Abs(Eta_hJet) < fJetEtaCut) fHistHadjet->Fill(pthad, corrPtHad);
@@ -3580,12 +3621,12 @@ void AliAnalysisHFjetTagHFE::GetFakeHadronJet(Double_t pthad, Double_t *hpTarray
 
                 // yield
                 if (-TMath::Pi() / 4. < JetPhiEPV0A_Had && JetPhiEPV0A_Had < TMath::Pi() / 4.) {
-                    fInPlane_Hadjet->Fill(corrPtHad);
-                    fInPlane_Hadjet_2D->Fill(pthad, corrPtHad);
+                    fInPlane_Hadjet->Fill(corrPtHad_flow);
+                    fInPlane_Hadjet_2D->Fill(pthad, corrPtHad_flow);
                 }
                 if (TMath::Pi() / 4. < JetPhiEPV0A_Had || JetPhiEPV0A_Had < -TMath::Pi() / 4.) {
-                    fOutPlane_Hadjet->Fill(corrPtHad);
-                    fOutPlane_Hadjet_2D->Fill(pthad, corrPtHad);
+                    fOutPlane_Hadjet->Fill(corrPtHad_flow);
+                    fOutPlane_Hadjet_2D->Fill(pthad, corrPtHad_flow);
                 }
             }
         }
