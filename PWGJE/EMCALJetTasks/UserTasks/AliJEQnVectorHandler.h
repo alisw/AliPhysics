@@ -159,20 +159,18 @@ class AliJEQnVectorHandler : public TObject
     // OADB Objects for streaming
     AliOADBContainer * fMultV0BefCorPfpx;                      /// OADB object containing the hMultV0BefCorPfpx histograms
 
-    std::vector<AliOADBContainer*> fOADBzArray_contQx2am;           /// Array of OADB contQx2am object, index is z-vertex bin
-    std::vector<AliOADBContainer*> fOADBzArray_contQy2am;           /// Array of OADB contQy2am object, index is z-vertex bin
-    std::vector<AliOADBContainer*> fOADBzArray_contQx2as;           /// Array of OADB contQx2as object, index is z-vertex bin
-    std::vector<AliOADBContainer*> fOADBzArray_contQy2as;           /// Array of OADB contQy2as object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQx2am;           /// Array of OADB contQx2am object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQy2am;           /// Array of OADB contQy2am object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQx2as;           /// Array of OADB contQx2as object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQy2as;           /// Array of OADB contQy2as object, index is z-vertex bin
 
+    TObjArray *fOADBzArray_contQx2cm;           /// Array of OADB contQx2cm object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQy2cm;           /// Array of OADB contQy2cm object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQx2cs;           /// Array of OADB contQx2cs object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQy2cs;           /// Array of OADB contQy2cs object, index is z-vertex bin
 
-    std::vector<AliOADBContainer*> fOADBzArray_contQx2cm;           /// Array of OADB contQx2cm object, index is z-vertex bin
-    std::vector<AliOADBContainer*> fOADBzArray_contQy2cm;           /// Array of OADB contQy2cm object, index is z-vertex bin
-    std::vector<AliOADBContainer*> fOADBzArray_contQx2cs;           /// Array of OADB contQx2cs object, index is z-vertex bin
-    std::vector<AliOADBContainer*> fOADBzArray_contQy2cs;           /// Array of OADB contQy2cs object, index is z-vertex bin
-
-
-    std::vector<AliOADBContainer*> fOADBcentArray_contTPCposEta;    /// Array of OADB contTPCposEta, index is cent bin
-    std::vector<AliOADBContainer*> fOADBcentArray_contTPCnegEta;    /// Array of OADB contTPCnegEta, index is cent bin
+    TObjArray *fOADBcentArray_contTPCposEta;    /// Array of OADB contTPCposEta, index is cent bin
+    TObjArray *fOADBcentArray_contTPCnegEta;    /// Array of OADB contTPCnegEta, index is cent bin
 
     int fCalibObjRun;                                          /// Run of loaded calibration objects
 
@@ -200,7 +198,7 @@ class AliJEQnVectorHandler : public TObject
     AliQnCorrectionsManager *fQnVectorMgr;                     /// Qn-framework manager
 
   /// \cond CLASSIMP
-  ClassDef(AliJEQnVectorHandler, 5); ///
+  ClassDef(AliJEQnVectorHandler, 6); ///
   /// \endcond
 };
 
