@@ -1022,7 +1022,7 @@ void AliCSPIDCuts::DefineHistograms(){
 
     /* the original name is used as title for the statistics histogram so, preserve it */
     TString originalTempName = fHistogramsList->GetName();
-    fHistogramsList->SetName(Form("%s_%s",fHistogramsList->GetName(),GetCutsString()));
+    fHistogramsList->SetName(Form("%s_%s%s", fHistogramsList->GetName(), AliPID::ParticleShortName(fTargetSpecies), GetCutsString()));
 
     fhCutsStatistics = new TH1F(Form("CutsStatistics_%s",GetCutsString()),Form("%s tracks cuts statistics",originalTempName.Data()),kNCuts+4,-0.5,kNCuts+3.5);
     fhCutsStatistics->GetXaxis()->SetBinLabel(1,"n tracks");
