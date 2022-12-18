@@ -44,6 +44,7 @@ AliAnaWeights::AliAnaWeights()
   fDoMCParticlePtWeights(1),
   fEtaFunction(0), fPi0Function(0), 
   fCheckGeneratorName(0),
+  fApplyRaaWeight(0),
   fMCWeight(1.),
   fCurrFileName(0),
   fCheckMCCrossSection(kFALSE),
@@ -131,40 +132,78 @@ Double_t AliAnaWeights::GetWeight()
 /// \param pdg: input particle type pdg code
 /// \param genName: TString with generator name
 /// \param igen: index of generator (not used yet).
+/// \param cen: centrality.
 ///
 /// currently, only pi0 and eta cases are considered. The parametrizations are passed via
 /// SetEtaFunction(TF1* fun) and SetPi0Function(TF1* fun)
 /// ex param: TF1* PowerEta0 = new TF1("PowerEta0","[0]*pow([1]/(([1]*exp(-[3]*x)+x)),[2])",4,25);
 /// Only active when SwitchOnMCParticlePtWeights() 
 //_____________________________________________
-Double_t AliAnaWeights::GetParticlePtWeight(Float_t pt, Int_t pdg, TString genName, Int_t igen) const 
+Double_t AliAnaWeights::GetParticlePtWeight(Float_t pt, Int_t pdg, TString genName, Int_t igen, Float_t cen) const
 {
   Double_t weight = 1.;
 
   if ( !fDoMCParticlePtWeights ) return weight ;
-
+  
   //printf("Get particle MC weight %p %p\n",fPi0Function,fEtaFunction);
-  
-  if ( !fCheckGeneratorName )
+  if ( fApplyRaaWeight )
   {
-    if      (pdg == 111 && fPi0Function)
+    const Int_t nCen = 4;
+    const Int_t nPtBins = 20;
+    Double_t lowEdgePt [] = { 0, 6., 7., 8.,9.,10.,11., 12., 14., 16., 18., 20., 25., 30., 40., 50., 60., 80.,100.,120.,1000000.};
+    Int_t    lowEdgeCen[] = { 0, 10, 30, 50, 100};
+
+    Float_t raa[nCen][nPtBins] = {
+      // 0     6      7     8      9    10    11    12     14    16    18    20    25    30    40    50    60    80   100  120
+      { 0.2, 0.155, 0.15, 0.155, 0.16, 0.17, 0.18, 0.19, 0.21, 0.23, 0.25, 0.28, 0.32, 0.36, 0.44, 0.51, 0.58, 0.65, 0.72, 0.75 },// 0-10%
+      { 0.3, 0.22 , 0.22, 0.23 , 0.24, 0.26, 0.27, 0.28, 0.30, 0.32, 0.35, 0.40, 0.45, 0.5 , 0.55, 0.60, 0.65, 0.73, 0.77, 0.80 },// 10-30%
+      { 0.4, 0.35 , 0.36, 0.38 , 0.40, 0.41, 0.42, 0.45, 0.48, 0.52, 0.56, 0.6 , 0.64, 0.70, 0.75, 0.79, 0.82, 0.85, 0.88, 0.88 },// 30-50%
+      { 0.7, 0.61 , 0.61, 0.63 , 0.65, 0.66, 0.67, 0.69, 0.72, 0.74, 0.76, 0.79, 0.83, 0.83, 0.83, 0.83, 0.83, 0.83, 0.83, 0.83 }};// 50-90%
+
+    Int_t cenbin = -1;
+    Int_t ptbin  = -1;
+    for(Int_t icen = 0; icen < nCen; icen++)
     {
-      weight = fPi0Function->Eval(pt);
-      //printf("GetParticlePtWeights:: Pi0 w %2.3f, pt %2.3f\n",weight,pt);
-    }
-    else if (pdg == 221 && fEtaFunction)
-      weight = fEtaFunction->Eval(pt);
+      if ( cen >= lowEdgeCen[icen] && cen < lowEdgeCen[icen+1] )
+      {
+        cenbin = icen;
+        
+        for(Int_t ipt = 0; ipt < nPtBins; ipt++)
+        {
+          if ( pt >= lowEdgePt[ipt] && pt < lowEdgePt[ipt+1] )
+          {
+            ptbin = ipt;
+            //printf("AliAnaWeights::GetParticlePtWeight() - pdg %d, pt %2.2f (bin %d), cen %2.2f (bin %d), raa %1.3f\n",
+            //       pdg, pt, ptbin, cen, cenbin, raa[cenbin][ptbin]);
+            return raa[cenbin][ptbin];
+          }
+        } // pt loop
+      } // selected centrality
+    } // centrality loop
+    
   }
-  else // Check particular generator names, to be better done
+  else
   {
-    if      (pdg == 111 && fPi0Function && 
-             ( genName.Contains("Pi0") || genName.Contains("pi0") || genName.Contains("PARAM") || genName.Contains("BOX")))
-      weight = fPi0Function->Eval(pt);
-    else if (pdg == 221 && fEtaFunction && 
-             ( genName.Contains("Eta") || genName.Contains("eta") || genName.Contains("PARAM") || genName.Contains("BOX")))
-      weight = fEtaFunction->Eval(pt);
+    if ( !fCheckGeneratorName )
+    {
+      if      (pdg == 111 && fPi0Function)
+      {
+        weight = fPi0Function->Eval(pt);
+        //printf("GetParticlePtWeights:: Pi0 w %2.3f, pt %2.3f\n",weight,pt);
+      }
+      else if (pdg == 221 && fEtaFunction)
+        weight = fEtaFunction->Eval(pt);
+    }
+    else // Check particular generator names, to be better done
+    {
+      if      (pdg == 111 && fPi0Function &&
+               ( genName.Contains("Pi0") || genName.Contains("pi0") || genName.Contains("PARAM") || genName.Contains("BOX")))
+        weight = fPi0Function->Eval(pt);
+      else if (pdg == 221 && fEtaFunction &&
+               ( genName.Contains("Eta") || genName.Contains("eta") || genName.Contains("PARAM") || genName.Contains("BOX")))
+        weight = fEtaFunction->Eval(pt);
+    }
   }
-  
   AliDebug(1,Form("MC particle pdg %d, pt %2.2f, generator %s with index %d: weight %f",pdg,pt,genName.Data(),igen, weight));
   
   return weight ;
@@ -391,6 +430,7 @@ void AliAnaWeights::PrintParameters()
   printf("Use cent weight                 = %d\n",fUseCentralityWeight);
   printf("Do MC particle weight           = %d\n",fDoMCParticlePtWeights);
   printf("Check generator                 = %d\n",fCheckGeneratorName);
+  printf("Use charged particle Raa        = %d\n",fApplyRaaWeight);
   printf("Check cross section             = %d\n",fCheckMCCrossSection);
   printf("Only fill cross sec. histo.     = %d\n",fJustFillCrossSecHist);
   printf("Get cross sec. pythia Evt Head. = %d\n",fCheckPythiaEventHeader);  

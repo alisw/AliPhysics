@@ -5588,7 +5588,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     
     // Particle ID and pT dependent Weight
     Int_t   index    = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
-    Float_t weightPt = GetParticlePtWeight(photonPt, pdg, genName, index) ; 
+    Float_t weightPt = GetParticlePtWeight(photonPt, pdg, genName, index, centrality) ;
     //
     
     // Check the origin of the photon or if it is a pi0, assing a tag
@@ -5642,13 +5642,13 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     {
       mcIndex   = kmcPrimPi0Decay;
       fMomentum = GetMCAnalysisUtils()->GetMotherWithPDG(i, 111, GetMC(),ok, momLabel);        
-      weightPt  = GetParticlePtWeight(fMomentum.Pt(), 111, genName, index) ; 
+      weightPt  = GetParticlePtWeight(fMomentum.Pt(), 111, genName, index, centrality) ;
     }
     else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) )
     {
       mcIndex   = kmcPrimEtaDecay;
       fMomentum = GetMCAnalysisUtils()->GetMotherWithPDG(i, 221, GetMC(),ok, momLabel);        
-      weightPt  = GetParticlePtWeight(fMomentum.Pt(), 221, genName, index) ; 
+      weightPt  = GetParticlePtWeight(fMomentum.Pt(), 221, genName, index, centrality) ; 
     }
     else if( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay) )
     {
