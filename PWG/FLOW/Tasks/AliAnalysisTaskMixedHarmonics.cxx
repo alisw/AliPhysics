@@ -67,6 +67,7 @@ fCorrectForDetectorEffects(kFALSE),
 fPrintOnTheScreen(kTRUE),
 fCalculateVsM(kFALSE),
 fShowBinLabelsVsM(kFALSE),
+fCalculateVsZDC(kFALSE),
 fUseParticleWeights(useParticleWeights),
 fUsePhiWeights(kFALSE),
 fUsePtWeights(kFALSE),
@@ -126,6 +127,7 @@ fCorrectForDetectorEffects(kFALSE),
 fPrintOnTheScreen(kFALSE),
 fCalculateVsM(kFALSE),
 fShowBinLabelsVsM(kFALSE),
+fCalculateVsZDC(kFALSE),
 fUseParticleWeights(kFALSE),
 fUsePhiWeights(kFALSE),
 fUsePtWeights(kFALSE),
@@ -183,6 +185,7 @@ void AliAnalysisTaskMixedHarmonics::UserCreateOutputObjects()
  fMH->SetPrintOnTheScreen(fPrintOnTheScreen); 
  fMH->SetCalculateVsM(fCalculateVsM); 
  fMH->SetShowBinLabelsVsM(fShowBinLabelsVsM);
+ fMH->SetCalculateVsZDC(fCalculateVsZDC); 
  if(fUseParticleWeights)
  {
   // Pass the flags to class:
