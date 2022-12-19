@@ -886,7 +886,7 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects() {
     fOutput->Add(fUEv2);
 
     fUE = new TF1("fUE", "1. + 2. * [0] * cos(2. * x)");
-    fUE->SetParameter(0, 0.2);
+    fUE->SetParameter(0, 0.07);
 
     // ------------------------------------------------------
     fJetPhicos2_ele = new TH2F("fJetPhicos2_ele", "fJetPhicos2_ele", 600, -100., 500., 20, -1., 1.);
