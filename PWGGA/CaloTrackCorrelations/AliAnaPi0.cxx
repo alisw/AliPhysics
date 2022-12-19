@@ -2884,7 +2884,7 @@ void AliAnaPi0::FillAcceptanceHistograms()
     Int_t index   = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
     //(GetMC())->GetCocktailGenerator(i,genName);
     
-    Float_t weightPt = GetParticlePtWeight(mesonPt, pdg, genName, index) ; 
+    Float_t weightPt = GetParticlePtWeight(mesonPt, pdg, genName, index, cen) ; 
     
     if(IsStudyClusterOverlapsPerGeneratorOn())
     {
@@ -4440,7 +4440,7 @@ void AliAnaPi0::MakeAnalysisFillHistograms()
           Int_t index   = GetReader()->GetCocktailGeneratorAndIndex(ancLabel, genName);
           //(GetMC())->GetCocktailGenerator(i,genName);
           
-          weightPt = GetParticlePtWeight(fMCPrimMesonMom.Pt(), ancPDG, genName, index) ; 
+          weightPt = GetParticlePtWeight(fMCPrimMesonMom.Pt(), ancPDG, genName, index, GetEventCentrality()) ;
         }
       }
       

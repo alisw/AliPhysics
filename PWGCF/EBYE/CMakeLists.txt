@@ -46,6 +46,7 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskEfficiencyBFPsi.cxx
   BalanceFunctions/AliAnalysisTaskEffContBF.cxx
   BalanceFunctions/AliAnalysisTaskEffContPIDBF.cxx
+  BalanceFunctions/AliAnalysisTaskRecEff.cxx
   BalanceFunctions/AliBalance.cxx
   BalanceFunctions/AliBalancePsi.cxx
   BalanceFunctions/AliBalanceEbyE.cxx
