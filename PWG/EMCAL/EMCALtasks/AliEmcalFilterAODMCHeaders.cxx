@@ -220,6 +220,8 @@ void AliEmcalFilterAODMCHeaders::LinkMothers(){
     if(part->GetDaughterFirst() > -1 && part->GetDaughterLast() > -1) {
       ((AliAODMCParticle*)(fParticlesOut->At(iPart)))->SetDaughter(0, fParticlesMap->At(part->GetDaughterFirst()));
       ((AliAODMCParticle*)(fParticlesOut->At(iPart)))->SetDaughter(1, fParticlesMap->At(part->GetDaughterLast()));
+      ((AliAODMCParticle*)(fParticlesOut->At( ((AliAODMCParticle*)(fParticlesOut->At(iPart)))->GetDaughterFirst() )))->SetMother(iPart);
+      ((AliAODMCParticle*)(fParticlesOut->At( ((AliAODMCParticle*)(fParticlesOut->At(iPart)))->GetDaughterLast() )))->SetMother(iPart);
     }
   }
 }
@@ -239,7 +241,7 @@ void AliEmcalFilterAODMCHeaders::ProcessClusters(){
     AliVCluster* clus = static_cast<AliAODCaloCluster*>(fClustersIn->At(iCluster));
     if (!clus) continue;
 
-    if(IsParticleFromBGEvent(clus->GetLabelAt(0))){
+    if(!IsParticleFromBGEvent(clus->GetLabelAt(0))){
       AliDebugStream(3) << "Parent particle for cluster " << iCluster << " is from bg event. Skipping cluster..." << std::endl;
       continue;
     }
@@ -264,7 +266,7 @@ void AliEmcalFilterAODMCHeaders::ProcessTracks(){
     AliVTrack* track = static_cast<AliAODTrack*>(fTracksIn->At(iTrack));
     if (!track) continue;
 
-    if(IsParticleFromBGEvent(TMath::Abs(track->GetLabel()))){
+    if(!IsParticleFromBGEvent(TMath::Abs(track->GetLabel()))){
       AliDebugStream(3) << "Parent particle for track " << iTrack << " is from bg event. Skipping track..." << std::endl;
       continue;
     }
@@ -302,7 +304,7 @@ void AliEmcalFilterAODMCHeaders::ProcessParticles()
     if (!part) continue;
 
     // rejection criteria
-    if(IsParticleFromBGEvent(iPart)){
+    if(!IsParticleFromBGEvent(iPart)){
       AliDebugStream(3) << "Particle " << iPart << " is from bg event. Skipping particle..." << std::endl;
       continue;
     }
