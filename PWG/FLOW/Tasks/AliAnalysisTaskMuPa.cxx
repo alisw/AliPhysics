@@ -6680,7 +6680,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
   //  [2] => v3
   //  [3] => RP
 
-  fvnPDF = new TF3("fvnPDF","x+2.*y+3.*z",0.05,0.06,0.06,0.07,0.07,0.08); // v1 \in [0.5,0.6], v2 \in [0.6,0.7], v3 \in [0.7,0.8]   
+  fvnPDF = new TF3("fvnPDF","x + 2.*y - 3.*z",0.05,0.06,0.06,0.07,0.07,0.08); // v1 \in [0.05,0.06], v2 \in [0.06,0.07], v3 \in [0.07,0.08]   
   fvnPDF->SetParName(0,"v_{1}");
   fvnPDF->SetParName(1,"v_{2}");
   fvnPDF->SetParName(2,"v_{3}");

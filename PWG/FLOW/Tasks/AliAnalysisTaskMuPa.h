@@ -701,7 +701,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fUseEventCuts[gEventHistograms];   // if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
 
   // 3) Control particle histograms:  
-  TList *fControlParticleHistogramsList; // list to hold all control histograms for particle distributions
+  TList *fControlParticleHistogramsList; // list to hold all control histograms for particle distributions 
   TProfile *fControlParticleHistogramsPro; // keeps flags relevant for the control particle histograms
   TExMap *fSimReco; //! look up table between kine and reco particles (key = kine (Monte Carlo label), value = reco (track index in AOD))
   Bool_t fUseFakeTracks; // if kTRUE, the Monte Carlo particle is obtained as TMath:Abs(aRecoTrack->GetLabel())
@@ -766,7 +766,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TArrayD *fKineDependenceBins[gKineDependenceVariables];          // custom binning kine dependence, SetKineDependenceBins(...). By default the same binning is used as in the corresponding control histograms. 
 
   // 8) Nested loops:
-  TList *fNestedLoopsList;                       // list to hold all nested loops objects
+  TList *fNestedLoopsList;                       // list to hold all nested loops objects 
   TProfile *fNestedLoopsFlagsPro;                // profile to hold all flags for nested loops
   Bool_t fCalculateNestedLoops;                  // calculate and store correlations with nested loops, as a cross-check
   Bool_t fCalculateCustomNestedLoop;             // validate e-b-e all correlations with custom nested loop
@@ -822,10 +822,10 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   UShort_t fBunchCross;              // bunch crossing
   UInt_t fOrbit;                     // orbit
   UInt_t fPeriod;                    // period
-  Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
+  Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo() 
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,32);
+  ClassDef(AliAnalysisTaskMuPa,33);
 
 };
 
