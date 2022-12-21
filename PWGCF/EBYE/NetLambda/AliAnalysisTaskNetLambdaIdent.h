@@ -187,7 +187,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   //AliMCEvent*              fMcEvent;    //! MC event
   //AliInputEventHandler*    fMcHandler;  //! MCEventHandler 
  
-  ClassDef(AliAnalysisTaskNetLambdaIdent,15);
+  ClassDef(AliAnalysisTaskNetLambdaIdent,16);
 };
 
 //_____________________________________________________________________________
