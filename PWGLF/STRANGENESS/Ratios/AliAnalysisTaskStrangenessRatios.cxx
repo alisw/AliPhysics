@@ -25,7 +25,6 @@ using std::string;
 #include "AliPIDResponse.h"
 #include "AliAODEvent.h"
 #include "AliVEventHandler.h"
-#include "AliVTrack.h"
 #include "AliAODMCHeader.h"
 #include "AliAnalysisUtils.h"
 
@@ -508,7 +507,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
     }
   }
 
-  if ((fFillK0s||fFillLambdasBDTOut) && rdmState < fK0sDownscaling)
+  if (fFillK0s && rdmState < fK0sDownscaling)
   {
     fGenK0s.isReconstructed = true;
     for (int iV0{0}; iV0 < ev->GetNumberOfV0s(); ++iV0)
@@ -548,7 +547,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         int labMothPos = posPart->GetMother();
         int labMothNeg = negPart->GetMother();
         auto K0s = (AliAODMCParticle *)fMCEvent->GetTrack(labMothNeg);
-        if (K0s && labMothNeg == labMothPos && std::abs(K0s->GetPdgCode()) == kK0sPdg)
+        if (K0s && labMothNeg == labMothPos && K0s->GetPdgCode() == kK0sPdg)
         {
           K0sLabel = labMothNeg;
           fGenK0s.ptMC = K0s->Pt();
@@ -567,12 +566,14 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
             fGenK0s.flag |= kSecondaryFromWD;
           else fGenK0s.flag |= kSecondaryFromMaterial;
         }
-        if (fOnlyTrueK0s && K0sLabel != -1)
+        if (fOnlyTrueK0s && K0sLabel == -1)
           continue;
       }
 
 
       fRecK0s->pt = v0->Pt();
+      fRecK0s->ptNeg = nTrack->Pt();
+      fRecK0s->ptPos = pTrack->Pt();
       fRecK0s->eta = v0->Eta();
       fRecK0s->mass = v0->MassK0Short();
       fRecK0s->ct = v0->Ct(kK0sPdg, pv);
@@ -583,9 +584,11 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       fRecK0s->dcaV0tracks = v0->DcaV0Daughters();
       fRecK0s->cosPA = v0->CosPointingAngle(pv);
       fRecK0s->tpcNsigmaNeg = fPID->NumberOfSigmasTPC(nTrack, AliPID::kPion);
-      fRecK0s->tpcNsigmaPos = fPID->NumberOfSigmasTPC(pTrack, AliPID::kProton);
+      fRecK0s->tpcNsigmaPos = fPID->NumberOfSigmasTPC(pTrack, AliPID::kPion);
       fRecK0s->tpcClV0Neg = nTrack->GetTPCsignalN();
       fRecK0s->tpcClV0Pos = pTrack->GetTPCsignalN();
+      fRecK0s->hasTOFneg = HasTOF(nTrack);
+      fRecK0s->hasTOFpos = HasTOF(pTrack);
       fRecK0s->hasTOFhit = !pTrack->GetTOFBunchCrossing(bField) || !nTrack->GetTOFBunchCrossing(bField);
       fRecK0s->hasITSrefit = nTrack->GetStatus() & AliVTrack::kITSrefit || pTrack->GetStatus() & AliVTrack::kITSrefit;
 
@@ -774,7 +777,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           {
             continue;
           }
-          if (std::abs(daugh->GetPdgCode()) == AliPID::ParticleCode(AliPID::kProton))
+          if (std::abs(daugh->GetPdgCode()) == AliPID::ParticleCode(AliPID::kPion))
           {
             neutralDecay = false;
             daugh->XvYvZv(dv);
@@ -898,7 +901,7 @@ bool AliAnalysisTaskStrangenessRatios::IsTopolSelectedLambda()
 bool AliAnalysisTaskStrangenessRatios::IsTopolSelectedK0s()
 {
   return fRecK0s->radius > fCutRadius[2] &&
-         fRecK0s->cosPA > fCosPALambda &&
+         fRecK0s->cosPA > fCosPAK0s &&
          fRecK0s->dcaPosPV > fCutDCAK0sProngToPV &&
          fRecK0s->dcaNegPV > fCutDCAK0sProngToPV &&
          fRecK0s->dcaV0tracks < fCutDCAV0tracks &&
@@ -996,4 +999,11 @@ void AliAnalysisTaskStrangenessRatios::FindWDLambdaMother(AliAODMCParticle *trac
     }
   }
   fGenLambda.ctMotherMC = std::sqrt(Sq(ovMother[0] - dvMother[0]) + Sq(ovMother[1] - dvMother[1]) + Sq(ovMother[2] - dvMother[2])) * mother->M() / mother->P();
+}
+
+bool AliAnalysisTaskStrangenessRatios::HasTOF(AliVTrack *track) {
+  bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
+  bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
+  const float len = track->GetIntegratedLength();
+  return hasTOFout && hasTOFtime && (len > 350.);
 }
