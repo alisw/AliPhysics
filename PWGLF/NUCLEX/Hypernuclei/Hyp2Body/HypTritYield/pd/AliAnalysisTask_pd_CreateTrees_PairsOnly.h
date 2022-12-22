@@ -63,6 +63,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float     fProton_DCAz;
     float     fProton_Event_Centrality;
     float     fProton_Event_PrimaryVertexZ;
+    float     fProton_Event_BField;
     unsigned short    fProton_TPC_nCrossedRows;
     unsigned short    fProton_TPC_nSharedCluster;
     unsigned short    fProton_TPC_nClusterFindable;
@@ -93,6 +94,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float     fDeuteron_DCAz;
     float     fDeuteron_Event_Centrality;
     float     fDeuteron_Event_PrimaryVertexZ;
+    float     fDeuteron_Event_BField;
     unsigned short    fDeuteron_TPC_nCrossedRows;
     unsigned short    fDeuteron_TPC_nSharedCluster;
     unsigned short    fDeuteron_TPC_nClusterFindable;
@@ -123,6 +125,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float     fAntiProton_DCAz;
     float     fAntiProton_Event_Centrality;
     float     fAntiProton_Event_PrimaryVertexZ;
+    float     fAntiProton_Event_BField;
     unsigned short    fAntiProton_TPC_nCrossedRows;
     unsigned short    fAntiProton_TPC_nSharedCluster;
     unsigned short    fAntiProton_TPC_nClusterFindable;
@@ -153,6 +156,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float     fAntiDeuteron_DCAz;
     float     fAntiDeuteron_Event_Centrality;
     float     fAntiDeuteron_Event_PrimaryVertexZ;
+    float     fAntiDeuteron_Event_BField;
     unsigned short    fAntiDeuteron_TPC_nCrossedRows;
     unsigned short    fAntiDeuteron_TPC_nSharedCluster;
     unsigned short    fAntiDeuteron_TPC_nClusterFindable;

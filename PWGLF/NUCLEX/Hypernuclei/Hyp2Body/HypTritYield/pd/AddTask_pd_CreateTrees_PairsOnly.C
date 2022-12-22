@@ -4,11 +4,11 @@
 
 AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
   TString Name = "AnalysisTask_pd_CreateTrees_PairsOnly",
-  int CollisionSystem = 0,
+  int CollisionSystem = 1,
   const char *Variation = "0") {
 
 
-  bool DebugAddTask = true;
+  bool DebugAddTask = false;
 
   // CollisionSystem:
   //
