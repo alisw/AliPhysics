@@ -71,10 +71,23 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
   // connect the manager to the task
   manager->ConnectInput(task,0,container);
   if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: Input container connected" << std::endl;
-  
-  
+ 
 
-  task->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kHighMultV0 | AliVEvent::kSemiCentral | AliVEvent::kCentral);
+  if(CollisionSystem == 0){
+ 
+    task->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kHighMultV0);
+    std::cout << "AddTask_pd_CreateTrees_PairsOnly: SelectCollisionCandidates(AliVEvent::kHighMultV0)" << std::endl;
+
+  }
+
+
+  if((CollisionSystem == 1) || (CollisionSystem == 2)){
+
+    task->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
+    std::cout << "AddTask_pd_CreateTrees_PairsOnly: SelectCollisionCandidates(AliVEvent::kSemiCentral || AliVEvent::kCentral)" << std::endl;
+
+  }
+
   if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: Collision candidates selected" << std::endl;
 
 
