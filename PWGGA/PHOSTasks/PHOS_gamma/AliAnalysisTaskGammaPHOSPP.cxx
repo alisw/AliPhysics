@@ -71,7 +71,8 @@ AliAnalysisTaskGammaPHOSPP::AliAnalysisTaskGammaPHOSPP(const char *name) : AliAn
   fMCArray(0),
   fPIDResponse(0x0), 
   fBCgap(525.e-9),
-  fTOFcut(12.5e-09),
+  //fTOFcut(12.5e-09),
+  fTOFcut(30.e-09),
   fEventCounter(0), 
   fWeightFunction(new TF1("fWeightFunction", "((([0]+([1]*x))+([2]*(x*x)))/((1.+([3]*x))+([4]*(x*x))))+([5]*x)", 0., 100.)),
   fCurrFileName(0), 
@@ -121,7 +122,6 @@ void AliAnalysisTaskGammaPHOSPP::UserCreateOutputObjects()
     delete fOutputContainer2;
   }
 
-
   fOutputContainer  = new THashList();
   fOutputContainer2 = new THashList();
 
@@ -170,7 +170,7 @@ void AliAnalysisTaskGammaPHOSPP::UserExec(Option_t *)  // Main loop, called for 
   // Get event
   fEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!fEvent) {
-     Printf("ERROR: Could not retrieve evenat!");
+     Printf("ERROR: Could not retrieve event!");
      return;
   }
 
@@ -569,6 +569,9 @@ void AliAnalysisTaskGammaPHOSPP::SelectCluster(AliAODCaloCluster *clu1)
 
   if (fLHCRunN == 2 && !fMCArray && TMath::Abs(clu1->GetTOF()) > fTOFcut) return ; // TOF cut for real data only!
   
+  const Bool_t cpvBit  = clu1->GetEmcCpvDistance() > fNsigmaCPV;
+  const Bool_t dispBit = TMath::Sqrt(clu1->Chi2()) < fNsigmaDisp;
+  
   multPHOSClust[0]++ ;
   FillHistogram("hClusterEnergy",energy) ;
   FillHistogram("hCellMultClu_all",digMult) ;
@@ -579,19 +582,19 @@ void AliAnalysisTaskGammaPHOSPP::SelectCluster(AliAODCaloCluster *clu1)
   FillHistogram(Form("hCluNXZM%d", mod1), cellX, cellZ, 1.) ;
   FillHistogram(Form("hCluEXZM%d", mod1), cellX, cellZ, clu1->E());
 
-  if (clu1->GetEmcCpvDistance() > 2.5) {
+  if (cpvBit ) {
     FillHistogram("hClusterEvsN_cpv",energy,digMult) ;
     FillHistogram("hCellMultClu_cpv",digMult) ;
     FillHistogram(Form("hClusterEvsN_cpv_M%d", mod1), energy, digMult) ;
     FillHistogram(Form("hCellMultClu_cpv_M%d", mod1), digMult) ;
   }
-  if (clu1->Chi2() < 2.5) {
+  if (dispBit ) {
     FillHistogram("hClusterEvsN_disp",energy,digMult);
     FillHistogram("hCellMultClu_disp",digMult);
     FillHistogram(Form("hClusterEvsN_disp_M%d", mod1), energy, digMult);
     FillHistogram(Form("hCellMultClu_disp_M%d", mod1), digMult);
   }
-  if (clu1->GetEmcCpvDistance() > 2.5 && clu1->Chi2() < 2.5) {
+  if (cpvBit && dispBit) {
     FillHistogram("hClusterEvsN_both",energy,digMult);
     FillHistogram("hCellMultClu_both",digMult);
     FillHistogram(Form("hClusterEvsN_both_M%d", mod1), energy,digMult);
@@ -626,7 +629,7 @@ void AliAnalysisTaskGammaPHOSPP::SelectCluster(AliAODCaloCluster *clu1)
   FillHistogram("hPhotonPx", pX);
   FillHistogram("hPhotonPy", pY);
 
-  if (clu1->E() < 0.3) return;
+  if (clu1 -> E() < 0.3) return;
   if (fLHCRunN == 1) {
      if (clu1->GetNCells() < 3)  return ; //no cuts on cell multiplicity only in MC for Run 2 
   } else {
@@ -665,13 +668,14 @@ void AliAnalysisTaskGammaPHOSPP::SelectCluster(AliAODCaloCluster *clu1)
   ph->SetEMCz(global1.Z());
   ph->SetNsigmaCPV(clu1->GetEmcCpvDistance());
   ph->SetNsigmaFullDisp(TMath::Sqrt(clu1->Chi2()));
-  ph->SetCPVBit(ph->GetNsigmaCPV() > fNsigmaCPV);
-  ph->SetDispBit(ph->GetNsigmaFullDisp() < fNsigmaDisp);
+  ph->SetCPVBit(cpvBit);
+  ph->SetDispBit(dispBit);
   ph->SetBC(TestBC(clu1->GetTOF()));
   ph->SetPrimary(GetPrimaryLabel(clu1));
   ph->SetPrimaryAtVertex(GetPrimaryLabelAtVertex(clu1));
   ph->SetWeight(weight); 
   
+  // TestMatchingTrackPID(ph, p11.Pt());
 
   FillHistogram("hvt0vsvt5", p11.Pt()- p1.Pt());
   FillHistogram("hBC", TestBC(clu1->GetTOF()) + 0.5);
@@ -1230,10 +1234,15 @@ Bool_t AliAnalysisTaskGammaPHOSPP::PythiaInfoFromFile(TString file,Float_t & xse
 }
 
 //_____________________________________________________________________________
+//void AliAnalysisTaskGammaPHOSPP::TestMatchingTrackPID(AliCaloPhoton *ph, Double_t pt)
 void AliAnalysisTaskGammaPHOSPP::TestMatchingTrackPID(AliAODCaloCluster *clu1, Double_t pt)
 {
     const Bool_t CPVBit = clu1->GetEmcCpvDistance() > fNsigmaCPV;
-    const Bool_t DispBit = clu1->Chi2() < fNsigmaDisp;
+    const Bool_t DispBit = TMath::Sqrt(clu1->Chi2()) < fNsigmaDisp;
+    
+    //auto clu1 = (AliAODCaloCluster*)ph->GetCluster();
+    //const Bool_t CPVBit  = ph->IsCPVOK();
+    //const Bool_t DispBit = ph->IsDispOK();
 
     const Int_t NTracksMatched = clu1->GetNTracksMatched();
 
