@@ -503,9 +503,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
   // debug analysis
   bool DebugEventSelection  = false;
 
-
  
-  bool isPbPb = true;
 
 
 
@@ -514,13 +512,13 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
   double Centrality_min	    = 0.0;
   double Centrality_max	    = 100.0;
 
-  if(fCollisionSystem == 1)
+  if(fCollisionSystem == 1) // Central collisions
   {
     Centrality_min = 0.0;
     Centrality_max = 10.0;
   }
 
-  if(fCollisionSystem == 2)
+  if(fCollisionSystem == 2) // Semi-Central collisions
   {
     Centrality_min = 30.0;
     Centrality_max = 50.0;
@@ -530,7 +528,9 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
   // use only events containing tracks
   int nTracks = fAODEvent->GetNumberOfTracks();
   if(nTracks == 0) return;
-  
+
+
+
   // get primary vertex
   AliAODVertex *PrimaryVertex = fAODEvent->GetPrimaryVertex();
   if(!PrimaryVertex)::Warning("AliAnalsisTask_pd_CreateTrees_PairsOnlyd::UserExec","No AliAODVertex object found!");
@@ -539,17 +539,16 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 
   // apply cut on z-position of primary vertex
   double PrimaryVertexZ = PrimaryVertexPos[2]; // cm
+  if(TMath::IsNaN(PrimaryVertexZ)) return;
   if(TMath::Abs(PrimaryVertexZ) > PrimaryVertexMaxZ) return;
 
   // apply centrality cut
   double Centrality = -999.0;
-  if(isPbPb == true){
+  AliMultSelection *MultSelection = (AliMultSelection*) fAODEvent->FindListObject("MultSelection");
+  Centrality = MultSelection->GetMultiplicityPercentile("V0M");
+  if(TMath::IsNaN(Centrality)) return;
+  if((Centrality < Centrality_min) || (Centrality > Centrality_max)) return;
 
-    AliMultSelection *MultSelection = (AliMultSelection*) fAODEvent->FindListObject("MultSelection");
-    Centrality = MultSelection->GetMultiplicityPercentile("V0M");
-    if((Centrality < Centrality_min) || (Centrality > Centrality_max)) return;
-
-  }
 
 
 
@@ -560,16 +559,20 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
   unsigned int BunchCrossNumber	= fAODEvent->GetBunchCrossNumber();
   float BField			= fAODEvent->GetMagneticField();
 
+  if(TMath::IsNaN(BField)) return;
+
+
+
   // print event information
   if(DebugEventSelection)
   {
 
     cout << "" << endl;
+    cout << "fCollisionSystem:\t\t" << fCollisionSystem << std::endl;
     cout << "PeriodNumber:\t\t\t" << PeriodNumber << endl;
     cout << "OrbitNumber:\t\t\t" << OrbitNumber << endl;
     cout << "BunchCrossNumber:\t\t" << BunchCrossNumber << endl;
-    cout << "isPbPb:\t\t\t\t" << isPbPb << endl;
-    cout << "Centrality:\t\t\t" << Centrality << " %" << endl;
+    cout << "Centrality / Multiplicity:\t" << Centrality << " %" << endl;
     cout << "z-position of primary vertex:\t" << PrimaryVertexZ << " cm" << endl;
     cout << "Number of tracks in event:\t" << nTracks << endl;
 
