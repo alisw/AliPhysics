@@ -104,6 +104,8 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP() :
   fTree_Xic0MCGen(0),
   fVar_Xic0MCGen(0),
   fCounter(0),
+  fCentrality(0),
+  fNtracklets(0),
   fHistMCGen_Lambda_Pt(0),
   fHistMCGen_AntiLambda_Pt(0),
   fHistMCGen_Lambda_Pt_wYcut(0),
@@ -422,6 +424,8 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   fTree_Xic0MCGen(0),
   fVar_Xic0MCGen(0),
   fCounter(0),
+  fCentrality(0),
+  fNtracklets(0),
   fHistMCGen_Lambda_Pt(0),
   fHistMCGen_AntiLambda_Pt(0),
   fHistMCGen_Lambda_Pt_wYcut(0),
@@ -1680,12 +1684,13 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
   }
   fHistEvents->Fill(4);
 
-
   Bool_t IsMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kMB)==(AliVEvent::kMB);
   Bool_t IsSemi = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kSemiCentral)==(AliVEvent::kSemiCentral);
   Bool_t IsCent = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kCentral)==(AliVEvent::kCentral);
   Bool_t IsINT7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kINT7)==(AliVEvent::kINT7);
   Bool_t IsEMC7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kEMC7)==(AliVEvent::kEMC7);
+  Bool_t fIsHMV0 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kHighMultV0)==(AliVEvent::kHighMultV0);
+  Bool_t fIsHMSPD = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kHighMultSPD)==(AliVEvent::kHighMultSPD);
   if(IsMB) fHTrigger->Fill(1);
   if(IsSemi) fHTrigger->Fill(2);
   if(IsCent) fHTrigger->Fill(3);
@@ -1696,10 +1701,12 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
   if(IsMB&&IsSemi) fHTrigger->Fill(10);
   if(IsMB&&IsCent) fHTrigger->Fill(11);
   if(IsINT7&&IsEMC7) fHTrigger->Fill(12);
+  if(fIsHMV0) fHTrigger->Fill(13);
+  if(fIsHMSPD) fHTrigger->Fill(14); 
 
-//  AliCentrality *cent = AODEvent->GetCentrality();
-//  Float_t Centrality = cent->GetCentralityPercentile("V0M");
-//  fHCentrality->Fill(Centrality);
+  fNtracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
+  AliMultSelection *MultSelection = dynamic_cast<AliMultSelection*>(AODEvent->FindListObject("MultSelection"));
+  if(MultSelection)fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
 
   //------------------------------------------------
   // Check if the event has v0 candidate
@@ -2171,7 +2178,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeGenXic0(AliAODMCParticle *mcp
 {
   // Fill histograms or tree depending
 
-  for(Int_t i=0;i<8;i++){
+  for(Int_t i=0;i<9;i++){
     fVar_Xic0MCGen[i] = -9999.;
   }
 
@@ -2183,6 +2190,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeGenXic0(AliAODMCParticle *mcp
   fVar_Xic0MCGen[5] = (fAnaCuts->GetWeightFunctionUp())->Eval(mcpart->Pt());;
   fVar_Xic0MCGen[6] = (fAnaCuts->GetWeightFunctionDw())->Eval(mcpart->Pt());;
   fVar_Xic0MCGen[7] = MLoverP;
+  fVar_Xic0MCGen[8] = fNtracklets;
 
   if (fWriteXic0MCGenTree) fTree_Xic0MCGen->Fill();
 
@@ -3692,11 +3700,6 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
 void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *AODEvent, TClonesArray *mcArray, KFParticle PV)
 {
   // Main analysis called from "UserExec"
-    Double_t Centrality = -999.;
-    AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(AODEvent->FindListObject("MultSelection"));
-    if (multSelection) Centrality = multSelection->GetMultiplicityPercentile("V0M");
-
-    Int_t Ntracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
 
 //  std::cout.setf(std::ios::fixed);
 //  std::cout.setf(std::ios::showpoint);
@@ -3904,10 +3907,10 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
            if (fIsMC) {
              if (!fIsAnaOmegac0) lab_Xic0 = MatchToMCXic0(ptrack, ntrack, btrack, trackP[itrkBP], mcArray);
              if (fIsAnaOmegac0) lab_Xic0  = MatchToMCOmegac0(ptrack, ntrack, btrack, trackP[itrkBP], mcArray);
-             if (lab_Xic0>=0) FillTreeRecXic0FromCasc(1, kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0, Centrality, Ntracklets);
+             if (lab_Xic0>=0) FillTreeRecXic0FromCasc(1, kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0);
            }
            if (!fIsMC) {
-             FillTreeRecXic0FromCasc(1, kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0, Centrality, Ntracklets);
+             FillTreeRecXic0FromCasc(1, kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0);
            }
          }
          kfpXic0.Clear();
@@ -3937,7 +3940,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
         if ( err_massXic0_LS<=0 ) continue;
         if (fWriteXic0Tree) {
           Int_t lab_Xic0_LS = -9999;
-          FillTreeRecXic0FromCasc(0, kfpXic0_LS, trackN[itrkBP_LS], kfpBP_LS, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0_LS, Centrality, Ntracklets);
+          FillTreeRecXic0FromCasc(0, kfpXic0_LS, trackN[itrkBP_LS], kfpBP_LS, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0_LS);
         }
         kfpXic0_LS.Clear();
         kfpBP_LS.Clear();
@@ -4065,10 +4068,10 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
           if (fIsMC) {
             if (!fIsAnaOmegac0) lab_AntiXic0 = MatchToMCAntiXic0(ntrack, ptrack, btrack, trackN[itrkBP], mcArray);
             if (fIsAnaOmegac0)  lab_AntiXic0 = MatchToMCAntiOmegac0(ntrack, ptrack, btrack, trackN[itrkBP], mcArray);
-            if (lab_AntiXic0>=0) FillTreeRecXic0FromCasc(1, kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0, Centrality, Ntracklets);
+            if (lab_AntiXic0>=0) FillTreeRecXic0FromCasc(1, kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0);
           }
           if (!fIsMC) {
-            FillTreeRecXic0FromCasc(1, kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0, Centrality, Ntracklets);
+            FillTreeRecXic0FromCasc(1, kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0);
           }
         }
         kfpAntiXic0.Clear();
@@ -4098,7 +4101,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
         if ( err_massAntiXic0_LS<=0 ) continue;
         if (fWriteXic0Tree) {
           Int_t lab_AntiXic0_LS = -9999;
-          FillTreeRecXic0FromCasc(0, kfpAntiXic0_LS, trackP[itrkBP_LS], kfpBP_LS, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0_LS, Centrality, Ntracklets);
+          FillTreeRecXic0FromCasc(0, kfpAntiXic0_LS, trackP[itrkBP_LS], kfpBP_LS, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0_LS);
         }
         kfpAntiXic0_LS.Clear();
         kfpBP_LS.Clear();
@@ -4900,8 +4903,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   fVarNames[46] = "weight_up";
   fVarNames[47] = "weight_dw";
 
-  fVarNames[48] = "Centrality";
-  fVarNames[49] = "Ntracklets";
+  fVarNames[48] = "fCentrality";
+  fVarNames[49] = "fNtracklets";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Xic0->Branch(fVarNames[ivar].Data(), &fVar_Xic0[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -4968,7 +4971,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeGenXic0()
   const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0MCGen = new TTree(nameoutput,"Xic0 MC variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0MCGen = new TTree(nameoutput,"Omegac0 MC variables tree");
-  Int_t nVar = 8;
+  Int_t nVar = 9;
   fVar_Xic0MCGen = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
   
@@ -4981,6 +4984,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeGenXic0()
     fVarNames[5] = "weight_up";
     fVarNames[6] = "weight_dw";
     fVarNames[7] = "MLoverP"; // c*(proper lifetime)
+    fVarNames[8] = "fNtracklets";
   }
   if (fIsAnaOmegac0) {
     fVarNames[0] = "rap_Omegac0";
@@ -5395,7 +5399,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpX
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0, Double_t Centrality, Int_t Ntracklets)
+void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0)
 {
 
   for (Int_t i=0; i<50; i++) {
@@ -5624,8 +5628,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSo
 
   fVar_Xic0[44] = flagUSorLS; // flag of unlike sign or like sign pair
 
-  fVar_Xic0[48] = Centrality;
-  fVar_Xic0[49] = Ntracklets; 
+  fVar_Xic0[48] = fCentrality;
+  fVar_Xic0[49] = fNtracklets; 
   fTree_Xic0->Fill();
 
 

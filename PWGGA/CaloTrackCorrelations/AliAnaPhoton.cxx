@@ -1559,7 +1559,7 @@ void AliAnaPhoton::FillAcceptanceHistograms(Int_t cen)
     
     /// Particle ID and pT dependent Weight
     Int_t   index    = GetReader()->GetCocktailGeneratorAndIndex(i, genName);
-    Float_t weightPt = GetParticlePtWeight(photonPt, pdg, genName, index) ; 
+    Float_t weightPt = GetParticlePtWeight(photonPt, pdg, genName, index, cen) ;
     ///
     Float_t mcbin = -1;
     Bool_t takeIt  = kFALSE ;
@@ -1588,14 +1588,14 @@ void AliAnaPhoton::FillAcceptanceHistograms(Int_t cen)
       mcIndex = kmcPPi0Decay;
       mcbin = 3.5;
       fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(i, 111, GetMC(),ok, momLabel);        
-      weightPt     = GetParticlePtWeight(fPrimaryMom2.Pt(), 111, genName, index) ; 
+      weightPt     = GetParticlePtWeight(fPrimaryMom2.Pt(), 111, genName, index, cen) ;
     }
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay))
     {
       mcIndex = kmcPEtaDecay;
       mcbin = 4.5;
       fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(i, 221, GetMC(),ok, momLabel);        
-      weightPt     = GetParticlePtWeight(fPrimaryMom2.Pt(), 221, genName, index) ; 
+      weightPt     = GetParticlePtWeight(fPrimaryMom2.Pt(), 221, genName, index, cen) ;
     }
     else if(GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCOtherDecay))
     {
@@ -8111,7 +8111,7 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCPi0Decay) )
           fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 111, GetMC(),ok, momLabel);        
         
-        weightPt = GetParticlePtWeight(fPrimaryMom2.Pt(), 111, genName, index) ; 
+        weightPt = GetParticlePtWeight(fPrimaryMom2.Pt(), 111, genName, index, cen) ;
       }
       else if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEta)  ||
                 GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) )
@@ -8120,11 +8120,11 @@ void  AliAnaPhoton::MakeAnalysisFillAOD()
         if ( GetMCAnalysisUtils()->CheckTagBit(tag,AliMCAnalysisUtils::kMCEtaDecay) )
           fPrimaryMom2 = GetMCAnalysisUtils()->GetMotherWithPDG(mcLabel, 221, GetMC(),ok, momLabel);        
         
-        weightPt = GetParticlePtWeight(fPrimaryMom2.Pt(), 221, genName, index) ; 
+        weightPt = GetParticlePtWeight(fPrimaryMom2.Pt(), 221, genName, index, cen) ;
       }
       else
       {
-        weightPt = GetParticlePtWeight(fPrimaryMom.Pt(), pdg, genName, index) ; 
+        weightPt = GetParticlePtWeight(fPrimaryMom.Pt(), pdg, genName, index, cen) ;
       }
       
       if ( egen > 0.1 ) eRecoRes = (ener-egen) / egen;

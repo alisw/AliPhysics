@@ -8,6 +8,7 @@
 #include <TString.h>
 #include "AliEventCuts.h"
 #include "AliExternalBDT.h"
+#include "AliVTrack.h"
 #include "AliAODMCParticle.h"
 
 class AliPIDResponse;
@@ -40,6 +41,8 @@ struct MiniLambda {
 
 struct MiniK0s {
   Double32_t pt;
+  Double32_t ptPos;
+  Double32_t ptNeg;
   Double32_t eta;
   Double32_t mass;
   Double32_t ct;
@@ -54,6 +57,8 @@ struct MiniK0s {
   unsigned char tpcClV0Pos;
   unsigned char tpcClV0Neg;
   unsigned char centrality;
+  bool hasTOFpos;
+  bool hasTOFneg;
   bool hasTOFhit;
   bool hasITSrefit;
 };
@@ -300,6 +305,7 @@ private:
   float Eta2y(float pt, float m, float eta) const;
   int WhichBDT(double ct);
   void FindWDLambdaMother(AliAODMCParticle *track);
+  bool HasTOF(AliVTrack *track);
 
 
   /// \cond CLASSDEF

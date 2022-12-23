@@ -771,9 +771,10 @@ Pair_number= NumJet-1;
                         if(MI>=0){
                         if(((DetLowRJetsList.At(w) == Jet_genlowR->ClosestJet()))&&(iLowRIndex_det[MI]==w)) {
                                  pt_Hdet = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(MI)))->Pt();
+                                
                                 if((pt_low<0)||(pt_high<0))continue;
-                                 DeltaPt_det = pt_Hdet -pt_Ldet;
-
+                        if(DetjetCont2->GetRhoParameter())pt_Hdet = pt_Hdet-DetjetCont2->GetRhoVal() * (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(MI)))->Area();
+                                DeltaPt_det = pt_Hdet -pt_Ldet;
                         //        histname = TString::Format("ResponseMatrix_pt_R%03d",int(Rstep*(i+1)*100)); 
                         //        fHistManager.FillTH2(histname,pt_low,pt_Ldet);
                                  histname = TString::Format("ResponseMatrix_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);

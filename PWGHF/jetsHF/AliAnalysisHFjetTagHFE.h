@@ -196,6 +196,10 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     TH2F *fsubV0AV0Ccos2;  // histogram of cos(2*Delta Psi between V0A and V0C).
     TH2F *fsubV0ATPCcos2;  // histogram of cos(2*Delta Psi between V0A and TPC).
     TH2F *fsubV0CTPCcos2;  // histogram of cos(2*Delta Psi between V0C and TPC).
+    
+    // Background flow subtraction
+    TProfile *fUEv2;
+    TF1 *fUE;
 
     // for yield
     TH2F *fJetPhicos2_ele;    // c
@@ -232,7 +236,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     TH1F *fOutPlane_Hadjet;     //
     TH2F *fInPlane_Hadjet_2D;   //
     TH2F *fOutPlane_Hadjet_2D;  //
-
+    TH2F *fHistJetBGflow;
 
 
     TH1F *fHistMultCent;  //!

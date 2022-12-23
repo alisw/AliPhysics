@@ -258,8 +258,8 @@ public:
   virtual Int_t          GetEventMixBin(Int_t iCen, Int_t iVz, Int_t iRP);
   
   virtual Double_t       GetEventWeight()                  const { return GetReader()->GetEventWeight()      ; }
-  virtual Double_t       GetParticlePtWeight(Float_t pt, Int_t pdg, TString genName, Int_t igen) 
-    const { return (GetReader()->GetWeightUtils())->GetParticlePtWeight(pt, pdg, genName, igen)  ; }
+  virtual Double_t       GetParticlePtWeight(Float_t pt, Int_t pdg, TString genName, Int_t igen, Int_t cen)
+    const { return (GetReader()->GetWeightUtils())->GetParticlePtWeight(pt, pdg, genName, igen, cen)  ; }
   
   virtual void           SetNZvertBin(Int_t n = 1 )              { fNZvertBin = n ; if(n < 1) fNZvertBin = 1 ; } /// Number of bins for vertex position
   virtual void           SetNRPBin   (Int_t n = 1 )              { fNrpBin    = n ; if(n < 1) fNrpBin    = 1 ; } /// Number of bins in reaction plain

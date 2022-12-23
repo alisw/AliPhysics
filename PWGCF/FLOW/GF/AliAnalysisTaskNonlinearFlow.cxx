@@ -768,7 +768,7 @@ void AliAnalysisTaskNonlinearFlow::NotifyRun() {
 //______________________________________________________________________________
 void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 {
-  bootstrap_value = rand.Integer(30);
+  // bootstrap_value = rand.Integer(30);
 
   // Check if it can pass the trigger
   //..apply physics selection
@@ -2653,6 +2653,20 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
     fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
   }
 
+  if (fPeriod.EqualTo("LHC15o_pass2")) {
+	int currentRun = fAOD->GetRunNumber();
+	if (currentRun == 245729 ||
+		currentRun == 245731 ||
+		currentRun == 245752 ||
+		currentRun == 245759 ||
+		currentRun == 245766 ||
+		currentRun == 245775 ||
+		currentRun == 245785 ||
+		currentRun == 245793) {
+		return kFALSE;
+	}
+  }
+
 
   if(!fEventCuts.AcceptEvent(inEv)) return false;
 
@@ -2691,6 +2705,8 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
   // Vertex Z
   const Double_t aodVtxZ = vtx->GetZ();
   if(TMath::Abs(aodVtxZ) > 10) return kFALSE;
+
+  bootstrap_value = (((int)(aodVtxZ * 233)) % 30 + 30) % 30;
   return kTRUE;
 }
 

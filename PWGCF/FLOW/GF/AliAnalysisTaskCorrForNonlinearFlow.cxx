@@ -174,6 +174,7 @@ ClassImp(AliAnalysisTaskCorrForNonlinearFlow)
 		hITSclusters(0),
 		hChi2(0),
 		fBootstrapStat(true),
+		fUsePhiStarCut(kTRUE),
 		fUseFMDcut(kTRUE),
 		fFMDcutapar0(1.64755),
 		fFMDcutapar1(119.602),
@@ -294,6 +295,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	hITSclusters(0),
 	hChi2(0),
 	fBootstrapStat(true),
+	fUsePhiStarCut(kTRUE),
 	fUseFMDcut(kTRUE),
 	fFMDcutapar0(1.64755),
 	fFMDcutapar1(119.602),
@@ -441,6 +443,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	hITSclusters(0),
 	hChi2(0),
 	fBootstrapStat(true),
+	fUsePhiStarCut(kTRUE),
 	fUseFMDcut(kTRUE),
 	fFMDcutapar0(1.64755),
 	fFMDcutapar1(119.602),
@@ -514,27 +517,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 	// fCentralityDis = new TH1F("fCentralityDis", "centrality distribution; centrality; Counts", 100, 0, 100);
 	// fListOfObjects->Add(fCentralityDis);
 
-    fEtaAssDisBefore = new TH1D("hEtaAssDisBefore", "eta distribution", 1000, -10, 10);
-    fListOfObjects->Add(fEtaAssDisBefore);
-    fPtAssDisBefore = new TH1D("hPtAssDisBefore", "pt distribution", 100, 0, 5);
-    fListOfObjects->Add(fPtAssDisBefore);
-    fEtaTriDisBefore = new TH1D("hEtaTriDisBefore", "eta distribution", 1000, -10, 10);
-    fListOfObjects->Add(fEtaTriDisBefore);
-    fPtTriDisBefore = new TH1D("hPtTriDisBefore", "pt distribution", 100, 0, 5);
-    fListOfObjects->Add(fPtTriDisBefore);
-
-    fEtaAssDis = new TH1D("hEtaAssDis", "eta distribution", 1000, -10, 10);
-    fListOfObjects->Add(fEtaAssDis);
-    fPtAssDis = new TH1D("hPtAssDis", "pt distribution", 100, 0, 5);
-    fListOfObjects->Add(fPtAssDis);
-    fEtaTriDis = new TH1D("hEtaTriDis", "eta distribution", 1000, -10, 10);
-    fListOfObjects->Add(fEtaTriDis);
-    fPtTriDis = new TH1D("hPtTriDis", "pt distribution", 100, 0, 5);
-    fListOfObjects->Add(fPtTriDis);
-
-	hFMDAvsV0 = new TH2D("hFMDAvsV0", "FMDA V0A correlation", 100, 0, 100, 100, 0, 100);
-	hFMDCvsV0 = new TH2D("hFMDCvsV0", "FMDC V0C correlation", 100, 0, 100, 100, 0, 100);
-
+    
 	Int_t nSteps = 1;
 	Double_t binning_deta_tpctpc[37] = {-1.8, -1.7, -1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0,  0.1,  0.2,  0.3,  0.4,  0.5, 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5, 1.6, 1.7, 1.8};
 	Double_t binning_deta_tpcfmd[43]={-6.,-5.8, -5.6, -5.4, -5.2, -5.0, -4.8, -4.6, -4.4, -4.2, -4., -3.8, -3.6, -3.4, -3.2, -3., -2.8, -2.6, -2.4, -2.2, -2., -1.8, -1.6, -1.4, -1.2, -1., -0.8, 1., 1.2, 1.4, 1.6, 1.8, 2. , 2.2, 2.4, 2.6, 2.8, 3., 3.2, 3.4, 3.6, 3.8, 4.};
@@ -558,6 +541,62 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 
 	Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
 	const Int_t iBinning[] = {sizeEta,80,sizeOfVtxZbins,sizeOfSamples,sizePtTrig,sizeCent};
+
+    fEtaAssDisBefore = new TH1D("hEtaAssDisBefore", "eta distribution", 1000, -10, 10);
+    fListOfObjects->Add(fEtaAssDisBefore);
+    fPtAssDisBefore = new TH1D("hPtAssDisBefore", "pt distribution", 100, 0, 5);
+    fListOfObjects->Add(fPtAssDisBefore);
+	fPhiAssDisBefore = new TH1D("hEtaPhiAssDisBefore", "eta phi distribution", 80, -TMath::Pi() / 2, TMath::Pi() / 2 * 3);
+    fListOfObjects->Add(fPhiAssDisBefore);
+    fEtaTriDisBefore = new TH1D("hEtaTriDisBefore", "eta distribution", 1000, -10, 10);
+    fListOfObjects->Add(fEtaTriDisBefore);
+    fPtTriDisBefore = new TH1D("hPtTriDisBefore", "pt distribution", 100, 0, 5);
+    fListOfObjects->Add(fPtTriDisBefore);
+	fPhiTriDisBefore = new TH1D("hEtaPhiTriDisBefore", "eta phi distribution", 80, -TMath::Pi() / 2, TMath::Pi() / 2 * 3);
+    fListOfObjects->Add(fPhiTriDisBefore);
+
+
+    fEtaAssDis = new TH1D("hEtaAssDis", "eta distribution", 1000, -10, 10);
+    fListOfObjects->Add(fEtaAssDis);
+    fPtAssDis = new TH1D("hPtAssDis", "pt distribution", 100, 0, 5);
+    fListOfObjects->Add(fPtAssDis);
+	fPhiAssDis = new TH1D("hEtaPhiAssDis", "eta phi distribution", 80, -TMath::Pi() / 2, TMath::Pi() / 2 * 3);
+    fListOfObjects->Add(fPhiAssDis);
+    fEtaTriDis = new TH1D("hEtaTriDis", "eta distribution", 1000, -10, 10);
+    fListOfObjects->Add(fEtaTriDis);
+    fPtTriDis = new TH1D("hPtTriDis", "pt distribution", 100, 0, 5);
+    fListOfObjects->Add(fPtTriDis);
+	fPhiTriDis = new TH1D("hEtaPhiTriDis", "eta phi distribution", 80, -TMath::Pi() / 2, TMath::Pi() / 2 * 3);
+    fListOfObjects->Add(fPhiTriDis);
+
+	hFMDAvsV0 = new TH2D("hFMDAvsV0", "FMDA V0A correlation", 100, 0, 100, 100, 0, 100);
+	hFMDCvsV0 = new TH2D("hFMDCvsV0", "FMDC V0C correlation", 100, 0, 100, 100, 0, 100);
+
+	Int_t inSlotCounter=1;
+	if(fNUA) {
+		if (fPeriod.EqualTo("LHC15oKatarina") ) {
+			fFlowWeightsList = (TList*) GetInputData(inSlotCounter);
+		} else {
+			fFlowWeightsList = (TList*) GetInputData(inSlotCounter);
+		}
+		inSlotCounter++;
+	};
+	if(fNUE) {
+		if (fPeriod.EqualTo("LHC15oKatarina") ) {
+			fFlowPtWeightsList = (TList*) GetInputData(inSlotCounter);
+		} else if (fPeriod.EqualTo("LHC16qt") ||
+				fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
+				fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview")
+				) {
+			fFlowPtWeightsList = (TList*) GetInputData(inSlotCounter);
+			inSlotCounter++;
+			fFlowFeeddownList = (TList*) GetInputData(inSlotCounter);
+			cout << "Got feeddown list" << endl;
+		} else {
+			fFlowPtWeightsList = (TList*) GetInputData(inSlotCounter);
+		}
+		inSlotCounter++;
+	};
 
 	fListOfProfile = new TList();
 	fListOfProfile->SetOwner();
@@ -834,6 +873,8 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
 			Double_t etaTrig = trackTrig->Eta();
 			Double_t chargeTrig = trackTrig->Charge();
 			Double_t trigEff = 1.0; // Efficiency
+            if(fNUA == 1) trigEff *= GetFlowWeightSystematics(trackTrig, fPVz, kRefs);
+            if(fNUE == 1) trigEff *= GetPtWeight(ptTrig, etaTrig, fPVz, fInputEvent->GetRunNumber());
 
 			for (Int_t iAss = 0; iAss < fTracksAss->GetEntriesFast(); iAss++) {
 				AliAODTrack* trackAss = dynamic_cast<AliAODTrack*>(fTracksTrigCharged->At(iAss));
@@ -842,6 +883,8 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
 				Double_t etaAss = trackAss->Eta();
 				Double_t chargeAss = trackAss->Charge();
 				Double_t assEff = 1.0; // Efficiency
+                if(fNUA == 1) assEff *= GetFlowWeightSystematics(trackAss, fPVz, kRefs);
+                if(fNUE == 1) assEff *= GetPtWeight(ptAss, etaAss, fPVz, fInputEvent->GetRunNumber());
 
 				if (trackTrig->GetID() == trackAss->GetID()) {
 					continue;
@@ -856,28 +899,29 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
 				binscont[4] = ptTrig;
 				binscont[5] = NtrksCounter;
 
-				double fMergingCut = 0.02;
+				if (fUsePhiStarCut) {
+					double fMergingCut = 0.02;
 
-				// If etaTrig  - etaAss < 0; Cut from Zuzana
-				if(TMath::Abs(binscont[0]) < fMergingCut){
-					Double_t dPhiStarLow = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 0.8);
-					Double_t dPhiStarHigh = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 2.5);
+					if(TMath::Abs(binscont[0]) < fMergingCut){
+						Double_t dPhiStarLow = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 0.8);
+						Double_t dPhiStarHigh = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 2.5);
 
-					const Double_t kLimit = 3.0*fMergingCut;
+						const Double_t kLimit = 3.0*fMergingCut;
 
-					if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
-						Bool_t bIsBelow = kFALSE;
-						for(Double_t rad(0.8); rad < 2.51; rad+=0.01){
-							Double_t dPhiStar = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, rad);
-							if(TMath::Abs(dPhiStar) < fMergingCut) {
-								bIsBelow = kTRUE;
-								break;
-							}
-						} // end loop radius
-						if(bIsBelow) continue;
-					}
-				} 
-				fhChargedSE->Fill(binscont, 0, 1./(trigEff*assEff));
+						if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
+							Bool_t bIsBelow = kFALSE;
+							for(Double_t rad(0.8); rad < 2.51; rad+=0.01){
+								Double_t dPhiStar = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, rad);
+								if(TMath::Abs(dPhiStar) < fMergingCut) {
+									bIsBelow = kTRUE;
+									break;
+								}
+							} // end loop radius
+							if(bIsBelow) continue;
+						}
+					} 
+				}
+				fhChargedSE->Fill(binscont, 0, trigEff*assEff);
 			} 
 		} // end loop particle pairs
 	} // endif TPC-TPC
@@ -986,6 +1030,11 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 				Double_t etaTrig = trackTrig->Eta();
 				Double_t chargeTrig = trackTrig->Charge();
 
+				Double_t trigEff = 1;
+
+                if(fNUA == 1) trigEff *= GetFlowWeightSystematics(trackTrig, fPVz, kRefs);
+                if(fNUE == 1) trigEff *= GetPtWeight(ptTrig, etaTrig, fPVz, fInputEvent->GetRunNumber());
+
 				for (Int_t iMix = 0; iMix < nMix; iMix++) {
 					TObjArray* mixTracks = pool->GetEvent(iMix);
 					for (Int_t iAss = 0; iAss < mixTracks->GetEntriesFast(); iAss++) {
@@ -996,6 +1045,10 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 						Double_t phiAss = trackAss->Phi();
 						Double_t etaAss = trackAss->Eta();
 						Double_t chargeAss = trackAss->Charge();
+
+						Double_t assEff = 1;
+                        if(fNUA == 1) assEff *= GetFlowWeightSystematics(trackAss, fPVz, kRefs);
+                        if(fNUE == 1) assEff *= GetPtWeight(ptAss, etaAss, fPVz, fInputEvent->GetRunNumber());
 
 						// We should not use this to reject self correlation in mixed event
 						/*
@@ -1013,28 +1066,29 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 						binscont[4] = ptTrig;
 						binscont[5] = NtrksCounter;
 
-						double fMergingCut = 0.02;
+						if (fUsePhiStarCut) {
+						  double fMergingCut = 0.02;
 
-						// If etaTrig  - etaAss < 0; Cut from Zuzana
-						if(TMath::Abs(binscont[0]) < fMergingCut){
-							Double_t dPhiStarLow = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 0.8);
-							Double_t dPhiStarHigh = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 2.5);
+						  if(TMath::Abs(binscont[0]) < fMergingCut){
+						  	Double_t dPhiStarLow = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 0.8);
+						  	Double_t dPhiStarHigh = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, 2.5);
 
-							const Double_t kLimit = 3.0*fMergingCut;
+						  	const Double_t kLimit = 3.0*fMergingCut;
 
-							if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
-								Bool_t bIsBelow = kFALSE;
-								for(Double_t rad(0.8); rad < 2.51; rad+=0.01){
-									Double_t dPhiStar = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, rad);
-									if(TMath::Abs(dPhiStar) < fMergingCut) {
-										bIsBelow = kTRUE;
-										break;
-									}
-								} // end loop radius
-								if(bIsBelow) continue;
-							}
+						  	if(TMath::Abs(dPhiStarLow) < kLimit || TMath::Abs(dPhiStarHigh) < kLimit || dPhiStarLow * dPhiStarHigh < 0 ) {
+						  		Bool_t bIsBelow = kFALSE;
+						  		for(Double_t rad(0.8); rad < 2.51; rad+=0.01){
+						  			Double_t dPhiStar = GetDPhiStar(phiTrig, ptTrig, chargeTrig, phiAss, ptAss, chargeAss, rad);
+						  			if(TMath::Abs(dPhiStar) < fMergingCut) {
+						  				bIsBelow = kTRUE;
+						  				break;
+						  			}
+						  		} // end loop radius
+						  		if(bIsBelow) continue;
+						  	}
+						  }
 						}
-						fhChargedME->Fill(binscont, 0, 1./nMix);
+						fhChargedME->Fill(binscont, 0, trigEff*assEff/nMix);
 					} // end loop Ass
 				} // end loop Mix
 			} // end loop Trig
@@ -1153,6 +1207,8 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 			fPtAssDisBefore->Fill(track->Pt());
 			fEtaTriDisBefore->Fill(track->Eta());
 			fEtaAssDisBefore->Fill(track->Eta());
+			fPhiTriDisBefore->Fill(track->Phi());
+			fPhiAssDisBefore->Fill(track->Phi());
 
 			track->GetXYZ(pos);
 			if (!AcceptAODTrack(track, pos,vtxp)) continue;
@@ -1166,6 +1222,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 				// Fill the QA plot after cuts
 				fPtAssDis->Fill(track->Pt());
 				fEtaAssDis->Fill(track->Eta());
+				fPhiAssDis->Fill(track->Phi());
 			}
 
 			if (pt > fPtMinTrig && pt < fPtMaxTrig) {
@@ -1174,6 +1231,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 				fhTracksTrigCent->Fill(NtrksCounter, fPVz);
 				fPtTriDis->Fill(track->Pt());
 				fEtaTriDis->Fill(track->Eta());
+				fPhiTriDis->Fill(track->Phi());
 			}
 		}
 	} else if (anaType.EqualTo("TPCFMD")) {
@@ -1185,6 +1243,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 
 			fPtTriDisBefore->Fill(track->Pt());
 			fEtaTriDisBefore->Fill(track->Eta());
+			fPhiTriDisBefore->Fill(track->Phi());
 
 			track->GetXYZ(pos);
 			if (!AcceptAODTrack(track, pos,vtxp)) continue;
@@ -1195,6 +1254,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 				fTracksTrigCharged->Add(track);
 			    fPtTriDisBefore->Fill(track->Pt());
 			    fEtaTriDisBefore->Fill(track->Eta());
+			    fPhiTriDisBefore->Fill(track->Phi());
 				fNofTracksTrig++; // number of trigger tracks in the event
 				fhTracksTrigCent->Fill(NtrksCounter, fPVz);
 			}
@@ -1223,6 +1283,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 				if (mostProbableN > 0) {
 					fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
 					fEtaAssDis->Fill(eta, mostProbableN);
+					fPhiAssDis->Fill(phi, mostProbableN);
 				}
 			}
 		} 
@@ -1250,9 +1311,11 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 						// Set the pt to 1.0
 						fhTracksTrigCent->Fill(NtrksCounter, fPVz, mostProbableN);
 						fEtaTriDis->Fill(eta, mostProbableN);
+						fPhiTriDis->Fill(phi, mostProbableN);
 					} else {
 						fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
 						fEtaAssDis->Fill(eta, mostProbableN);
+						fPhiAssDis->Fill(phi, mostProbableN);
 					}
 				}
 			} // end loop phi
@@ -1702,5 +1765,65 @@ void AliAnalysisTaskCorrForNonlinearFlow::NTracksCalculation(AliVEvent* aod) {
 	}
 	// hTracksCorrection2d->Fill(NTracksUncorrected, NTracksCorrected);
 	// hnCorrectedTracks->Fill(NtrksCounter, NTracksCorrected);
+}
+
+//____________________________________________________________________
+double AliAnalysisTaskCorrForNonlinearFlow::GetPtWeight(double pt, double eta, float vz, double runNumber)
+{
+  double binPt = fPtWeightsSystematics->GetXaxis()->FindBin(pt);
+  double eff = fPtWeightsSystematics->GetBinContent(binPt);
+  double error = fPtWeightsSystematics->GetBinError(binPt);
+  double weight = 1;
+  //..take into account error on efficiency: randomly get number from gaussian distribution of eff. where width = error
+  if((eff < 0.03) || ((error/eff) > 0.1)) error = 0.00001;
+  if((eff < 0.03)) return 1;
+
+  TRandom3 r(0);
+  double efficiency = 0;
+  efficiency = r.Gaus(eff, error);
+  weight = 1./efficiency; //..taking into account errors
+  //weight = 1./eff;
+
+  if (fPeriod.EqualTo("LHC16qt") ||
+      fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
+      fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview") 
+		  ) {
+    double binPt = fPtWeightsFeeddown->GetXaxis()->FindBin(pt);
+    double feeddown = fPtWeightsFeeddown->GetBinContent(binPt);
+    weight /= feeddown;
+  }
+  if (fExtremeEfficiency == 1) {
+    // Soft: Lower region: higher efficiency, lower weight
+    if (pt < 1.5) return weight * 0.98; 
+    if (pt > 1.5) return weight * 1.02; 
+  } else if (fExtremeEfficiency == 2) {
+    if (pt < 1.5) return weight * 1.02;
+    if (pt > 1.5) return weight * 0.98;
+  } else if (fExtremeEfficiency == 3) {
+    if (pt < 1.5) return weight * 0.96; 
+    if (pt > 1.5) return weight * 1.04; 
+  } else if (fExtremeEfficiency == 4) {
+    if (pt < 1.5) return weight * 1.04;
+    if (pt > 1.5) return weight * 0.96;
+  }
+  return weight;
+
+}
+//
+//____________________________________________________________________
+double AliAnalysisTaskCorrForNonlinearFlow::GetWeight(double phi, double eta, double pt, int fRun, bool fPlus, double vz, double runNumber) {
+  TList* weights_list = dynamic_cast<TList*>(fPhiWeight);
+  // cout << "weights_list" << weights_list << endl;
+  // weights_list->ls();
+
+  TList* averaged_list = dynamic_cast<TList*>(weights_list->FindObject("averaged"));
+  // cout << "averaged_list" << averaged_list << endl;
+  TH2D* hPhiWeightRun = dynamic_cast<TH2D*>(averaged_list->FindObject("Charged"));
+  // cout << "hist_list" << hPhiWeightRun << endl;
+
+  double weight = hPhiWeightRun->GetBinContent(hPhiWeightRun->GetXaxis()->FindBin(phi),
+      hPhiWeightRun->GetYaxis()->FindBin(eta));
+  // , hPhiWeightRun->GetZaxis()->FindBin(vz));
+  return weight;
 }
 

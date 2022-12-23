@@ -70,6 +70,9 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   Bool_t GetCalculateVsM() const {return this->fCalculateVsM;};  
   void SetShowBinLabelsVsM(Bool_t const sblvm) {this->fShowBinLabelsVsM = sblvm;};
   Bool_t GetShowBinLabelsVsM() const {return this->fShowBinLabelsVsM;};     
+  void SetCalculateVsZDC(Bool_t const cvzdc) {this->fCalculateVsZDC = cvzdc;};
+  Bool_t GetCalculateVsZDC() const {return this->fCalculateVsZDC;};
+  
   // particle weights:
   void SetUsePhiWeights(Bool_t const uPhiW) {this->fUsePhiWeights = uPhiW;};
   Bool_t GetUsePhiWeights() const {return this->fUsePhiWeights;};
@@ -116,6 +119,8 @@ class AliAnalysisTaskMixedHarmonics : public AliAnalysisTaskSE{
   Bool_t fPrintOnTheScreen; // print or not the final results on the screen
   Bool_t fCalculateVsM; // calculate correlators vs multiplicity
   Bool_t fShowBinLabelsVsM; // in histograms holding results vs multiplicity show bin labels in the format M_lowEdge \leq M < M_upperEdge  
+  Bool_t fCalculateVsZDC; // calculate correlators vs ZDC-P energy
+
   // particle weights:
   Bool_t fUseParticleWeights; // use any particle weights
   Bool_t fUsePhiWeights; // use phi weights

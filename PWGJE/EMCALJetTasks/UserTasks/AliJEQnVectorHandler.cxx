@@ -111,6 +111,17 @@ AliJEQnVectorHandler::AliJEQnVectorHandler():
 
     fPhiVsCentrTPC[0]=nullptr;
     fPhiVsCentrTPC[1]=nullptr;
+
+    fOADBzArray_contQx2am = new TObjArray();
+    fOADBzArray_contQy2am = new TObjArray();
+    fOADBzArray_contQx2as = new TObjArray();
+    fOADBzArray_contQy2as = new TObjArray();
+    fOADBzArray_contQx2cm = new TObjArray();
+    fOADBzArray_contQy2cm = new TObjArray();
+    fOADBzArray_contQx2cs = new TObjArray();
+    fOADBzArray_contQy2cs = new TObjArray();
+    fOADBcentArray_contTPCposEta = new TObjArray();
+    fOADBcentArray_contTPCnegEta = new TObjArray();
 }
 
 //________________________________________________________________
@@ -196,6 +207,17 @@ AliJEQnVectorHandler::AliJEQnVectorHandler(int calibType, int normMeth, int harm
 
     fPhiVsCentrTPC[0]=nullptr;
     fPhiVsCentrTPC[1]=nullptr;
+
+    fOADBzArray_contQx2am = new TObjArray();
+    fOADBzArray_contQy2am = new TObjArray();
+    fOADBzArray_contQx2as = new TObjArray();
+    fOADBzArray_contQy2as = new TObjArray();
+    fOADBzArray_contQx2cm = new TObjArray();
+    fOADBzArray_contQy2cm = new TObjArray();
+    fOADBzArray_contQx2cs = new TObjArray();
+    fOADBzArray_contQy2cs = new TObjArray();
+    fOADBcentArray_contTPCposEta = new TObjArray();
+    fOADBcentArray_contTPCnegEta = new TObjArray();
 
     // Load OADB information from file during constructor
     bool LoadedCalibrations = LoadOADBCalibrations();
@@ -367,7 +389,7 @@ bool AliJEQnVectorHandler::LoadOADBCalibrations() {
             AliWarning(Form("OADB object fqxa%dm is not available in the file\n", fHarmonic));
             return false;
         }
-        fOADBzArray_contQx2am.push_back(contQx2am);
+        fOADBzArray_contQx2am->Add(contQx2am);
 
         // Mean Qy correction
         AliOADBContainer* contQy2am = nullptr;
@@ -379,7 +401,7 @@ bool AliJEQnVectorHandler::LoadOADBCalibrations() {
             AliWarning(Form("OADB object fqya%dm is not available in the file\n", fHarmonic));
             return false;
         }
-        fOADBzArray_contQy2am.push_back(contQy2am);
+        fOADBzArray_contQy2am->Add(contQy2am);
 
         // Sigma Qx correction
         AliOADBContainer* contQx2as = nullptr;
@@ -391,7 +413,7 @@ bool AliJEQnVectorHandler::LoadOADBCalibrations() {
             AliWarning(Form("OADB object fqxa%ds is not available in the file\n", fHarmonic));
             return false;
         }
-        fOADBzArray_contQx2as.push_back(contQx2as);
+        fOADBzArray_contQx2as->Add(contQx2as);
 
         // Sigma Qy correction
         AliOADBContainer* contQy2as = nullptr;
@@ -403,7 +425,7 @@ bool AliJEQnVectorHandler::LoadOADBCalibrations() {
             AliWarning(Form("OADB object fqya%ds is not available in the file\n", fHarmonic));
             return false;
         }
-        fOADBzArray_contQy2as.push_back(contQy2as);
+        fOADBzArray_contQy2as->Add(contQy2as);
 
         // V0 C-side
         // Mean Qx correction
@@ -416,7 +438,7 @@ bool AliJEQnVectorHandler::LoadOADBCalibrations() {
             AliWarning(Form("OADB object fqxc%dm is not available in the file\n", fHarmonic));
             return false;
         }
-        fOADBzArray_contQx2cm.push_back(contQx2cm);
+        fOADBzArray_contQx2cm->Add(contQx2cm);
 
         // Mean Qy correction
         AliOADBContainer* contQy2cm = nullptr;
@@ -428,7 +450,7 @@ bool AliJEQnVectorHandler::LoadOADBCalibrations() {
             AliWarning(Form("OADB object fqyc%dm is not available in the file\n", fHarmonic));
             return false;
         }
-        fOADBzArray_contQy2cm.push_back(contQy2cm);
+        fOADBzArray_contQy2cm->Add(contQy2cm);
 
         // Sigma Qx correction
         AliOADBContainer* contQx2cs = nullptr;
@@ -440,7 +462,7 @@ bool AliJEQnVectorHandler::LoadOADBCalibrations() {
             AliWarning(Form("OADB object fqxc%ds is not available in the file\n", fHarmonic));
             return false;
         }
-        fOADBzArray_contQx2cs.push_back(contQx2cs);
+        fOADBzArray_contQx2cs->Add(contQx2cs);
 
         // Sigma Qy correction
         AliOADBContainer* contQy2cs = nullptr;
@@ -452,7 +474,7 @@ bool AliJEQnVectorHandler::LoadOADBCalibrations() {
             AliWarning(Form("OADB object fqyc%ds is not available in the file\n", fHarmonic));
             return false;
         }
-        fOADBzArray_contQy2cs.push_back(contQy2cs);
+        fOADBzArray_contQy2cs->Add(contQy2cs);
     }
     //load TPC calibrations (not mandatory)
     for(int iCent = 0; iCent < 9; iCent++) {
@@ -460,14 +482,14 @@ bool AliJEQnVectorHandler::LoadOADBCalibrations() {
         if(!contTPCposEta) {
             AliWarning("OADB object fphidistr_poseta (TPC Calibration) is not available in the file\n");
         }
-        fOADBcentArray_contTPCposEta.push_back(contTPCposEta);
+        fOADBcentArray_contTPCposEta->Add(contTPCposEta);
 
         AliOADBContainer* contTPCnegEta = (AliOADBContainer*) fOADBFile->Get(Form("fphidistr_negeta_%d_%d", iCent*10, (iCent+1)*10));
         if(!contTPCnegEta) {
             AliWarning("OADB object fphidistr_negeta (TPC Calibration) is not available in the file\n");
             fWeightsTPCNegEta[iCent] = nullptr;
         }
-        fOADBcentArray_contTPCnegEta.push_back(contTPCnegEta);
+        fOADBcentArray_contTPCnegEta->Add(contTPCnegEta);
     }
     return true;
 }
@@ -1236,8 +1258,8 @@ bool AliJEQnVectorHandler::OpenInfoCalbration()
         AliOADBContainer* contQx2am = 0;
         // If we do not have z-vertex differential objects, then only the first index is 
         // in the OADBContainer array
-        if (fV0CalibZvtxDiff) contQx2am = fOADBzArray_contQx2am[iZvtx];
-        else contQx2am = fOADBzArray_contQx2am[0];
+        if (fV0CalibZvtxDiff) contQx2am = (AliOADBContainer* ) fOADBzArray_contQx2am->At(iZvtx);
+        else contQx2am = (AliOADBContainer* ) fOADBzArray_contQx2am->At(0);
         if(!contQx2am) {
             AliWarning(Form("OADB object fqxa%dm is not available\n", fHarmonic));
             return false;
@@ -1249,8 +1271,8 @@ bool AliJEQnVectorHandler::OpenInfoCalbration()
         fQx2mV0A[iZvtx] = ((TH1D*) contQx2am->GetObject(fRun));
         
         AliOADBContainer* contQy2am = 0;
-        if (fV0CalibZvtxDiff) contQy2am = fOADBzArray_contQy2am[iZvtx];
-        else contQy2am = fOADBzArray_contQy2am[0];
+        if (fV0CalibZvtxDiff) contQy2am = (AliOADBContainer* ) fOADBzArray_contQy2am->At(iZvtx);
+        else contQy2am = (AliOADBContainer* ) fOADBzArray_contQy2am->At(0);
         if(!contQy2am) {
             AliWarning(Form("OADB object fqya%dm is not available\n", fHarmonic));
             return false;
@@ -1262,8 +1284,8 @@ bool AliJEQnVectorHandler::OpenInfoCalbration()
         fQy2mV0A[iZvtx] = ((TH1D*) contQy2am->GetObject(fRun));
         
         AliOADBContainer* contQx2as = 0;
-        if (fV0CalibZvtxDiff) contQx2as = fOADBzArray_contQx2as[iZvtx];
-        else contQx2as = fOADBzArray_contQx2as[0];
+        if (fV0CalibZvtxDiff) contQx2as = (AliOADBContainer* ) fOADBzArray_contQx2as->At(iZvtx);
+        else contQx2as = (AliOADBContainer* ) fOADBzArray_contQx2as->At(0);
         if(!contQx2as) {
             AliWarning(Form("OADB object fqxa%ds is not available\n", fHarmonic));
             return false;
@@ -1275,8 +1297,8 @@ bool AliJEQnVectorHandler::OpenInfoCalbration()
         fQx2sV0A[iZvtx] = ((TH1D*) contQx2as->GetObject(fRun));
         
         AliOADBContainer* contQy2as = 0;
-        if (fV0CalibZvtxDiff) contQy2as = fOADBzArray_contQy2as[iZvtx];
-        else contQy2as = fOADBzArray_contQy2as[0];
+        if (fV0CalibZvtxDiff) contQy2as = (AliOADBContainer* ) fOADBzArray_contQy2as->At(iZvtx);
+        else contQy2as = (AliOADBContainer* ) fOADBzArray_contQy2as->At(0);
         if(!contQy2as) {
             AliWarning(Form("OADB object fqya%ds is not available\n", fHarmonic));
             return false;
@@ -1288,8 +1310,8 @@ bool AliJEQnVectorHandler::OpenInfoCalbration()
         fQy2sV0A[iZvtx] = ((TH1D*) contQy2as->GetObject(fRun));
         
         AliOADBContainer* contQx2cm = 0;
-        if (fV0CalibZvtxDiff) contQx2cm = fOADBzArray_contQx2cm[iZvtx];
-        else contQx2cm = fOADBzArray_contQx2cm[0];
+        if (fV0CalibZvtxDiff) contQx2cm = (AliOADBContainer* ) fOADBzArray_contQx2cm->At(iZvtx);
+        else contQx2cm = (AliOADBContainer* ) fOADBzArray_contQx2cm->At(0);
         if(!contQx2cm) {
             AliWarning(Form("OADB object fqxc%dm is not available\n", fHarmonic));
             return false;
@@ -1301,8 +1323,8 @@ bool AliJEQnVectorHandler::OpenInfoCalbration()
         fQx2mV0C[iZvtx] = ((TH1D*) contQx2cm->GetObject(fRun));
         
         AliOADBContainer* contQy2cm = 0;
-        if (fV0CalibZvtxDiff) contQy2cm = fOADBzArray_contQy2cm[iZvtx];
-        else contQy2cm = fOADBzArray_contQy2cm[0];
+        if (fV0CalibZvtxDiff) contQy2cm = (AliOADBContainer* ) fOADBzArray_contQy2cm->At(iZvtx);
+        else contQy2cm = (AliOADBContainer* ) fOADBzArray_contQy2cm->At(0);
         if(!contQy2cm) {
             AliWarning(Form("OADB object fqyc%dm is not available\n", fHarmonic));
             return false;
@@ -1314,8 +1336,8 @@ bool AliJEQnVectorHandler::OpenInfoCalbration()
         fQy2mV0C[iZvtx] = ((TH1D*) contQy2cm->GetObject(fRun));
 
         AliOADBContainer* contQx2cs = 0;
-        if (fV0CalibZvtxDiff) contQx2cs = fOADBzArray_contQx2cs[iZvtx];
-        else contQx2cs = fOADBzArray_contQx2cs[0];
+        if (fV0CalibZvtxDiff) contQx2cs = (AliOADBContainer* ) fOADBzArray_contQx2cs->At(iZvtx);
+        else contQx2cs = (AliOADBContainer* ) fOADBzArray_contQx2cs->At(0);
         if(!contQx2cs) {
             AliWarning(Form("OADB object fqxc%ds is not available\n", fHarmonic));
             return false;
@@ -1327,8 +1349,8 @@ bool AliJEQnVectorHandler::OpenInfoCalbration()
         fQx2sV0C[iZvtx] = ((TH1D*) contQx2cs->GetObject(fRun));
         
         AliOADBContainer* contQy2cs = nullptr;
-        if (fV0CalibZvtxDiff) contQy2cs = fOADBzArray_contQy2cs[iZvtx];
-        else contQy2cs = fOADBzArray_contQy2cs[0];
+        if (fV0CalibZvtxDiff) contQy2cs = (AliOADBContainer* ) fOADBzArray_contQy2cs->At(iZvtx);
+        else contQy2cs = (AliOADBContainer* ) fOADBzArray_contQy2cs->At(0);
         if(!contQy2cs) {
             AliWarning(Form("OADB object fqyc%ds is not available\n", fHarmonic));
             return false;
@@ -1346,7 +1368,7 @@ bool AliJEQnVectorHandler::OpenInfoCalbration()
     //load TPC calibrations (not mandatory)
     for(int iCent = 0; iCent < 9; iCent++) {
         AliOADBContainer* contTPCposEta = 0;
-        contTPCposEta = fOADBcentArray_contTPCposEta[iCent];
+        contTPCposEta = (AliOADBContainer* ) fOADBcentArray_contTPCposEta->At(iCent);
         if(!contTPCposEta) {
             AliWarning("OADB object fphidistr_poseta (TPC Calibration) is not available\n");
             fWeightsTPCPosEta[iCent] = nullptr;
@@ -1362,7 +1384,7 @@ bool AliJEQnVectorHandler::OpenInfoCalbration()
         }
 
         AliOADBContainer* contTPCnegEta = 0;
-        contTPCnegEta = fOADBcentArray_contTPCnegEta[iCent];
+        contTPCnegEta = (AliOADBContainer* ) fOADBcentArray_contTPCnegEta->At(iCent);
         if(!contTPCnegEta) {
             AliWarning("OADB object fphidistr_negeta (TPC Calibration) is not available in the file\n");
             fWeightsTPCNegEta[iCent] = nullptr;
