@@ -220,7 +220,7 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
             }
     }
 
-    hEventCount = new TH1D("hEventCount", "; centrality;;", 6, 0, 6);
+    hEventCount = new TH1D("hEventCount", "; centrality;;", 7, 0, 7);
 	fListOfObjects->Add(hEventCount);
 
 	hMult = new TH1F("hMult", ";number of tracks; entries", nn, xbins);
@@ -435,6 +435,20 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	float v0Centr = 0;
 	float cl1Centr = 0;
 	float cl0Centr = 0;
+	
+	if(fPeriod.EqualTo("LHC18qr_pass3")){
+		//check kCentral and kSemiCentral Triggers for pass3
+		Bool_t CentralSelected = false;
+		Bool_t SemiCentralSelected = false;
+		CentralSelected = (fSelectMask&AliVEvent::kCentral)&(cent<=10);
+		SemiCentralSelected = (fSelectMask&AliVEvent::kSemiCentral)&(cent>=30)&(cent<=50);
+
+		//if no trigger pass
+		if(!(CentralSelected||SemiCentralSelected))return;
+	}
+
+	hEventCount->GetXaxis()->SetBinLabel(6,"kCentral for PbPb_18qr");
+	hEventCount->Fill(5.5);
 
 	fCentralityDis->Fill(cent);
 	fCurrCentrality = cent;
@@ -466,8 +480,8 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 		AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, true);
 	} else AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
 
-	hEventCount->GetXaxis()->SetBinLabel(6,"after AnalyzeAOD");
-	hEventCount->Fill(5.5);
+	hEventCount->GetXaxis()->SetBinLabel(7,"after AnalyzeAOD");
+	hEventCount->Fill(6.5);
 
     PostData(1, fListOfObjects);                          // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
@@ -1031,7 +1045,7 @@ double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, d
 	else if(fCurrCentrality>=50 && fCurrCentrality<60)IntCent=6;
 	else if(fCurrCentrality>=60)IntCent=7;
 	//For PbPb, Only have Cent0 in NUE
-	if(fPeriod.EqualTo("LHC15o"))IntCent=0;
+	if(fPeriod.EqualTo("LHC15o")||fPeriod.EqualTo("LHC15o_pass2")||fPeriod.EqualTo("LHC18qr_pass3"))IntCent=0;
 	//Pt Weight is extract from Efficiency
 	if(fCurrSystFlag==0)
 	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d",IntCent));
