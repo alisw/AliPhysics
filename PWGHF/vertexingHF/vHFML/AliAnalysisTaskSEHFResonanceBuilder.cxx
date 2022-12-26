@@ -24,6 +24,7 @@
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
 #include "AliAODRecoCascadeHF.h"
+#include "AliRDHFCuts.h"
 #include "AliRDHFCutsD0toKpi.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
@@ -94,6 +95,10 @@ void AliAnalysisTaskSEHFResonanceBuilder::LocalInit()
 {
     // Initialization
 
+    fRDCuts->SetUseCentrality(AliRDHFCuts::kCentV0M);
+    fRDCuts->SetMinCentrality(fCentMin);
+    fRDCuts->SetMaxCentrality(fCentMax);
+
     switch (fDecChannel)
     {
         case kD0toKpi:
@@ -122,6 +127,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::LocalInit()
 //________________________________________________________________________
 void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
 {
+    fRDCuts->SetUseCentrality(AliRDHFCuts::kCentV0M);
+    fRDCuts->SetMinCentrality(fCentMin);
+    fRDCuts->SetMaxCentrality(fCentMax);
 
     if (fInvMassResoPiMin.size() != fInvMassResoPiMax.size())
         AliFatal("Different size of fInvMassResoPiMin and fInvMassResoPiMax");
@@ -209,6 +217,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
     //Counter for Normalization
     fCounter = new AliNormalizationCounter("NormalizationCounter");
     fCounter->Init();
+    fCounter->SetStudyMultiplicity(true, 1.);
     PostData(3, fCounter);
 
     //Loading of ML models
@@ -454,7 +463,13 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
 
     fHistNEvents->Fill(3); // count event
 
-    fCounter->StoreEvent(fAOD, fRDCuts, fReadMC);
+    float centrality = -9999.;
+    AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
+    if(multSelection) {
+        centrality = multSelection->GetMultiplicityPercentile("V0M");
+    }
+
+    fCounter->StoreEvent(fAOD, fRDCuts, fReadMC, std::round(centrality*10000)); // fill also multiplicity
 
     bool isEvSel = fRDCuts->IsEventSelected(fAOD);
 
@@ -475,11 +490,6 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
 
     TClonesArray *arrayMC = nullptr;
     AliAODMCHeader *mcHeader = nullptr;
-
-    float centrality = -999.;
-    AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
-    if(multSelection)
-        centrality = multSelection->GetMultiplicityPercentile("V0M");
 
     // load MC particles
     if (fReadMC)
