@@ -222,7 +222,7 @@ Bool_t AliCSTrackCuts::IsTrackAccepted(AliVTrack *trk) {
     }
 
     /* get some values needed for histograms filling */
-    Float_t dca[2], bCov[3];
+    Float_t dca[2]{0.0f, 0.0f}, bCov[3]{0.0f, 0.0f, 0.0f};
     if (trk->IsA() == AliESDtrack::Class()) {
       ttrk->GetImpactParameters(dca,bCov);
     }
@@ -238,8 +238,7 @@ Bool_t AliCSTrackCuts::IsTrackAccepted(AliVTrack *trk) {
         dca[1] = pos[1];
       }
       else {
-        dca[0] = 0.0;
-        dca[1] = 0.0;
+        aodt->GetImpactParameters(dca, bCov);
       }
     }
 
@@ -437,14 +436,17 @@ Bool_t AliCSTrackCuts::AcceptTrackType(AliVTrack *trk, AliVTrack *&ttrk) {
 
     if(!aodt->TestFilterBit(fAODFilterBits)) {
       accepted = kFALSE;
-    }
-    else if (fAODHandling) {
-      /* process additional AOD cuts over the filter bits */
-      if (!(aodt->GetTPCchi2perCluster() < fAODTPCChi2)) {
+    } else {
+      /* the track is accepted from the standard FB perspective */
+      if (fAODHandling) {
+        /* process additional AOD cuts over the filter bits */
+        if (!(aodt->GetTPCchi2perCluster() < fAODTPCChi2)) {
+          accepted = kFALSE;
+        }
+      }
+      if (!PassTPCClustersCutAOD(aodt)) {
         accepted = kFALSE;
       }
-    }
-    else {
       /* the track is accepted, check special handling depending on the cut */
       switch (fParameters[kTrackTypeCutParam]) {
       case 5: /* special handling for TPC only tracks to constrain to the SPD vertex */
@@ -1450,6 +1452,55 @@ void AliCSTrackCuts::PrintTPCClustersCut() const {
     default:
       AliError(Form("Wrong TPC cluster cut code %d stored", fParameters[kTPCClsCutParam]));
   }
+}
+
+Bool_t AliCSTrackCuts::PassTPCClustersCutAOD(AliAODTrack* aodt)
+{
+  bool pass = true;
+
+  auto tpccls = [](auto t, float lim) {
+    if (t->GetTPCNcls() > lim)
+      return false;
+    return true;
+  };
+  auto tpcrows = [&](auto t, float lim, float ofc) {
+    if (aodt->GetTPCCrossedRows() > lim)
+      return false;
+    else if (aodt->GetTPCNclsF() > 0 ? aodt->GetTPCCrossedRows() / aodt->GetTPCNclsF() > ofc : true)
+      return false;
+    return true;
+  };
+  switch (fParameters[kTPCClsCutParam]) {
+    case 0: // as standard for selected tracks in data period
+      /* do nothing */
+      break;
+    case 1: // min 70 clusters
+      pass = pass && tpccls(aodt, 79);
+      break;
+    case 2: // min 80 clusters
+      pass = pass && tpccls(aodt, 80);
+      break;
+    case 3: // min 100
+      pass = pass && tpccls(aodt, 100);
+      break;
+    case 4: // min 50 crossed rows, min 60% crossed rows over findable clusters
+      pass = pass && tpcrows(aodt, 50, 0.6);
+      break;
+    case 5: // min 70 crossed rows, min 70% crossed rows over findable clusters
+      pass = pass && tpcrows(aodt, 70, 0.7);
+      break;
+    case 6: // min 70 crossed rows, min 80% crossed rows over findable clusters
+      pass = pass && tpcrows(aodt, 70, 0.8);
+      break;
+    case 7: // min 70 crossed rows, min 90% crossed rows over findable clusters
+      pass = pass && tpcrows(aodt, 70, 0.9);
+      break;
+    case 9: // disable it
+      break;
+    default:
+      AliError(Form("TPC cluster cut code %d not supported", fParameters[kTPCClsCutParam]));
+  }
+  return pass;
 }
 
 /// Configures the track DCA cut
