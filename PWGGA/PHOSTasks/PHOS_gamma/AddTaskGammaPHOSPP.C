@@ -36,9 +36,13 @@ AliAnalysisTaskGammaPHOSPP* AddTaskGammaPHOSPP( Bool_t isMC = kFALSE,
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task, 0 , mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task, 1, mgr->CreateContainer("Data",  THashList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task, 2, mgr->CreateContainer("Data2", THashList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    // in the end, this macro returns a pointer to your task. this will be convenient later on
-    // when you will run your analysis in an analysis train on grid
+
+  AliAnalysisDataContainer *coutput1 =
+    mgr->CreateContainer("Data", THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaPHOSPP",AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutput2 =
+    mgr->CreateContainer("Data2", THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaPHOSPP",AliAnalysisManager::GetCommonFileName()));
+
+    mgr->ConnectOutput(task, 1, coutput1);
+    mgr->ConnectOutput(task, 2, coutput2);
     return task;
 }
