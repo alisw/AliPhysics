@@ -438,13 +438,14 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	
 	if(fPeriod.EqualTo("LHC18qr_pass3")){
 		//check kCentral and kSemiCentral Triggers for pass3
-		Bool_t CentralSelected = false;
-		Bool_t SemiCentralSelected = false;
-		CentralSelected = (fSelectMask&AliVEvent::kCentral)&(cent<=10);
-		SemiCentralSelected = (fSelectMask&AliVEvent::kSemiCentral)&(cent>=30)&(cent<=50);
-
-		//if no trigger pass
-		if(!(CentralSelected||SemiCentralSelected))return;
+		if((fSelectMask&AliVEvent::kCentral) && cent>10) {
+			PostData(1,fListOfObjects);
+			return; 
+		}; //printf("Returnning from kCent case\n");
+  		if((fSelectMask&AliVEvent::kSemiCentral) && (cent<30 || cent>50)) {
+			PostData(1,fListOfObjects);
+			return; 
+		}; //printf("Returning from kSC case\n");
 	}
 
 	hEventCount->GetXaxis()->SetBinLabel(6,"kCentral for PbPb_18qr");
