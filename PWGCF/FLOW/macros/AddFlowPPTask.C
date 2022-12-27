@@ -175,6 +175,9 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 			else if (fPeriod.EqualTo("LHC15o_pass2")){
 				inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/WeightsPbPb15o_pass2.root");
 			}
+			else if (fPeriod.EqualTo("LHC18qr_pass3")){
+				inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/WeightsPbPb18qr_pass3.root");
+			}
 			else if (fPeriod.EqualTo("LHC17")) {
 	            task->SetUsePeriodWeigths(true);
 				inNUA = TFile::Open("alien:///alice/cern.ch/user/v/vvislavi/Weights/pp_NUA/Weights_pp17.root");
@@ -270,6 +273,9 @@ AliAnalysisTaskFlowPPTask* AddFlowPPTask(
 			}
 			else if(fPeriod.EqualTo("LHC15o_pass2")){
 				inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/Efficiency_LHC20j6a_wSyst.root");
+			}
+			else if(fPeriod.EqualTo("LHC18qr_pass3")){
+				inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/Efficiency_LHC20e3a_wSyst.root");
 			}
 			// p-p Dataset
 			else{

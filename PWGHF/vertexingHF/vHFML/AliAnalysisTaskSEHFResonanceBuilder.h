@@ -136,6 +136,8 @@ public:
         fInvMassResoLaMin = minMassLa; fInvMassResoLaMax = maxMassLa;
     }
 
+    void SetCentralityInterval(double centMin, double centMax) { fCentMin=centMin; fCentMax=centMax; }
+
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
     virtual void LocalInit();
@@ -182,6 +184,9 @@ private:
     TList *fListCuts = nullptr;                                                           /// list of cuts
     AliRDHFCuts *fRDCuts = nullptr;                                                       /// Cuts for Analysis
 
+    double fCentMin = -1.;                                                                /// minimum centrality (percentile)
+    double fCentMax = 101.;                                                               /// maximum centrality (percentile)
+
     // ML application
     bool fApplyML = false;                                                                /// flag to enable ML application
     bool fMultiClass = false;                                                             /// flag to enable multi-class models (Bkg, Prompt, FD)
@@ -219,7 +224,7 @@ private:
     std::vector<float> fInvMassResoLaMax{1.5};                                            /// minimum invariant mass values for HF resonance (in case of lambda combination)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 13); /// AliAnalysisTaskSE for production of HF resonance trees
+    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 14); /// AliAnalysisTaskSE for production of HF resonance trees
                                                /// \endcond
 };
 
