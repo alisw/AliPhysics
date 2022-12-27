@@ -94,6 +94,7 @@ private:
   Bool_t                             SetEtaCut(Int_t etacode);
   Bool_t                             SetITSClustersCut(Int_t ITSclscode);
   Bool_t                             SetTPCClustersCut(Int_t TPCclscode);
+  Bool_t PassTPCClustersCutAOD(AliAODTrack* aodt);
   Bool_t                             SetDCACut(Int_t dcacode);
   Bool_t                             SetPtCut(Int_t ptcode);
 
