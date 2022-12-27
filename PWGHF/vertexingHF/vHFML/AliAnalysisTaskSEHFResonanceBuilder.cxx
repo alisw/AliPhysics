@@ -469,7 +469,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
         centrality = multSelection->GetMultiplicityPercentile("V0M");
     }
 
-    fCounter->StoreEvent(fAOD, fRDCuts, fReadMC, std::round(centrality*10000)); // fill also multiplicity
+    int nTracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fAOD, -1., 1.);
+    fCounter->StoreEvent(fAOD, fRDCuts, fReadMC, nTracklets); // fill also multiplicity for INEL>0
 
     bool isEvSel = fRDCuts->IsEventSelected(fAOD);
 
