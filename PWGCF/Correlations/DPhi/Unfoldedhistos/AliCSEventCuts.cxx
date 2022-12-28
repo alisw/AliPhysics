@@ -360,6 +360,7 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
 
   /* vertex cut */
   fVertexZ = GetVertexZ(fInputEvent);
+  fMagField = fInputEvent->GetMagneticField();
   if (fCutsEnabledMask.TestBitNumber(kVertexCut)) {
     if (!fgIsMConlyTruth) {
       if (GetNumberOfVertexContributors(fInputEvent) < 1) {
@@ -1810,10 +1811,12 @@ Double_t AliCSEventCuts::GetVertexZ(AliVEvent *event) const {
 
   if (vtx != NULL){
     vertexZ = vtx->GetZ();
+    fVertex = vtx;
   }
   else {
     if (vtxSPD != NULL) {
       vertexZ = vtxSPD->GetZ();
+      fVertex = vtxSPD;
     }
   }
   return vertexZ;

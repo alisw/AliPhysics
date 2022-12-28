@@ -24,6 +24,7 @@
 class TClonesArray;
 class AliInputEventHandler;
 class AliMCEventHandler;
+class AliVVertex;
 
 class AliCSAnalysisCutsBase : public TNamed {
 public:
@@ -265,9 +266,15 @@ public:
                                 /// A new event is coming
                                 /// Pure virtual function
   virtual void                  NotifyEvent() = 0;
-  static void                   NotifyRunGlobal();
-                                /// Prints the activated cuts mask
-                                /// \param opt the print options
+  static void NotifyRunGlobal();
+  /// Get the vertex object
+  /// \return the event vertex object for the whole cuts complex
+  static const AliVVertex* GetVertex() { return fVertex; }
+  /// Get the magnetic field
+  /// \return the event magnetic field for the whole cuts complex
+  static Double_t GetMagField() { return fMagField; }
+  /// Prints the activated cuts mask
+  /// \param opt the print options
   virtual void                  Print(Option_t *opt = "") const { fCutsActivatedMask.Print(opt); }
 
   Bool_t                        InitializeCutsFromCutString(const TString cutSelectionString);
@@ -326,22 +333,24 @@ private:
   static TString                fgOnTheFlyProduction;   ///< the on the fly MC production name
   static ProdPeriods            fgDataPeriod;           ///< the global period of ongoing analysis
   static ProdPeriods            fgAnchorPeriod;         ///< the anchor period, different from #fgDataPeriod in case of MC data
-  Int_t                         fNParams;               ///< the number of cuts parameters
-  char                         *fCutsString;            ///< the cuts parameters associated string
-protected:
-  Int_t                         fNCuts;                 ///< the number of cuts
-  QALevel                       fQALevel;               ///< the level of the QA histograms output
-                                /// the external values for each of the cuts parameters
-  Int_t                        *fParameters;            //[fNParams]
-  TBits                         fCutsEnabledMask;       ///< the mask of enabled cuts
-  TBits                         fCutsActivatedMask;     ///< the mask of cut activated for the ongoing event
-  ProdPeriods                   fDataPeriod;            ///< the current period under analysis. Occasionally could be different from the global period
-  static EnergyValue            fgEnergy;               ///< the collision energy for the analysis period
-  static Bool_t                 fgIsMC;                 ///< MC flag from production information
-  static Bool_t                 fgIsOnTheFlyMC;         ///< on the fly MC flag from configuration
-  static Bool_t                 fgIsMConlyTruth;        ///< fast MC flag (only kinematics) from production information
-  static AliInputEventHandler  *fgInputHandler;         ///< the input handler for the current ongoing analysis
-private:
+  Int_t fNParams;                                       ///< the number of cuts parameters
+  char* fCutsString;                                    ///< the cuts parameters associated string
+ protected:
+  static const AliVVertex* fVertex;            ///< the vertex \f$z\f$ coordinate, unique for the whole cuts complex
+  static Double_t fMagField;                   ///< the magnetic field intensity, unique for the whole cuts complex
+  Int_t fNCuts;                                ///< the number of cuts
+  QALevel fQALevel;                            ///< the level of the QA histograms output
+                                               /// the external values for each of the cuts parameters
+  Int_t* fParameters;                          //[fNParams]
+  TBits fCutsEnabledMask;                      ///< the mask of enabled cuts
+  TBits fCutsActivatedMask;                    ///< the mask of cut activated for the ongoing event
+  ProdPeriods fDataPeriod;                     ///< the current period under analysis. Occasionally could be different from the global period
+  static EnergyValue fgEnergy;                 ///< the collision energy for the analysis period
+  static Bool_t fgIsMC;                        ///< MC flag from production information
+  static Bool_t fgIsOnTheFlyMC;                ///< on the fly MC flag from configuration
+  static Bool_t fgIsMConlyTruth;               ///< fast MC flag (only kinematics) from production information
+  static AliInputEventHandler* fgInputHandler; ///< the input handler for the current ongoing analysis
+ private:
   static AliInputEventHandler  *fgMCHandler;            ///< MC handler for the current ongoing analysis
 protected:
   static Bool_t                 fgIsESD;                ///< kTRUE if data format is ESD, kFALSE if AOD

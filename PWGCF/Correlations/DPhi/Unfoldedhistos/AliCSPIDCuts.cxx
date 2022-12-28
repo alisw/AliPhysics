@@ -158,7 +158,8 @@ void AliCSPIDCuts::NotifyEvent() {
 /// \param ttrk the track to analyze whether it is recognized as the target or not
 /// \return kTRUE if the track is recognized, kFALSE otherwise
 ///
-Bool_t AliCSPIDCuts::IsTrackAccepted(AliVTrack *ttrk) {
+Bool_t AliCSPIDCuts::IsTrackAccepted(AliVTrack* ttrk, float*)
+{
   /* just to be sure */
   if (ttrk == NULL) return kFALSE;
 
@@ -314,7 +315,6 @@ Bool_t AliCSPIDCuts::IsTrackAccepted(AliVTrack *ttrk) {
   }
   return accepted;
 }
-
 
 /// Check whether the true track associated to the passed track is accepted by the PID cuts
 /// \param trk the track to analyze whether its associated true track is accepted or not

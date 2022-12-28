@@ -32,15 +32,16 @@ public:
                                 /// Pure virtual function
   virtual void                  NotifyRun() = 0;
 
-                                /// Is the track accepted by the set of cuts?
-                                /// Pure virtual function
-                                /// \param trk the track to be accepted or rejected
-                                /// \return kTRUE if the track is accepted kFALSE otherwise
-  virtual Bool_t                IsTrackAccepted(AliVTrack *trk) = 0;
-                                /// Is the corresponding true track accepted by the set of cuts?
-                                /// Pure virtual function
-                                /// \param trk the track whose corresponding true track is to be accepted or rejected
-                                /// \return kTRUE if the associated true track is accepted kFALSE otherwise
+  /// Is the track accepted by the set of cuts?
+  /// Pure virtual function
+  /// \param trk the track to be accepted or rejected
+  /// \param dca the track DCA
+  /// \return kTRUE if the track is accepted kFALSE otherwise
+  virtual Bool_t IsTrackAccepted(AliVTrack* trk, float* dca) = 0;
+  /// Is the corresponding true track accepted by the set of cuts?
+  /// Pure virtual function
+  /// \param trk the track whose corresponding true track is to be accepted or rejected
+  /// \return kTRUE if the associated true track is accepted kFALSE otherwise
   virtual Bool_t                IsTrueTrackAccepted(AliVTrack *trk) = 0;
                                 /// Is the true track accepted by the set of cuts?
                                 /// Pure virtual function

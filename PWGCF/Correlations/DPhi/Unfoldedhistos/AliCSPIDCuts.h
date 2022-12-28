@@ -79,7 +79,7 @@ public:
   virtual void                       InitCuts(const char *name = NULL);
   virtual void                       NotifyRun();
   virtual void                       NotifyEvent();
-  virtual Bool_t                     IsTrackAccepted(AliVTrack *trk);
+  virtual Bool_t IsTrackAccepted(AliVTrack* trk, float*);
   virtual Bool_t                     IsTrueTrackAccepted(AliVTrack *trk);
   virtual Bool_t                     IsTrueTrackAccepted(Int_t itrk);
 

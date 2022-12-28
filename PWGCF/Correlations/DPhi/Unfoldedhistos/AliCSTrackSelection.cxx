@@ -353,10 +353,40 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
   /* initialize the mask of activated cuts */
   fCutsActivatedMask->ResetAllBits();
 
+  /* let's get the DCA at this level because it will be latter used */
+  bool gooddca = true;
+  float dca[2]{0.0f, 0.0f}, bCov[3]{0.0f, 0.0f, 0.0f};
+  if (trk->IsA() == AliESDtrack::Class()) {
+    trk->GetImpactParameters(dca, bCov);
+  } else {
+    AliAODTrack* aodt = dynamic_cast<AliAODTrack*>(trk);
+    float pos[3] = {0.0f, 0.0f, 0.0f};
+    if (aodt->GetPosition(pos)) {
+      /* we got a DCA */
+      dca[0] = pos[0];
+      dca[1] = pos[1];
+    } else {
+      /* the track was not constrained to the PV */
+      double dcap[2]{0.0f, 0.0f}, bCovp[3]{0.0f, 0.0f, 0.0f};
+      AliExternalTrackParam etp;
+      etp.CopyFromVTrack(aodt);
+      if (!etp.PropagateToDCA(AliCSAnalysisCutsBase::GetVertex(), AliCSAnalysisCutsBase::GetMagField(), 3.0, dcap, bCovp)) {
+        /* wrong propagation to DCA */
+        gooddca = false;
+      } else if (bCovp[0] <= 0 || bCovp[2] <= 0) {
+        /* wrong DCA resolution */
+        gooddca = false;
+      } else {
+        dca[0] = dcap[0];
+        dca[1] = dcap[1];
+      }
+    }
+  }
+
   /* Check first the inclusive set of track cuts */
   for (Int_t ix = 0; ix < fInclusiveTrackCuts.GetEntriesFast(); ix++) {
 
-    Bool_t cutaccepted = ((AliCSTrackCutsBase *) fInclusiveTrackCuts[ix])->IsTrackAccepted(trk);
+    Bool_t cutaccepted = ((AliCSTrackCutsBase*)fInclusiveTrackCuts[ix])->IsTrackAccepted(trk, dca);
     /* if track is not accepted the cut is activated */
     fCutsActivatedMask->SetBitNumber(ix,!cutaccepted);
     inclusivetrack = inclusivetrack || cutaccepted;
@@ -365,7 +395,7 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
   /* now the inclusive set of pid cuts */
   for (Int_t ix = 0; ix < fInclusivePIDCuts.GetEntriesFast(); ix++) {
 
-    Bool_t cutaccepted = ((AliCSTrackCutsBase *) fInclusivePIDCuts[ix])->IsTrackAccepted(trk);
+    Bool_t cutaccepted = ((AliCSTrackCutsBase*)fInclusivePIDCuts[ix])->IsTrackAccepted(trk, dca);
     /* if track is not accepted the cut is activated */
     fCutsActivatedMask->SetBitNumber(ix+fInclusiveTrackCuts.GetEntriesFast(),!cutaccepted);
     inclusivepid = inclusivepid || cutaccepted;
@@ -373,14 +403,14 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
 
   /* and now the exclusive ones */
   for (Int_t ix = 0; ix < fExclusiveCuts.GetEntriesFast(); ix++) {
-    Bool_t cutaccepted = ((AliCSTrackCutsBase *) fExclusiveCuts[ix])->IsTrackAccepted(trk);
+    Bool_t cutaccepted = ((AliCSTrackCutsBase*)fExclusiveCuts[ix])->IsTrackAccepted(trk, dca);
     /* if track is accepted the cut is activated */
     fCutsActivatedMask->SetBitNumber(ix+fInclusiveTrackCuts.GetEntriesFast()+fInclusivePIDCuts.GetEntriesFast(),cutaccepted);
     exclusive = exclusive || cutaccepted;
   }
 
   /* now decide if accepted or not */
-  accepted = inclusivetrack && inclusivepid && !exclusive;
+  accepted = gooddca && inclusivetrack && inclusivepid && !exclusive;
 
   if (fQALevel > AliCSAnalysisCutsBase::kQALevelNone) {
     /* let's fill the histograms */
@@ -482,29 +512,6 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
         }
       }
     }
-
-    /* get some values needed for histograms filling */
-    Float_t dca[2], bCov[3];
-    if (trk->IsA() == AliESDtrack::Class()) {
-      trk->GetImpactParameters(dca,bCov);
-    }
-    else {
-      /* TODO: if the track is constrained this needs to be considered */
-      /* the selected tracks get a DCA of 0.0. Implement GetDCA from   */
-      /* AliDielectronVarManager but it will require access to the     */
-      /* event object                                                  */
-      AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(trk);
-      Float_t pos[3];
-      if (aodt->GetPosition(pos)) {
-        dca[0] = pos[0];
-        dca[1] = pos[1];
-      }
-      else {
-        dca[0] = 0.0;
-        dca[1] = 0.0;
-      }
-    }
-
 
     /* we now need to consider the potential constrained track */
     AliVTrack *ttrk = trk;
