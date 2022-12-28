@@ -248,6 +248,7 @@ void AliAnalysisTaskGammaPHOSPP::UserExec(Option_t *)  // Main loop, called for 
 //_______________________________________________________________________
 void AliAnalysisTaskGammaPHOSPP::FinishTaskOutput() // Terminate
 {
+  GammaAcceptance();
   GammaEfficiencies();
   CutEfficiencies();
 }
@@ -296,6 +297,9 @@ Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *event)
   fVtx5[2] = aodVertex5->GetZ();
 
   FillHistogram("hZvertex", aodVertex5->GetZ());
+  FillHistogram("hSPDvertex", aodVertexSPD->GetZ());
+  FillHistogram("hDistSPDTrackvertex", TMath::Abs(aodVertex5->GetZ() - aodVertexSPD->GetZ()));
+  FillHistogram("hTrackvsSPDVertices", aodVertexSPD->GetZ(), aodVertex5->GetZ());
   if (TMath::Abs(aodVertex5->GetZ()) < 10.) fEventVtxZ10cm = kTRUE; 
   if (!fEventVtxZ10cm) return kFALSE;
     else FillHistogram("hSelEvents", 5); //interaction vertex within 10 cm from the center
@@ -303,8 +307,8 @@ Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *event)
   if (event->IsPileupFromSPD()) {
     fEventPileup = kTRUE;
     FillHistogram("hNPileupVtx", event->GetNumberOfPileupVerticesSPD());
-    for (Int_t puVtx = 0;  puVtx < fEvent->GetNumberOfPileupVerticesSPD(); puVtx++) {
-      Double_t dZpileup = aodVertexSPD->GetZ() - fEvent->GetPileupVertexSPD(puVtx)->GetZ();
+    for (Int_t puVtx = 0;  puVtx < event->GetNumberOfPileupVerticesSPD(); puVtx++) {
+      Double_t dZpileup = aodVertexSPD->GetZ() - event->GetPileupVertexSPD(puVtx)->GetZ();
       FillHistogram("hZPileupVtx", dZpileup);
     }
   }
@@ -317,7 +321,7 @@ Bool_t AliAnalysisTaskGammaPHOSPP::AcceptEvent(AliAODEvent *event)
   if (trigClasses.Contains("CINT1C")) fnCINT1C++;
   if (trigClasses.Contains("CINT1-E")) fnCINT1E++;
 
-  ULong64_t trigmask = event->GetTriggerMask();
+  // ULong64_t trigmask = event->GetTriggerMask();
   fEventV0AND = fTriggerAnalysis->IsOfflineTriggerFired(event, AliTriggerAnalysis::kV0AND);
 
   if (!fEventV0AND) return kFALSE;
@@ -348,13 +352,13 @@ Int_t AliAnalysisTaskGammaPHOSPP::GetEventCentrality(AliAODEvent *event)
      return  2 ;
   else if (trackMult <= 14)
       return 3 ;
-   else if (trackMult <= 22)
-      return 4 ;
-   else if (trackMult <= 35)
-      return 5 ;
-   else if (trackMult <= 50)
-      return 6 ;
-    else return 7 ;
+  else if (trackMult <= 22)
+     return 4 ;
+  else if (trackMult <= 35)
+     return 5 ;
+  else if (trackMult <= 50)
+     return 6 ;
+  else return 7 ;
 }
 
 //_____________________________________________________________________________
@@ -613,7 +617,7 @@ void AliAnalysisTaskGammaPHOSPP::SelectCluster(AliAODCaloCluster *clu1)
   Double_t pX   = p1.Px();
   Double_t pY   = p1.Py();
 
-  if (pAbs<1.e-10) return ;
+  if (pAbs < 1.e-10) return ;
 
   Double_t kappa = pAbs - TMath::Power(0.135, 2)/4./pAbs;
 
@@ -690,6 +694,11 @@ void AliAnalysisTaskGammaPHOSPP::FillOnePhotonHistograms(AliCaloPhoton *ph)
    if (fMCArray) {
      pdg = ((AliAODMCParticle*)fMCArray->At(ph->GetPrimaryAtVertex())) -> GetPdgCode();
      pdg_naive = ((AliAODMCParticle*)fMCArray->At(ph->GetPrimary())) -> GetPdgCode(); //
+
+     Double_t enMC   = ((AliAODMCParticle*)fMCArray->At(ph->GetPrimary()))->E();
+     Double_t enMeas = ph->E();
+
+     FillHistogram("hEnergyResolution", enMC, enMeas - enMC);
    }
    
    Int_t sm1 = ph->Module();
@@ -979,6 +988,8 @@ Int_t AliAnalysisTaskGammaPHOSPP::GetPrimaryLabelAtVertex(AliVCluster *clu) //Re
       
    Int_t iPrimaryAtVertex = clu->GetLabel();
    AliAODMCParticle *particle0 =  (AliAODMCParticle*) fMCArray->At(iPrimaryAtVertex);
+
+
    
    if (particle0-> IsSecondaryFromMaterial()) {
     // Printf("Secondary from the material, Epart = %f, Eclust = %f" , particle0 ->E(), clu->E());
@@ -1055,7 +1066,7 @@ Int_t AliAnalysisTaskGammaPHOSPP::TestTrack(AliAODTrack *track)
 //_____________________________________________________________________________
 Double_t AliAnalysisTaskGammaPHOSPP::Weight(AliAODMCParticle *particleAtVertex)
 {
-   //mt scaling for Run1 MC production
+   //weighting for Run1 MC production
    if (!fMCArray) 
      return 1.0; // Data
 
@@ -1219,14 +1230,8 @@ Bool_t AliAnalysisTaskGammaPHOSPP::PythiaInfoFromFile(TString file,Float_t & xse
 }
 
 //_____________________________________________________________________________
-//void AliAnalysisTaskGammaPHOSPP::TestMatchingTrackPID(AliCaloPhoton *ph, Double_t pt)
 void AliAnalysisTaskGammaPHOSPP::TestMatchingTrackPID(AliAODCaloCluster *clu1, Double_t pt)
 {
-   //  AliVCluster *clu1 = ph->GetCluster();
-
-   // const Bool_t CPVBit  = ph->IsCPVOK();
-   // const Bool_t DispBit = ph->IsDispOK();
-
     const Bool_t CPVBit = clu1->GetEmcCpvDistance() > fNsigmaCPV;
     const Bool_t DispBit = clu1->Chi2() < fNsigmaDisp;
 
@@ -1493,17 +1498,46 @@ Double_t  AliAnalysisTaskGammaPHOSPP::NonlinearMCCorrection(Double_t en)
    return (en);
 }
 
+//____________________________________________________________________________
+
+void AliAnalysisTaskGammaPHOSPP::GammaAcceptance()
+{
+
+  if (!fMCArray) {
+    return;
+  }
+
+  auto h2 = (TH2F*)fOutputContainer2->FindObject("hGammaMC_true");
+  auto h1 = (TH1D*)h2->ProjectionX("h1", 71, 170);
+  
+  auto h2_1 = (TH2F*)fOutputContainer2->FindObject("hCaloPhotonPdgvsPt_all");
+  auto h1_1 = (TH1D*)h2_1->ProjectionX("h1_1", 4000 + 22 + 1, 4000 + 22 + 1);
+
+  Double_t xbins[2] = {0.3, 20};
+
+  auto htot  = (TH1D*)h1  ->Rebin(1, "htot",  xbins);
+  auto hacc  = (TH1D*)h1_1->Rebin(1, "hacc", xbins); 
+
+  hacc->Divide(hacc, htot,1, 1, "b");
+
+  hacc->SetTitle("#gamma acceptance;;");
+
+  hacc->SetTitle("#gamma acceptance");
+
+  fOutputContainer2->Add(hacc);
+ 
+}
+
 //_____________________________________________________________________________
 void AliAnalysisTaskGammaPHOSPP::GammaEfficiencies()
 {
+
   if (!fMCArray) {
     return;
   }
    
-  printf("Calculating photon detection efficiencies!!!\n");
-  
   TH2F *h2 = (TH2F*)fOutputContainer2->FindObject("hGammaMC_true");
-  TH1D *htot = (TH1D*)h2->ProjectionX("hgamma", 70, 170);
+  TH1D *htot = (TH1D*)h2->ProjectionX("htotal", 71, 170);
   htot->SetTitle("total #gamma-s");
   
   std::vector<std::pair<TString, TString>> cuts;
@@ -1783,6 +1817,8 @@ void AliAnalysisTaskGammaPHOSPP::AddQAHistograms()
   fOutputContainer->Add(new TH1F("hCellEnergy"  ,"Cell energy"            ,5000, 0.,50.));
   fOutputContainer->Add(new TH1F("hClusterEnergy"  ,"Cluster energy"      ,5000, 0.,50.));
 
+  fOutputContainer->Add(new TH2F("hEnergyResolution", "Energy resolution;E_{MC};E_{meas}-E_{MC}", 400, 0, 40, 320, -1.6, 1.6));
+
   for (Int_t imod = 1; imod < 5; imod ++) {
     fOutputContainer->Add(new TH1I(Form("hCellMultEventM%d", imod),Form("PHOS cell multiplicity per event, M%id", imod), 2000, 0, 2000));
     fOutputContainer->Add(new TH1I(Form("hPHOSClusterMultM%d",imod),Form("PHOS cluster multiplicity, M%d",imod), 100, 0, 100));
@@ -1817,7 +1853,10 @@ void AliAnalysisTaskGammaPHOSPP::AddQAHistograms()
   fOutputContainer->Add(new TH1F("hNPileupVtx","Number of SPD pileup vertices", 10, 0., 10.));
   fOutputContainer->Add(new TH1F("hZPileupVtx", "Z pileup", 200, -50., 50.));
 
-  fOutputContainer->Add(new TH1F("hZvertex","Z vertex",200, -50.,+50.));
+  fOutputContainer->Add(new TH1F("hZvertex","Z vertex",400, -20.,+20.));
+  fOutputContainer->Add(new TH1F("hSPDvertex","SPD vertex",400, -20.,+20.));
+  fOutputContainer->Add(new TH1F("hDistSPDTrackvertex","z-distance between track and SPD vertex", 200, 0., 20.));
+  fOutputContainer->Add(new TH2F("hTrackvsSPDVertices", "Track vs SPD vertices;SPDV, cm;TrackV, cm", 400, -20, 20, 400, -20, 20));
   fOutputContainer->Add(new TH1F("hNContributors","N of primary tracks from the primary vertex", 150, 0., 150.));
   fOutputContainer->Add(new TH1F("hTrackMult","Charged track multiplicity", 150, 0., 150.));
 

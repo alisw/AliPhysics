@@ -89,6 +89,7 @@ private:
   
   Double_t Weight(AliAODMCParticle *particle);
 
+  void GammaAcceptance();
   void GammaEfficiencies();
   void CutEfficiencies();
 

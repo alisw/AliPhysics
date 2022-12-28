@@ -5,10 +5,11 @@
 #include <TString.h>
 #include <TList.h>
 #include <THashList.h>
+#include <AliTender.h>
 #endif
 
-AliAnalysisTaskGammaPHOSPP* AddTaskGammaPHOSPP( Bool_t isMC,
-                                                TString name = "name")
+AliAnalysisTaskGammaPHOSPP* AddTaskGammaPHOSPP( Bool_t isMC = kFALSE,
+                                                TString name = "GammaAnalysis")
 {
     // get the manager via the static access member. since it's static, you don't need
     // an instance of the class to call the function
@@ -22,6 +23,7 @@ AliAnalysisTaskGammaPHOSPP* AddTaskGammaPHOSPP( Bool_t isMC,
     if (!mgr->GetInputEventHandler()) {
         return 0x0;
     }
+
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
     //fileName += ":MyTask";      // create a subfolder in the file
@@ -34,9 +36,13 @@ AliAnalysisTaskGammaPHOSPP* AddTaskGammaPHOSPP( Bool_t isMC,
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task, 0 , mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task, 1, mgr->CreateContainer("Data",  THashList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task, 2, mgr->CreateContainer("Data2", THashList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    // in the end, this macro returns a pointer to your task. this will be convenient later on
-    // when you will run your analysis in an analysis train on grid
+
+  AliAnalysisDataContainer *coutput1 =
+    mgr->CreateContainer("Data", THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaPHOSPP",AliAnalysisManager::GetCommonFileName()));
+  AliAnalysisDataContainer *coutput2 =
+    mgr->CreateContainer("Data2", THashList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaPHOSPP",AliAnalysisManager::GetCommonFileName()));
+
+    mgr->ConnectOutput(task, 1, coutput1);
+    mgr->ConnectOutput(task, 2, coutput2);
     return task;
 }
