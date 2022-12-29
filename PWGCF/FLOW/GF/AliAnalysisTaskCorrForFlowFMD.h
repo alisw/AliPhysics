@@ -11,8 +11,8 @@
  *    please aknowledge the author of this code.                          *
  **************************************************************************/
 
-#ifndef AliAnalysisTaskCorrForFlowFMD_H
-#define AliAnalysisTaskCorrForFlowFMD_H
+#ifndef ALIANALYSISTASKCORRFORFLOWFMD_H
+#define ALIANALYSISTASKCORRFORFLOWFMD_H
 
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
