@@ -299,15 +299,14 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     }// loop over particle species ends
 
 
-    if(fDoV0 || fDoPHI){      
+     if(fDoV0 || fDoPHI){      
       for(Int_t i(4); i < 7; i++){//4 (K0s), 5 (Lambda), 6 (Phi)
       if(!fDoV0 && i > 3 && i < 6) continue;
       if(!fDoPHI && i > 5) continue;
-        fhV0Counter[i-4] = new TH1D(Form("fhCounter_%s",pidName[i].Data()),"V0 Counter",10,0,10);
+        fhV0Counter[i-4] = new TH1D(Form("fhV0Counter_%s",pidName[i].Data()),"V0 Counter",10,0,10);
         fOutputListCharged->Add(fhV0Counter[i-4]);
       }
     }
-
 
     if(fDoPID || fDoV0 || fDoPHI){
       // PIDresponse initialization
