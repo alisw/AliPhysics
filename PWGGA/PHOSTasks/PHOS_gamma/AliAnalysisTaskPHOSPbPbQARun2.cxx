@@ -167,7 +167,6 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
 
   if (!event) {
     Printf("ERROR: Could not retrieve event");
-    PostData(1, fOutputContainer);
     return;
   }
 
@@ -399,9 +398,6 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
     }
   }
   
-
-  // Post output data.
-  PostData(1, fOutputContainer);
   fEventCounter++;
 }
 
