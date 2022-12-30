@@ -52,7 +52,6 @@
 #include "AliPicoTrack.h"
 #include "TLorentzVector.h"
 
-class storagephiclass;
 
 
 class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
@@ -155,7 +154,6 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Int_t                   IdentifyTrack(const AliAODTrack* track) const; // PID
         void                    PrepareV0(); // V0
 	void                    PreparePhi(); // Phi
-	storagephiclass*           MakeMotherPhi(AliAODTrack* part1, AliAODTrack* part2); // Combine two prongs into a mother particle stored in AliPicoTrack object
         Bool_t                  IsV0(const AliAODv0* v0) const; // V0s selection
         Bool_t                  IsK0s(const AliAODv0* v0) const;
         Bool_t                  IsLambda(const AliAODv0* v0) const;
@@ -190,6 +188,9 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         TH2D*                   fhEfficiencyEta[6][8]; //! eta dependent (8 sectors)
         TH2D*                   fHistFMDeta; //! vs PVz
         TH1D*                   fhV0Counter[3]; //!
+        TH1D*                   fhK0sphi; //!
+	TH1D*                   fhLambdaphi; //!
+	TH1D*                   fhPhiphi; //!	   		
         TH1D*                   fhCentCalib; //!
         TH1D*                   fhPT[7]; //!
         TH2D*                   fhPTvsMinv[3]; //!
@@ -296,38 +297,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 17);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 18);
 };
 
-
-class storagephiclass : public TObject {
-public:
- storagephiclass(Double_t pt, Double_t eta, Double_t phi, Int_t charge, Double_t mass)
-   :fPt(pt), fEta(eta), fPhi(phi),fCharge(charge),fMass(mass)  {}
-  virtual ~storagephiclass() {}
-
-  
-    
-     Float_t Pt()          const { return fPt; }
-     Float_t Eta()        const { return fEta; }
-     Float_t Phi()        const { return fPhi; }
-     Int_t Charge()      const { return fCharge; }
-     Double_t M()        const {return fMass;}
-
-
-private:
-  storagephiclass(const storagephiclass&);  // not implemented
-   storagephiclass& operator=(const storagephiclass&);  // not implemented
-  
-  Double_t fPt;
-  Double_t fEta;
-  Double_t fPhi;
-  Int_t fCharge;
-  Double_t fMass;
-
-
-  ClassDef(storagephiclass, 1);
-};
-
- 
 #endif
