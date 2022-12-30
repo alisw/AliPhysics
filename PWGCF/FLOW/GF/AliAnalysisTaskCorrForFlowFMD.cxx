@@ -1,5 +1,7 @@
 /**************************************************************************
- *    Author:       Zuzana Moravcova                                      *
+ *    Author:       Zuzana Moravcova
+ *    Modified by:  Debojit Sarkar
+
  *    Framework for calculating di-hadron correlation                     *
  *    for extraction of v_n{2} coefficients of identified particles       *
  *    including primary identified particles (pi, K, p)                   *
@@ -7,14 +9,17 @@
  *    using TPC-TPC and TPC-FMD correlations.                             *
  *                                                                        *
  *    If used, modified, or distributed,                                  *
- *    please aknowledge the author of this code.                          *
+ *    please aknowledge the author of this code.
  **************************************************************************/
 
+
 #include "AliAnalysisTaskCorrForFlowFMD.h"
+
 
 using namespace std;
 
 ClassImp(AliAnalysisTaskCorrForFlowFMD);
+
 
 AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTaskSE(),
     fAOD(0),
@@ -26,7 +31,10 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fPoolMgr(0),
     fhEventCounter(0),
     fhEventMultiplicity(0),
-    fAnalType(eFMDAFMDC),
+    fhK0sphi(0),
+    fhLambdaphi(0),
+    fhPhiphi(0),
+    fAnalType(eTPCFMDA),
     fColSystem(sPPb),
     fTrigger(AliVEvent::kINT7),
     fIsMC(kFALSE),
@@ -35,6 +43,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fIsHMpp(kFALSE),
     fDoPID(kFALSE),
     fDoV0(kFALSE),
+    fDoPHI(kFALSE),				   
     fUseNch(kFALSE),
     fUseEfficiency(kFALSE),
     fUseFMDcut(kTRUE),
@@ -102,6 +111,8 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fMaxK0Mass(0.56),
     fMinLambdaMass(1.08),
     fMaxLambdaMass(1.15),
+    fMinPhiMass(0.99),
+    fMaxPhiMass(1.07),				   
     fJetParticleLowPt(5.),
     fCentEstimator("V0M"),
     fSystematicsFlag(""),
@@ -123,7 +134,10 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fPoolMgr(0),
     fhEventCounter(0),
     fhEventMultiplicity(0),
-    fAnalType(eFMDAFMDC),
+    fhK0sphi(0),
+    fhLambdaphi(0),
+    fhPhiphi(0),
+    fAnalType(eTPCFMDA),
     fColSystem(sPPb),
     fTrigger(AliVEvent::kINT7),
     fIsMC(kFALSE),
@@ -132,6 +146,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fIsHMpp(kFALSE),
     fDoPID(kFALSE),
     fDoV0(kFALSE),
+    fDoPHI(kFALSE),				   										     
     fUseNch(kFALSE),
     fUseEfficiency(bUseEff),
     fUseFMDcut(kTRUE),
@@ -199,6 +214,8 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fMaxK0Mass(0.56),
     fMinLambdaMass(1.08),
     fMaxLambdaMass(1.15),
+    fMinPhiMass(0.99),
+    fMaxPhiMass(1.07),
     fJetParticleLowPt(5.),
     fCentEstimator("V0M"),
     fSystematicsFlag(""),
@@ -228,7 +245,9 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
 
     if(fAnalType == eFMDAFMDC && fDoPID) { AliWarning("PID on when running FMDA-FMDC. Turning off."); fDoPID = kFALSE; }
     if(fAnalType == eFMDAFMDC && fDoV0) { AliWarning("V0 on when running FMDA-FMDC. Turning off."); fDoV0 = kFALSE; }
-    if(!fDoV0) { fNbinsMinv = 1; }
+    if(fAnalType == eFMDAFMDC && fDoPHI) { AliWarning("Phi reconstruction on when running FMDA-FMDC. Turning off."); fDoPHI = kFALSE; }
+
+    if(!fDoV0 && !fDoPHI) { fNbinsMinv = 1; }
 
     fzVtxBins = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0};
 
@@ -250,50 +269,68 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
       fOutputListCharged->Add(fh2FMDvsV0[i]);
     }
 
-    TString pidName[6] = {"", "_Pion", "_Kaon", "_Proton", "_K0s", "_Lambda"};
+    TString pidName[7] = {"", "_Pion", "_Kaon", "_Proton", "_K0s", "_Lambda", "_Phi"};//0 (charged), 1 (pion), 2 (kaon), 3 (proton), 4 (K0s), 5 (Lambda), 6 (Phi)
     const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
-    const Int_t sizeOfSamples = (Int_t) fNOfSamples;
+    const Int_t sizeOfSamples = (Int_t) fNOfSamples;//for bootstrap
     const Int_t sizeMbins = fNbinsMinv;
-    Int_t binsFMD[] = {10, 10};
-    Int_t binsPID[] = {10, 10, sizePtTrig};
-    Int_t binsV0[] = {10, 10, sizePtTrig, sizeMbins};
-    Double_t min[2] = {fMinK0Mass, fMinLambdaMass};
-    Double_t max[2] = {fMaxK0Mass, fMaxLambdaMass};
-    
+    Int_t binsFMD[] = {10, 10};//zvtx, samplesize 
+    Int_t binsPID[] = {10, 10, sizePtTrig};//zvtx, samplesize, pT_trig
+    Int_t binsV0[] = {10, 10, sizePtTrig, sizeMbins};//zvtx, samplesize, pT_trig, inv_mass (keep it same for V0 and Phi)
+    Double_t min[3] = {fMinK0Mass, fMinLambdaMass, fMinPhiMass};
+    Double_t max[3] = {fMaxK0Mass, fMaxLambdaMass, fMaxPhiMass};
 
-    for(Int_t i(0); i < 6; i++){
+    for(Int_t i(0); i < 7; i++){// loop over particle species - 0 (charged), 1 (pion), 2 (kaon), 3 (proton), 4 (K0s), 5 (Lambda), 6 (Phi)
       if(!fDoPID && i > 0 && i < 4) continue;
-      if(!fDoV0 && i > 3) continue;
+      if(!fDoV0 && i > 3 && i < 6) continue;
+      if(!fDoPHI && i > 5) continue;      
       if(fIsAntiparticleCheck && i == 4) continue;
-      if(fAnalType == eFMDAFMDC) fhTrigTracks[i] = new AliTHn(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s)",pidName[i].Data()), 1, 2, binsFMD);
-      else if(i < 4) fhTrigTracks[i] = new AliTHn(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s)",pidName[i].Data()), 1, 3, binsPID);
-      else if(i > 3) fhTrigTracks[i] = new AliTHn(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s)",pidName[i].Data()), 1, 4, binsV0);
+      //1->stage of filling/processing in ALiTHn
+      if(fAnalType == eFMDAFMDC) fhTrigTracks[i] = new AliTHn(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s)",pidName[i].Data()), 1, 2, binsFMD);//zvtx, samplesize
+      else if(i < 4) fhTrigTracks[i] = new AliTHn(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s)",pidName[i].Data()), 1, 3, binsPID);//zvtx, samplesize, pT_trig
+      else if(i > 3) fhTrigTracks[i] = new AliTHn(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s)",pidName[i].Data()), 1, 4, binsV0);//zvtx, samplesize, pT_trig, inv_mass
       else AliError("This should not happen! There might be a problem with trigher AliTHn!");
-      fhTrigTracks[i]->SetBinLimits(0,-10,10);
-      fhTrigTracks[i]->SetBinLimits(1,0,10);
+      fhTrigTracks[i]->SetBinLimits(0,-10,10);//zvtx
+      fhTrigTracks[i]->SetBinLimits(1,0,10);//samplesize
       fhTrigTracks[i]->SetVarTitle(0, "PVz [cm]");
       fhTrigTracks[i]->SetVarTitle(1, "Sample");
       if(fAnalType != eFMDAFMDC){
-        fhTrigTracks[i]->SetBinLimits(2,fPtBinsTrigCharged.data());
+        fhTrigTracks[i]->SetBinLimits(2,fPtBinsTrigCharged.data());//pT_trig
         fhTrigTracks[i]->SetVarTitle(2, "p_{T} (trig)");
         if(i > 3){
-          fhTrigTracks[i]->SetBinLimits(3,min[i-4],max[i-4]);
+          fhTrigTracks[i]->SetBinLimits(3,min[i-4],max[i-4]);// inv_mass
           fhTrigTracks[i]->SetVarTitle(3, "M_{inv}");
         }
       }
       fOutputListCharged->Add(fhTrigTracks[i]);
-    }
+    }// loop over particle species ends
 
 
-    if(fDoV0){
-      for(Int_t i(0); i < 2; i++){
-        fhV0Counter[i] = new TH1D(Form("fhCounter_%s",pidName[i-4].Data()),"V0 Counter",10,0,10);
-        fOutputListCharged->Add(fhV0Counter[i]);
+    if(fDoV0 || fDoPHI){      
+      for(Int_t i(4); i < 7; i++){//4 (K0s), 5 (Lambda), 6 (Phi)
+      if(!fDoV0 && i > 3 && i < 6) continue;
+      if(!fDoPHI && i > 5) continue;
+        fhV0Counter[i-4] = new TH1D(Form("fhV0Counter_%s",pidName[i].Data()),"V0 Counter",10,0,10);
+        fOutputListCharged->Add(fhV0Counter[i-4]);
       }
     }
 
-    if(fDoPID || fDoV0){
-      // PID response
+ if(fDoV0){
+    fhK0sphi = new TH1D("fhK0sphi","fhK0sphi",200,-2*TMath::Pi(),2*TMath::Pi());
+    fOutputListCharged->Add(fhK0sphi);
+
+    fhLambdaphi = new TH1D("fhLambdaphi","fhLambdaphi",200,-2*TMath::Pi(),2*TMath::Pi());
+    fOutputListCharged->Add(fhLambdaphi);
+ }
+
+  if(fDoPHI){
+    fhPhiphi = new TH1D("fhPhiphi","fhPhiphi",200,-2*TMath::Pi(),2*TMath::Pi());
+    fOutputListCharged->Add(fhPhiphi);
+  }
+
+ 
+
+    if(fDoPID || fDoV0 || fDoPHI){
+      // PIDresponse initialization
       AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
       AliInputEventHandler* inputHandler = (AliInputEventHandler*)mgr->GetInputEventHandler();
       fPIDResponse = inputHandler->GetPIDResponse();
@@ -305,26 +342,40 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
       fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF); // setting TPC + TOF mask
     }
 
-    //mixing
+    //mixing-> poolmanager initialization
     fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins,fCentBins.data(), fNzVtxBins, fzVtxBins.data());
     if (!fPoolMgr) { AliError("Event Pool manager not created!"); return; }
     fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);
 
-    if(!fSkipCorr) CreateTHnCorrelations();
+    if(!fSkipCorr) CreateTHnCorrelations();//create the binning of the final containers based on the correlations between detectors
 
-    for(Int_t i(0); i < 6; i++){
-      if(!fDoPID && i > 0 && i < 4) continue;
-      if(!fDoV0 && i > 3) continue;
-      fhPT[i] = new TH1D(Form("PT%s",pidName[i].Data()), "PT", 1000, 0, 10);
+    for(Int_t i(0); i < 7; i++){// loop over particle species - 0 (charged), 1 (pion), 2 (kaon), 3 (proton), 4 (K0s), 5 (Lambda), 6 (Phi)
+      if(!fDoPID && i > 0 && i < 4) continue; 
+      if(!fDoV0 && i > 3 && i < 6) continue;
+      if(!fDoPHI && i > 5) continue;        
+      fhPT[i] = new TH1D(Form("PT%s",pidName[i].Data()), "PT", 2000, 0, 20);
       fhPT[i]->Sumw2();
       fOutputListCharged->Add(fhPT[i]);
-      if(fDoV0 && i > 3){
-        fhPTvsMinv[i-4] = new TH2D(Form("PT_minv%s",pidName[i].Data()), "PT vs. minv", 1000, 0, 10, sizeMbins, min[i-4],max[i-4]);
+      if(fDoV0  && i > 3 && i<6){
+        fhPTvsMinv[i-4] = new TH2D(Form("PT_minv%s",pidName[i].Data()), "PT vs. minv", 2000, 0, 20, sizeMbins, min[i-4],max[i-4]);
         fhPTvsMinv[i-4]->Sumw2();
         fOutputListCharged->Add(fhPTvsMinv[i-4]);
       }
-      if(!fSkipCorr) break;
+
+      if(fDoPHI  && i > 5){
+        fhPTvsMinv[i-4] = new TH2D(Form("PT_minv%s",pidName[i].Data()), "PT vs. minv", 2000, 0, 20, sizeMbins, min[i-4],max[i-4]);
+        fhPTvsMinv[i-4]->Sumw2();
+        fOutputListCharged->Add(fhPTvsMinv[i-4]);
+      }
+      
+      // if(!fSkipCorr) break;//stop at i=0 (charged) if fSkipCorr= kFALSE (kFALSE = fill the correlation containers for flow estimation)
     }
+
+    //for Phi meson bkg only (like-sign)
+   if(fDoPHI){  
+   fhPTvsMinv_Phi_LS=new TH2D ("fhPTvsMinv_Phi_LS", "fhPTvsMinv_Phi_LS",2000, 0, 20, sizeMbins, min[2],max[2]);
+   fOutputListCharged->Add(fhPTvsMinv_Phi_LS);
+   }
 
     if(fUseEfficiency) {
       fInputListEfficiency = (TList*) GetInputData(1);
@@ -359,23 +410,40 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     }
 
     fSampleIndex = gRandom->Uniform(0,fNOfSamples);
+
+    //use TObjArray to store track info for the correlation construction and fiiling the final AliTHn s
+    
+    //the FMD tracklets
     fTracksAss = new TObjArray;
+
+    //for trigger particles - charged (0)
     fTracksTrig[0] = new TObjArray;
 
+    //for trigger particles - pion(1), kaon(2), proton(3) (extra PID axis)
     if(fDoPID){
       for(Int_t i(1); i < 4; i++){
         fTracksTrig[i] = new TObjArray;
       }
     }
+
+    //for trigger particles - K0s(4), Lambda(5), Phi(6) (for invariant mass binning in the PID axis)
     if(fDoV0){
       for(Int_t i(4); i < 6; i++){
         fTracksTrig[i] = new TObjArray;
       }
     }
 
+    if(fDoPHI){ //for trigger particles - K0s(4), Lambda(5), Phi(6) (for invariant mass binning in the PID axis)
+      fTracksTrig[6] = new TObjArray;//for Phi
+      fTracksTrig_Kaon_Phi = new TObjArray;//for input kaons
+
+    }
+
     if(fUseEfficiency && fColSystem == sPP && (fRunNumber != fAOD->GetRunNumber()) && !AreEfficienciesLoaded()) { return; }
 
     // FMD - V0 correlation event cut
+
+    //for any configuration (data or MC) involving FMD tracklets
     if(fAnalType != eTPCTPC) {
       if(!PrepareFMDTracks()){
         delete fTracksAss;
@@ -385,23 +453,32 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
       }
     }
 
+    //for the reconstructed part (data) (TPC involved correlation including PID)
     if(!fIsTPCgen || fUseNch)  {
       if(!PrepareTPCTracks()){
-        for(Int_t i(0); i < 6; i++){
+	
+	if (fDoPHI && fTracksTrig_Kaon_Phi) delete fTracksTrig_Kaon_Phi;
+	  
+        for(Int_t i(0); i < 7; i++){
           if(!fDoPID && i > 0 && i < 4) continue;
-          if(!fDoV0 && i > 3) continue;
+          if(!fDoV0 && i > 3 && i < 6) continue;
+	  if(!fDoPHI && i > 5) continue;
+
           if(fTracksTrig[i]) delete fTracksTrig[i];
         }
         PostData(1, fOutputListCharged);
         return;
       }
-    }
+    }//end reco part
 
+    //for the MC part (TPC involved correlation including PID)
     if(fIsMC){
       if(!PrepareMCTracks()){
-        for(Int_t i(0); i < 6; i++){
+        for(Int_t i(0); i < 7; i++){
           if(!fDoPID && i > 0 && i < 4) continue;
-          if(!fDoV0 && i > 3) continue;
+	  if(!fDoV0 && i > 3 && i < 6) continue;
+	  if(!fDoPHI && i > 5) continue;
+	  
           if(fTracksTrig[i]) delete fTracksTrig[i];
         }
         PostData(1, fOutputListCharged);
@@ -410,10 +487,18 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     } // end MC
 
     if(!fTracksAss->IsEmpty() && !fSkipCorr){
-      for(Int_t i(0); i < 6; i++){
+
+      if (fDoPHI && fTracksTrig_Kaon_Phi) {//Filled but not needed for the correlation
+	fTracksTrig_Kaon_Phi->Clear();
+        delete fTracksTrig_Kaon_Phi;	
+      }
+    
+      for(Int_t i(0); i < 7; i++){//do correlation and delete the TObjArrays
         if(!fDoPID && i > 0 && i < 4) continue;
-        if(!fDoV0 && i > 3) continue;
-        if(fIsAntiparticleCheck && i == 4) continue;
+	if(!fDoV0 && i > 3 && i < 6) continue;
+	if(!fDoPHI && i > 5) continue;
+	
+	  if(fIsAntiparticleCheck && i == 4) continue;
 
         FillCorrelations(i);
         FillCorrelationsMixed(i);
@@ -426,7 +511,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
     if(fUseEfficiency) fRunNumber = fAOD->GetRunNumber();
 
     fTracksAss->Clear();
-	  delete fTracksAss;
+    delete fTracksAss;
 
     PostData(1, fOutputListCharged);
     return;
@@ -504,7 +589,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsEventSelected()
   return kTRUE;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskCorrForFlowFMD::IsTrackSelected(const AliAODTrack* track) const
+Bool_t AliAnalysisTaskCorrForFlowFMD::IsTrackSelected(const AliAODTrack* track) const //called inside prepareTPC Tracks() once for charged, pi, ka, Pr (default filterbit is 96)
 {
   if(!track->TestFilterBit(fFilterBit)) { return kFALSE; }
   if(track->GetTPCNcls() < fTPCclMin && fFilterBit != 2) { return kFALSE; }
@@ -565,7 +650,7 @@ Double_t AliAnalysisTaskCorrForFlowFMD::GetDPhiStar(Double_t phi1, Double_t pt1,
   return dPhiStar;
 }
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskCorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) const
+Int_t AliAnalysisTaskCorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) const// called inside prepareTPCTracks() once after IsTrackSelected() to identify Pi, Ka Pr
 {
   // checking detector statuses
   Bool_t bIsTPCok = HasTrackPIDTPC(track);
@@ -588,7 +673,7 @@ Int_t AliAnalysisTaskCorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) con
   return retInd;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskCorrForFlowFMD::IsV0(const AliAODv0* v0) const
+Bool_t AliAnalysisTaskCorrForFlowFMD::IsV0(const AliAODv0* v0) const //called inside PrepareV0() once to pre-slecet the V0 candidates thorogh the AliAODV0 loop in the PrepareV0()
 {
   if(!v0) {return kFALSE; }
   if(v0->Pt() < fPtMinTrig || v0->Pt() > fPtMaxTrig) { return kFALSE; }
@@ -627,7 +712,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsV0(const AliAODv0* v0) const
   return kTRUE;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const
+Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const //called inside PrepareV0() once to specifically selecet K0s candidates after preselecting V0 cnadidates through IsV0()
 {
   if(fIsAntiparticleCheck) return kFALSE;
 
@@ -689,14 +774,15 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const
   Double_t binscont[4] = {fPVz, fSampleIndex, v0->Pt(), dMass};
   fhTrigTracks[4]->Fill(binscont,0,1.);
   fTracksTrig[4]->Add(new AliPartSimpleForCorr(v0->Eta(),v0->Phi(),v0->Pt(),dMass));
-  if(fSkipCorr){
+  
     fhPT[4]->Fill(v0->Pt());
     fhPTvsMinv[0]->Fill(v0->Pt(),dMass);
-  }
+    fhK0sphi->Fill(v0->Phi());
+    
   return kTRUE;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const
+Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const //called inside PrepareV0() once to specifically selecet Lambda candidates after preselecting V0 cnadidates through IsV0()
 {
   fhV0Counter[1]->Fill("Input",1);
   Bool_t isL = kFALSE;
@@ -704,9 +790,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const
   // inv. mass window
   Double_t dMassLambda = v0->MassLambda();
   Double_t dMassALambda = v0->MassAntiLambda();
-  if(dMassLambda > fMinLambdaMass && dMassLambda < fMaxLambdaMass) { isL = kTRUE; }
-  if(dMassALambda > fMinLambdaMass && dMassALambda < fMaxLambdaMass) { isAL = kTRUE; }
-  
+  if( dMassLambda > fMinLambdaMass && dMassLambda < fMaxLambdaMass) { isL = kTRUE; }
+  if( dMassALambda > fMinLambdaMass && dMassALambda < fMaxLambdaMass) { isAL = kTRUE; }
   if(!isL && !isAL)  { return kFALSE; }
   fhV0Counter[1]->Fill("Mass OK",1);
 
@@ -765,10 +850,12 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const
   Double_t binscont[4] = {fPVz, fSampleIndex, v0->Pt(), dMass};
   fhTrigTracks[5]->Fill(binscont,0,1.);
   fTracksTrig[5]->Add(new AliPartSimpleForCorr(v0->Eta(),v0->Phi(),v0->Pt(),dMass));
-  if(fSkipCorr){
+  
     fhPT[5]->Fill(v0->Pt());
     fhPTvsMinv[1]->Fill(v0->Pt(),dMass);
-  }
+    fhLambdaphi->Fill(v0->Phi());
+
+  
   return kTRUE;
 }
 //_____________________________________________________________________________
@@ -806,15 +893,131 @@ void AliAnalysisTaskCorrForFlowFMD::PrepareV0()
 
   return;
 }
+//________________________________________________________________________________
+void AliAnalysisTaskCorrForFlowFMD::PreparePhi()
+
+{
+  if(!fTracksTrig_Kaon_Phi) { AliError("Necessary kaon inputs for Phi reconstrction missing, terminating!"); return; }
+
+
+  Int_t iNumKaons = fTracksTrig_Kaon_Phi->GetEntriesFast();//stored in the function PrepareTPCTracks(); get the kaon filled containers from there
+ if(iNumKaons < 2) { return; }
+
+
+// start Phi reconstruction
+  for(Int_t iKaon1(0); iKaon1 < iNumKaons; iKaon1++) {
+    AliAODTrack* kaon1 = dynamic_cast<AliAODTrack*>(fTracksTrig_Kaon_Phi->At(iKaon1));
+    if(!kaon1) { continue; }
+
+  for(Int_t iKaon2(iKaon1+1); iKaon2 < iNumKaons; iKaon2++) {
+    AliAODTrack* kaon2 = dynamic_cast<AliAODTrack*>(fTracksTrig_Kaon_Phi->At(iKaon2));
+    if(!kaon2) { continue; }
+
+
+
+    /* 
+   storagephiclass* mother = MakeMotherPhi(kaon1,kaon2);
+   if(!mother) continue;
+   fhV0Counter[2]->Fill("Input",1);
+    */
+
+    /*
+   // calculating inv. mass
+  Double_t dMass = -999.; 
+  Double_t dE1 = TMath::Sqrt( mom1.Mag2() + TMath::Power(fPDGMass[kKaon],2) );
+  Double_t dE2 = TMath::Sqrt( mom2.Mag2() + TMath::Power(fPDGMass[kKaon],2) );
+
+  Double_t dMassSq = TMath::Power((dE1+dE2),2) - mom.Mag2();
+  if(dMassSq >= 0.) dMass = TMath::Sqrt(dMassSq);
+    */
+
+
+
+   //put the make mother phi class here
+
+  TVector3 mom1 = TVector3( kaon1->Px(), kaon1->Py(), kaon1->Pz() );
+  TVector3 mom2 = TVector3( kaon2->Px(), kaon2->Py(), kaon2->Pz() );
+  TVector3 mom = mom1 + mom2;
+
+  //storagephiclass* copy = new storagephiclass(mom.Pt(),mom.Eta(),dPhi,iCharge,dMass);
+
+
+  // moving phi form [-pi,pi] -> [0,2pi] for consistency with other species
+  Double_t dPhi = mom.Phi() + TMath::Pi();
+
+  Double_t dpT = mom.Pt();
+
+  Double_t dEta = mom.Eta();
+
+  Int_t iCharge = kaon1->Charge() + kaon2->Charge();
+
+
+  if(dpT < fPtMinTrig || dpT > fPtMaxTrig) continue;
+
+  fhV0Counter[2]->Fill("Input",1);
+
+   TLorentzVector L1, L2;
+
+      L1.SetVectM(mom1, 0.493677);//Phi = 1.019455
+      L2.SetVectM(mom2, 0.493677);
+      Double_t dMass = (L1 + L2).M();
+      
+   
+   //Accepted Inv mass range
+   if(dMass < fMinPhiMass || dMass > fMaxPhiMass) continue;
+
+   fhV0Counter[2]->Fill("Mass OK",1);
+
+    TLorentzVector vect;
+    vect.SetPtEtaPhiM(dpT, dEta, mom.Phi(), dMass);//for the mother V0, using PDG mass will create a gaussian distribition of the daughter's added momentum in the mother's rest frame 
+
+    double rap = vect.Rapidity();
+   
+   if( rap > 0.5) continue;//this is same as the K0s and Lambda cases (can we change it?)
+  fhV0Counter[2]->Fill("Rap Phi OK",1);
+
+    // mother (phi) candidate passing all criteria (except for charge)
+
+  if(TMath::Abs(iCharge) == 2) {
+    // like-sign combination (background)
+        fhV0Counter[2]->Fill("Like-Sign",1);
+	fhPTvsMinv_Phi_LS->Fill(dpT,dMass);  
+      }
+
+      if(iCharge == 0) {
+        // opposite-sign combination (signal+background)
+	
+        fhV0Counter[2]->Fill("Unlike-sign",1);
+	Double_t binscont[4] = {fPVz, fSampleIndex, dpT, dMass};
+        fhTrigTracks[6]->Fill(binscont,0,1.);	
+	fTracksTrig[6]->Add(new AliPartSimpleForCorr(dEta,dPhi,dpT,dMass));//dPhi = mom.Phi() + TMath::Pi();
+
+	
+    fhPT[6]->Fill(dpT);
+    fhPTvsMinv[2]->Fill(dpT,dMass);
+
+    fhPhiphi->Fill(dPhi);//dPhi = mom.Phi() + TMath::Pi();
+
+  
+      }
+      
+    } // endfor {iKaon2} : second kaon
+  } // endfor {iKaon1} : first Kaon
+  
+  return;
+
+  
+  }
+
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskCorrForFlowFMD::HasTrackPIDTPC(const AliAODTrack* track) const
+Bool_t AliAnalysisTaskCorrForFlowFMD::HasTrackPIDTPC(const AliAODTrack* track) const //called inside IdentifyTrack(), IsK0s() and IsLambda() for PID purposes
 {
   if(!track || !fPIDResponse) return kFALSE;
   AliPIDResponse::EDetPidStatus pidStatusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track);
   return (pidStatusTPC == AliPIDResponse::kDetPidOk);
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskCorrForFlowFMD::HasTrackPIDTOF(const AliAODTrack* track) const
+Bool_t AliAnalysisTaskCorrForFlowFMD::HasTrackPIDTOF(const AliAODTrack* track) const //called inside IdentifyTrack() only
 {
   if(!track || !fPIDResponse) return kFALSE;
   AliPIDResponse::EDetPidStatus pidStatusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track);
@@ -1240,11 +1443,11 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   const Int_t sizeOfSamples = (Int_t) fNOfSamples;
   const Int_t sizeMbins = fNbinsMinv;
 
-  Double_t min[6] = {0.0, 0.0, 0.0, 0.0, fMinK0Mass, fMinLambdaMass};
-  Double_t max[6] = {2.0, 2.0, 2.0, 2.0, fMaxK0Mass, fMaxLambdaMass};
+  Double_t min[7] = {0.0, 0.0, 0.0, 0.0, fMinK0Mass, fMinLambdaMass, fMinPhiMass};
+  Double_t max[7] = {2.0, 2.0, 2.0, 2.0, fMaxK0Mass, fMaxLambdaMass, fMaxPhiMass};
 
-  TString nameS[6] = {"fhChargedSE", "fhPidSE_Pion", "fhPidSE_Kaon", "fhPidSE_Proton", "fhPidSE_K0s", "fhPidSE_Lambda"};
-  TString nameM[6] = {"fhChargedME", "fhPidME_Pion", "fhPidME_Kaon", "fhPidME_Proton", "fhPidME_K0s", "fhPidME_Lambda"};
+  TString nameS[7] = {"fhChargedSE", "fhPidSE_Pion", "fhPidSE_Kaon", "fhPidSE_Proton", "fhPidSE_K0s", "fhPidSE_Lambda", "fhPidSE_Phi"};
+  TString nameM[7] = {"fhChargedME", "fhPidME_Pion", "fhPidME_Kaon", "fhPidME_Proton", "fhPidME_K0s", "fhPidME_Lambda", "fhPidME_Phi"};
 
   if(fAnalType == eTPCFMDA || fAnalType == eTPCFMDC){
     Double_t binning_detaFMDTPC[]={-6.,-5.8, -5.6, -5.4, -5.2, -5.0, -4.8, -4.6, -4.4, -4.2, -4., -3.8, -3.6, -3.4, -3.2, -3., -2.8, -2.6, -2.4, -2.2, -2., -1.8, -1.6, -1.4, -1.2, -1., -0.8};
@@ -1254,9 +1457,11 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
     Int_t iTrackBin_tpcfmdC[] = {15, 72, 10, sizeOfSamples, sizeMbins, sizePtTrig};
     Int_t nTrackBin_tpcfmd = sizeof(iTrackBin_tpcfmdA) / sizeof(Int_t);
 
-    for(Int_t i(0); i < 6; i++){
-      if(!fDoPID && i > 0 && i < 4) continue;
-      if(!fDoV0 && i > 3) continue;
+    for(Int_t i(0); i < 7; i++){
+      if(!fDoPID && i > 0 && i < 4) continue; 
+      if(!fDoV0 && i > 3 && i < 6) continue;
+      if(!fDoPHI && i > 5) continue;
+      
       if(fIsAntiparticleCheck && i == 4) continue;
 
       if(fAnalType == eTPCFMDA){
@@ -1298,9 +1503,11 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
     Int_t iBinningTPCTPC[] = {32,72,10,sizeOfSamples,sizeMbins,sizePtTrig};
     Int_t nTrackBin_tpctpc = sizeof(iBinningTPCTPC) / sizeof(Int_t);
 
-    for(Int_t i(0); i < 6; i++){
-      if(!fDoPID && i > 0 && i < 4) continue;
-      if(!fDoV0 && i > 3) continue;
+    for(Int_t i(0); i < 7; i++){
+      if(!fDoPID && i > 0 && i < 4) continue; 
+      if(!fDoV0 && i > 3 && i < 6) continue;
+      if(!fDoPHI && i > 5) continue;
+      
       if(fIsAntiparticleCheck && i == 4) continue;
 
       fhSE[i] = new AliTHn(nameS[i], nameS[i], nSteps, nTrackBin_tpctpc, iBinningTPCTPC);
@@ -1315,10 +1522,12 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   } // end TPC - TPC
 
   // all
-  for(Int_t i(0); i < 6; i++){
+  for(Int_t i(0); i < 7; i++){
     if(fAnalType == eFMDAFMDC && i > 0) break;
-    if(!fDoPID && i > 0 && i < 4) continue;
-    if(!fDoV0 && i > 3) continue;
+      if(!fDoPID && i > 0 && i < 4) continue; 
+      if(!fDoV0 && i > 3 && i < 6) continue;
+      if(!fDoPHI && i > 5) continue;
+    
     if(fIsAntiparticleCheck && i == 4) continue;
 
     fhSE[i]->SetBinLimits(2, -10,10);
@@ -1363,20 +1572,27 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
   TObjArray* fTracksJets = nullptr;
   if(fVetoJetEvents) fTracksJets = new TObjArray;
 
-  for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {
+  for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {//track loop starts
       AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
-      if(!track || !IsTrackSelected(track)) { continue; }
+      if(!track || !IsTrackSelected(track)) { continue; }//general track selection
 
       Double_t trackPt = track->Pt();
       if(fVetoJetEvents && trackPt > fJetParticleLowPt) fTracksJets->Add((AliAODTrack*)track);
-      if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {
+      
+      if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {//fiil the Assoc TObjArray
         fNofTracks++;
         if(fAnalType == eFMDAFMDC || fIsTPCgen) continue;
-        if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); // only if associated from TPC
+        if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); 
       }
-      if(fAnalType != eFMDAFMDC){
+
+      
+      if(fAnalType != eFMDAFMDC && !fDoV0){//fiil the Trigger TObjArray in DoPID and DoPHI case as it needs AliAOD TPC tracks (not for AliAODV0 case)
+	
         Double_t trackEta = track->Eta();
-        if(trackPt > fPtMinTrig && trackPt < fPtMaxTrig) {
+	
+	if(fDoPHI)  {if(trackPt < 0.05 || trackPt > 100.0) continue;}//kaon candidates to be used for Phi reconstruction
+	if(fDoPID) { if(trackPt < fPtMinTrig || trackPt > fPtMaxTrig) continue; }//all other candidates
+	
           if(fUseOppositeSidesOnly){
             if(fAnalType == eTPCFMDA && trackEta > 0.0) continue;
             if(fAnalType == eTPCFMDC && trackEta < 0.0) continue;
@@ -1387,6 +1603,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
           fTracksTrig[0]->Add((AliAODTrack*)track);
           fhTrigTracks[0]->Fill(binscont,0,1.);
 
+
+
           if(fDoPID){
             Int_t trackPid = IdentifyTrack(track);
             if(trackPid > 0 && trackPid < 4){
@@ -1396,10 +1614,17 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
               }
               fTracksTrig[trackPid]->Add((AliAODTrack*)track);
               fhTrigTracks[trackPid]->Fill(binscont,0,1.);
-              if(fSkipCorr) fhPT[trackPid]->Fill(trackPt);
+              fhPT[trackPid]->Fill(trackPt);
             }
           }
-        }
+
+	  
+          if(fDoPHI){//store only kaon candidates for Phi-meson reconstruction
+            Int_t trackPid_s = IdentifyTrack(track);//output:  1=pion, 2=kaon, 3=proton
+            if(trackPid_s == 2) fTracksTrig_Kaon_Phi->Add((AliAODTrack*)track);
+}
+
+       
       } // POI from TPC
   } // tracks loop end
 
@@ -1432,6 +1657,10 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
 
   if(fDoV0){
     PrepareV0();
+  }
+
+   if(fDoPHI){
+    PreparePhi();
   }
 
   return kTRUE;
@@ -1651,6 +1880,7 @@ void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){
   printf("\t fIsFMDgen: (Bool_t) %s\n", fIsFMDgen ? "kTRUE" : "kFALSE");
   printf("\t fDoPID: (Bool_t) %s\n", fDoPID ? "kTRUE" : "kFALSE");
   printf("\t fDoV0: (Bool_t) %s\n", fDoV0 ? "kTRUE" : "kFALSE");
+  printf("\t fDoPHI: (Bool_t) %s\n", fDoPHI ? "kTRUE" : "kFALSE");
   printf("\t fUseNch: (Bool_t) %s\n", fUseNch ? "kTRUE" : "kFALSE");
   printf("\t fIsHMpp: (Bool_t) %s\n", fIsHMpp ? "kTRUE" : "kFALSE");
   printf("\t fUseEfficiency: (Bool_t) %s\n",  fUseEfficiency ? "kTRUE" : "kFALSE");
@@ -1675,3 +1905,4 @@ void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){
   printf("\t fFMDacceptanceCut A - lower, upper: (Double_t) %f, %f\n", fFMDAacceptanceCutLower, fFMDAacceptanceCutUpper);
   printf("\t fFMDacceptanceCut C - lower, upper: (Double_t) %f, %f\n", fFMDCacceptanceCutLower, fFMDCacceptanceCutUpper);
 }
+
