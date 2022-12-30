@@ -12,13 +12,13 @@
  *    please aknowledge the author of this code.
  **************************************************************************/
 
+
 #include "AliAnalysisTaskCorrForFlowFMD.h"
 
 
 using namespace std;
 
 ClassImp(AliAnalysisTaskCorrForFlowFMD);
-ClassImp(storagephiclass);
 
 
 AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTaskSE(),
@@ -31,6 +31,9 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fPoolMgr(0),
     fhEventCounter(0),
     fhEventMultiplicity(0),
+    fhK0sphi(0),
+    fhLambdaphi(0),
+    fhPhiphi(0),
     fAnalType(eTPCFMDA),
     fColSystem(sPPb),
     fTrigger(AliVEvent::kINT7),
@@ -131,6 +134,9 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fPoolMgr(0),
     fhEventCounter(0),
     fhEventMultiplicity(0),
+    fhK0sphi(0),
+    fhLambdaphi(0),
+    fhPhiphi(0),
     fAnalType(eTPCFMDA),
     fColSystem(sPPb),
     fTrigger(AliVEvent::kINT7),
@@ -299,7 +305,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     }// loop over particle species ends
 
 
-     if(fDoV0 || fDoPHI){      
+    if(fDoV0 || fDoPHI){      
       for(Int_t i(4); i < 7; i++){//4 (K0s), 5 (Lambda), 6 (Phi)
       if(!fDoV0 && i > 3 && i < 6) continue;
       if(!fDoPHI && i > 5) continue;
@@ -307,6 +313,21 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
         fOutputListCharged->Add(fhV0Counter[i-4]);
       }
     }
+
+ if(fDoV0){
+    fhK0sphi = new TH1D("fhK0sphi","fhK0sphi",200,-2*TMath::Pi(),2*TMath::Pi());
+    fOutputListCharged->Add(fhK0sphi);
+
+    fhLambdaphi = new TH1D("fhLambdaphi","fhLambdaphi",200,-2*TMath::Pi(),2*TMath::Pi());
+    fOutputListCharged->Add(fhLambdaphi);
+ }
+
+  if(fDoPHI){
+    fhPhiphi = new TH1D("fhPhiphi","fhPhiphi",200,-2*TMath::Pi(),2*TMath::Pi());
+    fOutputListCharged->Add(fhPhiphi);
+  }
+
+ 
 
     if(fDoPID || fDoV0 || fDoPHI){
       // PIDresponse initialization
@@ -756,7 +777,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const //called i
   
     fhPT[4]->Fill(v0->Pt());
     fhPTvsMinv[0]->Fill(v0->Pt(),dMass);
-  
+    fhK0sphi->Fill(v0->Phi());
+    
   return kTRUE;
 }
 //_____________________________________________________________________________
@@ -831,6 +853,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const //calle
   
     fhPT[5]->Fill(v0->Pt());
     fhPTvsMinv[1]->Fill(v0->Pt(),dMass);
+    fhLambdaphi->Fill(v0->Phi());
+
   
   return kTRUE;
 }
@@ -889,18 +913,63 @@ void AliAnalysisTaskCorrForFlowFMD::PreparePhi()
     AliAODTrack* kaon2 = dynamic_cast<AliAODTrack*>(fTracksTrig_Kaon_Phi->At(iKaon2));
     if(!kaon2) { continue; }
 
+
+
+    /* 
    storagephiclass* mother = MakeMotherPhi(kaon1,kaon2);
    if(!mother) continue;
    fhV0Counter[2]->Fill("Input",1);
+    */
 
+    /*
+   // calculating inv. mass
+  Double_t dMass = -999.; 
+  Double_t dE1 = TMath::Sqrt( mom1.Mag2() + TMath::Power(fPDGMass[kKaon],2) );
+  Double_t dE2 = TMath::Sqrt( mom2.Mag2() + TMath::Power(fPDGMass[kKaon],2) );
+
+  Double_t dMassSq = TMath::Power((dE1+dE2),2) - mom.Mag2();
+  if(dMassSq >= 0.) dMass = TMath::Sqrt(dMassSq);
+    */
+
+
+
+   //put the make mother phi class here
+
+  TVector3 mom1 = TVector3( kaon1->Px(), kaon1->Py(), kaon1->Pz() );
+  TVector3 mom2 = TVector3( kaon2->Px(), kaon2->Py(), kaon2->Pz() );
+  TVector3 mom = mom1 + mom2;
+
+  //storagephiclass* copy = new storagephiclass(mom.Pt(),mom.Eta(),dPhi,iCharge,dMass);
+
+
+  // moving phi form [-pi,pi] -> [0,2pi] for consistency with other species
+  Double_t dPhi = mom.Phi() + TMath::Pi();
+
+  Double_t dpT = mom.Pt();
+
+  Double_t dEta = mom.Eta();
+
+  Int_t iCharge = kaon1->Charge() + kaon2->Charge();
+
+
+  if(dpT < fPtMinTrig || dpT > fPtMaxTrig) continue;
+
+  fhV0Counter[2]->Fill("Input",1);
+
+   TLorentzVector L1, L2;
+
+      L1.SetVectM(mom1, 0.493677);//Phi = 1.019455
+      L2.SetVectM(mom2, 0.493677);
+      Double_t dMass = (L1 + L2).M();
+      
+   
    //Accepted Inv mass range
-   Double_t dMass = mother->M();
    if(dMass < fMinPhiMass || dMass > fMaxPhiMass) continue;
 
    fhV0Counter[2]->Fill("Mass OK",1);
 
     TLorentzVector vect;
-    vect.SetPtEtaPhiM(mother->Pt(), mother->Eta(), mother->Phi(), mother->M());//for the mother V0, using PDG mass will create a gaussian distribition of the daughter's added momentum in the mother's rest frame 
+    vect.SetPtEtaPhiM(dpT, dEta, mom.Phi(), dMass);//for the mother V0, using PDG mass will create a gaussian distribition of the daughter's added momentum in the mother's rest frame 
 
     double rap = vect.Rapidity();
    
@@ -909,23 +978,26 @@ void AliAnalysisTaskCorrForFlowFMD::PreparePhi()
 
     // mother (phi) candidate passing all criteria (except for charge)
 
-  if(TMath::Abs(mother->Charge()) == 2) {
+  if(TMath::Abs(iCharge) == 2) {
     // like-sign combination (background)
         fhV0Counter[2]->Fill("Like-Sign",1);
-	fhPTvsMinv_Phi_LS->Fill(mother->Pt(),mother->M());  
+	fhPTvsMinv_Phi_LS->Fill(dpT,dMass);  
       }
 
-      if(mother->Charge() == 0) {
+      if(iCharge == 0) {
         // opposite-sign combination (signal+background)
 	
         fhV0Counter[2]->Fill("Unlike-sign",1);
-	Double_t binscont[4] = {fPVz, fSampleIndex, mother->Pt(), mother->M()};
+	Double_t binscont[4] = {fPVz, fSampleIndex, dpT, dMass};
         fhTrigTracks[6]->Fill(binscont,0,1.);	
-	fTracksTrig[6]->Add(new AliPartSimpleForCorr(mother->Eta(),mother->Phi(),mother->Pt(),mother->M()));
+	fTracksTrig[6]->Add(new AliPartSimpleForCorr(dEta,dPhi,dpT,dMass));//dPhi = mom.Phi() + TMath::Pi();
 
 	
-    fhPT[6]->Fill(mother->Pt());
-    fhPTvsMinv[2]->Fill(mother->Pt(),mother->M());
+    fhPT[6]->Fill(dpT);
+    fhPTvsMinv[2]->Fill(dpT,dMass);
+
+    fhPhiphi->Fill(dPhi);//dPhi = mom.Phi() + TMath::Pi();
+
   
       }
       
@@ -937,61 +1009,6 @@ void AliAnalysisTaskCorrForFlowFMD::PreparePhi()
   
   }
 
-
-// ============================================================================
-storagephiclass* AliAnalysisTaskCorrForFlowFMD::MakeMotherPhi(AliAODTrack* part1, AliAODTrack* part2)
-{
-  // Reconstructing mother particle from two prongs and fill its properties.
-  // return ptr to created mother particle
-  // *************************************************************
-
-  if(!part1 || !part2) { return nullptr; }
-
-  // combining momenta
-  
-  TVector3 mom1 = TVector3( part1->Px(), part1->Py(), part1->Pz() );
-  TVector3 mom2 = TVector3( part2->Px(), part2->Py(), part2->Pz() );
-  TVector3 mom = mom1 + mom2;
- 
-
-   Int_t iCharge = part1->Charge() + part2->Charge();
-
-  //Byte_t iCharge = TMath::Abs(part1->Charge() + part2->Charge());
-
-
-  
-  // calculating inv. mass
-  //Double_t dMass = -999.;
-
-    
-    /*
-  Double_t dE1 = TMath::Sqrt( mom1.Mag2() + TMath::Power(fPDGMass[kKaon],2) );
-  Double_t dE2 = TMath::Sqrt( mom2.Mag2() + TMath::Power(fPDGMass[kKaon],2) );
-
-  Double_t dMassSq = TMath::Power((dE1+dE2),2) - mom.Mag2();
-  if(dMassSq >= 0.) dMass = TMath::Sqrt(dMassSq);
-    */
-
-
-
-      TLorentzVector L1, L2;
-
-      L1.SetVectM(mom1, 0.493677);//Phi = 1.019455
-      L2.SetVectM(mom2, 0.493677);
-      Double_t dMass = (L1 + L2).M();
-
-  
-
-  // maving phi form [-pi,pi] -> [0,2pi] for consistency with other species
-  Double_t dPhi = mom.Phi() + TMath::Pi();
-
-  storagephiclass* copy = new storagephiclass(mom.Pt(),mom.Eta(),dPhi,iCharge,dMass);
-
-					    
-   return copy;
-
-  // return new AliPicoTrack(mom.Pt(),mom.Eta(),dPhi,iCharge,0,0,0,0,0,0,dMass);
-}
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskCorrForFlowFMD::HasTrackPIDTPC(const AliAODTrack* track) const //called inside IdentifyTrack(), IsK0s() and IsLambda() for PID purposes
 {
@@ -1555,7 +1572,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
   TObjArray* fTracksJets = nullptr;
   if(fVetoJetEvents) fTracksJets = new TObjArray;
 
-  for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {
+  for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) {//track loop starts
       AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
       if(!track || !IsTrackSelected(track)) { continue; }//general track selection
 
@@ -1569,12 +1586,12 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
       }
 
       
-      if(fAnalType != eFMDAFMDC){//fiil the Trigger TObjArray
+      if(fAnalType != eFMDAFMDC && !fDoV0){//fiil the Trigger TObjArray in DoPID and DoPHI case as it needs AliAOD TPC tracks (not for AliAODV0 case)
 	
         Double_t trackEta = track->Eta();
 	
-	if(fDoPHI)  {if(trackPt < 0.05 || trackPt > 50.0) continue;}//kaon candidates to be used for Phi reconstruction
-	if(!fDoPHI) { if(trackPt < fPtMinTrig || trackPt > fPtMaxTrig) continue; }//all other candidates
+	if(fDoPHI)  {if(trackPt < 0.05 || trackPt > 100.0) continue;}//kaon candidates to be used for Phi reconstruction
+	if(fDoPID) { if(trackPt < fPtMinTrig || trackPt > fPtMaxTrig) continue; }//all other candidates
 	
           if(fUseOppositeSidesOnly){
             if(fAnalType == eTPCFMDA && trackEta > 0.0) continue;
@@ -1888,33 +1905,4 @@ void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){
   printf("\t fFMDacceptanceCut A - lower, upper: (Double_t) %f, %f\n", fFMDAacceptanceCutLower, fFMDAacceptanceCutUpper);
   printf("\t fFMDacceptanceCut C - lower, upper: (Double_t) %f, %f\n", fFMDCacceptanceCutLower, fFMDCacceptanceCutUpper);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
