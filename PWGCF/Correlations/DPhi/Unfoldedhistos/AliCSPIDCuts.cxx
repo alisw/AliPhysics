@@ -43,30 +43,31 @@ const char *AliCSPIDCuts::fgkCutsNames[AliCSPIDCuts::kNCuts] = {
 
 
 /// Default constructor for serialization
-AliCSPIDCuts::AliCSPIDCuts() :
-    AliCSTrackCutsBase(),
+AliCSPIDCuts::AliCSPIDCuts()
+  : AliCSTrackCutsBase(),
     fMinP(0.0),
     fMaxP(9999.0),
-//    fITSnSigmaAbove{100.0},
-//    fITSnSigmaBelow{-100.0},
-//    fTPCnSigmaAbove{100.0},
-//    fTPCnSigmaBelow{-100.0},
-//    fTOFRequired{kFALSE},
-//    fTOFnSigmaAbove{100.0},
-//    fTOFnSigmaBelow{-100.0},
+    fITSnSigmaAbove{100.0},
+    fITSnSigmaBelow{-100.0},
+    fTPCnSigmaAbove{100.0},
+    fTPCnSigmaBelow{-100.0},
+    fTOFRequired{false},
+    fTOFnSigmaAbove{100.0},
+    fTOFnSigmaBelow{-100.0},
     fITSEnabledSpeciesMask(TBits()),
     fTPCEnabledSpeciesMask(TBits()),
     fTOFEnabledSpeciesMask(TBits()),
     fPIDResponse(NULL),
     fTargetSpecies(AliPID::kUnknown),
-    fhCutsStatistics(NULL),
-    fhCutsCorrelation(NULL)
-//    fhITSdEdxSigmaVsP{NULL},
-//    fhITSdEdxSignalVsP{NULL},
-//    fhTPCdEdxSigmaVsP{NULL},
-//    fhTPCdEdxSignalVsP{NULL},
-//    fhTOFSigmaVsP{NULL},
-//    fhTOFSignalVsP{NULL}
+    fCutNumber(0),
+    fhCutsStatistics(nullptr),
+    fhCutsCorrelation(nullptr),
+    fhITSdEdxSigmaVsP{nullptr},
+    fhITSdEdxSignalVsP{nullptr},
+    fhTPCdEdxSigmaVsP{nullptr},
+    fhTPCdEdxSignalVsP{nullptr},
+    fhTOFSigmaVsP{NULL},
+    fhTOFSignalVsP{NULL}
 {
 }
 
@@ -74,50 +75,32 @@ AliCSPIDCuts::AliCSPIDCuts() :
 /// \param name name of the event cuts
 /// \param title title of the event cuts
 /// \param target the PID target particle of type AliPID::EParticleType
-AliCSPIDCuts::AliCSPIDCuts(const char *name, const char *title, AliPID::EParticleType target) :
-    AliCSTrackCutsBase(kNCuts,kNCutsParameters,name,title),
+AliCSPIDCuts::AliCSPIDCuts(const char* name, const char* title, AliPID::EParticleType target, int cutnumber)
+  : AliCSTrackCutsBase(kNCuts, kNCutsParameters, name, title),
     fMinP(0.0),
     fMaxP(9999.0),
-    //    fITSnSigmaAbove{100.0},
-    //    fITSnSigmaBelow{-100.0},
-    //    fTPCnSigmaAbove{100.0},
-    //    fTPCnSigmaBelow{-100.0},
-    //    fTOFRequired{kFALSE},
-    //    fTOFnSigmaAbove{100.0},
-    //    fTOFnSigmaBelow{-100.0},
+    fITSnSigmaAbove{100.0},
+    fITSnSigmaBelow{-100.0},
+    fTPCnSigmaAbove{100.0},
+    fTPCnSigmaBelow{-100.0},
+    fTOFRequired{false},
+    fTOFnSigmaAbove{100.0},
+    fTOFnSigmaBelow{-100.0},
     fITSEnabledSpeciesMask(TBits(AliPID::kSPECIESC)),
     fTPCEnabledSpeciesMask(TBits(AliPID::kSPECIESC)),
     fTOFEnabledSpeciesMask(TBits(AliPID::kSPECIESC)),
     fPIDResponse(NULL),
     fTargetSpecies(target),
-    fhCutsStatistics(NULL),
-    fhCutsCorrelation(NULL)
-//    fhITSdEdxSigmaVsP{NULL},
-//    fhITSdEdxSignalVsP{NULL},
-//    fhTPCdEdxSigmaVsP{NULL},
-//    fhTPCdEdxSignalVsP{NULL},
-//    fhTOFSigmaVsP{NULL},
-//    fhTOFSignalVsP{NULL}
+    fCutNumber(cutnumber),
+    fhCutsStatistics(nullptr),
+    fhCutsCorrelation(nullptr),
+    fhITSdEdxSigmaVsP{nullptr},
+    fhITSdEdxSignalVsP{nullptr},
+    fhTPCdEdxSigmaVsP{nullptr},
+    fhTPCdEdxSignalVsP{nullptr},
+    fhTOFSigmaVsP{nullptr},
+    fhTOFSignalVsP{nullptr}
 {
-  for (Int_t spid = AliPID::kElectron; spid < AliPID::kSPECIESC; spid++) {
-    fITSnSigmaAbove[spid] = 100.0;
-    fITSnSigmaBelow[spid] = -100.0;
-    fTPCnSigmaAbove[spid] = 100.0;
-    fTPCnSigmaBelow[spid] = -100.0;
-    fTOFRequired[spid] = kFALSE;
-    fTOFnSigmaAbove[spid] = 100.0;
-    fTOFnSigmaBelow[spid] = -100.0;
-  }
-
-  for (Int_t i = 0; i < 2; i++) {
-    fhITSdEdxSigmaVsP[i] = NULL;
-    fhITSdEdxSignalVsP[i] = NULL;
-    fhTPCdEdxSigmaVsP[i] = NULL;
-    fhTPCdEdxSignalVsP[i] = NULL;
-    fhTOFSigmaVsP[i] = NULL;
-    fhTOFSignalVsP[i] = NULL;
-  }
-
   fITSEnabledSpeciesMask.ResetAllBits();
   fTPCEnabledSpeciesMask.ResetAllBits();
   fTOFEnabledSpeciesMask.ResetAllBits();
@@ -1022,7 +1005,7 @@ void AliCSPIDCuts::DefineHistograms(){
 
     /* the original name is used as title for the statistics histogram so, preserve it */
     TString originalTempName = fHistogramsList->GetName();
-    fHistogramsList->SetName(Form("%s_%s%s", fHistogramsList->GetName(), AliPID::ParticleShortName(fTargetSpecies), GetCutsString()));
+    fHistogramsList->SetName(Form("%s_%s%d_%s", fHistogramsList->GetName(), AliPID::ParticleShortName(fTargetSpecies), fCutNumber, GetCutsString()));
 
     fhCutsStatistics = new TH1F(Form("CutsStatistics_%s",GetCutsString()),Form("%s tracks cuts statistics",originalTempName.Data()),kNCuts+4,-0.5,kNCuts+3.5);
     fhCutsStatistics->GetXaxis()->SetBinLabel(1,"n tracks");

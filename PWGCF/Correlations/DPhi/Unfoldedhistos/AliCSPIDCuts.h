@@ -37,8 +37,7 @@ class AliPIDResponse;
 /// \date Feb 09, 2017
 
 class AliCSPIDCuts : public AliCSTrackCutsBase {
-public:
-
+ public:
   /// \enum cutsParametersIds
   /// \brief The ids of the different PID track cuts parameters supported
   enum cutsParametersIds {
@@ -70,70 +69,69 @@ public:
     kNCuts                           ///< The number of supported cuts
   };
 
-public:
+ public:
+  AliCSPIDCuts();
+  AliCSPIDCuts(const char* name, const char* title, AliPID::EParticleType target, int ncut);
+  virtual ~AliCSPIDCuts();
 
-                                     AliCSPIDCuts();
-                                     AliCSPIDCuts(const char *name, const char * title, AliPID::EParticleType target);
-  virtual                           ~AliCSPIDCuts();
-
-  virtual void                       InitCuts(const char *name = NULL);
-  virtual void                       NotifyRun();
-  virtual void                       NotifyEvent();
+  virtual void InitCuts(const char* name = NULL);
+  virtual void NotifyRun();
+  virtual void NotifyEvent();
   virtual Bool_t IsTrackAccepted(AliVTrack* trk, float*);
-  virtual Bool_t                     IsTrueTrackAccepted(AliVTrack *trk);
-  virtual Bool_t                     IsTrueTrackAccepted(Int_t itrk);
+  virtual Bool_t IsTrueTrackAccepted(AliVTrack* trk);
+  virtual Bool_t IsTrueTrackAccepted(Int_t itrk);
 
-  static AliPID::EParticleType       GetTrueSpecies(AliVTrack *trk);
-  static AliPID::EParticleType       GetTrueSpecies(AliVParticle *par);
+  static AliPID::EParticleType GetTrueSpecies(AliVTrack* trk);
+  static AliPID::EParticleType GetTrueSpecies(AliVParticle* par);
 
-private:
-  void                               DefineHistograms();
+ private:
+  void DefineHistograms();
 
-private:
+ private:
   /* we set them private to force cuts string consistency */
-  Bool_t                             SetPRange(Int_t pcode);
-  Bool_t                             SetITSdEdxSigmaCut(AliPID::EParticleType id, Int_t dEdxCode);
-  Bool_t                             SetTPCdEdxSigmaCut(AliPID::EParticleType id, Int_t dEdxCode);
-  Bool_t                             SetTOFSigmaCut(AliPID::EParticleType id, Int_t tofcode);
-  void                               PrintITSdEdxSigmaCut(AliPID::EParticleType id) const;
-  void                               PrintTPCdEdxSigmaCut(AliPID::EParticleType id) const;
-  void                               PrintTOFSigmaCut(AliPID::EParticleType id) const;
+  Bool_t SetPRange(Int_t pcode);
+  Bool_t SetITSdEdxSigmaCut(AliPID::EParticleType id, Int_t dEdxCode);
+  Bool_t SetTPCdEdxSigmaCut(AliPID::EParticleType id, Int_t dEdxCode);
+  Bool_t SetTOFSigmaCut(AliPID::EParticleType id, Int_t tofcode);
+  void PrintITSdEdxSigmaCut(AliPID::EParticleType id) const;
+  void PrintTPCdEdxSigmaCut(AliPID::EParticleType id) const;
+  void PrintTOFSigmaCut(AliPID::EParticleType id) const;
 
-private:
-  virtual Bool_t                     SetCutAndParams(Int_t paramID, Int_t value);
-  virtual void                       PrintCutWithParams(Int_t paramID) const;
+ private:
+  virtual Bool_t SetCutAndParams(Int_t paramID, Int_t value);
+  virtual void PrintCutWithParams(Int_t paramID) const;
 
-private:
-  static const char                 *fgkCutsParametersNames[kNCutsParameters];     ///< the names of the different event cuts parameters
-  static const char                 *fgkCutsNames[kNCuts];                         ///< the names of the different event cuts
+ private:
+  static const char* fgkCutsParametersNames[kNCutsParameters]; ///< the names of the different event cuts parameters
+  static const char* fgkCutsNames[kNCuts];                     ///< the names of the different event cuts
 
-  Double_t                           fMinP;                                        ///< the minimum momentum value for applying the cut
-  Double_t                           fMaxP;                                        ///< the maximum momentum value for applying the cut
-  Double_t                           fITSnSigmaAbove[AliPID::kSPECIESC];           ///< \f$ n \sigma \f$ above a species ITS line cut
-  Double_t                           fITSnSigmaBelow[AliPID::kSPECIESC];           ///< \f$ n \sigma \f$ below a species ITS line cut
-  Double_t                           fTPCnSigmaAbove[AliPID::kSPECIESC];           ///< \f$ n \sigma \f$ above a species TPC line cut
-  Double_t                           fTPCnSigmaBelow[AliPID::kSPECIESC];           ///< \f$ n \sigma \f$ below a species TPC line cut
-  Bool_t                             fTOFRequired[AliPID::kSPECIESC];              ///< track presence in TOF required
-  Double_t                           fTOFnSigmaAbove[AliPID::kSPECIESC];           ///< \f$ n \sigma \f$ above a species TOF line cut
-  Double_t                           fTOFnSigmaBelow[AliPID::kSPECIESC];           ///< \f$ n \sigma \f$ below a species TOF line cut
+  Double_t fMinP;                              ///< the minimum momentum value for applying the cut
+  Double_t fMaxP;                              ///< the maximum momentum value for applying the cut
+  Double_t fITSnSigmaAbove[AliPID::kSPECIESC]; ///< \f$ n \sigma \f$ above a species ITS line cut
+  Double_t fITSnSigmaBelow[AliPID::kSPECIESC]; ///< \f$ n \sigma \f$ below a species ITS line cut
+  Double_t fTPCnSigmaAbove[AliPID::kSPECIESC]; ///< \f$ n \sigma \f$ above a species TPC line cut
+  Double_t fTPCnSigmaBelow[AliPID::kSPECIESC]; ///< \f$ n \sigma \f$ below a species TPC line cut
+  Bool_t fTOFRequired[AliPID::kSPECIESC];      ///< track presence in TOF required
+  Double_t fTOFnSigmaAbove[AliPID::kSPECIESC]; ///< \f$ n \sigma \f$ above a species TOF line cut
+  Double_t fTOFnSigmaBelow[AliPID::kSPECIESC]; ///< \f$ n \sigma \f$ below a species TOF line cut
 
-  TBits                              fITSEnabledSpeciesMask;                       ///< mask for the species to consider within the ITS
-  TBits                              fTPCEnabledSpeciesMask;                       ///< mask for the spdcies to consider within the TPC
-  TBits                              fTOFEnabledSpeciesMask;                       ///< mask for the species to consider within the TOF
+  TBits fITSEnabledSpeciesMask; ///< mask for the species to consider within the ITS
+  TBits fTPCEnabledSpeciesMask; ///< mask for the spdcies to consider within the TPC
+  TBits fTOFEnabledSpeciesMask; ///< mask for the species to consider within the TOF
 
-  AliPIDResponse                    *fPIDResponse;                                 ///< the PID response instance
-  AliPID::EParticleType              fTargetSpecies;                               ///< the species to address with the PID cuts
-
+  AliPIDResponse* fPIDResponse;         ///< the PID response instance
+  AliPID::EParticleType fTargetSpecies; ///< the species to address with the PID cuts
+  int fCutNumber;                       ///< the sequential cut number for this species
 
   /* histograms with two indices: before (0) / after (1) applying the cut */
-  TH1F                              *fhCutsStatistics;                             ///< the cuts statistics
-  TH2F                              *fhCutsCorrelation;                            ///< cuts correlation
-  TH2F                              *fhITSdEdxSigmaVsP[2];                         ///< ITS dE/dx \f$ \mbox{n} \sigma \f$ vs P (b/a)
-  TH2F                              *fhITSdEdxSignalVsP[2];                        ///< ITS dE/dx signal vs P (b/a)
-  TH2F                              *fhTPCdEdxSigmaVsP[2];                         ///< TPC dE/dx \f$ \mbox{n} \sigma \f$ vs P(b/a)
-  TH2F                              *fhTPCdEdxSignalVsP[2];                        ///< TPC dE/dx signal vs P(b/a)
-  TH2F                              *fhTOFSigmaVsP[2];                             ///< TOF \f$ \mbox{n} \sigma \f$ vs P(b/a)
-  TH2F                              *fhTOFSignalVsP[2];                            ///< TOF signal vs P(b/a)
+  TH1F* fhCutsStatistics;      ///< the cuts statistics
+  TH2F* fhCutsCorrelation;     ///< cuts correlation
+  TH2F* fhITSdEdxSigmaVsP[2];  ///< ITS dE/dx \f$ \mbox{n} \sigma \f$ vs P (b/a)
+  TH2F* fhITSdEdxSignalVsP[2]; ///< ITS dE/dx signal vs P (b/a)
+  TH2F* fhTPCdEdxSigmaVsP[2];  ///< TPC dE/dx \f$ \mbox{n} \sigma \f$ vs P(b/a)
+  TH2F* fhTPCdEdxSignalVsP[2]; ///< TPC dE/dx signal vs P(b/a)
+  TH2F* fhTOFSigmaVsP[2];      ///< TOF \f$ \mbox{n} \sigma \f$ vs P(b/a)
+  TH2F* fhTOFSignalVsP[2];     ///< TOF signal vs P(b/a)
 
   /// Copy constructor
   /// Not allowed. Forced private.
@@ -144,7 +142,7 @@ private:
   AliCSPIDCuts& operator=(const AliCSPIDCuts&);
 
   /// \cond CLASSIMP
-  ClassDef(AliCSPIDCuts,1);
+  ClassDef(AliCSPIDCuts, 1);
   /// \endcond
 };
 
