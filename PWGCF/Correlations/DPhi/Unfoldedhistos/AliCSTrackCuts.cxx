@@ -148,6 +148,7 @@ void AliCSTrackCuts::NotifyEvent() {
 
 /// Check whether the passed track is accepted by the different cuts
 /// \param trk the track to analyze whether it is accepted or not
+/// \param dca the track DCA to the primary vertex
 /// \return kTRUE if the track  is accepted, kFALSE otherwise
 ///
 /// An internal copy of the track is used in case it were needed to constrain it if the cut
@@ -886,10 +887,19 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
     fESDTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     fESDTrackCuts->SetNameTitle(Form("TrackType_%s",GetCutsString()),"Type of tracks: Standard TPC only");
     fAODFilterBits = 1;
-    if (aodhandling) {
-      fAODHandling = true;
-      fAODTPCChi2 = chi2;
-      fESDTrackCuts->SetMaxChi2PerClusterTPC(chi2);
+    switch (fBaseSystem) {
+      case k2010based:
+        break;
+      case k2011based:
+        if (aodhandling) {
+          fAODHandling = true;
+          fAODTPCChi2 = chi2;
+          fESDTrackCuts->SetMaxChi2PerClusterTPC(chi2);
+        }
+        break;
+      default:
+        AliFatal("Internal inconsistency between data period and base period for track cuts selection. ABORTING!!!");
+        return;
     }
     tracktype = "FB1. Standard TPC only";
     break;

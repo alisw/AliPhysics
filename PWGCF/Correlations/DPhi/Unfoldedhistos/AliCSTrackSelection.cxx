@@ -179,30 +179,28 @@ Bool_t AliCSTrackSelection::InitializeFromString(const char *confstring)
     TString sztmpid = sztmp(0, sztmp.Index(";"));
     sztmp.Remove(0, sztmp.Index(";")+1);
 
-    /* so far only reject e- after track selection */
+    /* let's build the inclusive and exclusive PID cuts lists */
+    auto populate = [](TObjArray& lst, TString str) {
+      TObjArray* tok = str.Tokenize("&");
+      for (int icf = 0; icf < tok->GetEntries(); ++icf) {
+        TObjString* cfstr = new TObjString(((TObjString*)tok->At(icf))->String());
+        if (cfstr->String().BeginsWith("e") || cfstr->String().BeginsWith("mu") || cfstr->String().BeginsWith("pi") || cfstr->String().BeginsWith("p") || cfstr->String().BeginsWith("k")) {
+          lst.Add(cfstr);
+        } else {
+          ::Fatal("AliCSTrackSelection::InitializeFromString()", "Wrong family in track selection PID cuts string. ABORTING!!!");
+          return false;
+        }
+      }
+      delete tok;
+      return true;
+    };
     TObjArray *tokens = sztmpid.Tokenize("+");
     for (Int_t icut = 0; icut < tokens->GetEntries(); icut++) {
       if (((TObjString*) tokens->At(icut))->String().BeginsWith("-")) {
-        TObjString *posz = new TObjString(((TObjString*) tokens->At(icut))->String().Remove(0,1).Data());
-        if (posz->String().BeginsWith("e") || posz->String().BeginsWith("mu") || posz->String().BeginsWith("pi")
-            || posz->String().BeginsWith("p") || posz->String().BeginsWith("k")) {
-          fExclusivePidCutsStrings.Add(posz);
-        }
-        else {
-          AliFatal("Wrong family in track selection PID cuts string. ABORTING!!!");
-          return kFALSE;
-        }
+        accepted = accepted && populate(fExclusivePidCutsStrings, ((TObjString*)tokens->At(icut))->String().Remove(0, 1));
       }
       else {
-        TObjString *posz = new TObjString(((TObjString*) tokens->At(icut))->String().Data());
-        if (posz->String().BeginsWith("e") || posz->String().BeginsWith("mu") || posz->String().BeginsWith("pi")
-            || posz->String().BeginsWith("p") || posz->String().BeginsWith("k")) {
-          fInclusivePidCutsStrings.Add(posz);
-        }
-        else {
-          AliFatal("Wrong family in track selection PID cuts string. ABORTING!!!");
-          return kFALSE;
-        }
+        accepted = accepted && populate(fInclusivePidCutsStrings, ((TObjString*)tokens->At(icut))->String());
       }
     }
     delete tokens;
@@ -693,71 +691,59 @@ void AliCSTrackSelection::InitCuts(const char *name){
   Bool_t oldstatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  TList *tmplist = new TList();
+  TList* tmplist = new TList();
 
-  for (Int_t icut = 0; icut < fInclusiveCutsStrings.GetEntries(); icut++) {
-    AliCSTrackCuts *cut = new AliCSTrackCuts(Form("CS_InclusiveTrackCut%d",icut),Form("CS Inclusive Track Cut %d",icut));
-    cut->InitializeCutsFromCutString(((TObjString*)fInclusiveCutsStrings.At(icut))->String().Data());
-    fInclusiveTrackCuts.Add(cut);
+  auto addcut = [&](auto& lst, auto& cut, auto cfstr, std::string kind) {
+    cut->InitializeCutsFromCutString(cfstr);
+    lst.Add(cut);
     cut->SetQALevelOutput(fQALevel);
-    cut->InitCuts("Inclusive track cut");
+    cut->InitCuts(Form("%s cut", kind.c_str()));
     if (cut->GetHistogramsList() != NULL)
       tmplist->Add(cut->GetHistogramsList());
-  }
+  };
 
-  for (Int_t icut = 0; icut < fInclusivePidCutsStrings.GetEntries(); icut++) {
-    TString szcut = ((TObjString*)fInclusivePidCutsStrings.At(icut))->String().Data();
-    AliPID::EParticleType target = AliPID::kUnknown;
-    Int_t delchars = 0;
-    if (szcut.BeginsWith("e")) { delchars = 1; target = AliPID::kElectron; }
-    else if (szcut.BeginsWith("mu")) { delchars = 2; target = AliPID::kMuon; }
-    else if (szcut.BeginsWith("pi")) { delchars = 2; target = AliPID::kPion; }
-    else if (szcut.BeginsWith("p")) { delchars = 1; target = AliPID::kProton; }
-    else if (szcut.BeginsWith("k")) { delchars = 1; target = AliPID::kKaon; }
-    else {
-      AliFatal("Inconsistent family in track selection PID cuts string. ABORTING!!!");
+  auto populatetrks = [&](auto& lst, std::string cutrole, auto& cutscf) {
+    for (int icut = 0; icut < cutscf.GetEntries(); ++icut) {
+      AliCSTrackCuts* cut = new AliCSTrackCuts(Form("CS_%sTrackCut%d", cutrole.c_str(), icut), Form("CS %s Track Cut %d", cutrole.c_str(), icut));
+      addcut(lst, cut, ((TObjString*)cutscf.At(icut))->String().Data(), Form("%s track", cutrole.c_str()));
     }
-    szcut.Remove(0,delchars);
-    AliCSPIDCuts *cut = new AliCSPIDCuts(Form("CS_InclusivePidCut%d",icut),Form("CS Inclusive PID Cut %d",icut),target);
-    cut->InitializeCutsFromCutString(szcut.Data());
-    fInclusivePIDCuts.Add(cut);
-    cut->SetQALevelOutput(fQALevel);
-    cut->InitCuts("Inclusive pid cut");
-    if (cut->GetHistogramsList() != NULL)
-      tmplist->Add(cut->GetHistogramsList());
-  }
+  };
 
-  for (Int_t icut = 0; icut < fExclusiveCutsStrings.GetEntries(); icut++) {
-    AliCSTrackCuts *cut = new AliCSTrackCuts(Form("CS_ExclusiveTrackCut%d",icut),Form("CS Exclusive Track Cut %d",icut));
-    cut->InitializeCutsFromCutString(((TObjString*)fExclusiveCutsStrings.At(icut))->String().Data());
-    fExclusiveCuts.Add(cut);
-    cut->SetQALevelOutput(fQALevel);
-    cut->InitCuts("Exclusive track cut");
-    if (cut->GetHistogramsList() != NULL)
-      tmplist->Add(cut->GetHistogramsList());
-  }
-
-  for (Int_t icut = 0; icut < fExclusivePidCutsStrings.GetEntries(); icut++) {
-    TString szcut = ((TObjString*)fExclusivePidCutsStrings.At(icut))->String().Data();
-    AliPID::EParticleType target  = AliPID::kUnknown;
-    Int_t delchars = 0;
-    if (szcut.BeginsWith("e")) { delchars = 1; target = AliPID::kElectron; }
-    else if (szcut.BeginsWith("mu")) { delchars = 2; target = AliPID::kMuon; }
-    else if (szcut.BeginsWith("pi")) { delchars = 2; target = AliPID::kPion; }
-    else if (szcut.BeginsWith("p")) { delchars = 1; target = AliPID::kProton; }
-    else if (szcut.BeginsWith("k")) { delchars = 1; target = AliPID::kKaon; }
-    else {
-      AliFatal("Inconsistent family in track selection PID cuts string. ABORTING!!!");
+  auto populatepids = [&](auto& lst, std::string cutrole, auto& cutscf) {
+    int ncuts[AliPID::kSPECIESC] = {0};
+    for (int icut = 0; icut < cutscf.GetEntries(); ++icut) {
+      TString szcut = ((TObjString*)cutscf.At(icut))->String().Data();
+      AliPID::EParticleType target = AliPID::kUnknown;
+      Int_t delchars = 0;
+      if (szcut.BeginsWith("e")) {
+        delchars = 1;
+        target = AliPID::kElectron;
+      } else if (szcut.BeginsWith("mu")) {
+        delchars = 2;
+        target = AliPID::kMuon;
+      } else if (szcut.BeginsWith("pi")) {
+        delchars = 2;
+        target = AliPID::kPion;
+      } else if (szcut.BeginsWith("p")) {
+        delchars = 1;
+        target = AliPID::kProton;
+      } else if (szcut.BeginsWith("k")) {
+        delchars = 1;
+        target = AliPID::kKaon;
+      } else {
+        AliFatal("Inconsistent family in track selection PID cuts string. ABORTING!!!");
+      }
+      szcut.Remove(0, delchars);
+      ncuts[target]++;
+      AliCSPIDCuts* cut = new AliCSPIDCuts(Form("CS_%sPidCut%d", cutrole.c_str(), icut), Form("CS %s PID Cut %d", cutrole.c_str(), icut), target, ncuts[target]);
+      addcut(lst, cut, szcut.Data(), Form("%s PID", cutrole.c_str()));
     }
-    szcut.Remove(0,delchars);
-    AliCSPIDCuts *cut = new AliCSPIDCuts(Form("CS_ExclusivePidCut%d",icut),Form("CS Exclusive PID Cut %d",icut),target);
-    cut->InitializeCutsFromCutString(szcut.Data());
-    fExclusiveCuts.Add(cut);
-    cut->SetQALevelOutput(fQALevel);
-    cut->InitCuts("Exclusive pid cut");
-    if (cut->GetHistogramsList() != NULL)
-      tmplist->Add(cut->GetHistogramsList());
-  }
+  };
+
+  populatetrks(fInclusiveTrackCuts, "Inclusive", fInclusiveCutsStrings);
+  populatetrks(fExclusiveCuts, "Exclusive", fExclusiveCutsStrings);
+  populatepids(fInclusivePIDCuts, "Inclusive", fInclusivePidCutsStrings);
+  populatepids(fExclusiveCuts, "Exclusive", fExclusivePidCutsStrings);
 
   if (name == NULL) name = GetName();
 
