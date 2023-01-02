@@ -1,6 +1,7 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
- *                                                                        *
+ 
+*                                                                        *
  * Author: The ALICE Off-line Project.                                    *
  * Contributors are mentioned in the code where appropriate.              *
  *                                                                        *
@@ -41,18 +42,18 @@ ClassImp(AliAnalysisTaskPHOSPbPbQARun2)
 //________________________________________________________________________
 AliAnalysisTaskPHOSPbPbQARun2::AliAnalysisTaskPHOSPbPbQARun2() : AliAnalysisTaskSE(),
   fOutputContainer(0),fPHOSEvent(0),fCentrality(0),fCenBin(0),
-  fPHOSGeo(0),fEventCounter(0)
+  fPHOSGeo(0),fEventCounter(0), fMCArray(0)
 {
   //Default constructor
-  
+
   for(Int_t i=0; i<1;i++){
     for(Int_t j=0; j<5;j++)
       fPHOSEvents[i][j]=0 ;
   }
-  
+
   // Initialize the PHOS geometry 
   fPHOSGeo = AliPHOSGeometry::GetInstance("Run2") ;
-  
+
 }
 
 //________________________________________________________________________
@@ -70,7 +71,7 @@ AliAnalysisTaskPHOSPbPbQARun2::AliAnalysisTaskPHOSPbPbQARun2(const char *name)
     for(Int_t j=0; j<5; j++)
 	fPHOSEvents[i][j]=0 ;
   }
-  
+
   // Output slots #0 write into a TH1 container
   DefineOutput(1,TList::Class());
 
@@ -84,7 +85,7 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserCreateOutputObjects()
 {
   // Create histograms
   // Called once
-  
+
   // AOD histograms
   if(fOutputContainer != NULL){
     delete fOutputContainer;
@@ -94,21 +95,22 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserCreateOutputObjects()
   fOutputContainer->SetOwner(kTRUE);
 
   fOutputContainer->Add(new TH1I("hSelEvent", "Event selection", 10, 0, 10));
- 
+
   fOutputContainer->Add(new TH1I("hEvCenBins", "events per centrality bin", 5, 0, 5));
 
   fOutputContainer->Add(new TH2F("hCenPHOS","Centrality vs PHOSclusters", 100,0.,100.,200,0.,200.)) ;
   fOutputContainer->Add(new TH2F("hCenPHOSCells","Centrality vs PHOS cells", 100,0.,100.,100,0.,1000.)) ;
   fOutputContainer->Add(new TH2F("hCenTrack","Centrality vs tracks", 100,0.,100.,100,0.,15000.)) ;  
 
+
   fOutputContainer->Add(new TH1F("hZvertex","vertex z coordinate",400, -20.,+20.));
   fOutputContainer->Add(new TH1F("hZvertexSPD","SPD vertex z coordinate",400, -20.,+20.));
   fOutputContainer->Add(new TH1F("hDistanceVSPD","distance between vertices",400, -20.,+20.));
   fOutputContainer->Add(new TH1F("hNContributors","N of primary tracks from the primary vertex", 1e4, 0., 1e4));
-
+ 
   fOutputContainer->Add(new TH1I("hNPileupVtx", "Number of pileup vertices", 10, 0, 10));
   fOutputContainer->Add(new TH1F("hZPileupVtx", "Location of pileup vertices", 400, -20, 20));
-  
+
   //pi0 spectrum
   Int_t nPtPhot = 300 ;
   Double_t ptPhotMax = 30 ;
@@ -129,31 +131,35 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserCreateOutputObjects()
 
     snprintf(key,55,"hPi0All_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-    
+
     snprintf(key,55,"hMiPi0All_cen%d",cent) ;
     fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-
+    
     snprintf(key,55,"hGammaMC_cen%d", cent); 
     fOutputContainer->Add(new  TH2F(key, "MC #gamma;p_{T};y", nPtPhot, 0, ptPhotMax, 240, -1.2, 1.2));
-
+    
     for (Int_t sm = 1; sm < 5; sm ++) {
+
        snprintf(key,55, "hClusterEM%d_cen%d", sm, cent);
        fOutputContainer->Add(new TH1F(key, "cluster energy", nPtPhot, 0., ptPhotMax));
-       
+
        snprintf(key,55, "hClusterPtM%d_cen%d", sm, cent);
        fOutputContainer->Add(new TH1F(key, "cluster p_{T}", nPtPhot, 0., ptPhotMax));
-       
+
        snprintf(key,55, "hNcellvsEclM%d_cen%d", sm, cent);
        fOutputContainer->Add(new TH2F(key, "ncells vs cluster energy", nPtPhot, 0., ptPhotMax, 40, 0, 40));
 
-      snprintf(key,55,"hPi0AllSM%d_cen%d",sm,cent) ;
-      fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
-      
-      snprintf(key,55,"hMiPi0AllSM%d_cen%d",sm,cent) ;
-      fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+       snprintf(key,55,"hPi0AllSM%d_cen%d",sm,cent) ;
+       fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+
+       snprintf(key,55,"hMiPi0AllSM%d_cen%d",sm,cent) ;
+       fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
     }
+
   }
+
   PostData(1, fOutputContainer);
+
 }
 
 //________________________________________________________________________
@@ -162,7 +168,7 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
   // Main loop, called for each event
   // Analyze AOD/AOD  
   //
-  
+
   AliAODEvent *event = dynamic_cast<AliAODEvent*>(InputEvent());
 
   if (!event) {
@@ -171,7 +177,7 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
   }
 
   FillHistogram("hSelEvent", 0.5);
- 
+
   const AliAODVertex *aodVertex =  event->GetPrimaryVertex();
   const AliAODVertex *aodVertexSPD  = event->GetPrimaryVertexSPD();
 
@@ -180,7 +186,6 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
   if (!aodVertex) return;
 
   FillHistogram("hSelEvent", 2.5);
-
 
   const Int_t ncont = aodVertex->GetNContributors();
   FillHistogram("hNContributors", ncont);
@@ -193,7 +198,7 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
   FillHistogram("hZvertexSPD", aodVertexSPD->GetZ());
   FillHistogram("hDistanceVSPD", vtx[2] - aodVertexSPD->GetZ());
   if (TMath::Abs(vtx[2]) > 10.) return;
-  
+
   FillHistogram("hSelEvent", 4.5);
 
   if (event->IsPileupFromSPD()) {
@@ -204,15 +209,12 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
     }
     return;
   }
-  
+
   FillHistogram("hSelEvent", 5.5);
 
   char key[55] ;  
-   
+
   Int_t zvtx=0 ;
-
-
-  //Get MC
 
   AliMultSelection *multSelection =static_cast<AliMultSelection*>(event->FindListObject("MultSelection"));
   if(multSelection) fCentrality = multSelection->GetMultiplicityPercentile("V0M");
@@ -224,21 +226,20 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
   if(fCentrality >= 80.) fCenBin = 4;
 
   FillHistogram("hEvCenBins", fCenBin + 0.5);
-  
+
   //printf("event nr %d, centrality %.3f [%d]\n", fEventCounter, fCentrality, fCenBin);
-  
+
   if(!fPHOSEvents[zvtx][fCenBin]) 
     fPHOSEvents[zvtx][fCenBin]=new TList() ;
- 
+
   TList * prevPHOS = fPHOSEvents[zvtx][fCenBin] ;
-  
+
   if(fPHOSEvent)
     fPHOSEvent->Clear() ;
   else
     fPHOSEvent = new TClonesArray("AliCaloPhoton", 200) ;
-  
-  Int_t multClust = event->GetNumberOfCaloClusters();
 
+  Int_t multClust = event->GetNumberOfCaloClusters();
   AliAODCaloCells * cells = event->GetPHOSCells() ;
 
   FillHistogram("hCenPHOSCells",fCentrality,cells->GetNumberOfCells()) ;
@@ -254,10 +255,10 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
     if(clu->GetNCells() < 3) continue;
 
     if (clu->GetType() != AliVCluster::kPHOSNeutral) continue;
-    
+
     fMCArray = (TClonesArray*)event->FindListObject(AliAODMCParticle::StdBranchName());
     if (!fMCArray && TMath::Abs(clu->GetTOF()) > 12.5e-9) continue; // TOF cut for real data only!
-    
+
     Float_t  position[3];
     clu->GetPosition(position);
     TVector3 global(position) ;
@@ -271,17 +272,17 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
       Printf("Wrong module number %d", mod) ;
       continue ;
     }  
-   
+
     if (clu->GetM02() < 0.1) continue;    
 
     FillHistogram(Form("hClusterE_cen%d", fCenBin), clu->E());
     FillHistogram(Form("hClusterEM%d_cen%d", mod, fCenBin), clu->E());
     FillHistogram(Form("hNcellvsEcl_cen%d", fCenBin), clu->E(), clu->GetNCells()); 
     FillHistogram(Form("hNcellvsEclM%d_cen%d", mod, fCenBin), clu->E(), clu->GetNCells()); 
-    
+
     TLorentzVector pv1 ;
     clu->GetMomentum(pv1 ,vtx);
-    
+
     if(inPHOS>=fPHOSEvent->GetSize()){
       fPHOSEvent->Expand(inPHOS+50) ;
     }
@@ -291,18 +292,17 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
     ph->SetModule(mod) ;
     ph->SetMomV2(&pv1) ;
     ph->SetNCells(clu->GetNCells());
-    ph->SetPrimary(fMCArray ? clu->GetLabel() : 0);
-  
+
     ph->SetEMCx(float(cellX)) ;
     ph->SetEMCz(float(cellZ)) ;
-    
+
     inPHOS++ ;
   }
-  
+
   FillHistogram("hCenPHOS",fCentrality, inPHOS) ;
-  
+
   //photons
-  for (Int_t i = 0; i < inPHOS-1; i++) {
+  for (Int_t i=0; i<inPHOS-1; i++) {
     AliCaloPhoton * ph=(AliCaloPhoton*)fPHOSEvent->At(i) ;
     Int_t sm = ph->Module();
     FillHistogram(Form("hClusterPt_cen%d", fCenBin), ph->Pt());
@@ -311,7 +311,7 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
 
   //pi0
   for (Int_t i1=0; i1<inPHOS-1; i1++) {
-   
+
     AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
     Int_t sm1 = ph1->Module();
 
@@ -320,7 +320,7 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
 
       Int_t sm2 = ph2->Module();      
       TLorentzVector p12  = *ph1  + *ph2;
-      
+
       snprintf(key,55,"hPi0All_cen%d",fCenBin) ;
       FillHistogram(key,p12.M() ,p12.Pt()) ; 
 
@@ -328,15 +328,15 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
 	snprintf(key,55,"hPi0AllSM%d_cen%d",sm1,fCenBin) ;
 	 FillHistogram(key,p12.M() ,p12.Pt()) ; 
       }
-      
+
     } // end of loop i2
   } // end of loop i1
-  
+
   //now mixed
   for (Int_t i1=0; i1 <inPHOS; i1++) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
     Int_t sm1 = ph1->Module();
- 
+
     for(Int_t ev=0; ev<prevPHOS->GetSize();ev++){
       TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
 
@@ -345,7 +345,7 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
 
 	Int_t sm2 = ph2->Module();
 	TLorentzVector p12  = *ph1  + *ph2;
-	
+
 	snprintf(key,55,"hMiPi0All_cen%d",fCenBin) ;
 	FillHistogram(key,p12.M() ,p12.Pt()) ;
 
@@ -357,8 +357,8 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
       } // end of loop i2
     }
   } // end of loop i1
-  
-  
+
+
   //Now we either add current events to stack or remove
   //If no photons in current event - no need to add it to mixed
   if(fPHOSEvent->GetEntriesFast()>0){
@@ -370,7 +370,6 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
       delete tmp ;
     }
   }
-
 
   if (fMCArray) {
     for (Int_t i = 0; i < fMCArray->GetEntriesFast(); i++) {
