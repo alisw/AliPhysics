@@ -2477,9 +2477,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       fHistoMCGammaPtNoVertex[iCut]->SetXTitle("p_{T} (GeV/c)");
       fMCList[iCut]->Add(fHistoMCGammaPtNoVertex[iCut]);
 
-      fHistoMCEventsTrigg[iCut]          = new TH1D("MC_NEvents", "MC_NEvents", 2, -0.5, 1.5);
-      fHistoMCEventsTrigg[iCut]->GetXaxis()->SetBinLabel(1, "accepted");
-      fHistoMCEventsTrigg[iCut]->GetXaxis()->SetBinLabel(2, "rejected");
+      fHistoMCEventsTrigg[iCut]          = new TH1D("MC_NEvents", "MC_NEvents", 4, -0.5, 3.5);
+      fHistoMCEventsTrigg[iCut]->GetXaxis()->SetBinLabel(1, "accepted, trig");
+      fHistoMCEventsTrigg[iCut]->GetXaxis()->SetBinLabel(2, "accepted, not trig");
+      fHistoMCEventsTrigg[iCut]->GetXaxis()->SetBinLabel(3, "rejected, trig");
+      fHistoMCEventsTrigg[iCut]->GetXaxis()->SetBinLabel(4, "rejected, not trig");
       fMCList[iCut]->Add(fHistoMCEventsTrigg[iCut]);
 
       if(!fDoLightOutput){
@@ -5082,10 +5084,12 @@ void AliAnalysisTaskGammaCalo::ProcessAODMCParticles(Int_t isCurrentEventSelecte
 
   // Check if MC generated particles should be filled for this event using the selected trigger
   if( !((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsMCTriggerSelected(fInputEvent, fMCEvent)){
-    fHistoMCEventsTrigg[fiCut]->Fill(1., fWeightJetJetMC); // event is rejected
+    if(isCurrentEventSelected == 0) fHistoMCEventsTrigg[fiCut]->Fill(2., fWeightJetJetMC); // event is rejected and triggered
+    else fHistoMCEventsTrigg[fiCut]->Fill(3., fWeightJetJetMC); // event is rejected but not triggered
     return;
   }
-  fHistoMCEventsTrigg[fiCut]->Fill(0., fWeightJetJetMC); // event is accepted
+  if(isCurrentEventSelected == 0) fHistoMCEventsTrigg[fiCut]->Fill(0., fWeightJetJetMC); // event is accepted and triggered
+  else fHistoMCEventsTrigg[fiCut]->Fill(1., fWeightJetJetMC); // event is accepted but not triggered
 
   // Loop over all primary MC particle
   for(Long_t i = 0; i < fAODMCTrackArray->GetEntriesFast(); i++) {
@@ -5376,10 +5380,12 @@ void AliAnalysisTaskGammaCalo::ProcessMCParticles(Int_t isCurrentEventSelected)
 
   // Check if MC generated particles should be filled for this event using the selected trigger
   if( !((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsMCTriggerSelected(fInputEvent, fMCEvent)){
-    fHistoMCEventsTrigg[fiCut]->Fill(1); // event is rejected
+    if(isCurrentEventSelected == 0) fHistoMCEventsTrigg[fiCut]->Fill(2., fWeightJetJetMC); // event is rejected and triggered
+    else fHistoMCEventsTrigg[fiCut]->Fill(3., fWeightJetJetMC); // event is rejected but not triggered
     return;
   }
-  fHistoMCEventsTrigg[fiCut]->Fill(0); // event is accepted
+  if(isCurrentEventSelected == 0) fHistoMCEventsTrigg[fiCut]->Fill(0., fWeightJetJetMC); // event is accepted and triggered
+  else fHistoMCEventsTrigg[fiCut]->Fill(1., fWeightJetJetMC); // event is accepted but not triggered
 
   // Loop over all primary MC particle
   for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
