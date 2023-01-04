@@ -25,6 +25,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist()
     fpDist[i] = nullptr;
     fpTPCDist[i] = nullptr;
     fetaDist[i] = nullptr;
+    frapidityDist[i] = nullptr;
     fphiDist[i] = nullptr;
     fTPCCls[i] = nullptr;
     fTPCClsS[i] = nullptr;
@@ -135,6 +136,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
   fCutCounter->GetXaxis()->SetBinLabel(30, "DCA_{XY}");
   fCutCounter->GetXaxis()->SetBinLabel(31, "ITS_d status Ok");
   fCutCounter->GetXaxis()->SetBinLabel(32, "ITS_d PID");//_d stands for deuteron analysis
+  fCutCounter->GetXaxis()->SetBinLabel(33, "Rapidity");// applied after chi2
   fCutCounter->GetYaxis()->SetTitle("Entries");
 
   fHistList->Add(fCutCounter);
@@ -170,6 +172,12 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(bool DCADist, bool CombSig, bool 
     fetaDist[i]->GetXaxis()->SetTitle("#eta");
     fetaDist[i]->GetYaxis()->SetTitle("Entries");
     fTrackCutQA[i]->Add(fetaDist[i]);
+
+    TString rapidityName = Form("RapidityDist_%s", sName[i].Data());
+    frapidityDist[i] = new TH1F(rapidityName.Data(), rapidityName.Data(), 200, -1.5, 1.5);
+    frapidityDist[i]->GetXaxis()->SetTitle("y");
+    frapidityDist[i]->GetYaxis()->SetTitle("Entries");
+    fTrackCutQA[i]->Add(frapidityDist[i]);
 
     TString phiName = Form("phiDist_%s", sName[i].Data());
     fphiDist[i] = new TH1F(phiName.Data(), phiName.Data(), 200, 0.,
@@ -479,6 +487,7 @@ AliFemtoDreamTrackHist::AliFemtoDreamTrackHist(TString MinimalBooking)
     fpDist[i] = nullptr;
     fpTPCDist[i] = nullptr;
     fetaDist[i] = nullptr;
+    frapidityDist[i] = nullptr;
     fphiDist[i] = nullptr;
     fTPCCls[i] = nullptr;
     fTPCClsS[i] = nullptr;
