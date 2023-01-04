@@ -110,7 +110,7 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   void SetEtaForCorrel(Double_t etacorr) {fEtaForCorrel=etacorr;}
   void SetSpeed(Int_t speed) {fSpeed=speed;}
   void SetMergePools(Bool_t mergepools) {fMergePools=mergepools;}
-  void SetUseDeff(Bool_t useDeff) {fUseDeff=useDeff;}
+  void SetUseLceff(Bool_t UseLceff) {fUseLceff=UseLceff;}
   void SetUseTrackeff(Bool_t useTrackeff) {fUseTrackeff=useTrackeff;}
   void SetMinDPt(Double_t minDPt) {fMinDPt=minDPt;}
   void SetFillTrees(Int_t fillTrees, Double_t fractAccME) {fFillTrees=fillTrees; fFractAccME=fractAccME;}
@@ -251,7 +251,7 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   //SpeedType fSpeed;			// Speed up the execution removing bins and histos - 0=std, 1=single-SB bins, 2=single-SB and single-S bins
     Int_t fSpeed;			// Speed up the execution removing bins and histos - 0=std, 1=single-SB bins, 2=single-SB and single-S bins
   Bool_t    fMergePools;		// Put all entries from various pools in _pool0 THnSparses (as old approach) - for testing & low stat!
-  Bool_t    fUseDeff;			// Use D meson efficiency as weight
+  Bool_t    fUseLceff;			// Use D meson efficiency as weight
   Bool_t    fUseTrackeff;   		// Use track efficiency as weight
   Double_t  fPtAssocLimit;   		// Maximum value for associated pT
   Double_t  fMinDPt;			// Minimum pT of the Lambdac to allow selection
