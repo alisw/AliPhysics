@@ -1356,352 +1356,157 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillMEBackground(std::vector<TVe
         //--- to reconstruct the V0 Lambda
         Int_t decaytype = -9999.;  // WS = 0; RS =1
         
-        if(btrack->Charge()<0){
-            const KFParticle *vDaughters[2] = {&kfpProton, &kfpPionMinus};
-            
-            KFParticle kfpLambda;
-            kfpLambda.Construct(vDaughters,NDaughters);
-            Float_t massLambda_Rec, err_massLambda;
-            kfpLambda.GetMass(massLambda_Rec, err_massLambda);
-            
-            //check rapidity of lambda
-            if( TMath::Abs(kfpLambda.GetE()) <= TMath::Abs(kfpLambda.GetPz() )) continue;
-               
-            // chi2>0 && NDF>0 for selecting Lambda
-            if ( (kfpLambda.GetNDF()<=0 || kfpLambda.GetChi2()<=0) ) continue;
+        const KFParticle *vDaughters[2];
+        KFParticle kfpKaon;
+        if(btrack->Charge() < 0){
+          vDaughters[0] = &kfpProton; vDaughters[1] = &kfpPionMinus;
+          kfpKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, -321); // kaon-
+        } else {
+          vDaughters[0] = &kfpPionPlus; vDaughters[1] = &kfpAntiProton;
+          kfpKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, 321); // kaon+
+        }
+        
+        KFParticle kfpLambda;
+        kfpLambda.Construct(vDaughters,NDaughters);
+        
+        // Quality KF cuts
+        if(!SelectKFTrack(kfpLambda)) continue;
+        // Chi2geo cut
+        if( (kfpLambda.GetChi2()/kfpLambda.GetNDF()) >= fAnalCuts->GetKFPLam_Chi2geoMax()) continue; // defined
+        // Error mass and mass cut
+        Float_t massLambda_Rec, err_massLambda;
+        kfpLambda.GetMass(massLambda_Rec, err_massLambda);
+        if( err_massLambda <=0 ) continue;
+        if(TMath::Abs(massLambda_Rec - massLambda) > (fAnalCuts->GetProdMassTolLambda()) ) continue;
 
-            // check cov. of Lambda
-            if( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda)) continue;
+        // l/Delatl cut of Lambda
+        Double_t dx_Lambda = PV.GetX()-kfpLambda.GetX();
+        Double_t dy_Lambda = PV.GetY()-kfpLambda.GetY();
+        Double_t dz_Lambda = PV.GetZ()-kfpLambda.GetZ();
+        Double_t l_Lambda = TMath::Sqrt(dx_Lambda*dx_Lambda + dy_Lambda*dy_Lambda + dz_Lambda*dz_Lambda);
+        Double_t dl_Lambda = (PV.GetCovariance(0)+kfpLambda.GetCovariance(0))*dx_Lambda*dx_Lambda + (PV.GetCovariance(2)+kfpLambda.GetCovariance(2))*dy_Lambda*dy_Lambda + (PV.GetCovariance(5)+kfpLambda.GetCovariance(5))*dz_Lambda*dz_Lambda + 2*( (PV.GetCovariance(1)+kfpLambda.GetCovariance(1))*dx_Lambda*dy_Lambda + (PV.GetCovariance(3)+kfpLambda.GetCovariance(3))*dx_Lambda*dz_Lambda + (PV.GetCovariance(4)+kfpLambda.GetCovariance(4))*dy_Lambda*dz_Lambda );
+        if ( fabs(l_Lambda)<1.e-8f ) l_Lambda = 1.e-8f;
+        dl_Lambda = dl_Lambda<0. ? 1.e8f : sqrt(dl_Lambda)/l_Lambda;
+        Double_t nErr_l_Lambda = l_Lambda/dl_Lambda;
+        if ( nErr_l_Lambda <= fAnalCuts->GetKFPLam_lDeltalMin() ) continue;
+        
+        //---------------------------------------------------------------------
+        // Lambda with mass constraint
+        KFParticle kfpLambda_m = kfpLambda;
+        kfpLambda_m.SetNonlinearMassConstraint(massLambda);
+        // Quality KF cuts
+        if(!SelectKFTrack(kfpLambda_m)) continue;
+
+        //---------------------------------------------------------------------
+        // Reconstruct OmegaMinus with Lambda mass constraint
+
+        KFParticle kfpOmegaMinus;
+        const KFParticle *vOmegaDs[2] = {&kfpKaon, &kfpLambda_m};
+        kfpOmegaMinus.Construct(vOmegaDs,NDaughters);
+        // Quality KF cuts
+        if(!SelectKFTrack(kfpOmegaMinus)) continue;
+        //Chi2geo cut
+        if(kfpOmegaMinus.GetChi2()/kfpOmegaMinus.GetNDF() >= fAnalCuts->GetKFPOmega_Chi2geoMax() ) continue;
+        // Error mass and mass cut
+        Float_t massOmegaMinus_Rec, err_massOmegaMinus;
+        kfpOmegaMinus.GetMass(massOmegaMinus_Rec,err_massOmegaMinus);
+        if(err_massOmegaMinus <= 0 ) continue;
+        if(TMath::Abs(massOmegaMinus_Rec - massOmega) > (fAnalCuts->GetProdMassTolOmega() ) ) continue;
+        
+        //---------------------------------------------------------------------
+        // Omega with mass constraint
+        KFParticle kfpOmegaMinus_m = kfpOmegaMinus;
+        kfpOmegaMinus_m.SetNonlinearMassConstraint(massOmega); //  mass constraint on Omega
+        // Quality KF cuts
+        if(!SelectKFTrack(kfpOmegaMinus_m)) continue;
+        
+        //---------------------------------------------------------------------
+        for(Int_t iEv=0; iEv< nEl; iEv++ ){
+           
+            //--- evars: AliAODTrack
+            TVector * evars = mixTypeE[iEv];
+            if(!evars) continue;
             
-            // error_mass > 0 of Lambas
-            if( err_massLambda <=0 ) continue;
+            Int_t id = (Int_t)((*evars)[0]);
+            Int_t label = (Int_t)((*evars)[1]);
+            Double_t pxpypz[3];
+            for(Int_t ic=0;ic<3;ic++) pxpypz[ic] = (*evars)[ic+2];
+            Bool_t cartesian = (Bool_t)(*evars)[5];
+            Double_t xyz[3];
+            for(Int_t ic=0;ic<3;ic++) xyz[ic] = (*evars)[ic+6];
+            Bool_t isDCA = (Int_t)((*evars)[9]);
+            Double_t cv[21];
+            for(Int_t ic=0;ic<21;ic++) cv[ic] = (*evars)[ic+10];
+            Int_t sign = (Int_t)((*evars)[31]);
+            UChar_t ITSclsmap = (UChar_t)((*evars)[32]);
+            Double_t vtxold[3];
+            for(Int_t ic=0;ic<3;ic++) vtxold[ic] = (*evars)[ic+33];
+            Bool_t usedForVtxFit = (*evars)[36];
+            Bool_t usedForPrimVtxFit = (*evars)[37];
               
-            // Chi2geo cut of Lambda
-            if( (kfpLambda.GetChi2()/kfpLambda.GetNDF()) >= fAnalCuts->GetKFPLam_Chi2geoMax()) continue; // defined
+            AliAODTrack::AODTrk_t ttype = (AliAODTrack::AODTrk_t)((*evars)[38]);
+            UInt_t selectInfo = (UInt_t)((*evars)[39]);
+            Float_t chi2perNDF = (*evars)[40];
+            Double_t d0z0bach = (*evars)[41];
+            Double_t covd0z0bach = (*evars)[42];
+            Double_t nsigmaTPCE = (*evars)[43];
+            Double_t nsigmaTOFE = (*evars)[44];
+            Double_t ncombsigmaE = (*evars)[45];
             
-            //--------  calcualte l/Delatl for Lambda ------------------------------
-               Double_t dx_Lambda = PV.GetX()-kfpLambda.GetX();
-               Double_t dy_Lambda = PV.GetY()-kfpLambda.GetY();
-               Double_t dz_Lambda = PV.GetZ()-kfpLambda.GetZ();
-               Double_t l_Lambda = TMath::Sqrt(dx_Lambda*dx_Lambda + dy_Lambda*dy_Lambda + dz_Lambda*dz_Lambda);
-               Double_t dl_Lambda = (PV.GetCovariance(0)+kfpLambda.GetCovariance(0))*dx_Lambda*dx_Lambda + (PV.GetCovariance(2)+kfpLambda.GetCovariance(2))*dy_Lambda*dy_Lambda + (PV.GetCovariance(5)+kfpLambda.GetCovariance(5))*dz_Lambda*dz_Lambda + 2*( (PV.GetCovariance(1)+kfpLambda.GetCovariance(1))*dx_Lambda*dy_Lambda + (PV.GetCovariance(3)+kfpLambda.GetCovariance(3))*dx_Lambda*dz_Lambda + (PV.GetCovariance(4)+kfpLambda.GetCovariance(4))*dy_Lambda*dz_Lambda );
-               if ( fabs(l_Lambda)<1.e-8f ) l_Lambda = 1.e-8f;
-               dl_Lambda = dl_Lambda<0. ? 1.e8f : sqrt(dl_Lambda)/l_Lambda;
-               Double_t nErr_l_Lambda = l_Lambda/dl_Lambda;
+            //Move to new vertex
+            Double_t vtxnew[3];
+            fpVtx->GetXYZ(vtxnew);
+            for(Int_t ic=0;ic<3;ic++) xyz[ic] = xyz[ic] + vtxnew[ic] - vtxold[ic];
+            
+            AliAODTrack *trkBE = new AliAODTrack(id, label, pxpypz, cartesian, xyz, isDCA, cv, sign, ITSclsmap, fpVtx, usedForVtxFit, usedForPrimVtxFit, ttype, selectInfo,  chi2perNDF);
+            
+            if(!trkBE) continue;
+            
+            KFParticle kfpBE;
+            KFParticle kfpOmegac0;
+            
+            //---------  make eOmega_KFP pairs -------------
+            if( (trkBE->Charge()>0 && btrack->Charge()<0) || (trkBE->Charge()<0 && btrack->Charge()>0) ) {
+              decaytype = 1; // RS
+            } else {
+              decaytype = 0; // WS
+            }
+
+            if( trkBE->Charge()>0 ){
+              kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, 11);
+            } else {
+              kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, -11);
+            }
+        
             //---------------------------------------------------------------------
-               
-            // l/Delatl cut of Lambda
-            if ( nErr_l_Lambda <= fAnalCuts->GetKFPLam_lDeltalMin() ) continue;
-            // mass window cut of Lambda
-            if(TMath::Abs(massLambda_Rec - massLambda) > (fAnalCuts->GetProdMassTolLambda()) ) continue;
-        
-            KFParticle kfpLambda_m = kfpLambda;
-            kfpLambda_m.SetNonlinearMassConstraint(massLambda);
-    
-            if( !AliVertexingHFUtils::CheckKFParticleCov(kfpLambda_m) || TMath::Abs(kfpLambda.GetE()) <= TMath::Abs(kfpLambda.GetPz()) ) continue;
-             
-            KFParticle  kfpKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, -321); // kaon-
+            // Reconstruct Omegac0 with Omega mass constraint
+            const KFParticle *vOmegacZeroDs[2] = {&kfpBE, &kfpOmegaMinus_m};
+            kfpOmegac0.Construct(vOmegacZeroDs,NDaughters);
+              
+            // Quality KF cuts
+            if(!SelectKFTrack(kfpOmegac0)) continue;
+            // Error mass cut
+            Float_t massOmegac0_Rec, err_massOmegac0;
+            kfpOmegac0.GetMass(massOmegac0_Rec, err_massOmegac0);
+            if(err_massOmegac0 <= 0) continue;
+            // Chi2geo cut
+            if (kfpOmegac0.GetChi2()/kfpOmegac0.GetNDF() >= fAnalCuts->GetKFPOmegac0_Chi2geoMax()) continue;
             
-            //--------- reconstruct OmegaMinus
-            KFParticle kfpOmegaMinus;
-            const KFParticle *vOmegaDs[2] = {&kfpKaon, &kfpLambda_m};
-            kfpOmegaMinus.Construct(vOmegaDs,NDaughters);
-        
-            //check rapidity for Omega-
-            if( TMath::Abs(kfpOmegaMinus.GetE()) <= TMath::Abs(kfpOmegaMinus.GetPz()) ) continue;
-            //err_massOmega > 0
-            Float_t massOmegaMinus_Rec, err_massOmegaMinus;
-            kfpOmegaMinus.GetMass(massOmegaMinus_Rec,err_massOmegaMinus);
-            if(err_massOmegaMinus <= 0 ) continue;
-            //chi2 >0 && NDF>0
-            if(kfpOmegaMinus.GetNDF() <=0 || kfpOmegaMinus.GetChi2() <=0) continue;
-            //Chi2geo cut
-            if(kfpOmegaMinus.GetChi2()/kfpOmegaMinus.GetNDF() >= fAnalCuts->GetKFPOmega_Chi2geoMax() ) continue;
-            //check covariance matrix
-            if( !AliVertexingHFUtils::CheckKFParticleCov(kfpOmegaMinus) )continue;
-            //mass window cut of Omega-
-            if(TMath::Abs(massOmegaMinus_Rec - massOmega) > (fAnalCuts->GetProdMassTolOmega() ) ) continue;
-               
-            KFParticle kfpOmegaMinus_m = kfpOmegaMinus;
-            kfpOmegaMinus_m.SetNonlinearMassConstraint(massOmega);
-            if( !AliVertexingHFUtils::CheckKFParticleCov(kfpOmegaMinus_m) || TMath::Abs(kfpOmegaMinus_m.GetE()) <= TMath::Abs(kfpOmegaMinus_m.GetPz()) ) continue;
-        
-            for(Int_t iEv=0; iEv< nEl; iEv++ ){
-               
-                //--- evars: AliAODTrack
-                TVector * evars = mixTypeE[iEv];
-                if(!evars) continue;
-                
-                Int_t id = (Int_t)((*evars)[0]);
-                Int_t label = (Int_t)((*evars)[1]);
-                Double_t pxpypz[3];
-                for(Int_t ic=0;ic<3;ic++) pxpypz[ic] = (*evars)[ic+2];
-                Bool_t cartesian = (Bool_t)(*evars)[5];
-                Double_t xyz[3];
-                for(Int_t ic=0;ic<3;ic++) xyz[ic] = (*evars)[ic+6];
-                Bool_t isDCA = (Int_t)((*evars)[9]);
-                Double_t cv[21];
-                for(Int_t ic=0;ic<21;ic++) cv[ic] = (*evars)[ic+10];
-                Int_t sign = (Int_t)((*evars)[31]);
-                UChar_t ITSclsmap = (UChar_t)((*evars)[32]);
-                Double_t vtxold[3];
-                for(Int_t ic=0;ic<3;ic++) vtxold[ic] = (*evars)[ic+33];
-                Bool_t usedForVtxFit = (*evars)[36];
-                Bool_t usedForPrimVtxFit = (*evars)[37];
-                  
-                AliAODTrack::AODTrk_t ttype = (AliAODTrack::AODTrk_t)((*evars)[38]);
-                UInt_t selectInfo = (UInt_t)((*evars)[39]);
-                Float_t chi2perNDF = (*evars)[40];
-                Double_t d0z0bach = (*evars)[41];
-                Double_t covd0z0bach = (*evars)[42];
-                Double_t nsigmaTPCE = (*evars)[43];
-                Double_t nsigmaTOFE = (*evars)[44];
-                Double_t ncombsigmaE = (*evars)[45];
-                
-                //Move to new vertex
-                Double_t vtxnew[3];
-                fpVtx->GetXYZ(vtxnew);
-                for(Int_t ic=0;ic<3;ic++) xyz[ic] = xyz[ic] + vtxnew[ic] - vtxold[ic];
-                
-                AliAODTrack *trkBE = new AliAODTrack(id, label, pxpypz, cartesian, xyz, isDCA, cv, sign, ITSclsmap, fpVtx, usedForVtxFit, usedForPrimVtxFit, ttype, selectInfo,  chi2perNDF);
-                
-                    if(!trkBE) continue;
-                
-                    KFParticle kfpBE;
-                    KFParticle kfpOmegac0;
-                    
-                    //--- RS eOmega pairs
-                    if(trkBE->Charge()>0){
-                        decaytype = 1; // RS
-                        kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, 11);
-               
-                        const KFParticle *vOmegacZeroDs[2] = {&kfpBE, &kfpOmegaMinus_m};
-                        kfpOmegac0.Construct(vOmegacZeroDs,NDaughters);
-                 
-                        // chi2>0 && NDF>0
-                        if (kfpOmegac0.GetNDF()<= 0 || kfpOmegac0.GetChi2()<=0) continue;
-                        if (kfpOmegac0.GetChi2()/kfpOmegac0.GetNDF() >= fAnalCuts->GetKFPOmegac0_Chi2geoMax()) continue;
-                        //check rapidity of Omegac0
-                        if (TMath::Abs(kfpOmegac0.GetE())<= TMath::Abs(kfpOmegac0.GetPz())) continue;
-                        // err_massOmegac0 > 0
-                        Float_t massOmegac0_Rec, err_massOmegac0;
-                        kfpOmegac0.GetMass(massOmegac0_Rec, err_massOmegac0);
-                        if(err_massOmegac0 <=0 ) continue;
-                        
-                        if(fWriteMixedEventTree){
-                            if(!fUseMCInfo){
-                                FillTreeMixedEvent(kfpOmegac0, trkBE, kfpBE, kfpOmegaMinus,kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV,  aodEvent, decaytype, nsigmaTPCE, nsigmaTOFE, ncombsigmaE);
-                            }
-                        } //fWriteMixedEventTree
-                        kfpOmegac0.Clear();
-                        kfpBE.Clear();
-                    }//trkBE->Charge()>0
-                    
-                    //----- WS eOmega pairs
-                    if(trkBE->Charge()<0){
-                        decaytype = 0; // WS
-                        kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, -11);
-                        
-                        const KFParticle *vOmegacZeroDs[2] = {&kfpBE, &kfpOmegaMinus_m};
-                        kfpOmegac0.Construct(vOmegacZeroDs,NDaughters);
-                          
-                        // chi2>0 && NDF>0
-                        if (kfpOmegac0.GetNDF()<= 0 || kfpOmegac0.GetChi2()<=0) continue;
-                        if (kfpOmegac0.GetChi2()/kfpOmegac0.GetNDF() >= fAnalCuts->GetKFPOmegac0_Chi2geoMax()) continue;
-                        //check rapidity of Omegac0
-                        if (TMath::Abs(kfpOmegac0.GetE())<= TMath::Abs(kfpOmegac0.GetPz())) continue;
-                        // err_massOmegac0 > 0
-                        Float_t massOmegac0_Rec, err_massOmegac0;
-                        kfpOmegac0.GetMass(massOmegac0_Rec, err_massOmegac0);
-                        if(err_massOmegac0 <=0 ) continue;
-                        
-                        if(fWriteMixedEventTree){
-                            if(!fUseMCInfo){
-                                FillTreeMixedEvent(kfpOmegac0, trkBE, kfpBE, kfpOmegaMinus,kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV,  aodEvent, decaytype, nsigmaTPCE, nsigmaTOFE, ncombsigmaE);
-                            }
-                        }//MixedTree
-                        kfpOmegac0.Clear();
-                        kfpBE.Clear();
-                    }//trkBE->Charge()<0
-                }// iEv loop
-        } // btrack->Charge()<0
-        
-        if(btrack->Charge()>0){
-            const KFParticle *vAntiDaughters[2] = {&kfpPionPlus, &kfpAntiProton};
-                    
-            KFParticle kfpAntiLambda;
-            kfpAntiLambda.Construct(vAntiDaughters, NDaughters);
-            Float_t massAntiLambda_Rec, err_massAntiLambda;
-            kfpAntiLambda.GetMass(massAntiLambda_Rec, err_massAntiLambda);
-                    
-            // check rapidity of Anti-Lambda
-            if ( TMath::Abs(kfpAntiLambda.GetE())<=TMath::Abs(kfpAntiLambda.GetPz()) ) continue;
-
-            // chi2>0 && NDF>0 for selecting Anti-Lambda
-            if ( kfpAntiLambda.GetNDF()<=0 || kfpAntiLambda.GetChi2()<=0 ) continue;
-
-            // check cov. of Anti-Lambda
-            if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda) ) continue;
-
-            // err_mass>0 of Anti-Lambda
-            if ( err_massAntiLambda<=0 ) continue;
-
-            // Chi2geo cut of Anti-Lambda
-            if ( (kfpAntiLambda.GetChi2()/kfpAntiLambda.GetNDF()) >= fAnalCuts->GetKFPLam_Chi2geoMax() ) continue;
-
-            //---------------------------- calculate l/Δl for Anti-Lambda -----------------------------
-            Double_t dx_AntiLambda = PV.GetX()-kfpAntiLambda.GetX();
-            Double_t dy_AntiLambda = PV.GetY()-kfpAntiLambda.GetY();
-            Double_t dz_AntiLambda = PV.GetZ()-kfpAntiLambda.GetZ();
-            Double_t l_AntiLambda = TMath::Sqrt(dx_AntiLambda*dx_AntiLambda + dy_AntiLambda*dy_AntiLambda + dz_AntiLambda*dz_AntiLambda);
-            Double_t dl_AntiLambda = (PV.GetCovariance(0)+kfpAntiLambda.GetCovariance(0))*dx_AntiLambda*dx_AntiLambda + (PV.GetCovariance(2)+kfpAntiLambda.GetCovariance(2))*dy_AntiLambda*dy_AntiLambda + (PV.GetCovariance(5)+kfpAntiLambda.GetCovariance(5))*dz_AntiLambda*dz_AntiLambda + 2*( (PV.GetCovariance(1)+kfpAntiLambda.GetCovariance(1))*dx_AntiLambda*dy_AntiLambda + (PV.GetCovariance(3)+kfpAntiLambda.GetCovariance(3))*dx_AntiLambda*dz_AntiLambda + (PV.GetCovariance(4)+kfpAntiLambda.GetCovariance(4))*dy_AntiLambda*dz_AntiLambda );
-            if ( fabs(l_AntiLambda)<1.e-8f ) l_AntiLambda = 1.e-8f;
-            dl_AntiLambda = dl_AntiLambda<0. ? 1.e8f : sqrt(dl_AntiLambda)/l_AntiLambda;
-            Double_t nErr_l_AntiLambda = l_AntiLambda/dl_AntiLambda;
-         //------------------------------------------------------------------------------------------
-                    
-            // l/Deltal cut of Anti-Lambda
-            if ( nErr_l_AntiLambda <= fAnalCuts->GetKFPLam_lDeltalMin() ) continue;
-
-            // mass window cut of Anti-Lambda
-            if ( TMath::Abs(massAntiLambda_Rec-massLambda) > (fAnalCuts->GetProdMassTolLambda()) ) continue;
-
-            KFParticle kfpAntiLambda_m = kfpAntiLambda;
-            kfpAntiLambda_m.SetNonlinearMassConstraint(massLambda);  // mass constraint on AntiLambda
-
-            if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiLambda_m) || TMath::Abs(kfpAntiLambda_m.GetE()) <= TMath::Abs(kfpAntiLambda_m.GetPz()) ) continue;
-                    
-            KFParticle kfpKaon = AliVertexingHFUtils::CreateKFParticleFromAODtrack(btrack, 321); // kaon+
-            //======================== reconstruct OmegaPlus ==============================
-            KFParticle kfpOmegaPlus;
-            const KFParticle *vOmegaDs[2] = {&kfpKaon, &kfpAntiLambda_m};
-            kfpOmegaPlus.Construct(vOmegaDs, NDaughters);
-                    
-            // check rapidity of Omega+
-            if ( TMath::Abs(kfpOmegaPlus.GetE())<=TMath::Abs(kfpOmegaPlus.GetPz()) ) continue;
-            // err_massXi > 0
-            Float_t massOmegaPlus_Rec, err_massOmegaPlus;
-            kfpOmegaPlus.GetMass(massOmegaPlus_Rec, err_massOmegaPlus);
-            if ( err_massOmegaPlus<=0 ) continue;
-            // chi2>0 && NDF>0
-            if ( kfpOmegaPlus.GetNDF()<=0 || kfpOmegaPlus.GetChi2()<=0 ) continue;
-            if ( kfpOmegaPlus.GetChi2()/kfpOmegaPlus.GetNDF() >= fAnalCuts->GetKFPOmega_Chi2geoMax() ) continue;
-            // check covariance matrix
-            if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpOmegaPlus) ) continue;
-            // mass window cut of Omega
-            if ( (TMath::Abs(massOmegaPlus_Rec-massOmega) > (fAnalCuts->GetProdMassTolOmega())) ) continue;
-            // mass constraint on OmegaPlus
-            KFParticle kfpOmegaPlus_m = kfpOmegaPlus;
-            kfpOmegaPlus_m.SetNonlinearMassConstraint(massOmega);
-            if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpOmegaPlus_m) || TMath::Abs(kfpOmegaPlus_m.GetE()) <= TMath::Abs(kfpOmegaPlus_m.GetPz()) ) continue;
-            
-            for(Int_t iEv=0; iEv<nEl; iEv++){
-               
-                //--- evars: AliAODTrack
-                TVector * evars = mixTypeE[iEv];
-                if(!evars) continue;
-                
-                Int_t id = (Int_t)((*evars)[0]);
-                Int_t label = (Int_t)((*evars)[1]);
-                Double_t pxpypz[3];
-                for(Int_t ic=0;ic<3;ic++) pxpypz[ic] = (*evars)[ic+2];
-                Bool_t cartesian = (Bool_t)(*evars)[5];
-                Double_t xyz[3];
-                for(Int_t ic=0;ic<3;ic++) xyz[ic] = (*evars)[ic+6];
-                Bool_t isDCA = (Int_t)((*evars)[9]);
-                Double_t cv[21];
-                for(Int_t ic=0;ic<21;ic++) cv[ic] = (*evars)[ic+10];
-                Int_t sign = (Int_t)((*evars)[31]);
-                UChar_t ITSclsmap = (UChar_t)((*evars)[32]);
-                Double_t vtxold[3];
-                for(Int_t ic=0;ic<3;ic++) vtxold[ic] = (*evars)[ic+33];
-                Bool_t usedForVtxFit = (*evars)[36];
-                Bool_t usedForPrimVtxFit = (*evars)[37];
-                  
-                AliAODTrack::AODTrk_t ttype = (AliAODTrack::AODTrk_t)((*evars)[38]);
-                UInt_t selectInfo = (UInt_t)((*evars)[39]);
-                Float_t chi2perNDF = (*evars)[40];
-                Double_t d0z0bach = (*evars)[41];
-                Double_t covd0z0bach = (*evars)[42];
-                Double_t nsigmaTPCE = (*evars)[43];
-                Double_t nsigmaTOFE = (*evars)[44];
-                Double_t ncombsigmaE = (*evars)[45];
-                
-                //Move to new vertex
-                Double_t vtxnew[3];
-                fpVtx->GetXYZ(vtxnew);
-                for(Int_t ic=0;ic<3;ic++) xyz[ic] = xyz[ic] + vtxnew[ic] - vtxold[ic];
-                
-                AliAODTrack *trkBE = new AliAODTrack(id, label, pxpypz, cartesian, xyz, isDCA, cv, sign, ITSclsmap, fpVtx, usedForVtxFit, usedForPrimVtxFit, ttype, selectInfo,  chi2perNDF);
-                
-                    if(!trkBE) continue;
-                
-                    KFParticle kfpBE;
-                    KFParticle kfpAntiOmegac0;
-                    
-                    //---- RS eOmega pairs
-                    if(trkBE->Charge()<0){
-                        decaytype = 1;
-                        kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, -11);
-                    
-                        const KFParticle *vOmegac0Ds[2] = {&kfpBE, &kfpOmegaPlus_m};
-                        kfpAntiOmegac0.Construct(vOmegac0Ds, NDaughters);
-                        // chi2>0 && NDF>0
-                        if ( kfpAntiOmegac0.GetNDF()<=0 || kfpAntiOmegac0.GetChi2()<=0 ) continue;
-                        // Prefilter
-                        if ( kfpAntiOmegac0.GetChi2()/kfpAntiOmegac0.GetNDF() >= fAnalCuts->GetKFPOmegac0_Chi2geoMax() ) continue;
-                        // check rapidity of Anti-Omegac0
-                        if ( TMath::Abs(kfpAntiOmegac0.GetE())<=TMath::Abs(kfpAntiOmegac0.GetPz()) ) continue;
-                        // check covariance matrix
-                        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiOmegac0) ) continue;
-                        // err_massAntiXic0 > 0
-                        Float_t massAntiOmegac0_Rec, err_massAntiOmegac0;
-                        kfpAntiOmegac0.GetMass(massAntiOmegac0_Rec, err_massAntiOmegac0);
-                        if ( massAntiOmegac0_Rec<=0 ) continue;
-                        
-                        if(fWriteMixedEventTree){
-                            if(!fUseMCInfo){
-                                FillTreeMixedEvent(kfpAntiOmegac0, trkBE, kfpBE, kfpOmegaPlus,kfpOmegaPlus_m, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ptrack, ntrack, PV, aodEvent, decaytype, nsigmaTPCE, nsigmaTOFE, ncombsigmaE);
-                            }
-                        }//MixedTree
-                        kfpAntiOmegac0.Clear();
-                        kfpBE.Clear();
-                    }//trkBE->Charge()<0
-                    
-                    //---- WS eOmega pairs
-                    if(trkBE->Charge()>0){
-                        decaytype = 0; // WS
-                        kfpBE = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkBE, 11);
-                        
-                        const KFParticle *vOmegac0Ds[2] = {&kfpBE, &kfpOmegaPlus_m};
-                        kfpAntiOmegac0.Construct(vOmegac0Ds, NDaughters);
-                        // chi2>0 && NDF>0
-                        if ( kfpAntiOmegac0.GetNDF()<=0 || kfpAntiOmegac0.GetChi2()<=0 ) continue;
-                        // Prefilter
-                        if ( kfpAntiOmegac0.GetChi2()/kfpAntiOmegac0.GetNDF() >= fAnalCuts->GetKFPOmegac0_Chi2geoMax() ) continue;
-                        // check rapidity of Anti-Omegac0
-                        if ( TMath::Abs(kfpAntiOmegac0.GetE())<=TMath::Abs(kfpAntiOmegac0.GetPz()) ) continue;
-                        // check covariance matrix
-                        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiOmegac0) ) continue;
-                        // err_massAntiXic0 > 0
-                        Float_t massAntiOmegac0_Rec, err_massAntiOmegac0;
-                        kfpAntiOmegac0.GetMass(massAntiOmegac0_Rec, err_massAntiOmegac0);
-                        if ( massAntiOmegac0_Rec<=0 ) continue;
-                        
-                        if(fWriteMixedEventTree){
-                            if(!fUseMCInfo){
-                                FillTreeMixedEvent(kfpAntiOmegac0, trkBE, kfpBE, kfpOmegaPlus,kfpOmegaPlus_m, kfpKaon, btrack, casc, kfpK0Short, kfpAntiLambda, kfpAntiLambda_m, ptrack, ntrack, PV, aodEvent, decaytype, nsigmaTPCE, nsigmaTOFE, ncombsigmaE);
-                            }
-                        }//MixedTree
-                        kfpAntiOmegac0.Clear();
-                        kfpBE.Clear();
-                    }//trkBE->Charge()>0
-                } // iEv loop
-        } //btrack->Charge()>0
+            if(fWriteMixedEventTree){
+                if(!fUseMCInfo){
+                    if(btrack->Charge()<0){
+                        FillTreeMixedEvent(kfpOmegac0, trkBE, kfpBE, kfpOmegaMinus,kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV,  aodEvent, decaytype, nsigmaTPCE, nsigmaTOFE, ncombsigmaE);
+                    }else{
+                        FillTreeMixedEvent(kfpOmegac0, trkBE, kfpBE, kfpOmegaMinus,kfpOmegaMinus_m, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ntrack, ptrack, PV,  aodEvent, decaytype, nsigmaTPCE, nsigmaTOFE, ncombsigmaE);
+                    }
+                }
+            } //fWriteMixedEventTree
+            kfpOmegac0.Clear();
+            kfpBE.Clear();
+        } // iEv loop
     } // Casc
-    
-    
-} // DoEventMixingWithPools
+   
+} // FillMEBackground
 //----------------------------------------------------------------------------------------
 void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineAnaHist()
 {
@@ -2230,7 +2035,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
     
     Float_t mass_Omegac0_woMassConst_PV, err_mass_Omegac0_woMassConst_PV;
     kfpOmegac0_woMassConst_PV.GetMass(mass_Omegac0_woMassConst_PV, err_mass_Omegac0_woMassConst_PV);
-    fVar_Omegac0[29] = mass_Omegac0_woMassConst_PV; //  without Omega mass const.
+    fVar_Omegac0_QA[29] = mass_Omegac0_woMassConst_PV; //  without Omega mass const.
     //----- without mass const.
     fVar_Omegac0_QA[30] = kfpOmegac0_woMassConst.GetPt(); // pt of EleOmega without Omega mass const.
     fVar_Omegac0_QA[31] = kfpOmegac0_woMassConst.GetRapidity(); // rap of EleOmega without Omega mass const.
@@ -2435,7 +2240,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0_QA()
 //____________________________________________________________________________
 void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kfpOmegac0, AliAODTrack *trackEleFromMixed, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, AliAODEvent *aodEvent,  Int_t decaytype, Double_t nsigmaTPCE, Double_t nsigmaTOFE, Double_t ncombsigmaE )
 {
-    for (Int_t i=0; i<38; i++){
+    for (Int_t i=0; i<44; i++){
         fVar_MixedEvent[i]=-9999.;
     }
     
@@ -2460,15 +2265,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kf
     Double_t EOmega = sqrt(momOmega*momOmega+1.67245*1.67245);
     
     Double_t cosoa = (pxe*pxOmega+pye*pyOmega+pze*pzOmega)/mome/momOmega;
-    
- //   Float_t nSigmaTOF_EleFromME = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackEleFromMixed, AliPID::kElectron);
- //   Float_t nSigmaTPC_EleFromME = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackEleFromMixed, AliPID::kElectron);
-  //  Float_t nSigmaTPC_PiFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkPion, AliPID::kPion);
-  //  Float_t nSigmaTPC_PrFromLam = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkProton,AliPID::kProton);
-  //  Float_t nSigmaTPC_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackKaonFromOmega,AliPID::kKaon);
-  //  Float_t nSigmaTOF_KaonFromOmega = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackKaonFromOmega,AliPID::kKaon);
-    
-    
+ 
     //--- using new funtions to get nSigmaTOF and nSigmaTPC
     
     Double_t  nSigmaTPC_PiFromLam = -999., nSigmaTPC_PrFromLam = -999., nSigmaTPC_KaonFromOmega = -999., nSigmaTOF_KaonFromOmega = -999.;
@@ -2565,14 +2362,9 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kf
     fVar_MixedEvent[9] = mass_Omega; // Omega from KFP
     
     //--- add new branches for ML
-//    fVar_MixedEvent[10] = nSigmaTOF_EleFromME;
-//    fVar_MixedEvent[11] = nSigmaTPC_EleFromME;
-//    fVar_MixedEvent[12] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_EleFromME,nSigmaTOF_EleFromME);
-    
     fVar_MixedEvent[10] = nsigmaTOFE;
     fVar_MixedEvent[11] = nsigmaTPCE;
     fVar_MixedEvent[12] = ncombsigmaE;
-    
     fVar_MixedEvent[13] = AliVertexingHFUtils::CombineNsigmaTPCTOF(nSigmaTPC_KaonFromOmega,nSigmaTOF_KaonFromOmega);
     fVar_MixedEvent[14] = nSigmaTPC_PiFromLam;
     fVar_MixedEvent[15] = nSigmaTPC_PrFromLam;
@@ -2622,6 +2414,39 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeMixedEvent(KFParticle kf
     fVar_MixedEvent[36] = nSigmaTPC_KaonFromOmega;
     fVar_MixedEvent[37] = nSigmaTOF_KaonFromOmega;
     
+    //----------------- New variables
+    //------- DCA information
+    fVar_MixedEvent[38] = kfpLambda_m.GetDistanceFromVertex(PV);
+    
+    KFParticle kfpProton       = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkProton,2212);
+    KFParticle kfpPionMinus    = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkPion,-211);
+    KFParticle kfpAntiProton   = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkPion,-2212);
+    KFParticle kfpPionPlus     = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trkProton,211);
+    
+    Bool_t isparticle = kTRUE;
+    if (casc -> ChargeXi() >0) isparticle = kFALSE;
+    if(isparticle){
+        //--- positive
+        fVar_MixedEvent[39] =kfpProton.GetDistanceFromVertexXY(PV);
+        //--- Negtive
+        fVar_MixedEvent[40] =kfpPionMinus.GetDistanceFromVertexXY(PV);
+    }else{
+        //--- positive
+        fVar_MixedEvent[39] =kfpPionPlus.GetDistanceFromVertexXY(PV);
+        //--- negative
+        fVar_MixedEvent[40] =kfpAntiProton.GetDistanceFromVertexXY(PV);
+    }
+    
+    fVar_MixedEvent[41] =kfpKaon.GetDistanceFromVertexXY(PV);
+    
+    //-------  DecayLength information
+    Double_t DecayLength_Lambda = TMath::Sqrt(dx_Lambda*dx_Lambda + dy_Lambda*dy_Lambda);
+    fVar_MixedEvent[42] = DecayLength_Lambda;
+    
+    Double_t DecayLength_Omega  = TMath::Sqrt(dx_Omega*dx_Omega + dy_Omega*dy_Omega);
+    fVar_MixedEvent[43] = DecayLength_Omega;
+    
+    
     if(fWriteMixedEventTree) fTree_MixedEvent -> Fill();
     
     
@@ -2633,7 +2458,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeMixedEvent()
    
     const char* nameoutput = GetOutputSlot(9)->GetContainer()->GetName();
     fTree_MixedEvent = new TTree(nameoutput, "mixed event variables tree");
-    Int_t nVar = 38;
+    Int_t nVar = 44;
     fVar_MixedEvent = new Float_t[nVar];
     TString *fVarNames_MixedEvent = new TString[nVar];
     
@@ -2643,8 +2468,8 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeMixedEvent()
     fVarNames_MixedEvent[3] = "CosOA";
     fVarNames_MixedEvent[4] = "DecayType";
     fVarNames_MixedEvent[5] = "Mass_Omega_casc";
-    fVarNames_MixedEvent[6] = "EleOmegapT_OldMethod";
-    fVarNames_MixedEvent[7] = "EleOmegaMass_OldMethod";
+    fVarNames_MixedEvent[6] = "EleOmegapT";
+    fVarNames_MixedEvent[7] = "EleOmegaMass";
     fVarNames_MixedEvent[8] = "ConvType";
     fVarNames_MixedEvent[9] = "MassOmega_KFP";
     fVarNames_MixedEvent[10] = "nSigmaTOF_Ele";
@@ -2675,7 +2500,13 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeMixedEvent()
     fVarNames_MixedEvent[35] = "DCAxy_EleFromOmegac0_KF";
     fVarNames_MixedEvent[36] = "nSigmaTPC_KaonFromOmega";
     fVarNames_MixedEvent[37] = "nSigmaTOF_KaonFromOmega";
-
+    fVarNames_MixedEvent[38] = "DCAofV0ToPV_KFP";
+    fVarNames_MixedEvent[39] = "DCAofV0PosDauToPV_KFP";
+    fVarNames_MixedEvent[40] = "DCAofV0NegDauToPC_KFP";
+    fVarNames_MixedEvent[41] = "DCAofBachToPV_KFP";
+    fVarNames_MixedEvent[42] = "DecayLengthLambda_KFP";
+    fVarNames_MixedEvent[43] = "DecayLengthOmega_KFP";
+    
     for (Int_t ivar = 0; ivar<nVar; ivar++){
      
         fTree_MixedEvent->Branch(fVarNames_MixedEvent[ivar].Data(), &fVar_MixedEvent[ivar], Form("%s/F", fVarNames_MixedEvent[ivar].Data()));
