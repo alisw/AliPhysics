@@ -1,4 +1,4 @@
-AliAnalysisTask *AddTask_hmurakam_pp(Bool_t getFromAlien  = kFALSE,
+AliAnalysisTask *AddTask_hmurakam_pp(Bool_t getFromAlien    = kFALSE,
 				     TString year           = "16",
 				     Bool_t hasSpline       = kFALSE,
 				     ULong64_t triggerMask  = AliVEvent::kINT7,
@@ -37,11 +37,6 @@ AliAnalysisTask *AddTask_hmurakam_pp(Bool_t getFromAlien  = kFALSE,
   std::cout << "Configpath: " << configFilePath << std::endl;
   if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data())) {
     printf("Load macro now\n");
-    gROOT->LoadMacro(configFilePath.Data());
-  }
-  TString configFunction(cFileName(0,cFileName.Length() - 2));
-  std::cout << "Configfunction: " << configFunction << std::endl;
-  if (!gROOT->GetListOfGlobalFunctions()->FindObject(configFunction.Data())){
     gROOT->LoadMacro(configFilePath.Data());
   }
 
@@ -153,25 +148,25 @@ AliAnalysisTask *AddTask_hmurakam_pp(Bool_t getFromAlien  = kFALSE,
     mgr->CreateContainer(Form("tree_lowmass%s",appendix.Data()),
 			 TTree::Class(),
 			 AliAnalysisManager::kExchangeContainer,
-			 Form("%s",outputFileName.Data()));
+			 outputFileName.Data());
 
   AliAnalysisDataContainer *cOutputHist1 =
     mgr->CreateContainer(Form("Output_Histos%s",appendix.Data()),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
-			 Form("%s",outputFileName.Data()));
+			 outputFileName.Data());
 
   AliAnalysisDataContainer *cOutputHist2 =
     mgr->CreateContainer(Form("Output_CF%s",appendix.Data()),
 			 TList::Class(),
 			 AliAnalysisManager::kOutputContainer,
-			 Form("%s",outputFileName.Data()));
+			 outputFileName.Data());
 
   AliAnalysisDataContainer *cOutputHist3 =
     mgr->CreateContainer(Form("Output_EventStat%s",appendix.Data()),
 			 TH1D::Class(),
 			 AliAnalysisManager::kOutputContainer,
-			 Form("%s",outputFileName.Data()));
+			 outputFileName.Data());
 
   mgr->ConnectInput(task,  0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 0, coutput1 );
