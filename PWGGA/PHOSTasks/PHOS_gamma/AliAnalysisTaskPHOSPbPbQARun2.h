@@ -19,10 +19,10 @@ public:
   AliAnalysisTaskPHOSPbPbQARun2();
   AliAnalysisTaskPHOSPbPbQARun2(const char *name);
   virtual ~AliAnalysisTaskPHOSPbPbQARun2() {}
-  
+
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
-  
+
 private:
 
   AliAnalysisTaskPHOSPbPbQARun2(const AliAnalysisTaskPHOSPbPbQARun2&); // not implemented
@@ -40,7 +40,6 @@ private:
   Int_t fCenBin ;             //! Current centrality bin
   AliPHOSGeometry  *fPHOSGeo; //! PHOS geometry
   Int_t fEventCounter;        // number of analyzed events
-
   TClonesArray *       fMCArray;  // MC array
 
   ClassDef(AliAnalysisTaskPHOSPbPbQARun2, 1); // PHOS analysis task
