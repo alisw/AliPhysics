@@ -60,7 +60,7 @@ private:
 		AliAnalysisTaskLumiStabi(const AliAnalysisTaskLumiStabi&); //not implemented
 		AliAnalysisTaskLumiStabi& operator =(const AliAnalysisTaskLumiStabi&); //not implemented
 
-		ClassDef(AliAnalysisTaskLumiStabi, 3);
+		ClassDef(AliAnalysisTaskLumiStabi, 4);
 };
 
 #endif
