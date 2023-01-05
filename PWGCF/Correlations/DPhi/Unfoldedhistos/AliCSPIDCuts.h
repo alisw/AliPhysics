@@ -103,8 +103,12 @@ class AliCSPIDCuts : public AliCSTrackCutsBase {
 
  private:
   void DefineHistograms();
+
+ public:
   template <detectors det>
   float nsigmas(AliPID::EParticleType s, AliVTrack* t);
+
+ protected:
   template <detectors det>
   bool nearerIn(AliPID::EParticleType s, AliVTrack* t);
   template <detectors det>

@@ -33,6 +33,7 @@
 #include "AliPIDResponse.h"
 #include "AliCSPIDCuts.h"
 #include "AliLog.h"
+#include "TH3.h"
 
 /// \file AliCSTrackSelection.cxx
 /// \brief Implementation of track selection class within the correlation studies analysis
@@ -526,8 +527,10 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
       fhPtVsDCAxy[i]->Fill(dca[0],trk->Pt());
       fhPtVsDCAz[i]->Fill(dca[1],trk->Pt());
       fhPtVsTPCCls[i]->Fill(ttrk->GetTPCNcls(),trk->Pt());
+      fhPtVsTPCRows[i]->Fill(ttrk->GetTPCCrossedRows(), trk->Pt());
       fhPtVsTPCRowOverFindCls[i]->Fill(ratioCrossedRowsOverFindableClustersTPC,trk->Pt());
       fhPtVsEta[i]->Fill(trk->Eta(),trk->Pt());
+      fhPvsMsq[i]->Fill(ttrk->M() * ttrk->M(), ttrk->P());
 
       if (fQALevel > AliCSAnalysisCutsBase::kQALevelLight) {
         fhEtaVsPhi[i]->Fill(trk->Phi()*180.0/TMath::Pi(),trk->Eta());
@@ -544,6 +547,24 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
             Double_t toftime_ps = ttrk->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(trk->P());
             Double_t beta = tracklen_cm / toftime_ps / c_cm_ps;
             fhTOFSignalVsP[i]->Fill(trk->P(),beta);
+          }
+          auto spec = [](int ix) {
+            switch (ix) {
+              case 0:
+                return AliPID::kPion;
+                break;
+              case 1:
+                return AliPID::kKaon;
+                break;
+              case 2:
+                return AliPID::kProton;
+                break;
+            }
+            return AliPID::kUnknown;
+          };
+          for (int j = 0; j < 3; ++j) {
+            fhTPCTOFSigmaVsP[j][i]->Fill(fPIDResponse->NumberOfSigmasTPC(ttrk, spec(j)), fPIDResponse->NumberOfSigmasTOF(ttrk, spec(j)), ttrk->P());
+            fhTPCdEdxSignalDiffVsP[j][i]->Fill(ttrk->GetTPCsignal() - fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, ttrk, spec(j)), ttrk->P());
           }
         }
       }
@@ -818,8 +839,13 @@ void AliCSTrackSelection::DefineHistograms(){
     fHistogramsList->Add(fhPtVsTPCCls[0]);
     fHistogramsList->Add(fhPtVsTPCCls[1]);
 
-    fhPtVsTPCRowOverFindCls[0] = new TH2F(Form("PtVsTPCCROFCB_%s",fCutsString.Data()),
-        "p_{T} vs TPC crossed rows findable clusters ratio before;crossed rows / findable clusters;p_{T} (GeV/c)",100,0,1,400,0.,10.);
+    fhPtVsTPCRows[0] = new TH2F(Form("PtVsTPCRowsB_%s", fCutsString.Data()), "p_{T} vs no. of TPC crossed rows before;no of crossed rows;p_{T} (GeV/c)", 170, 0, 170, 400, 0., 10.);
+    fhPtVsTPCRows[1] = new TH2F(Form("PtVsTPCRowsA_%s", fCutsString.Data()), "p_{T} vs no. of TPC crossed rows;no of crossed rows;p_{T} (GeV/c)", 170, 0, 170, 400, 0., 10.);
+    fHistogramsList->Add(fhPtVsTPCRows[0]);
+    fHistogramsList->Add(fhPtVsTPCRows[1]);
+
+    fhPtVsTPCRowOverFindCls[0] = new TH2F(Form("PtVsTPCCROFCB_%s", fCutsString.Data()),
+                                          "p_{T} vs TPC crossed rows findable clusters ratio before;crossed rows / findable clusters;p_{T} (GeV/c)", 100, 0, 1, 400, 0., 10.);
     fhPtVsTPCRowOverFindCls[1] = new TH2F(Form("PtVsTPCCROFCA_%s",fCutsString.Data()),
         "p_{T} vs TPC crossed rows findable clusters ratio;crossed rows / findable clusters;p_{T} (GeV/c)",100,0,1,400,0.,10.);
     fHistogramsList->Add(fhPtVsTPCRowOverFindCls[0]);
@@ -859,6 +885,57 @@ void AliCSTrackSelection::DefineHistograms(){
       fhTOFSignalVsP[1] = new TH2F(Form("TOFSignalA_%s",fCutsString.Data()),"TOF signal;P (GeV/c);#beta",nPbins,edges, 400, 0.0, 1.1);
       fHistogramsList->Add(fhTOFSignalVsP[0]);
       fHistogramsList->Add(fhTOFSignalVsP[1]);
+
+      fhPvsMsq[0] = new TH2F(Form("PvsMsqB_%s", fCutsString.Data()), "Momentum versus #it{m}^{2} before;#it{m}^{2} (GeV/c^{2};P (GeV/c)", 200, 0.0, 2.0, nPbins, edges);
+      fhPvsMsq[1] = new TH2F(Form("PvsMsqA_%s", fCutsString.Data()), "Momentum versus #it{m}^{2};#it{m}^{2} (GeV/c^{2};P (GeV/c)", 200, 0.0, 2.0, nPbins, edges);
+      fHistogramsList->Add(fhPvsMsq[0]);
+      fHistogramsList->Add(fhPvsMsq[1]);
+
+      if (fQALevel == AliCSAnalysisCutsBase::kQALevelHeavy) {
+        auto name = [](int idx) {
+          switch (idx) {
+            case 0:
+              return "pi";
+              break;
+            case 1:
+              return "k";
+              break;
+            case 2:
+              return "p";
+              break;
+          }
+          return "WRONG";
+        };
+        auto title = [](int idx) {
+          switch (idx) {
+            case 0:
+              return "#pi";
+              break;
+            case 1:
+              return "k";
+              break;
+            case 2:
+              return "p";
+              break;
+          }
+          return "WRONG";
+        };
+        for (int i = 0; i < 3; ++i) {
+          fhTPCTOFSigmaVsP[i][0] = new TH3F(Form("TPCTOFSigma%sVsPB_%s", name(i), fCutsString.Data()), Form("n#sigma to the %s line before;n#sigma_{TPC}^{%s};n#sigma_{TOF}^{%s}", title(i), title(i), title(i)),
+                                            60, -6.0, 6.0, 60, -6.0, 6.0, 100, 0.0, 4.0);
+          fhTPCTOFSigmaVsP[i][1] = new TH3F(Form("TPCTOFSigma%sVsPA_%s", name(i), fCutsString.Data()), Form("n#sigma to the %s line;n#sigma_{TPC}^{%s};n#sigma_{TOF}^{%s}", title(i), title(i), title(i)),
+                                            60, -6.0, 6.0, 60, -6.0, 6.0, 100, 0.0, 4.0);
+          fHistogramsList->Add(fhTPCTOFSigmaVsP[i][0]);
+          fHistogramsList->Add(fhTPCTOFSigmaVsP[i][1]);
+
+          fhTPCdEdxSignalDiffVsP[i][0] = new TH2F(Form("TPCdEdxSignal%sDiffVsPB_%s", name(i), fCutsString.Data()), Form("TPC dE/dx to the %s line before;dE/dx - <dE/dx>_{%s};P (GeV/c)", title(i), title(i)),
+                                                  800, 0.0, 200.0, 100, 0.0, 4.0);
+          fhTPCdEdxSignalDiffVsP[i][1] = new TH2F(Form("TPCdEdxSignal%sDiffVsPA_%s", name(i), fCutsString.Data()), Form("TPC dE/dx to the %s line;dE/dx - <dE/dx>_{%s};P (GeV/c)", title(i), title(i)),
+                                                  800, 0.0, 200.0, 100, 0.0, 4.0);
+          fHistogramsList->Add(fhTPCdEdxSignalDiffVsP[i][0]);
+          fHistogramsList->Add(fhTPCdEdxSignalDiffVsP[i][1]);
+        }
+      }
     }
 
     TH1::AddDirectory(oldstatus);
