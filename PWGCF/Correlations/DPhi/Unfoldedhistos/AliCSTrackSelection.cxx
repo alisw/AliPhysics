@@ -564,7 +564,7 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
           };
           for (int j = 0; j < 3; ++j) {
             fhTPCTOFSigmaVsP[j][i]->Fill(fPIDResponse->NumberOfSigmasTPC(ttrk, spec(j)), fPIDResponse->NumberOfSigmasTOF(ttrk, spec(j)), ttrk->P());
-            fhTPCdEdxSignalDiffVsP[j][i]->Fill(ttrk->GetTPCsignal() - fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, ttrk, spec(j)), ttrk->P());
+            fhTPCdEdxSignalDiffVsP[j][i]->Fill(ttrk->P(), ttrk->GetTPCsignal() - fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, ttrk, spec(j)));
           }
         }
       }
@@ -886,8 +886,8 @@ void AliCSTrackSelection::DefineHistograms(){
       fHistogramsList->Add(fhTOFSignalVsP[0]);
       fHistogramsList->Add(fhTOFSignalVsP[1]);
 
-      fhPvsMsq[0] = new TH2F(Form("PvsMsqB_%s", fCutsString.Data()), "Momentum versus #it{m}^{2} before;#it{m}^{2} (GeV/c^{2};P (GeV/c)", 200, 0.0, 2.0, nPbins, edges);
-      fhPvsMsq[1] = new TH2F(Form("PvsMsqA_%s", fCutsString.Data()), "Momentum versus #it{m}^{2};#it{m}^{2} (GeV/c^{2};P (GeV/c)", 200, 0.0, 2.0, nPbins, edges);
+      fhPvsMsq[0] = new TH2F(Form("PvsMsqB_%s", fCutsString.Data()), "Momentum versus #it{m}^{2} before;#it{m}^{2} (GeV/c^{2});P (GeV/c)", 200, 0.0, 2.0, nPbins, edges);
+      fhPvsMsq[1] = new TH2F(Form("PvsMsqA_%s", fCutsString.Data()), "Momentum versus #it{m}^{2};#it{m}^{2} (GeV/c^{2});P (GeV/c)", 200, 0.0, 2.0, nPbins, edges);
       fHistogramsList->Add(fhPvsMsq[0]);
       fHistogramsList->Add(fhPvsMsq[1]);
 
@@ -928,10 +928,10 @@ void AliCSTrackSelection::DefineHistograms(){
           fHistogramsList->Add(fhTPCTOFSigmaVsP[i][0]);
           fHistogramsList->Add(fhTPCTOFSigmaVsP[i][1]);
 
-          fhTPCdEdxSignalDiffVsP[i][0] = new TH2F(Form("TPCdEdxSignal%sDiffVsPB_%s", name(i), fCutsString.Data()), Form("TPC dE/dx to the %s line before;dE/dx - <dE/dx>_{%s};P (GeV/c)", title(i), title(i)),
-                                                  800, 0.0, 200.0, 100, 0.0, 4.0);
-          fhTPCdEdxSignalDiffVsP[i][1] = new TH2F(Form("TPCdEdxSignal%sDiffVsPA_%s", name(i), fCutsString.Data()), Form("TPC dE/dx to the %s line;dE/dx - <dE/dx>_{%s};P (GeV/c)", title(i), title(i)),
-                                                  800, 0.0, 200.0, 100, 0.0, 4.0);
+          fhTPCdEdxSignalDiffVsP[i][0] = new TH2F(Form("TPCdEdxSignal%sDiffVsPB_%s", name(i), fCutsString.Data()), Form("TPC dE/dx to the %s line before;P (GeV/c);dE/dx - <dE/dx>_{%s}", title(i), title(i)),
+                                                  100, 0.0, 4.0, 800, -200.0, 200.0);
+          fhTPCdEdxSignalDiffVsP[i][1] = new TH2F(Form("TPCdEdxSignal%sDiffVsPA_%s", name(i), fCutsString.Data()), Form("TPC dE/dx to the %s line;P (GeV/c);dE/dx - <dE/dx>_{%s}", title(i), title(i)),
+                                                  100, 0.0, 4.0, 800, -200.0, 200.0);
           fHistogramsList->Add(fhTPCdEdxSignalDiffVsP[i][0]);
           fHistogramsList->Add(fhTPCdEdxSignalDiffVsP[i][1]);
         }
