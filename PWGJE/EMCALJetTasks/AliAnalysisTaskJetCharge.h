@@ -57,6 +57,8 @@ class AliAnalysisTaskJetCharge : public AliAnalysisTaskEmcalJet {
   Float_t Phi;                    //
   Float_t Eta;                    //
   Float_t JetCharge;              //
+  Float_t JetChargeMid;              //
+  Float_t JetChargeHigh;              //
   Float_t LeadingTrackPt;         //
 
 
@@ -64,6 +66,6 @@ class AliAnalysisTaskJetCharge : public AliAnalysisTaskEmcalJet {
 
 
 
-  ClassDef(AliAnalysisTaskJetCharge, 5)
+  ClassDef(AliAnalysisTaskJetCharge, 6)
 };
 #endif
