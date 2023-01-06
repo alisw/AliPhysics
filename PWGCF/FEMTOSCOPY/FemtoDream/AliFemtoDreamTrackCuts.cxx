@@ -40,6 +40,10 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts()
       fetamin(0.),
       fetamax(0.),
       fcutEta(false),
+      frapmin(0.),
+      frapmax(0.),
+      fcutRap(false),
+      fMassForRapidity(0.),
       fcutCharge(false),
       fCharge(0),
       fnTPCCls(0),
@@ -121,6 +125,10 @@ AliFemtoDreamTrackCuts::AliFemtoDreamTrackCuts(
       fetamin(cuts.fetamin),
       fetamax(cuts.fetamax),
       fcutEta(cuts.fcutEta),
+      frapmin(cuts.frapmin),
+      frapmax(cuts.frapmax),
+      fcutRap(cuts.fcutRap),
+      fMassForRapidity(cuts.fMassForRapidity),
       fcutCharge(cuts.fcutCharge),
       fCharge(cuts.fCharge),
       fnTPCCls(cuts.fnTPCCls),
@@ -205,6 +213,9 @@ AliFemtoDreamTrackCuts &AliFemtoDreamTrackCuts::operator =(
   this->fetamin = cuts.fetamin;
   this->fetamax = cuts.fetamax;
   this->fcutEta = cuts.fcutEta;
+  this->frapmin = cuts.frapmin;
+  this->frapmax = cuts.frapmax;
+  this->fcutRap = cuts.fcutRap;
   this->fcutCharge = cuts.fcutCharge;
   this->fCharge = cuts.fCharge;
   this->fnTPCCls = cuts.fnTPCCls;
@@ -457,7 +468,21 @@ bool AliFemtoDreamTrackCuts::TrackingCuts(AliFemtoDreamTrack *Track) {
         fHists->FillTrackCounter(16);
     }
   }
+  // TO BE MODIFIED
+  if (pass && fcutRap) {
+    Double_t p = Track->GetP();
+    Double_t pz = Track->GetPz();
+    Double_t e = sqrt(fMassForRapidity*fMassForRapidity+p*p);
+    Double_t rapidity = -999;
 
+    rapidity = 0.5*TMath::Log((e+pz)/(e-pz));
+    if (rapidity < frapmin || rapidity > frapmax) {
+      pass = false;
+    } else {
+      if (!fMinimalBooking)
+        fHists->FillTrackCounter(32);
+    }
+  }
   return pass;
 }
 
@@ -815,9 +840,15 @@ void AliFemtoDreamTrackCuts::BookQA(AliFemtoDreamTrack *Track) {
     float p = Track->GetP();
     float pTPC = Track->GetMomTPC();
     float Pprim = Track->GetP();
+
+    float pz = Track->GetPz();
+    float e = sqrt(fMassForRapidity*fMassForRapidity+p*p);
+    float rapidity = 0.5*TMath::Log((e+pz)/(e-pz));
+
     for (int i = 0; i < 2; ++i) {
       if (i == 0 || (i == 1 && Track->UseParticle())) {
         fHists->FilletaCut(i, eta.at(0));
+        fHists->FillrapidityCut( i, rapidity);
         fHists->FillphiCut(i, phi.at(0));
         fHists->FillpTCut(i, pT);
         fHists->FillpCut(i, pTPC);

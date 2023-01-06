@@ -49,7 +49,7 @@ class AliAODv0;
 #include "TProfile.h"
 #include "TChain.h"
 
-//#include "AliLog.h"
+// #include "AliLog.h"
 
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
@@ -96,14 +96,14 @@ using namespace std;
 ClassImp(AliAnalysisTaskFlatenicityLambdaK0s)
 
     AliAnalysisTaskFlatenicityLambdaK0s::AliAnalysisTaskFlatenicityLambdaK0s() : AliAnalysisTaskSE(),
-                                                     fESD(0), fOutputList(0), hinvmassK0s(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0), hflat(0), fESDpid(0x0), treeK0s(0), treeLambda(0), treeAntiLambda(0), invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0), invpLambda(0), invptLambda(0), invyLambda(0), invmAntiLambda(0), invpAntiLambda(0), invptAntiLambda(0), invyAntiLambda(0), flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0)
+                                                                                 fESD(0), fOutputList(0), hinvmassK0s(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0), hflat(0), fESDpid(0x0), treeK0s(0), treeLambda(0), treeAntiLambda(0), invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0), invpLambda(0), invptLambda(0), invyLambda(0), invmAntiLambda(0), invpAntiLambda(0), invptAntiLambda(0), invyAntiLambda(0), flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicityLambdaK0s::AliAnalysisTaskFlatenicityLambdaK0s(const char *name) : AliAnalysisTaskSE(name),
-                                                                 fESD(0), fOutputList(0), hinvmassK0s(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0), hflat(0), fESDpid(0x0), treeK0s(0), treeLambda(0), treeAntiLambda(0), invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0), invpLambda(0), invptLambda(0), invyLambda(0), invmAntiLambda(0), invpAntiLambda(0), invptAntiLambda(0), invyAntiLambda(0), flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0)
+                                                                                             fESD(0), fOutputList(0), hinvmassK0s(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0), hflat(0), fESDpid(0x0), treeK0s(0), treeLambda(0), treeAntiLambda(0), invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0), invpLambda(0), invptLambda(0), invyLambda(0), invmAntiLambda(0), invpAntiLambda(0), invptAntiLambda(0), invyAntiLambda(0), flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0)
 {
 
     DefineInput(0, TChain::Class());
@@ -128,7 +128,7 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserCreateOutputObjects()
     hinvmassK0s = new TH1F("hinvmassK0s", "hinvmassK0s", 100, 0.41, 0.58);
     hinvmassLambda = new TH1F("hinvmassLambda", "hinvmassLambda", 100, 1.08, 1.15);
     hinvmassAntiLambda = new TH1F("hinvmassAntiLambda", "hinvmassAntiLambda", 100, 1.08, 1.15);
-    hflat = new TH1F("hflat", "hflat", 101, -0.005, 1.005);
+    hflat = new TH1F("hflat", "hflat", 1001, -0.005, 1.005);
 
     treeK0s = new TTree("treeK0s", "treeK0s");
     treeK0s->Branch("invmK0s", &invmK0s, "invmK0s/F");
@@ -223,7 +223,11 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
     {
         return;
     }
-
+    const AliESDVertex *lPrimaryBestESDVtx1 = lESDevent->GetPrimaryVertex();
+    if (!lPrimaryBestESDVtx1)
+    {
+        return;
+    }
     Double_t lBestPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
     lPrimaryBestESDVtx->GetXYZ(lBestPrimaryVtxPos);
 
@@ -482,7 +486,7 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
 
         v0->ChangeMassHypothesis(310);
         lInvMassK0s = v0->GetEffMass();
-        if (TMath::Abs(lInvMassK0s - 0.497611) < 0.05)
+        if (TMath::Abs(lInvMassK0s - 0.497611) < 0.1)
         {
             if (lV0CosineOfPointingAngle < 0.97)
                 continue;
@@ -509,7 +513,7 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
 
         v0->ChangeMassHypothesis(3122);
         lInvMassLambda = v0->GetEffMass();
-        if (TMath::Abs(lInvMassLambda - massLambda) < 0.05)
+        if (TMath::Abs(lInvMassLambda - massLambda) < 0.1)
         {
             if (lV0CosineOfPointingAngle < 0.995)
                 continue;
@@ -539,7 +543,7 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
 
         lInvMassAntiLambda = v0->GetEffMass();
 
-        if (TMath::Abs(lInvMassAntiLambda - massLambda) < 0.05)
+        if (TMath::Abs(lInvMassAntiLambda - massLambda) < 0.1)
         {
             if (lV0CosineOfPointingAngle < 0.995)
                 continue;

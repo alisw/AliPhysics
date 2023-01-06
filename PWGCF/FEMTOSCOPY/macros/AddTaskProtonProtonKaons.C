@@ -64,6 +64,11 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
     AntiTrackCuts->SetEtaRange(-0.9, 0.9);
   }
 
+  if(suffix=="69"){
+    TrackCuts->SetRapidityRange(-0.5, 0.5, 0.9382720881);
+    AntiTrackCuts->SetRapidityRange(-0.5, 0.5, 0.9382720881);
+  }
+
   //Kaon Cuts
   AliFemtoDreamTrackCuts *KaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(
     isMC, true, false, false);
@@ -95,7 +100,10 @@ AliAnalysisTaskSE *AddTaskProtonProtonKaons(int trigger = 0, bool fullBlastQA = 
   }else if(KaonCut==1){ // cuts by Ramona
    AntiKaonCuts->SetPIDkd(true,true);
   }
-
+  if(suffix=="69"){
+    KaonCuts->SetRapidityRange(-0.5, 0.5, 0.493677);
+    AntiKaonCuts->SetRapidityRange(-0.5, 0.5, 0.493677);
+  }
 
   if (!fullBlastQA) {
     evtCuts->SetMinimalBooking(true);

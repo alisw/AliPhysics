@@ -12,6 +12,7 @@
 class TBits;
 class TH1F;
 class TH2F;
+class TH3F;
 class AliVTrack;
 class AliVParticle;
 class AliPIDResponse;
@@ -77,12 +78,16 @@ private:
   TH2F                              *fhPtVsDCAxy[2];                     ///< \f$ p_{T} \f$ vs \f$ \mbox{DCA}_{XY} \f$ (b/a)
   TH2F                              *fhPtVsDCAz[2];                      ///< \f$ p_{T} \f$ vs \f$ \mbox{DCA}_{Z} \f$ (b/a)
   TH2F                              *fhPtVsTPCCls[2];                    ///< \f$ p_{T} \f$ vs TPC clusters (b/a)
+  TH2F* fhPtVsTPCRows[2];                                                ///< \f$ p_{T} \f$ vs TPC crossed rows (b/a)
   TH2F                              *fhPtVsTPCRowOverFindCls[2];         ///< \f$ p_{T} \f$ vs TPC crossed rows findable clusters ratio (b/a)
   TH2F                              *fhEtaVsPhi[2];                      ///< \f$ p_{T} \f$ vs \f$ \eta \f$ (b/a)
   TH2F                              *fhPtVsEta[2];                       ///< \f$ p_{T} \f$ vs \f$ \eta \f$ (b/a)
   TH2F                              *fhITSdEdxSignalVsP[2];              ///< ITS dE/dx signal vs P (b/a)
   TH2F                              *fhTPCdEdxSignalVsP[2];              ///< TPC dE/dx signal vs P(b/a)
   TH2F                              *fhTOFSignalVsP[2];                  ///< TOF signal vs P(b/a)
+  TH3F* fhTPCTOFSigmaVsP[3][2];                                          ///< TOF n sigmas vs TPC n sigmas vs P  to the pi, k, p lines (b/a)
+  TH2F* fhTPCdEdxSignalDiffVsP[3][2];                                    ///< TPC dE/dx signal difference to the pi, k, p lines vs P (b/a)
+  TH2F* fhPvsMsq[2];                                                     ///< momentum vs squared mass (b/a)
 
   TList                             *fHistogramsList;                    ///< the list of histograms used
 
