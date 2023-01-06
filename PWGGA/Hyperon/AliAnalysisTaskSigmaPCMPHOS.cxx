@@ -56,16 +56,13 @@ ClassImp(AliAnalysisTaskSigmaPCMPHOS)
     ////////////////////////////////////////////////////////////////////////////////
     //Default class constructor
     AliAnalysisTaskSigmaPCMPHOS::AliAnalysisTaskSigmaPCMPHOS() : AliAnalysisTaskSE(),
-                                                                 aodEvent(0), fGlobalEventID(0), mcEvent(0x0),
+                                                                 fAODEvent(0), fGlobalEventID(0), fMCEvent(0x0),
                                                                  fPIDResponse(0),
                                                                  fOutputList(0),
                                                                  fStack(0x0),
                                                                  fPHOSGeo(0x0),
-                                                                 aodEventCounter(0),
-                                                                 EventTriggers(0),
                                                                  fTriggerAnalysis(new AliTriggerAnalysis),
-                                                                 cElectronMass(0), cProtonMass(0), cSigmaMass(0), cPi0Mass(0), c(0),
-                                                                 primaryVtxPosX(0), primaryVtxPosY(0), primaryVtxPosZ(0),
+                                                                 fElectronMass(0),
                                                                  fGamma(0x0),
                                                                  fPCM(0x0),
                                                                  fPi0(0x0),
@@ -79,23 +76,20 @@ ClassImp(AliAnalysisTaskSigmaPCMPHOS)
                                                                  fMixTracksPp(0x0),
                                                                  fMixTracksPm(0x0),
                                                                  fMixLambda(0x0),
-                                                                 AODMCTrackArray(0x0), fOnFlyVector(0x0), fFinderVector(0x0), fV0ParticleIDArray(0x0), fConvPhotonArray(0x0)
+                                                                 fAODMCTrackArray(0x0), fOnFlyVector(0x0), fFinderVector(0x0), fV0ParticleIDArray(0x0), fConvPhotonArray(0x0)
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class constructor for I/O operations
 AliAnalysisTaskSigmaPCMPHOS::AliAnalysisTaskSigmaPCMPHOS(const char *name) : AliAnalysisTaskSE(name),
-                                                                             aodEvent(0), fGlobalEventID(0), mcEvent(0x0),
+                                                                             fAODEvent(0), fGlobalEventID(0), fMCEvent(0x0),
                                                                              fPIDResponse(0),
                                                                              fOutputList(0),
                                                                              fStack(0x0),
                                                                              fPHOSGeo(0x0),
-                                                                             aodEventCounter(0),
-                                                                             EventTriggers(0),
                                                                              fTriggerAnalysis(new AliTriggerAnalysis),
-                                                                             cElectronMass(0), cProtonMass(0), cSigmaMass(0), cPi0Mass(0), c(0),
-                                                                             primaryVtxPosX(0), primaryVtxPosY(0), primaryVtxPosZ(0),
+                                                                             fElectronMass(0),
                                                                              fGamma(0x0),
                                                                              fPCM(0x0),
                                                                              fPi0(0x0),
@@ -109,7 +103,7 @@ AliAnalysisTaskSigmaPCMPHOS::AliAnalysisTaskSigmaPCMPHOS(const char *name) : Ali
                                                                              fMixTracksPp(0x0),
                                                                              fMixTracksPm(0x0),
                                                                              fMixLambda(0x0),
-                                                                             AODMCTrackArray(0x0), fOnFlyVector(0x0), fFinderVector(0x0), fV0ParticleIDArray(0x0), fConvPhotonArray(0x0)
+                                                                             fAODMCTrackArray(0x0), fOnFlyVector(0x0), fFinderVector(0x0), fV0ParticleIDArray(0x0), fConvPhotonArray(0x0)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -130,11 +124,7 @@ void AliAnalysisTaskSigmaPCMPHOS::UserCreateOutputObjects()
   // Create AOD histograms
 
   //Save Particle Masses and other constants for later use
-  cElectronMass = TDatabasePDG::Instance()->GetParticle(11)->Mass();
-  cProtonMass = TDatabasePDG::Instance()->GetParticle(2212)->Mass();
-  cSigmaMass = TDatabasePDG::Instance()->GetParticle(3222)->Mass();
-  cPi0Mass = TDatabasePDG::Instance()->GetParticle(111)->Mass();
-  c = 2.99792457999999984e-02; // [cm/ps]
+  fElectronMass = TDatabasePDG::Instance()->GetParticle(11)->Mass();
 
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
@@ -194,22 +184,22 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
   if (!mgr || !mgr->GetInputEventHandler())
     return;
 
-  aodEvent = dynamic_cast<AliAODEvent *>(InputEvent());
-  if (!aodEvent)
+  fAODEvent = dynamic_cast<AliAODEvent *>(InputEvent());
+  if (!fAODEvent)
     return;
 
-  AliAODHeader *aodHeader = dynamic_cast<AliAODHeader *>(aodEvent->GetHeader());
+  AliAODHeader *aodHeader = dynamic_cast<AliAODHeader *>(fAODEvent->GetHeader());
   if (!aodHeader)
     return;
 
-  AliVHeader *aodEventHeader = aodEvent->GetHeader(); //Get the Header from the event
-  if (!aodEventHeader)
+  AliVHeader *fAODEventHeader = fAODEvent->GetHeader(); //Get the Header from the event
+  if (!fAODEventHeader)
     return;
 
   else
-    fGlobalEventID = aodEventHeader->GetEventIdAsLong(); //Get global ID of the event
+    fGlobalEventID = fAODEventHeader->GetEventIdAsLong(); //Get global ID of the event
 
-  Int_t nTracks = aodEvent->GetNumberOfTracks();
+  Int_t nTracks = fAODEvent->GetNumberOfTracks();
   fPIDResponse = mgr->GetInputEventHandler()->GetPIDResponse();
 
   // Event selection flags
@@ -218,7 +208,7 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
   Bool_t eventVtxZ10cm = kFALSE;
   Bool_t eventPileup = kFALSE;
   Bool_t eventV0AND = kFALSE;
-  Bool_t aodEventVtxExist = kFALSE;
+  Bool_t fAODEventVtxExist = kFALSE;
 
   FillHistogram("hSelEvents", 1);
 
@@ -232,57 +222,24 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
 
   // Check primary vertex position
   Double_t primaryVtxPos[3] = {-999, -999, -999};
-  const AliAODVertex *aodVtx = aodEvent->GetPrimaryVertex();
+  const AliAODVertex *aodVtx = fAODEvent->GetPrimaryVertex();
   if (!aodVtx)
     return;
 
   aodVtx->GetXYZ(primaryVtxPos);
 
-  if (EventTriggers & 65536)
-  {
-    //FillHistogram("fHistEventCounterHMV0",1); //Event Counter
-    TH1D *EventCounterdoubHMV0 = dynamic_cast<TH1D *>(fOutputList->FindObject("fHistEventCounterDouble_tHMV0"));
-    if (!EventCounterdoubHMV0)
-    {
-      return;
-    }
-    else
-      EventCounterdoubHMV0->Fill(1);
-  }
-  if (EventTriggers & 8)
-  {
-    //FillHistogram("fHistEventCounterHMSPD",1); //Event Counter
-    TH1D *EventCounterdoubHMSPD = dynamic_cast<TH1D *>(fOutputList->FindObject("fHistEventCounterDouble_tHMSPD"));
-    if (!EventCounterdoubHMSPD)
-    {
-      return;
-    }
-    else
-      EventCounterdoubHMSPD->Fill(1);
-  }
-  if (EventTriggers & 2)
-  {
-    //FillHistogram("fHistEventCounterINT7",1); //Event Counter
-    TH1D *EventCounterdoubINT7 = dynamic_cast<TH1D *>(fOutputList->FindObject("fHistEventCounterDouble_tINT7"));
-    if (!EventCounterdoubINT7)
-    {
-      return;
-    }
-    else
-      EventCounterdoubINT7->Fill(1);
-  }
-
+  
   //Fill V0 arrays
   fOnFlyVector.clear(); //clear the arrays
   fFinderVector.clear();
   fV0ParticleIDArray.clear();
 
-  Int_t nV0 = aodEvent->GetNumberOfV0s(); //Number of V0s in the event
+  Int_t nV0 = fAODEvent->GetNumberOfV0s(); //Number of V0s in the event
 
   for (Int_t iV0 = 0; iV0 < nV0; iV0++)
   { //Loop over V0s in the event
 
-    AliAODv0 *aodV0 = (AliAODv0 *)aodEvent->GetV0(iV0); //Get V0 object
+    AliAODv0 *aodV0 = (AliAODv0 *)fAODEvent->GetV0(iV0); //Get V0 object
     if (!aodV0)
       continue;
 
@@ -318,17 +275,17 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
 
   /************************Start Event Processing**************************************/
 
-  mcEvent = MCEvent(); // Get MC event (called mcEvent) from the input file
+  fMCEvent = MCEvent(); // Get MC event (called fMCEvent) from the input file
 
-  if (mcEvent)
+  if (fMCEvent)
   {
-    AODMCTrackArray = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-    if (!AODMCTrackArray)
+    fAODMCTrackArray = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    if (!fAODMCTrackArray)
       return;
-    if (mcEvent->Stack())
+    if (fMCEvent->Stack())
     {
       printf("-----------------------");
-      fStack = static_cast<AliStack *>(mcEvent->Stack());
+      fStack = static_cast<AliStack *>(fMCEvent->Stack());
       if (fStack)
         ProcessMC();
     }
@@ -342,11 +299,11 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
     fPHOSGeo = AliPHOSGeometry::GetInstance();
 
   // Checks if we have a primary vertex	// Get primary vertices form AOD
-  if (aodEvent->GetPrimaryVertexTracks()->GetNContributors() > 0)
-    aodEventVtxExist = kTRUE;
-  else if (aodEvent->GetPrimaryVertexSPD()->GetNContributors() > 0)
-    aodEventVtxExist = kTRUE;
-  const AliAODVertex *esdVertex5 = aodEvent->GetPrimaryVertex();
+  if (fAODEvent->GetPrimaryVertexTracks()->GetNContributors() > 0)
+    fAODEventVtxExist = kTRUE;
+  else if (fAODEvent->GetPrimaryVertexSPD()->GetNContributors() > 0)
+    fAODEventVtxExist = kTRUE;
+  const AliAODVertex *esdVertex5 = fAODEvent->GetPrimaryVertex();
 
   Double_t vtx5[3];
   vtx5[0] = esdVertex5->GetX();
@@ -361,7 +318,7 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
 
   FillHistogram("hSelEvents", 5);
 
-  if (aodEvent->IsPileupFromSPD())
+  if (fAODEvent->IsPileupFromSPD())
     return;
 
   FillHistogram("hSelEvents", 6);
@@ -431,7 +388,7 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
   const Int_t nConvPhoton = fConvPhotonArray.size();
   for (Int_t i = 0; i < nConvPhoton - 1; i++)
   {
-    AliAODv0 *v0_1 = (AliAODv0 *)aodEvent->GetV0(fConvPhotonArray.at(i));
+    AliAODv0 *v0_1 = (AliAODv0 *)fAODEvent->GetV0(fConvPhotonArray.at(i));
     if (!v0_1)
       continue;
     pvv1.SetXYZM(v0_1->Px(), v0_1->Py(), v0_1->Pz(), 0);
@@ -457,7 +414,7 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
     for (Int_t j = i + 1; j < nConvPhoton; j++)
     {
 
-      AliAODv0 *v0_2 = (AliAODv0 *)aodEvent->GetV0(fConvPhotonArray.at(j));
+      AliAODv0 *v0_2 = (AliAODv0 *)fAODEvent->GetV0(fConvPhotonArray.at(j));
       if (!v0_2)
         continue;
       pvv2.SetXYZM(v0_2->Px(), v0_2->Py(), v0_2->Pz(), 0);
@@ -571,7 +528,7 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
       TLorentzVector *pv2 = (TLorentzVector *)tmp->At(j);
       for (Int_t i = 0; i < nConvPhoton - 1; i++)
       {
-        AliAODv0 *v0_1 = (AliAODv0 *)aodEvent->GetV0(fConvPhotonArray.at(i));
+        AliAODv0 *v0_1 = (AliAODv0 *)fAODEvent->GetV0(fConvPhotonArray.at(i));
         if (!v0_1)
           continue;
         pvv1.SetXYZM(v0_1->Px(), v0_1->Py(), v0_1->Pz(), 0);
@@ -617,7 +574,6 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
 
   // Post output data.
   PostData(1, fOutputList);
-  aodEventCounter++;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -629,9 +585,9 @@ void AliAnalysisTaskSigmaPCMPHOS::ProcessMC()
 
   const Double_t kRcut = 1.; //cut for primary particles
   Double_t vtx[3];
-  vtx[0] = aodEvent->GetPrimaryVertex()->GetX();
-  vtx[1] = aodEvent->GetPrimaryVertex()->GetY();
-  vtx[2] = aodEvent->GetPrimaryVertex()->GetZ();
+  vtx[0] = fAODEvent->GetPrimaryVertex()->GetX();
+  vtx[1] = fAODEvent->GetPrimaryVertex()->GetY();
+  vtx[2] = fAODEvent->GetPrimaryVertex()->GetZ();
 
   Int_t Daughter1 = 0;
   Int_t Daughter2 = 0;
@@ -639,12 +595,12 @@ void AliAnalysisTaskSigmaPCMPHOS::ProcessMC()
   if (Int_t(fStack->GetNtrack()) < 2)
     return;
 
-  Int_t nMCTracks = mcEvent->GetNumberOfTracks();
+  Int_t nMCTracks = fMCEvent->GetNumberOfTracks();
   //loop over all MC tracks
   for (Int_t iMCtrack = 1; iMCtrack < nMCTracks; iMCtrack++)
   {
 
-    AliAODMCParticle *mcPart = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(iMCtrack));
+    AliAODMCParticle *mcPart = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(iMCtrack));
     if (!mcPart)
       continue;
 
@@ -669,13 +625,13 @@ void AliAnalysisTaskSigmaPCMPHOS::FillV0PhotonArray()
 {
 
   // the same codes as for Sigma+ analysis
-  Double_t primaryVtxPos[3] = {primaryVtxPosX, primaryVtxPosY, primaryVtxPosZ};
+  Double_t primaryVtxPos[3] = {0, 0, 0};
 
   //Clear V0 Photon Array and reset counter
   fConvPhotonArray.clear();
   Int_t countPhotons = 0;
 
-  Int_t nV0 = aodEvent->GetNumberOfV0s(); //Number of V0s in the event
+  Int_t nV0 = fAODEvent->GetNumberOfV0s(); //Number of V0s in the event
   if (nV0 == 0)
     return; //Return if there is no V0 to be processed
 
@@ -702,7 +658,7 @@ void AliAnalysisTaskSigmaPCMPHOS::FillV0PhotonArray()
     Double_t trackparams[6];
     Double_t covMatrix[21];
 
-    AliAODv0 *aodV0 = (AliAODv0 *)aodEvent->GetV0(iV0); //Get V0 object
+    AliAODv0 *aodV0 = (AliAODv0 *)fAODEvent->GetV0(iV0); //Get V0 object
     if (!aodV0)
       continue;
 
@@ -779,10 +735,9 @@ void AliAnalysisTaskSigmaPCMPHOS::FillV0PhotonArray()
     Double_t Vtxradius = TMath::Sqrt(vtxPosV0[0] * vtxPosV0[0] + vtxPosV0[1] * vtxPosV0[1]);
 
     //Calculating DCA of Photon to PV
-    TVector3 PV(primaryVtxPosX, primaryVtxPosY, primaryVtxPosZ);                            //Prim. Vertex
     TVector3 CV(aodV0->DecayVertexV0X(), aodV0->DecayVertexV0Y(), aodV0->DecayVertexV0Z()); //Conv. Vertex
     TVector3 p(aodV0->Px(), aodV0->Py(), aodV0->Pz());                                      //Momentum vectors of the photons
-    Double_t DCAPV = (p.Cross((CV - PV))).Mag() / p.Mag();                                  //DCA to PV of Photons
+    Double_t DCAPV = (p.Cross(CV)).Mag() / p.Mag();                                  //DCA to PV of Photons
 
     //Get reconstructed cartesian momentum
     vecN.SetXYZ(aodV0->MomNegX(), aodV0->MomNegY(), aodV0->MomNegZ()); //negative daughter
@@ -805,17 +760,17 @@ void AliAnalysisTaskSigmaPCMPHOS::FillV0PhotonArray()
 
     //*******************AOD V0 MC treatment************************//
     // * AOD MC treatment
-    if (mcEvent)
+    if (fMCEvent)
     {
       AliAODMCParticle *V0Part = nullptr;
-      AliAODMCParticle *NPart = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(TMath::Abs(trackN->GetLabel())));
-      AliAODMCParticle *PPart = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(TMath::Abs(trackP->GetLabel())));
+      AliAODMCParticle *NPart = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(TMath::Abs(trackN->GetLabel())));
+      AliAODMCParticle *PPart = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(TMath::Abs(trackP->GetLabel())));
       AliAODMCParticle *V2Mother = nullptr;
       AliAODMCParticle *V1Mother = nullptr;
-      AliAODMCParticle *V1Part = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(NPart->GetMother()));
+      AliAODMCParticle *V1Part = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(NPart->GetMother()));
       if (V1Part->GetMother() != -1)
       {
-        V1Mother = dynamic_cast<AliAODMCParticle *>(AODMCTrackArray->At(TMath::Abs(V1Part->GetMother())));
+        V1Mother = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(TMath::Abs(V1Part->GetMother())));
         if (TMath::Abs(V1Mother->GetPdgCode()) == 3212)
         {
           Double_t m = V1Mother->M();
@@ -824,10 +779,10 @@ void AliAnalysisTaskSigmaPCMPHOS::FillV0PhotonArray()
         }
       }
 
-      AliAODMCParticle *V2Part = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(PPart->GetMother()));
+      AliAODMCParticle *V2Part = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(PPart->GetMother()));
       if (V2Part->GetMother() != -1)
       {
-        V2Mother = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(TMath::Abs(V2Part->GetMother())));
+        V2Mother = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(TMath::Abs(V2Part->GetMother())));
         if (TMath::Abs(V2Mother->GetPdgCode()) == 3212)
         {
           Double_t m = V2Mother->M();
@@ -855,7 +810,7 @@ void AliAnalysisTaskSigmaPCMPHOS::FillV0PhotonArray()
 
         if (NPart->GetMother() == PPart->GetMother() && NPart->GetMother() != -1)
         {
-          V0Part = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(NPart->GetMother()));
+          V0Part = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(NPart->GetMother()));
           if (V0Part)
           {
             if (V0Part->GetPdgCode() == 22)
@@ -864,7 +819,7 @@ void AliAnalysisTaskSigmaPCMPHOS::FillV0PhotonArray()
 
               AliAODMCParticle *V0Mother = nullptr;
               if (V0Part->GetMother() != -1)
-                V0Mother = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(TMath::Abs(V0Part->GetMother())));
+                V0Mother = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(TMath::Abs(V0Part->GetMother())));
               if (V0Mother)
               {
                 if (TMath::Abs(V0Mother->GetPdgCode()) == 3212)
@@ -882,8 +837,8 @@ void AliAnalysisTaskSigmaPCMPHOS::FillV0PhotonArray()
     //  ***************End of AOD V0 MC treatment*********************** */
 
     //  Reconstruct photon with TLorentzVector
-    electron.SetXYZM(vecN(0), vecN(1), vecN(2), cElectronMass);
-    positron.SetXYZM(vecP(0), vecP(1), vecP(2), cElectronMass);
+    electron.SetXYZM(vecN(0), vecN(1), vecN(2), fElectronMass);
+    positron.SetXYZM(vecP(0), vecP(1), vecP(2), fElectronMass);
     photon = electron + positron;
 
     // Calculate photon invariant mass with TL
@@ -1002,14 +957,14 @@ void AliAnalysisTaskSigmaPCMPHOS::SelectHadrons()
   const Double_t massP = 0.938272;
   const Double_t massHe3 = 3.016029;
 
-  Int_t nTracks = aodEvent->GetNumberOfTracks();
+  Int_t nTracks = fAODEvent->GetNumberOfTracks();
 
   if (!fTracksPp)
-    fTracksPp = new TClonesArray("AliCaloPhoton", aodEvent->GetNumberOfTracks());
+    fTracksPp = new TClonesArray("AliCaloPhoton", fAODEvent->GetNumberOfTracks());
   else
     fTracksPp->Clear();
   if (!fTracksPm)
-    fTracksPm = new TClonesArray("AliCaloPhoton", aodEvent->GetNumberOfTracks());
+    fTracksPm = new TClonesArray("AliCaloPhoton", fAODEvent->GetNumberOfTracks());
   else
     fTracksPm->Clear();
 
@@ -1019,7 +974,7 @@ void AliAnalysisTaskSigmaPCMPHOS::SelectHadrons()
   for (Int_t i = 0; i < nTracks; i++)
   {
 
-    AliAODTrack *track = static_cast<AliAODTrack *>(aodEvent->GetTrack(i)); // track (type AliAODTrack) from event
+    AliAODTrack *track = static_cast<AliAODTrack *>(fAODEvent->GetTrack(i)); // track (type AliAODTrack) from event
     if (!track->IsHybridGlobalConstrainedGlobal() || TMath::Abs(track->Eta()) > 0.8)
       continue;
     AliVParticle *inEvHMain = dynamic_cast<AliVParticle *>(track);
@@ -1063,13 +1018,13 @@ void AliAnalysisTaskSigmaPCMPHOS::SelectLambda()
   else
     fLambda->Clear();
 
-  Int_t nv0 = aodEvent->GetNumberOfV0s();
+  Int_t nv0 = fAODEvent->GetNumberOfV0s();
   Int_t inLambda = 0;
   const Double_t massLambda = 1.115683;
 
   while (nv0--)
   {
-    AliAODv0 *v0 = aodEvent->GetV0(nv0);
+    AliAODv0 *v0 = fAODEvent->GetV0(nv0);
     if (!v0)
     {
       continue;
@@ -1113,7 +1068,7 @@ void AliAnalysisTaskSigmaPCMPHOS::SelectLambda()
     if (dca < 0.06)
       continue;
 
-    Double_t cpa = v0->CosPointingAngle(aodEvent->GetPrimaryVertex());
+    Double_t cpa = v0->CosPointingAngle(fAODEvent->GetPrimaryVertex());
     if (cpa < 0.993)
       continue;
 
@@ -1193,15 +1148,15 @@ void AliAnalysisTaskSigmaPCMPHOS::SelectGamma()
   else
     fGamma = new TClonesArray("AliCaloPhoton", 100);
 
-  const AliAODVertex *esdVertex5 = aodEvent->GetPrimaryVertex();
+  const AliAODVertex *esdVertex5 = fAODEvent->GetPrimaryVertex();
 
   Double_t vtx5[3] = {esdVertex5->GetX(), esdVertex5->GetY(), esdVertex5->GetZ()};
 
-  Int_t multClust = aodEvent->GetNumberOfCaloClusters();
+  Int_t multClust = fAODEvent->GetNumberOfCaloClusters();
 
   for (Int_t i = 0; i < multClust; i++)
   {
-    AliAODCaloCluster *clu = aodEvent->GetCaloCluster(i);
+    AliAODCaloCluster *clu = fAODEvent->GetCaloCluster(i);
     if (clu->GetType() != AliVCluster::kPHOSNeutral)
       continue; // always continue, why?
     if (clu->E() > 1.500)

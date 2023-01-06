@@ -57,10 +57,10 @@ private:
   ClassDef(AliAnalysisTaskSigmaPCMPHOS, 1); // PHOS analysis task
 
   TList *fOutputList;            //! Output list which contains all Histograms
-  AliAODEvent *aodEvent;         //! AOD Event to be processed
-  TClonesArray *AODMCTrackArray; //! TClonesArray containing the MC Particles
+  AliAODEvent *fAODEvent;         //! AOD Event to be processed
+  TClonesArray *fAODMCTrackArray; //! TClonesArray containing the MC Particles
   AliPIDResponse *fPIDResponse;  //! PID response object
-  AliMCEvent *mcEvent;           //! Monte-Carlo event flag
+  AliMCEvent *fMCEvent;           //! Monte-Carlo event flag
   AliStack *fStack;              //! Stack of simulated events
 
   std::vector<int> fOnFlyVector;       //! Save the track IDs used by the V0 Finders
@@ -68,15 +68,7 @@ private:
   std::vector<int> fV0ParticleIDArray; //! Save IDs of Particles found by any of the V0 Finders
   std::vector<int> fConvPhotonArray;   //! V0 Photon candidates
 
-  Double_t cElectronMass;   //! Electron PDG mass
-  Double_t cProtonMass;     //! Proton PDG mass
-  Double_t cSigmaMass;      //! Sigma^0 PDG mass
-  Double_t cPi0Mass;        //! Pi^0 PDG mass
-  Double_t c;               //! speed of light
-  Double_t primaryVtxPosX;  //! x position of the primary Vertex of the Event
-  Double_t primaryVtxPosY;  //! y position of the primary Vertex of the Event
-  Double_t primaryVtxPosZ;  //! z position of the primary Vertex of the Event
-  UInt_t EventTriggers;     //! Triggers of the Event
+  Double_t fElectronMass;   //! Electron PDG mass
   ULong64_t fGlobalEventID; //! Global ID of the Collision
 
   //FillProtonArray Cuts
@@ -105,7 +97,6 @@ private:
   Double_t fMaxphotonmass = 0.1;    //! maximum electron-positron pair mass cut
 
   AliPHOSGeometry *fPHOSGeo;            //! PHOS geometry
-  Int_t aodEventCounter;                //! number of analyzed events
   AliTriggerAnalysis *fTriggerAnalysis; //! Trigger Analysis for Normalisation
 
   TClonesArray *fGamma;     //! array of photons
