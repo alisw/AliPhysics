@@ -480,8 +480,10 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     TObjArray *oba = new TObjArray();
     oba->Add(new TNamed("ChGap22","ChGap22")); //for gap (|eta|>0.4) case
     oba->Add(new TNamed("ChGap24","ChGap24")); //for gap (|eta|>0.4) case
+    oba->Add(new TNamed("ChGap26","ChGap26")); //for gap (|eta|>0.4) case
     oba->Add(new TNamed("ChFull22","ChFull22")); //no-gap case
     oba->Add(new TNamed("ChFull24","ChFull24")); //no-gap case
+    oba->Add(new TNamed("ChFull26","ChFull26")); //no-gap case
 
     oba->Add(new TNamed("ChGap32","ChGap32")); //for gap (|eta|>0.4) case
     oba->Add(new TNamed("ChGap34","ChGap34")); //for gap (|eta|>0.4) case
@@ -502,6 +504,7 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     oba->Add(new TNamed("ChSC244","ChSC244")); //for SC{2,3}
 
     oba->Add(new TNamed("ChFull28","ChFull28"));
+    oba->Add(new TNamed("ChFull212","ChFull212"));
     oba->Add(new TNamed("PiGap22","PiGap22"));
     oba->Add(new TNamed("PiFull22","PiFull22"));
     oba->Add(new TNamed("PiFull24","PiFull24"));
@@ -536,13 +539,14 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     delete oba;
     PostData(2,fFC);
     Int_t pows[] = {3,0,2,2,3,3,3}; //5th harm. sum = 3, b/c {-2 -3}
-    //Int_t powsFull[] = {5,0,4,4,3,3,3};
-    Int_t powsFull[] = {9,0,8,4,7,3,6,0,5};
+    //Int_t powsFull[] = {5,0,4,4,3,3,3}; //Old for v2{6}
+    //Int_t powsFull[] = {9,0,8,4,7,3,6,0,5}; //For v2{8}
+    Int_t powsFull[] = {13,0,12,4,11,3,10,0,9,0,8,0,7}; //For v2{12}
     fGFW = new AliGFW();
     fGFW->AddRegion("refN",7,pows,-0.8,-fEtaV2Sep,1,1);
     fGFW->AddRegion("refP",7,pows,fEtaV2Sep,0.8,1,1);
     if(fEtaV2Sep>=0) fGFW->AddRegion("subMid",7,pows,-fEtaV2Sep,fEtaV2Sep,1,1);
-    fGFW->AddRegion("mid",9,powsFull,-0.8,0.8,1,2);
+    fGFW->AddRegion("mid",13,powsFull,-0.8,0.8,1,2);
 
     fGFW->AddRegion("PiRefN",7,pows,-0.8,-fEtaV2Sep,1,4);
     fGFW->AddRegion("PiRefP",7,pows,fEtaV2Sep,0.8,1,4);
@@ -578,18 +582,22 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       fCovList->Add(fCovariance[6+Ncovpfs*i]);
       fCovariance[7+Ncovpfs*i] = new AliProfileBS(Form("covnopt_v24_%s",spNames[i].Data()),Form("covnopt_v24_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
       fCovList->Add(fCovariance[7+Ncovpfs*i]);
-      fCovariance[8+Ncovpfs*i] = new AliProfileBS(Form("covmpt_v34_%s",spNames[i].Data()),Form("covmpt_v34_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovariance[8+Ncovpfs*i] = new AliProfileBS(Form("covmpt_v26_%s",spNames[i].Data()),Form("covmpt_v26_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
       fCovList->Add(fCovariance[8+Ncovpfs*i]);
-      fCovariance[9+Ncovpfs*i] = new AliProfileBS(Form("covnopt_v34_%s",spNames[i].Data()),Form("covnopt_v34_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovariance[9+Ncovpfs*i] = new AliProfileBS(Form("covnopt_v26_%s",spNames[i].Data()),Form("covnopt_v26_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
       fCovList->Add(fCovariance[9+Ncovpfs*i]);
-      fCovariance[10+Ncovpfs*i] = new AliProfileBS(Form("covpt2_v2_%s",spNames[i].Data()),Form("covpt2_v2_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovariance[10+Ncovpfs*i] = new AliProfileBS(Form("covmpt_v34_%s",spNames[i].Data()),Form("covmpt_v34_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
       fCovList->Add(fCovariance[10+Ncovpfs*i]);
-      fCovariance[11+Ncovpfs*i] = new AliProfileBS(Form("covpt2_v3_%s",spNames[i].Data()),Form("covpt2_v3_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovariance[11+Ncovpfs*i] = new AliProfileBS(Form("covnopt_v34_%s",spNames[i].Data()),Form("covnopt_v34_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
       fCovList->Add(fCovariance[11+Ncovpfs*i]);
-      fCovariance[12+Ncovpfs*i] = new AliProfileBS(Form("covpt3_v2_%s",spNames[i].Data()),Form("covpt3_v2_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovariance[12+Ncovpfs*i] = new AliProfileBS(Form("covpt2_v2_%s",spNames[i].Data()),Form("covpt2_v2_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
       fCovList->Add(fCovariance[12+Ncovpfs*i]);
-      fCovariance[13+Ncovpfs*i] = new AliProfileBS(Form("covpt4_v2_%s",spNames[i].Data()),Form("covpt4_v2_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovariance[13+Ncovpfs*i] = new AliProfileBS(Form("covpt2_v3_%s",spNames[i].Data()),Form("covpt2_v3_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
       fCovList->Add(fCovariance[13+Ncovpfs*i]);
+      fCovariance[14+Ncovpfs*i] = new AliProfileBS(Form("covpt3_v2_%s",spNames[i].Data()),Form("covpt3_v2_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[14+Ncovpfs*i]);
+      fCovariance[15+Ncovpfs*i] = new AliProfileBS(Form("covpt4_v2_%s",spNames[i].Data()),Form("covpt4_v2_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovariance[15+Ncovpfs*i]);
       if(fFillMptPowers) {
         fCovariancePowerMpt = new AliProfileBS*[3*4];
         for(Int_t i=0;i<endPID;i++) {
@@ -1262,24 +1270,26 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
     FillCovariance(fCovariance[5+Ncovpfs*i],corrconfigs.at(33+i),l_Multi,1,wp[i][0],l_Random);
     FillCovariance(fCovariance[6+Ncovpfs*i],corrconfigs.at(8+i),l_Multi,mptev,wp[i][0],l_Random);
     FillCovariance(fCovariance[7+Ncovpfs*i],corrconfigs.at(8+i),l_Multi,1,wp[i][0],l_Random);
-    FillCovariance(fCovariance[8+Ncovpfs*i],corrconfigs.at(24+i),l_Multi,mptev,wp[i][0],l_Random);
-    FillCovariance(fCovariance[9+Ncovpfs*i],corrconfigs.at(24+i),l_Multi,1,wp[i][0],l_Random);
+    FillCovariance(fCovariance[8+Ncovpfs*i],corrconfigs.at(39+i),l_Multi,mptev,wp[i][0],l_Random);
+    FillCovariance(fCovariance[9+Ncovpfs*i],corrconfigs.at(39+i),l_Multi,1,wp[i][0],l_Random);
+    FillCovariance(fCovariance[10+Ncovpfs*i],corrconfigs.at(24+i),l_Multi,mptev,wp[i][0],l_Random);
+    FillCovariance(fCovariance[11+Ncovpfs*i],corrconfigs.at(24+i),l_Multi,1,wp[i][0],l_Random);
     //Covariance of vn with multi-particle pt-correlation
     vector<double> pt2corr = fPtCont[i]->getEventCorrelation(wpPt[i],2);
     if(pt2corr[1]!=0) {
       double pt2ev = pt2corr[0]/pt2corr[1];
-      FillCovariance(fCovariance[10+Ncovpfs*i],corrconfigs.at(i),l_Multi,pt2ev,pt2corr[1],l_Random);
-      FillCovariance(fCovariance[11+Ncovpfs*i],corrconfigs.at(16+i),l_Multi,pt2ev,pt2corr[1],l_Random);
+      FillCovariance(fCovariance[12+Ncovpfs*i],corrconfigs.at(i),l_Multi,pt2ev,pt2corr[1],l_Random);
+      FillCovariance(fCovariance[13+Ncovpfs*i],corrconfigs.at(16+i),l_Multi,pt2ev,pt2corr[1],l_Random);
     }
     vector<double> pt3corr = fPtCont[i]->getEventCorrelation(wpPt[i],3);
     if(pt3corr[1]!=0) {
       double pt3ev = pt3corr[0]/pt3corr[1];
-      FillCovariance(fCovariance[12+Ncovpfs*i],corrconfigs.at(i),l_Multi,pt3ev,pt3corr[1],l_Random);
+      FillCovariance(fCovariance[14+Ncovpfs*i],corrconfigs.at(i),l_Multi,pt3ev,pt3corr[1],l_Random);
     }
     vector<double> pt4corr = fPtCont[i]->getEventCorrelation(wpPt[i],4);
     if(pt4corr[1]!=0) {
       double pt4ev = pt4corr[0]/pt4corr[1];
-      FillCovariance(fCovariance[13+Ncovpfs*i],corrconfigs.at(i),l_Multi,pt4ev,pt4corr[1],l_Random);
+      FillCovariance(fCovariance[15+Ncovpfs*i],corrconfigs.at(i),l_Multi,pt4ev,pt4corr[1],l_Random);
     }
     //Covariance of vn with powers of mpt
     if(fFillMptPowers) {
@@ -1379,6 +1389,12 @@ void AliAnalysisTaskDeform::CreateCorrConfigs() {
 
   corrconfigs.push_back(GetConf("ChSC244","refP {2 4} refN {-2 -4}", kFALSE));    //  ChSC244 37
   corrconfigs.push_back(GetConf("ChFull28","mid {2 2 2 2 -2 -2 -2 -2}",kFALSE));  //  ChFull28 38
+  corrconfigs.push_back(GetConf("ChGap26","refP {2 2 2} refN {-2 -2 -2}",kFALSE));  //  ChGap26 39 - 42
+  corrconfigs.push_back(GetConf("PiGap26","PiRefP {2 2 2} PiRefN {-2 -2 -2}",kFALSE));  // 
+  corrconfigs.push_back(GetConf("KaGap26","KaRefP {2 2 2} KaRefN {-2 -2 -2}",kFALSE));  // 
+  corrconfigs.push_back(GetConf("PrGap26","PrRefP {2 2 2} PrRefN {-2 -2 -2}",kFALSE));  //  
+  corrconfigs.push_back(GetConf("ChFull26","mid {2 2 2 -2 -2 -2}",kFALSE));  //  ChFull26 43
+  corrconfigs.push_back(GetConf("ChFull212","mid {2 2 2 2 2 2 -2 -2 -2 -2 -2 -2}",kFALSE));  //  ChFull212 44
   
 //v24 3-sub
   if(fEtaV2Sep<0) return; //if eta < 0, then pos & neg are w/o SE and thus doesn't make sense to calculate v24

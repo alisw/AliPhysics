@@ -180,7 +180,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   AliPtContainer  **fPtCont;
   TList *fCovList;
   TList *fV2dPtList;
-  static const int Ncovpfs = 14;
+  static const int Ncovpfs = 16;
   AliProfileBS **fCovariance; //!
   AliProfileBS **fCovariancePowerMpt; //!
   AliProfileBS **fMpt; //
