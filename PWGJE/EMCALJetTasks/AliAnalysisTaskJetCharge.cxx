@@ -44,6 +44,8 @@ AliAnalysisTaskJetCharge::AliAnalysisTaskJetCharge() :
   fCentMax(10),
   fJetRadius(0),
   JetChargeK(0.5),
+  JetChargeMid(-999),
+  JetChargeHigh(-999),
 
 
   fTreeJets(0)
@@ -62,6 +64,8 @@ AliAnalysisTaskJetCharge::AliAnalysisTaskJetCharge(const char *name) :
   fCentMax(10),
   fJetRadius(0),
   JetChargeK(0.5),
+  JetChargeMid(-999),
+  JetChargeHigh(-999),
 
 
 
@@ -103,6 +107,9 @@ AliAnalysisTaskJetCharge::~AliAnalysisTaskJetCharge()
   fTreeJets->Branch("Phi",&Phi,"Phi/F");
   fTreeJets->Branch("Eta",&Eta,"Eta/F");
   fTreeJets->Branch("JetCharge",&JetCharge,"JetCharge/F");
+  fTreeJets->Branch("JetChargeMid",&JetChargeMid,"JetChargeMid/F");
+  fTreeJets->Branch("JetChargeHigh",&JetChargeHigh,"JetChargeHigh/F");
+
   fTreeJets->Branch("LeadingTrackPt",&LeadingTrackPt,"LeadingTrackPt/F");
 
 
@@ -139,6 +146,8 @@ Bool_t AliAnalysisTaskJetCharge::FillHistograms()
   Phi = 0;
   Eta = 0;
   JetCharge = 0;
+  JetChargeMid = 0;
+  JetChargeHigh = 0;
   LeadingTrackPt = 0;
 
   // Initialise jet pointer
@@ -215,12 +224,31 @@ Bool_t AliAnalysisTaskJetCharge::FillHistograms()
 
           // Now Caluclate the jet Charge
           Float_t jetCharge = 0;
+          Float_t MidjetCharge = 0;
+          Float_t HighjetCharge = 0;
+
+          double_t DetMidPt = 0;
+          double_t DetHighPt = 0;
+          Int_t MidCount = 0;
+          Int_t HighCount = 0;
 
           // Loop over the consituents
           for (UInt_t iJetConst = 0; iJetConst < nJetConstituents; iJetConst++ )
           {
             AliVParticle *JetParticle = Jet1->Track(iJetConst);
             jetCharge += JetParticle->Charge()*pow(JetParticle->Pt(),JetChargeK);
+            if(JetParticle->Pt() > 0.8)
+            {
+              MidjetCharge += JetParticle->Charge()*pow(abs(JetParticle->Pt()),JetChargeK);
+              DetMidPt += JetParticle->Pt();
+              MidCount += 1;
+            }
+            if(JetParticle->Pt() > 3.0)
+            {
+              HighjetCharge += JetParticle->Charge()*pow(abs(JetParticle->Pt()),JetChargeK);
+              DetHighPt += JetParticle->Pt();
+              HighCount += 1;
+            }
           }
 
 
@@ -228,12 +256,23 @@ Bool_t AliAnalysisTaskJetCharge::FillHistograms()
 
         // Normalise the Non Flavoured Jet CHarge
         jetCharge/=pow(Jet1->Pt(),0.5);
+        MidjetCharge/=pow(DetMidPt,JetChargeK);
+        HighjetCharge/=pow(DetHighPt,JetChargeK);
 
-
+        //insure that the particle count is greater than 1 otherwise sets the final value to 0
+        if(MidCount < 2)
+        {
+          MidjetCharge = 0;
+        }
+        if(HighCount < 2)
+        {
+          HighjetCharge = 0;
+        }     
 
         //Put The Jet Charge in the right place
         JetCharge = jetCharge;
-
+        JetChargeMid = MidjetCharge;
+        JetChargeHigh = HighjetCharge;
 
 
 

@@ -58,21 +58,28 @@ class AliAnalysisTaskJetChargeFlavourPb : public AliAnalysisTaskEmcalJet {
   Float_t Phi;                    //
   Float_t Eta;                    //
   Float_t JetCharge;              //
+  Float_t JetChargeMid;              //
+  Float_t JetChargeHigh;              //
   Float_t ParticlePt;             //
   Float_t ParticlePhi;            //
   Float_t ParticleEta;            //
   Float_t ParticleJetCharge;      //
+  Float_t ParticleJetChargeMid;      //
+  Float_t ParticleJetChargeHigh;      //
   Float_t LeadingTrackPt;         //
   Int_t PdgCode;                  //
   Int_t PtMatchedPdgCode;         //
   Int_t GeoMatchedPdgCode;        //
   Float_t ProgenetorFraction;     //
 
+  Int_t nParticles;        //
+  Int_t nParticlesParticle;        //
+
   
   TChain                              *pChain;                                                     //
 
 
 
-  ClassDef(AliAnalysisTaskJetChargeFlavourPb, 2)
+  ClassDef(AliAnalysisTaskJetChargeFlavourPb, 11)
 };
 #endif
