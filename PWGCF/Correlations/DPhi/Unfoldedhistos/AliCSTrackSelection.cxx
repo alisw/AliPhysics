@@ -530,7 +530,6 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
       fhPtVsTPCRows[i]->Fill(ttrk->GetTPCCrossedRows(), trk->Pt());
       fhPtVsTPCRowOverFindCls[i]->Fill(ratioCrossedRowsOverFindableClustersTPC,trk->Pt());
       fhPtVsEta[i]->Fill(trk->Eta(),trk->Pt());
-      fhPvsMsq[i]->Fill(ttrk->M() * ttrk->M(), ttrk->P());
 
       if (fQALevel > AliCSAnalysisCutsBase::kQALevelLight) {
         fhEtaVsPhi[i]->Fill(trk->Phi()*180.0/TMath::Pi(),trk->Eta());
@@ -546,7 +545,9 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
             Double_t tracklen_cm = trk->GetIntegratedLength();
             Double_t toftime_ps = ttrk->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(trk->P());
             Double_t beta = tracklen_cm / toftime_ps / c_cm_ps;
-            fhTOFSignalVsP[i]->Fill(trk->P(),beta);
+            double tofmass = TMath::Sqrt(trk->P() * trk->P() * (1.0 / beta / beta - 1.0));
+            fhTOFSignalVsP[i]->Fill(trk->P(), beta);
+            fhPvsTOFMass[i]->Fill(tofmass, ttrk->P());
           }
           auto spec = [](int ix) {
             switch (ix) {
@@ -886,10 +887,10 @@ void AliCSTrackSelection::DefineHistograms(){
       fHistogramsList->Add(fhTOFSignalVsP[0]);
       fHistogramsList->Add(fhTOFSignalVsP[1]);
 
-      fhPvsMsq[0] = new TH2F(Form("PvsMsqB_%s", fCutsString.Data()), "Momentum versus #it{m}^{2} before;#it{m}^{2} (GeV/c^{2});P (GeV/c)", 200, 0.0, 2.0, nPbins, edges);
-      fhPvsMsq[1] = new TH2F(Form("PvsMsqA_%s", fCutsString.Data()), "Momentum versus #it{m}^{2};#it{m}^{2} (GeV/c^{2});P (GeV/c)", 200, 0.0, 2.0, nPbins, edges);
-      fHistogramsList->Add(fhPvsMsq[0]);
-      fHistogramsList->Add(fhPvsMsq[1]);
+      fhPvsTOFMass[0] = new TH2F(Form("PvsMsqB_%s", fCutsString.Data()), "Momentum versus #it{m} before;#it{m} (GeV/c^{2});P (GeV/c)", 200, 0.0, 2.0, nPbins, edges);
+      fhPvsTOFMass[1] = new TH2F(Form("PvsMsqA_%s", fCutsString.Data()), "Momentum versus #it{m};#it{m} (GeV/c^{2});P (GeV/c)", 200, 0.0, 2.0, nPbins, edges);
+      fHistogramsList->Add(fhPvsTOFMass[0]);
+      fHistogramsList->Add(fhPvsTOFMass[1]);
 
       if (fQALevel == AliCSAnalysisCutsBase::kQALevelHeavy) {
         auto name = [](int idx) {
