@@ -7,6 +7,7 @@
 #include "AliGenEventHeader.h"
 #include "AliGenCocktailEventHeader.h"
 #include "AliVVertex.h"
+#include "AliMCVertex.h"
 #include "AliLog.h"
 #include "AliAODVertex.h"
 #include "AliVTrack.h"
@@ -453,7 +454,49 @@ Bool_t AliAnalysisUtils::IsPileupInGeneratedEvent(TList *lgen, TString genname, 
   if(nCollis>1) return kTRUE;
   return kFALSE;
 }
+//______________________________________________________________________
+AliVVertex*  AliAnalysisUtils::GetGeneratedPrimaryVertexOfTriggerEvent(AliMCEvent* mcEv){
+  // Interface method for ESDs
+  AliGenCocktailEventHeader *cocktailHeader = dynamic_cast<AliGenCocktailEventHeader *>(mcEv->GenEventHeader());
+  if (cocktailHeader == nullptr) return 0x0;
+  TList *lgen = cocktailHeader->GetHeaders();
+  return GetGeneratedPrimaryVertexOfTriggerEvent(lgen);
+}
+//______________________________________________________________________
+AliVVertex*  AliAnalysisUtils::GetGeneratedPrimaryVertexOfTriggerEvent(AliAODMCHeader* aodMCHeader){
+  // Interface method for AODs
+  TList *lgen = aodMCHeader->GetCocktailHeaders();
+  return GetGeneratedPrimaryVertexOfTriggerEvent(lgen);
+}
+//______________________________________________________________________
+AliVVertex*  AliAnalysisUtils::GetGeneratedPrimaryVertexOfTriggerEvent(TList *lgen){
+  // returns the position of the generated primary vertex of the trigger event
+  // in case of productions with generated pileup
 
+  if(!lgen) return 0x0;
+  TArrayF v;
+  Int_t nh=lgen->GetEntries();
+  for(Int_t i=0; i<nh; i++){
+    AliGenEventHeader* gh=(AliGenEventHeader*)lgen->At(i);
+    if(gh->InheritsFrom(AliGenCocktailEventHeader::Class())){
+      AliGenCocktailEventHeader* gch=dynamic_cast<AliGenCocktailEventHeader*>(gh);
+      TList* lh2=gch->GetHeaders();
+      if(lh2){
+	Int_t nh2=lh2->GetEntries();
+	for(Int_t i2=0; i2<nh2; i2++){
+	  AliGenEventHeader* gh2=(AliGenEventHeader*)lh2->At(i2);
+	  Double_t timeNs = gh2->InteractionTime() * 1e9;
+	  if(TMath::Abs(timeNs) < 3.0) gh2->PrimaryVertex(v);
+	}
+      }
+    }else{
+      Double_t timeNs = gh->InteractionTime() * 1e9;
+      if(TMath::Abs(timeNs) < 3.0) gh->PrimaryVertex(v);
+    }
+  }
+  AliMCVertex* primv=new AliMCVertex(v[0] ,v[1], v[2]);
+  return ((AliVVertex*)primv);
+}
 //______________________________________________________________________
 Bool_t AliAnalysisUtils::IsKinkMother(AliAODTrack* track, AliAODEvent* aod){
   // returns kTRUE if a track enters in a kink (kink mother)
