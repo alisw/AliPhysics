@@ -2236,6 +2236,12 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     //                            00010113   0dm00009f9730000dge0404000   24466190sa01cc00000   32l51070a   0103103m00000000   0453503000000000
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","24466190sa01cc00000","32l51070a","0103103m00000000","0453503000000000");
 
+
+  } else if ( trainConfig == 6524) { //Standard 13TeV, Material Budget Studies, exchange m by d
+    //                            00010113   0dm00009f9730000dge0404000   24466190sa01cc00000   32l51070a   0103103m00000000   0453503000000000
+    //                                         |
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa01cc00000","32l51070a","0103103m00000000","0453503000000000"); // INT7 Standard
+
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
   } else {
