@@ -331,6 +331,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
 
   void SetControlParticleHistogramsList(TList* const cphl) {this->fControlParticleHistogramsList = cphl;};
   TList* GetControlParticleHistogramsList() const {return this->fControlParticleHistogramsList;} 
+  void SetFillControlParticleHistograms(Bool_t fcph) {this->fFillControlParticleHistograms = fcph;};
   void SetUseFakeTracks(const Bool_t uft) {this->fUseFakeTracks = uft;};
 
   void SetFilterBit(Int_t fb) {this->fFilterBit = fb;};
@@ -664,8 +665,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Double_t fMultiplicity;        // defined as a sum of track weights used to calculate Q-vectors (see below also fSelectedTracks) 
   TH1D *fMultiplicityHist;       // this is distribution of my multiplicity
   Double_t fMultiplicityBins[3]; // [nBins,minMultiplicity,maxMultiplicity]
-  Int_t fSelectedTracks;         // this is an integer counter of tracks used to calculate Q-vectors, after all particle cuts have been applied
-  TH1I *fSelectedTracksHist;     // this is distribution fSelectedTracks. Also the counter of selected events for analysis (use e.g. in OnlineMonitoring())
+  Int_t fSelectedTracks;         // this is an integer counter of tracks used to calculate Q-vectors, after all particle cuts have been applied. Calculated in FilterEvent(AliVEvent *ave)
+  TH1I *fSelectedTracksHist;     // this is distribution fSelectedTracks. Also the counter of selected events for analysis (use e.g. in OnlineMonitoring() or InternalValidation())
   Int_t fSelectedTracksCuts[2];  // [min,max]
   Bool_t fUseSelectedTracksCuts; // kFALSE by default, set to kTRUE if task->SelectedTracksCuts(...) has been called
   TH1D *fCentralMultiplicityHist[gCentralMultiplicity][2]; // this is distribution of reference multiplicities, maintained centrally [before,after event cuts]
@@ -703,6 +704,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   // 3) Control particle histograms:  
   TList *fControlParticleHistogramsList; // list to hold all control histograms for particle distributions 
   TProfile *fControlParticleHistogramsPro; // keeps flags relevant for the control particle histograms
+  Bool_t fFillControlParticleHistograms; // kTRUE by default, but for instance kFALSE when I do InternalValidation()
   TExMap *fSimReco; //! look up table between kine and reco particles (key = kine (Monte Carlo label), value = reco (track index in AOD))
   Bool_t fUseFakeTracks; // if kTRUE, the Monte Carlo particle is obtained as TMath:Abs(aRecoTrack->GetLabel())
   TExMap *fGlobalTracksAOD; //! global tracks in AOD
@@ -825,7 +827,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo() 
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,33);
+  ClassDef(AliAnalysisTaskMuPa,34);
 
 };
 

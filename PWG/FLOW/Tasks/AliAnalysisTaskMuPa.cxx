@@ -83,6 +83,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  // Control particle histograms:
  fControlParticleHistogramsList(NULL),
  fControlParticleHistogramsPro(NULL),
+ fFillControlParticleHistograms(kTRUE),
  fSimReco(NULL),
  fUseFakeTracks(kFALSE),
  fGlobalTracksAOD(NULL),
@@ -252,6 +253,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  // Control particle histograms:
  fControlParticleHistogramsList(NULL),
  fControlParticleHistogramsPro(NULL),
+ fFillControlParticleHistograms(kTRUE),
  fSimReco(NULL),
  fUseFakeTracks(kFALSE),
  fGlobalTracksAOD(NULL),
@@ -541,7 +543,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  Double_t dEta = 0., wEta = 1.; // pseudorapidity and corresponding eta weight
  Double_t wToPowerP = 1.; // weight raised to power p
  Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
- Int_t nSelectedTracksCounter = 0; 
+ Int_t nSelectedTracksCounter = 0; // I cannot use here fSelectedTracks, since that one is already calculated in FilterEvent(AliVEvent *ave)
  for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  {
   AliAODTrack *aodTrack = NULL;
@@ -613,12 +615,34 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
 
   if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
   {
-   Int_t bin = fCorrelationsPro[0][0][AFO_PT]->FindBin(dPt);
-   if(0>=bin || fCorrelationsPro[0][0][AFO_PT]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+   // get the desired bin number:
+   Int_t bin = -1;
+   if(fCalculateCorrelations)
    {
-    Red(Form("dPt = %f, bin = %d",dPt,bin));
-    cout<<__LINE__<<endl;exit(1);
-   }
+    bin = fCorrelationsPro[0][0][AFO_PT]->FindBin(dPt);
+    if(0>=bin || fCorrelationsPro[0][0][AFO_PT]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+    {
+     Red(Form("dPt = %f, bin = %d",dPt,bin));
+     cout<<__LINE__<<endl;exit(1);
+    }
+   } 
+   else if(fCalculateTest0)
+   {
+    for(Int_t o=0;o<gMaxCorrelator;o++)
+    { 
+     if(fTest0Pro[o][0][AFO_PT]) 
+     {
+      bin = fTest0Pro[o][0][AFO_PT]->FindBin(dPt);
+      if(0>=bin || fTest0Pro[o][0][AFO_PT]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+      {
+       Red(Form("dPt = %f, bin = %d",dPt,bin));
+       cout<<__LINE__<<endl;exit(1);
+      }       
+      break; // it suffices to find the first one which is booked, since binning is the same across different orders
+     }
+    } // for(Int_t o=0;o<gMaxCorrelator;o++)
+   } // else if(fCalculateTest0)
+
    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
    {
     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
@@ -639,12 +663,34 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
 
   if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])
   {
-   Int_t bin = fCorrelationsPro[0][0][AFO_ETA]->FindBin(dEta);
-   if(0>=bin || fCorrelationsPro[0][0][AFO_ETA]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+   // get the desired bin number:
+   Int_t bin = -1;
+   if(fCalculateCorrelations)
    {
-    Red(Form("dEta = %f, bin = %d",dEta,bin));
-    cout<<__LINE__<<endl;exit(1);
-   }
+    bin = fCorrelationsPro[0][0][AFO_ETA]->FindBin(dEta);
+    if(0>=bin || fCorrelationsPro[0][0][AFO_ETA]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+    {
+     Red(Form("dEta = %f, bin = %d",dEta,bin));
+     cout<<__LINE__<<endl;exit(1);
+    }
+   } 
+   else if(fCalculateTest0)
+   {
+    for(Int_t o=0;o<gMaxCorrelator;o++)
+    { 
+     if(fTest0Pro[o][0][AFO_ETA]) 
+     {
+      bin = fTest0Pro[o][0][AFO_ETA]->FindBin(dEta);
+      if(0>=bin || fTest0Pro[o][0][AFO_ETA]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+      {
+       Red(Form("dEta = %f, bin = %d",dEta,bin));
+       cout<<__LINE__<<endl;exit(1);
+      }       
+      break; // it suffices to find the first one which is booked, since binning is the same across different orders
+     }
+    } // for(Int_t o=0;o<gMaxCorrelator;o++)
+   } // else if(fCalculateTest0)
+
    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
    {
     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
@@ -729,7 +775,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
 
  // k) Fill e-b-e quantities:
  if(fMultiplicityHist){fMultiplicityHist->Fill(fMultiplicity);}
- if(fSelectedTracksHist){fSelectedTracksHist->Fill(fSelectedTracks);}
+ if(fSelectedTracksHist){fSelectedTracksHist->Fill(fSelectedTracks);} // fSelectedTracks is calculated separately in FilterEvent(AliVEvent *ave), therefore not available for InternalValidation()
 
  // l) Calculate correlations:
  if(fCalculateCorrelations){this->CalculateCorrelations();}
@@ -741,8 +787,8 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  if(fCalculateTest0){this->CalculateTest0();}
 
  // o) Calculate kine correlations:
- if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){this->CalculateKineCorrelations("pt");}
- if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){this->CalculateKineCorrelations("eta");}
+ if(fCalculateCorrelations && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){this->CalculateKineCorrelations("pt");}
+ if(fCalculateCorrelations && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){this->CalculateKineCorrelations("eta");}
 
  // p) Kine Test0 correlations:
  if(fCalculateTest0 && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){this->CalculateKineTest0("pt");}  
@@ -843,7 +889,26 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
 
  if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
  {
-  for(Int_t b=0;b<fCorrelationsPro[0][0][AFO_PT]->GetNbinsX();b++)
+  // if-else code snippet below is is fine, as long as binning in Correlations and Test0 are identical, as well as along different orders, which is the case
+  Int_t nBins = -1;
+  if(fCalculateCorrelations)
+  {
+   for(Int_t o=0;o<4;o++) // loop over order of correlator, 4 is hardcoded also in .h, when I generalize is there, I need to update also here
+   {
+    if(fCorrelationsPro[o][0][AFO_PT]) { nBins = fCorrelationsPro[o][0][AFO_PT]->GetNbinsX(); }
+    break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+   }   
+  } 
+  else if(fCalculateTest0)
+  {
+   for(Int_t o=0;o<gMaxCorrelator;o++) // loop over order of correlator
+   {
+    if(fTest0Pro[o][0][AFO_PT]) { nBins = fTest0Pro[o][0][AFO_PT]->GetNbinsX(); }
+    break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+   }   
+  }
+ 
+  for(Int_t b=0;b<nBins;b++)
   {
    fqVectorEntries[PTq][b] = 0;
    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
@@ -856,9 +921,29 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
   } // for(Int_t b=0;b<this->fKinematicsBins[PT][0];b++)
  } // if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
 
+
  if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])
  {
-  for(Int_t b=0;b<fCorrelationsPro[0][0][AFO_ETA]->GetNbinsX();b++)
+  // if-else code snippet below is is fine, as long as binning in Correlations and Test0 are identical, as well as along different orders, which is the case
+  Int_t nBins = -1;
+  if(fCalculateCorrelations)
+  {
+   for(Int_t o=0;o<4;o++) // loop over order of correlator, 4 is hardcoded also in .h, when I generalize is there, I need to update also here
+   {
+    if(fCorrelationsPro[o][0][AFO_ETA]) { nBins = fCorrelationsPro[o][0][AFO_ETA]->GetNbinsX(); }
+    break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+   }   
+  } 
+  else if(fCalculateTest0)
+  {
+   for(Int_t o=0;o<gMaxCorrelator;o++) // loop over order of correlator
+   {
+    if(fTest0Pro[o][0][AFO_ETA]) { nBins = fTest0Pro[o][0][AFO_ETA]->GetNbinsX(); }
+    break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+   }   
+  }
+
+  for(Int_t b=0;b<nBins;b++)
   {
    fqVectorEntries[ETAq][b] = 0;
    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
@@ -878,7 +963,26 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
   if(ftaNestedLoops[1]){ftaNestedLoops[1]->Reset();}
   if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
   {
-   for(Int_t b=0;b<fCorrelationsPro[0][0][AFO_PT]->GetNbinsX();b++)
+   // if-else code snippet below is is fine, as long as binning in Correlations and Test0 are identical, as well as along different orders, which is the case
+   Int_t nBins = -1;
+   if(fCalculateCorrelations)
+   {
+    for(Int_t o=0;o<4;o++) // loop over order of correlator, 4 is hardcoded also in .h, when I generalize is there, I need to update also here
+    {
+     if(fCorrelationsPro[o][0][AFO_PT]) { nBins = fCorrelationsPro[o][0][AFO_PT]->GetNbinsX(); }
+     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    }   
+   } 
+   else if(fCalculateTest0)
+   {
+    for(Int_t o=0;o<gMaxCorrelator;o++) // loop over order of correlator
+    {
+     if(fTest0Pro[o][0][AFO_PT]) { nBins = fTest0Pro[o][0][AFO_PT]->GetNbinsX(); }
+     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    }   
+   }
+
+   for(Int_t b=0;b<nBins;b++)
    {
     ftaNestedLoopsKine[PTq][b][0]->Reset();
     ftaNestedLoopsKine[PTq][b][1]->Reset();
@@ -886,7 +990,26 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
   } // if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
   if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])
   {
-   for(Int_t b=0;b<fCorrelationsPro[0][0][AFO_ETA]->GetNbinsX();b++)
+   // if-else code snippet below is is fine, as long as binning in Correlations and Test0 are identical, as well as along different orders, which is the case
+   Int_t nBins = -1;
+   if(fCalculateCorrelations)
+   {
+    for(Int_t o=0;o<4;o++) // loop over order of correlator, 4 is hardcoded also in .h, when I generalize is there, I need to update also here
+    {
+     if(fCorrelationsPro[o][0][AFO_PT]) { nBins = fCorrelationsPro[o][0][AFO_PT]->GetNbinsX(); }
+     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    }   
+   } 
+   else if(fCalculateTest0)
+   {
+    for(Int_t o=0;o<gMaxCorrelator;o++) // loop over order of correlator
+    {
+     if(fTest0Pro[o][0][AFO_PT]) { nBins = fTest0Pro[o][0][AFO_PT]->GetNbinsX(); }
+     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    }   
+   }
+
+   for(Int_t b=0;b<nBins;b++)
    {
     ftaNestedLoopsKine[ETAq][b][0]->Reset();
     ftaNestedLoopsKine[ETAq][b][1]->Reset();  
@@ -1521,7 +1644,7 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
- fBasePro = new TProfile("fBasePro","flags for the whole analysis",15,0.,15.);
+ fBasePro = new TProfile("fBasePro","flags for the whole analysis",16,0.,16.);
  fBasePro->SetStats(kFALSE);
  fBasePro->SetLineColor(COLOR);
  fBasePro->SetFillColor(FILLCOLOR);
@@ -1540,6 +1663,8 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
  fBasePro->GetXaxis()->SetBinLabel(13,"fUseTrigger"); fBasePro->Fill(12.5,fUseTrigger);
  fBasePro->GetXaxis()->SetBinLabel(14,"fUseFixedNumberOfRandomlySelectedParticles"); fBasePro->Fill(13.5,fUseFixedNumberOfRandomlySelectedParticles);
  fBasePro->GetXaxis()->SetBinLabel(15,"fFixedNumberOfRandomlySelectedParticles"); fBasePro->Fill(14.5,fFixedNumberOfRandomlySelectedParticles);
+ fBasePro->GetXaxis()->SetBinLabel(16,"fFillControlParticleHistograms"); fBasePro->Fill(15.5,fFillControlParticleHistograms);
+
  fBaseList->Add(fBasePro);
 
 } // void AliAnalysisTaskMuPa::BookBaseProfile()
@@ -2134,6 +2259,10 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
  }
  fControlParticleHistogramsList->Add(fControlParticleHistogramsPro);
 
+
+ if(!fFillControlParticleHistograms){return;}
+
+
  // b) Common local labels:
  //    Remark: Keep them in sync with enums in .h 
  TString sxyTz[2] = {"xy","z"};
@@ -2524,7 +2653,7 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
      if(AFO_PT == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){continue;}
      if(AFO_ETA == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){continue;}
   
-     // per demand, custom meeting for kine dependence:
+     // per demand, custom binning for kine dependence:
      if(AFO_PT == v && fUseCustomKineDependenceBins[PTq])
      {
       fTest0Pro[mo][mi][v] = new TProfile(Form("fTest0Pro[%d][%d][%s]",mo,mi,vvVariableHistName[v].Data()),fTest0Labels[mo][mi]->Data(),fKineDependenceBins[PTq]->GetSize()-1,fKineDependenceBins[PTq]->GetArray());
@@ -6171,7 +6300,7 @@ Bool_t AliAnalysisTaskMuPa::RetrieveCorrelationsLabels()
   if(0 == order){continue;} // empty lines, or the label format which is not supported
   // 1-p => 0, 2-p => 1, etc.:
   fTest0Labels[order-1][counter[order-1]] = new TString(fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b)); // okay...  
-  //cout<<__LINE__<<": "<<fTest0Labels[order-1][counter[order-1]]->Data()<<endl;
+  // cout<<__LINE__<<": "<<fTest0Labels[order-1][counter[order-1]]->Data()<<endl; sleep(1);
   counter[order-1]++;
  } // for(Int_t b=1;b<=nBins;b++)
 
@@ -6680,7 +6809,8 @@ void AliAnalysisTaskMuPa::InternalValidation()
   //  [2] => v3
   //  [3] => RP
 
-  fvnPDF = new TF3("fvnPDF","x + 2.*y - 3.*z",0.05,0.06,0.06,0.07,0.07,0.08); // v1 \in [0.05,0.06], v2 \in [0.06,0.07], v3 \in [0.07,0.08]   
+  fvnPDF = new TF3("fvnPDF","x + 2.*y - 3.*z",0.07,0.08,0.06,0.07,0.05,0.06); // v1 \in [0.07,0.08], v2 \in [0.06,0.07], v3 \in [0.05,0.06]   
+  // check for example message 'W-TF3::GetRandom3: function:fvnPDF has 27000 negative values: abs assumed' in the log file
   fvnPDF->SetParName(0,"v_{1}");
   fvnPDF->SetParName(1,"v_{2}");
   fvnPDF->SetParName(2,"v_{3}");
@@ -6711,14 +6841,19 @@ void AliAnalysisTaskMuPa::InternalValidation()
   // b0) Reset ebe quantities:
   this->ResetEventByEventQuantities();
 
+
   // b1) Determine multiplicity, reaction plane and configure p.d.f. for azimuthal angles if harmonics are not constant e-by-e:
   Int_t nMult = gRandom->Uniform(fMultRangeInternalValidation[0],fMultRangeInternalValidation[1]);
-  if(fMultiplicityHist){fMultiplicityHist->Fill(nMult);}
-
   //cout<<"nMult = "<<nMult<<endl;
+  if(fMultiplicityHist){fMultiplicityHist->Fill(nMult);}
+  fSelectedTracks = nMult; // I can do it this way, as long as I do not apply some cuts on tracks in InternalValidation(). Otherwise, introduce a special counter
+                           // Remember that I have to calculate fSelectedTracks, due to e.g. if(fSelectedTracks<2){return;} in Calculate* member functions
+  if(fSelectedTracksHist){fSelectedTracksHist->Fill(fSelectedTracks);}
+
   Double_t fReactionPlane = gRandom->Uniform(0.,TMath::TwoPi());
   if(fHarmonicsOptionInternalValidation->EqualTo("constant")){fPhiPDF->SetParameter(18,fReactionPlane);}
   else if(fHarmonicsOptionInternalValidation->EqualTo("correlated")){fPhiPDF->SetParameter(3,fReactionPlane);}
+
 
   // configure p.d.f. for azimuthal angles if harmonics are not constant e-by-e:
   if(fHarmonicsOptionInternalValidation->EqualTo("correlated"))
@@ -6744,6 +6879,9 @@ void AliAnalysisTaskMuPa::InternalValidation()
    dPhi = fPhiPDF->GetRandom(); 
    if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){dPt = gRandom->Uniform(fKinematicsCuts[PT][0],fKinematicsCuts[PT][1]);}
    if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){dEta = gRandom->Uniform(fKinematicsCuts[ETA][0],fKinematicsCuts[ETA][1]);}
+ 
+   // Remark: Deliberately I do not fill Control Particle Histograms in InternalValidation(), to increase the performance, and to make copying and merging faster
+
    // Fill Q-vector (simplified version, without weights):
    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
    {
@@ -6762,12 +6900,34 @@ void AliAnalysisTaskMuPa::InternalValidation()
 
    if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
    {
-    Int_t bin = fCorrelationsPro[0][0][AFO_PT]->FindBin(dPt);
-    if(0>=bin || fCorrelationsPro[0][0][AFO_PT]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+    // get the desired bin number:
+    Int_t bin = -1;
+    if(fCalculateCorrelations)
     {
-     Red(Form("dPt = %f, bin = %d",dPt,bin));
-     cout<<__LINE__<<endl;exit(1);
-    }
+     bin = fCorrelationsPro[0][0][AFO_PT]->FindBin(dPt);
+     if(0>=bin || fCorrelationsPro[0][0][AFO_PT]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+     {
+      Red(Form("dPt = %f, bin = %d",dPt,bin));
+      cout<<__LINE__<<endl;exit(1);
+     }
+    } 
+    else if(fCalculateTest0)
+    {
+     for(Int_t o=0;o<gMaxCorrelator;o++)
+     { 
+      if(fTest0Pro[o][0][AFO_PT]) 
+      {
+       bin = fTest0Pro[o][0][AFO_PT]->FindBin(dPt);
+       if(0>=bin || fTest0Pro[o][0][AFO_PT]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+       {
+        Red(Form("dPt = %f, bin = %d",dPt,bin));
+        cout<<__LINE__<<endl;exit(1);
+       }       
+       break; // it suffices to find the first one which is booked, since binning is the same across different orders
+      }
+     } // for(Int_t o=0;o<gMaxCorrelator;o++)
+    } // else if(fCalculateTest0)
+
     for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
     {
      for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
@@ -6788,12 +6948,34 @@ void AliAnalysisTaskMuPa::InternalValidation()
 
    if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])
    {
-    Int_t bin = fCorrelationsPro[0][0][AFO_ETA]->FindBin(dEta);
-    if(0>=bin || fCorrelationsPro[0][0][AFO_ETA]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+    // get the desired bin number:
+    Int_t bin = -1;
+    if(fCalculateCorrelations)
     {
-     Red(Form("dEta = %f, bin = %d",dEta,bin));
-     cout<<__LINE__<<endl;exit(1);
-    }
+     bin = fCorrelationsPro[0][0][AFO_ETA]->FindBin(dEta);
+     if(0>=bin || fCorrelationsPro[0][0][AFO_ETA]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+     {
+      Red(Form("dEta = %f, bin = %d",dEta,bin));
+      cout<<__LINE__<<endl;exit(1);
+     }
+    } 
+    else if(fCalculateTest0)
+    {
+     for(Int_t o=0;o<gMaxCorrelator;o++)
+     { 
+      if(fTest0Pro[o][0][AFO_ETA]) 
+      {
+       bin = fTest0Pro[o][0][AFO_ETA]->FindBin(dEta);
+       if(0>=bin || fTest0Pro[o][0][AFO_ETA]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+       {
+        Red(Form("dEta = %f, bin = %d",dEta,bin));
+        cout<<__LINE__<<endl;exit(1);
+       }       
+       break; // it suffices to find the first one which is booked, since binning is the same across different orders
+      }
+     } // for(Int_t o=0;o<gMaxCorrelator;o++)
+    } // else if(fCalculateTest0)
+
     for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
     { 
      for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
@@ -6814,12 +6996,12 @@ void AliAnalysisTaskMuPa::InternalValidation()
 
   } // for(Int_t p=0;p<nMult;p++) 
 
+
   // b3) Calculate correlations:
-  fSelectedTracks = nMult;
   fCentrality = gRandom->Uniform(0.,100.); // in any case it's meaningless in this exercise
   if(fCalculateCorrelations){this->CalculateCorrelations();}
-  if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){this->CalculateKineCorrelations("pt");}
-  if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){this->CalculateKineCorrelations("eta");}
+  if(fCalculateCorrelations && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){this->CalculateKineCorrelations("pt");}
+  if(fCalculateCorrelations && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){this->CalculateKineCorrelations("eta");}
   if(fCalculateTest0){this->CalculateTest0();}
   if(fCalculateTest0 && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){this->CalculateKineTest0("pt");}  
   if(fCalculateTest0 && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){this->CalculateKineTest0("eta");} 
@@ -6833,7 +7015,6 @@ void AliAnalysisTaskMuPa::InternalValidation()
  // c) Delete persistent objects:
  if(fPhiPDF) delete fPhiPDF;
  if(fvnPDF) delete fvnPDF;
-
 
  /*
 
@@ -7296,6 +7477,9 @@ void AliAnalysisTaskMuPa::DefaultConfiguration()
 
  // task->SetRandomSeed(0);
  fRandomSeed = 0;
+
+ // task->SetFillControlParticleHistograms(kTRUE);
+ fFillControlParticleHistograms = kTRUE;
  
  // task->SetFillQAHistograms(kTRUE); // by default, only selection of most important ones 
  fFillQAHistograms = kFALSE;
