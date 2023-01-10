@@ -1088,6 +1088,8 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 
     if(fIsAOD) {
       aodcasc = fAOD->GetCascade(iCasc);
+      InvMassXi = aodcasc->MassXi();
+      if(TMath::Abs(InvMassXi) < massXi - 5*0.007 || TMath::Abs(InvMassXi) > massXi + 5*0.007) { continue; } // Xi invariant mass cut - Joey Staa    
       if(aodcasc->GetOnFlyStatus() == kTRUE) { continue; }
       AliAODVertex* cascv0vtx = (AliAODVertex*)aodcasc->GetSecondaryVtx();
       aodcascv0postrack = (AliAODTrack*)cascv0vtx->GetDaughter(0);
@@ -1096,12 +1098,11 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       // Xi- and bachelor properties
       aodcasc->GetDecayVertexXi()->GetXYZ(AODXiVertexXYZ);
       Charge = aodcasc->ChargeXi();
+      if(Charge > 0) { InvMassXi = -1*(aodcasc->MassXi()); } // Incorporate the charge in the particle mass
       PtXi = TMath::Sqrt(aodcasc->Pt2Xi());
       PtBach = TMath::Sqrt(TMath::Power(aodcasc->MomBachX(), 2) + TMath::Power(aodcasc->MomBachY(), 2));
       EtaXi = TMath::ATanH((aodcasc->MomXiZ())/(TMath::Sqrt(aodcasc->Ptot2Xi())));
       EtaBach = TMath::ATanH((aodcasc->MomBachZ())/(TMath::Sqrt(aodcasc->Ptot2Bach())));
-      if(Charge < 0) { InvMassXi = aodcasc->MassXi(); }
-      else if(Charge > 0) { InvMassXi = -1*(aodcasc->MassXi()); } // Incorporate the charge in the particle mass
       CosPAXi = aodcasc->CosPointingAngleXi(fVtx[0], fVtx[1], fVtx[2]);
       CosPABachBar = aodcasc->BachBaryonCosPA();
       DecayRXi = TMath::Sqrt(TMath::Power(AODXiVertexXYZ[0], 2) + TMath::Power(AODXiVertexXYZ[1], 2));
@@ -1136,6 +1137,8 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
     }
     else {
       esdcasc = fESD->GetCascade(iCasc);
+      InvMassXi = esdcasc->M();
+      if(TMath::Abs(InvMassXi) < massXi - 5*0.007 || TMath::Abs(InvMassXi) > massXi + 5*0.007) { continue; } // Xi invariant mass cut - Joey Staa
       if(esdcasc->GetOnFlyStatus() == kTRUE) { continue; }
       esdcascbachtrack = fESD->GetTrack(TMath::Abs(esdcasc->GetBindex()));
       esdcascv0postrack = (AliESDtrack*)fESD->GetTrack(TMath::Abs(esdcasc->GetPindex()));
@@ -1151,7 +1154,6 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 						       TMath::Power(ESDBachMom[1], 2) +
 						       TMath::Power(ESDBachMom[2], 2))));
       if(Charge < 0) {
-	InvMassXi = esdcasc->M();
 	CosPABachBar = GetCosPA(esdcascv0postrack, esdcascbachtrack, b, fVtx);
       }
       else if(Charge > 0) {
