@@ -1,5 +1,5 @@
 
-AliAnalysisTaskCorrPbPb *AddTaskCorrPbPb(Int_t fCentralityMin=0, Int_t fCentralityMax=90,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Double_t fdcaxy=0.1, Double_t fdcaz=1, Double_t fchi2tpc=2.5, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileName = "_default", Double_t fEta=0.8)
+AliAnalysisTaskCorrPbPb *AddTaskCorrPbPb(Int_t fCentralityMin=0, Int_t fCentralityMax=90,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Double_t fdcaxy=0.1, Double_t fdcaz=1, Double_t fchi2tpc=2.5, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileName = "_default", Double_t fEta=0.8, TString sMCfilePath ="/home/swati/SWATI_Laptop_Ubutu_Backup_3rdJune2022/Two_new_Analysis/NetParticleFluctuation/AOD/MC_fresh_LHC20j6a/CentralityWise_efficiency/EfficiencyHijingPbPb.root")
 {
   // standard with task
   printf("===================================================================================\n");
@@ -71,6 +71,30 @@ AliAnalysisTaskCorrPbPb *AddTaskCorrPbPb(Int_t fCentralityMin=0, Int_t fCentrali
   OutTreeName += OutFileName;
   task_Mpt->SetTreeName(OutTreeName);
   */
+
+  TFile *fMCFile = TFile::Open(sMCfilePath,"READ");
+  TList *fListMC = NULL;
+
+  if(fMCFile)
+    {
+      fListMC = dynamic_cast <TList*> (fMCFile->FindObjectAny("fMCEffHijing"));
+
+      if(fListMC)
+	{
+	  task_Mpt->SetListForTrkCorr(fListMC);
+	}
+      else
+	{
+	  printf("\n\n *** AddTask::Warning \n => MC file esists, but TList not found !!! \n AddTask::Info() ===> No MC Correction !! \n\n");
+	}
+    }
+  else
+    {
+      printf("\n\n *** AddTask::WARNING \n => no MC file!!! \n AddTask::Info() ===> NO MC Correction!! \n\n");
+    }
+
+    
+
   
   mgr->AddTask(task_Mpt);                        // connect the task to the analysis manager
   mgr->ConnectInput(task_Mpt, 0, cinput);        

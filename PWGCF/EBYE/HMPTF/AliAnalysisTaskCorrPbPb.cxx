@@ -113,8 +113,49 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb():
   fNoProtonPlus_ptmax2(0),
   fNoProtonMinus_ptmax2(0),
   fNoProtonPlus_ptmax3(0),
-  fNoProtonMinus_ptmax3(0)
- {}
+  fNoProtonMinus_ptmax3(0),
+  fCorrectedNoKaonPlus_ptmax2(0),
+  fCorrectedNoKaonMinus_ptmax2(0),
+  fCorrectedNoKaonPlus_ptmax3(0),
+  fCorrectedNoKaonMinus_ptmax3(0),
+  fCorrectedNoPionPlus_ptmax2(0),
+  fCorrectedNoPionMinus_ptmax2(0),
+  fCorrectedNoPionPlus_ptmax3(0),
+  fCorrectedNoPionMinus_ptmax3(0),
+  fCorrectedNoProtonPlus_ptmax2(0),
+  fCorrectedNoProtonMinus_ptmax2(0),
+  fCorrectedNoProtonPlus_ptmax3(0),
+  fCorrectedNoProtonMinus_ptmax3(0),
+  fEffSqrFactrPionMinus_ptmax2(0),
+  fEffSqrFactrPionPlus_ptmax2(0),
+  fEffSqrFactrProtonMinus_ptmax2(0),
+  fEffSqrFactrProtonPlus_ptmax2(0),
+  fEffSqrFactrKaonMinus_ptmax2(0),
+  fEffSqrFactrKaonPlus_ptmax2(0),
+  fEffSqrFactrPionMinus_ptmax3(0),
+  fEffSqrFactrPionPlus_ptmax3(0),
+  fEffSqrFactrProtonMinus_ptmax3(0),
+  fEffSqrFactrProtonPlus_ptmax3(0),
+  fEffSqrFactrKaonMinus_ptmax3(0),
+  fEffSqrFactrKaonPlus_ptmax3(0),
+  fListTRKCorr(0), 
+  fHistMCEffKaonPlus(0),
+  fHistMCEffKaonMinus(0),
+  fHistMCEffPionPlus(0),
+  fHistMCEffPionMinus(0),
+  fHistMCEffProtonPlus(0),
+  fHistMCEffProtonMinus(0)
+{
+  for(int i=0; i<9; i++)
+    {
+      fEffProtonPlus[i] = NULL;
+      fEffProtonMinus[i] = NULL;
+      fEffPionPlus[i] = NULL;
+      fEffPionMinus[i] = NULL;
+      fEffKaonPlus[i] = NULL;
+      fEffKaonMinus[i] = NULL;
+    }
+}
 //_____________________________________________________________________________________________________________________________________
 AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb(const char *name):
   AliAnalysisTaskSE(name),
@@ -151,8 +192,49 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb(const char *name):
   fNoProtonPlus_ptmax2(0),
   fNoProtonMinus_ptmax2(0),
   fNoProtonPlus_ptmax3(0),
-  fNoProtonMinus_ptmax3(0)
+  fNoProtonMinus_ptmax3(0),
+  fCorrectedNoKaonPlus_ptmax2(0),
+  fCorrectedNoKaonMinus_ptmax2(0),
+  fCorrectedNoKaonPlus_ptmax3(0),
+  fCorrectedNoKaonMinus_ptmax3(0),
+  fCorrectedNoPionPlus_ptmax2(0),
+  fCorrectedNoPionMinus_ptmax2(0),
+  fCorrectedNoPionPlus_ptmax3(0),
+  fCorrectedNoPionMinus_ptmax3(0),
+  fCorrectedNoProtonPlus_ptmax2(0),
+  fCorrectedNoProtonMinus_ptmax2(0),
+  fCorrectedNoProtonPlus_ptmax3(0),
+  fCorrectedNoProtonMinus_ptmax3(0),
+  fEffSqrFactrPionMinus_ptmax2(0),
+  fEffSqrFactrPionPlus_ptmax2(0),
+  fEffSqrFactrProtonMinus_ptmax2(0),
+  fEffSqrFactrProtonPlus_ptmax2(0),
+  fEffSqrFactrKaonMinus_ptmax2(0),
+  fEffSqrFactrKaonPlus_ptmax2(0),
+  fEffSqrFactrPionMinus_ptmax3(0),
+  fEffSqrFactrPionPlus_ptmax3(0),
+  fEffSqrFactrProtonMinus_ptmax3(0),
+  fEffSqrFactrProtonPlus_ptmax3(0),
+  fEffSqrFactrKaonMinus_ptmax3(0),
+  fEffSqrFactrKaonPlus_ptmax3(0),
+  fListTRKCorr(0), 
+  fHistMCEffKaonPlus(0),
+  fHistMCEffKaonMinus(0),
+  fHistMCEffPionPlus(0),
+  fHistMCEffPionMinus(0),
+  fHistMCEffProtonPlus(0),
+  fHistMCEffProtonMinus(0)
 {
+  for(int i=0; i<9; i++)
+    {
+      fEffProtonPlus[i] = NULL;
+      fEffProtonMinus[i] = NULL;
+      fEffPionPlus[i] = NULL;
+      fEffPionMinus[i] = NULL;
+      fEffKaonPlus[i] = NULL;
+      fEffKaonMinus[i] = NULL;
+    }
+  
   fUtils = new AliAnalysisUtils();
   DefineInput (0, TChain::Class());
   DefineOutput(1, TList::Class());
@@ -248,7 +330,37 @@ void AliAnalysisTaskCorrPbPb::UserCreateOutputObjects()  {
     fTreeEvent->Branch("fNoPionMinus_ptmax3", &fNoPionMinus_ptmax3, "fNoPionMinus_ptmax3/F");
     fTreeEvent->Branch("fNoProtonPlus_ptmax3", &fNoProtonPlus_ptmax3, "fNoProtonPlus_ptmax3/F");
     fTreeEvent->Branch("fNoProtonMinus_ptmax3", &fNoProtonMinus_ptmax3, "fNoProtonMinus_ptmax3/F");
-   
+
+    //Reconstred tracks corrected
+    fTreeEvent->Branch("fCorrectedNoKaonPlus_ptmax2", &fCorrectedNoKaonPlus_ptmax2, "fCorrectedNoKaonPlus_ptmax2/F");
+    fTreeEvent->Branch("fCorrectedNoKaonMinus_ptmax2", &fCorrectedNoKaonMinus_ptmax2, "fCorrectedNoKaonMinus_ptmax2/F");
+    fTreeEvent->Branch("fCorrectedNoPionPlus_ptmax2", &fCorrectedNoPionPlus_ptmax2, "fCorrectedNoPionPlus_ptmax2/F");
+    fTreeEvent->Branch("fCorrectedNoPionMinus_ptmax2", &fCorrectedNoPionMinus_ptmax2, "fCorrectedNoPionMinus_ptmax2/F");
+    fTreeEvent->Branch("fCorrectedNoProtonPlus_ptmax2", &fCorrectedNoProtonPlus_ptmax2, "fCorrectedNoProtonPlus_ptmax2/F");
+    fTreeEvent->Branch("fCorrectedNoProtonMinus_ptmax2", &fCorrectedNoProtonMinus_ptmax2, "fCorrectedNoProtonMinus_ptmax2/F");
+
+    fTreeEvent->Branch("fCorrectedNoKaonPlus_ptmax3", &fCorrectedNoKaonPlus_ptmax3, "fCorrectedNoKaonPlus_ptmax3/F");
+    fTreeEvent->Branch("fCorrectedNoKaonMinus_ptmax3", &fCorrectedNoKaonMinus_ptmax3, "fCorrectedNoKaonMinus_ptmax3/F");
+    fTreeEvent->Branch("fCorrectedNoPionPlus_ptmax3", &fCorrectedNoPionPlus_ptmax3, "fCorrectedNoPionPlus_ptmax3/F");
+    fTreeEvent->Branch("fCorrectedNoPionMinus_ptmax3", &fCorrectedNoPionMinus_ptmax3, "fCorrectedNoPionMinus_ptmax3/F");
+    fTreeEvent->Branch("fCorrectedNoProtonPlus_ptmax3", &fCorrectedNoProtonPlus_ptmax3, "fCorrectedNoProtonPlus_ptmax3/F");
+    fTreeEvent->Branch("fCorrectedNoProtonMinus_ptmax3", &fCorrectedNoProtonMinus_ptmax3, "fCorrectedNoProtonMinus_ptmax3/F");
+
+    fTreeEvent->Branch("fEffSqrFactrKaonPlus_ptmax2", &fEffSqrFactrKaonPlus_ptmax2, "fEffSqrFactrKaonPlus_ptmax2/F");
+    fTreeEvent->Branch("fEffSqrFactrKaonMinus_ptmax2", &fEffSqrFactrKaonMinus_ptmax2, "fEffSqrFactrKaonMinus_ptmax2/F");
+    fTreeEvent->Branch("fEffSqrFactrPionPlus_ptmax2", &fEffSqrFactrPionPlus_ptmax2, "fEffSqrFactrPionPlus_ptmax2/F");
+    fTreeEvent->Branch("fEffSqrFactrPionMinus_ptmax2", &fEffSqrFactrPionMinus_ptmax2, "fEffSqrFactrPionMinus_ptmax2/F");
+    fTreeEvent->Branch("fEffSqrFactrProtonPlus_ptmax2", &fEffSqrFactrProtonPlus_ptmax2, "fEffSqrFactrProtonPlus_ptmax2/F");
+    fTreeEvent->Branch("fEffSqrFactrProtonMinus_ptmax2", &fEffSqrFactrProtonMinus_ptmax2, "fEffSqrFactrProtonMinus_ptmax2/F");
+    
+    fTreeEvent->Branch("fEffSqrFactrKaonPlus_ptmax3", &fEffSqrFactrKaonPlus_ptmax3, "fEffSqrFactrKaonPlus_ptmax3/F");
+    fTreeEvent->Branch("fEffSqrFactrKaonMinus_ptmax3", &fEffSqrFactrKaonMinus_ptmax3, "fEffSqrFactrKaonMinus_ptmax3/F");
+    fTreeEvent->Branch("fEffSqrFactrPionPlus_ptmax3", &fEffSqrFactrPionPlus_ptmax3, "fEffSqrFactrPionPlus_ptmax3/F");
+    fTreeEvent->Branch("fEffSqrFactrPionMinus_ptmax3", &fEffSqrFactrPionMinus_ptmax3, "fEffSqrFactrPionMinus_ptmax3/F");
+    fTreeEvent->Branch("fEffSqrFactrProtonPlus_ptmax3", &fEffSqrFactrProtonPlus_ptmax3, "fEffSqrFactrProtonPlus_ptmax3/F");
+    fTreeEvent->Branch("fEffSqrFactrProtonMinus_ptmax3", &fEffSqrFactrProtonMinus_ptmax3, "fEffSqrFactrProtonMinus_ptmax3/F");
+
+    
     /*
     
     //Track Cuts Objects
@@ -303,19 +415,81 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
     
     
     //Initialize number 0f K+, K-, pi+, pi-, p and p-bar per event
-    Int_t no_KaonPlus_perevent = 0;
-    Int_t no_KaonMinus_perevent = 0;
-    Int_t no_ProtonPlus_perevent = 0;
-    Int_t no_ProtonMinus_perevent = 0;
-    Int_t no_PionPlus_perevent = 0;
-    Int_t no_PionMinus_perevent = 0;
 
-    Int_t no_KaonPlus_perevent_ptmax2 = 0;
-    Int_t no_KaonMinus_perevent_ptmax2 = 0;
-    Int_t no_ProtonPlus_perevent_ptmax2 = 0;
-    Int_t no_ProtonMinus_perevent_ptmax2 = 0;
-    Int_t no_PionPlus_perevent_ptmax2 = 0;
-    Int_t no_PionMinus_perevent_ptmax2 = 0;
+    //raw
+    Float_t no_KaonPlus_perevent = 0;
+    Float_t no_KaonMinus_perevent = 0;
+    Float_t no_ProtonPlus_perevent = 0;
+    Float_t no_ProtonMinus_perevent = 0;
+    Float_t no_PionPlus_perevent = 0;
+    Float_t no_PionMinus_perevent = 0;
+
+    Float_t no_KaonPlus_perevent_ptmax2 = 0;
+    Float_t no_KaonMinus_perevent_ptmax2 = 0;
+    Float_t no_ProtonPlus_perevent_ptmax2 = 0;
+    Float_t no_ProtonMinus_perevent_ptmax2 = 0;
+    Float_t no_PionPlus_perevent_ptmax2 = 0;
+    Float_t no_PionMinus_perevent_ptmax2 = 0;
+
+    //efficiency corrected
+    Float_t no_KaonPlus_perevent_corrected = 0;
+    Float_t no_KaonMinus_perevent_corrected = 0;
+    Float_t no_ProtonPlus_perevent_corrected = 0;
+    Float_t no_ProtonMinus_perevent_corrected = 0;
+    Float_t no_PionPlus_perevent_corrected = 0;
+    Float_t no_PionMinus_perevent_corrected = 0;
+
+    Float_t no_KaonPlus_perevent_ptmax2_corrected = 0;
+    Float_t no_KaonMinus_perevent_ptmax2_corrected = 0;
+    Float_t no_ProtonPlus_perevent_ptmax2_corrected = 0;
+    Float_t no_ProtonMinus_perevent_ptmax2_corrected = 0;
+    Float_t no_PionPlus_perevent_ptmax2_corrected = 0;
+    Float_t no_PionMinus_perevent_ptmax2_corrected = 0;
+
+    Float_t noByEffSquare_KaonPlus_perevent_corrected = 0;
+    Float_t noByEffSquare_KaonMinus_perevent_corrected = 0;
+    Float_t noByEffSquare_ProtonPlus_perevent_corrected = 0;
+    Float_t noByEffSquare_ProtonMinus_perevent_corrected = 0;
+    Float_t noByEffSquare_PionPlus_perevent_corrected = 0;
+    Float_t noByEffSquare_PionMinus_perevent_corrected = 0;
+
+    Float_t noByEffSquare_KaonPlus_perevent_ptmax2_corrected = 0;
+    Float_t noByEffSquare_KaonMinus_perevent_ptmax2_corrected = 0;
+    Float_t noByEffSquare_ProtonPlus_perevent_ptmax2_corrected = 0;
+    Float_t noByEffSquare_ProtonMinus_perevent_ptmax2_corrected = 0;
+    Float_t noByEffSquare_PionPlus_perevent_ptmax2_corrected = 0;
+    Float_t noByEffSquare_PionMinus_perevent_ptmax2_corrected = 0;
+
+
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    
+    Int_t ptBinNo = 0;
+    Double_t BinCont = 0;
+    Double_t EffWgt = 0;
+
+    if(fListTRKCorr) GetMCEffCorrectionHist();
+
+    Int_t centrality_bin = 0;
+    if(lV0M > 0.0 && lV0M < 5.0)
+      centrality_bin = 0;
+    else if (lV0M > 5.0 && lV0M < 10.0)
+      centrality_bin = 1;
+    else if (lV0M > 10.0 && lV0M < 20.0)
+      centrality_bin = 2;
+    else if (lV0M > 20.0 && lV0M < 30.0)
+      centrality_bin = 3;
+    else if (lV0M > 30.0 && lV0M < 40.0)
+      centrality_bin = 4;
+    else if (lV0M > 40.0 && lV0M < 50.0)
+      centrality_bin = 5;
+    else if (lV0M > 50.0 && lV0M < 60.0)
+      centrality_bin = 6;
+    else if (lV0M > 60.0 && lV0M < 70.0)
+      centrality_bin = 7;
+    else if (lV0M > 70.0 && lV0M < 80.0)
+      centrality_bin = 8;
+
+
 
 
     //Loop on reconstructed tracks
@@ -365,49 +539,141 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
 	
 	if (trkCharge > 0 && IsKaon)   //K+
 	  {
-	    no_KaonPlus_perevent += 1;
-	    if(trkPt < 2.0)
-	      no_KaonPlus_perevent_ptmax2 += 1;
+	    if (fEffKaonPlus[centrality_bin])
+	      {
+		ptBinNo = fEffKaonPlus[centrality_bin]->FindBin(trkPt);
+		BinCont = fEffKaonPlus[centrality_bin]->GetBinContent(ptBinNo);
+		if(BinCont!=0) EffWgt = 1.0/BinCont;
+	   
+		no_KaonPlus_perevent += 1.0;
+		no_KaonPlus_perevent_corrected += EffWgt;
+		noByEffSquare_KaonPlus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+	    
+		if(trkPt < 2.0)
+		  {
+		    no_KaonPlus_perevent_ptmax2 += 1.0;
+		    no_KaonPlus_perevent_ptmax2_corrected += EffWgt;
+		    noByEffSquare_KaonPlus_perevent_ptmax2_corrected += TMath::Power(EffWgt, 2.0);
+		  }
+	      }
 	  }
 	  
 
 	if (trkCharge < 0 && IsKaon)   //K-
 	  {
-	    no_KaonMinus_perevent += 1;
-	    if(trkPt < 2.0)
-	      no_KaonMinus_perevent_ptmax2 += 1;
+	    if (fEffKaonMinus[centrality_bin])
+	      {
+		ptBinNo = fEffKaonMinus[centrality_bin]->FindBin(trkPt);
+		BinCont = fEffKaonMinus[centrality_bin]->GetBinContent(ptBinNo);
+		if(BinCont!=0) EffWgt = 1.0/BinCont;
+	   
+		no_KaonMinus_perevent += 1.0;
+		no_KaonMinus_perevent_corrected += EffWgt;
+		noByEffSquare_KaonMinus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+	   
+		if(trkPt < 2.0)
+		  {
+		    no_KaonMinus_perevent_ptmax2 += 1.0;
+		    no_KaonMinus_perevent_ptmax2_corrected += EffWgt;
+		    noByEffSquare_KaonMinus_perevent_ptmax2_corrected += TMath::Power(EffWgt, 2.0);
+		  }
+	      }
 	  }
 
 	if (trkCharge > 0 && IsProton)   //proton
 	  {
-	    no_ProtonPlus_perevent += 1;
-	    if(trkPt < 2.0)
-	      no_ProtonPlus_perevent_ptmax2 += 1;
+	    if (trkPt > 0.4) // cut for removing protons coming from beam pipe
+	      {
+		if (fEffProtonPlus[centrality_bin])
+		  {
+		    ptBinNo = fEffProtonPlus[centrality_bin]->FindBin(trkPt);
+		    BinCont = fEffProtonPlus[centrality_bin]->GetBinContent(ptBinNo);
+		    if(BinCont!=0) EffWgt = 1.0/BinCont;
+	
+		    no_ProtonPlus_perevent += 1.0;
+		    no_ProtonPlus_perevent_corrected += EffWgt;
+		    noByEffSquare_ProtonPlus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+
+		    if(trkPt < 2.0)
+		      {
+			no_ProtonPlus_perevent_ptmax2 += 1.0;
+		      	no_ProtonPlus_perevent_ptmax2_corrected += EffWgt;
+			noByEffSquare_ProtonPlus_perevent_ptmax2_corrected += TMath::Power(EffWgt, 2.0);
+		      }
+		  }
+	      }
 	  }
 	  
 
 	if (trkCharge < 0 && IsProton)   //anti-proton
 	  {
-	    no_ProtonMinus_perevent += 1;
-	    if(trkPt < 2.0)
-	      no_ProtonMinus_perevent_ptmax2 += 1;
+	    if (trkPt > 0.4) // cut for removing protons coming from beam pipe
+	      {
+		if (fEffProtonMinus[centrality_bin])
+		  {
+		    ptBinNo = fEffProtonMinus[centrality_bin]->FindBin(trkPt);
+		    BinCont = fEffProtonMinus[centrality_bin]->GetBinContent(ptBinNo);
+		    if(BinCont!=0) EffWgt = 1.0/BinCont;
+		  
+		    no_ProtonMinus_perevent += 1.0;
+		    no_ProtonMinus_perevent_corrected += EffWgt;
+		    noByEffSquare_ProtonMinus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+
+		    if(trkPt < 2.0)
+		      {
+			no_ProtonMinus_perevent_ptmax2 += 1.0;
+			no_ProtonMinus_perevent_ptmax2_corrected += EffWgt;
+			noByEffSquare_ProtonMinus_perevent_ptmax2_corrected += TMath::Power(EffWgt, 2.0);
+		      }
+		  }
+	      }
 	  }
 
 	if (trkCharge > 0 && IsPion)   //pi+
 	  {
-	    no_PionPlus_perevent += 1;
-	    if(trkPt < 2.0)
-	      no_PionPlus_perevent_ptmax2 += 1;
+	    if (fEffPionPlus[centrality_bin])
+	      {
+		ptBinNo = fEffPionPlus[centrality_bin]->FindBin(trkPt);
+		BinCont = fEffPionPlus[centrality_bin]->GetBinContent(ptBinNo);
+		if(BinCont!=0) EffWgt = 1.0/BinCont;
+	   
+		no_PionPlus_perevent += 1.0;
+	    	no_PionPlus_perevent_corrected += EffWgt;
+		noByEffSquare_PionPlus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+
+		if(trkPt < 2.0)
+		  {
+		    no_PionPlus_perevent_ptmax2 += 1.0;
+		    no_PionPlus_perevent_ptmax2_corrected += EffWgt;
+		    noByEffSquare_PionPlus_perevent_ptmax2_corrected += TMath::Power(EffWgt, 2.0);
+		  }
+	      }
 	  }
 	  
 
 	if (trkCharge < 0 && IsPion)   //pi-
 	  {
-	    no_PionMinus_perevent += 1;
-	    if(trkPt < 2.0)
-	      no_PionMinus_perevent_ptmax2 += 1;
+	    if (fEffPionMinus[centrality_bin])
+	      {
+		ptBinNo = fEffPionMinus[centrality_bin]->FindBin(trkPt);
+		BinCont = fEffPionMinus[centrality_bin]->GetBinContent(ptBinNo);
+		if(BinCont!=0) EffWgt = 1.0/BinCont;
+	      
+
+		no_PionMinus_perevent += 1.0;
+	    	no_PionMinus_perevent_corrected += EffWgt;
+		noByEffSquare_PionMinus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+
+	
+		if(trkPt < 2.0)
+		  {
+		    no_PionMinus_perevent_ptmax2 += 1.0;
+		    no_PionMinus_perevent_ptmax2_corrected += EffWgt;
+		    noByEffSquare_PionMinus_perevent_ptmax2_corrected += TMath::Power(EffWgt, 2.0);
+		  }
+	      }
 	  }
-     }
+      }      
     //end reconstructed track loop
     
 
@@ -439,9 +705,44 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
     fNoProtonMinus_ptmax2 = no_ProtonMinus_perevent_ptmax2;
     fNoProtonPlus_ptmax3 = no_ProtonPlus_perevent;
     fNoProtonMinus_ptmax3 = no_ProtonMinus_perevent;
+    
+    //++++++++++++++++++++++++++++++++++++++++++++
+    //Corrected from Reconstructed
+    //Kaon
+    fCorrectedNoKaonPlus_ptmax2 = no_KaonPlus_perevent_ptmax2_corrected;
+    fCorrectedNoKaonMinus_ptmax2 = no_KaonMinus_perevent_ptmax2_corrected;
+    fCorrectedNoKaonPlus_ptmax3 = no_KaonPlus_perevent_corrected;
+    fCorrectedNoKaonMinus_ptmax3 = no_KaonMinus_perevent_corrected;
+    //Pion
+    fCorrectedNoPionPlus_ptmax2 = no_PionPlus_perevent_ptmax2_corrected;
+    fCorrectedNoPionMinus_ptmax2 = no_PionMinus_perevent_ptmax2_corrected;
+    fCorrectedNoPionPlus_ptmax3 = no_PionPlus_perevent_corrected;
+    fCorrectedNoPionMinus_ptmax3 = no_PionMinus_perevent_corrected;
+    //Proton
+    fCorrectedNoProtonPlus_ptmax2 = no_ProtonPlus_perevent_ptmax2_corrected;
+    fCorrectedNoProtonMinus_ptmax2 = no_ProtonMinus_perevent_ptmax2_corrected;
+    fCorrectedNoProtonPlus_ptmax3 = no_ProtonPlus_perevent_corrected;
+    fCorrectedNoProtonMinus_ptmax3 = no_ProtonMinus_perevent_corrected;
+
+    //Eff Square factor
+
+    fEffSqrFactrPionMinus_ptmax2 = noByEffSquare_PionMinus_perevent_ptmax2_corrected;
+    fEffSqrFactrPionPlus_ptmax2 = noByEffSquare_PionPlus_perevent_ptmax2_corrected;
+    fEffSqrFactrProtonMinus_ptmax2 = noByEffSquare_ProtonMinus_perevent_ptmax2_corrected;
+    fEffSqrFactrProtonPlus_ptmax2 = noByEffSquare_ProtonPlus_perevent_ptmax2_corrected;
+    fEffSqrFactrKaonMinus_ptmax2 = noByEffSquare_KaonMinus_perevent_ptmax2_corrected;
+    fEffSqrFactrKaonPlus_ptmax2 = noByEffSquare_KaonPlus_perevent_ptmax2_corrected;
+
+    fEffSqrFactrPionMinus_ptmax3 = noByEffSquare_PionMinus_perevent_corrected;
+    fEffSqrFactrPionPlus_ptmax3 = noByEffSquare_PionPlus_perevent_corrected;
+    fEffSqrFactrProtonMinus_ptmax3 = noByEffSquare_ProtonMinus_perevent_corrected;
+    fEffSqrFactrProtonPlus_ptmax3 = noByEffSquare_ProtonPlus_perevent_corrected;
+    fEffSqrFactrKaonMinus_ptmax3 = noByEffSquare_KaonMinus_perevent_corrected;
+    fEffSqrFactrKaonPlus_ptmax3 = noByEffSquare_KaonPlus_perevent_corrected;
+
     fTreeEvent->Fill();
-    
-    
+
+ 
     PostData(1, fOutputList);
     PostData(2, fQAList);
     PostData(3, fTreeEvent);
@@ -974,6 +1275,33 @@ Bool_t AliAnalysisTaskCorrPbPb::PassedSingleParticlePileUpCuts(AliAODTrack *trac
   if (!(track->HasPointOnITSLayer(1)) && !(track->HasPointOnITSLayer(4)) && !(track->HasPointOnITSLayer(5)) && !(track->GetTOFBunchCrossing() == 0))
     passedTrackPileupCut = (kFALSE);
   return passedTrackPileupCut;
+}
+//_____________________________________________________________________________________________________________________________________
+void AliAnalysisTaskCorrPbPb::GetMCEffCorrectionHist()
+{
+  if(fListTRKCorr)
+    {
+      fHistMCEffKaonPlus = (TH1D*) fListTRKCorr->FindObject("histKaonPlusEff");
+      fHistMCEffKaonMinus = (TH1D*) fListTRKCorr->FindObject("histKaonMinusEff");
+
+      fHistMCEffPionPlus = (TH1D*) fListTRKCorr->FindObject("histPionPlusEff");
+      fHistMCEffPionMinus = (TH1D*) fListTRKCorr->FindObject("histPionMinusEff");
+
+      fHistMCEffProtonPlus = (TH1D*) fListTRKCorr->FindObject("histProtonPlusEff");
+      fHistMCEffProtonMinus = (TH1D*) fListTRKCorr->FindObject("histProtonMinusEff");
+
+      for(int i=0; i<9; i++)
+	{
+	  fEffProtonPlus[i] = (TH1D*)fListTRKCorr->FindObject(Form("EffProtonPlus%d",i));
+	  fEffProtonMinus[i] = (TH1D*)fListTRKCorr->FindObject(Form("EffProtonMinus%d",i));
+	  fEffPionPlus[i] = (TH1D*)fListTRKCorr->FindObject(Form("EffPionPlus%d",i));
+	  fEffPionMinus[i] = (TH1D*)fListTRKCorr->FindObject(Form("EffPionMinus%d",i));
+	  fEffKaonPlus[i] = (TH1D*)fListTRKCorr->FindObject(Form("EffKaonPlus%d",i));
+	  fEffKaonMinus[i] = (TH1D*)fListTRKCorr->FindObject(Form("EffKaonMinus%d",i));
+
+	}
+    }
+
 }
  //_____________________________________________________________________________________________________________________________________
 void AliAnalysisTaskCorrPbPb::Terminate(Option_t *)  {
