@@ -35,8 +35,8 @@ AliAnalysisTaskSimpleCoalescenceHelium3 *addTaskHelium3SimpleCoalescence ()  {
     task -> AliAnalysisTaskSimpleCoalescenceHelium3::SetProtonWeights (fProtWeights);
     mgr -> AddTask(task);
     mgr -> ConnectInput (task,0,mgr->GetCommonInputContainer());
-    mgr -> ConnectOutput(task,1,mgr->CreateContainer("Results",TList::Class(),AliAnalysisManager::kOutputContainer,filename));
-    mgr -> ConnectOutput(task,2,mgr->CreateContainer("QAPlots",TList::Class(),AliAnalysisManager::kOutputContainer,filename));
+    mgr -> ConnectOutput(task,1,mgr->CreateContainer("Results",TList::Class(),AliAnalysisManager::kOutputContainer,filename.Data()));
+    mgr -> ConnectOutput(task,2,mgr->CreateContainer("QAPlots",TList::Class(),AliAnalysisManager::kOutputContainer,filename.Data()));
     
     return task;
 }
