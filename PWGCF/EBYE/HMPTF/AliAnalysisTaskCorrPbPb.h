@@ -55,6 +55,12 @@ class AliAnalysisTaskCorrPbPb : public AliAnalysisTaskSE {
   Bool_t PionSelector (AliVTrack *track); 
   Bool_t PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type);
   Bool_t PassedSingleParticlePileUpCuts(AliAODTrack *track);
+  void GetMCEffCorrectionHist();
+
+  void SetListForTrkCorr (TList *fList)
+  {
+ 	this->fListTRKCorr = (TList*) fList->Clone();
+  }
 
   /*
   void SetVzRangeMax(Double_t VzMax)
@@ -131,6 +137,48 @@ class AliAnalysisTaskCorrPbPb : public AliAnalysisTaskSE {
   Float_t fNoProtonMinus_ptmax2;
   Float_t fNoProtonPlus_ptmax3;
   Float_t fNoProtonMinus_ptmax3;
+  //CORRECTED
+  Float_t fCorrectedNoKaonPlus_ptmax2;
+  Float_t fCorrectedNoKaonMinus_ptmax2;
+  Float_t fCorrectedNoKaonPlus_ptmax3;
+  Float_t fCorrectedNoKaonMinus_ptmax3;
+  Float_t fCorrectedNoPionPlus_ptmax2;
+  Float_t fCorrectedNoPionMinus_ptmax2;
+  Float_t fCorrectedNoPionPlus_ptmax3;
+  Float_t fCorrectedNoPionMinus_ptmax3;
+  Float_t fCorrectedNoProtonPlus_ptmax2;
+  Float_t fCorrectedNoProtonMinus_ptmax2;
+  Float_t fCorrectedNoProtonPlus_ptmax3;
+  Float_t fCorrectedNoProtonMinus_ptmax3;
+  //Eff.square factors
+  Float_t fEffSqrFactrPionMinus_ptmax2;
+  Float_t fEffSqrFactrPionPlus_ptmax2;
+  Float_t fEffSqrFactrProtonMinus_ptmax2;
+  Float_t fEffSqrFactrProtonPlus_ptmax2;
+  Float_t fEffSqrFactrKaonMinus_ptmax2;
+  Float_t fEffSqrFactrKaonPlus_ptmax2;
+  Float_t fEffSqrFactrPionMinus_ptmax3;
+  Float_t fEffSqrFactrPionPlus_ptmax3;
+  Float_t fEffSqrFactrProtonMinus_ptmax3;
+  Float_t fEffSqrFactrProtonPlus_ptmax3;
+  Float_t fEffSqrFactrKaonMinus_ptmax3;
+  Float_t fEffSqrFactrKaonPlus_ptmax3;
+
+  //Efficiency list of histograms
+  TList *fListTRKCorr; 
+  TH1D *fHistMCEffKaonPlus;
+  TH1D *fHistMCEffKaonMinus;
+  TH1D *fHistMCEffPionPlus;
+  TH1D *fHistMCEffPionMinus;
+  TH1D *fHistMCEffProtonPlus;
+  TH1D *fHistMCEffProtonMinus;
+  TH1D *fEffPionPlus[9];
+  TH1D *fEffKaonPlus[9];
+  TH1D *fEffProtonPlus[9];
+  TH1D *fEffPionMinus[9];
+  TH1D *fEffKaonMinus[9];
+  TH1D *fEffProtonMinus[9];
+ 
 
 
   /*
