@@ -216,8 +216,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
 
     //Counter for Normalization
     fCounter = new AliNormalizationCounter("NormalizationCounter");
-    fCounter->Init();
     fCounter->SetStudyMultiplicity(true, 1.);
+    fCounter->Init();
     PostData(3, fCounter);
 
     //Loading of ML models
