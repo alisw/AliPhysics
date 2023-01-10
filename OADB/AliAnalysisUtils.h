@@ -80,7 +80,10 @@ class AliAnalysisUtils : public TObject {
   static Bool_t IsPileupInGeneratedEvent(AliMCEvent* mcEv, TString genname);
   static Bool_t IsPileupInGeneratedEvent(AliAODMCHeader* aodMCHeader, TString genname);
   static Bool_t IsPileupInGeneratedEvent(TList *lgen, TString genname, Bool_t requireSameBunch=kFALSE);
-
+  static AliVVertex* GetGeneratedPrimaryVertexOfTriggerEvent(AliMCEvent* mcEv);
+  static AliVVertex* GetGeneratedPrimaryVertexOfTriggerEvent(AliAODMCHeader* aodMCHeader);
+  static AliVVertex* GetGeneratedPrimaryVertexOfTriggerEvent(TList *lgen);
+  
   // helper methods for kink tagging in AODs
   static Bool_t IsKinkMother(AliAODTrack* track, AliAODEvent* aod);
   static Bool_t IsKinkDaughter(AliAODTrack* track);
