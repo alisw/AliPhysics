@@ -1492,13 +1492,14 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     //                                                                                                          |
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","0103503g00000000","0453503000000000"); // EG2, N.Pi rap. -0.85, 0.85
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","0103603g00000000","0453503000000000"); // EG2, N.Pi rap. -0.75, 0.75
-  } else if(trainConfig == 3303)  { //EMCal + DCal EG2, N.Pi cut var. maxMass, Std v -> 25GeV
+  } else if(trainConfig == 3303)  { //EMCal + DCal EG2, N.Pi cut var. maxMass, Std 0, no max Mass
     //                            0008e113   0dm00009f9730000dge0404000   411790109fe30220000   32l51070a   0103103g00000000   0453503000000000
     //                                                                                                           |
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","01031v3g00000000","0453503000000000"); // EG2, N.Pi maxMass 25GeV
     cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","01031s3g00000000","0453503000000000"); // EG2, N.Pi maxMass 20GeV
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","01031t3g00000000","0453503000000000"); // EG2, N.Pi maxMass 12GeV, maxMass 20GeV
-    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","01031w3g00000000","0453503000000000"); // EG2, N.Pi minMass 12GeV, maxMass 25GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","01031y3g00000000","0453503000000000"); // EG2, N.Pi maxMass 22GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","01031e3g00000000","0453503000000000"); // EG2, 1 Gamma >5.GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008e113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","01031o3g00000000","0453503000000000"); // EG2, N.Pi maxMass 25GeV, 1 Gamma >5.GeV
   } else if(trainConfig == 3304)  { //EMCal + DCal EG2, N.Pi cut var. alpha, Std 3 -> 0.0-1.0
     //                            0008e113   0dm00009f9730000dge0404000   411790109fe30220000   32l51070a   0103103g00000000   0453503000000000
     //                                                                                                            |
@@ -1784,8 +1785,9 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     //                                                                                                           |
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","01031v3g00000000","0453503000000000"); // EG1, N.Pi maxMass 25GeV
     cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","01031s3g00000000","0453503000000000"); // EG1, N.Pi maxMass 20GeV
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","01031t3g00000000","0453503000000000"); // EG1, N.Pi maxMass 12GeV, maxMass 20GeV
-    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","01031w3g00000000","0453503000000000"); // EG1, N.Pi minMass 12GeV, maxMass 25GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","01031y3g00000000","0453503000000000"); // EG1, N.Pi maxMass 22GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","01031i3g00000000","0453503000000000"); // EG1, 1 Gamma >11.GeV
+    cuts.AddCutHeavyMesonPCMCalo("0008d113","0dm00009f9730000dge0404000","411790109fe30220000","32l51070a","01031p3g00000000","0453503000000000"); // EG1, N.Pi maxMass 25GeV, 1 Gamma >11.GeV
   } else if(trainConfig == 4304)  { //EMCal + DCal EG1, N.Pi cut var. alpha, Std 3 -> 0.0-1.0
     //                            0008d113   0dm00009f9730000dge0404000   411790109fe30220000   32l51070a   0103103g00000000   0453503000000000
     //                                                                                                            |

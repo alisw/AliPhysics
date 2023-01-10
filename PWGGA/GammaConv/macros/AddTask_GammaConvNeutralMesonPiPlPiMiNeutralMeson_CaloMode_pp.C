@@ -1858,8 +1858,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     //                                                                           |
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32l51070a","0103103x00000000","0453503000000000"); // EG2, N.Pi maxMass off
     cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32l51070a","01031s3x00000000","0453503000000000"); // EG2, N.Pi maxMass 20GeV
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32l51070a","01031t3x00000000","0453503000000000"); // EG2, N.Pi minMass 12GeV, maxMass 20GeV
-    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32l51070a","01031w3x00000000","0453503000000000"); // EG2, N.Pi minMass 12GeV, maxMass 25GeV
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32l51070a","01031y3x00000000","0453503000000000"); // EG2, N.Pi maxMass 22GeV
+    cuts.AddCutHeavyMesonCalo("0008e113","411790109fe30220000","32l51070a","01031o3x00000000","0453503000000000"); // EG2, N.Pi maxMass 25GeV, 1 Gamma >5.GeV
   } else if(trainConfig == 3304)  { //EMCal + DCal EG2, N.Pi cut var. alpha, Std 3 -> 0.0-1.0
     //                         0008e013   411790109fe30220000   32l51070a   01031v3x00000000   0453503000000000
     //                                                                            |
@@ -2037,6 +2037,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32l51070a","0103103x00000000","0453503000000000"); // EG1, N.Pi maxMass off
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32l51070a","01031s3x00000000","0453503000000000"); // EG1, N.Pi maxMass 20GeV
     cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32l51070a","01031y3x00000000","0453503000000000"); // EG1, N.Pi maxMass 22GeV
+    cuts.AddCutHeavyMesonCalo("0008d113","411790109fe30220000","32l51070a","01031p3x00000000","0453503000000000"); // EG1, N.Pi maxMass 25GeV, 1 Gamma >11.GeV
   } else if(trainConfig == 4304)  { //EMCal + DCal EG1, N.Pi cut var. alpha, Std 3 -> 0.0-1.0
     //                         0008d113   411790109fe30220000   32l51070a   01031v3x00000000   0453503000000000
     //                                                                            |

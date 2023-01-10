@@ -2128,7 +2128,7 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
   case 18: // i
     fDoGammaMinEnergyCut = kTRUE;
     fNDaughterEnergyCut  = 1;
-    fSingleDaughterMinE  = 12.;
+    fSingleDaughterMinE  = 11.;
     break;
   case 19: //j
     fDoGammaMinEnergyCut = kTRUE;
@@ -2160,14 +2160,14 @@ Bool_t AliConversionMesonCuts::SetMinPtCut(Int_t PtCut){
   case 24: //o
     fDoGammaMinEnergyCut = kTRUE;
     fNDaughterEnergyCut  = 1;
-    fSingleDaughterMinE  = 10.;
-    fMaxPt = 20.0;
+    fSingleDaughterMinE  = 5.;
+    fMaxPt = 25.0;
     fDoMaxPtCut = kTRUE;
     break;
   case 25: //p
     fDoGammaMinEnergyCut = kTRUE;
     fNDaughterEnergyCut  = 1;
-    fSingleDaughterMinE  = 10.;
+    fSingleDaughterMinE  = 11.;
     fMaxPt = 25.0;
     fDoMaxPtCut = kTRUE;
     break;
