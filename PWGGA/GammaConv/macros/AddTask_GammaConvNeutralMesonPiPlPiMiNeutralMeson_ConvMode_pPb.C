@@ -24,22 +24,24 @@
 //main function
 //***************************************************************************************
 void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
-    Int_t     trainConfig                 = 1,
-    Int_t     isMC                        = 0,                        //run MC
-    TString   photonCutNumberV0Reader     = "",                       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
-    Int_t     selectHeavyNeutralMeson     = 0,                        //run eta prime instead of omega
-    Int_t     enableQAMesonTask           = 1,                        //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
-    Int_t     enableTriggerMimicking      = 0,                        // enable trigger mimicking
-    Bool_t    enableTriggerOverlapRej     = kFALSE,                   // enable trigger overlap rejection
-    TString   fileNameExternalInputs      = "MCSpectraInput.root",    // path to file for weigting input
-    Int_t     doWeightingPart             = kFALSE,                   //enable Weighting
-    TString   generatorName               = "HIJING",
-    Double_t  tolerance                   = -1,
-    TString   periodNameV0Reader          = "",                       // period Name for V0Reader
-    Int_t     runLightOutput              = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
-    Int_t     prefilterRunFlag            = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
-    Int_t     enableMatBudWeightsPi0      = 0,                        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
-    TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
+    Int_t     trainConfig                   = 1,
+    Int_t     isMC                          = 0,                        //run MC
+    TString   photonCutNumberV0Reader       = "",                       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
+    Int_t     selectHeavyNeutralMeson       = 0,                        //run eta prime instead of omega
+    Int_t     enableQAMesonTask             = 1,                        //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
+    Int_t     enableTriggerMimicking        = 0,                        // enable trigger mimicking
+    Bool_t    enableTriggerOverlapRej       = kFALSE,                   // enable trigger overlap rejection
+    TString   fileNameExternalInputs        = "MCSpectraInput.root",    // path to file for weigting input
+    Int_t     doWeighting                   = kFALSE,                       //enable Weighting
+    Bool_t    enableElecDeDxPostCalibration = kFALSE,                 // enable post calibration of elec pos dEdX
+    TString   generatorName                 = "HIJING",
+    Double_t  tolerance                     = -1,
+    TString   periodNameV0Reader            = "",                       // period Name for V0Reader
+    Int_t     runLightOutput                = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
+    Int_t     prefilterRunFlag              = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
+    Bool_t    usePtDepSelectionWindowCut    = kFALSE,                   // use pt dependent meson selection window cut
+    Int_t     enableMatBudWeightsPi0        = 0,                        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
+    TString   additionalTrainConfig         = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ){
 
   AliCutHandlerPCM cuts(13);
@@ -207,6 +209,16 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
     cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070a","0103113s00000000","0153503000000000"); // PCM 2 sigma, pT > 0.4
     cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070a","0103123s00000000","0153503000000000"); // PCM 2 sigma, pT > 0.7
     cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070a","0103133s00000000","0153503000000000"); // PCM 2 sigma, pT > 0.9
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //                                        OMEGA MESON (p-Pb @ 5 TeV)
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  }else if (trainConfig == 1100){ // Standard 5 TeV omega INT7 cutstring
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0000003500000000","0400503000000000");
+
+
  //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 1501){ // PHOS  PHI7 run1
     cuts.AddCutHeavyMesonPCM("80062113","00200009f9730000dge0400000","32c51070a","0103603s00000000","0453503000000000");  // 0-100%
@@ -268,10 +280,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
   if (periodNameV0Reader.Contains("LHC17g6a2") || periodNameV0Reader.Contains("LHC17g6a3") ){
     TObjString *HeaderPMB = new TObjString("Dpmjet_0");
     TObjString *HeaderP8J = new TObjString("Pythia8JetsGammaTrg_1");
-    if (doWeightingPart==4) { // all headers
+    if (doWeighting==4) { // all headers
       HeaderList->Add(HeaderPMB);
       HeaderList->Add(HeaderP8J);
-    } else if (doWeightingPart==5) { // only MB header
+    } else if (doWeighting==5) { // only MB header
       HeaderList->Add(HeaderPMB);
     } else { // only JJ header
       HeaderList->Add(HeaderP8J);
@@ -319,7 +331,21 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
       }
       else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
     }
-
+    // post calibration of dEdx energy loss
+    if (enableElecDeDxPostCalibration){
+      if (isMC == 0){
+        if(fileNamedEdxPostCalib.CompareTo("") != 0){
+          analysisCuts[i]->SetElecDeDxPostCalibrationCustomFile(fileNamedEdxPostCalib);
+          cout << "Setting custom dEdx recalibration file: " << fileNamedEdxPostCalib.Data() << endl;
+        }
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(enableElecDeDxPostCalibration);
+        cout << "Enabled TPC dEdx recalibration." << endl;
+      } else{
+        cout << "ERROR enableElecDeDxPostCalibration set to True even if MC file. Automatically reset to 0"<< endl;
+        enableElecDeDxPostCalibration=kFALSE;
+        analysisCuts[i]->SetDoElecDeDxPostCalibration(kFALSE);
+      }
+    }
     if( ! analysisCuts[i]->InitializeCutsFromCutString((cuts.GetPhotonCut(i)).Data()) ) {
       cout<<"ERROR: analysisCuts [" <<i<<"]"<<endl;
       return 0;
@@ -330,6 +356,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
     }
 
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
+    analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(usePtDepSelectionWindowCut);
     if(runLightOutput>0) analysisNeutralPionCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNDMCut(i)).Data()) ) {
       cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
