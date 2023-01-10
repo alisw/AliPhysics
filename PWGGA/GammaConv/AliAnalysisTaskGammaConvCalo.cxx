@@ -3540,22 +3540,16 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
 
     if(fDoJetAnalysis) InitJets();
 
-    // here we have to exclude eventQuality != 4 as these are events which have a vertex outside 10cm. Therefore, no MC particles should be considered!
-    if(eventNotAccepted!= 0 && eventQuality != 4){
+    if(eventNotAccepted!= 0){
       fHistoNEvents[iCut]->Fill(eventNotAccepted, fWeightJetJetMC); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
       if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
       // cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
       if(fIsMC > 0){
-        if (eventNotAccepted==3){ // wrong trigger selected. However, we still want to count the MC particles fot these events! If MC particles should be rejected in addition, use IsMCTriggerSelected function
+        if((eventNotAccepted == 3) && (eventQuality == 0 || eventQuality == 3 || eventQuality == 5)){ // wrong trigger selected. However, we still want to count the MC particles fot these events! If MC particles should be rejected in addition, use IsMCTriggerSelected function
           if(fInputEvent->IsA()==AliESDEvent::Class())
             ProcessMCParticles(1);
           if(fInputEvent->IsA()==AliAODEvent::Class())
             ProcessAODMCParticles(1);
-        } else if( eventNotAccepted != 1 && fIsMC > 0){ // exclude centrality/multiplicity selection from MC particles processing
-          if(fInputEvent->IsA()==AliESDEvent::Class())
-            ProcessMCParticles(2);
-          if(fInputEvent->IsA()==AliAODEvent::Class())
-            ProcessAODMCParticles(2);
         }
       }
       continue;
@@ -3567,7 +3561,7 @@ void AliAnalysisTaskGammaConvCalo::UserExec(Option_t *)
       if (fIsMC>1) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
 
       if(fIsMC > 0){
-        if(eventQuality != 4){ // 4 = event outside of +-10cm, we dont want to count these events
+        if(eventQuality == 3 || eventQuality == 5){   // 3 = wrong trigger, 5 = GetNumberOfContributorsVtx
           if(fInputEvent->IsA()==AliESDEvent::Class())
             ProcessMCParticles(2);
           if(fInputEvent->IsA()==AliAODEvent::Class())
