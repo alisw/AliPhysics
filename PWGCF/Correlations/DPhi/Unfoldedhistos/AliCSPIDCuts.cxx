@@ -980,20 +980,24 @@ Bool_t AliCSPIDCuts::SetTPCTOFCut(int tpctofcode)
     case 0:
       fTPCTOF2DEnabledSpeciesMask.ResetAllBits();
       fTOFRequired = false;
+      fTPCTOF2Dcut = false;
       break;
     case 1:
       fTPCTOF2DEnabledSpeciesMask.ResetAllBits();
       fTOFRequired = true;
+      fTPCTOF2Dcut = false;
       break;
     case 2:
       fTPCTOF2DEnabledSpeciesMask.ResetAllBits();
       fTPCTOF2DEnabledSpeciesMask = fTPCEnabledSpeciesMask & fTOFEnabledSpeciesMask;
       fTOFRequired = false;
+      fTPCTOF2Dcut = true;
       break;
     case 3:
       fTPCTOF2DEnabledSpeciesMask.ResetAllBits();
       fTPCTOF2DEnabledSpeciesMask = fTPCEnabledSpeciesMask & fTOFEnabledSpeciesMask;
       fTOFRequired = true;
+      fTPCTOF2Dcut = true;
       break;
     default:
       AliError(Form("TOF configuration cut code %d not supported", tpctofcode));
