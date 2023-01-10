@@ -1902,20 +1902,15 @@ bool AliAnalysisTaskCharmingFemto::IsMassSelected(const double mass,
                                                   double upperDstarRemoval,
                                                   CollSystem system) {
 
-                                                    
+  if (selection == kAny) {
+    return true;
+  }
+                        
   if (selection == kSideband) {
     if (pdg == 411)
       return IsMassSelected(mass, pt, pdg, kSidebandLeft, nSigmaSignal, nSigmaOffset, sidebandWidth, lowerDstarRemoval, upperDstarRemoval, system) || IsMassSelected(mass, pt, pdg, kSidebandRight, nSigmaSignal, nSigmaOffset, sidebandWidth, lowerDstarRemoval, upperDstarRemoval, system);
     else if (pdg == 413)
       selection = kSidebandRight;
-    else
-      printf("charmed hadron with pdg %d not implemented!", pdg);
-      exit(1);
-  } else if (selection == kAny) {
-    if (pdg == 411)
-      return IsMassSelected(mass, pt, pdg, kSignal, nSigmaSignal, nSigmaOffset, sidebandWidth, lowerDstarRemoval, upperDstarRemoval, system) || IsMassSelected(mass, pt, pdg, kSidebandLeft, nSigmaSignal, nSigmaOffset, sidebandWidth, lowerDstarRemoval, upperDstarRemoval, system) || IsMassSelected(mass, pt, pdg, kSidebandRight, nSigmaSignal, nSigmaOffset, sidebandWidth, lowerDstarRemoval, upperDstarRemoval, system);
-    else if (pdg == 413)
-      return IsMassSelected(mass, pt, pdg, kSignal, nSigmaSignal, nSigmaOffset, sidebandWidth, lowerDstarRemoval, upperDstarRemoval, system) || IsMassSelected(mass, pt, pdg, kSidebandRight, nSigmaSignal, nSigmaOffset, sidebandWidth, lowerDstarRemoval, upperDstarRemoval, system);
     else
       printf("charmed hadron with pdg %d not implemented!", pdg);
       exit(1);
