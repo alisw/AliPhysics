@@ -13,8 +13,7 @@
 //_______________________________________________________________________________________________________________________________________
 AliAnalysisTaskSimpleCoalescenceHelium3 *addTaskHelium3SimpleCoalescence ()  {
     
-   
-    //Get Input Files
+    //Get Input File
     TFile *input = TFile::Open ("alien:///alice/cern.ch/user/a/alcaliva/reshaping_protons_pythia/reshaping_protons.root");
     
     //Get Weights
@@ -28,8 +27,8 @@ AliAnalysisTaskSimpleCoalescenceHelium3 *addTaskHelium3SimpleCoalescence ()  {
     if (!mgr->GetInputEventHandler()) return 0x0;
     
     //File Name
-    TString fileName = AliAnalysisManager::GetCommonFileName();
-    fileName += ":helium3_coalescence";
+    TString filename = AliAnalysisManager::GetCommonFileName();
+    filename += ":helium3_coalescence";
 
     //Analysis Task
     AliAnalysisTaskSimpleCoalescenceHelium3 *task = new AliAnalysisTaskSimpleCoalescenceHelium3 ("task_helium3_coalescence");
