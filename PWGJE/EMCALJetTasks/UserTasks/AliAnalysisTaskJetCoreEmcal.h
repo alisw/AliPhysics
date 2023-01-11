@@ -157,6 +157,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
 	TH1D *fh1TrigRef; //!<!
 	TH1D *fh1TrigSig; //!<!
 	TH2F *fh2Ntriggers; //!<!
+	TH2F *fhNtriggersEPbin; //!<!
 	TH2F *fhRhoCentSig; //!<!
 	TH2F *fhRhoCentRef; //!<!
 	TH3F *fhRhoCentPtTTSig; //!<!
@@ -219,7 +220,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 17);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 18);
   /// \endcond
 };
 #endif
