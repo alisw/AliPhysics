@@ -282,12 +282,12 @@ void AliAnalysisTaskAntiProtons_vs_RT_pPb::UserCreateOutputObjects() {
 
     //Arrays
     Double_t Nch_Tr[]   = { 0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 5.0, 10.0 };
-    Double_t pt_TPC[]   = { 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
+    Double_t pt_TPC[]   = { 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.9, 1.0};
     Double_t pt_TOF[]   = { 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.5, 4.0, 5.0 };
     Double_t pt_DCA[]   = { 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.1, 2.2, 2.3, 2.4};
     Double_t dca_xy[]   = { -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.18, -0.16, -0.14, -0.12, -0.10, -0.08, -0.06, -0.04, -0.02, 0.0, 0.02, 0.04, 0.06, 0.08, 0.10, 0.12, 0.14, 0.16, 0.18, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0 };
     Double_t p_ITS[]    = { 0.3, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.9, 1.0};
-    Double_t eta_ITS[]  = { -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
+    Double_t eta_ITS[]  = { -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8};
 
     //Arrays Dimensions
     Int_t nBins_Nch_Tr   = sizeof(Nch_Tr)/sizeof(Double_t)-1;
@@ -1264,6 +1264,7 @@ Bool_t AliAnalysisTaskAntiProtons_vs_RT_pPb::PassedTrackQualityCuts_Syst (AliESD
     //Cuts
     if (y_cms > 0)                                                 return passedTrkSelection;
     if (y_cms < -1)                                                return passedTrkSelection;
+    if (TMath::Abs(track->Eta())>0.8)                              return passedTrkSelection;
     if (nCrossedRows<nCrossedRows_Min)                             return passedTrkSelection;
     if (nCrossedRows_over_Findable<nCrossedRows_over_Findable_Min) return passedTrkSelection;
     if (nClustersITS<nClustersITS_Min)                             return passedTrkSelection;
