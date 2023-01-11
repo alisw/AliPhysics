@@ -176,6 +176,8 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   TH2F *fhDeltaPtJetPtRCrecoil; //!<!
   TH2F *fhDeltaPtaRhoRCrecoil; //!<!
   TH2F *fhDeltaPtCentralityRCrecoil; //!<!
+  TH3F *fhLeadingTrackPtJetPtJetDphiSig; //!<!
+  TH3F *fhLeadingTrackPtJetPtJetDphiRef; //!<!
 	// embedding histograms
 	// inclusive jets
 	TH2F *fhPtDetPart; //!<!
@@ -220,7 +222,7 @@ class AliAnalysisTaskJetCoreEmcal : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetCoreEmcal &operator=(const AliAnalysisTaskJetCoreEmcal&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetCoreEmcal, 18);
+  ClassDef(AliAnalysisTaskJetCoreEmcal, 19);
   /// \endcond
 };
 #endif

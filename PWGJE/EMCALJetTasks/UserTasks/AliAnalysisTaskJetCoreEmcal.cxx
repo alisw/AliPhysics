@@ -113,6 +113,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal() :
   fhDeltaPtJetPtRCrecoil(0x0),
   fhDeltaPtaRhoRCrecoil(0x0),
   fhDeltaPtCentralityRCrecoil(0x0),
+  fhLeadingTrackPtJetPtJetDphiSig(0x0),
+  fhLeadingTrackPtJetPtJetDphiRef(0x0),
 	fhPtDetPart(0x0),
 	fhPtHybrDet(0x0),
 	fhPtHybrPart(0x0),
@@ -221,6 +223,8 @@ AliAnalysisTaskJetCoreEmcal::AliAnalysisTaskJetCoreEmcal(const char *name) :
   fhDeltaPtJetPtRCrecoil(0x0),
   fhDeltaPtaRhoRCrecoil(0x0),
   fhDeltaPtCentralityRCrecoil(0x0),
+  fhLeadingTrackPtJetPtJetDphiSig(0x0),
+  fhLeadingTrackPtJetPtJetDphiRef(0x0),
 	fhPtDetPart(0x0),
 	fhPtHybrDet(0x0),
 	fhPtHybrPart(0x0),
@@ -659,6 +663,19 @@ void AliAnalysisTaskJetCoreEmcal::AllocateJetCoreHistograms()
   fOutput->Add(fhDeltaPtaRhoRCrecoil);
   fOutput->Add(fhDeltaPtCentralityRCrecoil);
 
+  // leading track pT vs jet pT vs D phi
+  fhLeadingTrackPtJetPtJetDphiSig= new TH3F("hLeadingTrackPtJetPtJetDphiSig","LT pT vs jet pT vs jet #Delta#phi, signal-classed events",120,0.,30.,20,0.,100.,20,TMath::Pi()/2,TMath::Pi());
+  fhLeadingTrackPtJetPtJetDphiSig->GetXaxis()->SetTitle("leading track p_{T} (GeV/c)");
+  fhLeadingTrackPtJetPtJetDphiSig->GetYaxis()->SetTitle("recoil jet p_{T} (GeV/c)");
+  fhLeadingTrackPtJetPtJetDphiSig->GetZaxis()->SetTitle("recoil jet #Delta#phi");
+  fhLeadingTrackPtJetPtJetDphiRef= new TH3F("hLeadingTrackPtJetPtJetDphiRef","LT pT vs jet pT vs jet #Delta#phi, reference-classed events",120,0.,30.,20,0.,100.,20,TMath::Pi()/2,TMath::Pi());
+  fhLeadingTrackPtJetPtJetDphiRef->GetXaxis()->SetTitle("leading track p_{T} (GeV/c)");
+  fhLeadingTrackPtJetPtJetDphiRef->GetYaxis()->SetTitle("recoil jet p_{T} (GeV/c)");
+  fhLeadingTrackPtJetPtJetDphiRef->GetZaxis()->SetTitle("recoil jet #Delta#phi");
+
+  fOutput->Add(fhLeadingTrackPtJetPtJetDphiSig);
+  fOutput->Add(fhLeadingTrackPtJetPtJetDphiRef);
+
 
 	fhPtHybrDet= new TH2F("hPtHybrDet","pT response Pb-Pb+PYTHIA vs PYTHIA",200,0,200,200,0,200);
 	fhPtHybrDet->GetXaxis()->SetTitle("p^{Pb-Pb+PYTHIA,ch}_{T} (GeV/c)"); 
@@ -1087,6 +1104,7 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
 			if(isSignal) {
         fhDphiPtSigPi->Fill(dPhiShiftPi,ptcorr);
         fhDphiPtSig->Fill(dPhiShift,ptcorr);
+        fhLeadingTrackPtJetPtJetDphiSig->Fill(jetbig->GetLeadingTrack()->Pt(),ptcorr,dPhiShiftPi);
       }
 			else         {
         fhDphiPtRefPi->Fill(dPhiShiftPi,ptcorr);
@@ -1096,6 +1114,7 @@ void AliAnalysisTaskJetCoreEmcal::DoJetCoreLoop()
           Double_t ptcorrshift=ptbig-(rho+rhoshift)*areabig;
           fhDphiPtShiftRefPi->Fill(dPhiShiftPi,ptcorrshift,rhoshift+0.001);
         }
+        fhLeadingTrackPtJetPtJetDphiRef->Fill(jetbig->GetLeadingTrack()->Pt(),ptcorr,dPhiShiftPi);
       }
 
 			// selection on relative phi
