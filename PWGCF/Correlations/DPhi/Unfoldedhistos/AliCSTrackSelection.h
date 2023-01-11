@@ -87,7 +87,7 @@ private:
   TH2F                              *fhTOFSignalVsP[2];                  ///< TOF signal vs P(b/a)
   TH3F* fhTPCTOFSigmaVsP[3][2];                                          ///< TOF n sigmas vs TPC n sigmas vs P  to the pi, k, p lines (b/a)
   TH2F* fhTPCdEdxSignalDiffVsP[3][2];                                    ///< TPC dE/dx signal difference to the pi, k, p lines vs P (b/a)
-  TH2F* fhPvsTOFMass[2];                                                 ///< momentum vs TOF estimated mass (b/a)
+  TH2F* fhPvsTOFMassSq[2];                                                 ///< momentum vs TOF estimated mass (b/a)
 
   TList                             *fHistogramsList;                    ///< the list of histograms used
 
