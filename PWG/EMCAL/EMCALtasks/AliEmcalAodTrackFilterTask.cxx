@@ -9,15 +9,18 @@
 #include <TRandom3.h>
 #include <AliAODEvent.h>
 #include <AliAODTrack.h>
+#include "AliParticleContainer.h"
 #include <AliAnalysisManager.h>
 #include <AliEMCALRecoUtils.h>
 #include <AliLog.h>
 #include <AliVEventHandler.h>
+#include "AliEmcalContainerUtils.h"
 ClassImp(AliEmcalAodTrackFilterTask)
 
 //________________________________________________________________________
 AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask() : 
-  AliAnalysisTaskSE("AliEmcalAodTrackFilterTask"),
+//  AliAnalysisTaskSE("AliEmcalAodTrackFilterTask"),
+ AliAnalysisTaskEmcal("AliEmcalAodTrackFilterTask"),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
   fIncludeNoITS(kTRUE),
@@ -41,7 +44,8 @@ AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask() :
 
 //________________________________________________________________________
 AliEmcalAodTrackFilterTask::AliEmcalAodTrackFilterTask(const char *name) : 
-  AliAnalysisTaskSE(name),
+//  AliAnalysisTaskSE(name),
+ AliAnalysisTaskEmcal(name),
   fTracksOutName("PicoTracks"),
   fTracksInName("tracks"),
   fIncludeNoITS(kTRUE),
@@ -97,26 +101,6 @@ AliEmcalAodTrackFilterTask* AliEmcalAodTrackFilterTask::AddTaskEmcalAodTrackFilt
   
     // Check the analysis type using the event handlers connected to the analysis manager.
     //==============================================================================
-/*        AliVEventHandler* handler = mgr->GetInputEventHandler();
-    if (!handler)
-    {
-      ::Error("AddTaskAodTrackFilter", "This task requires an input event handler");
-      return 0;
-    }
-  
-    enum EDataType_t {
-      kUnknown,
-      kESD,
-      kAOD
-    };
-    EDataType_t dataType = kUnknown; 
-    if (handler->InheritsFrom("AliESDInputHandler")) {
-      dataType = kESD;
-    }
-    else if (handler->InheritsFrom("AliAODInputHandler")) {
-      dataType = kAOD;
-    }
-*/
     if (!mgr->GetInputEventHandler())
     {
       ::Error("AddTaskAodTrackFilter", "This task requires an input event handler");
@@ -137,7 +121,12 @@ AliEmcalAodTrackFilterTask* AliEmcalAodTrackFilterTask::AddTaskEmcalAodTrackFilt
     aodTask->SetTracksOutName(name);
     aodTask->SetTracksInName(inname);
     aodTask->SetMC(kFALSE);
-  
+    TString trackname(inname);
+   if(!trackname.IsNull())aodTask->AddParticleContainer(trackname);
+
+    TString OutTrackName(name);
+   if(!OutTrackName.IsNull())aodTask->AddParticleContainer(OutTrackName);
+
     Bool_t includeNoITS  = kFALSE;
     Bool_t doProp        = kFALSE; //force propagation of all tracks to EMCal
     Bool_t doAttemptProp = kTRUE;  //only propagate the tracks which were not propagated during AOD filtering
@@ -145,7 +134,7 @@ AliEmcalAodTrackFilterTask* AliEmcalAodTrackFilterTask::AddTaskEmcalAodTrackFilt
   
     TString runPeriod(runperiod);
     runPeriod.ToLower();
-  if (runPeriod == "lhc10b" || runPeriod == "lhc10c" || runPeriod == "lhc10d" ||
+/*  if (runPeriod == "lhc10b" || runPeriod == "lhc10c" || runPeriod == "lhc10d" ||
         runPeriod == "lhc10e" || runPeriod == "lhc10h" ||
         runPeriod == "lhc11h" || runPeriod == "lhc12a" || runPeriod == "lhc12b" ||
         runPeriod == "lhc12c" || runPeriod == "lhc12d" || runPeriod == "lhc12e" ||
@@ -201,9 +190,9 @@ AliEmcalAodTrackFilterTask* AliEmcalAodTrackFilterTask::AddTaskEmcalAodTrackFilt
       aodTask->SetAODfilterBits(arg1.Atoi(),arg2.Atoi());
       delete arr;
     } else {
-      if (!runPeriod.IsNull())
+*/  
+    if (!runPeriod.IsNull())
         ::Warning("AddTaskEmcalAodTrackFilter", Form("Run period %s not known. It will use IsHybridGlobalConstrainedGlobal.", runPeriod.Data()));
-    }
     aodTask->SetIncludeNoITS(includeNoITS);
     aodTask->SetDoPropagation(doProp);
     aodTask->SetAttemptProp(doAttemptProp);
@@ -228,7 +217,6 @@ AliEmcalAodTrackFilterTask* AliEmcalAodTrackFilterTask::AddTaskEmcalAodTrackFilt
 void AliEmcalAodTrackFilterTask::UserExec(Option_t *) 
 {
   // Main loop, called for each event.
-
   AliAnalysisManager *am = AliAnalysisManager::GetAnalysisManager();
   if (!am) {
     AliError("Manager zero, returning");
@@ -236,7 +224,7 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
   }
 
   // retrieve tracks from input.
-  if (!fTracksIn) { 
+/*  if (!fTracksIn) { 
     fTracksIn = dynamic_cast<TClonesArray*>(InputEvent()->FindListObject(fTracksInName));
     if (!fTracksIn) {
       AliError(Form("Could not retrieve tracks %s!", fTracksInName.Data())); 
@@ -247,21 +235,32 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
       return;
     }
   }
-
+*/
+AliParticleContainer* OutputCont= static_cast<AliParticleContainer*>(fParticleCollArray.Last());
   // add tracks to event if not yet there
   fTracksOut->Delete();
-  if (!(InputEvent()->FindListObject(fTracksOutName))) {
+  if(OutputCont->GetIsEmbedding()){
+        AliVEvent *event = AliEmcalContainerUtils::GetEvent(InputEvent(),kTRUE);
+        if(!(event->FindListObject(fTracksOutName))){
+        event->AddObject(fTracksOut);
+        OutputCont->SetArray(event);}
+        }
+  else if (!(InputEvent()->FindListObject(fTracksOutName))) {
     InputEvent()->AddObject(fTracksOut);
+        OutputCont->SetArray(InputEvent());
   }
-
+ AliAnalysisTaskEmcal::ExecOnce();
   // loop over tracks
-  const Int_t Ntracks = fTracksIn->GetEntriesFast();
-  for (Int_t iTracks = 0, nacc = 0; iTracks < Ntracks; ++iTracks) {
-
-    AliAODTrack *track = static_cast<AliAODTrack*>(fTracksIn->At(iTracks));
-
-    if (!track)
-      continue;
+AliParticleContainer* partCont = 0;
+    TIter next(&fParticleCollArray);
+    while ((partCont = static_cast<AliParticleContainer*>(next()))) {
+    Int_t nacc = 0;
+    Int_t count =0;
+        if(TString(partCont->GetTitle()).Contains(fTracksOutName))continue;
+  for(auto part : partCont->accepted()) {
+        if (!part) continue;
+    AliAODTrack *track = dynamic_cast<AliAODTrack*>(part);
+    if (!track) continue;
     Int_t type = -1;
     if (fAODfilterBits[0] < 0) {
       if (track->IsHybridGlobalConstrainedGlobal())
@@ -323,7 +322,7 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
       else 
         label = TMath::Abs(track->GetLabel());
       if (label == 0) 
-        AliDebug(2,Form("Track %d with label==0", iTracks));
+        AliDebug(2,Form("Track %d with label==0", count));
     }
     if(fKeepInvMassTag && !fIsMC && (track->GetLabel() == 1011000 ||
         track->GetLabel() == 1012000 ||
@@ -348,6 +347,7 @@ void AliEmcalAodTrackFilterTask::UserExec(Option_t *)
       newt->SetBit(BIT(22),1);
       newt->SetBit(BIT(23),1);
     }
-    ++nacc;
+    ++nacc;++count;
   }
+}
 }

@@ -4,10 +4,12 @@
 class TClonesArray;
 
 #include <TF1.h>
+#include "AliAnalysisTaskEmcal.h"
 
-#include "AliAnalysisTaskSE.h"
+//#include "AliAnalysisTaskSE.h"
 
-class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
+//class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
+class AliEmcalAodTrackFilterTask : public AliAnalysisTaskEmcal {
  public:
   AliEmcalAodTrackFilterTask();
   AliEmcalAodTrackFilterTask(const char *name);
@@ -59,7 +61,7 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
   AliEmcalAodTrackFilterTask(const AliEmcalAodTrackFilterTask&);            // not implemented
   AliEmcalAodTrackFilterTask &operator=(const AliEmcalAodTrackFilterTask&); // not implemented
 
-  ClassDef(AliEmcalAodTrackFilterTask, 5); // Task to filter Aod tracks
+  ClassDef(AliEmcalAodTrackFilterTask, 6); // Task to filter Aod tracks
 };
 #endif
 
