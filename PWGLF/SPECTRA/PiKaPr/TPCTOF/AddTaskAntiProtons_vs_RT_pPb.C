@@ -10,7 +10,7 @@
 
 
 //____________________________________________________________________________________________________________________________________________
-AliAnalysisTaskAntiProtons_vs_RT_pPb *addTaskAntiProtons_vs_RT_pPb (
+AliAnalysisTaskAntiProtons_vs_RT_pPb *AddTaskAntiProtons_vs_RT_pPb (
                                                 Bool_t    isITSrecalib = kTRUE,
                                                 Bool_t    isMC  = kFALSE,
                                                 UInt_t    triggerType = (AliVEvent::kINT7),//(AliVEvent::kINT7|AliVEvent::kHighMultV0)
@@ -21,22 +21,26 @@ AliAnalysisTaskAntiProtons_vs_RT_pPb *addTaskAntiProtons_vs_RT_pPb (
     
     
     //Get nsigmaITS recalibration map
-    TFile *inputFile;
+    TFile *inputFile_data = TFile::Open("alien:///alice/cern.ch/user/m/mrasa/ITS_recalib_map_protons/ITSrecalibrationMaps_Data.root");
+    TH2F *hITSnsigma_Mean_data = (TH2F*) inputFile_data->Get("hITSnsigma_Mean");
+    TH2F *hITSnsigma_Width_data = (TH2F*) inputFile_data->Get("hITSnsigma_Width");
+
+    TFile *inputFile_mc = TFile::Open("alien:///alice/cern.ch/user/m/mrasa/ITS_recalib_map_protons/ITSrecalibrationMaps_MC.root");
+    TH2F *hITSnsigma_Mean_mc = (TH2F*) inputFile_mc->Get("hITSnsigma_Mean");
+    TH2F *hITSnsigma_Width_mc = (TH2F*) inputFile_mc->Get("hITSnsigma_Width");
+
     TH2F *hITSnsigma_Mean;
     TH2F *hITSnsigma_Width;
-
-    //temporary files, to be changed as soon as the corrected recalibrated maps are availables
+    
     if(!isMC)
     {
-        inputFile = TFile::Open ("alien:///alice/cern.ch/user/a/alcaliva/nSigmaITS_Recalib/ITSrecalibrationMaps_data.root");
-        hITSnsigma_Mean = (TH2F*) inputFile->Get("hITSnsigma_Mean");
-        hITSnsigma_Width = (TH2F*) inputFile->Get("hITSnsigma_Width");
+        hITSnsigma_Mean = hITSnsigma_Mean_data;
+        hITSnsigma_Width = hITSnsigma_Width_data;
     }
     else if(isMC)
     {
-        inputFile = TFile::Open ("alien:///alice/cern.ch/user/a/alcaliva/nSigmaITS_Recalib/ITSrecalibrationMaps_mc.root");
-        hITSnsigma_Mean = (TH2F*) inputFile->Get("hITSnsigma_Mean");
-        hITSnsigma_Width = (TH2F*) inputFile->Get("hITSnsigma_Width");
+        hITSnsigma_Mean = hITSnsigma_Mean_mc;
+        hITSnsigma_Width = hITSnsigma_Width_mc;;
     }
     
     //Get Analysis Manager
@@ -76,4 +80,3 @@ AliAnalysisTaskAntiProtons_vs_RT_pPb *addTaskAntiProtons_vs_RT_pPb (
     return task;
 }
 //____________________________________________________________________________________________________________________________________________
-
