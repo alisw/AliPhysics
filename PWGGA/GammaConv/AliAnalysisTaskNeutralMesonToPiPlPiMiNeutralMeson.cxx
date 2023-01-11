@@ -2899,7 +2899,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
             fTreeEventInfoHNM[iCut]->Branch("fPtHNM", &fPtHNM, "fPtHNM/F");
             fTrueTreeList[iCut]->Add(fTreeEventInfoHNM[iCut]);
             if (fDoMesonQA>2) {
-              fHistopi0vsmesonmassshiftangle[iCut]    = new TH3F("fHistopi0vsmesonmassshiftangle", "fHistopi0vsmesonmassshiftangle", 15, -0.03, 0.03, 50, -0.1, 0.1, 60, 0, 3*TMath::Pi()/10.);
+              if (fNDMRecoMode == 0){ 
+                fHistopi0vsmesonmassshiftangle[iCut]    = new TH3F("fHistopi0vsmesonmassshiftangle", "fHistopi0vsmesonmassshiftangle", 30, -0.015, 0.015, 100, -0.1, 0.1, 60, 0, 3*TMath::Pi()/10.);
+              } else{ // Calo methods need larger pi0 mass range
+                fHistopi0vsmesonmassshiftangle[iCut]    = new TH3F("fHistopi0vsmesonmassshiftangle", "fHistopi0vsmesonmassshiftangle", 30, -0.03, 0.03, 100, -0.1, 0.1, 60, 0, 3*TMath::Pi()/10.);
+              }
               if (fIsMC>1) fHistopi0vsmesonmassshiftangle[iCut]->Sumw2();
               fHistopi0vsmesonmassshiftangle[iCut]->GetXaxis()->SetTitle("M_{#pi^{0}}^{rec.}-M_{#pi^{0}}^{true.} (GeV/c^{2})");
               fHistopi0vsmesonmassshiftangle[iCut]->GetYaxis()->SetTitle(Form("M_{%s^{0}}^{rec.}-M_{%s^{0}}^{true.} (GeV/c^{2})", NameNeutralMesonAnalyzedLatex.Data(), NameNeutralMesonAnalyzedLatex.Data()));
