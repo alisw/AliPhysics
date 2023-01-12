@@ -347,6 +347,7 @@ inline bool AliCSPIDCuts::accept(AliVTrack* ttrk)
   if ((trk->GetStatus() & AliESDtrack::kTOFin) && (!(trk->GetStatus() & AliESDtrack::kTOFmismatch))) {
     if (fTPCTOF2Dcut) {
       btof = btof && check<kTPCTOF2D>(trk);
+      btpc = btof;
     } else {
       btof = btof && check<kTOF>(trk);
     }
