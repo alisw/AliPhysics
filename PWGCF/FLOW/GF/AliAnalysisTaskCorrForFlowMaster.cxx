@@ -76,7 +76,8 @@ AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster() : AliAnalys
     fMinEventsToMix(5),
     fNzVtxBins(10),
     fNCentBins(15),
-    fMergingCut(0.0)
+    fMergingCut(0.0),
+    fUsePhiStar(kFALSE)
 {}
 //_____________________________________________________________________________
 AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster(const char* name, Bool_t bUseEff, Bool_t bUseCalib) : AliAnalysisTaskSE(name),
@@ -136,7 +137,8 @@ AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster(const char* n
     fMinEventsToMix(5),
     fNzVtxBins(10),
     fNCentBins(15),
-    fMergingCut(0.0)
+    fMergingCut(0.0),
+    fUsePhiStar(kFALSE)
 {
     DefineInput(0, TChain::Class());
     if(bUseEff) { DefineInput(1, TList::Class()); }
@@ -456,6 +458,8 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
       Double_t assPhi = trackAss->Phi();
       Double_t assCharge = trackAss->Charge();
       Double_t assEff = 1.0;
+
+      if(trigPt<assPt) continue;
       if(fUseEfficiency) {
         assEff = GetEff(assPt, 0, assEta);
         if(assEff < 0.001) continue;
@@ -468,7 +472,7 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
       binscont[5] = assPt;
 
 
-      if(CheckDPhiStar(binscont[0], trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
+      if(fUsePhiStar && CheckDPhiStar(binscont[0], trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
 
       fhSE->Fill(binscont,0,1./(trigEff*assEff));
     }
@@ -518,6 +522,7 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelationsMixed()
           Double_t assPhi = trackAss->Phi();
           Double_t assCharge = trackAss->Charge();
           Double_t assEff = 1.0;
+          if(trigPt<assPt) continue;
           if(fUseEfficiency) {
             assEff = GetEff(assPt, 0, assEta);
             if(assEff < 0.001) continue;
@@ -527,7 +532,7 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelationsMixed()
           binscont[1] = RangePhi(trigPhi - assPhi);
           binscont[5] = assPt;
 
-          if(CheckDPhiStar(binscont[0],trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
+          if(fUsePhiStar && CheckDPhiStar(binscont[0], trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
 
           fhME->Fill(binscont,0,1./((Double_t)nMix*(trigEff*assEff)));
         } //End of Asso loop
@@ -866,6 +871,7 @@ void AliAnalysisTaskCorrForFlowMaster::PrintSetup(){
   printf("\t fNOfSamples: (Int_t) %d\n", (Int_t) fNOfSamples);
   printf("\t fEventBias: (Bool_t) %s\n", fUseEventBias ? "kTRUE" : "kFALSE");
   printf("\t fNumEventBias: (Int_t) %d\n", (Int_t) fNumEventBias);  
+  printf("\t fUsePhiStar: (Bool_t) %s\n", fUsePhiStar ? "kTRUE" : "kFALSE");
   printf(" **************************** \n");
   printf("\t fSystematicsFlag: (TString) %s\n", fSystematicsFlag.Data());
   printf("\t fAbsEtaMax: (Double_t) %f\n", fAbsEtaMax);
