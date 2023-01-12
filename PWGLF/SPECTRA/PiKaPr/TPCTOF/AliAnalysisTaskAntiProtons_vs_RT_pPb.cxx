@@ -1306,8 +1306,8 @@ Double_t AliAnalysisTaskAntiProtons_vs_RT_pPb::GetRecalibratedITSnsigma (Double_
     Double_t nsigma_corr=nsigma;
     
     //Protections
-    if (eta<-1.0) return nsigma_corr;
-    if (eta>+1.0) return nsigma_corr;
+    if (eta<-0.8) return nsigma_corr;
+    if (eta>+0.8) return nsigma_corr;
     if (p>1.0)    return nsigma_corr;
     if (p<0.3)    return nsigma_corr;
 

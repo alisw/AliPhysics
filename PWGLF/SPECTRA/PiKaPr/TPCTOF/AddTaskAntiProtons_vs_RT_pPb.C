@@ -40,7 +40,7 @@ AliAnalysisTaskAntiProtons_vs_RT_pPb *AddTaskAntiProtons_vs_RT_pPb (
     else if(isMC)
     {
         hITSnsigma_Mean = hITSnsigma_Mean_mc;
-        hITSnsigma_Width = hITSnsigma_Width_mc;;
+        hITSnsigma_Width = hITSnsigma_Width_mc;
     }
     
     //Get Analysis Manager
