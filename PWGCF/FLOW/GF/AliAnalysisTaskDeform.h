@@ -208,6 +208,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH2D *fWithinDCAvsPt_withChi2;
   TH3D *fDCAxyVsPt_withChi2;
   TH2D *fWithinDCAvsPt_noChi2;
+  TH3D *fMptVsNch;
   TH1D *fV0MMulti;
   TH2D *fITSvsTPCMulti;
   TH1D *fV2dPtMulti;

@@ -120,6 +120,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fWithinDCAvsPt_withChi2(0),
   fDCAxyVsPt_withChi2(0),
   fWithinDCAvsPt_noChi2(0),
+  fMptVsNch(0),
   fV0MMulti(0),
   fITSvsTPCMulti(0),
   fV2dPtMulti(0),
@@ -224,6 +225,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fWithinDCAvsPt_withChi2(0),
   fDCAxyVsPt_withChi2(0),
   fWithinDCAvsPt_noChi2(0),
+  fMptVsNch(0),
   fV0MMulti(0),
   fITSvsTPCMulti(0),
   fV2dPtMulti(0),
@@ -626,9 +628,16 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     if(fUseChargedPtCut) {
       fChPtDist = new TH1D("fChPtDist","#it{p}_{T,ch} distribution",100,fchPtMin,fchPtMax);
       fQAList->Add(fChPtDist);
-      fPtDist = new TH1D("fPtDist","#it{p}_{T} distribution",100,fPtBins[0],fPtBins[fNPtBins]);
-      fQAList->Add(fPtDist);
     }
+    fPtDist = new TH1D("fPtDist","#it{p}_{T} distribution",100,fPtBins[0],fPtBins[fNPtBins]);
+    fQAList->Add(fPtDist);
+    int NNchBins = 3000;
+    double* NchBins = new double[NNchBins+1];
+    for(int i(0);i<=NNchBins;++i) NchBins[i] = i+0.5;
+    int NdummyCentBins = 5;
+    double dummyCentBins[] = {0,2,4,6,8,10};
+    fMptVsNch = new TH3D("fMptVsNch","[#it{p}_{T}] vs N_{ch}",NNchBins,NchBins,fNPtBins,fPtBins,NdummyCentBins,dummyCentBins);
+    fQAList->Add(fMptVsNch);
     printf("QA objects created!\n");
     PostData(4,fQAList);
   }
@@ -1158,6 +1167,7 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
         if(pt>fchPtMin && pt<fchPtMax) { fChPtDist->Fill(pt); fGFW->Fill(leta,1,lPart->Phi(),1,3); }
         continue;
       }
+      fPtDist->Fill(pt);
       if(PIDIndex) fGFW->Fill(leta,1,lPart->Phi(),1,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); //filling both gap and full for PID
       fGFW->Fill(leta,1,lPart->Phi(),1,3); //filling both gap (bit mask 1) and full (bit maks 2). Since this is MC, weight is 1.
     };
@@ -1206,6 +1216,7 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
         (fUsePIDNUA)?wacc_PID = fWeights[PIDIndex]->GetNUA(lTrack->Phi(),lTrack->Eta(),vz):wacc;
         fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc_PID*1./weff_PID,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); //filling both gap and full for PID
       }
+      fPtDist->Fill(lpt);
       fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),wacc*weff,3); //filling both gap (bit mask 1) and full (bit mask 2)
     };
   };
@@ -1226,6 +1237,7 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   AliAODHeader *head = (AliAODHeader*)fAOD->GetHeader();
   Int_t nESD = head->GetNumberOfESDTracks();
   fESDvsFB128->Fill(nTotTracksFB128,nESD);
+  if(l_Cent<10) fMptVsNch->Fill(nTotNoTracks,wp[0][1]/wp[0][0],l_Cent);
   Double_t l_Random = fRndm->Rndm();
   int endPID = (fDisablePID)?1:4;
   for(int i(0);i<endPID;++i){
