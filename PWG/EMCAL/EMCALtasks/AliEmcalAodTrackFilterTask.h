@@ -39,7 +39,9 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskEmcal {
 
  protected:
   void               UserCreateOutputObjects();
-  void               UserExec(Option_t *option);
+//  void               UserExec(Option_t *option);
+  void               ExecOnce();
+  Bool_t             Run();
 
   Int_t              fAODfilterBits[2];     // AOD track filter bit map
   TString            fTracksOutName;        // name of output track array
@@ -61,7 +63,7 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskEmcal {
   AliEmcalAodTrackFilterTask(const AliEmcalAodTrackFilterTask&);            // not implemented
   AliEmcalAodTrackFilterTask &operator=(const AliEmcalAodTrackFilterTask&); // not implemented
 
-  ClassDef(AliEmcalAodTrackFilterTask, 6); // Task to filter Aod tracks
+  ClassDef(AliEmcalAodTrackFilterTask, 7); // Task to filter Aod tracks
 };
 #endif
 
