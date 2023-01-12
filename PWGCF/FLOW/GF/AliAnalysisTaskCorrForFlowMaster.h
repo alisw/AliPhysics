@@ -65,6 +65,8 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    SetRejectSecondariesFromMC(Bool_t flag = kTRUE) { fRejectSecondariesFromMC = flag; }
         void                    SetVetoJetEvents(Bool_t flag = kTRUE) { fVetoJetEvents = flag; }
         void                    SetJetEventsLowPtCut(Double_t cut) { fJetParticleLowPt = cut; }
+        void                    SetUsePhiStar(Bool_t flag) {fUsePhiStar = flag;}
+        void                    SetUseEfficiency(Bool_t flag) {fUseEfficiency = flag;}
 
         // event selection
         void                    SetNumEventBias(Int_t num) {fNumEventBias = num;}
@@ -157,6 +159,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         Bool_t                  fVetoJetEvents; // [kFALSE]
         Bool_t                  fRejectSecondariesFromMC; // [kFALSE]
         Bool_t                  fBoostAMPT; // [kFALSE] = boost to CMS in pPb collisions for the gen level of AMPT
+        Bool_t                  fUsePhiStar; // [kFALSE]
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
