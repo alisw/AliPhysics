@@ -1,8 +1,8 @@
-AliAnaTaskSEXic0SL* addTaskXic0SL(const char* name, const char* option)
+AliAnalysisTaskSEXic0SL* AddTaskXic0SL(const char* name, const char* option)
 {
 	AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
 	if (!mgr || !mgr->GetInputEventHandler()) return NULL;
-	AliAnaTaskSEXic0SL* task = new AliAnaTaskSEXic0SL(name, option);
+	AliAnalysisTaskSEXic0SL* task = new AliAnalysisTaskSEXic0SL(name, option);
 	if (!task) return NULL;
 	mgr->AddTask(task);
 
@@ -13,10 +13,14 @@ AliAnaTaskSEXic0SL* addTaskXic0SL(const char* name, const char* option)
 	task->SetPA(false);
 	task->SetTrigMB(true);
 	task->SetTrigHMV0(true);
+	task->SetCutsLegacy(false); //Set conditions same to the "old" code
+	task->SetCutsByFile(false); //Set conditions using external ROOT file
+	task->SetValidEvtOnly(false);
 
 	TString taskOpt = option;
 	if (taskOpt.Contains("MC")) task->SetMC(true);
 	if (taskOpt.Contains("PA")) task->SetPA(true);
+	if (taskOpt.Contains("LEGACY")) task->SetCutsLegacy(true);
 
 	//-------------------------------------------
 

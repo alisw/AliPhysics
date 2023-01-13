@@ -1,3 +1,18 @@
+/**************************************************************************
+ * Copyright(c) 1998-2022, ALICE Experiment at CERN, All rights reserved. *
+ *                                                                        *
+ * Author: The ALICE Off-line Project.                                    *
+ * Contributors are mentioned in the code where appropriate.              *
+ *                                                                        *
+ * Permission to use, copy, modify and distribute this software and its   *
+ * documentation strictly for non-commercial purposes is hereby granted   *
+ * without fee, provided that the above copyright notice appears in all   *
+ * copies and that both the copyright notice and this permission notice   *
+ * appear in the supporting documentation. The authors make no claims     *
+ * about the suitability of this software for any purpose. It is          *
+ * provided "as is" without express or implied warranty.                  *
+ **************************************************************************/
+
 /*
    Xic0 -> eXi analysis (* newly written, Aug. 2022)
 
@@ -6,8 +21,8 @@
    kimc@cern.ch
 */
 
-#include "AliAnaTaskSEXic0SL.h"
-ClassImp(AliAnaTaskSEXic0SL);
+#include "AliAnalysisTaskSEXic0SL.h"
+ClassImp(AliAnalysisTaskSEXic0SL);
 
 #include "AliAnalysisManager.h"
 #include "AliAODcascade.h"
@@ -40,14 +55,7 @@ ClassImp(AliAnaTaskSEXic0SL);
 #include <vector>
 using namespace std;
 
-AliAnaTaskSEXic0SL::AliAnaTaskSEXic0SL():AliAnalysisTaskSE("AliAnaTaskSEXic0SL")
-{
-	ControlAnaObjects(0);
-	ControlOutputContainers(0);
-	ResetTreeVariables();
-}//Constructor, default
-
-AliAnaTaskSEXic0SL::AliAnaTaskSEXic0SL(const char* name, const char* option):
+AliAnalysisTaskSEXic0SL::AliAnalysisTaskSEXic0SL(const char* name, const char* option):
 	AliAnalysisTaskSE(name), fTaskOpt(option)
 {
 	ControlAnaObjects(0);
@@ -55,46 +63,67 @@ AliAnaTaskSEXic0SL::AliAnaTaskSEXic0SL(const char* name, const char* option):
 	ResetTreeVariables();
 }//Constructor
 
-AliAnaTaskSEXic0SL::~AliAnaTaskSEXic0SL()
+AliAnalysisTaskSEXic0SL::~AliAnalysisTaskSEXic0SL()
 {
 	ControlAnaObjects(1);
 }//Destructor
 
-void AliAnaTaskSEXic0SL::Terminate(Option_t *)
+void AliAnalysisTaskSEXic0SL::Terminate(Option_t *)
 {
 	cout <<"\nDone!\n";
 	return;
 }//Terminate
 
 //=======================================================================================
-void AliAnaTaskSEXic0SL::UserCreateOutputObjects()
+void AliAnalysisTaskSEXic0SL::UserCreateOutputObjects()
 {
-	//Eventwise cut, for MB (default)
-	fEvtCutsMB = new AliRDHFCutsXictoeleXifromAODtracks();
-	fEvtCutsMB->SetOptPileup(AliRDHFCuts::kRejectMVPileupEvent); //Multi vertexer pileup rejection
-	fEvtCutsMB->SetTriggerClass("");
-	fEvtCutsMB->SetTriggerMask(AliVEvent::kINT7);
-	fEvtCutsMB->SetUseInt7TriggerPP2012();
-	fEvtCutsMB->SetUsePhysicsSelection(true);
+	if (IsCutsByFile)
+	{
+		cout <<"\nSet selection cuts by using external file...\n";
 
-	//Eventwise cut, for HMV0 trigger
-	fEvtCutsHMV0 = new AliRDHFCutsXictoeleXifromAODtracks();
-	fEvtCutsHMV0->SetOptPileup(AliRDHFCuts::kRejectMVPileupEvent);
-	fEvtCutsHMV0->SetTriggerClass("");
-	fEvtCutsHMV0->SetTriggerMask(AliVEvent::kHighMultV0);
-	fEvtCutsHMV0->SetUsePhysicsSelection(true);
+	}//IsCutsByFile
+	else //Apply hard-corded cuts, includes legacy mode
+	{
+		//Eventwise cut, for MB (default)
+		fEvtCutsMB = new AliRDHFCutsXictoeleXifromAODtracks();
+		fEvtCutsMB->SetOptPileup(AliRDHFCuts::kRejectMVPileupEvent); //Multi vertexer pileup rejection
+		if (IsMC==false) //data
+		{
+			//fEvtCutsMB->SetTriggerMask(AliVEvent::kINT7); //This is included in SetUseIny7TriggerPP2012()
+			fEvtCutsMB->SetUseInt7TriggerPP2012();
+		}
+		else if (IsLegacy==false) fEvtCutsMB->SetTriggerMask(AliVEvent::kAny); //MC only
+		fEvtCutsMB->SetUsePhysicsSelection(true);
 
-	//AliESDTrackCut for track filtering
-	fTrkCuts = new AliESDtrackCuts();
-	fTrkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kBoth);
-	fTrkCuts->SetDCAToVertex2D(true);
-	fTrkCuts->SetMaxChi2PerClusterITS(cut_maxChi2PerClusterITS);
-	fTrkCuts->SetMaxDCAToVertexXY(cut_maxDCAToVertexXY);
-	fTrkCuts->SetMaxDCAToVertexZ(cut_maxDCAToVertexZ);
-	fTrkCuts->SetMinNClustersITS(cut_minNClustersITS); //ITS cluster
-	//fTrkCuts->SetMinNClustersTPC(fNClustersTPCMin = 70); //TPC min # of clusters - why masked?
-	fTrkCuts->SetRequireTPCRefit(true); //TPC refit
-	fTrkCuts->SetRequireITSRefit(true); //ITS refit
+		//Eventwise cut, for HMV0 trigger
+		fEvtCutsHMV0 = new AliRDHFCutsXictoeleXifromAODtracks();
+		fEvtCutsHMV0->SetOptPileup(AliRDHFCuts::kRejectMVPileupEvent);
+		if (IsMC==false)
+		{
+			fEvtCutsHMV0->SetTriggerMask(AliVEvent::kHighMultV0);
+			fEvtCutsHMV0->SetTriggerClass(""); //Causes problem on NormalizationCounter if deleted, Jan. 9
+		}
+		fEvtCutsHMV0->SetUsePhysicsSelection(true);
+
+		//AliESDTrackCut for track filtering
+		fTrkCuts = new AliESDtrackCuts();
+		fTrkCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kBoth);
+		fTrkCuts->SetDCAToVertex2D(true);
+		fTrkCuts->SetMaxChi2PerClusterITS(cut_maxChi2PerClusterITS);
+		fTrkCuts->SetRequireTPCRefit(true); //TPC refit
+		fTrkCuts->SetRequireITSRefit(true); //ITS refit
+
+		if (IsLegacy)
+		{
+			cout <<"\nWARNING! Legacy conditions are being used!\n";
+
+			fEvtCutsMB->SetTriggerClass("");
+			fTrkCuts->SetMaxDCAToVertexXY(cut_maxDCAToVertexXY);
+			fTrkCuts->SetMaxDCAToVertexZ(cut_maxDCAToVertexZ);
+			fTrkCuts->SetMinNClustersITS(cut_minNClustersITS); //ITS cluster
+			//fTrkCuts->SetMinNClustersTPC(fNClustersTPCMin = 70); //TPC min # of clusters - why masked?
+		}//IsLegacy
+	}//Use Hard-corded cuts
 
 	//Trigger setup
 	TrigStore.clear();
@@ -103,22 +132,23 @@ void AliAnaTaskSEXic0SL::UserCreateOutputObjects()
 	if (TrigStore.size() == 0) AliFatal("ERROR: no trigger is enabled!");
 	for (unsigned int a=0; a<TrigStore.size(); a++)
 	{
-		if (TrigStore[a] == AliVEvent::kINT7) cout <<Form("Adding trigger: kINT7 (bit %i)\n", TrigStore[a]);
-		if (TrigStore[a] == AliVEvent::kHighMultV0) cout <<Form("Adding trigger: kHMV0 (bit %i)\n", TrigStore[a]);
+		if (TrigStore[a] == AliVEvent::kINT7) AliInfo(Form("Adding trigger: kINT7 (bit %i)", TrigStore[a]));
+		if (TrigStore[a] == AliVEvent::kHighMultV0) AliInfo(Form("Adding trigger: kHMV0 (bit %i)\n", TrigStore[a]));
 	}
 
 	//-----------------------------------------------------
 
 	//Histograms
 	fHisto = new THistManager("Histo");
-	fHisto->CreateTH1("RunNo", ";run", cut_runNoUp-cut_runNoLo, cut_runNoLo, cut_runNoUp, "s");
-	vector<const char*> evtCuts = {"Bfield", "Mult", "IsSel+PID", "Trig>0", "PileupX>0","VtxZ10", "INEL>0"};
+	fHisto->CreateTH1("RunNo", ";run", cut_runNoUp - cut_runNoLo, cut_runNoLo, cut_runNoUp, "s");
+
+	vector<const char*> evtCuts = {"Bfield", "Mult", "PID", "Trig>0", "PileupX>0","VtxZ10", "INEL>0"};
 	TH1* H1_cutEff = fHisto->CreateTH1("EvtCut", ";cut", evtCuts.size(), 0, (float)evtCuts.size(), "s");
 	for (unsigned int a=0; a<evtCuts.size(); a++) H1_cutEff->GetXaxis()->SetBinLabel(a+1, evtCuts[a]);
+
 	vector<const char*> evtTrigList = {"Any", "MB", "HMV0"};
 	TH1* H1_trig = fHisto->CreateTH1("EvtTrig", ";trig", evtTrigList.size(), 0, (float)evtTrigList.size());
 	for (unsigned int a=0; a<evtTrigList.size(); a++) H1_trig->GetXaxis()->SetBinLabel(a+1, evtTrigList[a]);
-	fHisto->CreateTH1("MC_Xic0decay", "Any/e&Xi/e&!Xi/!e&Xi/!e&!Xi;Cond", 5, 0, 5, "s");
 
 	//xChceks for raw e/Xi yields (after filtering), Nov. 2022
 	fHisto->CreateTH1("e_minMassUS", "", 300, 0, 3, "s");
@@ -127,7 +157,7 @@ void AliAnaTaskSEXic0SL::UserCreateOutputObjects()
 	fHisto->CreateTH1("c_massXi_HMV0", "", 400, 1.1, 1.5, "s");
 
 	//Tree
-	fTree = new TTree("T", Form("Xic0SemiLeptonic%s%s", IsPA?"_pA":"", IsMC?"_MC":""));
+	fTree = new TTree("T", Form("Xic0SemiLeptonic%s%s%s", IsPA?"_pA":"", IsMC?"_MC":"", IsLegacy?"_LEGACY":""));
 	ControlOutputTree(fTree, IsMC);
 
 	//AliNormalizationCounter
@@ -154,7 +184,7 @@ void AliAnaTaskSEXic0SL::UserCreateOutputObjects()
 }//UserCreateOutputObjects
 
 //=======================================================================================
-void AliAnaTaskSEXic0SL::UserExec(Option_t *)
+void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 {
 	fEvtID++;
 	ResetTreeVariables();
@@ -165,69 +195,76 @@ void AliAnaTaskSEXic0SL::UserExec(Option_t *)
 	//Check AOD event object
 	AliVEvent *event = InputEvent();
 	if (event->IsA() == AliAODEvent::Class()) fEvt = dynamic_cast<AliAODEvent*>(event);
-	else { Printf("ERROR: input event type is NOT AOD"); return; } //Return 1
-
-	//Check run number
-	fEvtRunNo = fEvt->GetRunNumber();
-	if (fEvtRunNo<cut_runNoLo || fEvtRunNo>cut_runNoUp) { Printf("ERROR: runNo"); return; } //Return 2
-	fHisto->FillTH1("RunNo", fEvtRunNo, 1); //@
+	else AliFatal("ERROR: input event type is NOT an AOD"); //Return 1
 
 	//Check bfield
 	const Double_t t_bfield = (Double_t)fEvt->GetMagneticField();
-	if (fabs(t_bfield) < cut_bfield) { Printf("ERROR: B-field"); return; } //Return 3
+	if (fabs(t_bfield) < cut_bfield) AliFatal("ERROR: B-field?"); //Return 2
 	fHisto->FillTH1("EvtCut", "Bfield", 1); //@
 
 	//Check multiplicity selection is available
 	fMultSel = (AliMultSelection*)fEvt->FindListObject("MultSelection");
-	if (!fMultSel) { Printf("ERROR: MultSelection"); return; } //Return 4
-	else fEvtMult = fMultSel->GetMultiplicityPercentile(IsPA?"V0A":"V0M");
+	if (fMultSel) fEvtMult = fMultSel->GetMultiplicityPercentile(IsPA?"V0A":"V0M");
+	else AliFatal("ERROR: MultSelection"); //Return 3
 	fHisto->FillTH1("EvtCut", "Mult", 1); //@
 
-	//Event validity (?)
+	//Get input handler, Check event validity (* Dec. 21, outdated: does nothing, but keep it as legacy)
 	fInputHandler = (AliInputEventHandler*)AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler();
-	if (fInputHandler->IsEventSelected() == false) return; //Return 5
+	if (IsLegacy && fInputHandler->IsEventSelected()==false) return; //Return 4
 
 	//Check pID
 	fPID = (AliPIDResponse*)fInputHandler->GetPIDResponse();
-	if (!fPID) { Printf("ERROR: PID"); return; } //Return 6
-	fHisto->FillTH1("EvtCut", "IsSel+PID", 1); //@
+	if (!fPID) AliFatal("ERROR: PID"); //Return 5
+	fHisto->FillTH1("EvtCut", "PID", 1); //@
+
+	//Check run number
+	fEvtRunNo = fEvt->GetRunNumber();
+	fHisto->FillTH1("RunNo", fEvtRunNo, 1); //@
 
 	//Separate data/MC
 	if (IsMC == false) //data
 	{
+		//Check vtx validity (NOT vtxZ)
+		fEvtVtx = fEvt->GetPrimaryVertex();
+		if (!fEvtVtx || fEvtVtx->GetNContributors()<cut_vtxNContributors) return; //Return 6d
+
 		//Check trigger
 		bool t_trigFired = false;
 		fEvtTrig = fInputHandler->IsEventSelected();
 		for (unsigned int a=0; a<TrigStore.size(); a++)
 		{
 			if (fEvtTrig & TrigStore[a]) t_trigFired = true;
+
+			//Outdated but keep it as a legacy (Dec., 2022)
 			//LHC16k and LHC16l are CD dedicated runs! CD-online-trigger is used
-			if ( (fEvt->GetFiredTriggerClasses().Contains("CINT7-B-NOPF-CENT")) &&
+			if ( IsLegacy && (TrigStore[a] == AliVEvent::kINT7) &&
 				 (fTaskOpt.Contains("LHC16k") || fTaskOpt.Contains("LHC16l")) &&
-				 (TrigStore[a] == AliVEvent::kINT7) ) t_trigFired = true;
-		}
+				 (fEvt->GetFiredTriggerClasses().Contains("CINT7-B-NOPF-CENT")) ) t_trigFired = true;
+		}//a, TrigStore
 		if (!t_trigFired) return; //Return 7d
 		else fHisto->FillTH1("EvtCut", "Trig>0", 1); //@
+
 		const bool t_trigFiredMB   = (fEvtTrig & AliVEvent::kINT7)?true:false;
 		const bool t_trigFiredHMV0 = (fEvtTrig & AliVEvent::kHighMultV0)?true:false;
-
 		fHisto->FillTH1("EvtTrig", "Any", 1); //@
-		if (t_trigFiredMB) fHisto->FillTH1("EvtTrig", "MB", 1); //@
+		if (t_trigFiredMB)   fHisto->FillTH1("EvtTrig", "MB",   1); //@
 		if (t_trigFiredHMV0) fHisto->FillTH1("EvtTrig", "HMV0", 1); //@
 
-		//Activate RDHF cut by invoking it, then check pileup status by using multi vertexer
-		const bool t_evtGoodMB   = fEvtCutsMB  ->IsEventSelected(fEvt);
-		const bool t_evtGoodHMV0 = fEvtCutsHMV0->IsEventSelected(fEvt);
-		fEvtPileupMB   = fEvtCutsMB  ->IsEventRejectedDueToPileup();
-		fEvtPileupHMV0 = fEvtCutsHMV0->IsEventRejectedDueToPileup();
-		if (fEvtPileupMB && fEvtPileupHMV0) return; //Return 8d
-		else fHisto->FillTH1("EvtCut", "PileupX>0", 1); //@
+		//Activate RDHF cut by invoking it
+		fEvtGoodMB   = fEvtCutsMB  ->IsEventSelected(fEvt);
+		fEvtGoodHMV0 = fEvtCutsHMV0->IsEventSelected(fEvt);
 
-		//Check vtx validity (NOT vtxZ)
-		fEvtVtx = fEvt->GetPrimaryVertex();
-		if (!fEvtVtx || fEvtVtx->GetNContributors()<cut_vtxNContributors) return; //Return 9d
+		const bool t_pileup_MB   = fEvtCutsMB  ->IsEventRejectedDueToPileup(); //true = pile up
+		const bool t_pileup_HMV0 = fEvtCutsHMV0->IsEventRejectedDueToPileup();
+		if (t_pileup_MB != t_pileup_HMV0) AliFatal("Pileup status is different between MB and HMV0");
+		else if (t_pileup_MB && t_pileup_HMV0) return;
+		else fHisto->FillTH1("EvtCut", "PileupX", 1); //@
 
-		//Store AliNormalizationCounter: DO NOT CHANGE THIS POSITION! (after vtx found, before |VtxZ| < 10)
+		//Check INEL>0
+		if (AliPPVsMultUtils::IsINELgtZERO(fEvt)==true)	fEvtINELLgt0 = true;
+		if (fEvtINELLgt0) fHisto->FillTH1("EvtCut", "INEL>0", 1); //@
+
+		//Store AliNormalizationCounter: DO NOT CHANGE THIS POSITION! (after vtx found, before |vtxZ| < 10)
 		if (t_trigFiredMB)
 		{
 			if (fEvtMult >= 0.0 && fEvtMult <= 100.0)
@@ -246,7 +283,7 @@ void AliAnaTaskSEXic0SL::UserExec(Option_t *)
 				if (fEvtINELLgt0) fANC_INEL0_MB_0p1to30->StoreEvent(fEvt, fEvtCutsMB, IsMC);
 			}
 		}
-		if (t_trigFiredHMV0 && fEvtMult >= 0.0 && fEvtMult <= 0.1)
+		if (t_trigFiredHMV0 && (fEvtMult >= 0.0 && fEvtMult <= 0.1) )
 		{
 			fANC_HMV0_0to0p1->StoreEvent(fEvt, fEvtCutsHMV0, IsMC);
 			if (fEvtINELLgt0) fANC_INEL0_HMV0_0to0p1->StoreEvent(fEvt, fEvtCutsHMV0, IsMC);
@@ -254,12 +291,11 @@ void AliAnaTaskSEXic0SL::UserExec(Option_t *)
 
 		//Check vtxZ
 		fEvtVtxZ = fEvtVtx->GetZ();
-		if (fabs(fEvtVtxZ) > cut_vtxZ) return; //Return 10d
+		if (fabs(fEvtVtxZ) > cut_vtxZ) return; //Return 9d
 		else fHisto->FillTH1("EvtCut", "VtxZ10", 1); //@
 
-		//Check INEL>0
-		if (AliPPVsMultUtils::IsINELgtZERO(fEvt)==true)	fEvtINELLgt0 = true;
-		if (fEvtINELLgt0) fHisto->FillTH1("EvtCut", "INEL>0", 1); //@
+		//Dec. 21, newly added
+		if (IsLegacy==false && fEvtGoodMB==false && fEvtGoodHMV0==false) return; //Return 10d
 	}//data
 	else //MC
 	{
@@ -270,51 +306,67 @@ void AliAnaTaskSEXic0SL::UserExec(Option_t *)
 		fEvtVtxZ = fEvtVtx->GetZ();
 		if (fabs(fEvtVtxZ) > cut_vtxZ) return; //Return 7mc
 
-		//Get true Xic0
-		int nXic0 = 0;
+		//RDHF event cut, Dec. 27, 2022
+		if (IsLegacy==false && fEvtCutsMB->IsEventSelected(fEvt)==false) return; //Return 8mc
+
+		//Check generated MC particles w/ eXi pairs
+		int nTruth = 0;
 		const int nTracksMC = fMCEvt->GetNumberOfTracks();
 		for (int a=0; a<nTracksMC; a++)
 		{
+			//Possible 4-body decay contaminations:
+			//a. Xic+ -> (e+) + (nu) + (Xi*0) -> (e+) + (nu) + (Xi- + pi+)
+			//b. Xic0 -> (e-) + (nu_bar) + (Xi*+) -> (e-) + (nu_bar) + (Xi+ + pi0)
 			fMCPart = (AliAODMCParticle*)fMCEvt->GetTrack(a);
-			if (!fMCPart || abs(fMCPart->GetPdgCode())!=PDGCode_Xic0) continue; //Continue 1
+			if (!fMCPart) continue; //Continue
 
-			//Search e-Xi pair among daughters
-			bool t_found_e = false;
-			bool t_found_Xi = false;
-			AliAODMCParticle* fMCPart_e = 0;
-			AliAODMCParticle* fMCPart_Xi = 0;
+			//Check if this is a desired particle
+			bool t_proceed = false;
+			if (IsLegacy)
+			{
+				if ( (abs(fMCPart->GetPdgCode()) == PDGCode_Xic0) ) t_proceed = true;
+			}
+			else //For later 4-body decay study
+			{
+				if ( (abs(fMCPart->GetPdgCode()) == PDGCode_Xic0) ||
+					 (abs(fMCPart->GetPdgCode()) == PDGCode_Xicp) ) t_proceed = true;
+			}
+			if (t_proceed == false) continue; //Continue
+
+			//Search e and Xi among daughters
+			std::vector<int> idxEle;
+			std::vector<int> idxXi;
 			for (int b=fMCPart->GetDaughterFirst(); b<=fMCPart->GetDaughterLast(); b++)
 			{
 				if (b<0) { cout <<"ERROR: negative index found!\n"; break; }
-				AliAODMCParticle* fMCPartDau = (AliAODMCParticle*)fMCEvt->GetTrack(b);
-				if (abs(fMCPartDau->GetPdgCode()) == PDGCode_e) { t_found_e = true; fMCPart_e = fMCPartDau; }
-				if (abs(fMCPartDau->GetPdgCode()) == PDGCode_Xi) { t_found_Xi = true; fMCPart_Xi = fMCPartDau; }
-			}//b, tracks (MC, daughters)
-
-			fHisto->FillTH1("MC_Xic0decay", 0.); //@
-			if ( t_found_e &&  t_found_Xi) fHisto->FillTH1("MC_Xic0decay", 1.);
-			if ( t_found_e && !t_found_Xi) fHisto->FillTH1("MC_Xic0decay", 2.);
-			if (!t_found_e &&  t_found_Xi) fHisto->FillTH1("MC_Xic0decay", 3.);
-			if (!t_found_e && !t_found_Xi) fHisto->FillTH1("MC_Xic0decay", 4.);
-			if ((t_found_e && t_found_Xi) == false) continue; //Continue 2
-
-			const int t_orig = CheckOrigin(fMCEvt, fMCPart, true); //3rd arg: trace ancestry up to quark level
-			if (t_orig <= 0) continue; //<=0: err, 4: from C, 5: from B
+				const int t_PDG = fMCEvt->GetTrack(b)->PdgCode();
+				if (abs(t_PDG) == PDGCode_e) idxEle.push_back(b);
+				if (abs(t_PDG) == PDGCode_Xi) idxXi.push_back(b);
+			}//b
+			if (idxEle.size()==0 || idxXi.size()==0) continue; //Continue
 
 			//#
-			fMCOrig  [nXic0] = t_orig;
-			fMCXic0Pt[nXic0] = fMCPart->Pt();
-			fMCXic0Y [nXic0] = fMCPart->Y();
-			fMCCascPt[nXic0] = fMCPart_Xi->Pt();
-			fMCCascY [nXic0] = fMCPart_Xi->Y();
-			fMCElePt [nXic0] = fMCPart_e->Pt();
-			fMCEleY  [nXic0] = fMCPart_e->Y();
-			nXic0++;
+			fMCOrig [nTruth] = CheckOrigin(fMCEvt, fMCPart);
+			fMCLabel[nTruth] = fMCPart->GetLabel();
+			fMCPDG  [nTruth] = fMCPart->GetPdgCode();
+			fMCPt   [nTruth] = fMCPart->Pt();
+			fMCY    [nTruth] = fMCPart->Y();
 
-			if (nXic0 > MaxNXic0) cout <<Form("WARNING: nXic0 exceeds max in run%i evt%i\n", fEvtRunNo, fEvtID);
+			if (idxEle.size()>1 || idxXi.size()>1) AliWarning("More than one electron/Xi found in MC truth!");
+			else
+			{
+				fMCElePt[nTruth] = fMCEvt->GetTrack(idxEle[0])->Pt();
+				fMCEleY [nTruth] = fMCEvt->GetTrack(idxEle[0])->Y();
+				fMCXiPt [nTruth] = fMCEvt->GetTrack(idxXi[0])->Pt();
+				fMCXiY  [nTruth] = fMCEvt->GetTrack(idxXi[0])->Y();
+			}
+			nTruth++;
+
+			if (nTruth > MaxNTruth) cout <<Form("WARNING: nTruth exceeds max in run%i evt%i\n", fEvtRunNo, fEvtID);
 		}//a, tracks (MC)
-		fMCNum = nXic0;
-		//if (nXic0 == 0) return; //!!
+		fMCNum = nTruth;
+
+		if (ValidEvtOnly && nTruth==0) return; //!!
 	}//MC
 
 	//Trackwise selection starts
@@ -373,10 +425,14 @@ void AliAnaTaskSEXic0SL::UserExec(Option_t *)
 		fCascTPCNclsF_BachPi[nXi] = fBach_pi->GetTPCNclsF();
 		fCascTPCNclsF_V0dPos[nXi] = fV0d_pos->GetTPCNclsF();
 		fCascTPCNclsF_V0dNeg[nXi] = fV0d_neg->GetTPCNclsF();
+		if (IsMC)
+		{
+			fCascMomLabel[nXi] = GetCascMotherID(fMCEvt, fCasc); //For truth mathcing later
+			if (fCascMomLabel[nXi] >= 0) fCascMomPDG[nXi] = fMCEvt->GetTrack(fCascMomLabel[nXi])->PdgCode();
+		}
 
 		//xCheck, Dec. 2022
-		if ( (fCascDecayLenXiOld[nXi] > cutCasc_minDecayLenXi) &&
-			 (fCascDecayLenV0Old[nXi] > cutCasc_minDecayLenV0) )
+		if ( (fCascDecayLenXiOld[nXi] > cutCasc_minDecayLenXi) && (fCascDecayLenV0Old[nXi] > cutCasc_minDecayLenV0) )
 		{
 			fHisto->FillTH1("c_massXi", fCasc->MassXi());
 
@@ -394,7 +450,7 @@ void AliAnaTaskSEXic0SL::UserExec(Option_t *)
 		if (nXi > MaxNCasc) cout <<Form("WARNING: nCasc exceeds max in run%i evt%i\n", fEvtRunNo, fEvtID);
 	}//a, nCasc
 	fCascNum = nXi;
-	//if (nXi == 0) return; //!!
+	if (ValidEvtOnly && nXi==0) return; //!!
 
 	//Electron tracks
 	int nEle = 0;
@@ -403,11 +459,13 @@ void AliAnaTaskSEXic0SL::UserExec(Option_t *)
 	for (int a=0; a<nTracks; a++)
 	{
 		fTrk = (AliAODTrack*)fEvt->GetTrack(a);
+
 		if (FilterTrack(fTrk, fEvtVtx) == false) continue; //Track filter 1, common
 		if (FilterTrackElectron(fTrk, fPID) == false) continue; //Track filter 2, electron
 
 		//!! Reject electrons on the blacklist (i.e., pairs from photon conversion)
-		//if (std::find(Blacklist.begin(), Blacklist.end(), fTrk->GetID()) != Blacklist.end()) continue;
+		if ( ValidEvtOnly &&
+			 (std::find(Blacklist.begin(), Blacklist.end(), fTrk->GetID())!=Blacklist.end()) ) continue;
 
 		//Check if this electron is originated from conversion
 		//++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -445,7 +503,7 @@ void AliAnaTaskSEXic0SL::UserExec(Option_t *)
 		fHisto->FillTH1("e_minMassUS", minMass_us); //xCheck, Nov. 8, 2022
 
 		//!! Track filter 3, electron from photon conversion
-		//if (minMass_us < cutEle_massConv) { Blacklist.push_back(fTrk->GetID()); continue; }
+		if ( ValidEvtOnly && (minMass_us < cutEle_massConv) ) { Blacklist.push_back(fTrk->GetID()); continue; }
 
 		//++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -469,11 +527,20 @@ void AliAnaTaskSEXic0SL::UserExec(Option_t *)
 		fEleTPCNxedR[nEle] = fTrk->GetTPCNCrossedRows();
 		fEleTPCNclsF[nEle] = fTrk->GetTPCNclsF();
 
+		if (IsMC)
+		{
+			const int l_ele = fTrk->GetLabel();
+
+			fEleLabel   [nEle] = l_ele;
+			fEleMomLabel[nEle] = fMCEvt->GetTrack( abs(l_ele) )->GetMother();
+			fEleMomPDG  [nEle] = fMCEvt->GetTrack( fEleMomLabel[nEle] )->PdgCode();
+		}
+
 		nEle++;
 		if (nEle > MaxNEle) cout <<Form("WARNING: nEle exceeds max in run%i evt%i\n", fEvtRunNo, fEvtID);
 	}//a, nTracks
 	fEleNum = nEle;
-	//if (nEle == 0) return; //!!
+	if (ValidEvtOnly && nEle==0) return; //!!
 
 	if (nXi>0 && nEle>0) fTree->Fill(); //#
 	ControlOutputContainers(1);
@@ -482,12 +549,12 @@ void AliAnaTaskSEXic0SL::UserExec(Option_t *)
 
 //=======================================================================================
 
-int AliAnaTaskSEXic0SL::CheckOrigin(AliMCEvent* MCEvt, AliAODMCParticle *MCPart, bool SearchUpToQuark)
+int AliAnalysisTaskSEXic0SL::CheckOrigin(AliMCEvent* MCEvt, AliAODMCParticle *MCPart)
 {
 	//Original code from AliVertexingHFUtils::CheckOrigin()
 	bool isQuarkFound = false;
-	bool isFromC = false;
 	bool isFromB = false;
+	//bool isFromC = false;
 
 	int step = 0;
 	int momTrk = MCPart->GetMother();
@@ -504,7 +571,8 @@ int AliAnaTaskSEXic0SL::CheckOrigin(AliMCEvent* MCEvt, AliAODMCParticle *MCPart,
 			//Bottom/bbar mesons: 511 (B0) ~ 557 (Upsilon_3(1D))
 			//Bottom baryons: 5122 (Lambda_b0) ~ 5554 (Omega_bbb-)
 			const Int_t momPdg = abs(momPart->GetPdgCode()); //Take absolute number
-			if ((momPdg==4) || (momPdg>400 && momPdg<500) || (momPdg>4000 && momPdg<5000)) isFromC = true;
+
+			//if ((momPdg==4) || (momPdg>400 && momPdg<500) || (momPdg>4000 && momPdg<5000)) isFromC = true;
 			if ((momPdg==5) || (momPdg>500 && momPdg<600) || (momPdg>5000 && momPdg<6000)) isFromB = true;
 			if (momPdg==4 || momPdg==5)	isQuarkFound = true;
 
@@ -514,15 +582,38 @@ int AliAnaTaskSEXic0SL::CheckOrigin(AliMCEvent* MCEvt, AliAODMCParticle *MCPart,
 		}
 	}
 
-	int flag = 0;
-	if (SearchUpToQuark==true && isQuarkFound==false) flag = -1;
-	if (isFromC==true && isFromB==true) flag = -2;
-	if (isFromC==true && isFromB==false) flag = 4;
-	if (isFromC==false && isFromB==true) flag = 5;
-	return flag;
+	//Last updated Jan. 3, 2023
+	if (isQuarkFound == false) return -1;
+	else if (isFromB == true) return 5; //Quark found and is bottom
+	else return 4; //Quark found and it's NOT bottom, thus charm (only Xic0 or Xic+ supposed to be provided)
 }//CheckOrigin
 
-bool AliAnaTaskSEXic0SL::FilterTrack(AliAODTrack* Trk, const AliVVertex* Vtx)
+int AliAnalysisTaskSEXic0SL::GetCascMotherID(AliMCEvent* MCEvt, AliAODcascade* Casc)
+{
+	//CAVEAT: reco level, these indice can be negative if quality is poor, but SHOULD BE USED
+	const Int_t l_bachPi = ((AliAODTrack*)Casc->GetDecayVertexXi()->GetDaughter(0))->GetLabel();
+	const Int_t l_v0dPos = ((AliAODTrack*)Casc->GetDaughter(0))->GetLabel();
+	const Int_t l_v0dNeg = ((AliAODTrack*)Casc->GetDaughter(1))->GetLabel();
+
+	//CAVEAT: truth level hereafter, provide argument wrapped with absolute (otherwise segfault happens, anyway)
+	const Int_t m_bachPi = MCEvt->GetTrack( abs(l_bachPi) )->GetMother(); //= Xi (strange, charged)
+	const Int_t m_v0dPos = MCEvt->GetTrack( abs(l_v0dPos) )->GetMother(); //= lambda0
+	const Int_t m_v0dNeg = MCEvt->GetTrack( abs(l_v0dNeg) )->GetMother(); //= lambda0
+	if (m_v0dPos != m_v0dNeg) return -999;
+
+	const Int_t n_v0dPos = MCEvt->GetTrack( m_v0dPos )->GetMother(); //= Xi
+	const Int_t n_v0dNeg = MCEvt->GetTrack( m_v0dNeg )->GetMother(); //= Xi
+	if (n_v0dPos != n_v0dNeg) return -998;
+
+	if ( (m_bachPi == n_v0dPos) && (m_bachPi == n_v0dNeg) && (n_v0dPos == n_v0dNeg)	)
+	{
+		const Int_t l_Xic0 = MCEvt->GetTrack( m_bachPi )->GetMother();
+		return l_Xic0;
+	}
+	else return -997;
+}//GetCascMotherID
+
+bool AliAnalysisTaskSEXic0SL::FilterTrack(AliAODTrack* Trk, const AliVVertex* Vtx)
 {
 	if ( (Trk->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA) == false) || //Filterbit 4
 		 (Trk->GetTPCsignalN() < cut_TPCsignalN) || //fSetProdTrackTPCNclsPID
@@ -547,7 +638,7 @@ bool AliAnaTaskSEXic0SL::FilterTrack(AliAODTrack* Trk, const AliVVertex* Vtx)
 	return true;
 }//FilterTrack
 
-bool AliAnaTaskSEXic0SL::FilterTrackElectron(AliAODTrack* Trk, AliPIDResponse* PID)
+bool AliAnalysisTaskSEXic0SL::FilterTrackElectron(AliAODTrack* Trk, AliPIDResponse* PID)
 {
 	//Regard all tracks being tested are electron candidates
 	const Float_t e_nSigmaTOF = PID->NumberOfSigmasTOF(Trk, AliPID::kElectron); //Default -999
@@ -563,7 +654,7 @@ bool AliAnaTaskSEXic0SL::FilterTrackElectron(AliAODTrack* Trk, AliPIDResponse* P
 	return true;
 }//FilterTrackElectron
 
-bool AliAnaTaskSEXic0SL::FilterCascade(AliAODcascade* Casc, const AliVVertex* Vtx, AliPIDResponse* PID)
+bool AliAnalysisTaskSEXic0SL::FilterCascade(AliAODcascade* Casc, const AliVVertex* Vtx, AliPIDResponse* PID)
 {
 	//Xic0 (m: 2470.91 +- 0.25 MeV):
 	//Xic0 -> "e+ Xi-" -> "e+ (pi- lambda0 nu)"     -> "e+ (pi- (p     pi-) nu)" or -> XiNeg
@@ -650,10 +741,11 @@ bool AliAnaTaskSEXic0SL::FilterCascade(AliAODcascade* Casc, const AliVVertex* Vt
 
 //=======================================================================================
 
-void AliAnaTaskSEXic0SL::ControlOutputContainers(int option)
+void AliAnalysisTaskSEXic0SL::ControlOutputContainers(int option)
 {
 	if (option == 0)
 	{
+		DefineOutput(0, TChain::Class());
 		DefineOutput(1, TDirectory::Class());
 		DefineOutput(2, TTree::Class());
 		DefineOutput(3, AliNormalizationCounter::Class());
@@ -682,7 +774,7 @@ void AliAnaTaskSEXic0SL::ControlOutputContainers(int option)
 	return;
 }//ControlOutputContainers
 
-void AliAnaTaskSEXic0SL::ControlAnaObjects(int option)
+void AliAnalysisTaskSEXic0SL::ControlAnaObjects(int option)
 {
 	if (option == 0)
 	{
@@ -739,22 +831,26 @@ void AliAnaTaskSEXic0SL::ControlAnaObjects(int option)
 	return;
 }//ControlAnaObjects
 
-void AliAnaTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOnly)
+void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOnly)
 {
 	int iLeaf = 0;
 
 	if (isMC == false) //data
 	{
 		iLeaf = 0;
-		if (!readOnly) T->Branch("Event", 0, "evtID/i:trig/i:runNo/I:mult/F:vtxZ/D:INEL0/O:pUpMB/O:pUpHMV0/O");
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtID);         iLeaf++; //0
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtTrig);       iLeaf++;
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtRunNo);      iLeaf++;
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtMult);       iLeaf++;
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtVtxZ);       iLeaf++;
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtINELLgt0);   iLeaf++; //5
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtPileupMB);   iLeaf++;
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtPileupHMV0); iLeaf++;
+		if (!readOnly)
+		{
+			TString strEvt = "evtID/i:trig/i:runNo/I:mult/F:vtxZ/D:goodMB/O:goodHMV0/O:INEL0/O";
+			T->Branch("Event", 0, strEvt);
+		}
+		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtID);       iLeaf++; //0
+		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtTrig);     iLeaf++;
+		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtRunNo);    iLeaf++;
+		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtMult);     iLeaf++;
+		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtVtxZ);     iLeaf++;
+		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtGoodMB);   iLeaf++; //5
+		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtGoodHMV0); iLeaf++;
+		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtINELLgt0); iLeaf++;
 	}
 	else //MC
 	{
@@ -766,19 +862,21 @@ void AliAnaTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOnly)
 		iLeaf = 0;
 		if (!readOnly)
 		{
-			TString strMCXic0 = "mcN/I:mc_orig[mcN]/I";
-			strMCXic0 += ":mc_Xic0Pt[mcN]/D:mc_Xic0Y[mcN]/D:mc_XiPt[mcN]/D:mc_XiY[mcN]/D";
-			strMCXic0 += ":mc_ElePt[mcN]/D:mc_EleY[mcN]/D";
-			T->Branch("MCXic0", 0, strMCXic0.Data());
+			TString strMCTruth = "mcN/I:mc_label[mcN]/I:mc_orig[mcN]/I:mc_PDG[mcN]/I:mc_Pt[mcN]/D:mc_Y[mcN]/D";
+			strMCTruth += ":mc_ElePt[mcN]/D:mc_EleY[mcN]/D";
+			strMCTruth += ":mc_XiPt[mcN]/D:mc_XiY[mcN]/D";
+			T->Branch("MCTruth", 0, strMCTruth.Data());
 		}
-		((TLeaf*)T->GetBranch("MCXic0")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCNum);    iLeaf++; //0
-		((TLeaf*)T->GetBranch("MCXic0")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCOrig);   iLeaf++;
-		((TLeaf*)T->GetBranch("MCXic0")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCXic0Pt); iLeaf++;
-		((TLeaf*)T->GetBranch("MCXic0")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCXic0Y);  iLeaf++;
-		((TLeaf*)T->GetBranch("MCXic0")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCCascPt); iLeaf++;
-		((TLeaf*)T->GetBranch("MCXic0")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCCascY);  iLeaf++; //5
-		((TLeaf*)T->GetBranch("MCXic0")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCElePt);  iLeaf++;
-		((TLeaf*)T->GetBranch("MCXic0")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCEleY);   iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCNum);   iLeaf++; //0
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCLabel); iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCOrig);  iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCPDG);   iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCPt);    iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCY);     iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCElePt); iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCEleY);  iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCXiPt);  iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCXiY);   iLeaf++;
 	}
 
 	//+++++++++++++++++++++++++++++++++++++++++++
@@ -790,6 +888,8 @@ void AliAnaTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOnly)
 		strEle += ":e_minMassLS[eN]/F:e_minMassUS[eN]/F:e_nSigmaTOF[eN]/F:e_nSigmaTPC[eN]/F";
 		strEle += ":e_eta[eN]/D:e_phi[eN]/D:e_pT[eN]/D:e_px[eN]/D:e_py[eN]/D:e_pz[eN]/D:e_Y[eN]/D";
 		strEle += ":e_tpcNsig[eN]/s:e_tpcNxedR[eN]/s:e_tpcNclsF[eN]/s";
+		//
+		if (IsMC) strEle += ":e_label[eN]/I:e_momLabel[eN]/I:e_momPDG[eN]/I";
 		T->Branch("Ele", 0, strEle.Data());
 	}
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNum);       iLeaf++; //0
@@ -809,6 +909,13 @@ void AliAnaTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOnly)
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNsig);   iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNxedR);  iLeaf++; //15
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNclsF);  iLeaf++;
+	//
+	if (IsMC)
+	{
+		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleLabel);    iLeaf++;
+		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMomLabel); iLeaf++;
+		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMomPDG);   iLeaf++;
+	}
 
 	//+++++++++++++++++++++++++++++++++++++++++++
 
@@ -826,6 +933,8 @@ void AliAnaTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOnly)
 		strCasc += ":c_pT_BachPi[cN]/D:c_pT_V0dPos[cN]/D:c_pT_V0dNeg[cN]/D";
 		strCasc += ":c_tpcNxedR_BachPi[cN]/s:c_tpcNxedR_V0dPos[cN]/s:c_tpcNxedR_V0dNeg[cN]/s";
 		strCasc += ":c_tpcNclsF_BachPi[cN]/s:c_tpcNclsF_V0dPos[cN]/s:c_tpcNclsF_V0dNeg[cN]/s";
+		//
+		if (IsMC) strCasc += ":c_momLabel[cN]/I:c_momPDG[cN]/I";
 		T->Branch("Casc", 0, strCasc.Data());
 	}
 	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascNum);           iLeaf++;
@@ -861,36 +970,48 @@ void AliAnaTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOnly)
 	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNclsF_BachPi); iLeaf++; //TPCf
 	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNclsF_V0dPos); iLeaf++; //|
 	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNclsF_V0dNeg); iLeaf++; //|
+	//
+	if (IsMC)
+	{
+		((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMomLabel); iLeaf++;
+		((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMomPDG);   iLeaf++;
+	}
 
 	return;
 }//ControlOutputTree
 
-void AliAnaTaskSEXic0SL::ResetTreeVariables(void)
+void AliAnalysisTaskSEXic0SL::ResetTreeVariables(void)
 {
-	fEvtTrig       = -999;
-	fEvtRunNo      = -999;
-	fEvtMult       = -999.;
-	fEvtVtxZ       = -999.;
-	fEvtINELLgt0   = false;
-	fEvtPileupMB   = false;
-	fEvtPileupHMV0 = false;
+	fEvtTrig     = -999;
+	fEvtRunNo    = -999;
+	fEvtMult     = -999.;
+	fEvtVtxZ     = -999.;
+	fEvtGoodMB   = false;
+	fEvtGoodHMV0 = false;
+	fEvtINELLgt0 = false;
 
 	fMCNum = -999;
-	for (int a=0; a<MaxNXic0; a++)
+	for (int a=0; a<MaxNTruth; a++)
 	{
-		fMCOrig  [a] = -999;
-		fMCXic0Pt[a] = -999.;
-		fMCXic0Y [a] = -999.;
-		fMCCascPt[a] = -999.;
-		fMCCascY [a] = -999.;
-		fMCElePt [a] = -999.;
-		fMCEleY  [a] = -999.;
+		fMCLabel[a] = -999;
+		fMCOrig [a] = -999;
+		fMCPDG  [a] = -999;
+		fMCPt   [a] = -999.;
+		fMCY    [a] = -999.;
+		fMCElePt[a] = -999.;
+		fMCEleY [a] = -999.;
+		fMCXiPt [a] = -999.;
+		fMCXiY  [a] = -999.;
 	}//fMC
 
 	fEleNum = -999;
 	for (int a=0; a<MaxNEle; a++)
 	{
 		fEleChg      [a] = -999;
+		fEleITSNcls  [a] = -999;
+		fEleLabel    [a] = -999;
+		fEleMomLabel [a] = -999;
+		fEleMomPDG   [a] = -999;
 		fEleMinMassLS[a] = -999.;
 		fEleMinMassUS[a] = -999.;
 		fEleNSigmaTOF[a] = -999.;
@@ -902,6 +1023,7 @@ void AliAnaTaskSEXic0SL::ResetTreeVariables(void)
 		fElePy       [a] = -999.;
 		fElePz       [a] = -999.;
 		fEleY        [a] = -999.;
+		fEleTPCNsig  [a] = 999; ///Unsigned short
 		fEleTPCNxedR [a] = 999;
 		fEleTPCNclsF [a] = 999;
 	}//fEle
@@ -910,6 +1032,8 @@ void AliAnaTaskSEXic0SL::ResetTreeVariables(void)
 	for (int a=0; a<MaxNCasc; a++)
 	{
 		fCascChgXi        [a] = -999;
+		fCascMomLabel     [a] = -999;
+		fCascMomPDG       [a] = -999;
 		fCascCosPAXi      [a] = -999.;
 		fCascCosPAV0      [a] = -999.;
 		fCascDcaBachToPV  [a] = -999.;

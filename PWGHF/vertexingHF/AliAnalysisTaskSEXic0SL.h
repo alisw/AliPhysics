@@ -1,5 +1,5 @@
-#ifndef AliAnaTaskSEXic0SL_H
-#define AliAnaTaskSEXic0SL_H
+#ifndef AliAnalysisTaskSEXic0SL_H
+#define AliAnalysisTaskSEXic0SL_H
 
 #include "AliAnalysisTaskSE.h"
 
@@ -20,13 +20,13 @@ class THistManager;
 class TString;
 class TTree;
 
-class AliAnaTaskSEXic0SL : public AliAnalysisTaskSE
+class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 {
 	public:
 
-		AliAnaTaskSEXic0SL();
-		AliAnaTaskSEXic0SL(const char* name, const char* option);
-		virtual ~AliAnaTaskSEXic0SL();
+		AliAnalysisTaskSEXic0SL():AliAnalysisTaskSE("AliAnalysisTaskSEXic0SL") {}
+		AliAnalysisTaskSEXic0SL(const char* name, const char* option);
+		virtual ~AliAnalysisTaskSEXic0SL();
 
 		virtual void Terminate(Option_t* option);
 		virtual void UserCreateOutputObjects();
@@ -37,9 +37,14 @@ class AliAnaTaskSEXic0SL : public AliAnalysisTaskSE
 		void SetPA(bool set) { IsPA = set; };
 		void SetTrigMB(bool set) { TrigOnMB = set; }
 		void SetTrigHMV0(bool set) { TrigOnHMV0 = set; }
+		void SetCutsLegacy(bool set) { IsLegacy = set; }
+		void SetCutsByFile(bool set) { IsCutsByFile = set; }
+		void SetValidEvtOnly(bool set) { ValidEvtOnly = set; }
 
 		//User defined functions
-		int CheckOrigin(AliMCEvent* MCEvt, AliAODMCParticle *MCPart, bool SearchUpToQuark); //<=0:err, 4:c, 5:b
+		int CheckOrigin(AliMCEvent* MCEvt, AliAODMCParticle *MCPart); //<0:no_quark, 4:c, 5:b
+		int GetCascMotherID(AliMCEvent* MCEvt, AliAODcascade* Casc);
+
 		bool FilterTrack(AliAODTrack* Trk, const AliVVertex* Vtx);
 		bool FilterTrackElectron(AliAODTrack* Trk, AliPIDResponse* PID);
 		bool FilterCascade(AliAODcascade* Casc, const AliVVertex* Vtx, AliPIDResponse* PID);
@@ -70,8 +75,8 @@ class AliAnaTaskSEXic0SL : public AliAnalysisTaskSE
 		AliNormalizationCounter*            fANC_INEL0_MB_0p1to30 = nullptr;
 		AliNormalizationCounter*            fANC_INEL0_HMV0_0to0p1 = nullptr;
 		AliPIDResponse*                     fPID = nullptr;
-		AliRDHFCutsXictoeleXifromAODtracks* fEvtCutsMB = nullptr;
-		AliRDHFCutsXictoeleXifromAODtracks* fEvtCutsHMV0 = nullptr;
+		AliRDHFCutsXictoeleXifromAODtracks* fEvtCutsMB = nullptr; //Legacy
+		AliRDHFCutsXictoeleXifromAODtracks* fEvtCutsHMV0 = nullptr; //Legacy
 		AliVEvent*                          fEvt = nullptr;
 		const AliVVertex*                   fEvtVtx = nullptr;
 		THistManager*                       fHisto = nullptr;
@@ -83,19 +88,23 @@ class AliAnaTaskSEXic0SL : public AliAnalysisTaskSE
 		bool IsPA = false;
 		bool TrigOnMB = false;
 		bool TrigOnHMV0 = false;
+		bool IsLegacy = false;
+		bool IsCutsByFile = false;
+		bool ValidEvtOnly = false;
 		std::vector<UInt_t> TrigStore; //Container for triggers of interest
 
 		//-----------------------------------------------------------
 
 		//Constants
-		static const int MaxNXic0       = 20; //max. # of Xic0 per event (MC truth)
-		static const int MaxNEle        = 20; //After all cut: typically 1-2 per event
-		static const int MaxNCasc       = 20;
+		static const int MaxNTruth      = 20; //max. # of generated particle w/ eXi pair per event (MC truth)
+		static const int MaxNEle        = 20; //max. # of electrons per event, for both MC truth and reco
+		static const int MaxNCasc       = 20; //max. # of Xi per event, for both MC truth and reco
 		static const int PDGCode_e      = 11;
 		static const int PDGCode_Lambda = 3122; //Lambda0, 1115.683 +- 0.006 (MeV)
 		static const int PDGCode_Omega  = 3334; //Omega-, 1672.45 +- 0.29 (MeV)
 		static const int PDGCode_Xi     = 3312; //Xi- (strange baryon), 1321.71 +- 0.07 (MeV)
 		static const int PDGCode_Xic0   = 4132; //2470.87 +0.28 -0.31 (MeV)
+		static const int PDGCode_Xicp   = 4232; //Xic+
 		const double MassEle = 0.51099895 * 1.E-3; //Electron mass in GeV
 		const double MassLmb = 1115.683 * 1.E-3; //Lambda0 mass in GeV
 		const double MassXi  = 1321.71 * 1.E-3; //Xi mass in GeV
@@ -124,10 +133,9 @@ class AliAnaTaskSEXic0SL : public AliAnalysisTaskSE
 		const Float_t cutEle_nSigmaTPCMax     = 3.0; //Cf. Min: pT dependent (FilterTrackElectron)
 
 		//Trackwise cut, cascade
-		const Float_t cutCasc_massTolLambda = 0.008;
-		const Float_t cutCasc_massTolOmega  = 0.3 * 1.E-3; //ckim, NOT used for now
-		const Float_t cutCasc_massTolXi     = 0.03; //!! Old code: online 0.01, offline selection 0.008
-
+		const Float_t cutCasc_massTolLambda   = 0.008;
+		const Float_t cutCasc_massTolOmega    = 0.3 * 1.E-3; //ckim, NOT used for now
+		const Float_t cutCasc_massTolXi       = 0.03; //!! Old code: online 0.01, offline selection 0.008
 		const Float_t cutCasc_nSigmaTPCAbs    = 4.0;
 		const Float_t cutCasc_minDecayLenXi   = 0.2; //Decay length btw PV to cascade
 		const Float_t cutCasc_minDecayLenV0   = 0.2; //Decay length btw cascade to V0
@@ -148,18 +156,20 @@ class AliAnaTaskSEXic0SL : public AliAnalysisTaskSE
 		Int_t    fEvtRunNo;
 		Float_t  fEvtMult;
 		Double_t fEvtVtxZ;
+		Bool_t   fEvtGoodMB;
+		Bool_t   fEvtGoodHMV0;
 		Bool_t   fEvtINELLgt0;
-		Bool_t   fEvtPileupMB;
-		Bool_t   fEvtPileupHMV0;
 
 		Int_t    fMCNum;
-		Int_t    fMCOrig  [MaxNXic0];
-		Double_t fMCXic0Pt[MaxNXic0];
-		Double_t fMCXic0Y [MaxNXic0];
-		Double_t fMCCascPt[MaxNXic0];
-		Double_t fMCCascY [MaxNXic0];
-		Double_t fMCElePt [MaxNXic0];
-		Double_t fMCEleY  [MaxNXic0];
+		Int_t    fMCLabel[MaxNTruth];
+		Int_t    fMCOrig [MaxNTruth];
+		Int_t    fMCPDG  [MaxNTruth];
+		Double_t fMCPt   [MaxNTruth];
+		Double_t fMCY    [MaxNTruth];
+		Double_t fMCElePt[MaxNTruth];
+		Double_t fMCEleY [MaxNTruth];
+		Double_t fMCXiPt [MaxNTruth];
+		Double_t fMCXiY  [MaxNTruth];
 
 		//Tree variables for tracks
 		Int_t    fEleNum;
@@ -179,7 +189,12 @@ class AliAnaTaskSEXic0SL : public AliAnalysisTaskSE
 		UShort_t fEleTPCNsig  [MaxNEle]; //Previous notation: TPCPID
 		UShort_t fEleTPCNxedR [MaxNEle]; //Previous notation: e_crossedrows
 		UShort_t fEleTPCNclsF [MaxNEle]; //Previous notation: e_findable
+		//
+		Int_t fEleLabel   [MaxNEle]; //MC only, electron's label, to check if it's negative or not
+		Int_t fEleMomLabel[MaxNEle]; //MC only, mother particle's (Xic0) label
+		Int_t fEleMomPDG  [MaxNEle]; //MC only, mother particle's (Xic0) PDG code
 
+		//Tree variables for cascades
 		Int_t    fCascNum;
 		Int_t    fCascChgXi      [MaxNCasc];
 		Double_t fCascCosPAXi    [MaxNCasc]; //Cosine of pointing angle
@@ -213,8 +228,11 @@ class AliAnaTaskSEXic0SL : public AliAnalysisTaskSE
 		UShort_t fCascTPCNclsF_BachPi[MaxNCasc]; //Previously bpion_findable
 		UShort_t fCascTPCNclsF_V0dPos[MaxNCasc];
 		UShort_t fCascTPCNclsF_V0dNeg[MaxNCasc];
+		//
+		Int_t fCascMomLabel[MaxNCasc]; //MC only, mother particle's (Xic0) label
+		Int_t fCascMomPDG  [MaxNCasc]; //MC only, mother particle's (Xic0) PDG code
 
-		ClassDef(AliAnaTaskSEXic0SL, 1);
+		ClassDef(AliAnalysisTaskSEXic0SL, 1);
 };
 
-#endif //AliAnaTaskSEXic0SL_H
+#endif //AliAnalysisTaskSEXic0SL_H
