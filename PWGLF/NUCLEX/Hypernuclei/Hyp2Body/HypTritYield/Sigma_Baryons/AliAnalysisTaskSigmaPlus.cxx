@@ -101,7 +101,7 @@ primaryVtxPosX(-999), primaryVtxPosY(-999), primaryVtxPosZ(-999),
 primaryVtxPosXMC(-999), primaryVtxPosYMC(-999), primaryVtxPosZMC(-999), 
 nTracks(0), Centrality(0), EventTriggers(0),
 fRefMultComb05(0), fRefMultComb08(0), fRefMultComb10(0), fGlobalEventID(0),
-fEventhasSigma(kFALSE), fEventhasProton(kFALSE), fDebug(kFALSE), fRemoveGenPileup(kTRUE),
+fEventhasSigma(kFALSE), fEventhasProton(kFALSE), fEventhasSigmaCand(kFALSE), fDebug(kFALSE), fRemoveGenPileup(kTRUE),
 
 fProcessMCParticles(kTRUE), 
 
@@ -130,8 +130,8 @@ fEvTrackSize(10000),
 fCentralityBins(29),
 fMinCentBin(-5),
 fMaxCentBin(140),
-fZvtxBins(20),
-fMinZBin(-10),
+fZvtxBins(10),
+fMinZBin(0),
 fMaxZBin(10),
 
 fEvPoolSize2(20),
@@ -139,11 +139,15 @@ fEvTrackSize2(10000),
 fCentralityBins2(29),
 fMinCentBin2(-5),
 fMaxCentBin2(140),
-fZvtxBins2(20),
-fMinZBin2(-10),
+fZvtxBins2(10),
+fMinZBin2(0),
 fMaxZBin2(10),
+
 fRequireSigma(kFALSE),
 fRequireProton(kFALSE),
+fRequireSigmaCand(kTRUE),
+fUseAbsZ(kTRUE),
+fUseAbsZCorr(kTRUE),
 
 fMaxProtEta(1),    
 fMinTPCClustProt(40),
@@ -197,8 +201,8 @@ fRequireDCACut(kFALSE),
 
 fMinPi0MassPHOS(0.09), 
 fMaxPi0MassPHOS(0.16),  
-fMaxSigmaPAPHOS(0.03),
-fMaxSigmaPAPHOSHM(0.03),
+fMaxSigmaPAPHOS(0.02),
+fMaxSigmaPAPHOSHM(0.02),
 fMinSigmaAntiPAPHOS(0.005),
 fMaxProtPhotDCA(2),
 fMinSigmaDCAtoPVPHOS(0.5),
@@ -402,7 +406,7 @@ primaryVtxPosX(-999), primaryVtxPosY(-999), primaryVtxPosZ(-999),
 primaryVtxPosXMC(-999), primaryVtxPosYMC(-999), primaryVtxPosZMC(-999), 
 nTracks(0), Centrality(0), EventTriggers(0),
 fRefMultComb05(0), fRefMultComb08(0), fRefMultComb10(0), fGlobalEventID(0),
-fEventhasSigma(kFALSE), fEventhasProton(kFALSE), fDebug(kFALSE), fRemoveGenPileup(kTRUE),
+fEventhasSigma(kFALSE), fEventhasProton(kFALSE), fEventhasSigmaCand(kFALSE), fDebug(kFALSE), fRemoveGenPileup(kTRUE),
 
 fProcessMCParticles(kTRUE), 
 
@@ -431,8 +435,8 @@ fEvTrackSize(10000),
 fCentralityBins(29),
 fMinCentBin(-5),
 fMaxCentBin(140),
-fZvtxBins(20),
-fMinZBin(-10),
+fZvtxBins(10),
+fMinZBin(0),
 fMaxZBin(10),
 
 fEvPoolSize2(20),
@@ -440,11 +444,15 @@ fEvTrackSize2(10000),
 fCentralityBins2(29),
 fMinCentBin2(-5),
 fMaxCentBin2(140),
-fZvtxBins2(20),
-fMinZBin2(-10),
+fZvtxBins2(10),
+fMinZBin2(0),
 fMaxZBin2(10),
+
 fRequireSigma(kFALSE),
 fRequireProton(kFALSE),
+fRequireSigmaCand(kTRUE),
+fUseAbsZ(kTRUE),
+fUseAbsZCorr(kTRUE),
 
 fMaxProtEta(1),    
 fMinTPCClustProt(40),
@@ -498,8 +506,8 @@ fRequireDCACut(kFALSE),
 
 fMinPi0MassPHOS(0.09), 
 fMaxPi0MassPHOS(0.16),  
-fMaxSigmaPAPHOS(0.03),
-fMaxSigmaPAPHOSHM(0.03),
+fMaxSigmaPAPHOS(0.02),
+fMaxSigmaPAPHOSHM(0.02),
 fMinSigmaAntiPAPHOS(0.005),
 fMaxProtPhotDCA(2),
 fMinSigmaDCAtoPVPHOS(0.5),
@@ -1861,7 +1869,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
 /**************************Histograms********************************/
 
     //Book Keeper for used Cuts 
-    TH1D* fHistCutBookKeeper           = new TH1D("fHistCutBookKeeper", "Book Keeper for used Cuts", 92, 0.5, 92.5);
+    TH1D* fHistCutBookKeeper           = new TH1D("fHistCutBookKeeper", "Book Keeper for used Cuts", 95, 0.5, 95.5);
 
     //Event related                    
     TH1F* fHistMCGenPileup             = new TH1F("fHistMCGenPileup", "Generated pile-up;IsPileUp;", 2, -0.5, 1.5);
@@ -2261,78 +2269,81 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fHistCutBookKeeper->GetXaxis()->SetBinLabel(18,"fMaxZBin2");
     fHistCutBookKeeper->GetXaxis()->SetBinLabel(19,"fRequireSigma");
     fHistCutBookKeeper->GetXaxis()->SetBinLabel(20,"fRequireProton");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(21,"fMaxProtEta");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(22,"fMinTPCClustProt");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(23,"fMaxNsigProtTPC");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(24,"fRequireProtonTPC");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(25,"fRequireProtonTOF");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(26,"fRequireProtonTOFforPairs");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(27,"fMaxNsigProtTOF");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(28,"fMaxpOnlyTPCPID");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(29,"fMinProtpt");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(30,"fMaxProtpt");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(31,"fStrictMaxProtEta");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(32,"fStrictMinTPCClustProt");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(33,"fStrictMaxNsigProtTPC");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(34,"fStrictMaxNsigProtTOF");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(35,"fStrictMaxpOnlyTPCPID");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(36,"fStrictMinProtpt");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(37,"fStrictMaxProtpt");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(38,"fMaxMCEta");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(39,"fMaxDaughtEta");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(40,"fMinTPCClustDaught");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(41,"fMaxNsigDaughtTPC");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(42,"fMaxalpha");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(43,"fMaxqt");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(44,"fMaxopenangle");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(45,"fMaxdeltatheta");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(46,"fMinV0CPA");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(47,"fMinV0Radius");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(48,"fMaxV0Radius");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(49,"fMaxphotonmass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(50,"fRequirePHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(51,"fMinClusterBeta");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(52,"fMinClusterDy");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(53,"fMaxClusterM02");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(54,"fCleanAutoCorr");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(55,"fMinPi0Mass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(56,"fMaxPi0Mass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(57,"fMaxSigmaPA");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(58,"fMaxSigmaY");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(59,"fMaxSigmaMass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(60,"fMinProtonDCAxy");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(61,"fMinProtonDCAz");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(62,"fMaxProtonDCAxy");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(63,"fMaxProtonDCAz");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(64,"fRequireDCACut");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(65,"fMinPi0MassPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(66,"fMaxPi0MassPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(67,"fMaxSigmaPAPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(68,"fMaxSigmaPAPHOSHM");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(69,"fMinSigmaAntiPAPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(70,"fMaxProtPhotDCA");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(71,"fMinSigmaDCAtoPVPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(72,"fMaxSigmaDCAtoPVPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(73,"fMaxSigmaYPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(74,"fMaxSigmaMassPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(75,"fMinProtonDCAxyPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(76,"fMinProtonDCAzPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(77,"fMaxProtonDCAxyPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(78,"fMaxProtonDCAzPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(79,"fRequireDCACutPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(80,"fMinCorrPi0Mass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(81,"fMaxCorrPi0Mass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(82,"fMaxCorrSigmaPA");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(83,"fMinCorrSigmaMass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(84,"fMaxCorrSigmaMass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(85,"fMinCorrProtonDCAxy");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(86,"fMaxCorrPairProtonDCAxy");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(87,"fMaxCorrPairProtonDCAz");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(88,"fMaxCorrkstar");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(89,"fMinCorrPi0MassPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(90,"fMaxCorrPi0MassPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(91,"fMaxCorrSigmaPAPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(92,"Number of Fills");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(21,"fRequireSigmaCand");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(22,"fUseAbsZ");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(23,"fUseAbsZCorr");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(24,"fMaxProtEta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(25,"fMinTPCClustProt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(26,"fMaxNsigProtTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(27,"fRequireProtonTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(28,"fRequireProtonTOF");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(29,"fRequireProtonTOFforPairs");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(30,"fMaxNsigProtTOF");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(31,"fMaxpOnlyTPCPID");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(32,"fMinProtpt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(33,"fMaxProtpt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(34,"fStrictMaxProtEta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(35,"fStrictMinTPCClustProt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(36,"fStrictMaxNsigProtTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(37,"fStrictMaxNsigProtTOF");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(38,"fStrictMaxpOnlyTPCPID");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(39,"fStrictMinProtpt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(40,"fStrictMaxProtpt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(41,"fMaxMCEta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(42,"fMaxDaughtEta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(43,"fMinTPCClustDaught");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(44,"fMaxNsigDaughtTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(45,"fMaxalpha");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(46,"fMaxqt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(47,"fMaxopenangle");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(48,"fMaxdeltatheta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(49,"fMinV0CPA");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(50,"fMinV0Radius");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(51,"fMaxV0Radius");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(52,"fMaxphotonmass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(53,"fRequirePHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(54,"fMinClusterBeta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(55,"fMinClusterDy");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(56,"fMaxClusterM02");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(57,"fCleanAutoCorr");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(58,"fMinPi0Mass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(59,"fMaxPi0Mass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(60,"fMaxSigmaPA");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(61,"fMaxSigmaY");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(62,"fMaxSigmaMass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(63,"fMinProtonDCAxy");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(64,"fMinProtonDCAz");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(65,"fMaxProtonDCAxy");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(66,"fMaxProtonDCAz");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(67,"fRequireDCACut");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(68,"fMinPi0MassPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(69,"fMaxPi0MassPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(70,"fMaxSigmaPAPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(71,"fMaxSigmaPAPHOSHM");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(72,"fMinSigmaAntiPAPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(73,"fMaxProtPhotDCA");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(74,"fMinSigmaDCAtoPVPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(75,"fMaxSigmaDCAtoPVPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(76,"fMaxSigmaYPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(77,"fMaxSigmaMassPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(78,"fMinProtonDCAxyPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(79,"fMinProtonDCAzPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(80,"fMaxProtonDCAxyPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(81,"fMaxProtonDCAzPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(82,"fRequireDCACutPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(83,"fMinCorrPi0Mass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(84,"fMaxCorrPi0Mass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(85,"fMaxCorrSigmaPA");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(86,"fMinCorrSigmaMass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(87,"fMaxCorrSigmaMass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(88,"fMinCorrProtonDCAxy");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(89,"fMaxCorrPairProtonDCAxy");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(90,"fMaxCorrPairProtonDCAz");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(91,"fMaxCorrkstar");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(92,"fMinCorrPi0MassPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(93,"fMaxCorrPi0MassPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(94,"fMaxCorrSigmaPAPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(95,"Number of Fills");
 
     fHistCutBookKeeper->SetBinContent(1,fRemoveGenPileup);
     fHistCutBookKeeper->SetBinContent(2,fMaxVertexZ);
@@ -2354,78 +2365,81 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fHistCutBookKeeper->SetBinContent(18,fMaxZBin2);
     fHistCutBookKeeper->SetBinContent(19,fRequireSigma);
     fHistCutBookKeeper->SetBinContent(20,fRequireProton);
-    fHistCutBookKeeper->SetBinContent(21,fMaxProtEta);
-    fHistCutBookKeeper->SetBinContent(22,fMinTPCClustProt);
-    fHistCutBookKeeper->SetBinContent(23,fMaxNsigProtTPC);
-    fHistCutBookKeeper->SetBinContent(24,fRequireProtonTPC);
-    fHistCutBookKeeper->SetBinContent(25,fRequireProtonTOF);
-    fHistCutBookKeeper->SetBinContent(26,fRequireProtonTOFforPairs);
-    fHistCutBookKeeper->SetBinContent(27,fMaxNsigProtTOF);
-    fHistCutBookKeeper->SetBinContent(28,fMaxpOnlyTPCPID);
-    fHistCutBookKeeper->SetBinContent(29,fMinProtpt);
-    fHistCutBookKeeper->SetBinContent(30,fMaxProtpt);
-    fHistCutBookKeeper->SetBinContent(31,fStrictMaxProtEta);
-    fHistCutBookKeeper->SetBinContent(32,fStrictMinTPCClustProt);
-    fHistCutBookKeeper->SetBinContent(33,fStrictMaxNsigProtTPC);
-    fHistCutBookKeeper->SetBinContent(34,fStrictMaxNsigProtTOF);
-    fHistCutBookKeeper->SetBinContent(35,fStrictMaxpOnlyTPCPID);
-    fHistCutBookKeeper->SetBinContent(36,fStrictMinProtpt);
-    fHistCutBookKeeper->SetBinContent(37,fStrictMaxProtpt);
-    fHistCutBookKeeper->SetBinContent(38,fMaxMCEta);
-    fHistCutBookKeeper->SetBinContent(39,fMaxDaughtEta);
-    fHistCutBookKeeper->SetBinContent(40,fMinTPCClustDaught);
-    fHistCutBookKeeper->SetBinContent(41,fMaxNsigDaughtTPC);
-    fHistCutBookKeeper->SetBinContent(42,fMaxalpha);
-    fHistCutBookKeeper->SetBinContent(43,fMaxqt);
-    fHistCutBookKeeper->SetBinContent(44,fMaxopenangle);
-    fHistCutBookKeeper->SetBinContent(45,fMaxdeltatheta);
-    fHistCutBookKeeper->SetBinContent(46,fMinV0CPA);
-    fHistCutBookKeeper->SetBinContent(47,fMinV0Radius);
-    fHistCutBookKeeper->SetBinContent(48,fMaxV0Radius);
-    fHistCutBookKeeper->SetBinContent(49,fMaxphotonmass);
-    fHistCutBookKeeper->SetBinContent(50,fRequirePHOS);
-    fHistCutBookKeeper->SetBinContent(51,fMinClusterBeta);
-    fHistCutBookKeeper->SetBinContent(52,fMinClusterDy);
-    fHistCutBookKeeper->SetBinContent(53,fMaxClusterM02);
-    fHistCutBookKeeper->SetBinContent(54,fCleanAutoCorr); 
-    fHistCutBookKeeper->SetBinContent(55,fMinPi0Mass);
-    fHistCutBookKeeper->SetBinContent(56,fMaxPi0Mass);
-    fHistCutBookKeeper->SetBinContent(57,fMaxSigmaPA);
-    fHistCutBookKeeper->SetBinContent(58,fMaxSigmaY);
-    fHistCutBookKeeper->SetBinContent(59,fMaxSigmaMass);
-    fHistCutBookKeeper->SetBinContent(60,fMinProtonDCAxy);
-    fHistCutBookKeeper->SetBinContent(61,fMinProtonDCAz);
-    fHistCutBookKeeper->SetBinContent(62,fMaxProtonDCAxy);
-    fHistCutBookKeeper->SetBinContent(63,fMaxProtonDCAz);
-    fHistCutBookKeeper->SetBinContent(64,fRequireDCACut);
-    fHistCutBookKeeper->SetBinContent(65,fMinPi0MassPHOS);
-    fHistCutBookKeeper->SetBinContent(66,fMaxPi0MassPHOS);
-    fHistCutBookKeeper->SetBinContent(67,fMaxSigmaPAPHOS);
-    fHistCutBookKeeper->SetBinContent(68,fMaxSigmaPAPHOSHM);
-    fHistCutBookKeeper->SetBinContent(69,fMinSigmaAntiPAPHOS);
-    fHistCutBookKeeper->SetBinContent(70,fMaxProtPhotDCA);
-    fHistCutBookKeeper->SetBinContent(71,fMinSigmaDCAtoPVPHOS);
-    fHistCutBookKeeper->SetBinContent(72,fMaxSigmaDCAtoPVPHOS);
-    fHistCutBookKeeper->SetBinContent(73,fMaxSigmaYPHOS);
-    fHistCutBookKeeper->SetBinContent(74,fMaxSigmaMassPHOS);
-    fHistCutBookKeeper->SetBinContent(75,fMinProtonDCAxyPHOS);
-    fHistCutBookKeeper->SetBinContent(76,fMinProtonDCAzPHOS);
-    fHistCutBookKeeper->SetBinContent(77,fMaxProtonDCAxyPHOS);
-    fHistCutBookKeeper->SetBinContent(78,fMaxProtonDCAzPHOS);
-    fHistCutBookKeeper->SetBinContent(79,fRequireDCACutPHOS);
-    fHistCutBookKeeper->SetBinContent(80,fMinCorrPi0Mass);
-    fHistCutBookKeeper->SetBinContent(81,fMaxCorrPi0Mass);
-    fHistCutBookKeeper->SetBinContent(82,fMaxCorrSigmaPA);
-    fHistCutBookKeeper->SetBinContent(83,fMinCorrSigmaMass);
-    fHistCutBookKeeper->SetBinContent(84,fMaxCorrSigmaMass);
-    fHistCutBookKeeper->SetBinContent(85,fMinCorrProtonDCAxy);
-    fHistCutBookKeeper->SetBinContent(86,fMaxCorrPairProtonDCAxy);
-    fHistCutBookKeeper->SetBinContent(87,fMaxCorrPairProtonDCAz);
-    fHistCutBookKeeper->SetBinContent(88,fMaxCorrkstar);
-    fHistCutBookKeeper->SetBinContent(89,fMinCorrPi0MassPHOS);
-    fHistCutBookKeeper->SetBinContent(90,fMaxCorrPi0MassPHOS);
-    fHistCutBookKeeper->SetBinContent(91,fMaxCorrSigmaPAPHOS);
-    fHistCutBookKeeper->SetBinContent(92,1);
+    fHistCutBookKeeper->SetBinContent(21,fRequireSigmaCand);
+    fHistCutBookKeeper->SetBinContent(22,fUseAbsZ);
+    fHistCutBookKeeper->SetBinContent(23,fUseAbsZCorr);
+    fHistCutBookKeeper->SetBinContent(24,fMaxProtEta);
+    fHistCutBookKeeper->SetBinContent(25,fMinTPCClustProt);
+    fHistCutBookKeeper->SetBinContent(26,fMaxNsigProtTPC);
+    fHistCutBookKeeper->SetBinContent(27,fRequireProtonTPC);
+    fHistCutBookKeeper->SetBinContent(28,fRequireProtonTOF);
+    fHistCutBookKeeper->SetBinContent(29,fRequireProtonTOFforPairs);
+    fHistCutBookKeeper->SetBinContent(30,fMaxNsigProtTOF);
+    fHistCutBookKeeper->SetBinContent(31,fMaxpOnlyTPCPID);
+    fHistCutBookKeeper->SetBinContent(32,fMinProtpt);
+    fHistCutBookKeeper->SetBinContent(33,fMaxProtpt);
+    fHistCutBookKeeper->SetBinContent(34,fStrictMaxProtEta);
+    fHistCutBookKeeper->SetBinContent(35,fStrictMinTPCClustProt);
+    fHistCutBookKeeper->SetBinContent(36,fStrictMaxNsigProtTPC);
+    fHistCutBookKeeper->SetBinContent(37,fStrictMaxNsigProtTOF);
+    fHistCutBookKeeper->SetBinContent(38,fStrictMaxpOnlyTPCPID);
+    fHistCutBookKeeper->SetBinContent(39,fStrictMinProtpt);
+    fHistCutBookKeeper->SetBinContent(40,fStrictMaxProtpt);
+    fHistCutBookKeeper->SetBinContent(41,fMaxMCEta);
+    fHistCutBookKeeper->SetBinContent(42,fMaxDaughtEta);
+    fHistCutBookKeeper->SetBinContent(43,fMinTPCClustDaught);
+    fHistCutBookKeeper->SetBinContent(44,fMaxNsigDaughtTPC);
+    fHistCutBookKeeper->SetBinContent(45,fMaxalpha);
+    fHistCutBookKeeper->SetBinContent(46,fMaxqt);
+    fHistCutBookKeeper->SetBinContent(47,fMaxopenangle);
+    fHistCutBookKeeper->SetBinContent(48,fMaxdeltatheta);
+    fHistCutBookKeeper->SetBinContent(49,fMinV0CPA);
+    fHistCutBookKeeper->SetBinContent(50,fMinV0Radius);
+    fHistCutBookKeeper->SetBinContent(51,fMaxV0Radius);
+    fHistCutBookKeeper->SetBinContent(52,fMaxphotonmass);
+    fHistCutBookKeeper->SetBinContent(53,fRequirePHOS);
+    fHistCutBookKeeper->SetBinContent(54,fMinClusterBeta);
+    fHistCutBookKeeper->SetBinContent(55,fMinClusterDy);
+    fHistCutBookKeeper->SetBinContent(56,fMaxClusterM02);
+    fHistCutBookKeeper->SetBinContent(57,fCleanAutoCorr); 
+    fHistCutBookKeeper->SetBinContent(58,fMinPi0Mass);
+    fHistCutBookKeeper->SetBinContent(59,fMaxPi0Mass);
+    fHistCutBookKeeper->SetBinContent(60,fMaxSigmaPA);
+    fHistCutBookKeeper->SetBinContent(61,fMaxSigmaY);
+    fHistCutBookKeeper->SetBinContent(62,fMaxSigmaMass);
+    fHistCutBookKeeper->SetBinContent(63,fMinProtonDCAxy);
+    fHistCutBookKeeper->SetBinContent(64,fMinProtonDCAz);
+    fHistCutBookKeeper->SetBinContent(65,fMaxProtonDCAxy);
+    fHistCutBookKeeper->SetBinContent(66,fMaxProtonDCAz);
+    fHistCutBookKeeper->SetBinContent(67,fRequireDCACut);
+    fHistCutBookKeeper->SetBinContent(68,fMinPi0MassPHOS);
+    fHistCutBookKeeper->SetBinContent(69,fMaxPi0MassPHOS);
+    fHistCutBookKeeper->SetBinContent(70,fMaxSigmaPAPHOS);
+    fHistCutBookKeeper->SetBinContent(71,fMaxSigmaPAPHOSHM);
+    fHistCutBookKeeper->SetBinContent(72,fMinSigmaAntiPAPHOS);
+    fHistCutBookKeeper->SetBinContent(73,fMaxProtPhotDCA);
+    fHistCutBookKeeper->SetBinContent(74,fMinSigmaDCAtoPVPHOS);
+    fHistCutBookKeeper->SetBinContent(75,fMaxSigmaDCAtoPVPHOS);
+    fHistCutBookKeeper->SetBinContent(76,fMaxSigmaYPHOS);
+    fHistCutBookKeeper->SetBinContent(77,fMaxSigmaMassPHOS);
+    fHistCutBookKeeper->SetBinContent(78,fMinProtonDCAxyPHOS);
+    fHistCutBookKeeper->SetBinContent(79,fMinProtonDCAzPHOS);
+    fHistCutBookKeeper->SetBinContent(80,fMaxProtonDCAxyPHOS);
+    fHistCutBookKeeper->SetBinContent(81,fMaxProtonDCAzPHOS);
+    fHistCutBookKeeper->SetBinContent(82,fRequireDCACutPHOS);
+    fHistCutBookKeeper->SetBinContent(83,fMinCorrPi0Mass);
+    fHistCutBookKeeper->SetBinContent(84,fMaxCorrPi0Mass);
+    fHistCutBookKeeper->SetBinContent(85,fMaxCorrSigmaPA);
+    fHistCutBookKeeper->SetBinContent(86,fMinCorrSigmaMass);
+    fHistCutBookKeeper->SetBinContent(87,fMaxCorrSigmaMass);
+    fHistCutBookKeeper->SetBinContent(88,fMinCorrProtonDCAxy);
+    fHistCutBookKeeper->SetBinContent(89,fMaxCorrPairProtonDCAxy);
+    fHistCutBookKeeper->SetBinContent(90,fMaxCorrPairProtonDCAz);
+    fHistCutBookKeeper->SetBinContent(91,fMaxCorrkstar);
+    fHistCutBookKeeper->SetBinContent(92,fMinCorrPi0MassPHOS);
+    fHistCutBookKeeper->SetBinContent(93,fMaxCorrPi0MassPHOS);
+    fHistCutBookKeeper->SetBinContent(94,fMaxCorrSigmaPAPHOS);
+    fHistCutBookKeeper->SetBinContent(95,1);
 
     fHistMCCounter->GetXaxis()->SetBinLabel(1,"Events");
     fHistMCCounter->GetXaxis()->SetBinLabel(2,"MC Particles");
@@ -3060,6 +3074,7 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
   // Reset bools
   fEventhasSigma = kFALSE;
   fEventhasProton = kFALSE;
+  fEventhasSigmaCand = kFALSE;
 
   // Load the Input Event and check it
   aodEvent = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -3348,7 +3363,8 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
    
     //Get Pool from Pool Manager for given RefMult and Z Vertex values
     AliEventPool* Evpool = 0x0;
-	  if(fEvPoolMgr) Evpool = fEvPoolMgr->GetEventPool((Int_t)fRefMultComb08, (Double_t)primaryVtxPosZ);
+	  if(fEvPoolMgr&&fUseAbsZ)  Evpool = fEvPoolMgr->GetEventPool((Int_t)fRefMultComb08, (Double_t)TMath::Abs(primaryVtxPosZ));
+	  if(fEvPoolMgr&&!fUseAbsZ) Evpool = fEvPoolMgr->GetEventPool((Int_t)fRefMultComb08, (Double_t)primaryVtxPosZ);
 	  if(Evpool){
     
       //Create TObjArray of selected Protons
@@ -3373,32 +3389,36 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
   } //End of Pool updating
 
   if(fSavePHOSMixedBackground){
-    if(fDebug) cout << "Updating Event Pool 3\n";
-   
-    //Get Pool from Pool Manager for given RefMult and Z Vertex values
-    AliEventPool* Evpool = 0x0;
-	  if(fEvPoolMgr3) Evpool = fEvPoolMgr3->GetEventPool((Int_t)fRefMultComb08, (Double_t)primaryVtxPosZ);
-	  if(Evpool){
-    
-      //Create TObjArray of selected Clusters
-      TObjArray* ClusterObjArray = new TObjArray();    
-  	  ClusterObjArray->SetOwner(kTRUE);
-      Int_t nClusterforMixing = fCaloPhotonArray.size();
-      for(Int_t k=0; k<nClusterforMixing; k++) {
-        AliAODCaloCluster *clust = (AliAODCaloCluster*)aodEvent->GetCaloCluster(fCaloPhotonArray.at(k));
-        if(!clust) continue;
-        AliAODClusterreduced* redclust = new AliAODClusterreduced();
-        if(!redclust) continue;
-        redclust->InitfromCluster(clust);
-        ClusterObjArray->Add(redclust);
-      }
+    if(!fRequireSigmaCand||fEventhasSigmaCand){
 
-      //Clone it and update the Pool    
-      TObjArray* ClusterCloneArray = (TObjArray*)ClusterObjArray->Clone();    
-      ClusterCloneArray->SetOwner(kTRUE);
-      Evpool->UpdatePool(ClusterCloneArray);
-    }
-    else{AliWarning(Form("No pool found for fRefMultComb08 = %hd, primaryVtxPosZ = %f", fRefMultComb08, primaryVtxPosZ));}
+      if(fDebug) cout << "Updating Event Pool 3\n";
+
+      //Get Pool from Pool Manager for given RefMult and Z Vertex values
+      AliEventPool* Evpool = 0x0;
+  	  if(fEvPoolMgr3&&fUseAbsZ)  Evpool = fEvPoolMgr3->GetEventPool((Int_t)fRefMultComb08, (Double_t)TMath::Abs(primaryVtxPosZ));
+  	  if(fEvPoolMgr3&&!fUseAbsZ) Evpool = fEvPoolMgr3->GetEventPool((Int_t)fRefMultComb08, (Double_t)primaryVtxPosZ);
+  	  if(Evpool){
+      
+        //Create TObjArray of selected Clusters
+        TObjArray* ClusterObjArray = new TObjArray();    
+    	  ClusterObjArray->SetOwner(kTRUE);
+        Int_t nClusterforMixing = fCaloPhotonArray.size();
+        for(Int_t k=0; k<nClusterforMixing; k++) {
+          AliAODCaloCluster *clust = (AliAODCaloCluster*)aodEvent->GetCaloCluster(fCaloPhotonArray.at(k));
+          if(!clust) continue;
+          AliAODClusterreduced* redclust = new AliAODClusterreduced();
+          if(!redclust) continue;
+          redclust->InitfromCluster(clust);
+          ClusterObjArray->Add(redclust);
+        }
+
+        //Clone it and update the Pool    
+        TObjArray* ClusterCloneArray = (TObjArray*)ClusterObjArray->Clone();    
+        ClusterCloneArray->SetOwner(kTRUE);
+        Evpool->UpdatePool(ClusterCloneArray);
+      }
+      else{AliWarning(Form("No pool found for fRefMultComb08 = %hd, primaryVtxPosZ = %f", fRefMultComb08, primaryVtxPosZ));}
+    } //Require Sigma Candidate
   } //End of Pool updating
 
   if(fFillPairTreeME||fFillPHOSPairTreeME){  
@@ -3409,7 +3429,8 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
 
         //Get Pool from Pool Manager for given RefMult and Z Vertex values
         AliEventPool* Evpool = 0x0;
-    	  if(fEvPoolMgr2) Evpool = fEvPoolMgr2->GetEventPool((Int_t)fRefMultComb08, (Double_t)primaryVtxPosZ);
+    	  if(fEvPoolMgr2&&fUseAbsZCorr)  Evpool = fEvPoolMgr2->GetEventPool((Int_t)fRefMultComb08, (Double_t)TMath::Abs(primaryVtxPosZ));
+    	  if(fEvPoolMgr2&&!fUseAbsZCorr) Evpool = fEvPoolMgr2->GetEventPool((Int_t)fRefMultComb08, (Double_t)primaryVtxPosZ);
     	  if(Evpool){
         
           //Create TObjArray of selected Protons
@@ -5077,13 +5098,15 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
 
           //Get Pool from Pool Manager for given RefMult and Z Vertex values
         	AliEventPool* Evpool = 0x0;
-	        if(fEvPoolMgr2) Evpool = fEvPoolMgr2->GetEventPool((Int_t)fRefMultComb08, (Double_t)primaryVtxPosZ);
+	        if(fEvPoolMgr2&&fUseAbsZCorr)  Evpool = fEvPoolMgr2->GetEventPool((Int_t)fRefMultComb08, (Double_t)TMath::Abs(primaryVtxPosZ));
+	        if(fEvPoolMgr2&&!fUseAbsZCorr) Evpool = fEvPoolMgr2->GetEventPool((Int_t)fRefMultComb08, (Double_t)primaryVtxPosZ);
 		      if(!Evpool){  AliWarning(Form("No pool found for fRefMultComb08 = %hd, primaryVtxPosZ = %f", fRefMultComb08, primaryVtxPosZ)); continue;}
           if(Evpool->GetCurrentNEvents()==0) {/*cout << "Pool for fRefMultComb08 = "<< fRefMultComb08 << ", primaryVtxPosZ = " << primaryVtxPosZ << " is empty!\n";*/ continue;}
 
           //Get Number of Events in Pool
     			Int_t nMixEvents = Evpool->GetCurrentNEvents();
-          FillHistogram("fHistPairNMixedEvents",fRefMultComb08,primaryVtxPosZ,nMixEvents);
+          if(fUseAbsZCorr) FillHistogram("fHistPairNMixedEvents",fRefMultComb08,TMath::Abs(primaryVtxPosZ),nMixEvents);
+          else FillHistogram("fHistPairNMixedEvents",fRefMultComb08,primaryVtxPosZ,nMixEvents);
 
           //Now Loop over the mixed Events
 			    for (Int_t iMixEvent = 0; iMixEvent < nMixEvents; iMixEvent++){
@@ -5158,14 +5181,16 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
 
           //Get Pool from Pool Manager for given RefMult and Z Vertex values
           AliEventPool* Evpool = 0x0;
-  	      if(fEvPoolMgr) Evpool = fEvPoolMgr->GetEventPool((Int_t)fRefMultComb08, (Double_t)primaryVtxPosZ);
+  	      if(fEvPoolMgr&&fUseAbsZ)  Evpool = fEvPoolMgr->GetEventPool((Int_t)fRefMultComb08, (Double_t)TMath::Abs(primaryVtxPosZ));
+  	      if(fEvPoolMgr&&!fUseAbsZ) Evpool = fEvPoolMgr->GetEventPool((Int_t)fRefMultComb08, (Double_t)primaryVtxPosZ);
   		    if(!Evpool){AliWarning(Form("No pool found for fRefMultComb08 = %hd, primaryVtxPosZ = %f", fRefMultComb08, primaryVtxPosZ)); nMixEvents = -1;}
           else if(Evpool->GetCurrentNEvents()==0) {/*cout << "Pool for fRefMultComb08 = "<< fRefMultComb08 << ", primaryVtxPosZ = " << primaryVtxPosZ << " is empty!\n";*/ nMixEvents = -1;}
 
           //Get Number of Events in Pool. Number can be reduced with Setter Function to reduce Tree Size.
       		if(nMixEvents!=-1) nMixEvents = Evpool->GetCurrentNEvents();
           else nMixEvents = 0;
-          FillHistogram("fHistBkgNMixedEvents",fRefMultComb08,primaryVtxPosZ,nMixEvents);
+          if(fUseAbsZ) FillHistogram("fHistBkgNMixedEvents",fRefMultComb08,TMath::Abs(primaryVtxPosZ),nMixEvents);
+          else FillHistogram("fHistBkgNMixedEvents",fRefMultComb08,primaryVtxPosZ,nMixEvents);
 
           //Now Loop over the mixed Events
   			  for (Int_t iMixEvent = 0; iMixEvent < nMixEvents; iMixEvent++){
@@ -5884,6 +5909,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
         fProtonNSigTOFKaon = fPIDResponse->NumberOfSigmasTOF(prot,AliPID::kKaon);
         fProtonNSigTOFElec = fPIDResponse->NumberOfSigmasTOF(prot,AliPID::kElectron);
 
+        fEventhasSigmaCand = kTRUE;
         if(fSavePartCandPHOS) fSigmaPHOSCandTree->Fill();
 
         //Now apply some Selections to filter out potential Sigma Candidates.
@@ -5972,13 +5998,15 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
 
         //Get Pool from Pool Manager for given RefMult and Z Vertex values
         AliEventPool* Evpool = 0x0;
-	      if(fEvPoolMgr2) Evpool = fEvPoolMgr2->GetEventPool((Int_t)fRefMultComb08, (Double_t)primaryVtxPosZ);
+	      if(fEvPoolMgr2&&fUseAbsZCorr)  Evpool = fEvPoolMgr2->GetEventPool((Int_t)fRefMultComb08, (Double_t)TMath::Abs(primaryVtxPosZ));
+	      if(fEvPoolMgr2&&!fUseAbsZCorr) Evpool = fEvPoolMgr2->GetEventPool((Int_t)fRefMultComb08, (Double_t)primaryVtxPosZ);
 		    if(!Evpool){ AliWarning(Form("No pool found for fRefMultComb08 = %hd, primaryVtxPosZ = %f", fRefMultComb08, primaryVtxPosZ)); continue;}
         if(Evpool->GetCurrentNEvents()==0) {/*cout << "Pool for fRefMultComb08 = "<< fRefMultComb08 << ", primaryVtxPosZ = " << primaryVtxPosZ << " is empty!\n";*/ continue;}
 
         //Get Number of Events in Pool
     	  Int_t nMixEvents = Evpool->GetCurrentNEvents();
-        FillHistogram("fHistPairNMixedEventsPHOS",fRefMultComb08,primaryVtxPosZ,nMixEvents);
+        if(fUseAbsZCorr) FillHistogram("fHistPairNMixedEventsPHOS",fRefMultComb08,TMath::Abs(primaryVtxPosZ),nMixEvents);
+        else FillHistogram("fHistPairNMixedEventsPHOS",fRefMultComb08,primaryVtxPosZ,nMixEvents);
 
         //Now Loop over the mixed Events
 			  for (Int_t iMixEvent = 0; iMixEvent < nMixEvents; iMixEvent++){
@@ -6052,14 +6080,16 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
 
         //Get Pool from Pool Manager for given RefMult and Z Vertex values
         AliEventPool* Evpool = 0x0;
-	      if(fEvPoolMgr3) Evpool = fEvPoolMgr3->GetEventPool((Int_t)fRefMultComb08, (Double_t)primaryVtxPosZ);
+	      if(fEvPoolMgr3&&fUseAbsZ)  Evpool = fEvPoolMgr3->GetEventPool((Int_t)fRefMultComb08, (Double_t)TMath::Abs(primaryVtxPosZ));
+	      if(fEvPoolMgr3&&!fUseAbsZ) Evpool = fEvPoolMgr3->GetEventPool((Int_t)fRefMultComb08, (Double_t)primaryVtxPosZ);
 		    if(!Evpool){AliWarning(Form("No pool found for fRefMultComb08 = %hd, primaryVtxPosZ = %f", fRefMultComb08, primaryVtxPosZ)); nMixEvents = -1;}
         else if(Evpool->GetCurrentNEvents()==0) {/*cout << "Pool for fRefMultComb08 = "<< fRefMultComb08 << ", primaryVtxPosZ = " << primaryVtxPosZ << " is empty!\n";*/ nMixEvents = -1;}
 
         //Get Number of Events in Pool. Number can be reduced with Setter Function to reduce Tree Size.
       	if(nMixEvents!=-1) nMixEvents = Evpool->GetCurrentNEvents();
         else nMixEvents = 0;
-        FillHistogram("fHistBkgNMixedEventsPHOS",fRefMultComb08,primaryVtxPosZ,nMixEvents);
+        if(fUseAbsZ) FillHistogram("fHistBkgNMixedEventsPHOS",fRefMultComb08,TMath::Abs(primaryVtxPosZ),nMixEvents);
+        else FillHistogram("fHistBkgNMixedEventsPHOS",fRefMultComb08,primaryVtxPosZ,nMixEvents);
 
         //Now Loop over the mixed Events
   			for (Int_t iMixEvent = 0; iMixEvent < nMixEvents; iMixEvent++){

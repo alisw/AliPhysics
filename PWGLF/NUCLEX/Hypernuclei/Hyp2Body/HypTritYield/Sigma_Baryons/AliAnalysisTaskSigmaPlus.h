@@ -110,7 +110,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         std::vector<int>      fProtonArray;               //!<! Proton candidates
         std::vector<int>      fProtonArray2;              //!<! Stricter Selection for Mixing
         std::vector<int>      fConvPhotonArray;           //!<! V0 Photon candidates
-        std::vector<int>      fCaloPhotonArray;           //!<! V0 Photon candidates
+        std::vector<int>      fCaloPhotonArray;           //!<! Calo Photon candidates
         std::vector<std::pair<int,int>>  PairIndexArray;  //!<! V0 Photon candidates
 
         Bool_t                isMonteCarlo;               //True if MC information is available  
@@ -140,6 +140,8 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Double_t              fMeanProtonpt;              //Mean pt of protons for correlations
         Bool_t                fEventhasSigma;             //Event has Sigma Candidate(s)
         Bool_t                fEventhasProton;            //Event has Proton Candidate(s)
+
+        Bool_t                fEventhasSigmaCand;             //Event has Sigma Candidate(s)
 
         //Remove generated pile-up events (included in pass2/pass3)
         Bool_t                fRemoveGenPileup = kTRUE;   
@@ -175,10 +177,10 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Int_t                 fCentralityBins = 29;
         Double_t              fMinCentBin = -5;
         Double_t              fMaxCentBin = 140;
-        Int_t                 fZvtxBins = 20;
-        Double_t              fMinZBin = -10;
+        Int_t                 fZvtxBins = 10;
+        Double_t              fMinZBin = 0;
         Double_t              fMaxZBin = 10;
-
+    	
         //Event Mixing Settings
         Int_t                 fEvPoolSize2 = 20;        //Number of Events used for Event Mixing for Correlation
         Int_t                 fEvTrackSize2 = 10000;    //Targeted Track Number
@@ -188,8 +190,13 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Int_t                 fZvtxBins2 = 20;
         Double_t              fMinZBin2 = -10;
         Double_t              fMaxZBin2 = 10;
+
+        //Event Mixing Settings
         Bool_t                fRequireSigma = kFALSE;
         Bool_t                fRequireProton = kFALSE;
+        Bool_t                fRequireSigmaCand = kTRUE;
+        Bool_t                fUseAbsZ = kTRUE;
+        Bool_t                fUseAbsZCorr = kTRUE;
 
         //FillProtonArray Cuts
         Double_t              fMaxProtEta = 1;                   // 0.9  
@@ -329,8 +336,13 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetNZVertBins2(Int_t nzvert) {fZvtxBins2 = nzvert;}
         void SetMinZVertBin2(Double_t minz) {fMinZBin2 = minz;}
         void SetMaxZVertBin2(Double_t maxz) {fMaxZBin2 = maxz;}
-        void SetRequireSigma(Double_t reqsig) {fRequireSigma = reqsig;}
-        void SetRequireProton(Double_t reqprt) {fRequireProton = reqprt;}
+
+        //Event Mixing Settings
+        void SetRequireSigma(Bool_t reqsig) {fRequireSigma = reqsig;}
+        void SetRequireProton(Bool_t reqprt) {fRequireProton = reqprt;}
+        void SetRequireSigmaCand(Bool_t reqsigc) {fRequireSigmaCand = reqsigc;}
+        void SetUseAbsZ(Bool_t useabsz) {fUseAbsZ = useabsz;}
+        void SetUseAbsZCorr(Bool_t useabszcorr) {fUseAbsZCorr = useabszcorr;}
 
         //FillProtonArray Cuts
         void SetProtonMaxEta(Double_t maxeta) {fMaxProtEta = maxeta;}
