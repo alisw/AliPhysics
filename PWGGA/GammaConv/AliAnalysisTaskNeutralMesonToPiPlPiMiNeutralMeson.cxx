@@ -1683,11 +1683,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
 
     if(fEnableSubLambdaOutput){
       fLambda[iCut]                                            = new TF1("fLambda","pol3",0.,30);
-      if (fNDMRecoMode == 1){
-        fLambda[iCut]->SetParameters(0.651031,0.23351,-0.0108806,0.000177861); // Parameters taken from fits to projections of fHistopi0vsmesonmassshiftangle for PCMEMC
-      }
-      else{
-        fLambda[iCut]->SetParameters(0.192795,0.460392,-0.0323214,0.000255231);  // Parameters for EMCEMC
+      if (fNDMRecoMode == 0){
+        fLambda[iCut]->SetParameters(1.01457,0.00252082,0.00102263,-0.0000217);  // Parameters taken from fits to projections of fHistopi0vsmesonmassshiftangle for PCM
+      } else if(fNDMRecoMode == 1){
+        fLambda[iCut]->SetParameters(0.444968,0.288044,-0.0154603,0.000271816);  // Parameters taken from fits to projections of fHistopi0vsmesonmassshiftangle for PCMEMC
+      } else{
+        fLambda[iCut]->SetParameters(0.265865,0.383971,-0.0153176,-0.000860089); // Parameters taken from fits to projections of fHistopi0vsmesonmassshiftangle for EMC
       }
       fHistoMotherInvMassSubLambda[iCut]                       = new TH2F("ESD_InvMass_Mother_Sub_Lambda_InvMass_Neutral_Pt","ESD_InvMass_Mother_Sub_InvMass_Neutral_Pt",HistoNMassBinsSub,HistoMassRangeSub[0],HistoMassRangeSub[1], HistoNPtBins, arrPtBinning);
       fHistoMotherInvMassSubLambda[iCut]->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} - #lambda#times(M_{%s}-M_{%s},PDG}) (GeV/c^{2})",NameNDMLatex.Data(),NameNDMLatex.Data(),NameNDMLatex.Data()));
