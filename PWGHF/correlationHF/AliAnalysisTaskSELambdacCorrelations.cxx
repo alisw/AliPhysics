@@ -1163,22 +1163,24 @@ void AliAnalysisTaskSELambdacCorrelations::UserExec(Option_t */*option*/)
           nSelectedtight++;      
 
           //Removal of cases in which Lambdac decay is not in pKpi!
-	  if(mcPart->GetNDaughters()!=2) continue;
+	/*  if(mcPart->GetNDaughters()!=3) continue;
 	  AliAODMCParticle* mcDau1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(0)));
-	  AliAODMCParticle* mcDau2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(1)));
-	  AliAODMCParticle* mcDau3 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(2)));
+	  AliAODMCParticle* mcDau2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(1)-1));
+	  AliAODMCParticle* mcDau3 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(1)));
+	  cout<<"daughter levels ------"<<mcDau1<<"  "<<mcDau2<<"  "<<mcDau3<<endl;
 	  if(!mcDau1 || !mcDau2 || !mcDau3) continue;
+	              cout<<"get pdg     "<<mcDau1->GetPdgCode()<<"  "<<mcDau2->GetPdgCode()<<"  "<<mcDau3->GetPdgCode()<<endl;
 	  Int_t pdg1 = TMath::Abs(mcDau1->GetPdgCode());
 	  Int_t pdg2 = TMath::Abs(mcDau2->GetPdgCode());
 	  Int_t pdg3 = TMath::Abs(mcDau3->GetPdgCode());
-          if(!((pdg1 == 211 && pdg2 == 321 && pdg3 == 2212) || (pdg1 == 211 && pdg2 == 2212 && pdg3 == 321))) continue;
+          if(!((pdg1 == 2212 && pdg2 == 321 && pdg3 == 211) || (pdg1 == 211 && pdg2 == 321 && pdg3 == 2212))) continue;
           if(TMath::Abs(mcDau1->Eta())>0.8||TMath::Abs(mcDau2->Eta())>0.8) continue;
             //Check momentum conservation (to exclude 4-prong decays with tracks outside y=1.5)
             Double_t p1[3]  = {mcDau1->Px(),mcDau1->Py(),mcDau1->Pz()};
             Double_t p2[3]  = {mcDau2->Px(),mcDau2->Py(),mcDau2->Pz()};
             Double_t p3[3]  = {mcDau3->Px(),mcDau3->Py(),mcDau3->Pz()};
             Double_t pLambdac[3] = {mcPart->Px(),mcPart->Py(),mcPart->Pz()};
-            if(TMath::Abs( (p1[0]+p2[0]+p3[0]-pLambdac[0])*(p1[0]+p2[0]+p3[0]-pLambdac[0]) + (p1[1]+p2[1]+p3[1]-pLambdac[1])*(p1[1]+p2[1]+p3[1]-pLambdac[1]) + (p1[2]+p2[2]+p3[2]-pLambdac[2])*(p1[2]+p2[2]+p3[0]-pLambdac[2]) )>0.1) continue;
+            if(TMath::Abs( (p1[0]+p2[0]+p3[0]-pLambdac[0])*(p1[0]+p2[0]+p3[0]-pLambdac[0]) + (p1[1]+p2[1]+p3[1]-pLambdac[1])*(p1[1]+p2[1]+p3[1]-pLambdac[1]) + (p1[2]+p2[2]+p3[2]-pLambdac[2])*(p1[2]+p2[2]+p3[2]-pLambdac[2]) )>0.1) continue; */
 
           if(fSys==0) fNentries->Fill(19);
           Int_t ptbin=fCutsLambdac->PtBin(mcPart->Pt());
@@ -2409,7 +2411,7 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
       if (IsDDaughter(d,trkMC,mcArray)) continue;
    //   if (fSoftPiCut && IsSoftPion_MCKine(d,trkMC,mcArray)) continue; //remove soft pions (if requestes, e.g. for templates)
 
-      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,0); //fills for charged tracks
+      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack); //fills for charged tracks
 
       //retrieving leading info...
       if(track->Pt() > highPt) {
