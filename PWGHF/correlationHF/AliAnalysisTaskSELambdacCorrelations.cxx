@@ -2411,7 +2411,7 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
       if (IsDDaughter(d,trkMC,mcArray)) continue;
    //   if (fSoftPiCut && IsSoftPion_MCKine(d,trkMC,mcArray)) continue; //remove soft pions (if requestes, e.g. for templates)
 
-      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,0); //fills for charged tracks
+      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack); //fills for charged tracks
 
       //retrieving leading info...
       if(track->Pt() > highPt) {
