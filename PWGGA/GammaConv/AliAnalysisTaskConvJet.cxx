@@ -13,6 +13,9 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include <cstddef>
+#include <cstring>
+
 #include <TObjString.h>
 #include <TClonesArray.h>
 #include <TH1F.h>
@@ -329,7 +332,7 @@ AliAnalysisTaskConvJet* AliAnalysisTaskConvJet::AddTask_GammaConvJet(
     }
   }
 
-  TString name("AliAnalysisTaskConvJet");
+  TString name(Form("AliAnalysisTaskConvJet%s", strlen(suffix) == 0 ? "" : Form("_%s", suffix)));
 
   AliAnalysisTaskConvJet* sampleTask = new AliAnalysisTaskConvJet(name);
   sampleTask->SetCaloCellsName(cellName);
@@ -367,6 +370,8 @@ AliAnalysisTaskConvJet* AliAnalysisTaskConvJet::AddTask_GammaConvJet(
   AliAnalysisDataContainer* cinput1 = mgr->GetCommonInputContainer();
   TString contname(trackName);
   contname += "_histos";
+  contname += strlen(suffix) == 0 ? "" : Form("_%s", suffix);
+  printf("contname: %s", contname.Data());
   AliAnalysisDataContainer* coutput1 = mgr->CreateContainer(contname.Data(),
                                                             TList::Class(), AliAnalysisManager::kOutputContainer,
                                                             Form("%s", AliAnalysisManager::GetCommonFileName()));

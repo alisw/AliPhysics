@@ -91,6 +91,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(): AliAnalysisTaskSE(),
   fMesonCutArray(NULL),
   fMesonCuts(NULL),
   fConvJetReader(NULL),
+  fAddNameConvJet("Jet"),
   fOutlierJetReader(NULL),
   fConversionCuts(NULL),
   fDoJetAnalysis(kFALSE),
@@ -539,6 +540,7 @@ AliAnalysisTaskGammaCalo::AliAnalysisTaskGammaCalo(const char *name):
   fMesonCutArray(NULL),
   fMesonCuts(NULL),
   fConvJetReader(NULL),
+  fAddNameConvJet("Jet"),
   fOutlierJetReader(NULL),
   fConversionCuts(NULL),
   fDoJetAnalysis(kFALSE),
@@ -1070,8 +1072,8 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   }
 
   if(fDoJetAnalysis){
-    fConvJetReader=(AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskConvJet");
-    if(!fConvJetReader){printf("Error: No AliAnalysisTaskConvJet");return;} // GetV0Reader
+    fConvJetReader=(AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask(Form("AliAnalysisTaskConvJet%s", fAddNameConvJet.EqualTo("") == true ? "" : Form("_%s",fAddNameConvJet.Data())));
+    if(!fConvJetReader){printf(Form("ERROR: No AliAnalysisTaskConvJet%s", fAddNameConvJet.EqualTo("") == true ? "" : Form("_%s",fAddNameConvJet.Data())));return;} // GetV0Reader
   }
   if(((AliConvEventCuts*)fEventCutArray->At(0))->GetUseJetFinderForOutliers()){
     fOutlierJetReader=(AliAnalysisTaskJetOutlierRemoval*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetOutlierRemoval");
@@ -6694,7 +6696,7 @@ void AliAnalysisTaskGammaCalo::ProcessTrueMesonCandidates(AliAODConversionMother
   } else if(!isTruePi0 && !isTrueEta){ // Background
     if (fDoMesonQA > 0 && fDoMesonQA < 3){
       if(gamma0MotherLabel>-1 && gamma1MotherLabel>-1){ // Both Tracks are Photons and have a mother but not Pi0 or Eta
-        if(TrueGammaCandidate0->IsLargestComponentPhoton() && TrueGammaCandidate1->IsConversion()){
+        if(TrueGammaCandidate0->IsLargestComponentPhoton() && TrueGammaCandidate1->IsLargestComponentPhoton()){
           fHistoTrueBckGGInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(), tempTruePi0CandWeight);
         } else if(  (TrueGammaCandidate0->IsLargestComponentPhoton() && TrueGammaCandidate1->IsConversion() ) ||
                     (TrueGammaCandidate1->IsLargestComponentPhoton() && TrueGammaCandidate0->IsConversion() )

@@ -78,8 +78,9 @@ void AddTask_GammaConvV1_pp(
   if(additionalTrainConfig.Contains("TM"))
     trackMatcherRunningMode = strTrackMatcherRunningMode.Atoi();
 
+  TString nameJetFinder = (additionalTrainConfig.Contains("JET:") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET:", "", addTaskName) : "";
 
- TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
+  TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   if(rmaxFacPtHardSetting->GetEntries()<1){cout << "ERROR: AddTask_GammaConvV1_pp during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl; return;}
   Bool_t fMinPtHardSet        = kFALSE;
   Double_t minFacPtHard       = -1;
@@ -2901,6 +2902,7 @@ if(!cuts.AreValid()){
   if (initializedMatBudWeigths_existing) {
       task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
   }
+  if(additionalTrainConfig.Contains("JET:")){task->SetJetContainerAddName(nameJetFinder);}
 
   //connect containers
   AliAnalysisDataContainer *coutput =

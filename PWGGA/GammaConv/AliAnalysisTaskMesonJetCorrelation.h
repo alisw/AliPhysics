@@ -113,6 +113,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void SetUseTHnSparseForResponse(bool tmp) { fUseThNForResponse = tmp; }
   void SetMesonKind(int meson) { (meson == 0) ? fMesonPDGCode = 111 : fMesonPDGCode = 221; }
   void SetOtherMesons(std::vector<int> vec) { fOtherMesonsPDGCodes = vec; }
+  void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
 
   void SetEventCutList(Int_t nCuts,
                        TList* CutArray)
@@ -185,6 +186,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   // Jet related variables
   //-------------------------------
   AliAnalysisTaskConvJet* fConvJetReader; // JetReader
+  TString fAddNameConvJet;                // Jet container additional name
   TVector3 fHighestJetVector;             // vector px,py,pz of jet with highest momentum in the event. Needed for jet event mixing
   float fMaxPtJet;                        // pt of jet with highest pt in the event. Needed for jet ecvent mixing
 
@@ -315,7 +317,6 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoInvMassVsPt;          //! vector of histos with inv. mass vs pt
   std::vector<TH2F*> fHistoInvMassVsPt_Incl;     //! vector of histos with inv. mass vs pt for all mesons (no in-jet criterium)
   std::vector<TH2F*> fHistoJetPtVsFrag;          //! vector of histos for jet pt vs meson-z
-  std::vector<TH2F*> fHistoJetPtVsFrag_SB;       //! vector of histos for jet pt vs meson-z in the sideband region
   std::vector<TH2F*> fHistoInvMassVsPtMassCut;   //! vector of histos with inv. mass vs. pT after cut
   std::vector<TH2F*> fHistoInvMassVsPtMassCutSB; //! vector of histos with inv. mass vs. pT after cut in Sideband
 
@@ -323,7 +324,6 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
 
   std::vector<TH2F*> fHistoInvMassVsPtPerpCone;    //! same as fHistoInvMassVsPt but in perpendicular cone
   std::vector<TH2F*> fHistoJetPtVsFragPerpCone;    //! same as fHistoJetPtVsFrag but in perp cone
-  std::vector<TH2F*> fHistoJetPtVsFragPerpCone_SB; //! same as fHistoJetPtVsFrag_SB but in perp cone
 
   //-------------------------------
   // Jet related histograms
@@ -426,10 +426,11 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoMCPartonPtVsFragTrueParton; //! vector of histos True parton pT vs. true Frag (mc particle based distribution) for particles originating from hard parton from Jet
 
  private:
+  static constexpr bool fLocalDebugFlag = false;
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 8);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 9);
 };
 
 #endif

@@ -55,6 +55,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fGenPhaseSpace(),
                                                                              // Jet related
                                                                              fConvJetReader(nullptr),
+                                                                             fAddNameConvJet(""),
                                                                              fHighestJetVector(),
                                                                              fMaxPtJet(0),
                                                                              fOutlierJetReader(nullptr),
@@ -146,13 +147,11 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoInvMassVsPt({}),
                                                                              fHistoInvMassVsPt_Incl({}),
                                                                              fHistoJetPtVsFrag({}),
-                                                                             fHistoJetPtVsFrag_SB({}),
                                                                              fHistoInvMassVsPtMassCut({}),
                                                                              fHistoInvMassVsPtMassCutSB({}),
                                                                              fHistoInvMassVsPtBack({}),
                                                                              fHistoInvMassVsPtPerpCone({}),
                                                                              fHistoJetPtVsFragPerpCone({}),
-                                                                             fHistoJetPtVsFragPerpCone_SB({}),
                                                                              // jet related Histograms
                                                                              fHistoEventwJets({}),
                                                                              fHistoNJets({}),
@@ -266,6 +265,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fGenPhaseSpace(),
                                                                                            // Jet related
                                                                                            fConvJetReader(nullptr),
+                                                                                           fAddNameConvJet(""),
                                                                                            fHighestJetVector(),
                                                                                            fMaxPtJet(0),
                                                                                            fOutlierJetReader(nullptr),
@@ -357,13 +357,11 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoInvMassVsPt({}),
                                                                                            fHistoInvMassVsPt_Incl({}),
                                                                                            fHistoJetPtVsFrag({}),
-                                                                                           fHistoJetPtVsFrag_SB({}),
                                                                                            fHistoInvMassVsPtMassCut({}),
                                                                                            fHistoInvMassVsPtMassCutSB({}),
                                                                                            fHistoInvMassVsPtBack({}),
                                                                                            fHistoInvMassVsPtPerpCone({}),
                                                                                            fHistoJetPtVsFragPerpCone({}),
-                                                                                           fHistoJetPtVsFragPerpCone_SB({}),
                                                                                            // jet related Histograms
                                                                                            fHistoEventwJets({}),
                                                                                            fHistoNJets({}),
@@ -496,9 +494,9 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     return;
   } // GetV0Reader
 
-  fConvJetReader = (AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskConvJet");
+  fConvJetReader = (AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask(Form("AliAnalysisTaskConvJet%s", fAddNameConvJet.EqualTo("") == true ? "" : Form("_%s",fAddNameConvJet.Data())));
   if (!fConvJetReader) {
-    printf("Error: No AliAnalysisTaskConvJet");
+    printf(Form("ERROR: No AliAnalysisTaskConvJet%s", fAddNameConvJet.EqualTo("") == true ? "" : Form("_%s",fAddNameConvJet.Data())));
     return;
   } // GetV0Reader
 
@@ -608,7 +606,9 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
   fHistoJetArea.resize(fnCuts);
   if (fIsMC) {
     fHistoTruevsRecJetPt.resize(fnCuts);
-    fHistoTruevsRecJetPtForTrueJets.resize(fnCuts);
+    if(!fDoLightOutput){
+      fHistoTruevsRecJetPtForTrueJets.resize(fnCuts);
+    }
     fHistoTrueJetPtVsPartonPt.resize(fnCuts);
     fHistoMatchedPtJet.resize(fnCuts);
     fHistoUnMatchedPtJet.resize(fnCuts);
@@ -633,9 +633,11 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fRespMatrixHandlerTrueOtherMesonInvMassVsZ.resize(fnCuts);
     fRespMatrixHandlerTrueSecondaryMesonInvMassVsPt.resize(fnCuts);
     fRespMatrixHandlerTrueSecondaryMesonInvMassVsZ.resize(fnCuts);
-    fHistoTrueMesonInvMassVsTruePt.resize(fnCuts);
-    fHistoTruePrimaryMesonInvMassPt.resize(fnCuts);
-    fHistoTrueSecondaryMesonInvMassPt.resize(fnCuts);
+    if(fDoMesonQA > 0){
+      fHistoTrueMesonInvMassVsTruePt.resize(fnCuts);
+      fHistoTruePrimaryMesonInvMassPt.resize(fnCuts);
+      fHistoTrueSecondaryMesonInvMassPt.resize(fnCuts);
+    }
 
     fHistoTrueMesonJetPtVsTruePt.resize(fnCuts);
     fHistoTrueMesonJetPtVsTrueZ.resize(fnCuts);
@@ -643,11 +645,13 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoTrueMesonJetPtVsRecPt.resize(fnCuts);
     fHistoTrueMesonJetPtVsRecZ.resize(fnCuts);
 
-    fHistoTrueSecMesonJetPtVsRecPt.resize(fnCuts);
-    fHistoTrueSecMesonJetPtVsRecZ.resize(fnCuts);
+    if(fDoMesonQA>0){
+      fHistoTrueSecMesonJetPtVsRecPt.resize(fnCuts);
+      fHistoTrueSecMesonJetPtVsRecZ.resize(fnCuts);
 
-    fHistoTrueMesonInTrueJet_JetPtVsTruePt.resize(fnCuts);
-    fHistoTrueMesonInTrueJet_JetPtVsTrueZ.resize(fnCuts);
+      fHistoTrueMesonInTrueJet_JetPtVsTruePt.resize(fnCuts);
+      fHistoTrueMesonInTrueJet_JetPtVsTrueZ.resize(fnCuts);
+    }
 
     fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount.resize(fnCuts);
     fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount.resize(fnCuts);
@@ -667,11 +671,9 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
   // fragmentation histos
   //----------------------
   fHistoJetPtVsFrag.resize(fnCuts);
-  fHistoJetPtVsFrag_SB.resize(fnCuts);
 
   // perpendicular cone
   fHistoJetPtVsFragPerpCone.resize(fnCuts);
-  fHistoJetPtVsFragPerpCone_SB.resize(fnCuts);
 
   //----------------------
   // response matrix
@@ -686,7 +688,9 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
   if (fIsMC) {
     fRespMatrixHandlerMesonPt.resize(fnCuts);
     fRespMatrixHandlerFrag.resize(fnCuts);
-    fRespMatrixHandlerFragTrueJets.resize(fnCuts);
+    if(!fDoLightOutput) {
+      fRespMatrixHandlerFragTrueJets.resize(fnCuts);
+    }
   }
 
   for (int iCut = 0; iCut < fnCuts; ++iCut) {
@@ -1041,9 +1045,10 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     if (fIsMC) {
       fHistoTruevsRecJetPt[iCut] = new TH2F("True_JetPt_vs_Rec_JetPt", "True_JetPt_vs_Rec_JetPt", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
       fTrueJetList[iCut]->Add(fHistoTruevsRecJetPt[iCut]);
-      fHistoTruevsRecJetPtForTrueJets[iCut] = new TH2F("True_JetPt_vs_Rec_JetPt_ForTrueJets", "True_JetPt_vs_Rec_JetPt_ForTrueJets", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
-      fTrueJetList[iCut]->Add(fHistoTruevsRecJetPtForTrueJets[iCut]);
-
+      if(!fDoLightOutput){
+        fHistoTruevsRecJetPtForTrueJets[iCut] = new TH2F("True_JetPt_vs_Rec_JetPt_ForTrueJets", "True_JetPt_vs_Rec_JetPt_ForTrueJets", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fTrueJetList[iCut]->Add(fHistoTruevsRecJetPtForTrueJets[iCut]);
+      }
       fHistoTrueJetPtVsPartonPt[iCut] = new TH2F("True_JetPt_vs_Parton_Pt", "True_JetPt_vs_Parton_Pt", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
       fTrueJetList[iCut]->Add(fHistoTrueJetPtVsPartonPt[iCut]);
 
@@ -1112,20 +1117,22 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       else
         fTrueList[iCut]->Add(fRespMatrixHandlerTrueSecondaryMesonInvMassVsZ[iCut]->GetTH2("ESD_TrueSecondaryMother_InvMass_Z_JetPt"));
 
-      fHistoTrueMesonInvMassVsTruePt[iCut] = new TH2F("ESD_TrueMother_InvMass_TruePt", "ESD_TrueMother_InvMass_TruePt", fVecBinsMesonInvMass.size() - 1, fVecBinsMesonInvMass.data(), fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data());
-      fHistoTrueMesonInvMassVsTruePt[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
-      fHistoTrueMesonInvMassVsTruePt[iCut]->SetYTitle("p_{T} (GeV/c)");
-      fTrueList[iCut]->Add(fHistoTrueMesonInvMassVsTruePt[iCut]);
+      if(fDoMesonQA > 0){
+        fHistoTrueMesonInvMassVsTruePt[iCut] = new TH2F("ESD_TrueMother_InvMass_TruePt", "ESD_TrueMother_InvMass_TruePt", fVecBinsMesonInvMass.size() - 1, fVecBinsMesonInvMass.data(), fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data());
+        fHistoTrueMesonInvMassVsTruePt[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+        fHistoTrueMesonInvMassVsTruePt[iCut]->SetYTitle("p_{T} (GeV/c)");
+        fTrueList[iCut]->Add(fHistoTrueMesonInvMassVsTruePt[iCut]);
 
-      fHistoTruePrimaryMesonInvMassPt[iCut] = new TH2F("ESD_TruePrimaryMother_InvMass_Pt", "ESD_TruePrimaryMother_InvMass_Pt", fVecBinsMesonInvMass.size() - 1, fVecBinsMesonInvMass.data(), fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data());
-      fHistoTruePrimaryMesonInvMassPt[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
-      fHistoTruePrimaryMesonInvMassPt[iCut]->SetYTitle("p_{T} (GeV/c)");
-      fTrueList[iCut]->Add(fHistoTruePrimaryMesonInvMassPt[iCut]);
+        fHistoTruePrimaryMesonInvMassPt[iCut] = new TH2F("ESD_TruePrimaryMother_InvMass_Pt", "ESD_TruePrimaryMother_InvMass_Pt", fVecBinsMesonInvMass.size() - 1, fVecBinsMesonInvMass.data(), fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data());
+        fHistoTruePrimaryMesonInvMassPt[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+        fHistoTruePrimaryMesonInvMassPt[iCut]->SetYTitle("p_{T} (GeV/c)");
+        fTrueList[iCut]->Add(fHistoTruePrimaryMesonInvMassPt[iCut]);
 
-      fHistoTrueSecondaryMesonInvMassPt[iCut] = new TH2F("ESD_TrueSecondaryMother_InvMass_Pt", "ESD_TrueSecondaryMother_InvMass_Pt", fVecBinsMesonInvMass.size() - 1, fVecBinsMesonInvMass.data(), fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data());
-      fHistoTrueSecondaryMesonInvMassPt[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
-      fHistoTrueSecondaryMesonInvMassPt[iCut]->SetYTitle("p_{T} (GeV/c)");
-      fTrueList[iCut]->Add(fHistoTrueSecondaryMesonInvMassPt[iCut]);
+        fHistoTrueSecondaryMesonInvMassPt[iCut] = new TH2F("ESD_TrueSecondaryMother_InvMass_Pt", "ESD_TrueSecondaryMother_InvMass_Pt", fVecBinsMesonInvMass.size() - 1, fVecBinsMesonInvMass.data(), fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data());
+        fHistoTrueSecondaryMesonInvMassPt[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+        fHistoTrueSecondaryMesonInvMassPt[iCut]->SetYTitle("p_{T} (GeV/c)");
+        fTrueList[iCut]->Add(fHistoTrueSecondaryMesonInvMassPt[iCut]);
+      }
 
       fHistoTrueMesonJetPtVsTruePt[iCut] = new TH2F("ESD_TrueMeson_TruePt_JetPt", "ESD_TrueMeson_TruePt_JetPt", fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
       fHistoTrueMesonJetPtVsTruePt[iCut]->SetXTitle("meson p_{T} (GeV/c)");
@@ -1147,39 +1154,39 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoTrueMesonJetPtVsRecZ[iCut]->SetYTitle("Jet p_{T} (GeV/c)");
       fTrueList[iCut]->Add(fHistoTrueMesonJetPtVsRecZ[iCut]);
 
-      fHistoTrueSecMesonJetPtVsRecPt[iCut] = new TH2F("ESD_TrueSecMeson_RecPt_JetPt", "ESD_TrueSecMeson_RecPt_JetPt", fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
-      fHistoTrueSecMesonJetPtVsRecPt[iCut]->SetXTitle("Pt");
-      fHistoTrueSecMesonJetPtVsRecPt[iCut]->SetYTitle("Jet p_{T} (GeV/c)");
-      fTrueList[iCut]->Add(fHistoTrueSecMesonJetPtVsRecPt[iCut]);
+      if(fDoMesonQA > 0){
+        fHistoTrueSecMesonJetPtVsRecPt[iCut] = new TH2F("ESD_TrueSecMeson_RecPt_JetPt", "ESD_TrueSecMeson_RecPt_JetPt", fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoTrueSecMesonJetPtVsRecPt[iCut]->SetXTitle("Pt");
+        fHistoTrueSecMesonJetPtVsRecPt[iCut]->SetYTitle("Jet p_{T} (GeV/c)");
+        fTrueList[iCut]->Add(fHistoTrueSecMesonJetPtVsRecPt[iCut]);
 
-      fHistoTrueSecMesonJetPtVsRecZ[iCut] = new TH2F("ESD_TrueSecMeson_RecFrag_JetPt", "ESD_TrueMeson_RecFrag_JetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
-      fHistoTrueSecMesonJetPtVsRecZ[iCut]->SetXTitle("Z");
-      fHistoTrueSecMesonJetPtVsRecZ[iCut]->SetYTitle("Jet p_{T} (GeV/c)");
-      fTrueList[iCut]->Add(fHistoTrueSecMesonJetPtVsRecZ[iCut]);
+        fHistoTrueSecMesonJetPtVsRecZ[iCut] = new TH2F("ESD_TrueSecMeson_RecFrag_JetPt", "ESD_TrueMeson_RecFrag_JetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoTrueSecMesonJetPtVsRecZ[iCut]->SetXTitle("Z");
+        fHistoTrueSecMesonJetPtVsRecZ[iCut]->SetYTitle("Jet p_{T} (GeV/c)");
+        fTrueList[iCut]->Add(fHistoTrueSecMesonJetPtVsRecZ[iCut]);
 
-      fHistoTrueMesonInTrueJet_JetPtVsTruePt[iCut] = new TH2F("ESD_TrueMeson_InTrueJets_TruePt_JetPt", "ESD_TrueMeson_InTrueJets_TruePt_JetPt", fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
-      fHistoTrueMesonInTrueJet_JetPtVsTruePt[iCut]->SetXTitle("meson p_{T} (GeV/c)");
-      fHistoTrueMesonInTrueJet_JetPtVsTruePt[iCut]->SetYTitle("Jet p_{T} (GeV/c)");
-      fTrueList[iCut]->Add(fHistoTrueMesonInTrueJet_JetPtVsTruePt[iCut]);
+        fHistoTrueMesonInTrueJet_JetPtVsTruePt[iCut] = new TH2F("ESD_TrueMeson_InTrueJets_TruePt_JetPt", "ESD_TrueMeson_InTrueJets_TruePt_JetPt", fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoTrueMesonInTrueJet_JetPtVsTruePt[iCut]->SetXTitle("meson p_{T} (GeV/c)");
+        fHistoTrueMesonInTrueJet_JetPtVsTruePt[iCut]->SetYTitle("Jet p_{T} (GeV/c)");
+        fTrueList[iCut]->Add(fHistoTrueMesonInTrueJet_JetPtVsTruePt[iCut]);
 
-      fHistoTrueMesonInTrueJet_JetPtVsTrueZ[iCut] = new TH2F("ESD_TrueMeson_InTrueJets_TrueFrag_JetPt", "ESD_TrueMeson_InTrueJets_TrueFrag_JetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
-      fHistoTrueMesonInTrueJet_JetPtVsTrueZ[iCut]->SetXTitle("meson z_{T}");
-      fHistoTrueMesonInTrueJet_JetPtVsTrueZ[iCut]->SetYTitle("Jet p_{T} (GeV/c)");
-      fTrueList[iCut]->Add(fHistoTrueMesonInTrueJet_JetPtVsTrueZ[iCut]);
+        fHistoTrueMesonInTrueJet_JetPtVsTrueZ[iCut] = new TH2F("ESD_TrueMeson_InTrueJets_TrueFrag_JetPt", "ESD_TrueMeson_InTrueJets_TrueFrag_JetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+        fHistoTrueMesonInTrueJet_JetPtVsTrueZ[iCut]->SetXTitle("meson z_{T}");
+        fHistoTrueMesonInTrueJet_JetPtVsTrueZ[iCut]->SetYTitle("Jet p_{T} (GeV/c)");
+        fTrueList[iCut]->Add(fHistoTrueMesonInTrueJet_JetPtVsTrueZ[iCut]);
 
-      fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[iCut] = new MatrixHandler4D(fVecBinsMesonInvMass, fVecBinsMesonPt, fVecBinsJetPt, {0, 1}, fUseThNForResponse);
-      if (fUseThNForResponse)
-        fTrueList[iCut]->Add(fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[iCut]->GetTHnSparse("ESD_TrueMother_InvMass_Pt_JetPt_DoubleCount"));
-      else
-        fTrueList[iCut]->Add(fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[iCut]->GetTH2("ESD_TrueMother_InvMass_Pt_JetPt_DoubleCount"));
+        fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[iCut] = new MatrixHandler4D(fVecBinsMesonInvMass, fVecBinsMesonPt, fVecBinsJetPt, {0, 1}, fUseThNForResponse);
+        if (fUseThNForResponse)
+          fTrueList[iCut]->Add(fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[iCut]->GetTHnSparse("ESD_TrueMother_InvMass_Pt_JetPt_DoubleCount"));
+        else
+          fTrueList[iCut]->Add(fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[iCut]->GetTH2("ESD_TrueMother_InvMass_Pt_JetPt_DoubleCount"));
 
-      fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount[iCut] = new MatrixHandler4D(fVecBinsMesonInvMass, fVecBinsFragment, fVecBinsJetPt, {0, 1}, fUseThNForResponse);
-      if (fUseThNForResponse)
-        fTrueList[iCut]->Add(fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount[iCut]->GetTHnSparse("ESD_TrueMother_InvMass_Z_JetPt_DoubleCount"));
-      else
-        fTrueList[iCut]->Add(fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount[iCut]->GetTH2("ESD_TrueMother_InvMass_Z_JetPt_DoubleCount"));
+        fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount[iCut] = new MatrixHandler4D(fVecBinsMesonInvMass, fVecBinsFragment, fVecBinsJetPt, {0, 1}, fUseThNForResponse);
+        if (fUseThNForResponse)
+          fTrueList[iCut]->Add(fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount[iCut]->GetTHnSparse("ESD_TrueMother_InvMass_Z_JetPt_DoubleCount"));
+        else
+          fTrueList[iCut]->Add(fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount[iCut]->GetTH2("ESD_TrueMother_InvMass_Z_JetPt_DoubleCount"));
 
-      if (fDoMesonQA) {
         fHistoMesonResponse[iCut] = new TH2F("ESD_TrueMeson_RecPt_TruePt", "ESD_TrueMeson_RecPt_TruePt", fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data(), fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data());
         fHistoMesonResponse[iCut]->SetXTitle("p_{T, rec} (GeV/c)");
         fHistoMesonResponse[iCut]->SetYTitle("p_{T, true} (GeV/c)");
@@ -1214,21 +1221,11 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoJetPtVsFrag[iCut]->SetYTitle("p_{T, Jet} (GeV/c)");
     fESDList[iCut]->Add(fHistoJetPtVsFrag[iCut]);
 
-    fHistoJetPtVsFrag_SB[iCut] = new TH2F("ESD_Frag_JetPt_SB", "ESD_Frag_JetPt_SB", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
-    fHistoJetPtVsFrag_SB[iCut]->SetXTitle("z");
-    fHistoJetPtVsFrag_SB[iCut]->SetYTitle("p_{T, Jet} (GeV/c)");
-    fESDList[iCut]->Add(fHistoJetPtVsFrag_SB[iCut]);
-
     // perpendicular cone
     fHistoJetPtVsFragPerpCone[iCut] = new TH2F("ESD_Frag_JetPt_PerpCone", "ESD_Frag_JetPt_PerpCone", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
     fHistoJetPtVsFragPerpCone[iCut]->SetXTitle("z");
     fHistoJetPtVsFragPerpCone[iCut]->SetYTitle("p_{T, Jet} (GeV/c)");
     fESDList[iCut]->Add(fHistoJetPtVsFragPerpCone[iCut]);
-
-    fHistoJetPtVsFragPerpCone_SB[iCut] = new TH2F("ESD_Frag_JetPt_PerpCone_SB", "ESD_Frag_JetPt_PerpCone_SB", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
-    fHistoJetPtVsFragPerpCone_SB[iCut]->SetXTitle("z");
-    fHistoJetPtVsFragPerpCone_SB[iCut]->SetYTitle("p_{T, Jet} (GeV/c)");
-    fESDList[iCut]->Add(fHistoJetPtVsFragPerpCone_SB[iCut]);
 
     fRespMatrixHandlerMesonInvMass[iCut] = new MatrixHandler4D(fVecBinsMesonInvMass, fVecBinsMesonPt, fVecBinsJetPt, fVecBinsJetPt, fUseThNForResponse);
     if (fUseThNForResponse)
@@ -1280,11 +1277,13 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       else
         fTrueList[iCut]->Add(fRespMatrixHandlerFrag[iCut]->GetTH2("Frag_JetPt_TrueVsRec"));
 
-      fRespMatrixHandlerFragTrueJets[iCut] = new MatrixHandler4D(fVecBinsFragment, fVecBinsFragment, fVecBinsJetPt, fVecBinsJetPt, fUseThNForResponse);
-      if (fUseThNForResponse)
-        fTrueList[iCut]->Add(fRespMatrixHandlerFragTrueJets[iCut]->GetTHnSparse("Frag_JetPt_TrueVsRec_ForTrueJets"));
-      else
-        fTrueList[iCut]->Add(fRespMatrixHandlerFragTrueJets[iCut]->GetTH2("Frag_JetPt_TrueVsRec_ForTrueJets"));
+      if(!fDoLightOutput){
+        fRespMatrixHandlerFragTrueJets[iCut] = new MatrixHandler4D(fVecBinsFragment, fVecBinsFragment, fVecBinsJetPt, fVecBinsJetPt, fUseThNForResponse);
+        if (fUseThNForResponse)
+          fTrueList[iCut]->Add(fRespMatrixHandlerFragTrueJets[iCut]->GetTHnSparse("Frag_JetPt_TrueVsRec_ForTrueJets"));
+        else
+          fTrueList[iCut]->Add(fRespMatrixHandlerFragTrueJets[iCut]->GetTH2("Frag_JetPt_TrueVsRec_ForTrueJets"));
+      }
     }
 
     // Call Sumw2 forall histograms in list
@@ -1593,7 +1592,9 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets()
         } else {
           fHistoUnMatchedPtJet[fiCut]->Fill(fVectorJetPt.at(i), fWeightJetJetMC);
           // Fill response matrix in case that no corresponding true jet was found
-          fHistoTruevsRecJetPtForTrueJets[fiCut]->Fill(fVectorJetPt.at(i), 0.5, fWeightJetJetMC);
+          if(!fDoLightOutput){
+            fHistoTruevsRecJetPtForTrueJets[fiCut]->Fill(fVectorJetPt.at(i), 0.5, fWeightJetJetMC);
+          }
         }
       }
       if (fVectorJetPt.at(i) > fMaxPtJet) {
@@ -1615,13 +1616,17 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets()
       if (findResults != std::end(MapRecJetsTrueJets)) {
         fHistoTrueMatchedPtJet[fiCut]->Fill(fTrueVectorJetPt.at(i), fWeightJetJetMC);
         // Fill response matrix in case that pair of true and rec jets are found
-        if (findResults->first < static_cast<int>(fVectorJetPt.size())) { // probably not needed for safety
-          fHistoTruevsRecJetPtForTrueJets[fiCut]->Fill(fVectorJetPt.at(findResults->first), fTrueVectorJetPt.at(i), fWeightJetJetMC);
+        if(!fDoLightOutput){
+          if (findResults->first < static_cast<int>(fVectorJetPt.size())) { // probably not needed for safety
+            fHistoTruevsRecJetPtForTrueJets[fiCut]->Fill(fVectorJetPt.at(findResults->first), fTrueVectorJetPt.at(i), fWeightJetJetMC);
+          }
         }
       } else {
         fHistoTrueUnMatchedPtJet[fiCut]->Fill(fTrueVectorJetPt.at(i), fWeightJetJetMC);
         // Fill response matrix in case that no corresponding rec jet was found
-        fHistoTruevsRecJetPtForTrueJets[fiCut]->Fill(0.5, fTrueVectorJetPt.at(i), fWeightJetJetMC);
+        if(!fDoLightOutput){
+          fHistoTruevsRecJetPtForTrueJets[fiCut]->Fill(0.5, fTrueVectorJetPt.at(i), fWeightJetJetMC);
+        }
       }
     }
   }
@@ -1710,6 +1715,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
     }
 
     // Jets need to be initialized before the ProcessMCParticles because they are needed in ProcessAODMCParticles
+    if(fLocalDebugFlag) {printf("InitJets\n");}
     InitJets();
 
     // reset double counting vector
@@ -1720,6 +1726,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
       if (fIsMC > 1)
         fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
 
+      if(fLocalDebugFlag) {printf("ProcessAODMCParticles\n");}
       if (fIsMC > 0) {
         if (eventNotAccepted == 3) { // Event rejected due to wrong trigger, MC particles still have to be processed
           ProcessAODMCParticles(1);
@@ -1730,7 +1737,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
       }
       continue;
     }
-
+    if(fLocalDebugFlag) {printf("ProcessAODMCParticles\n");}
     if (eventQuality != 0) { // Event Not Accepted
       fHistoNEvents[iCut]->Fill(eventQuality, fWeightJetJetMC);
       if (fIsMC > 1)
@@ -1759,19 +1766,25 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
       ProcessAODMCParticles(0);
     }
 
+    if(fLocalDebugFlag) {printf("ProcessJets\n");}
     ProcessJets();
     if (fIsConvCalo || fIsCalo) {
+      if(fLocalDebugFlag) {printf("ProcessJets\n");}
       ProcessClusters(); // process calo clusters
     }
     if (fIsConvCalo || fIsConv) {
+      if(fLocalDebugFlag) {printf("ProcessJets\n");}
       ProcessPhotonCandidates(); // Process this cuts gammas
     }
 
+    if(fLocalDebugFlag) {printf("ProcessJets\n");}
     CalculateMesonCandidates();
 
+    if(fLocalDebugFlag) {printf("ProcessJets\n");}
     CalculateBackground();
 
     if (!((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) {
+      if(fLocalDebugFlag) {printf("UpdateEventMixData\n");}
       UpdateEventMixData();
     }
   }
@@ -1904,7 +1917,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
 
       double RJetPi0CandPerp = 0;
       int matchedJetPerp = -1;
-      if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEtaPerp, fVectorJetPhiPerp, fConvJetReader->Get_Jet_Radius(), etaCluster, phiCluster, matchedJetPerp, RJetPi0CandPerp)) {
+      if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhiPerp, fConvJetReader->Get_Jet_Radius(), etaCluster, phiCluster, matchedJetPerp, RJetPi0CandPerp)) {
         fHistoClusterPtPerpCone[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
       }
     }
@@ -1996,7 +2009,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessPhotonCandidates()
           }
           double RJetPi0CandPerp = 0;
           int matchedJetPerp = -1;
-          if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEtaPerp, fVectorJetPhiPerp, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJetPerp, RJetPi0CandPerp)) {
+          if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhiPerp, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJetPerp, RJetPi0CandPerp)) {
             fHistoConvGammaPtPerpCone[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
           }
         }
@@ -2049,7 +2062,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessPhotonCandidates()
             }
             double RJetPi0CandPerp = 0;
             int matchedJetPerp = -1;
-            if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEtaPerp, fVectorJetPhiPerp, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJetPerp, RJetPi0CandPerp)) {
+            if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhiPerp, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJetPerp, RJetPi0CandPerp)) {
               fHistoConvGammaPtPerpCone[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
             }
           }
@@ -2094,7 +2107,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessPhotonCandidates()
           }
           double RJetPi0CandPerp = 0;
           int matchedJetPerp = -1;
-          if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEtaPerp, fVectorJetPhiPerp, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJetPerp, RJetPi0CandPerp)) {
+          if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhiPerp, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJetPerp, RJetPi0CandPerp)) {
             fHistoConvGammaPtPerpCone[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
           }
         }
@@ -2220,11 +2233,6 @@ void AliAnalysisTaskMesonJetCorrelation::FillMesonHistograms(AliAODConversionPho
         if (fDoMesonQA > 0) {
           fHistoInvMassVsPtMassCut[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), fWeightJetJetMC);
         }
-      } else if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 1)) { // sideband
-        fHistoJetPtVsFrag_SB[fiCut]->Fill(z, ptJet, fWeightJetJetMC);
-        if (fDoMesonQA > 0) {
-          fHistoInvMassVsPtMassCutSB[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), fWeightJetJetMC);
-        }
       }
 
       if (fIsMC > 0) {
@@ -2236,7 +2244,7 @@ void AliAnalysisTaskMesonJetCorrelation::FillMesonHistograms(AliAODConversionPho
     // Needed for underlying event study
     double RJetPi0CandPerp = 0;
     int matchedJetPerp = -1;
-    if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEtaPerp, fVectorJetPhiPerp, fConvJetReader->Get_Jet_Radius(), pi0cand->Eta(), pi0cand->Phi(), matchedJetPerp, RJetPi0CandPerp)) {
+    if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhiPerp, fConvJetReader->Get_Jet_Radius(), pi0cand->Eta(), pi0cand->Phi(), matchedJetPerp, RJetPi0CandPerp)) {
 
       fHistoInvMassVsPtPerpCone[fiCut]->Fill(pi0cand->M(), pi0cand->Pt(), fWeightJetJetMC);
 
@@ -2249,8 +2257,6 @@ void AliAnalysisTaskMesonJetCorrelation::FillMesonHistograms(AliAODConversionPho
       fRespMatrixHandlerMesonInvMassVsZPerpCone[fiCut]->Fill(ptJet, 0.5, pi0cand->M(), z, fWeightJetJetMC); // Inv Mass vs. Z in Jet Pt_rec bins. Needed to subtract background in the Z-distribution
       if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 0)) {     // nominal mass range
         fHistoJetPtVsFragPerpCone[fiCut]->Fill(z, ptJet, fWeightJetJetMC);
-      } else if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelectedByMassCut(pi0cand, 1)) { // sideband
-        fHistoJetPtVsFragPerpCone_SB[fiCut]->Fill(z, ptJet, fWeightJetJetMC);
       }
 
     } // end isInJet in perpendicular direction
@@ -3122,23 +3128,24 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesAOD(AliAODCon
   fRespMatrixHandlerTrueMesonInvMassVsPt[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC);
   fRespMatrixHandlerTrueMesonInvMassVsZ[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), z_rec, fWeightJetJetMC);
 
-  fHistoTrueMesonInvMassVsTruePt[fiCut]->Fill(Pi0Candidate->M(), trueMesonCand->Pt(), fWeightJetJetMC);
+  if(fDoMesonQA > 0){
+    fHistoTrueMesonInvMassVsTruePt[fiCut]->Fill(Pi0Candidate->M(), trueMesonCand->Pt(), fWeightJetJetMC);
 
-  if (std::find(fMesonDoubleCount.begin(), fMesonDoubleCount.end(), gamma0MotherLabel) != fMesonDoubleCount.end()) {
-    fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC);
-    fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), z_rec, fWeightJetJetMC);
-  } else {
-    fMesonDoubleCount.push_back(gamma0MotherLabel);
+    if (std::find(fMesonDoubleCount.begin(), fMesonDoubleCount.end(), gamma0MotherLabel) != fMesonDoubleCount.end()) {
+      fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC);
+      fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), z_rec, fWeightJetJetMC);
+    } else {
+      fMesonDoubleCount.push_back(gamma0MotherLabel);
+    }
   }
 
   // fill all primary true mesons
   bool isPrimary = ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsConversionPrimaryAOD(fInputEvent, static_cast<AliAODMCParticle*>(fAODMCTrackArray->At(gamma0MotherLabel)), mcProdVtxX, mcProdVtxY, mcProdVtxZ);
 
   if (isPrimary) {
-    fHistoTruePrimaryMesonInvMassPt[fiCut]->Fill(mesonMassRec, mesonPtRec, fWeightJetJetMC);
-
-    // meson response matrix (no Jet included here). Only use that for x-checks as the response is probably jet pt dependent
     if (fDoMesonQA) {
+      fHistoTruePrimaryMesonInvMassPt[fiCut]->Fill(mesonMassRec, mesonPtRec, fWeightJetJetMC);
+     // meson response matrix (no Jet included here). Only use that for x-checks as the response is probably jet pt dependent
       fHistoMesonResponse[fiCut]->Fill(mesonPtRec, mesonPtTrue, fWeightJetJetMC);
     }
 
@@ -3149,8 +3156,10 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesAOD(AliAODCon
     fHistoTrueMesonJetPtVsRecPt[fiCut]->Fill(Pi0Candidate->Pt(), jetPtRec, fWeightJetJetMC);
 
     fRespMatrixHandlerFrag[fiCut]->Fill(jetPtRec, jetPtTrue, z_rec, z_true, fWeightJetJetMC);
-    // response matrix filled with only true jet information. As the jet pT is already corrected at the stage of the meson unfolding
-    fRespMatrixHandlerFragTrueJets[fiCut]->Fill(jetPtRec, jetPtTrue, z_rec_trueJet, z_true, fWeightJetJetMC);
+    // response matrix filled with only true jet information. 
+    if(!fDoLightOutput){
+      fRespMatrixHandlerFragTrueJets[fiCut]->Fill(jetPtRec, jetPtTrue, z_rec_trueJet, z_true, fWeightJetJetMC);
+    }
 
     fRespMatrixHandlerMesonInvMass[fiCut]->Fill(jetPtRec, jetPtTrue, Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC);
 
@@ -3158,10 +3167,14 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesAOD(AliAODCon
     fRespMatrixHandlerMesonPt[fiCut]->Fill(jetPtRec, jetPtTrue, mesonPtRec, mesonPtTrue, fWeightJetJetMC);
   } else { // fill all secondary mesons
 
-    fHistoTrueSecMesonJetPtVsRecZ[fiCut]->Fill(z_rec, jetPtRec, fWeightJetJetMC);
-    fHistoTrueSecMesonJetPtVsRecPt[fiCut]->Fill(Pi0Candidate->Pt(), jetPtRec, fWeightJetJetMC);
+    if(fDoMesonQA>0){
+      fHistoTrueSecMesonJetPtVsRecZ[fiCut]->Fill(z_rec, jetPtRec, fWeightJetJetMC);
+      fHistoTrueSecMesonJetPtVsRecPt[fiCut]->Fill(Pi0Candidate->Pt(), jetPtRec, fWeightJetJetMC);
+    }
 
-    fHistoTrueSecondaryMesonInvMassPt[fiCut]->Fill(Pi0Candidate->M(), mesonPtRec, fWeightJetJetMC);
+    if(fDoMesonQA > 0){
+      fHistoTrueSecondaryMesonInvMassPt[fiCut]->Fill(Pi0Candidate->M(), mesonPtRec, fWeightJetJetMC);
+    }
     fRespMatrixHandlerTrueSecondaryMesonInvMassVsPt[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), Pi0Candidate->Pt(), fWeightJetJetMC);
     fRespMatrixHandlerTrueSecondaryMesonInvMassVsZ[fiCut]->Fill(jetPtRec, 0.5, Pi0Candidate->M(), z_rec, fWeightJetJetMC);
   }
@@ -3207,8 +3220,10 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesInTrueJetsAOD
   float jetPtTrue = fTrueVectorJetPt[matchedJet];
   float z_true = GetFrag(trueMesonCand, matchedJet, true);
 
-  fHistoTrueMesonInTrueJet_JetPtVsTrueZ[fiCut]->Fill(z_true, jetPtTrue, fWeightJetJetMC);
-  fHistoTrueMesonInTrueJet_JetPtVsTruePt[fiCut]->Fill(mesonPtTrue, jetPtTrue, fWeightJetJetMC);
+  if(fDoMesonQA>0){
+    fHistoTrueMesonInTrueJet_JetPtVsTrueZ[fiCut]->Fill(z_true, jetPtTrue, fWeightJetJetMC);
+    fHistoTrueMesonInTrueJet_JetPtVsTruePt[fiCut]->Fill(mesonPtTrue, jetPtTrue, fWeightJetJetMC);
+  }
 }
 
 //_____________________________________________________________________________________________________________________

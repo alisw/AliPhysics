@@ -42,6 +42,9 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
 
+    // Function to set name of Jet container
+    void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
+
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
     void ProcessPhotonCandidates();
@@ -184,6 +187,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TList*                              fClusterCutArray;       // List with Cluster Cuts
     TList*                              fMesonCutArray;         // List with Meson Cuts
     AliAnalysisTaskConvJet*             fConvJetReader;         //! JetReader
+    TString                             fAddNameConvJet;        // Additional Name of jet container
     AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;      //! JetReader
     Bool_t                              fDoJetAnalysis;         //! Bool to produce Jet Plots
     Bool_t                              fDoJetQA;               //! Bool to produce Jet QA Plots
@@ -616,7 +620,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 72);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 73);
 };
 
 #endif
