@@ -78,6 +78,9 @@ void AddTask_MesonJetCorr_Conv(
   if (additionalTrainConfig.Contains("TM"))
     trackMatcherRunningMode = strTrackMatcherRunningMode.Atoi();
 
+  TString nameJetFinder = (additionalTrainConfig.Contains("JET:") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET:", "", addTaskName) : "";
+  printf("nameJetFinder: %s\n", nameJetFinder.Data());
+  
   TObjArray* rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   if (rmaxFacPtHardSetting->GetEntries() < 1) {
     cout << "ERROR: AddTask_MesonJetCorr_pp during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl;
@@ -306,17 +309,16 @@ void AddTask_MesonJetCorr_Conv(
 
   task->SetMesonKind(meson);
   task->SetIsConv(true);
+  task->SetJetContainerAddName(nameJetFinder);
   task->SetEventCutList(numberOfCuts, EventCutList);
   task->SetMesonCutList(numberOfCuts, MesonCutList);
   task->SetConversionCutList(numberOfCuts, ConvCutList);
-  //   task->SetDoMesonAnalysis(kTRUE); // I think we dont need that!
-  task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
+  task->SetDoMesonQA(enableQAMesonTask); 
   task->SetUseTHnSparseForResponse(enableTHnSparse);
 
   //connect containers
-  AliAnalysisDataContainer* coutput =
-    mgr->CreateContainer(Form("MesonJetCorrelation_Conv_%i_%i", meson, trainConfig), TList::Class(),
-                         AliAnalysisManager::kOutputContainer, Form("MesonJetCorrelation_Conv_%i_%i.root", meson, trainConfig));
+  TString nameContainer = Form("MesonJetCorrelation_Conv_%i_%i%s", meson, trainConfig, nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );
+  AliAnalysisDataContainer* coutput = mgr->CreateContainer(nameContainer, TList::Class(), AliAnalysisManager::kOutputContainer, Form("MesonJetCorrelation_Conv_%i_%i.root", meson, trainConfig));
 
   mgr->AddTask(task);
   cout << "before connect input\n";
