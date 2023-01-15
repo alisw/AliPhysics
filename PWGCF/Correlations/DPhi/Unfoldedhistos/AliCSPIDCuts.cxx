@@ -731,7 +731,6 @@ void AliCSPIDCuts::PrintITSdEdxSigmaCut(AliPID::EParticleType id) const {
     printf("  ITS PID CUT %s: none\n", AliPID::ParticleName(fTargetSpecies));
 }
 
-
 /// Sets the range for the dEdx \f$ n \sigma \f$ cut within the TPC
 ///
 /// The cut establishes an acceptance band around a concrete
@@ -742,8 +741,8 @@ void AliCSPIDCuts::PrintITSdEdxSigmaCut(AliPID::EParticleType id) const {
 /// | code | \f$ n \sigma \f$ below line | \f$ n \sigma \f$ above line | observations |
 /// |:--:|:--:|:--:|:--|
 /// | 0 | n/a | n/a | passive cut |
-/// | 1 | -10 | 10 | |
-/// | 2 | -6| 7 | |
+/// | 1 | -1 | 1 | |
+/// | 2 | -2 | 2 | |
 /// | 3 | -5 | 5 | |
 /// | 4 | -4 | 5 | |
 /// | 5 | -4 | 4 | |
@@ -764,13 +763,13 @@ Bool_t AliCSPIDCuts::SetTPCdEdxSigmaCut(AliPID::EParticleType id, Int_t dEdxCode
       break;
     case 1:
       fTPCEnabledSpeciesMask.SetBitNumber(id);
-      fTPCnSigmaBelow[id] = -10.0;
-      fTPCnSigmaAbove[id] = 10.0;
+      fTPCnSigmaBelow[id] = -1.0;
+      fTPCnSigmaAbove[id] = 1.0;
       break;
     case 2:
       fTPCEnabledSpeciesMask.SetBitNumber(id);
-      fTPCnSigmaBelow[id] = -6.0;
-      fTPCnSigmaAbove[id] = 7.0;
+      fTPCnSigmaBelow[id] = -2.0;
+      fTPCnSigmaAbove[id] = 2.0;
       break;
     case 3:
       fTPCEnabledSpeciesMask.SetBitNumber(id);
@@ -874,6 +873,8 @@ void AliCSPIDCuts::PrintTPCdEdxSigmaCut(AliPID::EParticleType id) const {
 /// | 3 | -3 | 5 | |
 /// | 4 | -2 | 3 | |
 /// | 5 | -3 | 3 | |
+/// | 6 | -2 | 2 | |
+/// | 7 | -1 | 1 | |
 /// \return kTRUE if proper and supported TOF code
 
 Bool_t AliCSPIDCuts::SetTOFSigmaCut(AliPID::EParticleType id, Int_t tofcode){
@@ -907,6 +908,16 @@ Bool_t AliCSPIDCuts::SetTOFSigmaCut(AliPID::EParticleType id, Int_t tofcode){
       fTOFEnabledSpeciesMask.SetBitNumber(id);
       fTOFnSigmaBelow[id] = -3.0;
       fTOFnSigmaAbove[id] = 3.0;
+      break;
+    case 6:
+      fTOFEnabledSpeciesMask.SetBitNumber(id);
+      fTOFnSigmaBelow[id] = -2.0;
+      fTOFnSigmaAbove[id] = 2.0;
+      break;
+    case 7:
+      fTOFEnabledSpeciesMask.SetBitNumber(id);
+      fTOFnSigmaBelow[id] = -1.0;
+      fTOFnSigmaAbove[id] = 1.0;
       break;
     default:
       AliError(Form("TOF n sigmas cut code %d not supported", tofcode));
