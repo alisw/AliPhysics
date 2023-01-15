@@ -5601,7 +5601,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 
   // abort if mimicing not enabled
   if (!fMimicTrigger) return kTRUE;
-  if(!(fSpecialTrigger == 5 || fSpecialTrigger == 6 || fSpecialTrigger == 8 || fSpecialTrigger == 10 || fSpecialTrigger == 13  || fSpecialTrigger == 14 )) return kTRUE;   // not the correct trigger for mimcking
+  if(!(fSpecialTrigger == 5 || fSpecialTrigger == 6 || fSpecialTrigger == 8 || fSpecialTrigger == 9 || fSpecialTrigger == 10 || fSpecialTrigger == 13  || fSpecialTrigger == 14 )) return kTRUE;   // not the correct trigger for mimcking
 
   // Trigger mimicking based on decision by the AliAnalysisTaskEmcalTriggerSelection for L1 triggers
   // To get the correct values one has to select the correct dataset
@@ -5616,6 +5616,13 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
         if( (triggercont->IsEventSelected("EG1")) || (triggercont->IsEventSelected("DG1")) ) return kTRUE;
       } else if( fSpecialTrigger == 5 || fSpecialTrigger == 10 ){
         if( triggercont->IsEventSelected("EMCL0") || triggercont->IsEventSelected("DMCL0") ) return kTRUE;
+      } else if( fSpecialTrigger == 9 ){
+        if(fSpecialSubTriggerName.Contains("EJ2") || fSpecialSubTriggerName.Contains("DJ2") ){
+          if( triggercont->IsEventSelected("EJ2") || triggercont->IsEventSelected("DJ2") ) return kTRUE;
+        }
+        if(fSpecialSubTriggerName.Contains("EJ1") || fSpecialSubTriggerName.Contains("DJ1") ){
+          if( triggercont->IsEventSelected("EJ1") || triggercont->IsEventSelected("DJ1") ) return kTRUE;
+        }
       } else {
         return kTRUE; // In case no suitable fSpecialTrigger was selected
       }
