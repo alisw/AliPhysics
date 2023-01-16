@@ -78,7 +78,7 @@ void AddTask_MesonJetCorr_Conv(
   if (additionalTrainConfig.Contains("TM"))
     trackMatcherRunningMode = strTrackMatcherRunningMode.Atoi();
 
-  TString nameJetFinder = (additionalTrainConfig.Contains("JET:") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET:", "", addTaskName) : "";
+  TString nameJetFinder = (additionalTrainConfig.Contains("JET") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET", "", addTaskName) : "";
   printf("nameJetFinder: %s\n", nameJetFinder.Data());
   
   TObjArray* rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");

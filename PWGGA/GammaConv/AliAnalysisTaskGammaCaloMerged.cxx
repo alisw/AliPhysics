@@ -88,6 +88,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(): AliAnalysisTas
   fMesonCuts(NULL),
   fOutlierJetReader(NULL),
   fConvJetReader(NULL),
+  fAddNameConvJet("Jet"),
   fDoJetAnalysis(kFALSE),
   fDoJetQA(kFALSE),
   fDoOutOfJet(0),
@@ -356,6 +357,7 @@ AliAnalysisTaskGammaCaloMerged::AliAnalysisTaskGammaCaloMerged(const char *name)
   fMesonCuts(NULL),
   fOutlierJetReader(NULL),
   fConvJetReader(NULL),
+  fAddNameConvJet("Jet"),
   fDoJetAnalysis(kFALSE),
   fDoJetQA(kFALSE),
   fDoOutOfJet(0),
@@ -622,8 +624,8 @@ void AliAnalysisTaskGammaCaloMerged::UserCreateOutputObjects(){
   if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoOutOfJet() > 0 )fDoOutOfJet    = ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoOutOfJet();
 
   if(fDoJetAnalysis){
-    fConvJetReader=(AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskConvJet");
-    if(!fConvJetReader){printf("Error: No AliAnalysisTaskConvJet");return;}
+    fConvJetReader=(AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask(Form("AliAnalysisTaskConvJet%s", fAddNameConvJet.EqualTo("") == true ? "" : Form("_%s",fAddNameConvJet.Data())));
+    if(!fConvJetReader){printf(Form("ERROR: No AliAnalysisTaskConvJet%s", fAddNameConvJet.EqualTo("") == true ? "" : Form("_%s",fAddNameConvJet.Data())));return;}
   }
 
   // for electron selection (data driven electron contamination estimation)

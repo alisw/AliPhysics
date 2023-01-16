@@ -76,6 +76,8 @@ void AddTask_GammaCaloMerged_pp(
   if(additionalTrainConfig.Contains("TM"))
     trackMatcherRunningMode = strTrackMatcherRunningMode.Atoi();
 
+  TString nameJetFinder = (additionalTrainConfig.Contains("JET") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET", "", addTaskName) : "";
+
   TH1S* histoAcc = 0x0;         // histo for modified acceptance
   TString strModifiedAcc              = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MODIFYACC", "", addTaskName);
   if(strModifiedAcc.Contains("MODIFYACC")){
@@ -2690,6 +2692,7 @@ void AddTask_GammaCaloMerged_pp(
   task->SetOverlapFromCluster(doOverlapsFromCluster);
   if(enableExtMatchAndQA > 1){ task->SetPlotHistsExtQA(kTRUE);}
   if (enableDetailedPrintout) task->SetEnableDetailedPrintout(enableDetailedPrintout);//Attention new switch small for Cluster QA
+  if(additionalTrainConfig.Contains("JET")){task->SetJetContainerAddName(nameJetFinder);}
 
   //========= Add Electron Selector ================
   if( ElecCuts.Sizeof() == 21 ){
