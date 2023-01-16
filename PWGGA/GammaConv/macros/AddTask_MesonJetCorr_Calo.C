@@ -78,7 +78,7 @@ void AddTask_MesonJetCorr_Calo(
   if (additionalTrainConfig.Contains("TM"))
     trackMatcherRunningMode = strTrackMatcherRunningMode.Atoi();
 
-  TString nameJetFinder = (additionalTrainConfig.Contains("JET:") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET:", "", addTaskName) : "";
+  TString nameJetFinder = (additionalTrainConfig.Contains("JET") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET", "", addTaskName) : "";
   printf("nameJetFinder: %s\n", nameJetFinder.Data());
 
   TObjArray* rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
@@ -310,7 +310,7 @@ void AddTask_MesonJetCorr_Calo(
 
   task->SetMesonKind(meson);
   task->SetIsCalo(true);
-  if(additionalTrainConfig.Contains("JET:")){task->SetJetContainerAddName(nameJetFinder);}
+  if(additionalTrainConfig.Contains("JET")){task->SetJetContainerAddName(nameJetFinder);}
   task->SetEventCutList(numberOfCuts, EventCutList);
   task->SetCaloCutList(numberOfCuts, ClusterCutList);
   task->SetMesonCutList(numberOfCuts, MesonCutList);

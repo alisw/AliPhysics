@@ -85,7 +85,7 @@ void AddTask_GammaCalo_pp(
   if(additionalTrainConfig.Contains("TM"))
     trackMatcherRunningMode = strTrackMatcherRunningMode.Atoi();
 
-  TString nameJetFinder = (additionalTrainConfig.Contains("JET:") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET:", "", addTaskName) : "";
+  TString nameJetFinder = (additionalTrainConfig.Contains("JET") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET", "", addTaskName) : "";
   printf("nameJetFinder: %s\n", nameJetFinder.Data());
 
   Bool_t doTreeEOverP = kFALSE; // switch to produce EOverP tree
@@ -4974,7 +4974,7 @@ void AddTask_GammaCalo_pp(
   if(trainConfig == 106 || trainConfig == 125 || trainConfig == 145){
     task->SetInOutTimingCluster(-30e-9,35e-9);
   }
-  if(additionalTrainConfig.Contains("JET:")){task->SetJetContainerAddName(nameJetFinder);}
+  if(additionalTrainConfig.Contains("JET")){task->SetJetContainerAddName(nameJetFinder);}
   task->SetLocalDebugFlag(localDebugFlag);
 
   //connect containers
