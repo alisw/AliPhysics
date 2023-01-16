@@ -41,7 +41,7 @@ public:
     Bool_t    IsInjectedParticle    (AliMCParticle *particle);
     Double_t  GetProtonWeight       (Double_t pt);
     Double_t  GetHelium3Weight      (Double_t pt_prot1, Double_t pt_prot2, Double_t pt_neut);
-    Bool_t    ThreeBodyCoalescence  (Double_t deltaP1, Double_t deltaP2, Double_t deltaP3, Double_t p0);
+    Bool_t    ThreeBodyCoalescence  (Double_t deltaP1, Double_t deltaP2, Double_t deltaP3, Double_t p0_pp, Double_t p0_pn);
     TLorentzVector LorentzTransform (TLorentzVector R, TVector3 beta_vect);
 
 private:
