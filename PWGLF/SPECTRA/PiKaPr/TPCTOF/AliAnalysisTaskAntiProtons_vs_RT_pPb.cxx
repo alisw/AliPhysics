@@ -913,13 +913,10 @@ Bool_t AliAnalysisTaskAntiProtons_vs_RT_pPb::IsProtonCandidate (AliESDtrack *tra
     
     //Initialization
     Bool_t isProton=(kFALSE);
-    
     Double_t DCAxy = GetTransverseDCA (track);
 
     if (!PassedTrackQualityCuts_Syst(track, 0)) return isProton;
-    if (!IsHighPurityProton(track))     return isProton;
     if (TMath::Abs(DCAxy)>0.1)          return isProton;
-    if (track->P()>1.0)                 return isProton;
      
     isProton=kTRUE;
     return isProton;
