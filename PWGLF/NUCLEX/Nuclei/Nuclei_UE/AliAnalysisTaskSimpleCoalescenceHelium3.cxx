@@ -141,11 +141,35 @@ void AliAnalysisTaskSimpleCoalescenceHelium3::UserCreateOutputObjects()  {
 void AliAnalysisTaskSimpleCoalescenceHelium3::UserExec(Option_t *)  {
     
     //Coalescence Momentum
+    /*
     Double_t p0[] = {
         0.200,0.205,0.210,0.215,0.220,0.225,0.230,0.235,0.240,0.245,0.250,0.255,0.260,0.265,0.270,0.275,0.280,0.285,0.290,0.295,
         0.300,0.305,0.310,0.315,0.320,0.325,0.330,0.335,0.340,0.345,0.350,0.355,0.360,0.365,0.370,0.375,0.380,0.385,0.390,0.395,0.400
+    };*/
+    
+    //Coalescence Momentum: pp Pairs
+    Double_t p0_pp[] = {
+        0.22,0.23,0.24,0.25,0.26,0.27,0.28,
+        0.22,0.23,0.24,0.25,0.26,0.27,0.28,
+        0.22,0.23,0.24,0.25,0.26,0.27,0.28,
+        0.22,0.23,0.24,0.25,0.26,0.27,0.28,
+        0.22,0.23,0.24,0.25,0.26,0.27,0.28,
+        0.22,0.23,0.24,0.25,0.26,0.27,0.28,
+        0.22,0.23,0.24,0.25,0.26,0.27,0.28
     };
-    const Int_t nTrials = sizeof(p0)/sizeof(Double_t);
+    
+    //Coalescence Momentum: pn Pairs
+    Double_t p0_pn[] = {
+        0.22,0.22,0.22,0.22,0.22,0.22,0.22,
+        0.23,0.23,0.23,0.23,0.23,0.23,0.23,
+        0.24,0.24,0.24,0.24,0.24,0.24,0.24,
+        0.25,0.25,0.25,0.25,0.25,0.25,0.25,
+        0.26,0.26,0.26,0.26,0.26,0.26,0.26,
+        0.27,0.27,0.27,0.27,0.27,0.27,0.27,
+        0.28,0.28,0.28,0.28,0.28,0.28,0.28
+    };
+    
+    const Int_t nTrials = sizeof(p0_pp)/sizeof(Double_t);
     
     //Particle Masses [GeV/c^2]
     Double_t mp = 0.93827208816;//Proton
@@ -256,7 +280,7 @@ void AliAnalysisTaskSimpleCoalescenceHelium3::UserExec(Option_t *)  {
                     if (neutron_status[in]==1) continue;
                     
                     //Coalescence Condition
-                    if (ThreeBodyCoalescence(deltaP1,deltaP2,deltaP3,p0[iTrial]))  {
+                    if (ThreeBodyCoalescence(deltaP1,deltaP2,deltaP3,p0_pp[iTrial],p0_pn[iTrial]))  {
                         
                         neutron_status[in]=1;
                         Double_t y = p_helium3.Rapidity();
@@ -345,12 +369,13 @@ Double_t AliAnalysisTaskSimpleCoalescenceHelium3::GetHelium3Weight (Double_t pt_
     return wh;
 }
 //_______________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskSimpleCoalescenceHelium3::ThreeBodyCoalescence (Double_t deltaP1, Double_t deltaP2, Double_t deltaP3, Double_t p0)  {
+Bool_t AliAnalysisTaskSimpleCoalescenceHelium3::ThreeBodyCoalescence (Double_t deltaP1, Double_t deltaP2, Double_t deltaP3, Double_t p0_pp, Double_t p0_pn)  {
     
     //Initialization
     Bool_t isBoundStateFormed=(kFALSE);
     
-    if ((deltaP1<p0)&&(deltaP2<p0)&&(deltaP3<p0)) isBoundStateFormed=kTRUE;
+    if ((deltaP1<p0_pp)&&(deltaP2<p0_pn)&&(deltaP3<p0_pn)) isBoundStateFormed=kTRUE;
+    //if ((deltaP1<p0)&&(deltaP2<p0)&&(deltaP3<p0)) isBoundStateFormed=kTRUE;
    
     return isBoundStateFormed;
 }
