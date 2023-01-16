@@ -71,7 +71,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
         TString tempType = tempStr;
         tempType.Replace(0,9,"");
         unsmearingoutputs = tempType;
-        cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb will output the following minv_pT histograms:" << endl;
+        cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pp will output the following minv_pT histograms:" << endl;
         if(unsmearingoutputs.Contains("0")) cout << "- Uncorrected" << endl;
         if(unsmearingoutputs.Contains("1")) cout << "- SubNDM" << endl;
         if(unsmearingoutputs.Contains("2")) cout << "- Fixpz" << endl;
@@ -1495,26 +1495,26 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pp(
     cuts.AddCutHeavyMesonCalo("00010113","411790105ce30220000","32c51070a","0000003100000000","0400503000000000"); // c: No E/p cut
     cuts.AddCutHeavyMesonCalo("00010113","411790105ee30220000","32c51070a","0000003100000000","0400503000000000"); // e: E/p < 2
     cuts.AddCutHeavyMesonCalo("00010113","411790105ge30220000","32c51070a","0000003100000000","0400503000000000"); // g: E/p < 1.5
-    cuts.AddCutHeavyMesonCalo("00010113","411790105he30220000","32c51070a","0000003100000000","0400503000000000"); // h: E/p < 1.25
-    cuts.AddCutHeavyMesonCalo("00010113","411790105oe30220000","32c51070a","0000003100000000","0400503000000000"); // n: E/p < 1.75 (standard), but eta and phi varied
+    cuts.AddCutHeavyMesonCalo("00010113","411790105ne30220000","32c51070a","0000003100000000","0400503000000000"); // n: E/p < 1.75 (standard), but eta and phi varied
+    cuts.AddCutHeavyMesonCalo("00010113","411790105oe30220000","32c51070a","0000003100000000","0400503000000000"); // o: E/p < 1.75 (standard), but eta and phi varied
   }else if (trainConfig == 1504){ // Exotic cluster variations
     cuts.AddCutHeavyMesonCalo("00010113","411790105f030220000","32c51070a","0000003100000000","0400503000000000"); // 0: No exotics cut
     cuts.AddCutHeavyMesonCalo("00010113","411790105fb30220000","32c51070a","0000003100000000","0400503000000000"); // b: fExoticEnergyFracCluster = 0.95
     cuts.AddCutHeavyMesonCalo("00010113","411790105fi30220000","32c51070a","0000003100000000","0400503000000000"); // i: fExoticMinEnergyCell = 3
   }else if (trainConfig == 1505){ // Min cluster energy variations
     cuts.AddCutHeavyMesonCalo("00010113","411790105fe20220000","32c51070a","0000003100000000","0400503000000000"); // 2: E > 0.6
-    cuts.AddCutHeavyMesonCalo("00010113","411790105fe40220000","32c51070a","0000003100000000","0400503000000000"); // 3: E > 0.8
+    cuts.AddCutHeavyMesonCalo("00010113","411790105fe40220000","32c51070a","0000003100000000","0400503000000000"); // 4: E > 0.8
   }else if (trainConfig == 1506){ // NCell variation
     cuts.AddCutHeavyMesonCalo("00010113","411790105fe3n220000","32c51070a","0000003100000000","0400503000000000");
   }else if (trainConfig == 1507){ // M02 variations
     cuts.AddCutHeavyMesonCalo("00010113","411790105fe30210000","32c51070a","0000003100000000","0400503000000000"); // 1: M02 < 1
     cuts.AddCutHeavyMesonCalo("00010113","411790105fe30230000","32c51070a","0000003100000000","0400503000000000"); // 3: M02 < 0.5
   }else if (trainConfig == 1508){ // pi0 mass selection window variations
-    cuts.AddCutHeavyMesonCalo("00010113","411790105fe30220000","32c51070a","0000003r00000000","0400503000000000"); // r: 3.5 sigma, no gamma selection
     cuts.AddCutHeavyMesonCalo("00010113","411790105fe30220000","32c51070a","0000003u00000000","0400503000000000"); // u: 1.5 sigma
     cuts.AddCutHeavyMesonCalo("00010113","411790105fe30220000","32c51070a","0000003v00000000","0400503000000000"); // v: 2.5 sigma
-    cuts.AddCutHeavyMesonCalo("00010113","411790105fe30220000","32c51070a","0000003w00000000","0400503000000000"); // w: 4 sigma
     cuts.AddCutHeavyMesonCalo("00010113","411790105fe30220000","32c51070a","0000003x00000000","0400503000000000"); // x: 3 sigma
+    cuts.AddCutHeavyMesonCalo("00010113","411790105fe30220000","32c51070a","0000003r00000000","0400503000000000"); // r: 3.5 sigma, no gamma selection
+    cuts.AddCutHeavyMesonCalo("00010113","411790105fe30220000","32c51070a","0000003w00000000","0400503000000000"); // w: 4 sigma
   }else if (trainConfig == 1509){ // pi0 asymmetry variations
     cuts.AddCutHeavyMesonCalo("00010113","411790105fe30220000","32c51070a","0000005100000000","0400503000000000"); // 5: alpha < 0.75
     cuts.AddCutHeavyMesonCalo("00010113","411790105fe30220000","32c51070a","0000006100000000","0400503000000000"); // 6: alpha < 0.8

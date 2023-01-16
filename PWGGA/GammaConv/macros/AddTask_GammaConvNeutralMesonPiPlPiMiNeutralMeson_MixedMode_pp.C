@@ -52,6 +52,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
   ) {
 
   AliCutHandlerPCM cuts(13);
+
   TString addTaskName                       = "AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp";
   TString fileNamePtWeights                 = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
   TString fileNameMultWeights               = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
@@ -62,7 +63,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
   if(additionalTrainConfig.Contains("MaterialBudgetWeights"))
     fileNameMatBudWeights         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MaterialBudgetWeights",fileNameMatBudWeights, addTaskName);
 
-    //parse additionalTrainConfig flag
+  //parse additionalTrainConfig flag
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   TString unsmearingoutputs = "012"; // 0: No correction, 1: One pi0 mass errer subtracted, 2: pz of pi0 corrected to fix its mass, 3: Lambda(alpha)*DeltaPi0 subtracted, 4: Analytic PCMEMC unsmearing
 
@@ -84,7 +85,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
         TString tempType = tempStr;
         tempType.Replace(0,9,"");
         unsmearingoutputs = tempType;
-        cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pPb will output the following minv_pT histograms:" << endl;
+        cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_MixedMode_pp will output the following minv_pT histograms:" << endl;
         if(unsmearingoutputs.Contains("4")) cout << "- Analytic PCM unsmearing" << endl;
         else if(unsmearingoutputs.Contains("0")) cout << "- Uncorrected" << endl;
         if(unsmearingoutputs.Contains("1")) cout << "- SubNDM" << endl;
@@ -1167,15 +1168,15 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790105ce30220000","32c51070a","0000003f00000000","0400503000000000"); // c: No E/p cut
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790105ee30220000","32c51070a","0000003f00000000","0400503000000000"); // e: E/p < 2
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790105ge30220000","32c51070a","0000003f00000000","0400503000000000"); // g: E/p < 1.5
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790105he30220000","32c51070a","0000003f00000000","0400503000000000"); // h: E/p < 1.25
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790105oe30220000","32c51070a","0000003f00000000","0400503000000000"); // n: E/p < 1.75 (standard), but eta and phi varied
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790105ne30220000","32c51070a","0000003f00000000","0400503000000000"); // n: E/p < 1.75 (standard), but eta and phi varied
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790105oe30220000","32c51070a","0000003f00000000","0400503000000000"); // o: E/p < 1.75 (standard), but eta and phi varied
   }else if (trainConfig == 1519){ // Exotic cluster variations
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790105f030220000","32c51070a","0000003f00000000","0400503000000000"); // 0: No exotics cut
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790105fb30220000","32c51070a","0000003f00000000","0400503000000000"); // b: fExoticEnergyFracCluster = 0.95
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790105fi30220000","32c51070a","0000003f00000000","0400503000000000"); // i: fExoticMinEnergyCell = 3
   }else if (trainConfig == 1520){ // Min cluster energy variations
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790105fe20220000","32c51070a","0000003f00000000","0400503000000000"); // 2: E > 0.6
-    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790105fe40220000","32c51070a","0000003f00000000","0400503000000000"); // 3: E > 0.8
+    cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790105fe40220000","32c51070a","0000003f00000000","0400503000000000"); // 4: E > 0.8
   }else if (trainConfig == 1521){ // NCell variation
     cuts.AddCutHeavyMesonPCMCalo("00010113","0dm00009f9730000dge0404000","411790105fe3n220000","32c51070a","0000003f00000000","0400503000000000");
   }else if (trainConfig == 1522){ // M02 variations
