@@ -297,18 +297,23 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
     // once you return from the UserExec function, the manager will retrieve the next event from the chain   
   
     bootstrap_value = rand.Integer(30);
-	//..apply physics selection
-	UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-	//trigger & mask
-	Bool_t isTrigselected = false;
-        if (fTrigger == 0) {
-	    isTrigselected = fSelectMask&AliVEvent::kINT7;
-	    fAliTrigger = AliVEvent::kINT7;
-        } else if (fTrigger == 1) {
-	    isTrigselected = fSelectMask&AliVEvent::kHighMultV0;
-	    fAliTrigger = AliVEvent::kHighMultV0;
-        }
-	if(isTrigselected == false) return;
+	// //..apply physics selection
+	// UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+	// //trigger & mask
+	// Bool_t isTrigselected = false;
+    //     if (fTrigger == 0) {
+	//     isTrigselected = fSelectMask&AliVEvent::kINT7;
+	//     fAliTrigger = AliVEvent::kINT7;
+    //     } else if (fTrigger == 1) {
+	//     isTrigselected = fSelectMask&AliVEvent::kHighMultV0;
+	//     fAliTrigger = AliVEvent::kHighMultV0;
+    //     }
+	// if(isTrigselected == false) return;
+	if(!CheckTrigger()){
+		//self-define event selection
+		PostData(1,fListOfObjects);
+		return;
+	}
 	hEventCount->GetXaxis()->SetBinLabel(2,"After Trigger");
 	hEventCount->Fill(1.5);
 
@@ -362,7 +367,15 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	}
 
 	if(fTrigger==0){
-		fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7, true);
+		if(fPeriod.EqualTo("LHC18qr_pass3")){
+			// pass3 use kInt7 || kCentral || kSemiCentral
+			// but in this function you should pass them all
+			// and only check trigger in CheckTrigger()
+			fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7+AliVEvent::kCentral+AliVEvent::kSemiCentral, true);
+		}
+		else{
+			fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7, true);
+		}
 	}
 	else if(fTrigger==1){
 		fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
@@ -436,20 +449,17 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	float cl1Centr = 0;
 	float cl0Centr = 0;
 	
-	if(fPeriod.EqualTo("LHC18qr_pass3")){
-		//check kCentral and kSemiCentral Triggers for pass3
-		if((fSelectMask&AliVEvent::kCentral) && cent>10) {
-			PostData(1,fListOfObjects);
-			return; 
-		}; //printf("Returnning from kCent case\n");
-  		if((fSelectMask&AliVEvent::kSemiCentral) && (cent<30 || cent>50)) {
-			PostData(1,fListOfObjects);
-			return; 
-		}; //printf("Returning from kSC case\n");
-	}
-
-	hEventCount->GetXaxis()->SetBinLabel(6,"kCentral for PbPb_18qr");
-	hEventCount->Fill(5.5);
+	// if(fPeriod.EqualTo("LHC18qr_pass3")){
+	// 	//check kCentral and kSemiCentral Triggers for pass3
+	// 	if((fSelectMask&AliVEvent::kCentral) && cent>10) {
+	// 		PostData(1,fListOfObjects);
+	// 		return; 
+	// 	}; //printf("Returnning from kCent case\n");
+  	// 	if((fSelectMask&AliVEvent::kSemiCentral) && (cent<30 || cent>50)) {
+	// 		PostData(1,fListOfObjects);
+	// 		return; 
+	// 	}; //printf("Returning from kSC case\n");
+	// }
 
 	fCentralityDis->Fill(cent);
 	fCurrCentrality = cent;
@@ -469,7 +479,8 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
         //} else {
 		//if (fNUA && !LoadWeightsSystematics()) { AliFatal("Weights not loaded! for LHC15o"); return; }
         //}
-
+	hEventCount->GetXaxis()->SetBinLabel(6,"NUA loaded");
+	hEventCount->Fill(5.5);
 	
 
 	//..all charged particles
@@ -489,6 +500,29 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
                                                         // it to a file
     // Post output data.
 	
+}
+//============================================================================
+Bool_t AliAnalysisTaskFlowPPTask::CheckTrigger(){
+	const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
+	const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
+	float cent = dCentrality;
+	UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+
+	if (fTrigger == 0){
+		if(fSelectMask&(AliVEvent::kINT7+AliVEvent::kMB)){return kTRUE;}
+		// kInt7 or kCentral or kSemiCentral
+		if(fPeriod.EqualTo("LHC18qr_pass3")){
+			if((fSelectMask&AliVEvent::kCentral) && cent>10){return kFALSE;}
+			if((fSelectMask&AliVEvent::kSemiCentral) && (cent<30 || cent>50)){return kFALSE;}
+		}
+	}
+	else if(fTrigger==1){
+		Bool_t isTrigselected = fSelectMask&AliVEvent::kHighMultV0;
+		if(!isTrigselected)return kFALSE;
+	}
+	else return kFALSE;
+
+	return kTRUE;
 }
 //============================================================================
 void AliAnalysisTaskFlowPPTask::NTracksCalculation(AliVEvent* aod) {

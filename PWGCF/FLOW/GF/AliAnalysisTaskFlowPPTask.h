@@ -244,6 +244,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
         
         virtual void		AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus);
 		virtual void            NTracksCalculation(AliVEvent* aod);
+		Bool_t			CheckTrigger();
 		double 			GetPtWeight(double pt, double eta, float vz, double runNumber);
 		Bool_t                  LoadWeightsSystematics();
 
