@@ -307,26 +307,26 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
     cuts.AddCutHeavyMesonCalo("80010113","411790105ce30220000","32c51070a","0000003100000000","0400503000000000"); // c: No E/p cut
     cuts.AddCutHeavyMesonCalo("80010113","411790105ee30220000","32c51070a","0000003100000000","0400503000000000"); // e: E/p < 2
     cuts.AddCutHeavyMesonCalo("80010113","411790105ge30220000","32c51070a","0000003100000000","0400503000000000"); // g: E/p < 1.5
-    cuts.AddCutHeavyMesonCalo("80010113","411790105he30220000","32c51070a","0000003100000000","0400503000000000"); // h: E/p < 1.25
-    cuts.AddCutHeavyMesonCalo("80010113","411790105oe30220000","32c51070a","0000003100000000","0400503000000000"); // n: E/p < 1.75 (standard), but eta and phi varied
+    cuts.AddCutHeavyMesonCalo("80010113","411790105ne30220000","32c51070a","0000003100000000","0400503000000000"); // n: E/p < 1.75 (standard), but eta and phi varied
+    cuts.AddCutHeavyMesonCalo("80010113","411790105oe30220000","32c51070a","0000003100000000","0400503000000000"); // o: E/p < 1.75 (standard), but eta and phi varied
   }else if (trainConfig == 1104){ // Exotic cluster variations
     cuts.AddCutHeavyMesonCalo("80010113","411790105f030220000","32c51070a","0000003100000000","0400503000000000"); // 0: No exotics cut
     cuts.AddCutHeavyMesonCalo("80010113","411790105fb30220000","32c51070a","0000003100000000","0400503000000000"); // b: fExoticEnergyFracCluster = 0.95
     cuts.AddCutHeavyMesonCalo("80010113","411790105fi30220000","32c51070a","0000003100000000","0400503000000000"); // i: fExoticMinEnergyCell = 3
   }else if (trainConfig == 1105){ // Min cluster energy variations
     cuts.AddCutHeavyMesonCalo("80010113","411790105fe20220000","32c51070a","0000003100000000","0400503000000000"); // 2: E > 0.6
-    cuts.AddCutHeavyMesonCalo("80010113","411790105fe40220000","32c51070a","0000003100000000","0400503000000000"); // 3: E > 0.8
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe40220000","32c51070a","0000003100000000","0400503000000000"); // 4: E > 0.8
   }else if (trainConfig == 1106){ // NCell variation
     cuts.AddCutHeavyMesonCalo("80010113","411790105fe3n220000","32c51070a","0000003100000000","0400503000000000");
   }else if (trainConfig == 1107){ // M02 variations
     cuts.AddCutHeavyMesonCalo("80010113","411790105fe30210000","32c51070a","0000003100000000","0400503000000000"); // 1: M02 < 1
     cuts.AddCutHeavyMesonCalo("80010113","411790105fe30230000","32c51070a","0000003100000000","0400503000000000"); // 3: M02 < 0.5
   }else if (trainConfig == 1108){ // pi0 mass selection window variations
-    cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","0000003r00000000","0400503000000000"); // r: 3.5 sigma, no gamma selection
     cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","0000003u00000000","0400503000000000"); // u: 1.5 sigma
     cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","0000003v00000000","0400503000000000"); // v: 2.5 sigma
-    cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","0000003w00000000","0400503000000000"); // w: 4 sigma
     cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","0000003x00000000","0400503000000000"); // x: 3 sigma
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","0000003r00000000","0400503000000000"); // r: 3.5 sigma, no gamma selection
+    cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","0000003w00000000","0400503000000000"); // w: 4 sigma
   }else if (trainConfig == 1109){ // pi0 asymmetry variations
     cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","0000005100000000","0400503000000000"); // 5: alpha < 0.75
     cuts.AddCutHeavyMesonCalo("80010113","411790105fe30220000","32c51070a","0000006100000000","0400503000000000"); // 6: alpha < 0.8

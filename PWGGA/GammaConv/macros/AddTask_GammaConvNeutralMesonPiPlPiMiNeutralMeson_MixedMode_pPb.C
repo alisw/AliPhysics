@@ -40,6 +40,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pPb(
     TString   periodNameV0Reader          = "",                       // period Name for V0Reader
     Int_t     runLightOutput              = 0,                        // run light output option 0: no light output 1: most cut histos stiched off 2: unecessary omega hists turned off as well
     Int_t     prefilterRunFlag            = 1500,                     // flag to change the prefiltering of ESD tracks. See SetHybridTrackCutsAODFiltering() in AliPrimaryPionCuts
+    Bool_t    usePtDepSelectionWindowCut  = kFALSE,                   // use pt dependent meson selection window cut
     Bool_t    enableSortingMCLabels       = kTRUE,                    // enable sorting for MC cluster labels
     Int_t     enableMatBudWeightsPi0      = 0,                        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
     TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
@@ -335,15 +336,15 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105ce30220000","32c51070a","0000003f00000000","0400503000000000"); // c: No E/p cut
     cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105ee30220000","32c51070a","0000003f00000000","0400503000000000"); // e: E/p < 2
     cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105ge30220000","32c51070a","0000003f00000000","0400503000000000"); // g: E/p < 1.5
-    cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105he30220000","32c51070a","0000003f00000000","0400503000000000"); // h: E/p < 1.25
-    cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105oe30220000","32c51070a","0000003f00000000","0400503000000000"); // n: E/p < 1.75 (standard), but eta and phi varied
+    cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105ne30220000","32c51070a","0000003f00000000","0400503000000000"); // n: E/p < 1.75 (standard), but eta and phi varied
+    cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105oe30220000","32c51070a","0000003f00000000","0400503000000000"); // o: E/p < 1.75 (standard), but eta and phi varied
   }else if (trainConfig == 1119){ // Exotic cluster variations
     cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105f030220000","32c51070a","0000003f00000000","0400503000000000"); // 0: No exotics cut
     cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105fb30220000","32c51070a","0000003f00000000","0400503000000000"); // b: fExoticEnergyFracCluster = 0.95
     cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105fi30220000","32c51070a","0000003f00000000","0400503000000000"); // i: fExoticMinEnergyCell = 3
   }else if (trainConfig == 1120){ // Min cluster energy variations
     cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105fe20220000","32c51070a","0000003f00000000","0400503000000000"); // 2: E > 0.6
-    cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105fe40220000","32c51070a","0000003f00000000","0400503000000000"); // 3: E > 0.8
+    cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105fe40220000","32c51070a","0000003f00000000","0400503000000000"); // 4: E > 0.8
   }else if (trainConfig == 1121){ // NCell variation
     cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790105fe3n220000","32c51070a","0000003f00000000","0400503000000000");
   }else if (trainConfig == 1122){ // M02 variations
@@ -555,6 +556,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     }
 
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
+    analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(usePtDepSelectionWindowCut);
     if(runLightOutput>0) analysisNeutralPionCuts[i]->SetLightOutput(kTRUE);
     if( ! analysisNeutralPionCuts[i]->InitializeCutsFromCutString((cuts.GetNDMCut(i)).Data()) ) {
       cout<<"ERROR: analysisMesonCuts [ " <<i<<" ] "<<endl;
