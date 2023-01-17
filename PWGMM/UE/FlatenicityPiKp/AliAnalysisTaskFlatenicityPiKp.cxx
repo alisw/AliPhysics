@@ -88,9 +88,6 @@ static const Int_t nEta = 4;
 static Double_t centClass[nCent + 1] = {0.0,  1.0,  5.0,  10.0, 20.0,
 	30.0, 40.0, 50.0, 70.0, 100.0};
 
-/* static const Char_t* V0MClass[nCent] = {"0_1","1_5","5_10","10_20", */
-/* 	"20_30","30_40","40_50","50_70","70_100"}; */
-
 static const Char_t* etaClass[nEta] = {"02","24","46","68"};
 static const Char_t* ParticleType[3] = {"Primaries","MaterialInt","WeakDecays"};
 
@@ -102,14 +99,13 @@ ClassImp(AliAnalysisTaskFlatenicityPiKp) // classimp: necessary for root
 
 AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 	: AliAnalysisTaskSE(), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-	fUseMC(kFALSE), /*fV0Mindex(-1),*/ fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
+	fUseMC(kFALSE), fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
 	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
-	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fV0MEqualisation(kTRUE) ,fdEdxCalibrated(kTRUE),
-	fSaveDCAxyHistograms(kFALSE), 
-	fEtaCalibrationPos(0x0), fEtaCalibrationNeg(0x0), /* fV0CCalibration(0x0), fV0ACalibration(0x0), */ 
+	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fdEdxCalibrated(kTRUE),
+	fSaveDCAxyHistograms(kFALSE), fEtaCalibrationPos(0x0), fEtaCalibrationNeg(0x0),
 	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
 	ftrackmult08(0), fv0mpercentile(0), fMidRapidityMult(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
-	fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0), hFlatVsV0MVsMult(0),
+	fMultSelection(0x0), hFlatVsV0MVsMult(0),
 	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0), hFlatVsPtMC(0),
 	hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
 	hMCPtPionPos(0),hMCPtKaonPos(0),hMCPtProtonPos(0),
@@ -184,14 +180,13 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 	: AliAnalysisTaskSE(name), fESD(0), fEventCuts(0x0), fMCStack(0), fMC(0),
-	fUseMC(kFALSE), /*fV0Mindex(-1),*/ fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
+	fUseMC(kFALSE), fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
 	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
-	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fV0MEqualisation(kTRUE), fdEdxCalibrated(kTRUE), 
-	fSaveDCAxyHistograms(kFALSE), 
-	fEtaCalibrationPos(0x0), fEtaCalibrationNeg(0x0), /* fV0CCalibration(0x0), fV0ACalibration(0x0), */
+	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fdEdxCalibrated(kTRUE), 
+	fSaveDCAxyHistograms(kFALSE), fEtaCalibrationPos(0x0), fEtaCalibrationNeg(0x0),
 	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
 	ftrackmult08(0), fv0mpercentile(0), fMidRapidityMult(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
-	fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0), hFlatVsV0MVsMult(0),
+	fMultSelection(0x0), hFlatVsV0MVsMult(0),
 	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0), hFlatVsPtMC(0),
 	hActivityV0DataSect(0), hActivityV0McSect(0), hFlatVsNchMC(0),
 	hMCPtPionPos(0),hMCPtKaonPos(0),hMCPtProtonPos(0),
@@ -517,7 +512,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 	hActivityV0DataSect = new TProfile("hActivityV0DataSect", "rec; V0 sector; #LTmultiplicity#GT", 64, -0.5, 63.5);
 	fOutputList->Add(hActivityV0DataSect);
 
-	if (!fUseMC && fV0MEqualisation && !fSaveDCAxyHistograms) { 
+	if (!fUseMC && !fSaveDCAxyHistograms) { 
 		fOutputList->Add(hFlatVsV0MVsMult);
 		fOutputList->Add(pMIPVsEta);
 		fOutputList->Add(pPlateauVsEta);
@@ -567,7 +562,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 		histPiTof[i_eta] = new TH2F(Form("hPiTOF_%s",etaClass[i_eta]), "Primary Pions from TOF; #it{p} (GeV/#it{c}); d#it{e}d#it{x}", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
 		histEV0[i_eta] = new TH2F(Form("hEV0_%s",etaClass[i_eta]), "Electrons id by V0; #it{p} (GeV/#it{c}); d#it{e}d#it{x}", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
 
-		if (!fUseMC && fV0MEqualisation && !fSaveDCAxyHistograms) { 
+		if (!fUseMC && !fSaveDCAxyHistograms) { 
 
 			fOutputList->Add(hNsigmaPiPos[i_eta]);
 			fOutputList->Add(hNsigmaKPos[i_eta]);
@@ -600,31 +595,19 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 	}
 
 	if (fUseMC) {
-		hPtPrimIn = new TH1D("hPtPrimIn", "Prim In; #it{p}_{T} (GeV/#it{c}; counts)", nPtbins, Ptbins);
-		/* fOutputList->Add(hPtPrimIn); */
-
-		hPtPrimOut = new TH1D("hPtPrimOut", "Prim Out; #it{p}_{T} (GeV/#it{c}; counts)", nPtbins, Ptbins);
-		/* fOutputList->Add(hPtPrimOut); */
-
-		hPtSecOut = new TH1D("hPtSecOut", "Sec Out; #it{p}_{T} (GeV/#it{c}; counts)", nPtbins, Ptbins);
-		/* fOutputList->Add(hPtSecOut); */
-
-		hPtOut = new TH1D("hPtOut", "all Out; #it{p}_{T} (GeV/#it{c}; counts)", nPtbins, Ptbins);
-		/* fOutputList->Add(hPtOut); */
-
 		hFlatenicityMC = new TH2F("hFlatenicityMC", ";True Flatenicity; V0M Percentile;", nbins_flat, min_flat, max_flat, nCent, centClass );
 		fOutputList->Add(hFlatenicityMC);
 
 		hFlatenicityMCRec = new TH2F("hFlatenicityMCRec",";rec Flatenicity;V0M Percentile;", nbins_flat, min_flat, max_flat, nCent, centClass );
 		fOutputList->Add(hFlatenicityMCRec);
 
-		hFlatResponse = new TH2D("hFlatResponse", "; true flat; measured flat", nbins_flat, min_flat, max_flat, nbins_flat, min_flat, max_flat);
+		hFlatResponse = new TH2F("hFlatResponse", "; true flat; measured flat", nbins_flat, min_flat, max_flat, nbins_flat, min_flat, max_flat);
 		fOutputList->Add(hFlatResponse);
 
-		hFlatVsPtMC = new TH2D("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})", nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
-		/* fOutputList->Add(hFlatVsPtMC); */
+		hFlatVsPtMC = new TH2F("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})", nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
+		fOutputList->Add(hFlatVsPtMC);
 
-		hFlatVsNchMC = new TH2D("hFlatVsNchMC", "; true flat; true Nch", nbins_flat, min_flat, max_flat, 100, -0.5, 99.5);
+		hFlatVsNchMC = new TH2F("hFlatVsNchMC", "; true flat; true Nch", nbins_flat, min_flat, max_flat, 100, -0.5, 99.5);
 		fOutputList->Add(hFlatVsNchMC);
 
 		hMCPtPionPos = new TH1F("hMCPtPionPos",";#it{p}_{T} (GeV/#it{c}); Counts;", nPtbins, Ptbins);
@@ -713,30 +696,18 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 
 		for (int i_eta = 0; i_eta < nEta; ++i_eta) 
 		{	
-			/* pion_cont_in_kaon_h[i_eta] = new TH2F(Form("pion_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins); */
-			/* fOutputList->Add(pion_cont_in_kaon_h[i_eta]); */
 			nsigma_kaon_h[i_eta] = new TH2F(Form("nsigma_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(nsigma_kaon_h[i_eta]);
-			/* electron_cont_in_kaon_h[i_eta] = new TH2F(Form("electron_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins); */
-			/* fOutputList->Add(electron_cont_in_kaon_h[i_eta]); */
 			random_cont_in_kaon_h[i_eta] = new TH2F(Form("random_cont_in_kaon_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(random_cont_in_kaon_h[i_eta]);
 
-			/* pion_cont_in_proton_h[i_eta] = new TH2F(Form("pion_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins); */
-			/* fOutputList->Add(pion_cont_in_proton_h[i_eta]); */
 			nsigma_proton_h[i_eta] = new TH2F(Form("nsigma_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(nsigma_proton_h[i_eta]);
-			/* electron_cont_in_proton_h[i_eta] = new TH2F(Form("electron_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins); */
-			/* fOutputList->Add(electron_cont_in_proton_h[i_eta]); */
 			random_cont_in_proton_h[i_eta] = new TH2F(Form("random_cont_in_proton_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(random_cont_in_proton_h[i_eta]);
 
-			/* kaon_cont_in_pion_h[i_eta] = new TH2F(Form("kaon_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins); */
-			/* fOutputList->Add(kaon_cont_in_pion_h[i_eta]); */
 			nsigma_pion_h[i_eta] = new TH2F(Form("nsigma_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(nsigma_pion_h[i_eta]);
-			/* electron_cont_in_pion_h[i_eta] = new TH2F(Form("electron_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins); */
-			/* fOutputList->Add(electron_cont_in_pion_h[i_eta]); */
 			random_cont_in_pion_h[i_eta] = new TH2F(Form("random_cont_in_pion_h_%s",etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); n#sigma",nPtbins,Ptbins,nnSigmabins,nSigmabins);
 			fOutputList->Add(random_cont_in_pion_h[i_eta]);
 		}
@@ -857,15 +828,9 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 		if (!(fv0mpercentile >= 70.0 && fv0mpercentile < 100.0)) { return; }
 	}
 
-	/* for (Int_t i_c = 0; i_c < nCent; ++i_c) { */
-	/* 	if (fv0mpercentile >= centClass[i_c] && fv0mpercentile < centClass[i_c + 1]) { fV0Mindex = i_c;} */ 
-	/* 	else { continue; } */
-	/* } */
-
 	fMidRapidityMult = GetMidRapidityMultiplicity();
-	//fFlatTPC = GetFlatenicityTPC(); 
+	// fFlatTPC = GetFlatenicityTPC(); 
 	fFlat = GetFlatenicityV0();
-	/* cout << "fFlat = " << fFlat << endl; */
 
 	fFlatMC = -1;
 	if (fUseMC) {
@@ -884,8 +849,10 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 	if (fFlat > 0) {
 
 		hFlatVsV0MVsMult->Fill(fFlat, fMidRapidityMult);
-		/* MakeDataanalysis(); */
+		// piKp as a function of Flattenicity
 		MakePIDanalysis();
+		// Charged particle spectra as a function of Flattenicity
+		/* MakeDataanalysis(); */
 	}
 
 	if (fIsMCclosure) {
@@ -962,9 +929,9 @@ void AliAnalysisTaskFlatenicityPiKp::MakePIDanalysis()
 		Float_t dcaz = 0.0;
 		esdTrack->GetImpactParameters(DCAxy,dcaz);
 
-		Float_t nSigmaPi = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion);
-		Float_t nSigmaK = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon);
-		Float_t nSigmaP = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton);
+		float nSigmaPi = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kPion);
+		float nSigmaK = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kKaon);
+		float nSigmaP = fPIDResponse->NumberOfSigmasTPC(esdTrack,AliPID::kProton);
 		float nSigmaPiTOF = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion);
 		float nSigmaKTOF = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kPion);
 		float nSigmaPTOF = fPIDResponse->NumberOfSigmasTOF(esdTrack,AliPID::kProton);
@@ -1147,12 +1114,8 @@ void AliAnalysisTaskFlatenicityPiKp::AnalyzeV0s()
 		if(TMath::Abs(pTrack->Eta()) > fEtaCut || TMath::Abs(nTrack->Eta()) > fEtaCut)
 			continue;
 
-		/* if ( fTrackFilterGolden ) { */
-
 		if (!fTrackFilterPID->IsSelected(pTrack)) { continue; }
 		if (!fTrackFilterPID->IsSelected(nTrack)) { continue; }
-
-		/* } */
 
 		// Check if switch does anything!
 		Bool_t isSwitched = kFALSE;
@@ -1409,7 +1372,7 @@ void AliAnalysisTaskFlatenicityPiKp::MakeMCanalysis() {
 		if (TMath::Abs(particle->Charge()) < 0.1)
 			continue;
 		hFlatVsPtMC->Fill(fFlatMC, particle->Pt());
-		hPtPrimIn->Fill(particle->Pt());
+		/* hPtPrimIn->Fill(particle->Pt()); */
 	}
 	// rec
 	Int_t nTracks = fESD->GetNumberOfTracks();
@@ -1425,13 +1388,13 @@ void AliAnalysisTaskFlatenicityPiKp::MakeMCanalysis() {
 			continue;
 		if (esdtrack->Pt() < fPtMin)
 			continue;
-		hPtOut->Fill(esdtrack->Pt());
+		/* hPtOut->Fill(esdtrack->Pt()); */
 		Int_t mcLabel = -1;
 		mcLabel = TMath::Abs(esdtrack->GetLabel());
 		if (fMC->IsPhysicalPrimary(mcLabel)) {
-			hPtPrimOut->Fill(esdtrack->Pt());
+			/* hPtPrimOut->Fill(esdtrack->Pt()); */
 		} else {
-			hPtSecOut->Fill(esdtrack->Pt());
+			/* hPtSecOut->Fill(esdtrack->Pt()); */
 		}
 	}
 }
