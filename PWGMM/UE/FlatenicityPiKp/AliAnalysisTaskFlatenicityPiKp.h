@@ -45,11 +45,13 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		double GetFlatenicityTPC();
 		double GetFlatenicityMC();
 		double EtaCalibration(const double&);
+		double EtaCalibrationEl(const double&);
 		void MakeMCanalysis();
 		void MakeMCanalysisPID();
 		void nSigmaContamination();
 		void MakeDataanalysis();
 		void MakePIDanalysis();
+		void AnalyzeV0s();
 		void SetPtMin(Double_t val) { fPtMin = val; } // Set pT cut for associated particles
 		void SetNcl(UShort_t ncl) { fNcl = ncl; } // Set pT cut for associated particles
 		void SetUseMC(Bool_t flat_flag = kFALSE) { fUseMC = flat_flag; } // use to analyse MC data
@@ -95,8 +97,8 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		Bool_t fSaveDCAxyHistograms;
 		TF1* fEtaCalibrationPos;
 		TF1* fEtaCalibrationNeg;
-		TF1* fV0CCalibration;
-		TF1* fV0ACalibration;
+		/* TF1* fV0CCalibration; */
+		/* TF1* fV0ACalibration; */
 		TF1* fcutLow;
 		TF1* fcutHigh;
 		TF1* fcutDCAxy;
@@ -201,6 +203,14 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		TH2F* hProtonTOFDCAxyPosData;
 		TProfile* pMIPVsEta;
 		TProfile* pPlateauVsEta;
+
+		//! Histograms for V0s
+		TProfile* pMIPVsEtaV0s;
+		TH2F* histPiV0[4];
+		TH2F* histPV0[4];
+		TH2F* histEV0[4];
+		TH2F* histPiTof[4];
+
 
 		AliAnalysisTaskFlatenicityPiKp(
 				const AliAnalysisTaskFlatenicityPiKp &); // not implemented
