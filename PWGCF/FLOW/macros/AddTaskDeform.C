@@ -7,7 +7,7 @@ Bool_t ConnectToGrid() {
   if(!gGrid) {printf("Task requires connection to grid, but it could not be established!\n"); return kFALSE; };
   return kTRUE;
 }
-AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
+AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, Bool_t HasMpt, TString stage,
                                                   TString efficiencyPath, TString meanPtPath, TString NUAPath, TString subfix1, TString subfix2)
 {
   Int_t StageSwitch = 0;
@@ -15,6 +15,7 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
   if(stage.Contains("weights")) StageSwitch=1;
   if(stage.Contains("Efficiency")) StageSwitch=2;
   if(stage.Contains("VnMpt")) StageSwitch=3;
+  if(stage.Contains("meanpt")) StageSwitch=4;
   if(StageSwitch==0) return 0;
   TString l_ContName(subfix1);
   if(!subfix2.IsNull()) l_ContName+="_"+subfix2;
@@ -31,7 +32,7 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
   // };
   Int_t Nkeys = 1;
   TString fileName = AliAnalysisManager::GetCommonFileName();
-  if(!IsMC&&StageSwitch==3) {
+  if(!IsMC&&(StageSwitch==3||StageSwitch==4)) {
       if(efficiencyPath.IsNull()) { printf("Efficiency path not provided!\n"); return 0; };
       if(efficiencyPath.Contains("alien:")) if(!ConnectToGrid()) return 0;
       TFile *tfEff = TFile::Open(efficiencyPath.Data()); 
@@ -42,7 +43,7 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
       printf("Number of keys in efficiency file: %i\n",Nkeys);
       tfEff->Close();
   }
-  AliAnalysisTaskDeform* task = new AliAnalysisTaskDeform(name.Data(), IsMC, stage, l_ContName, Nkeys);
+  AliAnalysisTaskDeform* task = new AliAnalysisTaskDeform(name.Data(), IsMC, HasMpt, stage, l_ContName, Nkeys);
   if(!task)
     return 0x0;
   mgr->AddTask(task); // add your task to the manager
@@ -64,6 +65,17 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
     TObjArray *AllContainers = mgr->GetContainers();
     // AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer(Form("MPTProfileList%s",l_ContName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
     Bool_t gridConnected=kFALSE;
+    if(HasMpt){
+      if(!AllContainers->FindObject("MeanPt")) {
+        if(meanPtPath.IsNull()) { printf("Task should have mean pt input, but no path provided!\n"); return 0; };
+        if(meanPtPath.Contains("alien:")) if(!ConnectToGrid()) return 0;
+        TFile *tfMeanPt = TFile::Open(meanPtPath.Data());
+        TList *fList = (TList*)tfMeanPt->Get("MeanPtList");
+        AliAnalysisDataContainer *cMeanPt = mgr->CreateContainer("MeanPt",TList::Class(), AliAnalysisManager::kInputContainer);
+        cMeanPt->SetData(fList);
+        mgr->ConnectInput(task,1,cMeanPt);       
+      } else mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("MeanPt"));
+    }
     if(!IsMC) {
       if(!AllContainers->FindObject("Weights")) {
         if(NUAPath.IsNull()) { printf("Weight path not provided!\n"); return 0; };
@@ -72,8 +84,8 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
         TList *fList = (TList*)tfWeights->Get("WeightList");
         AliAnalysisDataContainer *cWeights = mgr->CreateContainer("Weights",TList::Class(), AliAnalysisManager::kInputContainer);
         cWeights->SetData(fList);
-        mgr->ConnectInput(task,1,cWeights);
-      } else mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("Weights"));
+        mgr->ConnectInput(task,HasMpt?2:1,cWeights);
+      } else mgr->ConnectInput(task,HasMpt?2:1,(AliAnalysisDataContainer*)AllContainers->FindObject("Weights"));
       if(Nkeys==1){
         if(!AllContainers->FindObject("Efficiency")) {
           if(efficiencyPath.IsNull()) { printf("Efficiency path not provided!\n"); return 0; };
@@ -85,8 +97,8 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
           if(!fList) { printf("Could not fetch the efficiency list!\n"); return 0; };
           AliAnalysisDataContainer *cEff = mgr->CreateContainer("Efficiency",TList::Class(), AliAnalysisManager::kInputContainer);
           cEff->SetData(fList);
-          mgr->ConnectInput(task,2,cEff);
-        } else mgr->ConnectInput(task,2,(AliAnalysisDataContainer*)AllContainers->FindObject("Efficiency"));
+          mgr->ConnectInput(task,HasMpt?3:2,cEff);
+        } else mgr->ConnectInput(task,HasMpt?3:2,(AliAnalysisDataContainer*)AllContainers->FindObject("Efficiency"));
       } else {
           if(efficiencyPath.IsNull()) { printf("Efficiency path not provided!\n"); return 0; };
           if(efficiencyPath.Contains("alien:")) if(!ConnectToGrid()) return 0;
@@ -99,8 +111,8 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
               if(!fList) { printf("Could not fetch the efficiency list %i!\n",key); return 0; };
               AliAnalysisDataContainer *cEff = mgr->CreateContainer(Form("Efficiency_%i",key),TList::Class(), AliAnalysisManager::kInputContainer);
               cEff->SetData(fList);
-              mgr->ConnectInput(task,2+key,cEff);
-            } else mgr->ConnectInput(task,2+key,(AliAnalysisDataContainer*)AllContainers->FindObject(Form("Efficiency_%i",key)));
+              mgr->ConnectInput(task,HasMpt?(3+key):(2+key),cEff);
+            } else mgr->ConnectInput(task,HasMpt?(3+key):(2+key),(AliAnalysisDataContainer*)AllContainers->FindObject(Form("Efficiency_%i",key)));
           }
       }
     };
@@ -114,10 +126,49 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
     mgr->ConnectOutput(task,4,cOutputQA); //For QA
     return task;
   };
+  //mean pt
+  if(StageSwitch==4) {
+    TObjArray *AllContainers = mgr->GetContainers();
+    Bool_t gridConnected=kFALSE;
+    if(!IsMC) {
+      if(Nkeys==1){
+        if(!AllContainers->FindObject("Efficiency")) {
+          if(efficiencyPath.IsNull()) { printf("Efficiency path not provided!\n"); return 0; };
+          if(efficiencyPath.Contains("alien:")) if(!ConnectToGrid()) return 0;
+          TFile *tfEff = TFile::Open(efficiencyPath.Data()); 
+          if(!tfEff) { printf("Could not open efficiency file\n"); return 0; };
+          if(tfEff->IsZombie()) { printf("Efficiency file is a zombie\n"); return 0; };
+          TList *fList = (TList*)tfEff->Get("EffAndFD");
+          if(!fList) { printf("Could not fetch the efficiency list!\n"); return 0; };
+          AliAnalysisDataContainer *cEff = mgr->CreateContainer("Efficiency",TList::Class(), AliAnalysisManager::kInputContainer);
+          cEff->SetData(fList);
+          mgr->ConnectInput(task,1,cEff);
+        } else mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("Efficiency"));
+      } else {
+          if(efficiencyPath.IsNull()) { printf("Efficiency path not provided!\n"); return 0; };
+          if(efficiencyPath.Contains("alien:")) if(!ConnectToGrid()) return 0;
+          TFile *tfEff = TFile::Open(efficiencyPath.Data()); 
+          if(!tfEff) { printf("Could not open efficiency file\n"); return 0; };
+          if(tfEff->IsZombie()) { printf("Efficiency file is a zombie\n"); return 0; };
+          for(int key(0);key<Nkeys;++key) {
+            if(!AllContainers->FindObject(Form("Efficiency_%i",key))) {
+              TList *fList = (TList*)tfEff->Get(Form("EffAndFD_%i",key));
+              if(!fList) { printf("Could not fetch the efficiency list %i!\n",key); return 0; };
+              AliAnalysisDataContainer *cEff = mgr->CreateContainer(Form("Efficiency_%i",key),TList::Class(), AliAnalysisManager::kInputContainer);
+              cEff->SetData(fList);
+              mgr->ConnectInput(task,1+key,cEff);
+            } else mgr->ConnectInput(task,1+key,(AliAnalysisDataContainer*)AllContainers->FindObject(Form("Efficiency_%i",key)));
+          }
+      }
+    };
+    AliAnalysisDataContainer *cOutputMPT = mgr->CreateContainer(Form("MeanPt%s",l_ContName.Data()),TList::Class(), AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+    mgr->ConnectOutput(task,1,cOutputMPT);
+    return task;
+  };
   return 0;
 }
-AliAnalysisTaskDeform* AddTaskDeform(TString name="name", Bool_t IsMC=kFALSE, TString stage="Efficiency",
+AliAnalysisTaskDeform* AddTaskDeform(TString name="name", Bool_t IsMC=kFALSE, Bool_t HasMpt=kFALSE, TString stage="Efficiency",
                                                   TString efficiencyPath="", TString meanPtPath="", TString NUAPath="", TString subfix2="")
 {
-  return AddTaskDeform(name,IsMC,stage,efficiencyPath,meanPtPath,NUAPath,"",subfix2);
+  return AddTaskDeform(name,IsMC,HasMpt,stage,efficiencyPath,meanPtPath,NUAPath,"",subfix2);
 }
