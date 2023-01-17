@@ -56,11 +56,36 @@ ClassImp(AliAnalysisTaskSEXic0SL);
 using namespace std;
 
 AliAnalysisTaskSEXic0SL::AliAnalysisTaskSEXic0SL(const char* name, const char* option):
-	AliAnalysisTaskSE(name), fTaskOpt(option)
+	AliAnalysisTaskSE(name), fTaskOpt(option),
+	//
+	fCasc(0), fMCPart(0), fTrk(0), fTrkCuts(0), fInputHandler(0), fMCEvt(0), fMultSel(0),
+	fANC_MB_0to100(0), fANC_MB_30to100(0), fANC_MB_0p1to30(0), fANC_HMV0_0to0p1(0),
+	fANC_INEL0_MB_0to100(0), fANC_INEL0_MB_30to100(0), fANC_INEL0_MB_0p1to30(0), fANC_INEL0_HMV0_0to0p1(0),
+	fPID(0), fEvtCutsMB(0), fEvtCutsHMV0(0), fEvt(0), fEvtVtx(0), fHisto(0), fTree(0),
+	//
+	IsMC(false), IsPA(false), TrigOnMB(false), TrigOnHMV0(false),
+	IsLegacy(false), IsCutsByFile(false), ValidEvtOnly(false), TrigStore(0),
+	//
+	MaxNTruth(0), MaxNEle(0), MaxNCasc(0), PDGCode_e(0), PDGCode_Lambda(0), PDGCode_Omega(0),
+	PDGCode_Xi(0), PDGCode_Xistm(0), PDGCode_Xist0(0), PDGCode_Xic0(0), PDGCode_Xicp(0),
+	MassEle(0), MassLmb(0), MassXi(0),
+	//
+	cut_runNoLo(0), cut_runNoUp(0), cut_vtxNContributors(0), cut_bfield(0), cut_eta(0), cut_vtxZ(0),
+	//
+	cut_minNClustersITS(0), cut_TPCsignalN(0), cut_maxChi2PerClusterITS(0),
+	cut_maxDCAToVertexXY(0), cut_maxDCAToVertexZ(0), cut_trkEta(0), cut_trkPt(0),
+	//
+	cutEle_massConv(0), cutEle_nSigmaTOFAbs(0), cutEle_nSigmaTPCAbsConv(0), cutEle_nSigmaTPCMax(0),
+	//
+	cutCasc_massTolLambda(0), cutCasc_massTolOmega(0), cutCasc_massTolXi(0), cutCasc_nSigmaTPCAbs(0),
+	cutCasc_minDecayLenXi(0), cutCasc_minDecayLenV0(0), cutCasc_minDcaBachToPV(0), cutCasc_minDcaV0ToPV(0),
+	cutCasc_maxDcaXiDau(0), cutCasc_maxDcaV0Dau(0), cutCasc_minDcaV0PosToPV(0), cutCasc_minDcaV0NegToPV(0),
+	cutCasc_minCosPAngleXi(0), cutCasc_minCosPAngleV0(0)
 {
 	ControlAnaObjects(0);
 	ControlOutputContainers(0);
 	ResetTreeVariables();
+	SetConstants();
 }//Constructor
 
 AliAnalysisTaskSEXic0SL::~AliAnalysisTaskSEXic0SL()
@@ -142,7 +167,7 @@ void AliAnalysisTaskSEXic0SL::UserCreateOutputObjects()
 	fHisto = new THistManager("Histo");
 	fHisto->CreateTH1("RunNo", ";run", cut_runNoUp - cut_runNoLo, cut_runNoLo, cut_runNoUp, "s");
 
-	vector<const char*> evtCuts = {"Bfield", "Mult", "PID", "Trig>0", "PileupX>0","VtxZ10", "INEL>0"};
+	vector<const char*> evtCuts = {"Bfield", "Mult", "PID", "Trig>0", "VtxZ10", "PileupX", "INEL>0"};
 	TH1* H1_cutEff = fHisto->CreateTH1("EvtCut", ";cut", evtCuts.size(), 0, (float)evtCuts.size(), "s");
 	for (unsigned int a=0; a<evtCuts.size(); a++) H1_cutEff->GetXaxis()->SetBinLabel(a+1, evtCuts[a]);
 
@@ -224,10 +249,6 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 	//Separate data/MC
 	if (IsMC == false) //data
 	{
-		//Check vtx validity (NOT vtxZ)
-		fEvtVtx = fEvt->GetPrimaryVertex();
-		if (!fEvtVtx || fEvtVtx->GetNContributors()<cut_vtxNContributors) return; //Return 6d
-
 		//Check trigger
 		bool t_trigFired = false;
 		fEvtTrig = fInputHandler->IsEventSelected();
@@ -241,7 +262,7 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 				 (fTaskOpt.Contains("LHC16k") || fTaskOpt.Contains("LHC16l")) &&
 				 (fEvt->GetFiredTriggerClasses().Contains("CINT7-B-NOPF-CENT")) ) t_trigFired = true;
 		}//a, TrigStore
-		if (!t_trigFired) return; //Return 7d
+		if (!t_trigFired) return; //Return 6d
 		else fHisto->FillTH1("EvtCut", "Trig>0", 1); //@
 
 		const bool t_trigFiredMB   = (fEvtTrig & AliVEvent::kINT7)?true:false;
@@ -250,19 +271,9 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 		if (t_trigFiredMB)   fHisto->FillTH1("EvtTrig", "MB",   1); //@
 		if (t_trigFiredHMV0) fHisto->FillTH1("EvtTrig", "HMV0", 1); //@
 
-		//Activate RDHF cut by invoking it
-		fEvtGoodMB   = fEvtCutsMB  ->IsEventSelected(fEvt);
-		fEvtGoodHMV0 = fEvtCutsHMV0->IsEventSelected(fEvt);
-
-		const bool t_pileup_MB   = fEvtCutsMB  ->IsEventRejectedDueToPileup(); //true = pile up
-		const bool t_pileup_HMV0 = fEvtCutsHMV0->IsEventRejectedDueToPileup();
-		if (t_pileup_MB != t_pileup_HMV0) AliFatal("Pileup status is different between MB and HMV0");
-		else if (t_pileup_MB && t_pileup_HMV0) return;
-		else fHisto->FillTH1("EvtCut", "PileupX", 1); //@
-
-		//Check INEL>0
-		if (AliPPVsMultUtils::IsINELgtZERO(fEvt)==true)	fEvtINELLgt0 = true;
-		if (fEvtINELLgt0) fHisto->FillTH1("EvtCut", "INEL>0", 1); //@
+		//Check is vtx exists
+		fEvtVtx = fEvt->GetPrimaryVertex();
+		if (!fEvtVtx) return; //Return 7d
 
 		//Store AliNormalizationCounter: DO NOT CHANGE THIS POSITION! (after vtx found, before |vtxZ| < 10)
 		if (t_trigFiredMB)
@@ -289,13 +300,30 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 			if (fEvtINELLgt0) fANC_INEL0_HMV0_0to0p1->StoreEvent(fEvt, fEvtCutsHMV0, IsMC);
 		}
 
+		//Check vtx contributors (should be >= 0)
+		if (fEvtVtx->GetNContributors() < cut_vtxNContributors) return; //Return 8d
+
 		//Check vtxZ
 		fEvtVtxZ = fEvtVtx->GetZ();
 		if (fabs(fEvtVtxZ) > cut_vtxZ) return; //Return 9d
 		else fHisto->FillTH1("EvtCut", "VtxZ10", 1); //@
 
+		//Activate RDHF cut by invoking it + reject pileup event
+		fEvtGoodMB   = fEvtCutsMB  ->IsEventSelected(fEvt);
+		fEvtGoodHMV0 = fEvtCutsHMV0->IsEventSelected(fEvt);
+
+		const bool t_pileup_MB   = fEvtCutsMB  ->IsEventRejectedDueToPileup(); //true = pile up
+		const bool t_pileup_HMV0 = fEvtCutsHMV0->IsEventRejectedDueToPileup();
+		if (t_pileup_MB != t_pileup_HMV0) AliFatal("Pileup status is different between MB and HMV0");
+		else if (t_pileup_MB && t_pileup_HMV0) return; //Return 10d
+		else fHisto->FillTH1("EvtCut", "PileupX", 1); //@
+
+		//Check INEL>0
+		if (AliPPVsMultUtils::IsINELgtZERO(fEvt)==true)	fEvtINELLgt0 = true;
+		if (fEvtINELLgt0) fHisto->FillTH1("EvtCut", "INEL>0", 1); //@
+
 		//Dec. 21, newly added
-		if (IsLegacy==false && fEvtGoodMB==false && fEvtGoodHMV0==false) return; //Return 10d
+		if (IsLegacy==false && fEvtGoodMB==false && fEvtGoodHMV0==false) return; //Return 11d
 	}//data
 	else //MC
 	{
@@ -304,10 +332,10 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 		//Check vtxZ
 		fEvtVtx = fMCEvt->GetPrimaryVertex();
 		fEvtVtxZ = fEvtVtx->GetZ();
-		if (fabs(fEvtVtxZ) > cut_vtxZ) return; //Return 7mc
+		if (fabs(fEvtVtxZ) > cut_vtxZ) return; //Return 6mc
 
 		//RDHF event cut, Dec. 27, 2022
-		if (IsLegacy==false && fEvtCutsMB->IsEventSelected(fEvt)==false) return; //Return 8mc
+		if (IsLegacy==false && fEvtCutsMB->IsEventSelected(fEvt)==false) return; //Return 7mc
 
 		//Check generated MC particles w/ eXi pairs
 		int nTruth = 0;
@@ -315,10 +343,10 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 		for (int a=0; a<nTracksMC; a++)
 		{
 			//Possible 4-body decay contaminations:
-			//a. Xic+ -> (e+) + (nu) + (Xi*0) -> (e+) + (nu) + (Xi- + pi+)
+			//a. Xic+ -> (e+) + (nu)     + (Xi*0) -> (e+) + (nu)     + (Xi- + pi+)
 			//b. Xic0 -> (e-) + (nu_bar) + (Xi*+) -> (e-) + (nu_bar) + (Xi+ + pi0)
 			fMCPart = (AliAODMCParticle*)fMCEvt->GetTrack(a);
-			if (!fMCPart) continue; //Continue
+			if (!fMCPart) continue; //Continue 1
 
 			//Check if this is a desired particle
 			bool t_proceed = false;
@@ -331,7 +359,7 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 				if ( (abs(fMCPart->GetPdgCode()) == PDGCode_Xic0) ||
 					 (abs(fMCPart->GetPdgCode()) == PDGCode_Xicp) ) t_proceed = true;
 			}
-			if (t_proceed == false) continue; //Continue
+			if (t_proceed == false) continue; //Continue 2
 
 			//Search e and Xi among daughters
 			std::vector<int> idxEle;
@@ -339,15 +367,29 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 			for (int b=fMCPart->GetDaughterFirst(); b<=fMCPart->GetDaughterLast(); b++)
 			{
 				if (b<0) { cout <<"ERROR: negative index found!\n"; break; }
+
 				const int t_PDG = fMCEvt->GetTrack(b)->PdgCode();
 				if (abs(t_PDG) == PDGCode_e) idxEle.push_back(b);
-				if (abs(t_PDG) == PDGCode_Xi) idxXi.push_back(b);
+				if (abs(t_PDG) == PDGCode_Xi) idxXi.push_back(b); //3-body Xic0
+
+				//4-body decay
+				if ( (abs(t_PDG) == PDGCode_Xistm) || (abs(t_PDG) == PDGCode_Xist0) )
+				{
+					AliAODMCParticle* t_Xist = (AliAODMCParticle*)fMCEvt->GetTrack(b);
+					for (int c=t_Xist->GetDaughterFirst(); c<=t_Xist->GetDaughterLast(); c++)
+					{
+						if (c<0) break;
+						const int u_PDG = fMCEvt->GetTrack(c)->PdgCode();
+						if (abs(u_PDG) == PDGCode_Xi) idxXi.push_back(c);
+					}//c, Xi* daughters
+				}
 			}//b
-			if (idxEle.size()==0 || idxXi.size()==0) continue; //Continue
+			if (idxEle.size()==0 || idxXi.size()==0) continue; //Continue 3
 
 			//#
 			fMCOrig [nTruth] = CheckOrigin(fMCEvt, fMCPart);
 			fMCLabel[nTruth] = fMCPart->GetLabel();
+			fMCNDau [nTruth] = fMCPart->GetNDaughters();
 			fMCPDG  [nTruth] = fMCPart->GetPdgCode();
 			fMCPt   [nTruth] = fMCPart->Pt();
 			fMCY    [nTruth] = fMCPart->Y();
@@ -365,7 +407,6 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 			if (nTruth > MaxNTruth) cout <<Form("WARNING: nTruth exceeds max in run%i evt%i\n", fEvtRunNo, fEvtID);
 		}//a, tracks (MC)
 		fMCNum = nTruth;
-
 		if (ValidEvtOnly && nTruth==0) return; //!!
 	}//MC
 
@@ -427,7 +468,10 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 		fCascTPCNclsF_V0dNeg[nXi] = fV0d_neg->GetTPCNclsF();
 		if (IsMC)
 		{
-			fCascMomLabel[nXi] = GetCascMotherID(fMCEvt, fCasc); //For truth mathcing later
+			const Int_t l_Xi = GetCascLabel(fMCEvt, fCasc, false); //Xi label
+			if (l_Xi >= 0) fCascPDG[nXi] = fMCEvt->GetTrack(l_Xi)->PdgCode();
+
+			fCascMomLabel[nXi] = GetCascLabel(fMCEvt, fCasc, true); //Xic0 label
 			if (fCascMomLabel[nXi] >= 0) fCascMomPDG[nXi] = fMCEvt->GetTrack(fCascMomLabel[nXi])->PdgCode();
 		}
 
@@ -530,8 +574,8 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 		if (IsMC)
 		{
 			const int l_ele = fTrk->GetLabel();
-
 			fEleLabel   [nEle] = l_ele;
+			fElePDG     [nEle] = fMCEvt->GetTrack( abs(l_ele) )->PdgCode();
 			fEleMomLabel[nEle] = fMCEvt->GetTrack( abs(l_ele) )->GetMother();
 			fEleMomPDG  [nEle] = fMCEvt->GetTrack( fEleMomLabel[nEle] )->PdgCode();
 		}
@@ -541,8 +585,8 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 	}//a, nTracks
 	fEleNum = nEle;
 	if (ValidEvtOnly && nEle==0) return; //!!
-
 	if (nXi>0 && nEle>0) fTree->Fill(); //#
+
 	ControlOutputContainers(1);
 	return;
 }//UserExec
@@ -588,7 +632,7 @@ int AliAnalysisTaskSEXic0SL::CheckOrigin(AliMCEvent* MCEvt, AliAODMCParticle *MC
 	else return 4; //Quark found and it's NOT bottom, thus charm (only Xic0 or Xic+ supposed to be provided)
 }//CheckOrigin
 
-int AliAnalysisTaskSEXic0SL::GetCascMotherID(AliMCEvent* MCEvt, AliAODcascade* Casc)
+int AliAnalysisTaskSEXic0SL::GetCascLabel(AliMCEvent* MCEvt, AliAODcascade* Casc, bool getLabelXic0)
 {
 	//CAVEAT: reco level, these indice can be negative if quality is poor, but SHOULD BE USED
 	const Int_t l_bachPi = ((AliAODTrack*)Casc->GetDecayVertexXi()->GetDaughter(0))->GetLabel();
@@ -604,14 +648,15 @@ int AliAnalysisTaskSEXic0SL::GetCascMotherID(AliMCEvent* MCEvt, AliAODcascade* C
 	const Int_t n_v0dPos = MCEvt->GetTrack( m_v0dPos )->GetMother(); //= Xi
 	const Int_t n_v0dNeg = MCEvt->GetTrack( m_v0dNeg )->GetMother(); //= Xi
 	if (n_v0dPos != n_v0dNeg) return -998;
+	else if (getLabelXic0 == false) return n_v0dPos;
 
-	if ( (m_bachPi == n_v0dPos) && (m_bachPi == n_v0dNeg) && (n_v0dPos == n_v0dNeg)	)
+	if ( getLabelXic0 && (m_bachPi == n_v0dPos) && (m_bachPi == n_v0dNeg) && (n_v0dPos == n_v0dNeg)	)
 	{
 		const Int_t l_Xic0 = MCEvt->GetTrack( m_bachPi )->GetMother();
 		return l_Xic0;
 	}
 	else return -997;
-}//GetCascMotherID
+}//GetCascLabel
 
 bool AliAnalysisTaskSEXic0SL::FilterTrack(AliAODTrack* Trk, const AliVVertex* Vtx)
 {
@@ -862,13 +907,15 @@ void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOn
 		iLeaf = 0;
 		if (!readOnly)
 		{
-			TString strMCTruth = "mcN/I:mc_label[mcN]/I:mc_orig[mcN]/I:mc_PDG[mcN]/I:mc_Pt[mcN]/D:mc_Y[mcN]/D";
+			TString strMCTruth = "mcN/I:mc_label[mcN]/I:mc_nDau[mcN]/I:mc_orig[mcN]/I:mc_PDG[mcN]/I";
+			strMCTruth += ":mc_Pt[mcN]/D:mc_Y[mcN]/D";
 			strMCTruth += ":mc_ElePt[mcN]/D:mc_EleY[mcN]/D";
 			strMCTruth += ":mc_XiPt[mcN]/D:mc_XiY[mcN]/D";
 			T->Branch("MCTruth", 0, strMCTruth.Data());
 		}
 		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCNum);   iLeaf++; //0
 		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCLabel); iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCNDau);  iLeaf++;
 		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCOrig);  iLeaf++;
 		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCPDG);   iLeaf++;
 		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCPt);    iLeaf++;
@@ -889,7 +936,7 @@ void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOn
 		strEle += ":e_eta[eN]/D:e_phi[eN]/D:e_pT[eN]/D:e_px[eN]/D:e_py[eN]/D:e_pz[eN]/D:e_Y[eN]/D";
 		strEle += ":e_tpcNsig[eN]/s:e_tpcNxedR[eN]/s:e_tpcNclsF[eN]/s";
 		//
-		if (IsMC) strEle += ":e_label[eN]/I:e_momLabel[eN]/I:e_momPDG[eN]/I";
+		if (IsMC) strEle += ":e_label[eN]/I:e_PDG[eN]/I:e_momLabel[eN]/I:e_momPDG[eN]/I";
 		T->Branch("Ele", 0, strEle.Data());
 	}
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNum);       iLeaf++; //0
@@ -913,6 +960,7 @@ void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOn
 	if (IsMC)
 	{
 		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleLabel);    iLeaf++;
+		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePDG);      iLeaf++;
 		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMomLabel); iLeaf++;
 		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMomPDG);   iLeaf++;
 	}
@@ -934,7 +982,7 @@ void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOn
 		strCasc += ":c_tpcNxedR_BachPi[cN]/s:c_tpcNxedR_V0dPos[cN]/s:c_tpcNxedR_V0dNeg[cN]/s";
 		strCasc += ":c_tpcNclsF_BachPi[cN]/s:c_tpcNclsF_V0dPos[cN]/s:c_tpcNclsF_V0dNeg[cN]/s";
 		//
-		if (IsMC) strCasc += ":c_momLabel[cN]/I:c_momPDG[cN]/I";
+		if (IsMC) strCasc += ":c_PDG[cN]/I:c_momLabel[cN]/I:c_momPDG[cN]/I";
 		T->Branch("Casc", 0, strCasc.Data());
 	}
 	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascNum);           iLeaf++;
@@ -973,6 +1021,7 @@ void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOn
 	//
 	if (IsMC)
 	{
+		((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPDG);      iLeaf++;
 		((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMomLabel); iLeaf++;
 		((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMomPDG);   iLeaf++;
 	}
@@ -994,6 +1043,7 @@ void AliAnalysisTaskSEXic0SL::ResetTreeVariables(void)
 	for (int a=0; a<MaxNTruth; a++)
 	{
 		fMCLabel[a] = -999;
+		fMCNDau [a] = -999;
 		fMCOrig [a] = -999;
 		fMCPDG  [a] = -999;
 		fMCPt   [a] = -999.;
@@ -1010,6 +1060,7 @@ void AliAnalysisTaskSEXic0SL::ResetTreeVariables(void)
 		fEleChg      [a] = -999;
 		fEleITSNcls  [a] = -999;
 		fEleLabel    [a] = -999;
+		fElePDG      [a] = -999;
 		fEleMomLabel [a] = -999;
 		fEleMomPDG   [a] = -999;
 		fEleMinMassLS[a] = -999.;
@@ -1032,6 +1083,7 @@ void AliAnalysisTaskSEXic0SL::ResetTreeVariables(void)
 	for (int a=0; a<MaxNCasc; a++)
 	{
 		fCascChgXi        [a] = -999;
+		fCascPDG          [a] = -999;
 		fCascMomLabel     [a] = -999;
 		fCascMomPDG       [a] = -999;
 		fCascCosPAXi      [a] = -999.;
@@ -1069,3 +1121,76 @@ void AliAnalysisTaskSEXic0SL::ResetTreeVariables(void)
 
 	return;
 }//ResetDummyIndices
+
+void AliAnalysisTaskSEXic0SL::SetConstants(void)
+{
+	//Options
+	IsMC         = false;
+	IsPA         = false;
+	TrigOnMB     = false;
+	TrigOnHMV0   = false;
+	IsLegacy     = false;
+	IsCutsByFile = false;
+	ValidEvtOnly = false;
+	TrigStore.clear();
+
+	//Constants
+	MaxNTruth      = 20; //max. # of generated particle w/ eXi pair per event (MC truth)
+	MaxNEle        = 20; //max. # of electrons per event, for both MC truth and reco
+	MaxNCasc       = 20; //max. # of Xi per event, for both MC truth and reco
+	PDGCode_e      = 11;
+	PDGCode_Lambda = 3122; //Lambda0, 1115.683 +- 0.006 (MeV)
+	PDGCode_Omega  = 3334; //Omega-, 1672.45 +- 0.29 (MeV)
+	PDGCode_Xi     = 3312; //Xi- (strange baryon), 1321.71 +- 0.07 (MeV)
+	PDGCode_Xistm  = 3314; //Xi*- (or Xi 1530), 1535.0 +- 0.6 (MeV)
+	PDGCode_Xist0  = 3324; //Xi*0 (or Xi 1530), 1531.80 +- 0.32 (MeV)
+	PDGCode_Xic0   = 4132; //2470.87 +0.28 -0.31 (MeV)
+	PDGCode_Xicp   = 4232; //Xic+, 2467.93 +- 0.18 (MeV)
+	MassEle = 0.51099895 * 1.E-3; //Electron mass in GeV
+	MassLmb = 1115.683 * 1.E-3; //Lambda0 mass in GeV
+	MassXi  = 1321.71 * 1.E-3; //Xi mass in GeV
+
+	//Eventwise cut
+	cut_runNoLo = 252000;
+	cut_runNoUp = 295000;
+	cut_vtxNContributors = 1;
+	cut_bfield = 0.001;
+	cut_eta    = 1.0;
+	cut_vtxZ   = 10.0;
+
+	//Trackwise cut, common
+	cut_minNClustersITS = 2;
+	cut_TPCsignalN      = 50; //fSetProdTrackTPCNclsPID in old code
+	cut_maxChi2PerClusterITS = 36.;
+	cut_maxDCAToVertexXY     = 1.0;
+	cut_maxDCAToVertexZ      = 2.0;
+	cut_trkEta               = 0.8; //For daughter particles
+	cut_trkPt                = 0.5; //Lower limit of electron
+
+	//Trackwise cut, electron
+	cutEle_massConv         = 0.05; //GeV, max. conversion mass
+	cutEle_nSigmaTOFAbs     = 3.0;
+	cutEle_nSigmaTPCAbsConv = 5.0; //Used only to check conversion mass (FilterTrackElectron)
+	cutEle_nSigmaTPCMax     = 3.0; //Cf. Min: pT dependent (FilterTrackElectron)
+
+	//Trackwise cut, cascade
+	cutCasc_massTolLambda   = 0.008;
+	cutCasc_massTolOmega    = 0.3 * 1.E-3; //ckim, NOT used for now
+	cutCasc_massTolXi       = 0.03; //!! Old code: online 0.01, offline selection 0.008
+	cutCasc_nSigmaTPCAbs    = 4.0;
+	cutCasc_minDecayLenXi   = 0.2; //Decay length btw PV to cascade
+	cutCasc_minDecayLenV0   = 0.2; //Decay length btw cascade to V0
+	cutCasc_minDcaBachToPV  = 0.01; //DCA of bachelor track to primary vertex
+	cutCasc_minDcaV0ToPV    = 0.01; //DCA of V0 to PV
+	cutCasc_maxDcaXiDau     = 1.68; //DCA of Cascade (Xi) to its daughters
+	cutCasc_maxDcaV0Dau     = 1.68; //DCA of V0 to its daughters
+	cutCasc_minDcaV0PosToPV = 0.05; //DCA of V0 daughter (positive) to PV
+	cutCasc_minDcaV0NegToPV = 0.05;
+	cutCasc_minCosPAngleXi  = 0.98;
+	cutCasc_minCosPAngleV0  = 0.98;
+
+	//Tree variables for events
+	fEvtID = 0;
+
+	return;
+}//SetConstants

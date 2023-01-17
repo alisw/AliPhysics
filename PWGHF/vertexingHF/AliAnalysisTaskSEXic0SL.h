@@ -43,7 +43,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 
 		//User defined functions
 		int CheckOrigin(AliMCEvent* MCEvt, AliAODMCParticle *MCPart); //<0:no_quark, 4:c, 5:b
-		int GetCascMotherID(AliMCEvent* MCEvt, AliAODcascade* Casc);
+		int GetCascLabel(AliMCEvent* MCEvt, AliAODcascade* Casc, bool getLabelXic0); //true for Xic0, false for Xi
 
 		bool FilterTrack(AliAODTrack* Trk, const AliVVertex* Vtx);
 		bool FilterTrackElectron(AliAODTrack* Trk, AliPIDResponse* PID);
@@ -53,10 +53,13 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		void ControlOutputContainers(int option); //0: define, 1: post
 		void ControlOutputTree(TTree* T, bool isMC, bool readOnly = false);
 		void ResetTreeVariables(void);
+		void SetConstants(void);
 
 		void ExecuteOffSel(TTree* T, TString Cond); //For offline selection of Grid/LT output
 
 	private:
+
+		TString fTaskOpt;
 
 		//Analysis objects
 		AliAODcascade*                      fCasc = nullptr;
@@ -75,83 +78,84 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		AliNormalizationCounter*            fANC_INEL0_MB_0p1to30 = nullptr;
 		AliNormalizationCounter*            fANC_INEL0_HMV0_0to0p1 = nullptr;
 		AliPIDResponse*                     fPID = nullptr;
-		AliRDHFCutsXictoeleXifromAODtracks* fEvtCutsMB = nullptr; //Legacy
-		AliRDHFCutsXictoeleXifromAODtracks* fEvtCutsHMV0 = nullptr; //Legacy
+		AliRDHFCutsXictoeleXifromAODtracks* fEvtCutsMB = nullptr;
+		AliRDHFCutsXictoeleXifromAODtracks* fEvtCutsHMV0 = nullptr;
 		AliVEvent*                          fEvt = nullptr;
 		const AliVVertex*                   fEvtVtx = nullptr;
 		THistManager*                       fHisto = nullptr;
 		TTree*                              fTree = nullptr;
 
 		//Options
-		TString fTaskOpt;
-		bool IsMC = false;
-		bool IsPA = false;
-		bool TrigOnMB = false;
-		bool TrigOnHMV0 = false;
-		bool IsLegacy = false;
-		bool IsCutsByFile = false;
-		bool ValidEvtOnly = false;
+		bool IsMC;         //= false;
+		bool IsPA;         //= false;
+		bool TrigOnMB;     //= false;
+		bool TrigOnHMV0;   //= false;
+		bool IsLegacy;     //= false;
+		bool IsCutsByFile; //= false;
+		bool ValidEvtOnly; //= false;
 		std::vector<UInt_t> TrigStore; //Container for triggers of interest
 
 		//-----------------------------------------------------------
 
 		//Constants
-		static const int MaxNTruth      = 20; //max. # of generated particle w/ eXi pair per event (MC truth)
-		static const int MaxNEle        = 20; //max. # of electrons per event, for both MC truth and reco
-		static const int MaxNCasc       = 20; //max. # of Xi per event, for both MC truth and reco
-		static const int PDGCode_e      = 11;
-		static const int PDGCode_Lambda = 3122; //Lambda0, 1115.683 +- 0.006 (MeV)
-		static const int PDGCode_Omega  = 3334; //Omega-, 1672.45 +- 0.29 (MeV)
-		static const int PDGCode_Xi     = 3312; //Xi- (strange baryon), 1321.71 +- 0.07 (MeV)
-		static const int PDGCode_Xic0   = 4132; //2470.87 +0.28 -0.31 (MeV)
-		static const int PDGCode_Xicp   = 4232; //Xic+
-		const double MassEle = 0.51099895 * 1.E-3; //Electron mass in GeV
-		const double MassLmb = 1115.683 * 1.E-3; //Lambda0 mass in GeV
-		const double MassXi  = 1321.71 * 1.E-3; //Xi mass in GeV
+		int MaxNTruth;      //= 20; //max. # of generated particle w/ eXi pair per event (MC truth)
+		int MaxNEle;        //= 20; //max. # of electrons per event, for both MC truth and reco
+		int MaxNCasc;       //= 20; //max. # of Xi per event, for both MC truth and reco
+		int PDGCode_e;      //= 11;
+		int PDGCode_Lambda; //= 3122; //Lambda0, 1115.683 +- 0.006 (MeV)
+		int PDGCode_Omega;  //= 3334; //Omega-, 1672.45 +- 0.29 (MeV)
+		int PDGCode_Xi;     //= 3312; //Xi- (strange baryon), 1321.71 +- 0.07 (MeV)
+		int PDGCode_Xistm;  //= 3314; //Xi*- (Xi 1530), 1535.0 +- 0.6 (MeV)
+		int PDGCode_Xist0;  //= 3324; //Xi*0 (Xi 1530), 1531.80 +- 0.32 (MeV)
+		int PDGCode_Xic0;   //= 4132; //2470.87 +0.28 -0.31 (MeV)
+		int PDGCode_Xicp;   //= 4232; //Xic+, 2467.93 +- 0.18 (MeV)
+		double MassEle;     //= 0.51099895 * 1.E-3; //Electron mass in GeV
+		double MassLmb;     //= 1115.683 * 1.E-3; //Lambda0 mass in GeV
+		double MassXi;      //= 1321.71 * 1.E-3; //Xi mass in GeV
 
 		//Eventwise cut
-		const Int_t   cut_runNoLo = 252000;
-		const Int_t   cut_runNoUp = 295000;
-		const Int_t   cut_vtxNContributors = 1;
-		const Float_t cut_bfield = 0.001;
-		const Float_t cut_eta    = 1.0;
-		const Float_t cut_vtxZ   = 10.0;
+		Int_t   cut_runNoLo;          //= 252000; 
+		Int_t   cut_runNoUp;          //= 295000;
+		Int_t   cut_vtxNContributors; //= 1;
+		Float_t cut_bfield;           //= 0.001;
+		Float_t cut_eta;              //= 1.0;
+		Float_t cut_vtxZ;             //= 10.0;
 
 		//Trackwise cut, common
-		const Int_t   cut_minNClustersITS = 2;
-		const Int_t   cut_TPCsignalN      = 50; //fSetProdTrackTPCNclsPID in old code
-		const Float_t cut_maxChi2PerClusterITS = 36.;
-		const Float_t cut_maxDCAToVertexXY     = 1.0;
-		const Float_t cut_maxDCAToVertexZ      = 2.0;
-		const Float_t cut_trkEta               = 0.8; //For daughter particles
-		const Float_t cut_trkPt                = 0.5; //Lower limit of electron
+		Int_t   cut_minNClustersITS;      //= 2;
+		Int_t   cut_TPCsignalN;           //= 50; //fSetProdTrackTPCNclsPID in old code
+		Float_t cut_maxChi2PerClusterITS; //= 36.;
+		Float_t cut_maxDCAToVertexXY;     //= 1.0;
+		Float_t cut_maxDCAToVertexZ;      //= 2.0;
+		Float_t cut_trkEta;               //= 0.8; //For daughter particles
+		Float_t cut_trkPt;                //= 0.5; //Lower limit of electron
 
 		//Trackwise cut, electron
-		const Float_t cutEle_massConv         = 0.05; //GeV, max. conversion mass
-		const Float_t cutEle_nSigmaTOFAbs     = 3.0;
-		const Float_t cutEle_nSigmaTPCAbsConv = 5.0; //Used only to check conversion mass (FilterTrackElectron)
-		const Float_t cutEle_nSigmaTPCMax     = 3.0; //Cf. Min: pT dependent (FilterTrackElectron)
+		Float_t cutEle_massConv;         //= 0.05; //GeV, max. conversion mass
+		Float_t cutEle_nSigmaTOFAbs;     //= 3.0;
+		Float_t cutEle_nSigmaTPCAbsConv; //= 5.0; //Used only to check conversion mass (FilterTrackElectron)
+		Float_t cutEle_nSigmaTPCMax;     //= 3.0; //Cf. Min: pT dependent (FilterTrackElectron)
 
 		//Trackwise cut, cascade
-		const Float_t cutCasc_massTolLambda   = 0.008;
-		const Float_t cutCasc_massTolOmega    = 0.3 * 1.E-3; //ckim, NOT used for now
-		const Float_t cutCasc_massTolXi       = 0.03; //!! Old code: online 0.01, offline selection 0.008
-		const Float_t cutCasc_nSigmaTPCAbs    = 4.0;
-		const Float_t cutCasc_minDecayLenXi   = 0.2; //Decay length btw PV to cascade
-		const Float_t cutCasc_minDecayLenV0   = 0.2; //Decay length btw cascade to V0
-		const Float_t cutCasc_minDcaBachToPV  = 0.01; //DCA of bachelor track to primary vertex
-		const Float_t cutCasc_minDcaV0ToPV    = 0.01; //DCA of V0 to PV
-		const Float_t cutCasc_maxDcaXiDau     = 1.68; //DCA of Cascade (Xi) to its daughters
-		const Float_t cutCasc_maxDcaV0Dau     = 1.68; //DCA of V0 to its daughters
-		const Float_t cutCasc_minDcaV0PosToPV = 0.05; //DCA of V0 daughter (positive) to PV
-		const Float_t cutCasc_minDcaV0NegToPV = 0.05;
-		const Float_t cutCasc_minCosPAngleXi  = 0.98;
-		const Float_t cutCasc_minCosPAngleV0  = 0.98;
+		Float_t cutCasc_massTolLambda;   //= 0.008;
+		Float_t cutCasc_massTolOmega;    //= 0.3 * 1.E-3; //ckim, NOT used for now
+		Float_t cutCasc_massTolXi;       //= 0.03; //!! Old code: online 0.01, offline selection 0.008
+		Float_t cutCasc_nSigmaTPCAbs;    //= 4.0;
+		Float_t cutCasc_minDecayLenXi;   //= 0.2; //Decay length btw PV to cascade
+		Float_t cutCasc_minDecayLenV0;   //= 0.2; //Decay length btw cascade to V0
+		Float_t cutCasc_minDcaBachToPV;  //= 0.01; //DCA of bachelor track to primary vertex
+		Float_t cutCasc_minDcaV0ToPV;    //= 0.01; //DCA of V0 to PV
+		Float_t cutCasc_maxDcaXiDau;     //= 1.68; //DCA of Cascade (Xi) to its daughters
+		Float_t cutCasc_maxDcaV0Dau;     //= 1.68; //DCA of V0 to its daughters
+		Float_t cutCasc_minDcaV0PosToPV; //= 0.05; //DCA of V0 daughter (positive) to PV
+		Float_t cutCasc_minDcaV0NegToPV; //= 0.05;
+		Float_t cutCasc_minCosPAngleXi;  //= 0.98;
+		Float_t cutCasc_minCosPAngleV0;  //= 0.98;
 
 		//-----------------------------------------------------------
 
 		//Tree variables for events
-		UInt_t   fEvtID = 0;
+		UInt_t   fEvtID;
 		UInt_t   fEvtTrig;
 		Int_t    fEvtRunNo;
 		Float_t  fEvtMult;
@@ -161,76 +165,79 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Bool_t   fEvtINELLgt0;
 
 		Int_t    fMCNum;
-		Int_t    fMCLabel[MaxNTruth];
-		Int_t    fMCOrig [MaxNTruth];
-		Int_t    fMCPDG  [MaxNTruth];
-		Double_t fMCPt   [MaxNTruth];
-		Double_t fMCY    [MaxNTruth];
-		Double_t fMCElePt[MaxNTruth];
-		Double_t fMCEleY [MaxNTruth];
-		Double_t fMCXiPt [MaxNTruth];
-		Double_t fMCXiY  [MaxNTruth];
+		Int_t    fMCLabel[20]; //20: MaxNTruth
+		Int_t    fMCNDau [20];
+		Int_t    fMCOrig [20];
+		Int_t    fMCPDG  [20];
+		Double_t fMCPt   [20];
+		Double_t fMCY    [20];
+		Double_t fMCElePt[20];
+		Double_t fMCEleY [20];
+		Double_t fMCXiPt [20];
+		Double_t fMCXiY  [20];
 
 		//Tree variables for tracks
 		Int_t    fEleNum;
-		Int_t    fEleChg      [MaxNEle];
-		Int_t    fEleITSNcls  [MaxNEle]; //Previous notation: ITS
-		Float_t  fEleMinMassLS[MaxNEle]; //Minimum mass of e+e- suspect from photon conversion, likesign
-		Float_t  fEleMinMassUS[MaxNEle]; //Minimum mass of e+e- suspect from photon conversion, unlikesign
-		Float_t  fEleNSigmaTOF[MaxNEle];
-		Float_t  fEleNSigmaTPC[MaxNEle];
-		Double_t fEleEta      [MaxNEle];
-		Double_t fElePhi      [MaxNEle];
-		Double_t fElePt       [MaxNEle];
-		Double_t fElePx       [MaxNEle];
-		Double_t fElePy       [MaxNEle];
-		Double_t fElePz       [MaxNEle];
-		Double_t fEleY        [MaxNEle];
-		UShort_t fEleTPCNsig  [MaxNEle]; //Previous notation: TPCPID
-		UShort_t fEleTPCNxedR [MaxNEle]; //Previous notation: e_crossedrows
-		UShort_t fEleTPCNclsF [MaxNEle]; //Previous notation: e_findable
+		Int_t    fEleChg      [20]; //20: MaxNEle
+		Int_t    fEleITSNcls  [20]; //Previous notation: ITS
+		Float_t  fEleMinMassLS[20]; //Minimum mass of e+e- suspect from photon conversion, likesign
+		Float_t  fEleMinMassUS[20]; //Minimum mass of e+e- suspect from photon conversion, unlikesign
+		Float_t  fEleNSigmaTOF[20];
+		Float_t  fEleNSigmaTPC[20];
+		Double_t fEleEta      [20];
+		Double_t fElePhi      [20];
+		Double_t fElePt       [20];
+		Double_t fElePx       [20];
+		Double_t fElePy       [20];
+		Double_t fElePz       [20];
+		Double_t fEleY        [20];
+		UShort_t fEleTPCNsig  [20]; //Previous notation: TPCPID
+		UShort_t fEleTPCNxedR [20]; //Previous notation: e_crossedrows
+		UShort_t fEleTPCNclsF [20]; //Previous notation: e_findable
 		//
-		Int_t fEleLabel   [MaxNEle]; //MC only, electron's label, to check if it's negative or not
-		Int_t fEleMomLabel[MaxNEle]; //MC only, mother particle's (Xic0) label
-		Int_t fEleMomPDG  [MaxNEle]; //MC only, mother particle's (Xic0) PDG code
+		Int_t fEleLabel   [20]; //MC only, electron candidate's label, to check if it's negative or not
+		Int_t fElePDG     [20]; //MC only, electron candidate's PDG code
+		Int_t fEleMomLabel[20]; //MC only, mother particle's (Xic0) label
+		Int_t fEleMomPDG  [20]; //MC only, mother particle's (Xic0) PDG code
 
 		//Tree variables for cascades
 		Int_t    fCascNum;
-		Int_t    fCascChgXi      [MaxNCasc];
-		Double_t fCascCosPAXi    [MaxNCasc]; //Cosine of pointing angle
-		Double_t fCascCosPAV0    [MaxNCasc];
-		Double_t fCascDcaBachToPV[MaxNCasc]; //DCA of Bachelor track to Primary Vertex
-		Double_t fCascDcaV0ToPV  [MaxNCasc];
-		Double_t fCascDcaXiDau   [MaxNCasc]; //DCA of Xi daughters
-		Double_t fCascDcaV0Dau   [MaxNCasc];
-		Double_t fCascDcaPosToPV [MaxNCasc]; //DCA of Positive V0 daughter to PV
-		Double_t fCascDcaNegToPV [MaxNCasc];
+		Int_t    fCascChgXi      [20]; //20: MaxNCasc
+		Double_t fCascCosPAXi    [20]; //Cosine of pointing angle
+		Double_t fCascCosPAV0    [20];
+		Double_t fCascDcaBachToPV[20]; //DCA of Bachelor track to Primary Vertex
+		Double_t fCascDcaV0ToPV  [20];
+		Double_t fCascDcaXiDau   [20]; //DCA of Xi daughters
+		Double_t fCascDcaV0Dau   [20];
+		Double_t fCascDcaPosToPV [20]; //DCA of Positive V0 daughter to PV
+		Double_t fCascDcaNegToPV [20];
 		//
-		Double_t fCascDecayLenXi   [MaxNCasc]; //Decay length, Xi to PV
-		Double_t fCascDecayLenXiOld[MaxNCasc]; //Decay length (in truth, radial length) at the old code
-		Double_t fCascDecayLenV0   [MaxNCasc]; //Decay length, V0 ti Xi
-		Double_t fCascDecayLenV0Old[MaxNCasc]; //Decay length (in truth, radial length) at the old code
-		Double_t fCascMassLmb      [MaxNCasc]; //Lambda0
-		Double_t fCascMassLmbAnti  [MaxNCasc]; //Lambda0_bar
-		Double_t fCascMassOmega    [MaxNCasc];
-		Double_t fCascMassXi       [MaxNCasc];
-		Double_t fCascPtXi         [MaxNCasc]; //pT of Xi
-		Double_t fCascPxXi         [MaxNCasc];
-		Double_t fCascPyXi         [MaxNCasc];
-		Double_t fCascPzXi         [MaxNCasc];
+		Double_t fCascDecayLenXi   [20]; //Decay length, Xi to PV
+		Double_t fCascDecayLenXiOld[20]; //Decay length (in truth, radial length) at the old code
+		Double_t fCascDecayLenV0   [20]; //Decay length, V0 ti Xi
+		Double_t fCascDecayLenV0Old[20]; //Decay length (in truth, radial length) at the old code
+		Double_t fCascMassLmb      [20]; //Lambda0
+		Double_t fCascMassLmbAnti  [20]; //Lambda0_bar
+		Double_t fCascMassOmega    [20];
+		Double_t fCascMassXi       [20];
+		Double_t fCascPtXi         [20]; //pT of Xi
+		Double_t fCascPxXi         [20];
+		Double_t fCascPyXi         [20];
+		Double_t fCascPzXi         [20];
 		//
-		Double_t fCascPt_BachPi      [MaxNCasc];
-		Double_t fCascPt_V0dPos      [MaxNCasc];
-		Double_t fCascPt_V0dNeg      [MaxNCasc];
-		UShort_t fCascTPCNxedR_BachPi[MaxNCasc]; //TPCNcrossedRows, previously bpion_crossedrows or crossedratio
-		UShort_t fCascTPCNxedR_V0dPos[MaxNCasc]; //V0 daughter, positive
-		UShort_t fCascTPCNxedR_V0dNeg[MaxNCasc]; //V0 daughter, negative
-		UShort_t fCascTPCNclsF_BachPi[MaxNCasc]; //Previously bpion_findable
-		UShort_t fCascTPCNclsF_V0dPos[MaxNCasc];
-		UShort_t fCascTPCNclsF_V0dNeg[MaxNCasc];
+		Double_t fCascPt_BachPi      [20];
+		Double_t fCascPt_V0dPos      [20];
+		Double_t fCascPt_V0dNeg      [20];
+		UShort_t fCascTPCNxedR_BachPi[20]; //TPCNcrossedRows, previously bpion_crossedrows or crossedratio
+		UShort_t fCascTPCNxedR_V0dPos[20]; //V0 daughter, positive
+		UShort_t fCascTPCNxedR_V0dNeg[20]; //V0 daughter, negative
+		UShort_t fCascTPCNclsF_BachPi[20]; //Previously bpion_findable
+		UShort_t fCascTPCNclsF_V0dPos[20];
+		UShort_t fCascTPCNclsF_V0dNeg[20];
 		//
-		Int_t fCascMomLabel[MaxNCasc]; //MC only, mother particle's (Xic0) label
-		Int_t fCascMomPDG  [MaxNCasc]; //MC only, mother particle's (Xic0) PDG code
+		Int_t fCascPDG     [20]; //MC only, Xi candidate's PDG code
+		Int_t fCascMomLabel[20]; //MC only, mother particle's (Xic0) label
+		Int_t fCascMomPDG  [20]; //MC only, mother particle's (Xic0) PDG code
 
 		ClassDef(AliAnalysisTaskSEXic0SL, 1);
 };
