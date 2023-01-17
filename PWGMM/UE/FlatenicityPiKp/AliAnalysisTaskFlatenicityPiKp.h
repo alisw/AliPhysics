@@ -56,7 +56,6 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		void SetNcl(UShort_t ncl) { fNcl = ncl; } // Set pT cut for associated particles
 		void SetUseMC(Bool_t flat_flag = kFALSE) { fUseMC = flat_flag; } // use to analyse MC data
 		void SaveDCAxyHistograms(Bool_t saveDCAxy ) { fSaveDCAxyHistograms = saveDCAxy; } 
-		void IsV0MCalibrated(Bool_t V0MCal = kTRUE) { fV0MEqualisation = V0MCal; }
 		void IsdEdxCalibrated(Bool_t dEdxCal = kTRUE) { fdEdxCalibrated = dEdxCal; }
 		void SetDetectorForFlatenicity(TString det = "V0") { fDetFlat = det; }
 		void SaveThisMultBin(std::string v0bin = "0_1") { fV0MBin = v0bin; }
@@ -77,7 +76,6 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		AliStack *fMCStack; //! MC stack
 		AliMCEvent *fMC;    //! MC Event
 		Bool_t fUseMC;      // analyze MC events
-		/* Int_t fV0Mindex; */
 		Float_t fV0MMultiplicity;
 		TString fDetFlat;
 		std::string fV0MBin;
@@ -92,13 +90,10 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		Double_t fEtaCut;
 		Double_t fPtMin;
 		Double_t fNcl;
-		Bool_t fV0MEqualisation;
 		Bool_t fdEdxCalibrated;
 		Bool_t fSaveDCAxyHistograms;
 		TF1* fEtaCalibrationPos;
 		TF1* fEtaCalibrationNeg;
-		/* TF1* fV0CCalibration; */
-		/* TF1* fV0ACalibration; */
 		TF1* fcutLow;
 		TF1* fcutHigh;
 		TF1* fcutDCAxy;
@@ -110,20 +105,14 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		Double_t fFlatTPC;
 		Float_t fFlatMC;
 		AliMultSelection *fMultSelection;
-		TH1D *hPtPrimIn;
-		TH1D *hPtPrimOut;
-		TH1D *hPtSecOut;
-		TH1D *hPtOut;
 		TH2F *hFlatVsV0MVsMult;
 		TH2F *hFlatenicityMC;
 		TH2F *hFlatenicityMCRec;
-		TH2D *hFlatResponse;
-		TH2D *hFlatVsPtMC;
-		/* TH3F *hActivityV0CV0A; */
+		TH2F *hFlatResponse;
+		TH2F *hFlatVsPtMC;
 		TProfile *hActivityV0DataSect;
 		TProfile *hActivityV0McSect;
-		TH2D *hFlatVsNchMC;
-		/* TH2F *hFlatVsPtV0M[9]; */
+		TH2F *hFlatVsNchMC;
 		TH3F *hNsigmaPiPos[4];
 		TH3F *hNsigmaKPos[4];
 		TH3F *hNsigmaPPos[4];
@@ -150,16 +139,10 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 
 		TH2F* nsigma_kaon_h[4];
 		TH2F* random_cont_in_kaon_h[4];
-		/* TH2F* pion_cont_in_kaon_h[4]; */
-		/* TH2F* electron_cont_in_kaon_h[4]; */
 		TH2F* nsigma_proton_h[4];
 		TH2F* random_cont_in_proton_h[4];
-		/* TH2F* pion_cont_in_proton_h[4]; */
-		/* TH2F* electron_cont_in_proton_h[4]; */
 		TH2F* nsigma_pion_h[4];
 		TH2F* random_cont_in_pion_h[4];
-		/* TH2F* kaon_cont_in_pion_h[4]; */
-		/* TH2F* electron_cont_in_pion_h[4]; */
 
 		TH2F* hPionTOFDCAxyNeg[3];
 		TH2F* hProtonTOFDCAxyNeg[3];
