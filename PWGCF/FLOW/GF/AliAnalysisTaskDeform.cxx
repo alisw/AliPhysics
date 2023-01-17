@@ -267,8 +267,8 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, Bool
   if(fStageSwitch==2)
     DefineOutput(1,TList::Class());
   if(fStageSwitch==3) {
+    if(fHasMpt) DefineInput(1,TList::Class());
     if(!fIsMC) { //Efficiency and NUA only important for data
-      if(fHasMpt) DefineInput(1,TList::Class());
       DefineInput(fHasMpt?2:1,TList::Class()); //NUA
       int idx = fHasMpt?3:2;
       for(int key(0);key<Nkeys;++key) {
@@ -376,8 +376,6 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
   if(fStageSwitch==3) {
     fRndm = new TRandom(0);
     fRequireReloadOnRunChange = kFALSE;
-    fWeightList = (TList*)GetInputData(fHasMpt?2:1);
-    fWeights = new AliGFWWeights*[4];
     const char* species[] = {"_ch","_pi","_ka","_pr"};
     if(fHasMpt) {
       fMptList = (TList*)GetInputData(1);
@@ -387,6 +385,8 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       }
     }
     if(!fIsMC) { //Efficiencies and NUA are only for the data or if specified for pseudoefficiencies
+      fWeightList = (TList*)GetInputData(fHasMpt?2:1);
+      fWeights = new AliGFWWeights*[4];
       if(fUsePIDNUA) {
         if(!fWeightList) AliFatal("NUA list not set or does not exist!\n");
         TString lBase(""); //base
@@ -1360,7 +1360,6 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       fMpt[7+8*i]->FillProfile(l_Multi,mptev*mptev*mptev*mptev*mptev*mptev*mptev*mptev,fUseWeightsOne?1:(wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]),l_Random);
     }
   }
-  
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
   PostData(1,fptVarList);

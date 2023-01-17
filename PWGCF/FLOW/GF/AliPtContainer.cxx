@@ -205,7 +205,7 @@ vector<double> AliPtContainer::getEventCorrelation(const vector<vector<double>> 
 }
 double AliPtContainer::PolynomialExpansion(int k, const vector<vector<double>> &inarr, const double &mpt){
   double polexp = 0;
-  for(int l(0);l<=k;++k){
+  for(int l(0);l<=k;++l){
     polexp += fSign[l]*binomial(k,l)*inarr[k][k-l]/inarr[k][0]*pow(mpt,l);
   }
   return polexp;
