@@ -58,7 +58,7 @@ enum {kCh = 0, kPi = 1, kKa = 2, kPr = 4};
 class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskDeform();
-  AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="", TString ContainerSubfix="", Int_t Nkeys = 1);
+  AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, Bool_t HasMpt=kFALSE, TString StageSwitch="", TString ContainerSubfix="", Int_t Nkeys = 1);
   virtual ~AliAnalysisTaskDeform();
   virtual void UserCreateOutputObjects();
   virtual void NotifyRun();
@@ -73,6 +73,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void FillSpectraMC(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   //void ProduceEfficiencies(AliESDEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void VnMpt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
+  void MeanPt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
@@ -135,6 +136,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Int_t fEventCutFlag; //0 for standard AliEventCuts; 1 for LHC15o pass2; 2 for LHC18qr pass3
   TString *fContSubfix;
   TString *fCentEst;
+  Bool_t fHasMpt;
   Bool_t fExtendV0MAcceptance;
   Bool_t fIsMC;
   Bool_t fBypassTriggerAndEvetCuts;
@@ -176,6 +178,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH2D *fNchTrueVsReco; //!
   TH2D *fESDvsFB128;
   TList *fptVarList;
+  TList* fMptList;
   AliCkContainer **fCkCont;
   AliPtContainer  **fPtCont;
   TList *fCovList;
@@ -183,7 +186,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   static const int Ncovpfs = 16;
   AliProfileBS **fCovariance; //!
   AliProfileBS **fCovariancePowerMpt; //!
-  AliProfileBS **fMpt; //
+  AliProfileBS **fMpt; //!
+  TH1D **fMptInput; //!
   UInt_t fTriggerType;
   TList *fWeightList; //!
   AliGFWWeights **fWeights;//! This should be stored in TList
