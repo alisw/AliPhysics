@@ -55,6 +55,42 @@ ClassImp(AliAnalysisTaskSEXic0SL);
 #include <vector>
 using namespace std;
 
+AliAnalysisTaskSEXic0SL::AliAnalysisTaskSEXic0SL():
+	AliAnalysisTaskSE("AliAnalysisTaskSEXic0SL"), fTaskOpt(0),
+	fCasc(0), fMCPart(0), fTrk(0), fTrkCuts(0), fInputHandler(0), fMCEvt(0), fMultSel(0),
+	fANC_MB_0to100(0), fANC_MB_30to100(0), fANC_MB_0p1to30(0), fANC_HMV0_0to0p1(0),
+	fANC_INEL0_MB_0to100(0), fANC_INEL0_MB_30to100(0), fANC_INEL0_MB_0p1to30(0), fANC_INEL0_HMV0_0to0p1(0),
+	fPID(0), fEvtCutsMB(0), fEvtCutsHMV0(0), fEvt(0), fEvtVtx(0), fHisto(0), fTree(0),
+	IsMC(false), IsPA(false), TrigOnMB(false), TrigOnHMV0(false),
+	IsLegacy(false), IsCutsByFile(false), ValidEvtOnly(false), TrigStore(0),
+	MaxNTruth(0), MaxNEle(0), MaxNCasc(0), PDGCode_e(0), PDGCode_Lambda(0), PDGCode_Omega(0), PDGCode_Xi(0),
+	PDGCode_Xistm(0), PDGCode_Xist0(0), PDGCode_Xic0(0), PDGCode_Xicp(0), MassEle(0), MassLmb(0), MassXi(0),
+	cut_runNoLo(0), cut_runNoUp(0), cut_vtxNContributors(0), cut_bfield(0), cut_eta(0), cut_vtxZ(0),
+	cut_minNClustersITS(0), cut_TPCsignalN(0), cut_maxChi2PerClusterITS(0),
+	cut_maxDCAToVertexXY(0), cut_maxDCAToVertexZ(0), cut_trkEta(0), cut_trkPt(0),
+	cutEle_massConv(0), cutEle_nSigmaTOFAbs(0), cutEle_nSigmaTPCAbsConv(0), cutEle_nSigmaTPCMax(0),
+	cutCasc_massTolLambda(0), cutCasc_massTolOmega(0), cutCasc_massTolXi(0), cutCasc_nSigmaTPCAbs(0),
+	cutCasc_minDecayLenXi(0), cutCasc_minDecayLenV0(0), cutCasc_minDcaBachToPV(0), cutCasc_minDcaV0ToPV(0),
+	cutCasc_maxDcaXiDau(0), cutCasc_maxDcaV0Dau(0), cutCasc_minDcaV0PosToPV(0), cutCasc_minDcaV0NegToPV(0),
+	cutCasc_minCosPAngleXi(0), cutCasc_minCosPAngleV0(0),
+	fEvtID(0), fEvtTrig(0), fEvtRunNo(0), fEvtMult(0), fEvtVtxZ(0), fEvtGoodMB(0), fEvtGoodHMV0(0), fEvtINELLgt0(0),
+	fMCNum(0), fMCLabel(0), fMCNDau(0), fMCOrig(0), fMCPDG(0), fMCPt(0), fMCY(0),
+	fMCElePt(0), fMCEleY(0), fMCXiPt(0), fMCXiY(0),
+	fEleNum(0), fEleChg(0), fEleITSNcls(0), fEleMinMassLS(0), fEleMinMassUS(0),
+	fEleNSigmaTOF(0), fEleNSigmaTPC(0), fEleEta(0), fElePhi(0), fElePt(0),
+	fElePx(0), fElePy(0), fElePz(0),	fEleY(0), fEleTPCNsig(0), fEleTPCNxedR(0),
+	fEleTPCNclsF(0), fEleLabel(0), fElePDG(0), fEleMomLabel(0), fEleMomPDG(0),
+	fCascNum(0), fCascChgXi(0), fCascCosPAXi(0), fCascCosPAV0(0), fCascDcaBachToPV(0), fCascDcaV0ToPV(0),
+	fCascDcaXiDau(0), fCascDcaV0Dau(0), fCascDcaPosToPV(0), fCascDcaNegToPV(0), fCascDecayLenXi(0),
+	fCascDecayLenXiOld(0), fCascDecayLenV0(0), fCascDecayLenV0Old(0), fCascMassLmb(0), fCascMassLmbAnti(0),
+	fCascMassOmega(0), fCascMassXi(0), fCascPtXi(0), fCascPxXi(0), fCascPyXi(0), fCascPzXi(0),
+	fCascPt_BachPi(0), fCascPt_V0dPos(0), fCascPt_V0dNeg(0),
+	fCascTPCNxedR_BachPi(0), fCascTPCNxedR_V0dPos(0), fCascTPCNxedR_V0dNeg(0), 
+	fCascTPCNclsF_BachPi(0), fCascTPCNclsF_V0dPos(0), fCascTPCNclsF_V0dNeg(0), 
+	fCascPDG(0), fCascMomLabel(0), fCascMomPDG(0)
+{
+}//Constructor, default
+
 AliAnalysisTaskSEXic0SL::AliAnalysisTaskSEXic0SL(const char* name, const char* option):
 	AliAnalysisTaskSE(name), fTaskOpt(option),
 	//
@@ -66,9 +102,8 @@ AliAnalysisTaskSEXic0SL::AliAnalysisTaskSEXic0SL(const char* name, const char* o
 	IsMC(false), IsPA(false), TrigOnMB(false), TrigOnHMV0(false),
 	IsLegacy(false), IsCutsByFile(false), ValidEvtOnly(false), TrigStore(0),
 	//
-	MaxNTruth(0), MaxNEle(0), MaxNCasc(0), PDGCode_e(0), PDGCode_Lambda(0), PDGCode_Omega(0),
-	PDGCode_Xi(0), PDGCode_Xistm(0), PDGCode_Xist0(0), PDGCode_Xic0(0), PDGCode_Xicp(0),
-	MassEle(0), MassLmb(0), MassXi(0),
+	MaxNTruth(0), MaxNEle(0), MaxNCasc(0), PDGCode_e(0), PDGCode_Lambda(0), PDGCode_Omega(0), PDGCode_Xi(0),
+	PDGCode_Xistm(0), PDGCode_Xist0(0), PDGCode_Xic0(0), PDGCode_Xicp(0), MassEle(0), MassLmb(0), MassXi(0),
 	//
 	cut_runNoLo(0), cut_runNoUp(0), cut_vtxNContributors(0), cut_bfield(0), cut_eta(0), cut_vtxZ(0),
 	//
@@ -80,7 +115,26 @@ AliAnalysisTaskSEXic0SL::AliAnalysisTaskSEXic0SL(const char* name, const char* o
 	cutCasc_massTolLambda(0), cutCasc_massTolOmega(0), cutCasc_massTolXi(0), cutCasc_nSigmaTPCAbs(0),
 	cutCasc_minDecayLenXi(0), cutCasc_minDecayLenV0(0), cutCasc_minDcaBachToPV(0), cutCasc_minDcaV0ToPV(0),
 	cutCasc_maxDcaXiDau(0), cutCasc_maxDcaV0Dau(0), cutCasc_minDcaV0PosToPV(0), cutCasc_minDcaV0NegToPV(0),
-	cutCasc_minCosPAngleXi(0), cutCasc_minCosPAngleV0(0)
+	cutCasc_minCosPAngleXi(0), cutCasc_minCosPAngleV0(0),
+	//
+	fEvtID(0), fEvtTrig(0), fEvtRunNo(0), fEvtMult(0), fEvtVtxZ(0), fEvtGoodMB(0), fEvtGoodHMV0(0), fEvtINELLgt0(0),
+	//
+	fMCNum(0), fMCLabel(0), fMCNDau(0), fMCOrig(0), fMCPDG(0), fMCPt(0), fMCY(0),
+	fMCElePt(0), fMCEleY(0), fMCXiPt(0), fMCXiY(0),
+	//
+	fEleNum(0), fEleChg(0), fEleITSNcls(0), fEleMinMassLS(0), fEleMinMassUS(0),
+	fEleNSigmaTOF(0), fEleNSigmaTPC(0), fEleEta(0), fElePhi(0), fElePt(0),
+	fElePx(0), fElePy(0), fElePz(0),	fEleY(0), fEleTPCNsig(0), fEleTPCNxedR(0),
+	fEleTPCNclsF(0), fEleLabel(0), fElePDG(0), fEleMomLabel(0), fEleMomPDG(0),
+	//
+	fCascNum(0), fCascChgXi(0), fCascCosPAXi(0), fCascCosPAV0(0), fCascDcaBachToPV(0), fCascDcaV0ToPV(0),
+	fCascDcaXiDau(0), fCascDcaV0Dau(0), fCascDcaPosToPV(0), fCascDcaNegToPV(0), fCascDecayLenXi(0),
+	fCascDecayLenXiOld(0), fCascDecayLenV0(0), fCascDecayLenV0Old(0), fCascMassLmb(0), fCascMassLmbAnti(0),
+	fCascMassOmega(0), fCascMassXi(0), fCascPtXi(0), fCascPxXi(0), fCascPyXi(0), fCascPzXi(0),
+	fCascPt_BachPi(0), fCascPt_V0dPos(0), fCascPt_V0dNeg(0),
+	fCascTPCNxedR_BachPi(0), fCascTPCNxedR_V0dPos(0), fCascTPCNxedR_V0dNeg(0), 
+	fCascTPCNclsF_BachPi(0), fCascTPCNclsF_V0dPos(0), fCascTPCNclsF_V0dNeg(0), 
+	fCascPDG(0), fCascMomLabel(0), fCascMomPDG(0)
 {
 	ControlAnaObjects(0);
 	ControlOutputContainers(0);
@@ -91,6 +145,7 @@ AliAnalysisTaskSEXic0SL::AliAnalysisTaskSEXic0SL(const char* name, const char* o
 AliAnalysisTaskSEXic0SL::~AliAnalysisTaskSEXic0SL()
 {
 	ControlAnaObjects(1);
+	DeleteTreeVariables();
 }//Destructor
 
 void AliAnalysisTaskSEXic0SL::Terminate(Option_t *)
@@ -878,54 +933,61 @@ void AliAnalysisTaskSEXic0SL::ControlAnaObjects(int option)
 
 void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOnly)
 {
+	// Event
+	//+++++++++++++++++++++++++++++++++++++++++++
+
 	int iLeaf = 0;
-
-	if (isMC == false) //data
+	if (!readOnly)
 	{
-		iLeaf = 0;
-		if (!readOnly)
-		{
-			TString strEvt = "evtID/i:trig/i:runNo/I:mult/F:vtxZ/D:goodMB/O:goodHMV0/O:INEL0/O";
-			T->Branch("Event", 0, strEvt);
-		}
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtID);       iLeaf++; //0
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtTrig);     iLeaf++;
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtRunNo);    iLeaf++;
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtMult);     iLeaf++;
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtVtxZ);     iLeaf++;
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtGoodMB);   iLeaf++; //5
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtGoodHMV0); iLeaf++;
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtINELLgt0); iLeaf++;
+		TString strEvt = "evtID/i:trig/i:runNo/I:mult/F:vtxZ/D:goodMB/O:goodHMV0/O:INEL0/O";
+		T->Branch("Event", 0, strEvt);
 	}
-	else //MC
-	{
-		iLeaf = 0;
-		if (!readOnly) T->Branch("Event", 0, "runNo/I:vtxZ/D");
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtRunNo); iLeaf++;
-		((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtVtxZ);  iLeaf++;
+	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtID);       iLeaf++; //0
+	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtTrig);     iLeaf++;
+	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtRunNo);    iLeaf++;
+	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtMult);     iLeaf++;
+	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtVtxZ);     iLeaf++;
+	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtGoodMB);   iLeaf++; //5
+	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtGoodHMV0); iLeaf++;
+	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtINELLgt0); iLeaf++;
 
+	// MC truth
+	//+++++++++++++++++++++++++++++++++++++++++++
+
+	fMCNum   = MaxNTruth;
+	fMCLabel = new Int_t[fMCNum];
+	fMCNDau  = new Int_t[fMCNum];
+	fMCOrig  = new Int_t[fMCNum];
+	fMCPDG   = new Int_t[fMCNum];
+	fMCPt    = new Double_t[fMCNum];
+	fMCY     = new Double_t[fMCNum];
+	fMCElePt = new Double_t[fMCNum];
+	fMCEleY  = new Double_t[fMCNum];
+	fMCXiPt  = new Double_t[fMCNum];
+	fMCXiY   = new Double_t[fMCNum];
+	if (IsMC)
+	{
 		iLeaf = 0;
 		if (!readOnly)
 		{
 			TString strMCTruth = "mcN/I:mc_label[mcN]/I:mc_nDau[mcN]/I:mc_orig[mcN]/I:mc_PDG[mcN]/I";
-			strMCTruth += ":mc_Pt[mcN]/D:mc_Y[mcN]/D";
-			strMCTruth += ":mc_ElePt[mcN]/D:mc_EleY[mcN]/D";
-			strMCTruth += ":mc_XiPt[mcN]/D:mc_XiY[mcN]/D";
+			strMCTruth += ":mc_Pt[mcN]/D:mc_Y[mcN]/D:mc_ElePt[mcN]/D:mc_EleY[mcN]/D:mc_XiPt[mcN]/D:mc_XiY[mcN]/D";
 			T->Branch("MCTruth", 0, strMCTruth.Data());
 		}
-		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCNum);   iLeaf++; //0
-		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCLabel); iLeaf++;
-		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCNDau);  iLeaf++;
-		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCOrig);  iLeaf++;
-		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCPDG);   iLeaf++;
-		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCPt);    iLeaf++;
-		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCY);     iLeaf++;
-		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCElePt); iLeaf++;
-		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCEleY);  iLeaf++;
-		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCXiPt);  iLeaf++;
-		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCXiY);   iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCNum);      iLeaf++; //0
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCLabel[0]); iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCNDau[0]);  iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCOrig[0]);  iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCPDG[0]);   iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCPt[0]);    iLeaf++; //5
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCY[0]);     iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCElePt[0]); iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCEleY[0]);  iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCXiPt[0]);  iLeaf++;
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCXiY[0]);   iLeaf++;
 	}
 
+	// Reco. electron candidates
 	//+++++++++++++++++++++++++++++++++++++++++++
 
 	iLeaf = 0;
@@ -935,36 +997,56 @@ void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOn
 		strEle += ":e_minMassLS[eN]/F:e_minMassUS[eN]/F:e_nSigmaTOF[eN]/F:e_nSigmaTPC[eN]/F";
 		strEle += ":e_eta[eN]/D:e_phi[eN]/D:e_pT[eN]/D:e_px[eN]/D:e_py[eN]/D:e_pz[eN]/D:e_Y[eN]/D";
 		strEle += ":e_tpcNsig[eN]/s:e_tpcNxedR[eN]/s:e_tpcNclsF[eN]/s";
-		//
 		if (IsMC) strEle += ":e_label[eN]/I:e_PDG[eN]/I:e_momLabel[eN]/I:e_momPDG[eN]/I";
 		T->Branch("Ele", 0, strEle.Data());
 	}
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNum);       iLeaf++; //0
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleChg);       iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleITSNcls);   iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMinMassLS); iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMinMassUS); iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNSigmaTOF); iLeaf++; //5
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNSigmaTPC); iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleEta);       iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePhi);       iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePt);        iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePx);        iLeaf++; //10
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePy);        iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePz);        iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleY);         iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNsig);   iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNxedR);  iLeaf++; //15
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNclsF);  iLeaf++;
-	//
+	fEleNum       = MaxNEle;
+	fEleChg       = new Int_t[fEleNum];
+	fEleITSNcls   = new Int_t[fEleNum]; //Previous notation: ITS
+	fEleMinMassLS = new Float_t[fEleNum]; //Minimum mass of e+e- suspect from photon conversion, likesign
+	fEleMinMassUS = new Float_t[fEleNum]; //Minimum mass of e+e- suspect from photon conversion, unlikesign
+	fEleNSigmaTOF = new Float_t[fEleNum];
+	fEleNSigmaTPC = new Float_t[fEleNum];
+	fEleEta       = new Double_t[fEleNum];
+	fElePhi       = new Double_t[fEleNum];
+	fElePt        = new Double_t[fEleNum];
+	fElePx        = new Double_t[fEleNum];
+	fElePy        = new Double_t[fEleNum];
+	fElePz        = new Double_t[fEleNum];
+	fEleY         = new Double_t[fEleNum];
+	fEleTPCNsig   = new UShort_t[fEleNum]; //Previous notation: TPCPID
+	fEleTPCNxedR  = new UShort_t[fEleNum]; //Previous notation: e_crossedrows
+	fEleTPCNclsF  = new UShort_t[fEleNum];
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNum);          iLeaf++; //0
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleChg[0]);       iLeaf++;
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleITSNcls[0]);   iLeaf++;
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMinMassLS[0]); iLeaf++;
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMinMassUS[0]); iLeaf++;
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNSigmaTOF[0]); iLeaf++; //5
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNSigmaTPC[0]); iLeaf++;
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleEta[0]);       iLeaf++;
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePhi[0]);       iLeaf++;
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePt[0]);        iLeaf++;
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePx[0]);        iLeaf++; //10
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePy[0]);        iLeaf++;
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePz[0]);        iLeaf++;
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleY[0]);         iLeaf++;
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNsig[0]);   iLeaf++;
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNxedR[0]);  iLeaf++; //15
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNclsF[0]);  iLeaf++;
+	fEleLabel    = new Int_t[fEleNum]; //MC only, electron candidate's label, to check if it's negative or not
+	fElePDG      = new Int_t[fEleNum]; //MC only, electron candidate's PDG code
+	fEleMomLabel = new Int_t[fEleNum]; //MC only, mother particle's (Xic0) label
+	fEleMomPDG   = new Int_t[fEleNum]; //MC only, mother particle's (Xic0) PDG code
 	if (IsMC)
 	{
-		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleLabel);    iLeaf++;
-		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePDG);      iLeaf++;
-		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMomLabel); iLeaf++;
-		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMomPDG);   iLeaf++;
+		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleLabel[0]);    iLeaf++;
+		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePDG[0]);      iLeaf++;
+		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMomLabel[0]); iLeaf++;
+		((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMomPDG[0]);   iLeaf++;
 	}
 
+	// Reco. Xi candidates
 	//+++++++++++++++++++++++++++++++++++++++++++
 
 	iLeaf = 0;
@@ -985,49 +1067,151 @@ void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOn
 		if (IsMC) strCasc += ":c_PDG[cN]/I:c_momLabel[cN]/I:c_momPDG[cN]/I";
 		T->Branch("Casc", 0, strCasc.Data());
 	}
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascNum);           iLeaf++;
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascChgXi);         iLeaf++;
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascCosPAXi);       iLeaf++; //CosPA
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascCosPAV0);       iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDcaBachToPV);   iLeaf++; //DCA
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDcaV0ToPV);     iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDcaXiDau);      iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDcaV0Dau);      iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDcaPosToPV);    iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDcaNegToPV);    iLeaf++; //|
-	//
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDecayLenXi);    iLeaf++; //DLen
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDecayLenXiOld); iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDecayLenV0);    iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDecayLenV0Old); iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMassLmb);       iLeaf++; //Mass
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMassLmbAnti);   iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMassOmega);     iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMassXi);        iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPtXi);          iLeaf++; //Xi_pT
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPxXi);          iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPyXi);          iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPzXi);          iLeaf++; //|
-	//
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPt_BachPi);       iLeaf++; //pT
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPt_V0dPos);       iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPt_V0dNeg);       iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNxedR_BachPi); iLeaf++; //TPCx
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNxedR_V0dPos); iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNxedR_V0dNeg); iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNclsF_BachPi); iLeaf++; //TPCf
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNclsF_V0dPos); iLeaf++; //|
-	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNclsF_V0dNeg); iLeaf++; //|
-	//
+	fCascNum         = MaxNCasc;
+	fCascChgXi       = new Int_t[fCascNum];
+	fCascCosPAXi     = new Double_t[fCascNum]; //Cosine of pointing angle
+	fCascCosPAV0     = new Double_t[fCascNum];
+	fCascDcaBachToPV = new Double_t[fCascNum]; //DCA of Bachelor track to Primary Vertex
+	fCascDcaV0ToPV   = new Double_t[fCascNum];  
+	fCascDcaXiDau    = new Double_t[fCascNum]; //DCA of Xi daughters
+	fCascDcaV0Dau    = new Double_t[fCascNum];   
+	fCascDcaPosToPV  = new Double_t[fCascNum]; //DCA of Positive V0 daughter to PV
+	fCascDcaNegToPV  = new Double_t[fCascNum];
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascNum);            iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascChgXi[0]);       iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascCosPAXi[0]);     iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascCosPAV0[0]);     iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDcaBachToPV[0]); iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDcaV0ToPV[0]);   iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDcaXiDau[0]);    iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDcaV0Dau[0]);    iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDcaPosToPV[0]);  iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDcaNegToPV[0]);  iLeaf++;
+	fCascDecayLenXi    = new Double_t[fCascNum]; //Decay length, Xi to PV
+	fCascDecayLenXiOld = new Double_t[fCascNum]; //Decay length (in truth, radial length) at the old code
+	fCascDecayLenV0    = new Double_t[fCascNum]; //Decay length, V0 ti Xi
+	fCascDecayLenV0Old = new Double_t[fCascNum]; //Decay length (in truth, radial length) at the old code
+	fCascMassLmb       = new Double_t[fCascNum]; //Lambda0
+	fCascMassLmbAnti   = new Double_t[fCascNum]; //Lambda0_bar
+	fCascMassOmega     = new Double_t[fCascNum]; 
+	fCascMassXi        = new Double_t[fCascNum]; 
+	fCascPtXi          = new Double_t[fCascNum];
+	fCascPxXi          = new Double_t[fCascNum];
+	fCascPyXi          = new Double_t[fCascNum];
+	fCascPzXi          = new Double_t[fCascNum];
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDecayLenXi[0]);    iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDecayLenXiOld[0]); iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDecayLenV0[0]);    iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascDecayLenV0Old[0]); iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMassLmb[0]);       iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMassLmbAnti[0]);   iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMassOmega[0]);     iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMassXi[0]);        iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPtXi[0]);          iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPxXi[0]);          iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPyXi[0]);          iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPzXi[0]);          iLeaf++;
+	fCascPt_BachPi = new Double_t[fCascNum];
+	fCascPt_V0dPos = new Double_t[fCascNum];
+	fCascPt_V0dNeg = new Double_t[fCascNum];
+	fCascTPCNxedR_BachPi = new UShort_t[fCascNum]; //TPCNcrossedRows, previously bpion_crossedrows or crossedratio
+	fCascTPCNxedR_V0dPos = new UShort_t[fCascNum]; //V0 daughter, positive
+	fCascTPCNxedR_V0dNeg = new UShort_t[fCascNum]; //V0 daughter, negative
+	fCascTPCNclsF_BachPi = new UShort_t[fCascNum]; //Previously bpion_findable
+	fCascTPCNclsF_V0dPos = new UShort_t[fCascNum];
+	fCascTPCNclsF_V0dNeg = new UShort_t[fCascNum];
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPt_BachPi[0]);       iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPt_V0dPos[0]);       iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPt_V0dNeg[0]);       iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNxedR_BachPi[0]); iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNxedR_V0dPos[0]); iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNxedR_V0dNeg[0]); iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNclsF_BachPi[0]); iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNclsF_V0dPos[0]); iLeaf++;
+	((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascTPCNclsF_V0dNeg[0]); iLeaf++;
+	fCascPDG      = new Int_t[fCascNum]; //MC only, Xi candidate's PDG code
+	fCascMomLabel = new Int_t[fCascNum]; //MC only, mother particle's (Xic0) label
+	fCascMomPDG   = new Int_t[fCascNum]; //MC only, mother particle's (Xic0) PDG code
 	if (IsMC)
 	{
-		((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPDG);      iLeaf++;
-		((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMomLabel); iLeaf++;
-		((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMomPDG);   iLeaf++;
+		((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascPDG[0]);      iLeaf++;
+		((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMomLabel[0]); iLeaf++;
+		((TLeaf*)T->GetBranch("Casc")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fCascMomPDG[0]);   iLeaf++;
 	}
 
 	return;
 }//ControlOutputTree
+
+void AliAnalysisTaskSEXic0SL::DeleteTreeVariables(void)
+{
+	delete[] fMCLabel;
+	delete[] fMCNDau;
+	delete[] fMCOrig;
+	delete[] fMCPDG;
+	delete[] fMCPt;
+	delete[] fMCY;
+	delete[] fMCElePt;
+	delete[] fMCEleY;
+	delete[] fMCXiPt;
+	delete[] fMCXiY;
+
+	delete[] fEleChg;
+	delete[] fEleITSNcls;
+	delete[] fEleMinMassLS;
+	delete[] fEleMinMassUS;
+	delete[] fEleNSigmaTOF;
+	delete[] fEleNSigmaTPC;
+	delete[] fEleEta;
+	delete[] fElePhi;
+	delete[] fElePt;
+	delete[] fElePx;
+	delete[] fElePy;
+	delete[] fElePz;
+	delete[] fEleY;
+	delete[] fEleTPCNsig;
+	delete[] fEleTPCNxedR;
+	delete[] fEleTPCNclsF;
+	delete[] fEleLabel;
+	delete[] fElePDG;
+	delete[] fEleMomLabel;
+	delete[] fEleMomPDG;
+
+	delete[] fCascChgXi;
+	delete[] fCascCosPAXi;
+	delete[] fCascCosPAV0;
+	delete[] fCascDcaBachToPV;
+	delete[] fCascDcaV0ToPV;
+	delete[] fCascDcaXiDau;
+	delete[] fCascDcaV0Dau;
+	delete[] fCascDcaPosToPV;
+	delete[] fCascDcaNegToPV;
+	delete[] fCascDecayLenXi;
+	delete[] fCascDecayLenXiOld;
+	delete[] fCascDecayLenV0;
+	delete[] fCascDecayLenV0Old;
+	delete[] fCascMassLmb;
+	delete[] fCascMassLmbAnti;
+	delete[] fCascMassOmega;
+	delete[] fCascMassXi;
+	delete[] fCascPtXi;
+	delete[] fCascPxXi;
+	delete[] fCascPyXi;
+	delete[] fCascPzXi;
+	delete[] fCascPt_BachPi;
+	delete[] fCascPt_V0dPos;
+	delete[] fCascPt_V0dNeg;
+	delete[] fCascTPCNxedR_BachPi;
+	delete[] fCascTPCNxedR_V0dPos;
+	delete[] fCascTPCNxedR_V0dNeg;
+	delete[] fCascTPCNclsF_BachPi;
+	delete[] fCascTPCNclsF_V0dPos;
+	delete[] fCascTPCNclsF_V0dNeg;
+	delete[] fCascPDG;
+	delete[] fCascMomLabel;
+	delete[] fCascMomPDG;
+
+	return;
+}//DeleteTreeVariables
 
 void AliAnalysisTaskSEXic0SL::ResetTreeVariables(void)
 {

@@ -24,7 +24,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 {
 	public:
 
-		AliAnalysisTaskSEXic0SL():AliAnalysisTaskSE("AliAnalysisTaskSEXic0SL") {}
+		AliAnalysisTaskSEXic0SL();
 		AliAnalysisTaskSEXic0SL(const char* name, const char* option);
 		virtual ~AliAnalysisTaskSEXic0SL();
 
@@ -52,6 +52,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		void ControlAnaObjects(int option); //0: set, 1: delete
 		void ControlOutputContainers(int option); //0: define, 1: post
 		void ControlOutputTree(TTree* T, bool isMC, bool readOnly = false);
+		void DeleteTreeVariables(void);
 		void ResetTreeVariables(void);
 		void SetConstants(void);
 
@@ -164,80 +165,81 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Bool_t   fEvtGoodHMV0;
 		Bool_t   fEvtINELLgt0;
 
-		Int_t    fMCNum;
-		Int_t    fMCLabel[20]; //20: MaxNTruth
-		Int_t    fMCNDau [20];
-		Int_t    fMCOrig [20];
-		Int_t    fMCPDG  [20];
-		Double_t fMCPt   [20];
-		Double_t fMCY    [20];
-		Double_t fMCElePt[20];
-		Double_t fMCEleY [20];
-		Double_t fMCXiPt [20];
-		Double_t fMCXiY  [20];
+		//Tree variables for MC truth
+		Int_t     fMCNum;
+		Int_t*    fMCLabel; //[fMCNum]
+		Int_t*    fMCNDau;  //[fMCNum]
+		Int_t*    fMCOrig;  //[fMCNum]
+		Int_t*    fMCPDG;   //[fMCNum]
+		Double_t* fMCPt;    //[fMCNum]
+		Double_t* fMCY;     //[fMCNum]
+		Double_t* fMCElePt; //[fMCNum]
+		Double_t* fMCEleY;  //[fMCNum]
+		Double_t* fMCXiPt;  //[fMCNum]
+		Double_t* fMCXiY;   //[fMCNum]
 
 		//Tree variables for tracks
-		Int_t    fEleNum;
-		Int_t    fEleChg      [20]; //20: MaxNEle
-		Int_t    fEleITSNcls  [20]; //Previous notation: ITS
-		Float_t  fEleMinMassLS[20]; //Minimum mass of e+e- suspect from photon conversion, likesign
-		Float_t  fEleMinMassUS[20]; //Minimum mass of e+e- suspect from photon conversion, unlikesign
-		Float_t  fEleNSigmaTOF[20];
-		Float_t  fEleNSigmaTPC[20];
-		Double_t fEleEta      [20];
-		Double_t fElePhi      [20];
-		Double_t fElePt       [20];
-		Double_t fElePx       [20];
-		Double_t fElePy       [20];
-		Double_t fElePz       [20];
-		Double_t fEleY        [20];
-		UShort_t fEleTPCNsig  [20]; //Previous notation: TPCPID
-		UShort_t fEleTPCNxedR [20]; //Previous notation: e_crossedrows
-		UShort_t fEleTPCNclsF [20]; //Previous notation: e_findable
-		//
-		Int_t fEleLabel   [20]; //MC only, electron candidate's label, to check if it's negative or not
-		Int_t fElePDG     [20]; //MC only, electron candidate's PDG code
-		Int_t fEleMomLabel[20]; //MC only, mother particle's (Xic0) label
-		Int_t fEleMomPDG  [20]; //MC only, mother particle's (Xic0) PDG code
+		Int_t     fEleNum;
+		Int_t*    fEleChg;       //[fEleNum]
+		Int_t*    fEleITSNcls;   //[fEleNum]
+		Float_t*  fEleMinMassLS; //[fEleNum]
+		Float_t*  fEleMinMassUS; //[fEleNum]
+		Float_t*  fEleNSigmaTOF; //[fEleNum]
+		Float_t*  fEleNSigmaTPC; //[fEleNum]
+		Double_t* fEleEta;       //[fEleNum]
+		Double_t* fElePhi;       //[fEleNum]
+		Double_t* fElePt;        //[fEleNum]
+		Double_t* fElePx;        //[fEleNum]
+		Double_t* fElePy;        //[fEleNum]
+		Double_t* fElePz;        //[fEleNum]
+		Double_t* fEleY;         //[fEleNum]
+		UShort_t* fEleTPCNsig;   //[fEleNum]
+		UShort_t* fEleTPCNxedR;  //[fEleNum]
+		UShort_t* fEleTPCNclsF;  //[fEleNum]
+		///Tree variables for tracks, MC only heareafter
+		Int_t* fEleLabel;    //[fEleNum]
+		Int_t* fElePDG;      //[fEleNum]
+		Int_t* fEleMomLabel; //[fEleNum]
+		Int_t* fEleMomPDG;   //[fEleNum]
 
 		//Tree variables for cascades
-		Int_t    fCascNum;
-		Int_t    fCascChgXi      [20]; //20: MaxNCasc
-		Double_t fCascCosPAXi    [20]; //Cosine of pointing angle
-		Double_t fCascCosPAV0    [20];
-		Double_t fCascDcaBachToPV[20]; //DCA of Bachelor track to Primary Vertex
-		Double_t fCascDcaV0ToPV  [20];
-		Double_t fCascDcaXiDau   [20]; //DCA of Xi daughters
-		Double_t fCascDcaV0Dau   [20];
-		Double_t fCascDcaPosToPV [20]; //DCA of Positive V0 daughter to PV
-		Double_t fCascDcaNegToPV [20];
+		Int_t     fCascNum;
+		Int_t*    fCascChgXi;       //[fCascNum]
+		Double_t* fCascCosPAXi;     //[fCascNum]
+		Double_t* fCascCosPAV0;     //[fCascNum]
+		Double_t* fCascDcaBachToPV; //[fCascNum]
+		Double_t* fCascDcaV0ToPV;   //[fCascNum]
+		Double_t* fCascDcaXiDau;    //[fCascNum]
+		Double_t* fCascDcaV0Dau;    //[fCascNum]
+		Double_t* fCascDcaPosToPV;  //[fCascNum]
+		Double_t* fCascDcaNegToPV;  //[fCascNum]
 		//
-		Double_t fCascDecayLenXi   [20]; //Decay length, Xi to PV
-		Double_t fCascDecayLenXiOld[20]; //Decay length (in truth, radial length) at the old code
-		Double_t fCascDecayLenV0   [20]; //Decay length, V0 ti Xi
-		Double_t fCascDecayLenV0Old[20]; //Decay length (in truth, radial length) at the old code
-		Double_t fCascMassLmb      [20]; //Lambda0
-		Double_t fCascMassLmbAnti  [20]; //Lambda0_bar
-		Double_t fCascMassOmega    [20];
-		Double_t fCascMassXi       [20];
-		Double_t fCascPtXi         [20]; //pT of Xi
-		Double_t fCascPxXi         [20];
-		Double_t fCascPyXi         [20];
-		Double_t fCascPzXi         [20];
+		Double_t* fCascDecayLenXi;    //[fCascNum]
+		Double_t* fCascDecayLenXiOld; //[fCascNum]
+		Double_t* fCascDecayLenV0;    //[fCascNum]
+		Double_t* fCascDecayLenV0Old; //[fCascNum]
+		Double_t* fCascMassLmb;       //[fCascNum]
+		Double_t* fCascMassLmbAnti;   //[fCascNum]
+		Double_t* fCascMassOmega;     //[fCascNum]
+		Double_t* fCascMassXi;        //[fCascNum]
+		Double_t* fCascPtXi;          //[fCascNum]
+		Double_t* fCascPxXi;          //[fCascNum]
+		Double_t* fCascPyXi;          //[fCascNum]
+		Double_t* fCascPzXi;          //[fCascNum]
 		//
-		Double_t fCascPt_BachPi      [20];
-		Double_t fCascPt_V0dPos      [20];
-		Double_t fCascPt_V0dNeg      [20];
-		UShort_t fCascTPCNxedR_BachPi[20]; //TPCNcrossedRows, previously bpion_crossedrows or crossedratio
-		UShort_t fCascTPCNxedR_V0dPos[20]; //V0 daughter, positive
-		UShort_t fCascTPCNxedR_V0dNeg[20]; //V0 daughter, negative
-		UShort_t fCascTPCNclsF_BachPi[20]; //Previously bpion_findable
-		UShort_t fCascTPCNclsF_V0dPos[20];
-		UShort_t fCascTPCNclsF_V0dNeg[20];
-		//
-		Int_t fCascPDG     [20]; //MC only, Xi candidate's PDG code
-		Int_t fCascMomLabel[20]; //MC only, mother particle's (Xic0) label
-		Int_t fCascMomPDG  [20]; //MC only, mother particle's (Xic0) PDG code
+		Double_t* fCascPt_BachPi;       //[fCascNum]
+		Double_t* fCascPt_V0dPos;       //[fCascNum]
+		Double_t* fCascPt_V0dNeg;       //[fCascNum]
+		UShort_t* fCascTPCNxedR_BachPi; //[fCascNum]
+		UShort_t* fCascTPCNxedR_V0dPos; //[fCascNum]
+		UShort_t* fCascTPCNxedR_V0dNeg; //[fCascNum]
+		UShort_t* fCascTPCNclsF_BachPi; //[fCascNum]
+		UShort_t* fCascTPCNclsF_V0dPos; //[fCascNum]
+		UShort_t* fCascTPCNclsF_V0dNeg; //[fCascNum]
+		//Tree variables for cascades, MC only hereafter
+		Int_t* fCascPDG;      //[fCascNum]
+		Int_t* fCascMomLabel; //[fCascNum]
+		Int_t* fCascMomPDG;   //[fCascNum]
 
 		ClassDef(AliAnalysisTaskSEXic0SL, 1);
 };
