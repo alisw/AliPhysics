@@ -95,7 +95,7 @@ class AliAnalysisTaskOmegaDielectron_AccEff : public AliAnalysisTaskSE {
 
 
     // Output Histograms
-    TH1F* fHistEventSelection;                     //!<! Histogram for event counting
+    TH2D* fHistVertex;                            //!<! Histogram for event counting
 
     TH1F* fHist_MC_Omegas_Rapidity;                //!<! Histogram for event counting
     TH3D* fHist_MC_Omegas_gen;                     //!<! Histogram of generated primaries
