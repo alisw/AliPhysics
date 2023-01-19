@@ -18,6 +18,5 @@ add_subdirectory(FemtoDream)
 add_subdirectory(KPAnalysis)
 add_subdirectory(K0pAnalysis)
 add_subdirectory(EfficiencyTask)
-add_subdirectory(EfficiencyTaskPbPb5020)
 
 install(DIRECTORY macros DESTINATION PWGCF/FEMTOSCOPY)
