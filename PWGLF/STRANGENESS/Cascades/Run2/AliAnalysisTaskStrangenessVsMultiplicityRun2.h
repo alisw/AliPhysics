@@ -110,6 +110,9 @@ public:
   void SetSaveVertex ( Bool_t lVal = kTRUE) {
     fkSaveVertex = lVal;
   }
+  void SetSaveTPCInnerParam ( Bool_t lVal = kTRUE) {
+    fkSaveTPCInnerParam = lVal;
+  }
   void SetDoStrangenessTracking ( Bool_t lOpt = kTRUE) {
     fkDoStrangenessTracking = lOpt;
   }
@@ -311,6 +314,7 @@ private:
   Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
   Bool_t    fkExtraCleanupRapidity;    // if true, select candidates only within |y|<0.5 (logical OR in mass hypo)
   Bool_t    fkSaveVertex;              // if true, save ESD vertex
+  Bool_t 	fkSaveTPCInnerParam;	   // if true, save the TPC inner param
   Bool_t    fkDoStrangenessTracking;   //if true, will attempt to attach ITS recpoints to cascade trajectory
   AliAnalysisTaskWeakDecayVertexer *fWDV; //helper
   
@@ -480,6 +484,9 @@ private:
   
   AliExternalTrackParam *fTreeVariablePosTrack; //!
   AliExternalTrackParam *fTreeVariableNegTrack; //!
+  
+  AliExternalTrackParam *fTreeVariablePosTrackTPCInnerParam; //!
+  AliExternalTrackParam *fTreeVariableNegTrackTPCInnerParam; //!
   
   AliESDVertex *fTreeVariableAliESDvertex;
   
@@ -716,7 +723,11 @@ private:
   
   AliExternalTrackParam *fTreeCascVarBachTrack;//!
   AliExternalTrackParam *fTreeCascVarPosTrack; //!
-  AliExternalTrackParam *fTreeCascVarNegTrack;
+  AliExternalTrackParam *fTreeCascVarNegTrack; //!
+  
+  AliExternalTrackParam *fTreeCascVarBachTrackTPCInnerParam;//!
+  AliExternalTrackParam *fTreeCascVarPosTrackTPCInnerParam; //!
+  AliExternalTrackParam *fTreeCascVarNegTrackTPCInnerParam; //!
   
   AliESDVertex *fTreeCascVarAliESDvertex;//!
   
