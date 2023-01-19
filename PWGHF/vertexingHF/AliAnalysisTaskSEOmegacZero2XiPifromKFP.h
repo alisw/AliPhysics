@@ -38,7 +38,7 @@ class AliAnalysisTaskSEOmegacZero2XiPifromKFP : public AliAnalysisTaskSE
 {
     public:
                                 AliAnalysisTaskSEOmegacZero2XiPifromKFP();
-                                AliAnalysisTaskSEOmegacZero2XiPifromKFP(const char *name, AliRDHFCutsKFP* cuts);
+                                AliAnalysisTaskSEOmegacZero2XiPifromKFP(const char *name, AliRDHFCutsKFP* cuts, Bool_t isMC);
         virtual                 ~AliAnalysisTaskSEOmegacZero2XiPifromKFP();
 
         virtual void            UserCreateOutputObjects();
@@ -49,6 +49,8 @@ class AliAnalysisTaskSEOmegacZero2XiPifromKFP : public AliAnalysisTaskSE
 
         void                   MakeAnaOmegacZero(AliAODEvent *AODEvent, KFParticle PV);
         void                   FillTreeOmegac0(Int_t flagUSorLS, KFParticle kfpOmegac0, AliAODTrack *trackPiFromOmegac0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionFromXi, AliAODTrack *trackPionFromXi, AliAODcascade *casc, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV);
+       
+        Bool_t                 MakeMCCheck(TClonesArray *mcArray);
 
     private:
         void                    DefineTreeOmegac0();
@@ -68,10 +70,21 @@ class AliAnalysisTaskSEOmegacZero2XiPifromKFP : public AliAnalysisTaskSE
         TH1F*                    fHistCheckKF;        // Histogram to check when the KF fails (E<p_z)
         Int_t                    fEvCount;            // event counter
 
+        //histograms for MC test check
+        TH1F*                    fHistMCPdgCode;
+        TH1F*                    fHistMCOmegacDauNumber;
+        TH1F*                    fHistMCOmegacPt;
+        TH1F*                    fHistMCOmegacEta;
+        TH1F*                    fHistMCOmegacSign;
+        TH1F*                    fHistMCOmegacCTau;
+        TH1F*                    fHistMCOmegacM;
+        TH1F*                    fHistMCDecayChain;
+        TH1F*                    fHistMCOrigin;
+
         AliAnalysisTaskSEOmegacZero2XiPifromKFP(const AliAnalysisTaskSEOmegacZero2XiPifromKFP &source); // not implemented
         AliAnalysisTaskSEOmegacZero2XiPifromKFP& operator=(const AliAnalysisTaskSEOmegacZero2XiPifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEOmegacZero2XiPifromKFP, 3);
+        ClassDef(AliAnalysisTaskSEOmegacZero2XiPifromKFP, 4);
 };
 
 #endif
