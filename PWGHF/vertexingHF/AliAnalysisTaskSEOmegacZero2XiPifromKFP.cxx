@@ -233,7 +233,7 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::UserCreateOutputObjects()
 
   fOutputList->Add(fHistCheckKF);
 
-  fHistMCPdgCode= new TH1F("fHistMCPdgCode","fHistMCPdgCode",1000,4000,5000);
+  fHistMCPdgCode= new TH1F("fHistMCPdgCode","fHistMCPdgCode",10000,-5000,5000);
   fOutputList->Add(fHistMCPdgCode);
   fHistMCOmegacDauNumber= new TH1F("fHistMCOmegacDauNumber","fHistMCOmegacDauNumber",10,0,10);
   fOutputList->Add(fHistMCOmegacDauNumber);
@@ -243,7 +243,7 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::UserCreateOutputObjects()
   fOutputList->Add(fHistMCOmegacEta);
   fHistMCOmegacSign= new TH1F("fHistMCOmegacSign","fHistMCOmegacSign",10,-5,5);
   fOutputList->Add(fHistMCOmegacSign);
-  fHistMCOmegacCTau= new TH1F("fHistMCOmegacCTau","fHistMCOmegacCTau",500,0.,1000.);
+  fHistMCOmegacCTau= new TH1F("fHistMCOmegacCTau","fHistMCOmegacCTau",3000,0.,1500.);
   fOutputList->Add(fHistMCOmegacCTau);
   fHistMCOmegacM= new TH1F("fHistMCOmegacM","fHistMCOmegacM",500,2.5,2.8);
   fOutputList->Add(fHistMCOmegacM);
