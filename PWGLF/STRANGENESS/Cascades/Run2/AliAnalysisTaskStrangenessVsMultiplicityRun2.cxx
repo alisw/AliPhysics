@@ -186,6 +186,7 @@ fkDoV0Refit       ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
 fkExtraCleanupRapidity( kFALSE) ,
 fkSaveVertex ( kFALSE ),
+fkSaveTPCInnerParam ( kFALSE ),
 fkDoStrangenessTracking (kFALSE),
 fWDV (0x0),
 
@@ -312,6 +313,8 @@ fTreeVariablePrimVertexZ(0),
 
 fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
+fTreeVariablePosTrackTPCInnerParam(new AliExternalTrackParam()),
+fTreeVariableNegTrackTPCInnerParam(new AliExternalTrackParam()),
 fTreeVariableAliESDvertex(0x0),
 
 fTreeVariableMagneticField(0x0),
@@ -522,6 +525,9 @@ fTreeCascVarPrimVertexZ(0),
 fTreeCascVarBachTrack(0x0),
 fTreeCascVarPosTrack(0x0),
 fTreeCascVarNegTrack(0x0),
+fTreeCascVarBachTrackTPCInnerParam(new AliExternalTrackParam()),
+fTreeCascVarPosTrackTPCInnerParam(new AliExternalTrackParam()),
+fTreeCascVarNegTrackTPCInnerParam(new AliExternalTrackParam()),
 fTreeCascVarAliESDvertex(0x0),
 fTreeCascVarMagneticField(0),
 fTreeCascVarRunNumber(0),
@@ -590,6 +596,7 @@ fkDoV0Refit       ( kTRUE ),
 fkExtraCleanup    ( kTRUE ),
 fkExtraCleanupRapidity( kFALSE) ,
 fkSaveVertex ( kFALSE ),
+fkSaveTPCInnerParam ( kFALSE ),
 fkDoStrangenessTracking (kFALSE),
 fWDV (0x0),
 
@@ -718,6 +725,8 @@ fTreeVariablePrimVertexZ(0),
 
 fTreeVariablePosTrack(0x0),
 fTreeVariableNegTrack(0x0),
+fTreeVariablePosTrackTPCInnerParam(new AliExternalTrackParam()),
+fTreeVariableNegTrackTPCInnerParam(new AliExternalTrackParam()),
 fTreeVariableAliESDvertex(0x0), 
 
 fTreeVariableMagneticField(0x0),
@@ -928,6 +937,9 @@ fTreeCascVarPrimVertexZ(0),
 fTreeCascVarBachTrack(0x0),
 fTreeCascVarPosTrack(0x0),
 fTreeCascVarNegTrack(0x0),
+fTreeCascVarBachTrackTPCInnerParam(new AliExternalTrackParam()),
+fTreeCascVarPosTrackTPCInnerParam(new AliExternalTrackParam()),
+fTreeCascVarNegTrackTPCInnerParam(new AliExternalTrackParam()),
 fTreeCascVarAliESDvertex(0x0),
 fTreeCascVarMagneticField(0),
 fTreeCascVarRunNumber(0),
@@ -1239,6 +1251,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
     if(fkSaveVertex){
       fTreeV0->Branch("fTreeVariableAliESDvertex", &fTreeVariableAliESDvertex,16000,99);
     }
+    if(fkSaveTPCInnerParam){
+      fTreeV0->Branch("fTreeVariableNegTrackTPCInnerParam", &fTreeVariableNegTrackTPCInnerParam,16000,99);
+      fTreeV0->Branch("fTreeVariablePosTrackTPCInnerParam", &fTreeVariablePosTrackTPCInnerParam,16000,99);
+    }
   }
   
   //------------------------------------------------
@@ -1468,6 +1484,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserCreateOutputObjects()
     //------------------------------------------------
     if(fkSaveVertex){
       fTreeCascade->Branch("fTreeCascVarAliESDvertex", &fTreeCascVarAliESDvertex,16000,99);
+    }
+    if(fkSaveTPCInnerParam){
+      fTreeCascade->Branch("fTreeCascVarBachTrackTPCInnerParam", &fTreeCascVarBachTrackTPCInnerParam,16000,99);
+      fTreeCascade->Branch("fTreeCascVarPosTrackTPCInnerParam", &fTreeCascVarPosTrackTPCInnerParam,16000,99);
+      fTreeCascade->Branch("fTreeCascVarNegTrackTPCInnerParam", &fTreeCascVarNegTrackTPCInnerParam,16000,99);
     }
   }
   //------------------------------------------------
@@ -2114,6 +2135,15 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
       Printf("ERROR: Could not retreive one of the daughter track");
       continue;
     }
+    
+    if( fkSaveTPCInnerParam )
+	{
+        fTreeVariablePosTrackTPCInnerParam->Reset();
+        fTreeVariableNegTrackTPCInnerParam->Reset();
+        pTrack->GetTrackParamTPCInner( *fTreeVariablePosTrackTPCInnerParam );
+        nTrack->GetTrackParamTPCInner( *fTreeVariableNegTrackTPCInnerParam );
+	}
+    
     fTreeVariablePosPIDForTracking = pTrack->GetPIDForTracking();
     fTreeVariableNegPIDForTracking = nTrack->GetPIDForTracking();
     
@@ -2781,6 +2811,16 @@ void AliAnalysisTaskStrangenessVsMultiplicityRun2::UserExec(Option_t *)
       AliWarning("ERROR: Could not retrieve one of the 3 ESD daughter tracks of the cascade ...");
       continue;
     }
+    
+    if( fkSaveTPCInnerParam )
+	{
+        fTreeCascVarBachTrackTPCInnerParam->Reset();
+        fTreeCascVarPosTrackTPCInnerParam->Reset();
+        fTreeCascVarNegTrackTPCInnerParam->Reset();
+        bachTrackXi->GetTrackParamTPCInner( *fTreeCascVarBachTrackTPCInnerParam );
+        pTrackXi->GetTrackParamTPCInner( *fTreeCascVarPosTrackTPCInnerParam );
+        nTrackXi->GetTrackParamTPCInner( *fTreeCascVarNegTrackTPCInnerParam );
+	}
     
     fTreeCascVarPosEta = pTrackXi->Eta();
     fTreeCascVarNegEta = nTrackXi->Eta();
