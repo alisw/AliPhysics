@@ -37,8 +37,8 @@ AliAnalysisTaskSimpleCoalescenceDeuteronInJets *addTaskDeuteronsInJets (Double_t
     task -> AliAnalysisTaskSimpleCoalescenceDeuteronInJets::SetMaximumPt (ptTrigger);
     mgr -> AddTask(task);
     mgr -> ConnectInput (task,0,mgr->GetCommonInputContainer());
-    mgr -> ConnectOutput(task,1,mgr->CreateContainer("Results",TList::Class(),AliAnalysisManager::kOutputContainer,filename.Data()));
-    mgr -> ConnectOutput(task,2,mgr->CreateContainer("QAPlots",TList::Class(),AliAnalysisManager::kOutputContainer,filename.Data()));
+    mgr -> ConnectOutput(task,1,mgr->CreateContainer(Form("Results_jetRadius%.1f_ptMax%.1f",jetRadius,ptTrigger),TList::Class(),AliAnalysisManager::kOutputContainer,filename.Data()));
+    mgr -> ConnectOutput(task,2,mgr->CreateContainer(Form("QAPlots_jetRadius%.1f_ptMax%.1f",jetRadius,ptTrigger),TList::Class(),AliAnalysisManager::kOutputContainer,filename.Data()));
     
     return task;
 }
