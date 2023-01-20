@@ -446,6 +446,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Int_t                 fSigMCLabel;
         Int_t                 fSigProtonID;
         ULong64_t             fSigProtonStatus;
+        UInt_t                fSigProtonFilterMap;
         ULong64_t             fSigEventID;
         Float_t               fSigCentrality;               
         Short_t               fSigRefMultComb05;        
@@ -600,6 +601,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Int_t                 fPairProtonITSCluster;
         Int_t                 fPairProtonID;
         ULong64_t             fPairProtonStatus;
+        UInt_t                fPairProtonFilterMap;
         //End of Extra Branches of "fSigmaPairTree"
 
         //Extra Branches of TTree "fSigmaPairTreeSE/ME"
@@ -622,7 +624,7 @@ class AliAODTrackreduced : public TObject //Version with Cov Matrix for Reconstr
     public:
         //AliAODTrackreduced(){}
         AliAODTrackreduced() :
-        charge(-999), tpcncls(-999), id(-999), status(0), tpcchi2(-999), dcaxy(-999), dcaz(-999),
+        charge(-999), tpcncls(-999), id(-999), status(0), filtermap(0), tpcchi2(-999), dcaxy(-999), dcaz(-999),
         nsigmatpcproton(-999), nsigmatpcpion(-999), nsigmatpckaon(-999), nsigmatpcelectron(-999), 
         nsigmatofproton(-999), nsigmatofpion(-999), nsigmatofkaon(-999), nsigmatofelectron(-999)
         {
@@ -647,6 +649,7 @@ class AliAODTrackreduced : public TObject //Version with Cov Matrix for Reconstr
             itsncls = aodTrack->GetITSNcls();
             id = aodTrack->GetID();
             status = aodTrack->GetStatus();
+            filtermap = aodTrack->GetFilterMap();
             tpcchi2 = aodTrack->GetTPCchi2();
             if(!pidresp) {std::cout << "WARNING: Input source 'PID Response' does not exit!\n"; return;}            
             nsigmatpcproton = pidresp->NumberOfSigmasTPC(aodTrack,AliPID::kProton);
@@ -669,6 +672,7 @@ class AliAODTrackreduced : public TObject //Version with Cov Matrix for Reconstr
         Int_t GetITSNcls() const { return itsncls; } 
         Int_t GetID() const { return id; } 
         ULong64_t GetStatus() const { return status; } 
+        UInt_t GetFilterMap() const { return filtermap; } 
         Double_t GetTPCchi2() const { return tpcchi2; } 
 
         void GetXYZ(Double_t xx[3]) const { for(Int_t i=0; i<3; i++){xx[i]=x[i];} return; }
@@ -694,6 +698,7 @@ class AliAODTrackreduced : public TObject //Version with Cov Matrix for Reconstr
         Int_t     itsncls;
         Int_t     id;
         ULong64_t status;
+        UInt_t    filtermap;
         Double_t  tpcchi2;
         Float_t   dcaxy;
         Float_t   dcaz;
@@ -718,7 +723,7 @@ class AliAODTrackcorrelation : public TObject //Version without Cov Matrix for C
     public:
         //AliAODTrackcorrelation(){}
         AliAODTrackcorrelation() :
-        charge(-999), tpcncls(-999), id(-999), status(0), tpcchi2(-999), dcaxy(-999), dcaz(-999), 
+        charge(-999), tpcncls(-999), id(-999), status(0), filtermap(0), tpcchi2(-999), dcaxy(-999), dcaz(-999), 
         nsigmatpcproton(-999), nsigmatpckaon(-999), nsigmatpcpion(-999), nsigmatofproton(-999), nsigmatofkaon(-999), nsigmatofpion(-999)
         {
             for(Int_t i=0; i<3; i++){p[i]=-999;}            
@@ -735,6 +740,7 @@ class AliAODTrackcorrelation : public TObject //Version without Cov Matrix for C
             itsncls = aodTrack->GetITSNcls();
             id = aodTrack->GetID();
             status = aodTrack->GetStatus();
+            filtermap = aodTrack->GetFilterMap();
             tpcchi2 = aodTrack->GetTPCchi2();
             if(!pidresp) {std::cout << "WARNING: Input source 'PID Response' does not exit!\n"; return;}            
             nsigmatpcproton = pidresp->NumberOfSigmasTPC(aodTrack,AliPID::kProton);
@@ -755,6 +761,7 @@ class AliAODTrackcorrelation : public TObject //Version without Cov Matrix for C
         Int_t GetITSNcls() const { return itsncls; } 
         Int_t GetID() const { return id; } 
         ULong64_t GetStatus() const { return status; } 
+        UInt_t GetFilterMap() const { return filtermap; } 
         Float_t GetTPCchi2() const { return tpcchi2; } 
 
         void GetPxPyPz(Double_t pp[3]) const { for(Int_t i=0; i<3; i++){pp[i]=p[i];} return; }
@@ -774,6 +781,7 @@ class AliAODTrackcorrelation : public TObject //Version without Cov Matrix for C
         Int_t     itsncls;
         Int_t     id;
         ULong64_t status;
+        UInt_t    filtermap;
         Float_t   tpcchi2;
         Float_t   dcaxy;
         Float_t   dcaz;
