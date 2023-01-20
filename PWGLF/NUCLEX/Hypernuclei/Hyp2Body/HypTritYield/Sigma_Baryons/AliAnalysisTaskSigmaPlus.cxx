@@ -239,6 +239,7 @@ fSigTriggerMask(0),
 fSigMCLabel(0),
 fSigProtonID(-999),
 fSigProtonStatus(0),
+fSigProtonFilterMap(0),
 fSigEventID(0),
 fSigCentrality(-999),
 fSigRefMultComb05(-999),
@@ -389,6 +390,7 @@ fPairProtonCluster(-999),
 fPairProtonITSCluster(-999),
 fPairProtonID(-999),
 fPairProtonStatus(0),
+fPairProtonFilterMap(0),
 fSigmaProtonkstar(-999),
 fSigmaProtonpropkstar(-999)
 {
@@ -544,6 +546,7 @@ fSigTriggerMask(0),
 fSigMCLabel(0),
 fSigProtonID(-999),
 fSigProtonStatus(0),
+fSigProtonFilterMap(0),
 fSigEventID(0),
 fSigCentrality(-999),
 fSigRefMultComb05(-999),
@@ -694,6 +697,7 @@ fPairProtonCluster(-999),
 fPairProtonITSCluster(-999),
 fPairProtonID(-999),
 fPairProtonStatus(0),
+fPairProtonFilterMap(0),
 fSigmaProtonkstar(-999),
 fSigmaProtonpropkstar(-999)
 {
@@ -822,6 +826,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaCandTree->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
     fSigmaCandTree->Branch("fSigProtonID",&fSigProtonID,"fSigProtonID/I");
     fSigmaCandTree->Branch("fSigProtonStatus",&fSigProtonStatus,"fSigProtonStatus/l");
+    fSigmaCandTree->Branch("fSigProtonFilterMap",&fSigProtonFilterMap,"fSigProtonFilterMap/i");
     fSigmaCandTree->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaCandTree->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
     fSigmaCandTree->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
@@ -928,6 +933,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaMEBackgroundTree->Branch("fSigTriggerMask",&fSigTriggerMask,"fSigTriggerMask/i");
     fSigmaMEBackgroundTree->Branch("fSigProtonID",&fSigProtonID,"fSigProtonID/I");
     fSigmaMEBackgroundTree->Branch("fSigProtonStatus",&fSigProtonStatus,"fSigProtonStatus/l");
+    fSigmaMEBackgroundTree->Branch("fSigProtonFilterMap",&fSigProtonFilterMap,"fSigProtonFilterMap/i");
     fSigmaMEBackgroundTree->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaMEBackgroundTree->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
     fSigmaMEBackgroundTree->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
@@ -1037,6 +1043,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreeSE->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
     fSigmaPairTreeSE->Branch("fSigProtonID",&fSigProtonID,"fSigProtonID/I");
     fSigmaPairTreeSE->Branch("fSigProtonStatus",&fSigProtonStatus,"fSigProtonStatus/l");
+    fSigmaPairTreeSE->Branch("fSigProtonFilterMap",&fSigProtonFilterMap,"fSigProtonFilterMap/i");
     fSigmaPairTreeSE->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaPairTreeSE->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
     fSigmaPairTreeSE->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
@@ -1139,6 +1146,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreeSE->Branch("fPairProtonIsPrimary",&fPairProtonIsPrimary,"fPairProtonIsPrimary/O");
     fSigmaPairTreeSE->Branch("fPairProtonID",&fPairProtonID,"fPairProtonID/I");
     fSigmaPairTreeSE->Branch("fPairProtonStatus",&fPairProtonStatus,"fPairProtonStatus/l");
+    fSigmaPairTreeSE->Branch("fPairProtonFilterMap",&fPairProtonFilterMap,"fPairProtonFilterMap/i");
     fSigmaPairTreeSE->Branch("fPairProtonCharge",&fPairProtonCharge,"fPairProtonCharge/F");
     fSigmaPairTreeSE->Branch("fPairProtonPx",&fPairProtonPx,"fPairProtonPx/F");
     fSigmaPairTreeSE->Branch("fPairProtonPy",&fPairProtonPy,"fPairProtonPy/F");
@@ -1168,6 +1176,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreeME->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
     fSigmaPairTreeME->Branch("fSigProtonID",&fSigProtonID,"fSigProtonID/I");
     fSigmaPairTreeME->Branch("fSigProtonStatus",&fSigProtonStatus,"fSigProtonStatus/l");
+    fSigmaPairTreeME->Branch("fSigProtonFilterMap",&fSigProtonFilterMap,"fSigProtonFilterMap/i");
     fSigmaPairTreeME->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaPairTreeME->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
     fSigmaPairTreeME->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
@@ -1270,6 +1279,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreeME->Branch("fPairProtonIsPrimary",&fPairProtonIsPrimary,"fPairProtonIsPrimary/O");
     fSigmaPairTreeME->Branch("fPairProtonID",&fPairProtonID,"fPairProtonID/I");
     fSigmaPairTreeME->Branch("fPairProtonStatus",&fPairProtonStatus,"fPairProtonStatus/l");
+    fSigmaPairTreeME->Branch("fPairProtonFilterMap",&fPairProtonFilterMap,"fPairProtonFilterMap/i");
     fSigmaPairTreeME->Branch("fPairProtonCharge",&fPairProtonCharge,"fPairProtonCharge/F");
     fSigmaPairTreeME->Branch("fPairProtonPx",&fPairProtonPx,"fPairProtonPx/F");
     fSigmaPairTreeME->Branch("fPairProtonPy",&fPairProtonPy,"fPairProtonPy/F");
@@ -1296,6 +1306,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPHOSCandTree->Branch("fSigTriggerMask",&fSigTriggerMask,"fSigTriggerMask/i");
     fSigmaPHOSCandTree->Branch("fSigProtonID",&fSigProtonID,"fSigProtonID/I");
     fSigmaPHOSCandTree->Branch("fSigProtonStatus",&fSigProtonStatus,"fSigProtonStatus/l");
+    fSigmaPHOSCandTree->Branch("fSigProtonFilterMap",&fSigProtonFilterMap,"fSigProtonFilterMap/i");
     fSigmaPHOSCandTree->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaPHOSCandTree->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
     fSigmaPHOSCandTree->Branch("fSigBField",&fSigBField,"fSigBField/F");
@@ -1428,6 +1439,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPHOSMEBkgTree->Branch("fSigTriggerMask",&fSigTriggerMask,"fSigTriggerMask/i");
     fSigmaPHOSMEBkgTree->Branch("fSigProtonID",&fSigProtonID,"fSigProtonID/I");
     fSigmaPHOSMEBkgTree->Branch("fSigProtonStatus",&fSigProtonStatus,"fSigProtonStatus/l");
+    fSigmaPHOSMEBkgTree->Branch("fSigProtonFilterMap",&fSigProtonFilterMap,"fSigProtonFilterMap/i");
     fSigmaPHOSMEBkgTree->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaPHOSMEBkgTree->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
     fSigmaPHOSMEBkgTree->Branch("fSigBField",&fSigBField,"fSigBField/F");
@@ -1560,6 +1572,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreePHOSSE->Branch("fSigTriggerMask",&fSigTriggerMask,"fSigTriggerMask/i");
     fSigmaPairTreePHOSSE->Branch("fSigProtonID",&fSigProtonID,"fSigProtonID/I");
     fSigmaPairTreePHOSSE->Branch("fSigProtonStatus",&fSigProtonStatus,"fSigProtonStatus/l");
+    fSigmaPairTreePHOSSE->Branch("fSigProtonFilterMap",&fSigProtonFilterMap,"fSigProtonFilterMap/i");
     fSigmaPairTreePHOSSE->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaPairTreePHOSSE->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
     fSigmaPairTreePHOSSE->Branch("fSigBField",&fSigBField,"fSigBField/F");
@@ -1607,6 +1620,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreePHOSSE->Branch("fSigmaProtonpropkstar",&fSigmaProtonpropkstar,"fSigmaProtonpropkstar/F");
     fSigmaPairTreePHOSSE->Branch("fPairProtonID",&fPairProtonID,"fPairProtonID/I");
     fSigmaPairTreePHOSSE->Branch("fPairProtonStatus",&fPairProtonStatus,"fPairProtonStatus/l");
+    fSigmaPairTreePHOSSE->Branch("fPairProtonFilterMap",&fPairProtonFilterMap,"fPairProtonFilterMap/i");
     fSigmaPairTreePHOSSE->Branch("fPairProtonCharge",&fPairProtonCharge,"fPairProtonCharge/F");
     fSigmaPairTreePHOSSE->Branch("fPairProtonPx",&fPairProtonPx,"fPairProtonPx/F");
     fSigmaPairTreePHOSSE->Branch("fPairProtonPy",&fPairProtonPy,"fPairProtonPy/F");
@@ -1714,6 +1728,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreePHOSME->Branch("fSigTriggerMask",&fSigTriggerMask,"fSigTriggerMask/i");
     fSigmaPairTreePHOSME->Branch("fSigProtonID",&fSigProtonID,"fSigProtonID/I");
     fSigmaPairTreePHOSME->Branch("fSigProtonStatus",&fSigProtonStatus,"fSigProtonStatus/l");
+    fSigmaPairTreePHOSME->Branch("fSigProtonFilterMap",&fSigProtonFilterMap,"fSigProtonFilterMap/i");
     fSigmaPairTreePHOSME->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaPairTreePHOSME->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
     fSigmaPairTreePHOSME->Branch("fSigBField",&fSigBField,"fSigBField/F");
@@ -1761,6 +1776,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreePHOSME->Branch("fSigmaProtonpropkstar",&fSigmaProtonpropkstar,"fSigmaProtonpropkstar/F");
     fSigmaPairTreePHOSME->Branch("fPairProtonID",&fPairProtonID,"fPairProtonID/I");
     fSigmaPairTreePHOSME->Branch("fPairProtonStatus",&fPairProtonStatus,"fPairProtonStatus/l");
+    fSigmaPairTreePHOSME->Branch("fPairProtonFilterMap",&fPairProtonFilterMap,"fPairProtonFilterMap/i");
     fSigmaPairTreePHOSME->Branch("fPairProtonCharge",&fPairProtonCharge,"fPairProtonCharge/F");
     fSigmaPairTreePHOSME->Branch("fPairProtonPx",&fPairProtonPx,"fPairProtonPx/F");
     fSigmaPairTreePHOSME->Branch("fPairProtonPy",&fPairProtonPy,"fPairProtonPy/F");
@@ -4913,6 +4929,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
           fSigMCLabel = Pi0MotherLabel;
           fSigProtonID = prot->GetID();
           fSigProtonStatus = prot->GetStatus();
+          fSigProtonFilterMap = prot->GetFilterMap();
           fSigEventID = fGlobalEventID;
           fSigCentrality = Centrality;
           fSigRefMultComb05 = fRefMultComb05;
@@ -5083,6 +5100,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
             fPairProtonITSCluster = pairprot->GetITSNcls();
             fPairProtonID = pairprot->GetID();
             fPairProtonStatus = pairprot->GetStatus();
+            fPairProtonFilterMap = pairprot->GetFilterMap();
 
             //Force TOF PID for Pair Proton if requested
             if(pairprot->P()>fMaxpOnlyTPCPID&&fRequireProtonTOFforPairs&&TMath::Abs(fPairProtonNSigTOF)>fMaxNsigProtTOF) continue;
@@ -5156,6 +5174,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
               fPairProtonITSCluster = mixprot->GetITSNcls();
               fPairProtonID = mixprot->GetID();
               fPairProtonStatus = mixprot->GetStatus();
+              fPairProtonFilterMap = mixprot->GetFilterMap();
 
               TVector3 mprt(fPairProtonPx,fPairProtonPy,fProtonPz);
               fPairProtonP = mprt.Mag();
@@ -5306,6 +5325,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
             fSigTriggerMask = EventTriggers;
             fSigProtonID = mixprot->GetID();
             fSigProtonStatus = mixprot->GetStatus();
+            fSigProtonFilterMap = mixprot->GetFilterMap();
             fSigEventID = fGlobalEventID;
             fSigCentrality = Centrality;
             fSigRefMultComb05 = fRefMultComb05;
@@ -5793,6 +5813,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
         fSigMCLabel = SigmaMCLabel;
         fSigProtonID = prot->GetID();
         fSigProtonStatus = prot->GetStatus();
+        fSigProtonFilterMap = prot->GetFilterMap();
         fSigEventID = fGlobalEventID;
         fSigCentrality = Centrality;
         fSigRefMultComb05 = fRefMultComb05;
@@ -5983,6 +6004,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
           fPairProtonITSCluster = pairprot->GetITSNcls();
           fPairProtonID = pairprot->GetID();
           fPairProtonStatus = pairprot->GetStatus();
+          fPairProtonFilterMap = pairprot->GetFilterMap();
 
           //Force TOF PID for Pair Proton if requested
           if(pairprot->P()>fMaxpOnlyTPCPID&&fRequireProtonTOFforPairs&&TMath::Abs(fPairProtonNSigTOF)>fMaxNsigProtTOF) continue;
@@ -6056,6 +6078,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
             fPairProtonITSCluster = mixprot->GetITSNcls();
             fPairProtonID = mixprot->GetID();
             fPairProtonStatus = mixprot->GetStatus();
+            fPairProtonFilterMap = mixprot->GetFilterMap();
 
             TVector3 mprt(fPairProtonPx,fPairProtonPy,fProtonPz);
             fPairProtonP = mprt.Mag();
