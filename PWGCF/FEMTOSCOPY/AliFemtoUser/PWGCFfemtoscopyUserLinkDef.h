@@ -6,6 +6,7 @@
 #pragma link C++ class AliFemtoShareQualityKTPairCut;
 #pragma link C++ class AliFemtoShareQualityTPCEntranceSepPairCut;
 #pragma link C++ class AliFemtoPairCutRadialDistance;
+#pragma link C++ class AliFemtoPairCutRadialDistanceDR;
 #pragma link C++ class AliFemtoESDTrackCut;
 #pragma link C++ class AliFemtoEPSelectionTaskThird+;
 #pragma link C++ class AliFemtoEventCutCentrality+;
@@ -86,6 +87,7 @@
 #pragma link C++ class AliFemtoQinvCorrFctnEMCIC;
 #pragma link C++ class AliFemtoCorrFctn3DSphericalEMCIC;
 #pragma link C++ class AliFemtoCorrFctnPtKstar;
+#pragma link C++ class AliFemtoCorrFctnPtKstarBeta;
 #pragma link C++ class AliFemtoBPLCMS3DCorrFctnEMCIC;
 #pragma link C++ class AliFemtoPairCutPt;
 #pragma link C++ class AliFemtoAvgSepCorrFctn;
@@ -99,6 +101,13 @@
 #pragma link C++ class AliAnalysisTaskParticleEffDY+;
 #pragma link C++ class AliAnalysisTaskParticleEffDY04+;
 #pragma link C++ class AliAnalysisTaskParticleEffDY06+;
+#pragma link C++ class AliAnalysisEffTaskFilterBit768+;
+#pragma link C++ class AliAnalysisEffTaskFilterBit16+;
+#pragma link C++ class AliAnalysisTaskEfficiencyFB128+;
+#pragma link C++ class AliAnalysisEffTaskExclusivePID+;
+#pragma link C++ class AliAnalysisEffTaskDoubleCountPID+;
+#pragma link C++ class AliAnalysisEfficiencyPbPbExclusivePID+;
+#pragma link C++ class AliAnalysisEfficiencyPbPbNodoublecount+;
 #pragma link C++ class AliAnalysisTaskParticleFractions+;
 #pragma link C++ class AliFemtoPairOriginMonitor+;
 #pragma link C++ class AliFemtoPairCutAntiGammaAlpha+;
@@ -199,8 +208,12 @@
 #pragma link C++ class AliFemtoCutMonitorV0CosPointingAngle+;
 #pragma link C++ class AliFemtoCutMonitorV0CosPointingAngle::ParentPIDInfo+;
 #pragma link C++ class AliFemtoCorrFctnPairsForCorrFit;
+//wiola
+#pragma link C++ class AliAnalysisTaskParticleEffWRZ+;
 #pragma link C++ class AliFemtoWRzTrackCut;
+
 #pragma link C++ class AliFemtoCorrFctnDYDPhiSimpleWithCorrections;
+
 
 
 // p-d/t/He3 track cut

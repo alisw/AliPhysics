@@ -358,7 +358,7 @@ void AliAnalysisTaskLMeePureMC::ProcessMCParticles()
 
     Double_t y = 0.5*TMath::Log(yPre);
     
-    if (y > 1.000) continue;
+    if (TMath::Abs(y) > 1.000) continue;
     switch(particle->GetPdgCode()){
     case kPdgPi0:
       fHistPtYPi0->Fill(particle->Pt(), particle->Y());

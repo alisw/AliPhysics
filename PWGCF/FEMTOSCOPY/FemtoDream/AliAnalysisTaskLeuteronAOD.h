@@ -28,7 +28,7 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
   public:
 
     AliAnalysisTaskLeuteronAOD();									// class constructor without parameters
-    AliAnalysisTaskLeuteronAOD(const char* name,bool isMC,bool isHighMultV0,bool BruteForceDebugging,bool isSidebandSignal, bool isUpperSideband, bool isLowerSideband,bool isPbPb,bool doEventQAPlots, bool doResultsQAPlots);	// class constructor with parameters
+    AliAnalysisTaskLeuteronAOD(const char* name,bool isMC,bool isHighMultV0,bool BruteForceDebugging,bool isSidebandSignal, bool isUpperSideband, bool isLowerSideband,bool isPbPb,bool doEventQAPlots, bool doResultsQAPlots,bool isCentral);	// class constructor with parameters
     AliAnalysisTaskLeuteronAOD& operator = (const AliAnalysisTaskLeuteronAOD &task);			// copy assignment operator
     AliAnalysisTaskLeuteronAOD(const AliAnalysisTaskLeuteronAOD &task);					// copy constructor
     virtual ~AliAnalysisTaskLeuteronAOD();								// class destructor
@@ -36,6 +36,9 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
     virtual void UserCreateOutputObjects();	      // is called only once -> define output objects within this function
     virtual void UserExec(Option_t *option);	      // is called in every event -> define what to search for in the events 
     Float_t CalculateMassSqTOF(AliFemtoDreamTrack *track);      // calculate the mass^2 of the particle using TOF
+    bool CheckTPCDeuteronPID(AliFemtoDreamTrack *track, double nSigma);
+    bool CheckDeuteronMassSquarePID(AliFemtoDreamTrack *track,double nSigma);
+    bool CheckAntiDeuteronMassSquarePID(AliFemtoDreamTrack *track,double nSigma);
     Double_t GetDeuteronMass2Mean_pp(float pT);
     Double_t GetLimit(float pT, double mean, double sign,double offset,double lastpar);
     Double_t GetAntideuteronMass2Mean_pp(float pT);
@@ -53,8 +56,20 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
     void SetTrackCutsPart3(AliFemtoDreamTrackCuts *trkCuts){	// particle 3 will be Deuterons
       fTrackCutsPart3 = trkCuts;
     };
+    void SetTrackCutsPart3Mass(AliFemtoDreamTrackCuts *trkCuts){	// particle 3 will be DeuteronsMass
+      fTrackCutsPart3Mass = trkCuts;
+    };
+    void SetTrackCutsPart3Sigma(AliFemtoDreamTrackCuts *trkCuts){	// particle 3 will be DeuteronsSigma
+      fTrackCutsPart3Sigma = trkCuts;
+    };
     void SetTrackCutsPart4(AliFemtoDreamTrackCuts *trkCuts){	// particle 4 will be Antideuterons
       fTrackCutsPart4 = trkCuts;
+    };
+    void SetTrackCutsPart4Mass(AliFemtoDreamTrackCuts *trkCuts){	// particle 4 will be AntideuteronsMass
+      fTrackCutsPart4Mass = trkCuts;
+    };
+    void SetTrackCutsPart4Sigma(AliFemtoDreamTrackCuts *trkCuts){	// particle 4 will be AntideuteronsSigma
+      fTrackCutsPart4Sigma = trkCuts;
     };
     void Setv0CutsPart5(AliFemtoDreamv0Cuts *v0Cuts){		// particle 3 will be Lambdas
       fv0CutsPart5 = v0Cuts;
@@ -77,6 +92,7 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
     bool fisUpperSideband;
     bool fisLowerSideband;
     bool fisPbPb;
+    bool fisCentral;
     int fTrackBufferSize;			  
 
     TList			    *fEventList;		// list for the event cuts
@@ -84,8 +100,12 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
     TList			    *fAntiprotonList;		// list for the antiproton cuts
     TList			    *fDeuteronList;		// list for the deuteron cuts
     TH2F                            *fDeuteronMassSqTOF;        // TH2F for calculation of deuteron mass2
+    TH2F                            *fDeuteronMassSqTOFFullPt;  // TH2F for calculation of deuteron mass2 full pt
+    TH2F                            *fDeuteronTPCnSigma;	// TH2F for calculation of nsigma TPC for purity
     TList			    *fAntideuteronList;		// list for the antideuteron cuts
     TH2F                            *fAntideuteronMassSqTOF;	// TH2F for calculation of antideuteron mass2
+    TH2F                            *fAntideuteronMassSqTOFFullPt;  // TH2F for calculation of antideuteron mass2 full pt
+    TH2F                            *fAntideuteronTPCnSigma;	// TH2F for calculation of nsigma TPC for purity
     TList			    *fLambdaList;		// list for the lambda cuts
     TList			    *fAntilambdaList;		// list for the antilambda cuts
     TList			    *fPairCleanerList;		// list for the pair cleaner
@@ -102,7 +122,11 @@ class AliAnalysisTaskLeuteronAOD : public AliAnalysisTaskSE {
     AliFemtoDreamTrackCuts	    *fTrackCutsPart1;		// cuts for the tracks of particle 1 (Protons)
     AliFemtoDreamTrackCuts	    *fTrackCutsPart2;		// cuts for the tracks of particle 2 (Antiprotons)
     AliFemtoDreamTrackCuts	    *fTrackCutsPart3;		// cuts for the tracks of particle 3 (Deuterons)
+    AliFemtoDreamTrackCuts	    *fTrackCutsPart3Mass;	// cuts for the tracks of particle 3 (DeuteronsMass)
+    AliFemtoDreamTrackCuts	    *fTrackCutsPart3Sigma;	// cuts for the tracks of particle 3 (DeuteronsSigma)
     AliFemtoDreamTrackCuts	    *fTrackCutsPart4;		// cuts for the tracks of particle 4 (Antideuterons)
+    AliFemtoDreamTrackCuts	    *fTrackCutsPart4Mass;	// cuts for the tracks of particle 4 (AntideuteronsMass)
+    AliFemtoDreamTrackCuts	    *fTrackCutsPart4Sigma;	// cuts for the tracks of particle 4 (AntideuteronsSigma)
     AliFemtoDreamv0Cuts		    *fv0CutsPart5;		// cuts for the tracks of particle 5 (Lambdas)
     AliFemtoDreamv0Cuts		    *fv0CutsPart6;		// cuts for the tracks of particle 6 (Antilambdas)
 

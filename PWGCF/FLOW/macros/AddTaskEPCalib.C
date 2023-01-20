@@ -103,7 +103,7 @@ AliAnalysisTaskEPCalib* AddTaskEPCalib(
             if (period.EqualTo("LHC18q")) inV0Calib = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/calib2021/CalibV0GainCorrectionLHC18q_Sept2021NoAvgQ.root");
             if (period.EqualTo("LHC18r")) inV0Calib = TFile::Open("alien:///alice/cern.ch/user/m/mhaque/calib2021/CalibV0GainCorrectionLHC18r_Sept2021NoAvgQ.root");
 
-            AliAnalysisDataContainer *cin_V0Calib = mgr->CreateContainer(Form("inV0Calib"), TList::Class(), AliAnalysisManager::kInputContainer);             
+            AliAnalysisDataContainer *cin_V0Calib = mgr->CreateContainer(Form("inV0Calib_%s", uniqueID.Data()), TList::Class(), AliAnalysisManager::kInputContainer);             
             TList* V0Calib_list = NULL;
             V0Calib_list = dynamic_cast<TList*>(inV0Calib->Get("fWgtsV0ZDC"));
             if (!V0Calib_list) printf("Read TList wrong!\n");

@@ -188,7 +188,7 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   }
 
   if(fMakeClusterHistos1D){
-    fHistos->CreateTH1("hClusterEnergy1D", "Cluster Energy Spectrum", 200., 0., 200.);
+    fHistos->CreateTH1("hClusterEnergy1D", "Cluster Energy Spectrum", 800., 0., 200.);
   }
 
   // A bit of QA stuff
@@ -215,6 +215,8 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQAJetAreaVsJetPt", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 200, 0., 2.);
   fHistos->CreateTH2("hQAJetAreaVsNEF", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 200, 0., 2.);
   fHistos->CreateTH2("hQAJetAreaVsNConst", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 200, 0., 2.);
+  fHistos->CreateTH1("hQAPosTrVsPt", "N_{tr}^{+} vs. p_{t,tr}", 350., 0., 350.);
+  fHistos->CreateTH1("hQANegTrVsPt", "N_{tr}^{-} vs. p_{t,tr}", 350., 0., 350.);
   // Cluster constituent QA
   fHistos->CreateTH2("hQAClusterTimeVsE", "Cluster time vs. energy; time (ns); E (GeV)", 1200, -600, 600, 200, 0., 200);
   fHistos->CreateTH2("hQAClusterTimeVsEFine", "Cluster time vs. energy (main region); time (ns); E (GeV)", 1000, -100, 100, 200, 0., 200);
@@ -454,6 +456,12 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
         fHistos->FillTH2("hQAZchPt", ptjet, j->GetZ(track->Px(), track->Py(), track->Pz()), weight);
         fHistos->FillTH2("hQAEtaPhiConstCh", track->Eta(), TVector2::Phi_0_2pi(track->Phi()), weight);
         fHistos->FillTH2("hQADeltaRCharged", ptjet, j->DeltaR(track), weight);
+        if(track->Charge() > 0)      fHistos->FillTH1("hQAPosTrVsPt", track->Pt(), weight);
+        else if(track->Charge() < 0) fHistos->FillTH1("hQANegTrVsPt", track->Pt(), weight);
+        else{
+          AliErrorStream() << "Found track with zero charge! Returning..." << std::endl;
+          return false;
+        }
       }
     }
     fHistos->FillTH2("hQANChPt", ptjet, j->GetNumberOfTracks(), weight);
@@ -570,7 +578,7 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::ConfigureMCMinBias(MCProductionType_
 
 void AliAnalysisTaskEmcalJetEnergySpectrum::ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc) {
   auto detjets = GetDetJetContainer();
-  
+
   detjets->SetJetPtCut(minJetPt);
   if(detjets->GetJetType() == AliJetContainer::kFullJet || detjets->GetJetType() == AliJetContainer::kChargedJet) {
     detjets->SetMaxTrackPt(maxTrackPt);
@@ -746,7 +754,7 @@ Double_t AliAnalysisTaskEmcalJetEnergySpectrum::GetDeltaPtEmbedding()
     return deltaPtEmb;
 }
 
-AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW suffix){
+AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrumBase(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW nametrackcont, EMCAL_STRINGVIEW nameclustercont, EMCAL_STRINGVIEW suffix){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) {
     std::cerr << "Analysis manager not initialized" << std::endl;
@@ -798,12 +806,18 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   // Connect particle and cluster container
   AliTrackContainer *tracks(nullptr);
   AliClusterContainer *clusters(nullptr);
+  TString trackcontname   = nametrackcont.data();
+  TString clustercontname = nameclustercont.data();
+
   if(jettype == AliJetContainer::kChargedJet || jettype == AliJetContainer::kFullJet) {
-    tracks = task->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    if(trackcontname == "usedefault") tracks = task->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    else tracks = task->AddTrackContainer(trackcontname.Data());
     tracks->SetMinPt(0.15);
   }
+
   if(jettype == AliJetContainer::kNeutralJet || jettype == AliJetContainer::kFullJet){
-    clusters = task->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    if(clustercontname == "usedefault") clusters = task->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    else clusters = task->AddClusterContainer(clustercontname.Data());
     clusters->SetDefaultClusterEnergy(energydef);
     clusters->SetClusUserDefEnergyCut(energydef, 0.3);
   }
@@ -838,7 +852,7 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   return task;
 }
 
-AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrumBkgSub(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW nrho, EMCAL_STRINGVIEW suffix){
+AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrumBkgSubBase(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW nrho, EMCAL_STRINGVIEW nametrackcont, EMCAL_STRINGVIEW nameclustercont, EMCAL_STRINGVIEW suffix){
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if(!mgr) {
     std::cerr << "Analysis manager not initialized" << std::endl;
@@ -890,12 +904,18 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   // Connect particle and cluster container
   AliTrackContainer *tracks(nullptr);
   AliClusterContainer *clusters(nullptr);
+  TString trackcontname   = nametrackcont.data();
+  TString clustercontname = nameclustercont.data();
+
   if(jettype == AliJetContainer::kChargedJet || jettype == AliJetContainer::kFullJet) {
-    tracks = task->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    if(trackcontname == "usedefault") tracks = task->AddTrackContainer(AliEmcalAnalysisFactory::TrackContainerNameFactory(isAOD));
+    else tracks = task->AddTrackContainer(trackcontname.Data());
     tracks->SetMinPt(0.15);
   }
+
   if(jettype == AliJetContainer::kNeutralJet || jettype == AliJetContainer::kFullJet){
-    clusters = task->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    if(clustercontname == "usedefault") clusters = task->AddClusterContainer(AliEmcalAnalysisFactory::ClusterContainerNameFactory(isAOD));
+    else clusters = task->AddClusterContainer(clustercontname.Data());
     clusters->SetDefaultClusterEnergy(energydef);
     clusters->SetClusUserDefEnergyCut(energydef, 0.3);
   }
@@ -929,4 +949,20 @@ AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::Ad
   mgr->ConnectOutput(task, 1, mgr->CreateContainer(Form("JetSpectrum_%s", tag.str().data()), TList::Class(), AliAnalysisManager::kOutputContainer, outfilename.str().data()));
 
   return task;
+}
+
+AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW suffix){
+  return AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrumBase(isMC, jettype, recoscheme, energydef, radius, namepartcont, trigger, "usedefault", "usedefault", suffix);
+}
+
+AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrum(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW nametrackcont, EMCAL_STRINGVIEW nameclustercont, EMCAL_STRINGVIEW suffix){
+  return AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrumBase(isMC, jettype, recoscheme, energydef, radius, namepartcont, trigger, nametrackcont, nameclustercont, suffix);
+}
+
+AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrumBkgSub(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW nrho, EMCAL_STRINGVIEW suffix){
+  return AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrumBkgSubBase(isMC, jettype, recoscheme, energydef, radius, namepartcont, trigger, nrho, "usedefault", "usedefault", suffix);
+}
+
+AliAnalysisTaskEmcalJetEnergySpectrum *AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrumBkgSub(Bool_t isMC, AliJetContainer::EJetType_t jettype, AliJetContainer::ERecoScheme_t recoscheme, AliVCluster::VCluUserDefEnergy_t energydef, double radius, EMCAL_STRINGVIEW namepartcont, EMCAL_STRINGVIEW trigger, EMCAL_STRINGVIEW nrho, EMCAL_STRINGVIEW nametrackcont, EMCAL_STRINGVIEW nameclustercont, EMCAL_STRINGVIEW suffix){
+  return AliAnalysisTaskEmcalJetEnergySpectrum::AddTaskJetEnergySpectrumBkgSubBase(isMC, jettype, recoscheme, energydef, radius, namepartcont, trigger, nrho, nametrackcont, nameclustercont, suffix);
 }

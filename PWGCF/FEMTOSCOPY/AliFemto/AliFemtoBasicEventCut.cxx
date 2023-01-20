@@ -47,7 +47,7 @@ bool AliFemtoBasicEventCut::Pass(const AliFemtoEvent* event)
   // Double_t qxEPVZERO = 0, qyEPVZERO = 0;
   // Double_t qVZERO = -999;
   const double epvzero = event->ReactionPlaneAngle();
-
+  
   const bool passes_ep = (fPsiEP[0] < epvzero && epvzero < fPsiEP[1]),
            passes_mult = (fEventMult[0] <= mult && mult <= fEventMult[1]),
               passes_z = (fVertZPos[0] < vertexZPos && vertexZPos < fVertZPos[1]),

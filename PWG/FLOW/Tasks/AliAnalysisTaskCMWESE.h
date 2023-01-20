@@ -42,6 +42,9 @@ public:
   TString GetTrigger(){return fTrigger;}
   void SetTrigger(TString x){fTrigger = x;}
 
+  TString GetCentEst(){return fCentEst;}
+  void SetCentEst(TString x){fCentEst = x;}
+
   int    GetFilterBit(){return fFltbit;}
   void SetFilterBit(int x){fFltbit = x;}
 
@@ -147,6 +150,7 @@ private:
     int                     fDebug; // debug level controls amount of output statements
     double              fHarmonic; // value of harmonic
     TString             fTrigger; // flag of trigger; 0 = kINT7; 1 = kMB; 2 = kMB+kCentral+kSemiCentral
+    TString             fCentEst;
     int                     fFltbit; // AOD filter bit selection
     int                     fNclsCut; // ncls cut for all tracks 
     float                  fChi2Hg; // upper limmit for chi2
@@ -233,6 +237,8 @@ private:
     TH2D*             hMQNeg_weight_thisEvt;
     TProfile*          pRefFlow_thisEvt;
     TProfile*          pIntd2_thisEvt;
+    TProfile*          pbufferPt_thisEvt;
+    TProfile*          pbufferEta_thisEvt;
 
     // Read Files for V0Calib
     TProfile3D*     pV0XMeanRead[3]; 
@@ -277,6 +283,12 @@ private:
     TProfile*         pAch[NCENTBINS];
     TH1D*            hMultMb[NQNBINS];
     TH1D*            hAchMb[NQNBINS];
+
+    // pt,eta vs Ach
+    TProfile* pPosPtAch[NCENTBINS];
+    TProfile* pNegPtAch[NCENTBINS];
+    TProfile* pPosEtaAch[NCENTBINS];
+    TProfile* pNegEtaAch[NCENTBINS];
 
     AliAnalysisTaskCMWESE(const AliAnalysisTaskCMWESE&);
     AliAnalysisTaskCMWESE& operator=(const AliAnalysisTaskCMWESE&);

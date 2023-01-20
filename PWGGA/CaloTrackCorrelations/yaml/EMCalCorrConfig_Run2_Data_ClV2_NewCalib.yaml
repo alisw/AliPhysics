@@ -1,0 +1,42 @@
+configurationName: "EMCal Run2 Data Correction Cluster V3"
+CellEnergy:
+    enabled: true
+    createHistos: true
+    enableNewTempCalib: true
+    enableShaperCorrection: true
+    enableAdditionalScale: true
+    additionalScaleValuesSM: [0.981, 0.970, 0.980]
+CellBadChannel:
+    enabled: true
+    createHistos: true
+CellTimeCalib:
+    enabled: true
+    createHistos: true
+    doCalibrateLowGain: true 
+    doCalibTimeEdep: true
+    doMergedBCs: true
+    doCalibMergedLG: false
+Clusterizer:
+    enabled: true
+    clusterizer: kClusterizerv3
+    cellE: 0.1
+    seedE: 0.5
+    cellTimeMin: -500e-6
+    cellTimeMax:  500e-6
+    clusterTimeLength: 1e6
+    createHistos: true
+    recalDistToBadChannels: true
+    recalShowerShape: false
+ClusterExotics:
+    enabled: false          # false since applied in the analysis 
+    createHistos: false
+    fMaxFcross: 0.95
+    fHighEnergyNdiffCut: 50 
+ClusterNonLinearity:
+    enabled: true
+    setForceClusterE: true
+    createHistos: true
+    nonLinFunct: kTestBeamShaperWoScale 
+ClusterTrackMatcher:
+    enabled: true
+    createHistos: true

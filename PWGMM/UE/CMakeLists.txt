@@ -49,7 +49,11 @@ set(SRCS
   UeKNO/AliAnalysisTaskDataKno.cxx
   UeKNO/AliAnalysisTaskGenMcKno.cxx
   UeKNO/AliAnalysisTaskGenUeNchTS.cxx
-  UeMpi/AliAnalysisTaskMpiUE.cxx		
+  UeKNO/AliAnalysisTaskFlatenicity.cxx
+  UeMpi/AliAnalysisTaskMpiUE.cxx
+  Flatenicity/AliAnalysisTaskSpectraFlatenicity.cxx
+  FlatenicityPiKp/AliAnalysisTaskFlatenicityPiKp.cxx
+  FlatenicityLambdaK0s/AliAnalysisTaskFlatenicityLambdaK0s.cxx
   )
 
 # Headers from sources
@@ -118,4 +122,7 @@ install(FILES ${HDRS} DESTINATION include)
 install(DIRECTORY UeMultDep DESTINATION  PWGMM/UE)
 install(DIRECTORY UeSpectraRT DESTINATION  PWGMM/UE)
 install(DIRECTORY UeDphi DESTINATION  PWGMM/UE)
-install(DIRECTORY macros DESTINATION  PWGMM/UE)		
+install(DIRECTORY macros DESTINATION  PWGMM/UE)
+install(DIRECTORY Flatenicity DESTINATION  PWGMM/UE)
+install(DIRECTORY FlatenicityPiKp DESTINATION  PWGMM/UE)
+install(DIRECTORY FlatenicityLambdaK0s DESTINATION  PWGMM/UE)

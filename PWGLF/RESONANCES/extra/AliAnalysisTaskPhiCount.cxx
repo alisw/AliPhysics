@@ -94,10 +94,43 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     
     //_____________________________________________________________________________
     //
-    //  EVENT
-    auto    kV0M_bin    =   100000;
-    auto    kV0M_min    =   -100.;
-    auto    kV0M_max    =   +900.;
+    //  --- Event
+    //  --- --- Multiplicity
+    //  --- --- --- V0M
+    Int_t   kV0M_bin    =   100000;
+    Float_t kV0M_min    =   -100.;
+    Float_t kV0M_max    =   +900.;
+    //
+    //  --- --- --- Tracklets
+    Int_t   kTRK_bin    =   220;
+    Float_t kTRK_min    =   -20.;
+    Float_t kTRK_max    =   +200.;
+    //
+    //  --- --- Z Vertex
+    Int_t   zVTX_bin    =   300;
+    Float_t zVTX_min    =   -15.;
+    Float_t zVTX_max    =   +15.;
+    //
+    //  --- Track
+    //  --- --- Transverse momentum
+    Int_t   kMOM_bin    =   400;
+    Float_t kMOM_min    =   +0.;
+    Float_t kMOM_max    =   +10.;
+    //
+    //  --- --- Phi angle
+    Int_t   kPhA_bin    =   370;
+    Float_t kPhA_min    =   -5.;
+    Float_t kPhA_max    =   +365.;
+    //
+    //  --- --- Eta
+    Int_t   kETA_bin    =   100;
+    Float_t kETA_min    =   -1.;
+    Float_t kETA_max    =   +1.;
+    //
+    //  --- --- Nsgima PID
+    Int_t   sPID_bin    =   200;
+    Float_t sPID_min    =   -10.;
+    Float_t sPID_max    =   +10.;
     //
     //_____________________________________________________________________________
     fQC_Event_Enum_FLL              = new TH1D("fQC_Event_Enum_FLL",       "Event Selection",                                  29, -0.5, 28.5);
@@ -111,25 +144,25 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fQC_Event_Enum_V0M              ->  GetYaxis()  ->  SetTitle("Accepted Event");
     fQCOutputList->Add(fQC_Event_Enum_V0M);
     
-    fQC_Event_Enum_TRK              = new TH1D("fQC_Event_Enum_TRK",        "Acc. Events in Mult.",                             220, -20., 200.);
+    fQC_Event_Enum_TRK              = new TH1D("fQC_Event_Enum_TRK",        "Acc. Events in Mult.",                             kTRK_bin, kTRK_min, kTRK_max);
     fQC_Event_Enum_TRK              ->  GetXaxis()  ->  SetTitle("Tracklets Multiplicity");
     fQC_Event_Enum_TRK              ->  GetYaxis()  ->  SetTitle("Accepted Event");
     fQCOutputList->Add(fQC_Event_Enum_TRK);
     
-    fQC_Event_Enum_V0T              = new TH2D("fQC_Event_Enum_V0T",        "Acc. Events in Mult.",                             100, 0., 100., 200, 0., 200.);
+    fQC_Event_Enum_V0T              = new TH2D("fQC_Event_Enum_V0T",        "Acc. Events in Mult.",                             kV0M_bin, kV0M_min, kV0M_max, kTRK_bin, kTRK_min, kTRK_max);
     fQC_Event_Enum_V0T              ->  GetXaxis()  ->  SetTitle("V0M Multiplicity");
     fQC_Event_Enum_V0T              ->  GetYaxis()  ->  SetTitle("Tracklets Multiplicity");
     fQC_Event_Enum_V0T              ->  GetZaxis()  ->  SetTitle("Accepted Event");
     fQCOutputList->Add(fQC_Event_Enum_V0T);
     
-    fQC_Event_Vertex_Fll            = new TH1F("fQC_Event_Vertex_Fll",      "Collision Vertex (FULL)",                          300, -15, 15);
-    fQC_Event_Vertex_Fll            ->  GetXaxis()  ->  SetTitle("Accepted Events");
-    fQC_Event_Vertex_Fll            ->  GetYaxis()  ->  SetTitle("Vertex z-position (cm)");
+    fQC_Event_Vertex_Fll            = new TH1F("fQC_Event_Vertex_Fll",      "Collision Vertex (FULL)",                          zVTX_bin, zVTX_min, zVTX_max);
+    fQC_Event_Vertex_Fll            ->  GetXaxis()  ->  SetTitle("Vertex z-position (cm)");
+    fQC_Event_Vertex_Fll            ->  GetYaxis()  ->  SetTitle("Accepted Events");
     fQCOutputList->Add(fQC_Event_Vertex_Fll);
     
-    fQC_Event_Vertex_Cut            = new TH1F("fQC_Event_Vertex_Cut",      "Collision Vertex (CUTS)",                          300, -15, 15);
-    fQC_Event_Vertex_Cut            ->  GetXaxis()  ->  SetTitle("Accepted Events");
-    fQC_Event_Vertex_Cut            ->  GetYaxis()  ->  SetTitle("Vertex z-position (cm)");
+    fQC_Event_Vertex_Cut            = new TH1F("fQC_Event_Vertex_Cut",      "Collision Vertex (CUTS)",                          zVTX_bin, zVTX_min, zVTX_max);
+    fQC_Event_Vertex_Cut            ->  GetXaxis()  ->  SetTitle("Vertex z-position (cm)");
+    fQC_Event_Vertex_Fll            ->  GetYaxis()  ->  SetTitle("Accepted Events");
     fQCOutputList->Add(fQC_Event_Vertex_Cut);
     
     fQC_Event_Spherocity            = new TH1F("fQC_Event_Spherocity",      "Event Spherocity",                                 410, -3, 1.1);
@@ -156,27 +189,27 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     //
     //  TRACKS
     //_____________________________________________________________________________
-    fQC_Tracks_Momentum             = new TH2F("fQC_Tracks_Momentum",       "Acc. Tracks Momentum",                             2, -1., 1., 100, 0., 10.);
+    fQC_Tracks_Momentum             = new TH2F("fQC_Tracks_Momentum",       "Acc. Tracks Momentum",                             2, -1., 1., kMOM_bin, kMOM_min, kMOM_max);
     fQC_Tracks_Momentum             ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_Tracks_Momentum             ->  GetYaxis()  ->  SetTitle("Track Momentum (GeV/c)");
     fQC_Tracks_Momentum             ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Tracks_Momentum);
     
-    fQC_Tracks_TMomentum            = new TH2F("fQC_Tracks_TMomentum",      "Acc. Tracks Transverse Momentum",                  2, -1., 1., 100, 0., 10.);
+    fQC_Tracks_TMomentum            = new TH2F("fQC_Tracks_TMomentum",      "Acc. Tracks Transverse Momentum",                  2, -1., 1., kMOM_bin, kMOM_min, kMOM_max);
     fQC_Tracks_TMomentum            ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_Tracks_TMomentum            ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_Tracks_TMomentum            ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Tracks_TMomentum);
     
-    fQC_Tracks_Eta                  = new TH2F("fQC_Tracks_Eta",            "Acc. Tracks #eta",                                 2, -1., 1., 100, -1., 1.);
+    fQC_Tracks_Eta                  = new TH2F("fQC_Tracks_Eta",            "Acc. Tracks #eta",                                 2, -1., 1., kETA_bin, kETA_min, kETA_max);
     fQC_Tracks_Eta                  ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_Tracks_Eta                  ->  GetYaxis()  ->  SetTitle("Track #eta");
     fQC_Tracks_Eta                  ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Tracks_Eta);
     
-    fQC_Tracks_Phi                  = new TH2F("fQC_Tracks_Phi",            "Acc. Tracks #phi",                                 2, -1., 1., 370, -5., 365.);
+    fQC_Tracks_Phi                  = new TH2F("fQC_Tracks_Phi",            "Acc. Tracks #phi",                                 2, -1., 1., kPhA_bin, kPhA_min, kPhA_max);
     fQC_Tracks_Phi                  ->  GetXaxis()  ->  SetTitle("Track Sign");
-    fQC_Tracks_Phi                  ->  GetYaxis()  ->  SetTitle("Track #phi");
+    fQC_Tracks_Phi                  ->  GetYaxis()  ->  SetTitle("Track #varphi");
     fQC_Tracks_Phi                  ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Tracks_Phi);
     
@@ -186,55 +219,55 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fQC_Tracks_V0M                  ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Tracks_V0M);
     
-    fQC_Tracks_TRK                  = new TH2F("fQC_Tracks_TRK",            "Acc. Tracks in Mult.",                             2, -1., 1., 202, -1., 201.);
+    fQC_Tracks_TRK                  = new TH2F("fQC_Tracks_TRK",            "Acc. Tracks in Mult.",                             2, -1., 1., kTRK_bin, kTRK_min, kTRK_max);
     fQC_Tracks_TRK                  ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_Tracks_TRK                  ->  GetYaxis()  ->  SetTitle("Tracklets Multiplicity");
     fQC_Tracks_TRK                  ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Tracks_TRK);
     
-    fQC_Tracks_DCAXY_P              = new TH3F("fQC_Tracks_DCAXY_P",        "Acc. Tracks XY-DCA",                               2, -1., 1., 400, 0., 10., 1000, -5., 5.);
+    fQC_Tracks_DCAXY_P              = new TH3F("fQC_Tracks_DCAXY_P",        "Acc. Tracks XY-DCA",                               2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, 1000, -5., 5.);
     fQC_Tracks_DCAXY_P              ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_Tracks_DCAXY_P              ->  GetYaxis()  ->  SetTitle("Track Momentum (GeV/c)");
     fQC_Tracks_DCAXY_P              ->  GetZaxis()  ->  SetTitle("XY-DCA (cm)");
     fQCOutputList->Add(fQC_Tracks_DCAXY_P);
     
-    fQC_Tracks_DCAXY_PT             = new TH3F("fQC_Tracks_DCAXY_PT",       "Acc. Tracks XY-DCA",                               2, -1., 1., 400, 0., 10., 1000, -5., 5.);
+    fQC_Tracks_DCAXY_PT             = new TH3F("fQC_Tracks_DCAXY_PT",       "Acc. Tracks XY-DCA",                               2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, 1000, -5., 5.);
     fQC_Tracks_DCAXY_PT             ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_Tracks_DCAXY_PT             ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_Tracks_DCAXY_PT             ->  GetZaxis()  ->  SetTitle("XY-DCA (cm)");
     fQCOutputList->Add(fQC_Tracks_DCAXY_PT);
     
-    fQC_Tracks_DCAZ_P               = new TH3F("fQC_Tracks_DCAZ_P",          "Acc. Tracks Z-DCA",                               2, -1., 1., 400, 0., 10., 1000, -5., 5.);
+    fQC_Tracks_DCAZ_P               = new TH3F("fQC_Tracks_DCAZ_P",          "Acc. Tracks Z-DCA",                               2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, 1000, -5., 5.);
     fQC_Tracks_DCAZ_P               ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_Tracks_DCAZ_P               ->  GetYaxis()  ->  SetTitle("Track Momentum (GeV/c)");
     fQC_Tracks_DCAZ_P               ->  GetZaxis()  ->  SetTitle("Z-DCA (cm)");
     fQCOutputList->Add(fQC_Tracks_DCAZ_P);
     
-    fQC_Tracks_DCAZ_PT              = new TH3F("fQC_Tracks_DCAZ_PT",        "Acc. Tracks Z-DCA",                                2, -1., 1., 400, 0., 10., 1000, -5., 5.);
+    fQC_Tracks_DCAZ_PT              = new TH3F("fQC_Tracks_DCAZ_PT",        "Acc. Tracks Z-DCA",                                2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, 1000, -5., 5.);
     fQC_Tracks_DCAZ_PT              ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_Tracks_DCAZ_PT              ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_Tracks_DCAZ_PT              ->  GetZaxis()  ->  SetTitle("Z-DCA (cm)");
     fQCOutputList->Add(fQC_Tracks_DCAZ_PT);
     
-    fQC_Tracks_TOF_P                = new TH3F("fQC_Tracks_TOF_P",           "Acc. Tracks TOF Sig.",                            2, -1., 1.,  400, 0., 10., 120, 0., 1.2);
+    fQC_Tracks_TOF_P                = new TH3F("fQC_Tracks_TOF_P",           "Acc. Tracks TOF Sig.",                            2, -1., 1.,  kMOM_bin, kMOM_min, kMOM_max, 120, 0., 1.2);
     fQC_Tracks_TOF_P                ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Tracks_TOF_P                ->  GetYaxis()  ->  SetTitle("Kaon Momentum (GeV/c)");
     fQC_Tracks_TOF_P                ->  GetZaxis()  ->  SetTitle("#beta");
     fQCOutputList->Add(fQC_Tracks_TOF_P);
     
-    fQC_Tracks_TOF_PT               = new TH3F("fQC_Tracks_TOF_PT",          "Acc. Tracks TOF Sig.",                            2, -1., 1.,  400, 0., 10., 120, 0., 1.2);
+    fQC_Tracks_TOF_PT               = new TH3F("fQC_Tracks_TOF_PT",          "Acc. Tracks TOF Sig.",                            2, -1., 1.,  kMOM_bin, kMOM_min, kMOM_max, 120, 0., 1.2);
     fQC_Tracks_TOF_PT               ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_Tracks_TOF_PT               ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_Tracks_TOF_PT               ->  GetZaxis()  ->  SetTitle("#beta");
     fQCOutputList->Add(fQC_Tracks_TOF_PT);
     
-    fQC_Tracks_TPC_P                = new TH3F("fQC_Tracks_TPC_P",           "Acc. Tracks TPC Sig.",                            2, -1., 1.,  400, 0., 10., 100, 0., 500.);
+    fQC_Tracks_TPC_P                = new TH3F("fQC_Tracks_TPC_P",           "Acc. Tracks TPC Sig.",                            2, -1., 1.,  kMOM_bin, kMOM_min, kMOM_max, 100, 0., 500.);
     fQC_Tracks_TPC_P                ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_Tracks_TPC_P                ->  GetYaxis()  ->  SetTitle("Track Momentum (GeV/c)");
     fQC_Tracks_TPC_P                ->  GetZaxis()  ->  SetTitle("dE/dx a.u.");
     fQCOutputList->Add(fQC_Tracks_TPC_P);
     
-    fQC_Tracks_TPC_PT               = new TH3F("fQC_Tracks_TPC_PT",          "Acc. Tracks TPC Sig.",                            2, -1., 1.,  400, 0., 10., 100, 0., 500.);
+    fQC_Tracks_TPC_PT               = new TH3F("fQC_Tracks_TPC_PT",          "Acc. Tracks TPC Sig.",                            2, -1., 1.,  kMOM_bin, kMOM_min, kMOM_max, 100, 0., 500.);
     fQC_Tracks_TPC_PT               ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_Tracks_TPC_PT               ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_Tracks_TPC_PT               ->  GetZaxis()  ->  SetTitle("dE/dx a.u.");
@@ -269,27 +302,27 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     //
     //  KAONS
     //_____________________________________________________________________________
-    fQC_Kaons_Momentum              = new TH2F("fQC_Kaons_Momentum",        "Acc. Kaons Momentum",                              2, -1., 1., 100, 0., 10.);
+    fQC_Kaons_Momentum              = new TH2F("fQC_Kaons_Momentum",        "Acc. Kaons Momentum",                              2, -1., 1., kMOM_bin, kMOM_min, kMOM_max);
     fQC_Kaons_Momentum              ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Kaons_Momentum              ->  GetYaxis()  ->  SetTitle("Kaon Momentum (GeV/c)");
     fQC_Kaons_Momentum              ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Kaons_Momentum);
     
-    fQC_Kaons_TMomentum             = new TH2F("fQC_Kaons_TMomentum",       "Acc. Kaons Transverse Momentum",                   2, -1., 1., 100, 0., 10.);
+    fQC_Kaons_TMomentum             = new TH2F("fQC_Kaons_TMomentum",       "Acc. Kaons Transverse Momentum",                   2, -1., 1., kMOM_bin, kMOM_min, kMOM_max);
     fQC_Kaons_TMomentum             ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Kaons_TMomentum             ->  GetYaxis()  ->  SetTitle("Kaon Transverse Momentum (GeV/c)");
     fQC_Kaons_TMomentum             ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Kaons_TMomentum);
     
-    fQC_Kaons_Eta                   = new TH2F("fQC_Kaons_Eta",             "Acc. Kaons #eta",                                  2, -1., 1., 100, -1., 1.);
+    fQC_Kaons_Eta                   = new TH2F("fQC_Kaons_Eta",             "Acc. Kaons #eta",                                  2, -1., 1., kETA_bin, kETA_min, kETA_max);
     fQC_Kaons_Eta                   ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Kaons_Eta                   ->  GetYaxis()  ->  SetTitle("Kaon #eta");
     fQC_Kaons_Eta                   ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Kaons_Eta);
     
-    fQC_Kaons_Phi                   = new TH2F("fQC_Kaons_Phi",             "Acc. Kaons #phi",                                  2, -1., 1., 370, -5., 365.);
+    fQC_Kaons_Phi                   = new TH2F("fQC_Kaons_Phi",             "Acc. Kaons #phi",                                  2, -1., 1., kPhA_bin, kPhA_min, kPhA_max);
     fQC_Kaons_Phi                   ->  GetXaxis()  ->  SetTitle("Kaon Sign");
-    fQC_Kaons_Phi                   ->  GetYaxis()  ->  SetTitle("Kaon #phi");
+    fQC_Kaons_Phi                   ->  GetYaxis()  ->  SetTitle("Kaon #varphi");
     fQC_Kaons_Phi                   ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Kaons_Phi);
     
@@ -299,55 +332,55 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fQC_Kaons_V0M                   ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Kaons_V0M);
     
-    fQC_Kaons_TRK                   = new TH2F("fQC_Kaons_TRK",            "Acc. Kaons in Mult.",                               2, -1., 1., 202, -1., 201.);
+    fQC_Kaons_TRK                   = new TH2F("fQC_Kaons_TRK",            "Acc. Kaons in Mult.",                               2, -1., 1., kTRK_bin, kTRK_min, kTRK_max);
     fQC_Kaons_TRK                   ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Kaons_TRK                   ->  GetYaxis()  ->  SetTitle("Tracklets Multiplicity");
     fQC_Kaons_TRK                   ->  GetZaxis()  ->  SetTitle("Accepted Tracks");
     fQCOutputList->Add(fQC_Kaons_TRK);
     
-    fQC_Kaons_DCAXY_P               = new TH3F("fQC_Kaons_DCAXY_P",        "Acc. Kaons XY-DCA",                                 2, -1., 1., 400, 0., 10., 1000, -5., 5.);
+    fQC_Kaons_DCAXY_P               = new TH3F("fQC_Kaons_DCAXY_P",        "Acc. Kaons XY-DCA",                                 2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, 1000, -5., 5.);
     fQC_Kaons_DCAXY_P               ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Kaons_DCAXY_P               ->  GetYaxis()  ->  SetTitle("Kaon Momentum (GeV/c)");
     fQC_Kaons_DCAXY_P               ->  GetZaxis()  ->  SetTitle("XY-DCA (cm)");
     fQCOutputList->Add(fQC_Kaons_DCAXY_P);
     
-    fQC_Kaons_DCAXY_PT              = new TH3F("fQC_Kaons_DCAXY_PT",       "Acc. Kaons XY-DCA",                                 2, -1., 1., 400, 0., 10., 1000, -5., 5.);
+    fQC_Kaons_DCAXY_PT              = new TH3F("fQC_Kaons_DCAXY_PT",       "Acc. Kaons XY-DCA",                                 2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, 1000, -5., 5.);
     fQC_Kaons_DCAXY_PT              ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Kaons_DCAXY_PT              ->  GetYaxis()  ->  SetTitle("Kaon Transverse Momentum (GeV/c)");
     fQC_Kaons_DCAXY_PT              ->  GetZaxis()  ->  SetTitle("XY-DCA (cm)");
     fQCOutputList->Add(fQC_Kaons_DCAXY_PT);
     
-    fQC_Kaons_DCAZ_P                = new TH3F("fQC_Kaons_DCAZ_P",          "Acc. Kaons Z-DCA",                                 2, -1., 1., 400, 0., 10., 1000, -5., 5.);
+    fQC_Kaons_DCAZ_P                = new TH3F("fQC_Kaons_DCAZ_P",          "Acc. Kaons Z-DCA",                                 2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, 1000, -5., 5.);
     fQC_Kaons_DCAZ_P                ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Kaons_DCAZ_P                ->  GetYaxis()  ->  SetTitle("Kaon Momentum (GeV/c)");
     fQC_Kaons_DCAZ_P                ->  GetZaxis()  ->  SetTitle("Z-DCA (cm)");
     fQCOutputList->Add(fQC_Kaons_DCAZ_P);
     
-    fQC_Kaons_DCAZ_PT               = new TH3F("fQC_Kaons_DCAZ_P",          "Acc. Kaons Z-DCA",                                 2, -1., 1., 400, 0., 10., 1000, -5., 5.);
+    fQC_Kaons_DCAZ_PT               = new TH3F("fQC_Kaons_DCAZ_P",          "Acc. Kaons Z-DCA",                                 2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, 1000, -5., 5.);
     fQC_Kaons_DCAZ_PT               ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Kaons_DCAZ_PT               ->  GetYaxis()  ->  SetTitle("Kaon Transverse Momentum (GeV/c)");
     fQC_Kaons_DCAZ_PT               ->  GetZaxis()  ->  SetTitle("Z-DCA (cm)");
     fQCOutputList->Add(fQC_Kaons_DCAZ_PT);
     
-    fQC_Kaons_TOF_P                 = new TH3F("fQC_Kaons_TOF_P",           "Acc. Kaons TOF Sig.",                              2, -1., 1., 400, 0., 10., 120, 0., 1.2);
+    fQC_Kaons_TOF_P                 = new TH3F("fQC_Kaons_TOF_P",           "Acc. Kaons TOF Sig.",                              2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, 120, 0., 1.2);
     fQC_Kaons_TOF_P                 ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Kaons_TOF_P                 ->  GetYaxis()  ->  SetTitle("Kaon Momentum (GeV/c)");
     fQC_Kaons_TOF_P                 ->  GetZaxis()  ->  SetTitle("#beta");
     fQCOutputList->Add(fQC_Kaons_TOF_P);
     
-    fQC_Kaons_TOF_PT                = new TH3F("fQC_Kaons_TOF_PT",          "Acc. Kaons TOF Sig.",                              2, -1., 1., 400, 0., 10., 120, 0., 1.2);
+    fQC_Kaons_TOF_PT                = new TH3F("fQC_Kaons_TOF_PT",          "Acc. Kaons TOF Sig.",                              2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, 120, 0., 1.2);
     fQC_Kaons_TOF_PT                ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Kaons_TOF_PT                ->  GetYaxis()  ->  SetTitle("Kaon Transverse Momentum (GeV/c)");
     fQC_Kaons_TOF_PT                ->  GetZaxis()  ->  SetTitle("#beta");
     fQCOutputList->Add(fQC_Kaons_TOF_PT);
     
-    fQC_Kaons_TPC_P                 = new TH3F("fQC_Kaons_TPC_P",           "Acc. Kaons TPC Sig.",                              2, -1., 1., 400, 0., 10., 100, 0., 500.);
+    fQC_Kaons_TPC_P                 = new TH3F("fQC_Kaons_TPC_P",           "Acc. Kaons TPC Sig.",                              2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, 100, 0., 500.);
     fQC_Kaons_TPC_P                 ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Kaons_TPC_P                 ->  GetYaxis()  ->  SetTitle("Kaon Momentum (GeV/c)");
     fQC_Kaons_TPC_P                 ->  GetZaxis()  ->  SetTitle("dE/dx a.u.");
     fQCOutputList->Add(fQC_Kaons_TPC_P);
     
-    fQC_Kaons_TPC_PT                = new TH3F("fQC_Kaons_TPC_PT",          "Acc. Kaons TPC Sig.",                              2, -1., 1., 400, 0., 10., 100, 0., 500.);
+    fQC_Kaons_TPC_PT                = new TH3F("fQC_Kaons_TPC_PT",          "Acc. Kaons TPC Sig.",                              2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, 100, 0., 500.);
     fQC_Kaons_TPC_PT                ->  GetXaxis()  ->  SetTitle("Kaon Sign");
     fQC_Kaons_TPC_PT                ->  GetYaxis()  ->  SetTitle("Kaon Transverse Momentum (GeV/c)");
     fQC_Kaons_TPC_PT                ->  GetZaxis()  ->  SetTitle("dE/dx a.u.");
@@ -357,80 +390,80 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     //
     //  PID
     //_____________________________________________________________________________
-    fQC_PID_TOF_Kaons_P             = new TH3F("fQC_PID_TOF_Kaons_P",   "Tracks TOF Kaons nSigma",                              2, -1., 1., 400, 0., 10., 200, -10., 10.);
+    fQC_PID_TOF_Kaons_P             = new TH3F("fQC_PID_TOF_Kaons_P",   "Tracks TOF Kaons nSigma",                              2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, sPID_bin, sPID_min, sPID_max);
     fQC_PID_TOF_Kaons_P             ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_PID_TOF_Kaons_P             ->  GetYaxis()  ->  SetTitle("Track Momentum (GeV/c)");
     fQC_PID_TOF_Kaons_P             ->  GetZaxis()  ->  SetTitle("n#sigma_{kaons}^{TOF}");
     fQCOutputList->Add(fQC_PID_TOF_Kaons_P);
         
-    fQC_PID_TOF_Kaons_PT            = new TH3F("fQC_PID_TOF_Kaons_PT",  "Tracks TOF Kaons nSigma",                              2, -1., 1., 400, 0., 10., 200, -10., 10.);
+    fQC_PID_TOF_Kaons_PT            = new TH3F("fQC_PID_TOF_Kaons_PT",  "Tracks TOF Kaons nSigma",                              2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, sPID_bin, sPID_min, sPID_max);
     fQC_PID_TOF_Kaons_PT            ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_PID_TOF_Kaons_PT            ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_PID_TOF_Kaons_PT            ->  GetZaxis()  ->  SetTitle("n#sigma_{kaons}^{TOF}");
     fQCOutputList->Add(fQC_PID_TOF_Kaons_PT);
     
-    fQC_PID_TPC_Kaons_P             = new TH3F("fQC_PID_TPC_Kaons_P",   "Tracks TPC Kaons nSigma",                              2, -1., 1., 400, 0., 10., 200, -10., 10.);
+    fQC_PID_TPC_Kaons_P             = new TH3F("fQC_PID_TPC_Kaons_P",   "Tracks TPC Kaons nSigma",                              2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, sPID_bin, sPID_min, sPID_max);
     fQC_PID_TPC_Kaons_P             ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_PID_TPC_Kaons_P             ->  GetYaxis()  ->  SetTitle("Track Momentum (GeV/c)");
     fQC_PID_TPC_Kaons_P             ->  GetZaxis()  ->  SetTitle("n#sigma_{kaons}^{TPC}");
     fQCOutputList->Add(fQC_PID_TPC_Kaons_P);
     
-    fQC_PID_TPC_Kaons_PT            = new TH3F("fQC_PID_TPC_Kaons_PT",  "Tracks TPC Kaons nSigma",                              2, -1., 1., 400, 0., 10., 200, -10., 10.);
+    fQC_PID_TPC_Kaons_PT            = new TH3F("fQC_PID_TPC_Kaons_PT",  "Tracks TPC Kaons nSigma",                              2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, sPID_bin, sPID_min, sPID_max);
     fQC_PID_TPC_Kaons_PT            ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_PID_TPC_Kaons_PT            ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_PID_TPC_Kaons_PT            ->  GetZaxis()  ->  SetTitle("n#sigma_{kaons}^{TPC}");
     fQCOutputList->Add(fQC_PID_TPC_Kaons_PT);
     
-    fQC_PID_TPC_TOF_Kaons_PT        = new TH3F("fQC_PID_TPC_TOF_Kaons_PT",  "Tracks TPC Kaons nSigma",                          2, -1., 1., 200, -10., 10., 200, -10., 10.);
+    fQC_PID_TPC_TOF_Kaons_PT        = new TH3F("fQC_PID_TPC_TOF_Kaons_PT",  "Tracks TPC Kaons nSigma",                          2, -1., 1., sPID_bin, sPID_min, sPID_max, sPID_bin, sPID_min, sPID_max);
     fQC_PID_TPC_TOF_Kaons_PT        ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_PID_TPC_TOF_Kaons_PT        ->  GetYaxis()  ->  SetTitle("n#sigma_{kaons}^{TOF}");
     fQC_PID_TPC_TOF_Kaons_PT        ->  GetZaxis()  ->  SetTitle("n#sigma_{kaons}^{TPC}");
     fQCOutputList->Add(fQC_PID_TPC_TOF_Kaons_PT);
     
     // KAONS _____________________________________________________________________________
-    fQC_PID_TOF_NSig_SEL_Kaons_P    = new TH3F("fQC_PID_TOF_NSig_SEL_Kaons_P",   "Tracks TOF Kaons nSigma",                     2, -1., 1., 400, 0., 10., 200, -10., 10.);
+    fQC_PID_TOF_NSig_SEL_Kaons_P    = new TH3F("fQC_PID_TOF_NSig_SEL_Kaons_P",   "Selected tracks TOF Kaons nSigma",                     2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, sPID_bin, sPID_min, sPID_max);
     fQC_PID_TOF_NSig_SEL_Kaons_P    ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_PID_TOF_NSig_SEL_Kaons_P    ->  GetYaxis()  ->  SetTitle("Track Momentum (GeV/c)");
     fQC_PID_TOF_NSig_SEL_Kaons_P    ->  GetZaxis()  ->  SetTitle("n#sigma_{kaons}^{TOF}");
     fQCOutputList->Add(fQC_PID_TOF_NSig_SEL_Kaons_P);
     
-    fQC_PID_TOF_NSig_SEL_Kaons_PT   = new TH3F("fQC_PID_TOF_NSig_SEL_Kaons_PT",  "Tracks TOF Kaons nSigma",                     2, -1., 1., 400, 0., 10., 200, -10., 10.);
+    fQC_PID_TOF_NSig_SEL_Kaons_PT   = new TH3F("fQC_PID_TOF_NSig_SEL_Kaons_PT",  "Selected tracks TOF Kaons nSigma",                     2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, sPID_bin, sPID_min, sPID_max);
     fQC_PID_TOF_NSig_SEL_Kaons_PT   ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_PID_TOF_NSig_SEL_Kaons_PT   ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_PID_TOF_NSig_SEL_Kaons_PT   ->  GetZaxis()  ->  SetTitle("n#sigma_{kaons}^{TOF}");
     fQCOutputList->Add(fQC_PID_TOF_NSig_SEL_Kaons_PT);
     
-    fQC_PID_TPC_NSig_SEL_Kaons_P    = new TH3F("fQC_PID_TPC_NSig_SEL_Kaons_P",   "Tracks TPC Kaons nSigma",                     2, -1., 1., 400, 0., 10., 200, -10., 10.);
+    fQC_PID_TPC_NSig_SEL_Kaons_P    = new TH3F("fQC_PID_TPC_NSig_SEL_Kaons_P",   "Selected tracks TPC Kaons nSigma",                     2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, sPID_bin, sPID_min, sPID_max);
     fQC_PID_TPC_NSig_SEL_Kaons_P    ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_PID_TPC_NSig_SEL_Kaons_P    ->  GetYaxis()  ->  SetTitle("Track Momentum (GeV/c)");
     fQC_PID_TPC_NSig_SEL_Kaons_P    ->  GetZaxis()  ->  SetTitle("n#sigma_{kaons}^{TPC}");
     fQCOutputList->Add(fQC_PID_TPC_NSig_SEL_Kaons_P);
     
-    fQC_PID_TPC_NSig_SEL_Kaons_PT   = new TH3F("fQC_PID_TPC_NSig_SEL_Kaons_PT",  "Tracks TPC Kaons nSigma",                     2, -1., 1., 400, 0., 10., 200, -10., 10.);
+    fQC_PID_TPC_NSig_SEL_Kaons_PT   = new TH3F("fQC_PID_TPC_NSig_SEL_Kaons_PT",  "Selected tracks TPC Kaons nSigma",                     2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, sPID_bin, sPID_min, sPID_max);
     fQC_PID_TPC_NSig_SEL_Kaons_PT   ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_PID_TPC_NSig_SEL_Kaons_PT   ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_PID_TPC_NSig_SEL_Kaons_PT   ->  GetZaxis()  ->  SetTitle("n#sigma_{kaons}^{TPC}");
     fQCOutputList->Add(fQC_PID_TPC_NSig_SEL_Kaons_PT);
     
-    fQC_PID_TOF_Sgnl_SEL_Kaons_P    = new TH3F("fQC_PID_TOF_Sgnl_SEL_Kaons_P",   "Tracks TOF Kaons nSigma",                     2, -1., 1., 400, 0., 10., 200, -10., 10.);
+    fQC_PID_TOF_Sgnl_SEL_Kaons_P    = new TH3F("fQC_PID_TOF_Sgnl_SEL_Kaons_P",   "Selected tracks TOF Kaons nSigma",                     2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, sPID_bin, sPID_min, sPID_max);
     fQC_PID_TOF_Sgnl_SEL_Kaons_P    ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_PID_TOF_Sgnl_SEL_Kaons_P    ->  GetYaxis()  ->  SetTitle("Track Momentum (GeV/c)");
     fQC_PID_TOF_Sgnl_SEL_Kaons_P    ->  GetZaxis()  ->  SetTitle("#beta_{TOF}");
     fQCOutputList->Add(fQC_PID_TOF_Sgnl_SEL_Kaons_P);
     
-    fQC_PID_TOF_Sgnl_SEL_Kaons_PT   = new TH3F("fQC_PID_TOF_Sgnl_SEL_Kaons_PT",  "Tracks TOF Kaons nSigma",                     2, -1., 1., 400, 0., 10., 200, -10., 10.);
+    fQC_PID_TOF_Sgnl_SEL_Kaons_PT   = new TH3F("fQC_PID_TOF_Sgnl_SEL_Kaons_PT",  "Selected tracks TOF Kaons nSigma",                     2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, sPID_bin, sPID_min, sPID_max);
     fQC_PID_TOF_Sgnl_SEL_Kaons_PT   ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_PID_TOF_Sgnl_SEL_Kaons_PT   ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_PID_TOF_Sgnl_SEL_Kaons_PT   ->  GetZaxis()  ->  SetTitle("#beta_{TOF}");
     fQCOutputList->Add(fQC_PID_TOF_Sgnl_SEL_Kaons_PT);
     
-    fQC_PID_TPC_Sgnl_SEL_Kaons_P    = new TH3F("fQC_PID_TPC_Sgnl_SEL_Kaons_P",   "Tracks TPC Kaons nSigma",                     2, -1., 1., 400, 0., 10., 200, -10., 10.);
+    fQC_PID_TPC_Sgnl_SEL_Kaons_P    = new TH3F("fQC_PID_TPC_Sgnl_SEL_Kaons_P",   "Selected tracks TPC Kaons nSigma",                     2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, sPID_bin, sPID_min, sPID_max);
     fQC_PID_TPC_Sgnl_SEL_Kaons_P    ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_PID_TPC_Sgnl_SEL_Kaons_P    ->  GetYaxis()  ->  SetTitle("Track Momentum (GeV/c)");
     fQC_PID_TPC_Sgnl_SEL_Kaons_P    ->  GetZaxis()  ->  SetTitle("dE/dx a.u.");
     fQCOutputList->Add(fQC_PID_TPC_Sgnl_SEL_Kaons_P);
     
-    fQC_PID_TPC_Sgnl_SEL_Kaons_PT   = new TH3F("fQC_PID_TPC_Sgnl_SEL_Kaons_PT",  "Tracks TPC Kaons nSigma",                     2, -1., 1., 400, 0., 10., 200, -10., 10.);
+    fQC_PID_TPC_Sgnl_SEL_Kaons_PT   = new TH3F("fQC_PID_TPC_Sgnl_SEL_Kaons_PT",  "Selected tracks TPC Kaons nSigma",                     2, -1., 1., kMOM_bin, kMOM_min, kMOM_max, sPID_bin, sPID_min, sPID_max);
     fQC_PID_TPC_Sgnl_SEL_Kaons_PT   ->  GetXaxis()  ->  SetTitle("Track Sign");
     fQC_PID_TPC_Sgnl_SEL_Kaons_PT   ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_PID_TPC_Sgnl_SEL_Kaons_PT   ->  GetZaxis()  ->  SetTitle("dE/dx a.u.");
@@ -440,21 +473,21 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     //
     //  GENERAL
     //_____________________________________________________________________________
-    fQC_Phi_InvMass_Rec             = new TH2F("fQC_Phi_InvMass_Rec",             "Invariant Mass Accepted #phi",               1000, 0.99, 1.08, 100, 0.0, 10.);
-    fQC_Phi_InvMass_Rec             ->  GetXaxis()  ->  SetTitle("m_{K^{+}K^{-}}");
-    fQC_Phi_InvMass_Rec             ->  GetYaxis()  ->  SetTitle("#epsilon");
+    fQC_Phi_InvMass_Rec             = new TH2F("fQC_Phi_InvMass_Rec",             "Invariant Mass Reconstructed #phi",          1000, 0.99, 1.08, kMOM_bin, kMOM_min, kMOM_max);
+    fQC_Phi_InvMass_Rec             ->  GetXaxis()  ->  SetTitle("M_{K^{+}K^{-}}");
+    fQC_Phi_InvMass_Rec             ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_Phi_InvMass_Rec             ->  GetZaxis()  ->  SetTitle("Counts");
     fQCOutputList->Add(fQC_Phi_InvMass_Rec);
     
-    fQC_Phi_InvMass_Gen             = new TH2F("fQC_Phi_InvMass_Gen",             "Invariant Mass Generated #phi",              1000, 0.99, 1.08, 100, 0.0, 10.);
-    fQC_Phi_InvMass_Gen             ->  GetXaxis()  ->  SetTitle("m_{K^{+}K^{-}}");
-    fQC_Phi_InvMass_Gen             ->  GetYaxis()  ->  SetTitle("#epsilon");
+    fQC_Phi_InvMass_Gen             = new TH2F("fQC_Phi_InvMass_Gen",             "Invariant Mass Generated #phi",              1000, 0.99, 1.08, kMOM_bin, kMOM_min, kMOM_max);
+    fQC_Phi_InvMass_Gen             ->  GetXaxis()  ->  SetTitle("M_{K^{+}K^{-}}");
+    fQC_Phi_InvMass_Gen             ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_Phi_InvMass_Gen             ->  GetZaxis()  ->  SetTitle("Counts");
     fQCOutputList->Add(fQC_Phi_InvMass_Gen);
     
-    fQC_Phi_InvMass_Eff             = new TH2F("fQC_Phi_InvMass_Eff",             "Invariant Mass Efficiency #phi",             1000, 0.99, 1.08, 100, 0.0, 10.);
-    fQC_Phi_InvMass_Eff             ->  GetXaxis()  ->  SetTitle("m_{K^{+}K^{-}}");
-    fQC_Phi_InvMass_Eff             ->  GetYaxis()  ->  SetTitle("#epsilon");
+    fQC_Phi_InvMass_Eff             = new TH2F("fQC_Phi_InvMass_Eff",             "Invariant Mass Efficiency #phi",             1000, 0.99, 1.08, kMOM_bin, kMOM_min, kMOM_max);
+    fQC_Phi_InvMass_Eff             ->  GetXaxis()  ->  SetTitle("M_{K^{+}K^{-}}");
+    fQC_Phi_InvMass_Eff             ->  GetYaxis()  ->  SetTitle("Track Transverse Momentum (GeV/c)");
     fQC_Phi_InvMass_Eff             ->  GetZaxis()  ->  SetTitle("Counts");
     fQCOutputList->Add(fQC_Phi_InvMass_Eff);
     
@@ -470,7 +503,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
     fPhiCandidate->Branch       ("EventMask",       &fEventMask,        "fEventMask/b");
     fPhiCandidate->Branch       ("Multiplicity",    &fCurrent_V0M,      "fMultiplicity/F");
     fPhiCandidate->Branch       ("Spherocity",      &fCurrent_SPH,      "fSpherocity/F");
-    fPhiCandidate->Branch       ("RTransverse",     &fCurrent_RT,       "fRTrasnverse/F");
+    fPhiCandidate->Branch       ("RTransverse",     &fCurrent_RT,       "fRTransverse/F");
     fPhiCandidate->Branch       ("nPhi",            &fnPhi,             "fnPhi/I");
     fPhiCandidate->Branch       ("Px",              &fPhiPx,            "fPhiPx[fnPhi]/F");
     fPhiCandidate->Branch       ("Py",              &fPhiPy,            "fPhiPy[fnPhi]/F");
@@ -522,7 +555,7 @@ void        AliAnalysisTaskPhiCount::UserCreateOutputObjects()                  
 void        AliAnalysisTaskPhiCount::UserExec( Option_t* )                      {
     //  Check the Event is available and within requirements
     if ( !fIsEventCandidate() )    return;
-     //
+    //
     //  Check the Event type
     fIsEventMultiplicityAvailable();
     fIsEventPileUp();
@@ -557,7 +590,7 @@ void        AliAnalysisTaskPhiCount::UserExec( Option_t* )                      
         
         // Fill the QC for Kaons PID
         fQC_PID_Sel_Kaons   ();
-        
+
         // Filling the Kaon Tree
         fKaonPx[fnKaon] =   fCurrent_Track->Px();
         fKaonPy[fnKaon] =   fCurrent_Track->Py();
@@ -915,10 +948,13 @@ bool        AliAnalysisTaskPhiCount::fIsTrackCandidate ( )                      
     if (  std::fabs(fCurrent_Track_TransMom) < 0.15 ||  std::fabs(fCurrent_Track_Eta) > 0.80 || std::fabs(fCurrent_Track_Charge) != 1 )  return false;
     
     //  If a Filterbit is set, use it
+    if ( kFilterBit >= 0 ) return fCurrent_Track->TestFilterBit(BIT(kFilterBit));
+    /*
     if ( kFilterBit >= 0 ) {
         if ( !fCurrent_Track->TestFilterBit(BIT(kFilterBit)) )   return false;
         else return true;
     }
+     */
 
     //  ------------------------ CUSTOM IMPLEMENTATION OF FILTERBIT 5 COMMON FOR ALL SYSTEMS
     
@@ -1257,7 +1293,7 @@ void        AliAnalysisTaskPhiCount::fFillTrees( )                              
         fQC_Event_Enum_FLL->Fill("OFPhTCand",1);
     }
     if ( fnKaon     != 0 )  {
-        fKaonCandidate   ->Fill();
+        //fKaonCandidate   ->Fill();
     }
     if ( fnKaon     == 0 )  {
         fQC_Event_Enum_FLL->Fill("NoKaonCand",1);
@@ -1266,7 +1302,7 @@ void        AliAnalysisTaskPhiCount::fFillTrees( )                              
         fQC_Event_Enum_FLL->Fill("OFKaonCand",1);
     }
     if ( fnKaonTru  != 0 )  {
-        fKaonEfficiency   ->Fill();
+        //fKaonEfficiency   ->Fill();
     }
     if ( fnKaonTru  == 0 )  {
         fQC_Event_Enum_FLL->Fill("NoKaoTCand",1);

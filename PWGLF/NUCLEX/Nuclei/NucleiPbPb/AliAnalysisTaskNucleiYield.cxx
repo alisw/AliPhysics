@@ -150,6 +150,8 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fDCAzNbins{400}
    ,fSigmaLimit{6.}
    ,fSigmaNbins{240}
+   ,fITSSigmaLimit{6.}
+   ,fITSSigmaNbins{240}
    ,fTOFSigmaLimit{12.}
    ,fTOFSigmaNbins{240}
    ,fTOFlowBoundary{-2.4}
@@ -165,6 +167,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fRequireITSsignal{0u}
    ,fRequireSDDrecPoints{0u}
    ,fRequireSPDrecPoints{1u}
+   ,fRequireSDDSSDrecPoints{0u}
    ,fRequireTPCsignal{70u}
    ,fRequireEtaMin{-0.8f}
    ,fRequireEtaMax{0.8f}
@@ -206,6 +209,9 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fDCABins{0}
    ,fPtBins{0}
    ,fCustomTPCpid{0}
+   ,fCustomITSpidPath{""}
+   ,fCustomITSpid{nullptr}
+   ,fCustomITSpidPtMax{-1.}
    ,fFlatteningProbs{0}
    ,fPtShapeParams{0}
    ,fFunctCollection{nullptr}
@@ -230,6 +236,7 @@ AliAnalysisTaskNucleiYield::AliAnalysisTaskNucleiYield(TString taskname)
    ,fTOFNoT0FillNsigma{nullptr}
    ,fTPCsignalTpl{nullptr}
    ,fTPCbackgroundTpl{nullptr}
+   ,fITSnSigma{nullptr}
    ,fDCAxy{{nullptr}}
    ,fDCAz{{nullptr}}
    ,fHist2Phi{nullptr}
@@ -345,14 +352,22 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
     const float deltaTOF = (fTOFhighBoundary - fTOFlowBoundary) / fTOFnBins;
     for (int i = 0; i <= fTOFnBins; ++i)
       tofBins[i] = i * deltaTOF + fTOFlowBoundary;
+
     float dcazBins[fDCAzNbins + 1];
     const float deltaDCAz = 2.f * fDCAzLimit / fDCAzNbins;
     for (int i = 0; i <= fDCAzNbins; ++i)
       dcazBins[i] = i * deltaDCAz - fDCAzLimit;
+
     float sigmaBins[fSigmaNbins + 1];
     const float deltaSigma = 2.f * fSigmaLimit / fSigmaNbins;
     for (int i = 0; i <= fSigmaNbins; ++i)
       sigmaBins[i] = i * deltaSigma - fSigmaLimit;
+
+    float ITSSigmaBins[fITSSigmaNbins + 1];
+    const float deltaITSSigma = 2.f * fITSSigmaLimit / fITSSigmaNbins;
+    for (int i = 0; i <= fITSSigmaNbins; ++i)
+      ITSSigmaBins[i] = i * deltaITSSigma - fITSSigmaLimit;
+
     float TOFSigmaBins[fTOFSigmaNbins + 1];
     const float deltaTOFSigma = 2.f * fTOFSigmaLimit / fTOFSigmaNbins;
     for (int i = 0; i <= fTOFSigmaNbins; ++i)
@@ -392,6 +407,8 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
           nCentBins,centBins,nPtBins,pTbins,fSigmaNbins,sigmaBins);
       fTPCbackgroundTpl[iC] = new TH3F(Form("f%cTPCbackgroundTpl",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
           nCentBins,centBins,nPtBins,pTbins,fSigmaNbins,sigmaBins);
+      fITSnSigma[iC] = new TH3F(Form("f%cITSnSigma",letter[iC]),";Centrality (%);#it{p}_{T} (GeV/#it{c}); n_{#sigma} d",
+          nCentBins,centBins,nPtBins,pTbins,fITSSigmaNbins,ITSSigmaBins);
       fHist2Phi[iC] = new TH2F(Form("fHist2Phi%c", letter[iC]), Form("%c; #Phi (rad) ;#it{p}_{T} (Gev/#it{c});", letter[iC]), 100, 0, TMath::TwoPi(), 100, 0, 7);
 
       fList->Add(fTOFsignal[iC]);
@@ -403,6 +420,7 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
       fList->Add(fTPCcounts[iC]);
       fList->Add(fTPCsignalTpl[iC]);
       fList->Add(fTPCbackgroundTpl[iC]);
+      fList->Add(fITSnSigma[iC]);
       fList->Add(fHist2Phi[iC]);
 
       for (int iT = 0; iT < 2; ++iT) {
@@ -453,6 +471,13 @@ void AliAnalysisTaskNucleiYield::UserCreateOutputObjects() {
   }
   if (fTRDvintage == 2013)
     SetupTRD2013(fTRDboundariesNeg, fTRDboundariesPos);
+
+  const char *par[] = {"Mu", "Sigma"};
+  TFile its_file(fCustomITSpidPath.Data());
+  for (int iPar = 0; iPar < 2; ++iPar)
+  {
+    fCustomITSpid[iPar] = (TH1F*)its_file.Get(Form("fCustomITSpid%s",par[iPar]));
+  }  
 }
 
 /// This is the function that is evaluated for each event. The analysis code stays here.
@@ -738,6 +763,20 @@ void AliAnalysisTaskNucleiYield::SetCustomTPCpid(Float_t *par, Float_t sigma) {
   }
 }
 
+float AliAnalysisTaskNucleiYield::GetITSsigmas(AliVTrack* t) {
+  AliNanoAODTrack* nanoT = dynamic_cast<AliNanoAODTrack*>(t);
+  if (nanoT)
+    AliFatal("ITS PID not implemented for NanoAOD");
+  float its_n_sigma_uncalib = fPID->NumberOfSigmasITS(t, fParticle);
+  const float pT = t->Pt();
+  if (!(fCustomITSpid[0] && fCustomITSpid[1]) || pT > fCustomITSpidPtMax) return its_n_sigma_uncalib;
+  double par[2];
+  for (int iPar=0; iPar<2; ++iPar){
+    par[iPar] = fCustomITSpid[iPar]->GetBinContent(fCustomITSpid[iPar]->FindBin(pT));
+  }
+  return (its_n_sigma_uncalib - par[0])/par[1];
+}
+
 float AliAnalysisTaskNucleiYield::GetTPCsigmas(AliVTrack* t) {
   if (fCustomTPCpid.GetSize() < 6 || fIsMC) {
     AliNanoAODTrack* nanoT = dynamic_cast<AliNanoAODTrack*>(t);
@@ -765,7 +804,7 @@ int AliAnalysisTaskNucleiYield::PassesPIDSelection(AliAODTrack *t) {
   bool tofPID = true, itsPID = true, tpcPID = true, electronRejection = true;
 
   if (fRequireITSpidSigmas > 0 && t->Pt() < fDisableITSatHighPt) {
-    itsPID = TMath::Abs(fPID->NumberOfSigmasITS(t, fParticle)) < fRequireITSpidSigmas;
+    itsPID = TMath::Abs(GetITSsigmas(t)) < fRequireITSpidSigmas;
   }
   electronRejection = TMath::Abs(fPID->NumberOfSigmasITS(t, AliPID::kElectron)) > fITSelectronRejectionSigma;
 
@@ -835,6 +874,17 @@ void AliAnalysisTaskNucleiYield::SetDCAzBins(Int_t nbins, Float_t limit) {
 void AliAnalysisTaskNucleiYield::SetSigmaBins(Int_t nbins, Float_t limit) {
   fSigmaNbins = nbins;
   fSigmaLimit = limit;
+}
+
+/// This function sets the number of n\f$_{sigma}_{ITS}\f$ bins and the boundaries of the histogram
+///
+/// \param nbins Number of bins
+/// \param limit Boundaries of the histogram (symmetrical with respect to zero)
+/// \return void
+///
+void AliAnalysisTaskNucleiYield::SetITSSigmaBins(Int_t nbins, Float_t limit) {
+  fITSSigmaNbins = nbins;
+  fITSSigmaLimit = limit;
 }
 
 /// This function sets the number of n\f$_{sigma_{TOF}}\f$ bins and the boundaries of the histogram

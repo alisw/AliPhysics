@@ -140,7 +140,7 @@ public:
 
 private:
   unsigned short fEventNumber;           ///< Event number in file
-  unsigned short fRunNumber;             ///< run number the event belong to
+  int fRunNumber;             ///< run number the event belong to
   unsigned short fNumberOfTracks;        ///< total number of TPC tracks
   int   fNormalizedMult;                 ///< normalized multiplicity
   int   fSPDMult;                        ///< Multiplicity of SPD tracklets

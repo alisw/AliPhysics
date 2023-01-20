@@ -30,7 +30,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     Int_t     selectHeavyNeutralMeson       = 0,                        //run eta prime instead of omega
     Int_t     enableQAMesonTask             = 1,                        //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
     Int_t     enableTriggerMimicking        = 0,                        // enable trigger mimicking
-    Bool_t    enableTriggerOverlapRej       = kFALSE,                   // enable trigger overlap rejection    
+    Bool_t    enableTriggerOverlapRej       = kFALSE,                   // enable trigger overlap rejection
     // settings for weights
     // FPTW:fileNamePtWeights, FMUW:fileNameMultWeights,  FMAW:fileNameMatBudWeights,  separate with ;
     // Material Budget Weights file for Run 2
@@ -48,8 +48,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     Int_t     enableMatBudWeightsPi0        = 0,                        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
     TString   additionalTrainConfig         = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
-  AliCutHandlerPCM cuts(13);
 
+  AliCutHandlerPCM cuts(13);
   TString addTaskName                       = "AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp";
   TString fileNamePtWeights                 = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FPTW:");
   TString fileNameMultWeights               = cuts.GetSpecialFileNameFromString (fileNameExternalInputs, "FMUW:");
@@ -59,7 +59,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
 
   if(additionalTrainConfig.Contains("MaterialBudgetWeights"))
     fileNameMatBudWeights         = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "MaterialBudgetWeights",fileNameMatBudWeights, addTaskName);
+  
   //parse additionalTrainConfig flag
+  TString unsmearingoutputs = "012"; // 0: No correction, 1: One pi0 mass errer subtracted, 2: pz of pi0 corrected to fix its mass, 3: Lambda(alpha)*DeltaPi0 subtracted
+
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
   TObjString* rAdditionalTrainConfig;
@@ -68,7 +71,16 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     else{
       TObjString* temp = (TObjString*) rAddConfigArr->At(i);
       TString tempStr = temp->GetString();
-      cout << "INFO: nothing to do, no definition available!" << endl;
+      if(tempStr.BeginsWith("UNSMEARING")){
+        TString tempType = tempStr;
+        tempType.Replace(0,9,"");
+        unsmearingoutputs = tempType;
+        cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_ConvMode_pp will output the following minv_pT histograms:" << endl;
+        if(unsmearingoutputs.Contains("0")) cout << "- Uncorrected" << endl;
+        if(unsmearingoutputs.Contains("1")) cout << "- SubNDM" << endl;
+        if(unsmearingoutputs.Contains("2")) cout << "- Fixpz" << endl;
+        if(unsmearingoutputs.Contains("3")) cout << "- SubLambda" << endl;
+      }
     }
   }
   TString sAdditionalTrainConfig = rAdditionalTrainConfig->GetString();
@@ -461,235 +473,304 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103p00000000","0453503000000000"); //INT7, 4.0 sigma
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //                                          OMEGA MESON (pp @ 5 TeV)
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+  }else if (trainConfig == 1500){ // Standard 5 TeV omega INT7 cutstring
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0000003z00000000","0400503000000000");
+  }else if (trainConfig == 1501){ // Min track pT variations
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00069f9730000dge0404000","32c51070a","0000003z00000000","0400503000000000"); // 6: e_pT > 40 MeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00049f9730000dge0404000","32c51070a","0000003z00000000","0400503000000000"); // 4: e_pT > 75 MeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00019f9730000dge0404000","32c51070a","0000003z00000000","0400503000000000"); // 1: e_pT > 100 MeV
+  }else if (trainConfig == 1502){ // min TPC cluster variations
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00008f8730000dge0404000","32c51070a","0000003z00000000","0400503000000000"); // 8: > 35% of findable
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00006f6730000dge0404000","32c51070a","0000003z00000000","0400503000000000"); // 6: > 70% of findable
+  }else if (trainConfig == 1503){ // electron PID variations
+    cuts.AddCutHeavyMesonPCM("00010113","0dm0000939730000dge0404000","32c51070a","0000003z00000000","0400503000000000"); // 3: -4 - 5
+    cuts.AddCutHeavyMesonPCM("00010113","0dm0000969730000dge0404000","32c51070a","0000003z00000000","0400503000000000"); // 6: -2.5 - 4
+  }else if (trainConfig == 1504){ // pion rejection variations
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f1730000dge0404000","32c51070a","0000003z00000000","0400503000000000"); // 1: nsigma > 0
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f5730000dge0404000","32c51070a","0000003z00000000","0400503000000000"); // 5: nsigma > 2
+  }else if (trainConfig == 1505){ // qT variations
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000lge0404000","32c51070a","0000003z00000000","0400503000000000"); // l: const = 0.03, pT = 0.11
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000jge0404000","32c51070a","0000003z00000000","0400503000000000"); // j: const = 0.04, pT = 0.25
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000kge0404000","32c51070a","0000003z00000000","0400503000000000"); // k: const = 0.045, pT = 0.3
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000ege0404000","32c51070a","0000003z00000000","0400503000000000"); // e: const = 0.06, pT = 0.14
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000fge0404000","32c51070a","0000003z00000000","0400503000000000"); // f: const = 0.07, pT = 0.16
+  }else if (trainConfig == 1506){ // PsiPair variations
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000de20404000","32c51070a","0000003z00000000","0400503000000000"); // e2: const PsiPair
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000d290404000","32c51070a","0000003z00000000","0400503000000000"); // 29 : chi2 = 30 PsiPair = 0.1 triangle (Nico)
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000d860404000","32c51070a","0000003z00000000","0400503000000000"); // 86 : chi2 = 20 PsiPair = 0.05 triangle (Nico var)
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dfd0404000","32c51070a","0000003z00000000","0400503000000000"); // fd: 0.065 exp, chi = 0.18
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dif0404000","32c51070a","0000003z00000000","0400503000000000"); // if: 0.075 exp, chi = 0.2
+  }else if (trainConfig == 1507){ // Cos point angle
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0304000","32c51070a","0000003z00000000","0400503000000000"); // 3: 0.75
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0504000","32c51070a","0000003z00000000","0400503000000000"); // 5: 0.88
+  }else if (trainConfig == 1508){ // pi0 mass selection window variations
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0000003500000000","0400503000000000"); // 5: 2.0 sigma, no gamma selection
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0000003o00000000","0400503000000000"); // o: 2.5 sigma, no gamma selection
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0000003n00000000","0400503000000000"); // n: 3.5 sigma, no gamma selection
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0000003p00000000","0400503000000000"); // p: 4 sigma, no gamma selection
+  }else if (trainConfig == 1509){ // pi0 asymmetry variations
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0000005z00000000","0400503000000000"); // 5: alpha < 0.75
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0000006z00000000","0400503000000000"); // 6: alpha < 0.8
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0000007z00000000","0400503000000000"); // 7: alpha < 0.85
+  }else if (trainConfig == 1510){ // ITS cluster requirement variation
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","34c51070a","0000003z00000000","0400503000000000"); // 4: min 3 ITS cluster
+  }else if (trainConfig == 1511){ // TPC cluster requirement variation
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32e51070a","0000003z00000000","0400503000000000"); // e: No shared clusters
+  }else if (trainConfig == 1512){ // Charged pion DCA
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c61070a","0000003z00000000","0400503000000000"); // 6: z,xy < 0.5 (very tight)
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c01070a","0000003z00000000","0400503000000000"); // 0: No cut
+  }else if (trainConfig == 1513){ // min pT
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c50070a","0000003z00000000","0400503000000000"); // 0: pT > 0.075 GeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c52070a","0000003z00000000","0400503000000000"); // 2: pT > 0.125 GeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c53070a","0000003z00000000","0400503000000000"); // 3: pT > 0.15 GeV
+  }else if (trainConfig == 1514){ // TPC dEdx sigma
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c510b0a","0000003z00000000","0400503000000000"); // b: -2,2
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51090a","0000003z00000000","0400503000000000"); // 9: -2.5,2.5
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c510a0a","0000003z00000000","0400503000000000"); // a: -3.5,3.5
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51050a","0000003z00000000","0400503000000000"); // 5: -4,4
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51030a","0000003z00000000","0400503000000000"); // 3: -5,5
+  }else if (trainConfig == 1515){ // PiPlPiMi Mass
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070r","0000003z00000000","0400503000000000"); // r: 0.8 GeV/c^2
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070s","0000003z00000000","0400503000000000"); // s: 0.825 GeV/c^2
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070t","0000003z00000000","0400503000000000"); // t: 0.875 GeV/c^2
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070u","0000003z00000000","0400503000000000"); // u: 0.9 GeV/c^2
+
+    // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // EMC pp 13 TeV Fitting, Systematics
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //Standard Cuts of Pi0 Analysis: ("00010113","0dm00009f9730000dge0404000","0r631031000000d0")
     //MesonCut r63==Background->ignored, d==OpeningAngle for Background->ignored =>0453503000000000
   } else if(trainConfig == 2000)  { //PCM INT7 Standard
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0453503000000000"); // INT7 Standard
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0453503000000000"); // INT7 Standard
     //-----
     //INT7: Event Variations
     //-----
     //Std: 00010113
   } else if(trainConfig == 2001)  { //PCM INT7, Event cut var. Remove Pileup, Std 1-> True
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                              |
-    cuts.AddCutHeavyMesonPCM("00010013","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0453503000000000"); // INT7 Pileup not removed
+    cuts.AddCutHeavyMesonPCM("00010013","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0453503000000000"); // INT7 Pileup not removed
     //-----
     //INT7: Primary Pion / Charged Pion (Pi+ Pi-) Variations
     //-----
-    //Std: 32c51070a
+    //Std: 32l51070a
   } else if(trainConfig == 2201)  { //PCM INT7, Ch.Pi cut var. Ch.Pi ITS Requirement, Std 2 -> first or second SPD cluster required
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                 |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","34c51070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi ITS, first or second SPD cluster required, min number of ITS clusters = 3
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","35c51070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi ITS, first or second SPD cluster required, min number of ITS clusters = 4
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","34l51070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi ITS, first or second SPD cluster required, min number of ITS clusters = 3
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","35l51070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi ITS, first or second SPD cluster required, min number of ITS clusters = 4
   } else if(trainConfig == 2202)  { //PCM INT7, Ch.Pi cut var. Ch.Pi Cls TPC, Std c -> MinClsTPC 80. + Refit
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                  |
     cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32e51070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi, MinClsTPC 80. + Refit MaxSharedClsTPCFrac=0.
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32k51070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi, max shared clusters 10
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi, c -> MinClsTPC 80. + Refit
   } else if(trainConfig == 2203)  { //PCM INT7, Ch.Pi cut var. Ch.Pi pT, Std 1 -> pt>0.1
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                    |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c50070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi pt>0.075
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c52070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi pt>0.125
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c53070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi pt>0.15
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c54070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi pt>0.4
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l50070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi pt>0.075
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l52070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi pt>0.125
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l53070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi pt>0.15
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l54070a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi pt>0.4
   } else if(trainConfig == 2204)  { //PCM INT7, Ch.Pi cut var. Ch.Pi TPC dEdx, Std 7 -> -3,3
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                      |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c510c0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -3.5,3.0
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c510d0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -3.25,3.0
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c510e0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -2.75,3.0
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c510f0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -2.5,3.0
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l510c0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -3.5,3.0
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l510d0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -3.25,3.0
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l510e0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -2.75,3.0
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l510f0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -2.5,3.0
   } else if(trainConfig == 2205)  { //PCM INT7, Ch.Pi cut var. Ch.Pi TPC dEdx, Std 7 -> -3,3
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                      |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c510g0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -3.0,2.5
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c510h0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -3.0,2.75
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c510i0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -3.0,3.25
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c510j0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -3.0,3.5
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l510g0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -3.0,2.5
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l510h0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -3.0,2.75
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l510i0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -3.0,3.25
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l510j0a","0103103z00000000","0453503000000000"); // INT7, Ch.Pi -3.0,3.5
   } else if(trainConfig == 2206)  { //PCM INT7, Ch.Pi cut var. Ch.Pi Mass, Std a -> Ch.Pi<850MeV
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                        |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070r","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<800MeV
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070s","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<825MeV
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070t","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<875MeV
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070u","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<900MeV
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070n","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<1000MeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070r","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<800MeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070s","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<825MeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070t","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<875MeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070u","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<900MeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070n","0103103z00000000","0453503000000000"); // INT7, Ch.Pi<1000MeV
     //-----
     //INT7: Neutral Meson (Pi0) Cut Variations
     //-----
     //Std: 0103103z00000000
   } else if(trainConfig == 2302)  { //PCM INT7, N.Pi cut var. rapidity, Std 1 -> -0.8, 0.8
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                                |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103503z00000000","0453503000000000"); // INT7, N.Pi rap. -0.85, 0.85
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103603z00000000","0453503000000000"); // INT7, N.Pi rap. -0.75, 0.75
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103503z00000000","0453503000000000"); // INT7, N.Pi rap. -0.85, 0.85
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103603z00000000","0453503000000000"); // INT7, N.Pi rap. -0.75, 0.75
   } else if(trainConfig == 2304)  { //PCM INT7, N.Pi cut var. alpha, Std 3 -> 0.0-1.0
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                                  |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103105z00000000","0453503000000000"); // INT7 alpha 0-0.75
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103108z00000000","0453503000000000"); // INT7 alpha 0-0.6
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103101z00000000","0453503000000000"); // alpha meson pT dependent
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103105z00000000","0453503000000000"); // INT7 alpha 0-0.75
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103108z00000000","0453503000000000"); // INT7 alpha 0-0.6
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103101z00000000","0453503000000000"); // alpha meson pT dependent
   } else if(trainConfig == 2305)  { //PCM INT7, N.Pi cut var. Selection Window, Std z -> 3 sigma
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                                   |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103500000000","0453503000000000"); //INT7, 2.0 sigma
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103p00000000","0453503000000000"); //INT7, 4.0 sigma
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103o00000000","0453503000000000"); //INT7, 2.5 sigma
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103n00000000","0453503000000000"); //INT7, 3.5 sigma
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103500000000","0453503000000000"); //INT7, 2.0 sigma
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103p00000000","0453503000000000"); //INT7, 4.0 sigma
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103o00000000","0453503000000000"); //INT7, 2.5 sigma
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103n00000000","0453503000000000"); //INT7, 3.5 sigma
   } else if(trainConfig == 2306)  { //PCM INT7, N.Pi cut var. open. angle, Std 0 -> off
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                                          |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z000000d0","0453503000000000"); // INT7 Op. Ang. var 1 cell dist + 0.017
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z000000b0","0453503000000000"); // INT7 Op. Ang. var 1 cell dist + 0.0152
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z000000g0","0453503000000000"); // INT7 Op. Ang. var 1 cell dist + 0.0202
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z000000a0","0453503000000000"); // INT7 Op. Ang. var 1 cell dist + 0
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z000000d0","0453503000000000"); // INT7 Op. Ang. var 1 cell dist + 0.017
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z000000b0","0453503000000000"); // INT7 Op. Ang. var 1 cell dist + 0.0152
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z000000g0","0453503000000000"); // INT7 Op. Ang. var 1 cell dist + 0.0202
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z000000a0","0453503000000000"); // INT7 Op. Ang. var 1 cell dist + 0
 
     //-----
     //INT7: Omega Meson Cut Variations
     //-----
     //Std: 0453503000000000
   } else if(trainConfig == 2401)  { //PCM INT7, Omega cut var. Background Scheme, Std 4 -> off
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                                                |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0153103000000000"); // INT7, Om Event Mixing
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0a53603000000000"); // INT7, Om LikeSignMixing
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0d53603000000000"); // INT7, Om SideBandMixing
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0153103000000000"); // INT7, Om Event Mixing
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0a53603000000000"); // INT7, Om LikeSignMixing
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0d53603000000000"); // INT7, Om SideBandMixing
   } else if(trainConfig == 2402)  { //PCM INT7, Omega cut var. rapidity, Std 5 -> -0.85, 0.85
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                                                   |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0453103000000000"); // INT7, Om rap. -0.8, 0.8
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0453603000000000"); // INT7, Om rap. -0.75, 0.75
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0453103000000000"); // INT7, Om rap. -0.8, 0.8
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0453603000000000"); // INT7, Om rap. -0.75, 0.75
   } else if(trainConfig == 2404)  { //PCM INT7, Omega cut var. alpha, Std 3 -> 0.0-1.0
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                                                     |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0453505000000000"); // INT7 alpha 0-0.75
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0453508000000000"); // INT7 alpha 0-0.6
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0453505000000000"); // INT7 alpha 0-0.75
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0453508000000000"); // INT7 alpha 0-0.6
   } else if(trainConfig == 2410)  { //PCM INT7, Omega cut var. Background Scheme single cfg, Std 4 -> off, EventMixing
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                                                |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0153103000000000"); // INT7, Om Event Mixing
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0153103000000000"); // INT7, Om Event Mixing
   } else if(trainConfig == 2411)  { //PCM INT7, Omega cut var. Background Scheme single cfg, Std 4 -> off, LikeSignMixing
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                                                |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0a53603000000000"); // INT7, Om LikeSignMixing
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0a53603000000000"); // INT7, Om LikeSignMixing
   } else if(trainConfig == 2412)  { //PCM INT7, Omega cut var. Background Scheme single cfg, Std 4 -> off, SideBandMixing
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                                                                |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0d53603000000000"); // INT7, Om SideBandMixing
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0d53603000000000"); // INT7, Om SideBandMixing
 
     //-----
     //INT7: PCM Conversion Cut
     //-----
     //Std: 0dm00009f9730000dge0404000
   } else if (trainConfig == 2501) {   // min pT variations
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                         |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00069f9730000dge0404000","32c51070a","0103103z00000000","0453503000000000"); //min pT 40 MeV
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00049f9730000dge0404000","32c51070a","0103103z00000000","0453503000000000"); //min pT 75 MeV
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00019f9730000dge0404000","32c51070a","0103103z00000000","0453503000000000"); //min pT 100MeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00069f9730000dge0404000","32l51070a","0103103z00000000","0453503000000000"); //min pT 40 MeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00049f9730000dge0404000","32l51070a","0103103z00000000","0453503000000000"); //min pT 75 MeV
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00019f9730000dge0404000","32l51070a","0103103z00000000","0453503000000000"); //min pT 100MeV
 
   } else if (trainConfig == 2502) {   // TPC clusters, cosPA
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                          |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00008f9730000dge0404000","32c51070a","0103103z00000000","0453503000000000"); // TPC cluster 35%
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00006f9730000dge0404000","32c51070a","0103103z00000000","0453503000000000"); // TPC cluster 70%
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0604000","32c51070a","0103103z00000000","0453503000000000"); // cosPA 0.9
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0304000","32c51070a","0103103z00000000","0453503000000000"); // cosPA 0.75
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00008f9730000dge0404000","32l51070a","0103103z00000000","0453503000000000"); // TPC cluster 35%
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00006f9730000dge0404000","32l51070a","0103103z00000000","0453503000000000"); // TPC cluster 70%
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0604000","32l51070a","0103103z00000000","0453503000000000"); // cosPA 0.9
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0304000","32l51070a","0103103z00000000","0453503000000000"); // cosPA 0.75
 
   } else if (trainConfig == 2503) {   // TPC clusters, cosPA
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                           |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm0000939730000dge0404000","32c51070a","0103103z00000000","0453503000000000"); // nsig electron   -4,5
-    cuts.AddCutHeavyMesonPCM("00010113","0dm0000969730000dge0404000","32c51070a","0103103z00000000","0453503000000000"); // nsig electron -2.5,4
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f5730000dge0404000","32c51070a","0103103z00000000","0453503000000000"); // nsig pion 2,-10
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f1730000dge0404000","32c51070a","0103103z00000000","0453503000000000"); // nsig pion 0,-10
+    cuts.AddCutHeavyMesonPCM("00010113","0dm0000939730000dge0404000","32l51070a","0103103z00000000","0453503000000000"); // nsig electron   -4,5
+    cuts.AddCutHeavyMesonPCM("00010113","0dm0000969730000dge0404000","32l51070a","0103103z00000000","0453503000000000"); // nsig electron -2.5,4
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f5730000dge0404000","32l51070a","0103103z00000000","0453503000000000"); // nsig pion 2,-10
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f1730000dge0404000","32l51070a","0103103z00000000","0453503000000000"); // nsig pion 0,-10
 
   } else if (trainConfig == 2504) {
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                             |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9030000dge0404000","32c51070a","0103103z00000000","0453503000000000"); // pion nsig min mom 0.50 GeV/c
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9630000dge0404000","32c51070a","0103103z00000000","0453503000000000"); // pion nsig min mom 0.25 GeV/c
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9760000dge0404000","32c51070a","0103103z00000000","0453503000000000"); // pion nsig max mom 2.00 GeV/c
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9710000dge0404000","32c51070a","0103103z00000000","0453503000000000"); // pion nsig max mom 5.00 GeV/c
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9030000dge0404000","32l51070a","0103103z00000000","0453503000000000"); // pion nsig min mom 0.50 GeV/c
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9630000dge0404000","32l51070a","0103103z00000000","0453503000000000"); // pion nsig min mom 0.25 GeV/c
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9760000dge0404000","32l51070a","0103103z00000000","0453503000000000"); // pion nsig max mom 2.00 GeV/c
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9710000dge0404000","32l51070a","0103103z00000000","0453503000000000"); // pion nsig max mom 5.00 GeV/c
 
   } else if (trainConfig == 2505) {   // qT Adrian
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                   |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f97300008ge0404000","32c51070a","0103103z00000000","0453503000000000"); // qT max 0.05 1D
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f97300003ge0404000","32c51070a","0103103z00000000","0453503000000000"); // qT max 0.05 1D
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f97300002ge0404000","32c51070a","0103103z00000000","0453503000000000"); // qT max 0.06 2D
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f97300009ge0404000","32c51070a","0103103z00000000","0453503000000000"); // qT max 0.03 2D
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f97300008ge0404000","32l51070a","0103103z00000000","0453503000000000"); // qT max 0.05 1D
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f97300003ge0404000","32l51070a","0103103z00000000","0453503000000000"); // qT max 0.05 1D
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f97300002ge0404000","32l51070a","0103103z00000000","0453503000000000"); // qT max 0.06 2D
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f97300009ge0404000","32l51070a","0103103z00000000","0453503000000000"); // qT max 0.03 2D
 
 
   } else if (trainConfig == 2506) {   // qT 2d Adrian
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                   |||
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000c259404000","32c51070a","0103103z00000000","0453503000000000"); // qT<0.110pT (2D) alpha<0.99
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000a259404000","32c51070a","0103103z00000000","0453503000000000"); // qT<0.125pT (2D) alpha<0.99
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000e259404000","32c51070a","0103103z00000000","0453503000000000"); // qT<0.130pT (2D) alpha<0.99
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000c259404000","32l51070a","0103103z00000000","0453503000000000"); // qT<0.110pT (2D) alpha<0.99
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000a259404000","32l51070a","0103103z00000000","0453503000000000"); // qT<0.125pT (2D) alpha<0.99
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000e259404000","32l51070a","0103103z00000000","0453503000000000"); // qT<0.130pT (2D) alpha<0.99
 
 
   } else if (trainConfig == 2507) {   // qT Ana
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                   |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000age0404000","32c51070a","0103103z00000000","0453503000000000"); // qT max 0.040, qtptmax 0.11
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000ege0404000","32c51070a","0103103z00000000","0453503000000000"); // qT max 0.060, qtptmax 0.14
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000fge0404000","32c51070a","0103103z00000000","0453503000000000"); // qT max 0.070, qtptmax 0.16
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000age0404000","32l51070a","0103103z00000000","0453503000000000"); // qT max 0.040, qtptmax 0.11
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000ege0404000","32l51070a","0103103z00000000","0453503000000000"); // qT max 0.060, qtptmax 0.14
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000fge0404000","32l51070a","0103103z00000000","0453503000000000"); // qT max 0.070, qtptmax 0.16
 
   } else if (trainConfig == 2508) {   // Psi pair Adrian
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                     |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dg50404000","32c51070a","0103103z00000000","0453503000000000"); // Psi pair 0.1  1D
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dg10404000","32c51070a","0103103z00000000","0453503000000000"); // Psi pair 0.1  1D
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dg60404000","32c51070a","0103103z00000000","0453503000000000"); // Psi pair 0.05 2D
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dg80404000","32c51070a","0103103z00000000","0453503000000000"); // Psi pair 0.2  2D
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dg50404000","32l51070a","0103103z00000000","0453503000000000"); // Psi pair 0.1  1D
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dg10404000","32l51070a","0103103z00000000","0453503000000000"); // Psi pair 0.1  1D
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dg60404000","32l51070a","0103103z00000000","0453503000000000"); // Psi pair 0.05 2D
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dg80404000","32l51070a","0103103z00000000","0453503000000000"); // Psi pair 0.2  2D
 
   } else if (trainConfig == 2509) {   // Chi2, Psi pair Adrian
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                     |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f97300008fd0404000","32c51070a","0103103z00000000","0453503000000000"); // PsiPair<0.15exp(-0.065chi2)
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f97300008ge0404000","32c51070a","0103103z00000000","0453503000000000"); // PsiPair<0.18exp(-0.055chi2)
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f97300008hf0404000","32c51070a","0103103z00000000","0453503000000000"); // PsiPair<0.20exp(-0.050chi2)
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f97300008fd0404000","32l51070a","0103103z00000000","0453503000000000"); // PsiPair<0.15exp(-0.065chi2)
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f97300008ge0404000","32l51070a","0103103z00000000","0453503000000000"); // PsiPair<0.18exp(-0.055chi2)
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f97300008hf0404000","32l51070a","0103103z00000000","0453503000000000"); // PsiPair<0.20exp(-0.050chi2)
 
 
   } else if (trainConfig == 2510) {   // Psi pair variations Ana
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                     |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dgd0404000","32c51070a","0103103z00000000","0453503000000000"); // Psi pair 0.15 dep
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dgf0404000","32c51070a","0103103z00000000","0453503000000000"); // Psi pair 0.20 dep
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dgg0404000","32c51070a","0103103z00000000","0453503000000000"); // Psi pair 0.30 dep
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009227300008250404000","32c51070a","0103103z00000000","0453503000000000"); // old cuts (run1)
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dgd0404000","32l51070a","0103103z00000000","0453503000000000"); // Psi pair 0.15 dep
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dgf0404000","32l51070a","0103103z00000000","0453503000000000"); // Psi pair 0.20 dep
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dgg0404000","32l51070a","0103103z00000000","0453503000000000"); // Psi pair 0.30 dep
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009227300008250404000","32l51070a","0103103z00000000","0453503000000000"); // old cuts (run1)
 
 
   } else if (trainConfig == 2511) {   // chi2 variations
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                    |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000d1e0404000","32c51070a","0103103z00000000","0453503000000000"); // chi2 50
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dfe0404000","32c51070a","0103103z00000000","0453503000000000"); // chi2 50 chi2 dep -0.065
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dhe0404000","32c51070a","0103103z00000000","0453503000000000"); // chi2 50 chi2 dep -0.050
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0400000","32c51070a","0103103z00000000","0453503000000000"); // remove reject close v0
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000d1e0404000","32l51070a","0103103z00000000","0453503000000000"); // chi2 50
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dfe0404000","32l51070a","0103103z00000000","0453503000000000"); // chi2 50 chi2 dep -0.065
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dhe0404000","32l51070a","0103103z00000000","0453503000000000"); // chi2 50 chi2 dep -0.050
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0400000","32l51070a","0103103z00000000","0453503000000000"); // remove reject close v0
 
   } else if (trainConfig == 2512) {//TRD Variations, Standard 0 -> Off
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
     //                                                        |
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0474000","32c51070a","0103103z00000000","0453503000000000"); // INT7 Use TRD
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0474000","32l51070a","0103103z00000000","0453503000000000"); // INT7 Use TRD
 
 
 
   } else if ( trainConfig == 2521) { //Standard 13TeV, Material Budget Studies
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0453503000000000");
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0453503000000000");
 
   } else if ( trainConfig == 2522) { //Standard 13TeV, Material Budget Studies
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0453503000000000");
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0453503000000000");
 
   } else if ( trainConfig == 2523) { //Standard 13TeV, Material Budget Studies
-    //                        00010113   0dm00009f9730000dge0404000   32c51070a   0103103z00000000   0453503000000000
-    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32c51070a","0103103z00000000","0453503000000000");
+    //                        00010113   0dm00009f9730000dge0404000   32l51070a   0103103z00000000   0453503000000000
+    cuts.AddCutHeavyMesonPCM("00010113","0dm00009f9730000dge0404000","32l51070a","0103103z00000000","0453503000000000");
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   } else {
@@ -746,7 +827,6 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
     analysisCuts[i] = new AliConversionPhotonCuts();
     analysisCuts[i]->SetV0ReaderName(V0ReaderName);
 
-
     if (enableMatBudWeightsPi0 > 0){
       if (isMC > 0){
         Int_t FlagMatBudWeightsPi0=enableMatBudWeightsPi0;
@@ -789,7 +869,6 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
       analysisCuts[i]->SetFillCutHistograms("",kFALSE);
 
     }
-
     analysisNeutralPionCuts[i] = new AliConversionMesonCuts();
     analysisNeutralPionCuts[i]->SetUsePtDepSelectionWindow(usePtDepSelectionWindowCut);
     if(runLightOutput>=4) {
@@ -852,6 +931,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
           task->SetDoMaterialBudgetWeightingOfGammasForInvMassHistogram(kTRUE);
       }
   }
+
+  task->SetUnsmearedOutputs(unsmearingoutputs);
 
   //connect containers
   AliAnalysisDataContainer *coutput =

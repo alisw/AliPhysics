@@ -63,6 +63,8 @@ public:
   void SetSelectTrigger(UInt_t triggerbits, const char *triggerstring) { fTriggerBits = triggerbits; fTriggerString = triggerstring; }
   void SetUseDownscaleWeight(Bool_t doUse) { fUseDownscaleWeight = doUse; }
   void SetDropMass0Jets(bool doDrop) { fDropMass0Jets = doDrop; }
+  void SetMinPtTracksSD(double pt) { fMinPtTracksSD = pt; }
+  void SetMinEClustersSD(double e) { fMinEClustersSD = e; }
 
   void ConfigureDetJetSelection(Double_t minJetPt, Double_t maxTrackPt, Double_t maxClusterPt, Double_t minAreaPerc);
 
@@ -89,6 +91,8 @@ private:
   Bool_t                        fUseChargedConstituents;    ///< Use also charged constituents
   Bool_t                        fUseNeutralConstituents;    ///< Use also neutral constituents
   Bool_t                        fDropMass0Jets;             ///< Drop jets with mass 0
+  Double_t                      fMinPtTracksSD;             ///< Min. pt of track constituent for softdrop
+  Double_t                      fMinEClustersSD;            ///< Min. E of EMCAL clusters constituent for softdrop
   THistManager                  *fHistos;                   //!<! Histogram handler
   TBinning                      *fPtBinning;                ///< Detector level pt binning
 

@@ -496,7 +496,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   //
   // Main loop. Called for every event
   //
-  cout << "***************************** AliAnalysisTaskReducedTreeMaker::UserExec()  IN" << endl;  
+  //cout << "***************************** AliAnalysisTaskReducedTreeMaker::UserExec()  IN" << endl;  
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   Bool_t isESD=man->GetInputEventHandler()->IsA()==AliESDInputHandler::Class();
   Bool_t isAOD=man->GetInputEventHandler()->IsA()==AliAODInputHandler::Class();
@@ -511,7 +511,7 @@ void AliAnalysisTaskReducedTreeMaker::UserExec(Option_t *option)
   else
     AliFatal("This task needs the PID response attached to the input event handler!");
   
-  cout << "***************************** AliAnalysisTaskReducedTreeMaker::UserExec()  1" << endl;  
+ // cout << "***************************** AliAnalysisTaskReducedTreeMaker::UserExec()  1" << endl;  
   
   // Was event selected ?
   UInt_t isPhysSel = AliVEvent::kAny;

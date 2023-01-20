@@ -111,6 +111,7 @@ set(SRCS
   AliFemtoCorrFctnQLCMS.cxx
   AliFemtoCorrFctn3DSphericalEMCIC.cxx
   AliFemtoCorrFctnPtKstar.cxx
+  AliFemtoCorrFctnPtKstarBeta.cxx
   AliFemtoQinvCorrFctnEMCIC.cxx
   AliFemtoBPLCMS3DCorrFctnEMCIC.cxx
   AliFemtoPairCutAntiGamma.cxx
@@ -129,7 +130,7 @@ set(SRCS
   AliFemtoPairCutResonances.cxx
   AliFemtoCorrFctnMinvMonitor.cxx
   AliFemtoCorrFctnPairFractions.cxx
-AliAnalysisTaskParticleEfficiency.cxx
+  AliAnalysisTaskParticleEfficiency.cxx
   AliAnalysisTaskParticleFractions.cxx
   AliFemtoPairOriginMonitor.cxx
   AliFemtoPairCutAntiGammaAlpha.cxx
@@ -167,13 +168,23 @@ AliAnalysisTaskParticleEfficiency.cxx
   AliFemtoCutMonitorV0CosPointingAngle.cxx
   AliFemtoCutMonitorPairMomRes.cxx
   AliFemtoCorrFctnPairsForCorrFit.cxx
+  AliAnalysisTaskParticleEffWRZ.cxx
   AliFemtoWRzTrackCut.cxx
   AliFemtoCorrFctnDYDPhiSimpleWithCorrections.cxx
   AliFemtoTrackCutPdtHe3.cxx	# p-d/t/He3 track cut
   AliFemtoCorrFctnpdtHe3.cxx
   AliAnalysisTaskParticleEffDY04.cxx
   AliAnalysisTaskParticleEffDY06.cxx
+  AliAnalysisEffTaskFilterBit768.cxx
+  AliAnalysisEffTaskFilterBit16.cxx
   AliAnalysisTaskParticleEffDY.cxx
+  AliAnalysisTaskEfficiencyFB128.cxx
+  AliAnalysisEffTaskDoubleCountPID.cxx
+  AliAnalysisEffTaskExclusivePID.cxx
+  AliAnalysisEfficiencyPbPbExclusivePID.cxx
+  AliAnalysisEfficiencyPbPbNodoublecount.cxx
+  AliFemtoPairCutRadialDistanceDR.cxx
+  
 
   )
 

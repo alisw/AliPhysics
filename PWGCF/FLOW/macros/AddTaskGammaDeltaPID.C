@@ -1,5 +1,5 @@
 
-void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fPtMax=2.0,Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,Double_t fChi2max=4.0,Int_t gNclustTPC=70, Int_t fparticle=0,Double_t nSigTPC = 3.0, Double_t nSigTOF = 3.0, Bool_t bSkipPileUp=kFALSE, TString sCentEstimator="V0M", Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", Int_t vnHarmonic=2, TString sDetForEP="TPC", TString sMCfilePath="alien:///alice/cern.ch/user/m/mhaque/nuanue18/HijingMC_LHC18q_FB768_DeftCut.root", TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root", TString sDetWgtsFile = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root", Bool_t bSkipAnalysis=kFALSE, Bool_t bUseZDCSpectatorPlane=kTRUE, TString sZDCCorrFile = "alien:///alice/cern.ch/user/s/sqiu/RecenteringResultFinal_2018q.root", const char *suffix = "")
+void AddTaskGammaDeltaPID(Int_t gFilterBit = 768,Double_t fPtMin=0.2,Double_t fPtMax=2.0,Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8,Double_t fChi2max=4.0,Int_t gNclustTPC=70, Int_t fparticle=0,Double_t nSigTPC = 3.0, Double_t nSigTOF = 3.0, Bool_t bSkipPileUp=kFALSE, TString sCentEstimator="V0M", Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", Int_t vnHarmonic=2, TString sDetForEP="TPC", TString sMCfilePath="alien:///alice/cern.ch/user/m/mhaque/nuanue18/HijingMC_LHC18q_FB768_DeftCut.root", TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root", TString sDetWgtsFile = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root", Bool_t bSkipAnalysis=kFALSE, Bool_t bUseZDCSpectatorPlane=kTRUE, Int_t gTypeOfRecentering=2, TString sZDCCorrFile = "alien:///alice/cern.ch/user/s/sqiu/RecenteringResultFinal_2018q.root", const char *suffix = "")
 {
 
   printf("===================================================================================\n");
@@ -51,6 +51,15 @@ TGrid::Connect("alien://");
 
   ///Set using ZDC
   taskGammaPID->SetUseZDCSpectatorPlane(bUseZDCSpectatorPlane);
+  taskGammaPID->SetTypeOfRecentering(gTypeOfRecentering); // 0 for 1st order centrality+vtxPos
+	                                                      // 1 for 3rd order centrality+vtxpos
+	                                                      // 2 for 3rd order centrality+vtxpos+orbitNum
+	                                                      // 3 for 1st order tow0 + vtxpos
+	                                                      // 4 for 3rd order tow0 + vtxpos
+	                                                      // 5 for 5th order tow0 + vtxpos
+	                                                      // 6 for 5th order tow0 + vtxpos + orbitNum
+	                                                      // 7 for 5th order tow0 + 3rd order centrality + vtxpos + orbitNum
+	                               
 
   cout<<"=========> AddTaskCMW::Info() setting Event Plane Det: "<<sDetForEP<<endl;
   taskGammaPID->SetDetectorforEventPlane(sDetForEP);

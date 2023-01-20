@@ -3,12 +3,15 @@
 #include "TFile.h"
 #include "TObjString.h"
 #include "TObjArray.h"
+#include "TGrid.h"
 
 #include <cmath>
 
 #include "AliPID.h"
 
 #include "AliPieceWisePoly.h"
+
+#include <string.h>
 using namespace std;
 
 AliPieceWisePoly::AliPieceWisePoly(Int_t parts, Double_t* cutxvalues, Int_t* polys, Double_t xmin, Double_t xmax,  Double_t* params, Int_t smooth)
@@ -148,8 +151,15 @@ double AliPieceWisePoly::Eval (double x, double* p) {
   return piecewisepolynom->Eval(x);
 }
 
-void AliPieceWisePoly::ReadFSParameters(TString parameterFile, TF1** effFunctions) {
-  TFile* f = new TFile(parameterFile.Data(), "READ");
+TString AliPieceWisePoly::ReadFSParameters(TString parameterFile, TF1** effFunctions) 
+{
+  if(parameterFile.Contains("alien://") && !gGrid)
+    TGrid::Connect("alien://");
+  
+  TString joinedString = "";
+  char separator = ':';
+  
+  TFile* f = TFile::Open(parameterFile.Data(), "READ");
   for (Int_t species=0;species<AliPID::kSPECIES;++species) {
     for (Int_t charge=0;charge<=1;++charge) {     
       TString name = TString::Format("fastSimulationParameters_%s_%s", AliPID::ParticleShortName(species), charge ? "pos" : "neg");
@@ -159,30 +169,62 @@ void AliPieceWisePoly::ReadFSParameters(TString parameterFile, TF1** effFunction
       if (!name)
         cout << "Could not find " << name << "." << endl;
       
-      TString* parString = new TString(cont->GetTitle());
-      TObjArray* arrPar = parString->Tokenize(";");
-      Int_t nOfParts = (((TObjString*)(arrPar->At(0)))->GetString()).Atoi();
-      Double_t* cuts = new Double_t[nOfParts-1];
-      Int_t* nparameters = new Int_t[nOfParts]; 
+      TString parString = TString(cont->GetTitle());
+      joinedString += parString + TString(separator);
       
-      for (Int_t part = 0;part<nOfParts - 1;++part) {
-        nparameters[part] = (((TObjString*)(arrPar->At(nOfParts + part)))->GetString()).Atoi();
-        cuts[part] = (((TObjString*)(arrPar->At(1 + part)))->GetString()).Atof();
-      }
-      nparameters[nOfParts - 1] = (((TObjString*)(arrPar->At(2*nOfParts -1)))->GetString()).Atoi();
+      TString nameFunction = TString::Format("fastSimulationFunction_%s_%s", AliPID::ParticleShortName(species), charge ? "pos" : "neg");
+      TF1* func = GetFSFunctionFromString(parString, nameFunction);
       
-      AliPieceWisePoly* pwp = new AliPieceWisePoly(nOfParts,cuts,nparameters,0,50,0x0,2);
-      TString nameFunction = TString::Format("fastSimulationFunction_%s_%s",AliPID::ParticleShortName(species),charge ? "pos" : "neg");
-      TF1* func = new TF1(nameFunction.Data(),pwp,0,50,pwp->GetNOfParam());
-      for (Int_t param=0;param<pwp->GetNOfParam();++param) {
-        func->SetParameter(param,(((TObjString*)(arrPar->At(2*nOfParts + param)))->GetString()).Atof());
-      }
       effFunctions[2*species + charge] = func;
-			delete [] nparameters;
-      delete [] cuts;
-      delete arrPar;
-      delete parString;
+    }
+  }
+  f->Close();
+  delete f;
+  joinedString.Remove(TString::kTrailing, separator);
+  return joinedString;
+}
+
+void AliPieceWisePoly::ReadFSParametersFromString(TString parameterString, TF1** effFunctions)
+{
+  TObjArray* parameters = parameterString.Tokenize(":");
+  
+  Int_t position = 0;
+  for (Int_t species=0;species<AliPID::kSPECIES;++species) {
+    for (Int_t charge=0;charge<=1;++charge) {     
+      TString parString = ((TObjString*)(parameters->At(position)))->GetString();
+      
+      TString nameFunction = TString::Format("fastSimulationFunction_%s_%s", AliPID::ParticleShortName(species), charge ? "pos" : "neg");
+      TF1* func = GetFSFunctionFromString(parString, nameFunction);
+      
+      effFunctions[2*species + charge] = func;
+      position++;
     }
   }
 }
+
+
+TF1* AliPieceWisePoly::GetFSFunctionFromString(TString parameters, TString nameFunction) 
+{
+  TObjArray* arrPar = parameters.Tokenize(";");
+  Int_t nOfParts = (((TObjString*)(arrPar->At(0)))->GetString()).Atoi();
+  Double_t* cuts = new Double_t[nOfParts-1];
+  Int_t* nparameters = new Int_t[nOfParts]; 
+  
+  for (Int_t part = 0;part<nOfParts - 1;++part) {
+    nparameters[part] = (((TObjString*)(arrPar->At(nOfParts + part)))->GetString()).Atoi();
+    cuts[part] = (((TObjString*)(arrPar->At(1 + part)))->GetString()).Atof();
+  }
+  nparameters[nOfParts - 1] = (((TObjString*)(arrPar->At(2*nOfParts -1)))->GetString()).Atoi();
+  
+  AliPieceWisePoly* pwp = new AliPieceWisePoly(nOfParts,cuts,nparameters,0,50,0x0,2);
+  TF1* function = new TF1(nameFunction.Data(),pwp,0,50,pwp->GetNOfParam());
+  for (Int_t param=0;param<pwp->GetNOfParam();++param) {
+    function->SetParameter(param,(((TObjString*)(arrPar->At(2*nOfParts + param)))->GetString()).Atof());
+  }
+  delete [] nparameters;
+  delete [] cuts;
+  delete arrPar;
+  return function;
+}
+
   

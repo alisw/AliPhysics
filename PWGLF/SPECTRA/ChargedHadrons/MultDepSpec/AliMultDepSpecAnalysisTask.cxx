@@ -51,7 +51,7 @@ void AliMultDepSpecAnalysisTask::SetAxis(unsigned int dim, const std::string nam
  * Define default axis properties.
  */
 //**************************************************************************************************
-void AliMultDepSpecAnalysisTask::DefineDefaultAxes(int maxMultMeas, int maxMultTrue)
+void AliMultDepSpecAnalysisTask::DefineDefaultAxes()
 {
   std::vector<double> ptBins = {0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 0.75,
                                 0.8, 0.85, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9,
@@ -73,11 +73,11 @@ void AliMultDepSpecAnalysisTask::DefineDefaultAxes(int maxMultMeas, int maxMultT
 
   SetAxis(pt_meas, "pt_meas", "#it{p}^{ meas}_{T} (GeV/#it{c})", ptBins);
 
-  int nBinsMultMeas = maxMultMeas + 1;
+  int nBinsMultMeas = fMaxMultMeas + 1;
   SetAxis(mult_meas, "mult_meas", "#it{N}^{ meas}_{ch}", {-0.5, nBinsMultMeas - 0.5}, nBinsMultMeas);
 
   if (fIsMC) {
-    int nBinsMultTrue = maxMultTrue + 1;
+    int nBinsMultTrue = fMaxMultTrue + 1;
     SetAxis(mult_true, "mult_true", "#it{N}_{ch}", {-0.5, nBinsMultTrue - 0.5}, nBinsMultTrue);
     SetAxis(pt_true, "pt_true", "#it{p}_{T} (GeV/#it{c})", ptBins);
   }
@@ -311,6 +311,7 @@ void AliMultDepSpecAnalysisTask::UserCreateOutputObjects()
   fRand.reset(new TRandom3());
 
   // book user histograms
+  DefineDefaultAxes();
   BookHistograms();
 
   // configure event selection
@@ -489,6 +490,7 @@ bool AliMultDepSpecAnalysisTask::InitEvent()
       // get mc spectra weights object for data-driven corrections
       AliMCSpectraWeightsHandler* mcWeightsHandler = static_cast<AliMCSpectraWeightsHandler*>(fEvent->FindListObject("fMCSpectraWeights"));
       fMCSpectraWeights = (mcWeightsHandler) ? mcWeightsHandler->fMCSpectraWeight : nullptr;
+      //if (fMCSpectraWeights) fMCSpectraWeights->SetDoInterpolation(false);
     }
   }
 
@@ -1046,25 +1048,22 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
     }
   }
 
-  int maxMultMeas = 100;
-  int maxMultTrue = 100;
-
   if (dataSet.find("pPb") != string::npos) {
-    maxMultMeas = 200;
-    maxMultTrue = 200;
+    fMaxMultMeas = 200;
+    fMaxMultTrue = 200;
   } else if (dataSet.find("PbPb") != string::npos || dataSet.find("XeXe") != string::npos) {
-    maxMultMeas = 2500;
-    maxMultTrue = 3800;
+    fMaxMultMeas = 2500;
+    fMaxMultTrue = 3800;
   }
 
   if (!options.Contains("consistentBinningAA")) {
     if (dataSet.find("PbPb_2TeV") != string::npos) {
-      maxMultMeas = 2000;
-      maxMultTrue = 3200;
+      fMaxMultMeas = 2000;
+      fMaxMultTrue = 3200;
     }
     if (dataSet.find("XeXe") != string::npos) {
-      maxMultMeas = 2000;
-      maxMultTrue = 3200;
+      fMaxMultMeas = 2000;
+      fMaxMultTrue = 3200;
     }
   }
 
@@ -1085,6 +1084,5 @@ bool AliMultDepSpecAnalysisTask::SetupTask(string dataSet, TString options)
     SetPtRange(0.15, 100.0);
   }
 
-  DefineDefaultAxes(maxMultMeas, maxMultTrue);
   return true;
 }

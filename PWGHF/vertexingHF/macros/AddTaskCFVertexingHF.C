@@ -950,13 +950,14 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	output3name=nameCorr;
 	output4name= "Cuts";
 	output5name= "coutProf";
-	output6name="QAHistos";
+	output6name= "checkRT";
 	if(!isKeepDfromB) {
 		outputfile += ":PWG3_D2H_CFtaskD0toKpi";
 		output1name="CFHFchist0";
 		output3name+="_cOnly";
 		output4name+="_cOnly";
 		output5name+="_cOnly";
+		output6name+="_cOnly";
 	}
 	else  if(isKeepDfromBOnly){
 		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromBOnly";
@@ -964,6 +965,7 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 		output3name+="_bOnly";
 		output4name+="_bOnly";
 		output5name+="_bOnly";
+		output6name+="_bOnly";
 	}
 	else{
 		outputfile += ":PWG3_D2H_CFtaskD0toKpiKeepDfromB";
@@ -971,12 +973,14 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 		output3name+="_all";
 		output4name+="_all";
 		output5name+="_all";
+		output6name+="_all";
 	}
 
 	outputfile += suffix;
 	output1name += suffix;
 	output4name += suffix;
 	output5name += suffix;
+	output6name += suffix;
 
 	//now comes user's output objects :
 	// output TH1I for event counting
@@ -990,7 +994,6 @@ const Float_t multmax_100_400 = 400; // Only for pPb
 	// estimators list
 	AliAnalysisDataContainer *coutput5 = mgr->CreateContainer(output5name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
 	AliAnalysisDataContainer *coutput6 = mgr->CreateContainer(output6name, TList::Class(),AliAnalysisManager::kOutputContainer, outputfile.Data());
-
 
 	mgr->AddTask(task);
 

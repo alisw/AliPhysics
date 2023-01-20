@@ -121,6 +121,7 @@ public:
   void SetRequireTPCsignal (int sig = 70) { fRequireTPCsignal = sig; }
   void SetRequireSDDrecPoints (int rec = 1) { fRequireSDDrecPoints = rec; }
   void SetRequireSPDrecPoints (int rec = 1) { fRequireSPDrecPoints = rec; }
+  void SetRequireSDDSSDrecPoints (int rec = 1) { fRequireSDDSSDrecPoints = rec; }
   void SetEtaRange (float emin, float emax) { fRequireEtaMin = emin; fRequireEtaMax = emax; }
   void SetYRange (float ymin, float ymax) { fRequireYmin = ymin; fRequireYmax = ymax; }
   void SetRequireMaxChi2 (float maxChi2 = 4.f) { fRequireMaxChi2 = maxChi2; }
@@ -164,9 +165,12 @@ public:
   void SetPtBins (Int_t nbins, Float_t min, Float_t max);
   void SetPtBins (Int_t nbins, Float_t *bins);
   void SetCustomTPCpid (Float_t *par, Float_t sigma);
+  void SetCustomITSpidPtMax (Float_t max) { fCustomITSpidPtMax = max; };
+  void SetCustomITSpidPath (const char *path) { fCustomITSpidPath = path; };
   void SetTOFBins (Int_t nbins, Float_t min, Float_t max);
   void SetDCAzBins (Int_t nbins, Float_t limit);
   void SetSigmaBins (Int_t nbins, Float_t limit);
+  void SetITSSigmaBins (Int_t nbins, Float_t limit);
   void SetTOFSigmaBins (Int_t nbins, Float_t limit);
   void SetFlatteningProbabilities (Int_t n, Float_t *probs) { fFlatteningProbs.Set(n,probs); }
   void SetUseFlattening (bool useIt) { fEnableFlattening = useIt; }
@@ -212,6 +216,7 @@ private:
   bool   AcceptTrack(track_t *t, Float_t dca[2]);
   int   PassesPIDSelection(AliAODTrack *t);
   int   PassesPIDSelection(AliNanoAODTrack *t);
+  float  GetITSsigmas(AliVTrack *t);
   float  GetTPCsigmas(AliVTrack *t);
   float  GetTOFsigmas(AliVTrack* t);
 
@@ -250,6 +255,8 @@ private:
   Int_t                 fDCAzNbins;             ///<  Number of bins used for \f$DCA_{z}\f$ distributions
   Float_t               fSigmaLimit;            ///<  Limits of the \f$n_{sigma}\f$ histograms
   Int_t                 fSigmaNbins;            ///<  Number of bins used for \f$n_{sigma}\f$ distributions
+  Float_t               fITSSigmaLimit;         ///<  Number of bins used for \f$n_{sigma}_{ITS}\f$ distributions
+  Int_t                 fITSSigmaNbins;         ///<  Number of bins used for \f$n_{sigma}_{ITS}\f$ distributions
   Float_t               fTOFSigmaLimit;         ///<  Limits of the \f$n_{sigma_{TOF}}\f$ histograms
   Int_t                 fTOFSigmaNbins;         ///<  Number of bins used for \f$n_{sigma_{TOF}}\f$ distributions
 
@@ -266,6 +273,7 @@ private:
   UShort_t              fRequireITSsignal;      ///<  Cut on tracks: minimum number of required ITS PID recpoints
   UShort_t              fRequireSDDrecPoints;   ///<  Cut on tracks: minimum number of required SDD recpoints
   UShort_t              fRequireSPDrecPoints;   ///<  Cut on tracks: minimum number of required SPD recpoints
+  UShort_t              fRequireSDDSSDrecPoints;///<  Cut on tracks: minimum number of required SDD+SSD recpoints
   UShort_t              fRequireTPCsignal;      ///<  Cut on tracks: minimum number of required TPC PID recpoints
   Float_t               fRequireEtaMin;         ///<  Cut on tracks: minimum eta for the track
   Float_t               fRequireEtaMax;         ///<  Cut on tracks: maximum eta for the track
@@ -311,6 +319,9 @@ private:
   TArrayF               fCentBins;              ///<  Centrality bins
   TArrayF               fDCABins;               ///<  DCA bins
   TArrayF               fPtBins;                ///<  Transverse momentum bins
+  TString               fCustomITSpidPath;      ///< ITS custom calibration file path
+  TH1F                 *fCustomITSpid[2];       ///< ITS custom calibration histograms (mean and sigma)
+  Float_t               fCustomITSpidPtMax;     ///< upper \f$p_{T}\f$ limit for ITS recalibration
   TArrayF               fCustomTPCpid;          ///<  Custom parametrisation of the Bethe-Bloch
   TArrayF               fFlatteningProbs;       ///<  Flattening probabilities
   TArrayF               fPtShapeParams;         ///<  Params used by the pt shape function
@@ -344,6 +355,7 @@ private:
   TH3F                 *fTPCcounts[2];           //!<! *(Data only)* TPC counts for (anti-)matter
   TH3F                 *fTPCsignalTpl[2];        //!<! *(Data only)* TPC counts for (anti-)matter
   TH3F                 *fTPCbackgroundTpl[2];    //!<! *(Data only)* TPC counts for (anti-)matter
+  TH3F                 *fITSnSigma[2];           //!<! *(Data only)* ITS nSigma counts for (anti-)matter
   TH3F                 *fDCAxy[2][2];            //!<! *(Data only)* \f$DCA_{xy}\f$ distribution for ITS+TPC tracks
   TH3F                 *fDCAz[2][2];             //!<! *(Data only)* \f$DCA_{z}\f$ distribution for ITS+TPC tracks
   TH2F *fHist2Phi[2]; //! phi vs pt, negative (0) and positive (1): used for monitoring
@@ -429,6 +441,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
   float p = track->P();
   int pid_mask = PassesPIDSelection(track);
   bool pid_check = (pid_mask & 7) == 7;
+  bool its_pid = fRequireITSpidSigmas > 1.e-9;
   if (fEnablePtCorrection) PtCorrection(pT,track->Charge() > 0);
   if(rejectTrack) return;
 
@@ -446,7 +459,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
     if (std::abs(part->PdgCode()) == fPDG) {
       for (int iR = iTof; iR >= 0; iR--) {
         if ( ( (iR || fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) &&
-              (!iR || pid_check) && (iR || pid_mask & 8)) && (!fRequireLongMCTracks || (fRequireLongMCTracks && IsLongMCTrack(track))) ) {
+              (!iR || pid_check) && (iR || pid_mask & 8) && ((its_pid && pid_mask & 1) || !its_pid)) && (!fRequireLongMCTracks || (fRequireLongMCTracks && IsLongMCTrack(track))) ) {
           bool isPrimary = (part->IsPhysicalPrimary() && !fRequirePrimaryFromDistance) || (fRequirePrimaryFromDistance && IsPrimaryFromDistance(part));
           if (isPrimary) {
             if ( TMath::Abs(dca[0]) <= fRequireMaxDCAxy )
@@ -466,6 +479,7 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
   } else {
     const int iC = (track->Charge() > 0) ? 1 : 0;
 
+    float its_n_sigma = GetITSsigmas(track);
     float tpc_n_sigma = GetTPCsigmas(track);
     float tof_n_sigma = iTof ? GetTOFsigmas(track) : -999.f;
 
@@ -480,15 +494,18 @@ template<class track_t> void AliAnalysisTaskNucleiYield::TrackLoop(track_t* trac
 
       /// TPC asymmetric cut to avoid contamination from protons in the DCA distributions. TOF sigma cut is set to 4
       /// to compensate for the shift in the sigma (to be rechecked in case of update of TOF PID response)
-      if (tpc_n_sigma > -3. && tpc_n_sigma < 3. && (fabs(tof_n_sigma) < 4. || !iTof)) {
+      if (tpc_n_sigma > -3. && tpc_n_sigma < 3. && (fabs(tof_n_sigma) < 4. || !iTof) && ((its_pid && pid_mask & 1) || !its_pid)) {
         fDCAxy[iR][iC]->Fill(fCentrality, pT, dca[0]);
         fDCAz[iR][iC]->Fill(fCentrality, pT, dca[1]);
       }
     }
     if (TMath::Abs(dca[0]) > fRequireMaxDCAxy) return;
+    
+    fITSnSigma[iC]->Fill(fCentrality, pT, its_n_sigma);
+
     bool tofCleanUp = fOptionalTOFcleanup < 0 ? true : std::abs(tof_n_sigma) < fOptionalTOFcleanup || beta < 0;
     if ((fRequireMaxMomentum < 0 || track->GetTPCmomentum() < fRequireMaxMomentum) && tofCleanUp &&
-        (pid_mask & 8))
+        (pid_mask & 8) && ((its_pid && pid_mask & 1) || !its_pid))
       fTPCcounts[iC]->Fill(fCentrality, pT, tpc_n_sigma);
 
     if (iTof == 0) return;
@@ -549,6 +566,7 @@ bool AliAnalysisTaskNucleiYield::AcceptTrack(track_t *track, Float_t dca[2]) {
     if (nITS < fRequireITSrecPoints) return false;
     if (nSPD < fRequireSPDrecPoints) return false;
     if (nSDD < fRequireSDDrecPoints) return false;
+    if ((nSDD+nSSD) < fRequireSDDSSDrecPoints) return false;
     if (fRequireVetoSPD && nSPD > 0) return false;
     track->GetImpactParameters(dca[0], dca[1]);
     if (TMath::Abs(dca[1]) > fRequireMaxDCAz) return false;

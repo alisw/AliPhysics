@@ -134,6 +134,10 @@ void AliAnalysisTaskUpcRho0::Init()
 		TrackP_T[i] = -666;
 		TrackEta_T[i] = -666;
 		TrackPhi_T[i] = -666;
+		TrackQ_T[i] = 0;
+		TrackEtaGen_T[i] = -666;
+		TrackPhiGen_T[i] = -666;
+		TrackPtGen_T[i] = -666;
 	}
 	for (Int_t i=0;i<3;i++){
 		Vertex_T[i] = -666;
@@ -182,6 +186,7 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	fRhoTree->Branch("TrackPx_T",&TrackPx_T,"TrackPx_T[2]/F");
 	fRhoTree->Branch("TrackPy_T",&TrackPy_T,"TrackPy_T[2]/F");
 	fRhoTree->Branch("TrackPz_T",&TrackPz_T,"TrackPz_T[2]/F");
+	fRhoTree->Branch("TrackQ_T",&TrackQ_T,"TrackQ_T[2]/S");
 	fRhoTree->Branch("VtxX_T",&Vertex_T[0],"VtxX_T/F");
 	fRhoTree->Branch("VtxY_T",&Vertex_T[1],"VtxY_T/F");
 	fRhoTree->Branch("VtxZ_T",&Vertex_T[2],"VtxZ_T/F");
@@ -205,6 +210,12 @@ void AliAnalysisTaskUpcRho0::UserCreateOutputObjects()
 	fRhoTree->Branch("ChipCut_T",&ChipCut_T,"ChipCut_T/O");
 	fRhoTree->Branch("TriggerSPD_T",&TriggerSPD_T,"TriggerSPD_T/O");
 	fRhoTree->Branch("TriggerTOF_T",&TriggerTOF_T,"TriggerTOF_T/O");
+	if(isMC){
+          //Kinematics, MC gen:
+          fRhoTree->Branch("TrackEtaGen_T",&TrackEtaGen_T,"TrackEtaGen_T[2]/F");
+	  fRhoTree->Branch("TrackPhiGen_T",&TrackPhiGen_T,"TrackPhiGen_T[2]/F");
+	  fRhoTree->Branch("TrackPtGen_T",&TrackPtGen_T,"TrackPtGen_T[2]/F");
+    	  }
 
 	if(debugMode) std::cout<<"Defining MC ttree..."<<std::endl;
 	// MC tree
@@ -537,6 +548,18 @@ void AliAnalysisTaskUpcRho0::UserExec(Option_t *)
 		TrackPx_T[i] = trk->Px();
 		TrackPy_T[i] = trk->Py();
 		TrackPz_T[i] = trk->Pz();
+		TrackQ_T[i] = trk->Charge();
+		
+		if(trk->GetLabel() >= 0){
+                    AliMCEvent *mc = MCEvent();
+                    if(!mc) return;
+                    AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(trk->GetLabel());
+		
+		    TrackEtaGen_T[i] = mcPart->Eta();
+		    TrackPhiGen_T[i] = mcPart->Phi();
+		    TrackPtGen_T[i] = mcPart->Pt();
+		    }
+
 
 		fTrackChi2->Fill((Float_t)trk->GetTPCchi2()/trk->GetTPCNcls());
 

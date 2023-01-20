@@ -25,6 +25,8 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #include <PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinuspPbRun2_AOD.C>
 #endif
 
+
+//#include "ConfigKStarPlusMinuspPbRun2.C"
 enum pairYCutSet { kPairDefault,    // USED ONLY FOR pA
     kNegative,       // USED ONLY FOR pA
     kCentral         // USED ONLY FOR pA
@@ -53,8 +55,8 @@ enum eventMixConfig { kDisabled = -1,
 
 AliRsnMiniAnalysisTask *AddTaskKStarPlusMinuspPbRun2_AOD
 (
- Bool_t      isMC,
- Bool_t      isPP,
+ Bool_t      isMC=kFALSE,
+ Bool_t      isPP=kFALSE,
  Float_t     cutV = 10.0,
  Bool_t      isGT = 0,
  Int_t       evtCutSetID = 0,
@@ -215,18 +217,24 @@ AliRsnMiniAnalysisTask *AddTaskKStarPlusMinuspPbRun2_AOD
     PairCutsMix->AddCut(cutY);
     PairCutsMix->SetCutScheme(cutY->GetName());
 
+
+    #if !defined (__CINT__) || defined (__CLING__)
+
+    if (!ConfigKStarPlusMinuspPbRun2_AOD(task, isMC, isPP, isGT, piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
+
+ #else
+
+    gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinuspPbRun2_AOD.C");
+
+    //    gROOT->LoadMacro("ConfigKStarPlusMinuspPbRun2.C");
+  
+ 
     if (isMC) {
         Printf("========================== MC analysis - PID cuts not used");
     } else
         Printf("========================== DATA analysis - PID cuts used");
-
-    #if !defined (__CINT__) || defined (__CLING__)
-    if (!ConfigKStarPlusMinuspPbRun2_AOD(task, isMC, isPP, isGT, piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
- #else
     
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKStarPlusMinuspPbRun2_AOD.C");
-  
-  if (!ConfigKStarPlusMinuspPbRun2_AOD(task, isMC, isPP, isGT, piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
+   if (!ConfigKStarPlusMinuspPbRun2_AOD(task, isMC, isPP, isGT, piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, aodFilterBit, enableMonitor, monitorOpt.Data(), massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, crossedRows, rowsbycluster, v0rapidity, Sys)) return 0x0;
   #endif
     // -- CONTAINERS -------------------------------------------------------------------------------//
     TString outputFileName = AliAnalysisManager::GetCommonFileName();

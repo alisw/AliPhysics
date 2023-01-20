@@ -226,6 +226,12 @@ Bool_t AliEmcalPatchFromCellMaker::FillPatchADCSimple()
 
     Double_t cellT = fCaloCells->GetCellTime(cellId); 
     Double_t amp = fCaloCells->GetAmplitude(iCell);
+
+    if ( cellId < 0 ) {
+      AliErrorStream() << "Skip: iCell = "<< iCell << "Cell Id = " << cellId <<", E = "<< amp <<", time = "<<cellT<<std::endl;
+      continue;
+    }
+
     fh2CellEnergyVsTime->Fill(amp,cellT*1e9);
 
     //timing cuts

@@ -208,6 +208,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPion(
   config->SetdPhidEtaPlots(true);
   config->SetkTandMultBinning(true);
   config->SetkTandMultPtBinning(true);
+  if(isMC) config->SetkTandMultMCTrueBinning(true);
   config->SetdPhidEtaPlotsSmallK(true);
   config->SetPhiEtaBinnign(true);
   

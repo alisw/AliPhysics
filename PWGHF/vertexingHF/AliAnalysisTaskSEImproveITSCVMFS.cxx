@@ -229,6 +229,9 @@ AliAnalysisTaskSEImproveITSCVMFS::AliAnalysisTaskSEImproveITSCVMFS()
    fNDebug      (0),
    fImproverSuffix(0),
    fOverridePeriodName(0),
+   fUseSeparateOverrideDataMC(false),
+   fOverridePeriodNameData(""),
+   fOverridePeriodNameMC(""),
    fFilesOpen(kFALSE),
    fRescaledd0rphi(1.)
 {
@@ -452,6 +455,9 @@ AliAnalysisTaskSEImproveITSCVMFS::AliAnalysisTaskSEImproveITSCVMFS(const char *n
    fNDebug      (ndebug),
    fImproverSuffix(0),
    fOverridePeriodName(0),
+   fUseSeparateOverrideDataMC(false),
+   fOverridePeriodNameData(""),
+   fOverridePeriodNameMC(""),
    fFilesOpen(kFALSE),
    fRescaledd0rphi(1.)
 {
@@ -1509,6 +1515,14 @@ void AliAnalysisTaskSEImproveITSCVMFS::OpenImproverHistos(AliVEvent* event) {
     if ( run >= 296690 && run <= 300000 ) { lProductionName = "LHC18r"; fIsPbPb2018 = kTRUE; }
 }
 
+  /// case for forced paths set with SetUseSeparateOverrideDataMC function
+  TString lProductionNameOriginal = lProductionName;
+  if(fUseSeparateOverrideDataMC){
+    /// override only if the string is not empty, otherwise keep the authomatic one
+    if(!fOverridePeriodNameMC.EqualTo(""))  lProductionName = fOverridePeriodNameMC;
+    else lProductionName = lProductionNameOriginal; /// not necessary
+  }
+
   if (lProductionName.EqualTo("")) {
    AliError("This run number has no corresponding improver file!");
    return;
@@ -1517,6 +1531,8 @@ void AliAnalysisTaskSEImproveITSCVMFS::OpenImproverHistos(AliVEvent* event) {
 
 
   TString pathToFileCurrent = AliDataFile::GetFileName(Form("PWGHF/common/Improver/%s/%s/ITSgraphs_Current.root",lProductionName.Data(),fImproverSuffix.Data()));  // find URI for improver file from CVMFS
+
+  Printf(">>> Taking parametrization files for MC from %s",pathToFileCurrent.Data());
   
   // Check access to CVMFS (will only be displayed locally)
   if (pathToFileCurrent.IsNull()) {
@@ -1772,8 +1788,20 @@ void AliAnalysisTaskSEImproveITSCVMFS::OpenImproverHistos(AliVEvent* event) {
     
   //TString resfileUpgURI = Form("alien:///alice/cern.ch/user/p/pwg_hf/common/Improver/%s/%s/ITSgraphs_NewAll-X0.3-Res4um.root",period,systematic);
 
+  if(fUseSeparateOverrideDataMC){
+    /// override only if the string is not empty, otherwise keep the authomatic one
+    if(!fOverridePeriodNameData.EqualTo(""))  lProductionName = fOverridePeriodNameData;
+    else lProductionName = lProductionNameOriginal;
+  }
 
   TString pathToFileUpgrade = AliDataFile::GetFileName(Form("PWGHF/common/Improver/%s/%s/ITSgraphs_NewAll-X0.3-Res4um.root",lProductionName.Data(),fImproverSuffix.Data()));  // find URI for improver file from CVMFS
+
+  Printf(">>> Taking parametrization files for Data from %s",pathToFileUpgrade.Data());
+  
+  // Check access to CVMFS (will only be displayed locally)
+  if (pathToFileUpgrade.IsNull()) {
+	AliFatal("Cannot access data files from CVMFS: please export ALICE_DATA=root://eospublic.cern.ch//eos/experiment/alice/analysis-data and run again");
+}
 
   TFile *resfileUpg=TFile::Open(pathToFileUpgrade.Data());
   printf("\n### reading file %s ...\n",pathToFileUpgrade.Data());

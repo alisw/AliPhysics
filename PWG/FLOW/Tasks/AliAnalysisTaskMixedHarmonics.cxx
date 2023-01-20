@@ -28,7 +28,7 @@ class TFile;
 class TString;
 class TList;
 class AliAnalysisTaskSE; 
- 
+
 #include "Riostream.h"
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskMixedHarmonics.h"
@@ -67,6 +67,7 @@ fCorrectForDetectorEffects(kFALSE),
 fPrintOnTheScreen(kTRUE),
 fCalculateVsM(kFALSE),
 fShowBinLabelsVsM(kFALSE),
+fCalculateVsZDC(kFALSE),
 fUseParticleWeights(useParticleWeights),
 fUsePhiWeights(kFALSE),
 fUsePtWeights(kFALSE),
@@ -77,7 +78,21 @@ fFillQAHistograms(kFALSE),
 fTPCvsGlobalTrkBefore(NULL),
 fTPCvsGlobalTrkAfter(NULL),
 fTPCvsESDTrk(NULL),
-fWeightsList(NULL)
+fWeightsList(NULL),
+fIs2018Data(kFALSE),
+fV0CutPU(NULL),
+fSPDCutPU(NULL),
+fMultCutPU(NULL),
+fCenCutLowPU(NULL),
+fCenCutHighPU(NULL),
+fHistTPConlyVsCL1Before(NULL),
+fHistTPConlyVsCL1After(NULL), 
+fHistTPConlyVsV0MBefore(NULL),
+fHistTPConlyVsV0MAfter(NULL), 
+fHistCentCL0VsV0MBefore(NULL),
+fHistCentCL0VsV0MAfter(NULL), 
+fHistTPCVsESDTrkBefore(NULL), 
+fHistTPCVsESDTrkAfter(NULL)
 {
  // constructor
  cout<<"AliAnalysisTaskMixedHarmonics::AliAnalysisTaskMixedHarmonics(const char *name, Bool_t useParticleWeights)"<<endl;
@@ -112,6 +127,7 @@ fCorrectForDetectorEffects(kFALSE),
 fPrintOnTheScreen(kFALSE),
 fCalculateVsM(kFALSE),
 fShowBinLabelsVsM(kFALSE),
+fCalculateVsZDC(kFALSE),
 fUseParticleWeights(kFALSE),
 fUsePhiWeights(kFALSE),
 fUsePtWeights(kFALSE),
@@ -122,7 +138,21 @@ fFillQAHistograms(kFALSE),
 fTPCvsGlobalTrkBefore(NULL),
 fTPCvsGlobalTrkAfter(NULL),
 fTPCvsESDTrk(NULL),
-fWeightsList(NULL)
+fWeightsList(NULL),
+fIs2018Data(kFALSE),
+fV0CutPU(NULL),
+fSPDCutPU(NULL),
+fMultCutPU(NULL),
+fCenCutLowPU(NULL),
+fCenCutHighPU(NULL),
+fHistTPConlyVsCL1Before(NULL),
+fHistTPConlyVsCL1After(NULL), 
+fHistTPConlyVsV0MBefore(NULL),
+fHistTPConlyVsV0MAfter(NULL), 
+fHistCentCL0VsV0MBefore(NULL),
+fHistCentCL0VsV0MAfter(NULL), 
+fHistTPCVsESDTrkBefore(NULL), 
+fHistTPCVsESDTrkAfter(NULL)
 {
  // Dummy constructor
  cout<<"AliAnalysisTaskMixedHarmonics::AliAnalysisTaskMixedHarmonics()"<<endl;
@@ -155,6 +185,7 @@ void AliAnalysisTaskMixedHarmonics::UserCreateOutputObjects()
  fMH->SetPrintOnTheScreen(fPrintOnTheScreen); 
  fMH->SetCalculateVsM(fCalculateVsM); 
  fMH->SetShowBinLabelsVsM(fShowBinLabelsVsM);
+ fMH->SetCalculateVsZDC(fCalculateVsZDC); 
  if(fUseParticleWeights)
  {
   // Pass the flags to class:
@@ -192,6 +223,26 @@ void AliAnalysisTaskMixedHarmonics::UserCreateOutputObjects()
   fTPCvsESDTrk = new TH2F("fTPCvsESDTrk","ESDTrk vs TPC(FB128)",1000,0,20000,250,0,5000);
   fListHistos->Add(fTPCvsESDTrk);
 
+  // Centrality Correlations and PileUp QA
+  fHistTPConlyVsCL1Before = new TH2F("fHistTPConlyVsCL1Before","Before;Cent(CL1); TPC(FB128)",100,0,100,250,0,5000);
+  fListHistos->Add(fHistTPConlyVsCL1Before);
+  fHistTPConlyVsCL1After  = new TH2F("fHistTPConlyVsCL1After","After; Cent(CL1); TPC(FB128) ",100,0,100,250,0,5000);
+  fListHistos->Add(fHistTPConlyVsCL1After);
+
+  fHistTPConlyVsV0MBefore = new TH2F("fHistTPConlyVsV0MBefore","Before;Cent(V0M); TPC(FB128)",100,0,100,250,0,5000);
+  fListHistos->Add(fHistTPConlyVsV0MBefore);
+  fHistTPConlyVsV0MAfter  = new TH2F("fHistTPConlyVsV0MAfter","After; Cent(V0M); TPC(FB128) ",100,0,100,250,0,5000);
+  fListHistos->Add(fHistTPConlyVsV0MAfter);
+
+  fHistCentCL0VsV0MBefore = new TH2F("fHistCentCL0VsV0MBefore","Before;Cent(V0M); Cent(CL0)",100,0,100,100,0,100);
+  fListHistos->Add(fHistCentCL0VsV0MBefore);
+  fHistCentCL0VsV0MAfter  = new TH2F("fHistCentCL0VsV0MAfter"," After; Cent(V0M); Cent(CL0)",100,0,100,100,0,100);
+  fListHistos->Add(fHistCentCL0VsV0MAfter);
+
+  fHistTPCVsESDTrkBefore = new TH2F("fHistTPCVsESDTrkBefore","Before; TPC1; ESD trk",100,0,5000,200,0,20000);
+  fListHistos->Add(fHistTPCVsESDTrkBefore);
+  fHistTPCVsESDTrkAfter  = new TH2F("fHistTPCVsESDTrkAfter"," After;  TPC1; ESD trk",100,0,5000,200,0,20000);
+  fListHistos->Add(fHistTPCVsESDTrkAfter);
 
  PostData(1,fListHistos);
   
@@ -211,7 +262,10 @@ void AliAnalysisTaskMixedHarmonics::UserExec(Option_t *)
  //cout<<" Run = "<<aodEvent->GetRunNumber();
 
  if(fRejectPileUp || fFillQAHistograms){
-   kPileupEvent = CheckEventIsPileUp(aodEvent);
+   if (!fIs2018Data) 
+     kPileupEvent = CheckEventIsPileUp(aodEvent);
+   else if (fIs2018Data)
+     kPileupEvent = CheckEventIsPileUp2018(aodEvent);
  }
 
  if(fRejectPileUp && kPileupEvent)  return;
@@ -482,6 +536,147 @@ Bool_t AliAnalysisTaskMixedHarmonics::CheckEventIsPileUp(AliAODEvent *faod) {
   return kFALSE;
 }
 
+void AliAnalysisTaskMixedHarmonics::SetupPileUpRemovalFunctions18qPass3() { //@Shi for 2018 period Pass3 data
+	// 18q pass3
+	fSPDCutPU = new TF1("fSPDCutPU", "480. + 3.95*x", 0, 50000);
+   
+    Double_t parV0[8] = {41.3226, 0.822835, 0.0880984, 206.961, 3.56337, 0.0965816, -0.00076483, 2.11591e-06};
+    fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+    fV0CutPU->SetParameters(parV0);
+   
+    Double_t parV0CL0[6] = {0.362458, 0.962768, 0.995134, 0.0331353, -0.000692428, 6.59962e-06};
+    fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutLowPU->SetParameters(parV0CL0);
+    fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutHighPU->SetParameters(parV0CL0);
+   
+    Double_t parFB32[9] = {-812.555, 6.38397, 5379.01, -0.394814, 0.0296228, -26.1633, 317.365, -0.842175, 0.0165651};
+    fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
+    fMultCutPU->SetParameters(parFB32);
+	
+}
+
+void AliAnalysisTaskMixedHarmonics::SetupPileUpRemovalFunctions18rPass3() { //@Shi for 2018 period Pass3 data
+    // 18r pass3
+    fSPDCutPU = new TF1("fSPDCutPU", "480. + 3.95*x", 0, 50000);
+   
+    Double_t parV0[8] = {42.4921, 0.823255, 0.0824939, 139.826, 7.27032, 0.0488425, -0.00045769, 1.40891e-06};
+    fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+    fV0CutPU->SetParameters(parV0);
+   
+    Double_t parV0CL0[6] = {0.317973, 0.961823, 1.02383, 0.0330231, -0.000721551, 6.92564e-06};
+    fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutLowPU->SetParameters(parV0CL0);
+    fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutHighPU->SetParameters(parV0CL0);
+   
+    Double_t parFB32[9] = {-817.169, 6.40836, 5380.3, -0.394358, 0.0295209, -25.9573, 316.586, -0.843951, 0.0165442};
+    fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
+    fMultCutPU->SetParameters(parFB32);
+	
+}
+
+Bool_t AliAnalysisTaskMixedHarmonics::CheckEventIsPileUp2018(AliAODEvent *faod) {
+  // check pile up for 2018 
+  Bool_t BisPileup=kFALSE;
+
+  Double_t centrV0M=-99.0;
+  Double_t centrCL1=-99.0;
+  Double_t centrCL0=-99.0;
+
+  fMultSelection = (AliMultSelection*) InputEvent()->FindListObject("MultSelection");
+
+  if(!fMultSelection) {
+    printf("\n\n **WARNING** ::UserExec() AliMultSelection object not found.\n\n");
+    exit(111);
+  }
+
+  centrV0M = fMultSelection->GetMultiplicityPercentile("V0M");
+  centrCL1 = fMultSelection->GetMultiplicityPercentile("CL1");
+  centrCL0 = fMultSelection->GetMultiplicityPercentile("CL0");
+
+  Int_t nITSClsLy0 = faod->GetNumberOfITSClusters(0);
+  Int_t nITSClsLy1 = faod->GetNumberOfITSClusters(1);
+  Int_t nITSCls = nITSClsLy0 + nITSClsLy1;
+
+  AliAODTracklets* aodTrkl = (AliAODTracklets*)faod->GetTracklets();
+  Int_t nITSTrkls = aodTrkl->GetNumberOfTracklets();
+
+  const Int_t nTracks = faod->GetNumberOfTracks();
+
+  Int_t multTrk = 0;
+
+  for (Int_t it = 0; it < nTracks; it++) {
+    
+    AliAODTrack* aodTrk = (AliAODTrack*)faod->GetTrack(it);
+
+    if (!aodTrk){
+      delete aodTrk;
+      continue;
+    }
+
+    if (aodTrk->TestFilterBit(32)){
+      if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2))
+        multTrk++;
+    }
+  }
+
+  AliAODVZERO* aodV0 = faod->GetVZEROData();
+  Float_t multV0a = aodV0->GetMTotV0A();
+  Float_t multV0c = aodV0->GetMTotV0C();
+  Float_t multV0Tot = multV0a + multV0c;
+  UShort_t multV0aOn = aodV0->GetTriggerChargeA();
+  UShort_t multV0cOn = aodV0->GetTriggerChargeC();
+  UShort_t multV0On = multV0aOn + multV0cOn;
+
+  Int_t tpcClsTot = faod->GetNumberOfTPCClusters();
+  Float_t nclsDif = Float_t(tpcClsTot) - (60932.9 + 69.2897*multV0Tot - 0.000217837*multV0Tot*multV0Tot);
+
+  if (centrCL0 < fCenCutLowPU->Eval(centrV0M)) {
+    BisPileup=kTRUE;
+  }
+  if (centrCL0 > fCenCutHighPU->Eval(centrV0M)) {
+    BisPileup=kTRUE;
+  }
+  if (Float_t(nITSCls) > fSPDCutPU->Eval(nITSTrkls)) {
+    BisPileup=kTRUE;
+  }     
+  if (multV0On < fV0CutPU->Eval(multV0Tot)) {
+    BisPileup=kTRUE;
+  }
+  if (Float_t(multTrk) < fMultCutPU->Eval(centrV0M)) {
+    BisPileup=kTRUE;
+  }
+  if (((AliAODHeader*)faod->GetHeader())->GetRefMultiplicityComb08() < 0) {
+    BisPileup=kTRUE;
+  }
+  if (faod->IsIncompleteDAQ()) {
+    BisPileup=kTRUE;
+  }    
+  //if (nclsDif > 200000)//can be increased to 200000
+  // BisPileup=kTRUE;
+
+  Int_t multEsd = ((AliAODHeader*)faod->GetHeader())->GetNumberOfESDTracks();
+
+  if(fFillQAHistograms){
+    fHistCentCL0VsV0MBefore->Fill(centrV0M,centrCL0);
+    fHistTPCVsESDTrkBefore->Fill(multTrk,multEsd);  
+    fHistTPConlyVsCL1Before->Fill(centrCL1,multTrk);
+    fHistTPConlyVsV0MBefore->Fill(centrV0M,multTrk);
+    
+    
+    if (!BisPileup) { 
+      fHistCentCL0VsV0MAfter->Fill(centrV0M,centrCL0);
+      fHistTPCVsESDTrkAfter->Fill(multTrk,multEsd);  
+      fHistTPConlyVsCL1After->Fill(centrCL1,multTrk);
+      fHistTPConlyVsV0MAfter->Fill(centrV0M,multTrk);      
+    }
+  }
+
+  return BisPileup; 
+}
+
+
 double AliAnalysisTaskMixedHarmonics::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
 {
   // calculate sqrt of weighted distance to other vertex
@@ -511,7 +706,6 @@ double AliAnalysisTaskMixedHarmonics::GetWDist(const AliVVertex* v0, const AliVV
   +    2*vVb(0,1)*dx*dy + 2*vVb(0,2)*dx*dz + 2*vVb(1,2)*dy*dz;
   return dist>0 ? TMath::Sqrt(dist) : -1;
 }
-
 
 
 

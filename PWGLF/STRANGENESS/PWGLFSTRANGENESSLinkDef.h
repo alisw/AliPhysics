@@ -60,6 +60,7 @@
 #pragma link C++ class AliAnalysisTaskStrEffStudy+;
 #pragma link C++ class AliAnalysisTaskMCPredictions+;
 #pragma link C++ class AliAnalysisTaskMCPredictionsEE+;
+#pragma link C++ class AliAnalysisTaskMCPredictionsStrgVsMultVsZDC+;
 #pragma link C++ class AliAnalysisCorrelationEventCollection+;
 #pragma link C++ class AliReconstructedFirstC+;
 #pragma link C++ class AliReconstructedSecondC+;
@@ -68,10 +69,12 @@
 #pragma link C++ class AliAnalysisTaskCorrelationhhK0s+;
 #pragma link C++ class AliAnalysisTaskCorrelationhCasc+;
 #pragma link C++ class AliAnalysisTaskCorrelationhCascDATA+;
+#pragma link C++ class AliAnalysisTaskCorrelationhK0sXi_PureMCOnly+;
 #pragma link C++ class AliAnalysisTaskStrVsMult+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_BumpStudies+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_PileUpStudies+;
 #pragma link C++ class AliAnalysisTaskStrVsMult_SelectionStudies+;
+#pragma link C++ class AliAnalysisTaskStrVsMult_RStudies+;
 #pragma link C++ class AliEventContainer+;
 #pragma link C++ class AliCascadeContainer+;
 #pragma link C++ class AliV0Container+;
@@ -87,6 +90,11 @@
 #pragma link C++ class AliAnalysisTaskXiNucleusInteraction+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2+;
 #pragma link C++ class AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2+;
+#pragma link C++ class AliMachineLearning+;
+#pragma link C++ class AliNeuralNetwork+;
+#pragma link C++ class AliBDT+;
+#pragma link C++ class AliAnalysisTaskStrangenessML+;
+#pragma link C++ class AliAnalysisTaskMultspec+;
 //#pragma link C++ class AliRunningCascadeEvent+;
 //#pragma link C++ class AliRunningCascadeTrack+;
 #endif
@@ -99,8 +107,13 @@
 #pragma link C++ class MiniCascadeMC+;
 #pragma link C++ class MiniLambda+;
 #pragma link C++ class MiniLambdaMC+;
+#pragma link C++ class MiniK0s+;
+#pragma link C++ class MiniK0sMC+;
+#pragma link C++ class MiniLambdaBDTOut+;
 #pragma link C++ class V0filler+;
 #pragma link C++ class Cascfiller+;
+#pragma link C++ class V0filler_Mult+;
+#pragma link C++ class Cascfiller_Mult+;
 //#pragma link C++ class std::vector<FindableHyperTriton<2>>+;
 //#pragma link C++ class std::vector<FindableHyperTriton<3>>+;
 #endif

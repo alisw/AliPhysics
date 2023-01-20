@@ -27,7 +27,6 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
   void SetMaxCentrality(Float_t t)         { fCentMax = t; }
   void SetJetRadius(Float_t t)            { fJetRadius = t; }
   void SetK(Float_t t)                    { JetChargeK = t; }
-  void SetMotherFraction(Float_t t)       { MotherFraction = t; }
 
  protected:
   // Obligatory Functions
@@ -49,8 +48,6 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
   Float_t                             fJetRadius;
   // Value of K the scaling factor on jet charge default k = 0.5
   Float_t                             JetChargeK = 0.5;                     //
-  // Set Fraction of the Mother particles which need to agree
-  Float_t                             MotherFraction = 0.8;                 //
 
   // Here is the TTree
   TTree                               *fTreeJets;                                                  //!
@@ -66,13 +63,15 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
   Float_t ParticleJetCharge;      //
   Float_t LeadingTrackPt;         //
   Int_t PdgCode;                  //
+  Int_t PtMatchedPdgCode;         //
+  Int_t GeoMatchedPdgCode;        //
+  Float_t ProgenetorFraction;     //
 
-
-
+  
   TChain                              *pChain;                                                     //
 
 
 
-  ClassDef(AliAnalysisTaskJetChargeFlavourTemplates, 5)
+  ClassDef(AliAnalysisTaskJetChargeFlavourTemplates, 7)
 };
 #endif

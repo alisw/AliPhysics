@@ -55,6 +55,11 @@ public:
 
   //..setters for the analysis
   void                        SetDebug(Int_t input)                                 { fDebug           = input  ; }
+  void                        SetEnablePileupCut(Int_t input)                       { fEnablePileupCut = input ; }
+  void                        SetEnableMVPileupCut(Int_t input)                     { fEnableMVPileupCut = input ; }
+  void                        SetEMCalTriggerReqMode(Int_t input)                   { fEMCalTriggerReqMode = input; }
+  void                        SetNameEMCalTriggerDecisionContainer(TString input)        { fNameEMCalTriggerDecisionContainer = input; }
+  void                        AddEMCalTriggerRequirement(TString input)             { fAcceptEMCalTriggers.push_back(input); }
   void                        SetCorrectEff(Bool_t input)                           { fCorrectEff      = input  ; }
   void                        SetEventWeightChoice(Int_t input)                     { fEventWeightChoice = input; }
   void                        SetSavePool(Bool_t input)                             { fSavePool        = input  ; }
@@ -63,6 +68,7 @@ public:
   void                        SetPoolTrackDepth(Int_t input)                        { fMETrackDepth    = input  ; }
   void                        SetPoolTargetEvents(Int_t input)                      { fMETargetEvents  = input  ; }
   void                        SetPlotMore(Int_t input)                              { fPlotQA          = input  ; }
+  void                        SetEPCorrMode(Int_t input)                            { fEPCorrMode      = input  ; }
   void                        SetEvtTriggerType(UInt_t input)                       { fTriggerType     = input  ; }
   void                        SetPi0MassSelection(Int_t input);
   void                        SetTriggerPtCut(Double_t input)                       { fTriggerPtCut    = input  ; }
@@ -96,8 +102,9 @@ public:
   void                        SetApplyPatchCandCut(Bool_t input)                    { fApplyPatchCandCut = input;}
   void                        SetSidebandChoice(Int_t input)                        { fSidebandChoice    = input;}
   void                        SetEventPlaneSource(Int_t input)                      { fEventPlaneSource  = input;}
+  void                        SetEventPlaneChoice(Int_t input)                      { fEventPlaneChoice  = input;}
 
-
+  void                        SetOverrideCentEventCut(Bool_t input)                 { fOverrideCentEventCut = input;}
   void                        SetMCEmbedReweightMode(Int_t input)                   { fMCEmbedReweightMode = input;}
   void                        SetUseMCReactionPlane(Int_t input)                    { fUseMCReactionPlane  = input;}
 
@@ -112,6 +119,7 @@ private:
   AliFiducialCut*             fFiducialCuts;                ///< fiducial cuts for the EMCal and DCal in terms of eta and phi
   AliEMCALRecoUtils*          fFiducialCellCut;             ///< fiducial cut for EMCal+DCal in terms of rows and collumns
   AliQnCorrectionsManager*    fFlowQnVectorMgr;             ///< object for accessing QnVectorCorrections corrected event plane info (source 0)
+  AliAnalysisTaskJetQnVectors* fQ1VectorReader;             ///< Reader for the Q1 vector (source 1)
   AliAnalysisTaskJetQnVectors* fQ2VectorReader;             ///< Reader for the Q2 vector (source 1)
   AliAnalysisTaskJetQnVectors* fQ3VectorReader;             ///< Reader for the Q3 vector (source 1)
 
@@ -133,7 +141,7 @@ protected:
   TObjArray*                  CloneToCreateTObjArray(AliParticleContainer* tracks)          ;
 
   //..Function for event plane purposes
-  void                        LoadQnCorrectedEventPlane();
+  bool                        LoadQnCorrectedEventPlane(); // returns true if succesful
 
 
   //..Correlate and fill
@@ -164,6 +172,7 @@ protected:
   //..Delta phi does also exist in AliAnalysisTaskEmcal. It is overwritten here (ask Raymond)
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,AliVParticle* TrackVec) ;
   Double_t                    DeltaPhi(AliTLorentzVector ClusterVec,Double_t phi_EVP)       ;
+  Double_t                    DeltaPhi(AliVParticle* TrackVec,Double_t phi_EVP) ;
 
   Double_t                    GetEventMixingAngle(Double_t fRawEventPlaneAngle);
 
@@ -171,16 +180,20 @@ protected:
   void                        GetDistanceToSMBorder(AliVCluster* caloCluster,Int_t &etaCellDist,Int_t &phiCellDist);
   AliVCluster*                GetLeadingCluster(const char* opt, AliClusterContainer* clusters);
 
+  // Control variables
   Int_t                       fGammaOrPi0;               ///< This tells me whether the correlation and the filling of histograms is done for gamma or pi0 or pi0 SB
   Int_t                       fSEvMEv;                   ///< This option performs the analysis either for same event or for mixed event analysis
-	Bool_t                      fSaveTriggerPool;          ///< Whether to save an event pool of accepted triggers
+  Bool_t                      fSaveTriggerPool;          ///< Whether to save an event pool of accepted triggers
   Float_t                     fDownScaleMT;              ///< Downscale factor to restrict Mixed Trigger statistics/runtime. 1.0 -> no downscale. 0.5 -> cut stats in half.
   Int_t                       fSidebandChoice;           ///< This determines which sideband option is used
   Bool_t                      fDebug;			        ///< Can be set for debugging
+  Int_t                       fEnablePileupCut;          ///< Whether to enable pileup cut in EventCuts. 2,3,4 = looser cut options
+  Int_t                       fEnableMVPileupCut;          ///< Whether to enable MV pileup cut in EventCuts
   Bool_t                      fSavePool;                 ///< Defines whether to save output pools in a root file
   Int_t                       fPlotQA;                   ///< plot additional QA histograms
+  Int_t                       fEPCorrMode;               ///< Correlate with EP{n=fEPCorrmode} instead of the trigger particle. 0 => use trigger particle (default)
   Bool_t                      fUseManualEventCuts;       ///< Use manual cuts if automatic setup is not available for the period
-  Bool_t                      fCorrectEff;               ///< Correct efficiency of associated tracks
+  Int_t                       fCorrectEff;               ///< Correct efficiency of associated tracks. 0 = no correction, 1 = 15oP1 Correction, 2 = 18qrP1 Correction
   Bool_t                      fEventWeightChoice;        ///< 0 = no event reweighting, 1 = reweight by GA function
 
   static const Int_t kNMainCentBins = 4;                 ///< Centrality bins that the analysis is done in (and mass windows are defined in)
@@ -190,6 +203,49 @@ protected:
   TF1 						 *funcpT_high[4];
   TF1 						 *funcpEta_left[4];
   TF1 						 *funcpEta_right[4];
+
+  // Parameters for new parameterizations from Charles for LHC18qr Pass1 (very close to Pass3)
+  // LHC18qr efficiency parameters
+  // pt parameters
+  static const double LHC18qrParam_0_10_pt[11];                    //!<! 0-10% pt parameters
+  static const double LHC18qrParam_10_30_pt[11];                   //!<! 10-30% pt parameters
+  static const double LHC18qrParam_30_50_pt[11];                   //!<! 30-50% pt parameters
+  static const double LHC18qrParam_50_90_pt[11];                   //!<! 50-90% pt parameters
+  // Eta parameters
+  static const double LHC18qrParam_0_10_eta[11];                   //!<! 0-10% eta parameters
+  static const double LHC18qrParam_10_30_eta[11];                  //!<! 10-30% eta parameters
+  static const double LHC18qrParam_30_50_eta[11];                  //!<! 30-50% eta parameters
+  static const double LHC18qrParam_50_90_eta[11];                  //!<! 50-90% eta parameters
+
+  // Parameters for new parametrization using LHC20j6, anchored to 15o Pass2
+  // LHC15oP2 efficiency parameters
+  // pt parameters
+  static const double LHC15oP2Param_0_10_pt[11];                    //!<! 0-10% pt parameters
+  static const double LHC15oP2Param_10_30_pt[11];                   //!<! 10-30% pt parameters
+  static const double LHC15oP2Param_30_50_pt[11];                   //!<! 30-50% pt parameters
+  static const double LHC15oP2Param_50_90_pt[11];                   //!<! 50-90% pt parameters
+  // Eta parameters
+  static const double LHC15oP2Param_0_10_eta[11];                   //!<! 0-10% eta parameters
+  static const double LHC15oP2Param_10_30_eta[11];                  //!<! 10-30% eta parameters
+  static const double LHC15oP2Param_30_50_eta[11];                  //!<! 30-50% eta parameters
+  static const double LHC15oP2Param_50_90_eta[11];                  //!<! 50-90% eta parameters
+
+
+  // Helper functions for determining the LHC15o tracking efficiency
+  static double LHC18qrPtEfficiency(const double trackPt, const double params[11]);
+
+  static double LHC18qrLowPtEfficiencyImpl(const double trackPt, const double params[11], const int index); // pT < 2.7
+  static double LHC18qrMidPtEfficiencyImpl(const double trackPt, const double params[11], const int index); // 2.7 < pT < 10
+  static double LHC18qrHighPtEfficiencyImpl(const double params[11], const int index); // pT > 10
+
+  static double LHC18qrEtaEfficiency(const double trackEta, const double params[11]);
+
+  static double LHC18qrEtaEfficiencyNeg(const double trackEta, const double params[11], const int index); // eta < -0.1
+  static double LHC18qrEtaEfficiencyMid(const double trackEta, const double params[11], const int index); // -0.1  < eta < 0.12
+  static double LHC18qrEtaEfficiencyPos(const double trackEta, const double params[11], const int index); // eta > 0.12
+
+
+
 
   //..Constants
   Double_t                    fRtoD;                     ///< conversion of rad to degree
@@ -213,6 +269,12 @@ protected:
 
   static const Bool_t         bEnableTrackPtAxis = 1;    ///< Whether to swap the xi axis with a track pT axis. Currently must be set here
   static const Bool_t         bEnableEventHashMixing = 1;///< Whether to split events up into 2 classes (odd and even) for event mixing to avoid autocorrelation
+
+
+  Int_t                       fEMCalTriggerReqMode;       ///< How to require EMCal triggers. 0 for trigger string based, 1 for TriggerDecision ContainerBased
+  TString                     fNameEMCalTriggerDecisionContainer;
+
+  vector<TString>             fAcceptEMCalTriggers; ///< Array of EMCal trigger types to accept
 
   //..cuts
 	Int_t                       fSubDetector;              ///< Whether to use all clusters, ECal only, or DCal only
@@ -254,15 +316,25 @@ protected:
 
   Int_t                       fEventPlaneSource;         ///< Where to get the event plane information. 0 is the QnVectorCorrections framework, 1 is the AliAnalysisTaskJetQnVectors
                                                          // if 0 is given, but no QnVector corrections are available, default to V0M (sans calibration)
+  Int_t                       fEventPlaneChoice;         ///< 0 for V0M, 1 for V0A, 2 for V0C
 
   //..Event Plane variables
+  Double_t                    fQnCorrEventPlane1Angle;    //!<! Event plane(1st order) angle corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
   Double_t                    fQnCorrEventPlaneAngle;    //!<! Event plane angle corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
   Double_t                    fQnCorrEventPlane3Angle;    //!<! Event plane(3rd order) angle corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
   Double_t                    fQnCorrEventPlane4Angle;    //!<! Event plane angle (4th order) corrected by the QnVector framework. Filled by LoadQnCorrectedEventPlane
 
+  // QVector Scales
+  Double_t                    fQnCorrQ1Scale;   //!<! Scale of Q1 Vector for chosen source
+  Double_t                    fQnCorrQ2Scale;   //!<! Scale of Q1 Vector for chosen source
+  Double_t                    fQnCorrQ3Scale;   //!<! Scale of Q1 Vector for chosen source
+  Double_t                    fQnCorrQ4Scale;   //!<! Scale of Q1 Vector for chosen source
+
+
   //..MC stuff
   Bool_t                      fParticleLevel;            ///< Set particle level analysis
   Bool_t                      fIsMC;                     ///< Trigger, MC analysis
+  Bool_t                      fOverrideCentEventCut;     ///< In MC, set true to override centrality cuts in AliEventCut
   Int_t                       fMCEmbedReweightMode;      ///< Whether to reweight embedded MC particles. 0 = none, 1 = reweight function, 2 = veto embed etas
   Int_t                       fUseMCReactionPlane;       ///< Whether to set the 2nd order event plane to the reaction plane in the MC Header.
   UInt_t                      fAODfilterBits[2];         ///< AOD track filter bit map
@@ -280,20 +352,53 @@ protected:
   Double_t                    fscaleEta[4];             ///<
 
   // QnVector info and Event Plane Resolution Profiles
+  TH1F            *fEP1AngleV0M;              //!<! EP1 Angle from V0M
+  TH1F            *fEP1AngleV0A;              //!<! EP1 Angle from V0A
+  TH1F            *fEP1AngleV0C;              //!<! EP1 Angle from V0C
+  TH1F            *fEP1AngleTPC;              //!<! EP1 Angle from TPC all
+  TH1F            *fEP1AngleTPCA;             //!<! EP1 Angle from TPC A (eta > 0)
+  TH1F            *fEP1AngleTPCC;             //!<! EP1 Angle from TPC C (eta < 0)
+
   TH1F            *fEPAngleV0M;              //!<! EP Angle from V0M
+  TH1F            *fEPAngleV0A;              //!<! EP Angle from V0A
+  TH1F            *fEPAngleV0C;              //!<! EP Angle from V0C
+  TH1F            *fEPAngleTPC;              //!<! EP Angle from TPC all
   TH1F            *fEPAngleTPCA;             //!<! EP Angle from TPC A (eta > 0)
   TH1F            *fEPAngleTPCC;             //!<! EP Angle from TPC C (eta < 0)
 
   TH1F            *fEP3AngleV0M;              //!<! EP3 Angle from V0M
+  TH1F            *fEP3AngleV0A;              //!<! EP3 Angle from V0A
+  TH1F            *fEP3AngleV0C;              //!<! EP3 Angle from V0C
+  TH1F            *fEP3AngleTPC;              //!<! EP3 Angle from TPC all
   TH1F            *fEP3AngleTPCA;             //!<! EP3 Angle from TPC A (eta > 0)
   TH1F            *fEP3AngleTPCC;             //!<! EP3 Angle from TPC C (eta < 0)
 
   TH1F            *fEP4AngleV0M;              //!<! EP4 Angle from V0M
+  TH1F            *fEP4AngleV0A;              //!<! EP4 Angle from V0A
+  TH1F            *fEP4AngleV0C;              //!<! EP4 Angle from V0C
+  TH1F            *fEP4AngleTPC;              //!<! EP4 Angle from TPC all
   TH1F            *fEP4AngleTPCA;             //!<! EP4 Angle from TPC A (eta > 0)
   TH1F            *fEP4AngleTPCC;             //!<! EP4 Angle from TPC C (eta < 0)
 
 
+  TH2F            *fQ2V0MScaleVsAngle;        //!<! Scale of Q2Vector from V0M vs its angle
+  TH2F            *fQ2V0AScaleVsAngle;        //!<! Scale of Q2Vector from V0A vs its angle
+  TH2F            *fQ2V0CScaleVsAngle;        //!<! Scale of Q2Vector from V0C vs its angle
+  TH2F            *fQ2TPCScaleVsAngle;        //!<! Scale of Q2Vector from TPC vs its angle
+
+  TH2F            *fQ3V0MScaleVsAngle;        //!<! Scale of Q3Vector from V0M vs its angle
+  TH2F            *fQ3V0AScaleVsAngle;        //!<! Scale of Q3Vector from V0A vs its angle
+  TH2F            *fQ3V0CScaleVsAngle;        //!<! Scale of Q3Vector from V0C vs its angle
+  TH2F            *fQ3TPCScaleVsAngle;        //!<! Scale of Q3Vector from TPC vs its angle
+
+
   static const int kNumEPROrders = 6;        ///<  How many orders of EPR to measure
+
+  // For 1st Order Event Plane
+  TProfile2D     **fEP1R_CosD1;               //!<! Cos(N[V0 - TPCA]). N is the index
+  TProfile2D     **fEP1R_CosD2;               //!<! Cos(N[V0 - TPCC])
+  TProfile2D     **fEP1R_CosD3;               //!<! Cos(N[TPCA - TPC])
+
   // For 2nd Order Event Plane
   TProfile2D     **fEPR_CosD1;               //!<! Cos(N[V0 - TPCA]). N is the index
   TProfile2D     **fEPR_CosD2;               //!<! Cos(N[V0 - TPCC])
@@ -321,25 +426,46 @@ protected:
   TH2             *fMAngle;                  //!<! Tyler's histogram
   TH2             *fPtAngle;                 //!<! Tyler's histogram
   TH1             *fMassPionRej;             //!<! Histogram of Mass vs Pt for rejected Pi0 Candidates
+
+
+  // Event Plane information (reconstructed event plane, 1st order)
+  TH2             *fPtEP1AnglePionAcc;        //!<! Histogram of delta Psi_{EP,1} of accepted pi0 (vs pt)
+  TH3             *fPtEP1AnglePionAccCent;    //!<! Histogram of delta Psi_{EP,1} of accepted pi0 (vs pt and cent)
+  TH2             *fPtEP1AngleMCPion;         //!<! Histogram of delta Psi_{EP,1} of MC truth pi0 (vs pt)
+  TH2             *fPtEP1AngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP,1} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
+
   // Event Plane information (reconstructed event plane)
   TH2             *fPtEPAnglePionAcc;        //!<! Histogram of delta Psi_{EP} of accepted pi0 (vs pt)
   TH3             *fPtEPAnglePionAccCent;    //!<! Histogram of delta Psi_{EP} of accepted pi0 (vs pt and cent)
   TH2             *fPtEPAngleMCPion;         //!<! Histogram of delta Psi_{EP} of MC truth pi0 (vs pt)
   TH2             *fPtEPAngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
+
   // Event Plane information (reconstructed event plane, 3rd order)
   TH2             *fPtEP3AnglePionAcc;        //!<! Histogram of delta Psi_{EP,3} of accepted pi0 (vs pt)
-  TH3             *fPtEP3AnglePionAccCent;    //!<! Histogram of delta Psi_{EP,2} of accepted pi0 (vs pt and cent)
+  TH3             *fPtEP3AnglePionAccCent;    //!<! Histogram of delta Psi_{EP,3} of accepted pi0 (vs pt and cent)
   TH2             *fPtEP3AngleMCPion;         //!<! Histogram of delta Psi_{EP,3} of MC truth pi0 (vs pt)
   TH2             *fPtEP3AngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP,3} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
+
   // Event Plane information (reconstructed event plane, 4th order)
   TH2             *fPtEP4AnglePionAcc;        //!<! Histogram of delta Psi_{EP,4} of accepted pi0 (vs pt)
   TH3             *fPtEP4AnglePionAccCent;    //!<! Histogram of delta Psi_{EP,4} of accepted pi0 (vs pt and cent)
   TH2             *fPtEP4AngleMCPion;         //!<! Histogram of delta Psi_{EP,4} of MC truth pi0 (vs pt)
   TH2             *fPtEP4AngleTrueRecMCPion;  //!<! Histogram of delta Psi_{EP,4} (MC true angle) of properly reconstructed pi0s (vs MC true pt)
 
+  TH2             *fHistNChargedCent;         //!<! Histogram of the number of tracks per event, in centrality bins
+
+  TH3             *fHistTrackPsiEP1PtCent;    //!<! Histogram of delta Psi_{EP,1} of accepted tracks (vs pt and centrality)
   TH3             *fHistTrackPsiEPPtCent;    //!<! Histogram of delta Psi_{EP} of accepted tracks (vs pt and centrality)
   TH3             *fHistTrackPsiEP3PtCent;    //!<! Histogram of delta Psi_{EP,3} of accepted tracks (vs pt and centrality)
   TH3             *fHistTrackPsiEP4PtCent;    //!<! Histogram of delta Psi_{EP,4} of accepted tracks (vs pt and centrality)
+
+
+
+  TH3             *fHistPionAccV2ScalarProdPtCent;   //!<! Histogram of u*Q2 for accepted tracks, the scalar produce method of v2 flow (vs pt and centrality)
+  TH3             *fHistPionAccV3ScalarProdPtCent;   //!<! Histogram of u*Q3 for accepted tracks, the scalar produce method of v3 flow (vs pt and centrality)
+
+  TH3             *fHistTrackV2ScalarProdPtCent;   //!<! Histogram of u*Q2 for accepted tracks, the scalar produce method of v2 flow (vs pt and centrality)
+  TH3             *fHistTrackV3ScalarProdPtCent;   //!<! Histogram of u*Q3 for accepted tracks, the scalar produce method of v3 flow (vs pt and centrality)
 
   // Event Plane information (MC information);
   TH1             *fMCReactionPlane;         //!<! Histogram of distribution of reaction plane angle (MC information)
@@ -437,6 +563,6 @@ protected:
   AliAnalysisTaskGammaHadron(const AliAnalysisTaskGammaHadron&);            // not implemented
   AliAnalysisTaskGammaHadron &operator=(const AliAnalysisTaskGammaHadron&); // not implemented
 
-  ClassDef(AliAnalysisTaskGammaHadron, 13) // Class to analyse gamma hadron correlations
+  ClassDef(AliAnalysisTaskGammaHadron, 19) // Class to analyze gamma- and pi0- hadron correlations
 };
 #endif

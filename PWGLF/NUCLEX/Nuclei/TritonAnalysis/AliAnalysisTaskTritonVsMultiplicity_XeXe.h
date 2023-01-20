@@ -1,3 +1,4 @@
+
 #ifndef AliAnalysisTaskTritonVsMultiplicity_XeXe_cxx
 #define AliAnalysisTaskTritonVsMultiplicity_XeXe_cxx
 
@@ -169,12 +170,18 @@ private:
     TH2F *histoNsigmaTPCtriton_vs_p_notof;//!
     TH2F *histoNsigmaTPCantitriton_vs_p_notof;//!
 
+
+
     //Reduced Trees
     TTree *reducedTree_Triton;//!
 
     Double_t multPercentile_V0M;//
+    Double_t multPercentile_V0A;//
     Double_t pt;//
     Double_t p;//
+    Double_t px;//
+    Double_t py;//
+    Double_t pz;//
     Double_t eta;//
     Double_t y;//
     Int_t q;//
@@ -188,18 +195,18 @@ private:
     Int_t nTPC_Clusters_dEdx;//
     bool HasPointOnITSLayer0;//
     bool HasPointOnITSLayer1;//
-    bool HasSharedPointOnITSLayer0;//
-    bool HasSharedPointOnITSLayer1;//
+    bool HasPointOnITSLayer2;//
+    bool HasPointOnITSLayer3;//
+    bool HasPointOnITSLayer4;//
+    bool HasPointOnITSLayer5;//
     Double_t chi2_TPC;//check
-    Double_t chi2_NDF;//check
     Double_t chi2_ITS;//check
     Double_t ITSsignal;
     Double_t TPCsignal;
     Double_t TOFsignal;
-    Double_t TRDsignal;
+    Double_t nSigmaITS_Trit;//
     Double_t nSigmaTPC_Trit;//
     Double_t nSigmaTOF_Trit;//
-    Double_t nSigmaTRD_Trit;//
 
 
     AliAnalysisTaskTritonVsMultiplicity_XeXe(const AliAnalysisTaskTritonVsMultiplicity_XeXe&);

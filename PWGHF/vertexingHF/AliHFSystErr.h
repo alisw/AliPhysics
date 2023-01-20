@@ -56,6 +56,11 @@ class AliHFSystErr : public TNamed
   void  ResetTrackEfficErr(Double_t pt, Double_t val){
     fTrackingEff->SetBinContent(fTrackingEff->FindBin(pt),val);
   }
+  void  ResetDataDrivenFDErr(Double_t pt, Double_t val){
+    if (fDataDrivenFD) {
+      fDataDrivenFD->SetBinContent(fDataDrivenFD->FindBin(pt),val);
+    }
+  }
   /// Setting  the run number
   ///  set the two last numbers of the year (is 10 for 2010)
   void SetRunNumber(Int_t number) {
@@ -296,6 +301,7 @@ class AliHFSystErr : public TNamed
   void InitDplustoKpipi2017pp5TeV();
   void InitDplustoKpipi2017pp5TeV_finebins();
   void InitDplustoKpipi2016pp13TeV();
+  void InitDplustoKpipi201620172018pp13TeVML();
   void InitDplustoKpipi2011PbPb07half();
   void InitDplustoKpipi2010PbPb020();
   void InitDplustoKpipi2010PbPb4080();
@@ -321,6 +327,7 @@ class AliHFSystErr : public TNamed
   void InitDstartoD0pi2017pp5TeV();
   void InitDstartoD0pi2017pp5TeV_finebins();
   void InitDstartoKpipi2016pp13TeV();
+  void InitDstartoKpipi20161718pp13TeV();
 
   void InitDstoKKpi2010pp();
   void InitDstoKKpi2010ppPass4();

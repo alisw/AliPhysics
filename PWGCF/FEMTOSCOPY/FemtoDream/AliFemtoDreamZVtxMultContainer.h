@@ -8,7 +8,11 @@
 #ifndef ALIFEMTODREAMZVTXMULTCONTAINER_H_
 #define ALIFEMTODREAMZVTXMULTCONTAINER_H_
 #include <vector>
+#include <map>
+#include <utility>
+
 #include "Rtypes.h"
+#include "TTree.h"
 
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamCorrHists.h"
@@ -24,10 +28,20 @@ class AliFemtoDreamZVtxMultContainer {
   virtual ~AliFemtoDreamZVtxMultContainer();
   void PairParticlesSE(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-      AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent);
+      AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent,
+      std::map<std::pair<int, int>, TTree *> *kStarsSE = nullptr);
   void PairParticlesME(
       std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-      AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent);
+      AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent,
+      std::map<std::pair<int, int>, TTree *> *kStarsME = nullptr, bool usePart2Buffer=true);
+  void PairParticlesMEPart1Buffer(
+      std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
+      AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent,
+      std::map<std::pair<int, int>, TTree *> *kStarsME = nullptr);
+  void PairParticlesMEPart2Buffer(
+      std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
+      AliFemtoDreamHigherPairMath *HigherMath, int iMult, float cent,
+      std::map<std::pair<int, int>, TTree *> *kStarsME = nullptr);
   void DeltaEtaDeltaPhi(int Hist, AliFemtoDreamBasePart &part1,
                         AliFemtoDreamBasePart &part2, bool SEorME,
                         AliFemtoDreamCorrHists *ResultsHist, float relk);
@@ -44,6 +58,7 @@ class AliFemtoDreamZVtxMultContainer {
   std::vector<AliFemtoDreamPartContainer> fPartContainer;
   std::vector<int> fPDGParticleSpecies;
   std::vector<unsigned int> fWhichPairs;
+  std::vector<float> fKStars;
 //  std::vector<bool> fRejPairs;
 //  bool fDoDeltaEtaDeltaPhiCut;
 //  float fDeltaEtaMax;

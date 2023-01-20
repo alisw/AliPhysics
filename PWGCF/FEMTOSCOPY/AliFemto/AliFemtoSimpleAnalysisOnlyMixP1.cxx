@@ -186,9 +186,8 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
     AddEventProcessed();
     EventBegin(hbtEvent);
     bool tmpPassEvent = fEventCut->Pass(hbtEvent);
-	
     if (!tmpPassEvent) {
-        fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
+        //fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
         EventEnd(hbtEvent);  // cleanup for EbyE
         return;
     }
@@ -200,7 +199,7 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
                                *collection2 = fPicoEvent->SecondParticleCollection();
     // only collection1 == nullptr, we delete this event!
     if ((collection1 == nullptr) && (OnlyP1Exist == 1)){
-        cout << "E-AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent: new PicoEvent is missing particle collections!\n";
+	fEventCut->FillCutMonitor(hbtEvent, false);
         EventEnd(hbtEvent);  // cleanup for EbyE
         delete fPicoEvent;
         return;
@@ -209,6 +208,7 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
     // only for side band cut!
     if (OnlyP1Exist == 0){
     	if((collection1 == nullptr) && (collection2 == nullptr)){
+		fEventCut->FillCutMonitor(hbtEvent, false);
 		EventEnd(hbtEvent);  // cleanup for EbyE
 	        delete fPicoEvent;
         	return;
@@ -237,7 +237,7 @@ void AliFemtoSimpleAnalysisOnlyMixP1::ProcessEvent(const AliFemtoEvent* hbtEvent
     tmpPassEvent = tmpPassEvent && coll_1_size_passes && coll_2_size_passes;
     // fill the event cut monitor
     fEventCut->FillCutMonitor(hbtEvent, tmpPassEvent);
-   
+
     //\ dowang 1.23
     if(MakeCForNot!=1){
     	EventEnd(hbtEvent);

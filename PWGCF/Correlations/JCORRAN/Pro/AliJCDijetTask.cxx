@@ -174,22 +174,26 @@ void AliJCDijetTask::UserCreateOutputObjects()
     fOutput = gDirectory;
     fOutput->cd();
 
+    fEventCuts.AddQAplotsToList(fJCatalystTask->GetCataList());
+
+    fana = new AliJCDijetAna();
     fhistos = new AliJCDijetHistos();
     fhistos->SetName("jcdijet");
     fhistos->SetCentralityBinsHistos(fcentralityBins);
     fhistos->SetDijetMBinsHistos(fsDijetMBins);
+    fhistos->SetNJetClasses(fana->jetClassesSize);
     fhistos->CreateEventTrackHistos();
     fhistos->fHMG->Print();
-    fana = new AliJCDijetAna();
 
     if(fIsMC) {
+        fanaMC = new AliJCDijetAna();
         fhistosDetMC = new AliJCDijetHistos();
         fhistosDetMC->SetName("jcdijetDetMC");
         fhistosDetMC->SetCentralityBinsHistos(fcentralityBins);
         fhistosDetMC->SetDijetMBinsHistos(fsDijetMBins);
+        fhistosDetMC->SetNJetClasses(fanaMC->jetClassesSize);
         fhistosDetMC->CreateEventTrackHistos();
         fhistosDetMC->fHMG->Print();
-        fanaMC = new AliJCDijetAna();
     }
 
     fUtils = new AliAnalysisUtils();
@@ -314,8 +318,8 @@ void AliJCDijetTask::UserCreateOutputObjects()
 
     // Save information about the settings used.
     // Done after SetSettings
-    fana->InitHistos(fhistos, fIsMC, fcentralityBins.size());
-    if(fIsMC) fanaMC->InitHistos(fhistosDetMC, fIsMC, fcentralityBins.size());
+    fana->InitHistos(fhistos, fIsMC, fcentralityBins.size(), iUnfJetClassTrue, iUnfJetClassDet);
+    if(fIsMC) fanaMC->InitHistos(fhistosDetMC, fIsMC, fcentralityBins.size(), iUnfJetClassTrue, iUnfJetClassDet);
 
 #endif
 
@@ -330,129 +334,170 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
 {
     //cout << "======================== BEGIN EVENT ========================" << endl;
     // Processing of one event
+    bGoodMCEvent = true;
+    bGoodEvent = true;
+    TClonesArray *fInputListDetMC;
+    TClonesArray *fInputList;
     fhistos->fh_eventSel->Fill("events wo/ cuts",1.0);
     if(fDebug > 5) cout << "------- AliJCDijetTask Exec-------"<<endl;
     if(!((Entry()-1)%1000))  AliInfo(Form(" Processing event # %lld",  Entry())); 
-    if( fJCatalystTask->GetJCatalystEntry() != fEntry) return;
+    if( fJCatalystTask->GetJCatalystEntry() != fEntry) bGoodEvent=false;
 
-    fCBin = AliJCDijetHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
-    fhistos->fh_centrality->Fill(fJCatalystTask->GetCentrality());
-    if(fCBin == -1) return;
+    if(bGoodEvent) {
+        fCBin = AliJCDijetHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
+        fhistos->fh_centrality->Fill(fJCatalystTask->GetCentrality());
+        if(fCBin == -1) bGoodEvent=false;
+    }
 
 
     if(fIsMC) {
         fhistosDetMC->fh_eventSel->Fill("events wo/ cuts",1.0);
-        if(fJCatalystDetMCTask->GetJCatalystEntry() != fEntry) return;
-        fhistosDetMC->fh_eventSel->Fill("catalyst entry ok",1.0);
-        if(flags & DIJET_CATALYST) {
-            if( !fJCatalystDetMCTask->GetIsGoodEvent() ) return;
-            fhistosDetMC->fh_eventSel->Fill("catalyst ok",1.0);
+        if(fJCatalystDetMCTask->GetJCatalystEntry() != fEntry) bGoodMCEvent=false;
+        else fhistosDetMC->fh_eventSel->Fill("catalyst entry ok",1.0);
+
+        if(bGoodMCEvent && (flags & DIJET_CATALYST)) {
+            if( !fJCatalystDetMCTask->GetIsGoodEvent() ) bGoodMCEvent=false;
+            else fhistosDetMC->fh_eventSel->Fill("catalyst ok",1.0);
         }
 
-        if(flags & DIJET_ALIEVENTCUT) {
-            if( !fEventCuts.AcceptEvent(InputEvent()) ) return;
-            fhistosDetMC->fh_eventSel->Fill("alieventcut ok",1.0);
+        if(bGoodMCEvent && (flags & DIJET_ALIEVENTCUT)) {
+            if( !fEventCuts.AcceptEvent(InputEvent()) ) bGoodMCEvent=false;
+            else fhistosDetMC->fh_eventSel->Fill("alieventcut ok",1.0);
         }
 
-        if(flags & DIJET_VERTEX13PA) {
-            if(!fUtils->IsVertexSelected2013pA(InputEvent())) return;
-            fhistosDetMC->fh_eventSel->Fill("vertex2013pA ok",1.0);
+        if(bGoodMCEvent && (flags & DIJET_VERTEX13PA)) {
+            if(!fUtils->IsVertexSelected2013pA(InputEvent())) bGoodMCEvent=false;
+            else fhistosDetMC->fh_eventSel->Fill("vertex2013pA ok",1.0);
         }
 
-        if(flags & DIJET_PILEUPSPD) {
-            if(InputEvent()->IsPileupFromSPD(3,0.6,3,2,5)) return;
-            fhistosDetMC->fh_eventSel->Fill("pileupSPD ok",1.0);
+        if(bGoodMCEvent && (flags & DIJET_PILEUPSPD)) {
+            if(InputEvent()->IsPileupFromSPD(3,0.6,3,2,5)) bGoodMCEvent=false;
+            else fhistosDetMC->fh_eventSel->Fill("pileupSPD ok",1.0);
         }
 
-        if(flags & DIJET_UTILSPILEUPSPD) {
-            if(fUtils->IsPileUpSPD(InputEvent())) return;
-            fhistosDetMC->fh_eventSel->Fill("utils pileupSPD ok",1.0);
+        if(bGoodMCEvent && (flags & DIJET_UTILSPILEUPSPD)) {
+            if(fUtils->IsPileUpSPD(InputEvent())) bGoodMCEvent=false;
+            else fhistosDetMC->fh_eventSel->Fill("utils pileupSPD ok",1.0);
         }
 
-        fCBinDetMC = AliJCDijetHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
-        fhistosDetMC->fh_centrality->Fill(fJCatalystTask->GetCentrality());
-        if(fCBinDetMC == -1) return;
+        if(bGoodMCEvent) {
 
-        TList *genHeaders = 0x0;
-        AliGenEventHeader* gh = 0;
-        AliMCEvent *mcEvent = MCEvent();
-        if(mcEvent) genHeaders = mcEvent->GetCocktailList();
-        if(genHeaders){
-            for(Int_t i = 0; i<genHeaders->GetEntries(); i++){
-                gh = (AliGenEventHeader*)genHeaders->At(i);
-                AliGenPythiaEventHeader* pythiaGenHeader= dynamic_cast<AliGenPythiaEventHeader*>(gh); //identify pythia header
-                //AliGenPythiaEventHeader *pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
-                if(pythiaGenHeader) fptHardBin = pythiaGenHeader->GetPtHard();
-                else fptHardBin = 0.0;
-                //cout << "genHeader " << i << ": " << pythiaGenHeader << ", fptHardBin: " << fptHardBin << endl;
+            fCBinDetMC = AliJCDijetHistos::GetCentralityClass(fJCatalystTask->GetCentrality());
+            fhistosDetMC->fh_centrality->Fill(fJCatalystTask->GetCentrality());
+            if(fCBinDetMC == -1) bGoodMCEvent=false;
+        }
+        if(bGoodMCEvent) {
+
+            TList *genHeaders = 0x0;
+            AliGenEventHeader* gh = 0;
+            AliMCEvent *mcEvent = MCEvent();
+            if(mcEvent) genHeaders = mcEvent->GetCocktailList();
+            if(genHeaders){
+                for(Int_t i = 0; i<genHeaders->GetEntries(); i++){
+                    gh = (AliGenEventHeader*)genHeaders->At(i);
+                    AliGenPythiaEventHeader* pythiaGenHeader= dynamic_cast<AliGenPythiaEventHeader*>(gh); //identify pythia header
+                    //AliGenPythiaEventHeader *pythiaGenHeader = AliAnalysisHelperJetTasks::GetPythiaEventHeader(mcEvent);
+                    if(pythiaGenHeader) {
+                        fptHardBin = pythiaGenHeader->GetPtHard();
+                        fPythiaSigma = pythiaGenHeader->GetXsection();
+                        fPythiaTrial = pythiaGenHeader->Trials();
+                    }
+                    else {
+                        fptHardBin = 0.0;
+                        fPythiaSigma = 0.0;
+                        fPythiaTrial = 0.0;
+                    }
+                    //cout << "genHeader " << i << ": " << pythiaGenHeader << ", fptHardBin: " << fptHardBin << endl;
+                }
             }
+            //cout << "fptHardBin: " << fptHardBin << endl;
+            //fana->SetPythiaInfo(fptHardBin, fPythiaSigma, fPythiaTrial);
+            fanaMC->SetPythiaInfo(fptHardBin, fPythiaSigma, fPythiaTrial);
+
+            fhistosDetMC->fh_eventSel->Fill("events",1.0);
+            fhistosDetMC->fh_events[fCBin]->Fill("events",1.0);
+            fhistosDetMC->fh_zvtx->Fill(fJCatalystTask->GetZVertex());
+
+            fInputListDetMC = (TClonesArray*)fJCatalystDetMCTask->GetInputList();
+
         }
-        //cout << "fptHardBin: " << fptHardBin << endl;
-        //fana->SetPtHardBin(fptHardBin);
-        fanaMC->SetPtHardBin(fptHardBin);
 
-        fhistosDetMC->fh_eventSel->Fill("events",1.0);
-        fhistosDetMC->fh_events[fCBin]->Fill("events",1.0);
-        fhistosDetMC->fh_zvtx->Fill(fJCatalystTask->GetZVertex());
-
-        TClonesArray *fInputListDetMC = (TClonesArray*)fJCatalystDetMCTask->GetInputList();
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
-        //cout << "Next det level calculations:" << endl;
-        fDetMCFlag = fanaMC->CalculateJets(fInputListDetMC, fhistosDetMC, fCBinDetMC);
-        if(fDetMCFlag != 0) return;
-        fanaMC->FillJetsDijets(fhistosDetMC, fCBinDetMC);
+        if(bGoodMCEvent) {
+            //cout << "Next det level calculations:" << endl;
+            fDetMCFlag = fanaMC->CalculateJets(fInputListDetMC, fhistosDetMC, fCBinDetMC, 1.0);
+            //If fDetMCFlag=-1 then we want to discard whole event
+            //as that means there is jet-pt > 4*pt_hard
+            if(fDetMCFlag != 0) { 
+                bGoodMCEvent=false;
+                bGoodEvent=false;
+            }
+        }
+        if(bGoodMCEvent) {
+            fanaMC->FillJetsDijets(fhistosDetMC, fCBinDetMC, 1.0);
+        }
 #endif
     }
 
     fhistos->fh_eventSel->Fill("catalyst entry ok",1.0);
-    if(flags & DIJET_CATALYST) {
-        if( !fJCatalystTask->GetIsGoodEvent() ) return;
-        fhistos->fh_eventSel->Fill("catalyst ok",1.0);
+    if(bGoodEvent && (flags & DIJET_CATALYST)) {
+        if( !fJCatalystTask->GetIsGoodEvent() ) bGoodEvent=false;
+        else fhistos->fh_eventSel->Fill("catalyst ok",1.0);
     }
 
-    if(flags & DIJET_ALIEVENTCUT) {
-        if( !fEventCuts.AcceptEvent(InputEvent()) ) return;
-        fhistos->fh_eventSel->Fill("alieventcut ok",1.0);
+    if(bGoodEvent && (flags & DIJET_ALIEVENTCUT)) {
+        if( !fEventCuts.AcceptEvent(InputEvent()) ) bGoodEvent=false;
+        else fhistos->fh_eventSel->Fill("alieventcut ok",1.0);
     }
 
-    if(flags & DIJET_VERTEX13PA) {
-        if(!fUtils->IsVertexSelected2013pA(InputEvent())) return;
-        fhistos->fh_eventSel->Fill("vertex2013pA ok",1.0);
+    if(bGoodEvent && (flags & DIJET_VERTEX13PA)) {
+        if(!fUtils->IsVertexSelected2013pA(InputEvent())) bGoodEvent=false;
+        else fhistos->fh_eventSel->Fill("vertex2013pA ok",1.0);
     }
 
-    if(flags & DIJET_PILEUPSPD) {
-        if(InputEvent()->IsPileupFromSPD(3,0.6,3,2,5)) return;
-        fhistos->fh_eventSel->Fill("pileupSPD ok",1.0);
+    if(bGoodEvent && (flags & DIJET_PILEUPSPD)) {
+        if(InputEvent()->IsPileupFromSPD(3,0.6,3,2,5)) bGoodEvent=false;
+        else fhistos->fh_eventSel->Fill("pileupSPD ok",1.0);
     }
 
-    if(flags & DIJET_UTILSPILEUPSPD) {
-        if(fUtils->IsPileUpSPD(InputEvent())) return;
-        fhistos->fh_eventSel->Fill("utils pileupSPD ok",1.0);
+    if(bGoodEvent && (flags & DIJET_UTILSPILEUPSPD)) {
+        if(fUtils->IsPileUpSPD(InputEvent())) bGoodEvent=false;
+        else fhistos->fh_eventSel->Fill("utils pileupSPD ok",1.0);
     }
 
-    fhistos->fh_eventSel->Fill("events",1.0);
-    fhistos->fh_events[fCBin]->Fill("events",1.0);
-    fhistos->fh_zvtx->Fill(fJCatalystTask->GetZVertex());
-    
-    TClonesArray *fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
+    if(bGoodEvent) {
+
+        fhistos->fh_eventSel->Fill("events",1.0);
+        fhistos->fh_events[fCBin]->Fill("events",1.0);
+        fhistos->fh_zvtx->Fill(fJCatalystTask->GetZVertex());
+
+        fInputList = (TClonesArray*)fJCatalystTask->GetInputList();
+    }
 
 #if !defined(__CINT__) && !defined(__MAKECINT__)
     //cout << "Next true level calculations:" << endl;
-    fana->CalculateJets(fInputList, fhistos, fCBin);
-    fana->FillJetsDijets(fhistos, fCBin);
+    if(bGoodEvent) {
+        fana->CalculateJets(fInputList, fhistos, fCBin, 1.0);
+        fana->FillJetsDijets(fhistos, fCBin, 1.0);
+    }
 #endif
 
     // Here response matrix calculation.
-    if(fIsMC) {
+    if(fIsMC && bGoodEvent && bGoodMCEvent) {
 #if !defined(__CINT__) && !defined(__MAKECINT__)
         fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iAcc,AliJCDijetAna::iAcc);
         fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtr,AliJCDijetAna::iBGSubtr);
+        fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtrConstCut,AliJCDijetAna::iBGSubtrConstCut);
+        fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iConstCut,AliJCDijetAna::iConstCut);
         fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtrCutsRaw,AliJCDijetAna::iBGSubtrCutsRaw);
         //we can run custom configuration with an argument
-        if( !((iUnfJetClassTrue==AliJCDijetAna::iAcc            && iUnfJetClassDet==AliJCDijetAna::iAcc)
-        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtr        && iUnfJetClassDet==AliJCDijetAna::iBGSubtr)
-        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtrCutsRaw && iUnfJetClassDet==AliJCDijetAna::iBGSubtrCutsRaw))) {
+        if( !((iUnfJetClassTrue==AliJCDijetAna::iAcc             && iUnfJetClassDet==AliJCDijetAna::iAcc)
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtr         && iUnfJetClassDet==AliJCDijetAna::iBGSubtr)
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtrConstCut && iUnfJetClassDet==AliJCDijetAna::iBGSubtrConstCut)
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iConstCut        && iUnfJetClassDet==AliJCDijetAna::iConstCut)
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtrCutsRaw  && iUnfJetClassDet==AliJCDijetAna::iBGSubtrCutsRaw) 
+             )) {
             fana->CalculateResponse(fanaMC,fhistosDetMC,iUnfJetClassTrue,iUnfJetClassDet);
         }
 #endif

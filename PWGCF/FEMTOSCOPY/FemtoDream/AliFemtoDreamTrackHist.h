@@ -50,6 +50,11 @@ class AliFemtoDreamTrackHist {
     if (!fMinimalBooking)
       fetaDist[i]->Fill(eta);
   }
+  
+  void FillrapidityCut(int i, float rapidity) {
+    if (!fMinimalBooking)
+      frapidityDist[i]->Fill(rapidity);
+  }
   ;
   void FillphiCut(int i, float phi) {
     if (!fMinimalBooking)
@@ -224,6 +229,7 @@ class AliFemtoDreamTrackHist {
   TH1F *fpDist[2];          //!
   TH1F *fpTPCDist[2];       //!
   TH1F *fetaDist[2];        //!
+  TH1F *frapidityDist[2];   //!
   TH1F *fphiDist[2];        //!
   TH1F *fTPCCls[2];         //!
   TH2F *fShrdClsITS[2];     //!

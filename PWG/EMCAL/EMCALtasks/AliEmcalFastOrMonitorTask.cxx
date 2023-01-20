@@ -285,6 +285,10 @@ void AliEmcalFastOrMonitorTask::LoadEventCellData(){
     int position = fCaloCells->GetCellNumber(icell);
     double amplitude = fCaloCells->GetAmplitude(icell),
            celltimeNS = fCaloCells->GetTime(icell) * kSecToNanoSec;
+    if ( position < 0 ) {
+      AliErrorStream() << "Skip: iCell = "<< icell << "Cell Id = " << position <<", E = "<< amplitude <<", time = "<<celltimeNS<<std::endl;
+      continue;
+    }
     if(amplitude > 0) fHistosQA->FillTH2("hCellTimeBefore", celltimeNS, amplitude);
     if(celltimeNS < fMinCellTimeNS || celltimeNS > fMaxCellTimeNS) continue;
     if(amplitude > 0){

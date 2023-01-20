@@ -585,8 +585,7 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
         fhSum2PtPt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_d,corr*ptpt);
         fhSum2PtPt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_c,corr*ptpt);
         float dptdptnw = (pt_1 - avgpt_1) * (fPt_1[ix2] - fAvgPt_1[ix2]);
-        float dptdpt = (corr_1 * pt_1 - avgpt_1)
-                       * (fCorrection_1[ix2] * fPt_1[ix2] - fAvgPt_1[ix2]);
+        float dptdpt = corr * (pt_1 - avgpt_1) * (fPt_1[ix2] - fAvgPt_1[ix2]);
         fSum2DptDptnw_12 += 2 * dptdptnw;
         fSum2DptDpt_12 += 2 * dptdpt;
         fhSum2DptDpt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_d, dptdpt);
@@ -669,8 +668,7 @@ void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
         fhSum2PtPt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_d,corr*ptpt);
         fhSum2PtPt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_c,corr*ptpt);
         float dptdptnw = (pt_1 - avgpt_1) * (fPt_2[ix2] - fAvgPt_2[ix2]);
-        float dptdpt = (corr_1 * pt_1 - avgpt_1)
-                       * (fCorrection_2[ix2] * fPt_2[ix2] - fAvgPt_2[ix2]);
+        float dptdpt = corr * (pt_1 - avgpt_1) * (fPt_2[ix2] - fAvgPt_2[ix2]);
         fSum2DptDptnw_12 += 2 * dptdptnw;
         fSum2DptDpt_12 += 2 * dptdpt;
         fhSum2DptDpt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_d, dptdpt);
@@ -792,8 +790,7 @@ void Ali2PCorrelations::ProcessUnlikeSignPairs() {
         fhSum2PtPt_12_vsDEtaDPhi[kOT]->AddBinContent(globalbin_d,corr*ptpt);
         fhSum2PtPt_12_vsDEtaDPhi[kTO]->AddBinContent(globalbin_c,corr*ptpt);
         float dptdptnw = (pt_1 - avgpt_1) * (fPt_2[ix2] - fAvgPt_2[ix2]);
-        float dptdpt = (corr_1 * pt_1 - avgpt_1)
-                       * (fCorrection_2[ix2] * fPt_2[ix2] - fAvgPt_2[ix2]);
+        float dptdpt = corr * (pt_1 - avgpt_1) * (fPt_2[ix2] - fAvgPt_2[ix2]);
         fSum2DptDptnw_12 += dptdptnw;
         fSum2DptDpt_12 += dptdpt;
         fhSum2DptDpt_12_vsDEtaDPhi[kOT]->AddBinContent(globalbin_d, dptdpt);

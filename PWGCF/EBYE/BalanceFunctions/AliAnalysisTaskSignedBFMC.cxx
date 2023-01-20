@@ -180,7 +180,7 @@ void AliAnalysisTaskSignedBFMC::UserCreateOutputObjects() {
   }
   else {
     //AliFatal("Flow Qn vector corrections framework needed but it is not present. ABORTING!!!");
-    Printf("Flow Qn vector corrections framework needed but it is not present. No Qn Vector!!!");
+    //Printf("Flow Qn vector corrections framework needed but it is not present. No Qn Vector!!!");
   }
   //============================================//
   
@@ -302,7 +302,7 @@ void AliAnalysisTaskSignedBFMC::UserExec(Option_t *) {
   //fHistEventPlane->Fill(gReactionPlane,lMultiplicityVar);
 
   if(lMultiplicityVar < 0) { 
-    Printf("Debug: Could not get Centrality from Impact parameter! Exit \n");    
+    //Printf("Debug: Could not get Centrality from Impact parameter! Exit \n");    
     return;
   }
   if(gReactionPlane<-9){  /// should -pi to pi but if it is -10 then we did not get it right! 

@@ -52,13 +52,14 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void ProcessPhotonBDT();
     void ProcessClusters();
     void ProcessJets();
+    void InitJets();
     void ProcessPhotonsHighPtHadronAnalysis();
     void CalculatePi0Candidates();
     void CalculateBackground();
     void CalculateBackgroundSwapp();
     void CalculateBackgroundRP();
-    void ProcessMCParticles();
-    void ProcessAODMCParticles();
+    void ProcessMCParticles(int isCurrentEventSelected = 0);
+    void ProcessAODMCParticles(int isCurrentEventSelected = 0);
     void RelabelAODPhotonCandidates(Bool_t mode);
     void ProcessTruePhotonCandidates( AliAODConversionPhoton* TruePhotonCandidate);
     void ProcessTruePhotonCandidatesAOD( AliAODConversionPhoton* TruePhotonCandidate);
@@ -93,6 +94,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked);
     void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
     Double_t GetOriginalInvMass(const AliConversionPhotonBase * photon, AliVEvent * event) const;
+    // Function to set name of Jet container
+    void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
+
 
   protected:
     AliV0ReaderV1*                    fV0Reader;                                  //
@@ -117,6 +121,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TList*                            fMesonCutArray;                             //
     TList*                            fClusterCutArray;                           //
     AliAnalysisTaskConvJet*           fConvJetReader;                             //
+    TString                           fAddNameConvJet;                            // Additional Name of jet container
     Bool_t                            fDoJetAnalysis;                             //
     Bool_t                            fDoIsolatedAnalysis;                        //
     Bool_t                            fDoHighPtHadronAnalysis;                    //
@@ -174,6 +179,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     THnSparseF**                      sPtRDeltaROpenAngle;                          //!
     TH1I**                            fHistoMCHeaders;                                 //!
     TH1F**                            fHistoMCAllGammaPt;                              //!
+    TH1F**                            fHistoMCAllGammaPtNotTriggered;                  //!
+    TH1F**                            fHistoMCAllGammaPtNoVertex;                      //!
     TH2F**                            fHistoMCAllSecondaryGammaPt;                     //!
     TH1F**                            fHistoMCDecayGammaPi0Pt;                         //!
     TH1F**                            fHistoMCDecayGammaRhoPt;                         //!
@@ -187,15 +194,23 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F**                            fHistoMCConvGammaR;                              //!
     TH1F**                            fHistoMCConvGammaEta;                            //!
     TH1F**                            fHistoMCPi0Pt;                                   //!
+    TH1F**                            fHistoMCPi0PtNotTriggered;                       //!
+    TH1F**                            fHistoMCPi0PtNoVertex;                           //!
     TH1F**                            fHistoMCPi0WOWeightPt;                           //! array of histos with unweighted pi0, pT
     TH1F**                            fHistoMCPi0WOEvtWeightPt;                        //! array of histos without event weights pi0, pT
     TH1F**                            fHistoMCEtaWOEvtWeightPt;                        //! array of histos without event weights eta, pT
     TH1F**                            fHistoMCEtaPt;                                   //!
+    TH1F**                            fHistoMCEtaPtNotTriggered;                       //!
+    TH1F**                            fHistoMCEtaPtNoVertex;                           //!
     TH1F**                            fHistoMCEtaWOWeightPt;                           //!
     TH1F**                            fHistoMCPi0WOWeightInAccPt;                      //!
     TH1F**                            fHistoMCEtaWOWeightInAccPt;                      //!
     TH1F**                            fHistoMCPi0InAccPt;                              //!
+    TH1F**                            fHistoMCPi0InAccPtNotTriggered;                  //!
+    TH1F**                            fHistoMCPi0InAccPtNoVertex;                      //!
     TH1F**                            fHistoMCEtaInAccPt;                              //!
+    TH1F**                            fHistoMCEtaInAccPtNotTriggered;                  //!
+    TH1F**                            fHistoMCEtaInAccPtNoVertex;                      //!
     TH1F**                            fHistoMCPi0WOEvtWeightInAccPt;                   //!
     TH1F**                            fHistoMCEtaWOEvtWeightInAccPt;                   //!
     TH2F**                            fHistoMCPi0PtY;                                  //!
@@ -319,6 +334,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH2F**                            fHistoTrueJetFragmFuncZInvMass;                       // Histogram to determine true Inv Mass distribution with z
     TH1F**                            fHistoMCPi0JetInAccPt;                                // Histogram with weighted pi0 in a jet event in acceptance, pT
     TH1F**                            fHistoMCPi0inJetInAccPt;                              // Histogram with weighted pi0 in a jet in acceptance, pT
+    TH1F**                            fHistoMCPi0WOWeightinJetInAccPt;                      // Histogram with pi0 without weights in a jet in acceptance, pT
     TH1F**                            fHistoMCEtaJetInAccPt;                                // Histogram with weighted eta in a jet event in acceptance, pT
     TH1F**                            fHistoMCEtainJetInAccPt;                              // Histogram with weighted eta in a jet in acceptance, pT
     TH1F**                            fHistoMCPi0JetEventGenerated;                         // Histogram with mesons in a jet event generated, pT
@@ -353,6 +369,8 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     vector<Double_t>                  fTrueVectorJetPz;                                     // Vector of True JetPz
     vector<Double_t>                  fTrueVectorJetEta;                                    // Vector of True JetEta
     vector<Double_t>                  fTrueVectorJetPhi;                                    // Vector of True JetPhi
+
+    std::map<Int_t, Int_t> MapRecJetsTrueJets;                                  //! Map containing the reconstructed jet index in vector and mapping it to true Jet index
 
     TH2F**                            fHistoSPDClusterTrackletBackground;         //! array of histos with SPD tracklets vs SPD clusters for background rejection
     TH1F**                            fHistoNV0Tracks;                            //!
@@ -415,6 +433,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TObjString*                       fFileNameBroken;                            // string object for broken file name
     Bool_t                            fFileWasAlreadyReported;                    // to store if the current file was already marked broken
     TClonesArray*                     fAODMCTrackArray;                           //! pointer to track array
+    TH1F*                             fAddressChanges;                                //! count if addresses of aod mc tracks arrays ever change            
 
     AliConversionPhotonCuts::TMapPhotonBool fMapPhotonHeaders;                   // map to remember if the photon tracks are from selected headers
 
@@ -422,7 +441,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 55);
+    ClassDef(AliAnalysisTaskGammaConvV1, 58);
 };
 
 #endif

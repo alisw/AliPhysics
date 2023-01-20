@@ -20,7 +20,6 @@
 #include <AliVParticle.h>
 #include <AliAODTrack.h>
 #include <AliAODMCParticle.h>
-#include <TH1D.h>
 #include <TH1I.h>
 #include <TH2I.h>
 #include <TH2D.h>
@@ -31,7 +30,9 @@
 #include <TArrayI.h>
 #include <TSystem.h>
 #include <TF1.h>
+#include <TF3.h>
 #include <TStopwatch.h>
+#include <TFormula.h>
 
 using std::cout;
 using std::endl;
@@ -49,13 +50,13 @@ const Int_t gWeights = 3; // phi, pt, eta
 const Int_t gQAAnomalousEvents = 1; // |vertex| = 0; 
 const Int_t gQASelfCorrelations = 3; // phi, pt, eta
 const Int_t gQAEventCutCounter = 23; // see TString secc[gQAEventCutCounter] in .cxx
-const Int_t gQAParticleCutCounter = 39; // see TString spcc[gQAParticleCutCounter] in .cxx
-const Int_t gGenericCorrelations = 5; // correlations between various quantities (see .cxx for documentation)
+const Int_t gQAParticleCutCounter = 40; // see TString spcc[gQAParticleCutCounter] in .cxx . Used also for SequentialParticleCutCounter, via cloning
+const Int_t gGenericCorrelations = 7; // correlations between various quantities (see .cxx for documentation)
 const Int_t gMaxCorrelator = 12; // 
-const Int_t gMaxHarmonic = 6; // 
+const Int_t gMaxHarmonic = 9; // 
 const Int_t gMaxIndex = 300; // per order
 const Int_t gMaxNoBinsKine = 1000; 
-const Int_t gKineDependenceVariables = 2; // pt,eta
+const Int_t gKineDependenceVariables = 2; // pt,eta => special treatment, since I need to calculate separately differential q-vectors here
 
 // enums:
 enum eBins {nBins,min,max};
@@ -68,8 +69,8 @@ enum eDefaultColors { COLOR = kBlack, FILLCOLOR = kGray };
 enum eParticle { TPCNcls, TPCnclsS, TPCnclsFractionShared, TPCNCrossedRows, TPCChi2perNDF, TPCFoundFraction, Chi2TPCConstrainedVsGlobal, ITSNcls, ITSChi2perNDF, TPCNclsF, HasPointOnITSLayer, IsGlobalConstrained };
 enum eEvent { MagneticField, PrimaryVertex };
 enum eCentralMultiplicity { RefMultComb08 };
-enum eKineCorrelations { PTKINE = 3, ETAKINE = 4 };
 enum eqvectorKine { PTq = 0, ETAq = 1 };
+enum eAsFunctionOf { AFO_INTEGRATED = 0, AFO_MULTIPLICITY = 1, AFO_CENTRALITY = 2, AFO_PT = 3, AFO_ETA = 4, eAsFunctionOf_N }; // prefix is needed, to avoid conflict with enum eKinematics
 
 //================================================================================================================
 
@@ -134,6 +135,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SequentialEventCutCounter(AliVEvent *ave); // only for QA
   Bool_t SurvivesParticleCuts(AliVParticle *vParticle); // applied e.g. on TPC-only
   void ParticleCutCounter(AliVParticle *vParticle); // only for QA
+  void SequentialParticleCutCounter(AliVParticle *vParticle); // only for QA
   virtual Double_t Weight(const Double_t &value, const char *variable);
   virtual Double_t CentralityWeight(const Double_t &value);
   virtual void CalculateCorrelations();
@@ -246,15 +248,15 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    else if (TString(firstEstimator).EqualTo("SPDTracklets")){ce1 = 1;} 
    else if (TString(firstEstimator).EqualTo("CL0")){ce1 = 2;} 
    else if (TString(firstEstimator).EqualTo("CL1")){ce1 = 3;} 
-   else{exit(1);}
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
 
    if(TString(secondEstimator).EqualTo("V0M")){ce2 = 0;} 
    else if (TString(secondEstimator).EqualTo("SPDTracklets")){ce2 = 1;} 
    else if (TString(secondEstimator).EqualTo("CL0")){ce2 = 2;} 
    else if (TString(secondEstimator).EqualTo("CL1")){ce2 = 3;} 
-   else{exit(2);}
+   else{ Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(2); }
 
-   if(!(cutVersion==0||cutVersion==1)){exit(3);}
+   if(!(cutVersion==0||cutVersion==1)){ Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(3); }
 
    this->fUseCentralityCorrelationsCuts[ce1][ce2] = kTRUE;
    this->fCentralityCorrelationsCuts[ce1][ce2] = cut;
@@ -275,7 +277,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    if(TString(sxyz).EqualTo("x")){xyz = 0;} 
    else if (TString(sxyz).EqualTo("y")){xyz = 1;} 
    else if (TString(sxyz).EqualTo("z")){xyz = 2;}
-   else{exit(1);}
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
    this->fVertexCuts[xyz][0] = min;
    this->fVertexCuts[xyz][1] = max;
    this->fUseVertexCuts[xyz] = kTRUE;
@@ -304,7 +306,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    Int_t var = -44;
    if(TString(type).EqualTo("MagneticField")){var = MagneticField;} 
    else if (TString(type).EqualTo("PrimaryVertex")){var = PrimaryVertex;}
-   else{exit(1);}
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
    this->fEventBins[var][0] = nbins;
    this->fEventBins[var][1] = min;
    this->fEventBins[var][2] = max;
@@ -314,7 +316,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    Int_t var = -44;
    if(TString(type).EqualTo("MagneticField")){var = MagneticField;} 
    else if (TString(type).EqualTo("PrimaryVertex")){var = PrimaryVertex;}
-   else{exit(1);}
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
    this->fEventCuts[var][0] = min;
    this->fEventCuts[var][1] = max;
    this->fUseEventCuts[var] = kTRUE;
@@ -329,6 +331,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
 
   void SetControlParticleHistogramsList(TList* const cphl) {this->fControlParticleHistogramsList = cphl;};
   TList* GetControlParticleHistogramsList() const {return this->fControlParticleHistogramsList;} 
+  void SetFillControlParticleHistograms(Bool_t fcph) {this->fFillControlParticleHistograms = fcph;};
   void SetUseFakeTracks(const Bool_t uft) {this->fUseFakeTracks = uft;};
 
   void SetFilterBit(Int_t fb) {this->fFilterBit = fb;};
@@ -350,7 +353,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    else if (TString(kv).EqualTo("eta")){var = ETA;}
    else if (TString(kv).EqualTo("e")){var = E;}
    else if (TString(kv).EqualTo("charge")){var = CHARGE;}
-   else{exit(1);}
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
    this->fKinematicsBins[var][0] = nbins;
    this->fKinematicsBins[var][1] = min;
    this->fKinematicsBins[var][2] = max;
@@ -361,7 +364,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    Int_t var = -44;
    if (TString(kv).EqualTo("pt")){var = PTq;} 
    else if (TString(kv).EqualTo("eta")){var = ETAq;}
-   else{exit(1);}
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
    this->fUseCustomKineDependenceBins[var] = kTRUE;
    this->fKineDependenceBins[var] = iva;
   }
@@ -374,7 +377,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    else if (TString(kc).EqualTo("eta")){var = ETA;}
    else if (TString(kc).EqualTo("e")){var = E;}
    else if (TString(kc).EqualTo("charge")){var = CHARGE;} // it is hardwired in SurvivesParticleCuts(...) that neutral particles are rejected, whenever this setting is called
-   else{exit(1);}
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
    this->fKinematicsCuts[var][0] = min;
    this->fKinematicsCuts[var][1] = max;
    this->fUseKinematicsCuts[var] = kTRUE;
@@ -386,7 +389,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    Int_t var = -44;
    if(TString(xyTz).EqualTo("xy")){var = 0;} 
    else if (TString(xyTz).EqualTo("z")){var = 1;}
-   else{exit(1);}
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
    this->fDCABins[var][0] = nbins;
    this->fDCABins[var][1] = min;
    this->fDCABins[var][2] = max;
@@ -396,11 +399,29 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    Int_t var = -44;
    if(TString(dc).EqualTo("xy")){var = 0;} 
    else if (TString(dc).EqualTo("z")){var = 1;} 
-   else{exit(1);}
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
    this->fDCACuts[var][0] = min;
    this->fDCACuts[var][1] = max;
    this->fUseDCACuts[var] = kTRUE;
-  }
+  } 
+  void SetPtDependentDCAxyCut(const char* parameterization)
+  {
+   // Supported pre-defined formulas for DCAxy vs. pT dependence: "definition-2010", "definition-2011", "definition-2015"
+   // If none of them is used, then content of 'parameterization' is interpreted as user-defined formula for DCAxy vs. pT
+   // The chosen parameterization is stored in 5th bin of fControlParticleHistogramsPro, so it can be retrieved afterward from the output of analysis.
+   if(TString(parameterization).EqualTo("definition-2010")){this->fPtDependentDCAxyParameterization = "0.0182+0.0350/x^1.01";} 
+   else if(TString(parameterization).EqualTo("definition-2011")){this->fPtDependentDCAxyParameterization = "0.0105+0.0350/x^1.1";} 
+   else if(TString(parameterization).EqualTo("definition-2015")){this->fPtDependentDCAxyParameterization = "0.0105+0.0350/x^1.1";} 
+   // else if ... 
+   else // use user-supplied formula for parameterization. Use "x" to denote variable in the formula string, e.g. "1.44 + 2.*x"
+   {
+    this->fPtDependentDCAxyParameterization = parameterization;
+   } 
+    
+   // Only if this setter is called, for whichever parameterization, pT dependent DCAxy cut will be used:
+   this->fUsePtDependentDCAxyParameterization = kTRUE;
+
+  } // void SetPtDependentDCAxyCut(const char* parameterization)
 
   // Remaining particle distributions:
   void SetParticleBins(const char* type, const Double_t nbins, const Double_t min, const Double_t max)
@@ -433,10 +454,26 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    else if (TString(type).EqualTo("ITSNcls")){var = ITSNcls;}
    else if (TString(type).EqualTo("ITSChi2perNDF")){var = ITSChi2perNDF;}
    else if (TString(type).EqualTo("TPCNclsF")){var = TPCNclsF;}
-   else{exit(1);}
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
    this->fParticleCuts[var][0] = min;
    this->fParticleCuts[var][1] = max;
    this->fUseParticleCuts[var] = kTRUE;
+  }  
+  void SetUseParticleCuts(const char* type, const Bool_t b) // use this setter just to switch on/off sum cut, with was set either by default, or via SetParticleCuts(...)
+  {
+   Int_t var = -44;
+   if(TString(type).EqualTo("TPCNcls")){var = TPCNcls;} 
+   else if (TString(type).EqualTo("TPCnclsS")){var = TPCnclsS;}
+   else if (TString(type).EqualTo("TPCnclsFractionShared")){var = TPCnclsFractionShared;}
+   else if (TString(type).EqualTo("TPCNCrossedRows")){var = TPCNCrossedRows;}
+   else if (TString(type).EqualTo("TPCChi2perNDF")){var = TPCChi2perNDF;}
+   else if (TString(type).EqualTo("TPCFoundFraction")){var = TPCFoundFraction;}
+   else if (TString(type).EqualTo("Chi2TPCConstrainedVsGlobal")){var = Chi2TPCConstrainedVsGlobal;}
+   else if (TString(type).EqualTo("ITSNcls")){var = ITSNcls;}
+   else if (TString(type).EqualTo("ITSChi2perNDF")){var = ITSChi2perNDF;}
+   else if (TString(type).EqualTo("TPCNclsF")){var = TPCNclsF;}
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
+   this->fUseParticleCuts[var] = b;
   }  
   void SetAtLeastOnePointInTheSPD(Bool_t alopits) {this->fAtLeastOnePointInTheSPD = alopits;};
   void SetIgnoreGlobalConstrained(Bool_t igc) {this->fIgnoreGlobalConstrained = igc;};
@@ -447,10 +484,14 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   void SetCalculateCorrelations(Bool_t cc) {this->fCalculateCorrelations = cc;};
   Bool_t GetCalculateCorrelations() const {return this->fCalculateCorrelations;};
 
-  void SetCalculateKineCorrelations(const char* kc)
+  void SetDoNotCalculateCorrelationsAsFunctionOf(const char* kc)
   {
-   if(TString(kc).EqualTo("pt")){fCalculatePtCorrelations = kTRUE;} 
-   if(TString(kc).EqualTo("eta")){fCalculateEtaCorrelations = kTRUE;} 
+   if(TString(kc).EqualTo("integrated")){fDoNotCalculateCorrelationsAsFunctionOf[AFO_INTEGRATED] = kTRUE;}
+   else if(TString(kc).EqualTo("multiplicity")){fDoNotCalculateCorrelationsAsFunctionOf[AFO_MULTIPLICITY] = kTRUE;} 
+   else if(TString(kc).EqualTo("centrality")){fDoNotCalculateCorrelationsAsFunctionOf[AFO_CENTRALITY] = kTRUE;} 
+   else if(TString(kc).EqualTo("pt")){fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT] = kTRUE;} 
+   else if(TString(kc).EqualTo("eta")){fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA] = kTRUE;} 
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
   }
 
   void SetCalculateTest0(Bool_t c) {this->fCalculateTest0 = c;};
@@ -498,7 +539,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    else if (TString(kc).EqualTo("eta")){var = ETA;}
    else if (TString(kc).EqualTo("e")){var = E;}
    else if (TString(kc).EqualTo("charge")){var = CHARGE;}
-   else{exit(1);}
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
    if(probability<0.||probability>1.){exit(1);}
    if(fToyNUACuts[var][1]>fToyNUACuts[var][2]){exit(1);}
    this->fToyNUACuts[var][0] = probability;
@@ -519,6 +560,18 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    this->fMultRangeInternalValidation[0] = min; 
    this->fMultRangeInternalValidation[1] = max;
   };
+
+  void SetHarmonicsOptionInternalValidation(const char* kc)
+  {
+   // If the setter is not called, fHarmonicsOptionInternalValidation is defaulted to "constant".
+   // Supported options:
+   // a) "constant": vn and psin are constant event-by-event, their values are set via SetInternalValidationAmplitudes and SetInternalValidationPlanes;
+   // b) "correlated": vn's and psin's are sampled correlated event-by-event, see .cxx how pdf is implemented
+   *(this->fHarmonicsOptionInternalValidation) = kc; // I can do it this way, since  DefaultConfiguration() is called in the constructor, and there fHarmonicsOptionInternalValidation is defined 
+                                                     // as new TString("constant") already 
+   if(! (fHarmonicsOptionInternalValidation->EqualTo("constant") || fHarmonicsOptionInternalValidation->EqualTo("correlated")) )
+   { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); } // bail out, if non-supported options is provided
+  } // void SetHarmonicsOptionInternalValidation(const char* kc)
   void SetInternalValidationAmplitudes(TArrayD *iva){this->fInternalValidationAmplitudes = iva;};
   void SetInternalValidationPlanes(TArrayD *ivp){this->fInternalValidationPlanes = ivp;};
 
@@ -601,6 +654,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1I *fQAEventCutCounter; // counter for each event cut
   TH1I *fQASequentialEventCutCounter; // sequential counter for event cuts
   TH1I *fQAParticleCutCounter[2]; // counter for each particle cut. [0] = reco, [1] = sim
+  TH1I *fQASequentialParticleCutCounter[2]; // sequential counter for each particle cut. [0] = reco, [1] = sim
   TH1I *fQATrigger[2]; // counter for triggers [0] = before event cuts, [1] = after event cuts
 
   // 2) Control event histograms:  
@@ -611,8 +665,8 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Double_t fMultiplicity;        // defined as a sum of track weights used to calculate Q-vectors (see below also fSelectedTracks) 
   TH1D *fMultiplicityHist;       // this is distribution of my multiplicity
   Double_t fMultiplicityBins[3]; // [nBins,minMultiplicity,maxMultiplicity]
-  Int_t fSelectedTracks;         // this is an integer counter of tracks used to calculate Q-vectors, after all particle cuts have been applied
-  TH1I *fSelectedTracksHist;     // this is distribution fSelectedTracks. Also the counter of selected events for analysis (use e.g. in OnlineMonitoring())
+  Int_t fSelectedTracks;         // this is an integer counter of tracks used to calculate Q-vectors, after all particle cuts have been applied. Calculated in FilterEvent(AliVEvent *ave)
+  TH1I *fSelectedTracksHist;     // this is distribution fSelectedTracks. Also the counter of selected events for analysis (use e.g. in OnlineMonitoring() or InternalValidation())
   Int_t fSelectedTracksCuts[2];  // [min,max]
   Bool_t fUseSelectedTracksCuts; // kFALSE by default, set to kTRUE if task->SelectedTracksCuts(...) has been called
   TH1D *fCentralMultiplicityHist[gCentralMultiplicity][2]; // this is distribution of reference multiplicities, maintained centrally [before,after event cuts]
@@ -648,8 +702,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fUseEventCuts[gEventHistograms];   // if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
 
   // 3) Control particle histograms:  
-  TList *fControlParticleHistogramsList; // list to hold all control histograms for particle distributions
+  TList *fControlParticleHistogramsList; // list to hold all control histograms for particle distributions 
   TProfile *fControlParticleHistogramsPro; // keeps flags relevant for the control particle histograms
+  Bool_t fFillControlParticleHistograms; // kTRUE by default, but for instance kFALSE when I do InternalValidation()
   TExMap *fSimReco; //! look up table between kine and reco particles (key = kine (Monte Carlo label), value = reco (track index in AOD))
   Bool_t fUseFakeTracks; // if kTRUE, the Monte Carlo particle is obtained as TMath:Abs(aRecoTrack->GetLabel())
   TExMap *fGlobalTracksAOD; //! global tracks in AOD
@@ -668,6 +723,9 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Double_t fDCABins[2][3]; // [xy,z][nBins,min,max]
   Double_t fDCACuts[2][2]; // [xy,z][min,max]
   Bool_t fUseDCACuts[2];   // [xy,z] if not set via setter, corresponding cut is kFALSE. Therefore, correspondig cut is open (default values are NOT used)
+  Bool_t fUsePtDependentDCAxyParameterization; // use instead the pT dependent cut for DCAxy, see the setter SetPtDependentDCAxyCut(const char* parameterization)
+  TString fPtDependentDCAxyParameterization; // math. parameterization for DCAxy vs. pT, see the setter SetPtDependentDCAxyCut(const char* parameterization)
+  TFormula *fPtDependentDCAxyFormula; // the actual formula, used to evaluate for a given pT, the corresponding DCAxy, where the parameterization is given by fPtDependentDCAxyParameterization
   //    All remaining particle histograms: 
   TH1D *fParticleHist[2][2][gParticleHistograms]; //! distributions [before,after particle cuts][reco,sim][type - see enum]
   Double_t fParticleBins[gParticleHistograms][3]; // [nBins,min,max]
@@ -701,23 +759,22 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   TH1D *fCentralityWeightsHist;         // histograms holding centrality weights [V0M, SPDTracklets, CL0, CL1]
 
   // 7) Correlations:
-  TList *fCorrelationsList;            // list to hold all correlations objects
-  TProfile *fCorrelationsFlagsPro;     // profile to hold all flags for correlations
-  Bool_t fCalculateCorrelations;       // calculate and store integrated correlations
-  Bool_t fCalculatePtCorrelations;     // calculate and store pt correlations
-  Bool_t fCalculateEtaCorrelations;    // calculate and store eta correlations
-  TProfile *fCorrelationsPro[4][6][5]; //! multiparticle correlations [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
-  Bool_t fUseCustomKineDependenceBins[gKineDependenceVariables]; // use or not custom binning for kine dependence => use setter SetKineDependenceBins(...)
-  TArrayD *fKineDependenceBins[gKineDependenceVariables]; // custom binning kine dependence, SetKineDependenceBins(...). By default the same binning is used as in the corresponding control histograms. 
+  TList *fCorrelationsList;                                        // list to hold all correlations objects
+  TProfile *fCorrelationsFlagsPro;                                 // profile to hold all flags for correlations
+  Bool_t fCalculateCorrelations;                                   // calculate and store all correlations (see enum eAsFunctionOf for what is supported at the moment)
+  Bool_t fDoNotCalculateCorrelationsAsFunctionOf[eAsFunctionOf_N]; // decide differentially which correlations shall NOT be calculated (by default, all are calculated)
+  TProfile *fCorrelationsPro[4][gMaxHarmonic][5];                  //! multiparticle correlations [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...][0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
+  Bool_t fUseCustomKineDependenceBins[gKineDependenceVariables];   // use or not custom binning for kine dependence => use setter SetKineDependenceBins(...)
+  TArrayD *fKineDependenceBins[gKineDependenceVariables];          // custom binning kine dependence, SetKineDependenceBins(...). By default the same binning is used as in the corresponding control histograms. 
 
   // 8) Nested loops:
-  TList *fNestedLoopsList;                 // list to hold all nested loops objects
-  TProfile *fNestedLoopsFlagsPro;          // profile to hold all flags for nested loops
-  Bool_t fCalculateNestedLoops;            // calculate and store correlations with nested loops, as a cross-check
-  Bool_t fCalculateCustomNestedLoop;       // validate e-b-e all correlations with custom nested loop
-  TProfile *fNestedLoopsPro[4][6][5];      //! multiparticle correlations from nested loops [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...,n=6][0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
-  //TProfile *fNestedLoopsPerDemandPro[3]; // which correlator needs to be cross-checked with nested loops (no setter => recompile). [0=integrated,1=vs. multiplicity,2=vs. centrality]
-  TArrayD *ftaNestedLoops[2];              //! e-b-e container for nested loops [0=angles;1=product of all weights]   
+  TList *fNestedLoopsList;                       // list to hold all nested loops objects 
+  TProfile *fNestedLoopsFlagsPro;                // profile to hold all flags for nested loops
+  Bool_t fCalculateNestedLoops;                  // calculate and store correlations with nested loops, as a cross-check
+  Bool_t fCalculateCustomNestedLoop;             // validate e-b-e all correlations with custom nested loop
+  TProfile *fNestedLoopsPro[4][gMaxHarmonic][5]; //! multiparticle correlations from nested loops [2p=0,4p=1,6p=2,8p=3][n=1,n=2,...][0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
+  //TProfile *fNestedLoopsPerDemandPro[3];       // which correlator needs to be cross-checked with nested loops (no setter => recompile). [0=integrated,1=vs. multiplicity,2=vs. centrality]
+  TArrayD *ftaNestedLoops[2];                    //! e-b-e container for nested loops [0=angles;1=product of all weights]   
   TArrayD *ftaNestedLoopsKine[gKineDependenceVariables][gMaxNoBinsKine][2]; //! e-b-e container for nested loops [0=pT,1=eta][kine.bin][0=angles;1=product of all weights]   
 
   // 9) Toy NUA:
@@ -727,14 +784,15 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Double_t fToyNUACuts[gKinematicVariables][3]; // stores probability [0] and NUA sector range min [1] and max [2]. Use task->SetToyNUACuts("variable",probability,min,max)
 
   //10) Internal validation:
-  TList *fInternalValidationList;         // list to hold all objects for internal validation
-  TProfile *fInternalValidationFlagsPro;  // profile to hold all flags for internal validation
-  Bool_t fUseInternalValidation;          // use internal validation
-  Bool_t fRescaleWithTheoreticalInput;    // if kTRUE, all measured correlators are rescaled with theoretical input, so that in profiles everything is at 1
-  Int_t fnEventsInternalValidation;       // how many events will be sampled on-the-fly for internal validation
-  TArrayD *fInternalValidationAmplitudes; // 0 = v1, 1 = v2, etc.
-  TArrayD *fInternalValidationPlanes;     // 0 = Psi1, 1 = Psi2, etc.
-  Int_t fMultRangeInternalValidation[2];  // min and max values for uniform multiplicity distribution in on-the-fly analysis
+  TList *fInternalValidationList;              // list to hold all objects for internal validation
+  TProfile *fInternalValidationFlagsPro;       // profile to hold all flags for internal validation
+  Bool_t fUseInternalValidation;               // use internal validation
+  Bool_t fRescaleWithTheoreticalInput;         // if kTRUE, all measured correlators are rescaled with theoretical input, so that in profiles everything is at 1
+  Int_t fnEventsInternalValidation;            // how many events will be sampled on-the-fly for internal validation
+  TString *fHarmonicsOptionInternalValidation; // see .cxx for full documentation 
+  TArrayD *fInternalValidationAmplitudes;      // 0 = v1, 1 = v2, etc.
+  TArrayD *fInternalValidationPlanes;          // 0 = Psi1, 1 = Psi2, etc.
+  Int_t fMultRangeInternalValidation[2];       // min and max values for uniform multiplicity distribution in on-the-fly analysis
 
   //11) Test0:  
   TList *fTest0List; // list to hold all objects for Test0
@@ -766,10 +824,10 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   UShort_t fBunchCross;              // bunch crossing
   UInt_t fOrbit;                     // orbit
   UInt_t fPeriod;                    // period
-  Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo()
+  Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo() 
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,30);
+  ClassDef(AliAnalysisTaskMuPa,34);
 
 };
 

@@ -1059,3 +1059,15 @@ Double_t *AliGFWFlowContainer::GetMultiRebin(Int_t &nbins) {
   for(Int_t i=0;i<=nbins;i++) retBins[i] = fMultiRebinEdges[i];
   return fMultiRebinEdges;
 }
+Bool_t AliGFWFlowContainer::RebinYBlind(Int_t nbins) {
+  Int_t nTotBins = fProf->GetNbinsY();
+  if(nTotBins%nbins) {printf("Cannot rebin Y axis properly, number of bins (%i) is not a multiple of group size (%i)\n",nTotBins,nbins); return 0; };
+  Int_t reducedSize = TMath::Nint(nTotBins/nbins);
+  TString *StrAr = new TString[reducedSize];
+  for(Int_t i=0;i<reducedSize;i++)
+    StrAr[i] = fProf->GetYaxis()->GetBinLabel(i*nbins);
+  fProf->RebinY(nbins);
+  for(Int_t i=1;i<=fProf->GetNbinsY();i++) fProf->GetYaxis()->SetBinLabel(i,StrAr[i-1].Data());
+  delete [] StrAr;
+  return 1;
+}

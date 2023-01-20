@@ -26,6 +26,12 @@
 
 class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	public:
+        enum AnalysisType{
+                kppData         = 0,
+                kppMC           = 1,
+                kPbPbData       = 2,
+                kEmbedded       = 3 
+                };
 	
 	AliAnalysisTaskEmcalJetEnergyFlow()			;
 	AliAnalysisTaskEmcalJetEnergyFlow(const char* name)	;
@@ -38,7 +44,8 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 		const char *ntracks		= "usedefault",
 		const char *nclusters		= "usedefault",
 		const char *ncells		= "usedefault",
-		Bool_t SetMCprod                 = kTRUE,
+		Double_t Rstep_EF               = 0.1,              
+                AnalysisType fAnType            =kppData,
                 const char *suffix              = "" );
 	
 	protected:
@@ -51,7 +58,8 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	void			ExecOnce()				;
 	Bool_t			FillHistograms()			;
 	Bool_t			Run()					;
-
+        void                    SetAnalysisType(AnalysisType a){fAnalysisType = a;}
+        AnalysisType            GetAnalysisType(){return fAnalysisType;}
 	void			AllocateJetHistograms()			;
 	void			AllocateTrackHistograms()		; ///<Same as Sample task
 	void                    AllocateClusterHistograms()             ; ///<May remove later
@@ -64,15 +72,15 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	void                    DoClusterLoop()                         ; ///<May remove later	
 	void                    DoCellLoop()                            ; ///<May remove later
 
-        Bool_t                  IsMCprod                                ;///<Flag for MC productions
+	Double_t                R_jet_step				;///<Radial step for the dpt calculation
 	THistManager            fHistManager                            ;///<Hist manager
 //	TList*			fOutput					;///!<! Output list
  	private:
+        AnalysisType            fAnalysisType                           ;///<Flag for type of analysis
  	 AliAnalysisTaskEmcalJetEnergyFlow(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
   	 AliAnalysisTaskEmcalJetEnergyFlow &operator=(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
 
-  	/// \cond CLASSIMP
-  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,13);
+  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,18);
 	/// \endcond
 };
 #endif

@@ -324,6 +324,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC18b10,            //!< anchored LHC17p/q pass 1 - gamma-jet MC w/GEANT3,
         kLHC18l2,             //!< anchored LHC17p/q pass 1 - gamma-jet MC w/GEANT3,
         kLHC17P1PHO,          //!< anchored LHC17p only low Intensity Phojet 5 TeV
+	      kLHC17P2Pyt5TeV,      //!< anchored LHC17p only low Intensity Pythia8, 5 TeV (pass2)
         //13 TeV MC 2017
         kLHC17P1Pyt8NomB,     //!LHC17x Pythia8 MB productions nom B anchored to LHC17x
         kLHC17P1Pyt6NomB,     //!LHC17x Pythia8 MB productions nom B anchored to LHC17x
@@ -409,6 +410,9 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Bool_t    SetSelectSubTriggerClass (Int_t selectSpecialSubTriggerClass);
       Bool_t    SetRejectExtraSignalsCut (Int_t extraSignal);
       Bool_t    SetVertexCut(Int_t vertexCut);
+
+      void    ResetAODMCTrackArray()                                                { fAODMCTrackArray = 0x0;}
+      void    ResetMcHeader()                                                       { fAODMCHeader = 0x0;}
 
       void    SetPeriodEnum (TString periodName);
       void    SetPeriodEnumExplicit ( PeriodVar periodEnum )                        { fPeriodEnum = periodEnum                                  ; }
@@ -557,6 +561,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Float_t   GetWeightForMeson( Int_t index, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetWeightForGamma( Int_t index, Double_t gammaPTrec, AliMCEvent *mcEvent, AliVEvent *event = 0x0);
       Float_t   GetCentrality(AliVEvent *event);
+      Int_t     GetEMCalClusterMultiplicity(AliVEvent* event);
       Bool_t    GetUseNewMultiplicityFramework();
       Bool_t    GetUseINELgtZERO()                                                  { return fINELgtZEROTrigger                                 ; }
       void      GetCorrectEtaShiftFromPeriod();
@@ -565,6 +570,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t     GetNumberOfTPCClusters(AliVEvent *event) const;
       TClonesArray*     GetArrayFromEvent(AliVEvent* event, const char *name, const char *clname=0);
       AliEMCALGeometry* GetGeomEMCAL()                                              { return fGeomEMCAL;}
+
 
       Bool_t    InitializeCutsFromCutString(const TString analysisCutSelection);
       void      SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kAny) {
@@ -680,6 +686,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       Int_t                       fEventQuality;                          ///< EventQuality
       AliEMCALGeometry*           fGeomEMCAL;                             ///< pointer to EMCal geometry
       TClonesArray*               fAODMCTrackArray;                       ///< pointer to track array
+      AliAODMCHeader*             fAODMCHeader;                           ///< pointer to mc header
       AliV0ReaderV1*              fV0Reader;                              //!
       //cuts
       Int_t                       fIsHeavyIon;                            ///< flag for heavy ion
@@ -743,6 +750,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
       TString                     fNameHistoReweightingGamma;             ///< Histogram name for reweighting Gamma
       TString                     fNameDataHistoReweightingGamma;         ///< Histogram Data name for reweighting Gamma
       TString                     fLabelNamePileupCutTPC;                 //<  Label for NEvents histograms depending on pileup cut used
+
       // Histograms
       TH1F*                       fHistoEventCuts;                        ///< bookkeeping for event selection cuts
       TH1F*                       fHistoPastFutureBits;                   ///< bookkeeping for event selection cuts
@@ -814,7 +822,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
   private:
 
       /// \cond CLASSIMP
-      ClassDef(AliConvEventCuts,90)
+      ClassDef(AliConvEventCuts,92)
       /// \endcond
 };
 

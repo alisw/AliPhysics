@@ -9,7 +9,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     if (!mgr) {
         return 0x0;
     }
-    // get the input event handler, again via a static method. 
+    // get the input event handler, again via a static method.
     // this handler is part of the managing system and feeds events
     // to your task
     if (!mgr->GetInputEventHandler()) {
@@ -24,20 +24,22 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     if(!qSplines.IsNull()) { bUseEseSp = kTRUE; }
 
     Bool_t bUseV0Calibration = kFALSE;
-    if(!V0Calib.IsNull()) { bUseV0Calibration = kTRUE; } 
+    if(!V0Calib.IsNull()) { bUseV0Calibration = kTRUE; }
 
     Bool_t bUseRBRWeights = kFALSE;
     if(!sVWeights.IsNull() || !sWeightsFile.IsNull()) { bUseRBRWeights = kTRUE; }
-         
+
 
 
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += Form(":%s", suffix);      // create a subfolder in the file
     // now we create an instance of your task
-    AliAnalysisTaskESEFlow* task = new AliAnalysisTaskESEFlow(name.Data(), colSys, bUseV0Calibration);   
+    AliAnalysisTaskESEFlow* task = new AliAnalysisTaskESEFlow(name.Data(), colSys, bUseV0Calibration);
     if(!task) return 0x0;
     // add your task to the manager
+    //task->SelectCollisionCandidates(AliVEvent::kAnyINT);
+
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
@@ -64,9 +66,16 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetVtxZCut(10.0);
     task->SetPhiBins(60);
     task->SetEtaBins(32);
-    const int nPtBins = 28;
-    Double_t PtEdges[nPtBins+1] = {0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0,1.25,1.5,1.75,2.0,2.25,2.5,2.75,3.0,3.25,3.5,3.75,4.0,4.5,5.0,5.5,6.0,7.0,8.0,9.0,10.0};
-    task->SetPtBins(nPtBins,PtEdges);
+    const  Int_t NptBins = 61;
+    Double_t ptBins[NptBins+1] = {0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45, 0.50, 0.55, 0.60,
+                           0.65, 0.70, 0.75, 0.80, 0.85, 0.90, 0.95, 1.00, 1.10, 1.20,
+                           1.30, 1.40, 1.50, 1.60, 1.70, 1.80, 1.90, 2.00, 2.20, 2.40,
+                           2.60, 2.80, 3.00, 3.20, 3.40, 3.60, 3.80, 4.00, 4.50, 5.00,
+                           5.50, 6.00, 6.50, 7.00, 8.00, 9.00, 10.0, 11.0, 12.0, 13.0,
+                           14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 30.0, 34.0,
+                           40.0, 50.0};
+
+    task->SetPtBins(NptBins,ptBins);
     const Int_t nCentBins = 10;
     Double_t CentEdges[nCentBins+1] = {0, 5., 10., 20., 30., 40., 50., 60., 70., 80., 90.};
     task->SetCentBin(nCentBins,CentEdges);
@@ -84,10 +93,11 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     task->SetEtaGap(1.0);
     task->SetTPCEseqnBins(100,0.0,8.0);
     task->SetV0EseqnBins(100,0.0,15.0);
-    task->SetChi2TPCFl(kFALSE, 4.0); // change to kTRUE for systematic, default in track cut is 4.0, so change to i.e. 3
+    task->SetChi2TPCFl(kTRUE, 2.5); // change to kTRUE for systematic, default in track cut is 4.0, so change to i.e. 3
     task->SetChi2ITSFl(kFALSE, 36.0); // change to kTRUE for systematic, default in track cut is 36.0, so change to i.e. 35
     task->SetQARejFiller(kFALSE);
     task->SetNUEWeights(kFALSE, 1);
+    task->SetEfficiencyWeights(kFALSE,1);
     task->Set2018(kFALSE);
     task->SetBayesUnfolding(kFALSE);
     task->Activateq2ESEProjections(kFALSE);
@@ -112,7 +122,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     // RUN BY RUN own
 
     if(bUseRBRWeights){
-      if(bUseOwnWeights) 
+      if(bUseOwnWeights)
       {
         task->SetWeights(bUseOwnWeights);
 
@@ -121,8 +131,8 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
 
         // check if the input weights are already loaded (e.g. in different subwagon)
         AliAnalysisDataContainer* weights = (AliAnalysisDataContainer*) taskContainers->FindObject("inputWeights");
-        if(!weights) 
-        {  
+        if(!weights)
+        {
           // if it does not exists create it
 
           // in case of non-local run, establish connection to ALiEn for loading the weights
@@ -138,7 +148,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
           cInputWeights->SetData(weights_list);
           mgr->ConnectInput(task,1,cInputWeights);
         }
-        else 
+        else
         {
           // connect existing container
           mgr->ConnectInput(task,1,weights);
@@ -151,7 +161,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
 
         // check if the input weights are already loaded (e.g. in different subwagon)
         AliAnalysisDataContainer* weightsVy = (AliAnalysisDataContainer*) taskContainersVy->FindObject("inputWeights");
-        if(!weightsVy) {  
+        if(!weightsVy) {
           // if it does not exists create it
           // in case of non-local run, establish connection to ALiEn for loading the weights
           if(sVWeights.Contains("alien://")) { gGrid->Connect("alien://"); }
@@ -176,14 +186,14 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
     else{
       task->SetMakeRBRweights(kTRUE);
     }
-    
+
 
     if(bUseV0Calibration){
       TObjArray* taskContainersV0 = mgr->GetContainers();
       if(!taskContainersV0) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
 
       AliAnalysisDataContainer* V0Cal = (AliAnalysisDataContainer*) taskContainersV0->FindObject("inputV0Cal");
-      if(!V0Cal) {  
+      if(!V0Cal) {
         if(V0Calib.Contains("alien://")) { gGrid->Connect("alien://"); }
 
         TFile* V0Cal_file = TFile::Open(V0Calib.Data(),"READ");
@@ -207,7 +217,7 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
       if(!taskContainersSp) { printf("E-AddTaskESEFlow: Task containers does not exists!\n"); return NULL; }
 
       AliAnalysisDataContainer* qSelSp = (AliAnalysisDataContainer*) taskContainersSp->FindObject("inputqSp");
-      if(!qSelSp) {  
+      if(!qSelSp) {
         if(qSplines.Contains("alien://")) { gGrid->Connect("alien://"); }
 
         TFile* qSp_file = TFile::Open(qSplines.Data(),"READ");
@@ -225,10 +235,10 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
         mgr->ConnectInput(task,3,qSelSp);
       }
     }
-    else{ 
-      task->SetMakeqSelectionRun(kTRUE); 
+    else{
+      task->SetMakeqSelectionRun(kTRUE);
     }
-    
+
 
   return task;
 }

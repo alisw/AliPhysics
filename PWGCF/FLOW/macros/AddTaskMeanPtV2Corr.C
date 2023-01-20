@@ -60,10 +60,13 @@ AliAnalysisTaskMeanPtV2Corr* AddTaskMeanPtV2Corr(TString name, Bool_t IsMC, TStr
         TFile *tfEff = TFile::Open(efficiencyPath.Data()); //"alien:///alice/cern.ch/user/v/vvislavi/MeanPts/MergedWeights.root"
         if(!tfEff) { printf("Could not open efficiency file\n"); return 0; };
         if(tfEff->IsZombie()) { printf("Efficiency file is a zombie\n"); return 0; };
-        TList *fList = (TList*)tfEff->Get("EffAndFD");
-        if(!fList) { printf("Could not fetch the efficiency list!\n"); return 0; };
+        TList *fEffList = new TList();
+        TList *keyList = tfEff->GetListOfKeys();
+        for(Int_t i=0;i<keyList->GetEntries();i++) fEffList->Add((TList*)tfEff->Get(keyList->At(i)->GetName()));
+        // TList *fList = (TList*)tfEff->Get("EffAndFD");
+        // if(!fList) { printf("Could not fetch the efficiency list!\n"); return 0; };
         AliAnalysisDataContainer *cEff = mgr->CreateContainer("Efficiency",TList::Class(), AliAnalysisManager::kInputContainer);
-        cEff->SetData(fList);
+        cEff->SetData(fEffList);
         mgr->ConnectInput(task,1,cEff);
       } else mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("Efficiency"));
       if(!AllContainers->FindObject("Weights")) {

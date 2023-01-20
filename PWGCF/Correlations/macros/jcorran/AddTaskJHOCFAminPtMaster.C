@@ -1,20 +1,35 @@
-#include "TMath.h"
-#include "TString.h"
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 
-AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster_Run2_pass2", UInt_t period = 0, std::string ptMinArray = "0.2 0.3 0.4 0.5", double ptMax = 5.0, int cutConfig = 0, bool saveQA = kFALSE, bool removeBadArea = kFALSE, int debug = 0, bool useWeightsNUE = kTRUE, bool useWeightsNUA = kFALSE, int setNUAmap = 2, bool useTightCuts = kFALSE, bool ESDpileup = true, double slope = 3.38, double intercept = 15000, bool saveQApileup = false, bool getSC3h = kTRUE, bool getEtaGap = kFALSE, float etaGap = 1.0, int Ncombi = 6, TString combiArray = "2 3 4 2 3 5 2 3 6 2 4 5 2 4 6 3 4 5")
+#include "TMath.h"
+#include "TString.h"
+
+AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster", UInt_t period = 0,
+    int cutConfig = 0, int whichNUAmap = 2,
+    std::string ptMinArray = "0.2 0.3 0.4 0.5", double ptMax = 5.0,
+    bool saveFullQA = false,
+    bool cutESDpileup = true, double ESDintercept = 15000,
+    bool cutTPCpileup = false, bool saveQA_TPCpileup = false,
+    bool useEtaGap = true, float etaGap = 1.0,
+    bool useWeightsNUE = true, bool useWeightsNUA = false,
+    bool getSC = true, bool getLower = true)
 {
+  // Configuration of the analysis.
+  double ESDslope = 3.38; bool saveQA_ESDpileup = false;
+  bool removeBadArea = kFALSE; bool useTightCuts = kFALSE;
+  int debug = 0;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
-// Prepare the configuration of the wagons.
+  // Prepare the list of selection configurations for the wagons.
   enum { lhc15o = 0, lhc18q = 1, lhc18r = 2 };
-  TString speriod[3] = { "15o", "18q", "18r" };   // Needed to load correct map config.
+  TString sPeriod[3] = {"15o", "18q", "18r"};   // Needed to load the correct map config.
+  std::cout << "AddTaskJHOCFAminPtMaster:: taskName = " << taskName << "\nPeriod = " << period 
+    << std::endl;
 
   TString configName;   // Configuration name corresponding to the cutConfig.
-  switch(cutConfig) { // Hardcoded names to prevent typo in phi weights files.
+  switch(cutConfig) {   // Hardcoded names to prevent typo in phi weights files.
   case 0 :    // Default selection.     // V0M + |zVtx < 8| + (pileup > 15000)
     configName = "default";   // + global tracks 96 + (NTPC < 70) + (chi2 in [0.1, 4]).
     break;
@@ -33,8 +48,8 @@ AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster_
   case 5 :    // Syst: |zVtx < 8| changed to |zVtx < 10|.
     configName = "zvtx10";
     break;
-  case 6 :    // Syst: |zVtx < 8| changed to |zVtx < 9|.
-    configName = "zvtx9";
+  case 6 :    // Syst: |zVtx < 8| changed to |zVtx < 6|.
+    configName = "zvtx6";
     break;
   case 7 :    // Syst: |zVtx < 8| changed to |zVtx < 7|.
     configName = "zvtx7";
@@ -72,8 +87,6 @@ AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster_
   default :
     std::cout << "ERROR: Invalid configuration index." << std::endl;
   }
-
-  std::cout << "AddTaskJHOCFAMaster:: period = " << period << "\t max pT = " << ptMax << std::endl;
   std::cout << "Config of the selection = " << configName.Data() << std::endl;
 
   // Prepare the array of min pT values from the provided string.
@@ -91,63 +104,104 @@ AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster_
     index++;
     thisOldMinPt = thisMinPt;
   } while (sConfig);
+  std::cout << "List of minPt configuration has been prepared." << std::endl;
 
-// Load the correction maps.
-// We assume the same maps for all minPt values.
-  TString MAPfilenames;  // Azimuthal corrections.
-  TString MAPdirname = "alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
-  AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask");
-  TString sCorrection[3] = { "15o", "18q", "18r" }; // 17i2a for 15o?
+  // Get and load the NUE and NUA correction maps.
+  // We assume the same maps for all minPt values.
+  AliJCorrectionMapTask *cMapTask = new AliJCorrectionMapTask("JCorrectionMapTask");
 
   if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
-    cmaptask->EnableCentFlattening(Form("alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC%s_pass13.root", speriod[period].Data()));
-    cmaptask->EnableEffCorrection(Form("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC18l8-0-Lists.root", speriod[period].Data()));
-  } else if (period == lhc15o) {    // 2015 PbPb dataset.
-    cmaptask->EnableEffCorrection(Form("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC16g-0-Lists.root", speriod[period].Data()));
-  }  
+    cMapTask->EnableCentFlattening(Form(
+      "alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC%s_pass13.root",
+      sPeriod[period].Data() ));
+    cMapTask->EnableEffCorrection(Form(
+      "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC18l8-0-Lists.root",
+      sPeriod[period].Data() ));
+  } else if (period == lhc15o) {                // 2015 PbPb dataset.
+    cMapTask->EnableEffCorrection(Form(
+      "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC16g-0-Lists.root",
+      sPeriod[period].Data() ));
+  }
 
-  switch (setNUAmap) {
+  TString MAPfileNames;  // NUA correction maps.
+  TString MAPdirName = "alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
+  TString sCorrection[3] = { "15o", "18q", "18r" };
+
+  switch (whichNUAmap) {
   case 0:   // 0: Coarse binning, minPt = 0.2 for all.
-    MAPfilenames = Form("%sPhiWeights_LHC%s_Error_pt02_s_%s.root",
-      MAPdirname.Data(), sCorrection[period].Data(), configName.Data());
+    MAPfileNames = Form("%sPhiWeights_LHC%s_Error_pt02_s_%s.root",
+      MAPdirName.Data(), sCorrection[period].Data(), configName.Data());
     break;
   case 1:   // 1; Fine binning, minPt = 0.2 for all. --> Default.
     if (cutConfig == 0) {
-      MAPfilenames = Form("%sPhiWeights_LHC%s_Error_finerBins_Default_s_%s.root",
-        MAPdirname.Data(), sCorrection[period].Data(), configName.Data());
+      MAPfileNames = Form("%sPhiWeights_LHC%s_Error_finerBins_Default_s_%s.root",
+        MAPdirName.Data(), sCorrection[period].Data(), configName.Data());
     } else {
-      MAPfilenames = Form("%sPhiWeights_LHC%s_Error_finerBins_s_%s.root",
-        MAPdirname.Data(), sCorrection[period].Data(), configName.Data());
+      MAPfileNames = Form("%sPhiWeights_LHC%s_Error_finerBins_s_%s.root",
+        MAPdirName.Data(), sCorrection[period].Data(), configName.Data());
+    }
+    break;
+  case 2:   // 2: Coarse binning, full PU cuts, minPt = 0.2 for all.
+    if (cutConfig == 0) {
+      MAPfileNames = Form("%sPhiWeights_LHC%s_fullPUcuts_Default_s_%s.root",
+        MAPdirName.Data(), sCorrection[period].Data(), configName.Data());
+    }
+    else if ((strcmp(configName.Data(), "zvtx6") == 0) || (strcmp(configName.Data(), "zvtx7") == 0)) {
+        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_s_zvtx10.root",
+          MAPdirName.Data(), sCorrection[period].Data());
+    }
+    else {
+      MAPfileNames = Form("%sPhiWeights_LHC%s_fullPUcuts_s_%s.root",
+        MAPdirName.Data(), sCorrection[period].Data(), configName.Data());
     }
     break;
   default:
     std::cout << "ERROR: Invalid configuration index. Skipping this element."
       << std::endl;   
   }
-  cmaptask->EnablePhiCorrection(0, MAPfilenames);  // i = 0: index for 'SetPhiCorrectionIndex(i)'.
-  mgr->AddTask((AliAnalysisTask *) cmaptask);
 
-  // Set the general variables.
-  int hybridCut = 768;      // Global hybrid tracks.
+  cMapTask->EnablePhiCorrection(0, MAPfileNames);  // i = 0: index for 'SetPhiCorrectionIndex(i)'.
+  mgr->AddTask((AliAnalysisTask *) cMapTask); 
+  std::cout << "The NUA/NUE correction maps have been added to the manager." << std::endl;
+
+  // Configure the catalyst task for each prepared configuration.
+  // 'taskName' added in the name of the catalyst to prevent merging issues between wagons.
+  const int Nsets = index;
+  AliJCatalystTask *fJCatalyst[Nsets];  // One catalyst needed per configuration.
   int globalCut = 96;       // Global tracks.
-  UInt_t selEvt;            // Trigger.
-  if (period == lhc15o) {   // Minimum bias.
+  int hybridCut = 768;      // Global hybrid tracks.
+
+  /// Trigger - common to all configurations.
+  UInt_t selEvt;
+  if (period == lhc15o) {   // Minimum bias only.
     selEvt = AliVEvent::kINT7;
   } else if (period == lhc18q || period == lhc18r) {  // Minimum bias + central + semicentral.
     selEvt = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
   }
 
-  // Configure the catalyst tasks for each value of minPt.
-  // taskName added in the name of the catalyst to prevent merging issues between wagons.
-  const int Nsets = index;
-  AliJCatalystTask *fJCatalyst[Nsets];  // One catalyst needed per configuration.
+
   for (int i = 0; i < Nsets; i++) {
     std::cout << "Current min pT = " << configMinPt[i] << std::endl;
-    fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s_minPt%02d", taskName.Data(), configName.Data(), Int_t(configMinPt[i] * 10)));
+    fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s_minPt%02d",
+      taskName.Data(), configName.Data(), Int_t(configMinPt[i] * 10)));
     std::cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << std::endl;
-    fJCatalyst[i]->SetSaveAllQA(saveQA);
+    fJCatalyst[i]->SetSaveAllQA(saveFullQA);
 
-    /// Trigger and centrality selection.
+    // Set the correct flags to use.
+    if (strcmp(configName.Data(), "noPileup") != 0) {     // Set flag only if we cut on pileup.
+      fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);
+
+      if (strcmp(configName.Data(), "pileup10") == 0) {   // Vary the cut on the ESD pileup.
+        fJCatalyst[i]->SetESDpileupCuts(true, ESDslope, 10000, saveQA_ESDpileup);
+      } else {fJCatalyst[i]->SetESDpileupCuts(cutESDpileup, ESDslope, ESDintercept, saveQA_ESDpileup);}
+
+      fJCatalyst[i]->SetTPCpileupCuts(cutTPCpileup, saveQA_TPCpileup); // Reject the TPC pileup.
+    }
+    if (period == lhc18q || period == lhc18r) {
+      fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CENT_FLATTENING);
+    }
+
+    // Set the trigger, centrality and event selection.
     fJCatalyst[i]->SelectCollisionCandidates(selEvt);
     fJCatalyst[i]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
     fJCatalyst[i]->SetInitializeCentralityArray();
@@ -157,25 +211,17 @@ AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster_
       fJCatalyst[i]->SetCentDetName("V0M");
     }
 
-    /// Event selection: pileup cuts and Zvtx.
-    if (strcmp(configName.Data(), "noPileup") != 0) {   // Set flag only if we cut on pileup.
-      fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);
-      if (strcmp(configName.Data(), "pileup10") == 0) {fJCatalyst[i]->SetESDpileupCuts(true, slope, 10000, saveQApileup);}
-      else {fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQApileup);}
-    }
-    if (period == lhc18q || period == lhc18r) {fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CENT_FLATTENING);}    
-
     if (strcmp(configName.Data(), "zvtx10") == 0) {    
       fJCatalyst[i]->SetZVertexCut(10.0);
-    } else if (strcmp(configName.Data(), "zvtx9") == 0) {
-      fJCatalyst[i]->SetZVertexCut(9.0);
+    } else if (strcmp(configName.Data(), "zvtx6") == 0) {
+      fJCatalyst[i]->SetZVertexCut(6.0);
     } else if (strcmp(configName.Data(), "zvtx7") == 0) {
       fJCatalyst[i]->SetZVertexCut(7.0);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetZVertexCut(8.0);
     }
 
-    /// Filtering, kinematic and detector cuts.
+    /// Filtering and detector cuts.
     if (strcmp(configName.Data(), "hybrid") == 0) {
       fJCatalyst[i]->SetTestFilterBit(hybridCut);
     } else {  // Default: global tracks.
@@ -216,11 +262,13 @@ AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster_
 
     // TBA: subA systematics.
 
+    /// Kinematic cuts and last fine tuning.
     fJCatalyst[i]->SetPtRange(configMinPt[i], ptMax);
     fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
     fJCatalyst[i]->SetPhiCorrectionIndex(0);  // Instead of i.
     fJCatalyst[i]->SetRemoveBadArea(removeBadArea);
     fJCatalyst[i]->SetTightCuts(useTightCuts);
+
     mgr->AddTask((AliAnalysisTask *)fJCatalyst[i]);
   }
 
@@ -231,15 +279,17 @@ AliAnalysisTask *AddTaskJHOCFAminPtMaster(TString taskName = "JHOCFAminPtMaster_
       taskName.Data(), configName.Data(), Int_t(configMinPt[i] * 10)));
     myTask[i]->SetJCatalystTaskName(fJCatalyst[i]->GetJCatalystTaskName());
     myTask[i]->HOCFASetDebugLevel(debug);
+
     myTask[i]->HOCFASetCentralityBinning(9);
     myTask[i]->HOCFASetCentralityArray("0. 5. 10. 20. 30. 40. 50. 60. 70. 80.");
     myTask[i]->HOCFASetMinMultiplicity(10);
+
     myTask[i]->HOCFASetPtRange(configMinPt[i], ptMax);
+    myTask[i]->HOCFASetEtaGap(useEtaGap, etaGap);
     myTask[i]->HOCFASetParticleWeights(useWeightsNUE, useWeightsNUA);
-    myTask[i]->HOCFASetObservable(getSC3h);
-    myTask[i]->HOCFASetEtaGaps(getEtaGap, etaGap);
-    myTask[i]->HOCFASetNumberCombi(Ncombi);
-    myTask[i]->HOCFASetHarmoArray(Form("%s", combiArray.Data()));
+
+    myTask[i]->HOCFASetObservable(getSC, getLower);
+
     mgr->AddTask((AliAnalysisTask *)myTask[i]);
   }
 

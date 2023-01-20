@@ -2122,7 +2122,7 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   /// reconstruction cuts
   //AliCodeTimerAuto("",0);
   UInt_t ntref=TProcessID::GetObjectCount();
-  if(ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
+  if(fUseTRefArrayForSecVert && ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
     AliFatal(Form("Number of TRef created (=%d), close to limit (16777216)",ntref));
   }
 
@@ -2194,7 +2194,7 @@ AliAODRecoCascadeHF* AliAnalysisVertexingHF::MakeCascade(
   /// cascades reconstruction cuts
   //AliCodeTimerAuto("",0);
   UInt_t ntref=TProcessID::GetObjectCount();
-  if(ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
+  if(fUseTRefArrayForSecVert && ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
     AliFatal(Form("Number of TRef created (=%d), close to limit (16777216)",ntref));
   }
 
@@ -2298,7 +2298,7 @@ AliAODRecoDecayHF2Prong *AliAnalysisVertexingHF::Make2Prong(
   okD0=kFALSE; okJPSI=kFALSE; okD0fromDstar=kFALSE;
 
   UInt_t ntref=TProcessID::GetObjectCount();
-  if(ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
+  if(fUseTRefArrayForSecVert && ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
     AliFatal(Form("Number of TRef created (=%d), close to limit (16777216)",ntref));
   }
 
@@ -2434,7 +2434,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
 
 
   UInt_t ntref=TProcessID::GetObjectCount();
-  if(ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
+  if(fUseTRefArrayForSecVert && ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
     AliFatal(Form("Number of TRef created (=%d), close to limit (16777216)",ntref));
   }
 
@@ -2599,7 +2599,7 @@ AliAODRecoDecayHF3Prong* AliAnalysisVertexingHF::Make3Prong(
   // AliCodeTimerAuto("",0);
 
   UInt_t ntref=TProcessID::GetObjectCount();
-  if(ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
+  if(fUseTRefArrayForSecVert && ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
     AliFatal(Form("Number of TRef created (=%d), close to limit (16777216)",ntref));
   }
 
@@ -2688,7 +2688,7 @@ AliAODRecoDecayHF4Prong* AliAnalysisVertexingHF::Make4Prong(
   // AliCodeTimerAuto("",0);
 
   UInt_t ntref=TProcessID::GetObjectCount();
-  if(ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
+  if(fUseTRefArrayForSecVert && ntref>16776216){// This number is 2^24-1000. The maximum number of TRef for a given TProcesssID is 2^24=16777216.
     AliFatal(Form("Number of TRef created (=%d), close to limit (16777216)",ntref));
   }
 

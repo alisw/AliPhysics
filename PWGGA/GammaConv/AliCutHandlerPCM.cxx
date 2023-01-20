@@ -651,6 +651,10 @@ TString AliCutHandlerPCM::GetSpecialSettingFromAddConfig (
         tempStr.Replace(0,2,"");
         cout << Form("INFO: GetSpecialSettingFromAddConfig will use running mode '%i' for the TrackMatcher!",tempStr.Atoi()) << endl;
         return tempStr;
+      } else if(tempStr.BeginsWith("JET") && !configString.CompareTo("JET")){
+        tempStr.Replace(0,3,"");
+        cout << Form("INFO: GetSpecialSettingFromAddConfig will use running mode '%i' for the JetReader!",tempStr.Atoi()) << endl;
+        return tempStr;
       }else if(tempStr.CompareTo("EPCLUSTree") == 0&& !configString.CompareTo("EPCLUSTree")){
         cout << "INFO: "<< addTaskName.Data() << " activating 'EPCLUSTree'" << endl;
         return "1";

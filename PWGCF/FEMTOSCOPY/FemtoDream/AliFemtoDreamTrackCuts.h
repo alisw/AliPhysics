@@ -125,6 +125,13 @@ class AliFemtoDreamTrackCuts {
     fcutEta = kTRUE;
   }
   ;
+  void SetRapidityRange(float rapmin, float rapmax, float MassForRapidity) {
+    frapmin = rapmin;
+    frapmax = rapmax;
+    fMassForRapidity = MassForRapidity;
+    fcutRap = kTRUE;
+  }
+  ;
   float GetEtaMin() {
     return fetamin;
   }
@@ -348,6 +355,10 @@ class AliFemtoDreamTrackCuts {
   float fetamin;                     //
   float fetamax;                     //
   bool fcutEta;                       //
+  float frapmin;                     //
+  float frapmax;                     //
+  bool fcutRap;                       //
+  bool fMassForRapidity;                       //
   bool fcutCharge;                    //
   int fCharge;                        //
   int fnTPCCls;                       //

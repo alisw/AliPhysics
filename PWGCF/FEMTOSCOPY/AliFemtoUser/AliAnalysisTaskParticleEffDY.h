@@ -47,7 +47,7 @@ class AliAnalysisTaskParticleEffDY :public AliAnalysisTaskSE{
       }
     }
 
-  AliAnalysisTaskParticleEffDY(TString name, int pidMethod=-1, int filterbit=96); // default constructor
+  AliAnalysisTaskParticleEffDY(TString name, int pidMethod=3, int filterbit=96); // default constructor
   virtual ~AliAnalysisTaskParticleEffDY(); // default destructor
   virtual void UserCreateOutputObjects(); // user create output objects
   virtual void UserExec(Option_t *option); // user exec

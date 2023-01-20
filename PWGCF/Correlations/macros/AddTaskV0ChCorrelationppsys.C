@@ -1,6 +1,6 @@
 // AddTask for AliAnalysisTaskCascadeChCorrelations task
 
-AliAnalysisTaskV0ChCorrelationppsys* AddTaskV0ChCorrelationppsys(TString taskName = "", float cenMin, float cenMax, bool effCorr = 0, bool isMC=0,TString container_name_extension = "",TString fileName_extension = "",TString EffFileNameWithPath = ""){
+AliAnalysisTaskV0ChCorrelationppsys* AddTaskV0ChCorrelationppsys(TString taskName = "", Int_t cenMin=0, Int_t cenMax=100, bool effCorr = 0, bool isMC=0,TString container_name_extension = "",TString fileName_extension = "",TString EffFileNameWithPath = ""){
 
 // Creates a V0-Ch correlations analysis task and adds it to the analysis manager.
   

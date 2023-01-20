@@ -70,9 +70,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 /*   enum{kD0,kLS}; */
   
   
-  AliESDtrack* SelectTrack(AliAODTrack *aodtr, Int_t &isSelProton,Int_t &isSelKaon, Int_t &isSelPion,Int_t &isSelSoftPion,AliESDtrackCuts *cutsProton, AliESDtrackCuts *cutsKaon, AliESDtrackCuts *cutsPion,AliESDtrackCuts *cutsSoftPion);
+  AliESDtrack* SelectTrack(AliAODTrack *aodtr, Int_t &isSelProton,Int_t &isSelKaon, Int_t &isSelPion,Int_t &isSelElectron,Int_t &isSelSoftPion,AliESDtrackCuts *cutsProton, AliESDtrackCuts *cutsKaon, AliESDtrackCuts *cutsPion,AliESDtrackCuts *cutsSoftPion);
 
-  void IsSelectedPID(AliAODTrack *track,Int_t &iSelPion,Int_t &iSelKaon,Int_t &iSelProton,const Int_t iSelPionCuts=1,const Int_t iSelKaonCuts=1,const Int_t iSelProtonCuts=1,Bool_t fillHistos=kFALSE);
+  void IsSelectedPID(AliAODTrack *track,Int_t &iSelPion,Int_t &iSelKaon,Int_t &iSelProton,Int_t &iSelElectron,const Int_t iSelPionCuts=1,const Int_t iSelKaonCuts=1,const Int_t iSelProtonCuts=1,const Int_t iSelElectronCuts=1,Bool_t fillHistos=kFALSE);
   void UpdateTrackPIDwithBayesPID(AliAODTrack *track,Int_t &iSelPion,Int_t &iSelKaon,Int_t &iSelProton);
  
   void SetReadMC(Bool_t readMC=kFALSE){fReadMC=readMC;}
@@ -171,6 +171,9 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
   void SetNSoftPionRotations(Int_t nrot){nrot < 0 ? Printf("Cannot set negative number of rotations, setting 0"), fNRotations=0 : fNRotations=nrot;}
   void SetMinAndMaxRotationAngles(Double_t minRot,Double_t maxRot){fMinAngleForRot=minRot;fMaxAngleForRot=maxRot;}
   void SetPDGcodeForFiducialYreco(Int_t pdgcode){fPdgFiducialYreco=pdgcode;}
+  void SetFill4ProngNtuple(Bool_t fill4prnt){fFillNtuple4Prong=fill4prnt;}
+  // set binning of Lc mass distribution
+  void SetLcInvMassBins(Int_t bins) {fLcInvMassBins=bins;}
   
   // set mass range for ttree filling
   void SetMassRangeTTreeFill( Double_t min, Double_t max )  {flowMass_treeFill=min;  fhighMass_tree_Fill=max;}
@@ -196,17 +199,19 @@ class AliAnalysisTaskSEXicTopKpi : public AliAnalysisTaskSE
 
   void SetRandomRejFactorDebug(Double_t value){fRejFactorFastAnalysis=value;}
   // apply different pt cuts on candidate daughters
-  void SetMinPtSingleDaughter(Double_t minPtProton, Double_t minPtKaon, Double_t minPtPion){
+  void SetMinPtSingleDaughter(Double_t minPtProton, Double_t minPtKaon, Double_t minPtPion,Double_t minPtElectron=0.5){
     fUseMinPtSingleDaughter = kTRUE;
     fMinPtProton = minPtProton;
     fMinPtKaon = minPtKaon;
     fMinPtPion = minPtPion;
+    fMinPtElectron = minPtElectron;    
   }
   void SwitchToFastLoops(){fFastLoopPbPb=kTRUE;}
   void SwitchOnFastSelections(Bool_t fastsel=kTRUE){fFastLoopPbPbFastSelections=fastsel;}
   void ExtendSparseVariables(Bool_t extendSparse=kTRUE){fextendSparseForLb=extendSparse;}
   // avoid SigmaC analysis
   void SetDisableSigmaCLoop(){fDisableSigmaCLoop=kTRUE;}
+  void SetDisable4trLoop(Bool_t disable=kTRUE){fDisableFourthTrackLoop=disable;}
   void SetFillNtupleFastVar(Bool_t fillNt=kTRUE){fFillFastVarForDebug=fillNt;}
   void SetMinFastLxyCuts(Double_t minLxyFast,Double_t minLxyFast12,Double_t minLxyFast13,Double_t minLxyFast23){
     if(minLxyFast12>0.)fMinFastLxy12Sq=minLxyFast12*minLxyFast12;
@@ -292,17 +297,23 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   // calculate weight to treat reco true Lc as Xic (mfaggin)
   
   void SigmaCloop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Double_t *pointS,Int_t resp_onlyPID,Bool_t *arrayPIDselpKpi=0x0,Bool_t *arrayPIDselpiKpi=0x0,Int_t itrack1=-1,Int_t itrack2=-1,Int_t itrackThird=-1,AliAODMCParticle *pSigmaC=0x0,Int_t checkorigin=-1,Int_t decay_channel=0);
-  void FillArrayVariableSparse(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Double_t *point,Int_t massHypothesis);  
+  void ExtraLoop(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Int_t massHypothesis,Double_t mass1, Double_t mass2,Int_t resp_onlyPID,Bool_t *arrayPIDselPkPi,Bool_t *arrayPIDselPikP,Int_t itrack1,Int_t itrack2,Int_t itrackThird,Int_t checkorigin,Int_t label3prong);  
+    void FillArrayVariableSparse(AliAODRecoDecayHF3Prong *io3Prong,AliAODEvent *aod,Double_t *point,Int_t massHypothesis);  
   Double_t Weight_fromLc_toXic(AliAODMCParticle* p, AliAODMCParticle* prong);
   void PrepareTracks(AliAODEvent *aod,TClonesArray *mcArray=0x0, AliAODMCHeader *mcHeader = 0x0);
   Int_t ConvertXicMCinfo(Int_t infoMC);
-  AliAODMCParticle* MatchRecoCandtoMC(AliAODRecoDecayHF3Prong *io3Prong,Int_t &isTrueLambdaCorXic,Int_t &checkOrigin);
-  AliAODMCParticle* MatchRecoCandtoMCAcc(AliAODRecoDecayHF3Prong *io3Prong,Int_t &isTrueLambdaCorXic,Int_t &checkOrigin);
+  Int_t MatchRecoCandtoMC(AliAODRecoDecayHF3Prong *io3Prong,Int_t &isTrueLambdaCorXic,Int_t &checkOrigin);
+  Int_t MatchRecoCandtoMCAcc(AliAODRecoDecayHF3Prong *io3Prong,Int_t &isTrueLambdaCorXic,Int_t &checkOrigin);
+  Int_t MatchToMC4prong(Int_t checkorigin,AliAODRecoDecayHF3Prong *hfCand,Int_t label3prong,AliAODTrack *track);
   void LoopOverGenParticles();
   void LoopOverFilteredCandidates(TClonesArray *lcArray,AliAODEvent *aod);
   Int_t DefinePbPbfilteringLoop(const AliAODTrack *track,Bool_t isPreselSoftPionOnly);
   void PrepareArrayFastLoops();
   void InitStandardValuesForFastLoops();
+  AliAODVertex* ReconstructSecondaryVertex(TObjArray *trkArray,Double_t magfield);
+  AliAODVertex* RemoveDaughtersFromPrimaryVtxCascHF(Int_t *ids,AliAODEvent *aod);
+  Bool_t GetTrackMomentumAtSecVert(AliExternalTrackParam* tr, AliAODVertex* secVert, Double_t momentum[3],Double_t bzkG) const;
+  void FillArrayVariable4prongs(AliAODRecoDecayHF2Prong *io2Prong,AliAODEvent *aod,Double_t *point) const;
   AliAnalysisVertexingHF *fvHF;   //!<! temporary object for filling reco cands
   AliRDHFCutsD0toKpi *fCuts;      //  Cuts 
   //AliRDHFCutsLctopKpi *fCutsLc;  // Lc Cuts
@@ -322,6 +333,7 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   TArrayI *ftrackSelStatusProton; //!<! array with flags
   TArrayI *ftrackSelStatusKaon;//!<! array with flags
   TArrayI *ftrackSelStatusPion;//!<! array with flags
+  TArrayI *ftrackSelStatusElectron;//!<! array with flags
   Int_t     fSys;                 /// fSys=0 -> p-p; fSys=1 ->pPb; fSys=2 ->PbPb (PV vtx is recalculated only in pp)
   Int_t     fAODProtection;       /// flag to activate protection against AOD-dAOD mismatch.
                                   /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
@@ -345,7 +357,9 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   THnF *fhistMCSpectrumAccXic;//! hist with MC spectrum of cand in acceptance
 
   TH2F *fhistMCSpectrumAccCdeuteron;//! hist with MC spectrum of cand in acceptance
+  THnSparseF* fhistMCSpectrumAccLbToLcEle;//! hist with MC spectrum of cand in acceptance
   THnSparseF* fhSparseAnalysis;//! sparse for analysis
+  THnSparseF* fhSparseAnalysis4Prong;//! sparse for 4-prong analysis
   THnSparseF* fhSparseAnalysisReflections;//! sparse for analysis - reflections
   THnSparseF* fhSparseAnalysisSigma;//! sparse for analysis of SigmaC (with deltaM)
   THnSparseF* fhSparsePartReco;//! sparse for single track efficiency (reco spectra)
@@ -377,14 +391,21 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   TH2F *fnSigmaPIDtofProton; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtofPion; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtofKaon; //!<! histo for monitoring PID performance
+  TH2F *fnSigmaPIDtofElectron; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtpcProton; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtpcPion; //!<! histo for monitoring PID performance
   TH2F *fnSigmaPIDtpcKaon; //!<! histo for monitoring PID performance
+  TH2F *fnSigmaPIDtpcElectron; //!<! histo for monitoring PID performance
+  TH3F *fhPIDtpctofAfterBayesProton; //!<! histo for monitoring PID performance
+  TH3F *fhPIDtpctofAfterBayesPion; //!<! histo for monitoring PID performance
+  TH3F *fhPIDtpctofAfterBayesKaon; //!<! histo for monitoring PID performance
   TH2F *fProtonID; //!<! histo for purity of PID
   TH2F *fKaonID; //!<! histo for purity of PID
   TH2F *fPionID; //!<! histo for purity of PID
+  TH2F *fElectronID; //!<! histo for purity of PID
   TList *fOutput;//! Output List
   AliVertexerTracks *fVertexerTracks;//!<! vertexer
+  AliVertexerTracks *fVertexerTracksPrimaryVtx;//!<! vertexer used for PV recalculation 
   Bool_t fSetTrackCutLcFilteringPP; /// flag to force esd track cuts used for Lc filtering
   Int_t fCutSelLevel; /// flag to define cuts used online
   Bool_t fApplykFirst;/// flag to apply kFirst selection at track level for pt<fMaxPtTrackkFirst (needed just to avoid pt calculations if not needed)
@@ -467,6 +488,9 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   Double_t fMaxAngleForRot;//
   Int_t   fPdgFiducialYreco;// pdg code of particle that will be used to compute fiducial acceptance at reco level
 
+  // binning of Lc mass distribution
+  Int_t fLcInvMassBins;
+  
   // mass ranges to store candidates in the TTree
   Double_t flowMass_treeFill;
   Double_t fhighMass_tree_Fill;
@@ -515,6 +539,7 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   Int_t fnProt; //
   Int_t fnKaon; //
   Int_t fnPion; //
+  Int_t fnElectron; //
 
   // bool to avoid processing events without recognised p, K, pi
   Bool_t fRejEvWoutpKpi; //
@@ -524,12 +549,14 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   Double_t fMinPtProton;  // minimum pt for selected candidate protons
   Double_t fMinPtKaon;    // minimum pt for selected candidate kaons
   Double_t fMinPtPion;    // minimum pt for selected candidate pions
+  Double_t fMinPtElectron;    // minimum pt for selected candidate electrons
   TH1D* fHistoPtSelProton; //!<!
   TH1D* fHistoPtSelKaon; //!<!
   TH1D* fHistoPtSelPion; //!<!
 
   // avoid SigmaC analysis
   Bool_t fDisableSigmaCLoop; //
+  Bool_t fDisableFourthTrackLoop;//
   TH2F *fHistoPtd0plane;//!<!
   TH2F *fHistoPtd0planeAfterFastLoopSel;//!<!
   Bool_t fFastLoopPbPb;// option for fast loops in Pb-Pb
@@ -538,9 +565,11 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   TArrayI *ftrackArraySelLoop1;  //!<! array of selected tracks for internal use
   TArrayI *ftrackArraySelLoop2;  //!<! array of selected tracks for internal use
   TArrayI *ftrackArraySelLoop3;  //!<! array of selected tracks for internal use
+  TArrayI *ftrackArraySelLoop4;  //!<! array of selected tracks for internal use: these are not used in loops for pKpi if Fast selections are activated, but the related tracks are placed at the end of the selected tracks in floop1,2,3 for the triple+track loop (not soft pions)
   Int_t floop1;  //!<! internal number of selected tracks for loop1
   Int_t floop2;  //!<! internal number of selected tracks for loop2
   Int_t floop3;  //!<! internal number of selected tracks for loop3
+  Int_t floop4;  //!<! internal number of selected tracks: these are not used in loops for pKpi if Fast selections are activated, but the related tracks are placed at the end of the selected tracks in floop1,2,3 for the triple+track loop (not soft pions)
   TNtuple *ftnFastVariables; //!  ntuple with fast variable and correlation with full calculation
   Bool_t fFillFastVarForDebug; // flag to fill ntuple with fast variables
   Double_t fMinFastLxy12Sq; // variable used in fast selection
@@ -574,7 +603,10 @@ void FillTuplePID_TOFreq(AliAODRecoDecayHF3Prong* candidate, Int_t isTrueLc);
   Bool_t fFillTuplePID_TOFreq;  // fill tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
   TNtuple* fTuplePID_TOFreq;  //! tuple to evaluate tof matching influence in PID (---> offline: mat. budget for TOF matching WHEN PRESENT)
   Bool_t fUseBayesInFiltering;// use bayesPID (max prob) in Filtering: note this does not match identically the usual Bayes selection
-  ClassDef(AliAnalysisTaskSEXicTopKpi,30); /// AliAnalysisTaskSE for Xic->pKpi  
+  Bool_t fOnlyEleFourthLoop;// flag for limiting to electron candidate 4th-particle loop
+  Bool_t fFillNtuple4Prong;// flag to switch on filling of 4-prong ntuple 
+  TNtuple *fNtuple4Prong;// ntuple for 4-prong candidates
+  ClassDef(AliAnalysisTaskSEXicTopKpi,35); /// AliAnalysisTaskSE for Xic->pKpi  
   /// \endcond
 };
 

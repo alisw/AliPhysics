@@ -18,7 +18,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   bool isLowerSideband = false,
   bool isPbPb = false,
   bool isSystematics = false,
-  bool DoITSPID = false,
+  bool isCentral = false,
   const char *CutVariation = "0"){
 
   // isHighMultV0:
@@ -27,6 +27,8 @@ AliAnalysisTaskSE *AddTaskLeuteron(
 
   bool BruteForceDebugging = false;
   bool isNanoAOD = false;
+  bool DoITSPID = false;
+
 
   TString suffix = TString::Format("%s",CutVariation);
   int PionPDG = 211;
@@ -137,27 +139,98 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     return nullptr;
   }
 
+  double deuteron_eta_min = -0.8;
+  double deuteron_eta_max = +0.8;
+  double deuteron_dca_z = 0.2;
+  double deuteron_dca_xy = 0.1;
+  double deuteron_pt_min = 0.5;
+  double deuteron_pt_max = 1.0;
+  double deuteron_TPC_CrossedRowsOverCluster = 0.83;
+  double deuteron_nSigma = 3.0;
+  double deuteron_TPC_thresold = 1.0; // TPC < threshold < TPC + TOF
+  int deuteron_Filterbit = 256;
+  int deuteron_TPC_cluster = 80;
+  int deuteron_TPC_CrossedRows = 70;
+
   // Deuterons
   TrackCuts3->SetPlotDCADist(isFullBlastQA);
   TrackCuts3->SetPlotCombSigma(false);
   TrackCuts3->SetIsMonteCarlo(isMC);
   TrackCuts3->SetCutCharge(1);
-  TrackCuts3->SetFilterBit(256);
-  TrackCuts3->SetPtRange(0.5,4.0);
-  TrackCuts3->SetEtaRange(-0.8,0.8);
-  TrackCuts3->SetNClsTPC(80);
+  TrackCuts3->SetFilterBit(deuteron_Filterbit);
+  TrackCuts3->SetPtRange(deuteron_pt_min,deuteron_pt_max);
+  TrackCuts3->SetEtaRange(deuteron_eta_min,deuteron_eta_max);
+  TrackCuts3->SetNClsTPC(deuteron_TPC_cluster);
   TrackCuts3->SetDCAReCalculation(true);
-  TrackCuts3->SetDCAVtxZ(0.2);
-  TrackCuts3->SetDCAVtxXY(0.1);
+  TrackCuts3->SetDCAVtxZ(deuteron_dca_z);
+  TrackCuts3->SetDCAVtxXY(deuteron_dca_xy);
   TrackCuts3->SetCutSharedCls(true);
-  TrackCuts3->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts3->SetPID(AliPID::kDeuteron,999.0,3.0);
+  TrackCuts3->SetCutTPCCrossedRows(true,deuteron_TPC_CrossedRows,deuteron_TPC_CrossedRowsOverCluster);
+//  TrackCuts3->SetPID(AliPID::kDeuteron,deuteron_TPC_thresold,deuteron_nSigma);
   TrackCuts3->SetRejLowPtPionsTOF(true);
   TrackCuts3->SetCutSmallestSig(true);
   TrackCuts3->SetMinimalBooking(false);
-
   TrackCuts3->SetCutITSPID(1.4,-2.0,1e30);
   TrackCuts3->SetITSnSigmaCut(DoITSPID);
+
+
+  AliFemtoDreamTrackCuts *TrackCuts3Mass = new AliFemtoDreamTrackCuts();
+
+  if(!TrackCuts3Mass){
+    printf("TrackCuts3Mass not found\n");
+    return nullptr;
+  }
+
+  // Deuterons Mass
+  TrackCuts3Mass->SetPlotDCADist(isFullBlastQA);
+  TrackCuts3Mass->SetPlotCombSigma(false);
+  TrackCuts3Mass->SetIsMonteCarlo(isMC);
+  TrackCuts3Mass->SetCutCharge(1);
+  TrackCuts3Mass->SetFilterBit(deuteron_Filterbit);
+  TrackCuts3Mass->SetPtRange(deuteron_pt_min,4.0);
+  TrackCuts3Mass->SetEtaRange(deuteron_eta_min,deuteron_eta_max);
+  TrackCuts3Mass->SetNClsTPC(deuteron_TPC_cluster);
+  TrackCuts3Mass->SetDCAReCalculation(true);
+  TrackCuts3Mass->SetDCAVtxZ(deuteron_dca_z);
+  TrackCuts3Mass->SetDCAVtxXY(deuteron_dca_xy);
+  TrackCuts3Mass->SetCutSharedCls(true);
+  TrackCuts3Mass->SetCutTPCCrossedRows(true,deuteron_TPC_CrossedRows,deuteron_TPC_CrossedRowsOverCluster);
+  TrackCuts3Mass->SetPID(AliPID::kDeuteron,999.0,deuteron_nSigma);
+  TrackCuts3Mass->SetRejLowPtPionsTOF(true);
+  TrackCuts3Mass->SetCutSmallestSig(true);
+  TrackCuts3Mass->SetMinimalBooking(false);
+  TrackCuts3Mass->SetCutITSPID(1.4,-2.0,1e30);
+  TrackCuts3Mass->SetITSnSigmaCut(DoITSPID);
+
+
+  AliFemtoDreamTrackCuts *TrackCuts3Sigma = new AliFemtoDreamTrackCuts();
+
+  if(!TrackCuts3Sigma){
+    printf("TrackCuts3Sigma not found\n");
+    return nullptr;
+  }
+
+  // Deuterons Sigma
+  TrackCuts3Sigma->SetPlotDCADist(isFullBlastQA);
+  TrackCuts3Sigma->SetPlotCombSigma(false);
+  TrackCuts3Sigma->SetIsMonteCarlo(isMC);
+  TrackCuts3Sigma->SetCutCharge(1);
+  TrackCuts3Sigma->SetFilterBit(deuteron_Filterbit);
+  TrackCuts3Sigma->SetPtRange(deuteron_pt_min,deuteron_pt_max);
+  TrackCuts3Sigma->SetEtaRange(deuteron_eta_min,deuteron_eta_max);
+  TrackCuts3Sigma->SetNClsTPC(deuteron_TPC_cluster);
+  TrackCuts3Sigma->SetDCAReCalculation(true);
+  TrackCuts3Sigma->SetDCAVtxZ(deuteron_dca_z);
+  TrackCuts3Sigma->SetDCAVtxXY(deuteron_dca_xy);
+  TrackCuts3Sigma->SetCutSharedCls(true);
+  TrackCuts3Sigma->SetCutTPCCrossedRows(true,deuteron_TPC_CrossedRows,deuteron_TPC_CrossedRowsOverCluster);
+  TrackCuts3Sigma->SetPID(AliPID::kDeuteron,deuteron_TPC_thresold,60.0);
+  TrackCuts3Sigma->SetRejLowPtPionsTOF(true);
+  TrackCuts3Sigma->SetCutSmallestSig(true);
+  TrackCuts3Sigma->SetMinimalBooking(false);
+  TrackCuts3Sigma->SetCutITSPID(1.4,-2.0,1e30);
+  TrackCuts3Sigma->SetITSnSigmaCut(DoITSPID);
+
 
 
   if(BruteForceDebugging){
@@ -177,22 +250,78 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts4->SetPlotCombSigma(false);
   TrackCuts4->SetIsMonteCarlo(isMC);
   TrackCuts4->SetCutCharge(-1);
-  TrackCuts4->SetFilterBit(256);
-  TrackCuts4->SetPtRange(0.5,4.0);
-  TrackCuts4->SetEtaRange(-0.8,0.8);
-  TrackCuts4->SetNClsTPC(80);			
+  TrackCuts4->SetFilterBit(deuteron_Filterbit);
+  TrackCuts4->SetPtRange(deuteron_pt_min,deuteron_pt_max);
+  TrackCuts4->SetEtaRange(deuteron_eta_min,deuteron_eta_max);
+  TrackCuts4->SetNClsTPC(deuteron_TPC_cluster);
   TrackCuts4->SetDCAReCalculation(true);
-  TrackCuts4->SetDCAVtxZ(0.2);
-  TrackCuts4->SetDCAVtxXY(0.1);
+  TrackCuts4->SetDCAVtxZ(deuteron_dca_z);
+  TrackCuts4->SetDCAVtxXY(deuteron_dca_xy);
   TrackCuts4->SetCutSharedCls(true);
-  TrackCuts4->SetCutTPCCrossedRows(true,70,0.83);
-  TrackCuts4->SetPID(AliPID::kDeuteron,999.0,3.0);
+  TrackCuts4->SetCutTPCCrossedRows(true,deuteron_TPC_CrossedRows,deuteron_TPC_CrossedRowsOverCluster);
+  TrackCuts4->SetPID(AliPID::kDeuteron,deuteron_TPC_thresold,deuteron_nSigma);
   TrackCuts4->SetRejLowPtPionsTOF(true);
   TrackCuts4->SetCutSmallestSig(true);
   TrackCuts4->SetMinimalBooking(false);
-
   TrackCuts4->SetCutITSPID(1.4,-2.0,1e30);
   TrackCuts4->SetITSnSigmaCut(DoITSPID);
+
+  AliFemtoDreamTrackCuts *TrackCuts4Mass = new AliFemtoDreamTrackCuts();
+
+  if(!TrackCuts4Mass){
+    printf("TrackCuts4Mass not found\n");
+    return nullptr;
+  }
+
+  // Deuterons Mass
+  TrackCuts4Mass->SetPlotDCADist(isFullBlastQA);
+  TrackCuts4Mass->SetPlotCombSigma(false);
+  TrackCuts4Mass->SetIsMonteCarlo(isMC);
+  TrackCuts4Mass->SetCutCharge(-1);
+  TrackCuts4Mass->SetFilterBit(deuteron_Filterbit);
+  TrackCuts4Mass->SetPtRange(deuteron_pt_min,4.0);
+  TrackCuts4Mass->SetEtaRange(deuteron_eta_min,deuteron_eta_max);
+  TrackCuts4Mass->SetNClsTPC(deuteron_TPC_cluster);
+  TrackCuts4Mass->SetDCAReCalculation(true);
+  TrackCuts4Mass->SetDCAVtxZ(deuteron_dca_z);
+  TrackCuts4Mass->SetDCAVtxXY(deuteron_dca_xy);
+  TrackCuts4Mass->SetCutSharedCls(true);
+  TrackCuts4Mass->SetCutTPCCrossedRows(true,deuteron_TPC_CrossedRows,deuteron_TPC_CrossedRowsOverCluster);
+  TrackCuts4Mass->SetPID(AliPID::kDeuteron,999.0,deuteron_nSigma);
+  TrackCuts4Mass->SetRejLowPtPionsTOF(true);
+  TrackCuts4Mass->SetCutSmallestSig(true);
+  TrackCuts4Mass->SetMinimalBooking(false);
+  TrackCuts4Mass->SetCutITSPID(1.4,-2.0,1e30);
+  TrackCuts4Mass->SetITSnSigmaCut(DoITSPID);
+
+
+  AliFemtoDreamTrackCuts *TrackCuts4Sigma = new AliFemtoDreamTrackCuts();
+
+  if(!TrackCuts4Sigma){
+    printf("TrackCuts4Sigma not found\n");
+    return nullptr;
+  }
+
+  // Deuterons Sigma
+  TrackCuts4Sigma->SetPlotDCADist(isFullBlastQA);
+  TrackCuts4Sigma->SetPlotCombSigma(false);
+  TrackCuts4Sigma->SetIsMonteCarlo(isMC);
+  TrackCuts4Sigma->SetCutCharge(-1);
+  TrackCuts4Sigma->SetFilterBit(deuteron_Filterbit);
+  TrackCuts4Sigma->SetPtRange(deuteron_pt_min,deuteron_pt_max);
+  TrackCuts4Sigma->SetEtaRange(deuteron_eta_min,deuteron_eta_max);
+  TrackCuts4Sigma->SetNClsTPC(deuteron_TPC_cluster);
+  TrackCuts4Sigma->SetDCAReCalculation(true);
+  TrackCuts4Sigma->SetDCAVtxZ(deuteron_dca_z);
+  TrackCuts4Sigma->SetDCAVtxXY(deuteron_dca_xy);
+  TrackCuts4Sigma->SetCutSharedCls(true);
+  TrackCuts4Sigma->SetCutTPCCrossedRows(true,deuteron_TPC_CrossedRows,deuteron_TPC_CrossedRowsOverCluster);
+  TrackCuts4Sigma->SetPID(AliPID::kDeuteron,deuteron_TPC_thresold,60.0);
+  TrackCuts4Sigma->SetRejLowPtPionsTOF(true);
+  TrackCuts4Sigma->SetCutSmallestSig(true);
+  TrackCuts4Sigma->SetMinimalBooking(false);
+  TrackCuts4Sigma->SetCutITSPID(1.4,-2.0,1e30);
+  TrackCuts4Sigma->SetITSnSigmaCut(DoITSPID);
 
   if(BruteForceDebugging){
     printf("x-x-> AddTaskLeuteron: Cuts for the Antideuteron (TrackCuts4) set\n");
@@ -737,27 +866,14 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   ZVtxBins.push_back(10);
 
   // set MultBins
-  MultBins.push_back(0);
-  MultBins.push_back(4);
-  MultBins.push_back(8);
-  MultBins.push_back(12);
-  MultBins.push_back(16);
-  MultBins.push_back(20);
-  MultBins.push_back(24);
-  MultBins.push_back(28);
-  MultBins.push_back(32);
-  MultBins.push_back(36);
-  MultBins.push_back(40);
-  MultBins.push_back(44);
-  MultBins.push_back(48);
-  MultBins.push_back(52);
-  MultBins.push_back(56);
-  MultBins.push_back(60);
-  MultBins.push_back(64);
-  MultBins.push_back(68);
-  MultBins.push_back(72);
-  MultBins.push_back(76);
-  MultBins.push_back(80);
+  for(int iMult = 0; iMult <= 2000; iMult++){
+
+    MultBins.push_back(iMult*4);
+
+  }
+
+
+
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto","Femto");
   
@@ -776,7 +892,17 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   config->SetDeltaEtaMax(0.012);
   config->SetDeltaPhiMax(0.012);
   config->SetMultBinning(true);					  // enable explicit binning of the correlation function for each multiplicity
-  config->SetMixingDepth(10);					  // the number of saved events for the event mixing
+
+  if(isPbPb){
+
+    config->SetMixingDepth(1000);
+
+  }else{
+
+    config->SetMixingDepth(10);					  // the number of saved events for the event mixing
+
+  }
+
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);	  // reference multiplicity estimator
   config->SetExtendedQAPairs(pairQA);
   config->SetSummedPtCut(0.0,999.0);
@@ -843,7 +969,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   } else{
 
 
-    taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging,isSidebandSignal,isUpperSideband,isLowerSideband,isPbPb,isFullBlastQA,isFullBlastQA);
+    taskAOD = new AliAnalysisTaskLeuteronAOD("FemtoLeuteronAOD",isMC,isHighMultV0,BruteForceDebugging,isSidebandSignal,isUpperSideband,isLowerSideband,isPbPb,isFullBlastQA,isFullBlastQA,isCentral);
 
     if(!taskAOD){				  // check if the AOD task is there
       printf("taskAOD not found\n");
@@ -878,7 +1004,11 @@ AliAnalysisTaskSE *AddTaskLeuteron(
     taskAOD->SetTrackCutsPart1(TrackCuts1);
     taskAOD->SetTrackCutsPart2(TrackCuts2);
     taskAOD->SetTrackCutsPart3(TrackCuts3);
+    taskAOD->SetTrackCutsPart3Mass(TrackCuts3Mass);
+    taskAOD->SetTrackCutsPart3Sigma(TrackCuts3Sigma);
     taskAOD->SetTrackCutsPart4(TrackCuts4);
+    taskAOD->SetTrackCutsPart4Mass(TrackCuts4Mass);
+    taskAOD->SetTrackCutsPart4Sigma(TrackCuts4Sigma);
     taskAOD->Setv0CutsPart5(LambdaCuts5);
     taskAOD->Setv0CutsPart6(LambdaCuts6);
     taskAOD->SetCollectionConfig(config);

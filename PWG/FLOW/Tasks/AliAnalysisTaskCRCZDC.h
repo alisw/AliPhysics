@@ -61,6 +61,7 @@ public:
     k2015v6,
     k2015pidfix,
     kAny,
+    k2018q,
     k2018r //@Shi
   };
 
@@ -124,6 +125,9 @@ public:
   void          SetQAOn(Bool_t kt)        {fQAon = kt; }
   Bool_t        GetQAOn()   const         {return fQAon; }
   Bool_t        SelectPileup(AliAODEvent* aod);
+  void          SetupPileUpRemovalFunctions18qPass3();
+  void          SetupPileUpRemovalFunctions18rPass3();
+
 
   void          SetShuffleTracks(Bool_t b)  {fShuffleTracks=b;}
 
@@ -441,6 +445,8 @@ private:
   Bool_t fUseTowerEq; //
   TList *fTowerEqList;   // list with weights
   TH1D *fTowerGainEq[2][5]; //!
+  TH1D *fHZDCCparameters; //! ZDC-C gain eq and recentering parameters using least square fit for 2018 dataset
+  TH1D *fHZDCAparameters; //! ZDC-A gain eq and recentering parameters using least square fit for 2018 dataset
   TList *fBadTowerStuffList; //! list for storing calib files
   Bool_t fUseBadTowerCalib; //
   TList *fBadTowerCalibList; // list with original calib files
@@ -455,6 +461,7 @@ private:
   TH1D *SpecCorSi[8]; //!
   TH2D *fBadTowerCalibHist[100]; //!
   TH2D *fVZEROGainEqHist; //!
+  TH2F *fHCorrectV0ChWeghts; //! V0 gain eq weight file for 2018 dataset  
   const static Int_t fkVZEROnHar = 4;
 //  TProfile3D *fVZEROQVectorRecQx[fkVZEROnHar]; //!
 //  TProfile3D *fVZEROQVectorRecQy[fkVZEROnHar]; //!
@@ -480,6 +487,13 @@ private:
   TH2D* fEbEQIm[fKNFBs][4]; //!
   TH2D* fEbEQMu[fKNFBs][4]; //!
 
+  // Functions for Pile Up Event Removal 2018 period:
+  TF1                   *fV0CutPU;      //
+  TF1                   *fSPDCutPU;     //
+  TF1                   *fMultCutPU;    //
+  TF1                   *fCenCutLowPU;  //
+  TF1                   *fCenCutHighPU; //
+  
   ClassDef(AliAnalysisTaskCRCZDC,12);
 
 };

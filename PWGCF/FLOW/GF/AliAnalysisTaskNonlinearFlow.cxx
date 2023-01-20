@@ -136,6 +136,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     hEventCount(0),
     hMult(0),
     fVtxAfterCuts(0),
+	fCentralityCut(100),
     fCentralityDis(0),
     fV0CentralityDis(0),
     hMultV0vsNtrksAfterCuts(0),
@@ -254,6 +255,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   hEventCount(0),
   hMult(0),
   fVtxAfterCuts(0),
+	fCentralityCut(100),
   fCentralityDis(0),
   fV0CentralityDis(0),
   hMultV0vsNtrksAfterCuts(0),
@@ -404,6 +406,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   hEventCount(0),
   hMult(0),
   fVtxAfterCuts(0),
+	fCentralityCut(100),
   fCentralityDis(0),
   fV0CentralityDis(0),
   hMultV0vsNtrksAfterCuts(0),
@@ -518,7 +521,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
     fEventCuts.fPileUpCutMV = true;
   }
 
-  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1 and LHC17n
     fGFWSelection15o = new AliGFWNFCuts();
     fGFWSelection15o->PrintSetup();
   } else {
@@ -541,9 +544,9 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
        for (int i = 0; i <= 3000; i++) xbins[i] = i;  
     }
   } else {
-    nn = 10;
-    for (int i = 0; i <= 10; i++) {
-      xbins[i] = i * 10;
+    nn = 100;
+    for (int i = 0; i <= 100; i++) {
+      xbins[i] = i;
     }
   }
 
@@ -639,8 +642,11 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   fCentralityDis = new TH1F("fCentralityDis", "centrality distribution; centrality; Counts", 100, 0, 100);
   fListOfObjects->Add(fCentralityDis);
 
-  fV0CentralityDis = new TH1F("fV0CentralityDis", "centrality V0/<V0> distribution; centrality; Counts", 100, 0, 10);
+  fV0CentralityDis = new TH1F("fV0CentralityDis", "centrality V0/<V0> distribution; centrality; Counts", 100, 0, 100);
   fListOfObjects->Add(fV0CentralityDis);
+
+  fV0CentralityDisNarrow = new TH1F("fV0CentralityDisNarrow", "centrality V0/<V0> distribution; centrality; Counts", 1000, 0, 10);
+  fListOfObjects->Add(fV0CentralityDisNarrow);
 
   hMultV0vsNtrksAfterCuts = new TH2F("hMultV0vsNtrksAfterCuts","V0 mult vs. number of tracks; V0 mult; number of tracks", 100, 0, 10, 100, 0, 3000);
   fListOfObjects->Add(hMultV0vsNtrksAfterCuts);
@@ -663,6 +669,19 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   fListOfObjects->Add(hTracksCorrection2d);
   hnCorrectedTracks = new TProfile("hnCorrectedTracks", "Number of corrected tracks in a ntracks bin", nn, xbins);
   fListOfObjects->Add(hnCorrectedTracks);
+
+  hDCAxy = new TH2D("hDCAxy", "DCAxy distribution", 100, 0, 1, 100, 0, 5);
+  fListOfObjects->Add(hDCAxy);
+  hDCAz  = new TH1D("hDCAz",  "DCAz distribution", 100, 0, 4);
+  fListOfObjects->Add(hDCAz);
+  hDCAxyBefore = new TH2D("hDCAxyBefore", "DCAxy distribution", 100, 0, 1, 100, 0, 5);
+  fListOfObjects->Add(hDCAxyBefore);
+  hDCAzBefore  = new TH1D("hDCAzBefore",  "DCAz distribution", 100, 0, 4);
+  fListOfObjects->Add(hDCAzBefore);
+  hChi2  = new TH1D("hChi2", "TPC chi2 per cluster", 100, 0, 5);
+  fListOfObjects->Add(hChi2);
+  hChi2Before  = new TH1D("hChi2Before", "TPC chi2 per cluster", 100, 0, 5);
+  fListOfObjects->Add(hChi2Before);
 
   Int_t inSlotCounter=1;
   if(fNUA) {
@@ -740,6 +759,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 void AliAnalysisTaskNonlinearFlow::NotifyRun() {
     if (fAddTPCPileupCuts) {
       Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
+	  fEventCuts.fUseVariablesCorrelationCuts = true;
       fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
       fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
     }
@@ -748,7 +768,7 @@ void AliAnalysisTaskNonlinearFlow::NotifyRun() {
 //______________________________________________________________________________
 void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 {
-  bootstrap_value = rand.Integer(30);
+  // bootstrap_value = rand.Integer(30);
 
   // Check if it can pass the trigger
   //..apply physics selection
@@ -770,21 +790,6 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
     return;
   }
 
-  if (fLowMultiplicityMode) {
-     // Number of AOD tracks before track cuts
-     const int nAODTracks = fAOD->GetNumberOfTracks();
-     if (nAODTracks > 200) {
-       PostData(1,fListOfObjects);
-       int outputslot = 2;
-       PostData(2, fListOfProfile);
-       for (int i = 0; i < 30; i++) {
-         outputslot++;
-         PostData(outputslot, fListOfProfiles[i]);
-       }
-       return;
-     }
-  }
-
   // Check if it passed the standard AOD selection
   if (!AcceptAOD(fAOD) ) {
     PostData(1,fListOfObjects);
@@ -798,7 +803,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
   }
   hEventCount->Fill("after fEventCuts", 1.);
 
-  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
     fGFWSelection15o->ResetCuts();
   } else {
     fGFWSelection->ResetCuts();
@@ -807,7 +812,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
   AliVVertex *vtx = fAOD->GetPrimaryVertex();
   float fVtxZ = vtx->GetZ();
 
-  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
 	   if (!fGFWSelection15o->AcceptVertex(fAOD)) {
 	    PostData(1,fListOfObjects);
 	    int outputslot = 2;
@@ -861,7 +866,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
   NTracksCalculation(fInputEvent);
 
   // Setup AliGFWCuts for a specific systematics
-  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
     fGFWSelection15o->SetupCuts(fCurrSystFlag);
     if (!fGFWSelection15o->AcceptVertex(fAOD)) {
       PostData(1,fListOfObjects);
@@ -894,12 +899,25 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
   //..standard event plots (cent. percentiles, mult-vs-percentile)
   const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
   const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
-  float centrV0 = 0;
+  float centrV0 = dCentrality;
   float cent = dCentrality;
   float centSPD = 0;
 
-  fCentralityDis->Fill(centrV0);
-  fV0CentralityDis->Fill(cent);
+  fCentralityDis->Fill(cent);
+  fV0CentralityDis->Fill(centrV0);
+  fV0CentralityDisNarrow->Fill(centrV0);
+
+  if (cent > fCentralityCut) {
+	  PostData(1,fListOfObjects);
+	  int outputslot = 2;
+	  PostData(2, fListOfProfile);
+	  for (int i = 0; i < 30; i++) {
+		  outputslot++;
+		  PostData(outputslot, fListOfProfiles[i]);
+	  }
+	  return;
+  }
+
 
   //..all charged particles
   if (!fIsMC) {
@@ -1068,19 +1086,27 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     }
 
     aodTrk->GetXYZ(pos);
-    if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
 
+    double pos[3];
+    aodTrk->GetXYZ(pos);
+    double dcaX = pos[0] - vtxp[0]; 
+    double dcaY = pos[1] - vtxp[1];
+    double dcaZ = abs(pos[2] - vtxp[2]);
+    double dcaXY = TMath::Sqrt(dcaX*dcaX+dcaY*dcaY);
+
+	hDCAxyBefore->Fill(dcaXY, aodTrk->Pt());
+	hDCAzBefore->Fill(dcaZ);
+    hChi2Before->Fill(aodTrk->GetTPCchi2perCluster());
+
+    if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
     if (fUseAdditionalDCACut) {
-       double pos[3];
-       aodTrk->GetXYZ(pos);
-       double dcaX = pos[0] - vtxp[0]; 
-       double dcaY = pos[1] - vtxp[1];
-       double dcaZ = abs(pos[2] - vtxp[2]);
-       double dcaXY = TMath::Sqrt(dcaX*dcaX+dcaY*dcaY);
        if (dcaXY > 1) continue;
        if (dcaZ > 1) continue;
     }
 
+	hDCAxy->Fill(dcaXY, aodTrk->Pt());
+	hDCAz->Fill(dcaZ);
+    hChi2->Fill(aodTrk->GetTPCchi2perCluster());
     NtrksAfter += 1;
 
     //..get phi-weight for NUA correction
@@ -2222,6 +2248,12 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
       listOfProfile->Add(multProfile.fChcn2[h]);
     }
 
+    if (fuTwoParticleCorrelation0Gap) {
+      multProfile.fChcn2_Gap0[h] = new TProfile(Form("fChc%d{2}_Gap0%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
+      multProfile.fChcn2_Gap0[h]->Sumw2();
+      listOfProfile->Add(multProfile.fChcn2_Gap0[h]);
+    }
+
     if (fuTwoParticleCorrelationLargeGap) {
       multProfile.fChcn2_Gap10[h] = new TProfile(Form("fChc%d{2}_Gap10%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
       multProfile.fChcn2_Gap10[h]->Sumw2();
@@ -2621,6 +2653,20 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
     fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
   }
 
+  if (fPeriod.EqualTo("LHC15o_pass2")) {
+	int currentRun = fAOD->GetRunNumber();
+	if (currentRun == 245729 ||
+		currentRun == 245731 ||
+		currentRun == 245752 ||
+		currentRun == 245759 ||
+		currentRun == 245766 ||
+		currentRun == 245775 ||
+		currentRun == 245785 ||
+		currentRun == 245793) {
+		return kFALSE;
+	}
+  }
+
 
   if(!fEventCuts.AcceptEvent(inEv)) return false;
 
@@ -2659,6 +2705,8 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
   // Vertex Z
   const Double_t aodVtxZ = vtx->GetZ();
   if(TMath::Abs(aodVtxZ) > 10) return kFALSE;
+
+  bootstrap_value = (((int)(aodVtxZ * 233)) % 30 + 30) % 30;
   return kTRUE;
 }
 
@@ -2678,7 +2726,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *
   // Additional cut for TPCchi2perCluster
   if (mtr->GetTPCchi2perCluster()>fTPCchi2perCluster) return kFALSE;
 
-  if (fPeriod.EqualTo("LHC15o")) { // Only for LHC15o pass1
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
     return fGFWSelection15o->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
   } else {
     return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
@@ -2699,9 +2747,12 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptMCTruthTrack(AliAODMCParticle *mtrk) 
 void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, double Ntrks) {
   //..calculate 2-particle correlations
   //..................................
-  double Dn2 = 0, Dn2Gap10 = 0, Dn2Gap14 = 0, Dn2_3subLM = 0, Dn2_3subRM = 0, Dn2_3subLR = 0;
+  double Dn2 = 0, Dn2Gap0 = 0, Dn2Gap10 = 0, Dn2Gap14 = 0, Dn2_3subLM = 0, Dn2_3subRM = 0, Dn2_3subLR = 0;
   if (fuTwoParticleCorrelationStandard || fuTwoParticleCorrelationHigherStandard) {
     Dn2 = correlator.Two(0, 0).Re();
+  }
+  if (fuTwoParticleCorrelation0Gap || fuTwoParticleCorrelationHigher0Gap) {
+    Dn2Gap0 = correlator.TwoGap0(0, 0).Re();
   }
   if (fuTwoParticleCorrelationLargeGap || fuTwoParticleCorrelationHigherLargeGap) {
     Dn2Gap10 = correlator.TwoGap10(0, 0).Re();
@@ -2739,6 +2790,36 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
       TComplex v62 = correlator.Two(6, -6);
       double v62Re = v62.Re()/Dn2;
       profile.fChcn2[4]->Fill(Ntrks, v62Re, Dn2);
+    }
+  }
+
+  if (fuTwoParticleCorrelation0Gap) {
+    if(NtrksAfterGap0M > 0 && NtrksAfterGap0P > 0 && Dn2Gap0 != 0)
+    {
+      //..v2{2} with eta Gap > 1.0
+      TComplex v22Gap0 = correlator.TwoGap0(2, -2);
+      double v22ReGap0 = v22Gap0.Re()/Dn2Gap0;
+      profile.fChcn2_Gap0[0]->Fill(Ntrks, v22ReGap0, Dn2Gap0);
+
+      //..v3{2} with eta Gap > 1.0
+      TComplex v32Gap0 = correlator.TwoGap0(3, -3);
+      double v32ReGap0 = v32Gap0.Re()/Dn2Gap0;
+      profile.fChcn2_Gap0[1]->Fill(Ntrks, v32ReGap0, Dn2Gap0);
+
+      //..v4{2} with eta Gap > 1.0
+      TComplex v42Gap0 = correlator.TwoGap0(4, -4);
+      double v42ReGap0 = v42Gap0.Re()/Dn2Gap0;
+      profile.fChcn2_Gap0[2]->Fill(Ntrks, v42ReGap0, Dn2Gap0);
+
+      //..v5{2} with eta Gap > 1.0
+      TComplex v52Gap0 = correlator.TwoGap0(5, -5);
+      double v52ReGap0 = v52Gap0.Re()/Dn2Gap0;
+      profile.fChcn2_Gap0[3]->Fill(Ntrks, v52ReGap0, Dn2Gap0);
+
+      //..v6{2} with eta Gap > 1.0
+      TComplex v62Gap0 = correlator.TwoGap0(6, -6);
+      double v62ReGap0 = v62Gap0.Re()/Dn2Gap0;
+      profile.fChcn2_Gap0[4]->Fill(Ntrks, v62ReGap0, Dn2Gap0);
     }
   }
 

@@ -192,7 +192,7 @@ int AliFemtoManager::ProcessEvent()
 {
   // process a single event by reading it and passing it to each
   // analysis and event writer
-  //  cout << "AliFemtoManager::ProcessEvent" << endl;
+  //cout << "AliFemtoManager::ProcessEvent" << endl;
   // NOTE - this ReturnHbtEvent makes a *new* AliFemtoEvent - delete it when done!
   AliFemtoEvent* currentHbtEvent = fEventReader->ReturnHbtEvent();
   //  cout << "Event reader has returned control to manager" << endl;

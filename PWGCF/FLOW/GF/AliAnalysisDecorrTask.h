@@ -10,6 +10,7 @@
 #include "AliVParticle.h"
 #include "TAxis.h"
 #include "AliDecorrFlowCorrTask.h"
+#include <vector>
 
 class Taxis;
 class AliVEvent;
@@ -21,7 +22,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
 {
     public:
                                 AliAnalysisDecorrTask();
-                                AliAnalysisDecorrTask(const char *name, Bool_t IsMC);
+                                AliAnalysisDecorrTask(const char *name, bool IsMC, bool isOnTheFly);
         virtual                 ~AliAnalysisDecorrTask();
 
         virtual void            UserCreateOutputObjects();
@@ -32,8 +33,6 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         //Analysis setters
         void                    SetSampling(Bool_t sample, Int_t iNum, Bool_t tracks = kFALSE) { fSampling = sample; fNumSamples = iNum; fRedTracks = tracks; }      //Use jack-knife resampling
         void                    SetFillQA(Bool_t fill = kTRUE) { fFillQA = fill; }
-        void                    SetSmallSystem(Bool_t small = kTRUE) { fSmallSystem = small; }
-        void                    SetFillAfterWeights(Bool_t fillAfter) { fFillAfterWeights = fillAfter; }
         //event selection
         void                    SetTriggerType(UInt_t newval) { fTrigger = newval; }
         void                    SetRejectAddPileUp(Bool_t use = kTRUE) { fEventRejectAddPileUp = use; }
@@ -44,7 +43,8 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetCentBin(Int_t nbins, Double_t *bins) { fCentAxis->Set(nbins,bins); }
         void                    SetCentLim(Double_t min, Double_t max) { fCentMin = min; fCentMax = max; } //Not used yet
         void                    SetPtBins(Int_t nbins, Double_t *bins) { fPtAxis->Set(nbins, bins); }
-        void                    SetRequireHighPtTracks(Bool_t req, Int_t Ntracks, Double_t ptcut) { fRequireHighPtTracks = req; fNHighPtTracks = Ntracks; fHighPtCut = ptcut; }
+        void                    SetRequireHighPtTracks(Int_t Ntracks, Double_t ptcut) { fRequireHighPtTracks = true; fNHighPtTracks = Ntracks; fHighPtCut = ptcut; }
+        void                    SetRequirePrimariesAndCh(Bool_t newval) { bOnlyPrimariesAndCh = newval; }
         AliEventCuts            fEventCuts;
         //track selection
         void                    SetDCAzMax(Double_t dcaz) {  fCutDCAzMax = dcaz; }
@@ -61,19 +61,26 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         void                    SetAbsEta(Double_t etaAbs) {fAbsEtaMax = etaAbs; }
         void                    SetEtaBins(Int_t bins) { fEtaBinNum = bins; }
         void                    SetPhiBins(Int_t bins) { fPhiBinNum = bins; }
-        //void                    SetEtaGap(double etaGap) { dEtaGap = etaGap; }  //outdated, moved to CorrTask
-        void                    SetUseWeights3D(Bool_t use) { fUseWeights3D = use; }    //Use 3D weights (phi, eta Vz)
-        void                    SetUseOwnWeights(Bool_t useOwn) { fUseOwnWeights = useOwn; }
         void                    SetFillWeights(Bool_t fill) { fFillWeights = fill; }    //Fill histograms for weights calculations
-        Bool_t                  GetUseWeights3D() { return fUseWeights3D; }             //Check if 3D weights are used for macro path to weights
-        Bool_t                  GetUseOwnWeights() { return fUseOwnWeights; }
         void                    SetUseWeightsOne(Bool_t useOne) { fUseWeightsOne = useOne; }
         void                    SetCurrSystFlag(int sys) { fCurrSystFlag = sys; }
-        //void                    HasGap(Bool_t hasGap) { bHasGap = hasGap; }  //outdated, derived from CorrTask
         void                    SetRequireTwoPart(Bool_t req) { fRequireTwoPart = req; }
-        void                    SetOnTheFly(bool otf) { fOnTheFly = otf; }
         void                    OverrideMCFlag(Bool_t newval) { fIsMC = newval; };
-    
+        void                    OverrideCentrality(double val) { fOverrideCentrality = val; }
+        void                    DebugTrain(bool dbg) { fDebugTrain = dbg; }
+        struct StoreRef
+        {
+            double val;
+        };
+        struct StorePtA
+        {
+            double val[3][10];
+        };
+        struct StorePtB
+        {
+            double val[10][10];
+        };
+
     private:
         static const Int_t      fNumHarms = 8;             // Used to be 13 for 4-pc without gap. Reduced for cpu. Maximum harmonics length of flow vector array
         static const Int_t      fNumPowers = 2;             // maximum weight power length of flow vector array
@@ -86,28 +93,27 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TList*                  lSampleList;                //!
 
 
-        Bool_t                  InitTask();
-        Bool_t                  IsChargedSelected(const AliAODTrack* track) const;
-        Float_t                 GetNCharged();
-        Bool_t                  LoadWeights();
-        double                  GetWeights(double dPhi, double dEta, double dVz);
-        void                    CreateProfiles(AliDecorrFlowCorrTask* task, double* lCentEdges, double* lPtEdges);
-        Bool_t                  IsEventSelected(Double_t lCent);
-        Bool_t                  CheckTrigger(Double_t lCent);
-        Bool_t                  IsMCEventSelected();
-        Bool_t                  IsEventRejectedAddPileUp(const int fPileupCut) const;
-        Bool_t                  IsTrackSelected(const AliAODTrack* track) const;
-        Int_t                   GetSamplingIndex() const;
-        Double_t                GetCentralityFromImpactParameter();
-        double*                 GetBinsFromAxis(TAxis *inax);
+        AliMCEvent*           getMCEvent();  
+        bool                  InitTask();
+        bool                  LoadWeights();
+        double                GetWeights(double dPhi, double dEta, double dVz);
+        void                  CreateProfiles(AliDecorrFlowCorrTask* task, double* lCentEdges, double* lPtEdges);
+        bool                  IsEventSelected(Double_t lCent);
+        bool                  CheckTrigger(double lCent);
+        bool                  IsEventRejectedAddPileUp(const int fPileupCut) const;
+        bool                  IsTrackSelected(const AliAODTrack* track) const;
+        int                   GetSamplingIndex() const;
+        double                GetCentralityFromImpactParameter();
+        double*               GetBinsFromAxis(TAxis *inax);
+        void                  InitTypes(const AliDecorrFlowCorrTask* const task);
+
+        std::vector<StoreRef> refData;
+        std::vector<StorePtA> ptaData;
+        std::vector<StorePtB> ptbData;
+
         //Weights and QA hists
         AliGFWWeights*          fWeights;                   //!
         TList*                  fWeightList;                //!
-        TH2D*                   fh2Weights;                 //!
-        TH3D*                   fh3Weights;                 //!
-        TH3D*                   fhAfterWeights;             //!
-        TH1D*                   fhChargedCounter;           //!
-        TH2D*                   fhCentVsCharged;            //!  
         TH1D*                   fV0MMulti;                  //!
         TH1D*                   fMulti;                     //!
         TH1I*                   hITSclsB;                   //!
@@ -123,18 +129,24 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         TH1D*                   hNumTracksB;                //!
         TH1D*                   hNumTracksA;                //!
         TH1D*                   hNumHighPtTracksA;          //!
+        TH1I*                   hCharge;                    //!
         TH1D*                   fhEventSel;                 //!
 
-        void                    FillWeights();
-        void                    FillAfterWeights();         
+        void                    FillWeights();   
+        double                  getCentrality();     
         
         //Flow methods
         bool                    IsWithinRP(const AliVParticle* track) const;
         bool                    IsWithinPOI(const AliVParticle* track) const;
         void                    FillRPvectors(const AliDecorrFlowCorrTask* const task);
-        Int_t                   FillPOIvectors(const AliDecorrFlowCorrTask* const task, const double dPtLow, const double dPtHigh); 
+        int                     FillPOIvectors(const AliDecorrFlowCorrTask* const task, const double dPtLow, const double dPtHigh); 
         void                    FillPtBvectors(const AliDecorrFlowCorrTask* const task, const double dPtLow, const double dPtHigh); 
-        void                    CalculateCorrelations(const AliDecorrFlowCorrTask* const task, double centrality, double dPtA, double dPtB, Bool_t bRef, Bool_t bDiff, Bool_t bPtA, Bool_t bPtRef, Bool_t bPtB);
+        void                    CalculateCorrelations(const AliDecorrFlowCorrTask* const task, const double &lCent, const double &lpta, const double &lptb, Bool_t bRef, Bool_t bDiff, Bool_t bPtA, Bool_t bPtRef, Bool_t bPtB);
+        void                    CalculateGFW(TComplex c[2], const AliDecorrFlowCorrTask* const task, int type, bool gap, bool switchreg = false);
+        //void                    RunningCovariance(double x, double y, const double &lCent, const double &lpta);
+        void                    FillProfiles(TComplex c[2], const double &lCent, TString suffix);
+        void                    FillProfiles(TComplex c[2], const double &lCent, const double &lpta, TString suffix);
+        void                    FillProfiles(TComplex c[2], const double &lCent, const double &lpta, const double lptb, TString suffix);
 
         //Flow vectors
         TComplex pvector[fNumHarms][fNumPowers];
@@ -226,22 +238,27 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
 
         //Array lengths and constants
         Int_t                   fIndexSampling;
+        Int_t                   fTaskCounter;
         AliAODEvent*            fAOD;                       //! input event
         Bool_t                  fIsMC;
         AliMCEvent*             fMCEvent;                   //! MC event
         AliVEvent*              fEvent;                     //!
         Bool_t                  fInitTask;                  //Initialization
         Bool_t                  fOnTheFly;                  
+        Bool_t                  fDebugTrain;
         Double_t                fImpactParameterMC;
         std::vector<AliDecorrFlowCorrTask*>    fVecCorrTask;   //
+        TString                 fCorrName;                     //
+        TString                 fCorrLabel;                    //
+        int                     fCorrOrder;                    //
+        std::map<double,double>      centralitymap;  
+
         
         //cuts & selection: Analysis
         Bool_t                  fSampling;      //Bootstrapping sampling
         Bool_t                  fRedTracks;
         Double_t                fTrackprevent;
         Bool_t                  fFillQA;        //Fill QA histograms
-        Bool_t                  fSmallSystem;   //Analyse small system
-        Bool_t                  fFillAfterWeights;
         //cuts & selection: events
         UInt_t                  fTrigger;
         Bool_t                  fEventRejectAddPileUp;
@@ -255,6 +272,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Int_t                   NPtBin;
         Double_t                fCentMin;
         Double_t                fCentMax;
+        double                  fOverrideCentrality;
         Double_t                fPVtxCutX;
         Double_t                fPVtxCutY;
         Double_t                fPVtxCutZ;
@@ -274,8 +292,6 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         //Double_t                dEtaGap; //Now gotten from CorrTask
         Int_t                   fEtaBinNum;
         Int_t                   fPhiBinNum;
-        Bool_t                  fUseWeights3D;
-        Bool_t                  fUseOwnWeights;
         Bool_t                  fUseWeightsOne;
         int                     fCurrSystFlag;
         Bool_t                  fFillWeights;
@@ -292,6 +308,7 @@ class AliAnalysisDecorrTask : public AliAnalysisTaskSE
         Double_t                fRFPsPtMin;
         Bool_t                  fRequireTwoPart;
         Bool_t                  bEqualPt;
+        Bool_t                  bOnlyPrimariesAndCh;
         //QA
         TH2D*                   fhQAEventsfMult32vsCentr;   //!
         TH2D*                   fhQAEventsMult128vsCentr;   //!

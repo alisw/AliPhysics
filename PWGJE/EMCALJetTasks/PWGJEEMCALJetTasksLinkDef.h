@@ -131,7 +131,10 @@
 #pragma link C++ class AliEventTree+;
 #pragma link C++ class AliAnalysisTaskEventExtractor+;
 #pragma link C++ class AliEmcalTRDTrackingTask+;
+#pragma link C++ class AliAnalysisTaskEPCalibForJet+;
 #pragma link C++ class AliAnalysisTaskRawJetWithEP+;
+#pragma link C++ class AliAnalysisTaskEmbeddingJetWithEP+;
+#pragma link C++ class AliAnalysisTaskEmcalJetProperties+;
 
 #pragma link C++ class AliAnalysisTaskSOH+;
 #pragma link C++ class AliAnalysisTaskPi0Hadron+;
@@ -285,6 +288,7 @@
 #pragma link C++ class AliAnalysisTaskLundPlane+;
 #pragma link C++ class AliAnalysisTaskJetCharge+;
 #pragma link C++ class AliAnalysisTaskJetChargeFlavourTemplates+;
+#pragma link C++ class AliAnalysisTaskJetChargeFlavourPb+;
 #pragma link C++ namespace PWGJE::EMCALJetTasks::SubstructureTree;
 #pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::Subjets+;
 #pragma link C++ class PWGJE::EMCALJetTasks::SubstructureTree::JetSplittings+;

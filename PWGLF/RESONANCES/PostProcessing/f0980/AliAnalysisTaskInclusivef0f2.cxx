@@ -138,34 +138,42 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
 
 
  Double1D varcentbinHeavy = {0,0.001,0.0033,0.01,0.02,0.033,0.05,0.1,0.2,0.5,1,5,10,15,20,30,40,50,60,70,80,100};
+ Double1D Cntbins_HI = {0, 10, 30, 50, 90};
+ Double1D Cntbins_HILOWPT = {70, 80, 82.5, 85, 87.5, 90};
+
  binCent = AxisVar("Cent",varcentbinHeavy);
+ if( fOption.Contains("PbPb") ){
+	binCent = AxisVar("Cent",Cntbins_HI);
+	if( fOption.Contains("UPCMODE") ){
+		binCent = AxisVar("Cent",Cntbins_HILOWPT);
+	}
+ }
 
  Double1D verzbin = {-15,-10,-7,7,10,15};
  binZ = AxisVar("Z",verzbin);
- 
+
  Double1D verptbin = {0.0, 0.3, 0.6, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 5.0, 6.0, 7.0, 8.0, 13.0};
+
+ Double1D verLOWptbin = {0.0, 0.01, 0.02, 0.05, 0.1, 0.2};
+
  binPt = AxisVar("Pt",verptbin);
+ if( fOption.Contains("UPCMODE") ) binPt = AxisVar("Pt",verLOWptbin);
+
  binPtGen = AxisFix("Pt",200,0.0,20.0);
-
  binType = AxisStr("Type",{"PN","PP","NN"});
-
  binMass = AxisFix("Mass",1000,0,5);
+
  if( fOption.Contains("Fine") ) binMass = AxisFix("Mass",100000,0,5);
-
+ if( fOption.Contains("PbPb") ){
+	binMass = AxisFix("Mass",380,0.1,2);
+ }
  binCharge = AxisFix("Charge",3,-1.5,1.5);
-
  binTrackCutBit = AxisFix("TrackCut",7,0.5,7.5);
-
  binPID = AxisFix("PIDBit",4,0.5,4.5);
-
  binExKaonNum = AxisFix("KNum",5,0.5,5.5);
-
  binTrackPt = AxisFix("TrackPt",200,0,10);
-
  binSigma = AxisFix("Sigma",100,-10,10);
-
  binSwitch = AxisFix("Switch",2,-0.5,1.5);
-
  binEta = AxisFix("eta",32,-0.8,0.8);
 
  auto binV0Amp = AxisFix("binV0Amp",3000,0,3e3);
@@ -187,7 +195,7 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  binMtRho = AxisVar("binMtPion",binRhoMt);
  binMtPhi = AxisVar("binMtPion",binPhiMt);
 
- binEP = AxisFix("binEP",8,0,TMath::Pi());
+ binEP = AxisFix("binEP",10,0,TMath::Pi());
 
  fHistos = new THistManager("Inclusivef0f2hists");
 
@@ -230,7 +238,7 @@ void AliAnalysisTaskInclusivef0f2::UserCreateOutputObjects()
  CreateTHnSparse("hF2GenParticle","hF2GenParticle",4,
         {binZ,binCentForMC,binPtGen,binMass},"s");
 
-if( fOption.Contains("EPAna") ){
+ if( fOption.Contains("EPAna") ){
         CreateTHnSparse("hF0GenParticleAddEP","hF0GenParticleAddEP",5,
                 {binZ,binCentForMC,binPtGen,binMass,binEP},"s");
  }
@@ -252,6 +260,7 @@ if( fOption.Contains("EPAna") ){
 
  CreateTHnSparse("SignalLossKaon","SignalLossKaon",3,
         {binCentForMC,binPt,binSwitch},"s");
+
  CreateTHnSparse("SignalLoss0Kaon","SignalLoss0Kaon",3,
         {binCentForMC,binPt,binSwitch},"s");
 
@@ -373,6 +382,7 @@ if( fOption.Contains("EPAna") ){
  fHistos->CreateTH2("PID_TPC_NSIG_MC_TUNE","",200,0,10,100,-10,10,"s");
  fHistos->CreateTH2("PID_TOF_NSIG_MC_TUNE","",200,0,10,100,-10,10,"s");
 
+ if( fOption.Contains("MC") ){
  CreateTHnSparse("hKSTrueParticleADDPID","hKSTrueParticleADDPID",4,
         {binZ,binCent,binPt,binMass},"s");
  CreateTHnSparse("hOmgTrueParticleADDPID","hOmgTrueParticleADDPID",4,
@@ -382,6 +392,7 @@ if( fOption.Contains("EPAna") ){
         {binZ,binCent,binPt,binMass},"s");
  CreateTHnSparse("hOmgTrueParticleADDPIDTUNE","hOmgTrueParticleADDPIDTUNE",4,
         {binZ,binCent,binPt,binMass},"s");
+ }
 //***************************************
 
 
@@ -397,18 +408,30 @@ if( fOption.Contains("EPAna") ){
 
 
 //Fill Tracks*********************************
+
+ if( fOption.Contains("Sys") && !fOption.Contains("Sep") ){
  CreateTHnSparse("hInvMass","InvMass",6,
 	{binType,binZ,binCent,binPt,binMass,binTrackCutBit},"s");
+/*
  CreateTHnSparse("hInvMassMixing","InvMassMixing",6,
 	{binType,binZ,binCent,binPt,binMass,binTrackCutBit},"s");
  CreateTHnSparse("hInvMassUnpair","InvMassUnpair",5,
         {binType,binZ,binCent,binPt,binMass},"s");
+*/
  if( fOption.Contains("EPAna") ){
         CreateTHnSparse("hInvMassEP","hInvMassEP",7,
         {binType,binZ,binCent,binPt,binMass,binTrackCutBit,binEP},"s");
  }
+ } else{
+ CreateTHnSparse("hInvMass","InvMass",5,
+	{binType,binZ,binCent,binPt,binMass},"s");
+ if( fOption.Contains("EPAna") ){
+	CreateTHnSparse("hInvMassEP","hInvMassEP",6,
+	{binType,binZ,binCent,binPt,binMass,binEP},"s");
+ }
+ }
 
-
+ if( fOption.Contains("MC") ){
  CreateTHnSparse("KSTARRecParticle","KSTARRecParticle",5,
 	{binType,binZ,binCent,binPt,binMass},"s");
  CreateTHnSparse("OmegaRecParticle","OmegaRecParticle",5,
@@ -421,11 +444,14 @@ if( fOption.Contains("EPAna") ){
         {binType,binZ,binCent,binPt,binMass},"s");
  CreateTHnSparse("ExKaonRecParticle","ExKaonRecParticle",6,
 	{binType,binZ,binCent,binPt,binMass,binExKaonNum},"s");
+ }
 //**********************************************
 
 //QA plots**************************************
+ if( fOption.Contains("AddSP") ){
  CreateTHnSparse("hSinglePion","hSinglePion",4,
 	{binCent,binTrackPt,binCharge,binEta},"s");
+ }
 //**********************************************
 
 // fEMpool.resize(binCent.GetNbins(),
@@ -507,6 +533,7 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
  if( fOption.Contains("UseZNA") ){ fCent = sel->GetMultiplicityPercentile("ZNA"); } 
  
  fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral) );
+ if( fOption.Contains("PbPb") && fOption.Contains("MBOnly") ) fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7) );
  if( fOption.Contains("PbPb") && (
 	( fCent > 10  && fCent < 30 ) || ( fCent > 50 ) ) ){
 	fEventCuts.OverrideAutomaticTriggerSelection( (AliVEvent::kINT7) );
@@ -744,8 +771,42 @@ void AliAnalysisTaskInclusivef0f2::UserExec(Option_t *option)
 			( IsEventSelectedPbPb && fOption.Contains("2018") ) ){
 			if( fOption.Contains("MismatchCheck") ){
 				if(this -> GoodTracksSelection(0x20, 5, 3, 2, 100)) this -> FillTracks();
-			} else{ if(this -> GoodTracksSelection(0x20, 5, 3, 2, 0.01)) this -> FillTracks(); }
+			} else if( fOption.Contains("UPCMODE") ){
+				if(this -> GoodTracksSelection(0x20, 2, 0, 2, 0.1)) this -> FillTracks(); 
+			} else if( fOption.Contains("UPCTOFMODE") ){
+				if(this -> GoodTracksSelection(0x20, 0, 2, 0, 0.01)) this -> FillTracks();
+			}else {
+				if(this -> GoodTracksSelection(0x20, 5, 3, 2, 0.01)) this -> FillTracks(); 
+			}
 			fHistos->FillTH1("hEvtNumberUsed",1,1);
+			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
+		}
+	}
+	else if( IsEventSelectedPbPb && fOption.Contains("2018") ){
+		if( fOption.Contains("SepSysZ") ){
+			if( fabs(fZ) < 7 ){
+				if(this -> GoodTracksSelection(0x20, 5, 3, 2, 0.01)) this -> FillTracks();
+				FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
+			}
+		}
+		else if( fOption.Contains("SepSysTrk") ){
+			if(this -> GoodTracksSelection(0x60, 5, 3, 2,0.01)) this -> FillTracks();
+			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
+		}
+		else if( fOption.Contains("SepSysPID_var1") ){
+			if(this -> GoodTracksSelection(0x20, 5, 3.5, 2,0.01)) this -> FillTracks();
+			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
+		}
+		else if( fOption.Contains("SepSysPID_var2") ){
+			if(this -> GoodTracksSelection(0x20, 5, 3, 2.5,0.01)) this -> FillTracks();
+			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
+		}
+		else if( fOption.Contains("SepSysPID_var3") ){
+			if(this -> GoodTracksSelection(0x20, 5, 2.5, 2,0.01)) this -> FillTracks();
+			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
+		}
+		else if( fOption.Contains("SepSysPID_var4") ){
+			if(this -> GoodTracksSelection(0x20, 5, 3, 1.5,0.01)) this -> FillTracks();
 			FillTHnSparse("EvtSelector",{fZ,fCent},1.0);
 		}
 	}
@@ -1071,8 +1132,9 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 
 		if( track->Pt() < fptcut ) continue;
 		if( fabs( track->Eta() ) > fetacut ) continue;
-
-		FillTHnSparse("hSinglePion", {fCent,track->Pt(),static_cast<double>(track->Charge()),track->Eta()},1.0 );
+		if( fOption.Contains("AddSP") ){
+			FillTHnSparse("hSinglePion", {fCent,track->Pt(),static_cast<double>(track->Charge()),track->Eta()},1.0 );
+		}
 	}
 
 	goodtrackindices.push_back(it);
@@ -1165,7 +1227,7 @@ bool AliAnalysisTaskInclusivef0f2::GoodTracksSelection(int trkcut, double TPCsig
 				for(UInt_t it=0;it<ntracks;it++){
 					track = (AliAODTrack*)fEvt->GetTrack(it);
 					if( !track ) continue;
-					if( pdgCode == 9010221 ) cout << track->GetLabel() << ", " << track->GetMother() << endl;
+//					if( pdgCode == 9010221 ) cout << track->GetLabel() << ", " << track->GetMother() << endl;
 					if( (int)track->GetLabel() == Label1 || (int)track->GetLabel() == Label2 ){
 						trackd1Recon = (AliAODTrack*)fEvt->GetTrack( it );
 						if( trackd1Recon ){
@@ -1663,40 +1725,82 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 */
 
 		if( track1->Charge()*track2->Charge() == -1 ){
+			if( fOption.Contains("Sys") && !fOption.Contains("Sep") ){
 			FillTHnSparse("hInvMass",{1,fZ,fCent,
 				PiPipT, PiPiMass,(double)(trkbin+1)},1.0 );
                         if( fOption.Contains("EPAna") ){
                                 rap_Phi = Phi_pair - fEP_v0;
-                                TVector2::Phi_0_2pi( rap_Phi );
+                                rap_Phi = TVector2::Phi_0_2pi( rap_Phi );
                                 if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
 
                                 FillTHnSparse("hInvMassEP",{1,fZ,fCent,
                                 PiPipT, PiPiMass,(double)(trkbin+1),rap_Phi},1.0 );
                         }
+			} else{
+			FillTHnSparse("hInvMass",{1,fZ,fCent,
+                                PiPipT, PiPiMass},1.0 );
+                        if( fOption.Contains("EPAna") ){
+                                rap_Phi = Phi_pair - fEP_v0;
+                                rap_Phi = TVector2::Phi_0_2pi( rap_Phi );
+                                if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
+
+                                FillTHnSparse("hInvMassEP",{1,fZ,fCent,
+                                PiPipT, PiPiMass,rap_Phi},1.0 );
+                        }
+
+			}
 		}
 		else if( track1->Charge() + track2->Charge() == 2 ){
+			if( fOption.Contains("Sys") && !fOption.Contains("Sep") ){
 			FillTHnSparse("hInvMass",{2,fZ,fCent,
 				PiPipT, PiPiMass,(double)(trkbin+1)},1.0 );
                         if( fOption.Contains("EPAna") ){
                                 rap_Phi = Phi_pair - fEP_v0;
-                                TVector2::Phi_0_2pi( rap_Phi );
+                                rap_Phi = TVector2::Phi_0_2pi( rap_Phi );
                                 if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
 
                                 FillTHnSparse("hInvMassEP",{2,fZ,fCent,
                                 PiPipT, PiPiMass,(double)(trkbin+1),rap_Phi},1.0 );
                         }
+			} else{
+			FillTHnSparse("hInvMass",{2,fZ,fCent,
+                                PiPipT, PiPiMass},1.0 );
+                        if( fOption.Contains("EPAna") ){
+                                rap_Phi = Phi_pair - fEP_v0;
+                                rap_Phi = TVector2::Phi_0_2pi( rap_Phi );
+                                if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
+
+                                FillTHnSparse("hInvMassEP",{2,fZ,fCent,
+                                PiPipT, PiPiMass,rap_Phi},1.0 );
+                        }
+
+			}
 		}
 		else if( track1->Charge() + track2->Charge() == -2 ){
+			if( fOption.Contains("Sys") && !fOption.Contains("Sep") ){
 			FillTHnSparse("hInvMass",{3,fZ,fCent,
 				PiPipT, PiPiMass,(double)(trkbin+1)},1.0 );
                         if( fOption.Contains("EPAna") ){
                                 rap_Phi = Phi_pair - fEP_v0;
-                                TVector2::Phi_0_2pi( rap_Phi );
+                                rap_Phi = TVector2::Phi_0_2pi( rap_Phi );
                                 if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
 
                                 FillTHnSparse("hInvMassEP",{3,fZ,fCent,
                                 PiPipT, PiPiMass,(double)(trkbin+1),rap_Phi},1.0 );
                         }
+			} else{
+			FillTHnSparse("hInvMass",{3,fZ,fCent,
+                                PiPipT, PiPiMass},1.0 );
+                        if( fOption.Contains("EPAna") ){
+                                rap_Phi = Phi_pair - fEP_v0;
+                                rap_Phi = TVector2::Phi_0_2pi( rap_Phi );
+                                if( rap_Phi > TMath::Pi() ) rap_Phi -= TMath::Pi();
+
+                                FillTHnSparse("hInvMassEP",{3,fZ,fCent,
+                                PiPipT, PiPiMass,rap_Phi},1.0 );
+                        }
+
+			}
 		}
 	}
  }
@@ -1733,7 +1837,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 	
 			PiPipT = sqrt( pow( track1->Px()+track2->Px(),2 ) +
 	                               pow( track1->Py()+track2->Py(),2 ) );
-
+/*
 	                if( track1->Charge()*track2->Charge() == -1 ){
 	                        FillTHnSparse("hInvMassMixing",{1,fZ,fCent,
 	                                PiPipT, PiPiMass,(double)(trkbin+1)},1.0);
@@ -1746,6 +1850,7 @@ void AliAnalysisTaskInclusivef0f2::FillTracks(){
 	                        FillTHnSparse("hInvMassMixing",{3,fZ,fCent,
 	                                PiPipT, PiPiMass,(double)(trkbin+1)},1.0);
 	                }
+*/
 	        }
 	}
  }

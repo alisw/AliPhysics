@@ -126,12 +126,13 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD():
   fjets(0), //ML
   fPtmax(0),  //ML
   fEventReject(0), // begin dowang
+  fPbPb15Pass2MC(0),
   fCenCutLowPU(NULL),
   fCenCutHighPU(NULL),
   fSPDCutPU(NULL),
   fV0CutPU(NULL),
   fMultCutPU(NULL),
- fCenCutLowPU2018(NULL),
+  fCenCutLowPU2018(NULL),
   fCenCutHighPU2018(NULL),
   fSPDCutPU2018(NULL),
   fV0CutPU2018(NULL),
@@ -262,12 +263,13 @@ AliFemtoEventReaderAOD::AliFemtoEventReaderAOD(const AliFemtoEventReaderAOD &aRe
   fjets(aReader.fjets), //ML
   fPtmax(aReader.fPtmax),  //ML
   fEventReject(aReader.fEventReject), // begin dowang
+  fPbPb15Pass2MC(aReader.fPbPb15Pass2MC),
   fCenCutLowPU(aReader.fCenCutLowPU),
   fCenCutHighPU(aReader.fCenCutHighPU),
   fSPDCutPU(aReader.fSPDCutPU),
   fV0CutPU(aReader.fV0CutPU),
   fMultCutPU(aReader.fMultCutPU),
- fCenCutLowPU2018(aReader.fCenCutLowPU2018),
+  fCenCutLowPU2018(aReader.fCenCutLowPU2018),
   fCenCutHighPU2018(aReader.fCenCutHighPU2018),
   fSPDCutPU2018(aReader.fSPDCutPU2018),
   fV0CutPU2018(aReader.fV0CutPU2018),
@@ -379,6 +381,7 @@ AliFemtoEventReaderAOD &AliFemtoEventReaderAOD::operator=(const AliFemtoEventRea
   fjets = aReader.fjets;  //ML
   fPtmax = aReader.fPtmax; //ML
   fEventReject    = aReader.fEventReject; // begin dowang
+  fPbPb15Pass2MC = aReader.fPbPb15Pass2MC;
   fCenCutLowPU    = aReader.fCenCutLowPU;
   fCenCutHighPU   = aReader.fCenCutHighPU;
   fSPDCutPU       = aReader.fSPDCutPU;
@@ -430,7 +433,6 @@ AliFemtoEvent *AliFemtoEventReaderAOD::ReturnHbtEvent()
 {
   /// Reads in the next event from the chain and converts it to an AliFemtoEvent
   AliFemtoEvent *hbtEvent = nullptr;
-
   // We have hit the end of our range -> open the next file
   if (fCurEvent == fNumberofEvent) {
     // We haven't loaded anything yet - open
@@ -461,13 +463,11 @@ AliFemtoEvent *AliFemtoEventReaderAOD::ReturnHbtEvent()
 
 AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 {
-
   // A function that reads in the AOD event
   // and transfers the neccessary information into
   // the internal AliFemtoEvent
 
   AliFemtoEvent *tEvent = new AliFemtoEvent();
-
   // setting global event characteristics
   tEvent->SetRunNumber(fEvent->GetRunNumber());
   tEvent->SetMagneticField(fEvent->GetMagneticField() * kilogauss); //to check if here is ok
@@ -529,9 +529,17 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
         if(!Reject15oPass2Event(fEvent,fEventReject)){
             return nullptr;
         }
+	if(fCentRange[1]!=1000){
+	AliMultSelection* fMultSel  = (AliMultSelection*)fEvent->FindListObject("MultSelection");
+	float centV0M               = fMultSel->GetMultiplicityPercentile("V0M");
+		if ((centV0M * 10 < fCentRange[0]) || (centV0M * 10 > fCentRange[1])) {
+      			delete tEvent;
+      			return nullptr;
+    		}
+	}		
     }
   //**************************************
-
+  
   // AliAnalysisUtils
   if (fisPileUp || fpA2013) {
     fAnaUtils = new AliAnalysisUtils();
@@ -563,17 +571,17 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
 
     delete fAnaUtils;
   }
-
+  
   // Primary Vertex position
   const auto *aodvertex = (fUseAliEventCuts)
                         ? static_cast<const AliAODVertex *>(fEventCuts->GetPrimaryVertex())
                         : static_cast<const AliAODVertex *>(fEvent->GetPrimaryVertex());
-
+  
   if (!aodvertex || aodvertex->GetNContributors() < 1) {
     delete tEvent;  // Bad vertex, skip event.
     return nullptr;
   }
-
+  
   aodvertex->GetPosition(fV1);
   AliFmThreeVectorF vertex(fV1[0], fV1[1], fV1[2]);
   tEvent->SetPrimVertPos(vertex);
@@ -603,7 +611,7 @@ AliFemtoEvent *AliFemtoEventReaderAOD::CopyAODtoFemtoEvent()
       return nullptr;
     }
   }
-
+  
   const Float_t percent = cent->GetCentralityPercentile("V0M");
 
   // Flatten centrality distribution
@@ -834,8 +842,6 @@ if(fjets>0){
       }
     }
 
-
- 
     tEvent->SetNormalizedMult(norm_mult);
 
     std::unique_ptr<AliFemtoTrack> trackCopy(CopyAODtoFemtoTrack(aodtrack));
@@ -886,6 +892,12 @@ if(fjets>0){
 
 
     CopyPIDtoFemtoTrack(aodtrackpid, trackCopy.get());
+	// dowang for Pb-Pb 15 pass2 filter bit7 MC
+	if(fPbPb15Pass2MC){
+		if(fFilterBit == (1 << 7)){
+			CopyPIDtoFemtoTrack(aodtrack,trackCopy.get());		
+		}
+	}
 
     if (mcP) {
       // Fill the hidden information with the simulated data
@@ -1442,7 +1454,7 @@ AliFemtoTrack *AliFemtoEventReaderAOD::CopyAODtoFemtoTrack(const AliAODTrack *tA
   tFemtoTrack->SetTPCsignal(tAodTrack->GetTPCsignal());
   tFemtoTrack->SetTPCClusterMap(tAodTrack->GetTPCClusterMap());
   tFemtoTrack->SetTPCSharedMap(tAodTrack->GetTPCSharedMap());
-
+  tFemtoTrack->SetTPCNCrossedRows(tAodTrack->GetTPCCrossedRows());
   float globalPositionsAtRadii[9][3];
   float bfield = 5 * fMagFieldSign;
 
@@ -2298,6 +2310,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, A
     //DCA for TPC only - from PropagateToDCA method
     AliExternalTrackParam aliextparam;
     aliextparam.CopyFromVTrack(tAodTrack);
+    
     if (aliextparam.GetX() > 3.0) {
       DCAXY = -999;
       DCAZ = -999;
@@ -2312,7 +2325,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, A
         DCAZ = DCA[1];
       }
     }
-
+    
     tFemtoTrack->SetImpactD(DCAXY);
     tFemtoTrack->SetImpactZ(DCAZ);
   }
@@ -2450,7 +2463,11 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, A
   /******************************************/
   //////////////////////////////////////
 }
+void AliFemtoEventReaderAOD::SetPreCentralityCut(double min, double max){
+  fCentRange[0] = min;
+  fCentRange[1] = max;
 
+}
 void AliFemtoEventReaderAOD::SetCentralityPreSelection(double min, double max)
 {
   fCentRange[0] = min;
@@ -2894,6 +2911,9 @@ void AliFemtoEventReaderAOD::Set15oPass2EventReject(Int_t EventReject)
 {
   fEventReject = EventReject;   
 }
+void AliFemtoEventReaderAOD::SetPbPb15Pass2MC(Int_t PbPb15Pass2MC){
+  fPbPb15Pass2MC = PbPb15Pass2MC;
+}
 bool AliFemtoEventReaderAOD::Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLabel)
 {
 	// 2 means 2015 AOD pass2
@@ -2903,7 +2923,6 @@ bool AliFemtoEventReaderAOD::Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLab
   // 0.0 refenrence 08 pileup
   if (((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0) return false;
   if (fAOD->IsIncompleteDAQ()) return false;
-
   // 1.0 trigger
   // has been done in AliAnalysisTaskFemto.cxx
 
@@ -2938,6 +2957,8 @@ bool AliFemtoEventReaderAOD::Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLab
   // 4.1 CL0 pile-up
   float centCL0 = fMultSel->GetMultiplicityPercentile("CL0");
   if (centCL0 < fCenCutLowPU->Eval(centV0M)) return false;
+  if (centCL0 > fCenCutHighPU->Eval(centV0M)) return false;
+
   // 4.2 ITS pile-up
   Int_t nITSClsLy0          = fAOD->GetNumberOfITSClusters(0);
   Int_t nITSClsLy1          = fAOD->GetNumberOfITSClusters(1);
@@ -2956,7 +2977,7 @@ bool AliFemtoEventReaderAOD::Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLab
   UShort_t multV0On     = multV0aOn + multV0cOn;
 
   if (multV0On < fV0CutPU->Eval(multV0Tot)) return false;
-  
+
   // 4.4 Mult(FB32) Vs Cent(V0M)
   const Int_t nTracks = fAOD->GetNumberOfTracks();
   Int_t multTrk = 0;
@@ -2967,7 +2988,7 @@ bool AliFemtoEventReaderAOD::Reject15oPass2Event(AliAODEvent *fAOD,Int_t yearLab
           continue;
       }
       if (aodTrk->TestFilterBit(32)){
-        if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2))
+        //if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2))
         multTrk++;
       }
   }
@@ -3029,7 +3050,7 @@ double fVertex[3] = {0.};
           continue;
       }
       if (aodTrk->TestFilterBit(32)) {
-        if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2))
+        //if ((TMath::Abs(aodTrk->Eta()) < 0.8) && (aodTrk->GetTPCNcls() >= 70) && (aodTrk->Pt() >= 0.2))
         multTrk++;
       }
   }

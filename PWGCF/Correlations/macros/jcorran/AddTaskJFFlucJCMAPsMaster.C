@@ -6,16 +6,18 @@
 #include <string>
 #include <vector>
 
-AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_pass2", UInt_t period = 0, double ptMin = 0.2, double ptMax = 5.0,
-  std::string configArray = "0 1 2 4 5 8 11 13", bool saveQA = kFALSE, bool ESDpileup = false, double intercept = 15000, bool saveQApileup = false)
+AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_pass2", UInt_t period = 0,
+  double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 2 4 5 8 11 13",
+  bool saveQA = kFALSE, bool ESDpileup = false, double intercept = 15000,
+  bool TPCpileup = false, bool saveQA_TPCpileup = false)
 {
-  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
   // Less essential global variables.
   bool removeBadArea = kFALSE;
   int debug = 0;
   bool useTightCuts = kFALSE;
-  double slope = 3.38;
+  double slope = 3.38; bool saveQA_ESDpileup = false;
+  
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   // Prepare the configuration of the wagons.
   enum { lhc15o = 0, lhc18q = 1, lhc18r = 2 };
@@ -50,11 +52,11 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     case 4 :    // Syst: (pileup > 15000) changed to (pileup > 10000).
       configNames.push_back("pileup10");
       break;
-    case 5 :    // Syst: |zVtx < 8| changed to |zVtx < 10|.
-      configNames.push_back("zvtx10");
-      break;
-    case 6 :    // Syst: |zVtx < 8| changed to |zVtx < 9|.
+    case 5 :    // Syst: |zVtx < 8| changed to |zVtx < 9|.
       configNames.push_back("zvtx9");
+      break;
+    case 6 :    // Syst: |zVtx < 8| changed to |zVtx < 6|.
+      configNames.push_back("zvtx6");
       break;
     case 7 :    // Syst: |zVtx < 8| changed to |zVtx < 7|.
       configNames.push_back("zvtx7");
@@ -89,6 +91,21 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     case 17 :     // Syst: subA. TBI
       configNames.push_back("subA");
       break;
+    case 18 :     // Syst: (chi2 in [0.1, 4]) changed to (chi2 in [0.1, 2.5]).
+      configNames.push_back("chi2tight01");
+      break;
+    case 19 :     // Syst: (chi2 in [0.1, 4]) changed to (chi2 < 2.3).
+      configNames.push_back("chi2tight23");
+      break;
+    case 20 :     // Syst: (chi2 in [0.1, 4]) changed to (chi2 < 2.3).
+      configNames.push_back("chi2tight136");
+      break;
+    case 21 :     // Syst: (chi2 in [0.1, 1.36])
+      configNames.push_back("chi2low136");
+      break;  
+    case 22 :     // Syst: (chi2 in [0.1, 2.3])
+      configNames.push_back("chi2low23");
+      break;  
     default :
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
         << std::endl;
@@ -149,15 +166,17 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     /// Event selection: pileup cuts and Zvtx.
     if (strcmp(configNames[i].Data(), "noPileup") != 0) {   // Set flag only if we cut on pileup.
       fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);
-      if (strcmp(configNames[i].Data(), "pileup10") == 0) {fJCatalyst[i]->SetESDpileupCuts(true, slope, 10000, saveQApileup);}
-      else {fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQApileup);}
+      if (strcmp(configNames[i].Data(), "pileup10") == 0) {fJCatalyst[i]->SetESDpileupCuts(true, slope, 10000, saveQA_ESDpileup);}
+      else {fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQA_ESDpileup);}
+
+      fJCatalyst[i]->SetTPCpileupCuts(TPCpileup, saveQA_TPCpileup); // Reject the TPC pileup.
     }
     if (period == lhc18q || period == lhc18r) {fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CENT_FLATTENING);}    
 
-    if (strcmp(configNames[i].Data(), "zvtx10") == 0) {    
-      fJCatalyst[i]->SetZVertexCut(10.0);
-    } else if (strcmp(configNames[i].Data(), "zvtx9") == 0) {
+    if (strcmp(configNames[i].Data(), "zvtx9") == 0) {    
       fJCatalyst[i]->SetZVertexCut(9.0);
+    } else if (strcmp(configNames[i].Data(), "zvtx6") == 0) {
+      fJCatalyst[i]->SetZVertexCut(6.0);
     } else if (strcmp(configNames[i].Data(), "zvtx7") == 0) {
       fJCatalyst[i]->SetZVertexCut(7.0);
     } else {  // Default value for JCorran analyses in Run 2.
@@ -185,6 +204,16 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
       fJCatalyst[i]->SetChi2Cuts(0.0, 4.0);
     } else if (strcmp(configNames[i].Data(), "chi2tight") == 0) {
       fJCatalyst[i]->SetChi2Cuts(0.0, 2.5);
+    } else if (strcmp(configNames[i].Data(), "chi2tight01") == 0) {
+      fJCatalyst[i]->SetChi2Cuts(0.1, 2.5);
+    } else if (strcmp(configNames[i].Data(), "chi2tight23") == 0) {
+      fJCatalyst[i]->SetChi2Cuts(0.0, 2.3);
+    } else if (strcmp(configNames[i].Data(), "chi2tight136") == 0) {
+      fJCatalyst[i]->SetChi2Cuts(0.0, 1.36);
+    } else if (strcmp(configNames[i].Data(), "chi2low136") == 0) {
+      fJCatalyst[i]->SetChi2Cuts(0.1, 1.36);
+    } else if (strcmp(configNames[i].Data(), "chi2low23") == 0) {
+      fJCatalyst[i]->SetChi2Cuts(0.1, 2.3);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetChi2Cuts(0.1, 4.0);
     }

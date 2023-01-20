@@ -3,15 +3,9 @@
 // *** AddTaskFemto.C ***
 // ---train version ---
 // This macro initialize a complete AnalysisTask object for femtoscopy.
-// from:
-// alicepc100/cern/users/erogocha/PbPb2.76/2011/AOD115_0-10_newPID/to_alien_newtag/AddTaskFemto.C
-// ---modified to train---
-//  KM: March 25, 2013
 //=============================================================================
-
-//this line for local: AliAnalysisTaskFemto *AddTaskFemtoKchHBT(const char *configMacroName="ConfigFemtoAnalysis.C", const char *configMacroParameters="" )
-
-AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containerName="femtolist", const char *configMacroParameters="" )
+//AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerName="femtolist", TString configMacroParameters="")
+AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, TString containerName="femtolist", TString configMacroParameters="",Bool_t kGridConfig = kFALSE, TString userName = "", TString configFunName = "ConfigFemtoAnalysis")
 {
 // Creates a proton analysis task and adds it to the analysis manager.
 
@@ -48,19 +42,19 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   }
   //  gROOT->LoadMacro("ConfigFemtoAnalysis.C++");
 
-  //was befere aliroot 5.04.33: AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName);
-  //  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,kFALSE);
-  //March 2013:
-  //to check localy before new tag I did symbolic link on my laplot
-  //in $ALICE_PHYSICS/PWGCF/FEMTOSCOPY/macros/Train/
-  //[root@alicethinks Train]# ln -s /scratch/AliWork/PbPb2.76/Train2013/KchHBT KchHBT
-  //
-  AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
-  //10-90% only two triggers: SemiCentral and MB
-  //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);// this a new line for train
-  taskfemto->SelectCollisionCandidates(AliVEvent::kINT7);
-  //0-10 % all three triggers
-  //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// this a new line for train
+  //AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
+  AliAnalysisTaskFemto *taskfemto;
+  if(kGridConfig)
+    {
+      taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE,kTRUE,userName,configFunName);
+    }
+  else
+    {
+      taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE,kFALSE,userName,configFunName);
+    }
+
+  //taskfemto->SelectCollisionCandidates(AliVEvent::kINT7);
+
   mgr->AddTask(taskfemto);
 
   // D. Configure the analysis task. Extra parameters can be used via optional
@@ -72,9 +66,8 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("ER_woSDD",  TList::Class(),
-  							       AliAnalysisManager::kOutputContainer,outputfile);
-
+  //AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("ER_woSDD",TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer(containerName,TList::Class(),AliAnalysisManager::kOutputContainer,outputfile);
 
    mgr->ConnectInput(taskfemto, 0, mgr->GetCommonInputContainer());
    mgr->ConnectOutput(taskfemto, 0, cout_femto);

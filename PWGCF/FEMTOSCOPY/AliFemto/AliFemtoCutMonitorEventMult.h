@@ -24,7 +24,7 @@ class TList;
 class AliFemtoCutMonitorEventMult : public AliFemtoCutMonitor {
 public:
   AliFemtoCutMonitorEventMult();
-  AliFemtoCutMonitorEventMult(const char *aName, int nBins=5000, double multMax=5000.5);
+  AliFemtoCutMonitorEventMult(const char *aName, int nBins=20000, double multMax=20000.5);
   AliFemtoCutMonitorEventMult(const AliFemtoCutMonitorEventMult &aCut);
   virtual ~AliFemtoCutMonitorEventMult();
 
@@ -44,6 +44,7 @@ public:
 
   void SetReadMC(Bool_t mc);
   void AdditionalMultHistsOn(Bool_t addhists);
+  void SetfaddRunNumberQA(int addRunNumberQA);
   void Write();
 
   virtual TList *GetOutputList();
@@ -69,7 +70,9 @@ private:
   TH2D *fEst3Norm;    ///< ITS Pure vs Normalized
 
   TH1D *fPsiVZERO;    ///< psi from vzero
-
+  
+  int faddRunNumberQA;	///< dowang: if ture, add run number QA
+  TH1D *fRunNumberQA;	///< dowang: how many event in each run number!
 };
 
 #endif

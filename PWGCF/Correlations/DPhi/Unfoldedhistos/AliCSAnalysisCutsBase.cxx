@@ -38,6 +38,8 @@ AliInputEventHandler               *AliCSAnalysisCutsBase::fgInputHandler = NULL
 AliInputEventHandler               *AliCSAnalysisCutsBase::fgMCHandler = NULL;
 Bool_t                              AliCSAnalysisCutsBase::fgIsESD = kTRUE;
 TClonesArray                       *AliCSAnalysisCutsBase::fgMCArray = NULL;
+const AliVVertex* AliCSAnalysisCutsBase::fVertex = nullptr;
+double AliCSAnalysisCutsBase::fMagField = 0.0;
 
 /// Default constructor for serialization
 AliCSAnalysisCutsBase::AliCSAnalysisCutsBase() :

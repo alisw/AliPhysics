@@ -2,6 +2,7 @@
 // Author: Ionut-Cristian Arsene, 2015/04/05
 // email: iarsene@cern.ch
 //
+// Altered by Ida Storehaug: 2021/19/08
 // Variable manager
 //
 
@@ -547,11 +548,13 @@ class AliReducedVarManager : public TObject {
     kPairTypeSPD,               // 2 (both); 1 (one) 0 (none) of the legs has an hit in the first SPD layer;     
     kMassV0,                    // masses for all 4 V0 assumptions (0-K0s, 1-Lambda, 2-ALambda, 3-Gamma)
     kPairChisquare=kMassV0+4,     
-    kPairLxy,           
+    kPairLxy, 
+    kPairLxyz,          
     kPseudoProperDecayTime,
     kPseudoProperDecayTimeMC,
     kPairOpeningAngle,  
     kPairPointingAngle, 
+    kPairCosPointingAngle,
     kPairThetaCS,                // cos (theta*) in Collins-Soper frame       
     kPairPhiCS,                    // phi* in Collins-Soper frame
     kPairThetaHE,                // cos (theta*) in helicity frame       
@@ -704,6 +707,27 @@ class AliReducedVarManager : public TObject {
     kOneOverAssocHadronEff,                 // 1 / associated hadron efficiency (correction factor)
     kTriggerEffTimesAssocHadronEff,         // J/psi candidate efficiency x associated hadron efficiency
     kOneOverTriggerEffTimesAssocHadronEff,  // 1 / (J/psi candidate efficiency x associated hadron efficiency)
+    // B -> J /psi + K variables (Added by idstoreh) ----------------------------------------------
+    kMassJpsiK,                             // innvariant mass of the trigger pair and associated track
+    kP_JpsiK,                               // momentum of the B candidate 
+    kPt_JpsiK,                              // transverse momentum of the B candidate
+    kPhi_JpsiK,                             // phi of the B candidate
+    kEta_JpsiK,                             // eta of the B candidate 
+    kPairChi2prNDOF,                        // chi2 of legs pair
+    kTripletChi2prNDOF,                     // chi2 of legs + associated track (B candidate)
+    kTripletLegPtSum,                       // sum of pt of three legs of B candidate
+    //kTripletDca,                            // DCA of B candidate
+    //kTripletDcaXY,                
+    //kTripletDcaZ, 
+    kTripletLxy,
+    kTripletLxyz,
+    kTripletCosPointingAngle,
+    kTripletPseudoProperDecayTime,
+    kDCADoubletToAssoc,
+    kDoubletAssocDeviation,
+    kArmAlpha,
+    kArmQTJPsi,
+    kArmQTK,
     // vars related to psiprime decay into J/psi + pi+pi- channel
     kAssociated2Pt,
     kAssociated2Eta,
@@ -825,6 +849,7 @@ class AliReducedVarManager : public TObject {
   static void FillPairInfoME(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Int_t type, Float_t* values);
   static void FillPairMEflow(AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Float_t* values/*, Int_t idx=0*/);
   static void FillCorrelationInfo(AliReducedBaseTrack* p, AliReducedBaseTrack* t, Float_t* values);
+  static void FillBcandidateInfo(AliReducedBaseTrack* p, AliReducedBaseTrack* leg1, AliReducedBaseTrack* leg2, AliReducedBaseTrack* t, Float_t* values); //idstoreh
   static void FillCaloClusterInfo(AliReducedCaloClusterInfo* cl, Float_t* values);
   static void FillPsiPrimeInfo(AliReducedBaseTrack* p, AliReducedBaseTrack* t1, AliReducedBaseTrack* t2, Float_t* values);//tariq
   static void FillTrackingStatus(AliReducedTrackInfo* p, Float_t* values);
@@ -885,6 +910,7 @@ class AliReducedVarManager : public TObject {
   static void GetLegMassAssumption(Int_t id, Float_t& m1, Float_t& m2);
   static AliKFParticle BuildKFcandidate(AliReducedTrackInfo* track1, Float_t mh1, AliReducedTrackInfo* track2, Float_t mh2);
   static AliKFParticle BuildKFvertex( AliReducedEventInfo * event );
+  static AliKFParticle BuildKFtriplet(AliReducedTrackInfo* track1, Float_t mh1, AliReducedTrackInfo* track2, Float_t mh2, AliReducedTrackInfo* track3, Float_t mh3, Double_t& doubletAssocDistance, Double_t& doubletAssocDeviation);
   
   static TH2F* fgTPCelectronCentroidMap;    // TPC electron centroid 2D map
   static TH2F* fgTPCelectronWidthMap;       // TPC electron width 2D map

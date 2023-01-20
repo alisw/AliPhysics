@@ -73,6 +73,7 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
 
   /// Setter for ZDC
   void SetUseZDCSpectatorPlane(Bool_t bL)        {this->bUseZDCSpectatorPlane = bL;}
+  void SetTypeOfRecentering(Int_t nType)        {this->gTypeOfRecentering = nType;}
   
   /// Track Cut Ranges ///
   void SetTrackCutNclusterMin(Int_t nclTPC)   {this->fTPCclustMin   = nclTPC;}
@@ -188,6 +189,7 @@ class AliAnalysisTaskGammaDeltaPID : public AliAnalysisTaskSE {
 
   /// ZDC 
   Bool_t       bUseZDCSpectatorPlane; //
+  Int_t        gTypeOfRecentering;
   Bool_t       bRecenterFailOrNot;    //
 
   /// Chunzheng: V0 (Lambda) Cut parameters:

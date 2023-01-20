@@ -48,7 +48,13 @@ class AliExternalTrackParam;
 //#include "AliESDtrackCuts.h"
 //#include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
+#include "AliTrackReference.h"
 #include "AliAnalysisTaskWeakDecayVertexer.h"
+
+//include ML classes
+#include "AliMachineLearning.h"
+#include "AliNeuralNetwork.h"
+#include "AliBDT.h"
 
 class AliAnalysisTaskStrangenessVsMultiplicityMCRun2 : public AliAnalysisTaskSE {
 public:
@@ -149,6 +155,9 @@ public:
   }
   void SetSandboxV0Prongs ( Bool_t lOpt = kTRUE) {
     fkSandboxV0Prongs = lOpt;
+  }
+  void SetSaveMCInfoAtTPC ( Bool_t lVal = kTRUE) {
+    fkSaveMCInfoTPC = lVal;
   }
   //---------------------------------------------------------------------------------------
   void SetUseExtraEvSels ( Bool_t lUseExtraEvSels = kTRUE) {
@@ -316,7 +325,10 @@ public:
     fkSaveSpecificConfig = kTRUE;
   }
   //---------------------------------------------------------------------------------------
-  
+  //Function to load ML models 
+  void Create_ML_Model(TString FileName, TString ModelType, TString Particle);
+  //---------------------------------------------------------------------------------------
+ 
 private:
   // Note : In ROOT, "//!" means "do not stream the data from Master node to Worker node" ...
   // your data member object is created on the worker nodes and streaming is not needed.
@@ -397,6 +409,7 @@ private:
   Bool_t    fkExtraCleanup;           //if true, perform pre-rejection of useless candidates before going through configs
   Bool_t    fkExtraCleanupRapidity;    // if true, select candidates only within |y|<0.5 (logical OR in mass hypo)
   Bool_t    fkSaveVertex;              // if true, save ESD vertex
+  Bool_t	fkSaveMCInfoTPC;			// if true, save MC info at the entrance of the TPC
   Bool_t    fkDoStrangenessTracking;   //if true, will attempt to attach ITS recpoints to cascade trajectory
   Bool_t fkAddPVToRecPointFinder;
   Bool_t    fkUseLayer1; //if true, use layer 1
@@ -420,6 +433,19 @@ private:
   Double_t fLambdaMassSigma[4]; //Array to store the lambda mass sigma parametrization
   //[0]+[1]*x+[2]*TMath::Exp([3]*x)
   
+  //===========================================================================================
+  //   Pointers to ML Classes
+  //===========================================================================================
+  AliNeuralNetwork* fXiMinusNN;
+  AliNeuralNetwork* fXiPlusNN;
+  AliNeuralNetwork* fOmegaMinusNN;
+  AliNeuralNetwork* fOmegaPlusNN;
+
+  AliBDT* fXiMinusBDT;
+  AliBDT* fXiPlusBDT;
+  AliBDT* fOmegaMinusBDT;
+  AliBDT* fOmegaPlusBDT;
+
   //===========================================================================================
   //   Variables for Event Tree
   //===========================================================================================
@@ -603,9 +629,15 @@ private:
   Bool_t fTreeVariableIsPhysicalPrimaryPositiveGrandMother;
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   
+  AliTrackReference* fTreeVariablePosTrackRef;
+  AliTrackReference* fTreeVariableNegTrackRef;
+  
+  //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+  
   //===========================================================================================
   //   Variables for Cascade Candidate Tree
   //===========================================================================================
+  Int_t fTreeCascVarRunNumber;      //!
   Int_t fTreeCascVarCharge;         //!
   Float_t fTreeCascVarMassAsXi;     //!
   Float_t fTreeCascVarMassAsOmega;  //!
@@ -646,6 +678,19 @@ private:
   Float_t fTreeCascVarMaxChi2PerCluster; //!
   Float_t fTreeCascVarMinTrackLength; //!
   
+  //-------------------------------------------
+  //ML Prediction
+  Double_t fTreeCascVarMLNNPredXiMinus; //!
+  Double_t fTreeCascVarMLNNPredXiPlus; //!
+  Double_t fTreeCascVarMLNNPredOmegaMinus; //!
+  Double_t fTreeCascVarMLNNPredOmegaPlus; //!
+
+  Double_t fTreeCascVarMLBDTPredXiMinus; //!
+  Double_t fTreeCascVarMLBDTPredXiPlus; //!
+  Double_t fTreeCascVarMLBDTPredOmegaMinus; //!
+  Double_t fTreeCascVarMLBDTPredOmegaPlus; //!
+  //-------------------------------------------
+
   //TPC dEdx
   Float_t fTreeCascVarNegNSigmaPion;   //!
   Float_t fTreeCascVarNegNSigmaProton; //!
@@ -816,6 +861,10 @@ private:
   Int_t   fTreeCascVarV0PosSibIsValid;         //!
   Int_t   fTreeCascVarPosV0Tagging;         //!
   
+  AliTrackReference* fTreeCascVarBachTrackRef;
+  AliTrackReference* fTreeCascVarPosTrackRef;
+  AliTrackReference* fTreeCascVarNegTrackRef;
+  
   //Bachelor Sibling Testing Variables
   Float_t fTreeCascVarBachSibPt; //!
   Float_t fTreeCascVarBachSibDcaV0ToPrimVertex; //!
@@ -975,8 +1024,9 @@ private:
   AliAnalysisTaskStrangenessVsMultiplicityMCRun2(const AliAnalysisTaskStrangenessVsMultiplicityMCRun2&);            // not implemented
   AliAnalysisTaskStrangenessVsMultiplicityMCRun2& operator=(const AliAnalysisTaskStrangenessVsMultiplicityMCRun2&); // not implemented
   
-  ClassDef(AliAnalysisTaskStrangenessVsMultiplicityMCRun2, 1);
+  ClassDef(AliAnalysisTaskStrangenessVsMultiplicityMCRun2, 2);
   //1: first implementation
+  //2: Addition of ML Classes Data members
 };
 
 #endif

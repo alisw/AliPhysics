@@ -117,14 +117,26 @@ set(SRCS
   AliAnalysisTaskThreeBodyFemtoMixedCharge.cxx;
   AliAnalysisTaskNanoBenchmark.cxx
   AliAnalysisTaskNanoFemtoProtonPion.cxx
+  AliAnalysisTaskNanoXiPi.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
-set(SRCS ${SRCS} AliAnalysisTaskCharmingFemto.cxx)
+set(SRCS
+    ${SRCS}
+    AliAnalysisTaskCharmingFemto.cxx
+    AliEasyFemto.cxx
+    AliAnalysisTaskPionDeuteronMC.cxx
+    AliAnalysisTaskPionDeuteron.cxx)
 endif()
 
 # Headers from sources
 string(REPLACE ".cxx" ".h" HDRS "${SRCS}")
+if(ROOT_VERSION_MAJOR EQUAL 6)
+	set(HDRS
+	  ${HDRS}
+      CustomQueue.h
+	)
+endif()
 
 # Generate the dictionary
 # It will create G_ARG1.cxx and G_ARG1.h / ARG1 = function first argument

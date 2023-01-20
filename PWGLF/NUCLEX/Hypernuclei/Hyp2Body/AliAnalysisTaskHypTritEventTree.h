@@ -55,6 +55,7 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   AliESDEvent            *fESDevent;            //!<! ESD event
   AliReducedHypTritEvent *fReducedEvent;        //<   Reduced event containing he3 and pi
   AliReducedHypTritEvent *fReducedEventMCGen;   //<   Reduced MC event containing he3 and pi
+  AliESDtrackCuts        *trackCutsV0;          //<  track cuts for v0 candidates
   AliStack               *fStack;               //!<! MC stack
   AliESDv0               *fV0;                  //!<! ESD v0
   TClonesArray           *fV0Array;             //<   Array of v0s in a event
@@ -89,7 +90,8 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   Double_t                fBetheParamsT[6];     //< Bethe Aleph He3 Parameter + TPC sigma: [0][i] he3 [2][i] t
   Bool_t                  fRefitOnFlyV0;        //< Refit OTF V0s due to bug in OnTheFly finder
   Int_t                   fYear;            
-   
+  AliTRDonlineTrackMatching *matching;          //< match TRD with ESD tracks
+       
   void MCStackLoop(AliMCEvent* mcEvent);
   void SetMomentum(Int_t charge, Bool_t v0Charge);
   void CalculateV0(const AliESDtrack& trackN, const AliESDtrack& trackP, AliPID::EParticleType typeNeg, AliPID::EParticleType typePos, AliMCEvent* mcEvent);
@@ -106,7 +108,7 @@ class AliAnalysisTaskHypTritEventTree : public AliAnalysisTaskSE {
   AliAnalysisTaskHypTritEventTree &operator=(const AliAnalysisTaskHypTritEventTree&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskHypTritEventTree, 9);
+  ClassDef(AliAnalysisTaskHypTritEventTree, 10);
   /// \endcond
 };
 #endif

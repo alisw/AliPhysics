@@ -67,6 +67,7 @@
 #pragma link C++ class AliAnalysisTaskCMWPU2018eqAchdca+;
 #pragma link C++ class AliAnalysisTaskCMWPU2018eqAchmerge+;
 #pragma link C++ class AliAnalysisTaskCMWPU2018eqAchCL+;
+#pragma link C++ class AliAnalysisTaskCMWPU2018eqAchCLdca+;
 #pragma link C++ class AliAnalysisTaskCMWPU2018eqAchmergedca+;
 #pragma link C++ class AliAnalysisTaskCVEUNIpt+;
 #pragma link C++ class AliAnalysisTaskCMWPUeqAch+;
@@ -85,6 +86,10 @@
 #pragma link C++ class AliAnalysisTaskCMXQA+;
 #pragma link C++ class AliAnalysisTaskCMWPU2018eqAchCL+;
 #pragma link C++ class AliAnalysisTaskLambdaProtonCVE+;
-
+#pragma link C++ class AliAnalysisTaskGammaDeltaPIDSaveQvecSimple+;
+#pragma link C++ class AliAnalysisTaskGammaDeltaPIDSaveQvecEventSimple+;
+#pragma link C++ class AliAnalysisTaskCME2018NUA+;
+#pragma link C++ class AliAnalysisTaskGammaNonIsotropicCorr+;
+#pragma link C++ class AliAnalysisTaskGammaNonIsotropicCorrUsingWeights+;
 #endif
 

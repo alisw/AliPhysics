@@ -83,12 +83,15 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  // Control particle histograms:
  fControlParticleHistogramsList(NULL),
  fControlParticleHistogramsPro(NULL),
+ fFillControlParticleHistograms(kTRUE),
  fSimReco(NULL),
  fUseFakeTracks(kFALSE),
  fGlobalTracksAOD(NULL),
  fFilterGlobalTracksAOD(kFALSE),
  fFilterBit(128), // defaulted to TPC-only
  fUseOnlyPrimaries(kTRUE), 
+ fUsePtDependentDCAxyParameterization(kFALSE),
+ fPtDependentDCAxyFormula(NULL),
  fAtLeastOnePointInTheSPD(kFALSE),
  fIgnoreGlobalConstrained(kFALSE),
 
@@ -96,9 +99,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fQvectorList(NULL),
  fQvectorFlagsPro(NULL),
  fCalculateQvector(kTRUE),
- //fMaxHarmonic(6),
  fMaxHarmonic(gMaxHarmonic),
- //fMaxCorrelator(8),
  fMaxCorrelator(gMaxCorrelator),
 
  // Particle weights:
@@ -115,8 +116,6 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fCorrelationsList(NULL),        
  fCorrelationsFlagsPro(NULL), 
  fCalculateCorrelations(kTRUE),
- fCalculatePtCorrelations(kFALSE),
- fCalculateEtaCorrelations(kFALSE),
 
  // Nested loops:
  fNestedLoopsList(NULL),        
@@ -134,6 +133,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fUseInternalValidation(kFALSE),
  fRescaleWithTheoreticalInput(kFALSE),
  fnEventsInternalValidation(1e4),
+ fHarmonicsOptionInternalValidation(NULL),
  fInternalValidationAmplitudes(NULL),
  fInternalValidationPlanes(NULL),
 
@@ -253,12 +253,15 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  // Control particle histograms:
  fControlParticleHistogramsList(NULL),
  fControlParticleHistogramsPro(NULL),
+ fFillControlParticleHistograms(kTRUE),
  fSimReco(NULL),
  fUseFakeTracks(kFALSE),
  fGlobalTracksAOD(NULL),
  fFilterGlobalTracksAOD(kFALSE),
  fFilterBit(-44),
  fUseOnlyPrimaries(kFALSE), 
+ fUsePtDependentDCAxyParameterization(kFALSE),
+ fPtDependentDCAxyFormula(NULL),
  fAtLeastOnePointInTheSPD(kFALSE),
  fIgnoreGlobalConstrained(kFALSE),
 
@@ -266,9 +269,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fQvectorList(NULL),
  fQvectorFlagsPro(NULL),
  fCalculateQvector(kTRUE),
- //fMaxHarmonic(6),
  fMaxHarmonic(gMaxHarmonic),
- //fMaxCorrelator(8),
  fMaxCorrelator(gMaxCorrelator),
 
  // Particle weights:
@@ -285,8 +286,6 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fCorrelationsList(NULL),        
  fCorrelationsFlagsPro(NULL), 
  fCalculateCorrelations(kTRUE),
- fCalculatePtCorrelations(kFALSE),
- fCalculateEtaCorrelations(kFALSE),
 
  // Nested loops:
  fNestedLoopsList(NULL),        
@@ -304,6 +303,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fUseInternalValidation(kFALSE),
  fRescaleWithTheoreticalInput(kFALSE),
  fnEventsInternalValidation(0),
+ fHarmonicsOptionInternalValidation(NULL),
  fInternalValidationAmplitudes(NULL),
  fInternalValidationPlanes(NULL),
 
@@ -470,9 +470,16 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  // *) PostData.
 
  Green(__PRETTY_FUNCTION__); 
- fEventCounter++;
 
- if(fUseInternalValidation){this->InternalValidation(); return;} // only do internal validation for all implemented correlations against the theoretical values
+ if(fUseInternalValidation)
+ {
+  // Only do internal validation for all implemented correlations against the theoretical values:
+  this->InternalValidation(); 
+  PostData(1,fBaseList);
+  return;
+ } // if(fUseInternalValidation)
+
+ fEventCounter++;
 
  // a) Get pointer to AOD event:
  AliMCEvent *aMC = MCEvent();                                  // from TaskSE
@@ -536,7 +543,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  Double_t dEta = 0., wEta = 1.; // pseudorapidity and corresponding eta weight
  Double_t wToPowerP = 1.; // weight raised to power p
  Int_t nTracks = aAOD->GetNumberOfTracks(); // number of all tracks in current event 
- Int_t nSelectedTracksCounter = 0; 
+ Int_t nSelectedTracksCounter = 0; // I cannot use here fSelectedTracks, since that one is already calculated in FilterEvent(AliVEvent *ave)
  for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
  {
   AliAODTrack *aodTrack = NULL;
@@ -606,14 +613,36 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
   } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
 
-  if(fCalculatePtCorrelations)
+  if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
   {
-   Int_t bin = fCorrelationsPro[0][0][PTKINE]->FindBin(dPt);
-   if(0>=bin || fCorrelationsPro[0][0][PTKINE]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+   // get the desired bin number:
+   Int_t bin = -1;
+   if(fCalculateCorrelations)
    {
-    Red(Form("dPt = %f, bin = %d",dPt,bin));
-    cout<<__LINE__<<endl;exit(1);
-   }
+    bin = fCorrelationsPro[0][0][AFO_PT]->FindBin(dPt);
+    if(0>=bin || fCorrelationsPro[0][0][AFO_PT]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+    {
+     Red(Form("dPt = %f, bin = %d",dPt,bin));
+     cout<<__LINE__<<endl;exit(1);
+    }
+   } 
+   else if(fCalculateTest0)
+   {
+    for(Int_t o=0;o<gMaxCorrelator;o++)
+    { 
+     if(fTest0Pro[o][0][AFO_PT]) 
+     {
+      bin = fTest0Pro[o][0][AFO_PT]->FindBin(dPt);
+      if(0>=bin || fTest0Pro[o][0][AFO_PT]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+      {
+       Red(Form("dPt = %f, bin = %d",dPt,bin));
+       cout<<__LINE__<<endl;exit(1);
+      }       
+      break; // it suffices to find the first one which is booked, since binning is the same across different orders
+     }
+    } // for(Int_t o=0;o<gMaxCorrelator;o++)
+   } // else if(fCalculateTest0)
+
    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
    {
     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
@@ -630,16 +659,38 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
 
    fqVectorEntries[PTq][bin-1]++; // count number of particles in this pt bin in this event
 
-  } // if(fCalculatePtCorrelations)
+  } // if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
 
-  if(fCalculateEtaCorrelations)
+  if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])
   {
-   Int_t bin = fCorrelationsPro[0][0][ETAKINE]->FindBin(dEta);
-   if(0>=bin || fCorrelationsPro[0][0][ETAKINE]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+   // get the desired bin number:
+   Int_t bin = -1;
+   if(fCalculateCorrelations)
    {
-    Red(Form("dEta = %f, bin = %d",dEta,bin));
-    cout<<__LINE__<<endl;exit(1);
-   }
+    bin = fCorrelationsPro[0][0][AFO_ETA]->FindBin(dEta);
+    if(0>=bin || fCorrelationsPro[0][0][AFO_ETA]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+    {
+     Red(Form("dEta = %f, bin = %d",dEta,bin));
+     cout<<__LINE__<<endl;exit(1);
+    }
+   } 
+   else if(fCalculateTest0)
+   {
+    for(Int_t o=0;o<gMaxCorrelator;o++)
+    { 
+     if(fTest0Pro[o][0][AFO_ETA]) 
+     {
+      bin = fTest0Pro[o][0][AFO_ETA]->FindBin(dEta);
+      if(0>=bin || fTest0Pro[o][0][AFO_ETA]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+      {
+       Red(Form("dEta = %f, bin = %d",dEta,bin));
+       cout<<__LINE__<<endl;exit(1);
+      }       
+      break; // it suffices to find the first one which is booked, since binning is the same across different orders
+     }
+    } // for(Int_t o=0;o<gMaxCorrelator;o++)
+   } // else if(fCalculateTest0)
+
    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
    {
     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
@@ -656,7 +707,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
 
    fqVectorEntries[ETAq][bin-1]++; // count number of particles in this pt bin in this event
 
-  } // if(fCalculateEtaCorrelations)
+  } // if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])
 
   // Nested loops containers:
   if(fCalculateNestedLoops||fCalculateCustomNestedLoop)
@@ -724,7 +775,7 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
 
  // k) Fill e-b-e quantities:
  if(fMultiplicityHist){fMultiplicityHist->Fill(fMultiplicity);}
- if(fSelectedTracksHist){fSelectedTracksHist->Fill(fSelectedTracks);}
+ if(fSelectedTracksHist){fSelectedTracksHist->Fill(fSelectedTracks);} // fSelectedTracks is calculated separately in FilterEvent(AliVEvent *ave), therefore not available for InternalValidation()
 
  // l) Calculate correlations:
  if(fCalculateCorrelations){this->CalculateCorrelations();}
@@ -736,12 +787,12 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  if(fCalculateTest0){this->CalculateTest0();}
 
  // o) Calculate kine correlations:
- if(fCalculatePtCorrelations){this->CalculateKineCorrelations("pt");}
- if(fCalculateEtaCorrelations){this->CalculateKineCorrelations("eta");}
+ if(fCalculateCorrelations && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){this->CalculateKineCorrelations("pt");}
+ if(fCalculateCorrelations && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){this->CalculateKineCorrelations("eta");}
 
  // p) Kine Test0 correlations:
- if(fCalculateTest0 && fCalculatePtCorrelations){this->CalculateKineTest0("pt");}  
- if(fCalculateTest0 && fCalculateEtaCorrelations){this->CalculateKineTest0("eta");} 
+ if(fCalculateTest0 && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){this->CalculateKineTest0("pt");}  
+ if(fCalculateTest0 && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){this->CalculateKineTest0("eta");} 
 
  // r) Reset event-by-event objects:
  this->ResetEventByEventQuantities();
@@ -814,6 +865,8 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
  // d) Reset ebe containers for nested loops;
  // e) Fisher-Yates algorithm.
  
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
+
  // a) Multiplicities:
  fMultiplicity = 0.;
  fSelectedTracks = 0;
@@ -834,9 +887,28 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
   }
  } // if(fCalculateQvector)
 
- if(fCalculatePtCorrelations)
+ if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
  {
-  for(Int_t b=0;b<fCorrelationsPro[0][0][PTKINE]->GetNbinsX();b++)
+  // if-else code snippet below is is fine, as long as binning in Correlations and Test0 are identical, as well as along different orders, which is the case
+  Int_t nBins = -1;
+  if(fCalculateCorrelations)
+  {
+   for(Int_t o=0;o<4;o++) // loop over order of correlator, 4 is hardcoded also in .h, when I generalize is there, I need to update also here
+   {
+    if(fCorrelationsPro[o][0][AFO_PT]) { nBins = fCorrelationsPro[o][0][AFO_PT]->GetNbinsX(); }
+    break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+   }   
+  } 
+  else if(fCalculateTest0)
+  {
+   for(Int_t o=0;o<gMaxCorrelator;o++) // loop over order of correlator
+   {
+    if(fTest0Pro[o][0][AFO_PT]) { nBins = fTest0Pro[o][0][AFO_PT]->GetNbinsX(); }
+    break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+   }   
+  }
+ 
+  for(Int_t b=0;b<nBins;b++)
   {
    fqVectorEntries[PTq][b] = 0;
    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
@@ -847,11 +919,31 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
     }
    }
   } // for(Int_t b=0;b<this->fKinematicsBins[PT][0];b++)
- } // if(fCalculatePtCorrelations)
+ } // if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
 
- if(fCalculateEtaCorrelations)
+
+ if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])
  {
-  for(Int_t b=0;b<fCorrelationsPro[0][0][ETAKINE]->GetNbinsX();b++)
+  // if-else code snippet below is is fine, as long as binning in Correlations and Test0 are identical, as well as along different orders, which is the case
+  Int_t nBins = -1;
+  if(fCalculateCorrelations)
+  {
+   for(Int_t o=0;o<4;o++) // loop over order of correlator, 4 is hardcoded also in .h, when I generalize is there, I need to update also here
+   {
+    if(fCorrelationsPro[o][0][AFO_ETA]) { nBins = fCorrelationsPro[o][0][AFO_ETA]->GetNbinsX(); }
+    break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+   }   
+  } 
+  else if(fCalculateTest0)
+  {
+   for(Int_t o=0;o<gMaxCorrelator;o++) // loop over order of correlator
+   {
+    if(fTest0Pro[o][0][AFO_ETA]) { nBins = fTest0Pro[o][0][AFO_ETA]->GetNbinsX(); }
+    break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+   }   
+  }
+
+  for(Int_t b=0;b<nBins;b++)
   {
    fqVectorEntries[ETAq][b] = 0;
    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
@@ -862,29 +954,67 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
     }
    }
   } // for(Int_t b=0;b<this->fKinematicsBins[ETA][0];b++)
- } // if(fCalculateEtaCorrelations)
+ } // if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])
 
  // d) Reset ebe containers for nested loops:
  if(fCalculateNestedLoops||fCalculateCustomNestedLoop)
  {
   if(ftaNestedLoops[0]){ftaNestedLoops[0]->Reset();} 
   if(ftaNestedLoops[1]){ftaNestedLoops[1]->Reset();}
-  if(fCalculatePtCorrelations)
+  if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
   {
-   for(Int_t b=0;b<fCorrelationsPro[0][0][PTKINE]->GetNbinsX();b++)
+   // if-else code snippet below is is fine, as long as binning in Correlations and Test0 are identical, as well as along different orders, which is the case
+   Int_t nBins = -1;
+   if(fCalculateCorrelations)
+   {
+    for(Int_t o=0;o<4;o++) // loop over order of correlator, 4 is hardcoded also in .h, when I generalize is there, I need to update also here
+    {
+     if(fCorrelationsPro[o][0][AFO_PT]) { nBins = fCorrelationsPro[o][0][AFO_PT]->GetNbinsX(); }
+     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    }   
+   } 
+   else if(fCalculateTest0)
+   {
+    for(Int_t o=0;o<gMaxCorrelator;o++) // loop over order of correlator
+    {
+     if(fTest0Pro[o][0][AFO_PT]) { nBins = fTest0Pro[o][0][AFO_PT]->GetNbinsX(); }
+     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    }   
+   }
+
+   for(Int_t b=0;b<nBins;b++)
    {
     ftaNestedLoopsKine[PTq][b][0]->Reset();
     ftaNestedLoopsKine[PTq][b][1]->Reset();
    }
-  } // if(fCalculatePtCorrelations)
-  if(fCalculateEtaCorrelations)
+  } // if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
+  if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])
   {
-   for(Int_t b=0;b<fCorrelationsPro[0][0][ETAKINE]->GetNbinsX();b++)
+   // if-else code snippet below is is fine, as long as binning in Correlations and Test0 are identical, as well as along different orders, which is the case
+   Int_t nBins = -1;
+   if(fCalculateCorrelations)
+   {
+    for(Int_t o=0;o<4;o++) // loop over order of correlator, 4 is hardcoded also in .h, when I generalize is there, I need to update also here
+    {
+     if(fCorrelationsPro[o][0][AFO_PT]) { nBins = fCorrelationsPro[o][0][AFO_PT]->GetNbinsX(); }
+     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    }   
+   } 
+   else if(fCalculateTest0)
+   {
+    for(Int_t o=0;o<gMaxCorrelator;o++) // loop over order of correlator
+    {
+     if(fTest0Pro[o][0][AFO_PT]) { nBins = fTest0Pro[o][0][AFO_PT]->GetNbinsX(); }
+     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    }   
+   }
+
+   for(Int_t b=0;b<nBins;b++)
    {
     ftaNestedLoopsKine[ETAq][b][0]->Reset();
     ftaNestedLoopsKine[ETAq][b][1]->Reset();  
    }
-  } // if(fCalculateEtaCorrelations)  
+  } // if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])  
  } // if(fCalculateNestedLoops||fCalculateCustomNestedLoop)
 
  // e) Fisher-Yates algorithm:
@@ -903,6 +1033,8 @@ void AliAnalysisTaskMuPa::OnlineMonitoring()
 
  // a) Update regularly the output file. Only the events which survive cuts are counted. # of events are entries in fSelectedTracksHist;
  // b) Bail out after specified number of events.
+
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Update regularly the output file:
  if(fUpdateOutputFile)
@@ -940,7 +1072,8 @@ void AliAnalysisTaskMuPa::OnlineMonitoring()
   if(fMaxNumberOfEvents == currentEventNo)
   {
    cout<<Form("\nPer request, bailing out after %d events in the file %s .\n",fMaxNumberOfEvents,fBailOutFile->Data())<<endl;
-   cout<<Form("Output is dumped correctly only if there is 1 task in the train, due to exit(1) below.")<<endl;
+   if(fCalculateNestedLoops){this->ComparisonNestedLoopsVsCorrelations();}
+   cout<<Form("Output is dumped correctly only if there is 1 task in the train, due to exit(1) below.\n")<<endl;
    sleep(2);
    TFile *f = new TFile(fBailOutFile->Data(),"recreate");
    TDirectoryFile *dirFile = new TDirectoryFile("outputMuPaAnalysis","outputMuPaAnalysis");
@@ -968,6 +1101,7 @@ void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
  fRunNumber = TString("not set"); // can be customized with e.g. task->SetRunNumber("000123456"); 
  fCentralityEstimator = TString("not set"); // by default, we use V0M as centrality estimator. Can be customized with task->SetCentralityEstimator("V0M") 
  fPrimaryDefinitionInMonteCarlo = TString("not set"); // supported: "IsPhysicalPrimary" (default), "IsPrimary", ... Set via task->SetPrimaryDefinitionInMonteCarlo("...")
+ fPtDependentDCAxyParameterization = TString("not set");
  fTrigger = TString("not set"); 
 
 } // void AliAnalysisTaskMuPa::InitializeNonBuiltInTypes()
@@ -1060,14 +1194,14 @@ void AliAnalysisTaskMuPa::InitializeArraysForNestedLoopsHistograms()
  // Initialize all arrays for nested loops:
  for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
   { 
-   for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
+   for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
    {
     for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
     {
      fNestedLoopsPro[k][n][v] = NULL;
     } // for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality] 
-   } // for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
-  } // for(Int_t n=0;n<6;n++) // harmonics [n=1,n=2,...,n=6]
+   } // for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
+  } // for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
 
  ftaNestedLoops[0] = NULL;
  ftaNestedLoops[1] = NULL;
@@ -1139,16 +1273,20 @@ void AliAnalysisTaskMuPa::InitializeArraysForCorrelationsHistograms()
  // Initialize all arrays for correlations (and nested loops):
  for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
   { 
-   for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
+   for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
    {
-    for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
+    for(Int_t v=0;v<eAsFunctionOf_N;v++) // generic variable, see enum eAsFunctionOf_N
     {
      fCorrelationsPro[k][n][v] = NULL;
-     //fNestedLoopsPro[k][n][v] = NULL;
-    } // for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
-   } // for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
-  } // for(Int_t n=0;n<6;n++) // harmonics [n=1,n=2,...,n=6]
+    } // for(Int_t v=0;v<5;v++) // generic variable, see enum eAsFunctionOf_N
+   } // for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
+  } // for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
 
+ for(Int_t v=0;v<eAsFunctionOf_N;v++) // generic variable, see enum eAsFunctionOf_N 
+ {
+  // TBI 20220827 most likely I do not need this initialization here, since in constructor in any case I call DefaultConfiguration(), where all these booleans are initialized
+  fDoNotCalculateCorrelationsAsFunctionOf[v] = kFALSE;
+ } // for(Int_t v=0;v<5;v++) // generic variable, see enum eAsFunctionOf_N
 
  for(Int_t v=0;v<gKineDependenceVariables;v++)
  {
@@ -1209,6 +1347,7 @@ void AliAnalysisTaskMuPa::InitializeArraysForQAHistograms()
  for(Int_t rs=0;rs<2;rs++)
  {
   fQAParticleCutCounter[rs] = NULL;
+  fQASequentialParticleCutCounter[rs] = NULL;
  }
 
  // e) Trigger counter:
@@ -1505,7 +1644,7 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
- fBasePro = new TProfile("fBasePro","flags for the whole analysis",15,0.,15.);
+ fBasePro = new TProfile("fBasePro","flags for the whole analysis",16,0.,16.);
  fBasePro->SetStats(kFALSE);
  fBasePro->SetLineColor(COLOR);
  fBasePro->SetFillColor(FILLCOLOR);
@@ -1524,6 +1663,8 @@ void AliAnalysisTaskMuPa::BookBaseProfile()
  fBasePro->GetXaxis()->SetBinLabel(13,"fUseTrigger"); fBasePro->Fill(12.5,fUseTrigger);
  fBasePro->GetXaxis()->SetBinLabel(14,"fUseFixedNumberOfRandomlySelectedParticles"); fBasePro->Fill(13.5,fUseFixedNumberOfRandomlySelectedParticles);
  fBasePro->GetXaxis()->SetBinLabel(15,"fFixedNumberOfRandomlySelectedParticles"); fBasePro->Fill(14.5,fFixedNumberOfRandomlySelectedParticles);
+ fBasePro->GetXaxis()->SetBinLabel(16,"fFillControlParticleHistograms"); fBasePro->Fill(15.5,fFillControlParticleHistograms);
+
  fBaseList->Add(fBasePro);
 
 } // void AliAnalysisTaskMuPa::BookBaseProfile()
@@ -1668,11 +1809,12 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
  TString secc[gQAEventCutCounter] = {"nEvts","minSelected","maxSelected","minCent","maxCent","!avtx","minNContr","maxNContr","fMinVertexDistance",
                                      "minVtxX","maxVtxX","minVtxY","maxVtxY","minVtxZ","maxVtxZ",
                                      "centCorrCut[0][1]","centCorrCut[0][2]","centCorrCut[0][3]","centCorrCut[1][2]","centCorrCut[1][3]","centCorrCut[2][3]","centFlattening","nSel.vsNcontr."};
- TString spcc[gQAParticleCutCounter] = {"fFilterBit","kPrimary","phi_min","phi_max","pt_min","pt_max","eta_min","eta_max","e_min","e_max","charge","charge_min","charge_max",
+ TString spcc[gQAParticleCutCounter] = {Form("fFilterBit = %d",fFilterBit),"kPrimary","phi_min","phi_max","pt_min","pt_max","eta_min","eta_max","e_min","e_max","charge","charge_min","charge_max",
                                         "dca_xy_min","dca_xy_max","dca_z_min","dca_z_max","TPCNcls_min","TPCNcls_max","TPCnclsS_min","TPCnclsS_max",
                                         "TPCnclsFractionShared_min","TPCnclsFractionShared_max","TPCNCrossedRows_min","TPCNCrossedRows_max","Chi2perNDF_min","Chi2perNDF_max",
-                                        "TPCFoundFraction_min","TPCFoundFraction_max","Chi2TPCConstrainedVsGlobal_min","Chi2TPCConstrainedVsGlobal_max",
-                                        "ITSNcls_min","ITSNcls_max","ITSChi2perNDF_min","ITSChi2perNDF_max","TPCNclsF_min","TPCNclsF_max","fAtLeastOnePointInTheSPD","fIgnoreGlobalConstrained"};
+                                        "TPCFoundFraction_min","TPCFoundFraction_max","Chi2TPCConstrainedVsGlobal_min","Chi2TPCConstrainedVsGlobal_max",                                           
+                                        "ITSNcls_min","ITSNcls_max","ITSChi2perNDF_min","ITSChi2perNDF_max","TPCNclsF_min","TPCNclsF_max","fAtLeastOnePointInTheSPD","fIgnoreGlobalConstrained",
+                                        "DCAxy_vs_pT"};
 
  for(Int_t ba=0;ba<2;ba++)
  {
@@ -1719,6 +1861,7 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
   // 2: fCentrality vs. fSelectedTracks 
   // 3: vtx_z vs. fCentralMultiplicityHist (RefMult08 at the moment)
   // 4: vtx_z vs. fSelectedTracks
+  // 5: DCAxy vs. pT
 
   // 0: fSelectedTracks vs. avtx->GetNContributors()
   fQAGenericCorrHist[0][ba] = new TH2D(Form("fQAGenericCorrHist[0][%d]",ba),"fSelectedTracks vs. avtx->GetNContributors()",
@@ -1759,6 +1902,26 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
                                         (Int_t)fMultiplicityBins[0],fMultiplicityBins[1],fMultiplicityBins[2]);
    fQAGenericCorrHist[4][ba]->GetXaxis()->SetTitle("V_{z}");
    fQAGenericCorrHist[4][ba]->GetYaxis()->SetTitle("fSelectedTracks");
+  }
+
+  // 5: DCAxy vs. pT:
+  if(fFillQAHistogramsAll)
+  {
+   fQAGenericCorrHist[5][ba] = new TH2D(Form("fQAGenericCorrHist[5][%d]",ba),Form("%s vs. %s","DCAxy","pT"),
+                                        (Int_t)fKinematicsBins[1][0],fKinematicsBins[1][1],fKinematicsBins[1][2], // TBI first index [1] here is for "pT", introduce eventually enum's
+                                        (Int_t)fDCABins[0][0],fDCABins[0][1],fDCABins[0][2]); // TBI first index [0] here is for TString(xyTz).EqualTo("xy"), introduce eventually enum's
+   fQAGenericCorrHist[5][ba]->GetXaxis()->SetTitle("p_{T}");
+   fQAGenericCorrHist[5][ba]->GetYaxis()->SetTitle("DCA_{xy}");
+  }
+
+  // 6: DCAz vs. pT: TBI I do not really need this one, but nevermind now...
+  if(fFillQAHistogramsAll)
+  {
+   fQAGenericCorrHist[6][ba] = new TH2D(Form("fQAGenericCorrHist[6][%d]",ba),Form("%s vs. %s","DCAz","pT"),
+                                        (Int_t)fKinematicsBins[1][0],fKinematicsBins[1][1],fKinematicsBins[1][2], // TBI first index [1] here is for "pT", introduce eventually enum's
+                                        (Int_t)fDCABins[1][0],fDCABins[1][1],fDCABins[1][2]); // TBI first index [1] here is for TString(xyTz).EqualTo("z"), introduce eventually enum's
+   fQAGenericCorrHist[6][ba]->GetXaxis()->SetTitle("p_{T}");
+   fQAGenericCorrHist[6][ba]->GetYaxis()->SetTitle("DCA_{z}");
   }
 
   // Common booking for generic correlations:
@@ -1894,7 +2057,13 @@ void AliAnalysisTaskMuPa::BookQAHistograms()
   }
   fQAParticleCutCounter[rs]->SetMinimum(1e-4);
   fQAList->Add(fQAParticleCutCounter[rs]);
- }
+
+  // To simplify booking, "sequential particle cut counter" starts of as a clone of "particle cut counter":
+  fQASequentialParticleCutCounter[rs] = (TH1I*) fQAParticleCutCounter[rs]->Clone(Form("fQASequentialParticleCutCounter[%d]",rs)); 
+  fQASequentialParticleCutCounter[rs]->SetTitle(Form("sequential particle cut counter, %s",0==rs?"reconstructed":"simulated"));
+  fQAList->Add(fQASequentialParticleCutCounter[rs]);
+
+ } // for(Int_t rs=0;rs<2;rs++)
 
  // i) Trigger counter:
  for(Int_t ba=0;ba<2;ba++)
@@ -2059,7 +2228,7 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
 
 //=======================================================================================================================
 
-void AliAnalysisTaskMuPa::BookControlParticleHistograms()
+void AliAnalysisTaskMuPa::BookControlParticleHistograms() 
 {
  // Book all control particle histograms.
 
@@ -2069,10 +2238,10 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
  // d) DCA;
  // e) Remaining.
 
- if(fVerbose){Green(__PRETTY_FUNCTION__);}
+ if(fVerbose){Green(__PRETTY_FUNCTION__);} 
 
  // a) Book the profile holding flags:
- fControlParticleHistogramsPro = new TProfile("fControlParticleHistogramsPro","flags for control particle histograms",4,0.,4.);
+ fControlParticleHistogramsPro = new TProfile("fControlParticleHistogramsPro","flags for control particle histograms",5,0.,5.);
  fControlParticleHistogramsPro->SetLineColor(COLOR);
  fControlParticleHistogramsPro->SetFillColor(FILLCOLOR);
  fControlParticleHistogramsPro->SetStats(kFALSE);
@@ -2080,10 +2249,22 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
  fControlParticleHistogramsPro->GetXaxis()->SetBinLabel(2,"fUseOnlyPrimaries"); fControlParticleHistogramsPro->Fill(1.5,fUseOnlyPrimaries);
  fControlParticleHistogramsPro->GetXaxis()->SetBinLabel(3,"fAtLeastOnePointInTheSPD"); fControlParticleHistogramsPro->Fill(2.5,fAtLeastOnePointInTheSPD);
  fControlParticleHistogramsPro->GetXaxis()->SetBinLabel(4,"fIgnoreGlobalConstrained"); fControlParticleHistogramsPro->Fill(3.5,fIgnoreGlobalConstrained);
+ if(!fUsePtDependentDCAxyParameterization)
+ { 
+  fControlParticleHistogramsPro->GetXaxis()->SetBinLabel(5,"fUsePtDependentDCA..."); fControlParticleHistogramsPro->Fill(4.5,0);
+ }
+ else
+ { 
+  fControlParticleHistogramsPro->GetXaxis()->SetBinLabel(5,Form("fUse... = %s",fPtDependentDCAxyParameterization.Data())); fControlParticleHistogramsPro->Fill(4.5,1);
+ }
  fControlParticleHistogramsList->Add(fControlParticleHistogramsPro);
 
+
+ if(!fFillControlParticleHistograms){return;}
+
+
  // b) Common local labels:
- //    Remark: Keep them in sync with enums in .h
+ //    Remark: Keep them in sync with enums in .h 
  TString sxyTz[2] = {"xy","z"};
  TString sba[2] = {"before particle cuts","after particle cuts"};
  TString srs[2] = {"reconstructed","simulated"};
@@ -2130,6 +2311,16 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
   } // for(Int_t rs=0;rs<2;rs++)
  } // for(Int_t ba=0;ba<2;ba++) 
 
+ // additional bookings only of pT dependent DCAxy cut will be used:
+ if(fUsePtDependentDCAxyParameterization)
+ {
+  fPtDependentDCAxyFormula = new TFormula("fPtDependentDCAxyFormula",fPtDependentDCAxyParameterization.Data());
+  // as a sanity check, try immediately to evaluate smtg:
+  cout<<"\n=> Quick sanity check for TFormula ....\n"<<endl;
+  if(isnan(fPtDependentDCAxyFormula->Eval(1.44))){cout<<__LINE__<<endl;exit(1);}
+  Green(" OK!"); sleep(1);
+ }
+
  // e) Remaining:
  for(Int_t ba=0;ba<2;ba++)
  {
@@ -2157,7 +2348,7 @@ void AliAnalysisTaskMuPa::BookControlParticleHistograms()
 
 //=======================================================================================================================
 
-void AliAnalysisTaskMuPa::BookCorrelationsHistograms()
+void AliAnalysisTaskMuPa::BookCorrelationsHistograms() 
 {
  // Book all correlations histograms.
 
@@ -2168,15 +2359,11 @@ void AliAnalysisTaskMuPa::BookCorrelationsHistograms()
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Book the profile holding flags:
- fCorrelationsFlagsPro = new TProfile("fCorrelationsFlagsPro","flags for correlations",3,0.,3.);
+ fCorrelationsFlagsPro = new TProfile("fCorrelationsFlagsPro","flags for correlations",1,0.,1.);
  fCorrelationsFlagsPro->SetStats(kFALSE);
  fCorrelationsFlagsPro->GetXaxis()->SetLabelSize(0.05); 
  fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(1,"fCalculateCorrelations");  
- fCorrelationsFlagsPro->Fill(0.5,fCalculateCorrelations);
- fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(2,"fCalculatePtCorrelations");  
- fCorrelationsFlagsPro->Fill(1.5,fCalculatePtCorrelations);
- fCorrelationsFlagsPro->GetXaxis()->SetBinLabel(3,"fCalculateEtaCorrelations");  
- fCorrelationsFlagsPro->Fill(2.5,fCalculateEtaCorrelations);
+ fCorrelationsFlagsPro->Fill(0.5,fCalculateCorrelations); 
  fCorrelationsList->Add(fCorrelationsFlagsPro);
 
  if(!fCalculateCorrelations){return;}
@@ -2185,40 +2372,47 @@ void AliAnalysisTaskMuPa::BookCorrelationsHistograms()
  TString oVariable[4] = {"#varphi_{1}-#varphi_{2}","#varphi_{1}+#varphi_{2}-#varphi_{3}-#varphi_{4}",
                          "#varphi_{1}+#varphi_{2}+#varphi_{3}-#varphi_{4}-#varphi_{5}-#varphi_{6}",
                          "#varphi_{1}+#varphi_{2}+#varphi_{3}+#varphi_{4}-#varphi_{5}-#varphi_{6}-#varphi_{7}-#varphi_{8}"};
- Int_t vvvariableNBins[5] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0],
-                             fUseCustomKineDependenceBins[PTq] ? fKineDependenceBins[PTq]->GetSize()-1 : (Int_t)fKinematicsBins[PT][0], 
-                             fUseCustomKineDependenceBins[ETAq] ? fKineDependenceBins[ETAq]->GetSize()-1 : (Int_t)fKinematicsBins[ETA][0]};
- Double_t vvvariableMinMax[5][2] = { {0.,1.}, // integrated 
-                                     {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
-                                     {fCentralityBins[1],fCentralityBins[2]}, // centrality
-                                     {fKinematicsBins[PT][1],fKinematicsBins[PT][2]},
-                                     {fKinematicsBins[ETA][1],fKinematicsBins[ETA][2]} 
-                                   };
- TString vvVariable[5] = {"integrated","multiplicity","centrality","p_{T}","#eta"};
+
+ // Generic binning (more or less...) - the ordering of elements in 3 arrays below have to be in sync with enum eAsFunctionOf:
+ Int_t vvvariableNBins[eAsFunctionOf_N] = { 1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0],
+                                            fUseCustomKineDependenceBins[PTq] ? fKineDependenceBins[PTq]->GetSize()-1 : (Int_t)fKinematicsBins[PT][0], 
+                                            fUseCustomKineDependenceBins[ETAq] ? fKineDependenceBins[ETAq]->GetSize()-1 : (Int_t)fKinematicsBins[ETA][0]};
+ Double_t vvvariableMinMax[eAsFunctionOf_N][2] = { {0.,1.}, // integrated 
+                                                   {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
+                                                   {fCentralityBins[1],fCentralityBins[2]}, // centrality
+                                                   {fKinematicsBins[PT][1],fKinematicsBins[PT][2]},
+                                                   {fKinematicsBins[ETA][1],fKinematicsBins[ETA][2]} 
+                                                 };
+ TString vvVariable[eAsFunctionOf_N] = {"integrated","multiplicity","centrality","p_{T}","#eta"};
+ TString vvVariableHistName[eAsFunctionOf_N] = {"int","mult","cent","pt","eta"}; // this is how it appears in the hist name when saved to the file
 
  for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
  {  
-  for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
+  for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
   {
-   for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
+   for(Int_t v=0;v<eAsFunctionOf_N;v++) // variable, see content of enum eAsFunctionOf
    {
-    if(PTKINE == v  && !fCalculatePtCorrelations){continue;}
-    if(ETAKINE == v  && !fCalculateEtaCorrelations){continue;}
+    // decide what is booked, then later valid pointer to fCorrelationsPro[k][n][v] is used as a boolean, in the standard way:
+    if(AFO_INTEGRATED == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_INTEGRATED]){continue;} 
+    if(AFO_MULTIPLICITY == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_MULTIPLICITY]){continue;}
+    if(AFO_CENTRALITY == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_CENTRALITY]){continue;}
+    if(AFO_PT == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){continue;}
+    if(AFO_ETA == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){continue;}
   
-    // per demand, custom meeting for kine dependence:
-    if(PTKINE == v  && fUseCustomKineDependenceBins[PTq])
+    // per demand, custom binning for kine dependence:
+    if(AFO_PT == v && fUseCustomKineDependenceBins[PTq])
     {
-     fCorrelationsPro[k][n][v] = new TProfile(Form("fCorrelationsPro[%d][%d][%d]",k,n,v),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),fKineDependenceBins[PTq]->GetSize()-1,fKineDependenceBins[PTq]->GetArray());     
+     fCorrelationsPro[k][n][v] = new TProfile(Form("fCorrelationsPro[%d][%d][%s]",k,n,vvVariableHistName[v].Data()),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),fKineDependenceBins[PTq]->GetSize()-1,fKineDependenceBins[PTq]->GetArray());     
     }
-    else if(ETAKINE == v  && fUseCustomKineDependenceBins[ETAq])
+    else if(AFO_ETA == v && fUseCustomKineDependenceBins[ETAq])
     {
-     fCorrelationsPro[k][n][v] = new TProfile(Form("fCorrelationsPro[%d][%d][%d]",k,n,v),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),fKineDependenceBins[ETAq]->GetSize()-1,fKineDependenceBins[ETAq]->GetArray());     
+     fCorrelationsPro[k][n][v] = new TProfile(Form("fCorrelationsPro[%d][%d][%s]",k,n,vvVariableHistName[v].Data()),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),fKineDependenceBins[ETAq]->GetSize()-1,fKineDependenceBins[ETAq]->GetArray());     
     }
     else
     {
      // the default binning:
-     fCorrelationsPro[k][n][v] = new TProfile(Form("fCorrelationsPro[%d][%d][%d]",k,n,v),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
-    } // if(PTKINE == v  && fUseCustomKineDependenceBins[PTq])
+     fCorrelationsPro[k][n][v] = new TProfile(Form("fCorrelationsPro[%d][%d][%s]",k,n,vvVariableHistName[v].Data()),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
+    } // if(AFO_PT == v  && fUseCustomKineDependenceBins[PTq])
 
     fCorrelationsPro[k][n][v]->SetStats(kFALSE);
     fCorrelationsPro[k][n][v]->Sumw2();
@@ -2231,14 +2425,14 @@ void AliAnalysisTaskMuPa::BookCorrelationsHistograms()
     //fCorrelationsPro[k][n][v]->SetLineColor(colorsW[v]);
     fCorrelationsList->Add(fCorrelationsPro[k][n][v]);
    } // for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
-  } // for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
- } // for(Int_t n=0;n<6;n++) // harmonics [n=1,n=2,...,n=6]
+  } // for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
+ } // for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
 
-} // void AliAnalysisTaskMuPa::BookCorrelationsHistograms()
+} // void AliAnalysisTaskMuPa::BookCorrelationsHistograms() 
 
 //=======================================================================================================================
 
-void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
+void AliAnalysisTaskMuPa::BookNestedLoopsHistograms() 
 {
  // Book all nested loops histograms.
 
@@ -2253,6 +2447,7 @@ void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
  fNestedLoopsFlagsPro->SetStats(kFALSE);
  fNestedLoopsFlagsPro->GetXaxis()->SetLabelSize(0.05); 
  fNestedLoopsFlagsPro->GetXaxis()->SetBinLabel(1,"fCalculateNestedLoops");  
+ fNestedLoopsFlagsPro->GetXaxis()->SetBinLabel(2,"fCalculateCustomNestedLoop");  
  fNestedLoopsFlagsPro->Fill(0.5,fCalculateNestedLoops);
  fNestedLoopsFlagsPro->Fill(1.5,fCalculateCustomNestedLoop);
  fNestedLoopsList->Add(fNestedLoopsFlagsPro);
@@ -2263,65 +2458,71 @@ void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
  ftaNestedLoops[0] = new TArrayD(iMaxSize); // ebe container for azimuthal angles 
  ftaNestedLoops[1] = new TArrayD(iMaxSize); // ebe container for particle weights (product of all)  
 
- if(fCalculatePtCorrelations)
+ if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
  {
-  if(!fCorrelationsPro[0][0][PTKINE]){cout<<__LINE__<<endl;exit(1);} // it is natural to book first fCorrelationsPro, therefore I will get nBins from it, instead of overshooting with gMaxNoBinsKine
-  for(Int_t b=0;b<fCorrelationsPro[0][0][PTKINE]->GetNbinsX();b++)
+  if(!fCorrelationsPro[0][0][AFO_PT]){cout<<__LINE__<<endl;exit(1);} // it is natural to book first fCorrelationsPro, therefore I will get nBins from it, instead of overshooting with gMaxNoBinsKine
+  for(Int_t b=0;b<fCorrelationsPro[0][0][AFO_PT]->GetNbinsX();b++)
   {
    ftaNestedLoopsKine[PTq][b][0] = new TArrayD(iMaxSize);
    ftaNestedLoopsKine[PTq][b][1] = new TArrayD(iMaxSize);
   }
  }
- if(fCalculateEtaCorrelations)
+ if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])
  {
-  if(!fCorrelationsPro[0][0][ETAKINE]){cout<<__LINE__<<endl;exit(1);} // it is natural to book first fCorrelationsPro, therefore I will get nBins from it, instead of overshooting with gMaxNoBinsKine
-  for(Int_t b=0;b<fCorrelationsPro[0][0][ETAKINE]->GetNbinsX();b++)
+  if(!fCorrelationsPro[0][0][AFO_ETA]){cout<<__LINE__<<endl;exit(1);} // it is natural to book first fCorrelationsPro, therefore I will get nBins from it, instead of overshooting with gMaxNoBinsKine
+  for(Int_t b=0;b<fCorrelationsPro[0][0][AFO_ETA]->GetNbinsX();b++)
   {
    ftaNestedLoopsKine[ETAq][b][0] = new TArrayD(iMaxSize);
    ftaNestedLoopsKine[ETAq][b][1] = new TArrayD(iMaxSize);
   }
  }
 
- if(!fCalculateNestedLoops){return;} // TBI this is safe enough, I think?
+ if(!fCalculateNestedLoops){return;}
 
- // b) Common local labels (keep 'em in sync with BookCorrelationsHistograms())
+ // b) Common local labels (keep the lines below in sync. with BookCorrelationsHistograms())
  TString oVariable[4] = {"#varphi_{1}-#varphi_{2}","#varphi_{1}+#varphi_{2}-#varphi_{3}-#varphi_{4}",
                          "#varphi_{1}+#varphi_{2}+#varphi_{3}-#varphi_{4}-#varphi_{5}-#varphi_{6}",
                          "#varphi_{1}+#varphi_{2}+#varphi_{3}+#varphi_{4}-#varphi_{5}-#varphi_{6}-#varphi_{7}-#varphi_{8}"};
- Int_t vvvariableNBins[5] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0],
-                             fUseCustomKineDependenceBins[PTq] ? fKineDependenceBins[PTq]->GetSize()-1 : (Int_t)fKinematicsBins[PT][0], 
-                             fUseCustomKineDependenceBins[ETAq] ? fKineDependenceBins[ETAq]->GetSize()-1 : (Int_t)fKinematicsBins[ETA][0]};
- Double_t vvvariableMinMax[5][2] = { {0.,1.}, // integrated 
-                                     {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
-                                     {fCentralityBins[1],fCentralityBins[2]}, // centrality
-                                     {fKinematicsBins[PT][1],fKinematicsBins[PT][2]},
-                                     {fKinematicsBins[ETA][1],fKinematicsBins[ETA][2]} 
-                                   };
- TString vvVariable[5] = {"integrated","multiplicity","centrality","p_{T}","#eta"};
+
+ // Generic binning (more or less...) - the ordering of elements in 3 arrays below have to be in sync with enum eAsFunctionOf:
+ Int_t vvvariableNBins[eAsFunctionOf_N] = { 1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0],
+                                            fUseCustomKineDependenceBins[PTq] ? fKineDependenceBins[PTq]->GetSize()-1 : (Int_t)fKinematicsBins[PT][0], 
+                                            fUseCustomKineDependenceBins[ETAq] ? fKineDependenceBins[ETAq]->GetSize()-1 : (Int_t)fKinematicsBins[ETA][0]};
+ Double_t vvvariableMinMax[eAsFunctionOf_N][2] = { {0.,1.}, // integrated 
+                                                   {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
+                                                   {fCentralityBins[1],fCentralityBins[2]}, // centrality
+                                                   {fKinematicsBins[PT][1],fKinematicsBins[PT][2]},
+                                                   {fKinematicsBins[ETA][1],fKinematicsBins[ETA][2]} 
+                                                 };
+ TString vvVariable[eAsFunctionOf_N] = {"integrated","multiplicity","centrality","p_{T}","#eta"};
+ TString vvVariableHistName[eAsFunctionOf_N] = {"int","mult","cent","pt","eta"}; // this is how it appears in the hist name when saved to the file
 
  for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
  {  
-  for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
+  for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
   {
-   for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
+   for(Int_t v=0;v<eAsFunctionOf_N;v++) // see enum eAsFunctionOf
    {
+    // decide what is booked, then later valid pointer to fNestedLoopsPro[k][n][v] is used as a boolean, in the standard way:
+    if(AFO_INTEGRATED == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_INTEGRATED]){continue;} 
+    if(AFO_MULTIPLICITY == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_MULTIPLICITY]){continue;}
+    if(AFO_CENTRALITY == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_CENTRALITY]){continue;}
+    if(AFO_PT == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){continue;}
+    if(AFO_ETA == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){continue;}
 
-    if(PTKINE == v  && !fCalculatePtCorrelations){continue;}
-    if(ETAKINE == v  && !fCalculateEtaCorrelations){continue;}
-
-    // per demand, custom meeting for kine dependence:
-    if(PTKINE == v  && fUseCustomKineDependenceBins[PTq])
+    // per demand, custom binning for kine dependence:
+    if(AFO_PT == v  && fUseCustomKineDependenceBins[PTq])
     {
-     fNestedLoopsPro[k][n][v] = new TProfile(Form("fNestedLoopsPro[%d][%d][%d]",k,n,v),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),fKineDependenceBins[PTq]->GetSize()-1,fKineDependenceBins[PTq]->GetArray());
+     fNestedLoopsPro[k][n][v] = new TProfile(Form("fNestedLoopsPro[%d][%d][%s]",k,n,vvVariableHistName[v].Data()),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),fKineDependenceBins[PTq]->GetSize()-1,fKineDependenceBins[PTq]->GetArray());
     }
-    else if(ETAKINE == v  && fUseCustomKineDependenceBins[ETAq])
+    else if(AFO_ETA == v  && fUseCustomKineDependenceBins[ETAq])
     {
-     fNestedLoopsPro[k][n][v] = new TProfile(Form("fNestedLoopsPro[%d][%d][%d]",k,n,v),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),fKineDependenceBins[ETAq]->GetSize()-1,fKineDependenceBins[ETAq]->GetArray());
+     fNestedLoopsPro[k][n][v] = new TProfile(Form("fNestedLoopsPro[%d][%d][%s]",k,n,vvVariableHistName[v].Data()),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),fKineDependenceBins[ETAq]->GetSize()-1,fKineDependenceBins[ETAq]->GetArray());
     }
     else
     {
      // the default binning:
-     fNestedLoopsPro[k][n][v] = new TProfile(Form("fNestedLoopsPro[%d][%d][%d]",k,n,v),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
+     fNestedLoopsPro[k][n][v] = new TProfile(Form("fNestedLoopsPro[%d][%d][%s]",k,n,vvVariableHistName[v].Data()),Form("#LT#LTcos[%s(%s)]#GT#GT",1==n+1?"":Form("%d",n+1),oVariable[k].Data()),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
     }
     fNestedLoopsPro[k][n][v]->SetStats(kFALSE);
     fNestedLoopsPro[k][n][v]->Sumw2();
@@ -2334,9 +2535,9 @@ void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
     }
      
     fNestedLoopsList->Add(fNestedLoopsPro[k][n][v]);
-   } // for(Int_t v=0;v<5;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
-  } // for(Int_t n=0;n<6;n++) // harmonic [n=1,n=2,...,n=6]
- } // for(Int_t n=0;n<6;n++) // harmonics [n=1,n=2,...,n=6]
+   } // for(Int_t v=0;v<5;v++) // see enum eAsFunctionOf
+  } // for(Int_t n=0;n<gMaxHarmonic;n++) // harmonic [n=1,n=2,...]
+ } // for(Int_t k=0;k<4;k++) // order [2p=0,4p=1,6p=2,8p=3]
 
 } // void AliAnalysisTaskMuPa::BookNestedLoopsHistograms()
 
@@ -2376,38 +2577,13 @@ void AliAnalysisTaskMuPa::BookInternalValidationHistograms()
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Book the profile holding flags:
- fInternalValidationFlagsPro = new TProfile("fInternalValidationFlagsPro","flags for internal validation",13,0.,13.);
+ fInternalValidationFlagsPro = new TProfile("fInternalValidationFlagsPro","flags for internal validation",2,0.,2.);
  fInternalValidationFlagsPro->SetStats(kFALSE);
  fInternalValidationFlagsPro->SetLineColor(COLOR);
  fInternalValidationFlagsPro->SetFillColor(FILLCOLOR);
  fInternalValidationFlagsPro->GetXaxis()->SetLabelSize(0.04); 
  fInternalValidationFlagsPro->GetXaxis()->SetBinLabel(1,"fUseInternalValidation"); fInternalValidationFlagsPro->Fill(0.5,fUseInternalValidation);
- for(Int_t e=0;e<7;e++) // hardwired support for harmonics v1-v6
- {
-  fInternalValidationFlagsPro->GetXaxis()->SetBinLabel(e+2,Form("v_{%d}",e+1)); 
-  if(fInternalValidationAmplitudes && (e+1 <= fInternalValidationAmplitudes->GetSize()))
-  {
-   fInternalValidationFlagsPro->Fill(e+1+0.5,fInternalValidationAmplitudes->GetAt(e));
-  }
-  else
-  {
-   fInternalValidationFlagsPro->Fill(e+1+0.5,0.0); // default values of all harmonics are 0
-  }
- } // for(Int_t e=0;e<fInternalValidationAmplitudes->GetSize()) 
- for(Int_t e=8;e<14;e++) // hardwired support for symmetry planesa Psi1-Psi6
- {
-  fInternalValidationFlagsPro->GetXaxis()->SetBinLabel(e,Form("#Psi_{%d}",e-7)); 
-/* TBI 20210910 fix this later
-  if(fInternalValidationPlanes && (e-7 <= fInternalValidationPlanes->GetSize()))
-  {
-   fInternalValidationFlagsPro->Fill(e+1+0.5,fInternalValidationPlanes->GetAt(e));
-  }
-  else
-  {
-   fInternalValidationFlagsPro->Fill(e+1+0.5,0.0); // default values of all harmonics are 0
-  }
-*/
- } // for(Int_t e=0;e<fInternalValidationPlanes->GetSize()) 
+ fInternalValidationFlagsPro->GetXaxis()->SetBinLabel(2,Form("fHarmonicsOptionInternalValidation = %s",fHarmonicsOptionInternalValidation->Data())); fInternalValidationFlagsPro->Fill(1.5,1);
  fInternalValidationList->Add(fInternalValidationFlagsPro);
 
 } // void AliAnalysisTaskMuPa::BookInternalValidationHistograms()
@@ -2449,17 +2625,18 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
  // c) Retreive labels from placeholder:
  if(!(this->RetrieveCorrelationsLabels())){cout<<__LINE__<<endl;exit(1);}
 
- // d) Book what needs to be booked:
- Int_t vvvariableNBins[5] = {1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0],
-                             fUseCustomKineDependenceBins[PTq] ? fKineDependenceBins[PTq]->GetSize()-1 : (Int_t)fKinematicsBins[PT][0], 
-                             fUseCustomKineDependenceBins[ETAq] ? fKineDependenceBins[ETAq]->GetSize()-1 : (Int_t)fKinematicsBins[ETA][0]};
- Double_t vvvariableMinMax[5][2] = { {0.,1.}, // integrated 
-                                     {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
-                                     {fCentralityBins[1],fCentralityBins[2]}, // centrality
-                                     {fKinematicsBins[PT][1],fKinematicsBins[PT][2]},
-                                     {fKinematicsBins[ETA][1],fKinematicsBins[ETA][2]} 
-                                   };
- TString vvVariable[5] = {"integrated","multiplicity","centrality","p_{T}","#eta"};
+ // Generic binning (more or less...) - the ordering of elements in 3 arrays below have to be in sync with enum eAsFunctionOf:
+ Int_t vvvariableNBins[eAsFunctionOf_N] = { 1,(Int_t)fMultiplicityBins[0],(Int_t)fCentralityBins[0],
+                                            fUseCustomKineDependenceBins[PTq] ? fKineDependenceBins[PTq]->GetSize()-1 : (Int_t)fKinematicsBins[PT][0], 
+                                            fUseCustomKineDependenceBins[ETAq] ? fKineDependenceBins[ETAq]->GetSize()-1 : (Int_t)fKinematicsBins[ETA][0]};
+ Double_t vvvariableMinMax[eAsFunctionOf_N][2] = { {0.,1.}, // integrated 
+                                                   {fMultiplicityBins[1],fMultiplicityBins[2]}, // multiplicity
+                                                   {fCentralityBins[1],fCentralityBins[2]}, // centrality
+                                                   {fKinematicsBins[PT][1],fKinematicsBins[PT][2]},
+                                                   {fKinematicsBins[ETA][1],fKinematicsBins[ETA][2]} 
+                                                 };
+ TString vvVariable[eAsFunctionOf_N] = {"integrated","multiplicity","centrality","p_{T}","#eta"};
+ TString vvVariableHistName[eAsFunctionOf_N] = {"int","mult","cent","pt","eta"}; // this is how it appears in the hist name when saved to the file
 
  for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
  { 
@@ -2467,24 +2644,28 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
   { 
    if(!fTest0Labels[mo][mi]){continue;} 
    {
-    for(Int_t v=0;v<5;v++) 
-    { 
-     if(PTKINE == v  && !fCalculatePtCorrelations){continue;}
-     if(ETAKINE == v  && !fCalculateEtaCorrelations){continue;}
-
-     // per demand, custom meeting for kine dependence:
-     if(PTKINE == v && fUseCustomKineDependenceBins[PTq])
+    for(Int_t v=0;v<eAsFunctionOf_N;v++) // variable, see content of enum eAsFunctionOf
+    {
+     // decide what is booked, then later valid pointer to fCorrelationsPro[k][n][v] is used as a boolean, in the standard way:
+     if(AFO_INTEGRATED == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_INTEGRATED]){continue;} 
+     if(AFO_MULTIPLICITY == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_MULTIPLICITY]){continue;}
+     if(AFO_CENTRALITY == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_CENTRALITY]){continue;}
+     if(AFO_PT == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){continue;}
+     if(AFO_ETA == v && fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){continue;}
+  
+     // per demand, custom binning for kine dependence:
+     if(AFO_PT == v && fUseCustomKineDependenceBins[PTq])
      {
-      fTest0Pro[mo][mi][v] = new TProfile(Form("fTest0Pro[%d][%d][%d]",mo,mi,v),fTest0Labels[mo][mi]->Data(),fKineDependenceBins[PTq]->GetSize()-1,fKineDependenceBins[PTq]->GetArray());
+      fTest0Pro[mo][mi][v] = new TProfile(Form("fTest0Pro[%d][%d][%s]",mo,mi,vvVariableHistName[v].Data()),fTest0Labels[mo][mi]->Data(),fKineDependenceBins[PTq]->GetSize()-1,fKineDependenceBins[PTq]->GetArray());
      }
-     else if(ETAKINE == v && fUseCustomKineDependenceBins[ETAq])
+     else if(AFO_ETA == v && fUseCustomKineDependenceBins[ETAq])
      {
-      fTest0Pro[mo][mi][v] = new TProfile(Form("fTest0Pro[%d][%d][%d]",mo,mi,v),fTest0Labels[mo][mi]->Data(),fKineDependenceBins[ETAq]->GetSize()-1,fKineDependenceBins[ETAq]->GetArray());
+      fTest0Pro[mo][mi][v] = new TProfile(Form("fTest0Pro[%d][%d][%s]",mo,mi,vvVariableHistName[v].Data()),fTest0Labels[mo][mi]->Data(),fKineDependenceBins[ETAq]->GetSize()-1,fKineDependenceBins[ETAq]->GetArray());
      }
      else
      {
       // the default binning:
-      fTest0Pro[mo][mi][v] = new TProfile(Form("fTest0Pro[%d][%d][%d]",mo,mi,v),fTest0Labels[mo][mi]->Data(),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
+      fTest0Pro[mo][mi][v] = new TProfile(Form("fTest0Pro[%d][%d][%s]",mo,mi,vvVariableHistName[v].Data()),fTest0Labels[mo][mi]->Data(),vvvariableNBins[v],vvvariableMinMax[v][0],vvvariableMinMax[v][1]);
      }
 
      fTest0Pro[mo][mi][v]->SetStats(kFALSE);
@@ -2495,7 +2676,7 @@ void AliAnalysisTaskMuPa::BookTest0Histograms()
       fTest0Pro[mo][mi][1]->GetXaxis()->SetTitle("WARNING: for each multiplicity, fFixedNumberOfRandomlySelectedParticles is selected randomly in Q-vector");
      }
      fTest0List->Add(fTest0Pro[mo][mi][v]); // yes, this has to be here
-    } // for(Int_t v=0;v<5;v++) 
+    } // for(Int_t v=0;v<eAsFunctionOf_N;v++) // variable, see content of enum eAsFunctionOf
    } // if(fTest0Labels[mo][mi]) 
   } // for(Int_t mi=0;mi<gMaxIndex;mi++) 
  } // for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
@@ -2796,7 +2977,7 @@ void AliAnalysisTaskMuPa::FillControlEventHistograms(AliVEvent *ave, const Int_t
  // d) Reference multiplicity (maintained centrally);
  // e) Remaining event distributions.
 
- //if(fVerbose){Green(__PRETTY_FUNCTION__);}
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Determine Ali{MC,ESD,AOD}Event:
  AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
@@ -2879,6 +3060,22 @@ void AliAnalysisTaskMuPa::FillControlParticleHistograms(AliVParticle *vParticle,
   } 
   if(fDCAHist[ba][rs][0]){fDCAHist[ba][rs][0]->Fill(dcaXY);}
   if(fDCAHist[ba][rs][1]){fDCAHist[ba][rs][1]->Fill(dcaZ);}
+
+  // DCAxy vs. pT: 
+  // Remark: This is QA histogram, and it shouldn't be filled here, but instead in FillQAHistograms() method, but nevermind now, because in any case 
+  //         I feel this histogram only during testing. Eventually, I have to re-design a lot of things anyway.
+  if(fQAGenericCorrHist[5][ba])
+  {
+   fQAGenericCorrHist[5][ba]->Fill(aodTrack->Pt(),dcaXY);
+  }
+
+  // DCAz vs. pT: 
+  // Remark: This is QA histogram, and it shouldn't be filled here, but instead in FillQAHistograms() method, but nevermind now, because in any case 
+  //         I feel this histogram only during testing. Eventually, I have to re-design a lot of things anyway.
+  if(fQAGenericCorrHist[6][ba])
+  {
+   fQAGenericCorrHist[6][ba]->Fill(aodTrack->Pt(),dcaZ);
+  }
 
   // Remaining:
   if(fParticleHist[ba][rs][TPCNcls]){fParticleHist[ba][rs][TPCNcls]->Fill(aodTrack->GetTPCNcls());}
@@ -3386,6 +3583,7 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliVParticle *vParticle)
  if(fFillQAHistograms)
  {
   if(vParticle){ParticleCutCounter(vParticle);}
+  if(vParticle){SequentialParticleCutCounter(vParticle);}
  }
 
  // a) Determine Ali{AODMC,ESD,AOD}Particle/Track:
@@ -3403,6 +3601,7 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliVParticle *vParticle)
   {
    if(aodTrack->GetType() != AliAODTrack::kPrimary) return kFALSE; // take into account only primaries
   }
+  // CGG: remove a important fraction of tracks with filter bit 256 (none with 512 or TPC only tracks).  
 
   // Kinematics:
   if(fUseKinematicsCuts[PHI])
@@ -3433,8 +3632,9 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliVParticle *vParticle)
   }
 
   // DCA:
-  if(fUseDCACuts[0]||fUseDCACuts[1])
+  if(fUseDCACuts[0] || fUseDCACuts[1] || fUsePtDependentDCAxyParameterization)
   {
+   // Common DCA information: 
    Float_t dcaXY = aodTrack->DCA(); 
    Float_t dcaZ = aodTrack->ZAtDCA(); 
    if(!aodTrack->TestBit(AliAODTrack::kIsDCA))
@@ -3453,7 +3653,12 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliVParticle *vParticle)
     if(dcaZ < fDCACuts[1][0]) return kFALSE;
     if(dcaZ >= fDCACuts[1][1]) return kFALSE;
    }
-  } // if(fUseDCACuts[0]||fUseDCACuts[1])
+   // pT dependent DCAxy:
+   if(fUsePtDependentDCAxyParameterization)
+   {
+    if(TMath::Abs(dcaXY) > fPtDependentDCAxyFormula->Eval(aodTrack->Pt())) return kFALSE;
+   }
+  } // if(fUseDCACuts[0] || fUseDCACuts[1] || fUsePtDependentDCAxyParameterization)
 
   // Remaining particle cuts:
   if(fUseParticleCuts[TPCNcls])
@@ -3602,6 +3807,7 @@ Bool_t AliAnalysisTaskMuPa::SurvivesParticleCuts(AliVParticle *vParticle)
 void AliAnalysisTaskMuPa::ParticleCutCounter(AliVParticle *vParticle)
 {
  // Used only in QA. Counter for each particle cut separately how many particles are rejected by the cut.
+ // Whatever you change here, keep in sync with AliAnalysisTaskMuPa::SequentialParticleCutCounter, and vice versa.
 
  // a) Determine Ali{AODMC,ESD,AOD}Particle/Track;
  // b) AOD track;
@@ -3655,7 +3861,7 @@ void AliAnalysisTaskMuPa::ParticleCutCounter(AliVParticle *vParticle)
   }
 
   // DCA:
-  if(fUseDCACuts[0]||fUseDCACuts[1])
+  if(fUseDCACuts[0] || fUseDCACuts[1] || fUsePtDependentDCAxyParameterization)
   {
    Float_t dcaXY = aodTrack->DCA(); 
    Float_t dcaZ = aodTrack->ZAtDCA(); 
@@ -3675,7 +3881,12 @@ void AliAnalysisTaskMuPa::ParticleCutCounter(AliVParticle *vParticle)
     if(dcaZ < fDCACuts[1][0]) fQAParticleCutCounter[RECO]->Fill(15.5);
     if(dcaZ >= fDCACuts[1][1]) fQAParticleCutCounter[RECO]->Fill(16.5);
    }
-  } // if(fUseDCACuts[0]||fUseDCACuts[1])
+   // pT dependent DCAxy:
+   if(fUsePtDependentDCAxyParameterization)
+   {
+    if(TMath::Abs(dcaXY) > fPtDependentDCAxyFormula->Eval(aodTrack->Pt())) fQAParticleCutCounter[RECO]->Fill(39.5);
+   }
+  } // if(fUseDCACuts[0] || fUseDCACuts[1] || fUsePtDependentDCAxyParameterization)
 
   // Remaining particle cuts:
   if(fUseParticleCuts[TPCNcls])
@@ -3794,6 +4005,216 @@ void AliAnalysisTaskMuPa::ParticleCutCounter(AliVParticle *vParticle)
 
 //=======================================================================================================================
 
+void AliAnalysisTaskMuPa::SequentialParticleCutCounter(AliVParticle *vParticle)
+{
+ // Used only in QA. Counter for each particle cut sequentually how many particles are rejected by the cut.
+ // Whatever you change here, keep in sync with AliAnalysisTaskMuPa::SequentialParticleCutCounter, and vice versa.
+
+ // a) Determine Ali{AODMC,ESD,AOD}Particle/Track;
+ // b) AOD track;
+ // c) AOD MC particle.
+
+ // a) Determine Ali{AODMC,ESD,AOD}Particle/Track:
+ AliAODMCParticle *aodmcParticle = dynamic_cast<AliAODMCParticle*>(vParticle);
+ AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(vParticle);
+ 
+ // b) Cut on AOD track:
+ if(aodTrack)
+ {
+  // Basic protection:
+  if(!fQASequentialParticleCutCounter[RECO]){return;}
+
+  // Filter bit:
+  if(!aodTrack->TestFilterBit(fFilterBit)) { fQASequentialParticleCutCounter[RECO]->Fill(0.5); return; }
+ 
+  // Trivial cuts:
+  if(fUseOnlyPrimaries)
+  {
+   if(aodTrack->GetType() != AliAODTrack::kPrimary) { fQASequentialParticleCutCounter[RECO]->Fill(1.5); return; } // take into account only primaries
+  }
+
+  // Kinematics:
+  if(fUseKinematicsCuts[PHI])
+  {
+   if(aodTrack->Phi() < fKinematicsCuts[PHI][0]) { fQASequentialParticleCutCounter[RECO]->Fill(2.5); return; }
+   if(aodTrack->Phi() >= fKinematicsCuts[PHI][1]) { fQASequentialParticleCutCounter[RECO]->Fill(3.5); return; }
+  }
+  if(fUseKinematicsCuts[PT])
+  {
+   if(aodTrack->Pt() < fKinematicsCuts[PT][0]) { fQASequentialParticleCutCounter[RECO]->Fill(4.5); return; }
+   if(aodTrack->Pt() >= fKinematicsCuts[PT][1]) { fQASequentialParticleCutCounter[RECO]->Fill(5.5); return; }
+  }
+  if(fUseKinematicsCuts[ETA])
+  {
+   if(aodTrack->Eta() < fKinematicsCuts[ETA][0]) { fQASequentialParticleCutCounter[RECO]->Fill(6.5); return; }
+   if(aodTrack->Eta() >= fKinematicsCuts[ETA][1]) { fQASequentialParticleCutCounter[RECO]->Fill(7.5); return; }
+  }
+  if(fUseKinematicsCuts[E])
+  {
+   if(aodTrack->E() < fKinematicsCuts[E][0]) { fQASequentialParticleCutCounter[RECO]->Fill(8.5); return; }
+   if(aodTrack->E() >= fKinematicsCuts[E][1]) { fQASequentialParticleCutCounter[RECO]->Fill(9.5); return; }
+  }
+  if(fUseKinematicsCuts[CHARGE])
+  {
+   if(0 == aodTrack->Charge()) { fQASequentialParticleCutCounter[RECO]->Fill(10.5); return; } // take into account only charged particles 
+   if(aodTrack->Charge() < fKinematicsCuts[CHARGE][0]) { fQASequentialParticleCutCounter[RECO]->Fill(11.5); return; }
+   if(aodTrack->Charge() >= fKinematicsCuts[CHARGE][1]) { fQASequentialParticleCutCounter[RECO]->Fill(12.5); return; }
+  }
+
+  // DCA:
+  if(fUseDCACuts[0]||fUseDCACuts[1])
+  {
+   Float_t dcaXY = aodTrack->DCA(); 
+   Float_t dcaZ = aodTrack->ZAtDCA(); 
+   if(!aodTrack->TestBit(AliAODTrack::kIsDCA))
+   {
+    aodTrack->GetImpactParameters(dcaXY,dcaZ); 
+   } 
+   // DCA xy:
+   if(fUseDCACuts[0])
+   {
+    if(dcaXY < fDCACuts[0][0]) { fQASequentialParticleCutCounter[RECO]->Fill(13.5); return; }
+    if(dcaXY >= fDCACuts[0][1]) { fQASequentialParticleCutCounter[RECO]->Fill(14.5); return; }
+   } 
+   // DCA z:
+   if(fUseDCACuts[1])
+   {
+    if(dcaZ < fDCACuts[1][0]) { fQASequentialParticleCutCounter[RECO]->Fill(15.5); return; }
+    if(dcaZ >= fDCACuts[1][1]) { fQASequentialParticleCutCounter[RECO]->Fill(16.5); return; }
+   }
+  } // if(fUseDCACuts[0]||fUseDCACuts[1])
+
+  // Remaining particle cuts:
+  if(fUseParticleCuts[TPCNcls])
+  {
+   if(aodTrack->GetTPCNcls() < fParticleCuts[TPCNcls][0]) { fQASequentialParticleCutCounter[RECO]->Fill(17.5); return; }
+   if(aodTrack->GetTPCNcls() >= fParticleCuts[TPCNcls][1]) { fQASequentialParticleCutCounter[RECO]->Fill(18.5); return; }
+  }
+  if(fUseParticleCuts[TPCnclsS])
+  {
+   if(aodTrack->GetTPCnclsS() < fParticleCuts[TPCnclsS][0]) { fQASequentialParticleCutCounter[RECO]->Fill(19.5); return; }
+   if(aodTrack->GetTPCnclsS() >= fParticleCuts[TPCnclsS][1]) { fQASequentialParticleCutCounter[RECO]->Fill(20.5); return; }
+  }
+  if(fUseParticleCuts[TPCnclsFractionShared])
+  {
+   if(TMath::Abs((Double_t)aodTrack->GetTPCNcls())>0.)
+   {
+    if(!((Double_t)aodTrack->GetTPCnclsS()/(Double_t)aodTrack->GetTPCNcls() < fParticleCuts[TPCnclsFractionShared][0])) { fQASequentialParticleCutCounter[RECO]->Fill(21.5); return; }
+    // if((Double_t)aodTrack->GetTPCnclsS()/(Double_t)aodTrack->GetTPCNcls() >= fParticleCuts[TPCnclsFractionShared][1]) { fQASequentialParticleCutCounter[RECO]->Fill(22.5); return; }// the upper limit is not needed
+   }
+  }
+  if(fUseParticleCuts[TPCNCrossedRows])
+  {
+   if(aodTrack->GetTPCNCrossedRows() < fParticleCuts[TPCNCrossedRows][0]) { fQASequentialParticleCutCounter[RECO]->Fill(23.5); return; }
+   if(aodTrack->GetTPCNCrossedRows() >= fParticleCuts[TPCNCrossedRows][1]) { fQASequentialParticleCutCounter[RECO]->Fill(24.5); return; }
+  }
+  if(fUseParticleCuts[TPCChi2perNDF])
+  {
+   if(aodTrack->GetTPCNcls()>0.)
+   {
+    if(!((Double_t)aodTrack->GetTPCchi2()/(Double_t)aodTrack->GetTPCNcls() < fParticleCuts[TPCChi2perNDF][0])) { fQASequentialParticleCutCounter[RECO]->Fill(25.5); return; }
+    // if((Double_t)aodTrack->GetTPCchi2()/(Double_t)aodTrack->GetTPCNcls() >= fParticleCuts[TPCChi2perNDF][1]) { fQASequentialParticleCutCounter[RECO]->Fill(26.5); return; } // open for the time being
+   }
+  } 
+  if(fUseParticleCuts[TPCFoundFraction])
+  {
+   if(aodTrack->GetTPCFoundFraction() < fParticleCuts[TPCFoundFraction][0]) { fQASequentialParticleCutCounter[RECO]->Fill(27.5); return; }
+   if(aodTrack->GetTPCFoundFraction() >= fParticleCuts[TPCFoundFraction][1]) { fQASequentialParticleCutCounter[RECO]->Fill(28.5); return; }
+  }
+  if(fUseParticleCuts[Chi2TPCConstrainedVsGlobal])
+  {
+   if(aodTrack->GetChi2TPCConstrainedVsGlobal() < fParticleCuts[Chi2TPCConstrainedVsGlobal][0]) { fQASequentialParticleCutCounter[RECO]->Fill(29.5); return; }
+   if(aodTrack->GetChi2TPCConstrainedVsGlobal() >= fParticleCuts[Chi2TPCConstrainedVsGlobal][1]) { fQASequentialParticleCutCounter[RECO]->Fill(30.5); return; }
+  }
+  if(fUseParticleCuts[ITSNcls])
+  {
+   if(aodTrack->GetITSNcls() < fParticleCuts[ITSNcls][0]) { fQASequentialParticleCutCounter[RECO]->Fill(31.5); return; }
+   if(aodTrack->GetITSNcls() >= fParticleCuts[ITSNcls][1]) { fQASequentialParticleCutCounter[RECO]->Fill(32.5); return; }
+  }
+  if(fUseParticleCuts[ITSChi2perNDF])
+  {
+   if(TMath::Abs(aodTrack->GetITSNcls())>0.)
+   {
+    if(aodTrack->GetITSchi2()/aodTrack->GetITSNcls() < fParticleCuts[ITSChi2perNDF][0]) { fQASequentialParticleCutCounter[RECO]->Fill(33.5); return; }
+    if(aodTrack->GetITSchi2()/aodTrack->GetITSNcls() >= fParticleCuts[ITSChi2perNDF][1]) { fQASequentialParticleCutCounter[RECO]->Fill(34.5); return; }
+   }
+  }
+  if(fUseParticleCuts[TPCNclsF])
+  {
+   if(aodTrack->GetTPCNclsF() < fParticleCuts[TPCNclsF][0]) { fQASequentialParticleCutCounter[RECO]->Fill(35.5); return; }
+   if(aodTrack->GetTPCNclsF() >= fParticleCuts[TPCNclsF][1]) { fQASequentialParticleCutCounter[RECO]->Fill(36.5); return; }
+  }
+  if(fAtLeastOnePointInTheSPD)
+  {
+   if(!(aodTrack->HasPointOnITSLayer(1) || aodTrack->HasPointOnITSLayer(2))) { fQASequentialParticleCutCounter[RECO]->Fill(37.5); return; }
+  }
+  if(fIgnoreGlobalConstrained) // kTRUE by default
+  {
+   if(aodTrack->IsGlobalConstrained()) { fQASequentialParticleCutCounter[RECO]->Fill(38.5); return; }
+  }
+
+  // DCAxy vs. pT:
+  if(fUsePtDependentDCAxyParameterization)
+  {
+   Float_t dcaXY = aodTrack->DCA(); 
+   Float_t dcaZ = aodTrack->ZAtDCA(); 
+   if(!aodTrack->TestBit(AliAODTrack::kIsDCA))
+   {
+    aodTrack->GetImpactParameters(dcaXY,dcaZ); 
+   } 
+   // pT dependent DCAxy:
+   if(TMath::Abs(dcaXY) > fPtDependentDCAxyFormula->Eval(aodTrack->Pt())) { fQASequentialParticleCutCounter[RECO]->Fill(39.5); return; }
+  } // if(fUsePtDependentDCAxyParameterization)
+
+ } // if(aodTrack)
+
+ // c) Cut on AOD MC particle:
+ if(aodmcParticle)
+ {
+  // Basic protection:
+  if(!fQASequentialParticleCutCounter[SIM]){return;}
+
+  // Trivial cuts:
+  if(fUseOnlyPrimaries)
+  {
+   if(!aodmcParticle->IsPrimary()) { fQASequentialParticleCutCounter[SIM]->Fill(1.5);  return; }// take into account only generated primaries 
+   //if(!aodmcParticle->IsPhysicalPrimary()) return kFALSE; // take into account only what ALICE defines as primaries
+  }
+
+  // Kinematics:
+  if(fUseKinematicsCuts[PHI])
+  {
+   if(aodmcParticle->Phi() < fKinematicsCuts[PHI][0]) { fQASequentialParticleCutCounter[SIM]->Fill(2.5); return; }
+   if(aodmcParticle->Phi() >= fKinematicsCuts[PHI][1]) { fQASequentialParticleCutCounter[SIM]->Fill(3.5); return; }
+  }
+  if(fUseKinematicsCuts[PT])
+  {
+   if(aodmcParticle->Pt() < fKinematicsCuts[PT][0]) { fQASequentialParticleCutCounter[SIM]->Fill(4.5); return; }
+   if(aodmcParticle->Pt() >= fKinematicsCuts[PT][1]) { fQASequentialParticleCutCounter[SIM]->Fill(5.5); return; }
+  }
+  if(fUseKinematicsCuts[ETA])
+  {
+   if(aodmcParticle->Eta() < fKinematicsCuts[ETA][0]) { fQASequentialParticleCutCounter[SIM]->Fill(6.5); return; }
+   if(aodmcParticle->Eta() >= fKinematicsCuts[ETA][1]) { fQASequentialParticleCutCounter[SIM]->Fill(7.5); return; }
+  }
+  if(fUseKinematicsCuts[E])
+  {
+   if(aodmcParticle->E() < fKinematicsCuts[E][0]) { fQASequentialParticleCutCounter[SIM]->Fill(8.5); return; }
+   if(aodmcParticle->E() >= fKinematicsCuts[E][1]) { fQASequentialParticleCutCounter[SIM]->Fill(9.5); return; }
+  }
+  if(fUseKinematicsCuts[CHARGE])
+  {
+   if(0 == aodmcParticle->Charge()) { fQASequentialParticleCutCounter[SIM]->Fill(10.5); return; }
+   if(aodmcParticle->Charge()/3 < fKinematicsCuts[CHARGE][0]) { fQASequentialParticleCutCounter[SIM]->Fill(11.5); return; }// yes, since aodmcParticle->Charge() = 3 if aodTrack->Charge() = 3
+   if(aodmcParticle->Charge()/3 >= fKinematicsCuts[CHARGE][1]) { fQASequentialParticleCutCounter[SIM]->Fill(12.5); return; }
+  }
+
+ } // if(aodmcParticle)
+
+} // void AliAnalysisTaskMuPa::SequentialParticleCutCounter(AliVParticle *vParticle)
+
+//=======================================================================================================================
+
 void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs)
 {
  // Fill all additional QA stuff here, that is already not filled in Control Event Histograms or Control Particle Histograms. 
@@ -3802,7 +4223,7 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const
  // b) AOD QA;
  // c) MC QA.
 
- //if(fVerbose){Green(__PRETTY_FUNCTION__);}
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
  // a) Determine Ali{MC,ESD,AOD}Event:
  AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
@@ -3873,8 +4294,7 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const
       if(fQAKinematicsFilterBits[fb][CHARGE]){fQAKinematicsFilterBits[fb][CHARGE]->Fill(aodTrack->Charge());}
      }
     }
-   } // if(rs == RECO && fQAFilterBits)
-   
+   } // if(rs == RECO && fQAFilterBits)   
   } // for(Int_t iTrack=0;iTrack<nTracks;iTrack++) // starting a loop over all tracks
 
   // Check for self-correlations in reconstructed data with two nested loops:
@@ -3964,6 +4384,10 @@ void AliAnalysisTaskMuPa::FillQAHistograms(AliVEvent *ave, const Int_t ba, const
    if(fQAGenericCorrHist[3][ba] && aodheader && avtx){fQAGenericCorrHist[3][ba]->Fill(avtx->GetZ(),aodheader->GetRefMultiplicityComb08());}
    // 4: vtx_z vs. fSelectedTracks
    if(fQAGenericCorrHist[4][ba] && avtx){fQAGenericCorrHist[4][ba]->Fill(avtx->GetZ(),fSelectedTracks);}
+   // 5: DCAxy vs. pT
+   //    => filled temporarily in FillControlParticleHistograms
+   // 6: DCAz vs. pT
+   //    => filled temporarily in FillControlParticleHistograms
   } // if(rs == RECO)
 
  } // if(aAOD)
@@ -4375,6 +4799,8 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
 
  // TBI 20210909 optimize that 2x I do not call e.g. Two(0,0).Re(), etc.
 
+ if(fVerbose){Green(__PRETTY_FUNCTION__);}
+
  // a) Flush 'n' fill the generic Q-vectors:
  this->ResetQ();
  for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
@@ -4389,11 +4815,15 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
  for(Int_t h=1;h<=fMaxHarmonic;h++) // harmonic
  {
   // 2p:
-  //cout<<"   => CalculateCorrelations(void), 2p .... "<<endl;
   if(fSelectedTracks<2){return;}
+  //cout<<"   => CalculateCorrelations(void), 2p .... "<<endl;
   TComplex twoC = Two(h,-h)/Two(0,0).Re(); // cos
   //TComplex twoS = Two(h,-h)/Two(0,0).Im(); // sin
   Double_t wTwo = Two(0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
+  if(!(wTwo>0.0)) 
+  { 
+   Form("wTwo = %f is not positive. fSelectedTracks = %d",wTwo,fSelectedTracks); sleep(1); return;
+  } 
   if(fCalculateCustomNestedLoop)
   {
    // e-b-e sanity check:
@@ -4415,18 +4845,22 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
   if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
      TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){twoC/=pow(fInternalValidationAmplitudes->GetAt(h-1),2.);}
   // integrated:
-  if(fCorrelationsPro[0][h-1][0]){fCorrelationsPro[0][h-1][0]->Fill(0.5,twoC,wTwo);}
+  if(fCorrelationsPro[0][h-1][AFO_INTEGRATED]){fCorrelationsPro[0][h-1][AFO_INTEGRATED]->Fill(0.5,twoC,wTwo);}
   // vs. multiplicity:
-  if(fCorrelationsPro[0][h-1][1]){fCorrelationsPro[0][h-1][1]->Fill(fSelectedTracks+0.5,twoC,wTwo);}
+  if(fCorrelationsPro[0][h-1][AFO_MULTIPLICITY]){fCorrelationsPro[0][h-1][AFO_MULTIPLICITY]->Fill(fSelectedTracks+0.5,twoC,wTwo);}
   // vs. centrality:
-  if(fCorrelationsPro[0][h-1][2]){fCorrelationsPro[0][h-1][2]->Fill(fCentrality,twoC,wTwo);}
+  if(fCorrelationsPro[0][h-1][AFO_CENTRALITY]){fCorrelationsPro[0][h-1][AFO_CENTRALITY]->Fill(fCentrality,twoC,wTwo);}
 
   // 4p:
+  if(fSelectedTracks<4){continue;} // yes, continue, because I can still calculate 2-p in other harmonics! 
   //cout<<"   => CalculateCorrelations(void), 4p .... "<<endl;
-  if(fSelectedTracks<4){return;}
   TComplex fourC = Four(h,h,-h,-h)/Four(0,0,0,0).Re(); // cos
   //TComplex fourS = Four(h,h,-h,-h)/Four(0,0,0,0).Im(); // sin
   Double_t wFour = Four(0,0,0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
+  if(!(wFour>0.0)) 
+  { 
+   Form("wFour = %f is not positive. fSelectedTracks = %d",wFour,fSelectedTracks); sleep(1); continue; // yes, continue, not return like for 2-p
+  } 
   if(fCalculateCustomNestedLoop)
   {
    // e-b-e sanity check:
@@ -4450,18 +4884,22 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
   if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
      TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){fourC/=pow(fInternalValidationAmplitudes->GetAt(h-1),4.);}
   // integrated:
-  if(fCorrelationsPro[1][h-1][0]){fCorrelationsPro[1][h-1][0]->Fill(0.5,fourC,wFour);}
+  if(fCorrelationsPro[1][h-1][AFO_INTEGRATED]){fCorrelationsPro[1][h-1][AFO_INTEGRATED]->Fill(0.5,fourC,wFour);}
   // vs. multiplicity:
-  if(fCorrelationsPro[1][h-1][1]){fCorrelationsPro[1][h-1][1]->Fill(fSelectedTracks+0.5,fourC,wFour);}
+  if(fCorrelationsPro[1][h-1][AFO_MULTIPLICITY]){fCorrelationsPro[1][h-1][AFO_MULTIPLICITY]->Fill(fSelectedTracks+0.5,fourC,wFour);}
   // vs. centrality:
-  if(fCorrelationsPro[1][h-1][2]){fCorrelationsPro[1][h-1][2]->Fill(fCentrality,fourC,wFour);}
+  if(fCorrelationsPro[1][h-1][AFO_CENTRALITY]){fCorrelationsPro[1][h-1][AFO_CENTRALITY]->Fill(fCentrality,fourC,wFour);}
 
   // 6p:
+  if(fSelectedTracks<6){continue;} // yes, continue, because I can still calculate 2-p and 4-p in other harmonics! 
   //cout<<"   => CalculateCorrelations(void), 6p .... "<<endl;
-  if(fSelectedTracks<6){return;}
   TComplex sixC = Six(h,h,h,-h,-h,-h)/Six(0,0,0,0,0,0).Re(); // cos
   //TComplex sixS = Six(h,h,h,-h,-h,-h)/Six(0,0,0,0,0,0).Im(); // sin
   Double_t wSix = Six(0,0,0,0,0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
+  if(!(wSix>0.0)) 
+  { 
+   Form("wSix = %f is not positive. fSelectedTracks = %d",wSix,fSelectedTracks); sleep(1); continue; // yes, continue, not return like for 2-p
+  } 
   if(fCalculateCustomNestedLoop)
   {
    // e-b-e sanity check:
@@ -4487,18 +4925,22 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
   if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
      TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){sixC/=pow(fInternalValidationAmplitudes->GetAt(h-1),6.);}
   // integrated:
-  if(fCorrelationsPro[2][h-1][0]){fCorrelationsPro[2][h-1][0]->Fill(0.5,sixC,wSix);}
+  if(fCorrelationsPro[2][h-1][AFO_INTEGRATED]){fCorrelationsPro[2][h-1][AFO_INTEGRATED]->Fill(0.5,sixC,wSix);}
   // vs. multiplicity:
-  if(fCorrelationsPro[2][h-1][1]){fCorrelationsPro[2][h-1][1]->Fill(fSelectedTracks+0.5,sixC,wSix);}
+  if(fCorrelationsPro[2][h-1][AFO_MULTIPLICITY]){fCorrelationsPro[2][h-1][AFO_MULTIPLICITY]->Fill(fSelectedTracks+0.5,sixC,wSix);}
   // vs. centrality:
-  if(fCorrelationsPro[2][h-1][2]){fCorrelationsPro[2][h-1][2]->Fill(fCentrality,sixC,wSix);}
+  if(fCorrelationsPro[2][h-1][AFO_CENTRALITY]){fCorrelationsPro[2][h-1][AFO_CENTRALITY]->Fill(fCentrality,sixC,wSix);}
 
   // 8p:
+  if(fSelectedTracks<8){continue;} // yes, continue, because I can still calculate 2-p, 4-p and 6-p in other harmonics! 
   //cout<<"   => CalculateCorrelations(void), 8p .... "<<endl;
-  if(fSelectedTracks<8){return;}
   TComplex eightC = Eight(h,h,h,h,-h,-h,-h,-h)/Eight(0,0,0,0,0,0,0,0).Re(); // cos
   //TComplex eightS = Eight(h,h,h,h,-h,-h,-h,-h)/Eight(0,0,0,0,0,0).Im(); // sin
   Double_t wEight = Eight(0,0,0,0,0,0,0,0).Re(); // Weight is 'number of combinations' by default TBI_20210515 add support for other weights
+  if(!(wEight>0.0)) 
+  { 
+   Form("wEight = %f is not positive. fSelectedTracks = %d",wEight,fSelectedTracks); sleep(1); continue; // yes, continue, not return like for 2-p
+  } 
   if(fCalculateCustomNestedLoop)
   {
    // e-b-e sanity check:
@@ -4526,11 +4968,11 @@ void AliAnalysisTaskMuPa::CalculateCorrelations()
   if(fUseInternalValidation && fInternalValidationAmplitudes && fRescaleWithTheoreticalInput && 
      TMath::Abs(fInternalValidationAmplitudes->GetAt(h-1))>0.){eightC/=pow(fInternalValidationAmplitudes->GetAt(h-1),8.);}
   // integrated:
-  if(fCorrelationsPro[3][h-1][0]){fCorrelationsPro[3][h-1][0]->Fill(0.5,eightC,wEight);}
+  if(fCorrelationsPro[3][h-1][AFO_INTEGRATED]){fCorrelationsPro[3][h-1][AFO_INTEGRATED]->Fill(0.5,eightC,wEight);}
   // vs. multiplicity:
-  if(fCorrelationsPro[3][h-1][1]){fCorrelationsPro[3][h-1][1]->Fill(fSelectedTracks+0.5,eightC,wEight);}
+  if(fCorrelationsPro[3][h-1][AFO_MULTIPLICITY]){fCorrelationsPro[3][h-1][AFO_MULTIPLICITY]->Fill(fSelectedTracks+0.5,eightC,wEight);}
   // vs. centrality:
-  if(fCorrelationsPro[3][h-1][2]){fCorrelationsPro[3][h-1][2]->Fill(fCentrality,eightC,wEight);}
+  if(fCorrelationsPro[3][h-1][AFO_CENTRALITY]){fCorrelationsPro[3][h-1][AFO_CENTRALITY]->Fill(fCentrality,eightC,wEight);}
 
  } // for(Int_t h=1;h<=fMaxHarmonic;h++) // harmonic
 
@@ -4573,17 +5015,17 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
    if(i2==i1){continue;}
    Double_t dPhi2 = ftaNestedLoops[0]->GetAt(i2);
    Double_t dW2 = ftaNestedLoops[1]->GetAt(i2);
-   for(int h=0; h<6; h++)
+   for(int h=0; h<gMaxHarmonic; h++)
    {
     // fill cos, 2p, integreated: 
-    if(fNestedLoopsPro[0][h][0]){fNestedLoopsPro[0][h][0]->Fill(0.5,TMath::Cos((h+1.)*(dPhi1-dPhi2)),dW1*dW2);}
+    if(fNestedLoopsPro[0][h][AFO_INTEGRATED]){fNestedLoopsPro[0][h][AFO_INTEGRATED]->Fill(0.5,TMath::Cos((h+1.)*(dPhi1-dPhi2)),dW1*dW2);}
     // fill cos, 2p, vs. M: 
-    if(fNestedLoopsPro[0][h][1]){fNestedLoopsPro[0][h][1]->Fill(fSelectedTracks+0.5,TMath::Cos((h+1.)*(dPhi1-dPhi2)),dW1*dW2);}
+    if(fNestedLoopsPro[0][h][AFO_MULTIPLICITY]){fNestedLoopsPro[0][h][AFO_MULTIPLICITY]->Fill(fSelectedTracks+0.5,TMath::Cos((h+1.)*(dPhi1-dPhi2)),dW1*dW2);}
     // fill cos, 2p, vs. centrality: 
-    if(fNestedLoopsPro[0][h][2]){fNestedLoopsPro[0][h][2]->Fill(fCentrality,TMath::Cos((h+1.)*(dPhi1-dPhi2)),dW1*dW2);}
+    if(fNestedLoopsPro[0][h][AFO_CENTRALITY]){fNestedLoopsPro[0][h][AFO_CENTRALITY]->Fill(fCentrality,TMath::Cos((h+1.)*(dPhi1-dPhi2)),dW1*dW2);}
    } // for(int h=1; h<=6; h++)
-  } // for(int i2=0; i2<nTracks; ++i2)
- } // for(int i1=0; i1<nTracks; ++i1)
+  } // for(int i2=0; i2<nTracks; i2++)
+ } // for(int i1=0; i1<nTracks; i1++)
 
  // 4p:
  if(nParticles<4){return;}
@@ -4607,19 +5049,19 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
      if(i4==i1||i4==i2||i4==i3){continue;}
      Double_t dPhi4 = ftaNestedLoops[0]->GetAt(i4);
      Double_t dW4 = ftaNestedLoops[1]->GetAt(i4);
-     for(int h=0; h<6; h++)
+     for(int h=0; h<gMaxHarmonic; h++)
      {
       // fill cos, 4p, integreated: 
-      if(fNestedLoopsPro[1][h][0]){fNestedLoopsPro[1][h][0]->Fill(0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2-dPhi3-dPhi4)),dW1*dW2*dW3*dW4);}
+      if(fNestedLoopsPro[1][h][AFO_INTEGRATED]){fNestedLoopsPro[1][h][AFO_INTEGRATED]->Fill(0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2-dPhi3-dPhi4)),dW1*dW2*dW3*dW4);}
       // fill cos, 4p, all harmonics, vs. M: 
-      if(fNestedLoopsPro[1][h][1]){fNestedLoopsPro[1][h][1]->Fill(fSelectedTracks+0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2-dPhi3-dPhi4)),dW1*dW2*dW3*dW4);}
+      if(fNestedLoopsPro[1][h][AFO_MULTIPLICITY]){fNestedLoopsPro[1][h][AFO_MULTIPLICITY]->Fill(fSelectedTracks+0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2-dPhi3-dPhi4)),dW1*dW2*dW3*dW4);}
       // fill cos, 4p, all harmonics, vs. centrality: 
-      if(fNestedLoopsPro[1][h][1]){fNestedLoopsPro[1][h][2]->Fill(fCentrality,TMath::Cos((h+1.)*(dPhi1+dPhi2-dPhi3-dPhi4)),dW1*dW2*dW3*dW4);}
-     } // for(int h=0; h<6; h++)
+      if(fNestedLoopsPro[1][h][AFO_CENTRALITY]){fNestedLoopsPro[1][h][AFO_CENTRALITY]->Fill(fCentrality,TMath::Cos((h+1.)*(dPhi1+dPhi2-dPhi3-dPhi4)),dW1*dW2*dW3*dW4);}
+     } // for(int h=0; h<gMaxHarmonic; h++)
     } // for(int i4=0; i4<nParticles; i4++)   
    } // for(int i3=0; i3<nParticles; i3++)
-  } // for(int i2=0; i2<nTracks; ++i2)
- } // for(int i1=0; i1<nTracks; ++i1)
+  } // for(int i2=0; i2<nTracks; i2++)
+ } // for(int i1=0; i1<nTracks; i1++)
 
  // 6p:
  if(nParticles<6){return;}
@@ -4653,21 +5095,21 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
        if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5){continue;}
        Double_t dPhi6 = ftaNestedLoops[0]->GetAt(i6);
        Double_t dW6 = ftaNestedLoops[1]->GetAt(i6);
-       for(int h=0; h<6; h++)
+       for(int h=0; h<gMaxHarmonic; h++)
        {
         // fill cos, 6p, integreated: 
-        if(fNestedLoopsPro[2][h][0]){fNestedLoopsPro[2][h][0]->Fill(0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3-dPhi4-dPhi5-dPhi6)),dW1*dW2*dW3*dW4*dW5*dW6);}
+        if(fNestedLoopsPro[2][h][AFO_INTEGRATED]){fNestedLoopsPro[2][h][AFO_INTEGRATED]->Fill(0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3-dPhi4-dPhi5-dPhi6)),dW1*dW2*dW3*dW4*dW5*dW6);}
         // fill cos, 6p, all harmonics, vs. M: 
-        if(fNestedLoopsPro[2][h][1]){fNestedLoopsPro[2][h][1]->Fill(fSelectedTracks+0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3-dPhi4-dPhi5-dPhi6)),dW1*dW2*dW3*dW4*dW5*dW6);}
+        if(fNestedLoopsPro[2][h][AFO_MULTIPLICITY]){fNestedLoopsPro[2][h][AFO_MULTIPLICITY]->Fill(fSelectedTracks+0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3-dPhi4-dPhi5-dPhi6)),dW1*dW2*dW3*dW4*dW5*dW6);}
         // fill cos, 6p, all harmonics, vs. M: 
-        if(fNestedLoopsPro[2][h][1]){fNestedLoopsPro[2][h][2]->Fill(fCentrality,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3-dPhi4-dPhi5-dPhi6)),dW1*dW2*dW3*dW4*dW5*dW6);}
-       } // for(int h=0; h<6; h++)
+        if(fNestedLoopsPro[2][h][AFO_CENTRALITY]){fNestedLoopsPro[2][h][AFO_CENTRALITY]->Fill(fCentrality,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3-dPhi4-dPhi5-dPhi6)),dW1*dW2*dW3*dW4*dW5*dW6);}
+       } // for(int h=0; h<gMaxHarmonic; h++)
       } // if(i6==i1||i6==i2||i6==i3||i6==i4||i6==i5){continue;}
      } // if(i5==i1||i5==i2||i5==i3||i5==i4){continue;}
     } // for(int i4=0; i4<nParticles; i4++)   
    } // for(int i3=0; i3<nParticles; i3++)
-  } // for(int i2=0; i2<nTracks; ++i2)
- } // for(int i1=0; i1<nTracks; ++i1)
+  } // for(int i2=0; i2<nTracks; i2++)
+ } // for(int i1=0; i1<nTracks; i1++)
 
  // 8p:
  if(nParticles<8){return;}
@@ -4711,23 +5153,23 @@ void AliAnalysisTaskMuPa::CalculateNestedLoops()
          if(i8==i1||i8==i2||i8==i3||i8==i4||i8==i5||i8==i6||i8==i7){continue;}
          Double_t dPhi8 = ftaNestedLoops[0]->GetAt(i8);
          Double_t dW8 = ftaNestedLoops[1]->GetAt(i8);
-         for(int h=0; h<6; h++)
+         for(int h=0; h<gMaxHarmonic; h++)
          {
           // fill cos, 8p, integreated: 
-          if(fNestedLoopsPro[3][h][0]){fNestedLoopsPro[3][h][0]->Fill(0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3+dPhi4-dPhi5-dPhi6-dPhi7-dPhi8)),dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8);}
+          if(fNestedLoopsPro[3][h][AFO_INTEGRATED]){fNestedLoopsPro[3][h][AFO_INTEGRATED]->Fill(0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3+dPhi4-dPhi5-dPhi6-dPhi7-dPhi8)),dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8);}
           // fill cos, 8p, all harmonics, vs. M: 
-          if(fNestedLoopsPro[3][h][1]){fNestedLoopsPro[3][h][1]->Fill(fSelectedTracks+0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3+dPhi4-dPhi5-dPhi6-dPhi7-dPhi8)),dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8);}
+          if(fNestedLoopsPro[3][h][AFO_MULTIPLICITY]){fNestedLoopsPro[3][h][AFO_MULTIPLICITY]->Fill(fSelectedTracks+0.5,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3+dPhi4-dPhi5-dPhi6-dPhi7-dPhi8)),dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8);}
           // fill cos, 8p, all harmonics, vs. M: 
-          if(fNestedLoopsPro[3][h][2]){fNestedLoopsPro[3][h][2]->Fill(fCentrality,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3+dPhi4-dPhi5-dPhi6-dPhi7-dPhi8)),dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8);}
-         } // for(int h=0; h<6; h++)
+          if(fNestedLoopsPro[3][h][AFO_CENTRALITY]){fNestedLoopsPro[3][h][AFO_CENTRALITY]->Fill(fCentrality,TMath::Cos((h+1.)*(dPhi1+dPhi2+dPhi3+dPhi4-dPhi5-dPhi6-dPhi7-dPhi8)),dW1*dW2*dW3*dW4*dW5*dW6*dW7*dW8);}
+         } // for(int h=0; h<gMaxHarmonic; h++)
         } // for(int i8=0; i8<nParticles; i8++)
        } // for(int i7=0; i7<nParticles; i7++)
       } // for(int i6=0; i6<nParticles; i6++) 
      } // for(int i5=0; i5<nParticles; i6++) 
     } // for(int i4=0; i4<nParticles; i4++)   
    } // for(int i3=0; i3<nParticles; i3++)
-  } // for(int i2=0; i2<nParticles; ++i2)
- } // for(int i1=0; i1<nParticles; ++i1)
+  } // for(int i2=0; i2<nParticles; i2++)
+ } // for(int i1=0; i1<nParticles; i1++)
 
 } // void AliAnalysisTaskMuPa::CalculateNestedLoops(void) 
 
@@ -4955,12 +5397,12 @@ Double_t AliAnalysisTaskMuPa::CalculateKineCustomNestedLoop(TArrayI *harmonics, 
  Int_t qv = -1; // which component of q-vector
  if(TString(kc).EqualTo("pt"))
  {
-  kb = PTKINE;
+  kb = AFO_PT;
   qv = PTq;
  } 
  else if(TString(kc).EqualTo("eta"))
  {
-  kb = ETAKINE;
+  kb = AFO_ETA;
   qv = ETAq;  
  } 
  else
@@ -4977,7 +5419,7 @@ Double_t AliAnalysisTaskMuPa::CalculateKineCustomNestedLoop(TArrayI *harmonics, 
   if(TMath::Abs(ftaNestedLoopsKine[qv][bin][0]->GetAt(i)) > 0. && TMath::Abs(ftaNestedLoopsKine[qv][bin][0]->GetAt(i)) > 0.){nParticles++;}
  }
 
- Blue(Form("kine: nParticles = %d, bin range = [%f,%f)",nParticles,fCorrelationsPro[0][0][kb]->GetBinLowEdge(bin+1),fCorrelationsPro[0][0][kb]->GetBinLowEdge(bin+2)));
+ Blue(Form("%s: nParticles = %d, bin range = [%f,%f)",kc,nParticles,fCorrelationsPro[0][0][kb]->GetBinLowEdge(bin+1),fCorrelationsPro[0][0][kb]->GetBinLowEdge(bin+2)));
 
  // a) Determine the order of correlator;
  Int_t order = harmonics->GetSize();
@@ -5169,11 +5611,7 @@ Double_t AliAnalysisTaskMuPa::CalculateKineCustomNestedLoop(TArrayI *harmonics, 
 
 void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
 {
- // Make a ratio fNestedLoopsPro[....]/fCorrelationsPro[....]. If results are the same, these ratios must be 1.
-
- // a) Integrated comparison;
- // b) Comparison vs. multiplicity;
- // c) Comparison vs. centrality;
+ // Compare results obtained with Q-vectors and independently with nested loops.
 
  if(fVerbose){Green(__PRETTY_FUNCTION__);}
 
@@ -5182,34 +5620,88 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
  Double_t valueQV = 0.;
  Double_t valueNL = 0.;
 
- // a) Integrated comparison:
- nBinsQV = fCorrelationsPro[0][0][0]->GetNbinsX();
- nBinsNL = fNestedLoopsPro[0][0][0]->GetNbinsX();
- if(nBinsQV != nBinsNL){cout<<__LINE__<<endl; exit(1);}
- cout<<endl;
- cout<<"   [0] : integrated"<<endl;
- for(Int_t o=0;o<4;o++)
+ TString vName[eAsFunctionOf_N] = {"integrated","multiplicity","centrality","pt","eta"};
+
+ for(Int_t v=0;v<eAsFunctionOf_N;v++) // variable, see content of enum eAsFunctionOf
  {
-  cout<<Form("   ==== <<%d>>-particle correlations ====",2*(o+1))<<endl;
-  for(Int_t h=0;h<6;h++)
+  if(fCorrelationsPro[0][0][v] && fNestedLoopsPro[0][0][v])
   {
-   for(Int_t b=1;b<=nBinsQV;b++)
+   // exceptionally here get the variable name from the x-axis title:
+   TString vName = fCorrelationsPro[0][0][v]->GetXaxis()->GetTitle();
+
+   // get the bins for this variable:
+   nBinsQV = fCorrelationsPro[0][0][v]->GetNbinsX();
+   nBinsNL = fNestedLoopsPro[0][0][v]->GetNbinsX();
+   if(nBinsQV != nBinsNL){cout<<__LINE__<<endl; exit(1);}
+   cout<<endl;
+   cout<<Form("   [%d] : %s",v,vName.Data())<<endl;
+   for(Int_t o=0;o<4;o++)
    {
-    if(fCorrelationsPro[o][h][0]){valueQV = fCorrelationsPro[o][h][0]->GetBinContent(b);}
-    if(fNestedLoopsPro[o][h][0]){valueNL = fNestedLoopsPro[o][h][0]->GetBinContent(b);}
-    if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
+    cout<<Form("   ==== <<%d>>-particle correlations vs. %s ====",2*(o+1),vName.Data())<<endl;
+    for(Int_t h=0;h<gMaxHarmonic;h++)
     {
-     cout<<Form("   h=%d, Q-vectors:    ",h+1)<<valueQV<<endl; 
-     cout<<Form("   h=%d, Nested loops: ",h+1)<<valueNL<<endl; 
-     if(TMath::Abs(valueQV-valueNL)>1.e-5)
-     {          
-      cout<<Form("[%d][%d][%d]",o,h,0)<<endl; cout<<__LINE__<<endl; exit(1);
-     }
-    } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
-   } // for(Int_t b=1;b<=nBinsQV;b++) 
-  } // for(Int_t h=0;h<6;h++)
+     for(Int_t b=1;b<=nBinsQV;b++)
+     {
+      if(fCorrelationsPro[o][h][v]){valueQV = fCorrelationsPro[o][h][v]->GetBinContent(b);}
+      if(fNestedLoopsPro[o][h][v]){valueNL = fNestedLoopsPro[o][h][v]->GetBinContent(b);}
+      if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
+      {
+       cout<<Form("   h=%d, b=%d, Q-vectors:    ",h+1,b)<<valueQV<<endl; 
+       cout<<Form("   h=%d, b=%d, Nested loops: ",h+1,b)<<valueNL<<endl; 
+       if(TMath::Abs(valueQV-valueNL)>1.e-5)
+       {          
+        cout<<Form("[%d][%d][%d]",o,h,v)<<endl; cout<<__LINE__<<endl; exit(1);
+       }
+      } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
+     } // for(Int_t b=1;b<=nBinsQV;b++) 
+    } // for(Int_t h=0;h<gMaxHarmonic;h++)
+    cout<<endl;
+   } // for(Int_t o=0;o<4;o++) 
+  } // if(fCorrelationsPro[0][0][v] && fNestedLoopsPro[0][0][v])
+ } // for(Int_t v=0;v<eAsFunctionOf_N;v++) // variable, see content of enum eAsFunctionOf
+
+
+
+  // decide what is booked, then later valid pointer to fCorrelationsPro[k][n][v] is used as a boolean, in the standard wa
+
+
+
+
+/*
+
+
+ // a) Integrated comparison:
+ if(fCorrelationsPro[0][0][AFO_INTEGRATED] && fNestedLoopsPro[0][0][AFO_INTEGRATED])
+ {
+  nBinsQV = fCorrelationsPro[0][0][AFO_INTEGRATED]->GetNbinsX();
+  nBinsNL = fNestedLoopsPro[0][0][AFO_INTEGRATED]->GetNbinsX();
+  if(nBinsQV != nBinsNL){cout<<__LINE__<<endl; exit(1);}
   cout<<endl;
- } // for(Int_t o=0;o<4;o++) 
+  cout<<"   [0] : integrated"<<endl;
+  for(Int_t o=0;o<4;o++)
+  {
+   cout<<Form("   ==== <<%d>>-particle correlations ====",2*(o+1))<<endl;
+   for(Int_t h=0;h<gMaxHarmonic;h++)
+   {
+    for(Int_t b=1;b<=nBinsQV;b++)
+    {
+     if(fCorrelationsPro[o][h][0]){valueQV = fCorrelationsPro[o][h][0]->GetBinContent(b);}
+     if(fNestedLoopsPro[o][h][0]){valueNL = fNestedLoopsPro[o][h][0]->GetBinContent(b);}
+     if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
+     {
+      cout<<Form("   h=%d, Q-vectors:    ",h+1)<<valueQV<<endl; 
+      cout<<Form("   h=%d, Nested loops: ",h+1)<<valueNL<<endl; 
+      if(TMath::Abs(valueQV-valueNL)>1.e-5)
+      {          
+       cout<<Form("[%d][%d][%d]",o,h,0)<<endl; cout<<__LINE__<<endl; exit(1);
+      }
+     } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
+    } // for(Int_t b=1;b<=nBinsQV;b++) 
+   } // for(Int_t h=0;h<gMaxHarmonic;h++)
+   cout<<endl;
+  } // for(Int_t o=0;o<4;o++) 
+ } // if(fCorrelationsPro[0][0][AFO_INTEGRATED] && fNestedLoopsPro[0][0][AFO_INTEGRATED])
+ 
 
  cout<<endl;
 
@@ -5222,7 +5714,7 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
  for(Int_t o=0;o<4;o++)
  {
   cout<<Form("   ==== <<%d>>-particle correlations ====",2*(o+1))<<endl;
-  for(Int_t h=0;h<6;h++)
+  for(Int_t h=0;h<gMaxHarmonic;h++)
   {
    for(Int_t b=1;b<=nBinsQV;b++)
    {
@@ -5238,7 +5730,7 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
      }
     } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
    } // for(Int_t b=1;b<=nBinsQV;b++) 
-  } // for(Int_t h=0;h<6;h++)
+  } // for(Int_t h=0;h<gMaxHarmonic;h++)
   cout<<endl;
  } // for(Int_t o=0;o<4;o++) 
 
@@ -5253,7 +5745,7 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
  for(Int_t o=0;o<4;o++)
  {
   cout<<Form("   ==== <<%d>>-particle correlations ====",2*(o+1))<<endl;
-  for(Int_t h=0;h<6;h++)
+  for(Int_t h=0;h<gMaxHarmonic;h++)
   {
    for(Int_t b=1;b<=nBinsQV;b++)
    {
@@ -5269,9 +5761,12 @@ void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations()
      }
     } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
    } // for(Int_t b=1;b<=nBinsQV;b++) 
-  } // for(Int_t h=0;h<6;h++)
+  } // for(Int_t h=0;h<gMaxHarmonic;h++)
   cout<<endl;
  } // for(Int_t o=0;o<4;o++) 
+
+*/
+
 
 } // void AliAnalysisTaskMuPa::ComparisonNestedLoopsVsCorrelations(void)
 
@@ -5801,11 +6296,11 @@ Bool_t AliAnalysisTaskMuPa::RetrieveCorrelationsLabels()
   TObjArray *oa = TString(fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b)).Tokenize(" ");
   if(!oa){cout<<__LINE__<<endl;exit(1);}
   order = oa->GetEntries();
-  delete oa; 
+  delete oa; // yes, otherwise it's a memory leak
   if(0 == order){continue;} // empty lines, or the label format which is not supported
   // 1-p => 0, 2-p => 1, etc.:
   fTest0Labels[order-1][counter[order-1]] = new TString(fTest0LabelsPlaceholder->GetXaxis()->GetBinLabel(b)); // okay...  
-  //cout<<__LINE__<<": "<<fTest0Labels[order-1][counter[order-1]]->Data()<<endl;
+  // cout<<__LINE__<<": "<<fTest0Labels[order-1][counter[order-1]]->Data()<<endl; sleep(1);
   counter[order-1]++;
  } // for(Int_t b=1;b<=nBins;b++)
 
@@ -5820,7 +6315,7 @@ void AliAnalysisTaskMuPa::StoreLabelsInPlaceholder(const char *source)
  // Storal all Test0 labels in the temporary placeholder. 
 
  // source = "external" => fetch Test0 labels from external file
- // source = "internal" => generate all Test0 labels automatocally with internal code
+ // source = "internal" => generate all Test0 labels automatically with internal code
 
  if(!(TString(source).EqualTo("external") || TString(source).EqualTo("internal"))){cout<<__LINE__<<endl;exit(1);}
 
@@ -5848,7 +6343,7 @@ void AliAnalysisTaskMuPa::StoreLabelsInPlaceholder(const char *source)
    TObjArray *oa = TString(line).Tokenize(" ");
    if(!oa){cout<<__LINE__<<endl;exit(1);}
    order = oa->GetEntries();
-   delete oa;
+   delete oa; // yes, otherwise it's a memory leak
    if(0 == order){continue;} // empty lines, or the label format which is not supported
    // 1-p => 0, 2-p => 1, etc.:
    fTest0Labels[order-1][counter[order-1]] = new TString(line); // okay...  
@@ -6067,7 +6562,7 @@ void AliAnalysisTaskMuPa::CalculateTest0()
    // Sanitize the labels (If necessary. Locally this is irrelevant): 
    if(!fTest0Labels[mo][mi]) // I do not stream them, so trying to get them from the booked profiles, where they are stored in the titles
    {
-    for(Int_t v=0;v<5;v++) 
+    for(Int_t v=0;v<eAsFunctionOf_N;v++) 
     {
      if(fTest0Pro[mo][mi][v])
      {
@@ -6224,15 +6719,13 @@ void AliAnalysisTaskMuPa::CalculateTest0()
     }
 
     // Finally, fill:
-    for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
-    { 
-     // integrated:
-     if(fTest0Pro[mo][mi][0]){fTest0Pro[mo][mi][0]->Fill(0.5,correlation/weight,weight);}
-     // vs. multiplicity:
-     if(fTest0Pro[mo][mi][1]){fTest0Pro[mo][mi][1]->Fill(fSelectedTracks+0.5,correlation/weight,weight);}
-     // vs. centrality:
-     if(fTest0Pro[mo][mi][2]){fTest0Pro[mo][mi][2]->Fill(fCentrality,correlation/weight,weight);}
-    } // for(Int_t v=0;v<3;v++) // variable [0=integrated,1=vs. multiplicity,2=vs. centrality]
+    // integrated:
+    if(fTest0Pro[mo][mi][AFO_INTEGRATED]){fTest0Pro[mo][mi][AFO_INTEGRATED]->Fill(0.5,correlation/weight,weight);}
+    // vs. multiplicity:
+    if(fTest0Pro[mo][mi][AFO_MULTIPLICITY]){fTest0Pro[mo][mi][AFO_MULTIPLICITY]->Fill(fSelectedTracks+0.5,correlation/weight,weight);}
+    // vs. centrality:
+    if(fTest0Pro[mo][mi][AFO_CENTRALITY]){fTest0Pro[mo][mi][AFO_CENTRALITY]->Fill(fCentrality,correlation/weight,weight);}
+ 
    } // if(fTest0Labels[mo][mi])
   } // for(Int_t mi=0;mi<gMaxIndex;mi++) 
  } // for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
@@ -6248,86 +6741,147 @@ void AliAnalysisTaskMuPa::InternalValidation()
 {
  // Internal validation against theoretical values in on-the-fly study for all implemented correlators. 
 
- // a) Configure Fourier like p.d.f. for azimuthal angles;
+ // a) Fourier like p.d.f. for azimuthal angles and flow amplitudes;
  // b) Loop over on-the-fly events.
  //    b0) Reset ebe quantities;
- //    b1) Determine multiplicity and reaction plane;
+ //    b1) Determine multiplicity, reaction plane and configure p.d.f. for azimuthal angles if harmonics are not constant e-by-e;
  //    b2) Loop over particles;
  //    b3) Calculate correlations;
  //    b4) Optionally, cross-check with nested loops;
- // c) Bail out directly from here when done;
- // d) Printout of comparison: standard isotropic vs. Test0;
- // e) Hasta la vista.
+ // c) Delete persistent objects;
+ // d) Bail out directly from here when done;
+ // e) Printout of comparison: standard isotropic vs. Test0;
+ // f) Hasta la vista.
 
  Green(__PRETTY_FUNCTION__);
 
- // a) Configure Fourier like p.d.f. for azimuthal angles:
- //    Remark: [12] is random reaction plane, keep in sync with fPhiPDF->SetParameter(12,fReactionPlane); below
- TF1 *fPhiPDF = new TF1("fPhiPDF","1+2.*[0]*TMath::Cos(x-[1]-[12])+2.*[2]*TMath::Cos(2.*(x-[3]-[12]))+2.*[4]*TMath::Cos(3.*(x-[5]-[12]))+2.*[6]*TMath::Cos(4.*(x-[7]-[12]))+2.*[8]*TMath::Cos(5.*(x-[9]-[12]))+2.*[10]*TMath::Cos(6.*(x-[11]-[12]))",0.,TMath::TwoPi());  
- for(Int_t h=0;h<gMaxHarmonic;h++)
- {
-  fPhiPDF->SetParName(2*h,Form("v_{%d}",h+1)); // set name v_n
-  fPhiPDF->SetParName(2*h+1,Form("Psi_{%d}",h+1)); // set name psi_n
-  // initialize v_n:
-  if(fInternalValidationAmplitudes && h+1<=fInternalValidationAmplitudes->GetSize())
-  { 
-   fPhiPDF->SetParameter(2*h,fInternalValidationAmplitudes->GetAt(h));
-  }
-  else
-  {
-   fPhiPDF->SetParameter(2*h,0.);
-  } 
-  // initialize psi_n:
-  if(fInternalValidationPlanes && h+1<=fInternalValidationPlanes->GetSize())
-  { 
-   fPhiPDF->SetParameter(2*h+1,fInternalValidationPlanes->GetAt(h));
-  }
-  else
-  {
-   fPhiPDF->SetParameter(2*h+1,0.);
-  } 
- } // for(Int_t h=0;h<6;h++)
+ // a) Fourier like p.d.f. for azimuthal angles and flow amplitudes:
+ TF1 *fPhiPDF = NULL;
+ TF3 *fvnPDF = NULL;
 
- // cross-check set vn's and psin's:
- /*
- for(Int_t h=0;h<12;h++)
+ if(fHarmonicsOptionInternalValidation->EqualTo("constant"))
  {
-  cout<<h<<" "<<fPhiPDF->GetParName(h)<<" = "<<fPhiPDF->GetParameter(h)<<endl;
- } 
- */
+  // For this option, vn's and psin's are constant for all simulated events, therefore I can configure fPhiPDF outside of loop over events. 
+  // Remark: The last parameter [18] is random reaction plane, keep in sync with fPhiPDF->SetParameter(18,fReactionPlane); below
+  //         Keep also in sync with const Int_t gMaxHarmonic = 9; in .h
+  TF1 *fPhiPDF = new TF1("fPhiPDF","1 + 2.*[0]*TMath::Cos(x-[1]-[18]) + 2.*[2]*TMath::Cos(2.*(x-[3]-[18])) + 2.*[4]*TMath::Cos(3.*(x-[5]-[18])) + 2.*[6]*TMath::Cos(4.*(x-[7]-[18])) + 2.*[8]*TMath::Cos(5.*(x-[9]-[18])) + 2.*[10]*TMath::Cos(6.*(x-[11]-[18])) + 2.*[12]*TMath::Cos(7.*(x-[13]-[18])) + 2.*[14]*TMath::Cos(8.*(x-[15]-[18])) + 2.*[16]*TMath::Cos(9.*(x-[17]-[18]))",0.,TMath::TwoPi());  
+  for(Int_t h=0;h<gMaxHarmonic;h++)
+  {
+   fPhiPDF->SetParName(2*h,Form("v_{%d}",h+1)); // set name v_n
+   fPhiPDF->SetParName(2*h+1,Form("Psi_{%d}",h+1)); // set name psi_n
+   // initialize v_n:
+   if(fInternalValidationAmplitudes && h+1<=fInternalValidationAmplitudes->GetSize())
+   { 
+    fPhiPDF->SetParameter(2*h,fInternalValidationAmplitudes->GetAt(h));
+   }
+   else
+   {
+    fPhiPDF->SetParameter(2*h,0.);
+   } 
+   // initialize psi_n:
+   if(fInternalValidationPlanes && h+1<=fInternalValidationPlanes->GetSize())
+   { 
+    fPhiPDF->SetParameter(2*h+1,fInternalValidationPlanes->GetAt(h));
+   }
+   else
+   {
+    fPhiPDF->SetParameter(2*h+1,0.);
+   } 
+  } // for(Int_t h=0;h<gMaxHarmonic;h++)
+  // cross-check set vn's and psin's:
+  cout<<"=> This is initial configuration for p.d.f. used in internal validation:"<<endl; 
+  for(Int_t h=0;h<2*gMaxHarmonic;h++)
+  {
+   cout<<h<<" "<<fPhiPDF->GetParName(h)<<" = "<<fPhiPDF->GetParameter(h)<<endl;
+  } 
+  cout<<"Remark: Parameter [18] at the moment is reaction plane."<<endl;
+  cout<<endl;
+ } // if(fHarmonicsOptionInternalValidation->EqualTo("constant"))
+ else if(fHarmonicsOptionInternalValidation->EqualTo("correlated"))
+ {
+  // For this option, three selected vn's (v1,v2,v3) are correlated, and all psin's are set to zero, for simplicity. 
+  // Remark: The last parameter [3] is random reaction plane, keep in sync with fPhiPDF->SetParameter(3,fReactionPlane); below
+  //         Keep also in sync with const Int_t gMaxHarmonic = 9; in .h
+  fPhiPDF = new TF1("fPhiPDF","1 + 2.*[0]*TMath::Cos(x-[3]) + 2.*[1]*TMath::Cos(2.*(x-[3])) + 2.*[2]*TMath::Cos(3.*(x-[3]))",0.,TMath::TwoPi());  
+  // With this parameterization, I have:
+  //  [0] => v1
+  //  [1] => v2
+  //  [2] => v3
+  //  [3] => RP
+
+  fvnPDF = new TF3("fvnPDF","x + 2.*y - 3.*z",0.07,0.08,0.06,0.07,0.05,0.06); // v1 \in [0.07,0.08], v2 \in [0.06,0.07], v3 \in [0.05,0.06]   
+  // check for example message 'W-TF3::GetRandom3: function:fvnPDF has 27000 negative values: abs assumed' in the log file
+  fvnPDF->SetParName(0,"v_{1}");
+  fvnPDF->SetParName(1,"v_{2}");
+  fvnPDF->SetParName(2,"v_{3}");
+  fvnPDF->SetParName(3,"RP");
+  // Both amplitudes v1-v3 and RP are sampled e-b-e, and then set in fPhiPDF below
+ } // else if(fHarmonicsOptionInternalValidation->EqualTo("correlated"))
+
 
  // b) Loop over on-the-fly events:
- Double_t step = 10.; // in percentage. Used only for the printout of progress
- TStopwatch watch;
- watch.Start();
+ //Double_t step = 10.; // in percentage. Used only for the printout of progress
+ //TStopwatch watch;
+ //watch.Start();
+ Double_t v1 = 0., v2 = 0., v3 = 0.;
  for(Int_t e=0;e<fnEventsInternalValidation;e++) 
  {
-  if(1.*e/(fnEventsInternalValidation) > step/100.)
+  fEventCounter++; 
+  cout<<Form("Simulated %d events on-the-fly.",fEventCounter)<<endl;
+
+  /*
+  if(1.*e/(fEventCounter) > step/100.)
   {
-   cout<<Form("Simulated %d%% events of requested %d",(Int_t)step,fnEventsInternalValidation)<<endl;
+   cout<<Form("Simulated %d%% events of requested %d",(Int_t)step,fEventCounter)<<endl;
    watch.Print(); watch.Continue();
    step+=10.;
   } 
+  */
 
   // b0) Reset ebe quantities:
   this->ResetEventByEventQuantities();
 
-  // b1) Determine multiplicity and reaction plane:
+
+  // b1) Determine multiplicity, reaction plane and configure p.d.f. for azimuthal angles if harmonics are not constant e-by-e:
   Int_t nMult = gRandom->Uniform(fMultRangeInternalValidation[0],fMultRangeInternalValidation[1]);
-  Double_t fReactionPlane = gRandom->Uniform(0.,TMath::TwoPi());
-  fPhiPDF->SetParameter(12,fReactionPlane);
   //cout<<"nMult = "<<nMult<<endl;
+  if(fMultiplicityHist){fMultiplicityHist->Fill(nMult);}
+  fSelectedTracks = nMult; // I can do it this way, as long as I do not apply some cuts on tracks in InternalValidation(). Otherwise, introduce a special counter
+                           // Remember that I have to calculate fSelectedTracks, due to e.g. if(fSelectedTracks<2){return;} in Calculate* member functions
+  if(fSelectedTracksHist){fSelectedTracksHist->Fill(fSelectedTracks);}
+
+  Double_t fReactionPlane = gRandom->Uniform(0.,TMath::TwoPi());
+  if(fHarmonicsOptionInternalValidation->EqualTo("constant")){fPhiPDF->SetParameter(18,fReactionPlane);}
+  else if(fHarmonicsOptionInternalValidation->EqualTo("correlated")){fPhiPDF->SetParameter(3,fReactionPlane);}
+
+
+  // configure p.d.f. for azimuthal angles if harmonics are not constant e-by-e:
+  if(fHarmonicsOptionInternalValidation->EqualTo("correlated"))
+  {
+   // Sample 3 correlated vn's from TF3 fvnPDF, and with them initialize fPhiPDF:
+   fvnPDF->GetRandom3(v1,v2,v3);
+   //cout<<Form("v1 = %.4f, v2 = %.4f, v3 = %.4f",v1,v2,v3)<<endl;
+   //sleep(0.1);
+   fPhiPDF->SetParameter(0,v1);
+   fPhiPDF->SetParameter(1,v2);
+   fPhiPDF->SetParameter(2,v3);
+   // reaction plane is set above
+  } // if(fHarmonicsOptionInternalValidation->EqualTo("correlated"))
+  
 
   // b2) Loop over particles:
   Double_t dPhi = 0.;
-  Double_t dPt = 0.;
+  Double_t dPt = 0.; 
   Double_t dEta = 0.;
   for(Int_t p=0;p<nMult;p++) 
   {   
    // Particle angle:
    dPhi = fPhiPDF->GetRandom(); 
-   if(fCalculatePtCorrelations){dPt = gRandom->Uniform(fKinematicsCuts[PT][0],fKinematicsCuts[PT][1]);}
-   if(fCalculateEtaCorrelations){dEta = gRandom->Uniform(fKinematicsCuts[ETA][0],fKinematicsCuts[ETA][1]);}
+   if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){dPt = gRandom->Uniform(fKinematicsCuts[PT][0],fKinematicsCuts[PT][1]);}
+   if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){dEta = gRandom->Uniform(fKinematicsCuts[ETA][0],fKinematicsCuts[ETA][1]);}
+ 
+   // Remark: Deliberately I do not fill Control Particle Histograms in InternalValidation(), to increase the performance, and to make copying and merging faster
+
    // Fill Q-vector (simplified version, without weights):
    for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
    {
@@ -6344,14 +6898,36 @@ void AliAnalysisTaskMuPa::InternalValidation()
     if(ftaNestedLoops[1]){ftaNestedLoops[1]->AddAt(1.,p);} // yes, otherwise weights are automatically set to 0.
    }
 
-   if(fCalculatePtCorrelations)
+   if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
    {
-    Int_t bin = fCorrelationsPro[0][0][PTKINE]->FindBin(dPt);
-    if(0>=bin || fCorrelationsPro[0][0][PTKINE]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+    // get the desired bin number:
+    Int_t bin = -1;
+    if(fCalculateCorrelations)
     {
-     Red(Form("dPt = %f, bin = %d",dPt,bin));
-     cout<<__LINE__<<endl;exit(1);
-    }
+     bin = fCorrelationsPro[0][0][AFO_PT]->FindBin(dPt);
+     if(0>=bin || fCorrelationsPro[0][0][AFO_PT]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+     {
+      Red(Form("dPt = %f, bin = %d",dPt,bin));
+      cout<<__LINE__<<endl;exit(1);
+     }
+    } 
+    else if(fCalculateTest0)
+    {
+     for(Int_t o=0;o<gMaxCorrelator;o++)
+     { 
+      if(fTest0Pro[o][0][AFO_PT]) 
+      {
+       bin = fTest0Pro[o][0][AFO_PT]->FindBin(dPt);
+       if(0>=bin || fTest0Pro[o][0][AFO_PT]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+       {
+        Red(Form("dPt = %f, bin = %d",dPt,bin));
+        cout<<__LINE__<<endl;exit(1);
+       }       
+       break; // it suffices to find the first one which is booked, since binning is the same across different orders
+      }
+     } // for(Int_t o=0;o<gMaxCorrelator;o++)
+    } // else if(fCalculateTest0)
+
     for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
     {
      for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
@@ -6368,16 +6944,38 @@ void AliAnalysisTaskMuPa::InternalValidation()
 
     fqVectorEntries[PTq][bin-1]++; // count number of particles in this pt bin in this event
 
-   } // if(fCalculatePtCorrelations)
+   } // if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT])
 
-   if(fCalculateEtaCorrelations)
+   if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])
    {
-    Int_t bin = fCorrelationsPro[0][0][ETAKINE]->FindBin(dEta);
-    if(0>=bin || fCorrelationsPro[0][0][ETAKINE]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+    // get the desired bin number:
+    Int_t bin = -1;
+    if(fCalculateCorrelations)
     {
-     Red(Form("dEta = %f, bin = %d",dEta,bin));
-     cout<<__LINE__<<endl;exit(1);
-    }
+     bin = fCorrelationsPro[0][0][AFO_ETA]->FindBin(dEta);
+     if(0>=bin || fCorrelationsPro[0][0][AFO_ETA]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+     {
+      Red(Form("dEta = %f, bin = %d",dEta,bin));
+      cout<<__LINE__<<endl;exit(1);
+     }
+    } 
+    else if(fCalculateTest0)
+    {
+     for(Int_t o=0;o<gMaxCorrelator;o++)
+     { 
+      if(fTest0Pro[o][0][AFO_ETA]) 
+      {
+       bin = fTest0Pro[o][0][AFO_ETA]->FindBin(dEta);
+       if(0>=bin || fTest0Pro[o][0][AFO_ETA]->GetNbinsX()<bin) // either underflow or overflow is hit, meaning that histogram is booked in narrower range than cuts
+       {
+        Red(Form("dEta = %f, bin = %d",dEta,bin));
+        cout<<__LINE__<<endl;exit(1);
+       }       
+       break; // it suffices to find the first one which is booked, since binning is the same across different orders
+      }
+     } // for(Int_t o=0;o<gMaxCorrelator;o++)
+    } // else if(fCalculateTest0)
+
     for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)
     { 
      for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
@@ -6394,26 +6992,33 @@ void AliAnalysisTaskMuPa::InternalValidation()
 
     fqVectorEntries[ETAq][bin-1]++; // count number of particles in this eta bin in this event
 
-   } // if(fCalculateEtaCorrelations)
+   } // if(!fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA])
 
   } // for(Int_t p=0;p<nMult;p++) 
 
+
   // b3) Calculate correlations:
-  fSelectedTracks = nMult;
   fCentrality = gRandom->Uniform(0.,100.); // in any case it's meaningless in this exercise
   if(fCalculateCorrelations){this->CalculateCorrelations();}
-  if(fCalculatePtCorrelations){this->CalculateKineCorrelations("pt");}
-  if(fCalculateEtaCorrelations){this->CalculateKineCorrelations("eta");}
+  if(fCalculateCorrelations && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){this->CalculateKineCorrelations("pt");}
+  if(fCalculateCorrelations && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){this->CalculateKineCorrelations("eta");}
   if(fCalculateTest0){this->CalculateTest0();}
-  if(fCalculateTest0 && fCalculatePtCorrelations){this->CalculateKineTest0("pt");}  
-  if(fCalculateTest0 && fCalculateEtaCorrelations){this->CalculateKineTest0("eta");} 
+  if(fCalculateTest0 && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT]){this->CalculateKineTest0("pt");}  
+  if(fCalculateTest0 && !fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA]){this->CalculateKineTest0("eta");} 
 
   // b4) Optionally, cross-check with nested loops:
   if(fCalculateNestedLoops){this->CalculateNestedLoops();}
 
  } // for(Int_t e=0;e<fnEventsInternalValidation;e++) 
 
- // c) Bail out directly from here when done:
+
+ // c) Delete persistent objects:
+ if(fPhiPDF) delete fPhiPDF;
+ if(fvnPDF) delete fvnPDF;
+
+ /*
+
+ // d) Bail out directly from here when done:
  if(fCalculateNestedLoops){this->ComparisonNestedLoopsVsCorrelations();}
  //    For the file name, I use again "AnalysisResults.root", not to bother with updating all scripts
  cout<<Form("\nInternal validation is over after %d events on-the-fly.\nDumping results in the file %s ....",fnEventsInternalValidation,"AnalysisResults.root")<<endl;
@@ -6423,8 +7028,9 @@ void AliAnalysisTaskMuPa::InternalValidation()
  f->Close();
  cout<<"Dumped!\n"<<endl;
  
- // d) Printout of comparison: standard isotropic vs. Test0:
- //    d0) Standard isotropic:
+
+ // e) Printout of comparison: standard isotropic vs. Test0:
+ //    e0) Standard isotropic:
  if(fCalculateCorrelations && !fCalculateNestedLoops)
  {
   for(Int_t var=0;var<5;var++) // [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
@@ -6435,7 +7041,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
    for(Int_t o=0;o<4;o++)
    {
     cout<<Form("   ==== <<%d>>-particle correlations (var = %d) ====",2*(o+1),var)<<endl;
-    for(Int_t h=0;h<6;h++)
+    for(Int_t h=0;h<gMaxHarmonic;h++)
     {
      for(Int_t b=1;b<=nBinsQV;b++)
      {
@@ -6445,14 +7051,18 @@ void AliAnalysisTaskMuPa::InternalValidation()
        cout<<Form("   h=%d, Q-vectors:    ",h+1)<<valueQV<<" +/- "<<fCorrelationsPro[o][h][var]->GetBinError(1)<<endl; 
       } // if(TMath::Abs(valueQV)>0. && TMath::Abs(valueNL)>0.)
      } // for(Int_t b=1;b<=nBinsQV;b++) 
-    } // for(Int_t h=0;h<6;h++)
+    } // for(Int_t h=0;h<gMaxHarmonic;h++)
    } // for(Int_t o=0;o<4;o++)
   } // for(Int_t var=0;var<5;var++) // [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta] 
  } // if(fCalculateCorrelations && !fCalculateNestedLoops)
 
  cout<<"\n=============================\n"<<endl;
 
- //    d1) Test0:
+ */
+
+
+ /*
+ //    e1) Test0:
  if(fCalculateTest0)
  {
   for(Int_t mo=0;mo<gMaxCorrelator;mo++) 
@@ -6477,8 +7087,10 @@ void AliAnalysisTaskMuPa::InternalValidation()
   } // for(Int_t var=0;var<5;var++) // [0=integrated,1=vs. multiplicity,2=vs. centrality,3=pT,4=eta]
  } // if(fCalculateTest0)
 
- // e) Hasta la vista:
+ // f) Hasta la vista:
  exit(1);
+
+ */
 
 } // void AliAnalysisTaskMuPa::InternalValidation()
 
@@ -6664,7 +7276,7 @@ void AliAnalysisTaskMuPa::DefaultBinning()
 
 void AliAnalysisTaskMuPa::DefaultCuts()
 {
- // Define all default cuts here. Defaults cuts are adjusted for 128. Each hardwired default setting can be overruled with:
+ // Define all default cuts here. Default cuts are adjusted for 128. Each hardwired default setting can be overruled as follows:
  //  1. on top of default cuts, use predefined cuts for some specific data-taking period with SetUseHardwiredEventsCuts(const char* eventsCutsPeriod, const char* eventsCutsOption)
  //  2. each indivudial cut can be modified directly with a dedicated setter, e.g. task->SetVertexCuts("z",-10.,10.), etc.
 
@@ -6735,7 +7347,9 @@ void AliAnalysisTaskMuPa::DefaultCuts()
  fUseFakeTracks = kTRUE;
 
  // task->SetUseOnlyPrimaries(kTRUE);
- fUseOnlyPrimaries = kTRUE;
+ fUseOnlyPrimaries = kFALSE; // VAL This one does NOT have any effect for FB 128 in real data and rec. Monte Carlo, but it has a large effect on sim. Monte Carlo.
+                             // It has an effect on other FBs, most notably on 1, 96 and 768, when it leads to NUA
+                             // I can estimate the effect of secondaries in Monte Carlo by setting this cut to kFALSE.
 
  // task->SetPrimaryDefinitionInMonteCarlo("IsPhysicalPrimary"); 
  fPrimaryDefinitionInMonteCarlo = "IsPhysicalPrimary"; 
@@ -6765,22 +7379,26 @@ void AliAnalysisTaskMuPa::DefaultCuts()
  fKinematicsCuts[CHARGE][1] = 1.5;
  fUseKinematicsCuts[CHARGE] = kTRUE;
 
- // task->SetDCACuts("xy",-2.4,2.4); // use only for filter bit 128
- fDCACuts[0][0] = -2.4;
+ // task->SetDCACuts("xy",-2.4,2.4);
+ fDCACuts[0][0] = -2.4; 
  fDCACuts[0][1] = 2.4;
- fUseDCACuts[0] = kTRUE;
+ fUseDCACuts[0] = kFALSE; 
 
- // task->SetDCACuts("z",-3.2,3.2); // use only for filter bit 128
+ // task->SetDCACuts("z",-3.2,3.2);
  fDCACuts[1][0] = -3.2;
  fDCACuts[1][1] = 3.2;
- fUseDCACuts[1] = kTRUE;
+ fUseDCACuts[1] = kFALSE;  
+
+ // void SetPtDependentDCAxyCut("definition-2011")
+ fPtDependentDCAxyParameterization = "0.0105+0.0350/x^1.1"; // widely used param. both for 2011 and 2015, see the body of SetPtDependentDCAxyCut(...) for other possibilities
+ fUsePtDependentDCAxyParameterization = kFALSE;
 
  // task->SetParticleCuts("TPCNcls",70,160); // VAL
  fParticleCuts[TPCNcls][0] = 70;
  fParticleCuts[TPCNcls][1] = 160;
- fUseParticleCuts[TPCNcls] = kTRUE;
+ fUseParticleCuts[TPCNcls] = kFALSE;
 
- // task->SetParticleCuts("TPCnclsS",0,200) on this one I do not cut directly, rather I request that TPCnclsFractionShared > 0.4 (JFGO+RS)
+ // task->SetParticleCuts("TPCnclsS",0,200) on this one I do not cut directly, rather I reject particles with TPCnclsFractionShared > 0.4 (JFGO+RS)
  fParticleCuts[TPCnclsS][0] = fParticleBins[TPCnclsS][1];
  fParticleCuts[TPCnclsS][1] = fParticleBins[TPCnclsS][2];
  fUseParticleCuts[TPCnclsS] = kFALSE;
@@ -6788,18 +7406,18 @@ void AliAnalysisTaskMuPa::DefaultCuts()
  // task->SetParticleCuts("TPCnclsFractionShared",0.4,-44); // VAL
  fParticleCuts[TPCnclsFractionShared][0] = 0.4;
  fParticleCuts[TPCnclsFractionShared][1] = -44.;
- fUseParticleCuts[TPCnclsFractionShared] = kTRUE;
+ fUseParticleCuts[TPCnclsFractionShared] = kFALSE; 
  // particles with > 0.4 are rejected (JFGO+RS). Upper cut is NOT applied at the moment (the check is commented out)
 
  // task->SetParticleCuts("TPCNCrossedRows",70,160); // VAL 
  fParticleCuts[TPCNCrossedRows][0] = 70;
  fParticleCuts[TPCNCrossedRows][1] = 160;
- fUseParticleCuts[TPCNCrossedRows] = kTRUE;
+ fUseParticleCuts[TPCNCrossedRows] = kFALSE;
 
  // task->SetParticleCuts("TPCChi2perNDF",4.,-44); // VAL 
  fParticleCuts[TPCChi2perNDF][0] = 4.;
  fParticleCuts[TPCChi2perNDF][1] = -44.;
- fUseParticleCuts[TPCChi2perNDF] = kTRUE;
+ fUseParticleCuts[TPCChi2perNDF] = kFALSE;
  // particles with > 4. are rejected (FP). Upper cut is NOT applied at the moment (the check is commented out)
  // FP: Use (Double_t)aodTrack->GetTPCchi2()/(Double_t)aodTrack->GetTPCNcls(), instead of aodTrack->Chi2perNDF()) 
 
@@ -6833,11 +7451,11 @@ void AliAnalysisTaskMuPa::DefaultCuts()
  fParticleCuts[TPCNclsF][0] = fParticleBins[TPCNclsF][1];
  fParticleCuts[TPCNclsF][1] = fParticleBins[TPCNclsF][2];
  fUseParticleCuts[TPCNclsF] = kFALSE;
- // TBI this one is alays empty. The expert suggests the following cut: TPCNCrossedRows/TPCNclsF > 0.8
+ // Not empty for FB 1. The expert suggests the following cut: TPCNCrossedRows/TPCNclsF > 0.8
 
  // task->SetAtLeastOnePointInTheSPD(kTRUE); // VAL 
  fAtLeastOnePointInTheSPD = kFALSE;
- // 1 or 2 points in SPD. Do not use for TPC-only. If used for 1,768, NUA is the same
+ // 1 or 2 points in SPD. Do not use for TPC-only. If used for 1, 768, NUA is the same
  
  // task->SetIgnoreGlobalConstrained(kFALSE); // VAL 
  fIgnoreGlobalConstrained = kFALSE;
@@ -6859,6 +7477,9 @@ void AliAnalysisTaskMuPa::DefaultConfiguration()
 
  // task->SetRandomSeed(0);
  fRandomSeed = 0;
+
+ // task->SetFillControlParticleHistograms(kTRUE);
+ fFillControlParticleHistograms = kTRUE;
  
  // task->SetFillQAHistograms(kTRUE); // by default, only selection of most important ones 
  fFillQAHistograms = kFALSE;
@@ -6881,7 +7502,22 @@ void AliAnalysisTaskMuPa::DefaultConfiguration()
  // task->SetCalculateCorrelations(kTRUE); // only basic same-harmonic correlations, 0=integrated,1=vs. multiplicity,2=vs. centrality]
  fCalculateCorrelations = kTRUE; 
 
- // task->SetCalculateTest0(kTRUE); // all "Test0" correlations [0=integrated,1=vs. multiplicity,2=vs. centrality] 
+ // task->SetDoNotCalculateCorrelationsAsFunctionOf("integrated"); 
+ fDoNotCalculateCorrelationsAsFunctionOf[AFO_INTEGRATED] = kFALSE;
+
+ // task->SetDoNotCalculateCorrelationsAsFunctionOf("multiplicity"); 
+ fDoNotCalculateCorrelationsAsFunctionOf[AFO_MULTIPLICITY] = kFALSE; 
+
+ // task->SetDoNotCalculateCorrelationsAsFunctionOf("centrality"); 
+ fDoNotCalculateCorrelationsAsFunctionOf[AFO_CENTRALITY] = kFALSE; 
+
+ // task->SetDoNotCalculateCorrelationsAsFunctionOf("pt"); 
+ fDoNotCalculateCorrelationsAsFunctionOf[AFO_PT] = kFALSE;
+
+ // task->SetDoNotCalculateCorrelationsAsFunctionOf("eta"); 
+ fDoNotCalculateCorrelationsAsFunctionOf[AFO_ETA] = kFALSE; 
+
+ // task->SetCalculateTest0(kTRUE); // all "Test0" correlations (AsFunctionOf and corresponding setters are the same as for standard correlations)
  fCalculateTest0 = kFALSE;
 
  // task->SetCalculateNestedLoops(kFALSE);
@@ -6889,6 +7525,9 @@ void AliAnalysisTaskMuPa::DefaultConfiguration()
  
  // task->SetCalculateCustomNestedLoop(kFALSE); // independent e-b-e cross-check with custom nested loop
  fCalculateCustomNestedLoop = kFALSE;
+
+ // task->SetHarmonicsOptionInternalValidation("constant"); // see supported options documented in the body of constructor
+ fHarmonicsOptionInternalValidation = new TString("constant"); 
 
 } // void AliAnalysisTaskMuPa::DefaultConfiguration()
 
@@ -6903,42 +7542,90 @@ void AliAnalysisTaskMuPa::SetUseDefaultFilterBitCuts(Int_t fb)
  {
   case 1:  
    fFilterBit = 1;
+   fUseOnlyPrimaries = kFALSE; // removes an important fraction of tracks, even after cut on FB => I get NUA only for kTRUE (see also "CGG" original comment below)
    fUseDCACuts[0] = kFALSE; // nice!
    fUseDCACuts[1] = kFALSE; // nice!
+   fUsePtDependentDCAxyParameterization = kFALSE;
    // task->SetParticleCuts("ITSNcls",2,999);
    fParticleCuts[ITSNcls][0] = 2;
    fParticleCuts[ITSNcls][1] = fParticleBins[ITSNcls][2];
-   fUseParticleCuts[ITSNcls] = kTRUE;
+   fUseParticleCuts[ITSNcls] = kFALSE;
    // task->SetAtLeastOnePointInTheSPD(kTRUE); // VAL 
-   fAtLeastOnePointInTheSPD = kTRUE;
+   fAtLeastOnePointInTheSPD = kFALSE;
+  break;
+
+  case 32: // I do not use this one, because even with open cuts, there is NUA in phi acceptance + eta distribution seems to be a bit asymmetric round 0
+   fFilterBit = 32; 
+   fUseOnlyPrimaries = kFALSE; // doesn't have effect in reconstructed data after FB 32 is applied 
+   fUseDCACuts[0] = kFALSE; // nice! I do not cut on DCA, because it this is already done in this FB: -0.2 < DCAxy < 0.2
+   fUseDCACuts[1] = kFALSE; // nice! I do not cut on DCA, because it this is already done in this FB: -0.6 < DCAz < 0.6 (or so, check with larger statistics)
+   fUsePtDependentDCAxyParameterization = kFALSE;
+   // task->SetParticleCuts("ITSNcls",2,999);
+   fParticleCuts[ITSNcls][0] = 2;
+   fParticleCuts[ITSNcls][1] = fParticleBins[ITSNcls][2];
+   fUseParticleCuts[ITSNcls] = kFALSE;
+   // task->SetAtLeastOnePointInTheSPD(kTRUE); // VAL 
+   fAtLeastOnePointInTheSPD = kFALSE;
   break;
 
   case 96:  
    fFilterBit = 96;
+   fUseOnlyPrimaries = kFALSE; // removes an important fraction of tracks, even after cut on FB => I get NUA, but different one, both for kTRUE and kFALSE (see also "CGG" original comment below)
    fUseDCACuts[0] = kFALSE; // nice!
    fUseDCACuts[1] = kFALSE; // nice!
+   fUsePtDependentDCAxyParameterization = kFALSE;
    // task->SetParticleCuts("ITSNcls",2,999);
    fParticleCuts[ITSNcls][0] = 2;
    fParticleCuts[ITSNcls][1] = fParticleBins[ITSNcls][2];
-   fUseParticleCuts[ITSNcls] = kTRUE;
+   fUseParticleCuts[ITSNcls] = kFALSE;
    // task->SetAtLeastOnePointInTheSPD(kTRUE); // VAL 
-   fAtLeastOnePointInTheSPD = kTRUE;
+   fAtLeastOnePointInTheSPD = kFALSE;
   break;
 
   case 128:  
    return; // yes, since default cuts are already set for 128 in DefaultCuts()
   break;
 
-  case 768:  
-   fFilterBit = 768;
+  case 256: // I do not use this one, because even with open cuts, there is NUA in phi acceptance + eta distribution seems to be a bit asymmetric round 0 
+   fFilterBit = 256;
+   fUseOnlyPrimaries = kFALSE; // removes an important fraction of tracks, even after cut on FB => I get NUA, but different one, both for kTRUE and kFALSE (see also "CGG" original comment below)
    fUseDCACuts[0] = kFALSE; // nice!
    fUseDCACuts[1] = kFALSE; // nice!
+   fUsePtDependentDCAxyParameterization = kFALSE;
    // task->SetParticleCuts("ITSNcls",2,999);
    fParticleCuts[ITSNcls][0] = 2;
    fParticleCuts[ITSNcls][1] = fParticleBins[ITSNcls][2];
-   fUseParticleCuts[ITSNcls] = kTRUE;
+   fUseParticleCuts[ITSNcls] = kFALSE;
    // task->SetAtLeastOnePointInTheSPD(kTRUE); // VAL 
-   fAtLeastOnePointInTheSPD = kTRUE;
+   fAtLeastOnePointInTheSPD = kFALSE;
+  break;
+
+  case 512:  
+   fFilterBit = 512;
+   fUseOnlyPrimaries = kFALSE; // removes an important fraction of tracks, even after cut on FB => I get NUA, but different one, both for kTRUE and kFALSE (see also "CGG" original comment below)
+   fUseDCACuts[0] = kFALSE; // nice!
+   fUseDCACuts[1] = kFALSE; // nice!
+   fUsePtDependentDCAxyParameterization = kFALSE;
+   // task->SetParticleCuts("ITSNcls",2,999);
+   fParticleCuts[ITSNcls][0] = 2;
+   fParticleCuts[ITSNcls][1] = fParticleBins[ITSNcls][2];
+   fUseParticleCuts[ITSNcls] = kFALSE;
+   // task->SetAtLeastOnePointInTheSPD(kTRUE); // VAL 
+   fAtLeastOnePointInTheSPD = kFALSE;
+  break;
+
+  case 768:  
+   fFilterBit = 768;
+   fUseOnlyPrimaries = kFALSE; // CGG: removes a important fraction of tracks with filter bit 256 (none with 512 or TPC only tracks). If kTRUE, then I get NUA for 768.
+   fUseDCACuts[0] = kFALSE; // nice!
+   fUseDCACuts[1] = kFALSE; // nice!
+   fUsePtDependentDCAxyParameterization = kFALSE;
+   // task->SetParticleCuts("ITSNcls",2,999);
+   fParticleCuts[ITSNcls][0] = 2;
+   fParticleCuts[ITSNcls][1] = fParticleBins[ITSNcls][2];
+   fUseParticleCuts[ITSNcls] = kFALSE;
+   // task->SetAtLeastOnePointInTheSPD(kTRUE); // VAL 
+   fAtLeastOnePointInTheSPD = kFALSE;
   break;
 
   default:
@@ -6961,15 +7648,15 @@ void AliAnalysisTaskMuPa::CalculateKineCorrelations(const char* kc)
  Int_t nBins = -1;
  if(TString(kc).EqualTo("pt"))
  {
-  kb = PTKINE;
+  kb = AFO_PT;
   qv = PTq;
-  nBins = fCorrelationsPro[0][0][PTKINE]->GetNbinsX();
+  nBins = fCorrelationsPro[0][0][AFO_PT]->GetNbinsX();
  } 
  else if(TString(kc).EqualTo("eta"))
  {
-  kb = ETAKINE;
+  kb = AFO_ETA;
   qv = ETAq;  
-  nBins = fCorrelationsPro[0][0][ETAKINE]->GetNbinsX();
+  nBins = fCorrelationsPro[0][0][AFO_ETA]->GetNbinsX();
  } 
 
  // Flush the generic Q-vectors:
@@ -7139,13 +7826,13 @@ void AliAnalysisTaskMuPa::CalculateKineTest0(const char* kc)
  Int_t nBins = -1;
  if(TString(kc).EqualTo("pt"))
  {
-  kb = PTKINE;
+  kb = AFO_PT;
   qv = PTq;
   nBins = fKinematicsBins[PT][0];
  } 
  else if(TString(kc).EqualTo("eta"))
  {
-  kb = ETAKINE;
+  kb = AFO_ETA;
   qv = ETAq;  
   nBins = fKinematicsBins[ETA][0];
  } 
@@ -7287,7 +7974,7 @@ void AliAnalysisTaskMuPa::CalculateKineTest0(const char* kc)
      // To ease comparison, rescale with theoretical value. Now all Test0 results shall be at 1:
      if(fUseInternalValidation && fInternalValidationAmplitudes && fInternalValidationPlanes && fRescaleWithTheoreticalInput)
      {
-      TArrayI *harmonics = new TArrayI(mo+1);
+      TArrayI *harmonics = new TArrayI(mo+1); 
       for(Int_t i=0;i<mo+1;i++)
       {
        harmonics->SetAt(n[i],i);

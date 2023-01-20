@@ -39,7 +39,7 @@ class AliJCDijetAna : public TObject
         vector<vector<vector<fastjet::PseudoJet>>> GetDijets() { return dijets; }
         bool HasDijet(int iSet) { return bHasDijet.at(iSet); }
         bool HasDeltaPhiDijet(int iSet) { return bHasDeltaPhiDijet.at(iSet); }
-        void InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBins);
+        void InitHistos(AliJCDijetHistos *histos, bool bIsMC, int nCentBins, int iJetClassTrue, int iJetClassDet);
 
         void SetSettings(int    lDebug,
                          double lParticleEtaCut,
@@ -58,15 +58,15 @@ class AliJCDijetAna : public TObject
                          double lDeltaPhiCut,
                          double lmatchingR,
                          double ltrackingIneff,
-                         double luseCrho,
+                         bool   luseCrho,
                          bool   lThisIsTrueMC);
 
-        int CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin);
+        int CalculateJets(TClonesArray *inList, AliJCDijetHistos *fhistos, int lCBin, double hisWeight=1.0);
         void SetJets(vector<fastjet::PseudoJet> jetsOutside);
-        void SetPtHardBin(double flptHardBin) {fptHardBin = flptHardBin; }
-        void FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin);
-        void CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSublead, int lcentBin, AliJCDijetHistos *fhistos);
-        void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos, int iJetSetPart, int iJetSetDet);
+        void SetPythiaInfo(double flptHardBin, double flsigma, double fltrial) {fptHardBin = flptHardBin; fPythiaSigma=flsigma; fPythiaTrial=fltrial;}
+        void FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin, double hisWeight=1.0);
+        void CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSublead, int lcentBin, AliJCDijetHistos *fhistos, double hisWeight=1.0);
+        void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos, int iJetSetPart, int iJetSetDet, double hisWeight=1.0);
         void ResetObjects();
         double DeltaR(fastjet::PseudoJet jet1, fastjet::PseudoJet jet2);
         double DeltaR(double eta1, double eta2, double phi1, double phi2);
@@ -105,13 +105,15 @@ class AliJCDijetAna : public TObject
         unsigned noTracks;
         bool removed;
         //For loops:
-        unsigned utrack, uktjet, ujet, ujet2, uconst, udijet, ujetDetMC;
+        unsigned utrack, uktjet, ujet, ujet2, uconst, udijet, ujetDetMC, ucount;
         std::vector<bool> bHasDijet;
         std::vector<bool> bHasDeltaPhiDijet;
         bool bHasDeltaPhiSubLeadJet;
         TRandom3 *randomGenerator;
         double fDeltaPt;
         double fptHardBin;
+        double fPythiaSigma;
+        double fPythiaTrial;
         double randConePhi;
         double randConeEta;
         double randConePt;

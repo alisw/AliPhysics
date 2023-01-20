@@ -21,10 +21,6 @@ struct Axis
   std::string title{};
   std::vector<double> binEdges{};
   int nBins{}; // 0 when bin edges are specified directly
-
-  virtual ~Axis(){};
-  ClassDef(Axis, 1);
-
 };
 
 template <typename RootHist_t>

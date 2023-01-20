@@ -66,9 +66,9 @@ AliFemtoCutMonitorParticleYPt::AliFemtoCutMonitorParticleYPt(const char *aName, 
   // snprintf(name, 200, "EtaPtW%s", aName);
   // fEtaPtW = new TH2D(name, "Pseudorapidity vs Pt chi2/N weighted",    140, -1.4, 1.4, 100, 0.0, 2.0);
   snprintf(name, 200, "DCARPt%s", aName);
-  fDCARPt = new TH2D(name, "DCA in XY vs. Pt", 400, -3.0, 3.0, 100,0.0,3.0);
+  fDCARPt = new TH2D(name, "DCA in XY vs. Pt", 400, -3.0, 3.0, 100,0.0,5.0);
   snprintf(name, 200, "DCAZPt%s", aName);
-  fDCAZPt = new TH2D(name, "DCA in Z vs. Pt", 400, -3.0, 3.0, 100,0.0,3.0);
+  fDCAZPt = new TH2D(name, "DCA in Z vs. Pt", 400, -3.0, 3.0, 100,0.0,5.0);
 
 
 }

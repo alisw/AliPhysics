@@ -171,7 +171,9 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(): AliAnalysisTaskS
   fWriteTTree(2),
   fcollisionSystem(2),
   fResolType(2),
-  fALTweightType(2)
+  fALTweightType(2),
+  fDoRapidityCut(kFALSE),
+  fMaxRap(1.)
 {
 
 }
@@ -296,7 +298,9 @@ AliAnalysisTaskLMeeCocktailMC::AliAnalysisTaskLMeeCocktailMC(const char *name):
   fWriteTTree(2),
   fcollisionSystem(2),
   fResolType(2),
-  fALTweightType(2)
+  fALTweightType(2),
+  fDoRapidityCut(kFALSE),
+  fMaxRap(1.)
 {
   // Define output slots here
   DefineOutput(1, TList::Class());
@@ -771,8 +775,17 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
     if (!(fabs(particle->E()-particle->Pz())>0.)) continue;
 
     Double_t yPre = (particle->E()+particle->Pz())/(particle->E()-particle->Pz());
-    if (yPre == 0.) continue;
+    Double_t y = 0.5*TMath::Log(yPre);
 
+    // It is anyway not the rapidity of the mother here (particle is the electron...)
+    // and we should not put a rapidity cut on the mother, since we do not do it in the data
+    // Therefore I comment this out and use the fDoRapidityCut for a cut on the rapidity of the dielectron pairs
+    //if(fDoRapidityCut){//Apply rapidity cut on mother consistent with GammaConv group.
+    //  if (yPre <= 0.) continue;
+    //  if (TMath::Abs(y) > 1.000)  continue;
+    //}else{
+    //  if (yPre == 0.) continue;
+    //}
     // We have an electron with a mother. Check that mother is primary and number of daughters
     if(abs(particle->PdgCode())==11 && hasMother==kTRUE){
      fdectyp = 0; // fdectyp: decay type (based on number of daughters).
@@ -886,6 +899,7 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
 
         if(TMath::Abs(dau1.Eta())>fMaxEta||TMath::Abs(dau2.Eta())>fMaxEta) fpass=kFALSE;
 
+
         //get the pair DCA (based in smeared pT)
         Float_t DCAtemplateLowEdge[] = {0., .3, .4, .6, 1., 2. };
         Float_t DCAtemplateUpEdge[]  =     {.3, .4, .6, 1., 2., 100000.}  ;
@@ -921,6 +935,11 @@ void AliAnalysisTaskLMeeCocktailMC::ProcessMCParticles(){
         //fID=1000*fdectyp+motherParticle->PdgCode();
         fID=motherParticle->PdgCode();
         fweight=particle->Particle()->GetWeight(); //get particle weight from generator
+
+        // Apply rapidity cut on the dielectron pairs
+        if(fDoRapidityCut){
+          if(TMath::Abs(ee.Rapidity()) > fMaxRap) fpass=kFALSE;
+        }
 
         //get multiplicity based weight:
         int iwbin=fhwMultpT->FindBin(fmotherpt);
@@ -1136,7 +1155,8 @@ void AliAnalysisTaskLMeeCocktailMC::SetEffFileName(TString name)
   // Get Efficiency
   if(fFileNameEff.Contains("alien")){
     // file is copied from alien path to local directory
-    gSystem->Exec(Form("alien_cp %s .", fFileNameEff.Data()));
+    gSystem->Exec(Form("alien_cp %s file:./", fFileNameEff.Data()));
+    //TFile::Cp(fFileNameEff, TString::Format("file:%s", gSystem->BaseName(fFileNameEff)));//this works only rootfile
 
     // obtain ROOT file name only and local directory
     TObjArray* Strings = fFileNameEff.Tokenize("/");
@@ -1171,7 +1191,8 @@ void AliAnalysisTaskLMeeCocktailMC::SetResFileName(TString name)
   if(fResolType == 2) {
     if(fResolDataSetName.Contains("alien")){
       // file is copied from alien path to local directory
-      gSystem->Exec(Form("alien_cp %s .", fResolDataSetName.Data()));
+      gSystem->Exec(Form("alien_cp %s file:./", fResolDataSetName.Data()));
+      //TFile::Cp(fResolDataSetName, TString::Format("file:%s", gSystem->BaseName(fResolDataSetName)));//this works only rootfile
 
       // obtain ROOT file name only and local directory
       TObjArray* Strings = fResolDataSetName.Tokenize("/");
@@ -1181,11 +1202,11 @@ void AliAnalysisTaskLMeeCocktailMC::SetResFileName(TString name)
     }
     else{
       if(fcollisionSystem==200){ //pp 13TeV
-	fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp13TeV.root";
+        fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/LMeeCocktailInputs_Respp13TeV.root";
       }
       else{
-	if(!fLocalRes) fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/"+ fResolDataSetName;
-	else fFileName = fResolDataSetName;
+        if(!fLocalRes) fFileName = "$ALICE_PHYSICS/PWGDQ/dielectron/files/"+ fResolDataSetName;
+        else fFileName = fResolDataSetName;
       }
     }
    fFile = TFile::Open(fFileName.Data());

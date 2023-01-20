@@ -78,8 +78,9 @@ void AddTask_GammaConvV1_pp(
   if(additionalTrainConfig.Contains("TM"))
     trackMatcherRunningMode = strTrackMatcherRunningMode.Atoi();
 
+  TString nameJetFinder = (additionalTrainConfig.Contains("JET") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET", "", addTaskName) : "";
 
- TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
+  TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   if(rmaxFacPtHardSetting->GetEntries()<1){cout << "ERROR: AddTask_GammaConvV1_pp during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl; return;}
   Bool_t fMinPtHardSet        = kFALSE;
   Double_t minFacPtHard       = -1;
@@ -1049,25 +1050,20 @@ void AddTask_GammaConvV1_pp(
 
   } else if (trainConfig == 450){ // PCM sphericity
     cuts.AddCutPCM("00010113", "00200009f9730000dge0404000", "0152103500000000");
-    cuts.AddCutPCM("h0510113", "00200009f9730000dge0404000", "0152103500000000");
-    cuts.AddCutPCM("h5a10113", "00200009f9730000dge0404000", "0152103500000000");
-    cuts.AddCutPCM("h0a10113", "00200009f9730000dge0404000", "0152103500000000");
-    cuts.AddCutPCM("h0310113", "00200009f9730000dge0404000", "0152103500000000");
-    cuts.AddCutPCM("h7a10113", "00200009f9730000dge0404000", "0152103500000000");
-  } else if (trainConfig == 451){ // PCM V0M multiplicity INEL>0
+    cuts.AddCutPCM("00015113", "00200009f9730000dge0404000", "0152103500000000");
+  } else if (trainConfig == 451){ // PCM sphericity
+    cuts.AddCutPCM("h0515113", "00200009f9730000dge0404000", "0152103500000000");
+    cuts.AddCutPCM("h5a15113", "00200009f9730000dge0404000", "0152103500000000");
+    cuts.AddCutPCM("h0a15113", "00200009f9730000dge0404000", "0152103500000000");
+    cuts.AddCutPCM("h0315113", "00200009f9730000dge0404000", "0152103500000000");
+    cuts.AddCutPCM("h7a15113", "00200009f9730000dge0404000", "0152103500000000");
+  } else if (trainConfig == 452){ // PCM V0M multiplicity INEL>0
     cuts.AddCutPCM("m0115113", "00200009f9730000dge0404000", "0152103500000000"); // 0-1%
     cuts.AddCutPCM("m1515113", "00200009f9730000dge0404000", "0152103500000000"); // 1-5%
     cuts.AddCutPCM("m5k15113", "00200009f9730000dge0404000", "0152103500000000"); // 5-20%
     cuts.AddCutPCM("n2415113", "00200009f9730000dge0404000", "0152103500000000"); // 20-40%
     cuts.AddCutPCM("n4715113", "00200009f9730000dge0404000", "0152103500000000"); // 40-70%
     cuts.AddCutPCM("n7a15113", "00200009f9730000dge0404000", "0152103500000000"); // 70-100%
-  } else if (trainConfig == 452){ // PCM SPD multiplicity
-    cuts.AddCutPCM("o0110113", "00200009f9730000dge0404000", "0152103500000000"); // 0-1%
-    cuts.AddCutPCM("o0210113", "00200009f9730000dge0404000", "0152103500000000"); // 0-2%
-    cuts.AddCutPCM("o0510113", "00200009f9730000dge0404000", "0152103500000000"); // 0-5%
-    cuts.AddCutPCM("o5k10113", "00200009f9730000dge0404000", "0152103500000000"); // 5-20%
-    cuts.AddCutPCM("p2610113", "00200009f9730000dge0404000", "0152103500000000"); // 20-60%
-    cuts.AddCutPCM("p6a10113", "00200009f9730000dge0404000", "0152103500000000"); // 60-100%
   } else if (trainConfig == 453){ // PCM V0M multiplicity
     cuts.AddCutPCM("m0110113", "00200009f9730000dge0404000", "0152103500000000"); // 0-1%
     cuts.AddCutPCM("m1510113", "00200009f9730000dge0404000", "0152103500000000"); // 1-5%
@@ -2906,6 +2902,7 @@ if(!cuts.AreValid()){
   if (initializedMatBudWeigths_existing) {
       task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
   }
+  if(additionalTrainConfig.Contains("JET")){task->SetJetContainerAddName(nameJetFinder);}
 
   //connect containers
   AliAnalysisDataContainer *coutput =

@@ -60,6 +60,8 @@ set(SRCS
   PiKaPr/TPC/rTPC/AliAnalysisTaskSpectraMC.cxx
   PiKaPr/TPC/rTPC/AliAnalysisTaskGenRT.cxx
   PiKaPr/TPCTOF/AliAnalysisCombinedHadronSpectra.cxx
+  PiKaPr/TPCTOF/AliAnalysisTaskAntiProtons_vs_Rapidity_Data.cxx
+  PiKaPr/TPCTOF/AliAnalysisTaskAntiProtons_vs_Rapidity_Simu.cxx
   PiKaPr/TPCTOFpA/AliAnalysisTPCTOFpA.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDEvent.cxx
   PiKaPr/TPCTOFfits/AliAnalysisPIDParticle.cxx
@@ -94,6 +96,8 @@ set(SRCS
   Kinks/AliAnalysisTaskKinksFilimon.cxx
   Kinks/AliAnalysisKinkESDat13.cxx
   Kinks/AliAnalysisKinkESDMC13.cxx
+  Kinks/AliAnalysisKinkESDat13ppHM.cxx
+  Kinks/AliAnalysisKinkESDMulPPpi.cxx
   Kinks/AliAnalysisKinkTaskMult13pp.cxx
   Kinks/AliAnalysisKinkTaskMult13ppMC.cxx
   Kinks/AliAnalysisTaskKinkpp5TeV.cxx
@@ -133,6 +137,7 @@ set(SRCS
 )
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
   list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecAnalysisTask.cxx)
+  list(APPEND SRCS ChargedHadrons/MultDepSpec/AliMultDepSpecOnTheFlyAnalysisTask.cxx)
   list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskDCArStudy.cxx)
   list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskCutStudies.cxx)
   list(APPEND SRCS ChargedHadrons/dNdPt/Framework/AliAnalysisTaskSpectraEtaPhi.cxx)
@@ -219,7 +224,7 @@ install(TARGETS ${MODULE}
         LIBRARY DESTINATION lib)
 
 install(FILES ${HDRS} DESTINATION include)
-install(FILES PiKaPr/TestAOD/HistogramsBoth.h PiKaPr/TestAOD/Histograms.h DESTINATION include)
+install(FILES PiKaPr/TestAOD/HistogramNamesBoth.h PiKaPr/TestAOD/HistogramNames.h PiKaPr/TestAOD/HistogramsBoth.h PiKaPr/TestAOD/Histograms.h DESTINATION include)
 
 # install macros
 install(DIRECTORY ChargedHadrons/MultDepSpec/macros DESTINATION  PWGLF/SPECTRA/ChargedHadrons/MultDepSpec)

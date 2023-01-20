@@ -29,8 +29,8 @@ AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="L
    if(makeTrees) {
       TString addTaskFullPath = "";
       if(isGrid) {
-         //Int_t errCode = gSystem->Exec(Form("alien_cp %s/AddTask_%s.C .", alienPath.Data(), tasksArray->At(0)->GetName()));
-         Int_t errCode = gSystem->Exec(Form("alien_cp %s/AddTask_%s.C .", pathForMacros.Data(), tasksArray->At(0)->GetName()));
+         //Int_t errCode = gSystem->Exec(Form("alien_cp %s/AddTask_%s.C file:./", alienPath.Data(), tasksArray->At(0)->GetName()));
+         Int_t errCode = gSystem->Exec(Form("alien_cp %s/AddTask_%s.C file:./", pathForMacros.Data(), tasksArray->At(0)->GetName()));
          if(errCode) {
             //printf("ERROR: In AddTask_TrainTreeAnalysis(), could not copy %s/AddTask_%s.C from the grid directory %s \n", alienPath.Data(), tasksArray->At(0)->GetName(), alienPath.Data());
             printf("ERROR: In AddTask_TrainTreeAnalysis(), could not copy %s/AddTask_%s.C from the grid directory %s \n", pathForMacros.Data(), tasksArray->At(0)->GetName(), pathForMacros.Data());
@@ -75,8 +75,8 @@ AliAnalysisTask* AddTask_TrainTreeAnalysis(Bool_t isGrid=kFALSE, TString prod="L
       TString task = tasksArray->At(i)->GetName();
       TString addTaskFullPath = "";
       if(isGrid) {
-         //Int_t errCode = gSystem->Exec(Form("alien_cp %s/AddTask_%s.C .", alienPath.Data(), task.Data()));
-         Int_t errCode = gSystem->Exec(Form("alien_cp %s/AddTask_%s.C .", pathForMacros.Data(), task.Data()));
+         //Int_t errCode = gSystem->Exec(Form("alien_cp %s/AddTask_%s.C file:./", alienPath.Data(), task.Data()));
+         Int_t errCode = gSystem->Exec(Form("alien_cp %s/AddTask_%s.C file:./", pathForMacros.Data(), task.Data()));
          if(errCode) {
             //printf("ERROR: In AddTask_TrainTreeAnalysis(), could not copy %s/AddTask_%s.C from the grid directory %s \n", alienPath.Data(), task.Data(), alienPath.Data());
             printf("ERROR: In AddTask_TrainTreeAnalysis(), could not copy %s/AddTask_%s.C from the grid directory %s \n", pathForMacros.Data(), task.Data(), pathForMacros.Data());

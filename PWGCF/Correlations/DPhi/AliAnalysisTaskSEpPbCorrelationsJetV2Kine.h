@@ -2,6 +2,8 @@
 #define ALIANALYSISTASKSEPPbCORRELATIONSJETV2KINE_H
 
 #include "AliAnalysisTaskSE.h"
+#include "AliUtilityMuonAncestor.h"
+
 
 class TList;
 class AliAnalysisTaskSEpPbCorrelationsJetV2Kine : public AliAnalysisTaskSE {
@@ -35,9 +37,15 @@ class AliAnalysisTaskSEpPbCorrelationsJetV2Kine : public AliAnalysisTaskSE {
  void SetPtMax(Double_t d) {fPtMax = d;}
  void SetPtMin(Double_t d) {fPtMin = d;}
  void SetAnaMode(TString s) {fMode = s;}
+ void SetTPCEtaLimits(Double_t d) {fEtaTPClimits = d;}
+ void SetMuonDecay(TString s) {fMuonDecay = s;} 
+ void SetIsPbp(TString s) {fPbp = s;}
+ void SetCorrBeam(TString s) {fCorr_Beam = s;}
+ void SetEst(TString s) {fEst = s;}
 
- 
  Double_t RangePhi(Double_t DPhi);
+ Double_t ConvertCMS(Double_t eta, Bool_t IsPbp);
+ Double_t GetLabEta(AliMCParticle *MCtrack, Bool_t isPbp);
 
  private:
  Double_t fCen1;
@@ -47,7 +55,12 @@ class AliAnalysisTaskSEpPbCorrelationsJetV2Kine : public AliAnalysisTaskSE {
  Double_t fVtxZ;
  Double_t fCentrality;
  Double_t fAsscoptCut;
+ Double_t fEtaTPClimits;
  TString fMode;
+ TString fMuonDecay;
+ TString fCorr_Beam;
+ TString fEst;
+ Bool_t fPbp;
 
  Int_t fNbinsPtTrig;
  Int_t fNbinsAssocPt;
@@ -68,6 +81,14 @@ class AliAnalysisTaskSEpPbCorrelationsJetV2Kine : public AliAnalysisTaskSE {
  AliTHn     *fHistFMDAFMDC_Mixed; //!
  AliTHn     *fHistFMDTrig; //!
 
+ AliTHn     *fHistMuonTrig; //!
+ AliTHn     *fHistMuonSPD; //!
+ AliTHn     *fHistMuonSPD_Mixed; //!
+
+ AliTHn     *fHistSPDTrig; //!
+ AliTHn     *fHistSPDSPD; //!
+ AliTHn     *fHistSPDSPD_Mixed; //!
+
 
  TAxis *fPtTrigAxis;
  TAxis *fPtAssocAxis;
@@ -81,6 +102,7 @@ class AliAnalysisTaskSEpPbCorrelationsJetV2Kine : public AliAnalysisTaskSE {
   AliAnalysisTaskSEpPbCorrelationsJetV2Kine& operator=(const AliAnalysisTaskSEpPbCorrelationsJetV2Kine&);
 
   TList *fListOutput; //!
+  AliUtilityMuonAncestor *fAncestor; //!
   Int_t fT;
   ClassDef(AliAnalysisTaskSEpPbCorrelationsJetV2Kine, 1);
 };

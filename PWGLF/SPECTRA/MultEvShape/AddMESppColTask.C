@@ -1,4 +1,6 @@
-#if ! defined (__CINT__) || defined (__MAKECINT__)
+// #if ! defined (__CINT__) || defined (__MAKECINT__)
+// #if ! defined (__CLING__) || defined (__MAKECINT__)
+#ifdef __CLING__
 #include <TTree.h>
 #include <TError.h>
 #include <AliLog.h>

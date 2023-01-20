@@ -54,16 +54,17 @@ public:
   void SetPlaneEtaGapPos(float etaGapPos)  {this->fEtaGapPos  =  etaGapPos;}
   void SetPlaneEtaGapNeg(float etaGapNeg)  {this->fEtaGapNeg  =  etaGapNeg;}
   //Track
-  void SetFilterBit(int filterBit)         {this->fFilterBit = filterBit;}
-  void SetNclsCut(int nclsCut)             {this->fNclsCut   =   nclsCut;}
-  void SetChi2Max(float chi2Max)           {this->fChi2Max   =   chi2Max;}
-  void SetChi2Min(float chi2Min)           {this->fChi2Min   =   chi2Min;}
-  void SetDCAcutZ(float dcaCutz)           {this->fDcaCutz   =   dcaCutz;}
-  void SetDCAcutXY(float dcaCutxy)         {this->fDcaCutxy  =  dcaCutxy;}
-  void SetPtMin(float ptMin)               {this->fPtMin     =     ptMin;}
-  void SetPtMax(float ptMax)               {this->fPtMax     =     ptMax;}
-  void SetNUEOn(bool doNUE)                {this->IsDoNUE    =     doNUE;}
-  void SetNUAOn(bool doNUA)                {this->IsDoNUA    =     doNUA;}
+  void SetFilterBit(int filterBit)         {this->fFilterBit   =   filterBit;}
+  void SetNclsCut(int nclsCut)             {this->fNclsCut     =     nclsCut;}
+  void SetChi2Max(float chi2Max)           {this->fChi2Max     =     chi2Max;}
+  void SetChi2Min(float chi2Min)           {this->fChi2Min     =     chi2Min;}
+  void SetDCAcutZ(float dcaCutz)           {this->fDcaCutz     =     dcaCutz;}
+  void SetDCAcutXY(float dcaCutxy)         {this->fDcaCutxy    =    dcaCutxy;}
+  void SetPtMin(float ptMin)               {this->fPtMin       =       ptMin;}
+  void SetPtMax(float ptMax)               {this->fPtMax       =       ptMax;}
+  void SetNUEOn(bool doNUE)                {this->IsDoNUE      =       doNUE;}
+  void SetNUAOn(bool doNUA)                {this->IsDoNUA      =       doNUA;}
+  void SetProtonPtMax(double protonPtMax)  {this->fProtonPtMax = protonPtMax;}
   //PID
   void SetNSigmaTPCCut(double nSigmaTPC) {this->fNSigmaTPCCut = nSigmaTPC;}
   void SetNSigmaTOFCut(double nSigmaTOF) {this->fNSigmaTOFCut = nSigmaTOF;}
@@ -104,6 +105,7 @@ private:
   ////////////////////////
   bool    GetVZEROPlane();
   bool      GetZDCPlane();
+  bool GetZDCPlaneLsFit();
   bool       LoopTracks();
   bool      GetTPCPlane();
   bool          LoopV0s();
@@ -114,7 +116,7 @@ private:
   //Functional function
   ////////////////////////
   // Read in
-  bool      GetCalibHistForThisRun();
+  bool      LoadCalibHistForThisRun();
   // Pile-up
   bool           RejectEvtMultComp();
   bool              RejectEvtTFFit();
@@ -172,6 +174,7 @@ private:
   float                     fPtMax; // maximum pt for track
   bool                     IsDoNUE; // switch for NUE
   bool                     IsDoNUA; // switch for NUA
+  double              fProtonPtMax; // Max pt for proton
   //PID
   float             fNSigmaTPCCut;
   float             fNSigmaTOFCut;
@@ -339,7 +342,10 @@ private:
   TProfile2D*      fProfile2DForSinC;
   TProfile2D*      fProfile2DForCosA;
   TProfile2D*      fProfile2DForSinA;
-  //15o 18q 18r //TODO
+  //15o //TODO
+  //18q 18r
+  TH1D*             fHZDCCparameters;
+  TH1D*             fHZDCAparameters;
 
   ///////////////////The following files will be saved//////////////////////////////////
   ////////////

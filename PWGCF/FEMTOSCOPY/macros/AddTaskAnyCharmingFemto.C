@@ -1,5 +1,6 @@
 #ifndef __CINT__
 #include <vector>
+#include <map>
 #include "AliAnalysisTaskSE.h"
 #include "AliAnalysisManager.h"
 #include "AliFemtoDreamEventCuts.h"
@@ -9,12 +10,15 @@
 #include "AliRDHFCuts.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
+#include "TTree.h"
 #endif
 
 AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     bool isMC = false,
     bool useMCTruthReco = false,
     bool isMCtruth = false,
+    bool useTree = false,
+    bool useLooseSelections = false,
     bool fullBlastQA = true,
     TString trigger = "kINT7",
     int channelHF = AliAnalysisTaskCharmingFemto::kDplustoKpipi,
@@ -23,10 +27,29 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     TString cutHFsuffix = "",
     bool applyML = false, TString configML = "config_ML.yml",
     int useAODProtection = 0,
-    int massSelection = AliAnalysisTaskCharmingFemto::kSignal,
+    AliAnalysisTaskCharmingFemto::MassSelectionType massSelection = AliAnalysisTaskCharmingFemto::kSignal,
     int pdgBuddy = 2212,
+    int mixingDepth = 10,
+    std::vector<std::string> colsToSave = {
+      "mult",
+      "kStar",
+      "is_oldpcrm",
+      "is_newpcrm",
+      "heavy_mult",
+      "heavy_invmass",
+      "heavy_pt",
+      "heavy_origin",
+      "light_mult",
+      "light_px",
+      "light_py",
+      "light_eta",
+      "light_nsigtpc",
+      "light_nsigtof",
+      "light_dcaxy",
+      "light_dcaz"},
     const char *cutVariation = "0"
   ) {
+
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -48,6 +71,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
   AliFemtoDreamTrackCuts *TrackCuts = nullptr;
   AliFemtoDreamTrackCuts *AntiTrackCuts = nullptr;
 
+  // overwritten later if useTree == true
   if(std::abs(pdgBuddy) == 2212) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(128);
@@ -60,9 +84,12 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     TrackCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(96);
     TrackCuts->SetCutCharge(1);
+    TrackCuts->SetPtRange(0, 4.0);
+
     AntiTrackCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
     AntiTrackCuts->SetFilterBit(96);
     AntiTrackCuts->SetCutCharge(-1);
+    AntiTrackCuts->SetPtRange(0, 4.0);
   }
   else if(std::abs(pdgBuddy) == 321) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
@@ -110,25 +137,29 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     buddyMaxPt = 4.05;
     aliPIDParticle = AliPID::kProton;
   } else if (pdgBuddy == 211){ // pion+
-    buddyPtlow = 0.1;
-    buddyPtup = 0.2;
-    buddyNsigmaLow = 2.7;
-    buddyNsigmaUp = 3.3;
+    buddyPtlow = 0.11;
+    buddyPtup = 0.17;
+    buddyNsigmaLow = 2.85;
+    buddyNsigmaUp = 3.15;
     buddyMaxPt = 4.0;
+    // buddyNClsLow = 75;
+    // buddyNClsUp = 85;
     aliPIDParticle = AliPID::kPion;
   } else if (pdgBuddy == 321){ // kaon+
-    buddyPtlow = 0.09;
-    buddyPtup = 0.19;
+    buddyPtlow = 0.1;
+    buddyPtup = 0.2;
     buddyNsigmaLow = 3;
     buddyNsigmaUp = 3;
     buddyMaxPt = 4.0;
     aliPIDParticle = AliPID::kKaon;
-    kaonPIDTight = { {"COMB", 3.7}, {"TPC", 2.7}, {"EXCLUSION", 3.3}, }; // for SetPIDkd() when using oton's K selection
-    kaonPIDLoose = { {"COMB", 4.3}, {"TPC", 3.3}, {"EXCLUSION", 2.7}, };
+    kaonPIDTight = { {"COMB", 2.7}, {"TPC", 2.7}, {"EXCLUSION", 3.3}, }; // for SetPIDkd() when using oton's K selection
+    kaonPIDLoose = { {"COMB", 3.3}, {"TPC", 3.3}, {"EXCLUSION", 2.7}, };
   } 
 
+if (!isMC) {
   TrackCuts->SetMinimalBooking(suffix != "0");
   AntiTrackCuts->SetMinimalBooking(suffix != "0");
+}
 
   if (suffix == "1") {
     TrackCuts->SetPtRange(buddyPtlow, buddyMaxPt);
@@ -332,6 +363,29 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     }
   }
 
+  // overwrite previous settings and use loose selections if trees are used
+  if (useTree && useLooseSelections) {
+    // eta
+    TrackCuts->SetEtaRange(-0.9, 0.9);
+    AntiTrackCuts->SetEtaRange(-0.9, 0.9);
+    
+    // ncls
+    TrackCuts->SetNClsTPC(70);
+    AntiTrackCuts->SetNClsTPC(70);
+    
+    if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPtRange(0.11, 10);
+      AntiTrackCuts->SetPtRange(0.11, 10);
+      TrackCuts->SetPID(aliPIDParticle, 0.5, 3.5);
+      AntiTrackCuts->SetPID(aliPIDParticle, 0.5, 3.5);
+    } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPtRange(0.1, 10);
+      AntiTrackCuts->SetPtRange(0.1, 10);
+      TrackCuts->SetPIDkd(true, false, 3.5, 3.5, -999); // last parameter is dummy
+      AntiTrackCuts->SetPIDkd(true, false, 3.5, 3.5, -999); // last parameter is dummy
+    }
+  }
+  
   // =====================================================================
   // D mesons
   TFile* fileCuts = TFile::Open(fileCutObjHF.Data());
@@ -397,14 +451,12 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     closeRejection[4] = false;  // barp barp
   }
 
-if((suffix == "0" && fullBlastQA)){
   pairQA[0] = 11;   // light-light
   pairQA[4] = 11;   // antilight-antilight
   pairQA[2] = 13;   // light-charm
   pairQA[3] = 13;   // light-anticharm
   pairQA[5] = 13;   // antilight charm
   pairQA[6] = 13;   // antilight anticharm
-}
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
   if (trigger == "kHighMultV0") {
@@ -424,28 +476,27 @@ if((suffix == "0" && fullBlastQA)){
   config->SetZBins(ZVtxBins);
   config->SetMomentumResolution(isMC);
 
-  if (!isMCtruth){
-    config->SetPhiEtaBinnign(true);
-  }
-
   config->SetDeltaEtaMax(0.012);
   config->SetDeltaPhiMax(0.012);
   config->SetClosePairRejection(closeRejection);
 
   config->SetmTBinning((suffix == "0" && fullBlastQA));
   config->SetPtQA((suffix == "0" && fullBlastQA));
+  if (!isMCtruth) {
+    config->SetPhiEtaBinnign(suffix == "0" && fullBlastQA);
+  }
   config->SetMassQA((suffix == "0" && fullBlastQA));
   config->SetPDGCodes(PDGParticles);
   config->SetNBinsHist(NBins);
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(mixingDepth);
   config->SetUseEventMixing(true);
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
   config->SetMinimalBookingME(suffix != "0");
 
   AliAnalysisTaskCharmingFemto *task = new AliAnalysisTaskCharmingFemto(
-      "AliAnalysisTaskCharmingFemto", isMC, isMCtruth);
+      "AliAnalysisTaskCharmingFemto", isMC, isMCtruth, useTree);
   task->SetLightweight(suffix != "0");
   task->SetEventCuts(evtCuts);
   task->SetProtonCuts(TrackCuts);
@@ -456,11 +507,15 @@ if((suffix == "0" && fullBlastQA)){
   task->SetAODMismatchProtection(useAODProtection);
   task->SetMassSelection(massSelection);
   task->SetUseMCTruthReco(useMCTruthReco);
+  task->SetColsToSave(colsToSave);
+
   if(applyML) {
     task->SetDoMLApplication(applyML);
     task->SetMLConfigFile(configML);
   }
 
+  task->SetLightPDG(pdgBuddy);
+  
   if (trigger == "kINT7") {
     task->SelectCollisionCandidates(AliVEvent::kINT7);
     task->SetTrigger(AliVEvent::kINT7);
@@ -484,13 +539,14 @@ if((suffix == "0" && fullBlastQA)){
     task->SetDmesonOriginMCTRUTH(0);
   }
   // Cutvariation currently not implemented for mctruth gen/reco
+
   // if(useMCTruthReco){
   //   task->SetBuddyOriginMCTRUTH(0);
   //   task->SetDmesonOriginMCTRUTH(0);
   //   if (suffix == "1") {
   //     task->SetBuddyOriginMCTRUTH(0);
   //     task->SetDmesonOriginMCTRUTH(1);
-  //   } 
+  //   }
   //   if (suffix == "2") {
   //     task->SetBuddyOriginMCTRUTH(0);
   //     task->SetDmesonOriginMCTRUTH(2);
@@ -498,17 +554,17 @@ if((suffix == "0" && fullBlastQA)){
   //   if (suffix == "3") {
   //     task->SetBuddyOriginMCTRUTH(1);
   //     task->SetDmesonOriginMCTRUTH(1);
-  //   }  
+  //   }
   //   if (suffix == "4") {
   //     task->SetBuddyOriginMCTRUTH(1);
   //     task->SetDmesonOriginMCTRUTH(2);
   //   }
   //   if (suffix == "5") {
-  //     task->SetBuddyOriginMCTRUTH(4);
+  //     task->SetBuddyOriginMCTRUTH(2);
   //     task->SetDmesonOriginMCTRUTH(1);
-  //   }  
+  //   }
   //   if (suffix == "6") {
-  //     task->SetBuddyOriginMCTRUTH(4);
+  //     task->SetBuddyOriginMCTRUTH(2);
   //     task->SetDmesonOriginMCTRUTH(2);
   //   }
   // }
@@ -589,6 +645,7 @@ if((suffix == "0" && fullBlastQA)){
       Form("%s:%s", file.Data(), CutObjHFName.Data()));
   mgr->ConnectOutput(task, 8, coutputCutObjHF);
 
+  int nOutput = 9;
   if (isMC) {
     TString TrkCutsMCName = Form("%sTrackCutsMC%s", addon.Data(),
                                  suffix.Data());
@@ -596,7 +653,7 @@ if((suffix == "0" && fullBlastQA)){
         TrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 9, coutputTrkCutsMC);
+    mgr->ConnectOutput(task, nOutput++, coutputTrkCutsMC);
 
     TString AntiTrkCutsMCName = Form("%sAntiTrackCutsMC%s", addon.Data(),
                                      suffix.Data());
@@ -604,8 +661,60 @@ if((suffix == "0" && fullBlastQA)){
         AntiTrkCutsMCName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 10, coutputAntiTrkCutsMC);
+    mgr->ConnectOutput(task, nOutput++, coutputAntiTrkCutsMC);
   }
 
+  if(useTree) {
+    TString treeDir = Form("%s:%sTrees%s", file.Data(), addon.Data(), suffix.Data());
+
+    AliAnalysisDataContainer *coutputTreeSE_pp = mgr->CreateContainer(
+        Form("%stSE_pp%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
+    coutputTreeSE_pp->SetSpecialOutput();
+    mgr->ConnectOutput(task, nOutput++, coutputTreeSE_pp);
+
+    AliAnalysisDataContainer *coutputTreeSE_mm = mgr->CreateContainer(
+        Form("%stSE_mm%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
+    coutputTreeSE_mm->SetSpecialOutput();
+    mgr->ConnectOutput(task, nOutput++, coutputTreeSE_mm);
+
+    AliAnalysisDataContainer *coutputTreeSE_mp = mgr->CreateContainer(
+        Form("%stSE_mp%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
+    coutputTreeSE_mp->SetSpecialOutput();
+    mgr->ConnectOutput(task, nOutput++, coutputTreeSE_mp);
+
+    AliAnalysisDataContainer *coutputTreeSE_pm = mgr->CreateContainer(
+        Form("%stSE_pm%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
+    coutputTreeSE_pm->SetSpecialOutput();
+    mgr->ConnectOutput(task, nOutput++, coutputTreeSE_pm);
+
+    AliAnalysisDataContainer *coutputTreeME_pp = mgr->CreateContainer(
+        Form("%stME_pp%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
+    coutputTreeME_pp->SetSpecialOutput();
+    mgr->ConnectOutput(task, nOutput++, coutputTreeME_pp);
+
+    AliAnalysisDataContainer *coutputTreeME_mm = mgr->CreateContainer(
+        Form("%stME_mm%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
+    coutputTreeME_mm->SetSpecialOutput();
+    mgr->ConnectOutput(task, nOutput++, coutputTreeME_mm);
+
+    AliAnalysisDataContainer *coutputTreeME_mp = mgr->CreateContainer(
+        Form("%stME_mp%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
+    coutputTreeME_mp->SetSpecialOutput();
+    mgr->ConnectOutput(task, nOutput++, coutputTreeME_mp);
+
+    AliAnalysisDataContainer *coutputTreeME_pm = mgr->CreateContainer(
+        Form("%stME_pm%s", addon.Data(), suffix.Data()), TTree::Class(),
+        AliAnalysisManager::kOutputContainer, treeDir);
+    coutputTreeME_pm->SetSpecialOutput();
+    mgr->ConnectOutput(task, nOutput++, coutputTreeME_pm);
+
+  }
   return task;
 }

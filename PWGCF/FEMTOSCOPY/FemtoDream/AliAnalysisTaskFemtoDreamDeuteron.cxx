@@ -361,8 +361,8 @@ void AliAnalysisTaskFemtoDreamDeuteron::UserExec(Option_t*) {
           }
         }
       }
-      fPairCleaner->CleanTrackAndDecay(&DCAProtons, &DCADeuterons, 0);
-      fPairCleaner->CleanTrackAndDecay(&DCAAntiProtons, &DCAAntiDeuterons, 1);
+      //fPairCleaner->CleanTrackAndDecay(&DCAProtons, &DCADeuterons, 0);
+      //fPairCleaner->CleanTrackAndDecay(&DCAAntiProtons, &DCAAntiDeuterons, 0);
       fPairCleaner->ResetArray();
       fPairCleaner->StoreParticle(DCAProtons);
       fPairCleaner->StoreParticle(DCAAntiProtons);

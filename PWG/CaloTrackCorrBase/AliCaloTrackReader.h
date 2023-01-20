@@ -86,7 +86,9 @@ public:
   virtual void    SetDataType(Int_t data )                 { fDataType = data              ; }
 
   virtual Int_t   GetEventNumber()                   const { return fEventNumber           ; }
-	
+  virtual Int_t   GetRunNumber()                     const { return fRunNumber             ; }
+  virtual Int_t   GetYear()                          const { return fYear                  ; }
+
   virtual TObjString *  GetListOfParameters() ;
   
   TString         GetTaskName()                      const { return fTaskName              ; }
@@ -269,7 +271,10 @@ public:
   virtual void     SwitchOnFiducialCut()                   { fCheckFidCut = kTRUE          ; 
                                                              fFiducialCut = new AliFiducialCut() ; }
   virtual void     SwitchOffFiducialCut()                  { fCheckFidCut = kFALSE         ; }
-    
+
+  virtual void     SwitchOnMaskRun2HardcodedEMCalRegions() { fMaskRun2HardcodedEMCalRegions = kTRUE ; }
+  virtual void     SwitchOffMaskRun2HardcodedEMCalRegions(){ fMaskRun2HardcodedEMCalRegions = kFALSE; }
+
   // Cluster/track/cells switchs
   
   Bool_t           IsCTSSwitchedOn()                 const { return fFillCTS               ; }
@@ -447,8 +452,19 @@ public:
   void             SwitchOffBadTriggerEventsFromTriggerMakerRemoval()      { fRemoveBadTriggerEventsFromEMCalTriggerMaker   = kFALSE ; }
   void             SwitchOnBadTriggerEventsFromTriggerMakerRemoval()       { fRemoveBadTriggerEventsFromEMCalTriggerMaker   = kTRUE  ; }
   
-  void             SetEMCalTriggerMakerDecisionContainerName(TString name) { fEMCalTriggerMakerDecissionContainerName = name ; }
-  TString          GetEMCalTriggerMakerDecisionContainerName()       const { return fEMCalTriggerMakerDecissionContainerName ; }
+  Bool_t           AreTriggerMakerDecisionHistoFill()   const { return fFillTriggerMakerDecisionHisto  ; }
+  TString          GetTriggerMakerDecisionHistoList()   const { return fFillTriggerMakerDecisionHistoList  ; }
+  void             SwitchOnTriggerMakerDecisionHistoFill (TString trigList = "L0_G1_G2")
+  { fFillTriggerMakerDecisionHisto = kTRUE ;  fFillTriggerMakerDecisionHistoList = trigList; }
+  void             SwitchOffTriggerMakerDecisionHistoFill()   { fFillTriggerMakerDecisionHisto = kFALSE; }
+  TString          GetTriggerMakerDecisionName(Int_t i) const { if (i < fNTrigMakerDecision && i >= 0 ) return fTrigMakerLabels[i]  ;
+                                                                 else                                     return ""; }
+  Int_t            GetNumberOfTriggerMakerDecisions()   const { return fNTrigMakerDecision; }
+  Bool_t           GetTriggerMakerDecision(Int_t i)     const { if (i < fNTrigMakerDecision && i >= 0 ) return fTriggerMakerDecisionBoolArr[i];
+                                                         else                                             return kFALSE; }
+
+  void             SetEMCalTriggerMakerDecisionContainerName(TString name) { fEMCalTriggerMakerDecisionContainerName = name ; }
+  TString          GetEMCalTriggerMakerDecisionContainerName()       const { return fEMCalTriggerMakerDecisionContainerName ; }
    
   Bool_t           AreBadTriggerEventsRemoved()      const { return fRemoveBadTriggerEvents     ; }
   void             SwitchOffBadTriggerEventsRemoval()      { fRemoveBadTriggerEvents   = kFALSE ; }
@@ -752,6 +768,13 @@ public:
   virtual Double_t       GetEventPlaneAngle()        const ;          
   virtual void           SetEventPlaneMethod(TString m)    { fEventPlaneMethod = m               ; }
   virtual TString        GetEventPlaneMethod()       const { return fEventPlaneMethod            ; }
+  
+  virtual void     SetEventPlaneBin(Double_t min, Double_t max) //Set the centrality bin to select the event. If used, then need to get percentile
+                                                           { fEventPlaneBin[0]=min; fEventPlaneBin[1]=max; }
+                                                           
+  virtual Float_t  GetEventPlaneBin(Int_t i)         const { if(i < 0 || i > 1) return 0 ; 
+                                                             else return fEventPlaneBin[i]              ; }
+  
 
   //--------------------
   // Mixing
@@ -948,11 +971,14 @@ public:
   
  protected:
   
-  Int_t	           fEventNumber;                   ///<  Event number.
+  Int_t            fEventNumber;                   ///<  Event number.
+  Int_t            fRunNumber;                     ///<  Run number.
+  Int_t            fYear;                          ///<  Year of run, for runs within range
   Int_t            fDataType ;                     ///<  Select MC: Kinematics, Data: ESD/AOD, MCData: Both.
   Int_t            fDebug;                         ///<  Debugging level.
   AliFiducialCut * fFiducialCut;                   ///<  Acceptance cuts.
   Bool_t           fCheckFidCut ;                  ///<  Do analysis for clusters in defined region.         
+  Bool_t           fMaskRun2HardcodedEMCalRegions; ///< Activate Hardcoded Run2 mask
 
   Bool_t           fComparePtHardAndJetPt;         ///<  In MonteCarlo, jet events, reject fake events with wrong jet energy.
   Float_t          fPtHardAndJetPtFactor;          ///<  Factor between ptHard and jet pT to reject/accept event.
@@ -1148,8 +1174,17 @@ public:
   // Triggered event selection
   
   Bool_t           fRemoveBadTriggerEventsFromEMCalTriggerMaker;  ///<  Remove triggered events because recalculated trigger was bad
-  TString          fEMCalTriggerMakerDecissionContainerName;      ///<  Name of container with trigger decission
+  TString          fEMCalTriggerMakerDecisionContainerName;      ///<  Name of container with trigger decision
   
+  Bool_t           fFillTriggerMakerDecisionHisto;               ///< Fill histograms with trigger maker decision
+  TString          fFillTriggerMakerDecisionHistoList;           ///<  List of triggers active to be checked in analysis
+  Int_t            fNTrigMakerDecision;                          ///< Number of trigger maker checks
+  TString          fTrigMakerLabels[10];                         ///< Trigger decision names
+  Bool_t           fTriggerMakerDecisionBoolArr[10];             ///< Trigger decision bits per trigger
+
+  Int_t            fNTriggerEMCal;                               ///< Number of EMCal trigger types checked
+  Bool_t           fTriggerEMCalBoolArr[16];                     ///< Trigger EMCal  types active in event
+
   Bool_t           fRemoveBadTriggerEvents;        ///<  Remove triggered events because trigger was exotic, bad, or out of BC.
   Bool_t           fTriggerPatchClusterMatch;      ///<  Search for the trigger patch and check if associated cluster was the trigger.
   Int_t            fTriggerPatchTimeWindow[2];     ///<  Trigger patch selection window.
@@ -1210,7 +1245,8 @@ public:
   Int_t            fCentralityOpt;                 ///<  Option for the returned value of the centrality, possible options 5, 10, 100.
   Int_t            fCentralityBin[2];              ///<  Minimum and maximum value of the centrality for the analysis.
   TString          fEventPlaneMethod;              ///<  Name of event plane method, by default "Q".
-
+  Double_t         fEventPlaneBin[2];              ///<  Minimum and maximum value of the event plane angle for the analysis.
+  
   // Event spherocity
   Float_t          fSpherocity ;                   ///<  Event spherocity, it uses fSpherocityMinPt, to be accesses by the analysis tasks
   Float_t          fSpherocityPtCut[4] ;           ///<  Event spherocity, it uses fSpherocityMinPtCuts[4], to be accesses by the analysis tasks if fStudySpherocityMinPt = 1
@@ -1281,6 +1317,16 @@ public:
   Bool_t           fHistoPtDependent;              ///< Fill control histograms with Pt not E 
   
   TH1F  *          fhNEventsAfterCut;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...
+  TH1F  *          fhNEventsPerTrigger;            //!<! Each bin represents number of event from a trigger
+  TH1F  *          fhNEventsPerTriggerMakerSelected;//!<! Each bin represents number of event selected by trigger maker
+  TH1F  *          fhNEventsPerTriggerAfterCut;    //!<! Each bin represents number of event from a trigger, after all other event cuts applied
+  TH1F  *          fhNEventsPerTriggerMakerSelectedAfterCut;//!<! Each bin represents number of event selected by trigger maker, after all other event cuts applied
+
+  TH2F  *          fhNEventsAfterCutCen;              //!<! Each bin represents number of events resulting after a given selection cut: vertex, trigger, ...
+  TH2F  *          fhNEventsPerTriggerCen;            //!<! Each bin represents number of event from a trigger,
+  TH2F  *          fhNEventsPerTriggerMakerSelectedCen;//!<! Each bin represents number of event selected by trigger maker
+  TH2F  *          fhNEventsPerTriggerAfterCutCen;             //!<! Each bin represents number of event from a trigger, after all other event cuts applied
+  TH2F  *          fhNEventsPerTriggerMakerSelectedAfterCutCen;//!<! Each bin represents number of event selected by trigger maker, after all other event cuts applied
 
   // MC labels to accept
   Int_t            fNMCGenerToAccept;              ///<  Number of MC generators that should not be included in analysis
@@ -1305,7 +1351,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,97) ;
+  ClassDef(AliCaloTrackReader,102) ;
   /// \endcond
 
 } ;

@@ -41,6 +41,8 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
         virtual void AddMixedPair(AliFemtoPair* aPair);
         void SetIsHe3Pair(int isOrNot);
         AliFemtoPair * ChangeP2Mom(AliFemtoPair* aPair);
+	void SetfUseVelGate(int aUseVelGate);
+	void SetVelGateInit(bool aUseVelGate);
         int ReVelocityGate(AliFemtoPair* aPair);
         void SetP1AndP2Mass(float p1Mass,float p2Mass);
 
@@ -62,6 +64,22 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void FillSideBandDum(AliFemtoPair* aPair);
 
 	void SetfUsePt(int aUsePt);
+	void SetfUseDPhiDEtaQA(int aUseDPhiDEtaQA);
+	void SetDPhiDEtaQAInit(bool aDPhiDEtaQA);
+        float ReAvgDphi(AliFemtoPair* aPair);
+	//\ 2022.9.5
+	void SetUseStavinskyMethod(int aUse);
+	void SetStaSkyBkgInit(bool aInit);
+	AliFemtoPair *InversePair(AliFemtoPair* aPair);
+	void SetUse2DpTvsKStar(int aUse);
+        void Set2DpTvsKStarInit(bool aInit);
+
+	//\ 2022.9.27
+	bool PairEtaPhiSelect(AliFemtoPair* aPair);
+	void SetUsePairCutEtaPhi(int aUsePairCutEtaPhi);
+	void SetPairCutEtaPhi(float aEtaCut,float aPhiCut);
+	
+	void SetPassAllPair(int aUse);
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -73,6 +91,7 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
         TH1D* fDenominator;        // denominator - mixed pairs
 
         // velocity gate 11.23
+	int fUseVelGate;
         TH1D *fP1EarlierP2Num;
         TH1D *fP1EarlierP2Dum;
         TH1D *fP2EarlierP1Num;
@@ -116,10 +135,24 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	TH1D *SignalAndSideCFDum;
 
 	int fUsePt;
+	int fUseDPhiDEtaQA;
 	
+	TH2F *fNumDPhiDEtaQA;
+	TH2F *fDumDPhiDEtaQA;
+	TH2F *fNumDPhiDEtaAvgQA;
+	TH2F *fDumDPhiDEtaAvgQA;
+		
+	int fUseStavinskyMethod;
+	TH1F *fStaSkyBkg;
 	
+        int fUse2DpTvsKStar;
+	TH2F *f2DpTvsKStar;
+
+	int fUsePairCutEtaPhi;
+	float fPairCut_eta;
+	float fPairCut_phi;
 	
-      
+	int fPassAllPair;
 };
 
 #endif

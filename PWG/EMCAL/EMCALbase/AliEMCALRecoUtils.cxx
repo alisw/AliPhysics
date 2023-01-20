@@ -54,7 +54,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fW0(0),                                 fShowerShapeCellLocationType(0),
   fNonLinearityFunction(0),               fNonLinearThreshold(0),                 fUseShaperNonlin(kFALSE),
   fUseDetermineLowGain(kFALSE), fCalibData(0),
-  fUseAdditionalScale(kFALSE),
+  fUseAdditionalScale(kFALSE), fUseAdditionalScaleEtaDep(kFALSE),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fNCellEfficiencyFunction(0),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fUse1Drecalib(kFALSE),                  fEMCALRecalibrationFactors(),
@@ -113,7 +113,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fUseShaperNonlin(reco.fUseShaperNonlin),
   fUseDetermineLowGain(reco.fUseDetermineLowGain), 
   fCalibData(reco.fCalibData),
-  fUseAdditionalScale(reco.fUseAdditionalScale),
+  fUseAdditionalScale(reco.fUseAdditionalScale), fUseAdditionalScaleEtaDep(reco.fUseAdditionalScaleEtaDep),
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
   fNCellEfficiencyFunction(reco.fNCellEfficiencyFunction),
   fCellsRecalibrated(reco.fCellsRecalibrated),
@@ -226,6 +226,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fUseDetermineLowGain       = reco.fUseDetermineLowGain;
   fCalibData                 = reco.fCalibData;
   fUseAdditionalScale        = reco.fUseAdditionalScale;
+  fUseAdditionalScaleEtaDep  = reco.fUseAdditionalScaleEtaDep;
   for (Int_t j = 0; j < 3; j++)
     fAdditionalScaleSM[j]         = reco.fAdditionalScaleSM[j];
   fSmearClusterEnergy        = reco.fSmearClusterEnergy;
@@ -459,12 +460,26 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
 
     // apply an additional scale on cell level. Not to be used for standard analyses!
     if(fUseAdditionalScale){
-      if( imod == 10 || imod == 11 || imod == 18 || imod == 19 ){ // 1/3 SM
-        amp *= fAdditionalScaleSM[2];
-      } else if( imod >= 12 && imod <=17 ){                       // 2/3 SM
-        amp *= fAdditionalScaleSM[1];
-      } else {                                                    // Full SM
-        amp *= fAdditionalScaleSM[0];
+      if(fUseAdditionalScaleEtaDep){ // eta dependent (with and without TRD support) 
+      // get cell collumn
+        Int_t iCol = ieta;
+        if( (imod > 11 && imod < 18) && imod%2) iCol+= 65;
+        else if (imod%2) iCol+=49;
+
+        if((iCol >= 5 && iCol <= 9) || (iCol >= 34 && iCol <= 38) || (iCol >= 59 && iCol <= 63) || (iCol >= 87 && iCol <= 91) ){
+          amp *= fAdditionalScaleSM[0]; // behind trd support
+        } else {
+          amp *= fAdditionalScaleSM[1]; // not behind trd support
+        }
+        
+      } else { // standard cell scale, not eta dependent
+        if( imod == 10 || imod == 11 || imod == 18 || imod == 19 ){ // 1/3 SM
+          amp *= fAdditionalScaleSM[2];
+        } else if( imod >= 12 && imod <=17 ){                       // 2/3 SM
+          amp *= fAdditionalScaleSM[1];
+        } else {                                                    // Full SM
+          amp *= fAdditionalScaleSM[0];
+        }
       }
     }
 

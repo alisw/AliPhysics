@@ -136,6 +136,17 @@ fListXiMinus(0), fListXiPlus(0), fListOmegaMinus(0), fListOmegaPlus(0),
 fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
 fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
 
+//---> Pointers to ML Classes
+fXiMinusNN(0),
+fXiPlusNN(0),
+fOmegaMinusNN(0),
+fOmegaPlusNN(0),
+
+fXiMinusBDT(0),
+fXiPlusBDT(0),
+fOmegaMinusBDT(0),
+fOmegaPlusBDT(0),
+
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
 fkDownScaleEvent      ( kTRUE  ),
@@ -197,6 +208,7 @@ fkUseLayer2(kTRUE),
 fkDistanceLayer1(0.5),
 fkDistanceLayer2(0.5),
 fWDV (0x0),
+fkSaveMCInfoTPC(kFALSE),
 
 //---> Flags for hypertriton tests
 fkHypertritonMode ( kFALSE ),
@@ -368,7 +380,11 @@ fTreeVariableIsPhysicalPrimaryPositiveMother(kFALSE),
 fTreeVariableIsPhysicalPrimaryNegativeGrandMother(kFALSE),
 fTreeVariableIsPhysicalPrimaryPositiveGrandMother(kFALSE),
 
+fTreeVariablePosTrackRef( new AliTrackReference() ),
+fTreeVariableNegTrackRef( new AliTrackReference() ),
+
 //---> Variables for fTreeCascade
+fTreeCascVarRunNumber(0),
 fTreeCascVarCharge(0),
 fTreeCascVarMassAsXi(0),
 fTreeCascVarMassAsOmega(0),
@@ -404,6 +420,17 @@ fTreeCascVarNbrCrossedRowsOverLength(0),
 fTreeCascVarDistOverTotMom(0),
 fTreeCascVarMaxChi2PerCluster(0),
 fTreeCascVarMinTrackLength(0),
+
+//ML Prediction
+fTreeCascVarMLNNPredXiMinus(-1),
+fTreeCascVarMLNNPredXiPlus(-1),
+fTreeCascVarMLNNPredOmegaMinus(-1),
+fTreeCascVarMLNNPredOmegaPlus(-1),
+
+fTreeCascVarMLBDTPredXiMinus(-1),
+fTreeCascVarMLBDTPredXiPlus(-1),
+fTreeCascVarMLBDTPredOmegaMinus(-1),
+fTreeCascVarMLBDTPredOmegaPlus(-1),
 
 fTreeCascVarNegNSigmaPion(0),
 fTreeCascVarNegNSigmaProton(0),
@@ -552,6 +579,10 @@ fTreeCascVarV0NegSibIsValid(0),
 fTreeCascVarNegV0Tagging(0),
 fTreeCascVarV0PosSibIsValid(0),
 fTreeCascVarPosV0Tagging(0),
+
+fTreeCascVarBachTrackRef( new AliTrackReference() ),
+fTreeCascVarPosTrackRef( new AliTrackReference() ),
+fTreeCascVarNegTrackRef( new AliTrackReference() ),
 
 fTreeCascVarBachSibPt(0),
 fTreeCascVarBachSibDcaV0ToPrimVertex(0),
@@ -704,6 +735,17 @@ fListXiMinus(0), fListXiPlus(0), fListOmegaMinus(0), fListOmegaPlus(0),
 fTreeEvent(0), fTreeV0(0), fTreeCascade(0),
 fPIDResponse(0), fESDtrackCuts(0), fESDtrackCutsITSsa2010(0), fESDtrackCutsGlobal2015(0), fUtils(0), fRand(0),
 
+//---> Pointers to ML Classes
+fXiMinusNN(0),
+fXiPlusNN(0),
+fOmegaMinusNN(0),
+fOmegaPlusNN(0),
+
+fXiMinusBDT(0),
+fXiPlusBDT(0),
+fOmegaMinusBDT(0),
+fOmegaPlusBDT(0),
+
 //---> Flags controlling Event Tree output
 fkSaveEventTree    ( kTRUE ), //no downscaling in this tree so far
 fkDownScaleEvent      ( kTRUE  ),
@@ -765,6 +807,7 @@ fkUseLayer2(kTRUE),
 fkDistanceLayer1(0.5),
 fkDistanceLayer2(0.5),
 fWDV (0x0),
+fkSaveMCInfoTPC(kFALSE),
 
 //---> Flags for hypertriton tests
 fkHypertritonMode ( kFALSE ),
@@ -936,7 +979,11 @@ fTreeVariableIsPhysicalPrimaryPositiveMother(kFALSE),
 fTreeVariableIsPhysicalPrimaryNegativeGrandMother(kFALSE),
 fTreeVariableIsPhysicalPrimaryPositiveGrandMother(kFALSE),
 
+fTreeVariablePosTrackRef( new AliTrackReference() ),
+fTreeVariableNegTrackRef( new AliTrackReference() ),
+
 //---> Variables for fTreeCascade
+fTreeCascVarRunNumber(0),
 fTreeCascVarCharge(0),
 fTreeCascVarMassAsXi(0),
 fTreeCascVarMassAsOmega(0),
@@ -976,6 +1023,17 @@ fTreeCascVarNbrCrossedRowsOverLength(0),
 fTreeCascVarDistOverTotMom(0),
 fTreeCascVarMaxChi2PerCluster(0),
 fTreeCascVarMinTrackLength(0),
+
+//ML Prediction
+fTreeCascVarMLNNPredXiMinus(-1),
+fTreeCascVarMLNNPredXiPlus(-1),
+fTreeCascVarMLNNPredOmegaMinus(-1),
+fTreeCascVarMLNNPredOmegaPlus(-1),
+
+fTreeCascVarMLBDTPredXiMinus(-1),
+fTreeCascVarMLBDTPredXiPlus(-1),
+fTreeCascVarMLBDTPredOmegaMinus(-1),
+fTreeCascVarMLBDTPredOmegaPlus(-1),
 
 fTreeCascVarNegNSigmaPion(0),
 fTreeCascVarNegNSigmaProton(0),
@@ -1124,6 +1182,10 @@ fTreeCascVarV0NegSibIsValid(0),
 fTreeCascVarNegV0Tagging(0),
 fTreeCascVarV0PosSibIsValid(0),
 fTreeCascVarPosV0Tagging(0),
+
+fTreeCascVarBachTrackRef( new AliTrackReference() ),
+fTreeCascVarPosTrackRef( new AliTrackReference() ),
+fTreeCascVarNegTrackRef( new AliTrackReference() ),
 
 fTreeCascVarBachSibPt(0),
 fTreeCascVarBachSibDcaV0ToPrimVertex(0),
@@ -1396,6 +1458,41 @@ AliAnalysisTaskStrangenessVsMultiplicityMCRun2::~AliAnalysisTaskStrangenessVsMul
     delete fRand;
     fRand = 0x0;
   }
+
+  //Pointers to ML Classes
+  if (fXiMinusNN) {
+    delete fXiMinusNN;
+    fXiMinusNN = 0x0;
+  }
+  if (fXiPlusNN) {
+    delete fXiPlusNN;
+    fXiPlusNN = 0x0;
+  }
+  if (fOmegaMinusNN) {
+    delete fOmegaMinusNN;
+    fOmegaMinusNN = 0x0;
+  }
+  if (fOmegaPlusNN) {
+    delete fOmegaPlusNN;
+    fOmegaPlusNN = 0x0;
+  }
+  if (fXiMinusBDT) {
+    delete fXiMinusBDT;
+    fXiMinusBDT = 0x0;
+  }
+  if (fXiPlusBDT) {
+    delete fXiPlusBDT;
+    fXiPlusBDT = 0x0;
+  }
+  if (fOmegaMinusBDT) {
+    delete fOmegaMinusBDT;
+    fOmegaMinusBDT = 0x0;
+  }
+  if (fOmegaPlusBDT) {
+    delete fOmegaPlusBDT;
+    fOmegaPlusBDT = 0x0;
+  }
+
 }
 
 //________________________________________________________________________
@@ -1584,6 +1681,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     if(fkSaveVertex){
       fTreeV0->Branch("fTreeVariableAliESDvertex", &fTreeVariableAliESDvertex,16000,99);
     }
+    if(fkSaveMCInfoTPC){
+		fTreeV0->Branch("fTreeVariableNegTrackRef", &fTreeVariableNegTrackRef, 16000, 99);
+		fTreeV0->Branch("fTreeVariablePosTrackRef", &fTreeVariablePosTrackRef, 16000, 99);
+	}
   }
   
   //------------------------------------------------
@@ -1593,6 +1694,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     //Create Cascade output tree
     fTreeCascade = new TTree("fTreeCascade","CascadeCandidates");
     //-----------BASIC-INFO---------------------------
+    fTreeCascade->Branch("fTreeCascVarRunNumber",&fTreeCascVarRunNumber,"fTreeCascVarRunNumber/I");
     fTreeCascade->Branch("fTreeCascVarCharge",&fTreeCascVarCharge,"fTreeCascVarCharge/I");
     fTreeCascade->Branch("fTreeCascVarMassAsXi",&fTreeCascVarMassAsXi,"fTreeCascVarMassAsXi/F");
     fTreeCascade->Branch("fTreeCascVarMassAsOmega",&fTreeCascVarMassAsOmega,"fTreeCascVarMassAsOmega/F");
@@ -1638,6 +1740,20 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     fTreeCascade->Branch("fTreeCascVarNbrCrossedRowsOverLength",&fTreeCascVarNbrCrossedRowsOverLength,"fTreeCascVarNbrCrossedRowsOverLength/F");
     fTreeCascade->Branch("fTreeCascVarMaxChi2PerCluster",&fTreeCascVarMaxChi2PerCluster,"fTreeCascVarMaxChi2PerCluster/F");
     fTreeCascade->Branch("fTreeCascVarMinTrackLength",&fTreeCascVarMinTrackLength,"fTreeCascVarMinTrackLength/F");
+
+    //-------------------------------------------
+    //ML Prediction
+    fTreeCascade->Branch("fTreeCascVarMLNNPredXiMinus", &fTreeCascVarMLNNPredXiMinus, "fTreeCascVarMLNNPredXiMinus/D");
+    fTreeCascade->Branch("fTreeCascVarMLNNPredXiPlus", &fTreeCascVarMLNNPredXiPlus, "fTreeCascVarMLNNPredXiPlus/D");
+    fTreeCascade->Branch("fTreeCascVarMLNNPredOmegaMinus", &fTreeCascVarMLNNPredOmegaMinus, "fTreeCascVarMLNNPredOmegaMinus/D");
+    fTreeCascade->Branch("fTreeCascVarMLNNPredOmegaPlus", &fTreeCascVarMLNNPredOmegaPlus, "fTreeCascVarMLNNPredOmegaPlus/D");
+
+    fTreeCascade->Branch("fTreeCascVarMLBDTPredXiMinus", &fTreeCascVarMLBDTPredXiMinus, "fTreeCascVarMLBDTPredXiMinus/D");
+    fTreeCascade->Branch("fTreeCascVarMLBDTPredXiPlus", &fTreeCascVarMLBDTPredXiPlus, "fTreeCascVarMLBDTPredXiPlus/D");
+    fTreeCascade->Branch("fTreeCascVarMLBDTPredOmegaMinus", &fTreeCascVarMLBDTPredOmegaMinus, "fTreeCascVarMLBDTPredOmegaMinus/D");
+    fTreeCascade->Branch("fTreeCascVarMLBDTPredOmegaPlus", &fTreeCascVarMLBDTPredOmegaPlus, "fTreeCascVarMLBDTPredOmegaPlus/D");
+    //-------------------------------------------
+
     //-----------MULTIPLICITY-INFO--------------------
     fTreeCascade->Branch("fTreeCascVarCentrality",&fTreeCascVarCentrality,"fTreeCascVarCentrality/F");
     fTreeCascade->Branch("fTreeCascVarMVPileupFlag",&fTreeCascVarMVPileupFlag,"fTreeCascVarMVPileupFlag/O");
@@ -1900,6 +2016,11 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserCreateOutputObjects()
     if(fkSaveVertex){
       fTreeCascade->Branch("fTreeCascVarAliESDvertex", &fTreeCascVarAliESDvertex,16000,99);
     }
+    if(fkSaveMCInfoTPC){
+		fTreeCascade->Branch("fTreeCascVarNegTrackRef", &fTreeCascVarNegTrackRef, 16000, 99);
+		fTreeCascade->Branch("fTreeCascVarPosTrackRef", &fTreeCascVarPosTrackRef, 16000, 99);
+		fTreeCascade->Branch("fTreeCascVarBachTrackRef", &fTreeCascVarBachTrackRef, 16000, 99);
+	}
     //------------------------------------------------
   }
   //------------------------------------------------
@@ -2312,6 +2433,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
   //Bookkeep event number for debugging
   //Run number
   fTreeVariableRunNumber = lESDevent->GetRunNumber();
+  fTreeCascVarRunNumber = lESDevent->GetRunNumber();
   
   //--- Acquisition of exact event ID
   fTreeCascVarEventNumber =
@@ -2372,7 +2494,7 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
   {   // This is the begining of the loop on tracks
     
     AliMCParticle* lPart = 0x0;
-    lPart = (AliMCParticle*) lMCevent->Particle( ilab );
+    lPart = (AliMCParticle*) lMCevent->GetTrack( ilab );
     if(!lPart) {
       Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", ilab );
       continue;
@@ -2858,6 +2980,64 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     
     AliMCParticle* mcPosV0Dghter = (AliMCParticle*)lMCevent->GetTrack( lblPosV0Dghter  );
     AliMCParticle* mcNegV0Dghter = (AliMCParticle*)lMCevent->GetTrack( lblNegV0Dghter  );
+	
+	if(fkSaveMCInfoTPC)
+	{
+		// Reset the TrackReference 
+		fTreeVariablePosTrackRef->SetLength( 0 );
+		fTreeVariablePosTrackRef->SetTrack( 0 );
+		fTreeVariablePosTrackRef->SetTime( 0 );
+		fTreeVariablePosTrackRef->SetDetectorId( -999 );
+		fTreeVariablePosTrackRef->SetPosition( 0, 0, 0 );
+		fTreeVariablePosTrackRef->SetMomentum( 0, 0, 0 );
+		fTreeVariablePosTrackRef->SetUserId( 0 );
+		
+		// Search for the first TrackReference in the TPC --> corresponds to MC info of the first hit in the TPC
+		// Stop once it has been found
+		for(Int_t iRef = 0 ; iRef < mcPosV0Dghter->GetNumberOfTrackReferences() ; iRef++)
+		{
+			AliTrackReference* trackRef = (AliTrackReference*)mcPosV0Dghter->GetTrackReference(iRef);
+			if( trackRef->DetectorId() == 1 )
+			{
+				fTreeVariablePosTrackRef->SetLength( trackRef->GetLength() );
+				fTreeVariablePosTrackRef->SetTrack( trackRef->GetTrack() );
+				fTreeVariablePosTrackRef->SetTime( trackRef->GetTime() );
+				fTreeVariablePosTrackRef->SetDetectorId( trackRef->DetectorId() );
+				fTreeVariablePosTrackRef->SetPosition( trackRef->X(), trackRef->Y(), trackRef->Z() );
+				fTreeVariablePosTrackRef->SetMomentum( trackRef->Px(), trackRef->Py(), trackRef->Pz() );
+				fTreeVariablePosTrackRef->SetUserId( trackRef->UserId() );
+				break;
+			}
+		}
+		
+		// Reset the TrackReference 
+		fTreeVariableNegTrackRef->SetLength( 0 );
+		fTreeVariableNegTrackRef->SetTrack( 0 );
+		fTreeVariableNegTrackRef->SetTime( 0 );
+		fTreeVariableNegTrackRef->SetDetectorId( -999 );
+		fTreeVariableNegTrackRef->SetPosition( 0, 0, 0 );
+		fTreeVariableNegTrackRef->SetMomentum( 0, 0, 0 );
+		fTreeVariableNegTrackRef->SetUserId( 0 );
+		
+		// Search for the first TrackReference in the TPC --> corresponds to MC info of the first hit in the TPC
+		// Stop once it has been found
+		for(Int_t iRef = 0 ; iRef < mcNegV0Dghter->GetNumberOfTrackReferences() ; iRef++)
+		{
+			AliTrackReference* trackRef = (AliTrackReference*)mcNegV0Dghter->GetTrackReference(iRef);
+			if( trackRef->DetectorId() == 1 )
+			{
+				fTreeVariableNegTrackRef->SetLength( trackRef->GetLength() );
+				fTreeVariableNegTrackRef->SetTrack( trackRef->GetTrack() );
+				fTreeVariableNegTrackRef->SetTime( trackRef->GetTime() );
+				fTreeVariableNegTrackRef->SetDetectorId( trackRef->DetectorId() );
+				fTreeVariableNegTrackRef->SetPosition( trackRef->X(), trackRef->Y(), trackRef->Z() );
+				fTreeVariableNegTrackRef->SetMomentum( trackRef->Px(), trackRef->Py(), trackRef->Pz() );
+				fTreeVariableNegTrackRef->SetUserId( trackRef->UserId() );
+				break;
+			}
+		}
+	}
+	
     
     Int_t lPIDPositive = mcPosV0Dghter -> PdgCode();
     Int_t lPIDNegative = mcNegV0Dghter -> PdgCode();
@@ -4286,6 +4466,90 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     fTreeCascVarPIDPositive = mcPosV0Dghter -> PdgCode();
     fTreeCascVarPIDNegative = mcNegV0Dghter -> PdgCode();
     fTreeCascVarPIDBachelor = mcBach->PdgCode();
+	
+	if(fkSaveMCInfoTPC)
+	{
+		// Reset the TrackReference 
+		fTreeCascVarBachTrackRef->SetLength( 0 );
+		fTreeCascVarBachTrackRef->SetTrack( 0 );
+		fTreeCascVarBachTrackRef->SetTime( 0 );
+		fTreeCascVarBachTrackRef->SetDetectorId( -999 );
+		fTreeCascVarBachTrackRef->SetPosition( 0, 0, 0 );
+		fTreeCascVarBachTrackRef->SetMomentum( 0, 0, 0 );
+		fTreeCascVarBachTrackRef->SetUserId( 0 );
+		
+		// Search for the first TrackReference in the TPC --> corresponds to MC info of the first hit in the TPC
+		// Stop once it has been found
+		for(Int_t iRef = 0 ; iRef < mcBach->GetNumberOfTrackReferences() ; iRef++)
+		{
+			AliTrackReference* trackRef = (AliTrackReference*)mcBach->GetTrackReference(iRef);
+			if( trackRef->DetectorId() == 1 )
+			{
+				fTreeCascVarBachTrackRef->SetLength( trackRef->GetLength() );
+				fTreeCascVarBachTrackRef->SetTrack( trackRef->GetTrack() );
+				fTreeCascVarBachTrackRef->SetTime( trackRef->GetTime() );
+				fTreeCascVarBachTrackRef->SetDetectorId( trackRef->DetectorId() );
+				fTreeCascVarBachTrackRef->SetPosition( trackRef->X(), trackRef->Y(), trackRef->Z() );
+				fTreeCascVarBachTrackRef->SetMomentum( trackRef->Px(), trackRef->Py(), trackRef->Pz() );
+				fTreeCascVarBachTrackRef->SetUserId( trackRef->UserId() );
+				break;
+			}
+		}
+		
+		// Reset the TrackReference 
+		fTreeCascVarPosTrackRef->SetLength( 0 );
+		fTreeCascVarPosTrackRef->SetTrack( 0 );
+		fTreeCascVarPosTrackRef->SetTime( 0 );
+		fTreeCascVarPosTrackRef->SetDetectorId( -999 );
+		fTreeCascVarPosTrackRef->SetPosition( 0, 0, 0 );
+		fTreeCascVarPosTrackRef->SetMomentum( 0, 0, 0 );
+		fTreeCascVarPosTrackRef->SetUserId( 0 );
+		
+		// Search for the first TrackReference in the TPC --> corresponds to MC info of the first hit in the TPC
+		// Stop once it has been found
+		for(Int_t iRef = 0 ; iRef < mcPosV0Dghter->GetNumberOfTrackReferences() ; iRef++)
+		{
+			AliTrackReference* trackRef = (AliTrackReference*)mcPosV0Dghter->GetTrackReference(iRef);
+			if( trackRef->DetectorId() == 1 )
+			{
+				fTreeCascVarPosTrackRef->SetLength( trackRef->GetLength() );
+				fTreeCascVarPosTrackRef->SetTrack( trackRef->GetTrack() );
+				fTreeCascVarPosTrackRef->SetTime( trackRef->GetTime() );
+				fTreeCascVarPosTrackRef->SetDetectorId( trackRef->DetectorId() );
+				fTreeCascVarPosTrackRef->SetPosition( trackRef->X(), trackRef->Y(), trackRef->Z() );
+				fTreeCascVarPosTrackRef->SetMomentum( trackRef->Px(), trackRef->Py(), trackRef->Pz() );
+				fTreeCascVarPosTrackRef->SetUserId( trackRef->UserId() );
+				break;
+			}
+		}
+		
+		// Reset the TrackReference 
+		fTreeCascVarNegTrackRef->SetLength( 0 );
+		fTreeCascVarNegTrackRef->SetTrack( 0 );
+		fTreeCascVarNegTrackRef->SetTime( 0 );
+		fTreeCascVarNegTrackRef->SetDetectorId( -999 );
+		fTreeCascVarNegTrackRef->SetPosition( 0, 0, 0 );
+		fTreeCascVarNegTrackRef->SetMomentum( 0, 0, 0 );
+		fTreeCascVarNegTrackRef->SetUserId( 0 );
+		
+		// Search for the first TrackReference in the TPC --> corresponds to MC info of the first hit in the TPC
+		// Stop once it has been found
+		for(Int_t iRef = 0 ; iRef < mcNegV0Dghter->GetNumberOfTrackReferences() ; iRef++)
+		{
+			AliTrackReference* trackRef = (AliTrackReference*)mcNegV0Dghter->GetTrackReference(iRef);
+			if( trackRef->DetectorId() == 1 )
+			{
+				fTreeCascVarNegTrackRef->SetLength( trackRef->GetLength() );
+				fTreeCascVarNegTrackRef->SetTrack( trackRef->GetTrack() );
+				fTreeCascVarNegTrackRef->SetTime( trackRef->GetTime() );
+				fTreeCascVarNegTrackRef->SetDetectorId( trackRef->DetectorId() );
+				fTreeCascVarNegTrackRef->SetPosition( trackRef->X(), trackRef->Y(), trackRef->Z() );
+				fTreeCascVarNegTrackRef->SetMomentum( trackRef->Px(), trackRef->Py(), trackRef->Pz() );
+				fTreeCascVarNegTrackRef->SetUserId( trackRef->UserId() );
+				break;
+			}
+		}
+	}
     
     // - Step 4.2 : level of the Xi daughters
     
@@ -4549,6 +4813,32 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
     fTreeCascVarNbrCrossedRowsOverLength = lLeastNcrOverLength;
     fTreeCascVarMaxChi2PerCluster = lBiggestChi2PerCluster;
     
+    //-------------------------------------------
+    //ML Predictions
+    Double_t X[11];
+    X[0] = lDcaV0DaughtersXi; //ML 0
+    X[1] = lDcaNegToPrimVertexXi; //ML 1
+    X[2] = lDcaPosToPrimVertexXi; //ML 2
+    X[3] = lV0RadiusXi; //ML 3
+    X[4] = lV0CosineOfPointingAngleXi; //ML 4
+    X[5] = lDcaXiDaughters; //ML 5
+    X[6] = lDcaBachToPrimVertexXi; //ML 6
+    X[7] = lDcaV0ToPrimVertexXi; //ML 7
+    X[8] = lXiRadius; //ML 8
+    X[9] = lXiCosineOfPointingAngle; //ML 9
+    X[10] = lInvMassLambdaAsCascDghter; //ML 10
+
+    if(fXiMinusNN)    fTreeCascVarMLNNPredXiMinus    = fXiMinusNN->Predict(X,11);
+    if(fXiPlusNN)     fTreeCascVarMLNNPredXiPlus     = fXiPlusNN->Predict(X,11);
+    if(fOmegaMinusNN) fTreeCascVarMLNNPredOmegaMinus = fOmegaMinusNN->Predict(X,11);
+    if(fOmegaPlusNN)  fTreeCascVarMLNNPredOmegaPlus  = fOmegaPlusNN->Predict(X,11);
+
+    if(fXiMinusBDT)    fTreeCascVarMLBDTPredXiMinus    = fXiMinusBDT->Predict(X,100);
+    if(fXiPlusBDT)     fTreeCascVarMLBDTPredXiPlus     = fXiPlusBDT->Predict(X,100);
+    if(fOmegaMinusBDT) fTreeCascVarMLBDTPredOmegaMinus = fOmegaMinusBDT->Predict(X,100);
+    if(fOmegaPlusBDT)  fTreeCascVarMLBDTPredOmegaPlus  = fOmegaPlusBDT->Predict(X,100);
+    //-------------------------------------------
+
     //Copy Multiplicity information
     fTreeCascVarCentrality = fCentrality;
     
@@ -4752,6 +5042,13 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
       lpipz = fTreeCascVarBachPz;
       Float_t lBaryonTransvMomMCForG3F;
       
+      //Local variable to cut ML selection threshold 
+      Double_t lMLpred = 0;
+      //Local variable to control model type (NN or BDT) in the output
+      //IsModelNN == kTrue => Neural Network Selection
+      //IsModelNN == kFalse => BDT Selection
+      Bool_t lIsModelNN = lCascadeResult->GetIsModelNN();
+
       //For parametric V0 Mass selection
       Float_t lExpV0Mass =
       fLambdaMassMean[0]+
@@ -4865,6 +5162,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         lprpy = fTreeCascVarPosPy;
         lprpz = fTreeCascVarPosPz;
         lBaryonTransvMomMCForG3F = fTreeCascVarPosTransvMomentumMC;
+        //ML thrsh
+        if(lIsModelNN) lMLpred = fTreeCascVarMLNNPredXiMinus;
+	else           lMLpred = fTreeCascVarMLBDTPredXiMinus;
       }
       if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kXiPlus      ){
         lCharge  = +1;
@@ -4879,6 +5179,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         lprpy = fTreeCascVarNegPy;
         lprpz = fTreeCascVarNegPz;
         lBaryonTransvMomMCForG3F = fTreeCascVarNegTransvMomentumMC;
+        //ML thrsh
+        if(lIsModelNN) lMLpred = fTreeCascVarMLNNPredXiPlus;
+	else           lMLpred = fTreeCascVarMLBDTPredXiPlus;
       }
       if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaMinus     ){
         lCharge  = -1;
@@ -4893,6 +5196,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         lprpy = fTreeCascVarPosPy;
         lprpz = fTreeCascVarPosPz;
         lBaryonTransvMomMCForG3F = fTreeCascVarPosTransvMomentumMC;
+        //ML thrsh
+        if(lIsModelNN) lMLpred = fTreeCascVarMLNNPredOmegaMinus;
+	else           lMLpred = fTreeCascVarMLBDTPredOmegaMinus;
       }
       if ( lCascadeResult->GetMassHypothesis() == AliCascadeResult::kOmegaPlus      ){
         lCharge  = +1;
@@ -4907,6 +5213,9 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
         lprpy = fTreeCascVarNegPy;
         lprpz = fTreeCascVarNegPz;
         lBaryonTransvMomMCForG3F = fTreeCascVarNegTransvMomentumMC;
+        //ML thrsh
+        if(lIsModelNN) lMLpred = fTreeCascVarMLNNPredOmegaPlus;
+	else           lMLpred = fTreeCascVarMLBDTPredOmegaPlus;
       }
       
       //Override rapidity for true rapidity if requested to do so
@@ -5064,7 +5373,10 @@ void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::UserExec(Option_t *)
           //Check 20: ITS or TOF required
           (
            lCascadeResult->GetCutITSorTOF()==kFALSE || lITSorTOFsatisfied==kTRUE
-           )
+           )&&
+          //Check 21: ML threshold selection
+          lMLpred > lCascadeResult->GetCutMLthrsh()
+
           )//end major if
       {
         
@@ -8299,6 +8611,67 @@ Double_t AliAnalysisTaskStrangenessVsMultiplicityMCRun2::GetErrorInPosition(AliE
   t1->GetXYZ(tmp);
   Double_t  x1=tmp[0],  y1=tmp[1],  z1=tmp[2];
   const Double_t ss=0.0005*0.0005;//a kind of a residual misalignment precision
-  Double_t sx1=sn*sn*t1->GetSigmaY2()+ss, sy1=cs*cs*t1->GetSigmaY2()+ss;
+  Double_t sx1=sn*sn*t1->GetSigmaY2()+ss, sy1=cs*cs*t1->GetSigmaY2()+ss;  
   return sx1;
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskStrangenessVsMultiplicityMCRun2::Create_ML_Model(TString FileName, TString ModelType, TString Particle)
+{
+  if( ModelType=="NN" && Particle=="XiMinus")
+  {
+    fXiMinusNN = new AliNeuralNetwork("XiMinusNN");
+    fXiMinusNN->LoadModel(FileName);
+    return;
+  }
+
+  if( ModelType=="NN" && Particle=="XiPlus")
+  {
+    fXiPlusNN = new AliNeuralNetwork("XiPlusNN");
+    fXiPlusNN->LoadModel(FileName);
+    return;
+  }
+
+  if( ModelType=="NN" && Particle=="OmegaMinus")
+  {
+    fOmegaMinusNN = new AliNeuralNetwork("OmegaMinusNN");
+    fOmegaMinusNN->LoadModel(FileName);
+    return;
+  }
+
+  if( ModelType=="NN" && Particle=="OmegaPlus")
+  {
+    fOmegaPlusNN = new AliNeuralNetwork("OmegaPlusNN");
+    fOmegaPlusNN->LoadModel(FileName);
+    return;
+  }
+
+  if( ModelType=="BDT" && Particle=="XiMinus")
+  {
+    fXiMinusBDT = new AliBDT("XiMinusBDT");
+    fXiMinusBDT->LoadModel(FileName);
+    return;
+  }
+
+  if( ModelType=="BDT" && Particle=="XiPlus")
+  {
+    fXiPlusBDT = new AliBDT("XiPlusBDT");
+    fXiPlusBDT->LoadModel(FileName);
+    return;
+  }
+
+  if( ModelType=="BDT" && Particle=="OmegaMinus")
+  {
+    fOmegaMinusBDT = new AliBDT("OmegaMinusBDT");
+    fOmegaMinusBDT->LoadModel(FileName);
+    return;
+  }
+
+  if( ModelType=="BDT" && Particle=="OmegaPlus")
+  {
+    fOmegaPlusBDT = new AliBDT("OmegaPlusBDT");
+    fOmegaPlusBDT->LoadModel(FileName);
+    return;
+  }
+
+  return;
 }

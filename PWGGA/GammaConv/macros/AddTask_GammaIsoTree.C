@@ -85,7 +85,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "00010113";
       TaskClusterCutnumberEMC           = "1111132060032000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -103,7 +103,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "00052113";
       TaskClusterCutnumberEMC           = "1111132060032000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -121,7 +121,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "00081113";
       TaskClusterCutnumberEMC           = "1111132060032000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -141,7 +141,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "00010103";
       TaskClusterCutnumberEMC           = "1111100060e32000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111110006fe22000000";
       TaskClusterCutnumberTaggingEMC    = "111110006fe00000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -159,7 +159,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "00052103";
       TaskClusterCutnumberEMC           = "1111100060e32000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111110006fe22000000";
       TaskClusterCutnumberTaggingEMC    = "111110006fe00000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -178,7 +178,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "00081103";
       TaskClusterCutnumberEMC           = "1111100060e32000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111110006fe22000000";
       TaskClusterCutnumberTaggingEMC    = "111110006fe00000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -200,7 +200,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "00010103";
       TaskClusterCutnumberEMC           = "1111132060032000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -221,7 +221,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "00010103";
       TaskClusterCutnumberEMC           = "1111132060032000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -242,7 +242,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "00052103";
       TaskClusterCutnumberEMC           = "1111132060032000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -263,7 +263,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "00081103";
       TaskClusterCutnumberEMC           = "1111132060032000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -285,7 +285,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "00010103";
       TaskClusterCutnumberEMC           = "1111132060032000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -306,7 +306,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "00052103";
       TaskClusterCutnumberEMC           = "1111132060032000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -327,7 +327,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "00081103";
       TaskClusterCutnumberEMC           = "1111132060032000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111113206f022000000";
       TaskClusterCutnumberTaggingEMC    = "111113206f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -350,14 +350,14 @@ void AddTask_GammaIsoTree(
   // ────────────────────────────────────────────────────────────────────────────────
   } else if(trainConfig == 50){  // pPb INT7
       TaskEventCutnumber                = "80010103";
-      TaskClusterCutnumberEMC           = "1111101060032000000";
+      TaskClusterCutnumberEMC           = "1111100060e32000000";
             TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
-      TaskClusterCutnumberIsolationEMC  = "111110106f022000000";
-      TaskClusterCutnumberTaggingEMC    = "111110106f000000000";
+      TaskTMCut.Replace(9,1,"s");
+      TaskClusterCutnumberIsolationEMC  = "111110006fe22000000";
+      TaskClusterCutnumberTaggingEMC    = "111110006fe22000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-
+      fEtaCut = 0.8;
       minSignalM02 = 0.1;
       maxSignalM02 = 0.5;
 
@@ -368,14 +368,14 @@ void AddTask_GammaIsoTree(
       doCellIso = kFALSE;
   } else if(trainConfig == 51){  // EG2
       TaskEventCutnumber                = "80085103";
-      TaskClusterCutnumberEMC           = "1111101060032000000";
+      TaskClusterCutnumberEMC           = "1111100060e32000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
-      TaskClusterCutnumberIsolationEMC  = "111110106f022000000";
-      TaskClusterCutnumberTaggingEMC    = "111110106f000000000";
+      TaskTMCut.Replace(9,1,"s");
+      TaskClusterCutnumberIsolationEMC  = "111110006fe22000000";
+      TaskClusterCutnumberTaggingEMC    = "111110006fe22000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-
+      fEtaCut = 0.8;
       minSignalM02 = 0.1;
       maxSignalM02 = 0.5;
 
@@ -386,14 +386,15 @@ void AddTask_GammaIsoTree(
       doCellIso = kFALSE;
   } else if(trainConfig == 52){  // EG1
       TaskEventCutnumber                = "80083103";
-      TaskClusterCutnumberEMC           = "1111101060032000000";
+      TaskClusterCutnumberEMC           = "1111100060e32000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
-      TaskClusterCutnumberIsolationEMC  = "111110106f022000000";
-      TaskClusterCutnumberTaggingEMC    = "111110106f000000000";
+      TaskTMCut.Replace(9,1,"s");
+      TaskClusterCutnumberIsolationEMC  = "111110006fe22000000";
+      TaskClusterCutnumberTaggingEMC    = "111110006fe22000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
-
+      
+      fEtaCut = 0.8;
       minSignalM02 = 0.1;
       maxSignalM02 = 0.5;
 
@@ -409,7 +410,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "80010103";
       TaskClusterCutnumberEMC           = "1111101060e32000000";
             TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111110106fe22000000";
       TaskClusterCutnumberTaggingEMC    = "111110106fe00000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -428,7 +429,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "80085103";
       TaskClusterCutnumberEMC           = "1111101060e32000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111110106fe22000000";
       TaskClusterCutnumberTaggingEMC    = "111110106fe00000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -447,7 +448,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "80083103";
       TaskClusterCutnumberEMC           = "1111101060e32000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "111110106fe22000000";
       TaskClusterCutnumberTaggingEMC    = "111110106fe00000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -469,11 +470,11 @@ void AddTask_GammaIsoTree(
 
    } else if(trainConfig == 60){  // pPb INT7
       TaskEventCutnumber                = "80010103";
-      TaskClusterCutnumberEMC           = "3885501060032000000";
+      TaskClusterCutnumberEMC           = "3885500060e32000000";
             TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
-      TaskClusterCutnumberIsolationEMC  = "388550106f022000000";
-      TaskClusterCutnumberTaggingEMC    = "388550106f000000000";
+      TaskTMCut.Replace(9,1,"s");
+      TaskClusterCutnumberIsolationEMC  = "388550006fe22000000";
+      TaskClusterCutnumberTaggingEMC    = "388550006fe22000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
 
@@ -487,11 +488,11 @@ void AddTask_GammaIsoTree(
       doCellIso = kFALSE;
   } else if(trainConfig == 61){  // DG2
       TaskEventCutnumber                = "80089103";
-      TaskClusterCutnumberEMC           = "3885501060032000000";
+      TaskClusterCutnumberEMC           = "3885500060e32000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
-      TaskClusterCutnumberIsolationEMC  = "388550106f022000000";
-      TaskClusterCutnumberTaggingEMC    = "388550106f000000000";
+      TaskTMCut.Replace(9,1,"s");
+      TaskClusterCutnumberIsolationEMC  = "388550006fe22000000";
+      TaskClusterCutnumberTaggingEMC    = "388550006fe22000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
 
@@ -505,11 +506,11 @@ void AddTask_GammaIsoTree(
       doCellIso = kFALSE;
   } else if(trainConfig == 62){  // DG1
       TaskEventCutnumber                = "8008b103";
-      TaskClusterCutnumberEMC           = "3885501060032000000";
+      TaskClusterCutnumberEMC           = "3885500060e32000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
-      TaskClusterCutnumberIsolationEMC  = "388550106f022000000";
-      TaskClusterCutnumberTaggingEMC    = "388550106f000000000";
+      TaskTMCut.Replace(9,1,"s");
+      TaskClusterCutnumberIsolationEMC  = "388550006fe22000000";
+      TaskClusterCutnumberTaggingEMC    = "388550006fe22000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
       TaskConvCutnumber                 = "0dm00009f9730000dge0404000";
 
@@ -527,7 +528,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "80010103";
       TaskClusterCutnumberEMC           = "3885501060032000000";
             TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "388550106f022000000";
       TaskClusterCutnumberTaggingEMC    = "388550106f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -546,7 +547,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "80089103";
       TaskClusterCutnumberEMC           = "3885501060032000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "388550106f022000000";
       TaskClusterCutnumberTaggingEMC    = "388550106f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -565,7 +566,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "8008b103";
       TaskClusterCutnumberEMC           = "3885501060032000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "388550106f022000000";
       TaskClusterCutnumberTaggingEMC    = "388550106f000000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -587,7 +588,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "80010103";
       TaskClusterCutnumberEMC           = "4117900060e32000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "411790006fe22000000";
       TaskClusterCutnumberTaggingEMC    = "411790006fe00000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -606,7 +607,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "8008e103";
       TaskClusterCutnumberEMC           = "4117900060e32000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "411790006fe22000000";
       TaskClusterCutnumberTaggingEMC    = "411790006fe00000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";
@@ -625,7 +626,7 @@ void AddTask_GammaIsoTree(
       TaskEventCutnumber                = "8008d103";
       TaskClusterCutnumberEMC           = "4117900060e32000000";
       TaskTMCut = TaskClusterCutnumberEMC.Data();
-      TaskTMCut.Replace(9,1,"5");
+      TaskTMCut.Replace(9,1,"s");
       TaskClusterCutnumberIsolationEMC  = "411790006fe22000000";
       TaskClusterCutnumberTaggingEMC    = "411790006fe00000000";
       TaskClusterCutnumberPHOS          = "2444411044013300000";

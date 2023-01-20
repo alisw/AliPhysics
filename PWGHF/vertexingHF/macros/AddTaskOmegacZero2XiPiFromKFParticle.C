@@ -61,7 +61,7 @@ AliAnalysisTaskSEOmegacZero2XiPifromKFP* AddTaskOmegacZero2XiPiFromKFParticle(TS
     fileName += cuttype.Data();
 
     // now we create an instance of your task
-    AliAnalysisTaskSEOmegacZero2XiPifromKFP* task = new AliAnalysisTaskSEOmegacZero2XiPifromKFP("AliAnalysisTaskSEOmegacZero2XiPifromKFP", RDHFCutsKFP);
+    AliAnalysisTaskSEOmegacZero2XiPifromKFP* task = new AliAnalysisTaskSEOmegacZero2XiPifromKFP("AliAnalysisTaskSEOmegacZero2XiPifromKFP", RDHFCutsKFP, IsMC);
 
     if(!task) return NULL;
 

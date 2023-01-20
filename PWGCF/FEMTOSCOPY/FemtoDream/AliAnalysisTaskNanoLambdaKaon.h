@@ -21,7 +21,7 @@ class AliAnalysisTaskNanoLambdaKaon : public AliAnalysisTaskSE
 {
 public:
   AliAnalysisTaskNanoLambdaKaon();
-  AliAnalysisTaskNanoLambdaKaon(const char *name, bool isMC);
+  AliAnalysisTaskNanoLambdaKaon(const char *name, bool isMC, bool isNewPC);
   virtual ~AliAnalysisTaskNanoLambdaKaon();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *);
@@ -55,21 +55,22 @@ private:
   AliAnalysisTaskNanoLambdaKaon &operator=(const AliAnalysisTaskNanoLambdaKaon &);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliVTrack *track);
-  bool fIsMC;               //
-  bool fUseOMixing;         //
-  UInt_t fTrigger;          //
-  TList *fResults;          //!
-  TList *fResultsQA;        //!
-  TList *fQA;               //!
-  TList *fEvtList;          //!
-  TList *fLambdaList;       //!
-  TList *fLambdaMCList;     //!
-  TList *fAntiLambdaList;   //!
-  TList *fAntiLambdaMCList; //!
-  TList *fKaonPlusList;     //!
-  TList *fKaonPlusMCList;   //!
-  TList *fKaonMinusList;    //!
-  TList *fKaonMinusMCList;  //!
+  bool fIsMC;                             //
+  bool fUseOMixing;                       //
+  bool fIsNewPC;                         //
+  UInt_t fTrigger;                        //
+  TList *fResults;                        //!
+  TList *fResultsQA;                      //!
+  TList *fQA;                             //!
+  TList *fEvtList;                        //!
+  TList *fLambdaList;                     //!
+  TList *fLambdaMCList;                   //!
+  TList *fAntiLambdaList;                 //!
+  TList *fAntiLambdaMCList;               //!
+  TList *fKaonPlusList;                   //!
+  TList *fKaonPlusMCList;                 //!
+  TList *fKaonMinusList;                  //!
+  TList *fKaonMinusMCList;                //!
   AliVEvent *fInputEvent;                 //! current event
   AliFemtoDreamEvent *fEvent;             //!
   AliFemtoDreamv0 *fLambda;               //!

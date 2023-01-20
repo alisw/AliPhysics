@@ -11,7 +11,7 @@
 #include "AliFemtoDreamCollConfig.h"
 #endif
 
-AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(bool fullBlastQA = true, bool isMC = false, bool isNano = true, TString taskName = "ThreeBodyProtonPion", bool UseSphericityCut = true, bool DoThreeBody = true, bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = true, double PhiPP = 0.017, double EtaPP = 0.017, double PhiPPion = 0.03, double EtaPPion = 0.012, double PhiPAPion = 0.03, double EtaPAPion = 0.012, bool RunPlotPhiTheta = false, double Q3LimitForDeltaPhiDeltaEta = 0.4, bool StandardMixing = false, int MixingDepth = 10, const char *cutVariation = "0", bool RunPlotMult = false, bool RunPlotInvMass = false, bool RunPlotQ3Vsq = false, bool RunPlotOtherHistos = false, bool RunPlotPt = false, bool UseFemtoPionCuts = false ){
+AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(bool fullBlastQA = true, bool isMC = false, bool isNano = true, TString taskName = "ThreeBodyProtonPion", bool UseSphericityCut = true, bool DoThreeBody = true, bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = true, double PhiPP = 0.017, double EtaPP = 0.017, double PhiPPion = 0.03, double EtaPPion = 0.012, double PhiPAPion = 0.03, double EtaPAPion = 0.012, bool RunPlotPhiTheta = false, double Q3LimitForDeltaPhiDeltaEta = 0.4, bool StandardMixing = false, int MixingDepth = 10, const char *cutVariation = "0", bool RunPlotMult = false, bool RunPlotInvMass = false, bool RunPlotQ3Vsq = false, bool RunPlotOtherHistos = false, bool RunPlotPt = false, bool UseFemtoPionCuts = true, double Q3MinValue = 0., double Q3cutValue = 1.0 ){
 
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -394,7 +394,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(bool fullBlastQA = true, bool isMC
     taskNano->SetDeltaEtaMaxPAPrim(EtaPAPion);
 
     taskNano->SetQ3LimitForDeltaPhiDeltaEta(Q3LimitForDeltaPhiDeltaEta);
-
+    taskNano->SetQ3cutValue(Q3cutValue); 
+    taskNano->SetQ3MinValue(Q3MinValue);
     
     mgr->AddTask(taskNano);
 

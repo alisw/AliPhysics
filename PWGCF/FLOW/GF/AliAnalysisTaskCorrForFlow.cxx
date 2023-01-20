@@ -1,16 +1,10 @@
 /**************************************************************************
- * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
+ *    Author:       Zuzana Moravcova                                      *
+ *    Framework for calculating di-hadron correlation                     *
+ *    for extraction of v_n{2} and v_n[2] coefficients.                   *
  *                                                                        *
- * Author: The ALICE Off-line Project.                                    *
- * Contributors are mentioned in the code where appropriate.              *
- *                                                                        *
- * Permission to use, copy, modify and distribute this software and its   *
- * documentation strictly for non-commercial purposes is hereby granted   *
- * without fee, provided that the above copyright notice appears in all   *
- * copies and that both the copyright notice and this permission notice   *
- * appear in the supporting documentation. The authors make no claims     *
- * about the suitability of this software for any purpose. It is          *
- * provided "as is" without express or implied warranty.                  *
+ *    If used, modified, or distributed,                                  *
+ *    please aknowledge the author of this code.                          *
  **************************************************************************/
 
 #include "AliAnalysisTaskCorrForFlow.h"
@@ -240,14 +234,14 @@ void AliAnalysisTaskCorrForFlow::UserExec(Option_t *)
              }
              else if(fEtaPolarity == -1 && track->Eta() > 0){
              fTracksAss->Add((AliAODTrack*)track);
-             fNofTracks++; 
+             fNofTracks++;
              }
              else if(fEtaPolarity == 1 && track->Eta() < 0){
              fTracksAss->Add((AliAODTrack*)track);
-             fNofTracks++; 
-             }          
+             fNofTracks++;
+             }
      }
-     
+
         if(trackPt > fPtMinTrig && trackPt < fPtMaxTrig) {
           if(fEtaPolarity == 0){
                fTracksTrigCharged->Add((AliAODTrack*)track);
@@ -335,13 +329,20 @@ Bool_t AliAnalysisTaskCorrForFlow::IsTrackSelected(const AliAODTrack* track) con
   if(track->GetTPCNcls() < fTPCclMin && fFilterBit != 2) { return kFALSE; }
   if(fAbsEtaMax > 0.0 && TMath::Abs(track->Eta()) > fAbsEtaMax) { return kFALSE; }
   if(track->Charge() == 0) { return kFALSE; }
-  if(fCutDCAz > 0. || fCutDCAxySigma > 0.){
+  if(fCutDCAz > 0.){
     Double_t vtxXYZ[3], trXYZ[3];
     track->GetXYZ(trXYZ);
     fAOD->GetPrimaryVertex()->GetXYZ(vtxXYZ);
     trXYZ[2] -= vtxXYZ[2];
     if(TMath::Abs(trXYZ[2]) > fCutDCAz) { return kFALSE; }
+  }
 
+  if(fCutDCAxySigma > 0.){
+    Double_t vtxXYZ[3], trXYZ[3];
+    track->GetXYZ(trXYZ);
+    fAOD->GetPrimaryVertex()->GetXYZ(vtxXYZ);
+    trXYZ[0] -= vtxXYZ[0];
+    trXYZ[1] -= vtxXYZ[1];
     Double_t trDcaxy = TMath::Sqrt(trXYZ[0]*trXYZ[0] + trXYZ[1]*trXYZ[1]);
     Double_t cutDcaxy = 0.0015+0.0050/TMath::Power(track->Pt(),1.1);
     if(trDcaxy > fCutDCAxySigma*cutDcaxy) { return kFALSE; }

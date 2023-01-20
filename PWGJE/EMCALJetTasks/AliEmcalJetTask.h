@@ -42,6 +42,7 @@ class AliEmcalJetUtility;
 #include "FJ_includes.h"
 #include "AliEmcalJet.h"
 #include "AliJetContainer.h"
+#include "AliYAMLConfiguration.h"
 #if !(defined(__CINT__) || defined(__MAKECINT__))
 #include "AliEmcalContainerIndexMap.h"
 #endif
@@ -114,6 +115,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   void                   SetMinJetClusE(Double_t min);
   void                   SetMinJetTrackPt(Double_t min);
   void                   SetPhiRange(Double_t pmi, Double_t pma);
+  void                   SetApplyPtDependentTrackingEfficiency(Bool_t b=kTRUE) { if (IsLocked()) return; fApplyPtDependentTrackingEfficiency = b; }
 
   AliEmcalJetUtility*    AddUtility(AliEmcalJetUtility* utility);
 
@@ -144,6 +146,8 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   UInt_t                 FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r);
   
   void                   LoadTrackEfficiencyFunction(const std::string & path, const std::string & name);
+  void                   SetArtificialTrackingEfficiencyFromYAML();
+  void                   AddArtificialTrackingEfficiencyConfig();
 
   Bool_t                 IsLocked() const;
   void                   SelectCollisionCandidates(UInt_t offlineTriggerMask = AliVEvent::kMB);
@@ -214,7 +218,10 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   TObjArray             *fUtilities;              ///< jet utilities (gen subtractor, constituent subtractor etc.)
   Bool_t                 fTrackEfficiencyOnlyForEmbedding; ///< Apply aritificial tracking inefficiency only for embedded tracks
   TF1                   *fTrackEfficiencyFunction;///< Function that describes the artificial tracking efficiency to be applied on top of the nominal tracking efficiency, as a function of track pT
+  TH1D                  *fTrackEfficiencyHistogram;///< Histogram that describes the artificial tracking efficiency to be applied on top of the nominal tracking efficiency, as a function of track pT
+  std::vector<TH1D*>    fTrackEfficiencyHistogramVector;///< Histogram that describes the artificial tracking efficiency to be applied on top of the nominal tracking efficiency, as a function of track pT
   Bool_t                 fApplyArtificialTrackingEfficiency; ///< Flag to apply artificial tracking efficiency
+  Bool_t                 fApplyPtDependentTrackingEfficiency; ///< Flag to apply pt-dependent tracking efficiency
   Bool_t                 fApplyQoverPtShift;      ///< Apply Q/pt shift
   TRandom3               fRandom;                 //!<! Random number generator for artificial tracking efficiency
   Bool_t                 fLocked;                 ///< true if lock is set
@@ -232,6 +239,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   AliFJWrapper           fFastJetWrapper;         //!<!fastjet wrapper
 
   static const Int_t     fgkConstIndexShift;      //!<!contituent index shift
+  PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< yaml configuration
 
 #if !(defined(__CINT__) || defined(__MAKECINT__))
   // Handle mapping between index and containers
@@ -244,7 +252,7 @@ class AliEmcalJetTask : public AliAnalysisTaskEmcal {
   AliEmcalJetTask &operator=(const AliEmcalJetTask&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalJetTask, 30);
+  ClassDef(AliEmcalJetTask, 31);
   /// \endcond
 };
 #endif

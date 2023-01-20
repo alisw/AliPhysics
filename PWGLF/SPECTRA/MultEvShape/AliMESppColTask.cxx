@@ -314,6 +314,7 @@ void AliMESppColTask::UserExec(Option_t *opt)
     do{
       // NOTE: the intervals are considered half-closed: (a,b]
       if ((pTlead >= 2. && pTlead <= 3.) && mult_comb08 > 0 && mult_comb08 <= 80 && TMath::Abs(fEvInfo->GetVertexZ()) < 10.0 && vec_hbTrk[8] == 0 && sfer>0.0 && sfer<=0.3)
+
       {
         //         TObjArray *selectedTracks1=FindLeadingObjects(fTracks, 0);
         TObjArray *selectedTracks1 = SelectedTracks(fTracks, 0, idLead, -1, mult_comb08);
@@ -421,6 +422,7 @@ TObjArray*  AliMESppColTask::SelectedTracks(TObjArray *obj, Int_t MC, Int_t idL,
 // 	Double_t pTtrigMin[nMult] = {0.2, 0.2, 0.29, 0.53, 0.8, 0.95, 1.15, 1.4, 1.65, 1.9, 2.0, 2.3};
 // 	Double_t pTtrigMax[nMult] = {0.9, 1.1, 1.29, 1.53, 1.8, 1.95, 2.15, 2.4, 2.65, 2.9, 3.0, 3.3};
 	
+
 // 	Double_t pTtrigMin[nMult] = {1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 1.};
 // 	Double_t pTtrigMax[nMult] = {2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2.};
     Double_t pTtrigMin[nMult] = {2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2., 2.};

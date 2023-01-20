@@ -24,6 +24,7 @@
 #include <TAxis.h>
 #include <TSpline.h>
 #include <TGrid.h>
+#include <TRandom3.h>
 
 #include <AliLog.h>
 #include "AliAnalysisManager.h"
@@ -147,6 +148,7 @@ AliAnalysisTaskSECharmHadronvn::AliAnalysisTaskSECharmHadronvn(const char *name,
     fRemoveDauFromqn(0),
     fRemoveSoftPion(false),
     fEnableDownsamplqn(false),
+    fEnableResampleCan(false),
     fFracToKeepDownSamplqn(1.1),
     fApplyML(false),
     fMultiClass(false),
@@ -464,6 +466,10 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     double Ntrkmin       = 0.;
     double Ntrkmax       = 5000.;
 
+    int nRandomBins      = 100;
+    double Randmin       = 0.;
+    double Randmax       = 1.;
+  
     TString massaxisname = "";
     if(fDecChannel==0)      massaxisname = "#it{M}(K#pi#pi) (GeV/#it{c}^{2})";
     else if(fDecChannel==1) massaxisname = "#it{M}(K#pi) (GeV/#it{c}^{2})";
@@ -472,15 +478,18 @@ void AliAnalysisTaskSECharmHadronvn::UserCreateOutputObjects()
     else if(fDecChannel==4) massaxisname = "#it{M}(pK^{0}_{S}) (GeV/#it{c}^{2})";
 
     int naxes = kVarForSparse;
+
     if(!fApplyML)
         naxes = naxes-3;
     if(fApplyML && !fMultiClass)
         naxes = naxes-2;
+    if(!fEnableResampleCan)
+        naxes = naxes-1;
 
-    int nbins[kVarForSparse]     = {fNMassBins, nptbins, ndeltaphibins, nfphibins, nfphibins, nphibins, ncentbins, nNtrkBins, nqnbins, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
-    double xmin[kVarForSparse]   = {fLowmasslimit, ptmin, mindeltaphi, fphimin, fphimin, phimin, fMinCentr, Ntrkmin, qnmin, fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
-    double xmax[kVarForSparse]   = {fUpmasslimit, ptmax, maxdeltaphi, fphimax, fphimax, phimax, fMaxCentr, Ntrkmax, qnmax, fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
-    TString axTit[kVarForSparse] = {massaxisname, "#it{p}_{T} (GeV/#it{c})", deltaphiname, nfphiname1, nfphiname2, "#varphi_{D}", "Centrality (%)", "#it{N}_{tracklets}", qnaxisnamefill, "ML response 0", "ML response 1", "ML response 2"};
+    int nbins[kVarForSparse]     = {fNMassBins, nptbins, ndeltaphibins, nfphibins, nfphibins, nphibins, ncentbins, nNtrkBins, nqnbins, nRandomBins, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+    double xmin[kVarForSparse]   = {fLowmasslimit, ptmin, mindeltaphi, fphimin, fphimin, phimin, fMinCentr, Ntrkmin, qnmin, Randmin, fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+    double xmax[kVarForSparse]   = {fUpmasslimit, ptmax, maxdeltaphi, fphimax, fphimax, phimax, fMaxCentr, Ntrkmax, qnmax, Randmax, fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+    TString axTit[kVarForSparse] = {massaxisname, "#it{p}_{T} (GeV/#it{c})", deltaphiname, nfphiname1, nfphiname2, "#varphi_{D}", "Centrality (%)", "#it{N}_{tracklets}", qnaxisnamefill, "Random number", "ML response 0", "ML response 1", "ML response 2"};
 
     fHistMassPtPhiqnCentr = new THnSparseF("fHistMassPtPhiqnCentr",Form("InvMass vs. #it{p}_{T} vs. %s vs. centr vs. #it{q}_{%d} ",deltaphiname.Data(),fHarmonic),naxes,nbins,xmin,xmax);
 
@@ -973,17 +982,19 @@ void AliAnalysisTaskSECharmHadronvn::UserExec(Option_t */*option*/)
         else {
             candpercqn = mainpercqn;
         }
+      
+        double canRandom = gRandom->Uniform(0., 1);
         std::vector<double> var4nSparse{};
         if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kLctopK0S || fDecChannel == kDstartoKpipi || (fDecChannel == kDstoKKpi && (isSelected & 4)))
         {
-            var4nSparse = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
+            var4nSparse = {invMass[0],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn, canRandom};
             var4nSparse.insert(var4nSparse.end(), scores.begin(), scores.end());
             fHistMassPtPhiqnCentr->Fill(var4nSparse.data());
             continue;
         }
         if((fDecChannel == kD0toKpi && (isSelected >= 2)) || (fDecChannel == kDstoKKpi && (isSelected & 8)))
         {
-            var4nSparse = {invMass[1],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn};
+            var4nSparse = {invMass[1],ptD,vnfunc,phifunc1,phifunc2,phiD,evCentr,static_cast<double>(tracklets),candpercqn, canRandom};
             var4nSparse.insert(var4nSparse.end(), scoresSecond.begin(), scoresSecond.end());
             fHistMassPtPhiqnCentr->Fill(var4nSparse.data());
             continue;

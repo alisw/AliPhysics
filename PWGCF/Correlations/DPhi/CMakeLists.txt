@@ -66,10 +66,18 @@ set(SRCS
     AliAnalysisTaskpzpz.cxx
     AliAnalysisTaskpzpz.cxx
     AliAnalysisTaskR2P2.cxx
+    AliAnalysisTaskR2P2multClassGen.cxx
     AliAnalysisTaskR2P2Base.cxx
-    AliAnalysisTaskR2P2Corr.cxx 
+    AliAnalysisTaskR2P2Corr.cxx
+    AliAnalysisTaskR2P2CorrGen.cxx
     AliAnalysisTaskR2P2multClass.cxx
+    AliAnalysisTaskR2P2multClassGen.cxx
+    AliAnalysisTaskR2P2multEff.cxx
+    AliAnalysisTaskR2P2highMult.cxx
+    AliAnalysisTaskR2P2highMultpp.cxx
     AliAnalysisTaskR2P2pp.cxx
+    AliAnalysisTaskBFR2.cxx
+    AliAnalysisTaskBFR2sphero.cxx
     AliAnalysisTaskSEpPbCorrelationsYS.cxx
     AliAnalysisTaskSEpPbCorrelationsMCYS.cxx
     AliAnalysisTaskSEpPbCorrelationsMCLEGOYS.cxx	
@@ -85,6 +93,7 @@ set(SRCS
     AliAnalysisTaskV0ChCorrelationpp.cxx
     AliAnalysisTaskV0ChCorrelationppsys.cxx
     AliAnalysisTaskV0ChCorrelationsys.cxx
+    AliAnalysisTaskCorrelGen.cxx
     AliAnalysisTaskLambdaK0s.cxx
     AliPhiCorrelationsQATask.cxx
     AliAnalysisTaskDiJetCorrelationsAllb2b.cxx

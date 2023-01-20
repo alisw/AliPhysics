@@ -22,14 +22,17 @@ class AliESDtrackCuts;
 class AliPIDResponse;
 class AliHeader;
 class AliESDpid;
-class fPIDCombined;
+class AliESDtools;
+class AliPIDCombined;
 
 
 #include "AliAnalysisTaskSE.h"
 #include "AliPIDCombined.h"
 #include "AliTPCdEdxInfo.h"
 #include "AliESDv0KineCuts.h"
+#include "AliESDv0.h"
 #include "THnSparse.h"
+#include "TClonesArray.h"
 #include "THn.h"
 #include "TVectorF.h"
 #include "TCutG.h"
@@ -39,7 +42,7 @@ class fPIDCombined;
 
 // class AliAnalysisTaskPIDetaTreeElectrons : public AliAnalysisTaskPIDV0base {
 class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
- public:
+public:
 
   AliEventCuts fEventCuts;     /// Event cuts
 
@@ -72,9 +75,9 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
     kNCrossedRowsTPC60=0,
     kNCrossedRowsTPC80=1,
     kNCrossedRowsTPC100=2,
-    kMaxChi2PerClusterTPC3=3,
-    kMaxChi2PerClusterTPC4=4,
-    kMaxChi2PerClusterTPC5=5,
+    kMaxChi2PerClusterTPCSmall=3,
+    kMaxChi2PerClusterTPC=4,
+    kMaxChi2PerClusterTPCLarge=5,
     kMaxDCAToVertexXYPtDepSmall=6,
     kMaxDCAToVertexXYPtDep=7,
     kMaxDCAToVertexXYPtDepLarge=8,
@@ -93,14 +96,38 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
     kTPCSignalNSmall=21,
     kTPCSignalN=22,
     kTPCSignalNLarge=23,
-    kTrackProbPiTPC=24,
-    kTrackProbKaTPC=25,
-    kTrackProbPrTPC=26,
-    kTrackProbDeTPC=27,
-    kTrackProbPiTOF=28,
-    kTrackProbKaTOF=29,
-    kTrackProbPrTOF=30,
-    kTrackProbDeTOF=31,
+    kCleanPrTOF=24,
+    kCleanKaTOF=25,
+    kCleanKaTOFTRD=26,
+    kTrackProbKaTOF=27,
+    kTrackProbPrTOF=28,
+    kCleanDeTOF=29,
+    kEventVertexZALICE=30,
+    kEventVertexZALICETight=31,
+  };
+
+  enum cutSettings {
+    kCutReference=0,
+    kCutCrossedRowsTPC60=1,
+    kCutCrossedRowsTPC100=2,
+    kCutMaxChi2PerClusterTPCSmall=3,
+    kCutMaxChi2PerClusterTPCLarge=4,
+    kCutMaxDCAToVertexXYPtDepSmall=5,
+    kCutMaxDCAToVertexXYPtDepLarge=6,
+    kCutVertexZSmall=7,
+    kCutVertexZLarge=8,
+    kCutEventVertexZSmall=9,
+    kCutEventVertexZLarge=10,
+    kCutRequireITSRefit=11,
+    kCutPixelRequirementITS=12,
+    kCutNewITSCut=13,
+    kCutTPCSignalN=14,
+    kCutActiveZone=15,
+    kCutTPCSignalNActiveZone=16,
+    kCutTPCSignalNSmallActiveZoneSmall=17,
+    kCutTPCSignalNLargeActiveZoneLarge=18,
+    kCutEventVertexZALICE=19,
+    kCutEventVertexZALICETight=20,
   };
 
   enum centEst {
@@ -178,11 +205,13 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   //                                    Settings
   // ---------------------------------------------------------------------------------
 
-  void   SetESDtrackCuts(AliESDtrackCuts * trackCuts){fESDtrackCuts = trackCuts;};
-  void   SetIsMCtrue(Bool_t isMCdata = kTRUE){fMCtrue = isMCdata;};
   void   Initialize();
   void   PrintNumInBinary(UInt_t num);
-
+  void   SetESDtrackCuts(AliESDtrackCuts * trackCuts)                 {fESDtrackCuts        = trackCuts;};
+  void   SetIsMCtrue(Bool_t isMCdata = kTRUE)                         {fMCtrue              = isMCdata;};
+  void   SetYear(const Int_t ifYear = 0)                              {fYear                = ifYear;}
+  void   SetPeriodName(const TString ifPeriodName = "")               {fPeriodName          = ifPeriodName;}
+  void   SetPassIndex(const Int_t ifPassIndex = 0)                    {fPassIndex           = ifPassIndex;}
   // Some boolian settings
   void   SetRunOnGrid(const Bool_t ifRunOnGrid = kTRUE)               {fRunOnGrid           = ifRunOnGrid;}
   void   SetIncludeITScuts(const Bool_t ifITSCuts = kTRUE)            {fIncludeITS          = ifITSCuts;}
@@ -195,15 +224,17 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void   SetFillHigherMomentsMCclosure(const Bool_t ifHigherMomentsMCclosure = kFALSE){fFillHigherMomentsMCclosure  = ifHigherMomentsMCclosure;}
   void   SetRunFastSimulation(const Bool_t ifFastSimul = kFALSE)      {fRunFastSimulation   = ifFastSimul;}
   void   SetRunFastHighMomentCal(const Bool_t ifFastHighMom = kFALSE) {fRunFastHighMomentCal= ifFastHighMom;}
-  void   SetFillGenDistributions(const Bool_t ifGenDistributions = kFALSE) {fFillGenDistributions= ifGenDistributions;}
+  void   SetFillDistributions(const Bool_t ifGenDistributions = kFALSE) {fFillDistributions= ifGenDistributions;}
   void   SetFillTreeMC(const Bool_t ifTreeMC = kFALSE)                {fFillTreeMC= ifTreeMC;}
 
   void   SetDefaultTrackCuts(const Bool_t ifDefaultTrackCuts = kFALSE){fDefaultTrackCuts= ifDefaultTrackCuts;}
   void   SetDefaultEventCuts(const Bool_t ifDefaultEventCuts = kFALSE){fDefaultEventCuts= ifDefaultEventCuts;}
   void   SetFillNudynFastGen(const Bool_t ifNudynFastGen = kFALSE)    {fFillNudynFastGen= ifNudynFastGen;}
+  void   SetCorrectForMissCl(const Int_t ifCorrectForMissCl = kFALSE)    {fCorrectForMissCl= ifCorrectForMissCl;}
   void   SetUsePtCut(const Int_t ifUsePtCut = 1)                      {fUsePtCut            = ifUsePtCut;}
-  void   SetTrackOriginType(const Int_t ifTrackOriginType = 0)        {fTrackOriginType     = ifTrackOriginType;}
+  void   SetMCTrackOriginType(const Int_t ifTrackOriginOnlyPrimary = 0) {fTrackOriginOnlyPrimary     = ifTrackOriginOnlyPrimary;}
   void   SetRapidityType(const Int_t ifRapidityType = 0)              {fRapidityType        = ifRapidityType;}
+  void   SetSisterCheck(const Int_t ifSisterCheck = 0)                {fSisterCheck         = ifSisterCheck;}
   void   SetFillDnchDeta(const Bool_t ifDnchDetaCal = kFALSE)         {fFillDnchDeta        = ifDnchDetaCal;}
   void   SetIncludeTOF(const Bool_t ifIncludeTOF = kFALSE)            {fIncludeTOF          = ifIncludeTOF;}
   void   SetUseThnSparse(const Bool_t ifUseThnSparse = kFALSE)        {fUseThnSparse        = ifUseThnSparse;}
@@ -211,9 +242,10 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void   SetWeakAndMaterial(const Bool_t ifWeakAndMaterial = kFALSE)  {fWeakAndMaterial     = ifWeakAndMaterial;}
   void   SetFillEventInfo(const Bool_t ifEventInfo = kFALSE)          {fEventInfo           = ifEventInfo;}
   void   SetPercentageOfEvents(const Int_t nPercentageOfEvents = 0)   {fPercentageOfEvents = nPercentageOfEvents;}
+  void   SetNSettings(const Int_t nSettings = 22)                     {fNSettings = nSettings;}
+
   //
   Bool_t GetRunOnGrid() const { return fRunOnGrid; }
-
 
   // Setters for the systematic uncertainty checks
   void   SetSystCentEstimator(const Int_t systCentEstimator = 0)  {fSystCentEstimatetor = systCentEstimator;}
@@ -228,15 +260,13 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
   void   SetDeDxLowerEdge(const Float_t dEdxLowerEdge = 20.)      {fDEdxDown            = dEdxLowerEdge;}
   void   SetDeDxUpperEdge(const Float_t dEdxUpperEdge = 1020.)    {fDEdxUp              = dEdxUpperEdge;}
 
-  void   SetEtaLowerEdge(const Float_t etaLowerEdge = -1.)        {fEtaDown             = etaLowerEdge;}
-  void   SetEtaUpperEdge(const Float_t etaUpperEdge = 1.)         {fEtaUp               = etaUpperEdge;}
+  void   SetEtaLowerEdge(const Float_t etaLowerEdge = -0.8)      {fEtaDown             = etaLowerEdge;}
+  void   SetEtaUpperEdge(const Float_t etaUpperEdge = 0.8)       {fEtaUp               = etaUpperEdge;}
   void   SetNEtabins(const Int_t nEtaBins = 20)                   {fNEtaBins            = nEtaBins;}
   void   SetMomLowerEdge(const Float_t momLowerEdge = 0.)         {fMomDown             = momLowerEdge;}
   void   SetMomUpperEdge(const Float_t momUpperEdge = 12.)        {fMomUp               = momUpperEdge;}
   void   SetNMomBins(const Int_t nMombins = 600)                  {fNMomBins            = nMombins;}
   void   SetNGenprotonBins(const Int_t nGenprotonBins = 100)      {fGenprotonBins       = nGenprotonBins;}
-
-
 
   // Set the binning of centrality
   void SetCentralityBinning(const Int_t tmpCentbins, Float_t tmpfxCentBins[])
@@ -249,10 +279,10 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
     // prepare real data centrality bins
     fNCentbinsData = tmpCentbins;
     fNCentBinsMC   = tmpCentbins-1;
-    fxCentBins = new Float_t[fNCentbinsData];
+    fxCentBins.resize(fNCentbinsData);
     for (Int_t i=0; i<fNCentbinsData; i++) fxCentBins[i] =  tmpfxCentBins[i];
-    fcentDownArr = new Float_t[fNCentBinsMC];
-    fcentUpArr   = new Float_t[fNCentBinsMC];
+    fcentDownArr.resize(fNCentBinsMC);
+    fcentUpArr.resize(fNCentBinsMC);
     for (Int_t i=0; i<fNCentbinsData-1; i++) fcentDownArr[i] =  tmpfxCentBins[i];
     for (Int_t i=1; i<fNCentbinsData; i++)   fcentUpArr[i-1] =  tmpfxCentBins[i];
   }
@@ -262,8 +292,8 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
     // set MC eta values to scan
     std::cout << " Info::marsland: !!!!!! SetMCEtaScanArray is being set !!!!!!! " << std::endl;
     fNEtaWinBinsMC = tmpEtaBinsMC;
-    fetaDownArr = new Float_t[fNEtaWinBinsMC];
-    fetaUpArr   = new Float_t[fNEtaWinBinsMC];
+    fetaDownArr.resize(fNEtaWinBinsMC);
+    fetaUpArr.resize(fNEtaWinBinsMC);
     for (Int_t i=0; i<fNEtaWinBinsMC; i++) {
       fetaDownArr[i] =  tmpetaDownArr[i];
       fetaUpArr[i]   =  tmpetaUpArr[i];
@@ -275,7 +305,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
     // set MC eta values to scan
     std::cout << " Info::marsland: !!!!!! SetMCResonanceArray is being set !!!!!!! " << std::endl;
     fNResBins = tmpNRes;
-    fResonances = new TString[fNResBins];
+    fResonances.resize(fNResBins);
     for (Int_t i=0; i<fNResBins; i++) fResonances[i] = tmpResArr[i];
 
   }
@@ -285,7 +315,7 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
     // set MC eta values to scan
     std::cout << " Info::marsland: !!!!!! SetMCBaryonArray is being set !!!!!!! " << std::endl;
     fNBarBins = tmpNBar;
-    fBaryons = new Int_t[fNBarBins];
+    fBaryons.resize(fNBarBins);
     for (Int_t i=0; i<fNBarBins; i++) fBaryons[i] = tmpBarArr[i];
   }
 
@@ -294,8 +324,8 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
     // set MC momentum values to scan
     std::cout << " Info::marsland: !!!!!! SetMCMomScanArray is being set !!!!!!! " << std::endl;
     fNMomBinsMC = tmpMomBinsMC;
-    fpDownArr = new Float_t[fNMomBinsMC];
-    fpUpArr   = new Float_t[fNMomBinsMC];
+    fpDownArr.resize(fNMomBinsMC);
+    fpUpArr.resize(fNMomBinsMC);
     for (Int_t i=0; i<fNMomBinsMC; i++) {
       fpDownArr[i] =  tmppDownArr[i];
       fpUpArr[i]   =  tmppUpArr[i];
@@ -448,6 +478,23 @@ class AliAnalysisTaskEbyeIterPID : public AliAnalysisTaskSE {
 
   }
 
+  void SetLookUpTable_MissCl(TClonesArray *lookUpArray)
+  {
+    // set MC eta values to scan
+    std::cout << " Info::marsland: !!!!!! SetLookUpTable_MissCl is being set !!!!!!!   " << std::endl;
+    //
+    const Int_t nParticles=4;
+    const Int_t nMultBins=16;
+    for (Int_t ipart=0; ipart<nParticles; ipart++){
+      for (Int_t icent=0; icent<nMultBins; icent++){
+        TString objname = Form("hDiffMissCl_part_%d_cent_%d",ipart,icent);
+        fH2MissCl[ipart][icent] = *((TH2F*)(lookUpArray->FindObject(objname))->Clone());
+        std::cout << fH2MissCl[ipart][icent].GetName() << std::endl;
+      }
+    }
+
+  }
+
 private:
 
   AliAnalysisTaskEbyeIterPID(const AliAnalysisTaskEbyeIterPID&);
@@ -458,11 +505,13 @@ private:
   // ---------------------------------------------------------------------------------
 
   void FillTPCdEdxReal();                   // Main function to fill all info + TIden
+  void FillTrackVariables(AliESDtrack *track);
   void FillTPCdEdxCheck();                  // Quick check for the TPC dEdx
   void FillMCFull();                     // Fill all info + TIdenMC from MC to do MC closure test
   void FillTreeMC();
   void FillMCFull_NetParticles();
-  void FastGen();                           // Run over galice.root for Fastgen
+  void FastGen();                           // Run over galice.root for Fastgen 2nd moments
+  void FastGen_NetParticles();              // Run over galice.root for Fastgen higher moments
   void FastGenHigherMoments();     // Run over galice.root for Fastgen and calculate higher moments
   void MCclosureHigherMoments();   // Calculate higher moments for REC and GEN
   void WeakAndMaterial();                   // Look full acceptance, weak decay and material
@@ -472,19 +521,20 @@ private:
   void SelectCleanSamplesFromV0s(AliESDv0 *v0, AliESDtrack *track0, AliESDtrack *track1);
   void SetSpecialV0Cuts(AliESDv0KineCuts* cuts);
   void BinLogAxis(TH1 *h);
-  void CalculateEventVariables();
-  void SetCutBitsAndSomeTrackVariables(AliESDtrack *track);
+  void CalculateEventInfo();
   void DumpDownScaledTree();
   void GetExpecteds(AliESDtrack *track, Float_t closestPar[3]);
-  void DumpEventVariables();
-  Bool_t ApplyDCAcutIfNoITSPixel(AliESDtrack *track);
-  Bool_t GetSystematicClassIndex(UInt_t cut,Int_t syst);
+  void CreateEventInfoTree();
+  void FillGenDistributions();
+  //
   Int_t CountEmptyEvents(Int_t counterBin);  // Just count if there is empty events
   Int_t CacheTPCEventInformation();
+  UInt_t SetCutBitsAndSomeTrackVariables(AliESDtrack *track, Int_t particleType);
   Bool_t CheckIfFromResonance(Int_t mcType, AliMCParticle *trackMCgen, Int_t trackIndex, Bool_t parInterest, Double_t ptot, Double_t eta, Double_t cent, Bool_t fillTree);
-  Bool_t CheckIfFromAnyResonance(AliMCParticle *trackMCgen);
-  void FillGenDistributions();
-
+  Bool_t CheckIfFromAnyResonance(AliMCParticle *trackMCgen, Float_t etaLow, Float_t etaUp, Float_t pDown, Float_t pUp);
+  Bool_t ApplyDCAcutIfNoITSPixel(AliESDtrack *track);
+  Bool_t GetSystematicClassIndex(UInt_t cut,Int_t syst);
+  const Bool_t CheckPsiPair(const AliESDv0* v0);
   // ---------------------------------------------------------------------------------
   //                                   Members
   // ---------------------------------------------------------------------------------
@@ -493,6 +543,11 @@ private:
   AliESDEvent      * fESD;                    //! ESD object
   TList            * fListHist;               //! list for histograms
   AliESDtrackCuts  * fESDtrackCuts;           //! basic cut variables
+  AliESDtrackCuts  * fESDtrackCuts_Bit96;     //! basic cut variables
+  AliESDtrackCuts  * fESDtrackCuts_Bit96_spd;     //! basic cut variables
+  AliESDtrackCuts  * fESDtrackCuts_Bit96_sdd;     //! basic cut variables
+  AliESDtrackCuts  * fESDtrackCuts_Bit128;    //! basic cut variables
+  AliESDtrackCuts  * fESDtrackCuts_Bit768;    //! basic cut variables
   AliESDtrackCuts  * fESDtrackCutsLoose;      //! basic cut variables for debugging
   AliESDv0Cuts     * fESDtrackCutsV0;         //! basic cut variables for V0
   AliESDtrackCuts  * fESDtrackCutsCleanSamp;  //! basic cut variables for clean pion and electron form V0s
@@ -505,9 +560,11 @@ private:
   AliAnalysisCuts  * fLambdaProtonCuts;       // filter for protons from Lambda
   AliAnalysisCuts  * fLambdaPionCuts;         // filter for pions from Lambda
   AliAnalysisCuts  * fGammaElectronCuts;      // filter for electrons from gamma conversions
+  const AliESDVertex * fVertex;               // primary vertex
+  AliESDtools      * fESDtool;                 // tools to calculate derived variables from the ESD
 
   TTree            * fArmPodTree;             // Tree for clean pion and proton selection
-  TTreeSRedirector * fTreeSRedirector;        //! temp tree to dump output
+  TTreeSRedirector * fTreeSRedirector;        /// temp tree to dump output
   TTree            * fTreeMCFull;             // tree for reconstructed moments
   TTree            * fTreeMCgen;              // tree for reconstructed moments
   TTree            * fTreeDnchDeta;           // tree for dnch/deta calculation
@@ -520,10 +577,18 @@ private:
   TTree            * fTreeEvents;
   TTree            * fTreeDScaled;
   TTree            * fTreeMCEffCorr;
+  TRandom          fRandom;
 
+
+  TString            fPeriodName;
+  Int_t              fYear;
+  Int_t              fPassIndex;
+  UInt_t             fPileUpBit;
   TH1F             * fHistCent;               // helper histogram for TIdentity tree
   TH1F             * fHistPhi;
   TH1F             * fHistGenMult;
+  TH2F             * fHistRapDistFullAccPr;
+  TH2F             * fHistRapDistFullAccAPr;
   TH1F             * fHistInvK0s;             // helper histogram for TIdentity tree
   TH1F             * fHistInvLambda;          // helper histogram for TIdentity tree
   TH1F             * fHistInvAntiLambda;      // helper histogram for TIdentity tree
@@ -537,9 +602,8 @@ private:
   TH1F             * fHistPhiITScounterC;     // helper histogram for TIdentity tree
 
   THnSparseF       * fHndEdx;                 // histogram which hold all dEdx info
-  THnSparseF       * fHnExpected[20];         // histogram which hold all PIDresponse info
-  THnSparseF       * fHnCleanKa;              // histogram which hold Clean Kaons
-  THnSparseF       * fHnCleanDe;              // histogram which hold Clean Deuterons
+  THnSparseF       * fHnExpected[22];         // histogram which hold all PIDresponse info
+  TH2F              fH2MissCl[4][16];          // histogram which hold all PIDresponse info
 
   TString           fChunkName;
 
@@ -564,21 +628,23 @@ private:
   Bool_t            fFillArmPodTree;         // switch whether to fill clean sample tree
   Bool_t            fRunFastSimulation;      // when running over galice.root do not fill other objects
   Bool_t            fRunFastHighMomentCal;   // when running over galice.root do not fill other objects
-  Bool_t            fFillGenDistributions;   // when running over galice.root do not fill other objects
+  Bool_t            fFillDistributions;   // when running over galice.root do not fill other objects
   Bool_t            fFillTreeMC;
   Bool_t            fDefaultTrackCuts;
   Bool_t            fDefaultEventCuts;
   Bool_t            fFillNudynFastGen;
+  Int_t             fCorrectForMissCl;       // 0; defaults crows, 1; ncls used wo correction, 2; ncls used with correction
   Int_t             fUsePtCut;
-  Int_t             fTrackOriginType;
+  Int_t             fTrackOriginOnlyPrimary;
   Int_t             fRapidityType;
-
+  Int_t             fSisterCheck;           // 0: reject the mother anyways, 1: if both girls are in acceptance rejet mother
 
   Bool_t            fFillDnchDeta;           // switch on calculation of the dncdeta for fastgens
   Bool_t            fIncludeTOF;             // Include TOF information to investigate the efficiency loss effects on observable
   Bool_t            fUseThnSparse;           // in case thnsparse is filled
   Bool_t            fUseCouts;               // for debugging
 
+  Int_t             fNSettings;
   Int_t             fNMomBins;               // number of mombins --> for 20MeV slice 150 and 10MeV 300
   Float_t           fMomDown;                // bottom limit for the momentum range (default 0.2)
   Float_t           fMomUp;                  // uppper limit for the momentum range (default 3.2)
@@ -637,6 +703,14 @@ private:
   Float_t           fLaMC;
 
   Double_t          fMCImpactParameter;
+  Int_t             fNHardScatters;            // Number of hard scatterings
+  Int_t             fNProjectileParticipants;  // Number of projectiles participants
+  Int_t             fNTargetParticipants;      // Number of target participants
+  Int_t             fNNColl;                   // Number of N-N collisions
+  Int_t             fNNwColl;                  // Number of N-Nwounded collisions
+  Int_t             fNwNColl;                  // Number of Nwounded-N collisons
+  Int_t             fNwNwColl;                 // Number of Nwounded-Nwounded collisions
+
 
   Float_t           fElMCgen;
   Float_t           fPiMCgen;
@@ -676,6 +750,7 @@ private:
   Int_t              fSign;                   // sign of the particle
   Int_t              fTPCShared;              // number of shared clusters
   Int_t              fNcl;                    // number of points used for dEdx
+  Int_t              fNclCorr;                // number of points used for dEdx
 
   Int_t              fNResBins;
   Int_t              fNBarBins;
@@ -699,15 +774,16 @@ private:
   Double_t fTrackProbPiTPC;
   Double_t fTrackProbKaTPC;
   Double_t fTrackProbPrTPC;
-  Bool_t fTrackProbDeTPC;
+  Bool_t   fTrackProbDeTPC;
   Double_t fTrackProbElTOF;
   Double_t fTrackProbPiTOF;
   Double_t fTrackProbKaTOF;
   Double_t fTrackProbPrTOF;
-  Bool_t fTrackProbDeTOF;
+  Bool_t   fTrackProbDeTOF;
 
   Float_t fTrackTPCCrossedRows;
   Float_t fTrackChi2TPC;
+  Float_t fTrackChi2TPCcorr;
   Float_t fTrackDCAxy;
   Float_t fTrackDCAz;
   Float_t fTrackLengthInActiveZone;
@@ -738,10 +814,10 @@ private:
 
   //  Variables for systematic uncertainty checks
   //  B field configurations -->  use default settings and analyse the following set of runs
-  //  ***********************************************
+  //  ------------------------------------------------
   //  Field (++)  --> run interval is [137161, 138275]
   //  Field (--)  --> run interval is [138364, 139510]
-  //  ***********************************************
+  //  ------------------------------------------------
   Int_t              fSystCentEstimatetor;   // 0 --> "V0M"   ||| -1 -->  "TRK" ||| +1 --> "CL1"
   Int_t              fSystCrossedRows;       // 0 -->  80     ||| -1 -->   60   ||| +1 -->  100
   Int_t              fSystDCAxy;             // 0 --> default ||| -1 --> -sigma ||| +1 --> +sigma
@@ -775,15 +851,15 @@ private:
   Float_t            fPrFirstMomentsRec[2][4][10][8];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
 
 
-  Float_t            *fetaDownArr;           //[fNEtaWinBinsMC]
-  Float_t            *fetaUpArr;             //[fNEtaWinBinsMC]
-  Float_t            *fcentDownArr;          //[fNCentBinsMC]
-  Float_t            *fcentUpArr;            //[fNCentBinsMC]
-  Float_t            *fpDownArr;             //[fNMomBinsMC]
-  Float_t            *fpUpArr;               //[fNMomBinsMC]
-  Float_t            *fxCentBins;            //[fNCentbinsData]
-  TString            *fResonances;           //[fNResBins]
-  Int_t              *fBaryons;              //[fNBarBins]
+  std::vector<float>  fetaDownArr;           
+  std::vector<float>  fetaUpArr;             
+  std::vector<float>  fcentDownArr;          
+  std::vector<float>  fcentUpArr;            
+  std::vector<float>  fpDownArr;             
+  std::vector<float>  fpUpArr;               
+  std::vector<float>  fxCentBins;             
+  std::vector<std::string> fResonances;           
+  std::vector<int>    fBaryons;
   //
   // control and QA histograms
   //
@@ -791,6 +867,10 @@ private:
   THnF             * fHistNegEffMatrixRec;       // histogram efficiency matrix --> generated traks
   THnF             * fHistPosEffMatrixGen;       // histogram efficiency matrix --> reconstructed pions
   THnF             * fHistNegEffMatrixGen;       // histogram efficiency matrix --> generated pions
+  THnF             * fHistPosEffMatrixScanRec;       // histogram efficiency matrix --> reconstructed traks
+  THnF             * fHistNegEffMatrixScanRec;       // histogram efficiency matrix --> generated traks
+  THnF             * fHistPosEffMatrixScanGen;       // histogram efficiency matrix --> reconstructed pions
+  THnF             * fHistNegEffMatrixScanGen;       // histogram efficiency matrix --> generated pions
   TH1F             * fHistEmptyEvent;         // control histogram for empty event
   TH1F             * fHistCentrality;         // control histogram for centrality
   TH1F             * fHistCentralityImpPar;         // control histogram for centrality
@@ -801,26 +881,29 @@ private:
   //
   // Counters for Marian
   //
-  TVectorF         * fPhiTPCdcarA;  // track counter
-  TVectorF         * fPhiTPCdcarC; // dedx info counter
-  TVectorF         * fCacheTrackCounters;  // track counter
-  TVectorF         * fCacheTrackdEdxRatio; // dedx info counter
-  TVectorF         * fCacheTrackNcl;       // ncl counter
-  TVectorF         * fCacheTrackChi2;      // chi2 counter
-  TVectorF         * fCacheTrackMatchEff;  // matchEff counter
-  TVectorF         * fCentralityEstimates;
-  TGraph           * fLumiGraph;           // grap for the interaction rate info for a run
-  TH1F             * fHisTPCVertexA;
-  TH1F             * fHisTPCVertexC;
-  TH1F             * fHisTPCVertexACut;
-  TH1F             * fHisTPCVertexCCut;
-  TH1F             * fHisTPCVertex;
-  TVectorF         * fCacheTrackTPCCountersZ; // track counter with DCA z cut
-  static const char*  centEstStr[];              //!centrality types
+  TVectorF         * fEventInfo_PhiTPCdcarA;  // track counter
+  TVectorF         * fEventInfo_PhiTPCdcarC; // dedx info counter
+  TVectorF         * fEventInfo_CacheTrackCounters;  // track counter
+  TVectorF         * fEventInfo_CacheTrackdEdxRatio; // dedx info counter
+  TVectorF         * fEventInfo_CacheTrackNcl;       // ncl counter
+  TVectorF         * fEventInfo_CacheTrackChi2;      // chi2 counter
+  TVectorF         * fEventInfo_CacheTrackMatchEff;  // matchEff counter
+  TVectorF         * fEventInfo_CentralityEstimates;
+  TGraph           * fEventInfo_LumiGraph;           // grap for the interaction rate info for a run
+  TH1F             * fEventInfo_HisTPCVertexA;
+  TH1F             * fEventInfo_HisTPCVertexC;
+  TH1F             * fEventInfo_HisTPCVertexACut;
+  TH1F             * fEventInfo_HisTPCVertexCCut;
+  TH1F             * fEventInfo_HisTPCVertex;
+  TVectorF         * fEventInfo_CacheTrackTPCCountersZ; // track counter with DCA z cut
+  static const char*  fEventInfo_centEstStr[];              //!centrality types
 
+  AliEventCuts* fPileUpTightnessCut4;
+  AliEventCuts* fPileUpTightnessCut3;
+  AliEventCuts* fPileUpTightnessCut2;
+  AliEventCuts* fPileUpTightnessCut1;
 
-
-  ClassDef(AliAnalysisTaskEbyeIterPID, 4);
+  ClassDef(AliAnalysisTaskEbyeIterPID, 7);
 
 };
 
