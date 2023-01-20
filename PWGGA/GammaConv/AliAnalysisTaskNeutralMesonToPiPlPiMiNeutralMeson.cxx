@@ -1686,7 +1686,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
       if (fNDMRecoMode == 0){
         fLambda[iCut]->SetParameters(1.15451,0.0367886,-0.00132376,0.0000071);  // Parameters taken from fits to projections of fHistopi0vsmesonmassshiftangle for PCM
       } else if(fNDMRecoMode == 1){
-        fLambda[iCut]->SetParameters(0.444632,0.308003,-0.0177388,0.000369535);  // Parameters taken from fits to projections of fHistopi0vsmesonmassshiftangle for PCMEMC
+        fLambda[iCut]->SetParameters(0.656844,0.263611,-0.0150209,0.00031184);  // Parameters taken from fits to projections of fHistopi0vsmesonmassshiftangle for PCMEMC
       } else{
         fLambda[iCut]->SetParameters(0.236562,0.420576,-0.0226939,-0.000362612); // Parameters taken from fits to projections of fHistopi0vsmesonmassshiftangle for EMC
       }
