@@ -149,6 +149,8 @@ fRequireSigmaCand(kTRUE),
 fUseAbsZ(kTRUE),
 fUseAbsZCorr(kTRUE),
 
+fRejectNegIDs(0),
+fRejectZeroFilterBit(0),
 fMaxProtEta(1),    
 fMinTPCClustProt(40),
 fMaxNsigProtTPC(4),
@@ -456,6 +458,8 @@ fRequireSigmaCand(kTRUE),
 fUseAbsZ(kTRUE),
 fUseAbsZCorr(kTRUE),
 
+fRejectNegIDs(0),
+fRejectZeroFilterBit(0),
 fMaxProtEta(1),    
 fMinTPCClustProt(40),
 fMaxNsigProtTPC(4),
@@ -1885,7 +1889,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
 /**************************Histograms********************************/
 
     //Book Keeper for used Cuts 
-    TH1D* fHistCutBookKeeper           = new TH1D("fHistCutBookKeeper", "Book Keeper for used Cuts", 95, 0.5, 95.5);
+    TH1D* fHistCutBookKeeper           = new TH1D("fHistCutBookKeeper", "Book Keeper for used Cuts", 97, 0.5, 97.5);
 
     //Event related                    
     TH1F* fHistMCGenPileup             = new TH1F("fHistMCGenPileup", "Generated pile-up;IsPileUp;", 2, -0.5, 1.5);
@@ -1933,9 +1937,9 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     TH1F* fHistV0Statistics            = new TH1F("fHistV0Statistics", "V0 Counter;Stage;Counts",14,0.5,14.5);
     TH1F* fHistV0StatisticsMC          = new TH1F("fHistV0StatisticsMC", "V0 Counter MC;Stage;Counts",14,0.5,14.5);
     TH1F* fHistV0StatisticsSigmaMC     = new TH1F("fHistV0StatisticsSigmaMC", "V0 Counter Sigma MC;Stage;Counts",14,0.5,14.5);
-    TH1F* fHistProtonStatistics        = new TH1F("fHistProtonStatistics", "Proton Counter;Stage;Counts",7,0.5,7.5);
-    TH1F* fHistProtonStatisticsMC      = new TH1F("fHistProtonStatisticsMC", "Proton Counter MC;Stage;Counts",7,0.5,7.5);
-    TH1F* fHistProtonStatisticsSigmaMC = new TH1F("fHistProtonStatisticsSigmaMC", "Proton Counter Sigma MC;Stage;Counts",7,0.5,7.5);
+    TH1F* fHistProtonStatistics        = new TH1F("fHistProtonStatistics", "Proton Counter;Stage;Counts",8,-0.5,7.5);
+    TH1F* fHistProtonStatisticsMC      = new TH1F("fHistProtonStatisticsMC", "Proton Counter MC;Stage;Counts",8,-0.5,7.5);
+    TH1F* fHistProtonStatisticsSigmaMC = new TH1F("fHistProtonStatisticsSigmaMC", "Proton Counter Sigma MC;Stage;Counts",8,-0.5,7.5);
     TH1F* fHistAddV0Statistics         = new TH1F("fHistAddV0Statistics", "Additional V0 Counter;Stage;Counts",11,0.5,11.5);
     TH1F* fHistAddV0StatisticsMC       = new TH1F("fHistAddV0StatisticsMC", "Additional V0 Counter MC;Stage;Counts",11,0.5,11.5);
     TH1F* fHistAddV0StatisticsSigmaMC  = new TH1F("fHistAddV0StatisticsSigmaMC", "Additional V0 Counter Sigma MC;Stage;Counts",11,0.5,11.5);
@@ -2288,78 +2292,80 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fHistCutBookKeeper->GetXaxis()->SetBinLabel(21,"fRequireSigmaCand");
     fHistCutBookKeeper->GetXaxis()->SetBinLabel(22,"fUseAbsZ");
     fHistCutBookKeeper->GetXaxis()->SetBinLabel(23,"fUseAbsZCorr");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(24,"fMaxProtEta");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(25,"fMinTPCClustProt");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(26,"fMaxNsigProtTPC");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(27,"fRequireProtonTPC");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(28,"fRequireProtonTOF");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(29,"fRequireProtonTOFforPairs");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(30,"fMaxNsigProtTOF");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(31,"fMaxpOnlyTPCPID");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(32,"fMinProtpt");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(33,"fMaxProtpt");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(34,"fStrictMaxProtEta");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(35,"fStrictMinTPCClustProt");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(36,"fStrictMaxNsigProtTPC");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(37,"fStrictMaxNsigProtTOF");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(38,"fStrictMaxpOnlyTPCPID");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(39,"fStrictMinProtpt");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(40,"fStrictMaxProtpt");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(41,"fMaxMCEta");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(42,"fMaxDaughtEta");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(43,"fMinTPCClustDaught");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(44,"fMaxNsigDaughtTPC");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(45,"fMaxalpha");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(46,"fMaxqt");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(47,"fMaxopenangle");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(48,"fMaxdeltatheta");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(49,"fMinV0CPA");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(50,"fMinV0Radius");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(51,"fMaxV0Radius");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(52,"fMaxphotonmass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(53,"fRequirePHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(54,"fMinClusterBeta");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(55,"fMinClusterDy");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(56,"fMaxClusterM02");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(57,"fCleanAutoCorr");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(58,"fMinPi0Mass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(59,"fMaxPi0Mass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(60,"fMaxSigmaPA");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(61,"fMaxSigmaY");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(62,"fMaxSigmaMass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(63,"fMinProtonDCAxy");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(64,"fMinProtonDCAz");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(65,"fMaxProtonDCAxy");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(66,"fMaxProtonDCAz");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(67,"fRequireDCACut");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(68,"fMinPi0MassPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(69,"fMaxPi0MassPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(70,"fMaxSigmaPAPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(71,"fMaxSigmaPAPHOSHM");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(72,"fMinSigmaAntiPAPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(73,"fMaxProtPhotDCA");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(74,"fMinSigmaDCAtoPVPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(75,"fMaxSigmaDCAtoPVPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(76,"fMaxSigmaYPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(77,"fMaxSigmaMassPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(78,"fMinProtonDCAxyPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(79,"fMinProtonDCAzPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(80,"fMaxProtonDCAxyPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(81,"fMaxProtonDCAzPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(82,"fRequireDCACutPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(83,"fMinCorrPi0Mass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(84,"fMaxCorrPi0Mass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(85,"fMaxCorrSigmaPA");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(86,"fMinCorrSigmaMass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(87,"fMaxCorrSigmaMass");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(88,"fMinCorrProtonDCAxy");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(89,"fMaxCorrPairProtonDCAxy");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(90,"fMaxCorrPairProtonDCAz");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(91,"fMaxCorrkstar");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(92,"fMinCorrPi0MassPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(93,"fMaxCorrPi0MassPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(94,"fMaxCorrSigmaPAPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(95,"Number of Fills");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(24,"fRejectNegIDs");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(25,"fRejectZeroFilterBit");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(26,"fMaxProtEta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(27,"fMinTPCClustProt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(28,"fMaxNsigProtTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(29,"fRequireProtonTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(30,"fRequireProtonTOF");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(31,"fRequireProtonTOFforPairs");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(32,"fMaxNsigProtTOF");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(33,"fMaxpOnlyTPCPID");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(34,"fMinProtpt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(35,"fMaxProtpt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(36,"fStrictMaxProtEta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(37,"fStrictMinTPCClustProt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(38,"fStrictMaxNsigProtTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(39,"fStrictMaxNsigProtTOF");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(40,"fStrictMaxpOnlyTPCPID");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(41,"fStrictMinProtpt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(42,"fStrictMaxProtpt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(43,"fMaxMCEta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(44,"fMaxDaughtEta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(45,"fMinTPCClustDaught");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(46,"fMaxNsigDaughtTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(47,"fMaxalpha");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(48,"fMaxqt");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(49,"fMaxopenangle");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(50,"fMaxdeltatheta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(51,"fMinV0CPA");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(52,"fMinV0Radius");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(53,"fMaxV0Radius");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(54,"fMaxphotonmass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(55,"fRequirePHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(56,"fMinClusterBeta");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(57,"fMinClusterDy");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(58,"fMaxClusterM02");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(59,"fCleanAutoCorr");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(60,"fMinPi0Mass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(61,"fMaxPi0Mass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(62,"fMaxSigmaPA");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(63,"fMaxSigmaY");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(64,"fMaxSigmaMass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(65,"fMinProtonDCAxy");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(66,"fMinProtonDCAz");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(67,"fMaxProtonDCAxy");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(68,"fMaxProtonDCAz");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(69,"fRequireDCACut");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(70,"fMinPi0MassPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(71,"fMaxPi0MassPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(72,"fMaxSigmaPAPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(73,"fMaxSigmaPAPHOSHM");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(74,"fMinSigmaAntiPAPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(75,"fMaxProtPhotDCA");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(76,"fMinSigmaDCAtoPVPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(77,"fMaxSigmaDCAtoPVPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(78,"fMaxSigmaYPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(79,"fMaxSigmaMassPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(80,"fMinProtonDCAxyPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(81,"fMinProtonDCAzPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(82,"fMaxProtonDCAxyPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(83,"fMaxProtonDCAzPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(84,"fRequireDCACutPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(85,"fMinCorrPi0Mass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(86,"fMaxCorrPi0Mass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(87,"fMaxCorrSigmaPA");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(88,"fMinCorrSigmaMass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(89,"fMaxCorrSigmaMass");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(90,"fMinCorrProtonDCAxy");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(91,"fMaxCorrPairProtonDCAxy");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(92,"fMaxCorrPairProtonDCAz");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(93,"fMaxCorrkstar");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(94,"fMinCorrPi0MassPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(95,"fMaxCorrPi0MassPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(96,"fMaxCorrSigmaPAPHOS");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(97,"Number of Fills");
 
     fHistCutBookKeeper->SetBinContent(1,fRemoveGenPileup);
     fHistCutBookKeeper->SetBinContent(2,fMaxVertexZ);
@@ -2384,78 +2390,80 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fHistCutBookKeeper->SetBinContent(21,fRequireSigmaCand);
     fHistCutBookKeeper->SetBinContent(22,fUseAbsZ);
     fHistCutBookKeeper->SetBinContent(23,fUseAbsZCorr);
-    fHistCutBookKeeper->SetBinContent(24,fMaxProtEta);
-    fHistCutBookKeeper->SetBinContent(25,fMinTPCClustProt);
-    fHistCutBookKeeper->SetBinContent(26,fMaxNsigProtTPC);
-    fHistCutBookKeeper->SetBinContent(27,fRequireProtonTPC);
-    fHistCutBookKeeper->SetBinContent(28,fRequireProtonTOF);
-    fHistCutBookKeeper->SetBinContent(29,fRequireProtonTOFforPairs);
-    fHistCutBookKeeper->SetBinContent(30,fMaxNsigProtTOF);
-    fHistCutBookKeeper->SetBinContent(31,fMaxpOnlyTPCPID);
-    fHistCutBookKeeper->SetBinContent(32,fMinProtpt);
-    fHistCutBookKeeper->SetBinContent(33,fMaxProtpt);
-    fHistCutBookKeeper->SetBinContent(34,fStrictMaxProtEta);
-    fHistCutBookKeeper->SetBinContent(35,fStrictMinTPCClustProt);
-    fHistCutBookKeeper->SetBinContent(36,fStrictMaxNsigProtTPC);
-    fHistCutBookKeeper->SetBinContent(37,fStrictMaxNsigProtTOF);
-    fHistCutBookKeeper->SetBinContent(38,fStrictMaxpOnlyTPCPID);
-    fHistCutBookKeeper->SetBinContent(39,fStrictMinProtpt);
-    fHistCutBookKeeper->SetBinContent(40,fStrictMaxProtpt);
-    fHistCutBookKeeper->SetBinContent(41,fMaxMCEta);
-    fHistCutBookKeeper->SetBinContent(42,fMaxDaughtEta);
-    fHistCutBookKeeper->SetBinContent(43,fMinTPCClustDaught);
-    fHistCutBookKeeper->SetBinContent(44,fMaxNsigDaughtTPC);
-    fHistCutBookKeeper->SetBinContent(45,fMaxalpha);
-    fHistCutBookKeeper->SetBinContent(46,fMaxqt);
-    fHistCutBookKeeper->SetBinContent(47,fMaxopenangle);
-    fHistCutBookKeeper->SetBinContent(48,fMaxdeltatheta);
-    fHistCutBookKeeper->SetBinContent(49,fMinV0CPA);
-    fHistCutBookKeeper->SetBinContent(50,fMinV0Radius);
-    fHistCutBookKeeper->SetBinContent(51,fMaxV0Radius);
-    fHistCutBookKeeper->SetBinContent(52,fMaxphotonmass);
-    fHistCutBookKeeper->SetBinContent(53,fRequirePHOS);
-    fHistCutBookKeeper->SetBinContent(54,fMinClusterBeta);
-    fHistCutBookKeeper->SetBinContent(55,fMinClusterDy);
-    fHistCutBookKeeper->SetBinContent(56,fMaxClusterM02);
-    fHistCutBookKeeper->SetBinContent(57,fCleanAutoCorr); 
-    fHistCutBookKeeper->SetBinContent(58,fMinPi0Mass);
-    fHistCutBookKeeper->SetBinContent(59,fMaxPi0Mass);
-    fHistCutBookKeeper->SetBinContent(60,fMaxSigmaPA);
-    fHistCutBookKeeper->SetBinContent(61,fMaxSigmaY);
-    fHistCutBookKeeper->SetBinContent(62,fMaxSigmaMass);
-    fHistCutBookKeeper->SetBinContent(63,fMinProtonDCAxy);
-    fHistCutBookKeeper->SetBinContent(64,fMinProtonDCAz);
-    fHistCutBookKeeper->SetBinContent(65,fMaxProtonDCAxy);
-    fHistCutBookKeeper->SetBinContent(66,fMaxProtonDCAz);
-    fHistCutBookKeeper->SetBinContent(67,fRequireDCACut);
-    fHistCutBookKeeper->SetBinContent(68,fMinPi0MassPHOS);
-    fHistCutBookKeeper->SetBinContent(69,fMaxPi0MassPHOS);
-    fHistCutBookKeeper->SetBinContent(70,fMaxSigmaPAPHOS);
-    fHistCutBookKeeper->SetBinContent(71,fMaxSigmaPAPHOSHM);
-    fHistCutBookKeeper->SetBinContent(72,fMinSigmaAntiPAPHOS);
-    fHistCutBookKeeper->SetBinContent(73,fMaxProtPhotDCA);
-    fHistCutBookKeeper->SetBinContent(74,fMinSigmaDCAtoPVPHOS);
-    fHistCutBookKeeper->SetBinContent(75,fMaxSigmaDCAtoPVPHOS);
-    fHistCutBookKeeper->SetBinContent(76,fMaxSigmaYPHOS);
-    fHistCutBookKeeper->SetBinContent(77,fMaxSigmaMassPHOS);
-    fHistCutBookKeeper->SetBinContent(78,fMinProtonDCAxyPHOS);
-    fHistCutBookKeeper->SetBinContent(79,fMinProtonDCAzPHOS);
-    fHistCutBookKeeper->SetBinContent(80,fMaxProtonDCAxyPHOS);
-    fHistCutBookKeeper->SetBinContent(81,fMaxProtonDCAzPHOS);
-    fHistCutBookKeeper->SetBinContent(82,fRequireDCACutPHOS);
-    fHistCutBookKeeper->SetBinContent(83,fMinCorrPi0Mass);
-    fHistCutBookKeeper->SetBinContent(84,fMaxCorrPi0Mass);
-    fHistCutBookKeeper->SetBinContent(85,fMaxCorrSigmaPA);
-    fHistCutBookKeeper->SetBinContent(86,fMinCorrSigmaMass);
-    fHistCutBookKeeper->SetBinContent(87,fMaxCorrSigmaMass);
-    fHistCutBookKeeper->SetBinContent(88,fMinCorrProtonDCAxy);
-    fHistCutBookKeeper->SetBinContent(89,fMaxCorrPairProtonDCAxy);
-    fHistCutBookKeeper->SetBinContent(90,fMaxCorrPairProtonDCAz);
-    fHistCutBookKeeper->SetBinContent(91,fMaxCorrkstar);
-    fHistCutBookKeeper->SetBinContent(92,fMinCorrPi0MassPHOS);
-    fHistCutBookKeeper->SetBinContent(93,fMaxCorrPi0MassPHOS);
-    fHistCutBookKeeper->SetBinContent(94,fMaxCorrSigmaPAPHOS);
-    fHistCutBookKeeper->SetBinContent(95,1);
+    fHistCutBookKeeper->SetBinContent(24,fRejectNegIDs);
+    fHistCutBookKeeper->SetBinContent(25,fRejectZeroFilterBit);
+    fHistCutBookKeeper->SetBinContent(26,fMaxProtEta);
+    fHistCutBookKeeper->SetBinContent(27,fMinTPCClustProt);
+    fHistCutBookKeeper->SetBinContent(28,fMaxNsigProtTPC);
+    fHistCutBookKeeper->SetBinContent(29,fRequireProtonTPC);
+    fHistCutBookKeeper->SetBinContent(30,fRequireProtonTOF);
+    fHistCutBookKeeper->SetBinContent(31,fRequireProtonTOFforPairs);
+    fHistCutBookKeeper->SetBinContent(32,fMaxNsigProtTOF);
+    fHistCutBookKeeper->SetBinContent(33,fMaxpOnlyTPCPID);
+    fHistCutBookKeeper->SetBinContent(34,fMinProtpt);
+    fHistCutBookKeeper->SetBinContent(35,fMaxProtpt);
+    fHistCutBookKeeper->SetBinContent(36,fStrictMaxProtEta);
+    fHistCutBookKeeper->SetBinContent(37,fStrictMinTPCClustProt);
+    fHistCutBookKeeper->SetBinContent(38,fStrictMaxNsigProtTPC);
+    fHistCutBookKeeper->SetBinContent(39,fStrictMaxNsigProtTOF);
+    fHistCutBookKeeper->SetBinContent(40,fStrictMaxpOnlyTPCPID);
+    fHistCutBookKeeper->SetBinContent(41,fStrictMinProtpt);
+    fHistCutBookKeeper->SetBinContent(42,fStrictMaxProtpt);
+    fHistCutBookKeeper->SetBinContent(43,fMaxMCEta);
+    fHistCutBookKeeper->SetBinContent(44,fMaxDaughtEta);
+    fHistCutBookKeeper->SetBinContent(45,fMinTPCClustDaught);
+    fHistCutBookKeeper->SetBinContent(46,fMaxNsigDaughtTPC);
+    fHistCutBookKeeper->SetBinContent(47,fMaxalpha);
+    fHistCutBookKeeper->SetBinContent(48,fMaxqt);
+    fHistCutBookKeeper->SetBinContent(49,fMaxopenangle);
+    fHistCutBookKeeper->SetBinContent(50,fMaxdeltatheta);
+    fHistCutBookKeeper->SetBinContent(51,fMinV0CPA);
+    fHistCutBookKeeper->SetBinContent(52,fMinV0Radius);
+    fHistCutBookKeeper->SetBinContent(53,fMaxV0Radius);
+    fHistCutBookKeeper->SetBinContent(54,fMaxphotonmass);
+    fHistCutBookKeeper->SetBinContent(55,fRequirePHOS);
+    fHistCutBookKeeper->SetBinContent(56,fMinClusterBeta);
+    fHistCutBookKeeper->SetBinContent(57,fMinClusterDy);
+    fHistCutBookKeeper->SetBinContent(58,fMaxClusterM02);
+    fHistCutBookKeeper->SetBinContent(59,fCleanAutoCorr); 
+    fHistCutBookKeeper->SetBinContent(60,fMinPi0Mass);
+    fHistCutBookKeeper->SetBinContent(61,fMaxPi0Mass);
+    fHistCutBookKeeper->SetBinContent(62,fMaxSigmaPA);
+    fHistCutBookKeeper->SetBinContent(63,fMaxSigmaY);
+    fHistCutBookKeeper->SetBinContent(64,fMaxSigmaMass);
+    fHistCutBookKeeper->SetBinContent(65,fMinProtonDCAxy);
+    fHistCutBookKeeper->SetBinContent(66,fMinProtonDCAz);
+    fHistCutBookKeeper->SetBinContent(67,fMaxProtonDCAxy);
+    fHistCutBookKeeper->SetBinContent(68,fMaxProtonDCAz);
+    fHistCutBookKeeper->SetBinContent(69,fRequireDCACut);
+    fHistCutBookKeeper->SetBinContent(70,fMinPi0MassPHOS);
+    fHistCutBookKeeper->SetBinContent(71,fMaxPi0MassPHOS);
+    fHistCutBookKeeper->SetBinContent(72,fMaxSigmaPAPHOS);
+    fHistCutBookKeeper->SetBinContent(73,fMaxSigmaPAPHOSHM);
+    fHistCutBookKeeper->SetBinContent(74,fMinSigmaAntiPAPHOS);
+    fHistCutBookKeeper->SetBinContent(75,fMaxProtPhotDCA);
+    fHistCutBookKeeper->SetBinContent(76,fMinSigmaDCAtoPVPHOS);
+    fHistCutBookKeeper->SetBinContent(77,fMaxSigmaDCAtoPVPHOS);
+    fHistCutBookKeeper->SetBinContent(78,fMaxSigmaYPHOS);
+    fHistCutBookKeeper->SetBinContent(79,fMaxSigmaMassPHOS);
+    fHistCutBookKeeper->SetBinContent(80,fMinProtonDCAxyPHOS);
+    fHistCutBookKeeper->SetBinContent(81,fMinProtonDCAzPHOS);
+    fHistCutBookKeeper->SetBinContent(82,fMaxProtonDCAxyPHOS);
+    fHistCutBookKeeper->SetBinContent(83,fMaxProtonDCAzPHOS);
+    fHistCutBookKeeper->SetBinContent(84,fRequireDCACutPHOS);
+    fHistCutBookKeeper->SetBinContent(85,fMinCorrPi0Mass);
+    fHistCutBookKeeper->SetBinContent(86,fMaxCorrPi0Mass);
+    fHistCutBookKeeper->SetBinContent(87,fMaxCorrSigmaPA);
+    fHistCutBookKeeper->SetBinContent(88,fMinCorrSigmaMass);
+    fHistCutBookKeeper->SetBinContent(89,fMaxCorrSigmaMass);
+    fHistCutBookKeeper->SetBinContent(90,fMinCorrProtonDCAxy);
+    fHistCutBookKeeper->SetBinContent(91,fMaxCorrPairProtonDCAxy);
+    fHistCutBookKeeper->SetBinContent(92,fMaxCorrPairProtonDCAz);
+    fHistCutBookKeeper->SetBinContent(93,fMaxCorrkstar);
+    fHistCutBookKeeper->SetBinContent(94,fMinCorrPi0MassPHOS);
+    fHistCutBookKeeper->SetBinContent(95,fMaxCorrPi0MassPHOS);
+    fHistCutBookKeeper->SetBinContent(96,fMaxCorrSigmaPAPHOS);
+    fHistCutBookKeeper->SetBinContent(97,1);
 
     fHistMCCounter->GetXaxis()->SetBinLabel(1,"Events");
     fHistMCCounter->GetXaxis()->SetBinLabel(2,"MC Particles");
@@ -2542,28 +2550,31 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fHistV0StatisticsSigmaMC->GetXaxis()->SetBinLabel(14,"Passed inv mass");
 
     fHistProtonStatistics->GetXaxis()->SetBinLabel(1, "Tracks");
-    fHistProtonStatistics->GetXaxis()->SetBinLabel(2, "No doublecount");
-    fHistProtonStatistics->GetXaxis()->SetBinLabel(3, "Passed eta cut");
-    fHistProtonStatistics->GetXaxis()->SetBinLabel(4, "Passed cluster cut");
-    fHistProtonStatistics->GetXaxis()->SetBinLabel(5, "Passed TPC cut");
-    fHistProtonStatistics->GetXaxis()->SetBinLabel(6, "Passed TOF cut");
-    fHistProtonStatistics->GetXaxis()->SetBinLabel(7, "Passed pt cut");
+    fHistProtonStatistics->GetXaxis()->SetBinLabel(2, "ESD ID >= 0");
+    fHistProtonStatistics->GetXaxis()->SetBinLabel(3, "Filterbit != 0");
+    fHistProtonStatistics->GetXaxis()->SetBinLabel(4, "Passed eta cut");
+    fHistProtonStatistics->GetXaxis()->SetBinLabel(5, "Passed cluster cut");
+    fHistProtonStatistics->GetXaxis()->SetBinLabel(6, "Passed TPC cut");
+    fHistProtonStatistics->GetXaxis()->SetBinLabel(7, "Passed TOF cut");
+    fHistProtonStatistics->GetXaxis()->SetBinLabel(8, "Passed pt cut");
 
     fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(1, "Tracks");
-    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(2, "No doublecount");
-    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(3, "Passed eta cut");
-    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(4, "Passed cluster cut");
-    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(5, "Passed TPC cut");
-    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(6, "Passed TOF cut");
-    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(7, "Passed pt cut");
+    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(2, "ESD ID >= 0");
+    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(3, "Filterbit != 0");
+    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(4, "Passed eta cut");
+    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(5, "Passed cluster cut");
+    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(6, "Passed TPC cut");
+    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(7, "Passed TOF cut");
+    fHistProtonStatisticsMC->GetXaxis()->SetBinLabel(8, "Passed pt cut");
 
     fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(1, "Tracks");
-    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(2, "No doublecount");
-    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(3, "Passed eta cut");
-    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(4, "Passed cluster cut");
-    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(5, "Passed TPC cut");
-    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(6, "Passed TOF cut");
-    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(7, "Passed pt cut");
+    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(2, "ESD ID >= 0");
+    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(3, "Filterbit != 0");
+    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(4, "Passed eta cut");
+    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(5, "Passed cluster cut");
+    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(6, "Passed TPC cut");
+    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(7, "Passed TOF cut");
+    fHistProtonStatisticsSigmaMC->GetXaxis()->SetBinLabel(8, "Passed pt cut");
 
     fHistAddV0Statistics->GetXaxis()->SetBinLabel(1, "Pairs considered");
     fHistAddV0Statistics->GetXaxis()->SetBinLabel(2, "Pairs not Onfly V0s");
@@ -3501,9 +3512,6 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray() {
   fProtonArray.clear();
   fProtonArray2.clear();
   Int_t countProton = 0;
-  //Save IDs of Tracks to avoid double counting
-  std::vector<int> IDvector;
-  IDvector.clear();
 
   //Loop for Proton Selection
   for(Int_t iTrack=0; iTrack < nTracks; iTrack++) {
@@ -3549,18 +3557,19 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray() {
       }//MC Particle exists
     }//MC treatment
 
+    FillHistogram("fHistProtonStatistics",0);
+    if(isReallyProton) FillHistogram("fHistProtonStatisticsMC",0);
+    if(isProtonfromSigma) FillHistogram("fHistProtonStatisticsSigmaMC",0);
+
+    //Reject Tracks with negative ESD ID (Rejected anyways, Global Tracks have positive IDs)
+    if(aodTrack->GetID()<0&&fRejectNegIDs) continue; 
+
     FillHistogram("fHistProtonStatistics",1);
     if(isReallyProton) FillHistogram("fHistProtonStatisticsMC",1);
     if(isProtonfromSigma) FillHistogram("fHistProtonStatisticsSigmaMC",1);
 
-    //Check for double counted Tracks if no filterbit is used
-    Int_t nIDs = IDvector.size();
-    Bool_t isdouble = kFALSE;
-    for(Int_t iID = 0; iID<nIDs; iID++){
-      if(aodTrack->GetID()==IDvector[iID]) isdouble = kTRUE; 
-    }
-    if(isdouble) continue;
-    else IDvector.push_back(aodTrack->GetID());
+    //Reject Tracks with Filterbit 0 (These Tracks have low quality and are only stored because the are used by the V0 finder)
+    if(!aodTrack->GetFilterMap()&&fRejectZeroFilterBit) continue; 
 
     FillHistogram("fHistProtonStatistics",2);
     if(isReallyProton) FillHistogram("fHistProtonStatisticsMC",2);

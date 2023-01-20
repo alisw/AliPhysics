@@ -199,6 +199,8 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Bool_t                fUseAbsZCorr = kTRUE;
 
         //FillProtonArray Cuts
+        Bool_t                fRejectNegIDs = 0;
+        Bool_t                fRejectZeroFilterBit = 0;
         Double_t              fMaxProtEta = 1;                   // 0.9  
         Double_t              fMinTPCClustProt = 40;             // 60
         Double_t              fMaxNsigProtTPC = 4;               // 3
@@ -345,6 +347,8 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetUseAbsZCorr(Bool_t useabszcorr) {fUseAbsZCorr = useabszcorr;}
 
         //FillProtonArray Cuts
+        void SetRejectNegIDs(Bool_t rejnegid) {fRejectNegIDs = rejnegid;}
+        void SetRejectZeroFilterBit(Bool_t rejzerofbit) {fRejectZeroFilterBit = rejzerofbit;}
         void SetProtonMaxEta(Double_t maxeta) {fMaxProtEta = maxeta;}
         void SetProtonMinTPCCluster(Double_t minclst) {fMinTPCClustProt = minclst;}
         void SetProtonMaxNSigmaTPC(Double_t nsigtpc) {fMaxNsigProtTPC = nsigtpc;}
