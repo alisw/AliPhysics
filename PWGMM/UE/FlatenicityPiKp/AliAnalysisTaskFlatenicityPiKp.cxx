@@ -416,6 +416,12 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 		2.0,  2.2, 2.4,  2.6, 2.8,  3.0, 3.2,  3.4, 3.6, 
 		3.8, 4.0, 4.5, 5.0 };
 
+	const int nPtbins_nSigmaTOF_pT = 21;
+	double Ptbins_nSigmaTOF_pT[nPtbins_nSigmaTOF_pT+1] = {
+		0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 
+		1.1,  1.2, 1.3,  1.4, 1.5,  1.6, 1.7,  1.8, 1.9, 
+		2.0,  2.2, 2.4,  2.6 };
+
 	const int nPtbins_high_pT = 31;
 	double Ptbins_high_pT[nPtbins_high_pT+1] = {
 		2.0, 2.2, 2.4, 2.6, 2.8, 3.0, 3.2, 3.4, 3.6, 3.8, 
@@ -540,12 +546,12 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 		hNsigmaPNeg[i_eta] = new TH3F(Form("hNsigmaPNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
 		hPtTPCEtaPos[i_eta] = new TH2F(Form("hPtTPCEtaPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}; Flatenicity;)", nPtbins_low_pT, Ptbins_low_pT, nFlatbins, Flatbins);
 		hPtTPCEtaNeg[i_eta] = new TH2F(Form("hPtTPCEtaNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); Flatenicity;)", nPtbins_low_pT, Ptbins_low_pT, nFlatbins, Flatbins);
-		hNsigmaTOFPiPos[i_eta] = new TH3F(Form("hNsigmaTOFPiPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
-		hNsigmaTOFKPos[i_eta] = new TH3F(Form("hNsigmaTOFKPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
-		hNsigmaTOFPPos[i_eta] = new TH3F(Form("hNsigmaTOFPPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
-		hNsigmaTOFPiNeg[i_eta] = new TH3F(Form("hNsigmaTOFPiNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
-		hNsigmaTOFKNeg[i_eta] = new TH3F(Form("hNsigmaTOFKNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
-		hNsigmaTOFPNeg[i_eta] = new TH3F(Form("hNsigmaTOFPNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaTOFPiPos[i_eta] = new TH3F(Form("hNsigmaTOFPiPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_nSigmaTOF_pT,Ptbins_nSigmaTOF_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaTOFKPos[i_eta] = new TH3F(Form("hNsigmaTOFKPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_nSigmaTOF_pT,Ptbins_nSigmaTOF_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaTOFPPos[i_eta] = new TH3F(Form("hNsigmaTOFPPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_nSigmaTOF_pT,Ptbins_nSigmaTOF_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaTOFPiNeg[i_eta] = new TH3F(Form("hNsigmaTOFPiNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_nSigmaTOF_pT,Ptbins_nSigmaTOF_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaTOFKNeg[i_eta] = new TH3F(Form("hNsigmaTOFKNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_nSigmaTOF_pT,Ptbins_nSigmaTOF_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		hNsigmaTOFPNeg[i_eta] = new TH3F(Form("hNsigmaTOFPNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_nSigmaTOF_pT,Ptbins_nSigmaTOF_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
 		hBetaPos[i_eta] = new TH3F(Form("hBetaPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p} (GeV/#it{c}); #beta; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT,nBetabins,Betabins,nFlatbins,Flatbins);
 		hBetaNeg[i_eta] = new TH3F(Form("hBetaNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p} (GeV/#it{c}); #beta; Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nBetabins,Betabins, nFlatbins, Flatbins);
 		hMomentumTOFEtaPos[i_eta] = new TH2F(Form("hMomentumTOFEtaPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p} (GeV/#it{c}); Flatenicity", nPtbins_intermediate_pT, Ptbins_intermediate_pT, nFlatbins, Flatbins);
@@ -1271,10 +1277,18 @@ void AliAnalysisTaskFlatenicityPiKp::AnalyzeV0s()
 						       if(nh<0) { continue; }
 
 						       if(fillPos&&fillNeg){
-							       histPiV0[nh]->Fill(momentum, dedx);
+							       float nSigmaPiTPC = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
+							       float nSigmaPiTOF = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
+							       if ((momentum < 1.0) && (TMath::Abs(nSigmaPiTPC) < 3.0)) { histPiV0[nh]->Fill(momentum, dedx); }
+							       if (!TOFPID(track)) { continue; }
+							       if ((momentum >= 1.0 ) && (TMath::Abs(nSigmaPiTOF) < 3.0)) { histPiV0[nh]->Fill(momentum, dedx); }
 						       }
 						       else{
-							       histPV0[nh]->Fill(momentum, dedx);
+							       float nSigmaPTPC = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton);
+							       float nSigmaPTOF = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
+							       if ((momentum < 1.0) && (TMath::Abs(nSigmaPTPC) < 3.0)) { histPV0[nh]->Fill(momentum, dedx); }
+							       if (!TOFPID(track)) { continue; }
+							       if ((momentum >= 1.0) && (TMath::Abs(nSigmaPTOF) < 3.0)) { histPV0[nh]->Fill(momentum, dedx); }
 						       }
 					       }//end loop over two tracks
 
@@ -1963,7 +1977,8 @@ Bool_t AliAnalysisTaskFlatenicityPiKp::HasRecVertex() {
 	return hasVtx;
 }
 //______________________________________________________________________________
-Bool_t AliAnalysisTaskFlatenicityPiKp::TOFPID(AliESDtrack * track) {
+Bool_t AliAnalysisTaskFlatenicityPiKp::TOFPID(AliESDtrack * track) 
+{
 	UInt_t status;
 	status=track->GetStatus();
 
