@@ -121,10 +121,10 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		TH3F *hNsigmaKNeg[4];
 		TH3F *hNsigmaPNeg[4];
 		TH2F *hPtTPCEtaNeg[4];
-		TH3F *hNsigmaTOFPiPos[4];
+		/* TH3F *hNsigmaTOFPiPos[4]; */
 		TH3F *hNsigmaTOFKPos[4];
 		TH3F *hNsigmaTOFPPos[4];
-		TH3F *hNsigmaTOFPiNeg[4];
+		/* TH3F *hNsigmaTOFPiNeg[4]; */
 		TH3F *hNsigmaTOFKNeg[4];
 		TH3F *hNsigmaTOFPNeg[4];
 		TH3F* hBetaPos[4];

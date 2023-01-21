@@ -133,10 +133,10 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 		hPtTPCEtaPos[i_eta] = 0;
 		hPtTPCEtaNeg[i_eta] = 0;
 
-		hNsigmaTOFPiPos[i_eta] = 0;
+		/* hNsigmaTOFPiPos[i_eta] = 0; */
 		hNsigmaTOFKPos[i_eta] = 0;
 		hNsigmaTOFPPos[i_eta] = 0;
-		hNsigmaTOFPiNeg[i_eta] = 0;
+		/* hNsigmaTOFPiNeg[i_eta] = 0; */
 		hNsigmaTOFKNeg[i_eta] = 0;
 		hNsigmaTOFPNeg[i_eta] = 0;
 		hBetaPos[i_eta] = 0;
@@ -212,10 +212,10 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 		hPtTPCEtaPos[i_eta] = 0;
 		hPtTPCEtaNeg[i_eta] = 0;
 
-		hNsigmaTOFPiPos[i_eta] = 0;
+		/* hNsigmaTOFPiPos[i_eta] = 0; */
 		hNsigmaTOFKPos[i_eta] = 0;
 		hNsigmaTOFPPos[i_eta] = 0;
-		hNsigmaTOFPiNeg[i_eta] = 0;
+		/* hNsigmaTOFPiNeg[i_eta] = 0; */
 		hNsigmaTOFKNeg[i_eta] = 0;
 		hNsigmaTOFPNeg[i_eta] = 0;
 		hBetaPos[i_eta] = 0;
@@ -546,10 +546,10 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 		hNsigmaPNeg[i_eta] = new TH3F(Form("hNsigmaPNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity", nPtbins_low_pT, Ptbins_low_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
 		hPtTPCEtaPos[i_eta] = new TH2F(Form("hPtTPCEtaPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}; Flatenicity;)", nPtbins_low_pT, Ptbins_low_pT, nFlatbins, Flatbins);
 		hPtTPCEtaNeg[i_eta] = new TH2F(Form("hPtTPCEtaNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),"; #it{p}_{T} (GeV/#it{c}); Flatenicity;)", nPtbins_low_pT, Ptbins_low_pT, nFlatbins, Flatbins);
-		hNsigmaTOFPiPos[i_eta] = new TH3F(Form("hNsigmaTOFPiPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_nSigmaTOF_pT,Ptbins_nSigmaTOF_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		/* hNsigmaTOFPiPos[i_eta] = new TH3F(Form("hNsigmaTOFPiPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_nSigmaTOF_pT,Ptbins_nSigmaTOF_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins); */
 		hNsigmaTOFKPos[i_eta] = new TH3F(Form("hNsigmaTOFKPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_nSigmaTOF_pT,Ptbins_nSigmaTOF_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
 		hNsigmaTOFPPos[i_eta] = new TH3F(Form("hNsigmaTOFPPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_nSigmaTOF_pT,Ptbins_nSigmaTOF_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
-		hNsigmaTOFPiNeg[i_eta] = new TH3F(Form("hNsigmaTOFPiNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_nSigmaTOF_pT,Ptbins_nSigmaTOF_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
+		/* hNsigmaTOFPiNeg[i_eta] = new TH3F(Form("hNsigmaTOFPiNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_nSigmaTOF_pT,Ptbins_nSigmaTOF_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins); */
 		hNsigmaTOFKNeg[i_eta] = new TH3F(Form("hNsigmaTOFKNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_nSigmaTOF_pT,Ptbins_nSigmaTOF_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
 		hNsigmaTOFPNeg[i_eta] = new TH3F(Form("hNsigmaTOFPNeg_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p}_{T} (GeV/#it{c}); n#sigma; Flatenicity",nPtbins_nSigmaTOF_pT,Ptbins_nSigmaTOF_pT, nnSigmabins, nSigmabins, nFlatbins, Flatbins);
 		hBetaPos[i_eta] = new TH3F(Form("hBetaPos_c%s_eta_%s",fV0MBin.c_str(),etaClass[i_eta]),";#it{p} (GeV/#it{c}); #beta; Flatenicity",nPtbins_intermediate_pT,Ptbins_intermediate_pT,nBetabins,Betabins,nFlatbins,Flatbins);
@@ -578,10 +578,10 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 			fOutputList->Add(hNsigmaPNeg[i_eta]);
 			fOutputList->Add(hPtTPCEtaPos[i_eta]);
 			fOutputList->Add(hPtTPCEtaNeg[i_eta]);
-			fOutputList->Add(hNsigmaTOFPiPos[i_eta]);
+			/* fOutputList->Add(hNsigmaTOFPiPos[i_eta]); */
 			fOutputList->Add(hNsigmaTOFKPos[i_eta]);
 			fOutputList->Add(hNsigmaTOFPPos[i_eta]);
-			fOutputList->Add(hNsigmaTOFPiNeg[i_eta]);
+			/* fOutputList->Add(hNsigmaTOFPiNeg[i_eta]); */
 			fOutputList->Add(hNsigmaTOFKNeg[i_eta]);
 			fOutputList->Add(hNsigmaTOFPNeg[i_eta]);
 			fOutputList->Add(hBetaPos[i_eta]);
@@ -1000,14 +1000,14 @@ void AliAnalysisTaskFlatenicityPiKp::MakePIDanalysis()
 			double beta = trkLength/((esdTrack->GetTOFsignal()-fPIDResponse->GetTOFResponse().GetStartTime(esdTrack->P()))*C_Value);
 
 			if(esdTrack->Charge() < 0.0){
-				hNsigmaTOFPiNeg[nh]->Fill(pt,nSigmaPiTOF,fFlat);
+				/* hNsigmaTOFPiNeg[nh]->Fill(pt,nSigmaPiTOF,fFlat); */
 				hNsigmaTOFKNeg[nh]->Fill(pt,nSigmaKTOF,fFlat);
 				hNsigmaTOFPNeg[nh]->Fill(pt,nSigmaPTOF,fFlat);
 				hBetaNeg[nh]->Fill(momentum,beta,fFlat);
 				hMomentumTOFEtaNeg[nh]->Fill(momentum,fFlat);
 				hPtTOFEtaNeg[nh]->Fill(pt,fFlat);
 			}else{ 
-				hNsigmaTOFPiPos[nh]->Fill(pt,nSigmaPiTOF,fFlat);
+				/* hNsigmaTOFPiPos[nh]->Fill(pt,nSigmaPiTOF,fFlat); */
 				hNsigmaTOFKPos[nh]->Fill(pt,nSigmaKTOF,fFlat);
 				hNsigmaTOFPPos[nh]->Fill(pt,nSigmaPTOF,fFlat);
 				hBetaPos[nh]->Fill(momentum,beta,fFlat);
