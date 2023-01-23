@@ -70,6 +70,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     void SetMCeta(Bool_t MCEtaFull) { iMCEtaFull = MCEtaFull; };
     void SetSS(Bool_t SSlong) { iSSlong = SSlong; };
     void SetPtHardMax(Double_t PtHardMax) { fPtHardMax = PtHardMax; };
+    void SetUEflow(Double_t UEflow){fUEflow = UEflow;};
 
     /////////////////////////
     ////// Event Plane //////
@@ -151,6 +152,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Bool_t iMCEtaFull;
     Bool_t iSSlong;
     Double_t fPtHardMax;
+    Double_t fUEflow;
     Int_t NembMCpi0;
     Int_t NembMCeta;
     Int_t NembEPOS;
@@ -199,6 +201,9 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     
     // Background flow subtraction
     TProfile *fUEv2;
+    TProfile *fUEv2_sys0;
+    TProfile *fUEv2_sys1;
+    TProfile *fUEv2_sys2;
     TF1 *fUE;
 
     // for yield
