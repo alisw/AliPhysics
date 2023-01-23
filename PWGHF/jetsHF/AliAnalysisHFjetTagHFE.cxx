@@ -147,6 +147,9 @@ ClassImp(AliAnalysisHFjetTagHFE)
       fsubV0CTPCcos2(0),
       // ------------------------------------------------------
       fUEv2(0),
+      fUEv2_sys0(0),
+      fUEv2_sys1(0),
+      fUEv2_sys2(0),
       fUE(0),
       // ------------------------------------------------------
       fJetPhicos2_ele(0),
@@ -341,6 +344,7 @@ ClassImp(AliAnalysisHFjetTagHFE)
       iMCEtaFull(kFALSE),
       iSSlong(kFALSE),
       fPtHardMax(0.0),
+      fUEflow(0.0),
       fzvtx_Ntrkl(0),
       fzvtx_Ntrkl_Corr(0),
       fNchNtr(0),
@@ -475,6 +479,9 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name)
       fsubV0CTPCcos2(0),
       // ------------------------------------------------------
       fUEv2(0), 
+      fUEv2_sys0(0),
+      fUEv2_sys1(0),
+      fUEv2_sys2(0),
       fUE(0),
       // ------------------------------------------------------
       fJetPhicos2_ele(0),
@@ -669,6 +676,7 @@ AliAnalysisHFjetTagHFE::AliAnalysisHFjetTagHFE(const char *name)
       iMCEtaFull(kFALSE),
       iSSlong(kFALSE),
       fPtHardMax(0.0),
+      fUEflow(0.0),
       fzvtx_Ntrkl(0),
       fzvtx_Ntrkl_Corr(0),
       fNchNtr(0),
@@ -885,9 +893,19 @@ void AliAnalysisHFjetTagHFE::UserCreateOutputObjects() {
     fUEv2 = new TProfile("fUEv2", "fUEv2", 1, 0.5, 1.5, -10., 10.);
     fOutput->Add(fUEv2);
 
+    fUEv2_sys0 = new TProfile("fUEv2_sys0", "fUEv2_sys0", 1, 0.5, 1.5, -10., 10.);
+    fOutput->Add(fUEv2_sys0);
+
+    fUEv2_sys1 = new TProfile("fUEv2_sys1", "fUEv2_sys1", 1, 0.5, 1.5, -10., 10.);
+    fOutput->Add(fUEv2_sys1);
+
+    fUEv2_sys2 = new TProfile("fUEv2_sys2", "fUEv2_sys2", 1, 0.5, 1.5, -10., 10.);
+    fOutput->Add(fUEv2_sys2);
+
     fUE = new TF1("fUE", "1. + 2. * [0] * cos(2. * x)");
     //fUE->SetParameter(0, 0.07); // for 30-50%
-    fUE->SetParameter(0, 0.02);   // for 0-10%
+    //fUE->SetParameter(0, 0.02);   // for 0-10%
+    fUE->SetParameter(0, fUEflow);   // for 0-10%
 
     // ------------------------------------------------------
     fJetPhicos2_ele = new TH2F("fJetPhicos2_ele", "fJetPhicos2_ele", 600, -100., 500., 20, -1., 1.);
@@ -2241,6 +2259,15 @@ Bool_t AliAnalysisHFjetTagHFE::Run() {
                     Double_t TrPtJet = jetcont->Pt();
                     if (TrPtJet > 0.15 && TrPtJet < 5.) {
                         if (Njet > 1) fUEv2->Fill(1, TMath::Cos(2. * (TrPhiJet - PsinV0A)));
+                    }
+                    if (TrPtJet > 0.5 && TrPtJet < 5.) {
+                        if (Njet > 1) fUEv2_sys0->Fill(1, TMath::Cos(2. * (TrPhiJet - PsinV0A)));
+                    }
+                    if (TrPtJet > 0.15 && TrPtJet < 3.) {
+                        if (Njet > 1) fUEv2_sys1->Fill(1, TMath::Cos(2. * (TrPhiJet - PsinV0A)));
+                    }
+                    if (TrPtJet > 0.5 && TrPtJet < 3.) {
+                        if (Njet > 1) fUEv2_sys2->Fill(1, TMath::Cos(2. * (TrPhiJet - PsinV0A)));
                     }
                 }
 
