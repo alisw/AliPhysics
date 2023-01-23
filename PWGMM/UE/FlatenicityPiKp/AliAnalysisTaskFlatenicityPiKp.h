@@ -100,17 +100,15 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		std::string fPeriod;
 		Double_t ftrackmult08;
 		Double_t fv0mpercentile;
-		Double_t fMidRapidityMult;
 		Double_t fFlat;
 		Double_t fFlatTPC;
 		Float_t fFlatMC;
 		AliMultSelection *fMultSelection;
-		TH2F *hFlatVsV0MVsMult;
+		TH1F *hFlat;
 		TH2F *hFlatenicityMC;
 		TH2F *hFlatenicityMCRec;
 		TH2F *hFlatResponse;
 		TH2F *hFlatVsPtMC;
-		TProfile *hActivityV0DataSect;
 		TProfile *hActivityV0McSect;
 		TH2F *hFlatVsNchMC;
 		TH3F *hNsigmaPiPos[4];
@@ -121,10 +119,8 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		TH3F *hNsigmaKNeg[4];
 		TH3F *hNsigmaPNeg[4];
 		TH2F *hPtTPCEtaNeg[4];
-		/* TH3F *hNsigmaTOFPiPos[4]; */
 		TH3F *hNsigmaTOFKPos[4];
 		TH3F *hNsigmaTOFPPos[4];
-		/* TH3F *hNsigmaTOFPiNeg[4]; */
 		TH3F *hNsigmaTOFKNeg[4];
 		TH3F *hNsigmaTOFPNeg[4];
 		TH3F* hBetaPos[4];
