@@ -535,12 +535,14 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
     
     int protonMotherPdg = 0;
+    int protonPdg = 0;
     if (fIsMC && (fTrackCutsPartProton->isSelected(fProtonTrack) || fTrackCutsPartAntiProton->isSelected(fProtonTrack))){
       mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
       if(mcPart){
         mcpdg = mcPart->GetPdgCode();
         int idxMother = mcPart->GetMother();
         auto mcMotherPart = (AliAODMCParticle *)fArrayMCAOD->At(idxMother);
+        protonPdg = fProtonTrack->GetPDGCode();
         protonMotherPdg = mcMotherPart->GetPdgCode();
       }
     }
@@ -554,6 +556,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetPDGCode(mcpdg);
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         protons.push_back(*fProtonTrack);
       }
@@ -565,6 +568,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetPDGCode(mcpdg);
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         protons.push_back(*fProtonTrack);
         fHistBuddyplusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
@@ -579,6 +583,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetPDGCode(mcpdg);
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         antiprotons.push_back(*fProtonTrack);
       }
@@ -590,6 +595,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetPDGCode(mcpdg);
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         antiprotons.push_back(*fProtonTrack);
         fHistBuddyminusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
@@ -1303,6 +1309,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       if(saveCol("light_dcaz")) tree.second->Branch("light_dcaz", &dummyfloat);
       if(saveCol("light_dcaxy")) tree.second->Branch("light_dcaxy", &dummyfloat);
       if(saveCol("light_label")) tree.second->Branch("light_label", &dummyint);
+      if(fIsMC && saveCol("light_pdg")) tree.second->Branch("light_pdg", &dummyint);
       if(fIsMC && saveCol("light_motherpdg")) tree.second->Branch("light_motherpdg", &dummyint);
     }
 
@@ -1346,6 +1353,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       if(saveCol("light_dcaz")) tree.second->Branch("light_dcaz", &dummyfloat);
       if(saveCol("light_dcaxy")) tree.second->Branch("light_dcaxy", &dummyfloat);
       if(saveCol("light_label")) tree.second->Branch("light_label", &dummyint);
+      if(fIsMC && saveCol("light_pdg")) tree.second->Branch("light_pdg", &dummyint);
       if(fIsMC && saveCol("light_motherpdg")) tree.second->Branch("light_motherpdg", &dummyint);
     }
   }
@@ -1911,9 +1919,10 @@ bool AliAnalysisTaskCharmingFemto::IsMassSelected(const double mass,
       return IsMassSelected(mass, pt, pdg, kSidebandLeft, nSigmaSignal, nSigmaOffset, sidebandWidth, lowerDstarRemoval, upperDstarRemoval, system) || IsMassSelected(mass, pt, pdg, kSidebandRight, nSigmaSignal, nSigmaOffset, sidebandWidth, lowerDstarRemoval, upperDstarRemoval, system);
     else if (pdg == 413)
       selection = kSidebandRight;
-    else
+    else {
       printf("charmed hadron with pdg %d not implemented!", pdg);
       exit(1);
+    }
   }
 
   // simple parametrisation from D+ in 5.02 TeV
