@@ -14,10 +14,10 @@
 AliAnalysisTaskSimpleCoalescenceDeuteronInJets *addTaskDeuteronsInJets (Double_t jetRadius=0.5, Double_t ptTrigger=5.0)  {
     
     //Get Input File
-    TFile *input = TFile::Open ("alien:///alice/cern.ch/user/a/alcaliva/reshaping_protons_pythia/reshaping_protons.root");
+    TFile *input = TFile::Open ("alien:///alice/cern.ch/user/a/alcaliva/reshaping_protons_pythia/weights_protons_in_jet.root");
     
     //Get Weights
-    TF1 *fProtWeights = (TF1*) input -> Get("protonWeight");
+    TF1 *fProtWeights = (TF1*) input -> Get("fWeight");
     
     //Get Analysis Manager
     AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
