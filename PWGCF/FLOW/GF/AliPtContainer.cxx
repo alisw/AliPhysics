@@ -210,7 +210,7 @@ double AliPtContainer::PolynomialExpansion(int k, const vector<vector<double>> &
   }
   return polexp;
 }
-void AliPtContainer::FillCentralMoments(const vector<vector<double>> &inarr, const double &mpt, const double &lMult, const double &rn){
+vector<vector<double>> AliPtContainer::FillCentralMoments(const vector<vector<double>> &inarr, const double &mpt, const double &lMult, const double &rn){
   vector<double> corr(mpar+1,0.0); corr[0] = 1.0;
   vector<double> sumw(mpar+1,0.0); sumw[0] = 1.0;
   vector<double> tau(mpar+1,0.0); tau[0] = 1.0;
@@ -233,9 +233,12 @@ void AliPtContainer::FillCentralMoments(const vector<vector<double>> &inarr, con
   
     corr[m] = sumNum;
     sumw[m] = sumDenum;
-    ((AliProfileBS*)fCMList->At(m-1))->FillProfile(lMult,corr[m]/sumw[m],(fEventWeight==PtSpace::kOne)?1.0:sumw[m],rn);
+    ((AliProfileBS*)fCMList->At(m-1))->FillProfile(lMult,corr[m]/sumw[m],(fEventWeight==PtSpace::kOne)?1.0:(pow(inarr[1][0],m)*sumw[m]),rn);
   }
-  return;
+  vector<vector<double>> outvec;
+  outvec.push_back(corr);
+  outvec.push_back(sumw);;
+  return outvec;
 }
 void AliPtContainer::FillRecursive(const vector<vector<double>> &inarr,const double &lMult, const double &rn, TString sub) {
   vector<double> corr(mpar+1,0.0); corr[0] = 1.0;

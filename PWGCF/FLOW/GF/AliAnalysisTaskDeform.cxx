@@ -99,6 +99,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fV2dPtList(0),
   fCovariance(0),
   fCovariancePowerMpt(0),
+  fCovarianceCM(0),
   fMpt(0),
   fMptInput(0),
   fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
@@ -207,6 +208,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, Bool
   fV2dPtList(0),
   fCovariance(0),
   fCovariancePowerMpt(0),
+  fCovarianceCM(0),
   fMpt(0),
   fMptInput(0),
   fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
@@ -381,7 +383,7 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
       fMptList = (TList*)GetInputData(1);
       fMptInput = new TH1D*[4];
       for(int iSp(0);iSp<4;++iSp){
-        fMptInput[iSp] = (TH1D*)fMptList->FindObject(Form("meanpt_%s_SystFlag%i",species[iSp],fSystFlag));
+        fMptInput[iSp] = (TH1D*)fMptList->FindObject(Form("meanpt%s_SystFlag%i_",species[iSp],fSystFlag));
       }
     }
     if(!fIsMC) { //Efficiencies and NUA are only for the data or if specified for pseudoefficiencies
@@ -636,8 +638,26 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
         };
       };
     }
+    if(fHasMpt) {
+      fCovarianceCM = new AliProfileBS*[7];
+      fCovarianceCM[0] = new AliProfileBS(Form("cov2"),Form("cov2"),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovarianceCM[0]);
+      fCovarianceCM[1] = new AliProfileBS(Form("cov3"),Form("cov3"),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovarianceCM[1]);
+      fCovarianceCM[2] = new AliProfileBS(Form("cov24"),Form("cov24"),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovarianceCM[2]);
+      fCovarianceCM[3] = new AliProfileBS(Form("cov26"),Form("cov26"),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovarianceCM[3]);
+      fCovarianceCM[4] = new AliProfileBS(Form("cov2pt2"),Form("cov2pt2"),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovarianceCM[4]);
+      fCovarianceCM[5] = new AliProfileBS(Form("cov3pt2"),Form("cov3pt2"),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovarianceCM[5]);
+      fCovarianceCM[6] = new AliProfileBS(Form("cov24pt2"),Form("cov24pt2"),fNMultiBins,fMultiBins);
+      fCovList->Add(fCovarianceCM[6]);
+    }
     if(fNBootstrapProfiles) for(Int_t i=0;i<Ncovpfs*endPID;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
     if(fFillMptPowers && fNBootstrapProfiles) for(Int_t i=0;i<3*endPID;i++) fCovariancePowerMpt[i]->InitializeSubsamples(fNBootstrapProfiles);
+    if(fHasMpt) for(int i(0);i<7;++i) fCovarianceCM[i]->InitializeSubsamples(fNBootstrapProfiles);
     printf("Covariance objects created\n");
     PostData(3,fCovList);
     printf("Creating QA objects\n");
@@ -1344,7 +1364,18 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
     fPtCont[i]->FillCk(wpPt[i],l_Multi,l_Random);
     fPtCont[i]->FillSkew(wpPt[i],l_Multi,l_Random);
     fPtCont[i]->FillKurtosis(wpPt[i],l_Multi,l_Random);
-    if(fHasMpt) fPtCont[i]->FillCentralMoments(wpPt[i],fMpt[i]->GetBinContent(fMpt[i]->FindBin(l_Multi)),l_Multi,l_Random);
+    if(fHasMpt) { 
+      vector<vector<double>> cmvec = fPtCont[i]->FillCentralMoments(wpPt[i],fMptInput[i]->GetBinContent(fMptInput[i]->FindBin(l_Multi)),l_Multi,l_Random);
+      if(i==0){
+        FillCovariance(fCovarianceCM[0],corrconfigs.at(0),l_Multi,cmvec[0][1]/cmvec[1][1],wpPt[0][1][0]*cmvec[1][1],l_Random);
+        FillCovariance(fCovarianceCM[1],corrconfigs.at(16),l_Multi,cmvec[0][1]/cmvec[1][1],wpPt[0][1][0]*cmvec[1][1],l_Random);
+        FillCovariance(fCovarianceCM[2],corrconfigs.at(8),l_Multi,cmvec[0][1]/cmvec[1][1],wpPt[0][1][0]*cmvec[1][1],l_Random);
+        FillCovariance(fCovarianceCM[3],corrconfigs.at(39),l_Multi,cmvec[0][1]/cmvec[1][1],wpPt[0][1][0]*cmvec[1][1],l_Random);
+        FillCovariance(fCovarianceCM[4],corrconfigs.at(0),l_Multi,cmvec[0][2]/cmvec[1][2],pow(wpPt[0][1][0],2)*cmvec[1][2],l_Random);
+        FillCovariance(fCovarianceCM[5],corrconfigs.at(16),l_Multi,cmvec[0][2]/cmvec[1][2],pow(wpPt[0][1][0],2)*cmvec[1][2],l_Random);
+        FillCovariance(fCovarianceCM[6],corrconfigs.at(8),l_Multi,cmvec[0][2]/cmvec[1][2],pow(wpPt[0][1][0],2)*cmvec[1][2],l_Random);
+      }
+    }
   }
   if(fFillMptPowers) {
     for(int i(0); i<endPID;++i) {
