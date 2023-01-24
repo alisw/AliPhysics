@@ -65,8 +65,12 @@ private:
     //p_{T} Spectra
     TH1D *hProtons;//!
     TH1D *hNeutrons;//!
+    TH1D *hProtons_pythia;//!
+    TH1D *hNeutrons_pythia;//!
     TH1D *hDeuterons[4];//!
     TH1D *hDeuterons_ptoverA[4];//!
+    TH1D *hDeuterons_pythia[4];//!
+    TH1D *hDeuterons_ptoverA_pythia[4];//!
 
     //General Histograms
     TH1I *hNumberOfParticlesInJet;//!
