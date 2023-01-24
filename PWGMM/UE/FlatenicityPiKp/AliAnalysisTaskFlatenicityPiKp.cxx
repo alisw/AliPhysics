@@ -723,6 +723,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 		cout << "------- No AliMultSelection Object Found --------"
 			<< fMultSelection << endl;
 	fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+	float v0multalice = fMultSelection->GetEstimator("V0M")->GetValue();
 
 	// Analyze V0s for the MB sample
 	AnalyzeV0s();
@@ -755,6 +756,12 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 		if (!(fv0mpercentile >= 70.0 && fv0mpercentile < 100.0)) { return; }
 	}
 
+	// This condition is added to reject the very few low-multiplicity events V0M Percentile 70-100%
+	// that have a very large V0M Amplitude
+	if ((fV0MBin=="70_100") && (fv0mpercentile >= 70.0 && fv0mpercentile < 100.0)){	
+		if (v0multalice >= 400.0) { return; }
+	}
+
 	/* fMidRapidityMult = GetMidRapidityMultiplicity(); */
 	/* fFlatTPC = GetFlatenicityTPC(); */ 
 	fFlat = GetFlatenicityV0();
@@ -773,7 +780,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserExec(Option_t *) {
 		//	}
 	}
 
-	if (fFlat > 0) {
+	if (fFlat >= 0.0) {
 
 		hFlat->Fill(fFlat);
 		// piKp as a function of Flattenicity
@@ -1638,7 +1645,7 @@ Double_t AliAnalysisTaskFlatenicityPiKp::GetFlatenicityV0() {
 	/* float total_v0_tmp = 0.0; */
 	/* for (Int_t iCh = 0; iCh < nCells; iCh++) { */
 	/* 	hActivityV0DataSect->Fill(iCh, RhoLattice[iCh]); */
-		/* total_v0_tmp += RhoLattice[iCh]; */
+	/* total_v0_tmp += RhoLattice[iCh]; */
 	/* } */
 	/* float total_v0 = total_v0_tmp; */
 	/* cout << "total_v0 = " << total_v0 << endl; */
