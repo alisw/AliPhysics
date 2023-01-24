@@ -186,6 +186,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   static const int Ncovpfs = 16;
   AliProfileBS **fCovariance; //!
   AliProfileBS **fCovariancePowerMpt; //!
+  AliProfileBS **fCovarianceCM; //!
   AliProfileBS **fMpt; //!
   TH1D **fMptInput; //!
   UInt_t fTriggerType;
