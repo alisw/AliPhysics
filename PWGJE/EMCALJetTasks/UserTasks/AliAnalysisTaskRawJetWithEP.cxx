@@ -461,13 +461,23 @@ void AliAnalysisTaskRawJetWithEP::UserCreateOutputObjects()
     fOutputList = new TList();
     fOutputList->SetOwner(true);
     
-    
-    bool LoadedCalibrations = LoadOADBCalibrations();
-    if (!LoadedCalibrations) {
-        AliError("Calibrations failed to load");
-    } else {
-        AliInfo("Calibrations loaded correctly!\n");
+    if(fQnVCalibType == "kOrig"){
+        bool LoadedCaliRef = LoadCalibRefFile();
+        if (!LoadedCaliRef) {
+            AliError("Calibrations failed to load");
+        } else {
+            AliInfo("Calibrations loaded correctly!\n");
+        }
     }
+    else if(fQnVCalibType == "kJeHand"){
+        bool LoadedCalibrations = LoadOADBCalibrations();
+        if (!LoadedCalibrations) {
+            AliError("Calibrations failed to load");
+        } else {
+            AliInfo("Calibrations loaded correctly!\n");
+        }
+    }
+
     
     /*
     if (fUseAliEventCuts) {
@@ -1119,7 +1129,12 @@ void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
     else if(fQnVCalibType == "kJeHand") QnJEHandlarEPGet();
     //== e == qn Calibration  111111111111111111111111111111111111111111111111111
     
+<<<<<<< HEAD
     
+=======
+    // std::cout << "Psi2 V0: M, C, A = " << psi2V0[0] << ", " << psi2V0[1] << ", " << psi2V0[2] << std::endl;
+
+>>>>>>> 02ce127897 (Change AliAnalysisTaskRawJetWithEP.cxx to add Q2 recentering histograms. And modify some mis assign variables.)
     TString histName;
     TString groupName;
     groupName="EventPlane";
@@ -1600,11 +1615,16 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
     Getqn(q2Tpc, q2NormTpc, TpcMult2);
 
     //== Q3 Vector ######################################## 
+    harmonic = 3.;
     ComputeQvecV0(q3VecV0M, q3VecV0C, q3VecV0A, q3NormV0, V0Mult3, harmonic);
     // GetQnVecV0(q3VecV0M, q3VecV0A, q3VecV0C, q3NormV0, V0Mult3);
     ComputeQvecTpc(q3VecTpcM, q3VecTpcN, q3VecTpcP, q3NormTpc, TpcMult3, harmonic);
+<<<<<<< HEAD
     // GetQnVecTPC(q3VecTpcM, q3VecTpcP, q3VecTpcN, q3NormTpc, TpcMult3);
     harmonic = 3.;
+=======
+    
+>>>>>>> 02ce127897 (Change AliAnalysisTaskRawJetWithEP.cxx to add Q2 recentering histograms. And modify some mis assign variables.)
     // Inisialize
     for(Int_t i = 0; i<3; i++){
         psi3V0[i] = -1;
@@ -1759,6 +1779,8 @@ Bool_t  AliAnalysisTaskRawJetWithEP::QnRecenteringCalibration(){
         q2VecV0C[0] -= avgqx;
         q2VecV0C[1] -= avgqy;	
         //cout<<" V0C PsiN: "<<gPsiN<<" Cent: "<<fCent<<"\t <qx> "<<avgqx<<"\t <qy> "<<avgqy<<endl;
+        std::cout << "C Q2x, Q2y : avgqx, avgqy = " << q2VecV0C[0] << ", " << q2VecV0C[1] << " : " << avgqx << ", " << avgqy << std::endl;
+        // std::cout << "C avgqx, avgqy = " << avgqx << ", " << avgqy << std::endl;
     }
     if(fHCorrQ2xV0A && fHCorrQ2yV0A){
         icentbin = fHCorrQ2xV0A->FindBin(fCent);
@@ -1766,7 +1788,8 @@ Bool_t  AliAnalysisTaskRawJetWithEP::QnRecenteringCalibration(){
         avgqy = fHCorrQ2yV0A->GetBinContent(icentbin);
         q2VecV0A[0] -= avgqx;
         q2VecV0A[1] -= avgqy;
-        //cout<<" V0A PsiN: "<<gPsiN<<" Cent: "<<fCent<<"\t <qx> "<<avgqx<<"\t <qy> "<<avgqy<<endl;
+        std::cout << "A Q2x, Q2y : avgqx, avgqy = " << q2VecV0A[0] << ", " << q2VecV0A[1] << " : " << avgqx << ", " << avgqy << std::endl;
+        // std::cout << "A avgqx, avgqy = " << avgqx << ", " << avgqy << std::endl;
     }
     //cout<<" => After qnxV0C "<<qnxV0C<<"\tqnyV0C "<<qnyV0C<<" qnxV0A"<<qnxV0A<<"\tqnyV0A"<<qnyV0A<<endl;
     if(fHCorrQ3xV0C && fHCorrQ3yV0C){
@@ -1787,6 +1810,7 @@ Bool_t  AliAnalysisTaskRawJetWithEP::QnRecenteringCalibration(){
     }
     //cout<<" => After qnxV0C "<<qnxV0C<<"\tqnyV0C "<<qnyV0C<<" qnxV0A "<<qnxV0A<<"\tqnyV0A "<<qnyV0A<<endl;
     
+
     return kTRUE;
 }
 
@@ -2265,6 +2289,33 @@ void AliAnalysisTaskRawJetWithEP::ResetAODEvent()
     fUsedTrackNegIDs.ResetAllBits();
 }
 
+
+bool AliAnalysisTaskRawJetWithEP::LoadCalibRefFile() {
+    // == s == Calib root file include  ==============================--------===-
+    if(fCalibRefFile && fCalibRefFile->IsOpen()) {
+        fCalibRefFile->Close();
+        delete fCalibRefFile;
+        fCalibRefFile = nullptr;
+    }
+
+    TString tempCalibFileName = AliDataFile::GetFileName(fCalibRefFileName.Data());
+    TString tempCalibLocalFileName = fCalibRefFileName;
+
+    // Check access to CVMFS (will only be displayed locally)
+    if(fCalibRefFileName.BeginsWith("alien://") && !gGrid){
+        AliInfo("Trying to connect to AliEn ...");
+        TGrid::Connect("alien://");
+    }
+    if(!tempCalibFileName.IsNull()) fCalibRefFile = TFile::Open(tempCalibFileName.Data());
+    if(tempCalibFileName.IsNull())  fCalibRefFile = TFile::Open(tempCalibLocalFileName.Data());
+    if(!fCalibRefFile) {
+        AliWarning("V0-TPC Gain calibration file cannot be opened\n");
+        return false;
+    }
+    return true;
+  // == e == Calib root file include  ==============================--------===-x
+}
+
 //
 // Loads the OADB Containers from the OADB files
 // This runs during Handler constructor, which should run during
@@ -2707,8 +2758,33 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t Qn
         QnVecV0A[1] = (QnVecV0A[1] - fQy2mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
         QnVecV0C[0] = (QnVecV0C[0] - fQx2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);   
         QnVecV0C[1] = (QnVecV0C[1] - fQy2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);
+<<<<<<< HEAD
     }
     else{
+=======
+        
+        histName = TString::Format("%s/Q2x_V0M", groupName.Data());
+        fHistManager.FillProfile(histName, iCentBin, QnVecV0M[0]);
+        histName = TString::Format("%s/Q2y_V0M", groupName.Data());
+        fHistManager.FillProfile(histName, iCentBin, QnVecV0M[1]);
+        histName = TString::Format("%s/Q2x_V0C", groupName.Data());
+        fHistManager.FillProfile(histName, iCentBin, QnVecV0C[0]);
+        histName = TString::Format("%s/Q2y_V0C", groupName.Data());
+        fHistManager.FillProfile(histName, iCentBin, QnVecV0C[1]);
+        histName = TString::Format("%s/Q2x_V0A", groupName.Data());
+        fHistManager.FillProfile(histName, iCentBin, QnVecV0A[0]);
+        histName = TString::Format("%s/Q2y_V0A", groupName.Data());
+        fHistManager.FillProfile(histName, iCentBin, QnVecV0A[1]);
+
+        // Double_t avgqxC = fQx2mV0C[zvtxbin]->GetBinContent(iCentBin);
+        // Double_t avgqyC = fQy2mV0C[zvtxbin]->GetBinContent(iCentBin);
+        // Double_t avgqxA = fQx2mV0A[zvtxbin]->GetBinContent(iCentBin);
+        // Double_t avgqyA = fQy2mV0A[zvtxbin]->GetBinContent(iCentBin);
+        // std::cout << "C Q2x, Q2y : avgqx, avgqy = " << QnVecV0C[0] << ", " << QnVecV0C[1] << " : " << avgqxC << ", " << avgqyC << std::endl;
+        // std::cout << "A Q2x, Q2y : avgqx, avgqy = " << QnVecV0A[0] << ", " << QnVecV0A[1] << " : " << avgqxA << ", " << avgqyA << std::endl;
+    }
+    else if(harmonic == 3){
+>>>>>>> 02ce127897 (Change AliAnalysisTaskRawJetWithEP.cxx to add Q2 recentering histograms. And modify some mis assign variables.)
         QnVecV0A[0] = (QnVecV0A[0] - fQx3mV0A[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0A[zvtxbin]->GetBinContent(iCentBin);
         QnVecV0A[1] = (QnVecV0A[1] - fQy3mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
         QnVecV0C[0] = (QnVecV0C[0] - fQx3mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);   

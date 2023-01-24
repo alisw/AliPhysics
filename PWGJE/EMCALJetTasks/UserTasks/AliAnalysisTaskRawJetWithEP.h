@@ -133,7 +133,6 @@ public:
   void SetBkgQA(Bool_t bBkgQA){fBkgQA = bBkgQA;}
   void SetJetHistWEP(Bool_t bSepEP){fSepEP = bSepEP;}
 
-  bool LoadOADBCalibFile();
   void CreateQnVectorHandlers(); // Create the QnVector handlers, including loading the calibration files
     //== e == Setter Prepare  ################################################
 
@@ -148,7 +147,8 @@ public:
     void SetFractionOfTPCtracksToUse(double fracToKeep) {fFractionOfTracksForQnTPC = fracToKeep;}
     void SetCalibrationsOADBFileName(TString OADBfileName) {fOADBFileName = OADBfileName;}
     bool LoadOADBCalibrations();
-    
+    bool LoadCalibRefFile();
+
     int GetCalibrationType() const {return fCalibType;}
     int GetNormalisationMethod() const {return fNormMethod;}
     TString GetCalibrationsOADBFileName() const {return fOADBFileName;}
