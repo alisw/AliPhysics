@@ -424,7 +424,9 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
 {
   if(!fTracksTrig || !fhTrigTracks || !fTracksAss) { AliError("Necessary inputs missing, terminating!"); return; }
   if(!fhSE) { AliError("Output AliTHn missing: terminating!"); return; }
-
+  const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
+  TH1D *h = new TH1D();
+  h->SetBins(sizePtTrig, fPtBinsTrigCharged.data());
   
   Double_t binscont[6];
   binscont[2] = fPVz;
@@ -459,7 +461,19 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
       Double_t assCharge = trackAss->Charge();
       Double_t assEff = 1.0;
 
-      if(trigPt<assPt) continue;
+      //trig vs trig
+      Int_t TrigBin = h->FindBin(trigPt);
+      Int_t AssBin = h->FindBin(assPt);
+      if(TrigBin == AssBin){
+        if(trigPt<assPt){continue;}
+      }
+
+      //Within ref
+      if(0.2<trigPt<3.0 && 0.2<assPt<3.0){
+        if(trigPt<assPt){continue;}
+      }
+
+
       if(fUseEfficiency) {
         assEff = GetEff(assPt, 0, assEta);
         if(assEff < 0.001) continue;
@@ -473,7 +487,7 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
 
 
       if(fUsePhiStar && CheckDPhiStar(binscont[0], trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
-
+  
       fhSE->Fill(binscont,0,1./(trigEff*assEff));
     }
   }
@@ -487,7 +501,9 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelationsMixed()
 
   AliEventPool *pool = fPoolMgr->GetEventPool(fCentrality, fPVz);
   if(!pool) { AliError(Form("No pool found for centrality = %f, zVtx = %f", fCentrality,fPVz)); return; }
-
+  const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
+  TH1D *h = new TH1D();
+  h->SetBins(sizePtTrig, fPtBinsTrigCharged.data());
   if(pool->IsReady() || pool->NTracksInPool() > fPoolMinNTracks ||  pool->GetCurrentNEvents() > fMinEventsToMix) {
     Int_t nMix = pool->GetCurrentNEvents();
 
@@ -522,7 +538,17 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelationsMixed()
           Double_t assPhi = trackAss->Phi();
           Double_t assCharge = trackAss->Charge();
           Double_t assEff = 1.0;
-          if(trigPt<assPt) continue;
+          //trig vs trig
+          Int_t TrigBin = h->FindBin(trigPt);
+          Int_t AssBin = h->FindBin(assPt);
+          if(TrigBin == AssBin){
+            if(trigPt<assPt){continue;}
+          }
+
+          //Within ref
+          if(0.2<trigPt<3.0 && 0.2<assPt<3.0){
+            if(trigPt<assPt){continue;}
+          }
           if(fUseEfficiency) {
             assEff = GetEff(assPt, 0, assEta);
             if(assEff < 0.001) continue;
