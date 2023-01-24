@@ -27,7 +27,6 @@
 #include <TCanvas.h>
 #include <TString.h>
 
-// #include "AliAnalysisTaskRawJetWithEP1.h"
 #include "AliAODHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliMultSelection.h"
@@ -593,11 +592,48 @@ void AliAnalysisTaskRawJetWithEP::AllocateEventPlaneHistograms()
 
     histName  = TString::Format("%s/v2", groupName.Data());
     histtitle = TString::Format("%s;centrality;v2", histName.Data());
-    fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
+    fHistManager.CreateTProfile(histName, histtitle, 100, 0, 100);
     histName  = TString::Format("%s/v3", groupName.Data());
     histtitle = TString::Format("%s;centrality;v3", histName.Data());
-    fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
+    fHistManager.CreateTProfile(histName, histtitle, 100, 0, 100);
 
+    histName  = TString::Format("%s/Q2x_V0M", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q2x_V0M", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 100, 0, 100);
+    histName  = TString::Format("%s/Q2y_V0M", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q2y_V0M", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 100, 0, 100);
+    histName  = TString::Format("%s/Q2x_V0C", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q2x_V0C", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 100, 0, 100);
+    histName  = TString::Format("%s/Q2y_V0C", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q2y_V0C", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 100, 0, 100);
+    histName  = TString::Format("%s/Q2x_V0A", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q2x_V0A", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 100, 0, 100);
+    histName  = TString::Format("%s/Q2y_V0A", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q2y_V0A", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 100, 0, 100);
+
+    histName  = TString::Format("%s/Q3x_V0M", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q3x_V0M", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
+    histName  = TString::Format("%s/Q3y_V0M", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q3y_V0M", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
+    histName  = TString::Format("%s/Q3x_V0C", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q3x_V0C", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
+    histName  = TString::Format("%s/Q3y_V0C", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q3y_V0C", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
+    histName  = TString::Format("%s/Q3x_V0A", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q3x_V0A", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
+    histName  = TString::Format("%s/Q3y_V0A", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q3y_V0A", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
 }
 
 void AliAnalysisTaskRawJetWithEP::AllocateBkgHistograms()
@@ -1119,7 +1155,7 @@ void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
     else if(fQnVCalibType == "kJeHand") QnJEHandlarEPGet();
     //== e == qn Calibration  111111111111111111111111111111111111111111111111111
     
-    
+    std::cout << "psiV0: M, C, A" << psi2V0[0] << ", " << psi2V0[1] << ", " << psi2V0[2] << std::endl;
     TString histName;
     TString groupName;
     groupName="EventPlane";
@@ -1145,7 +1181,7 @@ void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
     fHistManager.FillProfile(histName, 2., TMath::Cos(2.*(psi2V0[2] - psi2V0[1])));
     fHistManager.FillProfile(histName, 3., TMath::Cos(2.*(psi2V0[1] - psi2V0[2])));
     fHistManager.FillProfile(histName, 4., TMath::Cos(2.*(psi2V0[2] - psi2Tpc[0])));
-    fHistManager.FillProfile(histName, 5., TMath::Cos(2.*(psi2Tpc[2] - psi2V0[2])));
+    fHistManager.FillProfile(histName, 5., TMath::Cos(2.*(psi2Tpc[0] - psi2V0[2])));
     fHistManager.FillProfile(histName, 6., TMath::Cos(2.*(psi2V0[1] - psi2Tpc[0])));
     fHistManager.FillProfile(histName, 7., TMath::Cos(2.*(psi2Tpc[0] - psi2V0[1])));
     fHistManager.FillProfile(histName, 8., TMath::Cos(2.*(psi2V0[0] - psi2Tpc[1])));
@@ -1288,6 +1324,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::MeasureBkg(){
         } break;
     }
     /// === e === determine background fit function   ###############################################
+    std::cout << "psiV0 1: M, C, A" << psi2V0[0] << ", " << psi2V0[1] << ", " << psi2V0[2] << std::endl;
     fLocalRho->SetVal(fRho->GetVal());
     fFitModulation->SetParameter(0, fLocalRho->GetVal());
     fFitModulation->FixParameter(2, psi2V0[0]);
@@ -1577,9 +1614,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
     //== Q2 Vector ######################################## 
     Double_t harmonic = 2.;
     ComputeQvecV0(q2VecV0M, q2VecV0C, q2VecV0A, q2NormV0, V0Mult2, harmonic);
-    // GetQnVecV0(q2VecV0M, q2VecV0A, q2VecV0C, q2NormV0, V0Mult2);
     ComputeQvecTpc(q2VecTpcM, q2VecTpcN, q2VecTpcP, q2NormTpc, TpcMult2, harmonic);
-    // GetQnVecTPC(q2VecTpcM, q2VecTpcP, q2VecTpcN, q2NormTpc, TpcMult2);
     
     // == s == ComputeEventPlaneAngle ======================
     // Inisialize
@@ -1591,7 +1626,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
     psi2V0[0] = ComputeEventPlaneAngle(q2VecV0M, harmonic);
     psi2V0[1] = ComputeEventPlaneAngle(q2VecV0C, harmonic);
     psi2V0[2] = ComputeEventPlaneAngle(q2VecV0A, harmonic);
-
+    
     psi2Tpc[0] = ComputeEventPlaneAngle(q2VecTpcM, harmonic);
     psi2Tpc[1] = ComputeEventPlaneAngle(q2VecTpcN, harmonic);
     psi2Tpc[2] = ComputeEventPlaneAngle(q2VecTpcP, harmonic);
@@ -1601,9 +1636,8 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
 
     //== Q3 Vector ######################################## 
     ComputeQvecV0(q3VecV0M, q3VecV0C, q3VecV0A, q3NormV0, V0Mult3, harmonic);
-    // GetQnVecV0(q3VecV0M, q3VecV0A, q3VecV0C, q3NormV0, V0Mult3);
     ComputeQvecTpc(q3VecTpcM, q3VecTpcN, q3VecTpcP, q3NormTpc, TpcMult3, harmonic);
-    // GetQnVecTPC(q3VecTpcM, q3VecTpcP, q3VecTpcN, q3NormTpc, TpcMult3);
+    
     harmonic = 3.;
     // Inisialize
     for(Int_t i = 0; i<3; i++){
@@ -1611,6 +1645,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
         psi3Tpc[i] = -1;
     }
     
+
     psi3V0[0] = ComputeEventPlaneAngle(q3VecV0M, harmonic);
     psi3V0[1] = ComputeEventPlaneAngle(q3VecV0C, harmonic);
     psi3V0[2] = ComputeEventPlaneAngle(q3VecV0A, harmonic);
@@ -2631,17 +2666,22 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecTpc(Double_t QnVecTpcM[2],Double_t 
 //__________________________________________________________
 void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t QnVecV0C[2],Double_t QnVecV0A[2], Double_t QnNorm[3], Double_t Multi[3], unsigned int harmonic)
 {
-    
+    TString histName;
+    TString groupName;
+    groupName="EventPlane";
+
     //initialise Q vectors
     for(int iComp=0; iComp<2; iComp++) {
         QnVecV0M[iComp] = 0.;
         QnVecV0A[iComp]    = 0.;
         QnVecV0C[iComp]    = 0.;
     }
+
     for(int i=0; i<3; i++) {
-        QnNorm[3] = 1.;
-        Multi[3] = 0.;
+        QnNorm[i] = 1.;
+        Multi[i] = 0.;
     }
+    
     
     short zvtxbin = GetVertexZbin();
     for (int iCh = 0; iCh < 64; iCh++) {
@@ -2707,13 +2747,28 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t Qn
         QnVecV0A[1] = (QnVecV0A[1] - fQy2mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
         QnVecV0C[0] = (QnVecV0C[0] - fQx2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);   
         QnVecV0C[1] = (QnVecV0C[1] - fQy2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);
+        
+        histName = TString::Format("%s/Q2x_V0M", groupName.Data());
+        fHistManager.FillProfile(histName, iCentBin, QnVecV0M[0]);
+        histName = TString::Format("%s/Q2y_V0M", groupName.Data());
+        fHistManager.FillProfile(histName, iCentBin, QnVecV0M[1]);
+        histName = TString::Format("%s/Q2x_V0C", groupName.Data());
+        fHistManager.FillProfile(histName, iCentBin, QnVecV0C[0]);
+        histName = TString::Format("%s/Q2y_V0C", groupName.Data());
+        fHistManager.FillProfile(histName, iCentBin, QnVecV0C[1]);
+        histName = TString::Format("%s/Q2x_V0A", groupName.Data());
+        fHistManager.FillProfile(histName, iCentBin, QnVecV0A[0]);
+        histName = TString::Format("%s/Q2y_V0A", groupName.Data());
+        fHistManager.FillProfile(histName, iCentBin, QnVecV0A[1]);
+
     }
-    else{
+    else if(harmonic == 3){
         QnVecV0A[0] = (QnVecV0A[0] - fQx3mV0A[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0A[zvtxbin]->GetBinContent(iCentBin);
         QnVecV0A[1] = (QnVecV0A[1] - fQy3mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
         QnVecV0C[0] = (QnVecV0C[0] - fQx3mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);   
         QnVecV0C[1] = (QnVecV0C[1] - fQy3mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);   
     }
+
 
     QnNorm[0] = TMath::Sqrt(QnVecV0M[0]*QnVecV0M[0]+QnVecV0M[1]*QnVecV0M[1]);
     QnNorm[1] = TMath::Sqrt(QnVecV0C[0]*QnVecV0C[0]+QnVecV0C[1]*QnVecV0C[1]);
@@ -2861,11 +2916,11 @@ bool AliAnalysisTaskRawJetWithEP::OpenInfoCalbration()
         if(fV0CalibZvtxDiff) contQy3am = (AliOADBContainer* ) fOADBzArray_contQy3am->At(iZvtx);
         else contQy3am = (AliOADBContainer* ) fOADBzArray_contQy3am->At(0);
         if(!contQy3am) {
-            AliWarning("OADB object fqya2m is not available\n");
+            AliWarning("OADB object fqya3m is not available\n");
             return false;
         }
         if(!(contQy3am->GetObject(fRun))) {
-            AliWarning(Form("OADB object fqya2m is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqya3m is not available for run %i\n", fRun));
             return false;
         }
         fQy3mV0A[iZvtx] = ((TH1D*) contQy3am->GetObject(fRun));
