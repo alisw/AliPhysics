@@ -1129,12 +1129,6 @@ void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
     else if(fQnVCalibType == "kJeHand") QnJEHandlarEPGet();
     //== e == qn Calibration  111111111111111111111111111111111111111111111111111
     
-<<<<<<< HEAD
-    
-=======
-    // std::cout << "Psi2 V0: M, C, A = " << psi2V0[0] << ", " << psi2V0[1] << ", " << psi2V0[2] << std::endl;
-
->>>>>>> 02ce127897 (Change AliAnalysisTaskRawJetWithEP.cxx to add Q2 recentering histograms. And modify some mis assign variables.)
     TString histName;
     TString groupName;
     groupName="EventPlane";
@@ -1619,12 +1613,8 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
     ComputeQvecV0(q3VecV0M, q3VecV0C, q3VecV0A, q3NormV0, V0Mult3, harmonic);
     // GetQnVecV0(q3VecV0M, q3VecV0A, q3VecV0C, q3NormV0, V0Mult3);
     ComputeQvecTpc(q3VecTpcM, q3VecTpcN, q3VecTpcP, q3NormTpc, TpcMult3, harmonic);
-<<<<<<< HEAD
     // GetQnVecTPC(q3VecTpcM, q3VecTpcP, q3VecTpcN, q3NormTpc, TpcMult3);
     harmonic = 3.;
-=======
-    
->>>>>>> 02ce127897 (Change AliAnalysisTaskRawJetWithEP.cxx to add Q2 recentering histograms. And modify some mis assign variables.)
     // Inisialize
     for(Int_t i = 0; i<3; i++){
         psi3V0[i] = -1;
@@ -2758,11 +2748,8 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t Qn
         QnVecV0A[1] = (QnVecV0A[1] - fQy2mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
         QnVecV0C[0] = (QnVecV0C[0] - fQx2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);   
         QnVecV0C[1] = (QnVecV0C[1] - fQy2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);
-<<<<<<< HEAD
     }
-    else{
-=======
-        
+    else{        
         histName = TString::Format("%s/Q2x_V0M", groupName.Data());
         fHistManager.FillProfile(histName, iCentBin, QnVecV0M[0]);
         histName = TString::Format("%s/Q2y_V0M", groupName.Data());
@@ -2784,7 +2771,6 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t Qn
         // std::cout << "A Q2x, Q2y : avgqx, avgqy = " << QnVecV0A[0] << ", " << QnVecV0A[1] << " : " << avgqxA << ", " << avgqyA << std::endl;
     }
     else if(harmonic == 3){
->>>>>>> 02ce127897 (Change AliAnalysisTaskRawJetWithEP.cxx to add Q2 recentering histograms. And modify some mis assign variables.)
         QnVecV0A[0] = (QnVecV0A[0] - fQx3mV0A[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0A[zvtxbin]->GetBinContent(iCentBin);
         QnVecV0A[1] = (QnVecV0A[1] - fQy3mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
         QnVecV0C[0] = (QnVecV0C[0] - fQx3mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);   
