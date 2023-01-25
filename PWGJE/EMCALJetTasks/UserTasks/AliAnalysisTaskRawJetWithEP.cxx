@@ -2675,7 +2675,7 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t Qn
     TString histName;
     TString groupName;
     groupName="EventPlane";
-    
+
     //initialise Q vectors
     for(int iComp=0; iComp<2; iComp++) {
         QnVecV0M[iComp] = 0.;
@@ -2751,8 +2751,7 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t Qn
         QnVecV0A[1] = (QnVecV0A[1] - fQy2mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
         QnVecV0C[0] = (QnVecV0C[0] - fQx2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);   
         QnVecV0C[1] = (QnVecV0C[1] - fQy2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);
-    }
-    else{        
+        
         histName = TString::Format("%s/Q2x_V0M", groupName.Data());
         fHistManager.FillProfile(histName, iCentBin, QnVecV0M[0]);
         histName = TString::Format("%s/Q2y_V0M", groupName.Data());
