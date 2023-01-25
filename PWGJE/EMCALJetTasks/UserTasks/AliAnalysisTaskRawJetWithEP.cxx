@@ -2672,6 +2672,9 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecTpc(Double_t QnVecTpcM[2],Double_t 
 //__________________________________________________________
 void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t QnVecV0C[2],Double_t QnVecV0A[2], Double_t QnNorm[3], Double_t Multi[3], unsigned int harmonic)
 {
+    TString histName;
+    TString groupName;
+    groupName="EventPlane";
     
     //initialise Q vectors
     for(int iComp=0; iComp<2; iComp++) {
