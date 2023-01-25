@@ -78,7 +78,7 @@ AliAnalysisTaskSEXic0SL::AliAnalysisTaskSEXic0SL():
 	fMCElePt(0), fMCEleY(0), fMCXiPt(0), fMCXiY(0),
 	fEleNum(0), fEleChg(0), fEleITSNcls(0), fEleMinMassLS(0), fEleMinMassUS(0),
 	fEleNSigmaTOF(0), fEleNSigmaTPC(0), fEleEta(0), fElePhi(0), fElePt(0),
-	fElePx(0), fElePy(0), fElePz(0),	fEleY(0), fEleTPCNsig(0), fEleTPCNxedR(0),
+	fElePx(0), fElePy(0), fElePz(0), fEleY(0), fEleTPCNsig(0), fEleTPCNxedR(0),
 	fEleTPCNclsF(0), fEleLabel(0), fElePDG(0), fEleMomLabel(0), fEleMomPDG(0),
 	fCascNum(0), fCascChgXi(0), fCascCosPAXi(0), fCascCosPAV0(0), fCascDcaBachToPV(0), fCascDcaV0ToPV(0),
 	fCascDcaXiDau(0), fCascDcaV0Dau(0), fCascDcaPosToPV(0), fCascDcaNegToPV(0), fCascDecayLenXi(0),
@@ -124,7 +124,7 @@ AliAnalysisTaskSEXic0SL::AliAnalysisTaskSEXic0SL(const char* name, const char* o
 	//
 	fEleNum(0), fEleChg(0), fEleITSNcls(0), fEleMinMassLS(0), fEleMinMassUS(0),
 	fEleNSigmaTOF(0), fEleNSigmaTPC(0), fEleEta(0), fElePhi(0), fElePt(0),
-	fElePx(0), fElePy(0), fElePz(0),	fEleY(0), fEleTPCNsig(0), fEleTPCNxedR(0),
+	fElePx(0), fElePy(0), fElePz(0), fEleY(0), fEleTPCNsig(0), fEleTPCNxedR(0),
 	fEleTPCNclsF(0), fEleLabel(0), fElePDG(0), fEleMomLabel(0), fEleMomPDG(0),
 	//
 	fCascNum(0), fCascChgXi(0), fCascCosPAXi(0), fCascCosPAV0(0), fCascDcaBachToPV(0), fCascDcaV0ToPV(0),
@@ -629,10 +629,12 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 		if (IsMC)
 		{
 			const int l_ele = fTrk->GetLabel();
-			fEleLabel   [nEle] = l_ele;
-			fElePDG     [nEle] = fMCEvt->GetTrack( abs(l_ele) )->PdgCode();
-			fEleMomLabel[nEle] = fMCEvt->GetTrack( abs(l_ele) )->GetMother();
-			fEleMomPDG  [nEle] = fMCEvt->GetTrack( fEleMomLabel[nEle] )->PdgCode();
+			fEleLabel[nEle] = l_ele;
+			fElePDG  [nEle] = fMCEvt->GetTrack( abs(l_ele) )->PdgCode();
+
+			const int l_eleMom = fMCEvt->GetTrack( abs(l_ele) )->GetMother();
+			fEleMomLabel[nEle] = l_eleMom;
+			fEleMomPDG  [nEle] = fMCEvt->GetTrack( abs(l_eleMom) )->PdgCode();
 		}
 
 		nEle++;
