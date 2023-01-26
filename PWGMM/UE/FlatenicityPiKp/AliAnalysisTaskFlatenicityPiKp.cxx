@@ -159,6 +159,7 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 		histPV0[i_eta] = 0;
 		histEV0[i_eta] = 0;
 		histPiTof[i_eta] = 0;
+		histPiTof2[i_eta] = 0;
 
 	}
 
@@ -236,6 +237,7 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 		histPV0[i_eta] = 0;
 		histEV0[i_eta] = 0;
 		histPiTof[i_eta] = 0;
+		histPiTof2[i_eta] = 0;
 	}
 
 	for(Int_t i = 0; i < 3; ++i){
@@ -356,11 +358,10 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 		11.0, 12.0, 13.0, 14.0, 15.0, 16.0, 18.0, 20.0, 22.0, 24.0,
 		26.0, 30.0 };
 
-	const int nPtBinsV0s = 22;
-	double ptBinsV0s[nPtBinsV0s+1] = { 
-		0.0 , 0.1 , 0.2 , 0.3 , 0.4 , 0.5 , 0.6 , 0.7 , 0.8 , 0.9 , 1.0 ,
+	const int nPtBinsV0s = 25;
+	double ptBinsV0s[nPtBinsV0s+1] = { 0.0 , 0.1 , 0.2 , 0.3 , 0.4 , 0.5 , 0.6 , 0.7 , 0.8 , 0.9 , 1.0 ,
 		1.2 , 1.4 , 1.6 , 1.8 , 2.0 , 2.5 , 3.0 , 3.5 , 4.0 , 5.0 , 7.0 ,
-		10.0};
+		9.0 , 12.0, 15.0, 20.0 };
 
 	const int nDeltaPiBins = 80;
 	const double deltaPiLow  = 20;
@@ -489,6 +490,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 		histPiV0[i_eta] = new TH2F(Form("hPiV0_%s",etaClass[i_eta]), "Pions id by V0; #it{p} (GeV/#it{c}); d#it{e}d#it{x}", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
 		histPV0[i_eta] = new TH2F(Form("hPV0_%s",etaClass[i_eta]), "Protons id by V0; #it{p} (GeV/#it{c}); d#it{e}d#it{x}", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
 		histPiTof[i_eta] = new TH2F(Form("hPiTOF_%s",etaClass[i_eta]), "Primary Pions from TOF; #it{p} (GeV/#it{c}); d#it{e}d#it{x}", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
+		histPiTof2[i_eta] = new TH2F(Form("hPiTOF2_%s",etaClass[i_eta]), "Primary Pions from TOF; #it{p} (GeV/#it{c}); d#it{e}d#it{x}", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
 		histEV0[i_eta] = new TH2F(Form("hEV0_%s",etaClass[i_eta]), "Electrons id by V0; #it{p} (GeV/#it{c}); d#it{e}d#it{x}", nPtBinsV0s, ptBinsV0s, nDeltaPiBins, deltaPiLow, deltaPiHigh);
 
 		if (!fUseMC && !fSaveDCAxyHistograms) { 
@@ -517,6 +519,7 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 			fOutputList->Add(histPiV0[i_eta]);
 			fOutputList->Add(histPV0[i_eta]);
 			fOutputList->Add(histPiTof[i_eta]);
+			fOutputList->Add(histPiTof2[i_eta]);
 			fOutputList->Add(histEV0[i_eta]);
 		}
 	}
@@ -940,7 +943,6 @@ void AliAnalysisTaskFlatenicityPiKp::MakePIDanalysis()
 				hMomentumTOFEtaPos[nh]->Fill(momentum,fFlat);
 				hPtTOFEtaPos[nh]->Fill(pt,fFlat);
 			}
-			if (TMath::Sqrt(nSigmaPi*nSigmaPi + nSigmaPiTOF*nSigmaPiTOF) < 2.0) { histPiTof[nh]->Fill(momentum,dEdx); }
 		}
 
 		hPtVsP[nh]->Fill(momentum,pt);
@@ -956,6 +958,8 @@ void AliAnalysisTaskFlatenicityPiKp::MakePIDanalysis()
 		hdEdx[nh]->Fill(momentum,dEdx,fFlat);
 		hPtrTPC[nh]->Fill(pt,fFlat);
 
+		if ( TOFPID(esdTrack) && (TMath::Abs(nSigmaPiTOF) < 2.0)) { histPiTof[nh]->Fill(momentum,dEdx); }
+
 		Bool_t IsTOFout=kFALSE;
 		if ((esdTrack->GetStatus()&AliESDtrack::kTOFout)==0)
 			IsTOFout=kTRUE;
@@ -968,6 +972,10 @@ void AliAnalysisTaskFlatenicityPiKp::MakePIDanalysis()
 		if ( !IsTOFout ){
 			if ( ( lengthtrack != 0 ) && ( timeTOF != 0) )
 				beta = inttime[0] / timeTOF;
+		}
+		
+		if(beta>1.0){
+			histPiTof2[nh]->Fill(momentum,dEdx);
 		}
 
 		if ( momentum <= 0.6 && momentum >= 0.4 ){ //only p:0.4-0.6 GeV, pion MIP
@@ -1205,16 +1213,16 @@ void AliAnalysisTaskFlatenicityPiKp::AnalyzeV0s()
 						       if(fillPos&&fillNeg){
 							       float nSigmaPiTPC = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kPion);
 							       float nSigmaPiTOF = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kPion);
-							       if ((momentum < 1.0) && (TMath::Abs(nSigmaPiTPC) < 3.0)) { histPiV0[nh]->Fill(momentum, dedx); }
+							       if ((momentum < 1.0) && (TMath::Abs(nSigmaPiTPC) < 2.0)) { histPiV0[nh]->Fill(momentum, dedx); }
 							       if (!TOFPID(track)) { continue; }
-							       if ((momentum >= 1.0 ) && (TMath::Abs(nSigmaPiTOF) < 3.0)) { histPiV0[nh]->Fill(momentum, dedx); }
+							       if ((momentum >= 1.0 ) && (TMath::Abs(nSigmaPiTOF) < 2.0)) { histPiV0[nh]->Fill(momentum, dedx); }
 						       }
 						       else{
 							       float nSigmaPTPC = fPIDResponse->NumberOfSigmasTPC(track,AliPID::kProton);
 							       float nSigmaPTOF = fPIDResponse->NumberOfSigmasTOF(track,AliPID::kProton);
-							       if ((momentum < 1.0) && (TMath::Abs(nSigmaPTPC) < 3.0)) { histPV0[nh]->Fill(momentum, dedx); }
+							       if ((momentum < 1.0) && (TMath::Abs(nSigmaPTPC) < 2.5)) { histPV0[nh]->Fill(momentum, dedx); }
 							       if (!TOFPID(track)) { continue; }
-							       if ((momentum >= 1.0) && (TMath::Abs(nSigmaPTOF) < 3.0)) { histPV0[nh]->Fill(momentum, dedx); }
+							       if ((momentum >= 1.0) && (TMath::Abs(nSigmaPTOF) < 2.5)) { histPV0[nh]->Fill(momentum, dedx); }
 						       }
 					       }//end loop over two tracks
 
@@ -2208,4 +2216,5 @@ Int_t AliAnalysisTaskFlatenicityPiKp::GetPidCode(Int_t pdgCode) {
 
 	return pidCode;
 }
+
 
