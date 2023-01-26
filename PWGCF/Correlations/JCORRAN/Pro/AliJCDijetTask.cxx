@@ -521,3 +521,120 @@ void AliJCDijetTask::Terminate(Option_t *)
     cout<<"AliJCDijetTask Analysis DONE !!"<<endl; 
 }
 
+//_____________________________________________________________________
+AliAnalysisTask *AliJCDijetTask::AddTaskJCDijetTask(TString taskName,
+                                    Bool_t isMC,
+                                    TString sJCatalyst        ,
+                                    TString sJCatalystDetMC   ,
+                                    UInt_t flags              ,
+                                    TString centBins          ,
+                                    TString sDijetMBins       ,
+                                    double jetCone            ,
+                                    double ktjetCone          ,
+                                    int ktScheme              ,
+                                    int antiktScheme          ,
+                                    Bool_t usePionMass        ,
+                                    Bool_t useDeltaPhiBGSubtr ,
+                                    double particleEtaCut     ,
+                                    double particlePtCut      ,
+                                    double leadingJetCut      ,
+                                    double subleadingJetCut   ,
+                                    double minJetPt           ,
+                                    double constituentCut     ,
+                                    double deltaPhiCut        ,
+                                    double matchingR          ,
+                                    double trackingIneff      ,
+                                    AliJCDijetAna::jetClasses lUnfJetClassTrue ,
+                                    AliJCDijetAna::jetClasses lUnfJetClassDet ,
+                                    Bool_t useCoveredAreaRho)
+{
+    // Load Custom Configuration and parameters
+    // override values with parameters
+
+    // flags can manipulate event selection:
+    // 0: no additional events rejected.
+    // AliAnalysisTask::DIJET_VERTEX13PA: use IsVertexSelected2013pA
+    // AliAnalysisTask::DIJET_PILEUPSPD: use IsPileupFromSPD(3,0.6,3,2,5)
+    // AliAnalysisTask::DIJET_UTILSPILEUPSPD: use IsPileUpSPD(InputEvent())
+    // Combinations of these can be used by giving argument for example:
+    // AliAnalysisTask::DIJET_VERTEX13PA|AliAnalysisTask::DIJET_PILEUPSPD
+
+    // jet recombination schemes can be set with ktScheme argument:
+    // E_scheme     = 0
+    // pt_scheme    = 1
+    // pt2_scheme   = 2
+    // Et_scheme    = 3
+    // Et2_scheme   = 4
+    // BIpt_scheme  = 5
+    // BIpt2_scheme = 6
+
+    cout<<"AddTaskJCDijetTask::flags = "<<flags<<endl;
+
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+    std::stringstream ss( centBins.Data() );
+    double binBorder;
+    vector<double> vecCentBins;
+    ss >> binBorder;
+    while (!ss.fail()) {
+        vecCentBins.push_back(binBorder);
+        ss >> binBorder;
+    }
+
+    if (vecCentBins.size() < 2) {
+        ::Error("AddTaskJCDijetTask", "Centrality bins are not properly set. At least two bin borders are needed. Terminating.");
+        return NULL;
+    }
+
+    for (int ivec=0; ivec < vecCentBins.size()-1; ivec++) {
+        if(vecCentBins.at(ivec+1) <= vecCentBins.at(ivec)) {
+            ::Error("AddTaskJCDijetTask", "Centrality bins are not properly set. Terminating.");
+            return NULL;
+        }
+    }
+
+    if (jetCone > 0.8 || jetCone < 0.0 || ktjetCone > 0.8 || ktjetCone < 0.0) {
+        ::Error("AddTaskJCDijetTask", "Jet cones are set to be too small or too big. Terminating.");
+        return NULL;
+    }
+
+    if (ktScheme < 0 || ktScheme > 6) {
+        ::Error("AddTaskJCDijetTask", "Invalid ktScheme set. Please choose a setting from 0 till 6. Terminating.");
+        return NULL;
+    }
+    if (antiktScheme < 0 || antiktScheme > 6) {
+        ::Error("AddTaskJCDijetTask", "Invalid antiktScheme set. Please choose a setting from 0 till 6. Terminating.");
+        return NULL;
+    }
+    cout << "MC: " << isMC << endl;
+
+    //==== Set up the dijet task ====
+    AliJCDijetTask *dijetTask = new AliJCDijetTask(taskName.Data(),"AOD");
+    dijetTask->SetDebugLevel(5);
+    dijetTask->SetJCatalystTaskName(sJCatalyst.Data());
+    dijetTask->SetJCatalystTaskNameDetMC(sJCatalystDetMC.Data());
+    dijetTask->SetCentralityBins(vecCentBins);
+    dijetTask->SetDijetMBins(sDijetMBins);
+    dijetTask->SetJetConeSize(jetCone, ktjetCone);
+    dijetTask->SetBGSubtrSettings(ktScheme, antiktScheme, usePionMass, useDeltaPhiBGSubtr, useCoveredAreaRho);
+    dijetTask->SetUnfoldingJetSets(lUnfJetClassTrue, lUnfJetClassDet);
+    dijetTask->SetIsMC(isMC);
+    dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut, matchingR, trackingIneff, minJetPt);
+    dijetTask->AddFlags(flags);
+    cout << dijetTask->GetName() << endl;
+
+
+    mgr->AddTask((AliAnalysisTask*) dijetTask);
+
+    // Create containers for input/output
+    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+
+
+    // Connect input/output
+    mgr->ConnectInput(dijetTask, 0, cinput);
+    AliAnalysisDataContainer *jHist = mgr->CreateContainer(Form("%scontainer",dijetTask->GetName()),  TDirectory::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",AliAnalysisManager::GetCommonFileName(), dijetTask->GetName()));
+    mgr->ConnectOutput(dijetTask, 1, jHist );
+
+    return dijetTask;
+}
+
