@@ -89,10 +89,10 @@ Double_t Ptbins[nPtbins + 1] = {
     8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 30.0, 40.0, 50.0};
 const Int_t nCent = 9;
 Double_t centClass[nCent + 1] = {0.0,  1.0,  5.0,  10.0, 20.0,
-                                  30.0, 40.0, 50.0, 70.0, 100.0};
+                                 30.0, 40.0, 50.0, 70.0, 100.0};
 
-//const Int_t nCent = 2;
-//Double_t centClass[nCent + 1] = {0.0, 50.0, 100.0};
+// const Int_t nCent = 2;
+// Double_t centClass[nCent + 1] = {0.0, 50.0, 100.0};
 const Int_t nDet = 4;
 const Char_t *DetName[nDet] = {"ADC", "V0C", "V0A", "ADA"};
 const Int_t nComb = 3;
@@ -118,7 +118,7 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
       hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
       hEtamc(0), hEtamcAlice(0), hCounter(0), hMultMCmVsV0M(0),
       hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0), hMultmVsV0Malice(0),
-      hMultaVsV0M(0), hMultcVsV0M(0) {
+      hMultaVsV0M(0), hMultcVsV0M(0), hV0MBadruns(0) {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0M[i_c] = 0;
   }
@@ -164,7 +164,7 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
       hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
       hEtamc(0), hEtamcAlice(0), hCounter(0), hMultMCmVsV0M(0),
       hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0), hMultmVsV0Malice(0),
-      hMultaVsV0M(0), hMultcVsV0M(0)
+      hMultaVsV0M(0), hMultcVsV0M(0), hV0MBadruns(0)
 
 {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
@@ -435,6 +435,9 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
       new TH2D("hMultcVsV0M", "", nCent, centClass, 1000, -0.5, 999.5);
   fOutputList->Add(hMultcVsV0M);
 
+  hV0MBadruns = new TH1D("hV0MBadruns", "", 1000, -0.5, 999.5);
+  fOutputList->Add(hV0MBadruns);
+
   fEventCuts.AddQAplotsToList(fOutputList);
   PostData(1, fOutputList); // postdata will notify the analysis manager of
                             // changes / updates to the
@@ -630,14 +633,17 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
       hFlatenicity->Fill(fFlat);
     }
     if (fV0Mindex >= 0) {
-      hFlatVsV0M->Fill(fv0mpercentile, fFlat);
-      hMultmVsFlat[fV0Mindex]->Fill(fFlat, fmultV0C + fmultV0A);
-      hMultmVsV0M->Fill(fv0mpercentile, fmultV0C + fmultV0A);
-      hMultmVsV0Malice->Fill(fv0mpercentile, v0multalice);
-      hMultcVsV0M->Fill(fv0mpercentile, fmultV0C);
-      hMultaVsV0M->Fill(fv0mpercentile, fmultV0A);
-
-      MakeDataanalysis();
+      if ((fV0Mindex == nCent - 1) && (v0multalice > 400)) {
+        hV0MBadruns->Fill(v0multalice);
+      } else {
+        hFlatVsV0M->Fill(fv0mpercentile, fFlat);
+        hMultmVsFlat[fV0Mindex]->Fill(fFlat, fmultV0C + fmultV0A);
+        hMultmVsV0M->Fill(fv0mpercentile, fmultV0C + fmultV0A);
+        hMultmVsV0Malice->Fill(fv0mpercentile, v0multalice);
+        hMultcVsV0M->Fill(fv0mpercentile, fmultV0C);
+        hMultaVsV0M->Fill(fv0mpercentile, fmultV0A);
+        MakeDataanalysis();
+      }
     }
   }
 
