@@ -11,6 +11,8 @@
 #include "TH1D.h"
 #include "TH2D.h"
 #include "AliMCEvent.h"
+#include "AliEventCuts.h"
+#include "AliESDtrackCuts.h"
 
 enum PartType_Mult {kk0s_Mult, klam_Mult, kalam_Mult, kxi_Mult, kom_Mult, kallparts_Mult};
 const int PDGcodes_Mult[5] = {310, 3122, -3122, 3312, 3334};

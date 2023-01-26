@@ -262,8 +262,6 @@ void AliAnalysisTaskMultspec::UserExec(Option_t *)
   int indexRecN = 0;
   int indexRecB = 0;
   
-  int MCtracks = 0;
-  
   TH1D *hPt_Gen_Ev = new TH1D("hPt_Gen_Ev","",400, -20, 20); //histogram PtGen_distrib for each event
  
   // start v0 part
@@ -286,10 +284,8 @@ void AliAnalysisTaskMultspec::UserExec(Option_t *)
     ffillV0->nGen  = initgens;
     int ngen = 0;
     
-    MCtracks = lMCev->GetNumberOfTracks();
-    
     if(fisMC){
-      for (int i_MCtrk = 0;  i_MCtrk < MCtracks; i_MCtrk++){
+      for (int i_MCtrk = 0;  i_MCtrk < lMCev->GetNumberOfTracks(); i_MCtrk++){
         AliVParticle *lPart = (AliAODMCParticle*) lMCev->GetTrack(i_MCtrk);
         if(!lPart || lPart->Y()<-0.5 || lPart->Y()>0.5 || !lPart->IsPhysicalPrimary()) continue;
         
@@ -481,10 +477,9 @@ void AliAnalysisTaskMultspec::UserExec(Option_t *)
     int ngenP = 0;
     int ngenM = 0;
     
-    MCtracks = lMCev->GetNumberOfTracks();
     
     if(fisMC){
-      for (int i_MCtrk = 0;  i_MCtrk < MCtracks; i_MCtrk++){
+      for (int i_MCtrk = 0;  i_MCtrk < lMCev->GetNumberOfTracks(); i_MCtrk++){
         AliVParticle *lPart = (AliAODMCParticle*) lMCev->GetTrack(i_MCtrk);
         if(!lPart || lPart->Y()<-0.5 || lPart->Y()>0.5 || !lPart->IsPhysicalPrimary()) continue;
        
