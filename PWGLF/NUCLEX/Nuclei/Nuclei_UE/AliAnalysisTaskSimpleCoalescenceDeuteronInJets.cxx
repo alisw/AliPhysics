@@ -329,7 +329,7 @@ void AliAnalysisTaskSimpleCoalescenceDeuteronInJets::UserExec(Option_t *)  {
         
         //Store Proton ID
         if (pdg==2212) {
-            proton_ID.push_back(i);
+            proton_ID.push_back(jet_particle_ID[i]);
             if (TMath::Abs(particle->Y())<0.5) {
                 hProtons        -> Fill(particle->Pt(),wp);
                 hProtons_pythia -> Fill(particle->Pt());
@@ -338,7 +338,7 @@ void AliAnalysisTaskSimpleCoalescenceDeuteronInJets::UserExec(Option_t *)  {
         
         //Store Neutron ID
         if (pdg==2112) {
-            neutron_ID.push_back(i);
+            neutron_ID.push_back(jet_particle_ID[i]);
             neutron_status.push_back(0);
             if (TMath::Abs(particle->Y())<0.5) {
                 hNeutrons        -> Fill(particle->Pt(),wp);
