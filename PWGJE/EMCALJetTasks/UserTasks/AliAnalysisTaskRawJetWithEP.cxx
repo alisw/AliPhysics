@@ -27,7 +27,6 @@
 #include <TCanvas.h>
 #include <TString.h>
 
-// #include "AliAnalysisTaskRawJetWithEP1.h"
 #include "AliAODHandler.h"
 #include "AliAnalysisManager.h"
 #include "AliMultSelection.h"
@@ -76,10 +75,8 @@ AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP() :
     fRejectTPCPileup(false),
     fUseAliEventCuts(kTRUE),
     fUseManualEventCuts(kFALSE),
-    fOADBFile(nullptr),
     fRunListFileName(""),
     fCalibRefFileName(""),
-    fCalibRefFile(nullptr),
     fCalibRefObjList(nullptr),
     fCalibV0Ref(nullptr),
     fExLJetFromFit(kTRUE),
@@ -249,10 +246,8 @@ AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP(const char *name) :
     fTriggerMask(AliVEvent::kAny),
     fUseAliEventCuts(kTRUE),
     fUseManualEventCuts(kFALSE),
-    fOADBFile(nullptr),
     fRunListFileName(""),
     fCalibRefFileName(""),
-    fCalibRefFile(nullptr),
     fCalibRefObjList(nullptr),
     fCalibV0Ref(nullptr),
     fExLJetFromFit(kTRUE),
@@ -446,8 +441,6 @@ AliAnalysisTaskRawJetWithEP::~AliAnalysisTaskRawJetWithEP()
 		delete fOutputList;
     }
 
-    if(fOADBFile) {fOADBFile->Close(); fOADBFile = 0x0;}
-    if(fCalibRefFile) {fCalibRefFile->Close(); fCalibRefFile = 0x0;}
     if(fCalibV0Ref)   {delete fCalibV0Ref;   fCalibV0Ref = 0x0;}
     if(fCalibRefObjList) {delete fCalibRefObjList; fCalibRefObjList = 0x0;}
     if(fFitModulation) {delete fFitModulation; fFitModulation = 0x0;}
@@ -460,14 +453,6 @@ void AliAnalysisTaskRawJetWithEP::UserCreateOutputObjects()
     AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
     fOutputList = new TList();
     fOutputList->SetOwner(true);
-    
-    
-    bool LoadedCalibrations = LoadOADBCalibrations();
-    if (!LoadedCalibrations) {
-        AliError("Calibrations failed to load");
-    } else {
-        AliInfo("Calibrations loaded correctly!\n");
-    }
     
     /*
     if (fUseAliEventCuts) {
@@ -598,6 +583,43 @@ void AliAnalysisTaskRawJetWithEP::AllocateEventPlaneHistograms()
     histtitle = TString::Format("%s;centrality;v3", histName.Data());
     fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
 
+    histName  = TString::Format("%s/Q2x_V0M", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q2x_V0M", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 100, 0, 100);
+    histName  = TString::Format("%s/Q2y_V0M", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q2y_V0M", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 100, 0, 100);
+    histName  = TString::Format("%s/Q2x_V0C", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q2x_V0C", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 100, 0, 100);
+    histName  = TString::Format("%s/Q2y_V0C", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q2y_V0C", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 100, 0, 100);
+    histName  = TString::Format("%s/Q2x_V0A", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q2x_V0A", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 100, 0, 100);
+    histName  = TString::Format("%s/Q2y_V0A", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q2y_V0A", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 100, 0, 100);
+
+    histName  = TString::Format("%s/Q3x_V0M", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q3x_V0M", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
+    histName  = TString::Format("%s/Q3y_V0M", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q3y_V0M", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
+    histName  = TString::Format("%s/Q3x_V0C", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q3x_V0C", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
+    histName  = TString::Format("%s/Q3y_V0C", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q3y_V0C", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
+    histName  = TString::Format("%s/Q3x_V0A", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q3x_V0A", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
+    histName  = TString::Format("%s/Q3y_V0A", groupName.Data());
+    histtitle = TString::Format("%s;centrality;Q3y_V0A", histName.Data());
+    fHistManager.CreateTProfile(histName, histtitle, 10, 0, 10);
 }
 
 void AliAnalysisTaskRawJetWithEP::AllocateBkgHistograms()
@@ -1042,6 +1064,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::Run()
     
     DoEventPlane();
     if(fTPCQnMeasure) MeasureTpcEPQA();
+    fLocalRho->SetVal(fRho->GetVal());
     MeasureBkg();
     DoJetLoop();
 
@@ -1052,7 +1075,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::Run()
 }
 
 
-void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
+Bool_t AliAnalysisTaskRawJetWithEP::DoEventPlane(){
     if (!fAOD && AODEvent() && IsStandardAOD()) {
         // In case there is an AOD handler writing a standard AOD, use the AOD
         // event in memory rather than the input (ESD) event.
@@ -1060,17 +1083,21 @@ void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
     }
     if (!fAOD) {
         AliWarning("AliAnalysisTaskRawJetWithEP::Exec(): bad AOD");
-        return;
+        return kFALSE;
     }
     AliAODHandler* aodHandler = static_cast<AliAODHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
     if(!aodHandler) {
         AliWarning("AliAnalysisTaskJetQnVectors::Exec(): No AliInputEventHandler!");
-        return;
+        return kFALSE;
     }
 
     //== s == qn Calibration  111111111111111111111111111111111111111111111111111
     if(fQnVCalibType == "kOrig"){
         // std::cout << "bef calib (qx,qy) = " << q2VecV0M[0] << "," << q2VecV0M[1] << ")" << std::endl;
+        if(!fCalibRefObjList){
+            AliWarning("AliAnalysisTaskRawJetWithEP::: No fCalibRefObjList!!!!");
+            return kFALSE;
+        }
         QnGainCalibration();
         if(0){
             std::cout << "recent calibA (qx,qy) = " \
@@ -1116,9 +1143,14 @@ void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
         psi3V0[1] = CalcEPAngle(q3VecV0C[0], q3VecV0C[1]);
         psi3V0[2] = CalcEPAngle(q3VecV0A[0], q3VecV0A[1]);
     }
-    else if(fQnVCalibType == "kJeHand") QnJEHandlarEPGet();
+    else if(fQnVCalibType == "kJeHand"){
+        if(!fMultV0BefCorPfpx){
+            AliWarning("AliAnalysisTaskRawJetWithEP::: No fMultV0BefCorPfpx!!!!!!");
+            return kFALSE;
+        }
+        QnJEHandlarEPGet();
+    }
     //== e == qn Calibration  111111111111111111111111111111111111111111111111111
-    
     
     TString histName;
     TString groupName;
@@ -1145,7 +1177,7 @@ void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
     fHistManager.FillProfile(histName, 2., TMath::Cos(2.*(psi2V0[2] - psi2V0[1])));
     fHistManager.FillProfile(histName, 3., TMath::Cos(2.*(psi2V0[1] - psi2V0[2])));
     fHistManager.FillProfile(histName, 4., TMath::Cos(2.*(psi2V0[2] - psi2Tpc[0])));
-    fHistManager.FillProfile(histName, 5., TMath::Cos(2.*(psi2Tpc[2] - psi2V0[2])));
+    fHistManager.FillProfile(histName, 5., TMath::Cos(2.*(psi2Tpc[0] - psi2V0[2])));
     fHistManager.FillProfile(histName, 6., TMath::Cos(2.*(psi2V0[1] - psi2Tpc[0])));
     fHistManager.FillProfile(histName, 7., TMath::Cos(2.*(psi2Tpc[0] - psi2V0[1])));
     fHistManager.FillProfile(histName, 8., TMath::Cos(2.*(psi2V0[0] - psi2Tpc[1])));
@@ -1156,7 +1188,7 @@ void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
     fHistManager.FillProfile(histName, 2., TMath::Cos(3.*(psi2V0[2] - psi2V0[1])));
     fHistManager.FillProfile(histName, 3., TMath::Cos(3.*(psi2V0[1] - psi2V0[2])));
     fHistManager.FillProfile(histName, 4., TMath::Cos(3.*(psi2V0[2] - psi2Tpc[0])));
-    fHistManager.FillProfile(histName, 5., TMath::Cos(3.*(psi2Tpc[2] - psi2V0[2])));
+    fHistManager.FillProfile(histName, 5., TMath::Cos(3.*(psi2Tpc[0] - psi2V0[2])));
     fHistManager.FillProfile(histName, 6., TMath::Cos(3.*(psi2V0[1] - psi2Tpc[0])));
     fHistManager.FillProfile(histName, 7., TMath::Cos(3.*(psi2Tpc[0] - psi2V0[1])));
     fHistManager.FillProfile(histName, 8., TMath::Cos(3.*(psi2V0[0] - psi2Tpc[1])));
@@ -1169,7 +1201,7 @@ void AliAnalysisTaskRawJetWithEP::DoEventPlane(){
 Bool_t AliAnalysisTaskRawJetWithEP::MeasureBkg(){
     TString groupName;
     TString histName;
-    
+
     // AliAnalysisTaskJetV2 ==================================================================
     // Int_t iTracks(fTracks->GetEntriesFast()); //????
     Double_t excludeInEta = -999;
@@ -1288,6 +1320,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::MeasureBkg(){
         } break;
     }
     /// === e === determine background fit function   ###############################################
+
     fLocalRho->SetVal(fRho->GetVal());
     fFitModulation->SetParameter(0, fLocalRho->GetVal());
     fFitModulation->FixParameter(2, psi2V0[0]);
@@ -1565,21 +1598,18 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
 {
     ResetAODEvent();
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    SetAODEvent(fAOD);
-
+    SetAODEvent(fAOD); 
     if(!fIsOADBFileOpen || fCalibObjRun!=fRun) {
         fIsOADBFileOpen = OpenInfoCalbration();
         if(!fIsOADBFileOpen)
             return kFALSE;
         fCalibObjRun = fRun;
     }
-
+    
     //== Q2 Vector ######################################## 
     Double_t harmonic = 2.;
     ComputeQvecV0(q2VecV0M, q2VecV0C, q2VecV0A, q2NormV0, V0Mult2, harmonic);
-    // GetQnVecV0(q2VecV0M, q2VecV0A, q2VecV0C, q2NormV0, V0Mult2);
     ComputeQvecTpc(q2VecTpcM, q2VecTpcN, q2VecTpcP, q2NormTpc, TpcMult2, harmonic);
-    // GetQnVecTPC(q2VecTpcM, q2VecTpcP, q2VecTpcN, q2NormTpc, TpcMult2);
     
     // == s == ComputeEventPlaneAngle ======================
     // Inisialize
@@ -1591,7 +1621,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
     psi2V0[0] = ComputeEventPlaneAngle(q2VecV0M, harmonic);
     psi2V0[1] = ComputeEventPlaneAngle(q2VecV0C, harmonic);
     psi2V0[2] = ComputeEventPlaneAngle(q2VecV0A, harmonic);
-
+    
     psi2Tpc[0] = ComputeEventPlaneAngle(q2VecTpcM, harmonic);
     psi2Tpc[1] = ComputeEventPlaneAngle(q2VecTpcN, harmonic);
     psi2Tpc[2] = ComputeEventPlaneAngle(q2VecTpcP, harmonic);
@@ -1601,16 +1631,15 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
 
     //== Q3 Vector ######################################## 
     ComputeQvecV0(q3VecV0M, q3VecV0C, q3VecV0A, q3NormV0, V0Mult3, harmonic);
-    // GetQnVecV0(q3VecV0M, q3VecV0A, q3VecV0C, q3NormV0, V0Mult3);
     ComputeQvecTpc(q3VecTpcM, q3VecTpcN, q3VecTpcP, q3NormTpc, TpcMult3, harmonic);
-    // GetQnVecTPC(q3VecTpcM, q3VecTpcP, q3VecTpcN, q3NormTpc, TpcMult3);
-    harmonic = 3.;
+    
     // Inisialize
     for(Int_t i = 0; i<3; i++){
         psi3V0[i] = -1;
         psi3Tpc[i] = -1;
     }
     
+
     psi3V0[0] = ComputeEventPlaneAngle(q3VecV0M, harmonic);
     psi3V0[1] = ComputeEventPlaneAngle(q3VecV0C, harmonic);
     psi3V0[2] = ComputeEventPlaneAngle(q3VecV0A, harmonic);
@@ -1630,16 +1659,6 @@ Bool_t  AliAnalysisTaskRawJetWithEP::QnGainCalibration(){
     groupName="EventPlane";
     
     fCalibQA = kTRUE;
-    if(fCalibRefFile){
-        TList *tempCalibRefObj = (TList *)fCalibRefFile->Get("fWgtsV0ZDC");
-        fCalibRefObjList = tempCalibRefObj;
-
-        //V0 Channel Gains:
-        fHCorrV0ChWeghts = (TH2F *)fCalibRefObjList->FindObject(Form("hWgtV0ChannelsvsVzRun%d",fRunNumber));
-        if(fHCorrV0ChWeghts){
-            printf("\n ===========> Info:: V0 Channel Weights Found for Run %d \n ",fRunNumber);
-        }
-    }
     AliAODVZERO* fAodV0 = dynamic_cast<AliAODVZERO*>(fAOD->GetVZEROData());
     
     // AliOADBContainer* cont = (AliOADBContainer*) fOADBFile->Get("hMultV0BefCorPfpx");
@@ -1657,6 +1676,12 @@ Bool_t  AliAnalysisTaskRawJetWithEP::QnGainCalibration(){
     Double_t fV0chGain = 0.;
     Double_t fMultV0 = 0.;
     
+    
+    if(!fCalibRefObjList){
+        AliWarning("AliAnalysisTaskRawJetWithEP::: No fCalibRefObjList!!!!!!");
+        return kFALSE;
+    }
+    TH2F *fHCorrV0ChWeghts = (TH2F *)fCalibRefObjList->FindObject(Form("hWgtV0ChannelsvsVzRun%d",fRunNumber));
     for(int iV0 = 0; iV0 < 64; iV0++) { //0-31 is V0C, 32-63 VOA
         fMultV0 = fAodV0->GetMultiplicity(iV0);
         
@@ -1731,9 +1756,10 @@ Bool_t  AliAnalysisTaskRawJetWithEP::QnGainCalibration(){
 }
 
 Bool_t  AliAnalysisTaskRawJetWithEP::QnRecenteringCalibration(){
-    TList *tempCalibRefObj = (TList *)fCalibRefFile->Get("fWgtsV0ZDC");
-    fCalibRefObjList = tempCalibRefObj;
-
+    if(!fCalibRefObjList){
+        AliWarning("AliAnalysisTaskRawJetWithEP::: No fCalibRefObjList!!!!!!");
+        return kFALSE;
+    }
     //Get V0A, V0C <Q> Vectors:
     fHCorrQ2xV0C = (TH1D *)fCalibRefObjList->FindObject(Form("fHisAvgQNxvsCentV0CRun%d",fRunNumber));
     fHCorrQ2yV0C = (TH1D *)fCalibRefObjList->FindObject(Form("fHisAvgQNyvsCentV0CRun%d",fRunNumber));    
@@ -1744,9 +1770,9 @@ Bool_t  AliAnalysisTaskRawJetWithEP::QnRecenteringCalibration(){
     fHCorrQ3yV0C = (TH1D *)fCalibRefObjList->FindObject(Form("fHisAvgQ3yvsCentV0CRun%d",fRunNumber));    
     fHCorrQ3xV0A = (TH1D *)fCalibRefObjList->FindObject(Form("fHisAvgQ3xvsCentV0ARun%d",fRunNumber));
     fHCorrQ3yV0A = (TH1D *)fCalibRefObjList->FindObject(Form("fHisAvgQ3yvsCentV0ARun%d",fRunNumber));    
-    if(fHCorrQ2xV0C && fHCorrQ2yV0C && fHCorrQ2xV0A && fHCorrQ2yV0A){
-        printf(" ===========> Info:: V0A,V0C <Q> Found for Run %d \n ",fRunNumber);
-    }
+    // if(fHCorrQ2xV0C && fHCorrQ2yV0C && fHCorrQ2xV0A && fHCorrQ2yV0A){
+    //     printf(" ===========> Info:: V0A,V0C <Q> Found for Run %d \n ",fRunNumber);
+    // }
 
     Int_t icentbin = 0;
     Double_t avgqx=0,avgqy=0; 
@@ -1758,7 +1784,6 @@ Bool_t  AliAnalysisTaskRawJetWithEP::QnRecenteringCalibration(){
         avgqy = fHCorrQ2yV0C->GetBinContent(icentbin);
         q2VecV0C[0] -= avgqx;
         q2VecV0C[1] -= avgqy;	
-        //cout<<" V0C PsiN: "<<gPsiN<<" Cent: "<<fCent<<"\t <qx> "<<avgqx<<"\t <qy> "<<avgqy<<endl;
     }
     if(fHCorrQ2xV0A && fHCorrQ2yV0A){
         icentbin = fHCorrQ2xV0A->FindBin(fCent);
@@ -1766,7 +1791,6 @@ Bool_t  AliAnalysisTaskRawJetWithEP::QnRecenteringCalibration(){
         avgqy = fHCorrQ2yV0A->GetBinContent(icentbin);
         q2VecV0A[0] -= avgqx;
         q2VecV0A[1] -= avgqy;
-        //cout<<" V0A PsiN: "<<gPsiN<<" Cent: "<<fCent<<"\t <qx> "<<avgqx<<"\t <qy> "<<avgqy<<endl;
     }
     //cout<<" => After qnxV0C "<<qnxV0C<<"\tqnyV0C "<<qnyV0C<<" qnxV0A"<<qnxV0A<<"\tqnyV0A"<<qnyV0A<<endl;
     if(fHCorrQ3xV0C && fHCorrQ3yV0C){
@@ -2265,235 +2289,6 @@ void AliAnalysisTaskRawJetWithEP::ResetAODEvent()
     fUsedTrackNegIDs.ResetAllBits();
 }
 
-//
-// Loads the OADB Containers from the OADB files
-// This runs during Handler constructor, which should run during
-// task creation (i.e. constructor or CreateOutputObjects
-//________________________________________________________________
-bool AliAnalysisTaskRawJetWithEP::LoadOADBCalibrations() {
-    if(fOADBFile && fOADBFile->IsOpen()) {
-        fOADBFile->Close();
-        delete fOADBFile;
-        fOADBFile = nullptr;
-    }
-    
-    //TString pathToFileCMVFNS = AliDataFile::GetFileName(fOADBFileName.Data());
-    TString pathToFileLocal = fOADBFileName;
-
-    TString tempCalibFileName = AliDataFile::GetFileName(fOADBFileName.Data());
-    TString tempCalibLocalFileName = fOADBFileName;
-    
-    // Check access to CVMFS (will only be displayed locally)
-    if(fOADBFileName.BeginsWith("alien://") && !gGrid){
-        AliInfo("Trying to connect to AliEn ...");
-        TGrid::Connect("alien://");
-    }
-    if(!tempCalibFileName.IsNull()) fOADBFile = TFile::Open(tempCalibFileName.Data());
-    if(tempCalibFileName.IsNull())  fOADBFile = TFile::Open(tempCalibLocalFileName.Data());
-    if(!fOADBFile) {
-        AliWarning("V0-TPC Gain calibration file cannot be opened\n");
-        return false;
-    }
-    
-    fMultV0BefCorPfpx = (AliOADBContainer *) fOADBFile->Get("hMultV0BefCorPfpx");
-    if(!fMultV0BefCorPfpx) {
-        AliWarning("OADB object hMultV0BefCorPfpx is not available in the file\n");
-        return false;
-    }
-    
-    for(int iZvtx = 0; iZvtx < 14; iZvtx++) {
-        // V0 A-side #################################################################
-        // Mean Qx correction
-        // Includes check if Zvtx is differential
-        AliOADBContainer* contQx2am = (AliOADBContainer*) fOADBFile->Get(Form("fqxa2m_%d", iZvtx));
-        if(!contQx2am) { //check if it is not Zvtx differential
-            contQx2am = (AliOADBContainer*) fOADBFile->Get("fqxa2m");
-            if(contQx2am) fV0CalibZvtxDiff = false;
-        }
-        if(!contQx2am) {
-            AliWarning("OADB object fqxa2m is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQx2am->Add(contQx2am);
-        
-        AliOADBContainer* contQy2am = nullptr; // Mean Qy correction
-        AliOADBContainer* contQx2as = nullptr; // Sigma Qx correction
-        AliOADBContainer* contQy2as = nullptr; // Sigma Qy correction
-        if(fV0CalibZvtxDiff){
-            contQy2am = (AliOADBContainer*) fOADBFile->Get(Form("fqya2m_%d", iZvtx));
-            contQx2as = (AliOADBContainer*) fOADBFile->Get(Form("fqxa2s_%d", iZvtx));
-            contQy2as = (AliOADBContainer*) fOADBFile->Get(Form("fqya2s_%d", iZvtx));
-        }
-        else {
-            contQy2am = (AliOADBContainer*) fOADBFile->Get("fqya2m");
-            contQx2as = (AliOADBContainer*) fOADBFile->Get("fqxa2s");
-            contQy2as = (AliOADBContainer*) fOADBFile->Get("fqya2s");
-        }
-        if(!contQy2am) {
-            AliWarning("OADB object fqya2m is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQy2am->Add(contQy2am);
-        if(!contQx2as) {
-            AliWarning("OADB object fqxa2s is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQx2as->Add(contQx2as);
-        if(!contQy2as) {
-            AliWarning("OADB object fqya2s is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQy2as->Add(contQy2as);
-
-
-        AliOADBContainer* contQx3am = (AliOADBContainer*) fOADBFile->Get(Form("fqxa3m_%d", iZvtx));
-        if(!contQx3am) { //check if it is not Zvtx differential
-            contQx3am = (AliOADBContainer*) fOADBFile->Get("fqxa3m");
-            if(contQx3am) fV0CalibZvtxDiff = false;
-        }
-        if(!contQx3am) {
-            AliWarning("OADB object fqxa3m is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQx3am->Add(contQx3am);
-
-        
-        AliOADBContainer* contQy3am = nullptr; // Mean Qy correction
-        AliOADBContainer* contQx3as = nullptr; // Sigma Qx correction
-        AliOADBContainer* contQy3as = nullptr; // Sigma Qy correction
-        if(fV0CalibZvtxDiff){
-            contQy3am = (AliOADBContainer*) fOADBFile->Get(Form("fqya3m_%d", iZvtx));
-            contQx3as = (AliOADBContainer*) fOADBFile->Get(Form("fqxa3s_%d", iZvtx));
-            contQy3as = (AliOADBContainer*) fOADBFile->Get(Form("fqya3s_%d", iZvtx));
-        }
-        else {
-            contQy3am = (AliOADBContainer*) fOADBFile->Get("fqya3m");
-            contQx3as = (AliOADBContainer*) fOADBFile->Get("fqxa3s");
-            contQy3as = (AliOADBContainer*) fOADBFile->Get("fqya3s");
-        }
-        if(!contQy3am) {
-            AliWarning("OADB object fqya3m is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQy3am->Add(contQy3am);
-
-        if(!contQx3as) {
-            AliWarning("OADB object fqxa3s is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQx3as->Add(contQx3as);
-
-        if(!contQy3as) {
-            AliWarning("OADB object fqya3s is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQy3as->Add(contQy3as);
-
-
-        // V0 C-side  #################################################################
-        AliOADBContainer* contQx2cm = nullptr; // Mean Qx correction
-        AliOADBContainer* contQy2cm = nullptr; // Mean Qy correction
-        AliOADBContainer* contQx2cs = nullptr; // Sigma Qx correction
-        AliOADBContainer* contQy2cs = nullptr; // Sigma Qy correction
-
-        AliOADBContainer* contQx3cm = nullptr; // Mean Qx correction
-        AliOADBContainer* contQy3cm = nullptr; // Mean Qy correction
-        AliOADBContainer* contQx3cs = nullptr; // Sigma Qx correction
-        AliOADBContainer* contQy3cs = nullptr; // Sigma Qy correction
-        if(fV0CalibZvtxDiff){
-            contQx2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqxc2m_%d", iZvtx));
-            contQy2cm = (AliOADBContainer*) fOADBFile->Get(Form("fqyc2m_%d", iZvtx));
-            contQx2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqxc2s_%d", iZvtx));
-            contQy2cs = (AliOADBContainer*) fOADBFile->Get(Form("fqyc2s_%d", iZvtx));
-            
-            contQx3cm = (AliOADBContainer*) fOADBFile->Get(Form("fqxc3m_%d", iZvtx));
-            contQy3cm = (AliOADBContainer*) fOADBFile->Get(Form("fqyc3m_%d", iZvtx));
-            contQx3cs = (AliOADBContainer*) fOADBFile->Get(Form("fqxc3s_%d", iZvtx));
-            contQy3cs = (AliOADBContainer*) fOADBFile->Get(Form("fqyc3s_%d", iZvtx));
-        }
-        else{
-            contQx2cm = (AliOADBContainer*) fOADBFile->Get("fqxc2m");
-            contQy2cm = (AliOADBContainer*) fOADBFile->Get("fqyc2m");
-            contQx2cs = (AliOADBContainer*) fOADBFile->Get("fqxc2s");
-            contQy2cs = (AliOADBContainer*) fOADBFile->Get("fqyc2s");
-
-            contQx3cm = (AliOADBContainer*) fOADBFile->Get("fqxc3m");
-            contQy3cm = (AliOADBContainer*) fOADBFile->Get("fqyc3m");
-            contQx3cs = (AliOADBContainer*) fOADBFile->Get("fqxc3s");
-            contQy3cs = (AliOADBContainer*) fOADBFile->Get("fqyc3s");
-        }
-
-        if(!contQx2cm) {
-            AliWarning("OADB object fqxc2m is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQx2cm->Add(contQx2cm);
-
-        if(!contQy2cm) {
-            AliWarning("OADB object fqyc2m is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQy2cm->Add(contQy2cm);
-
-        if(!contQx2cs) {
-            AliWarning("OADB object fqxc2s is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQx2cs->Add(contQx2cs);
-
-        if(!contQy2cs) {
-            AliWarning("OADB object fqyc2s is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQy2cs->Add(contQy2cs);
-
-        
-        if(!contQx3cm) {
-            AliWarning("OADB object fqxc3m is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQx3cm->Add(contQx3cm);
-
-        if(!contQy3cm) {
-            AliWarning("OADB object fqyc3m is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQy3cm->Add(contQy3cm);
-
-        if(!contQx3cs) {
-            AliWarning("OADB object fqxc2s is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQx3cs->Add(contQx3cs);
-
-        if(!contQy3cs) {
-            AliWarning("OADB object fqyc2s is not available in the file\n");
-            return false;
-        }
-        fOADBzArray_contQy3cs->Add(contQy3cs);
-    }
-    
-    
-    //load TPC calibrations (not mandatory)
-    for(int iCent = 0; iCent < 9; iCent++) {
-        AliOADBContainer* contTPCposEta = (AliOADBContainer*) fOADBFile->Get(Form("fphidistr_poseta_%d_%d", iCent*10, (iCent+1)*10));
-        if(!contTPCposEta) {
-            AliWarning("OADB object fphidistr_poseta (TPC Calibration) is not available in the file\n");
-        }
-        fOADBcentArray_contTPCposEta->Add(contTPCposEta);
-
-        AliOADBContainer* contTPCnegEta = (AliOADBContainer*) fOADBFile->Get(Form("fphidistr_negeta_%d_%d", iCent*10, (iCent+1)*10));
-        if(!contTPCnegEta) {
-            AliWarning("OADB object fphidistr_negeta (TPC Calibration) is not available in the file\n");
-            fWeightsTPCNegEta[iCent] = nullptr;
-        }
-        fOADBcentArray_contTPCnegEta->Add(contTPCnegEta);
-    }
-    
-    return true;
-}
-
-
 //________________________________________________________________
 void AliAnalysisTaskRawJetWithEP::GetQnVec(double QnVecFull[2], double QnVecA[2], double QnVecC[2], Double_t QnNorm[3], Double_t Multi[3])
 {
@@ -2638,10 +2433,12 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t Qn
         QnVecV0A[iComp]    = 0.;
         QnVecV0C[iComp]    = 0.;
     }
+
     for(int i=0; i<3; i++) {
-        QnNorm[3] = 1.;
-        Multi[3] = 0.;
+        QnNorm[i] = 1.;
+        Multi[i] = 0.;
     }
+    
     
     short zvtxbin = GetVertexZbin();
     for (int iCh = 0; iCh < 64; iCh++) {
@@ -2715,24 +2512,510 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t Qn
         QnVecV0C[1] = (QnVecV0C[1] - fQy3mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);   
     }
 
+
     QnNorm[0] = TMath::Sqrt(QnVecV0M[0]*QnVecV0M[0]+QnVecV0M[1]*QnVecV0M[1]);
     QnNorm[1] = TMath::Sqrt(QnVecV0C[0]*QnVecV0C[0]+QnVecV0C[1]*QnVecV0C[1]);
     QnNorm[2] = TMath::Sqrt(QnVecV0A[0]*QnVecV0A[0]+QnVecV0A[1]*QnVecV0A[1]);
 }
 
-//
-// Opens the calibration info from the OADB containers (already loaded into the task)
-//________________________________________________________________
+
+//__________________________________________________________
+short AliAnalysisTaskRawJetWithEP::GetVertexZbin() const
+{
+    if(!fV0CalibZvtxDiff)
+        return 0; //if it is not Zvtx differential, always first bin
+
+    short zvtxbin = -10;
+    
+    if (fZvtx >= -10. && fZvtx < -8.)
+        zvtxbin = 0;
+    else if (fZvtx >= -8. && fZvtx < -6.)
+        zvtxbin = 1;
+    else if (fZvtx >= -6. && fZvtx < -4.)
+        zvtxbin = 2;
+    else if (fZvtx >= -4. && fZvtx < -3.)
+        zvtxbin = 3;
+    else if (fZvtx >= -3. && fZvtx < -2.)
+        zvtxbin = 4;
+    else if (fZvtx >= -2. && fZvtx < -1.)
+        zvtxbin = 5;
+    else if (fZvtx >= -1. && fZvtx < 0)
+        zvtxbin = 6;
+    else if (fZvtx >= 0 && fZvtx < 1.)
+        zvtxbin = 7;
+    else if (fZvtx >= 1. && fZvtx < 2.)
+        zvtxbin = 8;
+    else if (fZvtx >= 2. && fZvtx < 3.)
+        zvtxbin = 9;
+    else if (fZvtx >= 3. && fZvtx < 4.)
+        zvtxbin = 10;
+    else if (fZvtx >= 4. && fZvtx < 6.)
+        zvtxbin = 11;
+    else if (fZvtx >= 6. && fZvtx < 8.)
+        zvtxbin = 12;
+    else if (fZvtx >= 8. && fZvtx <= 10.)
+        zvtxbin = 13;
+    
+    return zvtxbin;
+}
+
+//__________________________________________________________
+short AliAnalysisTaskRawJetWithEP::GetCentBin() const
+{
+    short centbin = -10;
+    
+    if (fCentrality >= 0. && fCentrality < 10.)
+        centbin = 0;
+    else if (fCentrality >= 10. && fCentrality < 20.)
+        centbin = 1;
+    else if (fCentrality >= 20. && fCentrality < 30.)
+        centbin = 2;
+    else if (fCentrality >= 30. && fCentrality < 40.)
+        centbin = 3;
+    else if (fCentrality >= 40. && fCentrality < 50.)
+        centbin = 4;
+    else if (fCentrality >= 50. && fCentrality < 60.)
+        centbin = 5;
+    else if (fCentrality >= 60. && fCentrality < 70.)
+        centbin = 6;
+    else if (fCentrality >= 70. && fCentrality < 80.)
+        centbin = 7;
+    else if (fCentrality >= 80. && fCentrality < 90.)
+        centbin = 8;
+    else if(fCentrality >= 90.)
+        centbin = 8;
+
+    return centbin;
+}
+
+//__________________________________________________________
+bool AliAnalysisTaskRawJetWithEP::IsTrackSelected(AliAODTrack* track) {
+
+    if(fRun>=244918 && fRun<=246994) {//PbPb2015
+        if(fCalibType==kQnCalib) {
+            if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9)))
+                return false;
+            if(track->Pt()<fPtMinTPC || track->Pt()>fPtMaxTPC || TMath::Abs(track->Eta())>fEtaMaxTPC || TMath::Abs(track->Eta())<fEtaMinTPC)
+                return false;
+        }
+        else if(fCalibType==kQnFrameworkCalib) {
+            if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9)))
+                return false;
+            if(track->Pt()<0.2 || track->Pt()>5 || TMath::Abs(track->Eta())>0.8 || TMath::Abs(track->Eta())<0.)
+                return false;
+        }
+    }
+    else if(fRun>=295581 && fRun<=297317) { //PbPb2018
+        if(fCalibType==kQnCalib) {
+            if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9)))
+                return false;
+            if(track->Pt()<fPtMinTPC || track->Pt()>fPtMaxTPC || TMath::Abs(track->Eta())>fEtaMaxTPC || TMath::Abs(track->Eta())<fEtaMinTPC)
+                return false;
+        }
+        else if(fCalibType==kQnFrameworkCalib) {
+            if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9)))
+                return false;
+            if(track->Pt()<0.2 || track->Pt()>5 || TMath::Abs(track->Eta())>0.8 || TMath::Abs(track->Eta())<0.)
+                return false;
+        }
+    }
+    else { //default
+        if(fCalibType==kQnCalib) {
+            if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9)))
+                return false;
+            if(track->Pt()<fPtMinTPC || track->Pt()>fPtMaxTPC || TMath::Abs(track->Eta())>fEtaMaxTPC || TMath::Abs(track->Eta())<fEtaMinTPC)
+                return false;
+        }
+        else if(fCalibType==kQnFrameworkCalib) {
+            if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9)))
+                return false;
+            if(track->Pt()<0.2 || track->Pt()>5 || TMath::Abs(track->Eta())>0.8 || TMath::Abs(track->Eta())<0.)
+                return false;
+        }
+    }
+
+    return true;
+}
+
+/// ========================================================================================
+
+AliAnalysisTaskRawJetWithEP * AliAnalysisTaskRawJetWithEP::AddTaskRawJetWithEP(
+    TString EPCailbType,
+    TString EPCalibJEHandRefFileName, TString EPCalibOrigRefFileName,
+    const char *ntracks, const char *nclusters, const char* ncells, const char *suffix)
+{
+    // Get the pointer to the existing analysis manager via the static access method.
+    //==============================================================================
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+    if (!mgr)
+    {
+        ::Error("AddTaskRawJetWithEP", "No analysis manager to connect to.");
+        return 0;
+    }
+
+    // Check the analysis type using the event handlers connected to the analysis manager.
+    //==============================================================================
+    AliVEventHandler* handler = mgr->GetInputEventHandler();
+    if (!handler)
+    {
+        ::Error("AddTaskRawJetWithEP", "This task requires an input event handler");
+        return 0;
+    }
+    
+    enum EDataType_t {kUnknown, kESD, kAOD};
+    EDataType_t dataType = kAOD;
+    
+    //-------------------------------------------------------
+    // Init the task and do settings
+    //-------------------------------------------------------
+    TString trackName(ntracks);
+    if (trackName == "usedefault") trackName = "tracks";
+
+    TString name("AliAnalysisTaskRawJetWithEP");
+    if (strcmp(suffix,"") != 0) {
+        name += "_";
+        name += suffix;
+    }
+    
+    AliAnalysisTaskRawJetWithEP* rawJetTask = new AliAnalysisTaskRawJetWithEP(name);
+  // rawJetTask->LoadSpliForqnPerce(qnSplineFileName); //new
+    rawJetTask->SetQnCalibType(EPCailbType); //kJeHand, kOrig
+    rawJetTask->SetVzRange(-10,10);
+    
+    if(EPCailbType == "kOrig"){
+        TList *lCalibRefHists = NULL;
+
+        TString tempCalibFileName = AliDataFile::GetFileName(EPCalibOrigRefFileName.Data());
+        TString tempCalibLocalFileName = EPCalibOrigRefFileName;
+        
+        // Check access to CVMFS (will only be displayed locally)
+        if(EPCalibOrigRefFileName.BeginsWith("alien://") && !gGrid){
+            TGrid::Connect("alien://");
+        }
+        TFile* EPCalibRefFile = NULL;
+        if(!tempCalibFileName.IsNull()) EPCalibRefFile = TFile::Open(tempCalibFileName.Data());
+        if(tempCalibFileName.IsNull())  EPCalibRefFile = TFile::Open(tempCalibLocalFileName.Data());
+        lCalibRefHists = (TList *)EPCalibRefFile->Get("fWgtsV0ZDC");
+        
+        rawJetTask->SetCalibOrigRefObjList(lCalibRefHists);
+    }
+    else if(EPCailbType == "kJeHand"){
+        TString pathToFileLocal = EPCalibJEHandRefFileName;
+
+        TString tempCalibFileName = AliDataFile::GetFileName(EPCalibJEHandRefFileName.Data());
+        TString tempCalibLocalFileName = EPCalibJEHandRefFileName;
+        
+        // Check access to CVMFS (will only be displayed locally)
+        if(EPCalibJEHandRefFileName.BeginsWith("alien://") && !gGrid){
+            // AliInfo("Trying to connect to AliEn ...");
+            TGrid::Connect("alien://");
+        }
+        TFile* EPCalibRefFile = NULL;
+        if(!tempCalibFileName.IsNull()) EPCalibRefFile = TFile::Open(tempCalibFileName.Data());
+        if(tempCalibFileName.IsNull())  EPCalibRefFile = TFile::Open(tempCalibLocalFileName.Data());
+
+        AliOADBContainer *lRefMultV0BefCorPfpx = new AliOADBContainer();
+        TObjArray *lRefQx2am = new TObjArray();
+        TObjArray *lRefQy2am = new TObjArray();
+        TObjArray *lRefQx2as = new TObjArray();
+        TObjArray *lRefQy2as = new TObjArray();
+        TObjArray *lRefQx3am = new TObjArray();
+        TObjArray *lRefQy3am = new TObjArray();
+        TObjArray *lRefQx3as = new TObjArray();
+        TObjArray *lRefQy3as = new TObjArray();
+        TObjArray *lRefQx2cm = new TObjArray();
+        TObjArray *lRefQy2cm = new TObjArray();
+        TObjArray *lRefQx2cs = new TObjArray();
+        TObjArray *lRefQy2cs = new TObjArray();
+        TObjArray *lRefQx3cm = new TObjArray();
+        TObjArray *lRefQy3cm = new TObjArray(); 
+        TObjArray *lRefQx3cs = new TObjArray(); 
+        TObjArray *lRefQy3cs = new TObjArray();
+        TObjArray *lRefTPCposEta = new TObjArray();;
+        TObjArray *lRefTPCnegEta = new TObjArray();;
+
+        lRefMultV0BefCorPfpx = (AliOADBContainer *) EPCalibRefFile->Get("hMultV0BefCorPfpx");
+
+        bool LoadedCaliRef = rawJetTask->ExtractRecentPara(EPCalibRefFile, lRefQx2am, lRefQy2am, lRefQx2as, lRefQy2as, lRefQx3am, lRefQy3am, lRefQx3as, lRefQy3as, lRefQx2cm, lRefQy2cm, lRefQx2cs, lRefQy2cs, lRefQx3cm,lRefQy3cm, lRefQx3cs, lRefQy3cs, lRefTPCposEta, lRefTPCnegEta);
+        if (!LoadedCaliRef) {
+            std::cout << "Calibrations failed to load!\n" << std::endl;
+        } else {
+            std::cout << "Calibrations loaded correctly!\n" << std::endl;
+        }
+        
+
+        rawJetTask->SetLRefMultV0BefCorPfpx(lRefMultV0BefCorPfpx);
+        rawJetTask->SetLRefQx2am(lRefQx2am);
+        rawJetTask->SetLRefQy2am(lRefQy2am);
+        rawJetTask->SetLRefQx2as(lRefQx2as);
+        rawJetTask->SetLRefQy2as(lRefQy2as);
+        rawJetTask->SetLRefQx3am(lRefQx3am);
+        rawJetTask->SetLRefQy3am(lRefQy3am);
+        rawJetTask->SetLRefQx3as(lRefQx3as);
+        rawJetTask->SetLRefQy3as(lRefQy3as);
+        rawJetTask->SetLRefQx2cm(lRefQx2cm);
+        rawJetTask->SetLRefQy2cm(lRefQy2cm);
+        rawJetTask->SetLRefQx2cs(lRefQx2cs);
+        rawJetTask->SetLRefQy2cs(lRefQy2cs);
+        rawJetTask->SetLRefQx3cm(lRefQx3cm);
+        rawJetTask->SetLRefQy3cm(lRefQy3cm);
+        rawJetTask->SetLRefQx3cs(lRefQx3cs);
+        rawJetTask->SetLRefQy3cs(lRefQy3cs);
+        rawJetTask->SetLRefTPCposEta(lRefTPCposEta);
+        rawJetTask->SetLRefTPCnegEta(lRefTPCnegEta);
+        
+        if(lRefMultV0BefCorPfpx) delete lRefMultV0BefCorPfpx;
+        if(lRefQx2am) delete lRefQx2am;
+        if(lRefQy2am) delete lRefQy2am;
+        if(lRefQx2as) delete lRefQx2as;
+        if(lRefQy2as) delete lRefQy2as;
+        if(lRefQx3am) delete lRefQx3am;
+        if(lRefQy3am) delete lRefQy3am;
+        if(lRefQx3as) delete lRefQx3as;
+        if(lRefQy3as) delete lRefQy3as;
+        if(lRefQx2cm) delete lRefQx2cm;
+        if(lRefQy2cm) delete lRefQy2cm;
+        if(lRefQx2cs) delete lRefQx2cs;
+        if(lRefQy2cs) delete lRefQy2cs;
+        if(lRefQx3cm) delete lRefQx3cm;
+        if(lRefQy3cm) delete lRefQy3cm;
+        if(lRefQx3cs) delete lRefQx3cs;
+        if(lRefQy3cs) delete lRefQy3cs;
+        if(lRefTPCposEta) delete lRefTPCposEta;
+        if(lRefTPCnegEta) delete lRefTPCnegEta;
+        
+    }
+    
+    if (trackName == "mcparticles") rawJetTask->AddMCParticleContainer(trackName);
+    else if (trackName == "tracks") rawJetTask->AddTrackContainer(trackName);
+    else if (!trackName.IsNull()) rawJetTask->AddParticleContainer(trackName);
+
+    //-------------------------------------------------------
+    // Final settings, pass to manager and set the containers
+    //-------------------------------------------------------
+    mgr->AddTask(rawJetTask);
+    
+    // Create containers for input/output
+    AliAnalysisDataContainer *cinput1  = mgr->GetCommonInputContainer()  ;
+    TString contname(name);
+    contname += "_histos";
+    AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(contname.Data(),
+        TList::Class(),AliAnalysisManager::kOutputContainer,
+        Form("%s", AliAnalysisManager::GetCommonFileName()));
+    mgr->ConnectInput  (rawJetTask, 0,  cinput1 );
+    mgr->ConnectOutput (rawJetTask, 1, coutput1 );
+    
+    return rawJetTask;
+}
+
+
+
+bool AliAnalysisTaskRawJetWithEP::ExtractRecentPara(TFile *EPCalibRefFile, TObjArray *lRefQx2am, TObjArray *lRefQy2am, TObjArray *lRefQx2as, TObjArray *lRefQy2as, TObjArray *lRefQx3am, TObjArray *lRefQy3am, TObjArray *lRefQx3as, TObjArray *lRefQy3as, TObjArray *lRefQx2cm, TObjArray *lRefQy2cm, TObjArray *lRefQx2cs, TObjArray *lRefQy2cs, TObjArray *lRefQx3cm,TObjArray *lRefQy3cm, TObjArray *lRefQx3cs, TObjArray *lRefQy3cs, TObjArray *lRefTPCposEta, TObjArray *lRefTPCnegEta) {
+    for(int iZvtx = 0; iZvtx < 14; iZvtx++) {
+        // V0 A-side #################################################################
+        // Mean Qx correction
+        // Includes check if Zvtx is differential
+        AliOADBContainer* contQx2am = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqxa2m_%d", iZvtx));
+        if(!contQx2am) { //check if it is not Zvtx differential
+            contQx2am = (AliOADBContainer*) EPCalibRefFile->Get("fqxa2m");
+            if(contQx2am) fV0CalibZvtxDiff = false;
+        }
+        if(!contQx2am) {
+            AliWarning("OADB object fqxa2m is not available in the file\n");
+            return false;
+        }
+        
+        lRefQx2am->Add(contQx2am);
+        
+        AliOADBContainer* contQy2am = nullptr; // Mean Qy correction
+        AliOADBContainer* contQx2as = nullptr; // Sigma Qx correction
+        AliOADBContainer* contQy2as = nullptr; // Sigma Qy correction
+        if(fV0CalibZvtxDiff){
+            contQy2am = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqya2m_%d", iZvtx));
+            contQx2as = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqxa2s_%d", iZvtx));
+            contQy2as = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqya2s_%d", iZvtx));
+        }
+        else {
+            contQy2am = (AliOADBContainer*) EPCalibRefFile->Get("fqya2m");
+            contQx2as = (AliOADBContainer*) EPCalibRefFile->Get("fqxa2s");
+            contQy2as = (AliOADBContainer*) EPCalibRefFile->Get("fqya2s");
+        }
+        if(!contQy2am) {
+            AliWarning("OADB object fqya2m is not available in the file\n");
+            return false;
+        }
+        lRefQy2am->Add(contQy2am);
+        if(!contQx2as) {
+            AliWarning("OADB object fqxa2s is not available in the file\n");
+            return false;
+        }
+        lRefQx2as->Add(contQx2as);
+        if(!contQy2as) {
+            AliWarning("OADB object fqya2s is not available in the file\n");
+            return false;
+        }
+        lRefQy2as->Add(contQy2as);
+
+
+        AliOADBContainer* contQx3am = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqxa3m_%d", iZvtx));
+        if(!contQx3am) { //check if it is not Zvtx differential
+            contQx3am = (AliOADBContainer*) EPCalibRefFile->Get("fqxa3m");
+            if(contQx3am) fV0CalibZvtxDiff = false;
+        }
+        if(!contQx3am) {
+            AliWarning("OADB object fqxa3m is not available in the file\n");
+            return false;
+        }
+        lRefQx3am->Add(contQx3am);
+
+        
+        AliOADBContainer* contQy3am = nullptr; // Mean Qy correction
+        AliOADBContainer* contQx3as = nullptr; // Sigma Qx correction
+        AliOADBContainer* contQy3as = nullptr; // Sigma Qy correction
+        if(fV0CalibZvtxDiff){
+            contQy3am = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqya3m_%d", iZvtx));
+            contQx3as = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqxa3s_%d", iZvtx));
+            contQy3as = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqya3s_%d", iZvtx));
+        }
+        else {
+            contQy3am = (AliOADBContainer*) EPCalibRefFile->Get("fqya3m");
+            contQx3as = (AliOADBContainer*) EPCalibRefFile->Get("fqxa3s");
+            contQy3as = (AliOADBContainer*) EPCalibRefFile->Get("fqya3s");
+        }
+        if(!contQy3am) {
+            AliWarning("OADB object fqya3m is not available in the file\n");
+            return false;
+        }
+        lRefQy3am->Add(contQy3am);
+
+        if(!contQx3as) {
+            AliWarning("OADB object fqxa3s is not available in the file\n");
+            return false;
+        }
+        lRefQx3as->Add(contQx3as);
+
+        if(!contQy3as) {
+            AliWarning("OADB object fqya3s is not available in the file\n");
+            return false;
+        }
+        lRefQy3as->Add(contQy3as);
+
+
+        // V0 C-side  #################################################################
+        AliOADBContainer* contQx2cm = nullptr; // Mean Qx correction
+        AliOADBContainer* contQy2cm = nullptr; // Mean Qy correction
+        AliOADBContainer* contQx2cs = nullptr; // Sigma Qx correction
+        AliOADBContainer* contQy2cs = nullptr; // Sigma Qy correction
+
+        AliOADBContainer* contQx3cm = nullptr; // Mean Qx correction
+        AliOADBContainer* contQy3cm = nullptr; // Mean Qy correction
+        AliOADBContainer* contQx3cs = nullptr; // Sigma Qx correction
+        AliOADBContainer* contQy3cs = nullptr; // Sigma Qy correction
+        if(fV0CalibZvtxDiff){
+            contQx2cm = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqxc2m_%d", iZvtx));
+            contQy2cm = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqyc2m_%d", iZvtx));
+            contQx2cs = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqxc2s_%d", iZvtx));
+            contQy2cs = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqyc2s_%d", iZvtx));
+            
+            contQx3cm = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqxc3m_%d", iZvtx));
+            contQy3cm = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqyc3m_%d", iZvtx));
+            contQx3cs = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqxc3s_%d", iZvtx));
+            contQy3cs = (AliOADBContainer*) EPCalibRefFile->Get(Form("fqyc3s_%d", iZvtx));
+        }
+        else{
+            contQx2cm = (AliOADBContainer*) EPCalibRefFile->Get("fqxc2m");
+            contQy2cm = (AliOADBContainer*) EPCalibRefFile->Get("fqyc2m");
+            contQx2cs = (AliOADBContainer*) EPCalibRefFile->Get("fqxc2s");
+            contQy2cs = (AliOADBContainer*) EPCalibRefFile->Get("fqyc2s");
+
+            contQx3cm = (AliOADBContainer*) EPCalibRefFile->Get("fqxc3m");
+            contQy3cm = (AliOADBContainer*) EPCalibRefFile->Get("fqyc3m");
+            contQx3cs = (AliOADBContainer*) EPCalibRefFile->Get("fqxc3s");
+            contQy3cs = (AliOADBContainer*) EPCalibRefFile->Get("fqyc3s");
+        }
+
+        if(!contQx2cm) {
+            AliWarning("OADB object fqxc2m is not available in the file\n");
+            return false;
+        }
+        lRefQx2cm->Add(contQx2cm);
+
+        if(!contQy2cm) {
+            AliWarning("OADB object fqyc2m is not available in the file\n");
+            return false;
+        }
+        lRefQy2cm->Add(contQy2cm);
+
+        if(!contQx2cs) {
+            AliWarning("OADB object fqxc2s is not available in the file\n");
+            return false;
+        }
+        lRefQx2cs->Add(contQx2cs);
+
+        if(!contQy2cs) {
+            AliWarning("OADB object fqyc2s is not available in the file\n");
+            return false;
+        }
+        lRefQy2cs->Add(contQy2cs);
+
+        
+        if(!contQx3cm) {
+            AliWarning("OADB object fqxc3m is not available in the file\n");
+            return false;
+        }
+        lRefQx3cm->Add(contQx3cm);
+
+        if(!contQy3cm) {
+            AliWarning("OADB object fqyc3m is not available in the file\n");
+            return false;
+        }
+        lRefQy3cm->Add(contQy3cm);
+
+        if(!contQx3cs) {
+            AliWarning("OADB object fqxc2s is not available in the file\n");
+            return false;
+        }
+        lRefQx3cs->Add(contQx3cs);
+
+        if(!contQy3cs) {
+            AliWarning("OADB object fqyc2s is not available in the file\n");
+            return false;
+        }
+        lRefQy3cs->Add(contQy3cs);
+    }
+    
+    
+    //load TPC calibrations (not mandatory)
+    for(int iCent = 0; iCent < 9; iCent++) {
+        AliOADBContainer* contTPCposEta = (AliOADBContainer*) EPCalibRefFile->Get(Form("fphidistr_poseta_%d_%d", iCent*10, (iCent+1)*10));
+        if(!contTPCposEta) {
+            AliWarning("OADB object fphidistr_poseta (TPC Calibration) is not available in the file\n");
+        }
+        lRefTPCposEta->Add(contTPCposEta);
+
+        AliOADBContainer* contTPCnegEta = (AliOADBContainer*) EPCalibRefFile->Get(Form("fphidistr_negeta_%d_%d", iCent*10, (iCent+1)*10));
+        if(!contTPCnegEta) {
+            AliWarning("OADB object fphidistr_negeta (TPC Calibration) is not available in the file\n");
+            fWeightsTPCNegEta[iCent] = nullptr;
+        }
+        lRefTPCnegEta->Add(contTPCnegEta);
+    }
+    
+    return true;
+}
+
 bool AliAnalysisTaskRawJetWithEP::OpenInfoCalbration() 
 {
     if(!fMultV0BefCorPfpx) {
         AliWarning("OADB object hMultV0BefCorPfpx is not available\n");
         return false;
     }
+    
     if(!(fMultV0BefCorPfpx->GetObject(fRun))) {
         AliWarning(Form("OADB object hMultV0BefCorPfpx is not available for run %i\n", fRun));
         return false;
     }
+    
     fHistMultV0 = ((TH1D*) fMultV0BefCorPfpx->GetObject(fRun));
     for(int iZvtx = 0; iZvtx < 14; iZvtx++) {
         AliOADBContainer* contQx2am = 0;
@@ -2861,11 +3144,11 @@ bool AliAnalysisTaskRawJetWithEP::OpenInfoCalbration()
         if(fV0CalibZvtxDiff) contQy3am = (AliOADBContainer* ) fOADBzArray_contQy3am->At(iZvtx);
         else contQy3am = (AliOADBContainer* ) fOADBzArray_contQy3am->At(0);
         if(!contQy3am) {
-            AliWarning("OADB object fqya2m is not available\n");
+            AliWarning("OADB object fqya3m is not available\n");
             return false;
         }
         if(!(contQy3am->GetObject(fRun))) {
-            AliWarning(Form("OADB object fqya2m is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqya3m is not available for run %i\n", fRun));
             return false;
         }
         fQy3mV0A[iZvtx] = ((TH1D*) contQy3am->GetObject(fRun));
@@ -2992,125 +3275,7 @@ bool AliAnalysisTaskRawJetWithEP::OpenInfoCalbration()
     return true;
 }
 
-//__________________________________________________________
-short AliAnalysisTaskRawJetWithEP::GetVertexZbin() const
-{
-    if(!fV0CalibZvtxDiff)
-        return 0; //if it is not Zvtx differential, always first bin
 
-    short zvtxbin = -10;
-    
-    if (fZvtx >= -10. && fZvtx < -8.)
-        zvtxbin = 0;
-    else if (fZvtx >= -8. && fZvtx < -6.)
-        zvtxbin = 1;
-    else if (fZvtx >= -6. && fZvtx < -4.)
-        zvtxbin = 2;
-    else if (fZvtx >= -4. && fZvtx < -3.)
-        zvtxbin = 3;
-    else if (fZvtx >= -3. && fZvtx < -2.)
-        zvtxbin = 4;
-    else if (fZvtx >= -2. && fZvtx < -1.)
-        zvtxbin = 5;
-    else if (fZvtx >= -1. && fZvtx < 0)
-        zvtxbin = 6;
-    else if (fZvtx >= 0 && fZvtx < 1.)
-        zvtxbin = 7;
-    else if (fZvtx >= 1. && fZvtx < 2.)
-        zvtxbin = 8;
-    else if (fZvtx >= 2. && fZvtx < 3.)
-        zvtxbin = 9;
-    else if (fZvtx >= 3. && fZvtx < 4.)
-        zvtxbin = 10;
-    else if (fZvtx >= 4. && fZvtx < 6.)
-        zvtxbin = 11;
-    else if (fZvtx >= 6. && fZvtx < 8.)
-        zvtxbin = 12;
-    else if (fZvtx >= 8. && fZvtx <= 10.)
-        zvtxbin = 13;
-    
-    return zvtxbin;
-}
-
-//__________________________________________________________
-short AliAnalysisTaskRawJetWithEP::GetCentBin() const
-{
-    short centbin = -10;
-    
-    if (fCentrality >= 0. && fCentrality < 10.)
-        centbin = 0;
-    else if (fCentrality >= 10. && fCentrality < 20.)
-        centbin = 1;
-    else if (fCentrality >= 20. && fCentrality < 30.)
-        centbin = 2;
-    else if (fCentrality >= 30. && fCentrality < 40.)
-        centbin = 3;
-    else if (fCentrality >= 40. && fCentrality < 50.)
-        centbin = 4;
-    else if (fCentrality >= 50. && fCentrality < 60.)
-        centbin = 5;
-    else if (fCentrality >= 60. && fCentrality < 70.)
-        centbin = 6;
-    else if (fCentrality >= 70. && fCentrality < 80.)
-        centbin = 7;
-    else if (fCentrality >= 80. && fCentrality < 90.)
-        centbin = 8;
-    else if(fCentrality >= 90.)
-        centbin = 8;
-
-    return centbin;
-}
-
-//__________________________________________________________
-bool AliAnalysisTaskRawJetWithEP::IsTrackSelected(AliAODTrack* track) {
-
-    if(fRun>=244918 && fRun<=246994) {//PbPb2015
-        if(fCalibType==kQnCalib) {
-            if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9)))
-                return false;
-            if(track->Pt()<fPtMinTPC || track->Pt()>fPtMaxTPC || TMath::Abs(track->Eta())>fEtaMaxTPC || TMath::Abs(track->Eta())<fEtaMinTPC)
-                return false;
-        }
-        else if(fCalibType==kQnFrameworkCalib) {
-            if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9)))
-                return false;
-            if(track->Pt()<0.2 || track->Pt()>5 || TMath::Abs(track->Eta())>0.8 || TMath::Abs(track->Eta())<0.)
-                return false;
-        }
-    }
-    else if(fRun>=295581 && fRun<=297317) { //PbPb2018
-        if(fCalibType==kQnCalib) {
-            if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9)))
-                return false;
-            if(track->Pt()<fPtMinTPC || track->Pt()>fPtMaxTPC || TMath::Abs(track->Eta())>fEtaMaxTPC || TMath::Abs(track->Eta())<fEtaMinTPC)
-                return false;
-        }
-        else if(fCalibType==kQnFrameworkCalib) {
-            if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9)))
-                return false;
-            if(track->Pt()<0.2 || track->Pt()>5 || TMath::Abs(track->Eta())>0.8 || TMath::Abs(track->Eta())<0.)
-                return false;
-        }
-    }
-    else { //default
-        if(fCalibType==kQnCalib) {
-            if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9)))
-                return false;
-            if(track->Pt()<fPtMinTPC || track->Pt()>fPtMaxTPC || TMath::Abs(track->Eta())>fEtaMaxTPC || TMath::Abs(track->Eta())<fEtaMinTPC)
-                return false;
-        }
-        else if(fCalibType==kQnFrameworkCalib) {
-            if(!track->TestFilterBit(BIT(8)) && !track->TestFilterBit(BIT(9)))
-                return false;
-            if(track->Pt()<0.2 || track->Pt()>5 || TMath::Abs(track->Eta())>0.8 || TMath::Abs(track->Eta())<0.)
-                return false;
-        }
-    }
-
-    return true;
-}
-
-/// ========================================================================================
 
 
 
