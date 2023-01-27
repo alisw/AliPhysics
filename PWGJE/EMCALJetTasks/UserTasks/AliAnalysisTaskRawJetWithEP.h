@@ -159,9 +159,6 @@ public:
   void SetLRefTPCposEta(TObjArray *hList){this->fOADBcentArray_contTPCposEta = (TObjArray *) hList->Clone();}
   void SetLRefTPCnegEta(TObjArray *hList){this->fOADBcentArray_contTPCnegEta = (TObjArray *) hList->Clone();}
 
-
-
->>>>>>> c9300aec8e (AliAnalysisTaskRawJetWithEP: Changed the way to read gain calibration reference root file to prevent memory leack)
   void CreateQnVectorHandlers(); // Create the QnVector handlers, including loading the calibration files
     //== e == Setter Prepare  ################################################
 
@@ -177,7 +174,7 @@ public:
     void SetTPCPtLimits(double ptmin=0.2, double ptmax=5) {fPtMinTPC=ptmin; fPtMaxTPC=ptmax;}
     void SetFractionOfTPCtracksToUse(double fracToKeep) {fFractionOfTracksForQnTPC = fracToKeep;}
     void SetCalibrationsOADBFileName(TString OADBfileName) {fOADBFileName = OADBfileName;}
-    
+
     int GetCalibrationType() const {return fCalibType;}
     int GetNormalisationMethod() const {return fNormMethod;}
     TString GetCalibrationsOADBFileName() const {return fOADBFileName;}
