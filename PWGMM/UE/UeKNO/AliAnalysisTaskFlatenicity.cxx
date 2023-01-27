@@ -118,7 +118,7 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
       hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
       hEtamc(0), hEtamcAlice(0), hCounter(0), hMultMCmVsV0M(0),
       hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0), hMultmVsV0Malice(0),
-      hMultaVsV0M(0), hMultcVsV0M(0), hV0MBadruns(0) {
+      hMultaVsV0M(0), hMultcVsV0M(0), hV0MBadruns(0), hPtBefore(0), hPtAfter(0) {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0M[i_c] = 0;
   }
@@ -164,7 +164,7 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
       hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
       hEtamc(0), hEtamcAlice(0), hCounter(0), hMultMCmVsV0M(0),
       hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0), hMultmVsV0Malice(0),
-      hMultaVsV0M(0), hMultcVsV0M(0), hV0MBadruns(0)
+      hMultaVsV0M(0), hMultcVsV0M(0), hV0MBadruns(0), hPtBefore(0), hPtAfter(0)
 
 {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
@@ -386,6 +386,14 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
     hMultMCcVsV0M =
         new TH2D("hMultMCcVsV0M", "", nCent, centClass, 1000, -0.5, 999.5);
     fOutputList->Add(hMultMCcVsV0M);
+      
+      hPtBefore = new TH1D("hPtBefore", "hPtBefore",
+                        nPtbins, Ptbins);
+      fOutputList->Add(hPtBefore);
+      
+      hPtAfter = new TH1D("hPtAfter", "hPtAfter",
+                        nPtbins, Ptbins);
+      fOutputList->Add(hPtAfter);
   }
 
   hActivityV0DataSectBefore = new TProfile(
@@ -490,6 +498,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
       isGoodVtxPosMC = kTRUE;
   }
 
+    MakeanalysispureMCBefore();
   // Trigger selection
   UInt_t fSelectMask = fInputHandler->IsEventSelected();
   Bool_t isINT7selected = fSelectMask & AliVEvent::kINT7;
@@ -504,6 +513,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   }
 
   hCounter->Fill(2.0);
+    MakeanalysispureMCAfter();
 
   // Good vertex
   Bool_t hasRecVertex = kFALSE;
@@ -717,6 +727,46 @@ void AliAnalysisTaskFlatenicity::MakeMCanalysis() {
       hPtSecOut->Fill(esdtrack->Pt());
     }
   }
+}
+//______________________________________________________________________________
+void AliAnalysisTaskFlatenicity::MakeanalysispureMCBefore() {
+    
+    for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
+        
+        AliMCParticle *particle = (AliMCParticle *)fMC->GetTrack(i);
+        if (!particle)
+            continue;
+        if (!fMC->IsPhysicalPrimary(i))
+            continue;
+        if (TMath::Abs(particle->Eta()) > fEtaCut)
+            continue;
+        if (particle->Pt() < fPtMin)
+            continue;
+        if (TMath::Abs(particle->Charge()) < 0.1)
+            continue;
+        
+        hPtBefore->Fill(particle->Pt());
+    }
+}
+//______________________________________________________________________________
+void AliAnalysisTaskFlatenicity::MakeanalysispureMCAfter() {
+    
+    for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
+        
+        AliMCParticle *particle = (AliMCParticle *)fMC->GetTrack(i);
+        if (!particle)
+            continue;
+        if (!fMC->IsPhysicalPrimary(i))
+            continue;
+        if (TMath::Abs(particle->Eta()) > fEtaCut)
+            continue;
+        if (particle->Pt() < fPtMin)
+            continue;
+        if (TMath::Abs(particle->Charge()) < 0.1)
+            continue;
+        
+        hPtAfter->Fill(particle->Pt());
+    }
 }
 
 //______________________________________________________________________________

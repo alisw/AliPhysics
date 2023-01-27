@@ -42,6 +42,8 @@ public:
   void ExtractMultiplicitiesMC();
   void MakeMCanalysis();
   void MakeDataanalysis();
+    void MakeanalysispureMCBefore();
+    void MakeanalysispureMCAfter();
 
   void SetPtMin(Double_t val) {
     fPtMin = val;
@@ -125,6 +127,8 @@ private:
   TH2D *hMultaVsV0M;
   TH2D *hMultcVsV0M;
   TH1D *hV0MBadruns;
+    TH1D *hPtBefore;
+    TH1D *hPtAfter;
   TH2D *hFlatVsPtV0M[9];
   TH2D *hFlatVsPtV0MMC[9];
   TH2D *hComponentsMult[4];
