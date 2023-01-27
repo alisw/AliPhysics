@@ -171,7 +171,7 @@ AliEmcalJetUtility* AliEmcalJetTask::AddUtility(AliEmcalJetUtility* utility)
   if (fUtilities->FindObject(utility)) {
     Error("AddUtility", "Jet utility %s already connected.", utility->GetName());
     return utility;
-  }   
+  }
   fUtilities->Add(utility);
   utility->SetJetTask(this);
 
@@ -277,7 +277,7 @@ Int_t AliEmcalJetTask::FindJets()
     AliDebug(2,Form("Tracks from collection %d: '%s'. Embedded: %i, nTracks: %i", iColl-1, tracks->GetName(), tracks->GetIsEmbedding(), tracks->GetNParticles()));
     AliParticleIterableMomentumContainer itcont = tracks->accepted_momentum();
     for (AliParticleIterableMomentumContainer::iterator it = itcont.begin(); it != itcont.end(); it++) {
-      
+
       // Apply artificial track inefficiency, if supplied (either constant or pT-dependent)
       if (fApplyArtificialTrackingEfficiency) {
         if (fTrackEfficiencyOnlyForEmbedding == kFALSE || (fTrackEfficiencyOnlyForEmbedding == kTRUE && tracks->GetIsEmbedding())) {
@@ -286,7 +286,7 @@ Int_t AliEmcalJetTask::FindJets()
             trackEfficiency = fTrackEfficiencyFunction->Eval(it->first.Pt());
           }
           if(fApplyPtDependentTrackingEfficiency) {
-            // if it exists, centrality-integrated tracking efficiency taken from index 0 
+            // if it exists, centrality-integrated tracking efficiency taken from index 0
             if(fTrackEfficiencyHistogramVector.at(0) ) {
               trackEfficiency -= (1. - fTrackEfficiencyHistogramVector.at(0)->GetBinContent(fTrackEfficiencyHistogramVector.at(0)->FindBin(it->first.Pt())));
             }
@@ -448,19 +448,19 @@ void AliEmcalJetTask::ExecOnce()
   if(fApplyPtDependentTrackingEfficiency) {
     SetArtificialTrackingEfficiencyFromYAML();
   }
-  
+
   // If a constant artificial track efficiency is supplied, create a TF1 that is constant in pT
   if (fTrackEfficiency < 1.) {
     // If a TF1 was already loaded, throw an error
     if (fApplyArtificialTrackingEfficiency && fTrackEfficiencyHistogram==nullptr) {
       AliError(Form("%s: fTrackEfficiencyFunction was already loaded! Do not apply multiple artificial track efficiencies.", GetName()));
     }
-    
+
     fTrackEfficiencyFunction = new TF1("trackEfficiencyFunction", "[0]", 0., fMaxBinPt);
     fTrackEfficiencyFunction->SetParameter(0, fTrackEfficiency);
     fApplyArtificialTrackingEfficiency = kTRUE;
   }
-  
+
   // If artificial tracking efficiency is enabled (either constant or pT-depdendent), set up random number generator
   if (fApplyArtificialTrackingEfficiency) {
     fRandom.SetSeed(0);
@@ -499,7 +499,7 @@ void AliEmcalJetTask::ExecOnce()
   fFastJetWrapper.SetAlgorithm(ConvertToFJAlgo(fJetAlgo));
   fFastJetWrapper.SetRecombScheme(ConvertToFJRecoScheme(fRecombScheme));
   fFastJetWrapper.SetMaxRap(1);
- 
+
 
   // setting legacy mode
   if (fLegacyMode) {
@@ -582,7 +582,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
           constituents[ic].py(),
           constituents[ic].pz(),
           constituents[ic].e());
-    }	
+    }
     else if (uid >= fgkConstIndexShift) { // track constituent
       Int_t iColl = uid / fgkConstIndexShift;
       Int_t tid = uid - iColl * fgkConstIndexShift;
@@ -649,7 +649,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
       }
 
       ++nt;
-    } 
+    }
     else if (uid <= -fgkConstIndexShift) { // cluster constituent
       Int_t iColl = -uid / fgkConstIndexShift;
       Int_t cid = -uid - iColl * fgkConstIndexShift;
@@ -715,7 +715,7 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
 
       ++nc;
       ++nneutral;
-    } 
+    }
     else {
       AliError(Form("%s: No logical way to end up here (uid = %d).", GetName(), uid));
       continue;
@@ -746,9 +746,9 @@ void AliEmcalJetTask::FillJetConstituents(AliEmcalJet *jet, std::vector<fastjet:
 Bool_t AliEmcalJetTask::IsLocked() const
 {
   if (fLocked) {
-    AliFatal("Jet finder task is locked! Changing properties is not allowed."); 
+    AliFatal("Jet finder task is locked! Changing properties is not allowed.");
     return kTRUE;
-  } 
+  }
   else {
     return kFALSE;
   }
@@ -767,7 +767,7 @@ void AliEmcalJetTask::SelectCollisionCandidates(UInt_t offlineTriggerMask)
     fOfflineTriggerMask = offlineTriggerMask;
   }
   else {
-    AliWarning("Manually setting the event selection for jet finders is not allowed! Using trigger=old_trigger | your_trigger");  
+    AliWarning("Manually setting the event selection for jet finders is not allowed! Using trigger=old_trigger | your_trigger");
     fOfflineTriggerMask = fOfflineTriggerMask | offlineTriggerMask;
   }
 }
@@ -925,11 +925,11 @@ fastjet::RecombinationScheme AliEmcalJetTask::ConvertToFJRecoScheme(ERecoScheme_
  * @return bitwise jet acceptance type
  */
 UInt_t AliEmcalJetTask::FindJetAcceptanceType(Double_t eta, Double_t phi, Double_t r) {
-  
+
   //This method has to be called after the run number is known because it needs the EMCal geometry object.
-  
+
   UInt_t jetAcceptanceType = AliEmcalJet::kUser; // all jets satify the "no acceptance cut" condition
-  
+
   // Check if TPC
   if( eta < 0.9 && eta > -0.9 ) {
     jetAcceptanceType |= AliEmcalJet::kTPC;
@@ -937,7 +937,7 @@ UInt_t AliEmcalJetTask::FindJetAcceptanceType(Double_t eta, Double_t phi, Double
     if (eta < 0.9 - r && eta > -0.9 + r)
       jetAcceptanceType |= AliEmcalJet::kTPCfid;
   }
-    
+
   // Check if EMCAL
   if( IsJetInEmcal(eta, phi, 0) ) {
     jetAcceptanceType |= AliEmcalJet::kEMCAL;
@@ -945,7 +945,7 @@ UInt_t AliEmcalJetTask::FindJetAcceptanceType(Double_t eta, Double_t phi, Double
     if( IsJetInEmcal(eta, phi, r) )
       jetAcceptanceType |= AliEmcalJet::kEMCALfid;
   }
-  
+
   // Check if DCAL (i.e. eta-phi rectangle spanning DCal, which includes most of PHOS)
   if( IsJetInDcal(eta, phi, 0) ) {
     jetAcceptanceType |= AliEmcalJet::kDCAL;
@@ -953,7 +953,7 @@ UInt_t AliEmcalJetTask::FindJetAcceptanceType(Double_t eta, Double_t phi, Double
     if( IsJetInDcal(eta, phi, r) )
       jetAcceptanceType |= AliEmcalJet::kDCALfid;
   }
-  
+
   // Check if DCALonly (i.e. ONLY DCal, does not include any of PHOS region)
   if( IsJetInDcalOnly(eta, phi, 0) ) {
     jetAcceptanceType |= AliEmcalJet::kDCALonly;
@@ -961,7 +961,7 @@ UInt_t AliEmcalJetTask::FindJetAcceptanceType(Double_t eta, Double_t phi, Double
     if( IsJetInDcalOnly(eta, phi, r) )
       jetAcceptanceType |= AliEmcalJet::kDCALonlyfid;
   }
-  
+
   // Check if PHOS
   if( IsJetInPhos(eta, phi, 0) ) {
     jetAcceptanceType |= AliEmcalJet::kPHOS;
@@ -969,7 +969,7 @@ UInt_t AliEmcalJetTask::FindJetAcceptanceType(Double_t eta, Double_t phi, Double
     if( IsJetInPhos(eta, phi, r) )
       jetAcceptanceType |= AliEmcalJet::kPHOSfid;
   }
- 
+
   return jetAcceptanceType;
 }
 
@@ -1016,10 +1016,10 @@ Bool_t AliEmcalJetTask::IsJetInDcal(Double_t eta, Double_t phi, Double_t r)
 Bool_t AliEmcalJetTask::IsJetInDcalOnly(Double_t eta, Double_t phi, Double_t r)
 {
   if (!fGeom) return kFALSE;
-  
+
   if (eta < fGeom->GetArm1EtaMax() - r && eta > fGeom->GetArm1EtaMin() + r) {
     if ( phi < fGeom->GetDCALPhiMax() * TMath::DegToRad() - r && phi > fGeom->GetDCALPhiMin() * TMath::DegToRad() + r) {
-      
+
       if (TMath::Abs(eta) > fGeom->GetDCALInnerExtandedEta() + r) {
         return kTRUE;
       }
@@ -1027,10 +1027,10 @@ Bool_t AliEmcalJetTask::IsJetInDcalOnly(Double_t eta, Double_t phi, Double_t r)
         if (phi > fGeom->GetEMCGeometry()->GetDCALStandardPhiMax() * TMath::DegToRad())
           return kTRUE;
       }
-      
+
     }
   }
-  
+
   return kFALSE;
 }
 
@@ -1045,14 +1045,14 @@ Bool_t AliEmcalJetTask::IsJetInPhos(Double_t eta, Double_t phi, Double_t r)
   Double_t phiMin = 260; // Run 1
   if (fRunNumber > 209121)
     phiMin = 250; // Run 2
-  
+
   if (eta < etaMax - r && eta > etaMin + r ) {
     if (phi < phiMax * TMath::DegToRad() - r && phi > phiMin * TMath::DegToRad() + r)
       return kTRUE;
   }
   return kFALSE;
 }
-  
+
 /**
  * Load the artificial tracking efficiency TF1 from a file into the member fTrackEfficiencyFunction
  * @param path Path to the file containing the TF1
@@ -1064,16 +1064,16 @@ void AliEmcalJetTask::LoadTrackEfficiencyFunction(const std::string & path, cons
   if (fname.BeginsWith("alien://")) {
     TGrid::Connect("alien://");
   }
-  
+
   TFile* file = TFile::Open(path.data());
-  
+
   if (!file || file->IsZombie()) {
     AliErrorStream() << "Could not open artificial track efficiency function file\n";
     return;
   }
-  
+
   TF1* trackEff = dynamic_cast<TF1*>(file->Get(name.data()));
-  
+
   if (trackEff) {
     AliInfoStream() << Form("Artificial track efficiency function %s loaded from file %s.", name.data(), path.data()) << "\n";
   }
@@ -1081,10 +1081,10 @@ void AliEmcalJetTask::LoadTrackEfficiencyFunction(const std::string & path, cons
     AliErrorStream() << Form("Artificial track efficiency function %s not found in file %s.", name.data(), path.data()) << "\n";
     return;
   }
-  
+
   fTrackEfficiencyFunction = static_cast<TF1*>(trackEff->Clone());
   fApplyArtificialTrackingEfficiency = kTRUE;
-  
+
   file->Close();
   delete file;
 }
@@ -1095,7 +1095,7 @@ void AliEmcalJetTask::LoadTrackEfficiencyFunction(const std::string & path, cons
 
 void AliEmcalJetTask::SetArtificialTrackingEfficiencyFromYAML() {
 
-  
+
   std::vector <Double_t> ptBinning;
   std::vector <Double_t> trackingUncertainty;
   bool res = fYAMLConfig.GetProperty("ptBinning", ptBinning, false);
@@ -1259,7 +1259,7 @@ AliEmcalJetTask* AliEmcalJetTask::AddTaskEmcalJet(
     AliMCParticleContainer* mcpartCont = new AliMCParticleContainer(trackName);
     partCont = mcpartCont;
   }
-  else if (trackName == "tracks" || trackName == "Tracks") {
+  else if (trackName.Contains("tracks") || trackName.Contains("Tracks")) {
     AliTrackContainer* trackCont = new AliTrackContainer(trackName);
     partCont = trackCont;
   }
