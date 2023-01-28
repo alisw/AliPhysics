@@ -116,48 +116,48 @@ void AliAnalysisTaskOmegaDielectron_AccEff::UserCreateOutputObjects() {
   fOutputList->Add(fHist_MC_Omegas_Rapidity);
 
   /// --- --- --- MC histograms - generated/accepted Omegas --- --- --- ///
-  fHist_MC_Omegas_gen = new TH3D("fHist_MC_Omegas_gen", "fHist_MC_Omegas_gen;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});y",  200, 0, 2, 80, 0, 8, 20, -1, 1);
+  fHist_MC_Omegas_gen = new TH3D("fHist_MC_Omegas_gen", "fHist_MC_Omegas_gen;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});y",  200, 0, 2, 160, 0, 8, 20, -1, 1);
   fOutputList->Add(fHist_MC_Omegas_gen);
-  fHist_MC_Omegas_gen_DaughtersinAcc = new TH3D("fHist_MC_Omegas_gen_DaughtersinAcc", "fHist_MC_Omegas_gen_DaughtersinAcc;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});y",  200, 0, 2, 80, 0, 8, 20, -1, 1);
+  fHist_MC_Omegas_gen_DaughtersinAcc = new TH3D("fHist_MC_Omegas_gen_DaughtersinAcc", "fHist_MC_Omegas_gen_DaughtersinAcc;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T} (GeV/#it{c});y",  200, 0, 2, 160, 0, 8, 20, -1, 1);
   fOutputList->Add(fHist_MC_Omegas_gen_DaughtersinAcc);
 
   // --- single electron histos: pt - eta - phi
-  fHist_MC_elec_gen = new TH3D("fHist_MC_elec_gen", "fHist_MC_elec_gen;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 80, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
+  fHist_MC_elec_gen = new TH3D("fHist_MC_elec_gen", "fHist_MC_elec_gen;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 800, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
   fOutputList->Add(fHist_MC_elec_gen);
-  fHist_MC_elec_gen_inAcc = new TH3D("fHist_MC_elec_gen_inAcc", "fHist_MC_elec_gen_inAcc;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 80, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
+  fHist_MC_elec_gen_inAcc = new TH3D("fHist_MC_elec_gen_inAcc", "fHist_MC_elec_gen_inAcc;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 800, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
   fOutputList->Add(fHist_MC_elec_gen_inAcc);
-  fHist_elec_rec_inAcc = new TH3D("fHist_elec_rec_inAcc", "fHist_elec_rec_inAcc;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 80, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
+  fHist_elec_rec_inAcc = new TH3D("fHist_elec_rec_inAcc", "fHist_elec_rec_inAcc;#it{p}_{T,e} (GeV/#it{c});#eta;#phi",800, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
   fOutputList->Add(fHist_elec_rec_inAcc);
-  fHist_elec_rec_inAcc_Track = new TH3D("fHist_elec_rec_inAcc_Track", "fHist_elec_rec_inAcc_Track;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 80, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
+  fHist_elec_rec_inAcc_Track = new TH3D("fHist_elec_rec_inAcc_Track", "fHist_elec_rec_inAcc_Track;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 800, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
   fOutputList->Add(fHist_elec_rec_inAcc_Track);
-  fHist_elec_rec_inAcc_Track_PID = new TH3D("fHist_elec_rec_inAcc_Track_PID", "fHist_elec_rec_inAcc_Track_PID;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 80, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
+  fHist_elec_rec_inAcc_Track_PID = new TH3D("fHist_elec_rec_inAcc_Track_PID", "fHist_elec_rec_inAcc_Track_PID;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 800, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
   fOutputList->Add(fHist_elec_rec_inAcc_Track_PID);
 
   // --- single positron histos: pt - eta - phi
-  fHist_MC_posi_gen = new TH3D("fHist_MC_posi_gen", "fHist_MC_posi_gen;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 80, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
+  fHist_MC_posi_gen = new TH3D("fHist_MC_posi_gen", "fHist_MC_posi_gen;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 800, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
   fOutputList->Add(fHist_MC_posi_gen);
-  fHist_MC_posi_gen_inAcc = new TH3D("fHist_MC_posi_gen_inAcc", "fHist_MC_posi_gen_inAcc;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 80, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
+  fHist_MC_posi_gen_inAcc = new TH3D("fHist_MC_posi_gen_inAcc", "fHist_MC_posi_gen_inAcc;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 800, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
   fOutputList->Add(fHist_MC_posi_gen_inAcc);
-  fHist_posi_rec_inAcc = new TH3D("fHist_posi_rec_inAcc", "fHist_posi_rec_inAcc;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 80, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
+  fHist_posi_rec_inAcc = new TH3D("fHist_posi_rec_inAcc", "fHist_posi_rec_inAcc;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 800, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
   fOutputList->Add(fHist_posi_rec_inAcc);
-  fHist_posi_rec_inAcc_Track = new TH3D("fHist_posi_rec_inAcc_Track", "fHist_posi_rec_inAcc_Track;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 80, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
+  fHist_posi_rec_inAcc_Track = new TH3D("fHist_posi_rec_inAcc_Track", "fHist_posi_rec_inAcc_Track;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 800, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
   fOutputList->Add(fHist_posi_rec_inAcc_Track);
-  fHist_posi_rec_inAcc_Track_PID = new TH3D("fHist_posi_rec_inAcc_Track_PID", "fHist_posi_rec_inAcc_Track_PID;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 80, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
+  fHist_posi_rec_inAcc_Track_PID = new TH3D("fHist_posi_rec_inAcc_Track_PID", "fHist_posi_rec_inAcc_Track_PID;#it{p}_{T,e} (GeV/#it{c});#eta;#phi", 800, 0, 8, 20, -1, 1, 64, 0, 6.4); // 6.4 == 2*PI()
   fOutputList->Add(fHist_posi_rec_inAcc_Track_PID);
 
   /// --- --- --- histograms -> reconstructed Omega --- --- --- ///
   // m - pt - y
-  fHist_MC_Omegas_withoutCuts = new TH3D("fHist_MC_Omegas_withoutCuts", "fHist_MC_Omegas_withoutCuts;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T,ee} (GeV/#it{c});y",   200, 0, 2, 80, 0, 8, 20, -1, 1);
+  fHist_MC_Omegas_withoutCuts = new TH3D("fHist_MC_Omegas_withoutCuts", "fHist_MC_Omegas_withoutCuts;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T,ee} (GeV/#it{c});y",  200, 0, 2, 160, 0, 8, 20, -1, 1);
   fOutputList->Add(fHist_MC_Omegas_withoutCuts);
-  fHist_MC_Omegas_TrackCuts = new TH3D("fHist_MC_Omegas_TrackCuts", "fHist_MC_Omegas_TrackCuts;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T,ee} (GeV/#it{c});y",   200, 0, 2, 80, 0, 8, 20, -1, 1);
+  fHist_MC_Omegas_TrackCuts = new TH3D("fHist_MC_Omegas_TrackCuts", "fHist_MC_Omegas_TrackCuts;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T,ee} (GeV/#it{c});y",  200, 0, 2, 160, 0, 8, 20, -1, 1);
   fOutputList->Add(fHist_MC_Omegas_TrackCuts);
-  fHist_MC_Omegas_TrackPID = new TH3D("fHist_MC_Omegas_TrackPID", "fHist_MC_Omegas_TrackPID;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T,ee} (GeV/#it{c});y",   200, 0, 2, 80, 0, 8, 20, -1, 1);
+  fHist_MC_Omegas_TrackPID = new TH3D("fHist_MC_Omegas_TrackPID", "fHist_MC_Omegas_TrackPID;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T,ee} (GeV/#it{c});y", 200, 0, 2, 160, 0, 8, 20, -1, 1);
   fOutputList->Add(fHist_MC_Omegas_TrackPID);
-  fHist_Rec_Omegas_withoutCuts = new TH3D("fHist_Rec_Omegas_withoutCuts", "fHist_Rec_Omegas_withoutCuts;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T,ee} (GeV/#it{c});y", 200, 0, 2, 80, 0, 8, 20, -1, 1);
+  fHist_Rec_Omegas_withoutCuts = new TH3D("fHist_Rec_Omegas_withoutCuts", "fHist_Rec_Omegas_withoutCuts;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T,ee} (GeV/#it{c});y", 200, 0, 2, 160, 0, 8, 20, -1, 1);
   fOutputList->Add(fHist_Rec_Omegas_withoutCuts);
-  fHist_Rec_Omegas_TrackCuts = new TH3D("fHist_Rec_Omegas_TrackCuts", "fHist_Rec_Omegas_TrackCuts;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T,ee} (GeV/#it{c});y",   200, 0, 2, 80, 0, 8, 20, -1, 1);
+  fHist_Rec_Omegas_TrackCuts = new TH3D("fHist_Rec_Omegas_TrackCuts", "fHist_Rec_Omegas_TrackCuts;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T,ee} (GeV/#it{c});y", 200, 0, 2, 160, 0, 8, 20, -1, 1);
   fOutputList->Add(fHist_Rec_Omegas_TrackCuts);
-  fHist_Rec_Omegas_TrackPID = new TH3D("fHist_Rec_Omegas_TrackPID", "fHist_Rec_Omegas_TrackPID;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T,ee} (GeV/#it{c});y",   200, 0, 2, 80, 0, 8, 20, -1, 1);
+  fHist_Rec_Omegas_TrackPID = new TH3D("fHist_Rec_Omegas_TrackPID", "fHist_Rec_Omegas_TrackPID;#it{m}_{ee} (GeV/#it{c}^{2});#it{p}_{T,ee} (GeV/#it{c});y", 200, 0, 2, 160, 0, 8, 20, -1, 1);
   fOutputList->Add(fHist_Rec_Omegas_TrackPID);
 
   /// --- --- --- EventCuts (for AOD/ ESD) --- --- --- ///
