@@ -82,6 +82,7 @@ set(SRCS
   MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
   MeanPtFluctuations/pp13TeV_MB/AliAnalysisMeanPt.cxx
   MeanPtFluctuations/pp13TeV_MB/AliAnalysisHMMeanPt.cxx
+  MeanPtFluctuations/pp13TeV_MB/AliAnalysisMCMeanPt.cxx
   MeanPtFluctuations_PbPb5020GeV2018/AliAnalysisMeanPtdata.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeCharge.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeFluctuations.cxx
