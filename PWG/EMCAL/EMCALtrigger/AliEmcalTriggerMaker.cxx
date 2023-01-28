@@ -307,6 +307,10 @@ Bool_t AliEmcalTriggerMaker::Run()
     // get the cell info, based in index in array
     Short_t cellId = fCaloCells->GetCellNumber(iCell);
     Double_t amp = fCaloCells->GetAmplitude(iCell);
+    if ( cellId < 0 ) {
+      AliErrorStream() << "Skip: iCell = "<< iCell << "Cell Id = " << cellId <<", E = "<< amp <<std::endl;
+      continue;
+    }
     // get position
     Int_t absId=-1;
     fGeom->GetFastORIndexFromCellIndex(cellId, absId);

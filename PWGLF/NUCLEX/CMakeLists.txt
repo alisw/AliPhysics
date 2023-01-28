@@ -74,8 +74,12 @@ set(SRCS
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisCODEXS3task.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskTRDtriggerTracks.cxx
   Hypernuclei/Hyp2Body/HypTritYield/Sigma_Baryons/AliAnalysisTaskSigmaPlus.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/pdLd/AliAnalysisTask_pdLd.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/pd/AliAnalysisTask_pd.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/pd/AliAnalysisTask_pd_CreateTrees_PairsOnly.cxx
   Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypTritEventTree.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskHe3TriTree.cxx
   Hypernuclei/Hyp3Body/AliAnalysisTaskFindableHypertriton3.cxx
   Hypernuclei/Vertexer2Body/AliVertexerHyperTriton2Body.cxx
   Hypernuclei/Vertexer3Body/AliVertexerHyperTriton3Body.cxx
@@ -106,6 +110,8 @@ set(SRCS
   Nuclei/Nuclei_UE/AliAnalysisTaskDeuteronsRT.cxx
   Nuclei/Nuclei_UE/AliAnalysisTaskDeuteronCoalescence.cxx
   Nuclei/Nuclei_UE/AliAnalysisTaskPythiaCoalescence.cxx
+  Nuclei/Nuclei_UE/AliAnalysisTaskSimpleCoalescenceHelium3.cxx
+  Nuclei/Nuclei_UE/AliAnalysisTaskSimpleCoalescenceDeuteronInJets.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiYield.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskNucleiPIDqa.cxx
   Nuclei/NucleiPbPb/AliAnalysisTaskSignalLoss.cxx
@@ -118,6 +124,7 @@ set(SRCS
   Nuclei/TritonAnalysis/AliAnalysisTaskDeuteronVsMultiplicity_XeXe.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskLightNuclei_XeXe_MC.cxx
   Nuclei/TritonAnalysis/AliAnalysisTaskDeuteron_XeXe_MC.cxx    
+  Nuclei/TritonAnalysis/AliAnalysisTaskDeuteron_XeXe_MC_noMult.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2SP.cxx
   Nuclei/v2/AliAnalysisTaskNucleiv2pPb.cxx

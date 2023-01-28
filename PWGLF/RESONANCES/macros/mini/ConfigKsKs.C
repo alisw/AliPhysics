@@ -14,36 +14,37 @@
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #include <PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C>
 #endif
+
 Bool_t ConfigKsKs
 (
- AliRsnMiniAnalysisTask *task,
- Bool_t                  isPP,
- Bool_t                  isMC,
+ AliRsnMiniAnalysisTask *task = 0x0,
+ Bool_t                  isPP = kTRUE,
+ Bool_t                  isMC = kFALSE,
  Int_t                   customQualityCutsID=AliRsnCutSetDaughterParticle::kDisableCustom,
- Int_t                   aodFilterBit,
+ Int_t                   aodFilterBit = 32,
  Bool_t                  enableMonitor=kTRUE,
  Bool_t                  enaMultSel = kTRUE,    //enable multiplicity axis
- TString                 monitorOpt="",
+ TString                 monitorOpt = kTURE,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidphikstarpPb2016,
  Float_t  ThetaStar=AliRsnMiniValue::kCosThetaHeAbs,
- Float_t                 piPIDCut,
- Float_t                 pi_k0s_PIDCut,
- Float_t                 massTol,
- Float_t                 massTolVeto,
- Int_t 			 tol_switch,
- Double_t                tol_sigma,
- Float_t                 pLife,
- Float_t                 radiuslow,
- Bool_t                  Switch,
- Float_t                 k0sDCA,
- Float_t                 k0sCosPoinAn,
- Float_t                 k0sDaughDCA,
- const char             *suffix,
- AliRsnCutSet           *PairCutsSame,
- AliRsnCutSet           *PairCutsMix,
- Float_t                 DCAxy,
- Bool_t                  enableSys,
- Int_t                   Sys,
+ Float_t                 piPIDCut = 3.0,
+ Float_t                 pi_k0s_PIDCut=5.0,
+ Float_t                 massTol=0.03,
+ Float_t                 massTolVeto =0.03,
+ Int_t 			 tol_switch = 1,
+ Double_t                tol_sigma =4.0,
+ Float_t                 pLife = 20.0,
+ Float_t                 radiuslow =0.5,
+ Bool_t                  Switch = kTRUE,
+ Float_t                 k0sDCA =1.0,
+ Float_t                 k0sCosPoinAn=0.997,
+ Float_t                 k0sDaughDCA =1.0,
+ const char             *suffix =0x0,
+ AliRsnCutSet           *PairCutsSame = 0x0,
+ AliRsnCutSet           *PairCutsMix = 0x0,
+ Float_t                 DCAxy = 0.06,
+ Bool_t                  enableSys = kTRUE,
+ Int_t                   Sys = kTURE,
  Float_t                masslow = 0.5,         //inv mass axis low edge
  Float_t                massup = 2.5,          //inv mass axis upper edge 
  Int_t                  nbins = 200,           //inv mass axis n bin
@@ -88,12 +89,13 @@ Bool_t ConfigKsKs
     /////////////////////////////////////////////////////////////
     //
   // selections for pion daugthers of K0s
-    AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("qualityDaughterK0s");
+     AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("qualityDaughterK0s");
+  //    AliAODtrackCuts *aodTrackCuts = new AliAODtrackCuts("qualityDaughterK0s");
     esdTrackCuts->SetEtaRange(-0.8,0.8);
     esdTrackCuts->SetRequireTPCRefit();
-    esdTrackCuts->SetAcceptKinkDaughters(0); //
+   esdTrackCuts->SetAcceptKinkDaughters(0); //
     // esdTrackCuts->SetMinNCrossedRowsTPC(crossedRows);
-    esdTrackCuts->SetMinNCrossedRowsTPC(70);
+   esdTrackCuts->SetMinNCrossedRowsTPC(70);
     //esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(rowsbycluster);
     esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
     esdTrackCuts->SetMaxChi2PerClusterTPC(100);

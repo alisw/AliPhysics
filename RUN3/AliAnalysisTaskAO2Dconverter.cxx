@@ -95,7 +95,7 @@
 ClassImp(AliAnalysisTaskAO2Dconverter);
 
 const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
-  "O2collision",
+  "O2collision_001",
   "DbgEventExtra",
   "O2track",
   "O2trackcov",
@@ -124,8 +124,11 @@ const TString AliAnalysisTaskAO2Dconverter::TreeName[kTrees] = {
   "O2hf2prong",
   "O2hf3prong",
   "O2hfcascade",
-  "O2hfdstar"
-  };
+  "O2hfdstar",
+  "O2hepmcxsection",
+  "O2hepmcpdfinfo",
+  "O2hepmcheavyion"
+};
 
 const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
   "Collision tree",
@@ -157,7 +160,11 @@ const TString AliAnalysisTaskAO2Dconverter::TreeTitle[kTrees] = {
   "HF 2 prong candidates",
   "HF 3 prong candidates",
   "HF cascade candidates",
-  "HF D* candidates"};
+  "HF D* candidates",
+  "O2 HepMc Cross Sections",
+  "O2 HepMc Pdf Info",
+  "O2 HepMc Heavy Ion"
+};
 
 const TClass *AliAnalysisTaskAO2Dconverter::Generator[kGenerators] = {AliGenEventHeader::Class(), AliGenCocktailEventHeader::Class(), AliGenDPMjetEventHeader::Class(), AliGenEpos3EventHeader::Class(), AliGenEposEventHeader::Class(), AliGenEventHeaderTunedPbPb::Class(), AliGenGeVSimEventHeader::Class(), AliGenHepMCEventHeader::Class(), AliGenHerwigEventHeader::Class(), AliGenHijingEventHeader::Class(), AliGenPythiaEventHeader::Class(), AliGenToyEventHeader::Class()};
 
@@ -322,6 +329,9 @@ void AliAnalysisTaskAO2Dconverter::UserCreateOutputObjects()
     DisableTree(kMcTrackLabel);
     DisableTree(kMcCaloLabel);
     DisableTree(kMcCollisionLabel);
+    DisableTree(kHepMcCrossSections);
+    DisableTree(kHepMcPdfInfo);
+    DisableTree(kHepMcHeavyIon);
     break;
   default:
     break;
@@ -1126,7 +1136,66 @@ void AliAnalysisTaskAO2Dconverter::InitTF(ULong64_t tfId)
       tCollisionLabels->Branch("fMcMask", &mccollisionlabel.fMcMask, "fMcMask/s");
       tCollisionLabels->SetBasketSize("*", fBasketSizeEvents);
     }
-  }
+
+    // HepMC trees
+    // Cross-sections
+    TTree *tHepMcCrossSections = CreateTree(kHepMcCrossSections);
+    if (fTreeStatus[kHepMcCrossSections])
+    {
+      tHepMcCrossSections->Branch("fIndexMcCollisions", &hepMcCrossSections.fIndexMcCollisions, "fIndexMcCollisions/I");
+      // The generator may differ from the one in the MC collision or from the other HepMC tables in case of cocktail
+      tHepMcCrossSections->Branch("fGeneratorsID", &hepMcCrossSections.fGeneratorsID, "fGeneratorsID/S");
+
+      tHepMcCrossSections->Branch("fAccepted", &hepMcCrossSections.fAccepted, "fAccepted/l");
+      tHepMcCrossSections->Branch("fAttempted", &hepMcCrossSections.fAttempted, "fAttempted/l");
+      tHepMcCrossSections->Branch("fXsectGen", &hepMcCrossSections.fXsectGen, "fXsectGen/F");
+      tHepMcCrossSections->Branch("fXsectErr", &hepMcCrossSections.fXsectErr, "fXsectErr/F");
+      tHepMcCrossSections->Branch("fPtHard", &hepMcCrossSections.fPtHard, "fPtHard/F");
+    }
+
+    // PDF Information
+    TTree *tHepMcPdfInfo = CreateTree(kHepMcPdfInfo);
+    if (fTreeStatus[kHepMcPdfInfo])
+    {
+      tHepMcPdfInfo->Branch("fIndexMcCollisions", &hepMcPdfInfo.fIndexMcCollisions, "fIndexMcCollisions/I");
+      // The generator may differ from the one in the MC collision or from the other HepMC tables in case of cocktail
+      tHepMcPdfInfo->Branch("fGeneratorsID", &hepMcPdfInfo.fGeneratorsID, "fGeneratorsID/S");
+
+      tHepMcPdfInfo->Branch("fId1", &hepMcPdfInfo.fId1, "fId1/I");
+      tHepMcPdfInfo->Branch("fId2", &hepMcPdfInfo.fId2, "fId2/I");
+      tHepMcPdfInfo->Branch("fPdfId1", &hepMcPdfInfo.fPdfId1, "fPdfId1/I");
+      tHepMcPdfInfo->Branch("fPdfId2", &hepMcPdfInfo.fPdfId2, "fPdfId2/I");
+      tHepMcPdfInfo->Branch("fX1", &hepMcPdfInfo.fX1, "fX1/F");
+      tHepMcPdfInfo->Branch("fX2", &hepMcPdfInfo.fX2, "fX2/F");
+      tHepMcPdfInfo->Branch("fScalePdf", &hepMcPdfInfo.fScalePdf, "fScalePdf/F");
+      tHepMcPdfInfo->Branch("fPdf1", &hepMcPdfInfo.fPdf1, "fPdf1/F");
+      tHepMcPdfInfo->Branch("fPdf2", &hepMcPdfInfo.fPdf2, "fPdf2/F");
+    }
+
+    // Heavy Ion information
+    TTree *tHepMcHeavyIon = CreateTree(kHepMcHeavyIon);
+    if (fTreeStatus[kHepMcHeavyIon])
+    {
+      tHepMcHeavyIon->Branch("fIndexMcCollisions", &hepMcHeavyIon.fIndexMcCollisions, "fIndexMcCollisions/I");
+      // The generator may differ from the one in the MC collision or from the other HepMC tables in case of cocktail
+      tHepMcHeavyIon->Branch("fGeneratorsID", &hepMcHeavyIon.fGeneratorsID, "fGeneratorsID/S");
+
+      tHepMcHeavyIon->Branch("fNcollHard", &hepMcHeavyIon.fNcollHard, "fNcollHard/I");
+      tHepMcHeavyIon->Branch("fNpartProj", &hepMcHeavyIon.fNpartProj, "fNpartProj/I");
+      tHepMcHeavyIon->Branch("fNpartTarg", &hepMcHeavyIon.fNpartTarg, "fNpartTarg/I");
+      tHepMcHeavyIon->Branch("fNcoll", &hepMcHeavyIon.fNcoll, "fNcoll/I");
+      tHepMcHeavyIon->Branch("fNNwoundedCollisions", &hepMcHeavyIon.fNNwoundedCollisions, "fNNwoundedCollisions/I");
+      tHepMcHeavyIon->Branch("fNwoundedNCollisions", &hepMcHeavyIon.fNwoundedNCollisions, "fNwoundedNCollisions/I");
+      tHepMcHeavyIon->Branch("fNwoundedNwoundedCollisions", &hepMcHeavyIon.fNwoundedNwoundedCollisions, "fNwoundedNwoundedCollisions/I");
+      tHepMcHeavyIon->Branch("fSpectatorNeutrons", &hepMcHeavyIon.fSpectatorNeutrons, "fSpectatorNeutrons/I");
+      tHepMcHeavyIon->Branch("fSpectatorProtons", &hepMcHeavyIon.fSpectatorProtons, "fSpectatorProtons/I");
+      tHepMcHeavyIon->Branch("fImpactParameter", &hepMcHeavyIon.fImpactParameter, "fImpactParameter/F");
+      tHepMcHeavyIon->Branch("fEventPlaneAngle", &hepMcHeavyIon.fEventPlaneAngle, "fEventPlaneAngle/F");
+      tHepMcHeavyIon->Branch("fEccentricity", &hepMcHeavyIon.fEccentricity, "fEccentricity/F");
+      tHepMcHeavyIon->Branch("fSigmaInelNN", &hepMcHeavyIon.fSigmaInelNN, "fSigmaInelNN/F");
+      tHepMcHeavyIon->Branch("fCentrality", &hepMcHeavyIon.fCentrality, "fCentrality/F");
+    }
+  } // End if(fTaskMode == kMC)
 
   if (fStoreHF) {
     // HF 2 prong candidates
@@ -1258,8 +1327,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
 
     collision.fCovXX = AliMathBase::TruncateFloatFraction(covmatrix[0], mCollisionPositionCov);
     collision.fCovXY = AliMathBase::TruncateFloatFraction(covmatrix[1], mCollisionPositionCov);
-    collision.fCovXZ = AliMathBase::TruncateFloatFraction(covmatrix[2], mCollisionPositionCov);
-    collision.fCovYY = AliMathBase::TruncateFloatFraction(covmatrix[3], mCollisionPositionCov);
+    collision.fCovXZ = AliMathBase::TruncateFloatFraction(covmatrix[3], mCollisionPositionCov);
+    collision.fCovYY = AliMathBase::TruncateFloatFraction(covmatrix[2], mCollisionPositionCov);
     collision.fCovYZ = AliMathBase::TruncateFloatFraction(covmatrix[4], mCollisionPositionCov);
     collision.fCovZZ = AliMathBase::TruncateFloatFraction(covmatrix[5], mCollisionPositionCov);
 
@@ -1356,32 +1425,34 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     if (fEventCuts.PassedCut(AliEventCuts::kAllCuts))
       SETBIT(run2bcinfo.fEventCuts, kAliEventCutsAccepted);
 
-    if (fTriggerAnalysis.IsSPDVtxPileup(fInputEvent))
-      SETBIT(run2bcinfo.fEventCuts, kIsPileupFromSPD);
+    if (fUseTriggerAnalysis) {
+      if (fTriggerAnalysis.IsSPDVtxPileup(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsPileupFromSPD);
 
-    if (fTriggerAnalysis.IsV0PFPileup(fInputEvent))
-      SETBIT(run2bcinfo.fEventCuts, kIsV0PFPileup);
+      if (fTriggerAnalysis.IsV0PFPileup(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsV0PFPileup);
 
-    if (fTriggerAnalysis.IsHVdipTPCEvent(fInputEvent))
-      SETBIT(run2bcinfo.fEventCuts, kIsTPCHVdip);
+      if (fTriggerAnalysis.IsHVdipTPCEvent(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsTPCHVdip);
 
-    if (fTriggerAnalysis.IsLaserWarmUpTPCEvent(fInputEvent))
-      SETBIT(run2bcinfo.fEventCuts, kIsTPCLaserWarmUp);
+      if (fTriggerAnalysis.IsLaserWarmUpTPCEvent(fInputEvent))
+        SETBIT(run2bcinfo.fEventCuts, kIsTPCLaserWarmUp);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHCO))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHCO);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHCO))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHCO);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHJT))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHJT);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHJT))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHJT);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHSE))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHSE);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHSE))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHSE);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHQU))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHQU);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHQU))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHQU);
 
-    if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHEE))
-      SETBIT(run2bcinfo.fEventCuts, kTRDHEE);
+      if (fTriggerAnalysis.TRDTrigger(fInputEvent,AliTriggerAnalysis::kTRDHEE))
+        SETBIT(run2bcinfo.fEventCuts, kTRDHEE);
+    }
   }
   else {
     //PH AOD case: What should we use here?
@@ -1585,6 +1656,11 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (aodmcpt && aodmcpt->IsPhysicalPrimary()) // AOD
         mcparticle.fFlags |= MCParticleFlags::PhysicalPrimary;
 
+      if (MCEvt && MCEvt->IsFromBGEvent(i)) // ESD
+        mcparticle.fFlags |= MCParticleFlags::FromBackgroundEvent;
+      if (aodmcpt && aodmcpt->IsFromSubsidiaryEvent()) // AOD: PH Not sure if corresponds to BKG event
+        mcparticle.fFlags |= MCParticleFlags::FromBackgroundEvent;
+
       mcparticle.fIndexArray_Mothers_size = 1;
       mcparticle.fIndexArray_Mothers[0] = particle ? particle->GetMother(0) : aodmcpt->GetMother();
       if (mcparticle.fIndexArray_Mothers[0] > -1)
@@ -1600,6 +1676,8 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         mcparticle.fIndexSlice_Daughters[1] = kineIndex[mcparticle.fIndexSlice_Daughters[1]] > -1 ? kineIndex[mcparticle.fIndexSlice_Daughters[1]] + fOffsetLabel : -1;
       if (mcparticle.fIndexSlice_Daughters[0] > -1 && mcparticle.fIndexSlice_Daughters[1] == -1)
         mcparticle.fIndexSlice_Daughters[1] = mcparticle.fIndexSlice_Daughters[0];
+      if (mcparticle.fIndexSlice_Daughters[1] > -1 && mcparticle.fIndexSlice_Daughters[0] == -1)
+        mcparticle.fIndexSlice_Daughters[0] = mcparticle.fIndexSlice_Daughters[1];
       mcparticle.fWeight = AliMathBase::TruncateFloatFraction(particle ? particle->GetWeight() : 1., mMcParticleW);
 
       mcparticle.fPx = AliMathBase::TruncateFloatFraction(particle ? particle->Px() : aodmcpt->Px(), mMcParticleMom);
@@ -2657,7 +2735,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
       if (fStoreHF) {
         // Read input from HF task
         TTree *hf2ProngCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hf2ProngCandidateTree");
-        Printf("HF hf2ProngCandidateTree has %lld entries", hf2ProngCandidateTree->GetEntries());
+        //Printf("HF hf2ProngCandidateTree has %lld entries", hf2ProngCandidateTree->GetEntries());
         hf2ProngCandidateTree->SetBranchAddress("trackId0", &hf2Prong.fIndexTracks_0);
         hf2ProngCandidateTree->SetBranchAddress("trackId1", &hf2Prong.fIndexTracks_1);
         hf2ProngCandidateTree->SetBranchAddress("hfflag", &hf2Prong.fHFflag);
@@ -2672,7 +2750,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         eventextra.fNentries[kHF2Prong] = n2prong_filled;
 
         TTree *hf3ProngCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hf3ProngCandidateTree");
-        Printf("HF hf3ProngCandidateTree has %lld entries", hf3ProngCandidateTree->GetEntries());
+        //Printf("HF hf3ProngCandidateTree has %lld entries", hf3ProngCandidateTree->GetEntries());
         hf3ProngCandidateTree->SetBranchAddress("trackId0", &hf3Prong.fIndexTracks_0);
         hf3ProngCandidateTree->SetBranchAddress("trackId1", &hf3Prong.fIndexTracks_1);
         hf3ProngCandidateTree->SetBranchAddress("trackId2", &hf3Prong.fIndexTracks_2);
@@ -2688,7 +2766,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         eventextra.fNentries[kHF3Prong] = hf3ProngCandidateTree->GetEntries();
 
         TTree *hfDstarCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hfDstarCandidateTree");
-        Printf("HF hfDstarCandidateTree has %lld entries", hfDstarCandidateTree->GetEntries());
+        //Printf("HF hfDstarCandidateTree has %lld entries", hfDstarCandidateTree->GetEntries());
         hfDstarCandidateTree->SetBranchAddress("trackSoftPi", &hfDStar.fIndexTracks_0);
         hfDstarCandidateTree->SetBranchAddress("trackD0", &hfDStar.fIndexHf2Prongs);
 
@@ -2701,7 +2779,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
         eventextra.fNentries[kHFDStar] = hfDstarCandidateTree->GetEntries();
 
         TTree *hfCascadeCandidateTree = (TTree*) fInputHandler->GetUserInfo()->FindObject("hfCascadeCandidateTree");
-        Printf("HF hfCascadeCandidateTree has %lld entries", hfCascadeCandidateTree->GetEntries());
+        //Printf("HF hfCascadeCandidateTree has %lld entries", hfCascadeCandidateTree->GetEntries());
         Int_t v0Index = -1;
         hfCascadeCandidateTree->SetBranchAddress("v0index", &v0Index);
         hfCascadeCandidateTree->SetBranchAddress("trackBachel", &hfCascades.fIndexTracks_0);
@@ -2736,6 +2814,7 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     if (!MCvtx && !MCHeader) //Check on the MC vertex
       AliFatal("Could not retrieve MC vertex");
 
+    // Fill MC collision
     mccollision.fIndexBCs = fBCCount;
 
     mccollision.fPosX = AliMathBase::TruncateFloatFraction(MCvtx ? MCvtx->GetX() : MCHeader->GetVtxX(), mCollisionPosition);
@@ -2781,6 +2860,19 @@ void AliAnalysisTaskAO2Dconverter::FillEventInTF()
     }
     mccollision.fImpactParameter = AliMathBase::TruncateFloatFraction(mccollision.fImpactParameter, mCollisionPosition);
     eventextra.fNentries[kMcCollision] = 1;
+
+    // HepMC inforrmation
+    hepMcCrossSections.Reset();
+    hepMcCrossSections.fIndexMcCollisions = fBCCount;
+    hepMcCrossSections.Fill(mcGenH, this);
+
+    hepMcPdfInfo.Reset();
+    hepMcPdfInfo.fIndexMcCollisions = fBCCount;
+    hepMcPdfInfo.Fill(mcGenH, this);
+
+    hepMcHeavyIon.Reset();
+    hepMcHeavyIon.fIndexMcCollisions = fBCCount;
+    hepMcHeavyIon.Fill(mcGenH, this);
   }
   else
   {
@@ -3201,6 +3293,312 @@ AliAnalysisTaskAO2Dconverter::FwdTrackPars AliAnalysisTaskAO2Dconverter::MUONtoF
     convertedTrack.fRho1PtTgl = 0;
 
   return convertedTrack;
+}
+
+//_________________________________________________________________________________________________
+AliAnalysisTaskAO2Dconverter::MCGeneratorID AliAnalysisTaskAO2Dconverter::GetMCGeneratorID(AliGenEventHeader * genHeader) {
+  // Not very elegant way of finding the generator's ID
+  if (genHeader->InheritsFrom("AliGenDPMjetEventHeader")) {
+    return kAliGenDPMjetEventHeader;
+  }
+  if (genHeader->InheritsFrom("AliGenEpos3EventHeader")) {
+    return kAliGenEpos3EventHeader;
+  }
+  if (genHeader->InheritsFrom("AliGenEposEventHeader")) {
+    return kAliGenEposEventHeader;
+  }
+  if (genHeader->InheritsFrom("AliGenEventHeaderTunedPbPb")) {
+    return kAliGenEventHeaderTunedPbPb;
+  }
+  if (genHeader->InheritsFrom("AliGenGeVSimEventHeader")) {
+    return kAliGenGeVSimEventHeader;
+  }
+  if (genHeader->InheritsFrom("AliGenHepMCEventHeader")) {
+    return kAliGenHepMCEventHeader;
+  }
+  if (genHeader->InheritsFrom("AliGenHerwigEventHeader")) {
+    return kAliGenHerwigEventHeader;
+  }
+  if (genHeader->InheritsFrom("AliGenHijingEventHeader")) {
+    return kAliGenHijingEventHeader;
+  }
+  if (genHeader->InheritsFrom("AliGenPythiaEventHeader")) {
+    return kAliGenPythiaEventHeader;
+  }
+  if (genHeader->InheritsFrom("AliGenToyEventHeader")) {
+    return kAliGenToyEventHeader;
+  }
+  return kAliGenCocktailEventHeader;
+}
+//_________________________________________________________________________________________________
+void AliAnalysisTaskAO2Dconverter::CrossSections::Print() {
+  std::cout << "Content of CrossSections --------------->" << std::endl;
+  std::cout << "fGeneratorsID = " << fGeneratorsID << std::endl;
+  std::cout << "fAccepted = " << fAccepted << std::endl;
+  std::cout << "fAttempted = " << fAttempted << std::endl;
+  std::cout << "fXsectGen = " << fXsectGen << std::endl;
+  std::cout << "fXsectErr = " << fXsectErr << std::endl;
+  std::cout << "fPtHard = " << fPtHard << std::endl;
+  std::cout << "<---------------" << std::endl;
+}
+
+//_________________________________________________________________________________________________
+void AliAnalysisTaskAO2Dconverter::CrossSections::Reset() {
+  fIndexMcCollisions = -1;
+  fGeneratorsID = 0u;
+  fAccepted = 0;
+  fAttempted = 0;
+  fXsectGen = -999.f;
+  fXsectErr = -999.f;
+  fPtHard = -999.f;
+}
+
+//_________________________________________________________________________________________________
+void AliAnalysisTaskAO2Dconverter::CrossSections::Fill(AliGenEventHeader * genHeader, AliAnalysisTaskAO2Dconverter * task) {
+  if (!genHeader) {
+    // Protection, normally genHeader should always be set
+    std::cerr << "No AliGenEventHeader!" << std::endl;
+    return;
+  }
+  // Define the number of accepted events from the map
+  const std::map<std::string, Float_t> weights = genHeader->GetEventWeights();
+  fAccepted = weights.size();
+
+  fGeneratorsID = AliAnalysisTaskAO2Dconverter::GetMCGeneratorID(genHeader);
+  switch (fGeneratorsID) {
+  case kAliGenDPMjetEventHeader: {
+    AliGenDPMjetEventHeader * hepMcHeader = (AliGenDPMjetEventHeader*)genHeader;
+    fAttempted = hepMcHeader->Trials();
+    fXsectGen = -999.f;
+    fXsectErr = -999.f;
+    fPtHard = -999.f;
+    break;
+  }
+  case kAliGenHepMCEventHeader: {
+    AliGenHepMCEventHeader * hepMcHeader = (AliGenHepMCEventHeader*)genHeader;
+    fAttempted = hepMcHeader->ntrials();
+    fXsectGen = hepMcHeader->sigma_gen();
+    fXsectErr = hepMcHeader->sigma_err();
+    fPtHard = hepMcHeader->pthard();
+    break;
+  }
+  case kAliGenHerwigEventHeader: {
+    AliGenHerwigEventHeader * hepMcHeader = (AliGenHerwigEventHeader*)genHeader;
+    fAttempted = hepMcHeader->Trials();
+    fXsectGen = -999.f;
+    fXsectErr = -999.f;
+    fPtHard = hepMcHeader->GetPtHard();
+    break;
+  }
+  case kAliGenHijingEventHeader: {
+    AliGenHijingEventHeader * hepMcHeader = (AliGenHijingEventHeader*)genHeader;
+    fAttempted = hepMcHeader->Trials();
+    fXsectGen = -999.f;
+    fXsectErr = -999.f;
+    fPtHard = -999.f;
+    break;
+  }
+  case kAliGenPythiaEventHeader: {
+    AliGenPythiaEventHeader * hepMcHeader = (AliGenPythiaEventHeader*)genHeader;
+    fAttempted = hepMcHeader->Trials();
+    fXsectGen = hepMcHeader->GetXsection();
+    fXsectErr = -999;
+    fPtHard = hepMcHeader->GetPtHard();
+    break;
+  }
+  default: {
+    fAttempted = 0;
+    fXsectGen = -999.f;
+    fXsectErr = -999.f;
+    fPtHard = -999.f;
+    break;
+  }
+  }
+  task->FillTree(kHepMcCrossSections);
+
+  // Special case - AliGenCocktailEventHeader
+  if (fGeneratorsID == kAliGenCocktailEventHeader) {
+    TList* genList = ((AliGenCocktailEventHeader*)genHeader)->GetHeaders();
+    TListIter next(genList);
+    TObject * to;
+    while((to=next())) {
+      Fill((AliGenEventHeader *)to, task);
+    }
+  }
+}
+
+//_________________________________________________________________________________________________
+void AliAnalysisTaskAO2Dconverter::PdfInfo::Print() {
+  std::cout << "Content of PdfInfo --------------->" << std::endl;
+  std::cout << "fGeneratorsID = " << fGeneratorsID << std::endl;
+  std::cout << "fId1 = " << fId1 << std::endl;
+  std::cout << "fId2 = " << fId2 << std::endl;
+  std::cout << "fPdfId1 = " << fPdfId1 << std::endl;
+  std::cout << "fPdfId2 = " << fPdfId2 << std::endl;
+  std::cout << "fX1 = " << fX1 << std::endl;
+  std::cout << "fX2 = " << fX2 << std::endl;
+  std::cout << "fScalePdf = " << fScalePdf << std::endl;
+  std::cout << "fPdf1 = " << fPdf1 << std::endl;
+  std::cout << "fPdf2 = " << fPdf2 << std::endl;
+  std::cout << "<---------------" << std::endl;
+}
+
+//_________________________________________________________________________________________________
+void AliAnalysisTaskAO2Dconverter::PdfInfo::Reset(){
+  fIndexMcCollisions = -1;
+  fGeneratorsID = 0u;
+  fId1 = 0;
+  fId2 = 0;
+  fPdfId1 = 0;
+  fPdfId2 = 0;
+  fX1 = 0.f;
+  fX2 = 0.f;
+  fScalePdf = 0.f;
+  fPdf1 = 0.f;
+  fPdf2 = 0.f;
+}
+
+//_________________________________________________________________________________________________
+void AliAnalysisTaskAO2Dconverter::PdfInfo::Fill(AliGenEventHeader * genHeader, AliAnalysisTaskAO2Dconverter * task) {
+  if (!genHeader) {
+    // Protection, normally genHeader should always be set
+    std::cerr << "No AliGenEventHeader!" << std::endl;
+    return;
+  }
+  fGeneratorsID = AliAnalysisTaskAO2Dconverter::GetMCGeneratorID(genHeader);
+  if (fGeneratorsID == kAliGenHepMCEventHeader) {
+    AliGenHepMCEventHeader * hepMcHeader = (AliGenHepMCEventHeader*)genHeader;
+
+    fId1 = hepMcHeader->id1();
+    fId2 = hepMcHeader->id2();
+    fPdfId1 = hepMcHeader->pdf_id1();
+    fPdfId2 = hepMcHeader->pdf_id2();
+    fX1 = hepMcHeader->x1();
+    fX2 = hepMcHeader->x2();
+    fScalePdf = hepMcHeader->scalePDF();
+    fPdf1 = hepMcHeader->pdf1();
+    fPdf2 = hepMcHeader->pdf2();
+    task->FillTree(kHepMcPdfInfo);
+    return;
+  }
+  // Special case - AliGenCocktailEventHeader
+  if (fGeneratorsID == kAliGenCocktailEventHeader) {
+    TList* genList = ((AliGenCocktailEventHeader*)genHeader)->GetHeaders();
+    TListIter next(genList);
+    TObject * to;
+    while((to=next())) {
+      Fill((AliGenEventHeader *)to, task);
+    }
+  }
+}
+//_________________________________________________________________________________________________
+void AliAnalysisTaskAO2Dconverter::HeavyIon::Print() {
+  std::cout << "Content of HeavyIon --------------->" << std::endl;
+  std::cout << "fGeneratorsID = " << fGeneratorsID << std::endl;
+  std::cout << "fNcollHard = " << fNcollHard << std::endl;
+  std::cout << "fNpartProj = " << fNpartProj << std::endl;
+  std::cout << "fNpartTarg = " << fNpartTarg << std::endl;
+  std::cout << "fNcoll = " << fNcoll << std::endl;
+  std::cout << "fNNwoundedCollisions = " << fNNwoundedCollisions << std::endl;
+  std::cout << "fNwoundedNCollisions = " << fNwoundedNCollisions << std::endl;
+  std::cout << "fNwoundedNwoundedCollisions = " << fNwoundedNwoundedCollisions << std::endl;
+  std::cout << "fSpectatorNeutrons = " << fSpectatorNeutrons << std::endl;
+  std::cout << "fSpectatorProtons = " << fSpectatorProtons << std::endl;
+  std::cout << "fImpactParameter = " << fImpactParameter << std::endl;
+  std::cout << "fEventPlaneAngle = " << fEventPlaneAngle << std::endl;
+  std::cout << "fEccentricity = " << fEccentricity << std::endl;
+  std::cout << "fSigmaInelNN = " << fSigmaInelNN << std::endl;
+  std::cout << "fCentrality = " << fCentrality << std::endl;
+  std::cout << "<---------------" << std::endl;
+}
+
+//_________________________________________________________________________________________________
+void AliAnalysisTaskAO2Dconverter::HeavyIon::Reset(){
+  fIndexMcCollisions = -1;
+  fGeneratorsID = 0u;
+  fNcollHard = -999;
+  fNpartProj = -999;
+  fNpartTarg = -999;
+  fNcoll = -999;
+  fNNwoundedCollisions = -999;
+  fNwoundedNCollisions = -999;
+  fNwoundedNwoundedCollisions = -999;
+  fSpectatorNeutrons = -999;
+  fSpectatorProtons = -999;
+  fImpactParameter = -999.f;
+  fEventPlaneAngle = 0.f;
+  fEccentricity = 0.f;
+  fSigmaInelNN = -999.f;
+  fCentrality = -999.f;
+}
+
+//_________________________________________________________________________________________________
+void AliAnalysisTaskAO2Dconverter::HeavyIon::Fill(AliGenEventHeader * genHeader, AliAnalysisTaskAO2Dconverter * task) {
+  if (!genHeader) {
+    // Protection, normally genHeader should always be set
+    std::cerr << "No AliGenEventHeader!" << std::endl;
+    return;
+  }
+  fGeneratorsID = AliAnalysisTaskAO2Dconverter::GetMCGeneratorID(genHeader);
+  if (fGeneratorsID == kAliGenHepMCEventHeader) {
+    // The information is already available
+    AliGenHepMCEventHeader * hepMcHeader = (AliGenHepMCEventHeader*)genHeader;
+
+    fNcollHard = hepMcHeader->Ncoll_hard();
+    fNpartProj = hepMcHeader->Npart_proj();
+    fNpartTarg = hepMcHeader->Npart_targ();
+    fNcoll = hepMcHeader->Ncoll();
+    fNNwoundedCollisions = hepMcHeader->N_Nwounded_collisions();
+    fNwoundedNCollisions = hepMcHeader->Nwounded_N_collisions();
+    fNwoundedNwoundedCollisions = hepMcHeader->Nwounded_Nwounded_collisions();
+    fSpectatorNeutrons = hepMcHeader->spectator_neutrons();
+    fSpectatorProtons = hepMcHeader->spectator_protons();
+    fImpactParameter = hepMcHeader->impact_parameter();
+    fEventPlaneAngle = hepMcHeader->event_plane_angle();
+    fEccentricity = hepMcHeader->eccentricity();
+    fSigmaInelNN = hepMcHeader->sigma_inel_NN();
+    //PH fCentrality is not in HepMC
+    task->FillTree(kHepMcHeavyIon);
+    return;
+  }
+  if (genHeader->InheritsFrom("AliCollisionGeometry")) {
+    // Extracting form AliCollisionInfo
+    // Covers: AliGenDPMjetEventHeader, AliGenEpos3EventHeader,
+    //         AliGenEposEventHeader, AliGenHijingEventHeader,
+    //         AliGenHydjetEventHeader
+    AliCollisionGeometry * hepMcHeader = (AliCollisionGeometry*)genHeader;
+
+    fNcollHard = hepMcHeader->HardScatters();
+    fNpartProj = hepMcHeader->ProjectileParticipants();
+    fNpartTarg = hepMcHeader->TargetParticipants();
+    fNcoll = hepMcHeader->NN();
+    fNNwoundedCollisions = hepMcHeader->NNw();
+    fNwoundedNCollisions = hepMcHeader->NwN();
+    fNwoundedNwoundedCollisions = hepMcHeader->NwNw();
+    fSpectatorNeutrons = hepMcHeader->ProjSpectatorsn() + hepMcHeader->TargSpectatorsn();
+    fSpectatorProtons = hepMcHeader->ProjSpectatorsp() + hepMcHeader->TargSpectatorsp();
+    fImpactParameter = hepMcHeader->ImpactParameter();
+    fEventPlaneAngle = hepMcHeader->ReactionPlaneAngle();
+
+    //PH fEccentricity, fSigmaInelNN, fCentrallity are not in AliCollisionGeometry
+    task->FillTree(kHepMcHeavyIon);
+    return;
+  }
+  if (fGeneratorsID == kAliGenEventHeaderTunedPbPb) {
+    AliGenEventHeaderTunedPbPb * hepMcHeader = (AliGenEventHeaderTunedPbPb*)genHeader;
+    fCentrality = hepMcHeader->GetCentrality();
+    task->FillTree(kHepMcHeavyIon);
+    return;
+  }
+  // Special case - AliGenCocktailEventHeader
+  if (fGeneratorsID == kAliGenCocktailEventHeader) {
+    TList* genList = ((AliGenCocktailEventHeader*)genHeader)->GetHeaders();
+    TListIter next(genList);
+    TObject * to;
+    while((to=next())) {
+      Fill((AliGenEventHeader *)to, task);
+    }
+  }
 }
 
 ////////////////////////////////////////////////////////////

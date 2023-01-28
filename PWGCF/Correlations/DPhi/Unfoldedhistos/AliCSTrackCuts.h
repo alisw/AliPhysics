@@ -11,6 +11,7 @@
 
 class TH1F;
 class TH2F;
+class TFormula;
 class AliESDtrackCuts;
 class AliVTrack;
 
@@ -44,14 +45,15 @@ public:
   /// \enum cutsIds
   /// \brief The ids of the different track cuts currently supported
   enum cutsIds {
-    kNotConstrainedCut,              ///< not constrained information cut
-    kEtaCut,                         ///< \f$ \eta \f$ cut
-    kTrackTypeCuts,                  ///< ESD track cuts machinery. Includes ITS clusters, TPC clusters and DCA cuts
-    kPtCut,                          ///< \f$ p_{T} \f$ cut
-    kNCuts                           ///< The number of supported cuts
+    kNotConstrainedCut, ///< not constrained information cut
+    kEtaCut,            ///< \f$ \eta \f$ cut
+    kTrackTypeCuts,     ///< ESD track cuts machinery. Includes ITS clusters, TPC clusters and DCA cuts
+    kDCACut,            ///< the DCA cut. Info could not be extracte or did not pass the cut
+    kPtCut,             ///< \f$ p_{T} \f$ cut
+    kNCuts              ///< The number of supported cuts
   };
 
-private:
+ private:
   /// \enum baseSystems
   /// \brief The ids of the systems used as base for the track cuts
   enum baseSystems {
@@ -69,7 +71,7 @@ public:
   virtual void                       InitCuts(const char *name = NULL);
   virtual void                       NotifyRun();
   virtual void                       NotifyEvent();
-  virtual Bool_t                     IsTrackAccepted(AliVTrack *trk);
+  virtual Bool_t IsTrackAccepted(AliVTrack* trk, float* dca);
   virtual Bool_t                     IsTrueTrackAccepted(AliVTrack *trk);
   virtual Bool_t                     IsTrueTrackAccepted(Int_t itrk);
                                      /// Does the current track need to be constrained
@@ -80,13 +82,13 @@ public:
   static Bool_t                      IsPhysicalPrimary(Int_t itrk);
 
 private:
-  virtual Bool_t                     AcceptTrackType(AliVTrack *trk, AliVTrack *&ttrk);
-  void                               SetActualTypeOfTrackCuts();
-  void                               SetActualITSClustersCut();
-  void                               SetActualTPCClustersCut();
-  void                               SetActualDCACut();
+ virtual Bool_t AcceptTrackType(AliVTrack* trk, AliVTrack*& ttrk, float* dca);
+ void SetActualTypeOfTrackCuts();
+ void SetActualITSClustersCut();
+ void SetActualTPCClustersCut();
+ void SetActualDCACut();
 
-  void                               DefineHistograms();
+ void DefineHistograms();
 
 private:
   /* we set them private to force cuts string consistency */
@@ -94,7 +96,9 @@ private:
   Bool_t                             SetEtaCut(Int_t etacode);
   Bool_t                             SetITSClustersCut(Int_t ITSclscode);
   Bool_t                             SetTPCClustersCut(Int_t TPCclscode);
-  Bool_t                             SetDCACut(Int_t dcacode);
+  Bool_t PassTPCClustersCutAOD(AliAODTrack* aodt);
+  Bool_t PassDCACutAOD(float pt, float* dca);
+  Bool_t SetDCACut(Int_t dcacode);
   Bool_t                             SetPtCut(Int_t ptcode);
 
 private:
@@ -119,7 +123,16 @@ private:
 
   AliESDtrackCuts                   *fESDTrackCuts;                      ///< the ESD track cuts instance
   UInt_t                             fAODFilterBits;                     ///< the AOD track filter bits selected
-
+  bool                               fAODHandling;                       ///< AOD track special handling
+  float                              fAODTPCChi2;                        ///< Chi2 per TPC cluster
+  int fMinTPCClusters;                                                   ///< the minimum number of TPC clusters required. AOD analysis
+  int fMinNumberOfTPCCrossedRows;                                        ///< the minimum number of TPC crossed rows required. AOD analysis
+  float fMinRatioXRowsTPCFClustres;                                      ///< the mimimum ratio of TPC crossed rows over findable clusters required. AOD analyis
+  float fMaxDCAToVertexXY;                                               ///< track-to-vertex cut in max absolute distance in xy-plane
+  float fMaxDCAToVertexZ;                                                ///< track-to-vertex cut in max absolute distance in z-axis
+  TFormula* f1MaxDCAToVertexXYPtDep;                                     ///< pt-dep track-to-vertex cut in max absolute distance in xy-plane
+  TFormula* f1MaxDCAToVertexZPtDep;                                      ///< pt-dep track-to-vertex cut in max absolute distance in z-axis
+  bool fDCAToVertex2D;                                                   ///< use 2D elliptical DCA for DCA cut
 
   /* histograms with two indices: before (0) / after (1) applying the cut */
   TH1F                              *fhCutsStatistics;                   ///< the cuts statistics

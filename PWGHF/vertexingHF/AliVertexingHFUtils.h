@@ -200,6 +200,8 @@ class AliVertexingHFUtils : public TObject{
   static Int_t CheckBsDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab, Bool_t ITS2UpgradeProd=kFALSE);
   static Int_t CheckLbDecay(AliMCEvent* mcEvent, Int_t label, Int_t* arrayDauLab);
   static Int_t CheckLbDecay(TClonesArray* arrayMC, AliAODMCParticle *mcPart, Int_t* arrayDauLab);
+  static Int_t CheckResoToDplusK0SDecay(TClonesArray *arrayMC, AliAODMCParticle *mcPart, Int_t *arrayDauLab);
+  static Int_t CheckResoToDstarK0SDecay(TClonesArray *arrayMC, AliAODMCParticle *mcPart, Int_t *arrayDauLab);
 
 
   /// Simultaneus fit

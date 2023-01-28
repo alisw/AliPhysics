@@ -6,10 +6,11 @@
 class AliAnalysisDataContainer;
 
 AliAnalysisTaskSpectraFlatenicity*
-AddTaskSpectraFlatenicity(const Char_t *taskname = "Flat",
-                   Bool_t woTrivialscaling = kFALSE, Bool_t useMC = kTRUE,
-                   Bool_t performMCclosuretest = kFALSE, Double_t minpT = 0.5)
-
+AddTaskSpectraFlatenicity(  const Char_t *taskname = "Flat", 
+                            Bool_t woTrivialscaling = kFALSE, 
+                            Bool_t useMC = kTRUE,
+                            Double_t minpT = 0.5
+                         )
 {
   // get the manager via the static access member. since it's static, you don't
   // need an instance of the class to call the function
@@ -25,14 +26,15 @@ AddTaskSpectraFlatenicity(const Char_t *taskname = "Flat",
   }
 
   // now you create an instance of your task
-  AliAnalysisTaskSpectraFlatenicity *taskFlat =
-      new AliAnalysisTaskSpectraFlatenicity("taskFlat");
+  AliAnalysisTaskSpectraFlatenicity *taskFlat = new AliAnalysisTaskSpectraFlatenicity("taskFlat");
+
   if (!taskFlat)
     return 0x0;
+  
   taskFlat->SetUseMC(useMC);
-  taskFlat->SetMCclosureTest(performMCclosuretest);
   taskFlat->SetPtMin(minpT);
   taskFlat->SetRemoveTrivialScaling(woTrivialscaling);
+  
   mgr->AddTask(taskFlat);
 
   const Char_t *complement;
@@ -41,14 +43,8 @@ AddTaskSpectraFlatenicity(const Char_t *taskname = "Flat",
   } else {
     complement = "wtrivialscal";
   }
-
+  
   mgr->ConnectInput(taskFlat, 0, mgr->GetCommonInputContainer());
-  mgr->ConnectOutput(
-      taskFlat, 1,
-      mgr->CreateContainer(
-          Form("cList%s_%s", taskname, complement), TList::Class(),
-          AliAnalysisManager::kOutputContainer,
-          Form("%s:%s", AliAnalysisManager::GetCommonFileName(), taskname)));
-
+  mgr->ConnectOutput( taskFlat, 1, mgr->CreateContainer( Form("cList%s_%s", taskname, complement), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", AliAnalysisManager::GetCommonFileName(), taskname)));
   return taskFlat;
 }

@@ -12,6 +12,7 @@ AliAnalysisMeanPtdata * AddTaskMptFluct
  // int    usePileupCut_PbPb5TeV    =  1 ,  // 0: no                   1: yes  
  int    singlesOnly             =  1,
  int    nContributor             =  1,
+ int    fb             =  768,
  int    nClusterMin             =  70,
  int    nTPCCrossRows             = 70,
  double dcaZMax                 =  1.0,///tulika 3.2,
@@ -95,6 +96,7 @@ AliAnalysisMeanPtdata * AddTaskMptFluct
      //     task->SetPileupCut_PbPb5TeV( hProfPileupCut);
      task->SetNClusterMin(         nClusterMin     );
      task->SetNTPCCrossRows(         nTPCCrossRows     );
+     task->SetFilterBit(         fb     );
      task->SetSinglesOnly(         singlesOnly     );
      task->SetNContributors(       nContributor     );
      task->SetDcaZMin(             dcaZMin         );

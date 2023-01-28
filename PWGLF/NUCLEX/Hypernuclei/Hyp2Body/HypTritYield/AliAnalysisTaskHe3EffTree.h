@@ -34,7 +34,8 @@ class AliAnalysisTaskHe3EffTree : public AliAnalysisTaskSE
     Double_t         fBetheParamsHe[6];     //< Bethe Aleph He3 Parameter + TPC sigma
     Double_t         fBetheParamsT[6];  
     TTree            *fTree;                //< tree containing He3 information
-    Bool_t           fUseExternalSplines;   //< Use Splines given in Add file    
+    Bool_t           fUseExternalSplines;   //< Use Splines given in Add file   
+    AliTRDonlineTrackMatching  *matching;   //< match ESD with TRD track
     Int_t            fYear;  
     Int_t            tRunNumber;
     Int_t            tTrigMB;               // trigger info

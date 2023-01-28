@@ -59,6 +59,8 @@
 #pragma link C++ class  std::pair<AliVTrack *,AliParticleContainer *>+;
 #pragma link C++ class  AliEmcalCorrectionPHOSCorrections+;
 #pragma link C++ class  AliAnalysisTaskEmcalOccupancy+;
+#pragma link C++ class  AliEmcalRejectMCBackground+;
+#pragma link C++ class  AliEmcalFilterAODMCHeaders+;
 
 #pragma link C++ namespace PWG+;
 #pragma link C++ namespace PWG::EMCAL+;

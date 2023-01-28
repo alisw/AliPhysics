@@ -1,4 +1,4 @@
-configurationName: "EMCal correction framework embedding MC in Data, Clusterizer v3"
+configurationName: "EMCal correction framework embedding MC in Data, Run 2 xTalk, Clusterizer v3"
 recycleUnusedEmbeddedEventsMode: true
 sharedParameters:
     cellBranchName: "usedefault"
@@ -67,7 +67,13 @@ inputObjects:
 ## Cross talk emulation, only on embedded cells   
 CellEmulateCrosstalk:   
     createHistos: false
-    inducedTCardMinimum: 0.1           
+    inducedTCardMinimum: 0.1
+    inducedEnergyLossMinimumFraction:
+      enabled: true
+      values: {0 : [4.5e-3], 1 : [5.0e-3], 2 : [4.5e-3], 3 : [6.0e-3], 4 : [4.5e-3], 5 : [4.5e-3],
+               6 : [4.5e-3], 7 : [6.0e-3], 8 : [3.5e-3], 9 : [3.5e-3], 10: [5.0e-3], 11: [4.5e-3],
+               12: [4.5e-3], 13: [4.5e-3], 14: [3.5e-3], 15: [3.5e-3], 16: [4.5e-3], 17: [3.5e-3],
+               18: [3.5e-3], 19: [3.5e-3], 20: [3.5e-3], 21: [3.5e-3]} # Run2
 CellEmulateCrosstalk_embed:                 
     enabled: true                            
     cellsNames:
@@ -81,6 +87,8 @@ CellEnergy_data:
     enabled: true
     enableNewTempCalib: true
     enableShaperCorrection: true
+    enableAdditionalScale: true
+    additionalScaleValuesSM: [0.981, 0.970, 0.980]
     cellsNames:
         - cells
 # No cell energy calibration should be applied to the embedded MC
@@ -102,9 +110,10 @@ CellTimeCalib:
     createHistos: false
 CellTimeCalib_data:
     enabled: true
-    doCalibrateLowGain: true 
+    doCalibrateLowGain: true
     doCalibTimeEdep: true
     doMergedBCs: true
+    doCalibMergedLG: false
     cellsNames:
         - cells
 # No cell time calibration should be applied to the embedded MC
@@ -188,7 +197,7 @@ ClusterNonLinearity_combined:
         - baseClusterContainer1_combined
 ClusterNonLinearity_data:
     enabled: false
-    nonLinFunct: kTestBeamShaper 
+    nonLinFunct: kTestBeamShaperWoScale
     cellsNames:
         - cells_data
     clusterContainersNames:

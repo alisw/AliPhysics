@@ -75,6 +75,7 @@
 #pragma link C++ class AliAnalysisTaskDeuteronVsMultiplicity_XeXe+;
 #pragma link C++ class AliAnalysisTaskLightNuclei_XeXe_MC+;
 #pragma link C++ class AliAnalysisTaskDeuteron_XeXe_MC+;
+#pragma link C++ class AliAnalysisTaskDeuteron_XeXe_MC_noMult+;
 /// * ReducedTreeNuclei
 #pragma link C++ class AliAnalysisTaskReducedTreeNuclei+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertriton+;
@@ -94,6 +95,8 @@
 #pragma link C++ class AliAnalysisTaskDeuteronsRT+;
 #pragma link C++ class AliAnalysisTaskDeuteronCoalescence+;
 #pragma link C++ class AliAnalysisTaskPythiaCoalescence+;
+#pragma link C++ class AliAnalysisTaskSimpleCoalescenceHelium3+;
+#pragma link C++ class AliAnalysisTaskSimpleCoalescenceDeuteronInJets+;
 
 
 /// * NucleiKine
@@ -115,9 +118,16 @@
 #pragma link C++ class AliAnalysisTaskTRDtriggerTracks+;
 #pragma link C++ class AliAnalysisTaskSigmaPlus+;
 #pragma link C++ class AliAODTrackreduced+;
+#pragma link C++ class AliAODTrackcorrelation+;
+#pragma link C++ class AliAODClusterreduced+;
 #pragma link C++ class AliAnalysisTaskHypCrossCheck+;
+#pragma link C++ class AliAnalysisTask_pdLd+;
+#pragma link C++ class AliAnalysisTask_pd+;
+#pragma link C++ class AliAnalysisTask_pd_CreateTrees_PairsOnly+;
+#pragma link C++ class AliAODTrackTiny+;
 #pragma link C++ class AliAnalysisTaskHypV0s+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;
+#pragma link C++ class AliAnalysisTaskHe3TriTree+;
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;

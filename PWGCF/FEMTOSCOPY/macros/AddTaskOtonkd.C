@@ -80,6 +80,9 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsKaon->SetEtaRange(-0.84, 0.84);
    TrackCutsKaon->SetNClsTPC(70);
    TrackCutsKaon->SetDCAVtxZ(0.24);
+  }else if(KaonCut==7){ // Kaons by Oton with checkpileupSPDTOF
+   TrackCutsKaon->SetPIDkd();
+   TrackCutsKaon->SetCheckPileUpSPDTOF(true);
   }
 
   AliFemtoDreamTrackCuts *TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(
@@ -98,6 +101,9 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsAntiKaon->SetEtaRange(-0.84, 0.84);
    TrackCutsAntiKaon->SetNClsTPC(70);
    TrackCutsAntiKaon->SetDCAVtxZ(0.24);
+  }else if(KaonCut==7){ // Kaons by Oton with checkpileupSPDTOF
+   TrackCutsAntiKaon->SetPIDkd();
+   TrackCutsAntiKaon->SetCheckPileUpSPDTOF(true);
   }
 
   //deuterons
@@ -122,16 +128,15 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsDeuteron->SetPtRange(0.5,1.4);
    TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 1.4);//1.4 sigmas as well!
   }else if(DeuteronCut==5){ // Deuterons by Oton with open cuts SYST
-   TrackCutsDeuteron->SetPIDkd(false,false,3,3.5);
+   TrackCutsDeuteron->SetPIDkd(false,false,3.5,3.5);
    TrackCutsDeuteron->SetEtaRange(-0.84, 0.84);
    TrackCutsDeuteron->SetNClsTPC(70);
    TrackCutsDeuteron->SetDCAVtxZ(0.24);
   }else if(DeuteronCut==6){ // Deuterons by Oton with cut in min pt
    TrackCutsDeuteron->SetPIDkd(false,false,3,3);
    TrackCutsDeuteron->SetPtRange(0.8,2.9);
-  }else if(DeuteronCut==7){ // Deuterons by Oton with cut in min pt and checkpileupSPDTOF
+  }else if(DeuteronCut==7){ // Deuterons by Oton with checkpileupSPDTOF
    TrackCutsDeuteron->SetPIDkd(false,false,3,3);
-   TrackCutsDeuteron->SetPtRange(0.8,2.9);
    TrackCutsDeuteron->SetCheckPileUpSPDTOF(true);
   }
 
@@ -156,16 +161,15 @@ AliAnalysisTaskSE* AddTaskOtonkd(int isMCint = 0,
    TrackCutsAntiDeuteron->SetPtRange(0.5,1.4);
    TrackCutsAntiDeuteron->SetPID(AliPID::kDeuteron,1.4,1.4);//1.4 sigmas as well!
   }else if(DeuteronCut==5){ // Deuterons by Oton with open cuts SYST
-   TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3.5);
+   TrackCutsAntiDeuteron->SetPIDkd(false,false,3.5,3.5);
    TrackCutsAntiDeuteron->SetEtaRange(-0.84, 0.84);
    TrackCutsAntiDeuteron->SetNClsTPC(70);
    TrackCutsAntiDeuteron->SetDCAVtxZ(0.24);
   }else if(DeuteronCut==6){ // Deuterons by Oton with cut in min pt
    TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3);
    TrackCutsAntiDeuteron->SetPtRange(0.8,2.9);
-  }else if(DeuteronCut==7){ // Deuterons by Oton with cut in min pt and checkpileupSPDTOF
+  }else if(DeuteronCut==7){ // Deuterons by Oton with checkpileupSPDTOF
    TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3);
-   TrackCutsAntiDeuteron->SetPtRange(0.8,2.9);
    TrackCutsAntiDeuteron->SetCheckPileUpSPDTOF(true);
   }
 

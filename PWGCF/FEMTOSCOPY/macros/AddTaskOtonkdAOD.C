@@ -104,8 +104,8 @@ AliAnalysisTaskSE* AddTaskOtonkdAOD(int isMCint = 0,
   AliFemtoDreamTrackCuts *TrackCutsDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, false, false);
   TrackCutsDeuteron->SetCutCharge(1);
-  TrackCutsDeuteron->SetFilterBit(128);
   if(DeuteronCut==0){ // cuts by Oton
+   TrackCutsDeuteron->SetFilterBit(128);
    TrackCutsDeuteron->SetPIDkd(false,false,3,3);
   }else if(DeuteronCut==1){ // cuts by FemtoDream
    TrackCutsDeuteron->SetPtRange(0.5,1.4);
@@ -116,30 +116,36 @@ AliAnalysisTaskSE* AddTaskOtonkdAOD(int isMCint = 0,
    TrackCutsDeuteron->SetDCAVtxZ(0.25);
    TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 3.5);
   }else if(DeuteronCut==3){ // Deuterons by Oton with open cuts for PID/DCA fits
+   TrackCutsDeuteron->SetFilterBit(128);
    TrackCutsDeuteron->SetPIDkd(false,false,3,5);
    TrackCutsDeuteron->SetDCAVtxXY(0.5);
   }else if(DeuteronCut==4){ // cuts by FemtoDream with tight PID req
    TrackCutsDeuteron->SetPtRange(0.5,1.4);
    TrackCutsDeuteron->SetPID(AliPID::kDeuteron,1.4, 1.4);//1.4 sigmas as well!
   }else if(DeuteronCut==5){ // Deuterons by Oton with open cuts SYST
-   TrackCutsDeuteron->SetPIDkd(false,false,3,3.5);
+   TrackCutsDeuteron->SetFilterBit(128);
+   TrackCutsDeuteron->SetPIDkd(false,false,3.5,3.5);
    TrackCutsDeuteron->SetEtaRange(-0.84, 0.84);
    TrackCutsDeuteron->SetNClsTPC(70);
    TrackCutsDeuteron->SetDCAVtxZ(0.24);
   }else if(DeuteronCut==6){ // Deuterons by Oton with cut in min pt
+   TrackCutsDeuteron->SetFilterBit(128);
    TrackCutsDeuteron->SetPIDkd(false,false,3,3);
    TrackCutsDeuteron->SetPtRange(0.8,2.9);
   }else if(DeuteronCut==7){ // Deuterons by Oton with cut in min pt and checkpileupSPDTOF
+   TrackCutsDeuteron->SetFilterBit(128);
    TrackCutsDeuteron->SetPIDkd(false,false,3,3);
    TrackCutsDeuteron->SetPtRange(0.8,2.9);
    TrackCutsDeuteron->SetCheckPileUpSPDTOF(true);
+  }else if(DeuteronCut==8){ // cuts by Oton wiht FB256
+   TrackCutsDeuteron->SetPIDkd(false,false,3,3);
   }
 
   AliFemtoDreamTrackCuts *TrackCutsAntiDeuteron = AliFemtoDreamTrackCuts::PrimDeuteronCuts(
         isMC, true, false, false);
   TrackCutsAntiDeuteron->SetCutCharge(-1);
-  TrackCutsAntiDeuteron->SetFilterBit(128);
   if(DeuteronCut==0){ // cuts by Oton
+   TrackCutsAntiDeuteron->SetFilterBit(128);
    TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3);
   }else if(DeuteronCut==1){ // cuts by FemtoDream
    TrackCutsAntiDeuteron->SetPtRange(0.5,1.4);
@@ -150,23 +156,29 @@ AliAnalysisTaskSE* AddTaskOtonkdAOD(int isMCint = 0,
    TrackCutsAntiDeuteron->SetDCAVtxZ(0.25);
    TrackCutsAntiDeuteron->SetPID(AliPID::kDeuteron,1.4, 3.5);
   }else if(DeuteronCut==3){ // Deuterons by Oton with open cuts for PID/DCA fits
+   TrackCutsAntiDeuteron->SetFilterBit(128);
    TrackCutsAntiDeuteron->SetPIDkd(false,false,3,5);
    TrackCutsAntiDeuteron->SetDCAVtxXY(0.5);
   }else if(DeuteronCut==4){ // cuts by FemtoDream with tight PID req
    TrackCutsAntiDeuteron->SetPtRange(0.5,1.4);
    TrackCutsAntiDeuteron->SetPID(AliPID::kDeuteron,1.4,1.4);//1.4 sigmas as well!
   }else if(DeuteronCut==5){ // Deuterons by Oton with open cuts SYST
-   TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3.5);
+   TrackCutsAntiDeuteron->SetFilterBit(128);
+   TrackCutsAntiDeuteron->SetPIDkd(false,false,3.5,3.5);
    TrackCutsAntiDeuteron->SetEtaRange(-0.84, 0.84);
    TrackCutsAntiDeuteron->SetNClsTPC(70);
    TrackCutsAntiDeuteron->SetDCAVtxZ(0.24);
   }else if(DeuteronCut==6){ // Deuterons by Oton with cut in min pt
+   TrackCutsAntiDeuteron->SetFilterBit(128);
    TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3);
    TrackCutsAntiDeuteron->SetPtRange(0.8,2.9);
   }else if(DeuteronCut==7){ // Deuterons by Oton with cut in min pt and checkpileupSPDTOF
+   TrackCutsAntiDeuteron->SetFilterBit(128);
    TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3);
    TrackCutsAntiDeuteron->SetPtRange(0.8,2.9);
    TrackCutsAntiDeuteron->SetCheckPileUpSPDTOF(true);
+  }else if(DeuteronCut==8){ // cuts by Oton with FB256
+   TrackCutsAntiDeuteron->SetPIDkd(false,false,3,3);
   }
 
   //protons

@@ -71,6 +71,8 @@ ClassImp(AliAnalysisTaskGammaDeltaPIDSaveQvecSimple)
 
 AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvecSimple(const char *name):
   AliAnalysisTaskSE(name),
+  whichData(0),
+  period("0"),
   fVevent(NULL),
   fESD(NULL),
   fAOD(NULL),
@@ -85,6 +87,7 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
   fListTRKCorr(NULL),
   fListNUACorr(NULL),
   fListV0MCorr(NULL),
+  fListZDCCorr(NULL),
   fV0CutPU(NULL),
   fSPDCutPU(NULL),
   fMultCutPU(NULL),
@@ -96,12 +99,14 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
   fFilterBit(1),
   fTPCclustMin(70),
   gOldRunNumber(1),  
+  fTPCsharedCut(56), // 70*0.8
+  bUseTPCCrossedRows(kFALSE),
   fMinVzCut(-10.0),
   fMaxVzCut(+10.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
-  fDCAxyMax(2.4),
-  fDCAzzMax(3.2),
+  fDCAxyMax(-1), // 2.4
+  fDCAzzMax(-1), // 3.2
   fMinEtaCut(-0.8),
   fMaxEtaCut(+0.8),
   fEtaGapNeg(-0.1),
@@ -116,8 +121,6 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
   sCentrEstimator("V0M"),  
   bUseKinkTracks(kFALSE),
   bSkipPileUpCut(kFALSE),
-  bSkipNestedLoop(kFALSE),
-  bUseV0EventPlane(kFALSE),
   
   fHistVertexZcm(NULL),
   fHistAnalysisInfo(NULL),
@@ -149,19 +152,17 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
   fHCorrectTPCQ3xEtaNeg(NULL),
   fHCorrectTPCQ3yEtaNeg(NULL),   
   
-  fHistTPCPsiNPosPlane(NULL),
-  fHistTPCPsiNNegPlane(NULL),
-  fHistTPCPsi3PosPlane(NULL),
-  fHistTPCPsi3NegPlane(NULL),
-  fHistTPCPsi4PosPlane(NULL),
-  fHistTPCPsi4NegPlane(NULL),
+  //fHistTPCPsiNPosPlane(NULL),
+  //fHistTPCPsiNNegPlane(NULL),
+  //fHistTPCPsi3PosPlane(NULL),
+  //fHistTPCPsi3NegPlane(NULL),
+  //fHistTPCPsi4PosPlane(NULL),
+  //fHistTPCPsi4NegPlane(NULL),
   
   fHistV0CPsiNEventPlane(NULL),
   fHistV0APsiNEventPlane(NULL),
-  fHistV0CPsi3EventPlane(NULL),
-  fHistV0APsi3EventPlane(NULL),
-  fHistTPCPosqVectorvsCent(NULL),
-  fHistTPCNegqVectorvsCent(NULL),
+  //fHistTPCPosqVectorvsCent(NULL),
+  //fHistTPCNegqVectorvsCent(NULL),
   fHistV0CDetqVectorvsCent(NULL),
   fHistV0ADetqVectorvsCent(NULL),
 
@@ -184,58 +185,65 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
   fHCorrectNUAkPIDNegKaon(NULL),
   fHCorrectNUAkPIDPosProton(NULL),
   fHCorrectNUAkPIDNegProton(NULL),
-  
+  fHZDCCparameters(NULL),
+  fHZDCAparameters(NULL),
   hAvgQNXvsCentV0C(NULL),
   hAvgQNYvsCentV0C(NULL),
-  hAvgQ3XvsCentV0C(NULL),
-  hAvgQ3YvsCentV0C(NULL),
   hAvgQNXvsCentV0A(NULL),
   hAvgQNYvsCentV0A(NULL),
-  hAvgQ3XvsCentV0A(NULL),
-  hAvgQ3YvsCentV0A(NULL),
   hTPCPsiNCorrelation(NULL),
   hTPCPsi3Correlation(NULL),
   hTPCPsi4Correlation(NULL),  
   hV0CV0APsiNCorrelation(NULL),
-  hV0CTPCPsiNCorrelation(NULL),
-  hV0ATPCPsiNCorrelation(NULL),
+  //hV0CTPCPsiNCorrelation(NULL),
+  //hV0ATPCPsiNCorrelation(NULL),
   hV0CV0APsi3Correlation(NULL),
-  hV0CTPCPsi3Correlation(NULL),
-  hV0ATPCPsi3Correlation(NULL),  
+  //hV0CTPCPsi3Correlation(NULL),
+  //hV0ATPCPsi3Correlation(NULL),  
   
-  fAvgCos2PsivsCentEtaPos(NULL),
-  fAvgSin2PsivsCentEtaPos(NULL),
-  fAvgCos2PsivsCentEtaNeg(NULL),
-  fAvgSin2PsivsCentEtaNeg(NULL),
-  fAvgCos3PsivsCentEtaPos(NULL),
-  fAvgSin3PsivsCentEtaPos(NULL),
-  fAvgCos3PsivsCentEtaNeg(NULL),
-  fAvgSin3PsivsCentEtaNeg(NULL),
-  fAvgCos4PsivsCentEtaPos(NULL),
-  fAvgSin4PsivsCentEtaPos(NULL),
-  fAvgCos4PsivsCentEtaNeg(NULL),
-  fAvgSin4PsivsCentEtaNeg(NULL),
+  //fAvgCos2PsivsCentEtaPos(NULL),
+  //fAvgSin2PsivsCentEtaPos(NULL),
+  //fAvgCos2PsivsCentEtaNeg(NULL),
+  //fAvgSin2PsivsCentEtaNeg(NULL),
+  //fAvgCos3PsivsCentEtaPos(NULL),
+  //fAvgSin3PsivsCentEtaPos(NULL),
+  //fAvgCos3PsivsCentEtaNeg(NULL),
+  //fAvgSin3PsivsCentEtaNeg(NULL),
+  //fAvgCos4PsivsCentEtaPos(NULL),
+  //fAvgSin4PsivsCentEtaPos(NULL),
+  //fAvgCos4PsivsCentEtaNeg(NULL),
+  //fAvgSin4PsivsCentEtaNeg(NULL),
   hAvgV0ChannelsvsVz(NULL)
 {
-  for(Int_t c=0;c<4;c++) {
-    for (Int_t h=0;h<fCRCnHar;h++) {
-      fCMEQRe[c][h] = NULL;
-      fCMEQIm[c][h] = NULL;
-      fCMEMult[c][h] = NULL;
-    }
-  }
-  
-  for(Int_t c=0;c<2;c++) {
-	fCMEQ2Re4[c] = NULL; // w^2*cos(4phi)
-    fCMEQ3Re2[c] = NULL; // w^3*cos(2phi)
-    fCMEQ2Im4[c] = NULL; // w^2*sin(4phi)
-    fCMEQ3Im2[c] = NULL; // w^3*sin(2phi)
-    fCMEw0[c] = NULL;    // w^0
-    fCMEw1[c] = NULL;    // w^1
-    fCMEw2[c] = NULL;    // w^2
-    fCMEw3[c] = NULL;    // w^3
-    fCMEw4[c] = NULL;    // w^4
-  }
+  fCMEQReRP = NULL;
+  fCMEQImRP = NULL;
+  fCMEQRePOIPos = NULL;
+  fCMEQImPOIPos = NULL;
+  fCMEQRePOINeg = NULL;
+  fCMEQImPOINeg = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiV0RP = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiZDCRP = NULL;
+  fNITV0OS = NULL;
+  fNITZDCOS = NULL;
+  fNITV0POIPos = NULL;
+  fNITZDCPOIPos = NULL;
+  fNITV0POINeg = NULL;
+  fNITZDCPOINeg = NULL;
+
+  f2pCorrelatorCosPsiDiff = NULL;
+  f2pCorrelatorCos2PsiDiff = NULL;
+  fRePEBEOS = NULL;
+  fImPEBEOS = NULL;
+  f2pCorrelatorCosPsiDiffOS = NULL;
+  f2pCorrelatorCos2PsiDiffOS = NULL;
+  fRePEBEPP = NULL;
+  fImPEBEPP = NULL;
+  f2pCorrelatorCosPsiDiffPP = NULL;
+  f2pCorrelatorCos2PsiDiffPP = NULL;
+  fRePEBENN = NULL;
+  fImPEBENN = NULL;
+  f2pCorrelatorCosPsiDiffNN = NULL;
+  f2pCorrelatorCos2PsiDiffNN = NULL;
   
   //Must be here:
   DefineInput(0,TChain::Class());
@@ -245,6 +253,8 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
 //_______________________empty constructor_______________________
 AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvecSimple():
   AliAnalysisTaskSE(),
+  whichData(0),
+  period("0"),
   fVevent(NULL),
   fESD(NULL),
   fAOD(NULL),
@@ -259,6 +269,7 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
   fListTRKCorr(NULL),
   fListNUACorr(NULL),
   fListV0MCorr(NULL),   
+  fListZDCCorr(NULL),
   fV0CutPU(NULL),
   fSPDCutPU(NULL),
   fMultCutPU(NULL),
@@ -270,12 +281,14 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
   fFilterBit(1),
   fTPCclustMin(70),
   gOldRunNumber(1),  
+  fTPCsharedCut(56), // 70*0.8
+  bUseTPCCrossedRows(kFALSE),
   fMinVzCut(-10.0),
   fMaxVzCut(+10.0),
   fMinPtCut(0.2),
   fMaxPtCut(5.0),
-  fDCAxyMax(2.4),
-  fDCAzzMax(3.2),
+  fDCAxyMax(-1),
+  fDCAzzMax(-1),
   fMinEtaCut(-0.8),
   fMaxEtaCut(+0.8),
   fEtaGapNeg(-0.1),
@@ -290,8 +303,6 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
   sCentrEstimator("V0M"),  
   bUseKinkTracks(kFALSE),
   bSkipPileUpCut(kFALSE),
-  bSkipNestedLoop(kFALSE),
-  bUseV0EventPlane(kFALSE),
   
   fHistVertexZcm(NULL),
   fHistAnalysisInfo(NULL),
@@ -324,19 +335,17 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
   fHCorrectTPCQ3yEtaNeg(NULL),   
 
   
-  fHistTPCPsiNPosPlane(NULL),
-  fHistTPCPsiNNegPlane(NULL),
-  fHistTPCPsi3PosPlane(NULL),
-  fHistTPCPsi3NegPlane(NULL),
-  fHistTPCPsi4PosPlane(NULL),
-  fHistTPCPsi4NegPlane(NULL),
+  //fHistTPCPsiNPosPlane(NULL),
+  //fHistTPCPsiNNegPlane(NULL),
+  //fHistTPCPsi3PosPlane(NULL),
+  //fHistTPCPsi3NegPlane(NULL),
+  //fHistTPCPsi4PosPlane(NULL),
+  //fHistTPCPsi4NegPlane(NULL),
   
   fHistV0CPsiNEventPlane(NULL),
   fHistV0APsiNEventPlane(NULL),
-  fHistV0CPsi3EventPlane(NULL),
-  fHistV0APsi3EventPlane(NULL),
-  fHistTPCPosqVectorvsCent(NULL),
-  fHistTPCNegqVectorvsCent(NULL),
+  //fHistTPCPosqVectorvsCent(NULL),
+  //fHistTPCNegqVectorvsCent(NULL),
   fHistV0CDetqVectorvsCent(NULL),
   fHistV0ADetqVectorvsCent(NULL),
 
@@ -359,58 +368,65 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::AliAnalysisTaskGammaDeltaPIDSaveQvec
   fHCorrectNUAkPIDNegKaon(NULL),
   fHCorrectNUAkPIDPosProton(NULL),
   fHCorrectNUAkPIDNegProton(NULL),
-  
+  fHZDCCparameters(NULL),
+  fHZDCAparameters(NULL),
   hAvgQNXvsCentV0C(NULL),
   hAvgQNYvsCentV0C(NULL),
-  hAvgQ3XvsCentV0C(NULL),
-  hAvgQ3YvsCentV0C(NULL),
   hAvgQNXvsCentV0A(NULL),
   hAvgQNYvsCentV0A(NULL),
-  hAvgQ3XvsCentV0A(NULL),
-  hAvgQ3YvsCentV0A(NULL),
   hTPCPsiNCorrelation(NULL),
   hTPCPsi3Correlation(NULL),
   hTPCPsi4Correlation(NULL),    
   hV0CV0APsiNCorrelation(NULL),
-  hV0CTPCPsiNCorrelation(NULL),
-  hV0ATPCPsiNCorrelation(NULL),
+  //hV0CTPCPsiNCorrelation(NULL),
+  //hV0ATPCPsiNCorrelation(NULL),
   hV0CV0APsi3Correlation(NULL),
-  hV0CTPCPsi3Correlation(NULL),
-  hV0ATPCPsi3Correlation(NULL),  
+  //hV0CTPCPsi3Correlation(NULL),
+  //hV0ATPCPsi3Correlation(NULL),  
   
-  fAvgCos2PsivsCentEtaPos(NULL),
-  fAvgSin2PsivsCentEtaPos(NULL),
-  fAvgCos2PsivsCentEtaNeg(NULL),
-  fAvgSin2PsivsCentEtaNeg(NULL),
-  fAvgCos3PsivsCentEtaPos(NULL),
-  fAvgSin3PsivsCentEtaPos(NULL),
-  fAvgCos3PsivsCentEtaNeg(NULL),
-  fAvgSin3PsivsCentEtaNeg(NULL),
-  fAvgCos4PsivsCentEtaPos(NULL),
-  fAvgSin4PsivsCentEtaPos(NULL),
-  fAvgCos4PsivsCentEtaNeg(NULL),
-  fAvgSin4PsivsCentEtaNeg(NULL),  
+  //fAvgCos2PsivsCentEtaPos(NULL),
+  //fAvgSin2PsivsCentEtaPos(NULL),
+  //fAvgCos2PsivsCentEtaNeg(NULL),
+  //fAvgSin2PsivsCentEtaNeg(NULL),
+  //fAvgCos3PsivsCentEtaPos(NULL),
+  //fAvgSin3PsivsCentEtaPos(NULL),
+  //fAvgCos3PsivsCentEtaNeg(NULL),
+  //fAvgSin3PsivsCentEtaNeg(NULL),
+  //fAvgCos4PsivsCentEtaPos(NULL),
+  //fAvgSin4PsivsCentEtaPos(NULL),
+  //fAvgCos4PsivsCentEtaNeg(NULL),
+  //fAvgSin4PsivsCentEtaNeg(NULL),  
   hAvgV0ChannelsvsVz(NULL)
 {
-  for(Int_t c=0;c<4;c++) {
-    for (Int_t h=0;h<fCRCnHar;h++) {
-      fCMEQRe[c][h] = NULL;
-      fCMEQIm[c][h] = NULL;
-      fCMEMult[c][h] = NULL;
-    }
-  }
-  
-  for(Int_t c=0;c<2;c++) {
-	fCMEQ2Re4[c] = NULL; // w^2*cos(4phi)
-    fCMEQ3Re2[c] = NULL; // w^3*cos(2phi)
-    fCMEQ2Im4[c] = NULL; // w^2*sin(4phi)
-    fCMEQ3Im2[c] = NULL; // w^3*sin(2phi)
-    fCMEw0[c] = NULL;    // w^0
-    fCMEw1[c] = NULL;    // w^1
-    fCMEw2[c] = NULL;    // w^2
-    fCMEw3[c] = NULL;    // w^3
-    fCMEw4[c] = NULL;    // w^4
-  }
+  fCMEQReRP = NULL;
+  fCMEQImRP = NULL;
+  fCMEQRePOIPos = NULL;
+  fCMEQImPOIPos = NULL;
+  fCMEQRePOINeg = NULL;
+  fCMEQImPOINeg = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiV0RP = NULL;
+  f2pCorrelatorCos2PsiDiff2PsiZDCRP = NULL;
+  fNITV0OS = NULL;
+  fNITZDCOS = NULL;
+  fNITV0POIPos = NULL;
+  fNITZDCPOIPos = NULL;
+  fNITV0POINeg = NULL;
+  fNITZDCPOINeg = NULL;
+
+  f2pCorrelatorCosPsiDiff = NULL;
+  f2pCorrelatorCos2PsiDiff = NULL;
+  fRePEBEOS = NULL;
+  fImPEBEOS = NULL;
+  f2pCorrelatorCosPsiDiffOS = NULL;
+  f2pCorrelatorCos2PsiDiffOS = NULL;
+  fRePEBEPP = NULL;
+  fImPEBEPP = NULL;
+  f2pCorrelatorCosPsiDiffPP = NULL;
+  f2pCorrelatorCos2PsiDiffPP = NULL;
+  fRePEBENN = NULL;
+  fImPEBENN = NULL;
+  f2pCorrelatorCosPsiDiffNN = NULL;
+  f2pCorrelatorCos2PsiDiffNN = NULL;
   //Not needed for Empty Constructor:
   //DefineInput(0,TChain::Class());
   //DefineOutput(1,TList::Class());
@@ -425,6 +441,7 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::~AliAnalysisTaskGammaDeltaPIDSaveQve
   if(fListTRKCorr)   delete fListTRKCorr;
   if(fListNUACorr)   delete fListNUACorr;
   if(fListV0MCorr)   delete fListV0MCorr;
+  if(fListZDCCorr)   delete fListZDCCorr;
 
   if(fV0CutPU)      delete fV0CutPU;
   if(fSPDCutPU)     delete fSPDCutPU;
@@ -432,14 +449,6 @@ AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::~AliAnalysisTaskGammaDeltaPIDSaveQve
   if(fCenCutLowPU)  delete fCenCutLowPU; 
   if(fCenCutHighPU) delete fCenCutHighPU;   
 }
-
-
-
-
-
-
-
-
 
 
 //________________ Define Histograms _______________
@@ -476,14 +485,18 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserCreateOutputObjects()
   
   SetupQAHistograms();
   SetupAnalysisHistograms();
-  SetupPileUpRemovalFunctions();
+  if (whichData == 2018 && period == 'q')
+	SetupPileUpRemovalFunctions18qPass3();
+  else if (whichData == 2018 && period == 'r')
+    SetupPileUpRemovalFunctions18rPass3();
+  //SetupPileUpRemovalFunctions();
   SetupEventAndTaskConfigInfo();
 
   SetupQvecSavingObjects();
 
  
     
-  cout<<"Ncls: "<<fTPCclustMin<<" Harm: "<<gHarmonic<<" POI: "<<gParticleID<<" nsigTPC: "<<fNSigmaTPCCut<<" nsigCirc: "<<fNSigmaTOFCut<<endl;
+  cout<<"Ncls: "<<fTPCclustMin<<" TPCsharedCut: "<<fTPCsharedCut<<" UseTPCCrossedRows: "<<bUseTPCCrossedRows<<" Harm: "<<gHarmonic<<" POI: "<<gParticleID<<" nsigTPC: "<<fNSigmaTPCCut<<" nsigCirc: "<<fNSigmaTOFCut<<endl;
   cout<<"FB: "<<fFilterBit<<" chi2min: "<<fTrkChi2Min<<" chi2max: "<<fTrkChi2Max<<" etaMin: "<<fMinEtaCut<<" etaMax: "<<fMaxEtaCut<<endl;
   cout<<"dEdxMin: "<<fTPCdEdxMin<<" dcaXY: "<<fDCAxyMax<<" dcaZ: "<<fDCAzzMax<<"  VzLow: "<<fMinVzCut<<" VzHigh: "<<fMaxVzCut<<endl;
   cout<<"minPt: "<<fMinPtCut<<" maxPt: "<<fMaxPtCut<<" etaGapNeg: "<<fEtaGapNeg<<" etaGapPos: "<<fEtaGapPos<<" oldRun: "<<gOldRunNumber<<endl;
@@ -622,6 +635,9 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
     if(fListV0MCorr){
       GetV0MCorrectionHist(runNumber);
     }
+    if(fListZDCCorr){
+	  GetZDCCorrectionHist(runNumber);
+	}
     gOldRunNumber = runNumber;
   }
   //----------------------------------------------
@@ -645,59 +661,53 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
   
   UInt_t orbit = period * (1<<24) + orbit24;
   
-  UShort_t bunchCrossNumber = fAOD->GetBunchCrossNumber();
-  UInt_t timeStamp = fAOD->GetTimeStamp();
-  
-  fpQvecEvent->setRawPeriod(period);
-  fpQvecEvent->setRawOrbitNumber24(orbit24);
   fpQvecEvent->setOrbitNumber(orbit);
-  fpQvecEvent->setBunchCrossNumber(bunchCrossNumber);
-  fpQvecEvent->setTimeStamp(timeStamp);
+  
+  Double_t fOrbitNumber = static_cast<double>(orbit)/1000000.;
   
   Bool_t kPileupEvent = kFALSE;
 
   //Double_t fSumQnxNeg = 0, fSumQnyNeg = 0, fSumQnxPos = 0, fSumQnyPos = 0;
-  Double_t fSumQnxNeg[3] = {0,}; // Array: Q2x, Q3x, Q4x,...
-  Double_t fSumQnyNeg[3] = {0,}; // Array: Q2y, Q3y, Q4y,... 
-  Double_t fSumQnxPos[3] = {0,};
-  Double_t fSumQnyPos[3] = {0,};  
+  //Double_t fSumQnxNeg[3] = {0,}; // Array: Q2x, Q3x, Q4x,...
+  //Double_t fSumQnyNeg[3] = {0,}; // Array: Q2y, Q3y, Q4y,... 
+  //Double_t fSumQnxPos[3] = {0,};
+  //Double_t fSumQnyPos[3] = {0,};  
   
-  Double_t fMultNeg = 0, fMultPos = 0;
+  //Double_t fMultNeg = 0, fMultPos = 0;
 
-  
-  kPileupEvent = GetTPCQvectAndRemovePileUp2018(fAOD, fSumQnxNeg, fSumQnyNeg, fSumQnxPos, fSumQnyPos, fMultNeg, fMultPos);
-  
+  kPileupEvent = CheckEventIsPileUp2018(fAOD);
+
   if(kPileupEvent) return;  // If not a PileUp event, then We have TPC q vectors for EP.
   fDebugwEventCount->Fill(4.1);
 
   
-  if(fMultNeg<0.1 || fMultPos<0.1) return;  //// This means there is not enough track in the the event. 
-  fDebugwEventCount->Fill(5.1);
+  //if(fMultNeg<0.1 || fMultPos<0.1) return;  //// This means there is not enough track in the the event. 
   
-  Double_t fQ2xNeg = 0., fQ2yNeg = 0., fQ2xPos = 0., fQ2yPos = 0.;  ///q = Q/Mult Vector from TPC;
-  Double_t fQ3xNeg = 0., fQ3yNeg = 0., fQ3xPos = 0., fQ3yPos = 0.;  ///q = Q/Mult Vector from TPC;
-  Double_t fQ4xNeg = 0., fQ4yNeg = 0., fQ4xPos = 0., fQ4yPos = 0.;  ///q = Q/Mult Vector from TPC;
+  
+  //Double_t fQ2xNeg = 0., fQ2yNeg = 0., fQ2xPos = 0., fQ2yPos = 0.;  ///q = Q/Mult Vector from TPC;
+  //Double_t fQ3xNeg = 0., fQ3yNeg = 0., fQ3xPos = 0., fQ3yPos = 0.;  ///q = Q/Mult Vector from TPC;
+  //Double_t fQ4xNeg = 0., fQ4yNeg = 0., fQ4xPos = 0., fQ4yPos = 0.;  ///q = Q/Mult Vector from TPC;
 
-  fQ2xNeg = fSumQnxNeg[0]/fMultNeg;
-  fQ2yNeg = fSumQnyNeg[0]/fMultNeg;
-  fQ3xNeg = fSumQnxNeg[1]/fMultNeg;
-  fQ3yNeg = fSumQnyNeg[1]/fMultNeg;
-  fQ4xNeg = fSumQnxNeg[2]/fMultNeg;
-  fQ4yNeg = fSumQnyNeg[2]/fMultNeg;
+  //fQ2xNeg = fSumQnxNeg[0]/fMultNeg;
+  //fQ2yNeg = fSumQnyNeg[0]/fMultNeg;
+  //fQ3xNeg = fSumQnxNeg[1]/fMultNeg;
+  //fQ3yNeg = fSumQnyNeg[1]/fMultNeg;
+  //fQ4xNeg = fSumQnxNeg[2]/fMultNeg;
+  //fQ4yNeg = fSumQnyNeg[2]/fMultNeg;
   
-  fQ2xPos = fSumQnxPos[0]/fMultPos;
-  fQ2yPos = fSumQnyPos[0]/fMultPos;
-  fQ3xPos = fSumQnxPos[1]/fMultPos;
-  fQ3yPos = fSumQnyPos[1]/fMultPos;
-  fQ4xPos = fSumQnxPos[2]/fMultPos;
-  fQ4yPos = fSumQnyPos[2]/fMultPos;
+  //fQ2xPos = fSumQnxPos[0]/fMultPos;
+  //fQ2yPos = fSumQnyPos[0]/fMultPos;
+  //fQ3xPos = fSumQnxPos[1]/fMultPos;
+  //fQ3yPos = fSumQnyPos[1]/fMultPos;
+  //fQ4xPos = fSumQnxPos[2]/fMultPos;
+  //fQ4yPos = fSumQnyPos[2]/fMultPos;
 
 
   //cout<<"Before rec: q2xn "<<fQ2xNeg<<"\t q2yn "<<fQ2yNeg<<"\t q2xp "<<fQ2xPos<<"\t q2yp "<<fQ2yPos<<endl;
 
   // *** Rihan: Temporarily Turned off. Uncomment after end of Test.!
-  ApplyTPCqVectRecenter(centrV0M, 2, fQ2xNeg, fQ2yNeg, fQ2xPos, fQ2yPos);
-  ApplyTPCqVectRecenter(centrV0M, 3, fQ3xNeg, fQ3yNeg, fQ3xPos, fQ3yPos);  
+  //ApplyTPCqVectRecenter(centrV0M, 2, fQ2xNeg, fQ2yNeg, fQ2xPos, fQ2yPos);
+  //ApplyTPCqVectRecenter(centrV0M, 3, fQ3xNeg, fQ3yNeg, fQ3xPos, fQ3yPos);  
 
   //cout<<"After  rec: q2xn "<<fQ2xNeg<<"\t q2yn "<<fQ2yNeg<<"\t q2xp "<<fQ2xPos<<"\t q2yp "<<fQ2yPos<<endl;
   //cout<<"------- Bug Testing Mode... we exit here....... "<<endl; return;
@@ -706,63 +716,63 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
 
   
   /// Fill <Q> vector for TPC event plane :
-  fAvgCos2PsivsCentEtaPos->Fill(centrV0M,fQ2xPos); 
-  fAvgSin2PsivsCentEtaPos->Fill(centrV0M,fQ2yPos); 
-  fAvgCos2PsivsCentEtaNeg->Fill(centrV0M,fQ2xNeg);
-  fAvgSin2PsivsCentEtaNeg->Fill(centrV0M,fQ2yNeg);
+  //fAvgCos2PsivsCentEtaPos->Fill(centrV0M,fQ2xPos); 
+  //fAvgSin2PsivsCentEtaPos->Fill(centrV0M,fQ2yPos); 
+  //fAvgCos2PsivsCentEtaNeg->Fill(centrV0M,fQ2xNeg);
+  //fAvgSin2PsivsCentEtaNeg->Fill(centrV0M,fQ2yNeg);
 
-  fAvgCos3PsivsCentEtaPos->Fill(centrV0M,fQ3xPos); 
-  fAvgSin3PsivsCentEtaPos->Fill(centrV0M,fQ3yPos); 
-  fAvgCos3PsivsCentEtaNeg->Fill(centrV0M,fQ3xNeg);
-  fAvgSin3PsivsCentEtaNeg->Fill(centrV0M,fQ3yNeg);
+  //fAvgCos3PsivsCentEtaPos->Fill(centrV0M,fQ3xPos); 
+  //fAvgSin3PsivsCentEtaPos->Fill(centrV0M,fQ3yPos); 
+  //fAvgCos3PsivsCentEtaNeg->Fill(centrV0M,fQ3xNeg);
+  //fAvgSin3PsivsCentEtaNeg->Fill(centrV0M,fQ3yNeg);
 
-  fAvgCos4PsivsCentEtaPos->Fill(centrV0M,fQ4xPos); 
-  fAvgSin4PsivsCentEtaPos->Fill(centrV0M,fQ4yPos); 
-  fAvgCos4PsivsCentEtaNeg->Fill(centrV0M,fQ4xNeg);
-  fAvgSin4PsivsCentEtaNeg->Fill(centrV0M,fQ4yNeg);  
+  //fAvgCos4PsivsCentEtaPos->Fill(centrV0M,fQ4xPos); 
+  //fAvgSin4PsivsCentEtaPos->Fill(centrV0M,fQ4yPos); 
+  //fAvgCos4PsivsCentEtaNeg->Fill(centrV0M,fQ4xNeg);
+  //fAvgSin4PsivsCentEtaNeg->Fill(centrV0M,fQ4yNeg);  
 
   
   
   /// TPC q2-vectors for ESE:
-  fHistTPCPosqVectorvsCent->Fill(centrV0M,TMath::Sqrt(fQ2xPos*fQ2xPos + fQ2yPos*fQ2yPos)); // centrV0M hardcoded to prevent mismatch!
-  fHistTPCNegqVectorvsCent->Fill(centrV0M,TMath::Sqrt(fQ2xNeg*fQ2xNeg + fQ2yNeg*fQ2yNeg));
+  //fHistTPCPosqVectorvsCent->Fill(centrV0M,TMath::Sqrt(fQ2xPos*fQ2xPos + fQ2yPos*fQ2yPos)); // centrV0M hardcoded to prevent mismatch!
+  //fHistTPCNegqVectorvsCent->Fill(centrV0M,TMath::Sqrt(fQ2xNeg*fQ2xNeg + fQ2yNeg*fQ2yNeg));
   
 
 
   /// TPC Event Planes:
-  Double_t fPsiNTPCPos = 0., fPsiNTPCNeg = 0.;
-  Double_t fPsi3TPCPos = 0., fPsi3TPCNeg = 0.;
-  Double_t fPsi4TPCPos = 0., fPsi4TPCNeg = 0.;
+  //Double_t fPsiNTPCPos = 0., fPsiNTPCNeg = 0.;
+  //Double_t fPsi3TPCPos = 0., fPsi3TPCNeg = 0.;
+  //Double_t fPsi4TPCPos = 0., fPsi4TPCNeg = 0.;
   
-  if(fQ2xPos != 0 && fQ2yPos != 0){
-    fPsiNTPCPos = (1./2)*TMath::ATan2(fQ2yPos,fQ2xPos);
-    if(fPsiNTPCPos < 0) fPsiNTPCPos += TMath::TwoPi()/2;
-    fPsi3TPCPos = (1./3)*TMath::ATan2(fQ3yPos,fQ3xPos);
-    if(fPsi3TPCPos < 0) fPsi3TPCPos += TMath::TwoPi()/3;
-    fPsi4TPCPos = (1./4)*TMath::ATan2(fQ4yPos,fQ4xPos);
-    if(fPsi4TPCPos < 0) fPsi4TPCPos += TMath::TwoPi()/4;      
-  }
-  if(fQ2xNeg != 0 && fQ2yNeg != 0){
-    fPsiNTPCNeg = (1./2)*TMath::ATan2(fQ2yNeg,fQ2xNeg);
-    if(fPsiNTPCNeg < 0) fPsiNTPCNeg += TMath::TwoPi()/2;
-    fPsi3TPCNeg = (1./3)*TMath::ATan2(fQ3yNeg,fQ3xNeg);
-    if(fPsi3TPCNeg < 0) fPsi3TPCNeg += TMath::TwoPi()/3;
-    fPsi4TPCNeg = (1./4)*TMath::ATan2(fQ4yNeg,fQ4xNeg);
-    if(fPsi4TPCNeg < 0) fPsi4TPCNeg += TMath::TwoPi()/4;     
-  }
+  //if(fQ2xPos != 0 && fQ2yPos != 0){
+    //fPsiNTPCPos = (1./2)*TMath::ATan2(fQ2yPos,fQ2xPos);
+    //if(fPsiNTPCPos < 0) fPsiNTPCPos += TMath::TwoPi()/2;
+    //fPsi3TPCPos = (1./3)*TMath::ATan2(fQ3yPos,fQ3xPos);
+    //if(fPsi3TPCPos < 0) fPsi3TPCPos += TMath::TwoPi()/3;
+    //fPsi4TPCPos = (1./4)*TMath::ATan2(fQ4yPos,fQ4xPos);
+    //if(fPsi4TPCPos < 0) fPsi4TPCPos += TMath::TwoPi()/4;      
+  //}
+  //if(fQ2xNeg != 0 && fQ2yNeg != 0){
+    //fPsiNTPCNeg = (1./2)*TMath::ATan2(fQ2yNeg,fQ2xNeg);
+    //if(fPsiNTPCNeg < 0) fPsiNTPCNeg += TMath::TwoPi()/2;
+    //fPsi3TPCNeg = (1./3)*TMath::ATan2(fQ3yNeg,fQ3xNeg);
+    //if(fPsi3TPCNeg < 0) fPsi3TPCNeg += TMath::TwoPi()/3;
+    //fPsi4TPCNeg = (1./4)*TMath::ATan2(fQ4yNeg,fQ4xNeg);
+    //if(fPsi4TPCNeg < 0) fPsi4TPCNeg += TMath::TwoPi()/4;     
+  //}
 
-  fHistTPCPsiNPosPlane->Fill(centrality,fPsiNTPCPos);
-  fHistTPCPsiNNegPlane->Fill(centrality,fPsiNTPCNeg);
-  fHistTPCPsi3PosPlane->Fill(centrality,fPsi3TPCPos);
-  fHistTPCPsi3NegPlane->Fill(centrality,fPsi3TPCNeg); 
-  fHistTPCPsi4PosPlane->Fill(centrality,fPsi4TPCPos);
-  fHistTPCPsi4NegPlane->Fill(centrality,fPsi4TPCNeg); 
+  //fHistTPCPsiNPosPlane->Fill(centrality,fPsiNTPCPos);
+  //fHistTPCPsiNNegPlane->Fill(centrality,fPsiNTPCNeg);
+  //fHistTPCPsi3PosPlane->Fill(centrality,fPsi3TPCPos);
+  //fHistTPCPsi3NegPlane->Fill(centrality,fPsi3TPCNeg); 
+  //fHistTPCPsi4PosPlane->Fill(centrality,fPsi4TPCPos);
+  //fHistTPCPsi4NegPlane->Fill(centrality,fPsi4TPCNeg); 
 
 
 
-  hTPCPsiNCorrelation->Fill(centrality,TMath::Cos(2*fPsiNTPCPos - 2*fPsiNTPCNeg));    /// TPC Psi2 Resolution
-  hTPCPsi3Correlation->Fill(centrality,TMath::Cos(3*fPsi3TPCPos - 3*fPsi3TPCNeg));    /// TPC Psi3 Resolution
-  hTPCPsi4Correlation->Fill(centrality,TMath::Cos(4*fPsi3TPCPos - 4*fPsi3TPCNeg));    /// TPC Psi3 Resolution
+  //hTPCPsiNCorrelation->Fill(centrality,TMath::Cos(2*fPsiNTPCPos - 2*fPsiNTPCNeg));    /// TPC Psi2 Resolution
+  //hTPCPsi3Correlation->Fill(centrality,TMath::Cos(3*fPsi3TPCPos - 3*fPsi3TPCNeg));    /// TPC Psi3 Resolution
+  //hTPCPsi4Correlation->Fill(centrality,TMath::Cos(4*fPsi3TPCPos - 4*fPsi3TPCNeg));    /// TPC Psi3 Resolution
 
 
 
@@ -773,12 +783,9 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
   Double_t fQnxV0C=0, fQnyV0C=0, fSumMV0C = 0, fQnxV0A=0, fQnyV0A=0, fSumMV0A = 0; 
   Bool_t kPassV0 = GetGainCorrectedV0Qvector(fAOD, fVertexZEvent, 2, fQnxV0C, fQnyV0C, fQnxV0A, fQnyV0A, fSumMV0C, fSumMV0A);
 
-  Double_t fQ3xV0C=0, fQ3yV0C=0, fQ3xV0A=0, fQ3yV0A=0;
-  kPassV0 = GetGainCorrectedV0Qvector(fAOD, fVertexZEvent, 3, fQ3xV0C, fQ3yV0C, fQ3xV0A, fQ3yV0A);
 
-  
   if(!kPassV0) return;           /// V0 does not have signal for this event.  
-  fDebugwEventCount->Fill(6.1);
+  fDebugwEventCount->Fill(5.1);
 
 
   ApplyV0XqVectRecenter(centrCL1, 2, fQnxV0C, fQnyV0C, fQnxV0A, fQnyV0A);
@@ -793,11 +800,6 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
   //cout<<"------- Bug Testing Mode... we exit here....... "<<endl; return;
 
   
-  ApplyV0XqVectRecenter(centrCL1, 3, fQ3xV0C, fQ3yV0C, fQ3xV0A, fQ3yV0A);
-  hAvgQ3XvsCentV0C->Fill(centrCL1,fQ3xV0C);
-  hAvgQ3YvsCentV0C->Fill(centrCL1,fQ3yV0C);  
-  hAvgQ3XvsCentV0A->Fill(centrCL1,fQ3xV0A);
-  hAvgQ3YvsCentV0A->Fill(centrCL1,fQ3yV0A);  
 
 
   /// V0 q2-vectors for ESE:
@@ -807,170 +809,28 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
   
   ///--------> Get V0A and V0C Event Planes 
 
-  Double_t fPsiNV0C = 0., fPsiNV0A = 0.;
-  Double_t fPsi3V0C = 0., fPsi3V0A = 0.;
+  Double_t fPsi2V0C = 0., fPsi2V0A = 0.;
     
-  fPsiNV0C = (1./gHarmonic)*TMath::ATan2(fQnyV0C,fQnxV0C);
-  if(fPsiNV0C < 0) fPsiNV0C += TMath::TwoPi()/gHarmonic;
-  fPsiNV0A = (1./gHarmonic)*TMath::ATan2(fQnyV0A,fQnxV0A);
-  if(fPsiNV0A < 0) fPsiNV0A += TMath::TwoPi()/gHarmonic;
-  fHistV0CPsiNEventPlane->Fill(centrality,fPsiNV0C);
-  fHistV0APsiNEventPlane->Fill(centrality,fPsiNV0A);
-
- 
-  fPsi3V0C = (1./3)*TMath::ATan2(fQ3yV0C,fQ3xV0C);
-  if(fPsi3V0C < 0) fPsi3V0C += TMath::TwoPi()/3;      
-  fPsi3V0A = (1./3)*TMath::ATan2(fQ3yV0A,fQ3xV0A);
-  if(fPsi3V0A < 0) fPsi3V0A += TMath::TwoPi()/3;      
-  fHistV0CPsi3EventPlane->Fill(centrality,fPsi3V0C);
-  fHistV0APsi3EventPlane->Fill(centrality,fPsi3V0A);    
+  fPsi2V0C = (1./gHarmonic)*TMath::ATan2(fQnyV0C,fQnxV0C);
+  if(fPsi2V0C < 0) fPsi2V0C += TMath::TwoPi()/gHarmonic;
+  fPsi2V0A = (1./gHarmonic)*TMath::ATan2(fQnyV0A,fQnxV0A);
+  if(fPsi2V0A < 0) fPsi2V0A += TMath::TwoPi()/gHarmonic;
+  fHistV0CPsiNEventPlane->Fill(centrality,fPsi2V0C);
+  fHistV0APsiNEventPlane->Fill(centrality,fPsi2V0A);  
  
 
 
   /// V0A, V0C Resolutions:
-  hV0CV0APsiNCorrelation->Fill(centrality,TMath::Cos(2*fPsiNV0A    - 2*fPsiNV0C));
-  hV0CTPCPsiNCorrelation->Fill(centrality,TMath::Cos(2*fPsiNTPCPos - 2*fPsiNV0C));
-  hV0ATPCPsiNCorrelation->Fill(centrality,TMath::Cos(2*fPsiNTPCPos - 2*fPsiNV0A));
+  hV0CV0APsiNCorrelation->Fill(centrality,TMath::Cos(2*fPsi2V0A    - 2*fPsi2V0C));
+  //hV0CTPCPsiNCorrelation->Fill(centrality,TMath::Cos(2*fPsiNTPCPos - 2*fPsi2V0C));
+  //hV0ATPCPsiNCorrelation->Fill(centrality,TMath::Cos(2*fPsiNTPCPos - 2*fPsi2V0A));
 
-  hV0CV0APsi3Correlation->Fill(centrality,TMath::Cos(3*fPsiNV0A    - 3*fPsiNV0C));
-  hV0CTPCPsi3Correlation->Fill(centrality,TMath::Cos(3*fPsiNTPCPos - 3*fPsiNV0C));
-  hV0ATPCPsi3Correlation->Fill(centrality,TMath::Cos(3*fPsiNTPCPos - 3*fPsiNV0A));
-
-
-
-  
-
-  //If we skip the nested loops and main Analysis:
-  if(bSkipNestedLoop){
- 
-    fHistVertexZcm->Fill(pVtxZ);
-    fCentDistAfterCut->Fill(centrality);
-    
-    PostData(1,fListHist);
-    return;     //Just fill QAs and get out..
-  }
+  hV0CV0APsi3Correlation->Fill(centrality,TMath::Cos(3*fPsi2V0A    - 3*fPsi2V0C));
+  //hV0CTPCPsi3Correlation->Fill(centrality,TMath::Cos(3*fPsiNTPCPos - 3*fPsi2V0C));
+  //hV0ATPCPsi3Correlation->Fill(centrality,TMath::Cos(3*fPsiNTPCPos - 3*fPsi2V0A));
 
 
-  Double_t fSelectedV0PsiN = 0;
-  Double_t fSelectedV0Psi3 = 0;
-  
 
-  if(sDetectorForEP.Contains("V0C")){
-    bUseV0EventPlane = kTRUE;
-    fSelectedV0PsiN  = fPsiNV0C;
-    fSelectedV0Psi3  = fPsi3V0C;
-  }
-  else if(sDetectorForEP.Contains("V0A")){
-    bUseV0EventPlane = kTRUE;
-    fSelectedV0PsiN  = fPsiNV0A;
-    fSelectedV0Psi3  = fPsi3V0A;
-  }
-  else if(sDetectorForEP.Contains("V0")){ 
-    bUseV0EventPlane = kTRUE;
-    fSelectedV0PsiN  = fPsiNV0A;
-    fSelectedV0Psi3  = fPsi3V0A;
-  }
-  else{ 
-    bUseV0EventPlane = kFALSE;
-  }
-  
-  //--------> Get V0A and V0C tower data
-  const AliAODVZERO *fAODV0 = (AliAODVZERO *) fAOD->GetVZEROData();
-  fpQvecEvent->setTowV0Craw0(fAODV0->GetMultiplicity(0));
-  fpQvecEvent->setTowV0Craw1(fAODV0->GetMultiplicity(1));
-  fpQvecEvent->setTowV0Craw2(fAODV0->GetMultiplicity(2));
-  fpQvecEvent->setTowV0Craw3(fAODV0->GetMultiplicity(3));
-  fpQvecEvent->setTowV0Craw4(fAODV0->GetMultiplicity(4));
-  fpQvecEvent->setTowV0Craw5(fAODV0->GetMultiplicity(5));
-  fpQvecEvent->setTowV0Craw6(fAODV0->GetMultiplicity(6));
-  fpQvecEvent->setTowV0Craw7(fAODV0->GetMultiplicity(7));
-  fpQvecEvent->setTowV0Craw8(fAODV0->GetMultiplicity(8));
-  fpQvecEvent->setTowV0Craw9(fAODV0->GetMultiplicity(9));
-  fpQvecEvent->setTowV0Craw10(fAODV0->GetMultiplicity(10));
-  fpQvecEvent->setTowV0Craw11(fAODV0->GetMultiplicity(11));
-  fpQvecEvent->setTowV0Craw12(fAODV0->GetMultiplicity(12));
-  fpQvecEvent->setTowV0Craw13(fAODV0->GetMultiplicity(13));
-  fpQvecEvent->setTowV0Craw14(fAODV0->GetMultiplicity(14));
-  fpQvecEvent->setTowV0Craw15(fAODV0->GetMultiplicity(15));
-  fpQvecEvent->setTowV0Craw16(fAODV0->GetMultiplicity(16));
-  fpQvecEvent->setTowV0Craw17(fAODV0->GetMultiplicity(17));
-  fpQvecEvent->setTowV0Craw18(fAODV0->GetMultiplicity(18));
-  fpQvecEvent->setTowV0Craw19(fAODV0->GetMultiplicity(19));
-  fpQvecEvent->setTowV0Craw20(fAODV0->GetMultiplicity(20));
-  fpQvecEvent->setTowV0Craw21(fAODV0->GetMultiplicity(21));
-  fpQvecEvent->setTowV0Craw22(fAODV0->GetMultiplicity(22));
-  fpQvecEvent->setTowV0Craw23(fAODV0->GetMultiplicity(23));
-  fpQvecEvent->setTowV0Craw24(fAODV0->GetMultiplicity(24));
-  fpQvecEvent->setTowV0Craw25(fAODV0->GetMultiplicity(25));
-  fpQvecEvent->setTowV0Craw26(fAODV0->GetMultiplicity(26));
-  fpQvecEvent->setTowV0Craw27(fAODV0->GetMultiplicity(27));
-  fpQvecEvent->setTowV0Craw28(fAODV0->GetMultiplicity(28));
-  fpQvecEvent->setTowV0Craw29(fAODV0->GetMultiplicity(29));
-  fpQvecEvent->setTowV0Craw30(fAODV0->GetMultiplicity(30));
-  fpQvecEvent->setTowV0Craw31(fAODV0->GetMultiplicity(31));
-  
-  fpQvecEvent->setTowV0Araw0(fAODV0->GetMultiplicity(32));
-  fpQvecEvent->setTowV0Araw1(fAODV0->GetMultiplicity(33));
-  fpQvecEvent->setTowV0Araw2(fAODV0->GetMultiplicity(34));
-  fpQvecEvent->setTowV0Araw3(fAODV0->GetMultiplicity(35));
-  fpQvecEvent->setTowV0Araw4(fAODV0->GetMultiplicity(36));
-  fpQvecEvent->setTowV0Araw5(fAODV0->GetMultiplicity(37));
-  fpQvecEvent->setTowV0Araw6(fAODV0->GetMultiplicity(38));
-  fpQvecEvent->setTowV0Araw7(fAODV0->GetMultiplicity(39));
-  fpQvecEvent->setTowV0Araw8(fAODV0->GetMultiplicity(40));
-  fpQvecEvent->setTowV0Araw9(fAODV0->GetMultiplicity(41));
-  fpQvecEvent->setTowV0Araw10(fAODV0->GetMultiplicity(42));
-  fpQvecEvent->setTowV0Araw11(fAODV0->GetMultiplicity(43));
-  fpQvecEvent->setTowV0Araw12(fAODV0->GetMultiplicity(44));
-  fpQvecEvent->setTowV0Araw13(fAODV0->GetMultiplicity(45));
-  fpQvecEvent->setTowV0Araw14(fAODV0->GetMultiplicity(46));
-  fpQvecEvent->setTowV0Araw15(fAODV0->GetMultiplicity(47));
-  fpQvecEvent->setTowV0Araw16(fAODV0->GetMultiplicity(48));
-  fpQvecEvent->setTowV0Araw17(fAODV0->GetMultiplicity(49));
-  fpQvecEvent->setTowV0Araw18(fAODV0->GetMultiplicity(50));
-  fpQvecEvent->setTowV0Araw19(fAODV0->GetMultiplicity(51));
-  fpQvecEvent->setTowV0Araw20(fAODV0->GetMultiplicity(52));
-  fpQvecEvent->setTowV0Araw21(fAODV0->GetMultiplicity(53));
-  fpQvecEvent->setTowV0Araw22(fAODV0->GetMultiplicity(54));
-  fpQvecEvent->setTowV0Araw23(fAODV0->GetMultiplicity(55));
-  fpQvecEvent->setTowV0Araw24(fAODV0->GetMultiplicity(56));
-  fpQvecEvent->setTowV0Araw25(fAODV0->GetMultiplicity(57));
-  fpQvecEvent->setTowV0Araw26(fAODV0->GetMultiplicity(58));
-  fpQvecEvent->setTowV0Araw27(fAODV0->GetMultiplicity(59));
-  fpQvecEvent->setTowV0Araw28(fAODV0->GetMultiplicity(60));
-  fpQvecEvent->setTowV0Araw29(fAODV0->GetMultiplicity(61));
-  fpQvecEvent->setTowV0Araw30(fAODV0->GetMultiplicity(62));
-  fpQvecEvent->setTowV0Araw31(fAODV0->GetMultiplicity(63));
-  
-  //=============== Get the ZDC data ==================== @Shi
- 
-  AliAODZDC *aodZDC = fAOD->GetZDCData();
-
-  if(!aodZDC) {
-    printf("\n ********* Error: could not find ZDC data ************ \n ");
-  }
-  else if(aodZDC){
-    const Double_t *fZNATowerRawAOD = aodZDC->GetZNATowerEnergy();
-    const Double_t *fZNCTowerRawAOD = aodZDC->GetZNCTowerEnergy();
-    
-    //const Double_t *fZPATowerRawAOD = aodZDC->GetZPATowerEnergy();
-    //const Double_t *fZPCTowerRawAOD = aodZDC->GetZPCTowerEnergy();  
-    //const Int_t nZDCChannel = 5;
-    
-	fpQvecEvent->setTowZNCraw0(fZNCTowerRawAOD[0]);
-	fpQvecEvent->setTowZNCraw1(fZNCTowerRawAOD[1]);
-	fpQvecEvent->setTowZNCraw2(fZNCTowerRawAOD[2]);
-	fpQvecEvent->setTowZNCraw3(fZNCTowerRawAOD[3]);
-	fpQvecEvent->setTowZNCraw4(fZNCTowerRawAOD[4]);
-
-	fpQvecEvent->setTowZNAraw0(fZNATowerRawAOD[0]);
-	fpQvecEvent->setTowZNAraw1(fZNATowerRawAOD[1]);
-	fpQvecEvent->setTowZNAraw2(fZNATowerRawAOD[2]);
-	fpQvecEvent->setTowZNAraw3(fZNATowerRawAOD[3]);
-	fpQvecEvent->setTowZNAraw4(fZNATowerRawAOD[4]);
-	
-
-  }
 
   // ================================================================================> Set event info 
     
@@ -986,12 +846,136 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
   fpQvecEvent->setVZARe(fQnxV0A);
   fpQvecEvent->setVZAIm(fQnyV0A);
   fpQvecEvent->setVZAM(fSumMV0A);
-
   
+  //=============== Get the ZDC data ==================== @Shi
 
+  Double_t fQxZNCC=0, fQyZNCC=0, fQxZNCA=0, fQyZNCA=0; 
+  Double_t fPsiZNCC = 0., fPsiZNCA = 0., fPsiZNCCA = 0; // fPsiZNCCA combine ZNCC and ZNCA
+  
+  AliAODZDC *aodZDC = fAOD->GetZDCData();
+	
+  if(!aodZDC) {
+    printf("\n ********* Error: could not find ZDC data ************ \n ");
+  }
+  else if(aodZDC){
+    const Double_t *fZNATowerRawAOD = aodZDC->GetZNATowerEnergy();
+    const Double_t *fZNCTowerRawAOD = aodZDC->GetZNCTowerEnergy();
+	
+	if((fZNATowerRawAOD[0]<0) || (fZNATowerRawAOD[1]<0) || (fZNATowerRawAOD[2]<0) || (fZNATowerRawAOD[3]<0) || (fZNATowerRawAOD[4] < 0)) {
+		return;
+	}
+	
+	if((fZNCTowerRawAOD[0]<0) || (fZNCTowerRawAOD[1]<0) || (fZNCTowerRawAOD[2]<0) || (fZNCTowerRawAOD[3]<0) || (fZNCTowerRawAOD[4] < 0)) {
+		return;
+	}
+	fDebugwEventCount->Fill(6.1);
+	
+	Double_t towZNCraw1GainEq = 0, towZNCraw2GainEq = 0, towZNCraw3GainEq = 0, towZNCraw4GainEq = 0;
+	towZNCraw1GainEq = fZNCTowerRawAOD[1]*fHZDCCparameters->GetBinContent(1);
+	towZNCraw2GainEq = fZNCTowerRawAOD[2]*fHZDCCparameters->GetBinContent(2);
+	towZNCraw3GainEq = fZNCTowerRawAOD[3]*fHZDCCparameters->GetBinContent(3);
+	towZNCraw4GainEq = fZNCTowerRawAOD[4]*fHZDCCparameters->GetBinContent(4);
+
+	Double_t towZNAraw1GainEq = 0, towZNAraw2GainEq = 0, towZNAraw3GainEq = 0, towZNAraw4GainEq = 0;
+	towZNAraw1GainEq = fZNATowerRawAOD[1]*fHZDCAparameters->GetBinContent(1);
+	towZNAraw2GainEq = fZNATowerRawAOD[2]*fHZDCAparameters->GetBinContent(2);
+	towZNAraw3GainEq = fZNATowerRawAOD[3]*fHZDCAparameters->GetBinContent(3);
+	towZNAraw4GainEq = fZNATowerRawAOD[4]*fHZDCAparameters->GetBinContent(4);
+	
+	const Double_t xZDCC[4] = {-1, 1, -1, 1}; // directional vector
+    const Double_t yZDCC[4] = {-1, -1, 1, 1};
+    const Double_t xZDCA[4] = {1, -1, 1, -1};
+    const Double_t yZDCA[4] = {-1, -1, 1, 1};
+    
+    Double_t towZNC[5] = {fZNCTowerRawAOD[0], towZNCraw1GainEq, towZNCraw2GainEq, towZNCraw3GainEq, towZNCraw4GainEq};
+    Double_t towZNA[5] = {fZNATowerRawAOD[0], towZNAraw1GainEq, towZNAraw2GainEq, towZNAraw3GainEq, towZNAraw4GainEq};
+    
+	
+    Double_t EZNC = 0, wZNC = 0, denZNC = 0, numXZNC = 0, numYZNC = 0;
+    Double_t EZNA = 0, wZNA = 0, denZNA = 0, numXZNA = 0, numYZNA = 0; 
+
+    for(Int_t i=0; i<4; i++){
+		// ZNC part
+        // get energy
+        EZNC = towZNC[i+1];
+        
+        // build ZDCC centroid
+        wZNC = TMath::Max(0., 4.0 + TMath::Log(towZNC[i+1]/fZNCTowerRawAOD[0]));
+        numXZNC += xZDCC[i]*wZNC;
+        numYZNC += yZDCC[i]*wZNC;
+        denZNC += wZNC;
+        
+        // ZNA part
+        // get energy
+        EZNA = towZNA[i+1];
+
+        // build ZDCA centroid
+        wZNA = TMath::Max(0., 4.0 + TMath::Log(towZNA[i+1]/fZNATowerRawAOD[0]));
+        numXZNA += xZDCA[i]*wZNA;
+        numYZNA += yZDCA[i]*wZNA;
+        denZNA += wZNA;
+        
+	}
+	
+	
+	if (denZNC==0) {return;}
+	if (denZNA==0) {return;}
+	
+	fDebugwEventCount->Fill(7.1);
+	fpQvecEvent->setTowZNCraw0(fZNCTowerRawAOD[0]);
+	fpQvecEvent->setTowZNCraw1(fZNCTowerRawAOD[1]);
+	fpQvecEvent->setTowZNCraw2(fZNCTowerRawAOD[2]);
+	fpQvecEvent->setTowZNCraw3(fZNCTowerRawAOD[3]);
+	fpQvecEvent->setTowZNCraw4(fZNCTowerRawAOD[4]);
+
+	fpQvecEvent->setTowZNAraw0(fZNATowerRawAOD[0]);
+	fpQvecEvent->setTowZNAraw1(fZNATowerRawAOD[1]);
+	fpQvecEvent->setTowZNAraw2(fZNATowerRawAOD[2]);
+	fpQvecEvent->setTowZNAraw3(fZNATowerRawAOD[3]);
+	fpQvecEvent->setTowZNAraw4(fZNATowerRawAOD[4]);
+	
+	Double_t ZDCCxPosFromLogWeight = numXZNC/denZNC;
+	Double_t ZDCCyPosFromLogWeight = numYZNC/denZNC;
+	Double_t ZDCAxPosFromLogWeight = numXZNA/denZNA;
+	Double_t ZDCAyPosFromLogWeight = numYZNA/denZNA;
+	
+	Double_t ZDCCAvgxPosFromVtxFit = 0;
+	Double_t ZDCCAvgyPosFromVtxFit = 0;
+	
+	Double_t ZDCAAvgxPosFromVtxFit = 0;
+	Double_t ZDCAAvgyPosFromVtxFit = 0;
+
+	// 3rd order centrality+vtxpos+orbitNum
+	ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*centrality + fHZDCCparameters->GetBinContent(7)*pow(centrality,2) + fHZDCCparameters->GetBinContent(8)*pow(centrality,3) + fHZDCCparameters->GetBinContent(9)*pVtxX + fHZDCCparameters->GetBinContent(10)*pVtxY + fHZDCCparameters->GetBinContent(11)*pVtxZ + fHZDCCparameters->GetBinContent(12)*fOrbitNumber + fHZDCCparameters->GetBinContent(13);
+	ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(14)*centrality + fHZDCCparameters->GetBinContent(15)*pow(centrality,2) + fHZDCCparameters->GetBinContent(16)*pow(centrality,3) + fHZDCCparameters->GetBinContent(17)*pVtxX + fHZDCCparameters->GetBinContent(18)*pVtxY + fHZDCCparameters->GetBinContent(19)*pVtxZ + fHZDCCparameters->GetBinContent(20)*fOrbitNumber + fHZDCCparameters->GetBinContent(21);
+	
+	ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*centrality + fHZDCAparameters->GetBinContent(7)*pow(centrality,2) + fHZDCAparameters->GetBinContent(8)*pow(centrality,3) + fHZDCAparameters->GetBinContent(9)*pVtxX + fHZDCAparameters->GetBinContent(10)*pVtxY + fHZDCAparameters->GetBinContent(11)*pVtxZ + fHZDCAparameters->GetBinContent(12)*fOrbitNumber + fHZDCAparameters->GetBinContent(13);
+	ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(14)*centrality + fHZDCAparameters->GetBinContent(15)*pow(centrality,2) + fHZDCAparameters->GetBinContent(16)*pow(centrality,3) + fHZDCAparameters->GetBinContent(17)*pVtxX + fHZDCAparameters->GetBinContent(18)*pVtxY + fHZDCAparameters->GetBinContent(19)*pVtxZ + fHZDCAparameters->GetBinContent(20)*fOrbitNumber + fHZDCAparameters->GetBinContent(21);
+	
+	
+	fQxZNCC = ZDCCxPosFromLogWeight - ZDCCAvgxPosFromVtxFit;
+	fQyZNCC = ZDCCyPosFromLogWeight - ZDCCAvgyPosFromVtxFit;
+	
+	fQxZNCA = ZDCAxPosFromLogWeight - ZDCAAvgxPosFromVtxFit;
+	fQyZNCA = ZDCAyPosFromLogWeight - ZDCAAvgyPosFromVtxFit;
+	
+	// Event plane
+
+	fPsiZNCA = TMath::ATan2(fQyZNCA,fQxZNCA); // Psi_{1,A} spectator plane -pi to pi
+	if (fPsiZNCA < 0) { // Psi_{1,A} should be differ to Psi_{1,C} by pi. 
+	  fPsiZNCA = fPsiZNCA + TMath::Pi();
+	} else if (fPsiZNCA >= 0) {
+	  fPsiZNCA = fPsiZNCA - TMath::Pi();
+	}
+
+	fPsiZNCC = TMath::ATan2(fQyZNCC,fQxZNCC); // Psi_{1,C} spectator plane 
+
+	fPsiZNCCA = TMath::ATan2((fQyZNCC-fQyZNCA),(fQxZNCC-fQxZNCA));
+  }
+  
   /// We Are About to Start Main Analysis Below: //
-  Int_t kPIDtrk1=gParticleID;   /// gParticleID is Set From AddTask. Both Identified..
-  Int_t kPIDtrk2=gParticleID;   /// 0 = hadron (h-h), 1 = Pi-Pi, 2 = K-K, 3 = Prot-Prot, 
+  //Int_t kPIDtrk1=gParticleID;   /// gParticleID is Set From AddTask. Both Identified..
+  //Int_t kPIDtrk2=gParticleID;   /// 0 = hadron (h-h), 1 = Pi-Pi, 2 = K-K, 3 = Prot-Prot, 
 
   ///For single Identified cases:
   
@@ -1012,109 +996,265 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
 ///Track variables:
   Int_t   trk1Chrg=0, trk1TpcNC=0;
   Int_t   trk2Chrg=0, trk2TpcNC=0;
-  //Bool_t  bPIDoktrk1=kFALSE, bPIDoktrk2=kFALSE;
-
+ 
   
   Double_t trk1Pt=0,trk1Phi=0,trk1Eta=0,trk1DCAxy=0.0, trk1DCAz=0.0,trk1Chi2=0,trk1dEdx=0,trk1Wgt=1.0;
-  Double_t wgtComb1Ch = 1.0;
-  Double_t ptWgtMCChtrk1  = 1.0, WgtNUAChtrk1   = 1.0;
+  Double_t trk2Pt=0,trk2Phi=0,trk2Eta=0,trk2DCAxy=0.0, trk2DCAz=0.0,trk2Chi2=0,trk2dEdx=0,trk2Wgt=1.0;
 
-  Double_t localSumQ2x =0,localSumQ2y=0;
-  Double_t localSumQ3x =0,localSumQ3y=0;
-  Double_t localMultTPC=0; 
-
-  Int_t chargeIndex = 0;
+  Double_t posTrk1[3] = {0 , 0, 0};
+  Double_t posTrk2[3] = {0 , 0, 0};
+  //Double_t vTrk1[3] = {0 , 0, 0};
+  //Double_t vTrk2[3] = {0 , 0, 0};
   
+
   ///----------> Starting Analysis track Loop -----------
   
-  for(Int_t iTrack = 0; iTrack < ntracks; iTrack++) { 
+  for(Int_t iTrack = 0; iTrack < ntracks; iTrack++) {
 
-		AliAODTrack* AODtrack1 = dynamic_cast <AliAODTrack*> (fVevent->GetTrack(iTrack));
-		if(!AODtrack1) continue;
+	AliAODTrack* AODtrack1 = dynamic_cast <AliAODTrack*> (fVevent->GetTrack(iTrack));
+	if(!AODtrack1) continue;
+	if(AODtrack1->TestFilterBit(fFilterBit)) {  //// Only use FB tracks. 
+
+	  trk1Pt    = AODtrack1->Pt();
+	  trk1Phi   = AODtrack1->Phi();
+	  trk1Eta   = AODtrack1->Eta();
+	  trk1Chrg  = AODtrack1->Charge();
+	  trk1Chi2  = AODtrack1->Chi2perNDF();
+	  trk1TpcNC = AODtrack1->GetTPCNcls();
+	  //trk1DCAxy = AODtrack1->DCA(); // do not use DCA for FB 768
+	  //trk1DCAz  = AODtrack1->ZAtDCA();            
+	  trk1dEdx  = AODtrack1->GetDetPid()->GetTPCsignal();  
+	  
+	  
+	  // for constrained TPConly tracks
+      if(fFilterBit == 128){
+	  	trk1DCAxy = AODtrack1->DCA();      // this is the DCA from global track (not exactly what is cut on)
+	    trk1DCAz  = AODtrack1->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+      }
+      else{
+	    //const AliVVertex *vertex = fVevent->GetPrimaryVertex();
+	    //vertex->GetXYZ(vTrk1);
+	    AODtrack1->GetXYZ(posTrk1);
+	    
 		
-		if(AODtrack1->TestFilterBit(fFilterBit)) {  //// Only use FB tracks. 
-
-		  trk1Pt    = AODtrack1->Pt();
-		  trk1Phi   = AODtrack1->Phi();
-		  trk1Eta   = AODtrack1->Eta();
-		  trk1Chrg  = AODtrack1->Charge();
-		  trk1Chi2  = AODtrack1->Chi2perNDF();
-		  trk1TpcNC = AODtrack1->GetTPCNcls();
-		  trk1DCAxy = AODtrack1->DCA();
-		  trk1DCAz  = AODtrack1->ZAtDCA();            
-		  trk1dEdx  = AODtrack1->GetDetPid()->GetTPCsignal();  
-		  
-		  
-		  //Apply track cuts for TPC EP here:
-		  //if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && !((trk1Eta >= fEtaGapNeg) && (trk1Eta <= fEtaGapPos)) && (trk1dEdx >= fTPCdEdxMin) && (trk1TpcNC >= fTPCclustMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
-		  if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && (trk1dEdx >= fTPCdEdxMin) && (trk1TpcNC >= fTPCclustMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
-
-		WgtNUAChtrk1  = 1.0;   
-		ptWgtMCChtrk1 = 1.0;  
-
-
-		WgtNUAChtrk1  = GetNUAWeightForTrack(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);          
-		ptWgtMCChtrk1 = GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,0);
-
-		wgtComb1Ch  = WgtNUAChtrk1*ptWgtMCChtrk1;    /// Charge
-
+	    trk1DCAxy  = TMath::Sqrt((posTrk1[0] - pVtxX)*(posTrk1[0] - pVtxX) + (posTrk1[1] - pVtxY)*(posTrk1[1] - pVtxY));
+	    trk1DCAz   = posTrk1[2] - pVtxZ;
+      }
+      
+      // DCA cut
+      if (fDCAxyMax>0 && fDCAzzMax>0 && trk1DCAxy>=fDCAxyMax && trk1DCAz>=fDCAzzMax) { // if fDCAxyMax, fDCAzzMax is set to be less than 0, no cut applied
+		continue;
+	  }
+	  
+	  // Crossed Row cut
+	  if (bUseTPCCrossedRows){ // either crossed row or ncluster Min should be applied
+		if ((Float_t)AODtrack1->GetTPCNCrossedRows() < (120 - (5/(Float_t)AODtrack1->Pt())) ){
+		  continue;
+		}
+	  }
+	  
+	  // n cluster Min cut, do not use together with crossed row
+	  if (fTPCclustMin > 0) { 
+		if (trk1TpcNC < fTPCclustMin) {
+		  continue;
+	    }
+	  }
+	  
+	  // shared cluster 
+	  if( fTPCsharedCut > 0 && AODtrack1->GetTPCnclsS() > fTPCsharedCut){
+		continue;
+      }
+      
+	  //Apply track cuts for TPC EP here:
+	  //if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && !((trk1Eta >= fEtaGapNeg) && (trk1Eta <= fEtaGapPos)) && (trk1dEdx >= fTPCdEdxMin) && (trk1TpcNC >= fTPCclustMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
+	  if((trk1Pt <= fMaxPtCut) && (trk1Pt >= fMinPtCut) && (trk1Eta <= fMaxEtaCut) && (trk1Eta >= fMinEtaCut) && (trk1dEdx >= fTPCdEdxMin) && (trk1Chi2 >= fTrkChi2Min) && (trk1Chi2 <= fTrkChi2Max) && TMath::Abs(trk1Chrg)) {
 		// ================================ save Qvec ===================================
-
-		chargeIndex = (trk1Chrg > 0. ? 0 : 1);
 		
-		for (Int_t h=0;h<fCRCnHar;h++) { // h = 0, 1
-			// all charged (Particle is UN-Identified)
-			fCMEQRe[chargeIndex][h]->Fill(trk1Eta,wgtComb1Ch*TMath::Cos((h+1.)*trk1Phi)); // w*cos(phi) and w*cos(2phi)
-			fCMEQIm[chargeIndex][h]->Fill(trk1Eta,wgtComb1Ch*TMath::Sin((h+1.)*trk1Phi));
-			fCMEMult[chargeIndex][h]->Fill(trk1Eta,wgtComb1Ch);
-			fCMEQRe[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1Ch,2.)*TMath::Cos((h+1.)*trk1Phi));
-			fCMEQIm[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1Ch,2.)*TMath::Sin((h+1.)*trk1Phi));
-			fCMEMult[2+chargeIndex][h]->Fill(trk1Eta,pow(wgtComb1Ch,2.));
-			if (h == 0) {
-				fCMEQ2Re4[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,2)*TMath::Cos(4*trk1Phi)); // w^2*cos(4phi)
-				fCMEQ3Re2[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,3)*TMath::Cos(2*trk1Phi)); // w^3*cos(2phi)
-				fCMEQ2Im4[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,2)*TMath::Sin(4*trk1Phi)); // w^2*sin(4phi)
-				fCMEQ3Im2[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,3)*TMath::Sin(2*trk1Phi)); // w^3*sin(2phi)
-				fCMEw0[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,0));
-				fCMEw1[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,1));
-				fCMEw2[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,2));
-				fCMEw3[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,3));
-				fCMEw4[chargeIndex]->Fill(trk1Eta,pow(wgtComb1Ch,4));
-			}
+		// Calculate Re[Q_{m,k}] and Im[Q_{m,k}], (m = 1,2,3,4,5,6 and k = 0,1,2,3) for this event:
+		for(Int_t h=0;h<2;h++) 
+		{
+		  // RP All, OS
+		  // S_{p,k} is in it
+		  fCMEQReRP->Fill(h+0.5, TMath::Cos((h+1.)*trk1Phi)); 
+		  fCMEQImRP->Fill(h+0.5, TMath::Sin((h+1.)*trk1Phi)); 
+		
+		  if (trk1Chrg>0) {
+			fCMEQRePOIPos->Fill(h+0.5, TMath::Cos((h+1.)*trk1Phi)); 
+			fCMEQImPOIPos->Fill(h+0.5, TMath::Sin((h+1.)*trk1Phi)); 
+		  } 
+		
+		  if (trk1Chrg<0) {
+			fCMEQRePOINeg->Fill(h+0.5, TMath::Cos((h+1.)*trk1Phi)); 
+			fCMEQImPOINeg->Fill(h+0.5, TMath::Sin((h+1.)*trk1Phi)); 
+		  }
+		
 		}
 	
+	
+		// Calculate <<cos(2a-2Psi_V0)>> for RP, POI OS
+		f2pCorrelatorCos2PsiDiff2PsiV0RP->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsi2V0C))); //<cos(2psi1-2phi_V0C)>
+		f2pCorrelatorCos2PsiDiff2PsiV0RP->Fill(1.5, TMath::Cos(2*(trk1Phi-fPsi2V0A))); //<cos(2psi1-2phi_V0A)>
+		// Calculate <<cos(2a-2Psi_ZDC)>> for RP, POI OS
+		f2pCorrelatorCos2PsiDiff2PsiZDCRP->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZNCC))); //<cos(2psi1-2phi_ZDCC)>
+		f2pCorrelatorCos2PsiDiff2PsiZDCRP->Fill(1.5, TMath::Cos(2*(trk1Phi-fPsiZNCA))); //<cos(2psi1-2phi_ZDCA)>
+		f2pCorrelatorCos2PsiDiff2PsiZDCRP->Fill(2.5, TMath::Cos(2*(trk1Phi-fPsiZNCCA))); //<cos(2psi1-2phi_ZDCCA)>
+	
+		fNITV0OS->Fill(0.5, TMath::Cos(trk1Phi-2*fPsi2V0C)); // <<cos(psi1-2phi_V0C)>>
+		fNITV0OS->Fill(1.5, TMath::Sin(trk1Phi-2*fPsi2V0C)); // <<sin(psi1-2phi_V0C)>>
+		fNITV0OS->Fill(2.5, TMath::Cos(trk1Phi-2*fPsi2V0A)); // <<cos(psi1-2phi_V0A)>>
+		fNITV0OS->Fill(3.5, TMath::Sin(trk1Phi-2*fPsi2V0A)); // <<sin(psi1-2phi_V0A)>>
 
+		fNITZDCOS->Fill(0.5, TMath::Cos(trk1Phi-2*fPsiZNCC)); // <<cos(psi1-2phi_ZDCC)>>
+		fNITZDCOS->Fill(1.5, TMath::Sin(trk1Phi-2*fPsiZNCC)); // <<sin(psi1-2phi_ZDCC)>>
+		fNITZDCOS->Fill(2.5, TMath::Cos(trk1Phi-2*fPsiZNCA)); // <<cos(psi1-2phi_ZDCA)>>
+		fNITZDCOS->Fill(3.5, TMath::Sin(trk1Phi-2*fPsiZNCA)); // <<sin(psi1-2phi_ZDCA)>>
+		fNITZDCOS->Fill(4.5, TMath::Cos(trk1Phi-2*fPsiZNCCA)); // <<cos(psi1-2phi_ZDCCA)>>
+		fNITZDCOS->Fill(5.5, TMath::Sin(trk1Phi-2*fPsiZNCCA)); // <<sin(psi1-2phi_ZDCCA)>>
+	
+		if (trk1Chrg>0) {
+		  // Calculate <<cos(2a-2Psi_V0)>> for POI Pos
+		  //f2pCorrelatorCos2PsiDiff2PsiV0POIPos->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsi2V0C))); 
+		  //f2pCorrelatorCos2PsiDiff2PsiV0POIPos->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsi2V0A)));
+		  // Calculate <<cos(2a-2Psi_ZDC)>> for POI Pos
+		  //f2pCorrelatorCos2PsiDiff2PsiZDCCPOIPos->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZNCC)));
+		  //f2pCorrelatorCos2PsiDiff2PsiZDCAPOIPos->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZNCA)));
+		  //f2pCorrelatorCos2PsiDiff2PsiZDCCAPOIPos->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZNCCA)));
+		
+		  fNITV0POIPos->Fill(0.5, TMath::Cos(trk1Phi-2*fPsi2V0C)); // <<cos(psi1-2phi_V0C)>>
+		  fNITV0POIPos->Fill(1.5, TMath::Sin(trk1Phi-2*fPsi2V0C)); // <<sin(psi1-2phi_V0C)>>
+		  fNITV0POIPos->Fill(2.5, TMath::Cos(trk1Phi-2*fPsi2V0A)); // <<cos(psi1-2phi_V0A)>>
+		  fNITV0POIPos->Fill(3.5, TMath::Sin(trk1Phi-2*fPsi2V0A)); // <<sin(psi1-2phi_V0A)>>
+
+		  fNITZDCPOIPos->Fill(0.5, TMath::Cos(trk1Phi-2*fPsiZNCC)); // <<cos(psi1-2phi_ZDCC)>>
+		  fNITZDCPOIPos->Fill(1.5, TMath::Sin(trk1Phi-2*fPsiZNCC)); // <<sin(psi1-2phi_ZDCC)>>
+		  fNITZDCPOIPos->Fill(2.5, TMath::Cos(trk1Phi-2*fPsiZNCA)); // <<cos(psi1-2phi_ZDCA)>>
+		  fNITZDCPOIPos->Fill(3.5, TMath::Sin(trk1Phi-2*fPsiZNCA)); // <<sin(psi1-2phi_ZDCA)>>
+		  fNITZDCPOIPos->Fill(4.5, TMath::Cos(trk1Phi-2*fPsiZNCCA)); // <<cos(psi1-2phi_ZDCCA)>>
+		  fNITZDCPOIPos->Fill(5.5, TMath::Sin(trk1Phi-2*fPsiZNCCA)); // <<sin(psi1-2phi_ZDCCA)>>
+		}
+	
+		if (trk1Chrg<0) {
+		  // Calculate <<cos(2a-2Psi_V0)>> for POI Neg
+		  //f2pCorrelatorCos2PsiDiff2PsiV0POINeg->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsi2V0C))); 
+		  //f2pCorrelatorCos2PsiDiff2PsiV0POINeg->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsi2V0A)));
+		  // Calculate <<cos(2a-2Psi_ZDC)>> for POI Neg
+		  //f2pCorrelatorCos2PsiDiff2PsiZDCCPOINeg->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZNCC)));
+		  //f2pCorrelatorCos2PsiDiff2PsiZDCAPOINeg->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZNCA)));
+		  //f2pCorrelatorCos2PsiDiff2PsiZDCCAPOINeg->Fill(0.5, TMath::Cos(2*(trk1Phi-fPsiZNCCA)));
+		
+		  fNITV0POINeg->Fill(0.5, TMath::Cos(trk1Phi-2*fPsi2V0C)); // <<cos(psi1-2phi_V0C)>>
+		  fNITV0POINeg->Fill(1.5, TMath::Sin(trk1Phi-2*fPsi2V0C)); // <<sin(psi1-2phi_V0C)>>
+		  fNITV0POINeg->Fill(2.5, TMath::Cos(trk1Phi-2*fPsi2V0A)); // <<cos(psi1-2phi_V0A)>>
+		  fNITV0POINeg->Fill(3.5, TMath::Sin(trk1Phi-2*fPsi2V0A)); // <<sin(psi1-2phi_V0A)>>
+
+		  fNITZDCPOINeg->Fill(0.5, TMath::Cos(trk1Phi-2*fPsiZNCC)); // <<cos(psi1-2phi_ZDCC)>>
+		  fNITZDCPOINeg->Fill(1.5, TMath::Sin(trk1Phi-2*fPsiZNCC)); // <<sin(psi1-2phi_ZDCC)>>
+		  fNITZDCPOINeg->Fill(2.5, TMath::Cos(trk1Phi-2*fPsiZNCA)); // <<cos(psi1-2phi_ZDCA)>>
+		  fNITZDCPOINeg->Fill(3.5, TMath::Sin(trk1Phi-2*fPsiZNCA)); // <<sin(psi1-2phi_ZDCA)>>
+		  fNITZDCPOINeg->Fill(4.5, TMath::Cos(trk1Phi-2*fPsiZNCCA)); // <<cos(psi1-2phi_ZDCCA)>>
+		  fNITZDCPOINeg->Fill(5.5, TMath::Sin(trk1Phi-2*fPsiZNCCA)); // <<sin(psi1-2phi_ZDCCA)>>
+		}
+
+		///---> 2nd track Loop   
+		for(Int_t jTrack = iTrack+1; jTrack < ntracks; jTrack++) {  // garanteed no overlap
+
+		  /// skip autocorrelation:
+		  //if(jTrack==iTrack) continue; ///////////////////// Delete later
+
+		  AliAODTrack* AODtrack2 = dynamic_cast <AliAODTrack*> (fVevent->GetTrack(jTrack));
+		  if(!AODtrack2) continue;
+
+		  if(AODtrack2->TestFilterBit(fFilterBit)) {  //// Only use FB tracks. 
+
+			trk2Pt    = AODtrack2->Pt();
+			trk2Phi   = AODtrack2->Phi();
+			trk2Eta   = AODtrack2->Eta();
+			trk2Chrg  = AODtrack2->Charge();
+			trk2Chi2  = AODtrack2->Chi2perNDF();
+			trk2TpcNC = AODtrack2->GetTPCNcls();
+			trk2DCAxy = AODtrack2->DCA();
+			trk2DCAz  = AODtrack2->ZAtDCA();
+			trk2dEdx  = AODtrack2->GetDetPid()->GetTPCsignal();       
+
+			
+			// for constrained TPConly tracks
+		    if(fFilterBit == 128){
+			  trk2DCAxy = AODtrack2->DCA();      // this is the DCA from global track (not exactly what is cut on)
+			  trk2DCAz  = AODtrack2->ZAtDCA();   // this is the DCA from global track (not exactly what is cut on)
+		    }
+		    else{
+			  //const AliVVertex *vertex = fVevent->GetPrimaryVertex();
+			  //vertex->GetXYZ(vTrk2);
+			  AODtrack2->GetXYZ(posTrk2);
+			  trk2DCAxy  = TMath::Sqrt((posTrk2[0] - pVtxX)*(posTrk2[0] - pVtxX) + (posTrk2[1] - pVtxY)*(posTrk2[1] - pVtxY));
+			  trk2DCAz   = posTrk2[2] - pVtxZ;
+		    }
+		    
+		    if (fDCAxyMax>0 && fDCAzzMax>0 && trk2DCAxy>=fDCAxyMax && trk2DCAz>=fDCAzzMax) { // if fDCAxyMax, fDCAzzMax is set to be less than 0, no cut applied
+			  continue;
+			}
+			
+			if (bUseTPCCrossedRows){
+			  if ((Float_t)AODtrack2->GetTPCNCrossedRows() < (120 - (5/(Float_t)AODtrack2->Pt())) ){
+				continue;
+			  }
+			}
+			
+			if (fTPCclustMin > 0) { 
+			  if (trk2TpcNC < fTPCclustMin) {
+			    continue;
+			  }
+		    }
+		    
+		    // shared cluster 
+			if( fTPCsharedCut > 0 && AODtrack2->GetTPCnclsS() > fTPCsharedCut){
+			  continue;
+			}
+  
+			//Apply track cuts for second track
+			if((trk2Pt <= fMaxPtCut) && (trk2Pt >= fMinPtCut) && (trk2Eta <= fMaxEtaCut) && (trk2Eta >= fMinEtaCut) && (trk2dEdx >= fTPCdEdxMin) && (trk2Chi2 >= fTrkChi2Min) && (trk2Chi2 <= fTrkChi2Max) && TMath::Abs(trk2Chrg)) {
+				// v2 for TPC
+				f2pCorrelatorCosPsiDiff->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi)); 
+				f2pCorrelatorCos2PsiDiff->Fill(0.5, TMath::Cos(2*(trk1Phi-trk2Phi))); 
+				
+				
+				if(trk1Chrg*trk2Chrg < 0){ //Opposite sign	
+					fRePEBEOS->Fill(0.5, TMath::Cos(trk1Phi+trk2Phi));
+					fImPEBEOS->Fill(0.5, TMath::Sin(trk1Phi+trk2Phi));
+					
+					f2pCorrelatorCosPsiDiffOS->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi)); 
+					f2pCorrelatorCos2PsiDiffOS->Fill(0.5, TMath::Cos(2*(trk1Phi-trk2Phi)));
+				} else if(trk1Chrg > 0 && trk2Chrg > 0){		      
+					fRePEBEPP->Fill(0.5, TMath::Cos(trk1Phi+trk2Phi));
+					fImPEBEPP->Fill(0.5, TMath::Sin(trk1Phi+trk2Phi));
+					
+					f2pCorrelatorCosPsiDiffPP->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi));
+					f2pCorrelatorCos2PsiDiffPP->Fill(0.5, TMath::Cos(2*(trk1Phi-trk2Phi)));
+					
+				} else{ //else if(trk1Chrg < 0 && trk2Chrg < 0){  ///this is obvious!
+					fRePEBENN->Fill(0.5, TMath::Cos(trk1Phi+trk2Phi));
+					fImPEBENN->Fill(0.5, TMath::Sin(trk1Phi+trk2Phi));
+					
+					f2pCorrelatorCosPsiDiffNN->Fill(0.5, TMath::Cos(trk1Phi-trk2Phi));
+					f2pCorrelatorCos2PsiDiffNN->Fill(0.5, TMath::Cos(2*(trk1Phi-trk2Phi)));
+				}
+			}//j-track cuts
+		  }//j-track FB validated
+		}///j-track loop
       }//----> i-track loop => All trackCuts applied.     
     }//-----> i-track loop => FB is validated.    
   }///-----> i-track loop Ends here.<--------
   
+
   CalculateCMESPPP();
 
   // fill event information
   treeEvent->Fill();
   
   // Reset event-by-event variables
-  for(Int_t c=0;c<4;c++) {
-    for (Int_t h=0;h<fCRCnHar;h++) {
-      if(fCMEQRe[c][h]) fCMEQRe[c][h]->Reset();
-      if(fCMEQIm[c][h]) fCMEQIm[c][h]->Reset();
-      if(fCMEMult[c][h]) fCMEMult[c][h]->Reset();
-    }
-  }
+  ResetEventByEventQuantities();
   
-  for(Int_t c=0;c<2;c++) {
-	if(fCMEQ2Re4[c]) fCMEQ2Re4[c]->Reset(); // w^2*cos(4phi)
-    if(fCMEQ3Re2[c]) fCMEQ3Re2[c]->Reset(); // w^3*cos(2phi)
-    if(fCMEQ2Im4[c]) fCMEQ2Im4[c]->Reset(); // w^2*sin(4phi)
-    if(fCMEQ3Im2[c]) fCMEQ3Im2[c]->Reset(); // w^3*sin(2phi)
-    if(fCMEw0[c]) fCMEw0[c]->Reset();    // w^0
-    if(fCMEw1[c]) fCMEw1[c]->Reset();    // w^1
-    if(fCMEw2[c]) fCMEw2[c]->Reset();    // w^2
-    if(fCMEw3[c]) fCMEw3[c]->Reset();    // w^3
-    if(fCMEw4[c]) fCMEw4[c]->Reset();    // w^4
-  }
-  
-  fDebugwEventCount->Fill(9.1); ///Left for Analysis
+  fDebugwEventCount->Fill(8.1); ///Left for Analysis
   
   fHistVertexZcm->Fill(pVtxZ);
   fCentDistAfterCut->Fill(centrality);  
@@ -1123,7 +1263,39 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::UserExec(Option_t*) {
 
 }//---------------- UserExec ----------------------
 
+void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::ResetEventByEventQuantities(){
 
+  fCMEQReRP->Reset();
+  fCMEQImRP->Reset();
+  fCMEQRePOIPos->Reset();
+  fCMEQImPOIPos->Reset();
+  fCMEQRePOINeg->Reset();
+  fCMEQImPOINeg->Reset();
+  f2pCorrelatorCos2PsiDiff2PsiV0RP->Reset();
+  f2pCorrelatorCos2PsiDiff2PsiZDCRP->Reset();
+  fNITV0OS->Reset();
+  fNITZDCOS->Reset();
+  fNITV0POIPos->Reset();
+  fNITZDCPOIPos->Reset();
+  fNITV0POINeg->Reset();
+  fNITZDCPOINeg->Reset();
+
+  f2pCorrelatorCosPsiDiff->Reset();
+  f2pCorrelatorCos2PsiDiff->Reset();
+  fRePEBEOS->Reset();
+  fImPEBEOS->Reset();
+  f2pCorrelatorCosPsiDiffOS->Reset();
+  f2pCorrelatorCos2PsiDiffOS->Reset();
+  fRePEBEPP->Reset();
+  fImPEBEPP->Reset();
+  f2pCorrelatorCosPsiDiffPP->Reset();
+  f2pCorrelatorCos2PsiDiffPP->Reset();
+  fRePEBENN->Reset();
+  fImPEBENN->Reset();
+  f2pCorrelatorCosPsiDiffNN->Reset();
+  f2pCorrelatorCos2PsiDiffNN->Reset();
+  
+}
 
 void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::SetupAnalysisHistograms(){
   
@@ -1142,52 +1314,22 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::SetupAnalysisHistograms(){
   ///V0X-V0X/TPC  Event Plane Correlations for Resolution:
   hV0CV0APsiNCorrelation = new TProfile("hV0CV0APsiNCorrelation",Form("V0C-V0A Psi%d; Cent; Resolution",gHarmonic),90,0,90);
   fListHist->Add(hV0CV0APsiNCorrelation);
-  hV0CTPCPsiNCorrelation = new TProfile("hV0CTPCPsiNCorrelation",Form("V0C-TPC Psi%d; Cent; Resolution",gHarmonic),90,0,90);
-  fListHist->Add(hV0CTPCPsiNCorrelation);
-  hV0ATPCPsiNCorrelation = new TProfile("hV0ATPCPsiNCorrelation",Form("V0A-TPC Psi%d; Cent; Resolution",gHarmonic),90,0,90);
-  fListHist->Add(hV0ATPCPsiNCorrelation);
+  //hV0CTPCPsiNCorrelation = new TProfile("hV0CTPCPsiNCorrelation",Form("V0C-TPC Psi%d; Cent; Resolution",gHarmonic),90,0,90);
+  //fListHist->Add(hV0CTPCPsiNCorrelation);
+  //hV0ATPCPsiNCorrelation = new TProfile("hV0ATPCPsiNCorrelation",Form("V0A-TPC Psi%d; Cent; Resolution",gHarmonic),90,0,90);
+  //fListHist->Add(hV0ATPCPsiNCorrelation);
 
   hV0CV0APsi3Correlation = new TProfile("hV0CV0APsi3Correlation",Form("V0C-V0A Psi%d; Cent; Resolution",3),90,0,90);
   fListHist->Add(hV0CV0APsi3Correlation);
-  hV0CTPCPsi3Correlation = new TProfile("hV0CTPCPsi3Correlation",Form("V0C-TPC Psi%d; Cent; Resolution",3),90,0,90);
-  fListHist->Add(hV0CTPCPsi3Correlation);
-  hV0ATPCPsi3Correlation = new TProfile("hV0ATPCPsi3Correlation",Form("V0A-TPC Psi%d; Cent; Resolution",3),90,0,90);
-  fListHist->Add(hV0ATPCPsi3Correlation);
+  //hV0CTPCPsi3Correlation = new TProfile("hV0CTPCPsi3Correlation",Form("V0C-TPC Psi%d; Cent; Resolution",3),90,0,90);
+  //fListHist->Add(hV0CTPCPsi3Correlation);
+  //hV0ATPCPsi3Correlation = new TProfile("hV0ATPCPsi3Correlation",Form("V0A-TPC Psi%d; Cent; Resolution",3),90,0,90);
+  //fListHist->Add(hV0ATPCPsi3Correlation);
   
   /// Q vec related histograms
   Double_t fCRCEtaBinEdges[fCMEnEtaBin+1] = {-0.8, -0.1, 0, 0.1, 0.8};
   
-  for(Int_t c=0;c<4;c++) {
-    for (Int_t h=0;h<fCRCnHar;h++) {
-      fCMEQRe[c][h] = new TH1D(Form("fCMEQRe[%d][%d]",c,h),Form("fCMEQRe[%d][%d]",c,h),fCMEnEtaBin,fCRCEtaBinEdges);
-      fTempList->Add(fCMEQRe[c][h]);
-      fCMEQIm[c][h] = new TH1D(Form("fCMEQIm[%d][%d]",c,h),Form("fCMEQIm[%d][%d]",c,h),fCMEnEtaBin,fCRCEtaBinEdges);
-      fTempList->Add(fCMEQIm[c][h]);
-      fCMEMult[c][h] = new TH1D(Form("fCMEMult[%d][%d]",c,h),Form("fCMEMult[%d][%d]",c,h),fCMEnEtaBin,fCRCEtaBinEdges);
-      fTempList->Add(fCMEMult[c][h]);
-    }
-  }
   
-  for(Int_t c=0;c<2;c++) {
-	fCMEQ2Re4[c] = new TH1D(Form("fCMEQ2Re4[%d]",c),Form("fCMEQ2Re4[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
-    fTempList->Add(fCMEQ2Re4[c]);
-    fCMEQ3Re2[c] = new TH1D(Form("fCMEQ3Re2[%d]",c),Form("fCMEQ3Re2[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
-    fTempList->Add(fCMEQ3Re2[c]);
-    fCMEQ2Im4[c] = new TH1D(Form("fCMEQ2Im4[%d]",c),Form("fCMEQ2Im4[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
-    fTempList->Add(fCMEQ2Im4[c]);
-    fCMEQ3Im2[c] = new TH1D(Form("fCMEQ3Im2[%d]",c),Form("fCMEQ3Im2[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
-    fTempList->Add(fCMEQ3Im2[c]);
-    fCMEw0[c] = new TH1D(Form("fCMEw0[%d]",c),Form("fCMEw0[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
-    fTempList->Add(fCMEw0[c]);
-    fCMEw1[c] = new TH1D(Form("fCMEw1[%d]",c),Form("fCMEw1[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
-    fTempList->Add(fCMEw1[c]);
-    fCMEw2[c] = new TH1D(Form("fCMEw2[%d]",c),Form("fCMEw2[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
-    fTempList->Add(fCMEw2[c]);
-    fCMEw3[c] = new TH1D(Form("fCMEw3[%d]",c),Form("fCMEw3[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
-    fTempList->Add(fCMEw3[c]);
-    fCMEw4[c] = new TH1D(Form("fCMEw4[%d]",c),Form("fCMEw4[%d]",c),fCMEnEtaBin,fCRCEtaBinEdges);
-    fTempList->Add(fCMEw4[c]);
-  }
   
 }
 
@@ -1197,321 +1339,210 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::CalculateCMESPPP()
   //*********************************************** TPC part *************************************
   Int_t h = 0; //@Shi used for TPC and v0 part. For ZDCpart, it is set to 1
   Double_t e = 1E-5;
-  Double_t uPReTPCPosEta=0., uPImTPCPosEta=0., uP2ReTPCPosEta=0., uP2ImTPCPosEta=0., uP2Re2TPCPosEta=0., uP2Im2TPCPosEta=0., uPMTPCPosEta=0., uP2MTPCPosEta=0.;
-  Double_t uNReTPCPosEta=0., uNImTPCPosEta=0., uN2ReTPCPosEta=0., uN2ImTPCPosEta=0., uN2Re2TPCPosEta=0., uN2Im2TPCPosEta=0., uNMTPCPosEta=0., uN2MTPCPosEta=0.;
   
-  Double_t uPReTPCNegEta=0., uPImTPCNegEta=0., uP2ReTPCNegEta=0., uP2ImTPCNegEta=0., uP2Re2TPCNegEta=0., uP2Im2TPCNegEta=0., uPMTPCNegEta=0., uP2MTPCNegEta=0.;
-  Double_t uNReTPCNegEta=0., uNImTPCNegEta=0., uN2ReTPCNegEta=0., uN2ImTPCNegEta=0., uN2Re2TPCNegEta=0., uN2Im2TPCNegEta=0., uNMTPCNegEta=0., uN2MTPCNegEta=0.;
+  // =========> begin same multiplicity #1 All number of tracks ===========
+  Double_t uRPReTPC = fCMEQReRP->GetBinContent(1); // Qvec TPC cos(phi) 
+  Double_t uRPImTPC = fCMEQImRP->GetBinContent(1); // Qvec TPC sin(phi) 
+  Double_t uRPMultTPC = fCMEQReRP->GetBinEntries(1); 
+  
+  Double_t uRP2ReTPC = fCMEQReRP->GetBinContent(2); // Qvec TPC cos(2phi)
+  Double_t uRP2ImTPC = fCMEQImRP->GetBinContent(2); // Qvec TPC sin(2phi)
+  // end  same multiplicity #1 All number of tracks ===========
+  
+  // =========> begin same multiplicity #2 All Positive particles ===========
+  Double_t uPOIPosReTPC = fCMEQRePOIPos->GetBinContent(1); // Cos(phi_POIPos)
+  Double_t uPOIPosMult = fCMEQRePOIPos->GetBinEntries(1);
+  Double_t uPOIPosImTPC = fCMEQImPOIPos->GetBinContent(1);
+  // end same multiplicity #2 All Positive particles ===========
 
-  Double_t uP4Re2TPCPosEta=0., uP4Im2TPCPosEta=0., uP2Re3TPCPosEta=0., uP2Im3TPCPosEta=0.;
-  Double_t uN4Re2TPCPosEta=0., uN4Im2TPCPosEta=0., uN2Re3TPCPosEta=0., uN2Im3TPCPosEta=0.;
-  
-  Double_t uP4Re2TPCNegEta=0., uP4Im2TPCNegEta=0., uP2Re3TPCNegEta=0., uP2Im3TPCNegEta=0.;
-  Double_t uN4Re2TPCNegEta=0., uN4Im2TPCNegEta=0., uN2Re3TPCNegEta=0., uN2Im3TPCNegEta=0.;
+  // =========> begin same multiplicity #3 All Negative particles ===========
+  Double_t uPOINegReTPC = fCMEQRePOINeg->GetBinContent(1); // Cos(phi_POINeg)
+  Double_t uPOINegMult = fCMEQRePOINeg->GetBinEntries(1);
+  Double_t uPOINegImTPC = fCMEQImPOINeg->GetBinContent(1);
+  // end same multiplicity #3 All Negative particles ===========
 
-  Double_t uP0MTPCPosEta=0., uP3MTPCPosEta=0., uP4MTPCPosEta=0.;
-  Double_t uN0MTPCPosEta=0., uN3MTPCPosEta=0., uN4MTPCPosEta=0.;
-  Double_t uP0MTPCNegEta=0., uP3MTPCNegEta=0., uP4MTPCNegEta=0.;
-  Double_t uN0MTPCNegEta=0., uN3MTPCNegEta=0., uN4MTPCNegEta=0.;
+  if(uPOIPosMult<0.1 || uPOINegMult<0.1) return;  //// This means there is not enough track in the the event. 
   
-  Double_t uP4Re2TPCSubPosEta=0., uP4Im2TPCSubPosEta=0., uP2Re3TPCSubPosEta=0., uP2Im3TPCSubPosEta=0.;
-  Double_t uN4Re2TPCSubPosEta=0., uN4Im2TPCSubPosEta=0., uN2Re3TPCSubPosEta=0., uN2Im3TPCSubPosEta=0.;
-  
-  Double_t uP4Re2TPCSubNegEta=0., uP4Im2TPCSubNegEta=0., uP2Re3TPCSubNegEta=0., uP2Im3TPCSubNegEta=0.;
-  Double_t uN4Re2TPCSubNegEta=0., uN4Im2TPCSubNegEta=0., uN2Re3TPCSubNegEta=0., uN2Im3TPCSubNegEta=0.;
+  // =========> begin same multiplicity #2 All Positive particles =========== (appear before no need to save)
+  Double_t uPOIPos2ReTPC = fCMEQRePOIPos->GetBinContent(2); // Cos(2phi_POIPos)
+  Double_t uPOIPos2ImTPC = fCMEQImPOIPos->GetBinContent(2);
+  // end same multiplicity #2 All Positive particles ===========
 
-  Double_t uP0MTPCSubPosEta=0., uP3MTPCSubPosEta=0., uP4MTPCSubPosEta=0.;
-  Double_t uN0MTPCSubPosEta=0., uN3MTPCSubPosEta=0., uN4MTPCSubPosEta=0.;
-  Double_t uP0MTPCSubNegEta=0., uP3MTPCSubNegEta=0., uP4MTPCSubNegEta=0.;
-  Double_t uN0MTPCSubNegEta=0., uN3MTPCSubNegEta=0., uN4MTPCSubNegEta=0.;
+  // =========> begin same multiplicity #3 All Negative particles =========== (appear before no need to save)
+  Double_t uPOINeg2ReTPC = fCMEQRePOINeg->GetBinContent(2); // Cos(2phi_POINeg)
+  Double_t uPOINeg2ImTPC = fCMEQImPOINeg->GetBinContent(2);
+  // end same multiplicity #3 All Negative particles ===========
+
+  // =========> begin same multiplicity #1 All number of tracks ===========
+  Double_t u2pCorrelatorCos2PsiDiff2PsiV0CRP = f2pCorrelatorCos2PsiDiff2PsiV0RP->GetBinContent(1); //<cos(2psi1-2phi_V0C)>
+  Double_t u2pCorrelatorCos2PsiDiff2PsiV0ARP = f2pCorrelatorCos2PsiDiff2PsiV0RP->GetBinContent(2); //<cos(2psi1-2phi_V0A)>
+
+  Double_t u2pCorrelatorCos2PsiDiff2PsiZDCCRP = f2pCorrelatorCos2PsiDiff2PsiZDCRP->GetBinContent(1); //<cos(2psi1-2phi_ZDCC)>
+  Double_t u2pCorrelatorCos2PsiDiff2PsiZDCARP = f2pCorrelatorCos2PsiDiff2PsiZDCRP->GetBinContent(2); //<cos(2psi1-2phi_ZDCA)>
+  Double_t u2pCorrelatorCos2PsiDiff2PsiZDCCARP = f2pCorrelatorCos2PsiDiff2PsiZDCRP->GetBinContent(3); //<cos(2psi1-2phi_ZDCCA)>
+
+	    
+  Double_t uNITCosPsidiff2PsiV0COS = fNITV0OS->GetBinContent(1); // <<cos(psi1-2phi_V0C)>> 
+  Double_t uNITSinPsidiff2PsiV0COS = fNITV0OS->GetBinContent(2); // <<sin(psi1-2phi_V0C)>>
+  Double_t uNITCosPsidiff2PsiV0AOS = fNITV0OS->GetBinContent(3); // <<cos(psi1-2phi_V0A)>>
+  Double_t uNITSinPsidiff2PsiV0AOS = fNITV0OS->GetBinContent(4); // <<sin(psi1-2phi_V0A)>>
+
+  Double_t uNITCosPsidiff2PsiZDCCOS = fNITZDCOS->GetBinContent(1); // <<cos(psi1-2phi_ZDCC)>>
+  Double_t uNITSinPsidiff2PsiZDCCOS = fNITZDCOS->GetBinContent(2); // <<sin(psi1-2phi_ZDCC)>>
+  Double_t uNITCosPsidiff2PsiZDCAOS = fNITZDCOS->GetBinContent(3); // <<cos(psi1-2phi_ZDCA)>>
+  Double_t uNITSinPsidiff2PsiZDCAOS = fNITZDCOS->GetBinContent(4); // <<sin(psi1-2phi_ZDCA)>>
+  Double_t uNITCosPsidiff2PsiZDCCAOS = fNITZDCOS->GetBinContent(5); // <<cos(psi1-2phi_ZDCCA)>>
+  Double_t uNITSinPsidiff2PsiZDCCAOS = fNITZDCOS->GetBinContent(6); // <<sin(psi1-2phi_ZDCCA)>>
+  // end  same multiplicity #1 All number of tracks ===========
+
+
+  // =========> begin same multiplicity #2 All Positive particles ===========
+  Double_t uNITCosPsidiff2PsiV0CPOIPos = fNITV0POIPos->GetBinContent(1); // <<cos(psi1-2phi_V0C)>> 
+  Double_t uNITSinPsidiff2PsiV0CPOIPos = fNITV0POIPos->GetBinContent(2); // <<sin(psi1-2phi_V0C)>>
+  Double_t uNITCosPsidiff2PsiV0APOIPos = fNITV0POIPos->GetBinContent(3); // <<cos(psi1-2phi_V0A)>>
+  Double_t uNITSinPsidiff2PsiV0APOIPos = fNITV0POIPos->GetBinContent(4); // <<sin(psi1-2phi_V0A)>>
+
+  Double_t uNITCosPsidiff2PsiZDCCPOIPos = fNITZDCPOIPos->GetBinContent(1); // <<cos(psi1-2phi_ZDCC)>>
+  Double_t uNITSinPsidiff2PsiZDCCPOIPos = fNITZDCPOIPos->GetBinContent(2); // <<sin(psi1-2phi_ZDCC)>>
+  Double_t uNITCosPsidiff2PsiZDCAPOIPos = fNITZDCPOIPos->GetBinContent(3); // <<cos(psi1-2phi_ZDCA)>>
+  Double_t uNITSinPsidiff2PsiZDCAPOIPos = fNITZDCPOIPos->GetBinContent(4); // <<sin(psi1-2phi_ZDCA)>>
+  Double_t uNITCosPsidiff2PsiZDCCAPOIPos = fNITZDCPOIPos->GetBinContent(5); // <<cos(psi1-2phi_ZDCCA)>>
+  Double_t uNITSinPsidiff2PsiZDCCAPOIPos = fNITZDCPOIPos->GetBinContent(6); // <<sin(psi1-2phi_ZDCCA)>>
+  // end same multiplicity #2 All Positive particles ===========
+
+  // =========> begin same multiplicity #3 All Negative particles ===========
+  Double_t uNITCosPsidiff2PsiV0CPOINeg = fNITV0POINeg->GetBinContent(1); // <<cos(psi1-2phi_V0C)>> 
+  Double_t uNITSinPsidiff2PsiV0CPOINeg = fNITV0POINeg->GetBinContent(2); // <<sin(psi1-2phi_V0C)>>
+  Double_t uNITCosPsidiff2PsiV0APOINeg = fNITV0POINeg->GetBinContent(3); // <<cos(psi1-2phi_V0A)>>
+  Double_t uNITSinPsidiff2PsiV0APOINeg = fNITV0POINeg->GetBinContent(4); // <<sin(psi1-2phi_V0A)>>
+
+  Double_t uNITCosPsidiff2PsiZDCCPOINeg = fNITZDCPOINeg->GetBinContent(1); // <<cos(psi1-2phi_ZDCC)>>
+  Double_t uNITSinPsidiff2PsiZDCCPOINeg = fNITZDCPOINeg->GetBinContent(2); // <<sin(psi1-2phi_ZDCC)>>
+  Double_t uNITCosPsidiff2PsiZDCAPOINeg = fNITZDCPOINeg->GetBinContent(3); // <<cos(psi1-2phi_ZDCA)>>
+  Double_t uNITSinPsidiff2PsiZDCAPOINeg = fNITZDCPOINeg->GetBinContent(4); // <<sin(psi1-2phi_ZDCA)>>
+  Double_t uNITCosPsidiff2PsiZDCCAPOINeg = fNITZDCPOINeg->GetBinContent(5); // <<cos(psi1-2phi_ZDCCA)>>
+  Double_t uNITSinPsidiff2PsiZDCCAPOINeg = fNITZDCPOINeg->GetBinContent(6); // <<sin(psi1-2phi_ZDCCA)>>
+  // end same multiplicity #3 All Negative particles ===========
+
+
+  // =========> begin same multiplicity #4 All RP pairs ===========
+  Double_t u2pCorrelatorCosPsiDiff = f2pCorrelatorCosPsiDiff->GetBinContent(1); // <cos(dPsi1-dPsi2)>
+  Double_t u2pCorrelatorCos2PsiDiff = f2pCorrelatorCos2PsiDiff->GetBinContent(1); // <cos(2(dPsi1-dPsi2))>
+  Double_t u2pCorrelatorRPMult = f2pCorrelatorCosPsiDiff->GetBinEntries(1);
+  // end same multiplicity #4 All RP pairs ===========
+
+  // =========> begin same multiplicity #5 All POI OS pairs ===========
+  Double_t u2pCorrelatorCosPsiSumPOIOS = fRePEBEOS->GetBinContent(1); // <cos(dPsi1+dPsi2)>
+  Double_t u2pCorrelatorPOIOSMult = fRePEBEOS->GetBinEntries(1);
+  Double_t u2pCorrelatorSinPsiSumPOIOS = fImPEBEOS->GetBinContent(1); // <sin(dPsi1+dPsi2)>
+  Double_t u2pCorrelatorCosPsiDiffPOIOS = f2pCorrelatorCosPsiDiffOS->GetBinContent(1); // <cos(dPsi1-dPsi2)>
+  Double_t u2pCorrelatorCos2PsiDiffPOIOS = f2pCorrelatorCos2PsiDiffOS->GetBinContent(1); // <cos(2(dPsi1-dPsi2))>
+  // end same multiplicity #5 All POI OS pairs ===========
+
+  // =========> begin same multiplicity #6 All POI PP pairs ===========
+  Double_t u2pCorrelatorCosPsiSumPOIPP = fRePEBEPP->GetBinContent(1); // <cos(dPsi1+dPsi2)>
+  Double_t u2pCorrelatorPOIPPMult = fRePEBEPP->GetBinEntries(1);
+  Double_t u2pCorrelatorSinPsiSumPOIPP = fImPEBEPP->GetBinContent(1); // <sin(dPsi1+dPsi2)>
+  Double_t u2pCorrelatorCosPsiDiffPOIPP = f2pCorrelatorCosPsiDiffPP->GetBinContent(1); // <cos(dPsi1-dPsi2)>
+  Double_t u2pCorrelatorCos2PsiDiffPOIPP = f2pCorrelatorCos2PsiDiffPP->GetBinContent(1); // <cos(2(dPsi1-dPsi2))>
+  // end same multiplicity #6 All POI PP pairs ===========
+
+  // =========> begin same multiplicity #7 All POI NN pairs ===========
+  Double_t u2pCorrelatorCosPsiSumPOINN = fRePEBENN->GetBinContent(1); // <cos(dPsi1+dPsi2)>
+  Double_t u2pCorrelatorPOINNMult = fRePEBENN->GetBinEntries(1);
+  Double_t u2pCorrelatorSinPsiSumPOINN = fImPEBENN->GetBinContent(1); // <sin(dPsi1+dPsi2)>
+  Double_t u2pCorrelatorCosPsiDiffPOINN = f2pCorrelatorCosPsiDiffNN->GetBinContent(1); // <cos(dPsi1-dPsi2)>
+  Double_t u2pCorrelatorCos2PsiDiffPOINN = f2pCorrelatorCos2PsiDiffNN->GetBinContent(1); // <cos(2(dPsi1-dPsi2))>
   
-  Double_t uPReTPCSubPosEta = 0, uPImTPCSubPosEta = 0, uP2ReTPCSubPosEta = 0, uP2ImTPCSubPosEta = 0, uP2Re2TPCSubPosEta = 0, uP2Im2TPCSubPosEta = 0, uPMTPCSubPosEta = 0, uP2MTPCSubPosEta = 0, uNReTPCSubPosEta = 0, uNImTPCSubPosEta = 0, uN2ReTPCSubPosEta = 0, uN2ImTPCSubPosEta = 0, uN2Re2TPCSubPosEta = 0, uN2Im2TPCSubPosEta = 0, uNMTPCSubPosEta = 0, uN2MTPCSubPosEta = 0;
-  
-  Double_t uPReTPCSubNegEta = 0, uPImTPCSubNegEta = 0, uP2ReTPCSubNegEta = 0, uP2ImTPCSubNegEta = 0, uP2Re2TPCSubNegEta = 0, uP2Im2TPCSubNegEta = 0, uPMTPCSubNegEta = 0, uP2MTPCSubNegEta = 0, uNReTPCSubNegEta = 0, uNImTPCSubNegEta = 0, uN2ReTPCSubNegEta = 0, uN2ImTPCSubNegEta = 0, uN2Re2TPCSubNegEta = 0, uN2Im2TPCSubNegEta = 0, uNMTPCSubNegEta = 0, uN2MTPCSubNegEta = 0;
-  
-  
-  
-  for(Int_t EBin=1; EBin<=fCMEQRe[0][0]->GetNbinsX(); EBin++) {
-    if (EBin == fCMEQRe[0][h]->FindBin(0.4)) { // positive eta region
-		// positive charge positive eta region
-		uPReTPCPosEta += fCMEQRe[0][h]->GetBinContent(EBin); // w*cos(phi)
-		uPImTPCPosEta += fCMEQIm[0][h]->GetBinContent(EBin); // w*sin(phi)
-		uP2ReTPCPosEta += fCMEQRe[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
-		uP2ImTPCPosEta += fCMEQIm[0][h+1]->GetBinContent(EBin); // w*sin(2phi)
-		uP2Re2TPCPosEta += fCMEQRe[2][h+1]->GetBinContent(EBin); // w^2*cos(2phi)
-		uP2Im2TPCPosEta += fCMEQIm[2][h+1]->GetBinContent(EBin); // w^2*sin(2phi)
-		uPMTPCPosEta += fCMEMult[0][h]->GetBinContent(EBin); // w
-		uP2MTPCPosEta += fCMEMult[2][h]->GetBinContent(EBin); // w^2
-		
-		uP4Re2TPCPosEta += fCMEQ2Re4[0]->GetBinContent(EBin); // w^2*cos(4phi)
-		uP4Im2TPCPosEta += fCMEQ2Im4[0]->GetBinContent(EBin); // w^2*sin(4phi)
-		uP2Re3TPCPosEta += fCMEQ3Re2[0]->GetBinContent(EBin); // w^3*cos(2phi)
-		uP2Im3TPCPosEta += fCMEQ3Im2[0]->GetBinContent(EBin); // w^3*sin(2phi)
-		uP0MTPCPosEta += fCMEw0[0]->GetBinContent(EBin); // w^0
-		uP3MTPCPosEta += fCMEw3[0]->GetBinContent(EBin); // w^3
-		uP4MTPCPosEta += fCMEw4[0]->GetBinContent(EBin); // w^4
-		
-		// negative charge positive eta region
-		uNReTPCPosEta += fCMEQRe[1][h]->GetBinContent(EBin);
-		uNImTPCPosEta += fCMEQIm[1][h]->GetBinContent(EBin);
-		uN2ReTPCPosEta += fCMEQRe[1][h+1]->GetBinContent(EBin);
-		uN2ImTPCPosEta += fCMEQIm[1][h+1]->GetBinContent(EBin);
-		uN2Re2TPCPosEta += fCMEQRe[3][h+1]->GetBinContent(EBin);
-		uN2Im2TPCPosEta += fCMEQIm[3][h+1]->GetBinContent(EBin);
-		uNMTPCPosEta += fCMEMult[1][h]->GetBinContent(EBin);
-		uN2MTPCPosEta += fCMEMult[3][h]->GetBinContent(EBin);
-		
-		uN4Re2TPCPosEta += fCMEQ2Re4[1]->GetBinContent(EBin); // w^2*cos(4phi)
-		uN4Im2TPCPosEta += fCMEQ2Im4[1]->GetBinContent(EBin); // w^2*sin(4phi)
-		uN2Re3TPCPosEta += fCMEQ3Re2[1]->GetBinContent(EBin); // w^3*cos(2phi)
-		uN2Im3TPCPosEta += fCMEQ3Im2[1]->GetBinContent(EBin); // w^3*sin(2phi)
-		uN0MTPCPosEta += fCMEw0[1]->GetBinContent(EBin); // w^0
-		uN3MTPCPosEta += fCMEw3[1]->GetBinContent(EBin); // w^3
-		uN4MTPCPosEta += fCMEw4[1]->GetBinContent(EBin); // w^4
-	} else if (EBin == fCMEQRe[0][h]->FindBin(-0.4)) { // negative eta region
-		// pegitive charge negitive eta region
-		uPReTPCNegEta += fCMEQRe[0][h]->GetBinContent(EBin); // w*cos(phi)
-		uPImTPCNegEta += fCMEQIm[0][h]->GetBinContent(EBin); // w*sin(phi)
-		uP2ReTPCNegEta += fCMEQRe[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
-		uP2ImTPCNegEta += fCMEQIm[0][h+1]->GetBinContent(EBin); // w*sin(2phi)
-		uP2Re2TPCNegEta += fCMEQRe[2][h+1]->GetBinContent(EBin); // w^2*cos(2phi)
-		uP2Im2TPCNegEta += fCMEQIm[2][h+1]->GetBinContent(EBin); // w^2*sin(2phi)
-		uPMTPCNegEta += fCMEMult[0][h]->GetBinContent(EBin); // w
-		uP2MTPCNegEta += fCMEMult[2][h]->GetBinContent(EBin); // w^2
-		
-		uP4Re2TPCNegEta += fCMEQ2Re4[0]->GetBinContent(EBin); // w^2*cos(4phi)
-		uP4Im2TPCNegEta += fCMEQ2Im4[0]->GetBinContent(EBin); // w^2*sin(4phi)
-		uP2Re3TPCNegEta += fCMEQ3Re2[0]->GetBinContent(EBin); // w^3*cos(2phi)
-		uP2Im3TPCNegEta += fCMEQ3Im2[0]->GetBinContent(EBin); // w^3*sin(2phi)
-		uP0MTPCNegEta += fCMEw0[0]->GetBinContent(EBin); // w^0
-		uP3MTPCNegEta += fCMEw3[0]->GetBinContent(EBin); // w^3
-		uP4MTPCNegEta += fCMEw4[0]->GetBinContent(EBin); // w^4
-		
-		// negative charge negitive eta region
-		uNReTPCNegEta += fCMEQRe[1][h]->GetBinContent(EBin);
-		uNImTPCNegEta += fCMEQIm[1][h]->GetBinContent(EBin);
-		uN2ReTPCNegEta += fCMEQRe[1][h+1]->GetBinContent(EBin);
-		uN2ImTPCNegEta += fCMEQIm[1][h+1]->GetBinContent(EBin);
-		uN2Re2TPCNegEta += fCMEQRe[3][h+1]->GetBinContent(EBin);
-		uN2Im2TPCNegEta += fCMEQIm[3][h+1]->GetBinContent(EBin);
-		uNMTPCNegEta += fCMEMult[1][h]->GetBinContent(EBin);
-		uN2MTPCNegEta += fCMEMult[3][h]->GetBinContent(EBin);
-		
-		uN4Re2TPCNegEta += fCMEQ2Re4[1]->GetBinContent(EBin); // w^2*cos(4phi)
-		uN4Im2TPCNegEta += fCMEQ2Im4[1]->GetBinContent(EBin); // w^2*sin(4phi)
-		uN2Re3TPCNegEta += fCMEQ3Re2[1]->GetBinContent(EBin); // w^3*cos(2phi)
-		uN2Im3TPCNegEta += fCMEQ3Im2[1]->GetBinContent(EBin); // w^3*sin(2phi)
-		uN0MTPCNegEta += fCMEw0[1]->GetBinContent(EBin); // w^0
-		uN3MTPCNegEta += fCMEw3[1]->GetBinContent(EBin); // w^3
-		uN4MTPCNegEta += fCMEw4[1]->GetBinContent(EBin); // w^4
-	} else if (EBin == fCMEQRe[0][h]->FindBin(0.05)) { // sub pos eta region
-		// positive charge positive eta region
-		uPReTPCSubPosEta += fCMEQRe[0][h]->GetBinContent(EBin); // w*cos(phi)
-		uPImTPCSubPosEta += fCMEQIm[0][h]->GetBinContent(EBin); // w*sin(phi)
-		uP2ReTPCSubPosEta += fCMEQRe[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
-		uP2ImTPCSubPosEta += fCMEQIm[0][h+1]->GetBinContent(EBin); // w*sin(2phi)
-		uP2Re2TPCSubPosEta += fCMEQRe[2][h+1]->GetBinContent(EBin); // w^2*cos(2phi)
-		uP2Im2TPCSubPosEta += fCMEQIm[2][h+1]->GetBinContent(EBin); // w^2*sin(2phi)
-		uPMTPCSubPosEta += fCMEMult[0][h]->GetBinContent(EBin); // w
-		uP2MTPCSubPosEta += fCMEMult[2][h]->GetBinContent(EBin); // w^2
-		
-		uP4Re2TPCSubPosEta += fCMEQ2Re4[0]->GetBinContent(EBin); // w^2*cos(4phi)
-		uP4Im2TPCSubPosEta += fCMEQ2Im4[0]->GetBinContent(EBin); // w^2*sin(4phi)
-		uP2Re3TPCSubPosEta += fCMEQ3Re2[0]->GetBinContent(EBin); // w^3*cos(2phi)
-		uP2Im3TPCSubPosEta += fCMEQ3Im2[0]->GetBinContent(EBin); // w^3*sin(2phi)
-		uP0MTPCSubPosEta += fCMEw0[0]->GetBinContent(EBin); // w^0
-		uP3MTPCSubPosEta += fCMEw3[0]->GetBinContent(EBin); // w^3
-		uP4MTPCSubPosEta += fCMEw4[0]->GetBinContent(EBin); // w^4
-		
-		// negative charge positive eta region
-		uNReTPCSubPosEta += fCMEQRe[1][h]->GetBinContent(EBin);
-		uNImTPCSubPosEta += fCMEQIm[1][h]->GetBinContent(EBin);
-		uN2ReTPCSubPosEta += fCMEQRe[1][h+1]->GetBinContent(EBin);
-		uN2ImTPCSubPosEta += fCMEQIm[1][h+1]->GetBinContent(EBin);
-		uN2Re2TPCSubPosEta += fCMEQRe[3][h+1]->GetBinContent(EBin);
-		uN2Im2TPCSubPosEta += fCMEQIm[3][h+1]->GetBinContent(EBin);
-		uNMTPCSubPosEta += fCMEMult[1][h]->GetBinContent(EBin);
-		uN2MTPCSubPosEta += fCMEMult[3][h]->GetBinContent(EBin);
-		
-		uN4Re2TPCSubPosEta += fCMEQ2Re4[1]->GetBinContent(EBin); // w^2*cos(4phi)
-		uN4Im2TPCSubPosEta += fCMEQ2Im4[1]->GetBinContent(EBin); // w^2*sin(4phi)
-		uN2Re3TPCSubPosEta += fCMEQ3Re2[1]->GetBinContent(EBin); // w^3*cos(2phi)
-		uN2Im3TPCSubPosEta += fCMEQ3Im2[1]->GetBinContent(EBin); // w^3*sin(2phi)
-		uN0MTPCSubPosEta += fCMEw0[1]->GetBinContent(EBin); // w^0
-		uN3MTPCSubPosEta += fCMEw3[1]->GetBinContent(EBin); // w^3
-		uN4MTPCSubPosEta += fCMEw4[1]->GetBinContent(EBin); // w^4
-	} else if (EBin == fCMEQRe[0][h]->FindBin(-0.05)) { // negative eta region
-		// pegitive charge negitive eta region
-		uPReTPCSubNegEta += fCMEQRe[0][h]->GetBinContent(EBin); // w*cos(phi)
-		uPImTPCSubNegEta += fCMEQIm[0][h]->GetBinContent(EBin); // w*sin(phi)
-		uP2ReTPCSubNegEta += fCMEQRe[0][h+1]->GetBinContent(EBin); // w*cos(2phi)
-		uP2ImTPCSubNegEta += fCMEQIm[0][h+1]->GetBinContent(EBin); // w*sin(2phi)
-		uP2Re2TPCSubNegEta += fCMEQRe[2][h+1]->GetBinContent(EBin); // w^2*cos(2phi)
-		uP2Im2TPCSubNegEta += fCMEQIm[2][h+1]->GetBinContent(EBin); // w^2*sin(2phi)
-		uPMTPCSubNegEta += fCMEMult[0][h]->GetBinContent(EBin); // w
-		uP2MTPCSubNegEta += fCMEMult[2][h]->GetBinContent(EBin); // w^2
-		
-		uP4Re2TPCSubNegEta += fCMEQ2Re4[0]->GetBinContent(EBin); // w^2*cos(4phi)
-		uP4Im2TPCSubNegEta += fCMEQ2Im4[0]->GetBinContent(EBin); // w^2*sin(4phi)
-		uP2Re3TPCSubNegEta += fCMEQ3Re2[0]->GetBinContent(EBin); // w^3*cos(2phi)
-		uP2Im3TPCSubNegEta += fCMEQ3Im2[0]->GetBinContent(EBin); // w^3*sin(2phi)
-		uP0MTPCSubNegEta += fCMEw0[0]->GetBinContent(EBin); // w^0
-		uP3MTPCSubNegEta += fCMEw3[0]->GetBinContent(EBin); // w^3
-		uP4MTPCSubNegEta += fCMEw4[0]->GetBinContent(EBin); // w^4
-		
-		// negative charge negitive eta region
-		uNReTPCSubNegEta += fCMEQRe[1][h]->GetBinContent(EBin);
-		uNImTPCSubNegEta += fCMEQIm[1][h]->GetBinContent(EBin);
-		uN2ReTPCSubNegEta += fCMEQRe[1][h+1]->GetBinContent(EBin);
-		uN2ImTPCSubNegEta += fCMEQIm[1][h+1]->GetBinContent(EBin);
-		uN2Re2TPCSubNegEta += fCMEQRe[3][h+1]->GetBinContent(EBin);
-		uN2Im2TPCSubNegEta += fCMEQIm[3][h+1]->GetBinContent(EBin);
-		uNMTPCSubNegEta += fCMEMult[1][h]->GetBinContent(EBin);
-		uN2MTPCSubNegEta += fCMEMult[3][h]->GetBinContent(EBin);
-		
-		uN4Re2TPCSubNegEta += fCMEQ2Re4[1]->GetBinContent(EBin); // w^2*cos(4phi)
-		uN4Im2TPCSubNegEta += fCMEQ2Im4[1]->GetBinContent(EBin); // w^2*sin(4phi)
-		uN2Re3TPCSubNegEta += fCMEQ3Re2[1]->GetBinContent(EBin); // w^3*cos(2phi)
-		uN2Im3TPCSubNegEta += fCMEQ3Im2[1]->GetBinContent(EBin); // w^3*sin(2phi)
-		uN0MTPCSubNegEta += fCMEw0[1]->GetBinContent(EBin); // w^0
-		uN3MTPCSubNegEta += fCMEw3[1]->GetBinContent(EBin); // w^3
-		uN4MTPCSubNegEta += fCMEw4[1]->GetBinContent(EBin); // w^4
-	}
-  }
-  
+  // end same multiplicity #7 All POI NN pairs ===========
+
+    
   // set fpQvecEvent
-  // Pos Eta 0.1<|eta|<0.8, Neg Eta -0.8<|eta|<-0.1
-  //cout<<"==> uPReTPCPosEta + uNReTPCPosEta = "<<uPReTPCPosEta + uNReTPCPosEta<<", uPNReTPCPosEta = "<<uPNReTPCPosEta<<endl;
-  //cout<<"==> uPNReTPC = "<<uPNReTPC<<", uPReTPCSubNegEta + uPReTPCNegEta + uPReTPCPosEta + uPReTPCSubPosEta + uNReTPCSubNegEta + uNReTPCNegEta + uNReTPCPosEta + uNReTPCSubPosEta = "<<uPReTPCSubNegEta + uPReTPCNegEta + uPReTPCPosEta + uPReTPCSubPosEta + uNReTPCSubNegEta + uNReTPCNegEta + uNReTPCPosEta + uNReTPCSubPosEta<<endl;
-  fpQvecEvent->setTPCRePosChPosEta( uPReTPCPosEta ); // w * cos(theta+) eta+
-  fpQvecEvent->setTPCImPosChPosEta( uPImTPCPosEta ); // w * sin(theta+) eta+
-  fpQvecEvent->setTPC2RePosChPosEta( uP2ReTPCPosEta ); // w * cos(2theta+) eta+
-  fpQvecEvent->setTPC2ImPosChPosEta( uP2ImTPCPosEta ); // w * sin(2theta+) eta+
-  fpQvecEvent->setTPC2Re2PosChPosEta( uP2Re2TPCPosEta ); // w^2 * cos(2theta+) eta+
-  fpQvecEvent->setTPC2Im2PosChPosEta( uP2Im2TPCPosEta ); // w^2 * sin(2theta+) eta+
-  fpQvecEvent->setTPCMPosChPosEta( uPMTPCPosEta );   // w ch+ eta+
-  fpQvecEvent->setTPC2MPosChPosEta( uP2MTPCPosEta );   // w^2 ch+ eta+
-  fpQvecEvent->setTPC4Re2PosChPosEta( uP4Re2TPCPosEta); // w^2*cos(4phi)
-  fpQvecEvent->setTPC4Im2PosChPosEta( uP4Im2TPCPosEta); // w^2*sin(4phi)
-  fpQvecEvent->setTPC2Re3PosChPosEta( uP2Re3TPCPosEta); // w^3*cos(2phi)
-  fpQvecEvent->setTPC2Im3PosChPosEta( uP2Im3TPCPosEta); // w^3*sin(2phi)
-  fpQvecEvent->setTPC0MPosChPosEta( uP0MTPCPosEta );   // w^0 ch+ eta+
-  fpQvecEvent->setTPC3MPosChPosEta( uP3MTPCPosEta );   // w^3 ch+ eta+
-  fpQvecEvent->setTPC4MPosChPosEta( uP4MTPCPosEta );   // w^4 ch+ eta+
+  fpQvecEvent->setRPReTPC( uRPReTPC ); // w * cos(theta+) eta+
+  fpQvecEvent->setRPImTPC( uRPImTPC );
+  fpQvecEvent->setRPMultTPC( uRPMultTPC );
   
-  fpQvecEvent->setTPCRePosChNegEta( uPReTPCNegEta ); // w * cos(theta+) eta-
-  fpQvecEvent->setTPCImPosChNegEta( uPImTPCNegEta ); // w * sin(theta+) eta-
-  fpQvecEvent->setTPC2RePosChNegEta( uP2ReTPCNegEta ); // w * cos(2theta+) eta-
-  fpQvecEvent->setTPC2ImPosChNegEta( uP2ImTPCNegEta ); // w * sin(2theta+) eta-
-  fpQvecEvent->setTPC2Re2PosChNegEta( uP2Re2TPCNegEta ); // w^2 * cos(2theta+) eta-
-  fpQvecEvent->setTPC2Im2PosChNegEta( uP2Im2TPCNegEta ); // w^2 * sin(2theta+) eta-
-  fpQvecEvent->setTPCMPosChNegEta( uPMTPCNegEta );   // w ch+ eta-
-  fpQvecEvent->setTPC2MPosChNegEta( uP2MTPCNegEta );   // w^2 ch+ eta-
-  fpQvecEvent->setTPC4Re2PosChNegEta( uP4Re2TPCNegEta); // w^2*cos(4phi)
-  fpQvecEvent->setTPC4Im2PosChNegEta( uP4Im2TPCNegEta); // w^2*sin(4phi)
-  fpQvecEvent->setTPC2Re3PosChNegEta( uP2Re3TPCNegEta); // w^3*cos(2phi)
-  fpQvecEvent->setTPC2Im3PosChNegEta( uP2Im3TPCNegEta); // w^3*sin(2phi)
-  fpQvecEvent->setTPC0MPosChNegEta( uP0MTPCNegEta );   // w^0 ch+ eta-
-  fpQvecEvent->setTPC3MPosChNegEta( uP3MTPCNegEta );   // w^3 ch+ eta-
-  fpQvecEvent->setTPC4MPosChNegEta( uP4MTPCNegEta );   // w^4 ch+ eta-
+  fpQvecEvent->setRP2ReTPC( uRP2ReTPC );
+  fpQvecEvent->setRP2ImTPC( uRP2ImTPC );
   
-  fpQvecEvent->setTPCReNegChPosEta( uNReTPCPosEta ); // w * cos(theta-) eta+
-  fpQvecEvent->setTPCImNegChPosEta( uNImTPCPosEta ); // w * sin(theta-) eta+
-  fpQvecEvent->setTPC2ReNegChPosEta( uN2ReTPCPosEta ); // w * cos(2theta-) eta+
-  fpQvecEvent->setTPC2ImNegChPosEta( uN2ImTPCPosEta ); // w * sin(2theta-) eta+
-  fpQvecEvent->setTPC2Re2NegChPosEta( uN2Re2TPCPosEta ); // w^2 * cos(2theta-) eta+
-  fpQvecEvent->setTPC2Im2NegChPosEta( uN2Im2TPCPosEta ); // w^2 * sin(2theta-) eta+
-  fpQvecEvent->setTPCMNegChPosEta( uNMTPCPosEta );   // w ch- eta+
-  fpQvecEvent->setTPC2MNegChPosEta( uN2MTPCPosEta );   // w^2  h- eta+
-  fpQvecEvent->setTPC4Re2NegChPosEta( uN4Re2TPCPosEta); // w^2*cos(4phi)
-  fpQvecEvent->setTPC4Im2NegChPosEta( uN4Im2TPCPosEta); // w^2*sin(4phi)
-  fpQvecEvent->setTPC2Re3NegChPosEta( uN2Re3TPCPosEta); // w^3*cos(2phi)
-  fpQvecEvent->setTPC2Im3NegChPosEta( uN2Im3TPCPosEta); // w^3*sin(2phi)
-  fpQvecEvent->setTPC0MNegChPosEta( uN0MTPCPosEta );   // w^0 ch- eta+
-  fpQvecEvent->setTPC3MNegChPosEta( uN3MTPCPosEta );   // w^3 ch- eta+
-  fpQvecEvent->setTPC4MNegChPosEta( uN4MTPCPosEta );   // w^4 ch- eta+
+  fpQvecEvent->setPOIPosReTPC( uPOIPosReTPC );
+  fpQvecEvent->setPOIPosMult( uPOIPosMult );
+  fpQvecEvent->setPOIPosImTPC( uPOIPosImTPC );
   
-  fpQvecEvent->setTPCReNegChNegEta( uNReTPCNegEta ); // w * cos(theta-) eta-
-  fpQvecEvent->setTPCImNegChNegEta( uNImTPCNegEta ); // w * sin(theta-) eta-
-  fpQvecEvent->setTPC2ReNegChNegEta( uN2ReTPCNegEta ); // w * cos(2theta-) eta-
-  fpQvecEvent->setTPC2ImNegChNegEta( uN2ImTPCNegEta ); // w * sin(2theta-) eta-
-  fpQvecEvent->setTPC2Re2NegChNegEta( uN2Re2TPCNegEta ); // w^2 * cos(2theta-) eta-
-  fpQvecEvent->setTPC2Im2NegChNegEta( uN2Im2TPCNegEta ); // w^2 * sin(2theta-) eta-
-  fpQvecEvent->setTPCMNegChNegEta( uNMTPCNegEta );   // w ch- eta-
-  fpQvecEvent->setTPC2MNegChNegEta( uN2MTPCNegEta );   // w^2 ch- eta-
-  fpQvecEvent->setTPC4Re2NegChNegEta( uN4Re2TPCNegEta); // w^2*cos(4phi)
-  fpQvecEvent->setTPC4Im2NegChNegEta( uN4Im2TPCNegEta); // w^2*sin(4phi)
-  fpQvecEvent->setTPC2Re3NegChNegEta( uN2Re3TPCNegEta); // w^3*cos(2phi)
-  fpQvecEvent->setTPC2Im3NegChNegEta( uN2Im3TPCNegEta); // w^3*sin(2phi)
-  fpQvecEvent->setTPC0MNegChNegEta( uN0MTPCNegEta );   // w^0 ch- eta-
-  fpQvecEvent->setTPC3MNegChNegEta( uN3MTPCNegEta );   // w^3 ch- eta-
-  fpQvecEvent->setTPC4MNegChNegEta( uN4MTPCNegEta );   // w^4 ch- eta-
+  fpQvecEvent->setPOINegReTPC( uPOINegReTPC );
+  fpQvecEvent->setPOINegMult( uPOINegMult );
+  fpQvecEvent->setPOINegImTPC( uPOINegImTPC );
   
-  // SubPos Eta 0<|eta|<0.1, SubNeg Eta -0.1<|eta|<0
-  fpQvecEvent->setTPCRePosChSubPosEta( uPReTPCSubPosEta ); // w * cos(theta+) eta+
-  fpQvecEvent->setTPCImPosChSubPosEta( uPImTPCSubPosEta ); // w * sin(theta+) eta+
-  fpQvecEvent->setTPC2RePosChSubPosEta( uP2ReTPCSubPosEta ); // w * cos(2theta+) eta+
-  fpQvecEvent->setTPC2ImPosChSubPosEta( uP2ImTPCSubPosEta ); // w * sin(2theta+) eta+
-  fpQvecEvent->setTPC2Re2PosChSubPosEta( uP2Re2TPCSubPosEta ); // w^2 * cos(2theta+) eta+
-  fpQvecEvent->setTPC2Im2PosChSubPosEta( uP2Im2TPCSubPosEta ); // w^2 * sin(2theta+) eta+
-  fpQvecEvent->setTPCMPosChSubPosEta( uPMTPCSubPosEta );   // w ch+ eta+
-  fpQvecEvent->setTPC2MPosChSubPosEta( uP2MTPCSubPosEta );   // w^2 ch+ eta+
-  fpQvecEvent->setTPC4Re2PosChSubPosEta( uP4Re2TPCSubPosEta); // w^2*cos(4phi)
-  fpQvecEvent->setTPC4Im2PosChSubPosEta( uP4Im2TPCSubPosEta); // w^2*sin(4phi)
-  fpQvecEvent->setTPC2Re3PosChSubPosEta( uP2Re3TPCSubPosEta); // w^3*cos(2phi)
-  fpQvecEvent->setTPC2Im3PosChSubPosEta( uP2Im3TPCSubPosEta); // w^3*sin(2phi)
-  fpQvecEvent->setTPC0MPosChSubPosEta( uP0MTPCSubPosEta );   // w^0 ch+ eta+
-  fpQvecEvent->setTPC3MPosChSubPosEta( uP3MTPCSubPosEta );   // w^3 ch+ eta+
-  fpQvecEvent->setTPC4MPosChSubPosEta( uP4MTPCSubPosEta );   // w^4 ch+ eta+
+  fpQvecEvent->setPOIPos2ReTPC( uPOIPos2ReTPC );
+  fpQvecEvent->setPOIPos2ImTPC( uPOIPos2ImTPC );
   
-  fpQvecEvent->setTPCRePosChSubNegEta( uPReTPCSubNegEta ); // w * cos(theta+) eta-
-  fpQvecEvent->setTPCImPosChSubNegEta( uPImTPCSubNegEta ); // w * sin(theta+) eta-
-  fpQvecEvent->setTPC2RePosChSubNegEta( uP2ReTPCSubNegEta ); // w * cos(2theta+) eta-
-  fpQvecEvent->setTPC2ImPosChSubNegEta( uP2ImTPCSubNegEta ); // w * sin(2theta+) eta-
-  fpQvecEvent->setTPC2Re2PosChSubNegEta( uP2Re2TPCSubNegEta ); // w^2 * cos(2theta+) eta-
-  fpQvecEvent->setTPC2Im2PosChSubNegEta( uP2Im2TPCSubNegEta ); // w^2 * sin(2theta+) eta-
-  fpQvecEvent->setTPCMPosChSubNegEta( uPMTPCSubNegEta );   // w ch+ eta-
-  fpQvecEvent->setTPC2MPosChSubNegEta( uP2MTPCSubNegEta );   // w^2 ch+ eta-
-  fpQvecEvent->setTPC4Re2PosChSubNegEta( uP4Re2TPCSubNegEta); // w^2*cos(4phi)
-  fpQvecEvent->setTPC4Im2PosChSubNegEta( uP4Im2TPCSubNegEta); // w^2*sin(4phi)
-  fpQvecEvent->setTPC2Re3PosChSubNegEta( uP2Re3TPCSubNegEta); // w^3*cos(2phi)
-  fpQvecEvent->setTPC2Im3PosChSubNegEta( uP2Im3TPCSubNegEta); // w^3*sin(2phi)
-  fpQvecEvent->setTPC0MPosChSubNegEta( uP0MTPCSubNegEta );   // w^0 ch+ eta-
-  fpQvecEvent->setTPC3MPosChSubNegEta( uP3MTPCSubNegEta );   // w^3 ch+ eta-
-  fpQvecEvent->setTPC4MPosChSubNegEta( uP4MTPCSubNegEta );   // w^4 ch+ eta-
+  fpQvecEvent->setPOINeg2ReTPC( uPOINeg2ReTPC );
+  fpQvecEvent->setPOINeg2ImTPC( uPOINeg2ImTPC );
+
+  fpQvecEvent->set2pCorrelatorCos2PsiDiff2PsiV0CRP( u2pCorrelatorCos2PsiDiff2PsiV0CRP );
+  fpQvecEvent->set2pCorrelatorCos2PsiDiff2PsiV0ARP( u2pCorrelatorCos2PsiDiff2PsiV0ARP );
   
-  fpQvecEvent->setTPCReNegChSubPosEta( uNReTPCSubPosEta ); // w * cos(theta-) eta+
-  fpQvecEvent->setTPCImNegChSubPosEta( uNImTPCSubPosEta ); // w * sin(theta-) eta+
-  fpQvecEvent->setTPC2ReNegChSubPosEta( uN2ReTPCSubPosEta ); // w * cos(2theta-) eta+
-  fpQvecEvent->setTPC2ImNegChSubPosEta( uN2ImTPCSubPosEta ); // w * sin(2theta-) eta+
-  fpQvecEvent->setTPC2Re2NegChSubPosEta( uN2Re2TPCSubPosEta ); // w^2 * cos(2theta-) eta+
-  fpQvecEvent->setTPC2Im2NegChSubPosEta( uN2Im2TPCSubPosEta ); // w^2 * sin(2theta-) eta+
-  fpQvecEvent->setTPCMNegChSubPosEta( uNMTPCSubPosEta );   // w ch- eta+
-  fpQvecEvent->setTPC2MNegChSubPosEta( uN2MTPCSubPosEta );   // w^2  h- eta+
-  fpQvecEvent->setTPC4Re2NegChSubPosEta( uN4Re2TPCSubPosEta); // w^2*cos(4phi)
-  fpQvecEvent->setTPC4Im2NegChSubPosEta( uN4Im2TPCSubPosEta); // w^2*sin(4phi)
-  fpQvecEvent->setTPC2Re3NegChSubPosEta( uN2Re3TPCSubPosEta); // w^3*cos(2phi)
-  fpQvecEvent->setTPC2Im3NegChSubPosEta( uN2Im3TPCSubPosEta); // w^3*sin(2phi)
-  fpQvecEvent->setTPC0MNegChSubPosEta( uN0MTPCSubPosEta );   // w^0 ch- eta+
-  fpQvecEvent->setTPC3MNegChSubPosEta( uN3MTPCSubPosEta );   // w^3 ch- eta+
-  fpQvecEvent->setTPC4MNegChSubPosEta( uN4MTPCSubPosEta );   // w^4 ch- eta+
+  fpQvecEvent->set2pCorrelatorCos2PsiDiff2PsiZDCCRP( u2pCorrelatorCos2PsiDiff2PsiZDCCRP );
+  fpQvecEvent->set2pCorrelatorCos2PsiDiff2PsiZDCARP( u2pCorrelatorCos2PsiDiff2PsiZDCARP );
+  fpQvecEvent->set2pCorrelatorCos2PsiDiff2PsiZDCCARP( u2pCorrelatorCos2PsiDiff2PsiZDCCARP );
+
+  fpQvecEvent->setNITCosPsidiff2PsiV0COS( uNITCosPsidiff2PsiV0COS );
+  fpQvecEvent->setNITSinPsidiff2PsiV0COS( uNITSinPsidiff2PsiV0COS );
+  fpQvecEvent->setNITCosPsidiff2PsiV0AOS( uNITCosPsidiff2PsiV0AOS );
+  fpQvecEvent->setNITSinPsidiff2PsiV0AOS( uNITSinPsidiff2PsiV0AOS );
+
+  fpQvecEvent->setNITCosPsidiff2PsiZDCCOS( uNITCosPsidiff2PsiZDCCOS );
+  fpQvecEvent->setNITSinPsidiff2PsiZDCCOS( uNITSinPsidiff2PsiZDCCOS );
+  fpQvecEvent->setNITCosPsidiff2PsiZDCAOS( uNITCosPsidiff2PsiZDCAOS );
+  fpQvecEvent->setNITSinPsidiff2PsiZDCAOS( uNITSinPsidiff2PsiZDCAOS );
+  fpQvecEvent->setNITCosPsidiff2PsiZDCCAOS( uNITCosPsidiff2PsiZDCCAOS );
+  fpQvecEvent->setNITSinPsidiff2PsiZDCCAOS( uNITSinPsidiff2PsiZDCCAOS );
+
+  fpQvecEvent->setNITCosPsidiff2PsiV0CPOIPos( uNITCosPsidiff2PsiV0CPOIPos );
+  fpQvecEvent->setNITSinPsidiff2PsiV0CPOIPos( uNITSinPsidiff2PsiV0CPOIPos );
+  fpQvecEvent->setNITCosPsidiff2PsiV0APOIPos( uNITCosPsidiff2PsiV0APOIPos );
+  fpQvecEvent->setNITSinPsidiff2PsiV0APOIPos( uNITSinPsidiff2PsiV0APOIPos );
+
+  fpQvecEvent->setNITCosPsidiff2PsiZDCCPOIPos( uNITCosPsidiff2PsiZDCCPOIPos );
+  fpQvecEvent->setNITSinPsidiff2PsiZDCCPOIPos( uNITSinPsidiff2PsiZDCCPOIPos );
+  fpQvecEvent->setNITCosPsidiff2PsiZDCAPOIPos( uNITCosPsidiff2PsiZDCAPOIPos );
+  fpQvecEvent->setNITSinPsidiff2PsiZDCAPOIPos( uNITSinPsidiff2PsiZDCAPOIPos );
+  fpQvecEvent->setNITCosPsidiff2PsiZDCCAPOIPos( uNITCosPsidiff2PsiZDCCAPOIPos );
+  fpQvecEvent->setNITSinPsidiff2PsiZDCCAPOIPos( uNITSinPsidiff2PsiZDCCAPOIPos );
+
+  fpQvecEvent->setNITCosPsidiff2PsiV0CPOINeg( uNITCosPsidiff2PsiV0CPOINeg );
+  fpQvecEvent->setNITSinPsidiff2PsiV0CPOINeg( uNITSinPsidiff2PsiV0CPOINeg );
+  fpQvecEvent->setNITCosPsidiff2PsiV0APOINeg( uNITCosPsidiff2PsiV0APOINeg );
+  fpQvecEvent->setNITSinPsidiff2PsiV0APOINeg( uNITSinPsidiff2PsiV0APOINeg );
+
+  fpQvecEvent->setNITCosPsidiff2PsiZDCCPOINeg( uNITCosPsidiff2PsiZDCCPOINeg );
+  fpQvecEvent->setNITSinPsidiff2PsiZDCCPOINeg( uNITSinPsidiff2PsiZDCCPOINeg );
+  fpQvecEvent->setNITCosPsidiff2PsiZDCAPOINeg( uNITCosPsidiff2PsiZDCAPOINeg );
+  fpQvecEvent->setNITSinPsidiff2PsiZDCAPOINeg( uNITSinPsidiff2PsiZDCAPOINeg );
+  fpQvecEvent->setNITCosPsidiff2PsiZDCCAPOINeg( uNITCosPsidiff2PsiZDCCAPOINeg );
+  fpQvecEvent->setNITSinPsidiff2PsiZDCCAPOINeg( uNITSinPsidiff2PsiZDCCAPOINeg );
   
-  fpQvecEvent->setTPCReNegChSubNegEta( uNReTPCSubNegEta ); // w * cos(theta-) eta-
-  fpQvecEvent->setTPCImNegChSubNegEta( uNImTPCSubNegEta ); // w * sin(theta-) eta-
-  fpQvecEvent->setTPC2ReNegChSubNegEta( uN2ReTPCSubNegEta ); // w * cos(2theta-) eta-
-  fpQvecEvent->setTPC2ImNegChSubNegEta( uN2ImTPCSubNegEta ); // w * sin(2theta-) eta-
-  fpQvecEvent->setTPC2Re2NegChSubNegEta( uN2Re2TPCSubNegEta ); // w^2 * cos(2theta-) eta-
-  fpQvecEvent->setTPC2Im2NegChSubNegEta( uN2Im2TPCSubNegEta ); // w^2 * sin(2theta-) eta-
-  fpQvecEvent->setTPCMNegChSubNegEta( uNMTPCSubNegEta );   // w ch- eta-
-  fpQvecEvent->setTPC2MNegChSubNegEta( uN2MTPCSubNegEta );   // w^2 ch- eta-
-  fpQvecEvent->setTPC4Re2NegChSubNegEta( uN4Re2TPCSubNegEta); // w^2*cos(4phi)
-  fpQvecEvent->setTPC4Im2NegChSubNegEta( uN4Im2TPCSubNegEta); // w^2*sin(4phi)
-  fpQvecEvent->setTPC2Re3NegChSubNegEta( uN2Re3TPCSubNegEta); // w^3*cos(2phi)
-  fpQvecEvent->setTPC2Im3NegChSubNegEta( uN2Im3TPCSubNegEta); // w^3*sin(2phi)
-  fpQvecEvent->setTPC0MNegChSubNegEta( uN0MTPCSubNegEta );   // w^0 ch- eta-
-  fpQvecEvent->setTPC3MNegChSubNegEta( uN3MTPCSubNegEta );   // w^3 ch- eta-
-  fpQvecEvent->setTPC4MNegChSubNegEta( uN4MTPCSubNegEta );   // w^4 ch- eta-
+  fpQvecEvent->set2pCorrelatorCosPsiDiff( u2pCorrelatorCosPsiDiff );
+  fpQvecEvent->set2pCorrelatorCos2PsiDiff( u2pCorrelatorCos2PsiDiff );
+  fpQvecEvent->set2pCorrelatorRPMult( u2pCorrelatorRPMult );
+
+  fpQvecEvent->set2pCorrelatorCosPsiSumPOIOS( u2pCorrelatorCosPsiSumPOIOS );
+  fpQvecEvent->set2pCorrelatorPOIOSMult( u2pCorrelatorPOIOSMult );
+  fpQvecEvent->set2pCorrelatorSinPsiSumPOIOS( u2pCorrelatorSinPsiSumPOIOS );
+  fpQvecEvent->set2pCorrelatorCosPsiDiffPOIOS( u2pCorrelatorCosPsiDiffPOIOS );
+  fpQvecEvent->set2pCorrelatorCos2PsiDiffPOIOS( u2pCorrelatorCos2PsiDiffPOIOS );
+
+  fpQvecEvent->set2pCorrelatorCosPsiSumPOIPP( u2pCorrelatorCosPsiSumPOIPP );
+  fpQvecEvent->set2pCorrelatorPOIPPMult( u2pCorrelatorPOIPPMult );
+  fpQvecEvent->set2pCorrelatorSinPsiSumPOIPP( u2pCorrelatorSinPsiSumPOIPP );
+  fpQvecEvent->set2pCorrelatorCosPsiDiffPOIPP( u2pCorrelatorCosPsiDiffPOIPP );
+  fpQvecEvent->set2pCorrelatorCos2PsiDiffPOIPP( u2pCorrelatorCos2PsiDiffPOIPP );
   
+  fpQvecEvent->set2pCorrelatorCosPsiSumPOINN( u2pCorrelatorCosPsiSumPOINN );
+  fpQvecEvent->set2pCorrelatorPOINNMult( u2pCorrelatorPOINNMult );
+  fpQvecEvent->set2pCorrelatorSinPsiSumPOINN( u2pCorrelatorSinPsiSumPOINN );
+  fpQvecEvent->set2pCorrelatorCosPsiDiffPOINN( u2pCorrelatorCosPsiDiffPOINN );
+  fpQvecEvent->set2pCorrelatorCos2PsiDiffPOINN( u2pCorrelatorCos2PsiDiffPOINN );
 }
 
 
@@ -1544,40 +1575,38 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::SetupQAHistograms(){
   fDebugwEventCount->GetXaxis()->SetBinLabel(3,"Centrality cut");
   fDebugwEventCount->GetXaxis()->SetBinLabel(4,"nTrkAOD>4");
   fDebugwEventCount->GetXaxis()->SetBinLabel(5,"PileUp cut");
-  fDebugwEventCount->GetXaxis()->SetBinLabel(6,"TPCmult>0.1");
-  fDebugwEventCount->GetXaxis()->SetBinLabel(7,"V0Mult>0.0001");
-  fDebugwEventCount->GetXaxis()->SetBinLabel(10,"Analyzed");
+  fDebugwEventCount->GetXaxis()->SetBinLabel(6,"V0Mult>0.0001");
+  fDebugwEventCount->GetXaxis()->SetBinLabel(7,"ZDC towE>0");
+  fDebugwEventCount->GetXaxis()->SetBinLabel(8,"denZNCA>0");
+  fDebugwEventCount->GetXaxis()->SetBinLabel(9,"Analyzed");
   
   /// 2D QA:
   
   ///TPC Event Planes:
-  fHistTPCPsiNPosPlane = new TH2F("fHistTPCPsiNPosPlane",Form("#Psi_{n}(#eta+); centrality; #Psi_{%d,#eta+}(rad); events",gHarmonic),18,0,90,50,0,3.14159);
-  fListHist->Add(fHistTPCPsiNPosPlane);
-  fHistTPCPsiNNegPlane = new TH2F("fHistTPCPsiNNegPlane",Form("#Psi_{n}(#eta-); centrality; #Psi_{%d,#eta-}(rad); events",gHarmonic),18,0,90,50,0,3.14159);
-  fListHist->Add(fHistTPCPsiNNegPlane);
-  fHistTPCPsi3PosPlane = new TH2F("fHistTPCPsi3PosPlane",Form("#Psi_{3}(#eta+); centrality; #Psi_{%d,#eta+}(rad); events",3), 18,0,90,50,0,3.14159);
-  fListHist->Add(fHistTPCPsi3PosPlane);
-  fHistTPCPsi3NegPlane = new TH2F("fHistTPCPsi3NegPlane",Form("#Psi_{3}(#eta-); centrality; #Psi_{%d,#eta-}(rad); events",3), 18,0,90,50,0,3.14159);
-  fListHist->Add(fHistTPCPsi3NegPlane);
-  fHistTPCPsi4PosPlane = new TH2F("fHistTPCPsi4PosPlane",Form("#Psi_{3}(#eta+); centrality; #Psi_{%d,#eta+}(rad); events",3), 18,0,90,50,0,3.14159);
-  fListHist->Add(fHistTPCPsi4PosPlane);
-  fHistTPCPsi4NegPlane = new TH2F("fHistTPCPsi4NegPlane",Form("#Psi_{3}(#eta-); centrality; #Psi_{%d,#eta-}(rad); events",3), 18,0,90,50,0,3.14159);
-  fListHist->Add(fHistTPCPsi4NegPlane);  
+  //fHistTPCPsiNPosPlane = new TH2F("fHistTPCPsiNPosPlane",Form("#Psi_{n}(#eta+); centrality; #Psi_{%d,#eta+}(rad); events",gHarmonic),18,0,90,50,0,3.14159);
+  //fListHist->Add(fHistTPCPsiNPosPlane);
+  //fHistTPCPsiNNegPlane = new TH2F("fHistTPCPsiNNegPlane",Form("#Psi_{n}(#eta-); centrality; #Psi_{%d,#eta-}(rad); events",gHarmonic),18,0,90,50,0,3.14159);
+  //fListHist->Add(fHistTPCPsiNNegPlane);
+  //fHistTPCPsi3PosPlane = new TH2F("fHistTPCPsi3PosPlane",Form("#Psi_{3}(#eta+); centrality; #Psi_{%d,#eta+}(rad); events",3), 18,0,90,50,0,3.14159);
+  //fListHist->Add(fHistTPCPsi3PosPlane);
+  //fHistTPCPsi3NegPlane = new TH2F("fHistTPCPsi3NegPlane",Form("#Psi_{3}(#eta-); centrality; #Psi_{%d,#eta-}(rad); events",3), 18,0,90,50,0,3.14159);
+  //fListHist->Add(fHistTPCPsi3NegPlane);
+  //fHistTPCPsi4PosPlane = new TH2F("fHistTPCPsi4PosPlane",Form("#Psi_{3}(#eta+); centrality; #Psi_{%d,#eta+}(rad); events",3), 18,0,90,50,0,3.14159);
+  //fListHist->Add(fHistTPCPsi4PosPlane);
+  //fHistTPCPsi4NegPlane = new TH2F("fHistTPCPsi4NegPlane",Form("#Psi_{3}(#eta-); centrality; #Psi_{%d,#eta-}(rad); events",3), 18,0,90,50,0,3.14159);
+  //fListHist->Add(fHistTPCPsi4NegPlane);  
   
   /// V0 Event Planes:
   fHistV0CPsiNEventPlane = new TH2F("fHistV0CPsiNEventPlane",Form("#Psi_{n}(V0C); centrality; #Psi_{%d,V0C}(rad); events",gHarmonic),18,0,90,50,0,3.14159);
   fListHist->Add(fHistV0CPsiNEventPlane);
   fHistV0APsiNEventPlane = new TH2F("fHistV0APsiNEventPlane",Form("#Psi_{n}(V0A); centrality; #Psi_{%d,V0A}(rad); events",gHarmonic),18,0,90,50,0,3.14159);
   fListHist->Add(fHistV0APsiNEventPlane);  
-  fHistV0CPsi3EventPlane = new TH2F("fHistV0CPsi3EventPlane",Form("#Psi_{3}(V0C); centrality; #Psi_{%d,V0C}(rad); events",3), 18,0,90,50,0,3.14159);
-  fListHist->Add(fHistV0CPsi3EventPlane);
-  fHistV0APsi3EventPlane = new TH2F("fHistV0APsi3EventPlane",Form("#Psi_{3}(V0A); centrality; #Psi_{%d,V0A}(rad); events",3), 18,0,90,50,0,3.14159);
-  fListHist->Add(fHistV0APsi3EventPlane);    
+ 
   ///q-Vector for ESE:
-  fHistTPCPosqVectorvsCent = new TH2F("fHistTPCPosqVectorvsCent","q TPC pos vs Cent; Cent; q vect;",10,centRange,200,0,1.0);
-  fListHist->Add(fHistTPCPosqVectorvsCent);
-  fHistTPCNegqVectorvsCent = new TH2F("fHistTPCNegqVectorvsCent","q TPC neg vs Cent; Cent; q vect;",10,centRange,200,0,1.0);
-  fListHist->Add(fHistTPCNegqVectorvsCent);
+  //fHistTPCPosqVectorvsCent = new TH2F("fHistTPCPosqVectorvsCent","q TPC pos vs Cent; Cent; q vect;",10,centRange,200,0,1.0);
+  //fListHist->Add(fHistTPCPosqVectorvsCent);
+  //fHistTPCNegqVectorvsCent = new TH2F("fHistTPCNegqVectorvsCent","q TPC neg vs Cent; Cent; q vect;",10,centRange,200,0,1.0);
+  //fListHist->Add(fHistTPCNegqVectorvsCent);
   fHistV0CDetqVectorvsCent = new TH2F("fHistV0CDetqVectorvsCent","q V0Cdet  vs Cent; Cent; q vect;",10,centRange,200,0,1.0);
   fListHist->Add(fHistV0CDetqVectorvsCent);
   fHistV0ADetqVectorvsCent = new TH2F("fHistV0ADetqVectorvsCent","q V0Adet  vs Cent; Cent; q vect;",10,centRange,200,0,1.0);
@@ -1616,94 +1645,172 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::SetupQAHistograms(){
   fListHist->Add(hAvgQNXvsCentV0C);
   hAvgQNYvsCentV0C = new TProfile("hAvgQNYvsCentV0C"," V0C <Q2y> vs Cent; Cent; <Q_{2,y}>",90,0,90);
   fListHist->Add(hAvgQNYvsCentV0C);
-  hAvgQ3XvsCentV0C = new TProfile("hAvgQ3XvsCentV0C"," V0C <Q3x> vs Cent; Cent; <Q_{3,x}>",90,0,90);
-  fListHist->Add(hAvgQ3XvsCentV0C);
-  hAvgQ3YvsCentV0C = new TProfile("hAvgQ3YvsCentV0C"," V0C <Q3y> vs Cent; Cent; <Q_{3,y}>",90,0,90);
-  fListHist->Add(hAvgQ3YvsCentV0C);
   ///  <Q> for the V0A
   hAvgQNXvsCentV0A = new TProfile("hAvgQNXvsCentV0A"," V0A <Q2x> vs Cent; Cent; <Q_{2,x}>",90,0,90);
   fListHist->Add(hAvgQNXvsCentV0A);
   hAvgQNYvsCentV0A = new TProfile("hAvgQNYvsCentV0A"," V0A <Q2y> vs Cent; Cent; <Q_{2,y}>",90,0,90);
   fListHist->Add(hAvgQNYvsCentV0A);
-  hAvgQ3XvsCentV0A = new TProfile("hAvgQ3XvsCentV0A"," V0A <Q3x> vs Cent; Cent; <Q_{3,x}>",90,0,90);
-  fListHist->Add(hAvgQ3XvsCentV0A);
-  hAvgQ3YvsCentV0A = new TProfile("hAvgQ3YvsCentV0A"," V0A <Q3y> vs Cent; Cent; <Q_{3,y}>",90,0,90);  
-  fListHist->Add(hAvgQ3YvsCentV0A);
 
   /// Now <Q> for the TPC..  Note:gHarmonic is set as global variable!
-  fAvgCos2PsivsCentEtaPos = new TProfile("fAvgCos2PsivsCentEtaPos",Form("<cos(%d#Psi)> vs cent",gHarmonic),90,0,90);
-  fListHist->Add(fAvgCos2PsivsCentEtaPos);
-  fAvgSin2PsivsCentEtaPos = new TProfile("fAvgSin2PsivsCentEtaPos",Form("<sin(%d#Psi)> vs cent",gHarmonic),90,0,90);
-  fListHist->Add(fAvgSin2PsivsCentEtaPos);
-  fAvgCos2PsivsCentEtaNeg = new TProfile("fAvgCos2PsivsCentEtaNeg",Form("<cos(%d#Psi)> vs cent",gHarmonic),90,0,90);
-  fListHist->Add(fAvgCos2PsivsCentEtaNeg);
-  fAvgSin2PsivsCentEtaNeg = new TProfile("fAvgSin2PsivsCentEtaNeg",Form("<sin(%d#Psi)> vs cent",gHarmonic),90,0,90);
-  fListHist->Add(fAvgSin2PsivsCentEtaNeg);
+  //fAvgCos2PsivsCentEtaPos = new TProfile("fAvgCos2PsivsCentEtaPos",Form("<cos(%d#Psi)> vs cent",gHarmonic),90,0,90);
+  //fListHist->Add(fAvgCos2PsivsCentEtaPos);
+  //fAvgSin2PsivsCentEtaPos = new TProfile("fAvgSin2PsivsCentEtaPos",Form("<sin(%d#Psi)> vs cent",gHarmonic),90,0,90);
+  //fListHist->Add(fAvgSin2PsivsCentEtaPos);
+  //fAvgCos2PsivsCentEtaNeg = new TProfile("fAvgCos2PsivsCentEtaNeg",Form("<cos(%d#Psi)> vs cent",gHarmonic),90,0,90);
+  //fListHist->Add(fAvgCos2PsivsCentEtaNeg);
+  //fAvgSin2PsivsCentEtaNeg = new TProfile("fAvgSin2PsivsCentEtaNeg",Form("<sin(%d#Psi)> vs cent",gHarmonic),90,0,90);
+  //fListHist->Add(fAvgSin2PsivsCentEtaNeg);
 
-  fAvgCos3PsivsCentEtaPos = new TProfile("fAvgCos3PsivsCentEtaPos",Form("<cos(%d#Psi)> vs cent",3),90,0,90);
-  fListHist->Add(fAvgCos3PsivsCentEtaPos);
-  fAvgSin3PsivsCentEtaPos = new TProfile("fAvgSin3PsivsCentEtaPos",Form("<sin(%d#Psi)> vs cent",3),90,0,90);
-  fListHist->Add(fAvgSin3PsivsCentEtaPos);
-  fAvgCos3PsivsCentEtaNeg = new TProfile("fAvgCos3PsivsCentEtaNeg",Form("<cos(%d#Psi)> vs cent",3),90,0,90);
-  fListHist->Add(fAvgCos3PsivsCentEtaNeg);
-  fAvgSin3PsivsCentEtaNeg = new TProfile("fAvgSin3PsivsCentEtaNeg",Form("<sin(%d#Psi)> vs cent",3),90,0,90);
-  fListHist->Add(fAvgSin3PsivsCentEtaNeg);  
+  //fAvgCos3PsivsCentEtaPos = new TProfile("fAvgCos3PsivsCentEtaPos",Form("<cos(%d#Psi)> vs cent",3),90,0,90);
+  //fListHist->Add(fAvgCos3PsivsCentEtaPos);
+  //fAvgSin3PsivsCentEtaPos = new TProfile("fAvgSin3PsivsCentEtaPos",Form("<sin(%d#Psi)> vs cent",3),90,0,90);
+  //fListHist->Add(fAvgSin3PsivsCentEtaPos);
+  //fAvgCos3PsivsCentEtaNeg = new TProfile("fAvgCos3PsivsCentEtaNeg",Form("<cos(%d#Psi)> vs cent",3),90,0,90);
+  //fListHist->Add(fAvgCos3PsivsCentEtaNeg);
+  //fAvgSin3PsivsCentEtaNeg = new TProfile("fAvgSin3PsivsCentEtaNeg",Form("<sin(%d#Psi)> vs cent",3),90,0,90);
+  //fListHist->Add(fAvgSin3PsivsCentEtaNeg);  
 
-  fAvgCos4PsivsCentEtaPos = new TProfile("fAvgCos4PsivsCentEtaPos",Form("<cos(%d#Psi)> vs cent",4),90,0,90);
-  fListHist->Add(fAvgCos4PsivsCentEtaPos);
-  fAvgSin4PsivsCentEtaPos = new TProfile("fAvgSin4PsivsCentEtaPos",Form("<sin(%d#Psi)> vs cent",4),90,0,90);
-  fListHist->Add(fAvgSin4PsivsCentEtaPos);
-  fAvgCos4PsivsCentEtaNeg = new TProfile("fAvgCos4PsivsCentEtaNeg",Form("<cos(%d#Psi)> vs cent",4),90,0,90);
-  fListHist->Add(fAvgCos4PsivsCentEtaNeg);
-  fAvgSin4PsivsCentEtaNeg = new TProfile("fAvgSin4PsivsCentEtaNeg",Form("<sin(%d#Psi)> vs cent",4),90,0,90);
-  fListHist->Add(fAvgSin4PsivsCentEtaNeg);
+  //fAvgCos4PsivsCentEtaPos = new TProfile("fAvgCos4PsivsCentEtaPos",Form("<cos(%d#Psi)> vs cent",4),90,0,90);
+  //fListHist->Add(fAvgCos4PsivsCentEtaPos);
+  //fAvgSin4PsivsCentEtaPos = new TProfile("fAvgSin4PsivsCentEtaPos",Form("<sin(%d#Psi)> vs cent",4),90,0,90);
+  //fListHist->Add(fAvgSin4PsivsCentEtaPos);
+  //fAvgCos4PsivsCentEtaNeg = new TProfile("fAvgCos4PsivsCentEtaNeg",Form("<cos(%d#Psi)> vs cent",4),90,0,90);
+  //fListHist->Add(fAvgCos4PsivsCentEtaNeg);
+  //fAvgSin4PsivsCentEtaNeg = new TProfile("fAvgSin4PsivsCentEtaNeg",Form("<sin(%d#Psi)> vs cent",4),90,0,90);
+  //fListHist->Add(fAvgSin4PsivsCentEtaNeg);
 
+  /// Event by event quantities
+  fCMEQReRP = new TProfile("fCMEQReRP", "fCMEQReRP",2,0,2);
+  fTempList->Add(fCMEQReRP);
+  
+  fCMEQImRP = new TProfile("fCMEQImRP", "fCMEQImRP",2,0,2);
+  fTempList->Add(fCMEQImRP);
+  
+  fCMEQRePOIPos = new TProfile("fCMEQRePOIPos", "fCMEQRePOIPos",2,0,2);
+  fTempList->Add(fCMEQRePOIPos);
+  
+  fCMEQImPOIPos = new TProfile("fCMEQImPOIPos", "fCMEQImPOIPos",2,0,2);
+  fTempList->Add(fCMEQImPOIPos);
+  
+  fCMEQRePOINeg = new TProfile("fCMEQRePOINeg", "fCMEQRePOINeg",2,0,2);
+  fTempList->Add(fCMEQRePOINeg);
+  
+  fCMEQImPOINeg = new TProfile("fCMEQImPOINeg", "fCMEQImPOINeg",2,0,2);
+  fTempList->Add(fCMEQImPOINeg);
+  
+  f2pCorrelatorCos2PsiDiff2PsiV0RP = new TProfile("f2pCorrelatorCos2PsiDiff2PsiV0RP", "f2pCorrelatorCos2PsiDiff2PsiV0RP",2,0,2);
+  fTempList->Add(f2pCorrelatorCos2PsiDiff2PsiV0RP);
+  
+  f2pCorrelatorCos2PsiDiff2PsiZDCRP = new TProfile("f2pCorrelatorCos2PsiDiff2PsiZDCRP", "f2pCorrelatorCos2PsiDiff2PsiZDCRP",3,0,3);
+  fTempList->Add(f2pCorrelatorCos2PsiDiff2PsiZDCRP);
 
+  fNITV0OS = new TProfile("fNITV0OS", "fNITV0OS",4,0,4);
+  fTempList->Add(fNITV0OS);
+  
+  fNITZDCOS = new TProfile("fNITZDCOS", "fNITZDCOS",6,0,6);
+  fTempList->Add(fNITZDCOS);
+  
+  fNITV0POIPos = new TProfile("fNITV0POIPos", "fNITV0POIPos",4,0,4);
+  fTempList->Add(fNITV0POIPos);
+  
+  fNITZDCPOIPos = new TProfile("fNITZDCPOIPos", "fNITZDCPOIPos",6,0,6);
+  fTempList->Add(fNITZDCPOIPos);
+
+  fNITV0POINeg = new TProfile("fNITV0POINeg", "fNITV0POINeg",4,0,4);
+  fTempList->Add(fNITV0POINeg);
+  
+  fNITZDCPOINeg = new TProfile("fNITZDCPOINeg", "fNITZDCPOINeg",6,0,6);
+  fTempList->Add(fNITZDCPOINeg);
 
   
+  f2pCorrelatorCosPsiDiff = new TProfile("f2pCorrelatorCosPsiDiff", "f2pCorrelatorCosPsiDiff",1,0,1);
+  fTempList->Add(f2pCorrelatorCosPsiDiff);
   
+  f2pCorrelatorCos2PsiDiff = new TProfile("f2pCorrelatorCos2PsiDiff", "f2pCorrelatorCos2PsiDiff",1,0,1);
+  fTempList->Add(f2pCorrelatorCos2PsiDiff);
+  
+  fRePEBEOS = new TProfile("fRePEBEOS", "fRePEBEOS",1,0,1);
+  fTempList->Add(fRePEBEOS);
+  
+  fImPEBEOS = new TProfile("fImPEBEOS", "fImPEBEOS",1,0,1);
+  fTempList->Add(fImPEBEOS);
+  
+  f2pCorrelatorCosPsiDiffOS = new TProfile("f2pCorrelatorCosPsiDiffOS", "f2pCorrelatorCosPsiDiffOS",1,0,1);
+  fTempList->Add(f2pCorrelatorCosPsiDiffOS);
+  
+  f2pCorrelatorCos2PsiDiffOS = new TProfile("f2pCorrelatorCos2PsiDiffOS", "f2pCorrelatorCos2PsiDiffOS",1,0,1);
+  fTempList->Add(f2pCorrelatorCos2PsiDiffOS);
+  
+  fRePEBEPP = new TProfile("fRePEBEPP", "fRePEBEPP",1,0,1);
+  fTempList->Add(fRePEBEPP);
+  
+  fImPEBEPP = new TProfile("fImPEBEPP", "fImPEBEPP",1,0,1);
+  fTempList->Add(fImPEBEPP);
+  
+  f2pCorrelatorCosPsiDiffPP = new TProfile("f2pCorrelatorCosPsiDiffPP", "f2pCorrelatorCosPsiDiffPP",1,0,1);
+  fTempList->Add(f2pCorrelatorCosPsiDiffPP);
+  
+  f2pCorrelatorCos2PsiDiffPP = new TProfile("f2pCorrelatorCos2PsiDiffPP", "f2pCorrelatorCos2PsiDiffPP",1,0,1);
+  fTempList->Add(f2pCorrelatorCos2PsiDiffPP);
+  
+  fRePEBENN = new TProfile("fRePEBENN", "fRePEBENN",1,0,1);
+  fTempList->Add(fRePEBENN);
+  
+  fImPEBENN = new TProfile("fImPEBENN", "fImPEBENN",1,0,1);
+  fTempList->Add(fImPEBENN);
+  
+  f2pCorrelatorCosPsiDiffNN = new TProfile("f2pCorrelatorCosPsiDiffNN", "f2pCorrelatorCosPsiDiffNN",1,0,1);
+  fTempList->Add(f2pCorrelatorCosPsiDiffNN);
+  
+  f2pCorrelatorCos2PsiDiffNN = new TProfile("f2pCorrelatorCos2PsiDiffNN", "f2pCorrelatorCos2PsiDiffNN",1,0,1);
+  fTempList->Add(f2pCorrelatorCos2PsiDiffNN);
+ 
 }
 
 
 
 
 
-
-
-void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::SetupPileUpRemovalFunctions(){
-  
-  ////==========> LHC18q/r PileUp Removal Functions: ---- Do not Remove them !!! -----
-  Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
-  fV0CutPU  = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
-  fV0CutPU->SetParameters(parV0);
-  
-  fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
-
-  Double_t parFB32[8] = {2093.36, -66.425, 0.728932, -0.0027611, 1.01801e+02, -5.23083e+00, -1.03792e+00, 5.70399e-03};
-  fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*x*x+[3]*x*x*x - 6.*([4]+[5]*sqrt(x)+[6]*x+[7]*x*x)", 0, 90);
-  fMultCutPU->SetParameters(parFB32);
-  
-  Double_t parV0CL0[6] = {0.320462, 0.961793, 1.02278, 0.0330054, -0.000719631, 6.90312e-06};
-  fCenCutLowPU  = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)",  0, 100);
-  fCenCutLowPU->SetParameters(parV0CL0);
-  
-  fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
-  fCenCutHighPU->SetParameters(parV0CL0);
-  //--------------------------------------------------------------------------------------
-
+void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::SetupPileUpRemovalFunctions18qPass3() { //@Shi for 2018 period Pass3 data
+	// 18q pass3
+	fSPDCutPU = new TF1("fSPDCutPU", "480. + 3.95*x", 0, 50000);
+   
+    Double_t parV0[8] = {41.3226, 0.822835, 0.0880984, 206.961, 3.56337, 0.0965816, -0.00076483, 2.11591e-06};
+    fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+    fV0CutPU->SetParameters(parV0);
+   
+    Double_t parV0CL0[6] = {0.362458, 0.962768, 0.995134, 0.0331353, -0.000692428, 6.59962e-06};
+    fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutLowPU->SetParameters(parV0CL0);
+    fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutHighPU->SetParameters(parV0CL0);
+   
+    Double_t parFB32[9] = {-812.555, 6.38397, 5379.01, -0.394814, 0.0296228, -26.1633, 317.365, -0.842175, 0.0165651};
+    fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
+    fMultCutPU->SetParameters(parFB32);
+	
 }
 
+void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::SetupPileUpRemovalFunctions18rPass3() { //@Shi for 2018 period Pass3 data
+    // 18r pass3
 
-
-
-
-
-
-
-
-
-
-
+    fSPDCutPU = new TF1("fSPDCutPU", "480. + 3.95*x", 0, 50000);
+   
+    Double_t parV0[8] = {42.4921, 0.823255, 0.0824939, 139.826, 7.27032, 0.0488425, -0.00045769, 1.40891e-06};
+    fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+    fV0CutPU->SetParameters(parV0);
+   
+    Double_t parV0CL0[6] = {0.317973, 0.961823, 1.02383, 0.0330231, -0.000721551, 6.92564e-06};
+    fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutLowPU->SetParameters(parV0CL0);
+    fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+    fCenCutHighPU->SetParameters(parV0CL0);
+   
+    Double_t parFB32[9] = {-817.169, 6.40836, 5380.3, -0.394358, 0.0295209, -25.9573, 316.586, -0.843951, 0.0165442};
+    fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
+    fMultCutPU->SetParameters(parFB32);
+	
+}
 
 void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::SetupEventAndTaskConfigInfo(){
 
@@ -1917,6 +2024,20 @@ void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::GetV0MCorrectionHist(Int_t run)
   } 
 }
 
+void AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::GetZDCCorrectionHist(Int_t run){ 
+  if(fListZDCCorr){
+	fHZDCCparameters = (TH1D*)(fListZDCCorr->FindObject(Form("Run %d", run))->FindObject(Form("fZDCCparameters[%d]",run)));
+	fHZDCAparameters = (TH1D*)(fListZDCCorr->FindObject(Form("Run %d", run))->FindObject(Form("fZDCAparameters[%d]",run)));
+	if(fHZDCCparameters && fHZDCAparameters){
+      printf("\n ===========> Info:: ZDC Channel Weights Found for Run %d \n ",run);
+    }
+  }
+  else{
+	fHZDCCparameters=NULL;
+	fHZDCAparameters=NULL;
+	printf("\n ===========> Info:: ZDC Channel Weights NOT Found for Run %d \n ",run);
+  }
+}
 
 Bool_t AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::CheckPIDofParticle(AliAODTrack* ftrack,Int_t pidToCheck){
   
@@ -2053,7 +2174,7 @@ Bool_t AliAnalysisTaskGammaDeltaPIDSaveQvecSimple::CheckEventIsPileUp2018(AliAOD
 
   Int_t tpcClsTot = faod->GetNumberOfTPCClusters();
   Float_t nclsDif = Float_t(tpcClsTot) - (60932.9 + 69.2897*multV0Tot - 0.000217837*multV0Tot*multV0Tot);
-
+  
   if (centrCL0 < fCenCutLowPU->Eval(centrV0M)) {
     BisPileup=kTRUE;
   }

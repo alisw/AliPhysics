@@ -32,6 +32,7 @@
 #include "TList.h"
 #include "TF1.h"
 #include "TH2F.h"
+#include "TH3F.h"
 #include "TRandom3.h"
 #include "TTimeStamp.h"
 #include "AliAODHandler.h"
@@ -48,6 +49,8 @@
 // AOD interface
 #include "AliAODEvent.h"
 #include "AliAODInputHandler.h"
+#include "AliAODZDC.h"
+#include "AliMultSelection.h"
 
 // Monte Carlo Event
 #include "AliMCEventHandler.h"
@@ -301,6 +304,9 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
     if (fCutsRP->GetQA()) fQAList->Add(fCutsRP->GetQA());  //1
     if (fCutsPOI->GetQA())fQAList->Add(fCutsPOI->GetQA()); //2
     fQAList->Add(new TH1F("event plane angle","event plane angle;angle [rad];",100,0.,TMath::TwoPi())); //3
+
+    fQAList->Add(new TH3F("fHistZPTowerSignal","fHistZPTowerSignal; Centrality (%); ZDC(P) tower; ZDC signal (a.u.) #times 10^{3}",100,0,100,10,0.5,10.5,601,-0.5,600.5));
+
     PostData(2,fQAList);
   }
 }
@@ -345,8 +351,8 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
       fCutsPOI->SetEvent( InputEvent(), McEventFake);
     }
 
-
-
+    if(myAOD) FillZDCInfo(myAOD);
+    
     //then make the event
     fFlowEvent->Fill( fCutsRP, fCutsPOI );
     //fFlowEvent = new AliFlowEvent( fCutsRP, fCutsPOI );
@@ -502,6 +508,7 @@ void AliAnalysisTaskFlowEvent::UserExec(Option_t *)
     }
     AliInfo(Form("AOD has %d tracks", myAOD->GetNumberOfTracks()));
     fFlowEvent = new AliFlowEvent(myAOD);
+    if(myAOD) FillZDCInfo(myAOD);
   }
 
   //inject candidates
@@ -595,3 +602,43 @@ void AliAnalysisTaskFlowEvent::Terminate(Option_t *)
   // Called once at the end of the query -- do not call in case of CAF
 }
 
+//________________________________________________________________________
+void AliAnalysisTaskFlowEvent::FillZDCInfo(AliAODEvent *myAOD) {
+  // Function to fill the ZDC related info
+  AliDebug(2,"AliAnalysisTaskFlowEvent::FillZDCInfo()");
+  const static Int_t gNumberOfZDCChannels = 5;
+
+  AliAODZDC *aodZDC = myAOD->GetZDCData();
+  const Double_t *gZNATowerRawAOD = aodZDC->GetZNATowerEnergy();
+  const Double_t *gZNCTowerRawAOD = aodZDC->GetZNCTowerEnergy();
+  const Double_t *gZPATowerRawAOD = aodZDC->GetZPATowerEnergy();
+  const Double_t *gZPCTowerRawAOD = aodZDC->GetZPCTowerEnergy();
+
+  if(fFlowEvent) {
+    fFlowEvent->SetZPAEnergy(gZPATowerRawAOD[0]);
+    fFlowEvent->SetZPCEnergy(gZPCTowerRawAOD[0]);
+  }
+  
+  Double_t gZNATowerRaw[5] = {0.,0.,0.,0.,0.};
+  Double_t gZNCTowerRaw[5] = {0.,0.,0.,0.,0.};
+  Double_t gZPATowerRaw[5] = {0.,0.,0.,0.,0.};
+  Double_t gZPCTowerRaw[5] = {0.,0.,0.,0.,0.};
+
+  //Get centrality
+  AliMultSelection *gMultSelection = (AliMultSelection*)myAOD->FindListObject("MultSelection");
+  Double_t gCentralityV0M = gMultSelection->GetMultiplicityPercentile("V0M");
+  
+  for(Int_t iChannel = 0; iChannel < gNumberOfZDCChannels; iChannel++) {
+    gZNATowerRaw[iChannel] = gZNATowerRawAOD[iChannel];
+    gZNCTowerRaw[iChannel] = gZNCTowerRawAOD[iChannel];
+    gZPATowerRaw[iChannel] = gZPATowerRawAOD[iChannel];
+    gZPCTowerRaw[iChannel] = gZPCTowerRawAOD[iChannel];
+
+    //QA
+    if (fQAon) {
+      TH3* h3 = static_cast<TH3F*>(fQAList->FindObject("fHistZPTowerSignal"));
+      h3->Fill(gCentralityV0M,iChannel+1,gZPATowerRawAOD[iChannel]/1000);
+      h3->Fill(gCentralityV0M,5+iChannel+1,gZPCTowerRawAOD[iChannel]/1000);
+    }
+  }
+}

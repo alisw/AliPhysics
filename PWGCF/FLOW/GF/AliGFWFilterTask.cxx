@@ -68,6 +68,15 @@ void AliGFWFilterTask::UserCreateOutputObjects()
     PostData(1, fOutList);
 }
 //_____________________________________________________________________________
+void AliGFWFilterTask::SetupLWCuts(Bool_t fb96, Bool_t fb768, Bool_t use25Chi)
+{
+  if(!fb96 && !fb768) return;
+  fDisableDefaultCuts = kTRUE;
+  GFWFlags::kLocalTrackFlags l_standardTPCChiCut = use25Chi?klTPCchi2PC25:klTPCchi2PC40;
+  if(fb96)  AddCustomCuts(klVtxZ10 + klEventCuts, klFB96 + klDCAz20 + klDCAxy2011 + l_standardTPCChiCut + klNTPCcls70);
+  if(fb768) AddCustomCuts(klVtxZ10 + klEventCuts, klFB768 + l_standardTPCChiCut + klNTPCcls70);
+}
+//_____________________________________________________________________________
 void AliGFWFilterTask::NotifyRun() {
   if(fEmbedES) {
     AliAODEvent *lEv = dynamic_cast<AliAODEvent*>(InputEvent());

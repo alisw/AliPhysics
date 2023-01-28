@@ -1,0 +1,829 @@
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/CMakeLists.txt GalpropStephan/GALPROP_56.0.2870_Source/source/CMakeLists.txt
+12c12,13
+<    gen_secondary_antiproton_source.cc 
+---
+>    gen_secondary_antiproton_source.cc gen_secondary_antideuteron_source.cc
+>    gen_secondary_antihelium3_source.cc
+15c16
+<    gen_tertiary_antiproton_source.cc integ.cc 
+---
+>    gen_tertiary_antiproton_source.cc gen_tertiary_antideuteron_source.cc integ.cc 
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/Galdef.cc GalpropStephan/GALPROP_56.0.2870_Source/source/Galdef.cc
+118a119,123
+> 
+> 	
+> 	//SETPAROPT(generator);//serksnyte: add generator name
+> 
+> 
+440a446,447
+>     SETPAROPT(secondary_antihelium3);//serksnyte
+>     SETPAROPT(DM_antihelium3);//koenigstorfer
+567a575,578
+> 	//serksnyte
+> 	SETPAROPT(scaling);
+> 	SETPAROPT(sigmaSign);
+> 
+775c786,788
+<     os<<"  pair_production        ="<<pair_production       <<endl; // TAP20110402
+---
+>     os<<"  secondary_antihelium3 ="<<secondary_antihelium3    <<endl;  // serksnyte    
+> 	os<<"  DM_antihelium3        ="<<DM_antihelium3    <<endl;  // koenigstorfer
+>     os<<"  pair_production       ="<<pair_production       <<endl; // TAP20110402
+824a838,842
+> 
+> 	//serksnyte D, He anihilation
+> 	os<<" scaling="<<scaling<<endl;
+> 	os<<" sigmaSign="<<sigmaSign<<endl;
+> 
+1008a1027,1028
+> 	secondary_antihelium3 = 0;//serknyte
+> 	DM_antihelium3 =0;//koenigstorfer
+1040a1061,1063
+> 	//serknyte D, He anihilation
+> 	scaling 			 = 1; 	//decides if  results are scaled to our results
+> 	sigmaSign 			 = 1;
+Only in GalpropStephan/GALPROP_56.0.2870_Source/source: Galdef.cc~
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/Galdef.h GalpropStephan/GALPROP_56.0.2870_Source/source/Galdef.h
+187a188,189
+>   int secondary_antihelium3; 			//1=propagate, serksnyte
+>   int DM_antihelium3; 			//1=propagate, koenigstorfer
+245a248,251
+> 
+>   //serksnyte, D, He, anihilation
+>   int scaling;
+>   int sigmaSign;
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/Galprop.cc GalpropStephan/GALPROP_56.0.2870_Source/source/Galprop.cc
+15a16
+> #include <fstream>
+50a52
+> 	std::cout<<"Pos1"<<std::endl;
+51a54
+> 	std::cout<<"Pos2"<<std::endl;
+54a58,59
+> 
+> 
+74a80,81
+> 	galdef.secondary_antihelium3 =0;
+> 	galdef.DM_antihelium3 =0;//koenigstorfer
+100a108,109
+>     std::cout<<"  secondary_antihelium3  "<<galdef.secondary_antihelium3<<std::endl;
+>     std::cout<<"  DM_antiprotons  "<<galdef.DM_antiprotons<<std::endl;
+114a124
+> 	std::cout<<"Pos2"<<std::endl;
+117a128
+> 	std::cout<<"Pos3"<<std::endl;
+120a132
+> 	std::cout<<"Pos4"<<std::endl;
+123a136
+> 	std::cout<<"Pos5"<<std::endl;
+128a142
+> 	std::cout<<"Pos6"<<std::endl;
+129a144
+> 	std::cout<<"Pos7"<<std::endl;
+Only in GalpropStephan/GALPROP_56.0.2870_Source/source: Galprop.cc~
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/Galprop.h GalpropStephan/GALPROP_56.0.2870_Source/source/Galprop.h
+270a271
+>   int gen_secondary_antihelium3_source ( Particle &particle );
+Only in GalpropStephan/GALPROP_56.0.2870_Source/source: Galprop.h~
+Only in GalpropStephan/GALPROP_56.0.2870_Source/source: Makefile
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/SourceClass.cc GalpropStephan/GALPROP_56.0.2870_Source/source/SourceClass.cc
+35a36,37
+>          particle.name == "secondary_antiprotons" ||
+>          particle.name == "secondary_antihelium3" ||//serksnyte
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/create_galaxy.cc GalpropStephan/GALPROP_56.0.2870_Source/source/create_galaxy.cc
+14a15,16
+> 		INFO("STARTED");
+> 		std::cout<<"Pos1"<<std::endl;
+16a19
+>   INFO("Pos2");
+21a25
+>   INFO("Pos3");
+23c27,28
+<   if (2 == galdef.n_spatial_dimensions)
+---
+>   if (2 == galdef.n_spatial_dimensions){
+>   	INFO("Pos4");
+25a31,32
+>   	INFO("Pos5");
+>   }
+Only in GalpropStephan/GALPROP_56.0.2870_Source/source: create_galaxy.cc~
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/create_gcr.cc GalpropStephan/GALPROP_56.0.2870_Source/source/create_gcr.cc
+56a57,59
+>    if(galdef.secondary_antihelium3) n_species++;//serksnyte
+>    if(galdef.DM_antihelium3) n_species++;//koenigstorfer
+> 
+410c413,415
+<    }
+---
+>    // serksnyte start *****************************************************************************************************
+>  
+>       // SECONDARY ANTIHELIUM3
+411a417,470
+>       if(galdef.secondary_antihelium3)
+>       {
+>              name = "secondary_antihelium3";
+>              Z=-2;  A=3;
+>              const double t_half(0);
+> 
+>              gcr[i].primary_abundance=0.0;
+> 
+>              if(galdef.n_spatial_dimensions==2)
+>                    gcr[i].init(name,Z,A,K_electron,t_half,                       
+>                                galdef.r_min,  galdef.r_max, galdef.dr,  
+>                                galdef.z_min,  galdef.z_max, galdef.dz,
+>                                galdef.p_min,  galdef.p_max, galdef.p_factor,
+>                                galdef.Ekin_min,  galdef.Ekin_max, galdef.Ekin_factor,
+>                                galdef.p_Ekin_grid);  
+> 
+>               if(galdef.n_spatial_dimensions==3) {
+>                    FATAL("Error when creating gcr: the antiheliums3 for 3D are not implemented, aborting");
+>                    return 1;
+> 			  }
+>                                                                                                                                                                                                                                                                                                                                                                                   if(galdef.verbose >= 1)gcr[i].print();
+>               if(galdef.verbose >= 1)cout<<"============== completed creation of "<<gcr[i].name<<endl<<endl;
+>               i++;
+> 	  }
+> 				
+> 	if (galdef.DM_antihelium3)
+> 	 {
+> 			 name = "DM_antihelium3";
+> 			 Z=-2; A=3;
+> 			 const double t_half(0);
+> 
+> 
+> 			 gcr[i].primary_abundance=0.0;
+> 
+> 			 if(galdef.n_spatial_dimensions==2)
+> 					 gcr[i].init(name, Z, A, K_electron, t_half,
+> 								 galdef.r_min, galdef.r_max, galdef.dr, 
+> 								 galdef.z_min, galdef.z_max, galdef.dz,
+> 								 galdef.p_min, galdef.p_max, galdef.p_factor,
+> 								 galdef.Ekin_min, galdef.Ekin_max, galdef.Ekin_factor,
+> 								 galdef.p_Ekin_grid);
+> 			 if(galdef.n_spatial_dimensions==3){
+> 					 FATAL("Error when creating gcr: the DM_antihelium3 for 3D are not implemented, aborting");
+> 					 return 1;
+> 			 }
+> 
+> 			 if(galdef.verbose >=1)gcr[i].print();
+> 			 if(galdef.verbose >=1)cout<<"================ completed creation of "<<gcr[i].name<<endl<<endl;
+> 			 i++;
+> 	 }
+> 
+> 
+> 
+> 
+514c573,574
+<            gcr[i].name == "secondary_antiprotons") 
+---
+>            gcr[i].name == "secondary_antiprotons"||
+> 		   gcr[i].name == "secondary_antihelium3") 
+526c586
+<          if (galdef.secondary_antiprotons == 3) {
+---
+>          if (galdef.secondary_antiprotons <= 5) { //serksnyte
+558a619,635
+> 
+>       
+> 		if ( gcr[i].name == "secondary_antihelium3" ) {
+> 
+>             //Look for secondary antiprotons
+>             for ( int j = 0; j < n_species; ++j ) {
+> 
+>                if (j == i)
+>                   continue;
+>                
+>                if ( gcr[j].A == 3 && gcr[j].Z == -2 ) 
+>                   gcr[i].dependencies[&gcr[j]] = std::valarray<double>(0); //Not the cross section, just for dependency calculation
+> 
+>             }
+>          }
+> 
+> 
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/fill_transport_arrays.cc GalpropStephan/GALPROP_56.0.2870_Source/source/fill_transport_arrays.cc
+17a18,19
+> #include <iostream>
+> #include <fstream>
+21a24,25
+> 	ofstream myfile;
+> 	myfile.open ("pbarEnergyKinetic.txt");
+27a32
+>   double aDP_non, aDHe_non, aDP_ann,aDHe_ann,aHe3P_non,aHe3P_ann,aHe3He_non,aHe3He_ann;//serksnyte
+266a272,273
+> 	 if(Z2==-1 && A2==2) { A1 =-1; Z2 = 2; A2 = 4; }	//serksnyte
+> 	 if(Z2==-2 && A2==3) { A1 =-1; Z2 = 2; A2 = 4; std::cout<<"Calling right nucleon"<<std::endl; }	//serksnyte
+268c275,277
+< 		    &PP_inel,&PA_inel,&aPP_non,&aPA_non,&aPP_ann,&aPA_ann);
+---
+> 		    &PP_inel,&PA_inel,&aPP_non,&aPA_non,&aPP_ann,&aPA_ann, &aDP_non, &aDHe_non,
+> 			&aDP_ann, &aDHe_ann, &aHe3P_non, &aHe3He_non, &aHe3P_ann, &aHe3He_ann,
+> 			galdef.scaling, galdef.sigmaSign);
+313a323
+> 		 myfile<<particle.Ekin[ip]*1e-3<<"\n";//serksnyte
+315a326,332
+> 	 
+> 	 if("secondary_antihelium3"==particle.name || "DM_antihelium3"==particle.name)
+> 	 {
+> 			 std::cout<<particle.Ekin[ip]*1e-3<<" "<<aHe3P_ann<<std::endl;
+> 			 fragment_p = aHe3P_non+aHe3P_ann;
+> 			 fragment_He= aHe3He_non+aHe3He_ann;
+> 	 }
+564a582
+>    myfile.close();
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/gen_DM_source.cc GalpropStephan/GALPROP_56.0.2870_Source/source/gen_DM_source.cc
+25a26,27
+> #include <fstream>
+> #include <iostream>
+33a36,38
+> void printProfile(Particle& particle);
+> double He3bar_injection_spectrum(double Ekin, int InjectionSpectrum);
+> double InjectionSpectrum_PBH_antideuterons(double Ekin);
+44a50,51
+> 
+>   //injection spectrum for WW channel with DM mass 100GeV, from Ibarra's paper
+49c56
+<     DMmass  =galdef.DM_double2, // DM particle mass
+---
+>     DMmass  =galdef.DM_double2, // DM particle mass, in GeV
+52a60,61
+>   int DM_channel_3Hebar = galdef.DM_int9;
+>   int DM_channel_dbar = galdef.DM_int9;//cannot run dbar and 3Hebar together anyways, since they require different galdef files for the energy distributions. 
+72a82,86
+>  		cout<<"#######DM distribution #######"<<endl;
+>         for(int ir=0; ir<gcr[0].n_rgrid; ir++){
+> 				cout<<DM_profile(galaxy.r[ir], 0,0)<<", ";
+> 		}
+> 		cout<<endl<<"###### end of DM distribution #####"<<endl;
+83a98,162
+> 
+> 
+> 				 if(article.name=="DM_antihelium3"){
+> 						 /* if (2*massDM>=Etot) {
+> 						  * 	source.add = 1/2 * DM_profile(r)**2 /massDM*DMcsv * (spectra_ww + spectra_bb);
+> 						  * 	}
+> 						  * else {source.add = 0;}
+> 						  */
+> 						 //if(DMmass<particle.Etot[ip]*1e-3) {INFO("");continue;}//Was commented out since its included in the injection spectra. 
+> 						 //double sec_source = 1/2 * DMcs_v * pow(DM_profile_av(galaxy.r[ir], galaxy.z[iz], galaxy.dr, galaxy.dz, dzz)/DMmass, 2)*dbar_inj_spectrum[ip];//todo: fix p values
+> 						 double nucA = 1.;
+> 						 int InjectionSpectrum=0;
+> 						 if (particle.name=="DM_antihelium3") nucA=3.;
+> 						 if (particle.name=="DM_antihelium3") {
+> 							 InjectionSpectrum = DM_channel_3Hebar;
+> 							 if (InjectionSpectrum==3 || InjectionSpectrum==6 || InjectionSpectrum==7 || InjectionSpectrum==9 || InjectionSpectrum==10 || InjectionSpectrum==11 || InjectionSpectrum == 69) {
+> 									 switch (InjectionSpectrum){//cases 3-11 are from Eric Carlson et. al. Phys. Rev. D 89, 076005
+> 											case 3:
+> 													 DMmass = 100.;
+> 													 break;
+> 											case 6: 
+> 													 DMmass = 100.;
+> 													 break;
+> 											case 7:
+> 													 DMmass = 10.;
+> 													 break;
+> 											case 9:
+> 													 DMmass = 1000.;
+> 													 break;
+> 											case 10:
+> 													 DMmass = 1000.;
+> 													 break;
+> 											case 11:
+> 													 DMmass = 2000.;
+> 													 break;
+> 											case 69:
+> 													 DMmass = 67.; //This is from 
+> 													 break;
+> 									 }
+> 									 //cout<<"He3bar present, using dynamic injection spectrum from galdef file. Using dynamic DM mass of: "<<DMmass<<" GeV"<<endl;
+> 							 } else {cout<<endl<<endl<<endl<<"Error: invalid injection spectrum given for DM_int9"<<endl<<endl;}
+> 						 }
+> 											 double epsilon = 1.;//extra factor for antitriton decays, only important for he3bar
+> 
+> 						 //the factor 1.0e-3 is because our injection spectra are given in [GeV]^-1, but we need [MeGV]^-1
+> 						 
+> 						 double conv_factor = particle.p[ip] / (nucA*(particle.Ekin[ip]+938.));//this converts from d/dE to d/dp for the injection spectra, since that is needed for the propagation. The factor is p/E_tot
+> 						 
+> 						 
+> 						 double sec_source;
+> 						 if (particle.name=="DM_antihelium3") {sec_source = conv_factor*1.0e-3*0.5 * DMcs_v * pow(DM_profile_av(galaxy.r[ir], galaxy.z[iz], galaxy.dr, galaxy.dz, dzz)/DMmass, 2) * He3bar_injection_spectrum(particle.Ekin[ip]*1.0e-3, InjectionSpectrum) * C/Pi/4.;}
+> 
+> 
+> 
+> 						
+> 						particle.secondary_source_function.d2[ir][iz].s[ip] += sec_source;
+> 						// =0.5* (rho(r)/m_DM)**2 * <csv> * dN/dT (T) 
+> 
+> 
+> 
+> 
+> 
+> 
+> 				 }
+> 				 /*
+114a194
+> 			   */
+160,162d239
+< 
+< //**"****!****"****!****"****!****"****!****"****!****"****!****"****!****"****|
+< 
+168c245
+<      DMcs_v      =galdef.DM_double9, // DM <cross_sec*V> -thermally overaged, cm3 s-1 
+---
+>      DMcs_v      =galdef.DM_double9, // DM <cross_sec*V> -thermally overaged, cm3 s-1 , this should be of the order 1e-26, need to check exact number
+188c265
+< 		   if(galaxy.E_gamma[iEgamma]*1.e-3>DMmass) 
+---
+> 		   if(skipForTesting ||  (galaxy.E_gamma[iEgamma]*1.e-3>DMmass)) 
+193,194c270,271
+< 		   galaxy.DM_emiss.d2[ir][iz].s[iEgamma]= DMcs_v *DMbranching/(4.*Pi)// sr^-1 IMOS20060420
+< 		     *pow(DM_profile_av(galaxy.r[ir], galaxy.z[iz], galaxy.dr, galaxy.dz, dzz)/DMmass,2)
+---
+> 		   galaxy.DM_emiss.d2[ir][iz].s[iEgamma]= DMcs_v *DMbranching/(4.*Pi)// sr^-1 IMOS20060420 
+> 		     *1//*pow(DM_profile_av(galaxy.r[ir], galaxy.z[iz], galaxy.dr, galaxy.dz, dzz)/DMmass,2)
+219c296
+< 			 *pow(DM_profile_av(galaxy.x[ix], galaxy.y[ix], galaxy.z[iz], galaxy.dx, galaxy.dy, galaxy.dz, dzz)/DMmass,2)
+---
+> 			 *0//pow(DM_profile_av(galaxy.x[ix], galaxy.y[ix], galaxy.z[iz], galaxy.dx, galaxy.dy, galaxy.dz, dzz)/DMmass,2)
+229,231d305
+< 
+< //**"****!****"****!****"****!****"****!****"****!****"****!****"****!****"****|
+< 
+237,238c311,315
+<     rho0       =galdef.DM_double1; //local DM mass density
+<   int profile_key =galdef.DM_int0; //profile type
+---
+>     rho0       =galdef.DM_double1; //local DM mass density| As its used, this is actually the normalization factor and needs to reproduce a local DM density at the sun of about 0.39GeVcm-3. 
+>   int profile_key =galdef.DM_int0; //profile type, this cannot have value 99, otherwhise runnig galprop will fail. This value is used for a test run elsewhere
+> 	  double alpha = 0.17;
+> 	  double rho=rho0;
+>   //cout<<"DM profile key: "<<profile_key<<endl;
+241c318
+<     {
+---
+>     {//important ones are 0 (NFW), 1 (isothermal), and 11 (Einasto)
+243c320,322
+<       return(rho0*Rc/R*pow(1.+R/Rc,-2));
+---
+> 	  	Rc = 24.42; //As stated in Ibarra@s paper
+> 	  	rho = rho0 * (8.5/Rc*pow(1.+8.5/Rc,2));//This makes sure we use the correct normalization.
+>       return(rho/(R/Rc*pow(1.+R/Rc,2)));
+246,252c325,335
+<       return(rho0*(pow(Rc,2)+pow(Rsun,2))/(pow(Rc,2)+pow(R,2)));
+<       
+<     case 2:   //Evans profile
+<       return(rho0*pow(pow(Rc,2)+pow(Rsun,2),2)/(3.*pow(Rc,2)+pow(Rsun,2))
+< 	     *(3.*pow(Rc,2)+pow(R,2))/pow(pow(Rc,2)+pow(R,2),2));
+<       
+<     case 3:   //alternative profile
+---
+> 	  	Rc = 4.38;
+> 	  	rho = rho0*(pow(8.5, 2) + pow(Rc, 2));
+> 	  	return(rho /(pow(R, 2) +pow(Rc, 2)));//according to Ibarra paper arxiv.1209.5539v2
+>     
+>     case 3:   //Einasto profile
+>       Rc = 28.44;//according to Ibarra paper arxiv.1209.5539v2
+>       rho =rho0 / pow(2.71828, -2/alpha * (pow(8.5/Rc, alpha)-1));
+>       double res;
+>       res	= (rho*pow(2.71828, -2/alpha * (pow(R/Rc, alpha)-1)));
+>       return res;
+>     case 4:   //alternative profile
+257d339
+< 
+259,262c341,344
+< 	{
+< 	  FATAL("gen_DM_source: rho_darksusy() function is not defined");
+< 	  exit(0);
+< 	}
+---
+>         {
+>           FATAL("gen_DM_source: rho_darksusy() function is not defined");
+>           exit(0);
+>         }
+265,269c347
+<     default:
+<       return(rho0);
+<     }
+< }
+<   
+---
+>       
+271d348
+< //**.****|****.****|****.****|****.****|****.****|****.****|****.****|****.****|
+273c350,355
+<  double Galprop::DM_profile_av(double r,double z,double dr,double dz,double dzz)
+---
+>     default:
+>         cout<<"Defaulting in DM profile. This is bad..."<<endl;
+>         return(rho0);
+>       }
+>   }
+> double Galprop::DM_profile_av(double r,double z,double dr,double dz,double dzz)
+281,283c363,366
+< 	   if (rr<0.) continue;
+< 	   DM_profile_av_+=DM_profile(rr,0,zz);
+< 	   nuse++; 
+---
+> 	    if (rr<0.) continue;
+> 	    DM_profile_av_+=DM_profile(rr,0,zz);
+> 	    //cout<<"Check profile: "<<DM_profile(rr,0,zz)<<endl;
+> 	    nuse++; 
+285c368,369
+<      return (DM_profile_av_/nuse);
+---
+> 	  //cout<<"DM check: "<<DM_profile_av_<<endl;
+>     return (DM_profile_av_/nuse);
+287,290c371
+<  
+< //**.****|****.****|****.****|****.****|****.****|****.****|****.****|****.****|
+<  
+<  double Galprop::DM_profile_av(double x,double y,double z,double dx,double dy,double dz,double dzz)
+---
+> double Galprop::DM_profile_av(double x,double y,double z,double dx,double dy,double dz,double dzz)
+299a381
+> 	   	 //cout<<"Check profile: "<<DM_profile(xx,yy,zz)<<endl;
+301a384
+> 	 //cout<<"DM check: "<<DM_profile_av_<<endl;
+304c387,688
+<  
+---
+> double He3bar_injection_spectrum(double Ekin, int InjectionSpectrum){
+> 		double threshold = 100;
+> 		//This is given in total kinetic energy
+> 		double Ekin_values_tmp[24] = {1.389139705019461386e-03,
+> 2.470278535103650856e-03,
+> 4.392845456035934966e-03,
+> 7.811706625951745156e-03,
+> 1.389139705019461560e-02,
+> 2.470278535103651030e-02,
+> 4.392845456035934792e-02,
+> 7.811706625951746197e-02,
+> 1.389139705019461490e-01,
+> 2.470278535103651030e-01,
+> 4.392845456035935348e-01,
+> 7.811706625951745364e-01,
+> 1.389139705019461379e+00,
+> 2.470278535103651141e+00,
+> 4.392845456035935570e+00,
+> 7.811706625951745586e+00,
+> 1.389139705019461424e+01,
+> 2.470278535103651052e+01,
+> 4.392845456035934859e+01,
+> 7.811706625951745764e+01,
+> 1.389139705019461530e+02,
+> 2.470278535103651052e+02,
+> 4.392845456035935285e+02,
+> 7.811706625951744627e+02};
+> 		const float T[210] = {0.001, 0.0010471285480508996, 0.0010964781961431851, 0.0011481536214968829, 0.001202264434617413, 0.0012589254117941675, 0.0013182567385564075, 0.0013803842646028853, 0.001445439770745928, 0.0015135612484362087, 0.001584893192461114, 0.0016595869074375613, 0.0017378008287493763, 0.0018197008586099826, 0.0019054607179632482, 0.001995262314968879, 0.0020892961308540386, 0.002187761623949552, 0.0022908676527677724, 0.00239883291901949, 0.0025118864315095794, 0.0026302679918953813, 0.002754228703338166, 0.0028840315031266055, 0.003019951720402016, 0.0031622776601683794, 0.003311311214825911, 0.0034673685045253167, 0.003630780547701014, 0.0038018939632056127, 0.003981071705534973, 0.004168693834703355, 0.004365158322401661, 0.004570881896148752, 0.004786300923226385, 0.005011872336272725, 0.005248074602497723, 0.005495408738576248, 0.005754399373371567, 0.0060255958607435805, 0.00630957344480193, 0.006606934480075964, 0.006918309709189363, 0.007244359600749898, 0.007585775750291836, 0.007943282347242814, 0.008317637711026709, 0.008709635899560805, 0.009120108393559097, 0.009549925860214359, 0.01, 0.010471285480508996, 0.01096478196143185, 0.01148153621496883, 0.012022644346174132, 0.012589254117941675, 0.013182567385564075, 0.013803842646028852, 0.014454397707459272, 0.01513561248436208, 0.015848931924611134, 0.016595869074375606, 0.017378008287493755, 0.018197008586099836, 0.019054607179632473, 0.0199526231496888, 0.020892961308540396, 0.02187761623949553, 0.022908676527677734, 0.02398832919019491, 0.025118864315095808, 0.026302679918953815, 0.02754228703338166, 0.028840315031266057, 0.03019951720402016, 0.03162277660168379, 0.03311311214825911, 0.034673685045253165, 0.03630780547701014, 0.038018939632056124, 0.039810717055349734, 0.04168693834703355, 0.04365158322401661, 0.04570881896148752, 0.047863009232263824, 0.05011872336272722, 0.05248074602497726, 0.054954087385762455, 0.057543993733715694, 0.06025595860743578, 0.06309573444801933, 0.06606934480075961, 0.06918309709189366, 0.07244359600749903, 0.0758577575029184, 0.07943282347242818, 0.08317637711026708, 0.08709635899560805, 0.09120108393559097, 0.09549925860214359, 0.1, 0.10471285480508996, 0.1096478196143185, 0.1148153621496883, 0.12022644346174131, 0.12589254117941676, 0.13182567385564073, 0.13803842646028852, 0.1445439770745928, 0.15135612484362088, 0.15848931924611143, 0.16595869074375613, 0.17378008287493762, 0.18197008586099844, 0.19054607179632482, 0.19952623149688808, 0.20892961308540386, 0.21877616239495518, 0.22908676527677724, 0.239883291901949, 0.25118864315095796, 0.26302679918953814, 0.2754228703338166, 0.28840315031266056, 0.3019951720402016, 0.31622776601683794, 0.3311311214825911, 0.34673685045253166, 0.3630780547701014, 0.38018939632056126, 0.3981071705534973, 0.41686938347033553, 0.4365158322401661, 0.4570881896148752, 0.47863009232263853, 0.5011872336272725, 0.5248074602497729, 0.5495408738576248, 0.5754399373371573, 0.6025595860743581, 0.6309573444801936, 0.6606934480075958, 0.6918309709189363, 0.7244359600749899, 0.7585775750291835, 0.7943282347242814, 0.8317637711026709, 0.8709635899560806, 0.9120108393559097, 0.9549925860214359, 1.0, 1.0471285480508996, 1.096478196143185, 1.1481536214968828, 1.2022644346174132, 1.2589254117941675, 1.3182567385564075, 1.3803842646028852, 1.4454397707459279, 1.5135612484362087, 1.584893192461114, 1.6595869074375613, 1.7378008287493762, 1.8197008586099843, 1.9054607179632483, 1.9952623149688808, 2.089296130854041, 2.1877616239495516, 2.2908676527677723, 2.39883291901949, 2.5118864315095797, 2.6302679918953813, 2.7542287033381663, 2.8840315031266055, 3.019951720402016, 3.1622776601683795, 3.311311214825911, 3.4673685045253166, 3.630780547701014, 3.801893963205613, 3.981071705534973, 4.168693834703355, 4.365158322401661, 4.570881896148752, 4.786300923226385, 5.011872336272725, 5.248074602497728, 5.4954087385762485, 5.754399373371572, 6.025595860743581, 6.309573444801936, 6.606934480075965, 6.918309709189362, 7.244359600749899, 7.585775750291836, 7.943282347242813, 8.317637711026709, 8.709635899560805, 9.120108393559097, 9.549925860214358, 10.0, 10.471285480509007, 10.964781961431852, 11.481536214968841, 12.02264434617413, 12.589254117941662, 13.182567385564074, 13.803842646028839, 14.45439770745928, 15.135612484362072};
+> 		const float dNdT[210] = {5.1148010455333304e-14, 8.20012637087852e-14, 1.2970357459330536e-13, 2.0245240733804423e-13, 3.119130499119425e-13, 4.744426743472556e-13, 7.126454969631298e-13, 1.057311474149059e-12, 1.5497867561938496e-12, 2.2448149462558413e-12, 3.2138732529026084e-12, 4.549006373193435e-12, 6.367133345289154e-12, 8.8147691953588e-12, 1.2073065179304903e-11, 1.6363030702934828e-11, 2.1950759185595775e-11, 2.915244235600333e-11, 3.833892622876212e-11, 4.9939540873124e-11, 6.444492836545048e-11, 8.244376947635576e-11, 1.0453345512304915e-10, 1.3139229858613304e-10, 1.6375343744092086e-10, 2.0239772204601204e-10, 2.481442780570888e-10, 3.018388449525376e-10, 3.6434011014143556e-10, 4.365043743630493e-10, 5.191689913783942e-10, 6.133979359616312e-10, 7.197483290109306e-10, 8.388828199574016e-10, 9.713633320420283e-10, 1.1176333955580726e-09, 1.2780027410077634e-09, 1.4526347871833741e-09, 1.6415375638356588e-09, 1.8445584867923059e-09, 2.0613832616971676e-09, 2.294263945878486e-09, 2.540249796707286e-09, 2.7983632600346377e-09, 3.0674153410570786e-09, 3.346016823894463e-09, 3.6325943680524086e-09, 3.92541113683171e-09, 4.222591462468018e-09, 4.522148921842434e-09, 4.822017090300375e-09, 5.1144926082725326e-09, 5.402759370883603e-09, 5.685162926275921e-09, 5.9601801298529305e-09, 6.2264426928846034e-09, 6.482756440073292e-09, 6.728116073109155e-09, 6.9617154039137885e-09, 7.182953174386786e-09, 7.3914347139696125e-09, 7.58733300128727e-09, 7.770288525589857e-09, 7.940474315046142e-09, 8.098241899669644e-09, 8.244109381243992e-09, 8.378748319184889e-09, 8.502969970039441e-09, 8.61771138900871e-09, 8.724021863008253e-09, 8.82305009976789e-09, 8.930030254934154e-09, 9.031719169930786e-09, 9.128588709325364e-09, 9.221147846033234e-09, 9.309939747008606e-09, 9.395539122772284e-09, 9.47854988916107e-09, 9.559603185142907e-09, 9.639355786491223e-09, 9.718488951686448e-09, 9.813029971215104e-09, 9.907721384737627e-09, 1.0002349034234004e-08, 1.0096691000068173e-08, 1.0190517644364411e-08, 1.02835917049001e-08, 1.037566844223589e-08, 1.04664958427273e-08, 1.0555814879949078e-08, 1.0643359836915547e-08, 1.0719552738579435e-08, 1.079385315179953e-08, 1.0866567580576769e-08, 1.0938012750047194e-08, 1.1008515171427653e-08, 1.1078410801035508e-08, 1.1148044799013279e-08, 1.1217771393137676e-08, 1.1287953852928022e-08, 1.1358964579197628e-08, 1.1435133792708544e-08, 1.1512715836318431e-08, 1.1591866751587699e-08, 1.1672746804738911e-08, 1.1755520692362963e-08, 1.1840357769698317e-08, 1.1927432302581813e-08, 1.2016923744254793e-08, 1.2109017038302535e-08, 1.2203902949111005e-08, 1.2318456387959157e-08, 1.2435478623191978e-08, 1.2554134010966707e-08, 1.2673554164858166e-08, 1.2792837115582958e-08, 1.2911047094930494e-08, 1.3027214985559419e-08, 1.3140339478059299e-08, 1.3249388975009606e-08, 1.3353304278578904e-08, 1.3424704201549415e-08, 1.3490081867182587e-08, 1.3549997194179065e-08, 1.360502879439554e-08, 1.3655771628857125e-08, 1.3702834905149375e-08, 1.374684023274501e-08, 1.3788420050295148e-08, 1.382821633670218e-08, 1.3866879615920711e-08, 1.3941568125997658e-08, 1.4014518631725178e-08, 1.408413908745692e-08, 1.4148808392607823e-08, 1.4206881083459575e-08, 1.425669390482848e-08, 1.4296574287562943e-08, 1.4324850733928442e-08, 1.4339865083015101e-08, 1.4339986592565142e-08, 1.4261940664737582e-08, 1.4170154493746602e-08, 1.406702001155016e-08, 1.395489796195737e-08, 1.3836101690945893e-08, 1.3712884727451722e-08, 1.3587432051982366e-08, 1.3461854903797879e-08, 1.3338188946895717e-08, 1.321839559972266e-08, 1.3238156021957034e-08, 1.3231510078784015e-08, 1.3201711727895181e-08, 1.315211947189609e-08, 1.3086143005028186e-08, 1.3007197820508215e-08, 1.291866823626299e-08, 1.2823879011131473e-08, 1.2726075495112615e-08, 1.2628412088348315e-08, 1.254841130364308e-08, 1.246288952400964e-08, 1.2379261733520638e-08, 1.230474860795515e-08, 1.2246408593062045e-08, 1.221121127303944e-08, 1.2206151198176585e-08, 1.2239361022243312e-08, 1.23199443268598e-08, 1.2456290992801333e-08, 1.2658397965711103e-08, 1.2935962421196868e-08, 1.3298992628083748e-08, 1.3758425777170014e-08, 1.4324805875503306e-08, 1.5009241492572872e-08, 1.582117539821784e-08, 1.677060558723803e-08, 1.7863178799866083e-08, 1.910375524164622e-08, 2.0492207522393666e-08, 2.202717211494706e-08, 2.3707663004607136e-08, 2.5542814257325892e-08, 2.756695169747697e-08, 2.986474048915137e-08, 3.260534090117518e-08, 3.6071046744670644e-08, 4.067136471639707e-08, 4.6881202769904595e-08, 5.5069197188292395e-08, 6.516415158724141e-08, 7.621996504755845e-08, 8.60733577526973e-08, 9.14931848001313e-08, 8.92007991586932e-08, 7.768349301858103e-08, 5.878394730011731e-08, 3.7517055459922954e-08, 1.9547388532621826e-08, 8.019896162164923e-09, 2.489365952212358e-09, 5.592406673370185e-10, 8.662410196155816e-11, 8.816348424435993e-12, 5.976662681775897e-13, 4.100678727238292e-14, 4.326998506320628e-15, 1.0669860595230262e-15};
+> 		double Ekin_values[210];
+> 		double dN_dEkin_values [210];//The yield is normalized to total kinetic energy
+> 		if (InjectionSpectrum==69) {for (int i=0;i<210;i++) {Ekin_values[i]=T[i]; dN_dEkin_values[i]=dNdT[i];}}
+> 		if (!(InjectionSpectrum ==3 || InjectionSpectrum ==5 || InjectionSpectrum ==6 || InjectionSpectrum ==7 || InjectionSpectrum ==8 || InjectionSpectrum==9 || InjectionSpectrum==10 || InjectionSpectrum==11 || InjectionSpectrum ==69)) {FATAL("INVALID Injection spectrum identifier. Aborting.");exit(0);}
+> 		if (!(InjectionSpectrum==69)) { for (int i=0; i<24; i++) {Ekin_values[i] = Ekin_values_tmp[i];}; Ekin_values[24] =  7.9e2; dN_dEkin_values[24]=0; for (int i = 25; i<210;i++) { Ekin_values[i]=1e18; dN_dEkin_values[i]=0;}}//This basically makes it so that if the ranges are different, the interpolation gives 0 outside the given range for Ibarra's spectra. Shouldnt change much since it should give 0 anyways, but this just makes sure. 
+> 		switch (InjectionSpectrum)
+> 		{
+> 			case 3:		//Ibarra bb 100GeV
+> 					{
+> 				double dN_dEkin_values_tmp_2[24] = {0.000000000000000000e+00,
+> 0.000000000000000000e+00,
+> 0.000000000000000000e+00,
+> 0.000000000000000000e+00,
+> 1.280000000000000047e-08,
+> 4.335000000000000106e-08,
+> 7.514999999999999464e-08,
+> 1.131000000000000003e-07,
+> 1.464499999999999912e-07,
+> 1.137999999999999999e-07,
+> 1.078500000000000029e-07,
+> 7.435000000000000071e-08,
+> 4.880000000000000023e-08,
+> 2.520000000000000066e-08,
+> 8.900000000000000285e-09,
+> 2.100000000000000193e-09,
+> 2.500000000000000156e-10,
+> 0.000000000000000000e+00,
+> 0.000000000000000000e+00,
+> 0.000000000000000000e+00,
+> 0.000000000000000000e+00,
+> 0.000000000000000000e+00,
+> 0.000000000000000000e+00,
+> 0.000000000000000000e+00};
+> 				for (int i=0;i<24;i++) {dN_dEkin_values[i]=dN_dEkin_values_tmp_2[i];}
+> 				break;
+> 
+> 					}
+> 				case 5: 		//Ibarra bb 10GeV MAX (highest coalescence momentum)
+> 					{
+> 							double dN_dEkin_values_tmp_3[24] = {3.8545e-07,
+> 									5.419e-07,
+> 									9.7515e-07,
+> 									4.70685e-06,
+> 									1.900345e-05,
+> 									5.500005e-05,
+> 									4.79758e-05,
+> 									2.288765e-05,
+> 									7.31035e-06,
+> 									1.2767e-06,
+> 									6.52e-08,
+> 									2e-10,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00};
+> 				for (int i=0;i<24;i++) {dN_dEkin_values[i]=dN_dEkin_values_tmp_3[i];}
+> 				break;
+> 					}
+> 				case 6: //Ibarra WW 100GeV
+> 					{
+> 								double dN_dEkin_values_tmp_4[24] = {0e+00,
+> 									0e+00,
+> 									0e+00,
+> 									4.565e-08,
+> 									2.7625e-07,
+> 									4.841e-07,
+> 									8.248e-07,
+> 									1.0533e-06,
+> 									1.2765e-06,
+> 									1.1835e-06,
+> 									9.091e-07,
+> 									5.743e-07,
+> 									2.8245e-07,
+> 									1.023e-07,
+> 									2.65e-08,
+> 									3.25e-09,
+> 									1e-10,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00,
+> 									0e+00};
+> 							for (int i=0;i<24;i++) {dN_dEkin_values[i]=dN_dEkin_values_tmp_4[i];}
+> 							break;
+> 					}
+> 				case 7: //Ibarra bb 10GeV mean
+> 					{
+> 							double dN_dEkin_values_tmp_5[24] = {0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											2.525e-08,
+> 											5.28e-08,
+> 											2.855e-08,
+> 											2.31e-08,
+> 											1.805e-08,
+> 											1.075e-08,
+> 											3.4e-09,
+> 											1e-10,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00};
+> 							for (int i=0;i<24;i++) {dN_dEkin_values[i]=dN_dEkin_values_tmp_5[i];}
+> 							break;
+> 
+> 					}
+> 				case 8: //Ibarra WW 100GeV max
+> 					{
+> 							double dN_dEkin_values_tmp_6[24] = {0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											4.565e-08,
+> 											3.212e-07,
+> 											1.2825e-06,
+> 											2.66745e-06,
+> 											3.48215e-06,
+> 											4.0615e-06,
+> 											3.8587e-06,
+> 											2.98435e-06,
+> 											1.9026e-06,
+> 											9.272e-07,
+> 											3.406e-07,
+> 											8.375e-08,
+> 											9.4e-09,
+> 											2.5e-10,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00,
+> 											0e+00};
+> 							for (int i=0;i<24;i++) {dN_dEkin_values[i]=dN_dEkin_values_tmp_6[i];}
+> 							break;
+> 
+> 					}
+> 				case 9: //Ibarra bb 1TeV
+> 					{
+> 							double dN_dEkin_values_tmp_7[24] = {0.000000000000000000e+00,
+> 									0.000000000000000000e+00,
+> 											0.000000000000000000e+00,
+> 											0.000000000000000000e+00,
+> 											4.495000000000000215e-08,
+> 											6.860000000000000547e-08,
+> 											1.462500000000000026e-07,
+> 											1.530500000000000106e-07,
+> 											1.939999999999999902e-07,
+> 											2.145499999999999988e-07,
+> 											1.999000000000000099e-07,
+> 											1.816000000000000115e-07,
+> 											1.349500000000000007e-07,
+> 											8.670000000000000211e-08,
+> 											5.204999999999999955e-08,
+> 											2.679999999999999844e-08,
+> 											1.190000000000000068e-08,
+> 											4.350000000000000074e-09,
+> 											1.149999999999999958e-09,
+> 											2.000000000000000073e-10,
+> 											0.000000000000000000e+00,
+> 											0.000000000000000000e+00,
+> 											0.000000000000000000e+00,
+> 											0.000000000000000000e+00};
+> 							for (int i=0;i<24;i++) {dN_dEkin_values[i]=dN_dEkin_values_tmp_7[i];}
+> 							break;
+> 					}
+> 				case 10: //Ibarra WW 1TeV
+> 					{
+> 							double dN_dEkin_values_tmp_8[24] = {0.000000000000000000e+00,
+> 									0.000000000000000000e+00,
+> 											0.000000000000000000e+00,
+> 											0.000000000000000000e+00,
+> 											0.000000000000000000e+00,
+> 											0.000000000000000000e+00,
+> 											2.000000000000000125e-09,
+> 											1.099999999999999924e-09,
+> 											0.000000000000000000e+00,
+> 											6.999999999999999609e-10,
+> 											5.999999999999999960e-10,
+> 											2.249999999999999882e-09,
+> 											2.650000000000000155e-09,
+> 											7.250000000000000400e-09,
+> 											1.759999999999999878e-08,
+> 											2.949999999999999946e-08,
+> 											3.110000000000000055e-08,
+> 											1.600000000000000100e-08,
+> 											5.000000000000000105e-09,
+> 											8.000000000000000291e-10,
+> 											0.000000000000000000e+00,
+> 											0.000000000000000000e+00,
+> 											0.000000000000000000e+00,
+> 											0.000000000000000000e+00};
+> 							for (int i=0;i<24;i++) {dN_dEkin_values[i]=dN_dEkin_values_tmp_8[i];}
+> 							break;
+> 					}
+> 				case 11: //Ibarra WW 2TeV
+> 					{
+> 							double dN_dEkin_values_tmp_9[24] = {0.000000000000000000e+00,
+> 									0.000000000000000000e+00,
+> 									0.000000000000000000e+00,
+> 									0.000000000000000000e+00,
+> 									0.000000000000000000e+00,
+> 									0.000000000000000000e+00,
+> 									0.000000000000000000e+00,
+> 									0.000000000000000000e+00,
+> 									5.999999999999999960e-10,
+> 									3.499999999999999804e-10,
+> 									4.000000000000000146e-10,
+> 									4.499999999999999970e-10,
+> 									2.999999999999999980e-10,
+> 									1.149999999999999958e-09,
+> 									2.149999999999999813e-09,
+> 									6.149999999999999649e-09,
+> 									1.309999999999999984e-08,
+> 									1.584999999999999965e-08,
+> 									1.000000000000000021e-08,
+> 									3.300000000000000185e-09,
+> 									6.500000000000000301e-10,
+> 									0.000000000000000000e+00,
+> 									0.000000000000000000e+00,
+> 									0.000000000000000000e+00};
+> 							for (int i=0;i<24;i++) {dN_dEkin_values[i]=dN_dEkin_values_tmp_9[i];}
+> 							break;
+> 					}
+> 
+> 
+> 		
+> 		}
+> 
+> 		//#####Pseudocode#######
+> 		//loop over Ekin in while loop
+> 		//	if Ekin_value >Ekin: break;
+> 		//diff = Ekin_values[i]-Ekin_values[i-1];
+> 		//Ekin_value = Ekin_values[i];
+> 		//interpolation = (Ekin-Ekin_value) /diff;
+> 		//
+> 		//dN_dEkin_value = dN_dEkin_values[i-1] + (interpolation * (dN_dEkin_values[i]-dN_dEkin_values[i-1]));
+> 		//return dN_dEkin_value;
+> 
+> 		int index = 0;
+> 		int N = 210;//length of arrays
+> 		while(index<N and Ekin_values[index]<Ekin){
+> 				if(Ekin_values[index]>=Ekin) break;
+> 				index++;
+> 		}
+> 		//cout<<endl<<"index: "<<index<<endl;
+> 		
+> 		double difference = Ekin_values[index]-Ekin_values[index-1];
+> 		double Ekin_value = Ekin_values[index-1];
+> 		double interpolation = (Ekin-Ekin_value)/difference;
+> 
+> 		double dN_dEkin_value = dN_dEkin_values[index-1]+(interpolation* ( dN_dEkin_values[index]-dN_dEkin_values[index-1]));//The interpolation should make it better, but is switched off for now
+> 		//cout<<endl<<"#### dN_dEkin value: "<<dN_dEkin_value<<" ######"<<endl;
+> 		return dN_dEkin_value;
+> }
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/gen_luminosity.cc GalpropStephan/GALPROP_56.0.2870_Source/source/gen_luminosity.cc
+252c252,255
+< 	  "secondary_antiprotons" != gcr[i].name) {
+---
+> 	  "secondary_antiprotons" != gcr[i].name &&
+> 	  "secondary_antihelium3" != gcr[i].name &&//serksnyte
+> 	  "DM_antideuterons" != gcr[i].name &&
+> 	  "DM_antihelium3" != gcr[i].name &&
+381c384,392
+< 	  "secondary_antiprotons" != gcr[i].name) {
+---
+> 	  "secondary_antiprotons" != gcr[i].name &&
+> 	  "secondary_antideuterons" !=gcr[i].name && //serksnyte
+> 	  "secondary_antihelium3" != gcr[i].name &&//serksnyte
+> 	  "DM_antiprotons_WIMP" != gcr[i].name &&//koenigstorfer
+> 	  "DM_antideuterons" != gcr[i].name &&//koenigstorfer
+> 	  "DM_PBH_antideuterons" != gcr[i].name &&//koenigstorfer
+> 	  "DM_antideuterons_1" != gcr[i].name &&//koenigstorfer
+> 	  "DM_antihelium3" != gcr[i].name &&//koenigstorfer
+> 	  "DM_antideuterons_2" != gcr[i].name) {//koenigstorfer
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/gen_secondary_proton_source.cc GalpropStephan/GALPROP_56.0.2870_Source/source/gen_secondary_proton_source.cc
+29a30
+>    double aDP_non,aDHe_non,aDP_ann,aDHe_ann,aHe3P_non,aHe3P_ann,aHe3He_non,aHe3He_ann;
+52c53
+< 	processes::nucleon_cs(galdef.total_cross_section,gcr[iprotons].Ekin[ip]*1.e-3,A1,Z2,A2,&PP_inel,&PA_inel,&aPP_non,&aPA_non,&aPP_ann,&aPA_ann);  // IMOS20010511
+---
+> 	processes::nucleon_cs(galdef.total_cross_section,gcr[iprotons].Ekin[ip]*1.e-3,A1,Z2,A2,&PP_inel,&PA_inel,&aPP_non,&aPA_non,&aPP_ann,&aPA_ann, &aDP_non, &aDHe_non, &aDP_ann, &aDHe_ann,&aHe3P_non, &aHe3P_ann, &aHe3He_non, &aHe3He_ann, galdef.scaling, galdef.sigmaSign);  // IMOS20010511
+Only in GalpropStephan/GALPROP_56.0.2870_Source/source: gen_secondary_proton_source.cc~
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/gen_secondary_source.cc GalpropStephan/GALPROP_56.0.2870_Source/source/gen_secondary_source.cc
+101a102
+>   // serksnyte start *************************************************************************************************
+103c104,114
+<   /*if(strcmp(particle.name,"primary_electrons"    )==0)       // since primary
+---
+>   
+>   if (particle_name == "secondary_antihelium3") {
+> 
+>     gen_secondary_antihelium3_source(particle);
+>     INFO("Exit");
+>     return 0;
+> 
+>   }
+>   // serksnyte end *************************************************************************************************
+> 
+>  /*if(strcmp(particle.name,"primary_electrons"    )==0)       // since primary
+129c140,141
+<       particle_name == "DM_antiprotons") {
+---
+>       particle_name == "DM_antiprotons"||
+> 	  particle_name == "DM_antihelium3"||
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/gen_tertiary_antiproton_source.cc GalpropStephan/GALPROP_56.0.2870_Source/source/gen_tertiary_antiproton_source.cc
+29a30
+>    double aDP_non,aDHe_non,aDP_ann,aDHe_ann,aHe3P_non,aHe3P_ann,aHe3He_non,aHe3He_ann; // serksnyte
+52c53,56
+< 	processes::nucleon_cs(galdef.total_cross_section,gcr[ipbars].Ekin[ip]*1.e-3,A1,Z2,A2,&PP_inel,&PA_inel,&aPP_non,&aPA_non,&aPP_ann,&aPA_ann);  // IMOS20010511
+---
+> 			  processes::nucleon_cs(galdef.total_cross_section,gcr[ipbars].Ekin[ip]*1.e-3,A1,Z2,A2,&PP_inel,&PA_inel,&aPP_non,&aPA_non,
+> 							           &aPP_ann,&aPA_ann, &aDP_non, &aDHe_non, &aDP_ann, &aDHe_ann,&aHe3P_non, &aHe3P_ann, &aHe3He_non, &aHe3He_ann,
+> 									            galdef.scaling, galdef.sigmaSign);  // IMOS20010511 //serksnyte
+> 
+diff -r GalpropSource/GALPROP-56.0.2870-Source/source/store_gcr.cc GalpropStephan/GALPROP_56.0.2870_Source/source/store_gcr.cc
+60c60,61
+<       for (int i_species=0;i_species< naxes[3];i_species++)
+---
+>       for (int i_species=0;i_species< naxes[3];i_species++){
+> 			  cout<<"species name: "<<gcr[i_species].name<<endl;
+64a66
+> 				  cout<<"final flux: "<<gcr[i_species].cr_density.d2[ir][iz1+iz].s[ip]<<endl;
+74c76
+<     }
+---
+>     }}
+96c98,101
+<   
+---
+>   cout<<"Printing final array"<<endl;
+>   for (int i=0;i<array.size();i++){
+> 		  cout<<array[i]<<endl;
+>   }

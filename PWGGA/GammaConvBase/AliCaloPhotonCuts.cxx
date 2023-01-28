@@ -5894,6 +5894,12 @@ Bool_t AliCaloPhotonCuts::SetTrackMatchingCut(Int_t trackMatching)
       fEOverPMax = 1.75;
       fUseOnlyMatchedClusters = kTRUE;
       break;
+    case 28: // cut char 's' (very wide track matching window for isolation studies
+      if (!fUseDistTrackToCluster) fUseDistTrackToCluster=kTRUE;
+      fMaxDistTrackToClusterEta = 0.1;
+      fMinDistTrackToClusterPhi = -0.1;
+      fMaxDistTrackToClusterPhi = 0.1;
+      break;
 
     default:
       AliError(Form("Track Matching Cut not defined %d",trackMatching));
@@ -8272,13 +8278,13 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           }
         } else if(fCurrentMC==k17e2 || fCurrentMC == k18j3 || fCurrentMC == k16h3) {
           if(fClusterType==2){
-            energy /= FunctionNL_kSDM(energy, 0.988638, 3.25466, -6.67582, -0.0148077) ;
-            energy /= FunctionNL_kSDM(energy, 0.997783, 5.47875, -12.3443, 0.00287078) ;
+            energy /= FunctionNL_kSDM(energy, 0.993954, -4.16859, -0.635584, 1.00) ;
+            energy /= FunctionNL_kSDM(energy, 0.985372, -2.95738, -1.00188, 1.00) ;
           }
         } else if(fCurrentMC==k17l3b || fCurrentMC==k18j2 || fCurrentMC==k17l4b || fCurrentMC == k18b8 || fCurrentMC == k18b10 || fCurrentMC==k18l2) {
           if(fClusterType==2){
-            energy /= FunctionNL_kSDM(energy, 0.988638, 3.25466, -6.67582, -0.0148077) ;
-            energy /= FunctionNL_kSDM(energy, 0.997783, 5.47875, -12.3443, 0.00287078) ;
+            energy /= FunctionNL_kSDM(energy, 0.993954, -4.16859, -0.635584, 1.00) ;
+            energy /= FunctionNL_kSDM(energy, 0.985372, -2.95738, -1.00188, 1.00) ;
           }
         } else if( fCurrentMC==k18f3bc || fCurrentMC==k18b9b || fCurrentMC==k18b9c ) {
           if(fClusterType==1 ){
@@ -9425,6 +9431,9 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC16P1EPOS") == 0 ||
             namePeriod.CompareTo("LHC17d20b1") == 0 ||
             namePeriod.CompareTo("LHC17d20b2") == 0 )   return kPP13T16P1EPOS;
+  // pp 13 TeV Phojet production. Give it the same enum as Pythia as NonLin etc. should be the same
+  else if ( namePeriod.CompareTo("LHC16P1Pho") == 0 ||
+            namePeriod.CompareTo("LHC21k3b2") == 0)     return kPP13T16P1Pyt8;
   // pp 13 TeV 2016 JJ prod
   else if ( namePeriod.CompareTo("LHC16P1JJ") == 0 ||
             namePeriod.CompareTo("LHC17f8a") == 0 ||
@@ -9552,6 +9561,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
             namePeriod.CompareTo("LHC19i3b2") == 0 ||
             namePeriod.CompareTo("LHC19i3c1") == 0 ||
             namePeriod.CompareTo("LHC19i3c2") == 0 ) return kPP13T18P1JJTrigger;
+  // pp 13 TeV EPOS. Give it the same period enum as Pythia as treated completely the same
+  else if ( namePeriod.CompareTo("LHC20f14a") == 0 ) return kPP13T18P1Pyt8;
   // PbPb 5 TeV 2015 Gamma-Jet MC
   else if ( namePeriod.CompareTo("LHC18b11c") == 0 ) return  kLHC18b11c;
 

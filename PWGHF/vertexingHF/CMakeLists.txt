@@ -174,6 +174,7 @@ set(SRCS
   AliRDHFCutsKFP.cxx
   AliAnalysisTaskSEXicZero2XiPifromKFP.cxx
   AliAnalysisTaskSESigmacTopK0Spi.cxx
+  AliAnalysisTaskSEXic0SL.cxx
   AliAnalysisTaskSEXic0Semileptonic.cxx
   AliAnalysisTaskSELc2pKs0fromKFP.cxx
   AliAnalysisTaskCheckAODdAODMatching.cxx

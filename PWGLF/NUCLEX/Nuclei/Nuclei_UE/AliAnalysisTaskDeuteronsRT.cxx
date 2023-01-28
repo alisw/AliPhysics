@@ -102,6 +102,10 @@ hnsigmaTPC_deuterons_rap(nullptr),
 hnsigmaTPC_antideuterons_rap(nullptr),
 hnsigmaTOF_deuterons_rap(nullptr),
 hnsigmaTOF_antideuterons_rap(nullptr),
+hnsigmaTPC_deuterons_rap_Syst(nullptr),
+hnsigmaTPC_antideuterons_rap_Syst(nullptr),
+hnsigmaTOF_deuterons_rap_Syst(nullptr),
+hnsigmaTOF_antideuterons_rap_Syst(nullptr),
 h_deuterons_Gen(nullptr),
 h_antideuterons_Gen(nullptr),
 hnsigmaTPC_deuterons_Rec(nullptr),
@@ -119,7 +123,11 @@ hGeneratedAntiDeuterons_vs_Rapidity(nullptr),
 hReconstructedDeuterons_TPC_vs_Rapidity(nullptr),
 hReconstructedAntiDeuterons_TPC_vs_Rapidity(nullptr),
 hReconstructedDeuterons_TOF_vs_Rapidity(nullptr),
-hReconstructedAntiDeuterons_TOF_vs_Rapidity(nullptr)
+hReconstructedAntiDeuterons_TOF_vs_Rapidity(nullptr),
+hnsigmaTPC_deuterons_Rec_rap_Syst(nullptr),
+hnsigmaTPC_antideuterons_Rec_rap_Syst(nullptr),
+hnsigmaTOF_deuterons_Rec_rap_Syst(nullptr),
+hnsigmaTOF_antideuterons_Rec_rap_Syst(nullptr)
 {}
 //__________________________________________________________________________________________________________________________________________________
 AliAnalysisTaskDeuteronsRT::AliAnalysisTaskDeuteronsRT(const char *name):
@@ -183,6 +191,10 @@ hnsigmaTPC_deuterons_rap(nullptr),
 hnsigmaTPC_antideuterons_rap(nullptr),
 hnsigmaTOF_deuterons_rap(nullptr),
 hnsigmaTOF_antideuterons_rap(nullptr),
+hnsigmaTPC_deuterons_rap_Syst(nullptr),
+hnsigmaTPC_antideuterons_rap_Syst(nullptr),
+hnsigmaTOF_deuterons_rap_Syst(nullptr),
+hnsigmaTOF_antideuterons_rap_Syst(nullptr),
 h_deuterons_Gen(nullptr),
 h_antideuterons_Gen(nullptr),
 hnsigmaTPC_deuterons_Rec(nullptr),
@@ -200,7 +212,11 @@ hGeneratedAntiDeuterons_vs_Rapidity(nullptr),
 hReconstructedDeuterons_TPC_vs_Rapidity(nullptr),
 hReconstructedAntiDeuterons_TPC_vs_Rapidity(nullptr),
 hReconstructedDeuterons_TOF_vs_Rapidity(nullptr),
-hReconstructedAntiDeuterons_TOF_vs_Rapidity(nullptr)
+hReconstructedAntiDeuterons_TOF_vs_Rapidity(nullptr),
+hnsigmaTPC_deuterons_Rec_rap_Syst(nullptr),
+hnsigmaTPC_antideuterons_Rec_rap_Syst(nullptr),
+hnsigmaTOF_deuterons_Rec_rap_Syst(nullptr),
+hnsigmaTOF_antideuterons_Rec_rap_Syst(nullptr)
 {
     DefineInput (0, TChain::Class());
     DefineOutput(1, TList::Class());
@@ -261,6 +277,10 @@ AliAnalysisTaskDeuteronsRT::~AliAnalysisTaskDeuteronsRT()  {
     delete hnsigmaTPC_antideuterons_rap;
     delete hnsigmaTOF_deuterons_rap;
     delete hnsigmaTOF_antideuterons_rap;
+    delete hnsigmaTPC_deuterons_rap_Syst;
+    delete hnsigmaTPC_antideuterons_rap_Syst;
+    delete hnsigmaTOF_deuterons_rap_Syst;
+    delete hnsigmaTOF_antideuterons_rap_Syst;
     delete h_deuterons_Gen;
     delete h_antideuterons_Gen;
     delete hnsigmaTPC_deuterons_Rec;
@@ -279,6 +299,10 @@ AliAnalysisTaskDeuteronsRT::~AliAnalysisTaskDeuteronsRT()  {
     delete hReconstructedAntiDeuterons_TPC_vs_Rapidity;
     delete hReconstructedDeuterons_TOF_vs_Rapidity;
     delete hReconstructedAntiDeuterons_TOF_vs_Rapidity;
+    delete hnsigmaTPC_deuterons_Rec_rap_Syst;
+    delete hnsigmaTPC_antideuterons_Rec_rap_Syst;
+    delete hnsigmaTOF_deuterons_Rec_rap_Syst;
+    delete hnsigmaTOF_antideuterons_Rec_rap_Syst;
 }
 //__________________________________________________________________________________________________________________________________________________
 void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
@@ -366,8 +390,8 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
         
          //***************************  Nch_Transverse,  nsigma_{TPC},                 pt_TPC ***************************************************
          Int_t    bins_TPC[3] = {         nBins_Nch_Tr,           100,           nBins_pt_TPC };
-         Double_t xmin_TPC[3] = {            Nch_Tr[0],          -5.0,              pt_TPC[0] };
-         Double_t xmax_TPC[3] = { Nch_Tr[nBins_Nch_Tr],          +5.0,   pt_TPC[nBins_pt_TPC] };
+         Double_t xmin_TPC[3] = {            Nch_Tr[0],          -10.0,              pt_TPC[0] };
+         Double_t xmax_TPC[3] = { Nch_Tr[nBins_Nch_Tr],          +10.0,   pt_TPC[nBins_pt_TPC] };
          //***************************************************************************************************************************************
          
          hnsigmaTPC_deuterons_Toward         = new THnSparseF ("hnsigmaTPC_deuterons_Toward","",3, bins_TPC, xmin_TPC, xmax_TPC);
@@ -486,8 +510,8 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
          
          //********************************  Nch_Transverse,  nsigma_{TPC},                 pt_TPC, isyst ****************************************
          Int_t    bins_TPC_syst[4] = {         nBins_Nch_Tr,           100,           nBins_pt_TPC,    50 };
-         Double_t xmin_TPC_syst[4] = {            Nch_Tr[0],          -5.0,              pt_TPC[0],     0 };
-         Double_t xmax_TPC_syst[4] = { Nch_Tr[nBins_Nch_Tr],          +5.0,   pt_TPC[nBins_pt_TPC],    50 };
+         Double_t xmin_TPC_syst[4] = {            Nch_Tr[0],          -10.0,              pt_TPC[0],     0 };
+         Double_t xmax_TPC_syst[4] = { Nch_Tr[nBins_Nch_Tr],          +10.0,   pt_TPC[nBins_pt_TPC],    50 };
          //***************************************************************************************************************************************
          
          hnsigmaTPC_deuterons_Syst     = new THnSparseF ("hnsigmaTPC_deuterons_Syst","",4, bins_TPC_syst, xmin_TPC_syst, xmax_TPC_syst);
@@ -571,6 +595,44 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
         fOutputList -> Add (hnsigmaTPC_antideuterons_rap);
         fOutputList -> Add (hnsigmaTOF_deuterons_rap);
         fOutputList -> Add (hnsigmaTOF_antideuterons_rap);
+
+     
+         //**************************************      Rapidity,      nsigma_{TPC},                 pt_TPC,   isyst ****************************************
+         Int_t    bins_TPC_rap_syst[4] = {           nBins_rapidity,           100,           nBins_pt_TPC,     50 };
+         Double_t xmin_TPC_rap_syst[4] = {              rapidity[0],          -10.0,              pt_TPC[0],     0 };
+         Double_t xmax_TPC_rap_syst[4] = { rapidity[nBins_rapidity],          +10.0,   pt_TPC[nBins_pt_TPC],    50 };
+         //***************************************************************************************************************************************
+         
+         hnsigmaTPC_deuterons_rap_Syst     = new THnSparseF ("hnsigmaTPC_deuterons_rap_Syst","",4, bins_TPC_rap_syst, xmin_TPC_rap_syst, xmax_TPC_rap_syst);
+         hnsigmaTPC_antideuterons_rap_Syst = new THnSparseF ("hnsigmaTPC_antideuterons_rap_Syst","",4, bins_TPC_rap_syst, xmin_TPC_rap_syst, xmax_TPC_rap_syst);
+         hnsigmaTPC_deuterons_rap_Syst     -> GetAxis(0) -> Set(nBins_rapidity, rapidity);
+         hnsigmaTPC_antideuterons_rap_Syst -> GetAxis(0) -> Set(nBins_rapidity, rapidity);
+         hnsigmaTPC_deuterons_rap_Syst     -> GetAxis(2) -> Set(nBins_pt_TPC, pt_TPC);
+         hnsigmaTPC_antideuterons_rap_Syst -> GetAxis(2) -> Set(nBins_pt_TPC, pt_TPC);
+         hnsigmaTPC_deuterons_rap_Syst     -> Sumw2();
+         hnsigmaTPC_antideuterons_rap_Syst -> Sumw2();
+         fOutputList -> Add (hnsigmaTPC_deuterons_rap_Syst);
+         fOutputList -> Add (hnsigmaTPC_antideuterons_rap_Syst);
+
+         
+         //********************************            Rapidity,  nsigma_{TOF},                  pt_TOF, isyst ****************************************
+         Int_t    bins_TOF_rap_syst[4] = {           nBins_rapidity,           200,            nBins_pt_TOF,    50 };
+         Double_t xmin_TOF_rap_syst[4] = {              rapidity[0],          -10.0,              pt_TOF[0],     0 };
+         Double_t xmax_TOF_rap_syst[4] = { rapidity[nBins_rapidity],          +10.0,   pt_TOF[nBins_pt_TOF],    50 };
+         //***************************************************************************************************************************************
+         
+         hnsigmaTOF_deuterons_rap_Syst     = new THnSparseF ("hnsigmaTOF_deuterons_rap_Syst","",4, bins_TOF_rap_syst, xmin_TOF_rap_syst, xmax_TOF_rap_syst);
+         hnsigmaTOF_antideuterons_rap_Syst = new THnSparseF ("hnsigmaTOF_antideuterons_rap_Syst","",4, bins_TOF_rap_syst, xmin_TOF_rap_syst, xmax_TOF_rap_syst);
+         hnsigmaTOF_deuterons_rap_Syst     -> GetAxis(0) -> Set(nBins_rapidity, rapidity);
+         hnsigmaTOF_antideuterons_rap_Syst -> GetAxis(0) -> Set(nBins_rapidity, rapidity);
+         hnsigmaTOF_deuterons_rap_Syst     -> GetAxis(2) -> Set(nBins_pt_TOF, pt_TOF);
+         hnsigmaTOF_antideuterons_rap_Syst -> GetAxis(2) -> Set(nBins_pt_TOF, pt_TOF);
+         hnsigmaTOF_deuterons_rap_Syst     -> Sumw2();
+         hnsigmaTOF_antideuterons_rap_Syst -> Sumw2();
+         fOutputList -> Add (hnsigmaTOF_deuterons_rap_Syst);
+         fOutputList -> Add (hnsigmaTOF_antideuterons_rap_Syst);
+        
+        
     }
 
     
@@ -644,6 +706,45 @@ void AliAnalysisTaskDeuteronsRT::UserCreateOutputObjects()  {
         fOutputList -> Add(hReconstructedAntiDeuterons_TPC_vs_Rapidity);
         fOutputList -> Add(hReconstructedDeuterons_TOF_vs_Rapidity);
         fOutputList -> Add(hReconstructedAntiDeuterons_TOF_vs_Rapidity);
+
+        //Histograms for Syst. Uncertainties
+
+         //**************************************      Rapidity,      nsigma_{TPC},                 pt_TPC,   isyst ****************************************
+         Int_t    bins_TPC_rap_syst[4] = {           nBins_rapidity,           100,           nBins_pt_TPC,     50 };
+         Double_t xmin_TPC_rap_syst[4] = {              rapidity[0],          -10.0,              pt_TPC[0],     0 };
+         Double_t xmax_TPC_rap_syst[4] = { rapidity[nBins_rapidity],          +10.0,   pt_TPC[nBins_pt_TPC],    50 };
+         //***************************************************************************************************************************************
+         
+         hnsigmaTPC_deuterons_Rec_rap_Syst     = new THnSparseF ("hnsigmaTPC_deuterons_Rec_rap_Syst","",4, bins_TPC_rap_syst, xmin_TPC_rap_syst, xmax_TPC_rap_syst);
+         hnsigmaTPC_antideuterons_Rec_rap_Syst = new THnSparseF ("hnsigmaTPC_antideuterons_Rec_rap_Syst","",4, bins_TPC_rap_syst, xmin_TPC_rap_syst, xmax_TPC_rap_syst);
+         hnsigmaTPC_deuterons_Rec_rap_Syst     -> GetAxis(0) -> Set(nBins_rapidity, rapidity);
+         hnsigmaTPC_antideuterons_Rec_rap_Syst -> GetAxis(0) -> Set(nBins_rapidity, rapidity);
+         hnsigmaTPC_deuterons_Rec_rap_Syst     -> GetAxis(2) -> Set(nBins_pt_TPC, pt_TPC);
+         hnsigmaTPC_antideuterons_Rec_rap_Syst -> GetAxis(2) -> Set(nBins_pt_TPC, pt_TPC);
+         hnsigmaTPC_deuterons_Rec_rap_Syst     -> Sumw2();
+         hnsigmaTPC_antideuterons_Rec_rap_Syst -> Sumw2();
+         fOutputList -> Add (hnsigmaTPC_deuterons_Rec_rap_Syst);
+         fOutputList -> Add (hnsigmaTPC_antideuterons_Rec_rap_Syst);
+
+         
+         //********************************            Rapidity,      nsigma_{TOF},                  pt_TOF, isyst ****************************************
+         Int_t    bins_TOF_rap_syst[4] = {           nBins_rapidity,           200,            nBins_pt_TOF,    50 };
+         Double_t xmin_TOF_rap_syst[4] = {              rapidity[0],          -10.0,              pt_TOF[0],     0 };
+         Double_t xmax_TOF_rap_syst[4] = { rapidity[nBins_rapidity],          +10.0,   pt_TOF[nBins_pt_TOF],    50 };
+         //***************************************************************************************************************************************
+         
+         hnsigmaTOF_deuterons_Rec_rap_Syst     = new THnSparseF ("hnsigmaTOF_deuterons_Rec_rap_Syst","",4, bins_TOF_rap_syst, xmin_TOF_rap_syst, xmax_TOF_rap_syst);
+         hnsigmaTOF_antideuterons_Rec_rap_Syst = new THnSparseF ("hnsigmaTOF_antideuterons_Rec_rap_Syst","",4, bins_TOF_rap_syst, xmin_TOF_rap_syst, xmax_TOF_rap_syst);
+         hnsigmaTOF_deuterons_Rec_rap_Syst     -> GetAxis(0) -> Set(nBins_rapidity, rapidity);
+         hnsigmaTOF_antideuterons_Rec_rap_Syst -> GetAxis(0) -> Set(nBins_rapidity, rapidity);
+         hnsigmaTOF_deuterons_Rec_rap_Syst     -> GetAxis(2) -> Set(nBins_pt_TOF, pt_TOF);
+         hnsigmaTOF_antideuterons_Rec_rap_Syst -> GetAxis(2) -> Set(nBins_pt_TOF, pt_TOF);
+         hnsigmaTOF_deuterons_Rec_rap_Syst     -> Sumw2();
+         hnsigmaTOF_antideuterons_Rec_rap_Syst -> Sumw2();
+         fOutputList -> Add (hnsigmaTOF_deuterons_Rec_rap_Syst);
+         fOutputList -> Add (hnsigmaTOF_antideuterons_Rec_rap_Syst);
+
+        
     }
         
     
@@ -935,6 +1036,11 @@ void AliAnalysisTaskDeuteronsRT::ProcessRealEventRapidityDependence ()  {
     
         //Fill Histograms: Rapidity Dependence
         FillHistograms_RapidityDependence (track);
+
+        //Fill Histograms: Systematic Uncertainties
+        for (Int_t isyst=0 ; isyst<50 ; isyst++)
+            FillHistograms_Rapidity_Systematics (track,isyst);
+
     }
 }
 //__________________________________________________________________________________________________________________________________________________
@@ -1038,6 +1144,9 @@ void AliAnalysisTaskDeuteronsRT::ProcessSimEvent ()  {
             //Fill Histograms: Standard Cuts
             FillHistograms_StandardCuts_Sim (track);
             
+            //Fill Histograms: Systematic Uncertainties
+            for (Int_t isyst=0 ; isyst<50 ; isyst++)
+                FillHistograms_Rapidity_Systematics_Sim (track,isyst);                
         }
     }
     
@@ -1159,7 +1268,7 @@ Bool_t AliAnalysisTaskDeuteronsRT::IsDeuteronCandidate (AliESDtrack *track)  {
 
     
     //TPC Pre-selection
-    if (TMath::Abs(nsigmaTPC)>5.0) return isDeuteronCandidate;
+    if (TMath::Abs(nsigmaTPC)>10.0) return isDeuteronCandidate;
     
     //Selection on TOF hit & Track Length
     if (pt>1.5 && (!hasTOFhit)) return isDeuteronCandidate;
@@ -1350,7 +1459,7 @@ void AliAnalysisTaskDeuteronsRT::FillHistograms_RapidityDependence (AliESDtrack 
     Double_t rap       = TMath::Abs(GetRapidity (track));
     
     
-    //Track Track Quality Cuts
+    //Track Quality Cuts
     if (!PassedTrackQualityCuts_Syst(track,0)) return;
        
         
@@ -1555,6 +1664,107 @@ void AliAnalysisTaskDeuteronsRT::FillHistograms_Systematics_Sim  (AliESDtrack *t
        
     if (charge>0) hnsigmaTOF_deuterons_Rec_Syst     -> Fill (pt,isyst);
     if (charge<0) hnsigmaTOF_antideuterons_Rec_Syst -> Fill (pt,isyst);
+    
+}
+//__________________________________________________________________________________________________________________________________________________
+void AliAnalysisTaskDeuteronsRT::FillHistograms_Rapidity_Systematics  (AliESDtrack *track, Int_t isyst)  {
+    
+    //Variables
+    Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kDeuteron);
+    Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kDeuteron);
+    Double_t pt        = track->Pt();
+    Double_t charge    = track->Charge();
+    Double_t DCAxy     = GetTransverseDCA (track);
+    Double_t DCAz      = GetLongitudinalDCA (track);
+    Bool_t   hasTOFhit = (track->GetStatus() & AliVTrack::kTOFout) && (track->GetStatus() & AliVTrack::kTIME);
+    Double_t length    = track->GetIntegratedLength();
+    Double_t rap       = TMath::Abs(GetRapidity (track));
+
+    
+    //Track Quality Cuts
+    if (!PassedTrackQualityCuts_Syst(track,isyst)) return;
+        
+    //DCA_{z} Cut
+    if (TMath::Abs(DCAz)>1.0) return;
+    
+    
+    //Vectors
+    Double_t xTPC[4] = { rap, nsigmaTPC, pt, static_cast<Double_t>(isyst) };
+    Double_t xTOF[4] = { rap, nsigmaTOF, pt, static_cast<Double_t>(isyst) };
+    
+
+    //DCA_{xy} Cut
+    if (TMath::Abs(DCAxy)>0.1) return;
+
+
+    //TPC-Only Analysis
+    if (pt<1.5)  {
+        
+        if (charge>0) hnsigmaTPC_deuterons_rap_Syst     -> Fill (xTPC);
+        if (charge<0) hnsigmaTPC_antideuterons_rap_Syst -> Fill (xTPC);
+    }
+
+
+    //TOF Analysis
+    if (!hasTOFhit) return;
+    if (length<350.0) return;
+    if (TMath::Abs(nsigmaTPC)>3.0) return;
+    if (pt<1.0) return;
+        
+            
+    if (charge>0) hnsigmaTOF_deuterons_rap_Syst     -> Fill (xTOF);
+    if (charge<0) hnsigmaTOF_antideuterons_rap_Syst -> Fill (xTOF);
+    
+}
+//__________________________________________________________________________________________________________________________________________________
+void AliAnalysisTaskDeuteronsRT::FillHistograms_Rapidity_Systematics_Sim  (AliESDtrack *track, Int_t isyst)  {
+    
+    //Variables
+    Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kDeuteron);
+    Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kDeuteron);
+    Double_t pt        = track->Pt();
+    Double_t charge    = track->Charge();
+    Double_t DCAxy     = GetTransverseDCA (track);
+    Double_t DCAz      = GetLongitudinalDCA(track);
+    Bool_t   hasTOFhit = (track->GetStatus() & AliVTrack::kTOFout) && (track->GetStatus() & AliVTrack::kTIME);
+    Double_t length    = track->GetIntegratedLength();
+    Double_t rap       = TMath::Abs(GetRapidity (track));
+
+    //MC Particle
+    AliMCParticle *particle = (AliMCParticle*) fMCEvent->GetTrack(TMath::Abs(track->GetLabel()));
+       
+    //Track Track Quality Cuts
+    if (!PassedTrackQualityCuts_Syst(track,isyst)) return;
+       
+        
+    //DCA cuts
+    if (TMath::Abs(DCAz)>1.0)   return;
+    if (TMath::Abs(DCAxy)>0.1) return;
+    if (!particle->IsPhysicalPrimary())     return;
+
+
+    //Vectors
+    Double_t xTPC[4] = { rap, nsigmaTPC, pt, static_cast<Double_t>(isyst) };
+    Double_t xTOF[4] = { rap, nsigmaTOF, pt, static_cast<Double_t>(isyst) };
+
+
+    //TPC-Only Analysis
+    if (pt<1.5)  {
+      
+        if (charge>0) hnsigmaTPC_deuterons_Rec_rap_Syst     -> Fill (xTPC);
+        if (charge<0) hnsigmaTPC_antideuterons_Rec_rap_Syst -> Fill (xTPC);
+    }
+        
+        
+    //TOF Analysis
+    if (!hasTOFhit) return;
+    if (length<350.0) return;
+    if (TMath::Abs(nsigmaTPC)>3.0) return;
+    if (pt<1.0) return;
+       
+    if (charge>0) hnsigmaTOF_deuterons_Rec_rap_Syst     -> Fill (xTOF);
+    if (charge<0) hnsigmaTOF_antideuterons_Rec_rap_Syst -> Fill (xTOF);
+
     
 }
 //__________________________________________________________________________________________________________________________________________________

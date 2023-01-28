@@ -241,6 +241,7 @@ void AliAnalysisTaskPtCorr::UserCreateOutputObjects()
     if(fNbootstrap) {
       fpt->InitializeSubsamples(fNbootstrap);
     }
+    fpt->SetEventWeight(fEventWeight);
     fCorrList->Add(fV0MMulti);
     if(fIsMC) {
       fNchTrueVsRec = new TH2D("NchTrueVsRec",";Nch (MC-true); Nch (MC-reco)",fNMultiBins,fMultiBins,fNMultiBins,fMultiBins);

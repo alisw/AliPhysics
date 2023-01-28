@@ -29,6 +29,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
 # Sources - alphabetical order
 set(SRCS
   AliAnalysisTaskParticleEff.cxx
+  AliAnalysisTaskParticleEffpbpb5020.cxx
   )
 
 # Headers from sources

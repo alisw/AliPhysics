@@ -30,11 +30,8 @@ AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult():
   fRunNumberQA(NULL)
 {
   // Default constructor
-  fEvMult = new TH1D("EvMult", "Event Multiplicity", 5001, -0.5, 5000.5);
-  fMultSumPt = new TH2D("EvMultSumPt",
-                        "Event Multiplicity vs Total pT",
-                        5001, -0.5, 5000.5,
-                        1000, 0.0, 100.0);
+  fEvMult = new TH1D("EvMult", "Event Multiplicity", 20001, -0.5, 20000.5);
+  fMultSumPt = new TH2D("EvMultSumPt", "Event Multiplicity vs Total pT",5001, -0.5, 5000.5,1000, 0.0, 100.0);
 }
 
 AliFemtoCutMonitorEventMult::AliFemtoCutMonitorEventMult(const char *aName, int nBins, double multMax):

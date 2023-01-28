@@ -124,20 +124,23 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   // #########################################################
   // #########################################################
   // Set minimum and maximum values of generated tracks. Only used to save computing power.
-  task->SetKinematicCuts(minPtCut, maxPtCut, minEtaCut, maxEtaCut);
+  task->SetKinematicCuts(PtMin, PtMax, EtaMin, EtaMax);
 
   // #########################################################
   // #########################################################
   // Set Binning
-  if (usePtVector == true) {
+  if (UsePtVec == true) {
 
-    const Int_t    nBinsPhi = 60; 
+    const Int_t    nBinsPt = 73; 
     const Double_t PtBins[] = {
-    0.00,0.050, 0.075, 0.080, 0.085, 0.090, 0.095, 0.10, 0.105, 0.11, 0.115, 0.12, 0.125, 0.13,
-    0.135, 0.14, 0.145, 0.15, 0.155, 0.16, 0.165, 0.170, 0.175, 0.180, 0.185, 0.190, 0.195, 0.20,
-    0.21,0.22,0.23,0.24,0.25, 0.26,0.27,0.28,0.29,0.30,0.32,0.34,0.36,0.38,0.40,0.42, 0.44,0.46, 
-    0.48, 0.49,0.52,0.54,0.56,0.58,0.60,0.65,0.70,0.75,0.80,0.90,1.00,1.10,1.20,
-    1.40,1.60,1.80,2.00,2.40,2.80,3.20,3.70,4.50,6.00,8.00,10.0
+    0.00,0.050, 0.075, 0.080, 0.085, 0.090, 0.095, 0.10, 0.105, 0.11,
+    0.115, 0.12, 0.125, 0.13,0.135, 0.14, 0.145, 0.15, 0.155, 0.16,
+    0.165, 0.170, 0.175, 0.180, 0.185, 0.190, 0.195, 0.20,0.21,0.22,
+    0.23,0.24,0.25, 0.26,0.27,0.28,0.29,0.30,0.32,0.34,
+    0.36,0.38,0.40,0.42, 0.44,0.46,0.48, 0.49,0.52,0.54,
+    0.56,0.58,0.60,0.65,0.70,0.75,0.80,0.90,1.00,1.10,
+    1.20,1.40,1.60,1.80,2.00,2.40,2.80,3.20,3.70,4.50,
+    6.00,8.00,10.0
     };
     std::vector<double> ptBinsVec;
     for (unsigned int i = 0; i < nBinsPt+1; ++i){
@@ -150,7 +153,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   task->SetPhiBinsLinear  (0, TMath::TwoPi(), (Int_t)gROOT->ProcessLine("GetNbinsPhi()"));
   task->SetThetaBinsLinear(0, TMath::TwoPi(), (Int_t)gROOT->ProcessLine("GetNbinsTheta()"));
 
-  if (usePairVector == true) {
+  if (UsePairVec == true) {
 
     const Double_t MeeBins[] = { 0.00,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,
                                0.10,0.11,0.12,0.13,0.14,0.15,0.16,0.17,0.18,0.19,
@@ -176,7 +179,7 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
     task->SetMassBins(meeBinsVec);
   }
   else task->SetMassBinsLinear (0., 4.0, (Int_t)gROOT->ProcessLine("GetNbinsMee()"));
-  if (usePairVector == true) {
+  if (UsePairVec == true) {
 
     const Double_t PteeBins[] = {
                                 0.00,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,
@@ -234,13 +237,14 @@ AliAnalysisTaskElectronEfficiencyV2* AddTask_jjung_efficiency(
   // #########################################################
   // Set Cocktail weighting
   task->SetDoCocktailWeighting(DoCocktailWeighting);
-  task->SetCocktailWeighting(CocktailFilename);
-  task->SetCocktailWeightingFromAlien("/alice/cern.ch/user/j/jjung/supportFiles/" + CocktailFilename);
-  task->SetCocktailWeighting(CocktailFilename,"/alice/cern.ch/user/j/jjung/supportFiles/" + CocktailFilename);
+  task->SetCocktailWeighting(cocktailFilename);
+  task->SetCocktailWeightingFromAlien("/alice/cern.ch/user/j/jjung/supportFiles/" + cocktailFilename);
+  task->SetCocktailWeighting(cocktailFilename,"/alice/cern.ch/user/j/jjung/supportFiles/" + cocktailFilename);
 
   // #########################################################
   // #########################################################
   // Pairing related config
+  Bool_t DoPairing = kTRUE;
   task->SetDoPairing(DoPairing);
   task->SetULSandLS(DoULSLS);
   //task->SetDeactivateLS(DeactivateLS);

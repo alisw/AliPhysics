@@ -68,7 +68,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         FillAcceptanceHistograms();
   
   void         FillShowerShapeControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
-                                                Int_t mcIndex, Int_t noverlaps) ;
+                                                Int_t mcIndex, Int_t noverlaps, Bool_t narrow) ;
   
   void         FillTrackMatchingControlHistograms(AliCaloTrackParticleCorrelation  * pCandidate,
                                                   Int_t mcIndex) ;
@@ -113,6 +113,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   void         SwitchOnFillHistogramsPerSM()         { fFillPerSMHistograms = kTRUE  ; }
   void         SwitchOffFillHistogramsPerSM()        { fFillPerSMHistograms = kFALSE ; }  
   
+  void         SwitchOnFillHistogramsPerSMInCone()   { fFillPerSMHistogramsInCone = kTRUE  ; }
+  void         SwitchOffFillHistogramsPerSMInCone()  { fFillPerSMHistogramsInCone = kFALSE ; }
+
   void         SwitchOnFillHistogramsPerTCardIndex()  { fFillPerTCardIndexHistograms = kTRUE  ; }
   void         SwitchOffFillHistogramsPerTCardIndex() { fFillPerTCardIndexHistograms = kFALSE ; }  
   
@@ -231,6 +234,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   Bool_t   fFillTMHisto;                              ///<  Fill track matching plots.
   Bool_t   fFillSSHisto;                              ///<  Fill Shower shape plots. Activate it only on photon analysis, enables filling of wide/narrow shape histograms.
   Bool_t   fFillPerSMHistograms ;                     ///<  Fill histograms per SM
+  Bool_t   fFillPerSMHistogramsInCone ;               ///<  Fill histograms per SM, tracks or clusters pt or sum pt in cone
   Bool_t   fFillPerTCardIndexHistograms ;             ///<  Fill histograms per T-Card index.
   Int_t    fTCardIndex;                               ///<  Store here the T-Card index per trigger cluster.
   Bool_t   fFillEMCALRegionHistograms ;               ///<  Fill histograms in EMCal slices
@@ -338,6 +342,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH2F *   fhPtEventPlane[2][2] ;                      //!<! Number of non/isolated narrow/wide particles event plane angle vs pT.
   TH2F *   fhPtNLocMax[2][2] ;                         //!<! Number of non/isolated narrow/wide particles vs NLM in cluster.
   TH3F *   fhPtEtaPhi[2][2] ;                          //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles.
+  TH3F *   fhPtEtaPhiG1[2][2] ;                        //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles. G1 events froom trigger decision.
+  TH3F *   fhPtEtaPhiG2[2][2] ;                        //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles. G2 events froom trigger decision.
+  TH3F *   fhPtEtaPhiL0[2][2] ;                        //!<! cluster pt vs eta vs phi of non/isolated narraw/wide particles. L0 events froom trigger decision.
   TH1F *   fhPtExoTrigger[2];                          //!<! Number of non/isolated exotic cluster vs pT.
   
   TH2F *   fhPtPerTrigger   [2][2] ;                   //!<! Number of non/isolated narrow/wide particles vs pT vs calo trigger from maker.
@@ -514,7 +521,10 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   TH3F *   fhPtLambda0Cent[2];                         //!<! Shower shape of (non) isolated photons (do not apply SS cut previously) vs centrality.
 
   // Selection parameters per supermodule number
-  TH2F *   fhPtPerSM[2];                               //!<! Input particle pT distribution per SM
+  TH2F *   fhPtPerSM[2][2];                            //!<! Input particle pT distribution per SM
+  TH2F *   fhPtPerSMTriggerG1[2][2];                   //!<! Input particle pT distribution per SM when trigger decision is G1
+  TH2F *   fhPtPerSMTriggerG2[2][2];                   //!<! Input particle pT distribution per SM when trigger decision is G2
+  TH2F *   fhPtPerSMTriggerL0[2][2];                   //!<! Input particle pT distribution per SM when trigger decision is L0
   TH2F *   fhPtLambda0PerSM[2][20];                    //!<! Shower shape of (non) isolated photons per supermodule (do not apply shower shape cut previously).
   TH2F *   fhPtLambda0PerSMNCellCut[2][20];            //!<! Shower shape of (non) isolated photons per supermodule (do not apply shower shape cut previously). N cell with weight > 4
   TH2F *   fhPtNCellPerSM       [2][20];               //!<! N cells with weight in cluster per cluster pT, per SM
@@ -734,7 +744,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,54) ;
+  ClassDef(AliAnaParticleIsolation,55) ;
   /// \endcond
 
 } ;

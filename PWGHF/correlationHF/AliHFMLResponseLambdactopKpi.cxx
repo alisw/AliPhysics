@@ -93,8 +93,8 @@ void AliHFMLResponseLambdactopKpi::SetMapOfVariables(AliAODRecoDecayHF *cand, do
     
     for (int iProng = 0; iProng < 3; iProng++)
     {
-        AliAODTrack *dautrack = dynamic_cast<AliAODTrack *>(cand->GetDaughter(iProng));
-	fVars[Form("pt_prong%d", iProng)] = dautrack->Pt();
+    AliAODTrack *dautrack = dynamic_cast<AliAODTrack *>(cand->GetDaughter(iProng));
+	//fVars[Form("pt_prong%d", iProng)] = dautrack->Pt();
 	
         double nsigmaTPCpi = -999., nsigmaTPCK = -999., nsigmaTPCp = -999., nsigmaTOFpi = -999., nsigmaTOFK = -999., nsigmaTOFp = -999.;
         pidHF->GetnSigmaTPC(dautrack, 2, nsigmaTPCpi);
@@ -117,9 +117,9 @@ void AliHFMLResponseLambdactopKpi::SetMapOfVariables(AliAODRecoDecayHF *cand, do
     fVars["sig_vert"] = dynamic_cast<AliAODRecoDecayHF3Prong *>(cand)->GetSigmaVert();
     fVars["max_norm_d0d0exp"] = AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(cand, bfield);
     
-    for(unsigned int iProng1 = 0; iProng1 < 3; iProng1++){
+    /* for(unsigned int iProng1 = 0; iProng1 < 3; iProng1++){
             fVars[Form("imp_par_prong%d", iProng1)] = cand->Getd0Prong(iProng1);
-            }
+    } */
     std::cout <<"d_len =============================="<<fVars["d_len"]<<std::endl;           
     std::cout <<"d_len_xy =============================="<<fVars["d_len_xy"]<<std::endl;       
     std::cout <<"norm_dl_xy =============================="<<fVars["norm_dl_xy"]<<std::endl;
@@ -127,9 +127,9 @@ void AliHFMLResponseLambdactopKpi::SetMapOfVariables(AliAODRecoDecayHF *cand, do
     std::cout <<"cos_p_xy ==========================="<<fVars["cos_p_xy"]<<std::endl;
     std::cout <<"imp_par_xy =============================="<<fVars["imp_par_xy"]<<std::endl;
     std::cout <<"dca ================================"<<fVars["dca"]<<std::endl;    
-    std::cout <<"pt_prong0 =========================="<<fVars["pt_prong0"]<<std::endl;    
+    /*std::cout <<"pt_prong0 =========================="<<fVars["pt_prong0"]<<std::endl;    
     std::cout <<"pt_prong1 =========================="<<fVars["pt_prong1"]<<std::endl;    
-    std::cout <<"pt_prong2 =========================="<<fVars["pt_prong2"]<<std::endl;    
+    std::cout <<"pt_prong2 =========================="<<fVars["pt_prong2"]<<std::endl;    */ 
     std::cout <<"nsigComb_Pi_0 =========================="<<fVars["nsigComb_Pi_0"]<<std::endl;    
     std::cout <<"nsigComb_K_0 =========================="<<fVars["nsigComb_K_0"]<<std::endl;    
     std::cout <<"nsigComb_Pr_0 =========================="<<fVars["nsigComb_Pr_0"]<<std::endl;    
@@ -141,8 +141,8 @@ void AliHFMLResponseLambdactopKpi::SetMapOfVariables(AliAODRecoDecayHF *cand, do
     std::cout <<"nsigComb_Pr_2 =========================="<<fVars["nsigComb_Pr_2"]<<std::endl;    
     std::cout <<"sig_vert =========================="<<fVars["sig_vert"]<<std::endl;
     std::cout <<"max_norm_d0d0exp =========================="<<fVars["max_norm_d0d0exp"]<<std::endl;        
-    std::cout <<"imp_par_prong0 =========================="<<fVars["imp_par_prong0"]<<std::endl;    
+    /* std::cout <<"imp_par_prong0 =========================="<<fVars["imp_par_prong0"]<<std::endl;    
     std::cout <<"imp_par_prong1 =========================="<<fVars["imp_par_prong1"]<<std::endl;    
-    std::cout <<"imp_par_prong2 =========================="<<fVars["imp_par_prong2"]<<std::endl;
+    std::cout <<"imp_par_prong2 =========================="<<fVars["imp_par_prong2"]<<std::endl; */
     
 }

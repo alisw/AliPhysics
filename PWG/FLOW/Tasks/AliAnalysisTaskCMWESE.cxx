@@ -1235,6 +1235,11 @@ void AliAnalysisTaskCMWESE::UserExec(Option_t *)
     centSPD1 =  fMultSel->GetMultiplicityPercentile("CL1");
   }
   fCent  = centV0M; // default
+
+  // Trigger check 
+  // if (mask&AliVEvent::kCentral && fCent>10.0) return;
+  // if (mask&AliVEvent::kSemiCentral && (fCent < 30.0 || fCent>50.0) ) return;
+
   if (fCentEst.EqualTo("V0M")) fCent  = centV0M;
   else if (fCentEst.EqualTo("SPD0")) fCent  = centSPD0;
   else if (fCentEst.EqualTo("SPD1")) fCent  = centSPD1;
@@ -1886,7 +1891,7 @@ bool AliAnalysisTaskCMWESE::RejectEvtTFFit(AliAODEvent* fAOD)
   if (fAOD->IsIncompleteDAQ()) return false;
 
   if (fPUSyst==1){
-     if (nclsDif > 100000)//can be varied to 150000, 200000
+     if (nclsDif > 200000)//can be varied to 150000, 200000
       return false;
   }
 

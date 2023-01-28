@@ -68,7 +68,9 @@ class AliHFMLVarHandler : public TObject
         void SetIsSignalWoQuark(bool isSignalWoQuark);
         void SetBeautyMotherPt(double ptB) {fPtBMother = ptB;}
         void SetBeautyMotherPDG(double pdg) {fPDGBMother = pdg;}
-        void FillTree();
+        virtual void FillTree();
+        void ResetCandType() {fCandType = 0;}
+        int GetCandType() const {return fCandType;}
 
         //to be called for each event
         void SetGlobalEventVariables(AliAODEvent* event);

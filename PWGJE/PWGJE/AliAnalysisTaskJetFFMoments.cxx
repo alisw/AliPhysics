@@ -44,6 +44,7 @@
 #include "AliLog.h"
 #include "AliGenPythiaEventHeader.h"
 #include "AliGenHerwigEventHeader.h"
+#include "AliGenHepMCEventHeader.h"
 #include "AliInputEventHandler.h"
 #include "AliAODMCHeader.h"
 #ifndef __CINT__
@@ -264,6 +265,9 @@ AliAnalysisTaskJetFFMoments::AliAnalysisTaskJetFFMoments():
     fHistListJets[iJetBranch] = 0x0;
   }
 
+   fh2JetPtResponse = 0x0;
+   fhnJetPtResponse = 0x0;
+  
   Double_t pi = TMath::Pi();
   Double_t halfWidth = (fFFMNMax - fFFMNMin)/(fFFMMomMax-1)/2.;
   Double_t nAxisMin = fFFMNMin - halfWidth;
@@ -854,6 +858,8 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
  // Kinematics
  AliGenPythiaEventHeader *pythiaHeader = GetPythiaHeader();
  AliGenHerwigEventHeader *HerwigHeader = GetHerwigHeader();
+ AliGenHepMCEventHeader  *HepMCEventHeader = GetHepMCEventHeader();
+
  if(pythiaHeader) {
    TArrayF t;
    pythiaHeader->PrimaryVertex(t);
@@ -877,7 +883,19 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
    fh1vZSelect->Fill(t.GetAt(2));
    fh1Xsec->Fill("<#sigma>",  HerwigHeader->Weight());
    fh1Trials->Fill("#sum{ntrials}",HerwigHeader->Trials());
+  } else if(HepMCEventHeader) {
+   Double_t position[3]={0,0,0};
+   MCEvent()->GetPrimaryVertex()->GetXYZ(position); 
+   Float_t xvtx = position[0];
+   Float_t yvtx = position[1];
+   Float_t zvtx = position[2];
+   Float_t r2   = yvtx*yvtx+xvtx*xvtx;
+   if(!(TMath::Abs(zvtx)<fVtxZMax&&r2<fVtxR2Max)) return;
+   fh1vZSelect->Fill(position[2]);
+   fh1Xsec->Fill("<#sigma>", HepMCEventHeader->sigma_gen());
+   fh1Trials->Fill("#sum{ntrials}",HepMCEventHeader->ntrials());
   }
+
 
 
   else  fh1vZSelect->Fill(0);
@@ -1153,6 +1171,8 @@ void AliAnalysisTaskJetFFMoments::UserExec(Option_t */*option*/)
           uRecJet->Pt() - jetBkgPtRec , uRecJet->Eta(), uRecJet->Phi(), uRecJet->EffectiveAreaCharged(), (Double_t)( (TRefArray *) (uRecJet->GetRefTracks()) )->GetEntries(),
         };
         for(Int_t iAxis=0; iAxis<5; iAxis++) fh2MatchedJets[iAxis]->Fill(jetEntriesMatch[iAxis], jetEntriesMatch[iAxis+5]);
+        
+        FillResponse(uRecJet,uGenJet);
 
         if(listUsedJets[0]->GetEntries()) {
           //At least we need rec and gen, if no-matching, we MATCH the rec_jet and gen_jet with same number
@@ -2387,7 +2407,16 @@ void AliAnalysisTaskJetFFMoments::CreateHistos()
 
   } // End loop on iJetBranch
 
-  //events
+   const Int_t dim = 2;
+   Int_t nbins[dim]={200,200};
+   Double_t xmin[dim]={0,0};
+   Double_t xmax[dim]={200,200};
+   
+   //response
+   fh2JetPtResponse = new TH2D("fh2JetPtResponse", "Jet Pt response", 200, 0, 200, 200, 0, 200); 
+   fhnJetPtResponse = new THnSparseF("fhnJetPtResponse", "GenJets:RecJets", dim, nbins, xmin, xmax);
+
+  //event
   if( fkIsPbPb ) {
     fHistList->Add(fh1CentralitySelect);
     fHistList->Add(fh1CentralityPhySel);
@@ -2463,6 +2492,10 @@ void AliAnalysisTaskJetFFMoments::CreateHistos()
 	fHistListJets[iJetBranch]->Add(fp2JetFFM_Sub[iJetBranch]);
 	fHistListJets[iJetBranch]->Add(fp2JetFFM_Imp[iJetBranch]);
   }
+
+   //response
+   fHistListJets[1]->Add(fh2JetPtResponse);
+   fHistListJets[1]->Add(fhnJetPtResponse);
 
   if (fDebug != 0) printf("AliAnalysisTaskJetFFMoments::CreateHistos() end!\n");
 }
@@ -3385,4 +3418,72 @@ AliGenHerwigEventHeader *AliAnalysisTaskJetFFMoments::GetHerwigHeader()  {
      }
     }
     return HerwigHeader;
+}
+
+// __________________________________________________________________________________________________________________________________________________________
+AliGenHepMCEventHeader *AliAnalysisTaskJetFFMoments::GetHepMCEventHeader()  {
+     if(!MCEvent()) return 0x0;
+     AliGenHepMCEventHeader *HepMCEventHeader = dynamic_cast<AliGenHepMCEventHeader*>(MCEvent()->GenEventHeader());
+     if(fDebug>10) HepMCEventHeader->Dump();
+     if (!HepMCEventHeader) {
+       // Check if AOD
+       if(fAOD) {
+       AliAODMCHeader* aodMCH = dynamic_cast<AliAODMCHeader*>(fAOD->FindListObject(AliAODMCHeader::StdBranchName()));
+       if (aodMCH) {
+         for (UInt_t i = 0;i<aodMCH->GetNCocktailHeaders();i++) {
+           HepMCEventHeader = dynamic_cast<AliGenHepMCEventHeader*>(aodMCH->GetCocktailHeader(i));
+           if (HepMCEventHeader) break;
+        }
+       }
+     }
+    }
+    return HepMCEventHeader;
+}
+
+//___________________________________________________________________________________
+void AliAnalysisTaskJetFFMoments::FillResponse(AliAODJet* recJet, AliAODJet* genJet)
+{
+  // match tracks of two jets, using MC labels (-> does not work for data tracks)	
+
+  if(fAOD){ //added for kine
+  TClonesArray *tca = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
+  if(!tca) return;
+  }
+
+  Double_t jetPtRec = recJet ? recJet->Pt() : -1; 
+  Double_t jetPtGen = genJet ? genJet->Pt() : -1;
+
+  if(recJet && !genJet){
+    std::cout<<" FillResponse: rec jet w/o gen ! "<<std::endl;
+  }
+
+
+  // get tracks in jet
+  TList* recjettracklist = new TList();
+  Bool_t isBadJet     = kFALSE;
+  if(recJet)  GetJetTracksTrackrefs(recjettracklist, recJet, GetJetMinLTrackPt(), GetJetMaxTrackPt(), isBadJet);
+
+  if(fJetMinnTracks>0 && recjettracklist->GetSize()<=fJetMinnTracks) isBadJet = kTRUE;
+      
+  if(isBadJet){
+    recjettracklist->Clear();
+    recJet = 0;  // treat as inefficiency in response  
+  }
+
+  TList* genjettracklist = new TList();
+  if(genJet)  GetJetTracksTrackrefs(genjettracklist, genJet, GetJetMinLTrackPt(), GetJetMaxTrackPt(), isBadJet);
+ 
+  // -----------
+  // jet response
+
+  if(recJet){
+
+    if(genJet){
+      Double_t entriesRespJetPt[] = {jetPtRec,jetPtGen};
+
+      fhnJetPtResponse->Fill(entriesRespJetPt);
+      fh2JetPtResponse->Fill(jetPtGen,jetPtRec);     
+    }
+  }
+
 }

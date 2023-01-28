@@ -127,12 +127,9 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fh3trackDensity(0x0)
    ,fh2TrackDef(0x0)
    ,fRandom(0)
-   
    ,fOnlyLeadingJets(kFALSE)
    ,fMCPtHardCut(-1.)
-   
    ,fAnaUtils(0)
-   
    // PID framework
    ,fNumInclusivePIDtasks(0)
    ,fNumJetPIDtasks(0)
@@ -152,11 +149,12 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction()
    ,fBetaSoftDrop(0.0)
    ,fZSoftDrop(0.1)
    ,fUseFastSimulations(kFALSE)
+   ,fastSimulationParameters("")
    ,fEffFunctions(0x0)
    ,fFastSimEffFactor(1.0)
    ,fFastSimRes(0.002)
    ,fFastSimResFactor(1.0)
-	 ,fFFChange(0)
+   ,fFFChange(AliAnalysisTaskIDFragmentationFunction::kNoChange)
    ,fRCTrials(1)
    ,fUEMethods(0x0)
    ,fUseRealJetArea(kTRUE)
@@ -248,11 +246,12 @@ AliAnalysisTaskIDFragmentationFunction::AliAnalysisTaskIDFragmentationFunction(c
   ,fBetaSoftDrop(0.0)
   ,fZSoftDrop(0.1)
   ,fUseFastSimulations(kFALSE) 
+  ,fastSimulationParameters("")
   ,fEffFunctions(0x0)
   ,fFastSimEffFactor(1.0)
   ,fFastSimRes(0.002)
   ,fFastSimResFactor(1.0)  
-	,fFFChange(0)
+  ,fFFChange(AliAnalysisTaskIDFragmentationFunction::kNoChange)
   ,fRCTrials(1)
   ,fUEMethods(0x0)
   ,fUseRealJetArea(kTRUE)
@@ -631,57 +630,63 @@ void AliAnalysisTaskIDFragmentationFunction::UserCreateOutputObjects()
   
   PostData(1, fCommonHistList);
   
+  // TODO should be moved to more appropriate interface
+  ResetEffFunctions();
+  InitialiseFastSimulationFunctions();
+  
   AliDebugStream(1) << "Done" << std::endl;
 }
 
 //_______________________________________________
-void AliAnalysisTaskIDFragmentationFunction::Init()
+void AliAnalysisTaskIDFragmentationFunction::InitialiseFastSimulationFunctions()
 {
-  // Initialization
-  AliDebugStream(1) << "Start Init" << std::endl;
-  
   if (fUseFastSimulations && !fEffFunctions) {
+    AliDebugStream(2) << "Fast Simulation parameters: " << fastSimulationParameters << std::endl;
     fEffFunctions = new TF1*[2*AliPID::kSPECIES];
     
-    //For electrons
-    const Int_t parts_e = 4;
-    Double_t cuts_e[parts_e-1] = {0.6,3.2,8.0};
-    Int_t nparameters_e[parts_e] = {7,5,3,2};
-    AliPieceWisePoly* pwp_e = new AliPieceWisePoly(parts_e,cuts_e,nparameters_e,0,50,0x0,2);
-    TF1* func_e = new TF1("func_e",pwp_e,0,50,pwp_e->GetNOfParam());
-    Double_t parameters_e[11] = {-1.22427e+00, 2.25003e+01, -9.00154e+01, 1.42536e+02, 1.98605e+00, -2.33708e+02, 1.74505e+02, -4.40750e-01, 1.43504e-01, -1.59226e-02, -6.14939e-04};
-    func_e->SetParameters(parameters_e);
-    fEffFunctions[2*AliPID::kElectron] = fEffFunctions[2*AliPID::kElectron+1] = func_e;
-    
-    //For protons
-    const Int_t parts_p = 6;
-    Double_t cuts_p[parts_p-1] = {0.4,1.6,2.5,8.0,12.0};
-    Int_t nparameters_p[parts_p] = {5,4,4,2,5,2};
-    AliPieceWisePoly* pwp_p = new AliPieceWisePoly(parts_p,cuts_p,nparameters_p,0,50,0x0,2);
-    TF1* func_p = new TF1("func_p",pwp_p,0,50,pwp_p->GetNOfParam());
-    Double_t parameters_p[12] = {-1.04124e+01, 1.72024e+02, -1.02722e+03, 2.61164e+03, -2.35742e+03, -6.20212e-01, 1.47330e-01, 8.64180e-02, -5.27106e-03, -1.91588e-01, 1.21507e-02, -2.85315e-04};
-    func_p->SetParameters(parameters_p);  
-    fEffFunctions[2*AliPID::kProton] = fEffFunctions[2*AliPID::kProton+1] = func_p;   
+    if (fastSimulationParameters != "") {
+      AliPieceWisePoly::ReadFSParametersFromString(fastSimulationParameters, fEffFunctions);
+    } else {
+      //For electrons
+      const Int_t parts_e = 4;
+      Double_t cuts_e[parts_e-1] = {0.6,3.2,8.0};
+      Int_t nparameters_e[parts_e] = {7,5,3,2};
+      AliPieceWisePoly* pwp_e = new AliPieceWisePoly(parts_e,cuts_e,nparameters_e,0,50,0x0,2);
+      TF1* func_e = new TF1("func_e",pwp_e,0,50,pwp_e->GetNOfParam());
+      Double_t parameters_e[11] = {-1.22427e+00, 2.25003e+01, -9.00154e+01, 1.42536e+02, 1.98605e+00, -2.33708e+02, 1.74505e+02, -4.40750e-01, 1.43504e-01, -1.59226e-02, -6.14939e-04};
+      func_e->SetParameters(parameters_e);
+      fEffFunctions[2*AliPID::kElectron] = fEffFunctions[2*AliPID::kElectron+1] = func_e;
+      
+      //For protons
+      const Int_t parts_p = 6;
+      Double_t cuts_p[parts_p-1] = {0.4,1.6,2.5,8.0,12.0};
+      Int_t nparameters_p[parts_p] = {5,4,4,2,5,2};
+      AliPieceWisePoly* pwp_p = new AliPieceWisePoly(parts_p,cuts_p,nparameters_p,0,50,0x0,2);
+      TF1* func_p = new TF1("func_p",pwp_p,0,50,pwp_p->GetNOfParam());
+      Double_t parameters_p[12] = {-1.04124e+01, 1.72024e+02, -1.02722e+03, 2.61164e+03, -2.35742e+03, -6.20212e-01, 1.47330e-01, 8.64180e-02, -5.27106e-03, -1.91588e-01, 1.21507e-02, -2.85315e-04};
+      func_p->SetParameters(parameters_p);  
+      fEffFunctions[2*AliPID::kProton] = fEffFunctions[2*AliPID::kProton+1] = func_p;   
 
-    //For kaons
-    const Int_t parts_k = 5;
-    Double_t cuts_k[parts_k-1] = {0.4,1.2,6,15};
-    Int_t nparameters_k[parts_k] = {3,3,5,4,2};  
-    AliPieceWisePoly* pwp_k = new AliPieceWisePoly(parts_k,cuts_k,nparameters_k,0,50,0x0,2);
-    TF1* func_k = new TF1("func_k",pwp_k,0,50,pwp_k->GetNOfParam());
-    Double_t parameters_k[9] = {-7.18856e-01, 5.10339e+00, -5.44263e+00, -4.80959e-01, 9.57122e-02, -1.80916e-02, 1.15958e-03, -6.17673e-03, 1.66119e-04};
-    func_k->SetParameters(parameters_k);   
-    fEffFunctions[2*AliPID::kKaon] = fEffFunctions[2*AliPID::kKaon+1] = func_k;
+      //For kaons
+      const Int_t parts_k = 5;
+      Double_t cuts_k[parts_k-1] = {0.4,1.2,6,15};
+      Int_t nparameters_k[parts_k] = {3,3,5,4,2};  
+      AliPieceWisePoly* pwp_k = new AliPieceWisePoly(parts_k,cuts_k,nparameters_k,0,50,0x0,2);
+      TF1* func_k = new TF1("func_k",pwp_k,0,50,pwp_k->GetNOfParam());
+      Double_t parameters_k[9] = {-7.18856e-01, 5.10339e+00, -5.44263e+00, -4.80959e-01, 9.57122e-02, -1.80916e-02, 1.15958e-03, -6.17673e-03, 1.66119e-04};
+      func_k->SetParameters(parameters_k);   
+      fEffFunctions[2*AliPID::kKaon] = fEffFunctions[2*AliPID::kKaon+1] = func_k;
 
-  //   For pions
-    const Int_t parts_pi = 6;
-    Double_t cuts_pi[parts_pi-1] = {0.8,1.6,3.0,10.0,12.0};
-    Int_t nparameters_pi[parts_pi] = {9,4,4,3,3,2};   
-    AliPieceWisePoly* pwp_pi = new AliPieceWisePoly(parts_pi,cuts_pi,nparameters_pi,0,50,0x0,2);
-    TF1* func_pi = new TF1("func_pi",pwp_pi,0,50,pwp_pi->GetNOfParam());
-    Double_t parameters_pi[15] = {-1.87482e-01, 8.99878e+00, -3.34776e+01, 5.73258e+01, -2.41936e+01, -4.02440e+01, 1.61212e+01, 5.09543e+01, -3.49975e+01, 7.70485e-02, -4.42996e-02, 3.16051e-01, -3.93133e-02, -5.79754e-04, 1.34446e-04};
-    func_pi->SetParameters(parameters_pi);   
-    fEffFunctions[2*AliPID::kPion] = fEffFunctions[2*AliPID::kPion+1] = func_pi;                                                              
+    //   For pions
+      const Int_t parts_pi = 6;
+      Double_t cuts_pi[parts_pi-1] = {0.8,1.6,3.0,10.0,12.0};
+      Int_t nparameters_pi[parts_pi] = {9,4,4,3,3,2};   
+      AliPieceWisePoly* pwp_pi = new AliPieceWisePoly(parts_pi,cuts_pi,nparameters_pi,0,50,0x0,2);
+      TF1* func_pi = new TF1("func_pi",pwp_pi,0,50,pwp_pi->GetNOfParam());
+      Double_t parameters_pi[15] = {-1.87482e-01, 8.99878e+00, -3.34776e+01, 5.73258e+01, -2.41936e+01, -4.02440e+01, 1.61212e+01, 5.09543e+01, -3.49975e+01, 7.70485e-02, -4.42996e-02, 3.16051e-01, -3.93133e-02, -5.79754e-04, 1.34446e-04};
+      func_pi->SetParameters(parameters_pi);   
+      fEffFunctions[2*AliPID::kPion] = fEffFunctions[2*AliPID::kPion+1] = func_pi;       
+    }
   }
 }
 
@@ -814,7 +819,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   AliVEvent* evtForCentDetermination = handler->InheritsFrom("AliAODInputHandler") ? fAOD : InputEvent();
   
   Int_t multiplicity;
-  if (evtForCentDetermination->ClassName() == "AliESDEvent")
+  if (strcmp(evtForCentDetermination->ClassName(), "AliESDEvent") == 0)
     multiplicity = ((AliESDEvent*)evtForCentDetermination)->GetNumberOfTPCTracks();
   else
     multiplicity = evtForCentDetermination->GetNumberOfESDTracks();
@@ -1325,11 +1330,10 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   
   AliDebugStream(2) << "Process jets..." << std::endl;
   
-  AliDebugStream(2) << "Process Jets - efficiency, particle level.." << std::endl;
-  
   AliJetContainer* mcJetContainer = GetJetContainer(GetNameMCParticleJetContainer()); 
   
   if (fUseJetPIDtask && mcJetContainer && !isPileUpForAllJetPIDTasks && !fUseFastSimulations) {
+    AliDebugStream(2) << "Process Jets - efficiency, particle level.." << std::endl;
     
     if (fOnlyLeadingJets)
       mcJetContainer->SortArray();    
@@ -1367,6 +1371,7 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
   // Fast simulations 
   // TODO: Extend code so it can run all fast simulations in the same train (reducing output numbers and complexity)
   if (fUseJetPIDtask && mcJetContainer && !isPileUpForAllJetPIDTasks && fUseFastSimulations) {
+    AliDebugStream(2) << "Do fast simulation" << std::endl;
     for (Int_t i=0;i<fNumJetPIDtasks;i++) {
       if (!isPileUpJetPIDtask[i]) {
         AliFJWrapper* wrapper = new AliFJWrapper("wrapper", "wrapper");        
@@ -1376,8 +1381,22 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
         Double_t jetMinEta = mcJetContainer->GetMinEta() + mcJetContainer->GetJetRadius(); 
         AliHelperClassFastSimulation* fastSimulation = new AliHelperClassFastSimulation(fEffFunctions, fFastSimEffFactor, fFastSimResFactor, fFastSimRes, jetMinPt, jetMaxEta, jetMinEta, wrapper);
 
-        Int_t maxLabel = 0;
+        Int_t nextFreeIndex;
+        
+        if (fFFChange == kLowPtEnhancement) {
+          Int_t maxLabel = 0;
+          for (auto part : mcParticleContainer->accepted()) {
+            if (!part)
+              continue;
+                
+            maxLabel = TMath::Max(maxLabel, part->GetLabel());
+          }
+            
+          nextFreeIndex = maxLabel + 1;
+        }
 
+        AliDebugStream(4) << "Free index: " << nextFreeIndex << std::endl;
+        
         for(auto jet : mcJetContainer->accepted()) {
           if(!jet) 
             continue;
@@ -1396,10 +1415,11 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
           Double_t leadingTrackPt = leadingTrack->Pt();
           Double_t smallestTrackPt = leadingTrackPt;
           
-          for(Int_t it=0; it<jet->GetNumberOfTracks(); ++it) {
-            AliAODMCParticle*   track = dynamic_cast<AliAODMCParticle*>(jet->Track(it));
-            if (track != leadingTrack && fFFChange == 2) {
-              //Low pT depletion
+          const Int_t nOfJetTracks = jet->GetNumberOfTracks();
+          
+          for(Int_t it=0; it<nOfJetTracks; ++it) {
+            AliAODMCParticle* track = dynamic_cast<AliAODMCParticle*>(jet->Track(it));
+            if (track != leadingTrack && fFFChange == kLowPtDepletion) {
               if (fRandom->Rndm() > 0.75)
                 continue;
             }
@@ -1407,27 +1427,26 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
             
             fastSimulation->AddParticle(track);
             
-            if (fFFChange == 1) {
+            if (fFFChange == kLowPtEnhancement) {
               smallestTrackPt = TMath::Min(track->Pt(), smallestTrackPt);	
-              maxLabel = TMath::Max(maxLabel, track->GetLabel());
             }
           }
                             
-          if (fFFChange == 1) {
+          if (fFFChange == kLowPtEnhancement && nOfJetTracks > 1) {
             Double_t jetPhi = jet->Phi();
             Double_t jetTheta = jet->Theta();
             
-            Int_t current_index = maxLabel + 1;
+            const Double_t survivalChanceSlope = 0.5/(leadingTrackPt - smallestTrackPt);
         
-            for(Int_t it=0; it<jet->GetNumberOfTracks(); ++it) {
+            for(Int_t it=0; it<nOfJetTracks; ++it) {
               AliAODMCParticle *track  = dynamic_cast<AliAODMCParticle*>(jet->Track(it));
                 
               if (!track || jet->Track(it) == leadingTrack)
                 continue;  
               
               Double_t pt = track->Pt();
-              // Low pT enhancement
-              Double_t survivalChance = 0.25 + 0.5 * (pt - smallestTrackPt)/(leadingTrackPt - smallestTrackPt);
+              // Discard additional tracks randomly. Survival probability going linearly from 75% for the lowest to 25% for the highest momentum
+              Double_t survivalChance = 0.75 - survivalChanceSlope * (pt - smallestTrackPt);
               if (fRandom->Rndm() > survivalChance)
                 continue;
             
@@ -1447,15 +1466,17 @@ Bool_t AliAnalysisTaskIDFragmentationFunction::FillHistograms()
               
               TParticle* tpart = new TParticle(track->GetPdgCode(), 0, 0, 0, 0, 0, px, py, pz, energy, 0.0, 0.0, 0.0, 0.0);
               AliMCParticle* mcParticle = new AliMCParticle(tpart);
-              AliAODMCParticle* doubled_part = new AliAODMCParticle(mcParticle, current_index);
+              AliAODMCParticle* doubled_part = new AliAODMCParticle(mcParticle, nextFreeIndex);
 
               FillEfficiencyContainerFromTrack(doubled_part, jet, centPercent, AliAnalysisTaskMTFPID::kStepGenWithGenCuts);
               fastSimulation->AddParticle(doubled_part);
               
-              current_index++;	
+              nextFreeIndex++;	
             }
           }
-        }  
+        }
+        
+        AliDebugStream(4) << "Run the fast simulation" << std::endl;
         
         fastSimulation->Run();
 

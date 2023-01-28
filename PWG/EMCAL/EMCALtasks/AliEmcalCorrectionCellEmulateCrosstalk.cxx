@@ -543,7 +543,7 @@ void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToNewCells()
               iphii < 0 || iphii >= AliEMCALGeoParams::fgkEMCALRows   ) continue;
 
         Int_t absIDi = fGeom->GetAbsCellIdFromCellIndexes(imod, iphii, ietai);
-        Float_t ampi = fCaloCells->GetCellAmplitude(absIDi);
+        Float_t ampi = fAODCellsTmp->GetCellAmplitude(absIDi);
 
         // Remove cells with no energy
         if ( ampi <= 0.01 ) continue;
@@ -552,8 +552,8 @@ void AliEmcalCorrectionCellEmulateCrosstalk::AddInducedEnergiesToNewCells()
         Int_t rowDiff = -100; Int_t colDiff = -100;
         if ( !fRecoUtils->IsAbsIDsFromTCard(absId, absIDi, rowDiff, colDiff) ) continue;
 
-        Int_t   mclabeli = fCaloCells->GetCellMCLabel(absIDi);
-        Float_t timei    = fCaloCells->GetCellTime(absIDi);
+        Int_t   mclabeli = fAODCellsTmp->GetCellMCLabel(absIDi);
+        Float_t timei    = fAODCellsTmp->GetCellTime(absIDi);
 
         //printf ("\t \t Same TCard ID %d, mcLabel %d, amp %1.3f, time %1.3e \n",absIDi,mclabeli,ampi,timei);
 

@@ -355,7 +355,7 @@ void AliEmcalJetTree::FillBuffer_SecVertices(std::vector<Float_t>& secVtx_X, std
 }
 
 //________________________________________________________________________
-void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSplittings, Bool_t saveQVector, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks, Bool_t lightTreeMode)
+void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveSplittings, Bool_t saveQVector, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks, Bool_t lightTreeMode, Bool_t EPDetails)
 {
   // Create the tree with active branches
 
@@ -373,9 +373,11 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
   fJetTree->Branch("Jet_Eta",&fBuffer_JetEta,"Jet_Eta/F");
   fJetTree->Branch("Jet_Area",&fBuffer_JetArea,"Jet_Area/F");
   fJetTree->Branch("Jet_EPangleV0M", &fBuffer_JetEPangleV0M, "Jet_EPangleV0M/F");
-  fJetTree->Branch("Jet_EPangleV0A", &fBuffer_JetEPangleV0A, "Jet_EPangleV0A/F");
-  fJetTree->Branch("Jet_EPangleV0C", &fBuffer_JetEPangleV0C, "Jet_EPangleV0C/F");
-  fJetTree->Branch("Jet_EPangleTPC", &fBuffer_JetEPangleTPC, "Jet_EPangleTPC/F");
+  if (EPDetails) {
+     fJetTree->Branch("Jet_EPangleV0A", &fBuffer_JetEPangleV0A, "Jet_EPangleV0A/F");
+     fJetTree->Branch("Jet_EPangleV0C", &fBuffer_JetEPangleV0C, "Jet_EPangleV0C/F");
+     fJetTree->Branch("Jet_EPangleTPC", &fBuffer_JetEPangleTPC, "Jet_EPangleTPC/F");
+     }
   if (!lightTreeMode) {
      fJetTree->Branch("Jet_NumTracks",&fBuffer_NumTracks,"Jet_NumTracks/I");
      }
@@ -389,11 +391,11 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
   fJetTree->Branch("Event_Vertex_Y",&fBuffer_Event_Vertex_Y,"Event_Vertex_Y/F");
   fJetTree->Branch("Event_Vertex_Z",&fBuffer_Event_Vertex_Z,"Event_Vertex_Z/F");
   fJetTree->Branch("Event_Centrality",&fBuffer_Event_Centrality,"Event_Centrality/F");
+  fJetTree->Branch("Event_ID",&fBuffer_Event_ID,"Event_ID/L");
 
   if (!lightTreeMode) 
   {
     fJetTree->Branch("Event_Multiplicity",&fBuffer_Event_Multiplicity,"Event_Multiplicity/I");
-    fJetTree->Branch("Event_ID",&fBuffer_Event_ID,"Event_ID/L");
     fJetTree->Branch("Event_MagneticField",&fBuffer_Event_MagneticField,"Event_MagneticField/F");
   }
 
@@ -538,12 +540,14 @@ void AliEmcalJetTree::InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInfor
       }
       fJetTree->Branch("Jet_MC_MatchedPartLevelJet_EPangleV0M",&fBuffer_Jet_MC_MatchedPartLevelJet_EPangleV0M,
                        "Jet_MC_MatchedPartLevelJet_EPangleV0M/F");
+      if (EPDetails) {
       fJetTree->Branch("Jet_MC_MatchedPartLevelJet_EPangleV0A",&fBuffer_Jet_MC_MatchedPartLevelJet_EPangleV0A,
                        "Jet_MC_MatchedPartLevelJet_EPangleV0A/F");
       fJetTree->Branch("Jet_MC_MatchedPartLevelJet_EPangleV0C",&fBuffer_Jet_MC_MatchedPartLevelJet_EPangleV0C,
                        "Jet_MC_MatchedPartLevelJet_EPangleV0C/F");
       fJetTree->Branch("Jet_MC_MatchedPartLevelJet_EPangleTPC",&fBuffer_Jet_MC_MatchedPartLevelJet_EPangleTPC,
                        "Jet_MC_MatchedPartLevelJet_EPangleTPC/F");
+      }
     }
 
     fJetTree->Branch("Jet_MC_TruePtFraction",&fBuffer_Jet_MC_TruePtFraction,"Jet_MC_TruePtFraction/F");
@@ -595,6 +599,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor() :
   fMCParticleArrayName("mcparticles"),
   fNeedEmbedClusterContainer(0),
   fLightTreeMode(0),
+  fSaveEPDetails(1),
   fQ2Detector(0),
   fEPDetector(0),
   fRandomSeed(0),
@@ -658,6 +663,7 @@ AliAnalysisTaskJetExtractor::AliAnalysisTaskJetExtractor(const char *name) :
   fMCParticleArrayName("mcparticles"),
   fNeedEmbedClusterContainer(0),
   fLightTreeMode(0),
+  fSaveEPDetails(1),
   fQ2Detector(0),
   fEPDetector(0),
   fRandomSeed(0),
@@ -744,7 +750,7 @@ void AliAnalysisTaskJetExtractor::UserCreateOutputObjects()
   }
   // ### Initialize the jet tree (settings must all be given at this stage)
   fJetTree->SetRandomGenerator(fRandomGenerator);
-  fJetTree->InitializeTree(fSaveCaloClusters, fSaveMCInformation, fDoDetLevelMatching, fDoPartLevelMatching, fSaveConstituents, fSaveConstituentsIP, fSaveConstituentPID, fSaveJetShapes, fSaveJetSplittings, fSaveQVector, fSaveSecondaryVertices, fSaveTriggerTracks, fLightTreeMode);
+  fJetTree->InitializeTree(fSaveCaloClusters, fSaveMCInformation, fDoDetLevelMatching, fDoPartLevelMatching, fSaveConstituents, fSaveConstituentsIP, fSaveConstituentPID, fSaveJetShapes, fSaveJetSplittings, fSaveQVector, fSaveSecondaryVertices, fSaveTriggerTracks, fLightTreeMode, fSaveEPDetails);
   OpenFile(2);
   PostData(2, fJetTree->GetTreePointer());
 

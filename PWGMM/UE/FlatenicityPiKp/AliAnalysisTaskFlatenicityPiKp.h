@@ -26,6 +26,11 @@ class THnSparse;
 #include "AliStack.h"
 #include "TParticle.h"
 
+#include <iostream>
+#include <string>
+#include <map>
+
+
 class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 	public:
 		AliAnalysisTaskFlatenicityPiKp();
@@ -35,31 +40,33 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		virtual void UserCreateOutputObjects();
 		virtual void UserExec(Option_t *option);
 		virtual void Terminate(Option_t *option);
-		Double_t GetFlatenicityV0();
-		Double_t GetFlatenicityTPC();
-		Double_t GetFlatenicityMC();
+		double GetFlatenicityV0();
+		double GetMidRapidityMultiplicity();
+		double GetFlatenicityTPC();
+		double GetFlatenicityMC();
+		double EtaCalibration(const double&);
+		double EtaCalibrationEl(const double&);
 		void MakeMCanalysis();
 		void MakeMCanalysisPID();
-		void ElectronsContamination();
+		void nSigmaContamination();
 		void MakeDataanalysis();
 		void MakePIDanalysis();
-
+		void AnalyzeV0s();
 		void SetPtMin(Double_t val) { fPtMin = val; } // Set pT cut for associated particles
 		void SetNcl(UShort_t ncl) { fNcl = ncl; } // Set pT cut for associated particles
 		void SetUseMC(Bool_t flat_flag = kFALSE) { fUseMC = flat_flag; } // use to analyse MC data
+		void SaveDCAxyHistograms(Bool_t saveDCAxy ) { fSaveDCAxyHistograms = saveDCAxy; } 
 		void IsdEdxCalibrated(Bool_t dEdxCal = kTRUE) { fdEdxCalibrated = dEdxCal; }
-		void SetV0MBin(TString v0mbin = "0_1") { fV0MBin = v0mbin; }
 		void SetDetectorForFlatenicity(TString det = "V0") { fDetFlat = det; }
-		void SetDataPeriod(TString period = "16l") { fPeriod = period;}
+		void SaveThisMultBin(std::string v0bin = "0_1") { fV0MBin = v0bin; }
+		void SetDataPeriod(std::string period = "16l") { fPeriod = period;}
 		void SetMCclosureTest(Bool_t flat_flag = kFALSE) { fIsMCclosure = flat_flag; }
-		void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) {
-			fRemoveTrivialScaling = flat_flag;
-		}
+		void SetDeltaV0(Bool_t deltav0 = kFALSE) { fDeltaV0 = deltav0; }
+		void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) { fRemoveTrivialScaling = flat_flag; }
+		bool PhiCut(Double_t , Double_t , Double_t , Float_t , TF1* , TF1* );
 		bool HasRecVertex();
-		Bool_t TOFPID(AliESDtrack* );
-		Double_t EtaCalibration(const Double_t& );
-		Bool_t PhiCut(Double_t , Double_t , Double_t , Float_t , TF1* , TF1* );
-		Int_t GetPidCode(Int_t);
+		bool TOFPID(AliESDtrack*);
+		int GetPidCode(Int_t);
 
 
 	protected:
@@ -69,10 +76,11 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		AliStack *fMCStack; //! MC stack
 		AliMCEvent *fMC;    //! MC Event
 		Bool_t fUseMC;      // analyze MC events
-		Int_t fV0Mindex;
-		TString fV0MBin;
+		Float_t fV0MMultiplicity;
 		TString fDetFlat;
+		std::string fV0MBin;
 		Bool_t fIsMCclosure;
+		Bool_t fDeltaV0;
 		Bool_t fRemoveTrivialScaling;
 		Int_t fnGen;
 		AliPIDResponse* fPIDResponse;
@@ -83,55 +91,55 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		Double_t fPtMin;
 		Double_t fNcl;
 		Bool_t fdEdxCalibrated;
+		Bool_t fSaveDCAxyHistograms;
 		TF1* fEtaCalibrationPos;
 		TF1* fEtaCalibrationNeg;
 		TF1* fcutLow;
 		TF1* fcutHigh;
 		TF1* fcutDCAxy;
-		TString fPeriod;
+		std::string fPeriod;
 		Double_t ftrackmult08;
 		Double_t fv0mpercentile;
-		Float_t fFlat;
+		Double_t fFlat;
+		Double_t fFlatTPC;
 		Float_t fFlatMC;
 		AliMultSelection *fMultSelection;
-		TH1D *hPtPrimIn;
-		TH1D *hPtPrimOut;
-		TH1D *hPtSecOut;
-		TH1D *hPtOut;
-		TH2D *hFlatV0vsFlatTPC;
-		TH1F *hFlatenicityBefore;
-		TH1D *hFlatenicity;
-		TH1D *hFlatenicityMC;
-		TH2D *hFlatResponse;
-		TH2D *hFlatVsPt;
-		TH2D *hFlatVsPtMC;
-		TProfile *hActivityV0DataSect;
+		TH1F *hFlat;
+		TH2F *hFlatenicityMC;
+		TH2F *hFlatenicityMCRec;
+		TH2F *hFlatResponse;
+		TH2F *hFlatVsPtMC;
 		TProfile *hActivityV0McSect;
-		TH2D *hFlatVsNchMC;
-		TH2F *hFlatVsV0M;
-		TH1F *hCounter;
-		TH2D *hFlatVsPtV0M[9];
-		TH3F *hNsigmaPiPos[9][4];
-		TH3F *hNsigmaKPos[9][4];
-		TH3F *hNsigmaPPos[9][4];
-		TH2F *hPtTPCEtaPos[9][4];
-		TH3F *hNsigmaPiNeg[9][4];
-		TH3F *hNsigmaKNeg[9][4];
-		TH3F *hNsigmaPNeg[9][4];
-		TH2F *hPtTPCEtaNeg[9][4];
-		TH3F* hBetaPos[9][4];
-		TH2F* hMomentumTOFEtaPos[9][4];
-		TH2F* hPtTOFEtaPos[9][4];
-		TH3F* hBetaNeg[9][4];
-		TH2F* hMomentumTOFEtaNeg[9][4];
-		TH2F* hPtTOFEtaNeg[9][4];
-		TH3F* hdEdx[9][4];
-		TH2F* hPtrTPC[9][4];
+		TH2F *hFlatVsNchMC;
+		TH3F *hNsigmaPiPos[4];
+		TH3F *hNsigmaKPos[4];
+		TH3F *hNsigmaPPos[4];
+		TH2F *hPtTPCEtaPos[4];
+		TH3F *hNsigmaPiNeg[4];
+		TH3F *hNsigmaKNeg[4];
+		TH3F *hNsigmaPNeg[4];
+		TH2F *hPtTPCEtaNeg[4];
+		TH3F *hNsigmaTOFKPos[4];
+		TH3F *hNsigmaTOFPPos[4];
+		TH3F *hNsigmaTOFKNeg[4];
+		TH3F *hNsigmaTOFPNeg[4];
+		TH3F* hBetaPos[4];
+		TH3F* hBetaNeg[4];
+		TH2F* hMomentumTOFEtaPos[4];
+		TH2F* hMomentumTOFEtaNeg[4];
+		TH2F* hPtTOFEtaPos[4];
+		TH2F* hPtTOFEtaNeg[4];
+		TH3F* hdEdx[4];
+		TH2F* hPtrTPC[4];
 		TH2F* hPtVsP[4];
-		TH2F* hKaonContamination[4];
-		TH2F* hKaondEdx[4];
-		TH2F* hProtonContamination[4];
-		TH2F* hProtondEdx[4];
+
+		TH2F* nsigma_kaon_h[4];
+		TH2F* random_cont_in_kaon_h[4];
+		TH2F* nsigma_proton_h[4];
+		TH2F* random_cont_in_proton_h[4];
+		TH2F* nsigma_pion_h[4];
+		TH2F* random_cont_in_pion_h[4];
+
 		TH2F* hPionTOFDCAxyNeg[3];
 		TH2F* hProtonTOFDCAxyNeg[3];
 		TH2F* hPionTOFDCAxyPos[3];
@@ -140,7 +148,7 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		TH2F* hProtonTPCDCAxyNeg[3];	
 		TH2F* hPionTPCDCAxyPos[3];	
 		TH2F* hProtonTPCDCAxyPos[3];
-		
+
 		TH1F* hMCPtPionPos;
 		TH1F* hMCPtKaonPos;
 		TH1F* hMCPtProtonPos;
@@ -172,10 +180,17 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		TH2F* hPionTOFDCAxyPosData;
 		TH2F* hProtonTOFDCAxyNegData; 
 		TH2F* hProtonTOFDCAxyPosData;
-		TH2F* hMIPVsEta;
 		TProfile* pMIPVsEta;
-		TH2F* hPlateauVsEta;
 		TProfile* pPlateauVsEta;
+
+		//! Histograms for V0s
+		TProfile* pMIPVsEtaV0s;
+		TH2F* histPiV0[4];
+		TH2F* histPV0[4];
+		TH2F* histEV0[4];
+		TH2F* histPiTof[4];
+		TH2F* histPiTof2[4];
+
 
 		AliAnalysisTaskFlatenicityPiKp(
 				const AliAnalysisTaskFlatenicityPiKp &); // not implemented
@@ -186,3 +201,4 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 };
 
 #endif
+

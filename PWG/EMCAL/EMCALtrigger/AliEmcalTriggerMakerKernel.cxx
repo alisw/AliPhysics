@@ -462,6 +462,12 @@ void AliEmcalTriggerMakerKernel::ReadCellData(AliVCaloCells *cells){
     Double_t amp = cells->GetAmplitude(iCell),
              celltime = cells->GetTime(iCell);
     if(celltime < fCellTimeLimits[0] || celltime > fCellTimeLimits[1]) continue;
+
+    if ( cellId < 0 ) {
+      AliDebugStream(1) << "Skip: iCell = "<< iCell << " Cell Id = " << cellId <<", E = "<< amp <<", time = "<<celltime<<std::endl;
+      continue;
+    }
+
     amp *= fScaleMult;
     if(amp < fMinCellAmplitude) continue;
     if(fScaleShift) amp += fScaleShift;
@@ -646,7 +652,15 @@ void AliEmcalTriggerMakerKernel::CreateTriggerPatches(const AliVEvent *inputeven
 
   // Find Level0 patches
   std::vector<AliEMCALTriggerRawPatch> l0patches;
-  if (fLevel0PatchFinder) l0patches = fLevel0PatchFinder->FindPatches(*fPatchAmplitudes, *fPatchADCSimple);
+  // Markus: 
+  // Trigger patches also in case of Level0 are based on the timesum. The
+  // timesum is caluclated at L0 in the TRU and sent to the STU. Since we don't 
+  // store the time sum from the TRU the time sum from the STU is a good proxy.
+  // Users have to recall that the L0 uses a 10 bit ADC (ALTRO data), the STU
+  // uses a 12 bit ADC, leading to a bit shift when sending timesums from TRU to
+  // STU. Users must divide the threshold applied in the TRU by 4 when operating
+  // on the timesums from STU  
+  if (fLevel0PatchFinder) l0patches = fLevel0PatchFinder->FindPatches(*fPatchADC, *fPatchADCSimple);
   for(std::vector<AliEMCALTriggerRawPatch>::iterator patchit = l0patches.begin(); patchit != l0patches.end(); ++patchit){
     Int_t offlinebits = 0, onlinebits = 0;
     if(HasPHOSOverlap(*patchit)) continue;

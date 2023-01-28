@@ -10,7 +10,7 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
   if(takeptofDCNM) listname += "takeptDCNM";
   listname += versionsmearing;
 
-  
+
   AliAnalysisTaskCharm* task = new  AliAnalysisTaskCharm(Form("Task_%s",listname.Data()));
   task->SetProcessType(processtype);
   task->SetSeed(rndmseed);
@@ -37,7 +37,7 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
     }
   }
   // CNM
-  if(file_cnm.Contains("alien")) {
+  if(file_cnm.Contains("alien") && !file_raa.Contains("alien")) {
     gSystem->Exec(Form("alien_cp %s file:./",file_cnm.Data()));
     TObjArray* Strings = file_cnm.Tokenize("/");
     TString namefile = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
@@ -45,7 +45,7 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
     TFile fcnm(namefile.Data());
     if (fcnm.IsOpen()){
       if((TGraph*)fcnm.Get(cnm.Data())!=0x0) { // apply cnm scaling.
-	task->ScaleByCNM(kTRUE,(TGraph*)fcnm.Get(cnm.Data()));
+        task->ScaleByCNM(kTRUE,(TGraph*)fcnm.Get(cnm.Data()));
       }
     }
   }
@@ -63,7 +63,7 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
   }
 
   //RAA
-  if(file_raa.Contains("alien")) {
+  if(file_raa.Contains("alien") && !file_cnm.Contains("alien")) {
     gSystem->Exec(Form("alien_cp %s file:./",file_raa.Data()));
     TObjArray* Strings = file_raa.Tokenize("/");
     TString namefile = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
@@ -71,49 +71,49 @@ AliAnalysisTaskCharm *AddTaskCharm(Bool_t applyeventw = kFALSE,Bool_t applyweigh
     TFile fraa(namefile.Data());
     if (fraa.IsOpen()){
       if(namefile.Contains("FIT")){
-	// fit functions
-	if((TF1*)fraa.Get(hname_raa.Data()) != 0x0) { // apply RAA weighting.
-	  TF1 *h1RAA = (TF1*)fraa.Get(hname_raa.Data());
-	  task->ScaleByRAA(kTRUE);
-	  task->SetTF1RAA(h1RAA);
-	}
+        // fit functions
+        if((TF1*)fraa.Get(hname_raa.Data()) != 0x0) { // apply RAA weighting.
+          TF1 *h1RAA = (TF1*)fraa.Get(hname_raa.Data());
+          task->ScaleByRAA(kTRUE);
+          task->SetTF1RAA(h1RAA);
+        }
       }
       else {
-	// histo
-	if((TH1F*)fraa.Get(hname_raa.Data()) != 0x0) { // apply RAA weighting.
-	  TH1F *h1RAA = (TH1F*)fraa.Get(hname_raa.Data());
-	  h1RAA->SetDirectory(0);
-	  task->ScaleByRAA(kTRUE);
-	  task->SetTH1FRAA(h1RAA);
-	}
+        // histo
+        if((TH1F*)fraa.Get(hname_raa.Data()) != 0x0) { // apply RAA weighting.
+          TH1F *h1RAA = (TH1F*)fraa.Get(hname_raa.Data());
+          h1RAA->SetDirectory(0);
+          task->ScaleByRAA(kTRUE);
+          task->SetTH1FRAA(h1RAA);
+        }
       }
     }
   }
-  
-  
+
+
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     Printf("AliAnalysisTaskCharm: No analysis manager to connect to.");
     return NULL;
   }
-  
+
   if(!mgr->GetMCtruthEventHandler()){
     Printf("AliAnalysisTaskCharm: This task requires an input MC event handler");
     return NULL;
   }
-  
+
   mgr->AddTask(task);
-  
+
   //Input and Output Slots:
   //AliAnalysisDataContainer *cinputSim = mgr->CreateContainer(inname,TChain::Class(), AliAnalysisManager::kInputContainer);
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   //outputfile += ":KineSimulations";
- 
+
 
   AliAnalysisDataContainer *coutput1 = mgr->CreateContainer(listname.Data(),TList::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
-  
+
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task,1,coutput1);
-  
+
   return task;
 }

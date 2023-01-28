@@ -775,6 +775,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
 
 
   //// PileUp Removal Functions:
+  /*
   fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
 
   Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
@@ -790,8 +791,48 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   fCenCutLowPU->SetParameters(parV0CL0);
   fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
   fCenCutHighPU->SetParameters(parV0CL0);
+  */
 
+  if (bdataset==0)
+    {
+      fSPDCutPU = new TF1("fSPDCutPU", "480. + 3.95*x", 0, 50000);
 
+      Double_t parV0[8] = {41.3226, 0.822835, 0.0880984, 206.961, 3.56337, 0.0965816, -0.00076483, 2.11591e-06};
+      fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+      fV0CutPU->SetParameters(parV0);
+   
+      Double_t parV0CL0[6] = {0.362458, 0.962768, 0.995134, 0.0331353, -0.000692428, 6.59962e-06};
+      fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+      fCenCutLowPU->SetParameters(parV0CL0);
+      fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+      fCenCutHighPU->SetParameters(parV0CL0);
+
+      Double_t parFB32[9] = {-812.555, 6.38397, 5379.01, -0.394814, 0.0296228, -26.1633, 317.365, -0.842175, 0.0165651};
+      fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
+      fMultCutPU->SetParameters(parFB32);
+
+    }
+
+  else if (bdataset==1)
+    {
+      fSPDCutPU = new TF1("fSPDCutPU", "480. + 3.95*x", 0, 50000);
+
+      Double_t parV0[8] = {42.4921, 0.823255, 0.0824939, 139.826, 7.27032, 0.0488425, -0.00045769, 1.40891e-06};
+      fV0CutPU = new TF1("fV0CutPU", "[0]+[1]*x - 6.*[2]*([3] + [4]*sqrt(x) + [5]*x + [6]*x*sqrt(x) + [7]*x*x)", 0, 100000);
+      fV0CutPU->SetParameters(parV0);
+
+      Double_t parV0CL0[6] = {0.317973, 0.961823, 1.02383, 0.0330231, -0.000721551, 6.92564e-06};
+      fCenCutLowPU = new TF1("fCenCutLowPU", "[0]+[1]*x - 6.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+      fCenCutLowPU->SetParameters(parV0CL0);
+      fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
+      fCenCutHighPU->SetParameters(parV0CL0);
+
+      Double_t parFB32[9] = {-817.169, 6.40836, 5380.3, -0.394358, 0.0295209, -25.9573, 316.586, -0.843951, 0.0165442};
+      fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
+      fMultCutPU->SetParameters(parFB32);
+    }
+
+  
 
 
 

@@ -31,11 +31,12 @@
 #include <AliMEStender.h>
 
 R__ADD_INCLUDE_PATH($ALICE_ROOT)
-#include <ANALYSIS/macros/AddTaskPIDResponse.C>
+//#include <ANALYSIS/macros/AddTaskPIDResponse.C>
 
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #include <OADB/macros/AddTaskPhysicsSelection.C>
-#include <TENDER/TenderSupplies/AddTaskTender.C>
+#include <OADB/COMMON/MULTIPLICITY/macros/AddTaskMultSelection.C>
+//#include <TENDER/TenderSupplies/AddTaskTender.C>
 #include <PWGLF/SPECTRA/MultEvShape/AddMEStender.C>
 #include <PWGLF/SPECTRA/MultEvShape/AddMESpidTask.C>
 #include <PWGLF/SPECTRA/MultEvShape/AddMESchgTask.C>
@@ -43,7 +44,8 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 
 #endif
 
-TChain* MakeChainLST(const char* filename = NULL);
+                                            TChain *
+                                            MakeChainLST(const char *filename = NULL);
 void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t tchg=kTRUE,  Bool_t tpp=kTRUE, Long64_t nev=1234567890, Long64_t first = 0)
 {
   TStopwatch timer;
@@ -84,20 +86,20 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
 	// TMacro physseladd(gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"));
 	// physseladd.Exec();
 	
-  if(!mc) AddTaskPIDResponse();
-  // else AddTaskPIDResponse(kTRUE,kTRUE,kTRUE,2);
-  else AddTaskPIDResponse(kTRUE);
+  // if(!mc) AddTaskPIDResponse();
+  // // else AddTaskPIDResponse(kTRUE,kTRUE,kTRUE,2);
+  // else AddTaskPIDResponse(kTRUE);
 
   // *******************  Tenders  ***********************
-  AliTender *aliTender(NULL);
-  // gROOT->LoadMacro("$ALICE_PHYSICS/TENDER/TenderSupplies/AddTaskTender.C");
-  if(!mc){    // for DATA
-    aliTender = (AliTender*)AddTaskTender(!mc, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kTRUE, kFALSE, kFALSE);
-       // (useV0, useTPC,  !!! useTOF=kFALSE for MC !!!, useTRD, usePID, useVTX, useT0, useEmc, usePtFix)
-  } else {  // for MC
-    aliTender = (AliTender*)AddTaskTender(!mc, kTRUE, kFALSE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE);  // (useV0, useTPC,  !!! useTOF=kFALSE for MC !!!, useTRD, usePID, useVTX, useT0, useEmc, usePtFix)
-  }
-  aliTender->SetHandleOCDB(kTRUE);
+  // AliTender *aliTender(NULL);
+  // // gROOT->LoadMacro("$ALICE_PHYSICS/TENDER/TenderSupplies/AddTaskTender.C");
+  // if(!mc){    // for DATA
+  //   aliTender = (AliTender*)AddTaskTender(!mc, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kTRUE, kFALSE, kFALSE);
+  //      // (useV0, useTPC,  !!! useTOF=kFALSE for MC !!!, useTRD, usePID, useVTX, useT0, useEmc, usePtFix)
+  // } else {  // for MC
+  //   aliTender = (AliTender*)AddTaskTender(!mc, kTRUE, kFALSE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE);  // (useV0, useTPC,  !!! useTOF=kFALSE for MC !!!, useTRD, usePID, useVTX, useT0, useEmc, usePtFix)
+  // }
+  // aliTender->SetHandleOCDB(kTRUE);
   // aliTender->SetDefaultCDBStorage(Form("alien://folder=/alice/data/2010/OCDB?cacheFolder=%s/local", gSystem->ExpandPathName("$HOME")));
   // aliTender->SetDefaultCDBStorage(Form("local://%s/local/alice/data/2010/OCDB", gSystem->ExpandPathName("$HOME")));
 
@@ -105,14 +107,16 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
   // gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
   AliPhysicsSelectionTask *physSelTask = AddTaskPhysicsSelection(mc); // 0 = real data; 1 = MC
 
+  AliMultSelectionTask *multSelectionTask = AddTaskMultSelection();
+
   // *******************  MES Tender  ******************
   // gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMEStender.C");
-  AddMEStender(mc);
+  AddMEStender(mc, 1);
 
   // *******************  MES PID task  ******************
   if(tpid){
     // gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESpidTask.C");
-	AddMESpidTask(mc, kFALSE);
+	AddMESpidTask(mc, kTRUE);
   }
 
   // *******************  MES CHG task  ******************
@@ -124,7 +128,7 @@ void run(const Char_t *files=NULL, Bool_t mc=kFALSE, Bool_t tpid=kTRUE,  Bool_t 
   // *******************  MES ppCol task  ******************
   if(tpp){
     // gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/AddMESppColTask.C");
-    AddMESppColTask(mc, kFALSE);
+    AddMESppColTask(mc, kTRUE);
   }
 
 

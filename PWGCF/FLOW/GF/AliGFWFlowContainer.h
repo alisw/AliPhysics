@@ -54,6 +54,7 @@ class AliGFWFlowContainer:public TNamed {
   void SetPtRebin(Int_t newval) { fPtRebin=newval; };
   void SetPtRebin(Int_t nbins, Double_t *binedges);
   void SetMultiRebin(Int_t nbins, Double_t *binedges);
+  Bool_t RebinYBlind(Int_t nbins); //Merge Y-bins and change y-titles to those of the first bin in the group. Does not affect anything else, so be extremely cautious when using this. In principle one could introduce a sorting function, but rearranging TProfile2D contents is a major pain
   Double_t *GetMultiRebin(Int_t &nBins);
   void SetPropagateErrors(Bool_t newval) { fPropagateErrors = newval; };
   TProfile *GetCorrXXVsMulti(const char *order, Int_t l_pti=0);//pti = 0 for pt-integrated

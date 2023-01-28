@@ -1,5 +1,6 @@
 #include "TString.h"
 #include "TGrid.h"
+#include "AliAnalysisPtCorr.h"
 class AliAnalysisDataContainer;
 class TNamed;
 Bool_t ConnectToGrid() {

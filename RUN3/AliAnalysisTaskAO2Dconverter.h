@@ -17,6 +17,8 @@
 
 #include <Rtypes.h>
 
+#include <map>
+
 class AliVEvent;
 class AliESDEvent;
 class AliAODEvent;
@@ -24,7 +26,8 @@ class AliGRPObject;
 class TFile;
 class TDirectory;
 class TParticle;
-class TH2I ;
+class TH2I;
+class AliGenEventHeader;
 
 class AliAnalysisTaskAO2Dconverter : public AliAnalysisTaskSE
 {
@@ -38,6 +41,9 @@ public:
 
   void SetUseEventCuts(Bool_t useEventCuts=kTRUE) { fUseEventCuts = useEventCuts;}
   Bool_t GetUseEventCuts() const {return fUseEventCuts;}
+
+  void SetUseTriggerAnalysis(Bool_t useTriggerAnalysis=kTRUE) { fUseTriggerAnalysis = useTriggerAnalysis;}
+  Bool_t GetUseTriggerAnalysis() const {return fUseTriggerAnalysis;}
 
   virtual void Init() {}
   virtual void NotifyRun();
@@ -88,6 +94,9 @@ public:
     kHF3Prong,
     kHFCascade,
     kHFDStar,
+    kHepMcCrossSections,
+    kHepMcPdfInfo,
+    kHepMcHeavyIon,
     kTrees
   };
   enum TaskModes { // Flag for the task operation mode
@@ -177,9 +186,10 @@ public:
 
   AliAnalysisFilter fTrackFilter; // Standard track filter object
 private:
-  Bool_t fUseEventCuts = kFALSE;         //! Use or not event cuts
-  AliEventCuts fEventCuts;      //! Standard event cuts
-  AliTriggerAnalysis fTriggerAnalysis; //! Trigger analysis object for event selection
+  Bool_t fUseEventCuts = kFALSE;         // Use or not event cuts
+  Bool_t fUseTriggerAnalysis = kTRUE;    // Use or not trigger analysis
+  AliEventCuts fEventCuts;      // Standard event cuts
+  AliTriggerAnalysis fTriggerAnalysis; // Trigger analysis object for event selection
   AliGRPObject *fGRP;           //! Global run parameters
   AliVEvent *fVEvent = nullptr; //! input ESD or AOD event
   AliESDEvent *fESD  = nullptr; //! input ESD event
@@ -358,68 +368,140 @@ private:
     Short_t fHMPIDQMip = -999;       /// Charge of the mip
   } hmpids; //! structure to keep HMPID info
 
+  //---------------------------------------------------------------------------
+  /// MC information
   struct {
-    // MC collision
-    Int_t fIndexBCs = 0u;       /// Index to BC table
-    Short_t fGeneratorsID = 0u; /// Generator ID used for the MC
-    Float_t fPosX = -999.f;  /// Primary vertex x coordinate from MC
-    Float_t fPosY = -999.f;  /// Primary vertex y coordinate from MC
-    Float_t fPosZ = -999.f;  /// Primary vertex z coordinate from MC
-    Float_t fT = -999.f;  /// Time of the collision from MC
-    Float_t fWeight = -999.f;  /// Weight from MC
-    // Generation details (HepMC3 in the future)
-    Float_t fImpactParameter = -999.f; /// Impact parameter from MC
-  } mccollision;  //! MC collisions = vertices
+    /// MC collision
 
-  struct {
-    // Track label to find the corresponding MC particle
-    Int_t fIndexMcParticles = 0;       /// Track label
-    UShort_t fMcMask = 0;  /// Bit mask to indicate detector mismatches (bit ON means mismatch)
-                           /// Bit 0-6: mismatch at ITS layer
-                           /// Bit 7-9: # of TPC mismatches in the ranges 0, 1, 2-3, 4-7, 8-15, 16-31, 32-63, >64
-                           /// Bit 10: TRD, bit 11: TOF, bit 15: negative label sign
-  } mctracklabel; //! Track labels
+    Int_t fIndexBCs = 0u;       ///< Index to BC table
+    Short_t fGeneratorsID = 0u; ///< Bitmask of generator IDs used for the MC
+    Float_t fPosX = -999.f;  ///< Primary vertex x coordinate from MC
+    Float_t fPosY = -999.f;  ///< Primary vertex y coordinate from MC
+    Float_t fPosZ = -999.f;  ///< Primary vertex z coordinate from MC
+    Float_t fT = -999.f;  ///< Time of the collision from MC
+    Float_t fWeight = -999.f;  ///< Weight from MC
 
+    /// Generation details (included in HepMC, to be removed)
+    Float_t fImpactParameter = -999.f; ///< Impact parameter from MC
+  } mccollision;  ///<! MC collisions = vertices
+
+  /// MC labels
   struct {
-    // Calo cluster label to find the corresponding MC particle
-    Int_t fIndexMcParticles = 0;       /// Calo label
-    UShort_t fMcMask = 0;    /// Bit mask to indicate detector mismatches (bit ON means mismatch)
-                             /// bit 15: negative label sign
-  } mccalolabel; //! Calo labels
+    /// Track label to find the corresponding MC particle
+    Int_t fIndexMcParticles = 0;       ///< Track label
+    UShort_t fMcMask = 0;  ///< Bit mask to indicate detector mismatches (bit ON means mismatch)
+                           ///< Bit 0-6: mismatch at ITS layer
+                           ///< Bit 7-9: # of TPC mismatches in the ranges 0, 1, 2-3, 4-7, 8-15, 16-31, 32-63, >64
+                           ///< Bit 10: TRD, bit 11: TOF, bit 15: negative label sign
+  } mctracklabel; ///<! Track labels
 
   struct {
-    // MC collision label
-    Int_t fIndexMcCollisions = 0;       /// Collision label
-    UShort_t fMcMask = 0;    /// Bit mask to indicate collision mismatches (bit ON means mismatch)
-                             /// bit 15: negative label sign
-  } mccollisionlabel; //! Collision labels
+    /// Calo cluster label to find the corresponding MC particle
+    Int_t fIndexMcParticles = 0;       ///< Calo label
+    UShort_t fMcMask = 0;    ///< Bit mask to indicate detector mismatches (bit ON means mismatch)
+                             ///< bit 15: negative label sign
+  } mccalolabel; ///<! Calo labels
 
   struct {
-    // MC particle
+    /// MC collision label
+    Int_t fIndexMcCollisions = 0;       ///< Collision label
+    UShort_t fMcMask = 0;    ///< Bit mask to indicate collision mismatches (bit ON means mismatch)
+                             ///< bit 15: negative label sign
+  } mccollisionlabel; ///<! Collision labels
 
-    Int_t   fIndexMcCollisions = -1;    /// The index of the MC collision vertex
+  struct {
+    /// MC particle
 
-    // MC information (modified version of TParticle)
-    Int_t fPdgCode    = -99999; /// PDG code of the particle
-    Int_t fStatusCode = -99999; /// generation status code
-    uint8_t fFlags    = 0;     /// See enum MCParticleFlags
-    Int_t fIndexArray_Mothers_size     = 0;   /// Length of fIndexArray_Mothers
-    Int_t fIndexArray_Mothers[1]       = {0}; /// VLA of mothers (length 1 or 0 for Run 2)
-    Int_t fIndexSlice_Daughters[2]     = {0}; /// Slice of daughter particles
-    Float_t fWeight   = 1;     /// particle weight from the generator or ML
+    Int_t   fIndexMcCollisions = -1;    /// The index of the MC collision
 
-    Float_t fPx = -999.f; /// x component of momentum
-    Float_t fPy = -999.f; /// y component of momentum
-    Float_t fPz = -999.f; /// z component of momentum
-    Float_t fE  = -999.f; /// Energy (covers the case of resonances, no need for calculated mass)
+    /// MC information (modified version of TParticle)
+    Int_t fPdgCode    = -99999; ///< PDG code of the particle
+    Int_t fStatusCode = -99999; ///< generation status code
+    uint8_t fFlags    = 0;      ///< See enum MCParticleFlags
+    Int_t fIndexArray_Mothers_size     = 0;   ///< Length of fIndexArray_Mothers
+    Int_t fIndexArray_Mothers[1]       = {0}; ///< VLA of mothers (length 1 or 0 for Run 2)
+    Int_t fIndexSlice_Daughters[2]     = {0}; ///< Slice of daughter particles
+    Float_t fWeight   = 1;      ///< particle weight from the generator or ML
 
-    Float_t fVx = -999.f; /// x of production vertex
-    Float_t fVy = -999.f; /// y of production vertex
-    Float_t fVz = -999.f; /// z of production vertex
-    Float_t fVt = -999.f; /// t of production vertex
-    // We do not use the polarisation so far
-  } mcparticle;  //! MC particles from the kinematics tree
+    Float_t fPx = -999.f; ///< X component of momentum
+    Float_t fPy = -999.f; ///< Y component of momentum
+    Float_t fPz = -999.f; ///< Z component of momentum
+    Float_t fE  = -999.f; ///< Energy (covers the case of resonances, no need for calculated mass)
 
+    Float_t fVx = -999.f; ///< X of production vertex
+    Float_t fVy = -999.f; ///< Y of production vertex
+    Float_t fVz = -999.f; ///< Z of production vertex
+    Float_t fVt = -999.f; ///< T of production vertex
+    /// We do not use the polarisation so far
+  } mcparticle;  ///<! MC particles from the kinematics tree
+
+  /// HepMC information
+  /// Replacing double by float in the corresponding data members
+
+  struct CrossSections {
+    ///  Information about cross-section
+
+    Int_t  fIndexMcCollisions = -1;    /// The index of the MC collision
+    Short_t fGeneratorsID = 0u; ///< Generator ID used for this set of parameters
+
+    ULong64_t fAccepted = 0;    ///< The number of events generated so far.
+    ULong64_t fAttempted = 0;   ///< The number of events attempted so far.
+    Float_t fXsectGen = -999.f;  ///< Cross section in pb
+    Float_t fXsectErr = -999.f;  ///< Error associated with this cross section
+    Float_t fPtHard = -999.f;    ///< PT-hard (event scale, for pp collisions)
+    void Print();
+    void Reset();
+    void Fill(AliGenEventHeader * genHeader, AliAnalysisTaskAO2Dconverter * task);
+  } hepMcCrossSections; ///<! Cross-sections from the generator + Pythia specific PT-hard
+
+  struct PdfInfo {
+    /// Additional PDF information for an event
+
+    Int_t   fIndexMcCollisions = -1;    ///< The index of the MC collision
+    Short_t fGeneratorsID = 0u; ///< Generator ID used for this set of parameters
+
+    Int_t   fId1 = 0;        ///< flavour code of first parton
+    Int_t   fId2 = 0;        ///< flavour code of second parton
+    Int_t   fPdfId1 = 0;     ///< LHAPDF set id of first parton
+    Int_t   fPdfId2 = 0;     ///< LHAPDF set id of second parton
+    Float_t fX1 = 0.f;       ///< fraction of beam momentum carried by first parton ("beam side")
+    Float_t fX2 = 0.f;       ///< fraction of beam momentum carried by second parton ("target side")
+    Float_t fScalePdf = 0.f; ///< Q-scale used in evaluation of PDF's   (in GeV)
+    Float_t fPdf1 = 0.f;     ///< PDF (id1, x1, Q) = x*f(x)
+    Float_t fPdf2 = 0.f;     ///< PDF (id2, x2, Q) = x*f(x)
+    void Print();
+    void Reset();
+    void Fill(AliGenEventHeader * genHeader, AliAnalysisTaskAO2Dconverter * task);
+  } hepMcPdfInfo; ///<! PDF information (PH: is it really used?)
+
+  struct HeavyIon {
+    ///  HepMC information for Heavy Ion generators
+
+    Int_t fIndexMcCollisions = -1; ///< The index of the MC collision
+    Short_t fGeneratorsID = 0u; ///< Generator ID used for this set of parameters
+
+    Int_t fNcollHard = -999;              ///< Number of hard scatterings
+    Int_t fNpartProj = -999;              ///< Number of projectile participants
+    Int_t fNpartTarg = -999;              ///< Number of target participants
+    Int_t fNcoll = -999;                  ///< Number of NN (nucleon-nucleon) collisions
+    Int_t fNNwoundedCollisions = -999;    ///< Number of N-Nwounded collisions
+    Int_t fNwoundedNCollisions = -999;    ///< Number of Nwounded-N collisons
+    Int_t fNwoundedNwoundedCollisions = -999; ///< Number of Nwounded-Nwounded collisions
+    Int_t fSpectatorNeutrons = -999;          ///< Number of spectator neutrons
+    Int_t fSpectatorProtons = -999;           ///< Number of spectator protons
+    Float_t fImpactParameter = -999.f;    ///< Impact Parameter(fm) of collision
+    Float_t fEventPlaneAngle = 0.f;       ///< Azimuthal angle of event plane
+    Float_t fEccentricity = 0.f;          ///< eccentricity of participating nucleons in the transverse plane
+                                          ///< (as in phobos nucl-ex/0510031)
+    Float_t fSigmaInelNN = -999.f;        ///< nucleon-nucleon inelastic (including diffractive) cross-section
+    Float_t fCentrality = -999.f;         ///< centrality (prcentile of geometric cross section)
+    void Print();
+    void Reset();
+    void Fill(AliGenEventHeader * genHeader, AliAnalysisTaskAO2Dconverter * task);
+  } hepMcHeavyIon; ///<! HI-specific information in HepMC
+
+  static MCGeneratorID GetMCGeneratorID(AliGenEventHeader * genHeader);
+  //---------------------------------------------------------------------------
   // To test the compilation uncoment the line below
   // #define USE_TOF_CLUST 1
 #ifdef USE_TOF_CLUST
@@ -652,7 +734,7 @@ private:
   FwdTrackPars MUONtoFwdTrack(AliESDMuonTrack&); // Converts MUON Tracks from ESD between RUN2 and RUN3 coordinates
   FwdTrackPars MUONtoFwdTrack(AliAODTrack&); // Converts MUON Tracks from AOD between RUN2 and RUN3 coordinates
 
-  ClassDef(AliAnalysisTaskAO2Dconverter, 28);
+  ClassDef(AliAnalysisTaskAO2Dconverter, 29);
 };
 
 #endif
