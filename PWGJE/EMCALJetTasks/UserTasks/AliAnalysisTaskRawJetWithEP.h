@@ -98,6 +98,9 @@ public:
   void Terminate(Option_t *option);
 
   static AliAnalysisTaskRawJetWithEP* AddTaskRawJetWithEP(
+      TString EPCailbType = "JeHand",
+      TString EPCalibJEHandRefFileName = "alien:///alice/cern.ch/user/t/tkumaoka/calibV0TPCRun2Vtx10P118qPass3.root",
+      TString EPCalibOrigRefFileName = "alien:///alice/cern.ch/user/t/tkumaoka/CalibV0GainCorrectionLHC18q_Oct2021.root",
       const char *ntracks            = "usedefault",
       const char *nclusters          = "usedefault",
       const char* ncells             = "usedefault",
@@ -133,12 +136,36 @@ public:
   void SetBkgQA(Bool_t bBkgQA){fBkgQA = bBkgQA;}
   void SetJetHistWEP(Bool_t bSepEP){fSepEP = bSepEP;}
 
-  bool LoadOADBCalibFile();
+
+  void SetCalibOrigRefObjList(TList *hWgtsV0ZDC){this->fCalibRefObjList = (TList *) hWgtsV0ZDC->Clone();}
+
+  void SetLRefMultV0BefCorPfpx(AliOADBContainer *hList){this->fMultV0BefCorPfpx = (AliOADBContainer *) hList->Clone();}
+  void SetLRefQx2am(TObjArray *hList){this->fOADBzArray_contQx2am = (TObjArray *) hList->Clone();}
+  void SetLRefQy2am(TObjArray *hList){this->fOADBzArray_contQy2am = (TObjArray *) hList->Clone();}
+  void SetLRefQx2as(TObjArray *hList){this->fOADBzArray_contQx2as = (TObjArray *) hList->Clone();}
+  void SetLRefQy2as(TObjArray *hList){this->fOADBzArray_contQy2as = (TObjArray *) hList->Clone();}
+  void SetLRefQx3am(TObjArray *hList){this->fOADBzArray_contQx3am = (TObjArray *) hList->Clone();}
+  void SetLRefQy3am(TObjArray *hList){this->fOADBzArray_contQy3am = (TObjArray *) hList->Clone();}
+  void SetLRefQx3as(TObjArray *hList){this->fOADBzArray_contQx3as = (TObjArray *) hList->Clone();}
+  void SetLRefQy3as(TObjArray *hList){this->fOADBzArray_contQy3as = (TObjArray *) hList->Clone();}
+  void SetLRefQx2cm(TObjArray *hList){this->fOADBzArray_contQx2cm = (TObjArray *) hList->Clone();}
+  void SetLRefQy2cm(TObjArray *hList){this->fOADBzArray_contQy2cm = (TObjArray *) hList->Clone();}
+  void SetLRefQx2cs(TObjArray *hList){this->fOADBzArray_contQx2cs = (TObjArray *) hList->Clone();}
+  void SetLRefQy2cs(TObjArray *hList){this->fOADBzArray_contQy2cs = (TObjArray *) hList->Clone();}
+  void SetLRefQx3cm(TObjArray *hList){this->fOADBzArray_contQx3cm = (TObjArray *) hList->Clone();}
+  void SetLRefQy3cm(TObjArray *hList){this->fOADBzArray_contQy3cm = (TObjArray *) hList->Clone();} 
+  void SetLRefQx3cs(TObjArray *hList){this->fOADBzArray_contQx3cs = (TObjArray *) hList->Clone();} 
+  void SetLRefQy3cs(TObjArray *hList){this->fOADBzArray_contQy3cs = (TObjArray *) hList->Clone();}
+  void SetLRefTPCposEta(TObjArray *hList){this->fOADBcentArray_contTPCposEta = (TObjArray *) hList->Clone();}
+  void SetLRefTPCnegEta(TObjArray *hList){this->fOADBcentArray_contTPCnegEta = (TObjArray *) hList->Clone();}
+
   void CreateQnVectorHandlers(); // Create the QnVector handlers, including loading the calibration files
     //== e == Setter Prepare  ################################################
 
 
-  /// ========================================================================================
+  // ========================================================================================
+    bool ExtractRecentPara(TFile *RefFile, TObjArray *lRefQx2am, TObjArray *lRefQy2am, TObjArray *lRefQx2as, TObjArray *lRefQy2as, TObjArray *lRefQx3am, TObjArray *lRefQy3am, TObjArray *lRefQx3as, TObjArray *lRefQy3as, TObjArray *lRefQx2cm, TObjArray *lRefQy2cm, TObjArray *lRefQx2cs, TObjArray *lRefQy2cs, TObjArray *lRefQx3cm,TObjArray *lRefQy3cm, TObjArray *lRefQx3cs, TObjArray *lRefQy3cs, TObjArray *lRefTPCposEta, TObjArray *lRefTPCnegEta);
+
     bool SetAODEvent(AliAODEvent* event); 
     void ResetAODEvent(); 
     
@@ -147,8 +174,7 @@ public:
     void SetTPCPtLimits(double ptmin=0.2, double ptmax=5) {fPtMinTPC=ptmin; fPtMaxTPC=ptmax;}
     void SetFractionOfTPCtracksToUse(double fracToKeep) {fFractionOfTracksForQnTPC = fracToKeep;}
     void SetCalibrationsOADBFileName(TString OADBfileName) {fOADBFileName = OADBfileName;}
-    bool LoadOADBCalibrations();
-    
+
     int GetCalibrationType() const {return fCalibType;}
     int GetNormalisationMethod() const {return fNormMethod;}
     TString GetCalibrationsOADBFileName() const {return fOADBFileName;}
@@ -160,11 +186,11 @@ public:
     void EnablePhiDistrHistos();
     TH2F* GetPhiDistrHistosTPCPosEta() const {return fPhiVsCentrTPC[0];}
     TH2F* GetPhiDistrHistosTPCNegEta() const {return fPhiVsCentrTPC[1];}
-    /// ========================================================================================
+    // ========================================================================================
 
 protected:
-  AliEventCuts fEventCuts;                         //!<! Event selection  
-  // TList        *fEventCutList; /// Output list for event cut histograms
+  AliEventCuts fEventCuts;       //!<! Event selection  
+  // TList        *fEventCutList; ///< Output list for event cut histograms
   Bool_t       fUseAliEventCuts; ///< Flag to use AliEventCuts (otherwise AliAnalysisTaskEmcal will be used)
   Bool_t       fUseManualEventCuts; ///< Flag to use manual event cuts
 
@@ -178,18 +204,16 @@ private:
 
     double GetEventPlaneAngle(double Qx, double Qy) const {return (TMath::Pi()+TMath::ATan2(-Qy,-Qx))/2;}
 
-    TList *fOutputList;                              //!<! output list for histograms
-    TH1F *fHistNEvents;                              //!<! histo with number of events
+    TList *fOutputList;               //!<! output list for histograms
+    TH1F *fHistNEvents;               //!<! histo with number of events
     
-    int fCalibType;                                  /// type of calibrations used by handler
-    int fNormMethod;                                 /// normalisation of Q vector
+    int fCalibType;                   /// type of calibrations used by handler
+    int fNormMethod;                  /// normalisation of Q vector
     
     AliAODEvent* fAOD;                /// AOD event
     TString fOADBFileName;            /// OADB input file name
-    TFile*  fOADBFile;                //!<!
-    TFile*  fCalibRefFile;            //!<!
-    TList*  fCalibRefObjList;         //!<!
-    TList*  fCalibV0Ref;              //!<!
+    TList*  fCalibRefObjList;         ///<
+    TList*  fCalibV0Ref;              ///<
 
     Bool_t  fPileupCut = kFALSE;      ///<
     Bool_t  fTPCQnMeasure = kFALSE;   ///<
@@ -211,10 +235,10 @@ private:
     std::string   fRunListFileName;         ///< Run list file Name
     TString       fCalibRefFileName;        ///< Calibration input file name
 
-    Bool_t        fExLJetFromFit = kTRUE;         ///< exclude tracks from bkg fit.
-    AliEmcalJet*  fLeadingJet;            //! leading jet
-    AliEmcalJet*  fLeadingJetAfterSub;    //! leading jet after background subtraction
-    TF1*          fFitModulation;         //-> modulation fit for rho
+    Bool_t        fExLJetFromFit = kTRUE;   ///< exclude tracks from bkg fit.
+    AliEmcalJet*  fLeadingJet;              //! leading jet
+    AliEmcalJet*  fLeadingJetAfterSub;      //! leading jet after background subtraction
+    TF1*          fFitModulation;           //-> modulation fit for rho
 
     void          VzeroGainCalibQA();
 
@@ -232,7 +256,7 @@ private:
     Bool_t     MeasureBkg();
     void       BkgFitEvaluation(TH1F* hBkgTracks, TF1* fFitModulation);
     
-    void       DoEventPlane();
+    Bool_t     DoEventPlane();
     void       DoJetLoop();
     void       DoTrackLoop();
     
@@ -286,7 +310,7 @@ private:
     //   return chi;
     // }
     
-    /// Functions for Pile Up Event Removal:
+    //  Functions for Pile Up Event Removal:
     // TF1   *fV0CutPU;        //!<!
     // TF1   *fSPDCutPU;       //!<!
     // TF1   *fMultCutPU;      //!<!
@@ -297,40 +321,40 @@ private:
     Double_t V0Mult3[3];    /// For q3 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
     
     //qnVector 0:x, 1:y
-    Double_t q2VecV0M[2];   /// Q2 V0 C+A vector(x,y)
-    Double_t q2VecV0C[2];   /// Q2 V0 C+A vector(x,y)
-    Double_t q2VecV0A[2];   /// Q2 V0 C+A vector(x,y)
-    Double_t q2V0[3];       /// psi2 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
-    Double_t q2NormV0[3];   /// Q2 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
-    Double_t q3VecV0M[2];   /// Q3 V0 C+A vector(x,y)
-    Double_t q3VecV0C[2];   /// Q3 V0 C vector(x,y)
-    Double_t q3VecV0A[2];   /// Q3 V0 A vector(x,y)
-    Double_t q3V0[3];       /// Q3 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
-    Double_t q3NormV0[3];   /// Q3 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
+    Double_t q2VecV0M[2];   ///< Q2 V0 C+A vector(x,y)
+    Double_t q2VecV0C[2];   ///< Q2 V0 C+A vector(x,y)
+    Double_t q2VecV0A[2];   ///< Q2 V0 C+A vector(x,y)
+    Double_t q2V0[3];       ///< psi2 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
+    Double_t q2NormV0[3];   ///< Q2 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
+    Double_t q3VecV0M[2];   ///< Q3 V0 C+A vector(x,y)
+    Double_t q3VecV0C[2];   ///< Q3 V0 C vector(x,y)
+    Double_t q3VecV0A[2];   ///< Q3 V0 A vector(x,y)
+    Double_t q3V0[3];       ///< Q3 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
+    Double_t q3NormV0[3];   ///< Q3 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
     
-    Double_t psi2V0[3];     /// psi2 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
-    Double_t psi3V0[3];     /// psi3 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
+    Double_t psi2V0[3];     ///< psi2 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
+    Double_t psi3V0[3];     ///< psi3 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
 
 
-    Double_t TpcMult2[3];  /// For q2 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
-    Double_t TpcMult3[3];  /// For q3 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
+    Double_t TpcMult2[3];  ///< For q2 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
+    Double_t TpcMult3[3];  ///< For q3 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
     //qnVector 0:eta posi, 1:eta nega
-    Double_t q2VecTpcM[2];  ///  Q2 TPC posi + nega
-    Double_t q2VecTpcP[2];  ///  Q2 TPC nega
-    Double_t q2VecTpcN[2];  ///  Q2 TPC nega
-    Double_t q2Tpc[3];      ///  psi2 TPC 0:eta negative (C side), 1:eta positive (A side)side)
-    Double_t q2NormTpc[3];  ///  psi2 TPC 0:eta negative (C side), 1:eta positive (A side)side)
-    Double_t q3VecTpcM[2];  ///  Q3 TPC posi + nega
-    Double_t q3VecTpcP[2];  ///  Q3 TPC posi
-    Double_t q3VecTpcN[2];  ///  Q3 TPC nega
-    Double_t q3Tpc[3];      ///  psi2 TPC 0:eta negative (C side), 1:eta positive (A side)
-    Double_t q3NormTpc[3];  ///  psi2 TPC 0:eta negative (C side), 1:eta positive (A side)side)
+    Double_t q2VecTpcM[2];  ///<  Q2 TPC posi + nega
+    Double_t q2VecTpcP[2];  ///<  Q2 TPC nega
+    Double_t q2VecTpcN[2];  ///<  Q2 TPC nega
+    Double_t q2Tpc[3];      ///<  psi2 TPC 0:eta negative (C side), 1:eta positive (A side)side)
+    Double_t q2NormTpc[3];  ///<  psi2 TPC 0:eta negative (C side), 1:eta positive (A side)side)
+    Double_t q3VecTpcM[2];  ///<  Q3 TPC posi + nega
+    Double_t q3VecTpcP[2];  ///<  Q3 TPC posi
+    Double_t q3VecTpcN[2];  ///<  Q3 TPC nega
+    Double_t q3Tpc[3];      ///<  psi2 TPC 0:eta negative (C side), 1:eta positive (A side)
+    Double_t q3NormTpc[3];  ///<  psi2 TPC 0:eta negative (C side), 1:eta positive (A side)side)
 
-    Double_t psi2Tpc[3];    ///  psi2 TPC 0:eta negative (C side), 1:eta positive (A side)
-    Double_t psi3Tpc[3];    ///  psi3 TPC 0:eta negative (C side), 1:eta positive (A side)
+    Double_t psi2Tpc[3];    ///<  psi2 TPC 0:eta negative (C side), 1:eta positive (A side)
+    Double_t psi3Tpc[3];    ///<  psi3 TPC 0:eta negative (C side), 1:eta positive (A side)
 
-    Double_t fV2ResoV0;     ///  V2 resolution value
-    Double_t fV3ResoV0;     ///  V3 resolution value
+    Double_t fV2ResoV0;     ///<  V2 resolution value
+    Double_t fV3ResoV0;     ///<  V3 resolution value
 
 
     TH2F *fHCorrV0ChWeghts;   //!<!
@@ -343,11 +367,11 @@ private:
     TH1D *fHCorrQ3xV0A;       //!<!
     TH1D *fHCorrQ3yV0A;       //!<! 
     
-    int fPrevEventRun;                               /// run number of event previously analysed
+    int fPrevEventRun;         ///< run number of event previously analysed
 
-    TString fTriggerClass;                           /// trigger class
-    unsigned long long fTriggerMask;                 /// trigger mask
-    bool fRejectTPCPileup;                           /// TPC pileup rejection
+    TString fTriggerClass;                 ///< trigger class
+    unsigned long long fTriggerMask;       ///< trigger mask
+    bool fRejectTPCPileup;                 ///< TPC pileup rejection
 
 
     fitModulationType  fFitModulationType;  ///< fit modulation type
@@ -368,82 +392,82 @@ private:
     bool IsTrackSelected(AliAODTrack* track);
 
     //data members
-    double fEtaMinTPC;             /// Absolute minimum value of eta for TPC Q vector
-    double fEtaMaxTPC;             /// Absolute maximum value of eta for TPC Q vector
-    double fPtMinTPC;              /// Minimum value of pt for TPC Q vector
-    double fPtMaxTPC;              /// Maximum value of pt for TPC Q vector
+    double fEtaMinTPC;             ///< Absolute minimum value of eta for TPC Q vector
+    double fEtaMaxTPC;             ///< Absolute maximum value of eta for TPC Q vector
+    double fPtMinTPC;              ///< Minimum value of pt for TPC Q vector
+    double fPtMaxTPC;              ///< Maximum value of pt for TPC Q vector
 
-    TBits fUsedTrackPosIDs;    /// IDs of tracks (with positive ID) used for the computation of the Q vector (TPC)
-    TBits fUsedTrackNegIDs;      /// IDs of tracks (with negative ID) used for the computation of the Q vector (TPC)
+    TBits fUsedTrackPosIDs;    ///< IDs of tracks (with positive ID) used for the computation of the Q vector (TPC)
+    TBits fUsedTrackNegIDs;    ///< IDs of tracks (with negative ID) used for the computation of the Q vector (TPC)
 
     //random rejection 
-    double fFractionOfTracksForQnTPC;   /// Fraction of tracks to keep when rejection enabled
+    double fFractionOfTracksForQnTPC;   ///< Fraction of tracks to keep when rejection enabled
 
     //data members needed for calibrations
   
-    AliAODVZERO* fV0;                        /// V0 info for the considered event
-    int fRun;                                /// Run number
-    double fZvtx;                            /// Primary vertx Z 
-    double fCentrality;                      /// Event centrality
+    AliAODVZERO* fV0;                        ///< V0 info for the considered event
+    int fRun;                                ///< Run number
+    double fZvtx;                            ///< Primary vertx Z 
+    double fCentrality;                      ///< Event centrality
 
-    bool fIsOADBFileOpen;                     /// Flag to test whether the OADB file is open
+    bool fIsOADBFileOpen;                    ///< Flag to test whether the OADB file is open
 
     // OADB Objects for streaming
-    AliOADBContainer * fMultV0BefCorPfpx;     /// OADB object containing the hMultV0BefCorPfpx histograms
+    AliOADBContainer * fMultV0BefCorPfpx;    ///< OADB object containing the hMultV0BefCorPfpx histograms
 
-    TObjArray *fOADBzArray_contQx2am; /// Array of OADB contQx2am object, index is z-vertex bin
-    TObjArray *fOADBzArray_contQy2am; /// Array of OADB contQy2am object, index is z-vertex bin
-    TObjArray *fOADBzArray_contQx2as; /// Array of OADB contQx2as object, index is z-vertex bin
-    TObjArray *fOADBzArray_contQy2as; /// Array of OADB contQy2as object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQx2am; ///< Array of OADB contQx2am object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQy2am; ///< Array of OADB contQy2am object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQx2as; ///< Array of OADB contQx2as object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQy2as; ///< Array of OADB contQy2as object, index is z-vertex bin
 
-    TObjArray *fOADBzArray_contQx2cm; /// Array of OADB contQx2cm object, index is z-vertex bin
-    TObjArray *fOADBzArray_contQy2cm; /// Array of OADB contQy2cm object, index is z-vertex bin
-    TObjArray *fOADBzArray_contQx2cs; /// Array of OADB contQx2cs object, index is z-vertex bin
-    TObjArray *fOADBzArray_contQy2cs; /// Array of OADB contQy2cs object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQx2cm; ///< Array of OADB contQx2cm object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQy2cm; ///< Array of OADB contQy2cm object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQx2cs; ///< Array of OADB contQx2cs object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQy2cs; ///< Array of OADB contQy2cs object, index is z-vertex bin
 
-    TObjArray *fOADBzArray_contQx3am; /// Array of OADB contQx3am object, index is z-vertex bin
-    TObjArray *fOADBzArray_contQy3am; /// Array of OADB contQy3am object, index is z-vertex bin
-    TObjArray *fOADBzArray_contQx3as; /// Array of OADB contQx3as object, index is z-vertex bin
-    TObjArray *fOADBzArray_contQy3as; /// Array of OADB contQy3as object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQx3am; ///< Array of OADB contQx3am object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQy3am; ///< Array of OADB contQy3am object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQx3as; ///< Array of OADB contQx3as object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQy3as; ///< Array of OADB contQy3as object, index is z-vertex bin
 
-    TObjArray *fOADBzArray_contQx3cm; /// Array of OADB contQx3cm object, index is z-vertex bin
-    TObjArray *fOADBzArray_contQy3cm; /// Array of OADB contQy3cm object, index is z-vertex bin
-    TObjArray *fOADBzArray_contQx3cs; /// Array of OADB contQx3cs object, index is z-vertex bin
-    TObjArray *fOADBzArray_contQy3cs; /// Array of OADB contQy3cs object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQx3cm; ///< Array of OADB contQx3cm object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQy3cm; ///< Array of OADB contQy3cm object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQx3cs; ///< Array of OADB contQx3cs object, index is z-vertex bin
+    TObjArray *fOADBzArray_contQy3cs; ///< Array of OADB contQy3cs object, index is z-vertex bin
 
-    TObjArray *fOADBcentArray_contTPCposEta; /// Array of OADB contTPCposEta, index is cent bin
-    TObjArray *fOADBcentArray_contTPCnegEta; /// Array of OADB contTPCnegEta, index is cent bin
+    TObjArray *fOADBcentArray_contTPCposEta; ///< Array of OADB contTPCposEta, index is cent bin
+    TObjArray *fOADBcentArray_contTPCnegEta; ///< Array of OADB contTPCnegEta, index is cent bin
 
-    int fCalibObjRun;            /// Run of loaded calibration objects
+    int fCalibObjRun;            ///< Run of loaded calibration objects
 
-    TH1D* fHistMultV0;           /// Profile from V0 multiplicity
+    TH1D* fHistMultV0;           ///< Profile from V0 multiplicity
 
-    TH1D* fQx2mV0A[14];                                        /// <Qxn> V0A
-    TH1D* fQy2mV0A[14];                                        /// <Qyn> V0A
-    TH1D* fQx2sV0A[14];                                        /// sigma Qxn V0A
-    TH1D* fQy2sV0A[14];                                        /// sigma Qyn V0A
+    TH1D* fQx2mV0A[14];                                        ///< <Qxn> V0A
+    TH1D* fQy2mV0A[14];                                        ///< <Qyn> V0A
+    TH1D* fQx2sV0A[14];                                        ///< sigma Qxn V0A
+    TH1D* fQy2sV0A[14];                                        ///< sigma Qyn V0A
     
-    TH1D* fQx2mV0C[14];                                        /// <Qxn> V0C
-    TH1D* fQy2mV0C[14];                                        /// <Qyn> V0C
-    TH1D* fQx2sV0C[14];                                        /// sigma Qxn V0C
-    TH1D* fQy2sV0C[14];                                        /// sigma Qyn V0C
+    TH1D* fQx2mV0C[14];                                        ///< <Qxn> V0C
+    TH1D* fQy2mV0C[14];                                        ///< <Qyn> V0C
+    TH1D* fQx2sV0C[14];                                        ///< sigma Qxn V0C
+    TH1D* fQy2sV0C[14];                                        ///< sigma Qyn V0C
 
-    TH1D* fQx3mV0A[14];                                        /// <Qxn> V0A
-    TH1D* fQy3mV0A[14];                                        /// <Qyn> V0A
-    TH1D* fQx3sV0A[14];                                        /// sigma Qxn V0A
-    TH1D* fQy3sV0A[14];                                        /// sigma Qyn V0A
+    TH1D* fQx3mV0A[14];                                        ///< <Qxn> V0A
+    TH1D* fQy3mV0A[14];                                        ///< <Qyn> V0A
+    TH1D* fQx3sV0A[14];                                        ///< sigma Qxn V0A
+    TH1D* fQy3sV0A[14];                                        ///< sigma Qyn V0A
     
-    TH1D* fQx3mV0C[14];                                        /// <Qxn> V0C
-    TH1D* fQy3mV0C[14];                                        /// <Qyn> V0C
-    TH1D* fQx3sV0C[14];                                        /// sigma Qxn V0C
-    TH1D* fQy3sV0C[14];                                        /// sigma Qyn V0C
+    TH1D* fQx3mV0C[14];                                        ///< <Qxn> V0C
+    TH1D* fQy3mV0C[14];                                        ///< <Qyn> V0C
+    TH1D* fQx3sV0C[14];                                        ///< sigma Qxn V0C
+    TH1D* fQy3sV0C[14];                                        ///< sigma Qyn V0C
 
-    bool fV0CalibZvtxDiff;          // flag to properly manage Zvtx differential V0 calibrations
+    bool fV0CalibZvtxDiff;          //< flag to properly manage Zvtx differential V0 calibrations
 
-    TH1D* fWeightsTPCPosEta[9];     /// Weights for TPC tracks with eta > 0
-    TH1D* fWeightsTPCNegEta[9];     /// Weights for TPC tracks with eta < 0
-    bool fEnablePhiDistrHistos;    /// Enable phi distribution histos
-    TH2F* fPhiVsCentrTPC[2];     /// Phi vs. centr TH2 of selected TPC tracks in eta>0 and eta<0
+    TH1D* fWeightsTPCPosEta[9];  ///< Weights for TPC tracks with eta > 0
+    TH1D* fWeightsTPCNegEta[9];  ///< Weights for TPC tracks with eta < 0
+    bool fEnablePhiDistrHistos;  ///< Enable phi distribution histos
+    TH2F* fPhiVsCentrTPC[2];     ///< Phi vs. centr TH2 of selected TPC tracks in eta>0 and eta<0
     
   /// ========================================================================================
 
@@ -451,7 +475,7 @@ private:
     AliAnalysisTaskRawJetWithEP(const AliAnalysisTaskRawJetWithEP&); // not implemented
     AliAnalysisTaskRawJetWithEP &operator=(const AliAnalysisTaskRawJetWithEP&);
 
-    ClassDef(AliAnalysisTaskRawJetWithEP, 73);
+    ClassDef(AliAnalysisTaskRawJetWithEP, 131);
 };
 
 #endif

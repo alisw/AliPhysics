@@ -189,6 +189,7 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		TH2F* histPV0[4];
 		TH2F* histEV0[4];
 		TH2F* histPiTof[4];
+		TH2F* histPiTof2[4];
 
 
 		AliAnalysisTaskFlatenicityPiKp(
@@ -200,3 +201,4 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 };
 
 #endif
+
