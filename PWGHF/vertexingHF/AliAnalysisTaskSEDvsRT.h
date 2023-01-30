@@ -75,6 +75,7 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    virtual void QSortTracks(TObjArray &a, Int_t first, Int_t last); 
    virtual TObjArray* SortRegions(const AliVParticle* leading, TObjArray *array);
    virtual TObjArray* GetMinMaxRegion(TList *transv1, TList *transv2);
+   virtual void FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t fPhiLeading, Double_t rtval,Double_t weight);
    TList *fOutput;         //!<! list to send on output slot 1
    TList *fListCuts;       ///list of cuts
    TList *fOutputCounters; //!<! list to send on output slot 3
@@ -129,6 +130,9 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    TH3D *fPtvsMassvsRTToward; //!<! output hist for mass vs RT (for candidates toward)
    TH3D *fPtvsMassvsRTAway;   //!<! output hist for mass vs RT (for candidates away)
    TH3D *fPtvsMassvsRTTrans;  //!<! output hist for mass vs RT (for transverse candidates)
+   TH3D *fPtvsMassvsRTTowardMC; //!<! output hist for mass vs RT (for MC candidates toward)
+   TH3D *fPtvsMassvsRTAwayMC;   //!<! output hist for mass vs RT (for MC candidates away)
+   TH3D *fPtvsMassvsRTTransMC;  //!<! output hist for mass vs RT (for MC transverse candidates)
    AliAnalysisFilter* fTrackFilter[18]; //! track filter
    AliAnalysisFilter* fTrackFilterGlobal; //! filter to select global tracks
    AliAnalysisFilter* fTrackFilterComplementary; //! filter to select complementary tracks
@@ -138,7 +142,7 @@ class AliAnalysisTaskSEDvsRT : public AliAnalysisTaskSE
    THnSparse *fOutNsparse;    //!<! output THnSparse for RT analysis
    
    /// \cond CLASSIMP
-   ClassDef(AliAnalysisTaskSEDvsRT,5); /// charmed hadrons vs. RT task
+   ClassDef(AliAnalysisTaskSEDvsRT,6); /// charmed hadrons vs. RT task
    /// \endcond
 };
 
