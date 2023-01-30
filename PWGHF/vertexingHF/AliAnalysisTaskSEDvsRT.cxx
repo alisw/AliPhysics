@@ -32,6 +32,8 @@
 #include <TH3F.h>
 #include <THnSparse.h>
 #include <TProfile.h>
+#include "AliAODMCParticle.h"
+#include "AliAODMCHeader.h"
 #include "AliAnalysisManager.h"
 #include "AliRDHFCuts.h"
 #include "AliRDHFCutsDplustoKpipi.h"
@@ -53,6 +55,7 @@
 #include "AliVertexingHFUtils.h"
 #include "AliAODVZERO.h"
 #include "AliESDUtils.h"
+
 
 
 //________________________________________________________________________
@@ -99,6 +102,9 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT():
    fPtvsMassvsRTToward(0),
    fPtvsMassvsRTAway(0),
    fPtvsMassvsRTTrans(0),
+   fPtvsMassvsRTTowardMC(0),
+   fPtvsMassvsRTAwayMC(0),
+   fPtvsMassvsRTTransMC(0),
    fTrackFilterGlobal(0),
    fTrackFilterComplementary(0),
    fUseHybridTracks(kTRUE),
@@ -153,6 +159,9 @@ AliAnalysisTaskSEDvsRT::AliAnalysisTaskSEDvsRT(const char *name, Int_t pdgSpecie
    fPtvsMassvsRTToward(0),
    fPtvsMassvsRTAway(0),
    fPtvsMassvsRTTrans(0),
+   fPtvsMassvsRTTowardMC(0),
+   fPtvsMassvsRTAwayMC(0),
+   fPtvsMassvsRTTransMC(0),
    fTrackFilterGlobal(0),
    fTrackFilterComplementary(0),
    fUseHybridTracks(kTRUE),
@@ -307,9 +316,18 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
 
    fPtvsMassvsRTTrans = new TH3D("hPtvsMassvsRTTrans", "D candidates in transverse region: p_{T} vs mass vs R_{T};R_{T};Mass [GeV/c^{2}];p_{T} [GeV/c}",nRTbins,firstRTbin,lastRTbin, fNMassBins, fLowmasslimit, fUpmasslimit, nPTbins, ptmin, ptmax);
 
+
+   fPtvsMassvsRTTowardMC = new TH3D("hPtvsMassvsRTTowardMC", "(MC) D candidates in toward region: p_{T} vs mass vs R_{T};R_{T};Mass [GeV/c^{2}];p_{T} [GeV/c]",nRTbins,firstRTbin,lastRTbin, fNMassBins,fLowmasslimit,fUpmasslimit,nPTbins, ptmin, ptmax);
+   fPtvsMassvsRTAwayMC = new TH3D("hPtvsMassvsRTAwayMC", "(MC) D candidates in away region: p_{T} vs mass vs R_{T};R_{T};Mass [GeV/c^{2}];p_{T} [GeV/c]",nRTbins,firstRTbin,lastRTbin, fNMassBins,fLowmasslimit,fUpmasslimit,nPTbins, ptmin, ptmax);
+
+   fPtvsMassvsRTTransMC = new TH3D("hPtvsMassvsRTTransMC", "(MC) D candidates in transverse region: p_{T} vs mass vs R_{T};R_{T};Mass [GeV/c^{2}];p_{T} [GeV/c}",nRTbins,firstRTbin,lastRTbin, fNMassBins, fLowmasslimit, fUpmasslimit, nPTbins, ptmin, ptmax);
+
    fOutput->Add(fPtvsMassvsRTToward);
    fOutput->Add(fPtvsMassvsRTAway);
    fOutput->Add(fPtvsMassvsRTTrans);
+   fOutput->Add(fPtvsMassvsRTTowardMC);
+   fOutput->Add(fPtvsMassvsRTAwayMC);
+   fOutput->Add(fPtvsMassvsRTTransMC);
 
 
    fHistNEvents = new TH1F("fHistNEvents", "number of events ",12,-0.5,11.5);
@@ -365,7 +383,7 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
 	double geolenght = 130.;
 	double maxchi2tpcglobal = 36.;
 	// ------------------------------------- //
-	
+
 	// variations of the track cuts -------- //
 	if ( iTc == 1) maxdcaz = 1.0;
 	if ( iTc == 2) maxdcaz = 5.0;
@@ -415,8 +433,8 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
 	fTrackFilterGlobal = new AliAnalysisFilter("fTrackFilterGlobal0");
 	esdTrackCutsGlobal[0] = new AliESDtrackCuts("esdTrackCutsRunGlobal0"); //use other slots for systematic if needed;
 	esdTrackCutsGlobal[0]->SetMinNCrossedRowsTPC(70);
-	esdTrackCutsGlobal[0]->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); 
-	esdTrackCutsGlobal[0]->SetMaxChi2PerClusterTPC(4); 
+	esdTrackCutsGlobal[0]->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+	esdTrackCutsGlobal[0]->SetMaxChi2PerClusterTPC(4);
 	esdTrackCutsGlobal[0]->SetAcceptKinkDaughters(kFALSE);
 	esdTrackCutsGlobal[0]->SetRequireTPCRefit(kTRUE);
 	esdTrackCutsGlobal[0]->SetRequireITSRefit(kTRUE);
@@ -425,7 +443,7 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
 	esdTrackCutsGlobal[0]->SetMaxDCAToVertexZ(2);
 	esdTrackCutsGlobal[0]->SetDCAToVertex2D(kFALSE);
 	esdTrackCutsGlobal[0]->SetRequireSigmaToVertex(kFALSE);
-	esdTrackCutsGlobal[0]->SetMaxChi2PerClusterITS(36); 
+	esdTrackCutsGlobal[0]->SetMaxChi2PerClusterITS(36);
 	esdTrackCutsGlobal[0]->SetEtaRange(-0.8,0.8);
 	fTrackFilterGlobal->AddCuts(esdTrackCutsGlobal[0]);
 
@@ -433,8 +451,8 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
 	esdTrackCutsComplementary[0] = new AliESDtrackCuts("esdTrackCutsRunComplementary0"); //use other slots for systematic if needed;
 
 	esdTrackCutsComplementary[0]->SetMinNCrossedRowsTPC(70);
-	esdTrackCutsComplementary[0]->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8); 
-	esdTrackCutsComplementary[0]->SetMaxChi2PerClusterTPC(4); 
+	esdTrackCutsComplementary[0]->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+	esdTrackCutsComplementary[0]->SetMaxChi2PerClusterTPC(4);
 	esdTrackCutsComplementary[0]->SetAcceptKinkDaughters(kFALSE);
 	esdTrackCutsComplementary[0]->SetRequireTPCRefit(kTRUE);
 	esdTrackCutsComplementary[0]->SetRequireITSRefit(kTRUE);
@@ -443,7 +461,7 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
 	esdTrackCutsComplementary[0]->SetMaxDCAToVertexZ(2);
 	esdTrackCutsComplementary[0]->SetDCAToVertex2D(kFALSE);
 	esdTrackCutsComplementary[0]->SetRequireSigmaToVertex(kFALSE);
-	esdTrackCutsComplementary[0]->SetMaxChi2PerClusterITS(36); 
+	esdTrackCutsComplementary[0]->SetMaxChi2PerClusterITS(36);
 	esdTrackCutsComplementary[0]->SetEtaRange(-0.8,0.8);
 	fTrackFilterComplementary->AddCuts(esdTrackCutsComplementary[0]);
   }
@@ -634,8 +652,26 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
   Double_t weight = 1.; //dummy weight for filling (needed later?)
   //!----l.839-888: multiplicity correction
 
+  //Load MC info if MC
+ TClonesArray *arrayMC=0;
+   AliAODMCHeader *mcHeader=0;
 
+     //Double_t nchWeight=1.0;
+  // load MC particles
+  if(fReadMC){
 
+    arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName()); ///ADDED
+    if(!arrayMC) {
+      printf("AliAnalysisTaskSEDvsMultiplicity::UserExec: MC particles branch not found!\n");
+      return;
+    }
+    // load MC header
+    mcHeader =  (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName()); ///ADDED
+    if(!mcHeader) {
+      printf("AliAnalysisTaskSEDvsMultiplicity::UserExec: MC header branch not found!\n");
+      return;
+    }
+ }
 
 //l.948-1094: MC multiplicity counting/reweighting
 
@@ -652,27 +688,11 @@ void AliAnalysisTaskSEDvsRT::UserExec(Option_t */*option*/)
 
   // PDG of daughters for Lc2pK0
   UInt_t pdgDgLctopK0S[2] = {2212, 310};
- //Load MC info if MC
-TClonesArray *arrayMC=0;
-  AliAODMCHeader *mcHeader=0;
 
-  Double_t nchWeight=1.0;
 
-  // load MC particles
-  if(fReadMC){
+  //Double_t nchWeight=1.0;
 
-    //arrayMC =  (TClonesArray*)aod->GetList()->FindObject(AliAODMCParticle::StdBranchName());
-    if(!arrayMC) {
-      printf("AliAnalysisTaskSEDvsMultiplicity::UserExec: MC particles branch not found!\n");
-      return;
-    }
-    // load MC header
-   // mcHeader =  (AliAODMCHeader*)aod->GetList()->FindObject(AliAODMCHeader::StdBranchName());
-    if(!mcHeader) {
-      printf("AliAnalysisTaskSEDvsMultiplicity::UserExec: MC header branch not found!\n");
-      return;
-    }
- }
+
    // omitting "aveMult" l.1110
 
   //TODO:  Loop on candidates, perform selection, !!determine phi of candidate wrt leading particle, fill corresponding histo (toward/away)
@@ -713,7 +733,7 @@ TClonesArray *arrayMC=0;
       } else {
          labD = d->MatchToMC(fPdgSpecies,arrayMC,nDau,(Int_t*)pdgDau);
       }
-      // FillMCMassHistos(arrayMC,labD, countMult,nchWeight);  ////!TODO be implemented
+      FillMCMassHistos(arrayMC,labD, fPhiLeading, rtval,weight);  ///ADDED
      }
 
      Int_t passAllCuts = 0, passTopolCuts = 0;
@@ -1139,4 +1159,45 @@ TObjArray* AliAnalysisTaskSEDvsRT::GetMinMaxRegion(TList *transv1, TList *transv
    }
 
   return regionParticles;
+}
+
+void AliAnalysisTaskSEDvsRT::FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t fPhiLeading, Double_t rtval,Double_t weight)
+{
+  //
+  /// Function to fill the true MC signal
+  //
+  if(labD>=0){
+
+  AliAODMCParticle *partD = (AliAODMCParticle*)arrayMC->At(labD);
+  Double_t invMass = partD->M();
+  Double_t ptCand = partD->Pt();
+  Double_t phiCand = partD->Phi();
+  Double_t candDeltaPhi = phiCand - fPhiLeading; //delta-phi wrt leading particle
+
+
+  if (candDeltaPhi <= -TMath::PiOver2()) candDeltaPhi += TMath::TwoPi();
+  if (candDeltaPhi > 3*TMath::PiOver2()) candDeltaPhi-=TMath::TwoPi();
+
+  Double_t fDeltaPhiMinCut = TMath::DegToRad()*60.;
+  Double_t fDeltaPhiMaxCut = TMath::DegToRad()*120.;
+  Int_t region = 0;
+  if ((candDeltaPhi < -fDeltaPhiMinCut) || (candDeltaPhi > 2*fDeltaPhiMaxCut)) region = -1; //left
+  if ((candDeltaPhi >  fDeltaPhiMinCut) && (candDeltaPhi < fDeltaPhiMaxCut))   region = 1; //right
+
+  if ((candDeltaPhi > -fDeltaPhiMinCut) && (candDeltaPhi < fDeltaPhiMinCut))   region = 2; // toward
+  if ((candDeltaPhi > fDeltaPhiMinCut) && (candDeltaPhi < 2*fDeltaPhiMaxCut))   region = -2; //away
+
+  if ((region == 1) || (region == -1)) { // fill transverse histo
+  fPtvsMassvsRTTransMC->Fill(rtval,invMass,ptCand,weight);
+
+  }
+  if (region == 2) { // fill toward histo
+  fPtvsMassvsRTTowardMC->Fill(rtval,invMass,ptCand,weight);
+  }
+  if (region == -2) { // fill away histo
+  fPtvsMassvsRTAwayMC->Fill(rtval,invMass,ptCand,weight);
+  }
+
+  }
+
 }
