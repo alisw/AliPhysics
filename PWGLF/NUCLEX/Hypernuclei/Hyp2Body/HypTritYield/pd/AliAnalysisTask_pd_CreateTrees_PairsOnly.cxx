@@ -2016,6 +2016,9 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
 
 
 
+  // temporary extremly wide TOF cut
+  double TOF_m2	  = CalculateMassSquareTOF(Track);
+  if((TOF_m2 < 0.4) || (TOF_m2 > 2.0)) return PassedParticleCuts;
 
 
   // check if TOF information is available
@@ -2071,7 +2074,7 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
     // apply ITS cluster cut
     double nClusterITS = Track.GetITSNcls();
     if(TMath::IsNaN(nClusterITS)) return PassedParticleCuts;
-    if(nClusterITS <= Proton_ITS_nCluster_min) return PassedParticleCuts;
+    if(nClusterITS < Proton_ITS_nCluster_min) return PassedParticleCuts;
 
   } // end of ITSisOK
 
@@ -2232,8 +2235,9 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
 
 
-
-
+  // temporary extremly wide TOF cut
+  double TOF_m2	  = CalculateMassSquareTOF(Track);
+  if((TOF_m2 < 1.5) || (TOF_m2 > 6.0)) return PassedParticleCuts;
 
   // check if TOF information is available
   AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse.CheckPIDStatus(AliPIDResponse::kTOF,&Track);
@@ -2288,7 +2292,7 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
     // apply ITS cluster cut
     double nClusterITS = Track.GetITSNcls();
     if(TMath::IsNaN(nClusterITS)) return PassedParticleCuts;
-    if(nClusterITS <= Deuteron_ITS_nCluster_min) return PassedParticleCuts;
+    if(nClusterITS < Deuteron_ITS_nCluster_min) return PassedParticleCuts;
 
   } // end of ITSisOK
 
