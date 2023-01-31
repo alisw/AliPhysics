@@ -1576,6 +1576,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
   AliAnalysisDataContainer *cont = GetOutputSlot(2)->GetContainer();
   if(cont) normName = (TString)cont->GetName();
   fCounter = new AliNormalizationCounter(normName.Data());
+  fCounter->SetStudyMultiplicity(kTRUE,1.);
   fCounter->Init();
   PostData(2, fCounter);
   DefineEvent();
@@ -1706,7 +1707,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
 
   fNtracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
   AliMultSelection *MultSelection = dynamic_cast<AliMultSelection*>(AODEvent->FindListObject("MultSelection"));
-  if(MultSelection)fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+  if (MultSelection) fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
 
   //------------------------------------------------
   // Check if the event has v0 candidate
