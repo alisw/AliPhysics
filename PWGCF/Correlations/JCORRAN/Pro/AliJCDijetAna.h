@@ -58,6 +58,7 @@ class AliJCDijetAna : public TObject
                          double lDeltaPhiCut,
                          double lmatchingR,
                          double ltrackingIneff,
+                         TH1D*  ltrackingIneffHistogram, //Only needed if ltrackingIneff<0.0
                          bool   luseCrho,
                          bool   lThisIsTrueMC);
 
@@ -96,6 +97,8 @@ class AliJCDijetAna : public TObject
         double pionmass;
         double matchingR;
         double ftrackingIneff;
+        TH1D*  ftrackingIneffHisto;
+        double ftrackingIneffTemp;
         bool bEvtHasAreaInfo;
         bool bUseCrho;
         bool bThisIsTrueMC;

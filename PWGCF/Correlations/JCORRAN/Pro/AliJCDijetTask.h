@@ -28,6 +28,7 @@
 #include "AliGenPythiaEventHeader.h"
 #include "AliAnalysisHelperJetTasks.h"
 #include "AliEventCuts.h"
+#include "AliYAMLConfiguration.h"
 
 
 
@@ -68,6 +69,7 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
                                     double deltaPhiCut        = 2.0,
                                     double matchingR          = 0.2,
                                     double trackingIneff      = 0.0,
+                                    TString sAnchorPeriodForTracking = "",
                                     AliJCDijetAna::jetClasses lUnfJetClassTrue = AliJCDijetAna::iAcc,
                                     AliJCDijetAna::jetClasses lUnfJetClassDet = AliJCDijetAna::iAcc,
                                     Bool_t useCoveredAreaRho  = false);
@@ -118,6 +120,8 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         // Methods specific for this class
         void SetJCatalystTaskName(TString name){ fJCatalystTaskName=name; } // Setter for filter task name
         void SetJCatalystTaskNameDetMC(TString name){ fJCatalystDetMCTaskName=name; } // Setter for filter task name
+        void AddArtificialTrackingEfficiencyConfig(TString sAnchorPeriod);
+        void SetArtificialTrackingEfficiencyFromYAML();
 
         AliEventCuts fEventCuts; // Event cut object
 
@@ -163,6 +167,9 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         bool bUseCrho;
         bool bGoodEvent;
         bool bGoodMCEvent;
+        TH1D *fTrackEfficiencyHistogram; ///< This will define the tracking efficiency uncertainty in pt function. Implemented similarly as AliEmcalJetTask. At the moment only implemented for MB runs of pp and p--Pb.
+        PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< yaml configuration
+        TString fsAnchorPeriod;
 
         ClassDef(AliJCDijetTask, 1); 
 };

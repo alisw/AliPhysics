@@ -82,6 +82,7 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_dijetCosDeltaPhi(),
     fh_dijetDeltaEta(),
     fh_dijetCoshDeltaEta(),
+    fh_dijetSqrtGeometry(),
     fh_dijetSqrt2pt12(),
     fh_dijetPtPairDeltaPhiCut(),
     fh_dijetInvMDeltaPhiCut(),
@@ -92,6 +93,7 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_dijetCosDeltaPhiWithCut(),
     fh_dijetDeltaEtaWithCut(),
     fh_dijetCoshDeltaEtaWithCut(),
+    fh_dijetSqrtGeometryWithCut(),
     fh_dijetSqrt2pt12WithCut(),
     fh_dijetPtPairDeltaPhiCutWithCut(),
     fh_responseInfo(),
@@ -193,6 +195,7 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_dijetCosDeltaPhi(obj.fh_dijetCosDeltaPhi),
     fh_dijetDeltaEta(obj.fh_dijetDeltaEta),
     fh_dijetCoshDeltaEta(obj.fh_dijetCoshDeltaEta),
+    fh_dijetSqrtGeometry(obj.fh_dijetSqrtGeometry),
     fh_dijetSqrt2pt12(obj.fh_dijetSqrt2pt12),
     fh_dijetPtPairDeltaPhiCut(obj.fh_dijetPtPairDeltaPhiCut),
     fh_dijetInvMDeltaPhiCut(obj.fh_dijetInvMDeltaPhiCut),
@@ -203,6 +206,7 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_dijetCosDeltaPhiWithCut(obj.fh_dijetCosDeltaPhiWithCut),
     fh_dijetDeltaEtaWithCut(obj.fh_dijetDeltaEtaWithCut),
     fh_dijetCoshDeltaEtaWithCut(obj.fh_dijetCoshDeltaEtaWithCut),
+    fh_dijetSqrtGeometryWithCut(obj.fh_dijetSqrtGeometryWithCut),
     fh_dijetSqrt2pt12WithCut(obj.fh_dijetSqrt2pt12WithCut),
     fh_responseInfo(obj.fh_responseInfo),
     fh_jetResponseDeltaR(obj.fh_jetResponseDeltaR),
@@ -309,7 +313,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     // 29: Number of accepted kt-dijets with delta phi cut
     // 30: Number of MC events discarded because of pt_jet > 4*pt_hard
     fh_events
-        << TH1D("h_events", "h_events", 40, 0.0, 40.0 )
+        << TH1D("h_events", "h_events", 50, 0.0, 50.0 )
         << fHistCentBin
         << "END" ;
 
@@ -577,6 +581,11 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << fHistCentBin << fJetBin
         << "END" ;
 
+    fh_dijetSqrtGeometry
+        << TH1D("h_dijetSqrtGeometry", "h_dijetSqrtGeometry", 162, 0.0, 1.62)
+        << fHistCentBin << fJetBin
+        << "END" ;
+
     fh_dijetSqrt2pt12
         << TH1D("h_dijetSqrt2pt12", "h_dijetSqrt2pt12", 500, 0, 500)
         << fHistCentBin << fJetBin
@@ -625,6 +634,11 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
 
     fh_dijetCoshDeltaEtaWithCut
         << TH1D("h_dijetCoshDeltaEtaWithCut", "h_dijetCoshDeltaEtaWithCut", 61, 0.995, 1.605)
+        << fHistCentBin << fJetBin
+        << "END" ;
+
+    fh_dijetSqrtGeometryWithCut
+        << TH1D("h_dijetSqrtGeometryWithCut", "h_dijetSqrtGeometryWithCut", 162, 0.0, 1.62)
         << fHistCentBin << fJetBin
         << "END" ;
 

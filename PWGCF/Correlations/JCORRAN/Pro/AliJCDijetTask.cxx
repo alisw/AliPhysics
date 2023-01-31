@@ -25,6 +25,7 @@
 //////////////////////////////////////////////////////////////////////////////
 #include <AliAnalysisManager.h>
 #include "AliJCDijetTask.h" 
+//#include "AliProdInfo.h"
 
 //______________________________________________________________________________
 AliJCDijetTask::AliJCDijetTask() :
@@ -50,6 +51,7 @@ AliJCDijetTask::AliJCDijetTask() :
     fmatchingR(0),
     fhistos(NULL),
     fhistosDetMC(NULL),
+    fTrackEfficiencyHistogram(NULL),
     fana(NULL),
     fanaMC(NULL),
     fCBin(-1),
@@ -84,6 +86,7 @@ AliJCDijetTask::AliJCDijetTask(const char *name, TString inputformat):
     fmatchingR(0),
     fhistos(NULL),
     fhistosDetMC(NULL),
+    fTrackEfficiencyHistogram(NULL),
     fana(NULL),
     fanaMC(NULL),
     fCBin(-1),
@@ -121,6 +124,7 @@ AliJCDijetTask::AliJCDijetTask(const AliJCDijetTask& ap) :
     fmatchingR(ap.fmatchingR),
     fhistos(ap.fhistos),
     fhistosDetMC(ap.fhistosDetMC),
+    fTrackEfficiencyHistogram(ap.fTrackEfficiencyHistogram),
     fana(ap.fana),
     fanaMC(ap.fanaMC),
     fCBin(ap.fCBin),
@@ -152,6 +156,7 @@ AliJCDijetTask::~AliJCDijetTask()
     delete fOutput;
     delete fhistos;
     delete fhistosDetMC;
+    delete fTrackEfficiencyHistogram;
     delete fana;
     delete fanaMC;
     delete fUtils;
@@ -272,6 +277,13 @@ void AliJCDijetTask::UserCreateOutputObjects()
         cout << endl;
     }
 
+    if(ftrackingIneff<0.0) {
+        fYAMLConfig.Reinitialize();
+        //if ftrackingIneff set as any negative number, use pt dependend ineff.
+        SetArtificialTrackingEfficiencyFromYAML();
+    }
+
+
 #if !defined(__CINT__) && !defined(__MAKECINT__)
     //Note: for true MC we do not want to cut particles kinematically.
     fana->SetSettings(fDebug,
@@ -291,6 +303,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
                       fdeltaPhiCut,
                       fmatchingR,
                       0.0, //Tracking ineff only for det level.
+                      nullptr, //Not needed if ^ not used
                       bUseCrho,
                       fIsMC); //Is this true mc
 
@@ -312,6 +325,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
                             fdeltaPhiCut,
                             fmatchingR,
                             ftrackingIneff,
+                            fTrackEfficiencyHistogram,
                             bUseCrho,
                             false); //Is this true mc
     }
@@ -521,6 +535,54 @@ void AliJCDijetTask::Terminate(Option_t *)
     cout<<"AliJCDijetTask Analysis DONE !!"<<endl; 
 }
 
+/**
+ * Stream and initialise tracking efficiency yaml file
+ * Original implementation in AliEmcalJetTask
+ */
+void AliJCDijetTask::AddArtificialTrackingEfficiencyConfig(TString sAnchorPeriod) {
+    fsAnchorPeriod=sAnchorPeriod;
+    std::string path = "$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/TrackEfficiencyConfiguration.yaml";
+    Printf("Get pT-dependent Tracking efficiency from %s", path.c_str());
+    int addedConfig = fYAMLConfig.AddConfiguration(path, "yamlConfig");
+    if (addedConfig < 0) {
+        AliFatal(TString::Format("YAML Configuration in set path %s not found!",path.c_str()).Data());
+    }
+    fYAMLConfig.Initialize();
+}
+
+/**
+ * Set the pt-dependent tracking efficiency from the loaded YAML file
+ * Original implementation in AliEmcalJetTask
+ */
+void AliJCDijetTask::SetArtificialTrackingEfficiencyFromYAML() {
+  std::vector <Double_t> ptBinning;
+  std::vector <Double_t> trackingUncertainty;
+  bool res = fYAMLConfig.GetProperty("ptBinning", ptBinning, false);
+  Int_t nPtBins = ptBinning.size()-1;
+  double* aptBinning = ptBinning.data();
+
+  //TODO: could implement automatic anchor period search.
+  //auto userInfo = fInputHandler->GetUserInfo();
+  //AliProdInfo prodInfo(userInfo);
+  //std::string period = prodInfo.GetAnchorProduction().Data();
+  std::string period = fsAnchorPeriod.Data();
+  std::string cent = "0_100"; //Here I have implemented MB only. Search AliEmcalJetTask for cent binned implementation.
+  //AliInfoStream() << "anchor production = " << prodInfo.GetAnchorProduction()<< "\n";
+
+  res = fYAMLConfig.GetProperty({period,cent},trackingUncertainty, false);
+  if(res) {
+      fTrackEfficiencyHistogram = new TH1D("fTrackEfficiencyHistogram","h",nPtBins,aptBinning);
+      for(Int_t i = 0; i < nPtBins; i++) {
+          fTrackEfficiencyHistogram->SetBinContent(i+1, trackingUncertainty.at(i));
+          AliDebug(2,TString::Format("pT %f - %f \t track uncertainty: %f", ptBinning.at(i), ptBinning.at(i+1), trackingUncertainty.at(i)).Data());
+      }
+  }
+  else {
+      fTrackEfficiencyHistogram = nullptr;
+      AliFatal("not able to find any pt-dependent uncertainties for the anchored period %s of the MC that you are running over");
+  }
+}
+
 //_____________________________________________________________________
 AliAnalysisTask *AliJCDijetTask::AddTaskJCDijetTask(TString taskName,
                                     Bool_t isMC,
@@ -544,6 +606,7 @@ AliAnalysisTask *AliJCDijetTask::AddTaskJCDijetTask(TString taskName,
                                     double deltaPhiCut        ,
                                     double matchingR          ,
                                     double trackingIneff      ,
+                                    TString sAnchorPeriodForTracking ,
                                     AliJCDijetAna::jetClasses lUnfJetClassTrue ,
                                     AliJCDijetAna::jetClasses lUnfJetClassDet ,
                                     Bool_t useCoveredAreaRho)
@@ -621,6 +684,7 @@ AliAnalysisTask *AliJCDijetTask::AddTaskJCDijetTask(TString taskName,
     dijetTask->SetIsMC(isMC);
     dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut, matchingR, trackingIneff, minJetPt);
     dijetTask->AddFlags(flags);
+    if(trackingIneff<0.0) dijetTask->AddArtificialTrackingEfficiencyConfig(sAnchorPeriodForTracking);
     cout << dijetTask->GetName() << endl;
 
 
