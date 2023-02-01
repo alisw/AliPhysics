@@ -1579,6 +1579,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
   fCounter->SetStudyMultiplicity(kTRUE,1.);
   fCounter->Init();
   PostData(2, fCounter);
+
   DefineEvent();
   PostData(3, fTree_Event);  // postdata will notify the analysis manager of changes / updates to the 
 
@@ -1624,7 +1625,14 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
   if (!fpVtx) return;
   fHistEvents->Fill(2);
 
-  fCounter->StoreEvent(AODEvent,fAnaCuts,fIsMC);
+  Int_t vzeroMult=0, vzeroMultA=0, vzeroMultC=0;
+  AliAODVZERO *vzeroAOD = (AliAODVZERO*)AODEvent->GetVZEROData();
+  if (vzeroAOD) {
+    vzeroMultA = static_cast<Int_t>(vzeroAOD->GetMTotV0A());
+    vzeroMultC = static_cast<Int_t>(vzeroAOD->GetMTotV0C());
+    vzeroMult  = vzeroMultA + vzeroMultC;
+  }
+  fCounter->StoreEvent(AODEvent,fAnaCuts,fIsMC,vzeroMult); // Fill "AliNormalizationCounter" with V0A+V0C multiplicity
 
   //------------------------------------------------
   // MC analysis setting                                                                    
