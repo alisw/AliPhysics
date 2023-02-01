@@ -320,8 +320,9 @@ void AliJBaseCard::WriteCard(TDirectory *file){
 }
 
 
-
-
+int AliJBaseCard::GetNwithIndex(int i){ 
+    return fValuesVector[i].GetNrows();
+}
 
 
 

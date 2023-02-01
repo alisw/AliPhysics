@@ -61,7 +61,7 @@ public:
 protected:
   void    ReadInputCard();
 
-  int     GetNwithIndex(int i){ return fValuesVector[i].GetNrows(); }
+  int     GetNwithIndex(int i);
 
   unsigned int GetTVectorIndex(TString keyword, int tol=0);
 
