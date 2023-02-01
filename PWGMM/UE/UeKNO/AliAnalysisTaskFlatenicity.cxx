@@ -497,7 +497,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
       isGoodVtxPosMC = kTRUE;
   }
 
-  MakeanalysispureMCBefore();
+  if (fUseMC) MakeanalysispureMCBefore();
   // Trigger selection
   UInt_t fSelectMask = fInputHandler->IsEventSelected();
   Bool_t isINT7selected = fSelectMask & AliVEvent::kINT7;
@@ -512,7 +512,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   }
 
   hCounter->Fill(2.0);
-  MakeanalysispureMCAfter();
+  if (fUseMC)  MakeanalysispureMCAfter();
 
   // Good vertex
   Bool_t hasRecVertex = kFALSE;
@@ -743,8 +743,7 @@ void AliAnalysisTaskFlatenicity::MakeanalysispureMCBefore() {
       continue;
     if (TMath::Abs(particle->Charge()) < 0.1)
       continue;
-    if (fUseMC)
-      hPtBefore->Fill(particle->Pt());
+    hPtBefore->Fill(particle->Pt());
   }
 }
 //______________________________________________________________________________
@@ -763,8 +762,7 @@ void AliAnalysisTaskFlatenicity::MakeanalysispureMCAfter() {
       continue;
     if (TMath::Abs(particle->Charge()) < 0.1)
       continue;
-    if (fUseMC)
-      hPtAfter->Fill(particle->Pt());
+    hPtAfter->Fill(particle->Pt());
   }
 }
 
