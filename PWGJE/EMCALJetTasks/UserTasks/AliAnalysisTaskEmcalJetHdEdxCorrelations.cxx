@@ -56,6 +56,7 @@ namespace PWGJE
                                                                                            fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
                                                                                            fDisableFastPartition(kFALSE),
                                                                                            fRandom(0),
+                                                                                           fqnVectorReader(0),
                                                                                            fEfficiencyPeriodIdentifier(AliAnalysisTaskEmcalJetHUtils::kLHC18qr),
                                                                                            fArtificialTrackInefficiency(1.0),
                                                                                            fNoMixedEventJESCorrection(kFALSE),
@@ -67,6 +68,7 @@ namespace PWGJE
                                                                                            fMaxMatchedJetDistance(-1),
                                                                                            fHistManager(),
                                                                                            fHistJetHTrackPt(nullptr),
+                                                                                           fHistEPAngle(nullptr),
                                                                                            fHistJetEtaPhi(nullptr),
                                                                                            fHistJetHEtaPhi(nullptr),
                                                                                            fhnMixedEvents(nullptr),
@@ -91,6 +93,7 @@ namespace PWGJE
                                                                                                            fTriggerType(AliVEvent::kEMCEJE), fMixingEventType(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral),
                                                                                                            fDisableFastPartition(kFALSE),
                                                                                                            fRandom(0),
+                                                                                                           fqnVectorReader(0),
                                                                                                            fEfficiencyPeriodIdentifier(AliAnalysisTaskEmcalJetHUtils::kLHC18qr),
                                                                                                            fArtificialTrackInefficiency(1.0),
                                                                                                            fNoMixedEventJESCorrection(kFALSE),
@@ -102,6 +105,7 @@ namespace PWGJE
                                                                                                            fMaxMatchedJetDistance(-1),
                                                                                                            fHistManager(name),
                                                                                                            fHistJetHTrackPt(nullptr),
+                                                                                                           fHistEPAngle(nullptr),
                                                                                                            fHistJetEtaPhi(nullptr),
                                                                                                            fHistJetHEtaPhi(nullptr),
                                                                                                            fhnMixedEvents(nullptr),
@@ -222,10 +226,12 @@ namespace PWGJE
 
       // Create histograms
       fHistJetHTrackPt = new TH1F("fHistJetHTrackPt", "P_{T} distribution", 1000, 0.0, 100.0);
+      fHistEPAngle = new TH1F("fHistEPAngle", "#Psi_{2} distribution for 2018 calib", 100, -TMath::Pi(), 3. * TMath::Pi());
       fHistJetEtaPhi = new TH2F("fHistJetEtaPhi", "Jet eta-phi", 900, -1.8, 1.8, 720, -3.2, 3.2);
       fHistJetHEtaPhi = new TH2F("fHistJetHEtaPhi", "Jet-Hadron deta-dphi", 900, -1.8, 1.8, 720, -1.6, 4.8);
 
       fOutput->Add(fHistJetHTrackPt);
+      fOutput->Add(fHistEPAngle);
       fOutput->Add(fHistJetEtaPhi);
       fOutput->Add(fHistJetHEtaPhi);
 
@@ -272,11 +278,11 @@ namespace PWGJE
       UInt_t cifras = 0; // bit coded, see GetDimParams() below
       if (fDoLessSparseAxes)
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 7 | 1 << 11;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 11 | 1 << 12;
       }
       else
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 7 | 1 << 11;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 11 | 1 << 12;
         ;
       }
       fhnJH = NewTHnSparseF("fhnJH", cifras);
@@ -290,11 +296,11 @@ namespace PWGJE
         // analysis if so desired.
         if (fDoLessSparseAxes)
         {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 7;
+          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7;
         }
         else
         {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 7 | 1 << 8 | 1 << 9;
+          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 9;
         }
         fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
         fhnMixedEvents->Sumw2();
@@ -465,6 +471,8 @@ namespace PWGJE
       Double_t deltaEta = 0;
       Double_t deltaR = 0;
       Double_t epAngle = 0;
+      // Event plane angle from V0C
+      Double_t EP_angle_from_calib = 0;
       // Event activity (centrality or multipilicity)
       Double_t eventActivity = 0;
       // Efficiency correction
@@ -484,6 +492,16 @@ namespace PWGJE
 
       // Determine the trigger for the current event
       UInt_t eventTrigger = RetrieveTriggerMask();
+
+      // new way of getting qnvectors
+      fqnVectorReader = (AliAnalysisTaskJetQnVectors *)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetQnVectors");
+      if (!fqnVectorReader)
+      {
+        printf("Error: No AliAnalysisTaskJetQnVectors");
+        return 0;
+      } // GetQnVectorReader
+      EP_angle_from_calib = fqnVectorReader->GetEPangleV0C();
+      fHistEPAngle->Fill(EP_angle_from_calib);
 
       AliDebugStream(5) << "Beginning main processing. Number of jets: " << jets->GetNJets() << ", accepted jets: " << jets->GetNAcceptedJets() << "\n";
 
@@ -546,8 +564,9 @@ namespace PWGJE
         if (jet == leadingJet)
           leadJet = kTRUE;
         isBiasedJet = BiasedJet(jet);
-        epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
-
+        // epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
+        // new way of getting qnvectors
+        epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), EP_angle_from_calib);
         // Fill jet properties
         fHistJetEtaPhi->Fill(jet->Eta(), jet->Phi());
         FillHist(fHistJetPt[fCentBin], jetPt);
@@ -571,7 +590,7 @@ namespace PWGJE
             // Get proper track properties
             track.Clear();
             track = trackIter->first;
-            AliVTrack *vTrack = static_cast<AliVTrack *>(trackIter->second);
+            AliVTrack *vTrack = dynamic_cast<AliVTrack *>(trackIter->second);
 
             // Artificial inefficiency
             // Note that we already randomly rejected tracks so that the same tracks will be rejected for the mixed events
@@ -585,24 +604,30 @@ namespace PWGJE
               Double_t pionSignalDelta;
               pionSignalDelta = pidResponse->GetSignalDelta((AliPIDResponse::EDetector)1, vTrack, (AliPID::EParticleType)2, kFALSE);
 
+              // Double_t TPCsignal = aodTrack->GetTPCsignal();
+
               // Fill track properties
               fHistJetHTrackPt->Fill(track.Pt());
               fHistJetHEtaPhi->Fill(deltaEta, deltaPhi);
 
               // Calculate single particle tracking efficiency for correlations
               efficiency = EffCorrection(track.Eta(), track.Pt());
-              AliDebugStream(6) << "track eta: " << track.Eta() << ", track pt: " << track.Pt() << ", efficiency: " << efficiency << "\n";
+              AliDebugStream(6) << "track eta: " << track.Eta() << ", track pt: " << track.Pt() << ", efficiency: " << efficiency << ", TPCsignal: "
+                                << "\n";
+
+              // get track eta
+              Double_t trackEta = track.Eta();
 
               if (isBiasedJet == kTRUE)
               {
                 if (fDoLessSparseAxes)
                 { // check if we want all dimensions
-                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle, pionSignalDelta};
+                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, pionSignalDelta, trackEta};
                   FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
                 }
                 else
                 {
-                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle, zVertex, deltaR, pionSignalDelta};
+                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, zVertex, deltaR, pionSignalDelta, trackEta};
                   FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
                 }
               }
@@ -703,8 +728,9 @@ namespace PWGJE
                   leadJet = kTRUE;
                 }
                 isBiasedJet = BiasedJet(jet);
-                epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
-
+                // epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
+                // new way of getting qnvectors
+                epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), EP_angle_from_calib);
                 // Make sure event contains a biased jet above our threshold (reduce stats of sparse)
                 if (jetPt < 15 || isBiasedJet == kFALSE)
                   continue;
@@ -1082,10 +1108,17 @@ namespace PWGJE
         break;
 
       case 11:
-        label = "TPC Pion Signal Delta";
-        nbins = 100;
-        xmin = -20;
-        xmax = 20;
+        label = "Pion TPC Signal △";
+        nbins = 60;
+        xmin = -15;
+        xmax = 15;
+        break;
+
+      case 12:
+        label = "Track eta";
+        nbins = 50;
+        xmin = -1.2;
+        xmax = 1.2;
         break;
       }
     }
