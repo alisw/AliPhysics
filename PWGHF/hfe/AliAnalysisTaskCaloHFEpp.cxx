@@ -90,6 +90,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         CutMimClE(0.3),
 	pTe("name"),
 	massMin(0),
+	fisoEcut(0.05),
+	fisoTrcut(3),
 	Nref(0),
 	NrefV0(0),
 	Nch(0),
@@ -307,6 +309,8 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         CutMimClE(0.3),
 	pTe("name"),
 	massMin(0),
+	fisoEcut(0.05),
+	fisoTrcut(3),
 	Nref(0),
 	NrefV0(0),
 	Nch(0),
@@ -1640,7 +1644,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                             //cout <<"isoarray = " << isoarray[7] << endl;
                             fIsoArray->Fill(isoarray);
                             if(IsoEnergy<0.05)fDCAxy_Pt_We->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
-                            if(IsoEnergy < 0.05 && NtrackCone <3)iIsocut=kTRUE;
+                            //if(IsoEnergy < 0.05 && NtrackCone <3)iIsocut=kTRUE;
+                            if(IsoEnergy < fisoEcut && fisoTrcut <3)iIsocut=kTRUE;
                             if(iIsocut && TMath::Abs(pdgorg)==23 && TrkPt>30.0)
                               { 
 	                       AliAODMCParticle* fMCparticleWZ = (AliAODMCParticle*) fMCarray->At(ilabelM);
