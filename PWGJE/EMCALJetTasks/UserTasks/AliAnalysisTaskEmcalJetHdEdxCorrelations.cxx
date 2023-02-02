@@ -278,11 +278,11 @@ namespace PWGJE
       UInt_t cifras = 0; // bit coded, see GetDimParams() below
       if (fDoLessSparseAxes)
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 11 | 1 << 12;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1 << 16;
       }
       else
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 11 | 1 << 12;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1 << 16;
         ;
       }
       fhnJH = NewTHnSparseF("fhnJH", cifras);
@@ -438,6 +438,9 @@ namespace PWGJE
       // NOTE: Clusters are never used directly in the task, so the container is neither created not retrieved
       // Retrieve tracks
       AliTrackContainer *tracks = static_cast<AliTrackContainer *>(GetParticleContainer("tracksForCorrelations"));
+      tracks->AddAODFilterBit((UInt_t)96);
+      tracks->AddAODFilterBit((UInt_t)16);
+      tracks->AddAODFilterBit((UInt_t)768);
       if (!tracks)
       {
         AliError(Form("%s: Unable to retrieve tracks!", GetName()));
@@ -601,8 +604,17 @@ namespace PWGJE
 
               GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
 
-              Double_t pionSignalDelta;
-              pionSignalDelta = pidResponse->GetSignalDelta((AliPIDResponse::EDetector)1, vTrack, (AliPID::EParticleType)2, kFALSE);
+              Double_t pionTPCnSigma;
+              Double_t pionTOFnSigma;
+              Double_t protonTOFnSigma;
+              Double_t kaonTOFnSigma;
+              Double_t electronTOFnSigma;
+
+              pionTPCnSigma = pidResponse->NumberOfSigmasTPC(vTrack, (AliPID::EParticleType)2);
+              pionTOFnSigma = pidResponse->NumberOfSigmasTOF(vTrack, (AliPID::EParticleType)2);
+              protonTOFnSigma = pidResponse->NumberOfSigmasTOF(vTrack, (AliPID::EParticleType)4);
+              kaonTOFnSigma = pidResponse->NumberOfSigmasTOF(vTrack, (AliPID::EParticleType)3);
+              electronTOFnSigma = pidResponse->NumberOfSigmasTOF(vTrack, (AliPID::EParticleType)0);
 
               // Double_t TPCsignal = aodTrack->GetTPCsignal();
 
@@ -622,12 +634,12 @@ namespace PWGJE
               {
                 if (fDoLessSparseAxes)
                 { // check if we want all dimensions
-                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, pionSignalDelta, trackEta};
+                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma, electronTOFnSigma};
                   FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
                 }
                 else
                 {
-                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, zVertex, deltaR, pionSignalDelta, trackEta};
+                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, zVertex, deltaR, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma, electronTOFnSigma};
                   FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
                 }
               }
@@ -1108,17 +1120,45 @@ namespace PWGJE
         break;
 
       case 11:
-        label = "Pion TPC Signal △";
-        nbins = 60;
-        xmin = -15;
-        xmax = 15;
-        break;
-
-      case 12:
         label = "Track eta";
         nbins = 50;
         xmin = -1.2;
         xmax = 1.2;
+        break;
+
+      case 12:
+        label = "Pion TPC nSigma";
+        nbins = 100;
+        xmin = -10;
+        xmax = 10;
+        break;
+
+      case 13:
+        label = "Pion TOF nSigma";
+        nbins = 60;
+        xmin = -5;
+        xmax = 5;
+        break;
+
+      case 14:
+        label = "Proton TOF nSigma";
+        nbins = 60;
+        xmin = -5;
+        xmax = 5;
+        break;
+
+      case 15:
+        label = "Kaon TOF nSigma";
+        nbins = 60;
+        xmin = -5;
+        xmax = 5;
+        break;
+
+      case 16:
+        label = "Electron TOF nSigma";
+        nbins = 60;
+        xmin = -5;
+        xmax = 5;
         break;
       }
     }
@@ -1566,6 +1606,7 @@ namespace PWGJE
         particlesForCorrelations->SetName("tracksForCorrelations");
         particlesForCorrelations->SetMinPt(0.15);
         particlesForCorrelations->SetEtaLimits(-1.0 * trackEta, trackEta);
+
         // Adopt the container
         this->AdoptParticleContainer(particlesForCorrelations);
       }
