@@ -119,6 +119,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fPairPtBins(),
   fPhiVBins(),
   fDoGenSmearing(false),
+  fDoRecSmearing(false),
   fPtMin(0.),
   fPtMax(0.),
   fEtaMin(-99.),
@@ -276,6 +277,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fPairPtBins(),
   fPhiVBins(),
   fDoGenSmearing(false),
+  fDoRecSmearing(false),
   fPtMin(0.),
   fPtMax(0.),
   fEtaMin(-99.),
@@ -1176,6 +1178,15 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
     // ##########################################################
     // check if electron comes from a mother with ele+pos as daughters
     CheckIfFromMotherWithDielectronAsDaughter(part);
+
+    // Test:Smear reconstructed particles to fill list for cutsetting
+    if (fDoRecSmearing == true && fArrResoPt){
+      TLorentzVector smearedVec = ApplyResolution(part.fPt, part.fEta, part.fPhi, part.fCharge);
+      part.fPt_smeared  = smearedVec.Pt();
+      part.fEta_smeared = smearedVec.Eta();
+      if (smearedVec.Phi() < 0) part.fPhi_smeared = smearedVec.Phi()+ 2 * pi;
+      else part.fPhi_smeared = smearedVec.Phi();
+    }
 
     // ##########################################################
     if      (fDoPairing == true && part.fCharge < 0) fRecNegPart.push_back(part);
