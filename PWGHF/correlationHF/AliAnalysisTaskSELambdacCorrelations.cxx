@@ -59,6 +59,7 @@
 #include "AliMultSelection.h"
 #include "AliAODVZERO.h"
 #include "AliESDUtils.h"
+#include "AliAnalysisTaskSELambdac.h"
 
 
 using std::cout;
@@ -122,7 +123,7 @@ AliAnalysisTaskSE(),
   fPoolNum(0),
   fSpeed(kOneBinSB),
   fMergePools(kFALSE),
-  fUseDeff(kTRUE),
+  fUseLceff(kTRUE),
   fUseTrackeff(kTRUE),
   fPtAssocLimit(1.),
   fMinDPt(2.),
@@ -207,7 +208,7 @@ AliAnalysisTaskSELambdacCorrelations::AliAnalysisTaskSELambdacCorrelations(const
   fPoolNum(0),
   fSpeed(kOneBinSB),
   fMergePools(kFALSE),
-  fUseDeff(kTRUE),
+  fUseLceff(kTRUE),
   fUseTrackeff(kTRUE),
   fPtAssocLimit(1.),
   fMinDPt(2.),
@@ -317,7 +318,7 @@ AliAnalysisTaskSELambdacCorrelations::AliAnalysisTaskSELambdacCorrelations(const
   fPoolNum(source.fPoolNum),
   fSpeed(source.fSpeed),
   fMergePools(source.fMergePools),
-  fUseDeff(source.fUseDeff),
+  fUseLceff(source.fUseLceff),
   fUseTrackeff(source.fUseTrackeff),
   fPtAssocLimit(source.fPtAssocLimit),
   fMinDPt(source.fMinDPt),
@@ -455,7 +456,7 @@ AliAnalysisTaskSELambdacCorrelations& AliAnalysisTaskSELambdacCorrelations::oper
   fPoolNum = orig.fPoolNum;
   fSpeed = orig.fSpeed;   
   fMergePools = orig.fMergePools;
-  fUseDeff = orig.fUseDeff;
+  fUseLceff = orig.fUseLceff;
   fUseTrackeff = orig.fUseTrackeff;
   fPtAssocLimit = orig.fPtAssocLimit;
   fMinDPt = orig.fMinDPt;
@@ -548,37 +549,33 @@ void AliAnalysisTaskSELambdacCorrelations::UserCreateOutputObjects()
   }
   //HFCorrelator creation and definition
   fCorrelatorTr = new AliHFCorrelator("CorrelatorTr",fCutsTracks,fSys,fCutsLambdac);//fSys=0 use multiplicity, =1 use centrality
-  fCorrelatorKc = new AliHFCorrelator("CorrelatorKc",fCutsTracks,fSys,fCutsLambdac);
-  fCorrelatorK0 = new AliHFCorrelator("CorrelatorK0",fCutsTracks,fSys,fCutsLambdac);
+
+
   fCorrelatorTr->SetDeltaPhiInterval(-TMath::Pi()/2,3*TMath::Pi()/2);// set the Delta Phi Interval you want (in this case -0.5Pi to 1.5 Pi)
-  fCorrelatorKc->SetDeltaPhiInterval(-TMath::Pi()/2,3*TMath::Pi()/2);
-  fCorrelatorK0->SetDeltaPhiInterval(-TMath::Pi()/2,3*TMath::Pi()/2);
+
+
   fCorrelatorTr->SetEventMixing(fMixing);// sets the analysis on a single event (kFALSE) or mixed events (kTRUE)
-  fCorrelatorKc->SetEventMixing(fMixing);
-  fCorrelatorK0->SetEventMixing(fMixing);
+
+
   fCorrelatorTr->SetAssociatedParticleType(1);// set 1 for correlations with hadrons, 2 with kaons, 3 with KZeros
-  fCorrelatorKc->SetAssociatedParticleType(2);// set 1 for correlations with hadrons, 2 with kaons, 3 with KZeros
-  fCorrelatorK0->SetAssociatedParticleType(3);// set 1 for correlations with hadrons, 2 with kaons, 3 with KZeros
+
+
   fCorrelatorTr->SetApplyDisplacementCut(2); //0: don't calculate Lambdac; 1: return Lambdac; 2: return Lambdac/Lambdacerr
-  fCorrelatorKc->SetApplyDisplacementCut(2);
-  fCorrelatorK0->SetApplyDisplacementCut(0);
+
+
   fCorrelatorTr->SetUseMC(fReadMC);// sets Montecarlo flag
-  fCorrelatorKc->SetUseMC(fReadMC);
-  fCorrelatorK0->SetUseMC(fReadMC);
+
+
   fCorrelatorTr->SetUseReco(fRecoTr);// sets (if MC analysis) wheter to analyze Reco or Kinem tracks
-  fCorrelatorKc->SetUseReco(fRecoTr);
-  fCorrelatorK0->SetUseReco(fRecoTr);
-  fCorrelatorKc->SetPIDmode(2); //switch for K+/- PID option
- // if(fMixing && fSoftPiCut) {
-  //  fCorrelatorTr->SetStoreInfoSoftPiME(kTRUE);
-  //  fCorrelatorKc->SetStoreInfoSoftPiME(kTRUE);
- // }
+
+
+
+ 
   Bool_t pooldefTr = fCorrelatorTr->DefineEventPool();// method that defines the properties ot the event mixing (zVtx and Multipl. bins)
-  Bool_t pooldefKc = fCorrelatorKc->DefineEventPool();// method that defines the properties ot the event mixing (zVtx and Multipl. bins)
-  Bool_t pooldefK0 = fCorrelatorK0->DefineEventPool();// method that defines the properties ot the event mixing (zVtx and Multipl. bins)
+
+
   if(!pooldefTr) AliInfo("Warning:: Event pool not defined properly");
-  if(!pooldefKc) AliInfo("Warning:: Event pool not defined properly");
-  if(!pooldefK0) AliInfo("Warning:: Event pool not defined properly");
+
 
   // Several histograms are more conveniently managed in a TList
   fOutputMass = new TList();
@@ -619,8 +616,8 @@ void AliAnalysisTaskSELambdacCorrelations::UserCreateOutputObjects()
 
     //MC signal
     if(fReadMC){
-      TH1F* tmpSt = new TH1F(nameSgn.Data(), "\Lambda_{c} invariant mass c - MC; M [GeV]; Entries",150,1.9864,2.5864);
-      TH1F* tmpStWg = new TH1F(nameSgnWg.Data(), "\Lambda_{c} invariant mass c - MC; M [GeV] - weight 1/Lambdaceff; Entries",150,1.9864,2.5864);
+      TH1F* tmpSt = new TH1F(nameSgn.Data(), "#Lambda_{c} invariant mass c - MC; M [GeV]; Entries",150,1.9864,2.5864);
+      TH1F* tmpStWg = new TH1F(nameSgnWg.Data(), "#Lambda_{c} invariant mass c - MC; M [GeV] - weight 1/Lambdaceff; Entries",150,1.9864,2.5864);
       tmpSt->Sumw2();
       tmpStWg->Sumw2();
 
@@ -680,8 +677,8 @@ void AliAnalysisTaskSELambdacCorrelations::UserCreateOutputObjects()
 
     //MC signal
     if(fReadMC){
-      TH1F* tmpSt = new TH1F(nameSgn.Data(), "\Lambda_{c} invariant mass b - MC; M [GeV]; Entries",150,1.9864,2.5864);
-      TH1F* tmpStWg = new TH1F(nameSgnWg.Data(), "\Lambda_{c} invariant mass b - MC; M [GeV] - weight 1/Lambdaceff; Entries",150,1.9864,2.5864);
+      TH1F* tmpSt = new TH1F(nameSgn.Data(), "#Lambda_{c} invariant mass b - MC; M [GeV]; Entries",150,1.9864,2.5864);
+      TH1F* tmpStWg = new TH1F(nameSgnWg.Data(), "#Lambda_{c} invariant mass b - MC; M [GeV] - weight 1/Lambdaceff; Entries",150,1.9864,2.5864);
       tmpSt->Sumw2();
       tmpStWg->Sumw2();
 
@@ -881,8 +878,6 @@ void AliAnalysisTaskSELambdacCorrelations::UserExec(Option_t */*option*/)
 
   //Setting PIDResponse for associated tracks
   fCorrelatorTr->SetPidAssociated();
-  fCorrelatorKc->SetPidAssociated();
-  fCorrelatorK0->SetPidAssociated();
 
   //Selection on production type (MC)
   if(fReadMC && fSelEvType){ 
@@ -1004,19 +999,14 @@ void AliAnalysisTaskSELambdacCorrelations::UserExec(Option_t */*option*/)
  
   //HFCorrelators initialization (for this event)
   fCorrelatorTr->SetAODEvent(aod); // set the AOD event from which you are processing
-  fCorrelatorKc->SetAODEvent(aod);
-  fCorrelatorK0->SetAODEvent(aod);
-  Bool_t correlatorONTr = fCorrelatorTr->Initialize(); // initialize the pool for event mixing
-  Bool_t correlatorONKc = fCorrelatorKc->Initialize();
-  Bool_t correlatorONK0 = fCorrelatorK0->Initialize();
-  if(!correlatorONTr) {AliInfo("AliHFCorrelator (tracks) didn't initialize the pool correctly or processed a bad event"); return;}
-  if(!correlatorONKc) {AliInfo("AliHFCorrelator (charged K) didn't initialize the pool correctly or processed a bad event"); return;}
-  if(!correlatorONK0) {AliInfo("AliHFCorrelator (K0) didn't initialize the pool correctly or processed a bad event"); return;}
 
+  Bool_t correlatorONTr = fCorrelatorTr->Initialize(); // initialize the pool for event mixing
+
+  if(!correlatorONTr) {AliInfo("AliHFCorrelator (tracks) didn't initialize the pool correctly or processed a bad event"); return;}
   if(fReadMC) {
     fCorrelatorTr->SetMCArray(mcArray); // set the TClonesArray *fmcArray for analysis on monte carlo
-    fCorrelatorKc->SetMCArray(mcArray);
-    fCorrelatorK0->SetMCArray(mcArray);
+
+
   }
 
   //Pool definition
@@ -1103,11 +1093,8 @@ void AliAnalysisTaskSELambdacCorrelations::UserExec(Option_t */*option*/)
 
         //Lambdac infos
         Double_t phiLambdac = fCorrelatorTr->SetCorrectPhiRange(d->Phi());
-                 phiLambdac = fCorrelatorKc->SetCorrectPhiRange(d->Phi());  //bad usage, but returns a Double_t...
-                 phiLambdac = fCorrelatorK0->SetCorrectPhiRange(d->Phi());
         fCorrelatorTr->SetTriggerParticleProperties(d->Pt(),phiLambdac,d->Eta()); // sets the parameters of the trigger particles that are needed
-        fCorrelatorKc->SetTriggerParticleProperties(d->Pt(),phiLambdac,d->Eta());
-        fCorrelatorK0->SetTriggerParticleProperties(d->Pt(),phiLambdac,d->Eta());
+
         
 
         
@@ -1144,40 +1131,40 @@ if(isMLsel)
             modelPred.push_back(-1.);
           }
           
-                  FillMassHists(d,mcArray,fCutsLambdac,fOutputMass,aod);
+          FillMassHists(d,mcArray,fCutsLambdac,fOutputMass,aod);
                   
-                  if(!fReadMC) {
-          if (TMath::Abs(d->Eta())<fEtaForCorrel) {
-	    if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);			
-            if(!fMixing && !fAlreadyFilled) {
- 	      ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
-	      ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv);
-            }
-	    if(fFillTrees==kNoTrees) CalculateCorrelations(d); //correlations on real data
-	  
-	  }
+          if(!fReadMC) {
+            if (TMath::Abs(d->Eta())<fEtaForCorrel) {
+	            if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);			
+              if(!fMixing && !fAlreadyFilled) {
+ 	            ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
+	            ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv);
+              }
+	           if(fFillTrees==kNoTrees) CalculateCorrelations(d); //correlations on real data
+	          }
         } else { //correlations on MC -> association of selected Lambdac to MCinfo with MCtruth
           if (TMath::Abs(d->Eta())<fEtaForCorrel) {
             Int_t pdgDgLambdactopKpi[3]={2212,321,211};
-    	    Int_t labLambdac = d->MatchToMC(4122,mcArray,3,pdgDgLambdactopKpi); //return MC particle label if the array corresponds to a Lambdac, -1 if not
+            //Int_t labLambdac = d->MatchToMC(4122,mcArray,3,pdgDgLambdactopKpi); //return MC particle label if the array corresponds to a Lambdac, -1 if not
+            Int_t labLambdac = MatchToMCLambdac(d, mcArray);
+
             if (labLambdac>-1) {
-  	      if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);
+  	          if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);
               if(!fMixing && !fAlreadyFilled) {
-		((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
+		            ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
                 ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
               }
-	      if(fFillTrees==kNoTrees) CalculateCorrelations(d,labLambdac,mcArray);
-              if(fFillTrees==kFillCutOptTree) { 
+	            if(fFillTrees==kNoTrees) CalculateCorrelations(d,labLambdac,mcArray);
+            /*  if(fFillTrees==kFillCutOptTree) { 
                 AliAODMCParticle *partLambdac = (AliAODMCParticle*)mcArray->At(labLambdac);
                 if (partLambdac->GetPdgCode()==4122) fIsSelectedCandidate = 1;
                 else fIsSelectedCandidate = 2;
                 //FillTreeLambdacForCutOptim(d,aod);
-              }
-	    }
+              } */
+	          }
           }
-        }
-          
-          } //isMLsel loop ends here
+        }    
+      } //isMLsel loop ends here
 
         //FillMassHists(d,mcArray,fCutsLambdac,fOutputMass,aod);
       }
@@ -1195,60 +1182,53 @@ if(isMLsel)
         AliWarning("Particle not found in tree, skipping"); 
         continue;
       } 
-  
       if(TMath::Abs(mcPart->GetPdgCode()) == 4122){  // THIS IS A Lambdac
         if (fCutsLambdac->IsInFiducialAcceptance(mcPart->Pt(),mcPart->Y()) ) {
           nSelectedloose++;
-          nSelectedtight++;      
-
-          //Removal of cases in which Lambdac decay is not in pKpi!
-	  if(mcPart->GetNDaughters()!=2) continue;
-	  AliAODMCParticle* mcDau1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(0)));
-	  AliAODMCParticle* mcDau2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(1)));
-	  if(!mcDau1 || !mcDau2) continue;
-	  Int_t pdg1 = TMath::Abs(mcDau1->GetPdgCode());
-	  Int_t pdg2 = TMath::Abs(mcDau2->GetPdgCode());
-          if(!((pdg1 == 211 && pdg2 == 321) || (pdg2 == 211 && pdg1 == 321))) continue;
-          if(TMath::Abs(mcDau1->Eta())>0.8||TMath::Abs(mcDau2->Eta())>0.8) continue;
+          nSelectedtight++; 
+          if( MatchLcToMC(mcPart, mcArray) > -1){
+          //cout << "BAUDO" << endl;
+            //Removal of cases in which Lambdac decay is not in pKpi!
+	          /*  if(mcPart->GetNDaughters()!=3) continue;
+	          AliAODMCParticle* mcDau1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(0)));
+	          AliAODMCParticle* mcDau2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(1)-1));
+	          AliAODMCParticle* mcDau3 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(1)));
+	          cout<<"daughter levels ------"<<mcDau1<<"  "<<mcDau2<<"  "<<mcDau3<<endl;
+	          if(!mcDau1 || !mcDau2 || !mcDau3) continue;
+	              cout<<"get pdg     "<<mcDau1->GetPdgCode()<<"  "<<mcDau2->GetPdgCode()<<"  "<<mcDau3->GetPdgCode()<<endl;
+	          Int_t pdg1 = TMath::Abs(mcDau1->GetPdgCode());
+	          Int_t pdg2 = TMath::Abs(mcDau2->GetPdgCode());
+	          Int_t pdg3 = TMath::Abs(mcDau3->GetPdgCode());
+            if(!((pdg1 == 2212 && pdg2 == 321 && pdg3 == 211) || (pdg1 == 211 && pdg2 == 321 && pdg3 == 2212))) continue;
+            if(TMath::Abs(mcDau1->Eta())>0.8||TMath::Abs(mcDau2->Eta())>0.8) continue;
             //Check momentum conservation (to exclude 4-prong decays with tracks outside y=1.5)
             Double_t p1[3]  = {mcDau1->Px(),mcDau1->Py(),mcDau1->Pz()};
             Double_t p2[3]  = {mcDau2->Px(),mcDau2->Py(),mcDau2->Pz()};
+            Double_t p3[3]  = {mcDau3->Px(),mcDau3->Py(),mcDau3->Pz()};
             Double_t pLambdac[3] = {mcPart->Px(),mcPart->Py(),mcPart->Pz()};
-            if(TMath::Abs( (p1[0]+p2[0]-pLambdac[0])*(p1[0]+p2[0]-pLambdac[0]) + (p1[1]+p2[1]-pLambdac[1])*(p1[1]+p2[1]-pLambdac[1]) + (p1[2]+p2[2]-pLambdac[2])*(p1[2]+p2[2]-pLambdac[2]) )>0.1) continue;
-
-          if(fSys==0) fNentries->Fill(19);
-          Int_t ptbin=fCutsLambdac->PtBin(mcPart->Pt());
-          if(ptbin==-1) {fNentries->Fill(17); continue;} //out of bounds  
+            if(TMath::Abs( (p1[0]+p2[0]+p3[0]-pLambdac[0])*(p1[0]+p2[0]+p3[0]-pLambdac[0]) + (p1[1]+p2[1]+p3[1]-pLambdac[1])*(p1[1]+p2[1]+p3[1]-pLambdac[1]) + (p1[2]+p2[2]+p3[2]-pLambdac[2])*(p1[2]+p2[2]+p3[2]-pLambdac[2]) )>0.1) continue; */
+            if(fSys==0) fNentries->Fill(19);
+            Int_t ptbin=fCutsLambdac->PtBin(mcPart->Pt());
+            if(ptbin==-1) {fNentries->Fill(17); continue;} //out of bounds  
   
-          //Lambdac infos
-          Double_t phiLambdac = fCorrelatorTr->SetCorrectPhiRange(mcPart->Phi());
-                   phiLambdac = fCorrelatorKc->SetCorrectPhiRange(mcPart->Phi());  //bad usage, but returns a Double_t...
-                   phiLambdac = fCorrelatorK0->SetCorrectPhiRange(mcPart->Phi());
-          fCorrelatorTr->SetTriggerParticleProperties(mcPart->Pt(),phiLambdac,mcPart->Eta()); // sets the parameters of the trigger particles that are needed
-          fCorrelatorKc->SetTriggerParticleProperties(mcPart->Pt(),phiLambdac,mcPart->Eta());
-          fCorrelatorK0->SetTriggerParticleProperties(mcPart->Pt(),phiLambdac,mcPart->Eta());
+            //Lambdac infos
+            Double_t phiLambdac = fCorrelatorTr->SetCorrectPhiRange(mcPart->Phi());
+            fCorrelatorTr->SetTriggerParticleProperties(mcPart->Pt(),phiLambdac,mcPart->Eta()); // sets the parameters of the trigger particles that are needed
+
           
   
-          if (TMath::Abs(mcPart->Eta())<fEtaForCorrel) {
-  
-            //Removal of Lambdac from D* feeddown! This solves also the problem of soft pions, now excluded
-         /*   Int_t mother = mcPart->GetMother();
-  	    AliAODMCParticle* mcMoth = dynamic_cast<AliAODMCParticle*>(mcArray->At(mother));
-            if(!mcMoth) continue;
-	    if(TMath::Abs(mcMoth->GetPdgCode())==413) continue;*/
-
-            if (mcPart->GetPdgCode()==4122) fIsSelectedCandidate = 1;
-    	    else fIsSelectedCandidate = 2;
-
-	    TString fillthis="histSgn_"; 
-	    if(CheckLambdacOrigin(mcArray,mcPart)==4) fillthis+="c_";
-	    else if(CheckLambdacOrigin(mcArray,mcPart)==5) fillthis+="b_";
-            else continue;
-            fillthis+=ptbin;
-	    ((TH1F*)(fOutputMass->FindObject(fillthis)))->Fill(2.286);
-	  
-          //  CalculateCorrelationsMCKine(mcPart,mcArray);
-            if(!fMixing) ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
+            if (TMath::Abs(mcPart->Eta())<fEtaForCorrel) {
+              if (mcPart->GetPdgCode()==4122) fIsSelectedCandidate = 1;
+    	        else fIsSelectedCandidate = 2;
+	            TString fillthis="histSgn_"; 
+	            if(CheckLambdacOrigin(mcArray,mcPart)==4) fillthis+="c_";
+	            else if(CheckLambdacOrigin(mcArray,mcPart)==5) fillthis+="b_";
+              else continue;
+              fillthis+=ptbin;
+	            ((TH1F*)(fOutputMass->FindObject(fillthis)))->Fill(2.286);
+              CalculateCorrelationsMCKine(mcPart,mcArray);
+              if(!fMixing) ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
+            }
           }
         }
       }
@@ -1258,9 +1238,7 @@ if(isMLsel)
 
   if(fMixing && fFillTrees!=kFillTrees /* && fAlreadyFilled*/) { // update the pool for Event Mixing, if: enabled,  event is ok, at least a SelLambdac found! (fAlreadyFilled's role!)
     Bool_t updatedTr = fCorrelatorTr->PoolUpdate();
-    Bool_t updatedKc = fCorrelatorKc->PoolUpdate();
-    Bool_t updatedK0 = fCorrelatorK0->PoolUpdate();
-    if(!updatedTr || !updatedKc || !updatedK0) AliInfo("Pool was not updated");
+    if(!updatedTr) AliInfo("Pool was not updated");
   }
   if(fFillTrees==kFillTrees && fAlreadyFilled) FillTreeTracks(aod);
   
@@ -1303,7 +1281,10 @@ void AliAnalysisTaskSELambdacCorrelations::FillMassHists(AliAODRecoDecayHF3Prong
   TString fillthis="";
   Int_t pdgDgLambdactopKpi[3]={2212,321,211};
   Int_t labLambdac=-1;
-  if (fReadMC) labLambdac = part->MatchToMC(4122,arrMC,3,pdgDgLambdactopKpi); //return MC particle label if the array corresponds to a Lambdac, -1 if not (cf. AliAODRecoDecay.cxx)
+  if (fReadMC) {
+    labLambdac = MatchToMCLambdac(part, arrMC);
+    //labLambdac = part->MatchToMC(4122,arrMC,3,pdgDgLambdactopKpi);*/
+  } //
 
   //count candidates selected by cuts
   fNentries->Fill(20);
@@ -1314,57 +1295,57 @@ void AliAnalysisTaskSELambdacCorrelations::FillMassHists(AliAODRecoDecayHF3Prong
 
     if(fReadMC){ //on MC
       if(labLambdac>=0 && CheckLambdacOrigin(arrMC,(AliAODMCParticle*)arrMC->At(labLambdac))==4) {
-  	AliAODMCParticle *partLambdac = (AliAODMCParticle*)arrMC->At(labLambdac);
-	Int_t pdgLambdac = partLambdac->GetPdgCode();
-	if (pdgLambdac==4122){ //Lambdac
-	  fillthis="histSgn_c_";
-	  fillthis+=ptbin;
-	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac);
+  	    AliAODMCParticle *partLambdac = (AliAODMCParticle*)arrMC->At(labLambdac);
+	      Int_t pdgLambdac = partLambdac->GetPdgCode();
+	      if (pdgLambdac==4122){ //Lambdac
+	        fillthis="histSgn_c_";
+	        fillthis+=ptbin;
+	        ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac);
           fillthis="histSgn_WeigLambdacEff_c_";
           fillthis+=ptbin;
           Double_t effLambdac = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-          if(!fUseDeff || !effLambdac) effLambdac=1.;
+          if(!fUseLceff || !effLambdac) effLambdac=1.;
           ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac,1./effLambdac);
-  	} else{ //it was a Lambdacbar
-	  fillthis="histRfl_c_";
-	  fillthis+=ptbin;
-	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac);
+  	    } else{ //it was a Lambdacbar
+	        fillthis="histRfl_c_";
+	        fillthis+=ptbin;
+	        ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac);
           fillthis="histRfl_WeigLambdacEff_c_";
           fillthis+=ptbin;
           Double_t effLambdac = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-          if(!fUseDeff || !effLambdac) effLambdac=1.;          
+          if(!fUseLceff || !effLambdac) effLambdac=1.;          
           ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac,1./effLambdac);
-  	}
+  	    }
       } else if(labLambdac>=0 && CheckLambdacOrigin(arrMC,(AliAODMCParticle*)arrMC->At(labLambdac))==5) {
-  	  AliAODMCParticle *partLambdac = (AliAODMCParticle*)arrMC->At(labLambdac);
-	  Int_t pdgLambdac = partLambdac->GetPdgCode();
-	  if (pdgLambdac==4122){ //Lambdac
-	    fillthis="histSgn_b_";
-	    fillthis+=ptbin;
-	    ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac);
-            fillthis="histSgn_WeigLambdacEff_b_";
-            fillthis+=ptbin;
-            Double_t effLambdac = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
-            if(!fUseDeff || !effLambdac) effLambdac=1.;            
-            ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac,1./effLambdac);
-  	  } else{ //it was a Lambdacbar
-	    fillthis="histRfl_b_";
-	    fillthis+=ptbin;
-	    ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac);
-            fillthis="histRfl_WeigLambdacEff_b_";
-            fillthis+=ptbin;
-            Double_t effLambdac = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
-            if(!fUseDeff || !effLambdac) effLambdac=1.;          
-            ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac,1./effLambdac);
-	  }
+  	    AliAODMCParticle *partLambdac = (AliAODMCParticle*)arrMC->At(labLambdac);
+	      Int_t pdgLambdac = partLambdac->GetPdgCode();
+	      if (pdgLambdac==4122){ //Lambdac
+	        fillthis="histSgn_b_";
+	        fillthis+=ptbin;
+	        ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac);
+          fillthis="histSgn_WeigLambdacEff_b_";
+          fillthis+=ptbin;
+          Double_t effLambdac = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
+          if(!fUseLceff || !effLambdac) effLambdac=1.;            
+          ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac,1./effLambdac);
+  	    } else{ //it was a Lambdacbar
+	        fillthis="histRfl_b_";
+	        fillthis+=ptbin;
+	        ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac);
+          fillthis="histRfl_WeigLambdacEff_b_";
+          fillthis+=ptbin;
+          Double_t effLambdac = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
+          if(!fUseLceff || !effLambdac) effLambdac=1.;          
+          ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac,1./effLambdac);
+	      }
       } else {//background
-  	fillthis="histBkg_c_";
-	fillthis+=ptbin;
-	((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac);
+  	    fillthis="histBkg_c_";
+	      fillthis+=ptbin;
+	      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac);
         fillthis="histBkg_WeigLambdacEff_c_";
         fillthis+=ptbin;
         Double_t effLambdac = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-        if(!fUseDeff || !effLambdac) effLambdac=1.; 
+        if(!fUseLceff || !effLambdac) effLambdac=1.; 
         ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac,1./effLambdac);
       }
     }else{ //on data
@@ -1375,11 +1356,11 @@ void AliAnalysisTaskSELambdacCorrelations::FillMassHists(AliAODRecoDecayHF3Prong
       fillthis+=ptbin;
       Double_t effLambdac = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
        
-      if(!fUseDeff || !effLambdac) effLambdac=1.; 
+      if(!fUseLceff || !effLambdac) effLambdac=1.; 
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdac,1./effLambdac);
       if(fFillTrees>0) {
-	Double_t centFill = 0.;
-	if(fCutsLambdac->GetUseCentrality()) centFill = fCutsLambdac->GetCentrality(aod);
+	      Double_t centFill = 0.;
+	      if(fCutsLambdac->GetUseCentrality()) centFill = fCutsLambdac->GetCentrality(aod);
         ((TH2F*)(listout->FindObject(Form("histMass2D_%d",ptbin))))->Fill(invmassLambdac,centFill);
         ((TH2F*)(listout->FindObject(Form("histMass2D_WeigLambdacEff_%d",ptbin))))->Fill(invmassLambdac,centFill,1./effLambdac);
       }
@@ -1391,57 +1372,57 @@ void AliAnalysisTaskSELambdacCorrelations::FillMassHists(AliAODRecoDecayHF3Prong
 
     if(fReadMC){ //on MC
       if(labLambdac>=0 && CheckLambdacOrigin(arrMC,(AliAODMCParticle*)arrMC->At(labLambdac))==4) {
-  	AliAODMCParticle *partLambdac = (AliAODMCParticle*)arrMC->At(labLambdac);
-	Int_t pdgLambdac = partLambdac->GetPdgCode();
-	if (pdgLambdac==-4122){ //Lambdac
-	  fillthis="histSgn_c_";
-	  fillthis+=ptbin;
-	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar);
+  	    AliAODMCParticle *partLambdac = (AliAODMCParticle*)arrMC->At(labLambdac);
+	      Int_t pdgLambdac = partLambdac->GetPdgCode();
+	      if (pdgLambdac==-4122){ //Lambdac
+	        fillthis="histSgn_c_";
+	        fillthis+=ptbin;
+	        ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar);
           fillthis="histSgn_WeigLambdacEff_c_";
           fillthis+=ptbin;
           Double_t effLambdac = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-          if(!fUseDeff || !effLambdac) effLambdac=1.; 
+          if(!fUseLceff || !effLambdac) effLambdac=1.; 
           ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar,1./effLambdac);
-  	} else{ //it was a Lambdacbar
-	  fillthis="histRfl_c_";
-	  fillthis+=ptbin;
-	  ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar);
+  	    } else{ //it was a Lambdacbar
+	        fillthis="histRfl_c_";
+	        fillthis+=ptbin;
+	        ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar);
           fillthis="histRfl_WeigLambdacEff_c_";
           fillthis+=ptbin;
           Double_t effLambdac = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-          if(!fUseDeff || !effLambdac) effLambdac=1.; 
+          if(!fUseLceff || !effLambdac) effLambdac=1.; 
           ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar,1./effLambdac);
-  	}
+  	    }
       } else if(labLambdac>=0 && CheckLambdacOrigin(arrMC,(AliAODMCParticle*)arrMC->At(labLambdac))==5) {
-  	  AliAODMCParticle *partLambdac = (AliAODMCParticle*)arrMC->At(labLambdac);
-	  Int_t pdgLambdac = partLambdac->GetPdgCode();
-	  if (pdgLambdac==-4122){ //Lambdac
-	    fillthis="histSgn_b_";
-	    fillthis+=ptbin;
-	    ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar);
-            fillthis="histSgn_WeigLambdacEff_b_";
-            fillthis+=ptbin;
-            Double_t effLambdac = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
-            if(!fUseDeff || !effLambdac) effLambdac=1.; 
-            ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar,1./effLambdac);
-  	  } else{ //it was a Lambdacbar
-	    fillthis="histRfl_b_";
-	    fillthis+=ptbin;
-	    ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar);
-            fillthis="histRfl_WeigLambdacEff_b_";
-            fillthis+=ptbin;
-            Double_t effLambdac = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
-            if(!fUseDeff || !effLambdac) effLambdac=1.; 
-            ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar,1./effLambdac);
-	  }
+  	    AliAODMCParticle *partLambdac = (AliAODMCParticle*)arrMC->At(labLambdac);
+	      Int_t pdgLambdac = partLambdac->GetPdgCode();
+	      if (pdgLambdac==-4122){ //Lambdac
+	        fillthis="histSgn_b_";
+	        fillthis+=ptbin;
+	        ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar);
+          fillthis="histSgn_WeigLambdacEff_b_";
+          fillthis+=ptbin;
+          Double_t effLambdac = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
+          if(!fUseLceff || !effLambdac) effLambdac=1.; 
+          ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar,1./effLambdac);
+  	    } else{ //it was a Lambdacbar
+	        fillthis="histRfl_b_";
+	        fillthis+=ptbin;
+	        ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar);
+          fillthis="histRfl_WeigLambdacEff_b_";
+          fillthis+=ptbin;
+          Double_t effLambdac = fCutsTracks->GetTrigWeightB(part->Pt(),fMultEv);
+          if(!fUseLceff || !effLambdac) effLambdac=1.; 
+          ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar,1./effLambdac);
+	      }
       } else {//background
-  	fillthis="histBkg_c_";
-	fillthis+=ptbin;
-	((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar);
+  	    fillthis="histBkg_c_";
+	      fillthis+=ptbin;
+	      ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar);
         fillthis="histBkg_WeigLambdacEff_c_";
         fillthis+=ptbin;
         Double_t effLambdac = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-        if(!fUseDeff || !effLambdac) effLambdac=1.; 
+        if(!fUseLceff || !effLambdac) effLambdac=1.; 
         ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar,1./effLambdac);
       }
     }else{ //on data
@@ -1451,11 +1432,11 @@ void AliAnalysisTaskSELambdacCorrelations::FillMassHists(AliAODRecoDecayHF3Prong
       fillthis="histMass_WeigLambdacEff_";
       fillthis+=ptbin;
       Double_t effLambdac = fCutsTracks->GetTrigWeight(part->Pt(),fMultEv);
-      if(!fUseDeff || !effLambdac) effLambdac=1.; 
+      if(!fUseLceff || !effLambdac) effLambdac=1.; 
       ((TH1F*)(listout->FindObject(fillthis)))->Fill(invmassLambdacbar,1./effLambdac);
       if(fFillTrees>0) {
-	Double_t centFill = 0.;
-	if(fCutsLambdac->GetUseCentrality()) centFill = fCutsLambdac->GetCentrality(aod);
+	      Double_t centFill = 0.;
+	      if(fCutsLambdac->GetUseCentrality()) centFill = fCutsLambdac->GetCentrality(aod);
         ((TH2F*)(listout->FindObject(Form("histMass2D_%d",ptbin))))->Fill(invmassLambdacbar,centFill);
         ((TH2F*)(listout->FindObject(Form("histMass2D_WeigLambdacEff_%d",ptbin))))->Fill(invmassLambdacbar,centFill,1./effLambdac);
       }      
@@ -1606,20 +1587,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
       for(Int_t k=0; k<nPoolForHistos; k++) {    	    
     	    
         //THnSparse plots: correlations for various invariant mass (MC and data)
-        namePlot="hPhi_K0_Bin";
-        namePlot+=i; namePlot+="_p"; namePlot+=k;
-
-        THnSparseF *hPhiK = new THnSparseF(namePlot.Data(), "Azimuthal correlation; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-        hPhiK->Sumw2();
-        fOutputCorr->Add(hPhiK);
-
-        namePlot="hPhi_Kcharg_Bin";
-        namePlot+=i; namePlot+="_p"; namePlot+=k;
-
-        THnSparseF *hPhiH = new THnSparseF(namePlot.Data(), "Azimuthal correlation; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
-        hPhiH->Sumw2();
-        fOutputCorr->Add(hPhiH);
-
+    
         namePlot="hPhi_Charg_Bin";
         namePlot+=i; namePlot+="_p"; namePlot+=k;
 
@@ -1631,7 +1599,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
         if (fReadMC) {
 
           //generic origin for tracks
-          namePlot="hPhi_K0_From_c_Bin";
+      /*    namePlot="hPhi_K0_From_c_Bin";
           namePlot+=i; namePlot+="_p"; namePlot+=k;
 
           THnSparseF *hPhiK_c = new THnSparseF(namePlot.Data(), "Azimuthal correlation - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
@@ -1643,7 +1611,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
 
           THnSparseF *hPhiH_c = new THnSparseF(namePlot.Data(), "Azimuthal correlation - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
           hPhiH_c->Sumw2();
-          fOutputCorr->Add(hPhiH_c);
+          fOutputCorr->Add(hPhiH_c); */
 
           namePlot="hPhi_Charg_From_c_Bin";
           namePlot+=i; namePlot+="_p"; namePlot+=k;
@@ -1652,7 +1620,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
           hPhiC_c->Sumw2();
           fOutputCorr->Add(hPhiC_c);
   
-          namePlot="hPhi_K0_From_b_Bin";
+     /*     namePlot="hPhi_K0_From_b_Bin";
           namePlot+=i; namePlot+="_p"; namePlot+=k;
 
           THnSparseF *hPhiK_b = new THnSparseF(namePlot.Data(), "Azimuthal correlation - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
@@ -1664,7 +1632,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
 
           THnSparseF *hPhiH_b = new THnSparseF(namePlot.Data(), "Azimuthal correlation - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
           hPhiH_b->Sumw2();
-          fOutputCorr->Add(hPhiH_b);
+          fOutputCorr->Add(hPhiH_b); */
 
           namePlot="hPhi_Charg_From_b_Bin";
           namePlot+=i; namePlot+="_p"; namePlot+=k;
@@ -1674,7 +1642,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
           fOutputCorr->Add(hPhiC_b);
 
           //HF-only tracks (c for c->Lambdac, b for b->Lambdac)
-          namePlot="hPhi_K0_HF_From_c_Bin";
+   /*       namePlot="hPhi_K0_HF_From_c_Bin";
           namePlot+=i; namePlot+="_p"; namePlot+=k;
   
           THnSparseF *hPhiK_HF_c = new THnSparseF(namePlot.Data(), "Azimuthal correlation HF - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
@@ -1686,7 +1654,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
 
           THnSparseF *hPhiH_HF_c = new THnSparseF(namePlot.Data(), "Azimuthal correlation HF - c origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
           hPhiH_HF_c->Sumw2();
-          fOutputCorr->Add(hPhiH_HF_c);
+          fOutputCorr->Add(hPhiH_HF_c); */
 
           namePlot="hPhi_Charg_HF_From_c_Bin";
           namePlot+=i; namePlot+="_p"; namePlot+=k;
@@ -1695,7 +1663,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
           hPhiC_HF_c->Sumw2();
           fOutputCorr->Add(hPhiC_HF_c);
 
-          namePlot="hPhi_K0_HF_From_b_Bin";
+       /*   namePlot="hPhi_K0_HF_From_b_Bin";
           namePlot+=i; namePlot+="_p"; namePlot+=k;
 
           THnSparseF *hPhiK_HF_b = new THnSparseF(namePlot.Data(), "Azimuthal correlation HF - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
@@ -1707,7 +1675,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
 
           THnSparseF *hPhiH_HF_b = new THnSparseF(namePlot.Data(), "Azimuthal correlation HF - b origin; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
           hPhiH_HF_b->Sumw2();
-          fOutputCorr->Add(hPhiH_HF_b);
+          fOutputCorr->Add(hPhiH_HF_b); */
 
           namePlot="hPhi_Charg_HF_From_b_Bin";
           namePlot+=i; namePlot+="_p"; namePlot+=k;
@@ -1716,7 +1684,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
           hPhiC_HF_b->Sumw2();
           fOutputCorr->Add(hPhiC_HF_b);
 
-          namePlot="hPhi_K0_NonHF_Bin";
+        /*  namePlot="hPhi_K0_NonHF_Bin";
           namePlot+=i; namePlot+="_p"; namePlot+=k;
 
           THnSparseF *hPhiK_Non = new THnSparseF(namePlot.Data(), "Azimuthal correlation - Non HF; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
@@ -1728,7 +1696,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
 
           THnSparseF *hPhiH_Non = new THnSparseF(namePlot.Data(), "Azimuthal correlation - Non HF; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsPhi,binMinPhi,binMaxPhi);
           hPhiH_Non->Sumw2();
-          fOutputCorr->Add(hPhiH_Non);
+          fOutputCorr->Add(hPhiH_Non); */
 
           namePlot="hPhi_Charg_NonHF_Bin";
           namePlot+=i; namePlot+="_p"; namePlot+=k;
@@ -1757,24 +1725,24 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
       	  varBins[nBins-1] = 2.5824;
       	  varBins[nBins] = 2.5864;
         
-      	  ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-      	  ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+
+
       	  ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
           if (fReadMC) {
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+
+
             ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+
+
             ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_HF_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_HF_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+
+
             ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_HF_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_HF_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_HF_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+
+
             ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_HF_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_NonHF_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_NonHF_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+
+
             ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_NonHF_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
           }
         } //end of fSpeed==1
@@ -1787,24 +1755,23 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
           varBins[1] = 0.5;
           varBins[2] = 1.5;
         
-          ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-          ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-          ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+       
+         ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
           if (fReadMC) {
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+
+
             ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+
+
             ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_HF_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_HF_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+
+
             ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_HF_From_c_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_HF_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_HF_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+
+
             ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_HF_From_b_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_NonHF_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
-            ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_NonHF_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
+
+
             ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_NonHF_Bin%d_p%d",i,k)))->GetAxis(1)->Set(nBins, varBins);
           }
         } //end of fSpeed==2
@@ -1905,16 +1872,6 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
      hPtC->SetMinimum(0);
      fOutputStudy->Add(hPtC);
 
-     namePlot = "hist_Pt_Kcharg_Bin"; namePlot+=i;
-     TH1F *hPtH = new TH1F(namePlot.Data(), "Hadrons pT (in Lambdac evs); p_{T} (GeV/c)",240,0.,12.);
-     hPtH->SetMinimum(0);
-     fOutputStudy->Add(hPtH);
-
-     namePlot = "hist_Pt_K0_Bin"; namePlot+=i;
-     TH1F *hPtK = new TH1F(namePlot.Data(), "Kaons pT (in Lambdac evs); p_{T} (GeV/c)",240,0.,12.);
-     hPtK->SetMinimum(0);
-     fOutputStudy->Add(hPtK);
-
      //Events multiplicity
      namePlot = "hMultiplEvt_Bin"; namePlot+=i;
      TH1F *hMultEv = new TH1F(namePlot.Data(), "Event multiplicity",1500,0.,6000.);
@@ -1926,20 +1883,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
     if(fMixing && !fFillTrees) {
       for(Int_t k=0; k<nPoolForHistos; k++) {     	    
         //THnSparse plots for event mixing!
-        namePlot="hPhi_K0_Bin";
-        namePlot+=i; namePlot+="_p"; namePlot+=k; namePlot+="_EvMix";
-
-        THnSparseF *hPhiK_EvMix = new THnSparseF(namePlot.Data(), "Az. corr. EvMix; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsMix,binMinMix,binMaxMix);
-        hPhiK_EvMix->Sumw2();
-        fOutputCorr->Add(hPhiK_EvMix);
-
-        namePlot="hPhi_Kcharg_Bin";
-        namePlot+=i; namePlot+="_p"; namePlot+=k; namePlot+="_EvMix";
   
-        THnSparseF *hPhiH_EvMix = new THnSparseF(namePlot.Data(), "Az. corr. EvMix; #Delta#phi; Inv. Mass (GeV/c^{2}); p_{t} (GeV/c)",5,nBinsMix,binMinMix,binMaxMix);
-        hPhiH_EvMix->Sumw2();
-        fOutputCorr->Add(hPhiH_EvMix);
-
         namePlot="hPhi_Charg_Bin";
         namePlot+=i; namePlot+="_p"; namePlot+=k; namePlot+="_EvMix";
 
@@ -1966,8 +1910,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
       	  varBins[nBins-1] = 2.5824;
       	  varBins[nBins] = 2.5864;
         
-      	  ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_Bin%d_p%d_EvMix",i,k)))->GetAxis(1)->Set(nBins, varBins);
-      	  ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_Bin%d_p%d_EvMix",i,k)))->GetAxis(1)->Set(nBins, varBins);
+      	 
       	  ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d_p%d_EvMix",i,k)))->GetAxis(1)->Set(nBins, varBins);
       	  
         } //end of fSpeed==1
@@ -1979,8 +1922,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
           varBins[1] = 0.5;
           varBins[2] = 1.5;
         
-          ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_K0_Bin%d_p%d_EvMix",i,k)))->GetAxis(1)->Set(nBins, varBins);
-          ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Kcharg_Bin%d_p%d_EvMix",i,k)))->GetAxis(1)->Set(nBins, varBins);
+        
           ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Charg_Bin%d_p%d_EvMix",i,k)))->GetAxis(1)->Set(nBins, varBins);
           
         } //end of fSpeed==2          
@@ -1989,21 +1931,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
     } //end of Mix
  
     //both for SE and for ME
-    //D* feeddown pions rejection histos
-  /*  namePlot = "hDstarPionsVsDmass_Bin"; namePlot+=i;
-    TH2F *hDstarPions = new TH2F(namePlot.Data(), "Tracks rejected for D* inv.mass cut vs D inv mass; # Tracks",2,0.,2.,150,1.9864,2.5864);
-    hDstarPions->GetXaxis()->SetBinLabel(1,"Not rejected");
-    hDstarPions->GetXaxis()->SetBinLabel(2,"Rejected");
-    hDstarPions->SetMinimum(0);
-    fOutputStudy->Add(hDstarPions); 
-
-    namePlot = "hDstarPionsVsdeltaPhi_Bin"; namePlot+=i;
-    TH2F *hDstarPions2 = new TH2F(namePlot.Data(), "Tracks rejected for D* inv.mass cut vs deltaPhi; # Tracks",2,0.,2.,64,-TMath::Pi()/2.,3.*TMath::Pi()/2.);
-    hDstarPions2->GetXaxis()->SetBinLabel(1,"Not rejected");
-    hDstarPions2->GetXaxis()->SetBinLabel(2,"Rejected");
-    hDstarPions2->SetMinimum(0);
-    fOutputStudy->Add(hDstarPions2); 
-*/
+    
     if(!fFillTrees) {
       //ME filling control plots
       namePlot="hEvtsPerPool_"; namePlot+=i;
@@ -2019,13 +1947,13 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
   hCountC->SetMinimum(0);
   fOutputStudy->Add(hCountC);
 
-  TH1F *hCountH = new TH1F("hist_Count_Kcharg", "Hadrons counter; # Tracks",100,0.,100.);
+ /* TH1F *hCountH = new TH1F("hist_Count_Kcharg", "Hadrons counter; # Tracks",100,0.,100.);
   hCountH->SetMinimum(0);
   fOutputStudy->Add(hCountH);
 
   TH1F *hCountK = new TH1F("hist_Count_K0", "Kaons counter; # Tracks",100,0.,100.);
   hCountK->SetMinimum(0);
-  fOutputStudy->Add(hCountK);
+  fOutputStudy->Add(hCountK); */
 
   TH1F *hZvtx = new TH1F("hZvtx", "z of Primary vtx (for events with selected D); z (cm); # Events",48,-12.,12.);
   hZvtx->SetMinimum(0);
@@ -2178,7 +2106,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
     hPhiDistKAll->SetMinimum(0);
     fOutputStudy->Add(hPhiDistKAll);
 
-    TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_Lambdac", "\Lambda_{c} phi distr. (All); #varphi (rad)",64,0,6.283);
+    TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_Lambdac", "#Lambda_{c} phi distr. (All); #varphi (rad)",64,0,6.283);
     hPhiDistDAll->SetMinimum(0);
     fOutputStudy->Add(hPhiDistDAll);
 
@@ -2195,7 +2123,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
     hEtaDistKAll->SetMinimum(0);
     fOutputStudy->Add(hEtaDistKAll);
 
-    TH1F *hEtaDistDAll = new TH1F("hist_EtaDistr_Lambdac", "\Lambda_{c} eta distr. (All); #eta (rad)",40,-1,1);
+    TH1F *hEtaDistDAll = new TH1F("hist_EtaDistr_Lambdac", "#Lambda_{c} eta distr. (All); #eta (rad)",40,-1,1);
     hEtaDistDAll->SetMinimum(0);
     fOutputStudy->Add(hEtaDistDAll);
     
@@ -2212,7 +2140,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
     hPhiVsEtaDistKAll->SetMinimum(0);
     fOutputStudy->Add(hPhiVsEtaDistKAll);  
     
-    TH2F *hPhiVsEtaDistDAll = new TH2F("hist_PhiVsEtaDistr_Lambdac", "Phi vs Eta distribution - \Lambda_{c}",64,0,6.283,40,-1,1);
+    TH2F *hPhiVsEtaDistDAll = new TH2F("hist_PhiVsEtaDistr_Lambdac", "Phi vs Eta distribution - #Lambda_{c}",64,0,6.283,40,-1,1);
     hPhiVsEtaDistDAll->SetMinimum(0);
     fOutputStudy->Add(hPhiVsEtaDistDAll);  
     }
@@ -2223,7 +2151,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
     if (fReadMC && !fMixing) {
 
       //displacement histos
-      namePlot="histDispl_K0_Bin"; namePlot+=i;
+   /*   namePlot="histDispl_K0_Bin"; namePlot+=i;
       TH1F *hDisplK = new TH1F(namePlot.Data(), "Kaons Displacement; DCA",150,0.,0.15);
       hDisplK->SetMinimum(0);
       fOutputStudy->Add(hDisplK);
@@ -2241,7 +2169,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
       namePlot="histDispl_Kcharg_HF_Bin";  namePlot+=i;
       TH1F *hDisplHadr_HF = new TH1F(namePlot.Data(), "Hadrons Displacement (from HF decay only); DCA",150,0.,0.15);
       hDisplHadr_HF->SetMinimum(0);
-      fOutputStudy->Add(hDisplHadr_HF);
+      fOutputStudy->Add(hDisplHadr_HF); */
 
       namePlot="histDispl_Charg_Bin"; namePlot+=i;
       TH1F *hDisplCharg = new TH1F(namePlot.Data(), "Charged tracks Displacement; DCA",150,0.,0.15);
@@ -2253,7 +2181,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
       hDisplCharg_HF->SetMinimum(0);
       fOutputStudy->Add(hDisplCharg_HF);
 
-      namePlot="histDispl_K0_From_c_Bin"; namePlot+=i;
+  /*    namePlot="histDispl_K0_From_c_Bin"; namePlot+=i;
       TH1F *hDisplK_c = new TH1F(namePlot.Data(), "Kaons Displacement - c origin; DCA",150,0.,0.15);
       hDisplK_c->SetMinimum(0);
       fOutputStudy->Add(hDisplK_c);
@@ -2271,7 +2199,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
       namePlot="histDispl_Kcharg_HF_From_c_Bin";  namePlot+=i;
       TH1F *hDisplHadr_HF_c = new TH1F(namePlot.Data(), "Hadrons Displacement (from HF decay only) - c origin; DCA",150,0.,0.15);
       hDisplHadr_HF_c->SetMinimum(0);
-      fOutputStudy->Add(hDisplHadr_HF_c);
+      fOutputStudy->Add(hDisplHadr_HF_c); */
 
       namePlot="histDispl_Charg_From_c_Bin"; namePlot+=i;
       TH1F *hDisplCharg_c = new TH1F(namePlot.Data(), "Charged tracks Displacement - c origin; DCA",150,0.,0.15);
@@ -2284,7 +2212,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
       hDisplCharg_HF_c->SetMinimum(0);
       fOutputStudy->Add(hDisplCharg_HF_c);
 
-      namePlot="histDispl_K0_From_b_Bin"; namePlot+=i;
+    /*  namePlot="histDispl_K0_From_b_Bin"; namePlot+=i;
       TH1F *hDisplK_b = new TH1F(namePlot.Data(), "Kaons Displacement - b origin; DCA",150,0.,0.15);
       hDisplK_b->SetMinimum(0);
       fOutputStudy->Add(hDisplK_b);
@@ -2302,7 +2230,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
       namePlot="histDispl_Kcharg_HF_From_b_Bin";  namePlot+=i;
       TH1F *hDisplHadr_HF_b = new TH1F(namePlot.Data(), "Hadrons Displacement (from HF decay only) - b origin; DCA",150,0.,0.15);
       hDisplHadr_HF_b->SetMinimum(0);
-      fOutputStudy->Add(hDisplHadr_HF_b);
+      fOutputStudy->Add(hDisplHadr_HF_b); */
 
       namePlot="histDispl_Charg_From_b_Bin"; namePlot+=i;
       TH1F *hDisplCharg_b = new TH1F(namePlot.Data(), "Charged tracks Displacement - b origin; DCA",150,0.,0.15);
@@ -2329,7 +2257,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
       hOrigin_Charm->GetXaxis()->SetBinLabel(9,"b hadr.");
       fOutputStudy->Add(hOrigin_Charm);
 
-      namePlot="histOrig_Kcharg_Bin";  namePlot+=i;
+  /*    namePlot="histOrig_Kcharg_Bin";  namePlot+=i;
       TH1F *hOrigin_Kcharg = new TH1F(namePlot.Data(), "Origin of hadrons",9,0.,9.);
       hOrigin_Kcharg->SetMinimum(0);
       hOrigin_Kcharg->GetXaxis()->SetBinLabel(1,"Not HF");
@@ -2355,7 +2283,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
       hOrigin_K->GetXaxis()->SetBinLabel(7,"B->D->#");
       hOrigin_K->GetXaxis()->SetBinLabel(8,"B->D->X->#");
       hOrigin_K->GetXaxis()->SetBinLabel(9,"b hadr.");
-      fOutputStudy->Add(hOrigin_K);
+      fOutputStudy->Add(hOrigin_K); */
     }
 
     if (fReadMC) {
@@ -2447,6 +2375,7 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelations(AliAODRecoDecay
 //
 // Method for correlations Lambdac-hadrons study
 //
+
   Int_t N_Charg = 0, N_KCharg = 0, N_Kaons = 0;
   Double_t mLambdac, mLambdacbar;
   Int_t origLambdac = 0, PDGLambdac = 0, ptbin = 0;
@@ -2485,8 +2414,7 @@ mLambdacbar = d->InvMassLcpiKp();
 
   //loop over the tracks in the pool 
   Bool_t execPoolTr = fCorrelatorTr->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
-  Bool_t execPoolKc = fCorrelatorKc->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
-  Bool_t execPoolK0 = fCorrelatorK0->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
+ 
 		
   Int_t NofEventsinPool = 1;
   if(fMixing) {
@@ -2514,7 +2442,13 @@ mLambdacbar = d->InvMassLcpiKp();
 
       if(!fMixing) {
         Int_t idDaughs[3] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID(),((AliVTrack*)d->GetDaughter(2))->GetID()}; //IDs of daughters to be skipped
-        if(track->GetID() == idDaughs[0] || track->GetID() == idDaughs[1] || track->GetID() == idDaughs[2]) continue; //discards daughters of candidate
+        cout << "Dau0 " << (AliVTrack*)d->GetDaughter(0) << " ID " << ((AliVTrack*)d->GetDaughter(0))->GetID() << endl;
+        cout << "Dau1 " << (AliVTrack*)d->GetDaughter(1) << " ID " << ((AliVTrack*)d->GetDaughter(1))->GetID() << endl;
+        cout << "Dau2 " << (AliVTrack*)d->GetDaughter(2) << " ID " << ((AliVTrack*)d->GetDaughter(2))->GetID() << endl;
+        if(track->GetID() == idDaughs[0] || track->GetID() == idDaughs[1] || track->GetID() == idDaughs[2]) {
+          cout << "!!!!!!DAUGHTER!!!!!" << endl;
+          continue; //discards daughters of candidate
+        }
       }
       if(track->Pt() < fPtThreshLow.at(ptbin) || track->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
 
@@ -2541,7 +2475,7 @@ mLambdacbar = d->InvMassLcpiKp();
         if(origLambdac==4) effLambdac = fCutsTracks->GetTrigWeight(d->Pt(),fMultEv);
         if(origLambdac==5) effLambdac = fCutsTracks->GetTrigWeightB(d->Pt(),fMultEv);
       } else effLambdac = fCutsTracks->GetTrigWeight(d->Pt(),fMultEv);
-      if(!fUseDeff) effLambdac=1.; 
+      if(!fUseLceff) effLambdac=1.; 
       if(!fUseTrackeff) effTr=1.; 
       Double_t eff = effTr*effLambdac;
       if(!eff) eff = 1; //safety check
@@ -2552,33 +2486,6 @@ mLambdacbar = d->InvMassLcpiKp();
       if(!effTr) ((TH1F*)fOutputStudy->FindObject("hZeroEff"))->Fill(3.5); 
         else ((TH1F*)fOutputStudy->FindObject("hZeroEff"))->Fill(2.5);
 
-/*
-      if(!fMixing) {
-        if(fSoftPiCut && !track->CheckSoftPi()) { //removal of soft pions
-          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdac);
-          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdacbar);
-          ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(1.,fCorrelatorTr->GetDeltaPhi());
-    	  continue; //in SE events, just reject the soft pion
-        } else { //not a soft pion
-          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdac);
-          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdacbar);
-          ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(0.,fCorrelatorTr->GetDeltaPhi());
-        }
-      }
-      if(fMixing) { 
-        if(fSoftPiCut && !fCutsTracks->InvMassDstarRejection(d,track,fIsSelectedCandidate)) { //removal of soft pions
-          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdac);
-          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdacbar);
-          ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(1.,fCorrelatorTr->GetDeltaPhi());
-          if(fMixing) FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,1./eff); //in ME events, fill the THnSparse under the softpi hypothesis
-    	  continue; 
-        } else { //not a soft pion
-          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdac);
-          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdacbar);
-          ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(0.,fCorrelatorTr->GetDeltaPhi());
-        }
-      }
- */
 
       FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,1./eff); //fills for charged tracks
 
@@ -2600,104 +2507,6 @@ mLambdacbar = d->InvMassLcpiKp();
 
     } // end of tracks loop
   } //end of event loop for fCorrelatorTr
-
- if(fKaonCorr) { //loops for Kcharg and K0
-
-  if(fMixing) {
-    NofEventsinPool = fCorrelatorKc->GetNofEventsInPool(); 
-    if(!execPoolKc) {
-      AliInfo("Mixed event analysis: K+/- pool is not ready");
-      NofEventsinPool = 0;
-    }
-  }
-
-  //Charged Kaons loop
-  for (Int_t jMix = 0; jMix < NofEventsinPool; jMix++) {// loop on events in the pool; if it is SE analysis, stops at one (index not needed there)
-    Bool_t analyzetracksKc = fCorrelatorKc->ProcessAssociatedTracks(jMix);
-    if(!analyzetracksKc) {
-      AliInfo("AliHFCorrelator::Cannot process the K+/- array");
-      continue;
-    }  
-
-    for(Int_t iTrack = 0; iTrack<fCorrelatorKc->GetNofTracks(); iTrack++){ // looping on charged kaons candidates
-
-      Bool_t runcorrelation = fCorrelatorKc->Correlate(iTrack);
-      if(!runcorrelation) continue;
-      
-      AliReducedParticle* kCharg = fCorrelatorKc->GetAssociatedParticle();
-
-      if(!fMixing) {  
-        Int_t idDaughs[3] = {((AliVTrack*)d->GetDaughter(0))->GetID(),((AliVTrack*)d->GetDaughter(1))->GetID(),((AliVTrack*)d->GetDaughter(2))->GetID()}; //IDs of daughters to be skipped
-        if(kCharg->GetID() == idDaughs[0] || kCharg->GetID() == idDaughs[1] || kCharg->GetID() == idDaughs[2]) continue; //discards daughters of candidate
-      }
-      if(kCharg->Pt() < fPtThreshLow.at(ptbin) || kCharg->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
-  /*
-      if(!fMixing) {
-        if(fSoftPiCut && !kCharg->CheckSoftPi()) { //removal of soft pions
-          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdac);
-          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdacbar);
-          ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(1.,fCorrelatorKc->GetDeltaPhi());
-    	  continue; //in SE events, just reject the soft pion
-        } else { //not a soft pion
-          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdac);
-          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdacbar);
-          ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(0.,fCorrelatorKc->GetDeltaPhi());
-        }
-      }
-      if(fMixing) { 
-        if(fSoftPiCut && !fCutsTracks->InvMassDstarRejection(d,kCharg,fIsSelectedCandidate)) { //removal of soft pions
-          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdac);
-          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdacbar);
-          ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(1.,fCorrelatorKc->GetDeltaPhi());
-          if(fMixing) FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,kCharg,ptbin,kKCharg,1); //fills for charged tracks
-    	  continue; 
-        } else { //not a soft pion
-          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdac);
-          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdacbar);
-          ((TH2F*)fOutputStudy->FindObject(Form("hDstarPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(0.,fCorrelatorKc->GetDeltaPhi());
-        }
-      }
-      */ 
-      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,kCharg,ptbin,kKCharg,0); //fills for charged tracks
-
-      if(!fMixing) N_KCharg++;
-
-    } // end of charged kaons loop
-  } //end of event loop for fCorrelatorKc
-
-  if(fMixing) {
-    NofEventsinPool = fCorrelatorK0->GetNofEventsInPool(); 
-    if(!execPoolK0) {
-      AliInfo("Mixed event analysis: K0 pool is not ready");
-      NofEventsinPool = 0;
-    }
-  }
-
-  //K0 loop
-  for (Int_t jMix =0; jMix < NofEventsinPool; jMix++) {// loop on events in the pool; if it is SE analysis, stops at one (index not needed there)
-    Bool_t analyzetracksK0 = fCorrelatorK0->ProcessAssociatedTracks(jMix);
-    if(!analyzetracksK0) {
-      AliInfo("AliHFCorrelator::Cannot process the K0 array");
-      continue;
-    }  
-
-    for(Int_t iTrack = 0; iTrack<fCorrelatorK0->GetNofTracks(); iTrack++){ // looping on k0 candidates
-
-      Bool_t runcorrelation = fCorrelatorK0->Correlate(iTrack);
-      if(!runcorrelation) continue;
-      
-      AliReducedParticle* k0 = fCorrelatorK0->GetAssociatedParticle();
-
-      if(k0->Pt() < fPtThreshLow.at(ptbin) || k0->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
-  
-      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,k0,ptbin,kK0,0); //fills for charged tracks
-
-      if(!fMixing) N_Kaons++;
-
-    } // end of charged kaons loop
-  } //end of event loop for fCorrelatorK0
-
- } //end of 'if(fKaonCorr)'
 
   Double_t fillSpLeadLambdac[4] = {lead[0],mLambdac,lead[1],0.4}; //dummy value for threshold of leading!
   Double_t fillSpLeadLambdacbar[4] = {lead[0],mLambdacbar,lead[1],0.4};
@@ -2727,22 +2536,21 @@ mLambdacbar = d->InvMassLcpiKp();
     //Fill of count histograms
   if (!fAlreadyFilled && !fMixing) { 
     ((TH1F*)fOutputStudy->FindObject("hist_Count_Charg"))->Fill(N_Charg);
-    ((TH1F*)fOutputStudy->FindObject("hist_Count_Kcharg"))->Fill(N_KCharg);
-    ((TH1F*)fOutputStudy->FindObject("hist_Count_K0"))->Fill(N_Kaons);
   }
 
 
   fAlreadyFilled=kTRUE; //at least a Lambdac analyzed in the event; distribution plots already filled
 
 }
-/*
+
 //________________________________________________________________________
 void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCParticle* d, TClonesArray* mcArray) {
 //
 // Method for correlations Lambdac-hadrons study
 //
+cout<<"I am here inside CalculateCorrelationsMCKine 1 ====== "<<endl;
   Int_t N_Charg = 0, N_KCharg = 0, N_Kaons = 0;
-  Double_t mLambdac = 1.864, mLambdacbar = 1.864;
+  Double_t mLambdac = 2.286, mLambdacbar = 2.286;
   Double_t mInv[2] = {mLambdac, mLambdacbar};
   Int_t origLambdac = 0, PDGLambdac = 0;
   Int_t ptbin = PtBinCorr(d->Pt());
@@ -2753,7 +2561,7 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
   if (!fMixing) ((TH1F*)fOutputStudy->FindObject("hist_PhiDistr_Lambdac"))->Fill(d->Phi()); 
   if (!fMixing) ((TH1F*)fOutputStudy->FindObject("hist_EtaDistr_Lambdac"))->Fill(d->Phi()); 
   if (!fMixing) ((TH2F*)fOutputStudy->FindObject("hist_PhiVsEtaDistr_Lambdac"))->Fill(d->Phi(),d->Eta()); 
-  
+  cout<<"I am here inside CalculateCorrelationsMCKine 2 ====== "<<endl;
   //Origin of Lambdac
   TString orig="";
   origLambdac=CheckLambdacOrigin(mcArray,d);
@@ -2770,13 +2578,13 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
     default:
       return;
   }
-
+cout<<"I am here inside CalculateCorrelationsMCKine 3 ====== "<<endl;
   Double_t highPt = 0; Double_t lead[3] = {0,0,0};  //infos for leading particle (pt,deltaphi)
 
   //loop over the tracks in the pool 
   Bool_t execPoolTr = fCorrelatorTr->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
-  Bool_t execPoolKc = fCorrelatorKc->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
-  Bool_t execPoolK0 = fCorrelatorK0->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
+ // Bool_t execPoolKc = fCorrelatorKc->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
+//  Bool_t execPoolK0 = fCorrelatorK0->ProcessEventPool(); //pool is ready? (only in ME, in SE returns kFALSE)
 		
   Int_t NofEventsinPool = 1;
   if(fMixing) {
@@ -2786,7 +2594,7 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
       NofEventsinPool = 0;
     }
   }
-
+cout<<"I am here inside CalculateCorrelationsMCKine 4 ====== "<<endl;
   //Charged tracks
   for (Int_t jMix =0; jMix < NofEventsinPool; jMix++) {// loop on events in the pool; if it is SE analysis, stops at one (index not needed there)
 
@@ -2800,13 +2608,13 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
 
       Bool_t runcorrelation = fCorrelatorTr->Correlate(iTrack);
       if(!runcorrelation) continue;
-      
+      cout<<"I am here inside CalculateCorrelationsMCKine 5 ====== "<<endl;
       AliReducedParticle* track = fCorrelatorTr->GetAssociatedParticle();
       if(track->GetLabel()<0) continue;
       if(track->Pt() < fPtThreshLow.at(ptbin) || track->Pt() > fPtThreshUp.at(ptbin)) continue; //discard tracks outside pt range for hadrons/K
       if(track->Pt() < 0.3 || TMath::Abs(track->Eta())>0.8) continue; //discard tracks outside barrel (since it's kinematic MC and produces tracks all over rapidity region
       if(!fMixing) N_Charg++;
-
+cout<<"I am here inside CalculateCorrelationsMCKine 6 ====== "<<endl;
       AliAODMCParticle *trkMC = (AliAODMCParticle*)mcArray->At(track->GetLabel());
       if(!trkMC) continue;
 
@@ -2816,10 +2624,10 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
       } else ((TH1F*)fOutputStudy->FindObject(Form("hPhysPrim_Bin%d",ptbin)))->Fill(0.);
 
       if (IsDDaughter(d,trkMC,mcArray)) continue;
-      if (fSoftPiCut && IsSoftPion_MCKine(d,trkMC,mcArray)) continue; //remove soft pions (if requestes, e.g. for templates)
-
-      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,0); //fills for charged tracks
-
+   //   if (fSoftPiCut && IsSoftPion_MCKine(d,trkMC,mcArray)) continue; //remove soft pions (if requestes, e.g. for templates)
+cout<<"I am here inside CalculateCorrelationsMCKine 7 ====== "<<endl;
+      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack); //fills for charged tracks
+cout<<"I am here inside CalculateCorrelationsMCKine 8 ====== "<<endl;
       //retrieving leading info...
       if(track->Pt() > highPt) {
         lead[0] = fCorrelatorTr->GetDeltaPhi();
@@ -2831,14 +2639,14 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
     } // end of tracks loop
   } //end of event loop for fCorrelatorTr
 
- if(fKaonCorr) { //loops for Kcharg and K0
+/* if(fKaonCorr) { //loops for Kcharg and K0
 
   if(fMixing) {
     NofEventsinPool = fCorrelatorKc->GetNofEventsInPool(); 
     if(!execPoolKc) {
       AliInfo("Mixed event analysis: K+/- pool is not ready");
       NofEventsinPool = 0;
-    }
+    } 
   }
 
   //Charged Kaons loop
@@ -2906,20 +2714,20 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
     } // end of charged kaons loop
   } //end of event loop for fCorrelatorK0
 
- } //end of 'if(fKaonCorr)'
+ } //end of 'if(fKaonCorr)' */
 
-  Double_t fillSpLeadMC[4] = {lead[0],mLambdac,lead[1],0.4}; //mLambdac = mLambdacbar = 1.864
+  Double_t fillSpLeadMC[4] = {lead[0],mLambdac,lead[1],0.4}; //mLambdac = mLambdacbar = 2.286
 
   //leading track correlations fill
   if(!fMixing && !fSpeed) {
-    if(d->GetPdgCode()==421 && (fIsSelectedCandidate==1||fIsSelectedCandidate==3)) { //Lambdac
+    if(d->GetPdgCode()==4122 && (fIsSelectedCandidate==1||fIsSelectedCandidate==3)) { //Lambdac
       ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(fillSpLeadMC); //c and b Lambdac
       ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Lead%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpLeadMC); //c or b Lambdac
       if(origLambdac==4&&(int)lead[2]>=1&&(int)lead[2]<=3) ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpLeadMC);  
       if(origLambdac==5&&(int)lead[2]>=4&&(int)lead[2]<=8) ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpLeadMC);  
       if((int)lead[2]==0) ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Lead_NonHF_Bin%d",ptbin)))->Fill(fillSpLeadMC);  //non HF
     }
-    if(d->GetPdgCode()==-421 && fIsSelectedCandidate>1) { //Lambdacbar
+    if(d->GetPdgCode()==-4122 && fIsSelectedCandidate>1) { //Lambdacbar
       ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Lead_Bin%d",ptbin)))->Fill(fillSpLeadMC);
       ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Lead%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpLeadMC); //c or b Lambdac
       if(origLambdac==4&&(int)lead[2]>=1&&(int)lead[2]<=3) ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_Lead_HF%s_Bin%d",orig.Data(),ptbin)))->Fill(fillSpLeadMC);  
@@ -2930,20 +2738,21 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
     //Fill of count histograms
   if (!fAlreadyFilled && !fMixing) { 
     ((TH1F*)fOutputStudy->FindObject("hist_Count_Charg"))->Fill(N_Charg);
-    ((TH1F*)fOutputStudy->FindObject("hist_Count_Kcharg"))->Fill(N_KCharg);
-    ((TH1F*)fOutputStudy->FindObject("hist_Count_K0"))->Fill(N_Kaons);
+ //   ((TH1F*)fOutputStudy->FindObject("hist_Count_Kcharg"))->Fill(N_KCharg);
+  //  ((TH1F*)fOutputStudy->FindObject("hist_Count_K0"))->Fill(N_Kaons);
   }
 
   fAlreadyFilled=kTRUE; //at least a Lambdac analyzed in the event; distribution plots already filled
 
 }
-*/
+
 //________________________________________________________________________
 void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray, Double_t mInv[], Int_t origLambdac, Int_t PdgLambdac, AliReducedParticle* track, Int_t ptbin, Int_t type, Double_t wg) {
   //
   //fills the THnSparse for correlations, calculating the variables
   //
-
+cout<<"I am here inside FillSparsePlots 1 ====== "<<endl;
+cout<<"print weight factor ======"<<wg<<endl;
   //for MC, in case Ntrkl reweight is active, add the event weights to THnSparse
   if(fReadMC && fUseNtrklWeight) wg*=fWeight;
 
@@ -2959,7 +2768,12 @@ void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray
   Double_t phiTr = track->Phi();
   Double_t etaTr = track->Eta();
   Double_t origTr = fReadMC ? CheckTrackOrigin(mcArray,(AliAODMCParticle*)mcArray->At(track->GetLabel())) : 0;
-
+  if(fReadMC && fRecoLambdac){
+    cout <<"RECO " << "Phi=" << track->Phi()<< " Eta="<< track->Eta()<< " Pt="<< track->Pt() << endl;
+  }
+  if(fReadMC && !fRecoLambdac){
+    cout <<"KINE " << "Phi=" << track->Phi()<< " Eta="<< track->Eta()<< " Pt="<< track->Pt() << endl;
+  }
   TString part = "", orig = "";
 
   switch (type) {
@@ -2967,9 +2781,10 @@ void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray
       part = "Charg";
       deltaphi = fCorrelatorTr->GetDeltaPhi();
       deltaeta = fCorrelatorTr->GetDeltaEta();
+      cout<<"I am here inside FillSparsePlots 2 ====== "<<endl;
       break;
     }
-    case(kKCharg): {
+   /* case(kKCharg): {
       part = "Kcharg";
       deltaphi = fCorrelatorKc->GetDeltaPhi();
       deltaeta = fCorrelatorKc->GetDeltaEta();
@@ -2980,11 +2795,11 @@ void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray
       deltaphi = fCorrelatorK0->GetDeltaPhi();
       deltaeta = fCorrelatorK0->GetDeltaEta();
       break;
-    }
+    } */
   }
   
   if(fMixing == kSE) {
-
+cout<<"I am here inside FillSparsePlots 3 ====== "<<endl;
     //Fixes limits; needed to include overflow into THnSparse projections!
     Double_t pTorig = track->Pt();
     Double_t Lambdacorig = track->GetImpPar();
@@ -3052,11 +2867,13 @@ void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray
     }
 
     if(fReadMC) {
-
+cout<<"I am here inside FillSparsePlots 4 ====== "<<endl;
       if(origLambdac==4) {orig = "_From_c";} else {orig = "_From_b";}
 
       //sparse fill for data (tracks, K+-, K0) + weighted
       if(PdgLambdac==4122 && (fIsSelectedCandidate==1||fIsSelectedCandidate==3)) { //Lambdac (from MCTruth)
+      cout<<"I am here inside FillSparsePlots 5 ====== "<<endl;
+      cout<<"Print THnSparse variables ===="<<deltaphi<<"  "<<mLambdac<<"  "<<ptTrack<<"  "<<LambdacTrack<<"  "<<deltaeta<<"  "<<wg<<endl;
          ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_%s_Bin%d_p%d",part.Data(),ptbin,fPoolNum)))->Fill(fillSpPhiLambdac,wg);
          ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_%s%s_Bin%d_p%d",part.Data(),orig.Data(),ptbin,fPoolNum)))->Fill(fillSpPhiLambdac,wg);
          if(origLambdac==4&&origTr>=1&&origTr<=3) ((THnSparseF*)fOutputCorr->FindObject(Form("hPhi_%s_HF%s_Bin%d_p%d",part.Data(),orig.Data(),ptbin,fPoolNum)))->Fill(fillSpPhiLambdac,wg);
@@ -3118,10 +2935,7 @@ void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray
       fillSpPhiLambdac[3] = ptTrack;
       fillSpPhiLambdacbar[3] = ptTrack;
     }
-   // if(softpiME==1) { //it's a softPi in the ME analysis! Fill it in the dedicated slice of ME THnSparse
-    //  fillSpPhiLambdac[4] = 1;
-    //  fillSpPhiLambdacbar[4] = 1;
-   // }
+   
 
     Bool_t allowLambdac = 0;
     Bool_t allowLambdacbar = 0;
@@ -3337,7 +3151,7 @@ TProfile* AliAnalysisTaskSELambdacCorrelations::GetEstimatorHistogram(const AliV
   return fTrackletProfiles[period];
 }
 
-
+/*
 //________________________________________________________________________
 Bool_t AliAnalysisTaskSELambdacCorrelations::AcceptTrackForMEOffline(Double_t pt) {
 
@@ -3348,7 +3162,7 @@ Bool_t AliAnalysisTaskSELambdacCorrelations::AcceptTrackForMEOffline(Double_t pt
   else return kTRUE; //accept track for offline ME
 
 }
-
+*/
 //________________________________________________________________________
 void AliAnalysisTaskSELambdacCorrelations::FillPurityPlots(TClonesArray* mcArray, AliReducedParticle* track, Int_t ptbin, Double_t deltaphi) {
 
@@ -3477,8 +3291,6 @@ void AliAnalysisTaskSELambdacCorrelations::PrintBinsAndLimits() {
   cout << "--------------------------\n";
   cout << "ME thresh axis = "<<fMEAxisThresh<<"\n";
   cout << "--------------------------\n";
-  //cout << "Soft Pi Cut = "<<fSoftPiCut<<"\n";
-  cout << "--------------------------\n";
   cout << "Speed (1 SBL/SBR and eventually Sign bin) = "<<fSpeed<<"\n";
   cout << "--------------------------\n";
   cout << "All entries in Pool0 = "<<fMergePools<<"\n";
@@ -3505,5 +3317,375 @@ void AliAnalysisTaskSELambdacCorrelations::PrintBinsAndLimits() {
   getchar();
   }
 
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskSELambdacCorrelations::MatchLcToMC(AliAODMCParticle *part,TClonesArray *arrayMC) const{
+  // check if the particle is a lambdac and if its decay mode is the correct one, apply eta cut on final daughters 
+  Int_t numberOfLambdac=0;
+  if(TMath::Abs(part->GetPdgCode())!=4122) return -1;
+  // Int_t daughTmp[2];
+  // daughTmp[0]=part->GetDaughterLabel(0);
+  // daughTmp[1]=part->GetDaughterLabel(1);
+  Int_t nDaugh = (Int_t)part->GetNDaughters();
+  if(nDaugh<2) return -1;
+  if(nDaugh>3) return -1;
+  AliAODMCParticle* pdaugh1 = (AliAODMCParticle*)arrayMC->At(part->GetDaughterLabel(0));
+  if(!pdaugh1) {return -1;}
+  Int_t number1 = TMath::Abs(pdaugh1->GetPdgCode());
+  AliAODMCParticle* pdaugh2 = (AliAODMCParticle*)arrayMC->At(part->GetDaughterLabel(1));
+  if(!pdaugh2) {return -1;}
+  Int_t number2 = TMath::Abs(pdaugh2->GetPdgCode());
+
+  if(nDaugh==3){
+    Int_t thirdDaugh=part->GetDaughterLabel(1)-1;
+    AliAODMCParticle* pdaugh3 = (AliAODMCParticle*)arrayMC->At(thirdDaugh);
+    Int_t number3 = TMath::Abs(pdaugh3->GetPdgCode());
+    if((number1==321 && number2==211 && number3==2212) ||
+       (number1==211 && number2==321 && number3==2212) ||
+       (number1==211 && number2==2212 && number3==321) ||
+       (number1==321 && number2==2212 && number3==211) ||
+       (number1==2212 && number2==321 && number3==211) ||
+       (number1==2212 && number2==211 && number3==321)) {
+        if(fReadMC && !fRecoLambdac){
+          if(!IsParticleMCInEta(pdaugh1) || !IsParticleMCInEta(pdaugh2) || !IsParticleMCInEta(pdaugh3)){
+            printf("1. %.3f  2.  %.3f  3.  %.3f   OUT of ETA: Non resonant", pdaugh1->Eta(), pdaugh2->Eta(), pdaugh3->Eta());
+            return -1;
+          }
+          if(!IsMatchedParticleMCInY(part,pdaugh1,pdaugh2,pdaugh3)) {return -1;}
+          cout << "Non resonant" << endl;
+          numberOfLambdac++;
+        }   
+    }
+  }
+
+  if(nDaugh==2){
+
+    //Lambda resonant
+  
+    //Lambda -> p K*0
+    //
+    Int_t nfiglieK=0;
+    //case1) daughter1 is a proton, daughter2 is K*0
+    if((number1==2212 && number2==313)){
+      nfiglieK=pdaugh2->GetNDaughters();
+      if(nfiglieK!=2) return -1;
+      AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+      AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
+      if(!pdaughK1) return -1;
+      if(!pdaughK2) return -1;
+      if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)){
+        if(fReadMC && !fRecoLambdac){
+          if(!IsParticleMCInEta(pdaugh1) || !IsParticleMCInEta(pdaughK1) || !IsParticleMCInEta(pdaughK2)){
+            printf("1. %.3f  2.  %.3f  3.  %.3f   OUT of ETA: K*0", pdaugh1->Eta(), pdaughK1->Eta(), pdaughK2->Eta());
+            return -1;
+          }
+          if(!IsMatchedParticleMCInY(part,pdaugh1,pdaughK1,pdaughK2)) {return -1;}
+          cout << "K*0" << endl;
+          numberOfLambdac++;
+        }   
+      }
+    }
+    //case1) daughter2 is a proton, daughter1 is K*0
+    if((number1==313 && number2==2212)){
+      nfiglieK=pdaugh1->GetNDaughters();
+      if(nfiglieK!=2) return -1;
+      AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+      AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
+      if(!pdaughK1) return -1;
+      if(!pdaughK2) return -1;
+      if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)){
+        if(fReadMC && !fRecoLambdac){
+          if(!IsParticleMCInEta(pdaugh2) || !IsParticleMCInEta(pdaughK1) || !IsParticleMCInEta(pdaughK2)){
+            printf("1. %.3f  2.  %.3f  3.  %.3f   OUT of ETA: K*0", pdaugh2->Eta(), pdaughK1->Eta(), pdaughK2->Eta());
+            return -1;
+          }
+          if(!IsMatchedParticleMCInY(part,pdaugh2,pdaughK1,pdaughK2)) {return -1;}
+          cout << "K*0" << endl;
+          numberOfLambdac++;
+        }   
+      }
+    }
+
+    //Lambda -> Delta++ k
+    Int_t nfiglieDelta=0;
+    //case a) daughter1 is kaon
+    if(number1==321 && number2==2224){
+      nfiglieDelta=pdaugh2->GetNDaughters();
+      if(nfiglieDelta!=2) return -1;
+      AliAODMCParticle *pdaughD1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+      AliAODMCParticle *pdaughD2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
+      if(!pdaughD1) return -1;
+      if(!pdaughD2) return -1;
+      if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)){
+        if(fReadMC && !fRecoLambdac){
+          if(!IsParticleMCInEta(pdaugh1) || !IsParticleMCInEta(pdaughD1) || !IsParticleMCInEta(pdaughD2)){
+            printf("1. %.3f  2.  %.3f  3.  %.3f   OUT of ETA: Delta++", pdaugh1->Eta(), pdaughD1->Eta(), pdaughD2->Eta());
+            return -1;
+          }
+          if(!IsMatchedParticleMCInY(part,pdaugh1,pdaughD1,pdaughD2)) {return -1;}
+            cout << "Delta++" << endl;
+            numberOfLambdac++;
+        }   
+      }
+    }
+    //case b) daughter2 is kaon
+    if(number1==2224 && number2==321){
+      nfiglieDelta=pdaugh1->GetNDaughters();
+      if(nfiglieDelta!=2) return -1;
+      AliAODMCParticle* pdaughD1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+      AliAODMCParticle* pdaughD2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
+      if(!pdaughD1) return -1;
+      if(!pdaughD2) return -1;
+      if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)){
+        if(fReadMC && !fRecoLambdac){
+          if(!IsParticleMCInEta(pdaugh2) || !IsParticleMCInEta(pdaughD1) || !IsParticleMCInEta(pdaughD2)){
+            printf("1. %.3f  2.  %.3f  3.  %.3f   OUT of ETA: Delta++", pdaugh2->Eta(), pdaughD1->Eta(), pdaughD2->Eta());
+            return -1;
+          }
+          if(!IsMatchedParticleMCInY(part,pdaugh2,pdaughD1,pdaughD2)) {return -1;}
+          numberOfLambdac++;
+          cout << "Delta++" << endl;
+        }
+      }
+    }
+    
+
+    //Lambdac -> Lambda(1520) pi
+    Int_t nfiglieLa=0;
+    //case a) daughter2 is a pi
+    if(number1==3124 && number2==211){
+      nfiglieLa=pdaugh1->GetNDaughters();
+      if(nfiglieLa!=2) return -1;
+      AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+      AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
+      if(!pdaughL1) return -1;
+      if(!pdaughL2) return -1;
+      if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)){
+        if(fReadMC && !fRecoLambdac){
+          if(!IsParticleMCInEta(pdaugh2) || !IsParticleMCInEta(pdaughL1) || !IsParticleMCInEta(pdaughL2)){
+            printf("1. %.3f  2.  %.3f  3.  %.3f  OUT of ETA: lambda 1520", pdaugh2->Eta(), pdaughL1->Eta(), pdaughL2->Eta());
+            return -1;
+          }
+          if(!IsMatchedParticleMCInY(part,pdaugh2,pdaughL1,pdaughL2)) {return -1;}
+          cout << "Lambda 1520" << endl;
+          numberOfLambdac++;
+        }
+      }
+    }
+    //case b) daughter1 is a pi
+    if(number1==211 && number2==3124){
+      nfiglieLa=pdaugh2->GetNDaughters();
+      if(nfiglieLa!=2) return -1;
+      AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+      AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
+      if(!pdaughL1) return -1;
+      if(!pdaughL2) return -1;
+      if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321))      if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)){
+        if(fReadMC && !fRecoLambdac){
+          if(!IsParticleMCInEta(pdaugh1) || !IsParticleMCInEta(pdaughL1) || !IsParticleMCInEta(pdaughL2)){
+            printf("1. %.3f  2.  %.3f  3.  %.3f  OUT of ETA: lambda 1520", pdaugh1->Eta(), pdaughL1->Eta(), pdaughL2->Eta());
+            return -1;
+          }
+          if(!IsMatchedParticleMCInY(part,pdaugh1,pdaughL1,pdaughL2)) {return -1;}
+          numberOfLambdac++;
+          cout << "Lambda 1520" << endl;
+        }
+      }
+    }
+
+  } //end Lc->2daughters->pkpi
+
+  if(numberOfLambdac>0) {return part->GetLabel();}
+  return -1;
+}
+//-----------------------------
+Bool_t AliAnalysisTaskSELambdacCorrelations::IsParticleMCInEta(AliAODMCParticle *part) const{
+  //Check if a particle is in eta range
+  if(std::abs(part->Eta()) < 0.8){
+    return kTRUE;
+  }
+  else return kFALSE;
+}
+
+//-----------------------------
+Bool_t AliAnalysisTaskSELambdacCorrelations::IsMatchedParticleMCInY(AliAODMCParticle *lc, AliAODMCParticle *mcDau1, AliAODMCParticle *mcDau2, AliAODMCParticle *mcDau3) const{
+  Double_t p1[3]  = {mcDau1->Px(),mcDau1->Py(),mcDau1->Pz()};
+  Double_t p2[3]  = {mcDau2->Px(),mcDau2->Py(),mcDau2->Pz()};
+  Double_t p3[3]  = {mcDau3->Px(),mcDau3->Py(),mcDau3->Pz()};
+  Double_t pLc[3] = {lc->Px(),lc->Py(),lc->Pz()};
+  //cout << "*** IsMatchedParticleMCInY " << TMath::Abs( (p1[0]+p2[0]+p3[0]-pLc[0])*(p1[0]+p2[0]+p3[0]-pLc[0]) + (p1[1]+p2[1]+p3[1]-pLc[1])*(p1[1]+p2[1]+p3[1]-pLc[1]) + (p1[2]+p2[2]+p3[2]-pLc[2])*(p1[2]+p2[2]+p3[2]-pLc[2]) ) << endl;
+  if(TMath::Abs( (p1[0]+p2[0]+p3[0]-pLc[0])*(p1[0]+p2[0]+p3[0]-pLc[0]) + (p1[1]+p2[1]+p3[1]-pLc[1])*(p1[1]+p2[1]+p3[1]-pLc[1]) + (p1[2]+p2[2]+p3[2]-pLc[2])*(p1[2]+p2[2]+p3[2]-pLc[2]) )>0.1) {return kFALSE;}
+    return kTRUE;
+}
+
+//________________________________________________________________________
+Int_t AliAnalysisTaskSELambdacCorrelations::MatchToMCLambdac(AliAODRecoDecayHF3Prong *d,TClonesArray *arrayMC) const{
+  // check if the candidate is a Lambdac decaying in pKpi or in the resonant channels
+  Int_t lambdacLab[3]={0,0,0};
+  Int_t pdgs[3]={0,0,0};
+  for(Int_t i=0;i<3;i++){
+    AliAODTrack *daugh=(AliAODTrack*)d->GetDaughter(i);
+    Int_t lab=daugh->GetLabel();
+    if(lab<0) return 0;
+    AliAODMCParticle *part= (AliAODMCParticle*)arrayMC->At(lab);
+    if(!part) continue;
+    pdgs[i]=part->GetPdgCode();
+    printf("Cand Hyp daugh: %d) %d \n", i, pdgs[i]);
+    Int_t partPdgcode = TMath::Abs(part->GetPdgCode());
+    if(partPdgcode==211 || partPdgcode==321 || partPdgcode==2212){
+      Int_t motherLabel=part->GetMother();
+      if(motherLabel<0) return 0;
+      AliAODMCParticle *motherPart = (AliAODMCParticle*)arrayMC->At(motherLabel);
+      if(!motherPart) continue;
+      Int_t motherPdg = TMath::Abs(motherPart->GetPdgCode());
+      if(motherPdg==4122) {
+        if(GetLambdacDaugh(motherPart,arrayMC)){lambdacLab[i]=motherLabel;continue;}
+      }
+      if(motherPdg==313 || motherPdg==2224 || motherPdg==3124){
+	      Int_t granMotherLabel=motherPart->GetMother();
+	      if(granMotherLabel<0) return 0;
+	      AliAODMCParticle *granMotherPart = (AliAODMCParticle*)arrayMC->At(granMotherLabel);
+	      if(!granMotherPart) continue;
+	      Int_t granMotherPdg  = TMath::Abs(granMotherPart->GetPdgCode());
+	      if(granMotherPdg ==4122) {
+	        if(GetLambdacDaugh(granMotherPart,arrayMC)) {lambdacLab[i]=granMotherLabel;continue;}
+	      }
+      }
+    }
+  }
+  printf("Label Mother of 3 tracks making the comb LcCand are %d, %d, %d\n", lambdacLab[0],lambdacLab[1],lambdacLab[2]);
+  for(Int_t i=0; i<3; i++){
+    if(lambdacLab[i]==0) {printf("Mother track %d not found\n", i); return -1;}
+  }
+  if(lambdacLab[0]==lambdacLab[1] && lambdacLab[1]==lambdacLab[2]) {return lambdacLab[0];}
+  return -1;
+
+}
+//------------------------
+Bool_t AliAnalysisTaskSELambdacCorrelations::GetLambdacDaugh(AliAODMCParticle *part,TClonesArray *arrayMC) const{
+  // check if the particle is a lambdac and if its decay mode is the correct one 
+  Int_t numberOfLambdac=0;
+  if(TMath::Abs(part->GetPdgCode())!=4122) return kFALSE;
+  Int_t daughTmp[2];
+  daughTmp[0]=part->GetDaughterLabel(0);
+  daughTmp[1]=part->GetDaughterLabel(1);
+  Int_t nDaugh = (Int_t)part->GetNDaughters();
+  if(nDaugh<2) return kFALSE;
+  if(nDaugh>3) return kFALSE;
+  AliAODMCParticle* pdaugh1 = (AliAODMCParticle*)arrayMC->At(part->GetDaughterLabel(0));
+  if(!pdaugh1) {return kFALSE;}
+  Int_t number1 = TMath::Abs(pdaugh1->GetPdgCode());
+  AliAODMCParticle* pdaugh2 = (AliAODMCParticle*)arrayMC->At(part->GetDaughterLabel(1));
+  if(!pdaugh2) {return kFALSE;}
+  Int_t number2 = TMath::Abs(pdaugh2->GetPdgCode());
+
+  if(nDaugh==3){
+    Int_t thirdDaugh=part->GetDaughterLabel(1)-1;
+    AliAODMCParticle* pdaugh3 = (AliAODMCParticle*)arrayMC->At(thirdDaugh);
+    Int_t number3 = TMath::Abs(pdaugh3->GetPdgCode());
+    if((number1==321 && number2==211 && number3==2212) ||
+       (number1==211 && number2==321 && number3==2212) ||
+       (number1==211 && number2==2212 && number3==321) ||
+       (number1==321 && number2==2212 && number3==211) ||
+       (number1==2212 && number2==321 && number3==211) ||
+       (number1==2212 && number2==211 && number3==321)) {
+      numberOfLambdac++;
+      cout << "Non resonant" << endl;
+    } 
+  }
+
+  if(nDaugh==2){
+
+    //Lambda resonant
+  
+    //Lambda -> p K*0
+    //
+    Int_t nfiglieK=0;
+
+    if((number1==2212 && number2==313)){
+      nfiglieK=pdaugh2->GetNDaughters();
+      if(nfiglieK!=2) return kFALSE;
+      AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+      AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
+      if(!pdaughK1) return kFALSE;
+      if(!pdaughK2) return kFALSE;
+      if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) {
+        cout << "K*0" << endl;
+        numberOfLambdac++;
+      }
+    }
+
+    if((number1==313 && number2==2212)){
+      nfiglieK=pdaugh1->GetNDaughters();
+      if(nfiglieK!=2) return kFALSE;
+      AliAODMCParticle* pdaughK1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+      AliAODMCParticle* pdaughK2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
+      if(!pdaughK1) return kFALSE;
+      if(!pdaughK2) return kFALSE;
+      if((TMath::Abs(pdaughK1->GetPdgCode())==211 && TMath::Abs(pdaughK2->GetPdgCode())==321) || (TMath::Abs(pdaughK1->GetPdgCode())==321 && TMath::Abs(pdaughK2->GetPdgCode())==211)) {
+        numberOfLambdac++;
+        cout << "K*0" << endl;
+      }
+    }
+
+    //Lambda -> Delta++ k
+    Int_t nfiglieDelta=0;
+    if(number1==321 && number2==2224){
+      nfiglieDelta=pdaugh2->GetNDaughters();
+      if(nfiglieDelta!=2) return kFALSE;
+      AliAODMCParticle *pdaughD1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+      AliAODMCParticle *pdaughD2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
+      if(!pdaughD1) return kFALSE;
+      if(!pdaughD2) return kFALSE;
+      if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)){ 
+        numberOfLambdac++;
+        cout << "Delta++" << endl;
+      }
+    }
+    if(number1==2224 && number2==321){
+      nfiglieDelta=pdaugh1->GetNDaughters();
+      if(nfiglieDelta!=2) return kFALSE;
+      AliAODMCParticle* pdaughD1 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+      AliAODMCParticle* pdaughD2 = (AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
+      if(!pdaughD1) return kFALSE;
+      if(!pdaughD2) return kFALSE;
+      if((TMath::Abs(pdaughD1->GetPdgCode())==211 && TMath::Abs(pdaughD2->GetPdgCode())==2212) || (TMath::Abs(pdaughD1->GetPdgCode())==2212 && TMath::Abs(pdaughD2->GetPdgCode())==211)) {
+        numberOfLambdac++;
+        cout << "Delta++" << endl;
+      }
+    }
+    
+
+    //Lambdac -> Lambda(1520) pi
+    Int_t nfiglieLa=0;
+    if(number1==3124 && number2==211){
+      nfiglieLa=pdaugh1->GetNDaughters();
+      if(nfiglieLa!=2) return kFALSE;
+      AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(0));
+      AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh1->GetDaughterLabel(1));
+      if(!pdaughL1) return kFALSE;
+      if(!pdaughL2) return kFALSE;
+      if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) {
+        numberOfLambdac++;
+        cout << "Lambda" << endl;
+      }
+    }
+    if(number1==211 && number2==3124){
+      nfiglieLa=pdaugh2->GetNDaughters();
+      if(nfiglieLa!=2) return kFALSE;
+      AliAODMCParticle *pdaughL1=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(0));
+      AliAODMCParticle *pdaughL2=(AliAODMCParticle*)arrayMC->At(pdaugh2->GetDaughterLabel(1));
+      if(!pdaughL1) return kFALSE;
+      if(!pdaughL2) return kFALSE;
+      if((TMath::Abs(pdaughL1->GetPdgCode())==321 && TMath::Abs(pdaughL2->GetPdgCode())==2212) || (TMath::Abs(pdaughL1->GetPdgCode())==2212 && TMath::Abs(pdaughL2->GetPdgCode())==321)) {
+        numberOfLambdac++;
+        cout << "Lambda" << endl;
+      }   
+    }
+  }
+
+  if(numberOfLambdac>0) {return kTRUE;}
+  return kFALSE;
 }
 
