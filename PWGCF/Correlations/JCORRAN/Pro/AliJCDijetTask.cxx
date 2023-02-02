@@ -25,6 +25,7 @@
 //////////////////////////////////////////////////////////////////////////////
 #include <AliAnalysisManager.h>
 #include "AliJCDijetTask.h" 
+//#include "AliProdInfo.h"
 
 //______________________________________________________________________________
 AliJCDijetTask::AliJCDijetTask() :
@@ -50,6 +51,7 @@ AliJCDijetTask::AliJCDijetTask() :
     fmatchingR(0),
     fhistos(NULL),
     fhistosDetMC(NULL),
+    fTrackEfficiencyHistogram(NULL),
     fana(NULL),
     fanaMC(NULL),
     fCBin(-1),
@@ -84,6 +86,7 @@ AliJCDijetTask::AliJCDijetTask(const char *name, TString inputformat):
     fmatchingR(0),
     fhistos(NULL),
     fhistosDetMC(NULL),
+    fTrackEfficiencyHistogram(NULL),
     fana(NULL),
     fanaMC(NULL),
     fCBin(-1),
@@ -121,6 +124,7 @@ AliJCDijetTask::AliJCDijetTask(const AliJCDijetTask& ap) :
     fmatchingR(ap.fmatchingR),
     fhistos(ap.fhistos),
     fhistosDetMC(ap.fhistosDetMC),
+    fTrackEfficiencyHistogram(ap.fTrackEfficiencyHistogram),
     fana(ap.fana),
     fanaMC(ap.fanaMC),
     fCBin(ap.fCBin),
@@ -152,6 +156,7 @@ AliJCDijetTask::~AliJCDijetTask()
     delete fOutput;
     delete fhistos;
     delete fhistosDetMC;
+    delete fTrackEfficiencyHistogram;
     delete fana;
     delete fanaMC;
     delete fUtils;
@@ -272,6 +277,13 @@ void AliJCDijetTask::UserCreateOutputObjects()
         cout << endl;
     }
 
+    if(ftrackingIneff<0.0) {
+        fYAMLConfig.Reinitialize();
+        //if ftrackingIneff set as any negative number, use pt dependend ineff.
+        SetArtificialTrackingEfficiencyFromYAML();
+    }
+
+
 #if !defined(__CINT__) && !defined(__MAKECINT__)
     //Note: for true MC we do not want to cut particles kinematically.
     fana->SetSettings(fDebug,
@@ -291,6 +303,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
                       fdeltaPhiCut,
                       fmatchingR,
                       0.0, //Tracking ineff only for det level.
+                      nullptr, //Not needed if ^ not used
                       bUseCrho,
                       fIsMC); //Is this true mc
 
@@ -312,6 +325,7 @@ void AliJCDijetTask::UserCreateOutputObjects()
                             fdeltaPhiCut,
                             fmatchingR,
                             ftrackingIneff,
+                            fTrackEfficiencyHistogram,
                             bUseCrho,
                             false); //Is this true mc
     }
@@ -519,5 +533,172 @@ void AliJCDijetTask::Terminate(Option_t *)
 {
     // Processing when the event loop is ended
     cout<<"AliJCDijetTask Analysis DONE !!"<<endl; 
+}
+
+/**
+ * Stream and initialise tracking efficiency yaml file
+ * Original implementation in AliEmcalJetTask
+ */
+void AliJCDijetTask::AddArtificialTrackingEfficiencyConfig(TString sAnchorPeriod) {
+    fsAnchorPeriod=sAnchorPeriod;
+    std::string path = "$ALICE_PHYSICS/PWGJE/EMCALJetTasks/macros/TrackEfficiencyConfiguration.yaml";
+    Printf("Get pT-dependent Tracking efficiency from %s", path.c_str());
+    int addedConfig = fYAMLConfig.AddConfiguration(path, "yamlConfig");
+    if (addedConfig < 0) {
+        AliFatal(TString::Format("YAML Configuration in set path %s not found!",path.c_str()).Data());
+    }
+    fYAMLConfig.Initialize();
+}
+
+/**
+ * Set the pt-dependent tracking efficiency from the loaded YAML file
+ * Original implementation in AliEmcalJetTask
+ */
+void AliJCDijetTask::SetArtificialTrackingEfficiencyFromYAML() {
+  std::vector <Double_t> ptBinning;
+  std::vector <Double_t> trackingUncertainty;
+  bool res = fYAMLConfig.GetProperty("ptBinning", ptBinning, false);
+  Int_t nPtBins = ptBinning.size()-1;
+  double* aptBinning = ptBinning.data();
+
+  //TODO: could implement automatic anchor period search.
+  //auto userInfo = fInputHandler->GetUserInfo();
+  //AliProdInfo prodInfo(userInfo);
+  //std::string period = prodInfo.GetAnchorProduction().Data();
+  std::string period = fsAnchorPeriod.Data();
+  std::string cent = "0_100"; //Here I have implemented MB only. Search AliEmcalJetTask for cent binned implementation.
+  //AliInfoStream() << "anchor production = " << prodInfo.GetAnchorProduction()<< "\n";
+
+  res = fYAMLConfig.GetProperty({period,cent},trackingUncertainty, false);
+  if(res) {
+      fTrackEfficiencyHistogram = new TH1D("fTrackEfficiencyHistogram","h",nPtBins,aptBinning);
+      for(Int_t i = 0; i < nPtBins; i++) {
+          fTrackEfficiencyHistogram->SetBinContent(i+1, trackingUncertainty.at(i));
+          AliDebug(2,TString::Format("pT %f - %f \t track uncertainty: %f", ptBinning.at(i), ptBinning.at(i+1), trackingUncertainty.at(i)).Data());
+      }
+  }
+  else {
+      fTrackEfficiencyHistogram = nullptr;
+      AliFatal("not able to find any pt-dependent uncertainties for the anchored period %s of the MC that you are running over");
+  }
+}
+
+//_____________________________________________________________________
+AliAnalysisTask *AliJCDijetTask::AddTaskJCDijetTask(TString taskName,
+                                    Bool_t isMC,
+                                    TString sJCatalyst        ,
+                                    TString sJCatalystDetMC   ,
+                                    UInt_t flags              ,
+                                    TString centBins          ,
+                                    TString sDijetMBins       ,
+                                    double jetCone            ,
+                                    double ktjetCone          ,
+                                    int ktScheme              ,
+                                    int antiktScheme          ,
+                                    Bool_t usePionMass        ,
+                                    Bool_t useDeltaPhiBGSubtr ,
+                                    double particleEtaCut     ,
+                                    double particlePtCut      ,
+                                    double leadingJetCut      ,
+                                    double subleadingJetCut   ,
+                                    double minJetPt           ,
+                                    double constituentCut     ,
+                                    double deltaPhiCut        ,
+                                    double matchingR          ,
+                                    double trackingIneff      ,
+                                    TString sAnchorPeriodForTracking ,
+                                    AliJCDijetAna::jetClasses lUnfJetClassTrue ,
+                                    AliJCDijetAna::jetClasses lUnfJetClassDet ,
+                                    Bool_t useCoveredAreaRho)
+{
+    // Load Custom Configuration and parameters
+    // override values with parameters
+
+    // flags can manipulate event selection:
+    // 0: no additional events rejected.
+    // AliAnalysisTask::DIJET_VERTEX13PA: use IsVertexSelected2013pA
+    // AliAnalysisTask::DIJET_PILEUPSPD: use IsPileupFromSPD(3,0.6,3,2,5)
+    // AliAnalysisTask::DIJET_UTILSPILEUPSPD: use IsPileUpSPD(InputEvent())
+    // Combinations of these can be used by giving argument for example:
+    // AliAnalysisTask::DIJET_VERTEX13PA|AliAnalysisTask::DIJET_PILEUPSPD
+
+    // jet recombination schemes can be set with ktScheme argument:
+    // E_scheme     = 0
+    // pt_scheme    = 1
+    // pt2_scheme   = 2
+    // Et_scheme    = 3
+    // Et2_scheme   = 4
+    // BIpt_scheme  = 5
+    // BIpt2_scheme = 6
+
+    cout<<"AddTaskJCDijetTask::flags = "<<flags<<endl;
+
+    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+
+    std::stringstream ss( centBins.Data() );
+    double binBorder;
+    vector<double> vecCentBins;
+    ss >> binBorder;
+    while (!ss.fail()) {
+        vecCentBins.push_back(binBorder);
+        ss >> binBorder;
+    }
+
+    if (vecCentBins.size() < 2) {
+        ::Error("AddTaskJCDijetTask", "Centrality bins are not properly set. At least two bin borders are needed. Terminating.");
+        return NULL;
+    }
+
+    for (int ivec=0; ivec < vecCentBins.size()-1; ivec++) {
+        if(vecCentBins.at(ivec+1) <= vecCentBins.at(ivec)) {
+            ::Error("AddTaskJCDijetTask", "Centrality bins are not properly set. Terminating.");
+            return NULL;
+        }
+    }
+
+    if (jetCone > 0.8 || jetCone < 0.0 || ktjetCone > 0.8 || ktjetCone < 0.0) {
+        ::Error("AddTaskJCDijetTask", "Jet cones are set to be too small or too big. Terminating.");
+        return NULL;
+    }
+
+    if (ktScheme < 0 || ktScheme > 6) {
+        ::Error("AddTaskJCDijetTask", "Invalid ktScheme set. Please choose a setting from 0 till 6. Terminating.");
+        return NULL;
+    }
+    if (antiktScheme < 0 || antiktScheme > 6) {
+        ::Error("AddTaskJCDijetTask", "Invalid antiktScheme set. Please choose a setting from 0 till 6. Terminating.");
+        return NULL;
+    }
+    cout << "MC: " << isMC << endl;
+
+    //==== Set up the dijet task ====
+    AliJCDijetTask *dijetTask = new AliJCDijetTask(taskName.Data(),"AOD");
+    dijetTask->SetDebugLevel(5);
+    dijetTask->SetJCatalystTaskName(sJCatalyst.Data());
+    dijetTask->SetJCatalystTaskNameDetMC(sJCatalystDetMC.Data());
+    dijetTask->SetCentralityBins(vecCentBins);
+    dijetTask->SetDijetMBins(sDijetMBins);
+    dijetTask->SetJetConeSize(jetCone, ktjetCone);
+    dijetTask->SetBGSubtrSettings(ktScheme, antiktScheme, usePionMass, useDeltaPhiBGSubtr, useCoveredAreaRho);
+    dijetTask->SetUnfoldingJetSets(lUnfJetClassTrue, lUnfJetClassDet);
+    dijetTask->SetIsMC(isMC);
+    dijetTask->SetCuts(particleEtaCut, particlePtCut, leadingJetCut, subleadingJetCut, constituentCut, deltaPhiCut, matchingR, trackingIneff, minJetPt);
+    dijetTask->AddFlags(flags);
+    if(trackingIneff<0.0) dijetTask->AddArtificialTrackingEfficiencyConfig(sAnchorPeriodForTracking);
+    cout << dijetTask->GetName() << endl;
+
+
+    mgr->AddTask((AliAnalysisTask*) dijetTask);
+
+    // Create containers for input/output
+    AliAnalysisDataContainer *cinput  = mgr->GetCommonInputContainer();
+
+
+    // Connect input/output
+    mgr->ConnectInput(dijetTask, 0, cinput);
+    AliAnalysisDataContainer *jHist = mgr->CreateContainer(Form("%scontainer",dijetTask->GetName()),  TDirectory::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s",AliAnalysisManager::GetCommonFileName(), dijetTask->GetName()));
+    mgr->ConnectOutput(dijetTask, 1, jHist );
+
+    return dijetTask;
 }
 

@@ -127,6 +127,7 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_dijetCosDeltaPhi;              //! // for cos(dijet deltaPhi)
         AliJTH1D fh_dijetDeltaEta;                 //! // for dijet deltaPhi
         AliJTH1D fh_dijetCoshDeltaEta;             //! // for Cosh(dijet deltaPhi)
+        AliJTH1D fh_dijetSqrtGeometry;             //! // for sqrt(Cosh(dijet deltaPhi) - cos(dijet deltaPhi))
         AliJTH1D fh_dijetSqrt2pt12;                //! // for sqrt(2*pt1*pt2)
         AliJTH1D fh_dijetPtPairDeltaPhiCut;        //! // for dijet pt after deltaPhi cut
         AliJTH1D fh_dijetInvMDeltaPhiCut;          //! // for dijet invariant mass after deltaPhi cut
@@ -138,6 +139,7 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_dijetCosDeltaPhiWithCut;       //! // for cos(dijet deltaPhi) (with deltaPhi cut)
         AliJTH1D fh_dijetDeltaEtaWithCut;          //! // for dijet deltaPhi (with deltaPhi cut)
         AliJTH1D fh_dijetCoshDeltaEtaWithCut;      //! // for Cosh(dijet deltaPhi) (with deltaPhi cut)
+        AliJTH1D fh_dijetSqrtGeometryWithCut;      //! // for sqrt(Cosh(dijet deltaPhi) - cos(dijet deltaPhi)) (with deltaPhi cut)
         AliJTH1D fh_dijetSqrt2pt12WithCut;         //! // for sqrt(2*pt1*pt2) (with deltaPhi cut)
 
         AliJTH1D fh_responseInfo;                  //! // for counting response related things.

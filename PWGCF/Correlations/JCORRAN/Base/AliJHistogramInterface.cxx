@@ -152,3 +152,10 @@ void AliJHistogramInterface::CreateDataManagerHistograms(){
     << TH1D("hTrackSelection","Bit convention", 100, -0.5, 100-0.5) << "END";
   
 }
+
+inline std::ostream &operator << (std::ostream &out_file, const TLorentzVector &Vec)
+{
+  out_file<<"Px="<<Vec.Px()<<" Py="<<Vec.Py()<<" Pz="<<Vec.Pz()<<" E="<<Vec.E()<<" M="<<Vec.M()<<std::endl;
+  out_file<<"Theta="<<Vec.Theta()<<" Phi="<<Vec.Phi()<<" p="<<Vec.Rho()<<std::endl;
+  return out_file;
+}

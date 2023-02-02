@@ -676,6 +676,8 @@ void AliAnalysisTaskGFWFlow::SetupFlagsByIndex(Int_t ind) {
       break;
     case 22:
       fTrNomFlag = 1<<kFB96MergedDCA;
+    case 23:
+      fTrNomFlag = 1<<kChiSq25;
       break;
   }
 }

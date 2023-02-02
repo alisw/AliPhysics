@@ -79,7 +79,9 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetMinNtr(Double_t minNtr) {MinNtr = minNtr;};
 		void                    SetEstimatorFile(TString filename) {festimatorFile = filename;}
 		void                    SetMultType(Int_t mult_type) {fmult_type = mult_type;}
-               
+                void                    SetIsolationCut_E(Double_t isoEcut){fisoEcut = isoEcut;}               
+                void                    SetIsolationCut_Tr(Int_t isoTrcut){fisoTrcut = isoTrcut;}               
+
 
 		//void      SetWeightNtrkl(TH1D* hWeight){
 		//	if(fweightNtrkl) delete fweightNtrkl;
@@ -111,6 +113,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t CutMimClE;
 		TString pTe;
 		Double_t massMin;
+                Double_t fisoEcut;
+                Int_t fisoTrcut;
 		Double_t Nref;
 		Double_t NrefV0;
 		Int_t Nch;

@@ -52,7 +52,7 @@ namespace GFWFlags {
     klTPCchi2PC25 =    BIT(19),//TPC chi2/cluster < 2.5
     klTPCchi2PC20 =    BIT(20),//TPC chi2/cluster < 2.0
     klTPCchi2PC30 =    BIT(21),//TPC chi2/cluster < 3.0
-    klTPCchi2PC40 =    BIT(22),//TPC chi2/cluster < 3.0
+    klTPCchi2PC40 =    BIT(22),//TPC chi2/cluster < 4.0
     klNTPCcls70 =      BIT(23),//Number of TPC clusters 70
     klNTPCcls80 =      BIT(24),//Number of TPC clusters 80
     klNTPCcls90 =      BIT(25),//Number of TPC clusters 90
@@ -64,12 +64,13 @@ namespace GFWFlags {
                     kDCA4Sigma, kDCA10Sigma,
                     kChiSq2, kChiSq3,
                     kNTPC80, kNTPC90, kNTPC100,
-                    kFB96Tuned, kFB768Tuned,
+                    kFB96Tuned, kFB768Tuned, //These are for developing purposes and shouldn't be used!
                     kFB768DCAz,
                     kFB768DCAxyLow,
                     kFB768DCAxyHigh,
                     kFB768ChiSq2, kFB768ChiSq3,
                     kFB768nTPC, kFB96MergedDCA,
+                    kChiSq25, //For testing purposes on 15_pass1 data
                     kAllTrFlags
                   };
   static const Int_t BitIndex(const UInt_t &lFlag) {
@@ -78,7 +79,7 @@ namespace GFWFlags {
     return -1;
   };
   static const TString GetSystPF(UInt_t lEv, UInt_t lTr) { return TString(Form("_Ev%i_Tr%i",lEv,lTr)); };
-  const Int_t gNTrackFlags=20;
+  const Int_t gNTrackFlags=21;
   const Int_t gNEventFlags=4;
 };
 using namespace GFWFlags;

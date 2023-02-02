@@ -1253,7 +1253,7 @@ Bool_t AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeMCCheck(TClonesArray *mcArra
             for(Int_t idau = mcpart->GetDaughterFirst(); idau<mcpart->GetDaughterLast()+1; idau++){
                 if(idau <0) break;
                 AliAODMCParticle *mcdau = (AliAODMCParticle*)mcArray->At(idau);
-                if(TMath::Abs(mcdau->GetPdgCode())==3312 && mcpart->GetNDaughters()==NDaughtersXi){  // 3312: xi
+                if(TMath::Abs(mcdau->GetPdgCode())==3312 && mcdau->GetNDaughters()==NDaughtersXi){  // 3312: xi
                     xi_flag = kTRUE;
                     mcxipart = mcdau;
                 }
@@ -1267,7 +1267,7 @@ Bool_t AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeMCCheck(TClonesArray *mcArra
               for(Int_t idau = mcxipart->GetDaughterFirst(); idau<mcxipart->GetDaughterLast()+1; idau++){
                 if(idau <0) break;
                 AliAODMCParticle *mcdau = (AliAODMCParticle*)mcArray->At(idau);
-                if(TMath::Abs(mcdau->GetPdgCode())==3122 && mcpart->GetNDaughters()==NDaughtersLambda){  // 3122: lambda
+                if(TMath::Abs(mcdau->GetPdgCode())==3122 && mcdau->GetNDaughters()==NDaughtersLambda){  // 3122: lambda
                     lambda_flag = kTRUE;
                     mclambdapart = mcdau;
                 }
