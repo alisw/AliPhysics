@@ -36,6 +36,7 @@ ClassImp(AliCSPIDCuts);
 /// \endcond
 
 const char* AliCSPIDCuts::fgkCutsNames[AliCSPIDCuts::kNCuts] = {
+  "#it{p} range",
   "ITS dE/dx n#sigma",
   "TPC dE/dx n#sigma",
   "TOF n#sigma",
@@ -165,26 +166,24 @@ Bool_t AliCSPIDCuts::IsTrackAccepted(AliVTrack* ttrk, float*)
 
   if (fQALevel > kQALevelNone) {
     /* let's fill the histograms */
-    fhCutsStatistics->Fill(fhCutsStatistics->GetBinCenter(fhCutsStatistics->GetXaxis()->FindBin("n tracks")));
+    fhCutsStatistics->Fill("n tracks", 1);
     if (!accepted)
-      fhCutsStatistics->Fill(fhCutsStatistics->GetBinCenter(fhCutsStatistics->GetXaxis()->FindBin("n cut tracks")));
+      fhCutsStatistics->Fill("n cut tracks", 1);
 
     for (Int_t i=0; i<kNCuts; i++) {
-      if (fhCutsStatistics->GetXaxis()->FindBin(fgkCutsNames[i]) < 1)
+      if (fhCutsStatistics->GetXaxis()->FindFixBin(fgkCutsNames[i]) < 1)
         AliFatal(Form("Inconsistency! Cut %d with name %s not found", i, fgkCutsNames[i]));
 
       if (fCutsActivatedMask.TestBitNumber(i))
-        fhCutsStatistics->Fill(fhCutsStatistics->GetBinCenter(fhCutsStatistics->GetXaxis()->FindBin(fgkCutsNames[i])));
+        fhCutsStatistics->Fill(fgkCutsNames[i], 1);
 
       if (fQALevel > kQALevelLight) {
-        for (Int_t j=i; j<kNCuts; j++) {
-          if (fhCutsStatistics->GetXaxis()->FindBin(fgkCutsNames[j]) < 1)
+        for (Int_t j = i; j < kNCuts; j++) {
+          if (fhCutsStatistics->GetXaxis()->FindFixBin(fgkCutsNames[j]) < 1)
             AliFatal(Form("Inconsistency! Cut %d with name %s not found", j, fgkCutsNames[j]));
 
           if (fCutsActivatedMask.TestBitNumber(i) && fCutsActivatedMask.TestBitNumber(j)) {
-            Float_t xC = fhCutsCorrelation->GetXaxis()->GetBinCenter(fhCutsCorrelation->GetXaxis()->FindBin(fgkCutsNames[i]));
-            Float_t yC = fhCutsCorrelation->GetYaxis()->GetBinCenter(fhCutsCorrelation->GetYaxis()->FindBin(fgkCutsNames[j]));
-            fhCutsCorrelation->Fill(xC, yC);
+            fhCutsCorrelation->Fill(fgkCutsNames[i], fgkCutsNames[j], 1);
           }
         }
       }
