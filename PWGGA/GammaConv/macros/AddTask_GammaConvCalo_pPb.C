@@ -1090,7 +1090,7 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0400000","24466530ha01cc00000","0h63103100000010"); // same as std + maximum past future rejection
   
   } else if (trainConfig == 1019){ // timing Cut variation  std -30+30ns
-|   //                                                                  |
+    //                                                                  |
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","244665301a01cc00000","0h63103100000010"); //1:     -1000  +1000 ns
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","244665305a01cc00000","0h63103100000010"); //5:     -50    +50   ns
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","244665307a01cc00000","0h63103100000010"); //7:     -30    +30   ns
