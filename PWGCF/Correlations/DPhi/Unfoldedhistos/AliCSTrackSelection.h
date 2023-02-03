@@ -29,9 +29,21 @@ class AliPIDResponse;
 /// \date Feb 12, 2017
 
 class AliCSTrackSelection : public TNamed {
-public:
-                                     AliCSTrackSelection();
-                                     AliCSTrackSelection(const char *name, const char * title);
+ public:
+  /// \enum poiIds
+  /// \brief The internal ids of the particles/tracks of interest
+  enum poiIds {
+    kWrongPOIid = -1, ///< wrong id
+    kPOIh = 0,        ///< hadrons
+    kPOIpi,           ///< pions
+    kPOIka,           ///< kaons
+    kPOIpr,           ///< protons
+    kNPOIids          ///< the number of POD ids
+  };
+
+ public:
+  AliCSTrackSelection();
+  AliCSTrackSelection(const char* name, const char* title);
   virtual                           ~AliCSTrackSelection();
 
   Bool_t                             InitializeFromString(const char *confstring);
@@ -84,10 +96,12 @@ private:
   TH2F                              *fhPtVsEta[2];                       ///< \f$ p_{T} \f$ vs \f$ \eta \f$ (b/a)
   TH2F                              *fhITSdEdxSignalVsP[2];              ///< ITS dE/dx signal vs P (b/a)
   TH2F                              *fhTPCdEdxSignalVsP[2];              ///< TPC dE/dx signal vs P(b/a)
+  TH2F* fhTPCdEdxSelSignalVsP[3];                                        ///< TPC dE/dx signal vs P for the different selected species
   TH2F                              *fhTOFSignalVsP[2];                  ///< TOF signal vs P(b/a)
   TH3F* fhTPCTOFSigmaVsP[3][2];                                          ///< TOF n sigmas vs TPC n sigmas vs P  to the pi, k, p lines (b/a)
   TH2F* fhTPCdEdxSignalDiffVsP[3][2];                                    ///< TPC dE/dx signal difference to the pi, k, p lines vs P (b/a)
-  TH2F* fhPvsTOFMassSq[2];                                                 ///< momentum vs TOF estimated mass (b/a)
+  TH2F* fhTPCdEdxSelSignalDiffVsP[3][3];                                 ///< TPC dE/dx signal difference to the pi, k, p lines vs P  for the different selected species
+  TH2F* fhPvsTOFMassSq[2];                                               ///< momentum vs TOF estimated mass (b/a)
 
   TList                             *fHistogramsList;                    ///< the list of histograms used
 
