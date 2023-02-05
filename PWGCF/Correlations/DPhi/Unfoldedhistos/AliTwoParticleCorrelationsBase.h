@@ -57,34 +57,35 @@ public:
   virtual Bool_t              ConfigureBinning(const char *configstring);
   void                        ConfigureResonances(const char *confstring);
   virtual TString             GetBinningConfigurationString() const;
-  TString                     GetResonancesConfigurationString() const;
+  TString GetResonancesConfigurationString() const;
+  void SetSpeciesNames(std::vector<std::string> names);
 
-
-  Bool_t                      SetWeigths(const TH3F *h3_1, const TH3F *h3_2);
-  virtual Bool_t              SetPtAvg(const TH2 *, const TH2 *) { return false; }
-  Bool_t                      SetEfficiencyCorrection(const TH1F *h1_1, const TH1F *h1_2);
-  Bool_t                      SetPairEfficiencyCorrection(const THn *h11, const THn *h12, const THn *h22, const THn *h21);
-  Bool_t                      SetSimultationPdfs(const TObjArray *pluspdf, const TObjArray *minuspdf);
-                              /// \brief set the number of simulated events per passed event
-                              /// \param nevents the number of events to simulate per passed event
-  void                        SetSimEventsPerEvent(Int_t nevents) { fSimEventsPerEvent = nevents; }
-                              /// \brief get the number of events being simulated per passed event
-                              /// \return the number of events being simulated per passed event
-  Int_t                       GetSimEventsPerEvent() { return fSimEventsPerEvent; }
+  bool SetWeigths(std::vector<const TH3*> h3);
+  virtual bool SetPtAvg(std::vector<const TH2*>) { return false; }
+  bool SetEfficiencyCorrection(std::vector<const TH1*> h1);
+  bool SetPairEfficiencyCorrection(std::vector<std::vector<const THn*>> hn);
+  bool SetSimultationPdfs(std::vector<const TObjArray*> pdf);
+  /// \brief set the number of simulated events per passed event
+  /// \param nevents the number of events to simulate per passed event
+  void SetSimEventsPerEvent(Int_t nevents) { fSimEventsPerEvent = nevents; }
+  /// \brief get the number of events being simulated per passed event
+  /// \return the number of events being simulated per passed event
+  int GetSimEventsPerEvent() { return fSimEventsPerEvent; }
 
   virtual void                Initialize();
                               /// Get the histograms list
                               /// \return the histograms list
   TList                      *GetHistogramsList() { return fOutput; }
-  virtual Bool_t              StartEvent(Float_t centrality, Float_t vertexZ);
-  virtual Bool_t              ProcessTrack(Int_t trkId, AliVTrack *trk);
-  virtual Bool_t              ProcessTrack(Int_t trkId, AliVParticle *part);
-  virtual Bool_t              ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Float_t eta, Float_t phi) = 0;
+  virtual bool StartEvent(float centrality, float vertexZ);
+  virtual bool ProcessTrack(int id, AliVTrack* trk);
+  virtual bool ProcessTrack(int id, AliVParticle* part);
+  virtual bool ProcessTrack(int pid, float pT, float eta, float phi) = 0;
   virtual void                ProcessEventData() = 0;
   virtual void                FinalizeProcess() = 0;
 
-  Float_t                     checkIfResonance(Int_t ires, Bool_t fill, int ix1, int ix2);
-protected:
+  float checkIfResonance(Int_t ires, Bool_t fill, int ix1, int ix2);
+
+ protected:
   void                        FlagConversionsAndResonances();
 
 protected:
@@ -98,104 +99,64 @@ protected:
   Bool_t                      fUseWeights;                  ///< kTRUE if correction weights must be utilized
   Bool_t                      fUseSimulation;               ///< kTRUE if particle production from stored profiles must be used
 
-  /* the arrays with tracks 1 and 2 information */
-  Int_t                       fArraySize;                   ///< the size of the array to collect accepted track information
-  Int_t                       fNoOfTracks1;                 ///< the number of stored track 1 tracks
-  UInt_t                     *fFlags_1;                     //!<! the array of track 1 flags
-  Float_t                    *fPt_1;                        //!<! the array of track 1 \f$p_T\f$
-  Float_t                    *fEta_1;                       //!<! the array of track 1 \f$\eta\f$
-  Float_t                    *fPhi_1;                       //!<! the array of track 1 \f$\varphi\f$
-  Int_t                       fNoOfTracks2;                 ///< the number of stored track 2 tracks
-  UInt_t                     *fFlags_2;                     //!<! the array of track 2 flags
-  Float_t                    *fPt_2;                        //!<! the array of track 2 \f$p_T\f$
-  Float_t                    *fEta_2;                       //!<! the array of track 2 \f$\eta\f$
-  Float_t                    *fPhi_2;                       //!<! the array of track 2 \f$\varphi\f$
+  /* the arrays with tracks information */
+  int fArraySize;  ///< the size of the array to collect accepted track information
+  int fNoOfTracks; ///< the number of stored tracks
+  uint* fFlags;    //!<! the array of track flags
+  float* fPt;      //!<! the array of track \f$p_T\f$
+  float* fEta;     //!<! the array of track \f$\eta\f$
+  float* fPhi;     //!<! the array of track \f$\varphi\f$
 
-  Float_t                    *fCorrectionWeights_1;         //!<! structure with the track 1 correction weights
-  Float_t                    *fCorrectionWeights_2;         //!<! structure with the track 2 correction weights
-  Float_t                    *fEfficiencyCorrection_1;      //!<! structure with the track 1 efficiency correction weights
-  Float_t                    *fEfficiencyCorrection_2;      //!<! structure with the track 2 efficiency correction weights
-  const THn                  *fPairsEfficiency_PP;          //!<! pair efficiency correction for the plus plus pair
-  const THn                  *fPairsEfficiency_PM;          //!<! pair efficiency correction for the plus minus pair
-  const THn                  *fPairsEfficiency_MM;          //!<! pair efficiency correction for the minus minus pair
-  const THn                  *fPairsEfficiency_MP;          //!<! pair efficiency correction for the minus plus pair
-  const TObjArray            *fPositiveTrackPdfs;           //!<! the positive tracks density distributions
-  const TObjArray            *fNegativeTrackPdfs;           //!<! the negative tracks density distributions
-  TH3F                       *fPositiveTrackCurrentPdf;     //!<! current event positive tracks density distribution
-  TH3F                       *fNegativeTrackCurrentPdf;     //!<! current event negative tracks density distribution
-  Int_t                       fSimEventsPerEvent;           ///< the number of simulated events produced per real event
+  std::vector<float*> fCorrectionWeights;                //!<! structure with the track correction weights
+  std::vector<float*> fEfficiencyCorrection;             //!<! structure with the track efficiency correction weights
+  std::vector<std::vector<const THn*>> fPairsEfficiency; //!<! pair efficiency correction for the different pair combinations
+  std::vector<const TObjArray*> fTrackPdfs;              //!<! the tracks density distributions
+  std::vector<TH3F*> fTrackCurrentPdf;                   //!<! current event tracks density distribution
+  int fSimEventsPerEvent;                                ///< the number of simulated events produced per real event
 
-  Int_t                       fNBins_vertexZ;               ///< the \f$z\f$ vertex component number of bins
-  Double_t                    fMin_vertexZ;                 ///< the minimum \f$z\f$ vertex component value
-  Double_t                    fMax_vertexZ;                 ///< the maximum \f$z\f$ vertex component value
-  Double_t                    fWidth_vertexZ;               ///< the \f$z\f$ vertex component bin width
+  int fNBins_vertexZ;    ///< the \f$z\f$ vertex component number of bins
+  double fMin_vertexZ;   ///< the minimum \f$z\f$ vertex component value
+  double fMax_vertexZ;   ///< the maximum \f$z\f$ vertex component value
+  double fWidth_vertexZ; ///< the \f$z\f$ vertex component bin width
 
-  Double_t                    fNBinsPhiShift;               ///< the number of bins the phi origin is shifted
+  double fNBinsPhiShift; ///< the number of bins the phi origin is shifted
 
-  Int_t                       fNBins_pt_1;                  ///< the track 1 \f$p_T\f$ number of bins
-  Double_t                    fMin_pt_1;                    ///< the track 1 minimum \f$p_T\f$ value
-  Double_t                    fMax_pt_1;                    ///< the track 1 maximum \f$p_T\f$ value
-  Double_t                    fWidth_pt_1;                  ///< the track 1 \f$p_T\f$ bin width
-  Int_t                       fNBins_phi_1;                 ///< the track 1 \f$\phi\f$ number of bins
-  Double_t                    fMin_phi_1;                   ///< the track 1 minimum \f$\phi\f$ value
-  Double_t                    fMax_phi_1;                   ///< the track 1 maximum \f$\phi\f$ value
-  Double_t                    fWidth_phi_1;                 ///< the track 1 \f$\phi\f$ bin width
-  Int_t                       fNBins_eta_1;                 ///< the track 1 \f$\eta\f$ number of bins
-  Double_t                    fMin_eta_1;                   ///< the track 1 minimum \f$\eta\f$ value
-  Double_t                    fMax_eta_1;                   ///< the track 1 maximum \f$\eta\f$ value
-  Double_t                    fWidth_eta_1;                 ///< the track 1 \f$\eta\f$ bin width
-  Int_t                       fNBins_etaPhi_1;              ///< the track 1 combined \f$\eta, \phi\f$ number of bins
-  Int_t                       fNBins_etaPhiPt_1;            ///< the track 1 combined \f$\eta, \phi, p_T\f$ number of bins
-  Int_t                       fNBins_zEtaPhiPt_1;           ///< the combined event \f$z\f$ vertex component and track 1 \f$\eta, \phi, p_T\f$ number of bins
+  int fNBins_pt;        ///< the track \f$p_T\f$ number of bins
+  double fMin_pt;       ///< the track minimum \f$p_T\f$ value
+  double fMax_pt;       ///< the track maximum \f$p_T\f$ value
+  double fWidth_pt;     ///< the track \f$p_T\f$ bin width
+  int fNBins_phi;       ///< the track \f$\phi\f$ number of bins
+  double fMin_phi;      ///< the track minimum \f$\phi\f$ value
+  double fMax_phi;      ///< the track maximum \f$\phi\f$ value
+  double fWidth_phi;    ///< the track \f$\phi\f$ bin width
+  int fNBins_eta;       ///< the track \f$\eta\f$ number of bins
+  double fMin_eta;      ///< the track minimum \f$\eta\f$ value
+  double fMax_eta;      ///< the track maximum \f$\eta\f$ value
+  double fWidth_eta;    ///< the track \f$\eta\f$ bin width
+  int fNBins_etaPhi;    ///< the track combined \f$\eta, \phi\f$ number of bins
+  int fNBins_etaPhiPt;  ///< the track combined \f$\eta, \phi, p_T\f$ number of bins
+  int fNBins_zEtaPhiPt; ///< the combined event \f$z\f$ vertex component and track \f$\eta, \phi, p_T\f$ number of bins
 
-  Int_t                       fNBins_pt_2;                  ///< the track 2 \f$p_T\f$ number of bins
-  Double_t                    fMin_pt_2;                    ///< the track 2 minimum \f$p_T\f$ value
-  Double_t                    fMax_pt_2;                    ///< the track 2 maximum \f$p_T\f$ value
-  Double_t                    fWidth_pt_2;                  ///< the track 2 \f$p_T\f$ bin width
-  Int_t                       fNBins_phi_2;                 ///< the track 2 \f$\phi\f$ number of bins
-  Double_t                    fMin_phi_2;                   ///< the track 2 minimum \f$\phi\f$ value
-  Double_t                    fMax_phi_2;                   ///< the track 2 maximum \f$\phi\f$ value
-  Double_t                    fWidth_phi_2;                 ///< the track 2 \f$\phi\f$ bin width
-  Int_t                       fNBins_eta_2;                 ///< the track 2 \f$\eta\f$ number of bins
-  Double_t                    fMin_eta_2;                   ///< the track 2 minimum \f$\eta\f$ value
-  Double_t                    fMax_eta_2;                   ///< the track 2 maximum \f$\eta\f$ value
-  Double_t                    fWidth_eta_2;                 ///< the track 2 \f$\eta\f$ bin width
-  Int_t                       fNBins_etaPhi_2;              ///< the track 2 combined \f$\eta, \phi\f$ number of bins
-  Int_t                       fNBins_etaPhiPt_2;            ///< the track 2 combined \f$\eta, \phi, p_T\f$ number of bins
-  Int_t                       fNBins_zEtaPhiPt_2;           ///< the combined event \f$z\f$ vertex component and track 2 \f$\eta, \phi, p_T\f$ number of bins
-
-  Double_t                    fN1_1;                        ///< weighted number of track 1 tracks for current event
-  Double_t                    fN1_2;                        ///< weighted number of track 2 tracks for current event
-  Double_t                    fNnw1_1;                      ///< not weighted number of track 1 tracks for current event
-  Double_t                    fNnw1_2;                      ///< not weighted number of track 2 tracks for current event
-  Double_t                    fSum1Pt_1;                    ///< accumulated sum of weighted track 1 \f$p_T\f$ for current event
-  Double_t                    fSum1Pt_2;                    ///< accumulated sum of weighted track 2 \f$p_T\f$ for current event
-  Double_t                    fSum1Ptnw_1;                  ///< accumulated sum of not weighted track 1 \f$p_T\f$ for current event
-  Double_t                    fSum1Ptnw_2;                  ///< accumulated sum of not weighted track 2 \f$p_T\f$ for current event
+  std::vector<double> fN1;       ///< weighted number of tracks per species for current event
+  std::vector<double> fNnw1;     ///< not weighted number of tracks per species for current event
+  std::vector<double> fSum1Pt;   ///< accumulated sum of weighted \f$p_T\f$ per species for current event
+  std::vector<double> fSum1Ptnw; ///< accumulated sum of not weighted \f$p_T\f$ per species for current event
 
   /* histograms */
-  TH1F                       *fhN1_1_vsPt;                  //!<! track 1 weighted single particle distribution vs \f$p_T\f$
-  TH2F                       *fhN1_1_vsEtaPhi;              //!<! track 1 weighted single particle distribution vs \f$\eta,\;\phi\f$
-  TH2F                       *fhSum1Pt_1_vsEtaPhi;          //!<! track 1 accumulated sum of weighted \f$p_T\f$ vs \f$\eta,\;\phi\f$
-  TH3F                       *fhN1_1_vsZEtaPhiPt;           //!<! track 1 single particle distribution vs \f$\mbox{vtx}_z,\; \eta,\;\phi,\;p_T\f$
-  TH3F                       *fhSum1Pt_1_vsZEtaPhiPt;       //!<! track 1 accumulated sum of weighted \f$p_T\f$ vs \f$\mbox{vtx}_z,\; \eta,\;\phi,\;p_T\f$
-  TH1F                       *fhN1_2_vsPt;                  //!<! track 2 weighted single particle distribution vs \f$p_T\f$
-  TH2F                       *fhN1_2_vsEtaPhi;              //!<! track 2 weighted single particle distribution vs \f$\eta,\;\phi\f$
-  TH2F                       *fhSum1Pt_2_vsEtaPhi;          //!<! track 2 accumulated sum of weighted \f$p_T\f$ vs \f$\eta,\;\phi\f$
-  TH3F                       *fhN1_2_vsZEtaPhiPt;           //!<! track 2 single particle distribution vs \f$\mbox{vtx}_z,\;\eta,\;\phi,\;p_T\f$
-  TH3F                       *fhSum1Pt_2_vsZEtaPhiPt;       //!<! track 1 accumulated sum of weighted \f$p_T\f$ vs \f$\mbox{vtx}_z,\; \eta,\;\phi,\;p_T\f$
+  std::vector<TH1F*> fhN1_vsPt;            //!<! weighted single particle distribution vs \f$p_T\f$ per species
+  std::vector<TH2F*> fhN1_vsEtaPhi;        //!<! weighted single particle distribution vs \f$\eta,\;\phi\f$ per species
+  std::vector<TH2F*> fhSum1Pt_vsEtaPhi;    //!<! accumulated sum of weighted \f$p_T\f$ vs \f$\eta,\;\phi\f$ per species
+  std::vector<TH3F*> fhN1_vsZEtaPhiPt;     //!<! single particle distribution vs \f$\mbox{vtx}_z,\; \eta,\;\phi,\;p_T\f$ per species
+  std::vector<TH3F*> fhSum1Pt_vsZEtaPhiPt; //!<! accumulated sum of weighted \f$p_T\f$ vs \f$\mbox{vtx}_z,\; \eta,\;\phi,\;p_T\f$ per species
   /* versus centrality  profiles */
-  TProfile                   *fhN1_1_vsC;                   //!<! track 1 weighted single particle distribution vs event centrality
-  TProfile                   *fhSum1Pt_1_vsC;               //!<! track 1 accumulated sum of weighted \f$p_T\f$ vs event centrality
-  TProfile                   *fhN1nw_1_vsC;                 //!<! track 1 un-weighted single particle distribution vs event centrality
-  TProfile                   *fhSum1Ptnw_1_vsC;              //!<! track 1 accumulated sum of un-weighted \f$p_T\f$ vs event centrality
-  TProfile                   *fhN1_2_vsC;                   //!<! track 2 weighted single particle distribution vs event centrality
-  TProfile                   *fhSum1Pt_2_vsC;               //!<! track 2 accumulated sum of weighted \f$p_T\f$ vs event centrality
-  TProfile                   *fhN1nw_2_vsC;                 //!<! track 2 un-weighted single particle distribution vs event centrality
-  TProfile                   *fhSum1Ptnw_2_vsC;             //!<! track 2 accumulated sum of un-weighted \f$p_T\f$ vs event centrality
+  std::vector<TProfile*> fhN1_vsC;       //!<! weighted single particle distribution vs event centrality/multiplicity per species
+  std::vector<TProfile*> fhSum1Pt_vsC;   //!<! accumulated sum of weighted \f$p_T\f$ vs event centrality/multiplicity per species
+  std::vector<TProfile*> fhN1nw_vsC;     //!<! un-weighted single particle distribution vs event centrality/multiplicity per species
+  std::vector<TProfile*> fhSum1Ptnw_vsC; //!<! accumulated sum of un-weighted \f$p_T\f$ vs event centrality/multiplicity per species
 
-protected: 
-  static Int_t                fgkNoOfResonances;            ///< the number of resonances conversions to consider
+ protected:
+  std::vector<std::string> fSpeciesNames;                   ///< the name of the species to consider
+  static Int_t fgkNoOfResonances;                           ///< the number of resonances conversions to consider
   Int_t                       fThresholdMult[16];           ///< the threshold multiplier, in 1/4 modulus units (i.e, four is one modulus, zero disable it)
 private:
   static Double_t             fgkMass[16];                  ///< the masses of resonances conversions to consider
@@ -217,7 +178,7 @@ private:
   AliTwoParticleCorrelationsBase& operator=(const AliTwoParticleCorrelationsBase&);
 
   /// \cond CLASSIMP
-  ClassDef(AliTwoParticleCorrelationsBase,1);
+  ClassDef(AliTwoParticleCorrelationsBase, 2);
   /// \endcond
 };
 
@@ -313,11 +274,11 @@ inline Float_t AliTwoParticleCorrelationsBase::checkIfResonance(Int_t ires, Bool
   // Author: Jan Fiete Grosse-Oetringhaus, Sara Vallero
 
   Bool_t itcouldbe = kFALSE;
-  Float_t mass = GetSquaredInvMassCheap(fPt_1[ix1], fEta_1[ix1], fPhi_1[ix1], fPt_2[ix2], fEta_2[ix2], fPhi_2[ix2], fgkChildMass[0][ires], fgkChildMass[1][ires]);
+  Float_t mass = GetSquaredInvMassCheap(fPt[ix1], fEta[ix1], fPhi[ix1], fPt[ix2], fEta[ix2], fPhi[ix2], fgkChildMass[0][ires], fgkChildMass[1][ires]);
 
   if (TMath::Abs(mass - fgkMass[ires]*fgkMass[ires]) < 5 * fgkMassThreshold[ires]) {
     if (fill) fhResonanceRoughMasses->Fill(ires,TMath::Sqrt(mass));
-    mass = GetSquaredInvMass(fPt_1[ix1], fEta_1[ix1], fPhi_1[ix1], fPt_2[ix2], fEta_2[ix2], fPhi_2[ix2], fgkChildMass[0][ires], fgkChildMass[1][ires]);
+    mass = GetSquaredInvMass(fPt[ix1], fEta[ix1], fPhi[ix1], fPt[ix2], fEta[ix2], fPhi[ix2], fgkChildMass[0][ires], fgkChildMass[1][ires]);
 
     Float_t low = ((fgkMass[ires] != 0.0) ? (fgkMass[ires] - fThresholdMult[ires] * 0.5)*(fgkMass[ires] - fgkMassThreshold[ires] * 0.5) : 0.0);
     Float_t high = (fgkMass[ires] + fgkMassThreshold[ires] * 0.5)*(fgkMass[ires] + fgkMassThreshold[ires] * 0.5);
@@ -327,7 +288,7 @@ inline Float_t AliTwoParticleCorrelationsBase::checkIfResonance(Int_t ires, Bool
     }
     else if (fgkChildMass[0][ires] != fgkChildMass[1][ires]) {
       /* switch masses hypothesis */
-      mass = GetSquaredInvMass(fPt_1[ix1], fEta_1[ix1], fPhi_1[ix1], fPt_2[ix2], fEta_2[ix2], fPhi_2[ix2], fgkChildMass[1][ires], fgkChildMass[0][ires]);
+      mass = GetSquaredInvMass(fPt[ix1], fEta[ix1], fPhi[ix1], fPt[ix2], fEta[ix2], fPhi[ix2], fgkChildMass[1][ires], fgkChildMass[0][ires]);
 
       Float_t low = ((fgkMass[ires] != 0.0) ? (fgkMass[ires] - fThresholdMult[ires] * 0.5)*(fgkMass[ires] - fgkMassThreshold[ires] * 0.5) : 0.0);
       Float_t high = (fgkMass[ires] + fgkMassThreshold[ires] * 0.5)*(fgkMass[ires] + fgkMassThreshold[ires] * 0.5);
@@ -339,11 +300,11 @@ inline Float_t AliTwoParticleCorrelationsBase::checkIfResonance(Int_t ires, Bool
   }
   else if (fgkChildMass[0][ires] != fgkChildMass[1][ires]) {
     /* switch masses hypothesis */
-    mass = GetSquaredInvMassCheap(fPt_1[ix1], fEta_1[ix1], fPhi_1[ix1], fPt_2[ix2], fEta_2[ix2], fPhi_2[ix2], fgkChildMass[1][ires], fgkChildMass[0][ires]);
+    mass = GetSquaredInvMassCheap(fPt[ix1], fEta[ix1], fPhi[ix1], fPt[ix2], fEta[ix2], fPhi[ix2], fgkChildMass[1][ires], fgkChildMass[0][ires]);
 
     if (TMath::Abs(mass - fgkMass[ires]*fgkMass[ires]) < 5 * fgkMassThreshold[ires]) {
       if (fill) fhResonanceRoughMasses->Fill(ires,TMath::Sqrt(mass));
-      mass = GetSquaredInvMass(fPt_1[ix1], fEta_1[ix1], fPhi_1[ix1], fPt_2[ix2], fEta_2[ix2], fPhi_2[ix2], fgkChildMass[1][ires], fgkChildMass[0][ires]);
+      mass = GetSquaredInvMass(fPt[ix1], fEta[ix1], fPhi[ix1], fPt[ix2], fEta[ix2], fPhi[ix2], fgkChildMass[1][ires], fgkChildMass[0][ires]);
 
       Float_t low = ((fgkMass[ires] != 0.0) ? (fgkMass[ires] - fThresholdMult[ires] * 0.5)*(fgkMass[ires] - fgkMassThreshold[ires] * 0.5) : 0.0);
       Float_t high = (fgkMass[ires] + fgkMassThreshold[ires] * 0.5)*(fgkMass[ires] + fgkMassThreshold[ires] * 0.5);

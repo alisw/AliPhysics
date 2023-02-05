@@ -40,8 +40,8 @@ Double_t AliTwoParticleCorrelationsBase::fgkChildMass[2][16] = {
 Double_t AliTwoParticleCorrelationsBase::fgkMassThreshold[16] = {0.04,0.01,0.05,0.04};
 
 /// Default constructor for object serialization
-AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase() :
-    TNamed(),
+AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase()
+  : TNamed(),
     fOutput(NULL),
     fVertexZ(0.0),
     fIxVertexZ(0),
@@ -50,32 +50,20 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase() :
     fUseWeights(kFALSE),
     fUseSimulation(kFALSE),
     /* the arrays with tracks 1 and 2 information */
-    fArraySize(5*1024),
-    fNoOfTracks1(0),
-    fFlags_1(nullptr),
-    fPt_1(nullptr),
-    fEta_1(nullptr),
-    fPhi_1(nullptr),
-    fNoOfTracks2(0),
-    fFlags_2(nullptr),
-    fPt_2(nullptr),
-    fEta_2(nullptr),
-    fPhi_2(nullptr),
+    fArraySize(10 * 1024),
+    fNoOfTracks(0),
+    fFlags(nullptr),
+    fPt(nullptr),
+    fEta(nullptr),
+    fPhi(nullptr),
     /* correction weights */
-    fCorrectionWeights_1(NULL),
-    fCorrectionWeights_2(NULL),
+    fCorrectionWeights{},
     /* efficiency correction */
-    fEfficiencyCorrection_1(NULL),
-    fEfficiencyCorrection_2(NULL),
-    fPairsEfficiency_PP(NULL),
-    fPairsEfficiency_PM(NULL),
-    fPairsEfficiency_MM(NULL),
-    fPairsEfficiency_MP(NULL),
+    fEfficiencyCorrection{},
+    fPairsEfficiency{},
     /* simulation pdfs */
-    fPositiveTrackPdfs(NULL),
-    fNegativeTrackPdfs(NULL),
-    fPositiveTrackCurrentPdf(NULL),
-    fNegativeTrackCurrentPdf(NULL),
+    fTrackPdfs{},
+    fTrackCurrentPdf{},
     fSimEventsPerEvent(1),
     /* vertex bins */
     fNBins_vertexZ(40),
@@ -84,71 +72,41 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase() :
     fWidth_vertexZ(0.5),
     /* phi origin shift */
     fNBinsPhiShift(0.0),
-    /* pT1 bins */
-    fNBins_pt_1(18),
-    fMin_pt_1(0.2),
-    fMax_pt_1(2.0),
-    fWidth_pt_1(0.1),
-    /* phi1 bins */
-    fNBins_phi_1(72),
-    fMin_phi_1(0.0),
-    fMax_phi_1(TMath::Pi()*2.0),
-    fWidth_phi_1(TMath::Pi()*2.0/72.0),
-    /* eta1 bins */
-    fNBins_eta_1(20),
-    fMin_eta_1(-1.0),
-    fMax_eta_1(1.0),
-    fWidth_eta_1(0.1),
-    fNBins_etaPhi_1(1440),
-    fNBins_etaPhiPt_1(25920),
-    fNBins_zEtaPhiPt_1(1036800),
-    /* pT2 bins */
-    fNBins_pt_2(18),
-    fMin_pt_2(0.2),
-    fMax_pt_2(2.0),
-    fWidth_pt_2(0.1),
-    /* phi2 bins */
-    fNBins_phi_2(72),
-    fMin_phi_2(0.0),
-    fMax_phi_2(TMath::Pi()*2.0),
-    fWidth_phi_2(TMath::Pi()*2.0/72.0),
-    /* eta2 bins */
-    fNBins_eta_2(20),
-    fMin_eta_2(-1.0),
-    fMax_eta_2(1.0),
-    fWidth_eta_2(0.1),
-    fNBins_etaPhi_2(1440),
-    fNBins_etaPhiPt_2(25920),
-    fNBins_zEtaPhiPt_2(1036800),
+    /* pT bins */
+    fNBins_pt(18),
+    fMin_pt(0.2),
+    fMax_pt(2.0),
+    fWidth_pt(0.1),
+    /* phi bins */
+    fNBins_phi(72),
+    fMin_phi(0.0),
+    fMax_phi(TMath::Pi() * 2.0),
+    fWidth_phi(TMath::Pi() * 2.0 / 72.0),
+    /* eta bins */
+    fNBins_eta(20),
+    fMin_eta(-1.0),
+    fMax_eta(1.0),
+    fWidth_eta(0.1),
+    fNBins_etaPhi(1440),
+    fNBins_etaPhiPt(25920),
+    fNBins_zEtaPhiPt(1036800),
     /* accumulated values */
-    fN1_1(0.0),
-    fN1_2(0.0),
-    fNnw1_1(0.0),
-    fNnw1_2(0.0),
-    fSum1Pt_1(0.0),
-    fSum1Pt_2(0.0),
-    fSum1Ptnw_1(0.0),
-    fSum1Ptnw_2(0.0),
+    fN1{0.0},
+    fNnw1{0.0},
+    fSum1Pt{0.0},
+    fSum1Ptnw{0.0},
     /* histograms */
-    fhN1_1_vsPt(NULL),
-    fhN1_1_vsEtaPhi(NULL),
-    fhSum1Pt_1_vsEtaPhi(NULL),
-    fhN1_1_vsZEtaPhiPt(NULL),
-    fhSum1Pt_1_vsZEtaPhiPt(nullptr),
-    fhN1_2_vsPt(NULL),
-    fhN1_2_vsEtaPhi(NULL),
-    fhSum1Pt_2_vsEtaPhi(NULL),
-    fhN1_2_vsZEtaPhiPt(NULL),
-    fhSum1Pt_2_vsZEtaPhiPt(nullptr),
+    fhN1_vsPt{},
+    fhN1_vsEtaPhi{},
+    fhSum1Pt_vsEtaPhi{},
+    fhN1_vsZEtaPhiPt{},
+    fhSum1Pt_vsZEtaPhiPt{},
     /* vs centrality profiles */
-    fhN1_1_vsC(NULL),
-    fhSum1Pt_1_vsC(NULL),
-    fhN1nw_1_vsC(NULL),
-    fhSum1Ptnw_1_vsC(NULL),
-    fhN1_2_vsC(NULL),
-    fhSum1Pt_2_vsC(NULL),
-    fhN1nw_2_vsC(NULL),
-    fhSum1Ptnw_2_vsC(NULL),
+    fhN1_vsC{},
+    fhSum1Pt_vsC{},
+    fhN1nw_vsC{},
+    fhSum1Ptnw_vsC{},
+    fSpeciesNames{},
     fhResonanceRoughMasses(NULL),
     fhResonanceMasses(NULL),
     fhDiscardedResonanceMasses(NULL)
@@ -159,8 +117,8 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase() :
 
 /// Normal constructor
 /// \param name the name for the object instance
-AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase(const char *name) :
-    TNamed(name,name),
+AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase(const char* name)
+  : TNamed(name, name),
     fOutput(NULL),
     fVertexZ(0.0),
     fIxVertexZ(0),
@@ -169,32 +127,20 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase(const char *name)
     fUseWeights(kFALSE),
     fUseSimulation(kFALSE),
     /* the arrays with tracks 1 and 2 information */
-    fArraySize(5*1024),
-    fNoOfTracks1(0),
-    fFlags_1(nullptr),
-    fPt_1(nullptr),
-    fEta_1(nullptr),
-    fPhi_1(nullptr),
-    fNoOfTracks2(0),
-    fFlags_2(nullptr),
-    fPt_2(nullptr),
-    fEta_2(nullptr),
-    fPhi_2(nullptr),
+    fArraySize(10 * 1024),
+    fNoOfTracks(0),
+    fFlags(nullptr),
+    fPt(nullptr),
+    fEta(nullptr),
+    fPhi(nullptr),
     /* correction weights */
-    fCorrectionWeights_1(NULL),
-    fCorrectionWeights_2(NULL),
+    fCorrectionWeights{},
     /* efficiency correction */
-    fEfficiencyCorrection_1(NULL),
-    fEfficiencyCorrection_2(NULL),
-    fPairsEfficiency_PP(NULL),
-    fPairsEfficiency_PM(NULL),
-    fPairsEfficiency_MM(NULL),
-    fPairsEfficiency_MP(NULL),
+    fEfficiencyCorrection{},
+    fPairsEfficiency{},
     /* simulation pdfs */
-    fPositiveTrackPdfs(NULL),
-    fNegativeTrackPdfs(NULL),
-    fPositiveTrackCurrentPdf(NULL),
-    fNegativeTrackCurrentPdf(NULL),
+    fTrackPdfs{},
+    fTrackCurrentPdf{},
     fSimEventsPerEvent(1),
     /* vertex bins */
     fNBins_vertexZ(40),
@@ -203,72 +149,41 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase(const char *name)
     fWidth_vertexZ(0.5),
     /* phi origin shift */
     fNBinsPhiShift(0.0),
-    /* pT1 bins */
-    fNBins_pt_1(18),
-    fMin_pt_1(0.2),
-    fMax_pt_1(2.0),
-    fWidth_pt_1(0.1),
-    /* phi1 bins */
-    fNBins_phi_1(72),
-    fMin_phi_1(0.0),
-    fMax_phi_1(TMath::Pi()*2.0),
-    fWidth_phi_1(TMath::Pi()*2.0/72.0),
-    /* eta1 bins */
-    fNBins_eta_1(20),
-    fMin_eta_1(-1.0),
-    fMax_eta_1(1.0),
-    fWidth_eta_1(0.1),
-    fNBins_etaPhi_1(1440),
-    fNBins_etaPhiPt_1(25920),
-    fNBins_zEtaPhiPt_1(1036800),
-    /* pT2 bins */
-    fNBins_pt_2(18),
-    fMin_pt_2(0.2),
-    fMax_pt_2(2.0),
-    fWidth_pt_2(0.1),
-    /* phi2 bins */
-    fNBins_phi_2(72),
-    fMin_phi_2(0.0),
-    fMax_phi_2(TMath::Pi()*2.0),
-    fWidth_phi_2(TMath::Pi()*2.0/72.0),
-    /* eta2 bins */
-    fNBins_eta_2(20),
-    fMin_eta_2(-1.0),
-    fMax_eta_2(1.0),
-    fWidth_eta_2(0.1),
-    fNBins_etaPhi_2(1440),
-    fNBins_etaPhiPt_2(25920),
-    fNBins_zEtaPhiPt_2(1036800),
+    /* pT bins */
+    fNBins_pt(18),
+    fMin_pt(0.2),
+    fMax_pt(2.0),
+    fWidth_pt(0.1),
+    /* phi bins */
+    fNBins_phi(72),
+    fMin_phi(0.0),
+    fMax_phi(TMath::Pi() * 2.0),
+    fWidth_phi(TMath::Pi() * 2.0 / 72.0),
+    /* eta bins */
+    fNBins_eta(20),
+    fMin_eta(-1.0),
+    fMax_eta(1.0),
+    fWidth_eta(0.1),
+    fNBins_etaPhi(1440),
+    fNBins_etaPhiPt(25920),
+    fNBins_zEtaPhiPt(1036800),
     /* accumulated values */
-    fN1_1(0.0),
-    fN1_2(0.0),
-    fNnw1_1(0.0),
-    fNnw1_2(0.0),
-    fSum1Pt_1(0.0),
-    fSum1Pt_2(0.0),
-    fSum1Ptnw_1(0.0),
-    fSum1Ptnw_2(0.0),
-    /* storage arrays */
+    fN1{0.0},
+    fNnw1{0.0},
+    fSum1Pt{0.0},
+    fSum1Ptnw{0.0},
     /* histograms */
-    fhN1_1_vsPt(NULL),
-    fhN1_1_vsEtaPhi(NULL),
-    fhSum1Pt_1_vsEtaPhi(NULL),
-    fhN1_1_vsZEtaPhiPt(NULL),
-    fhSum1Pt_1_vsZEtaPhiPt(nullptr),
-    fhN1_2_vsPt(NULL),
-    fhN1_2_vsEtaPhi(NULL),
-    fhSum1Pt_2_vsEtaPhi(NULL),
-    fhN1_2_vsZEtaPhiPt(NULL),
-    fhSum1Pt_2_vsZEtaPhiPt(nullptr),
+    fhN1_vsPt{},
+    fhN1_vsEtaPhi{},
+    fhSum1Pt_vsEtaPhi{},
+    fhN1_vsZEtaPhiPt{},
+    fhSum1Pt_vsZEtaPhiPt{},
     /* vs centrality profiles */
-    fhN1_1_vsC(NULL),
-    fhSum1Pt_1_vsC(NULL),
-    fhN1nw_1_vsC(NULL),
-    fhSum1Ptnw_1_vsC(NULL),
-    fhN1_2_vsC(NULL),
-    fhSum1Pt_2_vsC(NULL),
-    fhN1nw_2_vsC(NULL),
-    fhSum1Ptnw_2_vsC(NULL),
+    fhN1_vsC{},
+    fhSum1Pt_vsC{},
+    fhN1nw_vsC{},
+    fhSum1Ptnw_vsC{},
+    fSpeciesNames{},
     fhResonanceRoughMasses(NULL),
     fhResonanceMasses(NULL),
     fhDiscardedResonanceMasses(NULL)
@@ -281,16 +196,10 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase(const char *name)
 /// Deallocates the allocated memory
 AliTwoParticleCorrelationsBase::~AliTwoParticleCorrelationsBase() {
   /* track 1 storage */
-  delete [] fFlags_1;
-  delete [] fPt_1;
-  delete [] fEta_1;
-  delete [] fPhi_1;
-
-  /* track 2 storage */
-  delete [] fFlags_2;
-  delete [] fPt_2;
-  delete [] fEta_2;
-  delete [] fPhi_2;
+  delete[] fFlags;
+  delete[] fPt;
+  delete[] fEta;
+  delete[] fPhi;
 
   if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
       delete fOutput;
@@ -320,13 +229,13 @@ Bool_t AliTwoParticleCorrelationsBase::ConfigureBinning(const char *confstring) 
       &min_eta, &max_eta, &width_eta, &nBins_phi);
   delete a;
 
-  fMin_pt_1 = fMin_pt_2 = min_pt;
-  fMax_pt_1 = fMax_pt_2 = max_pt;
-  fWidth_pt_1 = fWidth_pt_2 = width_pt;
-  fMin_eta_1 = fMin_eta_2 = min_eta;
-  fMax_eta_1 = fMax_eta_2 = max_eta;
-  fWidth_eta_1 = fWidth_eta_2 = width_eta;
-  fNBins_phi_1 = fNBins_phi_2 = nBins_phi;
+  fMin_pt = min_pt;
+  fMax_pt = max_pt;
+  fWidth_pt = width_pt;
+  fMin_eta = min_eta;
+  fMax_eta = max_eta;
+  fWidth_eta = width_eta;
+  fNBins_phi = nBins_phi;
   return true;
 }
 
@@ -355,21 +264,12 @@ void AliTwoParticleCorrelationsBase::ConfigureResonances(const char *confstring)
 
 /// \brief Build the configuration string
 /// \return the configuration string corresponding to the current configuration
-TString AliTwoParticleCorrelationsBase::GetBinningConfigurationString() const {
-  if (fMin_pt_1 != fMin_pt_2 || fMax_pt_2 != fMax_pt_2 || fWidth_pt_1 != fWidth_pt_2 ||
-      fMin_eta_1 != fMin_eta_2 || fMax_eta_1 != fMax_eta_2 || fWidth_eta_1 != fWidth_eta_2 ||
-      fNBins_phi_1 != fNBins_phi_2) {
-    return TString::Format("WrongAsymmetricBinning:%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%d",
-        fMin_vertexZ, fMax_vertexZ, fWidth_vertexZ,
-        fMin_pt_1, fMax_pt_1, fWidth_pt_1,
-        fMin_eta_1, fMax_eta_1, fWidth_eta_1, fNBins_phi_1);
-  }
-  else {
-    return TString::Format("%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%d",
-        fMin_vertexZ, fMax_vertexZ, fWidth_vertexZ,
-        fMin_pt_1, fMax_pt_1, fWidth_pt_1,
-        fMin_eta_1, fMax_eta_1, fWidth_eta_1, fNBins_phi_1);
-  }
+TString AliTwoParticleCorrelationsBase::GetBinningConfigurationString() const
+{
+  return TString::Format("%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%d",
+                         fMin_vertexZ, fMax_vertexZ, fWidth_vertexZ,
+                         fMin_pt, fMax_pt, fWidth_pt,
+                         fMin_eta, fMax_eta, fWidth_eta, fNBins_phi);
 }
 
 /// \brief Build the resonances rejection configuration string
@@ -383,7 +283,11 @@ TString AliTwoParticleCorrelationsBase::GetResonancesConfigurationString() const
   return str;
 }
 
-
+void AliTwoParticleCorrelationsBase::SetSpeciesNames(std::vector<std::string> names)
+{
+  fSpeciesNames.clear();
+  fSpeciesNames.assign(names.begin(), names.end());
+}
 
 /// \brief Initializes the member data structures
 /// Allocates the needed memory an create the output histograms.
@@ -398,32 +302,26 @@ void AliTwoParticleCorrelationsBase::Initialize()
 
 
   fNBins_vertexZ     = Int_t(0.5 + (fMax_vertexZ - fMin_vertexZ) / fWidth_vertexZ);
-  fNBins_pt_1        = Int_t(0.5 + (fMax_pt_1 - fMin_pt_1 ) / fWidth_pt_1);
-  fNBins_eta_1       = Int_t(0.5 + (fMax_eta_1 - fMin_eta_1) / fWidth_eta_1);
-  fWidth_phi_1       = (fMax_phi_1  - fMin_phi_1) / fNBins_phi_1;
-  fNBins_etaPhi_1    = fNBins_phi_1 * fNBins_eta_1;
-  fNBins_etaPhiPt_1  = fNBins_etaPhi_1 * fNBins_pt_1;
-  fNBins_zEtaPhiPt_1 = fNBins_vertexZ * fNBins_etaPhiPt_1;
-  fNBins_pt_2        = Int_t(0.5 + (fMax_pt_2 - fMin_pt_2 ) / fWidth_pt_2);
-  fNBins_eta_2       = Int_t(0.5 + (fMax_eta_2 - fMin_eta_2) / fWidth_eta_2);
-  fWidth_phi_2       = (fMax_phi_2  - fMin_phi_2) / fNBins_phi_2;
-  fNBins_etaPhi_2    = fNBins_phi_2 * fNBins_eta_2;
-  fNBins_etaPhiPt_2  = fNBins_etaPhi_2 * fNBins_pt_2;
-  fNBins_zEtaPhiPt_2 = fNBins_vertexZ * fNBins_etaPhiPt_2;
+  fNBins_pt = Int_t(0.5 + (fMax_pt - fMin_pt) / fWidth_pt);
+  fNBins_eta = Int_t(0.5 + (fMax_eta - fMin_eta) / fWidth_eta);
+  fWidth_phi = (fMax_phi - fMin_phi) / fNBins_phi;
+  fNBins_etaPhi = fNBins_phi * fNBins_eta;
+  fNBins_etaPhiPt = fNBins_etaPhi * fNBins_pt;
+  fNBins_zEtaPhiPt = fNBins_vertexZ * fNBins_etaPhiPt;
 
   /* incorporate configuration parameters */
   fOutput->Add(new TParameter<Int_t>("NoBinsVertexZ",fNBins_vertexZ,'f'));
-  fOutput->Add(new TParameter<Int_t>("NoBinsPt",fNBins_pt_1,'f'));
-  fOutput->Add(new TParameter<Int_t>("NoBinsEta",fNBins_eta_1,'f'));
-  fOutput->Add(new TParameter<Int_t>("NoBinsPhi",fNBins_phi_1,'f'));
+  fOutput->Add(new TParameter<Int_t>("NoBinsPt", fNBins_pt, 'f'));
+  fOutput->Add(new TParameter<Int_t>("NoBinsEta", fNBins_eta, 'f'));
+  fOutput->Add(new TParameter<Int_t>("NoBinsPhi", fNBins_phi, 'f'));
   fOutput->Add(new TParameter<Double_t>("MinVertexZ",fMin_vertexZ,'f'));
   fOutput->Add(new TParameter<Double_t>("MaxVertexZ",fMax_vertexZ,'f'));
-  fOutput->Add(new TParameter<Double_t>("MinPt",fMin_pt_1,'f'));
-  fOutput->Add(new TParameter<Double_t>("MaxPt",fMax_pt_1,'f'));
-  fOutput->Add(new TParameter<Double_t>("MinEta",fMin_eta_1,'f'));
-  fOutput->Add(new TParameter<Double_t>("MaxEta",fMax_eta_1,'f'));
-  fOutput->Add(new TParameter<Double_t>("MinPhi",fMin_phi_1,'f'));
-  fOutput->Add(new TParameter<Double_t>("MaxPhi",fMax_phi_1,'f'));
+  fOutput->Add(new TParameter<Double_t>("MinPt", fMin_pt, 'f'));
+  fOutput->Add(new TParameter<Double_t>("MaxPt", fMax_pt, 'f'));
+  fOutput->Add(new TParameter<Double_t>("MinEta", fMin_eta, 'f'));
+  fOutput->Add(new TParameter<Double_t>("MaxEta", fMax_eta, 'f'));
+  fOutput->Add(new TParameter<Double_t>("MinPhi", fMin_phi, 'f'));
+  fOutput->Add(new TParameter<Double_t>("MaxPhi", fMax_phi, 'f'));
 
   /* incorporate the resonance rejection configuration parameter */
   Int_t rescode = 0;
@@ -435,345 +333,277 @@ void AliTwoParticleCorrelationsBase::Initialize()
   fOutput->Add(new TParameter<Int_t>("ResonancesCode",rescode,'f'));
 
   /* after the parameters dump the proper phi limits are set according to the phi shift */
-  fMax_phi_1         = fMax_phi_1 - fWidth_phi_1 * fNBinsPhiShift;
-  fMin_phi_1         = fMin_phi_1 - fWidth_phi_1 * fNBinsPhiShift;
-  fMax_phi_2         = fMax_phi_2 - fWidth_phi_2 * fNBinsPhiShift;
-  fMin_phi_2         = fMin_phi_2 - fWidth_phi_2 * fNBinsPhiShift;
+  fMax_phi = fMax_phi - fWidth_phi * fNBinsPhiShift;
+  fMin_phi = fMin_phi - fWidth_phi * fNBinsPhiShift;
 
   /* track 1 storage */
-  fFlags_1 = new UInt_t[fArraySize];
-  fPt_1 = new Float_t[fArraySize];
-  fEta_1 = new Float_t[fArraySize];
-  fPhi_1 = new Float_t[fArraySize];
-
-  /* track 2 storage */
-  fFlags_2 = new UInt_t[fArraySize];
-  fPt_2 = new Float_t[fArraySize];
-  fEta_2 = new Float_t[fArraySize];
-  fPhi_2 = new Float_t[fArraySize];
+  fFlags = new UInt_t[fArraySize];
+  fPt = new Float_t[fArraySize];
+  fEta = new Float_t[fArraySize];
+  fPhi = new Float_t[fArraySize];
 
   if (fSinglesOnly)  {
-    fhN1_1_vsPt = new TH1F("n1_1_vsPt","#LT n_{1} #GT;p_{t,1} (GeV/c);#LT n_{1} #GT", fNBins_pt_1,  fMin_pt_1,  fMax_pt_1);
-    fhN1_1_vsZEtaPhiPt = new TH3F("n1_1_vsZ_vsEtaPhi_vsPt","#LT n_{1} #GT;vtx_{z};#eta_{1}#times#varphi_{1};p_{t,1} (GeV/c)",
-        fNBins_vertexZ,fMin_vertexZ,fMax_vertexZ, fNBins_etaPhi_1,0.0,Double_t(fNBins_etaPhi_1),fNBins_pt_1,fMin_pt_1,fMax_pt_1);
-    fhSum1Pt_1_vsZEtaPhiPt = new TH3F("sumPt1_1_vsZ_vsEtaPhi_vsPt","#LT #Sigma p_{t,1} #GT;vtx_{z};#eta_{1}#times#varphi_{1};p_{t,1} (GeV/c)",
-        fNBins_vertexZ,fMin_vertexZ,fMax_vertexZ, fNBins_etaPhi_1,0.0,Double_t(fNBins_etaPhi_1),fNBins_pt_1,fMin_pt_1,fMax_pt_1);
-    fhN1_1_vsEtaPhi = new TH2F("n1_1_vsEtaPhi","#LT n_{1} #GT;#eta_{1};#varphi_{1} (radian);#LT n_{1} #GT",
-        fNBins_eta_1, fMin_eta_1, fMax_eta_1,  fNBins_phi_1, fMin_phi_1, fMax_phi_1);
-    fhSum1Pt_1_vsEtaPhi = new TH2F("sumPt_1_vsEtaPhi","#LT #Sigma p_{t,1} #GT;#eta_{1};#varphi_{1} (radian);#LT #Sigma p_{t,1} #GT (GeV/c)",
-        fNBins_eta_1,fMin_eta_1,fMax_eta_1,fNBins_phi_1,fMin_phi_1,fMax_phi_1);
-
-    fhN1_2_vsPt = new TH1F("n1_2_vsPt","#LT n_{1} #GT;p_{t,2} (GeV/c);#LT n_{1} #GT", fNBins_pt_2,  fMin_pt_2,  fMax_pt_2);
-    fhN1_2_vsZEtaPhiPt = new TH3F("n1_2_vsZ_vsEtaPhi_vsPt","#LT n_{2} #GT;vtx_{z};#eta_{2}#times#varphi_{2};p_{t,2} (GeV/c)",
-        fNBins_vertexZ,fMin_vertexZ,fMax_vertexZ, fNBins_etaPhi_2,0.0,Double_t(fNBins_etaPhi_2),fNBins_pt_2,fMin_pt_2,fMax_pt_2);
-    fhSum1Pt_2_vsZEtaPhiPt = new TH3F("sumPt1_2_vsZ_vsEtaPhi_vsPt","#LT #Sigma p_{t,2} #GT;vtx_{z};#eta_{2}#times#varphi_{2};p_{t,2} (GeV/c)",
-        fNBins_vertexZ,fMin_vertexZ,fMax_vertexZ, fNBins_etaPhi_1,0.0,Double_t(fNBins_etaPhi_1),fNBins_pt_1,fMin_pt_1,fMax_pt_1);
-    fhN1_2_vsEtaPhi = new TH2F("n1_2_vsEtaPhi","#LT n_{1} #GT;#eta_{2};#varphi_{2} (radian);#LT n_{1} #GT",
-        fNBins_eta_2, fMin_eta_2, fMax_eta_2,  fNBins_phi_2, fMin_phi_2, fMax_phi_2);
-    fhSum1Pt_2_vsEtaPhi = new TH2F("sumPt_2_vsEtaPhi","#LT #Sigma p_{t,2} #GT;#eta_{2};#varphi_{2} (radian);#LT #Sigma p_{t,2} #GT (GeV/c)",
-        fNBins_eta_2,fMin_eta_2,fMax_eta_2,fNBins_phi_2,fMin_phi_2,fMax_phi_2);
-
-    fOutput->Add(fhN1_1_vsPt);
-    fOutput->Add(fhN1_1_vsZEtaPhiPt);
-    fOutput->Add(fhSum1Pt_1_vsZEtaPhiPt);
-    fOutput->Add(fhN1_2_vsPt);
-    fOutput->Add(fhN1_2_vsZEtaPhiPt);
-    fOutput->Add(fhSum1Pt_2_vsZEtaPhiPt);
-    fOutput->Add(fhN1_1_vsEtaPhi);
-    fOutput->Add(fhSum1Pt_1_vsEtaPhi);
-    fOutput->Add(fhN1_2_vsEtaPhi);
-    fOutput->Add(fhSum1Pt_2_vsEtaPhi);
-  }
-  else {
-    fhResonanceRoughMasses = new TH2F("ResonanceRoughMasses","Approx invariant mass;res id;Inv mass", fgkNoOfResonances, -0.5, fgkNoOfResonances - 0.5, 1000, 0.0, 5.0);
-    fhResonanceMasses = new TH2F("ResonanceMasses","Invariant mass;res id;Inv mass", fgkNoOfResonances, -0.5, fgkNoOfResonances - 0.5, 1000, 0.0, 5.0);
-    fhDiscardedResonanceMasses = new TH2F("DiscardedResonanceMasses","Discarded invariant mass;res id;Inv mass", fgkNoOfResonances, -0.5, fgkNoOfResonances - 0.5, 1000, 0.0, 5.0);
-
-    fhN1_1_vsEtaPhi = new TH2F("n1_1_vsEtaPhi","#LT n_{1} #GT;#eta_{1};#varphi_{1} (radian);#LT n_{1} #GT",
-        fNBins_eta_1, fMin_eta_1, fMax_eta_1,  fNBins_phi_1, fMin_phi_1, fMax_phi_1);
-    fhSum1Pt_1_vsEtaPhi = new TH2F("sumPt_1_vsEtaPhi","#LT #Sigma p_{t,1} #GT;#eta_{1};#varphi_{1} (radian);#LT #Sigma p_{t,1} #GT (GeV/c)",
-        fNBins_eta_1,fMin_eta_1,fMax_eta_1,fNBins_phi_1,fMin_phi_1,fMax_phi_1);
-    fhN1_1_vsC = new TProfile("n1_1_vsM","#LT n_{1} #GT (weighted);Centrality (%);#LT n_{1} #GT",100,0.0,100.0);
-    fhSum1Pt_1_vsC = new TProfile("sumPt_1_vsM","#LT #Sigma p_{t,1} #GT (weighted);Centrality (%);#LT #Sigma p_{t,1} #GT (GeV/c)",100,0.0,100.0);
-    fhN1nw_1_vsC = new TProfile("n1Nw_1_vsM","#LT n_{1} #GT;Centrality (%);#LT n_{1} #GT",100,0.0,100.0);
-    fhSum1Ptnw_1_vsC = new TProfile("sumPtNw_1_vsM","#LT #Sigma p_{t,1} #GT;Centrality (%);#LT #Sigma p_{t,1} #GT (GeV/c)",100,0.0,100.0);
-
-    fhN1_2_vsEtaPhi = new TH2F("n1_2_vsEtaPhi","#LT n_{1} #GT;#eta_{2};#varphi_{2} (radian);#LT n_{1} #GT",
-        fNBins_eta_2, fMin_eta_2, fMax_eta_2,  fNBins_phi_2, fMin_phi_2, fMax_phi_2);
-    fhSum1Pt_2_vsEtaPhi = new TH2F("sumPt_2_vsEtaPhi","#LT #Sigma p_{t,2} #GT;#eta_{2};#varphi_{2} (radian);#LT #Sigma p_{t,2} #GT (GeV/c)",
-        fNBins_eta_2,fMin_eta_2,fMax_eta_2,fNBins_phi_2,fMin_phi_2,fMax_phi_2);
-    fhN1_2_vsC = new TProfile("n1_2_vsM","#LT n_{1} #GT (weighted);Centrality (%);#LT n_{1} #GT",100,0.0,100.0);
-    fhSum1Pt_2_vsC = new TProfile("sumPt_2_vsM","#LT #Sigma p_{t,1} #GT (weighted);Centrality (%);#LT #Sigma p_{t,1} #GT (GeV/c)",100,0.0,100.0);
-    fhN1nw_2_vsC = new TProfile("n1Nw_2_vsM","#LT n_{1} #GT;Centrality (%);#LT n_{1} #GT",100,0.0,100.0);
-    fhSum1Ptnw_2_vsC = new TProfile("sumPtNw_2_vsM","#LT #Sigma p_{t,1} #GT;Centrality (%);#LT #Sigma p_{t,1} #GT (GeV/c)",100,0.0,100.0);
+    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+      fhN1_vsPt.push_back(new TH1F(Form("n1_%s_vsPt", fSpeciesNames[i].c_str()), "#LT n_{1} #GT;p_{T} (GeV/c);#LT n_{1} #GT", fNBins_pt, fMin_pt, fMax_pt));
+      fhN1_vsZEtaPhiPt.push_back(new TH3F(Form("n1_%s_vsZ_vsEtaPhi_vsPt", fSpeciesNames[i].c_str()), "#LT n_{1} #GT;vtx_{z};#eta#times#varphi;p_{T} (GeV/c)",
+                                          fNBins_vertexZ, fMin_vertexZ, fMax_vertexZ, fNBins_etaPhi, 0.0, double(fNBins_etaPhi), fNBins_pt, fMin_pt, fMax_pt));
+      fhSum1Pt_vsZEtaPhiPt.push_back(new TH3F(Form("sumPt1_%s_vsZ_vsEtaPhi_vsPt", fSpeciesNames[i].c_str()), "#LT #Sigma p_{T} #GT;vtx_{z};#eta#times#varphi;p_{T} (GeV/c)",
+                                              fNBins_vertexZ, fMin_vertexZ, fMax_vertexZ, fNBins_etaPhi, 0.0, Double_t(fNBins_etaPhi), fNBins_pt, fMin_pt, fMax_pt));
+      fhN1_vsEtaPhi.push_back(new TH2F(Form("n1_%s_vsEtaPhi", fSpeciesNames[i].c_str()), "#LT n_{1} #GT;#eta;#varphi (radian);#LT n_{1} #GT",
+                                       fNBins_eta, fMin_eta, fMax_eta, fNBins_phi, fMin_phi, fMax_phi));
+      fhSum1Pt_vsEtaPhi.push_back(new TH2F(Form("sumPt_%s_vsEtaPhi", fSpeciesNames[i].c_str()), "#LT #Sigma p_{T} #GT;#eta;#varphi (radian);#LT #Sigma p_{T} #GT (GeV/c)",
+                                           fNBins_eta, fMin_eta, fMax_eta, fNBins_phi, fMin_phi, fMax_phi));
+    }
+    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+      fOutput->Add(fhN1_vsPt[i]);
+      fOutput->Add(fhN1_vsZEtaPhiPt[i]);
+      fOutput->Add(fhSum1Pt_vsZEtaPhiPt[i]);
+      fOutput->Add(fhN1_vsEtaPhi[i]);
+      fOutput->Add(fhSum1Pt_vsEtaPhi[i]);
+    }
+  } else {
+    fhResonanceRoughMasses = new TH2F("ResonanceRoughMasses", "Approx invariant mass;res id;Inv mass", fgkNoOfResonances, -0.5, fgkNoOfResonances - 0.5, 1000, 0.0, 5.0);
+    fhResonanceMasses = new TH2F("ResonanceMasses", "Invariant mass;res id;Inv mass", fgkNoOfResonances, -0.5, fgkNoOfResonances - 0.5, 1000, 0.0, 5.0);
+    fhDiscardedResonanceMasses = new TH2F("DiscardedResonanceMasses", "Discarded invariant mass;res id;Inv mass", fgkNoOfResonances, -0.5, fgkNoOfResonances - 0.5, 1000, 0.0, 5.0);
 
     fOutput->Add(fhResonanceRoughMasses);
     fOutput->Add(fhResonanceMasses);
     fOutput->Add(fhDiscardedResonanceMasses);
 
-    fOutput->Add(fhN1_1_vsEtaPhi);
-    fOutput->Add(fhSum1Pt_1_vsEtaPhi);
-    fOutput->Add(fhN1_1_vsC);
-    fOutput->Add(fhSum1Pt_1_vsC);
-    fOutput->Add(fhN1nw_1_vsC);
-    fOutput->Add(fhSum1Ptnw_1_vsC);
-    fOutput->Add(fhN1_2_vsEtaPhi);
-    fOutput->Add(fhSum1Pt_2_vsEtaPhi);
-    fOutput->Add(fhN1_2_vsC);
-    fOutput->Add(fhSum1Pt_2_vsC);
-    fOutput->Add(fhN1nw_2_vsC);
-    fOutput->Add(fhSum1Ptnw_2_vsC);
+    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+      fhN1_vsEtaPhi.push_back(new TH2F(Form("n1_%s_vsEtaPhi", fSpeciesNames[i].c_str()), "#LT n_{1} #GT;#eta;#varphi (radian);#LT n_{1} #GT",
+                                       fNBins_eta, fMin_eta, fMax_eta, fNBins_phi, fMin_phi, fMax_phi));
+      fhSum1Pt_vsEtaPhi.push_back(new TH2F(Form("sumPt_%s_vsEtaPhi", fSpeciesNames[i].c_str()), "#LT #Sigma p_{T} #GT;#eta;#varphi (radian);#LT #Sigma p_{T} #GT (GeV/c)",
+                                           fNBins_eta, fMin_eta, fMax_eta, fNBins_phi, fMin_phi, fMax_phi));
+      fhN1_vsC.push_back(new TProfile(Form("n1_%s_vsM", fSpeciesNames[i].c_str()), "#LT n_{1} #GT (weighted);Centrality (%);#LT n_{1} #GT", 100, 0.0, 100.0));
+      fhSum1Pt_vsC.push_back(new TProfile(Form("sumPt_%s_vsM", fSpeciesNames[i].c_str()), "#LT #Sigma p_{T} #GT (weighted);Centrality (%);#LT #Sigma p_{T} #GT (GeV/c)", 100, 0.0, 100.0));
+      fhN1nw_vsC.push_back(new TProfile(Form("n1Nw_%s_vsM", fSpeciesNames[i].c_str()), "#LT n_{1} #GT;Centrality (%);#LT n_{1} #GT", 100, 0.0, 100.0));
+      fhSum1Ptnw_vsC.push_back(new TProfile(Form("sumPtNw_%s_vsM", fSpeciesNames[i].c_str()), "#LT #Sigma p_{T} #GT;Centrality (%);#LT #Sigma p_{T} #GT (GeV/c)", 100, 0.0, 100.0));
+    }
+
+    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+      fOutput->Add(fhN1_vsEtaPhi[i]);
+      fOutput->Add(fhSum1Pt_vsEtaPhi[i]);
+      fOutput->Add(fhN1_vsC[i]);
+      fOutput->Add(fhSum1Pt_vsC[i]);
+      fOutput->Add(fhN1nw_vsC[i]);
+      fOutput->Add(fhSum1Ptnw_vsC[i]);
+    }
   }
   TH1::AddDirectory(oldstatus);
 }
 
-/// \brief Stores the correction weights for both set of tracks
-/// \param h3_1 the calibration weights for the first track
-/// \param h3_2 the calibration weights for the second track
+/// \brief Stores the correction weights for the different track species
+/// \param h3 vector with the weights histograms
 /// \return kTRUE if correctly done kFALSE otherwise
-Bool_t AliTwoParticleCorrelationsBase::SetWeigths(const TH3F *h3_1, const TH3F *h3_2) {
+Bool_t AliTwoParticleCorrelationsBase::SetWeigths(std::vector<const TH3*> h3)
+{
   Bool_t done = kTRUE;
 
   if (fUseWeights){
-    if (h3_1) {
-      /* allocate memory for track 1 weights */
-      fCorrectionWeights_1 = new Float_t[fNBins_vertexZ*fNBins_etaPhi_1*fNBins_pt_1];
+    if (h3.size() > 0) {
+      for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+        if (h3[i] != nullptr) {
+          /* allocate memory for each track species weights */
+          float* buffer = new float[fNBins_vertexZ * fNBins_etaPhi * fNBins_pt];
+          fCorrectionWeights.push_back(buffer);
 
-      for (Int_t ixZ = 0; ixZ < fNBins_vertexZ; ixZ++) {
-        Double_t zval = fMin_vertexZ + fWidth_vertexZ*(ixZ+0.5);
-        for (Int_t ixEtaPhi=0; ixEtaPhi < fNBins_etaPhi_1; ixEtaPhi++) {
-          for (Int_t ixPt=0; ixPt < fNBins_pt_1; ixPt++) {
-            Double_t pTval = fMin_pt_1 + fWidth_pt_1*(ixPt+0.5);
-            fCorrectionWeights_1[ixZ*fNBins_etaPhi_1*fNBins_pt_1+ixEtaPhi*fNBins_pt_1+ixPt] = h3_1->GetBinContent(h3_1->GetXaxis()->FindBin(zval),ixEtaPhi+1,h3_1->GetZaxis()->FindBin(pTval));
+          for (int ixZ = 0; ixZ < fNBins_vertexZ; ixZ++) {
+            double zval = fMin_vertexZ + fWidth_vertexZ * (ixZ + 0.5);
+            for (int ixEtaPhi = 0; ixEtaPhi < fNBins_etaPhi; ixEtaPhi++) {
+              for (int ixPt = 0; ixPt < fNBins_pt; ixPt++) {
+                double pTval = fMin_pt + fWidth_pt * (ixPt + 0.5);
+                buffer[ixZ * fNBins_etaPhi * fNBins_pt + ixEtaPhi * fNBins_pt + ixPt] = h3[i]->GetBinContent(h3[i]->GetXaxis()->FindBin(zval), ixEtaPhi + 1, h3[i]->GetZaxis()->FindBin(pTval));
+              }
+            }
           }
+        } else {
+          AliFatal(TString::Format("The weights histogram for species %s is a null pointer. ABORTING!!!", fSpeciesNames[i].c_str()));
+          done = kFALSE;
         }
       }
-    } // _weight_1
-    else {
-      AliFatal("The weights one histogram is a null pointer. ABORTING!!!");
+    } else {
+      AliFatal("The weights histograms for different species are not there. ABORTING!!!");
       done = kFALSE;
     }
-
-    if (h3_2) {
-      /* allocate memory for track 1 weights */
-      fCorrectionWeights_2 = new Float_t[fNBins_vertexZ*fNBins_etaPhi_2*fNBins_pt_2];
-
-      for (Int_t ixZ = 0; ixZ < fNBins_vertexZ; ixZ++) {
-        Double_t zval = fMin_vertexZ + fWidth_vertexZ*(ixZ+0.5);
-        for (Int_t ixEtaPhi=0; ixEtaPhi < fNBins_etaPhi_2; ixEtaPhi++) {
-          for (Int_t ixPt=0; ixPt < fNBins_pt_2; ixPt++) {
-            Double_t pTval = fMin_pt_2 + fWidth_pt_2*(ixPt+0.5);
-            fCorrectionWeights_2[ixZ*fNBins_etaPhi_2*fNBins_pt_2+ixEtaPhi*fNBins_pt_2+ixPt] = h3_2->GetBinContent(h3_2->GetXaxis()->FindBin(zval),ixEtaPhi+1,h3_2->GetZaxis()->FindBin(pTval));
-          }
-        }
-      }
-    } // _weight_2
-    else {
-      AliFatal("The weights two histogram is a null pointer. ABORTING!!!");
-      done = kFALSE;
+  } else {
+    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+      fCorrectionWeights.push_back(nullptr);
     }
-  }
-  else {
     AliError("Setting weights for a not use weights instance. Ignoring it");
     done = kFALSE;
   }
   return done;
 }
 
-/// \brief Stores the efficiency correction for both set of tracks
+/// \brief Stores the efficiency correction for the different track species
 /// If the efficiency correction histograms are not present a efficiency correction value 1.0 is stored.
 /// The correction value are always the inverse of the efficiency ones
 ///
 /// Usually the efficiency is incorporated in the weights but this method provides
 /// an additional way to incorporate pT dependent efficiency.
-/// \param h1_1 histogram with efficiency values for track one
-/// \param h1_2 histogram with efficiency values for track two
+/// \param h1 vector with the efficiency histograms
 /// \return kTRUE if everything went ok otherwise kFALSE
-Bool_t AliTwoParticleCorrelationsBase::SetEfficiencyCorrection(const TH1F *h1_1, const TH1F *h1_2) {
-  Bool_t done = kTRUE;
+Bool_t AliTwoParticleCorrelationsBase::SetEfficiencyCorrection(std::vector<const TH1*> h1)
+{
+  bool done = true;
 
-  if (h1_1 != NULL || h1_2 != NULL){
-    if (h1_1) {
-      /* allocate memory for track 1 efficiency correction */
-      fEfficiencyCorrection_1 = new Float_t[fNBins_pt_1];
-
-      for (Int_t ixPt=0; ixPt < fNBins_pt_1; ixPt++) {
-        Int_t bin = h1_1->GetXaxis()->FindBin(fMin_pt_1 + fWidth_pt_1/2.0 + ixPt*fWidth_pt_1);
-        fEfficiencyCorrection_1[ixPt] = 1.0 / h1_1->GetBinContent(bin);
-      }
-    }
-    else {
-      AliFatal("The efficiency correction histogram one is a null pointer. ABORTING!!!");
-      done = kFALSE;
-    }
-
-    if (h1_2) {
-      /* allocate memory for track 1 efficiency correction */
-      fEfficiencyCorrection_2 = new Float_t[fNBins_pt_2];
-
-      for (Int_t ixPt=0; ixPt < fNBins_pt_2; ixPt++) {
-        Int_t bin = h1_2->GetXaxis()->FindBin(fMin_pt_2 + fWidth_pt_2/2.0 + ixPt*fWidth_pt_2);
-        fEfficiencyCorrection_2[ixPt] = 1.0 / h1_2->GetBinContent(bin);
-      }
-    }
-    else {
-      AliFatal("The efficiency correction histogram two is a null pointer. ABORTING!!!");
-      done = kFALSE;
+  bool allnull = true;
+  for (uint pid = 0; pid < h1.size(); ++pid) {
+    if (h1[pid] != nullptr) {
+      allnull = false;
     }
   }
-  else {
-    AliInfo("Setting efficiency correction equal to one for both tracks");
 
-    fEfficiencyCorrection_1 = new Float_t[fNBins_pt_1];
-    for (Int_t ixPt=0; ixPt < fNBins_pt_1; ixPt++) {
-      fEfficiencyCorrection_1[ixPt] = 1.0;
+  if (!allnull) {
+    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+      if (i < h1.size() && h1[i] != nullptr) {
+        /* allocate memory for each species efficiency correction */
+        float* buffer = new float[fNBins_pt];
+        fEfficiencyCorrection.push_back(buffer);
+        for (int ixPt = 0; ixPt < fNBins_pt; ixPt++) {
+          int bin = h1[i]->GetXaxis()->FindBin(fMin_pt + fWidth_pt / 2.0 + ixPt * fWidth_pt);
+          buffer[ixPt] = 1.0 / h1[i]->GetBinContent(bin);
+        }
+      } else {
+        AliFatal(TString::Format("The efficiency correction histogram for species %s is a null pointer. ABORTING!!!", fSpeciesNames[i].c_str()));
+        done = kFALSE;
+      }
     }
-    fEfficiencyCorrection_2 = new Float_t[fNBins_pt_2];
-    for (Int_t ixPt=0; ixPt < fNBins_pt_2; ixPt++) {
-      fEfficiencyCorrection_2[ixPt] = 1.0;
+  } else {
+    AliInfo("Setting efficiency correction equal to one for all species");
+    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+
+      float* buffer = new float[fNBins_pt];
+      fEfficiencyCorrection.push_back(buffer);
+      for (int ixPt = 0; ixPt < fNBins_pt; ixPt++) {
+        buffer[ixPt] = 1.0;
+      }
     }
     done = kTRUE;
   }
-  AliInfo(Form("Configured efficiency correcton on %s",GetName()));
-  printf("Track one:\n");
-  for (Int_t bin = 0; bin < fNBins_pt_1; bin++) {
-    printf("%f, ", fEfficiencyCorrection_1[bin]);
-    if ((bin+1)%8 == 0) printf("\n");
+  if (done) {
+    AliInfo(Form("Configured efficiency correcton on %s", GetName()));
+    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+      printf("Species %s:\n", fSpeciesNames[i].c_str());
+      for (int bin = 0; bin < fNBins_pt; bin++) {
+        printf("%f, ", fEfficiencyCorrection[i][bin]);
+        if ((bin + 1) % 8 == 0)
+          printf("\n");
+      }
+      printf("\n");
+    }
   }
-  printf("\n");
-  printf("Track two:\n");
-  for (Int_t bin = 0; bin < fNBins_pt_2; bin++) {
-    printf("%f, ", fEfficiencyCorrection_2[bin]);
-    if ((bin+1)%8 == 0) printf("\n");
-  }
-  printf("\n");
   return done;
 }
 
-/// \brief Stores the pairs efficiency correction for the four tracks combinations
+/// \brief Stores the pairs efficiency correction for track species combinations
 /// The correction value is stored as the inverse of the efficiency ones
-/// \param h11 histogram with efficiency values for the one-one pair
-/// \param h12 histogram with efficiency values for the one-two pair
-/// \param h22 histogram with efficiency values for the two-two pair
-/// \param h21 histogram with efficiency values for the two-one pair
+/// \param hn vector with the pair efficiency histograms
 /// \return kTRUE if everything went ok otherwise kFALSE
-Bool_t AliTwoParticleCorrelationsBase::SetPairEfficiencyCorrection(const THn *h11, const THn *h12, const THn *h22, const THn *h21) {
+Bool_t AliTwoParticleCorrelationsBase::SetPairEfficiencyCorrection(std::vector<std::vector<const THn*>> hn)
+{
   AliInfo("");
 
   Bool_t done = kTRUE;
 
-  if (h11 != NULL || h12 != NULL || h22 != NULL || h21 != NULL){
-    if (h11) {
-      if (h11->GetNdimensions() != 4) {
-        AliFatal("Pair efficiency correction expected to have four dimensions. ABORTING!!!");
-        done = kFALSE;
-      }
-      else {
-        /* store the pair 11 efficiency histogram */
-        fPairsEfficiency_PP = h11;
-      }
-    }
-    else {
-      AliFatal("The pair efficiency correction histogram one-one is a null pointer. ABORTING!!!");
-      done = kFALSE;
-    }
-
-    if (h12) {
-      if (h12->GetNdimensions() != 4) {
-        AliFatal("Pair efficiency correction expected to have four dimensions. ABORTING!!!");
-        done = kFALSE;
-      }
-      else {
-        /* store the pair 12 efficiency histogram */
-        fPairsEfficiency_PM = h12;
+  if (hn.size() > 0) {
+    /* few sanity checks */
+    bool abort = false;
+    bool allnull = true;
+    if (hn.size() != fSpeciesNames.size()) {
+      abort = true;
+    } else {
+      for (uint i = 0 && allnull; i < fSpeciesNames.size(); ++i) {
+        if (hn[i].size() != fSpeciesNames.size()) {
+          abort = true;
+          break;
+        } else {
+          for (uint j = 0; j < fSpeciesNames.size(); ++j) {
+            if (hn[i][j] != nullptr) {
+              allnull = false;
+              break;
+            }
+          }
+        }
       }
     }
-    else {
-      AliFatal("The pair efficiency correction histogram one-two is a null pointer. ABORTING!!!");
-      done = kFALSE;
-    }
-
-    if (h22) {
-      if (h22->GetNdimensions() != 4) {
-        AliFatal("Pair efficiency correction expected to have four dimensions. ABORTING!!!");
-        done = kFALSE;
+    if (!abort) {
+      for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+        std::vector<const THn*> row;
+        for (uint j = 0; j < fSpeciesNames.size(); ++j) {
+          if (!allnull) {
+            if (hn[i][j] != nullptr) {
+              if (hn[i][j]->GetNdimensions() != 4) {
+                AliFatal(TString::Format("Pair efficiency correction histogram %s-%s expected to have four dimensions. ABORTING!!!", fSpeciesNames[i].c_str(), fSpeciesNames[j].c_str()));
+                done = kFALSE;
+              } else {
+                /* store the pair 11 efficiency histogram */
+                row.push_back(hn[i][j]);
+              }
+            } else {
+              AliFatal(TString::Format("The pair efficiency correction histogram %s-%s is a null pointer. ABORTING!!!", fSpeciesNames[i].c_str(), fSpeciesNames[j].c_str()));
+              done = kFALSE;
+            }
+          } else {
+            row.push_back(nullptr);
+          }
+        }
+        fPairsEfficiency.push_back(row);
       }
-      else {
-        /* store the pair 22 efficiency histogram */
-        fPairsEfficiency_MM = h22;
-      }
-    }
-    else {
-      AliFatal("The pair efficiency correction histogram two-two is a null pointer. ABORTING!!!");
-      done = kFALSE;
-    }
-
-    if (h21) {
-      if (h21->GetNdimensions() != 4) {
-        AliFatal("Pair efficiency correction expected to have four dimensions. ABORTING!!!");
-        done = kFALSE;
-      }
-      else {
-        /* store the pair 11 efficiency histogram */
-        fPairsEfficiency_MP = h21;
-      }
-    }
-    else {
-      AliFatal("The pair efficiency correction histogram one-one is a null pointer. ABORTING!!!");
+    } else {
+      AliFatal("The pair efficiency correction histograms vector is malformed. ABORTING!!!");
       done = kFALSE;
     }
   }
   return done;
 }
 
-/// \brief Stores the pdf for plus and minus tracks depending on z vertex bin
+/// \brief Stores the pdf for the different species depending on z vertex bin
 ///
 /// Pdf are used to generate simulated tracks
 /// \param pluspdf array with z vertex dependent pdf for positive tracks
 /// \param minuspdf array with z vertex dependent pdf for negative tracks
 /// \return kTRUE if everything went ok otherwise kFALSE
-Bool_t AliTwoParticleCorrelationsBase::SetSimultationPdfs(const TObjArray *pluspdf, const TObjArray *minuspdf) {
+Bool_t AliTwoParticleCorrelationsBase::SetSimultationPdfs(std::vector<const TObjArray*> pdf)
+{
 
-  Bool_t done = kTRUE;
+  bool done = true;
+  bool allnull = true;
 
-  if (fUseSimulation) {
-    if (pluspdf != NULL) {
-      if (pluspdf->GetEntriesFast() == fNBins_vertexZ) {
-        fPositiveTrackPdfs = pluspdf;
-      }
-      else {
-        AliFatal(Form("The positive tracks density histogram array number of pdfs %d differ from the number of zvertex bins %d. ABORTING!!!",
-            pluspdf->GetEntriesFast(), fNBins_vertexZ));
-        done = kFALSE;
-      }
-    }
-    else {
-      AliFatal("The positive tracks density histogram array is a null pointer. ABORTING!!!");
-      done = kFALSE;
-    }
-
-    if (minuspdf != NULL) {
-      if (minuspdf->GetEntriesFast() == fNBins_vertexZ) {
-        fNegativeTrackPdfs = minuspdf;
-      }
-      else {
-        AliFatal(Form("The negative tracks density histogram array number of pdfs %d differ from the number of zvertex bins %d. ABORTING!!!",
-            minuspdf->GetEntriesFast(), fNBins_vertexZ));
-        done = kFALSE;
-      }
-    }
-    else {
-      AliFatal("The negative tracks density histogram array is a null pointer. ABORTING!!!");
-      done = kFALSE;
+  for (uint pid = 0; pid < pdf.size(); ++pid) {
+    if (pdf[pid] != nullptr) {
+      allnull = false;
+      break;
     }
   }
-  else {
+
+  if (fUseSimulation) {
+    if (!allnull) {
+      for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+        if (i < pdf.size() && pdf[i] != nullptr) {
+          if (pdf[i]->GetEntriesFast() == fNBins_vertexZ) {
+            fTrackPdfs.push_back(pdf[i]);
+          } else {
+            AliFatal(Form("The track density histogram array number of pdfs %d differ from the number of zvertex bins %d for species %s. ABORTING!!!",
+                          pdf[i]->GetEntriesFast(), fNBins_vertexZ, fSpeciesNames[i].c_str()));
+            done = kFALSE;
+          }
+        } else {
+          AliFatal(TString::Format("The track density histogram for species %s is a null pointer. ABORTING!!!", fSpeciesNames[i].c_str()));
+          done = kFALSE;
+        }
+      }
+    } else {
+      AliFatal("The track density histograms for different species are not there. ABORTING!!!");
+      done = kFALSE;
+    }
+  } else {
     AliError("Setting tracks density profiles for a not use simulation instance. Ignoring it");
     done = kFALSE;
   }
   return done;
 }
-
 
 /// \brief initializes the object instance to start a new event
 /// \param centrality the new event centrality in percentage
@@ -796,15 +626,17 @@ Bool_t AliTwoParticleCorrelationsBase::StartEvent(Float_t centrality, Float_t ve
   }
 
   if (fUseSimulation) {
-    fPositiveTrackCurrentPdf = (TH3F *) fPositiveTrackPdfs->At(fIxVertexZ);
-    fNegativeTrackCurrentPdf = (TH3F *) fNegativeTrackPdfs->At(fIxVertexZ);
+    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+      fTrackCurrentPdf.push_back((TH3F*)fTrackPdfs[i]->At(fIxVertexZ));
+    }
   }
 
-  fNoOfTracks1 = 0;
-  fNoOfTracks2 = 0;
+  fNoOfTracks = 0;
 
   /* reset single counters */
-  fN1_1 = fN1_2 = fSum1Pt_1 = fSum1Pt_2 = fNnw1_1 = fNnw1_2 = fSum1Ptnw_1 = fSum1Ptnw_2 = 0;
+  for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+    fN1[i] = fSum1Pt[i] = fNnw1[i] = fSum1Ptnw[i] = 0;
+  }
 
   return kTRUE;
 }
@@ -816,24 +648,21 @@ Bool_t AliTwoParticleCorrelationsBase::StartEvent(Float_t centrality, Float_t ve
 /// \param trkId the external track Id
 /// \param trk the passed track
 /// \return kTRUE if the track is properly handled kFALSE otherwise
-Bool_t AliTwoParticleCorrelationsBase::ProcessTrack(Int_t trkId, AliVTrack *trk) {
+bool AliTwoParticleCorrelationsBase::ProcessTrack(int pid, AliVTrack* trk)
+{
 
   if (fUseSimulation) {
-    Double_t pT;
-    Double_t eta;
-    Double_t phi;
+    double pT;
+    double eta;
+    double phi;
 
-    if (trk->Charge() < 0)
-      fNegativeTrackCurrentPdf->GetRandom3(eta,phi,pT);
-    else
-      fPositiveTrackCurrentPdf->GetRandom3(eta,phi,pT);
+    fTrackCurrentPdf[pid]->GetRandom3(eta, phi, pT);
 
-    return ProcessTrack(trkId, Int_t(trk->Charge()), pT, eta, phi);
+    return ProcessTrack((trk->Charge() > 0) ? 0 : 1, pT, eta, phi);
   }
   else
-    return ProcessTrack(trkId, Int_t(trk->Charge()), Float_t(trk->Pt()), Float_t(trk->Eta()), Float_t(trk->Phi()));
+    return ProcessTrack((trk->Charge() > 0) ? 0 : 1, float(trk->Pt()), float(trk->Eta()), float(trk->Phi()));
 }
-
 
 /// \brief process a true particle and store its parameters if feasible
 ///
@@ -841,41 +670,41 @@ Bool_t AliTwoParticleCorrelationsBase::ProcessTrack(Int_t trkId, AliVTrack *trk)
 /// \param trkId the external particle Id
 /// \param part the passed particle
 /// \return kTRUE if the particle is properly handled kFALSE otherwise
-Bool_t AliTwoParticleCorrelationsBase::ProcessTrack(Int_t trkId, AliVParticle *part) {
+bool AliTwoParticleCorrelationsBase::ProcessTrack(int, AliVParticle* part)
+{
 
   if (fUseSimulation) {
     return kFALSE;
   }
   else
     if (part->Charge() != 0) {
-      return ProcessTrack(trkId, (part->Charge() > 0) ? 1 : -1, Float_t(part->Pt()), Float_t(part->Eta()), Float_t(part->Phi()));
+    return ProcessTrack((part->Charge() > 0) ? 0 : 1, float(part->Pt()), float(part->Eta()), float(part->Phi()));
     }
     else {
       return kFALSE;
     }
 }
 
-
 /// \brief Flag the potential products of conversions and / or resonances
 void AliTwoParticleCorrelationsBase::FlagConversionsAndResonances() {
   AliInfo("");
   /* pair with different charges. Both track list are different */
-  for (Int_t ix1 = 0; ix1 < fNoOfTracks1; ix1++) {
-    for (Int_t ix2 = 0; ix2 < fNoOfTracks2; ix2++) {
+  for (Int_t ix1 = 0; ix1 < fNoOfTracks; ix1++) {
+      for (Int_t ix2 = ix1 + 1; ix2 < fNoOfTracks; ix2++) {
 
       for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
         if (fThresholdMult[ires] != 0) {
           Float_t mass = checkIfResonance(ires, kTRUE, ix1, ix2);
 
           if (0 < mass) {
-            fFlags_1[ix1] |= (0x1 << ires);
-            fFlags_2[ix2] |= (0x1 << ires);
+            fFlags[ix1] |= (0x1 << ires);
+            fFlags[ix2] |= (0x1 << ires);
             fhResonanceMasses->Fill(ires,TMath::Sqrt(mass));
           }
         }
       }
-    } //ix2
-  } //ix1
+      } // ix2
+  }     // ix1
 }
 
 /// \cond CLASSIMP
