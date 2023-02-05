@@ -50,24 +50,32 @@ public:
                               /// Get the histograms list
                               /// \return the histograms list
   Bool_t                      StartEvent(Float_t centrality, Float_t vertexZ);
-  Bool_t                      ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Float_t eta, Float_t phi);
+  bool ProcessTrack(int pid, float pT, float eta, float phi);
   void                        ProcessEventData();
-  void                        FinalizeProcess();
+  void FinalizeProcess();
 
-private:
-  void                        ProcessLikeSignPairs(Int_t bank);
-  void                        ProcessNotHalfSymmLikeSignPairs(Int_t bank);
-  void                        ProcessUnlikeSignPairs();
-  void                        ProcessNotHalfSymmUnlikeSignPairs();
+ private:
+  enum kLSUS {
+    kLS,
+    kUS,
+    kALL
+  };
+  enum kSYMM {
+    kHALF,
+    kFULL
+  };
 
-  void                        fillHistoWithArray(TH1 * h, double * array, int size);
-  void                        fillHistoWithArray(TH2 * h, double * array, int size1, int size2);
-  void                        fillHistoWithArray(TH3 * h, double * array, int size1, int size2, int size3);
-  void                        fillHistoWithArray(TH1 * h, float * array, int size);
-  void                        fillHistoWithArray(TH2 * h, float * array, int size1, int size2);
-  void                        fillHistoWithArray(TH3 * h, float * array, int size1, int size2, int size3);
+  template <kLSUS kind, kSYMM half>
+  void ProcessPairs();
 
-private:
+  void fillHistoWithArray(TH1* h, double* array, int size);
+  void fillHistoWithArray(TH2* h, double* array, int size1, int size2);
+  void fillHistoWithArray(TH3* h, double* array, int size1, int size2, int size3);
+  void fillHistoWithArray(TH1* h, float* array, int size);
+  void fillHistoWithArray(TH2* h, float* array, int size1, int size2);
+  void fillHistoWithArray(TH3* h, float* array, int size1, int size2, int size3);
+
+ private:
   Bool_t                      fHalfSymmetrize;              ///< kTRUE if half symmetrizing for memory layout reduction
   Bool_t                      fSameSign;                    ///< kTRUE if the same charge particles are utilized to build correlations
   Bool_t                      fAllCombinations;             ///< kTRUE if all track pair combinations are utilized to build correlations
@@ -75,18 +83,12 @@ private:
   Int_t                       fRequestedCharge_2;           ///< requested charge sign for the second particle
 
   /* the arrays with tracks 1 and 2 information */
-  Int_t                      *fId_1;                        //!<! the array of track 1 Ids
-  Int_t                      *fCharge_1;                    //!<! the array of track 1 charge
-  Int_t                      *fIxEtaPhi_1;                  //!<! the array of track 1 combined eta phi bin index
-  Int_t                      *fIxPt_1;                      //!<! the array of track 1 pT bin index
-  Float_t                    *fCorrection_1;                //!<! the array of the correction to apply to track 1
-  Int_t                      *fId_2;                        //!<! the array of track 2 Ids
-  Int_t                      *fCharge_2;                    //!<! the array of track 2 charge
-  Int_t                      *fIxEtaPhi_2;                  //!<! the array of track 2 combined eta phi bin index
-  Int_t                      *fIxPt_2;                      //!<! the array of track 2 pT bin index
-  Float_t                    *fCorrection_2;                //!<! the array of the correction to apply to track 2
+  int* fPID;          //!<! the array of track Ids
+  int* fIxEtaPhi;     //!<! the array of track combined eta phi bin index
+  int* fIxPt;         //!<! the array of track pT bin index
+  float* fCorrection; //!<! the array of the correction to apply to track
 
-  Int_t                       fNBins_etaPhi_12;             ///< the track 1 and 2 combined \f$\eta, \phi\f$ number of bins
+  Int_t fNBins_etaPhi_12; ///< the track 1 and 2 combined \f$\eta, \phi\f$ number of bins
 
   Double_t                    fN2_12;                       ///< weighted number of track1 track 2 pairs for current event
   Double_t                    fNnw2_12;                     ///< not weighted number of track1 track 2 pairs for current event
@@ -95,16 +97,12 @@ private:
   Double_t                    fSum2NPt_12;                  ///< accumulated sum of weighted number of track 1 tracks times weighted track 2 \f$p_T\f$ for current event
   Double_t                    fSum2PtN_12;                  ///< accumulated sum of weighted track 1 \f$p_T\f$ times weighted number of track 2 tracks for current event
   Double_t                    fSum2NPtnw_12;                ///< accumulated sum of not weighted number of track 1 tracks times not weighted track 2 \f$p_T\f$ for current event
-  Double_t                    fSum2PtNnw_12;                ///< accumulated sum of not weighted track 1 \f$p_T\f$ times not weighted number of track  tracks for current event
+  Double_t fSum2PtNnw_12;                                   ///< accumulated sum of not weighted track 1 \f$p_T\f$ times not weighted number of track  tracks for current event
 
-  Double_t                   *fN1_1_vsPt;                   //!<! storage for track 1 weighted single particle distribution vs \f$p_T\f$
-  Double_t                   *fN1_1_vsEtaPhi;               //!<! storage for track 1 weighted single particle distribution vs \f$\eta,\;\phi\f$
-  Double_t                   *fSum1Pt_1_vsEtaPhi;           //!<! storage for track 1 accumulated sum of weighted \f$p_T\f$ vs \f$\eta,\;\phi\f$
-  Float_t                    *fN1_1_vsZEtaPhiPt;            //!<! storage for track 1 single particle distribution vs \f$\mbox{vtx}_z,\;\eta,\;\phi,\;p_T\f$
-  Double_t                   *fN1_2_vsPt;                   //!<! storage for track 2 weighted single particle distribution vs \f$p_T\f$
-  Double_t                   *fN1_2_vsEtaPhi;               //!<! storage for track 2 weighted single particle distribution vs \f$\eta,\;\phi\f$
-  Double_t                   *fSum1Pt_2_vsEtaPhi;           //!<! storage for track 2 accumulated sum of weighted \f$p_T\f$ vs \f$\eta,\;\phi\f$
-  Float_t                    *fN1_2_vsZEtaPhiPt;            //!<! storage for track 2 single particle distribution vs \f$\mbox{vtx}_z,\;\eta,\;\phi,\;p_T\f$
+  std::vector<double*> fN1_vsPt;                            //!<! storage for track 1 and 2 weighted single particle distribution vs \f$p_T\f$
+  std::vector<double*> fN1_vsEtaPhi;                        //!<! storage for track 1 and 2 weighted single particle distribution vs \f$\eta,\;\phi\f$
+  std::vector<double*> fSum1Pt_vsEtaPhi;                    //!<! storage for track 1 and 2 accumulated sum of weighted \f$p_T\f$ vs \f$\eta,\;\phi\f$
+  std::vector<float*> fN1_vsZEtaPhiPt;                      //!<! storage for track 1 and 2 single particle distribution vs \f$\mbox{vtx}_z,\;\eta,\;\phi,\;p_T\f$
   Double_t                   *fN2_12_vsPtPt;                //!<! storage for track 1 and 2 weighted two particle distribution vs \f${p_T}_1, {p_T}_2\f$
   Float_t                    *fN2_12_vsEtaPhi;              //!<! storage for track 1 and 2 weighted two particle distribution vs \f$\eta,\;\phi\f$
   Float_t                    *fSum2PtPt_12_vsEtaPhi;        //!<! storage for track 1 and 2 weighted accumulated \f${p_T}_1 {p_T}_2\f$ distribution vs \f$\eta,\;\phi\f$

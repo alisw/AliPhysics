@@ -453,20 +453,20 @@ Bool_t AliAnalysisTaskCorrelationsStudies::BuildEfficiencyProfiles() {
       }
       else {
         /* true will not apply any efficiency correction */
-        fProcessTrueCorrelations->SetEfficiencyCorrection(NULL,NULL);
+        fProcessTrueCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{});
       }
     }
   }
   else {
     if (fDoProcessCorrelations) {
       /* true will not apply any efficiency correction */
-      fProcessTrueCorrelations->SetEfficiencyCorrection(NULL,NULL);
+      fProcessTrueCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{});
     }
   }
 
   if (fDoProcessCorrelations) {
     /* for the time being, rec with true will never apply efficiency correction */
-    fProcessMCRecCorrelationsWithOptions->SetEfficiencyCorrection(NULL,NULL);
+    fProcessMCRecCorrelationsWithOptions->SetEfficiencyCorrection(std::vector<const TH1*>{});
   }
 
   return done;
@@ -941,81 +941,73 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
 
   TObjArray *tokens = sztmp.Tokenize(",");
   if ((tokens->GetEntries() == 4) || (tokens->GetEntries() == 5)) {
+    auto configureProcesses = [&](int ch_1, int ch_2, bool all) {
+      auto configureProcess = [](auto process, int ch_1, int ch_2, bool all) {
+        bool same = ch_1 == ch_2;
+        process->SetSameSign(same);
+        process->SetAllCombinations(all);
+        process->SetRequestedCharge_1(ch_1);
+        process->SetRequestedCharge_2(ch_2);
+      };
+      auto configureTracks = [&](int ch_1, int ch_2, bool all) {
+        bool same = ch_1 == ch_2;
+        if (same) {
+          if (ch_1 > 0) {
+            /* both track positives */
+            szTrack1 = "p1";
+            szTrack2 = "p2";
+            szContainerPrefix = "PP";
+          } else {
+            /* both track negatives */
+            szTrack1 = "m1";
+            szTrack2 = "m2";
+            szContainerPrefix = "MM";
+          }
+        } else {
+          if (ch_1 > 0) {
+            /* track 1 positive track 2 negative and, perhaps, all tracks */
+            szTrack1 = "p1";
+            szTrack2 = "m2";
+            if (all) {
+              szContainerPrefix = "AA";
+            } else {
+              szContainerPrefix = "PM";
+            }
+          } else {
+            szTrack1 = "m1";
+            szTrack2 = "p2";
+            szContainerPrefix = "MP";
+          }
+        }
+        std::vector<std::string> species;
+        if (fTaskActivitiesString.Contains("diffcorr")) {
+          species.push_back("O");
+          species.push_back("T");
+        } else {
+          species.push_back("1");
+          species.push_back("2");
+        }
+        fProcessCorrelations->SetSpeciesNames(species);
+        fProcessMCRecCorrelationsWithOptions->SetSpeciesNames(species);
+        fProcessTrueCorrelations->SetSpeciesNames(species);
+      };
+      configureProcess(fProcessCorrelations, ch_1, ch_2, all);
+      configureProcess(fProcessMCRecCorrelationsWithOptions, ch_1, ch_2, all);
+      configureProcess(fProcessTrueCorrelations, ch_1, ch_2, all);
+      configureTracks(ch_1, ch_2, all);
+    };
     /* track polarities */
     if (((TObjString*) tokens->At(0))->String().EqualTo("--")) {
-      fProcessCorrelations->SetSameSign(kTRUE);
-      fProcessCorrelations->SetRequestedCharge_1(-1);
-      fProcessCorrelations->SetRequestedCharge_2(-1);
-      fProcessMCRecCorrelationsWithOptions->SetSameSign(kTRUE);
-      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_1(-1);
-      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_2(-1);
-      fProcessTrueCorrelations->SetSameSign(kTRUE);
-      fProcessTrueCorrelations->SetRequestedCharge_1(-1);
-      fProcessTrueCorrelations->SetRequestedCharge_2(-1);
-      szTrack1 = "m1";
-      szTrack2 = "m2";
-      szContainerPrefix = "MM";
-    }
-    else if (((TObjString*) tokens->At(0))->String().EqualTo("++")) {
-      fProcessCorrelations->SetSameSign(kTRUE);
-      fProcessCorrelations->SetRequestedCharge_1(1);
-      fProcessCorrelations->SetRequestedCharge_2(1);
-      fProcessMCRecCorrelationsWithOptions->SetSameSign(kTRUE);
-      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_1(1);
-      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_2(1);
-      fProcessTrueCorrelations->SetSameSign(kTRUE);
-      fProcessTrueCorrelations->SetRequestedCharge_1(1);
-      fProcessTrueCorrelations->SetRequestedCharge_2(1);
-      szTrack1 = "p1";
-      szTrack2 = "p2";
-      szContainerPrefix = "PP";
-    }
-    else if (((TObjString*) tokens->At(0))->String().EqualTo("+-")) {
-      fProcessCorrelations->SetSameSign(kFALSE);
-      fProcessCorrelations->SetRequestedCharge_1(1);
-      fProcessCorrelations->SetRequestedCharge_2(-1);
-      fProcessMCRecCorrelationsWithOptions->SetSameSign(kFALSE);
-      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_1(1);
-      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_2(-1);
-      fProcessTrueCorrelations->SetSameSign(kFALSE);
-      fProcessTrueCorrelations->SetRequestedCharge_1(1);
-      fProcessTrueCorrelations->SetRequestedCharge_2(-1);
-      szTrack1 = "p1";
-      szTrack2 = "m2";
-      szContainerPrefix = "PM";
-    }
-    else if (((TObjString*) tokens->At(0))->String().EqualTo("-+")) {
-      fProcessCorrelations->SetSameSign(kFALSE);
-      fProcessCorrelations->SetRequestedCharge_1(-1);
-      fProcessCorrelations->SetRequestedCharge_2(1);
-      fProcessMCRecCorrelationsWithOptions->SetSameSign(kFALSE);
-      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_1(-1);
-      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_2(1);
-      fProcessTrueCorrelations->SetSameSign(kFALSE);
-      fProcessTrueCorrelations->SetRequestedCharge_1(-1);
-      fProcessTrueCorrelations->SetRequestedCharge_2(1);
-      szTrack1 = "m1";
-      szTrack2 = "p2";
-      szContainerPrefix = "MP";
-    }
-    else if (((TObjString*) tokens->At(0))->String().EqualTo("**")) {
-      fProcessCorrelations->SetSameSign(kFALSE);
-      fProcessCorrelations->SetAllCombinations(kTRUE);
-      fProcessCorrelations->SetRequestedCharge_1(1);
-      fProcessCorrelations->SetRequestedCharge_2(-1);
-      fProcessMCRecCorrelationsWithOptions->SetSameSign(kFALSE);
-      fProcessMCRecCorrelationsWithOptions->SetAllCombinations(kTRUE);
-      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_1(1);
-      fProcessMCRecCorrelationsWithOptions->SetRequestedCharge_2(-1);
-      fProcessTrueCorrelations->SetSameSign(kFALSE);
-      fProcessTrueCorrelations->SetAllCombinations(kTRUE);
-      fProcessTrueCorrelations->SetRequestedCharge_1(1);
-      fProcessTrueCorrelations->SetRequestedCharge_2(-1);
-      szTrack1 = "p1";
-      szTrack2 = "m2";
-      szContainerPrefix = "AA";
-    }
-    else {
+      configureProcesses(-1, -1, false);
+    } else if (((TObjString*)tokens->At(0))->String().EqualTo("++")) {
+      configureProcesses(1, 1, true);
+    } else if (((TObjString*)tokens->At(0))->String().EqualTo("+-")) {
+      configureProcesses(1, -1, false);
+    } else if (((TObjString*)tokens->At(0))->String().EqualTo("-+")) {
+      configureProcesses(-1, 1, false);
+    } else if (((TObjString*)tokens->At(0))->String().EqualTo("**")) {
+      configureProcesses(1, -1, true);
+    } else {
       AliFatal("Requested track polarities string not properly configured.ABORTING!!!");
       return kFALSE;
     }
@@ -1334,13 +1326,13 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
     fProcessCorrelations->Initialize();
     fProcessMCRecCorrelationsWithOptions->Initialize();
     fProcessTrueCorrelations->Initialize();
-    fProcessCorrelations->SetWeigths(fhWeightsTrack_1, fhWeightsTrack_2);
-    fProcessCorrelations->SetPtAvg(fhPtAverageTrack_1,fhPtAverageTrack_2);
-    fProcessCorrelations->SetEfficiencyCorrection(fhEffCorrTrack_1, fhEffCorrTrack_2);
-    fProcessCorrelations->SetPairEfficiencyCorrection(fhPairEfficiency_PP, fhPairEfficiency_PM, fhPairEfficiency_MM, fhPairEfficiency_MP);
-    fProcessCorrelations->SetSimultationPdfs(fPositiveTrackPdf, fNegativeTrackPdf);
+    fProcessCorrelations->SetWeigths(std::vector<const TH3*>{fhWeightsTrack_1, fhWeightsTrack_2});
+    fProcessCorrelations->SetPtAvg(std::vector<const TH2*>{fhPtAverageTrack_1, fhPtAverageTrack_2});
+    fProcessCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{fhEffCorrTrack_1, fhEffCorrTrack_2});
+    fProcessCorrelations->SetPairEfficiencyCorrection(std::vector<std::vector<const THn*>>{{fhPairEfficiency_PP, fhPairEfficiency_PM}, {fhPairEfficiency_MP, fhPairEfficiency_MM}});
+    fProcessCorrelations->SetSimultationPdfs(std::vector<const TObjArray*>{fPositiveTrackPdf, fNegativeTrackPdf});
     /* not clear how we will do it with MC rec with options */
-    fProcessTrueCorrelations->SetPtAvg(fhTruePtAverageTrack_1,fhTruePtAverageTrack_2);
+    fProcessTrueCorrelations->SetPtAvg(std::vector<const TH2*>{fhTruePtAverageTrack_1, fhTruePtAverageTrack_2});
   }
 
   /* now initialize the pair analysis instance */
