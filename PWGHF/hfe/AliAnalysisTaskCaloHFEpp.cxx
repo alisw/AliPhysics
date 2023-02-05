@@ -1645,7 +1645,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                             fIsoArray->Fill(isoarray);
                             if(IsoEnergy<0.05)fDCAxy_Pt_We->Fill(TrkPt,DCA[0]*Bsign*track->Charge());
                             //if(IsoEnergy < 0.05 && NtrackCone <3)iIsocut=kTRUE;
-                            if(IsoEnergy < fisoEcut && fisoTrcut <3)iIsocut=kTRUE;
+                            if(IsoEnergy < fisoEcut && NtrackCone < fisoTrcut )iIsocut=kTRUE;
                             if(iIsocut && TMath::Abs(pdgorg)==23 && TrkPt>30.0)
                               { 
 	                       AliAODMCParticle* fMCparticleWZ = (AliAODMCParticle*) fMCarray->At(ilabelM);
