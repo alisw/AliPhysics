@@ -114,6 +114,7 @@ AliAnalysisTaskSE(),
   fCentEvV0M(0.),
   fzVtx(0.),
   fMEAxisThresh(kFALSE),
+  fSoftPiCut(kTRUE),
   fKaonCorr(kFALSE),
   fSignLeft_LowPt(0),
   fSignRight_LowPt(0),
@@ -199,6 +200,7 @@ AliAnalysisTaskSELambdacCorrelations::AliAnalysisTaskSELambdacCorrelations(const
   fCentEvV0M(0.),
   fzVtx(0.),
   fMEAxisThresh(kFALSE),
+  fSoftPiCut(kTRUE),
   fKaonCorr(kFALSE),
   fSignLeft_LowPt(0),
   fSignRight_LowPt(0),
@@ -307,7 +309,7 @@ AliAnalysisTaskSELambdacCorrelations::AliAnalysisTaskSELambdacCorrelations(const
   fMultEvV0MEqual(source.fMultEvV0MEqual),
   fCentEvV0M(source.fCentEvV0M),
   fzVtx(source.fzVtx),
-//  fSoftPiCut(source.fSoftPiCut),
+  fSoftPiCut(source.fSoftPiCut),
   fMEAxisThresh(source.fMEAxisThresh),
   fKaonCorr(source.fKaonCorr),
   fSignLeft_LowPt(source.fSignLeft_LowPt),
@@ -446,6 +448,7 @@ AliAnalysisTaskSELambdacCorrelations& AliAnalysisTaskSELambdacCorrelations::oper
   fMultEvV0MEqual = orig.fMultEvV0MEqual;
   fCentEvV0M = orig.fCentEvV0M;
   fzVtx = orig.fzVtx;
+  fSoftPiCut = orig.fSoftPiCut;
   fMEAxisThresh = orig.fMEAxisThresh;
   fKaonCorr = orig.fKaonCorr;
   fSignLeft_LowPt = orig.fSignLeft_LowPt;
@@ -568,7 +571,9 @@ void AliAnalysisTaskSELambdacCorrelations::UserCreateOutputObjects()
   fCorrelatorTr->SetUseReco(fRecoTr);// sets (if MC analysis) wheter to analyze Reco or Kinem tracks
 
 
-
+  if(fMixing && fSoftPiCut) {
+    fCorrelatorTr->SetStoreInfoSoftPiME(kTRUE);
+  }
  
   Bool_t pooldefTr = fCorrelatorTr->DefineEventPool();// method that defines the properties ot the event mixing (zVtx and Multipl. bins)
 
@@ -1832,6 +1837,21 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
  
     //both for SE and for ME
     
+    //D* feeddown pions rejection histos
+    namePlot = "hSigmacPionsVsDmass_Bin"; namePlot+=i;
+    TH2F *hDstarPions = new TH2F(namePlot.Data(), "Tracks rejected for D* inv.mass cut vs D inv mass; # Tracks",2,0.,2.,150,1.5848,2.1848);
+    hDstarPions->GetXaxis()->SetBinLabel(1,"Not rejected");
+    hDstarPions->GetXaxis()->SetBinLabel(2,"Rejected");
+    hDstarPions->SetMinimum(0);
+    fOutputStudy->Add(hDstarPions); 
+
+    namePlot = "hSigmacPionsVsdeltaPhi_Bin"; namePlot+=i;
+    TH2F *hDstarPions2 = new TH2F(namePlot.Data(), "Tracks rejected for D* inv.mass cut vs deltaPhi; # Tracks",2,0.,2.,64,-TMath::Pi()/2.,3.*TMath::Pi()/2.);
+    hDstarPions2->GetXaxis()->SetBinLabel(1,"Not rejected");
+    hDstarPions2->GetXaxis()->SetBinLabel(2,"Rejected");
+    hDstarPions2->SetMinimum(0);
+    fOutputStudy->Add(hDstarPions2); 
+    
     if(!fFillTrees) {
       //ME filling control plots
       namePlot="hEvtsPerPool_"; namePlot+=i;
@@ -2272,8 +2292,34 @@ mLambdacbar = d->InvMassLcpiKp();
       if(!effTr) ((TH1F*)fOutputStudy->FindObject("hZeroEff"))->Fill(3.5); 
         else ((TH1F*)fOutputStudy->FindObject("hZeroEff"))->Fill(2.5);
 
+	if(!fMixing) {
+        if(fSoftPiCut && !track->CheckSoftPi()) { //removal of soft pions
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdac);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdacbar);
+          ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(1.,fCorrelatorTr->GetDeltaPhi());
+    	  continue; //in SE events, just reject the soft pion
+        } else { //not a soft pion
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdac);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdacbar);
+          ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(0.,fCorrelatorTr->GetDeltaPhi());
+        }
+      }
+      if(fMixing) { 
+        if(fSoftPiCut && !fCutsTracks->InvMassSigmacRejection(d,track,fIsSelectedCandidate)) { //removal of soft pions
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdac);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdacbar);
+          ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(1.,fCorrelatorTr->GetDeltaPhi());
+          if(fMixing) FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,1,1./eff); //in ME events, fill the THnSparse under the softpi hypothesis
+    	  continue; 
+        } else { //not a soft pion
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdac);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdacbar);
+          ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(0.,fCorrelatorTr->GetDeltaPhi());
+        }
+      } 
 
-      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,1./eff); //fills for charged tracks
+
+      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,0,1./eff); //fills for charged tracks
 
       if(!fMixing) N_Charg++;
 
@@ -2411,7 +2457,7 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
       if (IsDDaughter(d,trkMC,mcArray)) continue;
    //   if (fSoftPiCut && IsSoftPion_MCKine(d,trkMC,mcArray)) continue; //remove soft pions (if requestes, e.g. for templates)
 
-      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack); //fills for charged tracks
+      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,0); //fills for charged tracks
 
       //retrieving leading info...
       if(track->Pt() > highPt) {
@@ -2455,7 +2501,7 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray, Double_t mInv[], Int_t origLambdac, Int_t PdgLambdac, AliReducedParticle* track, Int_t ptbin, Int_t type, Double_t wg) {
+void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray, Double_t mInv[], Int_t origLambdac, Int_t PdgLambdac, AliReducedParticle* track, Int_t ptbin, Int_t type, Int_t softpiME, Double_t wg) {
   //
   //fills the THnSparse for correlations, calculating the variables
   //
@@ -2624,7 +2670,11 @@ void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray
       fillSpPhiLambdacbar[3] = ptTrack;
     }
    
-
+    if(softpiME==1) { //it's a softPi in the ME analysis! Fill it in the dedicated slice of ME THnSparse
+          fillSpPhiLambdac[4] = 1;
+          fillSpPhiLambdacbar[4] = 1;
+    	}
+    	
     Bool_t allowLambdac = 0;
     Bool_t allowLambdacbar = 0;
     if(fSpeed==kOneBinSB) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB
