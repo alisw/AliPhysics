@@ -75,13 +75,10 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fGFWSelection(NULL),
     fGFWSelection15o(NULL),
     fAOD(0),
-    fitssatrackcuts(0),
     fEtaCut(0.8),
     fVtxCut(10.0),
-    fVtxCutDefault(10.0),
     fMinPt(0.2),
     fMaxPt(3.0),
-    fSample(1),
     fTrigger(0),
     fAliTrigger(0),
     fNUE(0),
@@ -92,11 +89,10 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fPeriod("LHC15o"),
     fCurrSystFlag(0),
     fSpringMode(false),
-    fLowMultiplicityMode(false),
     fAddTPCPileupCuts(false),
     fESDvsTPConlyLinearCut(15000.),
     fUseCorrectedNTracks(false),
-    fUseFlippedEta(false),
+	  fCentralityCut(100),
     fUseNarrowBin(false),
     fExtremeEfficiency(0),
     fTPCchi2perCluster(4.0),
@@ -107,12 +103,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fListOfObjects(0),
     fListOfProfile(0),
 
-    fMultTOFLowCut(0),
-    fMultTOFHighCut(0),
-    fMultCentLowCut(0),
 
-    fTrackEfficiency(0),
-    hTrackEfficiency(0),
     hTrackEfficiencyRun(0),
 
     fFlowRunByRunWeights(false),
@@ -121,41 +112,18 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fFlowWeightsList(nullptr),
     fFlowPtWeightsList(nullptr),
     fFlowFeeddownList(nullptr),
-    fFlowPtWeightsFile(nullptr),
 
     fPhiWeight(0),
-    fPhiWeightFile(0),
-    fPhiWeightPlus(0),
-    fPhiWeightMinus(0),
     fWeightsSystematics(0),
     fPtWeightsSystematics(0),
-    hPhiWeight(0),
     hPhiWeightRun(0),
-    hPhiWeight1D(0),
 
     hEventCount(0),
     hMult(0),
     fVtxAfterCuts(0),
-	fCentralityCut(100),
     fCentralityDis(0),
     fV0CentralityDis(0),
-    hMultV0vsNtrksAfterCuts(0),
-    hMultSPDvsNtrksAfterCuts(0),
-    hNtrksVSmultPercentile(0),
-    fCentralityV0MCL1(0),
-    fCentralityV0MCL0(0),
-    fCentralityCL0CL1(0),
-    fMultvsCentr(0),
-    fMult128vsCentr(0),
-    fMultTPCvsTOF(0),
-    fMultTPCvsESD(0),
-
-    hSPDClsVsTrk(0),
-    hV0C012vsTkl(0),
-    hV0C012vsV0C3(0),
-    hV0MOnVsOf(0),
-    hSPDOnVsOf(0),
-
+    
     fPhiDis1D(0),
     fPhiDis(0),
     fEtaDis(0),
@@ -195,13 +163,10 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fGFWSelection(NULL),
   fGFWSelection15o(NULL),
   fAOD(0),
-  fitssatrackcuts(0),
   fEtaCut(0.8),
   fVtxCut(10.0),
-  fVtxCutDefault(10.0),
   fMinPt(0.2),
   fMaxPt(3.0),
-  fSample(1),
   fTrigger(0),
   fAliTrigger(0),
   fNUE(_fNUE),
@@ -212,11 +177,10 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fPeriod(_fPeriod),
   fCurrSystFlag(0),
   fSpringMode(false),
-  fLowMultiplicityMode(false),
   fAddTPCPileupCuts(false),
   fESDvsTPConlyLinearCut(15000.),
   fUseCorrectedNTracks(false),
-  fUseFlippedEta(false),
+	fCentralityCut(100),
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
   fTPCchi2perCluster(4.0),
@@ -227,12 +191,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fListOfObjects(0),
   fListOfProfile(0),
 
-  fMultTOFLowCut(0),
-  fMultTOFHighCut(0),
-  fMultCentLowCut(0),
 
-  fTrackEfficiency(0),
-  hTrackEfficiency(0),
   hTrackEfficiencyRun(0),
 
   fFlowRunByRunWeights(false),
@@ -241,40 +200,17 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fFlowWeightsList(nullptr),
   fFlowPtWeightsList(nullptr),
   fFlowFeeddownList(nullptr),
-  fFlowPtWeightsFile(nullptr),
 
   fPhiWeight(0),
-  fPhiWeightFile(0),
-  fPhiWeightPlus(0),
-  fPhiWeightMinus(0),
   fWeightsSystematics(0),
   fPtWeightsSystematics(0),
-  hPhiWeight(0),
   hPhiWeightRun(0),
-  hPhiWeight1D(0),
   hEventCount(0),
   hMult(0),
   fVtxAfterCuts(0),
-	fCentralityCut(100),
   fCentralityDis(0),
   fV0CentralityDis(0),
-  hMultV0vsNtrksAfterCuts(0),
-  hMultSPDvsNtrksAfterCuts(0),
-  hNtrksVSmultPercentile(0),
-  fCentralityV0MCL1(0),
-  fCentralityV0MCL0(0),
-  fCentralityCL0CL1(0),
-  fMultvsCentr(0),
-  fMult128vsCentr(0),
-  fMultTPCvsTOF(0),
-  fMultTPCvsESD(0),
-
-  hSPDClsVsTrk(0),
-  hV0C012vsTkl(0),
-  hV0C012vsV0C3(0),
-  hV0MOnVsOf(0),
-  hSPDOnVsOf(0),
-
+  
   fPhiDis1D(0),
   fPhiDis(0),
   fEtaDis(0),
@@ -344,13 +280,10 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fGFWSelection(NULL),
   fGFWSelection15o(NULL),
   fAOD(0),
-  fitssatrackcuts(0),
   fEtaCut(0.8),
   fVtxCut(10.0),
-  fVtxCutDefault(10.0),
   fMinPt(0.2),
   fMaxPt(3.0),
-  fSample(1),
   fTrigger(0),
   fAliTrigger(0),
   fNUE(0),
@@ -360,11 +293,10 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fPeriod("LHC15o"),
   fCurrSystFlag(0),
   fSpringMode(false),
-  fLowMultiplicityMode(false),
   fAddTPCPileupCuts(false),
   fESDvsTPConlyLinearCut(15000.),
   fUseCorrectedNTracks(false),
-  fUseFlippedEta(false),
+	fCentralityCut(100),
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
   fTPCchi2perCluster(4.0),
@@ -375,12 +307,6 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fListOfObjects(0),
   fListOfProfile(0),
 
-  fMultTOFLowCut(0),
-  fMultTOFHighCut(0),
-  fMultCentLowCut(0),
-
-  fTrackEfficiency(0),
-  hTrackEfficiency(0),
   hTrackEfficiencyRun(0),
 
   fFlowRunByRunWeights(false),
@@ -389,42 +315,20 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fFlowWeightsList(nullptr),
   fFlowPtWeightsList(nullptr),
   fFlowFeeddownList(nullptr),
-  fFlowPtWeightsFile(nullptr),
 
   fPhiWeight(0),
-  fPhiWeightFile(0),
-  fPhiWeightPlus(0),
-  fPhiWeightMinus(0),
 
   fWeightsSystematics(0),
   fPtWeightsSystematics(0),
 
-  hPhiWeight(0),
   hPhiWeightRun(0),
-  hPhiWeight1D(0),
 
   hEventCount(0),
   hMult(0),
   fVtxAfterCuts(0),
-	fCentralityCut(100),
   fCentralityDis(0),
   fV0CentralityDis(0),
-  hMultV0vsNtrksAfterCuts(0),
-  hMultSPDvsNtrksAfterCuts(0),
-  hNtrksVSmultPercentile(0),
-  fCentralityV0MCL1(0),
-  fCentralityV0MCL0(0),
-  fCentralityCL0CL1(0),
-  fMultvsCentr(0),
-  fMult128vsCentr(0),
-  fMultTPCvsTOF(0),
-  fMultTPCvsESD(0),
-
-  hSPDClsVsTrk(0),
-  hV0C012vsTkl(0),
-  hV0C012vsV0C3(0),
-  hV0MOnVsOf(0),
-  hSPDOnVsOf(0),
+  
 
   fPhiDis1D(0),
   fPhiDis(0),
@@ -647,15 +551,6 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 
   fV0CentralityDisNarrow = new TH1F("fV0CentralityDisNarrow", "centrality V0/<V0> distribution; centrality; Counts", 1000, 0, 10);
   fListOfObjects->Add(fV0CentralityDisNarrow);
-
-  hMultV0vsNtrksAfterCuts = new TH2F("hMultV0vsNtrksAfterCuts","V0 mult vs. number of tracks; V0 mult; number of tracks", 100, 0, 10, 100, 0, 3000);
-  fListOfObjects->Add(hMultV0vsNtrksAfterCuts);
-
-  hMultSPDvsNtrksAfterCuts = new TH2F("hMultSPDvsNtrksAfterCuts","SPD mult vs. number of tracks; SPD mult; number of tracks", 100, 0, 10, 100, 0, 3000);
-  fListOfObjects->Add(hMultSPDvsNtrksAfterCuts);
-
-  hNtrksVSmultPercentile = new TH2F("hNtrksVSmultPercentile", ";Multiplicity percentile;ITSsa tracks", 100, 0, 100, 100, 0, 3000);
-  fListOfObjects->Add(hNtrksVSmultPercentile);
 
   fPhiDis1DBefore = new TH1D("hPhiDisBefore", "phi distribution before the weight correction", 60, 0, 2*3.1415926);
   fListOfObjects->Add(fPhiDis1DBefore);
@@ -1005,7 +900,6 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
   const int nAODTracks = aod->GetNumberOfTracks();
 
   // Init the number of tracks
-  double NtrksBefore = 0;
   NtrksAfter = 0;
   NtrksAfterGap0M = 0;
   NtrksAfterGap0P = 0;
@@ -1071,8 +965,6 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
   double QsinSubRight[20][20] = {0};
 
 
-
-  // int run = GetRunPart(fInputEvent->GetRunNumber());
   double runNumber = fInputEvent->GetRunNumber();
 
   //..LOOP OVER TRACKS........
@@ -1122,7 +1014,6 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     } else {
       if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
     }
-    NtrksBefore += weightPt;
 
     fPhiDis1DBefore->Fill(aodTrk->Phi());
     fPtDis->Fill(aodTrk->Pt());
@@ -1288,9 +1179,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
 
     if (fuQThreeSub) {
       //..3-subevent method
-      if((aodTrk->Eta() < -fEtaGap3Sub && !fUseFlippedEta)
-		      || (aodTrk->Eta() > fEtaGap3Sub && fUseFlippedEta)
-		      ) {//..left part
+      if(aodTrk->Eta() < -fEtaGap3Sub) {//..left part
         NtrksAfter3subL += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1308,9 +1197,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
           }
         }
       }
-      if((aodTrk->Eta() > fEtaGap3Sub && !fUseFlippedEta)
-		     || (aodTrk->Eta() < -fEtaGap3Sub && fUseFlippedEta)
-		      ) {//..right part
+      if(aodTrk->Eta() > fEtaGap3Sub) {//..right part
         NtrksAfter3subR += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1387,7 +1274,6 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
   // AliAODMCParticle *trk = (AliAODMCParticle*) farray->At(TMath::Abs(label));
 
   // Init the number of tracks
-  double NtrksBefore = 0;
   NtrksAfter = 0;
   NtrksAfterGap0M = 0;
   NtrksAfterGap0P = 0;
@@ -1455,7 +1341,6 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
 
 
 
-  // int run = GetRunPart(fInputEvent->GetRunNumber());
   // double runNumber = fInputEvent->GetRunNumber();
   // Weight is not needed
 
@@ -1477,7 +1362,6 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
     //..get phi-weight for NUA correction
     double weight = 1;
     double weightPt = 1;
-    NtrksBefore += weightPt;
 
     //..calculate Q-vectors
     //..no eta gap
@@ -1638,9 +1522,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
 
     if (fuQThreeSub) {
       //..3-subevent method
-      if((track->Eta() < -fEtaGap3Sub && !fUseFlippedEta)
-		      || (track->Eta() > fEtaGap3Sub && fUseFlippedEta)
-		      ) {//..left part
+      if(track->Eta() < -fEtaGap3Sub) {//..left part
         NtrksAfter3subL += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1658,9 +1540,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
           }
         }
       }
-      if((track->Eta() > fEtaGap3Sub && !fUseFlippedEta)
-		     || (track->Eta() < -fEtaGap3Sub && fUseFlippedEta)
-		      ) {//..right part
+      if(track->Eta() > fEtaGap3Sub) {//..right part
         NtrksAfter3subR += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1717,212 +1597,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
 //____________________________________________________________________
 //	END OF MAIN PROGRAM
 //____________________________________________________________________
-Bool_t AliAnalysisTaskNonlinearFlow::IsGoodPSEvent(AliVEvent* event)
-{
 
-  IsSPDClusterVsTrackletBG(event, true);
-  IsV0C012vsTklBG(event, true);
-  IsV0Casym(event, true);
-  IsV0MOnVsOfPileup(event, true);
-  IsSPDOnVsOfPileup(event, true);
-
-  bool is = true;
-
-  if(IsSPDClusterVsTrackletBG(event, false)) is = false;
-  if(IsV0C012vsTklBG(event, false)) is = false;
-  if(IsV0Casym(event, false)) is = false;
-  if(IsV0MOnVsOfPileup(event, false)) is = false;
-  if(IsSPDOnVsOfPileup(event, false)) is = false;
-  if(IsV0PFPileup(event)) is = false;
-
-  return is;
-
-}
-//-----------------------------------------------------------------------------
-Bool_t AliAnalysisTaskNonlinearFlow::IsSPDClusterVsTrackletBG(const AliVEvent* event, bool fillHist){
-  // rejects BG based on SPD tracklets vs. clusters correlation
-  // returns true if the event is BG
-  const AliVMultiplicity* mult = event->GetMultiplicity();
-
-  Int_t nTkl = mult->GetNumberOfTracklets();
-  Int_t nCls = event->GetNumberOfITSClusters(0) + event->GetNumberOfITSClusters(1);
-
-  if(fillHist == true) hSPDClsVsTrk->Fill(nTkl, nCls);
-
-  return nCls > 65 + nTkl*4;
-}
-//-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskNonlinearFlow::IsV0C012vsTklBG(const AliVEvent* event, bool fillHist){
-  // rejects BG based on V0C012 vs tracklet correlation
-  // returns true if the event is BG
-  const AliVMultiplicity* mult = event->GetMultiplicity();
-  AliVVZERO* vzero = event->GetVZEROData();
-
-  Float_t nTkl       = mult->GetNumberOfTracklets();
-  Float_t multV0C012 = vzero->GetMTotV0C() - vzero->GetMRingV0C(3);
-
-  if(fillHist == true) hV0C012vsTkl->Fill(nTkl, multV0C012);
-
-  return nTkl < 6 && multV0C012 > 150 + nTkl*20;
-}
-//-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskNonlinearFlow::IsV0Casym(const AliVEvent* event, bool fillHist){
-  // rehect BG based on V0C012 vs. V0C3 mult. correlation
-  // returns true if the event is BG
-  AliVVZERO* vzero = event->GetVZEROData();
-
-  Float_t multV0C012 = vzero->GetMRingV0C(0)+vzero->GetMRingV0C(1)+vzero->GetMRingV0C(2);
-  Float_t multV0C3   = vzero->GetMRingV0C(3);
-
-  if(fillHist == true) hV0C012vsV0C3->Fill(multV0C012, multV0C3);
-
-  return (multV0C3 < -25 + 0.15*multV0C012);
-}
-//-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskNonlinearFlow::IsV0MOnVsOfPileup(const AliVEvent* event, bool fillHist){
-  // rejects pileup based on V0M online vs offline correlation
-  // return true if the event is pileup
-  AliVVZERO* vzero = event->GetVZEROData();
-
-  // V0A0 excluded from online V0A charge sum => excluding also from offline sum for consistency
-  Float_t on = vzero->GetTriggerChargeA() + vzero->GetTriggerChargeC();
-  Float_t of = vzero->GetMTotV0A() - vzero->GetMRingV0A(0) + vzero->GetMTotV0C();
-
-  if(fillHist == true) hV0MOnVsOf->Fill(of, on);
-
-  return (on < -145 + 7.2*of);
-}
-//-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskNonlinearFlow::IsSPDOnVsOfPileup(const AliVEvent* event, bool fillHist){
-  // rejects pileup based on SPD online vs. offline correlation
-  // returns true if the event is pileup
-  AliVMultiplicity* mult = event->GetMultiplicity();
-  TBits onMap = mult->GetFastOrFiredChips();
-  TBits ofMap = mult->GetFiredChipMap();
-
-  Int_t on = onMap.CountBits(0);
-  Int_t of = ofMap.CountBits(0);
-
-  if(fillHist == true) hSPDOnVsOf->Fill(of, on);
-
-  return (on < -4.16 + 0.84*of);
-}
-//-------------------------------------------------------------------------------------------------
-Bool_t AliAnalysisTaskNonlinearFlow::IsV0PFPileup(const AliVEvent* event){
-  // return true if the event is pileup
-
-  int fVIRBBAflags = 10;
-  int fVIRBBCflags = 10;
-  int fVIRBGAflags = 33;
-  int fVIRBGCflags = 33;
-
-  AliVVZERO* vzero = event->GetVZEROData();
-
-  Bool_t vir[21] = {0};
-  UChar_t bcMod4 = event->GetBunchCrossNumber()%4;
-
-  for (Int_t bc=0;bc<=20;bc++) {
-    UChar_t nBBA=0;
-    UChar_t nBBC=0;
-    UChar_t nBGA=0;
-    UChar_t nBGC=0;
-    if (fVIRBBAflags<33) for (Int_t i=0;i<32;i++) nBBA+=vzero->GetPFBBFlag(i+32,bc);
-    if (fVIRBBCflags<33) for (Int_t i=0;i<32;i++) nBBC+=vzero->GetPFBBFlag(i   ,bc);
-    if (fVIRBGAflags<33) for (Int_t i=0;i<32;i++) nBGA+=vzero->GetPFBGFlag(i+32,bc);
-    if (fVIRBGCflags<33) for (Int_t i=0;i<32;i++) nBGC+=vzero->GetPFBGFlag(i   ,bc);
-    vir[bc] |= nBBA>=fVIRBBAflags;
-    vir[bc] |= nBBC>=fVIRBBCflags;
-    vir[bc] |= nBGA>=fVIRBGAflags;
-    vir[bc] |= nBGC>=fVIRBGCflags;
-  }
-
-  // clock index is counting from future to past
-  Int_t bcMin = 10 - 7 + bcMod4;
-  Int_t bcMax = 10 + 4 + bcMod4;
-  for (Int_t bc=bcMin;bc<=bcMax;bc++) {
-    if (bc==10) continue; // skip current bc
-    if (bc < 0) continue;
-    if (bc >20) continue;
-    if (vir[bc]) return kTRUE;
-  }
-
-  return kFALSE;
-}
-//____________________________________________________________________
-int AliAnalysisTaskNonlinearFlow::GetRunPart(int run)
-{
-
-  int fRun = 0;
-
-  //..LHC15i, part 1
-  if(run == 236137 || run == 236138 || run == 236150 || run == 236151 || run == 236153
-      || run == 236158 || run == 236159 || run == 236163 || run == 236164 || run == 236203
-      || run == 236204 || run == 236222 || run == 236227 || run == 236234 || run == 236238
-      || run == 236240 || run == 236242 || run == 236244 || run == 236246 || run == 236248)
-    fRun = 1;
-  //..LHC15i, part2
-  if(run == 236281 || run == 236284 || run == 236285 || run == 236331 || run == 236334
-      || run == 236337 || run == 236348 || run == 236349 || run == 236352 || run == 236353
-      || run == 236354 || run == 236356 || run == 236357 || run == 236359 || run == 236360
-      || run == 236386 || run == 236389 || run == 236393 || run == 236395 || run == 236397
-      || run == 236441 || run == 236443 || run == 236444 || run == 236446 || run == 236453
-      || run == 236459 || run == 236462 || run == 236541 || run == 236554 || run == 236556
-      || run == 236558 || run == 236562 || run == 236563 || run == 236564 || run == 236565
-      || run == 236569)
-    fRun = 2;
-
-  //..LHC15j, part1
-  if(run == 238091 || run == 238097 || run == 238129 || run == 238131 || run == 238132
-      || run == 238133 || run == 238136 || run == 238139 || run == 238140 || run == 238142
-      || run == 238144 || run == 238145 || run == 238147 || run == 238148 || run == 238159
-      || run == 238160 || run == 238164 || run == 238170 || run == 238570)
-    fRun = 3;
-  //..LHC15j, part2
-  if(run == 237029 || run == 237406 || run == 237408 || run == 237409 || run == 237507
-      || run == 237512 || run == 237515 || run == 237645 || run == 237670 || run == 237671
-      || run == 237675 || run == 237676 || run == 237678 || run == 237681 || run == 237684
-      || run == 237691 || run == 237698 || run == 237699 || run == 237705 || run == 237706
-      || run == 237707 || run == 237708 || run == 237710 || run == 237711 || run == 237713
-      || run == 237765 || run == 237768 || run == 237777 || run == 237779 || run == 237780
-      || run == 237782 || run == 237787 || run == 237789 || run == 237790 || run == 237791
-      || run == 237793 || run == 237795 || run == 237796 || run == 237806 || run == 237842
-      || run == 237844 || run == 237845 || run == 237847 || run == 237945 || run == 237948
-      || run == 237969 || run == 237978 || run == 237982 || run == 237983 || run == 238073
-      || run == 238176 || run == 238179 || run == 238184 || run == 238185 || run == 238187
-      || run == 238395 || run == 238451 || run == 238454 || run == 238455 || run == 238456
-      || run == 238457 || run == 238458 || run == 238459 || run == 238460 || run == 238472
-      || run == 238474 || run == 238604 || run == 238606 || run == 238607 || run == 238610
-      || run == 238614 || run == 238621)
-    fRun = 4;
-
-  //..LHC15l, part1
-  if(run == 241257 || run == 241261 || run == 241263 || run == 241267 || run == 241268
-      || run == 241269 || run == 241281 || run == 241288 || run == 241295 || run == 241296)
-    fRun = 5;
-  //..LHC15l, part2
-  if(run == 240069) fRun = 6;
-  //..LHC15l, part3
-  if(run == 239319 || run == 239324 || run == 239518 || run == 239519 || run == 240183
-      || run == 240194 || run == 240196 || run == 240201 || run == 240204 || run == 240212
-      || run == 240220 || run == 240241 || run == 240250 || run == 240256 || run == 240262
-      || run == 240263 || run == 240265 || run == 240271 || run == 240274 || run == 240293
-      || run == 240303 || run == 240312 || run == 240376 || run == 240380 || run == 240381
-      || run == 240382 || run == 240385 || run == 240392 || run == 240394 || run == 240404
-      || run == 240411 || run == 240443 || run == 240444 || run == 240447 || run == 240450
-      || run == 240452 || run == 240610 || run == 240612 || run == 240845 || run == 240854
-      || run == 240860 || run == 240864 || run == 240872 || run == 240874 || run == 240875
-      || run == 240880 || run == 241001 || run == 241010 || run == 241014 || run == 241021
-      || run == 241032 || run == 241043 || run == 241047 || run == 241050 || run == 241054
-      || run == 241055 || run == 241056 || run == 241057 || run == 241062 || run == 241069
-      || run == 241075 || run == 241141 || run == 241144 || run == 241354 || run == 241360
-      || run == 241361 || run == 241393 || run == 241396 || run == 241407 || run == 241412)
-    fRun = 7;
-
-
-  return fRun;
-
-}
-//____________________________________________________________________
 double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
   double binPt = fPtWeightsSystematics->GetXaxis()->FindBin(pt);
@@ -1967,17 +1642,12 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
 //____________________________________________________________________
 double AliAnalysisTaskNonlinearFlow::GetWeight(double phi, double eta, double pt, int fRun, bool fPlus, double vz, double runNumber) {
   TList* weights_list = dynamic_cast<TList*>(fPhiWeight);
-  // cout << "weights_list" << weights_list << endl;
-  // weights_list->ls();
 
   TList* averaged_list = dynamic_cast<TList*>(weights_list->FindObject("averaged"));
-  // cout << "averaged_list" << averaged_list << endl;
   TH2D* hPhiWeightRun = dynamic_cast<TH2D*>(averaged_list->FindObject("Charged"));
-  // cout << "hist_list" << hPhiWeightRun << endl;
 
   double weight = hPhiWeightRun->GetBinContent(hPhiWeightRun->GetXaxis()->FindBin(phi),
       hPhiWeightRun->GetYaxis()->FindBin(eta));
-  // , hPhiWeightRun->GetZaxis()->FindBin(vz));
   return weight;
 }
 
