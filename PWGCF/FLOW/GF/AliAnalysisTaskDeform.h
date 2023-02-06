@@ -183,8 +183,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   AliPtContainer  **fPtCont;
   TList *fCovList;
   TList *fV2dPtList;
-  static const int Ncovpfs = 16;
   AliProfileBS **fCovariance; //!
+  AliProfileBS **fCovariancePID; //!
   AliProfileBS **fCovariancePowerMpt; //!
   AliProfileBS **fCovarianceCM; //!
   AliProfileBS **fMpt; //!
@@ -208,7 +208,6 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH1D **fEfficiencies; //TH1Ds for picking up efficiencies
   Double_t fPseudoEfficiency; //Pseudo efficiency to reject tracks. Default value set to 2, only used when the value is <1
   TH3D *fPtvsCentvsPower; //!
-  TH1D *fPtDist; //!
   TH3D *fDCAxyVsPt_noChi2;
   TH2D *fWithinDCAvsPt_withChi2;
   TH3D *fDCAxyVsPt_withChi2;
