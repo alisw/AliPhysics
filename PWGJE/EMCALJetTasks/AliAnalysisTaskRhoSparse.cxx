@@ -20,7 +20,7 @@
 
 ClassImp(AliAnalysisTaskRhoSparse)
 
-AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse() : 
+AliAnalysisTaskRhoSparse::AliAnalysisTaskRhoSparse() :
   AliAnalysisTaskRhoBase("AliAnalysisTaskRhoSparse"),
   fNExclLeadJets(0),
   fExcludeOverlaps(0),
@@ -76,7 +76,7 @@ Bool_t AliAnalysisTaskRhoSparse::IsJetSignal(AliEmcalJet* jet)
   }
 }
 
-Bool_t AliAnalysisTaskRhoSparse::Run() 
+Bool_t AliAnalysisTaskRhoSparse::Run()
 {
 
   fOutRho->SetVal(0);
@@ -100,7 +100,7 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
       if (!jet) {
         AliError(Form("%s: Could not receive jet %d", GetName(), ij));
         continue;
-      } 
+      }
 
       if (!AcceptJet(jet))
         continue;
@@ -135,7 +135,7 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
     if (!jet) {
       AliError(Form("%s: Could not receive jet %d", GetName(), iJets));
       continue;
-    } 
+    }
 
     // Take into account the area of real jets (no pure ghost jets)
     // and also the area of later excluded jets.
@@ -238,7 +238,7 @@ Bool_t AliAnalysisTaskRhoSparse::Run()
   }
 
   return kTRUE;
-} 
+}
 
 AliAnalysisTaskRhoSparse* AliAnalysisTaskRhoSparse::AddTaskRhoSparse(
     const char    *nTracks,
@@ -337,11 +337,11 @@ AliAnalysisTaskRhoSparse* AliAnalysisTaskRhoSparse::AddTaskRhoSparse(
 
   AliTrackContainer* trackCont;
   AliParticleContainer* partCont;
-  if (trackName == "mcparticles") {
+  if (trackName.Contains("mcparticles")) {
     AliMCParticleContainer* mcpartCont = rhotask->AddMCParticleContainer(trackName);
     mcpartCont->SelectPhysicalPrimaries(kTRUE);
   }
-  else if (trackName == "tracks" || trackName == "Tracks") {
+  else if (trackName.Contains("tracks") || trackName.Contains("Tracks")) {
     trackCont = rhotask->AddTrackContainer(trackName);
   }
   else if (!trackName.IsNull()) {
@@ -397,4 +397,3 @@ AliAnalysisTaskRhoSparse* AliAnalysisTaskRhoSparse::AddTaskRhoSparse(
 
   return rhotask;
 }
-

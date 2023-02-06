@@ -250,11 +250,11 @@ AliAnalysisTaskRhoPerpCone *AliAnalysisTaskRhoPerpCone::AddTaskRhoPerpCone(TStri
 
     AliTrackContainer *trackCont;
     AliParticleContainer *partCont;
-    if (trackName == "mcparticles")
+    if (trackName.Contains("mcparticles"))
     {
         partCont = rhotask->AddParticleContainer(trackName);
     }
-    else if (trackName == "tracks" || trackName == "Tracks")
+    else if (trackName.Contains("tracks") || trackName.Contains("Tracks"))
     {
         trackCont = rhotask->AddTrackContainer(trackName);
         partCont = rhotask->GetParticleContainer(0);
