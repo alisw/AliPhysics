@@ -198,8 +198,8 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
 
     if (strcmp(configNames[i].Data(), "chi2def") == 0) {    
       fJCatalyst[i]->SetChi2Cuts(0.0, 4.0);
-    } else if (strcmp(configNames[i].Data(), "chi2tight") == 0) {
-      fJCatalyst[i]->SetChi2Cuts(0.0, 2.5);
+    } else if (strcmp(configNames[i].Data(), "chi2tight23") == 0) {
+      fJCatalyst[i]->SetChi2Cuts(0.1, 2.3);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetChi2Cuts(0.1, 4.0);
     }
