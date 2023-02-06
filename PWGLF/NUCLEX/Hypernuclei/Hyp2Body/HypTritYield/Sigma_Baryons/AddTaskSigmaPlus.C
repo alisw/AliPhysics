@@ -35,7 +35,7 @@ AliAnalysisTaskSigmaPlus* AddTaskSigmaPlus(TString name = "SigmaPlus")
     // Connect the input data to the task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // Connect the output containers to the task
-    mgr->ConnectOutput(task,1,mgr->CreateContainer("Histogram_List", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1 ,mgr->CreateContainer("Histogram_List", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,2 ,mgr->CreateContainer("Sigma_Cand_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,3 ,mgr->CreateContainer("Sigma_Pair_Tree_SE", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,4 ,mgr->CreateContainer("Sigma_Pair_Tree_ME", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
@@ -44,6 +44,7 @@ AliAnalysisTaskSigmaPlus* AddTaskSigmaPlus(TString name = "SigmaPlus")
     mgr->ConnectOutput(task,7 ,mgr->CreateContainer("Sigma_Pair_Tree_PHOS_SE", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,8 ,mgr->CreateContainer("Sigma_Pair_Tree_PHOS_ME", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     mgr->ConnectOutput(task,9 ,mgr->CreateContainer("Sigma_PHOS_ME_Bkg_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,10,mgr->CreateContainer("Proton_Tree", TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     // Finally, a pointer to the created task is returned
     return task;
 }

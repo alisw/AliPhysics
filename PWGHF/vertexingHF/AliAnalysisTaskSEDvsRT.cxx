@@ -469,7 +469,13 @@ void AliAnalysisTaskSEDvsRT::UserCreateOutputObjects()
    fListQAhists->SetOwner();
    fListQAhists->SetName("QAhists");
 
-   fGlobalRT = new TH1F("fGlobalRT","RT for all events;R_{T};Entries",100,0,10);
+   const Int_t nRTBinsforDouble = 100;
+   Double_t RTEdgeforDouble[nRTBinsforDouble + 1] = {0};
+   for(Int_t i = 0; i <= nRTBinsforDouble; i++){
+   RTEdgeforDouble[i] = i/fAveMultiInTrans-1/(2*fAveMultiInTrans);
+   }
+
+   fGlobalRT = new TH1F("fGlobalRT","RT for all events;R_{T};Entries",nRTBinsforDouble,RTEdgeforDouble);
    fHistPtLead = new TH1F("fHistPtLead","pT distribution of leading track;p_{T} (GeV/c);Entries",100,0,100);
    fRTvsZvtxvsMult= new TH3F("fRTvsZvtxvsMult","RT vs Zvtx vs mult;R_{T};Z_{vtx} (cm);N_{trk}",100,0,10,200,-10,10,200,0,200);
 
