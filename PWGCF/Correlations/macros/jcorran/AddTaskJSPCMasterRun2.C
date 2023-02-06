@@ -35,14 +35,14 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
                                                           "NTPC80", "NTPC90", "NTPC100",
                                                           "chi2def", "chi2tight23", "DCAz1", "DCAz05",
                                                           "nqq", "pqq", "subA"}; //for reference, these variations are allowed
-    
+
   int PassedVariations = 0;
   std::vector<TString> configNames;
 
   do {
     std::string subs;
     iss >> subs;
-    
+
     // Check if valid variation
     bool exists = std::find(std::begin(PossibleVariations), std::end(PossibleVariations), subs) != std::end(PossibleVariations); 
     if(exists) {
@@ -88,7 +88,11 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
     case 0:   // 0: Coarse binning, minPt = 0.2 for all.
       MAPfileNames[i] = Form("%sPhiWeights_LHC%s_Error_pt02_s_%s.root",
         MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
-      break;
+	if (strcmp(configNames[i].Data(),"default")==0) {
+		MAPfileNames[i] = Form("%sPhiWeights_LHC%s_Error_pt02_s_global.root",
+        	MAPdirName.Data(), sCorrection[period].Data());
+	}
+     break;
     case 1:   // 1: Coarse binning, tuned minPt map.
       MAPfileNames[i] = Form("%sPhiWeights_LHC%s_Error_pt%02d_s_%s.root",
         MAPdirName.Data(), sCorrection[period].Data(), Int_t(ptMin * 10), configNames[i].Data());
