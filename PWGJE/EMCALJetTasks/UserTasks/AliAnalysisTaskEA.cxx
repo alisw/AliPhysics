@@ -196,6 +196,9 @@ fhNjetsPt10_15_PartLevel(0x0),
 fhNjetsPtAbove15_PartLevel(0x0),
 fhNjetsPt10_15_PartLevelV0MnormDetLev(0x0),
 fhNjetsPtAbove15_PartLevelV0MnormDetLev(0x0),
+fPhiSmearingTrack(0x0),
+fPhiSmearingJet(0x0),
+fDeltaPhiSmearingTT2030Jet(0x0),
 fhTrackEtaInclEMB(0x0),
 fMinFractionShared(0),
 fZVertexCut(10.0),
@@ -224,6 +227,9 @@ fhNjetReMx_V0MnormDetLev_15GeV(0x0),
 fhNjetNorm_V0MnormDetLev_15GeV(0x0),
 fhNjetReMx_V0MnormDetLev_20GeV(0x0),
 fhNjetNorm_V0MnormDetLev_20GeV(0x0)
+
+
+
 {
    //default constructor
    //1D respnse matrix from recoil jets  //FF
@@ -630,6 +636,9 @@ fhNjetsPt10_15_PartLevel(0x0),
 fhNjetsPtAbove15_PartLevel(0x0),
 fhNjetsPt10_15_PartLevelV0MnormDetLev(0x0),
 fhNjetsPtAbove15_PartLevelV0MnormDetLev(0x0),
+fPhiSmearingTrack(0x0),
+fPhiSmearingJet(0x0),
+fDeltaPhiSmearingTT2030Jet(0x0),
 fhTrackEtaInclEMB(0x0),
 fMinFractionShared(0),
 fZVertexCut(10.0),
@@ -2501,6 +2510,10 @@ void AliAnalysisTaskEA::FillResponseMatrix(){
 
                      bRecPrim = kTRUE;
                      fhPtTrkTruePrimRec->Fill(mcParticle->Pt(), mcParticle->Eta(), fMultV0Mnorm_PartLevel); //this is well recontr phys primary
+
+		     //NEW angular smearing of inclusive tracks
+                     fPhiSmearingTrack->Fill( fMultV0Mnorm, track->Pt(), TVector2::Phi_mpi_pi( mcParticle->Phi() - track->Phi())); //NEW  should jet pT be particle level or detector level?  
+
                      break;
                   }//same label with rec particle
                }
@@ -2729,6 +2742,49 @@ void AliAnalysisTaskEA::FillResponseMatrix(){
 
          }
       }
+
+
+      //NEW -----------------------------------------------------------
+      // make difference of delta phi  on detector and particle level
+      if(fnHadronTTBins==2){  // there must be 2 trigger track bins, in such a case the index 1 is signal 
+         if(fHadronTT[1] > 0){  //there is a TT{20,30} on the detector level
+            if(fHadronTT_PartLevel[1] > 0){ // there is also TT{20,30} at particle level
+
+               Int_t idxDetTT = -1;
+               Int_t idxPartTT = -1;
+               
+	       //search for trigger track candidates which have the same MC labels on particle and detenctor level
+               for(UInt_t id = 0; id < fTTH[1].size(); id++){
+                  for(UInt_t ip = 0; ip < fTTH_PartLevel[1].size(); ip++){
+                     if(fHadronTT_Labels_PartLevel[1][ip] == 0) continue;
+	             if(fHadronTT_Labels_PartLevel[1][ip] != fHadronTT_Labels[1][id]) continue;
+                     idxDetTT  = id;  //found match between detector level and particle level TT
+                     idxPartTT = ip;
+	             break;
+	          }
+	       }
+
+	       Double_t deltaPhiDet  = -100; //   phi TT - phi jet detector level
+	       Double_t deltaPhiPart = -100; //   phi TT - phi jet particle level
+               for(auto jetIterator : fJetContainerDetLevel->accepted_momentum()){
+                  jet = jetIterator.second;  // Get the pointer to jet object
+                  if(!jet) continue;
+              
+                  jetPartMC =  jet->ClosestJet();
+                  if(!jetPartMC) continue; // IMPORTANT TO ADD
+                  if(jetPartMC->Pt() < 5e-4) continue; //prevents matching with a ghost
+              
+                  jetPtCorrDet  =  jet->Pt() - jet->Area()*fRho;
+              
+                  deltaPhiDet  =  jet->Phi() - fTTH[1][idxDetTT].Phi();
+	          deltaPhiPart =  jetPartMC->Phi() - fTTH_PartLevel[1][idxPartTT].Phi();
+              
+                  fDeltaPhiSmearingTT2030Jet->Fill(fMultV0Mnorm, jetPtCorrDet, TVector2::Phi_mpi_pi(deltaPhiDet - deltaPhiPart));
+	       }
+	    }
+         }  	
+      }
+      //NEW -----------------------------------------------------------
    }
    return;
 }
@@ -2801,6 +2857,9 @@ void AliAnalysisTaskEA::FillResponseMatrix2D(){
                   //Jet pT is not corrected by RhokT
                   fArray_for_filling[1] = jetDetMC->Pt();
                   fhPhi_JetPtZeroDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets->Fill(fArray_for_filling); // added by KA
+
+		  //ANGLUAR SMEARING OF INCLUSIVE JETS
+                  fPhiSmearingJet->Fill( fMultV0Mnorm, jetPtCorrDet, TVector2::Phi_mpi_pi(smearing_Of_PhiAngle)); //NEW  should jet pT be particle level or detector level?  
                }
             }
          }//end inclusive jets
@@ -4940,6 +4999,36 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       fhNjetNorm_V0MnormDetLev_20GeV = new TH2D("fhNjetNorm_V0MnormDetLev_20GeV","fhNjetNorm_V0MnormDetLev_20GeV", nNjetBins,NjetBins,nNV0MnormBins,NV0MnormBins);
       fOutput->Add((TH2D*) fhNjetNorm_V0MnormDetLev_20GeV); 
    }//FILIP
+
+
+   if(fMode == AliAnalysisTaskEA::kMC){ 
+   //NEW
+      Double_t myNV0MnormBins [] = {0,4,4.1,4.2,4.3,4.4,4.5,5,9,20};  //  V0M/<V0M> bins 
+      Int_t nmyNV0MnormBins = sizeof(myNV0MnormBins)/sizeof(Double_t) - 1;  
+	
+      Double_t myTTPtBins [] = {0,6,7,10,15,20,30,100}; //trigger track pT bins 
+      Int_t nmyTTPtBins = sizeof(myTTPtBins)/sizeof(Double_t) - 1;  
+
+      Double_t myJetPtBins [] = {0,5,10,15,20,25,30,35,40,45,50,60,80,100}; //trigger track pT bins 
+      Int_t nmyJetPtBins = sizeof(myJetPtBins)/sizeof(Double_t) - 1;  
+
+      const Int_t nmyPhiBins = 200; 
+      Double_t myPhiBins[nmyPhiBins+1];
+      Double_t p = TMath::Pi()/nmyPhiBins;
+      for(Int_t i = 0; i <= nmyPhiBins; i++) myPhiBins[i] = -TMath::Pi()/2 + i*p;  // range was (-pi/2,pi/2)
+
+
+      fPhiSmearingTrack = new TH3D("fPhiSmearingTrack","fPhiSmearingTrack", nmyNV0MnormBins, myNV0MnormBins, nmyTTPtBins, myTTPtBins, nmyPhiBins, myPhiBins); 
+      fOutput->Add((TH3D*) fPhiSmearingTrack); 
+
+      fPhiSmearingJet = new TH3D("fPhiSmearingJet","fPhiSmearingJet", nmyNV0MnormBins, myNV0MnormBins,  nmyJetPtBins,  myJetPtBins, nmyPhiBins, myPhiBins); 
+      fOutput->Add((TH3D*) fPhiSmearingJet); 
+
+      fDeltaPhiSmearingTT2030Jet = new TH3D("fDeltaPhiSmearingTT2030Jet","fDeltaPhiSmearingTT2030Jet", nmyNV0MnormBins, myNV0MnormBins,  nmyJetPtBins,  myJetPtBins, nmyPhiBins, myPhiBins); 
+      fOutput->Add((TH3D*) fDeltaPhiSmearingTT2030Jet); 
+   }
+
+
 
    // =========== Switch on Sumw2 for all histos ===========
    for(Int_t i=0; i<fOutput->GetEntries(); i++){
