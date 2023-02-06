@@ -203,9 +203,11 @@ void AliAnalysisTaskSEDmesonTree::UserCreateOutputObjects()
                 fMLOptScoreCuts.push_back(model["cut_opt"].as<std::vector<std::string> >());
             }
         }
-
-        CreateRecoSparses();
     }
+
+    //Sparses for reco candidates
+    if(fApplyML || fFillSparsePreSelOnly)
+        CreateRecoSparses();
 
     //Create ML tree
     if (fCreateMLtree)
@@ -454,7 +456,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
         }
 
         fHistNEvents->Fill(13); // candidate selected
-        if(!fApplyML) {
+        if(!(fApplyML || fFillSparsePreSelOnly)) {
             nSelected++;
             if(isInSignalRegion)
                 nSelectedInMass++;
@@ -621,16 +623,18 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
             }
         }
 
-        if(fApplyML)
+        if(fApplyML || fFillSparsePreSelOnly)
         {
             //variables for ML application
             std::vector<double> modelPred = {};
             bool isMLsel = false;
             double ptCand = dMeson->Pt();
+            double eta = dMeson->Eta();
+            double phi = dMeson->Phi();
 
             if((fDecChannel == kD0toKpi && (isSelected == 1 || isSelected == 3)) || fDecChannel == kDplustoKpipi || fDecChannel == kDstartoD0pi)
             {
-                if(fDependOnMLSelector)
+                if(fDependOnMLSelector && fApplyML)
                 {
                     std::vector<float>::iterator low = std::lower_bound(fPtLimsML.begin(), fPtLimsML.end(), ptCand);
                     int bin = low - fPtLimsML.begin() - 1;
@@ -649,9 +653,10 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                         }
                     }
                 }
-                else
+                else if(fApplyML)
                     isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fAOD->GetMagneticField(), pidHF, 0);
-                if(isMLsel)
+
+                if(isMLsel || fFillSparsePreSelOnly)
                 {
                     nSelected++;
                     if(isInSignalRegion)
@@ -671,10 +676,10 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                             break;
                     }
 
-                    std::vector<double> var4nSparse = {mass, ptCand, ptB, centrality, double(Ntracklets)};
-                    if(fDependOnMLSelector)
+                    std::vector<double> var4nSparse = {mass, ptCand, ptB, centrality, double(Ntracklets), eta, phi};
+                    if(fDependOnMLSelector && fApplyML)
                         var4nSparse.insert(var4nSparse.end(), scoresFromMLSelector[iCand].begin(), scoresFromMLSelector[iCand].end());
-                    else
+                    else if(fApplyML)
                         var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
                     if(!fReadMC)
                         fnSparseReco[0]->Fill(var4nSparse.data());
@@ -684,22 +689,19 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                         {
                             if(fDecChannel == kD0toKpi)
                             {
-                                if(pdgCode0 == 321)fnSparseReco[4]->Fill(var4nSparse.data());
-                                else if(orig == 4 && pdgCode0 != 321)fnSparseReco[1]->Fill(var4nSparse.data());
+                                if(pdgCode0 == 321)
+                                    fnSparseReco[4]->Fill(var4nSparse.data());
+                                else if(orig == 4 && pdgCode0 != 321)
+                                    fnSparseReco[1]->Fill(var4nSparse.data());
                                 else if(orig == 5 && pdgCode0 != 321)
-                                {
-                                    var4nSparse.insert(var4nSparse.end(), ptB);
                                     fnSparseReco[2]->Fill(var4nSparse.data());
-                                }
                             }
                             else
                             {
-                                if(orig == 4)fnSparseReco[1]->Fill(var4nSparse.data());
+                                if(orig == 4)
+                                    fnSparseReco[1]->Fill(var4nSparse.data());
                                 if(orig == 5)
-                                {
-                                    var4nSparse.insert(var4nSparse.end(), ptB);
                                     fnSparseReco[2]->Fill(var4nSparse.data());
-                                }
                             }
                         }
                         else if(labD < 0)
@@ -711,7 +713,7 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
             }
             if(fDecChannel == kD0toKpi && isSelected >= 2)
             {
-                if(fDependOnMLSelector)
+                if(fDependOnMLSelector && fApplyML)
                 {
                     std::vector<float>::iterator low = std::lower_bound(fPtLimsML.begin(), fPtLimsML.end(), ptCand);
                     int bin = low - fPtLimsML.begin() - 1;
@@ -730,9 +732,10 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                         }
                     }
                 }
-                else
+                else if(fApplyML)
                     isMLsel = fMLResponse->IsSelectedMultiClass(modelPred, dMeson, fAOD->GetMagneticField(), pidHF, 1);
-                if(isMLsel)
+
+                if(isMLsel || fFillSparsePreSelOnly)
                 {
                     nSelected++;
                     if(isInSignalRegion)
@@ -746,10 +749,10 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                             break;
                     }
 
-                    std::vector<double> var4nSparse = {mass, ptCand, ptB, centrality, double(Ntracklets)};
-                    if(fDependOnMLSelector)
+                    std::vector<double> var4nSparse = {mass, ptCand, ptB, centrality, double(Ntracklets), eta, phi};
+                    if(fDependOnMLSelector && fApplyML)
                         var4nSparse.insert(var4nSparse.end(), scoresFromMLSelectorSecond[iCand].begin(), scoresFromMLSelectorSecond[iCand].end());
-                    else
+                    else if(fApplyML)
                         var4nSparse.insert(var4nSparse.end(), modelPred.begin(), modelPred.end());
                     if(!fReadMC)
                         fnSparseReco[0]->Fill(var4nSparse.data());
@@ -757,13 +760,12 @@ void AliAnalysisTaskSEDmesonTree::UserExec(Option_t * /*option*/)
                     {
                         if(labD >= 0)
                         {
-                            if(pdgCode0 == 211)fnSparseReco[4]->Fill(var4nSparse.data());
-                            else if(orig == 4 && pdgCode0 != 211)fnSparseReco[1]->Fill(var4nSparse.data());
+                            if(pdgCode0 == 211)
+                                fnSparseReco[4]->Fill(var4nSparse.data());
+                            else if(orig == 4 && pdgCode0 != 211)
+                                fnSparseReco[1]->Fill(var4nSparse.data());
                             else if(orig == 5 && pdgCode0 != 211)
-                            {
-                                var4nSparse.insert(var4nSparse.end(), ptB);
                                 fnSparseReco[2]->Fill(var4nSparse.data());
-                            }
                         }
                         else if(labD < 0)
                         {
@@ -985,6 +987,8 @@ void AliAnalysisTaskSEDmesonTree::FillMCGenAccHistos(TClonesArray *arrayMC, AliA
                 {
                     double pt = mcPart->Pt();
                     double rapid = mcPart->Y();
+                    double eta = mcPart->Eta();
+                    double phi = mcPart->Phi();
                     isFidAcc = fRDCuts->IsInFiducialAcceptance(pt, rapid);
                     isDaugInAcc = CheckDaugAcc(arrayMC, nDau, labDau);
 
@@ -992,13 +996,13 @@ void AliAnalysisTaskSEDmesonTree::FillMCGenAccHistos(TClonesArray *arrayMC, AliA
                     {
                         if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
                         {
-                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, -999., double(Ntracklets)};
+                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, -999., double(Ntracklets), eta, phi};
                             fnSparseMC[0]->Fill(var4nSparseAcc);
                         }
                         else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
                         {
                             double ptB = AliVertexingHFUtils::GetBeautyMotherPt(arrayMC, mcPart);
-                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, ptB, double(Ntracklets)};
+                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, ptB, double(Ntracklets), eta, phi};
                             fnSparseMC[1]->Fill(var4nSparseAcc);
                         }
                     }
@@ -1048,9 +1052,9 @@ void AliAnalysisTaskSEDmesonTree::CreateEffSparses()
     if (fUseFinPtBinsForSparse)
         nPtBins = nPtBins * 10;
 
-    int nBinsAcc[knVarForSparseAcc] = {nPtBins, 20, nPtBins, 201};
-    double xminAcc[knVarForSparseAcc] = {0., -1., 0., -0.5};
-    double xmaxAcc[knVarForSparseAcc] = {ptLims[nPtBinsCutObj], 1., ptLims[nPtBinsCutObj], 200.5};
+    int nBinsAcc[knVarForSparseAcc] = {nPtBins, 20, nPtBins, 201, 20, 36};
+    double xminAcc[knVarForSparseAcc] = {0., -1., 0., -0.5, -1., 0.};
+    double xmaxAcc[knVarForSparseAcc] = {ptLims[nPtBinsCutObj], 1., ptLims[nPtBinsCutObj], 200.5, 1., 2 * TMath::Pi()};
 
     TString label[2] = {"fromC", "fromB"};
     for (int iHist = 0; iHist < 2; iHist++)
@@ -1061,6 +1065,8 @@ void AliAnalysisTaskSEDmesonTree::CreateEffSparses()
         fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
         fnSparseMC[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
         fnSparseMC[iHist]->GetAxis(3)->SetTitle("#it{N}_{tracklets}");
+        fnSparseMC[iHist]->GetAxis(4)->SetTitle("#eta");
+        fnSparseMC[iHist]->GetAxis(5)->SetTitle("#varphi");
         fOutput->Add(fnSparseMC[iHist]);
     }
 }
@@ -1097,12 +1103,12 @@ void AliAnalysisTaskSEDmesonTree::CreateRecoSparses()
             break;
     }
 
-    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 2*nPtBins, 1000, 201, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
-    double xminReco[knVarForSparseReco] = {massMin, 0., 0., 0., -0.5, fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
-    double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 2*ptLims[nPtBinsCutObj], 100., 200.5, fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
-    int nVars = 6;
+    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 2*nPtBins, 1000, 201, 20, 36, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
+    double xminReco[knVarForSparseReco] = {massMin, 0., 0., 0., -0.5, -1., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
+    double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 2*ptLims[nPtBinsCutObj], 100., 200.5, 1., 2 * TMath::Pi(), fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+    int nVars = 8;
     if(fMultiClass)
-        nVars = 8;
+        nVars = 10;
 
     TString label[5] = {"all", "fromC", "fromB", "bkg", "refl"};
     for (int iHist = 0; iHist < 5; iHist++)
@@ -1114,8 +1120,13 @@ void AliAnalysisTaskSEDmesonTree::CreateRecoSparses()
         fnSparseReco[iHist]->GetAxis(2)->SetTitle("#it{p}_{T}^{B} (GeV/c)");
         fnSparseReco[iHist]->GetAxis(3)->SetTitle("centrality (%)");
         fnSparseReco[iHist]->GetAxis(4)->SetTitle("#it{N}_{tracklets}");
-        for(int iAx=5; iAx<nVars; iAx++)
-            fnSparseReco[iHist]->GetAxis(iAx)->SetTitle(Form("ML output %d", iAx-5));
+        fnSparseReco[iHist]->GetAxis(5)->SetTitle("#eta");
+        fnSparseReco[iHist]->GetAxis(6)->SetTitle("#varphi");
+        if(fApplyML)
+        {
+            for(int iAx=7; iAx<nVars; iAx++)
+                fnSparseReco[iHist]->GetAxis(iAx)->SetTitle(Form("ML output %d", iAx-7));
+        }
         fOutput->Add(fnSparseReco[iHist]);
     }
 }
