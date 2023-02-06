@@ -1106,9 +1106,11 @@ void AliAnalysisTaskSEDmesonTree::CreateRecoSparses()
     int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 2*nPtBins, 1000, 201, 20, 36, fNMLBins[0], fNMLBins[1], fNMLBins[2]};
     double xminReco[knVarForSparseReco] = {massMin, 0., 0., 0., -0.5, -1., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
     double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 2*ptLims[nPtBinsCutObj], 100., 200.5, 1., 2 * TMath::Pi(), fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
-    int nVars = 8;
-    if(fMultiClass)
-        nVars = 10;
+    int nVars = 7;
+    if(fApplyML)
+        nVars = 8;
+        if(fMultiClass)
+            nVars = 10;
 
     TString label[5] = {"all", "fromC", "fromB", "bkg", "refl"};
     for (int iHist = 0; iHist < 5; iHist++)
