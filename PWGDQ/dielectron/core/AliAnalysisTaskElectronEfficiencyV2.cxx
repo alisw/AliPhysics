@@ -1601,7 +1601,11 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
           TLorentzVector Lvec2;
           Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt, fRecNegPart[neg_i].fEta, fRecNegPart[neg_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
           Lvec2.SetPtEtaPhiM(fRecPosPart[pos_i].fPt, fRecPosPart[pos_i].fEta, fRecPosPart[pos_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
-          TLorentzVector LvecM = Lvec1 + Lvec2;
+	  if (fDoRecSmearing == true && fArrResoPt){
+	    Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt_smeared, fRecNegPart[neg_i].fEta_smeared, fRecNegPart[neg_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	    Lvec2.SetPtEtaPhiM(fRecPosPart[pos_i].fPt_smeared, fRecPosPart[pos_i].fEta_smeared, fRecPosPart[pos_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	  }
+	  TLorentzVector LvecM = Lvec1 + Lvec2;
           double mass = LvecM.M();
           double pairpt = LvecM.Pt();
 	  double opangle = Lvec1.Angle(Lvec2.Vect());
