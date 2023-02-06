@@ -112,6 +112,7 @@ public:
         fDependOnMLSelector = flag;
         fMLSelectorName = name;
     }
+    void SetFillSparsePreSelOnly(bool flag = true)                                                  {fFillSparsePreSelOnly = flag;}
 
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
@@ -121,8 +122,8 @@ public:
 private:
     enum
     {
-        knVarForSparseAcc    = 4,
-        knVarForSparseReco   = 8
+        knVarForSparseAcc    = 6,
+        knVarForSparseReco   = 10
     };
 
     AliAnalysisTaskSEDmesonTree(const AliAnalysisTaskSEDmesonTree &source);
@@ -189,9 +190,10 @@ private:
     std::vector<std::vector<double> > fMLScoreCuts{};                           /// score cuts used in case application of ML model is done in MLSelector task   
     std::vector<std::vector<std::string> > fMLOptScoreCuts{};                   /// score cut options (lower, upper) used in case application of ML model is done in MLSelector task                                           
     std::string fMLSelectorName = "MLSelector";                                 /// name of MLSelector task
+    bool fFillSparsePreSelOnly = false;                                         /// flag to fill fnSparseReco applying only the linear pre-selections, to be used with fApplyML = false
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDmesonTree, 6); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDmesonTree, 7); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 
