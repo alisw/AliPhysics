@@ -139,18 +139,22 @@ namespace PWGJE
      */
     bool AliAnalysisTaskEmcalJetHdEdxCorrelations::Initialize()
     {
+      std::cout << "Initializing task.\n";
       fConfigurationInitialized = false;
 
       // Ensure that we have at least one configuration in the YAML config.
       if (fYAMLConfig.DoesConfigurationExist(0) == false)
       {
+        std::cerr << "No configurations exist in the YAML configuration. Returning immediately.\n";
         // No configurations exist. Return immediately.
         return fConfigurationInitialized;
       }
 
       // Always initialize for streaming purposes
+      std::cout << "Initializing task.\n";
       fYAMLConfig.Initialize();
 
+   
       // Setup task based on the properties defined in the YAML config
       AliDebugStream(2) << "Configuring task from the YAML configuration.\n";
       RetrieveAndSetTaskPropertiesFromYAMLConfig();
