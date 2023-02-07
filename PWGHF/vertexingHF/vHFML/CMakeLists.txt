@@ -67,6 +67,7 @@ set(SRCS
     AliHFTreeHandlerApplyLc2V0bachelor.cxx
     AliHFTreeHandlerApplyDstartoKpipi.cxx
     AliParticleTreeHandlerApply.cxx
+    AliHFMLXicZeroToXiPifromKFP.cxx
 )
 
 # Headers from sources

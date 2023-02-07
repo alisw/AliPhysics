@@ -121,6 +121,15 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fProdTrackTPCsignalNMin(0),
   fPriTrackChi2perNDFMax(99.),
   fPriTrackITSNclsMin(0),
+  fCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0(6.),
+  fCut_nSigmaTPC_PiFromXi_or_KaFromOmega(6.),
+  fCut_nSigmaTPC_PrFromLam(6.),
+  fCut_nSigmaTPC_PiFromLam(6.),
+  fCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0(6.),
+  fCut_nSigmaTOF_PiFromXi_or_KaFromOmega(6.),
+  fCut_nSigmaTOF_PrFromLam(6.),
+  fCut_nSigmaTOF_PiFromLam(6.),
+  fCut_Armenteros(1.),
   fWeight(0),
   fWeight_up(0),
   fWeight_dw(0)
@@ -250,6 +259,15 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fProdTrackTPCsignalNMin(source.fProdTrackTPCsignalNMin),
   fPriTrackChi2perNDFMax(source.fPriTrackChi2perNDFMax),
   fPriTrackITSNclsMin(source.fPriTrackITSNclsMin),
+  fCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0(source.fCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0),
+  fCut_nSigmaTPC_PiFromXi_or_KaFromOmega(source.fCut_nSigmaTPC_PiFromXi_or_KaFromOmega),
+  fCut_nSigmaTPC_PrFromLam(source.fCut_nSigmaTPC_PrFromLam),
+  fCut_nSigmaTPC_PiFromLam(source.fCut_nSigmaTPC_PiFromLam),
+  fCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0(source.fCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0),
+  fCut_nSigmaTOF_PiFromXi_or_KaFromOmega(source.fCut_nSigmaTOF_PiFromXi_or_KaFromOmega),
+  fCut_nSigmaTOF_PrFromLam(source.fCut_nSigmaTOF_PrFromLam),
+  fCut_nSigmaTOF_PiFromLam(source.fCut_nSigmaTOF_PiFromLam),
+  fCut_Armenteros(source.fCut_Armenteros),
   fWeight(source.fWeight),
   fWeight_up(source.fWeight_up),
   fWeight_dw(source.fWeight_dw)
@@ -334,6 +352,15 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fProdTrackTPCsignalNMin = source.fProdTrackTPCsignalNMin;
   fPriTrackChi2perNDFMax = source.fPriTrackChi2perNDFMax;
   fPriTrackITSNclsMin = source.fPriTrackITSNclsMin;
+  fCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0 = source.fCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0;
+  fCut_nSigmaTPC_PiFromXi_or_KaFromOmega = source.fCut_nSigmaTPC_PiFromXi_or_KaFromOmega;
+  fCut_nSigmaTPC_PrFromLam = source.fCut_nSigmaTPC_PrFromLam;
+  fCut_nSigmaTPC_PiFromLam = source.fCut_nSigmaTPC_PiFromLam;
+  fCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0 = source.fCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0;
+  fCut_nSigmaTOF_PiFromXi_or_KaFromOmega = source.fCut_nSigmaTOF_PiFromXi_or_KaFromOmega;
+  fCut_nSigmaTOF_PrFromLam = source.fCut_nSigmaTOF_PrFromLam;
+  fCut_nSigmaTOF_PiFromLam = source.fCut_nSigmaTOF_PiFromLam;
+  fCut_Armenteros = source.fCut_Armenteros;
   fWeight = source.fWeight;
   fWeight_up = source.fWeight_up;
   fWeight_dw = source.fWeight_dw;
