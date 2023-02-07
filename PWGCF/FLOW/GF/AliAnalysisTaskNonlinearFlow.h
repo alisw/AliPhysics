@@ -268,22 +268,19 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		bool			IsSPDOnVsOfPileup       (const AliVEvent* event, bool fillHist);
 		bool			IsV0PFPileup            (const AliVEvent* event);
 		int 			GetRunPart(int run);
-		double 			GetWeight(double phi, double eta, double pt, int run, bool fPlus, double vz, double runNumber);
-		double 			GetPtWeight(double pt, double eta, float vz, double runNumber);
 
-		Bool_t                  LoadWeights();
+    Bool_t                  LoadWeightsSystematics();
 		Bool_t                  LoadWeightsKatarina();
 		Bool_t                  LoadPtWeights();
 		Bool_t                  LoadPtWeightsKatarina();
-		Bool_t                  LoadWeightsSystematics();
 
 		Double_t GetWeightKatarina(double phi, double eta, double vz);
 		Double_t GetPtWeightKatarina(double pt, double eta, double vz);
-		Double_t GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species);
 		Double_t GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species);
+    double 			GetPtWeight(double pt, double eta, float vz, double runNumber);
+
 		const char* ReturnPPperiod(const Int_t runNumber) const;
 		const char* ReturnPPperiodMC(const Int_t runNumber) const;
-		const char* GetSpeciesName(const PartSpecies species) const;
 
 		AliEventCuts	fEventCuts;					// Event cuts
 		AliGFWCuts*     fGFWSelection;                                  //!

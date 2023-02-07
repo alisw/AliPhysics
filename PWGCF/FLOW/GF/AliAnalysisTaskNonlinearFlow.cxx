@@ -1639,37 +1639,7 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
   return weight;
 
 }
-//____________________________________________________________________
-double AliAnalysisTaskNonlinearFlow::GetWeight(double phi, double eta, double pt, int fRun, bool fPlus, double vz, double runNumber) {
-  TList* weights_list = dynamic_cast<TList*>(fPhiWeight);
 
-  TList* averaged_list = dynamic_cast<TList*>(weights_list->FindObject("averaged"));
-  TH2D* hPhiWeightRun = dynamic_cast<TH2D*>(averaged_list->FindObject("Charged"));
-
-  double weight = hPhiWeightRun->GetBinContent(hPhiWeightRun->GetXaxis()->FindBin(phi),
-      hPhiWeightRun->GetYaxis()->FindBin(eta));
-  return weight;
-}
-
-
-const char* AliAnalysisTaskNonlinearFlow::GetSpeciesName(const PartSpecies species) const {
-  const char* name;
-
-  switch(species) {
-    case kRefs: name = "Refs"; break;
-    case kCharged: name = "Charged"; break;
-    case kPion: name = "Pion"; break;
-    case kKaon: name = "Kaon"; break;
-    case kProton: name = "Proton"; break;
-    case kCharUnidentified: name = "UnidentifiedCharged"; break;
-    case kK0s: name = "K0s"; break;
-    case kLambda: name = "Lambda"; break;
-    case kPhi: name = "Phi"; break;
-    default: name = "Unknown";
-  }
-
-  return name;
-}
 
 Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
 
@@ -1841,71 +1811,6 @@ Double_t AliAnalysisTaskNonlinearFlow::GetFlowWeightSystematics(const AliVPartic
   return dWeight;
 }
 
-Bool_t AliAnalysisTaskNonlinearFlow::LoadWeights() {
-  // (Re-) Loading of flow vector weights
-  // ***************************************************************************
-  if(!fFlowWeightsList) { AliError("Flow weights list not found! Terminating!"); return kFALSE; }
-
-  TList* listFlowWeights = nullptr;
-
-  TString fFlowWeightsTag = "";
-  if(!fFlowWeightsTag.IsNull()) {
-    // using weights Tag if provided (systematics)
-    listFlowWeights = (TList*) fFlowWeightsList->FindObject(fFlowWeightsTag.Data());
-    if(!listFlowWeights) { AliError(Form("TList with tag '%s' not found!",fFlowWeightsTag.Data())); fFlowWeightsList->ls(); return kFALSE; }
-  } else {
-    if(!fFlowRunByRunWeights && !fFlowPeriodWeights) {
-      // loading run-averaged weights
-      listFlowWeights = (TList*) fFlowWeightsList->FindObject("averaged");
-      if(!listFlowWeights) { AliError("TList with flow run-averaged weights not found."); fFlowWeightsList->ls(); return kFALSE; }
-    } else if(fFlowPeriodWeights){
-      // loading period-specific weights
-      listFlowWeights = (TList*) fFlowWeightsList->FindObject(ReturnPPperiod(fAOD->GetRunNumber()));
-      if(!listFlowWeights) { AliError("Loading period weights failed!"); fFlowWeightsList->ls(); return kFALSE; }
-    }
-    else {
-      // loading run-specific weights
-      listFlowWeights = (TList*) fFlowWeightsList->FindObject(Form("%d",fAOD->GetRunNumber()));
-
-      if(!listFlowWeights) {
-        // run-specific weights not found for this run; loading run-averaged instead
-        AliWarning(Form("TList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fAOD->GetRunNumber()));
-        listFlowWeights = (TList*) fFlowWeightsList->FindObject("averaged");
-        if(!listFlowWeights) { AliError("Loading run-averaged weights failed!"); fFlowWeightsList->ls(); return kFALSE; }
-      }
-    }
-  }
-
-
-  for(Int_t iSpec(0); iSpec <= kRefs; ++iSpec) {
-    if(fFlowUse3Dweights) {
-      fh3Weights[iSpec] = (TH3D*) listFlowWeights->FindObject(Form("%s3D",GetSpeciesName(PartSpecies(iSpec))));
-      if(!fh3Weights[iSpec]) { AliError(Form("Weight 3D (%s) not found",GetSpeciesName(PartSpecies(iSpec)))); return kFALSE; }
-    } else {
-      fh2Weights[iSpec] = (TH2D*) listFlowWeights->FindObject(GetSpeciesName(PartSpecies(iSpec)));
-      if(!fh2Weights[iSpec]) { AliError(Form("Weight 2D (%s) not found",GetSpeciesName(PartSpecies(iSpec)))); return kFALSE; }
-    }
-  }
-
-  return kTRUE;
-}
-
-Double_t AliAnalysisTaskNonlinearFlow::GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species) {
-  // if not applying for reconstructed
-  // if(!fFlowWeightsApplyForReco && HasMass(species)) { return 1.0; }
-
-  Double_t dWeight = 1.0;
-  if(fFlowUse3Dweights) {
-    Int_t iBin = fh3Weights[species]->FindFixBin(track->Phi(),track->Eta(),fVtxZ);
-    dWeight = fh3Weights[species]->GetBinContent(iBin);
-  } else {
-    Int_t iBin = fh2Weights[species]->FindFixBin(track->Phi(),track->Eta());
-    dWeight = fh2Weights[species]->GetBinContent(iBin);
-  }
-
-  if(dWeight <= 0.0) { dWeight = 1.0; }
-  return dWeight;
-}
 
 void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TString label, TList* listOfProfile) {
 
