@@ -20,7 +20,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     bool RemoveMCResonances = true, //11 
     bool RemoveMCResonanceDaughters = true, //12
     bool DoInvMass = false, //13
-    bool DoResonanceLorentzFactor = false //14
+    bool DoResonanceLorentzFactor = false, //14
+    bool DoFinemTBinning = false //15
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -78,14 +79,20 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
 
   std::vector<bool> closeRejection;
   std::vector<float> mTBins;
+  
   mTBins.push_back(0.53); 
   mTBins.push_back(0.7); 
   mTBins.push_back(0.8); 
   mTBins.push_back(1.0); 
   mTBins.push_back(1.2); 
   mTBins.push_back(1.5); 
-  mTBins.push_back(2.0); 
+  mTBins.push_back(2.0);
+  if(DoFinemTBinning){
+   mTBins.push_back(3.0); 
+  } 
   mTBins.push_back(4.0); 
+  
+
   std::vector<int> pairQA;
   //pairs: 
   // pp             0
