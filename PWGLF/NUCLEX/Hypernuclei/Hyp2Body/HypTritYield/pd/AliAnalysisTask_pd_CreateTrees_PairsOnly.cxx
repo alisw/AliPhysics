@@ -166,7 +166,16 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiDeuteron_ITS_nCluster(0),
   fAntiDeuteron_Event_nParticles(0),
   fAntiDeuteron_ID(0),
-  fAntiDeuteron_Event_Identifier(0)
+  fAntiDeuteron_Event_Identifier(0),
+  fHistoList(0),
+  h_Proton_TOF_m2_NoTOFcut(0),
+  h_Deuteron_TOF_m2_NoTOFcut(0),
+  h_AntiProton_TOF_m2_NoTOFcut(0),
+  h_AntiDeuteron_TOF_m2_NoTOFcut(0),
+  h_Proton_ITS_dEdx_NoTOFcutNoITScut(0),
+  h_Deuteron_ITS_dEdx_NoTOFcutNoITScut(0),
+  h_AntiProton_ITS_dEdx_NoTOFcutNoITScut(0),
+  h_AntiDeuteron_ITS_dEdx_NoTOFcutNoITScut(0)
 {
 
 
@@ -295,7 +304,16 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fAntiDeuteron_ITS_nCluster(0),
   fAntiDeuteron_Event_nParticles(0),
   fAntiDeuteron_ID(0),
-  fAntiDeuteron_Event_Identifier(0)
+  fAntiDeuteron_Event_Identifier(0),
+  fHistoList(0),
+  h_Proton_TOF_m2_NoTOFcut(0),
+  h_Deuteron_TOF_m2_NoTOFcut(0),
+  h_AntiProton_TOF_m2_NoTOFcut(0),
+  h_AntiDeuteron_TOF_m2_NoTOFcut(0),
+  h_Proton_ITS_dEdx_NoTOFcutNoITScut(0),
+  h_Deuteron_ITS_dEdx_NoTOFcutNoITScut(0),
+  h_AntiProton_ITS_dEdx_NoTOFcutNoITScut(0),
+  h_AntiDeuteron_ITS_dEdx_NoTOFcutNoITScut(0)
 {
 
   DefineInput(0,TChain::Class());
@@ -303,6 +321,7 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   DefineOutput(2,TTree::Class());
   DefineOutput(3,TTree::Class());
   DefineOutput(4,TTree::Class());
+  DefineOutput(5,TList::Class());
 
 }
 
@@ -330,6 +349,11 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::~AliAnalysisTask_pd_CreateTrees_PairsO
       delete fSaveTree_AntiDeuteron;
     }
 
+  if(fHistoList)
+    {
+      delete fHistoList;
+    }
+
 }
 
 
@@ -340,6 +364,51 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::~AliAnalysisTask_pd_CreateTrees_PairsO
 
 void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
 {
+
+  fHistoList = new TList();
+  fHistoList->SetOwner();
+
+  h_Proton_TOF_m2_NoTOFcut = new TH2F("h_Proton_TOF_m2_NoTOFcut","TOF #it{m}^{2} without TOF cut (protons)",240,0.0,6.0,500,0.0,10.0);
+  h_Proton_TOF_m2_NoTOFcut->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  h_Proton_TOF_m2_NoTOFcut->GetYaxis()->SetTitle("#it{m}^{2} (GeV/#it{c}^{2})^{2}");
+  fHistoList->Add(h_Proton_TOF_m2_NoTOFcut);
+
+  h_Deuteron_TOF_m2_NoTOFcut = new TH2F("h_Deuteron_TOF_m2_NoTOFcut","TOF #it{m}^{2} without TOF cut (deuterons)",240,0.0,6.0,500,0.0,10.0);
+  h_Deuteron_TOF_m2_NoTOFcut->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  h_Deuteron_TOF_m2_NoTOFcut->GetYaxis()->SetTitle("#it{m}^{2} (GeV/#it{c}^{2})^{2}");
+  fHistoList->Add(h_Deuteron_TOF_m2_NoTOFcut);
+
+  h_AntiProton_TOF_m2_NoTOFcut = new TH2F("h_AntiProton_TOF_m2_NoTOFcut","TOF #it{m}^{2} without TOF cut (antiprotons)",240,0.0,6.0,500,0.0,10.0);
+  h_AntiProton_TOF_m2_NoTOFcut->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  h_AntiProton_TOF_m2_NoTOFcut->GetYaxis()->SetTitle("#it{m}^{2} (GeV/#it{c}^{2})^{2}");
+  fHistoList->Add(h_AntiProton_TOF_m2_NoTOFcut);
+
+  h_AntiDeuteron_TOF_m2_NoTOFcut = new TH2F("h_AntiDeuteron_TOF_m2_NoTOFcut","TOF #it{m}^{2} without TOF cut (antideuterons)",240,0.0,6.0,500,0.0,10.0);
+  h_AntiDeuteron_TOF_m2_NoTOFcut->GetXaxis()->SetTitle("#it{p}_{T} (GeV/#it{c})");
+  h_AntiDeuteron_TOF_m2_NoTOFcut->GetYaxis()->SetTitle("#it{m}^{2} (GeV/#it{c}^{2})^{2}");
+  fHistoList->Add(h_AntiDeuteron_TOF_m2_NoTOFcut);
+
+
+  h_Proton_ITS_dEdx_NoTOFcutNoITScut = new TH2F("h_Proton_ITS_dEdx_NoTOFcutNoITScut","ITS d#it{E}/d#it{x} without TOF and ITS cut (protons)",400,0.0,10.0,500,0.0,500.0);
+  h_Proton_ITS_dEdx_NoTOFcutNoITScut->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  h_Proton_ITS_dEdx_NoTOFcutNoITScut->GetYaxis()->SetTitle("d#it{E}/d#it{x} (abs.)");
+  fHistoList->Add(h_Proton_ITS_dEdx_NoTOFcutNoITScut);
+
+  h_Deuteron_ITS_dEdx_NoTOFcutNoITScut = new TH2F("h_Deuteron_ITS_dEdx_NoTOFcutNoITScut","ITS d#it{E}/d#it{x} without TOF and ITS cut (deuterons)",400,0.0,10.0,500,0.0,500.0);
+  h_Deuteron_ITS_dEdx_NoTOFcutNoITScut->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  h_Deuteron_ITS_dEdx_NoTOFcutNoITScut->GetYaxis()->SetTitle("d#it{E}/d#it{x} (abs.)");
+  fHistoList->Add(h_Deuteron_ITS_dEdx_NoTOFcutNoITScut);
+
+  h_AntiProton_ITS_dEdx_NoTOFcutNoITScut = new TH2F("h_AntiProton_ITS_dEdx_NoTOFcutNoITScut","ITS d#it{E}/d#it{x} without TOF and ITS cut (antiprotons)",400,0.0,10.0,500,0.0,500.0);
+  h_AntiProton_ITS_dEdx_NoTOFcutNoITScut->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  h_AntiProton_ITS_dEdx_NoTOFcutNoITScut->GetYaxis()->SetTitle("d#it{E}/d#it{x} (abs.)");
+  fHistoList->Add(h_AntiProton_ITS_dEdx_NoTOFcutNoITScut);
+
+  h_AntiDeuteron_ITS_dEdx_NoTOFcutNoITScut = new TH2F("h_AntiDeuteron_ITS_dEdx_NoTOFcutNoITScut","ITS d#it{E}/d#it{x} without TOF and ITS cut (antideuterons)",400,0.0,10.0,500,0.0,500.0);
+  h_AntiDeuteron_ITS_dEdx_NoTOFcutNoITScut->GetXaxis()->SetTitle("#it{p} (GeV/#it{c})");
+  h_AntiDeuteron_ITS_dEdx_NoTOFcutNoITScut->GetYaxis()->SetTitle("d#it{E}/d#it{x} (abs.)");
+  fHistoList->Add(h_AntiDeuteron_ITS_dEdx_NoTOFcutNoITScut);
+
 
   fSaveTree_Proton = new TTree("fSaveTree_Proton","fSaveTree_Proton");
   fSaveTree_Proton->Branch("Proton_px",&fProton_px,"Proton_px/f");
@@ -473,6 +542,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserCreateOutputObjects()
   PostData(2,fSaveTree_Deuteron);
   PostData(3,fSaveTree_AntiProton);
   PostData(4,fSaveTree_AntiDeuteron);
+  PostData(5,fHistoList);
 
 
 
@@ -669,7 +739,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
       TOF_Beta	      = CalculateBetaTOF(*Track);
       TOF_Beta_nSigma = fPIDResponse->NumberOfSigmasTOF(Track,AliPID::kProton);
       TOF_m2	      = CalculateMassSquareTOF(*Track);
-      TOF_m2_nSigma   = CalculateSigmaMassSquareTOF(Track->Pt(),TOF_m2,true,RunNumber);
+      TOF_m2_nSigma   = CalculateSigmaMassSquareTOF(Track->Pt(),TOF_m2,1,RunNumber);
 
     }
 
@@ -812,7 +882,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
       TOF_Beta	      = CalculateBetaTOF(*Track);
       TOF_Beta_nSigma = fPIDResponse->NumberOfSigmasTOF(Track,AliPID::kDeuteron);
       TOF_m2	      = CalculateMassSquareTOF(*Track);
-      TOF_m2_nSigma   = CalculateSigmaMassSquareTOF(Track->Pt(),TOF_m2,true,RunNumber);
+      TOF_m2_nSigma   = CalculateSigmaMassSquareTOF(Track->Pt(),TOF_m2,2,RunNumber);
 
     }
 
@@ -1199,7 +1269,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
       TOF_Beta	      = CalculateBetaTOF(*Track);
       TOF_Beta_nSigma = fPIDResponse->NumberOfSigmasTOF(Track,AliPID::kProton);
       TOF_m2	      = CalculateMassSquareTOF(*Track);
-      TOF_m2_nSigma   = CalculateSigmaMassSquareTOF(Track->Pt(),TOF_m2,false,RunNumber);
+      TOF_m2_nSigma   = CalculateSigmaMassSquareTOF(Track->Pt(),TOF_m2,3,RunNumber);
 
     }
 
@@ -1346,7 +1416,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
       TOF_Beta	      = CalculateBetaTOF(*Track);
       TOF_Beta_nSigma = fPIDResponse->NumberOfSigmasTOF(Track,AliPID::kDeuteron);
       TOF_m2	      = CalculateMassSquareTOF(*Track);
-      TOF_m2_nSigma   = CalculateSigmaMassSquareTOF(Track->Pt(),TOF_m2,false,RunNumber);
+      TOF_m2_nSigma   = CalculateSigmaMassSquareTOF(Track->Pt(),TOF_m2,4,RunNumber);
 
     }
 
@@ -1651,6 +1721,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
   PostData(2,fSaveTree_Deuteron);
   PostData(3,fSaveTree_AntiProton);
   PostData(4,fSaveTree_AntiDeuteron);
+  PostData(5,fHistoList);
 
 } // end of UserExec
 
@@ -1741,7 +1812,7 @@ double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateMassSquareTOF(AliAODTr
 
 
 
-double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(double pT, double massSq, bool isMatter, int RunNumber)
+double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(double pT, double massSq, int ParticleSpecies, int RunNumber)
 {
 
   double nSigma = -999.0;
@@ -1760,129 +1831,81 @@ double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(dou
   if((RunNumber >= 295585) && (RunNumber <= 296623)) LHC18q = true;
   if((RunNumber >= 296690) && (RunNumber <= 297585)) LHC18r = true;
 
+  bool isProton	      = false;
+  bool isDeuteron     = false;
+  bool isAntiProton   = false;
+  bool isAntiDeuteron = false;
 
-  // for Pb-Pb (LHC18q and LHC18r)
+  if(ParticleSpecies == 1) isProton	  = true;
+  if(ParticleSpecies == 2) isDeuteron	  = true;
+  if(ParticleSpecies == 3) isAntiProton	  = true;
+  if(ParticleSpecies == 4) isAntiDeuteron = true;
+  
+/*
+  TF1 *Mean = new TF1("Mean","pol5",0.0,4.0);
+  TF1 *Sigma = new TF1("Sigma","pol5",0.0,4.0);
 
-  double ParameterMatter[35][2] = {
-{4.17615,0.298251},
-{4.08097,0.297396},
-{3.95197,0.240426},
-{3.82068,0.149232},
-{3.74164,0.118375},
-{3.69264,0.11247},
-{3.65695,0.112983},
-{3.63148,0.111041},
-{3.61447,0.111148},
-{3.60399,0.112195},
-{3.59677,0.113264},
-{3.59217,0.114995},
-{3.59126,0.118023},
-{3.59045,0.120715},
-{3.58861,0.122859},
-{3.58585,0.126467},
-{3.58287,0.12996},
-{3.5818,0.134162},
-{3.58132,0.138716},
-{3.58191,0.142358},
-{3.58124,0.147029},
-{3.5818,0.152781},
-{3.58151,0.156665},
-{3.58148,0.160992},
-{3.58288,0.16659},
-{3.58375,0.171199},
-{3.58526,0.1769},
-{3.58636,0.182282},
-{3.58728,0.188404},
-{3.58966,0.194788},
-{3.59245,0.199839},
-{3.59187,0.206191},
-{3.59449,0.213257},
-{3.59563,0.216757},
-}; // end of ParameterMatter definition
+  if((isDeuteron) && ((LHC18q == true) || (LHC18r == true))){
+
+    Mean->FixParameter(0,6.37297);
+    Mean->FixParameter(1,-5.51404);
+    Mean->FixParameter(2,4.2799);
+    Mean->FixParameter(3,-1.62632);
+    Mean->FixParameter(4,0.302122);
+    Mean->FixParameter(5,-0.0219382);
+
+    Sigma->FixParameter(0,1.36634);
+    Sigma->FixParameter(1,-2.74292);
+    Sigma->FixParameter(2,2.27612);
+    Sigma->FixParameter(3,-0.905014);
+    Sigma->FixParameter(4,0.174877);
+    Sigma->FixParameter(5,-0.0131305);
+
+  }
 
 
-  double ParameterAntiMatter[35][2] = {
-{4.34701,0.293789},
-{4.1721,0.270784},
-{3.97304,0.210971},
-{3.83358,0.16},
-{3.74727,0.130793},
-{3.69333,0.119528},
-{3.65658,0.115693},
-{3.63029,0.113118},
-{3.6127,0.112189},
-{3.60345,0.113028},
-{3.59819,0.115984},
-{3.59424,0.116708},
-{3.59396,0.120272},
-{3.59399,0.123617},
-{3.59312,0.12665},
-{3.59111,0.129108},
-{3.58911,0.13153},
-{3.58753,0.135724},
-{3.58664,0.140496},
-{3.58885,0.146367},
-{3.58733,0.150429},
-{3.58957,0.152747},
-{3.58825,0.156932},
-{3.59141,0.162311},
-{3.59057,0.166413},
-{3.59221,0.172248},
-{3.59319,0.178037},
-{3.59445,0.184472},
-{3.5954,0.190762},
-{3.59904,0.198087},
-{3.6033,0.20339},
-{3.60191,0.207736},
-{3.60263,0.213331},
-{3.60588,0.214263},
-}; // end of ParameterAntiMatter definition
+  if((isAntiDeuteron) && ((LHC18q == true) || (LHC18r == true))){
 
-  int row = 0; // pt < 0.5         
+    Mean->FixParameter(0,7.56258);
+    Mean->FixParameter(1,-8.40863);
+    Mean->FixParameter(2,6.92118);
+    Mean->FixParameter(3,-2.76507);
+    Mean->FixParameter(4,0.536251);
+    Mean->FixParameter(5,-0.0404276);
 
-  if(pT > 0.6) row = 1;
-  if(pT > 0.7) row = 2;
-  if(pT > 0.8) row = 3;
-  if(pT > 0.9) row = 4;
-  if(pT > 1.0) row = 5;
-  if(pT > 1.1) row = 6;
-  if(pT > 1.2) row = 7;
-  if(pT > 1.3) row = 8;
-  if(pT > 1.4) row = 9;
-  if(pT > 1.5) row = 10;
-  if(pT > 1.6) row = 11;
-  if(pT > 1.7) row = 12;
-  if(pT > 1.8) row = 13;
-  if(pT > 1.9) row = 14;
-  if(pT > 2.0) row = 15;
-  if(pT > 2.1) row = 16;
-  if(pT > 2.2) row = 17;
-  if(pT > 2.3) row = 18;
-  if(pT > 2.4) row = 19;
-  if(pT > 2.5) row = 20;
-  if(pT > 2.6) row = 21;
-  if(pT > 2.7) row = 22;
-  if(pT > 2.8) row = 23;
-  if(pT > 2.9) row = 24;
-  if(pT > 3.0) row = 25;
-  if(pT > 3.1) row = 26;
-  if(pT > 3.2) row = 27;
-  if(pT > 3.3) row = 28;
-  if(pT > 3.4) row = 29;
-  if(pT > 3.5) row = 30;
-  if(pT > 3.6) row = 31;
-  if(pT > 3.7) row = 32;
-  if(pT > 3.8) row = 33;
-  if(pT > 3.9) row = 34;
+    Sigma->FixParameter(0,1.26696);
+    Sigma->FixParameter(1,-2.54379);
+    Sigma->FixParameter(2,2.13709);
+    Sigma->FixParameter(3,-0.862281);
+    Sigma->FixParameter(4,0.169359);
+    Sigma->FixParameter(5,-0.0129328);
+
+  }
+
+  double mean = Mean->Eval(pT);
+  double sigma = Sigma->Eval(pT);
+
+  Mean->Delete();
+  Sigma->Delete();
+*/
 
   double mean = 0.0;
   double sigma = 0.0;
 
-  if(isMatter) mean   = ParameterMatter[row][0];
-  if(isMatter) sigma  = ParameterMatter[row][1];
+  if((isProton == true) || (isAntiProton == true)){
 
-  if(!isMatter) mean   = ParameterAntiMatter[row][0];
-  if(!isMatter) sigma  = ParameterAntiMatter[row][1];
+    mean = 0.88;
+    sigma = 0.1;
+  
+  }
+
+  if((isDeuteron == true) || (isAntiDeuteron == true)){
+
+    mean = 3.6;
+    sigma = 0.25;
+  
+  }
+
 
   if(TMath::Abs(sigma) < 0.00001) return -999.0;
 
@@ -1930,8 +1953,8 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
   double Proton_ITS_dEdx_BandScalingFactorBelow = 0.7;
   int Proton_ITS_nCluster_min = 2;
 
-  bool UseTOF = false;
-  bool UseITS = false;
+  bool UseTOF = true;
+  bool UseITS = true;
 
 
   // check if TPC information is available
@@ -2016,9 +2039,6 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
 
 
 
-  // temporary extremly wide TOF cut
-  double TOF_m2	  = CalculateMassSquareTOF(Track);
-  if((TOF_m2 < 0.4) || (TOF_m2 > 2.0)) return PassedParticleCuts;
 
 
   // check if TOF information is available
@@ -2026,10 +2046,50 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
   bool TOFisOK = false;
   if(statusTOF == AliPIDResponse::kDetPidOk) TOFisOK = true;
 
+  // check if ITS information is available
+  AliPIDResponse::EDetPidStatus statusITS = fPIDResponse.CheckPIDStatus(AliPIDResponse::kITS,&Track);
+  bool ITSisOK = false;
+  if(statusITS == AliPIDResponse::kDetPidOk) ITSisOK = true;
+
+
+  if((ITSisOK == true) && (isMatter == true)) h_Proton_ITS_dEdx_NoTOFcutNoITScut->Fill(p,Track.GetITSsignal());
+  if((ITSisOK == true) && (isMatter == false)) h_AntiProton_ITS_dEdx_NoTOFcutNoITScut->Fill(p,Track.GetITSsignal());
+
+
+  if((ITSisOK == true) && (UseITS == true)){
+
+    const int whichParticle = 1; // Proton or AntiProton
+
+    // apply ITS band cut above particle
+    bool isBelowUpperThreshold = IsWithinITSBand(Track,whichParticle,RunNumber,Proton_ITS_dEdx_BandScalingFactorAbove);
+    if(!isBelowUpperThreshold) return PassedParticleCuts;
+
+    // apply ITS band cut below particle
+    bool isAboveLowerThreshold = IsWithinITSBand(Track,whichParticle,RunNumber,Proton_ITS_dEdx_BandScalingFactorBelow);
+    if(!isAboveLowerThreshold) return PassedParticleCuts;
+
+    // apply ITS cluster cut
+    double nClusterITS = Track.GetITSNcls();
+    if(TMath::IsNaN(nClusterITS)) return PassedParticleCuts;
+    if(nClusterITS < Proton_ITS_nCluster_min) return PassedParticleCuts;
+
+  } // end of ITSisOK
+
+
+
+
+
+  if((TOFisOK == true) && (isMatter == true)) h_Proton_TOF_m2_NoTOFcut->Fill(pT,CalculateMassSquareTOF(Track));
+  if((TOFisOK == true) && (isMatter == false)) h_AntiProton_TOF_m2_NoTOFcut->Fill(pT,CalculateMassSquareTOF(Track));
+
   if((TOFisOK == true) && (UseTOF == true)){
 
+    int ParticleSpecies = 0;
+    if(isMatter) ParticleSpecies = 1;
+    if(!isMatter) ParticleSpecies = 3;
+
     double TOF_m2	  = CalculateMassSquareTOF(Track);
-    double TOF_m2_nSigma  = CalculateSigmaMassSquareTOF(pT,TOF_m2,isMatter,RunNumber);
+    double TOF_m2_nSigma  = CalculateSigmaMassSquareTOF(pT,TOF_m2,ParticleSpecies,RunNumber);
 
     // apply tight TOF m2 cut above pTPC threshold   
     if(pTPC >= Proton_TPC_Threshold){
@@ -2053,30 +2113,6 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
 
 
 
-
-  // check if ITS information is available
-  AliPIDResponse::EDetPidStatus statusITS = fPIDResponse.CheckPIDStatus(AliPIDResponse::kITS,&Track);
-  bool ITSisOK = false;
-  if(statusITS == AliPIDResponse::kDetPidOk) ITSisOK = true;
-
-  if((ITSisOK == true) && (UseITS == true)){
-
-    const int whichParticle = 1; // Proton or AntiProton
-
-    // apply ITS band cut above particle
-    bool isBelowUpperThreshold = IsWithinITSBand(Track,whichParticle,RunNumber,Proton_ITS_dEdx_BandScalingFactorAbove);
-    if(!isBelowUpperThreshold) return PassedParticleCuts;
-
-    // apply ITS band cut below particle
-    bool isAboveLowerThreshold = IsWithinITSBand(Track,whichParticle,RunNumber,Proton_ITS_dEdx_BandScalingFactorBelow);
-    if(!isAboveLowerThreshold) return PassedParticleCuts;
-
-    // apply ITS cluster cut
-    double nClusterITS = Track.GetITSNcls();
-    if(TMath::IsNaN(nClusterITS)) return PassedParticleCuts;
-    if(nClusterITS < Proton_ITS_nCluster_min) return PassedParticleCuts;
-
-  } // end of ITSisOK
 
 
 
@@ -2150,8 +2186,8 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
   double Deuteron_ITS_dEdx_BandScalingFactorBelow = 0.7;
   int Deuteron_ITS_nCluster_min = 2;
 
-  bool UseTOF = false;
-  bool UseITS = false;
+  bool UseTOF = true;
+  bool UseITS = true;
 
 
   // check if TPC information is available
@@ -2235,19 +2271,58 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
 
 
-  // temporary extremly wide TOF cut
-  double TOF_m2	  = CalculateMassSquareTOF(Track);
-  if((TOF_m2 < 1.5) || (TOF_m2 > 6.0)) return PassedParticleCuts;
+
 
   // check if TOF information is available
   AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse.CheckPIDStatus(AliPIDResponse::kTOF,&Track);
   bool TOFisOK = false;
   if(statusTOF == AliPIDResponse::kDetPidOk) TOFisOK = true;
 
+  // check if ITS information is available
+  AliPIDResponse::EDetPidStatus statusITS = fPIDResponse.CheckPIDStatus(AliPIDResponse::kITS,&Track);
+  bool ITSisOK = false;
+  if(statusITS == AliPIDResponse::kDetPidOk) ITSisOK = true;
+
+
+  if((ITSisOK == true) && (isMatter == true)) h_Deuteron_ITS_dEdx_NoTOFcutNoITScut->Fill(p,Track.GetITSsignal());
+  if((ITSisOK == true) && (isMatter == false)) h_AntiDeuteron_ITS_dEdx_NoTOFcutNoITScut->Fill(p,Track.GetITSsignal());
+
+
+  if((ITSisOK == true) && (UseITS == true)){
+
+    const int whichParticle = 2; // Deuteron or AntiDeuteron
+
+    // apply ITS band cut above particle
+    bool isBelowUpperThreshold = IsWithinITSBand(Track,whichParticle,RunNumber,Deuteron_ITS_dEdx_BandScalingFactorAbove);
+    if(!isBelowUpperThreshold) return PassedParticleCuts;
+
+    // apply ITS band cut below particle
+    bool isAboveLowerThreshold = IsWithinITSBand(Track,whichParticle,RunNumber,Deuteron_ITS_dEdx_BandScalingFactorBelow);
+    if(!isAboveLowerThreshold) return PassedParticleCuts;
+
+    // apply ITS cluster cut
+    double nClusterITS = Track.GetITSNcls();
+    if(TMath::IsNaN(nClusterITS)) return PassedParticleCuts;
+    if(nClusterITS < Deuteron_ITS_nCluster_min) return PassedParticleCuts;
+
+  } // end of ITSisOK
+
+
+
+
+
+  if((TOFisOK == true) && (isMatter == true)) h_Deuteron_TOF_m2_NoTOFcut->Fill(pT,CalculateMassSquareTOF(Track));
+  if((TOFisOK == true) && (isMatter == false)) h_AntiDeuteron_TOF_m2_NoTOFcut->Fill(pT,CalculateMassSquareTOF(Track));
+
+
   if((TOFisOK == true) && (UseTOF == true)){
 
+    int ParticleSpecies = 0;
+    if(isMatter) ParticleSpecies = 2;
+    if(!isMatter) ParticleSpecies = 4;
+
     double TOF_m2	  = CalculateMassSquareTOF(Track);
-    double TOF_m2_nSigma  = CalculateSigmaMassSquareTOF(pT,TOF_m2,isMatter,RunNumber);
+    double TOF_m2_nSigma  = CalculateSigmaMassSquareTOF(pT,TOF_m2,ParticleSpecies,RunNumber);
 
     // apply tight TOF m2 cut above pTPC threshold   
     if(pTPC >= Deuteron_TPC_Threshold){
@@ -2271,30 +2346,6 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
 
 
-
-  // check if ITS information is available
-  AliPIDResponse::EDetPidStatus statusITS = fPIDResponse.CheckPIDStatus(AliPIDResponse::kITS,&Track);
-  bool ITSisOK = false;
-  if(statusITS == AliPIDResponse::kDetPidOk) ITSisOK = true;
-
-  if((ITSisOK == true) && (UseITS == true)){
-
-    const int whichParticle = 2; // Deuteron or AntiDeuteron
-
-    // apply ITS band cut above particle
-    bool isBelowUpperThreshold = IsWithinITSBand(Track,whichParticle,RunNumber,Deuteron_ITS_dEdx_BandScalingFactorAbove);
-    if(!isBelowUpperThreshold) return PassedParticleCuts;
-
-    // apply ITS band cut below particle
-    bool isAboveLowerThreshold = IsWithinITSBand(Track,whichParticle,RunNumber,Deuteron_ITS_dEdx_BandScalingFactorBelow);
-    if(!isAboveLowerThreshold) return PassedParticleCuts;
-
-    // apply ITS cluster cut
-    double nClusterITS = Track.GetITSNcls();
-    if(TMath::IsNaN(nClusterITS)) return PassedParticleCuts;
-    if(nClusterITS < Deuteron_ITS_nCluster_min) return PassedParticleCuts;
-
-  } // end of ITSisOK
 
 
 
@@ -2371,6 +2422,9 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::IsWithinITSBand(AliAODTrack &Trac
     if(SignalITS > fdEdxITSBand->Eval(p)) IsWithinITSBand = true;
 
   }
+
+
+  fdEdxITSBand->Delete();
 
   return IsWithinITSBand;
 

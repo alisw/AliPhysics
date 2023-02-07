@@ -140,6 +140,15 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
   if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: AntiDeuteronContainer created" << std::endl;
 
 
+  TString HistogramName = Form("%sHistograms%s",prefix.Data(),suffix.Data());
+  AliAnalysisDataContainer *HistogramContainer = manager->CreateContainer(
+    HistogramName.Data(),
+    TList::Class(),
+    AliAnalysisManager::kOutputContainer,
+    TaskName.Data()
+  );
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: HistogramContainer created" << std::endl;
+
 
 
   manager->ConnectOutput(task,1,ProtonTreeContainer);
@@ -153,6 +162,9 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
 
   manager->ConnectOutput(task,4,AntiDeuteronTreeContainer);
   if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: Output container 4 connected" << std::endl;
+
+  manager->ConnectOutput(task,5,HistogramContainer);
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: Output container 5 connected" << std::endl;
 
 
   // return a pointer to the task

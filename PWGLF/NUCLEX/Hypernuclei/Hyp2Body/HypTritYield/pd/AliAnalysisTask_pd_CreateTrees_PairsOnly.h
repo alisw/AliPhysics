@@ -29,7 +29,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     void Terminate(Option_t *);
     double CalculateBetaTOF(AliAODTrack &track); 
     double CalculateMassSquareTOF(AliAODTrack &track);
-    double CalculateSigmaMassSquareTOF(double pT, double massSq, bool isMatter, int RunNumber);
+    double CalculateSigmaMassSquareTOF(double pT, double massSq, int ParticleSpecies, int RunNumber);
     bool CheckProtonCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
     bool CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
     bool IsWithinITSBand(AliAODTrack &Track, int whichParticle, int RunNumber, double ScalingFactor);
@@ -167,6 +167,15 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned int      fAntiDeuteron_ID;
     unsigned int      fAntiDeuteron_Event_Identifier;
 
+    TList     *fHistoList;
+    TH2F      *h_Proton_TOF_m2_NoTOFcut;
+    TH2F      *h_Deuteron_TOF_m2_NoTOFcut;
+    TH2F      *h_AntiProton_TOF_m2_NoTOFcut;
+    TH2F      *h_AntiDeuteron_TOF_m2_NoTOFcut;
+    TH2F      *h_Proton_ITS_dEdx_NoTOFcutNoITScut;
+    TH2F      *h_Deuteron_ITS_dEdx_NoTOFcutNoITScut;
+    TH2F      *h_AntiProton_ITS_dEdx_NoTOFcutNoITScut;
+    TH2F      *h_AntiDeuteron_ITS_dEdx_NoTOFcutNoITScut;
 
 
 
