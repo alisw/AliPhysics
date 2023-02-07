@@ -1894,7 +1894,7 @@ double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(dou
 
   if((isProton == true) || (isAntiProton == true)){
 
-    mean = 0.88;
+    mean = 0.89;
     sigma = 0.1;
   
   }
@@ -1961,6 +1961,22 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
   AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse.CheckPIDStatus(AliPIDResponse::kTPC,&Track);
   if(!(statusTPC == AliPIDResponse::kDetPidOk)) return PassedParticleCuts;
 
+  double p = Track.P();
+  double pT = Track.Pt();
+  double pTPC = Track.GetTPCmomentum();
+
+  if(TMath::IsNaN(p)) return PassedParticleCuts;
+  if(TMath::IsNaN(pT)) return PassedParticleCuts;
+  if(TMath::IsNaN(pTPC)) return PassedParticleCuts;
+
+  // check if TOF information is available
+  AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse.CheckPIDStatus(AliPIDResponse::kTOF,&Track);
+  bool TOFisOK = false;
+  if(statusTOF == AliPIDResponse::kDetPidOk) TOFisOK = true;
+
+  // apply TOF-is-available cut (above threshold)
+  if((pTPC >= Proton_TPC_Threshold) && (TOFisOK == false)) return PassedParticleCuts;
+
   // apply TPC nSigma cut
   double TPC_dEdx_nSigma = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kProton);
   if(TMath::IsNaN(TPC_dEdx_nSigma)) return PassedParticleCuts;
@@ -1980,14 +1996,6 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
 
   // apply DCAz cut
   if(TMath::Abs(DCAz) > Proton_DCAz_max) return PassedParticleCuts;
-
-  double p = Track.P();
-  double pT = Track.Pt();
-  double pTPC = Track.GetTPCmomentum();
-
-  if(TMath::IsNaN(p)) return PassedParticleCuts;
-  if(TMath::IsNaN(pT)) return PassedParticleCuts;
-  if(TMath::IsNaN(pTPC)) return PassedParticleCuts;
 
   // apply pT cut
   if(pT < Proton_pT_min || pT > Proton_pT_max) return PassedParticleCuts;
@@ -2010,7 +2018,7 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
   int TPC_nCrossedRows = Track.GetTPCCrossedRows();
   if(TPC_nCrossedRows < Proton_TPC_nCrossedRows_min) return PassedParticleCuts;
 
-  // apply zero shared cluster cut for TPC
+  // apply shared cluster cut for TPC
   int TPC_nSharedCluster = Track.GetTPCnclsS();
   if(TPC_nSharedCluster > Proton_TPC_nSharedCluster_max) return PassedParticleCuts;
 
@@ -2038,13 +2046,6 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
 
 
 
-
-
-
-  // check if TOF information is available
-  AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse.CheckPIDStatus(AliPIDResponse::kTOF,&Track);
-  bool TOFisOK = false;
-  if(statusTOF == AliPIDResponse::kDetPidOk) TOFisOK = true;
 
   // check if ITS information is available
   AliPIDResponse::EDetPidStatus statusITS = fPIDResponse.CheckPIDStatus(AliPIDResponse::kITS,&Track);
@@ -2074,7 +2075,6 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
     if(nClusterITS < Proton_ITS_nCluster_min) return PassedParticleCuts;
 
   } // end of ITSisOK
-
 
 
 
@@ -2194,6 +2194,23 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
   AliPIDResponse::EDetPidStatus statusTPC = fPIDResponse.CheckPIDStatus(AliPIDResponse::kTPC,&Track);
   if(!(statusTPC == AliPIDResponse::kDetPidOk)) return PassedParticleCuts;
 
+  double p = Track.P();
+  double pT = Track.Pt();
+  double pTPC = Track.GetTPCmomentum();
+
+  if(TMath::IsNaN(p)) return PassedParticleCuts;
+  if(TMath::IsNaN(pT)) return PassedParticleCuts;
+  if(TMath::IsNaN(pTPC)) return PassedParticleCuts;
+
+  // check if TOF information is available
+  AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse.CheckPIDStatus(AliPIDResponse::kTOF,&Track);
+  bool TOFisOK = false;
+  if(statusTOF == AliPIDResponse::kDetPidOk) TOFisOK = true;
+
+  // apply TOF-is-available cut (above threshold)
+  if((pTPC >= Deuteron_TPC_Threshold) && (TOFisOK == false)) return PassedParticleCuts;
+
+
   // apply TPC nSigma cut
   double TPC_dEdx_nSigma = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kDeuteron);
   if(TMath::IsNaN(TPC_dEdx_nSigma)) return PassedParticleCuts;
@@ -2213,14 +2230,6 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
   // apply DCAz cut
   if(TMath::Abs(DCAz) > Deuteron_DCAz_max) return PassedParticleCuts;
-
-  double p = Track.P();
-  double pT = Track.Pt();
-  double pTPC = Track.GetTPCmomentum();
-
-  if(TMath::IsNaN(p)) return PassedParticleCuts;
-  if(TMath::IsNaN(pT)) return PassedParticleCuts;
-  if(TMath::IsNaN(pTPC)) return PassedParticleCuts;
 
   // apply pT cut
   if(pT < Deuteron_pT_min || pT > Deuteron_pT_max) return PassedParticleCuts;
@@ -2272,11 +2281,6 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
 
 
-
-  // check if TOF information is available
-  AliPIDResponse::EDetPidStatus statusTOF = fPIDResponse.CheckPIDStatus(AliPIDResponse::kTOF,&Track);
-  bool TOFisOK = false;
-  if(statusTOF == AliPIDResponse::kDetPidOk) TOFisOK = true;
 
   // check if ITS information is available
   AliPIDResponse::EDetPidStatus statusITS = fPIDResponse.CheckPIDStatus(AliPIDResponse::kITS,&Track);
