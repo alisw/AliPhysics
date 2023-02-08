@@ -631,7 +631,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         if(bRef) refData.push_back(StoreRef());
         if(bDiff||bPtA||bPtRef) ptaData.push_back(StorePtA());
         if(bPtB) ptbData.push_back(StorePtB());
-        if(fCorrOrder==4&&bPtRef) if(task->fiHarm[1] > 0) iPtRefLS = fTaskCounter; else iPtRefOS = fTaskCounter;
+        if(fCorrOrder==4&&bPtRef) { if(task->fiHarm[1] > 0) iPtRefLS = fTaskCounter; else iPtRefOS = fTaskCounter; }
         FillRPvectors(task);
         if(bRef) { CalculateCorrelations(task, lCent, -1.0, -1.0, bRef, kFALSE, kFALSE, kFALSE, kFALSE); } 
         if(!(bDiff || bPtA || bPtRef || bPtB)) continue;  

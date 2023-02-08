@@ -566,21 +566,21 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
     //Int_t powsFull[] = {9,0,8,4,7,3,6,0,5}; //For v2{8}
     Int_t powsFull[] = {13,0,12,4,11,3,10,0,9,0,8,0,7}; //For v2{12}
     fGFW = new AliGFW();
-    fGFW->AddRegion("refN",7,pows,-0.8,-fEtaV2Sep,1,1);
-    fGFW->AddRegion("refP",7,pows,fEtaV2Sep,0.8,1,1);
+    fGFW->AddRegion("refN",7,pows,-fEtaNch,-fEtaV2Sep,1,1);
+    fGFW->AddRegion("refP",7,pows,fEtaV2Sep,fEtaNch,1,1);
     if(fEtaV2Sep>=0) fGFW->AddRegion("subMid",7,pows,-fEtaV2Sep,fEtaV2Sep,1,1);
-    fGFW->AddRegion("mid",13,powsFull,-0.8,0.8,1,2);
+    fGFW->AddRegion("mid",13,powsFull,-fEtaNch,fEtaNch,1,2);
 
-    fGFW->AddRegion("PiRefN",7,pows,-0.8,-fEtaV2Sep,1,4);
-    fGFW->AddRegion("PiRefP",7,pows,fEtaV2Sep,0.8,1,4);
-    fGFW->AddRegion("KaRefN",7,pows,-0.8,-fEtaV2Sep,1,8);
-    fGFW->AddRegion("KaRefP",7,pows,fEtaV2Sep,0.8,1,8);
-    fGFW->AddRegion("PrRefN",7,pows,-0.8,-fEtaV2Sep,1,16);
-    fGFW->AddRegion("PrRefP",7,pows,fEtaV2Sep,0.8,1,16);
+    fGFW->AddRegion("PiRefN",7,pows,-fEtaNch,-fEtaV2Sep,1,4);
+    fGFW->AddRegion("PiRefP",7,pows,fEtaV2Sep,fEtaNch,1,4);
+    fGFW->AddRegion("KaRefN",7,pows,-fEtaNch,-fEtaV2Sep,1,8);
+    fGFW->AddRegion("KaRefP",7,pows,fEtaV2Sep,fEtaNch,1,8);
+    fGFW->AddRegion("PrRefN",7,pows,-fEtaNch,-fEtaV2Sep,1,16);
+    fGFW->AddRegion("PrRefP",7,pows,fEtaV2Sep,fEtaNch,1,16);
 
-    fGFW->AddRegion("PiMid",9,powsFull,-0.8,0.8,1,32);
-    fGFW->AddRegion("KaMid",9,powsFull,-0.8,0.8,1,64);
-    fGFW->AddRegion("PrMid",9,powsFull,-0.8,0.8,1,128);  
+    fGFW->AddRegion("PiMid",9,powsFull,-fEtaNch,fEtaNch,1,32);
+    fGFW->AddRegion("KaMid",9,powsFull,-fEtaNch,fEtaNch,1,64);
+    fGFW->AddRegion("PrMid",9,powsFull,-fEtaNch,fEtaNch,1,128);  
     CreateCorrConfigs();
     printf("Flow container created\n");
     //Covariance
