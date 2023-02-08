@@ -102,7 +102,7 @@ protected:
   /* the arrays with tracks information */
   int fArraySize;  ///< the size of the array to collect accepted track information
   int fNoOfTracks; ///< the number of stored tracks
-  uint* fFlags;    //!<! the array of track flags
+  UInt_t* fFlags;    //!<! the array of track flags
   float* fPt;      //!<! the array of track \f$p_T\f$
   float* fEta;     //!<! the array of track \f$\eta\f$
   float* fPhi;     //!<! the array of track \f$\varphi\f$
