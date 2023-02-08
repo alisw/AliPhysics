@@ -497,17 +497,17 @@ Bool_t AliHFAssociatedTrackCuts::InvMassSigmacRejection(AliAODRecoDecayHF3Prong*
 	switch(hypLc) {
 		case 1:
 			invmassSigmac1 = TMath::Sqrt(pow(e1P+e2K+e3Pi+redtrack->Epion(),2.)-psum2);
-			if ((TMath::Abs(invmassSigmac1-mLc1)-0.1669) < nsigma*1.*pow(10.,-3.)) return kFALSE;
+			if ((TMath::Abs(invmassSigmac1-mLc1)-0.1669) < nsigma*1.5*pow(10.,-3.)) return kFALSE;
 			break;
 		case 2:
 			invmassSigmac2 = TMath::Sqrt(pow(e1Pi+e2K+e3P+redtrack->Epion(),2.)-psum2);
-			if ((TMath::Abs(invmassSigmac2-mLc2)-0.1669) < nsigma*1.*pow(10.,-3.)) return kFALSE;
+			if ((TMath::Abs(invmassSigmac2-mLc2)-0.1669) < nsigma*1.5*pow(10.,-3.)) return kFALSE;
 			break;
 		case 3:
 			invmassSigmac1 = TMath::Sqrt(pow(e1P+e2K+e3Pi+redtrack->Epion(),2.)-psum2);
 			invmassSigmac2 = TMath::Sqrt(pow(e1Pi+e2K+e3P+redtrack->Epion(),2.)-psum2);
-			if ((TMath::Abs(invmassSigmac1-mLc1)-0.1669) < nsigma*1.*pow(10.,-3.)) return kFALSE;
-			if ((TMath::Abs(invmassSigmac2-mLc2)-0.1669) < nsigma*1.*pow(10.,-3.)) return kFALSE;
+			if ((TMath::Abs(invmassSigmac1-mLc1)-0.1669) < nsigma*1.5*pow(10.,-3.)) return kFALSE;
+			if ((TMath::Abs(invmassSigmac2-mLc2)-0.1669) < nsigma*1.5*pow(10.,-3.)) return kFALSE;
 			break;
 	}
 	

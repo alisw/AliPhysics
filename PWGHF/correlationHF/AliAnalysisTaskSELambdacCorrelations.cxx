@@ -114,7 +114,7 @@ AliAnalysisTaskSE(),
   fCentEvV0M(0.),
   fzVtx(0.),
   fMEAxisThresh(kFALSE),
-  fSoftPiCut(kTRUE),
+  fSoftPiCut(kFALSE),
   fKaonCorr(kFALSE),
   fSignLeft_LowPt(0),
   fSignRight_LowPt(0),
@@ -200,7 +200,7 @@ AliAnalysisTaskSELambdacCorrelations::AliAnalysisTaskSELambdacCorrelations(const
   fCentEvV0M(0.),
   fzVtx(0.),
   fMEAxisThresh(kFALSE),
-  fSoftPiCut(kTRUE),
+  fSoftPiCut(kFALSE),
   fKaonCorr(kFALSE),
   fSignLeft_LowPt(0),
   fSignRight_LowPt(0),
@@ -1837,20 +1837,20 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
  
     //both for SE and for ME
     
-    //D* feeddown pions rejection histos
+    //Sigmac feeddown pions rejection histos
     namePlot = "hSigmacPionsVsDmass_Bin"; namePlot+=i;
-    TH2F *hDstarPions = new TH2F(namePlot.Data(), "Tracks rejected for D* inv.mass cut vs D inv mass; # Tracks",2,0.,2.,150,1.5848,2.1848);
-    hDstarPions->GetXaxis()->SetBinLabel(1,"Not rejected");
-    hDstarPions->GetXaxis()->SetBinLabel(2,"Rejected");
-    hDstarPions->SetMinimum(0);
-    fOutputStudy->Add(hDstarPions); 
+    TH2F *hSigmacPions = new TH2F(namePlot.Data(), "Tracks rejected for Sigmac inv.mass cut vs Lc inv mass; # Tracks",2,0.,2.,150,1.9864,2.5864);
+    hSigmacPions->GetXaxis()->SetBinLabel(1,"Not rejected");
+    hSigmacPions->GetXaxis()->SetBinLabel(2,"Rejected");
+    hSigmacPions->SetMinimum(0);
+    fOutputStudy->Add(hSigmacPions); 
 
     namePlot = "hSigmacPionsVsdeltaPhi_Bin"; namePlot+=i;
-    TH2F *hDstarPions2 = new TH2F(namePlot.Data(), "Tracks rejected for D* inv.mass cut vs deltaPhi; # Tracks",2,0.,2.,64,-TMath::Pi()/2.,3.*TMath::Pi()/2.);
-    hDstarPions2->GetXaxis()->SetBinLabel(1,"Not rejected");
-    hDstarPions2->GetXaxis()->SetBinLabel(2,"Rejected");
-    hDstarPions2->SetMinimum(0);
-    fOutputStudy->Add(hDstarPions2); 
+    TH2F *hSigmacPions2 = new TH2F(namePlot.Data(), "Tracks rejected for Sigmac inv.mass cut vs deltaPhi; # Tracks",2,0.,2.,64,-TMath::Pi()/2.,3.*TMath::Pi()/2.);
+    hSigmacPions2->GetXaxis()->SetBinLabel(1,"Not rejected");
+    hSigmacPions2->GetXaxis()->SetBinLabel(2,"Rejected");
+    hSigmacPions2->SetMinimum(0);
+    fOutputStudy->Add(hSigmacPions2); 
     
     if(!fFillTrees) {
       //ME filling control plots
