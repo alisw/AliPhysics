@@ -103,7 +103,7 @@ AliAnalysisTaskSEXic0Semileptonic *AddTaskXic0Semileptonic(
 	mgr->ConnectOutput(task, 14, coutput14);
 	mgr->ConnectOutput(task, 15, coutput15);
 
-	mgr->SetDebugLevel(2);
+	//mgr->SetDebugLevel(2);
 	//if (!mgr->InitAnalysis()) return 0x0;
 
 	return task;
