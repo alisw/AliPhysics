@@ -2529,7 +2529,7 @@ void AliAnalysisTaskGammaIsoTree::UserCreateOutputObjects()
     if(fIsMC>0) fAnalysisTree->Branch("Event_Ntrials", &fBuffer_EventNtrials,"Event_Ntrials/s");
     fAnalysisTree->Branch("Event_NPrimaryTracks", &fBuffer_EventNPrimaryTracks,"Event_NPrimaryTracks/s");
     fAnalysisTree->Branch("Event_IsTriggered", &fBuffer_EventIsTriggered,"Event_IsTriggered/O");
-    fAnalysisTree->Branch("Event_ZVertex", &fBuffer_EventZVertex,"Event_ZVertex/D");
+    fAnalysisTree->Branch("Event_ZVertex", &fBuffer_EventZVertex,"Event_ZVertex/F");
     fAnalysisTree->Branch("Event_Quality", &fBuffer_EventQuality,"Event_Quality/s");
     fAnalysisTree->Branch("Event_NotAccepted", &fBuffer_EventNotAccepted,"Event_NotAccepted/s");
     fAnalysisTree->Branch("Cluster_E","std::vector<Float_t>",&fBuffer_ClusterE);
@@ -2733,8 +2733,10 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
       if(!fUseHistograms){
         fBuffer_EventRho = fChargedRho;
         fBuffer_EventRhoMC = fChargedRhoMC;
-        fAnalysisTree->Fill();
-        PostData(2, fAnalysisTree);
+        if (fIsMC>0){ // only fill none accepted events for MC, not needed in data
+          fAnalysisTree->Fill();
+          PostData(2, fAnalysisTree);
+        }
       }
       ResetBuffer();
       return;
@@ -2749,8 +2751,10 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
     if(!fUseHistograms){
       fBuffer_EventRho = fChargedRho;
       fBuffer_EventRhoMC = fChargedRhoMC;
-      fAnalysisTree->Fill();
-      PostData(2, fAnalysisTree);
+      if(fIsMC>0){ // only fill none accepted events for MC, not needed in data
+        fAnalysisTree->Fill();
+        PostData(2, fAnalysisTree);
+      }
     }
     ResetBuffer();
     return;
@@ -2821,9 +2825,14 @@ void AliAnalysisTaskGammaIsoTree::UserExec(Option_t *){
   if(!fUseHistograms){
     fBuffer_EventRho = fChargedRho;
     fBuffer_EventRhoMC = fChargedRhoMC;
-    
-    fAnalysisTree->Fill();
-    PostData(2, fAnalysisTree);
+    if(fIsMC>0){
+      fAnalysisTree->Fill();
+      PostData(2, fAnalysisTree);
+    } else{ // for data only fill event tree if clusters are found
+      // if(fBuffer_ClusterE.size()>0) fAnalysisTree->Fill();
+      fAnalysisTree->Fill();
+      PostData(2, fAnalysisTree);
+    }
   }
 
   if( fIsMC > 0 && fInputEvent->IsA()==AliAODEvent::Class() && !(fV0Reader->AreAODsRelabeled())){

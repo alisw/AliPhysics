@@ -718,7 +718,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     UShort_t fBuffer_EventNtrials; //
     UShort_t fBuffer_EventNPrimaryTracks; //
     Bool_t fBuffer_EventIsTriggered; //
-    Double_t fBuffer_EventZVertex; //
+    Float_t fBuffer_EventZVertex; //
     UShort_t fBuffer_EventQuality; //
     UShort_t fBuffer_EventNotAccepted; //
 
@@ -822,7 +822,7 @@ class AliAnalysisTaskGammaIsoTree : public AliAnalysisTaskSE{
     Float_t CalculateIsoCorrectionFactor(Double_t cEta, Double_t maxEta, Double_t r);
     AliAnalysisTaskGammaIsoTree(const AliAnalysisTaskGammaIsoTree&); // Prevent copy-construction
     AliAnalysisTaskGammaIsoTree& operator=(const AliAnalysisTaskGammaIsoTree&); // Prevent assignment  
-    ClassDef(AliAnalysisTaskGammaIsoTree, 45);
+    ClassDef(AliAnalysisTaskGammaIsoTree, 46);
 
 };
 
