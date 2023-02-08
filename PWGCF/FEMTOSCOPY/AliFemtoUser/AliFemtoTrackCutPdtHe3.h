@@ -64,6 +64,10 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	
 	void Setf2pT(int aUse);
 	void SetAlldEdxMode(int aUse);
+	
+	void SetwiolaCrossCheck(int aUse);
+	bool WiolaDCut(float mom, float nsigmaTPCD, float nsigmaTOFD);
+	bool WiolaRejectPion(float mom,float nsigmaTPCpi,float nsigmaTOFpi);
     private:
         float fNsigmaP;
         float fNsigmaD;
@@ -141,6 +145,8 @@ class AliFemtoTrackCutPdtHe3 : public AliFemtoESDTrackCut{
 	int fUse2pT;
 	
 	int AlldEdxmode;
+	
+	int wiolaCrossCheck;
 };
 
 inline void AliFemtoTrackCutPdtHe3::SetMostProbableDeuteron() { fMostProbable = 13; }
