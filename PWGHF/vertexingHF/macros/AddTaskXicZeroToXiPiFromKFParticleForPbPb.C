@@ -73,11 +73,9 @@ AliHFMLXicZeroToXiPifromKFP* AddTaskXicZeroToXiPiFromKFParticleForPbPb (TString 
     task->SetWriteXic0MCGenTree(writeXic0MCGenTree);
     task->SetWriteXic0Tree(writeXic0RecTree);
 
-    if (IsPbPb) {
-      task->SetAnaPbPb(IsPbPb);
-      task->SetMLConfigFile(confFileML);
-      task->SetStoreOnlyMLoutput(IsStoreOnlyMLoutput);
-    }
+    task->SetAnaPbPb(IsPbPb);
+    task->SetMLConfigFile(confFileML);
+    task->SetStoreOnlyMLoutput(IsStoreOnlyMLoutput);
 
     /*
     // weight
