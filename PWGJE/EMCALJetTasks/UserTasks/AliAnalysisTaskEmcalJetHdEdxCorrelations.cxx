@@ -144,6 +144,7 @@ namespace PWGJE
       // Ensure that we have at least one configuration in the YAML config.
       if (fYAMLConfig.DoesConfigurationExist(0) == false)
       {
+        std::cerr << "No configurations exist in the YAML configuration. Returning immediately.\n";
         // No configurations exist. Return immediately.
         return fConfigurationInitialized;
       }
@@ -158,7 +159,6 @@ namespace PWGJE
 
       // Print the results of the initialization
       // Print outside of the ALICE Log system to ensure that it is always available!
-      std::cout << *this;
 
       fConfigurationInitialized = true;
       return fConfigurationInitialized;
@@ -285,6 +285,10 @@ namespace PWGJE
         cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1 << 16;
         ;
       }
+      if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
+      {
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15 | 1 << 16;
+      }
       fhnJH = NewTHnSparseF("fhnJH", cifras);
       fhnJH->Sumw2();
       fOutput->Add(fhnJH);
@@ -302,6 +306,10 @@ namespace PWGJE
         {
           cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 9;
         }
+        if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
+        {
+          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4;
+        }
         fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
         fhnMixedEvents->Sumw2();
         fOutput->Add(fhnMixedEvents);
@@ -309,6 +317,10 @@ namespace PWGJE
 
       // Trigger THnSparse
       cifras = 1 << 0 | 1 << 1 | 1 << 7;
+      if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
+      {
+        cifras = 1 << 0 | 1 << 1;
+      }
       fhnTrigger = NewTHnSparseF("fhnTrigger", cifras);
       fhnTrigger->Sumw2();
       fOutput->Add(fhnTrigger);
@@ -497,14 +509,17 @@ namespace PWGJE
       UInt_t eventTrigger = RetrieveTriggerMask();
 
       // new way of getting qnvectors
-      fqnVectorReader = (AliAnalysisTaskJetQnVectors *)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetQnVectors");
-      if (!fqnVectorReader)
+      if (fBeamType != kpp)
       {
-        printf("Error: No AliAnalysisTaskJetQnVectors");
-        return 0;
-      } // GetQnVectorReader
-      EP_angle_from_calib = fqnVectorReader->GetEPangleV0C();
-      fHistEPAngle->Fill(EP_angle_from_calib);
+        fqnVectorReader = (AliAnalysisTaskJetQnVectors *)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetQnVectors");
+        if (!fqnVectorReader)
+        {
+          printf("Error: No AliAnalysisTaskJetQnVectors");
+          return 0;
+        } // GetQnVectorReader
+        EP_angle_from_calib = fqnVectorReader->GetEPangleV0C();
+        fHistEPAngle->Fill(EP_angle_from_calib);
+      }
 
       AliDebugStream(5) << "Beginning main processing. Number of jets: " << jets->GetNJets() << ", accepted jets: " << jets->GetNAcceptedJets() << "\n";
 
@@ -569,7 +584,10 @@ namespace PWGJE
         isBiasedJet = BiasedJet(jet);
         // epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
         // new way of getting qnvectors
-        epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), EP_angle_from_calib);
+        if (fBeamType != kpp)
+        {
+          epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), EP_angle_from_calib);
+        }
         // Fill jet properties
         fHistJetEtaPhi->Fill(jet->Eta(), jet->Phi());
         FillHist(fHistJetPt[fCentBin], jetPt);
@@ -577,8 +595,16 @@ namespace PWGJE
         {
           FillHist(fHistJetPtBias[fCentBin], jetPt);
 
-          const double triggerInfo[] = {eventActivity, jetPt, epAngle};
-          fhnTrigger->Fill(triggerInfo);
+          if (fBeamType != kpp)
+          {
+            const double triggerInfo[] = {eventActivity, jetPt, epAngle};
+            fhnTrigger->Fill(triggerInfo);
+          }
+          else
+          {
+            const double triggerInfo[] = {eventActivity, jetPt};
+            fhnTrigger->Fill(triggerInfo);
+          }
         }
 
         // Cut on jet pt of 15 to reduce the size of the sparses
@@ -632,14 +658,22 @@ namespace PWGJE
 
               if (isBiasedJet == kTRUE)
               {
-                if (fDoLessSparseAxes)
-                { // check if we want all dimensions
-                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma, electronTOFnSigma};
-                  FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
+                if (fBeamType != kpp)
+                {
+                  if (fDoLessSparseAxes)
+                  { // check if we want all dimensions
+                    double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma, electronTOFnSigma};
+                    FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
+                  }
+                  else
+                  {
+                    double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, zVertex, deltaR, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma, electronTOFnSigma};
+                    FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
+                  }
                 }
                 else
                 {
-                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, zVertex, deltaR, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma, electronTOFnSigma};
+                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma, electronTOFnSigma};
                   FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
                 }
               }
@@ -742,7 +776,10 @@ namespace PWGJE
                 isBiasedJet = BiasedJet(jet);
                 // epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), fEPV0);
                 // new way of getting qnvectors
-                epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), EP_angle_from_calib);
+                if (fBeamType != kpp)
+                {
+                  epAngle = PWGJE::EMCALJetTasks::AliAnalysisTaskEmcalJetHUtils::RelativeEPAngle(jet->Phi(), EP_angle_from_calib);
+                }
                 // Make sure event contains a biased jet above our threshold (reduce stats of sparse)
                 if (jetPt < 15 || isBiasedJet == kFALSE)
                   continue;
@@ -772,15 +809,22 @@ namespace PWGJE
 
                     // Phi is [-0.5*TMath::Pi(), 3*TMath::Pi()/2.]
                     GetDeltaEtaDeltaPhiDeltaR(track, jet, deltaEta, deltaPhi, deltaR);
-
-                    if (fDoLessSparseAxes)
-                    { // check if we want all the axis filled
-                      double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle};
-                      FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
+                    if (fBeamType != AliAnalysisTaskEmcal::kpp)
+                    {
+                      if (fDoLessSparseAxes)
+                      { // check if we want all the axis filled
+                        double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, epAngle};
+                        FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
+                      }
+                      else
+                      {
+                        double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, epAngle, zVertex, deltaR};
+                        FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
+                      }
                     }
                     else
                     {
-                      double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, static_cast<Double_t>(leadJet), epAngle, zVertex, deltaR};
+                      double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi};
                       FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
                     }
                   }
