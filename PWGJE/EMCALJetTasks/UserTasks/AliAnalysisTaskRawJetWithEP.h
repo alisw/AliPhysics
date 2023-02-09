@@ -134,6 +134,7 @@ public:
   void SetEPQA(Bool_t bEPQA){fEPQA = bEPQA;}
   void SetTrackQA(Bool_t bTrackQA){fTrackQA = bTrackQA;}
   void SetBkgQA(Bool_t bBkgQA){fBkgQA = bBkgQA;}
+  void SetJetQA(Bool_t bJetQA){fJetQA = bJetQA;}
   void SetJetHistWEP(Bool_t bSepEP){fSepEP = bSepEP;}
 
 
@@ -159,6 +160,8 @@ public:
   void SetLRefTPCposEta(TObjArray *hList){this->fOADBcentArray_contTPCposEta = (TObjArray *) hList->Clone();}
   void SetLRefTPCnegEta(TObjArray *hList){this->fOADBcentArray_contTPCnegEta = (TObjArray *) hList->Clone();}
 
+
+
   void CreateQnVectorHandlers(); // Create the QnVector handlers, including loading the calibration files
     //== e == Setter Prepare  ################################################
 
@@ -174,6 +177,7 @@ public:
     void SetTPCPtLimits(double ptmin=0.2, double ptmax=5) {fPtMinTPC=ptmin; fPtMaxTPC=ptmax;}
     void SetFractionOfTPCtracksToUse(double fracToKeep) {fFractionOfTracksForQnTPC = fracToKeep;}
     void SetCalibrationsOADBFileName(TString OADBfileName) {fOADBFileName = OADBfileName;}
+
 
     int GetCalibrationType() const {return fCalibType;}
     int GetNormalisationMethod() const {return fNormMethod;}
@@ -213,7 +217,6 @@ private:
     AliAODEvent* fAOD;                /// AOD event
     TString fOADBFileName;            /// OADB input file name
     TList*  fCalibRefObjList;         ///<
-    TList*  fCalibV0Ref;              ///<
 
     Bool_t  fPileupCut = kFALSE;      ///<
     Bool_t  fTPCQnMeasure = kFALSE;   ///<
@@ -225,6 +228,7 @@ private:
     Bool_t  fEPQA = kFALSE;           ///<
     Bool_t  fTrackQA = kFALSE;        ///<
     Bool_t  fBkgQA = kFALSE;          ///<
+    Bool_t  fJetQA = kFALSE;          ///<
     Bool_t  fSepEP = kFALSE;          ///<
     
 
@@ -392,10 +396,10 @@ private:
     bool IsTrackSelected(AliAODTrack* track);
 
     //data members
-    double fEtaMinTPC;             ///< Absolute minimum value of eta for TPC Q vector
-    double fEtaMaxTPC;             ///< Absolute maximum value of eta for TPC Q vector
-    double fPtMinTPC;              ///< Minimum value of pt for TPC Q vector
-    double fPtMaxTPC;              ///< Maximum value of pt for TPC Q vector
+    double fEtaMinTPC;         ///< Absolute minimum value of eta for TPC Q vector
+    double fEtaMaxTPC;         ///< Absolute maximum value of eta for TPC Q vector
+    double fPtMinTPC;          ///< Minimum value of pt for TPC Q vector
+    double fPtMaxTPC;          ///< Maximum value of pt for TPC Q vector
 
     TBits fUsedTrackPosIDs;    ///< IDs of tracks (with positive ID) used for the computation of the Q vector (TPC)
     TBits fUsedTrackNegIDs;    ///< IDs of tracks (with negative ID) used for the computation of the Q vector (TPC)
@@ -442,27 +446,27 @@ private:
 
     TH1D* fHistMultV0;           ///< Profile from V0 multiplicity
 
-    TH1D* fQx2mV0A[14];                                        ///< <Qxn> V0A
-    TH1D* fQy2mV0A[14];                                        ///< <Qyn> V0A
-    TH1D* fQx2sV0A[14];                                        ///< sigma Qxn V0A
-    TH1D* fQy2sV0A[14];                                        ///< sigma Qyn V0A
+    TH1D* fQx2mV0A[14];          ///< <Qxn> V0A
+    TH1D* fQy2mV0A[14];          ///< <Qyn> V0A
+    TH1D* fQx2sV0A[14];          ///< sigma Qxn V0A
+    TH1D* fQy2sV0A[14];          ///< sigma Qyn V0A
     
-    TH1D* fQx2mV0C[14];                                        ///< <Qxn> V0C
-    TH1D* fQy2mV0C[14];                                        ///< <Qyn> V0C
-    TH1D* fQx2sV0C[14];                                        ///< sigma Qxn V0C
-    TH1D* fQy2sV0C[14];                                        ///< sigma Qyn V0C
+    TH1D* fQx2mV0C[14];          ///< <Qxn> V0C
+    TH1D* fQy2mV0C[14];          ///< <Qyn> V0C
+    TH1D* fQx2sV0C[14];          ///< sigma Qxn V0C
+    TH1D* fQy2sV0C[14];          ///< sigma Qyn V0C
 
-    TH1D* fQx3mV0A[14];                                        ///< <Qxn> V0A
-    TH1D* fQy3mV0A[14];                                        ///< <Qyn> V0A
-    TH1D* fQx3sV0A[14];                                        ///< sigma Qxn V0A
-    TH1D* fQy3sV0A[14];                                        ///< sigma Qyn V0A
+    TH1D* fQx3mV0A[14];          ///< <Qxn> V0A
+    TH1D* fQy3mV0A[14];          ///< <Qyn> V0A
+    TH1D* fQx3sV0A[14];          ///< sigma Qxn V0A
+    TH1D* fQy3sV0A[14];          ///< sigma Qyn V0A
     
-    TH1D* fQx3mV0C[14];                                        ///< <Qxn> V0C
-    TH1D* fQy3mV0C[14];                                        ///< <Qyn> V0C
-    TH1D* fQx3sV0C[14];                                        ///< sigma Qxn V0C
-    TH1D* fQy3sV0C[14];                                        ///< sigma Qyn V0C
+    TH1D* fQx3mV0C[14];          ///< <Qxn> V0C
+    TH1D* fQy3mV0C[14];          ///< <Qyn> V0C
+    TH1D* fQx3sV0C[14];          ///< sigma Qxn V0C
+    TH1D* fQy3sV0C[14];          ///< sigma Qyn V0C
 
-    bool fV0CalibZvtxDiff;          //< flag to properly manage Zvtx differential V0 calibrations
+    bool fV0CalibZvtxDiff;       //< flag to properly manage Zvtx differential V0 calibrations
 
     TH1D* fWeightsTPCPosEta[9];  ///< Weights for TPC tracks with eta > 0
     TH1D* fWeightsTPCNegEta[9];  ///< Weights for TPC tracks with eta < 0
