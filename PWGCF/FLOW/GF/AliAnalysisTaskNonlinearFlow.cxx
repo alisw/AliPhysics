@@ -106,9 +106,6 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
 
     hTrackEfficiencyRun(0),
 
-    fFlowRunByRunWeights(false),
-    fFlowPeriodWeights(false),
-    fFlowUse3Dweights(false),
     fFlowWeightsList(nullptr),
     fFlowPtWeightsList(nullptr),
     fFlowFeeddownList(nullptr),
@@ -194,9 +191,6 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
 
   hTrackEfficiencyRun(0),
 
-  fFlowRunByRunWeights(false),
-  fFlowPeriodWeights(false),
-  fFlowUse3Dweights(false),
   fFlowWeightsList(nullptr),
   fFlowPtWeightsList(nullptr),
   fFlowFeeddownList(nullptr),
@@ -309,9 +303,6 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
 
   hTrackEfficiencyRun(0),
 
-  fFlowRunByRunWeights(false),
-  fFlowPeriodWeights(false),
-  fFlowUse3Dweights(false),
   fFlowWeightsList(nullptr),
   fFlowPtWeightsList(nullptr),
   fFlowFeeddownList(nullptr),
@@ -532,7 +523,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   if (fuTwoParticleCorrelationGapScan || fuTwoParticleCorrelationHigherGapScan
       || fuThreeParticleCorrelationGapScan || fuFourParticleCorrelationGapScan) fuQGapScan = true;
 
-  hEventCount = new TH1D("hEventCount", "; centrality;;", 1, 0, 1);
+  hEventCount = new TH1D("hEventCount", "; centrality;;", 5, 0.5, 5.5);
   fListOfObjects->Add(hEventCount);
 
   hMult = new TH1F("hMult", ";number of tracks; entries", nn, xbins);
@@ -1600,9 +1591,15 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
 
 double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
-  double binPt = fPtWeightsSystematics->GetXaxis()->FindBin(pt);
-  double eff = fPtWeightsSystematics->GetBinContent(binPt);
-  double error = fPtWeightsSystematics->GetBinError(binPt);
+  double binPt = 0;
+  double eff = 1;
+  double error = 1;
+  if (fPeriod.EqualTo("LHC16qt")) {
+  } else {
+    fEtaPtWeightsSystematics[GetEtaPtFlag(eta)]->GetXaxis()->FindBin(pt);
+    fEtaPtWeightsSystematics[GetEtaPtFlag(eta)]->GetBinContent(binPt);
+    fEtaPtWeightsSystematics[GetEtaPtFlag(eta)]->GetBinError(binPt);
+  }
   double weight = 1;
   //..take into account error on efficiency: randomly get number from gaussian distribution of eff. where width = error
   if((eff < 0.03) || ((error/eff) > 0.1)) error = 0.00001;
@@ -1614,10 +1611,13 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
   weight = 1./efficiency; //..taking into account errors
   //weight = 1./eff;
 
-  if (fPeriod.EqualTo("LHC16qt") ||
-      fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
-      fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview") 
-		  ) {
+  if (fPeriod.EqualTo("LHC16qt")) {
+    double binPt = fEtaPtWeightsFeeddown[GetEtaPtFlag(eta)]->GetXaxis()->FindBin(pt);
+    double feeddown = fEtaPtWeightsFeeddown[GetEtaPtFlag(eta)]->GetBinContent(binPt);
+    weight /= feeddown;
+    
+  } else if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
+      fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview")) {
     double binPt = fPtWeightsFeeddown->GetXaxis()->FindBin(pt);
     double feeddown = fPtWeightsFeeddown->GetBinContent(binPt);
     weight /= feeddown;
@@ -1639,37 +1639,7 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
   return weight;
 
 }
-//____________________________________________________________________
-double AliAnalysisTaskNonlinearFlow::GetWeight(double phi, double eta, double pt, int fRun, bool fPlus, double vz, double runNumber) {
-  TList* weights_list = dynamic_cast<TList*>(fPhiWeight);
 
-  TList* averaged_list = dynamic_cast<TList*>(weights_list->FindObject("averaged"));
-  TH2D* hPhiWeightRun = dynamic_cast<TH2D*>(averaged_list->FindObject("Charged"));
-
-  double weight = hPhiWeightRun->GetBinContent(hPhiWeightRun->GetXaxis()->FindBin(phi),
-      hPhiWeightRun->GetYaxis()->FindBin(eta));
-  return weight;
-}
-
-
-const char* AliAnalysisTaskNonlinearFlow::GetSpeciesName(const PartSpecies species) const {
-  const char* name;
-
-  switch(species) {
-    case kRefs: name = "Refs"; break;
-    case kCharged: name = "Charged"; break;
-    case kPion: name = "Pion"; break;
-    case kKaon: name = "Kaon"; break;
-    case kProton: name = "Proton"; break;
-    case kCharUnidentified: name = "UnidentifiedCharged"; break;
-    case kK0s: name = "K0s"; break;
-    case kLambda: name = "Lambda"; break;
-    case kPhi: name = "Phi"; break;
-    default: name = "Unknown";
-  }
-
-  return name;
-}
 
 Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
 
@@ -1684,6 +1654,19 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
         printf("Weights could not be found in list!\n");
         return kFALSE;
       }
+      fWeightsSystematics->CreateNUA();
+    } else if (fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview")) {
+
+      if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+      else if (fCurrSystFlag >= 17)
+           fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag-7));
+      else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
+      // This special control is because the track flag is 1-16, but in NUA file it is 1-9
+      if(!fWeightsSystematics)
+        {
+          printf("Weights could not be found in list!\n");
+          return kFALSE;
+        }
       fWeightsSystematics->CreateNUA();
     } else {
       if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
@@ -1742,7 +1725,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
       return kFALSE;
     }
   } 
-  // If it is the pPb LHC16qt 
+  // If it is the pPb LHC16qt or pp
   else {
     if (fCurrSystFlag == 0) EvFlag = 0, TrFlag = 0;
     if (fCurrSystFlag == 1) EvFlag = 0, TrFlag = 1;
@@ -1759,17 +1742,22 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
     if (fCurrSystFlag == 19) EvFlag = 3, TrFlag = 0;
 
     if (fPeriod.EqualTo("LHC16qt")) {
-        fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("LHC17f2b_ch_Eta_0020_Ev%d_Tr%d", EvFlag, TrFlag));
 
-        cout << "Trying to load" << Form("LHC17f2b_ch_Eta_0020_Ev%d_Tr%d", EvFlag, TrFlag) << endl;
-        fPtWeightsFeeddown    = (TH1D*)fFlowFeeddownList->FindObject(Form("LHC17f2b_ch_Eta_0020_Ev%d_Tr%d", EvFlag, TrFlag));
+        TString etaReg[8] = {"0020", "0200", "0204", "0402", "0406", "0604", "0608", "0806"};
+
+        for (int flag = 0; flag < 8; flag++) {
+          fEtaPtWeightsSystematics[flag] = (TH1D*)fFlowPtWeightsList->FindObject(Form("LHC17f2b_ch_Eta_%s_Ev%d_Tr%d", etaReg[flag].Data(), EvFlag, TrFlag));
+          fEtaPtWeightsFeeddown[flag]    = (TH1D*)fFlowFeeddownList->FindObject(Form("LHC17f2b_ch_Eta_%s_Ev%d_Tr%d", etaReg[flag].Data(), EvFlag, TrFlag));
+        }
+        /* Too lazy to add the check
         if(!fPtWeightsSystematics)
         {
             printf("pPb: PtWeights could not be found in list!\n");
             return kFALSE;
         }
+        */
     } else {
-	std::string period = ReturnPPperiodMC(fAOD->GetRunNumber());
+	      std::string period = ReturnPPperiodMC(fAOD->GetRunNumber());
         fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("LHC%s_ch_Ev%d_Tr%d", period.c_str(), EvFlag, TrFlag));
         fPtWeightsFeeddown    = (TH1D*)fFlowFeeddownList->FindObject(Form("LHC%s_ch_Ev%d_Tr%d", period.c_str(), EvFlag, TrFlag));
         if(!fPtWeightsSystematics)
@@ -1841,71 +1829,6 @@ Double_t AliAnalysisTaskNonlinearFlow::GetFlowWeightSystematics(const AliVPartic
   return dWeight;
 }
 
-Bool_t AliAnalysisTaskNonlinearFlow::LoadWeights() {
-  // (Re-) Loading of flow vector weights
-  // ***************************************************************************
-  if(!fFlowWeightsList) { AliError("Flow weights list not found! Terminating!"); return kFALSE; }
-
-  TList* listFlowWeights = nullptr;
-
-  TString fFlowWeightsTag = "";
-  if(!fFlowWeightsTag.IsNull()) {
-    // using weights Tag if provided (systematics)
-    listFlowWeights = (TList*) fFlowWeightsList->FindObject(fFlowWeightsTag.Data());
-    if(!listFlowWeights) { AliError(Form("TList with tag '%s' not found!",fFlowWeightsTag.Data())); fFlowWeightsList->ls(); return kFALSE; }
-  } else {
-    if(!fFlowRunByRunWeights && !fFlowPeriodWeights) {
-      // loading run-averaged weights
-      listFlowWeights = (TList*) fFlowWeightsList->FindObject("averaged");
-      if(!listFlowWeights) { AliError("TList with flow run-averaged weights not found."); fFlowWeightsList->ls(); return kFALSE; }
-    } else if(fFlowPeriodWeights){
-      // loading period-specific weights
-      listFlowWeights = (TList*) fFlowWeightsList->FindObject(ReturnPPperiod(fAOD->GetRunNumber()));
-      if(!listFlowWeights) { AliError("Loading period weights failed!"); fFlowWeightsList->ls(); return kFALSE; }
-    }
-    else {
-      // loading run-specific weights
-      listFlowWeights = (TList*) fFlowWeightsList->FindObject(Form("%d",fAOD->GetRunNumber()));
-
-      if(!listFlowWeights) {
-        // run-specific weights not found for this run; loading run-averaged instead
-        AliWarning(Form("TList with flow weights (run %d) not found. Using run-averaged weights instead (as a back-up)", fAOD->GetRunNumber()));
-        listFlowWeights = (TList*) fFlowWeightsList->FindObject("averaged");
-        if(!listFlowWeights) { AliError("Loading run-averaged weights failed!"); fFlowWeightsList->ls(); return kFALSE; }
-      }
-    }
-  }
-
-
-  for(Int_t iSpec(0); iSpec <= kRefs; ++iSpec) {
-    if(fFlowUse3Dweights) {
-      fh3Weights[iSpec] = (TH3D*) listFlowWeights->FindObject(Form("%s3D",GetSpeciesName(PartSpecies(iSpec))));
-      if(!fh3Weights[iSpec]) { AliError(Form("Weight 3D (%s) not found",GetSpeciesName(PartSpecies(iSpec)))); return kFALSE; }
-    } else {
-      fh2Weights[iSpec] = (TH2D*) listFlowWeights->FindObject(GetSpeciesName(PartSpecies(iSpec)));
-      if(!fh2Weights[iSpec]) { AliError(Form("Weight 2D (%s) not found",GetSpeciesName(PartSpecies(iSpec)))); return kFALSE; }
-    }
-  }
-
-  return kTRUE;
-}
-
-Double_t AliAnalysisTaskNonlinearFlow::GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species) {
-  // if not applying for reconstructed
-  // if(!fFlowWeightsApplyForReco && HasMass(species)) { return 1.0; }
-
-  Double_t dWeight = 1.0;
-  if(fFlowUse3Dweights) {
-    Int_t iBin = fh3Weights[species]->FindFixBin(track->Phi(),track->Eta(),fVtxZ);
-    dWeight = fh3Weights[species]->GetBinContent(iBin);
-  } else {
-    Int_t iBin = fh2Weights[species]->FindFixBin(track->Phi(),track->Eta());
-    dWeight = fh2Weights[species]->GetBinContent(iBin);
-  }
-
-  if(dWeight <= 0.0) { dWeight = 1.0; }
-  return dWeight;
-}
 
 void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TString label, TList* listOfProfile) {
 
@@ -3508,4 +3431,19 @@ PhysicsProfile::PhysicsProfile(const PhysicsProfile& profile) :
   memset(fChcn6_Gap0, 0, sizeof(fChcn6_Gap0));
   memset(fChcn8, 0, sizeof(fChcn8));
   memset(fChcn8_Gap0, 0, sizeof(fChcn8_Gap0));
+}
+
+int AliAnalysisTaskNonlinearFlow::GetEtaPtFlag(double dEta) {
+  if(dEta > 0.0){
+    if(dEta > 0.6) return 6;
+    if(dEta > 0.4) return 4;
+    if(dEta > 0.2) return 2;
+    return 0;
+  }
+  else{
+    if(dEta < -0.6) return 7;
+    if(dEta < -0.4) return 5;
+    if(dEta < -0.2) return 3;
+    return 1;
+  }
 }
