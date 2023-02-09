@@ -56,6 +56,8 @@ fTriggerMask(0),
 fEventCuts(0),
 //pile-up rejection flag
 fRejectPileupEvts(kTRUE),
+//Centrality estimator
+fCentEstimator(0),
 //MC-related variables
 fisMC(kFALSE),
 fisMCassoc(kTRUE),
@@ -164,6 +166,8 @@ fTriggerMask(0),
 fEventCuts(0),
 //pile-up rejection flag
 fRejectPileupEvts(kTRUE),
+//Centrality estimator
+fCentEstimator("V0M"),
 //MC-related variables
 fisMC(kFALSE),
 fisMCassoc(kTRUE),
@@ -461,7 +465,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
     DataPosting(); 
     return; 
   } else {
-    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+    lPercentile = MultSelection->GetMultiplicityPercentile(fCentEstimator);
     lEvSelCode = MultSelection->GetEvSelCode(); //==0 means event is good. Set by AliMultSelectionTask
   }
 

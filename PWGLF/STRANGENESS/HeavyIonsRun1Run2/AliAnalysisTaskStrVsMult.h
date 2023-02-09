@@ -54,6 +54,9 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //pile-up rejection setter
     void SetRejectPileUpEvts(bool RejectPileupEvts){fRejectPileupEvts = RejectPileupEvts;};
 
+    //centrality estimator setter
+    void SetCentralityEstimator(TString CentEstimator){fCentEstimator = CentEstimator;};
+
   private:
     THistManager* fHistos_eve;                                //!
     THistManager* fHistos_K0S;                                //!
@@ -74,6 +77,9 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     //pile-up rejection flag
     bool fRejectPileupEvts;                                   //
 
+    //Centrality estimator
+    TString fCentEstimator;                                   //
+    
     //MC-realted variables
     bool fisMC;                                               //
     bool fisMCassoc;                                          //
