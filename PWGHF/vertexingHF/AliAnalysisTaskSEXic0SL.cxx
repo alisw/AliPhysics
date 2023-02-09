@@ -531,7 +531,9 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 		}
 
 		//xCheck, Dec. 2022
-		if ( (fCascDecayLenXiOld[nXi] > cutCasc_minDecayLenXi) && (fCascDecayLenV0Old[nXi] > cutCasc_minDecayLenV0) )
+		if ( (fCascDecayLenXiOld[nXi] > cutCasc_minDecayLenXi) &&
+			 (fCascDecayLenV0Old[nXi] > cutCasc_minDecayLenV0) &&
+			 (fabs(fCasc->MassXi() - MassXi) < 0.01) )
 		{
 			fHisto->FillTH1("c_massXi", fCasc->MassXi());
 
