@@ -216,9 +216,6 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetNUA(Bool_t NUA){fNUA = NUA;}
 		virtual void   SetIsMC(Bool_t isMC){fIsMC = isMC;}
 		virtual void   SetNtrksName(TString ntrksname){fNtrksName = ntrksname;}
-		virtual void   SetUseWeigthsRunByRun(Bool_t bRunByRun = kTRUE) { fFlowRunByRunWeights = bRunByRun; }
-		virtual void   SetUsePeriodWeigths(Bool_t weight = kTRUE) { fFlowPeriodWeights = weight; }
-		virtual void   SetUseWeights3D(Bool_t use = kTRUE) { fFlowUse3Dweights = use; }
 		virtual void   SetPeriod(TString period) { fPeriod = period; }
 		virtual void   SetSystFlag(int flag) { fCurrSystFlag = flag; }
 		virtual int    GetSystFlag() { return fCurrSystFlag; }
@@ -258,16 +255,6 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Bool_t                  AcceptAOD(AliAODEvent *inEv);
 		Bool_t                  AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
 		Bool_t                  AcceptMCTruthTrack(AliAODMCParticle *mtr);
-		Short_t			GetCentrCode(AliVEvent* ev);
-		bool 			CheckPrimary(AliVEvent *aod, double label);
-		bool			IsGoodPSEvent(AliVEvent *aod);
-		bool			IsSPDClusterVsTrackletBG(const AliVEvent* event, bool fillHist);
-		bool			IsV0C012vsTklBG         (const AliVEvent* event, bool fillHist);
-		bool			IsV0Casym               (const AliVEvent* event, bool fillHist);
-		bool			IsV0MOnVsOfPileup       (const AliVEvent* event, bool fillHist);
-		bool			IsSPDOnVsOfPileup       (const AliVEvent* event, bool fillHist);
-		bool			IsV0PFPileup            (const AliVEvent* event);
-		int 			GetRunPart(int run);
 
     Bool_t                  LoadWeightsSystematics();
 		Bool_t                  LoadWeightsKatarina();
@@ -278,11 +265,12 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Double_t GetPtWeightKatarina(double pt, double eta, double vz);
 		Double_t GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species);
     double 			GetPtWeight(double pt, double eta, float vz, double runNumber);
+    int GetEtaPtFlag(double eta);
 
 		const char* ReturnPPperiod(const Int_t runNumber) const;
 		const char* ReturnPPperiodMC(const Int_t runNumber) const;
 
-		AliEventCuts	fEventCuts;					// Event cuts
+		AliEventCuts	  fEventCuts;					// Event cuts
 		AliGFWCuts*     fGFWSelection;                                  //!
 		AliGFWNFCuts*   fGFWSelection15o;                               //!
 		AliAODEvent*    fAOD;                                           //! AOD object
@@ -292,12 +280,12 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Double_t		fVtxCut;				// Vtx cut on z position in cm
 		Double_t		fMinPt;					// Min pt - for histogram limits
 		Double_t		fMaxPt;					// Max pt - for histogram limits
-		Int_t			fTrigger;				// flag for trigger
-		Int_t			fAliTrigger;				// name for trigger
-		Bool_t			fNUE;					// flag for NUE correction
-		Bool_t			fNUA;					// 0: no NUA correction, 1: NUA correction
-		bool                    fIsMC;                                  // The observable for MonteCarlo truth
-		TString                 fNtrksName;                             // Cent or Mult
+		Int_t			  fTrigger;				// flag for trigger
+		Int_t			  fAliTrigger;		// name for trigger
+		Bool_t			fNUE;					  // flag for NUE correction
+		Bool_t			fNUA;					  // 0: no NUA correction, 1: NUA correction
+		bool        fIsMC;          // The observable for MonteCarlo truth
+		TString     fNtrksName;     // Cent or Mult
 		TString			fPeriod;				// period
 		Int_t                   fCurrSystFlag;                          // Systematics flag
 		Bool_t                  fSpringMode;                            // The mode with spring cuts.
@@ -322,11 +310,6 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH3F*			hTrackEfficiencyRun;            //! histogram with tracking efficiency (Katarina's format)
 
 		// NUA
-		bool fFlowRunByRunWeights;                              // flag of whether get the Run by run weight
-		bool fFlowPeriodWeights;                                // flag of whether to use period weight
-		bool fFlowUse3Dweights;                                 // flag of whether to use 3d weight 
-
-		// NUA
 		TList*                  fFlowWeightsList;               //! flowWightsList
 		TList*                  fFlowPtWeightsList;             //! PtflowWightsList
 		TList*                  fFlowFeeddownList;              //! FeeddownList
@@ -337,6 +320,8 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		AliGFWWeights*          fWeightsSystematics;            //! Weights for systematics
 		TH1D*                   fPtWeightsSystematics;          //! PtWeights for systematics
 		TH1D*                   fPtWeightsFeeddown;             //! Feeddown for systematics
+    TH1D*                   fEtaPtWeightsSystematics[8];          //! eta dependent PtWeights for systematics for pPb
+    TH1D*                   fEtaPtWeightsFeeddown[8];             //! eta dependent Feeddown for systematics for pPb
 
 
 		TH3F*			hPhiWeightRun;			//! 3D weight run-by-run for pPb 5TeV LHC16q
