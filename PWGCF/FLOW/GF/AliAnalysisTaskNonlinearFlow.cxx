@@ -523,7 +523,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   if (fuTwoParticleCorrelationGapScan || fuTwoParticleCorrelationHigherGapScan
       || fuThreeParticleCorrelationGapScan || fuFourParticleCorrelationGapScan) fuQGapScan = true;
 
-  hEventCount = new TH1D("hEventCount", "; centrality;;", 1, 0, 1);
+  hEventCount = new TH1D("hEventCount", "; centrality;;", 5, 0.5, 5.5);
   fListOfObjects->Add(hEventCount);
 
   hMult = new TH1F("hMult", ";number of tracks; entries", nn, xbins);
