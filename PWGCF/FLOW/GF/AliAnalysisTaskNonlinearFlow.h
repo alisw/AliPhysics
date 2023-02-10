@@ -448,7 +448,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 17);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 18);    //Analysis task
 };
 
 #endif
