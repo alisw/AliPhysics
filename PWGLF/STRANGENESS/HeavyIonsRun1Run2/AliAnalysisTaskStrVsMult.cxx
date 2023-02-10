@@ -55,7 +55,7 @@ fTriggerMask(0),
 //AliEventCuts object
 fEventCuts(0),
 //pile-up rejection flag
-fRejectPileupEvts(kTRUE),
+fPileupCut(0),
 //Centrality estimator
 fCentEstimator(0),
 //MC-related variables
@@ -165,7 +165,7 @@ fTriggerMask(0),
 //AliEventCuts object
 fEventCuts(0),
 //pile-up rejection flag
-fRejectPileupEvts(kTRUE),
+fPileupCut(0),
 //Centrality estimator
 fCentEstimator("V0M"),
 //MC-related variables
@@ -392,7 +392,8 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
   inputHandler->SetNeedField();
 
   //fEventCuts Setup
-  if (fRejectPileupEvts) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+  if (fPileupCut==1) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+  if (fPileupCut==2) fEventCuts.SetRejectTPCPileupWithV0CentTPCnTracksCorr(kTRUE);
 
   //geometrical cut Setup
   fESDTrackCuts.SetCutGeoNcrNcl(fDeadZoneWidth_GeoCut, fNcrNclLength_GeoCut, 1.5, 0.85, 0.7);
@@ -488,7 +489,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
   //fill number of events after pile-up rejection
   fHistos_eve->FillTH1("henum", 2.);
   
-  if (fRejectPileupEvts) {
+  if (fPileupCut) {
     if (!fEventCuts.PassedCut(AliEventCuts::kTPCPileUp)) {
       DataPosting(); 
       return;
