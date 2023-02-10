@@ -38,6 +38,14 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
   )
 
+# pulled in for HF vertexing
+if(FASTJET_FOUND)
+    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
+    add_definitions(${FASTJET_DEFINITIONS})
+    list(APPEND HDRS FJ_includes.h)
+endif(FASTJET_FOUND)
+
 if(ROOT_VERSION_MAJOR EQUAL 6)
 # Additional includes for ROOT 6 only dependencies - alphabetical order except ROOT
   include_directories(${AliPhysics_SOURCE_DIR}/ML
