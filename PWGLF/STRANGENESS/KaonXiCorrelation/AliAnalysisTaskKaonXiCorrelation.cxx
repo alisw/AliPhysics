@@ -44,6 +44,7 @@ namespace
   constexpr int kLambdaPdg(3122);
   constexpr double kXiMass{1.32171};
   constexpr double kLambdaMass{1.115683};
+  constexpr double kKaonMass{0.493667};
   constexpr double kcTauXi{4.91359839};
 
 }
@@ -193,7 +194,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
 
       if (!(aodTrack->GetStatus() & AliVTrack::kTPCrefit) ||
           !(aodTrack->GetStatus() & AliVTrack::kITSrefit) ||
-          std::abs(aodTrack->Y()) > fCutY ||
+          std::abs(Eta2y(aodTrack->Pt(), kKaonMass, aodTrack->Eta())) > fCutY ||
           std::abs(aodTrack->Eta()) > 0.8 ||
           aodTrack->Chi2perNDF() > 4 ||
           aodTrack->GetTPCNcls() < fCutTPCrecPoints ||
