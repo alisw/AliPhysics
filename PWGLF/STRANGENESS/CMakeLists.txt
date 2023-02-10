@@ -146,6 +146,7 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
     ${SRCS}
     Ratios/AliAnalysisTaskStrangenessRatios.cxx
+    KaonXiCorrelation/AliAnalysisTaskKaonXiCorrelation.cxx
   )
 endif()
 
@@ -216,6 +217,7 @@ install(DIRECTORY Correlationpp DESTINATION  PWGLF/STRANGENESS)
 install(DIRECTORY HeavyIonsRun1Run2/macros DESTINATION PWGLF/STRANGENESS/HeavyIonsRun1Run2)
 install(DIRECTORY StrPDF/macros DESTINATION PWGLF/STRANGENESS/StrPDF)
 install(DIRECTORY Ratios DESTINATION PWGLF/STRANGENESS/ FILES_MATCHING PATTERN "*.C")
+install(DIRECTORY KaonXiCorrelation DESTINATION PWGLF/STRANGENESS/ FILES_MATCHING PATTERN "*.C")
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Cascades/corrections)
   install(DIRECTORY Cascades/corrections DESTINATION PWGLF/STRANGENESS/Cascades)
