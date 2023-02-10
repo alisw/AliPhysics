@@ -146,6 +146,7 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
     ${SRCS}
     Ratios/AliAnalysisTaskStrangenessRatios.cxx
+    KaonXiCorrelation/AliAnalysisTaskKaonXiCorrelation.cxx
   )
 endif()
 
