@@ -1041,8 +1041,10 @@ void AddTask_GammaConvCalo_pPb(
 
   } else if (trainConfig == 1007) {
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530ha01cc00000","0h63103100000010"); // 0-100% with NL 1
+  } else if (trainConfig == 1008) { // timing cut effi u, new default
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 0-100% with NL 1
+  
   ///PCM-Variation
-
   } else if (trainConfig == 1010) {
 
     cuts.AddCutPCMCalo("80010113","0dm00069f9730000dge0404000","24466530ha01cc00000","0h63103100000010"); // min pT 40 MeV
