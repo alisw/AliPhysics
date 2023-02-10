@@ -44,7 +44,7 @@ namespace
   constexpr int kLambdaPdg(3122);
   constexpr double kXiMass{1.32171};
   constexpr double kLambdaMass{1.115683};
-  constexpr double kKaonMass{0.493667};
+  constexpr double kKaonMass{0.493677};
   constexpr double kcTauXi{4.91359839};
 
 }
