@@ -45,6 +45,7 @@ public:
     void SetAnalysisCuts(AliRDHFCuts *cuts)                                                       {fRDCuts = cuts;}
     void SetUseFinePtBinsForSparse(bool useFineBins = true)                                       {fUseFinPtBinsForSparse = useFineBins;}
     void SetFillNSparseAcceptanceLevel(bool fill = true)                                          {fFillAcceptanceLevel = fill;}
+    void SetFillNSparseNoAccAndYCut(bool fill = true)                                             {fFillNoAccAndYCut = fill;}
     /// methods for ML tree creation
     void SetCreateMLTree(bool flag = true)                                                        {fCreateMLtree = flag;}
     void SetMLTreePIDopt(int opt)                                                                 {fPIDopt = opt;} // default AliHFMLVarHandler::kNsigmaDetAndCombPID
@@ -152,7 +153,8 @@ private:
     int fDecChannel = kD0toKpi;                                                 /// channel to analyse
     int fPdgD = 421;                                                            /// pdg code of the D meson
     bool fReadMC = false;                                                       /// flag for access to MC
-    bool  fFillAcceptanceLevel = true;                                          /// flag for filling true reconstructed D at acceptance level (see FillMCGenAccHistos)
+    bool fFillAcceptanceLevel = true;                                           /// flag for filling true reconstructed D at acceptance level (see FillMCGenAccHistos)
+    bool fFillNoAccAndYCut = false;                                             /// flag to turn off mother rapidity cut and daughter acceptance check (see FillMCGenAccHistos) 
     int fAODProtection = 0;                                                     /// flag to activate protection against AOD-dAOD mismatch.
                                                                                 /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
     TList *fListCuts = nullptr;                                                 /// list of cuts
@@ -193,7 +195,7 @@ private:
     bool fFillSparsePreSelOnly = false;                                         /// flag to fill fnSparseReco applying only the linear pre-selections, to be used with fApplyML = false
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDmesonTree, 7); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDmesonTree, 8); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 

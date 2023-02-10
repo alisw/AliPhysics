@@ -942,6 +942,7 @@ void AliAnalysisTaskSEDmesonTree::FillMCGenAccHistos(TClonesArray *arrayMC, AliA
     /// Fill MC histos for cuts study
     ///    - at GenLimAccStep and AccStep (if fFillAcceptanceLevel=false)
     ///    - at AccStep (if fFillAcceptanceLevel=true)
+    ///    - without mother rapidity cut and daughter acceptance check
 
     double zMCVertex = mcHeader->GetVtxZ(); //vertex MC
     if (TMath::Abs(zMCVertex) <= fRDCuts->GetMaxVtxZ())
@@ -992,7 +993,7 @@ void AliAnalysisTaskSEDmesonTree::FillMCGenAccHistos(TClonesArray *arrayMC, AliA
                     isFidAcc = fRDCuts->IsInFiducialAcceptance(pt, rapid);
                     isDaugInAcc = CheckDaugAcc(arrayMC, nDau, labDau);
 
-                    if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid) < 0.5))
+                    if ((fFillAcceptanceLevel && isFidAcc && isDaugInAcc) || (!fFillAcceptanceLevel && TMath::Abs(rapid) < 0.5) || fFillNoAccAndYCut)
                     {
                         if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
                         {
@@ -1059,7 +1060,10 @@ void AliAnalysisTaskSEDmesonTree::CreateEffSparses()
     TString label[2] = {"fromC", "fromB"};
     for (int iHist = 0; iHist < 2; iHist++)
     {
-        TString titleSparse = Form("MC nSparse (%s)- %s", fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step", label[iHist].Data());
+        TString name = fFillAcceptanceLevel ? "Acc.Step" : "Gen.Acc.Step";
+        if (fFillNoAccAndYCut)
+            name = "No Acc. and Y Cut";
+        TString titleSparse = Form("MC nSparse (%s)- %s", name.Data(), label[iHist].Data());
         fnSparseMC[iHist] = new THnSparseF(Form("fnSparseAcc_%s", label[iHist].Data()), titleSparse.Data(), knVarForSparseAcc, nBinsAcc, xminAcc, xmaxAcc);
         fnSparseMC[iHist]->GetAxis(0)->SetTitle("#it{p}_{T} (GeV/c)");
         fnSparseMC[iHist]->GetAxis(1)->SetTitle("#it{y}");
