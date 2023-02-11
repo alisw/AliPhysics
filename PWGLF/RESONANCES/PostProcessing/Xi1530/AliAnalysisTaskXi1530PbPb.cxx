@@ -63,49 +63,54 @@ const Double_t pionMass = AliPID::ParticleMass(AliPID::kPion);
 const Double_t v0Mass = TDatabasePDG::Instance()->GetParticle(kLambda0)->Mass();
 const Double_t Ximass = TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass();
 
-enum {
+enum
+{
     kNormal = 1,
     kAnti = 2
 };
-enum {
-    kSigmaStarPCode = 3224,  // Sigma(1385)+
-    kSigmaStarNCode = 3114,  // Sigma(1385)-
-    kXiCode = 3312,          // Xi-
-    kXiZeroCode = 3322,      // Xi0
-    kLambdaCode = 3122,      // Lambda
-    kProtonCode = 2212,      // Proton+
-    kPionCode = 211,         // Pion+
-    kXiStarCode = 3324,      // Xi(1530)0
-    kXiStarMCode = 3314,     // Xi(1530)-
-    kLambdaStarCode = 3124,  // Lambda1520
-    kSigmaZeroCode = 3212    // Sigma0
+enum
+{
+    kSigmaStarPCode = 3224, // Sigma(1385)+
+    kSigmaStarNCode = 3114, // Sigma(1385)-
+    kXiCode = 3312,         // Xi-
+    kXiZeroCode = 3322,     // Xi0
+    kLambdaCode = 3122,     // Lambda
+    kProtonCode = 2212,     // Proton+
+    kPionCode = 211,        // Pion+
+    kXiStarCode = 3324,     // Xi(1530)0
+    kXiStarMCode = 3314,    // Xi(1530)-
+    kLambdaStarCode = 3124, // Lambda1520
+    kSigmaZeroCode = 3212   // Sigma0
 };
-enum {
+enum
+{
     kXiStar = 1,
     kXiStar_LS,
     kXiStar_MIX,
     kXiStar_NOT,
     kAllType
 };
-enum {
-    kXiStar_GEN = 1,  // 1
+enum
+{
+    kXiStar_GEN = 1, // 1
     kXiStar_GEN_INEL10,
     kXiStar_GEN_INEL10_IGZ,
     kXiStar_GEN_TRIG,
     kXiStar_REC,
 };
-enum {
-    kAll = 1,  // 1
+enum
+{
+    kAll = 1, // 1
     kINEL10,
     kINEL_trig,
     kINEL_trig_vtx,
     kINEL_trig_vtx10,
-    kINELg0,  // 6
+    kINELg0, // 6
     kINELg010,
     kINELg0_trig,
     kINELg0_trig_vtx,
     kINELg0_trig_vtx10,
-    kSelected  // 11
+    kSelected // 11
 };
 
 class AliAnalysisTaskXi1530PbPb;
@@ -160,11 +165,16 @@ ClassImp(AliAnalysisTaskXi1530PbPb)
                                                              fTPCNsigBachelorPionCut(3.0),
                                                              fDCALambdaDaughtersCut(0.8),
                                                              fDCAXiDaughtersCut(0.6),
-                                                             fDCALambdaPVCut(0.06),
-                                                             fDCAXiPVCut(0.3),
-                                                             fDCALambdaProtonPVCut(0.11),
-                                                             fDCALambdaPionPVCut(0.11),
-                                                             fDCABachelorPionPVCut(0.035),
+                                                             fMinDCALambdaPVCut(0.00),
+                                                             fMaxDCALambdaPVCut(10.0),
+                                                             fMinDCAXiPVCut(0.0),
+                                                             fMaxDCAXiPVCut(5.0),
+                                                             fMinDCALambdaProtonPVCut(0.0),
+                                                             fMinDCALambdaPionPVCut(0.0),
+                                                             fMinDCABachelorPionPVCut(0.0),
+                                                             fMaxDCALambdaProtonPVCut(10.0),
+                                                             fMaxDCALambdaPionPVCut(60.0),
+                                                             fMaxDCABachelorPionPVCut(40),
                                                              fV0CPACut(0.995),
                                                              fXiCPACut(0.99),
                                                              fXiEtaCut(0.8),
@@ -180,7 +190,8 @@ ClassImp(AliAnalysisTaskXi1530PbPb)
                                                              fXi1530MassHigh(1.6),
                                                              fXi1530MassLow(1.45),
                                                              fGoodTrackArray(),
-                                                             fGoodXiArray() {
+                                                             fGoodXiArray()
+{
     /// Default constructor
 }
 
@@ -235,11 +246,16 @@ AliAnalysisTaskXi1530PbPb::AliAnalysisTaskXi1530PbPb(const char *name,
                                                                       fTPCNsigBachelorPionCut(3.0),
                                                                       fDCALambdaDaughtersCut(0.8),
                                                                       fDCAXiDaughtersCut(0.6),
-                                                                      fDCALambdaPVCut(0.06),
-                                                                      fDCAXiPVCut(0.3),
-                                                                      fDCALambdaProtonPVCut(0.11),
-                                                                      fDCALambdaPionPVCut(0.11),
-                                                                      fDCABachelorPionPVCut(0.035),
+                                                                      fMinDCALambdaPVCut(0.00),
+                                                                      fMaxDCALambdaPVCut(10),
+                                                                      fMinDCAXiPVCut(0.0),
+                                                                      fMaxDCAXiPVCut(5.0),
+                                                                      fMinDCALambdaProtonPVCut(0.0),
+                                                                      fMinDCALambdaPionPVCut(0.0),
+                                                                      fMinDCABachelorPionPVCut(0.0),
+                                                                      fMaxDCALambdaProtonPVCut(10.0),
+                                                                      fMaxDCALambdaPionPVCut(60.0),
+                                                                      fMaxDCABachelorPionPVCut(40),
                                                                       fV0CPACut(0.995),
                                                                       fXiCPACut(0.99),
                                                                       fXiEtaCut(0.8),
@@ -255,27 +271,31 @@ AliAnalysisTaskXi1530PbPb::AliAnalysisTaskXi1530PbPb(const char *name,
                                                                       fXi1530MassHigh(1.6),
                                                                       fXi1530MassLow(1.45),
                                                                       fGoodTrackArray(),
-                                                                      fGoodXiArray() {
+                                                                      fGoodXiArray()
+{
     DefineInput(0, TChain::Class());
     DefineOutput(1, TList::Class());
     DefineOutput(2, TNtupleD::Class());
 }
 
 //_____________________________________________________________________________
-AliAnalysisTaskXi1530PbPb::~AliAnalysisTaskXi1530PbPb() {
+AliAnalysisTaskXi1530PbPb::~AliAnalysisTaskXi1530PbPb()
+{
     if (AliAnalysisManager::GetAnalysisManager()->IsProofMode())
         return;
     if (fHistos)
         delete fHistos;
     if (fTree)
         delete fTree;
-    if (!fIsMC) {
+    if (!fIsMC)
+    {
         delete fTreeXi1530Rec;
     }
 }
 
 //___________________________________________________________________
-void AliAnalysisTaskXi1530PbPb::SetCutOpen() {
+void AliAnalysisTaskXi1530PbPb::SetCutOpen()
+{
     // Use for Tree study
     // Pion cuts
     SetFilterbitXi1530Pion(32);
@@ -311,7 +331,8 @@ void AliAnalysisTaskXi1530PbPb::SetCutOpen() {
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskXi1530PbPb::UserCreateOutputObjects() {
+void AliAnalysisTaskXi1530PbPb::UserCreateOutputObjects()
+{
     fTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
 
     fHistos = new THistManager("Xi1530hists");
@@ -345,11 +366,12 @@ void AliAnalysisTaskXi1530PbPb::UserCreateOutputObjects() {
     auto binPt = AxisFix("Pt", 200, 0, 20);
     auto binMass = AxisFix("Mass", 1800, 1.2, 3.0);
     // fBinZ = AxisFix("Z", 20, -10, 10);	// 1cm diff
-    fBinZ = AxisVar("Z", {-10, -5, -3, -1, 1, 3, 5, 10});  // moderate diff
+    fBinZ = AxisVar("Z", {-10, -5, -3, -1, 1, 3, 5, 10}); // moderate diff
 
     CreateTHnSparse("Xi1530_data", "Xi1530_data", 5,
                     {binAnti, binType, fBinCent, binPt, binMass}, "s");
-    if (fIsMC) {
+    if (fIsMC)
+    {
         auto binTypeMCNorm = AxisStr("Type",
                                      {"kAll",
                                       "kINEL10",
@@ -376,7 +398,8 @@ void AliAnalysisTaskXi1530PbPb::UserCreateOutputObjects() {
     fHistos->CreateTH1("hXi1530Data", "", 1800, 1.2, 3.0, "s");
     fHistos->CreateTH1("hXi1530LS", "", 1800, 1.2, 3.0, "s");
     fHistos->CreateTH1("hXi1530Mix", "", 1800, 1.2, 3.0, "s");
-    if (fFillQAPlot) {
+    if (fFillQAPlot)
+    {
         // BEFORE CUT 	///////////////////////////////////
         // TPC PID dEdX
         fHistos->CreateTH2("QA/hTPCPIDLambdaProton", "", 200, 0, 20, 200, 0, 200);
@@ -452,7 +475,8 @@ void AliAnalysisTaskXi1530PbPb::UserCreateOutputObjects() {
         fHistos->CreateTH1("QAcut/hMassXi", "", 100, 1.26, 1.36, "s");
         fHistos->CreateTH1("QAcut/hLambdaRXY", "", 200, 0, 200);
         fHistos->CreateTH1("QAcut/hXiRXY", "", 200, 0, 200);
-        if (fIsMC) {
+        if (fIsMC)
+        {
             fHistos->CreateTH1("MCQA/hMCGeneratedXi1530Pt", "", 150, 0, 15, "s");
             fHistos->CreateTH1("MCQA/hMCReconstructedXi1530Pt", "", 150, 0, 15, "s");
         }
@@ -461,13 +485,16 @@ void AliAnalysisTaskXi1530PbPb::UserCreateOutputObjects() {
     if (fUseBuiltinMixer)
         fEMpool.resize(fBinCent.GetNbins() + 1,
                        std::vector<eventpool>(fBinZ.GetNbins() + 1));
-    
+
     fTreeXi1530Rec = fIsMC ? &fTreeXi1530Gen : new StructXi1530PbPb;
     OpenFile(2);
     fTree = new TTree("Xi1530Tree", "Xi1530Tree");
-    if (fIsMC) {
+    if (fIsMC)
+    {
         fTree->Branch("Xi1530TreeMC", &fTreeXi1530Gen);
-    } else {
+    }
+    else
+    {
         fTree->Branch("StructXi1530PbPb", fTreeXi1530Rec);
     }
 
@@ -476,9 +503,11 @@ void AliAnalysisTaskXi1530PbPb::UserCreateOutputObjects() {
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskXi1530PbPb::UserExec(Option_t *) {
+void AliAnalysisTaskXi1530PbPb::UserExec(Option_t *)
+{
     AliVEvent *event = InputEvent();
-    if (!event) {
+    if (!event)
+    {
         PostData(1, fHistos->GetListOfHistograms());
         PostData(2, fTree);
         AliInfo("Could not retrieve event");
@@ -493,7 +522,8 @@ void AliAnalysisTaskXi1530PbPb::UserExec(Option_t *) {
         : fEvt = dynamic_cast<AliAODEvent *>(event);
     if (!fIsAOD && (event->IsA() != AliESDEvent::Class()))
         fIsAOD = true;
-    if (!fEvt) {
+    if (!fEvt)
+    {
         PostData(1, fHistos->GetListOfHistograms());
         PostData(2, fTree);
         return;
@@ -508,12 +538,14 @@ void AliAnalysisTaskXi1530PbPb::UserExec(Option_t *) {
         IsSelectedTrig{false},
         IsVtxInZCut{false},
         IsGoodVertex{false};
-    if (!nanoHeader) {
+    if (!nanoHeader)
+    {
         IsEvtSelected = fEventCuts.AcceptEvent(event);
-        if (fIsMC) {
+        if (fIsMC)
+        {
             if (fIsAOD)
                 fMCArray =
-                    (TClonesArray *)fEvt->FindListObject("mcparticles");  // AOD Case
+                    (TClonesArray *)fEvt->FindListObject("mcparticles"); // AOD Case
             fMCEvent = MCEvent();
             IsINEL0True = fEventCuts.IsTrueINELgtZero(fEvt, true);
         }
@@ -528,13 +560,16 @@ void AliAnalysisTaskXi1530PbPb::UserExec(Option_t *) {
         IsVtxInZCut = fEventCuts.PassedCut(AliEventCuts::kVertexPosition);
         IsSelectedTrig = fEventCuts.PassedCut(AliEventCuts::kTrigger);
         IsGoodVertex = fEventCuts.PassedCut(AliEventCuts::kVertexQuality);
-    } else {
+    }
+    else
+    {
         if (!fIsNano)
             fIsNano = kTRUE;
-        if (fIsMC) {
+        if (fIsMC)
+        {
             if (fIsAOD)
                 fMCArray =
-                    (TClonesArray *)fEvt->FindListObject("mcparticles");  // AOD Case
+                    (TClonesArray *)fEvt->FindListObject("mcparticles"); // AOD Case
             fMCEvent = MCEvent();
             IsINEL0True = true;
         }
@@ -548,7 +583,8 @@ void AliAnalysisTaskXi1530PbPb::UserExec(Option_t *) {
             fCent = -0.5;
     }
 
-    if (fIsMC) {
+    if (fIsMC)
+    {
         if (IsVtxInZCut)
             FillMCinput(fMCEvent, 1);
         if (IsINEL0True && IsVtxInZCut)
@@ -556,47 +592,58 @@ void AliAnalysisTaskXi1530PbPb::UserExec(Option_t *) {
         if (IsSelectedTrig)
             FillMCinput(fMCEvent, 3);
         FillTHnSparse("Normalisation", {(int)kAll, (double)fCent});
-        if (IsINEL0True) {
+        if (IsINEL0True)
+        {
             FillTHnSparse("Normalisation", {(int)kINELg0, (double)fCent});
-            if (IsVtxInZCut) {
+            if (IsVtxInZCut)
+            {
                 FillTHnSparse("Normalisation", {(int)kINELg010, (double)fCent});
             }
 
-            if (IsSelectedTrig) {
+            if (IsSelectedTrig)
+            {
                 FillTHnSparse("Normalisation", {(int)kINELg0_trig, (double)fCent});
-                if (IsGoodVertex) {
+                if (IsGoodVertex)
+                {
                     FillTHnSparse("Normalisation", {(int)kINELg0_trig_vtx, (double)fCent});
-                    if (IsVtxInZCut) {
+                    if (IsVtxInZCut)
+                    {
                         FillTHnSparse("Normalisation", {(int)kINELg0_trig_vtx10, (double)fCent});
                     }
                 }
             }
         }
 
-        if (IsVtxInZCut) {
+        if (IsVtxInZCut)
+        {
             FillTHnSparse("Normalisation", {(int)kINEL10, (double)fCent});
         }
 
-        if (IsSelectedTrig) {
+        if (IsSelectedTrig)
+        {
             FillTHnSparse("Normalisation", {(int)kINEL_trig, (double)fCent});
-            if (IsGoodVertex) {
+            if (IsGoodVertex)
+            {
                 FillTHnSparse("Normalisation", {(int)kINEL_trig_vtx, (double)fCent});
-                if (IsVtxInZCut) {
+                if (IsVtxInZCut)
+                {
                     FillTHnSparse("Normalisation", {(int)kINEL_trig_vtx10, (double)fCent});
                 }
             }
         }
     }
 
-    if (!IsEvtSelected) {
+    if (!IsEvtSelected)
+    {
         PostData(1, fHistos->GetListOfHistograms());
         PostData(2, fTree);
-        return;  // event cut
+        return; // event cut
     }
 
     fHistos->FillTH1("hMultiplicity", (double)fCent);
 
-    if (fIsMC) {
+    if (fIsMC)
+    {
         FillMCinput(fMCEvent);
         FillTHnSparse("Normalisation", {(int)kSelected, (double)fCent});
     }
@@ -610,23 +657,25 @@ void AliAnalysisTaskXi1530PbPb::UserExec(Option_t *) {
     fMagField = fEvt->GetMagneticField();
 
     // Event Mixing pool -----------------------------------------------------
-    fZbin = fBinZ.FindBin(fPosPV[2]) - 1;    // Event mixing z-bin
-    fCentBin = fBinCent.FindBin(fCent) - 1;  // Event mixing cent bin
+    fZbin = fBinZ.FindBin(fPosPV[2]) - 1;   // Event mixing z-bin
+    fCentBin = fBinCent.FindBin(fCent) - 1; // Event mixing cent bin
     if (fIsINEL)
-        fCentBin = 0;  // for INEL case
+        fCentBin = 0; // for INEL case
 
     bool checkPion = GoodTracksSelection();
     bool checkCascade = GoodCascadeSelection();
 
-    if (checkPion && checkCascade) {
+    if (checkPion && checkCascade)
+    {
         if (!fSkipFillingHisto)
-            FillTracks();  // Fill the histogram
+            FillTracks(); // Fill the histogram
         if (fFillTree)
             FillTree();
     }
 
-    if (fUseBuiltinMixer && fSetMixing && fGoodTrackArray.size()) {
-        FillTrackToEventPool();  // use only pion track pool.
+    if (fUseBuiltinMixer && fSetMixing && fGoodTrackArray.size())
+    {
+        FillTrackToEventPool(); // use only pion track pool.
     }
 
     PostData(1, fHistos->GetListOfHistograms());
@@ -637,7 +686,8 @@ void AliAnalysisTaskXi1530PbPb::UserExec(Option_t *) {
 void AliAnalysisTaskXi1530PbPb::Terminate(Option_t *) {}
 
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskXi1530PbPb::GoodTracksSelection() {
+Bool_t AliAnalysisTaskXi1530PbPb::GoodTracksSelection()
+{
     const UInt_t nTracks = fEvt->GetNumberOfTracks();
     fGoodTrackArray.clear();
     AliVTrack *track;
@@ -646,28 +696,35 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodTracksSelection() {
     Double_t nTPCNSigPion, pionZ, pionPt, pionSigmaDCA_r, pionDCA_r, lEta;
     Int_t isTPCGeo = 0;
 
-    for (UInt_t it = 0; it < nTracks; it++) {
+    for (UInt_t it = 0; it < nTracks; it++)
+    {
         track = (AliVTrack *)fEvt->GetTrack(it);
         if (!track)
             continue;
 
         // ---------- Track selection begin ----------
-        if (!fIsAOD) {
+        if (!fIsAOD)
+        {
             if (!fTrackCuts->AcceptTrack((AliESDtrack *)track))
                 continue;
             if (fCheckTPCGeo)
                 isTPCGeo = IsSelectedTPCGeoCut(((AliESDtrack *)track)) ? 1 : 0;
-        }  // ESD Case
-        else {
-            if (!fIsNano) {
+        } // ESD Case
+        else
+        {
+            if (!fIsNano)
+            {
                 if (!((AliAODTrack *)track)->TestFilterBit(fFilterBit))
                     continue;
                 if (fCheckTPCGeo)
                     isTPCGeo = IsSelectedTPCGeoCut(((AliAODTrack *)track)) ? 1 : 0;
-            } else {
+            }
+            else
+            {
                 if (!(static_cast<AliNanoAODTrack *>(track)->TestFilterBit(fFilterBit)))
                     continue;
-                if (fCheckTPCGeo) {
+                if (fCheckTPCGeo)
+                {
                     static const Int_t tpcGeo_index = AliNanoAODTrackMapping::GetInstance()->GetVarIndex("cstTPCGeoLength");
                     isTPCGeo = (static_cast<AliNanoAODTrack *>(track)->GetVar(tpcGeo_index) > 0.5) ? 1 : 0;
                 }
@@ -682,7 +739,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodTracksSelection() {
         pionSigmaDCA_r = (0.0026 + 0.0050 / pionPt);
         pionDCA_r = TMath::Abs(b[0]);
         lEta = track->Eta();
-        if (fFillQAPlot) {
+        if (fFillQAPlot)
+        {
             fHistos->FillTH1("QA/hDCAXi1530PiontoPV", pionZ);
             fHistos->FillTH1("QA/hDCArPVXi1530Pion", pionDCA_r);
             fHistos->FillTH1("QA/hEtaXi1530Pion", lEta);
@@ -707,7 +765,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodTracksSelection() {
         if (fCheckTPCGeo && isTPCGeo < 0.5)
             continue;
 
-        if (fFillQAPlot) {
+        if (fFillQAPlot)
+        {
             fHistos->FillTH1("QAcut/hDCAXi1530PiontoPV", pionZ);
             fHistos->FillTH1("QAcut/hDCArPVXi1530Pion", pionDCA_r);
             fHistos->FillTH1("QAcut/hEtaXi1530Pion", lEta);
@@ -725,7 +784,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodTracksSelection() {
     return fGoodTrackArray.size();
 }
 
-Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
+Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection()
+{
     fGoodXiArray.clear();
     const UInt_t nXi = fEvt->GetNumberOfCascades();
 
@@ -739,34 +799,40 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
     Double_t lPosXi[3];
     Double_t lPosV0[3];
     Double_t lMomXi[3];
-    Float_t b[2];     // Float due to the function input
-    Float_t bCov[3];  // Float due to the function input
+    Float_t b[2];    // Float due to the function input
+    Float_t bCov[3]; // Float due to the function input
 
     Bool_t AcceptedXi = kTRUE;
-    if (!fIsAOD) {
+    if (!fIsAOD)
+    {
         // ESD case
-        for (UInt_t it = 0; it < nXi; it++) {
+        for (UInt_t it = 0; it < nXi; it++)
+        {
             AcceptedXi = kTRUE;
             xiESD = ((AliESDEvent *)fEvt)->GetCascade(it);
-            if (!xiESD) {
+            if (!xiESD)
+            {
                 AliInfo("No Cascade!");
                 continue;
             }
 
             if (TMath::Abs(xiESD->GetPindex()) ==
-                TMath::Abs(xiESD->GetNindex())) {
+                TMath::Abs(xiESD->GetNindex()))
+            {
                 AliInfo("Same index p-n");
                 continue;
             }
 
             if (TMath::Abs(xiESD->GetPindex()) ==
-                TMath::Abs(xiESD->GetBindex())) {
+                TMath::Abs(xiESD->GetBindex()))
+            {
                 AliInfo("Same index p-b");
                 continue;
             }
 
             if (TMath::Abs(xiESD->GetNindex()) ==
-                TMath::Abs(xiESD->GetBindex())) {
+                TMath::Abs(xiESD->GetBindex()))
+            {
                 AliInfo("Same index n-b");
                 continue;
             }
@@ -776,11 +842,13 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             AliESDtrack *bTrackXi = (AliESDtrack *)fEvt->GetTrack(TMath::Abs(xiESD->GetBindex()));
 
             // PID cuts for Xi daughters
-            if (xiESD->Charge() == -1) {
+            if (xiESD->Charge() == -1)
+            {
                 // Xi- has +proton, -pion
                 lTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
                 lTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
-                if (fFillQAPlot) {
+                if (fFillQAPlot)
+                {
                     fHistos->FillTH2("QA/hTPCPIDLambdaProton",
                                      pTrackXi->GetTPCmomentum(),
                                      pTrackXi->GetTPCsignal());
@@ -788,11 +856,14 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                                      nTrackXi->GetTPCmomentum(),
                                      nTrackXi->GetTPCsignal());
                 }
-            } else {
+            }
+            else
+            {
                 // Xi+ has -proton, +pion
                 lTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
                 lTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
-                if (fFillQAPlot) {
+                if (fFillQAPlot)
+                {
                     fHistos->FillTH2("QA/hTPCPIDLambdaProton",
                                      nTrackXi->GetTPCmomentum(),
                                      nTrackXi->GetTPCsignal());
@@ -803,7 +874,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             }
 
             lTPCNSigBachelorPion = GetTPCnSigma(bTrackXi, AliPID::kPion);
-            if (fFillQAPlot) {
+            if (fFillQAPlot)
+            {
                 fHistos->FillTH2("QA/hTPCPIDBachelorPion",
                                  bTrackXi->GetTPCmomentum(),
                                  bTrackXi->GetTPCsignal());
@@ -812,7 +884,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                 fHistos->FillTH1("QA/hTPCPIDsignalBachelorPion", lTPCNSigBachelorPion);
             }
 
-            if (TMath::Abs(lTPCNSigProton) > fTPCNsigLambdaProtonCut) {
+            if (TMath::Abs(lTPCNSigProton) > fTPCNsigLambdaProtonCut)
+            {
                 AliInfo(Form("Lambda proton PID cut failed -  value: %f, cut: %f",
                              lTPCNSigProton, fTPCNsigLambdaProtonCut));
                 if (fFillQAPlot)
@@ -821,7 +894,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if (TMath::Abs(lTPCNSigLambdaPion) > fTPCNsigLambdaPionCut) {
+            if (TMath::Abs(lTPCNSigLambdaPion) > fTPCNsigLambdaPionCut)
+            {
                 AliInfo(Form("Lambda pion PID cut failed -  value: %f, cut: %f",
                              lTPCNSigLambdaPion, fTPCNsigLambdaPionCut));
                 if (fFillQAPlot)
@@ -830,7 +904,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if (TMath::Abs(lTPCNSigBachelorPion) > fTPCNsigBachelorPionCut) {
+            if (TMath::Abs(lTPCNSigBachelorPion) > fTPCNsigBachelorPionCut)
+            {
                 AliInfo(Form("Bachelor Pion PID cut failed -  value: %f, cut: %f",
                              lTPCNSigBachelorPion,
                              fTPCNsigBachelorPionCut));
@@ -844,27 +919,30 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             // DCA between Dautgher particles
             lDCALambdaDaughters = TMath::Abs(xiESD->GetDcaV0Daughters());
             lDCAXiDaughters = TMath::Abs(xiESD->GetDcaXiDaughters());
-            if (lDCALambdaDaughters > fDCALambdaDaughtersCut) {
+            if (lDCALambdaDaughters > fDCALambdaDaughtersCut)
+            {
                 AliInfo(Form(
                     "DCA Lambda daughters cut failed -  value: %f, cut: %f",
                     lDCALambdaDaughters, fDCALambdaDaughtersCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
                 else
-                    continue;  // DCA proton-pion
+                    continue; // DCA proton-pion
             }
 
-            if (lDCAXiDaughters > fDCAXiDaughtersCut) {
+            if (lDCAXiDaughters > fDCAXiDaughtersCut)
+            {
                 AliInfo(
                     Form("DCA Xi daughters cut failed -  value: %f, cut: %f",
                          lDCAXiDaughters, fDCAXiDaughtersCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
                 else
-                    continue;  // DCA Lambda-pion
+                    continue; // DCA Lambda-pion
             }
 
-            if (fFillQAPlot) {
+            if (fFillQAPlot)
+            {
                 fHistos->FillTH1("QA/hDCALambdaBTWDaughters", lDCALambdaDaughters);
                 fHistos->FillTH1("QA/hDCAXiBTWDaughters", lDCAXiDaughters);
             }
@@ -874,13 +952,16 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                 TMath::Abs(xiESD->GetD(fPosPV[0], fPosPV[1], fPosPV[2]));
             lDCAXiPV =
                 TMath::Abs(xiESD->GetDcascade(fPosPV[0], fPosPV[1], fPosPV[2]));
-            if (xiESD->Charge() == -1) {
+            if (xiESD->Charge() == -1)
+            {
                 // Xi- has +proton, -pion
                 GetImpactParam(pTrackXi, b, bCov);
                 lDCALambdaProtonPV = TMath::Abs(b[0]);
                 GetImpactParam(nTrackXi, b, bCov);
                 lDCALambdaPionPV = TMath::Abs(b[0]);
-            } else {
+            }
+            else
+            {
                 GetImpactParam(nTrackXi, b, bCov);
                 lDCALambdaProtonPV = TMath::Abs(b[0]);
                 GetImpactParam(pTrackXi, b, bCov);
@@ -890,52 +971,106 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             GetImpactParam(bTrackXi, b, bCov);
             lDCABachelorPionPV = TMath::Abs(b[0]);
 
-            if (lDCALambdaPV < fDCALambdaPVCut) {
+            if (lDCALambdaPV < fMinDCALambdaPVCut)
+            {
                 AliInfo(Form("DCA Lambda PV cut failed -  value: %f, cut: %f",
-                             lDCALambdaPV, fDCALambdaPVCut));
+                             lDCALambdaPV, fMinDCALambdaPVCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
                 else
-                    continue;  // DCA Lambda-vertex
+                    continue; // min DCA Lambda-vertex
             }
-
-            // if (lDCAXiPV < fDCAXiPVCut) {
-            //   AliInfo(Form("DCA Xi PV cut failed -  value: %f, cut: %f",
-            //     lDCAXiPV, fDCAXiPVCut));
-            //   if (fFillQAPlot)
-            //     AcceptedXi = kFALSE;
-            //   else
-            //     continue;	// DCA Lambda-vertex
-            // }
-
-            if (lDCALambdaProtonPV < fDCALambdaProtonPVCut) {
-                AliInfo(Form("DCA LambdaProton PV cut failed -  value: %f, cut: %f",
-                             lDCALambdaProtonPV, fDCALambdaProtonPVCut));
+            if (lDCALambdaPV > fMaxDCALambdaPVCut)
+            {
+                AliInfo(Form("max DCA Lambda PV cut failed -  value: %f, cut: %f",
+                             lDCALambdaPV, fMaxDCALambdaPVCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
                 else
-                    continue;  // DCA Proton of Lambda-vertex
+                    continue; // max DCA Lambda-vertex
             }
 
-            if (lDCALambdaPionPV < fDCALambdaPionPVCut) {
-                AliInfo(Form("DCA LambdaPion PV cut failed -  value: %f, cut: %f",
-                             lDCALambdaPionPV, fDCALambdaPionPVCut));
+            if (lDCAXiPV < fMinDCAXiPVCut)
+            {
+                AliInfo(Form("min DCA Xi PV cut failed -  value: %f, cut: %f",
+                             lDCAXiPV, fMinDCAXiPVCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
                 else
-                    continue;  // DCA Pion of Lambda-vertex
+                    continue; // DCA Xi-vertex
             }
-
-            if (lDCABachelorPionPV < fDCABachelorPionPVCut) {
-                AliInfo(Form("DCA BachelorPion PV cut failed -  value: %f, cut: %f",
-                             lDCABachelorPionPV, fDCABachelorPionPVCut));
+            if (lDCAXiPV > fMaxDCAXiPVCut)
+            {
+                AliInfo(Form("max DCA Xi PV cut failed -  value: %f, cut: %f",
+                             lDCAXiPV, fMaxDCAXiPVCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
                 else
-                    continue;  // DCA BachelorPion of Xi-vertex
+                    continue; // DCA Xi-vertex
             }
 
-            if (fFillQAPlot) {
+            if (lDCALambdaProtonPV < fMinDCALambdaProtonPVCut)
+            {
+                AliInfo(Form("min DCA LambdaProton PV cut failed -  value: %f, cut: %f",
+                             lDCALambdaProtonPV, fMinDCALambdaProtonPVCut));
+                if (fFillQAPlot)
+                    AcceptedXi = kFALSE;
+                else
+                    continue; // min DCA Proton of Lambda-vertex
+            }
+
+            if (lDCALambdaProtonPV > fMaxDCALambdaProtonPVCut)
+            {
+                AliInfo(Form("max DCA LambdaProton PV cut failed -  value: %f, cut: %f",
+                             lDCALambdaProtonPV, fMaxDCALambdaProtonPVCut));
+                if (fFillQAPlot)
+                    AcceptedXi = kFALSE;
+                else
+                    continue; // max DCA Proton of Lambda-vertex
+            }
+
+            if (lDCALambdaPionPV < fMinDCALambdaPionPVCut)
+            {
+                AliInfo(Form("min DCA LambdaPion PV cut failed -  value: %f, cut: %f",
+                             lDCALambdaPionPV, fMinDCALambdaPionPVCut));
+                if (fFillQAPlot)
+                    AcceptedXi = kFALSE;
+                else
+                    continue; // min DCA Pion of Lambda-vertex
+            }
+
+            if (lDCALambdaPionPV > fMaxDCALambdaPionPVCut)
+            {
+                AliInfo(Form("max DCA LambdaPion PV cut failed -  value: %f, cut: %f",
+                             lDCALambdaPionPV, fMaxDCALambdaPionPVCut));
+                if (fFillQAPlot)
+                    AcceptedXi = kFALSE;
+                else
+                    continue; // max DCA Pion of Lambda-vertex
+            }
+
+            if (lDCABachelorPionPV < fMinDCABachelorPionPVCut)
+            {
+                AliInfo(Form("min DCA BachelorPion PV cut failed -  value: %f, cut: %f",
+                             lDCABachelorPionPV, fMinDCABachelorPionPVCut));
+                if (fFillQAPlot)
+                    AcceptedXi = kFALSE;
+                else
+                    continue; // min DCA BachelorPion of Xi-vertex
+            }
+
+            if (lDCABachelorPionPV > fMaxDCABachelorPionPVCut)
+            {
+                AliInfo(Form("max DCA BachelorPion PV cut failed -  value: %f, cut: %f",
+                             lDCABachelorPionPV, fMaxDCABachelorPionPVCut));
+                if (fFillQAPlot)
+                    AcceptedXi = kFALSE;
+                else
+                    continue; // max DCA BachelorPion of Xi-vertex
+            }
+
+            if (fFillQAPlot)
+            {
                 fHistos->FillTH1("QA/hDCALambdatoPV", lDCALambdaPV);
                 fHistos->FillTH1("QA/hDCAXitoPV", lDCAXiPV);
                 fHistos->FillTH1("QA/hDCALambdaProtontoPV", lDCALambdaProtonPV);
@@ -951,7 +1086,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             else
                 lLambdaCPA = TMath::Abs(xiESD->GetV0CosineOfPointingAngle(fPosPV[0], fPosPV[1], fPosPV[2]));
 
-            if (lLambdaCPA < fV0CPACut) {
+            if (lLambdaCPA < fV0CPACut)
+            {
                 AliInfo(Form("CPA Lambda cut failed -  value: %f, cut: %f",
                              lLambdaCPA, fV0CPACut));
                 if (fFillQAPlot)
@@ -960,7 +1096,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if (lXiCPA < fXiCPACut) {
+            if (lXiCPA < fXiCPACut)
+            {
                 AliInfo(Form("CPA Xi cut failed -  value: %f, cut: %f", lXiCPA,
                              fXiCPACut));
                 if (fFillQAPlot)
@@ -969,7 +1106,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if (fFillQAPlot) {
+            if (fFillQAPlot)
+            {
                 fHistos->FillTH1("QA/hCPALambda", lLambdaCPA);
                 fHistos->FillTH1("QA/hCPAXi", lXiCPA);
             }
@@ -978,7 +1116,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             lMassXi = xiESD->GetEffMassXi();
             lMassV0 = xiESD->GetEffMass();
 
-            if (TMath::Abs(lMassV0 - v0Mass) > fV0MassWindowCut) {
+            if (TMath::Abs(lMassV0 - v0Mass) > fV0MassWindowCut)
+            {
                 AliInfo(Form("Lambda Mass cut failed -  value: %f, cut: %f", lMassV0 - v0Mass, fV0MassWindowCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
@@ -986,7 +1125,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if (TMath::Abs(lMassXi - Ximass) > fXiMassWindowCut) {
+            if (TMath::Abs(lMassXi - Ximass) > fXiMassWindowCut)
+            {
                 AliInfo(Form("Xi Mass cut failed -  value: %f, cut: %f", TMath::Abs(lMassXi - Ximass), fXiMassWindowCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
@@ -994,7 +1134,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if (fFillQAPlot) {
+            if (fFillQAPlot)
+            {
                 fHistos->FillTH1("QA/hMassXi", lMassXi);
                 fHistos->FillTH1("QA/hMassV0", lMassV0);
             }
@@ -1002,7 +1143,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             // Eta cut
             lXieta = xiESD->Eta();
             lXiphi = xiESD->Phi();
-            if (TMath::Abs(lXieta) > fXiEtaCut) {
+            if (TMath::Abs(lXieta) > fXiEtaCut)
+            {
                 AliInfo(Form("Eta cut failed -  value: %f, cut: %f", xiESD->Eta(), fXiEtaCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
@@ -1019,7 +1161,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             radiusV0 = TMath::Hypot(lPosV0[0], lPosV0[1]);
             radiusXi = TMath::Hypot(lPosXi[0] - fPosPV[0], lPosXi[1] - fPosPV[1]);
 
-            if ((radiusV0 < fLambdaLowRadius) || (radiusV0 > fLambdaHighRadius)) {
+            if ((radiusV0 < fLambdaLowRadius) || (radiusV0 > fLambdaHighRadius))
+            {
                 AliInfo(Form("V0 radius cut failed -  value: %f, cut: %f < value < %f", radiusV0, fLambdaLowRadius, fLambdaHighRadius));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
@@ -1027,7 +1170,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if ((radiusXi < fLambdaLowRadius) || (radiusXi > fLambdaHighRadius)) {
+            if ((radiusXi < fLambdaLowRadius) || (radiusXi > fLambdaHighRadius))
+            {
                 AliInfo(Form("Xi radius cut failed -  value: %f, cut: %f < value < %f", radiusXi, fXiLowRadius, fXiHighRadius));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
@@ -1035,23 +1179,29 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if (fFillQAPlot) {
+            if (fFillQAPlot)
+            {
                 fHistos->FillTH1("QA/hLambdaRXY", radiusV0);
                 fHistos->FillTH1("QA/hXiRXY", radiusXi);
             }
 
             // After selection above
-            if (AcceptedXi) {
-                fGoodXiArray.push_back(it);  // for standard V0
-                if (fFillQAPlot) {
-                    if (xiESD->Charge() == -1) {
+            if (AcceptedXi)
+            {
+                fGoodXiArray.push_back(it); // for standard V0
+                if (fFillQAPlot)
+                {
+                    if (xiESD->Charge() == -1)
+                    {
                         fHistos->FillTH2("QAcut/hTPCPIDLambdaProton",
                                          pTrackXi->GetTPCmomentum(),
                                          pTrackXi->GetTPCsignal());
                         fHistos->FillTH2("QAcut/hTPCPIDLambdaPion",
                                          nTrackXi->GetTPCmomentum(),
                                          nTrackXi->GetTPCsignal());
-                    } else {
+                    }
+                    else
+                    {
                         fHistos->FillTH2("QAcut/hTPCPIDLambdaProton",
                                          nTrackXi->GetTPCmomentum(),
                                          nTrackXi->GetTPCsignal());
@@ -1082,31 +1232,37 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     fHistos->FillTH1("QAcut/hXiRXY", radiusXi);
                 }
             }
-        }  // All Xi loop
-    }      // ESD case
-    else {
-        for (UInt_t it = 0; it < nXi; it++) {
+        } // All Xi loop
+    }     // ESD case
+    else
+    {
+        for (UInt_t it = 0; it < nXi; it++)
+        {
             AcceptedXi = kTRUE;
             xiAOD = ((AliAODEvent *)fEvt)->GetCascade(it);
-            if (!xiAOD) {
+            if (!xiAOD)
+            {
                 AliInfo("No Cascade!");
                 continue;
             }
 
             if (TMath::Abs(xiAOD->GetPosID()) ==
-                TMath::Abs(xiAOD->GetNegID())) {
+                TMath::Abs(xiAOD->GetNegID()))
+            {
                 AliInfo("Same index p-n");
                 continue;
             }
 
             if (TMath::Abs(xiAOD->GetPosID()) ==
-                TMath::Abs(xiAOD->GetBachID())) {
+                TMath::Abs(xiAOD->GetBachID()))
+            {
                 AliInfo("Same index p-b");
                 continue;
             }
 
             if (TMath::Abs(xiAOD->GetNegID()) ==
-                TMath::Abs(xiAOD->GetBachID())) {
+                TMath::Abs(xiAOD->GetBachID()))
+            {
                 AliInfo("Same index n-b");
                 continue;
             }
@@ -1116,11 +1272,13 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             AliAODTrack *bTrackXi = (AliAODTrack *)(xiAOD->GetDecayVertexXi()->GetDaughter(0));
 
             // PID cuts for Xi daughters
-            if (xiAOD->ChargeXi() == -1) {
+            if (xiAOD->ChargeXi() == -1)
+            {
                 // Xi- has +proton, -pion
                 lTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
                 lTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
-                if (fFillQAPlot) {
+                if (fFillQAPlot)
+                {
                     fHistos->FillTH2("QA/hTPCPIDLambdaProton",
                                      pTrackXi->GetTPCmomentum(),
                                      pTrackXi->GetTPCsignal());
@@ -1128,11 +1286,14 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                                      nTrackXi->GetTPCmomentum(),
                                      nTrackXi->GetTPCsignal());
                 }
-            } else {
+            }
+            else
+            {
                 // Xi+ has -proton, +pion
                 lTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
                 lTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
-                if (fFillQAPlot) {
+                if (fFillQAPlot)
+                {
                     fHistos->FillTH2("QA/hTPCPIDLambdaProton",
                                      nTrackXi->GetTPCmomentum(),
                                      nTrackXi->GetTPCsignal());
@@ -1143,7 +1304,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             }
 
             lTPCNSigBachelorPion = GetTPCnSigma(bTrackXi, AliPID::kPion);
-            if (fFillQAPlot) {
+            if (fFillQAPlot)
+            {
                 fHistos->FillTH2("QA/hTPCPIDBachelorPion",
                                  bTrackXi->GetTPCmomentum(),
                                  bTrackXi->GetTPCsignal());
@@ -1152,7 +1314,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                 fHistos->FillTH1("QA/hTPCPIDsignalBachelorPion", lTPCNSigBachelorPion);
             }
 
-            if (TMath::Abs(lTPCNSigProton) > fTPCNsigLambdaProtonCut) {
+            if (TMath::Abs(lTPCNSigProton) > fTPCNsigLambdaProtonCut)
+            {
                 AliInfo(Form("Lambda proton PID cut failed -  value: %f, cut: %f",
                              lTPCNSigProton, fTPCNsigLambdaProtonCut));
                 if (fFillQAPlot)
@@ -1161,7 +1324,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if (TMath::Abs(lTPCNSigLambdaPion) > fTPCNsigLambdaPionCut) {
+            if (TMath::Abs(lTPCNSigLambdaPion) > fTPCNsigLambdaPionCut)
+            {
                 AliInfo(Form("Lambda pion PID cut failed -  value: %f, cut: %f",
                              lTPCNSigLambdaPion, fTPCNsigLambdaPionCut));
                 if (fFillQAPlot)
@@ -1170,7 +1334,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if (TMath::Abs(lTPCNSigBachelorPion) > fTPCNsigBachelorPionCut) {
+            if (TMath::Abs(lTPCNSigBachelorPion) > fTPCNsigBachelorPionCut)
+            {
                 AliInfo(Form("Bachelor Pion PID cut failed -  value: %f, cut: %f",
                              lTPCNSigBachelorPion,
                              fTPCNsigBachelorPionCut));
@@ -1184,27 +1349,30 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             // DCA between Dautgher particles
             lDCALambdaDaughters = TMath::Abs(xiAOD->DcaV0Daughters());
             lDCAXiDaughters = TMath::Abs(xiAOD->DcaXiDaughters());
-            if (lDCALambdaDaughters > fDCALambdaDaughtersCut) {
+            if (lDCALambdaDaughters > fDCALambdaDaughtersCut)
+            {
                 AliInfo(Form(
                     "DCA Lambda daughters cut failed -  value: %f, cut: %f",
                     lDCALambdaDaughters, fDCALambdaDaughtersCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
                 else
-                    continue;  // DCA proton-pion
+                    continue; // DCA proton-pion
             }
 
-            if (lDCAXiDaughters > fDCAXiDaughtersCut) {
+            if (lDCAXiDaughters > fDCAXiDaughtersCut)
+            {
                 AliInfo(
                     Form("DCA Xi daughters cut failed -  value: %f, cut: %f",
                          lDCAXiDaughters, fDCAXiDaughtersCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
                 else
-                    continue;  // DCA Lambda-pion
+                    continue; // DCA Lambda-pion
             }
 
-            if (fFillQAPlot) {
+            if (fFillQAPlot)
+            {
                 fHistos->FillTH1("QA/hDCALambdaBTWDaughters", lDCALambdaDaughters);
                 fHistos->FillTH1("QA/hDCAXiBTWDaughters", lDCAXiDaughters);
             }
@@ -1212,13 +1380,16 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             // DCA to PV cut
             lDCALambdaPV = TMath::Abs(xiAOD->DcaV0ToPrimVertex());
             lDCAXiPV = TMath::Abs(xiAOD->DcaXiToPrimVertex(fPosPV[0], fPosPV[1], fPosPV[2]));
-            if (xiAOD->Charge() == -1) {
+            if (xiAOD->Charge() == -1)
+            {
                 // Xi- has +proton, -pion
                 GetImpactParam(pTrackXi, b, bCov);
                 lDCALambdaProtonPV = TMath::Abs(b[0]);
                 GetImpactParam(nTrackXi, b, bCov);
                 lDCALambdaPionPV = TMath::Abs(b[0]);
-            } else {
+            }
+            else
+            {
                 GetImpactParam(nTrackXi, b, bCov);
                 lDCALambdaProtonPV = TMath::Abs(b[0]);
                 GetImpactParam(pTrackXi, b, bCov);
@@ -1228,52 +1399,98 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             GetImpactParam(bTrackXi, b, bCov);
             lDCABachelorPionPV = TMath::Abs(b[0]);
 
-            if (lDCALambdaPV < fDCALambdaPVCut) {
-                AliInfo(Form("DCA Lambda PV cut failed -  value: %f, cut: %f",
-                             lDCALambdaPV, fDCALambdaPVCut));
+            if (lDCALambdaPV < fMinDCALambdaPVCut)
+            {
+                AliInfo(Form("min DCA Lambda PV cut failed -  value: %f, cut: %f",
+                             lDCALambdaPV, fMinDCALambdaPVCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
                 else
-                    continue;  // DCA Lambda-vertex
+                    continue; // min DCA Lambda-vertex
             }
 
-            // if (lDCAXiPV < fDCAXiPVCut) {
-            //   AliInfo(Form("DCA Xi PV cut failed -  value: %f, cut: %f",
-            //     lDCAXiPV, fDCAXiPVCut));
-            //   if (fFillQAPlot)
-            //     AcceptedXi = kFALSE;
-            //   else
-            //     continue;	// DCA Xi-vertex
-            // }
-
-            if (lDCALambdaProtonPV < fDCALambdaProtonPVCut) {
-                AliInfo(Form("DCA LambdaProton PV cut failed -  value: %f, cut: %f",
-                             lDCALambdaProtonPV, fDCALambdaProtonPVCut));
+            if (lDCALambdaPV > fMaxDCALambdaPVCut)
+            {
+                AliInfo(Form("max DCA Lambda PV cut failed -  value: %f, cut: %f",
+                             lDCALambdaPV, fMaxDCALambdaPVCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
                 else
-                    continue;  // DCA Proton of Lambda-vertex
+                    continue; // max DCA Lambda-vertex
             }
 
-            if (lDCALambdaPionPV < fDCALambdaPionPVCut) {
-                AliInfo(Form("DCA LambdaPion PV cut failed -  value: %f, cut: %f",
-                             lDCALambdaPionPV, fDCALambdaPionPVCut));
+            if (lDCAXiPV < fMinDCAXiPVCut)
+            {
+                AliInfo(Form("DCA Xi PV cut failed -  value: %f, cut: %f",
+                             lDCAXiPV, fMinDCAXiPVCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
                 else
-                    continue;  // DCA Pion of Lambda-vertex
+                    continue; // DCA Xi-vertex
             }
 
-            if (lDCABachelorPionPV < fDCABachelorPionPVCut) {
-                AliInfo(Form("DCA BachelorPion PV cut failed -  value: %f, cut: %f",
-                             lDCABachelorPionPV, fDCABachelorPionPVCut));
+            if (lDCALambdaProtonPV < fMinDCALambdaProtonPVCut)
+            {
+                AliInfo(Form("min DCA LambdaProton PV cut failed -  value: %f, cut: %f",
+                             lDCALambdaProtonPV, fMinDCALambdaProtonPVCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
                 else
-                    continue;  // DCA BachelorPion of Xi-vertex
+                    continue; // min DCA Proton of Lambda-vertex
             }
 
-            if (fFillQAPlot) {
+            if (lDCALambdaProtonPV > fMaxDCALambdaProtonPVCut)
+            {
+                AliInfo(Form("max DCA LambdaProton PV cut failed -  value: %f, cut: %f",
+                             lDCALambdaProtonPV, fMaxDCALambdaProtonPVCut));
+                if (fFillQAPlot)
+                    AcceptedXi = kFALSE;
+                else
+                    continue; // max DCA Proton of Lambda-vertex
+            }
+
+            if (lDCALambdaPionPV < fMinDCALambdaPionPVCut)
+            {
+                AliInfo(Form("min DCA LambdaPion PV cut failed -  value: %f, cut: %f",
+                             lDCALambdaPionPV, fMinDCALambdaPionPVCut));
+                if (fFillQAPlot)
+                    AcceptedXi = kFALSE;
+                else
+                    continue; // min DCA Pion of Lambda-vertex
+            }
+
+            if (lDCALambdaPionPV > fMaxDCALambdaPionPVCut)
+            {
+                AliInfo(Form("max DCA LambdaPion PV cut failed -  value: %f, cut: %f",
+                             lDCALambdaPionPV, fMaxDCALambdaPionPVCut));
+                if (fFillQAPlot)
+                    AcceptedXi = kFALSE;
+                else
+                    continue; // max DCA Pion of Lambda-vertex
+            }
+
+            if (lDCABachelorPionPV < fMinDCABachelorPionPVCut)
+            {
+                AliInfo(Form("min DCA BachelorPion PV cut failed -  value: %f, cut: %f",
+                             lDCABachelorPionPV, fMinDCABachelorPionPVCut));
+                if (fFillQAPlot)
+                    AcceptedXi = kFALSE;
+                else
+                    continue; // min DCA BachelorPion of Xi-vertex
+            }
+
+            if (lDCABachelorPionPV > fMaxDCABachelorPionPVCut)
+            {
+                AliInfo(Form("max DCA BachelorPion PV cut failed -  value: %f, cut: %f",
+                             lDCABachelorPionPV, fMaxDCABachelorPionPVCut));
+                if (fFillQAPlot)
+                    AcceptedXi = kFALSE;
+                else
+                    continue; // max DCA BachelorPion of Xi-vertex
+            }
+
+            if (fFillQAPlot)
+            {
                 fHistos->FillTH1("QA/hDCALambdatoPV", lDCALambdaPV);
                 fHistos->FillTH1("QA/hDCAXitoPV", lDCAXiPV);
                 fHistos->FillTH1("QA/hDCALambdaProtontoPV", lDCALambdaProtonPV);
@@ -1291,7 +1508,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             else
                 lLambdaCPA = TMath::Abs(xiAOD->CosPointingAngle(fPosPV));
 
-            if (lLambdaCPA < fV0CPACut) {
+            if (lLambdaCPA < fV0CPACut)
+            {
                 AliInfo(Form("CPA Lambda cut failed -  value: %f, cut: %f",
                              lLambdaCPA, fV0CPACut));
                 if (fFillQAPlot)
@@ -1300,7 +1518,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if (lXiCPA < fXiCPACut) {
+            if (lXiCPA < fXiCPACut)
+            {
                 AliInfo(Form("CPA Xi cut failed -  value: %f, cut: %f", lXiCPA,
                              fXiCPACut));
                 if (fFillQAPlot)
@@ -1309,7 +1528,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if (fFillQAPlot) {
+            if (fFillQAPlot)
+            {
                 fHistos->FillTH1("QA/hCPALambda", lLambdaCPA);
                 fHistos->FillTH1("QA/hCPAXi", lXiCPA);
             }
@@ -1322,7 +1542,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             else
                 lMassV0 = xiAOD->MassAntiLambda();
 
-            if (TMath::Abs(lMassV0 - v0Mass) > fV0MassWindowCut) {
+            if (TMath::Abs(lMassV0 - v0Mass) > fV0MassWindowCut)
+            {
                 AliInfo(Form("Lambda Mass cut failed -  value: %f, cut: %f", lMassV0 - v0Mass, fV0MassWindowCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
@@ -1330,7 +1551,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if (TMath::Abs(lMassXi - Ximass) > fXiMassWindowCut) {
+            if (TMath::Abs(lMassXi - Ximass) > fXiMassWindowCut)
+            {
                 AliInfo(Form("Xi Mass cut failed -  value: %f, cut: %f", TMath::Abs(lMassXi - Ximass), fXiMassWindowCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
@@ -1338,7 +1560,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if (fFillQAPlot) {
+            if (fFillQAPlot)
+            {
                 fHistos->FillTH1("QA/hMassXi", lMassXi);
                 fHistos->FillTH1("QA/hMassV0", lMassV0);
             }
@@ -1355,7 +1578,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                                  (lXimomsum - lMomXi[2] + 1.e-13));
             lXiphi =
                 TMath::Pi() + TMath::ATan2(-lMomXi[1], -lMomXi[0]);
-            if (TMath::Abs(lXieta) > fXiEtaCut) {
+            if (TMath::Abs(lXieta) > fXiEtaCut)
+            {
                 AliInfo(Form("Eta cut failed -  value: %f, cut: %f", xiAOD->Eta(), fXiEtaCut));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
@@ -1373,7 +1597,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
             radiusV0 = TMath::Hypot(lPosV0[0], lPosV0[1]);
             radiusXi = TMath::Hypot(lPosXi[0] - fPosPV[0], lPosXi[1] - fPosPV[1]);
 
-            if ((radiusV0 < fLambdaLowRadius) || (radiusV0 > fLambdaHighRadius)) {
+            if ((radiusV0 < fLambdaLowRadius) || (radiusV0 > fLambdaHighRadius))
+            {
                 AliInfo(Form("V0 radius cut failed -  value: %f, cut: %f < value < %f", radiusV0, fLambdaLowRadius, fLambdaHighRadius));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
@@ -1381,7 +1606,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if ((radiusXi < fLambdaLowRadius) || (radiusXi > fLambdaHighRadius)) {
+            if ((radiusXi < fLambdaLowRadius) || (radiusXi > fLambdaHighRadius))
+            {
                 AliInfo(Form("Xi radius cut failed -  value: %f, cut: %f < value < %f", radiusXi, fXiLowRadius, fXiHighRadius));
                 if (fFillQAPlot)
                     AcceptedXi = kFALSE;
@@ -1389,23 +1615,29 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                     continue;
             }
 
-            if (fFillQAPlot) {
+            if (fFillQAPlot)
+            {
                 fHistos->FillTH1("QA/hLambdaRXY", radiusV0);
                 fHistos->FillTH1("QA/hXiRXY", radiusXi);
             }
 
             // After selection above
-            if (AcceptedXi) {
-                fGoodXiArray.push_back(it);  // for standard V0
-                if (fFillQAPlot) {
-                    if (xiAOD->ChargeXi() == -1) {
+            if (AcceptedXi)
+            {
+                fGoodXiArray.push_back(it); // for standard V0
+                if (fFillQAPlot)
+                {
+                    if (xiAOD->ChargeXi() == -1)
+                    {
                         fHistos->FillTH2("QAcut/hTPCPIDLambdaProton",
                                          pTrackXi->GetTPCmomentum(),
                                          pTrackXi->GetTPCsignal());
                         fHistos->FillTH2("QAcut/hTPCPIDLambdaPion",
                                          nTrackXi->GetTPCmomentum(),
                                          nTrackXi->GetTPCsignal());
-                    } else {
+                    }
+                    else
+                    {
                         fHistos->FillTH2("QAcut/hTPCPIDLambdaProton",
                                          nTrackXi->GetTPCmomentum(),
                                          nTrackXi->GetTPCsignal());
@@ -1437,11 +1669,12 @@ Bool_t AliAnalysisTaskXi1530PbPb::GoodCascadeSelection() {
                 }
             }
         }
-    }  // All Xi loop
+    } // All Xi loop
     return fGoodXiArray.size();
 }
 
-void AliAnalysisTaskXi1530PbPb::FillTracks() {
+void AliAnalysisTaskXi1530PbPb::FillTracks()
+{
     AliVTrack *track1;
     AliVTrack *track_mix;
     AliESDcascade *xiESD;
@@ -1463,22 +1696,27 @@ void AliAnalysisTaskXi1530PbPb::FillTracks() {
     const UInt_t nTracks = fGoodTrackArray.size();
 
     tracklist trackpool;
-    if (fSetMixing) {
+    if (fSetMixing)
+    {
         eventpool &ep = (!fUseBuiltinMixer)
                             ? fMixingPool->GetMixingPool()[fCentBin][fZbin]
                             : fEMpool[fCentBin][fZbin];
         if ((int)ep.size() < (int)fnMix)
             SkipMixing = kTRUE;
-        if (!SkipMixing) {
-            for (auto pool : ep) {
+        if (!SkipMixing)
+        {
+            for (auto pool : ep)
+            {
                 for (auto track : pool)
                     trackpool.push_back((AliVTrack *)track);
             }
         }
     }
 
-    for (UInt_t i = 0; i < nXi; i++) {
-        if (!fIsAOD) {
+    for (UInt_t i = 0; i < nXi; i++)
+    {
+        if (!fIsAOD)
+        {
             xiESD = ((AliESDEvent *)fEvt)->GetCascade(fGoodXiArray[i]);
             if (!xiESD)
                 continue;
@@ -1499,7 +1737,9 @@ void AliAnalysisTaskXi1530PbPb::FillTracks() {
                 isXiAnti = kFALSE;
 
             vecXi.SetXYZM(xiESD->Px(), xiESD->Py(), xiESD->Pz(), xiESD->GetEffMassXi());
-        } else {
+        }
+        else
+        {
             xiAOD = ((AliAODEvent *)fEvt)->GetCascade(fGoodXiArray[i]);
             if (!xiAOD)
                 continue;
@@ -1524,43 +1764,48 @@ void AliAnalysisTaskXi1530PbPb::FillTracks() {
         (isXiAnti) ? binAnti = kAnti : binAnti = kNormal;
 
         // pion loop start
-        for (UInt_t j = 0; j < nTracks; j++) {
+        for (UInt_t j = 0; j < nTracks; j++)
+        {
             track1 = (AliVTrack *)fEvt->GetTrack(fGoodTrackArray[j]);
             if (!track1)
                 continue;
 
             if (track1->GetID() == pID ||
                 track1->GetID() == nID ||
-                track1->GetID() == bID) {
+                track1->GetID() == bID)
+            {
                 AliInfo(Form("same track for Xi1530 prion!"));
                 continue;
             }
 
             vecPion.SetXYZM(track1->Px(), track1->Py(), track1->Pz(), pionMass);
 
-            vecXi1530 = vecXi + vecPion;  // vecXi = cascade, vecPion=pion
+            vecXi1530 = vecXi + vecPion; // vecXi = cascade, vecPion=pion
             // Y cut
             if ((vecXi1530.Rapidity() > fXi1530YCutHigh) ||
                 (vecXi1530.Rapidity() < fXi1530YCutLow))
                 continue;
 
             // Opening Angle - Not using in normal mode
-            if (fExoticFinder) {
+            if (fExoticFinder)
+            {
                 Double_t angle = vecXi.Angle(vecPion.Vect());
                 if (fFillQAPlot)
                     fHistos->FillTH1("QA/hExoticOpenAngle", angle);
-                if (TMath::Abs(angle) < fExoticMaxOpenAngle)  // 4.5 degree
+                if (TMath::Abs(angle) < fExoticMaxOpenAngle) // 4.5 degree
                     continue;
             }
 
             AliInfo("All cut passed!!");
             sign = kAllType;
             if (((isXiAnti) && (track1->Charge() < 0)) ||
-                ((!isXiAnti) && (track1->Charge() > 0))) {
+                ((!isXiAnti) && (track1->Charge() > 0)))
+            {
                 sign = kXiStar;
                 fHistos->FillTH1("hXi1530Data", vecXi1530.M());
-
-            } else {
+            }
+            else
+            {
                 sign = kXiStar_LS;
                 fHistos->FillTH1("hXi1530LS", vecXi1530.M());
             }
@@ -1572,8 +1817,10 @@ void AliAnalysisTaskXi1530PbPb::FillTracks() {
                            vecXi1530.Pt(),
                            vecXi1530.M()});
 
-            if (fIsMC) {
-                if (IsTrueXi1530(fGoodXiArray[i], fGoodTrackArray[j])) {
+            if (fIsMC)
+            {
+                if (IsTrueXi1530(fGoodXiArray[i], fGoodTrackArray[j]))
+                {
                     AliInfo("True Xi1530");
                     FillTHnSparse("Xi1530_mc",
                                   {(double)binAnti,
@@ -1583,7 +1830,9 @@ void AliAnalysisTaskXi1530PbPb::FillTracks() {
                                    vecXi1530.M()});
                     if (fFillQAPlot)
                         fHistos->FillTH1("MCQA/hMCReconstructedXi1530Pt", vecXi1530.Pt());
-                } else {
+                }
+                else
+                {
                     // AliInfo("Not True Xi1530");
                     // MC not true bkg
                     sign = kXiStar_NOT;
@@ -1595,20 +1844,24 @@ void AliAnalysisTaskXi1530PbPb::FillTracks() {
                                    vecXi1530.M()});
                 }
             }
-        }  // pion loop end
+        } // pion loop end
 
         // event mix pion loop start
-        if (fSetMixing && !SkipMixing && (fCentBin >= 0) && (fZbin >= 0)) {
-            for (UInt_t jt = 0; jt < trackpool.size(); jt++) {
+        if (fSetMixing && !SkipMixing && (fCentBin >= 0) && (fZbin >= 0))
+        {
+            for (UInt_t jt = 0; jt < trackpool.size(); jt++)
+            {
                 track_mix = trackpool.at(jt);
                 if (track_mix->GetID() == pID ||
                     track_mix->GetID() == nID ||
-                    track_mix->GetID() == bID) {
+                    track_mix->GetID() == bID)
+                {
                     AliInfo(Form("same track for Xi1530 prion!"));
                     continue;
                 }
 
-                if (!fUseBuiltinMixer) {
+                if (!fUseBuiltinMixer)
+                {
                     // We need to check further.
                     GetImpactParam(track_mix, b, bCov);
                     pionZ = TMath::Abs(b[1]);
@@ -1632,16 +1885,18 @@ void AliAnalysisTaskXi1530PbPb::FillTracks() {
                     continue;
 
                 // Opening Angle - Not using in normal mode
-                if (fExoticFinder) {
+                if (fExoticFinder)
+                {
                     Double_t angle = vecXi.Angle(vecPionMix.Vect());
                     fHistos->FillTH1("QA/hExoticOpenAngle", angle);
-                    if (TMath::Abs(angle) < fExoticMaxOpenAngle)  // 4.5 degree
+                    if (TMath::Abs(angle) < fExoticMaxOpenAngle) // 4.5 degree
                         continue;
                 }
 
                 sign = kAllType;
                 if (((isXiAnti) && (track_mix->Charge() < 0)) ||
-                    ((!isXiAnti) && (track_mix->Charge() > 0))) {
+                    ((!isXiAnti) && (track_mix->Charge() > 0)))
+                {
                     sign = kXiStar_MIX;
 
                     fHistos->FillTH1("hXi1530Mix", vecXi1530.M());
@@ -1652,13 +1907,14 @@ void AliAnalysisTaskXi1530PbPb::FillTracks() {
                                    (double)fCent,
                                    vecXi1530.Pt(),
                                    vecXi1530.M()});
-                }  // Don't conosider LS for mix
+                } // Don't conosider LS for mix
             }
-        }  // event mix pion loop end
+        } // event mix pion loop end
     }
 }
 
-void AliAnalysisTaskXi1530PbPb::FillTree() {
+void AliAnalysisTaskXi1530PbPb::FillTree()
+{
     // FillTree will fill the ntuples for Tree Analysis
     // It can be turned on by using SetFillnTuple() Default: Off
 
@@ -1672,18 +1928,20 @@ void AliAnalysisTaskXi1530PbPb::FillTree() {
         lXimomsum(999), lXieta(999), radiusV0(999), radiusXi(999);
     Double_t lPosXi[3], lPosV0[3], lMomXi[3], pos[3], cov[6], lPosRsnVtx[3], dztemp[2], covartemp[3], chi2perNDF, dispersion;
     Double_t cv[21], xdummy, ydummy, dca, radiusRsn;
-    Float_t b[2];     // Float due to the function input
-    Float_t bCov[3];  // Float due to the function input
+    Float_t b[2];    // Float due to the function input
+    Float_t bCov[3]; // Float due to the function input
 
     Int_t pID, nID, bID;
     Bool_t isXiAnti = kFALSE;
-    
+
     TLorentzVector vecXi, vecPion;
     TLorentzVector vecXi1530;
     const UInt_t nXi = fGoodXiArray.size();
     const UInt_t nTracks = fGoodTrackArray.size();
-    for (UInt_t i = 0; i < nXi; i++) {
-        if (!fIsAOD) {
+    for (UInt_t i = 0; i < nXi; i++)
+    {
+        if (!fIsAOD)
+        {
             xiESD = ((AliESDEvent *)fEvt)->GetCascade(fGoodXiArray[i]);
             if (!xiESD)
                 continue;
@@ -1705,10 +1963,13 @@ void AliAnalysisTaskXi1530PbPb::FillTree() {
 
             vecXi.SetXYZM(xiESD->Px(), xiESD->Py(), xiESD->Pz(), xiESD->GetEffMassXi());
 
-            if (!isXiAnti) {
+            if (!isXiAnti)
+            {
                 lTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
                 lTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
-            } else {
+            }
+            else
+            {
                 lTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
                 lTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
             }
@@ -1723,12 +1984,15 @@ void AliAnalysisTaskXi1530PbPb::FillTree() {
             lDCAXiPV =
                 TMath::Abs(xiESD->GetDcascade(fPosPV[0], fPosPV[1], fPosPV[2]));
 
-            if (!isXiAnti) {
+            if (!isXiAnti)
+            {
                 GetImpactParam(pTrackXi, b, bCov);
                 lDCALambdaProtonPV = TMath::Abs(b[0]);
                 GetImpactParam(nTrackXi, b, bCov);
                 lDCALambdaPionPV = TMath::Abs(b[0]);
-            } else {
+            }
+            else
+            {
                 GetImpactParam(nTrackXi, b, bCov);
                 lDCALambdaProtonPV = TMath::Abs(b[0]);
                 GetImpactParam(pTrackXi, b, bCov);
@@ -1773,7 +2037,9 @@ void AliAnalysisTaskXi1530PbPb::FillTree() {
             fTreeXi1530Rec->XiRadius = radiusXi;
             fTreeXi1530Rec->V0Mass = lMassV0;
             fTreeXi1530Rec->XiMass = lMassXi;
-        } else {
+        }
+        else
+        {
             xiAOD = ((AliAODEvent *)fEvt)->GetCascade(fGoodXiArray[i]);
             if (!xiAOD)
                 continue;
@@ -1794,10 +2060,13 @@ void AliAnalysisTaskXi1530PbPb::FillTree() {
 
             vecXi.SetXYZM(xiAOD->MomXiX(), xiAOD->MomXiY(), xiAOD->MomXiZ(), xiAOD->MassXi());
 
-            if (!isXiAnti) {
+            if (!isXiAnti)
+            {
                 lTPCNSigProton = GetTPCnSigma(pTrackXi, AliPID::kProton);
                 lTPCNSigLambdaPion = GetTPCnSigma(nTrackXi, AliPID::kPion);
-            } else {
+            }
+            else
+            {
                 lTPCNSigProton = GetTPCnSigma(nTrackXi, AliPID::kProton);
                 lTPCNSigLambdaPion = GetTPCnSigma(pTrackXi, AliPID::kPion);
             }
@@ -1812,12 +2081,15 @@ void AliAnalysisTaskXi1530PbPb::FillTree() {
             lDCAXiPV =
                 TMath::Abs(xiAOD->DcaXiToPrimVertex(fPosPV[0], fPosPV[1], fPosPV[2]));
 
-            if (!isXiAnti) {
+            if (!isXiAnti)
+            {
                 GetImpactParam(pTrackXi, b, bCov);
                 lDCALambdaProtonPV = TMath::Abs(b[0]);
                 GetImpactParam(nTrackXi, b, bCov);
                 lDCALambdaPionPV = TMath::Abs(b[0]);
-            } else {
+            }
+            else
+            {
                 GetImpactParam(nTrackXi, b, bCov);
                 lDCALambdaProtonPV = TMath::Abs(b[0]);
                 GetImpactParam(pTrackXi, b, bCov);
@@ -1879,7 +2151,8 @@ void AliAnalysisTaskXi1530PbPb::FillTree() {
             fTreeXi1530Rec->XiMass = lMassXi;
         }
 
-        for (UInt_t j = 0; j < nTracks; j++) {
+        for (UInt_t j = 0; j < nTracks; j++)
+        {
             track1 = (AliVTrack *)fEvt->GetTrack(fGoodTrackArray[j]);
             if (!track1)
                 continue;
@@ -1891,18 +2164,20 @@ void AliAnalysisTaskXi1530PbPb::FillTree() {
 
             vecPion.SetXYZM(track1->Px(), track1->Py(), track1->Pz(), pionMass);
 
-            vecXi1530 = vecXi + vecPion;  // vecXi = cascade, vecPion=pion
-                                          // Mass cut
+            vecXi1530 = vecXi + vecPion; // vecXi = cascade, vecPion=pion
+                                         // Mass cut
             if ((vecXi1530.M() > fXi1530MassHigh) ||
                 (vecXi1530.M() < fXi1530MassLow))
                 continue;
 
             // Y cut
             if ((vecXi1530.Rapidity() > fXi1530YCutHigh) ||
-                (vecXi1530.Rapidity() < fXi1530YCutLow)) continue;
+                (vecXi1530.Rapidity() < fXi1530YCutLow))
+                continue;
 
             // DCA and CPA cut for resonance
-            if (!fIsAOD) {  // Only for ESD
+            if (!fIsAOD)
+            { // Only for ESD
                 for (int i = 0; i < 21; i++)
                     cv[i] = 0;
                 const AliESDVertex *vtxT3D = ((AliESDEvent *)fEvt)->GetPrimaryVertex();
@@ -1931,18 +2206,18 @@ void AliAnalysisTaskXi1530PbPb::FillTree() {
                                              vertexKF.GetChi2(),
                                              vertexKF.GetNContributors());
 
-                vertexESD->GetXYZ(pos);        // position
-                vertexESD->GetCovMatrix(cov);  //covariance matrix
+                vertexESD->GetXYZ(pos);       // position
+                vertexESD->GetCovMatrix(cov); // covariance matrix
                 chi2perNDF = vertexESD->GetChi2toNDF();
                 dispersion = vertexESD->GetDispersion();
                 delete vertexESD;
                 vertexESD = NULL;
-                vertexAOD = new AliAODVertex(pos, cov, chi2perNDF, 0x0, -1, AliAODVertex::kUndef, 2);  // Resonance Vertex
+                vertexAOD = new AliAODVertex(pos, cov, chi2perNDF, 0x0, -1, AliAODVertex::kUndef, 2); // Resonance Vertex
 
                 // Values
-                vertexAOD->GetXYZ(lPosRsnVtx);  // Secondary vertex
+                vertexAOD->GetXYZ(lPosRsnVtx); // Secondary vertex
                 // Double_t deltaPos[3]{lPosRsnVtx[0] - fPosPV[0], lPosRsnVtx[1] - fPosPV[1], lPosRsnVtx[2] - fPosPV[2]};  // Distance from PV
-                dca = pPionTrk->GetDCA(pXiTrk, fMagField, xdummy, ydummy);  // DCA of resonance daughters
+                dca = pPionTrk->GetDCA(pXiTrk, fMagField, xdummy, ydummy); // DCA of resonance daughters
                 radiusRsn = TMath::Hypot(lPosRsnVtx[0] - fPosPV[0], lPosRsnVtx[1] - fPosPV[1]);
 
                 // CPA to PV
@@ -1952,18 +2227,23 @@ void AliAnalysisTaskXi1530PbPb::FillTree() {
                                lPosRsnVtx[2] - fPosPV[2]);
 
                 Double_t ptot2 = mom.Mag2() * fline.Mag2();
-                if (ptot2 > 0) {
+                if (ptot2 > 0)
+                {
                     Double_t cos = mom.Dot(fline) / TMath::Sqrt(ptot2);
-                    if (cos > 1.0) cos = 1.0;
-                    if (cos < -1.0) cos = -1.0;
+                    if (cos > 1.0)
+                        cos = 1.0;
+                    if (cos < -1.0)
+                        cos = -1.0;
                     fTreeXi1530Rec->Xi1530CPA = cos;
-                } else
+                }
+                else
                     fTreeXi1530Rec->Xi1530CPA = 0.0;
 
                 fTreeXi1530Rec->Xi1530Radius = radiusRsn;
                 fTreeXi1530Rec->Xi1530DCA = dca;
             }
-            else {
+            else
+            {
                 fTreeXi1530Rec->Xi1530Radius = -999;
                 fTreeXi1530Rec->Xi1530DCA = -999;
                 fTreeXi1530Rec->Xi1530CPA = -999;
@@ -1971,47 +2251,52 @@ void AliAnalysisTaskXi1530PbPb::FillTree() {
 
             GetImpactParam(track1, b, bCov);
 
-            fTreeXi1530Rec->TPCNsigXi1530Pion = GetTPCnSigma(track1, AliPID::kPion);                  
-            fTreeXi1530Rec->Xi1530PionEta = track1->Eta();                                        
-            fTreeXi1530Rec->Xi1530PionPVz = TMath::Abs(b[1]);                                     
-            fTreeXi1530Rec->Xi1530PionXYVertexSigma = TMath::Abs(b[0]) / (0.0026 + 0.0050 / track1->Pt());  
+            fTreeXi1530Rec->TPCNsigXi1530Pion = GetTPCnSigma(track1, AliPID::kPion);
+            fTreeXi1530Rec->Xi1530PionEta = track1->Eta();
+            fTreeXi1530Rec->Xi1530PionPVz = TMath::Abs(b[1]);
+            fTreeXi1530Rec->Xi1530PionXYVertexSigma = TMath::Abs(b[0]) / (0.0026 + 0.0050 / track1->Pt());
 
-            fTreeXi1530Rec->Xi1530Pt = vecXi1530.Pt();  
-            fTreeXi1530Rec->Xi1530Mass = vecXi1530.M();   
-            fTreeXi1530Rec->Centrality = fCent;           
-            fTreeXi1530Rec->zVertex = fPosPV[2];       
+            fTreeXi1530Rec->Xi1530Pt = vecXi1530.Pt();
+            fTreeXi1530Rec->Xi1530Mass = vecXi1530.M();
+            fTreeXi1530Rec->Centrality = fCent;
+            fTreeXi1530Rec->zVertex = fPosPV[2];
 
-            if (fIsMC) {
+            if (fIsMC)
+            {
                 if (IsTrueXi1530(fGoodXiArray[i], fGoodTrackArray[j]))
-                    fTreeXi1530Gen.MCflag = 1;  // MCflag Xi1530
+                    fTreeXi1530Gen.MCflag = 1; // MCflag Xi1530
                 else
-                    fTreeXi1530Gen.MCflag = 2;  // MCflag -> not true
+                    fTreeXi1530Gen.MCflag = 2; // MCflag -> not true
                 fTreeXi1530Gen.isReconstructed = true;
             }
             // Charge
             auto chargeFlag = 0;
             if (isXiAnti)
                 chargeFlag++;
-            if(track1->Charge() < 0)
+            if (track1->Charge() < 0)
                 chargeFlag = chargeFlag + 2;
-            fTreeXi1530Rec->Antiflag = chargeFlag;  // Antiflag -> Charge flag
-                                                     // 0: Xi- + pi+
-                                                     // 1: Xi+ + pi+ // LS
-                                                     // 2: Xi- + pi- // LS
-                                                     // 3: Xi+ + pi-
+            fTreeXi1530Rec->Antiflag = chargeFlag; // Antiflag -> Charge flag
+                                                   // 0: Xi- + pi+
+                                                   // 1: Xi+ + pi+ // LS
+                                                   // 2: Xi- + pi- // LS
+                                                   // 3: Xi+ + pi-
             fTree->Fill();
-        }  // pion loop
+        } // pion loop
     }
 }
 
-void AliAnalysisTaskXi1530PbPb::FillMCinput(AliMCEvent *fMCEvent, int Fillbin) {
+void AliAnalysisTaskXi1530PbPb::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
+{
     int sign = kAllType;
     auto binAnti = kNormal;
     TLorentzVector vecPart1, vecPart2;
-    if (!fIsAOD) {
-        for (Int_t it = 0; it < fMCEvent->GetNumberOfPrimaries(); it++) {
+    if (!fIsAOD)
+    {
+        for (Int_t it = 0; it < fMCEvent->GetNumberOfPrimaries(); it++)
+        {
             TParticle *mcInputTrack = (TParticle *)fMCEvent->GetTrack(it)->Particle();
-            if (!mcInputTrack) {
+            if (!mcInputTrack)
+            {
                 Error("UserExec", "Could not receive MC track %d", it);
                 continue;
             }
@@ -2039,7 +2324,8 @@ void AliAnalysisTaskXi1530PbPb::FillMCinput(AliMCEvent *fMCEvent, int Fillbin) {
                            (double)fCent,
                            mcInputTrack->Pt(),
                            mcInputTrack->GetCalcMass()});
-            if (fFillTree) {
+            if (fFillTree)
+            {
                 fTreeXi1530Gen.isReconstructed = false;
                 fTreeXi1530Gen.MCflag = 1;
                 fTreeXi1530Gen.ptMC = mcInputTrack->Pt();
@@ -2047,10 +2333,14 @@ void AliAnalysisTaskXi1530PbPb::FillMCinput(AliMCEvent *fMCEvent, int Fillbin) {
                 fTree->Fill();
             }
         }
-    } else {
-        for (Int_t it = 0; it < fMCArray->GetEntriesFast(); it++) {
+    }
+    else
+    {
+        for (Int_t it = 0; it < fMCArray->GetEntriesFast(); it++)
+        {
             AliAODMCParticle *mcInputTrack = (AliAODMCParticle *)fMCArray->At(it);
-            if (!mcInputTrack) {
+            if (!mcInputTrack)
+            {
                 Error("UserExec", "Could not receive MC track %d", it);
                 continue;
             }
@@ -2079,7 +2369,8 @@ void AliAnalysisTaskXi1530PbPb::FillMCinput(AliMCEvent *fMCEvent, int Fillbin) {
                            (double)fCent,
                            mcInputTrack->Pt(),
                            mcInputTrack->GetCalcMass()});
-            if (fFillTree) {
+            if (fFillTree)
+            {
                 fTreeXi1530Gen.isReconstructed = false;
                 fTreeXi1530Gen.MCflag = 1;
                 fTreeXi1530Gen.ptMC = mcInputTrack->Pt();
@@ -2090,7 +2381,8 @@ void AliAnalysisTaskXi1530PbPb::FillMCinput(AliMCEvent *fMCEvent, int Fillbin) {
     }
 }
 
-Bool_t AliAnalysisTaskXi1530PbPb::IsTrueXi1530(UInt_t xiIndex, UInt_t pionIndex) {
+Bool_t AliAnalysisTaskXi1530PbPb::IsTrueXi1530(UInt_t xiIndex, UInt_t pionIndex)
+{
     Bool_t TrueXi1530 = kFALSE;
     AliVTrack *track1;
     AliESDcascade *xiESD;
@@ -2098,7 +2390,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::IsTrueXi1530(UInt_t xiIndex, UInt_t pionIndex)
 
     track1 = (AliVTrack *)fEvt->GetTrack(pionIndex);
 
-    if (!fIsAOD) {
+    if (!fIsAOD)
+    {
         xiESD = ((AliESDEvent *)fEvt)->GetCascade(xiIndex);
         if (!xiESD)
             return kFALSE;
@@ -2118,57 +2411,71 @@ Bool_t AliAnalysisTaskXi1530PbPb::IsTrueXi1530(UInt_t xiIndex, UInt_t pionIndex)
         TParticle *MCXiStaresd;
         TParticle *MCXiStarD2esd;
 
-        if (TMath::Abs(MCXiD2esd->GetPdgCode()) == kPionCode) {
+        if (TMath::Abs(MCXiD2esd->GetPdgCode()) == kPionCode)
+        {
             // D2esd->pion
             MCLamD1esd = (TParticle *)fMCEvent->GetTrack(TMath::Abs(pTrackXi->GetLabel()))->Particle();
             MCLamD2esd = (TParticle *)fMCEvent->GetTrack(TMath::Abs(nTrackXi->GetLabel()))->Particle();
             if (MCLamD1esd->GetMother(0) ==
-                MCLamD2esd->GetMother(0)) {
+                MCLamD2esd->GetMother(0))
+            {
                 // Same mother(lambda)
                 if ((TMath::Abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
                      TMath::Abs(MCLamD2esd->GetPdgCode()) == kPionCode) ||
                     (TMath::Abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
                      TMath::Abs(MCLamD2esd->GetPdgCode()) ==
-                         kProtonCode)) {
+                         kProtonCode))
+                {
                     // Lamda daugthers check #1
                     MCLamesd = (TParticle *)fMCEvent->GetTrack(TMath::Abs(MCLamD1esd->GetMother(0)))->Particle();
                     if (TMath::Abs(MCLamesd->GetPdgCode()) ==
-                        kLambdaCode) {
+                        kLambdaCode)
+                    {
                         // Lambda check
                         if (MCLamesd->GetMother(0) ==
-                            MCXiD2esd->GetMother(0)) {
+                            MCXiD2esd->GetMother(0))
+                        {
                             // Lambda+pion(D2esd) mother check
                             MCXiesd = (TParticle *)fMCEvent->GetTrack(TMath::Abs(MCLamesd->GetMother(0)))->Particle();
                             if (TMath::Abs(MCXiesd->GetPdgCode()) ==
-                                kXiCode) {
+                                kXiCode)
+                            {
                                 // Xi Check
                                 MCXiStarD2esd =
                                     (TParticle *)fMCEvent->GetTrack(TMath::Abs(track1->GetLabel()))->Particle();
                                 if (MCXiesd->GetMother(0) ==
-                                    MCXiStarD2esd->GetMother(0)) {
+                                    MCXiStarD2esd->GetMother(0))
+                                {
                                     // Xi+pion mother check
                                     MCXiStaresd =
                                         (TParticle *)fMCEvent->GetTrack(TMath::Abs(MCXiesd->GetMother(0)))->Particle();
                                     if (TMath::Abs(MCXiStaresd->GetPdgCode()) ==
-                                        kXiStarCode) {
+                                        kXiStarCode)
+                                    {
                                         // Xi1530 check
-                                        if (fIsPrimaryMC) {
-                                            if (MCXiStaresd->IsPrimary()) {
+                                        if (fIsPrimaryMC)
+                                        {
+                                            if (MCXiStaresd->IsPrimary())
+                                            {
                                                 TrueXi1530 = kTRUE;
-                                            }  // Primary(input) Xi1530 check
-                                        } else {
+                                            } // Primary(input) Xi1530 check
+                                        }
+                                        else
+                                        {
                                             TrueXi1530 = kTRUE;
                                         }
-                                    }  // Xi1530 check
-                                }      // Xi+pion mother check
-                            }          // Xi Check
-                        }              // Lambda+pion(D2esd) mother check
-                    }                  // Lambda check
-                }                      // Lamda daugthers check
-            }                          // Same mother(lambda)
-        }                              // D2esd->pion
+                                    } // Xi1530 check
+                                }     // Xi+pion mother check
+                            }         // Xi Check
+                        }             // Lambda+pion(D2esd) mother check
+                    }                 // Lambda check
+                }                     // Lamda daugthers check
+            }                         // Same mother(lambda)
+        }                             // D2esd->pion
         return TrueXi1530;
-    } else {
+    }
+    else
+    {
         xiAOD = ((AliAODEvent *)fEvt)->GetCascade(xiIndex);
         if (!xiAOD)
             return kFALSE;
@@ -2188,57 +2495,69 @@ Bool_t AliAnalysisTaskXi1530PbPb::IsTrueXi1530(UInt_t xiIndex, UInt_t pionIndex)
         AliAODMCParticle *MCXiStaresd;
         AliAODMCParticle *MCXiStarD2esd;
 
-        if (TMath::Abs(MCXiD2esd->GetPdgCode()) == kPionCode) {
+        if (TMath::Abs(MCXiD2esd->GetPdgCode()) == kPionCode)
+        {
             // D2esd->pion
             MCLamD1esd = (AliAODMCParticle *)fMCArray->At(TMath::Abs(pTrackXi->GetLabel()));
             MCLamD2esd = (AliAODMCParticle *)fMCArray->At(TMath::Abs(nTrackXi->GetLabel()));
             if (MCLamD1esd->GetMother() ==
-                MCLamD2esd->GetMother()) {
+                MCLamD2esd->GetMother())
+            {
                 // Same mother(lambda)
                 if ((TMath::Abs(MCLamD1esd->GetPdgCode()) == kProtonCode &&
                      TMath::Abs(MCLamD2esd->GetPdgCode()) == kPionCode) ||
                     (TMath::Abs(MCLamD1esd->GetPdgCode()) == kPionCode &&
                      TMath::Abs(MCLamD2esd->GetPdgCode()) ==
-                         kProtonCode)) {
+                         kProtonCode))
+                {
                     // Lamda daugthers check #1
                     MCLamesd = (AliAODMCParticle *)fMCArray->At(
                         TMath::Abs(MCLamD1esd->GetMother()));
                     if (TMath::Abs(MCLamesd->GetPdgCode()) ==
-                        kLambdaCode) {
+                        kLambdaCode)
+                    {
                         // Lambda check
                         if (MCLamesd->GetMother() ==
-                            MCXiD2esd->GetMother()) {
+                            MCXiD2esd->GetMother())
+                        {
                             // Lambda+pion(D2esd) mother check
                             MCXiesd = (AliAODMCParticle *)fMCArray->At(
                                 TMath::Abs(MCLamesd->GetMother()));
                             if (TMath::Abs(MCXiesd->GetPdgCode()) ==
-                                kXiCode) {
+                                kXiCode)
+                            {
                                 // Xi Check
                                 MCXiStarD2esd = (AliAODMCParticle *)fMCArray->At(
                                     TMath::Abs(track1->GetLabel()));
                                 if (MCXiesd->GetMother() ==
-                                    MCXiStarD2esd->GetMother()) {
+                                    MCXiStarD2esd->GetMother())
+                                {
                                     // Xi+pion mother check
                                     MCXiStaresd = (AliAODMCParticle *)fMCArray->At(
                                         TMath::Abs(MCXiesd->GetMother()));
                                     if (TMath::Abs(MCXiStaresd->GetPdgCode()) ==
-                                        kXiStarCode) {
+                                        kXiStarCode)
+                                    {
                                         // Xi1530 check
-                                        if (fIsPrimaryMC) {
-                                            if (MCXiStaresd->IsPrimary()) {
+                                        if (fIsPrimaryMC)
+                                        {
+                                            if (MCXiStaresd->IsPrimary())
+                                            {
                                                 TrueXi1530 = kTRUE;
-                                            }  // Primary(input) Xi1530 check
-                                        } else {
+                                            } // Primary(input) Xi1530 check
+                                        }
+                                        else
+                                        {
                                             TrueXi1530 = kTRUE;
                                         }
-                                    }  // Xi1530 check
-                                }      // Xi+pion mother check
-                            }          // Xi Check
-                        }              // Lambda+pion(D2esd) mother check
-                    }                  // Lambda check
-                }                      // Lamda daugthers check
-            }                          // Same mother(lambda)
-        }                              // D2esd->pion
+                                    } // Xi1530 check
+                                }     // Xi+pion mother check
+                            }         // Xi Check
+                        }             // Lambda+pion(D2esd) mother check
+                    }                 // Lambda check
+                }                     // Lamda daugthers check
+            }                         // Same mother(lambda)
+        }                             // D2esd->pion
         return TrueXi1530;
     }
 }
@@ -2248,7 +2567,8 @@ THnSparse *AliAnalysisTaskXi1530PbPb::CreateTHnSparse(
     TString title,
     Int_t ndim,
     std::vector<TAxis> bins,
-    Option_t *opt) {
+    Option_t *opt)
+{
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     const TAxis *axises[bins.size()];
@@ -2260,11 +2580,13 @@ THnSparse *AliAnalysisTaskXi1530PbPb::CreateTHnSparse(
 
 Long64_t AliAnalysisTaskXi1530PbPb::FillTHnSparse(TString name,
                                                   std::vector<Double_t> x,
-                                                  Double_t w) {
+                                                  Double_t w)
+{
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     auto hsparse = dynamic_cast<THnSparse *>(fHistos->FindObject(name));
-    if (!hsparse) {
+    if (!hsparse)
+    {
         std::cout << "ERROR : no " << name << std::endl;
         exit(1);
     }
@@ -2274,10 +2596,12 @@ Long64_t AliAnalysisTaskXi1530PbPb::FillTHnSparse(TString name,
 
 Long64_t AliAnalysisTaskXi1530PbPb::FillTHnSparse(THnSparse *h,
                                                   std::vector<Double_t> x,
-                                                  Double_t w) {
+                                                  Double_t w)
+{
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
-    if (int(x.size()) != h->GetNdimensions()) {
+    if (int(x.size()) != h->GetNdimensions())
+    {
         std::cout << "ERROR : wrong sized of array while Fill " << h->GetName() << std::endl;
         exit(1);
     }
@@ -2288,7 +2612,8 @@ Long64_t AliAnalysisTaskXi1530PbPb::FillTHnSparse(THnSparse *h,
 TAxis AliAnalysisTaskXi1530PbPb::AxisFix(TString name,
                                          int nbin,
                                          Double_t xmin,
-                                         Double_t xmax) {
+                                         Double_t xmax)
+{
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis axis(nbin, xmin, xmax);
@@ -2297,7 +2622,8 @@ TAxis AliAnalysisTaskXi1530PbPb::AxisFix(TString name,
 }
 
 TAxis AliAnalysisTaskXi1530PbPb::AxisStr(TString name,
-                                         std::vector<TString> bin) {
+                                         std::vector<TString> bin)
+{
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis ax = AxisFix(name, bin.size(), 0.5, bin.size() + 0.5);
@@ -2308,7 +2634,8 @@ TAxis AliAnalysisTaskXi1530PbPb::AxisStr(TString name,
 }
 
 TAxis AliAnalysisTaskXi1530PbPb::AxisVar(TString name,
-                                         std::vector<Double_t> bin) {
+                                         std::vector<Double_t> bin)
+{
     // From AliPhysics/PWGUD/DIFFRACTIVE/Resonance/AliAnalysisTaskf0f2.cxx
     // Original author: Beomkyu Kim
     TAxis axis(bin.size() - 1, &bin.front());
@@ -2317,22 +2644,27 @@ TAxis AliAnalysisTaskXi1530PbPb::AxisVar(TString name,
 }
 
 double AliAnalysisTaskXi1530PbPb::GetTPCnSigma(AliVTrack *track,
-                                               AliPID::EParticleType type) {
+                                               AliPID::EParticleType type)
+{
     AliNanoAODTrack *nanoT = dynamic_cast<AliNanoAODTrack *>(track);
-    if (nanoT) {
+    if (nanoT)
+    {
         static bool used = false;
-        if (!used) {
+        if (!used)
+        {
             AliNanoAODTrack::InitPIDIndex();
             used = true;
         }
 
         return nanoT->GetVar(
             AliNanoAODTrack::GetPIDIndex(AliNanoAODTrack::kSigmaTPC, type));
-    } else
+    }
+    else
         return fPIDResponse->NumberOfSigmasTPC(track, type);
 }
 
-void AliAnalysisTaskXi1530PbPb::FillTrackToEventPool() {
+void AliAnalysisTaskXi1530PbPb::FillTrackToEventPool()
+{
     // Fill Selected tracks to event mixing pool
     if ((fCentBin < 0) || (fZbin < 0))
         return;
@@ -2346,7 +2678,8 @@ void AliAnalysisTaskXi1530PbPb::FillTrackToEventPool() {
     ep->push_back(tracklist());
     etl = &(ep->back());
     // Fill selected tracks
-    for (UInt_t i = 0; i < fGoodTrackArray.size(); i++) {
+    for (UInt_t i = 0; i < fGoodTrackArray.size(); i++)
+    {
         goodtrack = (AliVTrack *)fEvt->GetTrack(fGoodTrackArray[i]);
         if (!goodtrack)
             continue;
@@ -2355,7 +2688,8 @@ void AliAnalysisTaskXi1530PbPb::FillTrackToEventPool() {
 
     if (!fGoodTrackArray.size())
         ep->pop_back();
-    if ((int)ep->size() > (int)fnMix) {
+    if ((int)ep->size() > (int)fnMix)
+    {
         for (auto it : ep->front())
             delete it;
         ep->pop_front();
@@ -2364,7 +2698,8 @@ void AliAnalysisTaskXi1530PbPb::FillTrackToEventPool() {
 
 void AliAnalysisTaskXi1530PbPb::GetImpactParam(AliVTrack *track,
                                                Float_t p[2],
-                                               Float_t cov[3]) {
+                                               Float_t cov[3])
+{
     AliNanoAODTrack *nanoT = dynamic_cast<AliNanoAODTrack *>(track);
     if (nanoT)
         nanoT->AliNanoAODTrack::GetImpactParameters(p[0], p[1]);
@@ -2372,7 +2707,8 @@ void AliAnalysisTaskXi1530PbPb::GetImpactParam(AliVTrack *track,
         track->GetImpactParameters(p, cov);
 }
 
-Bool_t AliAnalysisTaskXi1530PbPb::IsSelectedTPCGeoCut(AliAODTrack *track) {
+Bool_t AliAnalysisTaskXi1530PbPb::IsSelectedTPCGeoCut(AliAODTrack *track)
+{
     Bool_t checkResult = kTRUE;
 
     AliESDtrack esdTrack(track);
@@ -2396,7 +2732,8 @@ Bool_t AliAnalysisTaskXi1530PbPb::IsSelectedTPCGeoCut(AliAODTrack *track) {
 
     return checkResult;
 }
-Bool_t AliAnalysisTaskXi1530PbPb::IsSelectedTPCGeoCut(AliESDtrack *track) {
+Bool_t AliAnalysisTaskXi1530PbPb::IsSelectedTPCGeoCut(AliESDtrack *track)
+{
     Bool_t checkResult = kTRUE;
 
     auto nCrossedRowsTPC = track->GetTPCCrossedRows();
