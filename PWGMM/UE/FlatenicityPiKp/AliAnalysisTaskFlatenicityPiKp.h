@@ -92,8 +92,10 @@ class AliAnalysisTaskFlatenicityPiKp : public AliAnalysisTaskSE {
 		Double_t fNcl;
 		Bool_t fdEdxCalibrated;
 		Bool_t fSaveDCAxyHistograms;
-		/* TF1* fEtaCalibrationPos; */
-		/* TF1* fEtaCalibrationNeg; */
+		TF1* fEtaCalibrationPos;
+		TF1* fEtaCalibrationNeg;
+		TF1* felededxfitPos;
+		TF1* felededxfitNeg;
 		TF1* fcutLow;
 		TF1* fcutHigh;
 		TF1* fcutDCAxy;
