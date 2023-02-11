@@ -380,6 +380,19 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 		fEtaCalibrationPos->SetParameter(par,pars_pos_eta_mip[par]);
 	}
 
+	std::cout << "fPeriod = " << fPeriod << '\n';
+	std::cout << "MIP negative eta parameters: " << '\n';
+	for (int par = 0; par < 9; ++par)
+	{
+		std::cout << "par = " << pars_neg_eta_mip[par] << '\n';
+	}
+
+	std::cout << "MIP positive eta parameters: " << '\n';
+	for (int par = 0; par < 9; ++par)
+	{
+		std::cout << "par = " << pars_pos_eta_mip[par] << '\n';
+	}
+
 	// These are the Plateau calibration parameters
 	const std::map<std::string, std::array<double, 5>> neg_eta{
 		{"18b",{78.0584, -9.92534, -43.4941, -74.9382, -43.5307}},
