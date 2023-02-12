@@ -1915,7 +1915,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 				if(iIsocut && charge>0)
                                    {
                                     fInv_pT_ULS_forZ_pos->Fill(TrkPt,mass);
-                                    if(TMath::Abs(pdgorg_ass)==24)fInv_pT_ULS_forZ_pos_true->Fill(TrkPt,mass);  // true Z->ee pair
+                                    if(TMath::Abs(pdgorg_ass)==23)fInv_pT_ULS_forZ_pos_true->Fill(TrkPt,mass);  // true Z->ee pair
                                     if(mass>75.0 && mass<100.0)fHist_Zpair_pos->Fill(aAssotrack->Eta(),TrkPt);
                                     if(mass>75.0 && mass<100.0 && TrkPt>30.0)fHist_Zeta_pos->Fill(RecoEta);
                                    }
