@@ -310,7 +310,7 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
     //     }
 	// if(isTrigselected == false) return;
 	if(!CheckTrigger()){
-		//self-define event selection
+		//self-define trigger selection
 		PostData(1,fListOfObjects);
 		return;
 	}
@@ -510,10 +510,15 @@ Bool_t AliAnalysisTaskFlowPPTask::CheckTrigger(){
 
 	if (fTrigger == 0){
 		if(fSelectMask&(AliVEvent::kINT7+AliVEvent::kMB)){return kTRUE;}
+
 		// kInt7 or kCentral or kSemiCentral
 		if(fPeriod.EqualTo("LHC18qr_pass3")){
 			if((fSelectMask&AliVEvent::kCentral) && cent>10){return kFALSE;}
 			if((fSelectMask&AliVEvent::kSemiCentral) && (cent<30 || cent>50)){return kFALSE;}
+		}
+		else{
+			//for LHC15o pass2,only pass by kint7
+			return kFALSE;
 		}
 	}
 	else if(fTrigger==1){
@@ -1092,8 +1097,16 @@ double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, d
 	}
 	else if(fCurrSystFlag>0&&fCurrSystFlag<9&&fCurrSystFlag!=3)
 	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag));
-	else
-	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag+7));
+	else{
+		if(fPeriod.EqualTo("LHC15o")||fPeriod.EqualTo("LHC15o_pass2")||fPeriod.EqualTo("LHC18qr_pass3")){
+			//PbPb NUE
+			hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag));
+		}
+		else{
+			//XeXe NUE
+			hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag+7));
+		}
+	}
 
 	//printf("========\n=======\n=======\n=======\n");
 	//printf("Using NUE flag%d Cent%d\n",fCurrSystFlag,IntCent);
