@@ -89,5 +89,7 @@
 #pragma link C++ class AliAnalysisTaskTrackMixer+ ;
 //f0980
 #pragma link C++ class AliAnalysisTaskInclusivef0f2+;
+// Xi1820
+#pragma link C++ class AliAnalysisTaskXi1820BH+;
 
 #endif
