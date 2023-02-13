@@ -326,6 +326,8 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TH2F*				hDCAzBefore; 		//!
 		TH2F*				hDCAxy; 		//!
 		TH2F*				hDCAz; 			//!
+		TH1D*				hChi2Before; 			//!
+		TH1D*				hChi2; 			//!
 
 		// Global variables
 		double NtrksCounter = 0;               //!
