@@ -1,5 +1,3 @@
-#include "AliAnalysisTask_pd_CreateTrees_PairsOnly.cxx"
-
 
 
 AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
