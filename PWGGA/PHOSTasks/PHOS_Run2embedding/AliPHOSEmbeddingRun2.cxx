@@ -85,6 +85,7 @@ ClassImp(AliPHOSEmbeddingRun2)
   // Constructor
   for (int i = 0; i < 5; i++) {
     fOldPHOSCalibration[i] = nullptr;
+    fRunByRunCorr[i] = 0.136;
   }
 }
 //________________________________________________________________________
