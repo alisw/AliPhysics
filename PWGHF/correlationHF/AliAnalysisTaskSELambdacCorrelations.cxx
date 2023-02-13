@@ -620,8 +620,8 @@ void AliAnalysisTaskSELambdacCorrelations::UserCreateOutputObjects()
 
     //MC signal
     if(fReadMC){
-      TH1F* tmpSt = new TH1F(nameSgn.Data(), "\Lambda_{c} invariant mass c - MC; M [GeV]; Entries",150,1.9864,2.5864);
-      TH1F* tmpStWg = new TH1F(nameSgnWg.Data(), "\Lambda_{c} invariant mass c - MC; M [GeV] - weight 1/Lambdaceff; Entries",150,1.9864,2.5864);
+      TH1F* tmpSt = new TH1F(nameSgn.Data(), "#Lambda_{c} invariant mass c - MC; M [GeV]; Entries",150,1.9864,2.5864);
+      TH1F* tmpStWg = new TH1F(nameSgnWg.Data(), "#Lambda_{c} invariant mass c - MC; M [GeV] - weight 1/Lambdaceff; Entries",150,1.9864,2.5864);
       tmpSt->Sumw2();
       tmpStWg->Sumw2();
 
@@ -681,8 +681,8 @@ void AliAnalysisTaskSELambdacCorrelations::UserCreateOutputObjects()
 
     //MC signal
     if(fReadMC){
-      TH1F* tmpSt = new TH1F(nameSgn.Data(), "\Lambda_{c} invariant mass b - MC; M [GeV]; Entries",150,1.9864,2.5864);
-      TH1F* tmpStWg = new TH1F(nameSgnWg.Data(), "\Lambda_{c} invariant mass b - MC; M [GeV] - weight 1/Lambdaceff; Entries",150,1.9864,2.5864);
+      TH1F* tmpSt = new TH1F(nameSgn.Data(), "#Lambda_{c} invariant mass b - MC; M [GeV]; Entries",150,1.9864,2.5864);
+      TH1F* tmpStWg = new TH1F(nameSgnWg.Data(), "#Lambda_{c} invariant mass b - MC; M [GeV] - weight 1/Lambdaceff; Entries",150,1.9864,2.5864);
       tmpSt->Sumw2();
       tmpStWg->Sumw2();
 
@@ -1119,33 +1119,34 @@ void AliAnalysisTaskSELambdacCorrelations::UserExec(Option_t */*option*/)
             modelPred.push_back(-1.);
           }
           
-                  FillMassHists(d,mcArray,fCutsLambdac,fOutputMass,aod);
-                  
-                  if(!fReadMC) {
-          if (TMath::Abs(d->Eta())<fEtaForCorrel) {
-	    if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);			
-            if(!fMixing && !fAlreadyFilled) {
- 	      ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
-	      ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv);
-            }
-	    if(fFillTrees==kNoTrees) CalculateCorrelations(d); //correlations on real data
-	  
-	  }
-        } else { //correlations on MC -> association of selected Lambdac to MCinfo with MCtruth
-          if (TMath::Abs(d->Eta())<fEtaForCorrel) {
-            Int_t pdgDgLambdactopKpi[3]={2212,321,211};
-    	    Int_t labLambdac = d->MatchToMC(4122,mcArray,3,pdgDgLambdactopKpi); //return MC particle label if the array corresponds to a Lambdac, -1 if not
-            if (labLambdac>-1) {
-  	      if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);
+          FillMassHists(d,mcArray,fCutsLambdac,fOutputMass,aod);
+          //Set special Properties for Lc (i.e. soft pion subtraction)
+          fCorrelatorTr->SetLcProperties(d,fIsSelectedCandidate); //sets special properties for Lc
+
+          if(!fReadMC) {
+            if (TMath::Abs(d->Eta())<fEtaForCorrel) {
+	            if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);			
               if(!fMixing && !fAlreadyFilled) {
-		((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
-                ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
+ 	              ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
+	              ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv);
               }
-	      if(fFillTrees==kNoTrees) CalculateCorrelations(d,labLambdac,mcArray);
-	    }
+   	          if(fFillTrees==kNoTrees) CalculateCorrelations(d); //correlations on real data
+	          }
+          } else { //correlations on MC -> association of selected Lambdac to MCinfo with MCtruth
+            if (TMath::Abs(d->Eta())<fEtaForCorrel) {
+              Int_t pdgDgLambdactopKpi[3]={2212,321,211};
+    	        Int_t labLambdac = d->MatchToMC(4122,mcArray,3,pdgDgLambdactopKpi); //return MC particle label if the array corresponds to a Lambdac, -1 if not
+              if (labLambdac>-1) {
+  	            if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);
+                if(!fMixing && !fAlreadyFilled) {
+		              ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
+                  ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
+                }
+	              if(fFillTrees==kNoTrees) CalculateCorrelations(d,labLambdac,mcArray);
+	            }
+            }
           }
-        }
-       } //isMLsel loop ends here
+        } //isMLsel loop ends here
       }
     }
   }
@@ -2008,7 +2009,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
     hPhiDistKAll->SetMinimum(0);
     fOutputStudy->Add(hPhiDistKAll);
 
-    TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_Lambdac", "\Lambda_{c} phi distr. (All); #varphi (rad)",64,0,6.283);
+    TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_Lambdac", "#Lambda_{c} phi distr. (All); #varphi (rad)",64,0,6.283);
     hPhiDistDAll->SetMinimum(0);
     fOutputStudy->Add(hPhiDistDAll);
 
@@ -2025,7 +2026,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
     hEtaDistKAll->SetMinimum(0);
     fOutputStudy->Add(hEtaDistKAll);
 
-    TH1F *hEtaDistDAll = new TH1F("hist_EtaDistr_Lambdac", "\Lambda_{c} eta distr. (All); #eta (rad)",40,-1,1);
+    TH1F *hEtaDistDAll = new TH1F("hist_EtaDistr_Lambdac", "#Lambda_{c} eta distr. (All); #eta (rad)",40,-1,1);
     hEtaDistDAll->SetMinimum(0);
     fOutputStudy->Add(hEtaDistDAll);
     
@@ -2042,7 +2043,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
     hPhiVsEtaDistKAll->SetMinimum(0);
     fOutputStudy->Add(hPhiVsEtaDistKAll);  
     
-    TH2F *hPhiVsEtaDistDAll = new TH2F("hist_PhiVsEtaDistr_Lambdac", "Phi vs Eta distribution - \Lambda_{c}",64,0,6.283,40,-1,1);
+    TH2F *hPhiVsEtaDistDAll = new TH2F("hist_PhiVsEtaDistr_Lambdac", "Phi vs Eta distribution - #Lambda_{c}",64,0,6.283,40,-1,1);
     hPhiVsEtaDistDAll->SetMinimum(0);
     fOutputStudy->Add(hPhiVsEtaDistDAll);  
     }
