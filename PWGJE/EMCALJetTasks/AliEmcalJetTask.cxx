@@ -1105,7 +1105,17 @@ void AliEmcalJetTask::SetArtificialTrackingEfficiencyFromYAML() {
   auto userInfo = fInputHandler->GetUserInfo();
   AliProdInfo prodInfo(userInfo);
   std::string period = prodInfo.GetAnchorProduction().Data();
-  AliInfoStream() << "anchor production = " << prodInfo.GetAnchorProduction()<< "\n";
+  if(period.size() == 0) {
+    // MC where anchor production is not saved - get the name of the MC production instead
+    period = prodInfo.GetTag(AliProdInfo::kProdTag).Data();
+    if(period.size() == 0) {
+      AliFatal("No information relating to anchored datset or MC tag in this MC production - can't get pT-dependent tracking efficiencies");
+    }
+    AliInfoStream() << "Get MC set tracking efficiency for " << period << "\n";
+  }
+  else {
+    AliInfoStream() << "Get anchor production set tracking efficiency for " << period << "\n";
+  }
 
   // index 0 always corresponds to centrality-integrated tracking efficiencies
   // index 1-4 corresponds to the centrality bins defined below
@@ -1131,7 +1141,7 @@ void AliEmcalJetTask::SetArtificialTrackingEfficiencyFromYAML() {
     }
   }
   if(count == 0) {
-    AliFatal("not able to find any pt-dependent uncertainties for the anchored period %s of the MC that you are running over");
+    AliFatal(TString::Format("not able to find any pt-dependent uncertainties for the anchored period %s of the MC that you are running over",period.c_str()));
   }
   if(fNcentBins != 4 && fNcentBins != 5 && !fTrackEfficiencyHistogramVector.at(0) ) {
     AliFatal("fNcentBins should be set to either 4 or 5 in order to correctly load the pt-dependent tracking efficiency histograms when running on Pb-Pb events");

@@ -2764,22 +2764,25 @@ void AliAnalysisTaskEA::FillResponseMatrix(){
 	          }
 	       }
 
-	       Double_t deltaPhiDet  = -100; //   phi TT - phi jet detector level
-	       Double_t deltaPhiPart = -100; //   phi TT - phi jet particle level
-               for(auto jetIterator : fJetContainerDetLevel->accepted_momentum()){
-                  jet = jetIterator.second;  // Get the pointer to jet object
-                  if(!jet) continue;
-              
-                  jetPartMC =  jet->ClosestJet();
-                  if(!jetPartMC) continue; // IMPORTANT TO ADD
-                  if(jetPartMC->Pt() < 5e-4) continue; //prevents matching with a ghost
-              
-                  jetPtCorrDet  =  jet->Pt() - jet->Area()*fRho;
-              
-                  deltaPhiDet  =  jet->Phi() - fTTH[1][idxDetTT].Phi();
-	          deltaPhiPart =  jetPartMC->Phi() - fTTH_PartLevel[1][idxPartTT].Phi();
-              
-                  fDeltaPhiSmearingTT2030Jet->Fill(fMultV0Mnorm, jetPtCorrDet, TVector2::Phi_mpi_pi(deltaPhiDet - deltaPhiPart));
+	       if(idxDetTT> -1 && idxPartTT > -1){
+	          Double_t deltaPhiDet  = -100; //   phi TT - phi jet detector level
+	          Double_t deltaPhiPart = -100; //   phi TT - phi jet particle level
+                  for(auto jetIterator : fJetContainerDetLevel->accepted_momentum()){
+                     jet = jetIterator.second;  // Get the pointer to jet object
+                     if(!jet) continue;
+                 
+                     jetPartMC =  jet->ClosestJet();
+                     if(!jetPartMC) continue; // IMPORTANT TO ADD
+                     if(jetPartMC->Pt() < 5e-4) continue; //prevents matching with a ghost
+                 
+                     jetPtCorrDet  =  jet->Pt() - jet->Area()*fRho;
+                 
+                     deltaPhiDet  =  jet->Phi() - fTTH[1][idxDetTT].Phi();
+	             deltaPhiPart =  jetPartMC->Phi() - fTTH_PartLevel[1][idxPartTT].Phi();
+                     if(TMath::Abs(TVector2::Phi_mpi_pi(deltaPhiDet)) > TMath::Pi()/2){ //recoil jets only
+                        fDeltaPhiSmearingTT2030Jet->Fill(fMultV0Mnorm, jetPtCorrDet, TVector2::Phi_mpi_pi(deltaPhiDet - deltaPhiPart));
+		     }
+	          }
 	       }
 	    }
          }  	
@@ -5012,7 +5015,7 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       Double_t myJetPtBins [] = {0,5,10,15,20,25,30,35,40,45,50,60,80,100}; //trigger track pT bins 
       Int_t nmyJetPtBins = sizeof(myJetPtBins)/sizeof(Double_t) - 1;  
 
-      const Int_t nmyPhiBins = 200; 
+      const Int_t nmyPhiBins = 800; 
       Double_t myPhiBins[nmyPhiBins+1];
       Double_t p = TMath::Pi()/nmyPhiBins;
       for(Int_t i = 0; i <= nmyPhiBins; i++) myPhiBins[i] = -TMath::Pi()/2 + i*p;  // range was (-pi/2,pi/2)
