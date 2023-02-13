@@ -1595,10 +1595,13 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
   double eff = 1;
   double error = 1;
   if (fPeriod.EqualTo("LHC16qt")) {
+    binPt = fEtaPtWeightsSystematics[GetEtaPtFlag(eta)]->GetXaxis()->FindBin(pt);
+    eff = fEtaPtWeightsSystematics[GetEtaPtFlag(eta)]->GetBinContent(binPt);
+    error = fEtaPtWeightsSystematics[GetEtaPtFlag(eta)]->GetBinError(binPt);
   } else {
-    fEtaPtWeightsSystematics[GetEtaPtFlag(eta)]->GetXaxis()->FindBin(pt);
-    fEtaPtWeightsSystematics[GetEtaPtFlag(eta)]->GetBinContent(binPt);
-    fEtaPtWeightsSystematics[GetEtaPtFlag(eta)]->GetBinError(binPt);
+    binPt = fPtWeightsSystematics->GetXaxis()->FindBin(pt);
+    eff = fPtWeightsSystematics->GetBinContent(binPt);
+    error = fPtWeightsSystematics->GetBinError(binPt);
   }
   double weight = 1;
   //..take into account error on efficiency: randomly get number from gaussian distribution of eff. where width = error
