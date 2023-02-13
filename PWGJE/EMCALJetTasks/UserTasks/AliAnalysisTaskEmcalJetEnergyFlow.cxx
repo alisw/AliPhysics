@@ -458,7 +458,7 @@ for (Int_t cent = 0; cent < fNcentBins; cent++){
         for(Int_t i=0;i<Pair_number;i++){
 
           histname = TString::Format("hJetMismatchesFraction_R%03d_%d",int(Rstep*(i+1)*100),cent);
-          histtitle = TString::Format("Fraction of mismatches between the two levels for R_{jet}= %.2f;Mismatch fraction",Rstep*(i+2),);
+          histtitle = TString::Format("Fraction of mismatches between the two levels for R_{jet}= %.2f;Mismatch fraction",Rstep*(i+2));
           fHistManager.CreateTH1(histname,histtitle,100,0,1);
 
           histname = TString::Format("hJetPtDeltaPt_R%03d_gen_%d",int(Rstep*(i+1)*100),cent);
