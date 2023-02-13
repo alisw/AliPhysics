@@ -64,7 +64,7 @@ enum
 };
 enum
 {
-  kXi1820zeroCode = 123324, // Xi(1820)0
+  kXi1820ZeroCode = 123324, // Xi(1820)0
   kXi1820MCode = 123314,    // Xi(1820)-
   kLambdaCode = 3122,       // Lambda
   kProtonCode = 2212,       // Proton+
@@ -76,32 +76,24 @@ enum // Need to be modified
 {
   kXi1820Zero = 1,
   kXi1820M,
-  kXi1820P,
   kXi1820Zero_MIX,
   kXi1820M_MIX,
-  kXi1820P_MIX,
   kXi1820Zero_NOT,
   kXi1820M_NOT,
-  kXi1820P_NOT,
   kAllType
 };
 enum // Need to be modified
 {
   kXi1820Zero_GEN = 1, // 1
   kXi1820M_GEN,
-  kXi1820P_GEN,
   kXi1820Zero_GEN_INEL10,
   kXi1820M_GEN_INEL10,
-  kXi1820P_GEN_INEL10,
   kXi1820Zero_GEN_INEL10_IGZ,
   kXi1820M_GEN_INEL10_IGZ,
-  kXi1820P_GEN_INEL10_IGZ,
   kXi1820Zero_GEN_TRIG,
   kXi1820M_GEN_TRIG,
-  kXi1820P_GEN_TRIG,
   kXi1820Zero_REC,
-  kXi1820M_REC,
-  kXi1820P_REC
+  kXi1820M_REC
 };
 enum
 {
@@ -140,6 +132,7 @@ ClassImp(AliAnalysisTaskXi1820BH)
       fMCArray(nullptr),
       fIsNano(kFALSE),
       fSetMixing(kFALSE),
+      fSetZero(kFALSE),
       fFillQAPlot(kTRUE),
       fIsMC(kFALSE),
       fIsPrimaryMC(kFALSE),
@@ -184,7 +177,7 @@ ClassImp(AliAnalysisTaskXi1820BH)
       fLambdaHighRadius(200.0),
       fK0sLifetime(30.0),
       fLambdaLifetime(30.0),
-      fK0sMassWindowCut(0.03),
+      fK0sMassWindowCut(0.01),
       fLambdaMassWindowCut(0.01),
       fXi1820YCutHigh(0.5),
       fXi1820YCutLow(-0.5),
@@ -216,6 +209,7 @@ AliAnalysisTaskXi1820BH::AliAnalysisTaskXi1820BH(const char *name, Bool_t MCcase
       fMCArray(nullptr),
       fIsNano(kFALSE),
       fSetMixing(kFALSE),
+      fSetZero(kFALSE),
       fFillQAPlot(kTRUE),
       fIsMC(MCcase),
       fIsPrimaryMC(kFALSE),
@@ -249,7 +243,7 @@ AliAnalysisTaskXi1820BH::AliAnalysisTaskXi1820BH(const char *name, Bool_t MCcase
       fK0sLowRadius(0.5),
       fK0sHighRadius(200.0),
       fK0sLifetime(30.0),
-      fK0sMassWindowCut(0.03),
+      fK0sMassWindowCut(0.01),
       fTPCNsigLambdaProtonCut(3.0),
       fTPCNsigLambdaPionCut(3.0),
       fDCADistLambdaDaughtersCut(1.0),
@@ -283,14 +277,13 @@ void AliAnalysisTaskXi1820BH::UserCreateOutputObjects()
   fHistos = new THistManager("Xi1820hists");
   auto binAnti = AxisStr("AType", {"Normal", "Anti"});
   auto binType = (!fIsMC)
-                     ? AxisStr("Type", {"Xi1820Zero", "Xi1820M", "Xi1820P",
-                                        "Xi1820Zero_mix", "Xi1820M_mix", "Xi1820P_mix"})
-                     : AxisStr("Type", {"Xi1820Zero", "Xi1820M", "Xi1820P",
-                                        "Xi1820Zero_mix", "Xi1820M_mix", "Xi1820P_mix",
-                                        "Xi1820Zero_no", "Xi1820M_no", "Xi1820P_no"});
+                     ? AxisStr("Type", {"Xi1820Zero", "Xi1820M",
+                                        "Xi1820Zero_mix", "Xi1820M_mix"})
+                     : AxisStr("Type", {"Xi1820Zero", "Xi1820M",
+                                        "Xi1820Zero_mix", "Xi1820M_mix",
+                                        "Xi1820Zero_no", "Xi1820M_no"});
   auto binTypeMC = AxisStr("Type", {"Xi1820Zero_gen",
                                     "Xi1820M_gen",
-                                    "Xi1820P_gen",
                                     "Xi1820Zero_gen_inel10",
                                     "Xi1820M_gen_inel10",
                                     "Xi1820Zero_gen_inel10_igz",
@@ -342,34 +335,38 @@ void AliAnalysisTaskXi1820BH::UserCreateOutputObjects()
     fHistos->CreateTH1("QA/hPtKaon", "", 200, 0, 20);
     if (fCheckTPCGeo)
       fHistos->CreateTH1("QA/hTPCGeoCheckKaon", "", 2, -0.5, 1.5, "s");
-    fHistos->CreateTH2("QA/hTPCPIDK0s", "", 200, 0, 20, 200, 0, 200);
-    fHistos->CreateTH1("QA/hEtaK0s", "", 20, -1.0, 1.0);
-    fHistos->CreateTH1("QA/hDCAPVK0s", "", 30, 0, 3, "s");
-    fHistos->CreateTH1("QA/hDCArPVK0s", "", 50, 0, 0.5, "s");
-    fHistos->CreateTH1("QA/hPtK0s", "", 200, 0, 20);
     fHistos->CreateTH2("QA/hTPCPIDLambdaProton", "", 200, 0, 20, 200, 0, 200);
     fHistos->CreateTH2("QA/hTPCPIDLambdaPion", "", 200, 0, 20, 200, 0, 200);
-    fHistos->CreateTH2("QA/hTPCPIDK0sPionP", "", 200, 0, 20, 200, -10, 10);
-    fHistos->CreateTH2("QA/hTPCPIDK0sPionN", "", 200, 0, 20, 200, -10, 10);
     fHistos->CreateTH2("QA/hTPCPIDAntiLambdaProton", "", 200, 0, 20, 200, 0, 200);
     fHistos->CreateTH2("QA/hTPCPIDAntiLambdaPion", "", 200, 0, 20, 200, 0, 200);
-    fHistos->CreateTH1("QA/hDCA_k0sDaughters", "", 300, 0, 3, "s");
     fHistos->CreateTH1("QA/hDCA_lambdaDaughters", "", 300, 0, 3, "s");
-    fHistos->CreateTH1("QA/hDCAk0sPV", "", 50, 0, 0.5, "s");
     fHistos->CreateTH1("QA/hDCAlambdaPV", "", 50, 0, 0.5, "s");
-    fHistos->CreateTH1("QA/hDCAK0sPVPionN", "", 50, 0, 0.5, "s");
-    fHistos->CreateTH1("QA/hDCAK0sPVPionP", "", 50, 0, 0.5, "s");
     fHistos->CreateTH1("QA/hDCALambdaPVProton", "", 50, 0, 0.5, "s");
     fHistos->CreateTH1("QA/hDCALambdaPVPion", "", 50, 0, 0.5, "s");
-    fHistos->CreateTH1("QA/hCosPAk0s", "", 50, 0.95, 1.0, "s");
     fHistos->CreateTH1("QA/hCosPAlambda", "", 50, 0.95, 1.0, "s");
-    fHistos->CreateTH1("QA/hLifetimek0s", "", 50, 0, 50, "s");
     fHistos->CreateTH1("QA/hLifetimelambda", "", 50, 0, 50, "s");
-    fHistos->CreateTH1("QA/hYk0s", "", 140, -0.7, 0.7, "s");
     fHistos->CreateTH1("QA/hYlambda", "", 140, -0.7, 0.7, "s");
     fHistos->CreateTH1("QA/hMassLambda", "", 80, 1.08, 1.16, "s");
-    fHistos->CreateTH1("QA/hK0sRxy", "", 200, 0, 200);
     fHistos->CreateTH1("QA/hLambdaRxy", "", 200, 0, 200);
+    if (fSetZero)
+    {
+      fHistos->CreateTH2("QA/hTPCPIDK0s", "", 200, 0, 20, 200, 0, 200);
+      fHistos->CreateTH1("QA/hEtaK0s", "", 20, -1.0, 1.0);
+      fHistos->CreateTH1("QA/hDCAPVK0s", "", 30, 0, 3, "s");
+      fHistos->CreateTH1("QA/hDCArPVK0s", "", 50, 0, 0.5, "s");
+      fHistos->CreateTH1("QA/hPtK0s", "", 200, 0, 20);
+      fHistos->CreateTH2("QA/hTPCPIDK0sPionP", "", 200, 0, 20, 200, -10, 10);
+      fHistos->CreateTH2("QA/hTPCPIDK0sPionN", "", 200, 0, 20, 200, -10, 10);
+      fHistos->CreateTH1("QA/hDCA_k0sDaughters", "", 300, 0, 3, "s");
+      fHistos->CreateTH1("QA/hDCAk0sPV", "", 50, 0, 0.5, "s");
+      fHistos->CreateTH1("QA/hDCAK0sPVPionN", "", 50, 0, 0.5, "s");
+      fHistos->CreateTH1("QA/hDCAK0sPVPionP", "", 50, 0, 0.5, "s");
+      fHistos->CreateTH1("QA/hCosPAk0s", "", 50, 0.95, 1.0, "s");
+      fHistos->CreateTH1("QA/hLifetimek0s", "", 50, 0, 50, "s");
+      fHistos->CreateTH1("QA/hYk0s", "", 140, -0.7, 0.7, "s");
+      fHistos->CreateTH1("QA/hMassK0s", "", 100, 0.4, 0.6, "s");
+      fHistos->CreateTH1("QA/hK0sRxy", "", 200, 0, 200);
+    }
     fHistos->CreateTH2("QA/hXi1820Asymm", "", 100, 0, 1, 100, 0, 100);
     if (fIsMC)
     {
@@ -388,29 +385,38 @@ void AliAnalysisTaskXi1820BH::UserCreateOutputObjects()
     fHistos->CreateTH1("QAcut/hPtKaon", "", 200, 0, 20);
     if (fCheckTPCGeo)
       fHistos->CreateTH1("QAcut/hTPCGeoCheckKaon", "", 2, -0.5, 1.5, "s");
-    fHistos->CreateTH2("QAcut/hTPCPIDK0sPionP", "", 200, 0, 20, 200, -10, 10);
-    fHistos->CreateTH2("QAcut/hTPCPIDK0sPionN", "", 200, 0, 20, 200, -10, 10);
     fHistos->CreateTH2("QAcut/hTPCPIDLambdaProton", "", 200, 0, 20, 200, 0, 200);
     fHistos->CreateTH2("QAcut/hTPCPIDLambdaPion", "", 200, 0, 20, 200, 0, 200);
     fHistos->CreateTH2("QAcut/hTPCPIDAntiLambdaProton", "", 200, 0, 20, 200, 0, 200);
     fHistos->CreateTH2("QAcut/hTPCPIDAntiLambdaPion", "", 200, 0, 20, 200, 0, 200);
-    fHistos->CreateTH1("QAcut/hDCA_k0sDaughters", "", 300, 0, 3, "s");
     fHistos->CreateTH1("QAcut/hDCA_lambdaDaughters", "", 300, 0, 3, "s");
-    fHistos->CreateTH1("QAcut/hDCAk0sPV", "", 50, 0, 0.5, "s");
     fHistos->CreateTH1("QAcut/hDCAlambdaPV", "", 50, 0, 0.5, "s");
-    fHistos->CreateTH1("QAcut/hDCAK0sPVPionN", "", 50, 0, 0.5, "s");
-    fHistos->CreateTH1("QAcut/hDCAK0sPVPionP", "", 50, 0, 0.5, "s");
     fHistos->CreateTH1("QAcut/hDCALambdaPVProton", "", 50, 0, 0.5, "s");
     fHistos->CreateTH1("QAcut/hDCALambdaPVPion", "", 50, 0, 0.5, "s");
-    fHistos->CreateTH1("QAcut/hCosPAk0s", "", 50, 0.95, 1.0, "s");
     fHistos->CreateTH1("QAcut/hCosPAlambda", "", 50, 0.95, 1.0, "s");
-    fHistos->CreateTH1("QAcut/hLifetimek0s", "", 50, 0, 50, "s");
     fHistos->CreateTH1("QAcut/hLifetimelambda", "", 50, 0, 50, "s");
-    fHistos->CreateTH1("QAcut/hYk0s", "", 140, -0.7, 0.7, "s");
     fHistos->CreateTH1("QAcut/hYlambda", "", 140, -0.7, 0.7, "s");
     fHistos->CreateTH1("QAcut/hMassLambda", "", 80, 1.08, 1.16, "s");
-    fHistos->CreateTH1("QAcut/hK0sRxy", "", 200, 0, 200);
     fHistos->CreateTH1("QAcut/hLambdaRxy", "", 200, 0, 200);
+    if (fSetZero)
+    {
+      fHistos->CreateTH2("QAcut/hTPCPIDK0s", "", 200, 0, 20, 200, 0, 200);
+      fHistos->CreateTH1("QAcut/hEtaK0s", "", 20, -1.0, 1.0);
+      fHistos->CreateTH1("QAcut/hDCAPVK0s", "", 30, 0, 3, "s");
+      fHistos->CreateTH1("QAcut/hDCArPVK0s", "", 50, 0, 0.5, "s");
+      fHistos->CreateTH1("QAcut/hPtK0s", "", 200, 0, 20);
+      fHistos->CreateTH2("QAcut/hTPCPIDK0sPionP", "", 200, 0, 20, 200, -10, 10);
+      fHistos->CreateTH2("QAcut/hTPCPIDK0sPionN", "", 200, 0, 20, 200, -10, 10);
+      fHistos->CreateTH1("QAcut/hDCA_k0sDaughters", "", 300, 0, 3, "s");
+      fHistos->CreateTH1("QAcut/hDCAk0sPV", "", 50, 0, 0.5, "s");
+      fHistos->CreateTH1("QAcut/hDCAK0sPVPionN", "", 50, 0, 0.5, "s");
+      fHistos->CreateTH1("QAcut/hDCAK0sPVPionP", "", 50, 0, 0.5, "s");
+      fHistos->CreateTH1("QAcut/hCosPAk0s", "", 50, 0.95, 1.0, "s");
+      fHistos->CreateTH1("QAcut/hLifetimek0s", "", 50, 0, 50, "s");
+      fHistos->CreateTH1("QAcut/hYk0s", "", 140, -0.7, 0.7, "s");
+      fHistos->CreateTH1("QAcut/hMassK0s", "", 100, 0.4, 0.6, "s");
+      fHistos->CreateTH1("QAcut/hK0sRxy", "", 200, 0, 200);
+    }
     fHistos->CreateTH2("QAcut/hXi1820Asymm", "", 100, 0, 1, 100, 0, 100);
     if (fIsMC)
     {
@@ -464,7 +470,7 @@ void AliAnalysisTaskXi1820BH::UserExec(Option_t *)
       fCent = -0.5; // INEL>0 centrality is saved in the -0.5 bin
   }
   fPIDResponse = (AliPIDResponse *)inputHandler->GetPIDResponse();
-  if (!fPIDResponse)
+  if (!fIsNano && !fPIDResponse)
     AliInfo("No PIDd");
   if (fIsMC)
   {
@@ -502,20 +508,25 @@ void AliAnalysisTaskXi1820BH::UserExec(Option_t *)
     fCentBin = 0; // for INEL case
 
   bool checkKaon = GoodKaonSelection();
-  bool checkK0s = GoodK0sSelection();
   bool checkLambda = GoodLambdaSelection();
 
   if (checkKaon && checkLambda)
   {
     FillKaonV0(); // Xi1820^{+-}
-    FillK0sV0();  // Xi1820^{0}
+  }
+
+  if (fSetZero)
+  {
+    bool checkK0s = GoodK0sSelection();
+    if (checkK0s && checkLambda)
+      FillK0sV0(); // Xi1820^{0}?
+    if (fSetMixing && fGoodK0sArray.size())
+      FillK0sToEventPool();
   }
   if (fSetMixing)
   {
     if (fGoodKaonArray.size())
       FillKaonToEventPool(); // use only pion track pool.
-    if (fGoodK0sArray.size())
-      FillK0sToEventPool();
   }
   PostData(1, fHistos->GetListOfHistograms());
 }
@@ -612,9 +623,9 @@ Bool_t AliAnalysisTaskXi1820BH::GoodKaonSelection()
       fHistos->FillTH1("QAcut/hDCArPVKaon", kaonDCA_r);
       fHistos->FillTH1("QAcut/hEtaKaon", lEta);
       fHistos->FillTH1("QAcut/hPtKaon", kaonpT);
-      fHistos->FillTH2("QA/hTPCPIDKaon", kaonpT, nTPCNSigKaon);
-      fHistos->FillTH2("QA/hTOFPIDKaon", kaonpT, nTOFNSigKaon);
-      fHistos->FillTH2("QA/hTPCTOFPIDKaon", nTPCNSigKaon, nTOFNSigKaon);
+      fHistos->FillTH2("QAcut/hTPCPIDKaon", kaonpT, nTPCNSigKaon);
+      fHistos->FillTH2("QAcut/hTOFPIDKaon", kaonpT, nTOFNSigKaon);
+      fHistos->FillTH2("QAcut/hTPCTOFPIDKaon", nTPCNSigKaon, nTOFNSigKaon);
       if (fCheckTPCGeo)
         fHistos->FillTH1("QAcut/hTPCGeoCheckKaon", isTPCGeo);
     }
@@ -626,7 +637,7 @@ Bool_t AliAnalysisTaskXi1820BH::GoodKaonSelection()
 Bool_t AliAnalysisTaskXi1820BH::GoodK0sSelection()
 {
   fGoodK0sArray.clear();
-  const UInt_t nLamba = fEvt->GetNumberOfV0s();
+  const UInt_t nK0s = fEvt->GetNumberOfV0s();
 
   AliAODv0 *v0AOD;
   AliAODTrack *pTrackV0, *nTrackV0;
@@ -636,7 +647,7 @@ Bool_t AliAnalysisTaskXi1820BH::GoodK0sSelection()
       lK0sRap{0};
   Bool_t AcceptedV0 = kTRUE;
 
-  for (UInt_t it = 0; it < nLamba; it++)
+  for (UInt_t it = 0; it < nK0s; it++)
   {
     AcceptedV0 = kTRUE;
     v0AOD = ((AliAODEvent *)fEvt)->GetV0(it);
@@ -761,7 +772,7 @@ Bool_t AliAnalysisTaskXi1820BH::GoodK0sSelection()
     // Mass window cut
     fMassK0s = v0AOD->MassK0Short();
     if (fFillQAPlot)
-      fHistos->FillTH1("QA/hMassLambda", fMassK0s);
+      fHistos->FillTH1("QA/hMassK0s", fMassK0s);
     if (TMath::Abs(fMassK0s - k0sMass) > fK0sMassWindowCut)
       if (fFillQAPlot)
         AcceptedV0 = kFALSE;
@@ -776,7 +787,7 @@ Bool_t AliAnalysisTaskXi1820BH::GoodK0sSelection()
       {
         fHistos->FillTH2("QAcut/hTPCPIDK0sPionP", pTrackV0->Pt(), nTPCNSigKaonMinus);
         fHistos->FillTH2("QAcut/hTPCPIDK0sPionN", nTrackV0->Pt(), nTPCNSigKaonPlus);
-        fHistos->FillTH1("QAcut/hDCA_lambdaDaughters", lDCADistK0s);
+        fHistos->FillTH1("QAcut/hDCA_k0sDaughters", lDCADistK0s);
         fHistos->FillTH1("QAcut/hDCA_k0sDaughters", lDCADistK0s);
         fHistos->FillTH1("QAcut/hDCAk0sPV", lDCADistK0s_PV);
         fHistos->FillTH1("QAcut/hDCAK0sPVPionP", lDCADist_K0sPiPlus_PV);
@@ -784,8 +795,9 @@ Bool_t AliAnalysisTaskXi1820BH::GoodK0sSelection()
         fHistos->FillTH1("QAcut/hDCAk0sPV", lDCADistK0s_PV);
         fHistos->FillTH1("QAcut/hLifetimek0s", lLifetime);
         fHistos->FillTH1("QAcut/hK0sRxy", lV0Radius);
+        fHistos->FillTH1("QAcut/hCosPAk0s", lK0sCPA);
         fHistos->FillTH1("QAcut/hYk0s", lK0sRap);
-        fHistos->FillTH1("QAcut/hMassLambda", fMassK0s);
+        fHistos->FillTH1("QAcut/hMassK0s", fMassK0s);
       }
     }
   }
@@ -999,21 +1011,13 @@ Bool_t AliAnalysisTaskXi1820BH::GoodLambdaSelection()
       {
         if (lPIDLambda)
         {
-          fHistos->FillTH2("QAcut/hTPCPIDLambdaProton",
-                           pTrackV0->GetTPCmomentum(),
-                           pTrackV0->GetTPCsignal());
-          fHistos->FillTH2("QAcut/hTPCPIDLambdaPion",
-                           nTrackV0->GetTPCmomentum(),
-                           nTrackV0->GetTPCsignal());
+          fHistos->FillTH2("QAcut/hTPCPIDLambdaProton", pTrackV0->GetTPCmomentum(), pTrackV0->GetTPCsignal());
+          fHistos->FillTH2("QAcut/hTPCPIDLambdaPion", nTrackV0->GetTPCmomentum(), nTrackV0->GetTPCsignal());
         }
         if (lPIDAntiLambda)
         {
-          fHistos->FillTH2("QAcut/hTPCPIDAntiLambdaProton",
-                           nTrackV0->GetTPCmomentum(),
-                           nTrackV0->GetTPCsignal());
-          fHistos->FillTH2("QAcut/hTPCPIDAntiLambdaPion",
-                           pTrackV0->GetTPCmomentum(),
-                           pTrackV0->GetTPCsignal());
+          fHistos->FillTH2("QAcut/hTPCPIDAntiLambdaProton", nTrackV0->GetTPCmomentum(), nTrackV0->GetTPCsignal());
+          fHistos->FillTH2("QAcut/hTPCPIDAntiLambdaPion", pTrackV0->GetTPCmomentum(), pTrackV0->GetTPCsignal());
         }
         fHistos->FillTH1("QAcut/hDCA_lambdaDaughters", lDCADistLambda);
         fHistos->FillTH1("QAcut/hDCAlambdaPV", lDCADistLambda_PV);
@@ -1048,7 +1052,6 @@ void AliAnalysisTaskXi1820BH::FillKaonV0()
   TLorentzVector vecLambda, vecKaon, vecKaonMix;
   TLorentzVector vecXi1820PM;
   const UInt_t nLamba = fGoodLambdaArray.size();
-  const UInt_t nK0s = fGoodK0sArray.size();
   const UInt_t nTracks = fGoodKaonArray.size();
 
   // Prepare mixing pool
@@ -1126,8 +1129,13 @@ void AliAnalysisTaskXi1820BH::FillKaonV0()
       else
         isKaonPlus = false;
 
-      binAnti = (isAnti) ? kAnti : kNormal;
-      sign = (isKaonPlus) ? kXi1820P : kXi1820M;
+      if (isKaonPlus && !isAnti) // Kaon+ + Lambda -> skip
+        continue;
+      if (!isKaonPlus && isAnti) // Kaon- + Anti-Lambda -> skip
+        continue;
+
+      binAnti = (isAnti) ? kAnti : kNormal; // Anti
+      sign = kXi1820M;
 
       FillTHnSparse("Xi1820_data", {(double)binAnti, (double)sign, (double)fCent, vecXi1820PM.Pt(), vecXi1820PM.M()});
 
@@ -1136,7 +1144,7 @@ void AliAnalysisTaskXi1820BH::FillKaonV0()
         isTrueXi1820 = IsTrueXi1820PM(fGoodLambdaArray[i][0], fGoodKaonArray[j], 0);
         if (isTrueXi1820)
         {
-          sign = (isKaonPlus) ? kXi1820P_REC : kXi1820M_REC;
+          sign = kXi1820M_REC;
           FillTHnSparse("Xi1820_mc", {(double)binAnti, (double)sign, (double)fCent, vecXi1820PM.Pt(), vecXi1820PM.M()});
           if (fUseAsymmCut && fFillQAPlot)
             fHistos->FillTH2("QAcut/hXi1820Asymm_true_selected", asym, fCent);
@@ -1144,7 +1152,7 @@ void AliAnalysisTaskXi1820BH::FillKaonV0()
         else
         {
           // MC not true bkg
-          sign = (isKaonPlus) ? kXi1820P_NOT : kXi1820M_NOT;
+          sign = kXi1820M_NOT;
           FillTHnSparse("Xi1820_data", {(double)binAnti, (double)sign, (double)fCent, vecXi1820PM.Pt(), vecXi1820PM.M()});
         }
       }
@@ -1182,9 +1190,13 @@ void AliAnalysisTaskXi1820BH::FillKaonV0()
           isAnti = true;
         else
           isAnti = false;
+        if (isKaonPlus && !isAnti)
+          continue;
+        if (!isKaonPlus && isAnti)
+          continue;
 
         binAnti = (isAnti) ? kAnti : kNormal;
-        sign = (isKaonPlus) ? kXi1820P_MIX : kXi1820M_MIX;
+        sign = kXi1820M_MIX;
 
         FillTHnSparse("Xi1820_data", {(double)binAnti, (double)sign, (double)fCent, vecXi1820PM.Pt(), vecXi1820PM.M()});
       }
@@ -1193,9 +1205,7 @@ void AliAnalysisTaskXi1820BH::FillKaonV0()
 }
 void AliAnalysisTaskXi1820BH::FillK0sV0()
 {
-  AliAODv0 *k0s_V0;
-  AliAODv0 *k0s_V0_mix;
-  AliAODv0 *LambdaV0;
+  AliAODv0 *k0s_V0, *k0s_V0_mix, *LambdaV0;
   AliAODTrack *pTrackV0, *nTrackV0, *pTrackK0s, *nTrackK0s, *pTrackK0s_Mix, *nTrackK0s_Mix;
   Bool_t isAnti;
   Bool_t isTrueXi1820;
@@ -1214,6 +1224,7 @@ void AliAnalysisTaskXi1820BH::FillK0sV0()
   v0list k0sMixingPool;
   if (fSetMixing)
   {
+    std::cout << "Mixing pool size: " << fEMpoolK0s[fCentBin][fZbin].size() << std::endl;
     // K0s track pool
     v0pool &ep = fEMpoolK0s[fCentBin][fZbin];
     if ((int)ep.size() < (int)fnMix)
@@ -1230,7 +1241,7 @@ void AliAnalysisTaskXi1820BH::FillK0sV0()
 
   for (UInt_t i = 0; i < nLamba; i++) // Lambda loop
   {
-
+    // std::cout << "Lambda loop: " << i << std::endl;
     LambdaV0 = ((AliAODEvent *)fEvt)->GetV0(fGoodLambdaArray[i][0]);
     if (!LambdaV0)
       continue;
@@ -1249,13 +1260,19 @@ void AliAnalysisTaskXi1820BH::FillK0sV0()
     else
       vecLambda.SetXYZM(LambdaV0->MomV0X(), LambdaV0->MomV0Y(), LambdaV0->MomV0Z(), LambdaV0->MassAntiLambda());
 
-    for (UInt_t j = 0; j < nTracks; j++) // Kaon loop
+    for (UInt_t j = 0; j < nK0s; j++) // Kaon loop
     {
+      // std::cout << "K0s loop: " << j << std::endl;
       k0s_V0 = ((AliAODEvent *)fEvt)->GetV0(fGoodK0sArray[j]);
       if (!k0s_V0)
+      {
         continue;
-      if (k0s_V0->GetID() == LambdaV0->GetID())
+      }
+      if (fGoodK0sArray[j] == fGoodLambdaArray[i][0])
+      {
         continue;
+      }
+
       pTrackK0s = (AliAODTrack *)(k0s_V0->GetSecondaryVtx()->GetDaughter(0));
       nTrackK0s = (AliAODTrack *)(k0s_V0->GetSecondaryVtx()->GetDaughter(1));
       pIDK0s = pTrackK0s->GetID();
@@ -1263,14 +1280,18 @@ void AliAnalysisTaskXi1820BH::FillK0sV0()
 
       // Skip duplicated track
       if (pIDK0s == pID || pIDK0s == nID || nIDK0s == pID || nIDK0s == nID)
+      {
         continue;
+      }
 
       vecK0s.SetXYZM(k0s_V0->Px(), k0s_V0->Py(), k0s_V0->Pz(), k0sMass);
       vecXi1820Zero = vecLambda + vecK0s;
       // Y cut
       if ((vecXi1820Zero.Rapidity() > fXi1820YCutHigh) ||
           (vecXi1820Zero.Rapidity() < fXi1820YCutLow))
+      {
         continue;
+      }
 
       // AsymmCut
       if (fUseAsymmCut)
@@ -1285,7 +1306,6 @@ void AliAnalysisTaskXi1820BH::FillK0sV0()
         if (fFillQAPlot)
           fHistos->FillTH2("QAcut/hXi1820Asymm", asym, fCent);
       }
-
       binAnti = (isAnti) ? kAnti : kNormal;
       FillTHnSparse("Xi1820_data", {(double)binAnti, (double)kXi1820Zero, (double)fCent, vecXi1820Zero.Pt(), vecXi1820Zero.M()});
 
@@ -1402,116 +1422,64 @@ void AliAnalysisTaskXi1820BH::FillMCinput(AliMCEvent *fMCEvent, int Fillbin)
   int sign = kAllType;
   int binAnti = 0;
   TLorentzVector vecPart1, vecPart2;
-  if (!fIsAOD)
+
+  for (Int_t it = 0; it < fMCArray->GetEntriesFast(); it++)
   {
-    for (Int_t it = 0; it < fMCEvent->GetNumberOfPrimaries(); it++)
+    AliAODMCParticle *mcInputTrack = (AliAODMCParticle *)fMCArray->At(it);
+    if (!mcInputTrack)
     {
-      TParticle *mcInputTrack = (TParticle *)fMCEvent->GetTrack(it)->Particle();
-      if (!mcInputTrack)
-      {
-        Error("UserExec", "Could not receive MC track %d", it);
-        continue;
-      }
-      Int_t v0PdgCode = mcInputTrack->GetPdgCode();
-      if ((TMath::Abs(v0PdgCode) != kXi1820zeroCode) ||
-          (TMath::Abs(v0PdgCode) != kXi1820MCode))
-        continue;
-      if (fIsPrimaryMC && !mcInputTrack->IsPrimary())
-        continue;
-      // Y cut
-      if ((mcInputTrack->Y() > fXi1820YCutHigh) ||
-          (mcInputTrack->Y() < fXi1820YCutLow))
-        continue;
-      // AsymmCut
-      if (fUseAsymmCut)
-      {
-        auto mcPart1 =
-            (TParticle *)fMCEvent->GetTrack(abs(mcInputTrack->GetDaughter(0)))
-                ->Particle();
-        auto mcPart2 =
-            (TParticle *)fMCEvent->GetTrack(abs(mcInputTrack->GetDaughter(1)))
-                ->Particle();
-        mcPart1->Momentum(vecPart1);
-        mcPart2->Momentum(vecPart2);
-
-        auto P1 = (TVector3)vecPart1.Vect();
-        auto P2 = (TVector3)vecPart2.Vect();
-        auto asym = TMath::Abs(P1.Mag() - P2.Mag()) / (P1.Mag() + P2.Mag());
-        if (fFillQAPlot)
-          fHistos->FillTH2("QA/hXi1820Asymm_true", asym, fCent);
-        if ((asym < fXi1820AsymmCutLow) || (asym > fXi1820AsymmCutHigh))
-          continue;
-        if (fFillQAPlot)
-          fHistos->FillTH2("QAcut/hXi1820Asymm_true", asym, fCent);
-      }
-      (v0PdgCode < 0) ? binAnti = kAnti : binAnti = kNormal;
-      if (TMath::Abs(v0PdgCode) == kXi1820zeroCode)
-        sign = kXi1820Zero_GEN + (int)Fillbin * 2;
-      if (TMath::Abs(v0PdgCode) == kXi1820MCode)
-        sign = kXi1820M_GEN + (int)Fillbin * 2;
-
-      FillTHnSparse("Xi1820_mc",
-                    {(double)binAnti, (double)sign, (double)fCent,
-                     mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
+      Error("UserExec", "Could not receive MC track %d", it);
+      continue;
     }
-  }
-  else
-  {
-    for (Int_t it = 0; it < fMCArray->GetEntriesFast(); it++)
+
+    Int_t v0PdgCode = mcInputTrack->GetPdgCode();
+
+    if ((TMath::Abs(v0PdgCode) != kXi1820ZeroCode) &&
+        (TMath::Abs(v0PdgCode) != kXi1820MCode))
+      continue;
+    if (fIsPrimaryMC && !mcInputTrack->IsPrimary())
+      continue;
+
+    // Y cut
+    if ((mcInputTrack->Y() > fXi1820YCutHigh) ||
+        (mcInputTrack->Y() < fXi1820YCutLow))
+      continue;
+    // AsymmCut
+    if (fUseAsymmCut)
     {
-      AliAODMCParticle *mcInputTrack = (AliAODMCParticle *)fMCArray->At(it);
-      if (!mcInputTrack)
-      {
-        Error("UserExec", "Could not receive MC track %d", it);
+      auto mcPart1 = (AliAODMCParticle *)fMCArray->At(
+          abs(mcInputTrack->GetDaughterFirst()));
+      auto mcPart2 = (AliAODMCParticle *)fMCArray->At(
+          abs(mcInputTrack->GetDaughterLast()));
+      mcPart1->Momentum(vecPart1);
+      mcPart2->Momentum(vecPart2);
+
+      auto P1 = (TVector3)vecPart1.Vect();
+      auto P2 = (TVector3)vecPart2.Vect();
+      auto asym = TMath::Abs(P1.Mag() - P2.Mag()) / (P1.Mag() + P2.Mag());
+      if (fFillQAPlot)
+        fHistos->FillTH2("QA/hXi1820Asymm_true", asym, fCent);
+      if ((asym < fXi1820AsymmCutLow) || (asym > fXi1820AsymmCutHigh))
         continue;
-      }
-
-      Int_t v0PdgCode = mcInputTrack->GetPdgCode();
-
-      if ((TMath::Abs(v0PdgCode) != kXi1820zeroCode) &&
-          (TMath::Abs(v0PdgCode) != kXi1820MCode))
-        continue;
-      if (fIsPrimaryMC && !mcInputTrack->IsPrimary())
-        continue;
-
-      // Y cut
-      if ((mcInputTrack->Y() > fXi1820YCutHigh) ||
-          (mcInputTrack->Y() < fXi1820YCutLow))
-        continue;
-      // AsymmCut
-      if (fUseAsymmCut)
-      {
-        auto mcPart1 = (AliAODMCParticle *)fMCArray->At(
-            abs(mcInputTrack->GetDaughterFirst()));
-        auto mcPart2 = (AliAODMCParticle *)fMCArray->At(
-            abs(mcInputTrack->GetDaughterLast()));
-        mcPart1->Momentum(vecPart1);
-        mcPart2->Momentum(vecPart2);
-
-        auto P1 = (TVector3)vecPart1.Vect();
-        auto P2 = (TVector3)vecPart2.Vect();
-        auto asym = TMath::Abs(P1.Mag() - P2.Mag()) / (P1.Mag() + P2.Mag());
-        if (fFillQAPlot)
-          fHistos->FillTH2("QA/hXi1820Asymm_true", asym, fCent);
-        if ((asym < fXi1820AsymmCutLow) || (asym > fXi1820AsymmCutHigh))
-          continue;
-        if (fFillQAPlot)
-          fHistos->FillTH2("QAcut/hXi1820Asymm_true", asym, fCent);
-      }
-
-      (v0PdgCode < 0) ? binAnti = kAnti : binAnti = kNormal;
-      if (TMath::Abs(v0PdgCode) == kXi1820zeroCode)
-        sign = kXi1820Zero_GEN + (int)Fillbin * 2;
-      if (TMath::Abs(v0PdgCode) == kXi1820MCode)
-        sign = kXi1820M_GEN + (int)Fillbin * 2;
-      // QA MC inputs
-      std::cout << "MC input: " << mcInputTrack->GetPdgCode() << " "
-                << mcInputTrack->Pt() << " " << mcInputTrack->Y() << " "
-                << mcInputTrack->GetCalcMass() << std::endl;
-      FillTHnSparse("Xi1820_mc",
-                    {(double)binAnti, (double)sign, (double)fCent,
-                     mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
+      if (fFillQAPlot)
+        fHistos->FillTH2("QAcut/hXi1820Asymm_true", asym, fCent);
     }
+
+    binAnti = (v0PdgCode < 0) ? kAnti : kNormal;
+    if (TMath::Abs(v0PdgCode) == kXi1820ZeroCode)
+    {
+      sign = kXi1820Zero_GEN + (int)Fillbin * 2;
+      if (!fSetZero)
+        continue;
+    }
+    if (TMath::Abs(v0PdgCode) == kXi1820MCode)
+    {
+      sign = kXi1820M_GEN + (int)Fillbin * 2;
+    }
+
+    FillTHnSparse("Xi1820_mc",
+                  {(double)binAnti, (double)sign, (double)fCent,
+                   mcInputTrack->Pt(), mcInputTrack->GetCalcMass()});
   }
 }
 Bool_t AliAnalysisTaskXi1820BH::IsTrueXi1820PM(UInt_t v0Index, UInt_t pionIndex, UInt_t BkgCheck)
@@ -1574,14 +1542,21 @@ Bool_t AliAnalysisTaskXi1820BH::IsTrueXi1820Zero(UInt_t v0Index, UInt_t k0sIndex
   AliAODv0 *v0AOD = ((AliAODEvent *)fEvt)->GetV0(v0Index);
   if (!v0AOD)
     return kFALSE;
+  if (!k0sAOD)
+    return kFALSE;
   AliAODTrack *pTrackV0 = (AliAODTrack *)(v0AOD->GetSecondaryVtx()->GetDaughter(0));
   AliAODTrack *nTrackV0 = (AliAODTrack *)(v0AOD->GetSecondaryVtx()->GetDaughter(1));
 
+  AliAODTrack *pTrackK0s = (AliAODTrack *)(k0sAOD->GetSecondaryVtx()->GetDaughter(0));
+  AliAODTrack *nTrackK0s = (AliAODTrack *)(k0sAOD->GetSecondaryVtx()->GetDaughter(1));
+
   AliAODMCParticle *MCLamD1 = (AliAODMCParticle *)fMCArray->At(TMath::Abs(pTrackV0->GetLabel()));
   AliAODMCParticle *MCLamD2 = (AliAODMCParticle *)fMCArray->At(TMath::Abs(nTrackV0->GetLabel()));
+  AliAODMCParticle *MCK0sD1 = (AliAODMCParticle *)fMCArray->At(TMath::Abs(pTrackK0s->GetLabel()));
+  AliAODMCParticle *MCK0sD2 = (AliAODMCParticle *)fMCArray->At(TMath::Abs(nTrackK0s->GetLabel()));
   AliAODMCParticle *MCLam;
   AliAODMCParticle *MCK0s;
-  AliAODMCParticle *MCXi1820PM;
+  AliAODMCParticle *MCXi1820Zero;
 
   // Lambda daughter (pion, proton) check
   if ((TMath::Abs(MCLamD1->GetPdgCode()) == kProtonCode &&
@@ -1596,23 +1571,32 @@ Bool_t AliAnalysisTaskXi1820BH::IsTrueXi1820Zero(UInt_t v0Index, UInt_t k0sIndex
   MCLam = (AliAODMCParticle *)fMCArray->At(TMath::Abs(MCLamD1->GetMother()));
   if (TMath::Abs(MCLam->GetPdgCode()) != kLambdaCode)
     return kFALSE;
-  // K0s check
-  MCK0s = (AliAODMCParticle *)fMCArray->At(TMath::Abs(k0sAOD->GetLabel()));
+
+  // K0s daughter (pion, pion) check
+  if ((TMath::Abs(MCK0sD1->GetPdgCode()) != kPionCode ||
+       TMath::Abs(MCK0sD2->GetPdgCode()) != kPionCode))
+    return kFALSE;
+  // K0s duather's mother check
+  if (MCK0sD1->GetMother() != MCK0sD2->GetMother())
+    return kFALSE;
+  MCK0s = (AliAODMCParticle *)fMCArray->At(TMath::Abs(MCK0sD1->GetMother()));
   if (TMath::Abs(MCK0s->GetPdgCode()) != kK0sCode)
     return kFALSE;
 
   switch (BkgCheck)
   {
   case 0: // Normal Xi1820PM case
-    // pion-Lambda mother check
+    // K0s-Lambda mother check
     if (MCK0s->GetMother() != MCLam->GetMother())
       return kFALSE;
-    MCXi1820PM = (AliAODMCParticle *)fMCArray->At(TMath::Abs(MCLam->GetMother()));
-    if (TMath::Abs(MCXi1820PM->GetPdgCode()) != kXi1820MCode)
+    std::cout << "same mother!" << std::endl;
+    MCXi1820Zero = (AliAODMCParticle *)fMCArray->At(TMath::Abs(MCLam->GetMother()));
+    if (TMath::Abs(MCXi1820Zero->GetPdgCode()) != kXi1820ZeroCode)
       return kFALSE;
+    std::cout << "PDG code: " << MCXi1820Zero->GetPdgCode() << std::endl;
     if (fIsPrimaryMC)
     {
-      if (MCXi1820PM->IsPrimary())
+      if (MCXi1820Zero->IsPrimary())
         return kTRUE;
       else
         return kFALSE;

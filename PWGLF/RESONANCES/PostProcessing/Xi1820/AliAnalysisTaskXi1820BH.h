@@ -28,6 +28,7 @@ public:
   void SetnMix(Int_t nMix) { fnMix = nMix; }
   void SetIsPrimaryMC(Bool_t isprimarymc) { fIsPrimaryMC = isprimarymc; }
   void SetINEL(Bool_t input) { fIsINEL = input; }
+  void SetRunXi1820Zero(Bool_t input) {fSetZero = input;}
   void SetHighMult(Bool_t input) { fIsHM = input; }
   void SetAsymmCut(Bool_t input) { fUseAsymmCut = input; }
   void SetOnlyUseOnTheFlyV0(Bool_t input) { fOnlyUseOnTheFlyV0 = input; }
@@ -127,6 +128,7 @@ private:
   Bool_t fIsAOD;             //!
   Bool_t fIsNano;            //!
   Bool_t fSetMixing;         //
+  Bool_t fSetZero;           //
   Bool_t fFillQAPlot;        //
   Bool_t fIsMC;              //
   Bool_t fIsPrimaryMC;       //
