@@ -70,6 +70,7 @@ class AliAnalysisTaskOmegaDielectron_AccEff : public AliAnalysisTaskSE {
     AliVEvent*          fEvent;			      //!<! Event object
     AliMCEvent*         fMCEvent;         //!<! MC event
     AliDielectronEventCuts  *fEventCuts;       //!<! Event cuts
+    AliDielectronEventCuts  *fEventCuts_VertexZ;       //!<! Event cuts
     AliAnalysisFilter * fFilter_TrackCuts;    //!<! Analysis Filter
     AliAnalysisFilter * fFilter_PID;          //!<! Analysis Filter
     AliPIDResponse*     fPIDResponse;           //!<! Analysis Filter

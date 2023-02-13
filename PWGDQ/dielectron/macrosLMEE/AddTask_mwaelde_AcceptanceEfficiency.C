@@ -18,7 +18,7 @@ AliAnalysisTask* AddTask_mwaelde_AcceptanceEfficiency(TString name = "name")
     // now we create an instance of your task
     AliAnalysisTaskOmegaDielectron_AccEff* task = new AliAnalysisTaskOmegaDielectron_AccEff(name.Data());
     if(!task) return 0x0;
-    task->SelectCollisionCandidates(AliVEvent::kINT7);// kAnyINT
+    // task->SelectCollisionCandidates(AliVEvent::kINT7);// kAnyINT
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
