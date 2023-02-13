@@ -1170,10 +1170,12 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 				} // end loop Mix
 			} // end loop Trig
 		}
-	}
-	TObjArray* cloneArray = (TObjArray*)fTracksAss->Clone();
-	cloneArray->SetOwner(kTRUE);
-	pool->UpdatePool(cloneArray);
+    pool->Clear();
+    } else {
+	    TObjArray* cloneArray = (TObjArray*)fTracksAss->Clone();
+	    cloneArray->SetOwner(kTRUE);
+	    pool->UpdatePool(cloneArray);
+    }
 
 	return;
 }
