@@ -601,7 +601,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   };
 
   // *.) Debugging:
-  void SetProcessOnlySpecifiedEvent(Int_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period)
+  void SetProcessOnlySpecifiedEvent(Int_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period) 
   {
    this->fProcessOnlySpecifiedEvent = kTRUE; 
    this->fRun = run;
