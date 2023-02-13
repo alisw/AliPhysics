@@ -895,16 +895,22 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
   {
    for(Int_t o=0;o<4;o++) // loop over order of correlator, 4 is hardcoded also in .h, when I generalize is there, I need to update also here
    {
-    if(fCorrelationsPro[o][0][AFO_PT]) { nBins = fCorrelationsPro[o][0][AFO_PT]->GetNbinsX(); }
-    break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    if(fCorrelationsPro[o][0][AFO_PT]) 
+    { 
+     nBins = fCorrelationsPro[o][0][AFO_PT]->GetNbinsX(); 
+     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    }
    }   
   } 
   else if(fCalculateTest0)
   {
    for(Int_t o=0;o<gMaxCorrelator;o++) // loop over order of correlator
    {
-    if(fTest0Pro[o][0][AFO_PT]) { nBins = fTest0Pro[o][0][AFO_PT]->GetNbinsX(); }
-    break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    if(fTest0Pro[o][0][AFO_PT]) 
+    { 
+     nBins = fTest0Pro[o][0][AFO_PT]->GetNbinsX();
+     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    }
    }   
   }
  
@@ -930,16 +936,22 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
   {
    for(Int_t o=0;o<4;o++) // loop over order of correlator, 4 is hardcoded also in .h, when I generalize is there, I need to update also here
    {
-    if(fCorrelationsPro[o][0][AFO_ETA]) { nBins = fCorrelationsPro[o][0][AFO_ETA]->GetNbinsX(); }
-    break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    if(fCorrelationsPro[o][0][AFO_ETA]) 
+    { 
+     nBins = fCorrelationsPro[o][0][AFO_ETA]->GetNbinsX();
+     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    }
    }   
   } 
   else if(fCalculateTest0)
   {
    for(Int_t o=0;o<gMaxCorrelator;o++) // loop over order of correlator
    {
-    if(fTest0Pro[o][0][AFO_ETA]) { nBins = fTest0Pro[o][0][AFO_ETA]->GetNbinsX(); }
-    break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    if(fTest0Pro[o][0][AFO_ETA]) 
+    { 
+     nBins = fTest0Pro[o][0][AFO_ETA]->GetNbinsX();
+     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+    }
    }   
   }
 
@@ -969,16 +981,22 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
    {
     for(Int_t o=0;o<4;o++) // loop over order of correlator, 4 is hardcoded also in .h, when I generalize is there, I need to update also here
     {
-     if(fCorrelationsPro[o][0][AFO_PT]) { nBins = fCorrelationsPro[o][0][AFO_PT]->GetNbinsX(); }
-     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+     if(fCorrelationsPro[o][0][AFO_PT]) 
+     {
+      nBins = fCorrelationsPro[o][0][AFO_PT]->GetNbinsX();
+      break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+     }
     }   
    } 
    else if(fCalculateTest0)
    {
     for(Int_t o=0;o<gMaxCorrelator;o++) // loop over order of correlator
     {
-     if(fTest0Pro[o][0][AFO_PT]) { nBins = fTest0Pro[o][0][AFO_PT]->GetNbinsX(); }
-     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+     if(fTest0Pro[o][0][AFO_PT]) 
+     { 
+      nBins = fTest0Pro[o][0][AFO_PT]->GetNbinsX();
+      break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+     }
     }   
    }
 
@@ -996,16 +1014,22 @@ void AliAnalysisTaskMuPa::ResetEventByEventQuantities()
    {
     for(Int_t o=0;o<4;o++) // loop over order of correlator, 4 is hardcoded also in .h, when I generalize is there, I need to update also here
     {
-     if(fCorrelationsPro[o][0][AFO_PT]) { nBins = fCorrelationsPro[o][0][AFO_PT]->GetNbinsX(); }
-     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+     if(fCorrelationsPro[o][0][AFO_PT])
+     {
+      nBins = fCorrelationsPro[o][0][AFO_PT]->GetNbinsX();
+      break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+     }
     }   
    } 
    else if(fCalculateTest0)
    {
     for(Int_t o=0;o<gMaxCorrelator;o++) // loop over order of correlator
     {
-     if(fTest0Pro[o][0][AFO_PT]) { nBins = fTest0Pro[o][0][AFO_PT]->GetNbinsX(); }
-     break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+     if(fTest0Pro[o][0][AFO_PT]) 
+     { 
+      nBins = fTest0Pro[o][0][AFO_PT]->GetNbinsX();
+      break; // yes, since binning is the same across different orders, so I just need to find the first one which is not NULL
+     }
     }   
    }
 
@@ -2104,9 +2128,9 @@ void AliAnalysisTaskMuPa::BookControlEventHistograms()
  fControlEventHistogramsPro->SetStats(kFALSE);
  fControlEventHistogramsPro->SetLineColor(COLOR);
  fControlEventHistogramsPro->SetFillColor(FILLCOLOR);
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(1,"TBI 1");
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(2,"TBI 2");
- fControlEventHistogramsPro->GetXaxis()->SetBinLabel(3,"TBI 3");
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(1,"TBI 1 ?");
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(2,"TBI 2 ?");
+ fControlEventHistogramsPro->GetXaxis()->SetBinLabel(3,"TBI 3 ?");
  fControlEventHistogramsPro->GetXaxis()->SetBinLabel(4,Form("fCentralityEstimator = %s",fCentralityEstimator.Data()));
  fControlEventHistogramsPro->GetXaxis()->SetBinLabel(5,"minSelected"); fControlEventHistogramsPro->Fill(4.5,fSelectedTracksCuts[0]);
  fControlEventHistogramsPro->GetXaxis()->SetBinLabel(6,"maxSelected"); fControlEventHistogramsPro->Fill(5.5,fSelectedTracksCuts[1]);
@@ -3238,10 +3262,10 @@ Bool_t AliAnalysisTaskMuPa::SurvivesEventCuts(AliVEvent *ave)
       switch(fCentralityCorrelationCutVersion)
       {
        case 0: // relative 
-        if(TMath::Abs((centrality1-centrality2)/(centrality1+centrality2)) > fCentralityCorrelationsCuts[ce1][ce2]) return kFALSE;
+        if(TMath::Abs((centrality1-centrality2)/(centrality1+centrality2)) > fCentralityCorrelationsCuts[ce1][ce2]) return kFALSE; 
        break;
        case 1: // absolute
-        if(TMath::Abs((centrality1-centrality2)) > fCentralityCorrelationsCuts[ce1][ce2]) return kFALSE;
+        if(TMath::Abs((centrality1-centrality2)) > fCentralityCorrelationsCuts[ce1][ce2]) return kFALSE; 
        break;
        default:
         cout<<__LINE__<<endl; exit(1);

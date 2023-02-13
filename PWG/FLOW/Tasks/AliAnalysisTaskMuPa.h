@@ -316,7 +316,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
    Int_t var = -44;
    if(TString(type).EqualTo("MagneticField")){var = MagneticField;} 
    else if (TString(type).EqualTo("PrimaryVertex")){var = PrimaryVertex;}
-   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); }
+   else { Red(__PRETTY_FUNCTION__); cout<<__LINE__<<endl; exit(1); } 
    this->fEventCuts[var][0] = min;
    this->fEventCuts[var][1] = max;
    this->fUseEventCuts[var] = kTRUE;
@@ -601,7 +601,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   };
 
   // *.) Debugging:
-  void SetProcessOnlySpecifiedEvent(Int_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period)
+  void SetProcessOnlySpecifiedEvent(Int_t run, UShort_t bunchCross, UInt_t orbit, UInt_t period) 
   {
    this->fProcessOnlySpecifiedEvent = kTRUE; 
    this->fRun = run;
@@ -827,7 +827,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo() 
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,34);
+  ClassDef(AliAnalysisTaskMuPa,35);
 
 };
 
