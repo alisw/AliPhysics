@@ -1160,8 +1160,14 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
           AliFatal(Form("Weights/input file %s not available.ABORTING!!!",((TObjString*) tokens->At(3))->String().Data()));
           return kFALSE;
         }
-      }
-      else {
+      } else if (tokens->GetEntries() == 4 && fTaskActivitiesString.Contains("diffcorr") && ((TObjString*)tokens->At(3))->String().EqualTo("noweights")) {
+        fhPtAverageTrack_1 = nullptr;
+        fhPtAverageTrack_2 = nullptr;
+        fhTruePtAverageTrack_1 = nullptr;
+        fhTruePtAverageTrack_2 = nullptr;
+        fProcessCorrelations->SetUseWeights(kFALSE);
+        szContainerPrefix += "NW";
+      } else {
         AliFatal("Use weights/input histograms required but the weights filename is not present.ABORTING!!!");
         return kFALSE;
       }
