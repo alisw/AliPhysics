@@ -41,6 +41,8 @@
 /// Default constructor for serialization
 AliCSTrackSelection::AliCSTrackSelection()
   : TNamed(),
+    fTrackId(kWrongPOIid),
+    fParticleId(kWrongPOIid),
     fQALevel(AliCSAnalysisCutsBase::kQALevelNone),
     fInclusiveTrackCuts(),
     fInclusivePIDCuts(),
@@ -85,6 +87,8 @@ AliCSTrackSelection::AliCSTrackSelection()
 /// \param title title of the event cuts
 AliCSTrackSelection::AliCSTrackSelection(const char* name, const char* title)
   : TNamed(name, title),
+    fTrackId(kWrongPOIid),
+    fParticleId(kWrongPOIid),
     fQALevel(AliCSAnalysisCutsBase::kQALevelNone),
     fInclusiveTrackCuts(),
     fInclusivePIDCuts(),
@@ -326,6 +330,23 @@ void AliCSTrackSelection::NotifyEvent() {
   }
 }
 
+/// get the paritcle of interest internal id for the PID species
+/// \param sp the PID species
+/// \return the internal POI id
+AliCSTrackSelection::poiIds AliCSTrackSelection::poiid(AliPID::EParticleType sp)
+{
+  switch (sp) {
+    case AliPID::kPion:
+      return kPOIpi;
+    case AliPID::kKaon:
+      return kPOIka;
+    case AliPID::kProton:
+      return kPOIpr;
+    default:
+      return kWrongPOIid;
+  }
+};
+
 /// Check whether the passed track is accepted by the different cuts
 /// \param trk the track to analyze whether it is accepted or not
 /// \return kTRUE if the track  is accepted, kFALSE otherwise
@@ -392,20 +413,8 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
   }
 
   /* now the inclusive set of pid cuts checking their consistency */
-  poiIds trackid = kWrongPOIid;
+  fTrackId = kWrongPOIid;
   if (fInclusivePIDCuts.GetEntriesFast() > 0) {
-    auto poid = [](AliPID::EParticleType sp) {
-      switch (sp) {
-        case AliPID::kPion:
-          return kPOIpi;
-        case AliPID::kKaon:
-          return kPOIka;
-        case AliPID::kProton:
-          return kPOIpr;
-        default:
-          return kWrongPOIid;
-      }
-    };
     for (Int_t ix = 0; ix < fInclusivePIDCuts.GetEntriesFast(); ix++) {
       Bool_t cutaccepted = ((AliCSTrackCutsBase*)fInclusivePIDCuts[ix])->IsTrackAccepted(trk, dca);
       /* if track is not accepted the cut is activated */
@@ -413,22 +422,22 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
       /* check the consistency */
       if (inclusivepid && cutaccepted) {
         /* still consistent */
-        if (trackid == kWrongPOIid) {
-          trackid = poid(((AliCSPIDCuts*)fInclusivePIDCuts[ix])->GetTargetSpecies());
+        if (fTrackId == kWrongPOIid) {
+          fTrackId = poiid(((AliCSPIDCuts*)fInclusivePIDCuts[ix])->GetTargetSpecies());
         } else {
-          if (trackid != poid(((AliCSPIDCuts*)fInclusivePIDCuts[ix])->GetTargetSpecies())) {
+          if (fTrackId != poiid(((AliCSPIDCuts*)fInclusivePIDCuts[ix])->GetTargetSpecies())) {
             /* more than one id associated to the track, track is rejected but we keep on the loop for getting all statistics */
-            trackid = kWrongPOIid;
+            fTrackId = kWrongPOIid;
             inclusivepid = false;
           }
         }
       }
     }
     /* just in case none were accepted */
-    inclusivepid = trackid != kWrongPOIid;
+    inclusivepid = fTrackId != kWrongPOIid;
   } else {
     /* if the track is reconstructed and accepted then by default is a hadron */
-    trackid = kPOIh;
+    fTrackId = kPOIh;
   }
 
   /* and now the exclusive ones */
@@ -574,7 +583,7 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
           fhTPCdEdxSignalVsP[i]->Fill(trk->P(),TMath::Abs(ttrk->GetTPCsignal()));
           if (i == 1 && fInclusivePidCutsStrings.GetEntries() != 0) {
             /* PID selection */
-            fhTPCdEdxSelSignalVsP[poiidx(trackid)]->Fill(trk->P(), TMath::Abs(ttrk->GetTPCsignal()));
+            fhTPCdEdxSelSignalVsP[poiidx(fTrackId)]->Fill(trk->P(), TMath::Abs(ttrk->GetTPCsignal()));
           }
           if ((trk->GetStatus() & AliESDtrack::kTOFin) && (!(trk->GetStatus() & AliESDtrack::kTOFmismatch))) {
             static const Double_t c_cm_ps = TMath::C() * 1.0e2 * 1.0e-12;
@@ -604,7 +613,7 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
             fhTPCdEdxSignalDiffVsP[j][i]->Fill(ttrk->P(), ttrk->GetTPCsignal() - fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, ttrk, spec(j)));
             if (i == 1 && fInclusivePidCutsStrings.GetEntries() != 0) {
               /* PID selection */
-              fhTPCdEdxSelSignalDiffVsP[j][poiidx(trackid)]->Fill(ttrk->P(), ttrk->GetTPCsignal() - fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, ttrk, spec(j)));
+              fhTPCdEdxSelSignalDiffVsP[j][poiidx(fTrackId)]->Fill(ttrk->P(), ttrk->GetTPCsignal() - fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, ttrk, spec(j)));
             }
           }
         }
@@ -643,7 +652,7 @@ Bool_t AliCSTrackSelection::IsTrueTrackAccepted(Int_t itrk) {
   /* for the time being */
   Bool_t accepted = kTRUE;
   Bool_t inclusivetrack = (fInclusiveTrackCuts.GetEntriesFast() == 0);
-  Bool_t inclusivepid = (fInclusivePIDCuts.GetEntriesFast() == 0);
+  Bool_t inclusivepid = true;
   Bool_t exclusive = kFALSE;
 
   /* initialize the mask of activated cuts */
@@ -658,13 +667,31 @@ Bool_t AliCSTrackSelection::IsTrueTrackAccepted(Int_t itrk) {
     inclusivetrack = inclusivetrack || cutaccepted;
   }
 
-  /* now the inclusive set of pid cuts */
-  for (Int_t ix = 0; ix < fInclusivePIDCuts.GetEntriesFast(); ix++) {
+  /* now the inclusive set of pid cuts checking their consistency */
+  fParticleId = kWrongPOIid;
+  if (fInclusivePIDCuts.GetEntriesFast() > 0) {
+    for (Int_t ix = 0; ix < fInclusivePIDCuts.GetEntriesFast(); ix++) {
 
-    Bool_t cutaccepted = ((AliCSTrackCutsBase *) fInclusivePIDCuts[ix])->IsTrueTrackAccepted(itrk);
-    /* if track is not accepted the cut is activated */
-    fCutsActivatedMask->SetBitNumber(ix+fInclusiveTrackCuts.GetEntriesFast(),!cutaccepted);
-    inclusivepid = inclusivepid || cutaccepted;
+      Bool_t cutaccepted = ((AliCSTrackCutsBase*)fInclusivePIDCuts[ix])->IsTrueTrackAccepted(itrk);
+      /* if track is not accepted the cut is activated */
+      fCutsActivatedMask->SetBitNumber(ix + fInclusiveTrackCuts.GetEntriesFast(), !cutaccepted);
+      /* check the consistency */
+      if (inclusivepid && cutaccepted) {
+        /* still consistent */
+        if (fParticleId == kWrongPOIid) {
+          fParticleId = poiid(((AliCSPIDCuts*)fInclusivePIDCuts[ix])->GetTargetSpecies());
+        } else {
+          if (fParticleId != poiid(((AliCSPIDCuts*)fInclusivePIDCuts[ix])->GetTargetSpecies())) {
+            /* more than one id associated to the track, track is rejected but we keep on the loop for getting all statistics */
+            fParticleId = kWrongPOIid;
+            inclusivepid = false;
+          }
+        }
+      }
+    }
+  } else {
+    /* if the track is accepted then by default is a hadron */
+    fParticleId = kPOIh;
   }
 
   /* and now the exclusive ones */
