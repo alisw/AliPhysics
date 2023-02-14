@@ -9,7 +9,8 @@
 class AliESDtrackCuts;
 class AliESDAD;
 class AliESDEvent;
-class AliAnalysisTaskFlatenicityLambdaK0s : public AliAnalysisTaskSE {
+class AliAnalysisTaskFlatenicityLambdaK0s : public AliAnalysisTaskSE
+{
 public:
   AliAnalysisTaskFlatenicityLambdaK0s();
   AliAnalysisTaskFlatenicityLambdaK0s(const char *name);

@@ -103,7 +103,8 @@ ClassImp(AliAnalysisTaskFlatenicityLambdaK0s)
       invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0),
       invpLambda(0), invptLambda(0), invyLambda(0), invmAntiLambda(0),
       invpAntiLambda(0), invptAntiLambda(0), invyAntiLambda(0),
-      flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0) {
+      flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0)
+{
   // default constructor, don't allocate memory here!
   // this is used by root for IO purposes, it needs to remain empty
 }
@@ -116,21 +117,25 @@ AliAnalysisTaskFlatenicityLambdaK0s::AliAnalysisTaskFlatenicityLambdaK0s(
       invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0),
       invpLambda(0), invptLambda(0), invyLambda(0), invmAntiLambda(0),
       invpAntiLambda(0), invptAntiLambda(0), invyAntiLambda(0),
-      flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0) {
+      flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0)
+{
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________________
-AliAnalysisTaskFlatenicityLambdaK0s::~AliAnalysisTaskFlatenicityLambdaK0s() {
+AliAnalysisTaskFlatenicityLambdaK0s::~AliAnalysisTaskFlatenicityLambdaK0s()
+{
   // destructor
-  if (fOutputList) {
+  if (fOutputList)
+  {
     delete fOutputList; // at the end of your task, it is deleted from memory by
                         // calling this function
   }
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskFlatenicityLambdaK0s::UserCreateOutputObjects() {
+void AliAnalysisTaskFlatenicityLambdaK0s::UserCreateOutputObjects()
+{
 
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
@@ -196,23 +201,27 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserCreateOutputObjects() {
   PostData(1, fOutputList);
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *) {
+void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
+{
 
   AliVEvent *event = InputEvent();
-  if (!event) {
+  if (!event)
+  {
     Error("UserExec", "Could not retrieve event");
     return;
   }
   AliESDEvent *lESDevent = 0x0;
 
   lESDevent = dynamic_cast<AliESDEvent *>(event);
-  if (!lESDevent) {
+  if (!lESDevent)
+  {
     AliWarning("ERROR: lESDevent not available \n");
     return;
   }
   // cout << event->GetFiredTriggerClasses() << endl;
-  
-  if (!fEventCuts.AcceptEvent(event)) {
+
+  if (!fEventCuts.AcceptEvent(event))
+  {
     // PostData(1, fOutputList);
     return;
   }
@@ -220,18 +229,18 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *) {
   AliVVZERO *esdV0 = lESDevent->GetVZEROData();
   if (!esdV0)
   {
-      AliError("AliVVZERO not available");
-      return;
+    AliError("AliVVZERO not available");
+    return;
   }
   if (lESDevent->IsIncompleteDAQ())
-      return;
+    return;
 
   AliAnalysisUtils *fUtils = new AliAnalysisUtils();
   if (fUtils->IsSPDClusterVsTrackletBG(lESDevent))
-      return;
+    return;
 
   if (lESDevent->IsPileupFromSPD(3))
-      return;
+    return;
 
   //    Bool_t maskIsSelected =
   //    ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
@@ -258,41 +267,38 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *) {
   // Step 3.1: reject events if SPDVtx or TrackVtx is not available
   //------------------------------------------------
   if (!(lESDPrimarySPDVtx->GetStatus() &&
-  lESDPrimaryTrackingVtx->GetStatus()))
+        lESDPrimaryTrackingVtx->GetStatus()))
   {
-      return;
+    return;
   }
 
   //------------------------------------------------
   // Step 3.2: check the spd vertex resolution and reject if not satisfied
   //------------------------------------------------
-  if (lESDPrimarySPDVtx->GetStatus() && lESDPrimarySPDVtx->IsFromVertexerZ()
-  && !(lESDPrimarySPDVtx->GetDispersion() < 0.04 &&
-  lESDPrimarySPDVtx->GetZRes() < 0.25))
+  if (lESDPrimarySPDVtx->GetStatus() && lESDPrimarySPDVtx->IsFromVertexerZ() && !(lESDPrimarySPDVtx->GetDispersion() < 0.04 && lESDPrimarySPDVtx->GetZRes() < 0.25))
   {
-      return;
+    return;
   }
 
   //------------------------------------------------
   // Step 3.3: check the proximity between the spd vertex and trak vertex, and
   // reject if not satisfied
   //------------------------------------------------
-  if ((TMath::Abs(lESDPrimarySPDVtx->GetZ() - lESDPrimaryTrackingVtx->GetZ())
-  > 0.5))
+  if ((TMath::Abs(lESDPrimarySPDVtx->GetZ() - lESDPrimaryTrackingVtx->GetZ()) > 0.5))
   {
-      return;
+    return;
   }
   const AliESDVertex *lPrimaryBestESDVtx1 = lESDevent->GetPrimaryVertex();
   if (!lPrimaryBestESDVtx1)
   {
-      return;
+    return;
   }
   Double_t lBestPrimaryVtxPos[3] = {-100.0, -100.0, -100.0};
   lPrimaryBestESDVtx->GetXYZ(lBestPrimaryVtxPos);
 
   if (TMath::Abs(lBestPrimaryVtxPos[2]) > 10.0)
   {
-      return;
+    return;
   }
   Double_t lMagneticField = -10;
 
@@ -325,10 +331,12 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *) {
 
     CheckChargeV0(v0);
     // Remove like-sign (will not affect offline V0 candidates!)
-    if (v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() > 0) {
+    if (v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() > 0)
+    {
       continue;
     }
-    if (v0->GetParamN()->Charge() < 0 && v0->GetParamP()->Charge() < 0) {
+    if (v0->GetParamN()->Charge() < 0 && v0->GetParamP()->Charge() < 0)
+    {
       continue;
     }
 
@@ -379,7 +387,8 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *) {
     fTreeVariablePosTrack = pTrack;
     fTreeVariableNegTrack = nTrack;
 
-    if (!pTrack || !nTrack) {
+    if (!pTrack || !nTrack)
+    {
       Printf("ERROR: Could not retreive one of the daughter track");
       continue;
     }
@@ -392,16 +401,20 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *) {
     Float_t lThisNegInnerP = -1;
     Float_t lThisPosInnerPt = -1;
     Float_t lThisNegInnerPt = -1;
-    if (innerposv0) {
+    if (innerposv0)
+    {
       lThisPosInnerP = innerposv0->GetP();
     }
-    if (innernegv0) {
+    if (innernegv0)
+    {
       lThisNegInnerP = innernegv0->GetP();
     }
-    if (innerposv0) {
+    if (innerposv0)
+    {
       lThisPosInnerPt = innerposv0->Pt();
     }
-    if (innernegv0) {
+    if (innernegv0)
+    {
       lThisNegInnerPt = innernegv0->Pt();
     }
     Float_t lThisPosdEdx = pTrack->GetTPCsignal();
@@ -412,14 +425,16 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *) {
     Float_t fTreeVariablePosEta = pTrack->Eta();
     Bool_t fkExtraCleanup = kTRUE;
 
-    if (fkExtraCleanup) {
+    if (fkExtraCleanup)
+    {
       if (TMath::Abs(fTreeVariableNegEta) > 0.8 ||
           TMath::Abs(fTreeVariableNegEta) > 0.8)
         continue;
     }
 
     // Filter like-sign V0 (next: add counter and distribution)
-    if (pTrack->GetSign() == nTrack->GetSign()) {
+    if (pTrack->GetSign() == nTrack->GetSign())
+    {
       continue;
     }
 
@@ -554,7 +569,8 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *) {
 
     v0->ChangeMassHypothesis(310);
     lInvMassK0s = v0->GetEffMass();
-    if (TMath::Abs(lInvMassK0s - 0.497611) < 0.1) {
+    if (TMath::Abs(lInvMassK0s - 0.497611) < 0.1)
+    {
       if (lV0CosineOfPointingAngle < 0.97)
         continue;
       Float_t lPtK0s = v0->Pt();
@@ -580,7 +596,8 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *) {
 
     v0->ChangeMassHypothesis(3122);
     lInvMassLambda = v0->GetEffMass();
-    if (TMath::Abs(lInvMassLambda - massLambda) < 0.1) {
+    if (TMath::Abs(lInvMassLambda - massLambda) < 0.1)
+    {
       if (lV0CosineOfPointingAngle < 0.995)
         continue;
 
@@ -610,7 +627,8 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *) {
 
     lInvMassAntiLambda = v0->GetEffMass();
 
-    if (TMath::Abs(lInvMassAntiLambda - massLambda) < 0.1) {
+    if (TMath::Abs(lInvMassAntiLambda - massLambda) < 0.1)
+    {
       if (lV0CosineOfPointingAngle < 0.995)
         continue;
 
@@ -641,16 +659,19 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *) {
   PostData(1, fOutputList);
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskFlatenicityLambdaK0s::Terminate(Option_t *) {
+void AliAnalysisTaskFlatenicityLambdaK0s::Terminate(Option_t *)
+{
   // terminate
   // called at the END of the anfalysis (when all events are processed)
 }
 //_____________________________________________________________________________
 //________________________________________________________________________
-void AliAnalysisTaskFlatenicityLambdaK0s::CheckChargeV0(AliESDv0 *v0) {
+void AliAnalysisTaskFlatenicityLambdaK0s::CheckChargeV0(AliESDv0 *v0)
+{
   // This function checks charge of negative and positive daughter tracks.
   // If incorrectly defined (onfly vertexer), swaps out.
-  if (v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() < 0) {
+  if (v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() < 0)
+  {
     // V0 daughter track swapping is required! Note: everything is swapped
     // here... P->N, N->P
     Long_t lCorrectNidx = v0->GetPindex();
@@ -691,14 +712,19 @@ void AliAnalysisTaskFlatenicityLambdaK0s::CheckChargeV0(AliESDv0 *v0) {
     v0correct = 0x0;
 
     // Just another cross-check and output_____________________________
-    if (v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() < 0) {
+    if (v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() < 0)
+    {
       AliWarning(
           "Found Swapped Charges, tried to correct but something FAILED!");
-    } else {
+    }
+    else
+    {
       // AliWarning("Found Swapped Charges and fixed.");
     }
     //________________________________________________________________
-  } else {
+  }
+  else
+  {
     // Don't touch it! ---
     // Printf("Ah, nice. Charges are already ordered...");
   }
@@ -712,7 +738,8 @@ Float_t AliAnalysisTaskFlatenicityLambdaK0s::GetDCAz(AliESDtrack *lTrack)
   Float_t b[2];
   Float_t bCov[3];
   lTrack->GetImpactParameters(b, bCov);
-  if (bCov[0] <= 0 || bCov[2] <= 0) {
+  if (bCov[0] <= 0 || bCov[2] <= 0)
+  {
     AliDebug(1, "Estimated b resolution lower or equal to zero!");
     bCov[0] = 0;
     bCov[2] = 0;
@@ -723,17 +750,20 @@ Float_t AliAnalysisTaskFlatenicityLambdaK0s::GetDCAz(AliESDtrack *lTrack)
   return dcaToVertexZ;
 }
 
-Float_t AliAnalysisTaskFlatenicityLambdaK0s::GetFlatenicityV0() {
+Float_t AliAnalysisTaskFlatenicityLambdaK0s::GetFlatenicityV0()
+{
   AliVVZERO *lVV0 = 0x0;
   AliVEvent *lVevent = 0x0;
   lVevent = dynamic_cast<AliVEvent *>(InputEvent());
-  if (!lVevent) {
+  if (!lVevent)
+  {
     AliWarning("ERROR: ESD / AOD event not available \n");
     return -1;
   }
   // Get VZERO Information for multiplicity later
   lVV0 = lVevent->GetVZEROData();
-  if (!lVV0) {
+  if (!lVV0)
+  {
     AliError("AliVVZERO not available");
     return 9999;
   }
@@ -747,34 +777,53 @@ Float_t AliAnalysisTaskFlatenicityLambdaK0s::GetFlatenicityV0() {
   // Grid
   const Int_t nCells = nRings * 2 * nSectors;
   Float_t RhoLattice[nCells];
-  for (Int_t iCh = 0; iCh < nCells; iCh++) {
+  for (Int_t iCh = 0; iCh < nCells; iCh++)
+  {
     RhoLattice[iCh] = 0.0;
   }
 
   Int_t nringA = 0;
   Int_t nringC = 0;
-  for (Int_t iCh = 0; iCh < nCells; iCh++) {
+  for (Int_t iCh = 0; iCh < nCells; iCh++)
+  {
     Float_t detaV0 = -1;
     Float_t mult = lVV0->GetMultiplicity(iCh);
-    if (iCh < 32) { // V0C
-      if (iCh < 8) {
+    if (iCh < 32)
+    { // V0C
+      if (iCh < 8)
+      {
         nringC = 0;
-      } else if (iCh >= 8 && iCh < 16) {
+      }
+      else if (iCh >= 8 && iCh < 16)
+      {
         nringC = 1;
-      } else if (iCh >= 16 && iCh < 24) {
+      }
+      else if (iCh >= 16 && iCh < 24)
+      {
         nringC = 2;
-      } else {
+      }
+      else
+      {
         nringC = 3;
       }
       detaV0 = maxEtaV0C[nringC] - minEtaV0C[nringC];
-    } else { // V0A
-      if (iCh < 40) {
+    }
+    else
+    { // V0A
+      if (iCh < 40)
+      {
         nringA = 0;
-      } else if (iCh >= 40 && iCh < 48) {
+      }
+      else if (iCh >= 40 && iCh < 48)
+      {
         nringA = 1;
-      } else if (iCh >= 48 && iCh < 56) {
+      }
+      else if (iCh >= 48 && iCh < 56)
+      {
         nringA = 2;
-      } else {
+      }
+      else
+      {
         nringA = 3;
       }
       detaV0 = maxEtaV0A[nringA] - minEtaV0A[nringA];
@@ -788,7 +837,8 @@ Float_t AliAnalysisTaskFlatenicityLambdaK0s::GetFlatenicityV0() {
   //}
   Float_t mRho = 0;
   Float_t flatenicity = -1;
-  for (Int_t iCh = 0; iCh < nCells; iCh++) {
+  for (Int_t iCh = 0; iCh < nCells; iCh++)
+  {
     mRho += RhoLattice[iCh];
   }
   Float_t multiplicityV0M = mRho;
@@ -796,19 +846,26 @@ Float_t AliAnalysisTaskFlatenicityLambdaK0s::GetFlatenicityV0() {
   mRho /= (1.0 * nCells);
   // get sigma
   Double_t sRho_tmp = 0;
-  for (Int_t iCh = 0; iCh < nCells; iCh++) {
+  for (Int_t iCh = 0; iCh < nCells; iCh++)
+  {
     sRho_tmp += TMath::Power(1.0 * RhoLattice[iCh] - mRho, 2);
   }
   sRho_tmp /= (1.0 * nCells * nCells);
   Float_t sRho = TMath::Sqrt(sRho_tmp);
   Bool_t fRemoveTrivialScaling = kFALSE;
-  if (mRho > 0) {
-    if (fRemoveTrivialScaling) {
+  if (mRho > 0)
+  {
+    if (fRemoveTrivialScaling)
+    {
       flatenicity = TMath::Sqrt(multiplicityV0M) * sRho / mRho;
-    } else {
+    }
+    else
+    {
       flatenicity = sRho / mRho;
     }
-  } else {
+  }
+  else
+  {
     flatenicity = 9999;
   }
   return flatenicity;
