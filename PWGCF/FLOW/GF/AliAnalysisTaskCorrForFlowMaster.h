@@ -138,6 +138,8 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         AliTHn*                 fhTrigTracks; //!
         AliTHn*                 fhSE; //!
         AliTHn*                 fhME; //!
+        AliTHn*                 fhSEref; //!
+        AliTHn*                 fhMEref; //!
         TH2D*                   fhEfficiency[1]; //! not eta dependent
         TH2D*                   fhEfficiencyEta[8]; //! eta dependent (8 sectors)
         TH1D*                   fhCentCalib; //!

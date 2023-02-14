@@ -461,15 +461,28 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
       Double_t assCharge = trackAss->Charge();
       Double_t assEff = 1.0;
 
-      //trig vs trig
+
+
+      //Ref vs ref - fill seperate histogram for the situation were both tracks are from the large ref. range
+      if(0.2<trigPt<3.0 && 0.2<assPt<3.0){
+        if(trigPt<assPt){continue;}
+          if(fUseEfficiency) {
+            assEff = GetEff(assPt, 0, assEta);
+            if(assEff < 0.001) continue;
+          }
+
+          binscont[0] = trigEta - assEta;
+          binscont[1] = RangePhi(trigPhi - assPhi);
+          binscont[5] = assPt;
+
+          if(fUsePhiStar && CheckDPhiStar(binscont[0], trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
+
+          fhSEref->Fill(binscont,0,1./(trigEff*assEff));
+      }
+      //All other situations
       Int_t TrigBin = h->FindBin(trigPt);
       Int_t AssBin = h->FindBin(assPt);
-      if(TrigBin == AssBin){
-        if(trigPt<assPt){continue;}
-      }
-
-      //Within ref
-      if(0.2<trigPt<3.0 && 0.2<assPt<3.0){
+      if(TrigBin == AssBin){ //This is needed as the only instance of double counting is within the same narrow pt bin
         if(trigPt<assPt){continue;}
       }
 
@@ -538,17 +551,31 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelationsMixed()
           Double_t assPhi = trackAss->Phi();
           Double_t assCharge = trackAss->Charge();
           Double_t assEff = 1.0;
-          //trig vs trig
+
+          //Ref vs ref - fill seperate histogram for the situation were both tracks are from the large ref. range
+          if(0.2<trigPt<3.0 && 0.2<assPt<3.0){
+            if(trigPt<assPt){continue;}
+              if(fUseEfficiency) {
+              assEff = GetEff(assPt, 0, assEta);
+              if(assEff < 0.001) continue;
+            }
+
+            binscont[0] = trigEta - assEta;
+            binscont[1] = RangePhi(trigPhi - assPhi);
+            binscont[5] = assPt;
+
+            if(fUsePhiStar && CheckDPhiStar(binscont[0], trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
+
+            fhMEref->Fill(binscont,0,1./((Double_t)nMix*(trigEff*assEff)));
+          }
+          //All other situations
           Int_t TrigBin = h->FindBin(trigPt);
           Int_t AssBin = h->FindBin(assPt);
-          if(TrigBin == AssBin){
+          if(TrigBin == AssBin){ //This is needed as the only instance of double counting is within the same narrow pt bin
             if(trigPt<assPt){continue;}
           }
 
-          //Within ref
-          if(0.2<trigPt<3.0 && 0.2<assPt<3.0){
-            if(trigPt<assPt){continue;}
-          }
+          
           if(fUseEfficiency) {
             assEff = GetEff(assPt, 0, assEta);
             if(assEff < 0.001) continue;
@@ -688,6 +715,8 @@ void AliAnalysisTaskCorrForFlowMaster::CreateTHnCorrelations(){
 
   TString nameS[1] = {"fhChargedSE"};
   TString nameM[1] = {"fhChargedME"};
+  TString nameSref[1] = {"fhChargedSEref"};
+  TString nameMref[1] = {"fhChargedMEref"};
 
   
   
@@ -729,6 +758,41 @@ void AliAnalysisTaskCorrForFlowMaster::CreateTHnCorrelations(){
     fhME->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
     
     fOutputListCharged->Add(fhME);
+
+    //Ref vs ref
+
+    fhSEref = new AliTHn(nameSref[0], nameSref[0], nSteps, nTrackBin_tpctpc, iBinningTPCTPC);
+    fhSEref->SetBinLimits(0, binning_deta_tpctpc);
+    fhSEref->SetBinLimits(1, binning_dphi);
+
+    fhMEref = new AliTHn(nameMref[0], nameMref[0], nSteps, nTrackBin_tpctpc, iBinningTPCTPC);
+    fhMEref->SetBinLimits(0, binning_deta_tpctpc);
+    fhMEref->SetBinLimits(1, binning_dphi);
+    fhSEref->SetBinLimits(2, -10,10);
+    fhSEref->SetBinLimits(3, 0,10);
+    fhSEref->SetVarTitle(0, "#Delta#eta");
+    fhSEref->SetVarTitle(1, "#Delta#phi");
+    fhSEref->SetVarTitle(2, "PVz [cm]");
+    fhSEref->SetVarTitle(3, "Sample");
+    fhSEref->SetBinLimits(4, fPtBinsTrigCharged.data());
+    fhSEref->SetBinLimits(5, fPtBinsAssCharged.data());
+    fhSEref->SetVarTitle(4, "p_{T} [GeV/c] (trig)");
+    fhSEref->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
+    
+    fOutputListCharged->Add(fhSEref);
+
+    fhMEref->SetBinLimits(2, -10,10);
+    fhMEref->SetBinLimits(3, 0,10);
+    fhMEref->SetVarTitle(0, "#Delta#eta");
+    fhMEref->SetVarTitle(1, "#Delta#phi");
+    fhMEref->SetVarTitle(2, "PVz [cm]");
+    fhMEref->SetVarTitle(3, "Sample");
+    fhMEref->SetBinLimits(4, fPtBinsTrigCharged.data());
+    fhMEref->SetBinLimits(5, fPtBinsAssCharged.data());
+    fhMEref->SetVarTitle(4, "p_{T} [GeV/c] (trig)");
+    fhMEref->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
+    
+    fOutputListCharged->Add(fhMEref);
   
 
   return;
