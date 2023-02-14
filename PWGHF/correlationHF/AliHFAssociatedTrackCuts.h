@@ -64,7 +64,8 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	Bool_t *IsMCpartFromHF(Int_t label, TClonesArray*mcArray);
 	Bool_t InvMassDstarRejection(AliAODRecoDecayHF2Prong* d, AliAODTrack *track, Int_t hypD0) const;
 	Bool_t InvMassDstarRejection(AliAODRecoDecayHF2Prong* d, AliReducedParticle *track, Int_t hypD0) const;
-	Bool_t InvMassSigmacRejection(AliAODRecoDecayHF3Prong* d, AliReducedParticle *track, Int_t hypD0) const;
+	Bool_t InvMassSigmacRejection(AliAODRecoDecayHF3Prong* d, AliAODTrack *track, Int_t hypLc) const;
+	Bool_t InvMassSigmacRejection(AliAODRecoDecayHF3Prong* d, AliReducedParticle *track, Int_t hypLc) const;
 	void SetPidAssociated();	
 	
 	// getters

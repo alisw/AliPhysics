@@ -58,7 +58,9 @@ fAssociatedTracks(0x0),
 fmcArray(0x0),
 fReducedPart(0x0),
 fD0cand(0x0), 
-fhypD0(0), 
+fhypD0(0),
+fLccand(0x0), 
+fhypLc(0), 
 fDCharge(0),
 
 fmixing(kFALSE),
@@ -111,6 +113,8 @@ fmcArray(0x0),
 fReducedPart(0x0),
 fD0cand(0x0), 
 fhypD0(0),
+fLccand(0x0), 
+fhypLc(0),
 fDCharge(0),
 
 fmixing(kFALSE),
@@ -161,6 +165,8 @@ fmcArray(0x0),
 fReducedPart(0x0),
 fD0cand(0x0),
 fhypD0(0),
+fLccand(0x0), 
+fhypLc(0),
 fDCharge(0),
 
 fmixing(kFALSE),
@@ -218,6 +224,7 @@ AliHFCorrelator::~AliHFCorrelator()
 	if(fmcArray) {delete fmcArray; fmcArray=0;}
 	if(fReducedPart) {delete fReducedPart; fReducedPart=0;}
 	if(fD0cand) {delete fD0cand; fD0cand=0;}
+	if(fLccand) {delete fLccand; fLccand=0;}
 	
 	
 	if(fNofTracks) fNofTracks = 0;
@@ -513,13 +520,15 @@ TObjArray*  AliHFCorrelator::AcceptAndReduceTracks(AliAODEvent* inputEvent){
       if(!fhadcuts->CheckHadronKinematic(pT,d0)) continue; // apply kinematic cuts
       Bool_t rejectsoftpi = kTRUE;// TO BE CHECKED: DO WE WANT IT TO kTRUE AS A DEFAULT?
       if(fD0cand && !fmixing) rejectsoftpi = fhadcuts->InvMassDstarRejection(fD0cand,track,fhypD0); // TO BE CHECKED: WHY NOT FOR EM?
+	  if(fLccand && !fmixing) rejectsoftpi = fhadcuts->InvMassSigmacRejection(fLccand,track,fhypLc); 
       
       
       if(fselect ==kKaon){	
-	if(!fhadcuts->CheckKaonCompatibility(track,fmontecarlo,fmcArray,fPIDmode)) continue; // check if it is a Kaon - data and MC
+	    if(!fhadcuts->CheckKaonCompatibility(track,fmontecarlo,fmcArray,fPIDmode)) continue; // check if it is a Kaon - data and MC
       }
       weight=fhadcuts->GetTrackWeight(pT,track->Eta(),pos[2]);
-      if(fStoreInfoSoftPiME) tracksClone->Add(new AliReducedParticle(track->Eta(), track->Phi(), pT,track->GetLabel(),track->GetID(),d0,rejectsoftpi,track->Charge(),weight,track->Px(),track->Py(),track->Pz(),track->E(0.1396)));
+      if(fD0cand && fStoreInfoSoftPiME) tracksClone->Add(new AliReducedParticle(track->Eta(), track->Phi(), pT,track->GetLabel(),track->GetID(),d0,rejectsoftpi,track->Charge(),weight,track->Px(),track->Py(),track->Pz(),track->E(0.1396)));
+      else if(fLccand && fStoreInfoSoftPiME) tracksClone->Add(new AliReducedParticle(track->Eta(), track->Phi(), pT,track->GetLabel(),track->GetID(),d0,rejectsoftpi,track->Charge(),weight,track->Px(),track->Py(),track->Pz(),track->E(0.1396)));
       else tracksClone->Add(new AliReducedParticle(track->Eta(), track->Phi(), pT,track->GetLabel(),track->GetID(),d0,rejectsoftpi,track->Charge(),weight));
     } // end loop on tracks
   } // end if use reconstruction kTRUE
