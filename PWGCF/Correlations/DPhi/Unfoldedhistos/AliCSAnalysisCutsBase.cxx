@@ -676,6 +676,11 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
       fgAnchorPeriod = kLHC18r;
       fgIsMC = kTRUE;
       fgEnergy = kPbPb5TeV;
+  } else if (szLHCPeriod.Contains("LHC20e3")) {
+      fgDataPeriod = kLHC20e3;
+      fgAnchorPeriod = kLHC18r;
+      fgIsMC = kTRUE;
+      fgEnergy = kPbPb5TeV;
 
       // fast MC productions
   } else if (szLHCPeriod.Contains("LHC13f3")) {
