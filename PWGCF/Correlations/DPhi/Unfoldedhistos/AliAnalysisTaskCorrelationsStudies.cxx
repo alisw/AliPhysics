@@ -1383,7 +1383,11 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
     fProcessCorrelations->SetPairEfficiencyCorrection(std::vector<std::vector<const THn*>>{{fhPairEfficiency_PP, fhPairEfficiency_PM}, {fhPairEfficiency_MP, fhPairEfficiency_MM}});
     fProcessCorrelations->SetSimultationPdfs(std::vector<const TObjArray*>{fPositiveTrackPdf, fNegativeTrackPdf});
     /* not clear how we will do it with MC rec with options */
+    fProcessTrueCorrelations->SetWeigths(std::vector<const TH3*>{nullptr, nullptr});
     fProcessTrueCorrelations->SetPtAvg(std::vector<const TH2*>{fhTruePtAverageTrack_1, fhTruePtAverageTrack_2});
+    fProcessTrueCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{nullptr, nullptr});
+    fProcessTrueCorrelations->SetPairEfficiencyCorrection(std::vector<std::vector<const THn*>>{{nullptr, nullptr}, {nullptr, nullptr}});
+    fProcessTrueCorrelations->SetSimultationPdfs(std::vector<const TObjArray*>{nullptr, nullptr});
   }
 
   /* now initialize the pair analysis instance */
