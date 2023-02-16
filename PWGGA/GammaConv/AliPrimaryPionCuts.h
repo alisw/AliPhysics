@@ -178,9 +178,11 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Bool_t   fDoWeights;
     Double_t fMaxDCAToVertexZ;
     Double_t fMaxDCAToVertexXY;
+    Bool_t fUsePtDepZDCA;
     Bool_t fUsePtDepXYDCA;
     Bool_t fUseDCAToVertex2D;
     TString fMaxDCAToVertexXYPtDep;
+    TString fMaxDCAToVertexZPtDep;
 	Int_t  fRunFlag; // runflag used to set track prefiltering
 	
 
@@ -196,6 +198,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	TH2F *fHistTPCdEdxafter; // TPC dEdx after cuts
 	TH2F *fHistTPCdEdxSignalbefore; //TPC dEdx signal before
 	TH2F *fHistTPCdEdxSignalafter; //TPC dEdx signal  after
+	TH2F *fHistoTOFSigbefore; // TOF signal after cuts
 	TH2F *fHistTOFbefore; // TOF after cuts
 	TH2F *fHistTOFafter; // TOF after cuts
 	TH2F *fHistTrackDCAxyPtbefore;
@@ -218,7 +221,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-    ClassDef(AliPrimaryPionCuts,15)
+    ClassDef(AliPrimaryPionCuts,16)
 };
 
 #endif

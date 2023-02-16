@@ -34,6 +34,7 @@
 #include "AliPIDResponse.h"
 #include "TH1.h"
 #include "TH2.h"
+#include "AliV0ReaderV1.h"
 #include "AliMCEvent.h"
 #include "TObjString.h"
 #include "AliAODEvent.h"
@@ -101,9 +102,11 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fDoWeights(kFALSE),
   fMaxDCAToVertexZ(8000),
   fMaxDCAToVertexXY(8000),
+  fUsePtDepZDCA(kFALSE),
   fUsePtDepXYDCA(kFALSE),
   fUseDCAToVertex2D(kFALSE),
   fMaxDCAToVertexXYPtDep(""),
+  fMaxDCAToVertexZPtDep(""),
   fRunFlag(1500),
 	fCutString(NULL),
   fCutStringRead(""),
@@ -115,6 +118,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fHistTPCdEdxafter(NULL),
 	fHistTPCdEdxSignalbefore(NULL),
 	fHistTPCdEdxSignalafter(NULL),
+	fHistoTOFSigbefore(NULL),
 	fHistTOFbefore(NULL),
 	fHistTOFafter(NULL),
 	fHistTrackDCAxyPtbefore(NULL),
@@ -180,9 +184,11 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const AliPrimaryPionCuts &ref) : AliAnaly
 	fDoWeights(ref.fDoWeights),
     fMaxDCAToVertexZ(ref.fMaxDCAToVertexZ),
 	fMaxDCAToVertexXY(ref.fMaxDCAToVertexXY),
+	fUsePtDepZDCA(ref.fUsePtDepZDCA),
 	fUsePtDepXYDCA(ref.fUsePtDepXYDCA),
 	fUseDCAToVertex2D(ref.fUseDCAToVertex2D),
 	fMaxDCAToVertexXYPtDep(ref.fMaxDCAToVertexXYPtDep),
+	fMaxDCAToVertexZPtDep(ref.fMaxDCAToVertexZPtDep),
 	fRunFlag(ref.fRunFlag),
 	fCutString(NULL),
 	fCutStringRead(""),
@@ -194,6 +200,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const AliPrimaryPionCuts &ref) : AliAnaly
 	fHistTPCdEdxafter(NULL),
 	fHistTPCdEdxSignalbefore(NULL),
 	fHistTPCdEdxSignalafter(NULL),
+	fHistoTOFSigbefore(NULL),
 	fHistTOFbefore(NULL),
 	fHistTOFafter(NULL),
 	fHistTrackDCAxyPtbefore(NULL),
@@ -275,6 +282,7 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
 	TAxis *axisBeforeITS  = NULL;
 	TAxis *axisBeforedEdx = NULL;
 	TAxis *axisBeforeTOF  = NULL;
+	TAxis *AxisBeforeTOFSig  = NULL;
 	TAxis *axisBeforedEdxSignal = NULL;
     if(!fDoLightOutput){
       fHistTPCdEdxbefore=new TH2F(Form("Pion_dEdx_before %s",cutName.Data()),"dEdx pion before" ,170,0.05,50,400,-10,10);
@@ -291,9 +299,12 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
 
 
 
-        fHistTOFbefore=new TH2F(Form("Pion_TOF_before %s",cutName.Data()),"TOF pion before" ,170,0.05,50,400,-6,10);
+        fHistTOFbefore=new TH2F(Form("Pion_TOF_before %s",cutName.Data()),"TOF pion before" ,170,0.03,20,11000,-1000,10000);
         fHistograms->Add(fHistTOFbefore);
         axisBeforeTOF = fHistTOFbefore->GetXaxis();
+		fHistoTOFSigbefore=new TH2F(Form("Pion_TOFSig_before %s",cutName.Data()),"TOF sigma pion before"  ,170,0.05,50,400,-6,10);
+      	fHistograms->Add(fHistoTOFSigbefore);
+      	AxisBeforeTOFSig = fHistoTOFSigbefore->GetXaxis();
 
         fHistTrackDCAxyPtbefore = new TH2F(Form("hTrack_DCAxy_Pt_before %s",cutName.Data()),"DCAxy Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
         fHistograms->Add(fHistTrackDCAxyPtbefore);
@@ -314,7 +325,7 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
       fHistTPCdEdxSignalafter=new TH2F(Form("Pion_dEdxSignal_after %s",cutName.Data()),"dEdx pion signal after" ,170,0.05,50.0,800,0.0,200);
       fHistograms->Add(fHistTPCdEdxSignalafter);
 
-      fHistTOFafter=new TH2F(Form("Pion_TOF_after %s",cutName.Data()),"TOF pion after" ,170,0.05,50,400,-6,10);
+      fHistTOFafter=new TH2F(Form("Pion_TOFSig_after %s",cutName.Data()),"TOF sigma pion after" ,170,0.05,50,400,-6,10);
       fHistograms->Add(fHistTOFafter);
 
       fHistTrackDCAxyPtafter  = new TH2F(Form("hTrack_DCAxy_Pt_after %s",cutName.Data()),"DCAxy Vs Pt of tracks after",800,-4.0,4.0,400,0.,10.);
@@ -360,6 +371,7 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
       if(preCut){
         axisBeforeITS->Set(bins, newBins);
         axisBeforeTOF->Set(bins, newBins);
+        AxisBeforeTOFSig->Set(bins, newBins);
 
       }
 
@@ -678,10 +690,18 @@ Bool_t AliPrimaryPionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 		cutIndex++;
 	} else { cutIndex+=1; }
 	
-    //if( ( fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid ) && ( !( fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch) ) ){
+    // if( ( fCurrentTrack->GetStatus() & AliESDtrack::kTOFpid) && !(fCurrentTrack->GetStatus() & AliESDtrack::kTOFmismatch)){
     // check for TOF signal: AliVTrack::kTOFout means that a tof signal is matched, AliVTrack::kTIME means that the track length (and then the expected times) was extrapolated properly
     if((fCurrentTrack->GetStatus() & AliVTrack::kTOFout ) && (fCurrentTrack->GetStatus() & AliVTrack::kTIME)){
-		if(fHistTOFbefore) fHistTOFbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion));
+		if(fHistTOFbefore){
+      		Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P());
+     		Double_t  times[AliPID::kSPECIESC];
+     		fCurrentTrack->GetIntegratedTimes(times,AliPID::kSPECIESC);
+      		Double_t TOFsignal = fCurrentTrack->GetTOFsignal();
+     		Double_t dT = TOFsignal - t0 - times[0];
+     		fHistTOFbefore->Fill(fCurrentTrack->P(),dT);
+    	}
+		if(fHistoTOFSigbefore) fHistoTOFSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion));
 		if(fUseTOFpid){
 			if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion)>fPIDnSigmaAbovePionLineTOF ||
 				fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion)<fPIDnSigmaBelowPionLineTOF ){
@@ -714,16 +734,23 @@ AliVTrack *AliPrimaryPionCuts::GetTrack(AliVEvent * event, Int_t label){
 		if(label > event->GetNumberOfTracks() ) return NULL;
 		AliESDtrack * track = esdEvent->GetTrack(label);
 		return track;		
-	} else { 
-		for(Int_t ii=0; ii<event->GetNumberOfTracks(); ii++) {
-			AliVTrack * track = dynamic_cast<AliVTrack*>(event->GetTrack(ii));		
-			if(track) { 
-				if(track->GetID() == label) {
-					return track;
-				}
-			}
-		}
-	}
+	} else {
+    	if(label == -999999) return NULL; // if AOD relabelling goes wrong, immediately return NULL
+  	    AliVTrack * track = 0x0;
+        if(AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1") && ((AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1"))->AreAODsRelabeled()){
+     	    if(event->GetTrack(label)) track = dynamic_cast<AliVTrack*>(event->GetTrack(label));
+     		return track;
+    	} else{
+       		for(Int_t ii=0; ii<event->GetNumberOfTracks(); ii++) {
+       			 if(event->GetTrack(ii)) track = dynamic_cast<AliVTrack*>(event->GetTrack(ii));
+         		 if(track){
+         			 if(track->GetID() == label) {
+           			 return track;
+          }
+        }
+      }
+    }
+  }
 	cout << "track not found " << label << " " << event->GetNumberOfTracks() << endl;
 	return NULL;
 }
@@ -1384,34 +1411,43 @@ Bool_t AliPrimaryPionCuts::SetDCACut(Int_t dcaCut)
 			break; 
         case 3:
             fMaxDCAToVertexZ = 3.0;
-						fUsePtDepXYDCA=kTRUE;
-						fMaxDCAToVertexXYPtDep = "0.0182+0.0350/pt^1.01";
+			fUsePtDepXYDCA=kTRUE;
+			fMaxDCAToVertexXYPtDep = "0.0182+0.0350/pt^1.01";
             fEsdTrackCuts->SetMaxDCAToVertexXYPtDep(fMaxDCAToVertexXYPtDep.Data());
             fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
             fEsdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAToVertexZ);
             break;
         case 4:
-				    fMaxDCAToVertexZ=3;
-			      fMaxDCAToVertexXY=0.5;
+			fMaxDCAToVertexZ=3;
+			fMaxDCAToVertexXY=0.5;
             fEsdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAToVertexZ);
             fEsdTrackCuts->SetMaxDCAToVertexXY(fMaxDCAToVertexXY);
             fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
             break;
-				case 5:
-					 fMaxDCAToVertexZ=3.2;
-			     fMaxDCAToVertexXY=2.4;
-					 fUseDCAToVertex2D=kTRUE;
-				   fEsdTrackCuts->SetMaxDCAToVertexXY(fMaxDCAToVertexXY);
-           fEsdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAToVertexZ);
-           fEsdTrackCuts->SetDCAToVertex2D(fUseDCAToVertex2D);
-					 break;
-				case 6: // temp
-					 fMaxDCAToVertexZ=0.5;
-			     fMaxDCAToVertexXY=0.5;
-					 fUseDCAToVertex2D=kTRUE;
-				   fEsdTrackCuts->SetMaxDCAToVertexXY(fMaxDCAToVertexXY);
-           fEsdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAToVertexZ);
-					 break;
+		case 5:
+			fMaxDCAToVertexZ=3.2;
+			fMaxDCAToVertexXY=2.4;
+			fUseDCAToVertex2D=kTRUE;
+			fEsdTrackCuts->SetMaxDCAToVertexXY(fMaxDCAToVertexXY);
+            fEsdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAToVertexZ);
+            fEsdTrackCuts->SetDCAToVertex2D(fUseDCAToVertex2D);
+			break;
+		case 6: // temp
+			fMaxDCAToVertexZ=0.5;
+			fMaxDCAToVertexXY=0.5;
+			fUseDCAToVertex2D=kTRUE;
+			fEsdTrackCuts->SetMaxDCAToVertexXY(fMaxDCAToVertexXY);
+            fEsdTrackCuts->SetMaxDCAToVertexZ(fMaxDCAToVertexZ);
+			 break;
+		case 7:
+			fUsePtDepXYDCA=kTRUE;
+			fUsePtDepZDCA=kTRUE;
+			fMaxDCAToVertexXYPtDep = "0.0182+0.0350/pt^1.01";
+			fMaxDCAToVertexZPtDep = "0.0364+0.07/pt^1.01";
+			fEsdTrackCuts->SetMaxDCAToVertexXYPtDep(fMaxDCAToVertexXYPtDep.Data());
+			fEsdTrackCuts->SetMaxDCAToVertexZPtDep(fMaxDCAToVertexZPtDep.Data());
+			fEsdTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
+			break;
 		default:
 			cout<<"Warning: dcaCut not defined "<<dcaCut<<endl;
 			return kFALSE;
@@ -1718,18 +1754,29 @@ void AliPrimaryPionCuts::SetHybridTrackCutsAODFiltering(Int_t runflag= 1000){
 //--------------------------------------------------------------------------
 void AliPrimaryPionCuts::SetPtDepDCACuts(Double_t pt) {
   /// set the pt-dependent DCA cuts
-  TString tmp = fMaxDCAToVertexXYPtDep;
-  tmp.ReplaceAll("pt","x");
-  TFormula CutMaxDCAToVertexXYPtDep("CutMaxDCAToVertexXYPtDep",tmp.Data());
+  if(fUsePtDepXYDCA){
+  	TString tmp = fMaxDCAToVertexXYPtDep;
+  	tmp.ReplaceAll("pt","x");
+  	TFormula CutMaxDCAToVertexXYPtDep("CutMaxDCAToVertexXYPtDep",tmp.Data());
    
-  fMaxDCAToVertexXY=CutMaxDCAToVertexXYPtDep.Eval(pt);
+  	fMaxDCAToVertexXY=CutMaxDCAToVertexXYPtDep.Eval(pt);
+  }
+  if(fUsePtDepZDCA){
+  	TString tmp = fMaxDCAToVertexZPtDep;
+  	tmp.ReplaceAll("pt","x");
+  	TFormula CutMaxDCAToVertexZPtDep("CutMaxDCAToVertexZPtDep",tmp.Data());
+   
+  	fMaxDCAToVertexZ=CutMaxDCAToVertexZPtDep.Eval(pt);
+  }
+
+
 
   return;
 }
 
 //--------------------------------------------------------------------------
 Bool_t AliPrimaryPionCuts::IsDCACutAccepted(AliAODTrack* lTrack) {
-if(fUsePtDepXYDCA) SetPtDepDCACuts(lTrack->Pt());
+if(fUsePtDepXYDCA || fUsePtDepZDCA) SetPtDepDCACuts(lTrack->Pt());
   
 	Float_t b[2];
   Float_t bCov[3];
