@@ -189,6 +189,7 @@ fFillHigherMomentsMCclosure(kFALSE),
 fFillArmPodTree(kTRUE),
 fFillBGJetsFJTree(kTRUE),
 fFilldscaledTree(kTRUE),
+fFillFastJet(kTRUE),
 fRunFastSimulation(kFALSE),
 fRunFastHighMomentCal(kFALSE),
 fFillDistributions(kFALSE),
@@ -476,6 +477,7 @@ fFillHigherMomentsMCclosure(kFALSE),
 fFillArmPodTree(kTRUE),
 fFillBGJetsFJTree(kTRUE),
 fFilldscaledTree(kTRUE),
+fFillFastJet(kTRUE),
 fRunFastSimulation(kFALSE),
 fRunFastHighMomentCal(kFALSE),
 fFillDistributions(kFALSE),
@@ -1456,9 +1458,11 @@ Bool_t AliAnalysisJetHadro::Run()
 
     FillTPCdEdxReal();
     FindJetsEMC();
-    FindJetsFJ();
+    if (fFillFastJet){
+      FindJetsFJ();
+    }
     if (fFillArmPodTree) FillCleanSamples();
-    FillEventTree(); //rhoEMC, rhoFJ, cent, yesjet, yesgoodjet
+    FillEventTree();
     if (fUseCouts)  std::cout << " Info::siweyhmi: (Real Data Analysis) End of Filling part = " << fEventCountInFile << std::endl;
     return kTRUE;
   }

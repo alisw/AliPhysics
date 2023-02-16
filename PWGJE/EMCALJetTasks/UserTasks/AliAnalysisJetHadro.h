@@ -167,6 +167,7 @@ public:
   void   SetFillArmPodTree(const Bool_t ifArmpodTree = kTRUE)         {fFillArmPodTree      = ifArmpodTree;}
   void   SetFillBGJetsFJTree(const Bool_t ifBGJetsFJTree = kTRUE)     {fFillBGJetsFJTree    = ifBGJetsFJTree;}
   void   SetFilldscaledTree(const Bool_t ifdscaledTree = kTRUE)       {fFilldscaledTree     = ifdscaledTree;}
+  void   SetFillFastJet(const Bool_t ifFastJet = kTRUE)               {fFillFastJet         = ifFastJet;}
   void   SetDeDxCheck(const Bool_t ifDeDxCheck = kFALSE)              {fDEdxCheck           = ifDeDxCheck;}
   void   SetEffMatrix(const Bool_t ifEffMatrix = kFALSE)              {fEffMatrix           = ifEffMatrix;}
   void   SetFillAllCutVariables(const Bool_t ifAllCuts = kFALSE)      {fFillTracks          = ifAllCuts;}
@@ -396,6 +397,7 @@ private:
   Bool_t            fFillArmPodTree;         // switch whether to fill clean sample tree
   Bool_t            fFillBGJetsFJTree;         // switch whether to fill BG Jets FJ tree
   Bool_t            fFilldscaledTree;         // switch whether to fill dscaled tree
+  Bool_t            fFillFastJet;         // switch whether to fill dscaled tree
   Bool_t            fRunFastSimulation;      // when running over galice.root do not fill other objects
   Bool_t            fRunFastHighMomentCal;   // when running over galice.root do not fill other objects
   Bool_t            fFillDistributions;   // when running over galice.root do not fill other objects
