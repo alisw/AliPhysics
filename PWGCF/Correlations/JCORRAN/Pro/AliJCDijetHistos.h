@@ -173,6 +173,7 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_deltaLocalRhoAlt;            //! // Difference of localrho1 and localrho2
         AliJTH1D fh_dijetdeltaM5;             //! // Dijet deltaM
         AliJTH1D fh_dijetdeltaM5Alt;             //! // Dijet deltaM
+        AliJTH1D fh_dijetdeltaM5Binned;             //! // Dijet deltaM
         AliJTH1D fh_dijetdeltaM5NearCone;             //! // Dijet deltaM
         AliJTH1D fh_dijetdeltaM5NearConeAlt;             //! // Dijet deltaM
         AliJTH1D fh_dijetMLocalRho;            //! // Dijet deltaM with localrho

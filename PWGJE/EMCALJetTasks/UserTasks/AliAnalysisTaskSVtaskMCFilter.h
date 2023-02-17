@@ -55,6 +55,7 @@ class AliAnalysisTaskSVtaskMCFilter : public AliAnalysisTaskEmcal
    void     SetFilteredTracksName(const Char_t* name){   fFilteredTracksName   = name;  }
    void     SetFilteredClustersName(const Char_t* name){ fFilteredClustersName = name;  }
    void     SetFilterType(Int_t param){                  fFilterType           = param; }
+   TString  GetGenerator(Int_t label, AliAODMCHeader* header);
 
  protected:
    void ExecOnce();
@@ -78,7 +79,7 @@ class AliAnalysisTaskSVtaskMCFilter : public AliAnalysisTaskEmcal
     AliAnalysisTaskSVtaskMCFilter(const AliAnalysisTaskSVtaskMCFilter &source);
     AliAnalysisTaskSVtaskMCFilter& operator=(const AliAnalysisTaskSVtaskMCFilter& source);
 
-    ClassDef(AliAnalysisTaskSVtaskMCFilter, 3);
+    ClassDef(AliAnalysisTaskSVtaskMCFilter, 4);
 };
 
 #endif
