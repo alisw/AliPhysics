@@ -58,6 +58,24 @@ AliCSTrackSelection::AliCSTrackSelection()
     fPIDResponse(NULL),
     fhCutsStatistics(NULL),
     fhCutsCorrelation(NULL),
+    fhPtVsDCAxy{nullptr},
+    fhPtVsDCAz{nullptr},
+    fhPtVsTPCCls{nullptr},
+    fhPtVsTPCRows{nullptr},
+    fhPtVsTPCRowOverFindCls{nullptr},
+    fhEtaVsPhi{nullptr},
+    fhPtVsEta{nullptr},
+    fhITSdEdxSignalVsP{nullptr},
+    fhTPCdEdxSignalVsP{nullptr},
+    fhTOFSignalVsP{nullptr},
+    fhTOFSelSignalVsP{nullptr},
+    fhTPCTOFSigmaVsP{{nullptr}},
+    fhTPCdEdxSignalDiffVsP{{nullptr}},
+    fhTOFSignalDiffVsP{{nullptr}},
+    fhTPCdEdxSelSignalDiffVsP{{nullptr}},
+    fhTOFSelSignalDiffVsP{{nullptr}},
+    fhPvsTOFMassSq{nullptr},
+    fhSelPvsTOFMassSq{nullptr},
     fHistogramsList(NULL)
 {
   /* we own the cuts so, they will be destroyed when we are */
@@ -68,18 +86,6 @@ AliCSTrackSelection::AliCSTrackSelection()
   fExclusiveCuts.SetOwner(kTRUE);
   fExclusiveCutsStrings.SetOwner(kTRUE);
   fExclusivePidCutsStrings.SetOwner(kTRUE);
-
-  for (Int_t i = 0; i < 2; i++) {
-    fhPtVsDCAxy[i] = NULL;
-    fhPtVsDCAz[i] = NULL;
-    fhPtVsTPCCls[i] = NULL;
-    fhPtVsTPCRowOverFindCls[i] = NULL;
-    fhEtaVsPhi[i] = NULL;
-    fhPtVsEta[i] = NULL;
-    fhITSdEdxSignalVsP[i] = NULL;
-    fhTPCdEdxSignalVsP[i] = NULL;
-    fhTOFSignalVsP[i] = NULL;
-  }
 }
 
 /// Constructor
@@ -104,6 +110,24 @@ AliCSTrackSelection::AliCSTrackSelection(const char* name, const char* title)
     fPIDResponse(NULL),
     fhCutsStatistics(NULL),
     fhCutsCorrelation(NULL),
+    fhPtVsDCAxy{nullptr},
+    fhPtVsDCAz{nullptr},
+    fhPtVsTPCCls{nullptr},
+    fhPtVsTPCRows{nullptr},
+    fhPtVsTPCRowOverFindCls{nullptr},
+    fhEtaVsPhi{nullptr},
+    fhPtVsEta{nullptr},
+    fhITSdEdxSignalVsP{nullptr},
+    fhTPCdEdxSignalVsP{nullptr},
+    fhTOFSignalVsP{nullptr},
+    fhTOFSelSignalVsP{nullptr},
+    fhTPCTOFSigmaVsP{{nullptr}},
+    fhTPCdEdxSignalDiffVsP{{nullptr}},
+    fhTOFSignalDiffVsP{{nullptr}},
+    fhTPCdEdxSelSignalDiffVsP{{nullptr}},
+    fhTOFSelSignalDiffVsP{{nullptr}},
+    fhPvsTOFMassSq{nullptr},
+    fhSelPvsTOFMassSq{nullptr},
     fHistogramsList(NULL)
 {
   /* we own the cuts so, they will be destroyed when we are */
@@ -114,18 +138,6 @@ AliCSTrackSelection::AliCSTrackSelection(const char* name, const char* title)
   fExclusiveCuts.SetOwner(kTRUE);
   fExclusiveCutsStrings.SetOwner(kTRUE);
   fExclusivePidCutsStrings.SetOwner(kTRUE);
-
-  for (Int_t i = 0; i < 2; i++) {
-    fhPtVsDCAxy[i] = NULL;
-    fhPtVsDCAz[i] = NULL;
-    fhPtVsTPCCls[i] = NULL;
-    fhPtVsTPCRowOverFindCls[i] = NULL;
-    fhEtaVsPhi[i] = NULL;
-    fhPtVsEta[i] = NULL;
-    fhITSdEdxSignalVsP[i] = NULL;
-    fhTPCdEdxSignalVsP[i] = NULL;
-    fhTOFSignalVsP[i] = NULL;
-  }
 }
 
 /// Destructor
@@ -585,14 +597,25 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
             /* PID selection */
             fhTPCdEdxSelSignalVsP[poiidx(fTrackId)]->Fill(trk->P(), TMath::Abs(ttrk->GetTPCsignal()));
           }
-          if ((trk->GetStatus() & AliESDtrack::kTOFin) && (!(trk->GetStatus() & AliESDtrack::kTOFmismatch))) {
+          auto gettofbeta = [&](auto tofsignal) {
             static const Double_t c_cm_ps = TMath::C() * 1.0e2 * 1.0e-12;
-            Double_t tracklen_cm = trk->GetIntegratedLength();
-            Double_t toftime_ps = ttrk->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(trk->P());
-            Double_t beta = tracklen_cm / toftime_ps / c_cm_ps;
-            double tofmasssq = trk->P() * trk->P() * (1.0 / beta / beta - 1.0);
+            double tracklen_cm = trk->GetIntegratedLength();
+            double toftime_ps = tofsignal - fPIDResponse->GetTOFResponse().GetStartTime(trk->P());
+            return tracklen_cm / toftime_ps / c_cm_ps;
+          };
+          auto gettofmasssq = [](auto const& trk, auto beta) {
+            return trk->P() * trk->P() * (1.0 / beta / beta - 1.0);
+          };
+          if ((trk->GetStatus() & AliESDtrack::kTOFin) && (!(trk->GetStatus() & AliESDtrack::kTOFmismatch))) {
+            double beta = gettofbeta(ttrk->GetTOFsignal());
+            double tofmasssq = gettofmasssq(trk, beta);
             fhTOFSignalVsP[i]->Fill(trk->P(), beta);
-            fhPvsTOFMassSq[i]->Fill(tofmasssq, ttrk->P());
+            fhPvsTOFMassSq[i]->Fill(tofmasssq, trk->P());
+            if (i == 1 && fInclusivePidCutsStrings.GetEntries() != 0) {
+              /* PID selection */
+              fhTOFSelSignalVsP[poiidx(fTrackId)]->Fill(trk->P(), beta);
+              fhSelPvsTOFMassSq[poiidx(fTrackId)]->Fill(tofmasssq, trk->P());
+            }
           }
           auto spec = [](int ix) {
             switch (ix) {
@@ -609,11 +632,17 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
             return AliPID::kUnknown;
           };
           for (int j = 0; j < 3; ++j) {
-            fhTPCTOFSigmaVsP[j][i]->Fill(fPIDResponse->NumberOfSigmasTPC(ttrk, spec(j)), fPIDResponse->NumberOfSigmasTOF(ttrk, spec(j)), ttrk->P());
             fhTPCdEdxSignalDiffVsP[j][i]->Fill(ttrk->P(), ttrk->GetTPCsignal() - fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, ttrk, spec(j)));
             if (i == 1 && fInclusivePidCutsStrings.GetEntries() != 0) {
               /* PID selection */
               fhTPCdEdxSelSignalDiffVsP[j][poiidx(fTrackId)]->Fill(ttrk->P(), ttrk->GetTPCsignal() - fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, ttrk, spec(j)));
+              if ((trk->GetStatus() & AliESDtrack::kTOFin) && (!(trk->GetStatus() & AliESDtrack::kTOFmismatch))) {
+                fhTOFSelSignalDiffVsP[j][poiidx(fTrackId)]->Fill(ttrk->P(), gettofbeta(ttrk->GetTOFsignal()) - gettofbeta(fPIDResponse->GetTOFResponse().GetExpectedSignal(ttrk, spec(j))));
+              }
+            }
+            if ((trk->GetStatus() & AliESDtrack::kTOFin) && (!(trk->GetStatus() & AliESDtrack::kTOFmismatch))) {
+              fhTPCTOFSigmaVsP[j][i]->Fill(fPIDResponse->NumberOfSigmasTPC(ttrk, spec(j)), fPIDResponse->NumberOfSigmasTOF(ttrk, spec(j)), ttrk->P());
+              fhTOFSelSignalDiffVsP[j][i]->Fill(ttrk->P(), gettofbeta(ttrk->GetTOFsignal()) - gettofbeta(fPIDResponse->GetTOFResponse().GetExpectedSignal(ttrk, spec(j))));
             }
           }
         }
@@ -990,10 +1019,19 @@ void AliCSTrackSelection::DefineHistograms(){
       fHistogramsList->Add(fhTOFSignalVsP[0]);
       fHistogramsList->Add(fhTOFSignalVsP[1]);
 
-      fhPvsTOFMassSq[0] = new TH2F(Form("PvsMsqB_%s", fCutsString.Data()), "Momentum versus #it{m} before;#it{m} ((GeV/c^{2})^{2});P (GeV/c)", 140, 0.0, 1.4, nPbins, edges);
-      fhPvsTOFMassSq[1] = new TH2F(Form("PvsMsqA_%s", fCutsString.Data()), "Momentum versus #it{m};#it{m} ((GeV/c^{2})^{2});P (GeV/c)", 140, 0.0, 1.4, nPbins, edges);
+      fhPvsTOFMassSq[0] = new TH2F(Form("PvsMsqB_%s", fCutsString.Data()), "Momentum versus #it{m}^{2} before;#it{m}^{2} ((GeV/c^{2})^{2});P (GeV/c)", 140, 0.0, 1.4, nPbins, edges);
+      fhPvsTOFMassSq[1] = new TH2F(Form("PvsMsqA_%s", fCutsString.Data()), "Momentum versus #it{m}^{2};#it{m}^{2} ((GeV/c^{2})^{2});P (GeV/c)", 140, 0.0, 1.4, nPbins, edges);
       fHistogramsList->Add(fhPvsTOFMassSq[0]);
       fHistogramsList->Add(fhPvsTOFMassSq[1]);
+
+      if (fInclusivePidCutsStrings.GetEntries() != 0) {
+        for (int i = 0; i < 3; ++i) {
+          fhTOFSelSignalVsP[i] = new TH2F(Form("TOFSel%sSignal_%s", name(i), fCutsString.Data()), Form("TOF signal for selected %s;P (GeV/c);#beta_{%s}", title(i), title(i)), nPbins, edges, 400, 0.0, 1.1);
+          fhSelPvsTOFMassSq[i] = new TH2F(Form("Sel%sPvsMsq_%s", name(i), fCutsString.Data()), Form("Momentum versus #it{m}^{2} for selected %s;#it{m}^{2}_{%s} ((GeV/c^{2})^{2});P (GeV/c)", title(i), title(i)), 140, 0.0, 1.4, nPbins, edges);
+          fHistogramsList->Add(fhTOFSelSignalVsP[i]);
+          fHistogramsList->Add(fhSelPvsTOFMassSq[i]);
+        }
+      }
 
       if (fQALevel == AliCSAnalysisCutsBase::kQALevelHeavy) {
         for (int i = 0; i < 3; ++i) {
@@ -1013,11 +1051,21 @@ void AliCSTrackSelection::DefineHistograms(){
           fHistogramsList->Add(fhTPCdEdxSignalDiffVsP[i][0]);
           fHistogramsList->Add(fhTPCdEdxSignalDiffVsP[i][1]);
 
+          fhTOFSignalDiffVsP[i][0] = new TH2F(Form("TOFSignal%sDiffVsPB_%s", name(i), fCutsString.Data()), Form("TOF #beta to the %s line before;P (GeV/c);#beta - <#beta>_{%s}", title(i), title(i)),
+                                              nPbins, edges, 400, -1.1, 1.1);
+          fhTOFSignalDiffVsP[i][1] = new TH2F(Form("TOFSignal%sDiffVsPA_%s", name(i), fCutsString.Data()), Form("TOF #beta to the %s line;P (GeV/c);#beta - <#beta>_{%s}", title(i), title(i)),
+                                              nPbins, edges, 400, -1.1, 1.1);
+          fHistogramsList->Add(fhTOFSignalDiffVsP[i][0]);
+          fHistogramsList->Add(fhTOFSignalDiffVsP[i][1]);
+
           if (fInclusivePidCutsStrings.GetEntries() != 0) {
             for (int j = 0; j < 3; ++j) {
-              fhTPCdEdxSelSignalDiffVsP[i][j] = new TH2F(Form("TPCdEdxSel%sSignal%sDiffVsPB_%s", name(j), name(i), fCutsString.Data()), Form("TPC dE/dx of selected %s to the %s line;P (GeV/c);dE/dx_{%s} - <dE/dx>_{%s}", title(j), title(i), title(j), title(i)),
+              fhTPCdEdxSelSignalDiffVsP[i][j] = new TH2F(Form("TPCdEdxSel%sSignal%sDiffVsP_%s", name(j), name(i), fCutsString.Data()), Form("TPC dE/dx of selected %s to the %s line;P (GeV/c);dE/dx_{%s} - <dE/dx>_{%s}", title(j), title(i), title(j), title(i)),
                                                          nPbins, edges, 800, -200.0, 200.0);
               fHistogramsList->Add(fhTPCdEdxSelSignalDiffVsP[i][j]);
+              fhTOFSelSignalDiffVsP[i][j] = new TH2F(Form("TOFSel%sSignal%sDiffVsP_%s", name(j), name(i), fCutsString.Data()), Form("TOF #beta of selected %s to the %s line;P (GeV/c);#beta_{%s} - <#beta>_{%s}", title(j), title(i), title(j), title(i)),
+                                                     nPbins, edges, 800, -200.0, 200.0);
+              fHistogramsList->Add(fhTOFSelSignalDiffVsP[i][j]);
             }
           }
         }

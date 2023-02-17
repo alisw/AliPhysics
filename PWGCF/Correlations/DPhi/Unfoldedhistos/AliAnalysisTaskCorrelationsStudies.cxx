@@ -1535,12 +1535,12 @@ void AliAnalysisTaskCorrelationsStudies::NotifyRun()
     fhPureP = new TH3F("fHistPureP", "P distribution for reconstructed primaries;P (GeV/c);dN/dP_{T} (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
     fhPurePPos = new TH3F("fHistPurePPos", "P distribution for reconstructed (+) primaries;P (GeV/c);dN/dP (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
     fhPurePNeg = new TH3F("fHistPurePNeg", "P distribution for reconstructed (-) primaries;P (GeV/c);dN/dP (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
-    fhSecPurePt = new TH3F("fHistSecPurePt", "P_{T} distribution for reconstructed secaries;P_{T} (GeV/c);dN/dP_{T} (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
-    fhSecPurePtPos = new TH3F("fHistSecPurePtPos", "P_{T} distribution for reconstructed (+) secaries;P_{T} (GeV/c);dN/dP_{T} (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
-    fhSecPurePtNeg = new TH3F("fHistSecPurePtNeg", "P_{T} distribution for reconstructed (-) secaries;P_{T} (GeV/c);dN/dP_{T} (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
-    fhSecPureP = new TH3F("fHistSecPureP", "P distribution for reconstructed secaries;P (GeV/c);dN/dP_{T} (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
-    fhSecPurePPos = new TH3F("fHistSecPurePPos", "P distribution for reconstructed (+) secaries;P (GeV/c);dN/dP (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
-    fhSecPurePNeg = new TH3F("fHistSecPurePNeg", "P distribution for reconstructed (-) secaries;P (GeV/c);dN/dP (c/GeV)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhSecPurePt = new TH3F("fHistSecPurePt", "P_{T} distribution for reconstructed secondaries;Reco ID;Gen ID;P_{T} (GeV/c)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhSecPurePtPos = new TH3F("fHistSecPurePtPos", "P_{T} distribution for reconstructed (+) secondaries;Reco ID;Gen ID;P_{T} (GeV/c)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhSecPurePtNeg = new TH3F("fHistSecPurePtNeg", "P_{T} distribution for reconstructed (-) secondaries;Reco ID;Gen ID;P_{T} (GeV/c)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhSecPureP = new TH3F("fHistSecPureP", "P distribution for reconstructed secondaries;Reco ID;Gen ID;P (GeV/c)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhSecPurePPos = new TH3F("fHistSecPurePPos", "P distribution for reconstructed (+) secondaries;Reco ID;Gen ID;P (GeV/c)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
+    fhSecPurePNeg = new TH3F("fHistSecPurePNeg", "P distribution for reconstructed (-) secondaries;Reco ID;Gen ID;P (GeV/c)", AliCSTrackSelection::kNPOIids + 1, -0.5, AliCSTrackSelection::kNPOIids + 0.5, AliPID::kSPECIES + 1, -0.5, AliPID::kSPECIES + 0.5, ptbins, ptlow, ptup);
 
     Int_t etabins = fhEtaB->GetNbinsX();
     Double_t etalow = fhEtaB->GetXaxis()->GetBinLowEdge(1), etaup = fhEtaB->GetXaxis()->GetBinUpEdge(etabins);
@@ -1916,7 +1916,7 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated)
         /* store purity information if applicable */
         if (fEventCuts->IsMC()) {
           AliPID::EParticleType trueid = AliCSPIDCuts::GetTrueSpecies(vtrack);
-          if (!(trueid < AliPID::kSPECIES)) {
+          if (!(trueid < AliPID::EParticleType(AliPID::kSPECIES))) {
           trueid = AliPID::EParticleType(AliPID::kSPECIES);
           }
           if (fTrackSelectionCuts->IsTruePrimary(vtrack)) {
