@@ -642,7 +642,7 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
             }
             if ((trk->GetStatus() & AliESDtrack::kTOFin) && (!(trk->GetStatus() & AliESDtrack::kTOFmismatch))) {
               fhTPCTOFSigmaVsP[j][i]->Fill(fPIDResponse->NumberOfSigmasTPC(ttrk, spec(j)), fPIDResponse->NumberOfSigmasTOF(ttrk, spec(j)), ttrk->P());
-              fhTOFSignalDiffVsP[j][i]->Fill(ttrk->P(), gettofbeta(ttrk->GetTOFsignal() - gettofbeta(fPIDResponse->GetTOFResponse().GetExpectedSignal(ttrk, spec(j)))));
+              fhTOFSignalDiffVsP[j][i]->Fill(ttrk->P(), gettofbeta(ttrk->GetTOFsignal()) - gettofbeta(fPIDResponse->GetTOFResponse().GetExpectedSignal(ttrk, spec(j))));
             }
           }
         }
