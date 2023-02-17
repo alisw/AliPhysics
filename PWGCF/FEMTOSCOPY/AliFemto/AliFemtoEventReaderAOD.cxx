@@ -2310,6 +2310,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, A
     //DCA for TPC only - from PropagateToDCA method
     AliExternalTrackParam aliextparam;
     aliextparam.CopyFromVTrack(tAodTrack);
+    
     if (aliextparam.GetX() > 3.0) {
       DCAXY = -999;
       DCAZ = -999;
@@ -2324,7 +2325,7 @@ void AliFemtoEventReaderAOD::CopyPIDtoFemtoTrack(const AliAODTrack *tAodTrack, A
         DCAZ = DCA[1];
       }
     }
-
+    
     tFemtoTrack->SetImpactD(DCAXY);
     tFemtoTrack->SetImpactZ(DCAZ);
   }

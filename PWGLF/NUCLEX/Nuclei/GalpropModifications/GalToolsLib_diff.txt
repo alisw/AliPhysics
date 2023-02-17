@@ -1,0 +1,359 @@
+diff -r GalpropSource/galtoolslib-1.0.855-Source/nuclei/Nuclei_Interface.cc GalpropStephan/galtoolslib-1.0.855-Source/nuclei/Nuclei_Interface.cc
+3a4
+> using namespace std;
+54a56
+>   printf(fn);
+Only in GalpropStephan/galtoolslib-1.0.855-Source/nuclei: Nuclei_Interface.cc~
+diff -r GalpropSource/galtoolslib-1.0.855-Source/processes/CMakeLists.txt GalpropStephan/galtoolslib-1.0.855-Source/processes/CMakeLists.txt
+11c11
+< add_library(processes Processes_Interface.cc pp_meson.f antiproton.f synchrotron.f bremss_spec.f crn6.f nucleon_cs.cc e_loss_compton.f energy_losses.cc kamae.cc inter.f ap_sergey.f Processes_Interface.h constants.h)
+---
+> add_library(processes Processes_Interface.cc pp_meson.f antiproton.f synchrotron.f bremss_spec.f crn6.f nucleon_cs.cc e_loss_compton.f energy_losses.cc kamae.cc inter.f ap_sergey.f Processes_Interface.h constants.h winkler.f generators.f)
+Only in GalpropStephan/galtoolslib-1.0.855-Source/processes: CMakeLists.txt~
+diff -r GalpropSource/galtoolslib-1.0.855-Source/processes/Processes_Interface.cc GalpropStephan/galtoolslib-1.0.855-Source/processes/Processes_Interface.cc
+6a7
+> #include <iostream>
+23a25
+> 
+26c28,31
+< 		    double *aPA_non, double *aPP_ann, double *aPA_ann) {
+---
+> 		    double *aPA_non, double *aPP_ann, double *aPA_ann,
+>         double *aDP_non, double *aDHe_non, double *aDP_ann, 
+>         double *aDHe_ann, double *aHe3P_non, double *aHe3He_non, 
+>         double *aHe3P_ann, double *aHe3He_ann, int scaling, int sigmaSign) {
+30c35,37
+<   nucleon_cs(opt,Ek,Zp,Zt,At,PP_inel,PA_inel,aPP_non,aPA_non,aPP_ann,aPA_ann);
+---
+>   nucleon_cs(opt,Ek,Zp,Zt,At,PP_inel,PA_inel,aPP_non,aPA_non,aPP_ann,aPA_ann, 
+>     aDP_non, aDHe_non, aDP_ann, aDHe_ann, aHe3P_non, aHe3He_non, aHe3P_ann, aHe3He_ann,
+>     scaling, sigmaSign);
+33d39
+< 
+diff -r GalpropSource/galtoolslib-1.0.855-Source/processes/Processes_Interface.h GalpropStephan/galtoolslib-1.0.855-Source/processes/Processes_Interface.h
+18a19,23
+> 
+>   double antiproton_winkler_cc(double Pap1, double Pp1, int NZ1, int NA1, int NZ2, int NAZ); //serksnyte
+>   void generator_table_cc(const std::string& path, const std::string& generator); //serksnyte
+>   double antiproton_generators_cc(double Pap1, double Pp1, int NZ1, int NA1, int NZ2, int NAZ); //serksnyte
+> 
+22c27,32
+< 		  double *aPP_ann, double *aPA_ann);
+---
+>   		  double *aPP_ann, double *aPA_ann,
+>       double *aDP_non,double *aDHe_non,
+>       double *aDP_ann,double *aDHe_ann,
+>       double *aHe3P_non,double *aHe3He_non,
+>       double *aHe3P_ann,double *aHe3He_ann,
+>       int scaling, int sigmaSign);
+diff -r GalpropSource/galtoolslib-1.0.855-Source/processes/antiproton.f GalpropStephan/galtoolslib-1.0.855-Source/processes/antiproton.f
+6c6,7
+<       real*8 function ANTIPROTON(key,Pap1,Pp1,NZ1,NA1,NZ2,NA2)        ! IMOS20010511
+---
+>       real*8 function ANTIPROTON(key,Pap1,Pp1,NZ1,NA1,NZ2,
+>      9        NA2,scal,sigm,oN,DHe)        !IMOS20010511
+63c64,67
+<      #       ,PP_inel,PA_inel,aPP_non,aPA_non,aPP_ann,aPA_ann)  ! IMOS20010511 IMOS20000606
+---
+>      #       ,PP_inel,PA_inel,aPP_non,aPA_non,aPP_ann,aPA_ann
+>      #       ,aDP_non,aDHe_non,aDP_ann,aDHe_ann
+>      #       ,aHe3P_non,aHe3He_non,aHe3P_ann,aHe3He_ann
+>      #       ,scal,sigm,oN,DHe)  ! IMOS20010511 IMOS20000606 serksnyte
+69,70c73,77
+<          call NUCLEON_CS(key,Ek,1,NZ1,NA1
+<      #       ,PP_inel,PA_inel,aPP_non,aPA_non,aPP_ann,aPA_ann)  ! IMOS20010511 IMOS20000606
+---
+>           call NUCLEON_CS(key,Ek,1,NZ1,NA1
+>      #       ,PP_inel,PA_inel,aPP_non,aPA_non,aPP_ann,aPA_ann
+>      #       ,aDP_non,aDHe_non,aDP_ann,aDHe_ann
+>      #       ,aHe3P_non,aHe3He_non,aHe3P_ann,aHe3He_ann
+>      #       ,scal,sigm,oN,DHe)  ! IMOS20010511 IMOS20000606 serksnyte
+diff -r GalpropSource/galtoolslib-1.0.855-Source/processes/nucleon_cs.cc GalpropStephan/galtoolslib-1.0.855-Source/processes/nucleon_cs.cc
+34a35,37
+> #include <iostream>
+> #include <fstream>    
+> #include <vector>
+45c48,51
+<    double *PP_inel,double *PA_inel,double *aPP_non,double *aPA_non,double *aPP_ann,double *aPA_ann)
+---
+>    double *PP_inel,double *PA_inel,double *aPP_non,double *aPA_non,double *aPP_ann,double *aPA_ann,
+>    double *aDP_non, double *aDHe_non,double *aDP_ann,double *aDHe_ann,
+>    double *aHe3P_non, double *aHe3He_non,double *aHe3P_ann,double *aHe3He_ann,
+>    int scaling, int sigmaSign)
+46a53
+>   
+48c55,62
+<    *PP_inel= *PA_inel= *aPP_non= *aPA_non= *aPP_ann= *aPA_ann=0.;
+---
+>    //int scaling = 1; // 0 - noscaling, 1 - with scaling
+>    //int sigmaSign = 1; // -1 - minus 1 sigma, 1 - plus 1 sigma
+> 
+>    *PP_inel= *PA_inel= *aPP_non= *aPA_non= *aPP_ann= *aPA_ann= *aDP_non= *aDHe_non= *aDP_ann= *aDHe_ann= 0.; //serksnyte
+>    *aHe3P_non = *aHe3He_non = *aHe3P_ann = *aHe3He_ann = 0; //serksnyte
+> 
+> 
+>    //serksnyte Implement antideuteron cross sections!
+104c118,120
+< //## AntiProton-Proton ANNIHILATION cross section [TN83]
+---
+> 
+> 
+> 
+109a126,127
+>       
+>       //*aPP_ann = 2*35.43/pow(s2,0.560);  //serksnyte 
+112c130
+< 
+---
+>    
+120c138
+< 
+---
+>    
+134a153
+> 
+138a158
+> 
+142,148c162
+< /*
+< //## my fit to AntiProton-NUCLEUS total cross section on 12C-nucleus [mb] (0.4<Pp<300)
+<          double Pp =sqrt(pow(Ek+Mp,2)-Mp*Mp); // GeV,kin. momentum per nucleon
+<          *aPA_ann = (Pp > 40.) ? 236.*(1.+6.9e-2*exp(-Pp/100.)) :
+<             209.7*pow(.542/Pp,.565)+29.6*cos(log10(Pp/9.29)*5.11)+257.9;
+<          *aPA_ann *= pow(At/12.,2./3.);                             // scaling to other nuclei
+< */
+---
+>    
+150,151d163
+<    return;
+< }
+154d165
+< //**.****|****.****|****.****|****.****|****.****|****.****|****.****|****.****|
+156,168c167
+< // A SAMPLE TEST PROGRAM
+< /*
+< #include<stdio.h>
+< #include<iostream.h>
+< extern "C" void sigtap2_(int*);
+< extern "C" double sighad_(int*,double*,double*,double*,double*,double*);
+< void nucleon_cs(int,double,int,int,int,double*,double*,double*,double*,double*,double*);
+< main()
+< {
+<    FILE *f1,*f2;
+<    int i,j,Zp=-1,Zt=2,At=4,  ISS;
+<    double Emev,cs,PA=1.,PZ=1.,TA,TZ;
+<    double Ek,dE=1.2, PP_inel,PA_inel,aPP_non,aPA_non,aPP_ann,aPA_ann;
+---
+>    double momentum = sqrt((Ek+0.938)*(Ek+0.938)-(0.938*0.938));
+170d168
+<    ISS = -1; sigtap2_cc(&ISS); ISS = 2;
+172,176d169
+<    f1=fopen("nucleon.out1","w");                     // output1
+<    fprintf(f1,"%3s%11s%11s%11s%11s%11s%11s%11s\n", "# A",
+<       "Ek, GeV","PP_inel","PA_inel","aPP_non","aPA_non","aPP_ann","aPA_ann");
+<    printf(  "\n%3s%11s%11s%11s%11s%11s%11s%11s\n", "# A",
+<       "Ek, GeV","PP_inel","PA_inel","aPP_non","aPA_non","aPP_ann","aPA_ann");
+178,182d170
+<    for(i=At; i<At+1; i++)  // for plots
+<    {
+<       for(Ek=0.02; Ek<1.e4; Ek*=dE)
+<       {
+<          nucleon_cs(2,Ek,Zp,Zt,i,&PP_inel,&PA_inel,&aPP_non,&aPA_non,&aPP_ann,&aPA_ann);
+184,193c172,182
+<          Emev=1000*Ek; TA = i; TZ = Zt;
+< 
+< // for plots
+<          fprintf(f1, "   %11.3e%11.3e%11.3e%11.3e%11.3e%11.3e%11.3e%11.3e%11.3e\n",
+< 	    Ek,PP_inel,PA_inel,aPP_non,aPA_non,aPP_ann,aPA_ann,aPP_non+aPP_ann,aPA_ann+aPA_non);
+< // for tests
+< //         fprintf(f1,"%3d%3d%11.2E%11.2E%11.2E%11.2E%11.2E%11.2E%11.2E\n", Zt,
+< //	    i,Ek,PP_inel,PA_inel,aPP_non,aPA_non,aPP_ann,aPA_ann);
+<          printf(    "%3d%3d%11.3E%11.3E%11.3E%11.3E%11.3E%11.3E%11.3E\n", Zt,
+< 	    i,Ek,PP_inel,PA_inel,aPP_non,aPA_non,aPP_ann,aPA_ann);
+---
+>   
+>       long int AnnihilationCSEkin[27]= {25155, 58112, 134247, 310128, 716438, 1655064, 3823414, 8832583, 20404413, 47136840, 108892215, 251555141, 581125002, 1342474130, 3101289350, 7164380640, 16550648500, 38234144700, 88325833200, 204044131000, 471368406000, 1088922150000, 2515551410000, 5811250020000, 13424741299999, 31012893500000, 71643806400000};
+>       //fake first  bin
+>       double AnnihilationCSHe3H[27]= {1020.64,758.501,575.694,445.96,353.364,288.004,241.852,205.874,173.266,145.645,126.662,114.707,107.433,103.742,102.941,104.396,107.578,112.105,117.72,124.249,131.574,139.607,148.279,157.534,167.32,177.596,188.321};
+>       double AnnihilationCSHe3He4[27]= {1715.97, 1309.82,1028.99,830.546,688.163,586.135,513.033,455.979,404.031,358.477,325.038,302.368,288.05,280.78,279.346,282.433,288.891,297.876,308.811,321.296,335.049,349.859,365.56,382.023,399.138,416.82,434.997};
+>           std::cout<<"Running nucleon_cs.cc"<<std::endl;
+> 	    int locationOfCS=-1;
+>       for(int i = 0; i<27;i++){
+>          if(floor( Ek * 10000000.0 )<AnnihilationCSEkin[i]*1.1 &&floor( Ek * 10000000.0 )>AnnihilationCSEkin[i]*0.9){
+>             locationOfCS=i;
+>          }
+195,196c184,187
+<    }
+<    fclose(f1);
+---
+> 			if (scaling==0){//Geant Default. Set scaling to 0 to use this
+> 	      *aHe3P_ann = AnnihilationCSHe3H[locationOfCS];
+>   	    *aHe3He_ann = AnnihilationCSHe3He4[locationOfCS];
+> 			}
+198,200c189,225
+<    f2=fopen("nucleon.out2","w");                     // output2
+<    fprintf(f2,  "#%5s%11s%11s%11s%11s\n", "Z  A","Ek, GeV","PA_inel0","PA_inel1","PA_inel2");
+<    printf (   "\n#%5s%11s%11s%11s%11s\n", "Z  A","Ek, GeV","PA_inel0","PA_inel1","PA_inel2");
+---
+>       
+>       if(momentum<0.389){
+>          if(scaling==1)
+>          {
+>             double minFitMomentum = 0.389;  
+> 			if(oldNew==99){
+> 				double scaleFit = 0;
+> 				float par0 = 0.714927;
+> 				float par1 = -0.006913;
+> 				float par2 = 4.549460;
+> 				float par3 = -8.548490;
+> 				float par4 = 0.688027;
+> 				float par5 = 0.091134;
+> 				float mean = ((par0+par1*minFitMomentum)*(exp(par2+par3*minFitMomentum))+par4+par5*minFitMomentum);
+> 				if (sigmaSign==1){
+> 					float par7 = 2.822500;
+> 					float par8 = -2.240650;
+> 					float par9 = 1.955780;
+> 					float par10 = -0.000092;
+> 					float par11 = -0.817899;
+> 					scaleFit = ((par7+par8*minFitMomentum+par9*minFitMomentum*minFitMomentum+par10*minFitMomentum*minFitMomentum*minFitMomentum)*(exp(par11*minFitMomentum)));
+> 					*aHe3P_ann = *aHe3P_ann*scaleFit*mean;
+> 					*aHe3He_ann = *aHe3He_ann*scaleFit*mean;
+> 				
+> 				}
+> 				if (sigmaSign==-1){
+> 					float par7 = -1.539800;
+> 					float par8 = 7.586810;
+> 					float par9 = -5.147790;
+> 					float par10 = 2.408560;
+> 					float par11 = -1.340530;
+> 					scaleFit = ((par7+par8*minFitMomentum+par9*minFitMomentum*minFitMomentum+par10*minFitMomentum*minFitMomentum*minFitMomentum)*(exp(par11*minFitMomentum)));
+> 					*aHe3P_ann = *aHe3P_ann*scaleFit*mean;
+> 					*aHe3He_ann = *aHe3He_ann*scaleFit*mean;
+> 				}}}}
+>             
+>             
+202,221d226
+<    int incr = 2;
+<    for(i=4; i<64; i+=incr)
+<    {
+<       Zt = (int) (0.59*pow(i,.927)+0.4);
+<       fprintf(f2,"\n#%3d%3d\n", Zt,i);
+<       printf (   "\n#%3d%3d\n", Zt,i);
+<       for(Ek=0.02; Ek<2000.; Ek*=1.1, fprintf(f2,"\n"), printf("\n"))
+<       {
+<          fprintf(f2,"      %11.2E",Ek);
+<          printf (   "      %11.2E",Ek);
+<          for(j=0; j<3; j++)
+< 	 {
+<             nucleon_cs(j,Ek,Zp,Zt,i,&PP_inel,&PA_inel,&aPP_non,&aPA_non,&aPP_ann,&aPA_ann);
+<             fprintf(f2,"%11.2E",PA_inel);
+<             printf (   "%11.2E",PA_inel);
+<          }
+<       } if(i%10==0) incr+=2;
+<    }
+<    fclose(f2);
+<    exit(1);
+223c228,260
+<    f1=fopen("nucleon.out1","w");                    // print data to a file
+---
+>       if(momentum>0.389 && momentum<=2.84){ //before used value
+>          if(scaling==1)
+>          {
+> 			if(oldNew==99){
+> 				double scaleFit = 0;
+> 				float par0 = 0.714927;
+> 				float par1 = -0.006913;
+> 				float par2 = 4.549460;
+> 				float par3 = -8.548490;
+> 				float par4 = 0.688027;
+> 				float par5 = 0.091134;
+> 				float mean = ((par0+par1*momentum)*(exp(par2+par3*momentum))+par4+par5*momentum);
+> 				if (sigmaSign==1){
+> 					float par7 = 2.822500;
+> 					float par8 = -2.240650;
+> 					float par9 = 1.955780;
+> 					float par10 = -0.000092;
+> 					float par11 = -0.817899;
+> 					scaleFit = ((par7+par8*momentum+par9*momentum*momentum+par10*momentum*momentum*momentum)*(exp(par11*momentum)));
+> 					*aHe3P_ann = *aHe3P_ann*scaleFit*mean;
+> 					*aHe3He_ann = *aHe3He_ann*scaleFit*mean;
+> 				
+> 				}
+>  				if (sigmaSign==-1){
+> 					float par7 = -1.539800;
+> 					float par8 = 7.586810;
+> 					float par9 = -5.147790;
+> 					float par10 = 2.408560;
+> 					float par11 = -1.340530;
+> 					scaleFit = ((par7+par8*momentum+par9*momentum*momentum+par10*momentum*momentum*momentum)*(exp(par11*momentum)));
+> 					*aHe3P_ann = *aHe3P_ann*scaleFit*mean;
+> 					*aHe3He_ann = *aHe3He_ann*scaleFit*mean;
+> 				}}}}
+225,235c262,295
+<    Zt = 26; At = 56;
+<    for(Ek=0.005; Ek<2000.; Ek*=dE)
+<    {
+<       nucleon_cs(2,Ek,Zp,Zt,At,&PP_inel,&PA_inel,&aPP_non,&aPA_non,&aPP_ann,&aPA_ann);
+<       fprintf(f1,"%3d%3d%11.2E%11.2E%11.2E%11.2E%11.2E%11.2E%11.2E\n", Zt,
+<          At,Ek,PP_inel,PA_inel,aPP_non,aPA_non,aPP_ann,aPA_ann);
+<       printf(    "%3d%3d%11.3E%11.3E%11.3E%11.3E%11.3E%11.3E%11.3E\n", Zt,
+<          At,Ek,PP_inel,PA_inel,aPP_non,aPA_non,aPP_ann,aPA_ann);
+<    }
+< }
+< //**.****|****.****|****.****|****.****|****.****|****.****|****.****|****.****|
+---
+>       if(momentum>2.84){
+>          if(scaling==1)
+>          {
+>             double maxFitMomentum = 2.84;
+> 			if(oldNew==99){
+> 				double scaleFit = 0;
+> 				float par0 = 0.714927;
+> 				float par1 = -0.006913;
+> 				float par2 = 4.549460;
+> 				float par3 = -8.548490;
+> 				float par4 = 0.688027;
+> 				float par5 = 0.091134;
+> 				float mean = ((par0+par1*maxFitMomentum)*(exp(par2+par3*maxFitMomentum))+par4+par5*maxFitMomentum);
+> 				if (sigmaSign==1){
+> 					float par7 = 2.822500;
+> 					float par8 = -2.240650;
+> 					float par9 = 1.955780;
+> 					float par10 = -0.000092;
+> 					float par11 = -0.817899;
+> 					scaleFit = ((par7+par8*maxFitMomentum+par9*maxFitMomentum*maxFitMomentum+par10*maxFitMomentum*maxFitMomentum*maxFitMomentum)*(exp(par11*maxFitMomentum)));
+> 					*aHe3P_ann = *aHe3P_ann*scaleFit*mean;
+> 					*aHe3He_ann = *aHe3He_ann*scaleFit*mean;
+> 				
+> 				}
+> 			  if (sigmaSign==-1){
+> 					float par7 = -1.539800;
+> 					float par8 = 7.586810;
+> 					float par9 = -5.147790;
+> 					float par10 = 2.408560;
+> 					float par11 = -1.340530;
+> 					scaleFit = ((par7+par8*maxFitMomentum+par9*maxFitMomentum*maxFitMomentum+par10*maxFitMomentum*maxFitMomentum*maxFitMomentum)*(exp(par11*maxFitMomentum)));
+> 					*aHe3P_ann = *aHe3P_ann*scaleFit*mean;
+> 					*aHe3He_ann = *aHe3He_ann*scaleFit*mean;
+> 				}}}} 
+237,241d296
+< // Barashenkov & Polanski pA total cross section  IMOS20020502
+< double sighad_cc(int IS, double PA, double PZ, double TA, double TZ, double E)
+< { 
+<    return( sighad_(&IS, &PA, &PZ, &TA, &TZ, &E) );
+< }
+243d297
+< //**.****|****.****|****.****|****.****|****.****|****.****|****.****|****.****|
+245,248c299,302
+< // initialization of the Barashenkov & Polanski cross section code
+< void sigtap_cc(int ISS)
+< { 
+<    sigtap2_(&ISS);
+---
+> 
+>   
+> 
+>    return;
+251d304
+< */
+

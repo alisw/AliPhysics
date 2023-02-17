@@ -112,10 +112,14 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fResolutionEtaBins(),
   fResolutionPhiBins(),
   fResolutionThetaBins(),
+  fNGenpt(1000),
+  fGenptMin(0.),
+  fGenptMax(20.),
   fMassBins(),
   fPairPtBins(),
   fPhiVBins(),
   fDoGenSmearing(false),
+  fDoRecSmearing(false),
   fPtMin(0.),
   fPtMax(0.),
   fEtaMin(-99.),
@@ -266,10 +270,14 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fResolutionEtaBins(),
   fResolutionPhiBins(),
   fResolutionThetaBins(),
+  fNGenpt(1000),
+  fGenptMin(0.),
+  fGenptMax(20.),
   fMassBins(),
   fPairPtBins(),
   fPhiVBins(),
   fDoGenSmearing(false),
+  fDoRecSmearing(false),
   fPtMin(0.),
   fPtMax(0.),
   fEtaMin(-99.),
@@ -722,21 +730,21 @@ void AliAnalysisTaskElectronEfficiencyV2::UserCreateOutputObjects(){
     fResolutionList->SetName("Resolution");
     fResolutionList->SetOwner();
 
-      fPGen_DeltaP                         = new TH2D("PGen_DeltaP",                        "", 1000, 0., 20., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
-      fPGen_PrecOverPGen                   = new TH2D("PGen_PrecOverPGen",                  "", 1000, 0., 20., fNResolutionRelptBins, fResolutionRelPtBins.data());
-      fPtGen_DeltaPt                       = new TH2D("PtGen_DeltaPt",                      "", 1000, 0., 20., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
-      fPtGen_DeltaPtOverPtGen              = new TH2D("PtGen_DeltaPtOverPtGen",             "", 1000, 0., 20., fNResolutionDeltaptBins, -1., +1.);
-      fPtGen_PtRecOverPtGen                = new TH2D("PtGen_PtRecOverPtGen",               "", 1000, 0., 20., fNResolutionRelptBins, fResolutionRelPtBins.data());
-      fPtGen_DeltaPt_wGenSmeared           = new TH2D("PtGen_DeltaPt_wGenSmeared",          "", 1000, 0., 20., fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
-      fPtGen_DeltaPtOverPtGen_wGenSmeared  = new TH2D("PtGen_DeltaPtOverPtGen_wGenSmeared", "", 1000, 0., 20., fNResolutionDeltaptBins, -1., +1.);
-      fPtGen_PtRecOverPtGen_wGenSmeared    = new TH2D("PtGen_PtRecOverPtGen_wGenSmeared",   "", 1000, 0., 20., fNResolutionRelptBins, fResolutionRelPtBins.data());
-      fPGen_DeltaEta                       = new TH2D("PGen_DeltaEta",                      "", 1000, 0., 20., fNResolutionetaBins, fResolutionEtaBins.data());
-      fPtGen_DeltaEta                      = new TH2D("PtGen_DeltaEta",                     "", 1000, 0., 20., fNResolutionetaBins, fResolutionEtaBins.data());
-      fPGen_DeltaTheta                     = new TH2D("PGen_DeltaTheta",                    "", 1000, 0., 20., fNResolutionthetaBins, fResolutionThetaBins.data());
-      fPGen_DeltaPhi_Ele                   = new TH2D("PGen_DeltaPhi_Ele",                  "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
-      fPGen_DeltaPhi_Pos                   = new TH2D("PGen_DeltaPhi_Pos",                  "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
-      fPtGen_DeltaPhi_Ele                  = new TH2D("PtGen_DeltaPhi_Ele",                 "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
-      fPtGen_DeltaPhi_Pos                  = new TH2D("PtGen_DeltaPhi_Pos",                 "", 1000, 0., 20., fNResolutionphiBins, fResolutionPhiBins.data());
+      fPGen_DeltaP                         = new TH2D("PGen_DeltaP",                        "", fNGenpt, fGenptMin, fGenptMax, fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
+      fPGen_PrecOverPGen                   = new TH2D("PGen_PrecOverPGen",                  "", fNGenpt, fGenptMin, fGenptMax, fNResolutionRelptBins, fResolutionRelPtBins.data());
+      fPtGen_DeltaPt                       = new TH2D("PtGen_DeltaPt",                      "", fNGenpt, fGenptMin, fGenptMax, fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
+      fPtGen_DeltaPtOverPtGen              = new TH2D("PtGen_DeltaPtOverPtGen",             "", fNGenpt, fGenptMin, fGenptMax, fNResolutionDeltaptBins, -1., +1.);
+      fPtGen_PtRecOverPtGen                = new TH2D("PtGen_PtRecOverPtGen",               "", fNGenpt, fGenptMin, fGenptMax, fNResolutionRelptBins, fResolutionRelPtBins.data());
+      fPtGen_DeltaPt_wGenSmeared           = new TH2D("PtGen_DeltaPt_wGenSmeared",          "", fNGenpt, fGenptMin, fGenptMax, fNResolutionDeltaptBins, fResolutionDeltaPtBins.data());
+      fPtGen_DeltaPtOverPtGen_wGenSmeared  = new TH2D("PtGen_DeltaPtOverPtGen_wGenSmeared", "", fNGenpt, fGenptMin, fGenptMax, fNResolutionDeltaptBins, -1., +1.);
+      fPtGen_PtRecOverPtGen_wGenSmeared    = new TH2D("PtGen_PtRecOverPtGen_wGenSmeared",   "", fNGenpt, fGenptMin, fGenptMax, fNResolutionRelptBins, fResolutionRelPtBins.data());
+      fPGen_DeltaEta                       = new TH2D("PGen_DeltaEta",                      "", fNGenpt, fGenptMin, fGenptMax, fNResolutionetaBins, fResolutionEtaBins.data());
+      fPtGen_DeltaEta                      = new TH2D("PtGen_DeltaEta",                     "", fNGenpt, fGenptMin, fGenptMax, fNResolutionetaBins, fResolutionEtaBins.data());
+      fPGen_DeltaTheta                     = new TH2D("PGen_DeltaTheta",                    "", fNGenpt, fGenptMin, fGenptMax, fNResolutionthetaBins, fResolutionThetaBins.data());
+      fPGen_DeltaPhi_Ele                   = new TH2D("PGen_DeltaPhi_Ele",                  "", fNGenpt, fGenptMin, fGenptMax, fNResolutionphiBins, fResolutionPhiBins.data());
+      fPGen_DeltaPhi_Pos                   = new TH2D("PGen_DeltaPhi_Pos",                  "", fNGenpt, fGenptMin, fGenptMax, fNResolutionphiBins, fResolutionPhiBins.data());
+      fPtGen_DeltaPhi_Ele                  = new TH2D("PtGen_DeltaPhi_Ele",                 "", fNGenpt, fGenptMin, fGenptMax, fNResolutionphiBins, fResolutionPhiBins.data());
+      fPtGen_DeltaPhi_Pos                  = new TH2D("PtGen_DeltaPhi_Pos",                 "", fNGenpt, fGenptMin, fGenptMax, fNResolutionphiBins, fResolutionPhiBins.data());
       fThetaGen_DeltaTheta                 = new TH2D("ThetaGen_DeltaTheta",                "", 220, -0.1*TMath::Pi(), 1.1*TMath::Pi(), fNResolutionthetaBins, fResolutionThetaBins.data());
       fPhiGen_DeltaPhi                     = new TH2D("PhiGen_DeltaPhi",                    "", 320, -0.1*TMath::Pi(), 2.1*TMath::Pi(), fNResolutionphiBins, fResolutionPhiBins.data());
 
@@ -1171,6 +1179,15 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
     // check if electron comes from a mother with ele+pos as daughters
     CheckIfFromMotherWithDielectronAsDaughter(part);
 
+    // Test:Smear reconstructed particles to fill list for cutsetting
+    if (fDoRecSmearing == true && fArrResoPt){
+      TLorentzVector smearedVec = ApplyResolution(part.fPt, part.fEta, part.fPhi, part.fCharge);
+      part.fPt_smeared  = smearedVec.Pt();
+      part.fEta_smeared = smearedVec.Eta();
+      if (smearedVec.Phi() < 0) part.fPhi_smeared = smearedVec.Phi()+ 2 * pi;
+      else part.fPhi_smeared = smearedVec.Phi();
+    }
+
     // ##########################################################
     if      (fDoPairing == true && part.fCharge < 0) fRecNegPart.push_back(part);
     else if (fDoPairing == true && part.fCharge > 0) fRecPosPart.push_back(part);
@@ -1584,7 +1601,11 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
           TLorentzVector Lvec2;
           Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt, fRecNegPart[neg_i].fEta, fRecNegPart[neg_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
           Lvec2.SetPtEtaPhiM(fRecPosPart[pos_i].fPt, fRecPosPart[pos_i].fEta, fRecPosPart[pos_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
-          TLorentzVector LvecM = Lvec1 + Lvec2;
+	  if (fDoRecSmearing == true && fArrResoPt){
+	    Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt_smeared, fRecNegPart[neg_i].fEta_smeared, fRecNegPart[neg_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	    Lvec2.SetPtEtaPhiM(fRecPosPart[pos_i].fPt_smeared, fRecPosPart[pos_i].fEta_smeared, fRecPosPart[pos_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	  }
+	  TLorentzVector LvecM = Lvec1 + Lvec2;
           double mass = LvecM.M();
           double pairpt = LvecM.Pt();
 	  double opangle = Lvec1.Angle(Lvec2.Vect());
@@ -1630,6 +1651,10 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
         TLorentzVector Lvec2;
         Lvec1.SetPtEtaPhiM(track1->Pt(), track1->Eta(), track1->Phi(), AliPID::ParticleMass(AliPID::kElectron));
         Lvec2.SetPtEtaPhiM(track2->Pt(), track2->Eta(), track2->Phi(), AliPID::ParticleMass(AliPID::kElectron));
+	if (fDoRecSmearing == true && fArrResoPt){
+	  Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt_smeared, fRecNegPart[neg_i].fEta_smeared, fRecNegPart[neg_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	  Lvec2.SetPtEtaPhiM(fRecPosPart[pos_i].fPt_smeared, fRecPosPart[pos_i].fEta_smeared, fRecPosPart[pos_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	}
         TLorentzVector LvecM = Lvec1 + Lvec2;
         double mass = LvecM.M();
         double pairpt = LvecM.Pt();
@@ -1696,6 +1721,10 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
         TLorentzVector Lvec2;
         Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt, fRecNegPart[neg_i].fEta, fRecNegPart[neg_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
         Lvec2.SetPtEtaPhiM(fRecNegPart[neg_j].fPt, fRecNegPart[neg_j].fEta, fRecNegPart[neg_j].fPhi, AliPID::ParticleMass(AliPID::kElectron));
+	if (fDoRecSmearing == true && fArrResoPt){
+	  Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt_smeared, fRecNegPart[neg_i].fEta_smeared, fRecNegPart[neg_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	  Lvec2.SetPtEtaPhiM(fRecNegPart[neg_j].fPt_smeared, fRecNegPart[neg_j].fEta_smeared, fRecNegPart[neg_j].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	}
         TLorentzVector LvecM = Lvec1 + Lvec2;
         double mass = LvecM.M();
         double pairpt = LvecM.Pt();
@@ -1726,6 +1755,10 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
         TLorentzVector Lvec2;
         Lvec1.SetPtEtaPhiM(fRecPosPart[pos_i].fPt, fRecPosPart[pos_i].fEta, fRecPosPart[pos_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
         Lvec2.SetPtEtaPhiM(fRecPosPart[pos_j].fPt, fRecPosPart[pos_j].fEta, fRecPosPart[pos_j].fPhi, AliPID::ParticleMass(AliPID::kElectron));
+	if (fDoRecSmearing == true && fArrResoPt){
+	  Lvec1.SetPtEtaPhiM(fRecPosPart[pos_i].fPt_smeared, fRecPosPart[pos_i].fEta_smeared, fRecPosPart[pos_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	  Lvec2.SetPtEtaPhiM(fRecPosPart[pos_j].fPt_smeared, fRecPosPart[pos_j].fEta_smeared, fRecPosPart[pos_j].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	}
         TLorentzVector LvecM = Lvec1 + Lvec2;
         double mass = LvecM.M();
         double pairpt = LvecM.Pt();

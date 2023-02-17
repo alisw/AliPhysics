@@ -326,10 +326,17 @@ class AliAnalysisTaskMTFPID : public AliAnalysisTaskPIDV0base {
   Double_t GetSystematicScalingEtaSigmaParaAboveThreshold() const { return fSystematicScalingEtaSigmaParaAboveThreshold; };
   void SetSystematicScalingEtaSigmaParaAboveThreshold(Double_t scaleFactor)
     { fSystematicScalingEtaSigmaParaAboveThreshold = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
+    
+  Double_t GetSystematicScalingMultCorrectionMomentumThreshold() const { return fSystematicScalingMultCorrectionMomentumThreshold; };
+  void SetSystematicScalingMultCorrectionMomentumThreshold(Double_t threshold) { fSystematicScalingMultCorrectionMomentumThreshold = threshold; };
   
-  Double_t GetSystematicScalingMultCorrection() const { return fSystematicScalingMultCorrection; };
-  void SetSystematicScalingMultCorrection(Double_t scaleFactor) 
-    { fSystematicScalingMultCorrection = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
+  Double_t GetSystematicScalingMultCorrectionLowMomenta() const { return fSystematicScalingMultCorrectionLowMomenta; };
+  void SetSystematicScalingMultCorrectionLowMomenta(Double_t scaleFactor) 
+    { fSystematicScalingMultCorrectionLowMomenta = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
+    
+  Double_t GetSystematicScalingMultCorrectionHighMomenta() const { return fSystematicScalingMultCorrectionHighMomenta; };
+  void SetSystematicScalingMultCorrectionHighMomenta(Double_t scaleFactor) 
+    { fSystematicScalingMultCorrectionHighMomenta = scaleFactor; CheckDoAnyStematicStudiesOnTheExpectedSignal(); };
   
   Double_t GetMaxEtaVariation(Double_t dEdxSplines);
   Bool_t CalculateMaxEtaVariationMapFromPIDResponse();
@@ -431,11 +438,11 @@ class AliAnalysisTaskMTFPID : public AliAnalysisTaskPIDV0base {
   const Double_t fkDeltaPrimeLowLimit; // Lower deltaPrime limit
   const Double_t fkDeltaPrimeUpLimit; // Upper deltaPrime limit
   TF1* fConvolutedGausDeltaPrime; //! Gaus convoluted with exponential tail to generate detector response (deltaPrime)
-  
+
   Double_t fConvolutedGaussLambda; // Lambda parameter for convoluted gaus function
+  Double_t fConvolutedGaussTransitionPars[3]; // Parameter for transition from gaussian parameters to asymmetric shape
   
   Int_t fTOFmode; // TOF mode used for TOF PID info (affects num sigma inclusion/exclusion)
-  Double_t fConvolutedGaussTransitionPars[3]; // Parameter for transition from gaussian parameters to asymmetric shape
   static const Double_t fgkSigmaReferenceForTransitionPars; // Reference sigma chosen to calculate transition parameters
   
   Double_t fEtaAbsCutLow; // Lower cut value on |eta|
@@ -446,7 +453,7 @@ class AliAnalysisTaskMTFPID : public AliAnalysisTaskPIDV0base {
   Double_t fSystematicScalingSplinesThreshold;         // beta-gamma threshold for the systematic spline scale factor
   Double_t fSystematicScalingSplinesBelowThreshold;        // Systematic scale factor for the splines (1. = no systematics) below threshold
   Double_t fSystematicScalingSplinesAboveThreshold;        // Systematic scale factor for the splines (1. = no systematics) above threshold
-  TH1F* fMultBinSystematics;
+  TH1F* fMultBinSystematics;                           // Systematic scaling factor for splines if we have several splines depending on multiplicity bins (not in use atm)
   Double_t fSystematicScalingEtaCorrectionMomentumThr;  // Momentum threshold for the systematic scale factor for the eta correction (separates low-p from high-p
   Double_t fSystematicScalingEtaCorrectionLowMomenta;   // Systematic scale factor for the eta correction (1. = no systematics) at low momenta
   Double_t fSystematicScalingEtaCorrectionHighMomenta;  // Systematic scale factor for the eta correction (1. = no systematics) at high momenta
@@ -454,8 +461,9 @@ class AliAnalysisTaskMTFPID : public AliAnalysisTaskPIDV0base {
   Double_t fSystematicScalingEtaSigmaParaThreshold; // dEdx threshold for the systematic scale factor for the parametrisation of the relative signal width
   Double_t fSystematicScalingEtaSigmaParaBelowThreshold; // Systematic scale factor for the parametrisation of the relative signal width (1. = no systematics) below threshold
   Double_t fSystematicScalingEtaSigmaParaAboveThreshold; // Systematic scale factor for the parametrisation of the relative signal width (1. = no systematics) above threshold 
-  Double_t fSystematicScalingMultCorrection; // Systematic scale factor for the multiplicity correction (1. = no systematics) 
-  
+  Double_t fSystematicScalingMultCorrectionMomentumThreshold; // pTPC value of threshold between low/high momenta of 
+  Double_t fSystematicScalingMultCorrectionLowMomenta; // Systematic scale factor for the multiplicity correction below threshold 
+  Double_t fSystematicScalingMultCorrectionHighMomenta; // Systematic scale factor for the multiplicity correction above threshold 
   
   
   TH3D* fFractionHists[AliPID::kSPECIES]; // 3D histos of particle fraction as function  with trackPt, jetPt (-1 for inclusive spectra), centralityPercentile (-1 for pp)
@@ -580,7 +588,7 @@ class AliAnalysisTaskMTFPID : public AliAnalysisTaskPIDV0base {
   TH3D* fh3DCA_XY_WeakDecays_Negative;
   TH3D* fh3DCA_XY_Material_Negative;  
   
-  ClassDef(AliAnalysisTaskMTFPID, 2);
+  ClassDef(AliAnalysisTaskMTFPID, 3);
 };
 
 

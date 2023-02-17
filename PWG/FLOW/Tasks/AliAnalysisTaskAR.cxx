@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.cxx
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 27.01.2022
+ * Last Modified Date: 15.09.2022
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -21,12 +21,12 @@
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
 
+#include "AliAnalysisTaskAR.h"
 #include "AliAODEvent.h"
 #include "AliAODHeader.h"
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliAODTrack.h"
-#include "AliAnalysisTaskAR.h"
 #include "AliLog.h"
 #include "AliMCEvent.h"
 #include "AliMultSelection.h"
@@ -37,8 +37,10 @@
 #include <TFile.h>
 #include <TH1.h>
 #include <TH2.h>
+#include <TList.h>
 #include <TMath.h>
 #include <TRandom3.h>
+#include <TString.h>
 #include <TSystem.h>
 #include <algorithm>
 #include <cstdlib>
@@ -100,6 +102,9 @@ ClassImp(AliAnalysisTaskAR)
       fFinalResultCorrelatorsListName("FinalResultCorrelator"),
       fFinalResultSymmetricCumulantsList(nullptr),
       fFinalResultSymmetricCumulantsListName("FinalResultSymmetricCumulant"),
+      fFinalResultNormalizedSymmetricCumulantsList(nullptr),
+      fFinalResultNormalizedSymmetricCumulantsListName(
+          "FinalResultNormalizedSymmetricCumulant"),
       fFillControlHistogramsOnly(kFALSE), fUseNestedLoops(kFALSE),
       // flags for MC analysis
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
@@ -172,6 +177,9 @@ AliAnalysisTaskAR::AliAnalysisTaskAR()
       fFinalResultCorrelatorsListName("FinalResultCorrelator"),
       fFinalResultSymmetricCumulantsList(nullptr),
       fFinalResultSymmetricCumulantsListName("FinalResultSymmetricCumulant"),
+      fFinalResultNormalizedSymmetricCumulantsList(nullptr),
+      fFinalResultNormalizedSymmetricCumulantsListName(
+          "FinalResultNormalizedSymmetricCumulant"),
       fFillControlHistogramsOnly(kFALSE), fUseNestedLoops(kFALSE),
       // flags for MC analysis
       fUseCustomSeed(kFALSE), fSeed(0), fMCOnTheFly(kFALSE), fMCClosure(kFALSE),
@@ -929,6 +937,13 @@ void AliAnalysisTaskAR::BookAndNestAllLists() {
       fFinalResultSymmetricCumulantsListName);
   fFinalResultSymmetricCumulantsList->SetOwner(kTRUE);
   fFinalResultsList->Add(fFinalResultSymmetricCumulantsList);
+
+  // final result histograms for normalized symmetric cumulants
+  fFinalResultNormalizedSymmetricCumulantsList = new TList();
+  fFinalResultNormalizedSymmetricCumulantsList->SetName(
+      fFinalResultNormalizedSymmetricCumulantsListName);
+  fFinalResultNormalizedSymmetricCumulantsList->SetOwner(kTRUE);
+  fFinalResultsList->Add(fFinalResultNormalizedSymmetricCumulantsList);
 }
 
 void AliAnalysisTaskAR::BookQAHistograms() {
@@ -1374,6 +1389,7 @@ void AliAnalysisTaskAR::BookFinalResultSymmetricCumulants() {
   // book histograms holding symmetric cumulants
 
   TH1D *Hist[LAST_EFINALRESULTPROFILE];
+  TH1D *NHist[LAST_EFINALRESULTPROFILE];
   Double_t bins[LAST_EBINS][LAST_EFINALRESULTPROFILE] = {
       {1, 0, 1},
       {fEventControlHistogramBins[kCEN][kBIN],
@@ -1388,7 +1404,7 @@ void AliAnalysisTaskAR::BookFinalResultSymmetricCumulants() {
   TString xaxis[LAST_EFINALRESULTPROFILE] = {"", "Centrality Percentile",
                                              "Multiplicity"};
   TString Name;
-  TList *List;
+  TList *List, *ListNormalized;
   std::vector<std::vector<Int_t>> correlators;
 
   Int_t Index = 0;
@@ -1407,6 +1423,11 @@ void AliAnalysisTaskAR::BookFinalResultSymmetricCumulants() {
     List->SetOwner(kTRUE);
     fFinalResultSymmetricCumulantsList->Add(List);
 
+    ListNormalized = new TList();
+    ListNormalized->SetName(Form("N%s", Name.Data()));
+    ListNormalized->SetOwner(kTRUE);
+    fFinalResultNormalizedSymmetricCumulantsList->Add(ListNormalized);
+
     for (int i = 0; i < LAST_EFINALRESULTPROFILE; i++) {
 
       if (i == kPTDEP) {
@@ -1423,6 +1444,11 @@ void AliAnalysisTaskAR::BookFinalResultSymmetricCumulants() {
       Hist[i]->GetXaxis()->SetTitle(xaxis[i]);
       Hist[i]->SetFillColor(kcolorFinalResult);
       List->Add(Hist[i]);
+
+      NHist[i] =
+          dynamic_cast<TH1D *>(Hist[i]->Clone(Form("N%s", Hist[i]->GetName())));
+      NHist[i]->SetTitle(Form("N%s", Hist[i]->GetTitle()));
+      ListNormalized->Add(NHist[i]);
     }
 
     correlators = MapSCToCor(fSymmetricCumulants.at(j));
@@ -1601,9 +1627,9 @@ void AliAnalysisTaskAR::SetDefaultCuts(Int_t Filterbit, Double_t cenMin,
   fTrackCuts[kTPCNCLS][kMAX] = 160;
   fUseTrackCuts[kTPCNCLS] = kTRUE;
 
-  fTrackCuts[kTPCCROSSEDROWS][kMIN] = 70;
-  fTrackCuts[kTPCCROSSEDROWS][kMAX] = 160;
-  fUseTrackCuts[kTPCCROSSEDROWS] = kTRUE;
+  fTrackCuts[kTPCNCLS][kMIN] = 70;
+  fTrackCuts[kTPCNCLS][kMAX] = 160;
+  fUseTrackCuts[kTPCNCLS] = kTRUE;
 
   fTrackCuts[kTPCNCLSFRACTIONSHARED][kMIN] = 0;
   fTrackCuts[kTPCNCLSFRACTIONSHARED][kMAX] = 0.4;
@@ -3162,6 +3188,8 @@ void AliAnalysisTaskAR::SC2(std::vector<Int_t> sc, Int_t index) {
 
   TList *listSC_kl =
       dynamic_cast<TList *>(fFinalResultSymmetricCumulantsList->At(index));
+  TList *listNSC_kl = dynamic_cast<TList *>(
+      fFinalResultNormalizedSymmetricCumulantsList->At(index));
 
   std::vector<std::vector<Int_t>> correlators = fMapSCtoCor.at(sc);
 
@@ -3172,20 +3200,28 @@ void AliAnalysisTaskAR::SC2(std::vector<Int_t> sc, Int_t index) {
   TList *listC_l = dynamic_cast<TList *>(
       fFinalResultCorrelatorsList->At(fMapCorToIndex.at(correlators.at(2))));
 
-  TH1D *sc_kl;
+  TH1D *sc_kl, *nsc_kl;
   TProfile *c_kl, *c_k, *c_l;
+  Double_t sc_value, norm;
 
   for (Int_t i = 0; i < LAST_EFINALRESULTPROFILE; i++) {
 
     sc_kl = dynamic_cast<TH1D *>(listSC_kl->At(i));
+    nsc_kl = dynamic_cast<TH1D *>(listNSC_kl->At(i));
     c_kl = dynamic_cast<TProfile *>(listC_kl->At(i));
     c_k = dynamic_cast<TProfile *>(listC_k->At(i));
     c_l = dynamic_cast<TProfile *>(listC_l->At(i));
 
     for (Int_t bin = 1; bin <= sc_kl->GetNbinsX(); bin++) {
-      sc_kl->SetBinContent(bin, c_kl->GetBinContent(bin) -
-                                    c_k->GetBinContent(bin) *
-                                        c_l->GetBinContent(bin));
+      sc_value = c_kl->GetBinContent(bin) -
+                 c_k->GetBinContent(bin) * c_l->GetBinContent(bin);
+      sc_kl->SetBinContent(bin, sc_value);
+
+      norm = c_k->GetBinContent(bin) * c_l->GetBinContent(bin);
+
+      if (std::abs(norm) > 1e-25) {
+        nsc_kl->SetBinContent(bin, sc_value / norm);
+      }
     }
   }
 }
@@ -3194,6 +3230,8 @@ void AliAnalysisTaskAR::SC3(std::vector<Int_t> sc, Int_t index) {
 
   TList *listSC_kln =
       dynamic_cast<TList *>(fFinalResultSymmetricCumulantsList->At(index));
+  TList *listNSC_kln = dynamic_cast<TList *>(
+      fFinalResultNormalizedSymmetricCumulantsList->At(index));
   std::vector<std::vector<Int_t>> correlators = fMapSCtoCor.at(sc);
 
   TList *listC_kln = dynamic_cast<TList *>(
@@ -3211,12 +3249,14 @@ void AliAnalysisTaskAR::SC3(std::vector<Int_t> sc, Int_t index) {
   TList *listC_n = dynamic_cast<TList *>(
       fFinalResultCorrelatorsList->At(fMapCorToIndex.at(correlators.at(6))));
 
-  TH1D *sc_kln;
+  TH1D *sc_kln, *nsc_kln;
   TProfile *c_kln, *c_kl, *c_kn, *c_ln, *c_k, *c_l, *c_n;
+  Double_t sc_value, norm;
 
   for (Int_t i = 0; i < LAST_EFINALRESULTPROFILE; i++) {
 
     sc_kln = dynamic_cast<TH1D *>(listSC_kln->At(i));
+    nsc_kln = dynamic_cast<TH1D *>(listNSC_kln->At(i));
     c_kln = dynamic_cast<TProfile *>(listC_kln->At(i));
     c_kl = dynamic_cast<TProfile *>(listC_kl->At(i));
     c_kn = dynamic_cast<TProfile *>(listC_kn->At(i));
@@ -3226,13 +3266,20 @@ void AliAnalysisTaskAR::SC3(std::vector<Int_t> sc, Int_t index) {
     c_n = dynamic_cast<TProfile *>(listC_n->At(i));
 
     for (Int_t bin = 1; bin <= sc_kln->GetNbinsX(); bin++) {
-      sc_kln->SetBinContent(
-          bin, c_kln->GetBinContent(bin) -
-                   c_kl->GetBinContent(bin) * c_n->GetBinContent(bin) -
-                   c_kn->GetBinContent(bin) * c_l->GetBinContent(bin) -
-                   c_ln->GetBinContent(bin) * c_k->GetBinContent(bin) +
-                   2 * c_k->GetBinContent(bin) * c_l->GetBinContent(bin) *
-                       c_n->GetBinContent(bin));
+      sc_value = c_kln->GetBinContent(bin) -
+                 c_kl->GetBinContent(bin) * c_n->GetBinContent(bin) -
+                 c_kn->GetBinContent(bin) * c_l->GetBinContent(bin) -
+                 c_ln->GetBinContent(bin) * c_k->GetBinContent(bin) +
+                 2 * c_k->GetBinContent(bin) * c_l->GetBinContent(bin) *
+                     c_n->GetBinContent(bin);
+      sc_kln->SetBinContent(bin, sc_value);
+
+      norm = c_k->GetBinContent(bin) * c_l->GetBinContent(bin) *
+             c_n->GetBinContent(bin);
+
+      if (std::abs(norm) > 1e-25) {
+        nsc_kln->SetBinContent(bin, sc_value / norm);
+      }
     }
   }
 }
@@ -4250,7 +4297,7 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
   fCorrelators.clear();
   fMapSCtoCor.clear();
 
-  // initalize vectors for computation of symmetric cumulants
+  // get pointers for fFinalResultSymmetricCumulantsList
   for (auto list : *fFinalResultSymmetricCumulantsList) {
     sc.clear();
     name = TString(list->GetName());
@@ -4261,6 +4308,16 @@ void AliAnalysisTaskAR::GetPointersForFinalResults() {
       sc.push_back(TString(name[i]).Atoi());
     }
     fSymmetricCumulants.push_back(sc);
+  }
+
+  // get pointers for fFinalResultNormalizedSymmetricCumulantsList
+  fFinalResultNormalizedSymmetricCumulantsList =
+      dynamic_cast<TList *>(fFinalResultsList->FindObject(
+          fFinalResultNormalizedSymmetricCumulantsListName));
+  if (!fFinalResultNormalizedSymmetricCumulantsList) {
+    std::cout << __LINE__ << ": Did not get "
+              << fFinalResultNormalizedSymmetricCumulantsListName << std::endl;
+    Fatal("GetPointersForFinalResults", "Invalid Pointer");
   }
 
   Int_t Index = 0;

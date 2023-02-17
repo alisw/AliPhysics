@@ -3494,7 +3494,7 @@ inline void AliDielectronVarManager::FillVarAODEvent(const AliAODEvent *event, D
   if (AliDielectronMC::Instance()->HasMC()){
     if (Req(kDistPrimToSecVtxXYMC) || Req(kDistPrimToSecVtxZMC) || Req(kXvPrimMCtruth) || Req(kYvPrimMCtruth) || Req(kZvPrimMCtruth)) {
       // @TODO: adopt the code from FillVarESDEvent() for AOD...
-      printf("WARNING: filling of MC true vertex not implemented for AOD tracks!\n");
+      // printf("WARNING: filling of MC true vertex not implemented for AOD tracks!\n");
       values[AliDielectronVarManager::kXvPrimMCtruth] = 0.;
       values[AliDielectronVarManager::kYvPrimMCtruth] = 0.;
       values[AliDielectronVarManager::kZvPrimMCtruth] = 0.;

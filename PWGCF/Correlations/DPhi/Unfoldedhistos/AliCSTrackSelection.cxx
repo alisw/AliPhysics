@@ -33,29 +33,50 @@
 #include "AliPIDResponse.h"
 #include "AliCSPIDCuts.h"
 #include "AliLog.h"
+#include "TH3.h"
 
 /// \file AliCSTrackSelection.cxx
 /// \brief Implementation of track selection class within the correlation studies analysis
 
 /// Default constructor for serialization
-AliCSTrackSelection::AliCSTrackSelection() :
-  TNamed(),
-  fQALevel(AliCSAnalysisCutsBase::kQALevelNone),
-  fInclusiveTrackCuts(),
-  fInclusivePIDCuts(),
-  fInclusiveCutsStrings(),
-  fInclusivePidCutsStrings(),
-  fExclusiveCuts(),
-  fExclusiveCutsStrings(),
-  fExclusivePidCutsStrings(),
-  fCutsActivatedMask(NULL),
-  fCutsString(""),
-  fDataPeriod(AliCSAnalysisCutsBase::kNoPeriod),
-  fHighestPrimaryLabel(0),
-  fPIDResponse(NULL),
-  fhCutsStatistics(NULL),
-  fhCutsCorrelation(NULL),
-  fHistogramsList(NULL)
+AliCSTrackSelection::AliCSTrackSelection()
+  : TNamed(),
+    fTrackId(kWrongPOIid),
+    fParticleId(kWrongPOIid),
+    fQALevel(AliCSAnalysisCutsBase::kQALevelNone),
+    fInclusiveTrackCuts(),
+    fInclusivePIDCuts(),
+    fInclusiveCutsStrings(),
+    fInclusivePidCutsStrings(),
+    fExclusiveCuts(),
+    fExclusiveCutsStrings(),
+    fExclusivePidCutsStrings(),
+    fCutsActivatedMask(NULL),
+    fCutsString(""),
+    fDataPeriod(AliCSAnalysisCutsBase::kNoPeriod),
+    fHighestPrimaryLabel(0),
+    fPIDResponse(NULL),
+    fhCutsStatistics(NULL),
+    fhCutsCorrelation(NULL),
+    fhPtVsDCAxy{nullptr},
+    fhPtVsDCAz{nullptr},
+    fhPtVsTPCCls{nullptr},
+    fhPtVsTPCRows{nullptr},
+    fhPtVsTPCRowOverFindCls{nullptr},
+    fhEtaVsPhi{nullptr},
+    fhPtVsEta{nullptr},
+    fhITSdEdxSignalVsP{nullptr},
+    fhTPCdEdxSignalVsP{nullptr},
+    fhTOFSignalVsP{nullptr},
+    fhTOFSelSignalVsP{nullptr},
+    fhTPCTOFSigmaVsP{{nullptr}},
+    fhTPCdEdxSignalDiffVsP{{nullptr}},
+    fhTOFSignalDiffVsP{{nullptr}},
+    fhTPCdEdxSelSignalDiffVsP{{nullptr}},
+    fhTOFSelSignalDiffVsP{{nullptr}},
+    fhPvsTOFMassSq{nullptr},
+    fhSelPvsTOFMassSq{nullptr},
+    fHistogramsList(NULL)
 {
   /* we own the cuts so, they will be destroyed when we are */
   fInclusiveTrackCuts.SetOwner(kTRUE);
@@ -65,41 +86,49 @@ AliCSTrackSelection::AliCSTrackSelection() :
   fExclusiveCuts.SetOwner(kTRUE);
   fExclusiveCutsStrings.SetOwner(kTRUE);
   fExclusivePidCutsStrings.SetOwner(kTRUE);
-
-  for (Int_t i = 0; i < 2; i++) {
-    fhPtVsDCAxy[i] = NULL;
-    fhPtVsDCAz[i] = NULL;
-    fhPtVsTPCCls[i] = NULL;
-    fhPtVsTPCRowOverFindCls[i] = NULL;
-    fhEtaVsPhi[i] = NULL;
-    fhPtVsEta[i] = NULL;
-    fhITSdEdxSignalVsP[i] = NULL;
-    fhTPCdEdxSignalVsP[i] = NULL;
-    fhTOFSignalVsP[i] = NULL;
-  }
 }
 
 /// Constructor
 /// \param name name of the event cuts
 /// \param title title of the event cuts
-AliCSTrackSelection::AliCSTrackSelection(const char *name, const char *title) :
-  TNamed(name,title),
-  fQALevel(AliCSAnalysisCutsBase::kQALevelNone),
-  fInclusiveTrackCuts(),
-  fInclusivePIDCuts(),
-  fInclusiveCutsStrings(),
-  fInclusivePidCutsStrings(),
-  fExclusiveCuts(),
-  fExclusiveCutsStrings(),
-  fExclusivePidCutsStrings(),
-  fCutsActivatedMask(NULL),
-  fCutsString(""),
-  fDataPeriod(AliCSAnalysisCutsBase::kNoPeriod),
-  fHighestPrimaryLabel(0),
-  fPIDResponse(NULL),
-  fhCutsStatistics(NULL),
-  fhCutsCorrelation(NULL),
-  fHistogramsList(NULL)
+AliCSTrackSelection::AliCSTrackSelection(const char* name, const char* title)
+  : TNamed(name, title),
+    fTrackId(kWrongPOIid),
+    fParticleId(kWrongPOIid),
+    fQALevel(AliCSAnalysisCutsBase::kQALevelNone),
+    fInclusiveTrackCuts(),
+    fInclusivePIDCuts(),
+    fInclusiveCutsStrings(),
+    fInclusivePidCutsStrings(),
+    fExclusiveCuts(),
+    fExclusiveCutsStrings(),
+    fExclusivePidCutsStrings(),
+    fCutsActivatedMask(NULL),
+    fCutsString(""),
+    fDataPeriod(AliCSAnalysisCutsBase::kNoPeriod),
+    fHighestPrimaryLabel(0),
+    fPIDResponse(NULL),
+    fhCutsStatistics(NULL),
+    fhCutsCorrelation(NULL),
+    fhPtVsDCAxy{nullptr},
+    fhPtVsDCAz{nullptr},
+    fhPtVsTPCCls{nullptr},
+    fhPtVsTPCRows{nullptr},
+    fhPtVsTPCRowOverFindCls{nullptr},
+    fhEtaVsPhi{nullptr},
+    fhPtVsEta{nullptr},
+    fhITSdEdxSignalVsP{nullptr},
+    fhTPCdEdxSignalVsP{nullptr},
+    fhTOFSignalVsP{nullptr},
+    fhTOFSelSignalVsP{nullptr},
+    fhTPCTOFSigmaVsP{{nullptr}},
+    fhTPCdEdxSignalDiffVsP{{nullptr}},
+    fhTOFSignalDiffVsP{{nullptr}},
+    fhTPCdEdxSelSignalDiffVsP{{nullptr}},
+    fhTOFSelSignalDiffVsP{{nullptr}},
+    fhPvsTOFMassSq{nullptr},
+    fhSelPvsTOFMassSq{nullptr},
+    fHistogramsList(NULL)
 {
   /* we own the cuts so, they will be destroyed when we are */
   fInclusiveTrackCuts.SetOwner(kTRUE);
@@ -109,18 +138,6 @@ AliCSTrackSelection::AliCSTrackSelection(const char *name, const char *title) :
   fExclusiveCuts.SetOwner(kTRUE);
   fExclusiveCutsStrings.SetOwner(kTRUE);
   fExclusivePidCutsStrings.SetOwner(kTRUE);
-
-  for (Int_t i = 0; i < 2; i++) {
-    fhPtVsDCAxy[i] = NULL;
-    fhPtVsDCAz[i] = NULL;
-    fhPtVsTPCCls[i] = NULL;
-    fhPtVsTPCRowOverFindCls[i] = NULL;
-    fhEtaVsPhi[i] = NULL;
-    fhPtVsEta[i] = NULL;
-    fhITSdEdxSignalVsP[i] = NULL;
-    fhTPCdEdxSignalVsP[i] = NULL;
-    fhTOFSignalVsP[i] = NULL;
-  }
 }
 
 /// Destructor
@@ -179,30 +196,28 @@ Bool_t AliCSTrackSelection::InitializeFromString(const char *confstring)
     TString sztmpid = sztmp(0, sztmp.Index(";"));
     sztmp.Remove(0, sztmp.Index(";")+1);
 
-    /* so far only reject e- after track selection */
+    /* let's build the inclusive and exclusive PID cuts lists */
+    auto populate = [](TObjArray& lst, TString str) {
+      TObjArray* tok = str.Tokenize("&");
+      for (int icf = 0; icf < tok->GetEntries(); ++icf) {
+        TObjString* cfstr = new TObjString(((TObjString*)tok->At(icf))->String());
+        if (cfstr->String().BeginsWith("e") || cfstr->String().BeginsWith("mu") || cfstr->String().BeginsWith("pi") || cfstr->String().BeginsWith("p") || cfstr->String().BeginsWith("k")) {
+          lst.Add(cfstr);
+        } else {
+          ::Fatal("AliCSTrackSelection::InitializeFromString()", "Wrong family in track selection PID cuts string. ABORTING!!!");
+          return false;
+        }
+      }
+      delete tok;
+      return true;
+    };
     TObjArray *tokens = sztmpid.Tokenize("+");
     for (Int_t icut = 0; icut < tokens->GetEntries(); icut++) {
       if (((TObjString*) tokens->At(icut))->String().BeginsWith("-")) {
-        TObjString *posz = new TObjString(((TObjString*) tokens->At(icut))->String().Remove(0,1).Data());
-        if (posz->String().BeginsWith("e") || posz->String().BeginsWith("mu") || posz->String().BeginsWith("pi")
-            || posz->String().BeginsWith("p") || posz->String().BeginsWith("k")) {
-          fExclusivePidCutsStrings.Add(posz);
-        }
-        else {
-          AliFatal("Wrong family in track selection PID cuts string. ABORTING!!!");
-          return kFALSE;
-        }
+        accepted = accepted && populate(fExclusivePidCutsStrings, ((TObjString*)tokens->At(icut))->String().Remove(0, 1));
       }
       else {
-        TObjString *posz = new TObjString(((TObjString*) tokens->At(icut))->String().Data());
-        if (posz->String().BeginsWith("e") || posz->String().BeginsWith("mu") || posz->String().BeginsWith("pi")
-            || posz->String().BeginsWith("p") || posz->String().BeginsWith("k")) {
-          fInclusivePidCutsStrings.Add(posz);
-        }
-        else {
-          AliFatal("Wrong family in track selection PID cuts string. ABORTING!!!");
-          return kFALSE;
-        }
+        accepted = accepted && populate(fInclusivePidCutsStrings, ((TObjString*)tokens->At(icut))->String());
       }
     }
     delete tokens;
@@ -327,6 +342,23 @@ void AliCSTrackSelection::NotifyEvent() {
   }
 }
 
+/// get the paritcle of interest internal id for the PID species
+/// \param sp the PID species
+/// \return the internal POI id
+AliCSTrackSelection::poiIds AliCSTrackSelection::poiid(AliPID::EParticleType sp)
+{
+  switch (sp) {
+    case AliPID::kPion:
+      return kPOIpi;
+    case AliPID::kKaon:
+      return kPOIka;
+    case AliPID::kProton:
+      return kPOIpr;
+    default:
+      return kWrongPOIid;
+  }
+};
+
 /// Check whether the passed track is accepted by the different cuts
 /// \param trk the track to analyze whether it is accepted or not
 /// \return kTRUE if the track  is accepted, kFALSE otherwise
@@ -347,164 +379,178 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
   /* for the time being */
   Bool_t accepted = kTRUE;
   Bool_t inclusivetrack = (fInclusiveTrackCuts.GetEntries() == 0);
-  Bool_t inclusivepid = (fInclusivePIDCuts.GetEntries() == 0);
+  Bool_t inclusivepid = true;
   Bool_t exclusive = kFALSE;
 
   /* initialize the mask of activated cuts */
   fCutsActivatedMask->ResetAllBits();
 
+  /* let's get the DCA at this level because it will be latter used */
+  bool gooddca = true;
+  float dca[2]{0.0f, 0.0f}, bCov[3]{0.0f, 0.0f, 0.0f};
+  if (trk->IsA() == AliESDtrack::Class()) {
+    trk->GetImpactParameters(dca, bCov);
+  } else {
+    AliAODTrack* aodt = dynamic_cast<AliAODTrack*>(trk);
+    float pos[3] = {0.0f, 0.0f, 0.0f};
+    if (aodt->GetPosition(pos)) {
+      /* we got a DCA */
+      dca[0] = pos[0];
+      dca[1] = pos[1];
+    } else {
+      /* the track was not constrained to the PV */
+      double dcap[2]{0.0f, 0.0f}, bCovp[3]{0.0f, 0.0f, 0.0f};
+      AliExternalTrackParam etp;
+      etp.CopyFromVTrack(aodt);
+      if (!etp.PropagateToDCA(AliCSAnalysisCutsBase::GetVertex(), AliCSAnalysisCutsBase::GetMagField(), 3.0, dcap, bCovp)) {
+        /* wrong propagation to DCA */
+        gooddca = false;
+      } else if (bCovp[0] <= 0 || bCovp[2] <= 0) {
+        /* wrong DCA resolution */
+        gooddca = false;
+      } else {
+        dca[0] = dcap[0];
+        dca[1] = dcap[1];
+      }
+    }
+  }
+
   /* Check first the inclusive set of track cuts */
   for (Int_t ix = 0; ix < fInclusiveTrackCuts.GetEntriesFast(); ix++) {
 
-    Bool_t cutaccepted = ((AliCSTrackCutsBase *) fInclusiveTrackCuts[ix])->IsTrackAccepted(trk);
+    Bool_t cutaccepted = ((AliCSTrackCutsBase*)fInclusiveTrackCuts[ix])->IsTrackAccepted(trk, dca);
     /* if track is not accepted the cut is activated */
     fCutsActivatedMask->SetBitNumber(ix,!cutaccepted);
     inclusivetrack = inclusivetrack || cutaccepted;
   }
 
-  /* now the inclusive set of pid cuts */
-  for (Int_t ix = 0; ix < fInclusivePIDCuts.GetEntriesFast(); ix++) {
-
-    Bool_t cutaccepted = ((AliCSTrackCutsBase *) fInclusivePIDCuts[ix])->IsTrackAccepted(trk);
-    /* if track is not accepted the cut is activated */
-    fCutsActivatedMask->SetBitNumber(ix+fInclusiveTrackCuts.GetEntriesFast(),!cutaccepted);
-    inclusivepid = inclusivepid || cutaccepted;
+  /* now the inclusive set of pid cuts checking their consistency */
+  fTrackId = kWrongPOIid;
+  if (fInclusivePIDCuts.GetEntriesFast() > 0) {
+    for (Int_t ix = 0; ix < fInclusivePIDCuts.GetEntriesFast(); ix++) {
+      Bool_t cutaccepted = ((AliCSTrackCutsBase*)fInclusivePIDCuts[ix])->IsTrackAccepted(trk, dca);
+      /* if track is not accepted the cut is activated */
+      fCutsActivatedMask->SetBitNumber(ix + fInclusiveTrackCuts.GetEntriesFast(), !cutaccepted);
+      /* check the consistency */
+      if (inclusivepid && cutaccepted) {
+        /* still consistent */
+        if (fTrackId == kWrongPOIid) {
+          fTrackId = poiid(((AliCSPIDCuts*)fInclusivePIDCuts[ix])->GetTargetSpecies());
+        } else {
+          if (fTrackId != poiid(((AliCSPIDCuts*)fInclusivePIDCuts[ix])->GetTargetSpecies())) {
+            /* more than one id associated to the track, track is rejected but we keep on the loop for getting all statistics */
+            fTrackId = kWrongPOIid;
+            inclusivepid = false;
+          }
+        }
+      }
+    }
+    /* just in case none were accepted */
+    inclusivepid = fTrackId != kWrongPOIid;
+  } else {
+    /* if the track is reconstructed and accepted then by default is a hadron */
+    fTrackId = kPOIh;
   }
 
   /* and now the exclusive ones */
   for (Int_t ix = 0; ix < fExclusiveCuts.GetEntriesFast(); ix++) {
-    Bool_t cutaccepted = ((AliCSTrackCutsBase *) fExclusiveCuts[ix])->IsTrackAccepted(trk);
+    Bool_t cutaccepted = ((AliCSTrackCutsBase*)fExclusiveCuts[ix])->IsTrackAccepted(trk, dca);
     /* if track is accepted the cut is activated */
     fCutsActivatedMask->SetBitNumber(ix+fInclusiveTrackCuts.GetEntriesFast()+fInclusivePIDCuts.GetEntriesFast(),cutaccepted);
     exclusive = exclusive || cutaccepted;
   }
 
   /* now decide if accepted or not */
-  accepted = inclusivetrack && inclusivepid && !exclusive;
+  accepted = gooddca && inclusivetrack && inclusivepid && !exclusive;
 
   if (fQALevel > AliCSAnalysisCutsBase::kQALevelNone) {
     /* let's fill the histograms */
-    fhCutsStatistics->Fill(fhCutsStatistics->GetBinCenter(fhCutsStatistics->GetXaxis()->FindBin("n tracks")));
+    fhCutsStatistics->Fill("n tracks", 1);
     if (!accepted)
-      fhCutsStatistics->Fill(fhCutsStatistics->GetBinCenter(fhCutsStatistics->GetXaxis()->FindBin("n cut tracks")));
+      fhCutsStatistics->Fill("n cut tracks", 1);
 
     for (Int_t ix=0; ix<fInclusiveTrackCuts.GetEntriesFast(); ix++) {
-      if (fhCutsStatistics->GetXaxis()->FindBin(fInclusiveTrackCuts[ix]->GetName()) < 1)
+      if (fhCutsStatistics->GetXaxis()->FindFixBin(fInclusiveTrackCuts[ix]->GetName()) < 1)
         AliFatal(Form("Inconsistency! Cut %d with name %s not found", ix, fInclusiveTrackCuts[ix]->GetName()));
 
       if (fCutsActivatedMask->TestBitNumber(ix))
-        fhCutsStatistics->Fill(fhCutsStatistics->GetBinCenter(fhCutsStatistics->GetXaxis()->FindBin(fInclusiveTrackCuts[ix]->GetName())));
+        fhCutsStatistics->Fill(fInclusiveTrackCuts[ix]->GetName(), 1);
 
       if (fQALevel > AliCSAnalysisCutsBase::kQALevelLight) {
-        for (Int_t jx=ix; jx<fInclusiveTrackCuts.GetEntriesFast(); jx++) {
-          if (fhCutsStatistics->GetXaxis()->FindBin(fInclusiveTrackCuts[jx]->GetName()) < 1)
+        for (Int_t jx = ix; jx < fInclusiveTrackCuts.GetEntriesFast(); jx++) {
+          if (fhCutsStatistics->GetXaxis()->FindFixBin(fInclusiveTrackCuts[jx]->GetName()) < 1)
             AliFatal(Form("Inconsistency! Cut %d with name %s not found", jx, fInclusiveTrackCuts[jx]->GetName()));
 
           if (fCutsActivatedMask->TestBitNumber(ix) && fCutsActivatedMask->TestBitNumber(jx)) {
-            Float_t xC = fhCutsCorrelation->GetXaxis()->GetBinCenter(fhCutsCorrelation->GetXaxis()->FindBin(fInclusiveTrackCuts[ix]->GetName()));
-            Float_t yC = fhCutsCorrelation->GetYaxis()->GetBinCenter(fhCutsCorrelation->GetYaxis()->FindBin(fInclusiveTrackCuts[jx]->GetName()));
-            fhCutsCorrelation->Fill(xC, yC);
+            fhCutsCorrelation->Fill(fInclusiveTrackCuts[ix]->GetName(), fInclusiveTrackCuts[jx]->GetName(), 1);
           }
         }
-        for (Int_t jx=ix; jx<fInclusivePIDCuts.GetEntriesFast(); jx++) {
-          if (fhCutsStatistics->GetXaxis()->FindBin(fInclusivePIDCuts[jx]->GetName()) < 1)
+        for (Int_t jx = 0; jx < fInclusivePIDCuts.GetEntriesFast(); jx++) {
+          if (fhCutsStatistics->GetXaxis()->FindFixBin(fInclusivePIDCuts[jx]->GetName()) < 1)
             AliFatal(Form("Inconsistency! Cut %d with name %s not found", jx, fInclusivePIDCuts[jx]->GetName()));
 
           if (fCutsActivatedMask->TestBitNumber(ix) && fCutsActivatedMask->TestBitNumber(jx+fInclusiveTrackCuts.GetEntriesFast())) {
-            Float_t xC = fhCutsCorrelation->GetXaxis()->GetBinCenter(fhCutsCorrelation->GetXaxis()->FindBin(fInclusiveTrackCuts[ix]->GetName()));
-            Float_t yC = fhCutsCorrelation->GetYaxis()->GetBinCenter(fhCutsCorrelation->GetYaxis()->FindBin(fInclusivePIDCuts[jx]->GetName()));
-            fhCutsCorrelation->Fill(xC, yC);
+            fhCutsCorrelation->Fill(fInclusiveTrackCuts[ix]->GetName(), fInclusivePIDCuts[jx]->GetName(), 1);
           }
         }
         for (Int_t jx=0; jx<fExclusiveCuts.GetEntriesFast(); jx++) {
-          if (fhCutsStatistics->GetXaxis()->FindBin(fExclusiveCuts[jx]->GetName()) < 1)
+          if (fhCutsStatistics->GetXaxis()->FindFixBin(fExclusiveCuts[jx]->GetName()) < 1)
             AliFatal(Form("Inconsistency! Cut %d with name %s not found", jx, fExclusiveCuts[jx]->GetName()));
 
           if (fCutsActivatedMask->TestBitNumber(ix)
               && fCutsActivatedMask->TestBitNumber(jx+fInclusiveTrackCuts.GetEntriesFast()+fInclusivePIDCuts.GetEntriesFast())) {
-            Float_t xC = fhCutsCorrelation->GetXaxis()->GetBinCenter(fhCutsCorrelation->GetXaxis()->FindBin(fInclusiveTrackCuts[ix]->GetName()));
-            Float_t yC = fhCutsCorrelation->GetYaxis()->GetBinCenter(fhCutsCorrelation->GetYaxis()->FindBin(fExclusiveCuts[jx]->GetName()));
-            fhCutsCorrelation->Fill(xC, yC);
+            fhCutsCorrelation->Fill(fInclusiveTrackCuts[ix]->GetName(), fExclusiveCuts[jx]->GetName(), 1);
           }
         }
       }
     }
     for (Int_t ix=0; ix<fInclusivePIDCuts.GetEntriesFast(); ix++) {
-      if (fhCutsStatistics->GetXaxis()->FindBin(fInclusivePIDCuts[ix]->GetName()) < 1)
+      if (fhCutsStatistics->GetXaxis()->FindFixBin(fInclusivePIDCuts[ix]->GetName()) < 1)
         AliFatal(Form("Inconsistency! Cut %d with name %s not found", ix, fInclusivePIDCuts[ix]->GetName()));
 
       if (fCutsActivatedMask->TestBitNumber(ix+fInclusiveTrackCuts.GetEntriesFast()))
-        fhCutsStatistics->Fill(fhCutsStatistics->GetBinCenter(fhCutsStatistics->GetXaxis()->FindBin(fInclusivePIDCuts[ix]->GetName())));
+        fhCutsStatistics->Fill(fInclusivePIDCuts[ix]->GetName(), 1);
 
       if (fQALevel > AliCSAnalysisCutsBase::kQALevelLight) {
-        for (Int_t jx=ix; jx<fInclusivePIDCuts.GetEntriesFast(); jx++) {
-          if (fhCutsStatistics->GetXaxis()->FindBin(fInclusivePIDCuts[jx]->GetName()) < 1)
+        for (Int_t jx = ix; jx < fInclusivePIDCuts.GetEntriesFast(); jx++) {
+          if (fhCutsStatistics->GetXaxis()->FindFixBin(fInclusivePIDCuts[jx]->GetName()) < 1)
             AliFatal(Form("Inconsistency! Cut %d with name %s not found", jx, fInclusivePIDCuts[jx]->GetName()));
 
           if (fCutsActivatedMask->TestBitNumber(ix+fInclusiveTrackCuts.GetEntriesFast())
               && fCutsActivatedMask->TestBitNumber(jx+fInclusiveTrackCuts.GetEntriesFast())) {
-            Float_t xC = fhCutsCorrelation->GetXaxis()->GetBinCenter(fhCutsCorrelation->GetXaxis()->FindBin(fInclusivePIDCuts[ix]->GetName()));
-            Float_t yC = fhCutsCorrelation->GetYaxis()->GetBinCenter(fhCutsCorrelation->GetYaxis()->FindBin(fInclusivePIDCuts[jx]->GetName()));
-            fhCutsCorrelation->Fill(xC, yC);
+            fhCutsCorrelation->Fill(fInclusivePIDCuts[ix]->GetName(), fInclusivePIDCuts[jx]->GetName(), 1);
           }
         }
         for (Int_t jx=0; jx<fExclusiveCuts.GetEntriesFast(); jx++) {
-          if (fhCutsStatistics->GetXaxis()->FindBin(fExclusiveCuts[jx]->GetName()) < 1)
+          if (fhCutsStatistics->GetXaxis()->FindFixBin(fExclusiveCuts[jx]->GetName()) < 1)
             AliFatal(Form("Inconsistency! Cut %d with name %s not found", jx, fExclusiveCuts[jx]->GetName()));
 
           if (fCutsActivatedMask->TestBitNumber(ix+fInclusiveTrackCuts.GetEntriesFast())
               && fCutsActivatedMask->TestBitNumber(jx+fInclusiveTrackCuts.GetEntriesFast()+fInclusivePIDCuts.GetEntriesFast())) {
-            Float_t xC = fhCutsCorrelation->GetXaxis()->GetBinCenter(fhCutsCorrelation->GetXaxis()->FindBin(fInclusivePIDCuts[ix]->GetName()));
-            Float_t yC = fhCutsCorrelation->GetYaxis()->GetBinCenter(fhCutsCorrelation->GetYaxis()->FindBin(fExclusiveCuts[jx]->GetName()));
-            fhCutsCorrelation->Fill(xC, yC);
+            fhCutsCorrelation->Fill(fInclusivePIDCuts[ix]->GetName(), fExclusiveCuts[jx]->GetName(), 1);
           }
         }
       }
     }
     for (Int_t ix=0; ix<fExclusiveCuts.GetEntriesFast(); ix++) {
-      if (fhCutsStatistics->GetXaxis()->FindBin(fExclusiveCuts[ix]->GetName()) < 1)
+      if (fhCutsStatistics->GetXaxis()->FindFixBin(fExclusiveCuts[ix]->GetName()) < 1)
         AliFatal(Form("Inconsistency! Cut %d with name %s not found", ix, fExclusiveCuts[ix]->GetName()));
 
       if (fCutsActivatedMask->TestBitNumber(ix+fInclusiveTrackCuts.GetEntriesFast()+fInclusivePIDCuts.GetEntriesFast()))
-        fhCutsStatistics->Fill(fhCutsStatistics->GetBinCenter(fhCutsStatistics->GetXaxis()->FindBin(fExclusiveCuts[ix]->GetName())));
+        fhCutsStatistics->Fill(fExclusiveCuts[ix]->GetName(), 1);
 
       if (fQALevel > AliCSAnalysisCutsBase::kQALevelLight) {
-        for (Int_t jx=0; jx<fExclusiveCuts.GetEntriesFast(); jx++) {
-          if (fhCutsStatistics->GetXaxis()->FindBin(fExclusiveCuts[jx]->GetName()) < 1)
+        for (Int_t jx = ix; jx < fExclusiveCuts.GetEntriesFast(); jx++) {
+          if (fhCutsStatistics->GetXaxis()->FindFixBin(fExclusiveCuts[jx]->GetName()) < 1)
             AliFatal(Form("Inconsistency! Cut %d with name %s not found", jx, fExclusiveCuts[jx]->GetName()));
 
           if (fCutsActivatedMask->TestBitNumber(ix+fInclusiveTrackCuts.GetEntriesFast()+fInclusivePIDCuts.GetEntriesFast())
               && fCutsActivatedMask->TestBitNumber(jx+fInclusiveTrackCuts.GetEntriesFast()+fInclusivePIDCuts.GetEntriesFast())) {
-            Float_t xC = fhCutsCorrelation->GetXaxis()->GetBinCenter(fhCutsCorrelation->GetXaxis()->FindBin(fExclusiveCuts[ix]->GetName()));
-            Float_t yC = fhCutsCorrelation->GetYaxis()->GetBinCenter(fhCutsCorrelation->GetYaxis()->FindBin(fExclusiveCuts[jx]->GetName()));
-            fhCutsCorrelation->Fill(xC, yC);
+            fhCutsCorrelation->Fill(fExclusiveCuts[ix]->GetName(), fExclusiveCuts[jx]->GetName(), 1);
           }
         }
       }
     }
-
-    /* get some values needed for histograms filling */
-    Float_t dca[2], bCov[3];
-    if (trk->IsA() == AliESDtrack::Class()) {
-      trk->GetImpactParameters(dca,bCov);
-    }
-    else {
-      /* TODO: if the track is constrained this needs to be considered */
-      /* the selected tracks get a DCA of 0.0. Implement GetDCA from   */
-      /* AliDielectronVarManager but it will require access to the     */
-      /* event object                                                  */
-      AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(trk);
-      Float_t pos[3];
-      if (aodt->GetPosition(pos)) {
-        dca[0] = pos[0];
-        dca[1] = pos[1];
-      }
-      else {
-        dca[0] = 0.0;
-        dca[1] = 0.0;
-      }
-    }
-
 
     /* we now need to consider the potential constrained track */
     AliVTrack *ttrk = trk;
@@ -521,6 +567,7 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
       fhPtVsDCAxy[i]->Fill(dca[0],trk->Pt());
       fhPtVsDCAz[i]->Fill(dca[1],trk->Pt());
       fhPtVsTPCCls[i]->Fill(ttrk->GetTPCNcls(),trk->Pt());
+      fhPtVsTPCRows[i]->Fill(ttrk->GetTPCCrossedRows(), trk->Pt());
       fhPtVsTPCRowOverFindCls[i]->Fill(ratioCrossedRowsOverFindableClustersTPC,trk->Pt());
       fhPtVsEta[i]->Fill(trk->Eta(),trk->Pt());
 
@@ -531,14 +578,72 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
       if (fInclusivePidCutsStrings.GetEntries() != 0 || fExclusivePidCutsStrings.GetEntries() != 0) {
         /* don't fill before if not requested */
         if (i == 1 || (fQALevel > AliCSAnalysisCutsBase::kQALevelLight)) {
+          auto poiidx = [&](poiIds id) {
+            switch (id) {
+              case kPOIpi:
+                return 0;
+              case kPOIka:
+                return 1;
+              case kPOIpr:
+                return 2;
+              default:
+                AliFatal(Form("Wrong POI id %d for filling selected tracks histograms", id));
+                return -1;
+            }
+          };
           fhITSdEdxSignalVsP[i]->Fill(trk->P(),ttrk->GetITSsignal());
           fhTPCdEdxSignalVsP[i]->Fill(trk->P(),TMath::Abs(ttrk->GetTPCsignal()));
-          if ((trk->GetStatus() & AliESDtrack::kTOFin) && (!(trk->GetStatus() & AliESDtrack::kTOFmismatch))) {
+          if (i == 1 && fInclusivePidCutsStrings.GetEntries() != 0) {
+            /* PID selection */
+            fhTPCdEdxSelSignalVsP[poiidx(fTrackId)]->Fill(trk->P(), TMath::Abs(ttrk->GetTPCsignal()));
+          }
+          auto gettofbeta = [&](auto tofsignal) {
             static const Double_t c_cm_ps = TMath::C() * 1.0e2 * 1.0e-12;
-            Double_t tracklen_cm = trk->GetIntegratedLength();
-            Double_t toftime_ps = ttrk->GetTOFsignal() - fPIDResponse->GetTOFResponse().GetStartTime(trk->P());
-            Double_t beta = tracklen_cm / toftime_ps / c_cm_ps;
-            fhTOFSignalVsP[i]->Fill(trk->P(),beta);
+            double tracklen_cm = trk->GetIntegratedLength();
+            double toftime_ps = tofsignal - fPIDResponse->GetTOFResponse().GetStartTime(trk->P());
+            return tracklen_cm / toftime_ps / c_cm_ps;
+          };
+          auto gettofmasssq = [](auto const& trk, auto beta) {
+            return trk->P() * trk->P() * (1.0 / beta / beta - 1.0);
+          };
+          if ((trk->GetStatus() & AliESDtrack::kTOFin) && (!(trk->GetStatus() & AliESDtrack::kTOFmismatch))) {
+            double beta = gettofbeta(ttrk->GetTOFsignal());
+            double tofmasssq = gettofmasssq(trk, beta);
+            fhTOFSignalVsP[i]->Fill(trk->P(), beta);
+            fhPvsTOFMassSq[i]->Fill(tofmasssq, trk->P());
+            if (i == 1 && fInclusivePidCutsStrings.GetEntries() != 0) {
+              /* PID selection */
+              fhTOFSelSignalVsP[poiidx(fTrackId)]->Fill(trk->P(), beta);
+              fhSelPvsTOFMassSq[poiidx(fTrackId)]->Fill(tofmasssq, trk->P());
+            }
+          }
+          auto spec = [](int ix) {
+            switch (ix) {
+              case 0:
+                return AliPID::kPion;
+                break;
+              case 1:
+                return AliPID::kKaon;
+                break;
+              case 2:
+                return AliPID::kProton;
+                break;
+            }
+            return AliPID::kUnknown;
+          };
+          for (int j = 0; j < 3; ++j) {
+            fhTPCdEdxSignalDiffVsP[j][i]->Fill(ttrk->P(), ttrk->GetTPCsignal() - fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, ttrk, spec(j)));
+            if (i == 1 && fInclusivePidCutsStrings.GetEntries() != 0) {
+              /* PID selection */
+              fhTPCdEdxSelSignalDiffVsP[j][poiidx(fTrackId)]->Fill(ttrk->P(), ttrk->GetTPCsignal() - fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, ttrk, spec(j)));
+              if ((trk->GetStatus() & AliESDtrack::kTOFin) && (!(trk->GetStatus() & AliESDtrack::kTOFmismatch))) {
+                fhTOFSelSignalDiffVsP[j][poiidx(fTrackId)]->Fill(ttrk->P(), gettofbeta(ttrk->GetTOFsignal()) - gettofbeta(fPIDResponse->GetTOFResponse().GetExpectedSignal(ttrk, spec(j))));
+              }
+            }
+            if ((trk->GetStatus() & AliESDtrack::kTOFin) && (!(trk->GetStatus() & AliESDtrack::kTOFmismatch))) {
+              fhTPCTOFSigmaVsP[j][i]->Fill(fPIDResponse->NumberOfSigmasTPC(ttrk, spec(j)), fPIDResponse->NumberOfSigmasTOF(ttrk, spec(j)), ttrk->P());
+              fhTOFSignalDiffVsP[j][i]->Fill(ttrk->P(), gettofbeta(ttrk->GetTOFsignal()) - gettofbeta(fPIDResponse->GetTOFResponse().GetExpectedSignal(ttrk, spec(j))));
+            }
           }
         }
       }
@@ -576,7 +681,7 @@ Bool_t AliCSTrackSelection::IsTrueTrackAccepted(Int_t itrk) {
   /* for the time being */
   Bool_t accepted = kTRUE;
   Bool_t inclusivetrack = (fInclusiveTrackCuts.GetEntriesFast() == 0);
-  Bool_t inclusivepid = (fInclusivePIDCuts.GetEntriesFast() == 0);
+  Bool_t inclusivepid = true;
   Bool_t exclusive = kFALSE;
 
   /* initialize the mask of activated cuts */
@@ -591,13 +696,31 @@ Bool_t AliCSTrackSelection::IsTrueTrackAccepted(Int_t itrk) {
     inclusivetrack = inclusivetrack || cutaccepted;
   }
 
-  /* now the inclusive set of pid cuts */
-  for (Int_t ix = 0; ix < fInclusivePIDCuts.GetEntriesFast(); ix++) {
+  /* now the inclusive set of pid cuts checking their consistency */
+  fParticleId = kWrongPOIid;
+  if (fInclusivePIDCuts.GetEntriesFast() > 0) {
+    for (Int_t ix = 0; ix < fInclusivePIDCuts.GetEntriesFast(); ix++) {
 
-    Bool_t cutaccepted = ((AliCSTrackCutsBase *) fInclusivePIDCuts[ix])->IsTrueTrackAccepted(itrk);
-    /* if track is not accepted the cut is activated */
-    fCutsActivatedMask->SetBitNumber(ix+fInclusiveTrackCuts.GetEntriesFast(),!cutaccepted);
-    inclusivepid = inclusivepid || cutaccepted;
+      Bool_t cutaccepted = ((AliCSTrackCutsBase*)fInclusivePIDCuts[ix])->IsTrueTrackAccepted(itrk);
+      /* if track is not accepted the cut is activated */
+      fCutsActivatedMask->SetBitNumber(ix + fInclusiveTrackCuts.GetEntriesFast(), !cutaccepted);
+      /* check the consistency */
+      if (inclusivepid && cutaccepted) {
+        /* still consistent */
+        if (fParticleId == kWrongPOIid) {
+          fParticleId = poiid(((AliCSPIDCuts*)fInclusivePIDCuts[ix])->GetTargetSpecies());
+        } else {
+          if (fParticleId != poiid(((AliCSPIDCuts*)fInclusivePIDCuts[ix])->GetTargetSpecies())) {
+            /* more than one id associated to the track, track is rejected but we keep on the loop for getting all statistics */
+            fParticleId = kWrongPOIid;
+            inclusivepid = false;
+          }
+        }
+      }
+    }
+  } else {
+    /* if the track is accepted then by default is a hadron */
+    fParticleId = kPOIh;
   }
 
   /* and now the exclusive ones */
@@ -686,71 +809,59 @@ void AliCSTrackSelection::InitCuts(const char *name){
   Bool_t oldstatus = TH1::AddDirectoryStatus();
   TH1::AddDirectory(kFALSE);
 
-  TList *tmplist = new TList();
+  TList* tmplist = new TList();
 
-  for (Int_t icut = 0; icut < fInclusiveCutsStrings.GetEntries(); icut++) {
-    AliCSTrackCuts *cut = new AliCSTrackCuts(Form("CS_InclusiveTrackCut%d",icut),Form("CS Inclusive Track Cut %d",icut));
-    cut->InitializeCutsFromCutString(((TObjString*)fInclusiveCutsStrings.At(icut))->String().Data());
-    fInclusiveTrackCuts.Add(cut);
+  auto addcut = [&](auto& lst, auto& cut, auto cfstr, std::string kind) {
+    cut->InitializeCutsFromCutString(cfstr);
+    lst.Add(cut);
     cut->SetQALevelOutput(fQALevel);
-    cut->InitCuts("Inclusive track cut");
+    cut->InitCuts(Form("%s cut", kind.c_str()));
     if (cut->GetHistogramsList() != NULL)
       tmplist->Add(cut->GetHistogramsList());
-  }
+  };
 
-  for (Int_t icut = 0; icut < fInclusivePidCutsStrings.GetEntries(); icut++) {
-    TString szcut = ((TObjString*)fInclusivePidCutsStrings.At(icut))->String().Data();
-    AliPID::EParticleType target = AliPID::kUnknown;
-    Int_t delchars = 0;
-    if (szcut.BeginsWith("e")) { delchars = 1; target = AliPID::kElectron; }
-    else if (szcut.BeginsWith("mu")) { delchars = 2; target = AliPID::kMuon; }
-    else if (szcut.BeginsWith("pi")) { delchars = 2; target = AliPID::kPion; }
-    else if (szcut.BeginsWith("p")) { delchars = 1; target = AliPID::kProton; }
-    else if (szcut.BeginsWith("k")) { delchars = 1; target = AliPID::kKaon; }
-    else {
-      AliFatal("Inconsistent family in track selection PID cuts string. ABORTING!!!");
+  auto populatetrks = [&](auto& lst, std::string cutrole, auto& cutscf) {
+    for (int icut = 0; icut < cutscf.GetEntries(); ++icut) {
+      AliCSTrackCuts* cut = new AliCSTrackCuts(Form("CS_%sTrackCut%d", cutrole.c_str(), icut), Form("CS %s Track Cut %d", cutrole.c_str(), icut));
+      addcut(lst, cut, ((TObjString*)cutscf.At(icut))->String().Data(), Form("%s track", cutrole.c_str()));
     }
-    szcut.Remove(0,delchars);
-    AliCSPIDCuts *cut = new AliCSPIDCuts(Form("CS_InclusivePidCut%d",icut),Form("CS Inclusive PID Cut %d",icut),target);
-    cut->InitializeCutsFromCutString(szcut.Data());
-    fInclusivePIDCuts.Add(cut);
-    cut->SetQALevelOutput(fQALevel);
-    cut->InitCuts("Inclusive pid cut");
-    if (cut->GetHistogramsList() != NULL)
-      tmplist->Add(cut->GetHistogramsList());
-  }
+  };
 
-  for (Int_t icut = 0; icut < fExclusiveCutsStrings.GetEntries(); icut++) {
-    AliCSTrackCuts *cut = new AliCSTrackCuts(Form("CS_ExclusiveTrackCut%d",icut),Form("CS Exclusive Track Cut %d",icut));
-    cut->InitializeCutsFromCutString(((TObjString*)fExclusiveCutsStrings.At(icut))->String().Data());
-    fExclusiveCuts.Add(cut);
-    cut->SetQALevelOutput(fQALevel);
-    cut->InitCuts("Exclusive track cut");
-    if (cut->GetHistogramsList() != NULL)
-      tmplist->Add(cut->GetHistogramsList());
-  }
-
-  for (Int_t icut = 0; icut < fExclusivePidCutsStrings.GetEntries(); icut++) {
-    TString szcut = ((TObjString*)fExclusivePidCutsStrings.At(icut))->String().Data();
-    AliPID::EParticleType target  = AliPID::kUnknown;
-    Int_t delchars = 0;
-    if (szcut.BeginsWith("e")) { delchars = 1; target = AliPID::kElectron; }
-    else if (szcut.BeginsWith("mu")) { delchars = 2; target = AliPID::kMuon; }
-    else if (szcut.BeginsWith("pi")) { delchars = 2; target = AliPID::kPion; }
-    else if (szcut.BeginsWith("p")) { delchars = 1; target = AliPID::kProton; }
-    else if (szcut.BeginsWith("k")) { delchars = 1; target = AliPID::kKaon; }
-    else {
-      AliFatal("Inconsistent family in track selection PID cuts string. ABORTING!!!");
+  auto populatepids = [&](auto& lst, std::string cutrole, auto& cutscf) {
+    int ncuts[AliPID::kSPECIESC] = {0};
+    for (int icut = 0; icut < cutscf.GetEntries(); ++icut) {
+      TString szcut = ((TObjString*)cutscf.At(icut))->String().Data();
+      AliPID::EParticleType target = AliPID::kUnknown;
+      Int_t delchars = 0;
+      if (szcut.BeginsWith("e")) {
+        delchars = 1;
+        target = AliPID::kElectron;
+      } else if (szcut.BeginsWith("mu")) {
+        delchars = 2;
+        target = AliPID::kMuon;
+      } else if (szcut.BeginsWith("pi")) {
+        delchars = 2;
+        target = AliPID::kPion;
+      } else if (szcut.BeginsWith("p")) {
+        delchars = 1;
+        target = AliPID::kProton;
+      } else if (szcut.BeginsWith("k")) {
+        delchars = 1;
+        target = AliPID::kKaon;
+      } else {
+        AliFatal("Inconsistent family in track selection PID cuts string. ABORTING!!!");
+      }
+      szcut.Remove(0, delchars);
+      ncuts[target]++;
+      AliCSPIDCuts* cut = new AliCSPIDCuts(Form("CS_%sPidCut%d", cutrole.c_str(), icut), Form("CS %s PID Cut %d", cutrole.c_str(), icut), target, ncuts[target]);
+      addcut(lst, cut, szcut.Data(), Form("%s PID", cutrole.c_str()));
     }
-    szcut.Remove(0,delchars);
-    AliCSPIDCuts *cut = new AliCSPIDCuts(Form("CS_ExclusivePidCut%d",icut),Form("CS Exclusive PID Cut %d",icut),target);
-    cut->InitializeCutsFromCutString(szcut.Data());
-    fExclusiveCuts.Add(cut);
-    cut->SetQALevelOutput(fQALevel);
-    cut->InitCuts("Exclusive pid cut");
-    if (cut->GetHistogramsList() != NULL)
-      tmplist->Add(cut->GetHistogramsList());
-  }
+  };
+
+  populatetrks(fInclusiveTrackCuts, "Inclusive", fInclusiveCutsStrings);
+  populatetrks(fExclusiveCuts, "Exclusive", fExclusiveCutsStrings);
+  populatepids(fInclusivePIDCuts, "Inclusive", fInclusivePidCutsStrings);
+  populatepids(fExclusiveCuts, "Exclusive", fExclusivePidCutsStrings);
 
   if (name == NULL) name = GetName();
 
@@ -825,8 +936,13 @@ void AliCSTrackSelection::DefineHistograms(){
     fHistogramsList->Add(fhPtVsTPCCls[0]);
     fHistogramsList->Add(fhPtVsTPCCls[1]);
 
-    fhPtVsTPCRowOverFindCls[0] = new TH2F(Form("PtVsTPCCROFCB_%s",fCutsString.Data()),
-        "p_{T} vs TPC crossed rows findable clusters ratio before;crossed rows / findable clusters;p_{T} (GeV/c)",100,0,1,400,0.,10.);
+    fhPtVsTPCRows[0] = new TH2F(Form("PtVsTPCRowsB_%s", fCutsString.Data()), "p_{T} vs no. of TPC crossed rows before;no of crossed rows;p_{T} (GeV/c)", 170, 0, 170, 400, 0., 10.);
+    fhPtVsTPCRows[1] = new TH2F(Form("PtVsTPCRowsA_%s", fCutsString.Data()), "p_{T} vs no. of TPC crossed rows;no of crossed rows;p_{T} (GeV/c)", 170, 0, 170, 400, 0., 10.);
+    fHistogramsList->Add(fhPtVsTPCRows[0]);
+    fHistogramsList->Add(fhPtVsTPCRows[1]);
+
+    fhPtVsTPCRowOverFindCls[0] = new TH2F(Form("PtVsTPCCROFCB_%s", fCutsString.Data()),
+                                          "p_{T} vs TPC crossed rows findable clusters ratio before;crossed rows / findable clusters;p_{T} (GeV/c)", 100, 0, 1, 400, 0., 10.);
     fhPtVsTPCRowOverFindCls[1] = new TH2F(Form("PtVsTPCCROFCA_%s",fCutsString.Data()),
         "p_{T} vs TPC crossed rows findable clusters ratio;crossed rows / findable clusters;p_{T} (GeV/c)",100,0,1,400,0.,10.);
     fHistogramsList->Add(fhPtVsTPCRowOverFindCls[0]);
@@ -844,6 +960,35 @@ void AliCSTrackSelection::DefineHistograms(){
     }
 
     if (fInclusivePidCutsStrings.GetEntries() != 0 || fExclusivePidCutsStrings.GetEntries() != 0) {
+      auto name = [](int idx) {
+        switch (idx) {
+          case 0:
+            return "pi";
+            break;
+          case 1:
+            return "k";
+            break;
+          case 2:
+            return "p";
+            break;
+        }
+        return "WRONG";
+      };
+      auto title = [](int idx) {
+        switch (idx) {
+          case 0:
+            return "#pi";
+            break;
+          case 1:
+            return "k";
+            break;
+          case 2:
+            return "p";
+            break;
+        }
+        return "WRONG";
+      };
+
       /* build the P bins */
       const Int_t nPbins = 150;
       Double_t minP = 0.05;
@@ -862,10 +1007,69 @@ void AliCSTrackSelection::DefineHistograms(){
       fHistogramsList->Add(fhTPCdEdxSignalVsP[0]);
       fHistogramsList->Add(fhTPCdEdxSignalVsP[1]);
 
+      if (fInclusivePidCutsStrings.GetEntries() != 0) {
+        for (int i = 0; i < 3; ++i) {
+          fhTPCdEdxSelSignalVsP[i] = new TH2F(Form("TPCdEdxSel%sSignal_%s", name(i), fCutsString.Data()), Form("TPC dE/dx signal for selected %s;P (GeV/c);#frac{dE}{dx}_{%s} (au)", title(i), title(i)), nPbins, edges, 800, 0.0, 200.0);
+          fHistogramsList->Add(fhTPCdEdxSelSignalVsP[i]);
+        }
+      }
+
       fhTOFSignalVsP[0] = new TH2F(Form("TOFSignalB_%s",fCutsString.Data()),"TOF signal before;P (GeV/c);#beta",nPbins,edges, 400, 0.0, 1.1);
       fhTOFSignalVsP[1] = new TH2F(Form("TOFSignalA_%s",fCutsString.Data()),"TOF signal;P (GeV/c);#beta",nPbins,edges, 400, 0.0, 1.1);
       fHistogramsList->Add(fhTOFSignalVsP[0]);
       fHistogramsList->Add(fhTOFSignalVsP[1]);
+
+      fhPvsTOFMassSq[0] = new TH2F(Form("PvsMsqB_%s", fCutsString.Data()), "Momentum versus #it{m}^{2} before;#it{m}^{2} ((GeV/c^{2})^{2});P (GeV/c)", 140, 0.0, 1.4, nPbins, edges);
+      fhPvsTOFMassSq[1] = new TH2F(Form("PvsMsqA_%s", fCutsString.Data()), "Momentum versus #it{m}^{2};#it{m}^{2} ((GeV/c^{2})^{2});P (GeV/c)", 140, 0.0, 1.4, nPbins, edges);
+      fHistogramsList->Add(fhPvsTOFMassSq[0]);
+      fHistogramsList->Add(fhPvsTOFMassSq[1]);
+
+      if (fInclusivePidCutsStrings.GetEntries() != 0) {
+        for (int i = 0; i < 3; ++i) {
+          fhTOFSelSignalVsP[i] = new TH2F(Form("TOFSel%sSignal_%s", name(i), fCutsString.Data()), Form("TOF signal for selected %s;P (GeV/c);#beta_{%s}", title(i), title(i)), nPbins, edges, 400, 0.0, 1.1);
+          fhSelPvsTOFMassSq[i] = new TH2F(Form("Sel%sPvsMsq_%s", name(i), fCutsString.Data()), Form("Momentum versus #it{m}^{2} for selected %s;#it{m}^{2}_{%s} ((GeV/c^{2})^{2});P (GeV/c)", title(i), title(i)), 140, 0.0, 1.4, nPbins, edges);
+          fHistogramsList->Add(fhTOFSelSignalVsP[i]);
+          fHistogramsList->Add(fhSelPvsTOFMassSq[i]);
+        }
+      }
+
+      if (fQALevel == AliCSAnalysisCutsBase::kQALevelHeavy) {
+        for (int i = 0; i < 3; ++i) {
+          fhTPCTOFSigmaVsP[i][0] = new TH3F(Form("TPCTOFSigma%sVsPB_%s", name(i), fCutsString.Data()), Form("n#sigma to the %s line before;n#sigma_{TPC}^{%s};n#sigma_{TOF}^{%s}", title(i), title(i), title(i)),
+                                            120, -6.0, 6.0, 120, -6.0, 6.0, nPbins, minP, maxP);
+          fhTPCTOFSigmaVsP[i][1] = new TH3F(Form("TPCTOFSigma%sVsPA_%s", name(i), fCutsString.Data()), Form("n#sigma to the %s line;n#sigma_{TPC}^{%s};n#sigma_{TOF}^{%s}", title(i), title(i), title(i)),
+                                            120, -6.0, 6.0, 120, -6.0, 6.0, nPbins, minP, maxP);
+          fhTPCTOFSigmaVsP[i][0]->GetZaxis()->Set(nPbins, edges);
+          fhTPCTOFSigmaVsP[i][1]->GetZaxis()->Set(nPbins, edges);
+          fHistogramsList->Add(fhTPCTOFSigmaVsP[i][0]);
+          fHistogramsList->Add(fhTPCTOFSigmaVsP[i][1]);
+
+          fhTPCdEdxSignalDiffVsP[i][0] = new TH2F(Form("TPCdEdxSignal%sDiffVsPB_%s", name(i), fCutsString.Data()), Form("TPC dE/dx to the %s line before;P (GeV/c);dE/dx - <dE/dx>_{%s}", title(i), title(i)),
+                                                  nPbins, edges, 800, -200.0, 200.0);
+          fhTPCdEdxSignalDiffVsP[i][1] = new TH2F(Form("TPCdEdxSignal%sDiffVsPA_%s", name(i), fCutsString.Data()), Form("TPC dE/dx to the %s line;P (GeV/c);dE/dx - <dE/dx>_{%s}", title(i), title(i)),
+                                                  nPbins, edges, 800, -200.0, 200.0);
+          fHistogramsList->Add(fhTPCdEdxSignalDiffVsP[i][0]);
+          fHistogramsList->Add(fhTPCdEdxSignalDiffVsP[i][1]);
+
+          fhTOFSignalDiffVsP[i][0] = new TH2F(Form("TOFSignal%sDiffVsPB_%s", name(i), fCutsString.Data()), Form("TOF #beta to the %s line before;P (GeV/c);#beta - <#beta>_{%s}", title(i), title(i)),
+                                              nPbins, edges, 400, -1.1, 1.1);
+          fhTOFSignalDiffVsP[i][1] = new TH2F(Form("TOFSignal%sDiffVsPA_%s", name(i), fCutsString.Data()), Form("TOF #beta to the %s line;P (GeV/c);#beta - <#beta>_{%s}", title(i), title(i)),
+                                              nPbins, edges, 400, -1.1, 1.1);
+          fHistogramsList->Add(fhTOFSignalDiffVsP[i][0]);
+          fHistogramsList->Add(fhTOFSignalDiffVsP[i][1]);
+
+          if (fInclusivePidCutsStrings.GetEntries() != 0) {
+            for (int j = 0; j < 3; ++j) {
+              fhTPCdEdxSelSignalDiffVsP[i][j] = new TH2F(Form("TPCdEdxSel%sSignal%sDiffVsP_%s", name(j), name(i), fCutsString.Data()), Form("TPC dE/dx of selected %s to the %s line;P (GeV/c);dE/dx_{%s} - <dE/dx>_{%s}", title(j), title(i), title(j), title(i)),
+                                                         nPbins, edges, 800, -200.0, 200.0);
+              fHistogramsList->Add(fhTPCdEdxSelSignalDiffVsP[i][j]);
+              fhTOFSelSignalDiffVsP[i][j] = new TH2F(Form("TOFSel%sSignal%sDiffVsP_%s", name(j), name(i), fCutsString.Data()), Form("TOF #beta of selected %s to the %s line;P (GeV/c);#beta_{%s} - <#beta>_{%s}", title(j), title(i), title(j), title(i)),
+                                                     nPbins, edges, 400, -1.1, 1.1);
+              fHistogramsList->Add(fhTOFSelSignalDiffVsP[i][j]);
+            }
+          }
+        }
+      }
     }
 
     TH1::AddDirectory(oldstatus);

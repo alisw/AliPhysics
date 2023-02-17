@@ -31,7 +31,7 @@ AliAnalysisTask *AddTask_sscheid_lowmass(Bool_t getFromAlien=kFALSE,
     printf("file already present\n");
     configBasePath=Form("%s/",gSystem->pwd());
   }
-  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hscheid/PWGDQ/dielectron/macrosLMEE/%s .",cFileName.Data()))) )
+  else if(getFromAlien && (!gSystem->Exec(Form("alien_cp alien:///alice/cern.ch/user/h/hscheid/PWGDQ/dielectron/macrosLMEE/thesis/%s file:./",cFileName.Data()))) )
   {
     configBasePath=Form("%s/",gSystem->pwd());
   }

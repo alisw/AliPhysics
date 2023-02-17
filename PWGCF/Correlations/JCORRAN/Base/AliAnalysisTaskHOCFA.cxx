@@ -47,7 +47,7 @@ AliAnalysisTaskHOCFA::AliAnalysisTaskHOCFA():
   fNCentralityBins(9), fCentralityBin(-1), fMultiplicityMin(10),
   fPtMin(0.2), fPtMax(5.),
   fEtaGap(0.), fApplyEtaGap(kFALSE), 
-  fUseWeightsNUE(kTRUE), fUseWeightsNUA(kFALSE),
+  fUseWeightsNUE(kTRUE), fUseWeightsNUA(kFALSE), fUseWeightsCent(kFALSE),
   fNCombi(7), fGetSC(kTRUE), fGetLowerHarmos(kTRUE),
   fHistoConfig(0)
 {
@@ -65,7 +65,7 @@ AliAnalysisTaskHOCFA::AliAnalysisTaskHOCFA(const char *name):
   fNCentralityBins(9), fCentralityBin(-1), fMultiplicityMin(10),
   fPtMin(0.2), fPtMax(5.),
   fEtaGap(0.), fApplyEtaGap(kFALSE), 
-  fUseWeightsNUE(kTRUE), fUseWeightsNUA(kFALSE),
+  fUseWeightsNUE(kTRUE), fUseWeightsNUA(kFALSE), fUseWeightsCent(kFALSE),
   fNCombi(7), fGetSC(kTRUE), fGetLowerHarmos(kTRUE),
   fHistoConfig(0)
 {
@@ -124,6 +124,7 @@ void AliAnalysisTaskHOCFA::UserExec(Option_t *option)
   double *iWeights = new double[fMultiplicity]();
   double iEffCorr = 1.;         // Efficiency (pT-weight = 1/efficiency).
   double iPhiModuleCorr = 1.;   // (phi, eta, PVz)-weight.
+  float iCentWeight = 1.;       // Centrality weight for LHC15o.
 
   for (Long64_t iTrack = 0; iTrack < fMultiplicity; iTrack++) {
     AliJBaseTrack *aTrack = (AliJBaseTrack*)fInputList->At(iTrack);
@@ -134,6 +135,7 @@ void AliAnalysisTaskHOCFA::UserExec(Option_t *option)
     if (fUseWeightsNUE) {iEffCorr = aTrack->GetTrackEff();}
     if (fUseWeightsNUA) {iPhiModuleCorr = aTrack->GetWeight();}
     if (fDebugLevel > 10) printf("iEffCorr: %.6f iPhiModuleCorr: %.6f \n", iEffCorr, iPhiModuleCorr);
+    if (fUseWeightsCent) {iCentWeight = aTrack->GetCentWeight();} // Same for all tracks in an event.
     iWeights[iTrack] = (1.0/iEffCorr)/iPhiModuleCorr;
 
     fHistoPt[fCentralityBin]->Fill(aTrack->Pt(), (1./iEffCorr));
@@ -142,12 +144,15 @@ void AliAnalysisTaskHOCFA::UserExec(Option_t *option)
     fHistoCharge[fCentralityBin]->Fill(aTrack->GetCharge());
   } // Go to the next track.
 
+// Fill the QA for the centrality*weight for this event.
+  fHistoCentCorrect[fCentralityBin]->Fill(fCentrality, iCentWeight);
+
 // Compute the Q-vectors and multiparticle correlations.
   CalculateQvectors(fMultiplicity, iPhi, iWeights);
-  ComputeAllTerms();
+  ComputeAllTerms(iCentWeight);
 
 // If true, calculate the 2-particle correlators for v1 to v8 using eta gaps.
-  if (fApplyEtaGap) {ComputeEtaGaps(fMultiplicity, iPhi, iWeights, iEta);}
+  if (fApplyEtaGap) {ComputeEtaGaps(fMultiplicity, iPhi, iWeights, iEta, iCentWeight);}
 
 // Reset the variables for the next event.
   fMultiplicity = 0;
@@ -173,6 +178,7 @@ void AliAnalysisTaskHOCFA::InitialiseArrayMembers()
     fCentralityArray[i] = 0.;
 
     fHistoCent[i] = NULL;
+    fHistoCentCorrect[i] = NULL;
     fHistoMulti[i] = NULL;
     fHistoPt[i] = NULL;
     fHistoEta[i] = NULL;
@@ -282,6 +288,12 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
     fHistoCent[i]->SetStats(kTRUE);
     fCentralityList[i]->Add(fHistoCent[i]);
 
+    fHistoCentCorrect[i] = new TH1F("", "", 100, 0., 100.);
+    fHistoCentCorrect[i]->SetName(Form("fHistoCentCorrect_Bin%d", i));
+    fHistoCentCorrect[i]->SetTitle(Form("Corrected centrality distribution, bin%d", i));
+    fHistoCentCorrect[i]->SetStats(kTRUE);
+    fCentralityList[i]->Add(fHistoCentCorrect[i]);
+
     fHistoMulti[i] = new TH1I("", "", 5000, 0., 5000.);
     fHistoMulti[i]->SetName(Form("fHistoMulti_Bin%d", i));
     fHistoMulti[i]->SetTitle(Form("Multiplicity distribution, bin%d", i));
@@ -317,11 +329,13 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
     fCorrel2p[i]->SetName(Form("fCorrel2p_Bin%d", i));
     fCorrel2p[i]->SetTitle(Form("2-p terms, no #Delta #eta, bin%d", i));
     fCorrel2p[i]->SetStats(kTRUE);
+    fCorrel2p[i]->Sumw2();  // NEW (seems not needed but safer to have it)
     fCentralityList[i]->Add(fCorrel2p[i]);
 
     fCorrel2pEtaGap[i] = new TProfile("", "", 8, 0., 8.);
     fCorrel2pEtaGap[i]->SetName(Form("ffCorrel2pEtaGap_Bin%d", i));
     fCorrel2pEtaGap[i]->SetTitle(Form("2-p terms, |#it{#Delta #eta}| > %.1f, bin%d", fEtaGap, i));
+    fCorrel2pEtaGap[i]->Sumw2();  // NEW (seems not needed but safer to have it)
     fCorrel2pEtaGap[i]->SetStats(kTRUE);
     if (fApplyEtaGap) {fCentralityList[i]->Add(fCorrel2pEtaGap[i]);}
 
@@ -350,6 +364,7 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
     fCorrel3h[i] = new TProfile("", "", 9, 0., 9.);
     fCorrel3h[i]->SetName(Form("fCorrel3h_Bin%d", i));
     fCorrel3h[i]->SetTitle(Form("3-h terms for SC, bin%d", i));
+    fCorrel3h[i]->Sumw2();  // NEW    
     fCorrel3h[i]->SetStats(kTRUE);
     if (fGetSC) {fCentralityList[i]->Add(fCorrel3h[i]);}
 
@@ -449,7 +464,7 @@ TComplex AliAnalysisTaskHOCFA::CalculateRecursion(int n, int *harmonic,
 }
 
 // ------------------------------------------------------------------------- //
-void AliAnalysisTaskHOCFA::ComputeAllTerms()
+void AliAnalysisTaskHOCFA::ComputeAllTerms(float myCentWeight)
 {
 // Compute all the terms needed for the ACs/SCs for all the observables.
   if (fDebugLevel > 5) {printf("Compute all the needed correlators.\n");}
@@ -461,7 +476,7 @@ void AliAnalysisTaskHOCFA::ComputeAllTerms()
   // Fill the profile for the 2-p as it is common to all analysis cases.
   for (int iBin = 0; iBin < 8; iBin++){
     lHarmo[0] = iBin+1; // Only the first element needs to be filled in the 2-p case.
-    CalculateCorrelator(nPart, lHarmo, fCorrel2p[fCentralityBin], iBin, lPower);
+    CalculateCorrelator(nPart, lHarmo, fCorrel2p[fCentralityBin], iBin, lPower, myCentWeight);
   }
 
   // Fill the 2-harmonic profile according to the analysis configuration.
@@ -491,7 +506,7 @@ void AliAnalysisTaskHOCFA::ComputeAllTerms()
       if (fDebugLevel > 5) {printf("Harmo: (%d,%d), nPart: %d\n", lHarmo[0], lHarmo[1], nPart);}
 
       // Calculate the multiparticle correlator itself using the recursion method.
-      CalculateCorrelator(nPart, lHarmo, fCorrel2h[iProf][fCentralityBin], iBin, lPower);
+      CalculateCorrelator(nPart, lHarmo, fCorrel2h[iProf][fCentralityBin], iBin, lPower, myCentWeight);
 
       // Reset the variables for safety purposes.
       lPower[0] = 0.; lPower[1] = 0.;
@@ -506,7 +521,7 @@ void AliAnalysisTaskHOCFA::ComputeAllTerms()
       for (int iH = 0; iH < 3; iH++) {lHarmo[iH] = fHarmoArray3h[iBin][iH];}
 
       // Calculate the multiparticle correlator for this combination of harmonics.
-      CalculateCorrelator(nPart, lHarmo, fCorrel3h[fCentralityBin], iBin, lPower);
+      CalculateCorrelator(nPart, lHarmo, fCorrel3h[fCentralityBin], iBin, lPower, myCentWeight);
     } // Go to the next combination of 3 harmonics.
   }
 
@@ -515,7 +530,7 @@ void AliAnalysisTaskHOCFA::ComputeAllTerms()
 
 // ------------------------------------------------------------------------- //
 void AliAnalysisTaskHOCFA::CalculateCorrelator(int myMulti, int myHarmos[],
-  TProfile *myProfile, int myBin, int myPowers[])
+  TProfile *myProfile, int myBin, int myPowers[], float myCentWeight)
 {
 // Calculate the multiparticle correlator corresponding to harmonics[].
   if (fDebugLevel > 5) {printf("Calculate correlators for the provided harmonics.\n");}
@@ -571,7 +586,7 @@ void AliAnalysisTaskHOCFA::CalculateCorrelator(int myMulti, int myHarmos[],
   }
 
   // Fill the corresponding bin in the right TProfile.
-  myProfile->Fill( (float)myBin + 0.5, rCorrel, eventWeight );
+  myProfile->Fill( (float)myBin + 0.5, rCorrel, eventWeight*myCentWeight );
 
   if (myMulti == 2) {   // Bins are filled with v1-v8.
     myProfile->GetXaxis()->SetBinLabel(myBin+1, Form("v_{%d}", myBin+1));
@@ -599,7 +614,7 @@ void AliAnalysisTaskHOCFA::CalculateCorrelator(int myMulti, int myHarmos[],
 
 // ------------------------------------------------------------------------- //
 void AliAnalysisTaskHOCFA::ComputeEtaGaps(Long64_t multiplicity,
-  double angles[], double pWeights[], double pseudorapidity[])
+  double angles[], double pWeights[], double pseudorapidity[], float myCentWeight)
 {
 // Calculate the two-particle correlators (v1..v8) with a given eta gap.
   if (fDebugLevel > 5) {printf("Calculate 2-particle correlators with eta gap'.\n");}
@@ -653,7 +668,7 @@ void AliAnalysisTaskHOCFA::ComputeEtaGaps(Long64_t multiplicity,
 
     cCorrel = Qminus[iHarmo]*TComplex::Conjugate(Qplus[iHarmo]);
     rCorrel = (cCorrel.Re())/(Mminus[iHarmo]*Mplus[iHarmo]);
-    fCorrel2pEtaGap[fCentralityBin]->Fill((float)iHarmo + 0.5, rCorrel, Mminus[iHarmo]*Mplus[iHarmo]);
+    fCorrel2pEtaGap[fCentralityBin]->Fill((float)iHarmo + 0.5, rCorrel, Mminus[iHarmo]*Mplus[iHarmo]*myCentWeight);
     fCorrel2pEtaGap[fCentralityBin]->GetXaxis()->SetBinLabel(iHarmo + 1, Form("v_{%d}", iHarmo+1));
 
     // Reset the correlators to prevent mixing between harmonics.

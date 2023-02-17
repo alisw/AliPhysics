@@ -50,6 +50,7 @@ fTreeGen(0),
 fBetheParamsHe(),
 fBetheParamsT(),
 fUseExternalSplines(kFALSE),
+matching(0),
 fMCtrue(0),
 fYear(0),
 tRunNumber(0),
@@ -140,6 +141,7 @@ fTreeGen(0),
 fBetheParamsHe(),
 fBetheParamsT(),
 fUseExternalSplines(kFALSE),
+matching(0),
 fMCtrue(0),
 fYear(0),
 tRunNumber(0),
@@ -234,6 +236,8 @@ void AliAnalysisTaskHe3EffTree::UserCreateOutputObjects() {
 		fInputHandler = dynamic_cast<AliESDInputHandler*> (man->GetInputEventHandler());
 		if (fInputHandler)   fPIDResponse = fInputHandler->GetPIDResponse();
 	}
+	
+	matching = new AliTRDonlineTrackMatching(); 
 
 	fOutputList = new TList();         
 	fOutputList->SetOwner(kTRUE);     
@@ -250,6 +254,22 @@ void AliAnalysisTaskHe3EffTree::UserCreateOutputObjects() {
 
 	fOutputList->Add(fHistEvents);          
 	fOutputList->Add(fHistdEdx);
+	
+		fHistEventsTRD[0] = new TH2D("fHistEventsTRD_bfec", "fHistEventsTRDbeforeEventCuts", 9, 0, 9,10000,0,100);     
+	fHistEventsTRD[1] = new TH2D("fHistEventsTRD_afec", "fHistEventsTRDafterEventCuts", 9, 0, 9,10000,0,100);  
+	for (int i = 0; i < 2; i++) {   
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(1,"Events");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(2,"MB");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(3,"HNUsimMB");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(4,"HQUsimMB");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(5,"TRD");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(6,"HNU");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(7,"HNUsimTRD");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(8,"HQU");
+	  fHistEventsTRD[i]->GetXaxis()->SetBinLabel(9,"HQUsimTRD");
+	  fOutputList->Add(fHistEventsTRD[i]);
+	}  
+	
 	fEventCuts.AddQAplotsToList(fOutputList);
 
 	fTree = new TTree("treeHe","fTree");
@@ -353,7 +373,7 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 
 	fESDevent = dynamic_cast<AliESDEvent*>(InputEvent()); 
 	fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT7 | AliVEvent::kTRD | AliVEvent::kHighMultV0 | AliVEvent::kHighMultSPD);
-  if(!fEventCuts.AcceptEvent(fESDevent)) return;
+
 
   Int_t runNumber = fESDevent->GetRunNumber();
   if (!fUseExternalSplines) SetBetheBlochParams(runNumber);
@@ -376,6 +396,19 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 	trackCutsV0.SetMaxChi2PerClusterTPC(8);
 	trackCutsV0.SetMinNClustersTPC(40);
 
+	AliMultSelection *MultSelection = (AliMultSelection*) fESDevent->FindListObject("MultSelection");
+	if (MultSelection) {
+		tMultV0M = MultSelection->GetMultiplicityPercentile("V0M");
+		tMultOfV0M = MultSelection->GetMultiplicityPercentile("OnlineV0M");
+		tMultSPDTracklet = MultSelection->GetMultiplicityPercentile("SPDClusters");
+		tMultSPDCluster = MultSelection->GetMultiplicityPercentile("SPDTracklets");
+		tMultRef05 = MultSelection->GetMultiplicityPercentile("RefMult05");
+		tMultRef08 = MultSelection->GetMultiplicityPercentile("RefMult08");
+	}
+	
+	TRDnEvents();
+	
+	if(!fEventCuts.AcceptEvent(fESDevent)) return;
 	//******************************
 	//*   get trigger information  *
 	//******************************
@@ -447,15 +480,7 @@ void AliAnalysisTaskHe3EffTree::UserExec(Option_t *) {
 	tSPDFiredChips0 = multSPD->GetNumberOfFiredChips(0);
 	tSPDFiredChips1 = multSPD->GetNumberOfFiredChips(1);
 
-	AliMultSelection *MultSelection = (AliMultSelection*) fESDevent->FindListObject("MultSelection");
-	if (MultSelection) {
-		tMultV0M = MultSelection->GetMultiplicityPercentile("V0M");
-		tMultOfV0M = MultSelection->GetMultiplicityPercentile("OnlineV0M");
-		tMultSPDTracklet = MultSelection->GetMultiplicityPercentile("SPDClusters");
-		tMultSPDCluster = MultSelection->GetMultiplicityPercentile("SPDTracklets");
-		tMultRef05 = MultSelection->GetMultiplicityPercentile("RefMult05");
-		tMultRef08 = MultSelection->GetMultiplicityPercentile("RefMult08");
-	}
+
 	
 	tMagField = fESDevent->GetMagneticField();
 
@@ -580,6 +605,85 @@ Double_t AliAnalysisTaskHe3EffTree::GetInvPtDevFromBC(Int_t b, Int_t c) {
 	return invPtDev;
 }
 //_____________________________________________________________________________
+void AliAnalysisTaskHe3EffTree::TRDnEvents() {
+	//*   get trigger information  *
+	Bool_t MB = kFALSE;		// minimum bias
+	Int_t HNU = 0;			// TRD nuclei
+	Int_t HQU = 0;			// TRD quarkonia
+  Int_t HJT = 0;
+  
+  Bool_t TRD = kFALSE;		// minimum bias
+	Int_t HNUTRD = 0;			// TRD nuclei
+	Int_t HQUTRD = 0;			// TRD quarkonia
+  Int_t HJTTRD = 0;
+ 	Int_t HNUsimTRD = 0;			// TRD nuclei
+	Int_t HQUsimTRD = 0;			// TRD quarkonia
+  Int_t HJTsimTRD = 0; 
+  
+	if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) MB = kTRUE;
+	if (fInputHandler->IsEventSelected() & AliVEvent::kTRD) TRD = kTRUE;
+	
+	if (TRD) {
+		TString classes = fESDevent->GetFiredTriggerClasses();   
+		if (classes.Contains("HNU")) HNUTRD = 1;
+		if (classes.Contains("HQU")) HQUTRD = 1; 
+		if (classes.Contains("HJT")) HJTTRD = 1; 
+	} 
+	
+	  Int_t nTrdTracks = fESDevent->GetNumberOfTrdTracks();
+		// MC: simulate TRD trigger
+
+		
+		Int_t nTracks[90] = { 0 }; // stack-wise counted number of tracks above pt threshold
+
+    
+		if (nTrdTracks > 0) {
+			for (Int_t iTrack = 0; iTrack < nTrdTracks; ++iTrack) {
+				AliESDTrdTrack* trdTrack = fESDevent->GetTrdTrack(iTrack);
+				if (!trdTrack) continue;
+	
+				// simulate HNU
+				if((trdTrack->GetPID() >= 255 && trdTrack->GetNTracklets() == 4) || 
+					(trdTrack->GetPID() >= 235 && trdTrack->GetNTracklets() > 4)) {	
+					if (MB) HNU = 1;
+					if (TRD) HNUsimTRD = 1;
+				}
+				// simulate HQU
+				if (TMath::Abs(trdTrack->GetPt()) >= 256 &&
+					trdTrack->GetPID() >= 130 && trdTrack->GetNTracklets() >= 5 && (trdTrack->GetLayerMask() & 1) ){	
+					Double_t sag = GetInvPtDevFromBC(trdTrack->GetB(), trdTrack->GetC());
+					if (sag < 0.2 && sag > -0.2) {
+						if (MB) HQU = 1;
+						if (TRD) HQUsimTRD = 1;
+					}
+				}
+      }
+		}
+  
+	// fill histogram
+	//fHistEventsTRD[0]->Fill(0,tMultV0M);
+	if (MB) fHistEventsTRD[0]->Fill(1,tMultV0M);
+	if (HNU) fHistEventsTRD[0]->Fill(2,tMultV0M);
+	if (HQU) fHistEventsTRD[0]->Fill(3,tMultV0M);
+	if (TRD) fHistEventsTRD[0]->Fill(4,tMultV0M);
+	if (HNUTRD) fHistEventsTRD[0]->Fill(5,tMultV0M);
+	if (HQUTRD) fHistEventsTRD[0]->Fill(7,tMultV0M);
+	if (HNUsimTRD) fHistEventsTRD[0]->Fill(6,tMultV0M);
+	if (HQUsimTRD) fHistEventsTRD[0]->Fill(8,tMultV0M);
+	
+	if (fEventCuts.AcceptEvent(fESDevent)) {
+		  //fHistEventsTRD[1]->Fill(0,tMultV0M);
+	  if (MB) fHistEventsTRD[1]->Fill(1,tMultV0M);
+	  if (HNU) fHistEventsTRD[1]->Fill(2,tMultV0M);
+	  if (HQU) fHistEventsTRD[1]->Fill(3,tMultV0M);
+	  if (TRD) fHistEventsTRD[1]->Fill(4,tMultV0M);
+	  if (HNUTRD) fHistEventsTRD[1]->Fill(5,tMultV0M);
+	  if (HQUTRD) fHistEventsTRD[1]->Fill(7,tMultV0M);
+	  if (HNUsimTRD) fHistEventsTRD[1]->Fill(6,tMultV0M);
+	  if (HQUsimTRD) fHistEventsTRD[1]->Fill(8,tMultV0M);
+	}
+}
+//_____________________________________________________________________________
 Double_t AliAnalysisTaskHe3EffTree::Bethe(const AliESDtrack& track, Double_t mass, Int_t charge, Double_t* params){
 	/// Calculates number of sigma deviation from expected dE/dx in TPC
 	/// \param track particle track
@@ -609,149 +713,76 @@ Double_t AliAnalysisTaskHe3EffTree::GetTOFSignalHe3(AliESDtrack& trackHe, Double
 //_____________________________________________________________________________
 void AliAnalysisTaskHe3EffTree::SetBetheBlochParams(Int_t runNumber) {
 	// set Bethe-Bloch parameter
-	if (runNumber >= 252235 && runNumber <= 267166) { // 2016 pp/Pb-p
+	if (runNumber >= 252235 && runNumber <= 265589) { // 2016 pp data
 		fYear = 2016;
-		if(!fMCtrue) { // Data
-			// LHC16 + LHC18
-			// Triton
-			fBetheParamsT[0] = 0.427978;
-			fBetheParamsT[1] = 105.46;
-			fBetheParamsT[2] =-7.08642e-07;
-			fBetheParamsT[3] = 2.23332;
-			fBetheParamsT[4] = 18.8231;
-			fBetheParamsT[5] = 0.06;
-			// He3
-			fBetheParamsHe[0] = 1.81085;
-			fBetheParamsHe[1] = 29.4656;
-			fBetheParamsHe[2] = 0.0458225;
-			fBetheParamsHe[3] = 2.08689;
-			fBetheParamsHe[4] = 2.28772;
-			fBetheParamsHe[5] = 0.06;
-		} else { // MC
-			if (runNumber >= 262424 || runNumber <= 256418 ) {
-				//LHC20l7c (-> LHC16)
-				// He3
-				fBetheParamsHe[0] = 2.74996;
-				fBetheParamsHe[1] = 13.98;
-				fBetheParamsHe[2] = 0.0251843;
-				fBetheParamsHe[3] = 2.04678;
-				fBetheParamsHe[4] = 1.37379;
-				fBetheParamsHe[5] = 0.06;
-				// Triton
-				fBetheParamsT[0] = 1.80227;
-				fBetheParamsT[1] = 16.8019;
-				fBetheParamsT[2] = 2.22419;
-				fBetheParamsT[3] = 2.30938;
-				fBetheParamsT[4] = 3.52324;
-				fBetheParamsT[5] = 0.06;
-			}
-			if (runNumber >= 256941 && runNumber <= 258537 ) { 
-				//LHC20l7c (-> LHC16)
-				// He3
-				fBetheParamsHe[0] = 2.74996;
-				fBetheParamsHe[1] = 13.98;
-				fBetheParamsHe[2] = 0.0251843;
-				fBetheParamsHe[3] = 2.04678;
-				fBetheParamsHe[4] = 1.37379;
-				fBetheParamsHe[5] = 0.06;
-				// Triton
-				fBetheParamsT[0] = 1.80227;
-				fBetheParamsT[1] = 16.8019;
-				fBetheParamsT[2] = 2.22419;
-				fBetheParamsT[3] = 2.30938;
-				fBetheParamsT[4] = 3.52324;
-				fBetheParamsT[5] = 0.06;
-			}
-			if (runNumber >= 258962 && runNumber <= 259888 ) {
-				//LHC20l7c (-> LHC16)
-				// He3
-				fBetheParamsHe[0] = 2.74996;
-				fBetheParamsHe[1] = 13.98;
-				fBetheParamsHe[2] = 0.0251843;
-				fBetheParamsHe[3] = 2.04678;
-				fBetheParamsHe[4] = 1.37379;
-				fBetheParamsHe[5] = 0.06;
-				// Triton
-				fBetheParamsT[0] = 1.80227;
-				fBetheParamsT[1] = 16.8019;
-				fBetheParamsT[2] = 2.22419;
-				fBetheParamsT[3] = 2.30938;
-				fBetheParamsT[4] = 3.52324;
-				fBetheParamsT[5] = 0.06;
-			} 
-		}
+    // He3 2016/2018 pass2
+    fBetheParamsHe[0] = 4.20995;
+    fBetheParamsHe[1] = 10.5007;
+    fBetheParamsHe[2] = -0.895979;
+    fBetheParamsHe[3] = 2.01748;
+    fBetheParamsHe[4] = 0.0798937;
+    fBetheParamsHe[5] = 0.06;
+
+    // Triton 2016/2018 pass2
+    fBetheParamsT[0] = 12.0774;
+    fBetheParamsT[1] = 5.70345;
+    fBetheParamsT[2] = 4.764;
+    fBetheParamsT[3] = 1.94198;
+    fBetheParamsT[4] = -3.03895;
+    fBetheParamsT[5] = 0.07;
 	}
-	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp
+	if (runNumber > 265589 && runNumber <= 267166) { // 2016 p-Pb data
+		fYear = 2016;
+		// He3
+		fBetheParamsHe[0] = 0.715489;
+		fBetheParamsHe[1] = 59.5463;
+		fBetheParamsHe[2] = 4.44487e-12;
+		fBetheParamsHe[3] = 2.69874;
+		fBetheParamsHe[4] = 24.063;
+		fBetheParamsHe[5] = 0.04725;
+		// Triton
+		fBetheParamsT[0] = 0.223948;
+		fBetheParamsT[1] = 180.564;
+		fBetheParamsT[2] = -3.03884e-10;
+		fBetheParamsT[3] = 2.30095;
+		fBetheParamsT[4] = 34.2269;
+		fBetheParamsT[5] = 0.06517;	
+	} 	
+	if (runNumber >= 270581 && runNumber <= 282704) { // 2017 pp data
 		fYear = 2017;
-		if(!fMCtrue) {
-			//LHC17 Data
-			// He3
-			fBetheParamsHe[0] = 3.20025;
-			fBetheParamsHe[1] = 16.4971;
-			fBetheParamsHe[2] = -0.0116571;
-			fBetheParamsHe[3] = 2.3152;
-			fBetheParamsHe[4] = 3.11135;
-			fBetheParamsHe[5] = 0.06;
-			// Triton
-			fBetheParamsT[0] = 0.420434;
-			fBetheParamsT[1] = 106.102;
-			fBetheParamsT[2] = -3.15587e-07;
-			fBetheParamsT[3] = 2.32499;
-			fBetheParamsT[4] = 21.3439;
-			fBetheParamsT[5] = 0.06;	
-		} else {
-			//LHC20l7b (-> LHC17)
-			// He3
-			fBetheParamsHe[0] = 3.14546;
-			fBetheParamsHe[1] = 16.2277;
-			fBetheParamsHe[2] = -0.000523081;
-			fBetheParamsHe[3] = 2.28248;
-			fBetheParamsHe[4] = 2.60465;
-			fBetheParamsHe[5] = 0.06;
-			// Triton
-			fBetheParamsT[0] = 2.88676;
-			fBetheParamsT[1] = 15.3823;
-			fBetheParamsT[2] = 0.580675;
-			fBetheParamsT[3] = 2.28551;
-			fBetheParamsT[4] = 2.47351;
-			fBetheParamsT[5] = 0.06;
-		}
+    // He3 2017 pass2
+    fBetheParamsHe[0] = 1.65042;
+    fBetheParamsHe[1] = 25.9254;
+    fBetheParamsHe[2] = 0.00600469;
+    fBetheParamsHe[3] = 2.73841;
+    fBetheParamsHe[4] = 10.8988;
+    fBetheParamsHe[5] = 0.06;
+
+    // Triton 2017 pass2
+    fBetheParamsT[0] = 2.82837;
+    fBetheParamsT[1] = 15.4278;
+    fBetheParamsT[2] = 1.03545;
+    fBetheParamsT[3] = 2.2757;
+    fBetheParamsT[4] = 2.7525;
+    fBetheParamsT[5] = 0.06;
 	}
-	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp
-		if(!fMCtrue) {
-			fYear = 2018;
-			// LHC16 + LHC18
-			// He3
-			fBetheParamsT[0] = 0.427978;
-			fBetheParamsT[1] = 105.46;
-			fBetheParamsT[2] =-7.08642e-07;
-			fBetheParamsT[3] = 2.23332;
-			fBetheParamsT[4] = 18.8231;
-			fBetheParamsT[5] = 0.06;
-			// Triton
-			fBetheParamsHe[0] = 1.81085;
-			fBetheParamsHe[1] = 29.4656;
-			fBetheParamsHe[2] = 0.0458225;
-			fBetheParamsHe[3] = 2.08689;
-			fBetheParamsHe[4] = 2.28772;
-			fBetheParamsHe[5] = 0.06;
-		} else {
-			//LHC20l7a (-> LHC18)
-			// He3
-			fBetheParamsHe[0] = 3.07067;
-			fBetheParamsHe[1] = 15.8069;
-			fBetheParamsHe[2] = -0.0142383;
-			fBetheParamsHe[3] = 2.15513;
-			fBetheParamsHe[4] = 2.5192;
-			fBetheParamsHe[5] = 0.06;
-			// Triton
-			fBetheParamsT[0] = 2.95171;
-			fBetheParamsT[1] = 17.7223;
-			fBetheParamsT[2] = 37.7979;
-			fBetheParamsT[3] = 2.03313;
-			fBetheParamsT[4] = 0.730268;
-			fBetheParamsT[5] = 0.06;
-		}
+	if (runNumber >= 285009 && runNumber <= 294925) { // 2018 pp data
+		fYear = 2018;
+    // He3 2016/2018 pass2
+    fBetheParamsHe[0] = 4.20995;
+    fBetheParamsHe[1] = 10.5007;
+    fBetheParamsHe[2] = -0.895979;
+    fBetheParamsHe[3] = 2.01748;
+    fBetheParamsHe[4] = 0.0798937;
+    fBetheParamsHe[5] = 0.06;
+
+    // Triton 2016/2018 pass2
+    fBetheParamsT[0] = 12.0774;
+    fBetheParamsT[1] = 5.70345;
+    fBetheParamsT[2] = 4.764;
+    fBetheParamsT[3] = 1.94198;
+    fBetheParamsT[4] = -3.03895;
+    fBetheParamsT[5] = 0.07;
 	}
 }
 //_____________________________________________________________________________
@@ -784,8 +815,7 @@ Double_t AliAnalysisTaskHe3EffTree::TRDtrack(AliESDtrack* esdTrack) {
     }
     
     AliESDTrdTrack* bestGtuTrack = 0x0;
-    AliTRDonlineTrackMatching *matching = new AliTRDonlineTrackMatching();
-    
+       
     Double_t esdPt = esdTrack->GetSignedPt();
     Double_t mag = fESDevent->GetMagneticField();
     Double_t currentMatch = 0;

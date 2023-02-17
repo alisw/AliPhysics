@@ -42,6 +42,9 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
 
+    // Function to set name of Jet container
+    void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
+
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
     void ProcessPhotonCandidates();
@@ -69,6 +72,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void ProcessConversionPhotonsForMissingTags     ();
     void ProcessConversionPhotonsForMissingTagsAOD  ();
     void ProcessJets();
+    void InitJets();
 
     // switches for additional analysis streams or outputs
     void SetDoPrimaryTrackMatching      ( Bool_t flag )                                     { fDoPrimaryTrackMatching = flag              ;}
@@ -183,6 +187,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TList*                              fClusterCutArray;       // List with Cluster Cuts
     TList*                              fMesonCutArray;         // List with Meson Cuts
     AliAnalysisTaskConvJet*             fConvJetReader;         //! JetReader
+    TString                             fAddNameConvJet;        // Additional Name of jet container
     AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;      //! JetReader
     Bool_t                              fDoJetAnalysis;         //! Bool to produce Jet Plots
     Bool_t                              fDoJetQA;               //! Bool to produce Jet QA Plots
@@ -445,6 +450,12 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoBckMCGammaHBTOpeningAnglePt;                  //! array of histos with Bck Inv mass of generated MC gammas
     TH2F**                  fHistoMCGammaHBTDeltaEPt;                           //! array of histos with Bck Inv mass of generated MC gammas
     TH2F**                  fHistoBckMCGammaHBTDeltaEPt;                        //! array of histos with Bck Inv mass of generated MC gammas
+    TH2F**                  fHistoMotherQCMPt;                                  //! array of histos for HBT analysis in LCMS frame, Data SE
+    TH2F**                  fHistoMotherBackQCMPt;                              //! array of histos for HBT analysis in LCMS frame, Data ME
+    TH2F**                  fHistoMCGammaHBTQCMPt;                              //! array of histos for HBT analysis in LCMS frame, MC gen SE
+    TH2F**                  fHistoTrueGammaQCMPt;                               //! array of histos for HBT analysis in LCMS frame, MC val SE
+    TH2F**                  fHistoBckTrueGammaQCMPt;                            //! array of histos for HBT analysis in LCMS frame, MC val ME
+    TH2F**                  fHistoBckMCGammaHBTQCMPt;                           //! array of histos for HBT analysis in LCMS frame, MC gen ME
 
     TH1F**                 fHistoPtJet;                                          //! Histogram of Jet Pt
     TH1F**                 fHistoJetEta;                                         //! Histogram of Jet Eta
@@ -518,6 +529,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     vector<Double_t>      fTrueVectorJetPz;                                     //! Vector of True JetPz
     vector<Double_t>      fTrueVectorJetEta;                                    //! Vector of True JetEta
     vector<Double_t>      fTrueVectorJetPhi;                                    //! Vector of True JetPhi
+
+    std::map<Int_t, Int_t> MapRecJetsTrueJets;                                  //! Map containing the reconstructed jet index in vector and mapping it to true Jet index
 
     // variable to keep track of multiple & missing reco
     vector<Int_t>           fVectorRecTruePi0s;                                 //! array of strings containing the stack position of the reconstructed validated pi0
@@ -613,7 +626,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 71);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 73);
 };
 
 #endif

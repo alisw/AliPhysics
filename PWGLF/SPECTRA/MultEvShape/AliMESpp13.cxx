@@ -24,14 +24,15 @@
 
 #include <AliMultiplicity.h>
 #include <AliCentrality.h>
-#include <AliPID.h>
-#include <AliPIDResponse.h>
 #include <AliAnalysisUtils.h>
 #include <AliPPVsMultUtils.h>
 #include <AliPhysicsSelectionTask.h>
 #include "AliMultSelection.h"
 
 #include "AliMESbaseTask.h"
+#include "AliMEStender.h"
+#include "AliMESppColTask.h"
+#include "AliMESpidTask.h"
 #include "AliMESpp13.h"
 #include "AliMESeventInfo.h"
 #include "AliMEStrackInfo.h"
@@ -39,86 +40,12 @@
 
 using namespace std;
 
-ClassImp(AliMESpp13::AliMESconfigTender)
-    ClassImp(AliMESpp13)
-
+int eventsPassAllCutsMC(0);
+int eventsPassSLCutsMC(0);
+ClassImp(AliMESpp13)
     //________________________________________________________________________
-    AliMESpp13::AliMESconfigTender::AliMESconfigTender() : TObject(), fTrackCuts(0), fEventCuts(0), fPIDpriors(0)
-{
-}
-
-//________________________________________________________________________
-void AliMESpp13::AliMESconfigTender::Print(Option_t *) const
-{
-  // Dump config info to stdout
-  printf("MES TENDER CONFIGURATION\n   Event cuts : ");
-  switch (fEventCuts)
-  {
-  case kNoEC:
-    printf("No\n");
-    break;
-  case k7TeV:
-    printf("Trigger[MB, HM], Vertex[Yes]\n");
-    break;
-  case k13TeV:
-    printf("13TeV: Trigger[MB, HM], Vertex[Yes]\n");
-    break;
-  default:
-    printf("Not defined [%d]\n", fEventCuts);
-    break;
-  }
-  printf("   Track cuts : ");
-  switch (fTrackCuts)
-  {
-  case kNoTC:
-    printf("No\n");
-    break;
-  case kStandardITSTPCTrackCuts2010:
-    printf("StandardITSTPCTrackCuts2010\n");
-    break;
-  case kStandardITSTPCTrackCuts2011:
-    printf("StandardITSTPCTrackCuts2011\n");
-    break;
-  default:
-    printf("Not defined [%d]\n", fTrackCuts);
-    break;
-  }
-  printf("   PID priors : ");
-  switch (fPIDpriors)
-  {
-  case kNoPP:
-    printf("Flat Priors\n");
-    break;
-  case kTPC:
-    printf("DefaultTPCPriors\n");
-    break;
-  case kIterative:
-    printf("LHC10d Iterative Priors\n");
-    break;
-  default:
-    printf("Not defined [%d]\n", fPIDpriors);
-    break;
-  }
-
-  printf("\n");
-}
-
-//________________________________________________________________________
-Bool_t AliMESpp13::ConfigTask(AliMESconfigTender::EMESconfigEventCuts ec,
-                              AliMESconfigTender::EMESconfigTrackCuts tc,
-                              AliMESconfigTender::EMESconfigPIDpriors pp)
-{
-  // configure tender for current run
-  fConfig.fEventCuts = ec;
-  fConfig.fTrackCuts = tc;
-  fConfig.fPIDpriors = pp;
-  fConfig.Print();
-  return kTRUE;
-}
-
-//________________________________________________________________________
-AliMESpp13::AliMESpp13()
-    : AliAnalysisTaskSE(), fConfig(), fTrackFilter(NULL), fPIDcomb(NULL), fTracks(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCevInfo(NULL), fTreeSRedirector(NULL), fEventTree(NULL), fTracksTree(NULL), fMCeventTree(NULL), fMCtracksTree(NULL), fMCGenTracksTree(NULL), fMCMissedTracksTree(NULL), fUtils(NULL), fEventCutsQA(kFALSE)
+    AliMESpp13::AliMESpp13()
+    : AliAnalysisTaskSE(), fTrackFilter(NULL), fTracks(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCevInfo(NULL), fTreeSRedirector(NULL), fTracksIO(NULL), fMCtracksIO(NULL), fMCGenTracksIO(NULL), fMCtracksMissIO(NULL), fTree(NULL), fMCGenTree(NULL), fMCMissTree(NULL), fUtils(NULL), fEventCutsQA(kFALSE)
 {
   //
   // Constructor
@@ -127,15 +54,12 @@ AliMESpp13::AliMESpp13()
 
 //________________________________________________________________________
 AliMESpp13::AliMESpp13(const char *name)
-    : AliAnalysisTaskSE(name), fConfig(), fTrackFilter(NULL), fPIDcomb(NULL), fTracks(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCevInfo(NULL), fTreeSRedirector(NULL), fEventTree(NULL), fTracksTree(NULL), fMCeventTree(NULL), fMCtracksTree(NULL), fMCGenTracksTree(NULL), fMCMissedTracksTree(NULL), fUtils(NULL), fEventCutsQA(kFALSE)
+    : AliAnalysisTaskSE(name), fTrackFilter(NULL), fTracks(NULL), fEvInfo(NULL), fMCtracks(NULL), fMCevInfo(NULL), fTreeSRedirector(NULL), fTracksIO(NULL), fMCtracksIO(NULL), fMCGenTracksIO(NULL), fMCtracksMissIO(NULL), fTree(NULL), fMCGenTree(NULL), fMCMissTree(NULL), fUtils(NULL), fEventCutsQA(kFALSE)
 { //
   // Constructor
   //
   DefineOutput(kQA, TList::Class());
-  DefineOutput(kEventInfo + 1, AliMESeventInfo::Class());
-  DefineOutput(kTracks + 1, TObjArray::Class());
-  DefineOutput(kEventTree + 1, TTree::Class());
-  DefineOutput(kTracksTree + 1, TTree::Class());
+  DefineOutput(kTree + 1, TTree::Class());
 }
 
 //________________________________________________________________________
@@ -145,12 +69,8 @@ void AliMESpp13::SetMCdata(Bool_t mc)
   SetBit(kMCdata, mc);
   if (mc)
   {
-    DefineOutput(kMCeventInfo + 1, AliMESeventInfo::Class());
-    DefineOutput(kMCtracks + 1, TObjArray::Class());
-    DefineOutput(kMCeventTree + 1, TTree::Class());
-    DefineOutput(kMCtracksTree + 1, TTree::Class());
-    DefineOutput(kMCGenTracksTree + 1, TTree::Class());
-    DefineOutput(kMCMissedTracksTree + 1, TTree::Class());
+    DefineOutput(kMCGenTree + 1, TTree::Class());
+    // DefineOutput(kMCMissTree + 1, TTree::Class());
   }
 }
 //________________________________________________________________________
@@ -161,8 +81,6 @@ AliMESpp13::~AliMESpp13()
   //
   if (fTrackFilter)
     delete fTrackFilter;
-  if (fPIDcomb)
-    delete fPIDcomb;
 
   if (fEvInfo)
     delete fEvInfo;
@@ -178,61 +96,57 @@ AliMESpp13::~AliMESpp13()
     fMCtracks->Delete();
     delete fMCtracks;
   }
-
   if (fUtils)
     delete fUtils;
 
-  if (fTreeSRedirector){
-    delete fTreeSRedirector;
-    fTreeSRedirector = NULL;
-  }
+  if (fTracksIO)
+    fTracksIO->Delete();
+
+  if (fMCtracksIO)
+    fMCtracksIO->Delete();
+
+  if (fMCGenTracksIO)
+    fMCGenTracksIO->Delete();
+
+  if (fMCtracksMissIO)
+    fMCtracksMissIO->Delete();
+
+  // if (fTree)
+  //   delete fTree;
+
+  // if (fMCGenTree)
+  //   delete fMCGenTree;
+
+  // if (fMCMissTree)
+  //   delete fMCMissTree;
 }
 
 //________________________________________________________________________
 void AliMESpp13::UserCreateOutputObjects()
 {
 
+  // Build user objects
+  BuildQAHistos();
+  PostData(kQA, fHistosQA);
+
   OpenFile(1);
   TDirectory *savedir = gDirectory;
   fTreeSRedirector = new TTreeSRedirector();
   savedir->cd();
 
-  // Build user objects
-  BuildQAHistos();
-  PostData(kQA, fHistosQA);
-
   // ------- track cuts
   fTrackFilter = new AliAnalysisFilter("trackFilter");
   AliESDtrackCuts *lTrackCuts(NULL);
-  switch (fConfig.fTrackCuts)
-  {
-  case AliMESconfigTender::kStandardITSTPCTrackCuts2010:
-    lTrackCuts = new AliESDtrackCuts("std10TC", "Standard 2010");
-    lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2010(kTRUE, 0);
-    fTrackFilter->AddCuts(lTrackCuts);
-    break;
-  case AliMESconfigTender::kStandardITSTPCTrackCuts2011:
-    lTrackCuts = new AliESDtrackCuts("std11TC", "Standard 2011");
-    lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 0); // kTRUE for primaries
-    fTrackFilter->AddCuts(lTrackCuts);
-    break;
-  case AliMESconfigTender::kNoTC:
-  default:
-    AliDebug(2, "No track cuts selected");
-    break;
-  }
+  lTrackCuts = new AliESDtrackCuts("trkCuts", "Track Cuts");
+  lTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kFALSE, 1); // kTRUE for primaries
+  fTrackFilter->AddCuts(lTrackCuts);
 
-
-  fEventTree = ((*fTreeSRedirector) << "ev").GetTree();
-  fTracksTree = ((*fTreeSRedirector) << "trk").GetTree();
+  fTree = ((*fTreeSRedirector) << "ev").GetTree();
 
   fTracks = new TObjArray(200);
   fTracks->SetOwner(kTRUE);
   fEvInfo = new AliMESeventInfo;
-  PostData(kEventInfo + 1, fEvInfo);
-  PostData(kTracks + 1, fTracks);
-  PostData(kEventTree + 1, fEventTree);
-  PostData(kTracksTree + 1, fTracksTree);
+  PostData(kTree + 1, fTree);
 
   fUtils = new AliPPVsMultUtils();
 
@@ -242,17 +156,11 @@ void AliMESpp13::UserCreateOutputObjects()
   fMCtracks->SetOwner(kTRUE);
   fMCevInfo = new AliMESeventInfo;
 
-  fMCeventTree = ((*fTreeSRedirector) << "MCev").GetTree();
-  fMCtracksTree = ((*fTreeSRedirector) << "MCtrk").GetTree();
-  fMCGenTracksTree = ((*fTreeSRedirector) << "genTrk").GetTree();
-  fMCMissedTracksTree = ((*fTreeSRedirector) << "missedTrk").GetTree();
+  fMCGenTree = ((*fTreeSRedirector) << "genTrk").GetTree();
+  // fMCMissTree = ((*fTreeSRedirector) << "missedTrk").GetTree();
 
-  PostData(kMCeventInfo + 1, fMCevInfo);
-  PostData(kMCtracks + 1, fMCtracks);
-  PostData(kMCeventTree + 1, fMCeventTree);
-  PostData(kMCtracksTree + 1, fMCtracksTree);
-  PostData(kMCGenTracksTree + 1, fMCGenTracksTree);
-  PostData(kMCMissedTracksTree + 1, fMCMissedTracksTree);
+  PostData(kMCGenTree + 1, fMCGenTree);
+  // PostData(kMCMissTree + 1, fMCMissTree);
 }
 
 #include "AliGRPManager.h"
@@ -274,13 +182,11 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     return;
   }
 
-  //   AliMESeventInfo *fEvInfo   = dynamic_cast<AliMESeventInfo*>(GetOutputData(AliMESbaseTask::kEventInfo+1));
   if (!fEvInfo)
   {
     AliError("REC event info missing. Processing skipped");
     return;
   }
-  //   TObjArray *fTracks   = dynamic_cast<TObjArray*>(GetOutputData(AliMESbaseTask::kTracks+1));
   if (!fTracks)
   {
     AliError("REC track array missing. Processing skipped");
@@ -297,9 +203,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
 
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
-  AliPIDResponse *pidResponse = inputHandler->GetPIDResponse();
-  if (!pidResponse)
-    AliFatal("This Task needs the PID response attached to the inputHandler");
 
   // init magnetic field
   if (!TGeoGlobalMagField::Instance()->GetField() && !TGeoGlobalMagField::Instance()->IsLocked())
@@ -311,74 +214,61 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
       AliError("Problem with magnetic field setup");
   }
 
-  Bool_t incompleteDAQ = kFALSE; // if true should be rejected
-  AliAnalysisUtils SPDclustersTrackletsPileup;
-
-  switch (fConfig.fEventCuts)
+  AliAnalysisUtils analysisUtils;
+  eventsPassSLCutsMC = 0;
+  eventsPassAllCutsMC = 0;
+  ((TH1 *)fHistosQA->At(kEfficiency))->Fill(0); // all events
+  if (inputHandler->IsEventSelected())
   {
-  case AliMESconfigTender::k7TeV:
-
-    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(0); // all events
-    if (AliPPVsMultUtils::IsMinimumBias(fESD))
+    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(1); // physics selection
     {
-      ((TH1 *)fHistosQA->At(kEfficiency))->Fill(1); // events after Physics Selection (for MB normalisation to INEL)
+      if (fEventCutsQA.PassedCut(AliEventCuts::kTrigger))
+      {
+        ((TH1 *)fHistosQA->At(kEfficiency))->Fill(2); // trigger selection
+        if (fEventCutsQA.PassedCut(AliEventCuts::kDAQincomplete))
+        {
+          ((TH1 *)fHistosQA->At(kEfficiency))->Fill(3); // DAQ incomplete selection
+          if (!analysisUtils.IsSPDClusterVsTrackletBG(fESD))
+          {
+            ((TH1 *)fHistosQA->At(kEfficiency))->Fill(4); // no background selection
+            if (AliPPVsMultUtils::IsNotPileupSPDInMultBins(fESD))
+            {
+              ((TH1 *)fHistosQA->At(kEfficiency))->Fill(5); // reject pile up evts using SPD
+              fEvInfo->SetPileUp();
+              if (fEventCutsQA.PassedCut(AliEventCuts::kVertex))
+              {
+                ((TH1 *)fHistosQA->At(kEfficiency))->Fill(6); // vertex
+                eventsPassSLCutsMC = 1;
+                if (fEventCutsQA.PassedCut(AliEventCuts::kVertexPosition))
+                {
+                  ((TH1 *)fHistosQA->At(kEfficiency))->Fill(7); // vertex  position
+                  eventsPassSLCutsMC = 1;
+                  if (fEventCutsQA.PassedCut(AliEventCuts::kINELgt0))
+                  {
+                    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(8); // INEL > 0
+                    eventsPassAllCutsMC = 1;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
-    if ((!AliPPVsMultUtils::IsEventSelected(fESD, AliVEvent::kMB)) && (!AliPPVsMultUtils::IsEventSelected(fESD, AliVEvent::kHighMult)))
-    {
-      return;
-    }
-    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(2); // analyzed events
-    break;
-
-  case AliMESconfigTender::k13TeV:
-
-    incompleteDAQ = fESD->IsIncompleteDAQ();
-
-    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(0); // all events
-    if (AliPPVsMultUtils::IsMinimumBias(fESD))
-    {
-      ((TH1 *)fHistosQA->At(kEfficiency))->Fill(1); // events after Physics Selection (for MB normalisation to INEL)
-    }
-
-    if (!(inputHandler->IsEventSelected()) ||
-        incompleteDAQ ||
-        SPDclustersTrackletsPileup.IsSPDClusterVsTrackletBG(fESD))
-    {
-      return;
-    }
-    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(2); // analyzed events
-    break;
-  default:
-    AliDebug(2, "No event cuts selected");
   }
 
-  // TRIGGER SELECTION
-  // MB & HM triggers
-  Bool_t triggerMB = 0;
-  Bool_t triggerHM = 0;
-  switch (fConfig.fEventCuts)
+  if (!fEventCutsQA.AcceptEvent(fESD))
   {
-  case AliMESconfigTender::k7TeV:
-    triggerMB = (inputHandler->IsEventSelected() & AliVEvent::kMB),
-    triggerHM = (inputHandler->IsEventSelected() & AliVEvent::kHighMult);
-    break;
-  case AliMESconfigTender::k13TeV:
-    triggerMB = (inputHandler->IsEventSelected() & AliVEvent::kINT7),   // default - for MB
-        triggerHM = (inputHandler->IsEventSelected() & AliVEvent::kMB); // for crosschecks
-    break;
-  default:
-    AliDebug(2, "No trigger selected");
+    // PostData(kQA, fHistosQA);
+    // eventsPassAllCutsMC = 0;
+    return;
   }
+  else
+  {
 
-  if (!triggerHM && !triggerMB)
-  {
-    AliDebug(2, "Miss trigger");
-    //     ((TH1*)fHistosQA->At(kEfficiency))->Fill(1);
+    ((TH1 *)fHistosQA->At(kEfficiency))->Fill(9); // All cuts
+    // eventsPassAllCutsMC = 1;
   }
-  if (triggerMB)
-    fEvInfo->SetTriggerMB();
-  if (triggerHM)
-    fEvInfo->SetTriggerHM();
 
   // vertex selection
   const AliESDVertex *vertex = fESD->GetPrimaryVertexTracks();
@@ -395,48 +285,20 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     else
     {
       AliDebug(2, "Miss vertex");
-      //       ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-      //       return;
     }
   }
-  /*
-  if(!AliPPVsMultUtils::HasNoInconsistentSPDandTrackVertices(fESD)){
-    ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-// 	  return;
-  }
-  if(!AliPPVsMultUtils::IsINELgtZERO(fESD)){
-    ((TH1*)fHistosQA->At(kEfficiency))->Fill(2);
-// 	  return;
-  }
-// 	((TH1*)fHistosQA->At(kEfficiency))->Fill(0);
-*/
-
   fEvInfo->SetVertexZ(vertex->GetZ());
-
-  // pile-up selection
-  if (fESD->IsPileupFromSPDInMultBins())
-    fEvInfo->SetPileUp();
 
   // multiplicity
   AliESDtrackCuts *tc(NULL);
   AliMultSelection *MultSelection = (AliMultSelection *)fESD->FindListObject("MultSelection");
-  if ((tc = dynamic_cast<AliESDtrackCuts *>(fTrackFilter->GetCuts()->At(0) /*FindObject("std10TC")*/)))
+  if ((tc = dynamic_cast<AliESDtrackCuts *>(fTrackFilter->GetCuts()->At(0))))
   {
-    // MakeMultiplicityESD(fESD, "Combined")
     fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8));
-    if (tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 1) >= 1)
-    {
-      fEvInfo->SetMultiplicity(AliMESeventInfo::kSPDtrk, tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 0.8));
-    }
-    // fEvInfo->SetMultiplicity(AliMESeventInfo::kComb, AliPPVsMultUtils::GetStandardReferenceMultiplicity(fESD));
-    // MakeMultiplicityESD(fESD, "Global")
+    fEvInfo->SetMultiplicity(AliMESeventInfo::kSPDtrk, tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTracklets, 0.8));
     fEvInfo->SetMultiplicity(AliMESeventInfo::kGlob08, tc->CountAcceptedTracks(fESD));
-    // V0M
-    // fEvInfo->SetMultiplicity(AliMESeventInfo::kV0M, fUtils->GetMultiplicityPercentile(ev, "V0M"));
     fEvInfo->SetMultiplicity(AliMESeventInfo::kV0M, MultSelection->GetMultiplicityPercentile("V0M"));
-    // fEvInfo->SetMultiplicity(AliMESeventInfo::kV0M_MC, MultSelection->GetMultiplicityPercentile("V0M"));
-    // Combined multiplicity for eta (-0.8,-0.4) & (0.4, 0.8)
-    fEvInfo->SetMultiplicity(AliMESeventInfo::kComb0408, (tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8) - tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.4)));
+    fEvInfo->SetMultiplicity(AliMESeventInfo::kComb0408, (tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8) - tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.4))); // Combined multiplicity for eta (-0.8,-0.4) & (0.4, 0.8)
   }
   else
   {
@@ -444,79 +306,23 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     fTrackFilter->GetCuts()->ls();
   }
 
-  Double_t val[7] = {0.};
+  Double_t val[5] = {0.};
   THnSparse *H(NULL);
   H = (THnSparse *)fHistosQA->At(kTrkInfo);
+  AliMESppColTask sort;
+  AliMESpidTask deltaPhi;
   AliMEStrackInfo *tmes(NULL);
-
-  // Int_t counter = 0;
   for (Int_t iTracks = 0; iTracks < fESD->GetNumberOfTracks(); iTracks++)
   {
-
     AliESDtrack *track = fESD->GetTrack(iTracks);
     if (!track)
     {
       Printf("ERROR: Could not receive track %d", iTracks);
       continue;
     }
-    // printf("label[%d] ITS[%d] TPC[%d] TRD[%d]\n", track->GetLabel(),
-    //  track->GetITSLabel(), track->GetTPCLabel(), track->GetTRDLabel());
-
-    if (!(fTrackFilter->IsSelected(track)))
-    {
-      // printf("ESD track reject %d\n", iTracks);
-      // track->Print("");
+    if (!(fTrackFilter->IsSelected(track)) && !DebugLevel())
       continue;
-    }
-    tmes = new AliMEStrackInfo(track, pidResponse, fPIDcomb);
-
-    // TOF matching (old version - Alex)
-    // 	if(pidResponse->CheckPIDStatus(AliPIDResponse::kTOF, track) == AliPIDResponse::kDetPidOk) tmes->SetTOFmisProb(fPIDcomb->GetTOFmismatchProb());
-    // 	printf("mismatch prob from AliMESpp13 = %g\n", fPIDcomb->GetTOFmismatchProb());
-
-    // TOF matching (Cristi)
-    Int_t fTOFout;
-    if ((!(track->GetStatus() & AliESDtrack::kTOFout)) == 0)
-    {
-      fTOFout = 1;
-    }
-    else
-    {
-      fTOFout = 0;
-    }
-    Int_t ftime;
-    if ((!(track->GetStatus() & AliESDtrack::kTIME)) == 0)
-    {
-      ftime = 1;
-    }
-    else
-    {
-      ftime = 0;
-    }
-    Double_t flength;
-    flength = track->GetIntegratedLength();
-    Double_t ftimetof;
-    ftimetof = track->GetTOFsignal();
-    Double_t inttime[5];
-    track->GetIntegratedTimes(inttime); // Returns the array with integrated times for each particle hypothesis
-    Double_t fexptimepi;
-    Double_t fexptimeka;
-    Double_t fexptimepr;
-    fexptimepi = inttime[2];
-    fexptimeka = inttime[3];
-    fexptimepr = inttime[4];
-
-    // Barbara
-    if ((fTOFout == 1) && (ftime == 1) && (flength > 350) && (ftimetof > 10000) && (fexptimepi > 10000) && (fexptimeka > 10000) && (fexptimepr > 10000) && (ftimetof < 80000))
-    {
-      tmes->SetTOFmisProb(1);
-    }
-    else
-    {
-      tmes->SetTOFmisProb(0);
-    }
-
-    // counter ++;
+    tmes = new AliMEStrackInfo(track);
 
     // fill tracks QA
     val[0] = tmes->Pt();
@@ -524,25 +330,11 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     val[2] = tmes->Phi();
     val[3] = tmes->Rv();
     val[4] = tmes->Zv();
-    const AliMEStrackInfo::AliMESpid *pid = tmes->GetPID();
-    if (pid)
-    {
-      val[5] = pid->GetRaw(AliMEStrackInfo::kTPC);
-      val[6] = pid->GetRaw(AliMEStrackInfo::kTOF);
-    }
     if (H)
       H->Fill(val);
     fTracks->Add(tmes);
-
     // printf("tender: counter = %i eta = %f \t pT = %g\n", counter, val[1], val[0]);
   }
-
-  // printf("tender: combined08 = %g \t old combined08 = %i \t global08 = %g\n", fEvInfo->GetMultiplicity(AliMESeventInfo::kComb), (tc->GetReferenceMultiplicity(fESD, AliESDtrackCuts::kTrackletsITSTPC, 0.8)), fEvInfo->GetMultiplicity(AliMESeventInfo::kGlob08));
-  // printf("fTracks = %i\n\n", fTracks->GetEntries());
-  // printf("event index = %i\n", fESD->GetEventNumberInFile());
-
-  // leading particle
-  // printf("\n\nNew event!\n");
 
   // printf("LP search\n");
   fEvInfo->FindLeadingParticle(fTracks);
@@ -565,30 +357,40 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   fSphericity = fEvInfo->GetEventShape()->GetSphericity();
   Int_t nTracks = fTracks->GetEntriesFast();
   Int_t run = fESD->GetRunNumber();
+  Int_t event = fESD->GetEventNumberInFile();
+  // if (!fTracksIO)
+  //   fTracksIO = new TClonesArray("AliMEStrackInfo");
   Double_t dca[2] = {0.};
-  Double_t fPt(0.), fEta(0.), fPhi(0.), fCharge(0.), fPhiLP(0.), fPtLP(0.), fEtaLP(0.), fDeltaPhi(0.), fDeltaEta(0.), fDCAxy(0.), fDCAz(0.);
-  Double_t pxLP = fEvInfo->GetEventShape()->GetMomLeading(kTRUE);
-  Double_t pyLP = fEvInfo->GetEventShape()->GetMomLeading(kFALSE);
-  fPhiLP = TMath::ATan2(pyLP, pxLP);
-  fPhiLP = (fPhiLP > 0) ? fPhiLP : (fPhiLP + TMath::TwoPi()); // if negative add 2*pi
+  Double_t fPhiLP(0.), fPtLP(0.), fEtaLP(0.), fPxLP(0.), fPyLP(0.);
+  Double_t fPt(0.), fEta(0.), fPhi(0.), fCharge(0.), fDeltaPhi(0.), fDeltaEta(0.), fPx(0.), fPy(0.), fDCAxy(0.), fDCAz(0.), fPassDCA(0.);
+  sort.QSortTracks(*fTracks, 0, nTracks);
   for (int i(0); i < fTracks->GetEntriesFast(); i++)
   {
     AliMEStrackInfo *t = (AliMEStrackInfo *)(*fTracks)[i];
-    if (TMath::Abs(t->Eta()) > 0.8 && t->Pt() < 0.15)
+    if (TMath::Abs(t->Eta()) >= 0.8 || t->Pt() <= 0.15)
       continue;
-    fPt = t->Pt();
+    // new ((*fTracksIO)[i]) AliMEStrackInfo(*t);
     fCharge = t->Charge();
     fEta = t->Eta();
     fPhi = t->Phi();
+    fPt = t->Pt();
+    fPx = t->Px();
+    fPy = t->Py();
+    // cout << "pT_Rec" << fPt << endl;
     if (i == 0)
     {
       fPtLP = fPt;
       fEtaLP = fEta;
+      fPxLP = fPx;
+      fPyLP = fPy;
+      fPhiLP = TMath::ATan2(fPyLP, fPxLP);
+      fPhiLP = (fPhiLP > 0) ? fPhiLP : (fPhiLP + TMath::TwoPi()); // if negative add 2*pi
     }
-    fDeltaPhi = ComputeDeltaPhi(fPhi, fPhiLP);
+    // printf("pt[%i]=%f; pT(LP)=%f\n", i, fPt, fPtLP);
+    fDeltaPhi = deltaPhi.ComputeDeltaPhi(fPhi, fPhiLP);
     if (i == 0)
     {
-      fDeltaEta = -99;
+      fDeltaEta = -9999;
     }
     else
     {
@@ -597,54 +399,109 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     t->GetDCA(dca);
     fDCAxy = dca[0];
     fDCAz = dca[1];
+    if (TMath::Abs(fDCAxy) < (0.0105 + 0.0350 / TMath::Power(fPt, 1.01)))
+    {
+      fPassDCA = 1.;
+    }
+    else
+    {
+      fPassDCA = 0.;
+    }
     if (!fTreeSRedirector)
       return;
-    (*fTreeSRedirector) << "trk"
-                        << "Pt=" << fPt
-                        << "Charge=" << fCharge
-                        << "Eta=" << fEta
-                        << "Phi=" << fPhi
-                        << "DeltaPhi=" << fDeltaPhi
-                        << "DeltaEta=" << fDeltaEta
-                        << "fDCAxy=" << fDCAxy
-                        << "fDCAz=" << fDCAz
-                        << "\n";
+    if (!HasMCdata())
+    {
+      (*fTreeSRedirector) << "ev"
+                          // << "run=" << run
+                          << "MultComb08=" << fMultComb08
+                          << "MultSPDtrk08=" << fMultSPDtrk08
+                          // << "V0M=" << fV0M
+                          << "Sphericity=" << fSphericity
+                          << "Pt=" << fPt
+                          // << "Eta=" << fEta
+                          // << "Phi=" << fPhi.at(i)
+                          // << "Charge=" << fCharge.at(i)
+                          // << "DeltaPhi=" << fDeltaPhi.at(i)
+                          // << "DeltaEta=" << fDeltaEta.at(i)
+                          << "DCAxy=" << fDCAxy
+                          << "PassDCA=" << fPassDCA
+                          << "\n";
+    }
   }
-  if (!fTreeSRedirector)
-    return;
-  (*fTreeSRedirector) << "ev"
-                      << "run=" << run
-                      << "MultComb08=" << fMultComb08
-                      << "MultSPDtrk08=" << fMultSPDtrk08
-                      << "V0M=" << fV0M
-                      << "Sphericity=" << fSphericity
-                      << "PtLP=" << fPtLP
-                      << "EtaLP=" << fEtaLP
-                      << "PhiLP=" << fPhiLP
-                      << "nTracks=" << nTracks
-                      << "\n";
-
-  if (!fEventCutsQA.AcceptEvent(ev))
-  {
-    PostData(kQA, fHistosQA);
-    return;
-  }
-
-  PostData(kEventInfo + 1, fEvInfo);
-  PostData(kTracks + 1, fTracks);
-  // PostData(kEventTree + 1, fEventTree);
-  // PostData(kTracksTree + 1, fTracksTree);
-
+  // cout << "entries Rec " << fTracksIO->GetEntries() << endl;
+  // for (int i(0); i < fTracksIO->GetEntries(); i++)
+  // {
+  //   AliMEStrackInfo *t = (AliMEStrackInfo *)(*fTracksIO)[i];
+  //   // if (TMath::Abs(t->Eta()) > 0.8 && t->Pt() < 0.15)
+  //   //   continue;
+  //   fCharge.push_back(t->Charge());
+  //   fEta.push_back(t->Eta());
+  //   fPhi.push_back(t->Phi());
+  //   fPt.push_back(t->Pt());
+  //   fPx.push_back(t->Px());
+  //   fPy.push_back(t->Py());
+  //   // cout << "pT_Rec" << fPt.at(i) << endl;
+  //   if (i == 0)
+  //   {
+  //     fPtLP = fPt.at(i);
+  //     fEtaLP = fEta.at(i);
+  //     fPxLP = fPx.at(i);
+  //     fPyLP = fPy.at(i);
+  //     fPhiLP = TMath::ATan2(fPyLP, fPxLP);
+  //     fPhiLP = (fPhiLP > 0) ? fPhiLP : (fPhiLP + TMath::TwoPi()); // if negative add 2*pi
+  //   }
+  //   // printf("pt[%i]=%f; pT(LP)=%f\n", i, fPt, fPtLP);
+  //   fDeltaPhi.push_back(deltaPhi.ComputeDeltaPhi(fPhi.at(i), fPhiLP));
+  //   if (i == 0)
+  //   {
+  //     fDeltaEta.push_back(-9999);
+  //   }
+  //   else
+  //   {
+  //     fDeltaEta.push_back(fEtaLP - fEta.at(i));
+  //   }
+  //   t->GetDCA(dca);
+  //   fDCAxy.push_back(dca[0]);
+  //   fDCAz.push_back(dca[1]);
+  //   if (TMath::Abs(fDCAxy.at(i)) < (0.0182 + 0.0350 / TMath::Power(fPt.at(i), 1.01)))
+  //   {
+  //     fPassDCA.push_back(1.);
+  //   }
+  //   else
+  //   {
+  //     fPassDCA.push_back(0.);
+  //   }
+  //   if (!fTreeSRedirector)
+  //     return;
+  //   if (!HasMCdata())
+  //   {
+  //     (*fTreeSRedirector) << "ev"
+  //                         << "run=" << run
+  //                         << "MultComb08=" << fMultComb08
+  //                         << "MultSPDtrk08=" << fMultSPDtrk08
+  //                         << "V0M=" << fV0M
+  //                         << "Sphericity=" << fSphericity
+  //                         << "Pt=" << fPt.at(i)
+  //                         << "Eta=" << fEta.at(i)
+  //                         // << "Phi=" << fPhi.at(i)
+  //                         // << "Charge=" << fCharge.at(i)
+  //                         // << "DeltaPhi=" << fDeltaPhi.at(i)
+  //                         // << "DeltaEta=" << fDeltaEta.at(i)
+  //                         << "DCAxy=" << fDCAxy.at(i)
+  //                         << "PassDCA=" << fPassDCA.at(i)
+  //                         << "\n";
+  //   }
+  // }
+  // fTracksIO->Clear("C");
+  PostData(kTree + 1, fTree);
   //____ _________________________________
   if (!HasMCdata())
     return;
-  //   AliMESeventInfo *fMCevInfo   = dynamic_cast<AliMESeventInfo*>(GetOutputData(AliMESbaseTask::kMCeventInfo+1));
   if (!fMCevInfo)
   {
     AliError("MC event info missing. MC processing skipped");
     return;
   }
-  //   TObjArray *fMCtracks         = dynamic_cast<TObjArray*>(GetOutputData(AliMESbaseTask::kMCtracks+1));
   if (!fMCtracks)
   {
     AliError("MC track array missing. MC processing skipped");
@@ -668,20 +525,16 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   }
 
   // multiplicity
-  // multiplicity for eta (-0.8, 0.8)
-  fMCevInfo->SetMultiplicity(AliMESeventInfo::kGlob08, MakeMultiplicityMC(fMC));
-  // multiplicity for eta (-0.8,-0.4) & (0.4, 0.8)
-  fMCevInfo->SetMultiplicity(AliMESeventInfo::kComb0408, MakeMultiplicity0408MC(fMC));
-  // multiplicity for eta (-3.7,-1.7) & (2.8, 5.1)  -> V0M
-  fMCevInfo->SetMultiplicity(AliMESeventInfo::kV0M, MakeMultiplicityV0MMC(fMC));
+  fMCevInfo->SetMultiplicity(AliMESeventInfo::kGlob08, AliMEStender::MakeMultiplicityMC(fMC));       // multiplicity for eta (-0.8, 0.8)
+  fMCevInfo->SetMultiplicity(AliMESeventInfo::kComb0408, AliMEStender::MakeMultiplicity0408MC(fMC)); // multiplicity for eta (-0.8,-0.4) & (0.4, 0.8)
+  fMCevInfo->SetMultiplicity(AliMESeventInfo::kV0M, AliMEStender::MakeMultiplicityV0MMC(fMC));       // multiplicity for eta (-3.7,-1.7) & (2.8, 5.1)  -> V0M
 
-  memset(val, 0, 7 * sizeof(Double_t));
+  memset(val, 0, 5 * sizeof(Double_t));
   H = (THnSparse *)fHistosQA->At(kMCtrkInfo);
   AliMCParticle *particle(NULL);
   AliMEStrackInfo *tmesRec(NULL);
   for (Int_t ipart = 0; ipart < fMC->GetNumberOfTracks(); ipart++)
   {
-
     if (!(particle = dynamic_cast<AliMCParticle *>(fMC->GetTrack(ipart))))
     {
       AliWarning("MC particle pointer is null !!!");
@@ -699,11 +552,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
       continue;
     }
     tmes = new AliMEStrackInfo(particle, fMCStack);
-    // if (!(fTrackFilter->IsSelected(tmes)))
-    // {
-    //   printf("MC track reject %d\n", ipart);
-    //   continue;
-    // }
     fMCtracks->AddLast(tmes);
     // printf("accept[%d] -> %d\n", ipart, tmes->GetLabel());
 
@@ -713,18 +561,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     val[2] = tmes->Phi();
     val[3] = tmes->Rv();
     val[4] = tmes->Zv();
-    const AliMEStrackInfo::AliMESpid *pid = tmes->GetPID();
-    if (pid)
-    {
-      const Double_t *prob = pid->GetProb(AliMEStrackInfo::kITS);
-      for (Int_t is(0); is < AliPID::kSPECIES; is++)
-        if (prob[is] > 0.)
-        {
-          val[5] = is;
-          break;
-        }
-    }
-    val[6] = 0.;
     if (H)
       H->Fill(val);
   }
@@ -789,13 +625,14 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
   fSphericity_MC = fMCevInfo->GetEventShape()->GetSphericity();
   Int_t nTracks_MC = fMCtracks->GetEntriesFast();
   Int_t nTracksMissed = nTracks_MC - nTracks;
-  Double_t fPt_MC(0.), fEta_MC(0.), fPhi_MC(0.), fCharge_MC(0.), fPhiLP_MC(0.), fPtLP_MC(0.), fEtaLP_MC(0.), fDeltaPhi_MC(0.), fDeltaEta_MC(0.), fPrimary_MC(0.), fSecondary_MC(0.), fMaterial_MC(0.);
-  Double_t pxLP_MC = fMCevInfo->GetEventShape()->GetMomLeading(kTRUE);
-  Double_t pyLP_MC = fMCevInfo->GetEventShape()->GetMomLeading(kFALSE);
-  fPhiLP_MC = TMath::ATan2(pyLP_MC, pxLP_MC);
-  fPhiLP_MC = (fPhiLP_MC > 0) ? fPhiLP_MC : (fPhiLP_MC + TMath::TwoPi());
   AliMEStrackInfo *t(NULL), *tMC(NULL);
-  for (int i(0); i < fTracks->GetEntriesFast(); i++)
+  // if (!fTracksIO)
+  //   fTracksIO = new TClonesArray("AliMEStrackInfo");
+  // if (!fMCtracksIO)
+  //   fMCtracksIO = new TClonesArray("AliMEStrackInfo");
+  Double_t fPhiLP_MC(0.), fPtLP_MC(0.), fEtaLP_MC(0.), fPxLP_MC(0.), fPyLP_MC(0.);
+  Double_t fPt_MC(0.), fEta_MC(0.), fPhi_MC(0.), fCharge_MC(0.), fDeltaPhi_MC(0.), fDeltaEta_MC(0.), fPrimary_MC(0.), fSecondary_MC(0.), fMaterial_MC(0.), fPx_MC(0.), fPy_MC(0.);
+  for (int i(0) /*, j(0)*/; i < fTracks->GetEntriesFast(); i++)
   {
     if (!(t = (AliMEStrackInfo *)(*fTracks)[i]))
       continue;
@@ -811,22 +648,29 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     if (tMC->GetLabel() != i)
     {
       AliError(Form("ESD label %d from MC track differ from ESD id %d", tMC->GetLabel(), i));
-    }
-    if (TMath::Abs(tMC->Eta()) > 0.8 && tMC->Pt() < 0.15)
       continue;
+    }
     fPt_MC = tMC->Pt();
+    // cout << "pT_Gen matched" << fPt_MC.at(i) << endl;
     fCharge_MC = tMC->Charge();
     fEta_MC = tMC->Eta();
     fPhi_MC = tMC->Phi();
+    fPx_MC = tMC->Px();
+    fPy_MC = tMC->Py();
     if (i == 0)
     {
       fPtLP_MC = fPt_MC;
       fEtaLP_MC = fEta_MC;
+      fPxLP_MC = fPx_MC;
+      fPyLP_MC = fPy_MC;
+      fPhiLP_MC = TMath::ATan2(fPyLP_MC, fPxLP_MC);
+      fPhiLP_MC = (fPhiLP_MC > 0) ? fPhiLP_MC : (fPhiLP_MC + TMath::TwoPi());
     }
-    fDeltaPhi_MC = ComputeDeltaPhi(fPhi_MC, fPhiLP_MC);
+    // printf("pT(%i) = %f\n", i, fPt_MC.at(i));
+    fDeltaPhi_MC = deltaPhi.ComputeDeltaPhi(fPhi_MC, fPhiLP_MC);
     if (i == 0)
     {
-      fDeltaEta_MC = -99;
+      fDeltaEta_MC = -9999;
     }
     else
     {
@@ -844,7 +688,6 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
       fSecondary_MC = 1.;
       fMaterial_MC = 0.;
     }
-
     else if (tMC->HasOrigin(AliMEStrackInfo::kMaterial))
     {
       fPrimary_MC = 0.;
@@ -853,47 +696,144 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
     }
     if (!fTreeSRedirector)
       return;
-    (*fTreeSRedirector) << "MCtrk"
+    (*fTreeSRedirector) << "ev"
+                        // << "run=" << run
+                        << "MultComb08=" << fMultComb08
+                        << "MultSPDtrk08=" << fMultSPDtrk08
+                        // << "V0M=" << fV0M
+                        << "Sphericity=" << fSphericity
+                        << "Pt=" << fPt
+                        // << "Eta=" << fEta
+                        // << "Phi=" << fPhi.at(i)
+                        // << "DeltaPhi=" << fDeltaPhi.at(i)
+                        // << "DeltaEta=" << fDeltaEta.at(i)
+                        // << "Charge=" << fCharge.at(i)
+                        << "DCAxy=" << fDCAxy
+                        << "PassDCA=" << fPassDCA
+                        << "Mult08=" << fMult08_MC
+                        // << "V0M_MC=" << fV0M_MC
+                        << "Sphericity_MC=" << fSphericity_MC
+                        // << "EventsPassSLCuts_MC=" << eventsPassSLCutsMC
+                        // << "EventsPassAllCuts_MC=" << eventsPassAllCutsMC
                         << "Pt_MC=" << fPt_MC
-                        << "Charge_MC=" << fCharge_MC
-                        << "Eta_MC=" << fEta_MC
-                        << "Phi_MC=" << fPhi_MC
-                        << "DeltaPhi_MC=" << fDeltaPhi_MC
-                        << "DeltaEta_MC=" << fDeltaEta_MC
-                        << "fPrimary_MC=" << fPrimary_MC
-                        << "fSecondary_MC=" << fSecondary_MC
-                        << "fMaterial_MC=" << fMaterial_MC
+                        // << "Phi_MC=" << fPhi_MC.at(i)
+                        // << "Eta_MC=" << fEta_MC
+                        // << "DeltaPhi_MC=" << fDeltaPhi_MC.at(i)
+                        // << "DeltaEta_MC=" << fDeltaEta_MC.at(i)
+                        // << "Charge_MC=" << fCharge_MC.at(i)
+                        << "Primary_MC=" << fPrimary_MC
+                        << "Secondary_MC=" << fSecondary_MC
+                        << "Material_MC=" << fMaterial_MC
                         << "\n";
-  }
-  if (!fTreeSRedirector)
-    return;
-  (*fTreeSRedirector) << "MCev"
-                      << "Mult08=" << fMult08_MC
-                      << "V0M_MC=" << fV0M_MC
-                      << "Sphericity_MC=" << fSphericity_MC
-                      << "nTracks=" << nTracks
-                      << "nTracks_MC=" << nTracks_MC
-                      << "nTracksMissed=" << nTracksMissed
-                      << "PtLP_MC=" << fPtLP_MC
-                      << "EtaLP_MC=" << fEtaLP_MC
-                      << "PhiLP_MC=" << fPhiLP_MC
-                      << "\n";
 
-  // cout << "Debug save " << fTracksIO->GetEntriesFast() << " MC " << fMCtracksIO->GetEntriesFast() << endl;
+    // new ((*fTracksIO)[j]) AliMEStrackInfo(*t);
+    // new ((*fMCtracksIO)[j]) AliMEStrackInfo(*tMC);
+    // j++;
+  }
+  // cout << "!!!!!! fTracksIO entries  = " << fTracksIO->GetEntries() << endl;
+  // cout << "!!!!!! fMCtracksIO entries  = " << fMCtracksIO->GetEntries() << endl;
+  //
+
+  // for (int i(0); i < fMCtracksIO->GetEntries(); i++)
+  // {
+  //   AliMEStrackInfo *tMC = (AliMEStrackInfo *)(*fMCtracksIO)[i];
+  //   fPt_MC.push_back(tMC->Pt());
+  //   // cout << "pT_Gen matched" << fPt_MC.at(i) << endl;
+  //   fCharge_MC.push_back(tMC->Charge());
+  //   fEta_MC.push_back(tMC->Eta());
+  //   fPhi_MC.push_back(tMC->Phi());
+  //   fPx_MC.push_back(tMC->Px());
+  //   fPy_MC.push_back(tMC->Py());
+  //   if (i == 0)
+  //   {
+  //     fPtLP_MC = fPt_MC.at(i);
+  //     fEtaLP_MC = fEta_MC.at(i);
+  //     fPxLP_MC = fPx_MC.at(i);
+  //     fPyLP_MC = fPy_MC.at(i);
+  //     fPhiLP_MC = TMath::ATan2(fPyLP_MC, fPxLP_MC);
+  //     fPhiLP_MC = (fPhiLP_MC > 0) ? fPhiLP_MC : (fPhiLP_MC + TMath::TwoPi());
+  //   }
+  //   // printf("pT(%i) = %f\n", i, fPt_MC.at(i));
+  //   fDeltaPhi_MC.push_back(deltaPhi.ComputeDeltaPhi(fPhi_MC.at(i), fPhiLP_MC));
+  //   if (i == 0)
+  //   {
+  //     fDeltaEta_MC.push_back(-9999);
+  //   }
+  //   else
+  //   {
+  //     fDeltaEta_MC.push_back(fEtaLP_MC - fEta_MC.at(i));
+  //   }
+  //   if (tMC->HasOrigin(AliMEStrackInfo::kPrimary))
+  //   {
+  //     fPrimary_MC.push_back(1.);
+  //     fSecondary_MC.push_back(0.);
+  //     fMaterial_MC.push_back(0.);
+  //   }
+  //   else if (tMC->HasOrigin(AliMEStrackInfo::kSecondary))
+  //   {
+  //     fPrimary_MC.push_back(0.);
+  //     fSecondary_MC.push_back(1.);
+  //     fMaterial_MC.push_back(0.);
+  //   }
+  //   else if (tMC->HasOrigin(AliMEStrackInfo::kMaterial))
+  //   {
+  //     fPrimary_MC.push_back(0.);
+  //     fSecondary_MC.push_back(0.);
+  //     fMaterial_MC.push_back(1.);
+  //   }
+  //   if (fPrimary_MC.size() != fPt_MC.size() || fSecondary_MC.size() != fPt_MC.size() || fMaterial_MC.size() != fPt_MC.size())
+  //     continue;
+  //   if (!fTreeSRedirector)
+  //     return;
+  //   (*fTreeSRedirector) << "ev"
+  //                       << "run=" << run
+  //                       << "MultComb08=" << fMultComb08
+  //                       << "MultSPDtrk08=" << fMultSPDtrk08
+  //                       << "V0M=" << fV0M
+  //                       << "Sphericity=" << fSphericity
+  //                       << "Pt=" << fPt.at(i)
+  //                       << "Eta=" << fEta.at(i)
+  //                       // << "Phi=" << fPhi.at(i)
+  //                       // << "DeltaPhi=" << fDeltaPhi.at(i)
+  //                       // << "DeltaEta=" << fDeltaEta.at(i)
+  //                       // << "Charge=" << fCharge.at(i)
+  //                       // << "DCAxy=" << fDCAxy.at(i)
+  //                       // << "PassDCA=" << fPassDCA.at(i)
+  //                       << "Mult08=" << fMult08_MC
+  //                       << "V0M_MC=" << fV0M_MC
+  //                       << "Sphericity_MC=" << fSphericity_MC
+  //                       << "EventsPassSLCuts_MC=" << eventsPassSLCutsMC
+  //                       << "EventsPassAllCuts_MC=" << eventsPassAllCutsMC
+  //                       << "Pt_MC=" << fPt_MC.at(i)
+  //                       // << "Phi_MC=" << fPhi_MC.at(i)
+  //                       << "Eta_MC=" << fEta_MC.at(i)
+  //                       // << "DeltaPhi_MC=" << fDeltaPhi_MC.at(i)
+  //                       // << "DeltaEta_MC=" << fDeltaEta_MC.at(i)
+  //                       // << "Charge_MC=" << fCharge_MC.at(i)
+  //                       << "Primary_MC=" << fPrimary_MC.at(i)
+  //                       << "Secondary_MC=" << fSecondary_MC.at(i)
+  //                       << "Material_MC=" << fMaterial_MC.at(i)
+  //                       << "\n";
+  // }
+
+  // // cout << "Debug save " << fTracksIO->GetEntriesFast() << " MC " << fMCtracksIO->GetEntriesFast() << endl;
   // for (int i = 0; i < fTracksIO->GetEntries(); i++)
   // {
-  //   std::cout << "REC: index" << i << "constructed at" << fTracksIO->ConstructedAt(i) << std::endl;
+  //   // std::cout << "REC: index" << i << "constructed at" << fTracksIO->ConstructedAt(i) << std::endl;
   //   // std::cout << "GEN: index" << i << "constructed at" << fMCtracksIO->ConstructedAt(i) << std::endl;
   // }
   // for (int i = 0; i < fMCtracksIO->GetEntries(); i++)
   // {
-  //   std::cout << "GEN: index" << i << "constructed at" << fMCtracksIO->ConstructedAt(i) << std::endl;
+  //   // std::cout << "GEN: index" << i << "constructed at" << fMCtracksIO->ConstructedAt(i) << std::endl;
   // }
   // printf("tracksIn %d tracksOut %d\n", fTracks->GetEntries(), fTracksIO->GetEntries());
   // printf("MCtracksIn %d MCtracksOut %d\n", fMCtracks->GetEntries(), fMCtracksIO->GetEntries());
 
-  Double_t fPt_Gen(0.), fEta_Gen(0.), fPhi_Gen(0.), fCharge_Gen(0.), fDeltaPhi_Gen(0.), fDeltaEta_Gen(0.), fPrimary_Gen(0.), fSecondary_Gen(0.), fMaterial_Gen(0.);
-  for (int i(0); i < fMCtracks->GetEntriesFast(); i++)
+  // if (!fMCGenTracksIO)
+  //   fMCGenTracksIO = new TClonesArray("AliMEStrackInfo");
+  sort.QSortTracks(*fMCtracks, 0, nTracks_MC);
+  Double_t fPt_Gen(0.), fEta_Gen(0.), fPhi_Gen(0.), fEtaLP_Gen(0.), fPtLP_Gen(0.), fCharge_Gen(0.), fDeltaPhi_Gen(0.), fDeltaEta_Gen(0.);
+  for (int i(0) /*, j(0)*/; i < nTracks_MC; i++)
   {
     tMC = (AliMEStrackInfo *)(*fMCtracks)[i];
     // std::cout << i << " ESD label " << tMC->GetLabel() << " reco tracks " << fTracksIO->GetEntries()  << std::endl;
@@ -902,230 +842,186 @@ void AliMESpp13::UserExec(Option_t * /*opt*/)
       AliError(Form("Missing MC trk at %d", i));
       continue;
     }
-    if (TMath::Abs(tMC->Eta()) > 0.8 && tMC->Pt() < 0.15)
+    if (TMath::Abs(tMC->Eta()) > 0.8 || tMC->Pt() <= 0.15)
       continue;
     fPt_Gen = tMC->Pt();
     fCharge_Gen = tMC->Charge();
     fEta_Gen = tMC->Eta();
     fPhi_Gen = tMC->Phi();
-    fDeltaPhi_Gen = ComputeDeltaPhi(fPhi_Gen, fPhiLP_MC);
+    // fDeltaPhi_Gen = deltaPhi.ComputeDeltaPhi(fPhi_Gen, fPhiLP_MC);
     if (i == 0)
     {
-      fDeltaEta_Gen = -99;
+      fDeltaEta_Gen = -9999;
+      fEtaLP_Gen = fEta_Gen;
+      fPtLP_Gen = fPt_Gen;
     }
     else
     {
-      fDeltaEta_Gen = fEtaLP_MC - fEta_Gen;
+      fDeltaEta_Gen = fEtaLP_Gen - fEta_Gen;
     }
-    if (tMC->HasOrigin(AliMEStrackInfo::kPrimary))
-    {
-      fPrimary_Gen = 1.;
-      fSecondary_Gen = 0.;
-      fMaterial_Gen = 0.;
-    }
-    else if (tMC->HasOrigin(AliMEStrackInfo::kSecondary))
-    {
-      fPrimary_Gen = 0.;
-      fSecondary_Gen = 1.;
-      fMaterial_Gen = 0.;
-    }
-
-    else if (tMC->HasOrigin(AliMEStrackInfo::kMaterial))
-    {
-      fPrimary_Gen = 0.;
-      fSecondary_Gen = 0.;
-      fMaterial_Gen = 1.;
-    }
-    if (!fTreeSRedirector)
-      return;
-    (*fTreeSRedirector) << "genTrk"
-                        << "Pt_Gen=" << fPt_Gen
-                        << "Charge_Gen=" << fCharge_Gen
-                        << "Eta_Gen=" << fEta_Gen
-                        << "Phi_Gen=" << fPhi_Gen
-                        << "DeltaPhi_Gen=" << fDeltaPhi_Gen
-                        << "DeltaEta_Gen=" << fDeltaEta_Gen
-                        << "fPrimary_Gen=" << fPrimary_Gen
-                        << "fSecondary_Gen=" << fSecondary_Gen
-                        << "fMaterial_Gen=" << fMaterial_Gen
-                        << "\n";
+    // if (!fTreeSRedirector)
+    //   return;
+    // (*fTreeSRedirector) << "genTrk"
+    //                     // << "Mult08=" << fMult08_MC
+    //                     // << "Sphericity_MC=" << fSphericity_MC
+    //                     // << "Pt_Gen=" << fPt_Gen
+    //                     // //                     << "Charge_Gen=" << fCharge_Gen
+    //                     // << "Eta_Gen=" << fEta_Gen
+    //                     // << "Phi_Gen=" << fPhi_Gen
+    //                     // << "DeltaPhi_Gen=" << fDeltaPhi_Gen
+    //                     // << "DeltaEta_Gen=" << fDeltaEta_Gen
+    //                     << "\n";
     // new ((*fMCGenTracksIO)[j++]) AliMEStrackInfo(*tMC);
   }
+
+  // for (int i(0); i < nTracks_MC; i++)
+  // {
+  //   tMC = (AliMEStrackInfo *)(*fMCGenTracksIO)[i];
+  //   if (TMath::Abs(tMC->Eta()) > 0.8 && tMC->Pt() < 0.15)
+  //     continue;
+  //   fPt_Gen = tMC->Pt();
+  //   fCharge_Gen = tMC->Charge();
+  //   fEta_Gen = tMC->Eta();
+  //   fPhi_Gen = tMC->Phi();
+  //   // fDeltaPhi_Gen = deltaPhi.ComputeDeltaPhi(fPhi_Gen, fPhiLP_MC);
+  //   if (i == 0)
+  //   {
+  //     fDeltaEta_Gen = -9999;
+  //     fEtaLP_Gen = fEta_Gen;
+  //     fPtLP_Gen = fPt_Gen;
+  //   }
+  //   else
+  //   {
+  //     fDeltaEta_Gen = fEtaLP_Gen - fEta_Gen;
+  //   }
+  //   if (!fTreeSRedirector)
+  //     return;
+  //   (*fTreeSRedirector) << "genTrk"
+  //                       << "run=" << run
+  //                       << "Mult08=" << fMult08_MC
+  //                       << "Sphericity_MC=" << fSphericity_MC
+  //                       << "Pt_Gen=" << fPt_Gen
+  //                       //                     << "Charge_Gen=" << fCharge_Gen
+  //                       << "Eta_Gen=" << fEta_Gen
+  //                       << "Primary_MC=" << fPrimary_MC.at(i)
+  //                       << "Secondary_MC=" << fSecondary_MC.at(i)
+  //                       << "Material_MC=" << fMaterial_MC.at(i)
+  //                       // << "Phi_Gen=" << fPhi_Gen
+  //                       // << "DeltaPhi_Gen=" << fDeltaPhi_Gen
+  //                       // << "DeltaEta_Gen=" << fDeltaEta_Gen
+  //                       << "\n";
+  // }
+  // if (!fTreeSRedirector)
+  //   return;
+  // (*fTreeSRedirector) << "ev"
+  // << "run=" << run
+  //                     // << "nTracks_Gen=" << nTracks_MC;
+  //                     // << "PtLP_Gen=" << fPtLP_Gen
+  //                     // << "EtaLP_Gen=" << fEtaLP_Gen
+  //                     // << "PhiLP_Gen=" << fPhiLP_Gen
+  //                     << "\n";
   // printf("MCtracksGenIn %d MCtracksGenOut %d\n", fMCtracks->GetEntries(), fMCGenTracksIO->GetEntries());
 
-  Double_t fPt_Miss(0.), fEta_Miss(0.), fPhi_Miss(0.), fCharge_Miss(0.), fDeltaPhi_Miss(0.), fDeltaEta_Miss(0.), fPrimary_Miss(0.), fSecondary_Miss(0.), fMaterial_Miss(0.);
-  for (int i(0); i < fMCtracks->GetEntriesFast(); i++)
-  {
-    tMC = (AliMEStrackInfo *)fMCtracks->At(i);
-    if (tMC->GetLabel() < 0)
-    {
-      if (TMath::Abs(tMC->Eta()) > 0.8 && tMC->Pt() < 0.15)
-        continue;
-      fPt_Miss = tMC->Pt();
-      fCharge_Miss = tMC->Charge();
-      fEta_Miss = tMC->Eta();
-      fPhi_Miss = tMC->Phi();
-      fDeltaPhi_Miss = ComputeDeltaPhi(fPhi_Miss, fPhiLP_MC);
-      if (i == 0)
-      {
-        fDeltaEta_Miss = -99;
-      }
-      else
-      {
-        fDeltaEta_Miss = fEtaLP_MC - fEta_Miss;
-      }
-      if (tMC->HasOrigin(AliMEStrackInfo::kPrimary))
-      {
-        fPrimary_Miss = 1.;
-        fSecondary_Miss = 0.;
-        fMaterial_Miss = 0.;
-      }
-      else if (tMC->HasOrigin(AliMEStrackInfo::kSecondary))
-      {
-        fPrimary_Miss = 0.;
-        fSecondary_Miss = 1.;
-        fMaterial_Miss = 0.;
-      }
+  // if (!fMCtracksMissIO)
+  //   fMCtracksMissIO = new TClonesArray("AliMEStrackInfo");
+  // for (int i(0), j(0); i < fMCtracks->GetEntriesFast(); i++)
+  // {
+  //   tMC = (AliMEStrackInfo *)fMCtracks->At(i);
+  //   if (tMC->GetLabel() < 0)
+  //     new ((*fMCtracksMissIO)[j++]) AliMEStrackInfo(*tMC);
+  // }
+  // sort.QSortTracks(*fMCtracksMissIO, 0, nTracksMissed);
+  // Double_t fPt_Miss(0.), fEta_Miss(0.), fPtLP_Miss(0.), fEtaLP_Miss(0.), fPhi_Miss(0.), fCharge_Miss(0.), fDeltaPhi_Miss(0.), fDeltaEta_Miss(0.);
+  // for (int i(0); i < nTracksMissed; i++)
+  // {
+  //   tMC = (AliMEStrackInfo *)(*fMCtracksMissIO)[i];
+  //   if (TMath::Abs(tMC->Eta()) > 0.8 && tMC->Pt() < 0.15)
+  //     continue;
+  //   fPt_Miss = tMC->Pt();
+  //   fCharge_Miss = tMC->Charge();
+  //   fEta_Miss = tMC->Eta();
+  //   fPhi_Miss = tMC->Phi();
+  //   fDeltaPhi_Miss = deltaPhi.ComputeDeltaPhi(fPhi_Miss, fPhiLP_MC);
+  //   if (i == 0)
+  //   {
+  //     fDeltaEta_Miss = -9999;
+  //     fPtLP_Miss = fPt_Miss;
+  //     fEtaLP_Miss = fEta_Miss;
+  //   }
+  //   else
+  //   {
+  //     fDeltaEta_Miss = fEtaLP_Miss - fEta_Miss;
+  //   }
+  //   // if (!fTreeSRedirector)
+  //   //   return;
+  //   // (*fTreeSRedirector) << "missedTrk"
+  //   // << "run=" << run
+  //   //                     // << "Pt_Miss=" << fPt_Miss
+  //   //                     // << "Charge_Miss=" << fCharge_Miss
+  //   //                     // << "Eta_Miss=" << fEta_Miss
+  //   //                     // << "Phi_Miss=" << fPhi_Miss
+  //   //                     // << "DeltaPhi_Miss=" << fDeltaPhi_Miss
+  //   //                     // << "DeltaEta_Miss=" << fDeltaEta_Miss
+  //   //                     << "\n";
+  // }
+  // if (!fTreeSRedirector)
+  //   return;
+  // (*fTreeSRedirector) << "ev"
+  // << "run=" << run
+  //                     // << "nTracks_Miss=" << nTracksMissed
+  //                     // << "PtLP_Miss=" << fPtLP_Miss
+  //                     // << "EtaLP_Miss=" << fEtaLP_Miss
+  //                     // << "PhiLP_Miss=" << fPhiLP_Miss
+  //                     << "\n";
 
-      else if (tMC->HasOrigin(AliMEStrackInfo::kMaterial))
-      {
-        fPrimary_Miss = 0.;
-        fSecondary_Miss = 0.;
-        fMaterial_Miss = 1.;
-      }
-      if (!fTreeSRedirector)
-        return;
-      (*fTreeSRedirector) << "missedTrk"
-                          << "Pt_Miss=" << fPt_Miss
-                          << "Charge_Miss=" << fCharge_Miss
-                          << "Eta_Miss=" << fEta_Miss
-                          << "Phi_Miss=" << fPhi_Miss
-                          << "DeltaPhi_Miss=" << fDeltaPhi_Miss
-                          << "DeltaEta_Miss=" << fDeltaEta_Miss
-                          << "fPrimary_Miss=" << fPrimary_Miss
-                          << "fSecondary_Miss=" << fSecondary_Miss
-                          << "fMaterial_Miss=" << fMaterial_Miss
-                          << "\n";
-    }
-    // new ((*fMCtracksMissIO)[j++]) AliMEStrackInfo(*tMC);
-  }
   // printf("MCtracks selected %d\n", fMCtracks->GetEntries());
   // printf("MCtracks matched %d\n", fMCtracksIO->GetEntries());
   // printf("MCtracks missed %d\n", fMCtracksMissIO->GetEntries());
   // printf("Closure %d\n", fMCtracks->GetEntries() - fMCtracksMissIO->GetEntries() - fMCtracksIO->GetEntries());
 
+  // if ((fMCtracks->GetEntries() - fMCtracksMissIO->GetEntries() - fMCtracksIO->GetEntries()) != 0)
+  // {
+  //   AliError("the closure test for MC is not passed!");
+  // }
+
   AliDebug(2, Form("Tracks REC[%d] MC[%d]", fTracks->GetEntries(), fMCtracks ? fMCtracks->GetEntries() : 0));
 
+  // fTracksIO->Clear("C");
+  // fMCtracksIO->Clear("C");
+  // fMCGenTracksIO->Clear("C");
+  // fMCtracksMissIO->Clear("C");
+
   PostData(kQA, fHistosQA);
-  PostData(kMCeventInfo + 1, fMCevInfo);
-  PostData(kMCtracks + 1, fMCtracks);
-  // PostData(kMCeventTree + 1, fMCeventTree);
-  // PostData(kMCtracksTree + 1, fMCtracksTree);
-  // PostData(kMCGenTracksTree + 1, fMCGenTracksTree);
-  // PostData(kMCMissedTracksTree + 1, fMCMissedTracksTree);
-
-  fTreeSRedirector->Close();
+  PostData(kTree + 1, fTree);
+  PostData(kMCGenTree + 1, fMCGenTree);
+  // PostData(kMCMissTree + 1, fMCMissTree);
 }
-//_____________________________________________________________________
-void AliMESpp13::SetPriors()
-{
-
-  fPIDcomb = new AliPIDCombined();
-  fPIDcomb->SetSelectedSpecies(AliPID::kSPECIES);
-
-  switch (fConfig.fPIDpriors)
-  {
-  case AliMESconfigTender::kTPC:
-    // default aliroot priors
-    AliInfo("Setting default priors ...");
-    fPIDcomb->SetDefaultTPCPriors();
-    AliInfo("Done setting default priors.");
-    break;
-  case AliMESconfigTender::kIterative:
-  { // data priors identified @ 15.04.2015 by Cristi for LHC10d
-    AliInfo("Getting iterative data priors from file...");
-    TDirectory *cwd(gDirectory);
-    TFile *lPriors = TFile::Open("$ALICE_PHYSICS/PWGLF/SPECTRA/MultEvShape/priorsDist_data_LHC10d_newAliroot.root");
-    if (lPriors->IsZombie())
-    {
-      AliError("Could not open the priors file");
-      return;
-    }
-    const Char_t *pname[] = {"e", "e", "pi", "K", "p"};
-    AliInfo("Setting iterative data priors ...");
-    for (Int_t i = 0; i < 5; i++)
-    {
-      fPIDcomb->SetPriorDistribution(AliPID::EParticleType(i), (TH1F *)lPriors->Get(Form("priors_%s_final", pname[i])));
-      fPIDcomb->GetPriorDistribution(AliPID::EParticleType(i))->SetDirectory(cwd);
-    }
-    lPriors->Close();
-    delete lPriors;
-    for (Int_t i = 0; i < 5; i++)
-    {
-      TH1 *h(fPIDcomb->GetPriorDistribution(AliPID::EParticleType(i)));
-      printf("%s -> %s\n", h->GetName(), h->GetDirectory()->GetName());
-    }
-    fPIDcomb->SetEnablePriors(kTRUE);
-    AliInfo("Done setting iterative data priors.");
-    break;
-  }
-  case AliMESconfigTender::kNoPP:
-  { // flat priors
-    AliInfo("Setting flat priors ...");
-    fPIDcomb->SetEnablePriors(kFALSE); // FLAT priors
-    AliInfo("Done setting flat priors.");
-    break;
-  }
-  default:
-    AliWarning("No PID priors selected");
-    break;
-  }
-}
-
-//________________________________________________________________________
-Bool_t AliMESpp13::PostProcess()
-{
-  return kTRUE;
-}
-
 //________________________________________________________
 Bool_t AliMESpp13::BuildQAHistos()
 {
   // Make QA sparse histos for
-  // - task configuration
   // - efficiency
   // - event info
   // - track info
 
-  if (fHistosQA)
-  { // QA histos already created. Check consistency
-    if (fHistosQA->GetEntries() == (HasMCdata() ? kNqa : kMCevInfo) && dynamic_cast<AliMESpp13::AliMESconfigTender *>(fHistosQA->At(kConfig)))
-    {
-      AliInfo("QA histos already created");
-      return kTRUE;
-    }
-    else
-    {
-      AliError("QA histos wrongly defined.");
-      fHistosQA->ls();
-      return kFALSE;
-    }
-  }
-
   // build QA histos
   fHistosQA = new TList();
   fHistosQA->SetOwner(kTRUE);
-  fHistosQA->AddAt(&fConfig, kConfig);
 
   fEventCutsQA.AddQAplotsToList(fHistosQA, kTRUE);
 
-  TH1 *hEff = new TH1I("hEff", "Cuts efficiency;cut;entries", 3, -0.5, 2.5);
+  TH1 *hEff = new TH1I("hEff", "Event selection;;Events", 10, -0.5, 9.5);
   TAxis *ax = hEff->GetXaxis();
-  ax->SetBinLabel(1, "OK");
-  ax->SetBinLabel(2, "Trigger");
-  ax->SetBinLabel(3, "Vertex");
-  //   ax->SetBinLabel(4, "PileUp");
-
+  ax->SetBinLabel(1, "All events");
+  ax->SetBinLabel(2, "Physics selection");
+  ax->SetBinLabel(3, "Trigger (kINT7)");
+  ax->SetBinLabel(4, "Complete DAQ");
+  ax->SetBinLabel(5, "No background");
+  ax->SetBinLabel(6, "No pile up");
+  ax->SetBinLabel(7, "Good vertex");
+  ax->SetBinLabel(8, "|Zvtx|<10 cm");
+  ax->SetBinLabel(9, "INEL > 0");
+  ax->SetBinLabel(10, "All cuts");
   fHistosQA->AddAt(hEff, kEfficiency);
 
   TString st;
@@ -1151,11 +1047,11 @@ Bool_t AliMESpp13::BuildQAHistos()
 
   if (!(H = (THnSparseI *)gROOT->FindObject("TrackInfo")))
   {
-    const Int_t ndim(7);
-    const Char_t *cldTitle[ndim] = {"p_{t}", "eta", "phi", "DCA_{r}", "DCA_{z}", "dEdx", "p_Beta"};
-    const Int_t cldNbins[ndim] = {100, 20, 20, 61, 41, 100, 100};
-    const Double_t cldMin[ndim] = {0., -1.0, 0., -3., -2.0, 0., 0.},
-                   cldMax[ndim] = {10., 1., (2 * TMath::Pi()), 3., 2., 200., 1.1};
+    const Int_t ndim(5);
+    const Char_t *cldTitle[ndim] = {"p_{t}", "eta", "phi", "DCA_{r}", "DCA_{z}"};
+    const Int_t cldNbins[ndim] = {100, 20, 20, 61, 41};
+    const Double_t cldMin[ndim] = {0., -1.0, 0., -3., -2.0},
+                   cldMax[ndim] = {10., 1., (2 * TMath::Pi()), 3., 2.};
     st = "Track Info;";
     for (Int_t idim(0); idim < ndim; idim++)
     {
@@ -1191,159 +1087,16 @@ Bool_t AliMESpp13::BuildQAHistos()
   fHistosQA->ls();
   return kTRUE;
 }
-
-//________________________________________________________________________
-Int_t AliMESpp13::MakeMultiplicityMC(AliMCEvent *const mc)
+//_____________________________________________________________________________
+void AliMESpp13::FinishTaskOutput()
 {
-  AliStack *stack(NULL);
-  if (!(stack = mc->Stack()))
-    return -1;
-
-  //     Int_t nPrim = stack->GetNprimary();
-  Int_t charged(0);
-  AliMCParticle *particle(NULL);
-  for (Int_t ipart = 0; ipart < mc->GetNumberOfTracks(); ipart++)
+  //
+  // Called one at the end
+  // locally on working node
+  //
+  if (fTreeSRedirector)
   {
-    if (!(particle = dynamic_cast<AliMCParticle *>(mc->GetTrack(ipart))))
-      continue;
-
-    if (particle->E() - TMath::Abs(particle->Pz()) < 0.)
-    {
-      printf(" - E - AliMESpp13::MakeMultiplicityMC : pz > E !!\n");
-      continue;
-    }
-
-    if (!(stack->IsPhysicalPrimary(particle->GetLabel())))
-      continue;
-
-    //  ---------  Charged  ----------
-    if (TMath::Abs(particle->Charge()) < 3)
-      continue;
-
-    if (TMath::Abs(particle->Eta()) > 0.8)
-      continue;
-
-    charged++;
-
-  } // end track loop
-
-  return charged;
-}
-
-Int_t AliMESpp13::MakeMultiplicity0408MC(AliMCEvent *const mc)
-{
-  AliStack *stack(NULL);
-  if (!(stack = mc->Stack()))
-    return -1;
-
-  //     Int_t nPrim = stack->GetNprimary();
-  Int_t charged(0);
-  AliMCParticle *particle(NULL);
-  for (Int_t ipart = 0; ipart < mc->GetNumberOfTracks(); ipart++)
-  {
-    if (!(particle = dynamic_cast<AliMCParticle *>(mc->GetTrack(ipart))))
-      continue;
-
-    if (particle->E() - TMath::Abs(particle->Pz()) < 0.)
-    {
-      printf(" - E - AliMESpp13::MakeMultiplicityMC : pz > E !!\n");
-      continue;
-    }
-
-    if (!(stack->IsPhysicalPrimary(particle->GetLabel())))
-      continue;
-
-    //  ---------  Charged  ----------
-    if (TMath::Abs(particle->Charge()) < 3)
-      continue;
-
-    if (TMath::Abs(particle->Eta()) > 0.8)
-      continue;
-    if (TMath::Abs(particle->Eta()) < 0.4)
-      continue;
-
-    charged++;
-
-  } // end track loop
-
-  return charged;
-}
-
-Int_t AliMESpp13::MakeMultiplicityV0MMC(AliMCEvent *const mc)
-{
-  AliStack *stack(NULL);
-  if (!(stack = mc->Stack()))
-    return -1;
-
-  //     Int_t nPrim = stack->GetNprimary();
-  Int_t charged(0);
-  AliMCParticle *particle(NULL);
-  for (Int_t ipart = 0; ipart < mc->GetNumberOfTracks(); ipart++)
-  {
-    if (!(particle = dynamic_cast<AliMCParticle *>(mc->GetTrack(ipart))))
-      continue;
-
-    if (particle->E() - TMath::Abs(particle->Pz()) < 0.)
-    {
-      printf(" - E - AliMESpp13::MakeMultiplicityMC : pz > E !!\n");
-      continue;
-    }
-
-    if (!(stack->IsPhysicalPrimary(particle->GetLabel())))
-      continue;
-
-    //  ---------  Charged  ----------
-    if (TMath::Abs(particle->Charge()) < 3)
-      continue;
-
-    if (particle->Eta() < 5.1 && particle->Eta() > 2.8)
-      charged++; // V0A
-    if (particle->Eta() < -1.7 && particle->Eta() > -3.7)
-      charged++; // V0C
-
-  } // end track loop
-
-  return charged;
-}
-//_____________________________________________________________________
-Double_t AliMESpp13::ComputeDeltaPhi(Double_t phi, Double_t phi_LP)
-{
-  Double_t delta_phi = phi - phi_LP;
-  Double_t result = -9999.;
-
-  if (TMath::Abs(delta_phi) > 0.0001)
-  { // avoid LP
-    if (delta_phi < -TMath::PiOver2())
-    {
-      result = delta_phi + TMath::TwoPi();
-    }
-    else if (delta_phi > (3 * TMath::PiOver2()))
-    {
-      result = delta_phi - TMath::TwoPi();
-    }
-    else
-    {
-      result = delta_phi;
-    }
-  }
-  // printf("\n\ndelta_phi = %g\n", result);
-  if (result == -9999)
-  {
-    return 0.5;
-  }
-  else if (-0.8 <= result && result <= 0.8)
-  { // near peak
-    // printf("returning 0.5\n");
-    return 1.5;
-  }
-  else if (2.4 <= result && result <= 4.0)
-  { // away peak
-    // printf("returning 1.5\n");
-    return 2.5;
-  }
-  else
-  {
-    // printf("returning 2.5\n");
-    return 3.5;
+    delete fTreeSRedirector;
+    fTreeSRedirector = NULL;
   }
 }

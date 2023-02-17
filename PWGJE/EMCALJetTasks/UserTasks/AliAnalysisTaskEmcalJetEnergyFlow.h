@@ -26,6 +26,12 @@
 
 class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	public:
+        enum AnalysisType{
+                kppData         = 0,
+                kppMC           = 1,
+                kPbPbData       = 2,
+                kEmbedded       = 3 
+                };
 	
 	AliAnalysisTaskEmcalJetEnergyFlow()			;
 	AliAnalysisTaskEmcalJetEnergyFlow(const char* name)	;
@@ -39,7 +45,8 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 		const char *nclusters		= "usedefault",
 		const char *ncells		= "usedefault",
 		Double_t Rstep_EF               = 0.1,              
-		Bool_t SetMCprod                 = kTRUE,
+                Double_t Max_match_dr           = 0.2,
+                AnalysisType fAnType            =kppData,
                 const char *suffix              = "" );
 	
 	protected:
@@ -52,7 +59,10 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	void			ExecOnce()				;
 	Bool_t			FillHistograms()			;
 	Bool_t			Run()					;
-
+        void                    SetAnalysisType(AnalysisType a){fAnalysisType = a;}
+        AnalysisType            GetAnalysisType(){return fAnalysisType;}
+        void                    SetMaxMatchDR(Double_t dr){Max_match_dist = dr;}
+        Double_t                SetMaxMatchDR(){return Max_match_dist;}
 	void			AllocateJetHistograms()			;
 	void			AllocateTrackHistograms()		; ///<Same as Sample task
 	void                    AllocateClusterHistograms()             ; ///<May remove later
@@ -66,15 +76,15 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	void                    DoCellLoop()                            ; ///<May remove later
 
 	Double_t                R_jet_step				;///<Radial step for the dpt calculation
-        Bool_t                  IsMCprod                                ;///<Flag for MC productions
+        Double_t                Max_match_dist                          ;///<Maximum distance for the matching between Rjet
 	THistManager            fHistManager                            ;///<Hist manager
 //	TList*			fOutput					;///!<! Output list
  	private:
+        AnalysisType            fAnalysisType                           ;///<Flag for type of analysis
  	 AliAnalysisTaskEmcalJetEnergyFlow(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
   	 AliAnalysisTaskEmcalJetEnergyFlow &operator=(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
 
-  	/// \cond CLASSIMP
-  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,14);
+  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,19);
 	/// \endcond
 };
 #endif

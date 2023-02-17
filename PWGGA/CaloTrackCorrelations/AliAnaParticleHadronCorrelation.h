@@ -427,6 +427,7 @@ private:
   TH2F *       fhTriggerEventPlaneCentrality;            //!<! Event plane vs centrality for trigger particles.
   
   TH1F *       fhPtTriggerMixed;                         //!<! pT distribution of trigger particles, used in mixing.
+  TH2F *       fhPtTriggerMixedCentrality;               //!<! pT distribution of trigger particles, used in mixing vs centrality
   TH2F *       fhPtTriggerMixedVzBin;                    //!<! pT distribution of trigger particles, used in mixing, vs vz bin.
   TH2F *       fhPtTriggerMixedBin;                      //!<! pT distribution of trigger particles vs mixing bin.
   TH2F *       fhPhiTriggerMixed;                        //!<! phi distribution vs pT of trigger particles, used in mixing.

@@ -1,5 +1,6 @@
 #include "TString.h"
 #include "TGrid.h"
+#include "AliAnalysisPtCorr.h"
 class AliAnalysisDataContainer;
 class TNamed;
 Bool_t ConnectToGrid() {
@@ -7,7 +8,7 @@ Bool_t ConnectToGrid() {
   if(!gGrid) {printf("Task requires connection to grid, but it could not be established!\n"); return kFALSE; };
   return kTRUE;
 }
-AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, bool isOnTheFly, int pseudoeff, TString efficiencyPath, TString subfix1)
+AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, bool isOnTheFly, unsigned int fl_eff, TString efficiencyPath, TString subfix1)
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0;
@@ -17,9 +18,15 @@ AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, bool isOnTheFly, i
   printf("----Initialising task %s ----\n",l_ContName.Data());
   printf("IsMC: %i\n",IsMC);
   printf("IsOnTheFly: %i\n",isOnTheFly);
-  printf("Pseudo efficiency: %i\n",pseudoeff);
+  printf("Efficiency flags:\n");
+  printf("No efficiency: %i\n",(fl_eff&PtCorrFlags::noeff)==PtCorrFlags::noeff);
+  printf("Constant efficiency: %i\n",(fl_eff&PtCorrFlags::consteff)==PtCorrFlags::consteff);
+  printf("Gaussian efficiency: %i\n",(fl_eff&PtCorrFlags::gausseff)==PtCorrFlags::gausseff);
+  printf("Flat efficiency: %i\n",(fl_eff&PtCorrFlags::flateff)==PtCorrFlags::flateff);
+  printf("Power efficiency: %i\n",(fl_eff&PtCorrFlags::powereff)==PtCorrFlags::powereff);
+  printf("Real efficiency input: %i\n",(fl_eff&PtCorrFlags::realeffin)==PtCorrFlags::realeffin);
   if(!l_ContName.IsNull()) l_ContName.Prepend("_");
-  AliAnalysisTaskPtCorr* task = new AliAnalysisTaskPtCorr(name.Data(), IsMC, isOnTheFly, pseudoeff, l_ContName);
+  AliAnalysisTaskPtCorr* task = new AliAnalysisTaskPtCorr(name.Data(), IsMC, isOnTheFly, fl_eff, l_ContName);
   if(!task)
     return 0x0;
   mgr->AddTask(task); // add your task to the manager
@@ -28,7 +35,7 @@ AliAnalysisTaskPtCorr* AddTaskPtCorr(TString name, bool IsMC, bool isOnTheFly, i
   //Full analysis
   TObjArray *AllContainers = mgr->GetContainers();
   Bool_t gridConnected=kFALSE;
-  if(!(IsMC && !(pseudoeff>0)) && !isOnTheFly) {
+  if(!(IsMC&&!((fl_eff&PtCorrFlags::realeffin)==PtCorrFlags::realeffin)) &&!isOnTheFly) {
     if(!AllContainers->FindObject("Efficiency")) {
       printf("Getting input...\n");
       if(efficiencyPath.IsNull()) { printf("Efficiency path not provided!\n"); return 0; };

@@ -77,7 +77,7 @@ void AliAnalysisTaskParticleEffDY::SetPidMethod(int method)
 //_______________________________________________________
 
 AliAnalysisTaskParticleEffDY::AliAnalysisTaskParticleEffDY(TString name, int pidMethod, int filterbit) :
-  AliAnalysisTaskSE(name), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0), fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(96), fPidMethod(kNSigma),  fEstEventMult(kRefMult),fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
+  AliAnalysisTaskSE(name), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0), fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(96), fPidMethod(kExclusivePIDDiffRejection),  fEstEventMult(kRefMult),fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
 
 {
 
@@ -592,19 +592,14 @@ void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
 
   
   
-  //********** PID ****************
+//********** PID ****************
 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
   fpidResponse = inputHandler->GetPIDResponse();
   std::cout<<"*******"<< fpidResponse<<std::endl;
-
-
-
-
   
   // ************************
-
   PostData(1, fHistoList);
 }
 
@@ -888,6 +883,9 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
   else if(fcent==2)fHistEvCuts[2]->Fill(2);
   else if(fcent==3)fHistEvCuts[3]->Fill(2);
 
+
+//********* Pile-up removal*******************
+  //check this: https://twiki.cern.ch/twiki/bin/view/ALICE/AliDPGtoolsPileup
   AliAnalysisUtils *anaUtil=new AliAnalysisUtils();
     
   Bool_t fpA2013 = kFALSE;
@@ -987,9 +985,8 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
     if (!track)continue;
     fHistQA[10]->Fill(2);
 
-    //UInt_t filterBit = (1 << (0));
-    UInt_t filterBit = 96;
-    if(!track->TestFilterBit(filterBit))continue;	
+      UInt_t filterBit = fFB;
+    if(!track->TestFilterBit(filterBit))continue;		
 
     //charge
     //  if(track->Charge() < 0 ) continue;

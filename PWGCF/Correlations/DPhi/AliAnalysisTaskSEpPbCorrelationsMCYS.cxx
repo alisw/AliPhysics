@@ -88,6 +88,7 @@ AliAnalysisTaskSEpPbCorrelationsMCYS::AliAnalysisTaskSEpPbCorrelationsMCYS()
       fcollisiontype("pPb"),
       fDataType(kTRUE),
       fcentcalib(kFALSE),
+      fboost(kTRUE),
       frun2(kTRUE),
       fQA(kFALSE),
       fMCclosure(kFALSE),
@@ -276,6 +277,7 @@ AliAnalysisTaskSEpPbCorrelationsMCYS::AliAnalysisTaskSEpPbCorrelationsMCYS(const
       fcollisiontype("pPb"),
       fDataType(kTRUE),
       fcentcalib(kFALSE),
+      fboost(kTRUE),
       frun2(kTRUE),
       fQA(kFALSE),
       fMCclosure(kFALSE),
@@ -518,11 +520,13 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
   fOutputList2->Add(frefvz);
 
   if(fcentcalib){
-	TGrid::Connect("alien://");
-	TFile*file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/fcalibration_centrality_AMPT_modireco.root");
-	if(!file) AliError("No correction factor");
-	fhcorr[0]=(TH1D*)file->Get("hcent");
-	fOutputList->Add(fhcorr[0]);
+    TGrid::Connect("alien://");
+    TFile*file;
+    if(!fboost)file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/fcalibration_centrality_AMPT_modireco.root");
+    else file=TFile::Open("alien:///alice/cern.ch/user/y/ysekiguc/fcalibration_centrality_AMPT_boostedprim.root");
+    if(!file) AliError("No correction factor");
+    fhcorr[0]=(TH1D*)file->Get("hcent");
+    fOutputList->Add(fhcorr[0]);
   }
   
   
@@ -775,10 +779,25 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::UserCreateOutputObjects() {
      //     fOutputList2->Add(fhistmcprimfinal);
 
      TH2F* fNTrackCorrMC;
-     if(fcollisiontype=="pp"||fcollisiontype=="HMPP"||fcollisiontype=="MBPP") fNTrackCorrMC=new TH2F("fNTrackCorrMC","fNTrackCorrMC",150,0,150,150,0,150);
-     else if(fcollisiontype=="pPb") fNTrackCorrMC=new TH2F("fNTrackCorrMC","fNTrackCorrMC",200,0,200,200,0,200);
-     else if(fcollisiontype.Contains("PbPb")) fNTrackCorrMC=new TH2F("fNTrackCorrMC","fNTrackCorrMC",1000,0,3500,1000,0,3500);
+     TH2F* fNTrackCorrMCptex;
+     TH2F* fNTrackCorrMCptexgen;
+     if(fcollisiontype=="pp"||fcollisiontype.Contains("HMPP")||fcollisiontype=="MBPP") {
+       fNTrackCorrMC=new TH2F("fNTrackCorrMC","fNTrackCorrMC",150,0,150,150,0,150);
+       fNTrackCorrMCptex=new TH2F("fNTrackCorrMCptex","fNTrackCorrMCptex",150,0,150,150,0,150);
+       fNTrackCorrMCptexgen=new TH2F("fNTrackCorrMCptexgen","fNTrackCorrMCptexgen",150,0,150,150,0,150);
+     }
+     else if(fcollisiontype=="pPb") {
+       fNTrackCorrMC=new TH2F("fNTrackCorrMC","fNTrackCorrMC",200,0,200,200,0,200);
+       fNTrackCorrMCptex=new TH2F("fNTrackCorrMCptex","fNTrackCorrMCptex",200,0,200,200,0,200);
+       fNTrackCorrMCptexgen=new TH2F("fNTrackCorrMCptexgen","fNTrackCorrMCptexgen",200,0,200,200,0,200);
+     }else if(fcollisiontype.Contains("PbPb")){
+       fNTrackCorrMC=new TH2F("fNTrackCorrMC","fNTrackCorrMC",1000,0,3500,1000,0,3500);
+       fNTrackCorrMCptex=new TH2F("fNTrackCorrMCptex","fNTrackCorrMCptex",1000,0,3500,1000,0,3500);
+       fNTrackCorrMCptexgen=new TH2F("fNTrackCorrMCptexgen","fNTrackCorrMCptexgen",1000,0,3500,1000,0,3500);
+     }
      fOutputList2->Add(fNTrackCorrMC);
+     fOutputList2->Add(fNTrackCorrMCptex);
+     fOutputList2->Add(fNTrackCorrMCptexgen);
      
      TH2F* fhmcprimvzeta=new TH2F("fhmcprimvzeta","fhmcprimvzeta",200,-4,6,20,-10,10);
      fOutputList2->Add(fhmcprimvzeta);
@@ -2110,7 +2129,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::DefineCorrOutput() {
    
    fHist_Stat->Fill(0);
 
-   if(fcollisiontype=="pPb"|| fcollisiontype.Contains("PbPb") || fcollisiontype=="PP"){
+   if(fcollisiontype=="pPb"|| fcollisiontype.Contains("PbPb")){
      if (!fEventCuts.AcceptEvent(fEvent)) {
        PostData(1, fOutputList);
        PostData(2, fOutputList1);
@@ -2226,19 +2245,22 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::DefineCorrOutput() {
    } else{
      Float_t sum = 0., max = 0.;
      for(Int_t i = 32; i < 64; ++i)
-       {      sum +=fvzero->GetMultiplicity(i);
+       {
+	 sum +=fvzero->GetMultiplicity(i);
 	 if (fvzero->GetMultiplicity(i) > max) max = fvzero->GetMultiplicity(i);
        }
      sum -= max;
      //     fV0Amultmodi->Fill(sum);
-
-     Int_t nbinmult= fhcorr[0]->GetXaxis()->FindBin(sum);
-     lCentrality=fhcorr[0]->GetBinContent(nbinmult);
+     if(!fboost){
+       Int_t nbinmult= fhcorr[0]->GetXaxis()->FindBin(sum);
+       lCentrality=fhcorr[0]->GetBinContent(nbinmult);
+     }
    }
-   
+
    Float_t sum = 0., max = 0.;
    for(Int_t i = 32; i < 64; ++i)
-     {      sum +=fvzero->GetMultiplicity(i);
+     {
+       sum +=fvzero->GetMultiplicity(i);
        if (fvzero->GetMultiplicity(i) > max) max = fvzero->GetMultiplicity(i);
      }
    sum -= max;
@@ -2252,8 +2274,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::DefineCorrOutput() {
      Int_t nbinmult= fhcorr[0]->GetXaxis()->FindBin(v0amult);
      lCentrality=fhcorr[0]->GetBinContent(nbinmult);
      */
-     
-    
+
    TClonesArray *mcArray = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
    if(!mcArray){
      Printf("No MC particle branch found");
@@ -2266,18 +2287,27 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::DefineCorrOutput() {
    for (Int_t i = 0; i < nMCAllTracks; i++){
      AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcArray->At(i);
      if (!mcTrack) {
-	  Error("ReadEventAODMC", "Could not receive particle %d", i);
-	  continue;
+       Error("ReadEventAODMC", "Could not receive particle %d", i);
+       continue;
      }
      Bool_t TrIsPrim=mcTrack->IsPhysicalPrimary();
      Float_t mcTrackEta = mcTrack->Eta();
-	Bool_t TrCharge=mcTrack->Charge()!=0;
-	if(!TrCharge)        continue;
-	if(mcTrackEta>2.8 && mcTrackEta<5.1) ntrackv0aprimaryall++;
-	if(!TrIsPrim)	     continue;
-	if(mcTrackEta>2.8 && mcTrackEta<5.1) ntrackv0aprimary++;
-	if(abs(mcTrackEta)<0.8) npartilce++;
-      }
+     if(fboost) mcTrackEta=Transboost(mcTrack);
+     
+     Bool_t TrCharge=mcTrack->Charge()!=0;
+     if(!TrCharge)        continue;
+     if(mcTrackEta>2.8 && mcTrackEta<5.1) ntrackv0aprimaryall++;
+     if(!TrIsPrim)	     continue;
+     if(mcTrackEta>2.8 && mcTrackEta<5.1) ntrackv0aprimary++;
+     if(abs(mcTrackEta)<0.8) npartilce++;
+   }
+
+   if(fcentcalib && fboost) {
+     Int_t nbinmult= fhcorr[0]->GetXaxis()->FindBin(ntrackv0aprimaryall);
+     lCentrality=fhcorr[0]->GetBinContent(nbinmult);
+   }
+
+   
    
    dynamic_cast<TH1F*>(fOutputList2->FindObject("fV0Amultprim"))->Fill(ntrackv0aprimary);
    dynamic_cast<TH2F*>(fOutputList2->FindObject("fh2_V0A_comp_prim"))->Fill(ntrackv0aprimaryall,sum);     
@@ -2310,7 +2340,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::DefineCorrOutput() {
       
       //      AliGenHijingEventHeader* ghijing = dynamic_cast<AliGenHijingEventHeader*>(gh);
       AliGenHepMCEventHeader* ggen= dynamic_cast<AliGenHepMCEventHeader*>(gh);
-
+      
       if(ggen){//For AMPT and EPOS production
 	Int_t ncoll=ggen->Ncoll();
 	Float_t impactpara=ggen->impact_parameter();
@@ -2329,14 +2359,13 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::DefineCorrOutput() {
 	dynamic_cast<TH1F*>(fOutputList->FindObject("fHistImpactpara"))->Fill(impactpara);
 	dynamic_cast<TH2F*>(fOutputList->FindObject("fHistImpactcent"))->Fill(lCentrality,impactpara);
       }
-
       
    }
-      MakeAna();
+   MakeAna();
       
-      PostData(1, fOutputList);
-      PostData(2, fOutputList1);
-      PostData(3, fOutputList2);
+   PostData(1, fOutputList);
+   PostData(2, fOutputList1);
+   PostData(3, fOutputList2);
  }
 
 void AliAnalysisTaskSEpPbCorrelationsMCYS::Terminate(Option_t *) {
@@ -2348,7 +2377,8 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::Terminate(Option_t *) {
 }
 
 void AliAnalysisTaskSEpPbCorrelationsMCYS::MakeAna() {
-  
+
+
   DumpTObjTable("start correlation analysis");
   TObjArray *selectedTracksLeading = new TObjArray;
   selectedTracksLeading->SetOwner(kTRUE);
@@ -2434,7 +2464,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::MakeAna() {
 	     if(eta>0){
 	       nFMD_fwd_hits+=mostProbableN;
 	       if(2.8<eta && eta<5.03) nFMD_fwdV0acc_hits+=mostProbableN;
-	   }else{
+		 }else{
 	       nFMD_bwd_hits+=mostProbableN;
 	       if(-3.4<eta && eta<-2.01) nFMD_bwdV0acc_hits+=mostProbableN;
 	     }
@@ -2452,22 +2482,22 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::MakeAna() {
      if(fFMDcut){
        //delete hphiacceptance;
        if(nFMD_fwd_hits==0 || nFMD_bwd_hits==0){
-	 selectedTracksLeading->Clear();
-	 delete selectedTracksLeading;
-	 selectedTracksAssociated->Clear();
-	 delete selectedTracksAssociated;
-	 PostData(1, fOutputList);
-	 PostData(2, fOutputList1);
-	 PostData(3, fOutputList2);
-	 return;
+		 selectedTracksLeading->Clear();
+		 delete selectedTracksLeading;
+		 selectedTracksAssociated->Clear();
+		 delete selectedTracksAssociated;
+		 PostData(1, fOutputList);
+		 PostData(2, fOutputList1);
+		 PostData(3, fOutputList2);
+		 return;
        }
      }
      
      fHist_Stat->Fill(5);
      
      DumpTObjTable("End of fill fmd tracks");
-
-   
+     
+     
      dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0"))->Fill(nFMD_bwd_hits + nFMD_fwd_hits, nV0C_hits + nV0A_hits);
      dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0A"))->Fill(nFMD_fwd_hits, nV0A_hits);
      dynamic_cast<TH2F*>(fOutputList2->FindObject("fFMDV0C"))->Fill(nFMD_bwd_hits, nV0C_hits);
@@ -2647,6 +2677,7 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::MakeAna() {
   Double_t mcTrackPt=-999.;
   Double_t mcTrackPhi=-999.;
   Bool_t TrCharge=kFALSE;
+  Double_t mcTrackEtab=-9999.;
   
   AliAODMCHeader* aodMCheader=(AliAODMCHeader*)fEvent->FindListObject(AliAODMCHeader::StdBranchName());
   TClonesArray *mcArray = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
@@ -2655,16 +2686,18 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::MakeAna() {
 	return;
   }
   
-  
   Int_t nMCAllTracks = mcArray->GetEntriesFast();
   Int_t nMCtrackssamecut=0;
+  Int_t nMCtrackssameetacut=0;
   Int_t ntrackv0aprimary=0;
   Int_t ntrackv0aall=0;
   Int_t ntrackv0cprimary=0;
   
   Double_t meanpt=0;
   Int_t nprimtrack=0;
-  
+
+
+
   for (Int_t i = 0; i < nMCAllTracks; i++){
 	AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcArray->At(i);
 	if (!mcTrack) {
@@ -2676,16 +2709,21 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::MakeAna() {
 	TrIsSecondMate=mcTrack->IsSecondaryFromMaterial();
 	TrIsSecondWeak=mcTrack->IsSecondaryFromWeakDecay();
 	TrIsOthers=!TrIsPrim && !TrIsSecondMate && !TrIsSecondWeak;
-	
+
+	//not transformed
 	mcTrackEta = mcTrack->Eta();
 	mcTrackPt  = mcTrack->Pt();
 	mcTrackPhi = mcTrack->Phi();
-	
+
 	//   cout<<mcTrackEta<<" "<<mcTrack->Y()<<endl;
 	TrCharge=mcTrack->Charge()!=0;
 	pdgcode=TMath::Abs(mcTrack->PdgCode());
 	
 	if(!TrCharge) continue;
+
+	mcTrackEtab=Transboost(mcTrack);
+       	if(fboost) mcTrackEta=mcTrackEtab;
+	
 	
 	if(mcTrackPt>0.15 && mcTrackPt<10.){
 	  if(abs(mcTrackEta)<0.3){
@@ -2734,11 +2772,13 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::MakeAna() {
 		  else if(fasso=="PID" && mcpid<4)fhistmcprim->Fill(conmcprim,mcpid);//primay charged partilce distribution(no mother particle)
 		}
 	  }
-	  
+
+
 	  if(mcTrackEta>-0.8&& mcTrackEta<0.8) {
-		if(mcTrackPt>fPtMin && mcTrackPt<fPtMax) {
-		  nMCtrackssamecut++;
-		}
+	    if(mcTrackPt<fPtMax) nMCtrackssameetacut++;
+	    if(mcTrackPt>fPtMin && mcTrackPt<fPtMax) {
+	      nMCtrackssamecut++;
+	    }
 	  }
 	  
 	  dynamic_cast<TH2F*>(fOutputList2->FindObject("fhmcprimvzeta"))->Fill(mcTrackEta,mcTrack->Zv());
@@ -2809,27 +2849,29 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::MakeAna() {
   if(nprimtrack>0)  dynamic_cast<TH2F*>(fOutputList2->FindObject("fhistmeanpt"))->Fill(nprimtrack,meanpt/(Float_t)nprimtrack);
   
   Int_t nrecotrack=selectedTracksLeading->GetEntriesFast();
+  dynamic_cast<TH2F*>(fOutputList2->FindObject("fNTrackCorrMC"))->Fill(nrecotrack,nMCtrackssamecut);
+  dynamic_cast<TH2F*>(fOutputList2->FindObject("fNTrackCorrMCptex"))->Fill(nrecotrack,nMCtrackssameetacut);
+    dynamic_cast<TH2F*>(fOutputList2->FindObject("fNTrackCorrMCptexgen"))->Fill(nMCtrackssamecut,nMCtrackssameetacut);
   
-  dynamic_cast<TH2F*>(fOutputList2->FindObject("fNTrackCorrMC"))->Fill(nrecotrack,nMCtrackssamecut); 
   dynamic_cast<TH2F*>(fOutputList2->FindObject("fh2_V0A_all"))->Fill(ntrackv0aall,nV0A_hits);
   dynamic_cast<TH2F*>(fOutputList2->FindObject("fh2_V0A"))->Fill(ntrackv0aprimary,nV0A_hits);
   dynamic_cast<TH2F*>(fOutputList2->FindObject("fh2_V0C"))->Fill(ntrackv0cprimary,nV0A_hits);
   
   if(ffillcorrelation){
-	if(!fprim){
-	  if(fextractsec){
-		FillCorrelationTracks(lCentrality,selectedTracksMC1,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
-		FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksMC1,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
-	  }else{
-		FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
-		FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
-	  }
-	  DumpTObjTable("End of fill  Correlation");
-	}else{
-	  FillCorrelationTracks(lCentrality,selectedTracksMC1,selectedTracksMC2,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
-	  FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksMC1,selectedTracksMC2,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
-	  DumpTObjTable("End of fill  Correlation");
-	}
+    if(!fprim){
+      if(fextractsec){
+	FillCorrelationTracks(lCentrality,selectedTracksMC1,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
+	FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksMC1,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
+      }else{
+	FillCorrelationTracks(lCentrality,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
+	FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksLeading,selectedTracksAssociated,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
+      }
+      DumpTObjTable("End of fill  Correlation");
+    }else{
+      FillCorrelationTracks(lCentrality,selectedTracksMC1,selectedTracksMC2,fHistTriggerTrack,fHistReconstTrack,kFALSE,0.02,0.8,bSign,0);
+      FillCorrelationTracksMixing(lCentrality,lPrimaryBestVtx->GetZ(),poolmax,poolmin,selectedTracksMC1,selectedTracksMC2,fHistTriggerTrackMix,fHistReconstTrackMix,kFALSE,0.02,0.8,bSign,0);
+      DumpTObjTable("End of fill  Correlation");
+    }
   }
   
   
@@ -2844,6 +2886,46 @@ void AliAnalysisTaskSEpPbCorrelationsMCYS::MakeAna() {
   
   DumpTObjTable("after delete TObjects");
   fNEntries++;
+}
+
+
+Double_t AliAnalysisTaskSEpPbCorrelationsMCYS::Transboost(const AliAODMCParticle*fTrack){
+  Float_t fDyBoost=0.465;
+  
+  //Float_t boost=0.5*TMath::Log((1+beta)/(1-beta));
+  Float_t beta=TMath::TanH(fDyBoost);
+  Float_t gamma=1./TMath::Sqrt((1.-beta)*(1.+beta));
+  Float_t gb=gamma*beta;
+  Float_t c=299792458.;
+  Float_t c_1=1./299792458.;
+
+  Float_t e=fTrack->E();
+  Float_t M=fTrack->M();
+  Float_t px=fTrack->Px();
+  Float_t py=fTrack->Py();
+  Float_t pz=fTrack->Pz();
+  Float_t mT=TMath::Sqrt(e*e-pz*pz);
+  Float_t eta=fTrack->Eta();
+  Float_t rapi=fTrack->Y();
+  //  Float_t rapi=0.5*TMath::Log((e+pz)/(e-pz));  
+  //  Float_t num=TMath::Sqrt(mT*mT*TMath::CosH(rapi)*TMath::CosH(rapi)-M*M)+mT*TMath::SinH(rapi);
+  //  Float_t den=TMath::Sqrt(mT*mT*TMath::CosH(rapi)*TMath::CosH(rapi)-M*M)-mT*TMath::SinH(rapi);
+  //  Float_t eta1=0.5*TMath::Log(num/den);
+  //boost
+  Float_t eb=gamma*e-gb*pz;
+  Float_t pzb=-gb*e+gamma*pz;
+  Float_t mTb=TMath::Sqrt(eb*eb-pzb*pzb);
+  //  Float_t rapib=0.5*TMath::Log((eb+pzb)/(eb-pzb));
+  Float_t rapib=rapi-fDyBoost;
+  Float_t numb=TMath::Sqrt(mTb*mTb*TMath::CosH(rapib)*TMath::CosH(rapib)-M*M)+mTb*TMath::SinH(rapib);
+  Float_t denb=TMath::Sqrt(mTb*mTb*TMath::CosH(rapib)*TMath::CosH(rapib)-M*M)-mTb*TMath::SinH(rapib);
+  Double_t etab;
+  etab=0.5*TMath::Log(numb/denb);
+  
+  //  cout<<eta<<" "<<eta1<<" "<<M<<" "<<etab<<endl;
+  //  Printf("%f,%f",e,eb);
+  return etab;
+  
 }
 
 TObjArray* AliAnalysisTaskSEpPbCorrelationsMCYS::GetFMDhitsYS(Bool_t Aside){
@@ -3176,52 +3258,52 @@ TObjArray *AliAnalysisTaskSEpPbCorrelationsMCYS::GetAcceptedTracksLeading(AliAOD
 	dynamic_cast<TH2F*>(fOutputList1->FindObject("fhDCAz"))->Fill(DCAz,1);
 
 	pidqa[0]=aodTrack->Pt();
-    pidqa[1]=aodTrack->Eta();
-    pidqa[2]=aodTrack->Phi();
-    pidqa[3]=lCentrality;
-    pidqa[4]=fPrimaryZVtx;
+	pidqa[1]=aodTrack->Eta();
+	pidqa[2]=aodTrack->Phi();
+	pidqa[3]=lCentrality;
+	pidqa[4]=fPrimaryZVtx;
 	
 	
-    if(leading){
-      if(!fDataType){
-		Int_t myTrackLabel = TMath::Abs(aodTrack->GetLabel());
-		TClonesArray *mcArray = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
-		Bool_t flabel=kFALSE;
-		AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcArray->At(myTrackLabel);
-		if(mcTrack){
-		  /*
-			for(Int_t k=0;k<mcArray->GetEntriesFast();k++){
-			AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcArray->At(i);
-			Int_t label=mcTrack->GetLabel();
-			if(label==myTrackLabel) flabel=kTRUE;
-			}
-		  */
-		  //if(flabel) fHistLeadQA->Fill(pidqa,0);
-		  if(fQA){
-			if(mcTrack->IsPhysicalPrimary() && mcTrack->Charge()!=0) {
-			  dynamic_cast<TH2F*>(fOutputList1->FindObject("fhDCAxy"))->Fill(DCAxy,2);
-			  dynamic_cast<TH2F*>(fOutputList1->FindObject("fhDCAz"))->Fill(DCAz,2);
-	
-			  Int_t ivzbin=frefvz->GetXaxis()->FindBin(fPrimaryZVtx);
-			  //	      if(abs(aodTrack->Eta())<1.0) fhrecopteta[ivzbin-1]->Fill(aodTrack->Pt(),aodTrack->Eta());
-			  if(abs(aodTrack->Eta())<1.0) dynamic_cast<TH2F*>(fOutputList2->FindObject(Form("fhrecopteta_%d",ivzbin-1)))->Fill(aodTrack->Pt(),aodTrack->Eta());
-			  dynamic_cast<TH2F*>(fOutputList2->FindObject("fhrecovzeta"))->Fill(aodTrack->Eta(),fPrimaryZVtx);
-			  fHistLeadQA->Fill(pidqa,0);
-			  if(abs(aodTrack->Eta())<0.8){
-				dynamic_cast<TH1F*>(fOutputList2->FindObject("fhistrecopt"))->Fill(aodTrack->Pt());
-				dynamic_cast<TH2F*>(fOutputList2->FindObject("fhistrecopteta_all"))->Fill(aodTrack->Pt(),aodTrack->Eta());
-			  }
-			}else{
-			  dynamic_cast<TH2F*>(fOutputList1->FindObject("fhDCAxy"))->Fill(DCAxy,3);
-			  dynamic_cast<TH2F*>(fOutputList1->FindObject("fhDCAz"))->Fill(DCAz,3);
-			}
-			
-			if(!mcTrack->IsPhysicalPrimary() && mcTrack->Charge()!=0 && abs(aodTrack->Eta())<0.8){
-			  dynamic_cast<TH2F*>(fOutputList2->FindObject("fhistrecopteta_secondary"))->Fill(aodTrack->Pt(),aodTrack->Eta());
-			}
-		  }
-		  //if(fQA) fHistLeadQA->Fill(pidqa,0);
+	if(leading){
+	  if(!fDataType){
+	    Int_t myTrackLabel = TMath::Abs(aodTrack->GetLabel());
+	    TClonesArray *mcArray = (TClonesArray*)fEvent->FindListObject(AliAODMCParticle::StdBranchName());
+	    Bool_t flabel=kFALSE;
+	    AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcArray->At(myTrackLabel);
+	    if(mcTrack){
+	      /*
+		for(Int_t k=0;k<mcArray->GetEntriesFast();k++){
+		AliAODMCParticle *mcTrack = (AliAODMCParticle*)mcArray->At(i);
+		Int_t label=mcTrack->GetLabel();
+		if(label==myTrackLabel) flabel=kTRUE;
 		}
+	      */
+	      //if(flabel) fHistLeadQA->Fill(pidqa,0);
+	      if(fQA){
+		if(mcTrack->IsPhysicalPrimary() && mcTrack->Charge()!=0) {
+		  dynamic_cast<TH2F*>(fOutputList1->FindObject("fhDCAxy"))->Fill(DCAxy,2);
+		  dynamic_cast<TH2F*>(fOutputList1->FindObject("fhDCAz"))->Fill(DCAz,2);
+		  
+		  Int_t ivzbin=frefvz->GetXaxis()->FindBin(fPrimaryZVtx);
+		  //	      if(abs(aodTrack->Eta())<1.0) fhrecopteta[ivzbin-1]->Fill(aodTrack->Pt(),aodTrack->Eta());
+		  if(abs(aodTrack->Eta())<1.0) dynamic_cast<TH2F*>(fOutputList2->FindObject(Form("fhrecopteta_%d",ivzbin-1)))->Fill(aodTrack->Pt(),aodTrack->Eta());
+		  dynamic_cast<TH2F*>(fOutputList2->FindObject("fhrecovzeta"))->Fill(aodTrack->Eta(),fPrimaryZVtx);
+		  fHistLeadQA->Fill(pidqa,0);
+		  if(abs(aodTrack->Eta())<0.8){
+		    dynamic_cast<TH1F*>(fOutputList2->FindObject("fhistrecopt"))->Fill(aodTrack->Pt());
+		    dynamic_cast<TH2F*>(fOutputList2->FindObject("fhistrecopteta_all"))->Fill(aodTrack->Pt(),aodTrack->Eta());
+		  }
+		}else{
+		  dynamic_cast<TH2F*>(fOutputList1->FindObject("fhDCAxy"))->Fill(DCAxy,3);
+		  dynamic_cast<TH2F*>(fOutputList1->FindObject("fhDCAz"))->Fill(DCAz,3);
+		}
+		
+		if(!mcTrack->IsPhysicalPrimary() && mcTrack->Charge()!=0 && abs(aodTrack->Eta())<0.8){
+		  dynamic_cast<TH2F*>(fOutputList2->FindObject("fhistrecopteta_secondary"))->Fill(aodTrack->Pt(),aodTrack->Eta());
+		}
+	      }
+	      //if(fQA) fHistLeadQA->Fill(pidqa,0);
+	    }
 	  }else {
 		fHistLeadQA->Fill(pidqa,0);
 	  }

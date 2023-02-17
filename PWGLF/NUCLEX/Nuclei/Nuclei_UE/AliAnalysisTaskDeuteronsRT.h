@@ -54,11 +54,13 @@ public:
     Bool_t   GetESDEvent ();
     Bool_t   GetMCEvent ();
     Int_t    GetLeadingTrack();
-    void     FillHistograms_StandardCuts         (Int_t mult_Transverse, Int_t leading_track_ID, AliESDtrack *track);
-    void     FillHistograms_Systematics          (Int_t mult_Transverse, Int_t leading_track_ID, AliESDtrack *track, Int_t isyst);
-    void     FillHistograms_StandardCuts_Sim     (AliESDtrack *track);
-    void     FillHistograms_Systematics_Sim      (AliESDtrack *track, Int_t isyst);
-    void     FillHistograms_RapidityDependence   (AliESDtrack *track);
+    void     FillHistograms_StandardCuts                (Int_t mult_Transverse, Int_t leading_track_ID, AliESDtrack *track);
+    void     FillHistograms_Systematics                 (Int_t mult_Transverse, Int_t leading_track_ID, AliESDtrack *track, Int_t isyst);
+    void     FillHistograms_RapidityDependence          (AliESDtrack *track);
+    void     FillHistograms_StandardCuts_Sim            (AliESDtrack *track);
+    void     FillHistograms_Systematics_Sim             (AliESDtrack *track, Int_t isyst);
+    void     FillHistograms_Rapidity_Systematics        (AliESDtrack *track, Int_t isyst);
+    void     FillHistograms_Rapidity_Systematics_Sim    (AliESDtrack *track, Int_t isyst);
     Bool_t   PassedBasicTrackQualityCuts               (AliESDtrack *track);
     Bool_t   PassedBasicTrackQualityCuts_NoRapidityCut (AliESDtrack *track);
     Bool_t   PassedTrackQualityCuts_LeadingTrack       (AliESDtrack *track);
@@ -157,6 +159,12 @@ private:
     THnSparseF *hnsigmaTPC_antideuterons_rap;//!
     THnSparseF *hnsigmaTOF_deuterons_rap;//!
     THnSparseF *hnsigmaTOF_antideuterons_rap;//!
+    
+    //3-Dimensional Histograms for Deuterons vs. y
+    THnSparseF *hnsigmaTPC_deuterons_rap_Syst;//!
+    THnSparseF *hnsigmaTPC_antideuterons_rap_Syst;//!
+    THnSparseF *hnsigmaTOF_deuterons_rap_Syst;//!
+    THnSparseF *hnsigmaTOF_antideuterons_rap_Syst;//!
 
     //****************************************** MC ******************************************
     
@@ -189,6 +197,12 @@ private:
     TH2F *hReconstructedAntiDeuterons_TPC_vs_Rapidity;//!
     TH2F *hReconstructedDeuterons_TOF_vs_Rapidity;//!
     TH2F *hReconstructedAntiDeuterons_TOF_vs_Rapidity;//!
+    
+    //Histograms for Syst. Uncertainties in Rapidity analysis
+    THnSparseF *hnsigmaTPC_deuterons_Rec_rap_Syst;//!
+    THnSparseF *hnsigmaTPC_antideuterons_Rec_rap_Syst;//!
+    THnSparseF *hnsigmaTOF_deuterons_Rec_rap_Syst;//!
+    THnSparseF *hnsigmaTOF_antideuterons_Rec_rap_Syst;//!
 
     //****************************************************************************************
 

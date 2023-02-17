@@ -82,21 +82,16 @@ class AliAnalysisTaskCorrelationhK0sXi_PureMCOnly : public AliAnalysisTaskSE
   TH2F*                   fHistEvtNoTrigger;                //! 
   TH1F*                   fHistPt;                          //! 
   TH1F*                   fHistPtV0;                        //! 
-  TH1F*                   fHistPthAssoc;                    //! 
   TH2F*                   fHistPtTMaxBefAllCfrDataMC;       //!
   TH1F*                   fHistPtTMinBefAll;                //! 
   TH1F*                   fHistPtTMinBefAllMC;              //! 
-  TH2F*                   fHistPtMaxvsMultBefRSelection;    //! 
-  TH2F*                   fHistPtMaxvsMultAfterRSelection;  //! 
   TH2F*                   fHistPtvsMult;                    //! 
   TH2F*                   fHistPtvsMultBefAll;              //! 
   TH2F*                   fHistPtMaxvsMult;                 //! 
   TH2F*                   fHistPtMaxvsMultBefAll;           //! 
-  TH2F*                   fHistPtMaxvsMultBefAllReco;       //! 
-  TH2F*                   fHistPtMaxvsMultBefAllGen;        //! 
   TH1F*                   fHistZvertex;                     //!
-  TH2F*                   fHistMultMidvsForwardRap;         //!
-  TH3F*                   fHistMultMidvsForwardRapvsPt;     //!
+  TH2F*                   fHistMultForwardvsMidRap;         //!
+  TH3F*                   fHistMultForwardvsMidRapvsPt;     //!
   TH1F*                   fHistFractionSharedTPCClusters;   //!
   TH3F*                   fHistNumberChargedAllEvents;      //!
   TH3F*                   fHistNumberChargedNoTrigger;      //!
@@ -141,14 +136,13 @@ class AliAnalysisTaskCorrelationhK0sXi_PureMCOnly : public AliAnalysisTaskSE
   TH1F*                   fHistTriggervsMult; 		    //!
   TH1F*                   fHistTriggervsMultMC; 	    //!
   TH2F*                   fHistMultiplicityOfMixedEvent;    //!
-  TH2F*                   fHistGeneratedV0PtOOBPileUp;      //!
   TH2F* 	          fHistGeneratedV0Pt;               //!
   TH3F *                  fHistGeneratedTriggerPtPhi; 	    //!
-  TH3F **                 fHistGeneratedV0PtTMaxPhi; 	    //!
+  TH3F *                  fHistGeneratedV0PtTMaxPhi; 	    //!
   TH3F *                  fHistGeneratedTriggerPtEta; 	    //!
-  TH3F **                 fHistGeneratedV0PtTMaxEta; 	    //!
-  TH3F **                 fHistGeneratedV0PtPtTMax; 	    //!
-  TH3F **                 fHistGeneratedV0PtEta; 	    //!
+  TH3F *                  fHistGeneratedV0PtTMaxEta; 	    //!
+  TH3F *                  fHistGeneratedV0PtPtTMax; 	    //!
+  TH3F *                  fHistGeneratedV0PtEta; 	    //!
 
   Float_t                 fminPtj;
   Float_t                 fmaxPtj;

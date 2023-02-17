@@ -122,8 +122,11 @@ private:
     AliAODMCHeader    *fAODMCHeader;//!
     TClonesArray      *fAODArrayMCParticles;//!
     AliMCEventHandler *fMCEventHandler;//!
-    TTree             *reducedTree_gen;//!
-    TTree             *reducedTree_rec;//!
+    TTree             *reducedTree_gen_He3;//!
+    TTree             *reducedTree_rec_He3;//!
+    TTree             *reducedTree_gen_H3;//!
+    TTree             *reducedTree_rec_H3;//!
+
 
 
     Double_t    fCentralityMin;//
@@ -214,18 +217,16 @@ private:
     Int_t   HasPointOnITSLayer5;//
     Float_t chi2_NDF;//
     Float_t chi2_ITS;//
-    Float_t nSigmaITS_He3;
-    Float_t nSigmaTPC_He3;//
-    Float_t nSigmaTOF_He3;//
-    Float_t nSigmaITS_Triton;//
-    Float_t nSigmaTPC_Triton;//
-    Float_t nSigmaTOF_Triton;//
+    Float_t nSigmaITS;
+    Float_t nSigmaTPC;//
+    Float_t nSigmaTOF;//
     Int_t   PrimaryParticle;//
     Int_t   SecondaryMaterial;//
     Int_t   SecondaryDecay;//
     Int_t   PrimaryTrack;//
     Double_t TPC_signal;//
     Double_t ITS_signal;//
+    Double_t TOF_signal;//
     Int_t   TRDntracklets;//
     Int_t   hasTOFhit;//
 

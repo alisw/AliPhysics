@@ -8,9 +8,13 @@
 #ifndef ALIFEMTODREAMPARTCOLLECTION_H_
 #define ALIFEMTODREAMPARTCOLLECTION_H_
 #include <deque>
+#include <map>
+#include <utility>
+
 #include <vector>
 #include "Rtypes.h"
 #include "TList.h"
+#include "TTree.h"
 
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamCorrHists.h"
@@ -30,7 +34,10 @@ class AliFemtoDreamPartCollection {
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
                 float ZVtx, float Mult, float cent);
   void SetEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &Particles,
-                AliFemtoDreamEvent* evt);
+                AliFemtoDreamEvent* evt,
+                std::map<std::pair<int, int>, TTree *> *kStarsSE = nullptr,
+                std::map<std::pair<int, int>, TTree *> *kStarsME = nullptr,
+                bool usePart2Buffer = true);
   void PrintEvent(int ZVtx, int Mult);
   TList* GetHistList() {
     return fHigherMath->GetHistList();

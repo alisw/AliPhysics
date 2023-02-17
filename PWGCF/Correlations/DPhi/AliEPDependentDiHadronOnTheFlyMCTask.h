@@ -42,6 +42,7 @@ class AliEPDependentDiHadronOnTheFlyMCTask : public AliAnalysisTaskSE {
 
  public:
   AliEPDependentDiHadronOnTheFlyMCTask(const char* name);
+  AliEPDependentDiHadronOnTheFlyMCTask();
   virtual ~AliEPDependentDiHadronOnTheFlyMCTask();
 
   void UserCreateOutputObjects();
@@ -105,9 +106,9 @@ class AliEPDependentDiHadronOnTheFlyMCTask : public AliAnalysisTaskSE {
   
   Bool_t fFillMixed; // enable event mixing (default: On)
   Int_t fMixingTracks; // size of track buffer for event mixing
-  AliEventPoolManager* fPoolMgr; // event pool manager to store events for event mixing
+  AliEventPoolManager* fPoolMgr; //! event pool manager to store events for event mixing
 
-  ClassDef(AliEPDependentDiHadronOnTheFlyMCTask, 4);
+  ClassDef(AliEPDependentDiHadronOnTheFlyMCTask, 5);
 };
 
 #endif

@@ -6,7 +6,7 @@
 #define AliAnalysisTaskFlowPPTask_H
 
 #include "AliAnalysisTaskSE.h"
-#include "AliGFWNFCuts.h"
+#include "AliGFWXXCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
 #include "AliEventCuts.h"
@@ -126,48 +126,49 @@ class PhysicsProfilePPTask : public TObject {
 		TProfile*        fChc532_Gap12A;    //!
 		TProfile*        fChc532_Gap12B;    //!
 
-		TProfile*	 fChcn2[6]; 			//! <<2>> in unit bins of Ntrks
-		TProfile*    fChcn2_Gap0[6];  		//! <<2>> |#Delta#eta| > 0.0
-		TProfile*	 fChcn2_Gap2[6];  		//! <<2>> |#Delta#eta| > 0.2
-		TProfile*	 fChcn2_Gap4[6];  		//! <<2>> |#Delta#eta| > 0.4
-		TProfile*    fChcn2_Gap6[6];        //! <<2>> |#Delta#eta| > 0.6
-		TProfile*	 fChcn2_Gap8[6];  		//! <<2>> |#Delta#eta| > 0.8
-		TProfile*	 fChcn2_Gap10[6];  		//! <<2>> |#Delta#eta| > 1.0
-		TProfile*	 fChcn2_Gap12[6];  		//! <<2>> |#Delta#eta| > 1.2
-		TProfile*	 fChcn2_Gap14[6];  	        //! <<2>> |#Delta#eta| > 1.4
-		TProfile*	 fChcn2_Gap16[6];  	        //! <<2>> |#Delta#eta| > 1.6
-		TProfile*	 fChcn2_Gap18[6];  	        //! <<2>> |#Delta#eta| > 1.8
+		TProfile*	 fChcn2[5]; 			//! <<2>> in unit bins of Ntrks
+		TProfile*    fChcn2_Gap0[5];  		//! <<2>> |#Delta#eta| > 0.0
+		TProfile*	 fChcn2_Gap2[5];  		//! <<2>> |#Delta#eta| > 0.2
+		TProfile*	 fChcn2_Gap4[5];  		//! <<2>> |#Delta#eta| > 0.4
+		TProfile*    fChcn2_Gap6[5];        //! <<2>> |#Delta#eta| > 0.6
+		TProfile*	 fChcn2_Gap8[5];  		//! <<2>> |#Delta#eta| > 0.8
+		TProfile*	 fChcn2_Gap10[5];  		//! <<2>> |#Delta#eta| > 1.0
+		TProfile*	 fChcn2_Gap12[5];  		//! <<2>> |#Delta#eta| > 1.2
+		TProfile*	 fChcn2_Gap14[5];  	        //! <<2>> |#Delta#eta| > 1.4
+		TProfile*	 fChcn2_Gap16[5];  	        //! <<2>> |#Delta#eta| > 1.6
+		TProfile*	 fChcn2_Gap18[5];  	        //! <<2>> |#Delta#eta| > 1.8
 
-		TProfile*	 fChcn2_3subLM[6];  		//! <<2>> left vs. middle subevent
-		TProfile*	 fChcn2_3subRM[6];  		//! <<2>> middle vs. right subevent
-		TProfile*	 fChcn2_3subLR[6];  		//! <<2>> middle vs. right subevent
-		TProfile*	 fChcn2_3subGap2LM[6];          //! <<2>> left vs. middle subevent |#Delta#eta| > 0.2
-		TProfile*	 fChcn2_3subGap2RM[6];          //! <<2>> middle vs. right subevent |#Delta#eta| > 0.2
+		TProfile*	 fChcn2_3subLM[5];  		//! <<2>> left vs. middle subevent
+		TProfile*	 fChcn2_3subRM[5];  		//! <<2>> middle vs. right subevent
+		TProfile*	 fChcn2_3subLR[5];  		//! <<2>> middle vs. right subevent
+		TProfile*	 fChcn2_3subGap2LM[5];          //! <<2>> left vs. middle subevent |#Delta#eta| > 0.2
+		TProfile*	 fChcn2_3subGap2RM[5];          //! <<2>> middle vs. right subevent |#Delta#eta| > 0.2
 
-		TProfile*	 fChcn4[6];  			//! <<4>> in unit bins of Ntrks
-		TProfile*	 fChcn4_Gap0[6];  		//! <<4>> |#Delta#eta| > 0.0
-		TProfile*	 fChcn4_Gap2[6];  		//! <<4>> |#Delta#eta| > 0.2
-		TProfile*        fChcn4_Gap4[6];                //! <<4>> |#Delta#eta| > 0.2
-		TProfile*        fChcn4_Gap6[6];                //! <<4>> |#Delta#eta| > 0.2
-		TProfile*        fChcn4_Gap8[6];                //! <<4>> |#Delta#eta| > 0.2
-		TProfile*        fChcn4_Gap10[6];               //! <<4>> |#Delta#eta| > 0.2
-		TProfile*        fChcn4_Gap12[6];               //! <<4>> |#Delta#eta| > 0.2
-		TProfile*        fChcn4_3subMMLR[6];            //! <<4>> 3subevent method
-		TProfile*        fChcn4_3subLLMR[6];            //! <<4>> 3subevent method
-		TProfile*        fChcn4_3subRRML[6];            //! <<4>> 3subevent method
-		TProfile*        fChcn4_3subGap2[6];            //! <<4>> 3subevent method |#Delta#eta| > 0.2
+		TProfile*	 fChcn4[5];  			//! <<4>> in unit bins of Ntrks
+		TProfile*	 fChcn4_Gap0[5];  		//! <<4>> |#Delta#eta| > 0.0
+		TProfile*	 fChcn4_Gap2[5];  		//! <<4>> |#Delta#eta| > 0.2
+		TProfile*        fChcn4_Gap4[5];                //! <<4>> |#Delta#eta| > 0.2
+		TProfile*        fChcn4_Gap6[5];                //! <<4>> |#Delta#eta| > 0.2
+		TProfile*        fChcn4_Gap8[5];                //! <<4>> |#Delta#eta| > 0.2
+		TProfile*        fChcn4_Gap10[5];               //! <<4>> |#Delta#eta| > 0.2
+		TProfile*        fChcn4_Gap12[5];               //! <<4>> |#Delta#eta| > 0.2
+		TProfile*        fChcn4_3subMMLR[5];            //! <<4>> 3subevent method
+		TProfile*        fChcn4_3subLLMR[5];            //! <<4>> 3subevent method
+		TProfile*        fChcn4_3subRRML[5];            //! <<4>> 3subevent method
+		TProfile*        fChcn4_3subGap2[5];            //! <<4>> 3subevent method |#Delta#eta| > 0.2
 
+	
 		//5,6 particle correlation
-		TProfile* fChc5_A42222;  		//! <<5>> |#Delta#eta| > 1.0
-		TProfile* fChc5_A52322;  		//! <<5>> |#Delta#eta| > 1.0
-		TProfile* fChc6_222222;  		//! <<6>> |#Delta#eta| > 1.0
-		TProfile* fChc6_322322;  		//! <<6>> |#Delta#eta| > 1.0
+		//TProfile* fChc5_A42222;  		//! <<5>> 
+		//TProfile* fChc5_A52322;  		//! <<5>> 
+		//TProfile* fChc6_222222;  		//! <<6>> 
+		//TProfile* fChc6_322322;  		//! <<6>> 
 
 		//Addtional 6 particle correlation
-		TProfile* fChsc6222_Gap0;  		//! <<4>> |#Delta#eta| > 1.0
-		TProfile* fChsc6222_Gap10;  		//! <<4>> |#Delta#eta| > 1.0
-		TProfile* fChsc633_Gap0A;  		//! <<3>> |#Delta#eta| > 1.0
-		TProfile* fChsc633_Gap10A;  		//! <<3>> |#Delta#eta| > 1.0
+		//TProfile* fChsc6222_Gap0;  		//! <<4>> |#Delta#eta| > 1.0
+		//TProfile* fChsc6222_Gap10;  		//! <<4>> |#Delta#eta| > 1.0
+		//TProfile* fChsc633_Gap0A;  		//! <<3>> |#Delta#eta| > 1.0
+		//TProfile* fChsc633_Gap10A;  		//! <<3>> |#Delta#eta| > 1.0
 		TProfile*	fChcn6[6];  			//! <<6>> in unit bins of Ntrks
 		TProfile*   fChcn6_Gap10[6];               //! <<6>> |#Delta#eta| > 1.0
 		TProfile*   fChcn6_Gap0[6];               //! <<6>> |#Delta#eta| > 0.
@@ -191,6 +192,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
+		virtual void   			NotifyRun();
         virtual void            Terminate(Option_t* option);
 
         
@@ -204,6 +206,11 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		virtual void   SetTPCclusters(Int_t tpcClus){fTPCclusters = tpcClus;}
 		virtual void   SetTPCclustersDefault(Int_t tpcClus){fTPCclustersDefault = tpcClus;} // The tpcCluster for NtrksCounter 
         virtual void   SetChi2PerTPCcluster(Double_t chi2){fChi2PerTPCcluster = chi2;}	    // max. chi2 per TPC cluster
+		virtual void	SetEventWeightSetOne(Bool_t useOne){
+			fEventWeightSetToOne=useOne;	//Set Event Weight to 1
+		}
+		virtual void	SetAddTPCPileupCuts(Bool_t usePileupCuts){fAddTPCPileupCuts=usePileupCuts;} // use TPC pile up Cuts
+		virtual void   SetESDvsTPConlyLinearCut(double cut = 15000) {fESDvsTPConlyLinearCut = cut;}
 		virtual void   SetMinITSClusters(Int_t minClus){fMinITSClus = minClus;}
 		virtual void   SetMaxChi2(Double_t maxChi){fMaxChi2 = maxChi;}
 		virtual void   SetUseDCAzCut(Bool_t usedcaz){fUseDCAzCut = usedcaz;}
@@ -237,32 +244,16 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
         
         virtual void		AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus);
 		virtual void            NTracksCalculation(AliVEvent* aod);
-		Short_t			GetCentrCode(AliVEvent* ev);
-		bool 			CheckPrimary(AliVEvent *aod, double label);
-		bool			IsGoodPSEvent(AliVEvent *aod);
-		bool			IsSPDClusterVsTrackletBG(const AliVEvent* event, bool fillHist);
-		bool			IsV0C012vsTklBG         (const AliVEvent* event, bool fillHist);
-		bool			IsV0Casym               (const AliVEvent* event, bool fillHist);
-		bool			IsV0MOnVsOfPileup       (const AliVEvent* event, bool fillHist);
-		bool			IsSPDOnVsOfPileup       (const AliVEvent* event, bool fillHist);
-		bool			IsV0PFPileup            (const AliVEvent* event);
-		int 			GetRunPart(int run);
-		double 			GetWeight(double phi, double eta, double pt, int run, bool fPlus, double vz, double runNumber);
+		Bool_t			CheckTrigger();
 		double 			GetPtWeight(double pt, double eta, float vz, double runNumber);
-
-		Bool_t                  LoadWeights();
 		Bool_t                  LoadWeightsSystematics();
 
-		Double_t GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species);
 		Double_t GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species);
-        const char* ReturnPPperiod(const Int_t runNumber) const;
-        const char* GetSpeciesName(const PartSpecies species) const;
         
 
 		AliEventCuts	fEventCuts;					// Event cuts
-		AliGFWNFCuts*     fGFWSelection;                                  //!
+		AliGFWXXCuts*     fGFWSelection;                                  //!
 		AliAODEvent* fAOD;                                              //! AOD object
-		AliAODITSsaTrackCuts* fitssatrackcuts;                          //! itssatrackcuts object
 
 		// Cuts and options
 		Int_t			fFilterbit;				// flag for filter bit
@@ -275,6 +266,9 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		Int_t			fTPCclusters;				// min. TPC clusters
 		Int_t			fTPCclustersDefault;			// min. TPC clusters (for NtrksCounter)
 		Int_t			fChi2PerTPCcluster;			// max. chi2 per TPC cluster
+		Bool_t			fEventWeightSetToOne;		// Set Event weight to 1
+		Bool_t			fAddTPCPileupCuts;			// Pile up Cuts in TPC
+		Double_t		fESDvsTPConlyLinearCut;     // ESDvsTPConlyLinearCut : default = 15000
 		Int_t			fMinITSClus;				// min ITS clusters, LHC15ijl
 		Double_t		fMaxChi2;				// max chi2 per ITS cluster, LHC15ijl
 		Bool_t			fUseDCAzCut;				// switch to choose whether I want to use DCAz cut or not (for systematic studies, otherwise it is in FB selection by default)
@@ -295,17 +289,15 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
                 Int_t                   fCurrSystFlag;                          // Systematics flag
 		Bool_t			fUseCorrectedNTracks;	// flag for online track correction
 
+
+		Double_t			fCurrCentrality;	//! Centrality of Ongoing Event
+
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
 
-		// Cut functions for LHC15o
-		TF1*			fMultTOFLowCut;			// cut low for TOF multiplicity outliers
-		TF1*			fMultTOFHighCut;		// cut high for TOF multiplicity outliers
-		TF1*			fMultCentLowCut;		// cut low for multiplicity centrality outliers
-
 		// NUE
 		TList*			fTrackEfficiency;		//! file with tracking efficiency
-		TH1D*			hTrackEfficiency;		//! histogram with tracking efficiency
+		//TH1D*			hTrackEfficiency;		//! histogram with tracking efficiency
 		TH1D*			hTrackEfficiencyRun;            //! histogram with tracking efficiency
 
 		// NUA
@@ -315,85 +307,27 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 
 		//
 		TList*                  fFlowWeightsList;               //! flowWightsList
-		TList*			fPhiWeight;	                //! file with phi weights
-		TList*			fPhiWeightPlus;	                //! file with phi weights
-		TList*			fPhiWeightMinus;                //! file with phi weights
-		TH2D*                   fh2Weights[kUnknown];           //! container for GF weights (phi,eta,pt) (2D)
-		TH3D*                   fh3Weights[kUnknown];           //! container for GF weights (phi,eta,pt)
-		TH2D*                   fh2AfterWeights[kUnknown];      //! distribution after applying GF weights - lightweight QA (phi)
-                TH3D*                   fh3AfterWeights[kUnknown];      //! distribution after applying GF weights - full QA (phi,eta,pt)
 		AliGFWWeights*          fWeightsSystematics;            //! Weights for systematics
 
 
 		TH3F*			hPhiWeight;			//! 3D weight for all periods except LHC15ijl
-		TH3F*			hPhiWeightRun;			//! 3D weight run-by-run for pPb 5TeV LHC16q
-		TH1F*			hPhiWeight1D;			//! 1D weight in one MC case (maybe need to redo to 3D weight)
-		TH3D*			hPhiWeight_LHC15i_part1;	//! LHC15i, part1 runs
-		TH3D*			hPhiWeight_LHC15i_part2;	//! LHC15i, part2 runs
-		TH3D*			hPhiWeight_LHC15j_part1;	//! LHC15j, part1 runs
-		TH3D*			hPhiWeight_LHC15j_part2;	//! LHC15j, part2 runs
-		TH3D*			hPhiWeight_LHC15l_part1;	//! LHC15l, part1 runs
-		TH3D*			hPhiWeight_LHC15l_part2;	//! LHC15l, part2 runs
-		TH3D*			hPhiWeight_LHC15l_part3;	//! LHC15l, part3 runs
-
-		TH3D*			hPhiWeightPlus_LHC15i_part1;	//! LHC15i, part1 runs
-		TH3D*			hPhiWeightPlus_LHC15i_part2;	//! LHC15i, part2 runs
-		TH3D*			hPhiWeightPlus_LHC15j_part1;	//! LHC15j, part1 runs
-		TH3D*			hPhiWeightPlus_LHC15j_part2;	//! LHC15j, part2 runs
-		TH3D*			hPhiWeightPlus_LHC15l_part1;	//! LHC15l, part1 runs
-		TH3D*			hPhiWeightPlus_LHC15l_part2;	//! LHC15l, part2 runs
-		TH3D*			hPhiWeightPlus_LHC15l_part3;	//! LHC15l, part3 runs
-
-		TH3D*			hPhiWeightMinus_LHC15i_part1;	//! LHC15i, part1 runs
-		TH3D*			hPhiWeightMinus_LHC15i_part2;	//! LHC15i, part2 runs
-		TH3D*			hPhiWeightMinus_LHC15j_part1;	//! LHC15j, part1 runs
-		TH3D*			hPhiWeightMinus_LHC15j_part2;	//! LHC15j, part2 runs
-		TH3D*			hPhiWeightMinus_LHC15l_part1;	//! LHC15l, part1 runs
-		TH3D*			hPhiWeightMinus_LHC15l_part2;	//! LHC15l, part2 runs
-		TH3D*			hPhiWeightMinus_LHC15l_part3;	//! LHC15l, part3 runs
 
 		// Event histograms
 		TH1D*			hEventCount;			//! counting events passing given event cuts
 		TH2D*			hTracksCorrection2d;	//! Correlation table for number of tracks table
 		TProfile*		hnCorrectedTracks;		//! Number of corrected tracks in a ntracks bin
 		TH1F*			hMult;				//! multiplicity distribution
-		TH1F*			hMultfBin[12]; 			//! multiplicity distribution in fBin
-		TH1F*			fVtxAfterCuts;			//! Vertex z dist after cuts
+		TH2F*			hMultCent;				//! multiplicity-centrality distribution
 		TH1F*			fCentralityDis;			//! distribution of centrality percentile using V0M estimator
-		TH1F*			fV0CentralityDis;		//! distribution of V0M/<V0M>
-		TH2F*			hMultV0vsNtrksAfterCuts;	//! Number of tracks vs. V0M/<V0M>
-		TH2F*			hMultSPDvsNtrksAfterCuts;	//! Number of tracks vs. SPD/<SPD>
-		TH2F*			hNtrksVSmultPercentile; 	//! Number of tracks vs. percentile using V0M estimator
-		TH2F*			fCentralityV0MCL1;		//! LHC15o: V0M vs. CL1 percentile
-		TH2F*			fCentralityV0MCL0;		//! LHC15o: V0M vs. CL0 percentile
-		TH2F*			fCentralityCL0CL1;		//! LHC15o: CL0 vs. CL1 percentile
-		TH2F*			fMultvsCentr;	  		//! LHC15o: Number of tracks vs. percentile
-		TH2F*			fMult128vsCentr;  		//! LHC15o: Number of FB128 tracks vs. percentile
-		TH2F*			fMultTPCvsTOF;	  		//! LHC15o: Number of TPC tracks vs. ToF tracks
-		TH2F*			fMultTPCvsESD;	  		//! LHC15o: Number of TPC tracks vs. ESD tracks
-
-		TH2D*			hSPDClsVsTrk;			//! SPD clusters vs. tracklets without any cuts
-		TH2D*			hV0C012vsTkl;			//! V0C mult. in 0,1,2nd ring vs. SPD tracklets without any cuts
-		TH2D*			hV0C012vsV0C3;			//! V0C mult. in 0,1,2nd ring vs. V0C mult. in 3rd ring without any cuts
-		TH2D*			hV0MOnVsOf;			//! V0M amplitude online vs. offline without any cuts
-		TH2D*			hSPDOnVsOf;			//! SPD amplitude online vs. offline without anycuts
 
 
-		// Track histograms
-		TH1F*				fPhiDis1D;		//! phi dis 1D
-		TH3F*				fPhiDis;		//! phi dist
-		TH1F*				fEtaDis;		//! eta dist
-		TH1F*				fEtaBefore;		//! eta dist before track cuts
-		TH1F*				fPtDis;			//! pt dist
-		TH1F*				fPtBefore;		//! pt dist before track cuts
-		TH1F*				hDCAxyBefore; 		//!
-		TH1F*				hDCAzBefore; 		//!
-		TH1F*				hITSclustersBefore; 	//!
-		TH1F*				hChi2Before; 		//!
-		TH1F*				hDCAxy; 		//!
-		TH1F*				hDCAz; 			//!
-		TH1F*				hITSclusters; 		//!
-		TH1F*				hChi2; 			//!
+		// // Track histograms
+		TH2F*				hDCAxyBefore; 		//!
+		TH2F*				hDCAzBefore; 		//!
+		TH2F*				hDCAxy; 		//!
+		TH2F*				hDCAz; 			//!
+		TH1D*				hChi2Before; 			//!
+		TH1D*				hChi2; 			//!
 
 		// Global variables
 		double NtrksCounter = 0;               //!
@@ -431,11 +365,12 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 
 		double xbins[3000+10];              //!
 		int nn;                             //!
-		TH1F* MyEventNumber;					//!
+		//TH1F* MyEventNumber;					//!
         
 		Bool_t AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
 		void CalculateProfile(PhysicsProfilePPTask& profile, double Ntrks);
 		void InitProfile(PhysicsProfilePPTask& profile, TString);
+		Bool_t AcceptAODEvent(AliAODEvent* aliev);
         
         //===================================================================================
 

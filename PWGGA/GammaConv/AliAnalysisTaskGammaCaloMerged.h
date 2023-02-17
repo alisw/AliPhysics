@@ -129,6 +129,8 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
 
     void SetCalcElectronContribution(Bool_t tmp)  {fUsePrimElectronMatching = tmp;};
 
+    void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
+
   protected:
     AliV0ReaderV1*          fV0Reader;                                          // basic photon Selection Task
     TString                 fV0ReaderName;
@@ -152,6 +154,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliConversionMesonCuts* fMesonCuts;                                         // MesonCutObject
     AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
     AliAnalysisTaskConvJet* fConvJetReader;                                     // JetReader
+    TString                 fAddNameConvJet;                                    // Additional Name of jet container
     Bool_t                  fDoJetAnalysis;                                     // Switch for Jet Analysis
     Bool_t                  fDoJetQA;                                           // Switch for Jet QA
     Int_t                   fDoOutOfJet;                                        // Switch for Jet Analysis out of jet (see AliConversionMesonCuts for detailed description)
@@ -425,7 +428,7 @@ class AliAnalysisTaskGammaCaloMerged : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCaloMerged(const AliAnalysisTaskGammaCaloMerged&); // Prevent copy-construction
     AliAnalysisTaskGammaCaloMerged &operator=(const AliAnalysisTaskGammaCaloMerged&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCaloMerged, 49);
+    ClassDef(AliAnalysisTaskGammaCaloMerged, 50);
 };
 
 #endif

@@ -29,7 +29,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            UserCreateOutputObjects();
 		virtual void            UserExec(Option_t* option);
 		virtual void            Terminate(Option_t* option);
-		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt,Double_t DCAxy,Int_t Bsign, Bool_t &iIsocut);
+		virtual void            SelectPhotonicElectron(Int_t itrack, AliVTrack *track, Bool_t &fFlagPhotonicElec, Int_t iMC, Double_t TrkPt,Double_t DCAxy,Int_t Bsign, Bool_t &iIsocut, Bool_t &fLagZdecay);
 		virtual void            IsolationCut(Int_t itrack, AliVTrack *track, Double_t TrackPt, Double_t MatchPhi, Double_t MatchEta, Double_t MatchclE, Bool_t fFlagPhoto, Bool_t &fFlagIso, Bool_t fFlagB, Bool_t fFlagD, Double_t &IsoEnergy, Int_t &NcontCone);
 
 		virtual void            IsolationTrackBase(Int_t itrack, AliVTrack *track, Double_t MatchclE, Double_t &IsoEnergyTrack, Int_t &NtrackCone);
@@ -39,7 +39,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		virtual void            CalNcharge(AliAODMCHeader* fMCheader,Double_t CutEta);
 		virtual void            GetMClevelWdecay(AliAODMCHeader* fMCheadera, Double_t CutEta);
 		virtual void            FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom);
-		virtual void            FindWdecay(AliAODMCParticle* part, int &label, int &pid);
+		virtual void            FindWZdecay(AliAODMCParticle* part, int &label, int &pid, Double_t &Eta_Zee);
 		virtual void            SetEtaRange(Int_t etarange){fetarange = etarange;};
 
 		Bool_t                  GetEMCalTriggerEG1() { return fEMCEG1; };
@@ -79,7 +79,9 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetMinNtr(Double_t minNtr) {MinNtr = minNtr;};
 		void                    SetEstimatorFile(TString filename) {festimatorFile = filename;}
 		void                    SetMultType(Int_t mult_type) {fmult_type = mult_type;}
-               
+                void                    SetIsolationCut_E(Double_t isoEcut){fisoEcut = isoEcut;}               
+                void                    SetIsolationCut_Tr(Int_t isoTrcut){fisoTrcut = isoTrcut;}               
+
 
 		//void      SetWeightNtrkl(TH1D* hWeight){
 		//	if(fweightNtrkl) delete fweightNtrkl;
@@ -111,6 +113,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t CutMimClE;
 		TString pTe;
 		Double_t massMin;
+                Double_t fisoEcut;
+                Int_t fisoTrcut;
 		Double_t Nref;
 		Double_t NrefV0;
 		Int_t Nch;
@@ -186,7 +190,14 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fInv_pT_LS_forW;
 		TH2F*                   fInv_pT_ULS_forW;
 		TH2F*                   fInv_pT_LS_forZ;
+		TH2F*                   fInv_pT_LS_forZ_level;
+		TH2F*                   fInv_pT_LS_forZ_pos;
+		TH2F*                   fInv_pT_LS_forZ_neg;
 		TH2F*                   fInv_pT_ULS_forZ;
+		TH2F*                   fInv_pT_ULS_forZ_level;
+		TH2F*                   fInv_pT_ULS_forZ_pos;
+		TH2F*                   fInv_pT_ULS_forZ_pos_true;
+		TH2F*                   fInv_pT_ULS_forZ_neg;
 		TH1F*                   fHistPt_Inc;
 		TH1F*                   fHistPt_Iso;
 		TH2F*                   fHistPt_R_Iso;
@@ -207,6 +218,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fNtrkl_noCorr;
 		TH2F*                   fzvtx_V0M;
 		TH2F*                   fcent_V0M;
+		TH2F*                   fcent_nAcc;
 		TH2F*                   fNchNtr;
 		TH2F*                   fNchNtr_Corr;
 		TH2F*                   fNchMC;
@@ -274,6 +286,21 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH1F*                   fHistWeOrg;
 		TH1F*                   fHistWeOrgPos;
 		TH1F*                   fHistWeOrgNeg;
+		TH1F*                   fHistZ_Org;
+		TH2F*                   fHistZeOrg;
+		TH2F*                   fHistZeOrgNeg;
+		TH2F*                   fHistZeOrgPos;
+		TH1F*                   fHistZeRec0;
+		TH1F*                   fHistZeRec1;
+		TH2F*                   fHist_Zpair_pos;
+		TH2F*                   fHist_Zpair_neg;
+		TH1F*                   fHistZrap;
+		TH1F*                   fHistZrap_ALICEacc;
+		TH1F*                   fHist_Zeta_pos;
+		TH1F*                   fHist_Zeta_neg;
+		TH1F*                   fHistZmassALICE_LS;
+		TH1F*                   fHistZmassALICE_ULS;
+		TH1F*                   fHistZmassALICE_org;
 
 		AliAnalysisTaskCaloHFEpp(const AliAnalysisTaskCaloHFEpp&); // not implemented
 		AliAnalysisTaskCaloHFEpp& operator=(const AliAnalysisTaskCaloHFEpp&); // not implemented

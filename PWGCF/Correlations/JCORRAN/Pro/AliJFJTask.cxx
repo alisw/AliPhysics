@@ -237,6 +237,7 @@ void AliJFJTask::UserCreateOutputObjects()
                       fdeltaPhiCut,
                       fmatchingR,
                       0.0, //Tracking ineff only for det level.
+                      nullptr, //Not needed if not using negative tracking ineff above ^
                       false,  //Todo: implement the C*rho method flag for this code as well.
                       false); //Is this true mc
 #endif

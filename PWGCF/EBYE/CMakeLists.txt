@@ -46,6 +46,7 @@ set(SRCS
   BalanceFunctions/AliAnalysisTaskEfficiencyBFPsi.cxx
   BalanceFunctions/AliAnalysisTaskEffContBF.cxx
   BalanceFunctions/AliAnalysisTaskEffContPIDBF.cxx
+  BalanceFunctions/AliAnalysisTaskRecEff.cxx
   BalanceFunctions/AliBalance.cxx
   BalanceFunctions/AliBalancePsi.cxx
   BalanceFunctions/AliBalanceEbyE.cxx
@@ -79,6 +80,10 @@ set(SRCS
   Fluctuations/AliEbyEPidEfficiencyContamination.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFluc.cxx
   MeanPtFluctuations/AliAnalysisTaskPtFlucPbPb.cxx
+  MeanPtFluctuations/pp13TeV_MB/AliAnalysisMeanPt.cxx
+  MeanPtFluctuations/pp13TeV_MB/AliAnalysisHMMeanPt.cxx
+  MeanPtFluctuations/pp13TeV_MB/AliAnalysisMCMeanPt.cxx
+  MeanPtFluctuations_PbPb5020GeV2018/AliAnalysisMeanPtdata.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeCharge.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeFluctuations.cxx
   NetChargeFluctuations/tasks/AliAnalysisTaskEbyeNetChargeMCPbPbESD.cxx
@@ -131,6 +136,16 @@ set(SRCS
   HMPTF/AliAnalysisTaskResonanceVsMultiplicity.cxx
   HMPTF/AliAnalysisTaskMeanptFluctuationPP.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicityMC.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity2.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicityROOT6.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD.cxx
+  HMPTF/AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2.cxx
+  HMPTF/AliAnalysisTaskCorrPP.cxx
+  HMPTF/AliAnalysisTaskCorrPbPb.cxx
+  HMPTF/AliAnalysisTaskCorrPPHM.cxx
+  HMPTF/AliAnalysisTaskCorrPbPbMC.cxx
+  HMPTF/AliAnalysisTaskCorrPPMC.cxx
+  IntermittencyAnalysis/AliAnalysisTaskNFMs.cxx
   )
 
 # Headers from sources

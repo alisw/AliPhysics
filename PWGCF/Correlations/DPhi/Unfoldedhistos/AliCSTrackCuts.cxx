@@ -35,17 +35,17 @@
 /// \file AliCSTrackCuts.cxx
 /// \brief Implementation of event cuts class within the correlation studies analysis
 
-const char *AliCSTrackCuts::fgkCutsNames[AliCSTrackCuts::kNCuts] = {
-    "Not constrained",
-    "#eta",
-    "Track type (ITS cls,TPC cls,DCA)",
-    "p_{t}",
+const char* AliCSTrackCuts::fgkCutsNames[AliCSTrackCuts::kNCuts] = {
+  "Not constrained",
+  "#eta",
+  "Track type (ITS cls,TPC cls,DCA)",
+  "DCA",
+  "p_{t}",
 };
 
-
 /// Default constructor for serialization
-AliCSTrackCuts::AliCSTrackCuts() :
-    AliCSTrackCutsBase(),
+AliCSTrackCuts::AliCSTrackCuts()
+  : AliCSTrackCutsBase(),
     fConstrain(kFALSE),
     fBaseSystem(kUnknownBase),
     fEtaCut(100.0),
@@ -54,6 +54,16 @@ AliCSTrackCuts::AliCSTrackCuts() :
     fEtaShift(0.0),
     fESDTrackCuts(NULL),
     fAODFilterBits(0),
+    fAODHandling(false),
+    fAODTPCChi2(0.0),
+    fMinTPCClusters(0),
+    fMinNumberOfTPCCrossedRows(0),
+    fMinRatioXRowsTPCFClustres(0.0f),
+    fMaxDCAToVertexXY(0.0f),
+    fMaxDCAToVertexZ(0.0f),
+    f1MaxDCAToVertexXYPtDep(nullptr),
+    f1MaxDCAToVertexZPtDep(nullptr),
+    fDCAToVertex2D(false),
     fhCutsStatistics(NULL),
     fhCutsCorrelation(NULL),
     fhPtVsDCAxy{NULL},
@@ -68,8 +78,8 @@ AliCSTrackCuts::AliCSTrackCuts() :
 /// Constructor
 /// \param name name of the event cuts
 /// \param title title of the event cuts
-AliCSTrackCuts::AliCSTrackCuts(const char *name, const char *title) :
-    AliCSTrackCutsBase(kNCuts,kNCutsParameters,name,title),
+AliCSTrackCuts::AliCSTrackCuts(const char* name, const char* title)
+  : AliCSTrackCutsBase(kNCuts, kNCutsParameters, name, title),
     fConstrain(kFALSE),
     fBaseSystem(kUnknownBase),
     fEtaCut(100.0),
@@ -78,6 +88,16 @@ AliCSTrackCuts::AliCSTrackCuts(const char *name, const char *title) :
     fEtaShift(0.0),
     fESDTrackCuts(NULL),
     fAODFilterBits(0),
+    fAODHandling(false),
+    fAODTPCChi2(0.0),
+    fMinTPCClusters(0),
+    fMinNumberOfTPCCrossedRows(0),
+    fMinRatioXRowsTPCFClustres(0.0f),
+    fMaxDCAToVertexXY(0.0f),
+    fMaxDCAToVertexZ(0.0f),
+    f1MaxDCAToVertexXYPtDep(nullptr),
+    f1MaxDCAToVertexZPtDep(nullptr),
+    fDCAToVertex2D(false),
     fhCutsStatistics(NULL),
     fhCutsCorrelation(NULL),
     fhPtVsDCAxy{NULL},
@@ -128,12 +148,14 @@ void AliCSTrackCuts::NotifyEvent() {
 
 /// Check whether the passed track is accepted by the different cuts
 /// \param trk the track to analyze whether it is accepted or not
+/// \param dca the track DCA to the primary vertex
 /// \return kTRUE if the track  is accepted, kFALSE otherwise
 ///
 /// An internal copy of the track is used in case it were needed to constrain it if the cut
 /// so decide it. The (constrained) copy is then used for further analysis or cut
 /// decisions. The #fConstrain flag is kept to inform the user she needs to constrain the track.
-Bool_t AliCSTrackCuts::IsTrackAccepted(AliVTrack *trk) {
+Bool_t AliCSTrackCuts::IsTrackAccepted(AliVTrack* trk, float dca[2])
+{
 
   AliVTrack *ttrk = NULL; /* it will be created once the type is known */
   fConstrain = kFALSE; /* it will be updated with the track type */
@@ -162,7 +184,7 @@ Bool_t AliCSTrackCuts::IsTrackAccepted(AliVTrack *trk) {
   /* should we need more granularity in the output information */
   /* The track will be constrained if the cut so decide it then the (potentially) constrained */
   /* is returned in ttrk for further use */
-  if (!AcceptTrackType(trk,ttrk)) {
+  if (!AcceptTrackType(trk, ttrk, dca)) {
     fCutsActivatedMask.SetBitNumber(kTrackTypeCuts);
     accepted = kFALSE;
   }
@@ -192,53 +214,30 @@ Bool_t AliCSTrackCuts::IsTrackAccepted(AliVTrack *trk) {
 
   if (fQALevel > kQALevelNone) {
     /* let's fill the histograms */
-    fhCutsStatistics->Fill(fhCutsStatistics->GetBinCenter(fhCutsStatistics->GetXaxis()->FindBin("n tracks")));
+    fhCutsStatistics->Fill("n tracks", 1);
     if (!accepted)
-      fhCutsStatistics->Fill(fhCutsStatistics->GetBinCenter(fhCutsStatistics->GetXaxis()->FindBin("n cut tracks")));
+      fhCutsStatistics->Fill("n cut tracks", 1);
 
     for (Int_t i=0; i<kNCuts; i++) {
-      if (fhCutsStatistics->GetXaxis()->FindBin(fgkCutsNames[i]) < 1)
+      if (fhCutsStatistics->GetXaxis()->FindFixBin(fgkCutsNames[i]) < 1)
         AliFatal(Form("Inconsistency! Cut %d with name %s not found", i, fgkCutsNames[i]));
 
       if (fCutsActivatedMask.TestBitNumber(i))
-        fhCutsStatistics->Fill(fhCutsStatistics->GetBinCenter(fhCutsStatistics->GetXaxis()->FindBin(fgkCutsNames[i])));
+        fhCutsStatistics->Fill(fgkCutsNames[i], 1);
 
       if (fQALevel > kQALevelLight) {
         for (Int_t j=i; j<kNCuts; j++) {
-          if (fhCutsStatistics->GetXaxis()->FindBin(fgkCutsNames[j]) < 1)
+          if (fhCutsStatistics->GetXaxis()->FindFixBin(fgkCutsNames[j]) < 1)
             AliFatal(Form("Inconsistency! Cut %d with name %s not found", j, fgkCutsNames[j]));
 
           if (fCutsActivatedMask.TestBitNumber(i) && fCutsActivatedMask.TestBitNumber(j)) {
-            Float_t xC = fhCutsCorrelation->GetXaxis()->GetBinCenter(fhCutsCorrelation->GetXaxis()->FindBin(fgkCutsNames[i]));
-            Float_t yC = fhCutsCorrelation->GetYaxis()->GetBinCenter(fhCutsCorrelation->GetYaxis()->FindBin(fgkCutsNames[j]));
-            fhCutsCorrelation->Fill(xC, yC);
+            fhCutsCorrelation->Fill(fgkCutsNames[i], fgkCutsNames[j], 1);
           }
         }
       }
     }
 
     /* get some values needed for histograms filling */
-    Float_t dca[2], bCov[3];
-    if (trk->IsA() == AliESDtrack::Class()) {
-      ttrk->GetImpactParameters(dca,bCov);
-    }
-    else {
-      /* TODO: if the track is constrained this needs to be considered */
-      /* the selected tracks get a DCA of 0.0. Implement GetDCA from   */
-      /* AliDielectronVarManager but it will require access to the     */
-      /* event object                                                  */
-      AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(trk);
-      Float_t pos[3];
-      if (aodt->GetPosition(pos)) {
-        dca[0] = pos[0];
-        dca[1] = pos[1];
-      }
-      else {
-        dca[0] = 0.0;
-        dca[1] = 0.0;
-      }
-    }
-
     Float_t nCrossedRowsTPC = ttrk->GetTPCCrossedRows();
     Float_t  ratioCrossedRowsOverFindableClustersTPC = 1.0;
     if (ttrk->GetTPCNclsF()>0) {
@@ -269,7 +268,6 @@ Bool_t AliCSTrackCuts::IsTrackAccepted(AliVTrack *trk) {
 
   return accepted;
 }
-
 
 /// Check whether the true track associated to the passed track is accepted by the kinematic cuts
 /// \param trk the track to analyze whether its associated true track is accepted or not
@@ -349,7 +347,8 @@ Bool_t AliCSTrackCuts::IsTrueTrackAccepted(Int_t itrk) {
 /// If the selected cut requires the track being constrained, the passed track is
 /// cloned, its clone constrained, its reference returned in *ttrk* parameter and the
 /// #fConstrain flag raised.
-Bool_t AliCSTrackCuts::AcceptTrackType(AliVTrack *trk, AliVTrack *&ttrk) {
+Bool_t AliCSTrackCuts::AcceptTrackType(AliVTrack* trk, AliVTrack*& ttrk, float dca[2])
+{
   Bool_t accepted = kTRUE;
 
   if (trk->IsA() == AliESDtrack::Class()) {
@@ -408,33 +407,28 @@ Bool_t AliCSTrackCuts::AcceptTrackType(AliVTrack *trk, AliVTrack *&ttrk) {
     }
   }
   else if (trk->IsA() == AliAODTrack::Class()) {
-    /* TODO: for the time being only the pure equivalence of FB with the */
-    /* type of track selected is used. This means that DCA cut, ITS      */
-    /* clusters cut and TPC clusters cut are not considered apart of     */
-    /* what is already implicit in the FB. As an additional comment to   */
-    /* consider, if the cut is loose than the FB, the FB is useless      */
-    /* to discard, tests with the track information available
-    Int_t a,bb,c,d;
-    Int_t clsITS[6];
-    Float_t b[2];
-    Float_t bCov[3];
-
-    trk->GetTPCClusterInfo(a,bb,c,d);
-    trk->GetTPCCrossedRows();
-    trk->GetTPCNcls();
-    trk->GetTPCNclsF();
-    trk->GetTPCSharedMapPtr();
-    trk->GetImpactParameters(b,bCov);
-    trk->GetITSclusters(clsITS);
-
-    end tests */
+    /* TODO: if the cut is loose than the FB, the cut is useless      */
+    /* for discarding the tracks, they will get dicarded by the FB    */
 
     AliAODTrack *aodt = dynamic_cast<AliAODTrack*>(trk);
 
     if(!aodt->TestFilterBit(fAODFilterBits)) {
       accepted = kFALSE;
-    }
-    else {
+    } else {
+      /* the track is accepted from the standard FB perspective */
+      if (fAODHandling) {
+        /* process additional AOD cuts over the filter bits */
+        if (!(aodt->GetTPCchi2perCluster() < fAODTPCChi2)) {
+          accepted = kFALSE;
+        }
+      }
+      if (!PassTPCClustersCutAOD(aodt)) {
+        accepted = false;
+      }
+      if (!PassDCACutAOD(aodt->Pt(), dca)) {
+        fCutsActivatedMask.SetBitNumber(kDCACut);
+        accepted = false;
+      }
       /* the track is accepted, check special handling depending on the cut */
       switch (fParameters[kTrackTypeCutParam]) {
       case 5: /* special handling for TPC only tracks to constrain to the SPD vertex */
@@ -487,7 +481,6 @@ Bool_t AliCSTrackCuts::AcceptTrackType(AliVTrack *trk, AliVTrack *&ttrk) {
   }
   return accepted;
 }
-
 
 /// Check whether the index passed corresponds to a MC physical primary track
 ///
@@ -765,6 +758,10 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
   if (fESDTrackCuts != NULL)
     delete fESDTrackCuts;
   fAODFilterBits = 0;
+  fAODHandling = false;
+  fAODTPCChi2 = 0.0;
+  bool aodhandling = false;
+  float chi2 = 0;
 
   TString system = "";
   TString period = "";
@@ -842,12 +839,16 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
       basename = "2011";
       system = "Pb-Pb";
       period = "2018q";
+      aodhandling = true;
+      chi2 = 2.5;
       break;
   case kLHC18r:
     fBaseSystem = k2011based;
     basename = "2011";
     system = "Pb-Pb";
     period = "2018r";
+      aodhandling = true;
+      chi2 = 2.5;
     break;
   default:
     fESDTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
@@ -884,6 +885,20 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
     fESDTrackCuts = AliESDtrackCuts::GetStandardTPCOnlyTrackCuts();
     fESDTrackCuts->SetNameTitle(Form("TrackType_%s",GetCutsString()),"Type of tracks: Standard TPC only");
     fAODFilterBits = 1;
+    switch (fBaseSystem) {
+      case k2010based:
+        break;
+      case k2011based:
+        if (aodhandling) {
+          fAODHandling = true;
+          fAODTPCChi2 = chi2;
+          fESDTrackCuts->SetMaxChi2PerClusterTPC(chi2);
+        }
+        break;
+      default:
+        AliFatal("Internal inconsistency between data period and base period for track cuts selection. ABORTING!!!");
+        return;
+    }
     tracktype = "FB1. Standard TPC only";
     break;
   case 2:
@@ -899,6 +914,11 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
       fESDTrackCuts = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011();
       fESDTrackCuts->SetNameTitle(Form("TrackType_%s",GetCutsString()),"Type of tracks: Global 2011 primaries");
       fAODFilterBits = 32;
+      if (aodhandling) {
+        fAODHandling = true;
+        fAODTPCChi2 = chi2;
+        fESDTrackCuts->SetMaxChi2PerClusterTPC(chi2);
+      }
       tracktype = "FB32. Global primaries ITS+TPC 2011. Tight DCA. SPD:ANY. Number of rows";
       break;
     default:
@@ -923,6 +943,11 @@ void AliCSTrackCuts::SetActualTypeOfTrackCuts() {
       fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
       fESDTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSDD, AliESDtrackCuts::kFirst);
       fAODFilterBits = 64;
+      if (aodhandling) {
+        fAODHandling = true;
+        fAODTPCChi2 = chi2;
+        fESDTrackCuts->SetMaxChi2PerClusterTPC(chi2);
+      }
       tracktype = "FB64. Global primaries ITS+TPC 2011. Tight DCA. SPD:NONE, SDD:FIRST. Number of rows";
       break;
     default:
@@ -1346,34 +1371,48 @@ void AliCSTrackCuts::SetActualTPCClustersCut(){
     AliFatal("AliESDtrackCut is not initialized. ABORTING!!!");
   }
 
-  switch(fParameters[kTPCClsCutParam]){
+  fMinTPCClusters = 0;
+  fMinNumberOfTPCCrossedRows = 0;
+  fMinRatioXRowsTPCFClustres = 0.0;
+  switch (fParameters[kTPCClsCutParam]) {
     case 0: // as standard for selected tracks in data period
       /* do nothing */
       break;
     case 1:  // min 70 clusters
       fESDTrackCuts->SetMinNClustersTPC(70);
+      fMinTPCClusters = 70;
       break;
     case 2:  // min 80 clusters
       fESDTrackCuts->SetMinNClustersTPC(80);
+      fMinTPCClusters = 80;
       break;
     case 3:  // min 100
       fESDTrackCuts->SetMinNClustersTPC(100);
+      fMinTPCClusters = 100;
       break;
     case 4:  // min 50 crossed rows, min 60% crossed rows over findable clusters
       fESDTrackCuts->SetMinNCrossedRowsTPC(50);
       fESDTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.6);
+      fMinNumberOfTPCCrossedRows = 50;
+      fMinRatioXRowsTPCFClustres = 0.6;
       break;
     case 5:  // min 70 crossed rows, min 70% crossed rows over findable clusters
       fESDTrackCuts->SetMinNCrossedRowsTPC(70);
       fESDTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
+      fMinNumberOfTPCCrossedRows = 70;
+      fMinRatioXRowsTPCFClustres = 0.7;
       break;
     case 6:  // min 70 crossed rows, min 80% crossed rows over findable clusters
       fESDTrackCuts->SetMinNCrossedRowsTPC(70);
       fESDTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fMinNumberOfTPCCrossedRows = 70;
+      fMinRatioXRowsTPCFClustres = 0.8;
       break;
     case 7:  // min 70 crossed rows, min 90% crossed rows over findable clusters
       fESDTrackCuts->SetMinNCrossedRowsTPC(70);
       fESDTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
+      fMinNumberOfTPCCrossedRows = 70;
+      fMinRatioXRowsTPCFClustres = 0.9;
       break;
     case 9: // disable it
       fESDTrackCuts->SetMinNClustersTPC();
@@ -1419,6 +1458,26 @@ void AliCSTrackCuts::PrintTPCClustersCut() const {
   }
 }
 
+/// Does the passed AOD track pass the number of TPC clusters cut
+Bool_t AliCSTrackCuts::PassTPCClustersCutAOD(AliAODTrack* aodt)
+{
+  bool pass = true;
+
+  auto tpccls = [](auto t, float th) {
+    if (t->GetTPCNcls() < th)
+      return false;
+    return true;
+  };
+  auto tpcrows = [](auto t, float th, float ofc) {
+    if (t->GetTPCCrossedRows() < th)
+      return false;
+    else if (t->GetTPCNclsF() > 0 ? t->GetTPCCrossedRows() / t->GetTPCNclsF() < ofc : true)
+      return false;
+    return true;
+  };
+  return pass && tpccls(aodt, fMinTPCClusters) && tpcrows(aodt, fMinNumberOfTPCCrossedRows, fMinRatioXRowsTPCFClustres);
+}
+
 /// Configures the track DCA cut
 /// \param dcacode the DCA cut code
 /// | code | max \f$ \mbox{DCA}_{XY} \f$ to vertex | max \f$ \mbox{DCA}_{Z} \f$ to vertex |
@@ -1430,6 +1489,8 @@ void AliCSTrackCuts::PrintTPCClustersCut() const {
 /// | 4 | tight DCA according to the data period | 5 |
 /// | 5 | 1 cm | 2 cm |
 /// | 6 | \f$ 0.0525+\frac{0.175}{p_t^{1.1}} \f$ | 2 |
+/// | 7 | 0.4 cm | 1 cm |
+/// | 8 | 0.2 cm | 1 cm |
 /// | 9 | not active cut | not active cut |
 /// \return kTRUE if proper and supported DCA cut code
 ///
@@ -1450,6 +1511,10 @@ Bool_t AliCSTrackCuts::SetDCACut(Int_t dcacode)
       break;
     case 6:
       break;
+    case 7:
+      break;
+    case 8:
+      break;
     case 9:
       break;
     default:
@@ -1466,7 +1531,19 @@ void AliCSTrackCuts::SetActualDCACut()
   if(!fESDTrackCuts ) {
     AliFatal("AliESDtrackCut is not initialized. ABORTING!!!");
   }
-  switch(fParameters[kDCACutParam]){
+  fMaxDCAToVertexXY = 999;
+  fMaxDCAToVertexZ = 999;
+  if (f1MaxDCAToVertexXYPtDep != nullptr) {
+    delete f1MaxDCAToVertexXYPtDep;
+    f1MaxDCAToVertexXYPtDep = nullptr;
+  }
+  if (f1MaxDCAToVertexZPtDep != nullptr) {
+    delete f1MaxDCAToVertexZPtDep;
+    f1MaxDCAToVertexZPtDep = nullptr;
+  }
+  fDCAToVertex2D = false;
+
+  switch (fParameters[kDCACutParam]) {
     case 0: // as standard for selected tracks in data period
       /* do nothing */
       break;
@@ -1476,11 +1553,17 @@ void AliCSTrackCuts::SetActualDCACut()
           fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
           fESDTrackCuts->SetMaxDCAToVertexZ(2);
           fESDTrackCuts->SetDCAToVertex2D(kFALSE);
+          f1MaxDCAToVertexXYPtDep = new TFormula("f1MaxDCAToVertexXYPtDep", "0.0182+0.0350/x^1.01");
+          fMaxDCAToVertexZ = 2;
+          fDCAToVertex2D = false;
           break;
         case k2011based:
           fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
           fESDTrackCuts->SetMaxDCAToVertexZ(2);
           fESDTrackCuts->SetDCAToVertex2D(kFALSE);
+          f1MaxDCAToVertexXYPtDep = new TFormula("f1MaxDCAToVertexXYPtDep", "0.0105+0.0350/x^1.1");
+          fMaxDCAToVertexZ = 2;
+          fDCAToVertex2D = false;
           break;
         default:
         /* do nothing */
@@ -1494,6 +1577,9 @@ void AliCSTrackCuts::SetActualDCACut()
           fESDTrackCuts->SetMaxDCAToVertexXY(2.4);
           fESDTrackCuts->SetMaxDCAToVertexZ(3.2);
           fESDTrackCuts->SetDCAToVertex2D(kTRUE);
+          fMaxDCAToVertexXY = 2.4;
+          fMaxDCAToVertexZ = 3.2;
+          fDCAToVertex2D = true;
           break;
         default:
         /* do nothing */
@@ -1506,11 +1592,17 @@ void AliCSTrackCuts::SetActualDCACut()
           fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
           fESDTrackCuts->SetMaxDCAToVertexZ(1);
           fESDTrackCuts->SetDCAToVertex2D(kFALSE);
+          f1MaxDCAToVertexXYPtDep = new TFormula("f1MaxDCAToVertexXYPtDep", "0.0182+0.0350/x^1.01");
+          fMaxDCAToVertexZ = 1;
+          fDCAToVertex2D = false;
           break;
         case k2011based:
           fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
           fESDTrackCuts->SetMaxDCAToVertexZ(1);
           fESDTrackCuts->SetDCAToVertex2D(kFALSE);
+          f1MaxDCAToVertexXYPtDep = new TFormula("f1MaxDCAToVertexXYPtDep", "0.0105+0.0350/x^1.1");
+          fMaxDCAToVertexZ = 1;
+          fDCAToVertex2D = false;
           break;
         default:
         /* do nothing */
@@ -1523,11 +1615,17 @@ void AliCSTrackCuts::SetActualDCACut()
           fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.0182+0.0350/pt^1.01");
           fESDTrackCuts->SetMaxDCAToVertexZ(5);
           fESDTrackCuts->SetDCAToVertex2D(kFALSE);
+          f1MaxDCAToVertexXYPtDep = new TFormula("f1MaxDCAToVertexXYPtDep", "0.0182+0.0350/x^1.01");
+          fMaxDCAToVertexZ = 5;
+          fDCAToVertex2D = false;
           break;
         case k2011based:
           fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
           fESDTrackCuts->SetMaxDCAToVertexZ(5);
           fESDTrackCuts->SetDCAToVertex2D(kFALSE);
+          f1MaxDCAToVertexXYPtDep = new TFormula("f1MaxDCAToVertexXYPtDep", "0.0105+0.0350/x^1.1");
+          fMaxDCAToVertexZ = 5;
+          fDCAToVertex2D = false;
           break;
         default:
         /* do nothing */
@@ -1538,11 +1636,33 @@ void AliCSTrackCuts::SetActualDCACut()
       fESDTrackCuts->SetMaxDCAToVertexXY(1);
       fESDTrackCuts->SetMaxDCAToVertexZ(2);
       fESDTrackCuts->SetDCAToVertex2D(kTRUE);
+      fMaxDCAToVertexXY = 1;
+      fMaxDCAToVertexZ = 2;
+      fDCAToVertex2D = true;
       break;
     case 6: /* specific */
       fESDTrackCuts->SetMaxDCAToVertexXYPtDep("0.0525+0.175/pt^1.1");
       fESDTrackCuts->SetMaxDCAToVertexZ(2);
       fESDTrackCuts->SetDCAToVertex2D(kFALSE);
+      f1MaxDCAToVertexXYPtDep = new TFormula("f1MaxDCAToVertexXYPtDep", "0.0525+0.175/x^1.1");
+      fMaxDCAToVertexZ = 2;
+      fDCAToVertex2D = false;
+      break;
+    case 7: /* 0.4 cm , 1 cm */
+      fESDTrackCuts->SetMaxDCAToVertexXY(0.4);
+      fESDTrackCuts->SetMaxDCAToVertexZ(1);
+      fESDTrackCuts->SetDCAToVertex2D(kTRUE);
+      fMaxDCAToVertexXY = 0.4;
+      fMaxDCAToVertexZ = 1;
+      fDCAToVertex2D = true;
+      break;
+    case 8: /* 0.2 cm , 1 cm */
+      fESDTrackCuts->SetMaxDCAToVertexXY(0.2);
+      fESDTrackCuts->SetMaxDCAToVertexZ(1);
+      fESDTrackCuts->SetDCAToVertex2D(kTRUE);
+      fMaxDCAToVertexXY = 0.2;
+      fMaxDCAToVertexZ = 1;
+      fDCAToVertex2D = true;
       break;
     case 9:
       fESDTrackCuts->SetMaxDCAToVertexZ(1000);
@@ -1571,7 +1691,7 @@ void AliCSTrackCuts::PrintDCACut() const
       printf("Z: 1 cm, XY: tight according to the data period\n");
       break;
     case 4:
-      printf("Z: 5 cm, XY: loose according to the data period\n");
+      printf("Z: 5 cm, XY: tight according to the data period\n");
       break;
     case 5:
       printf("Z: 2 cm, XY: 1 cm\n");
@@ -1579,11 +1699,32 @@ void AliCSTrackCuts::PrintDCACut() const
     case 6:
       printf("Z: 2 cm, XY: 0.0525+0.175/pt^1.1\n");
       break;
+    case 7:
+      printf("Z: 1 cm, XY: 0.4 cm\n");
+      break;
+    case 8:
+      printf("Z: 1 cm, XY: 0.2 cm\n");
+      break;
     case 9:
       printf("none\n");
       break;
     default:
       AliError(Form("Wrong DCA cut code %d stored", fParameters[kDCACutParam]));
+  }
+}
+
+/// Does the passed AOD track pass the DCA cut
+bool AliCSTrackCuts::PassDCACutAOD(float pt, float dca[2])
+{
+  if (f1MaxDCAToVertexXYPtDep != nullptr)
+    fMaxDCAToVertexXY = f1MaxDCAToVertexXYPtDep->Eval(pt);
+  if (f1MaxDCAToVertexZPtDep != nullptr)
+    fMaxDCAToVertexZ = f1MaxDCAToVertexZPtDep->Eval(pt);
+
+  if (fDCAToVertex2D) {
+    return dca[0] * dca[0] / fMaxDCAToVertexXY / fMaxDCAToVertexXY + dca[1] * dca[1] / fMaxDCAToVertexZ / fMaxDCAToVertexZ <= 1;
+  } else {
+    return TMath::Abs(dca[0]) <= fMaxDCAToVertexXY && TMath::Abs(dca[1]) <= fMaxDCAToVertexZ;
   }
 }
 

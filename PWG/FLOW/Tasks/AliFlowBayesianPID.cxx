@@ -2036,7 +2036,9 @@ void AliFlowBayesianPID::SetPriors(){
       Float_t y = 0.125 + (k2-1)*0.25;
       
       Int_t ipt = 0;
-      while(y > fBinLimitPID[ipt]) ipt++;
+      for (Int_t i = 0; i < 18; i++) {
+		  if (y > fBinLimitPID[i]) ipt++;  
+	  }
       ipt--;
 
       if(ipt < 0) ipt = 0;

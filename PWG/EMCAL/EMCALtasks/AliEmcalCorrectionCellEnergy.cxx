@@ -32,6 +32,7 @@ AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   ,fUseShaperCorrection(0)
   ,fUseDetermineLowGain(0)
   ,fUseAdditionalScale(kFALSE)
+  ,fUseAdditionalScaleEtaDep(kFALSE)
   ,fAdditionalScaleSM(0)
   ,fCustomRecalibFilePath("")
   ,fLoad1DRecalibFactors(0)
@@ -76,6 +77,9 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
   // check the YAML configuration if an additional cell correction scale is requested (default is 1 -> no scale shift)
   GetProperty("enableAdditionalScale",fUseAdditionalScale);
 
+  // check the YAML configuration if an additional cell correction scale is requested (default is 1 -> no scale shift)
+  GetProperty("enableAdditionalScaleEtaDep",fUseAdditionalScaleEtaDep);
+  
   // check the YAML configuration for values for additional scale (default is 1 for each SM category )
   GetProperty("additionalScaleValuesSM",fAdditionalScaleSM);
 
@@ -540,6 +544,10 @@ Bool_t AliEmcalCorrectionCellEnergy::CheckIfRunChanged()
   if(fUseAdditionalScale)
   {
     fRecoUtils->SetUseTowerAdditionalScaleCorrection(kTRUE);
+    if(fUseAdditionalScaleEtaDep)
+    {
+      fRecoUtils->SetUseTowerAdditionalScaleCorrectionEtaDep(kTRUE);
+    }
     for(int i = 0; i < 3; ++i){
       fRecoUtils->SetTowerAdditionalScaleCorrection(i, fAdditionalScaleSM[i]);
     }

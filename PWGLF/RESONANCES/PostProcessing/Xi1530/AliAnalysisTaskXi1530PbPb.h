@@ -13,7 +13,8 @@ class THistManager;
 class AliPIDResponse;
 class AliESDtrackCuts;
 
-struct StructXi1530PbPb {
+struct StructXi1530PbPb
+{
     Double32_t TPCNsigXi1530Pion;
     Double32_t TPCNsigLambdaProton;
     Double32_t TPCNsigLambdaPion;
@@ -45,15 +46,17 @@ struct StructXi1530PbPb {
     Int_t Antiflag;
 };
 
-struct StructXi1530PbPbMC : public StructXi1530PbPb {
+struct StructXi1530PbPbMC : public StructXi1530PbPb
+{
     float MCflag;
     float ptMC;
     Int_t Antiflag;
     bool isReconstructed;
 };
 
-class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
-   public:
+class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE
+{
+public:
     AliAnalysisTaskXi1530PbPb();
     AliAnalysisTaskXi1530PbPb(const char *name, Bool_t MCcase);
     virtual ~AliAnalysisTaskXi1530PbPb();
@@ -62,10 +65,12 @@ class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *option);
     void SetFillQAPlot(Bool_t input = kTRUE) { fFillQAPlot = input; }
-    void SetMixerTask(AliAnalysisTaskTrackMixer *mixerTask) {
+    void SetMixerTask(AliAnalysisTaskTrackMixer *mixerTask)
+    {
         fMixingPool = mixerTask;
     }
-    void SetUseBuiltinMixer(Bool_t builtinmixer) {
+    void SetUseBuiltinMixer(Bool_t builtinmixer)
+    {
         fUseBuiltinMixer = builtinmixer;
     }
     void SetMixing(Bool_t setmixing) { fSetMixing = setmixing; }
@@ -89,11 +94,16 @@ class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
     void SetMaxNsigBachelorPion(Double_t lParameter) { fTPCNsigBachelorPionCut = lParameter; }
     void SetMaxDCAV0daughters(Double_t lParameter) { fDCALambdaDaughtersCut = lParameter; }
     void SetMaxDCAXidaughters(Double_t lParameter) { fDCAXiDaughtersCut = lParameter; }
-    void SetMinDCAPVV0(Double_t lParameter) { fDCALambdaPVCut = lParameter; }
-    void SetMinDCAPVV0Proton(Double_t lParameter) { fDCALambdaProtonPVCut = lParameter; }
-    void SetMinDCAPVV0Pion(Double_t lParameter) { fDCALambdaPionPVCut = lParameter; }
-    void SetMinDCAPVBachelorPion(Double_t lParameter) { fDCABachelorPionPVCut = lParameter; }
-    void SetMinDCAPVXi(Double_t lParameter) { fDCAXiPVCut = lParameter; }
+    void SetMinDCAPVV0(Double_t lParameter) { fMinDCALambdaPVCut = lParameter; }
+    void SetMaxDCAPVV0(Double_t lParameter) { fMaxDCALambdaPVCut = lParameter; }
+    void SetMinDCAPVV0Proton(Double_t lParameter) { fMinDCALambdaProtonPVCut = lParameter; }
+    void SetMinDCAPVV0Pion(Double_t lParameter) { fMinDCALambdaPionPVCut = lParameter; }
+    void SetMinDCAPVBachelorPion(Double_t lParameter) { fMinDCABachelorPionPVCut = lParameter; }
+    void SetMaxDCAPVV0Proton(Double_t lParameter) { fMaxDCALambdaProtonPVCut = lParameter; }
+    void SetMaxDCAPVV0Pion(Double_t lParameter) { fMaxDCALambdaPionPVCut = lParameter; }
+    void SetMaxDCAPVBachelorPion(Double_t lParameter) { fMaxDCABachelorPionPVCut = lParameter; }
+    void SetMinDCAPVXi(Double_t lParameter) { fMinDCAXiPVCut = lParameter; }
+    void SetMaxDCAPVXi(Double_t lParameter) { fMaxDCAXiPVCut = lParameter; }
     void SetMinCPAV0(Double_t lParameter) { fV0CPACut = lParameter; }
     void SetMinCPAXi(Double_t lParameter) { fXiCPACut = lParameter; }
     void SetMaxEtaXi(Double_t lParameter) { fXiEtaCut = lParameter; }
@@ -106,16 +116,20 @@ class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
     void SetExoticMaxOpenAngle(Double_t lParameter) { fExoticMaxOpenAngle = lParameter; }
     void SetSkipFillingHistogram(Double_t lParameter) { fSkipFillingHisto = lParameter; }
 
-    void SetXi1530RapidityCutHigh(Double_t lParameter) {
+    void SetXi1530RapidityCutHigh(Double_t lParameter)
+    {
         fXi1530YCutHigh = lParameter;
     }
-    void SetXi1530RapidityCutLow(Double_t lParameter) {
+    void SetXi1530RapidityCutLow(Double_t lParameter)
+    {
         fXi1530YCutLow = lParameter;
     }
-    void SetXi1530MassCutHigh(Double_t lParameter) {
+    void SetXi1530MassCutHigh(Double_t lParameter)
+    {
         fXi1530MassHigh = lParameter;
     }
-    void SetXi1530MassCutLow(Double_t lParameter) {
+    void SetXi1530MassCutLow(Double_t lParameter)
+    {
         fXi1530MassLow = lParameter;
     }
 
@@ -153,65 +167,65 @@ class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
     TAxis AxisVar(TString name, std::vector<Double_t> bin);
     TAxis AxisStr(TString name, std::vector<TString> bin);
 
-    AliEventCuts fEventCuts;  // Event cuts
+    AliEventCuts fEventCuts; // Event cuts
     // TPC GeoCut
-    Bool_t fCheckTPCGeo;                   //
-    Double_t fTPCActiveLengthCutDeltaY;    //
-    Double_t fTPCActiveLengthCutDeltaZ;    //
-    Double_t fRequireCutGeoNcrNclLength;   //
-    Double_t fRequireCutGeoNcrNclGeom1Pt;  //
-    Double_t fCutGeoNcrNclFractionNcr;     //
-    Double_t fCutGeoNcrNclFractionNcl;     //
+    Bool_t fCheckTPCGeo;                  //
+    Double_t fTPCActiveLengthCutDeltaY;   //
+    Double_t fTPCActiveLengthCutDeltaZ;   //
+    Double_t fRequireCutGeoNcrNclLength;  //
+    Double_t fRequireCutGeoNcrNclGeom1Pt; //
+    Double_t fCutGeoNcrNclFractionNcr;    //
+    Double_t fCutGeoNcrNclFractionNcl;    //
 
-   private:
+private:
     typedef std::vector<AliVTrack *> tracklist;
     typedef std::deque<tracklist> eventpool;
-    typedef std::vector<std::vector<eventpool> > mixingpool;
+    typedef std::vector<std::vector<eventpool>> mixingpool;
 
-    AliESDtrackCuts *fTrackCuts;             //!
-    AliPIDResponse *fPIDResponse;            //!
-    AliAnalysisTaskTrackMixer *fMixingPool;  //!
+    AliESDtrackCuts *fTrackCuts;            //!
+    AliPIDResponse *fPIDResponse;           //!
+    AliAnalysisTaskTrackMixer *fMixingPool; //!
 
-    AliVEvent *fEvt;          //!
-    AliMCEvent *fMCEvent;     //!
-    THistManager *fHistos;    //!
-    AliAODVertex *fVertex;    //!
-    TTree *fTree = nullptr;   //!<! Tree for Xi1530
-    StructXi1530PbPb *fTreeXi1530Rec = nullptr;  //!<! Transient fRecXi1530
+    AliVEvent *fEvt;                            //!
+    AliMCEvent *fMCEvent;                       //!
+    THistManager *fHistos;                      //!
+    AliAODVertex *fVertex;                      //!
+    TTree *fTree = nullptr;                     //!<! Tree for Xi1530
+    StructXi1530PbPb *fTreeXi1530Rec = nullptr; //!<! Transient fRecXi1530
     StructXi1530PbPbMC fTreeXi1530Gen;
-    TClonesArray *fMCArray;   //!
+    TClonesArray *fMCArray; //!
 
-    Bool_t fIsAOD;             //!
-    Bool_t fIsNano;            //!
-    Bool_t fSetMixing;         //
-    Bool_t fUseBuiltinMixer;   //
-    Bool_t fFillQAPlot;        //
-    Bool_t fIsMC;              //
-    Bool_t fIsPrimaryMC;       //
-    Bool_t fFillTree;        //
-    Bool_t fIsINEL;            //
-    Bool_t fIsHM;              //
-    Bool_t fLambdaCPAtoXi;     //
-    Bool_t fExoticFinder;      //
-    Bool_t fSkipFillingHisto;  //
+    Bool_t fIsAOD;            //!
+    Bool_t fIsNano;           //!
+    Bool_t fSetMixing;        //
+    Bool_t fUseBuiltinMixer;  //
+    Bool_t fFillQAPlot;       //
+    Bool_t fIsMC;             //
+    Bool_t fIsPrimaryMC;      //
+    Bool_t fFillTree;         //
+    Bool_t fIsINEL;           //
+    Bool_t fIsHM;             //
+    Bool_t fLambdaCPAtoXi;    //
+    Bool_t fExoticFinder;     //
+    Bool_t fSkipFillingHisto; //
 
-    mixingpool fEMpool;  //!
-    TAxis fBinCent;      //!
-    TAxis fBinZ;         //!
-    Double_t fPosPV[3];  //!
-    Double_t fMagField;  //!
+    mixingpool fEMpool; //!
+    TAxis fBinCent;     //!
+    TAxis fBinZ;        //!
+    Double_t fPosPV[3]; //!
+    Double_t fMagField; //!
 
-    Double_t fCent;  //!
-    Int_t fnMix;     //!
-    Int_t fCentBin;  //!
-    Int_t fZbin;     //!
+    Double_t fCent; //!
+    Int_t fnMix;    //!
+    Int_t fCentBin; //!
+    Int_t fZbin;    //!
 
     // Pion cuts
-    UInt_t fFilterBit;                //
-    Double_t fTPCNsigXi1530PionCut;   //
-    Double_t fXi1530PionEtaCut;       //
-    Double_t fXi1530PionPVzCut;       //
-    Double_t fXi1530PionPVrSigmaCut;  //
+    UInt_t fFilterBit;               //
+    Double_t fTPCNsigXi1530PionCut;  //
+    Double_t fXi1530PionEtaCut;      //
+    Double_t fXi1530PionPVzCut;      //
+    Double_t fXi1530PionPVrSigmaCut; //
 
     // Xi cuts
     Double_t fTPCNsigLambdaProtonCut;  //
@@ -219,11 +233,16 @@ class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
     Double_t fTPCNsigBachelorPionCut;  //
     Double_t fDCALambdaDaughtersCut;   //
     Double_t fDCAXiDaughtersCut;       //
-    Double_t fDCALambdaPVCut;          //
-    Double_t fDCAXiPVCut;              //
-    Double_t fDCALambdaProtonPVCut;    //
-    Double_t fDCALambdaPionPVCut;      //
-    Double_t fDCABachelorPionPVCut;    //
+    Double_t fMinDCALambdaPVCut;       //
+    Double_t fMaxDCALambdaPVCut;       //
+    Double_t fMinDCAXiPVCut;           //
+    Double_t fMaxDCAXiPVCut;           //
+    Double_t fMinDCALambdaProtonPVCut; //
+    Double_t fMinDCALambdaPionPVCut;   //
+    Double_t fMinDCABachelorPionPVCut; //
+    Double_t fMaxDCALambdaProtonPVCut; //
+    Double_t fMaxDCALambdaPionPVCut;   //
+    Double_t fMaxDCABachelorPionPVCut; //
     Double_t fV0CPACut;                //
     Double_t fXiCPACut;                //
     Double_t fXiEtaCut;                //
@@ -235,15 +254,15 @@ class AliAnalysisTaskXi1530PbPb : public AliAnalysisTaskSE {
     Double_t fXiMassWindowCut;         //
 
     // Xi1530 cut
-    Double_t fExoticMaxOpenAngle;  //
-    Double_t fXi1530YCutHigh;      //
-    Double_t fXi1530YCutLow;       //
-    Double_t fXi1530MassHigh;      //
-    Double_t fXi1530MassLow;       //
+    Double_t fExoticMaxOpenAngle; //
+    Double_t fXi1530YCutHigh;     //
+    Double_t fXi1530YCutLow;      //
+    Double_t fXi1530MassHigh;     //
+    Double_t fXi1530MassLow;      //
 
     // Good track/cascade vector array
-    std::vector<UInt_t> fGoodTrackArray;  //
-    std::vector<UInt_t> fGoodXiArray;     //
+    std::vector<UInt_t> fGoodTrackArray; //
+    std::vector<UInt_t> fGoodXiArray;    //
 
     ClassDef(AliAnalysisTaskXi1530PbPb, 4);
     // 2. Code beautify, fix minor bugs

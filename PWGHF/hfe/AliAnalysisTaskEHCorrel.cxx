@@ -119,6 +119,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fFlagEleSPDkFirst(kFALSE),
   fEtaCutEleMin(-0.6),
   fEtaCutEleMax(0.6),
+  fDeltaEta(0.05),
+  fDeltaPhi(0.05),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
   fTPCnSigmaMax(3),
@@ -177,6 +179,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fNpureMC(0),
   fNembMCpi0(0),
   fNembMCeta(0),
+  fFuncPtDepEta(0),
+  fFuncPtDepPhi(0),
   fNDelPhiBins(32),
   fOutputList(0),
   fNevents(0),
@@ -315,6 +319,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fFlagEleSPDkFirst(kFALSE),
   fEtaCutEleMin(-0.6),
   fEtaCutEleMax(0.6),
+  fDeltaEta(0.05),
+  fDeltaPhi(0.05),
   fTPCnSigma(-999.0),
   fTPCnSigmaMin(-1),
   fTPCnSigmaMax(3),
@@ -373,6 +379,8 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fNpureMC(0),
   fNembMCpi0(0),
   fNembMCeta(0),
+  fFuncPtDepEta(0),
+  fFuncPtDepPhi(0),
   fNDelPhiBins(32),
   fOutputList(0),
   fNevents(0),
@@ -546,19 +554,25 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   }
     
   if(fIspPb){
-  
    if(fpPbPASS2weight){
-   
            fPi0Weight->SetParameters(1.53790e+02,9.59471e-02,-2.43197e-03,1.31348e+00,5.31726e+00);
            fEtaWeight->SetParameters(6.81328e+00,1.06621e+00,-2.47101e-02,1.13821e+00,4.20900e+00);
-  
-  }
+   }
    if(!fpPbPASS2weight){
-  
-  
         fPi0Weight->SetParameters(5.04011e+02,-3.62390e-02,-9.98778e-04,1.58097e+00,5.34769e+00);
         fEtaWeight->SetParameters(3.65122e+02,3.78278e-02,8.73001e-03,1.52167e+00,5.65169e+00);
-  }}
+   }
+  }
+  
+  if(fIsPbPb){
+      fPi0Weight->SetParameters(9.73263e+03,-1.81209e-01,2.55853e-03,1.50479e+00,4.47226e+00);
+      fEtaWeight->SetParameters(9.86090e+02,-6.42149e-02,3.38613e-06,3.03615e+00,5.62433e+00);
+  }
+
+  fFuncPtDepEta = new TF1("fFuncPtDepEta", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+  fFuncPtDepEta->SetParameters(0.03, 0.010, 2.5);
+  fFuncPtDepPhi = new TF1("fFuncPtDepPhi", "[1] + 1 / pow(x + pow(1 / ([0] - [1]), 1 / [2]), [2])");
+  fFuncPtDepPhi->SetParameters(0.08, 0.015, 2.);
 
   ////////////////////////
   //Initiale mixed event//
@@ -610,7 +624,29 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
       vertexBins[5] = 5;
       vertexBins[6] = 10.01;
     }
-    if(fCentralityMax == 20)
+    if(fCentralityMin==0 && fCentralityMax == 10){
+      if(!fFlagMEBinChange){
+        CentralityBinsPbPb[0] = 0;
+        CentralityBinsPbPb[1] = 1;
+        CentralityBinsPbPb[2] = 2;
+        CentralityBinsPbPb[3] = 3;
+        CentralityBinsPbPb[4] = 5;
+        CentralityBinsPbPb[5] = 7.5;
+        CentralityBinsPbPb[6] = 10.01;
+      }
+    }
+    if(fCentralityMin==30 && fCentralityMax == 50){
+      if(!fFlagMEBinChange){
+          CentralityBinsPbPb[0] = 30;
+          CentralityBinsPbPb[1] = 32;
+          CentralityBinsPbPb[2] = 35;
+          CentralityBinsPbPb[3] = 38;
+          CentralityBinsPbPb[4] = 41;
+          CentralityBinsPbPb[5] = 45;
+          CentralityBinsPbPb[6] = 50.01;
+        }
+    }
+    if(fCentralityMin==0 && fCentralityMax == 20)
     {
       if(!fFlagMEBinChange){
         CentralityBinsPbPb[0] = 0;
@@ -631,7 +667,7 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
         CentralityBinsPbPb[6] = 20.01;
       }
     }
-    if(fCentralityMax == 50)
+    if(fCentralityMin==20 && fCentralityMax == 50)
     {
       if(!fFlagMEBinChange){
         CentralityBinsPbPb[0] = 20;
@@ -665,7 +701,6 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
       }
     }
   }
-
   if(fIspPb){
     if(!fFlagMEBinChange){
       vertexBins[0] = -10.01;
@@ -698,7 +733,6 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
       CentralityBinspPb[4] = 100.01;
     }
   }
-
   if(fIspp){
     if(!fFlagMEBinChange){
       vertexBinspp[0] = -10.01;
@@ -718,7 +752,6 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
       vertexBinspp[4] = 10.01;
 
       CentralityBinspp[0] = 0;
-
       CentralityBinspp[1] = 100.01;
 
     }
@@ -1121,7 +1154,7 @@ if(fFlagFillMECorr){
     Double_t xmaxWt[5] = {50,3,2,9};
 
     fSprsPi0EtaWeightCal = new THnSparseD("fSprsPi0EtaWeightCal","Sparse to calculate #pi^{0} and #eta weight;p_{T};PDG ID;EnhanceSigOrNot;pi0etaType;SPDntrCorr;",4,binw,xminWt,xmaxWt);
-    fSprsPi0EtaWeightCal->GetAxis(0)->SetName("pT");     
+    fSprsPi0EtaWeightCal->GetAxis(0)->SetName("pT");
     fSprsPi0EtaWeightCal->GetAxis(1)->SetName("PDG");
     fSprsPi0EtaWeightCal->GetAxis(2)->SetName("EnhancedSigOrNot");
     fSprsPi0EtaWeightCal->GetAxis(3)->SetName("pi0etaType");
@@ -1145,18 +1178,20 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
     printf("ERROR: fVEvent not available\n");
     return;
   }
-
+    
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   fpVtx = fVevent->GetPrimaryVertex();
 
- if(fCalcHadronTrackEffi || fCalculateNonHFEEffi || fCalPi0EtaWeight){
+  if(fCalcHadronTrackEffi || fCalculateNonHFEEffi || fCalPi0EtaWeight){
     fMCarray = dynamic_cast<TClonesArray*>(fAOD->FindListObject(AliAODMCParticle::StdBranchName()));
     fMCHeader = dynamic_cast<AliAODMCHeader*>(fAOD->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
 
     ////////////////////////////////
     //Get number of Gen particles //
     ////////////////////////////////
-    Bool_t test = GetNMCPartProduced(); ///Getting number of particles produced by the MC generator
+     ///Getting number of particles produced by the MC generator
+     if(fIsPbPb) GetNMCPartProducedPbPb2018();
+     else GetNMCPartProduced();
   }
     
   /////Remove in bunch pileup events in MC////
@@ -1184,7 +1219,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   //event selection///
   ////////////////////
   if(!PassEventSelect(fVevent)) return;
-
+    
   if(fApplyAddPileUpCuts){
     if(!PassAddtionalPileUpCuts()) return;
   }
@@ -1215,7 +1250,8 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   //Pi0 and Eta weight cal//
   /////////////////////////////////////////////
   if(fCalPi0EtaWeight){
-    GetPi0EtaWeight(fSprsPi0EtaWeightCal);
+      if(fIsPbPb) GetPi0EtaWeightPbPb2018(fSprsPi0EtaWeightCal);
+      else GetPi0EtaWeight(fSprsPi0EtaWeightCal);
   }
 
   //////////////////////
@@ -1296,7 +1332,12 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       GetTrkClsEtaPhiDiff(track, clustMatch, fPhiDiff, fEtaDiff);
       fEMCTrkMatch->Fill(fPhiDiff,fEtaDiff);
 
-      if(TMath::Abs(fPhiDiff) > 0.01 || TMath::Abs(fEtaDiff)> 0.01) continue;
+      if(fDeltaPhi < 0)
+          fDeltaPhi = fFuncPtDepPhi->Eval(track->Pt());
+      if(fDeltaEta < 0)
+          fDeltaEta = fFuncPtDepEta->Eval(track->Pt());
+        
+      if(TMath::Abs(fPhiDiff) > fDeltaPhi || TMath::Abs(fEtaDiff)> fDeltaEta) continue;
 
       /////////////////////////////////
       //Select EMCAL or DCAL clusters//
@@ -1412,7 +1453,8 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
       Bool_t EffiDenom = kFALSE;
       Bool_t EffiNumTag = kFALSE;
       if(fMCHeader && fCalculateNonHFEEffi){
-        EffiDenom = GetNonHFEEffiDenom(track);
+        if(fIsPbPb) EffiDenom = GetNonHFEEffiDenomPbPb2018(track);
+        else EffiDenom = GetNonHFEEffiDenom(track);
 
         if(fFlagPhotonicElec){
           EffiNumTag = GetNonHFEEffiRecoTag(track);
@@ -2026,7 +2068,7 @@ void AliAnalysisTaskEHCorrel::CheckCentrality(AliAODEvent* fAOD, Bool_t &central
     fCentMultiplicityPass->Fill(fMultiplicity,fCentrality);
     centralitypass = kTRUE;
     //  cout << "--------------Fill pass-------------------------"<<endl;
-  }  
+  }
 }
 
 //________________________________________________________________________
@@ -2049,7 +2091,7 @@ void AliAnalysisTaskEHCorrel::EMCalClusterInfo()
     if(fUseTender) clust = dynamic_cast<AliVCluster*>(fCaloClusters_tender->At(icl));
     if(!clust)  printf("ERROR: Could not receive cluster matched calibrated from track %d\n", icl);
 
-    Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;  
+    Bool_t fClsTypeEMC = kFALSE, fClsTypeDCAL = kFALSE;
     if(clust && clust->IsEMCAL())
     {
         //Removing exotic clusters using IsExotic function in data and using M02 min cut
@@ -2510,7 +2552,118 @@ Bool_t AliAnalysisTaskEHCorrel::GetNonHFEEffiDenom(AliVTrack *track)
 
   return kTRUE;
 }
+//_________________________________________
+Bool_t AliAnalysisTaskEHCorrel::GetNonHFEEffiDenomPbPb2018(AliVTrack *track)
+{
+  //Calculate Non-HFE efficiency demoninator
 
+  fIsFrmEmbPi0 = kFALSE, fIsFrmEmbEta = kFALSE;
+  ftype = -1, fWeightPi0 = 1.0, fWeightEta = 1.0, fWeight=1.0;
+  Bool_t fFromMB = kTRUE;
+
+  Int_t MomPDG = -999, GMomPDG=-999, GGMomPDG=-999, GGGMomPDG=-999;
+  Int_t iMCmom = -999, iMCgmom = -999, iMCggmom = -999, iMCgggmom = -999;
+  Double_t MomPt =-999.0;
+
+  AliAODMCParticle *MCPart = 0;
+  AliAODMCParticle *MCPartMom = 0;
+  AliAODMCParticle *MCPartGMom = 0;
+  AliAODMCParticle *MCPartGGMom = 0;
+  AliAODMCParticle *MCPartGGGMom = 0;
+
+  Double_t TrkPt = track->Pt();
+  Int_t iTrklabel = TMath::Abs(track->GetLabel());
+  if(iTrklabel == 0) return kFALSE;
+
+  MCPart = (AliAODMCParticle*)fMCarray->At(iTrklabel);
+  if(TMath::Abs(MCPart->GetPdgCode())!=11) return kFALSE;
+  fRealInclsElecPt->Fill(TrkPt);
+
+  Bool_t fNonHFE = IsNonHFE(MCPart, fFromMB, ftype, iMCmom, MomPDG, MomPt);
+  if(!fNonHFE) return kFALSE;
+  fNonHFeTrkPt->Fill(TrkPt);
+
+  MCPartMom = (AliAODMCParticle*)fMCarray->At(iMCmom);
+  iMCgmom = MCPartMom->GetMother();
+  if(iMCgmom > 0){
+    MCPartGMom = (AliAODMCParticle*)fMCarray->At(iMCgmom);
+    GMomPDG = TMath::Abs(MCPartGMom->GetPdgCode());
+
+    iMCggmom = MCPartGMom->GetMother();
+    if(iMCggmom > 0){
+      MCPartGGMom = (AliAODMCParticle*)fMCarray->At(iMCggmom);
+      GGMomPDG = TMath::Abs(MCPartGGMom->GetPdgCode());
+
+      iMCgggmom = MCPartGGMom->GetMother();
+      if(iMCgggmom > 0){
+        MCPartGGGMom = (AliAODMCParticle*)fMCarray->At(iMCgggmom);
+        GGGMomPDG = TMath::Abs(MCPartGGGMom->GetPdgCode());
+      }
+    }
+  }
+
+  //cases to consider: eta->e, eta->pi0->e, eta->gamma->e, eta->pi0->gamma->e, pi0->e, pi0->gamma->e
+  if(MomPDG == 221){
+    if(iMCmom >= fNembMCeta && iMCmom < fNpureMC) { //from eta event
+      fIsFrmEmbEta = kTRUE; //eta->e
+      fWeightEta = fEtaWeight->Eval(MCPartMom->Pt());
+    }
+  }
+
+  if(MomPDG == 111) {
+    if(iMCmom >= fNembMCpi0 && iMCmom < fNembMCeta){ //from pi0 event
+      fIsFrmEmbPi0 = kTRUE; //pi0 -> e
+      fWeightPi0 = fPi0Weight->Eval(MCPartMom->Pt());
+    }
+
+    if(GMomPDG == 221){
+      if(iMCgmom >= fNembMCeta && iMCgmom < fNpureMC) { //from eta event
+        fIsFrmEmbEta = kTRUE; //eta->pi0-> e
+        fWeightEta = fEtaWeight->Eval(MCPartGMom->Pt());
+      }
+    }
+  }
+
+  if(MomPDG == 22){
+    if(GMomPDG == 221){
+      if(iMCgmom >= fNembMCeta && iMCgmom < fNpureMC) { //from eta event
+        fIsFrmEmbEta = kTRUE; //eta->gamma-> e
+        fWeightEta = fEtaWeight->Eval(MCPartGMom->Pt());
+      }
+    }
+
+    if(GMomPDG == 111){
+      if(iMCgmom >= fNembMCpi0 && iMCgmom < fNembMCeta) { //from pi0 event
+        fIsFrmEmbPi0 = kTRUE; //pi0-> gamma-> e
+        fWeightPi0 = fPi0Weight->Eval(MCPartGMom->Pt());
+      }
+
+      if(GGMomPDG == 221){
+        if(iMCggmom >= fNembMCeta && iMCggmom < fNpureMC) { //from eta event
+          fIsFrmEmbEta = kTRUE; //eta->pi0->gamma-> e
+          fWeightEta = fEtaWeight->Eval(MCPartGGMom->Pt());
+        }
+      }
+    }
+  }
+
+  if(fIsFrmEmbPi0 || fIsFrmEmbEta){
+    fNonHFeEmbTrkPt->Fill(TrkPt);
+
+    if(fIsFrmEmbPi0) {
+      fWeight = fWeightPi0;
+      fPi0eEmbWeightTrkPt->Fill(TrkPt,fWeightPi0);
+      fNonHFeEmbWeightTrkPt->Fill(TrkPt,fWeightPi0);
+    }
+    if(fIsFrmEmbEta){
+      fWeight = fWeightEta;
+      fEtaeEmbWeightTrkPt->Fill(TrkPt,fWeightEta);
+      fNonHFeEmbWeightTrkPt->Fill(TrkPt,fWeightEta);
+    }
+  }
+
+  return kTRUE;
+}
 //_________________________________________
 Bool_t AliAnalysisTaskEHCorrel::GetNonHFEEffiRecoTag(AliVTrack *track)
 {
@@ -2573,7 +2726,46 @@ void AliAnalysisTaskEHCorrel::GetPi0EtaWeight(THnSparse *SparseWeight)
     SparseWeight->Fill(fvalue);
   }
 }
+//_______________________________________________________________
+void AliAnalysisTaskEHCorrel::GetPi0EtaWeightPbPb2018(THnSparse *SparseWeight)
+{
+  //Get pi0 and eta information for weight calculation
 
+  Double_t fvalue[4] = {-999,-999,-999,-999};
+
+  for(int imc=0; imc< fNTotMCpart; imc++)
+  {
+
+    AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(imc);
+
+    if(TMath::Abs(AODMCtrack->Eta()) > 0.8) continue;
+
+    //-------Get PDG
+    Int_t TrackPDG = TMath::Abs(AODMCtrack->GetPdgCode());
+    if((TrackPDG != 111) && (TrackPDG != 221) && (TrackPDG != 22)) continue;
+
+    Double_t fPartPDGid = -999;
+    if (TrackPDG == 111) fPartPDGid = 0.2;
+    if (TrackPDG == 221) fPartPDGid = 1.2;
+    if (TrackPDG == 22) fPartPDGid = 2.2;
+
+    Double_t fTrkPt = AODMCtrack->Pt();
+
+    //-------Check if the particle is from Enhanced signal or not
+    Bool_t fFromEnhance = kEnhance;
+    if(imc > fNpureMC) fFromEnhance = kMB;
+
+    //------Get type of the particle
+    Int_t fType = GetPi0EtaType(AODMCtrack);
+
+    fvalue[0] = fTrkPt;
+    fvalue[1] = fPartPDGid;
+    fvalue[2] = fFromEnhance;
+    fvalue[3] = fType;
+
+    SparseWeight->Fill(fvalue);
+  }
+}
 //___________________________________________
 Bool_t  AliAnalysisTaskEHCorrel::IsNonHFE(AliAODMCParticle *MCPart, Bool_t &fFromMB, Int_t &type, Int_t &iMCmom, Int_t &MomPDG, Double_t &MomPt)
 {
@@ -2644,6 +2836,7 @@ Bool_t AliAnalysisTaskEHCorrel::GetNMCPartProduced()
 
     MCgen =  gh->GetName();
 
+    //Order of the generators added- MB, pi0, eta, cele or bele
     if(igene==0) fNpureMC = gh->NProduced();  // generated by HIJING
 
     if(MCgen.Contains(embpi0))fNembMCpi0 = fNTotMCpart;
@@ -2653,7 +2846,43 @@ Bool_t AliAnalysisTaskEHCorrel::GetNMCPartProduced()
   }
   return kTRUE;
 }
+//_________________________
+Bool_t AliAnalysisTaskEHCorrel::GetNMCPartProducedPbPb2018()
+{
+  //Get number of MC particles produced by generators.
 
+  TList *lh = fMCHeader->GetCocktailHeaders();
+  fNTotMCpart = 0;
+  fNembMCpi0 = 0;
+  fNembMCeta = 0;
+  fNpureMC = 0;
+
+  TString MCgen;
+  TString embpi0("pi");
+  TString embeta("eta");
+  TString mb("Hijing");
+
+  if(!lh){
+    AliError("no MC header");
+    return (0);
+  }
+
+  for(int igene=0; igene<lh->GetEntries(); igene++)
+  {
+    AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(igene);
+    if(!gh) continue;
+
+    MCgen =  gh->GetName();
+
+    //Order of the generators added- cele or bele, pi0, eta, MB
+    if(MCgen.Contains(embpi0))fNembMCpi0 = fNTotMCpart;
+    if(MCgen.Contains(embeta))fNembMCeta = fNTotMCpart;
+    if(MCgen.Contains(mb))    fNpureMC = fNTotMCpart;
+
+    fNTotMCpart += gh->NProduced();
+  }
+  return kTRUE;
+}
 //___________________________________________
 void AliAnalysisTaskEHCorrel::Terminate(Option_t *)
 {

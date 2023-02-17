@@ -40,7 +40,7 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID():
   fParticleOrigin = new TH1D("POrigin", "Mothers PDG Codes", 6000, 0.0, 6000.0);
   fParticleId     = new TH1D("PId", "Particle PDG Codes", 6000, 0.0, 6000.0);
 
-  fTPCdEdx_pT        = new TH2D("TPCdEdx_pT", "TPC dEdx vs. pT", 100, 0.0, 5.0, 250, 0.0, 500.0);
+  fTPCdEdx_pT        = new TH2D("TPCdEdx_pT", "TPC dEdx vs. pT", 50, 0.1, 1.1, 250, 0.0, 500.0);
   fTOFTime_pT        = new TH2D("TOFTime_pT", "TOF Time vs. pT", 100, 0.0, 5.0, 400, -4000.0, 4000.0);//to be consistent with dE/dx
   fTOFNSigma_pT      = new TH2D("TOFNSigma_pT","TOF NSigma vs. pT", 100, 0.0, 5.0, 100, -5.0, 5.0);
   fTPCNSigma_pT      = new TH2D("TPCNSigma_pT","TPC NSigma vs. pT", 100, 0.0, 5.0, 100, -5.0, 5.0);
@@ -76,7 +76,7 @@ AliFemtoCutMonitorParticlePID::AliFemtoCutMonitorParticlePID(const char *aName, 
   fParticleOrigin = new TH1D(TString::Format("POrigin%s", aName), "Mothers PDG Codes", 6000, 0.0, 6000.0);
   fParticleId     = new TH1D(TString::Format("PId%s", aName), "Particle PDG Codes", 6000, 0.0, 6000.0);
 
-  fTPCdEdx_pT        = new TH2D(TString::Format("TPCdEdx_pT%s", aName), "TPC dEdx vs. pT", 100, 0.0, 5.0, 250, 0.0, 500.0);
+  fTPCdEdx_pT        = new TH2D(TString::Format("TPCdEdx_pT%s", aName), "TPC dEdx vs. pT", 50, 0.1, 1.1, 250, 0.0, 500.0);
   fTOFTime_pT        = new TH2D(TString::Format("TOFTime_pT%s", aName), "TOF Time vs. pT", 100, 0.0, 5.0, 400, -4000.0, 4000.0);//to be consistent with dE/dx
   fTOFNSigma_pT      = new TH2D(TString::Format("TOFNSigma_pT%s", aName),"TOF NSigma vs. pT", 100, 0.0, 5.0, 100, -5.0, 5.0);
   fTPCNSigma_pT      = new TH2D(TString::Format("TPCNSigma_pT%s", aName),"TPC NSigma vs. pT", 100, 0.0, 5.0, 100, -5.0, 5.0);

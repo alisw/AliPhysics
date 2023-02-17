@@ -50,6 +50,8 @@
 #pragma link C++ class AliV0hParticles+;
 #pragma link C++ class AliAnalysisTaskV0ChCorrelationsys+;
 #pragma link C++ class AliV0XiParticles+;
+#pragma link C++ class AliAnalysisTaskCorrelGen+;
+#pragma link C++ class AliV0ChParticleGen+;
 #pragma link C++ class AliAnalysisTaskLambdaK0s+;
 #pragma link C++ class AliV0XiParticleall+;
 #pragma link C++ class AliAnalysisTaskLongRangeCorrelations+;
@@ -115,6 +117,13 @@
 #pragma link C++ class AliAnalysisTaskR2P2+;
 #pragma link C++ class AliAnalysisTaskR2P2Base+;
 #pragma link C++ class AliAnalysisTaskR2P2Corr+;
+#pragma link C++ class AliAnalysisTaskR2P2CorrGen+;
 #pragma link C++ class AliAnalysisTaskR2P2multClass+;
+#pragma link C++ class AliAnalysisTaskR2P2multClassGen+;
+#pragma link C++ class AliAnalysisTaskR2P2multEff+;
+#pragma link C++ class AliAnalysisTaskR2P2highMult+;
+#pragma link C++ class AliAnalysisTaskR2P2highMultpp+;
 #pragma link C++ class AliAnalysisTaskR2P2pp+;
+#pragma link C++ class AliAnalysisTaskBFR2+;
+#pragma link C++ class AliAnalysisTaskBFR2sphero+;
 #endif

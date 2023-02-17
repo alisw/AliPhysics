@@ -209,18 +209,13 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 
 		virtual void   SetEtaCut(Double_t etaCut){fEtaCut = etaCut;}
 		virtual void   SetVtxCut(Double_t vtxCut){fVtxCut = vtxCut;}
-		virtual void   SetVtxCutDefault(Double_t vtxCut){fVtxCutDefault = vtxCut;} // The vtxCut for NtrksCounter
 		virtual void   SetMinPt(Double_t minPt){fMinPt = minPt;}
 		virtual void   SetMaxPt(Double_t maxPt){fMaxPt = maxPt;}
-		virtual void   SetIsSample(Int_t IsSample){fSample = IsSample;}
 		virtual void   SetTrigger(Int_t trig){fTrigger = trig;}
 		virtual void   SetNUEFlag(Bool_t NUE){fNUE = NUE;}
 		virtual void   SetNUA(Bool_t NUA){fNUA = NUA;}
 		virtual void   SetIsMC(Bool_t isMC){fIsMC = isMC;}
 		virtual void   SetNtrksName(TString ntrksname){fNtrksName = ntrksname;}
-		virtual void   SetUseWeigthsRunByRun(Bool_t bRunByRun = kTRUE) { fFlowRunByRunWeights = bRunByRun; }
-		virtual void   SetUsePeriodWeigths(Bool_t weight = kTRUE) { fFlowPeriodWeights = weight; }
-		virtual void   SetUseWeights3D(Bool_t use = kTRUE) { fFlowUse3Dweights = use; }
 		virtual void   SetPeriod(TString period) { fPeriod = period; }
 		virtual void   SetSystFlag(int flag) { fCurrSystFlag = flag; }
 		virtual int    GetSystFlag() { return fCurrSystFlag; }
@@ -229,13 +224,13 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetAdditionalTPCPileupCuts(bool flag = true) {fAddTPCPileupCuts = flag;}
 		virtual void   SetESDvsTPConlyLinearCut(double cut = 15000) {fESDvsTPConlyLinearCut = cut;}
 		virtual void   SetUseCorrectedNTracks(bool flag = true) {fUseCorrectedNTracks = flag;}
-		virtual void   SetUseFlippedEta(bool flag = true) {fUseFlippedEta = flag;}
 		virtual void   SetUseNarrowBin(bool flag = true) {fUseNarrowBin = flag;}
 		virtual void   SetExtremeEfficiency(int flag = 0) {fExtremeEfficiency = flag;}
 		virtual void   SetTPCchi2perCluster(double fchi2 = 4) {fTPCchi2perCluster = fchi2;}
 		virtual void   SetUseAdditionalDCACut(double flag = true) {fUseAdditionalDCACut = flag;}
 		virtual void   SetUseDefaultWeight(double flag = true) {fUseDefaultWeight = flag;}
 		virtual void   SetEtaGap3Sub(Double_t feta = 0.4) {fEtaGap3Sub = feta;}
+		virtual void   SetCentralityCut(Double_t cent = 100) {fCentralityCut = cent;}
 
 		// unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
 		// unsigned fgFlowHarmonicsHigher = 0;  calculate v6, v7, v8 ..
@@ -260,53 +255,37 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Bool_t                  AcceptAOD(AliAODEvent *inEv);
 		Bool_t                  AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
 		Bool_t                  AcceptMCTruthTrack(AliAODMCParticle *mtr);
-		Short_t			GetCentrCode(AliVEvent* ev);
-		bool 			CheckPrimary(AliVEvent *aod, double label);
-		bool			IsGoodPSEvent(AliVEvent *aod);
-		bool			IsSPDClusterVsTrackletBG(const AliVEvent* event, bool fillHist);
-		bool			IsV0C012vsTklBG         (const AliVEvent* event, bool fillHist);
-		bool			IsV0Casym               (const AliVEvent* event, bool fillHist);
-		bool			IsV0MOnVsOfPileup       (const AliVEvent* event, bool fillHist);
-		bool			IsSPDOnVsOfPileup       (const AliVEvent* event, bool fillHist);
-		bool			IsV0PFPileup            (const AliVEvent* event);
-		int 			GetRunPart(int run);
-		double 			GetWeight(double phi, double eta, double pt, int run, bool fPlus, double vz, double runNumber);
-		double 			GetPtWeight(double pt, double eta, float vz, double runNumber);
 
-		Bool_t                  LoadWeights();
+    Bool_t                  LoadWeightsSystematics();
 		Bool_t                  LoadWeightsKatarina();
 		Bool_t                  LoadPtWeights();
 		Bool_t                  LoadPtWeightsKatarina();
-		Bool_t                  LoadWeightsSystematics();
 
 		Double_t GetWeightKatarina(double phi, double eta, double vz);
 		Double_t GetPtWeightKatarina(double pt, double eta, double vz);
-		Double_t GetFlowWeight(const AliVParticle* track, double fVtxZ, const PartSpecies species);
 		Double_t GetFlowWeightSystematics(const AliVParticle* track, double fVtxZ, const PartSpecies species);
+    double 			GetPtWeight(double pt, double eta, float vz, double runNumber);
+    int GetEtaPtFlag(double eta);
+
 		const char* ReturnPPperiod(const Int_t runNumber) const;
 		const char* ReturnPPperiodMC(const Int_t runNumber) const;
-		const char* GetSpeciesName(const PartSpecies species) const;
 
-		AliEventCuts	fEventCuts;					// Event cuts
+		AliEventCuts	  fEventCuts;					// Event cuts
 		AliGFWCuts*     fGFWSelection;                                  //!
 		AliGFWNFCuts*   fGFWSelection15o;                               //!
 		AliAODEvent*    fAOD;                                           //! AOD object
-		AliAODITSsaTrackCuts* fitssatrackcuts;                          //! itssatrackcuts object
 
 		// Cuts and options
 		Double_t		fEtaCut;				// Eta cut used to select particles
 		Double_t		fVtxCut;				// Vtx cut on z position in cm
-		Double_t		fVtxCutDefault;				// Vtx cut on z position in cm (for NtrksCounter)
 		Double_t		fMinPt;					// Min pt - for histogram limits
 		Double_t		fMaxPt;					// Max pt - for histogram limits
-		Int_t			fSample;				// number of sample
-		Int_t			fTrigger;				// flag for trigger
-		Int_t			fAliTrigger;				// name for trigger
-		// Bool_t		fLS;					// charge, 1:all, 2:pp,  3: mm
-		Bool_t			fNUE;					// flag for NUE correction
-		Bool_t			fNUA;					// 0: no NUA correction, 1: NUA correction
-		bool                    fIsMC;                                  // The observable for MonteCarlo truth
-		TString                 fNtrksName;                             // Cent or Mult
+		Int_t			  fTrigger;				// flag for trigger
+		Int_t			  fAliTrigger;		// name for trigger
+		Bool_t			fNUE;					  // flag for NUE correction
+		Bool_t			fNUA;					  // 0: no NUA correction, 1: NUA correction
+		bool        fIsMC;          // The observable for MonteCarlo truth
+		TString     fNtrksName;     // Cent or Mult
 		TString			fPeriod;				// period
 		Int_t                   fCurrSystFlag;                          // Systematics flag
 		Bool_t                  fSpringMode;                            // The mode with spring cuts.
@@ -314,7 +293,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Bool_t                  fAddTPCPileupCuts;                      // Additional TPC pileup cuts
                 Double_t                fESDvsTPConlyLinearCut;                 // ESDvsTPConlyLinearCut : default = 15000
 		Bool_t                  fUseCorrectedNTracks;                   // Use corrected Ntracks in the filling of xbins;
-		Bool_t                  fUseFlippedEta;                         // Flip the eta region to merge the pPb and Pbp sample;
+		Double_t                  fCentralityCut;                         // Apply an extra centrality cut.
                 Bool_t                  fUseNarrowBin;                          // Use Narrow bin
 		Int_t                   fExtremeEfficiency;                     // The flag to set extreme efficiency
 		Double_t                fTPCchi2perCluster;                     // Additional cuts for TPC chi2 / cluster
@@ -327,67 +306,34 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TList*			fListOfProfile;			//! Output list of objects
 		TList*			fListOfProfiles[30];		//! Output list of objects
 
-		// Cut functions for LHC15o
-		TF1*			fMultTOFLowCut;			// cut low for TOF multiplicity outliers
-		TF1*			fMultTOFHighCut;		// cut high for TOF multiplicity outliers
-		TF1*			fMultCentLowCut;		// cut low for multiplicity centrality outliers
-
 		// NUE
-		TFile*			fTrackEfficiency;		//! file with tracking efficiency
-		TH3F*			hTrackEfficiency;		//! histogram with tracking efficiency
-		TH3F*			hTrackEfficiencyRun;            //! histogram with tracking efficiency
+		TH3F*			hTrackEfficiencyRun;            //! histogram with tracking efficiency (Katarina's format)
 
 		// NUA
-		bool fFlowRunByRunWeights;                              // flag of whether get the Run by run weight
-		bool fFlowPeriodWeights;                                // flag of whether to use period weight
-		bool fFlowUse3Dweights;                                 // flag of whether to use 3d weight
-
-		//
 		TList*                  fFlowWeightsList;               //! flowWightsList
 		TList*                  fFlowPtWeightsList;             //! PtflowWightsList
 		TList*                  fFlowFeeddownList;              //! FeeddownList
-		TFile*                  fFlowPtWeightsFile;             //! PtflowWightsList
-		TList*			fPhiWeight;	                //! file with phi weights
-		TFile*			fPhiWeightFile;	                //! file with phi weights
-		TList*			fPhiWeightPlus;	                //! file with phi weights
-		TList*			fPhiWeightMinus;                //! file with phi weights
+		TList*			            fPhiWeight;	                    //! file with phi weights
+		TFile*			            fPhiWeightFile;	                //! file with phi weights
 		TH2D*                   fh2Weights[kUnknown];           //! container for GF weights (phi,eta,pt) (2D)
 		TH3D*                   fh3Weights[kUnknown];           //! container for GF weights (phi,eta,pt)
-		TH2D*                   fh2AfterWeights[kUnknown];      //! distribution after applying GF weights - lightweight QA (phi)
-		TH3D*                   fh3AfterWeights[kUnknown];      //! distribution after applying GF weights - full QA (phi,eta,pt)
 		AliGFWWeights*          fWeightsSystematics;            //! Weights for systematics
 		TH1D*                   fPtWeightsSystematics;          //! PtWeights for systematics
 		TH1D*                   fPtWeightsFeeddown;             //! Feeddown for systematics
+    TH1D*                   fEtaPtWeightsSystematics[8];          //! eta dependent PtWeights for systematics for pPb
+    TH1D*                   fEtaPtWeightsFeeddown[8];             //! eta dependent Feeddown for systematics for pPb
 
 
-		TH3F*			hPhiWeight;			//! 3D weight for all periods except LHC15ijl
 		TH3F*			hPhiWeightRun;			//! 3D weight run-by-run for pPb 5TeV LHC16q
 		TH1F*			hPhiWeight1D;			//! 1D weight in one MC case (maybe need to redo to 3D weight)
 
 		// Event histograms
 		TH1D*			hEventCount;			//! counting events passing given event cuts
 		TH1F*			hMult;				//! multiplicity distribution
-		TH1F*			hMultfBin[12]; 			//! multiplicity distribution in fBin
 		TH1F*			fVtxAfterCuts;			//! Vertex z dist after cuts
 		TH1F*			fCentralityDis;			//! distribution of centrality percentile using V0M estimator
 		TH1F*			fV0CentralityDis;		//! distribution of V0M/<V0M>
-		TH2F*			hMultV0vsNtrksAfterCuts;	//! Number of tracks vs. V0M/<V0M>
-		TH2F*			hMultSPDvsNtrksAfterCuts;	//! Number of tracks vs. SPD/<SPD>
-		TH2F*			hNtrksVSmultPercentile; 	//! Number of tracks vs. percentile using V0M estimator
-		TH2F*			fCentralityV0MCL1;		//! LHC15o: V0M vs. CL1 percentile
-		TH2F*			fCentralityV0MCL0;		//! LHC15o: V0M vs. CL0 percentile
-		TH2F*			fCentralityCL0CL1;		//! LHC15o: CL0 vs. CL1 percentile
-		TH2F*			fMultvsCentr;	  		//! LHC15o: Number of tracks vs. percentile
-		TH2F*			fMult128vsCentr;  		//! LHC15o: Number of FB128 tracks vs. percentile
-		TH2F*			fMultTPCvsTOF;	  		//! LHC15o: Number of TPC tracks vs. ToF tracks
-		TH2F*			fMultTPCvsESD;	  		//! LHC15o: Number of TPC tracks vs. ESD tracks
-
-		TH2D*			hSPDClsVsTrk;			//! SPD clusters vs. tracklets without any cuts
-		TH2D*			hV0C012vsTkl;			//! V0C mult. in 0,1,2nd ring vs. SPD tracklets without any cuts
-		TH2D*			hV0C012vsV0C3;			//! V0C mult. in 0,1,2nd ring vs. V0C mult. in 3rd ring without any cuts
-		TH2D*			hV0MOnVsOf;			//! V0M amplitude online vs. offline without any cuts
-		TH2D*			hSPDOnVsOf;			//! SPD amplitude online vs. offline without anycuts
-
+		TH1F*			fV0CentralityDisNarrow;	//! distribution of V0M/<V0M>
 
 		// Track histograms
 		TH1D*				fPhiDis1D;		//! phi dis 1D
@@ -397,14 +343,14 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH1D*				fEtaBefore;		//! eta dist before track cuts
 		TH1D*				fPtDis;			//! pt dist
 		TH1D*				fPtBefore;		//! pt dist before track cuts
-		TH1F*				hDCAxyBefore; 		//!
-		TH1F*				hDCAzBefore; 		//!
+		TH2D*				hDCAxyBefore; 		//!
+		TH1D*				hDCAzBefore; 		//!
 		TH1F*				hITSclustersBefore; 	//!
-		TH1F*				hChi2Before; 		//!
-		TH1F*				hDCAxy; 		//!
-		TH1F*				hDCAz; 			//!
+		TH1D*				hChi2Before; 		//!
+		TH2D*				hDCAxy; 		//!
+		TH1D*				hDCAz; 			//!
 		TH1F*				hITSclusters; 		//!
-		TH1F*				hChi2; 			//!
+		TH1D*				hChi2; 			//!
 
 		TH2D*                           hTracksCorrection2d;    //! Corrected Tracks - v.s. uncorrected tracks
 		TProfile*                       hnCorrectedTracks;      //! Averaged number of corrected tracks in a specific bin;
@@ -502,7 +448,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 16);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 18);    //Analysis task
 };
 
 #endif

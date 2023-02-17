@@ -6,14 +6,24 @@
 #include "AliFemtoDreamCollConfig.h"
 #include "AliAnalysisTaskNanoFemtoProtonPion.h"
 
-AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
-   TString trigger = "kHM", //2
-    bool fullBlastQA = true,//3
-    bool UseSphericityCut = false,//4
-    bool UseFemtoPionCuts = true,//5
-    bool DoPairCleaning = false, //6
-    const char *cutVariation = "0", //7
-    bool DoAncestors = false) {
+AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
+    bool isMC = false, //1
+    bool doOfficialFemto = true, //2
+    TString trigger = "kHM", //3
+    bool fullBlastQA = true,//4
+    bool UseSphericityCut = true,//5
+    float SphericityMinPt = 0.5, //6
+    int PionFilterbit = 96, //7
+    bool DoPairCleaning = false, //8
+    const char *cutVariation = "0", //9
+    bool DoAncestors = false, //10
+    bool RemoveMCResonances = true, //11 
+    bool RemoveMCResonanceDaughters = true, //12
+    bool DoInvMass = false, //13
+    bool DoResonanceLorentzFactor = false, //14
+    bool DoFinemTBinning = false //15
+    ) {
+
   TString suffix = TString::Format("%s", cutVariation);
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -31,7 +41,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
 
   if (UseSphericityCut){
     float SpherDown = 0.7;
-    evtCuts->SetSphericityCuts(SpherDown, 1.0, 0.5); 
+    evtCuts->SetSphericityCuts(SpherDown, 1.0, SphericityMinPt); 
   }
 
 
@@ -39,67 +49,14 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
   AliFemtoDreamTrackCuts *TrackCutsPion = NULL;
   AliFemtoDreamTrackCuts *TrackCutsAntiPion = NULL;
 
-  if(UseFemtoPionCuts)
-  {
-    TrackCutsPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
-    TrackCutsPion->SetFilterBit(96);
-    TrackCutsPion->SetCutCharge(1);
-    TrackCutsAntiPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
-    TrackCutsAntiPion->SetFilterBit(96);
-    TrackCutsAntiPion->SetCutCharge(-1);
-
-
-  } else {
-
-	TrackCutsPion = new AliFemtoDreamTrackCuts();
-	TrackCutsPion->SetIsMonteCarlo(isMC);
-	TrackCutsPion->SetCutCharge(1);
-	TrackCutsPion->SetPtRange(0.14, 4.0);
-	TrackCutsPion->SetEtaRange(-0.8, 0.8);
-	TrackCutsPion->SetNClsTPC(80);
-	// Not mention in AN oder Indico
-	TrackCutsPion->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
-	TrackCutsPion->SetFilterBit(128);//96); // Filterbit 5+6
-	TrackCutsPion->SetDCAVtxZ(0.3);
-	TrackCutsPion->SetDCAVtxXY(0.3);
-	// Cut on avrg. separation in TPC: <Dr> < 12 cm (10 cm, 3 cm); Share quality < 1.0; share fraction < 0.05
-
-	// FOR NOW OF BEACUSE OF MAX's INFORMATION
-	//TrackCutsPion->SetCutSharedCls(true);
-
-	TrackCutsPion->SetNClsTPC(80); // In Indico + additional Chi²/NDF <4
-	TrackCutsPion->SetPID(AliPID::kPion, 0.5);
-	TrackCutsPion->SetRejLowPtPionsTOF(false);
-	TrackCutsPion->SetMinimalBooking(false);
-	//this checks if the sigma of the wanted hypothesis is the smallest, and if
-	//another particle has a smaller sigma, the track is rejected.
-	// Not mention in AN oder Indico
-	//TrackCutsPion->SetCutSmallestSig(true);
-	TrackCutsPion->SetPlotDCADist(true);
-
-
-	TrackCutsAntiPion = new AliFemtoDreamTrackCuts();
-	TrackCutsAntiPion->SetIsMonteCarlo(isMC);
-	TrackCutsAntiPion->SetCutCharge(-1);
-	TrackCutsAntiPion->SetPtRange(0.14, 4.0);
-	TrackCutsAntiPion->SetEtaRange(-0.8, 0.8);
-	TrackCutsAntiPion->SetNClsTPC(80);
-	TrackCutsAntiPion->SetDCAReCalculation(true);
-
-	// FOR NOW OF BEACUSE OF MAX's INFORMATION
-	//TrackCutsAntiPion->SetCutSharedCls(true);}
-
-	TrackCutsAntiPion->SetNClsTPC(80);
-	TrackCutsAntiPion->SetPID(AliPID::kPion, 0.5);
-	TrackCutsAntiPion->SetRejLowPtPionsTOF(false);
-	TrackCutsAntiPion->SetMinimalBooking(false);
-	//TrackCutsAntiPion->SetCutSmallestSig(true);
-	TrackCutsAntiPion->SetPlotDCADist(true);
-
-	TrackCutsAntiPion->SetFilterBit(128);//96);
-	TrackCutsAntiPion->SetDCAVtxZ(0.3);
-	TrackCutsAntiPion->SetDCAVtxXY(0.3);
-  }
+ 
+  TrackCutsPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+  TrackCutsPion->SetFilterBit(PionFilterbit);
+  TrackCutsPion->SetCutCharge(1);
+  TrackCutsAntiPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+  TrackCutsAntiPion->SetFilterBit(PionFilterbit);
+  TrackCutsAntiPion->SetCutCharge(-1);
+  
 
   //Proton and AntiProton cuts
   AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
@@ -116,20 +73,26 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
   //Set-up output ------------------------------------------------------------------------
   std::vector<int> PDGParticles;
   PDGParticles.push_back(2212); 
-  PDGParticles.push_back(2212); 
+  PDGParticles.push_back(-2212); 
   PDGParticles.push_back(211); 
-  PDGParticles.push_back(211); 
+  PDGParticles.push_back(-211); 
 
   std::vector<bool> closeRejection;
   std::vector<float> mTBins;
+  
   mTBins.push_back(0.53); 
   mTBins.push_back(0.7); 
   mTBins.push_back(0.8); 
   mTBins.push_back(1.0); 
   mTBins.push_back(1.2); 
   mTBins.push_back(1.5); 
-  mTBins.push_back(2.0); 
+  mTBins.push_back(2.0);
+  if(DoFinemTBinning){
+   mTBins.push_back(3.0); 
+  } 
   mTBins.push_back(4.0); 
+  
+
   std::vector<int> pairQA;
   //pairs: 
   // pp             0
@@ -215,7 +178,6 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
   MultBins.push_back(96);
   MultBins.push_back(100);
 
-
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto", false);
   config->SetZBins(ZVtxBins);
   config->SetMultBins(MultBins);
@@ -242,12 +204,12 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
     }
   }
   if (fullBlastQA) {
-   // config->SetkTBinning(true);
+    // config->SetkTBinning(true);
     config->SetPtQA(true);
     config->SetdPhidEtaPlots(true);
-  }
-
-  if (!fullBlastQA) {
+    config->SetdPhidEtaPlotsSmallK(true);
+    config->SetPhiEtaBinnign(true);
+  } else {
     evtCuts->SetMinimalBooking(true);
     TrackCutsProton->SetMinimalBooking(true);
     TrackCutsAntiProton->SetMinimalBooking(true);
@@ -256,7 +218,6 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
   }
-
 
   AliAnalysisTaskNanoFemtoProtonPion *task =
   new AliAnalysisTaskNanoFemtoProtonPion("FemtoDreamDefault", isMC);
@@ -293,18 +254,21 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(bool isMC = false,//1
   task->SetTrackCutsAntiProton(TrackCutsAntiProton);
   task->SetCollectionConfig(config);
   task->SetDoPairCleaning(DoPairCleaning);
-  task->SetDoOfficialFemto(true); 
+  task->SetDoOfficialFemto(doOfficialFemto); 
+  task->SetDoResonanceLorentzFactor(DoResonanceLorentzFactor);
 
   //Set-up for own looping & calculus -> needed for 3D studies
   //IMPORTANT: 0, 1, 2, 3 and the names has to correspond to the order given to the offical femto framework!!!!
   task->SetCombinationInput("00 11 02 13 03 12"); //p-p barp-barp p-pion barp-barpion p-barpion barp-pion
+  task->SetClosePairRejectionInput("true true true true false false");
   task->SetNameTagInput("Proton AntiProton Pion AntiPion");
-  task->SetDoOwnFemto(false); //Do own looping and calculus 
-  task->SetDoThreeDFemto(false);
-  task->SetRunPlotMult(false);
-  task->SetRunPlotPhiTheta(false); 
-  task->SetDoClosePairRejection(false);
-  task->SetDoAncestors(false); //Does not affect official femto part
+  task->SetDoOwnFemto(!doOfficialFemto); //Do own looping and calculus 
+  task->SetDoThreeDFemto(false); //No 3D femto for now
+  task->SetRunPlotMult(true);
+  task->SetRunPlotPhiTheta(fullBlastQA); 
+  task->SetDoAncestors(DoAncestors); //Does not affect official femto part
+  task->SetRemoveMCResonances(RemoveMCResonances, RemoveMCResonanceDaughters);
+  task->SetDoInvMassPlot(DoInvMass);
 
   mgr->AddTask(task);
 

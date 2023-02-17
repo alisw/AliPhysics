@@ -237,6 +237,8 @@ private:
     TH2D*             hMQNeg_weight_thisEvt;
     TProfile*          pRefFlow_thisEvt;
     TProfile*          pIntd2_thisEvt;
+    TProfile*          pbufferPt_thisEvt;
+    TProfile*          pbufferEta_thisEvt;
 
     // Read Files for V0Calib
     TProfile3D*     pV0XMeanRead[3]; 
@@ -281,6 +283,12 @@ private:
     TProfile*         pAch[NCENTBINS];
     TH1D*            hMultMb[NQNBINS];
     TH1D*            hAchMb[NQNBINS];
+
+    // pt,eta vs Ach
+    TProfile* pPosPtAch[NCENTBINS];
+    TProfile* pNegPtAch[NCENTBINS];
+    TProfile* pPosEtaAch[NCENTBINS];
+    TProfile* pNegEtaAch[NCENTBINS];
 
     AliAnalysisTaskCMWESE(const AliAnalysisTaskCMWESE&);
     AliAnalysisTaskCMWESE& operator=(const AliAnalysisTaskCMWESE&);

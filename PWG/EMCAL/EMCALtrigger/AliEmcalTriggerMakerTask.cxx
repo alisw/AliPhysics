@@ -245,13 +245,11 @@ void AliEmcalTriggerMakerTask::ExecOnce(){
       // Configuration starting with LHC15f
       fTriggerMaker->ConfigureForPP2015();
       dataset = "pp 2015-2018";
-      if(!MCEvent()) {
-        // In case of data load masked fastORs from OADB
-        fMaskedFastorOADB = "oadb";
-      }
+      // Load additional masked FastORs from OADB (of course only if not specified explicitly, to allow for new maskings to be tested)
+      if(!fMaskedFastorOADB.Length()) fMaskedFastorOADB = "oadb";
     } else if((runnumber >= 244824 && runnumber <= 246994) || (runnumber >= 295581)){
       fTriggerMaker->ConfigureForPbPb2015();
-      dataset = "Pb-Pb 2015";
+      dataset = "Pb-Pb Run2";
     }
 
     if(fTriggerMaker->IsConfigured()){
@@ -374,7 +372,7 @@ void AliEmcalTriggerMakerTask::RunChanged(Int_t newrun){
   if(fBadFEEChannelOADB.Length()) InitializeBadFEEChannels();
   fTriggerMaker->ClearFastORBadChannels();
   if(fLoadFastORMaskingFromOCDB) InitializeFastORMaskingFromOCDB(newrun);
-  if(fMaskedFastorOADB.Length()) InitializeFastORMaskingFromOADB();
+  if(fMaskedFastorOADB.Length() && (fUseDeadFastORsOADB || fUseBadFastORsOADB)) InitializeFastORMaskingFromOADB();
   // QA: Monitor all channels which are masked in the current run
   if(fDoQA && fQAHistos){
     Int_t globCol(-1), globRow(-1) ;

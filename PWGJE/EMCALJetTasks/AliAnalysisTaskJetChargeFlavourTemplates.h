@@ -63,6 +63,8 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
   Float_t ParticleJetCharge;      //
   Float_t LeadingTrackPt;         //
   Int_t PdgCode;                  //
+  Int_t PtMatchedPdgCode;         //
+  Int_t GeoMatchedPdgCode;        //
   Float_t ProgenetorFraction;     //
 
   
@@ -70,6 +72,6 @@ class AliAnalysisTaskJetChargeFlavourTemplates : public AliAnalysisTaskEmcalJet 
 
 
 
-  ClassDef(AliAnalysisTaskJetChargeFlavourTemplates, 6)
+  ClassDef(AliAnalysisTaskJetChargeFlavourTemplates, 7)
 };
 #endif

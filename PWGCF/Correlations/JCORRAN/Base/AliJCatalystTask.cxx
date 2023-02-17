@@ -280,6 +280,9 @@ void AliJCatalystTask::UserExec(Option_t* /*option*/)
 
   // load current event and save track, event info
   if(flags & FLUC_KINEONLY) {
+    if(flags & FLUC_EXCLUDE_EPOS){
+        Error("UserExec","FLUC_EXCLUDE_EPOS flag is not set up to work with FLUC_KINEONLY. No EPOS filtering is done.");
+    }
     AliMCEvent *mcEvent;
     if(flags & FLUC_KINEONLYEXT) {
       AliInputEventHandler*  fMcHandler = dynamic_cast<AliInputEventHandler*> (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
@@ -440,8 +443,17 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 {
   //aod->Print();
   if(flags & FLUC_MC) {  // how to get a flag to check  MC or not !
-    TClonesArray *mcArray = (TClonesArray*) aod->FindListObject(AliAODMCParticle::StdBranchName());
-    if(!mcArray){ Printf("Error not a proper MC event"); };  // check mc array
+    TClonesArray *mcArray;
+    if(flags & FLUC_EXCLUDE_EPOS){
+        mcArray = (TClonesArray*)aod->FindListObject("FilteredParticlesTrueMC");
+        if(!mcArray) {
+            Error("ReadAODTracks","Could not find FilteredParticlesTrueMC, check that you are using AliAnalysisTaskSVtaskMCFilter properly or disable the FLUC_EXCLUDE_EPOS flag");
+            return;
+        }
+    } else {
+        mcArray = (TClonesArray*) aod->FindListObject(AliAODMCParticle::StdBranchName());
+        if(!mcArray){ Printf("Error not a proper MC event"); };  // check mc array
+    }
 
     Int_t nt = mcArray->GetEntriesFast();
     Int_t ntrack = 0;
@@ -499,15 +511,30 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
   } // end: if(flags & FLUC_MC)
 
   else {  // Read AOD reco tracks.
-    Int_t nt = aod->GetNumberOfTracks();
-    if (bSaveAllQA) {fMultHistogram[GetCentralityBin(fcent)][0]->Fill(nt);}
+    TClonesArray *aodArray;
+    Int_t nt;
+    if(flags & FLUC_EXCLUDE_EPOS){
+        aodArray = (TClonesArray*)aod->FindListObject("FilteredTracksDetMC");
+        if(aodArray) {
+            nt = aodArray->GetEntriesFast();
+            if (bSaveAllQA) {fMultHistogram[GetCentralityBin(fcent)][0]->Fill(nt);}
+        } else {
+            Error("ReadAODTracks","Could not find FilteredTracksDetMC, check that you are using AliAnalysisTaskSVtaskMCFilter properly or disable the FLUC_EXCLUDE_EPOS flag");
+            return;
+        }
+    } else {
+        nt = aod->GetNumberOfTracks();
+        if (bSaveAllQA) {fMultHistogram[GetCentralityBin(fcent)][0]->Fill(nt);}
+    }
 
     Int_t ntrack =0;
     Double_t PV[3] = {0.};
     ReadVertexInfo(aod, PV);
 
     for( int it=0; it<nt ; it++){
-      AliAODTrack *track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
+      AliAODTrack *track;
+      if(flags & FLUC_EXCLUDE_EPOS) track = dynamic_cast<AliAODTrack*>(aodArray->At(it));
+      else track = dynamic_cast<AliAODTrack*>(aod->GetTrack(it));
       if(!track) {
         Error("ReadEventAOD", "Could not read particle %d", (int) it);
         continue;
@@ -584,8 +611,12 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
         itrack->SetTrackEff(effCorr);
         
         // Adding phi weight for a track
+        AliJRunTable *fRunTable = & AliJRunTable::GetSpecialInstance();
+        fRunTable->SetRunNumber(fRunNum);
+        int fperiod = fRunTable->GetRunNumberToPeriod(fRunNum); // Needed for the alternative corrections.
+
         Double_t phi_module_corr = 1.0;
-        if(bUseAlternativeWeights){
+        if(bUseAlternativeWeights && fperiod == AliJRunTable::kLHC10h){ // Alternative NUA for 10h
            Int_t RunBin = GetRunIndex10h((Int_t)aod->GetRunNumber());
            Int_t CentralityBin = GetCentralityBin(fcent);
            Int_t phiBin = fHistoPhiWeight[CentralityBin][RunBin]->FindBin(track->Phi());
@@ -605,6 +636,18 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
           }
         }
         itrack->SetWeight(phi_module_corr);
+
+        // Adding centrality weight for a LHC15o track, and given centrality.
+        float cent_weight = 1.0;
+        if (bUseAlternativeWeights && fperiod == AliJRunTable::kLHC15o) {
+          Int_t RunBin = GetRunIndex15o((Int_t)aod->GetRunNumber());
+          //printf("RunBin = %d and fcent = %.2f\n", RunBin, fcent);
+          if (!fHistoCentWeight[RunBin]) {printf("We don't have a valid histo for cent for this run.\n");}
+          Int_t centBin = fHistoCentWeight[RunBin]->FindBin(fcent);
+          //printf("centBin = %d\n", centBin);
+          cent_weight = (float)(fHistoCentWeight[RunBin]->GetBinContent(centBin));
+        }
+        itrack->SetCentWeight(cent_weight);
 
         if (bSaveAllQA){
           fProfileWeights[GetCentralityBin(fcent)]->Fill(itrack->Phi(), phi_module_corr);
@@ -988,6 +1031,7 @@ void AliJCatalystTask::InitializeArrays() {
     fProfileWeights[icent] = NULL;
     for(int iRun = 0; iRun < 90; iRun++) {fHistoPhiWeight[icent][iRun] = NULL;}
   }
+  for (int iR = 0; iR < 138; iR++) {fHistoCentWeight[iR] = NULL;}
 }
 
 //______________________________________________________________________________
@@ -1364,3 +1408,85 @@ void AliJCatalystTask::FillEventQA(AliAODEvent *event, int centBin, int stepBin)
 
 
 } // oid AliJCatalystTask::FillEventQA(AliAODEvent *event, int stepBin)
+
+//==========================================================================================================================================================================
+
+Int_t AliJCatalystTask::GetRunIndex15o(Int_t runNumber)
+{
+// Return for the given run the index in the run-by-run arrays.
+  TString sMethod = "Int_t AliJCatalystTask::GetRunIndex15o()";
+  Int_t cRun = -1; // Current index in the loop.
+
+  const int NumberRuns = 138;
+  Int_t listRuns[NumberRuns] = {244917, 245347, 245507, 245829, 246113, 246424, 246846, 244918,
+      245349, 245535, 245831, 246115, 246431, 246847, 244975, 245353, 245540, 245833, 246148,
+      246434, 246851, 244980, 245396, 245542, 245923, 246151, 246750, 246858, 244982, 245397,
+      245543, 245949, 246152, 246751, 246859, 244983, 245401, 245544, 245952, 246153, 246757,
+      246864, 245064, 245407, 245545, 245954, 246178, 246758, 246865, 245066, 245409, 245554,
+      245963, 246180, 246759, 246867, 245068, 245410, 245683, 246001, 246181, 246760, 246870,
+      245145, 245411, 245692, 246003, 246182, 246763, 246871, 245146, 245441, 245702, 246012,
+      246185, 246765, 246928, 245151, 245446, 245705, 246036, 246217, 246766, 246945, 245152,
+      245450, 245729, 246037, 246222, 246804, 246948, 245231, 245453, 245731, 246042, 246225,
+      246805, 246982, 245232, 245454, 245752, 246048, 246271, 246807, 246984, 245233, 245496,
+      245759, 246049, 246272, 246808, 246989, 245259, 245497, 245766, 246052, 246275, 246809,
+      246991, 245343, 245501, 245775, 246053, 246276, 246810, 246994, 245345, 245504, 245785,
+      246087, 246391, 246844, 245346, 245505, 245793, 246089, 246392, 246845};
+
+// Find the position of the given run into the list of runs.
+  for (Int_t iRun = 0; iRun < NumberRuns; iRun++)
+  {
+    if (listRuns[iRun] == runNumber)
+    {
+      cRun = iRun;
+      break;
+    } // End: for (Int_t iRun = 0; iRun < fNumberRuns; iRun++).
+  } // End: iRun.
+
+ if(cRun == -1){Fatal(sMethod.Data(), "FATAL: Run Number not in List of Runs!");}  
+
+  return cRun;
+}
+
+//==========================================================================================================================================================================
+void AliJCatalystTask::SetInputCentralityWeight15o(bool useCentWeight, TString fileCentWeight)
+{
+// Get the centrality correction for LHC15o.
+  TString sMethod = "void AliJCatalystTask::SetInputCentralityWeight15o()";
+
+  // Enable the use of non-unit centrality correction. Recycled from alternative NUA for 10h.
+  bUseAlternativeWeights = useCentWeight;
+
+  // Declare the list of runs for LHC15o, pass2, AOD252.
+  const int NumberRuns = 138;
+  Int_t listRuns[NumberRuns] = {244917, 245347, 245507, 245829, 246113, 246424, 246846, 244918,
+      245349, 245535, 245831, 246115, 246431, 246847, 244975, 245353, 245540, 245833, 246148,
+      246434, 246851, 244980, 245396, 245542, 245923, 246151, 246750, 246858, 244982, 245397,
+      245543, 245949, 246152, 246751, 246859, 244983, 245401, 245544, 245952, 246153, 246757,
+      246864, 245064, 245407, 245545, 245954, 246178, 246758, 246865, 245066, 245409, 245554,
+      245963, 246180, 246759, 246867, 245068, 245410, 245683, 246001, 246181, 246760, 246870,
+      245145, 245411, 245692, 246003, 246182, 246763, 246871, 245146, 245441, 245702, 246012,
+      246185, 246765, 246928, 245151, 245446, 245705, 246036, 246217, 246766, 246945, 245152,
+      245450, 245729, 246037, 246222, 246804, 246948, 245231, 245453, 245731, 246042, 246225,
+      246805, 246982, 245232, 245454, 245752, 246048, 246271, 246807, 246984, 245233, 245496,
+      245759, 246049, 246272, 246808, 246989, 245259, 245497, 245766, 246052, 246275, 246809,
+      246991, 245343, 245501, 245775, 246053, 246276, 246810, 246994, 245345, 245504, 245785,
+      246087, 246391, 246844, 245346, 245505, 245793, 246089, 246392, 246845};
+
+  // Open the external file.
+  TFile *weightsFile = TFile::Open(Form("%s", fileCentWeight.Data()), "READ");
+  if (!weightsFile) {Fatal(sMethod.Data(), "ERROR 404: File not found");}
+
+  for (Int_t iRun = 0; iRun < NumberRuns; iRun++)
+  {
+    // Get the histogram for the current run number.
+    Int_t runNumber = listRuns[iRun];
+    fHistoCentWeight[iRun] = static_cast<TH1F*>(weightsFile->Get(
+      Form("histoCentWeight_%d", runNumber) ));
+    if (!fHistoCentWeight[iRun]) {Fatal(sMethod.Data(), "ERROR: cent weight histogram not found");}
+    else {fHistoCentWeight[iRun]->SetDirectory(0);}  // Kill the default ownership
+  } // for irun
+
+  // c.) Close the external file.
+  weightsFile->Close();
+  delete weightsFile;
+}

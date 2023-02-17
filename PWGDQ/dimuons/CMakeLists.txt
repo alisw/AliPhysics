@@ -34,6 +34,7 @@ set(SRCS
   AliAnalysisTaskPbPbTree_MCut.cxx
   AliAnalysisTaskPbPbTree_SingleMuons.cxx
   AliAnalysisTaskTree_MCut.cxx  
+  Psi2Spolarization/AliAnalysisTaskPsi2Spolarization.cxx
   )
 
 # Headers from sources
@@ -73,6 +74,6 @@ install(TARGETS ${MODULE}
   LIBRARY DESTINATION lib)
 install(FILES ${HDRS} DESTINATION include)
 
-install(DIRECTORY
-            macros
-        DESTINATION PWGDQ/dimuons)
+install(DIRECTORY macros DESTINATION PWGDQ/dimuons)
+        
+install(DIRECTORY Psi2Spolarization DESTINATION PWGDQ/dimuons)

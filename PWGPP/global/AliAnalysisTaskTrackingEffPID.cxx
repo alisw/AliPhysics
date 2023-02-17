@@ -171,16 +171,17 @@ void AliAnalysisTaskTrackingEffPID::UserCreateOutputObjects() {
   else if(fMultEstimator==2) axTit[3]="N_{TPCITStracks}";
   else if(fMultEstimator==3) axTit[3]="N_{TPCtracks}";
   else if(fMultEstimator==4) axTit[3]="N_{TPCclusters}/1000";
-  const int nPtBins=32;
+  const int nPtBins=42;
   const int nMultBins=10;
   int nbins[6]={10,18,nPtBins,nMultBins,4,60};
   double xmin[6]={-1.,0.,0.,0,-10.,0.};
   double xmax[6]={1.,2*TMath::Pi(),30.,200.,10.,3.};
   TString charge[2] = {"pos","neg"};
-  double ptBins[nPtBins+1] = {0.00,0.05,0.10,0.15,0.20,0.25,0.30,0.35,0.40,0.50,
-                              0.60,0.70,0.80,0.90,1.00,1.25,1.50,1.75,2.00,2.50,
-                              3.00,3.50,4.00,4.50,5.00,6.00,7.00,8.00,10.0,12.0,
-                              16.0,20.0,30.0};
+  double ptBins[nPtBins+1] = {0.00,0.05,0.075,0.10,0.11,0.12,0.13,0.14,0.15,
+                              0.16,0.17,0.18,0.19,0.20,0.225,0.25,0.30,0.35,
+			      0.40,0.50,0.60,0.70,0.80,0.90,1.00,1.25,1.50,
+			      1.75,2.00,2.50,3.00,3.50,4.00,4.50,5.00,6.00,
+			      7.00,8.00,10.0,12.0,16.0,20.0,30.0};
   double multBins[nMultBins+1] = {0.,5.,10.,20.,30.,40.,50.,60.,80.,100.,200.};
   if(fIsAA){
     multBins[0]=0.;

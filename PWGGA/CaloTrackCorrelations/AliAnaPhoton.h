@@ -381,8 +381,17 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   TH3F * fhPtPhotonPerTriggerCen;                   //!<! Number of identified photon vs pT  vs trigger bit  vs centrality
   TH2F * fhPtPhotonPerTrigger;                      //!<! Number of identified photon vs pT  vs trigger bit
   TH3F * fhPtPhotonPerTriggerSM;                    //!<! Number of identified photon vs pT  vs trigger bit vs SM number
+  TH3F * fhPtPhotonEtaSectorTriggerG1;              //!<! Number of identified photon vs pT  vs eta vs Sector number for EDG1 trigger from maker
+  TH3F * fhPtPhotonEtaSectorTriggerG2;              //!<! Number of identified photon vs pT  vs eta vs Sector number for EDG2 trigger from maker
+  TH3F * fhPtPhotonEtaSectorTriggerL0;              //!<! Number of identified photon vs pT   vs eta vs Sector number for EDL0 trigger from maker
   TH3F * fhPtMCPhotonPromptPerTriggerCen;           //!<! Number of identified photon vs pT  vs trigger bit  vs centrality, origin MC prompt photon
   TH2F * fhPtMCPhotonPromptPerTrigger;              //!<! Number of identified photon vs pT  vs trigger bit, origin MC prompt photon
+  TH3F * fhEnPhotonColRowTriggerG1;                 //!<! Col-Row-Enegy of highest energy cell for recalculated G1 trigger, selected cluster
+  TH3F * fhEnPhotonColRowTriggerG2;                 //!<! Col-Row-Enegy of highest energy cell for recalculated G2 trigger, selected cluster
+  TH3F * fhEnPhotonColRowTriggerL0;                 //!<! Col-Row-Enegy of highest energy cell for recalculated L0 trigger, selected cluster
+  TH3F * fhEnClusterColRowTriggerG1;                //!<! Col-Row-Enegy of highest energy cell for recalculated G1 trigger, input cluster
+  TH3F * fhEnClusterColRowTriggerG2;                //!<! Col-Row-Enegy of highest energy cell for recalculated G2 trigger, input clusters
+  TH3F * fhEnClusterColRowTriggerL0;                //!<! Col-Row-Enegy of highest energy cell for recalculated L0 trigger, input cluster
 
   // Shower shape
   TH2F * fhDispE;                                   //!<! Cluster dispersion vs E
@@ -796,6 +805,10 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
 
   TH3F * fhLam0Eta[fgkNSectors];                    //!<! Cluster lambda0 vs  Pt vs eta
 //TH3F * fhLam0EtaEn[fgkNSectors];                  //!<! Cluster lambda0 vs Energy vs eta
+  TH3F * fhLam0EtaTriggerG1[fgkNSectors];           //!<! Cluster lambda0 vs  Pt vs eta
+  TH3F * fhLam0EtaTriggerG2[fgkNSectors];           //!<! Cluster lambda0 vs  Pt vs eta
+  TH3F * fhLam0EtaTriggerL0[fgkNSectors];           //!<! Cluster lambda0 vs  Pt vs eta
+
   TH3F * fhLam0EtaVzPos[fgkNSectors];               //!<! Cluster lambda0 vs  Pt vs eta
   ///<  Cluster   shower shape  vs  pT vs eta, per centrality
   TH3F **fhLam0EtaPerCen;                           //![GetNCentrBin()*fgkNSectors]
@@ -871,7 +884,7 @@ class AliAnaPhoton : public AliAnaCaloTrackCorrBaseClass {
   AliAnaPhoton & operator = (const AliAnaPhoton & g) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPhoton,65) ;
+  ClassDef(AliAnaPhoton,68) ;
   /// \endcond
 
 } ;

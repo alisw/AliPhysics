@@ -15,7 +15,7 @@ AliAnalysisTask *AddTaskLightNuclei_XeXe_MC(unsigned long fTriggerMask, Double_t
   if (!mgr) {
     Error("AddTaskLightNuclei_XeXe_MC","No analysis manager found.");
     return 0;
-  }S
+  }
 
   // Check the analysis type using the event handlers connected to the analysis manager.
   //==============================================================================

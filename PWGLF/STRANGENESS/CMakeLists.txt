@@ -38,6 +38,14 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWGUD/base
   )
 
+# pulled in for HF vertexing
+if(FASTJET_FOUND)
+    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
+    add_definitions(${FASTJET_DEFINITIONS})
+    list(APPEND HDRS FJ_includes.h)
+endif(FASTJET_FOUND)
+
 if(ROOT_VERSION_MAJOR EQUAL 6)
 # Additional includes for ROOT 6 only dependencies - alphabetical order except ROOT
   include_directories(${AliPhysics_SOURCE_DIR}/ML
@@ -127,12 +135,18 @@ set(SRCS
   StrPDF/AliAnalysisTaskV0multspec.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessVsMultVsEffEnergyAODMCRun2.cxx
+  Cascades/Run2/AliMachineLearning.cxx
+  Cascades/Run2/AliNeuralNetwork.cxx
+  Cascades/Run2/AliBDT.cxx
+  Cascades/Run2/AliAnalysisTaskStrangenessML.cxx
+  StrPDF/AliAnalysisTaskMultspec.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
 	set(SRCS
     ${SRCS}
     Ratios/AliAnalysisTaskStrangenessRatios.cxx
+    KaonXiCorrelation/AliAnalysisTaskKaonXiCorrelation.cxx
   )
 endif()
 
@@ -203,6 +217,7 @@ install(DIRECTORY Correlationpp DESTINATION  PWGLF/STRANGENESS)
 install(DIRECTORY HeavyIonsRun1Run2/macros DESTINATION PWGLF/STRANGENESS/HeavyIonsRun1Run2)
 install(DIRECTORY StrPDF/macros DESTINATION PWGLF/STRANGENESS/StrPDF)
 install(DIRECTORY Ratios DESTINATION PWGLF/STRANGENESS/ FILES_MATCHING PATTERN "*.C")
+install(DIRECTORY KaonXiCorrelation DESTINATION PWGLF/STRANGENESS/ FILES_MATCHING PATTERN "*.C")
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/Cascades/corrections)
   install(DIRECTORY Cascades/corrections DESTINATION PWGLF/STRANGENESS/Cascades)

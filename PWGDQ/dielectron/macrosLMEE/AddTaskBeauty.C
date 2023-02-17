@@ -16,7 +16,7 @@ AliAnalysisTaskBeauty *AddTaskBeauty(Bool_t applyeventw = kFALSE,TString file_mo
 
   // Smearing
   if(file_momentum_smear.Contains("alien")) {
-    gSystem->Exec(Form("alien_cp %s .",file_momentum_smear.Data()));
+    gSystem->Exec(Form("alien_cp %s file:./",file_momentum_smear.Data()));
     TObjArray* Strings = file_momentum_smear.Tokenize("/");
     TString namefile = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
     printf("Resolution file is %s copied from %s\n",namefile.Data(),file_momentum_smear.Data());
@@ -31,7 +31,7 @@ AliAnalysisTaskBeauty *AddTaskBeauty(Bool_t applyeventw = kFALSE,TString file_mo
   
   // Efficiency
   if(file_efficiency.Contains("alien")) {
-    gSystem->Exec(Form("alien_cp %s .",file_efficiency.Data()));
+    gSystem->Exec(Form("alien_cp %s file:./",file_efficiency.Data()));
     TObjArray* Strings = file_efficiency.Tokenize("/");
     TString namefile = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
     printf("Efficiency file is %s copied from %s\n",namefile.Data(),file_efficiency.Data());
@@ -44,7 +44,7 @@ AliAnalysisTaskBeauty *AddTaskBeauty(Bool_t applyeventw = kFALSE,TString file_mo
 
   //RAA
   if(file_raa.Contains("alien")) {
-    gSystem->Exec(Form("alien_cp %s .",file_raa.Data()));
+    gSystem->Exec(Form("alien_cp %s file:./",file_raa.Data()));
     TObjArray* Strings = file_raa.Tokenize("/");
     TString namefile = Form("%s/%s",gSystem->pwd(),Strings->At(Strings->GetEntriesFast()-1)->GetName());
     printf("RAA file is %s copied from %s\n",namefile.Data(),file_raa.Data());

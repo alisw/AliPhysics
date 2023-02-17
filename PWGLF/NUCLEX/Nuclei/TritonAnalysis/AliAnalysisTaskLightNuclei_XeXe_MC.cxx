@@ -49,8 +49,10 @@ fQAList(nullptr),
 fAODMCHeader(nullptr),
 fAODArrayMCParticles(nullptr),
 fMCEventHandler(nullptr),
-reducedTree_gen(nullptr),
-reducedTree_rec(nullptr),
+reducedTree_gen_He3(nullptr),
+reducedTree_rec_He3(nullptr),
+reducedTree_gen_H3(nullptr),
+reducedTree_rec_H3(nullptr),
 fCentralityMin(0),
 fCentralityMax(0),
 fVertexZmin(0),
@@ -80,7 +82,7 @@ fpar0_mean_TOF(0),
 fpar1_mean_TOF(0),
 fpar0_sigma_TOF(0),
 fpar1_sigma_TOF(0),
-multPercentile_V0M(-1),
+multPercentile_V0M(0),
 particleType(0),
 centrality(0),
 xVertex(0),
@@ -115,18 +117,16 @@ HasPointOnITSLayer4(0),
 HasPointOnITSLayer5(0),
 chi2_NDF(0),
 chi2_ITS(0),
-nSigmaITS_He3(0),
-nSigmaTPC_He3(0),
-nSigmaTOF_He3(0),
-nSigmaITS_Triton(0),
-nSigmaTPC_Triton(0),
-nSigmaTOF_Triton(0),
+nSigmaITS(0),
+nSigmaTPC(0),
+nSigmaTOF(0),
 PrimaryParticle(0),
 SecondaryMaterial(0),
 SecondaryDecay(0),
 PrimaryTrack(0),
 TPC_signal(0),
 ITS_signal(0),
+TOF_signal(0),
 TRDntracklets(0),
 hasTOFhit(0)
 {}
@@ -143,8 +143,10 @@ fQAList(nullptr),
 fAODMCHeader(nullptr),
 fAODArrayMCParticles(nullptr),
 fMCEventHandler(nullptr),
-reducedTree_gen(nullptr),
-reducedTree_rec(nullptr),
+reducedTree_gen_He3(nullptr),
+reducedTree_rec_He3(nullptr),
+reducedTree_gen_H3(nullptr),
+reducedTree_rec_H3(nullptr),
 fCentralityMin(0),
 fCentralityMax(0),
 fVertexZmin(0),
@@ -174,7 +176,7 @@ fpar0_mean_TOF(0),
 fpar1_mean_TOF(0),
 fpar0_sigma_TOF(0),
 fpar1_sigma_TOF(0),
-multPercentile_V0M(-1),
+multPercentile_V0M(0),
 particleType(0),
 centrality(0),
 xVertex(0),
@@ -209,18 +211,16 @@ HasPointOnITSLayer4(0),
 HasPointOnITSLayer5(0),
 chi2_NDF(0),
 chi2_ITS(0),
-nSigmaITS_He3(0),
-nSigmaTPC_He3(0),
-nSigmaTOF_He3(0),
-nSigmaITS_Triton(0),
-nSigmaTPC_Triton(0),
-nSigmaTOF_Triton(0),
+nSigmaITS(0),
+nSigmaTPC(0),
+nSigmaTOF(0),
 PrimaryParticle(0),
 SecondaryMaterial(0),
 SecondaryDecay(0),
 PrimaryTrack(0),
 TPC_signal(0),
 ITS_signal(0),
+TOF_signal(0),
 TRDntracklets(0),
 hasTOFhit(0)
 {
@@ -255,7 +255,7 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserCreateOutputObjects(){
 
 
     //Number of Events
-    histoNumberOfEvents                     = new TH1F("histoNumberOfEvents","Events after selection steps",10,0,10);
+    histoNumberOfEvents                     = new TH1F("histoNumberOfEvents","Events after selection steps",20,0,10);
     fQAList                                 -> Add (histoNumberOfEvents);
     fAODeventCuts.AddQAplotsToList(fQAList);                //Add event selection QA plots
     //Signal Extraction
@@ -319,72 +319,134 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserCreateOutputObjects(){
 
 
     //Reduced Tree Generated particles
-    reducedTree_gen = new TTree("reducedTree_gen","reducedTree_gen");
-    reducedTree_gen -> Branch("centrality",&centrality,"centrality/F");
-    reducedTree_gen -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/D");
-    reducedTree_gen -> Branch("particleType",&particleType,"particleType/F");
-    reducedTree_gen -> Branch("xVertex",&xVertex,"xVertex/F");
-    reducedTree_gen -> Branch("yVertex",&yVertex,"yVertex/F");
-    reducedTree_gen -> Branch("zVertex",&zVertex,"zVertex/F");
-    reducedTree_gen -> Branch("px",&px,"px/F");
-    reducedTree_gen -> Branch("py",&py,"py/F");
-    reducedTree_gen -> Branch("pz",&pz,"pz/F");
-    reducedTree_gen -> Branch("pt",&pt,"pt/F");
-    reducedTree_gen -> Branch("charge",&charge,"charge/I");
-    reducedTree_gen -> Branch("PrimaryParticle",&PrimaryParticle,"PrimaryParticle/I");
+    reducedTree_gen_He3 = new TTree("reducedTree_gen_He3","reducedTree_gen_He3");
+    reducedTree_gen_He3 -> Branch("particleType",&particleType,"particleType/I");
+    reducedTree_gen_He3 -> Branch("centrality",&centrality,"centrality/F");
+    reducedTree_gen_He3 -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/F");
+    reducedTree_gen_He3 -> Branch("xVertex",&xVertex,"xVertex/F");
+    reducedTree_gen_He3 -> Branch("yVertex",&yVertex,"yVertex/F");
+    reducedTree_gen_He3 -> Branch("zVertex",&zVertex,"zVertex/F");
+    reducedTree_gen_He3 -> Branch("px",&px,"px/F");
+    reducedTree_gen_He3 -> Branch("py",&py,"py/F");
+    reducedTree_gen_He3 -> Branch("pz",&pz,"pz/F");
+    reducedTree_gen_He3 -> Branch("pt",&pt,"pt/F");
+    reducedTree_gen_He3 -> Branch("charge",&charge,"charge/I");
+    reducedTree_gen_He3 -> Branch("PrimaryParticle",&PrimaryParticle,"PrimaryParticle/I");
+
+    reducedTree_gen_H3 = new TTree("reducedTree_gen_H3","reducedTree_gen_H3");
+    reducedTree_gen_H3 -> Branch("particleType",&particleType,"particleType/I");
+    reducedTree_gen_H3 -> Branch("centrality",&centrality,"centrality/F");
+    reducedTree_gen_H3 -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/F");
+    reducedTree_gen_H3 -> Branch("xVertex",&xVertex,"xVertex/F");
+    reducedTree_gen_H3 -> Branch("yVertex",&yVertex,"yVertex/F");
+    reducedTree_gen_H3 -> Branch("zVertex",&zVertex,"zVertex/F");
+    reducedTree_gen_H3 -> Branch("px",&px,"px/F");
+    reducedTree_gen_H3 -> Branch("py",&py,"py/F");
+    reducedTree_gen_H3 -> Branch("pz",&pz,"pz/F");
+    reducedTree_gen_H3 -> Branch("pt",&pt,"pt/F");
+    reducedTree_gen_H3 -> Branch("charge",&charge,"charge/I");
+    reducedTree_gen_H3 -> Branch("PrimaryParticle",&PrimaryParticle,"PrimaryParticle/I");
 
     //Reduced Tree Reconstructed tracks
-    reducedTree_rec = new TTree("reducedTree_rec","reducedTree_rec");
-    reducedTree_rec -> Branch("trackType",&trackType,"trackType/F");
-    reducedTree_rec -> Branch("centrality",&centrality,"centrality/F");
-    reducedTree_rec -> Branch("xVertex",&xVertex,"xVertex/F");
-    reducedTree_rec -> Branch("yVertex",&yVertex,"yVertex/F");
-    reducedTree_rec -> Branch("zVertex",&zVertex,"zVertex/F");
-    reducedTree_rec -> Branch("ID_event",&ID_event,"ID_event/I");
-    reducedTree_rec -> Branch("Helium3Sec",&Helium3Sec,"Helium3Sec/I");
-    reducedTree_rec -> Branch("lp",&lp,"lp/I");
-    reducedTree_rec -> Branch("px",&px,"px/F");
-    reducedTree_rec -> Branch("py",&py,"py/F");
-    reducedTree_rec -> Branch("pz",&pz,"pz/F");
-    reducedTree_rec -> Branch("pt",&pt,"pt/F");
-    reducedTree_rec -> Branch("pt_particle",&pt_particle,"pt_particle/F");
-    reducedTree_rec -> Branch("pz_particle",&pz_particle,"pz_particle/F");
-    reducedTree_rec -> Branch("deltapt",&deltapt,"deltapt/F");
-    reducedTree_rec -> Branch("deltapz",&deltapz,"deltapz/F");
-    reducedTree_rec -> Branch("charge",&charge,"charge/I");
-    reducedTree_rec -> Branch("dcaxy",&dcaxy,"dcaxy/D");
-    reducedTree_rec -> Branch("dcaz",&dcaz,"dcaz/D");
-    reducedTree_rec -> Branch("nTPC_Clusters",&nTPC_Clusters,"nTPC_Clusters/I");
-    reducedTree_rec -> Branch("nITS_Clusters",&nITS_Clusters,"nITS_Clusters/I");
-    reducedTree_rec -> Branch("nTPC_Clusters_dEdx",&nTPC_Clusters_dEdx,"nTPC_Clusters_dEdx/I");
-    reducedTree_rec -> Branch("nTPC_FindableClusters",&nTPC_FindableClusters,"nTPC_FindableClusters/I");
-    reducedTree_rec -> Branch("nTPC_CrossedRows",&nTPC_CrossedRows,"nTPC_CrossedRows/I");
-    reducedTree_rec -> Branch("HasPointOnITSLayer0",&HasPointOnITSLayer0,"HasPointOnITSLayer0/I");
-    reducedTree_rec -> Branch("HasPointOnITSLayer1",&HasPointOnITSLayer1,"HasPointOnITSLayer1/I");
-    reducedTree_rec -> Branch("HasPointOnITSLayer2",&HasPointOnITSLayer2,"HasPointOnITSLayer2/I");
-    reducedTree_rec -> Branch("HasPointOnITSLayer3",&HasPointOnITSLayer3,"HasPointOnITSLayer3/I");
-    reducedTree_rec -> Branch("HasPointOnITSLayer4",&HasPointOnITSLayer4,"HasPointOnITSLayer4/I");
-    reducedTree_rec -> Branch("HasPointOnITSLayer5",&HasPointOnITSLayer5,"HasPointOnITSLayer5/I");
-    reducedTree_rec -> Branch("chi2_NDF",&chi2_NDF,"chi2_NDF/F");
-    reducedTree_rec -> Branch("chi2_ITS",&chi2_ITS,"chi2_ITS/F");
-    reducedTree_rec -> Branch("nSigmaITS_He3",&nSigmaITS_He3,"nSigmaITS_He3/F");
-    reducedTree_rec -> Branch("nSigmaTPC_He3",&nSigmaTPC_He3,"nSigmaTPC_He3/F");
-    reducedTree_rec -> Branch("nSigmaTOF_He3",&nSigmaTOF_He3,"nSigmaTOF_He3/F");
-    reducedTree_rec -> Branch("nSigmaITS_Triton",&nSigmaITS_Triton,"nSigmaITS_Triton/F");
-    reducedTree_rec -> Branch("nSigmaTPC_Triton",&nSigmaTPC_Triton,"nSigmaTPC_Triton/F");
-    reducedTree_rec -> Branch("nSigmaTOF_Triton",&nSigmaTOF_Triton,"nSigmaTOF_Triton/F");
-    reducedTree_rec -> Branch("PrimaryParticle",&PrimaryParticle,"PrimaryParticle/I");
-    reducedTree_rec -> Branch("SecondaryMaterial",&SecondaryMaterial,"SecondaryMaterial/I");
-    reducedTree_rec -> Branch("SecondaryDecay",&SecondaryDecay,"SecondaryDecay/I");
-    reducedTree_rec -> Branch("PrimaryTrack",&PrimaryTrack,"PrimaryTrack/I");
-    reducedTree_rec -> Branch("TPC_signal",&TPC_signal,"TPC_signal/D");
-    reducedTree_rec -> Branch("ITS_signal",&ITS_signal,"ITS_signal/D");
-    reducedTree_rec -> Branch("TRDntracklets",&TRDntracklets,"TRDntracklets/I");
-    reducedTree_rec -> Branch("hasTOFhit",&hasTOFhit,"hasTOFhit/I");
+    reducedTree_rec_He3 = new TTree("reducedTree_rec_He3","reducedTree_rec_He3");
+    reducedTree_rec_He3 -> Branch("trackType",&trackType,"trackType/I");
+    reducedTree_rec_He3 -> Branch("centrality",&centrality,"centrality/F");
+    reducedTree_rec_He3 -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/F");
+    reducedTree_rec_He3 -> Branch("xVertex",&xVertex,"xVertex/F");
+    reducedTree_rec_He3 -> Branch("yVertex",&yVertex,"yVertex/F");
+    reducedTree_rec_He3 -> Branch("zVertex",&zVertex,"zVertex/F");
+    reducedTree_rec_He3 -> Branch("ID_event",&ID_event,"ID_event/I");
+    reducedTree_rec_He3 -> Branch("Helium3Sec",&Helium3Sec,"Helium3Sec/I");
+    reducedTree_rec_He3 -> Branch("lp",&lp,"lp/I");
+    reducedTree_rec_He3 -> Branch("px",&px,"px/F");
+    reducedTree_rec_He3 -> Branch("py",&py,"py/F");
+    reducedTree_rec_He3 -> Branch("pz",&pz,"pz/F");
+    reducedTree_rec_He3 -> Branch("pt",&pt,"pt/F");
+    reducedTree_rec_He3 -> Branch("pt_particle",&pt_particle,"pt_particle/F");
+    reducedTree_rec_He3 -> Branch("pz_particle",&pz_particle,"pz_particle/F");
+    reducedTree_rec_He3 -> Branch("deltapt",&deltapt,"deltapt/F");
+    reducedTree_rec_He3 -> Branch("deltapz",&deltapz,"deltapz/F");
+    reducedTree_rec_He3 -> Branch("charge",&charge,"charge/I");
+    reducedTree_rec_He3 -> Branch("dcaxy",&dcaxy,"dcaxy/D");
+    reducedTree_rec_He3 -> Branch("dcaz",&dcaz,"dcaz/D");
+    reducedTree_rec_He3 -> Branch("nTPC_Clusters",&nTPC_Clusters,"nTPC_Clusters/I");
+    reducedTree_rec_He3 -> Branch("nITS_Clusters",&nITS_Clusters,"nITS_Clusters/I");
+    reducedTree_rec_He3 -> Branch("nTPC_Clusters_dEdx",&nTPC_Clusters_dEdx,"nTPC_Clusters_dEdx/I");
+    reducedTree_rec_He3 -> Branch("nTPC_FindableClusters",&nTPC_FindableClusters,"nTPC_FindableClusters/I");
+    reducedTree_rec_He3 -> Branch("nTPC_CrossedRows",&nTPC_CrossedRows,"nTPC_CrossedRows/I");
+    reducedTree_rec_He3 -> Branch("HasPointOnITSLayer0",&HasPointOnITSLayer0,"HasPointOnITSLayer0/I");
+    reducedTree_rec_He3 -> Branch("HasPointOnITSLayer1",&HasPointOnITSLayer1,"HasPointOnITSLayer1/I");
+    reducedTree_rec_He3 -> Branch("HasPointOnITSLayer2",&HasPointOnITSLayer2,"HasPointOnITSLayer2/I");
+    reducedTree_rec_He3 -> Branch("HasPointOnITSLayer3",&HasPointOnITSLayer3,"HasPointOnITSLayer3/I");
+    reducedTree_rec_He3 -> Branch("HasPointOnITSLayer4",&HasPointOnITSLayer4,"HasPointOnITSLayer4/I");
+    reducedTree_rec_He3 -> Branch("HasPointOnITSLayer5",&HasPointOnITSLayer5,"HasPointOnITSLayer5/I");
+    reducedTree_rec_He3 -> Branch("chi2_NDF",&chi2_NDF,"chi2_NDF/F");
+    reducedTree_rec_He3 -> Branch("chi2_ITS",&chi2_ITS,"chi2_ITS/F");
+    reducedTree_rec_He3 -> Branch("nSigmaITS",&nSigmaITS,"nSigmaITS/F");
+    reducedTree_rec_He3 -> Branch("nSigmaTPC",&nSigmaTPC,"nSigmaTPC/F");
+    reducedTree_rec_He3 -> Branch("nSigmaTOF",&nSigmaTOF,"nSigmaTOF/F");
+    reducedTree_rec_He3 -> Branch("PrimaryParticle",&PrimaryParticle,"PrimaryParticle/I");
+    reducedTree_rec_He3 -> Branch("SecondaryMaterial",&SecondaryMaterial,"SecondaryMaterial/I");
+    reducedTree_rec_He3 -> Branch("SecondaryDecay",&SecondaryDecay,"SecondaryDecay/I");
+    reducedTree_rec_He3 -> Branch("PrimaryTrack",&PrimaryTrack,"PrimaryTrack/I");
+    reducedTree_rec_He3 -> Branch("TPC_signal",&TPC_signal,"TPC_signal/D");
+    reducedTree_rec_He3 -> Branch("ITS_signal",&ITS_signal,"ITS_signal/D");
+    reducedTree_rec_He3 -> Branch("TOF_signal",&TOF_signal,"TOF_signal/D");
+    reducedTree_rec_He3 -> Branch("TRDntracklets",&TRDntracklets,"TRDntracklets/I");
+    reducedTree_rec_He3 -> Branch("hasTOFhit",&hasTOFhit,"hasTOFhit/I");
+
+    reducedTree_rec_H3 = new TTree("reducedTree_rec_H3","reducedTree_rec_H3");
+    reducedTree_rec_H3 -> Branch("trackType",&trackType,"trackType/I");
+    reducedTree_rec_H3 -> Branch("centrality",&centrality,"centrality/F");
+    reducedTree_rec_H3 -> Branch("multPercentile_V0M",&multPercentile_V0M,"multPercentile_V0M/F");
+    reducedTree_rec_H3 -> Branch("xVertex",&xVertex,"xVertex/F");
+    reducedTree_rec_H3 -> Branch("yVertex",&yVertex,"yVertex/F");
+    reducedTree_rec_H3 -> Branch("zVertex",&zVertex,"zVertex/F");
+    reducedTree_rec_H3 -> Branch("ID_event",&ID_event,"ID_event/I");
+    reducedTree_rec_H3 -> Branch("Helium3Sec",&Helium3Sec,"Helium3Sec/I");
+    reducedTree_rec_H3 -> Branch("lp",&lp,"lp/I");
+    reducedTree_rec_H3 -> Branch("px",&px,"px/F");
+    reducedTree_rec_H3 -> Branch("py",&py,"py/F");
+    reducedTree_rec_H3 -> Branch("pz",&pz,"pz/F");
+    reducedTree_rec_H3 -> Branch("pt",&pt,"pt/F");
+    reducedTree_rec_H3 -> Branch("pt_particle",&pt_particle,"pt_particle/F");
+    reducedTree_rec_H3 -> Branch("pz_particle",&pz_particle,"pz_particle/F");
+    reducedTree_rec_H3 -> Branch("deltapt",&deltapt,"deltapt/F");
+    reducedTree_rec_H3 -> Branch("deltapz",&deltapz,"deltapz/F");
+    reducedTree_rec_H3 -> Branch("charge",&charge,"charge/I");
+    reducedTree_rec_H3 -> Branch("dcaxy",&dcaxy,"dcaxy/D");
+    reducedTree_rec_H3 -> Branch("dcaz",&dcaz,"dcaz/D");
+    reducedTree_rec_H3 -> Branch("nTPC_Clusters",&nTPC_Clusters,"nTPC_Clusters/I");
+    reducedTree_rec_H3 -> Branch("nITS_Clusters",&nITS_Clusters,"nITS_Clusters/I");
+    reducedTree_rec_H3 -> Branch("nTPC_Clusters_dEdx",&nTPC_Clusters_dEdx,"nTPC_Clusters_dEdx/I");
+    reducedTree_rec_H3 -> Branch("nTPC_FindableClusters",&nTPC_FindableClusters,"nTPC_FindableClusters/I");
+    reducedTree_rec_H3 -> Branch("nTPC_CrossedRows",&nTPC_CrossedRows,"nTPC_CrossedRows/I");
+    reducedTree_rec_H3 -> Branch("HasPointOnITSLayer0",&HasPointOnITSLayer0,"HasPointOnITSLayer0/I");
+    reducedTree_rec_H3 -> Branch("HasPointOnITSLayer1",&HasPointOnITSLayer1,"HasPointOnITSLayer1/I");
+    reducedTree_rec_H3 -> Branch("HasPointOnITSLayer2",&HasPointOnITSLayer2,"HasPointOnITSLayer2/I");
+    reducedTree_rec_H3 -> Branch("HasPointOnITSLayer3",&HasPointOnITSLayer3,"HasPointOnITSLayer3/I");
+    reducedTree_rec_H3 -> Branch("HasPointOnITSLayer4",&HasPointOnITSLayer4,"HasPointOnITSLayer4/I");
+    reducedTree_rec_H3 -> Branch("HasPointOnITSLayer5",&HasPointOnITSLayer5,"HasPointOnITSLayer5/I");
+    reducedTree_rec_H3 -> Branch("chi2_NDF",&chi2_NDF,"chi2_NDF/F");
+    reducedTree_rec_H3 -> Branch("chi2_ITS",&chi2_ITS,"chi2_ITS/F");
+    reducedTree_rec_H3 -> Branch("nSigmaITS",&nSigmaITS,"nSigmaITS/F");
+    reducedTree_rec_H3 -> Branch("nSigmaTPC",&nSigmaTPC,"nSigmaTPC/F");
+    reducedTree_rec_H3 -> Branch("nSigmaTOF",&nSigmaTOF,"nSigmaTOF/F");
+    reducedTree_rec_H3 -> Branch("PrimaryParticle",&PrimaryParticle,"PrimaryParticle/I");
+    reducedTree_rec_H3 -> Branch("SecondaryMaterial",&SecondaryMaterial,"SecondaryMaterial/I");
+    reducedTree_rec_H3 -> Branch("SecondaryDecay",&SecondaryDecay,"SecondaryDecay/I");
+    reducedTree_rec_H3 -> Branch("PrimaryTrack",&PrimaryTrack,"PrimaryTrack/I");
+    reducedTree_rec_H3 -> Branch("TPC_signal",&TPC_signal,"TPC_signal/D");
+    reducedTree_rec_H3 -> Branch("ITS_signal",&ITS_signal,"ITS_signal/D");
+    reducedTree_rec_H3 -> Branch("TOF_signal",&TOF_signal,"TOF_signal/D");
+    reducedTree_rec_H3 -> Branch("TRDntracklets",&TRDntracklets,"TRDntracklets/I");
+    reducedTree_rec_H3 -> Branch("hasTOFhit",&hasTOFhit,"hasTOFhit/I");
 
 
-	fOutputList     -> Add(reducedTree_gen);
-	fOutputList     -> Add(reducedTree_rec);
+	fOutputList     -> Add(reducedTree_gen_He3);
+	fOutputList     -> Add(reducedTree_rec_He3);
+    fOutputList     -> Add(reducedTree_gen_H3);
+	fOutputList     -> Add(reducedTree_rec_H3);
 
 
     PostData(1, fOutputList);
@@ -414,8 +476,8 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserExec(Option_t *){
         if ( !particle) continue;
         if ( TMath::Abs(particle->GetPdgCode()) != 1000020030 && TMath::Abs(particle->GetPdgCode())!=1000010030 ) continue;
 
-        if (TMath::Abs(particle->GetPdgCode()) == 1000020030) particleType = 1; // 1 for He3, 2 for Triton
-        if (TMath::Abs(particle->GetPdgCode()) == 1000010030) particleType = 2;
+        if (TMath::Abs(particle->GetPdgCode()) == 1000020030) particleType = 1; // 1 for He3
+        if (TMath::Abs(particle->GetPdgCode()) == 1000010030) particleType = 2; // 2 for Triton
 
         px = particle  -> Px();
         py = particle  -> Py();
@@ -430,10 +492,12 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserExec(Option_t *){
         if (particle->IsSecondaryFromMaterial())  PrimaryParticle = 1;
         if (particle->IsSecondaryFromWeakDecay()) PrimaryParticle = 0;
 
-        reducedTree_gen -> Fill();
+        if      (TMath::Abs(particle->GetPdgCode()) == 1000020030) reducedTree_gen_He3 -> Fill();
+        else if (TMath::Abs(particle->GetPdgCode()) == 1000010030) reducedTree_gen_H3  -> Fill();
     }
 
 	Int_t 	Helium3Sec=0;
+	Int_t 	TritonSec=0;
 
     //Loop over Reconstructed Tracks
     for (Int_t i=0 ; i<fAODevent->GetNumberOfTracks() ; i++)  {
@@ -454,31 +518,31 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserExec(Option_t *){
 
 
         // Filling histograms for He3
-        if (PassedTrackQualityCuts (track) && track->PdgCode() == 1000020030) {
+        if (PassedTrackQualityCuts (track)) {
             //Variables
-            Double_t nsigmaTPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kHe3);
-            Double_t nsigmaTOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kHe3);
+            Double_t nsigma_TPC = fPIDResponse -> NumberOfSigmasTPC (track,AliPID::kHe3);
+            Double_t nsigma_TOF = fPIDResponse -> NumberOfSigmasTOF (track,AliPID::kHe3);
 
             //TPC Signal vs. pT
-            if (track->Charge()>0) histoNsigmaTPCHe3_vs_p_notof	            -> Fill (track->P(),nsigmaTPC);
-            if (track->Charge()<0) histoNsigmaTPCantiHe3_vs_p_notof         -> Fill (track->P(),nsigmaTPC);
+            if (track->Charge()>0) histoNsigmaTPCHe3_vs_p_notof	            -> Fill (track->P(),nsigma_TPC);
+            if (track->Charge()<0) histoNsigmaTPCantiHe3_vs_p_notof         -> Fill (track->P(),nsigma_TPC);
 
             if (PassedTOFSelection(track))  {
-                if (track->Charge()>0) histoNsigmaTPCHe3_vs_pt              -> Fill (track->Pt(),nsigmaTPC);
-                if (track->Charge()<0) histoNsigmaTPCantiHe3_vs_pt          -> Fill (track->Pt(),nsigmaTPC);
-                if (track->Charge()>0) histoNsigmaTPCHe3_vs_p               -> Fill (track->P(), nsigmaTPC);
-                if (track->Charge()<0) histoNsigmaTPCantiHe3_vs_p           -> Fill (track->P(), nsigmaTPC);
+                if (track->Charge()>0) histoNsigmaTPCHe3_vs_pt              -> Fill (track->Pt(),nsigma_TPC);
+                if (track->Charge()<0) histoNsigmaTPCantiHe3_vs_pt          -> Fill (track->Pt(),nsigma_TPC);
+                if (track->Charge()>0) histoNsigmaTPCHe3_vs_p               -> Fill (track->P(), nsigma_TPC);
+                if (track->Charge()<0) histoNsigmaTPCantiHe3_vs_p           -> Fill (track->P(), nsigma_TPC);
                 if (track->Charge()>0) histoNsigmaTPCHe3_vs_pt_centered     -> Fill (track->Pt(),Centered_nsigmaTPC(track));
                 if (track->Charge()<0) histoNsigmaTPCantiHe3_vs_pt_centered -> Fill (track->Pt(),Centered_nsigmaTPC(track));
             }
             //TOF Signal vs. pT
             if (PassedTPCSelection(track))  {
-                if (track->Charge()>0) histoNsigmaTOFHe3_vs_pt              -> Fill (track->Pt(),nsigmaTOF);
-                if (track->Charge()<0) histoNsigmaTOFantiHe3_vs_pt          -> Fill (track->Pt(),nsigmaTOF);
-                if (track->Charge()>0) histoNsigmaTOFHe3_vs_p               -> Fill (track->P(), nsigmaTOF);
-                if (track->Charge()<0) histoNsigmaTOFantiHe3_vs_p           -> Fill (track->P(), nsigmaTOF);
-                if (track->Charge()>0 && track->GetTRDntrackletsPID()>fTRDntracklets) histoNsigmaTOFHe3_vs_pt_trd     -> Fill (track->Pt(),nsigmaTOF);
-                if (track->Charge()<0 && track->GetTRDntrackletsPID()>fTRDntracklets) histoNsigmaTOFantiHe3_vs_pt_trd -> Fill (track->Pt(),nsigmaTOF);
+                if (track->Charge()>0) histoNsigmaTOFHe3_vs_pt              -> Fill (track->Pt(),nsigma_TOF);
+                if (track->Charge()<0) histoNsigmaTOFantiHe3_vs_pt          -> Fill (track->Pt(),nsigma_TOF);
+                if (track->Charge()>0) histoNsigmaTOFHe3_vs_p               -> Fill (track->P(), nsigma_TOF);
+                if (track->Charge()<0) histoNsigmaTOFantiHe3_vs_p           -> Fill (track->P(), nsigma_TOF);
+                if (track->Charge()>0 && track->GetTRDntrackletsPID()>fTRDntracklets) histoNsigmaTOFHe3_vs_pt_trd     -> Fill (track->Pt(),nsigma_TOF);
+                if (track->Charge()<0 && track->GetTRDntrackletsPID()>fTRDntracklets) histoNsigmaTOFantiHe3_vs_pt_trd -> Fill (track->Pt(),nsigma_TOF);
                 if (track->Charge()>0) histoNsigmaTOFHe3_vs_pt_centered     -> Fill (track->Pt(),Centered_nsigmaTOF(track));
                 if (track->Charge()<0) histoNsigmaTOFantiHe3_vs_pt_centered -> Fill (track->Pt(),Centered_nsigmaTOF(track));
             }
@@ -495,7 +559,7 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserExec(Option_t *){
 
         //He3 and Triton Selection
         if ( !particle)  {
-            if (track->IsSecondaryFromMaterial() && track->PdgCode() == 1000020030 ) Helium3Sec ++;
+            if (track->IsSecondaryFromMaterial() && track->PdgCode() == 1000020030 )   Helium3Sec ++;
             if (track->IsSecondaryFromMaterial() && track->PdgCode() == 1000010030 )   TritonSec ++;
             continue;
         }
@@ -554,12 +618,16 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserExec(Option_t *){
         chi2_ITS            = track -> GetITSchi2();
 
         //PID
-        nSigmaITS_He3       = fPIDResponse -> NumberOfSigmasITS(track,AliPID::kHe3);
-        nSigmaTPC_He3       = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kHe3);
-        nSigmaTOF_He3       = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kHe3);
-        nSigmaITS_Triton    = fPIDResponse -> NumberOfSigmasITS(track,AliPID::kTriton);
-        nSigmaTPC_Triton    = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kTriton);
-        nSigmaTOF_Triton    = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kTriton);
+        if (TMath::Abs(track->PdgCode()) == 1000020030 ){
+            nSigmaITS           = fPIDResponse -> NumberOfSigmasITS(track,AliPID::kHe3);
+            nSigmaTPC           = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kHe3);
+            nSigmaTOF           = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kHe3);
+        }
+        else if(TMath::Abs(track->PdgCode()) == 1000010030){
+            nSigmaITS           = fPIDResponse -> NumberOfSigmasITS(track,AliPID::kTriton);
+            nSigmaTPC           = fPIDResponse -> NumberOfSigmasTPC(track,AliPID::kTriton);
+            nSigmaTOF           = fPIDResponse -> NumberOfSigmasTOF(track,AliPID::kTriton);
+        }
 
         //TPC-TOF Matching
         if ((track->GetStatus()&AliAODTrack::kTOFout)==0) hasTOFhit=0;//Track with no TOF hit
@@ -580,11 +648,13 @@ void        AliAnalysisTaskLightNuclei_XeXe_MC::UserExec(Option_t *){
 
         TPC_signal = track -> GetTPCsignal();
         ITS_signal = track -> GetITSsignal();
+        TOF_signal = track -> GetTOFsignal();
 
         TRDntracklets = track -> GetTRDntrackletsPID();
 
         //Fill the Tree
-        reducedTree_rec -> Fill();
+        if      (TMath::Abs(particle->GetPdgCode()) == 1000020030) reducedTree_rec_He3 -> Fill();
+        else if (TMath::Abs(particle->GetPdgCode()) == 1000010030) reducedTree_rec_H3  -> Fill();
         }
 
     PostData(1, fOutputList);
@@ -624,8 +694,8 @@ Bool_t      AliAnalysisTaskLightNuclei_XeXe_MC::GetInputEvent ()  {
     yVertex = vertex->GetY();
     zVertex = vertex->GetZ();
 
-    centrality          = multiplicitySelection->GetMultiplicityPercentile("V0A");
-    multPercentile_V0M  = multiplicitySelection->GetMultiplicityPercentile("V0M");
+    centrality           = multiplicitySelection->GetMultiplicityPercentile("V0A");
+    multPercentile_V0M   = multiplicitySelection->GetMultiplicityPercentile("V0M");
 
     //identification
     fAODArrayMCParticles = dynamic_cast<TClonesArray *>(fAODevent->FindListObject(AliAODMCParticle::StdBranchName()));

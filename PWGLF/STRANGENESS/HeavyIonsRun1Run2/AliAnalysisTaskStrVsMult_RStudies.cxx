@@ -314,6 +314,12 @@ void AliAnalysisTaskStrVsMult_RStudies::UserCreateOutputObjects()
     fHistos_K0S->CreateTH3("h3_ptmasscent_def", "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins[kK0s], fcentbinning[kK0s]);
     fHistos_K0S->CreateTH3("h3_ptmasscent_massLam", "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kK0s], fcentbinning[kK0s]);
     fHistos_K0S->CreateTH3("h3_ptmasscent_massALam", "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kK0s], fcentbinning[kK0s]);
+    for (int iPt=0; iPt<3; iPt++) {
+      for (int iSig=0; iSig<3; iSig++) {
+        fHistos_K0S->CreateTH3(Form("h3_massK0smassLamcent_pT%i_nSig%i", iPt, iSig), "", fnmassbins[kK0s], fmassbinning[kK0s], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kK0s], fcentbinning[kK0s]);
+        fHistos_K0S->CreateTH3(Form("h3_massK0smassALamcent_pT%i_nSig%i", iPt, iSig), "", fnmassbins[kK0s], fmassbinning[kK0s], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kK0s], fcentbinning[kK0s]);
+      }
+    }
     for (int iR=0; iR<fnradbins; iR++) {
       if(fisMC) fHistos_K0S->CreateTH2(Form("h2_gen_R%i", iR), "", fnptbins[kK0s], fptbinning[kK0s], fncentbins[kK0s], fcentbinning[kK0s]);
       fHistos_K0S->CreateTH3(Form("h3_ptmasscent_R%i", iR), "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins[kK0s], fcentbinning[kK0s]);
@@ -326,6 +332,12 @@ void AliAnalysisTaskStrVsMult_RStudies::UserCreateOutputObjects()
     fHistos_ALam->CreateTH3("h3_ptmasscent_def", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
     fHistos_Lam->CreateTH3("h3_ptmasscent_massK0S", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins[kLam], fcentbinning[kLam]);
     fHistos_ALam->CreateTH3("h3_ptmasscent_massK0S", "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins[kLam], fcentbinning[kLam]);
+    for (int iPt=0; iPt<3; iPt++) {
+      for (int iSig=0; iSig<3; iSig++) {
+        fHistos_Lam->CreateTH3(Form("h3_massK0smassLamcent_pT%i_nSig%i", iPt, iSig), "", fnmassbins[kK0s], fmassbinning[kK0s], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
+        fHistos_ALam->CreateTH3(Form("h3_massK0smassALamcent_pT%i_nSig%i", iPt, iSig), "", fnmassbins[kK0s], fmassbinning[kK0s], fnmassbins[kLam], fmassbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
+      }
+    }
     if(fisMC) {
         fHistos_Lam->CreateTH2("h2_gen", "", fnptbins[kLam], fptbinning[kLam], fncentbins[kLam], fcentbinning[kLam]);
         fHistos_Lam->CreateTH2("h2_daughterPDG", "", 4431, -2215.5, 2215.5, 2, -0.5, 1.5);
@@ -863,6 +875,40 @@ void AliAnalysisTaskStrVsMult_RStudies::UserExec(Option_t *)
           }
           fHistos_K0S->FillTH3("h3_ptmasscent_massLam", fV0_Pt, fV0_InvMassLam, lPercentile);
           fHistos_K0S->FillTH3("h3_ptmasscent_massALam", fV0_Pt, fV0_InvMassALam, lPercentile);
+          if (fV0_Pt<2. && fV0_Pt>0.) {
+            fHistos_K0S->FillTH3("h3_massK0smassLamcent_pT0_nSig0", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+            fHistos_K0S->FillTH3("h3_massK0smassALamcent_pT0_nSig0", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            if (TMath::Abs(fV0_NSigPosPion)<3.5 && TMath::Abs(fV0_NSigNegPion)<3.5) {
+              fHistos_K0S->FillTH3("h3_massK0smassLamcent_pT0_nSig1", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+              fHistos_K0S->FillTH3("h3_massK0smassALamcent_pT0_nSig1", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            } 
+            if (TMath::Abs(fV0_NSigPosPion)<2. && TMath::Abs(fV0_NSigNegPion)<2.) {
+              fHistos_K0S->FillTH3("h3_massK0smassLamcent_pT0_nSig2", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+              fHistos_K0S->FillTH3("h3_massK0smassALamcent_pT0_nSig2", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            }
+          } else if (fV0_Pt<5. && fV0_Pt>2.) {
+            fHistos_K0S->FillTH3("h3_massK0smassLamcent_pT1_nSig0", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+            fHistos_K0S->FillTH3("h3_massK0smassALamcent_pT1_nSig0", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            if (TMath::Abs(fV0_NSigPosPion)<3.5 && TMath::Abs(fV0_NSigNegPion)<3.5) {
+              fHistos_K0S->FillTH3("h3_massK0smassLamcent_pT1_nSig1", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+              fHistos_K0S->FillTH3("h3_massK0smassALamcent_pT1_nSig1", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            } 
+            if (TMath::Abs(fV0_NSigPosPion)<2. && TMath::Abs(fV0_NSigNegPion)<2.) {
+              fHistos_K0S->FillTH3("h3_massK0smassLamcent_pT1_nSig2", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+              fHistos_K0S->FillTH3("h3_massK0smassALamcent_pT1_nSig2", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            }
+          } else if(fV0_Pt<25. && fV0_Pt>5.) {
+            fHistos_K0S->FillTH3("h3_massK0smassLamcent_pT2_nSig0", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+            fHistos_K0S->FillTH3("h3_massK0smassALamcent_pT2_nSig0", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            if (TMath::Abs(fV0_NSigPosPion)<3.5 && TMath::Abs(fV0_NSigNegPion)<3.5) {
+              fHistos_K0S->FillTH3("h3_massK0smassLamcent_pT2_nSig1", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+              fHistos_K0S->FillTH3("h3_massK0smassALamcent_pT2_nSig1", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            } 
+            if (TMath::Abs(fV0_NSigPosPion)<2. && TMath::Abs(fV0_NSigNegPion)<2.) {
+              fHistos_K0S->FillTH3("h3_massK0smassLamcent_pT2_nSig2", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+              fHistos_K0S->FillTH3("h3_massK0smassALamcent_pT2_nSig2", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            }
+          }
         }
       }
       if (fParticleAnalysisStatus[klam]) {
@@ -874,6 +920,31 @@ void AliAnalysisTaskStrVsMult_RStudies::UserExec(Option_t *)
             }
           }
           fHistos_Lam->FillTH3("h3_ptmasscent_massK0S", fV0_Pt, fV0_InvMassK0s, lPercentile);
+          if (fV0_Pt<2. && fV0_Pt>0.) {
+            fHistos_Lam->FillTH3("h3_massK0smassLamcent_pT0_nSig0", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+            if (TMath::Abs(fV0_NSigPosProton)<3.5 && TMath::Abs(fV0_NSigNegPion)<3.5) {
+              fHistos_Lam->FillTH3("h3_massK0smassLamcent_pT0_nSig1", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+            } 
+            if (TMath::Abs(fV0_NSigPosProton)<2. && TMath::Abs(fV0_NSigNegPion)<2.) {
+              fHistos_Lam->FillTH3("h3_massK0smassLamcent_pT0_nSig2", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+            }
+          } else if (fV0_Pt<5. && fV0_Pt>2.) {
+            fHistos_Lam->FillTH3("h3_massK0smassLamcent_pT1_nSig0", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+            if (TMath::Abs(fV0_NSigPosProton)<3.5 && TMath::Abs(fV0_NSigNegPion)<3.5) {
+              fHistos_Lam->FillTH3("h3_massK0smassLamcent_pT1_nSig1", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+            } 
+            if (TMath::Abs(fV0_NSigPosProton)<2. && TMath::Abs(fV0_NSigNegPion)<2.) {
+              fHistos_Lam->FillTH3("h3_massK0smassLamcent_pT1_nSig2", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+            }
+          } else if(fV0_Pt<25. && fV0_Pt>5.) {
+            fHistos_Lam->FillTH3("h3_massK0smassLamcent_pT2_nSig0", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+            if (TMath::Abs(fV0_NSigPosProton)<3.5 && TMath::Abs(fV0_NSigNegPion)<3.5) {
+              fHistos_Lam->FillTH3("h3_massK0smassLamcent_pT2_nSig1", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+            } 
+            if (TMath::Abs(fV0_NSigPosProton)<2. && TMath::Abs(fV0_NSigNegPion)<2.) {
+              fHistos_Lam->FillTH3("h3_massK0smassLamcent_pT2_nSig2", fV0_InvMassK0s, fV0_InvMassLam, lPercentile);
+            }
+          } 
         }
         if ( physprim && ApplyCuts(kalam)) {
           if (assFlag[kalam]) {
@@ -883,6 +954,31 @@ void AliAnalysisTaskStrVsMult_RStudies::UserExec(Option_t *)
             }
           }
           fHistos_ALam->FillTH3("h3_ptmasscent_massK0S", fV0_Pt, fV0_InvMassK0s, lPercentile);
+          if (fV0_Pt<2. && fV0_Pt>0.) {
+            fHistos_ALam->FillTH3("h3_massK0smassALamcent_pT0_nSig0", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            if (TMath::Abs(fV0_NSigNegProton)<3.5 && TMath::Abs(fV0_NSigPosPion)<3.5) {
+              fHistos_ALam->FillTH3("h3_massK0smassALamcent_pT0_nSig1", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            } 
+            if (TMath::Abs(fV0_NSigNegProton)<2. && TMath::Abs(fV0_NSigPosPion)<2.) {
+              fHistos_ALam->FillTH3("h3_massK0smassALamcent_pT0_nSig2", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            }
+          } else if (fV0_Pt<5. && fV0_Pt>2.) {
+            fHistos_ALam->FillTH3("h3_massK0smassALamcent_pT1_nSig0", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            if (TMath::Abs(fV0_NSigNegProton)<3.5 && TMath::Abs(fV0_NSigPosPion)<3.5) {
+              fHistos_ALam->FillTH3("h3_massK0smassALamcent_pT1_nSig1", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            } 
+            if (TMath::Abs(fV0_NSigNegProton)<2. && TMath::Abs(fV0_NSigPosPion)<2.) {
+              fHistos_ALam->FillTH3("h3_massK0smassALamcent_pT1_nSig2", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            }
+          } else if(fV0_Pt<25. && fV0_Pt>5.) {
+            fHistos_ALam->FillTH3("h3_massK0smassALamcent_pT2_nSig0", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            if (TMath::Abs(fV0_NSigNegProton)<3.5 && TMath::Abs(fV0_NSigPosPion)<3.5) {
+              fHistos_ALam->FillTH3("h3_massK0smassALamcent_pT2_nSig1", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            } 
+            if (TMath::Abs(fV0_NSigNegProton)<2. && TMath::Abs(fV0_NSigPosPion)<2.) {
+              fHistos_ALam->FillTH3("h3_massK0smassALamcent_pT2_nSig2", fV0_InvMassK0s, fV0_InvMassALam, lPercentile);
+            }
+          } 
         }
         if(fisMC){
           //Feeddown matrix filling

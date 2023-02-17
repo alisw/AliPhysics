@@ -99,6 +99,7 @@ public:
   void                        SetDoJetQA(Bool_t b)   { fDoJetQA   = b; }
   void                        SetDoEventQA(Bool_t b) { fDoEventQA = b; }
   void                        SetRejectOutlierEvents(Bool_t b) {fRejectOutlierEvents = b; }
+  void                        SetRejectMCPileup(Bool_t b)      {fRejectMCPileup = b; }
   void                        SetIsPtHard(Bool_t b)            {fIsPtHard = b; }
   void                        SetMaxPtBin(Bool_t b)  { fMaxPt = b; }
   
@@ -151,6 +152,7 @@ protected:
   TString                     fDetectorLevelName;        ///< detector level container name
   Int_t                       fMCGeneratorIndex;         ///< Optional choice of which MC generator (by index) from which to restrict MC particles
   Bool_t                      fRejectOutlierEvents;      ///< flag to reject pythia pt-hard jet outlier events
+  Bool_t                      fRejectMCPileup;           ///< flag to remove pileup at generator level
   Bool_t                      fIsPtHard;                 ///< flag to enable pt-hard histos and make available outlier cut
   
   // Service fields (non-streamed)
@@ -179,7 +181,7 @@ private:
   AliAnalysisTaskPWGJEQA &operator=(const AliAnalysisTaskPWGJEQA&); // not implemented
   
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskPWGJEQA, 6);
+  ClassDef(AliAnalysisTaskPWGJEQA, 7);
   /// \endcond
 };
 #endif

@@ -247,6 +247,11 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   TH3F* fHistImpParXYPtMulTPCselSPDanyPrim;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanySecDec;   //!<!  histo of impact parameter (pion)
   TH3F* fHistImpParXYPtMulTPCselSPDanySecMat;   //!<!  histo of impact parameter (pion)
+  
+  TH2F* fHistnSigmadEdxTPCVsP[AliPID::kSPECIESC];              //!<!  histo of nSigma TPC for particle species
+  TH2F* fHistnSigmaTOFVsP[AliPID::kSPECIESC];                  //!<!  histo of nSigma TOF for particle species
+  TH1F* fHistTOFMismProb;                                      //!<!  histo of TOF mismatch probability
+  TH2F* fHistnSigmaPionTOFVsSel;                               //!<!  histo of nSigma TOF for different selections
 
   TH2F* fHistGenK0s;       //!<! histo of generated y,pt of K0s
   TH3F* fHistInvMassK0s;   //!<!  histo of inv mass vs. pT vs. radius (K0s)
@@ -310,7 +315,7 @@ class AliAnalysisTaskCheckAODTracks : public AliAnalysisTaskSE {
   Bool_t  fUseMCId;            // flag use/not-use MC identity for PID
   Bool_t  fUseGenPt;           // flag for reco/gen pt in plots
 
-  ClassDef(AliAnalysisTaskCheckAODTracks,31);
+  ClassDef(AliAnalysisTaskCheckAODTracks,32);
 };
 
 

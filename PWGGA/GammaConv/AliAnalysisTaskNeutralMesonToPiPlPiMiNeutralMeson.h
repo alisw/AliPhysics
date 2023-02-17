@@ -16,6 +16,8 @@
 #include "AliGammaConversionAODBGHandler.h"
 #include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "TProfile2D.h"
+#include "TH3F.h"
+#include "TF1.h"
 #include "TArrayI.h"
 #include <vector>
 
@@ -53,6 +55,13 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
 
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
     void SetLightOutput(Int_t flag){fDoLightOutput = flag;}
+    void SetUnsmearedOutputs(TString unsmearingoutputs){
+      fEnableNoCorrOutput           = (unsmearingoutputs.Contains("0") || unsmearingoutputs.Contains("4")) ? kTRUE : kFALSE;
+      fEnableSubNDMOutput           = unsmearingoutputs.Contains("1") ? kTRUE : kFALSE;
+      fEnableFixedpzOutput          = unsmearingoutputs.Contains("2") ? kTRUE : kFALSE;
+      fEnableSubLambdaOutput        = unsmearingoutputs.Contains("3") ? kTRUE : kFALSE;
+      fEnablePCMEMCUnsmearing       = unsmearingoutputs.Contains("4") ? kTRUE : kFALSE;
+      }
     void SetEventCutList(Int_t nCuts, TList *CutArray){
       fnCuts= nCuts;
       fEventCutArray = CutArray;
@@ -208,6 +217,12 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Float_t                           fPDGMassChargedPion;                                ///< PDG mass of either pi0 or eta
     Int_t                             fPDGCodeNDM;                                        ///< PDG code of either pi0 or eta
     Int_t                             fPDGCodeAnalyzedMeson;                              ///< PDG code of the analyzed heavy netural meson
+    Bool_t                            fEnableNoCorrOutput;                                ///< Output the minv-pT histogram without any unsmearing correction
+    Bool_t                            fEnableSubNDMOutput;                                ///< Output the minv-pT histogram with the pi0 mass error subtracted for each omega meson
+    Bool_t                            fEnableFixedpzOutput;                               ///< Output the minv-pT histogram after correcting the NDM pz to match PDG mass
+    Bool_t                            fEnableSubLambdaOutput;                             ///< Output the minv-pT histogram with Lambda*DeltaMpi0 subtracted for each omega meson
+    TF1**                             fLambda;                                            ///< Function returning factor which multiplied with DeltaMpi0 will be subracted in the unsmearing
+    Bool_t                            fEnablePCMEMCUnsmearing;                            ///< Output the minv-pT histogram with an analytic unsmearing assuming perfect PCM energy resolution
     Bool_t                            fEnableNDMEfficiency;                               ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableNDMInputSpectrum;                            ///< Turn On or Off if Histograms are created and used
     Bool_t                            fEnableTreeTrueNDMFromHNM;                          ///< Turn On or Off if Histograms are created and used
@@ -300,6 +315,10 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
      *  its invMass matches the PDG value
      */
     TH2F**                            fHistoMotherLikeSignBackInvMassFixedPzNDMPt;        //!<!
+    TH2F**                            fHistoMotherInvMassSubLambda;                       //!<! invariant mass of (pi+,pi-,pi0) - lambda* invariant mass error of pi0
+    TH2F**                            fHistoBackInvMassPtSubLambda;                       //!<! background group 1, invMass-invMass(pi0), pT_{pi+pi-pi0} (pi+ and pi- from same event)
+    TH2F**                            fHistoMotherLikeSignBackInvMassSubLambdaPt;         //!<! array of histos of pi+pi+pi0 likesign mixed event, invMass-lambda*invMass(pi0), pT_{pi+pi-pi0}
+    TH1F**                            fHistoPCMEMCScalingFactor;                          //!<! Scaling factor for cluster photon in PCMEMC unsmearing
     // pure MC properties
     TH1F**                            fHistoMCAllGammaPt;                                 //!<! array of histos of all produced gammas in the specified y range
     TH1F**                            fHistoMCConvGammaPt;                                //!<! array of histos of all converted gammas in the specified y range
@@ -371,6 +390,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt;                 //!<! histos with reconstructed validated eta or omega, inv mass, pT
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtSubNDM;           //!<! histos with reconstructed validated eta or omega, inv mass, pT fixed pi0 mass
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtFixedPzNDM;       //!<! histos with reconstructed validated eta or omega, inv mass, pT fixed pi0 mass
+    TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPtSubLambda;        //!<! histos with reconstructed validated eta or omega, inv mass, pT fixed pi0 mass
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMAdditionalInvMassPtSubNDM; //!<! histos with reconstructed validated eta or omega, inv mass, pT fixed pi0 mass, only additionally found omegas
     // reconstructed particles MC validated different mesons
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMInvMassPt_FromDifferent;   //!<! histos with all reconstructed validated mesons which are not analyzed (eta or omega), inv mass, pT
@@ -403,6 +423,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegFixedPzNDM_HighPt;  //!<!
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotPosSubNDM_HighPt;      //!<!
     TH2F**                          fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM_HighPt;      //!<!
+
+    TH3F**                          fHistopi0vsmesonmassshiftangle;                             //!<!
 
     TH2F**                          fHistoTrueMotherGammaGammaInvMassPt;                  //!<! histos with reconstructed validated pi0, inv mass, pT
     TH2F**                          fHistoTrueMotherGammaGammaFromHNMInvMassPt;           //!<! histos with reconstructed validated pi0, inv mass, pT
@@ -516,7 +538,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 28);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 31);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

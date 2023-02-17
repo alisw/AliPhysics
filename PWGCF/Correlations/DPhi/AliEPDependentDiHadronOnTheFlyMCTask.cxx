@@ -32,15 +32,13 @@
 ClassImp(AliEPDependentDiHadronOnTheFlyMCTask)
 
 
-AliEPDependentDiHadronOnTheFlyMCTask::AliEPDependentDiHadronOnTheFlyMCTask(const char* name):
-AliAnalysisTaskSE(name),
+AliEPDependentDiHadronOnTheFlyMCTask::AliEPDependentDiHadronOnTheFlyMCTask():
+AliAnalysisTaskSE(),
 fListOutputHistograms(0x0),
-fFillMixed(kTRUE),
-fMixingTracks(5000),
+fProfileFractionPrimaryTracks(0x0),
 fHistNoEvents(0x0),
 fHistImpactVsMultiplicity(0x0),
 fHistImpactVsExperimentalMultiplicity(0x0),
-fProfileFractionPrimaryTracks(0x0),
 fHistReactionPlane(0x0),
 fHistEventReactionPlane(0x0),
 fHistTrueEventReactionPlane(0x0),
@@ -48,14 +46,13 @@ fHistTrueEvent3Plane(0x0),
 fHistTrueEvent4Plane(0x0),
 fHistSingleParticles(0x0),
 fHistos(0x0),
-fHistosIn(0x0),
-fHistosMid(0x0),
-fHistosOut(0x0),
 fHistosMixed(0x0),
+fHistosIn(0x0),
 fHistosInMixed(0x0),
+fHistosMid(0x0),
 fHistosMidMixed(0x0),
+fHistosOut(0x0),
 fHistosOutMixed(0x0),
-fPoolMgr(0x0),
 fEtaMinV0A(2.8),
 fEtaMaxV0A(5.1),
 fEtaMinV0C(-3.7),
@@ -63,7 +60,47 @@ fEtaMaxV0C(-1.7),
 fTrackEtaCut(1e9),
 fMultiplicityEtaCut(0.5),
 fMultiplicityPtCut(0.15),
-fNoSectorsV0(8)
+fNoSectorsV0(8),
+fFillMixed(kTRUE),
+fMixingTracks(5000),
+fPoolMgr(0x0)
+//fCentralityEstimator("V0M")
+{
+  // Default Constructor (used for streaming)
+}
+
+AliEPDependentDiHadronOnTheFlyMCTask::AliEPDependentDiHadronOnTheFlyMCTask(const char* name):
+AliAnalysisTaskSE(name),
+fListOutputHistograms(0x0),
+fProfileFractionPrimaryTracks(0x0),
+fHistNoEvents(0x0),
+fHistImpactVsMultiplicity(0x0),
+fHistImpactVsExperimentalMultiplicity(0x0),
+fHistReactionPlane(0x0),
+fHistEventReactionPlane(0x0),
+fHistTrueEventReactionPlane(0x0),
+fHistTrueEvent3Plane(0x0),
+fHistTrueEvent4Plane(0x0),
+fHistSingleParticles(0x0),
+fHistos(0x0),
+fHistosMixed(0x0),
+fHistosIn(0x0),
+fHistosInMixed(0x0),
+fHistosMid(0x0),
+fHistosMidMixed(0x0),
+fHistosOut(0x0),
+fHistosOutMixed(0x0),
+fEtaMinV0A(2.8),
+fEtaMaxV0A(5.1),
+fEtaMinV0C(-3.7),
+fEtaMaxV0C(-1.7),
+fTrackEtaCut(1e9),
+fMultiplicityEtaCut(0.5),
+fMultiplicityPtCut(0.15),
+fNoSectorsV0(8),
+fFillMixed(kTRUE),
+fMixingTracks(5000),
+fPoolMgr(0x0)
 //fCentralityEstimator("V0M")
 {
   // Constructor with name

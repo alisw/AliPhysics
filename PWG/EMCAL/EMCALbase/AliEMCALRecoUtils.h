@@ -175,6 +175,7 @@ public:
   void     SetUseTowerShaperNonlinarityCorrection(Bool_t doCorr)     { fUseShaperNonlin = doCorr ; }
   void     SetUseDetermineLowGain(Bool_t doCorr)     { fUseDetermineLowGain = doCorr ; }
   void     SetUseTowerAdditionalScaleCorrection(Bool_t doCorr)       { fUseAdditionalScale = doCorr;}
+  void     SetUseTowerAdditionalScaleCorrectionEtaDep(Bool_t doCorr) { fUseAdditionalScaleEtaDep = doCorr;}
   void     SetTowerAdditionalScaleCorrection(Int_t i, Float_t val)   { if(i < 3 && i >= 0) fAdditionalScaleSM[i] = val;
                                                                        else AliInfo(Form("fAdditionalScaleSM index %d larger than 3 or negative, do nothing\n",i));}
 
@@ -637,8 +638,9 @@ private:
   Bool_t     fUseShaperNonlin;           ///< Shaper non linearity correction for towers
   Bool_t     fUseDetermineLowGain;       ///< If set on true, wether a cell is low gain or high gain is not taken from cell info but calculated directly from cell ADC value
   AliEMCALCalibData* fCalibData;         ///< EMCAL calib data
-  Bool_t     fUseAdditionalScale;        ///< Switch for additional scale on cell level. Should not be used for standard Analyses
-  Float_t    fAdditionalScaleSM[3];      ///< Value for additional scale on cell level. Should not be used for standard Analyses
+  Bool_t     fUseAdditionalScale;        ///< Switch for additional scale on cell level. 
+  Bool_t     fUseAdditionalScaleEtaDep;  ///< Switch for eta-dependent (with and without TRD support structure) scale on cell level. Should not be used for standard Analyses
+  Float_t    fAdditionalScaleSM[3];      ///< Value for additional scale on cell level. 
 
   // Energy smearing for MC
   Bool_t     fSmearClusterEnergy;        ///< Smear cluster energy, to be done only for simulated data to match real data
@@ -757,7 +759,7 @@ private:
   Bool_t     fMCGenerToAcceptForTrack;   ///<  Activate the removal of tracks entering the track matching that come from a particular generator
 
   /// \cond CLASSIMP
-  ClassDef(AliEMCALRecoUtils, 43) ;
+  ClassDef(AliEMCALRecoUtils, 44) ;
   /// \endcond
 
 };

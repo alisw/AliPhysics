@@ -30,10 +30,15 @@ AliAnalysisTaskMCPredictions *AddTaskMCPredictions( Int_t lNSmallBinning = 1000,
                                                                  TList::Class(),
                                                                  AliAnalysisManager::kOutputContainer,
                                                                  outputFileName );
-    
+  AliAnalysisDataContainer *coutputTree = mgr->CreateContainer(Form("cTree%s", lOutputDir.Data()),
+                                                               TTree::Class(),
+                                                               AliAnalysisManager::kOutputContainer,
+                                                               outputFileName );
+  
     //Recommendation: Tree as a single output slot
     mgr->ConnectInput (taskMCPred, 0, mgr->GetCommonInputContainer());
     mgr->ConnectOutput(taskMCPred, 1, coutputList);
+    mgr->ConnectOutput(taskMCPred, 2, coutputTree);
     
     return taskMCPred;
 }   

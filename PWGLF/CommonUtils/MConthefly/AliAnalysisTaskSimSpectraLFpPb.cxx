@@ -124,7 +124,7 @@ void AliAnalysisTaskSimSpectraLFpPb::UserCreateOutputObjects(){
   fListOfObjects = new TList();
   fListOfObjects->SetOwner(kTRUE);
 
-  TString pidNames[11] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "KStarPM", "SigmaZero" };
+  TString pidNames[12] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "KStarPM", "SigmaZero", "LambdaStar" };
 
   // ### Create histograms
   fHistEvt = new TH1I("fHistEvt","fHistEvt",2,0,2) ;
@@ -137,7 +137,7 @@ void AliAnalysisTaskSimSpectraLFpPb::UserCreateOutputObjects(){
   InitHisto<TH1F>("fHistEta","Eta Distr.", 1000, -5., 5., "#eta", "N_{part}");
   InitHisto<TH1F>("fHistY", "Y Distr.", 1000, -5., 5., "#it{y}", "N_{part}");
   
-  for(Int_t i=0; i<11; i++)
+  for(Int_t i=0; i<12; i++)
     InitHisto<TH1F>(Form("fHistPt_%s",pidNames[i].Data()), "Generated #it{p}_{T} distribution",2000,0.,20., "#it{p}_{T} (GeV/#it{c})", "Entries");
 
   // ### List of outputs
@@ -248,14 +248,14 @@ void AliAnalysisTaskSimSpectraLFpPb::EventSel(TObject* obj){
 
 void AliAnalysisTaskSimSpectraLFpPb::ParticleSel(TObject* obj){
 
-  TString pidNames[11] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "KStarPM", "SigmaZero" };
+  TString pidNames[12] = { "Pion", "Kaon", "Proton", "K0Short", "Lambda", "Xi", "Omega", "Phi", "KStar", "KStarPM", "SigmaZero", "LambdaStar" };
 
   if ( !obj ) return;
 
   AliMCEvent *event = dynamic_cast<AliMCEvent*>(obj);
   if ( !event ) return;
     
-  Bool_t isPrimary[11] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE };
+  Bool_t isPrimary[12] = { kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kTRUE, kFALSE, kFALSE, kFALSE, kFALSE, kFALSE };
 
   Int_t pidCodeMC = 0;
   Double_t ipt = 0.;
@@ -275,7 +275,7 @@ void AliAnalysisTaskSimSpectraLFpPb::ParticleSel(TObject* obj){
     pidCodeMC = GetPidCode(pPDG);
 
     Bool_t isSelectedPart = kTRUE;
-    for(Int_t i=0; i<11; i++) 
+    for(Int_t i=0; i<12; i++) 
       if( pidCodeMC == i ) 
 	isSelectedPart = kFALSE;
     if ( isSelectedPart ) continue;
@@ -292,7 +292,7 @@ void AliAnalysisTaskSimSpectraLFpPb::ParticleSel(TObject* obj){
 
     isPhysPrim = event->IsPhysicalPrimary(ipart);
 
-    for(Int_t i=0; i<11; i++)
+    for(Int_t i=0; i<12; i++)
     {
       //if( pidCodeMC == i && TMath::Abs(y) < fY)
       if( pidCodeMC == i && y > fY1 && y < fY2)
@@ -358,7 +358,10 @@ Int_t AliAnalysisTaskSimSpectraLFpPb::GetPidCode(Int_t pdgCode) const  {
     break;
     case 3212:
       pidCode = 10; // Sigma 0
-    break;    
+    break;
+    case 3124:
+      pidCode = 11; // Lambda(1520)
+    break;  
     default:
     break;
   };

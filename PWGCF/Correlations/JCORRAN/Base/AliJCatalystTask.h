@@ -117,7 +117,8 @@ public:
 		FLUC_KINEONLYEXT = 0x8,
 		FLUC_CENT_FLATTENING = 0x100,
 		FLUC_CUT_OUTLIERS = 0x200,
-		FLUC_ALICE_IPINFO = 0x400
+		FLUC_ALICE_IPINFO = 0x400,
+		FLUC_EXCLUDE_EPOS = 0x800
 		//FLUC_PHI_CORRECTION  = 0x800,
 	};
 	void AddFlags(UInt_t nflags){flags |= nflags;}
@@ -161,6 +162,9 @@ public:
 // Methods to use alternative correction weights.
 	Int_t GetRunIndex10h(Int_t runNumber);
 	void SetInputAlternativeNUAWeights10h(bool UseAltWeight, TString fileWeight);
+
+	Int_t GetRunIndex15o(Int_t runNumber);
+	void SetInputCentralityWeight15o(bool useCentWeight, TString fileCentWeight);
 
 private:
 	TClonesArray * fInputList;  // tracklist
@@ -248,6 +252,8 @@ private:
   TProfile *fProfileWeights[16];	//! Profiles for the weights to apply per phi bins.
   TH2D *fESDpileupHistogram[16][2];		//! 0: Correlations between ESD and TPC tracks before, 1: after cut.
   TH2I *fTPCpileupHistogram[16][2];		//! 0: Correlations between ITS and TPC clusters before, 1: after cut.
+
+  TH1F *fHistoCentWeight[138];		// Histograms to save the centrality correction for 15o per run.
 
   ClassDef(AliJCatalystTask, 8);
 };

@@ -45,6 +45,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_PbPb(
 
   //parse additionalTrainConfig flag
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
+  TString unsmearingoutputs = "012"; // 0: No correction, 1: One pi0 mass errer subtracted, 2: pz of pi0 corrected to fix its mass, 3: Lambda(alpha)*DeltaPi0 subtracted
 
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){std::cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << std::endl; return;}
@@ -59,6 +60,16 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_PbPb(
         tempType.Replace(0,2,"");
         trackMatcherRunningMode = tempType.Atoi();
         cout << Form("INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_PbPb will use running mode '%i' for the TrackMatcher!",trackMatcherRunningMode) << endl;
+      }
+      if(tempStr.BeginsWith("UNSMEARING")){ // 0: No correction, 1: One pi0 mass errer subtracted, 2: pz of pi0 corrected to fix its mass, 3: Lambda(alpha)*DeltaPi0 subtracted
+        TString tempType = tempStr;
+        tempType.Replace(0,9,"");
+        unsmearingoutputs = tempType;
+        cout << "INFO: AddTask_GammaConvNeutralMesonPiPlPiMiPiZero_CaloMode_pPb will output the following minv_pT histograms:" << endl;
+        if(unsmearingoutputs.Contains("0")) cout << "- Uncorrected" << endl;
+        if(unsmearingoutputs.Contains("1")) cout << "- SubNDM" << endl;
+        if(unsmearingoutputs.Contains("2")) cout << "- Fixpz" << endl;
+        if(unsmearingoutputs.Contains("3")) cout << "- SubLambda" << endl;
       }
     }
   }
@@ -300,6 +311,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_PbPb(
   task->SetSelectedHeavyNeutralMeson(selectHeavyNeutralMeson);
 
   task->SetDoMesonQA(enableQAMesonTask );
+
+  task->SetUnsmearedOutputs(unsmearingoutputs);
 
   task->SetEnableSortingOfMCClusLabels(enableSortingMCLabels);
 

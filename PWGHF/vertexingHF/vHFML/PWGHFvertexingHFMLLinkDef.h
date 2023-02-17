@@ -11,6 +11,7 @@
 #pragma link C++ class AliAnalysisTaskSECharmHadronMLSelector+;
 #pragma link C++ class AliAnalysisTaskSECharmHadronvn+;
 #pragma link C++ class AliAnalysisTaskSECheckCharmHadronBkg+;
+#pragma link C++ class AliAnalysisTaskSEHFResonanceBuilder+;
 #pragma link C++ class AliAnalysisTaskSEHFTreeCreatorApply+;
 #pragma link C++ class AliAnalysisTaskSEDmesonTree+;
 #pragma link C++ class AliAnalysisTaskSENonPromptLc+;
@@ -30,4 +31,7 @@
 #pragma link C++ class AliHFTreeHandlerApply+;
 #pragma link C++ class AliHFTreeHandlerApplyDstoKKpi+;
 #pragma link C++ class AliHFTreeHandlerApplyLc2V0bachelor+;
+#pragma link C++ class AliHFTreeHandlerApplyDstartoKpipi+;
+#pragma link C++ class AliParticleTreeHandlerApply+;
+#pragma link C++ class AliHFMLXicZeroToXiPifromKFP+;
 #endif

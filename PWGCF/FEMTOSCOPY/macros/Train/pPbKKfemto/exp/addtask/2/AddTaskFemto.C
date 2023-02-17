@@ -58,7 +58,7 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   AliAnalysisTaskFemto *taskfemto = new AliAnalysisTaskFemto("TaskFemto","$ALICE_PHYSICS/"+configMacroName,configMacroParameters,kFALSE);
   //10-90% only two triggers: SemiCentral and MB
   //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kSemiCentral);// this a new line for train
-  taskfemto->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kHighMult);
+  taskfemto->SelectCollisionCandidates(AliVEvent::kAnyINT);
   //0-10 % all three triggers
   //taskfemto->SelectCollisionCandidates(AliVEvent::kMB | AliVEvent::kCentral | AliVEvent::kSemiCentral);// this a new line for train
   mgr->AddTask(taskfemto);
@@ -72,7 +72,7 @@ AliAnalysisTaskFemto *AddTaskFemto(TString configMacroName, const char *containe
   //==============================================================================
   TString outputfile = AliAnalysisManager::GetCommonFileName();
   outputfile += ":PWG2FEMTO";
-  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("ER_KpKm_exp_de",  TList::Class(),
+  AliAnalysisDataContainer *cout_femto  = mgr->CreateContainer("ER_woSDD",  TList::Class(),
   							       AliAnalysisManager::kOutputContainer,outputfile);
 
 

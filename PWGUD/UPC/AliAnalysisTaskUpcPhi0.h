@@ -134,6 +134,19 @@ class AliAnalysisTaskUpcPhi0 : public AliAnalysisTaskSE {
 	Float_t dca_1_T[Maxtrk];
 	Bool_t HasPointOnITSLayer_0_T[Maxtrk];
 	Bool_t HasPointOnITSLayer_1_T[Maxtrk];
+	Bool_t HasPointOnITSLayer_2_T[Maxtrk];
+	Bool_t HasPointOnITSLayer_3_T[Maxtrk];
+	Bool_t HasPointOnITSLayer_4_T[Maxtrk];
+	Bool_t HasPointOnITSLayer_5_T[Maxtrk];
+	Float_t TrackdEdxTunedOnData_T[Maxtrk];
+    Float_t TrackexpTPCmeanKaon_T[Maxtrk];
+    Float_t TrackexpTPCmeanMuon_T[Maxtrk];
+    Float_t TrackexpTPCmeanPion_T[Maxtrk];
+    Float_t TrackexpTPCmeanElectron_T[Maxtrk];
+    Float_t TrackexpTPCwidthKaon_T[Maxtrk];
+    Float_t TrackexpTPCwidthMuon_T[Maxtrk];
+    Float_t TrackexpTPCwidthPion_T[Maxtrk];
+    Float_t TrackexpTPCwidthElectron_T[Maxtrk];
 
 	// MC tree
 	TTree *fMCTree;

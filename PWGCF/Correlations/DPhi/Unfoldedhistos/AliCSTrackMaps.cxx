@@ -98,8 +98,14 @@ void AliCSTrackMaps::NotifyEvent() {
         }
         else {
           if (fgAODTracksIdMap.At(vtrack->GetID()) != NULL) {
-            AliError(Form("Original track with id: %d already present with id: %d",
-                vtrack->GetID(), ((AliVTrack *) fgAODTracksIdMap.At(vtrack->GetID()))->GetID()));
+            /* let's check the filter bits */
+            AliAODTrack* aodt1 = dynamic_cast<AliAODTrack*>(vtrack);
+            AliAODTrack* aodt2 = dynamic_cast<AliAODTrack*>(fgAODTracksIdMap.At(vtrack->GetID()));
+            if ((aodt1->GetFilterMap() & aodt2->GetFilterMap()) != 0) {
+              /* both tracks are present but with overlapping FB which is not OK */
+              AliError(Form("Original track with id: %d with FB0x%08x already present with id: %d with FB0x%08x",
+                            aodt1->GetID(), aodt1->GetFilterMap(), aodt2->GetID(), aodt2->GetFilterMap()));
+            }
           }
           else
             fgAODTracksIdMap.AddAt(vtrack, vtrack->GetID());

@@ -222,6 +222,7 @@ void AliAnalysisTaskLumiStabi::UserExec(Option_t *)
 	fL0inputs = event->GetHeader()->GetL0TriggerInputs();
 	Int_t inputV0M = 7; //V0M in Pb-Pb 2018
 	if (fRunNumber >  244640 && fRunNumber  < 247173) inputV0M = 4; //V0M in Pb-Pb 2015
+	if (fRunNumber >  265586 && fRunNumber  < 267132) inputV0M = 13; //V0M in p-Pb 8 TeV 2016
 	if (fRunNumber == 280234 || fRunNumber == 280235) inputV0M = 13; //V0M in Xe-Xe
 	fTrgInputV0M =  fL0inputs & (1 << (inputV0M-1));
 

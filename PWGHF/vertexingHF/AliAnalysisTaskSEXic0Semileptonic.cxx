@@ -350,6 +350,12 @@ void AliAnalysisTaskSEXic0Semileptonic::UserCreateOutputObjects()
 	auto hMCXic0Decays = fHistos->CreateTH1("hMCXic0Decays","",DecayChannel.size(), 0, DecayChannel.size());
 	for(auto i=0u; i<DecayChannel.size(); i++) hMCXic0Decays->GetXaxis()->SetBinLabel(i+1,DecayChannel.at(i).Data());
 
+	//ckim, for xCheck w/ new codes, Feb 9 (2023)
+    fHistos->CreateTH1("e_minMassUS",   "", 300, 0, 3, "s");
+    fHistos->CreateTH1("c_massXi",      "", 400, 1.1, 1.5, "s");
+    fHistos->CreateTH1("c_massXi_MB",   "", 400, 1.1, 1.5, "s");
+	fHistos->CreateTH1("c_massXi_HMV0", "", 400, 1.1, 1.5, "s");
+
 	//---------------------------CUT STUDY (MC Xi from Xic0)---------------------------//
 
 	vector <TString> ent6 ={"all","DCAV0Pr_c","DCAV0Pi_c","DCABach_c","DCAV0_c","COS1_c","COS2_c","DLXi_c","DLV0_c"};
@@ -762,6 +768,8 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 		if (!(FilterTrack(trk, 100))) continue;
 		Double_t mass; Double_t mass_ss;
 		Bool_t DrawElectron = FilterElectron(trk,mass,mass_ss,0,0,100);
+
+		if (DrawElectron) fHistos->FillTH1("e_minMassUS", mass); //ckim, for xCheck w/ new codes, Feb 9 (2023)
 	}
 
 	fNeXiPair = 0; //kimc!
@@ -774,6 +782,18 @@ void AliAnalysisTaskSEXic0Semileptonic::UserExec(Option_t*)
 		if (!(casc->GetSecondaryVtx())) continue;
 		if (!(casc->GetDecayVertexXi())) continue;
 		if (!FilterCascade(casc)) continue; //cascade cut
+
+		//ckim, for xCheck w/ new codes, Feb 9 (2023)
+		fHistos->FillTH1("c_massXi", casc->MassXi());
+
+		if ( (IsTrigFired_MB && pileup_MV_MB==false) && (fCentrality >= 0.0 && fCentrality <= 100.0) )
+        {
+			fHistos->FillTH1("c_massXi_MB", casc->MassXi());
+        }
+		if ( (IsTrigFired_HMV0 && pileup_MV_HMV0==false) && (fCentrality >= 0.0 && fCentrality <= 0.1) )
+        {
+			fHistos->FillTH1("c_massXi_HMV0", casc->MassXi());
+        }
 
 		for (Int_t itrk=0; itrk<nTracks; itrk++)
 		{

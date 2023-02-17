@@ -246,8 +246,11 @@ set(SRCS
     UserTasks/AliTrackContainerV0.cxx
     UserTasks/AliTrackContainerToyModel.cxx
     UserTasks/AliMCParticleContainerToyModel.cxx
+    UserTasks/AliAnalysisTaskEPCalibForJet.cxx
     UserTasks/AliAnalysisTaskRawJetWithEP.cxx
+    UserTasks/AliAnalysisTaskEmbeddingJetWithEP.cxx
     UserTasks/AliPieceWisePoly.cxx
+    UserTasks/AliAnalysisTaskEmcalJetProperties.cxx
     FlowVectorCorrections/AliAnalysisTaskFlowVectorCorrectionsPWGJE.cxx
 )
 
@@ -282,6 +285,7 @@ if(FASTJET_FOUND)
         AliLundPlaneHelper.cxx
       AliAnalysisTaskJetCharge.cxx
       AliAnalysisTaskJetChargeFlavourTemplates.cxx
+      AliAnalysisTaskJetChargeFlavourPb.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
 	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
             UserTasks/AliAnalysisTaskJetPull.cxx
@@ -319,6 +323,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
 	    UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
         UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
+        UserTasks/AliAnalysisTaskEmcalJetValidation.cxx
         Tracks/AliAnalysisTaskEmcalJetSpectrumSDPart.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx

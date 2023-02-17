@@ -25,6 +25,7 @@
 #ifndef AliAnalysisTaskMCPredictions_H
 #define AliAnalysisTaskMCPredictions_H
 
+class TTree;
 class TList;
 class TH1F;
 class TH2F;
@@ -62,9 +63,7 @@ public:
   
   Double_t ComputeDeltaPhi( Double_t phi1, Double_t phi2) const;
   
-  void SetDo2pc( Bool_t lOpt = kTRUE ) { fkDo2pc = lOpt; }
-  void SetPtTrigger( Float_t l1, Float_t l2 ) { fMinPtTrigger = l1; fMaxPtTrigger = l2; }
-  void SetEtaTrigger( Float_t lEta1, Float_t lEta2 ) { fMinEtaTrigger = lEta1; fMaxEtaTrigger = lEta2; }
+  void SetSaveTree( Bool_t lOpt = kTRUE ) { fkSaveTree = lOpt; }
   void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; }
   void SetWideRapidityCut ( Bool_t lOpt = kTRUE) { fkWideRapiditySpeciesStudy = lOpt; }
   
@@ -78,16 +77,15 @@ public:
   void SetNSpecies ( Int_t lVal ) { fkNSpecies = lVal; } ;
   void SetSpeciesSwitch ( Int_t lIndex, Bool_t lVal ) { fkSpeciesSwitch[lIndex] = lVal; } ;
   void SetSpeciesSwitch ( Bool_t *lVal ) { for (Int_t ii=0; ii<76; ii++) fkSpeciesSwitch[ii] = lVal[ii]; } ;
-  void SetStandardSpecies (); 
-  void SetNSpeciesDD ( Int_t lVal ) { fkNSpeciesDD = lVal; } ;
+  void SetStandardSpecies ();
   
   //configure intervals
   void ClearEtaIntervals() { fkNIntervals = 0; };
   void AddEtaInterval( Float_t lMin, Float_t lMax, Float_t lWeight = 1.0 ) {
-    fkNIntervals++;
     fkIntervalMinEta[fkNIntervals] = lMin;
     fkIntervalMaxEta[fkNIntervals] = lMax;
     fkIntervalWeight[fkNIntervals] = lWeight;
+    fkNIntervals++;
   } ;
   void PrintEtaIntervals(); 
   
@@ -98,10 +96,21 @@ private:
   // your data member object is created on the worker nodes and streaming is not needed.
   // http://root.cern.ch/download/doc/11InputOutput.pdf, page 14
   TList  *fListHist;  //! List of Cascade histograms
+  TTree *fTree; //! output tree (PoIs)
+  Bool_t fkSaveTree;
+  
+  //Variables for fTree
+  Float_t fPt;
+  Int_t fPID;
+  Int_t fPIDMother[10];
+  Int_t fStatus;
+  Int_t fStatusMother[10];
+  Int_t fNParents;
+  Int_t fV0MMultiplicity;
   
   //Histograms (Desired objects in this cross-checking task)
-  TH1D *fHistEventCounter; //! histogram for event counting
-  TH1D *fHistChargedEta; //! histogram for event counting
+  TH1D *fHistEventCounter; // histogram for event counting
+  TH1D *fHistChargedEta; // histogram for event counting
   
   Int_t fSmallMultRange;
   Int_t fLargeMultRange;
@@ -111,7 +120,7 @@ private:
   Int_t fkNNpartBins;
   Int_t fkNEtaBins;
   Int_t fkNSpecies;
-  Bool_t fkSpeciesSwitch[76]; 
+  Bool_t fkSpeciesSwitch[78]; 
   
   Int_t fkNIntervals; //number of eta intervals in "SPD" estimator (def 1)
   Float_t fkIntervalMinEta[10];
@@ -141,95 +150,27 @@ private:
   TH1D *fHistNMPI; //!
   TH2D *fHistNchVsNMPI; //!
   
-  TH1D *fHistPt[76];              //! for keeping track of base spectra
-  TH1D *fHistEta[76];              //! for keeping track of base spectra
-  TH2D *fHistEtaTriggeredMeson[76];              //! for keeping track of base spectra
-  TH2D *fHistEtaTriggeredCharm[76];              //! for keeping track of base spectra
-  TH2D *fHistEtaTriggeredBeauty[76];              //! for keeping track of base spectra
-  TH2D *fHistPtVsV0MMult[76];     //! for keeping track of base spectra
-  TH2D *fHistPtVsSPDMult[76];     //! for keeping track of base spectra
-  TH2D *fHistEtaVsSPDMult[76];    //! for keeping track of base spectra
-  TH2D *fHistYVsSPDMult[76];    //! for keeping track of base spectra
-  TH2D *fHistPtVsNpart[76];       //! for keeping track of base spectra
-  TH2D *fHistPtVsB[76];           //! for keeping track of base spectra
-  TH2D *fHistPtVsNMPI[76];       //! for keeping track of base spectra
+  TH1D *fHistPt[78];              //! for keeping track of base spectra
+  TH1D *fHistEta[78];              //! for keeping track of base spectra
+  TH2D *fHistPtVsV0MMult[78];     //! for keeping track of base spectra
+  TH2D *fHistPtVsSPDMult[78];     //! for keeping track of base spectra
+  TH2D *fHistEtaVsSPDMult[78];    //! for keeping track of base spectra
+  TH2D *fHistYVsSPDMult[78];    //! for keeping track of base spectra
+  TH2D *fHistPtVsNpart[78];       //! for keeping track of base spectra
+  TH2D *fHistPtVsB[78];           //! for keeping track of base spectra
+  TH2D *fHistPtVsNMPI[78];       //! for keeping track of base spectra
   
-  Bool_t fkDo2pc;
-  Float_t fMinPtTrigger; //for xi trigger
-  Float_t fMaxPtTrigger; //for xi trigger
-  Float_t fMinEtaTrigger;
-  Float_t fMaxEtaTrigger;
-  TH1D *fHistPtTriggerD0; //!
-  TH1D *fHistPtTriggerXiC; //!
-  TH1D *fHistPtTriggerXiB; //!
-  
-  TH3D *fHist3d2pcD0Proton; //!
-  TH3D *fHist3d2pcD0AntiProton; //!
-  TH3D *fHist3d2pcD0D0; //!
-  TH3D *fHist3d2pcD0D0bar; //!
-  TH3D *fHist3d2pcD0KMinus; //!
-  TH3D *fHist3d2pcD0KPlus; //!
-
-  TH3D *fHist3d2pcXiCProton; //!
-  TH3D *fHist3d2pcXiCAntiProton; //!
-  TH3D *fHist3d2pcXiCD0; //!
-  TH3D *fHist3d2pcXiCD0bar; //!
-  TH3D *fHist3d2pcXiCKMinus; //!
-  TH3D *fHist3d2pcXiCKPlus; //!
-
-  TH3D *fHist3d2pcXiBProton; //!
-  TH3D *fHist3d2pcXiBAntiProton; //!
-  TH3D *fHist3d2pcXiBBMinus; //!
-  TH3D *fHist3d2pcXiBBPlus; //!
-  TH3D *fHist3d2pcXiBKMinus; //!
-  TH3D *fHist3d2pcXiBKPlus; //!
-  
-  //for event mixing
-  Bool_t fEMBufferFullD0;
-  Long_t fEMBufferCycleD0;
-  Double_t fEMBufferEtaD0[10];
-  Double_t fEMBufferPhiD0[10];
-  Bool_t fEMBufferFullXiC;
-  Long_t fEMBufferCycleXiC;
-  Double_t fEMBufferEtaXiC[10];
-  Double_t fEMBufferPhiXiC[10];
-  Bool_t fEMBufferFullXiB;
-  Long_t fEMBufferCycleXiB;
-  Double_t fEMBufferEtaXiB[10];
-  Double_t fEMBufferPhiXiB[10];
-  
-  TH3D *fHistMixed3d2pcD0Proton; //!
-  TH3D *fHistMixed3d2pcD0AntiProton; //!
-  TH3D *fHistMixed3d2pcD0D0; //!
-  TH3D *fHistMixed3d2pcD0D0bar; //!
-  TH3D *fHistMixed3d2pcD0KMinus; //!
-  TH3D *fHistMixed3d2pcD0KPlus; //!
-  
-  TH3D *fHistMixed3d2pcXiCProton; //!
-  TH3D *fHistMixed3d2pcXiCAntiProton; //!
-  TH3D *fHistMixed3d2pcXiCD0; //!
-  TH3D *fHistMixed3d2pcXiCD0bar; //!
-  TH3D *fHistMixed3d2pcXiCKMinus; //!
-  TH3D *fHistMixed3d2pcXiCKPlus; //!
-
-  TH3D *fHistMixed3d2pcXiBProton; //!
-  TH3D *fHistMixed3d2pcXiBAntiProton; //!
-  TH3D *fHistMixed3d2pcXiBBMinus; //!
-  TH3D *fHistMixed3d2pcXiBBPlus; //!
-  TH3D *fHistMixed3d2pcXiBKMinus; //!
-  TH3D *fHistMixed3d2pcXiBKPlus; //!
-  
+ 
   //double-differential analysis
   Long_t fkDDRebin;
   Long_t fkMaxMultDDV0M;
   Long_t fkMaxMultDDSPD;
-  Long_t fkNSpeciesDD; 
   TH2D *fHistV0MvsSPD; //! DD studies
   TH2D *fHistDDNch; //! DD studies
   TH2D *fHistDDNMPI; //! DD studies
   TH2D *fHistDDQ2; //! DD studies
-  TH2D *fHistDDYield[76]; //! DD studies
-  TH2D *fHistDDPt[76]; //! DD studies
+  TH2D *fHistDDYield[78]; //! DD studies
+  TH2D *fHistDDPt[78]; //! DD studies
   
   AliAnalysisTaskMCPredictions(const AliAnalysisTaskMCPredictions&);            // not implemented
   AliAnalysisTaskMCPredictions& operator=(const AliAnalysisTaskMCPredictions&); // not implemented

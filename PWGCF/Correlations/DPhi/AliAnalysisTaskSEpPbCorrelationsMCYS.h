@@ -63,7 +63,7 @@ public:
   virtual void SetExtractSec(Bool_t mode){fextractsec=mode;}
   virtual void SetPtMax(Float_t mode){fPtMax=mode;}
   virtual void SetPtMin(Float_t mode){fPtMin=mode;}
-  
+  virtual void SetBoost(Bool_t mode){fboost=mode;}
   
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
@@ -91,8 +91,7 @@ public:
     }
   }
   void DumpTObjTable(const char* note);
-
-
+    
   //  void SetMCSpectraweightObject(AliMCSpectraWeights*obj){
   //	fMCSpectraWeights=obj;
   //  }
@@ -129,9 +128,10 @@ private:
   Double_t RangePhi(Double_t DPhi);
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
- Int_t      ConvertRunNumber(Int_t run);
-
-/*
+  Int_t      ConvertRunNumber(Int_t run);
+  Double_t Transboost(const AliAODMCParticle*fTrack);
+  
+  /*
   void FillCorrelationTracksCentralForward(Double_t MultipOrCent, TObjArray *triggerArray,
                              TObjArray *selectedTrackArray, AliTHn *triggerHist,
                              AliTHn *associateHist, Bool_t, Float_t, Float_t,
@@ -151,11 +151,14 @@ private:
                              Float_t phi2, Float_t pt2, Float_t charge2,
                              Float_t radius, Float_t bSign);
 
+
+
   //  AliMCSpectraWeights* fMCSpectraWeights;
   
   TString fcollisiontype;
   Bool_t fDataType;
   Bool_t fcentcalib;
+  Bool_t fboost;
   Bool_t frun2;
   Bool_t fQA;
   Bool_t fMCclosure;

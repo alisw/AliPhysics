@@ -117,6 +117,7 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID(const char *name):
   bUseV0EventPlane(kFALSE),
   bAnalysLambdaPairs(kFALSE),
   bUseZDCSpectatorPlane(kFALSE),
+  gTypeOfRecentering(-1),
   bRecenterFailOrNot(kTRUE),
   fV0PtMin(0.5),
   fV0CPAMin(0.995),
@@ -464,6 +465,7 @@ AliAnalysisTaskGammaDeltaPID::AliAnalysisTaskGammaDeltaPID():
   bUseV0EventPlane(kFALSE),
   bAnalysLambdaPairs(kFALSE),
   bUseZDCSpectatorPlane(kFALSE),
+  gTypeOfRecentering(-1),
   bRecenterFailOrNot(kTRUE),
   fV0PtMin(0.5),
   fV0CPAMin(0.995),
@@ -973,8 +975,25 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   }
   //----------------------------------------------
 
+  UInt_t period = fAOD->GetPeriodNumber();
+  UInt_t orbit24 = fAOD->GetOrbitNumber();
+  
+  if (period > 255) { // 8 bits
+	  cout<<"invalid period number"<<endl;
+	  period = 255;
+	  orbit24 = (1<<24)-1;
+  }
+  
+  
+  if (orbit24 >= (1<<24)) { // 24 bits
+	  cout<<"invalid orbit number"<<endl;
+	  period = 255;
+	  orbit24 = (1<<24)-1;
+  }
+  
+  UInt_t orbit = period * (1<<24) + orbit24;
 
-
+  Double_t fOrbitNumber = static_cast<double>(orbit)/1000000.; // scale down by 10^6 to fit to the scale used in least square fit. In least square fit, orbit number is scaled down by 10^6 to weight down the contribution to it. Maybe not necessary to scale down, but it should make the fit more stable in principle
   
   Bool_t kPileupEvent = kFALSE;
 
@@ -1027,12 +1046,11 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   fQ4xPos = fSumQnxPos[2]/fMultPos;
   fQ4yPos = fSumQnyPos[2]/fMultPos;
 
-
   //cout<<"Before rec: q2xn "<<fQ2xNeg<<"\t q2yn "<<fQ2yNeg<<"\t q2xp "<<fQ2xPos<<"\t q2yp "<<fQ2yPos<<endl;
 
   // *** Rihan: Temporarily Turned off. Uncomment after end of Test.!
-  //ApplyTPCqVectRecenter(centrV0M, 2, fQ2xNeg, fQ2yNeg, fQ2xPos, fQ2yPos);
-  //ApplyTPCqVectRecenter(centrV0M, 3, fQ3xNeg, fQ3yNeg, fQ3xPos, fQ3yPos);  
+  ApplyTPCqVectRecenter(centrV0M, 2, fQ2xNeg, fQ2yNeg, fQ2xPos, fQ2yPos);
+  ApplyTPCqVectRecenter(centrV0M, 3, fQ3xNeg, fQ3yNeg, fQ3xPos, fQ3yPos);  
 
   //cout<<"After  rec: q2xn "<<fQ2xNeg<<"\t q2yn "<<fQ2yNeg<<"\t q2xp "<<fQ2xPos<<"\t q2yp "<<fQ2yPos<<endl;
   //cout<<"------- Bug Testing Mode... we exit here....... "<<endl; return;
@@ -1069,6 +1087,8 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   Double_t fPsi3TPCPos = 0., fPsi3TPCNeg = 0.;
   Double_t fPsi4TPCPos = 0., fPsi4TPCNeg = 0.;
   
+  Double_t fPsiNTPC = 0.;
+  
   if(fQ2xPos != 0 && fQ2yPos != 0){
     fPsiNTPCPos = (1./2)*TMath::ATan2(fQ2yPos,fQ2xPos); // @Shi NTPC really is just 2TPC
     if(fPsiNTPCPos < 0) fPsiNTPCPos += TMath::TwoPi()/2;
@@ -1086,15 +1106,18 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
     if(fPsi4TPCNeg < 0) fPsi4TPCNeg += TMath::TwoPi()/4;     
   }
 
+  if(fQ2xPos != 0 && fQ2yPos != 0 && fQ2xNeg != 0 && fQ2yNeg != 0) {
+	fPsiNTPC = (1./2)*TMath::ATan2(fQ2yPos+fQ2yNeg, fQ2xPos+fQ2xNeg);
+	if(fPsiNTPC < 0) fPsiNTPC += TMath::TwoPi()/2;
+  }
+  
   fHistTPCPsiNPosPlane->Fill(centrality,fPsiNTPCPos);
   fHistTPCPsiNNegPlane->Fill(centrality,fPsiNTPCNeg);
   fHistTPCPsi3PosPlane->Fill(centrality,fPsi3TPCPos);
   fHistTPCPsi3NegPlane->Fill(centrality,fPsi3TPCNeg); 
   fHistTPCPsi4PosPlane->Fill(centrality,fPsi4TPCPos);
   fHistTPCPsi4NegPlane->Fill(centrality,fPsi4TPCNeg); 
-
-
-
+  
   hTPCPsiNCorrelation->Fill(centrality,TMath::Cos(2*fPsiNTPCPos - 2*fPsiNTPCNeg));    /// TPC Psi2 Resolution
   hTPCPsi3Correlation->Fill(centrality,TMath::Cos(3*fPsi3TPCPos - 3*fPsi3TPCNeg));    /// TPC Psi3 Resolution
   hTPCPsi4Correlation->Fill(centrality,TMath::Cos(4*fPsi3TPCPos - 4*fPsi3TPCNeg));    /// TPC Psi3 Resolution
@@ -1145,6 +1168,8 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 
   Double_t fPsiNV0C = 0., fPsiNV0A = 0.;
   Double_t fPsi3V0C = 0., fPsi3V0A = 0.;
+  Double_t fPsiNV0 = 0.;
+  
   Bool_t kPassZNC = kFALSE;
     
   fPsiNV0C = (1./gHarmonic)*TMath::ATan2(fQnyV0C,fQnxV0C); // @Shi actually gHarmonic does not really make sense here, fQnxV0 is hard coded to be fQ2xV0
@@ -1154,15 +1179,15 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
   fHistV0CPsiNEventPlane->Fill(centrality,fPsiNV0C);
   fHistV0APsiNEventPlane->Fill(centrality,fPsiNV0A);
 
- 
+  fPsiNV0 = (1./gHarmonic)*TMath::ATan2(fQnyV0C+fQnyV0A,fQnxV0C+fQnxV0A);
+  if(fPsiNV0 < 0) fPsiNV0 += TMath::TwoPi()/gHarmonic;
+  
   fPsi3V0C = (1./3)*TMath::ATan2(fQ3yV0C,fQ3xV0C);
   if(fPsi3V0C < 0) fPsi3V0C += TMath::TwoPi()/3;      
   fPsi3V0A = (1./3)*TMath::ATan2(fQ3yV0A,fQ3xV0A);
   if(fPsi3V0A < 0) fPsi3V0A += TMath::TwoPi()/3;      
   fHistV0CPsi3EventPlane->Fill(centrality,fPsi3V0C);
   fHistV0APsi3EventPlane->Fill(centrality,fPsi3V0A);    
- 
-
 
   /// V0A, V0C Resolutions:
   hV0CV0APsiNCorrelation->Fill(centrality,TMath::Cos(2*fPsiNV0A    - 2*fPsiNV0C));
@@ -1186,8 +1211,15 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
     const Double_t *fZNATowerRawAOD = aodZDC->GetZNATowerEnergy();
     const Double_t *fZNCTowerRawAOD = aodZDC->GetZNCTowerEnergy();
 	
-	if((fZNATowerRawAOD[0]<0) || (fZNATowerRawAOD[1]<0) || (fZNATowerRawAOD[2]<0) || (fZNATowerRawAOD[3]<0) || (fZNATowerRawAOD[4] < 0)) {bRecenterFailOrNot = kFALSE; return;}
-	if((fZNCTowerRawAOD[0]<0) || (fZNCTowerRawAOD[1]<0) || (fZNCTowerRawAOD[2]<0) || (fZNCTowerRawAOD[3]<0) || (fZNCTowerRawAOD[4] < 0)) {bRecenterFailOrNot = kFALSE; return;}
+	if((fZNATowerRawAOD[0]<0) || (fZNATowerRawAOD[1]<0) || (fZNATowerRawAOD[2]<0) || (fZNATowerRawAOD[3]<0) || (fZNATowerRawAOD[4] < 0)) {
+		bRecenterFailOrNot = kFALSE; 
+		return;
+	}
+	
+	if((fZNCTowerRawAOD[0]<0) || (fZNCTowerRawAOD[1]<0) || (fZNCTowerRawAOD[2]<0) || (fZNCTowerRawAOD[3]<0) || (fZNCTowerRawAOD[4] < 0)) {
+		bRecenterFailOrNot = kFALSE; 
+		return;
+	}
 	
 	Double_t towZNCraw1GainEq = 0, towZNCraw2GainEq = 0, towZNCraw3GainEq = 0, towZNCraw4GainEq = 0;
 	towZNCraw1GainEq = fZNCTowerRawAOD[1]*fHZDCCparameters->GetBinContent(1);
@@ -1246,18 +1278,67 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	Double_t ZDCAxPosFromLogWeight = numXZNA/denZNA;
 	Double_t ZDCAyPosFromLogWeight = numYZNA/denZNA;
 	
-	Double_t ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(5)*centrality + fHZDCCparameters->GetBinContent(6)*pVtxX + fHZDCCparameters->GetBinContent(7)*pVtxY + fHZDCCparameters->GetBinContent(8)*pVtxZ + fHZDCCparameters->GetBinContent(9);
-	Double_t ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(10)*centrality + fHZDCCparameters->GetBinContent(11)*pVtxX + fHZDCCparameters->GetBinContent(12)*pVtxY + fHZDCCparameters->GetBinContent(13)*pVtxZ + fHZDCCparameters->GetBinContent(14);
+	Double_t ZDCCAvgxPosFromVtxFit = 0;
+	Double_t ZDCCAvgyPosFromVtxFit = 0;
 	
-	Double_t ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(5)*centrality + fHZDCAparameters->GetBinContent(6)*pVtxX + fHZDCAparameters->GetBinContent(7)*pVtxY + fHZDCAparameters->GetBinContent(8)*pVtxZ + fHZDCAparameters->GetBinContent(9);
-	Double_t ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(10)*centrality + fHZDCAparameters->GetBinContent(11)*pVtxX + fHZDCAparameters->GetBinContent(12)*pVtxY + fHZDCAparameters->GetBinContent(13)*pVtxZ + fHZDCAparameters->GetBinContent(14);
+	Double_t ZDCAAvgxPosFromVtxFit = 0;
+	Double_t ZDCAAvgyPosFromVtxFit = 0;
+
+	if (gTypeOfRecentering == 0) { // 1st order centrality+vtxPos, 
+		ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*centrality + fHZDCCparameters->GetBinContent(7)*pVtxX + fHZDCCparameters->GetBinContent(8)*pVtxY + fHZDCCparameters->GetBinContent(9)*pVtxZ + fHZDCCparameters->GetBinContent(10);
+		ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(11)*centrality + fHZDCCparameters->GetBinContent(12)*pVtxX + fHZDCCparameters->GetBinContent(13)*pVtxY + fHZDCCparameters->GetBinContent(14)*pVtxZ + fHZDCCparameters->GetBinContent(15);
+		
+		ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*centrality + fHZDCAparameters->GetBinContent(7)*pVtxX + fHZDCAparameters->GetBinContent(8)*pVtxY + fHZDCAparameters->GetBinContent(9)*pVtxZ + fHZDCAparameters->GetBinContent(10);
+		ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(11)*centrality + fHZDCAparameters->GetBinContent(12)*pVtxX + fHZDCAparameters->GetBinContent(13)*pVtxY + fHZDCAparameters->GetBinContent(14)*pVtxZ + fHZDCAparameters->GetBinContent(15);
+	} else if (gTypeOfRecentering == 1) { // 3rd order centrality+vtxpos
+		ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*centrality + fHZDCCparameters->GetBinContent(7)*pow(centrality,2) + fHZDCCparameters->GetBinContent(8)*pow(centrality,3) + fHZDCCparameters->GetBinContent(9)*pVtxX + fHZDCCparameters->GetBinContent(10)*pVtxY + fHZDCCparameters->GetBinContent(11)*pVtxZ + fHZDCCparameters->GetBinContent(12);
+		ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(13)*centrality + fHZDCCparameters->GetBinContent(14)*pow(centrality,2) + fHZDCCparameters->GetBinContent(15)*pow(centrality,3) + fHZDCCparameters->GetBinContent(16)*pVtxX + fHZDCCparameters->GetBinContent(17)*pVtxY + fHZDCCparameters->GetBinContent(18)*pVtxZ + fHZDCCparameters->GetBinContent(19);
+		
+		ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*centrality + fHZDCAparameters->GetBinContent(7)*pow(centrality,2) + fHZDCAparameters->GetBinContent(8)*pow(centrality,3) + fHZDCAparameters->GetBinContent(9)*pVtxX + fHZDCAparameters->GetBinContent(10)*pVtxY + fHZDCAparameters->GetBinContent(11)*pVtxZ + fHZDCAparameters->GetBinContent(12);
+		ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(13)*centrality + fHZDCAparameters->GetBinContent(14)*pow(centrality,2) + fHZDCAparameters->GetBinContent(15)*pow(centrality,3) + fHZDCAparameters->GetBinContent(16)*pVtxX + fHZDCAparameters->GetBinContent(17)*pVtxY + fHZDCAparameters->GetBinContent(18)*pVtxZ + fHZDCAparameters->GetBinContent(19);
+	} else if (gTypeOfRecentering == 2) { // 3rd order centrality+vtxpos+orbitNum
+		ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*centrality + fHZDCCparameters->GetBinContent(7)*pow(centrality,2) + fHZDCCparameters->GetBinContent(8)*pow(centrality,3) + fHZDCCparameters->GetBinContent(9)*pVtxX + fHZDCCparameters->GetBinContent(10)*pVtxY + fHZDCCparameters->GetBinContent(11)*pVtxZ + fHZDCCparameters->GetBinContent(12)*fOrbitNumber + fHZDCCparameters->GetBinContent(13);
+		ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(14)*centrality + fHZDCCparameters->GetBinContent(15)*pow(centrality,2) + fHZDCCparameters->GetBinContent(16)*pow(centrality,3) + fHZDCCparameters->GetBinContent(17)*pVtxX + fHZDCCparameters->GetBinContent(18)*pVtxY + fHZDCCparameters->GetBinContent(19)*pVtxZ + fHZDCCparameters->GetBinContent(20)*fOrbitNumber + fHZDCCparameters->GetBinContent(21);
+		
+		ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*centrality + fHZDCAparameters->GetBinContent(7)*pow(centrality,2) + fHZDCAparameters->GetBinContent(8)*pow(centrality,3) + fHZDCAparameters->GetBinContent(9)*pVtxX + fHZDCAparameters->GetBinContent(10)*pVtxY + fHZDCAparameters->GetBinContent(11)*pVtxZ + fHZDCAparameters->GetBinContent(12)*fOrbitNumber + fHZDCAparameters->GetBinContent(13);
+		ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(14)*centrality + fHZDCAparameters->GetBinContent(15)*pow(centrality,2) + fHZDCAparameters->GetBinContent(16)*pow(centrality,3) + fHZDCAparameters->GetBinContent(17)*pVtxX + fHZDCAparameters->GetBinContent(18)*pVtxY + fHZDCAparameters->GetBinContent(19)*pVtxZ + fHZDCAparameters->GetBinContent(20)*fOrbitNumber + fHZDCAparameters->GetBinContent(21);
+	} else if (gTypeOfRecentering == 3) { // 1st order tow0 + vtxpos	
+		ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*pVtxX + fHZDCCparameters->GetBinContent(7)*pVtxY + fHZDCCparameters->GetBinContent(8)*pVtxZ + fHZDCCparameters->GetBinContent(9)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(10);
+		ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(11)*pVtxX + fHZDCCparameters->GetBinContent(12)*pVtxY + fHZDCCparameters->GetBinContent(13)*pVtxZ + fHZDCCparameters->GetBinContent(14)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(15);
+		
+		ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*pVtxX + fHZDCAparameters->GetBinContent(7)*pVtxY + fHZDCAparameters->GetBinContent(8)*pVtxZ + fHZDCAparameters->GetBinContent(9)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(10);
+		ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(11)*pVtxX + fHZDCAparameters->GetBinContent(12)*pVtxY + fHZDCAparameters->GetBinContent(13)*pVtxZ + fHZDCAparameters->GetBinContent(14)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(15);
+	} else if (gTypeOfRecentering == 4) { // 3rd order tow0 + vtxpos
+		ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*pVtxX + fHZDCCparameters->GetBinContent(7)*pVtxY + fHZDCCparameters->GetBinContent(8)*pVtxZ + fHZDCCparameters->GetBinContent(9)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(10)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(11)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(12);
+		ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(13)*pVtxX + fHZDCCparameters->GetBinContent(14)*pVtxY + fHZDCCparameters->GetBinContent(15)*pVtxZ + fHZDCCparameters->GetBinContent(16)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(17)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(18)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(19);
+		
+		ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*pVtxX + fHZDCAparameters->GetBinContent(7)*pVtxY + fHZDCAparameters->GetBinContent(8)*pVtxZ + fHZDCAparameters->GetBinContent(9)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(10)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(11)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(12);
+		ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(13)*pVtxX + fHZDCAparameters->GetBinContent(14)*pVtxY + fHZDCAparameters->GetBinContent(15)*pVtxZ + fHZDCAparameters->GetBinContent(16)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(17)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(18)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(19);
+	} else if (gTypeOfRecentering == 5) { // 5th order tow0 + vtxpos
+		ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*pVtxX + fHZDCCparameters->GetBinContent(7)*pVtxY + fHZDCCparameters->GetBinContent(8)*pVtxZ + fHZDCCparameters->GetBinContent(9)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(10)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(11)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(12)*pow(fZNCTowerRawAOD[0]/100000,4) + fHZDCCparameters->GetBinContent(13)*pow(fZNCTowerRawAOD[0]/100000,5) + fHZDCCparameters->GetBinContent(14);
+		ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(15)*pVtxX + fHZDCCparameters->GetBinContent(16)*pVtxY + fHZDCCparameters->GetBinContent(17)*pVtxZ + fHZDCCparameters->GetBinContent(18)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(19)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(20)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(21)*pow(fZNCTowerRawAOD[0]/100000,4) + fHZDCCparameters->GetBinContent(22)*pow(fZNCTowerRawAOD[0]/100000,5) + fHZDCCparameters->GetBinContent(23);
+		
+		ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*pVtxX + fHZDCAparameters->GetBinContent(7)*pVtxY + fHZDCAparameters->GetBinContent(8)*pVtxZ + fHZDCAparameters->GetBinContent(9)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(10)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(11)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(12)*pow(fZNATowerRawAOD[0]/100000,4) + fHZDCAparameters->GetBinContent(13)*pow(fZNATowerRawAOD[0]/100000,5) + fHZDCAparameters->GetBinContent(14);
+		ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(15)*pVtxX + fHZDCAparameters->GetBinContent(16)*pVtxY + fHZDCAparameters->GetBinContent(17)*pVtxZ + fHZDCAparameters->GetBinContent(18)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(19)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(20)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(21)*pow(fZNATowerRawAOD[0]/100000,4) + fHZDCAparameters->GetBinContent(22)*pow(fZNATowerRawAOD[0]/100000,5) + fHZDCAparameters->GetBinContent(23);
+	} else if (gTypeOfRecentering == 6) { // 5th order tow0 + vtxpos + orbitNum
+		ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*pVtxX + fHZDCCparameters->GetBinContent(7)*pVtxY + fHZDCCparameters->GetBinContent(8)*pVtxZ + fHZDCCparameters->GetBinContent(9)*fOrbitNumber + fHZDCCparameters->GetBinContent(10)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(11)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(12)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(13)*pow(fZNCTowerRawAOD[0]/100000,4) + fHZDCCparameters->GetBinContent(14)*pow(fZNCTowerRawAOD[0]/100000,5) + fHZDCCparameters->GetBinContent(15);
+		ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(16)*pVtxX + fHZDCCparameters->GetBinContent(17)*pVtxY + fHZDCCparameters->GetBinContent(18)*pVtxZ + fHZDCCparameters->GetBinContent(19)*fOrbitNumber + fHZDCCparameters->GetBinContent(20)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(21)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(22)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(23)*pow(fZNCTowerRawAOD[0]/100000,4) + fHZDCCparameters->GetBinContent(24)*pow(fZNCTowerRawAOD[0]/100000,5) + fHZDCCparameters->GetBinContent(25);
+		
+		ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*pVtxX + fHZDCAparameters->GetBinContent(7)*pVtxY + fHZDCAparameters->GetBinContent(8)*pVtxZ + fHZDCAparameters->GetBinContent(9)*fOrbitNumber + fHZDCAparameters->GetBinContent(10)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(11)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(12)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(13)*pow(fZNATowerRawAOD[0]/100000,4) + fHZDCAparameters->GetBinContent(14)*pow(fZNATowerRawAOD[0]/100000,5) + fHZDCAparameters->GetBinContent(15);
+		ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(16)*pVtxX + fHZDCAparameters->GetBinContent(17)*pVtxY + fHZDCAparameters->GetBinContent(18)*pVtxZ + fHZDCAparameters->GetBinContent(19)*fOrbitNumber + fHZDCAparameters->GetBinContent(20)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(21)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(22)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(23)*pow(fZNATowerRawAOD[0]/100000,4) + fHZDCAparameters->GetBinContent(24)*pow(fZNATowerRawAOD[0]/100000,5) + fHZDCAparameters->GetBinContent(25);
+	} else if (gTypeOfRecentering == 7) { // 5th order tow0 + 3rd order centrality + vtxpos + orbitNum
+		ZDCCAvgxPosFromVtxFit = fHZDCCparameters->GetBinContent(6)*centrality + fHZDCCparameters->GetBinContent(7)*pow(centrality,2) + fHZDCCparameters->GetBinContent(8)*pow(centrality,3) + fHZDCCparameters->GetBinContent(9)*pVtxX + fHZDCCparameters->GetBinContent(10)*pVtxY + fHZDCCparameters->GetBinContent(11)*pVtxZ + fHZDCCparameters->GetBinContent(12)*fOrbitNumber + fHZDCCparameters->GetBinContent(13)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(14)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(15)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(16)*pow(fZNCTowerRawAOD[0]/100000,4) + fHZDCCparameters->GetBinContent(17)*pow(fZNCTowerRawAOD[0]/100000,5) + fHZDCCparameters->GetBinContent(18);
+		ZDCCAvgyPosFromVtxFit = fHZDCCparameters->GetBinContent(19)*centrality + fHZDCCparameters->GetBinContent(20)*pow(centrality,2) + fHZDCCparameters->GetBinContent(21)*pow(centrality,3) + fHZDCCparameters->GetBinContent(22)*pVtxX + fHZDCCparameters->GetBinContent(23)*pVtxY + fHZDCCparameters->GetBinContent(24)*pVtxZ + fHZDCCparameters->GetBinContent(25)*fOrbitNumber + fHZDCCparameters->GetBinContent(26)*fZNCTowerRawAOD[0]/100000 + fHZDCCparameters->GetBinContent(27)*pow(fZNCTowerRawAOD[0]/100000,2) + fHZDCCparameters->GetBinContent(28)*pow(fZNCTowerRawAOD[0]/100000,3) + fHZDCCparameters->GetBinContent(29)*pow(fZNCTowerRawAOD[0]/100000,4) + fHZDCCparameters->GetBinContent(30)*pow(fZNCTowerRawAOD[0]/100000,5) + fHZDCCparameters->GetBinContent(31);
+		
+		ZDCAAvgxPosFromVtxFit = fHZDCAparameters->GetBinContent(6)*centrality + fHZDCAparameters->GetBinContent(7)*pow(centrality,2) + fHZDCAparameters->GetBinContent(8)*pow(centrality,3) + fHZDCAparameters->GetBinContent(9)*pVtxX + fHZDCAparameters->GetBinContent(10)*pVtxY + fHZDCAparameters->GetBinContent(11)*pVtxZ + fHZDCAparameters->GetBinContent(12)*fOrbitNumber + fHZDCAparameters->GetBinContent(13)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(14)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(15)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(16)*pow(fZNATowerRawAOD[0]/100000,4) + fHZDCAparameters->GetBinContent(17)*pow(fZNATowerRawAOD[0]/100000,5) + fHZDCAparameters->GetBinContent(18);
+		ZDCAAvgyPosFromVtxFit = fHZDCAparameters->GetBinContent(19)*centrality + fHZDCAparameters->GetBinContent(20)*pow(centrality,2) + fHZDCAparameters->GetBinContent(21)*pow(centrality,3) + fHZDCAparameters->GetBinContent(22)*pVtxX + fHZDCAparameters->GetBinContent(23)*pVtxY + fHZDCAparameters->GetBinContent(24)*pVtxZ + fHZDCAparameters->GetBinContent(25)*fOrbitNumber + fHZDCAparameters->GetBinContent(26)*fZNATowerRawAOD[0]/100000 + fHZDCAparameters->GetBinContent(27)*pow(fZNATowerRawAOD[0]/100000,2) + fHZDCAparameters->GetBinContent(28)*pow(fZNATowerRawAOD[0]/100000,3) + fHZDCAparameters->GetBinContent(29)*pow(fZNATowerRawAOD[0]/100000,4) + fHZDCAparameters->GetBinContent(30)*pow(fZNATowerRawAOD[0]/100000,5) + fHZDCAparameters->GetBinContent(31);
+	}
 	
 	fQxZNCC = ZDCCxPosFromLogWeight - ZDCCAvgxPosFromVtxFit;
 	fQyZNCC = ZDCCyPosFromLogWeight - ZDCCAvgyPosFromVtxFit;
 	
 	fQxZNCA = ZDCAxPosFromLogWeight - ZDCAAvgxPosFromVtxFit;
 	fQyZNCA = ZDCAyPosFromLogWeight - ZDCAAvgyPosFromVtxFit;
-	
 	
 	// Event plane
 
@@ -1271,7 +1352,7 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	fPsiZNCC = TMath::ATan2(fQyZNCC,fQxZNCC); // Psi_{1,C} spectator plane 
 
 	fPsiZNCCA = TMath::ATan2((fQyZNCC-fQyZNCA),(fQxZNCC-fQxZNCA));
-	
+
 	// QAs for ZDC 
 	hZDCCPsiSpectatorPlane->Fill(fPsiZNCC);
 	hZDCAPsiSpectatorPlane->Fill(fPsiZNCA);
@@ -1285,26 +1366,26 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	if (fPsiZNCCAProj<0) fPsiZNCCAProj += TMath::TwoPi()/2;
 	
 	hZDCCPsivsZDCAPsi->Fill(fPsiZNCC, fPsiZNCA);
-	hZDCCPsivsTPCPsi2->Fill((fPsiNTPCPos+fPsiNTPCNeg)/2, fPsiZNCCProj);
-	hZDCCPsivsTPCPosPsi2->Fill(fPsiNTPCPos, fPsiZNCCProj);
-	hZDCCPsivsTPCNegPsi2->Fill(fPsiNTPCNeg, fPsiZNCCProj);
-	hZDCCPsivsV0CAPsi2->Fill((fPsiNV0A+fPsiNV0C)/2, fPsiZNCCProj);
-	hZDCCPsivsV0CPsi2->Fill(fPsiNV0C, fPsiZNCCProj);
-	hZDCCPsivsV0APsi2->Fill(fPsiNV0A, fPsiZNCCProj);
+	hZDCCPsivsTPCPsi2->Fill(fPsiZNCC, fPsiNTPC);
+	hZDCCPsivsTPCPosPsi2->Fill(fPsiZNCC, fPsiNTPCPos);
+	hZDCCPsivsTPCNegPsi2->Fill(fPsiZNCC, fPsiNTPCNeg);
+	hZDCCPsivsV0CAPsi2->Fill(fPsiZNCC, fPsiNV0);
+	hZDCCPsivsV0CPsi2->Fill(fPsiZNCC, fPsiNV0C);
+	hZDCCPsivsV0APsi2->Fill(fPsiZNCC, fPsiNV0A);
 	
-	hZDCAPsivsTPCPsi2->Fill((fPsiNTPCPos+fPsiNTPCNeg)/2, fPsiZNCAProj);
-	hZDCAPsivsTPCPosPsi2->Fill(fPsiNTPCPos, fPsiZNCAProj);
-	hZDCAPsivsTPCNegPsi2->Fill(fPsiNTPCNeg, fPsiZNCAProj);
-	hZDCAPsivsV0CAPsi2->Fill((fPsiNV0A+fPsiNV0C)/2, fPsiZNCAProj);
-	hZDCAPsivsV0CPsi2->Fill(fPsiNV0C, fPsiZNCAProj);
-	hZDCAPsivsV0APsi2->Fill(fPsiNV0A, fPsiZNCAProj);
+	hZDCAPsivsTPCPsi2->Fill(fPsiZNCA, fPsiNTPC);
+	hZDCAPsivsTPCPosPsi2->Fill(fPsiZNCA, fPsiNTPCPos);
+	hZDCAPsivsTPCNegPsi2->Fill(fPsiZNCA, fPsiNTPCNeg);
+	hZDCAPsivsV0CAPsi2->Fill(fPsiZNCA, fPsiNV0);
+	hZDCAPsivsV0CPsi2->Fill(fPsiZNCA, fPsiNV0C);
+	hZDCAPsivsV0APsi2->Fill(fPsiZNCA, fPsiNV0A);
 	
-	hZDCCAPsivsTPCPsi2->Fill((fPsiNTPCPos+fPsiNTPCNeg)/2, fPsiZNCCAProj);
-	hZDCCAPsivsTPCPosPsi2->Fill(fPsiNTPCPos, fPsiZNCCAProj);
-	hZDCCAPsivsTPCNegPsi2->Fill(fPsiNTPCNeg, fPsiZNCCAProj);
-	hZDCCAPsivsV0CAPsi2->Fill((fPsiNV0A+fPsiNV0C)/2, fPsiZNCCAProj);
-	hZDCCAPsivsV0CPsi2->Fill(fPsiNV0C, fPsiZNCCAProj);
-	hZDCCAPsivsV0APsi2->Fill(fPsiNV0A, fPsiZNCCAProj);
+	hZDCCAPsivsTPCPsi2->Fill(fPsiZNCCA, fPsiNTPC);
+	hZDCCAPsivsTPCPosPsi2->Fill(fPsiZNCCA, fPsiNTPCPos);
+	hZDCCAPsivsTPCNegPsi2->Fill(fPsiZNCCA, fPsiNTPCNeg);
+	hZDCCAPsivsV0CAPsi2->Fill(fPsiZNCCA, fPsiNV0);
+	hZDCCAPsivsV0CPsi2->Fill(fPsiZNCCA, fPsiNV0C);
+	hZDCCAPsivsV0APsi2->Fill(fPsiZNCCA, fPsiNV0A);
   }
   
   
@@ -1431,7 +1512,6 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 
   
   ///----------> Starting Analysis track Loop -----------
-  
   for(Int_t iTrack = 0; iTrack < ntracks; iTrack++) { 
 
     AliAODTrack* AODtrack1 = dynamic_cast <AliAODTrack*> (fVevent->GetTrack(iTrack));
@@ -1460,8 +1540,10 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 
 	WgtNUAChtrk1  = GetNUAWeightForTrack(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);
 	WgtNUAPIDtrk1 = GetNUAWeightForTrackPID(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);
-	ptWgtMCChtrk1 = GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,0);
+	ptWgtMCChtrk1 = GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,0); // this is eff
+	ptWgtMCChtrk1 = 1./ptWgtMCChtrk1; // weight = 1/eff
 	ptWgtMCPIDtrk1= GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,kPIDtrk1);
+	ptWgtMCPIDtrk1 = 1./ptWgtMCPIDtrk1;
 
 	wgtComb1Ch  = WgtNUAChtrk1*ptWgtMCChtrk1;    /// Charge
 	wgtComb1PID = WgtNUAPIDtrk1*ptWgtMCPIDtrk1;  /// PID
@@ -1568,16 +1650,16 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	    localMultTPC-= WgtNUAChtrk1; 	  
       }
 	}
-
+	
     
 	// save v2 for each plane
 	if(localMultTPC>0){
-		localSumQ2x = localSumQ2x/localMultTPC;
-		localSumQ2y = localSumQ2y/localMultTPC;
+		Double_t localSumQ2xTemp = localSumQ2x/localMultTPC;
+		Double_t localSumQ2yTemp = localSumQ2y/localMultTPC;
 	
 		Double_t fPsi2TPC = 0;
 		
-		fPsi2TPC = (1./2)*TMath::ATan2(localSumQ2y,localSumQ2x);
+		fPsi2TPC = (1./2)*TMath::ATan2(localSumQ2y,localSumQ2xTemp);
 		if(fPsi2TPC < 0) fPsi2TPC += TMath::TwoPi()/2;
 		
 		if(gParticleID==0){
@@ -1673,19 +1755,22 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	      if(gParticleID==0){ /// Both Particles are UN-Identified
 		WgtNUAChtrk2  = GetNUAWeightForTrack(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg);
 		ptWgtMCChtrk2 = GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,0);		
+		ptWgtMCChtrk2 = 1./ptWgtMCChtrk2;
 		wgtComb2part  = WgtNUAChtrk1*ptWgtMCChtrk1 * WgtNUAChtrk2*ptWgtMCChtrk2;      /// Combined weight for Ch
 	      }
 	      else if(gParticleID < 10){/// Both Particles are Identified.			
 		WgtNUAPIDtrk2  = GetNUAWeightForTrackPID(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg);      
 		ptWgtMCPIDtrk2 = GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,kPIDtrk2);
-		
+		ptWgtMCPIDtrk2 = 1./ptWgtMCPIDtrk2;
 		wgtComb2part  = WgtNUAPIDtrk1*ptWgtMCPIDtrk1 * WgtNUAPIDtrk2*ptWgtMCPIDtrk2;  /// Combined weight for PID
 	      }
 	      else if(gParticleID > 10){/// Single Particle is Identified.
 		WgtNUAChtrk2   = GetNUAWeightForTrack(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg);    // first track is Charged
 		ptWgtMCChtrk2  = GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,0);                // first track is Charged
+		ptWgtMCChtrk2 = 1./ptWgtMCChtrk2;
 		WgtNUAPIDtrk2  = GetNUAWeightForTrackPID(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg); // 2nd is PID
 		ptWgtMCPIDtrk2 = GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,kPIDtrk2);         // 2nd is PID
+		ptWgtMCPIDtrk2 = 1./ptWgtMCPIDtrk2;
 		wgtComb2part  = WgtNUAChtrk1*ptWgtMCChtrk1 * WgtNUAPIDtrk2*ptWgtMCPIDtrk2;        // Wgt for Hybrid Ch+PID Analysis.
 	      }
 	   
@@ -1732,8 +1817,6 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 		  //fPsi4TPCPos = (1./4)*TMath::ATan2(fQ4yPos,fQ4xPos);
 		  //if(fPsi4TPCPos < 0) fPsi4TPCPos += TMath::TwoPi()/4;  		
 	    }
-
-
 	      
 	      if(trk1Chrg*trk2Chrg < 0){ //Opposite sign	
 		hAvg3pC112vsCentOS->Fill(centrality,TMath::Cos(trk1Phi +  trk2Phi  - 2*fPsiNEvent),wgtComb2part);
@@ -2528,111 +2611,111 @@ void AliAnalysisTaskGammaDeltaPID::SetupQAHistograms(){
   hZDCCPsivsZDCAPsi->SetYTitle("#Psi_{ZDCA}");
   fListHist->Add(hZDCCPsivsZDCAPsi);
   
-  hZDCCPsivsTPCPsi2 = new TH2F("hZDCCPsivsTPCPsi2","hZDCCPsivsTPCPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCPsivsTPCPsi2 = new TH2F("hZDCCPsivsTPCPsi2","hZDCCPsivsTPCPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCCPsivsTPCPsi2->Sumw2();
   hZDCCPsivsTPCPsi2->SetXTitle("#Psi_{ZDCC}");
   hZDCCPsivsTPCPsi2->SetYTitle("#Psi_{TPC}");
   fListHist->Add(hZDCCPsivsTPCPsi2);
   
-  hZDCCPsivsTPCPosPsi2 = new TH2F("hZDCCPsivsTPCPosPsi2","hZDCCPsivsTPCPosPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCPsivsTPCPosPsi2 = new TH2F("hZDCCPsivsTPCPosPsi2","hZDCCPsivsTPCPosPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCCPsivsTPCPosPsi2->Sumw2();
   hZDCCPsivsTPCPosPsi2->SetXTitle("#Psi_{ZDCC}");
   hZDCCPsivsTPCPosPsi2->SetYTitle("#Psi_{TPC+}");
   fListHist->Add(hZDCCPsivsTPCPosPsi2);
   
-  hZDCCPsivsTPCNegPsi2 = new TH2F("hZDCCPsivsTPCNegPsi2","hZDCCPsivsTPCNegPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCPsivsTPCNegPsi2 = new TH2F("hZDCCPsivsTPCNegPsi2","hZDCCPsivsTPCNegPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCCPsivsTPCNegPsi2->Sumw2();
   hZDCCPsivsTPCNegPsi2->SetXTitle("#Psi_{ZDCC}");
   hZDCCPsivsTPCNegPsi2->SetYTitle("#Psi_{TPC-}");
   fListHist->Add(hZDCCPsivsTPCNegPsi2);
   
-  hZDCCPsivsV0CAPsi2 = new TH2F("hZDCCPsivsV0CAPsi2","hZDCCPsivsV0CAPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCPsivsV0CAPsi2 = new TH2F("hZDCCPsivsV0CAPsi2","hZDCCPsivsV0CAPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCCPsivsV0CAPsi2->Sumw2();
   hZDCCPsivsV0CAPsi2->SetXTitle("#Psi_{ZDCC}");
   hZDCCPsivsV0CAPsi2->SetYTitle("#Psi_{V0CA}");
   fListHist->Add(hZDCCPsivsV0CAPsi2);
   
-  hZDCCPsivsV0CPsi2 = new TH2F("hZDCCPsivsV0CPsi2","hZDCCPsivsV0CPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCPsivsV0CPsi2 = new TH2F("hZDCCPsivsV0CPsi2","hZDCCPsivsV0CPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCCPsivsV0CPsi2->Sumw2();
   hZDCCPsivsV0CPsi2->SetXTitle("#Psi_{ZDCC}");
   hZDCCPsivsV0CPsi2->SetYTitle("#Psi_{V0C}");
   fListHist->Add(hZDCCPsivsV0CPsi2);
   
-  hZDCCPsivsV0APsi2 = new TH2F("hZDCCPsivsV0APsi2","hZDCCPsivsV0APsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCPsivsV0APsi2 = new TH2F("hZDCCPsivsV0APsi2","hZDCCPsivsV0APsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCCPsivsV0APsi2->Sumw2();
   hZDCCPsivsV0APsi2->SetXTitle("#Psi_{ZDCC}");
   hZDCCPsivsV0APsi2->SetYTitle("#Psi_{V0A}");
   fListHist->Add(hZDCCPsivsV0APsi2);
   
   
-  hZDCAPsivsTPCPsi2 = new TH2F("hZDCAPsivsTPCPsi2","hZDCAPsivsTPCPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCAPsivsTPCPsi2 = new TH2F("hZDCAPsivsTPCPsi2","hZDCAPsivsTPCPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCAPsivsTPCPsi2->Sumw2();
   hZDCAPsivsTPCPsi2->SetXTitle("#Psi_{ZDCA}");
   hZDCAPsivsTPCPsi2->SetYTitle("#Psi_{TPC}");
   fListHist->Add(hZDCAPsivsTPCPsi2);
   
-  hZDCAPsivsTPCPosPsi2 = new TH2F("hZDCAPsivsTPCPosPsi2","hZDCAPsivsTPCPosPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCAPsivsTPCPosPsi2 = new TH2F("hZDCAPsivsTPCPosPsi2","hZDCAPsivsTPCPosPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCAPsivsTPCPosPsi2->Sumw2();
   hZDCAPsivsTPCPosPsi2->SetXTitle("#Psi_{ZDCA}");
   hZDCAPsivsTPCPosPsi2->SetYTitle("#Psi_{TPC+}");
   fListHist->Add(hZDCAPsivsTPCPosPsi2);
   
-  hZDCAPsivsTPCNegPsi2 = new TH2F("hZDCAPsivsTPCNegPsi2","hZDCAPsivsTPCNegPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCAPsivsTPCNegPsi2 = new TH2F("hZDCAPsivsTPCNegPsi2","hZDCAPsivsTPCNegPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCAPsivsTPCNegPsi2->Sumw2();
   hZDCAPsivsTPCNegPsi2->SetXTitle("#Psi_{ZDCA}");
   hZDCAPsivsTPCNegPsi2->SetYTitle("#Psi_{TPC-}");
   fListHist->Add(hZDCAPsivsTPCNegPsi2);
   
-  hZDCAPsivsV0CAPsi2 = new TH2F("hZDCAPsivsV0CAPsi2","hZDCAPsivsV0CAPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCAPsivsV0CAPsi2 = new TH2F("hZDCAPsivsV0CAPsi2","hZDCAPsivsV0CAPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCAPsivsV0CAPsi2->Sumw2();
   hZDCAPsivsV0CAPsi2->SetXTitle("#Psi_{ZDCA}");
   hZDCAPsivsV0CAPsi2->SetYTitle("#Psi_{V0CA}");
   fListHist->Add(hZDCAPsivsV0CAPsi2);
   
-  hZDCAPsivsV0CPsi2 = new TH2F("hZDCAPsivsV0CPsi2","hZDCAPsivsV0CPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCAPsivsV0CPsi2 = new TH2F("hZDCAPsivsV0CPsi2","hZDCAPsivsV0CPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCAPsivsV0CPsi2->Sumw2();
   hZDCAPsivsV0CPsi2->SetXTitle("#Psi_{ZDCA}");
   hZDCAPsivsV0CPsi2->SetYTitle("#Psi_{V0C}");
   fListHist->Add(hZDCAPsivsV0CPsi2);
   
-  hZDCAPsivsV0APsi2 = new TH2F("hZDCAPsivsV0APsi2","hZDCAPsivsV0APsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCAPsivsV0APsi2 = new TH2F("hZDCAPsivsV0APsi2","hZDCAPsivsV0APsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCAPsivsV0APsi2->Sumw2();
   hZDCAPsivsV0APsi2->SetXTitle("#Psi_{ZDCA}");
   hZDCAPsivsV0APsi2->SetYTitle("#Psi_{V0A}");
   fListHist->Add(hZDCAPsivsV0APsi2);
   
   
-  hZDCCAPsivsTPCPsi2 = new TH2F("hZDCCAPsivsTPCPsi2","hZDCCAPsivsTPCPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCAPsivsTPCPsi2 = new TH2F("hZDCCAPsivsTPCPsi2","hZDCCAPsivsTPCPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCCAPsivsTPCPsi2->Sumw2();
   hZDCCAPsivsTPCPsi2->SetXTitle("#Psi_{ZDCCA}");
   hZDCCAPsivsTPCPsi2->SetYTitle("#Psi_{TPC}");
   fListHist->Add(hZDCCAPsivsTPCPsi2);
   
-  hZDCCAPsivsTPCPosPsi2 = new TH2F("hZDCCAPsivsTPCPosPsi2","hZDCCAPsivsTPCPosPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCAPsivsTPCPosPsi2 = new TH2F("hZDCCAPsivsTPCPosPsi2","hZDCCAPsivsTPCPosPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCCAPsivsTPCPosPsi2->Sumw2();
   hZDCCAPsivsTPCPosPsi2->SetXTitle("#Psi_{ZDCCA}");
   hZDCCAPsivsTPCPosPsi2->SetYTitle("#Psi_{TPC+}");
   fListHist->Add(hZDCCAPsivsTPCPosPsi2);
   
-  hZDCCAPsivsTPCNegPsi2 = new TH2F("hZDCCAPsivsTPCNegPsi2","hZDCCAPsivsTPCNegPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCAPsivsTPCNegPsi2 = new TH2F("hZDCCAPsivsTPCNegPsi2","hZDCCAPsivsTPCNegPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCCAPsivsTPCNegPsi2->Sumw2();
   hZDCCAPsivsTPCNegPsi2->SetXTitle("#Psi_{ZDCCA}");
   hZDCCAPsivsTPCNegPsi2->SetYTitle("#Psi_{TPC-}");
   fListHist->Add(hZDCCAPsivsTPCNegPsi2);
   
-  hZDCCAPsivsV0CAPsi2 = new TH2F("hZDCCAPsivsV0CAPsi2","hZDCCAPsivsV0CAPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCAPsivsV0CAPsi2 = new TH2F("hZDCCAPsivsV0CAPsi2","hZDCCAPsivsV0CAPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCCAPsivsV0CAPsi2->Sumw2();
   hZDCCAPsivsV0CAPsi2->SetXTitle("#Psi_{ZDCCA}");
   hZDCCAPsivsV0CAPsi2->SetYTitle("#Psi_{V0CA}");
   fListHist->Add(hZDCCAPsivsV0CAPsi2);
   
-  hZDCCAPsivsV0CPsi2 = new TH2F("hZDCCAPsivsV0CPsi2","hZDCCAPsivsV0CPsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCAPsivsV0CPsi2 = new TH2F("hZDCCAPsivsV0CPsi2","hZDCCAPsivsV0CPsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCCAPsivsV0CPsi2->Sumw2();
   hZDCCAPsivsV0CPsi2->SetXTitle("#Psi_{ZDCCA}");
   hZDCCAPsivsV0CPsi2->SetYTitle("#Psi_{V0C}");
   fListHist->Add(hZDCCAPsivsV0CPsi2);
   
-  hZDCCAPsivsV0APsi2 = new TH2F("hZDCCAPsivsV0APsi2","hZDCCAPsivsV0APsi2",100,0,TMath::Pi(),100,0,TMath::Pi());
+  hZDCCAPsivsV0APsi2 = new TH2F("hZDCCAPsivsV0APsi2","hZDCCAPsivsV0APsi2",100,-TMath::Pi(),TMath::Pi(),100,0,TMath::Pi());
   hZDCCAPsivsV0APsi2->Sumw2();
   hZDCCAPsivsV0APsi2->SetXTitle("#Psi_{ZDCCA}");
   hZDCCAPsivsV0APsi2->SetYTitle("#Psi_{V0A}");
@@ -3595,15 +3678,15 @@ Bool_t AliAnalysisTaskGammaDeltaPID::GetTPCQvectAndRemovePileUp2018(AliAODEvent 
 
   
   AliAODVZERO* aodV0 = faod->GetVZEROData();
-  Float_t  multV0a   = aodV0->GetMTotV0A();
-  Float_t  multV0c   = aodV0->GetMTotV0C();
+  Float_t  multV0a   = aodV0->GetMTotV0A(); // return total multiplicity in V0A 0-31
+  Float_t  multV0c   = aodV0->GetMTotV0C(); // return total multiplicity in V0C 32-63
   Float_t  multV0Tot = multV0a + multV0c;
-  UShort_t multV0aOn = aodV0->GetTriggerChargeA();
-  UShort_t multV0cOn = aodV0->GetTriggerChargeC();
+  UShort_t multV0aOn = aodV0->GetTriggerChargeA(); // Sum of the trigger (clock=10) charge on A side.
+  UShort_t multV0cOn = aodV0->GetTriggerChargeC(); // Sum of the trigger (clock=10) charge on C side.
   UShort_t multV0On  = multV0aOn + multV0cOn;
 
   Int_t tpcClsTot = faod->GetNumberOfTPCClusters();
-  Float_t nclsDif = Float_t(tpcClsTot) - (60932.9 + 69.2897*multV0Tot - 0.000217837*multV0Tot*multV0Tot);
+  Float_t nclsDif = Float_t(tpcClsTot) - (60932.9 + 69.2897*multV0Tot - 0.000217837*multV0Tot*multV0Tot); // not needed?
 
   if (centrCL0 < fCenCutLowPU->Eval(centrV0M)) {
     BisPileup=kTRUE;
@@ -3629,7 +3712,7 @@ Bool_t AliAnalysisTaskGammaDeltaPID::GetTPCQvectAndRemovePileUp2018(AliAODEvent 
   //if (nclsDif > 200000)//can be increased to 200000
   // BisPileup=kTRUE;
 
-  Int_t multEsd = ((AliAODHeader*)faod->GetHeader())->GetNumberOfESDTracks();
+  Int_t multEsd = ((AliAODHeader*)faod->GetHeader())->GetNumberOfESDTracks(); // should we have a pileup cut on multESD and multTPC
 
   fHistCentCL0VsV0MBefore->Fill(centrV0M,centrCL0);
   fHistTPCVsESDTrkBefore->Fill(multTrk,multEsd);  

@@ -115,6 +115,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fWriteVariableTree(kFALSE),
   fFillSparse(kFALSE),
   fHMTrigOn(kFALSE), //jcho
+  fEvtInfo(kFALSE),	//jcho
   fVariablesTree(0),
   fEventTree(0),  //jcho
   fReconstructPrimVert(kFALSE),
@@ -136,6 +137,23 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHistoXicMass(0x0),
   fSparseXicMass(0x0),
   fHistoMCSpectrumAccXic(0),
+/*  fHistoMCSpectrum_1(0), //jcho
+  fHistoMCSpectrum_2(0), //jcho
+  fHistoMCSpectrum_3(0), //jcho
+  fHistoMCSpectrum_4(0), //jcho
+  fHistoMCSpectrum_5(0), //jcho
+  fHistoMCSpectrum_6(0), //jcho
+  fHistoMCSpectrum_7(0), //jcho
+  fHistoMCSpectrum_8(0), //jcho
+  fHistoMCSpectrum_9(0), //jcho
+  fHistoMCSpectrum_10(0), //jcho
+  fHistoMCSpectrum_11(0), //jcho
+  fHistoMCSpectrum_12(0), //jcho
+  fHistoMCSpectrum_13(0), //jcho
+  fHistoMCSpectrum_14(0), //jcho
+  fHistoMCSpectrum_15(0), //jcho
+  fHistoMCSpectrum_16(0), //jcho */
+  fHistoMCSpectrumAccXic_HM(0), //jcho
   fHistoDcaPi1Pi2(0),
   fHistoDcaPi1Casc(0),
   fHistoDcaPi2Casc(0),
@@ -197,7 +215,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
 //___________________________________________________________________________
 AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks(const Char_t* name,
 											   AliRDHFCutsXicPlustoXiPiPifromAODtracks* analCuts, 
-											   Bool_t writeVariableTree, Bool_t fillSparse, Bool_t HMTrigOn) :  
+											   Bool_t writeVariableTree, Bool_t fillSparse, Bool_t HMTrigOn, Bool_t EvtInfo) :  
   AliAnalysisTaskSE(name),
   fUseMCInfo(kFALSE),
   fFillSignalOnly(kFALSE),
@@ -216,6 +234,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fWriteVariableTree(writeVariableTree),
   fFillSparse(fillSparse),
   fHMTrigOn(HMTrigOn), //jcho
+  fEvtInfo(EvtInfo), //jcho
   fVariablesTree(0),
   fEventTree(0), //jcho
   fReconstructPrimVert(kFALSE),
@@ -237,6 +256,23 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHistoXicMass(0x0),
   fSparseXicMass(0x0),
   fHistoMCSpectrumAccXic(0),
+/*  fHistoMCSpectrum_1(0), //jcho
+  fHistoMCSpectrum_2(0), //jcho
+  fHistoMCSpectrum_3(0), //jcho
+  fHistoMCSpectrum_4(0), //jcho
+  fHistoMCSpectrum_5(0), //jcho
+  fHistoMCSpectrum_6(0), //jcho
+  fHistoMCSpectrum_7(0), //jcho
+  fHistoMCSpectrum_8(0), //jcho
+  fHistoMCSpectrum_9(0), //jcho
+  fHistoMCSpectrum_10(0), //jcho
+  fHistoMCSpectrum_11(0), //jcho
+  fHistoMCSpectrum_12(0), //jcho
+  fHistoMCSpectrum_13(0), //jcho
+  fHistoMCSpectrum_14(0), //jcho
+  fHistoMCSpectrum_15(0), //jcho
+  fHistoMCSpectrum_16(0), //jcho */
+  fHistoMCSpectrumAccXic_HM(0), //jcho 
   fHistoDcaPi1Pi2(0),
   fHistoDcaPi1Casc(0),
   fHistoDcaPi2Casc(0),
@@ -308,10 +344,9 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   DefineOutput(6,AliNormalizationCounter::Class()); fCounter_MB_0p1to30 = 0; //jcho, MB[0.1,30] 
   DefineOutput(7,AliNormalizationCounter::Class()); fCounter_MB_30to100 = 0; //jcho, MB[30,100]
   DefineOutput(8,AliNormalizationCounter::Class()); fCounter_HMV0_0to0p1 = 0; //jcho, HM[0,0.1] 
-  DefineOutput(10,AliNormalizationCounter::Class()); fCounter_HMV0_0to100 = 0;	//jcho, HM[0,100]
+  DefineOutput(9,AliNormalizationCounter::Class()); fCounter_HMV0_0to100 = 0;	//jcho, HM[0,100]
 
-  if (fHMTrigOn==true) DefineOutput(9, TTree::Class()); //jcho, Event variable tree
-
+  if (fHMTrigOn==true && fEvtInfo==true) DefineOutput(10, TTree::Class()); //jcho, Event variable tree
 }
 
 //___________________________________________________________________________
@@ -350,7 +385,6 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::~AliAnalysisTaskSEXicPlus2XiPiPifr
   if (fEventTree) {			//jcho
 	delete fEventTree;		//jcho
 	fEventTree = 0;			//jcho
-
   }
   
   if(fCandidateVariables){
@@ -361,14 +395,32 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::~AliAnalysisTaskSEXicPlus2XiPiPifr
   if(fEventTreeVariables){			//jcho
 	delete fEventTreeVariables;		//jcho
 	fEventTreeVariables = 0;		//jcho
-}
+  }
 
 
   if(fHistoXicMass) delete fHistoXicMass;
   if(fSparseXicMass) delete fSparseXicMass;
 
   if(fHistoMCSpectrumAccXic) delete fHistoMCSpectrumAccXic;
-  
+  if(fHistoMCSpectrumAccXic_HM) delete fHistoMCSpectrumAccXic_HM; 
+
+/*  if(fHistoMCSpectrum_1) delete fHistoMCSpectrum_1;	//jcho
+  if(fHistoMCSpectrum_2) delete fHistoMCSpectrum_2;	//jcho
+  if(fHistoMCSpectrum_3) delete fHistoMCSpectrum_3;	//jcho
+  if(fHistoMCSpectrum_4) delete fHistoMCSpectrum_4;	//jcho
+  if(fHistoMCSpectrum_5) delete fHistoMCSpectrum_5;	//jcho
+  if(fHistoMCSpectrum_6) delete fHistoMCSpectrum_6;	//jcho
+  if(fHistoMCSpectrum_7) delete fHistoMCSpectrum_7;	//jcho
+  if(fHistoMCSpectrum_8) delete fHistoMCSpectrum_8;	//jcho
+  if(fHistoMCSpectrum_9) delete fHistoMCSpectrum_9;	//jcho
+  if(fHistoMCSpectrum_10) delete fHistoMCSpectrum_10; //jcho
+  if(fHistoMCSpectrum_11) delete fHistoMCSpectrum_11; //jcho
+  if(fHistoMCSpectrum_12) delete fHistoMCSpectrum_12; //jcho
+  if(fHistoMCSpectrum_13) delete fHistoMCSpectrum_13; //jcho
+  if(fHistoMCSpectrum_14) delete fHistoMCSpectrum_14; //jcho
+  if(fHistoMCSpectrum_15) delete fHistoMCSpectrum_15; //jcho
+  if(fHistoMCSpectrum_16) delete fHistoMCSpectrum_16; //jcho */
+
   if(fCounter){
     delete fCounter;
     fCounter=0;
@@ -543,7 +595,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
 			IsTrigFired_MB = true;
 			fCentralityOfEvt->Fill(0);
 			if (fCentrality >=  0.0 && fCentrality <= 100.0) fCentralityOfEvt->Fill(1);
-			if (fCentrality >=  0.1 && fCentrality <=  30.0) fCentralityOfEvt->Fill(2);
+			if (fCentrality >=  0.0 && fCentrality <  30.0) fCentralityOfEvt->Fill(2);
 			if (fCentrality >= 30.0 && fCentrality <= 100.0) fCentralityOfEvt->Fill(3);
 		}
 		if (inputHandler->IsEventSelected() & AliVEvent::kHighMultV0) 
@@ -561,6 +613,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
    // Fill the Event variables tree -------jcho, refer to Xi0 Semileptonic
    if (fHMTrigOn==true)
    {
+
+	if (fEvtInfo==true){
 	   //Filling the event tree
 	   for(int i=0; i<4; i++) fEventTreeVariables[i] = -999; //Initialize 
 	   fEventTreeVariables[ 0] = fCentrality;      // CentralityV0M
@@ -579,8 +633,9 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
 	   if (!fUseMCInfo) fEventTreeVarTrig = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 	   
 	   fEventTree->Fill(); 
+	} // Store the event tree when fEvtInfo is on.
 
-	   //Counter for MB[0.1,30],[30,100],[0,100] and HM[0,0.1],[0,100]  -- NOTE: HM[0,100] is not implemented yet!
+	   //Counter for MB[0.1,30],[30,100],[0,100] and HM[0,0.1],[0,100]
 	   if (IsTrigFired_MB)
 	   {
 			if (fCentrality >=  0.0 && fCentrality <= 100.0)
@@ -672,7 +727,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   MakeAnalysis(aodEvent, mcArray, mcHeader); 
   
   PostData(1,fOutput);
-  if (fHMTrigOn==true) PostData(9, fEventTree);  //jcho
+  if (fHMTrigOn==true && fEvtInfo==true) PostData(10, fEventTree);  //jcho
   if(fWriteVariableTree){
     PostData(3,fVariablesTree);
   }else{
@@ -775,7 +830,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
   fOutput->SetName("chist0");
   DefineGeneralHistograms(); // define general histograms
   PostData(1,fOutput);
-  if (fHMTrigOn==true) PostData(9, fEventTree);	//jcho
+  if (fHMTrigOn==true && fEvtInfo==true) PostData(10, fEventTree);	//jcho
 
   if (fWriteVariableTree) {
     DefineTreeVariables();
@@ -815,7 +870,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserCreateOutputObjects()
   PostData(6, fCounter_MB_0p1to30);
   PostData(7, fCounter_MB_30to100);
   PostData(8, fCounter_HMV0_0to0p1);
-  PostData(10, fCounter_HMV0_0to100);
+  PostData(9, fCounter_HMV0_0to100);
   return;
 }
 
@@ -1113,24 +1168,36 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 		//}
 		if(isInAcc){
 		  fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kReco,checkOrigin);
+		  //if(fHMTrigOn==true) fHistoMCSpectrum_11->Fill(mcxic->Pt());
+		  if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(mcxic->Pt(),kReco,checkOrigin);	
 		  isXic=kTRUE;
 		  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
 		    fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kRecoPID,checkOrigin);
+			//if(fHMTrigOn==true) fHistoMCSpectrum_12->Fill(mcxic->Pt());
+			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(mcxic->Pt(),kRecoPID,checkOrigin);
 		  }
 		  fAnalCuts->SetUsePID(kFALSE);
 		  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
 		    fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kRecoCuts,checkOrigin);
+			//if(fHMTrigOn==true) fHistoMCSpectrum_13->Fill(mcxic->Pt());
+			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(mcxic->Pt(),kRecoCuts,checkOrigin);
 		  }
 		  fAnalCuts->SetUsePID(kTRUE);
 		}
 		if(TMath::Abs(mcxic->Y())<0.8){
 		  fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kReco08,checkOrigin);
+		  //if(fHMTrigOn==true) fHistoMCSpectrum_14->Fill(mcxic->Pt());
+		  if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(mcxic->Pt(),kReco08,checkOrigin);
 		  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
 		    fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kRecoPID08,checkOrigin);
+		    //if(fHMTrigOn==true) fHistoMCSpectrum_15->Fill(mcxic->Pt());
+			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(mcxic->Pt(),kRecoPID08,checkOrigin);
 		  }
 		  fAnalCuts->SetUsePID(kFALSE);
 		  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
 		    fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kRecoCuts08,checkOrigin);
+			//if(fHMTrigOn==true) fHistoMCSpectrum_16->Fill(mcxic->Pt());
+			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(mcxic->Pt(),kRecoCuts08,checkOrigin);
 		  }
 		  fAnalCuts->SetUsePID(kTRUE);
 		}
@@ -1144,7 +1211,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 	} //if useMCinfo
        
 	//if(!fAnalCuts->IsInFiducialAcceptance(xicobj->Pt(),xicobj->Y(4232))) continue;
-	FillROOTObjects(xicobj,mcxic,mcdaughter1,mcdaughter2,mcdaughterxi,nmclabxic,isXic,checkOrigin); //AliAODRecoCascadeHF3Prong,
+	FillROOTObjects(xicobj,mcxic,mcdaughter1,mcdaughter2,mcdaughterxi,nmclabxic,isXic,checkOrigin,cptrack,cntrack,cbtrack,mcdaughterPionFromLambda,mcdaughterProtonFromLambda,mcdaughterPionFromXi); //AliAODRecoCascadeHF3Prong,	//jcho, add cascade daughter tracks
 	
 	xicobj->GetSecondaryVtx()->RemoveDaughters();
 	xicobj->UnsetOwnPrimaryVtx();
@@ -1157,7 +1224,7 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdaughter1, AliAODMCParticle *mcdaughter2, AliAODMCParticle *mcdaughterxi, Int_t mcnused, Bool_t isXic, Int_t checkOrigin) 
+void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCascadeHF3Prong *xicobj, AliAODMCParticle *mcpart, AliAODMCParticle *mcdaughter1, AliAODMCParticle *mcdaughter2, AliAODMCParticle *mcdaughterxi, Int_t mcnused, Bool_t isXic, Int_t checkOrigin, AliAODTrack *cptrack, AliAODTrack *cntrack, AliAODTrack *cbtrack, AliAODMCParticle *mcdaughterPionFromLambda, AliAODMCParticle *mcdaughterProtonFromLambda, AliAODMCParticle *mcdaughterPionFromXi)	// jcho, add cascade daughter tracks 
 {
   //
   // Fill histogram or Tree depending on fWriteVariableTree flag
@@ -1174,6 +1241,15 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
   Double_t nSigmaTPCpi2=-9999.;
   Double_t nSigmaTOFpi1=-9999.;
   Double_t nSigmaTOFpi2=-9999.;
+
+  Double_t nSigmaTPCcascp=-9999.; // jcho, for offline nsigmaTPC cut, cascade p 
+  Double_t nSigmaTPCcascn=-9999.; // jcho, for offline nSigmaTPC cut, cascade n
+  Double_t nSigmaTPCcascb=-9999.; // jcho, for offline nSigmaTPC cut, cascade b
+
+  Double_t nSigmaTOFcascp=-9999.; // jcho, for offline nsigmaToF cut, cascade p 
+  Double_t nSigmaTOFcascn=-9999.; // jcho, for offline nsigmaToF cut, cascade n
+  Double_t nSigmaTOFcascb=-9999.; // jcho, for offline nsigmaToF cut, cascade b
+
   Double_t probPion1=-9999.;
   Double_t probPion2=-9999.;
 
@@ -1199,9 +1275,19 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
     nSigmaTPCpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(part2,AliPID::kPion);
     nSigmaTOFpi1 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part1,AliPID::kPion);      
     nSigmaTOFpi2 = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(part2,AliPID::kPion);
+
+	nSigmaTPCcascp = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(cptrack,AliPID::kProton);	// jcho, nSigmaTPC
+	nSigmaTPCcascn = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(cntrack,AliPID::kPion);		// jcho, nSigmaTPC
+	nSigmaTPCcascb = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(cbtrack,AliPID::kPion);		// jcho, nSigmaTPC
+
+	nSigmaTOFcascp = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(cptrack,AliPID::kProton);	// jcho, nSigmaTOF
+	nSigmaTOFcascn = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(cntrack,AliPID::kPion);		// jcho, nSigmaTOF
+	nSigmaTOFcascb = fAnalCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(cbtrack,AliPID::kPion);		// jcho, nSigmaTOF
 	
     probPion1 =  fAnalCuts->GetPionProbabilityTPCTOF(part1);
     probPion2 =  fAnalCuts->GetPionProbabilityTPCTOF(part2);
+
+	
     
   }
 
@@ -1313,7 +1399,14 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
 	    fCandidateVariables[60] = mcsecvertx;
 	    fCandidateVariables[61] = mcsecverty;
 	    fCandidateVariables[62] = mcdaughter1->Zv();
-	  }
+
+		if(mcdaughterPionFromLambda&&mcdaughterProtonFromLambda&&mcdaughterPionFromXi){
+			fCandidateVariables[83] = mcdaughterPionFromLambda->Pt();	//jcho
+			fCandidateVariables[84] = mcdaughterProtonFromLambda->Pt();	//jcho
+			fCandidateVariables[85] = mcdaughterPionFromXi->Pt();	//jcho
+		} // Jcho, mcdaughter of Xi and Lambda
+
+	  } // mcdaughter1,2 and xi
 	}
       }
       
@@ -1337,7 +1430,9 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
 	  fCandidateVariables[69] = fCentrality;	//jcho
 	  fCandidateVariables[70] = fCentralSPD;	//jcho
       fCandidateVariables[71] = fNSPDTracklets;	//jcho
-	  fCandidateVariables[72] = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected(); //jcho
+	  //fCandidateVariables[72] = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected(); //jcho
+	  fCandidateVariables[72] = -999;	// Trigger bit
+
 	  // Flag for trigger 
 	  if(fIsMB) fCandidateVariables[73] = 1;	// MB
 	  if(fIsSemi) fCandidateVariables[73] = 2;	// Semi
@@ -1345,7 +1440,27 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillROOTObjects(AliAODRecoCas
 	  if(fIsINT7) fCandidateVariables[73] = 4;	// INT7
 	  if(fIsHMV0) fCandidateVariables[73] = 13;	// HMV0
 	  if(fIsHMSPD) fCandidateVariables[73] = 14; // HMSPD
-	  } //--Fill the event info.end
+
+/*	  fCandidateVariables[74] = nSigmaTPCcascp;	// jcho, add nSigmaTPC of cascade daughters
+	  fCandidateVariables[75] = nSigmaTPCcascn;
+	  fCandidateVariables[76] = nSigmaTPCcascb;
+	  fCandidateVariables[77] = nSigmaTOFcascp;	// jcho, add nSigmaTOF of cascade daughters
+	  fCandidateVariables[78] = nSigmaTOFcascn;
+	  fCandidateVariables[79] = nSigmaTOFcascb;
+
+	  fCandidateVariables[80] = cptrack->Pt(); // jcho, add cascade daughter pT
+	  fCandidateVariables[81] = cntrack->Pt(); 
+	  fCandidateVariables[82] = cbtrack->Pt();
+
+	  fCandidateVariables[86] = part1->GetTPCNCrossedRows(); // jcho
+	  fCandidateVariables[87] = part2->GetTPCNCrossedRows(); // jcho
+	  fCandidateVariables[88] = part1->GetTPCNCrossedRows()/part1->GetTPCNclsF(); // jcho
+	  fCandidateVariables[89] = part2->GetTPCNCrossedRows()/part2->GetTPCNclsF(); // jcho
+
+	  fCandidateVariables[90] = part1->Chi2perNDF(); // jcho
+	  fCandidateVariables[91] = part2->Chi2perNDF(); // jcho	*/
+
+	  } // fHMTrigOn end.
 
     }//close if to check mc fill only signal
     fVariablesTree->Fill();
@@ -1500,6 +1615,29 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineTreeVariables()
   fCandidateVariableNames[72]="Trigbit";		//jcho
   fCandidateVariableNames[73]="TrigFlags";		//jcho	
 
+/*  fCandidateVariableNames[74]="nSigmaTPCcascp";	//jcho
+  fCandidateVariableNames[75]="nSigmaTPCcascn"; //jcho
+  fCandidateVariableNames[76]="nSigmaTPCcascb"; //jcho
+  fCandidateVariableNames[77]="nSigmaTOFcascp"; //jcho
+  fCandidateVariableNames[78]="nSigmaTOFcascn"; //jcho
+  fCandidateVariableNames[79]="nSigmaTOFcascb"; //jcho
+
+  fCandidateVariableNames[80]="pTposTrack";	//jcho
+  fCandidateVariableNames[81]="pTnegTrack";	//jcho
+  fCandidateVariableNames[82]="pTbpionTrack";	//jcho
+
+  fCandidateVariableNames[83]="mcpionfromLambdapT";	//jcho
+  fCandidateVariableNames[84]="mcprotonfromLambdapT";	//jcho
+  fCandidateVariableNames[85]="mcpionfromXipT";	//jcho
+
+  fCandidateVariableNames[86]="pi1ncrossrow"; //jcho
+  fCandidateVariableNames[87]="pi2ncrossrow"; //jcho
+  fCandidateVariableNames[88]="pi1TPCcrossrowPerfindratio"; //jcho
+  fCandidateVariableNames[89]="pi2TPCcrossrowPerfindratio"; //jcho
+
+  fCandidateVariableNames[90]="pi1Chi2perNDF";
+  fCandidateVariableNames[91]="pi2Chi2perNDF";	*/
+
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fVariablesTree->Branch(fCandidateVariableNames[ivar].Data(),&fCandidateVariables[ivar],Form("%s/F",fCandidateVariableNames[ivar].Data()));
   }
@@ -1632,7 +1770,48 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   if(fUseMCInfo) {
     fHistoMCSpectrumAccXic=new TH3F("fHistoMCSpectrumAccXic","fHistoMCSpectrumAccXic",250,0,50,26,-0.5,12.5,4,3.5,7.5);
     fOutput->Add(fHistoMCSpectrumAccXic);
-  }
+
+	  if(fHMTrigOn==true) {		// jcho, to store the pT spectrum of generated Xic pT 
+		fHistoMCSpectrumAccXic_HM=new TH3F("fHistoMCSpectrumAccXic_HM","fHistoMCSpectrumAccXic_HM",250,0,50,26,-0.5,12.5,4,3.5,7.5);
+
+/*		fHistoMCSpectrum_1 = new TH1F("MCspec1","MCspec1",250,0,50);
+		fHistoMCSpectrum_2 = new TH1F("MCspec2","MCspec2",250,0,50);
+		fHistoMCSpectrum_3 = new TH1F("MCspec3","MCspec3",250,0,50);
+		fHistoMCSpectrum_4 = new TH1F("MCspec4","MCspec4",250,0,50);
+		fHistoMCSpectrum_5 = new TH1F("MCspec5","MCspec5",250,0,50);
+		fHistoMCSpectrum_6 = new TH1F("MCspec6","MCspec6",250,0,50);
+		fHistoMCSpectrum_7 = new TH1F("MCspec7","MCspec7",250,0,50);
+		fHistoMCSpectrum_8 = new TH1F("MCspec8","MCspec8",250,0,50);
+		fHistoMCSpectrum_9 = new TH1F("MCspec9","MCspec9",250,0,50);
+		fHistoMCSpectrum_10 = new TH1F("MCspec10","MCspec10",250,0,50);
+		fHistoMCSpectrum_11 = new TH1F("MCspec11","MCspec11",250,0,50);
+		fHistoMCSpectrum_12 = new TH1F("MCspec12","MCspec12",250,0,50);
+		fHistoMCSpectrum_13 = new TH1F("MCspec13","MCspec13",250,0,50);
+		fHistoMCSpectrum_14	= new TH1F("MCspec14","MCspec14",250,0,50);
+		fHistoMCSpectrum_15 = new TH1F("MCspec15","MCspec15",250,0,50);
+		fHistoMCSpectrum_16 = new TH1F("MCspec16","MCspec16",250,0,50);	*/
+
+		fOutput->Add(fHistoMCSpectrumAccXic_HM);
+
+/*		fOutput->Add(fHistoMCSpectrum_1);
+		fOutput->Add(fHistoMCSpectrum_2);
+        fOutput->Add(fHistoMCSpectrum_3);
+        fOutput->Add(fHistoMCSpectrum_4);
+        fOutput->Add(fHistoMCSpectrum_5);
+        fOutput->Add(fHistoMCSpectrum_6);
+        fOutput->Add(fHistoMCSpectrum_7);
+        fOutput->Add(fHistoMCSpectrum_8);
+        fOutput->Add(fHistoMCSpectrum_9);
+        fOutput->Add(fHistoMCSpectrum_10);
+        fOutput->Add(fHistoMCSpectrum_11);
+        fOutput->Add(fHistoMCSpectrum_12);
+        fOutput->Add(fHistoMCSpectrum_13);
+        fOutput->Add(fHistoMCSpectrum_14);
+		fOutput->Add(fHistoMCSpectrum_15);
+		fOutput->Add(fHistoMCSpectrum_16);	*/
+	  } // HMTrigOn 
+
+  } // fUseMCInfo
 
   //---Multiplicity analysis histograms-----------------------// jcho
   
@@ -1645,7 +1824,7 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
   fCentralityOfEvt->GetXaxis()->SetBinLabel(6,"[0,0.1]");
   fOutput->Add(fCentralityOfEvt);
 
-  if (fHMTrigOn==true)
+  if (fHMTrigOn==true && fEvtInfo==true)
   {
   //---Define the Event tree variables ------------------// jcho, refer to Xi0 Semileptinic
 	  fEventTree = new TTree("EventTree", "Event variable tree");
@@ -2107,7 +2286,7 @@ AliAODVertex* AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::ReconstructSecondary
 }
 
 //________________________________________________________________________
-AliAODRecoCascadeHF3Prong* AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeCascadeHF3Prong(AliAODcascade *casc, AliAODTrack *part1, AliAODTrack *part2, AliAODEvent * aod, AliAODVertex *secVert, Double_t dispersion) 
+AliAODRecoCascadeHF3Prong* AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeCascadeHF3Prong(AliAODcascade *casc, AliAODTrack *part1, AliAODTrack *part2, AliAODEvent * aod, AliAODVertex *secVert, Double_t dispersion)
 {
   //
   // Make AliAODRecoCascadeHF3Prong object from the arguments
@@ -2250,10 +2429,18 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	Float_t ptpart=mcpart->Pt();
 	Float_t ypart=mcpart->Y();
 
-	if(TMath::Abs(ypart)<0.5){
-	  if (checkXic2XiPiPi==1) fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin);
-	  else if (checkXic2XiPiPi==2) fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin+2);
-	}
+	if(TMath::Abs(ypart)<0.5){ // ypart < 0.5
+	  if (checkXic2XiPiPi==1) { 
+			fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin);
+			//if(fHMTrigOn==true) fHistoMCSpectrum_1->Fill(ptpart);
+			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenLimAcc,checkOrigin); 
+	  } // checkXic 1
+	  else if (checkXic2XiPiPi==2) {
+			fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin+2);
+			//if(fHMTrigOn==true) fHistoMCSpectrum_2->Fill(ptpart);
+			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenLimAcc,checkOrigin+2);
+	  } // checkXic 2
+	} // ypart < 0.5
 	Bool_t isInAcc=kTRUE;
 	
 	// check GenAcc level
@@ -2264,30 +2451,62 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	} else if (TMath::Abs(ypart)>0.8) isInAcc=kFALSE;
 
 	if (TMath::Abs(ypart)<0.8) {
-	  if (checkXic2XiPiPi==1) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin);
-	  else if (checkXic2XiPiPi==2) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin+2);
+	  if (checkXic2XiPiPi==1) { 
+			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin);
+			//if(fHMTrigOn==true) fHistoMCSpectrum_3->Fill(ptpart);			
+			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAccMother08,checkOrigin);
+	  } // checkXic 1
+	  else if (checkXic2XiPiPi==2) { 
+			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin+2);
+			//if(fHMTrigOn==true) fHistoMCSpectrum_4->Fill(ptpart);
+			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAccMother08,checkOrigin+2);
+	  } // checkXic 2
 	  Bool_t istrackIn08=kTRUE;
 	  for(Int_t k=0;k<5;k++){
 	    AliAODMCParticle *mcpartdau=(AliAODMCParticle*)mcArray->At(arrayDauLab[k]);
 	    if(TMath::Abs(mcpartdau->Eta())>0.8) istrackIn08=kFALSE;
 	  }
 	  if(istrackIn08) {
-	    if (checkXic2XiPiPi==1)  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin);
-	    else if (checkXic2XiPiPi==2) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin+2);
+	    if (checkXic2XiPiPi==1)  {
+			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin);
+			//if(fHMTrigOn==true) fHistoMCSpectrum_5->Fill(ptpart);
+			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAcc08,checkOrigin);
+		} // checkXic 1
+	    else if (checkXic2XiPiPi==2) { 
+			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin+2);
+			//if(fHMTrigOn==true) fHistoMCSpectrum_6->Fill(ptpart);
+			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAcc08,checkOrigin+2);
+		} // checkXic 2
 	  }
 	}
 	
 	if(isInAcc){
-	  if (checkXic2XiPiPi==1) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin);
-	  else if (checkXic2XiPiPi==2)  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin+2);
+	  if (checkXic2XiPiPi==1) { 
+			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin);
+			//if(fHMTrigOn==true) fHistoMCSpectrum_7->Fill(ptpart);
+			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAccMother,checkOrigin);
+	  } // checkXic 1
+	  else if (checkXic2XiPiPi==2) {
+			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin+2);
+			//if(fHMTrigOn==true) fHistoMCSpectrum_8->Fill(ptpart);
+			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAccMother,checkOrigin+2);
+	  } // checkXic 2
 	  for(Int_t k=0;k<5;k++){
 	    AliAODMCParticle *mcpartdau=(AliAODMCParticle*)mcArray->At(arrayDauLab[k]);
 	    if(TMath::Abs(mcpartdau->Eta())>0.8) isInAcc=kFALSE;    
 	  }
 	}
 	if(isInAcc) {
-	  if (checkXic2XiPiPi==1) fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin);
-	  else if (checkXic2XiPiPi==2)  fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin+2);
+	  if (checkXic2XiPiPi==1) {
+			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin);
+			//if(fHMTrigOn==true) fHistoMCSpectrum_9->Fill(ptpart);
+			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAcc,checkOrigin);
+	  } // checkXic 1
+	  else if (checkXic2XiPiPi==2) {
+			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin+2);
+			//if(fHMTrigOn==true) fHistoMCSpectrum_10->Fill(ptpart);
+			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAcc,checkOrigin+2);
+	  } // checkXic 2
 	}
       } //else continue;//CheckXic2XiPiPi
     }//Check on PDG code

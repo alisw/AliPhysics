@@ -35,38 +35,44 @@
 ClassImp(AliCSPIDCuts);
 /// \endcond
 
-const char *AliCSPIDCuts::fgkCutsNames[AliCSPIDCuts::kNCuts] = {
-    "ITS dE/dx n#sigma",
-    "TPC dE/dx n#sigma",
-    "TOF n#sigma"
-};
-
+const char* AliCSPIDCuts::fgkCutsNames[AliCSPIDCuts::kNCuts] = {
+  "#it{p} range",
+  "ITS dE/dx n#sigma",
+  "TPC dE/dx n#sigma",
+  "TOF n#sigma",
+  "TPC+TOF 2D"};
 
 /// Default constructor for serialization
-AliCSPIDCuts::AliCSPIDCuts() :
-    AliCSTrackCutsBase(),
+AliCSPIDCuts::AliCSPIDCuts()
+  : AliCSTrackCutsBase(),
     fMinP(0.0),
     fMaxP(9999.0),
-//    fITSnSigmaAbove{100.0},
-//    fITSnSigmaBelow{-100.0},
-//    fTPCnSigmaAbove{100.0},
-//    fTPCnSigmaBelow{-100.0},
-//    fTOFRequired{kFALSE},
-//    fTOFnSigmaAbove{100.0},
-//    fTOFnSigmaBelow{-100.0},
+    fTOFRequired(false),
+    fTPCTOF2Dcut(false),
+    fITSnSigmaAbove{100.0},
+    fITSnSigmaBelow{-100.0},
+    fTPCnSigmaAbove{100.0},
+    fTPCnSigmaBelow{-100.0},
+    fTOFnSigmaAbove{100.0},
+    fTOFnSigmaBelow{-100.0},
+    fCutsEnabledMask(TBits()),
+    fCutsActivatedMask(TBits()),
     fITSEnabledSpeciesMask(TBits()),
     fTPCEnabledSpeciesMask(TBits()),
     fTOFEnabledSpeciesMask(TBits()),
+    fTPCTOF2DEnabledSpeciesMask(TBits()),
     fPIDResponse(NULL),
     fTargetSpecies(AliPID::kUnknown),
-    fhCutsStatistics(NULL),
-    fhCutsCorrelation(NULL)
-//    fhITSdEdxSigmaVsP{NULL},
-//    fhITSdEdxSignalVsP{NULL},
-//    fhTPCdEdxSigmaVsP{NULL},
-//    fhTPCdEdxSignalVsP{NULL},
-//    fhTOFSigmaVsP{NULL},
-//    fhTOFSignalVsP{NULL}
+    fCutNumber(0),
+    fhCutsStatistics(nullptr),
+    fhCutsCorrelation(nullptr),
+    fhITSdEdxSigmaVsP{nullptr},
+    fhITSdEdxSignalVsP{nullptr},
+    fhTPCdEdxSigmaVsP{nullptr},
+    fhTPCdEdxSignalVsP{nullptr},
+    fhTOFSigmaVsP{nullptr},
+    fhTOFSignalVsP{nullptr},
+    fhTPCTOFSigma{nullptr}
 {
 }
 
@@ -74,53 +80,41 @@ AliCSPIDCuts::AliCSPIDCuts() :
 /// \param name name of the event cuts
 /// \param title title of the event cuts
 /// \param target the PID target particle of type AliPID::EParticleType
-AliCSPIDCuts::AliCSPIDCuts(const char *name, const char *title, AliPID::EParticleType target) :
-    AliCSTrackCutsBase(kNCuts,kNCutsParameters,name,title),
+AliCSPIDCuts::AliCSPIDCuts(const char* name, const char* title, AliPID::EParticleType target, int cutnumber)
+  : AliCSTrackCutsBase(kNCuts, kNCutsParameters, name, title),
     fMinP(0.0),
     fMaxP(9999.0),
-    //    fITSnSigmaAbove{100.0},
-    //    fITSnSigmaBelow{-100.0},
-    //    fTPCnSigmaAbove{100.0},
-    //    fTPCnSigmaBelow{-100.0},
-    //    fTOFRequired{kFALSE},
-    //    fTOFnSigmaAbove{100.0},
-    //    fTOFnSigmaBelow{-100.0},
-    fITSEnabledSpeciesMask(TBits(AliPID::kSPECIESC)),
-    fTPCEnabledSpeciesMask(TBits(AliPID::kSPECIESC)),
-    fTOFEnabledSpeciesMask(TBits(AliPID::kSPECIESC)),
+    fTOFRequired(false),
+    fTPCTOF2Dcut(false),
+    fITSnSigmaAbove{100.0},
+    fITSnSigmaBelow{-100.0},
+    fTPCnSigmaAbove{100.0},
+    fTPCnSigmaBelow{-100.0},
+    fTOFnSigmaAbove{100.0},
+    fTOFnSigmaBelow{-100.0},
+    fCutsEnabledMask(TBits()),
+    fCutsActivatedMask(TBits()),
+    fITSEnabledSpeciesMask(TBits()),
+    fTPCEnabledSpeciesMask(TBits()),
+    fTOFEnabledSpeciesMask(TBits()),
+    fTPCTOF2DEnabledSpeciesMask(TBits()),
     fPIDResponse(NULL),
     fTargetSpecies(target),
-    fhCutsStatistics(NULL),
-    fhCutsCorrelation(NULL)
-//    fhITSdEdxSigmaVsP{NULL},
-//    fhITSdEdxSignalVsP{NULL},
-//    fhTPCdEdxSigmaVsP{NULL},
-//    fhTPCdEdxSignalVsP{NULL},
-//    fhTOFSigmaVsP{NULL},
-//    fhTOFSignalVsP{NULL}
+    fCutNumber(cutnumber),
+    fhCutsStatistics(nullptr),
+    fhCutsCorrelation(nullptr),
+    fhITSdEdxSigmaVsP{nullptr},
+    fhITSdEdxSignalVsP{nullptr},
+    fhTPCdEdxSigmaVsP{nullptr},
+    fhTPCdEdxSignalVsP{nullptr},
+    fhTOFSigmaVsP{nullptr},
+    fhTOFSignalVsP{nullptr},
+    fhTPCTOFSigma{nullptr}
 {
-  for (Int_t spid = AliPID::kElectron; spid < AliPID::kSPECIESC; spid++) {
-    fITSnSigmaAbove[spid] = 100.0;
-    fITSnSigmaBelow[spid] = -100.0;
-    fTPCnSigmaAbove[spid] = 100.0;
-    fTPCnSigmaBelow[spid] = -100.0;
-    fTOFRequired[spid] = kFALSE;
-    fTOFnSigmaAbove[spid] = 100.0;
-    fTOFnSigmaBelow[spid] = -100.0;
-  }
-
-  for (Int_t i = 0; i < 2; i++) {
-    fhITSdEdxSigmaVsP[i] = NULL;
-    fhITSdEdxSignalVsP[i] = NULL;
-    fhTPCdEdxSigmaVsP[i] = NULL;
-    fhTPCdEdxSignalVsP[i] = NULL;
-    fhTOFSigmaVsP[i] = NULL;
-    fhTOFSignalVsP[i] = NULL;
-  }
-
   fITSEnabledSpeciesMask.ResetAllBits();
   fTPCEnabledSpeciesMask.ResetAllBits();
   fTOFEnabledSpeciesMask.ResetAllBits();
+  fTPCTOF2DEnabledSpeciesMask.ResetAllBits();
 }
 
 /// Destructor
@@ -158,134 +152,38 @@ void AliCSPIDCuts::NotifyEvent() {
 /// \param ttrk the track to analyze whether it is recognized as the target or not
 /// \return kTRUE if the track is recognized, kFALSE otherwise
 ///
-Bool_t AliCSPIDCuts::IsTrackAccepted(AliVTrack *ttrk) {
-  /* just to be sure */
-  if (ttrk == NULL) return kFALSE;
-
-  /* if not in the momentum range it is not recognized */
-  if (ttrk->P() < fMinP || fMaxP < ttrk->P()) return kFALSE;
-
-  /* for the time being */
-  Bool_t accepted = kTRUE;
-
-  /* initialize the mask of activated cuts */
-  fCutsActivatedMask.ResetAllBits();
+Bool_t AliCSPIDCuts::IsTrackAccepted(AliVTrack* ttrk, float*)
+{
+  /* is the track accepted */
+  bool accepted = accept(ttrk);
 
   /* we now need to consider the potential constrained track */
   AliVTrack *trk = ttrk;
-  if (ttrk->GetID() < 0)
+  if (ttrk->GetID() < 0) {
     /* let's switch to the original one which has the PID information */
     trk = AliCSTrackMaps::GetOriginalTrack(dynamic_cast<AliAODTrack*>(ttrk));
-
-
-  /* ITS PID cut */
-  if (fCutsEnabledMask.TestBitNumber(kITSdEdxSigmaCut)) {
-    if( fPIDResponse->NumberOfSigmasITS(trk, fTargetSpecies) < fITSnSigmaBelow[fTargetSpecies] ||
-        fITSnSigmaAbove[fTargetSpecies] < fPIDResponse->NumberOfSigmasITS(trk, fTargetSpecies)){
-      fCutsActivatedMask.SetBitNumber(kITSdEdxSigmaCut);
-      accepted = kFALSE;
-    }
-    else {
-      /* now check the separation if required */
-      if (fITSEnabledSpeciesMask.CountBits() > 1) {
-        AliPID::EParticleType spid = AliPID::EParticleType(fITSEnabledSpeciesMask.FirstSetBit());
-        while (spid < AliPID::kDeuteron) {
-          if (spid != fTargetSpecies) {
-            if(fITSnSigmaBelow[spid] < fPIDResponse->NumberOfSigmasITS(trk, spid) &&
-                fPIDResponse->NumberOfSigmasITS(trk, spid) < fITSnSigmaAbove[spid]){
-              fCutsActivatedMask.SetBitNumber(kITSdEdxSigmaCut);
-              accepted = kFALSE;
-              break;
-            }
-          }
-          spid = AliPID::EParticleType(fITSEnabledSpeciesMask.FirstSetBit(spid+1));
-        }
-      }
-    }
-  }
-
-  /* TPC PID cut */
-  if (fCutsEnabledMask.TestBitNumber(kTPCdEdxSigmaCut)) {
-    if( fPIDResponse->NumberOfSigmasTPC(trk, fTargetSpecies) < fTPCnSigmaBelow[fTargetSpecies] ||
-        fTPCnSigmaAbove[fTargetSpecies] < fPIDResponse->NumberOfSigmasTPC(trk, fTargetSpecies)){
-      fCutsActivatedMask.SetBitNumber(kTPCdEdxSigmaCut);
-      accepted = kFALSE;
-    }
-    else {
-      /* now check the separation if required */
-      if (fTPCEnabledSpeciesMask.CountBits() > 1) {
-        AliPID::EParticleType spid = AliPID::EParticleType(fTPCEnabledSpeciesMask.FirstSetBit());
-        while (spid < AliPID::kDeuteron) {
-          if (spid != fTargetSpecies) {
-            if(fTPCnSigmaBelow[spid] < fPIDResponse->NumberOfSigmasTPC(trk, spid) &&
-                fPIDResponse->NumberOfSigmasTPC(trk, spid) < fTPCnSigmaAbove[spid]){
-              fCutsActivatedMask.SetBitNumber(kTPCdEdxSigmaCut);
-              accepted = kFALSE;
-              break;
-            }
-          }
-          spid = AliPID::EParticleType(fTPCEnabledSpeciesMask.FirstSetBit(spid+1));
-        }
-      }
-    }
-  }
-
-  /* TOF PID cut */
-  if (fCutsEnabledMask.TestBitNumber(kTOFSigmaCut)) {
-    if ((trk->GetStatus() & AliESDtrack::kTOFin) && (!(trk->GetStatus() & AliESDtrack::kTOFmismatch))) {
-      if( fPIDResponse->NumberOfSigmasTOF(trk, fTargetSpecies) < fTOFnSigmaBelow[fTargetSpecies] ||
-          fTOFnSigmaAbove[fTargetSpecies] < fPIDResponse->NumberOfSigmasTOF(trk, fTargetSpecies)){
-        fCutsActivatedMask.SetBitNumber(kTOFSigmaCut);
-        accepted = kFALSE;
-      }
-      else {
-        /* now check the separation if required */
-        if (fTOFEnabledSpeciesMask.CountBits() > 1) {
-          AliPID::EParticleType spid = AliPID::EParticleType(fTOFEnabledSpeciesMask.FirstSetBit());
-          while (spid < AliPID::kDeuteron) {
-            if (spid != fTargetSpecies) {
-              if(fTOFnSigmaBelow[spid] < fPIDResponse->NumberOfSigmasTOF(trk, spid) &&
-                  fPIDResponse->NumberOfSigmasTOF(trk, spid) < fTOFnSigmaAbove[spid]){
-                fCutsActivatedMask.SetBitNumber(kTOFSigmaCut);
-                accepted = kFALSE;
-                break;
-              }
-            }
-            spid = AliPID::EParticleType(fTOFEnabledSpeciesMask.FirstSetBit(spid+1));
-          }
-        }
-      }
-    }
-    else {
-      if (fTOFRequired[fTargetSpecies]) {
-        fCutsActivatedMask.SetBitNumber(kTOFSigmaCut);
-        accepted = kFALSE;
-      }
-    }
   }
 
   if (fQALevel > kQALevelNone) {
     /* let's fill the histograms */
-    fhCutsStatistics->Fill(fhCutsStatistics->GetBinCenter(fhCutsStatistics->GetXaxis()->FindBin("n tracks")));
+    fhCutsStatistics->Fill("n tracks", 1);
     if (!accepted)
-      fhCutsStatistics->Fill(fhCutsStatistics->GetBinCenter(fhCutsStatistics->GetXaxis()->FindBin("n cut tracks")));
+      fhCutsStatistics->Fill("n cut tracks", 1);
 
     for (Int_t i=0; i<kNCuts; i++) {
-      if (fhCutsStatistics->GetXaxis()->FindBin(fgkCutsNames[i]) < 1)
+      if (fhCutsStatistics->GetXaxis()->FindFixBin(fgkCutsNames[i]) < 1)
         AliFatal(Form("Inconsistency! Cut %d with name %s not found", i, fgkCutsNames[i]));
 
       if (fCutsActivatedMask.TestBitNumber(i))
-        fhCutsStatistics->Fill(fhCutsStatistics->GetBinCenter(fhCutsStatistics->GetXaxis()->FindBin(fgkCutsNames[i])));
+        fhCutsStatistics->Fill(fgkCutsNames[i], 1);
 
       if (fQALevel > kQALevelLight) {
-        for (Int_t j=i; j<kNCuts; j++) {
-          if (fhCutsStatistics->GetXaxis()->FindBin(fgkCutsNames[j]) < 1)
+        for (Int_t j = i; j < kNCuts; j++) {
+          if (fhCutsStatistics->GetXaxis()->FindFixBin(fgkCutsNames[j]) < 1)
             AliFatal(Form("Inconsistency! Cut %d with name %s not found", j, fgkCutsNames[j]));
 
           if (fCutsActivatedMask.TestBitNumber(i) && fCutsActivatedMask.TestBitNumber(j)) {
-            Float_t xC = fhCutsCorrelation->GetXaxis()->GetBinCenter(fhCutsCorrelation->GetXaxis()->FindBin(fgkCutsNames[i]));
-            Float_t yC = fhCutsCorrelation->GetYaxis()->GetBinCenter(fhCutsCorrelation->GetYaxis()->FindBin(fgkCutsNames[j]));
-            fhCutsCorrelation->Fill(xC, yC);
+            fhCutsCorrelation->Fill(fgkCutsNames[i], fgkCutsNames[j], 1);
           }
         }
       }
@@ -306,6 +204,7 @@ Bool_t AliCSPIDCuts::IsTrackAccepted(AliVTrack *ttrk) {
           Double_t beta = tracklen_cm / toftime_ps / c_cm_ps;
           fhTOFSigmaVsP[i]->Fill(ttrk->P(),fPIDResponse->NumberOfSigmasTOF(trk, fTargetSpecies));
           fhTOFSignalVsP[i]->Fill(ttrk->P(),beta);
+          fhTPCTOFSigma[i]->Fill(fPIDResponse->NumberOfSigmasTPC(trk, fTargetSpecies), fPIDResponse->NumberOfSigmasTOF(trk, fTargetSpecies));
         }
       }
       /* don't fill after if event not accepted */
@@ -314,7 +213,6 @@ Bool_t AliCSPIDCuts::IsTrackAccepted(AliVTrack *ttrk) {
   }
   return accepted;
 }
-
 
 /// Check whether the true track associated to the passed track is accepted by the PID cuts
 /// \param trk the track to analyze whether its associated true track is accepted or not
@@ -351,7 +249,8 @@ Bool_t AliCSPIDCuts::IsTrueTrackAccepted(Int_t itrk) {
 
     if (fCutsEnabledMask.TestBitNumber(kITSdEdxSigmaCut) ||
         fCutsEnabledMask.TestBitNumber(kTPCdEdxSigmaCut) ||
-        fCutsEnabledMask.TestBitNumber(kTOFSigmaCut)) {
+        fCutsEnabledMask.TestBitNumber(kTOFSigmaCut) ||
+        fCutsEnabledMask.TestBitNumber(kTPCTOF2DSigmaCut)) {
       if (GetTrueSpecies(particle) != fTargetSpecies) {
         return kFALSE;
       }
@@ -371,7 +270,8 @@ Bool_t AliCSPIDCuts::IsTrueTrackAccepted(Int_t itrk) {
 
     if (fCutsEnabledMask.TestBitNumber(kITSdEdxSigmaCut) ||
         fCutsEnabledMask.TestBitNumber(kTPCdEdxSigmaCut) ||
-        fCutsEnabledMask.TestBitNumber(kTOFSigmaCut)) {
+        fCutsEnabledMask.TestBitNumber(kTOFSigmaCut) ||
+        fCutsEnabledMask.TestBitNumber(kTPCTOF2DSigmaCut)) {
       if (GetTrueSpecies(particle) != fTargetSpecies) {
         return kFALSE;
       }
@@ -399,7 +299,11 @@ AliPID::EParticleType AliCSPIDCuts::GetTrueSpecies(AliVTrack *trk) {
 /// Get the true species associated to a true particle
 /// \param par the true particle
 /// \return the ID of the particle species
-AliPID::EParticleType AliCSPIDCuts::GetTrueSpecies(AliVParticle *par) {
+AliPID::EParticleType AliCSPIDCuts::GetTrueSpecies(AliVParticle* par)
+{
+  if (par == nullptr) {
+    return AliPID::kUnknown;
+  }
 
   switch(par->PdgCode()) {
   case ::kPositron:
@@ -434,105 +338,135 @@ AliPID::EParticleType AliCSPIDCuts::GetTrueSpecies(AliVParticle *par) {
 Bool_t AliCSPIDCuts::SetCutAndParams(Int_t paramID, Int_t value) {
 
   switch (cutsParametersIds(paramID)) {
-  case kPRangeCutParam:
-    if (SetPRange(value)) {
-      fParameters[kPRangeCutParam] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kITSdEdxSigmaCutParam_e:
-    if (SetITSdEdxSigmaCut(AliPID::kElectron, value)) {
-      fParameters[kITSdEdxSigmaCutParam_e] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kITSdEdxSigmaCutParam_mu:
-    if (SetITSdEdxSigmaCut(AliPID::kMuon, value)) {
-      fParameters[kITSdEdxSigmaCutParam_mu] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kITSdEdxSigmaCutParam_pi:
-    if (SetITSdEdxSigmaCut(AliPID::kPion, value)) {
-      fParameters[kITSdEdxSigmaCutParam_pi] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kITSdEdxSigmaCutParam_k:
-    if (SetITSdEdxSigmaCut(AliPID::kKaon, value)) {
-      fParameters[kITSdEdxSigmaCutParam_k] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kITSdEdxSigmaCutParam_p:
-    if (SetITSdEdxSigmaCut(AliPID::kProton, value)) {
-      fParameters[kITSdEdxSigmaCutParam_p] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kTPCdEdxSigmaCutParam_e:
-    if (SetTPCdEdxSigmaCut(AliPID::kElectron, value)) {
-      fParameters[kTPCdEdxSigmaCutParam_e] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kTPCdEdxSigmaCutParam_mu:
-    if (SetTPCdEdxSigmaCut(AliPID::kMuon, value)) {
-      fParameters[kTPCdEdxSigmaCutParam_mu] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kTPCdEdxSigmaCutParam_pi:
-    if (SetTPCdEdxSigmaCut(AliPID::kPion, value)) {
-      fParameters[kTPCdEdxSigmaCutParam_pi] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kTPCdEdxSigmaCutParam_k:
-    if (SetTPCdEdxSigmaCut(AliPID::kKaon, value)) {
-      fParameters[kTPCdEdxSigmaCutParam_k] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kTPCdEdxSigmaCutParam_p:
-    if (SetTPCdEdxSigmaCut(AliPID::kProton, value)) {
-      fParameters[kTPCdEdxSigmaCutParam_p] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kTOFSigmaCutParam_e:
-    if (SetTOFSigmaCut(AliPID::kElectron, value)) {
-      fParameters[kTOFSigmaCutParam_e] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kTOFSigmaCutParam_mu:
-    if (SetTOFSigmaCut(AliPID::kMuon, value)) {
-      fParameters[kTOFSigmaCutParam_mu] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kTOFSigmaCutParam_pi:
-    if (SetTOFSigmaCut(AliPID::kPion, value)) {
-      fParameters[kTOFSigmaCutParam_pi] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kTOFSigmaCutParam_k:
-    if (SetTOFSigmaCut(AliPID::kKaon, value)) {
-      fParameters[kTOFSigmaCutParam_k] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  case kTOFSigmaCutParam_p:
-    if (SetTOFSigmaCut(AliPID::kProton, value)) {
-      fParameters[kTOFSigmaCutParam_p] = value;
-      UpdateCutsString();
-      return kTRUE;
-    } else return kFALSE;
-  default:
-    AliError(Form("Cut param id %d out of supported range", paramID));
-    return kFALSE;
+    case kPMinCutParam:
+      if (SetPMin(value)) {
+        fParameters[kPMinCutParam] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kPMaxCutParam:
+      if (SetPMax(value)) {
+        fParameters[kPMaxCutParam] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kITSdEdxSigmaCutParam_e:
+      if (SetITSdEdxSigmaCut(AliPID::kElectron, value)) {
+        fParameters[kITSdEdxSigmaCutParam_e] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kITSdEdxSigmaCutParam_mu:
+      if (SetITSdEdxSigmaCut(AliPID::kMuon, value)) {
+        fParameters[kITSdEdxSigmaCutParam_mu] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kITSdEdxSigmaCutParam_pi:
+      if (SetITSdEdxSigmaCut(AliPID::kPion, value)) {
+        fParameters[kITSdEdxSigmaCutParam_pi] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kITSdEdxSigmaCutParam_k:
+      if (SetITSdEdxSigmaCut(AliPID::kKaon, value)) {
+        fParameters[kITSdEdxSigmaCutParam_k] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kITSdEdxSigmaCutParam_p:
+      if (SetITSdEdxSigmaCut(AliPID::kProton, value)) {
+        fParameters[kITSdEdxSigmaCutParam_p] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kTPCdEdxSigmaCutParam_e:
+      if (SetTPCdEdxSigmaCut(AliPID::kElectron, value)) {
+        fParameters[kTPCdEdxSigmaCutParam_e] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kTPCdEdxSigmaCutParam_mu:
+      if (SetTPCdEdxSigmaCut(AliPID::kMuon, value)) {
+        fParameters[kTPCdEdxSigmaCutParam_mu] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kTPCdEdxSigmaCutParam_pi:
+      if (SetTPCdEdxSigmaCut(AliPID::kPion, value)) {
+        fParameters[kTPCdEdxSigmaCutParam_pi] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kTPCdEdxSigmaCutParam_k:
+      if (SetTPCdEdxSigmaCut(AliPID::kKaon, value)) {
+        fParameters[kTPCdEdxSigmaCutParam_k] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kTPCdEdxSigmaCutParam_p:
+      if (SetTPCdEdxSigmaCut(AliPID::kProton, value)) {
+        fParameters[kTPCdEdxSigmaCutParam_p] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kTOFSigmaCutParam_e:
+      if (SetTOFSigmaCut(AliPID::kElectron, value)) {
+        fParameters[kTOFSigmaCutParam_e] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kTOFSigmaCutParam_mu:
+      if (SetTOFSigmaCut(AliPID::kMuon, value)) {
+        fParameters[kTOFSigmaCutParam_mu] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kTOFSigmaCutParam_pi:
+      if (SetTOFSigmaCut(AliPID::kPion, value)) {
+        fParameters[kTOFSigmaCutParam_pi] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kTOFSigmaCutParam_k:
+      if (SetTOFSigmaCut(AliPID::kKaon, value)) {
+        fParameters[kTOFSigmaCutParam_k] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kTOFSigmaCutParam_p:
+      if (SetTOFSigmaCut(AliPID::kProton, value)) {
+        fParameters[kTOFSigmaCutParam_p] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    case kTPCTOFCutParam:
+      if (SetTPCTOFCut(value)) {
+        fParameters[kTPCTOFCutParam] = value;
+        UpdateCutsString();
+        return kTRUE;
+      } else
+        return kFALSE;
+    default:
+      AliError(Form("Cut param id %d out of supported range", paramID));
+      return kFALSE;
   }
 }
 
@@ -542,107 +476,152 @@ Bool_t AliCSPIDCuts::SetCutAndParams(Int_t paramID, Int_t value) {
 void AliCSPIDCuts::PrintCutWithParams(Int_t paramID) const {
 
   switch (cutsParametersIds(paramID)) {
-  case kPRangeCutParam:
-    printf("  Cut applicable P range: ");
-    printf("%3.1f GeV < P %s", fMinP, (fMaxP < 9990) ? Form("%3.1f GeV\n", fMaxP) : "\n");
-    break;
-  case kITSdEdxSigmaCutParam_e:
-    PrintITSdEdxSigmaCut(AliPID::kElectron);
-    break;
-  case kITSdEdxSigmaCutParam_mu:
-    PrintITSdEdxSigmaCut(AliPID::kMuon);
-    break;
-  case kITSdEdxSigmaCutParam_pi:
-    PrintITSdEdxSigmaCut(AliPID::kPion);
-    break;
-  case kITSdEdxSigmaCutParam_k:
-    PrintITSdEdxSigmaCut(AliPID::kKaon);
-    break;
-  case kITSdEdxSigmaCutParam_p:
-    PrintITSdEdxSigmaCut(AliPID::kProton);
-    break;
-  case kTPCdEdxSigmaCutParam_e:
-    PrintTPCdEdxSigmaCut(AliPID::kElectron);
-    break;
-  case kTPCdEdxSigmaCutParam_mu:
-    PrintTPCdEdxSigmaCut(AliPID::kMuon);
-    break;
-  case kTPCdEdxSigmaCutParam_pi:
-    PrintTPCdEdxSigmaCut(AliPID::kPion);
-    break;
-  case kTPCdEdxSigmaCutParam_k:
-    PrintTPCdEdxSigmaCut(AliPID::kKaon);
-    break;
-  case kTPCdEdxSigmaCutParam_p:
-    PrintTPCdEdxSigmaCut(AliPID::kProton);
-    break;
-  case kTOFSigmaCutParam_e:
-    PrintTOFSigmaCut(AliPID::kElectron);
-    break;
-  case kTOFSigmaCutParam_mu:
-    PrintTOFSigmaCut(AliPID::kMuon);
-    break;
-  case kTOFSigmaCutParam_pi:
-    PrintTOFSigmaCut(AliPID::kPion);
-    break;
-  case kTOFSigmaCutParam_k:
-    PrintTOFSigmaCut(AliPID::kKaon);
-    break;
-  case kTOFSigmaCutParam_p:
-    PrintTOFSigmaCut(AliPID::kProton);
-    break;
-  default:
-    AliError(Form("Cut param id %d out of supported range", paramID));
+    case kPMinCutParam:
+      printf("  Cut applicable from P min: %3.1f GeV/c\n", fMinP);
+      break;
+    case kPMaxCutParam:
+      printf("  Cut applicable up to P max: %s", (fMaxP < 9990) ? Form("%3.1f GeV/c\n", fMaxP) : "\n");
+      break;
+    case kITSdEdxSigmaCutParam_e:
+      PrintITSdEdxSigmaCut(AliPID::kElectron);
+      break;
+    case kITSdEdxSigmaCutParam_mu:
+      PrintITSdEdxSigmaCut(AliPID::kMuon);
+      break;
+    case kITSdEdxSigmaCutParam_pi:
+      PrintITSdEdxSigmaCut(AliPID::kPion);
+      break;
+    case kITSdEdxSigmaCutParam_k:
+      PrintITSdEdxSigmaCut(AliPID::kKaon);
+      break;
+    case kITSdEdxSigmaCutParam_p:
+      PrintITSdEdxSigmaCut(AliPID::kProton);
+      break;
+    case kTPCdEdxSigmaCutParam_e:
+      PrintTPCdEdxSigmaCut(AliPID::kElectron);
+      break;
+    case kTPCdEdxSigmaCutParam_mu:
+      PrintTPCdEdxSigmaCut(AliPID::kMuon);
+      break;
+    case kTPCdEdxSigmaCutParam_pi:
+      PrintTPCdEdxSigmaCut(AliPID::kPion);
+      break;
+    case kTPCdEdxSigmaCutParam_k:
+      PrintTPCdEdxSigmaCut(AliPID::kKaon);
+      break;
+    case kTPCdEdxSigmaCutParam_p:
+      PrintTPCdEdxSigmaCut(AliPID::kProton);
+      break;
+    case kTOFSigmaCutParam_e:
+      PrintTOFSigmaCut(AliPID::kElectron);
+      break;
+    case kTOFSigmaCutParam_mu:
+      PrintTOFSigmaCut(AliPID::kMuon);
+      break;
+    case kTOFSigmaCutParam_pi:
+      PrintTOFSigmaCut(AliPID::kPion);
+      break;
+    case kTOFSigmaCutParam_k:
+      PrintTOFSigmaCut(AliPID::kKaon);
+      break;
+    case kTOFSigmaCutParam_p:
+      PrintTOFSigmaCut(AliPID::kProton);
+      break;
+    case kTPCTOFCutParam:
+      break;
+    default:
+      AliError(Form("Cut param id %d out of supported range", paramID));
   }
 }
 
-/// Configures the applicable track momentum range for the PID cut
-/// \param ptcode the **P** range code
-/// | code | minimum **P** (GeV/c) | maximum **P** (GeV/c) |
+/// Configures the applicable track minimum momentum for the PID cut
+/// \param pcode the **P** range code
+/// | code | minimum **P** (GeV/c) |
 /// |:--:|:--:|:--:|
-/// | 0 | full range | full range |
-/// | 1 | 0.2 | 2.0 |
-/// | 2 | 0.2 | 3.0 |
-/// | 3 | 0.2 | 5.0 |
-/// | 4 | 0.2 | 1.4 |
-/// | 5 | 0.2 | 1.6 |
-/// | 6 | 0.2 | 1.8 |
-/// \return kTRUE if proper and supported \f$ p_{T} \f$ cut code
+/// | 0 | 0.0 |
+/// | 1 | 0.2 |
+/// | 2 | 0.3 |
+/// | 3 | 0.4 |
+/// | 4 | 0.5 |
+/// | 5 | 0.6 |
+/// | 6 | 0.7 |
+/// | 7 | 0.8 |
+/// | 8 | 0.9 |
+/// | 9 | 1.0 |
+/// \return kTRUE if proper and supported \f$ p \f$ cut code
 ///
-Bool_t AliCSPIDCuts::SetPRange(Int_t ptcode)
+Bool_t AliCSPIDCuts::SetPMin(Int_t pcode)
 {
-  switch(ptcode){
-  case 0:
-    fMinP = 0.0;
-    fMaxP = 9999.0;
-    break;
-  case 1:
-    fMinP = 0.2;
-    fMaxP = 2.0;
-    break;
-  case 2:
-    fMinP = 0.2;
-    fMaxP = 3.0;
-    break;
-  case 3:
-    fMinP = 0.2;
-    fMaxP = 5.0;
-    break;
-  case 4:
-    fMinP = 0.2;
-    fMaxP = 1.4;
-    break;
-  case 5:
-    fMinP = 0.2;
-    fMaxP = 1.6;
-    break;
-  case 6:
-    fMinP = 0.2;
-    fMaxP = 1.8;
-    break;
-  default:
-    AliError(Form("P range code %d not supported", ptcode));
-    return kFALSE;
+  switch (pcode) {
+    case 0:
+      fMinP = 0.0;
+      break;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+      fMinP = float((pcode + 1) / 10.0);
+      break;
+    default:
+      AliError(Form("P minimum code %d not supported", pcode));
+      return kFALSE;
+  }
+  return kTRUE;
+}
+
+/// Configures the applicable track maximum momentum for the PID cut
+/// \param pcode the **P** range code
+/// | code | minimum **P** (GeV/c) |
+/// |:--:|:--:|:--:|
+/// | 0 | no maximum |
+/// | 1 | 0.3 |
+/// | 2 | 0.4 |
+/// | 3 | 0.5 |
+/// | 4 | 0.6 |
+/// | 5 | 0.7 |
+/// | 6 | 2.0 |
+/// | 7 | 3.0 |
+/// | 8 | 4.0 |
+/// \return kTRUE if proper and supported \f$ p \f$ cut code
+///
+Bool_t AliCSPIDCuts::SetPMax(Int_t pcode)
+{
+  switch (pcode) {
+    case 0:
+      fMaxP = 1e6f;
+      break;
+    case 1:
+      fMaxP = 0.3;
+      break;
+    case 2:
+      fMaxP = 0.4;
+      break;
+    case 3:
+      fMaxP = 0.5;
+      break;
+    case 4:
+      fMaxP = 0.6;
+      break;
+    case 5:
+      fMaxP = 0.7;
+      break;
+    case 6:
+      fMaxP = 2.0;
+      break;
+    case 7:
+      fMaxP = 3.0;
+      break;
+    case 8:
+      fMaxP = 4.0;
+      break;
+    default:
+      AliError(Form("P minimum code %d not supported", pcode));
+      return kFALSE;
   }
   return kTRUE;
 }
@@ -755,7 +734,6 @@ void AliCSPIDCuts::PrintITSdEdxSigmaCut(AliPID::EParticleType id) const {
     printf("  ITS PID CUT %s: none\n", AliPID::ParticleName(fTargetSpecies));
 }
 
-
 /// Sets the range for the dEdx \f$ n \sigma \f$ cut within the TPC
 ///
 /// The cut establishes an acceptance band around a concrete
@@ -766,8 +744,8 @@ void AliCSPIDCuts::PrintITSdEdxSigmaCut(AliPID::EParticleType id) const {
 /// | code | \f$ n \sigma \f$ below line | \f$ n \sigma \f$ above line | observations |
 /// |:--:|:--:|:--:|:--|
 /// | 0 | n/a | n/a | passive cut |
-/// | 1 | -10 | 10 | |
-/// | 2 | -6| 7 | |
+/// | 1 | -1 | 1 | |
+/// | 2 | -2 | 2 | |
 /// | 3 | -5 | 5 | |
 /// | 4 | -4 | 5 | |
 /// | 5 | -4 | 4 | |
@@ -788,13 +766,13 @@ Bool_t AliCSPIDCuts::SetTPCdEdxSigmaCut(AliPID::EParticleType id, Int_t dEdxCode
       break;
     case 1:
       fTPCEnabledSpeciesMask.SetBitNumber(id);
-      fTPCnSigmaBelow[id] = -10.0;
-      fTPCnSigmaAbove[id] = 10.0;
+      fTPCnSigmaBelow[id] = -1.0;
+      fTPCnSigmaAbove[id] = 1.0;
       break;
     case 2:
       fTPCEnabledSpeciesMask.SetBitNumber(id);
-      fTPCnSigmaBelow[id] = -6.0;
-      fTPCnSigmaAbove[id] = 7.0;
+      fTPCnSigmaBelow[id] = -2.0;
+      fTPCnSigmaAbove[id] = 2.0;
       break;
     case 3:
       fTPCEnabledSpeciesMask.SetBitNumber(id);
@@ -851,28 +829,37 @@ Bool_t AliCSPIDCuts::SetTPCdEdxSigmaCut(AliPID::EParticleType id, Int_t dEdxCode
 /// \param id the id of the species for which the cut is being printed
 
 void AliCSPIDCuts::PrintTPCdEdxSigmaCut(AliPID::EParticleType id) const {
-  if (fCutsEnabledMask.TestBitNumber(kTPCdEdxSigmaCut)) {
-    printf("  TPC PID CUT %s: ", AliPID::ParticleName(fTargetSpecies));
+  if (fCutsEnabledMask.TestBitNumber(kTPCdEdxSigmaCut) || fCutsEnabledMask.TestBitNumber(kTPCTOF2DSigmaCut)) {
+    printf("  TPC%sPID CUT %s: ", fTPCTOF2Dcut ? " [2D] " : " ", AliPID::ParticleName(fTargetSpecies));
     if (fTPCEnabledSpeciesMask.TestBitNumber(id)) {
       if (fTargetSpecies != id) {
-        printf("nsigma %s < %3.1f OR %3.1f < nsigma %s\n",
-            AliPID::ParticleName(id),
-            fTPCnSigmaBelow[id],
-            fTPCnSigmaAbove[id],
-            AliPID::ParticleName(id));
+        if (fTPCTOF2Dcut) {
+          printf("%3.1f < 2D nsigma %s\n",
+                 fTPCnSigmaAbove[id],
+                 AliPID::ParticleName(id));
+        } else {
+          printf("nsigma %s < %3.1f OR %3.1f < nsigma %s\n",
+                 AliPID::ParticleName(id),
+                 fTPCnSigmaBelow[id],
+                 fTPCnSigmaAbove[id],
+                 AliPID::ParticleName(id));
+        }
+      } else {
+        if (fTPCTOF2Dcut) {
+          printf("2D nsigma < %3.1f\n",
+                 fTPCnSigmaAbove[id]);
+        } else {
+          printf("%3.1f < nsigma < %3.1f\n",
+                 fTPCnSigmaBelow[id],
+                 fTPCnSigmaAbove[id]);
+        }
       }
-      else
-        printf("%3.1f < nsigma < %3.1f\n",
-            fTPCnSigmaBelow[id],
-            fTPCnSigmaAbove[id]);
     }
     else
       printf("none to %s line\n",AliPID::ParticleName(id));
-  }
-  else
+  } else
     printf("  TPC PID CUT %s: none\n", AliPID::ParticleName(fTargetSpecies));
 }
-
 
 /// Sets the range for the \f$ n \, \sigma \f$ cut within TOF
 ///
@@ -888,46 +875,52 @@ void AliCSPIDCuts::PrintTPCdEdxSigmaCut(AliPID::EParticleType id) const {
 /// | 2 | -5 | 5 | |
 /// | 3 | -3 | 5 | |
 /// | 4 | -2 | 3 | |
-/// | 5 | -3 | 3 | TOF required |
+/// | 5 | -3 | 3 | |
+/// | 6 | -2 | 2 | |
+/// | 7 | -1 | 1 | |
 /// \return kTRUE if proper and supported TOF code
 
 Bool_t AliCSPIDCuts::SetTOFSigmaCut(AliPID::EParticleType id, Int_t tofcode){
   switch(tofcode){
     case 0:
       fTOFEnabledSpeciesMask.ResetBitNumber(id);
-      fTOFRequired[id] = kFALSE;
       fTOFnSigmaBelow[id] = -100.0;
       fTOFnSigmaAbove[id] = 100.0;
       break;
     case 1:
       fTOFEnabledSpeciesMask.SetBitNumber(id);
-      fTOFRequired[id] = kFALSE;
       fTOFnSigmaBelow[id] = -7.0;
       fTOFnSigmaAbove[id] = 7.0;
       break;
     case 2:
       fTOFEnabledSpeciesMask.SetBitNumber(id);
-      fTOFRequired[id] = kFALSE;
       fTOFnSigmaBelow[id] = -5.0;
       fTOFnSigmaAbove[id] = 5.0;
       break;
     case 3:
       fTOFEnabledSpeciesMask.SetBitNumber(id);
-      fTOFRequired[id] = kFALSE;
       fTOFnSigmaBelow[id] = -3.0;
       fTOFnSigmaAbove[id] = 5.0;
       break;
     case 4:
       fTOFEnabledSpeciesMask.SetBitNumber(id);
-      fTOFRequired[id] = kFALSE;
       fTOFnSigmaBelow[id] = -2.0;
       fTOFnSigmaAbove[id] = 3.0;
       break;
     case 5:
       fTOFEnabledSpeciesMask.SetBitNumber(id);
-      fTOFRequired[id] = kTRUE;
       fTOFnSigmaBelow[id] = -3.0;
       fTOFnSigmaAbove[id] = 3.0;
+      break;
+    case 6:
+      fTOFEnabledSpeciesMask.SetBitNumber(id);
+      fTOFnSigmaBelow[id] = -2.0;
+      fTOFnSigmaAbove[id] = 2.0;
+      break;
+    case 7:
+      fTOFEnabledSpeciesMask.SetBitNumber(id);
+      fTOFnSigmaBelow[id] = -1.0;
+      fTOFnSigmaAbove[id] = 1.0;
       break;
     default:
       AliError(Form("TOF n sigmas cut code %d not supported", tofcode));
@@ -947,28 +940,89 @@ Bool_t AliCSPIDCuts::SetTOFSigmaCut(AliPID::EParticleType id, Int_t tofcode){
 /// the selected target the band is a separation band.
 /// \param id the id of the species for which the cut is being printed
 void AliCSPIDCuts::PrintTOFSigmaCut(AliPID::EParticleType id) const {
-  if (fCutsEnabledMask.TestBitNumber(kTOFSigmaCut)) {
-    printf("  TOF (%s) PID CUT %s: ", fTOFRequired ? "REQUIRED" : "NOT required", AliPID::ParticleName(fTargetSpecies));
+  if (fCutsEnabledMask.TestBitNumber(kTOFSigmaCut) || fCutsEnabledMask.TestBitNumber(kTPCTOF2DSigmaCut)) {
+    printf("  TOF (%s)%sPID CUT %s: ", fTOFRequired ? "REQUIRED" : "NOT required", fTPCTOF2Dcut ? " [2D] " : " ", AliPID::ParticleName(fTargetSpecies));
     if (fTOFEnabledSpeciesMask.TestBitNumber(id)) {
       if (fTargetSpecies != id) {
-        printf("nsigma %s < %3.1f OR %3.1f < nsigma %s\n",
-            AliPID::ParticleName(id),
-            fTOFnSigmaBelow[id],
-            fTOFnSigmaAbove[id],
-            AliPID::ParticleName(id));
+        if (fTPCTOF2Dcut) {
+          printf("%3.1f < 2D nsigma %s\n",
+                 fTOFnSigmaAbove[id],
+                 AliPID::ParticleName(id));
+        } else {
+          printf("nsigma %s < %3.1f OR %3.1f < nsigma %s\n",
+                 AliPID::ParticleName(id),
+                 fTOFnSigmaBelow[id],
+                 fTOFnSigmaAbove[id],
+                 AliPID::ParticleName(id));
+        }
+      } else {
+        if (fTPCTOF2Dcut) {
+          printf("2D nsigma < %3.1f\n",
+                 fTOFnSigmaAbove[id]);
+        } else {
+          printf("%3.1f < nsigma < %3.1f\n",
+                 fTOFnSigmaBelow[id],
+                 fTOFnSigmaAbove[id]);
+        }
       }
-      else
-        printf("%3.1f < nsigma < %3.1f\n",
-            fTOFnSigmaBelow[id],
-            fTOFnSigmaAbove[id]);
     }
     else
-      printf("none to %s line\n",AliPID::ParticleName(id));
-  }
-  else
+      printf("none to %s line\n", AliPID::ParticleName(id));
+  } else
     printf("  TOF PID CUT %s: none\n", AliPID::ParticleName(fTargetSpecies));
 }
 
+/// Configures the TOF cut
+///
+/// Establishes the required presence of the TOF detector in the considered track
+/// and the usage of the 2D TPC+TOF nsigmas cut
+/// This last 2D cut establishes an acceptance ellipse around a concrete
+/// particle species line within the TOF detector. For species other than
+/// the selected target the ellipse is a separation area towards the corresponding line.
+/// \param tpctofcode the code for the configuration of the TOF cut
+/// | code | track TOF presence | 2D TPC+TOF nsigmas | observations |
+/// |:--:|:--:|:--:|:--|
+/// | 0 | not required | not required | |
+/// | 1 |   required   | not required | |
+/// | 2 | not required |   required   | |
+/// | 3 |   required   |   required   | |
+/// \return kTRUE if proper and supported TOF code
+
+Bool_t AliCSPIDCuts::SetTPCTOFCut(int tpctofcode)
+{
+  switch (tpctofcode) {
+    case 0:
+      fTPCTOF2DEnabledSpeciesMask.ResetAllBits();
+      fTOFRequired = false;
+      fTPCTOF2Dcut = false;
+      break;
+    case 1:
+      fTPCTOF2DEnabledSpeciesMask.ResetAllBits();
+      fTOFRequired = true;
+      fTPCTOF2Dcut = false;
+      break;
+    case 2:
+      fTPCTOF2DEnabledSpeciesMask.ResetAllBits();
+      fTPCTOF2DEnabledSpeciesMask = fTPCEnabledSpeciesMask & fTOFEnabledSpeciesMask;
+      fTOFRequired = false;
+      fTPCTOF2Dcut = true;
+      break;
+    case 3:
+      fTPCTOF2DEnabledSpeciesMask.ResetAllBits();
+      fTPCTOF2DEnabledSpeciesMask = fTPCEnabledSpeciesMask & fTOFEnabledSpeciesMask;
+      fTOFRequired = true;
+      fTPCTOF2Dcut = true;
+      break;
+    default:
+      AliError(Form("TOF configuration cut code %d not supported", tpctofcode));
+      return kFALSE;
+  }
+  if (fTPCTOF2DEnabledSpeciesMask.CountBits() > 0)
+    fCutsEnabledMask.SetBitNumber(kTPCTOF2DSigmaCut);
+  else
+    fCutsEnabledMask.ResetBitNumber(kTPCTOF2DSigmaCut);
+  return kTRUE;
+}
 
 /// Initializes the cuts
 ///
@@ -987,8 +1041,9 @@ void AliCSPIDCuts::InitCuts(const char *name){
       /* if we need PID response instance and it is not there we cannot continue */
       if ((fPIDResponse == NULL) &&
           (fCutsEnabledMask.TestBitNumber(kITSdEdxSigmaCut) ||
-              fCutsEnabledMask.TestBitNumber(kTPCdEdxSigmaCut) ||
-              fCutsEnabledMask.TestBitNumber(kTOFSigmaCut)))
+           fCutsEnabledMask.TestBitNumber(kTPCdEdxSigmaCut) ||
+           fCutsEnabledMask.TestBitNumber(kTOFSigmaCut) ||
+           fCutsEnabledMask.TestBitNumber(kTPCTOF2DSigmaCut)))
         AliFatal("No PID response instance. ABORTING!!!");
     }
   }
@@ -1022,7 +1077,7 @@ void AliCSPIDCuts::DefineHistograms(){
 
     /* the original name is used as title for the statistics histogram so, preserve it */
     TString originalTempName = fHistogramsList->GetName();
-    fHistogramsList->SetName(Form("%s_%s",fHistogramsList->GetName(),GetCutsString()));
+    fHistogramsList->SetName(Form("%s_%s%d_%s", fHistogramsList->GetName(), AliPID::ParticleShortName(fTargetSpecies), fCutNumber, GetCutsString()));
 
     fhCutsStatistics = new TH1F(Form("CutsStatistics_%s",GetCutsString()),Form("%s tracks cuts statistics",originalTempName.Data()),kNCuts+4,-0.5,kNCuts+3.5);
     fhCutsStatistics->GetXaxis()->SetBinLabel(1,"n tracks");
@@ -1077,6 +1132,11 @@ void AliCSPIDCuts::DefineHistograms(){
     fhTOFSignalVsP[1] = new TH2F(Form("TOFSignalA_%s",GetCutsString()),"TOF signal;P (GeV/c);#beta",nPbins,edges, 400, 0.0, 1.1);
     fHistogramsList->Add(fhTOFSignalVsP[0]);
     fHistogramsList->Add(fhTOFSignalVsP[1]);
+
+    fhTPCTOFSigma[0] = new TH2F(Form("TPCTOFSigmaB_%s", GetCutsString()), "TPC+TOF n#sigma before;TPC n#sigma;TOF n#sigma", 400, -10, 10, 400, -10, 10);
+    fhTPCTOFSigma[1] = new TH2F(Form("TPCTOFSigmaA_%s", GetCutsString()), "TPC+TOF n#sigma;TPC n#sigma;TOF n#sigma", 400, -10, 10, 400, -10, 10);
+    fHistogramsList->Add(fhTPCTOFSigma[0]);
+    fHistogramsList->Add(fhTPCTOFSigma[1]);
 
     TH1::AddDirectory(oldstatus);
   }

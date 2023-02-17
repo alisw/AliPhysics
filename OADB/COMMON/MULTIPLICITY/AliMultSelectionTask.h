@@ -172,7 +172,7 @@ public:
   virtual void   Terminate(Option_t *);
   
   // Max number of tracks
-  static const Int_t kTrack = 90000;
+  static const Int_t kTrack = 40000;
   static const Int_t kFwdTracks = 5000;
   //---------------------------------------------------------------------------------------
   
@@ -337,15 +337,22 @@ private:
   Int_t fNPileUpVertices;
   Int_t fNumberOfTracks;
   Float_t fTrackDCAz[kTrack];
+  Float_t fTrackDCAxy[kTrack];
   Int_t fTrackBCID[kTrack];
   Float_t fTrackEta[kTrack];
   Float_t fTrackPhi[kTrack];
   Float_t fTrackPt[kTrack];
   Int_t fTrackPileupVxt[kTrack];
   Bool_t fTrackITSrefit[kTrack];
-  Bool_t fTrackSPD[kTrack];
+  Bool_t fTrackSPD0[kTrack];
+  Bool_t fTrackSPD1[kTrack];
+  Bool_t fTrackSDD0[kTrack];
+  Bool_t fTrackSDD1[kTrack];
+  Bool_t fTrackSSD0[kTrack];
+  Bool_t fTrackSSD1[kTrack];
   Bool_t fTrackIsPileup[kTrack];
   Bool_t fTrackTPC[kTrack];
+  Bool_t fTrackIsPrimary[kTrack];
   Float_t fEtaCut;
   Float_t fNClustersCut;
   TString fGenName; // Generator name 
@@ -359,6 +366,7 @@ private:
   Int_t fCurrentRun;
   
   Float_t fQuantiles[100]; //! percentiles
+  Float_t fRaw[100]; //! raw vals
   Int_t fEvSelCode; //Final code in event selection
   Int_t fNDebug; // number of percentiles
   

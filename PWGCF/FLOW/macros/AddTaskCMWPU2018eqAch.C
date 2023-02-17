@@ -178,7 +178,7 @@ void AddTaskCMWPU2018eqAch(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t
   mgr->ConnectOutput(task_CMW, 1, cOutPut1);
   
  
-  printf("\n\n ================> AddTaskCMW() Configured properly <==================\n\n",);
+  printf("\n\n ================> AddTaskCMW() Configured properly <==================\n\n");
 
   //return task_CMW;
 

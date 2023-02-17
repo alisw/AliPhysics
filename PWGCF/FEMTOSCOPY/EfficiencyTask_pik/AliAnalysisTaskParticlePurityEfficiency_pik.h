@@ -3,7 +3,7 @@
 
 
 
-#define CENTRBINS 7
+#define CENTRBINS 9
 #define PARTTYPES 4
 
 #include "AliAnalysisTaskSE.h"

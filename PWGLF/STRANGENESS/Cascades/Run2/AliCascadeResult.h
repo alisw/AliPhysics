@@ -182,10 +182,14 @@ public:
     
     void SetCutIsCowboy (Int_t lCut) { fCutIsCowboy = lCut; }
     void SetCutIsCascadeCowboy (Int_t lCut) { fCutIsCascadeCowboy = lCut; }
+
+    //Setter for ML selection
+    void SetCutMLthrsh    ( Double_t lCut     ) { fCutMLthrsh = lCut;       }
+    void SetIsModelNN     ( Bool_t lIsModelNN ) { fIsModelNN  = lIsModelNN; }
     
     AliCascadeResult::EMassHypo GetMassHypothesis () const { return fMassHypo; }
     Double_t GetMass() const;
-    TString GetParticleName() const; 
+    TString GetParticleName() const;    
 
     //Getters for V0 Cuts
     Double_t GetCutMinRapidity     () const { return fCutMinRapidity; }
@@ -292,6 +296,10 @@ public:
     
     Int_t GetCutIsCowboy () const { return fCutIsCowboy; }
     Int_t GetCutIsCascadeCowboy () const { return fCutIsCascadeCowboy; }
+
+    //Getter for ML selection
+    Double_t GetCutMLthrsh    () const { return fCutMLthrsh; }
+    Bool_t   GetIsModelNN     () const { return fIsModelNN;  }
     
     Long_t      GetNPtBins()   const { return fhNPtBounds-1;   }
     Double_t*   GetPtBins()    const { return fhPtBins;        }
@@ -445,7 +453,11 @@ private:
     Int_t fCutIsCowboy; //-1: sailor, 0: don't select, 1: cowboy
     Int_t fCutIsCascadeCowboy; //-1: sailor, 0: don't select, 1: cowboy
     
-    ClassDef(AliCascadeResult, 38)
+    //ML selection
+    Double_t fCutMLthrsh;
+    Bool_t   fIsModelNN;
+
+    ClassDef(AliCascadeResult, 39)
     // 1 - original implementation
     // 2 - MC association implementation (disabled in real data analysis)
     // 3 - Variable binning constructor + re-order variables in main output for convenience
@@ -483,6 +495,7 @@ private:
     // 35 - provision for prong-wise ITS refit requirement
     // 36 - cowboy/sailor check
     // 37 - modern track selections: parametric length, crossed rows + cr/L
-    // 38 - ITS or TOF requirement a la Fiorella added 
+    // 38 - ITS or TOF requirement a la Fiorella added
+    // 39 - Addition of Machine Learning selection data members
 };
 #endif

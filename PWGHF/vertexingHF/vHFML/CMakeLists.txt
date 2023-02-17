@@ -37,6 +37,14 @@ if(KFParticle_FOUND)
     add_definitions("-DWITH_KFPARTICLE")
 endif(KFParticle_FOUND)
 
+# pulled in for HF vertexting
+if(FASTJET_FOUND)
+    include_directories(SYSTEM ${FASTJET_INCLUDE_DIR})
+    link_directories(${FASTJET_LIBS_DIR})
+    add_definitions(${FASTJET_DEFINITIONS})
+    list(APPEND HDRS FJ_includes.h)
+endif(FASTJET_FOUND)
+
 # Sources - alphabetical order
 set(SRCS 
     AliHFMLResponse.cxx
@@ -60,10 +68,14 @@ set(SRCS
     AliAnalysisTaskSECharmHadronMLSelector.cxx
     AliAnalysisTaskSECharmHadronvn.cxx
     AliAnalysisTaskSECheckCharmHadronBkg.cxx
+    AliAnalysisTaskSEHFResonanceBuilder.cxx
     AliAnalysisTaskSEHFTreeCreatorApply.cxx
     AliHFTreeHandlerApply.cxx
     AliHFTreeHandlerApplyDstoKKpi.cxx
     AliHFTreeHandlerApplyLc2V0bachelor.cxx
+    AliHFTreeHandlerApplyDstartoKpipi.cxx
+    AliParticleTreeHandlerApply.cxx
+    AliHFMLXicZeroToXiPifromKFP.cxx
 )
 
 # Headers from sources

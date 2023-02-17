@@ -2,7 +2,7 @@
  * File              : AliAnalysisTaskAR.h
  * Author            : Anton Riedel <anton.riedel@tum.de>
  * Date              : 07.05.2021
- * Last Modified Date: 25.11.2021
+ * Last Modified Date: 15.09.2022
  * Last Modified By  : Anton Riedel <anton.riedel@tum.de>
  */
 
@@ -655,6 +655,8 @@ private:
   TString fFinalResultCorrelatorsListName;
   TList *fFinalResultSymmetricCumulantsList;
   TString fFinalResultSymmetricCumulantsListName;
+  TList *fFinalResultNormalizedSymmetricCumulantsList;
+  TString fFinalResultNormalizedSymmetricCumulantsListName;
   Bool_t fFillControlHistogramsOnly; // only fill control histograms
   Bool_t fUseNestedLoops;
 
@@ -689,7 +691,7 @@ private:
   TH1D *fTrackBinsHistogram[kKinematic - 1];
   std::vector<Double_t> fTrackBins[kKinematic];
 
-  ClassDef(AliAnalysisTaskAR, 21); // increase this counter in each new version
+  ClassDef(AliAnalysisTaskAR, 23); // increase this counter in each new version
 };
 
 #endif

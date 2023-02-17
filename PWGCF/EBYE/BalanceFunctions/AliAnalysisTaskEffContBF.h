@@ -118,26 +118,28 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   }
   
   //Track cuts
-  void SetMinNumberOfTPCClusters(Double_t min) {
+  void SetMinNumberOfTPCClusters(Double_t min) { // fMinNumberOfTPCClusters doesn't really get used
     fMinNumberOfTPCClusters = min;}
-  void SetMaxChi2PerTPCCluster(Double_t max) {
+  void SetMaxChi2PerTPCCluster(Double_t max) { // fMaxChi2PerTPCCluster doesn't really get used
     fMaxChi2PerTPCCluster = max;}  
 
-  void SetExtra2DDCACutsAOD(Double_t DCAxy, Double_t DCAz){
+  void SetExtra2DDCACutsAOD(Double_t DCAxy, Double_t DCAz){ // actual setter for DCA cuts
     fDCAxyCut  = DCAxy;
     fDCAzCut = DCAz;
   }
 
-  void SetExtraTPCCutsAOD(Double_t maxTPCchi2, Int_t minNClustersTPC, Int_t minNTPCCrossedRows, Float_t minNTPCFindableCls){
+  void SetExtraTPCCutsAOD(Double_t maxTPCchi2, Int_t minNClustersTPC, Int_t maxNsharedClustersTPC, Float_t minTPCdEdx, Int_t minNTPCCrossedRows, Float_t minNTPCFindableCls){
     fTPCchi2Cut      = maxTPCchi2;
     fNClustersTPCCut = minNClustersTPC;
+    fNTPCsharedCut = maxNsharedClustersTPC;
+    fTPCdEdxMin = minTPCdEdx;
     fMinTPCCrossedRows = minNTPCCrossedRows;
     fMinTPCRowsOverFindableCls =  minNTPCFindableCls;
   }
   
-  void SetMaxDCAxy(Double_t max) {
+  void SetMaxDCAxy(Double_t max) { // fMaxDCAxy doesn't really get used
     fMaxDCAxy = max;}
-  void SetMaxDCAz(Double_t max) {
+  void SetMaxDCAz(Double_t max) { // fMaxDCAz doesn't really get used
     fMaxDCAz = max;}
   void SetMinPt(Double_t minPt) {
     fMinPt = minPt;}
@@ -291,6 +293,8 @@ class AliAnalysisTaskEffContBF : public AliAnalysisTaskSE {
   Double_t fDCAzCut;//2D DCA cut
   Double_t fTPCchi2Cut;//Chi2 Per Cluster TPC cut
   Int_t fNClustersTPCCut;//Minimum number of TPC clusters cut
+  Int_t fNTPCsharedCut;//Maximum number of shared TPC clusters cut
+  Float_t fTPCdEdxMin; //Minimum cut on TPC dEdX
   Int_t fMinTPCCrossedRows; //Minimum number of TPC crossed rows cut
   Float_t fMinTPCRowsOverFindableCls;  //Minimum number of TPC findable cls
 

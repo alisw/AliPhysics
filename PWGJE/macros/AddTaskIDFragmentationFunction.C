@@ -42,13 +42,14 @@ void SetEfficiencyFunctionsFastSimulation(AliAnalysisTaskIDFragmentationFunction
   
   const Double_t kObsResolution = 0.002;  //Only change if the observed resolution is changing (external study)
   
-  AliPieceWisePoly::ReadFSParameters(fastSimParamFile.Data(), effFunctions);                                                        
+  TString parameterString = AliPieceWisePoly::ReadFSParameters(fastSimParamFile.Data(), effFunctions);                                                        
 	
   task->SetEfficiencyFunctions(effFunctions);
+  task->SetFastSimulationParameters(parameterString);    // Set string with joined parameters additionally, because the functions are transient and will not be copied. Functions are initialized again at the start of the run
   task->SetFastSimEffFactor(effFactor);
   task->SetFastSimRes(kObsResolution);   
   task->SetFastSimResFactor(resFactor);
-  task->SetFFChange(ffChange);
+  task->SetFFChange(static_cast<AliAnalysisTaskIDFragmentationFunction::FragmentationFunctionChange>(ffChange));
   return;
 }
 
@@ -140,6 +141,14 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
 
 	// space for configuration parameter: histo bin, cuts, ...
 	// so far only default parameter used
+  
+     // Get the pointer to the existing analysis manager via the static access method.
+   //==============================================================================
+   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+   if (!mgr) {
+    ::Error("AddTaskIDFragmentationFunction", "No analysis manager to connect to.");
+    return NULL;
+   }
 
 	Int_t debug = -1; // debug level, -1: not set here
 	UInt_t kPhysSel = AliVEvent::kMB | AliVEvent::kINT8 | AliVEvent::kINT7;
@@ -188,13 +197,11 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
 
    //******************************************************************************
 	
-	Bool_t isMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler() != 0x0);
-    isMC = kFALSE;
-	if (isMC) 
-		std::cout << "MCtruthEventHandler found" << std::endl;
-	
+	Bool_t isMC = mgr->GetMCtruthEventHandler() != 0x0;
+
 	if (isMC) {
-        AddTaskMCTrackSelector("mcparticles", kFALSE, kFALSE, -1, kFALSE);   
+    std::cout << "MCtruthEventHandler found" << std::endl;
+    AddTaskMCTrackSelector("mcparticles", "usedefault", kFALSE, kFALSE, 1, kFALSE);   
 	}	
   
 	//Create jet Finder
@@ -225,16 +232,6 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
 			jetFinderTaskMC->SetForceBeamType(iBeamType);    
 		}
 	}  
-	 
-
-   
-   // Get the pointer to the existing analysis manager via the static access method.
-   //==============================================================================
-   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-   if (!mgr) {
-    ::Error("AddTaskIDFragmentationFunction", "No analysis manager to connect to.");
-    return NULL;
-   }
    
    // Check the analysis type using the event handlers connected to the analysis manager.
    //==============================================================================
@@ -289,7 +286,9 @@ AliAnalysisTaskIDFragmentationFunction *AddTaskIDFragmentationFunction(
    //TODO For PbPb: Search for Centrality estimator  
   
    task->SetUseFastSimulations(useFastSimulation);	
-   SetEfficiencyFunctionsFastSimulation(task, fastSimParamFile);
+   if (useFastSimulation) {
+    SetEfficiencyFunctionsFastSimulation(task, fastSimParamFile);
+   }
 // 	 task->SetDoGroomedJets(bDoJetGrooming);
 // 	 task->SetStudyTransversalJetStructure(bStudyTransversalJetStructure);
 // 	 task->SetMinMaxMultiplicity(kMinMultiplicity,kMaxMultiplicity);

@@ -112,7 +112,7 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   void SetEtaForCorrel(Double_t etacorr) {fEtaForCorrel=etacorr;}
   void SetSpeed(Int_t speed) {fSpeed=speed;}
   void SetMergePools(Bool_t mergepools) {fMergePools=mergepools;}
-  void SetUseDeff(Bool_t useDeff) {fUseDeff=useDeff;}
+  void SetUseLceff(Bool_t UseLceff) {fUseLceff=UseLceff;}
   void SetUseTrackeff(Bool_t useTrackeff) {fUseTrackeff=useTrackeff;}
   void SetMinDPt(Double_t minDPt) {fMinDPt=minDPt;}
   void SetFillTrees(Int_t fillTrees, Double_t fractAccME) {fFillTrees=fillTrees; fFractAccME=fractAccME;}
@@ -188,8 +188,6 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   void FillSparsePlots(TClonesArray* arrayMC, Double_t mInv[], Int_t origLambdac, Int_t PdgLambdac, AliReducedParticle* track, Int_t ptbin, Int_t type, Int_t softpiME, Double_t wg=1.);
   Int_t CheckTrackOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
   Bool_t IsDDaughter(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* mcArray) const;
-  Bool_t SelectV0(AliAODv0* v0, AliAODVertex *vtx, Int_t option, Int_t idArrayV0[][2]) const;
-  Bool_t IsSoftPion_MCKine(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* arrayMC) const;
   void FillTreeLambdac(AliAODRecoDecayHF3Prong* d, AliAODEvent* aod);  
   void FillTreeTracks(AliAODEvent* aod);  
   void FillTreeLambdacForCutOptim(AliAODRecoDecayHF3Prong* d, AliAODEvent* aod);  
@@ -256,7 +254,7 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   //SpeedType fSpeed;			// Speed up the execution removing bins and histos - 0=std, 1=single-SB bins, 2=single-SB and single-S bins
     Int_t fSpeed;			// Speed up the execution removing bins and histos - 0=std, 1=single-SB bins, 2=single-SB and single-S bins
   Bool_t    fMergePools;		// Put all entries from various pools in _pool0 THnSparses (as old approach) - for testing & low stat!
-  Bool_t    fUseDeff;			// Use D meson efficiency as weight
+  Bool_t    fUseLceff;			// Use D meson efficiency as weight
   Bool_t    fUseTrackeff;   		// Use track efficiency as weight
   Double_t  fPtAssocLimit;   		// Maximum value for associated pT
   Double_t  fMinDPt;			// Minimum pT of the Lambdac to allow selection

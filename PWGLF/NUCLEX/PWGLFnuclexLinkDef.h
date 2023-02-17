@@ -7,6 +7,8 @@
 /// Exotica
 /// * Dibaryons
 #pragma link C++ class AliAnalysisTaskDibaryons+;
+/// * MSDibaryons
+#pragma link C++ class AliAnalysisTaskMSDibaryons+;
 /// * Hdibaryon
 #pragma link C++ class AliAnalysisTaskHdibaryonLPpi+;
 /// * LambdaN
@@ -70,7 +72,10 @@
 #pragma link C++ class AliAnalysisTaskTritonESD_PbPb+;
 #pragma link C++ class AliAnalysisTaskTritonVsMultiplicity_XeXe+;
 #pragma link C++ class AliAnalysisTaskHe3VsMultiplicity_XeXe+;
+#pragma link C++ class AliAnalysisTaskDeuteronVsMultiplicity_XeXe+;
 #pragma link C++ class AliAnalysisTaskLightNuclei_XeXe_MC+;
+#pragma link C++ class AliAnalysisTaskDeuteron_XeXe_MC+;
+#pragma link C++ class AliAnalysisTaskDeuteron_XeXe_MC_noMult+;
 /// * ReducedTreeNuclei
 #pragma link C++ class AliAnalysisTaskReducedTreeNuclei+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertriton+;
@@ -90,6 +95,8 @@
 #pragma link C++ class AliAnalysisTaskDeuteronsRT+;
 #pragma link C++ class AliAnalysisTaskDeuteronCoalescence+;
 #pragma link C++ class AliAnalysisTaskPythiaCoalescence+;
+#pragma link C++ class AliAnalysisTaskSimpleCoalescenceHelium3+;
+#pragma link C++ class AliAnalysisTaskSimpleCoalescenceDeuteronInJets+;
 
 
 /// * NucleiKine
@@ -111,9 +118,16 @@
 #pragma link C++ class AliAnalysisTaskTRDtriggerTracks+;
 #pragma link C++ class AliAnalysisTaskSigmaPlus+;
 #pragma link C++ class AliAODTrackreduced+;
+#pragma link C++ class AliAODTrackcorrelation+;
+#pragma link C++ class AliAODClusterreduced+;
 #pragma link C++ class AliAnalysisTaskHypCrossCheck+;
+#pragma link C++ class AliAnalysisTask_pdLd+;
+#pragma link C++ class AliAnalysisTask_pd+;
+#pragma link C++ class AliAnalysisTask_pd_CreateTrees_PairsOnly+;
+#pragma link C++ class AliAODTrackTiny+;
 #pragma link C++ class AliAnalysisTaskHypV0s+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;
+#pragma link C++ class AliAnalysisTaskHe3TriTree+;
 
 /// * Hyp3body
 #pragma link C++ class AliAnalysisTaskFindableHypertriton3+;
@@ -139,11 +153,17 @@
 #pragma link C++ class AliSelectorFindableHyperTriton3Body+;
 #pragma link C++ class AliAnalysisTaskHyperTriton2He3piML+;
 #pragma link C++ class AliAnalysisTaskHe3piAOD+;
+#pragma link C++ class AliAnalysisTaskHe3piKF+;
 #pragma link C++ class AliAnalysisTaskAlphaPiAOD+;
 #pragma link C++ class StructHyper+;
 #pragma link C++ class StructHyperMC+;
+#pragma link C++ class AliAnalysisTaskAlphaPiAODtrk+;
+#pragma link C++ class StructHypertrk+;
+#pragma link C++ class StructHypertrkMC+;
 #pragma link C++ class MiniHyper+;
 #pragma link C++ class MiniHyperMC+;
+#pragma link C++ class MiniHyperKF+;
+#pragma link C++ class MiniHyperMCKF+;
 #pragma link C++ class RHyperTriton+;
 #pragma link C++ class RHyperTriton3KF+;
 #pragma link C++ class RHyperTriton3O2+;

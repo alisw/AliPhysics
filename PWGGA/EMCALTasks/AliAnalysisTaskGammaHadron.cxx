@@ -37,6 +37,7 @@
 #include "AliEventPoolManager.h"
 #include "AliMCEvent.h"
 
+#include "AliEmcalTriggerDecisionContainer.h"
 
 #include "AliAnalysisTaskJetQnVectors.h"
 
@@ -52,9 +53,10 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   : AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
   fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fFlowQnVectorMgr(0x0),fQ1VectorReader(0),fQ2VectorReader(0),fQ3VectorReader(0),
   fGammaOrPi0(0),fSEvMEv(0),fSaveTriggerPool(0),fDownScaleMT(1.0),fSidebandChoice(0),
-  fDebug(0),fSavePool(0),fPlotQA(0),fEPCorrMode(0),
-  fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),
-  fRtoD(0),fSubDetector(0),
+  fDebug(0),fEnablePileupCut(1),fEnableMVPileupCut(0),fSavePool(0),fPlotQA(0),fEPCorrMode(0),
+  fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),fRtoD(0),
+  fEMCalTriggerReqMode(0),fNameEMCalTriggerDecisionContainer("EmcalTriggerDecision"),fAcceptEMCalTriggers({}),
+  fSubDetector(0),
   fTriggerPtCut(5.),fMaxPi0Pt(23.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
   fRmvMTrack(0),fClusEnergyType(0),fHadCorr(0),fHadCorrConstant(0.236),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
   fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),
@@ -62,12 +64,15 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fTriggerType(AliVEvent::kINT7),fPi0MassSelection(3), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
   fApplyPatchCandCut(0),fEventPlaneSource(0),fEventPlaneChoice(0),
   fQnCorrEventPlane1Angle(0.0),fQnCorrEventPlaneAngle(0.0),fQnCorrEventPlane3Angle(0.0),fQnCorrEventPlane4Angle(0.0),
-  fParticleLevel(kFALSE),fIsMC(0),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
+  fQnCorrQ1Scale(0.0),fQnCorrQ2Scale(0.0),fQnCorrQ3Scale(0.0),fQnCorrQ4Scale(0.0),
+  fParticleLevel(kFALSE),fIsMC(0),fOverrideCentEventCut(0),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
   fEventCutList(0),fOutputListQA(0),
-  fEP1AngleV0M(0),fEP1AngleTPCA(0),fEP1AngleTPCC(0),
-  fEPAngleV0M(0),fEPAngleTPCA(0),fEPAngleTPCC(0),
-  fEP3AngleV0M(0),fEP3AngleTPCA(0),fEP3AngleTPCC(0),
-  fEP4AngleV0M(0),fEP4AngleTPCA(0),fEP4AngleTPCC(0),
+  fEP1AngleV0M(0),fEP1AngleV0A(0),fEP1AngleV0C(0),fEP1AngleTPC(0),fEP1AngleTPCA(0),fEP1AngleTPCC(0),
+  fEPAngleV0M(0),fEPAngleV0A(0),fEPAngleV0C(0),fEPAngleTPC(0),fEPAngleTPCA(0),fEPAngleTPCC(0),
+  fEP3AngleV0M(0),fEP3AngleV0A(0),fEP3AngleV0C(0),fEP3AngleTPC(0),fEP3AngleTPCA(0),fEP3AngleTPCC(0),
+  fEP4AngleV0M(0),fEP4AngleV0A(0),fEP4AngleV0C(0),fEP4AngleTPC(0),fEP4AngleTPCA(0),fEP4AngleTPCC(0),
+  fQ2V0MScaleVsAngle(0),fQ2V0AScaleVsAngle(0),fQ2V0CScaleVsAngle(0),fQ2TPCScaleVsAngle(0),
+  fQ3V0MScaleVsAngle(0),fQ3V0AScaleVsAngle(0),fQ3V0CScaleVsAngle(0),fQ3TPCScaleVsAngle(0),
   fEP1R_CosD1(0),fEP1R_CosD2(0),fEP1R_CosD3(0),
   fEPR_CosD1(0),fEPR_CosD2(0),fEPR_CosD3(0),
   fEP3R_CosD1(0),fEP3R_CosD2(0),fEP3R_CosD3(0),
@@ -78,7 +83,11 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron()
   fPtEPAnglePionAcc(0),fPtEPAnglePionAccCent(0),fPtEPAngleMCPion(0),fPtEPAngleTrueRecMCPion(0),
   fPtEP3AnglePionAcc(0),fPtEP3AnglePionAccCent(0),fPtEP3AngleMCPion(0),fPtEP3AngleTrueRecMCPion(0),
   fPtEP4AnglePionAcc(0),fPtEP4AnglePionAccCent(0),fPtEP4AngleMCPion(0),fPtEP4AngleTrueRecMCPion(0),
-  fHistTrackPsiEP1PtCent(0),fHistTrackPsiEPPtCent(0),fHistTrackPsiEP3PtCent(0),fHistTrackPsiEP4PtCent(0),fMCReactionPlane(0),fPtRPAnglePionAcc(0),fPtRPAngleMCPion(0),fPtRPAngleTrueRecMCPion(0),fHistTrackPsiRPPtCent(0),
+  fHistNChargedCent(0),
+  fHistTrackPsiEP1PtCent(0),fHistTrackPsiEPPtCent(0),fHistTrackPsiEP3PtCent(0),fHistTrackPsiEP4PtCent(0),
+  fHistPionAccV2ScalarProdPtCent(0),fHistPionAccV3ScalarProdPtCent(0),
+  fHistTrackV2ScalarProdPtCent(0),fHistTrackV3ScalarProdPtCent(0),
+  fMCReactionPlane(0),fPtRPAnglePionAcc(0),fPtRPAngleMCPion(0),fPtRPAngleTrueRecMCPion(0),fHistTrackPsiRPPtCent(0),
   fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
@@ -103,9 +112,10 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   : AliAnalysisTaskEmcal("AliAnalysisTaskGammaHadron", kTRUE),
   fEventCuts(0),fFiducialCuts(0x0),fFiducialCellCut(0x0),fFlowQnVectorMgr(0x0),fQ1VectorReader(0),fQ2VectorReader(0),fQ3VectorReader(0),
   fGammaOrPi0(0),fSEvMEv(0),fSaveTriggerPool(0),fDownScaleMT(1.0),fSidebandChoice(0),
-  fDebug(0),fSavePool(0),fPlotQA(0),fEPCorrMode(0),
-  fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),
-  fRtoD(0),fSubDetector(0),
+  fDebug(0),fEnablePileupCut(1),fEnableMVPileupCut(0),fSavePool(0),fPlotQA(0),fEPCorrMode(0),
+  fUseManualEventCuts(0),fCorrectEff(0),fEventWeightChoice(0),fRtoD(0),
+  fEMCalTriggerReqMode(0),fNameEMCalTriggerDecisionContainer("EmcalTriggerDecision"),fAcceptEMCalTriggers({}),
+  fSubDetector(0),
   fTriggerPtCut(5.),fMaxPi0Pt(23.),fClShapeMin(0),fClShapeMax(10),fClEnergyMin(2),fOpeningAngleCut(0.017),fMaxNLM(10),
   fRmvMTrack(0),fClusEnergyType(0),fHadCorr(0),fHadCorrConstant(0.236),fTrackMatchEta(0),fTrackMatchPhi(0),fTrackMatchEOverPLow(0.6),fTrackMatchEOverPHigh(1.4),
   fMixBCent(0),fMixBZvtx(0),fMixBEMCalMult(0),fMixBClusZvtx(0),
@@ -113,12 +123,14 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fTriggerType(AliVEvent::kINT7),fPi0MassSelection(3), fMixingEventType(AliVEvent::kINT7),fCurrentEventTrigger(0),fVetoTrigger(AliVEvent::kEMCEGA),
   fApplyPatchCandCut(0),fEventPlaneSource(0),fEventPlaneChoice(0),
   fQnCorrEventPlane1Angle(0.0),fQnCorrEventPlaneAngle(0.0),fQnCorrEventPlane3Angle(0.0),fQnCorrEventPlane4Angle(0.0),
-  fParticleLevel(kFALSE),fIsMC(InputMCorData),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
+  fParticleLevel(kFALSE),fIsMC(InputMCorData),fOverrideCentEventCut(0),fMCEmbedReweightMode(0),fUseMCReactionPlane(0),fMCHeader(0),fMCParticles(0),fMCPi0List(0),fMCReactionPlaneAngle(0),
   fEventCutList(0),fOutputListQA(0),
   fEP1AngleV0M(0),fEP1AngleV0A(0),fEP1AngleV0C(0),fEP1AngleTPC(0),fEP1AngleTPCA(0),fEP1AngleTPCC(0),
   fEPAngleV0M(0),fEPAngleV0A(0),fEPAngleV0C(0),fEPAngleTPC(0),fEPAngleTPCA(0),fEPAngleTPCC(0),
   fEP3AngleV0M(0),fEP3AngleV0A(0),fEP3AngleV0C(0),fEP3AngleTPC(0),fEP3AngleTPCA(0),fEP3AngleTPCC(0),
   fEP4AngleV0M(0),fEP4AngleV0A(0),fEP4AngleV0C(0),fEP4AngleTPC(0),fEP4AngleTPCA(0),fEP4AngleTPCC(0),
+  fQ2V0MScaleVsAngle(0),fQ2V0AScaleVsAngle(0),fQ2V0CScaleVsAngle(0),fQ2TPCScaleVsAngle(0),
+  fQ3V0MScaleVsAngle(0),fQ3V0AScaleVsAngle(0),fQ3V0CScaleVsAngle(0),fQ3TPCScaleVsAngle(0),
   fEP1R_CosD1(0),fEP1R_CosD2(0),fEP1R_CosD3(0),
   fEPR_CosD1(0),fEPR_CosD2(0),fEPR_CosD3(0),
   fEP3R_CosD1(0),fEP3R_CosD2(0),fEP3R_CosD3(0),
@@ -129,7 +141,11 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
   fPtEPAnglePionAcc(0),fPtEPAnglePionAccCent(0),fPtEPAngleMCPion(0),fPtEPAngleTrueRecMCPion(0),
   fPtEP3AnglePionAcc(0),fPtEP3AnglePionAccCent(0),fPtEP3AngleMCPion(0),fPtEP3AngleTrueRecMCPion(0),
   fPtEP4AnglePionAcc(0),fPtEP4AnglePionAccCent(0),fPtEP4AngleMCPion(0),fPtEP4AngleTrueRecMCPion(0),
-  fHistTrackPsiEP1PtCent(0),fHistTrackPsiEPPtCent(0),fHistTrackPsiEP3PtCent(0),fHistTrackPsiEP4PtCent(0),fMCReactionPlane(0),fPtRPAnglePionAcc(0),fPtRPAngleMCPion(0),fPtRPAngleTrueRecMCPion(0),fHistTrackPsiRPPtCent(0),
+  fHistNChargedCent(0),
+  fHistTrackPsiEP1PtCent(0),fHistTrackPsiEPPtCent(0),fHistTrackPsiEP3PtCent(0),fHistTrackPsiEP4PtCent(0),
+  fHistPionAccV2ScalarProdPtCent(0),fHistPionAccV3ScalarProdPtCent(0),
+  fHistTrackV2ScalarProdPtCent(0),fHistTrackV3ScalarProdPtCent(0),
+fMCReactionPlane(0),fPtRPAnglePionAcc(0),fPtRPAngleMCPion(0),fPtRPAngleTrueRecMCPion(0),fHistTrackPsiRPPtCent(0),
   fEtaPhiPionAcc(0),fMassPtPionAcc(0),fMassPtPionRej(0),fMassPtCentPionAcc(0),fMassPtCentPionRej(0),
   fMatchDeltaEtaTrackPt(0),fMatchDeltaPhiTrackPt(0),fMatchCondDeltaEtaTrackPt(0),fMatchCondDeltaPhiTrackPt(0),fClusterEnergyMatchedTracks(0),fHistEOverPvE(0),fHistPOverEvE(0),
   fHistPSDistU(0),fHistPSDistV(0),
@@ -150,6 +166,220 @@ AliAnalysisTaskGammaHadron::AliAnalysisTaskGammaHadron(Int_t InputGammaOrPi0,Int
 	fGammaOrPi0        =InputGammaOrPi0;
 	fSEvMEv            =InputSeMe;
 }
+
+
+// Copied Parameterization from Charles Hughes
+// at PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHUtils
+
+  // For pt parameters, first 5 are low pt, next 6 are high pt
+  // For eta parameters, first 6 are eta =< -0.04 (eta left in Eliane's def), next 6 are => -0.04 (eta right
+  // in Eliane's def). The last parameter normalizes the eta values such that their maximum is 1. This was apparently
+  // part of their definition, but was implementing by normalizing a TF1 afterwards. My implementation approach here
+  // is more useful when not using a TF1.
+
+// 0-10% centrality
+const double AliAnalysisTaskGammaHadron::LHC18qrParam_0_10_pt[11] = { 0.699603, 0.267286, -0.195571, 0.0678511,
+                                    -0.00933464, 0.938601, -0.100949 , 0.0375783,
+                                    -0.00645743, 0.000528983, -1.66575e-05 };
+const double AliAnalysisTaskGammaHadron::LHC18qrParam_0_10_eta[11] = { 0.833875, 0.00307507, 0.304824, -0.0326049, 0.684159,
+                                     -0.0131913,  0.911178, 0.72371, 0.0067518, 0.70137,
+                                     0.670715};
+
+// 10-30% centrality
+const double AliAnalysisTaskGammaHadron::LHC18qrParam_10_30_pt[11] = { 0.716997, 0.238892, -0.16799 ,0.0575402, -0.00800868, 0.781638, 0.0612547, -0.022832,                                                        0.00427833,  -0.000382241, 1.29733e-05 };
+const double AliAnalysisTaskGammaHadron::LHC18qrParam_10_30_eta[11] = { 0.812732, 0.00252395, 0.335487, -0.0243217, 0.692711, -0.00910397, 0.872084, 0.732093, 0.0060846 , 0.682686, 0.680311};
+
+// 30-50% centrality
+const double AliAnalysisTaskGammaHadron::LHC18qrParam_30_50_pt[11] = { 0.727383, 0.225829, -0.157234, 0.0546461,
+              -0.00781778,       0.982269,  -0.13003,       0.0500213,
+              -0.00909715, 0.000802507,   -2.75672e-05  };
+const double AliAnalysisTaskGammaHadron::LHC18qrParam_30_50_eta[11] = {0.797942, 0.00226676, 0.362397, -0.0191437, 0.69744,
+              -0.0083035, 0.873209, 0.736335, 0.00565254,  0.673817,
+              0.677491};
+
+// 50-90% centrality
+const double AliAnalysisTaskGammaHadron::LHC18qrParam_50_90_pt[11] = { 0.734614, 0.212767, -0.14503, 0.0498915,
+              -0.00713753, 0.738962, 0.102185, -0.0349441,
+              0.0059742, -0.000495631, 1.58505e-05 };
+const double AliAnalysisTaskGammaHadron::LHC18qrParam_50_90_eta[11] = {0.783412,  0.00219941, 0.389413, -0.0156538, 0.696907,
+              -0.00357013, 0.903991, 0.734531, 0.0056072, 0.68324,
+              0.659263};
+
+
+// Parameters for LHC15o Pass2, calculated with LHC20j6_HIJING
+
+// 0-10% centrality
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_0_10_pt[11] = {
+0.68479, 0.327364, -0.270812, 0.104918, -0.015284, 0.889987,
+-0.0314805, 0.00715624, -0.00045383,   -2.02408e-05,  2.16292e-06};
+
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_0_10_eta[11] = {
+0.835791, 0.00342724, 0.300875, -0.053104, 0.680688, 0.0255011,
+1.1134, 0.720639, 0.0063448, 0.735691, 0.672345};
+
+// 10-30% centrality
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_10_30_pt[11] = {
+0.702991, 0.295492, -0.237913, 0.0907758, -0.0131305, 0.902102,
+-0.0337796, 0.00693128, -0.000195277, -6.13476e-05, 4.12663e-06};
+
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_10_30_eta[11] = {
+ 0.823899, 0.00282205, 0.3209, -0.0413709, 0.69076, 0.0200196,
+ 1.06905, 0.732554, 0.00568939, 0.687603, 0.685426};
+
+// 30-50% centrality
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_30_50_pt[11] = {
+ 0.709754, 0.292528, -0.239098, 0.0928744, -0.0136577, 1.07672,
+ -0.1991, 0.0683799, -0.0111161, 0.000868109, -2.62688e-05};
+
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_30_50_eta[11] = {
+ 0.819134, 0.00266454, 0.332053, -0.0376824, 0.695236, 0.0200025,
+ 1.11778, 0.73767, 0.00549236,  0.6747,  0.679545};
+
+// 50-90% centrality
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_50_90_pt[11] = {
+ 0.713552, 0.285557, -0.23174, 0.0891146, -0.0129781, 0.892923,
+ -0.021774, 0.00250209, 0.000690796, -0.000149362, 7.45951e-06};
+
+const double AliAnalysisTaskGammaHadron::LHC15oP2Param_50_90_eta[11] = {
+ 0.81354, 0.00267767, 0.339068, -0.0376914, 0.693847, 0.021269,
+ 1.1552, 0.735639, 0.00563201, 0.687909, 0.683795};
+
+
+/**
+ * Determine the pt efficiency axis for LHC18qr. This is the main interface
+ * for getting the efficiency.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskGammaHadron::LHC18qrPtEfficiency(const double trackPt, const double params[11])
+{
+  return ((trackPt <= 2.7) * LHC18qrLowPtEfficiencyImpl(trackPt, params, 0) +
+      (trackPt > 2.7 && trackPt <= 10) * LHC18qrMidPtEfficiencyImpl(trackPt, params, 5) +
+      (trackPt > 10) * LHC18qrHighPtEfficiencyImpl(params, 5));
+}
+
+/**
+ * Determine the pt efficiency axis for low pt tracks in LHC18qr. Implementation function.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @param[in] index Index where it should begin accessing the parameters.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskGammaHadron::LHC18qrLowPtEfficiencyImpl(const double trackPt, const double params[11], const int index)
+{
+  return (params[index + 0] + params[index + 1] * trackPt + params[index + 2] * std::pow(trackPt, 2) +
+      params[index + 3] * std::pow(trackPt, 3) + params[index + 4] * std::pow(trackPt, 4));
+}
+
+/**
+ * Determine the pt efficiency axis for middle pt tracks in LHC18qr. Implementation function.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @param[in] index Index where it should begin accessing the parameters.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskGammaHadron::LHC18qrMidPtEfficiencyImpl(const double trackPt, const double params[11], const int index)
+{
+  return (params[index + 0] + params[index + 1] * trackPt + params[index + 2] * std::pow(trackPt, 2) +
+      params[index + 3] * std::pow(trackPt, 3) + params[index + 4] * std::pow(trackPt, 4) + params[index + 5] * std::pow(trackPt, 5));
+}
+
+/**
+ * Determine the pt efficiency axis for high pt tracks in LHC18qr. Implementation function.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @param[in] index Index where it should begin accessing the parameters.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskGammaHadron::LHC18qrHighPtEfficiencyImpl(const double params[11], const int index)
+{
+  return (params[index + 0] + params[index + 1] * 10 + params[index + 2] * std::pow(10, 2) +
+      params[index + 3] * std::pow(10, 3) + params[index + 4] * std::pow(10, 4) + params[index + 5] * std::pow(10, 5));
+}
+
+/**
+ * Determine the eta efficiency axis for LHC18qr.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskGammaHadron::LHC18qrEtaEfficiency(const double trackEta, const double params[11])
+{
+  // Just modify the arguments - the function is the same.
+  return ((trackEta <= -0.1) * LHC18qrEtaEfficiencyNeg(trackEta, params, 0) +
+      (trackEta > -0.1 && trackEta <= 0.12) * LHC18qrEtaEfficiencyMid(trackEta, params, 4) +
+      (trackEta > 0.12 ) * LHC18qrEtaEfficiencyPos(trackEta, params, 7));
+}
+
+/**
+ * Determine the eta efficiency axis for LHC18qr. Negative Eta Implementation function.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @param[in] index Index where it should begin accessing the parameters.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskGammaHadron::LHC18qrEtaEfficiencyNeg(const double trackEta, const double params[11],
+                               const int index)
+{
+  // We need to multiply the track eta by -1 if we are looking at eta > 0 (which corresponds to
+  // the second set of parameters, such that the index is greater than 0).
+
+  int sign = index > 0 ? -1 : 1;
+  return (params[index + 0] *
+      std::exp(-1.0 * std::pow(params[index + 1] / std::abs(sign * trackEta + 0.91),params[index + 2])) +
+      params[index + 3] * trackEta ) / params[10];
+
+}
+
+
+/**
+ * Determine the eta efficiency axis for LHC18qr. Middle Eta Implementation function.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @param[in] index Index where it should begin accessing the parameters.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskGammaHadron::LHC18qrEtaEfficiencyMid(const double trackEta, const double params[11],const int index)
+{
+
+  return (params[index + 0] +
+      params[index + 1] * std::pow(trackEta,1) + params[index + 2] * std::pow(trackEta,2))
+      / params[10];
+}
+
+
+/**
+ * Determine the eta efficiency axis for LHC18qr. Positive Eta Implementation function.
+ *
+ * @param[in] trackEta Track eta.
+ * @param[in] params Parameters for use with the function.
+ * @param[in] index Index where it should begin accessing the parameters.
+ * @returns The efficiency associated with the eta parameterization.
+ */
+double AliAnalysisTaskGammaHadron::LHC18qrEtaEfficiencyPos(const double trackEta, const double params[11],const int index)
+{
+  // We need to multiply the track eta by -1 if we are looking at eta > 0 (which corresponds to
+  // the second set of parameters, such that the index is greater than 0).
+
+  int sign = index > 0 ? -1 : 1;
+  return (params[index + 0] *
+      std::exp(-1.0 * std::pow(params[index + 1] / std::abs(sign * trackEta + 0.91),params[index + 2])))
+      / params[10];
+
+}
+
+
+
+
+
 //________________________________________________________________________
 void AliAnalysisTaskGammaHadron::InitArrays()
 {
@@ -292,7 +522,7 @@ void AliAnalysisTaskGammaHadron::InitArrays()
 
   SetPi0MassSelection(fPi0MassSelection);
 
-	// Pi0 Mass and Sigma Fit parameters (for mass window)
+	// Pi0 Mass and Sigma Fit parameters (for parametrized mass window, not used by default)
 	Double_t fPi0MassFitParsValue[5] = {10.49,0.13852,-1.17e-4,2.861e-3,0};
 	memcpy (fPi0MassFitPars, fPi0MassFitParsValue, sizeof(fPi0MassFitPars));
 	Double_t fPi0SigmaFitParsValue[5] = {8.34,9.90e-3,-1.09e-4,6.86e-4,0};
@@ -596,10 +826,22 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		//..this just means that the automatic cut settings
 		//..are not loaded every time the event is checked
 		fEventCuts.SetManualMode();
-		fEventCuts.fMC = false; //FixMe substitute by a real flag in the task!
+		fEventCuts.fMC = fIsMC;
 		fEventCuts.SetupLHC15o();
 		fEventCuts.fUseVariablesCorrelationCuts = true; //..That is specifically for LHC15o!
 	}
+  if (fIsMC && fOverrideCentEventCut) {
+    fEventCuts.OverrideCentralityFramework(0);
+  }
+
+  // TPC Pile-up cuts
+  if (fEnablePileupCut > 0) {
+    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,fEnablePileupCut);
+  }
+  // Multivertex pileup cuts
+  if (fEnableMVPileupCut > 0) {
+    fEventCuts.fPileUpCutMV = true; // Multivertexer based cut
+  }
 
 	fEventCuts.AddQAplotsToList(fEventCutList);
 	fOutput->Add(fEventCutList);
@@ -639,7 +881,7 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
   else {
     fQ1VectorReader = (AliAnalysisTaskJetQnVectors*) AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetQ1Vectors");
     if(!fQ1VectorReader) {
-      AliError("Error: Could not find AliAnalysisTaskJetQ1Vectors");
+      AliWarning("Warning: Could not find AliAnalysisTaskJetQ1Vectors");
     }
     fQ2VectorReader = (AliAnalysisTaskJetQnVectors*) AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetQ2Vectors");
     if(!fQ2VectorReader) {
@@ -927,16 +1169,16 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Min Cluster Energy";
-    nBinsThnPi0[dimThnPi0] = 3;
+    /*nBinsThnPi0[dimThnPi0] = 3;
     Double_t MinClusEnergyArray[3+1] = {2,2.5,3,100};
     binEdgesThnPi0[dimThnPi0] = MinClusEnergyArray;
     minThnPi0[dimThnPi0] = 2;
-    maxThnPi0[dimThnPi0] = 100;
-/*    nBinsThnPi0[dimThnPi0] = 5;
+    maxThnPi0[dimThnPi0] = 100;*/
+    nBinsThnPi0[dimThnPi0] = 5;
     Double_t MinClusEnergyArray[5+1] = {0.5,1,1.5,2,2.5,100};
     binEdgesThnPi0[dimThnPi0] = MinClusEnergyArray;
     minThnPi0[dimThnPi0] = 0.5;
-    maxThnPi0[dimThnPi0] = 100;*/
+    maxThnPi0[dimThnPi0] = 100;
     dimThnPi0++;
 
     titleThnPi0[dimThnPi0] = "Asymmetry";
@@ -1581,7 +1823,21 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
   Double_t fEventPlane4BinArray[nEventPlaneBins+1];
   GenerateFixedBinArray(nEventPlaneBins,fEventPlaneMin,fEventPlane4Max,fEventPlane4BinArray);
 
+  Int_t nScalarProductArrayBins = 2000;
+  Double_t fScalarProductArray[nScalarProductArrayBins+1];
+  GenerateFixedBinArray(nScalarProductArrayBins,-1.,1.,fScalarProductArray);
 
+  Int_t nBinsPtForEP = 30;
+  Double_t binsPtForEP[nBinsPtForEP+1];
+  GenerateFixedBinArray(nBinsPtForEP,0.,30.,binsPtForEP);
+
+
+  Int_t nChargedBins = 1000;
+  Double_t fNChargedArray[nChargedBins+1];
+  GenerateFixedBinArray(nChargedBins,0,20000,fNChargedArray);
+
+  fHistNChargedCent = new TH2F("fHistNChargedCent","N_{Charged};N_{Charged};Cent (%)",nChargedBins,fNChargedArray,nCentHistBins,centBinArray);
+  fOutput->Add(fHistNChargedCent);
 
   // pt bins for tracks
   Int_t nTrackPtBins = 200-1; // Bin Size = 150 MeV/c
@@ -1589,9 +1845,6 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
   Double_t fTrackPtMax = 30;
   Double_t fTrackPtArray[nTrackPtBins+1];
   GenerateFixedBinArray(nTrackPtBins,fTrackPtMin,fTrackPtMax,fTrackPtArray);
-
-
-
 
   // Update number of bins after verifying range the v1 is given in for all sources
   fHistTrackPsiEP1PtCent = new TH3F("fHistTrackPsiEP1PtCent","Track #Delta#Psi_{EP,1};#Delta#Psi_{EP,1};p_{T} (GeV/c);Cent (%)",2*nEventPlaneBins,fEventPlane1BinArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
@@ -1606,8 +1859,23 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
   fHistTrackPsiEP4PtCent = new TH3F("fHistTrackPsiEP4PtCent","Track #Delta#Psi_{EP,4};#Delta#Psi_{EP,4};p_{T} (GeV/c);Cent (%)",nEventPlaneBins,fEventPlane4BinArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
   fOutput->Add(fHistTrackPsiEP4PtCent);
 
+  // Histograms for flow measurment of scalar product
+  fHistPionAccV2ScalarProdPtCent = new TH3F("fHistPionAccV2ScalarProdPtCent","Accepted #pi^{0} u#bulletQ_{2};u#bulletQ_{2};p_{T} (GeV/c);Cent (%)",nScalarProductArrayBins,fScalarProductArray,nBinsPtForEP,binsPtForEP,nCentHistBins,centBinArray);
+  fOutput->Add(fHistPionAccV2ScalarProdPtCent);
+  fHistPionAccV3ScalarProdPtCent = new TH3F("fHistPionAccV3ScalarProdPtCent","Accepted #pi^{0} u#bulletQ_{2};u#bulletQ_{2};p_{T} (GeV/c);Cent (%)",nScalarProductArrayBins,fScalarProductArray,nBinsPtForEP,binsPtForEP,nCentHistBins,centBinArray);
+  fOutput->Add(fHistPionAccV3ScalarProdPtCent);
+
+  // Histograms for flow measurment of scalar product
+  fHistTrackV2ScalarProdPtCent = new TH3F("fHistTrackV2ScalarProdPtCent","Track u#bulletQ_{2};u#bulletQ_{2};p_{T} (GeV/c);Cent (%)",nScalarProductArrayBins,fScalarProductArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
+  fOutput->Add(fHistTrackV2ScalarProdPtCent);
+  fHistTrackV3ScalarProdPtCent = new TH3F("fHistTrackV3ScalarProdPtCent","Track u#bulletQ_{2};u#bulletQ_{2};p_{T} (GeV/c);Cent (%)",nScalarProductArrayBins,fScalarProductArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
+  fOutput->Add(fHistTrackV3ScalarProdPtCent);
+
+
   fHistTrackPsiRPPtCent = new TH3F("fHistTrackPsiRPPtCent","Track #Delta#Psi_{RP};#Delta#Psi_{RP};p_{T} (GeV/c);Cent (%)",nEventPlaneBins,fEventPlaneBinArray,nTrackPtBins,fTrackPtArray,nCentHistBins,centBinArray);
   fOutput->Add(fHistTrackPsiRPPtCent);
+
+
 
   int nClusEtaBins = 2;
   int nClusPhiBins = 18;
@@ -1625,15 +1893,10 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
 		Double_t binEdgesMassAccRej[nMassBinsAccRej+1];
 		GenerateFixedBinArray(nMassBinsAccRej,0.,0.75,binEdgesMassAccRej);
 
-    Int_t nBinsPtForEP = 30;
-    Double_t binsPtForEP[nBinsPtForEP+1];
-    GenerateFixedBinArray(nBinsPtForEP,0.,30.,binsPtForEP);
-
 		//fMassPionAcc = new TH1F("fMassPtPionAcc","Accepted Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2);p_{T} (GeV/c)",3000,0,0.75,250,0,50);
 		//fOutput->Add(fMassPionRej);
 		fMassPionRej = new TH1F("fMassPionRej","Rejected Pi0 Candidates;M_{#gamma#gamma} (GeV/c^2)",3000,0,0.75);
 		fOutput->Add(fMassPionRej);
-
 
     fPtEP1AnglePionAcc = new TH2F("PtEP1AnglePionAcc","PtEP1AnglePionAcc;#Delta#Psi_{EP,1}",nEventPlaneBins,fEventPlane1Min,fEventPlane1Max,60,0,30);
     fOutput->Add(fPtEP1AnglePionAcc);
@@ -1782,6 +2045,27 @@ void AliAnalysisTaskGammaHadron::UserCreateOutputObjects()
   fOutput->Add(fEP4AngleTPCA);
   fOutput->Add(fEP4AngleTPCC);
 
+  int iQnBinsForHists = 1000;
+  double fQnMaxForHists = 20;
+
+  // QnVector scales
+  fQ2V0MScaleVsAngle = new TH2F("Q2V0MScaleVsAngle","Q_{2}(V0M) Scale vs Angle;#psi_{2}^{V0M};Q_{2}",270,-TMath::Pi()/2.,TMath::Pi()/2.,iQnBinsForHists,0.0,fQnMaxForHists);
+  fQ2V0AScaleVsAngle = new TH2F("Q2V0AScaleVsAngle","Q_{2}(V0A) Scale vs Angle;#psi_{2}^{V0A};Q_{2}",270,-TMath::Pi()/2.,TMath::Pi()/2.,iQnBinsForHists,0.0,fQnMaxForHists);
+  fQ2V0CScaleVsAngle = new TH2F("Q2V0CScaleVsAngle","Q_{2}(V0C) Scale vs Angle;#psi_{2}^{V0C};Q_{2}",270,-TMath::Pi()/2.,TMath::Pi()/2.,iQnBinsForHists,0.0,fQnMaxForHists);
+  fQ2TPCScaleVsAngle = new TH2F("Q2TPCScaleVsAngle","Q_{2}(TPC) Scale vs Angle;#psi_{2}^{TPC};Q_{2}",270,-TMath::Pi()/2.,TMath::Pi()/2.,iQnBinsForHists,0.0,fQnMaxForHists);
+  fOutput->Add(fQ2V0MScaleVsAngle);
+  fOutput->Add(fQ2V0AScaleVsAngle);
+  fOutput->Add(fQ2V0CScaleVsAngle);
+  fOutput->Add(fQ2TPCScaleVsAngle);
+
+  fQ3V0MScaleVsAngle = new TH2F("Q3V0MScaleVsAngle","Q_{3}(V0M) Scale vs Angle;#psi_{3}^{V0M};Q_{3}",180,-TMath::Pi()/3.,TMath::Pi()/3.,iQnBinsForHists,0.0,fQnMaxForHists);
+  fQ3V0AScaleVsAngle = new TH2F("Q3V0AScaleVsAngle","Q_{3}(V0A) Scale vs Angle;#psi_{3}^{V0A};Q_{3}",180,-TMath::Pi()/3.,TMath::Pi()/3.,iQnBinsForHists,0.0,fQnMaxForHists);
+  fQ3V0CScaleVsAngle = new TH2F("Q3V0CScaleVsAngle","Q_{3}(V0C) Scale vs Angle;#psi_{3}^{V0C};Q_{3}",180,-TMath::Pi()/3.,TMath::Pi()/3.,iQnBinsForHists,0.0,fQnMaxForHists);
+  fQ3TPCScaleVsAngle = new TH2F("Q3TPCScaleVsAngle","Q_{3}(TPC) Scale vs Angle;#psi_{3}^{TPC};Q_{3}",180,-TMath::Pi()/3.,TMath::Pi()/3.,iQnBinsForHists,0.0,fQnMaxForHists);
+  fOutput->Add(fQ3V0MScaleVsAngle);
+  fOutput->Add(fQ3V0AScaleVsAngle);
+  fOutput->Add(fQ3V0CScaleVsAngle);
+  fOutput->Add(fQ3TPCScaleVsAngle);
 
   fEP1R_CosD1 = new TProfile2D*[kNumEPROrders];
   fEP1R_CosD2 = new TProfile2D*[kNumEPROrders];
@@ -2116,6 +2400,8 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 			if (fGeneralHistograms) fHistEventRejection->Fill("trigger",1);
 			return kFALSE;
 		}
+
+
      /* // For some wired reason gives an error in alibild when doing pull request
         // need to check that later again because it's an exact copy from "AliAnalysisTaskEmcal"
 		std::unique_ptr<TObjArray> arr(fTrigClass.Tokenize("|"));
@@ -2171,6 +2457,50 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 			return kFALSE;
 		}*/
 	}
+  // EMCal Trigger rejection (for use with trigger string selection or EMCalTriggerMakerNew
+  // Check if EMCal Trigger requirement is set
+  if (fAcceptEMCalTriggers.size() > 0) {
+    if (fEMCalTriggerReqMode == 0) {
+
+      bool fRejectForLackOfEMCalTrigger = true;
+
+      TString triggerClasses = InputEvent()->GetFiredTriggerClasses();
+      for (TString fEMCalTriggerString : fAcceptEMCalTriggers) {
+        if (triggerClasses.Contains(fEMCalTriggerString.Data())) {
+          fRejectForLackOfEMCalTrigger = false;
+          break;
+        }
+      }
+
+      if (fRejectForLackOfEMCalTrigger) {
+        return kFALSE;
+      }
+    }
+
+    if (fEMCalTriggerReqMode == 1) {
+      auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(InputEvent()->FindListObject("EmcalTriggerDecision"));
+      //auto trgsel = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(input->FindListObject("EmcalTriggerDecision"))
+      if (trgsel == 0) {
+        cout << "AliAnalysisGammaHadron:: Could not find EMCal Trigger Decision container named: " << fNameEMCalTriggerDecisionContainer << endl;
+        return kFALSE;
+      }
+
+      bool fRejectForLackOfEMCalTrigger = true;
+
+      for (TString fEMCalTriggerString : fAcceptEMCalTriggers) {
+        if(trgsel->IsEventSelected(fEMCalTriggerString.Data())) {
+          fRejectForLackOfEMCalTrigger = false;
+          break;
+        }
+      }
+
+      if (fRejectForLackOfEMCalTrigger) {
+        if (fGeneralHistograms) fHistEventRejection->Fill("trigTypeSel",1);
+        return kFALSE;
+      }
+    }
+  }
+
 
 	if (fTriggerTypeSel != kND)
 	{
@@ -2186,6 +2516,14 @@ Bool_t AliAnalysisTaskGammaHadron::IsEventSelected()
 //      if (fGeneralHistograms) fHistEventRejection->Fill("Cent",1); // Disabling cent bin
       return kFALSE;
     }
+  }
+
+
+  // Load QnVector, skip event in case of qvector=0
+  bool fQVectorSuccess = LoadQnCorrectedEventPlane();
+
+  if (!fQVectorSuccess) {
+    return kFALSE;
   }
 
     /*
@@ -2275,7 +2613,7 @@ Bool_t AliAnalysisTaskGammaHadron::FillHistograms()
   fHistEventHash->Fill((float) iEventHash);
 
   // Getting corrected event plane, saving information
-  LoadQnCorrectedEventPlane();
+  //LoadQnCorrectedEventPlane(); // now done in is event selected
   if (fIsMC && fMCHeader) {
     fMCReactionPlaneAngle = fMCHeader->GetReactionPlaneAngle();
     fMCReactionPlane->Fill(fMCReactionPlaneAngle);
@@ -2428,7 +2766,7 @@ void AliAnalysisTaskGammaHadron::FillClusterHistograms() {
 	AliClusterContainer* clusters  = GetClusterContainer(0);
 	if (!clusters) return;
 	Int_t NoOfClustersInEvent =clusters->GetNClusters();
-	Int_t nAccClusters = 0;
+	//Int_t nAccClusters = 0;
 	AliVCluster *cluster = 0;
 
   for(Int_t NoCluster1 = 0; NoCluster1 < NoOfClustersInEvent; NoCluster1++ )
@@ -2449,6 +2787,7 @@ void AliAnalysisTaskGammaHadron::FillTrackHistograms(AliParticleContainer* track
 
   // fHistTrackPsiRPPtCent fHistTrackPsiEPPtCent
 	Int_t NoOfTracksInEvent =tracks->GetNParticles();
+  fHistNChargedCent->Fill(NoOfTracksInEvent,fCent);
 	AliVParticle* track=0;
 	for(Int_t NoTrack = 0; NoTrack < NoOfTracksInEvent; NoTrack++)
 	{
@@ -2491,6 +2830,15 @@ void AliAnalysisTaskGammaHadron::FillTrackHistograms(AliParticleContainer* track
     if ((TMath::Pi() - fDeltaPsiRP) < fDeltaPsiRP) fDeltaPsiRP = TMath::Pi() - fDeltaPsiRP;
     fHistTrackPsiRPPtCent->Fill(fDeltaPsiRP,track->Pt(),fCent);
 
+    // Filling scalar product method histograms
+    Double_t fScalarProductV2 = 0;
+    Double_t fScalarProductV3 = 0;
+
+    fScalarProductV2 = fQnCorrQ2Scale * TMath::Cos(2*(fLocalPhi - fQnCorrEventPlaneAngle));
+    fScalarProductV3 = fQnCorrQ3Scale * TMath::Cos(3*(fLocalPhi - fQnCorrEventPlane3Angle));
+
+    fHistTrackV2ScalarProdPtCent->Fill(fScalarProductV2,track->Pt(),fCent);
+    fHistTrackV3ScalarProdPtCent->Fill(fScalarProductV3,track->Pt(),fCent);
   }
   return;
 }
@@ -2644,7 +2992,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 	AliClusterContainer* clusters  = GetClusterContainer(0);
 	if (!clusters) return 0;
 	Int_t NoOfClustersInEvent =clusters->GetNClusters();
-	Int_t nAccClusters = 0;
+	//Int_t nAccClusters = 0;
 	Int_t nAccPi0Clusters = 0;
 //	Double_t Pi0Mass = 0.13487; // Hi Michael -> this center value should also be made flexible
 //	Double_t Pi0Window = 0.02;  //0.03 // Hi Michael -> the width will vary with pT
@@ -2741,7 +3089,7 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 			TLorentzVector CaloClusterVec;
 			clusters->GetMomentum(CaloClusterVec, cluster);
 			//acc if pi0 candidate
-			nAccClusters++;
+			//nAccClusters++;
 
 			if (fPlotQA && fDoClusMixing && pool && pool->IsReady()) {
 				//.. Get current number of events in pool
@@ -3170,7 +3518,8 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
 		for (Int_t PtIndex = 0; PtIndex < kUsedPi0TriggerPtBins; PtIndex++) {
 			pool = fPoolMgr->GetEventPool(fCent, zVertex,EventPlaneAngle,PtIndex);
 			if (!pool) {
-				AliWarning(Form("No pool found. Centrality %f, ZVertex %f, PtIndex %d",fCent, zVertex,PtIndex));
+				AliWarning(Form("No pool found. Centrality %f, ZVertex %f, EvtPlaneAngle %f, PtIndex %d",fCent, zVertex, EventPlaneAngle, PtIndex));
+        continue;
 			}
 			Int_t nMix = pool->GetCurrentNEvents();
 			for (Int_t jMix = 0; jMix < nMix; jMix++) {
@@ -3255,6 +3604,16 @@ Int_t AliAnalysisTaskGammaHadron::CorrelatePi0AndTrack(AliParticleContainer* tra
         if (pi/4. <= evtPlane4Angle) evtPlane4Angle = pi/2. - evtPlane4Angle;
         fPtEP4AnglePionAcc->Fill(evtPlane4Angle,aliCaloClusterVecpi0.Pt());
         fPtEP4AnglePionAccCent->Fill(evtPlane4Angle,aliCaloClusterVecpi0.Pt(),fCent);
+
+        // Calculating scalar product for accepted pi0 candidates
+        Double_t fScalarProductV2 = 0;
+        Double_t fScalarProductV3 = 0;
+
+        fScalarProductV2 = fQnCorrQ2Scale * TMath::Cos(2*(fLocalPhi - fQnCorrEventPlaneAngle));
+        fScalarProductV3 = fQnCorrQ3Scale * TMath::Cos(3*(fLocalPhi - fQnCorrEventPlane3Angle));
+
+        fHistPionAccV2ScalarProdPtCent->Fill(fScalarProductV2,aliCaloClusterVecpi0.Pt(),fCent);
+        fHistPionAccV3ScalarProdPtCent->Fill(fScalarProductV3,aliCaloClusterVecpi0.Pt(),fCent);
 
 
         Double_t reactionPlaneAngle=abs(DeltaPhi(aliCaloClusterVecpi0,fMCReactionPlaneAngle));
@@ -4611,23 +4970,80 @@ Double_t AliAnalysisTaskGammaHadron::GetTrackEff(Double_t pT, Double_t eta)
 	if(fCent>0.3 && fCent<=0.5)centBin=2;
 	if(fCent>0.5 && fCent<=0.9)centBin=3;
 
-	if(pT<=3.5)
-	{
-		DetectionEff=funcpT_low[centBin]->Eval(pT);
-	}
-	else
-	{
-		DetectionEff=funcpT_high[centBin]->Eval(pT);
-	}
-	//..eta part
-	if(eta<=-0.04)
-	{
-		DetectionEff*=funcpEta_left[centBin]->Eval(eta,0,0)/fscaleEta[centBin];
-	}
-	else
-	{
-		DetectionEff*=funcpEta_right[centBin]->Eval(eta,0,0)/fscaleEta[centBin];
-	}
+  if(fCorrectEff == 1) { // LHC15oP1 Parameterization by Eliane
+    if(pT<=3.5)
+    {
+      DetectionEff=funcpT_low[centBin]->Eval(pT);
+    }
+    else
+    {
+      DetectionEff=funcpT_high[centBin]->Eval(pT);
+    }
+    //..eta part
+    if(eta<=-0.04)
+    {
+      DetectionEff*=funcpEta_left[centBin]->Eval(eta,0,0)/fscaleEta[centBin];
+    }
+    else
+    {
+      DetectionEff*=funcpEta_right[centBin]->Eval(eta,0,0)/fscaleEta[centBin];
+    }
+  } else if (fCorrectEff == 2) { // LHC18qrP1 Parameterization by Charles
+    // Copied from PWGJE/EMCALJetTasks/UserTasks/AliAnalysisTaskEmcalJetHUtils
+    const double* ptParams = nullptr;
+    const double* etaParams = nullptr;
+    switch (centBin) {
+      case 0:
+        ptParams = LHC18qrParam_0_10_pt;
+        etaParams = LHC18qrParam_0_10_eta;
+        break;
+      case 1:
+        ptParams = LHC18qrParam_10_30_pt;
+        etaParams = LHC18qrParam_10_30_eta;
+        break;
+      case 2:
+        ptParams = LHC18qrParam_30_50_pt;
+        etaParams = LHC18qrParam_30_50_eta;
+        break;
+      case 3:
+        ptParams = LHC18qrParam_50_90_pt;
+        etaParams = LHC18qrParam_50_90_eta;
+        break;
+      default:
+        AliFatal("Invalid centrality for determine tracking efficiency.\n");
+    }
+    // Calculate the efficiency using the parameters.
+    double ptAxis = LHC18qrPtEfficiency(pT, ptParams);
+    double etaAxis = LHC18qrEtaEfficiency(eta, etaParams);
+    DetectionEff = ptAxis * etaAxis;
+  } else if (fCorrectEff == 3) { // LHC15oP2 Parameterization using Charles' code with simulation LHC20j6
+    const double* ptParams = nullptr;
+    const double* etaParams = nullptr;
+    switch (centBin) {
+      case 0:
+        ptParams = LHC15oP2Param_0_10_pt;
+        etaParams = LHC15oP2Param_0_10_eta;
+        break;
+      case 1:
+        ptParams = LHC15oP2Param_10_30_pt;
+        etaParams = LHC15oP2Param_10_30_eta;
+        break;
+      case 2:
+        ptParams = LHC15oP2Param_30_50_pt;
+        etaParams = LHC15oP2Param_30_50_eta;
+        break;
+      case 3:
+        ptParams = LHC15oP2Param_50_90_pt;
+        etaParams = LHC15oP2Param_50_90_eta;
+        break;
+      default:
+        AliFatal("Invalid centrality for determine tracking efficiency.\n");
+    }
+    // Calculate the efficiency using the parameters.
+    double ptAxis = LHC18qrPtEfficiency(pT, ptParams);
+    double etaAxis = LHC18qrEtaEfficiency(eta, etaParams);
+    DetectionEff = ptAxis * etaAxis;
+  }
 
 	return DetectionEff;
 }
@@ -4650,7 +5066,7 @@ Int_t AliAnalysisTaskGammaHadron::CalculateEventHash() {
   }
 }
 //________________________________________________________________________
-void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
+bool AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   //..This function is called at the beginning of FillHistograms
 	if(fDebug==1)cout<<"Inside of: AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane()"<<endl;
 
@@ -4660,7 +5076,7 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
 
   if (fIsMC && fUseMCReactionPlane && fMCHeader) {
     fQnCorrEventPlaneAngle = fMCHeader->GetReactionPlaneAngle();
-    return;
+    return kTRUE;
   }
 
 
@@ -4669,9 +5085,9 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   Int_t iHarmonic = 2;
 
   const AliQnCorrectionsQnVector * fV0MQnVector = 0;
-  const AliQnCorrectionsQnVector * fV0AQnVector = 0;
-  const AliQnCorrectionsQnVector * fV0CQnVector = 0;
-  const AliQnCorrectionsQnVector * fTPCQnVector = 0;
+  //const AliQnCorrectionsQnVector * fV0AQnVector = 0;
+  //const AliQnCorrectionsQnVector * fV0CQnVector = 0;
+  //const AliQnCorrectionsQnVector * fTPCQnVector = 0;
   const AliQnCorrectionsQnVector * fTPCAQnVector = 0;
   const AliQnCorrectionsQnVector * fTPCCQnVector = 0;
   Double_t fV0MQnEP = 0.0;
@@ -4681,25 +5097,30 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   Double_t fTPCAQnEP = 0.0;
   Double_t fTPCCQnEP = 0.0;
 
+  // QnVector scale
+  Double_t fQnScaleV0M = 0.0;
+  Double_t fQnScaleV0A = 0.0;
+  Double_t fQnScaleV0C = 0.0;
+  Double_t fQnScaleTPC = 0.0;
 
   if (fEventPlaneSource == 0) {
-    if (fFlowQnVectorMgr == 0) return;
+    if (fFlowQnVectorMgr == 0) return kFALSE;
 
     fV0MQnVector = fFlowQnVectorMgr->GetDetectorQnVector("VZEROQoverM");
     fTPCAQnVector = fFlowQnVectorMgr->GetDetectorQnVector("TPCPosEtaQoverM");
     fTPCCQnVector = fFlowQnVectorMgr->GetDetectorQnVector("TPCNegEtaQoverM");
 
-    if (fV0MQnVector != NULL) fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic); else return;
-    if (fTPCAQnVector != NULL) fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic); else return;
-    if (fTPCCQnVector != NULL) fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic); else return;
+    if (fV0MQnVector != NULL) fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic); else return kFALSE;
+    if (fTPCAQnVector != NULL) fTPCAQnEP = fTPCAQnVector->EventPlane(iHarmonic); else return kFALSE;
+    if (fTPCCQnVector != NULL) fTPCCQnEP = fTPCCQnVector->EventPlane(iHarmonic); else return kFALSE;
   } else { // assume 1 for now, add switch if more options added
     if (fQ2VectorReader == 0) {
       AliError("Missing fQ2Vector");
-      return;
+      return kFALSE;
     }
     if (fQ3VectorReader == 0) {
       AliError("Missing fQ3Vector");
-      return;
+      return kFALSE;
     }
     // Q2
     fV0MQnEP = fQ2VectorReader->GetEPangleV0M();
@@ -4708,6 +5129,33 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
     fTPCQnEP = fQ2VectorReader->GetEPangleFullTPC();
     fTPCAQnEP = fQ2VectorReader->GetEPanglePosTPC();
     fTPCCQnEP = fQ2VectorReader->GetEPangleNegTPC();
+
+    fQnScaleV0M = fQ2VectorReader->Getq2V0M();
+    fQnScaleV0A = fQ2VectorReader->Getq2V0A();
+    fQnScaleV0C = fQ2VectorReader->Getq2V0C();
+    fQnScaleTPC = fQ2VectorReader->Getq2TPC();
+
+
+    if (fV0MQnEP >= TMath::Pi() / iHarmonic) fV0MQnEP -= 2*TMath::Pi()/iHarmonic;
+    if (fV0AQnEP >= TMath::Pi() / iHarmonic) fV0AQnEP -= 2*TMath::Pi()/iHarmonic;
+    if (fV0CQnEP >= TMath::Pi() / iHarmonic) fV0CQnEP -= 2*TMath::Pi()/iHarmonic;
+    if (fTPCQnEP >= TMath::Pi() / iHarmonic) fTPCQnEP -= 2*TMath::Pi()/iHarmonic;
+    if (fTPCAQnEP >= TMath::Pi() / iHarmonic) fTPCAQnEP -= 2*TMath::Pi()/iHarmonic;
+    if (fTPCCQnEP >= TMath::Pi() / iHarmonic) fTPCCQnEP -= 2*TMath::Pi()/iHarmonic;
+
+    fQ2V0MScaleVsAngle->Fill(fV0MQnEP,fQnScaleV0M);
+    fQ2V0AScaleVsAngle->Fill(fV0AQnEP,fQnScaleV0A);
+    fQ2V0CScaleVsAngle->Fill(fV0CQnEP,fQnScaleV0C);
+    fQ2TPCScaleVsAngle->Fill(fTPCQnEP,fQnScaleTPC);
+
+
+    if (fQnScaleV0M == 0) {
+      // removing rare events where Q2 = 0
+      AliError("Found Q2 = 0.");
+      return kFALSE;
+    }
+
+
   }
 
 
@@ -4715,13 +5163,16 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   switch (fEventPlaneChoice) {
     case 2:
       fQnCorrEventPlaneAngle = fV0CQnEP; // V0 C
+      fQnCorrQ2Scale = fQnScaleV0C;
       break;
     case 1:
       fQnCorrEventPlaneAngle = fV0AQnEP; // V0 A
+      fQnCorrQ2Scale = fQnScaleV0A;
       break;
     default:
     case 0:
       fQnCorrEventPlaneAngle = fV0MQnEP; // V0 Combination
+      fQnCorrQ2Scale = fQnScaleV0M;
   }
 
   Double_t fDPsi1 = fQnCorrEventPlaneAngle - fTPCAQnEP;
@@ -4749,6 +5200,10 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   fTPCQnEP = 0;
   fTPCAQnEP = 0;
   fTPCCQnEP = 0;
+  fQnScaleV0M = 0;
+  fQnScaleV0A = 0;
+  fQnScaleV0C = 0;
+  fQnScaleTPC = 0;
 
   if (fEventPlaneSource == 0) {
     fV0MQnEP = fV0MQnVector->EventPlane(iHarmonic);
@@ -4762,6 +5217,19 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
       fTPCQnEP  = fQ1VectorReader->GetEPangleFullTPC();
       fTPCAQnEP = fQ1VectorReader->GetEPanglePosTPC();
       fTPCCQnEP = fQ1VectorReader->GetEPangleNegTPC();
+
+      fQnScaleV0M = fQ1VectorReader->Getq2V0M();
+      fQnScaleV0A = fQ1VectorReader->Getq2V0A();
+      fQnScaleV0C = fQ1VectorReader->Getq2V0C();
+      fQnScaleTPC = fQ1VectorReader->Getq2TPC();
+
+
+      if (fV0MQnEP >= TMath::Pi() / iHarmonic) fV0MQnEP -= 2*TMath::Pi()/iHarmonic;
+      if (fV0AQnEP >= TMath::Pi() / iHarmonic) fV0AQnEP -= 2*TMath::Pi()/iHarmonic;
+      if (fV0CQnEP >= TMath::Pi() / iHarmonic) fV0CQnEP -= 2*TMath::Pi()/iHarmonic;
+      if (fTPCQnEP >= TMath::Pi() / iHarmonic) fTPCQnEP -= 2*TMath::Pi()/iHarmonic;
+      if (fTPCAQnEP >= TMath::Pi() / iHarmonic) fTPCAQnEP -= 2*TMath::Pi()/iHarmonic;
+      if (fTPCCQnEP >= TMath::Pi() / iHarmonic) fTPCCQnEP -= 2*TMath::Pi()/iHarmonic;
     }
   }
   fEP1AngleV0M->Fill(fV0MQnEP);
@@ -4774,13 +5242,16 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   switch (fEventPlaneChoice) {
     case 2:
       fQnCorrEventPlane1Angle = fV0CQnEP; // V0 C
+      fQnCorrQ1Scale = fQnScaleV0C;
       break;
     case 1:
       fQnCorrEventPlane1Angle = fV0AQnEP; // V0 A
+      fQnCorrQ1Scale = fQnScaleV0A;
       break;
     default:
     case 0:
       fQnCorrEventPlane1Angle = fV0MQnEP; // V0 Combination
+      fQnCorrQ1Scale = fQnScaleV0M;
   }
 
   fDPsi1 = fQnCorrEventPlane1Angle - fTPCAQnEP;
@@ -4815,6 +5286,20 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
     fTPCQnEP  = fQ3VectorReader->GetEPangleFullTPC();
     fTPCAQnEP = fQ3VectorReader->GetEPanglePosTPC();
     fTPCCQnEP = fQ3VectorReader->GetEPangleNegTPC();
+    fQnScaleV0M = fQ3VectorReader->Getq2V0M();
+    fQnScaleV0A = fQ3VectorReader->Getq2V0A();
+    fQnScaleV0C = fQ3VectorReader->Getq2V0C();
+    fQnScaleTPC = fQ3VectorReader->Getq2TPC();
+    if (fV0MQnEP >= TMath::Pi() / iHarmonic) fV0MQnEP -= 2*TMath::Pi()/iHarmonic;
+    if (fV0AQnEP >= TMath::Pi() / iHarmonic) fV0AQnEP -= 2*TMath::Pi()/iHarmonic;
+    if (fV0CQnEP >= TMath::Pi() / iHarmonic) fV0CQnEP -= 2*TMath::Pi()/iHarmonic;
+    if (fTPCQnEP >= TMath::Pi() / iHarmonic) fTPCQnEP -= 2*TMath::Pi()/iHarmonic;
+    if (fTPCAQnEP >= TMath::Pi() / iHarmonic) fTPCAQnEP -= 2*TMath::Pi()/iHarmonic;
+    if (fTPCCQnEP >= TMath::Pi() / iHarmonic) fTPCCQnEP -= 2*TMath::Pi()/iHarmonic;
+    fQ3V0MScaleVsAngle->Fill(fV0MQnEP,fQnScaleV0M);
+    fQ3V0AScaleVsAngle->Fill(fV0AQnEP,fQnScaleV0A);
+    fQ3V0CScaleVsAngle->Fill(fV0CQnEP,fQnScaleV0C);
+    fQ3TPCScaleVsAngle->Fill(fTPCQnEP,fQnScaleTPC);
   }
 
 
@@ -4828,13 +5313,16 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
   switch (fEventPlaneChoice) {
     case 2:
       fQnCorrEventPlane3Angle = fV0CQnEP; // V0 C
+      fQnCorrQ3Scale = fQnScaleV0C;
       break;
     case 1:
       fQnCorrEventPlane3Angle = fV0AQnEP; // V0 A
+      fQnCorrQ3Scale = fQnScaleV0A;
       break;
     default:
     case 0:
       fQnCorrEventPlane3Angle = fV0MQnEP; // V0 Combination
+      fQnCorrQ3Scale = fQnScaleV0M;
   }
 
   fDPsi1 = fQnCorrEventPlane3Angle - fTPCAQnEP;
@@ -4901,6 +5389,7 @@ void AliAnalysisTaskGammaHadron::LoadQnCorrectedEventPlane() {
     fEP4R_CosD3[iOrder]->Fill(fZVertex,fCent,TMath::Cos((iOrder+1)*fDPsi3));
   }
 
+  return kTRUE;
 }
 
 /**

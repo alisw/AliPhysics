@@ -39,8 +39,13 @@ class AliAnalysisTaskSEpPbCorrelationsJetV2Kine : public AliAnalysisTaskSE {
  void SetAnaMode(TString s) {fMode = s;}
  void SetTPCEtaLimits(Double_t d) {fEtaTPClimits = d;}
  void SetMuonDecay(TString s) {fMuonDecay = s;} 
+ void SetIsPbp(TString s) {fPbp = s;}
+ void SetCorrBeam(TString s) {fCorr_Beam = s;}
+ void SetEst(TString s) {fEst = s;}
 
  Double_t RangePhi(Double_t DPhi);
+ Double_t ConvertCMS(Double_t eta, Bool_t IsPbp);
+ Double_t GetLabEta(AliMCParticle *MCtrack, Bool_t isPbp);
 
  private:
  Double_t fCen1;
@@ -53,6 +58,9 @@ class AliAnalysisTaskSEpPbCorrelationsJetV2Kine : public AliAnalysisTaskSE {
  Double_t fEtaTPClimits;
  TString fMode;
  TString fMuonDecay;
+ TString fCorr_Beam;
+ TString fEst;
+ Bool_t fPbp;
 
  Int_t fNbinsPtTrig;
  Int_t fNbinsAssocPt;

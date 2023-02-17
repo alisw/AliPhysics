@@ -32,15 +32,18 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors() :
     fOutputList(nullptr),
     fHistNEvents(nullptr),
     fHistCentrality(nullptr),
-    fHistResolution1M(nullptr),
-    fHistResolution2M(nullptr),
-    fHistResolution3M(nullptr),
-    fHistResolution1A(nullptr),
-    fHistResolution2A(nullptr),
-    fHistResolution3A(nullptr),
-    fHistResolution1C(nullptr),
-    fHistResolution2C(nullptr),
-    fHistResolution3C(nullptr),
+    fHistResolution_epV0AV0C_qV0M(nullptr),
+    fHistResolution_epV0CTPC_qV0M(nullptr),
+    fHistResolution_epV0ATPC_qV0M(nullptr),
+    fHistResolution_epV0AV0C_qV0A(nullptr),
+    fHistResolution_epV0CTPC_qV0A(nullptr),
+    fHistResolution_epV0ATPC_qV0A(nullptr),
+    fHistResolution_epV0AV0C_qV0C(nullptr),
+    fHistResolution_epV0CTPC_qV0C(nullptr),
+    fHistResolution_epV0ATPC_qV0C(nullptr),
+    fHistResolution_epTPCpTPCn_qV0M(nullptr),
+    fHistResolution_epV0MTPCp_qV0M(nullptr),
+    fHistResolution_epV0MTPCn_qV0M(nullptr),
     fEnableTPCPhiVsCentrDistr(false),
     fEnableQvecTPCVsCentrDistr(false),
     fJEQnVecHandler1(nullptr),
@@ -89,15 +92,18 @@ AliAnalysisTaskJetQnVectors::AliAnalysisTaskJetQnVectors(const char *name, int h
     fOutputList(nullptr),
     fHistNEvents(nullptr),
     fHistCentrality(nullptr),
-    fHistResolution1M(nullptr),
-    fHistResolution2M(nullptr),
-    fHistResolution3M(nullptr),
-    fHistResolution1A(nullptr),
-    fHistResolution2A(nullptr),
-    fHistResolution3A(nullptr),
-    fHistResolution1C(nullptr),
-    fHistResolution2C(nullptr),
-    fHistResolution3C(nullptr),
+    fHistResolution_epV0AV0C_qV0M(nullptr),
+    fHistResolution_epV0CTPC_qV0M(nullptr),
+    fHistResolution_epV0ATPC_qV0M(nullptr),
+    fHistResolution_epV0AV0C_qV0A(nullptr),
+    fHistResolution_epV0CTPC_qV0A(nullptr),
+    fHistResolution_epV0ATPC_qV0A(nullptr),
+    fHistResolution_epV0AV0C_qV0C(nullptr),
+    fHistResolution_epV0CTPC_qV0C(nullptr),
+    fHistResolution_epV0ATPC_qV0C(nullptr),
+    fHistResolution_epTPCpTPCn_qV0M(nullptr),
+    fHistResolution_epV0MTPCp_qV0M(nullptr),
+    fHistResolution_epV0MTPCn_qV0M(nullptr),
     fEnableTPCPhiVsCentrDistr(false),
     fEnableQvecTPCVsCentrDistr(false),
     fJEQnVecHandler1(nullptr),
@@ -156,15 +162,19 @@ AliAnalysisTaskJetQnVectors::~AliAnalysisTaskJetQnVectors()
 		if(!fOutputList->IsOwner()) {
 			delete fHistNEvents;
 			delete fHistCentrality;
-                        delete fHistResolution1M;
-                        delete fHistResolution2M;
-                        delete fHistResolution3M;
-                        delete fHistResolution1A;
-                        delete fHistResolution2A;
-                        delete fHistResolution3A;
-                        delete fHistResolution1C;
-                        delete fHistResolution2C;
-                        delete fHistResolution3C;
+                        delete fHistResolution_epV0AV0C_qV0M;
+                        delete fHistResolution_epV0CTPC_qV0M;
+                        delete fHistResolution_epV0ATPC_qV0M;
+                        delete fHistResolution_epV0AV0C_qV0A;
+                        delete fHistResolution_epV0CTPC_qV0A;
+                        delete fHistResolution_epV0ATPC_qV0A;
+                        delete fHistResolution_epV0AV0C_qV0C;
+                        delete fHistResolution_epV0CTPC_qV0C;
+                        delete fHistResolution_epV0ATPC_qV0C;
+                        delete fHistResolution_epTPCpTPCn_qV0M;
+                        delete fHistResolution_epV0MTPCp_qV0M;
+                        delete fHistResolution_epV0MTPCn_qV0M;
+
 			for(int iDet=0; iDet<3; iDet++) {
 				delete fHistEventPlaneTPC[iDet];
                                 delete fHistEventPlaneV0[iDet];
@@ -189,10 +199,6 @@ AliAnalysisTaskJetQnVectors::~AliAnalysisTaskJetQnVectors()
 //________________________________________________________________________
 void AliAnalysisTaskJetQnVectors::UserCreateOutputObjects()
 {
-    fJEQnVecHandler1 = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName1);
-    fJEQnVecHandler2 = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName2);
-    fJEQnVecHandler1->EnablePhiDistrHistos();
-    fJEQnVecHandler2->EnablePhiDistrHistos();
     
     fOutputList = new TList();
     fOutputList->SetOwner(true);
@@ -211,28 +217,34 @@ void AliAnalysisTaskJetQnVectors::UserCreateOutputObjects()
     fOutputList->Add(fHistCentrality);
    
     //V0M Resolution Hists
-    fHistResolution1M = new TH3F("fHistResolution1M", "fHistResolution1M", 200, -1., 1., 200, 0., 20., 100, 0., 100.);
-    fOutputList->Add(fHistResolution1M);
-    fHistResolution2M = new TH3F("fHistResolution2M", "fHistResolution2M", 200, -1., 1., 200, 0., 20., 100, 0., 100.);
-    fOutputList->Add(fHistResolution2M);
-    fHistResolution3M = new TH3F("fHistResolution3M", "fHistResolution3M", 200, -1., 1., 200, 0., 20., 100, 0., 100.);
-    fOutputList->Add(fHistResolution3M);
+    fHistResolution_epV0AV0C_qV0M = new TH3F("fHistResolution_epV0AV0C_qV0M", "fHistResolution_epV0AV0C_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0AV0C_qV0M);
+    fHistResolution_epV0CTPC_qV0M = new TH3F("fHistResolution_epV0CTPC_qV0M", "fHistResolution_epV0CTPC_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0CTPC_qV0M);
+    fHistResolution_epV0ATPC_qV0M = new TH3F("fHistResolution_epV0ATPC_qV0M", "fHistResolution_epV0ATPC_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0ATPC_qV0M);
+    fHistResolution_epTPCpTPCn_qV0M = new TH3F("fHistResolution_epTPCpTPCn_qV0M", "fHistResolution_epTPCpTPCn_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epTPCpTPCn_qV0M);
+    fHistResolution_epV0MTPCp_qV0M = new TH3F("fHistResolution_epV0MTPCp_qV0M", "fHistResolution_epV0MTPCn_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0MTPCp_qV0M);
+    fHistResolution_epV0MTPCn_qV0M = new TH3F("fHistResolution_epV0MTPCn_qV0M", "fHistResolution_epV0MTPCn_qV0M", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0MTPCn_qV0M);
 
     //V0A Resolution Hists
-    fHistResolution1A = new TH3F("fHistResolution1A", "fHistResolution1A", 200, -1., 1., 200, 0., 20., 100, 0., 100.);
-    fOutputList->Add(fHistResolution1A);
-    fHistResolution2A = new TH3F("fHistResolution2A", "fHistResolution2A", 200, -1., 1., 200, 0., 20., 100, 0., 100.);
-    fOutputList->Add(fHistResolution2A);
-    fHistResolution3A = new TH3F("fHistResolution3A", "fHistResolution3A", 200, -1., 1., 200, 0., 20., 100, 0., 100.);
-    fOutputList->Add(fHistResolution3A);
+    fHistResolution_epV0AV0C_qV0A = new TH3F("fHistResolution_epV0AV0C_qV0A", "fHistResolution_epV0AV0C_qV0A", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0AV0C_qV0A);
+    fHistResolution_epV0CTPC_qV0A = new TH3F("fHistResolution_epV0CTPC_qV0A", "fHistResolution_epV0CTPC_qV0A", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0CTPC_qV0A);
+    fHistResolution_epV0ATPC_qV0A = new TH3F("fHistResolution_epV0ATPC_qV0A", "fHistResolution_epV0ATPC_qV0A", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0ATPC_qV0A);
 
     //V0C Resolution Hists
-    fHistResolution1C = new TH3F("fHistResolution1C", "fHistResolution1C", 200, -1., 1., 200, 0., 20., 100, 0., 100.);
-    fOutputList->Add(fHistResolution1C);
-    fHistResolution2C = new TH3F("fHistResolution2C", "fHistResolution2C", 200, -1., 1., 200, 0., 20., 100, 0., 100.);
-    fOutputList->Add(fHistResolution2C);
-    fHistResolution3C = new TH3F("fHistResolution3C", "fHistResolution3C", 200, -1., 1., 200, 0., 20., 100, 0., 100.);
-    fOutputList->Add(fHistResolution3C);
+    fHistResolution_epV0AV0C_qV0C = new TH3F("fHistResolution_epV0AV0C_qV0C", "fHistResolution_epV0AV0C_qV0C", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0AV0C_qV0C);
+    fHistResolution_epV0CTPC_qV0C = new TH3F("fHistResolution_epV0CTPC_qV0C", "fHistResolution_epV0CTPC_qV0C", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0CTPC_qV0C);
+    fHistResolution_epV0ATPC_qV0C = new TH3F("fHistResolution_epV0ATPC_qV0C", "fHistResolution_epV0ATPC_qV0C", 200,-1.,1., 200,0.,20., 100,0.,100.);
+    fOutputList->Add(fHistResolution_epV0ATPC_qV0C);
 
     TString TPCNames[3] = {"FullTPC","PosTPC","NegTPC"};
     TString V0Names[3] = {"FullV0","V0A","V0C"};
@@ -394,18 +406,24 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
     double resolution1 = cos(2*(PsinV0C-PsinV0A));
     double resolution2 = cos(2*(PsinV0C-PsinFullTPC));
     double resolution3 = cos(2*(PsinV0A-PsinFullTPC));
+    double resolution4 = cos(2*(PsinPosTPC-PsinNegTPC));
+    double resolution5 = cos(2*(PsinFullV0-PsinPosTPC));
+    double resolution6 = cos(2*(PsinFullV0-PsinNegTPC));
 
-    fHistResolution1M->Fill(resolution1, qnFullV0, cent);  //used to calculate reaction plane resolution in post-processing
-    fHistResolution2M->Fill(resolution2, qnFullV0, cent);  //2nd argument gives detector being used for q2 calculation
-    fHistResolution3M->Fill(resolution3, qnFullV0, cent);
+    fHistResolution_epV0AV0C_qV0M->Fill(resolution1, qnFullV0, cent);  //used to calculate reaction plane resolution
+    fHistResolution_epV0CTPC_qV0M->Fill(resolution2, qnFullV0, cent);  //2nd argument gives detector being used for q2 calculation
+    fHistResolution_epV0ATPC_qV0M->Fill(resolution3, qnFullV0, cent);
+    fHistResolution_epTPCpTPCn_qV0M->Fill(resolution4, qnFullV0, cent);
+    fHistResolution_epV0MTPCp_qV0M->Fill(resolution5, qnFullV0, cent);
+    fHistResolution_epV0MTPCn_qV0M->Fill(resolution6, qnFullV0, cent);
 
-    fHistResolution1A->Fill(resolution1, qnV0A, cent); 
-    fHistResolution2A->Fill(resolution2, qnV0A, cent); 
-    fHistResolution3A->Fill(resolution3, qnV0A, cent);
+    fHistResolution_epV0AV0C_qV0A->Fill(resolution1, qnV0A, cent); 
+    fHistResolution_epV0CTPC_qV0A->Fill(resolution2, qnV0A, cent); 
+    fHistResolution_epV0ATPC_qV0A->Fill(resolution3, qnV0A, cent);
 
-    fHistResolution1C->Fill(resolution1, qnV0C, cent);  
-    fHistResolution2C->Fill(resolution2, qnV0C, cent);  
-    fHistResolution3C->Fill(resolution3, qnV0C, cent);
+    fHistResolution_epV0AV0C_qV0C->Fill(resolution1, qnV0C, cent);  
+    fHistResolution_epV0CTPC_qV0C->Fill(resolution2, qnV0C, cent);  
+    fHistResolution_epV0ATPC_qV0C->Fill(resolution3, qnV0C, cent);
 
     int runnumber = fAOD->GetRunNumber();
 
@@ -447,6 +465,19 @@ void AliAnalysisTaskJetQnVectors::UserExec(Option_t */*option*/)
 
     // Post output data
     PostData(1, fOutputList);
+}
+
+//
+// Creates the QnVector Handlers. Needs to be run in add task so that calibration
+// files are loaded at job creation.
+//________________________________________________________________________
+void AliAnalysisTaskJetQnVectors::CreateQnVectorHandlers() {
+
+    fJEQnVecHandler1 = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName1);
+    fJEQnVecHandler2 = new AliJEQnVectorHandler(fCalibType,fNormMethod,fHarmonic,fOADBFileName2);
+    fJEQnVecHandler1->EnablePhiDistrHistos();
+    fJEQnVecHandler2->EnablePhiDistrHistos();
+
 }
 
 //________________________________________________________________________

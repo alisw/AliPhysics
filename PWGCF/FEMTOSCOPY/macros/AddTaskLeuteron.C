@@ -144,7 +144,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   double deuteron_dca_z = 0.2;
   double deuteron_dca_xy = 0.1;
   double deuteron_pt_min = 0.5;
-  double deuteron_pt_max = 1.4;
+  double deuteron_pt_max = 1.0;
   double deuteron_TPC_CrossedRowsOverCluster = 0.83;
   double deuteron_nSigma = 3.0;
   double deuteron_TPC_thresold = 1.0; // TPC < threshold < TPC + TOF
@@ -166,7 +166,7 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   TrackCuts3->SetDCAVtxXY(deuteron_dca_xy);
   TrackCuts3->SetCutSharedCls(true);
   TrackCuts3->SetCutTPCCrossedRows(true,deuteron_TPC_CrossedRows,deuteron_TPC_CrossedRowsOverCluster);
-  TrackCuts3->SetPID(AliPID::kDeuteron,deuteron_TPC_thresold,deuteron_nSigma);
+//  TrackCuts3->SetPID(AliPID::kDeuteron,deuteron_TPC_thresold,deuteron_nSigma);
   TrackCuts3->SetRejLowPtPionsTOF(true);
   TrackCuts3->SetCutSmallestSig(true);
   TrackCuts3->SetMinimalBooking(false);
@@ -866,27 +866,14 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   ZVtxBins.push_back(10);
 
   // set MultBins
-  MultBins.push_back(0);
-  MultBins.push_back(4);
-  MultBins.push_back(8);
-  MultBins.push_back(12);
-  MultBins.push_back(16);
-  MultBins.push_back(20);
-  MultBins.push_back(24);
-  MultBins.push_back(28);
-  MultBins.push_back(32);
-  MultBins.push_back(36);
-  MultBins.push_back(40);
-  MultBins.push_back(44);
-  MultBins.push_back(48);
-  MultBins.push_back(52);
-  MultBins.push_back(56);
-  MultBins.push_back(60);
-  MultBins.push_back(64);
-  MultBins.push_back(68);
-  MultBins.push_back(72);
-  MultBins.push_back(76);
-  MultBins.push_back(80);
+  for(int iMult = 0; iMult <= 2000; iMult++){
+
+    MultBins.push_back(iMult*4);
+
+  }
+
+
+
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto","Femto");
   
@@ -905,7 +892,17 @@ AliAnalysisTaskSE *AddTaskLeuteron(
   config->SetDeltaEtaMax(0.012);
   config->SetDeltaPhiMax(0.012);
   config->SetMultBinning(true);					  // enable explicit binning of the correlation function for each multiplicity
-  config->SetMixingDepth(10);					  // the number of saved events for the event mixing
+
+  if(isPbPb){
+
+    config->SetMixingDepth(1000);
+
+  }else{
+
+    config->SetMixingDepth(10);					  // the number of saved events for the event mixing
+
+  }
+
   config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);	  // reference multiplicity estimator
   config->SetExtendedQAPairs(pairQA);
   config->SetSummedPtCut(0.0,999.0);

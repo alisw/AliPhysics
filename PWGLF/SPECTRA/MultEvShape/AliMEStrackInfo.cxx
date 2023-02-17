@@ -4,11 +4,13 @@
 //
 //////////////////////////////////////////////////////////////////////////////
 
+
 #include <AliLog.h>
 #include <AliESDtrack.h>
 #include <AliPIDResponse.h>
 #include <AliPIDCombined.h>
-#include <AliStack.h>
+// #include <AliStack.h>
+#include <AliMCEvent.h>
 #include <AliMCParticle.h>
 
 #include "AliMESbaseTask.h"
@@ -111,28 +113,31 @@ AliMEStrackInfo::AliMEStrackInfo(AliESDtrack *t, AliPIDResponse *rpid, AliPIDCom
   // combined PID
   Double_t bayesProb[AliPID::kSPECIES];
 
+	if(rpid){
   // set PID ITS
-  pidComb->SetDetectorMask(AliPIDResponse::kDetITS|AliPIDResponse::kDetTPC);
-  pidComb->ComputeProbabilities(t, rpid, bayesProb);
-  for(Int_t is(0); is<AliPID::kSPECIES; is++) fPID.fNsigma[kITS][is] = rpid->NumberOfSigmasITS(t, AliPID::EParticleType(is));
-  memcpy(fPID.fProb[kITS], bayesProb, AliPID::kSPECIES*sizeof(Double_t));
-  fPID.fRaw[kITS] = t->GetITSsignal();
+	  pidComb->SetDetectorMask(AliPIDResponse::kDetITS|AliPIDResponse::kDetTPC);
+	  pidComb->ComputeProbabilities(t, rpid, bayesProb);
+	  for(Int_t is(0); is<AliPID::kSPECIES; is++) fPID.fNsigma[kITS][is] = rpid->NumberOfSigmasITS(t, AliPID::EParticleType(is));
+	  memcpy(fPID.fProb[kITS], bayesProb, AliPID::kSPECIES*sizeof(Double_t));
+	  fPID.fRaw[kITS] = t->GetITSsignal();
 
-  // set PID TPC
-  pidComb->SetDetectorMask(AliPIDResponse::kDetTPC);
-  pidComb->ComputeProbabilities(t, rpid, bayesProb);
-  for(Int_t is(0); is<AliPID::kSPECIES; is++) fPID.fNsigma[kITS][is] = rpid->NumberOfSigmasTPC(t, AliPID::EParticleType(is));
-  memcpy(fPID.fProb[kTPC], bayesProb, AliPID::kSPECIES*sizeof(Double_t));
-  fPID.fRaw[kTPC] = t->GetTPCsignal();
+	  // set PID TPC
+	  pidComb->SetDetectorMask(AliPIDResponse::kDetTPC);
+	  pidComb->ComputeProbabilities(t, rpid, bayesProb);
+	  for(Int_t is(0); is<AliPID::kSPECIES; is++) fPID.fNsigma[kITS][is] = rpid->NumberOfSigmasTPC(t, AliPID::EParticleType(is));
+	  memcpy(fPID.fProb[kTPC], bayesProb, AliPID::kSPECIES*sizeof(Double_t));
+	  fPID.fRaw[kTPC] = t->GetTPCsignal();
 
-  // set PID TOF
-  // pidComb->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
-  pidComb->SetDetectorMask(AliPIDResponse::kDetITS|AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
-  pidComb->ComputeProbabilities(t, rpid, bayesProb);
-  for(Int_t is(0); is<AliPID::kSPECIES; is++) fPID.fNsigma[kITS][is] = rpid->NumberOfSigmasTOF(t, AliPID::EParticleType(is));
-  memcpy(fPID.fProb[kTOF], bayesProb, AliPID::kSPECIES*sizeof(Double_t));
-  fPID.fRaw[kTOF] = (t->GetIntegratedLength()/(t->GetTOFsignal()*TMath::C()))*10e9;
-
+	  // set PID TOF
+	  // pidComb->SetDetectorMask(AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+	  pidComb->SetDetectorMask(AliPIDResponse::kDetITS|AliPIDResponse::kDetTPC|AliPIDResponse::kDetTOF);
+	  pidComb->ComputeProbabilities(t, rpid, bayesProb);
+	  for(Int_t is(0); is<AliPID::kSPECIES; is++) fPID.fNsigma[kITS][is] = rpid->NumberOfSigmasTOF(t, AliPID::EParticleType(is));
+	  memcpy(fPID.fProb[kTOF], bayesProb, AliPID::kSPECIES*sizeof(Double_t));
+	  fPID.fRaw[kTOF] = (t->GetIntegratedLength()/(t->GetTOFsignal()*TMath::C()))*10e9;
+	}
+	
+	
   // set origin // TODO
   SetOrigin(kPrimary);
   // -> analyze V0
@@ -156,6 +161,85 @@ AliMEStrackInfo::AliMEStrackInfo(AliESDtrack *t, AliPIDResponse *rpid, AliPIDCom
     fFilterParam->fChi2Cl = t->GetTPCchi2();
   }
 }
+
+//______________________________________________________________
+AliMEStrackInfo::AliMEStrackInfo(AliESDtrack *t)
+  : AliVParticle()
+  ,fTrackId(TMath::Abs(t->GetLabel()))
+  ,fOrigin(0)
+  ,fFilterId(0)
+  ,fDetStat(0)
+  ,fPt(t->GetSignedPt())
+//   ,fPt(t->Charge()*t->Pt())
+  ,fP(t->P())
+  ,fPz(t->Pz())
+  ,fEta(t->Eta())
+  ,fPhi(t->Phi())
+  ,fY(0.)
+  ,fdEdx(t->GetTPCsignal())
+  ,fBeta(-1.)
+  ,fFilterParam(NULL)
+{
+  // fill Position
+  t->GetXYZ(fPosition);
+  SetOrigin(kPrimary);
+
+  // set DCAxy and DCAz
+//   Float_t dca[2];  // 0 = xy; 1 = z
+  Float_t bCov[3];
+  t->GetImpactParameters(fDCA, bCov);
+}
+
+//______________________________________________________________
+// AliMEStrackInfo::AliMEStrackInfo(AliMCParticle *t, AliStack *mc)
+AliMEStrackInfo::AliMEStrackInfo(AliMCParticle *t, AliMCEvent *mc)
+  : AliVParticle()
+  // ,fTrackId(-1)
+  ,fTrackId(t->GetLabel())
+  ,fOrigin(0)
+  ,fTOFbc(0.)
+  ,fFilterId(0)
+  ,fDetStat(0)
+  ,fPt((t->Charge()>0?1:-1)*t->Pt())
+  ,fP(t->P())
+  ,fPz(t->Pz())
+  ,fEta(t->Eta())
+  ,fPhi(t->Phi())
+  ,fY(t->Y())
+  ,fdEdx(-1.)
+  ,fBeta(-1.)
+  ,fPID()
+  ,fFilterParam(NULL)
+{
+  //
+  // Constructor from reconstructed track
+  // to be checked and further implemented
+
+  memset(fPosition, 0, 3*sizeof(Double_t));
+  memset(fDCA, 0, 2*sizeof(Double_t));
+
+  Int_t pdgCode = t->PdgCode();
+  memset(fPID.fProb, 0, kNdet*AliPID::kSPECIES*sizeof(Double_t));
+  switch(TMath::Abs(pdgCode)){
+  case 11:   fPID.fProb[kITS][0] = 1.; break;
+  case 13:   fPID.fProb[kITS][1] = 1.; break;
+  case 211:  fPID.fProb[kITS][2] = 1.; break;
+  case 321:  fPID.fProb[kITS][3] = 1.; break;
+  case 2212: fPID.fProb[kITS][4] = 1.; break;
+  }
+
+  // set origin
+  TParticle* particle = t->Particle(); //mc->Particle(TMath::Abs(label));
+  if (mc->IsPhysicalPrimary(TMath::Abs(t->Label()))) SetOrigin(kPrimary);
+  else{
+    Int_t uniqueID=particle->GetUniqueID();
+    if(uniqueID==kPDecay) SetOrigin(kSecondary);
+    else if(uniqueID==kPHadronic) SetOrigin(kMaterial);
+  }
+
+//   AliInfo(Form("MC charge: %i\n", TMath::Sign(1,(t->Charge()))));
+}
+
 
 //______________________________________________________________
 AliMEStrackInfo::AliMEStrackInfo(AliMCParticle *t, AliStack *mc)

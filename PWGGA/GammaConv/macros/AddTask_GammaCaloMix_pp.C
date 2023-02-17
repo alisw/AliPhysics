@@ -207,23 +207,29 @@ void AddTask_GammaCaloMix_pp(
   // EDC STD: 411790109fe30220000
  if (trainConfig == 1){
     cuts.AddCutCaloCalo("00010113","244661905a01cc00000","411790109fe10220000","0163103100000010");
-} else if (trainConfig == 2){  //    Timing Variations   std: 50 ns 
+} else if (trainConfig == 2){  //   test 
+    cuts.AddCutCaloCalo("00010113","244661905a01cc00000","388550109fe10220000","0163103100000010");
+    cuts.AddCutCaloCalo("00010113","244661905a09cc00000","111110109fe10220000","0163103100000010");    // PHOS energy cut 0.1; 0.5 EMCal energy cut
+    cuts.AddCutCaloCalo("00010113","244661905a07cc00000","111110109fe10220000","0163103100000010");    // PHOS energy cut 0.2; 0.5 EMCal energy cut
+    cuts.AddCutCaloCalo("00010113","244661905a01cc00000","111110109fe10220000","0163103100000010");
+
+} else if (trainConfig == 12){  //    Timing Variations   std: 50 ns 
     cuts.AddCutCaloCalo("00010113","244661904a01cc00000","411790109fe10220000","0163103100000010");  // 100 ns
     cuts.AddCutCaloCalo("00010113","24466190sa01cc00000","411790109fe10220000","0163103100000010");  // +- 30 ns + TC effi
-} else if (trainConfig == 3){  //    Clus Energy   Variations std Phos: 0.1 EMCal 0.5
+} else if (trainConfig == 13){  //    Clus Energy   Variations std Phos: 0.1 EMCal 0.5
     cuts.AddCutCaloCalo("00010113","244661905a09cc00000","411790109fe10220000","0163103100000010");    // PHOS energy cut 0.1; 0.5 EMCal energy cut
     cuts.AddCutCaloCalo("00010113","244661905a07cc00000","411790109fe10220000","0163103100000010");    // PHOS energy cut 0.2; 0.5 EMCal energy cut
     cuts.AddCutCaloCalo("00010113","244661905a01cc00000","411790109fe30220000","0163103100000010");    // PHOS energy cut 0.3; 0.7 EMCal energy cut
     cuts.AddCutCaloCalo("00010113","244661905a07cc00000","411790109fe30220000","0163103100000010");    // PHOS energy cut 0.2; 0.7 EMCal energy cut
     cuts.AddCutCaloCalo("00010113","244661905a09cc00000","411790109fe30220000","0163103100000010");    // PHOS energy cut 0.1; 0.7 EMCal energy cut
-  } else if (trainConfig == 4){ //  Opening angle std 0.005
+  } else if (trainConfig == 14){ //  Opening angle std 0.005
     cuts.AddCutCaloCalo("00010113","244661905a09cc00000","111110109fe10220000","0163103100000010");    // PHOS EMCAL
     cuts.AddCutCaloCalo("00010113","244661905a01cc00000","388550109fe10220000","0163103100000010");    // PHOS DCAL
     cuts.AddCutCaloCalo("00010113","244661905a01cc00000","411790109fe10220000","0163103100000000");   // off
     cuts.AddCutCaloCalo("00010113","244661905a01cc00000","411790109fe10220000","0163103100000050");   //  0.0202; // minimum 1 EMCal cell diagonal
 
     // ******************** pp 13 TeV Triggered Data        *****************************************
-  } else if (trainConfig == 10){
+  } else if (trainConfig == 20){
 //                          ||         
     cuts.AddCutCaloCalo("0008e113","24466190sa09cc00000","411790109fe10220000","0163103100000010");// EG2+DG2
     cuts.AddCutCaloCalo("0008d113","24466190sa09cc00000","411790109fe10220000","0163103100000010");// EG1+DG1

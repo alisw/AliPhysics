@@ -2,12 +2,11 @@
 #define ALIMESPP13_H
 
 ////////////////////////////////////////////////////////////////////////////
-//  Tender for Multiplicity and Event Shape group                         //
-//  Tender configuration                                                  //
+//  Task for multiplicity and event shape studies in pp @ 13 TeV          //
+//                                                                        //
 //  Authors:                                                              //
 //    Amelia Lindner <amelia.lindner@cern.ch>                             //
 //    Alex Bercuci (a.bercuci@gsi.de)                                     //
-//    Cristi Andrei <Cristian.Andrei@cern.ch>                             //
 //                                                                        //
 ////////////////////////////////////////////////////////////////////////////
 
@@ -32,46 +31,6 @@ class TTreeSRedirector;
 class AliMESpp13 : public AliAnalysisTaskSE
 {
 public:
-  class AliMESconfigTender : public TObject
-  {
-  public:
-    friend class AliMESpp13;
-    enum EMESconfigEventCuts
-    {
-      kNoEC = 0 // no event cuts
-      ,
-      k7TeV // vertex and trigger cuts for 7TeV
-      ,
-      k13TeV // vertex and trigger cuts for 13TeV
-    };
-    enum EMESconfigTrackCuts
-    {
-      kNoTC = 0 // no track cuts
-      ,
-      kStandardITSTPCTrackCuts2010 // 2010 standard cuts
-      ,
-      kStandardITSTPCTrackCuts2011 // 2011 standard cuts
-    };
-    enum EMESconfigPIDpriors
-    {
-      kNoPP = 0 // no priors
-      ,
-      kTPC // TPC priors
-      ,
-      kIterative // iterative priors
-    };
-
-    AliMESconfigTender();
-    void Print(Option_t *o = "") const; // *MENU*
-
-  protected:
-    UChar_t fTrackCuts; // track cuts selector
-    UChar_t fEventCuts; // event cuts selector
-    UChar_t fPIDpriors; // PID prior selector
-
-    ClassDef(AliMESconfigTender, 1)
-  };
-
   //_______________________________________________________________________________________
   enum AliMESpp13Steering
   {
@@ -83,7 +42,6 @@ public:
   };
   enum EMESpp13QA
   {
-    kConfig = 0,
     kEfficiency,
     kEvInfo,
     kTrkInfo,
@@ -94,36 +52,18 @@ public:
   enum MESpp13Containers
   {
     kQA = 1,
-    kEventInfo = 1,
-    kTracks,
-    kEventTree,
-    kTracksTree,
-    kMCeventInfo,
-    kMCtracks,
-    kMCeventTree,
-    kMCtracksTree,
-    kMCGenTracksTree,
-    kMCMissedTracksTree,
+    kTree = 1,
+    kMCGenTree,
+    // kMCMissTree,
     kNcontainers
   };
   AliMESpp13();
   AliMESpp13(const char *name);
   virtual ~AliMESpp13();
 
-  // static Int_t    MakeMultiplicityESD(AliESDEvent* const, const char *opt);
-  static Int_t MakeMultiplicityMC(AliMCEvent *const);
-  static Int_t MakeMultiplicity0408MC(AliMCEvent *const);
-  static Int_t MakeMultiplicityV0MMC(AliMCEvent *const);
-  static Double_t ComputeDeltaPhi(Double_t, Double_t);
-
-  virtual Bool_t ConfigTask(AliMESconfigTender::EMESconfigEventCuts ec,
-                            AliMESconfigTender::EMESconfigTrackCuts tc,
-                            AliMESconfigTender::EMESconfigPIDpriors pp);
   Bool_t HasMCdata() const { return TestBit(kMCdata); };
   virtual void SetMCdata(Bool_t mc = kTRUE);
-  virtual void SetPriors();
-
-  virtual Bool_t PostProcess();
+  virtual void FinishTaskOutput();
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *opt);
 
@@ -134,27 +74,24 @@ private:
   AliMESpp13(const AliMESpp13 &);
   AliMESpp13 &operator=(const AliMESpp13 &);
 
-  AliMESconfigTender fConfig; // currrent configuration of task
-
-  AliAnalysisFilter *fTrackFilter; // working track filter
-  AliPIDCombined *fPIDcomb;        // working PID combined service
-
+  AliAnalysisFilter *fTrackFilter;    // working track filter
   TObjArray *fTracks;                 //!
   AliMESeventInfo *fEvInfo;           //!
   TObjArray *fMCtracks;               //!
   AliMESeventInfo *fMCevInfo;         //!
   TTreeSRedirector *fTreeSRedirector; //! temp tree to dump output
-  TTree *fEventTree;                  //!
-  TTree *fTracksTree;                 //!
-  TTree *fMCeventTree;                //!
-  TTree *fMCtracksTree;               //!
-  TTree *fMCGenTracksTree;    //!
-  TTree *fMCMissedTracksTree; //!
+  TClonesArray *fTracksIO;            //!
+  TClonesArray *fMCtracksIO;          //!
+  TClonesArray *fMCGenTracksIO;       //!
+  TClonesArray *fMCtracksMissIO;      //!
+  TTree *fTree;                       //!
+  TTree *fMCGenTree;                  //!
+  TTree *fMCMissTree;                 //!
 
   AliPPVsMultUtils *fUtils;
   AliEventCuts fEventCutsQA; //!
 
-  ClassDef(AliMESpp13, 5) // Tender task for the Multi Event Shape
+  ClassDef(AliMESpp13, 3) // MESpp task
 };
 
 #endif
