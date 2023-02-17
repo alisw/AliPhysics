@@ -614,6 +614,16 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
    */
   void                        SetUseBuiltinEventSelection(Bool_t doUse)            { fUseBuiltinEventSelection = doUse                  ; }
 
+   /**
+   * @brief Do not apply any event selection, process all events
+   * @param[in] doUse It true no event selection is applied
+   * 
+   * Feature is only intended for service wagons based on the AliAnalysisTaskEmcal which do not 
+   * know the event selection in consumer tasks in the train and as such should process all events
+   * in order not to apply a bias on other tasks due to its own internal event selection
+   */
+  void                        SetUseNoEventSelection(Bool_t doUse)                 { fUseNoEventSelection = doUse                       ; }
+
   /**
    * @brief Use fast method for PYTHIA cross section reading
    * @param doRead If true the fast method is used for cross section reading
@@ -1411,6 +1421,7 @@ class AliAnalysisTaskEmcal : public AliAnalysisTaskSE {
   Bool_t                      fMCRejectFilter;             ///< enable the filtering of events by tail rejection
   Bool_t                      fCountDownscaleCorrectedEvents; ///< Count event number corrected for downscaling
   Bool_t                      fUseBuiltinEventSelection;   ///< Use builtin event selection of the AliAnalysisTaskEmcal instead of AliEventCuts
+  Bool_t                      fUseNoEventSelection;        ///< Do not apply event selection but process every event (for service tasks and MC-gen based tasks)
   Bool_t                      fReadPyxsecFast;             ///< Use fast method for pythia cross section reading
   Float_t                     fPtHardAndJetPtFactor;       ///< Factor between ptHard and jet pT to reject/accept event.
   Float_t                     fPtHardAndClusterPtFactor;   ///< Factor between ptHard and cluster pT to reject/accept event.
