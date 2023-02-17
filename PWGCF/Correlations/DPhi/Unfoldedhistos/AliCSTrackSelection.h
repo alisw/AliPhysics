@@ -104,10 +104,14 @@ class AliCSTrackSelection : public TNamed {
   TH2F                              *fhTPCdEdxSignalVsP[2];              ///< TPC dE/dx signal vs P(b/a)
   TH2F* fhTPCdEdxSelSignalVsP[3];                                        ///< TPC dE/dx signal vs P for the different selected species
   TH2F                              *fhTOFSignalVsP[2];                  ///< TOF signal vs P(b/a)
+  TH2F* fhTOFSelSignalVsP[3];                                            ///< TOF signal vs P for the different selected species
   TH3F* fhTPCTOFSigmaVsP[3][2];                                          ///< TOF n sigmas vs TPC n sigmas vs P  to the pi, k, p lines (b/a)
   TH2F* fhTPCdEdxSignalDiffVsP[3][2];                                    ///< TPC dE/dx signal difference to the pi, k, p lines vs P (b/a)
+  TH2F* fhTOFSignalDiffVsP[3][2];                                        ///< TOF signal difference to the pi, k, p lines vs P (b/a)
   TH2F* fhTPCdEdxSelSignalDiffVsP[3][3];                                 ///< TPC dE/dx signal difference to the pi, k, p lines vs P  for the different selected species
-  TH2F* fhPvsTOFMassSq[2];                                               ///< momentum vs TOF estimated mass (b/a)
+  TH2F* fhTOFSelSignalDiffVsP[3][3];                                     ///< TOF signal difference to the pi, k, p lines vs P  for the different selected species
+  TH2F* fhPvsTOFMassSq[2];                                               ///< momentum vs TOF estimated squared mass (b/a)
+  TH2F* fhSelPvsTOFMassSq[3];                                            ///< momentum vs TOF estimated squared mass for the different selected species
 
   TList                             *fHistogramsList;                    ///< the list of histograms used
 
