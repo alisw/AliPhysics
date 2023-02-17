@@ -464,20 +464,19 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
 
 
       //Ref vs ref - fill seperate histogram for the situation were both tracks are from the large ref. range
-      if(0.2<trigPt<3.0 && 0.2<assPt<3.0){
-        if(trigPt<assPt){continue;}
-          if(fUseEfficiency) {
-            assEff = GetEff(assPt, 0, assEta);
-            if(assEff < 0.001) continue;
-          }
+      if(0.2<trigPt<3.0 && 0.2<assPt<3.0 && trigPt>assPt){
+        if(fUseEfficiency) {
+          assEff = GetEff(assPt, 0, assEta);
+          if(assEff < 0.001) continue;
+        }
 
-          binscont[0] = trigEta - assEta;
-          binscont[1] = RangePhi(trigPhi - assPhi);
-          binscont[5] = assPt;
+        binscont[0] = trigEta - assEta;
+        binscont[1] = RangePhi(trigPhi - assPhi);
+        binscont[5] = assPt;
 
-          if(fUsePhiStar && CheckDPhiStar(binscont[0], trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
+        if(fUsePhiStar && CheckDPhiStar(binscont[0], trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
 
-          fhSEref->Fill(binscont,0,1./(trigEff*assEff));
+        fhSEref->Fill(binscont,0,1./(trigEff*assEff));
       }
       //All other situations
       Int_t TrigBin = h->FindBin(trigPt);
@@ -553,9 +552,8 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelationsMixed()
           Double_t assEff = 1.0;
 
           //Ref vs ref - fill seperate histogram for the situation were both tracks are from the large ref. range
-          if(0.2<trigPt<3.0 && 0.2<assPt<3.0){
-            if(trigPt<assPt){continue;}
-              if(fUseEfficiency) {
+          if(0.2<trigPt<3.0 && 0.2<assPt<3.0 && trigPt>assPt){
+            if(fUseEfficiency) {
               assEff = GetEff(assPt, 0, assEta);
               if(assEff < 0.001) continue;
             }
@@ -567,6 +565,7 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelationsMixed()
             if(fUsePhiStar && CheckDPhiStar(binscont[0], trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
 
             fhMEref->Fill(binscont,0,1./((Double_t)nMix*(trigEff*assEff)));
+            
           }
           //All other situations
           Int_t TrigBin = h->FindBin(trigPt);
