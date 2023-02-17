@@ -642,7 +642,7 @@ Bool_t AliCSTrackSelection::IsTrackAccepted(AliVTrack *trk) {
             }
             if ((trk->GetStatus() & AliESDtrack::kTOFin) && (!(trk->GetStatus() & AliESDtrack::kTOFmismatch))) {
               fhTPCTOFSigmaVsP[j][i]->Fill(fPIDResponse->NumberOfSigmasTPC(ttrk, spec(j)), fPIDResponse->NumberOfSigmasTOF(ttrk, spec(j)), ttrk->P());
-              fhTOFSelSignalDiffVsP[j][i]->Fill(ttrk->P(), gettofbeta(ttrk->GetTOFsignal()) - gettofbeta(fPIDResponse->GetTOFResponse().GetExpectedSignal(ttrk, spec(j))));
+              fhTOFSignalDiffVsP[j][i]->Fill(ttrk->P(), gettofbeta(ttrk->GetTOFsignal() - gettofbeta(fPIDResponse->GetTOFResponse().GetExpectedSignal(ttrk, spec(j)))));
             }
           }
         }
@@ -1064,7 +1064,7 @@ void AliCSTrackSelection::DefineHistograms(){
                                                          nPbins, edges, 800, -200.0, 200.0);
               fHistogramsList->Add(fhTPCdEdxSelSignalDiffVsP[i][j]);
               fhTOFSelSignalDiffVsP[i][j] = new TH2F(Form("TOFSel%sSignal%sDiffVsP_%s", name(j), name(i), fCutsString.Data()), Form("TOF #beta of selected %s to the %s line;P (GeV/c);#beta_{%s} - <#beta>_{%s}", title(j), title(i), title(j), title(i)),
-                                                     nPbins, edges, 800, -200.0, 200.0);
+                                                     nPbins, edges, 400, -1.1, 1.1);
               fHistogramsList->Add(fhTOFSelSignalDiffVsP[i][j]);
             }
           }
