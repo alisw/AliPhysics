@@ -96,6 +96,8 @@ class AliAnalysisTaskUpc2Pi2E : public AliAnalysisTaskSE {
 	Bool_t ITSI_T[28];
 	Bool_t ITSSA_T[28];
 	Bool_t TrackCuts_T[28];
+	Float_t TrackDCAxy_T[28];
+	Float_t TrackDCAz_T[28];
 	Bool_t fMatchingSPD_T[28];
 	Int_t TPCNcls_T[28];
 	Int_t ITSNcls_T[28];
@@ -120,6 +122,7 @@ class AliAnalysisTaskUpc2Pi2E : public AliAnalysisTaskSE {
 	Bool_t TriggerSPD_T;
 	Int_t ITSModuleInner_T[28];
 	Int_t ITSModuleOuter_T[28];
+	Int_t fFOmodules_T[240];
 
 	// MC tree
 	TTree *fMCTree;		//! Tree for MC (not used now)
@@ -178,7 +181,7 @@ class AliAnalysisTaskUpc2Pi2E : public AliAnalysisTaskSE {
 	AliAnalysisTaskUpc2Pi2E(const AliAnalysisTaskUpc2Pi2E&); //not implemented
 	AliAnalysisTaskUpc2Pi2E& operator =(const AliAnalysisTaskUpc2Pi2E&); //not implemented
   
- 	ClassDef(AliAnalysisTaskUpc2Pi2E, 3); 
+ 	ClassDef(AliAnalysisTaskUpc2Pi2E, 4); 
 
 };
 
