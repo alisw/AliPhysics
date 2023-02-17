@@ -189,7 +189,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 
 	// Histograms
 	TObjString *fCutString; // cut number used for analysis
-  TString fCutStringRead;
+  	TString fCutStringRead;
 	TH1F *fHistCutIndex; // bookkeeping for cuts
 	TH1F *fHistdEdxCuts;  // bookkeeping for dEdx cuts
 	TH2F *fHistITSdEdxbefore; // ITS dEdx before cuts
@@ -198,9 +198,9 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	TH2F *fHistTPCdEdxafter; // TPC dEdx after cuts
 	TH2F *fHistTPCdEdxSignalbefore; //TPC dEdx signal before
 	TH2F *fHistTPCdEdxSignalafter; //TPC dEdx signal  after
-	TH2F *fHistoTOFSigbefore; // TOF signal after cuts
-	TH2F *fHistTOFbefore; // TOF after cuts
-	TH2F *fHistTOFafter; // TOF after cuts
+	TH2F *fHistoTOFSigbefore; // TOF signal before cuts
+	TH2F *fHistTOFbefore; // TOF before cuts
+	TH2F *fHistTOFSigafter; // TOF signal after cuts
 	TH2F *fHistTrackDCAxyPtbefore;
 	TH2F *fHistTrackDCAxyPtafter;
 	TH2F *fHistTrackDCAzPtbefore;

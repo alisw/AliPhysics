@@ -120,7 +120,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fHistTPCdEdxSignalafter(NULL),
 	fHistoTOFSigbefore(NULL),
 	fHistTOFbefore(NULL),
-	fHistTOFafter(NULL),
+	fHistTOFSigafter(NULL),
 	fHistTrackDCAxyPtbefore(NULL),
 	fHistTrackDCAxyPtafter(NULL),
 	fHistTrackDCAzPtbefore(NULL),
@@ -202,7 +202,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const AliPrimaryPionCuts &ref) : AliAnaly
 	fHistTPCdEdxSignalafter(NULL),
 	fHistoTOFSigbefore(NULL),
 	fHistTOFbefore(NULL),
-	fHistTOFafter(NULL),
+	fHistTOFSigafter(NULL),
 	fHistTrackDCAxyPtbefore(NULL),
 	fHistTrackDCAxyPtafter(NULL),
 	fHistTrackDCAzPtbefore(NULL),
@@ -299,7 +299,7 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
 
 
 
-        fHistTOFbefore=new TH2F(Form("Pion_TOF_before %s",cutName.Data()),"TOF pion before" ,170,0.03,20,11000,-1000,10000);
+        fHistTOFbefore=new TH2F(Form("Pion_TOF_before %s",cutName.Data()),"TOF pion before" ,170,0.03,20,100,-1000,10000);
         fHistograms->Add(fHistTOFbefore);
         axisBeforeTOF = fHistTOFbefore->GetXaxis();
 		fHistoTOFSigbefore=new TH2F(Form("Pion_TOFSig_before %s",cutName.Data()),"TOF sigma pion before"  ,170,0.05,50,400,-6,10);
@@ -325,8 +325,8 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
       fHistTPCdEdxSignalafter=new TH2F(Form("Pion_dEdxSignal_after %s",cutName.Data()),"dEdx pion signal after" ,170,0.05,50.0,800,0.0,200);
       fHistograms->Add(fHistTPCdEdxSignalafter);
 
-      fHistTOFafter=new TH2F(Form("Pion_TOFSig_after %s",cutName.Data()),"TOF sigma pion after" ,170,0.05,50,400,-6,10);
-      fHistograms->Add(fHistTOFafter);
+      fHistTOFSigafter=new TH2F(Form("Pion_TOFSig_after %s",cutName.Data()),"TOF sigma pion after" ,170,0.05,50,400,-6,10);
+      fHistograms->Add(fHistTOFSigafter);
 
       fHistTrackDCAxyPtafter  = new TH2F(Form("hTrack_DCAxy_Pt_after %s",cutName.Data()),"DCAxy Vs Pt of tracks after",800,-4.0,4.0,400,0.,10.);
       fHistograms->Add(fHistTrackDCAxyPtafter);
@@ -359,7 +359,7 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
       Double_t factor = TMath::Power(to/from, 1./bins);
       for(Int_t i=1; i<=bins; ++i) newBins[i] = factor * newBins[i-1];
       AxisAfter->Set(bins, newBins);
-      AxisAfter = fHistTOFafter->GetXaxis();
+      AxisAfter = fHistTOFSigafter->GetXaxis();
       AxisAfter->Set(bins, newBins);
       AxisAfter = fHistITSdEdxafter->GetXaxis();
       AxisAfter->Set(bins,newBins);
@@ -709,7 +709,7 @@ Bool_t AliPrimaryPionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 				return kFALSE;
 			}
 		}
-		if(fHistTOFafter)fHistTOFafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion));
+		if(fHistTOFSigafter)fHistTOFSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion));
 	} else if ( fRequireTOF == kTRUE ) {
 		if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
 		return kFALSE;
@@ -742,15 +742,15 @@ AliVTrack *AliPrimaryPionCuts::GetTrack(AliVEvent * event, Int_t label){
      		return track;
     	} else{
        		for(Int_t ii=0; ii<event->GetNumberOfTracks(); ii++) {
-       			 if(event->GetTrack(ii)) track = dynamic_cast<AliVTrack*>(event->GetTrack(ii));
-         		 if(track){
-         			 if(track->GetID() == label) {
-           			 return track;
-          }
-        }
-      }
-    }
-  }
+       			if(event->GetTrack(ii)) track = dynamic_cast<AliVTrack*>(event->GetTrack(ii));
+         		if(track){
+         			if(track->GetID() == label) {
+           			return track;
+          			}
+        		}		
+     		 }
+    	}
+  	}
 	cout << "track not found " << label << " " << event->GetNumberOfTracks() << endl;
 	return NULL;
 }
