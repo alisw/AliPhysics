@@ -218,8 +218,8 @@ void AliAnalysisTaskUpc2Pi2E::UserCreateOutputObjects()
 	f2Pi2ETree1->Branch("TrackCuts_T",&TrackCuts_T,"TrackCuts_T[28]/O");
 	f2Pi2ETree1->Branch("ITSNcls1_T",&ITSNcls_T,"ITSNcls_T[28]/I");
 	f2Pi2ETree1->Branch("TrackP1_T",&TrackP_T,"TrackP_T[28]/F");
-//	f4PiTree1->Branch("TrackDCAxy1_T",&TrackDCAxy_T,"TrackDCAxy_T[28]/F");
-//	f4PiTree1->Branch("TrackDCAz1_T",&TrackDCAz_T,"TrackDCAz_T[28]/F");
+	f2Pi2ETree1->Branch("TrackDCAxy1_T",&TrackDCAxy_T,"TrackDCAxy_T[28]/F");
+	f2Pi2ETree1->Branch("TrackDCAz1_T",&TrackDCAz_T,"TrackDCAz_T[28]/F");
 	f2Pi2ETree1->Branch("TrackC1_T",&TrackC_T,"TrackC_T[28]/I");
 	f2Pi2ETree1->Branch("TrackEta1_T",&TrackEta_T,"TrackEta_T[28]/F");
 	f2Pi2ETree1->Branch("TrackPhi1_T",&TrackPhi_T,"TrackPhi_T[28]/F");
@@ -248,7 +248,9 @@ void AliAnalysisTaskUpc2Pi2E::UserCreateOutputObjects()
 //	f4PiTree1->Branch("VBAfired1_T",&VBAfired_T,"VBAfired_T/O");
 //	f4PiTree1->Branch("VBCfired1_T",&VBCfired_T,"VBCfired_T/O");
 //	f4PiTree1->Branch("Ntracklets1_T",&Ntracklets_T,"Ntracklets_T/I");
-	// fRhoTree->Branch("ITSModule_T",&ITSModule_T,"ITSModule_T/I");
+	f2Pi2ETree1->Branch("ITSModuleInner_T",&ITSModuleInner_T,"ITSModuleInner_T[28]/I");
+	f2Pi2ETree1->Branch("ITSModuleOuter_T",&ITSModuleOuter_T,"ITSModuleOuter_T[28]/I");
+	f2Pi2ETree1->Branch("FOmodules_T",&fFOmodules_T,"FOmodules_T[240]/I");
 	f2Pi2ETree1->Branch("ChipCut1_T",&ChipCut_T,"ChipCut_T/O");
 	//f4PiTree1->Branch("FORChip1_T",&FORChip);
 //	f4PiTree1->Branch("TriggerSPD1_T",&TriggerSPD_T,"TriggerSPD_T/O");
@@ -572,9 +574,9 @@ for (Int_t it=0;it < Maxtrk; it++){
     Float_t dca[2] = {0.0,0.0}; AliExternalTrackParam cParam;
     if(!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(),300.,&cParam)) continue;
     trk->GetImpactParameters(dca[0],dca[1]);
-    if(TMath::Abs(dca[1]) > 2) continue;
+    //if(TMath::Abs(dca[1]) > 2) continue;
     Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
-    if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+    //if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
 
 	// store good track index
 	TrackIndex[nGoodTracks] = itr;
@@ -587,6 +589,8 @@ for (Int_t it=0;it < Maxtrk; it++){
 	ITSSA_T[nGoodTracks] = trk->IsPureITSStandalone();
 	ITSNcls_T[nGoodTracks] = trk->GetNumberOfITSClusters();
 	TrackCuts_T[nGoodTracks] = fTrackCutsBit4->AcceptTrack(trk);
+	TrackDCAxy_T[nGoodTracks] = dca[0];
+	TrackDCAz_T[nGoodTracks] = dca[1];
 	Int_t crossedFO[4];
 	TBits fFOCrossedChips(1200); 
 	const AliVMultiplicity *mult = esd->GetMultiplicity();
@@ -620,21 +624,21 @@ for (Int_t it=0;it < Maxtrk; it++){
 	TLorentzVector lvSum; // pair-4vector
 
 //	Int_t fFOmodules[240];
-//	for (Int_t i=0;i<240;i++) fFOmodules[i] = 0;
-//
-//  	for(Int_t chipkey=0;chipkey<1200;chipkey++){
-//  		if (esd->GetMultiplicity()->TestFastOrFiredChips(chipkey)){
-//  			fFOmodules[(chipkey/5)]++;
-// 		}
-// 	}
+	for (Int_t i=0;i<240;i++) fFOmodules_T[i] = 0;
+
+  	for(Int_t chipkey=0;chipkey<1200;chipkey++){
+  		if (esd->GetMultiplicity()->TestFastOrFiredChips(chipkey)){
+  			fFOmodules_T[(chipkey/5)]++;
+ 		}
+ 	}
 
   	for(Int_t i=0; i<nGoodTracks; i++){				//CHANGE i here to look at different track number
 	//	if (TrackIndex[i] <= 0) continue; 
   if(debugMode) std::cout<<"0"<<std::endl;
 	  	AliESDtrack *trk = esd->GetTrack(TrackIndex[i]);
 //		if (!trk) continue;
-//		ITSModuleInner_T[i] = trk->GetITSModuleIndex(0)/1000000;
-//		ITSModuleOuter_T[i] = trk->GetITSModuleIndex(1)/1000000;
+		ITSModuleInner_T[i] = trk->GetITSModuleIndex(0)/1000000;
+		ITSModuleOuter_T[i] = trk->GetITSModuleIndex(1)/1000000;
 
 		// phi test
 		if (trk->Charge()>0) PhiPlus = trk->Phi();
@@ -718,29 +722,20 @@ for (Int_t it=0;it < Maxtrk; it++){
 	if (!LikeSign_T && fabs(Rapidity_T)<0.8 && Pt_T<0.1 && (pow(PIDTPCElectron_T[0],2)+pow(PIDTPCElectron_T[1],2)+pow(PIDTPCElectron_T[2],2)+pow(PIDTPCElectron_T[3],2)<18) ) fDeltaPhiEe->Fill(Phi_T-PhiPlus);
 
 	// virtual cut on FO chip matching
-//	Int_t SPDInner[20]; for (Int_t i=0; i<20; ++i) SPDInner[i]=0;
-//	Int_t SPDOuter[40]; for (Int_t i=0; i<40; ++i) SPDOuter[i]=0;
+	Int_t SPDInner[20]; for (Int_t i=0; i<20; ++i) SPDInner[i]=0;
+	Int_t SPDOuter[40]; for (Int_t i=0; i<40; ++i) SPDOuter[i]=0;
 
-	//ChipCut_T = 0;
-/*	SPDInner[ITSModuleInner_T[0]/4]++;
+	SPDInner[ITSModuleInner_T[0]/4]++;
 	SPDInner[ITSModuleInner_T[1]/4]++;
-	if (//(fTriggerName == "CCUP9-B") &&
-		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
-		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
+	SPDOuter[(ITSModuleOuter_T[0]-80)/4]++;
+	SPDOuter[(ITSModuleOuter_T[1]-80)/4]++;
+	ChipCut_T = 0;
+	if ((fTriggerName == "CCUP9-B") &&
+		((fFOmodules_T[ITSModuleInner_T[0]] == 0)||(fFOmodules_T[ITSModuleOuter_T[0]] == 0)
+		||(fFOmodules_T[ITSModuleInner_T[1]] == 0)||(fFOmodules_T[ITSModuleOuter_T[1]] == 0)
 		|| !Is0STPfired(SPDInner,SPDOuter))) ChipCut_T = 1;
-	if (nGoodTracks == 4){ 
-	SPDInner[ITSModuleInner_T[2]/4]++;
-	SPDInner[ITSModuleInner_T[3]/4]++;
-	SPDOuter[(ITSModuleOuter_T[2]-80)/4]++;
-	SPDOuter[(ITSModuleOuter_T[3]-80)/4]++;
-	if (//(fTriggerName == "CCUP9-B") &&
-		((fFOmodules[ITSModuleInner_T[0]] == 0)||(fFOmodules[ITSModuleOuter_T[0]] == 0)
-		||(fFOmodules[ITSModuleInner_T[1]] == 0)||(fFOmodules[ITSModuleOuter_T[1]] == 0)
-		||(fFOmodules[ITSModuleInner_T[2]] == 0)||(fFOmodules[ITSModuleOuter_T[2]] == 0)
-		||(fFOmodules[ITSModuleInner_T[3]] == 0)||(fFOmodules[ITSModuleOuter_T[3]] == 0)
-		|| !Is0STPfired(SPDInner,SPDOuter))) ChipCut_T = 1;
-  }
-  */  
+//  }
+    
 //	Int_t fFOcounter = 0;
   //	for(Int_t chipkey=0;chipkey<1200;chipkey++){
   //		if (esd->GetMultiplicity()->TestFastOrFiredChips(chipkey)){
