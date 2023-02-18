@@ -51,6 +51,7 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
   AliAnalysisTaskCVEPIDCME* task = new AliAnalysisTaskCVEPIDCME("TaskCVEPIDCME");
   task->SetPeriod(period);
   task->SetTrigger(trigger);
+  task->SetFilterBit(filterBit);
   task->IfDebug(bDebug);
   task->IfUseTPCPlane(bUseTPCPlane);
   task->IfUseVZEROPlane(bUseVZEROPlane);
