@@ -72,6 +72,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void ProcessTrueBackgroundCandidatesAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand);
   float GetFrag(AliAODConversionMother* Pi0Candidate, const int matchedJet, int isTrueJet);
   float GetFrag(AliAODMCParticle* Pi0Candidate, const int matchedJet, int isTrueJet);
+  void FillMesonDCATree(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* gamma0, AliAODConversionPhoton* gamma1, const int matchedJet, const bool isTrueMeson);
 
   // MC functions
   void ProcessAODMCParticles(Int_t isCurrentEventSelected = 0);
@@ -81,7 +82,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool MCParticleIsSelected(AliAODMCParticle* particle, bool isConv, bool checkConversion);
   int GetPhotonMotherLabel(AliAODConversionPhoton* gammaCand, int& convertedPhotonLabel, bool isCaloPhoton);
   void RelabelAODPhotonCandidates(Bool_t mode);
-  void ProcessTrueMesonCandidatesAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand = 0);
+  bool ProcessTrueMesonCandidatesAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand = 0);
   void ProcessTrueMesonCandidatesInTrueJetsAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand = 0);
   // void IsTrueParticle(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, Bool_t matched);
   bool CheckAcceptance(AliAODMCParticle* gamma0, AliAODMCParticle* gamma1);
@@ -114,6 +115,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void SetMesonKind(int meson) { (meson == 0) ? fMesonPDGCode = 111 : fMesonPDGCode = 221; }
   void SetOtherMesons(std::vector<int> vec) { fOtherMesonsPDGCodes = vec; }
   void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
+  void SetFillMesonDCATree(bool tmp) { fFillDCATree = tmp; }
 
   void SetEventCutList(Int_t nCuts,
                        TList* CutArray)
@@ -216,7 +218,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   int fTrackMatcherRunningMode;                         // track matcher mode
   bool fUseThNForResponse;                              // flag if THnSparse or TH2 should be used for the 4d response matrices
   bool fEnableSortForClusMC;                            // flag if cluster mc labels should be sorted
-
+  bool fFillDCATree;                                    // flag if DCA tree should be filled or not
   //-------------------------------
   // conversions
   //-------------------------------
@@ -425,12 +427,24 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoMCJetPtVsFragTrueParton;    //! vector of histos True Jet pT vs. true Frag (mc particle based distribution) for particles originating from hard parton from Jet
   std::vector<TH2F*> fHistoMCPartonPtVsFragTrueParton; //! vector of histos True parton pT vs. true Frag (mc particle based distribution) for particles originating from hard parton from Jet
 
+  //-------------------------------
+  // DCA tree for PCM pile-up estimation
+  //-------------------------------
+  std::vector<TTree*> fDCATree;                       //! vector of trees with the following info: DCA for both photons, pt of meson, mass of meson, corresponding jet pT
+  unsigned short fDCATree_InvMass;                    //! inv mass of meson for DCA tree
+  unsigned short fDCATree_Pt;                         //! pt of meson for DCA tree
+  short fDCATree_DCAzGammaMin;                        //! DCA of photon with smaller DCA for DCA tree
+  short fDCATree_DCAzGammaMax;                        //! DCA of photon with larger DCA for DCA tree
+  short fDCATree_QualityFlag;                         //! Quality flag (categorie 1 - 6) of meson for DCA tree
+  unsigned short fDCATree_JetPt;                      //! jet pt meson belongs to for DCA tree
+  bool fDCATree_isTrueMeson;                          //! flag if meson is true meson or not
+
  private:
   static constexpr bool fLocalDebugFlag = false;
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 9);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 10);
 };
 
 #endif
