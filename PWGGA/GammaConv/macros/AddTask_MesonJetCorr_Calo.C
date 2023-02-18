@@ -187,17 +187,22 @@ void AddTask_MesonJetCorr_Calo(
     cuts.AddCutCalo("00010103", "411790109fe30230000", "21631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 4) {
     cuts.AddCutCalo("0008e103", "411790109fe30230000", "2s631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, rotation back
-    cuts.AddCutCalo("0008e103", "411790109fe30230000", "21631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 5) {
     cuts.AddCutCalo("0008d103", "411790109fe30230000", "2s631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, rotation back
-    cuts.AddCutCalo("0008d103", "411790109fe30230000", "21631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 6) {
     cuts.AddCutCalo("0009c103", "411790109fe30230000", "2s631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, rotation back
-    cuts.AddCutCalo("0009c103", "411790109fe30230000", "21631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 7) {
     cuts.AddCutCalo("0009b103", "411790109fe30230000", "2s631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
-    cuts.AddCutCalo("0009b103", "411790109fe30230000", "21631034000000d0"); // v in-jet, pi0 mass: 0.1-0.15, mixed jet back
 
+  } else if (trainConfig == 14) { // same as 4 but with mixed jet back
+    cuts.AddCutCalo("0008e103", "411790109fe30230000", "21631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, mixed jet back
+  } else if (trainConfig == 15) {// same as 5 but with mixed jet back
+    cuts.AddCutCalo("0008d103", "411790109fe30230000", "21631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, mixed jet back
+  } else if (trainConfig == 16) {// same as 6 but with mixed jet back
+    cuts.AddCutCalo("0009c103", "411790109fe30230000", "21631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, mixed jet back
+  } else if (trainConfig == 17) {// same as 7 but with mixed jet back
+    cuts.AddCutCalo("0009b103", "411790109fe30230000", "21631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, mixed jet back
+   
     //---------------------------------------
     // configs for eta meson pp 13 TeV
     //---------------------------------------

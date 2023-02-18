@@ -50,10 +50,7 @@ void AddTask_MesonJetCorr_Conv(
   Bool_t enableElecDeDxPostCalibration = kFALSE,
   // special settings
   Bool_t enableChargedPrimary = kFALSE,
-  Bool_t doSmear = kFALSE, // switches to run user defined smearing
-  Double_t bremSmear = 1.,
-  Double_t smearPar = 0.,      // conv photon smearing params
-  Double_t smearParConst = 0., // conv photon smearing params
+  bool doFillMesonDCATree = false, // swith to enable filling the meson DCA tree for pile-up estimation
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig + special settings
 )
@@ -185,11 +182,14 @@ void AddTask_MesonJetCorr_Conv(
   } else if (trainConfig == 3) {
     cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "2152103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
   } else if (trainConfig == 6) {
-    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
     cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "2s52103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, rotation back
   } else if (trainConfig == 7) {
-    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
     cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2s52103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, rotation back
+  } else if (trainConfig == 16) { // same as 6 but with mixed jet back
+    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
+  } else if (trainConfig == 17) { // same as 7 but with mixed jet back
+    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
+   
     //---------------------------------------
     // configs for eta meson pp 13 TeV
     //---------------------------------------
@@ -315,16 +315,19 @@ void AddTask_MesonJetCorr_Conv(
   task->SetConversionCutList(numberOfCuts, ConvCutList);
   task->SetDoMesonQA(enableQAMesonTask); 
   task->SetUseTHnSparseForResponse(enableTHnSparse);
+  if(doFillMesonDCATree) task->SetFillMesonDCATree(true);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_Conv_%i_%i%s", meson, trainConfig, nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );
   AliAnalysisDataContainer* coutput = mgr->CreateContainer(nameContainer, TList::Class(), AliAnalysisManager::kOutputContainer, Form("MesonJetCorrelation_Conv_%i_%i.root", meson, trainConfig));
-
+  
   mgr->AddTask(task);
-  cout << "before connect input\n";
   mgr->ConnectInput(task, 0, cinput);
-  cout << "before ConnectOutput\n";
   mgr->ConnectOutput(task, 1, coutput);
+
+  for(int i = 0; i<numberOfCuts; i++){
+    mgr->ConnectOutput(task,2+i,mgr->CreateContainer(Form("%s_%s_%s %s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data(), nameJetFinder.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("MesonJetCorrelation_Conv_%i_%i.root", meson, trainConfig)) );
+  }
 
   return;
 }
