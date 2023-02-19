@@ -139,10 +139,12 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoClusterE({}),
                                                                              fHistoClusterPtInJet({}),
                                                                              fHistoClusterEInJet({}),
+                                                                             fHistoClusterPtVsJetPtInJet({}),
                                                                              fHistoClusterPtPerpCone({}),
                                                                              // conversion histos
                                                                              fHistoConvGammaPt({}),
                                                                              fHistoConvGammaPtInJet({}),
+                                                                             fHistoConvGammaPtVsJetPtInJet({}),
                                                                              fHistoConvGammaPtPerpCone({}),
                                                                              // inv mass Histograms
                                                                              fHistoInvMassVsPt({}),
@@ -358,10 +360,12 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoClusterE({}),
                                                                                            fHistoClusterPtInJet({}),
                                                                                            fHistoClusterEInJet({}),
+                                                                                           fHistoClusterPtVsJetPtInJet({}),
                                                                                            fHistoClusterPtPerpCone({}),
                                                                                            // conversion histos
                                                                                            fHistoConvGammaPt({}),
                                                                                            fHistoConvGammaPtInJet({}),
+                                                                                           fHistoConvGammaPtVsJetPtInJet({}),
                                                                                            fHistoConvGammaPtPerpCone({}),
                                                                                            // inv mass Histograms
                                                                                            fHistoInvMassVsPt({}),
@@ -556,12 +560,14 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoClusterE.resize(fnCuts);
     fHistoClusterPtInJet.resize(fnCuts);
     fHistoClusterEInJet.resize(fnCuts);
+    fHistoClusterPtVsJetPtInJet.resize(fnCuts);
     fHistoClusterPtPerpCone.resize(fnCuts);
   }
   if (!fIsCalo) {
     // conversion histos
     fHistoConvGammaPt.resize(fnCuts);
     fHistoConvGammaPtInJet.resize(fnCuts);
+    fHistoConvGammaPtVsJetPtInJet.resize(fnCuts);
     fHistoConvGammaPtPerpCone.resize(fnCuts);
   }
 
@@ -878,6 +884,11 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoClusterEInJet[iCut]->SetXTitle("p_{T} (GeV/c)");
       fESDList[iCut]->Add(fHistoClusterEInJet[iCut]);
 
+      fHistoClusterPtVsJetPtInJet[iCut] = new TH2F("ClusGamma_InJet_Pt_VsJetPt", "ClusGamma_InJet_Pt_VsJetPt", fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
+      fHistoClusterPtVsJetPtInJet[iCut]->SetXTitle("p_{T} (GeV/c)");
+      fHistoClusterPtVsJetPtInJet[iCut]->SetXTitle("p_{T, jet} (GeV/c)");
+      fESDList[iCut]->Add(fHistoClusterPtVsJetPtInJet[iCut]);
+
       fHistoClusterPtPerpCone[iCut] = new TH1F("ClusGamma_Pt_PerpCone", "ClusGamma_Pt_PerpCone", fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data());
       fHistoClusterPtPerpCone[iCut]->SetXTitle("p_{T} (GeV/c)");
       fESDList[iCut]->Add(fHistoClusterPtPerpCone[iCut]);
@@ -892,6 +903,11 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fHistoConvGammaPtInJet[iCut] = new TH1F("ConvGamma_InJet_Pt", "ConvGamma_Pt", fVecBinsPhotonPt.size() - 1, fVecBinsPhotonPt.data());
       fHistoConvGammaPtInJet[iCut]->SetXTitle("p_{T} (GeV/c)");
       fESDList[iCut]->Add(fHistoConvGammaPtInJet[iCut]);
+
+      fHistoConvGammaPtVsJetPtInJet[iCut] = new TH2F("ConvGamma_InJet_Pt_VsJetPt", "ConvGamma_Pt_VsJetPt", fVecBinsPhotonPt.size() - 1, fVecBinsPhotonPt.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
+      fHistoConvGammaPtVsJetPtInJet[iCut]->SetXTitle("p_{T} (GeV/c)");
+      fHistoConvGammaPtVsJetPtInJet[iCut]->SetXTitle("p_{T, jet} (GeV/c)");
+      fESDList[iCut]->Add(fHistoConvGammaPtVsJetPtInJet[iCut]);
 
       fHistoConvGammaPtPerpCone[iCut] = new TH1F("ConvGamma_PerpCone_Pt", "ConvGamma_Pt", fVecBinsPhotonPt.size() - 1, fVecBinsPhotonPt.data());
       fHistoConvGammaPtPerpCone[iCut]->SetXTitle("p_{T} (GeV/c)");
@@ -1955,6 +1971,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
         // fClusterEtaPhiJets[fiCut]->Fill(phiCluster, etaCluster);
         fHistoClusterPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
         fHistoClusterEInJet[fiCut]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
+        fHistoClusterPtVsJetPtInJet[fiCut]->Fill(PhotonCandidate->E(), fVectorJetPt[matchedJet], fWeightJetJetMC);
       }
 
       double RJetPi0CandPerp = 0;
@@ -2048,6 +2065,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessPhotonCandidates()
           int matchedJet = -1;
           if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJet, RJetPi0Cand)) {
             fHistoConvGammaPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC * weightMatBudgetGamma);
+            fHistoConvGammaPtVsJetPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fVectorJetPt[matchedJet], fWeightJetJetMC * weightMatBudgetGamma);
           }
           double RJetPi0CandPerp = 0;
           int matchedJetPerp = -1;
@@ -2101,6 +2119,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessPhotonCandidates()
             int matchedJet = -1;
             if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJet, RJetPi0Cand)) {
               fHistoConvGammaPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC * weightMatBudgetGamma);
+              fHistoConvGammaPtVsJetPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fVectorJetPt[matchedJet], fWeightJetJetMC * weightMatBudgetGamma);
             }
             double RJetPi0CandPerp = 0;
             int matchedJetPerp = -1;
@@ -2146,6 +2165,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessPhotonCandidates()
           int matchedJet = -1;
           if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJet, RJetPi0Cand)) {
             fHistoConvGammaPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC * weightMatBudgetGamma);
+            fHistoConvGammaPtVsJetPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fVectorJetPt[matchedJet], fWeightJetJetMC * weightMatBudgetGamma);
           }
           double RJetPi0CandPerp = 0;
           int matchedJetPerp = -1;
