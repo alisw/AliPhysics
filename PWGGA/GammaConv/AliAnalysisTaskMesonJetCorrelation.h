@@ -301,14 +301,18 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoClusterPtInJet; //! vector of histos with number of clusters as function of pt inside of jets
   std::vector<TH1F*> fHistoClusterEInJet;  //! vector of histos with number of clusters as function of E inside of jets
 
+  std::vector<TH2F*> fHistoClusterPtVsJetPtInJet; //! vector of histos with number of clusters as function of pt vs. jet pt inside of jets
+
   // perpendicular cone
   std::vector<TH1F*> fHistoClusterPtPerpCone; //! vector of histos with number of clusters as function of pt in perpendicular cone
 
   //-------------------------------
   // conversion photon histograms
   //-------------------------------
-  std::vector<TH1F*> fHistoConvGammaPt;      //! vector of histos conversion photons vs. pt
-  std::vector<TH1F*> fHistoConvGammaPtInJet; //! vector of histos conversion photons vs. pt inside of jet
+  std::vector<TH1F*> fHistoConvGammaPt;             //! vector of histos conversion photons vs. pt
+  std::vector<TH1F*> fHistoConvGammaPtInJet;        //! vector of histos conversion photons vs. pt inside of jet
+  std::vector<TH2F*> fHistoConvGammaPtVsJetPtInJet; //! vector of histos conversion photons vs. pt  vs Jet Pt inside of jet
+  
 
   // perpendicular cone
   std::vector<TH1F*> fHistoConvGammaPtPerpCone; //! vector of histos conversion photons vs. pt in perpendicular cone
