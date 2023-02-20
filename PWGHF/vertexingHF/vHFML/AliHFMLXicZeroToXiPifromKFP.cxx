@@ -5663,7 +5663,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
 
   fVar_Xic0[51] = fCentrality;
   fVar_Xic0[52] = fNtracklets; 
-  if (!fIsStoreOnlyMLoutput) fTree_Xic0->Fill();
+  if (!fIsStoreOnlyMLoutput && fabs(fVar_Xic0[23])<0.8) fTree_Xic0->Fill();
 
   if (fIsPbPb) {
     for (Int_t i=0; i<4; i++) {
@@ -5723,15 +5723,25 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
     
     Bool_t isSelectedML = kFALSE;
     Float_t modelPred = -1.;
-    if (fMLResponse) isSelectedML = fMLResponse->IsSelected(fVar_Xic0[22], fVars_MLmap, modelPred);
-    if (isSelectedML) {
-      fVar_MLoutput[0] = fVar_Xic0[22]; // pt of Xic0 or Omegac0
-      fVar_MLoutput[1] = fVar_Xic0[23]; // rapidity of Xic0 or Omegac0
-      fVar_MLoutput[2] = fVar_Xic0[24]; // mass of Xic0 or Omegac0
-      fVar_MLoutput[3] = modelPred; // ML output score
-      fTree_MLoutput->Fill();
+    if (fabs(fVar_Xic0[23])<0.8 && // rapidity of Xic0 or Omegac0 selection
+        fVar_Xic0[44]==1. && // unlike-sign selection
+        fVar_Xic0[6]<1.4 && // DCA_XiDau selection
+        fVar_Xic0[10]<20. && fVar_Xic0[10]>0. && // chi2geo_Xi selection
+        fVar_Xic0[12]<20. && fVar_Xic0[12]>0. && // chi2topo_XiToPV selection
+        fVar_Xic0[18]<0.1 && // PA_XiToPV selection
+        fVar_Xic0[34]<20. && fVar_Xic0[34]>0. && // chi2geo_Xic0 selection
+        fVar_Xic0[26]<20. && fVar_Xic0[26]>0. && // chi2prim_PiFromXic0 selection
+        fVar_Xic0[7]>0. // chi2geo_Lam selection
+       ) {
+      if (fMLResponse) isSelectedML = fMLResponse->IsSelected(fVar_Xic0[22], fVars_MLmap, modelPred);
+      if (isSelectedML) { // ML score selection
+        fVar_MLoutput[0] = fVar_Xic0[22]; // pt of Xic0 or Omegac0
+        fVar_MLoutput[1] = fVar_Xic0[21]; // pt of pion from Xic0 or Omegac0 decay
+        fVar_MLoutput[2] = fVar_Xic0[24]; // mass of Xic0 or Omegac0
+        fVar_MLoutput[3] = modelPred; // ML output score
+        fTree_MLoutput->Fill();
+      }
     }
-    
   }
 
   f2DHistArmenterosPodolanski->Fill(casc->AlphaV0(), casc->PtArmV0());
@@ -5837,9 +5847,9 @@ void AliHFMLXicZeroToXiPifromKFP::DefineTreeMLoutput()
   fVar_MLoutput = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
-  fVarNames[0] = "pt"; // pt of Xic0 or Omegac0
-  fVarNames[1] = "rapidity"; // rapidity of Xic0 or Omegac0
-  fVarNames[2] = "mass"; // mass of Xic0 or Omegac0
+  fVarNames[0] = "pt_Xic0"; // pt of Xic0 or Omegac0
+  fVarNames[1] = "pt_PiFromXic0"; // pt of pion from Xic0 or Omegac0 decay
+  fVarNames[2] = "mass_Xic0"; // mass of Xic0 or Omegac0
   fVarNames[3] = "MLscore"; // ML output score
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
