@@ -131,10 +131,15 @@ public:
   void SetQnCalibType(TString iQnVCalibType){fQnVCalibType = iQnVCalibType;}
   void SetTPCQnMeasure(Bool_t bTPCQnMeasure){fTPCQnMeasure = bTPCQnMeasure;}
 
-  void SetEPQA(Bool_t bEPQA){fEPQA = bEPQA;}
-  void SetTrackQA(Bool_t bTrackQA){fTrackQA = bTrackQA;}
-  void SetBkgQA(Bool_t bBkgQA){fBkgQA = bBkgQA;}
-  void SetJetQA(Bool_t bJetQA){fJetQA = bJetQA;}
+  void SetDoEP(Bool_t bDoEP){fDoEP = bDoEP;}
+  void SetDoTrack(Bool_t bDoTrack){fDoTrack = bDoTrack;}
+  void SetDoBkg(Bool_t bDoBkg){fDoBkg = bDoBkg;}
+  void SetDoJet(Bool_t bDoJet){fDoJet = bDoJet;}
+  void SetEPHistQA(Bool_t bEPQA){fEPQA = bEPQA;}
+  void SetTrackHistQA(Bool_t bTrackQA){fTrackQA = bTrackQA;}
+  void SetBkgHistQA(Bool_t bBkgQA){fBkgQA = bBkgQA;}
+  void SetJetHistQA(Bool_t bJetQA){fJetQA = bJetQA;}
+
   void SetJetHistWEP(Bool_t bSepEP){fSepEP = bSepEP;}
 
 
@@ -216,8 +221,7 @@ private:
     
     AliAODEvent* fAOD;                /// AOD event
     TString fOADBFileName;            /// OADB input file name
-    TList*  fCalibRefObjList;         ///<
-
+    
     Bool_t  fPileupCut = kFALSE;      ///<
     Bool_t  fTPCQnMeasure = kFALSE;   ///<
     
@@ -225,10 +229,17 @@ private:
     Bool_t  fCalibQA = kFALSE;        ///<
     Bool_t  fGainCalibQA = kFALSE;    ///<
     Bool_t  fReCentCalibQA = kFALSE;  ///<
+
+    Bool_t  fDoEP = kFALSE;           ///<
+    Bool_t  fDoTrack = kFALSE;        ///<
+    Bool_t  fDoBkg = kFALSE;          ///<
+    Bool_t  fDoJet = kFALSE;          ///<
+    
     Bool_t  fEPQA = kFALSE;           ///<
     Bool_t  fTrackQA = kFALSE;        ///<
     Bool_t  fBkgQA = kFALSE;          ///<
     Bool_t  fJetQA = kFALSE;          ///<
+
     Bool_t  fSepEP = kFALSE;          ///<
     
 
@@ -278,16 +289,16 @@ private:
     // TH1F*   GetResoFromOutputFile(detectorType det, Int_t h, TArrayD* cen);
     Double_t CalculateEventPlaneChi(Double_t res);
 
-    static Double_t ChiSquarePDF(Int_t ndf, Double_t x) {
+    /* inline */  static Double_t ChiSquarePDF(Int_t ndf, Double_t x) {
         Double_t n(ndf/2.), denom(TMath::Power(2, n)*TMath::Gamma(n));
         if (denom!=0)  return ((1./denom)*TMath::Power(x, n-1)*TMath::Exp(-x/2.)); 
         return -999; 
     }
 
     // note that the cdf of the chisquare distribution is the normalized lower incomplete gamma function
-    static Double_t ChiSquareCDF(Int_t ndf, Double_t x) { return TMath::Gamma(ndf/2., x/2.); }
+    /* inline */  static Double_t ChiSquareCDF(Int_t ndf, Double_t x) { return TMath::Gamma(ndf/2., x/2.); }
 
-    static Double_t ChiSquare(TH1& histo, TF1* func) {
+    /* inline */  static Double_t ChiSquare(TH1& histo, TF1* func) {
         // evaluate the chi2 using a poissonian error estimate on bins
         Double_t chi2(0.);
         for(Int_t i(0); i < histo.GetXaxis()->GetNbins(); i++) {
@@ -360,16 +371,16 @@ private:
     Double_t fV2ResoV0;     ///<  V2 resolution value
     Double_t fV3ResoV0;     ///<  V3 resolution value
 
-
-    TH2F *fHCorrV0ChWeghts;   //!<!
-    TH1D *fHCorrQ2xV0C;       //!<!
-    TH1D *fHCorrQ2yV0C;       //!<!
-    TH1D *fHCorrQ2xV0A;       //!<!
-    TH1D *fHCorrQ2yV0A;       //!<!
-    TH1D *fHCorrQ3xV0C;       //!<!
-    TH1D *fHCorrQ3yV0C;       //!<!
-    TH1D *fHCorrQ3xV0A;       //!<!
-    TH1D *fHCorrQ3yV0A;       //!<! 
+    TList     *fCalibRefObjList;   ///<
+    TH2F      *fHCorrV0ChWeghts;   //!<!
+    TH1D      *fHCorrQ2xV0C;       //!<!
+    TH1D      *fHCorrQ2yV0C;       //!<!
+    TH1D      *fHCorrQ2xV0A;       //!<!
+    TH1D      *fHCorrQ2yV0A;       //!<!
+    TH1D      *fHCorrQ3xV0C;       //!<!
+    TH1D      *fHCorrQ3yV0C;       //!<!
+    TH1D      *fHCorrQ3xV0A;       //!<!
+    TH1D      *fHCorrQ3yV0A;       //!<! 
     
     int fPrevEventRun;         ///< run number of event previously analysed
 
@@ -479,7 +490,7 @@ private:
     AliAnalysisTaskRawJetWithEP(const AliAnalysisTaskRawJetWithEP&); // not implemented
     AliAnalysisTaskRawJetWithEP &operator=(const AliAnalysisTaskRawJetWithEP&);
 
-    ClassDef(AliAnalysisTaskRawJetWithEP, 131);
+    ClassDef(AliAnalysisTaskRawJetWithEP, 135);
 };
 
 #endif
