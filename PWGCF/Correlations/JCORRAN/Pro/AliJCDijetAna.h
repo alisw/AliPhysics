@@ -158,7 +158,7 @@ class AliJCDijetAna : public TObject
         unique_ptr<fastjet::ClusterSequenceArea> cs_bge;
 #endif
 
-        ClassDef(AliJCDijetAna, 1); // ClassDef needed if inheriting from TObject
+        ClassDef(AliJCDijetAna, 2); // ClassDef needed if inheriting from TObject
 
 };
 

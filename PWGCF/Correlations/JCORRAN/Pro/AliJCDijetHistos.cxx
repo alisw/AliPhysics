@@ -126,6 +126,7 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_deltaLocalRhoAlt(),
     fh_dijetdeltaM5(),
     fh_dijetdeltaM5Alt(),
+    fh_dijetdeltaM5Binned(),
     fh_dijetdeltaM5NearCone(),
     fh_dijetdeltaM5NearConeAlt(),
     fh_dijetMLocalRho(),
@@ -238,6 +239,7 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_deltaLocalRhoAlt(obj.fh_deltaLocalRhoAlt),
     fh_dijetdeltaM5(obj.fh_dijetdeltaM5),
     fh_dijetdeltaM5Alt(obj.fh_dijetdeltaM5Alt),
+    fh_dijetdeltaM5Binned(obj.fh_dijetdeltaM5Binned),
     fh_dijetdeltaM5NearCone(obj.fh_dijetdeltaM5NearCone),
     fh_dijetdeltaM5NearConeAlt(obj.fh_dijetdeltaM5NearConeAlt),
     fh_dijetMLocalRho(obj.fh_dijetMLocalRho),
@@ -770,6 +772,10 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
     fh_dijetdeltaM5Alt
         << TH1D("h_dijetdeltaM5Alt", "h_dijetdeltaM5Alt", 751, -250.5, 500.5)
         << fJetBin << "END" ;
+
+    fh_dijetdeltaM5Binned
+        << TH1D("h_dijetdeltaM5Binned", "h_dijetdeltaM5Binned", 751, -250.5, 500.5)
+        << fJetBin << fMBin << "END" ;
 
     fh_dijetdeltaM5NearCone
         << TH1D("h_dijetdeltaM5NearCone", "h_dijetdeltaM5NearCone", 751, -250.5, 500.5)
