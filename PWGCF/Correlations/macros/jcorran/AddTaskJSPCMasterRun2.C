@@ -88,10 +88,10 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
     case 0:   // 0: Coarse binning, minPt = 0.2 for all.
       MAPfileNames[i] = Form("%sPhiWeights_LHC%s_Error_pt02_s_%s.root",
         MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
-	if (strcmp(configNames[i].Data(),"default")==0) {
-		MAPfileNames[i] = Form("%sPhiWeights_LHC%s_Error_pt02_s_global.root",
-        	MAPdirName.Data(), sCorrection[period].Data());
-	}
+  	if (strcmp(configNames[i].Data(),"default")==0) {
+  		MAPfileNames[i] = Form("%sPhiWeights_LHC%s_Error_pt02_s_global.root",
+          	MAPdirName.Data(), sCorrection[period].Data());
+  	}
      break;
     case 1:   // 1: Coarse binning, tuned minPt map.
       MAPfileNames[i] = Form("%sPhiWeights_LHC%s_Error_pt%02d_s_%s.root",
