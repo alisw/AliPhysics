@@ -82,6 +82,7 @@ if(${ROOT_VERSION} GREATER_EQUAL 6.0)
   list(APPEND SRCS CorrelationCalculator.cxx)
   list(APPEND SRCS AliGFWNFCuts.cxx)
   list(APPEND SRCS AliGFWXXCuts.cxx)
+  list(APPEND SRCS AliGFWPbpass23Cuts.cxx)
 endif()
 
 # Headers from sources
