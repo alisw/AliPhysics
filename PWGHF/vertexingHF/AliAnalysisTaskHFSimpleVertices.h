@@ -86,7 +86,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   Int_t LcSkimCuts(AliAODRecoDecayHF3Prong* cand);
   Int_t DzeroSelectionCuts(AliAODRecoDecayHF2Prong* cand);
   Int_t DplusSelectionCuts(AliAODRecoDecayHF3Prong* cand, Double_t bzkG);
-  Int_t DsSelectionCuts(AliAODRecoDecayHF3Prong* cand, Double_t bzkG);
+  Int_t DsSelectionCuts(AliAODRecoDecayHF3Prong* cand);
   Int_t JpsiSelectionCuts(AliAODRecoDecayHF2Prong* cand, AliESDtrack* trk_p, AliESDtrack* trk_n, AliESDVertex* primvtx, float bzkG);
   Int_t LcSelectionCuts(AliAODRecoDecayHF3Prong* cand);
   Int_t MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, AliMCEvent* mcEvent, Int_t ndgCk, const TObjArray* trkArray, const Int_t* pdgDg) const;

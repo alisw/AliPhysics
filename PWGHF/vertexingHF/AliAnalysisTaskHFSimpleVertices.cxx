@@ -2591,7 +2591,7 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
   if (massSel & (1 << kbitDs)) {
     Int_t dsSel = 3;
     if (fCandidateCutLevel == 2 && fSelectDs > 0) {
-      dsSel = DsSelectionCuts(the3Prong, bzkG);
+      dsSel = DsSelectionCuts(the3Prong);
     } else if (fCandidateCutLevel == 1) {
       dsSel = DsSkimCuts(the3Prong);
     }
@@ -3160,7 +3160,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::DsSkimCuts(AliAODRecoDecayHF3Prong* cand)
   return returnValue;
 }
 //______________________________________________________________________________
-Int_t AliAnalysisTaskHFSimpleVertices::DsSelectionCuts(AliAODRecoDecayHF3Prong* cand, Double_t bzkG)
+Int_t AliAnalysisTaskHFSimpleVertices::DsSelectionCuts(AliAODRecoDecayHF3Prong* cand)
 {
   Double_t ptCand = cand->Pt();
   if (ptCand < fMinPtDs || ptCand > fMaxPtDs)
@@ -3168,7 +3168,7 @@ Int_t AliAnalysisTaskHFSimpleVertices::DsSelectionCuts(AliAODRecoDecayHF3Prong* 
   Int_t iPtDs = GetPtBin(ptCand, fPtBinLimsDs, fNPtBinsDs);
   if (iPtDs < 0)
     return 0;
- 
+
   if (cand->DecayLength() < fDsCuts[iPtDs][3])
     return 0;
   if (cand->NormalizedDecayLengthXY() < fDsCuts[iPtDs][4])
