@@ -7,25 +7,19 @@
 #include "AliAnalysisTaskCVEPIDCME.h"
 
 AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
-  TString trigger = "kINT7+kCentral+kSemiCentral",
-  TString period = "LHC18r",
-  int filterBit = 768,
-  bool bDebug = false,
-  bool bUseTPCPlane = true,
-  bool bUseVZEROPlane = true,
-  bool bUseZDCPlane = false,
-  bool bDoNUE = false,
-  bool bDoNUA = true,
-  bool bV0DaughterUseTOF = false,
-  bool bQATPC = true,
-  bool bQAVZERO = true,
-  bool bQAZDC = false,
-  bool bCalculatePIDFlow = true,
-  bool bCalculateDeltaGamma = true,
-  bool bCalculateDiffResult = true,
+  TString trigger               = "kINT7+kCentral+kSemiCentral",
+  TString period                = "LHC18r",
+  int  filterBit                = 768,
+  bool bDoNUA                   = true,
+  bool bCalculatePIDFlow        = true,
+  bool bCalculateDeltaGamma     = true,
+  bool bCalculateDiffResult     = true,
   bool bCalculateDeltaPhiSumPhi = true,
-  bool bNarrowDcaCuts768 = true,
-  TString uniqueID = "")
+  bool bCalculateLambdaLambda   = false,
+  bool bCalculateProtonProton   = false,
+  bool bCalculateHadronHadron   = false,
+  bool bNarrowDcaCuts768        = false,
+  TString uniqueID              = "")
 {
   // Creates a pid task and adds it to the analysis manager
   // Get the pointer to the existing analysis manager via the static
@@ -45,27 +39,41 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
     Error("AddTaskCVEPIDCME.C", "This task requires an input event handler.");
     return NULL;
   }
-  // TString type = mgr->GetInputEventHandler()->GetDataType(); // can be "ESD" or "AOD"
 
+  bool bDebug            = false;
+  bool bUseTPCPlane      = true;
+  bool bUseVZEROPlane    = true;
+  bool bUseZDCPlane      = false;
+  bool bDoNUE            = false;
+  bool bV0DaughterUseTOF = false;
+  bool bQATPC            = true;
+  bool bQAVZERO          = true;
+  bool bQAZDC            = false;
   // --- instantiate analysis task
   AliAnalysisTaskCVEPIDCME* task = new AliAnalysisTaskCVEPIDCME("TaskCVEPIDCME");
-  task->SetPeriod(period);
-  task->SetTrigger(trigger);
   task->IfDebug(bDebug);
   task->IfUseTPCPlane(bUseTPCPlane);
   task->IfUseVZEROPlane(bUseVZEROPlane);
   task->IfUseZDCPlane(bUseZDCPlane);
   task->IfDoNUE(bDoNUE);
-  task->IfDoNUA(bDoNUA);
   task->IfV0DaughterUseTOF(bV0DaughterUseTOF);
   task->IfQATPC(bQATPC);
   task->IfQAVZERO(bQAVZERO);
   task->IfQAZDC(bQAZDC);
+
+
+  task->SetPeriod(period);
+  task->SetTrigger(trigger);
+  task->SetFilterBit(filterBit);
+  task->IfDoNUA(bDoNUA);
   task->IfCalculatePIDFlow(bCalculatePIDFlow);
   task->IfCalculateDeltaGamma(bCalculateDeltaGamma);
   task->IfCalculateDiffResult(bCalculateDiffResult);
   task->IfCalculateDeltaPhiSumPhi(bCalculateDeltaPhiSumPhi);
-  task->IfNarrowDcaCuts768(bNarrowDcaCuts768);
+  task->IfCalculateLambdaLambda(bCalculateLambdaLambda);
+  task->IfCalculateProtonProton(bCalculateProtonProton);
+  task->IfCalculateHadronHadron(bCalculateHadronHadron);
+
   //=========================================================================
   // Read in Files
   TFile* fNUEFile = nullptr;
