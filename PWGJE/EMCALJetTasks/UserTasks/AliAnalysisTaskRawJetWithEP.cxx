@@ -1691,7 +1691,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
         psi2Tpc[i] = -1;
     }
     
-    std::cout << "QnJEHandlarEPGet(): Start ComputeEventPlaneAngle()  =========" << std::endl;
+    std::cout << "QnJEHandlarEPGet(): Start ComputeEventPlaneAngle() for v2 ====" << std::endl;
     psi2V0[0] = ComputeEventPlaneAngle(q2VecV0M, harmonic);
     psi2V0[1] = ComputeEventPlaneAngle(q2VecV0C, harmonic);
     psi2V0[2] = ComputeEventPlaneAngle(q2VecV0A, harmonic);
@@ -1700,13 +1700,15 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
     psi2Tpc[1] = ComputeEventPlaneAngle(q2VecTpcN, harmonic);
     psi2Tpc[2] = ComputeEventPlaneAngle(q2VecTpcP, harmonic);
 
-    std::cout << "QnJEHandlarEPGet(): Start Getqn()  =========" << std::endl;
+    std::cout << "QnJEHandlarEPGet(): Start Getqn() for v2  =========" << std::endl;
     Getqn(q2V0, q2NormV0, V0Mult2);
     Getqn(q2Tpc, q2NormTpc, TpcMult2);
 
     //== Q3 Vector ######################################## 
     harmonic = 3.;
+    std::cout << "QnJEHandlarEPGet(): Start ComputeQvecV0() for v3  =========" << std::endl;
     ComputeQvecV0(q3VecV0M, q3VecV0C, q3VecV0A, q3NormV0, V0Mult3, harmonic);
+    std::cout << "QnJEHandlarEPGet(): Start ComputeQvecTpc() for v3  =========" << std::endl;
     ComputeQvecTpc(q3VecTpcM, q3VecTpcN, q3VecTpcP, q3NormTpc, TpcMult3, harmonic);
     
     // Inisialize
@@ -1715,7 +1717,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
         psi3Tpc[i] = -1;
     }
     
-
+    std::cout << "QnJEHandlarEPGet(): Start ComputeEventPlaneAngle() for v3 ====" << std::endl;
     psi3V0[0] = ComputeEventPlaneAngle(q3VecV0M, harmonic);
     psi3V0[1] = ComputeEventPlaneAngle(q3VecV0C, harmonic);
     psi3V0[2] = ComputeEventPlaneAngle(q3VecV0A, harmonic);
@@ -1724,6 +1726,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
     psi3Tpc[1] = ComputeEventPlaneAngle(q3VecTpcN, harmonic);
     psi3Tpc[2] = ComputeEventPlaneAngle(q3VecTpcP, harmonic);
 
+    std::cout << "QnJEHandlarEPGet(): Start Getqn() for v3  =========" << std::endl;
     Getqn(q3V0, q3NormV0, V0Mult3);
     Getqn(q3Tpc, q3NormTpc, TpcMult3);
     
@@ -2518,10 +2521,9 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t Qn
         Multi[i] = 0.;
     }
     
-    if(fHistMultV0) std::cout << "ComputeQvecV0(): Start Gain Calibraiton ====" << std::endl;
+    if(fHistMultV0) std::cout << "ComputeQvecV0(): fHistMultV0 Exist! ====" << std::endl;
     else std::cout << "ComputeQvecV0(): fHistMultV0 not found ====" << std::endl;
-    if(fQx2mV0A[0]) std::cout << "ComputeQvecV0(): fQx2mV0A[0]AttaYo! ====" << std::endl;
-    else std::cout << "ComputeQvecV0(): fQx2mV0A[0] not found ====" << std::endl;
+
 
     short zvtxbin = GetVertexZbin();
     for (int iCh = 0; iCh < 64; iCh++) {
@@ -2585,10 +2587,23 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t Qn
     else std::cout << "ComputeQvecV0(): fQx2mV0A[zvtxbin] not found ====" << std::endl;
     //only recentering and not width equalisation to preserve multiplicity dependence (needed for qn)
     if(harmonic == 2){
-        QnVecV0A[0] = (QnVecV0A[0] - fQx2mV0A[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0A[zvtxbin]->GetBinContent(iCentBin);
-        QnVecV0A[1] = (QnVecV0A[1] - fQy2mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
-        QnVecV0C[0] = (QnVecV0C[0] - fQx2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);   
-        QnVecV0C[1] = (QnVecV0C[1] - fQy2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);
+        if(fQx2mV0A[zvtxbin]) {
+            QnVecV0A[0] = (QnVecV0A[0] - fQx2mV0A[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0A[zvtxbin]->GetBinContent(iCentBin);
+        }
+        else std::cout << "ComputeQvecV0(): fQx2mV0A[zvtxbin] not found ====" << std::endl;
+        if(fQy2mV0A[zvtxbin]) {
+            QnVecV0A[1] = (QnVecV0A[1] - fQy2mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
+        }
+        else std::cout << "ComputeQvecV0(): fQy2mV0A[zvtxbin] not found ====" << std::endl;
+        if(fQx2mV0C[zvtxbin]) {
+            QnVecV0C[0] = (QnVecV0C[0] - fQx2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);
+        }
+        else std::cout << "ComputeQvecV0(): fQx2mV0C[zvtxbin] not found ====" << std::endl;
+        if(fQy2mV0C[zvtxbin]) {
+            QnVecV0C[1] = (QnVecV0C[1] - fQy2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);
+        }
+        else std::cout << "ComputeQvecV0(): fQy2mV0C[zvtxbin] not found ====" << std::endl;
+        
         
         histName = TString::Format("%s/CentQ2x_V0M", groupName.Data());
         fHistManager.FillTH2(histName, iCentBin, QnVecV0M[0]);
@@ -2611,11 +2626,23 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t Qn
         // std::cout << "A Q2x, Q2y : avgqx, avgqy = " << QnVecV0A[0] << ", " << QnVecV0A[1] << " : " << avgqxA << ", " << avgqyA << std::endl;
     }
     else if(harmonic == 3){
-        QnVecV0A[0] = (QnVecV0A[0] - fQx3mV0A[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0A[zvtxbin]->GetBinContent(iCentBin);
-        QnVecV0A[1] = (QnVecV0A[1] - fQy3mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
-        QnVecV0C[0] = (QnVecV0C[0] - fQx3mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);   
-        QnVecV0C[1] = (QnVecV0C[1] - fQy3mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);
-
+        if(fQx3mV0A[zvtxbin]) {
+            QnVecV0A[0] = (QnVecV0A[0] - fQx3mV0A[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0A[zvtxbin]->GetBinContent(iCentBin);
+        }
+        else std::cout << "ComputeQvecV0(): fQx3mV0A[zvtxbin] not found ====" << std::endl;
+        if(fQy3mV0A[zvtxbin]) {
+            QnVecV0A[1] = (QnVecV0A[1] - fQy3mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
+        }
+        else std::cout << "ComputeQvecV0(): fQy3mV0A[zvtxbin] not found ====" << std::endl;
+        if(fQx3mV0C[zvtxbin]) {
+            QnVecV0C[0] = (QnVecV0C[0] - fQx3mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);
+        }
+        else std::cout << "ComputeQvecV0(): fQx3mV0C[zvtxbin] not found ====" << std::endl;
+        if(fQy3mV0C[zvtxbin]) {
+            QnVecV0C[1] = (QnVecV0C[1] - fQy3mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);
+        }
+        else std::cout << "ComputeQvecV0(): fQy3mV0C[zvtxbin] not found ====" << std::endl;
+        
         histName = TString::Format("%s/CentQ3x_V0M", groupName.Data());
         fHistManager.FillTH2(histName, iCentBin, QnVecV0M[0]);
         histName = TString::Format("%s/CentQ3y_V0M", groupName.Data());
@@ -3136,7 +3163,7 @@ bool AliAnalysisTaskRawJetWithEP::OpenInfoCalbration()
         AliWarning(Form("OADB object hMultV0BefCorPfpx is not available for run %i\n", fRun));
         return false;
     }
-    
+
     fHistMultV0 = ((TH1D*) fMultV0BefCorPfpx->GetObject(fRun));
     if(fHistMultV0 == nullptr) std::cout << "fHistMultV0 is null !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
     if(fOADBzArray_contQx2am == nullptr) std::cout << "fOADBzArray_contQx2am is null !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
@@ -3249,17 +3276,17 @@ bool AliAnalysisTaskRawJetWithEP::OpenInfoCalbration()
         fQy2sV0C[iZvtx] = ((TH1D*) contQy2cs->GetObject(fRun));
 
         // == Q3 Vector
-                AliOADBContainer* contQx3am = 0;
+        AliOADBContainer* contQx3am = 0;
         // If we do not have z-vertex differential objects, then only the first index is 
         // in the OADBContainer array
         if(fV0CalibZvtxDiff) contQx3am = (AliOADBContainer* ) fOADBzArray_contQx3am->At(iZvtx);
         else contQx3am = (AliOADBContainer* ) fOADBzArray_contQx3am->At(0);
         if(!contQx3am) {
-            AliWarning("OADB object fqxa2m is not available\n");
+            AliWarning("OADB object fqxa3m is not available\n");
             return false;
         }
         if(!(contQx3am->GetObject(fRun))) {
-            AliWarning(Form("OADB object fqxa2m is not available for run %i\n", fRun));
+            AliWarning(Form("OADB object fqxa3m is not available for run %i\n", fRun));
             return false;
         }
         fQx3mV0A[iZvtx] = ((TH1D*) contQx3am->GetObject(fRun));
