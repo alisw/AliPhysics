@@ -52,6 +52,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa(const char *name):
  fUseTrigger(kFALSE),
  fUseFixedNumberOfRandomlySelectedParticles(kFALSE),
  fFixedNumberOfRandomlySelectedParticles(0),
+ fHistogramBookingsWithRunInfoWereUpdated(kFALSE),
 
  // QA:
  fQAList(NULL),
@@ -222,6 +223,7 @@ AliAnalysisTaskMuPa::AliAnalysisTaskMuPa():
  fUseTrigger(kFALSE),
  fUseFixedNumberOfRandomlySelectedParticles(kFALSE),
  fFixedNumberOfRandomlySelectedParticles(0),
+ fHistogramBookingsWithRunInfoWereUpdated(kFALSE),
 
  // QA:
  fQAList(NULL),
@@ -484,10 +486,11 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
  // a) Get pointer to AOD event:
  AliMCEvent *aMC = MCEvent();                                  // from TaskSE
  AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(InputEvent()); // from TaskSE
-
  if(!aAOD){return;} // This means that at the moment I cannot process only kine, i.e. I process only reco, or both kine + reco
+
  if(fPrintEventInfo){this->PrintEventInfo(aAOD);}
- if(fProcessOnlySpecifiedEvent){if(!this->SpecifiedEvent(aAOD)){return;}} 
+ if(fProcessOnlySpecifiedEvent){if(!this->SpecifiedEvent(aAOD)){return;}}
+ if(!fHistogramBookingsWithRunInfoWereUpdated){this->UpdateHistogramBookingsWithRunInfo(aAOD);} // has to be called only once 
 
  // b) Fisher-Yates algorithm:
  if(fUseFisherYates){this->RandomIndices(aAOD);}
@@ -7176,22 +7179,22 @@ void AliAnalysisTaskMuPa::DefaultBinning()
  fCentralityBins[1] = 0.;
  fCentralityBins[2] = 100.;
 
- // task->SetVertexBins(10000,-10.,10.); // this sets bins and ranges for vz. bins for vx and vy are the same, but their ranges are automatically divided by 10 in the code 
- fVertexBins[0] = 10000;
- fVertexBins[1] = -10.;
- fVertexBins[2] = 10.;
+ // task->SetVertexBins(10000,-20.,20.); // this sets bins and ranges for vz. bins for vx and vy are the same, but their ranges are automatically divided by 10 in the code 
+ fVertexBins[0] = 1000;
+ fVertexBins[1] = -20.;
+ fVertexBins[2] = 20.;
 
- // task->SetNContributorsBins(3000,0.,3000.);
- fNContributorsBins[0] = 3000;
+ // task->SetNContributorsBins(5000,0.,5000.);
+ fNContributorsBins[0] = 5000;
  fNContributorsBins[1] = 0.;
- fNContributorsBins[2] = 3000.;
+ fNContributorsBins[2] = 5000.;
 
  // task->SetEventBins("MagneticField",20,-10.,10.); // Solenoid Magnetic Field in kG (1G = 10^-4 T), it's either -5 or 5
  fEventBins[MagneticField][0] = 20;
  fEventBins[MagneticField][1] = -10.;
  fEventBins[MagneticField][2] = 10.;
 
- // task->SetEventBins("PrimaryVertex",1,0.,1.); // yes, since here we only count # of events with valid pointer aAOD->GetPrimaryVertex()  
+ // task->SetEventBins("PrimaryVertex",1,0.,1.); // yes, since here # of events is counted with valid pointer aAOD->GetPrimaryVertex()  
  fEventBins[PrimaryVertex][0] = 1;
  fEventBins[PrimaryVertex][1] = 0.;
  fEventBins[PrimaryVertex][2] = 1.;
@@ -7204,7 +7207,7 @@ void AliAnalysisTaskMuPa::DefaultBinning()
  fKinematicsBins[PHI][1] = 0.;
  fKinematicsBins[PHI][2] = TMath::TwoPi();
 
- // task->SetKinematicsBins("pt",100,0.,20.);
+ // task->SetKinematicsBins("pt",1000,0.,20.);
  fKinematicsBins[PT][0] = 1000;
  fKinematicsBins[PT][1] = 0.;
  fKinematicsBins[PT][2] = 20.;
@@ -7224,15 +7227,15 @@ void AliAnalysisTaskMuPa::DefaultBinning()
  fKinematicsBins[CHARGE][1] = -10.;
  fKinematicsBins[CHARGE][2] = 10.;
 
- // task->SetDCABins("xy",1000,-4.,4.); 
+ // task->SetDCABins("xy",1000,-10.,10.); 
  fDCABins[0][0] = 1000;
- fDCABins[0][1] = -4.;
- fDCABins[0][2] = 4.;
+ fDCABins[0][1] = -10.;
+ fDCABins[0][2] = 10.;
 
- // task->SetDCABins("z",1000,-4.,4.); 
+ // task->SetDCABins("z",1000,-10.,10.); 
  fDCABins[1][0] = 1000;
- fDCABins[1][1] = -4.;
- fDCABins[1][2] = 4.;
+ fDCABins[1][1] = -10.;
+ fDCABins[1][2] = 10.;
 
  // task->SetParticleBins("TPCNcls",200,0.,200.); 
  fParticleBins[TPCNcls][0] = 200;
@@ -7245,7 +7248,7 @@ void AliAnalysisTaskMuPa::DefaultBinning()
  fParticleBins[TPCnclsS][2] = 200.;
   
  // task->SetParticleBins("TPCnclsFractionShared",200,0.,2.);  
- fParticleBins[TPCnclsFractionShared][0] = 2000;
+ fParticleBins[TPCnclsFractionShared][0] = 200;
  fParticleBins[TPCnclsFractionShared][1] = 0.;
  fParticleBins[TPCnclsFractionShared][2] = 2.;
 
@@ -8041,5 +8044,130 @@ void AliAnalysisTaskMuPa::CalculateKineTest0(const char* kc)
 
 //=======================================================================================================================
 
+void AliAnalysisTaskMuPa::UpdateHistogramBookingsWithRunInfo(AliVEvent *ave)
+{
+ // In this method, bookings of specified histograms are updated with specified run info (e.g. run number).
+ // If for whichever reasons I am processesing in the same jobs AODs from different runs, this function will be called only for the very first AOD.
 
+ // a) Determine Ali{MC,ESD,AOD}Event;
+ // b) Which run info is needed;
+ // c) Insanity check;
+ // d) Update bookings of specified histograms;
+ // e) Make sure this function is called only once;
+
+ if(fVerbose){Yellow(__PRETTY_FUNCTION__);}
+
+ // a) Determine Ali{MC,ESD,AOD}Event:
+ //AliMCEvent *aMC = dynamic_cast<AliMCEvent*>(ave);
+ //AliESDEvent *aESD = dynamic_cast<AliESDEvent*>(ave);
+ AliAODEvent *aAOD = dynamic_cast<AliAODEvent*>(ave);
+
+ // b) Which run info is needed:
+ Int_t runNumber = -44;
+ if(aAOD)
+ { 
+  runNumber = aAOD->GetRunNumber(); // formating is always the same, e.g. 120822, whether or not AOD correspongs to real data, or to simulation
+ }
+ // else if ( ... ) ... TBI support for MC (kine) and ESD ...
+
+ // c) Insanity check:
+ //    Algorithm: If I have managed to set fRunNumber via SetRunNumber() in the steering macro (e.g. when running Offline run-by-run), then nothing is needed here.
+ if(fRunNumber.Contains(Form("%d",runNumber)))
+ {
+  // I use Contains, instead of EqualTo, so that I do not have to bother if "000" was prepended or not
+  // If true, that means that fRunNumber was set in the steering macro, and already used in the booking.
+  fHistogramBookingsWithRunInfoWereUpdated = kTRUE;
+  return;
+ } 
+
+ // d) Update bookings of specified histograms:
+ fRunNumber = Form("%d",runNumber);
+ if(fRealData) { fRunNumber.Prepend("000"); }  
+
+ // TBI 20230221 re-implement the lines below, afrer:
+ // 1.) all TString settings are promoted into data members eventually
+ // 2.) it's dagerous to call SetTitle here. It's safer to use placeholder for RunNumber, and then GetTitle() + replace, and use that results in SetTitle()
+ 
+ TString sxyTz[2] = {"xy","z"};
+ TString sba[2] = {"before particle cuts","after particle cuts"};
+ TString srs[2] = {"reconstructed","simulated"};
+ TString skv[gKinematicVariables] = {"#varphi","p_{T}","#eta","energy","charge"};
+ TString stype[gParticleHistograms] = {"TPCNcls","TPCnclsS","TPCnclsFractionShared","TPCNCrossedRows","TPCChi2perNDF","TPCFoundFraction","Chi2TPCConstrainedVsGlobal","ITSNcls","ITSChi2perNDF",
+                                       "TPCNclsF","HasPointOnITSLayer","IsGlobalConstrained"};
+
+ // histos:  
+ if(fBasePro){ fBasePro->GetXaxis()->SetBinLabel(4,Form("fRunNumber = %s",fRunNumber.Data())); }
+ if(fMultiplicityHist){ fMultiplicityHist->SetTitle(Form("%s, multiplicity = sum of particle weights in Q-vector",fRunNumber.Data())); }  
+ if(fSelectedTracksHist){ fSelectedTracksHist->SetTitle(Form("%s, selected particles in Q-vector, after all event and particle cuts",fRunNumber.Data())); }  
+ for(Int_t m=0;m<gCentralMultiplicity;m++)
+ {
+  for(Int_t ba=0;ba<2;ba++) // before/after cuts
+  { 
+   if(fCentralMultiplicityHist[m][ba]) { fCentralMultiplicityHist[m][ba]->SetTitle(Form("%s, %s",fRunNumber.Data(),sba[ba].Data())); } 
+  }
+ }
+ for(Int_t ba=0;ba<2;ba++) // before/after cuts
+ { 
+  if(fCentralityHist[ba]) { fCentralityHist[ba]->SetTitle(Form("%s, %s, %s",fRunNumber.Data(),sba[ba].Data(),fCentralityEstimator.Data())); }
+ }
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   for(Int_t xyz=0;xyz<3;xyz++)
+   {
+    if(fVertexHist[ba][rs][xyz]) { fVertexHist[ba][rs][xyz]->SetTitle(Form("%s, %s, %s",fRunNumber.Data(),sba[ba].Data(),srs[rs].Data())); }
+   }
+  }
+ }
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   if(fNContributorsHist[ba][rs]) { fNContributorsHist[ba][rs]->SetTitle(Form("%s, %s, %s",fRunNumber.Data(),sba[ba].Data(),srs[rs].Data())); }
+  }
+ }
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t t=0;t<gEventHistograms;t++) // type, see enum 'eEvent'
+  {
+   if(fEventHistograms[ba][t]) { fEventHistograms[ba][t]->SetTitle(Form("%s, %s, %s",fRunNumber.Data(),sba[ba].Data(),stype[t].Data())); }
+  }
+ }
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   for(Int_t kv=0;kv<gKinematicVariables;kv++) // PHI = 0, PT = 1, ETA = 2, E = 3, CHARGE = 4 TBI 20210512 this is not enforced to be in sync with the definition of enums
+   {
+    if(fKinematicsHist[ba][rs][kv]) { fKinematicsHist[ba][rs][kv] ->SetTitle(Form("%s, %d, %s, %s",fRunNumber.Data(),fFilterBit,sba[ba].Data(),srs[rs].Data())); }
+   } // for(Int_t kv=0;kv<gKinematicVariables;kv++)
+  } // for(Int_t rs=0;rs<2;rs++)
+ } // for(Int_t ba=0;ba<2;ba++) 
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   for(Int_t xyTz=0;xyTz<2;xyTz++) 
+   {
+    if(fDCAHist[ba][rs][xyTz]) { fDCAHist[ba][rs][xyTz]->SetTitle(Form("%s, %d, %s, %s",fRunNumber.Data(),fFilterBit,sba[ba].Data(),srs[rs].Data())); }
+   }
+  }
+ }
+ for(Int_t ba=0;ba<2;ba++)
+ {
+  for(Int_t rs=0;rs<2;rs++)
+  {
+   for(Int_t t=0;t<gParticleHistograms;t++) // type, see enum 'eParticle'
+   {
+    if(fParticleHist[ba][rs][t]) { fParticleHist[ba][rs][t]->SetTitle(Form("%s, %d, %s, %s",fRunNumber.Data(),fFilterBit,sba[ba].Data(),srs[rs].Data())); }
+   }
+  }
+ }
+
+ // e) Make sure this function is called only once:
+ fHistogramBookingsWithRunInfoWereUpdated = kTRUE; // important, this ensures that this method is called only once
+
+} // void AliAnalysisTaskMuPa::UpdateHistogramBookingsWithRunInfo(AliVEvent *ave)
+ 
 

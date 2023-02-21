@@ -127,6 +127,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   virtual void FillQAHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs);
   virtual void FillQAHistograms(AliAODEvent *aAOD, AliMCEvent *aMC);
   virtual void FilterEvent(AliVEvent *ave);
+  virtual void UpdateHistogramBookingsWithRunInfo(AliVEvent *ave); // e.g. in user exec, I can use aAOD->GetRunNumber() to get run number. Clearly, I have to do this only once, therefore f
   virtual void FillControlEventHistograms(AliVEvent *ave, const Int_t ba, const Int_t rs); // before or after event cuts, reco or sim
   virtual void FillControlParticleHistograms(AliVParticle *vParticle, const Int_t ba, const Int_t rs); // before or after particle cuts, reco or sim
   virtual void GlobalTracksAOD(AliAODEvent *aAOD);
@@ -635,6 +636,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fUseTrigger; // kFALSE by default. Set automatically when task->SetTrigger(...) is called
   Bool_t fUseFixedNumberOfRandomlySelectedParticles; // use or not fixed number of randomly selected particles in each event. Use always in combination with SetUseFisherYates(kTRUE)
   Int_t fFixedNumberOfRandomlySelectedParticles; // set here a fixed number of randomly selected particles in each event. Use always in combination with SetUseFisherYates(kTRUE)
+  Bool_t fHistogramBookingsWithRunInfoWereUpdated; // makes sure that UpdateHistogramBookingsWithRunInfo() is called only once in UserExec()
 
   // 1) QA:
   TList *fQAList; // base list to hold all QA output object
@@ -827,7 +829,7 @@ class AliAnalysisTaskMuPa : public AliAnalysisTaskSE{
   Bool_t fPrintEventInfo;            // print event medatata (for AOD: fRun, fBunchCross, fOrbit, fPeriod). Enabled indirectly via task->PrintEventInfo() 
  
   // Increase this counter in each new version:
-  ClassDef(AliAnalysisTaskMuPa,35);
+  ClassDef(AliAnalysisTaskMuPa,36);
 
 };
 
