@@ -55,6 +55,7 @@
 #pragma link C++ class CorrelationCalculator+;
 #pragma link C++ class AliGFWNFCuts+;
 #pragma link C++ class AliGFWXXCuts+;
+#pragma link C++ class AliGFWPbpass23Cuts+;
 #pragma link C++ class PhysicsProfile+;
 #pragma link C++ class PhysicsProfilePPTask+;
 #pragma link C++ class AliLWTPCTrack+;

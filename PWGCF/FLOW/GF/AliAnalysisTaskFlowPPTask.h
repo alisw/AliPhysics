@@ -7,6 +7,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliGFWXXCuts.h"
+#include "AliGFWPbpass23Cuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
 #include "AliEventCuts.h"
@@ -253,6 +254,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 
 		AliEventCuts	fEventCuts;					// Event cuts
 		AliGFWXXCuts*     fGFWSelection;                                  //!
+		AliGFWPbpass23Cuts*     fGFWSelectionPbPb;                                  //!
 		AliAODEvent* fAOD;                                              //! AOD object
 
 		// Cuts and options
@@ -319,6 +321,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TH1F*			hMult;				//! multiplicity distribution
 		TH2F*			hMultCent;				//! multiplicity-centrality distribution
 		TH1F*			fCentralityDis;			//! distribution of centrality percentile using V0M estimator
+		TH1F*			hVtz;			//! distribution of centrality percentile using V0M estimator
 
 
 		// // Track histograms
