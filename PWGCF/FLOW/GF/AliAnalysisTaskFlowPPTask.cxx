@@ -1635,7 +1635,7 @@ Bool_t AliAnalysisTaskFlowPPTask::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltr
     mtr->GetXYZ(ltrackXYZ);
     ltrackXYZ[0] = ltrackXYZ[0]-vtxp[0];
     ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
-    ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
+    ltrackXYZ[2] = abs(ltrackXYZ[2]-vtxp[2]);
   } else return kFALSE; //DCA cut is a must for now
 
   if(fPeriod.EqualTo("LHC15o")||fPeriod.EqualTo("LHC15o_pass2")||fPeriod.EqualTo("LHC18qr_pass3")){
