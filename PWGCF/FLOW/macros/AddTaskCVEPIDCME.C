@@ -18,7 +18,6 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
   bool bCalculateLambdaLambda   = false,
   bool bCalculateProtonProton   = false,
   bool bCalculateHadronHadron   = false,
-  bool bNarrowDcaCuts768        = false,
   TString uniqueID              = "")
 {
   // Creates a pid task and adds it to the analysis manager

@@ -95,6 +95,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   isCalculateProtonProton(false),
   isCalculateHadronHadron(false),
   isNarrowDcaCuts768(false),
+  isStrictestProtonCut(false),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
   fVzCut(10.0),
@@ -227,6 +228,10 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   fHist2PDedx(nullptr),
   fHistDcaZ(nullptr),
   fHistDcaXY(nullptr),
+  fHistProtonDcaCutZ(nullptr),
+  fHistProtonDcaCutXY(nullptr),
+  fHistAntiProtonDcaCutZ(nullptr),
+  fHistAntiProtonDcaCutXY(nullptr),
   fHistV0Pt(nullptr),
   fHistV0Eta(nullptr),
   fHistV0DcatoPrimVertex(nullptr),
@@ -375,6 +380,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   isCalculateProtonProton(false),
   isCalculateHadronHadron(false),
   isNarrowDcaCuts768(false),
+  isStrictestProtonCut(false),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
   fVzCut(10.0),
@@ -507,6 +513,10 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   fHist2PDedx(nullptr),
   fHistDcaZ(nullptr),
   fHistDcaXY(nullptr),
+  fHistProtonDcaCutZ(nullptr),
+  fHistProtonDcaCutXY(nullptr),
+  fHistAntiProtonDcaCutZ(nullptr),
+  fHistAntiProtonDcaCutXY(nullptr),
   fHistV0Pt(nullptr),
   fHistV0Eta(nullptr),
   fHistV0DcatoPrimVertex(nullptr),
@@ -938,8 +948,12 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
   fHistEta = new TH1D("fHistEta", "", 50, -1., 1.);
   fHistNhits = new TH1D("fHistNhits", "", 200, 0., 200.);
   fHist2PDedx = new TH2D("fHist2PDedx", "", 400, -10., 10., 400, 0, 1000);
+  fHistDcaZ  = new TH1D("fHistDcaZ",  "", 500, 0., 5);
   fHistDcaXY = new TH1D("fHistDcaXY", "", 500, 0., 5);
-  fHistDcaZ  = new TH1D("fHistDcaZ", "", 500, 0., 5);
+  fHistProtonDcaCutZ  = new TH1D("fHistProtonDcaCutZ",  "", 500, 0., 5);
+  fHistProtonDcaCutXY = new TH1D("fHistProtonDcaCutXY", "", 500, 0., 5);
+  fHistAntiProtonDcaCutZ  = new TH1D("fHistAntiProtonDcaCutZ",  "", 500, 0., 5);
+  fHistAntiProtonDcaCutXY = new TH1D("fHistAntiProtonDcaCutXY", "", 500, 0., 5);
   fHistPhi[0] = new TH1D("fHistPhi", "", 100, 0, TMath::TwoPi());
   fHistPhi[1] = new TH1D("fHistPhi_afterNUA", "", 100, 0, TMath::TwoPi());
   fHist2EtaPhi[0] = new TH2D("fHistEtaPhi", "", 16,-0.8,0.8, 100, 0, TMath::TwoPi());
@@ -950,6 +964,10 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
   fQAList->Add(fHist2PDedx);
   fQAList->Add(fHistDcaXY);
   fQAList->Add(fHistDcaZ);
+  fQAList->Add(fHistProtonDcaCutZ);
+  fQAList->Add(fHistProtonDcaCutXY);
+  fQAList->Add(fHistAntiProtonDcaCutZ);
+  fQAList->Add(fHistAntiProtonDcaCutXY);
   for (int i = 0; i < 2; i++) fQAList->Add(fHistPhi[i]);
   for (int i = 0; i < 2; i++) fQAList->Add(fHist2EtaPhi[i]);
 
@@ -2023,6 +2041,28 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
       fHist2EtaPhi[1]->Fill(eta,phi,wAcc);
     }
 
+    //DCA Cut
+    double dcaxy = -999;
+    double dcaz = -999;
+    double r[3];
+    if (track->GetXYZ(r)) {
+      dcaxy = r[0];
+      dcaz  = r[1];
+    } else {
+      double dcax = r[0] - fVertex[0];
+      double dcay = r[1] - fVertex[1];
+      dcaz  = r[2] - fVertex[2];
+      dcaxy = sqrt(dcax*dcax + dcay*dcay);
+    }
+
+    if (fFilterBit == 1) { //we need to cut dca for the plane FB1
+      if (fabs(dcaz) > fDcaCutZ) return false;
+      if (fabs(dcaxy) > fDcaCutXY) return false;
+    }
+
+    fHistDcaXY->Fill(dcaxy);
+    fHistDcaZ->Fill(dcaz);
+
     if (pt > fPlanePtMin && pt < fPlanePtMax) {
       //TODO Do we need to set pT as weight for Better resolution?
       if (eta >= fEtaGapPos) {
@@ -2044,14 +2084,32 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
       }
     }
 
+    if (isNarrowDcaCuts768 && fFilterBit == 768) { 
+      if (fabs(dcaz) > 2.0) return false;
+      if (fabs(dcaxy) > 7 * (0.0026 + 0.005/TMath::Power(pt, 1.01))) return false;
+    }
+
     bool isItProttrk = CheckPIDofParticle(track,3); // 3=proton
+    isItProttrk = isItProttrk && (pt < fProtonPtMax && pt > fProtonPtMin);
+    if(isStrictestProtonCut) {
+      isItProttrk = isItProttrk && (fabs(dcaz) < 1. && fabs(dcaxy) < (0.0105 + 0.035/TMath::Power(pt,1.1))); 
+    }
+
     int code = 0;
-    if (charge > 0) {
+    if(charge > 0) {
       code = 999;
-      if (isItProttrk && pt < fProtonPtMax && pt > fProtonPtMin) code = 2212;
-    } else {  /// charge < 0
-      code = -999;
-      if (isItProttrk && pt < fAntiProtonPtMax && pt > fAntiProtonPtMin) code = -2212;
+      if(isItProttrk) {
+        code =  2212;
+        fHistProtonDcaCutXY->Fill(fabs(dcaxy));
+        fHistProtonDcaCutZ ->Fill(fabs(dcaz));
+      }
+    } else {
+      code =-999;
+      if(isItProttrk) {
+        code = -2212;
+        fHistAntiProtonDcaCutXY->Fill(fabs(dcaxy));
+        fHistAntiProtonDcaCutZ ->Fill(fabs(dcaz));
+      }
     }
 
     vecParticle.emplace_back(std::array<double,6>{pt,eta,phi,(double)id,(double)code,weight});
@@ -3092,35 +3150,11 @@ bool AliAnalysisTaskCVEPIDCME::AcceptAODTrack(AliAODTrack *track)
     if(chi2 > fChi2Max) return false;
 
     int charge = track->Charge();
-
-    double dcaxy = -999;
-    double dcaz = -999;
-    double r[3];
-    if (track->GetXYZ(r)) {
-      dcaxy = r[0];
-      dcaz  = r[1];
-    } else {
-      double dcax = r[0] - fVertex[0];
-      double dcay = r[1] - fVertex[1];
-      dcaz  = r[2] - fVertex[2];
-      dcaxy = sqrt(dcax*dcax + dcay*dcay);
-    }
-
-    if (fFilterBit == 1) {
-      if (fabs(dcaz) > fDcaCutZ) return false;
-      if (fabs(dcaxy) > fDcaCutXY) return false;
-    }
-    if (fFilterBit == 768 && isNarrowDcaCuts768) {
-      if (fabs(dcaz) > 2.0) return false;
-      if (fabs(dcaxy) > 7 * (0.0026 + 0.005/TMath::Power(pt, 1.01))) return false;
-    }
     
     fHistPt->Fill(pt);
     fHistEta->Fill(eta);
     fHistNhits->Fill(nhits);
     fHist2PDedx->Fill(track->P()*charge, dedx);
-    fHistDcaXY->Fill(dcaxy);
-    fHistDcaZ->Fill(dcaz);
     return true;
 }
 
@@ -3129,7 +3163,6 @@ bool AliAnalysisTaskCVEPIDCME::AcceptAODTrack(AliAODTrack *track)
 bool AliAnalysisTaskCVEPIDCME::CheckPIDofParticle(AliAODTrack* ftrack, int pidToCheck)
 {
   if (pidToCheck==0) return kTRUE;    //// Charge Particles do not need PID check
-  bool bPIDokay = kFALSE;
 
   if (!fPIDResponse) {
     Printf("\n Could Not access PIDResponse Task, please Add the Task...\n return with kFALSE pid\n");
@@ -3149,10 +3182,9 @@ bool AliAnalysisTaskCVEPIDCME::CheckPIDofParticle(AliAODTrack* ftrack, int pidTo
     nSigTOF = fPIDResponse->NumberOfSigmasTOF(ftrack, AliPID::kPion);
     nSigRMS = TMath::Sqrt(nSigTPC*nSigTPC + nSigTOF*nSigTOF);
 
-    if (trkPtPID<=0.5 && TMath::Abs(nSigTPC)<=fNSigmaTPCCut)     bPIDokay = kTRUE;
-    // Using TPCTOF RMS cut for higher pt:
-    else if (trkPtPID>0.5 && TMath::Abs(nSigRMS)<=fNSigmaTOFCut) bPIDokay = kTRUE;
-    return bPIDokay;
+    if (trkPtPID<=0.5 && TMath::Abs(nSigTPC)<=fNSigmaTPCCut) return true;
+    if (trkPtPID>0.5  && TMath::Abs(nSigRMS)<=fNSigmaTOFCut) return true;
+    return false;
   }
   ///Kaon =>
   else if (pidToCheck==2) {
@@ -3160,9 +3192,9 @@ bool AliAnalysisTaskCVEPIDCME::CheckPIDofParticle(AliAODTrack* ftrack, int pidTo
     nSigTOF = fPIDResponse->NumberOfSigmasTOF(ftrack, AliPID::kKaon);
     nSigRMS = TMath::Sqrt(nSigTPC*nSigTPC + nSigTOF*nSigTOF);
 
-    if (trkPtPID<=0.45 && TMath::Abs(nSigTPC)<=fNSigmaTPCCut)     bPIDokay = kTRUE;
-    else if (trkPtPID>0.45 && TMath::Abs(nSigRMS)<=fNSigmaTOFCut) bPIDokay = kTRUE;
-    return bPIDokay;
+    if (trkPtPID<=0.45 && TMath::Abs(nSigTPC)<=fNSigmaTPCCut) return true;
+    if (trkPtPID>0.45  && TMath::Abs(nSigRMS)<=fNSigmaTOFCut) return true;
+    return false;
   }
   ///proton =>
   else if (pidToCheck==3) {///
@@ -3170,21 +3202,25 @@ bool AliAnalysisTaskCVEPIDCME::CheckPIDofParticle(AliAODTrack* ftrack, int pidTo
     nSigTOF = fPIDResponse->NumberOfSigmasTOF(ftrack, AliPID::kProton);
     nSigRMS = TMath::Sqrt(nSigTPC*nSigTPC + nSigTOF*nSigTOF);
 
-    if (trkPtPID<=0.6 && TMath::Abs(nSigTPC)<=fNSigmaTPCCut) {
-      bPIDokay = kTRUE;
-      if (trkChargePID>0 && trkPtPID<0.4) bPIDokay = kFALSE;
+    if(isStrictestProtonCut) { //if Set the Strictest Cut to proton
+      if(trkPtPID > 0.5 && trkPtPID < 3.) {
+        float nSigTPCPion = fPIDResponse->NumberOfSigmasTPC(ftrack, AliPID::kPion);
+        if(nSigRMS < 2. && nSigTPCPion > 3.) return true;
+      }
+      return false;
+    } else {
+      if(trkChargePID>0 && trkPtPID<0.4) return false;
+      if(trkPtPID < 0.6) {
+        if(TMath::Abs(nSigTPC)<=fNSigmaTPCCut) return true;
+      } else {
+        if(TMath::Abs(nSigRMS)<=fNSigmaTOFCut) return true;
+      }
+      return false;
     }
-    else if (trkPtPID>0.6 && TMath::Abs(nSigRMS)<=fNSigmaTOFCut) {
-      bPIDokay = kTRUE;
-    }
-    return bPIDokay;
-  }
-  else{
+  } else {
     Printf("\n -Ve number not allowed! Choose among: 0,1,2,3 (Charge Pion, Kaon, Proton)\n return with kFALSE \n");
-    return kFALSE;
+    return false;
   }
-
-  return kFALSE;
 }
 
 //---------------------------------------------------
