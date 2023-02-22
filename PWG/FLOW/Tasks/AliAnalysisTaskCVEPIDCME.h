@@ -51,6 +51,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void IfCalculateProtonProton(bool bCalculateProtonProton) {this->isCalculateProtonProton = bCalculateProtonProton; }
   void IfCalculateHadronHadron(bool bCalculateHadronHadron) {this->isCalculateHadronHadron = bCalculateHadronHadron; }
   void IfNarrowDcaCuts768(bool bNarrowDcaCuts768) { this->isNarrowDcaCuts768 = bNarrowDcaCuts768; }
+  void IfStrictestProtonCut(bool bStrictestProtonCut) { this->isStrictestProtonCut = bStrictestProtonCut; }
 
   // read in
   void SetListForNUE(TList* flist) { this->fListNUE = (TList*)flist->Clone(); }
@@ -177,6 +178,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   bool isCalculateProtonProton;
   bool isCalculateHadronHadron;
   bool isNarrowDcaCuts768;
+  bool isStrictestProtonCut;
 
   //////////////////////
   // Cuts and options //
@@ -385,6 +387,10 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TH2D* fHist2PDedx;
   TH1D* fHistDcaZ;
   TH1D* fHistDcaXY;
+  TH1D* fHistProtonDcaCutZ;
+  TH1D* fHistProtonDcaCutXY;
+  TH1D* fHistAntiProtonDcaCutZ;
+  TH1D* fHistAntiProtonDcaCutXY;
   TH1D* fHistPhi[2];
   TH2D* fHist2EtaPhi[2];
   // Psi QA
