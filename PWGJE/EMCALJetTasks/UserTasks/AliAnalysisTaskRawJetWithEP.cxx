@@ -449,7 +449,6 @@ AliAnalysisTaskRawJetWithEP::~AliAnalysisTaskRawJetWithEP()
 //________________________________________________________________________
 void AliAnalysisTaskRawJetWithEP::UserCreateOutputObjects()
 {
-    std::cout << "UserCreateOutputObjects: Start load AliAnalysisTaskEmcalJet::UserCreateOutputObjects() ================" << std::endl;
     AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
     // fOutputList = new TList();
     // fOutputList->SetOwner(true);
@@ -474,7 +473,6 @@ void AliAnalysisTaskRawJetWithEP::UserCreateOutputObjects()
     } 
     */
     
-    std::cout << "UserCreateOutputObjects: Set fHistNEvents ================" << std::endl;
     fHistNEvents = new TH1F("fHistNEvents","Number of processed events;;Number of events",5,0.5,5.5);
     fHistNEvents->Sumw2();
     fHistNEvents->SetMinimum(0);
@@ -487,14 +485,12 @@ void AliAnalysisTaskRawJetWithEP::UserCreateOutputObjects()
     fOutput->Add(fHistNEvents);
     
     // == s == Set Out put Hist grams  ###########################################
-    std::cout << "UserCreateOutputObjects: Set Histgrams for each process =========" << std::endl;
     if(fEPQA)   AllocateEventPlaneHistograms();
     if(fBkgQA)  AllocateBkgHistograms();
     if(fJetQA)  AllocateJetHistograms();
     // == e == Set Out put Hist grams  ###########################################
     
     // == s == Add Objects into output file  ##################################### // previously make error for Run()
-    std::cout << "1UserCreateOutputObjects: Add Objects into output file =========" << std::endl;
     TIter next(fHistManager.GetListOfHistograms());
     TObject* obj = 0;
     while ((obj = next())) {
@@ -1010,7 +1006,6 @@ Bool_t AliAnalysisTaskRawJetWithEP::IsEventSelected()
 //________________________________________________________________________
 Bool_t AliAnalysisTaskRawJetWithEP::Run()
 {
-    std::cout << "===== Start Run() ================" << std::endl;
     // main event loop
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
     if (!fAOD && AODEvent() && IsStandardAOD()) {
@@ -1025,7 +1020,6 @@ Bool_t AliAnalysisTaskRawJetWithEP::Run()
 
     fHistNEvents->Fill(1);
 
-    std::cout << "Run(): Start Event Selection ================" << std::endl;
     if(TMath::Abs(fAOD->GetMagneticField())<0.001) return kFALSE;
 
     AliAODHandler* aodHandler = static_cast<AliAODHandler*>((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler());
@@ -1092,7 +1086,6 @@ Bool_t AliAnalysisTaskRawJetWithEP::Run()
 
 
 Bool_t AliAnalysisTaskRawJetWithEP::DoEventPlane(){
-    std::cout << "=== Start DoEventPlane()  =====================" << std::endl;
     if (!fAOD && AODEvent() && IsStandardAOD()) {
         // In case there is an AOD handler writing a standard AOD, use the AOD
         // event in memory rather than the input (ESD) event.
@@ -1109,7 +1102,6 @@ Bool_t AliAnalysisTaskRawJetWithEP::DoEventPlane(){
     }
 
     //== s == qn Calibration  111111111111111111111111111111111111111111111111111
-    std::cout << "DoEventPlane(): Calibration Q2 value and estimate Event plane ====" << std::endl;
     if(fQnVCalibType == "kOrig"){
         // std::cout << "bef calib (qx,qy) = " << q2VecV0M[0] << "," << q2VecV0M[1] << ")" << std::endl;
         if(!fCalibRefObjList){
@@ -1170,7 +1162,6 @@ Bool_t AliAnalysisTaskRawJetWithEP::DoEventPlane(){
     }
     //== e == qn Calibration  111111111111111111111111111111111111111111111111111
     
-    std::cout << "DoEventPlane(): Start Fill histograms of Event Plane ============" << std::endl;
     TString histName;
     TString groupName;
     groupName="EventPlane";
@@ -1216,6 +1207,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::DoEventPlane(){
     fHistManager.FillProfile(histName, 9., TMath::Cos(2.*(psi3V0[0] - psi3Tpc[2])));
     fHistManager.FillProfile(histName, 10., TMath::Cos(2.*(psi3Tpc[1] - psi3Tpc[2])));
     
+    return kTRUE;
 }
 
 
@@ -1665,10 +1657,8 @@ void AliAnalysisTaskRawJetWithEP::DoJetLoop()
 
 Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
 {
-    std::cout << "QnJEHandlarEPGet(): Start ResetAODEvent()  =================" << std::endl;
     ResetAODEvent();
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-    std::cout << "QnJEHandlarEPGet(): Start SetAODEvent(fAOD)  ===============" << std::endl;
     SetAODEvent(fAOD);
     
     if(!fIsOADBFileOpen || fCalibObjRun!=fRun) {
@@ -1680,7 +1670,6 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
     
     //== Q2 Vector ######################################## 
     Double_t harmonic = 2.;
-    std::cout << "QnJEHandlarEPGet(): Start ComputeQvecV0()  ===============" << std::endl;
     ComputeQvecV0(q2VecV0M, q2VecV0C, q2VecV0A, q2NormV0, V0Mult2, harmonic);
     ComputeQvecTpc(q2VecTpcM, q2VecTpcN, q2VecTpcP, q2NormTpc, TpcMult2, harmonic);
     
@@ -1691,7 +1680,6 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
         psi2Tpc[i] = -1;
     }
     
-    std::cout << "QnJEHandlarEPGet(): Start ComputeEventPlaneAngle() for v2 ====" << std::endl;
     psi2V0[0] = ComputeEventPlaneAngle(q2VecV0M, harmonic);
     psi2V0[1] = ComputeEventPlaneAngle(q2VecV0C, harmonic);
     psi2V0[2] = ComputeEventPlaneAngle(q2VecV0A, harmonic);
@@ -1700,15 +1688,12 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
     psi2Tpc[1] = ComputeEventPlaneAngle(q2VecTpcN, harmonic);
     psi2Tpc[2] = ComputeEventPlaneAngle(q2VecTpcP, harmonic);
 
-    std::cout << "QnJEHandlarEPGet(): Start Getqn() for v2  =========" << std::endl;
     Getqn(q2V0, q2NormV0, V0Mult2);
     Getqn(q2Tpc, q2NormTpc, TpcMult2);
 
     //== Q3 Vector ######################################## 
     harmonic = 3.;
-    std::cout << "QnJEHandlarEPGet(): Start ComputeQvecV0() for v3  =========" << std::endl;
     ComputeQvecV0(q3VecV0M, q3VecV0C, q3VecV0A, q3NormV0, V0Mult3, harmonic);
-    std::cout << "QnJEHandlarEPGet(): Start ComputeQvecTpc() for v3  =========" << std::endl;
     ComputeQvecTpc(q3VecTpcM, q3VecTpcN, q3VecTpcP, q3NormTpc, TpcMult3, harmonic);
     
     // Inisialize
@@ -1717,7 +1702,6 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
         psi3Tpc[i] = -1;
     }
     
-    std::cout << "QnJEHandlarEPGet(): Start ComputeEventPlaneAngle() for v3 ====" << std::endl;
     psi3V0[0] = ComputeEventPlaneAngle(q3VecV0M, harmonic);
     psi3V0[1] = ComputeEventPlaneAngle(q3VecV0C, harmonic);
     psi3V0[2] = ComputeEventPlaneAngle(q3VecV0A, harmonic);
@@ -1725,11 +1709,13 @@ Bool_t AliAnalysisTaskRawJetWithEP::QnJEHandlarEPGet()
     psi3Tpc[0] = ComputeEventPlaneAngle(q3VecTpcM, harmonic);
     psi3Tpc[1] = ComputeEventPlaneAngle(q3VecTpcN, harmonic);
     psi3Tpc[2] = ComputeEventPlaneAngle(q3VecTpcP, harmonic);
-
-    std::cout << "QnJEHandlarEPGet(): Start Getqn() for v3  =========" << std::endl;
+    
+    std::cout << "=s= QnJEHandlarEPGet(): Start Getqn() for v3  =========" << std::endl;
     Getqn(q3V0, q3NormV0, V0Mult3);
     Getqn(q3Tpc, q3NormTpc, TpcMult3);
+    std::cout << "=e= QnJEHandlarEPGet(): Start Getqn() for v3  =========" << std::endl;
     
+    return kTRUE;
 }
 
 Bool_t  AliAnalysisTaskRawJetWithEP::QnGainCalibration(){
@@ -2521,9 +2507,6 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t Qn
         Multi[i] = 0.;
     }
     
-    if(fHistMultV0) std::cout << "ComputeQvecV0(): fHistMultV0 Exist! ====" << std::endl;
-    else std::cout << "ComputeQvecV0(): fHistMultV0 not found ====" << std::endl;
-
 
     short zvtxbin = GetVertexZbin();
     for (int iCh = 0; iCh < 64; iCh++) {
@@ -2583,27 +2566,13 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t Qn
 
     int iCentBin = static_cast<int>(fCentrality)+1;
 
-    if(fQx2mV0A[zvtxbin]) std::cout << "ComputeQvecV0(): Start recentring ====" << std::endl;
-    else std::cout << "ComputeQvecV0(): fQx2mV0A[zvtxbin] not found ====" << std::endl;
     //only recentering and not width equalisation to preserve multiplicity dependence (needed for qn)
     if(harmonic == 2){
-        if(fQx2mV0A[zvtxbin]) {
-            QnVecV0A[0] = (QnVecV0A[0] - fQx2mV0A[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0A[zvtxbin]->GetBinContent(iCentBin);
-        }
-        else std::cout << "ComputeQvecV0(): fQx2mV0A[zvtxbin] not found ====" << std::endl;
-        if(fQy2mV0A[zvtxbin]) {
-            QnVecV0A[1] = (QnVecV0A[1] - fQy2mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
-        }
-        else std::cout << "ComputeQvecV0(): fQy2mV0A[zvtxbin] not found ====" << std::endl;
-        if(fQx2mV0C[zvtxbin]) {
-            QnVecV0C[0] = (QnVecV0C[0] - fQx2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);
-        }
-        else std::cout << "ComputeQvecV0(): fQx2mV0C[zvtxbin] not found ====" << std::endl;
-        if(fQy2mV0C[zvtxbin]) {
-            QnVecV0C[1] = (QnVecV0C[1] - fQy2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);
-        }
-        else std::cout << "ComputeQvecV0(): fQy2mV0C[zvtxbin] not found ====" << std::endl;
         
+        QnVecV0A[0] = (QnVecV0A[0] - fQx2mV0A[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0A[zvtxbin]->GetBinContent(iCentBin);
+        QnVecV0A[1] = (QnVecV0A[1] - fQy2mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
+        QnVecV0C[0] = (QnVecV0C[0] - fQx2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);
+        QnVecV0C[1] = (QnVecV0C[1] - fQy2mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);
         
         histName = TString::Format("%s/CentQ2x_V0M", groupName.Data());
         fHistManager.FillTH2(histName, iCentBin, QnVecV0M[0]);
@@ -2626,23 +2595,12 @@ void AliAnalysisTaskRawJetWithEP::ComputeQvecV0(Double_t QnVecV0M[2],Double_t Qn
         // std::cout << "A Q2x, Q2y : avgqx, avgqy = " << QnVecV0A[0] << ", " << QnVecV0A[1] << " : " << avgqxA << ", " << avgqyA << std::endl;
     }
     else if(harmonic == 3){
-        if(fQx3mV0A[zvtxbin]) {
-            QnVecV0A[0] = (QnVecV0A[0] - fQx3mV0A[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0A[zvtxbin]->GetBinContent(iCentBin);
-        }
-        else std::cout << "ComputeQvecV0(): fQx3mV0A[zvtxbin] not found ====" << std::endl;
-        if(fQy3mV0A[zvtxbin]) {
-            QnVecV0A[1] = (QnVecV0A[1] - fQy3mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
-        }
-        else std::cout << "ComputeQvecV0(): fQy3mV0A[zvtxbin] not found ====" << std::endl;
-        if(fQx3mV0C[zvtxbin]) {
-            QnVecV0C[0] = (QnVecV0C[0] - fQx3mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);
-        }
-        else std::cout << "ComputeQvecV0(): fQx3mV0C[zvtxbin] not found ====" << std::endl;
-        if(fQy3mV0C[zvtxbin]) {
-            QnVecV0C[1] = (QnVecV0C[1] - fQy3mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);
-        }
-        else std::cout << "ComputeQvecV0(): fQy3mV0C[zvtxbin] not found ====" << std::endl;
         
+        QnVecV0A[0] = (QnVecV0A[0] - fQx3mV0A[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0A[zvtxbin]->GetBinContent(iCentBin);
+        QnVecV0A[1] = (QnVecV0A[1] - fQy3mV0A[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0A[zvtxbin]->GetBinContent(iCentBin);
+        QnVecV0C[0] = (QnVecV0C[0] - fQx3mV0C[zvtxbin]->GetBinContent(iCentBin));///fQx2sV0C[zvtxbin]->GetBinContent(iCentBin);
+        QnVecV0C[1] = (QnVecV0C[1] - fQy3mV0C[zvtxbin]->GetBinContent(iCentBin));///fQy2sV0C[zvtxbin]->GetBinContent(iCentBin);
+
         histName = TString::Format("%s/CentQ3x_V0M", groupName.Data());
         fHistManager.FillTH2(histName, iCentBin, QnVecV0M[0]);
         histName = TString::Format("%s/CentQ3y_V0M", groupName.Data());
@@ -3165,8 +3123,6 @@ bool AliAnalysisTaskRawJetWithEP::OpenInfoCalbration()
     }
 
     fHistMultV0 = ((TH1D*) fMultV0BefCorPfpx->GetObject(fRun));
-    if(fHistMultV0 == nullptr) std::cout << "fHistMultV0 is null !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
-    if(fOADBzArray_contQx2am == nullptr) std::cout << "fOADBzArray_contQx2am is null !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
     
     for(int iZvtx = 0; iZvtx < 14; iZvtx++) {
         AliOADBContainer* contQx2am = 0;
