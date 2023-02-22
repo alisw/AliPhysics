@@ -2018,12 +2018,18 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
     //------------------
     // NUE & NUA
     //------------------
-    double phi = track->Phi();
-    double  pt = track->Pt();
-    double eta = track->Eta();
-    int charge = track->Charge();
-    int     id = track->GetID();
-
+    double phi  = track->Phi();
+    double  pt  = track->Pt();
+    double eta  = track->Eta();
+    int charge  = track->Charge();
+    int     id  = track->GetID();
+    int  nhits  = track->GetTPCNcls();
+    double dedx = track->GetTPCsignal();
+    
+    fHistPt->Fill(pt);
+    fHistEta->Fill(eta);
+    fHistNhits->Fill(nhits);
+    fHist2PDedx->Fill(track->P()*charge, dedx);
     fHistPhi[0]->Fill(phi);
     fHist2EtaPhi[0]->Fill(eta,phi);
 
@@ -2054,17 +2060,19 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
       dcaz  = r[2] - fVertex[2];
       dcaxy = sqrt(dcax*dcax + dcay*dcay);
     }
-
-    if (fFilterBit == 1) { //we need to cut dca for the plane FB1
-      if (fabs(dcaz) > fDcaCutZ) return false;
-      if (fabs(dcaxy) > fDcaCutXY) return false;
+    
+    // if FB = 1, we need to cut dca for the plane
+    if (fFilterBit == 1) {
+      if (fabs(dcaz) > fDcaCutZ) continue;
+      if (fabs(dcaxy) > fDcaCutXY) continue;
     }
+    // if FB = 96 or 768, we don't need cut dca for the plane
 
     fHistDcaXY->Fill(dcaxy);
     fHistDcaZ->Fill(dcaz);
 
     if (pt > fPlanePtMin && pt < fPlanePtMax) {
-      //TODO Do we need to set pT as weight for Better resolution?
+      //Do we need to set pT as weight for Better resolution?
       if (eta >= fEtaGapPos) {
         fSumQ2xTPCPos  += weight * TMath::Cos(2 * phi);
         fSumQ2yTPCPos  += weight * TMath::Sin(2 * phi);
@@ -2083,10 +2091,11 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
         mapTPCNegTrksIDPhiWgt[id] = vec_phi_weight;
       }
     }
-
-    if (isNarrowDcaCuts768 && fFilterBit == 768) { 
-      if (fabs(dcaz) > 2.0) return false;
-      if (fabs(dcaxy) > 7 * (0.0026 + 0.005/TMath::Power(pt, 1.01))) return false;
+    
+    // but we need to set the dca cut for 768 when we start to choose the paiticle for pair(just for NarrowDCACut)
+    if (fFilterBit == 768 && isNarrowDcaCuts768) { 
+      if (fabs(dcaz) > 2.0) continue;
+      if (fabs(dcaxy) > 7 * (0.0026 + 0.005/TMath::Power(pt, 1.01))) continue;
     }
 
     bool isItProttrk = CheckPIDofParticle(track,3); // 3=proton
@@ -3149,12 +3158,6 @@ bool AliAnalysisTaskCVEPIDCME::AcceptAODTrack(AliAODTrack *track)
     if(chi2 < fChi2Min) return false;
     if(chi2 > fChi2Max) return false;
 
-    int charge = track->Charge();
-    
-    fHistPt->Fill(pt);
-    fHistEta->Fill(eta);
-    fHistNhits->Fill(nhits);
-    fHist2PDedx->Fill(track->P()*charge, dedx);
     return true;
 }
 
