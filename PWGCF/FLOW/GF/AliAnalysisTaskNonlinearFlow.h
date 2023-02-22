@@ -347,6 +347,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH1D*				hDCAzBefore; 		//!
 		TH1F*				hITSclustersBefore; 	//!
 		TH1D*				hChi2Before; 		//!
+    TH1D*				hnTPCClu;  		//!
 		TH2D*				hDCAxy; 		//!
 		TH1D*				hDCAz; 			//!
 		TH1F*				hITSclusters; 		//!

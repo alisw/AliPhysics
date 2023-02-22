@@ -131,6 +131,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     hDCAzBefore(0),
     hITSclustersBefore(0),
     hChi2Before(0),
+    hnTPCClu(0),
     hDCAxy(0),
     hDCAz(0),
     hITSclusters(0),
@@ -215,6 +216,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   hDCAzBefore(0),
   hITSclustersBefore(0),
   hChi2Before(0),
+  hnTPCClu(0),
   hDCAxy(0),
   hDCAz(0),
   hITSclusters(0),
@@ -331,6 +333,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   hDCAzBefore(0),
   hITSclustersBefore(0),
   hChi2Before(0),
+  hnTPCClu(0),
   hDCAxy(0),
   hDCAz(0),
   hITSclusters(0),
@@ -556,18 +559,21 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   hnCorrectedTracks = new TProfile("hnCorrectedTracks", "Number of corrected tracks in a ntracks bin", nn, xbins);
   fListOfObjects->Add(hnCorrectedTracks);
 
-  hDCAxy = new TH2D("hDCAxy", "DCAxy distribution", 100, 0, 1, 100, 0, 5);
+  hDCAxy = new TH2D("hDCAxy", "DCAxy distribution", 100, 0, 0.2, 600, 0, 3);
   fListOfObjects->Add(hDCAxy);
-  hDCAz  = new TH1D("hDCAz",  "DCAz distribution", 100, 0, 4);
+  hDCAz  = new TH1D("hDCAz",  "DCAz distribution", 100, 0, 5);
   fListOfObjects->Add(hDCAz);
-  hDCAxyBefore = new TH2D("hDCAxyBefore", "DCAxy distribution", 100, 0, 1, 100, 0, 5);
+  hDCAxyBefore = new TH2D("hDCAxyBefore", "DCAxy distribution", 100, 0, 0.2, 100, 0, 3);
   fListOfObjects->Add(hDCAxyBefore);
-  hDCAzBefore  = new TH1D("hDCAzBefore",  "DCAz distribution", 100, 0, 4);
+  hDCAzBefore  = new TH1D("hDCAzBefore",  "DCAz distribution", 100, 0, 5);
   fListOfObjects->Add(hDCAzBefore);
   hChi2  = new TH1D("hChi2", "TPC chi2 per cluster", 100, 0, 5);
   fListOfObjects->Add(hChi2);
   hChi2Before  = new TH1D("hChi2Before", "TPC chi2 per cluster", 100, 0, 5);
   fListOfObjects->Add(hChi2Before);
+  hnTPCClu  = new TH1D("hnTPCClu",  "Number of TPC clusters", 100, 40, 140);
+  fListOfObjects->Add(hnTPCClu);
+
 
   Int_t inSlotCounter=1;
   if(fNUA) {
@@ -969,17 +975,17 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     }
 
     aodTrk->GetXYZ(pos);
-
-    double pos[3];
-    aodTrk->GetXYZ(pos);
     double dcaX = pos[0] - vtxp[0]; 
     double dcaY = pos[1] - vtxp[1];
     double dcaZ = abs(pos[2] - vtxp[2]);
     double dcaXY = TMath::Sqrt(dcaX*dcaX+dcaY*dcaY);
 
-	hDCAxyBefore->Fill(dcaXY, aodTrk->Pt());
-	hDCAzBefore->Fill(dcaZ);
-    hChi2Before->Fill(aodTrk->GetTPCchi2perCluster());
+    double fb = (fCurrSystFlag == 1) ? 768 : 96;
+    if (aodTrk->TestFilterBit(fb)) {
+	    hDCAxyBefore->Fill(dcaXY, aodTrk->Pt());
+	    hDCAzBefore->Fill(dcaZ);
+      hChi2Before->Fill(aodTrk->GetTPCchi2perCluster());
+    }
 
     if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
     if (fUseAdditionalDCACut) {
@@ -987,9 +993,10 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
        if (dcaZ > 1) continue;
     }
 
-	hDCAxy->Fill(dcaXY, aodTrk->Pt());
-	hDCAz->Fill(dcaZ);
+	  hDCAxy->Fill(dcaXY, aodTrk->Pt());
+	  hDCAz->Fill(dcaZ);
     hChi2->Fill(aodTrk->GetTPCchi2perCluster());
+    hnTPCClu->Fill(aodTrk->GetTPCNclsF());
     NtrksAfter += 1;
 
     //..get phi-weight for NUA correction
@@ -1688,7 +1695,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
     int EvFlag = 0, TrFlag = 0;
     if (fCurrSystFlag == 0) EvFlag = 0, TrFlag = 0;
     if (fCurrSystFlag == 1) EvFlag = 0, TrFlag = 1;
-    if (fCurrSystFlag == 2) EvFlag = 0, TrFlag = 3;
+    if (fCurrSystFlag == 2) EvFlag = 0, TrFlag = 5;
     if (fCurrSystFlag == 3) EvFlag = 0, TrFlag = 0; // Abandoned
     if (fCurrSystFlag == 4) EvFlag = 0, TrFlag = 2;
     if (fCurrSystFlag == 5) EvFlag = 0, TrFlag = 3;
@@ -1732,7 +1739,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
   else {
     if (fCurrSystFlag == 0) EvFlag = 0, TrFlag = 0;
     if (fCurrSystFlag == 1) EvFlag = 0, TrFlag = 1;
-    if (fCurrSystFlag == 2) EvFlag = 0, TrFlag = 3;
+    if (fCurrSystFlag == 2) EvFlag = 0, TrFlag = 5;
     if (fCurrSystFlag == 3) EvFlag = 0, TrFlag = 0; // Abandoned
     if (fCurrSystFlag == 4) EvFlag = 0, TrFlag = 2;
     if (fCurrSystFlag == 5) EvFlag = 0, TrFlag = 3;
@@ -2316,7 +2323,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *
     mtr->GetXYZ(ltrackXYZ);
     ltrackXYZ[0] = ltrackXYZ[0]-vtxp[0];
     ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
-    ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
+    ltrackXYZ[2] = abs(ltrackXYZ[2]-vtxp[2]);
   } else return kFALSE; //DCA cut is a must for now
 
   // Additional cut for TPCchi2perCluster
