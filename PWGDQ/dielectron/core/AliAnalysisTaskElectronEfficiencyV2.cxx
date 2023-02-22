@@ -1181,7 +1181,12 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
 
     // Test:Smear reconstructed particles to fill list for cutsetting
     if (fDoRecSmearing == true && fArrResoPt){
-      TLorentzVector smearedVec = ApplyResolution(part.fPt, part.fEta, part.fPhi, part.fCharge);
+      AliMCParticle *mc_part = (AliMCParticle*)fMC->GetTrack(TMath::Abs(label));
+      Double_t mcPt     = mc_part->Pt();
+      Double_t mcEta    = mc_part->Eta();
+      Double_t mcPhi    = mc_part->Phi();
+      Short_t  mcCharge = mc_part->Charge();
+      TLorentzVector smearedVec = ApplyResolution(mcPt, mcEta, mcPhi, mcCharge);
       part.fPt_smeared  = smearedVec.Pt();
       part.fEta_smeared = smearedVec.Eta();
       if (smearedVec.Phi() < 0) part.fPhi_smeared = smearedVec.Phi()+ 2 * pi;
