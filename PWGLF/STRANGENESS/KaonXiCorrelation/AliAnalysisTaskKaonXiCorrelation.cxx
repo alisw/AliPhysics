@@ -192,11 +192,13 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
       double tpcNsigma = fPID->NumberOfSigmasTPC(aodTrack, AliPID::kKaon);
       double tofNsigma = tof ? fPID->NumberOfSigmasTOF(aodTrack, AliPID::kKaon) : -999.f;
 
+      if (!aodTrack->TestFilterBit(fFilterBit) && fFilterBit) return;
+
       if (!(aodTrack->GetStatus() & AliVTrack::kTPCrefit) ||
           !(aodTrack->GetStatus() & AliVTrack::kITSrefit) ||
           std::abs(Eta2y(aodTrack->Pt(), kKaonMass, aodTrack->Eta())) > fCutY ||
           std::abs(aodTrack->Eta()) > 0.8 ||
-          aodTrack->Chi2perNDF() > 4 ||
+          aodTrack->Chi2perNDF() > fCutMaxChi2 ||
           aodTrack->GetTPCNcls() < fCutTPCrecPoints ||
           aodTrack->GetTPCFoundFraction() < fCutTPCfoundFraction ||
           aodTrack->GetTPCsignalN() < fCutTPCsignal ||
@@ -204,8 +206,8 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
           aodTrack->GetITSchi2() > fCutMaxITSChi2 ||
           nITS < fCutITSrecPoints ||
           nSPD < fCutSPDrecPoints ||
-          dca[0] > fCutDCAz ||
-          dca[1] > fCutDCAxy ||
+          std::abs(dca[1]) > fCutDCAz ||
+          std::abs(dca[0]) > fCutDCAxy ||
           std::abs(tpcNsigma) > fCutKaonNsigmaTPC ||
           (tof && std::abs(tofNsigma) > fCutKaonNsigmaTOF)
         )
