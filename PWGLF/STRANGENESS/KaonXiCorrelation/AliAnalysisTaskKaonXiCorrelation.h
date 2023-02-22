@@ -115,6 +115,7 @@ public:
   void SetDCAV0toPVOverflowCut(double cut = 2.5) { fDCAV0toPVOverflowCut = cut; }
   void SetBdtOutCut(double cut = 0.9) { fBdtOutCut = cut; }
 
+  void SetFilterBit(double bit = BIT(4)) { fFilterBit = bit; }
   void SetTPCsignalCut(double cut = 70u) { fCutTPCsignal = cut; }
   void SetMaxChi2Cut(double cut = 4.) { fCutMaxChi2 = cut; }
   void SetMaxITSChi2Cut(double cut = 36.) { fCutMaxITSChi2 = cut; }
@@ -190,11 +191,12 @@ private:
   double fDCAV0toPVOverflowCut = 2.5;
   double fBdtOutCut = 0.9;
 
+  int fFilterBit = BIT(4);
   int fCutTPCrecPoints = 70;
   int fCutITSrecPoints = 2;
   int fCutSPDrecPoints = 1;
   int fCutTPCsignal = 70;
-  float fCutMaxChi2 = 4.;
+  float fCutMaxChi2 = 2.5;
   float fCutMaxITSChi2 = 36.;
   float fCutTPCfoundFraction = 0.8;
   float fCutMinEnergyLoss = 0.;
