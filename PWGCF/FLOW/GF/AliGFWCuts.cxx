@@ -38,7 +38,7 @@ Int_t AliGFWCuts::AcceptTrack(AliAODTrack *&l_Tr, Double_t *l_DCA, const Int_t &
   };
   if(l_Tr->GetTPCchi2perCluster()>fTPCChi2PerCluster) return 0;
   if(!l_DCA) return 1<<BitShift;
-  if(l_DCA[2]>fDCAzCut) return 0;
+  if(TMath::Abs(l_DCA[2])>fDCAzCut) return 0;
   if(lDisableDCAxyCheck) return 1<<BitShift;
   Double_t DCAxyValue = TMath::Sqrt(l_DCA[0]*l_DCA[0] + l_DCA[1]*l_DCA[1]);
   if(DCAxyValue > fPtDepXYCut->Eval(l_Tr->Pt())) return 0;
@@ -147,7 +147,6 @@ void AliGFWCuts::ResetCuts() {
   fTPCChi2PerCluster=2.5;
   fRequiresExtraWeight=kTRUE;
   SetPtDepDCAXY("[0]*(0.0026+0.005/(x^1.01))");//[0]*(0.0015 + 0.005/(x^1.1))");//"0.0105+0.0350/(x^1.1)");
-  fPtDepXYCut->SetParameter(0,fDCAxyCut);
 };
 void AliGFWCuts::PrintSetup() {
   printf("**********\n");
@@ -155,9 +154,9 @@ void AliGFWCuts::PrintSetup() {
   printf("Eta: %f\n",fEta);
   printf("(Flag 1, 10-16) Filter bit: %i\n",fFilterBit);
   printf("(Flag 2,3,12,16) DCAxy cut: %2.0f sigma \n",fDCAxyCut);
-  printf("(Flag 4,5) DCAz cut: %f\n",fDCAzCut);
+  printf("(Flag 4,5) DCAz cut: %.1f\n",fDCAzCut);
   printf("(Flag 6-8) TPC Ncls: %i\n",fTPCNcls);
-  printf("(Flag 10-16) TPC chi2/Ncls: %2.0f \n",fTPCChi2PerCluster);
+  printf("(Flag 10-16) TPC chi2/Ncls: %.1f \n",fTPCChi2PerCluster);
   printf("Rest of the flags are global per event. Total flag = %i + vtx/ev flag\n",fNTrackFlags);
   printf("(Flag 1-3) Vertex selection: |z|<%2.1f\n",fVtxZ);
   printf("(Flag 4-5) CL1, CL2 multi. estimator (no weights)\n");
