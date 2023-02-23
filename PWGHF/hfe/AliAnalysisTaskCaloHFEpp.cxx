@@ -92,6 +92,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	massMin(0),
 	fisoEcut(0.05),
 	fisoTrcut(3),
+	fFlagZeeAssPhiCut(kFALSE),
 	Nref(0),
 	NrefV0(0),
 	Nch(0),
@@ -172,6 +173,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fInv_pT_ULS_forZ_pos(0),
 	fInv_pT_ULS_forZ_pos_true(0),
 	fInv_pT_ULS_forZ_neg(0),
+        fHistZeeDphi(0),
 	fHistPt_Inc(0),
 	fHistPt_Iso(0),
 	fHistPt_R_Iso(0),
@@ -312,6 +314,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	massMin(0),
 	fisoEcut(0.05),
 	fisoTrcut(3),
+	fFlagZeeAssPhiCut(kFALSE),
 	Nref(0),
 	NrefV0(0),
 	Nch(0),
@@ -392,6 +395,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fInv_pT_ULS_forZ_pos(0),
 	fInv_pT_ULS_forZ_pos_true(0),
 	fInv_pT_ULS_forZ_neg(0),
+        fHistZeeDphi(0),
 	fHistPt_Inc(0),
 	fHistPt_Iso(0),
 	fHistPt_R_Iso(0),
@@ -728,7 +732,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fInv_pT_ULS_forZ_pos = new TH2F("fInv_pT_ULS_forZ_pos", "Invariant mass vs p_{T} distribution(ULS,pos) ; pt(GeV/c) ; mass(GeV/c^2)",90,10,100,1200,0,120.0);
 	fInv_pT_ULS_forZ_pos_true = new TH2F("fInv_pT_ULS_forZ_pos_true", "Invariant mass vs p_{T} distribution(ULS,pos, true Zee) ; pt(GeV/c) ; mass(GeV/c^2)",90,10,100,1200,0,120.0);
 	fInv_pT_ULS_forZ_neg = new TH2F("fInv_pT_ULS_forZ_neg", "Invariant mass vs p_{T} distribution(ULS,neg) ; pt(GeV/c) ; mass(GeV/c^2)",90,10,100,1200,0,120.0);
-	fHistMCorgPi0 = new TH2F("fHistMCorgPi0","MC org Pi0",2,-0.5,1.5,100,0,50);
+	fHistZeeDphi = new TH2F("fHistZeeDphi","Z->ee dphi",100,0,100,80,-2.0,6.0);
+        fHistMCorgPi0 = new TH2F("fHistMCorgPi0","MC org Pi0",2,-0.5,1.5,100,0,50);
 	fHistMCorgEta = new TH2F("fHistMCorgEta","MC org Eta",2,-0.5,1.5,100,0,50);
 	fTrigMulti = new TH2F("fTrigMulti","Multiplicity distribution for different triggers; Trigger type; multiplicity",11,-1,10,2000,0,2000);
  
@@ -802,6 +807,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fInv_pT_ULS_forZ_pos);
 	fOutputList->Add(fInv_pT_ULS_forZ_pos_true);
 	fOutputList->Add(fInv_pT_ULS_forZ_neg);
+	fOutputList->Add(fHistZeeDphi);
 	fOutputList->Add(fHistPt_Inc);
 	fOutputList->Add(fHistPt_Iso);
 	fOutputList->Add(fHistPt_R_Iso);
@@ -1829,7 +1835,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		if(aAssotrack->Px()==track->Px() && aAssotrack->Py()==track->Py() && aAssotrack->Pz()==track->Pz())continue;
 
 		Bool_t fFlagLS=kFALSE, fFlagULS=kFALSE;
-		Double_t ptAsso=-999., nsigma=-999.0, mass=-999., width = -999;
+		Double_t ptAsso=-999., nsigma=-999.0, mass=-999., width = -999., dphiAss = -999.;
 		Int_t fPDGe1 = 11; Int_t fPDGe2 = 11;
 
 		nsigma = fpidResponse->NumberOfSigmasTPC(Assotrack, AliPID::kElectron);
@@ -1842,6 +1848,16 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		if(charge == chargeAsso) fFlagLS = kTRUE;
 		if(charge != chargeAsso) fFlagULS = kTRUE;
 	
+		dphiAss = aAssotrack->Phi() - track->Phi();
+		dphiAss = TMath::ATan2(TMath::Sin(dphiAss),TMath::Cos(dphiAss)); 
+		if(dphiAss < -TMath::Pi()/2) dphiAss += 2*TMath::Pi();
+
+                if(fFlagZeeAssPhiCut) // for Z->ee, pair e is away-side
+                  {
+                   if(dphiAss<2.0 || dphiAss>4.0)continue;
+                   fHistZeeDphi->Fill(TrkPt,dphiAss);
+                  }
+
          	Int_t ilabel_ass = TMath::Abs(track->GetLabel());
 	        AliAODMCParticle* fMCTrackpart_ass = (AliAODMCParticle*) fMCarray->At(ilabel_ass);
 		Int_t pdg_ass = fMCTrackpart->GetPdgCode();
