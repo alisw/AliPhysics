@@ -182,7 +182,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
         AliWarning("ERROR: Could not retrieve track ...\n");
         continue;
       }
-      
+
       int nSPD = 0.;
       int nITS = GetITScls(aodTrack, nSPD);
       float dca[2]{0., 0.};
@@ -206,7 +206,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
           std::abs(dca[1]) > fCutDCAz ||
           std::abs(dca[0]) > fCutDCAxy ||
           std::abs(tpcNsigma) > fCutKaonNsigmaTPC ||
-          (tof && aodTrack->Pt() > fPtTofCut && std::abs(tofNsigma) > fCutKaonNsigmaTOF)
+          (aodTrack->Pt() > fPtTofCut && std::abs(tofNsigma) > fCutKaonNsigmaTOF)
         )
       {
         continue;
