@@ -82,6 +82,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
                 void                    SetIsolationCut_E(Double_t isoEcut){fisoEcut = isoEcut;}               
                 void                    SetIsolationCut_Tr(Int_t isoTrcut){fisoTrcut = isoTrcut;}               
 
+		void                    SetZeeAssCut(Bool_t fZeeAssPhiCut){fFlagZeeAssPhiCut = fZeeAssPhiCut;}
 
 		//void      SetWeightNtrkl(TH1D* hWeight){
 		//	if(fweightNtrkl) delete fweightNtrkl;
@@ -115,6 +116,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t massMin;
                 Double_t fisoEcut;
                 Int_t fisoTrcut;
+                Bool_t fFlagZeeAssPhiCut;
 		Double_t Nref;
 		Double_t NrefV0;
 		Int_t Nch;
@@ -198,6 +200,7 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fInv_pT_ULS_forZ_pos;
 		TH2F*                   fInv_pT_ULS_forZ_pos_true;
 		TH2F*                   fInv_pT_ULS_forZ_neg;
+		TH2F*                   fHistZeeDphi;
 		TH1F*                   fHistPt_Inc;
 		TH1F*                   fHistPt_Iso;
 		TH2F*                   fHistPt_R_Iso;
