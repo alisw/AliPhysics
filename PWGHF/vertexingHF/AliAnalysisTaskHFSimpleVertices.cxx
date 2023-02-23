@@ -261,7 +261,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fVertexerMaxDZIni(4.),
   fVertexerMinParamChange(1.e-3),
   fVertexerMinRelChi2Change(0.9),
-  fVertexerUseAbsDCA(true),
+  fVertexerUseAbsDCA(false),
   fEventCuts{},
   fTrackCuts2pr{nullptr},
   fTrackCuts3pr{nullptr},
@@ -939,35 +939,38 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
 
     // vertexer parameters
     printf("--- DCAFitterN parameters ---\n");
+    Int_t useAbsDCA = GetJsonBool(filename.Data(), "hf-track-index-skim-creator", "useAbsDCA");
+    if (useAbsDCA == 1) {
+      fVertexerUseAbsDCA = true;
+    } else if (useAbsDCA == 0) {
+      fVertexerUseAbsDCA = false;
+    }
+    printf("useAbsDCA = %d\n", fVertexerUseAbsDCA);
     Int_t propagateToPCA = GetJsonBool(filename.Data(), "hf-track-index-skim-creator", "propagateToPCA");
     if (propagateToPCA == 1) {
       fVertexerPropagateToPCA = true;
-      printf("propagateToPCA = %d\n", fVertexerPropagateToPCA);
     } else if (propagateToPCA == 0) {
       fVertexerPropagateToPCA = false;
-      printf("propagateToPCA = %d\n", fVertexerPropagateToPCA);
     }
+    printf("propagateToPCA = %d\n", fVertexerPropagateToPCA);
     Double_t maxR = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "maxR");
     if (maxR > 0) {
       fMaxDecVertRadius2 = maxR * maxR;
       fVertexerMaxR = maxR;
-      printf("maxR = %g\n", fVertexerMaxR);
     }
+    printf("maxR = %g\n", fVertexerMaxR);
     Double_t maxDZIni = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "maxDZIni");
-    if (maxDZIni > 0) {
+    if (maxDZIni > 0)
       fVertexerMaxDZIni = maxDZIni;
-      printf("maxDZIni = %g\n", fVertexerMaxDZIni);
-    }
+    printf("maxDZIni = %g\n", fVertexerMaxDZIni);
     Double_t minParamChange = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "minParamChange");
-    if (minParamChange > 0) {
+    if (minParamChange > 0)
       fVertexerMinParamChange = minParamChange;
-      printf("minParamChange = %g\n", fVertexerMinParamChange);
-    }
+    printf("minParamChange = %g\n", fVertexerMinParamChange);
     Double_t minRelChi2Change = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "minRelChi2Change");
-    if (minRelChi2Change) {
+    if (minRelChi2Change)
       fVertexerMinRelChi2Change = minRelChi2Change;
-      printf("minRelChi2Change = %g\n", fVertexerMinRelChi2Change);
-    }
+    printf("minRelChi2Change = %g\n", fVertexerMinRelChi2Change);
     printf("----------------\n");
     Double_t ptMinCand = GetJsonFloat(filename.Data(), "hf-candidate-selector-d0", "ptCandMin");
     printf("Min pt Dzero cand = %g\n", ptMinCand);
