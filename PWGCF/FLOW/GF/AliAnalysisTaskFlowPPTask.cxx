@@ -49,6 +49,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
     fUseDCAzCut(0),
     fDCAz(0),
     fUseDCAxyCut(0),
+	fUseCL1Centrality(0),
     fDCAxy(0),
     fSample(1),
     fCentFlag(0),
@@ -86,6 +87,11 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
     hDCAz(0),
 	hChi2(0),
 	hChi2Before(0),
+	hPhi(0),
+	hPhiBefore(0),
+	fEtaDis(0),
+	fPtDis(0),
+	hnTPCClu(0),
     rand(32213)
 {
     // default constructor, don't allocate memory here!
@@ -111,6 +117,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 	fDCAz(0),
 	fDCAzDefault(0),
 	fUseDCAxyCut(0),
+	fUseCL1Centrality(0),
 	fDCAxy(0),
 	fDCAxyDefault(0),
 	fSample(1),
@@ -150,6 +157,11 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 	hDCAz(0),
 	hChi2(0),
 	hChi2Before(0),
+	hPhi(0),
+	hPhiBefore(0),
+	fEtaDis(0),
+	fPtDis(0),
+	hnTPCClu(0),
 	rand(32213)
 {
     // constructor
@@ -266,6 +278,16 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
   	fListOfObjects->Add(hChi2Before);
 	hVtz = new TH1F("hVtz", "Vertex z after event cuts; v_{z}(cm); Events", 100, -20, 20);
 	fListOfObjects->Add(hVtz);
+	hPhiBefore = new TH1D("hPhiBefore", "phi distribution before the weight correction", 60, 0, 2*3.1415926);
+  	fListOfObjects->Add(hPhiBefore);
+  	hPhi  = new TH1D("hPhi", "phi distribution after the weight correction", 60, 0, 2*3.1415926);
+  	fListOfObjects->Add(hPhi);
+	fEtaDis = new TH1D("hEtaDis", "eta distribution", 100, -2, 2);
+	fListOfObjects->Add(fEtaDis);
+	fPtDis = new TH1D("hPtDis", "pt distribution", 100, 0, 5);
+	fListOfObjects->Add(fPtDis);
+	hnTPCClu  = new TH1D("hnTPCClu",  "Number of TPC clusters", 100, 40, 180);
+  	fListOfObjects->Add(hnTPCClu);
 
     Int_t inSlotCounter=1;
 	if(fNUA) {
@@ -470,12 +492,18 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 
 	const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
 	const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
+	const auto CL1Centrality(pms->GetMultiplicityPercentile("CL1"));
+	//Printf("V0M Cent: %f",dCentrality);
+	//Printf("CL1 Cent: %f",CL1Centrality);
 	float fMultV0Meq = 0;
 	float fMultMeanV0M = 0;
 	float fMultSPD = 0;
 	float fMultMeanSPD = 0;
 	float centrV0 = 0;
 	float cent = dCentrality;
+	if(fUseCL1Centrality){
+		cent = CL1Centrality;
+	}
 	float centSPD = 0;
 	float v0Centr = 0;
 	float cl1Centr = 0;
@@ -537,7 +565,11 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 Bool_t AliAnalysisTaskFlowPPTask::CheckTrigger(){
 	const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
 	const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
+	const auto CL1Centrality(pms->GetMultiplicityPercentile("CL1"));
 	float cent = dCentrality;
+	if(fUseCL1Centrality){
+		cent = CL1Centrality;
+	}
 	UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
 	if (fTrigger == 0){
@@ -796,6 +828,7 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 		// if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
 
 		hChi2->Fill(aodTrk->GetTPCchi2perCluster());
+		hnTPCClu->Fill(aodTrk->GetTPCNclsF());
 		NtrksAfter += 1;
 
 		//..get phi-weight for NUA correction
@@ -812,6 +845,11 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 		double weightPt = 1;
 		if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
 		NtrksBefore += weightPt;
+
+		hPhiBefore->Fill(aodTrk->Phi());
+    	fPtDis->Fill(aodTrk->Pt());
+    	fEtaDis->Fill(aodTrk->Eta());
+    	hPhi->Fill(aodTrk->Phi(), weight*weightPt);
 
 		//..calculate Q-vectors
 		//..no eta gap
