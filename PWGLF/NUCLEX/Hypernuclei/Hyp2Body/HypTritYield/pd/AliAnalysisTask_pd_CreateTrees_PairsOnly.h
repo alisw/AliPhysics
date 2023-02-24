@@ -32,7 +32,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     double CalculateSigmaMassSquareTOF(double pT, double massSq, int ParticleSpecies, int RunNumber);
     bool CheckProtonCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
     bool CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
-    bool IsWithinITSBand(AliAODTrack &Track, int whichParticle, int RunNumber, double ScalingFactor);
+    double CalculateSigmadEdxITS(AliAODTrack &Track, int ParticleSpecies, int RunNumber);
 
 
   private:
