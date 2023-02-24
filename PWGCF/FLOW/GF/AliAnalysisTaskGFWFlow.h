@@ -65,6 +65,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   UInt_t fTriggerType; //Need to store this for it to be able to work on trains
   Bool_t fProduceWeights;
   TList *fWeightList; //! Stored via PostData
+  TFile *fWeightFile; //! File with weights, read-only
   TH1D *fCentMap; //! centrality map for on-fly trains
   AliGFWWeights *fWeights; //! these are stored in a list now
   AliGFWFlowContainer *fFC; // Flow container
