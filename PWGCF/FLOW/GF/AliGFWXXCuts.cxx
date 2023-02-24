@@ -219,6 +219,19 @@ void AliGFWXXCuts::SetupEventCuts(Int_t sysflag) {
     fVtxZ = 9;
     fRequiresExtraWeight=kTRUE;
     break;
+  case 21://Sys30
+    // same as Default
+    //fFilterBit=768;
+    //fRequiresExtraWeight=kTRUE;
+    break;
+  case 22://Sys31
+    fFilterBit=768;
+    fRequiresExtraWeight=kTRUE;
+    break;
+  case 23://Sys31
+    fFilterBit=768;
+    fRequiresExtraWeight=kTRUE;
+    break;
   case 4:
     printf("Warning! Event flag %i (syst. flag %i), CL1 estmator: make sure the proper estimator is used in the task!\n",sysflag, sysflag+fNTrackFlags);
     fRequiresExtraWeight=kFALSE;

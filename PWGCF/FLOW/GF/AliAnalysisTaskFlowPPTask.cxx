@@ -61,6 +61,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
     //....
     fPeriod("LHC15o"),
 	fUseCorrectedNTracks(false),
+	fUseAdditionalDCACut(false),
     fListOfObjects(0),
 
     fTrackEfficiency(0),
@@ -131,6 +132,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 	//....
 	fPeriod("LHC15o"),
 	fUseCorrectedNTracks(false),
+	fUseAdditionalDCACut(false),
 	fListOfObjects(0),
 
 	fTrackEfficiency(0),
@@ -774,7 +776,7 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 		double dcaY = pos[1] - vtxp[1];
 		double dcaZ = abs(pos[2] - vtxp[2]);
 		double dcaXY = TMath::Sqrt(dcaX*dcaX+dcaY*dcaY);
-		
+
 		double fb = (fCurrSystFlag == 1) ? 768 : 96;
 		if (aodTrk->TestFilterBit(fb)) {
 			//Only pass TPC or Global tracks once
@@ -1165,6 +1167,11 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 //____________________________________________________________________
 double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
+	//0~8: According to AliGFW framework
+	//10~12 in Xe, 17~19 in Pb: VtxZ cut
+	//30: Pileup cut (only change in wagons, not code)
+	//31: FB96
+	//32: FB96+Tight DCA
 	Int_t IntCent = 0;
 	if(fCurrCentrality>=5 && fCurrCentrality<10)IntCent=1;
 	else if(fCurrCentrality>=10 && fCurrCentrality<20)IntCent=2;
@@ -1186,6 +1193,10 @@ double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, d
 	}
 	else if(fCurrSystFlag>0&&fCurrSystFlag<9&&fCurrSystFlag!=3){
 		hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag));
+	}
+	else if(fCurrSystFlag>=30){
+		//For Additional Systematic Cuts
+		hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d",IntCent));
 	}
 	else{
 		if(fPeriod.EqualTo("LHC15o")||fPeriod.EqualTo("LHC15o_pass2")||fPeriod.EqualTo("LHC18qr_pass3")){
@@ -1228,6 +1239,11 @@ double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, d
 }
 Bool_t AliAnalysisTaskFlowPPTask::LoadWeightsSystematics()
 {
+	//0~8: According to AliGFW framework
+	//10~12 in Xe, 17~19 in Pb: VtxZ cut
+	//30: Pileup cut (only change in wagons, not code)
+	//31: FB96
+	//32: FB96+Tight DCA
 	if(fCurrSystFlag == 0) {
 		fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
 	}
@@ -1235,6 +1251,10 @@ Bool_t AliAnalysisTaskFlowPPTask::LoadWeightsSystematics()
 		//Be Careful
 		//Here I use DCAxy<6sigma for sys3
 		//And use Default NUA for this systematics
+		fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+	}
+	else if(fCurrSystFlag>=30){
+		//For Additional Systematic Cuts
 		fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
 	}
     else {
@@ -1684,6 +1704,14 @@ Bool_t AliAnalysisTaskFlowPPTask::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltr
     ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
     ltrackXYZ[2] = abs(ltrackXYZ[2]-vtxp[2]);
   } else return kFALSE; //DCA cut is a must for now
+  double dcaX = ltrackXYZ[0]; 
+  double dcaY = ltrackXYZ[1];
+  double dcaZ = ltrackXYZ[2];
+  double dcaXY = TMath::Sqrt(dcaX*dcaX+dcaY*dcaY);
+  if(fUseAdditionalDCACut){
+	if (dcaXY > 1) return kFALSE;
+    if (dcaZ > 1) return kFALSE;
+  }
 
   if(fPeriod.EqualTo("LHC15o")||fPeriod.EqualTo("LHC15o_pass2")||fPeriod.EqualTo("LHC18qr_pass3")){
   	return fGFWSelectionPbPb->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);

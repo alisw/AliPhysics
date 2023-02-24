@@ -235,6 +235,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
         virtual void   SetSystFlag(int flag) { fCurrSystFlag = flag; }
         virtual int    GetSystFlag() { return fCurrSystFlag; }
 		virtual void	SetOnlineTrackCorrection(Bool_t UseCorrectedNTracks){fUseCorrectedNTracks = UseCorrectedNTracks;}
+		virtual void	SetAdditionalDCACut(Bool_t UseAdditionalDCACut){fUseAdditionalDCACut = UseAdditionalDCACut;}
         
         //===================================================================================
 
@@ -292,6 +293,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TString			fPeriod;				// period
                 Int_t                   fCurrSystFlag;                          // Systematics flag
 		Bool_t			fUseCorrectedNTracks;	// flag for online track correction
+		Bool_t			fUseAdditionalDCACut;	// flag for online track correction
 
 
 		Double_t			fCurrCentrality;	//! Centrality of Ongoing Event
