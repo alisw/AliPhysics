@@ -108,8 +108,8 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   fNclsCut(70),
   fChi2Max(4.0),
   fChi2Min(0.1),
-  fDcaCutZ(3.2),
   fDcaCutXY(2.4),
+  fDcaCutZ(3.2),
   fPtMin(0.2),
   fPtMax(5.),
   fEtaCut(0.8),
@@ -226,12 +226,22 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   fHistEta(nullptr),
   fHistNhits(nullptr),
   fHist2PDedx(nullptr),
-  fHistDcaZ(nullptr),
   fHistDcaXY(nullptr),
-  fHistProtonDcaCutZ(nullptr),
-  fHistProtonDcaCutXY(nullptr),
-  fHistAntiProtonDcaCutZ(nullptr),
-  fHistAntiProtonDcaCutXY(nullptr),
+  fHistDcaZ(nullptr),
+  fHistProtonPt(nullptr),
+  fHistProtonEta(nullptr),
+  fHistProtonPhi(nullptr),
+  fHistProtonDcaXY(nullptr),
+  fHistProtonDcaZ(nullptr),
+  fHist2ProtonSigTPC(nullptr),
+  fHist2ProtonSigTOF(nullptr),
+  fHistAntiProtonPt(nullptr),
+  fHistAntiProtonEta(nullptr),
+  fHistAntiProtonPhi(nullptr),
+  fHistAntiProtonDcaXY(nullptr),
+  fHistAntiProtonDcaZ(nullptr),
+  fHist2AntiProtonSigTPC(nullptr),
+  fHist2AntiProtonSigTOF(nullptr),
   fHistV0Pt(nullptr),
   fHistV0Eta(nullptr),
   fHistV0DcatoPrimVertex(nullptr),
@@ -393,8 +403,8 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   fNclsCut(70),
   fChi2Max(4.0),
   fChi2Min(0.1),
-  fDcaCutZ(3.2),
   fDcaCutXY(2.4),
+  fDcaCutZ(3.2),
   fPtMin(0.2),
   fPtMax(5.),
   fEtaCut(0.8),
@@ -511,12 +521,22 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   fHistEta(nullptr),
   fHistNhits(nullptr),
   fHist2PDedx(nullptr),
-  fHistDcaZ(nullptr),
   fHistDcaXY(nullptr),
-  fHistProtonDcaCutZ(nullptr),
-  fHistProtonDcaCutXY(nullptr),
-  fHistAntiProtonDcaCutZ(nullptr),
-  fHistAntiProtonDcaCutXY(nullptr),
+  fHistDcaZ(nullptr),
+  fHistProtonPt(nullptr),
+  fHistProtonEta(nullptr),
+  fHistProtonPhi(nullptr),
+  fHistProtonDcaXY(nullptr),
+  fHistProtonDcaZ(nullptr),
+  fHist2ProtonSigTPC(nullptr),
+  fHist2ProtonSigTOF(nullptr),
+  fHistAntiProtonPt(nullptr),
+  fHistAntiProtonEta(nullptr),
+  fHistAntiProtonPhi(nullptr),
+  fHistAntiProtonDcaXY(nullptr),
+  fHistAntiProtonDcaZ(nullptr),
+  fHist2AntiProtonSigTPC(nullptr),
+  fHist2AntiProtonSigTOF(nullptr),
   fHistV0Pt(nullptr),
   fHistV0Eta(nullptr),
   fHistV0DcatoPrimVertex(nullptr),
@@ -944,30 +964,22 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
   // }
 
   // track-wise QA
-  fHistPt  = new TH1D("fHistPt", "", 200, 0., 20.);
-  fHistEta = new TH1D("fHistEta", "", 50, -1., 1.);
-  fHistNhits = new TH1D("fHistNhits", "", 200, 0., 200.);
-  fHist2PDedx = new TH2D("fHist2PDedx", "", 400, -10., 10., 400, 0, 1000);
-  fHistDcaZ  = new TH1D("fHistDcaZ",  "", 500, 0., 5);
-  fHistDcaXY = new TH1D("fHistDcaXY", "", 500, 0., 5);
-  fHistProtonDcaCutZ  = new TH1D("fHistProtonDcaCutZ",  "", 500, 0., 5);
-  fHistProtonDcaCutXY = new TH1D("fHistProtonDcaCutXY", "", 500, 0., 5);
-  fHistAntiProtonDcaCutZ  = new TH1D("fHistAntiProtonDcaCutZ",  "", 500, 0., 5);
-  fHistAntiProtonDcaCutXY = new TH1D("fHistAntiProtonDcaCutXY", "", 500, 0., 5);
-  fHistPhi[0] = new TH1D("fHistPhi", "", 100, 0, TMath::TwoPi());
-  fHistPhi[1] = new TH1D("fHistPhi_afterNUA", "", 100, 0, TMath::TwoPi());
-  fHist2EtaPhi[0] = new TH2D("fHistEtaPhi", "", 16,-0.8,0.8, 100, 0, TMath::TwoPi());
-  fHist2EtaPhi[1] = new TH2D("fHistEtaPhi_afterfNUA", "", 16,-0.8,0.8, 100, 0, TMath::TwoPi());
+  fHistPt  = new TH1D("fHistPt", ";p_{T}", 200, 0., 20.);
+  fHistEta = new TH1D("fHistEta", ";#eta", 100, -2., 2.);
+  fHistNhits = new TH1D("fHistNhits", ";nhits", 200, 0., 200.);
+  fHist2PDedx = new TH2D("fHist2PDedx", ";pdedx", 400, -10., 10., 400, 0, 1000);
+  fHistDcaXY = new TH1D("fHistDcaXY", ";DcaXY", 500, 0., 5);
+  fHistDcaZ  = new TH1D("fHistDcaZ",  ";DcaZ", 500, 0., 5);
+  fHistPhi[0] = new TH1D("fHistPhi", ";#phi", 100, 0, TMath::TwoPi());
+  fHistPhi[1] = new TH1D("fHistPhi_afterNUA", ";#phi", 100, 0, TMath::TwoPi());
+  fHist2EtaPhi[0] = new TH2D("fHistEtaPhi", ";#eta;#phi", 16,-0.8,0.8, 100, 0, TMath::TwoPi());
+  fHist2EtaPhi[1] = new TH2D("fHistEtaPhi_afterfNUA", ";#eta;#phi", 16,-0.8,0.8, 100, 0, TMath::TwoPi());
   fQAList->Add(fHistPt);
   fQAList->Add(fHistEta);
   fQAList->Add(fHistNhits);
   fQAList->Add(fHist2PDedx);
   fQAList->Add(fHistDcaXY);
   fQAList->Add(fHistDcaZ);
-  fQAList->Add(fHistProtonDcaCutZ);
-  fQAList->Add(fHistProtonDcaCutXY);
-  fQAList->Add(fHistAntiProtonDcaCutZ);
-  fQAList->Add(fHistAntiProtonDcaCutXY);
   for (int i = 0; i < 2; i++) fQAList->Add(fHistPhi[i]);
   for (int i = 0; i < 2; i++) fQAList->Add(fHist2EtaPhi[i]);
 
@@ -979,8 +991,8 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
     if (isQAVZERO) {
       fProfileV0CQxCent[i] = new TProfile(Form("fProfileV0CQxCent%s",charCalibStep.data()), "", 80, 0, 80.);
       fProfileV0CQyCent[i] = new TProfile(Form("fProfileV0CQyCent%s",charCalibStep.data()), "", 80, 0, 80.);
-      fProfileV0CQxVtx[i]  = new TProfile(Form("fProfileV0CQxVtx%s",charCalibStep.data()), "", 20, -10, 10);
-      fProfileV0CQyVtx[i]  = new TProfile(Form("fProfileV0CQyVtx%s",charCalibStep.data()), "", 20, -10, 10);
+      fProfileV0CQxVtx[i]  = new TProfile(Form("fProfileV0CQxVz%s",charCalibStep.data()), "", 20, -10, 10);
+      fProfileV0CQyVtx[i]  = new TProfile(Form("fProfileV0CQyVz%s",charCalibStep.data()), "", 20, -10, 10);
       fHist2CalibPsi2V0CCent[i] = new TH2D(Form("fHist2CalibPsi2V0CCent%s",charCalibStep.data()), "", 16, 0, 80, 50, 0, TMath::TwoPi());
       fQAList->Add(fProfileV0CQxCent[i]);
       fQAList->Add(fProfileV0CQyCent[i]);
@@ -990,8 +1002,8 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
 
       fProfileV0AQxCent[i] = new TProfile(Form("fProfileV0AQxCent%s",charCalibStep.data()), "", 80, 0, 80.);
       fProfileV0AQyCent[i] = new TProfile(Form("fProfileV0AQyCent%s",charCalibStep.data()), "", 80, 0, 80.);
-      fProfileV0AQxVtx[i]  = new TProfile(Form("fProfileV0AQxVtx%s",charCalibStep.data()), "", 20, -10, 10);
-      fProfileV0AQyVtx[i]  = new TProfile(Form("fProfileV0AQyVtx%s",charCalibStep.data()), "", 20, -10, 10);
+      fProfileV0AQxVtx[i]  = new TProfile(Form("fProfileV0AQxVz%s",charCalibStep.data()), "", 20, -10, 10);
+      fProfileV0AQyVtx[i]  = new TProfile(Form("fProfileV0AQyVz%s",charCalibStep.data()), "", 20, -10, 10);
       fHist2CalibPsi2V0ACent[i] = new TH2D(Form("fHist2CalibPsi2V0ACent%s",charCalibStep.data()), "", 16, 0, 80, 50, 0, TMath::Pi());
       fQAList->Add(fProfileV0AQxCent[i]);
       fQAList->Add(fProfileV0AQyCent[i]);
@@ -1041,6 +1053,36 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
     fQAList->Add(fProfileZNATowerMeanEnegry[0]);
     fQAList->Add(fProfileZNATowerMeanEnegry[1]);
   }
+
+  //Proton QA
+  fHistProtonPt      = new TH1D("fHistProtonPt"     , "fHistProtonPt;p_{T}"      , 200, 0., 20.);
+  fHistProtonEta     = new TH1D("fHistProtonEta"    , "fHistProtonEta;#eta"      , 100, -2., 2.);
+  fHistProtonPhi     = new TH1D("fHistProtonPhi"    , "fHistProtonPhi;#phi"      , 100, 0., TMath::TwoPi());
+  fHistProtonDcaXY   = new TH1D("fHistProtonDcaXY"  , "fHistProtonDcaXY;DcaXY"   , 500, 0., 5);
+  fHistProtonDcaZ    = new TH1D("fHistProtonDcaZ "  , "fHistProtonDcaZ;DcaZ"     , 500, 0., 5);
+  fHist2ProtonSigTPC = new TH2D("fHist2ProtonSigTPC", "fHist2ProtonSigTPC;SigTPC", 25, 0., 5., 100, 0.,10.);
+  fHist2ProtonSigTOF = new TH2D("fHist2ProtonSigTOF", "fHist2ProtonSigTOF;SigTOF", 25, 0., 5., 100, 0.,10.);
+  fQAList->Add(fHistProtonPt);
+  fQAList->Add(fHistProtonEta);
+  fQAList->Add(fHistProtonPhi);
+  fQAList->Add(fHistProtonDcaXY);
+  fQAList->Add(fHistProtonDcaZ);
+  fQAList->Add(fHist2ProtonSigTPC);
+  fQAList->Add(fHist2ProtonSigTOF);
+  fHistAntiProtonPt      = new TH1D("fHistAntiProtonPt"     , "fHistAntiProtonPt;p_{T}"      , 200, 0., 20.); 
+  fHistAntiProtonEta     = new TH1D("fHistAntiProtonEta"    , "fHistAntiProtonEta;#eta"      , 100, -2., 2.); 
+  fHistAntiProtonPhi     = new TH1D("fHistAntiProtonPhi"    , "fHistAntiProtonPhi;#phi"      , 100, 0., TMath::TwoPi()); 
+  fHistAntiProtonDcaXY   = new TH1D("fHistAntiProtonDcaXY"  , "fHistAntiProtonDcaXY;DcaXY"   , 500, 0., 5); 
+  fHistAntiProtonDcaZ    = new TH1D("fHistAntiProtonDcaZ "  , "fHistAntiProtonDcaZ;DcaZ"     , 500, 0., 5); 
+  fHist2AntiProtonSigTPC = new TH2D("fHist2AntiProtonSigTPC", "fHist2AntiProtonSigTPC;p_{T};SigTPC", 25, 0., 5., 100, 0.,10.); 
+  fHist2AntiProtonSigTOF = new TH2D("fHist2AntiProtonSigTOF", "fHist2AntiProtonSigTOF;p_{T};SigTOF", 25, 0., 5., 100, 0.,10.); 
+  fQAList->Add(fHistAntiProtonPt);
+  fQAList->Add(fHistAntiProtonEta);
+  fQAList->Add(fHistAntiProtonPhi);
+  fQAList->Add(fHistAntiProtonDcaXY);
+  fQAList->Add(fHistAntiProtonDcaZ);
+  fQAList->Add(fHist2AntiProtonSigTPC);
+  fQAList->Add(fHist2AntiProtonSigTOF);
 
   //V0s QA
   fHistV0Pt = new TH1D("hV0Pt","", 200, 0., 20.);
@@ -1435,9 +1477,9 @@ void AliAnalysisTaskCVEPIDCME::UserExec(Option_t *)
   AliAODVertex* vtSPD = fAOD->GetPrimaryVertexSPD();
   if (fabs(fVertex[0])<1e-6 || fabs(fVertex[1])<1e-6 || fabs(fVertex[2])<1e-6) return;
   double dz = fVertex[2] - fAOD->GetPrimaryVertexSPD()->GetZ();
+  fHistVz[0]->Fill(fVertex[2]);
   if (fabs(fVertex[2]) > fVzCut) return;
   if (!fVtx || fVtx->GetNContributors() < 2 || vtSPD->GetNContributors()<1) return;
-  fHistVz[0]->Fill(fVertex[2]);
   // https://twiki.cern.ch/twiki/bin/viewauth/ALICE/AliDPGtoolsEventProp
   // fEventCuts.SetCentralityEstimators("V0M","CL1");
   // if (!fEventCuts->AcceptEvent(fAOD) ) return;
@@ -2101,6 +2143,7 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
     bool isItProttrk = CheckPIDofParticle(track,3); // 3=proton
     isItProttrk = isItProttrk && (pt < fProtonPtMax && pt > fProtonPtMin);
     if(isStrictestProtonCut) {
+      // Proton need a customized dca cut
       isItProttrk = isItProttrk && (fabs(dcaz) < 1. && fabs(dcaxy) < (0.0105 + 0.035/TMath::Power(pt,1.1))); 
     }
 
@@ -2109,15 +2152,31 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
       code = 999;
       if(isItProttrk) {
         code =  2212;
-        fHistProtonDcaCutXY->Fill(fabs(dcaxy));
-        fHistProtonDcaCutZ ->Fill(fabs(dcaz));
+        fHistProtonPt->Fill(pt);
+        fHistProtonEta->Fill(eta);
+        fHistProtonPhi->Fill(phi);
+        fHistProtonDcaXY->Fill(fabs(dcaxy));
+        fHistProtonDcaZ ->Fill(fabs(dcaz));
+        float nSigTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+        float nSigTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+        float nSigRMS = TMath::Sqrt(nSigTPC*nSigTPC + nSigTOF*nSigTOF);
+        fHist2ProtonSigTPC -> Fill(pt,nSigTPC);
+        fHist2ProtonSigTOF -> Fill(pt,nSigRMS);
       }
     } else {
       code =-999;
       if(isItProttrk) {
         code = -2212;
-        fHistAntiProtonDcaCutXY->Fill(fabs(dcaxy));
-        fHistAntiProtonDcaCutZ ->Fill(fabs(dcaz));
+        fHistAntiProtonPt->Fill(pt);
+        fHistAntiProtonEta->Fill(eta);
+        fHistAntiProtonPhi->Fill(phi);
+        fHistAntiProtonDcaXY->Fill(fabs(dcaxy));
+        fHistAntiProtonDcaZ ->Fill(fabs(dcaz));
+        float nSigTPC = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+        float nSigTOF = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+        float nSigRMS = TMath::Sqrt(nSigTPC*nSigTPC + nSigTOF*nSigTOF);
+        fHist2AntiProtonSigTPC -> Fill(pt, nSigTPC);
+        fHist2AntiProtonSigTOF -> Fill(pt, nSigRMS);
       }
     }
 
@@ -2646,21 +2705,21 @@ bool AliAnalysisTaskCVEPIDCME::PairV0V0()
 bool AliAnalysisTaskCVEPIDCME::PairTrkTrk()
 {
   if (isCalculateProtonProton || isCalculateHadronHadron) {
-    for (auto lambda_a : vecParticleV0) {
-      double pt_a     = lambda_a[0];
-      double eta_a    = lambda_a[1];
-      double phi_a    = lambda_a[2];
-      int    id_a     = (int)lambda_a[3];
-      int    code_a   = (int)lambda_a[4];
-      double weight_a = lambda_a[5];
+    for (auto paticle_a : vecParticle) {
+      double pt_a     = paticle_a[0];
+      double eta_a    = paticle_a[1];
+      double phi_a    = paticle_a[2];
+      int    id_a     = (int)paticle_a[3];
+      int    code_a   = (int)paticle_a[4];
+      double weight_a = paticle_a[5];
   
-      for (auto lambda_b : vecParticleV0) {
-        double pt_b     = lambda_b[0];
-        double eta_b    = lambda_b[1];
-        double phi_b    = lambda_b[2];
-        int    id_b     = (int)lambda_b[3];
-        int    code_b   = (int)lambda_b[4];
-        double weight_b = lambda_b[5];
+      for (auto paticle_b : vecParticle) {
+        double pt_b     = paticle_b[0];
+        double eta_b    = paticle_b[1];
+        double phi_b    = paticle_b[2];
+        int    id_b     = (int)paticle_b[3];
+        int    code_b   = (int)paticle_b[4];
+        double weight_b = paticle_b[5];
 
         if (id_a == id_b) continue;
       
@@ -2716,8 +2775,8 @@ bool AliAnalysisTaskCVEPIDCME::PairTrkTrk()
           TBits bitsHadronHadronPair(nBits);
           bitsHadronHadronPair.SetBitNumber(0, code_a > 0 && code_b > 0);
           bitsHadronHadronPair.SetBitNumber(1, code_a > 0 && code_b < 0);
-          bitsHadronHadronPair.SetBitNumber(2, code_a < 0 && code_b > -2212);
-          bitsHadronHadronPair.SetBitNumber(3, code_a < 0 && code_b < -2212);
+          bitsHadronHadronPair.SetBitNumber(2, code_a < 0 && code_b > 0);
+          bitsHadronHadronPair.SetBitNumber(3, code_a < 0 && code_b < 0);
           for (int iBits = 0; iBits < nBits; iBits++) {
             if (bitsHadronHadronPair.TestBitNumber(iBits)) {
               fProfileDeltaHadronHadron[iBits] -> Fill(fCent, delta);
