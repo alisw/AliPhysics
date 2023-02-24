@@ -75,8 +75,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void SetNclsCut(int nclsCut) { this->fNclsCut = nclsCut; }
   void SetChi2Max(float chi2Max) { this->fChi2Max = chi2Max; }
   void SetChi2Min(float chi2Min) { this->fChi2Min = chi2Min; }
-  void SetDCAcutZ(float dcaCutz) { this->fDcaCutZ = dcaCutz; }
   void SetDCAcutXY(float dcaCutxy) { this->fDcaCutXY = dcaCutxy; }
+  void SetDCAcutZ(float dcaCutz) { this->fDcaCutZ = dcaCutz; }
   void SetPtMin(float ptMin) { this->fPtMin = ptMin; }
   void SetPtMax(float ptMax) { this->fPtMax = ptMax; }
   void SetEtaCut(float etaCut) { this->fEtaCut = etaCut; }
@@ -199,8 +199,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   int fNclsCut;            // ncls cut for all tracks
   float fChi2Max;          // upper limmit for chi2
   float fChi2Min;          // lower limmit for chi2
-  float fDcaCutZ;          // dcaz cut for all tracks
-  float fDcaCutXY;         // dcaxy cut for all tracks
+  float fDcaCutXY;            // dcaxy cut for all tracks
+  float fDcaCutZ;             // dcaz cut for all tracks
   float fPtMin;            // minimum pt for tracks
   float fPtMax;            // maximum pt for tracks
   float fEtaCut;           // eta cut for tracks
@@ -385,12 +385,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TH1D* fHistEta;
   TH1D* fHistNhits;
   TH2D* fHist2PDedx;
-  TH1D* fHistDcaZ;
   TH1D* fHistDcaXY;
-  TH1D* fHistProtonDcaCutZ;
-  TH1D* fHistProtonDcaCutXY;
-  TH1D* fHistAntiProtonDcaCutZ;
-  TH1D* fHistAntiProtonDcaCutXY;
+  TH1D* fHistDcaZ;
   TH1D* fHistPhi[2];
   TH2D* fHist2EtaPhi[2];
   // Psi QA
@@ -420,6 +416,22 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TProfile* fProfileZDCQxAQyCCent[2];
   TProfile* fProfileZDCQyAQxCCent[2];
   TProfile* fProfileZDCQyAQyCCent[2];
+
+  //Proton QA
+  TH1D* fHistProtonPt;
+  TH1D* fHistProtonEta;
+  TH1D* fHistProtonPhi;
+  TH1D* fHistProtonDcaXY;
+  TH1D* fHistProtonDcaZ;
+  TH2D* fHist2ProtonSigTPC;
+  TH2D* fHist2ProtonSigTOF;
+  TH1D* fHistAntiProtonPt;
+  TH1D* fHistAntiProtonEta;
+  TH1D* fHistAntiProtonPhi;
+  TH1D* fHistAntiProtonDcaXY;
+  TH1D* fHistAntiProtonDcaZ;
+  TH2D* fHist2AntiProtonSigTPC;
+  TH2D* fHist2AntiProtonSigTOF;
 
   // V0s QA
   TH1D* fHistV0Pt;              // !Raw V0s' pT
