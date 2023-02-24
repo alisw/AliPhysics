@@ -71,7 +71,7 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
         TFile *fileMultWeights = TFile::Open(fileNameMultWeights.data());
         if (!fileMultWeights || (fileMultWeights && !fileMultWeights->IsOpen()))
             ::Fatal("AddTaskHFResonanceBuilder", "Multiplicity weight file not found!\n");
-        hMultWeights = fileMultWeights->Get(histoMultWeights.data());
+        hMultWeights = (TH1F*)fileMultWeights->Get(histoMultWeights.data());
         if (!hMultWeights)
             ::Fatal("AddTaskHFResonanceBuilder", "Multiplicity weight histo not found!\n");
     }
