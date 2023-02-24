@@ -116,12 +116,13 @@ public:
   void SetBdtOutCut(double cut = 0.9) { fBdtOutCut = cut; }
 
   void SetFilterBit(double bit = BIT(4)) { fFilterBit = bit; }
-  void SetTPCsignalCut(double cut = 70u) { fCutTPCsignal = cut; }
+  void SetTPCclsKaonCut(double cut = 70u) { fCutTPCclsKaon = cut; }
   void SetMaxChi2Cut(double cut = 4.) { fCutMaxChi2 = cut; }
   void SetMaxITSChi2Cut(double cut = 36.) { fCutMaxITSChi2 = cut; }
   void SetDCAzCut(double cut = 1.) { fCutDCAz = cut; }
   void SetDCAxyCut(double cut = 0.1) { fCutDCAxy = cut; }
   void SetMaxPtKaon(double cut = 1.5) { fMaxPtKaon = cut; }
+  void SetPtTofCut(double cut = 0.5) { fPtTofCut = cut; }
 
   void SetBDTPath(const char *path = "") { fBDTPath = path; }
   void SetPtBinsBDT(int nBins, double *ptBins) { fPtBinsBDT.Set(nBins+1,ptBins); }
@@ -192,19 +193,17 @@ private:
   double fBdtOutCut = 0.9;
 
   int fFilterBit = BIT(4);
-  int fCutTPCrecPoints = 70;
   int fCutITSrecPoints = 2;
   int fCutSPDrecPoints = 1;
-  int fCutTPCsignal = 70;
+  int fCutTPCclsKaon = 70;
   float fCutMaxChi2 = 2.5;
   float fCutMaxITSChi2 = 36.;
-  float fCutTPCfoundFraction = 0.8;
-  float fCutMinEnergyLoss = 0.;
   float fCutDCAz = 1.;
   float fCutDCAxy = 0.1;
   double fCutKaonNsigmaTPC = 5.;
   double fCutKaonNsigmaTOF = 5.;
   double fMaxPtKaon = 1.5;
+  double fPtTofCut = 0.5;
 
   bool fUseOnTheFly = false;
   
