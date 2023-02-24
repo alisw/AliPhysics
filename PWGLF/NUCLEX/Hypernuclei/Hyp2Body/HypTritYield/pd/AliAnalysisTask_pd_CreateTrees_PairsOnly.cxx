@@ -754,7 +754,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(ITSisOK){
 
       ITS_dEdx	      = Track->GetITSsignal();
-      ITS_dEdx_nSigma = fPIDResponse->NumberOfSigmasITS(Track,AliPID::kProton);
+      ITS_dEdx_nSigma = CalculateSigmadEdxITS(*Track,1,RunNumber);
       ITS_nCluster    = Track->GetITSNcls();
 
     }
@@ -897,7 +897,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(ITSisOK){
 
       ITS_dEdx	      = Track->GetITSsignal();
-      ITS_dEdx_nSigma = fPIDResponse->NumberOfSigmasITS(Track,AliPID::kDeuteron);
+      ITS_dEdx_nSigma = CalculateSigmadEdxITS(*Track,2,RunNumber);
       ITS_nCluster    = Track->GetITSNcls();
 
     }
@@ -1284,7 +1284,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(ITSisOK){
 
       ITS_dEdx	      = Track->GetITSsignal();
-      ITS_dEdx_nSigma = fPIDResponse->NumberOfSigmasITS(Track,AliPID::kProton);
+      ITS_dEdx_nSigma = CalculateSigmadEdxITS(*Track,3,RunNumber);
       ITS_nCluster    = Track->GetITSNcls();
 
     }
@@ -1431,7 +1431,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(ITSisOK){
 
       ITS_dEdx	      = Track->GetITSsignal();
-      ITS_dEdx_nSigma = fPIDResponse->NumberOfSigmasITS(Track,AliPID::kDeuteron);
+      ITS_dEdx_nSigma = CalculateSigmadEdxITS(*Track,4,RunNumber);
       ITS_nCluster    = Track->GetITSNcls();
 
     }
@@ -1815,8 +1815,8 @@ double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateMassSquareTOF(AliAODTr
 double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(double pT, double massSq, int ParticleSpecies, int RunNumber)
 {
 
-  double nSigma = -999.0;
-  if(massSq < -990.0) return nSigma;
+  double SigmaParticle = -999.0;
+  if(massSq < -990.0) return SigmaParticle;
 
 
   bool MetaLHC16 = false;
@@ -1831,6 +1831,7 @@ double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(dou
   if((RunNumber >= 295585) && (RunNumber <= 296623)) LHC18q = true;
   if((RunNumber >= 296690) && (RunNumber <= 297585)) LHC18r = true;
 
+
   bool isProton	      = false;
   bool isDeuteron     = false;
   bool isAntiProton   = false;
@@ -1841,76 +1842,354 @@ double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(dou
   if(ParticleSpecies == 3) isAntiProton	  = true;
   if(ParticleSpecies == 4) isAntiDeuteron = true;
   
-/*
-  TF1 *Mean = new TF1("Mean","pol5",0.0,4.0);
-  TF1 *Sigma = new TF1("Sigma","pol5",0.0,4.0);
 
-  if((isDeuteron) && ((LHC18q == true) || (LHC18r == true))){
+  TF1 *Mean = new TF1("Mean","[0] + ([1] * (x)) + [2] * pow((1 -([3] / (x))),[4])",0.0,6.0);
+  TF1 *Sigma = new TF1("Sigma","[0] + ([1] * (x)) + [2] * pow((1 -([3] / (x))),[4])",0.0,6.0);
 
-    Mean->FixParameter(0,6.37297);
-    Mean->FixParameter(1,-5.51404);
-    Mean->FixParameter(2,4.2799);
-    Mean->FixParameter(3,-1.62632);
-    Mean->FixParameter(4,0.302122);
-    Mean->FixParameter(5,-0.0219382);
+  // MetaLHC16 pp data 
+  if((MetaLHC16 == true) && (isProton == true)){
 
-    Sigma->FixParameter(0,1.36634);
-    Sigma->FixParameter(1,-2.74292);
-    Sigma->FixParameter(2,2.27612);
-    Sigma->FixParameter(3,-0.905014);
-    Sigma->FixParameter(4,0.174877);
-    Sigma->FixParameter(5,-0.0131305);
+    Mean->FixParameter(0,0.886844);
+    Mean->FixParameter(1,0.00635951);
+    Mean->FixParameter(2,-1.70888e-06);
+    Mean->FixParameter(3,22.3206);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,383.247);
+    Sigma->FixParameter(1,0.0635129);
+    Sigma->FixParameter(2,-383.326);
+    Sigma->FixParameter(3,0.00118195);
+    Sigma->FixParameter(4,0.108687);
+
+  }
+
+
+  if((MetaLHC16 == true) && (isDeuteron == true)){
+
+    Mean->FixParameter(0,3.53557);
+    Mean->FixParameter(1,0.00503793);
+    Mean->FixParameter(2,-0.000335782);
+    Mean->FixParameter(3,10.3859);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,1.02977);
+    Sigma->FixParameter(1,0.153259);
+    Sigma->FixParameter(2,-1.41417);
+    Sigma->FixParameter(3,0.0996178);
+    Sigma->FixParameter(4,3);
+
+  }
+
+  if((MetaLHC16 == true) && (isAntiProton == true)){
+
+    Mean->FixParameter(0,0.885019);
+    Mean->FixParameter(1,0.00671772);
+    Mean->FixParameter(2,-1.45866e-06);
+    Mean->FixParameter(3,23.4559);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,498.345);
+    Sigma->FixParameter(1,0.0771085);
+    Sigma->FixParameter(2,-498.456);
+    Sigma->FixParameter(3,0.00100001);
+    Sigma->FixParameter(4,0.13076);
+
+  }
+
+  if((MetaLHC16 == true) && (isAntiDeuteron == true)){
+
+    Mean->FixParameter(0,3.53154);
+    Mean->FixParameter(1,0.0050005);
+    Mean->FixParameter(2,-0.000985306);
+    Mean->FixParameter(3,7.57384);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,0.870801);
+    Sigma->FixParameter(1,0.088904);
+    Sigma->FixParameter(2,-1.00007);
+    Sigma->FixParameter(3,0.0530252);
+    Sigma->FixParameter(4,3);
 
   }
 
 
-  if((isAntiDeuteron) && ((LHC18q == true) || (LHC18r == true))){
 
-    Mean->FixParameter(0,7.56258);
-    Mean->FixParameter(1,-8.40863);
-    Mean->FixParameter(2,6.92118);
-    Mean->FixParameter(3,-2.76507);
-    Mean->FixParameter(4,0.536251);
-    Mean->FixParameter(5,-0.0404276);
+  // MetaLHC17 pp data 
+  if((MetaLHC17 == true) && (isProton == true)){
 
-    Sigma->FixParameter(0,1.26696);
-    Sigma->FixParameter(1,-2.54379);
-    Sigma->FixParameter(2,2.13709);
-    Sigma->FixParameter(3,-0.862281);
-    Sigma->FixParameter(4,0.169359);
-    Sigma->FixParameter(5,-0.0129328);
+    Mean->FixParameter(0,0.889429);
+    Mean->FixParameter(1,0.00500005);
+    Mean->FixParameter(2,-5.08905e-07);
+    Mean->FixParameter(3,33.165);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,0.0171245);
+    Sigma->FixParameter(1,0.0697961);
+    Sigma->FixParameter(2,-0.168793);
+    Sigma->FixParameter(3,0.0270737);
+    Sigma->FixParameter(4,39.7396);
 
   }
+
+  if((MetaLHC17 == true) && (isDeuteron == true)){
+
+    Mean->FixParameter(0,3.55905);
+    Mean->FixParameter(1,-0.000832746);
+    Mean->FixParameter(2,-1.64011e-05);
+    Mean->FixParameter(3,25.9856);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,1.92524);
+    Sigma->FixParameter(1,0.0938953);
+    Sigma->FixParameter(2,-2.12169);
+    Sigma->FixParameter(3,0.0355014);
+    Sigma->FixParameter(4,3);
+
+  }
+
+  if((MetaLHC17 == true) && (isAntiProton == true)){
+
+    Mean->FixParameter(0,0.885178);
+    Mean->FixParameter(1,0.00500141);
+    Mean->FixParameter(2,-7.18764e-06);
+    Mean->FixParameter(3,14.0775);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,0.00380517);
+    Sigma->FixParameter(1,0.0767935);
+    Sigma->FixParameter(2,-0.19083);
+    Sigma->FixParameter(3,0.0193695);
+    Sigma->FixParameter(4,65.9204);
+
+  }
+
+
+  if((MetaLHC17 == true) && (isAntiDeuteron == true)){
+
+    Mean->FixParameter(0,3.61532);
+    Mean->FixParameter(1,-0.0254348);
+    Mean->FixParameter(2,-0.0191476);
+    Mean->FixParameter(3,3.31381);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,0.0113851);
+    Sigma->FixParameter(1,0.0442788);
+    Sigma->FixParameter(2,-0.00524713);
+    Sigma->FixParameter(3,3.4115);
+    Sigma->FixParameter(4,3);
+
+  }
+
+
+
+
+  // MetaLHC18 pp data 
+  if((MetaLHC18 == true) && (isProton == true)){
+
+    Mean->FixParameter(0,0.887931);
+    Mean->FixParameter(1,0.00574878);
+    Mean->FixParameter(2,-8.62471e-07);
+    Mean->FixParameter(3,28.3609);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,1.937);
+    Sigma->FixParameter(1,0.0526929);
+    Sigma->FixParameter(2,-2.00484);
+    Sigma->FixParameter(3,0.0204716);
+    Sigma->FixParameter(4,1.17935);
+
+  }
+
+  if((MetaLHC18 == true) && (isDeuteron == true)){
+
+    Mean->FixParameter(0,3.56105);
+    Mean->FixParameter(1,0.000378134);
+    Mean->FixParameter(2,-0.000464038);
+    Mean->FixParameter(3,9.30636);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,0.0506275);
+    Sigma->FixParameter(1,0.035813);
+    Sigma->FixParameter(2,-0.0111854);
+    Sigma->FixParameter(3,2.74214);
+    Sigma->FixParameter(4,3);
+
+  }
+
+  if((MetaLHC18 == true) && (isAntiProton == true)){
+
+    Mean->FixParameter(0,0.887204);
+    Mean->FixParameter(1,0.00500025);
+    Mean->FixParameter(2,-4.74017e-07);
+    Mean->FixParameter(3,34.2322);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,0.0377498);
+    Sigma->FixParameter(1,0.0586057);
+    Sigma->FixParameter(2,-0.14258);
+    Sigma->FixParameter(3,0.0234825);
+    Sigma->FixParameter(4,34.3808);
+
+  }
+
+  if((MetaLHC18 == true) && (isAntiDeuteron == true)){
+
+    Mean->FixParameter(0,3.59297);
+    Mean->FixParameter(1,-0.0119197);
+    Mean->FixParameter(2,-0.011537);
+    Mean->FixParameter(3,3.79925);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,0.0474376);
+    Sigma->FixParameter(1,0.0362703);
+    Sigma->FixParameter(2,-0.0104991);
+    Sigma->FixParameter(3,2.80921);
+    Sigma->FixParameter(4,3);
+
+  }
+
+  // MetaLHC18q PbPb data 
+  if((LHC18q == true) && (isProton == true)){
+
+    Mean->FixParameter(0,0.882663);
+    Mean->FixParameter(1,0.00954118);
+    Mean->FixParameter(2,-4.23798e-08);
+    Mean->FixParameter(3,74.7086);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,-0.499897);
+    Sigma->FixParameter(1,0.0498165);
+    Sigma->FixParameter(2,0.423006);
+    Sigma->FixParameter(3,-0.625526);
+    Sigma->FixParameter(4,0.266939);
+
+  }
+
+  if((LHC18q == true) && (isDeuteron == true)){
+
+    Mean->FixParameter(0,3.54);
+    Mean->FixParameter(1,0.01);
+    Mean->FixParameter(2,-2e-05);
+    Mean->FixParameter(3,25);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,-0.0580942);
+    Sigma->FixParameter(1,0.0649085);
+    Sigma->FixParameter(2,0.00450883);
+    Sigma->FixParameter(3,-3.21576);
+    Sigma->FixParameter(4,2.42083);
+
+  }
+
+  if((LHC18q == true) && (isAntiProton == true)){
+
+    Mean->FixParameter(0,0.899341);
+    Mean->FixParameter(1,0.0070984);
+    Mean->FixParameter(2,-0.0223373);
+    Mean->FixParameter(3,1.49187);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,-0.257502);
+    Sigma->FixParameter(1,0.0480432);
+    Sigma->FixParameter(2,0.170963);
+    Sigma->FixParameter(3,-2.64634);
+    Sigma->FixParameter(4,0.265305);
+
+  }
+
+  if((LHC18q == true) && (isAntiDeuteron == true)){
+
+    Mean->FixParameter(0,3.54826);
+    Mean->FixParameter(1,0.0177966);
+    Mean->FixParameter(2,-0.00774686);
+    Mean->FixParameter(3,4.20711);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,0.02181);
+    Sigma->FixParameter(1,0.0483774);
+    Sigma->FixParameter(2,-0.000824466);
+    Sigma->FixParameter(3,5.53748);
+    Sigma->FixParameter(4,3);
+
+  }
+
+  // LHC18r PbPb data 
+  if((LHC18r == true) && (isProton == true)){
+
+    Mean->FixParameter(0,0.886972);
+    Mean->FixParameter(1,0.00847106);
+    Mean->FixParameter(2,-1.94201e-08);
+    Mean->FixParameter(3,93.4605);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,-0.717964);
+    Sigma->FixParameter(1,0.0455849);
+    Sigma->FixParameter(2,0.654092);
+    Sigma->FixParameter(3,-0.213367);
+    Sigma->FixParameter(4,0.378298);
+
+  }
+
+  if((LHC18r == true) && (isDeuteron == true)){
+
+    Mean->FixParameter(0,3.5);
+    Mean->FixParameter(1,0.03);
+    Mean->FixParameter(2,-2e-05);
+    Mean->FixParameter(3,25);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,-0.0424764);
+    Sigma->FixParameter(1,0.0625353);
+    Sigma->FixParameter(2,0.00169585);
+    Sigma->FixParameter(3,-5.08514);
+    Sigma->FixParameter(4,2.41159);
+
+  }
+
+  if((LHC18r == true) && (isAntiProton == true)){
+
+    Mean->FixParameter(0,0.883118);
+    Mean->FixParameter(1,0.00949616);
+    Mean->FixParameter(2,-1.47418e-06);
+    Mean->FixParameter(3,22.7463);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,0.103316);
+    Sigma->FixParameter(1,0.0422522);
+    Sigma->FixParameter(2,-0.156961);
+    Sigma->FixParameter(3,0.0952412);
+    Sigma->FixParameter(4,3.17989);
+
+  }
+
+  if((LHC18r == true) && (isAntiDeuteron == true)){
+
+    Mean->FixParameter(0,3.51);
+    Mean->FixParameter(1,0.02);
+    Mean->FixParameter(2,-2e-05);
+    Mean->FixParameter(3,25);
+    Mean->FixParameter(4,3);
+
+    Sigma->FixParameter(0,-0.0256875);
+    Sigma->FixParameter(1,0.0584863);
+    Sigma->FixParameter(2,0.00261934);
+    Sigma->FixParameter(3,-2.12772);
+    Sigma->FixParameter(4,3.38546);
+
+  }
+
+
+
 
   double mean = Mean->Eval(pT);
   double sigma = Sigma->Eval(pT);
 
   Mean->Delete();
   Sigma->Delete();
-*/
-
-  double mean = 0.0;
-  double sigma = 0.0;
-
-  if((isProton == true) || (isAntiProton == true)){
-
-    mean = 0.89;
-    sigma = 0.1;
-  
-  }
-
-  if((isDeuteron == true) || (isAntiDeuteron == true)){
-
-    mean = 3.6;
-    sigma = 0.25;
-  
-  }
 
 
-  if(TMath::Abs(sigma) < 0.00001) return -999.0;
-
-  nSigma = (massSq - mean)/(sigma);
-  return nSigma;
+  SigmaParticle = (massSq - mean)/(sigma);
+  return SigmaParticle;
 
 } // end of CalculateSigmaMassSquareTOF
 
@@ -1949,8 +2228,7 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
   double Proton_TOF_m2_nSigma_max = 3.0;
   double Proton_TOF_m2_nSigma_max_low_pTPC = 7.0;
 
-  double Proton_ITS_dEdx_BandScalingFactorAbove = 1.3;
-  double Proton_ITS_dEdx_BandScalingFactorBelow = 0.7;
+  double Proton_ITS_dEdx_nSigma_max = 3.0;
   int Proton_ITS_nCluster_min = 2;
 
   bool UseTOF = true;
@@ -2059,15 +2337,12 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
 
   if((ITSisOK == true) && (UseITS == true)){
 
-    const int whichParticle = 1; // Proton or AntiProton
-
-    // apply ITS band cut above particle
-    bool isBelowUpperThreshold = IsWithinITSBand(Track,whichParticle,RunNumber,Proton_ITS_dEdx_BandScalingFactorAbove);
-    if(!isBelowUpperThreshold) return PassedParticleCuts;
-
-    // apply ITS band cut below particle
-    bool isAboveLowerThreshold = IsWithinITSBand(Track,whichParticle,RunNumber,Proton_ITS_dEdx_BandScalingFactorBelow);
-    if(!isAboveLowerThreshold) return PassedParticleCuts;
+    int ParticleSpecies = 0;
+    if(isMatter) ParticleSpecies = 1;
+    if(!isMatter) ParticleSpecies = 3;
+    
+    double ITS_dEdx_Sigma = CalculateSigmadEdxITS(Track,ParticleSpecies,RunNumber);
+    if(TMath::Abs(ITS_dEdx_Sigma) > Proton_ITS_dEdx_nSigma_max) return PassedParticleCuts;
 
     // apply ITS cluster cut
     double nClusterITS = Track.GetITSNcls();
@@ -2165,26 +2440,25 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
   // define deuteron and antideuteron track cuts
   double Deuteron_pT_min = 0.0;
   double Deuteron_pT_max = 5.0;
-  double Deuteron_eta_min = -0.8;
-  double Deuteron_eta_max = +0.8;
-  double Deuteron_DCAxy_max = 0.2; // cm
-  double Deuteron_DCAz_max = 0.1; // cm
+  double Deuteron_eta_min = -0.9;
+  double Deuteron_eta_max = +0.9;
+  double Deuteron_DCAxy_max = 0.3; // cm
+  double Deuteron_DCAz_max = 0.2; // cm
 
-  double Deuteron_TPC_RatioRowsFindableCluster_min = 0.83;
-  double Deuteron_TPC_dEdx_nSigma_max = 3.0;
+  double Deuteron_TPC_RatioRowsFindableCluster_min = 0.73;
+  double Deuteron_TPC_dEdx_nSigma_max = 4.0;
   double Deuteron_TPC_Chi2perCluster_max = 4.0;
   double Deuteron_TPC_Chi2perNDF_max = 4.0;
-  int Deuteron_TPC_nCluster_min = 80;
-  int Deuteron_TPC_nCrossedRows_min = 70;
-  int Deuteron_TPC_nSharedCluster_max = 0;
+  int Deuteron_TPC_nCluster_min = 70;
+  int Deuteron_TPC_nCrossedRows_min = 60;
+  int Deuteron_TPC_nSharedCluster_max = 1;
   double Deuteron_TPC_Threshold = 1.0;
 
-  double Deuteron_TOF_m2_nSigma_max = 3.0;
-  double Deuteron_TOF_m2_nSigma_max_low_pTPC = 7.0;
+  double Deuteron_TOF_m2_nSigma_max = 4.0;
+  double Deuteron_TOF_m2_nSigma_max_low_pTPC = 8.0;
 
-  double Deuteron_ITS_dEdx_BandScalingFactorAbove = 1.3;
-  double Deuteron_ITS_dEdx_BandScalingFactorBelow = 0.7;
-  int Deuteron_ITS_nCluster_min = 2;
+  double Deuteron_ITS_dEdx_nSigma_max = 3.0;
+  int Deuteron_ITS_nCluster_min = 1;
 
   bool UseTOF = true;
   bool UseITS = true;
@@ -2294,15 +2568,12 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
   if((ITSisOK == true) && (UseITS == true)){
 
-    const int whichParticle = 2; // Deuteron or AntiDeuteron
-
-    // apply ITS band cut above particle
-    bool isBelowUpperThreshold = IsWithinITSBand(Track,whichParticle,RunNumber,Deuteron_ITS_dEdx_BandScalingFactorAbove);
-    if(!isBelowUpperThreshold) return PassedParticleCuts;
-
-    // apply ITS band cut below particle
-    bool isAboveLowerThreshold = IsWithinITSBand(Track,whichParticle,RunNumber,Deuteron_ITS_dEdx_BandScalingFactorBelow);
-    if(!isAboveLowerThreshold) return PassedParticleCuts;
+    int ParticleSpecies = 0;
+    if(isMatter) ParticleSpecies = 2;
+    if(!isMatter) ParticleSpecies = 4;
+    
+    double ITS_dEdx_Sigma = CalculateSigmadEdxITS(Track,ParticleSpecies,RunNumber);
+    if(TMath::Abs(ITS_dEdx_Sigma) > Deuteron_ITS_dEdx_nSigma_max) return PassedParticleCuts;
 
     // apply ITS cluster cut
     double nClusterITS = Track.GetITSNcls();
@@ -2327,6 +2598,7 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
     double TOF_m2	  = CalculateMassSquareTOF(Track);
     double TOF_m2_nSigma  = CalculateSigmaMassSquareTOF(pT,TOF_m2,ParticleSpecies,RunNumber);
+
 
     // apply tight TOF m2 cut above pTPC threshold   
     if(pTPC >= Deuteron_TPC_Threshold){
@@ -2371,16 +2643,11 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
 
 
-bool AliAnalysisTask_pd_CreateTrees_PairsOnly::IsWithinITSBand(AliAODTrack &Track, int whichParticle, int RunNumber, double ScalingFactor){
+double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTrack &Track, int ParticleSpecies, int RunNumber){
 
-  bool IsWithinITSBand = false;
-
+  double SigmaParticle = -999.0;
   double SignalITS = Track.GetITSsignal();
-  if(TMath::IsNaN(SignalITS)) return IsWithinITSBand;
-
-  double p = Track.P();
-
-  TF1 *fdEdxITSBand = new TF1("fdEdxITSBand",Form("%.1f*[5]*[5]*AliExternalTrackParam::BetheBlochGeant([5]*x/([6]),[0],[1],[2],[3],[4])",ScalingFactor),0.01,6.0);
+  if(TMath::IsNaN(SignalITS)) return SigmaParticle;
 
   bool MetaLHC16 = false;
   bool MetaLHC17 = false;
@@ -2394,45 +2661,69 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::IsWithinITSBand(AliAODTrack &Trac
   if((RunNumber >= 295585) && (RunNumber <= 296623)) LHC18q = true;
   if((RunNumber >= 296690) && (RunNumber <= 297585)) LHC18r = true;
 
+  bool isProton	      = false;
+  bool isDeuteron     = false;
+  bool isAntiProton   = false;
+  bool isAntiDeuteron = false;
 
-  // whichParticle: 1 = Proton, 2 = Deuteron
+  if(ParticleSpecies == 1) isProton = true;
+  if(ParticleSpecies == 2) isDeuteron = true;
+  if(ParticleSpecies == 3) isAntiProton = true;
+  if(ParticleSpecies == 4) isAntiDeuteron = true;
 
-  // Proton and AntiProton in Pb-Pb (in LHC18q or LHC18r, central or semi-central)
-  if((whichParticle == 1) && ((LHC18q == true) || (LHC18r == true))){
+  double p = Track.P();
 
-    fdEdxITSBand->SetParameters(2.36861e-07,-55831.1,-238672,9.55834,17081,1,0.93827208816);
+  TF1 *Mean = new TF1("Mean","[5]*[5]*AliExternalTrackParam::BetheBlochGeant([5]*x/([6]),[0],[1],[2],[3],[4])",0.01,6.0);
 
-  }
+  if((isProton == true) || (isAntiProton == true)){
 
-
-  // Deuteron and AntiDeuteron in Pb-Pb (in LHC18q or LHC18r, central or semi-central)
-  if((whichParticle == 2) && ((LHC18q == true) || (LHC18r == true))){
-
-    fdEdxITSBand->SetParameters(7.41722e-06,-55831.1,-238672,11249.3,19828.9,1,1.8756129425);
-
-  }
-
-
-  // check if particle is above band
-  if(ScalingFactor > 1.0){
-  
-    if(SignalITS < fdEdxITSBand->Eval(p)) IsWithinITSBand = true;
-
-  }
-
-  // check if particle is below band
-  if(ScalingFactor < 1.0){
-
-    if(SignalITS > fdEdxITSBand->Eval(p)) IsWithinITSBand = true;
+    Mean->FixParameter(0,2.36861e-07);
+    Mean->FixParameter(1,-55831.1);
+    Mean->FixParameter(2,-238672);
+    Mean->FixParameter(3,9.55834);
+    Mean->FixParameter(4,17081);
+    Mean->FixParameter(5,1);
+    Mean->FixParameter(6,0.93827208816);
 
   }
 
+  if((isDeuteron == true) || (isAntiDeuteron == true)){
 
-  fdEdxITSBand->Delete();
+    Mean->FixParameter(0,7.41722e-06);
+    Mean->FixParameter(1,-55831.1);
+    Mean->FixParameter(2,-238672);
+    Mean->FixParameter(3,11249.3);
+    Mean->FixParameter(4,19828.9);
+    Mean->FixParameter(5,1);
+    Mean->FixParameter(6,1.8756129425);
 
-  return IsWithinITSBand;
+  }
 
-} // end of IsWithinITSBand
+  double mean = Mean->Eval(p);
+  Mean->Delete();
+
+  double Resolution = 0.0;
+
+  if(((isProton == true) || (isAntiProton == true))	&& (MetaLHC16 == true)) Resolution = 0.126;
+  if(((isDeuteron == true) || (isAntiDeuteron == true)) && (MetaLHC16 == true)) Resolution = 9.14588e-02;
+
+  if(((isProton == true) || (isAntiProton == true))	&& (MetaLHC17 == true)) Resolution = 1.34216e-01;
+  if(((isDeuteron == true) || (isAntiDeuteron == true)) && (MetaLHC17 == true)) Resolution = 9.00246e-02;
+
+  if(((isProton == true) || (isAntiProton == true))	&& (MetaLHC18 == true)) Resolution = 1.32506e-01;
+  if(((isDeuteron == true) || (isAntiDeuteron == true)) && (MetaLHC18 == true)) Resolution = 8.82121e-02;
+
+  if(((isProton == true) || (isAntiProton == true))	&& ((LHC18q == true) || (LHC18r == true))) Resolution = 0.10;
+  if(((isDeuteron == true) || (isAntiDeuteron == true)) && ((LHC18q == true) || (LHC18r == true))) Resolution = 0.10;
+
+  double ScaleFactor = 1.0-(Resolution);
+  double sigma = (mean*ScaleFactor) - mean;
+
+  SigmaParticle = (mean - SignalITS) / (sigma);
+
+  return SigmaParticle;
+
+} // end of CalculateSigmadEdxITS
 
 
 
