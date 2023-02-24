@@ -107,7 +107,9 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
     hfResoTask->SetReadMC(readMC);
     hfResoTask->EnableBachelors(enablePi, enableKa, enablePr, enableDe);
     hfResoTask->EnableV0s(enableKz, enableLa);
-    hfResoTask->SetMultiplicityWeights(hMultWeights);
+    if (applyMultWeights) {
+        hfResoTask->SetMultiplicityWeights(hMultWeights);
+    }
     mgr->AddTask(hfResoTask);
 
     // Create containers for input/output
