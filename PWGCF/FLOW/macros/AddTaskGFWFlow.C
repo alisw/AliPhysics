@@ -34,11 +34,11 @@ AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeig
         if(weightpath.EqualTo("")) { printf("Weight path for containers not set!\n"); return NULL; };
         if(weightpath.Contains("alien:")) TGrid::Connect("alien:");
         TFile *tf = TFile::Open(weightpath.Data());
-        if(!tf) { printf("Could not open weight file %s!\n",weightpath.Data()); return NULL; };
-        TList *tl = (TList*)tf->Get("WeightList");
-        if(!tl) { printf("Could not wetch WeightList from %s!\n",weightpath.Data()); tf->ls(); return NULL; };
-        AliAnalysisDataContainer *cInWeights = mgr->CreateContainer(Form("InputWeights"),TList::Class(), AliAnalysisManager::kInputContainer);
-        cInWeights->SetData(tl);
+        // if(!tf) { printf("Could not open weight file %s!\n",weightpath.Data()); return NULL; };
+        // TList *tl = (TList*)tf->Get("WeightList");
+        // if(!tl) { printf("Could not wetch WeightList from %s!\n",weightpath.Data()); tf->ls(); return NULL; };
+        AliAnalysisDataContainer *cInWeights = mgr->CreateContainer(Form("InputWeights"),TFile::Class(), AliAnalysisManager::kInputContainer);
+        cInWeights->SetData(tf);
         mgr->ConnectInput(task,1,cInWeights);
       } else {
         mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("InputWeights"));
