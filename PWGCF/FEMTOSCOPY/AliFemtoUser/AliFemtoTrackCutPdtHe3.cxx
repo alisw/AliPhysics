@@ -450,10 +450,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 				imost = 0;
 			}
 		}
-                //\ dE/dx cut for low pt abnormal
-                if ( fdEdxcut && !IsDeuteronTPCdEdx(track->Pt(), track->TPCsignal()) ){
-                    	imost = 0;
-                }
+            
 		if(fUseDCAvsPt_cut && fCharge>0){
 			float tmpDCAr = TMath::Abs(track->ImpactD());
 			float tmpCut = Return_DCAvsPt_cut_d(track->Pt(),fCharge);
@@ -513,6 +510,10 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 			if(abs(track->NSigmaTOFPi()) < 3) imost = 0;
 		}
 		}
+  
+                if ( fdEdxcut &&fMostProbable == 13 && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal()) ){
+                    	imost = 0;
+                }
 	    if (imost != fMostProbable) return false;
 	    if(fUseTOFMassCut){
 		//Mass square!
@@ -746,37 +747,15 @@ bool AliFemtoTrackCutPdtHe3::IsProtonTPCdEdx(float mom, float dEdx){
 }
 //\ follow wiola
 bool AliFemtoTrackCutPdtHe3::IsDeuteronTPCdEdx(float mom, float dEdx){
-// mom actually is pt, not total moment!
-//
-//   double a1 = -250.0,  b1 = 400.0;
-//   double a2 = -135.0,  b2 = 270.0;
-//   double a3 = -80,   b3 = 190.0;
-//   double a4 = 0.0,   b4 = 20.0;
-
-//   double a5 = 125.0,   b5 = -100.0; 
-
-//   if (mom < 1.1) {
-//     if (dEdx < a1*mom+b1) return false;
-//   }
-//   else if (mom < 1.4) {
-//     if (dEdx < a2*mom+b2) return false;
-//   }
-//   else if (mom < 2) {
-//     if (dEdx < a3*mom+b3) return false;
-//   }
-//   else if (mom >= 2) {
-//     if (dEdx < a4*mom+b4) return false;
-//   }
-
-    double a1 = -250.,  b1 = 350.;
-    double a2 = -75.,  b2 = 175.;
-    if (mom < 1.) {
-        if (dEdx < a1*mom+b1) return false;
-    }
-    if (1. <= mom && mom <1.5){// for safe choose 1.5, due to after 1.4 add TOF
-	if (dEdx < a2*mom+b2) return false;
-    }
-    return true;
+	double a1 = -250.0,  b1 = 400.0;
+  	double a2 = -80,   b2 = 190.0;
+  	if (mom < 1.1) {
+    		if (dEdx < a1 * mom+b1) return false;
+  	}
+  	else if (mom < 2) {
+    		if (dEdx < a2 *mom+b2) return false;
+  	}
+    	return true;
 
 }
 bool AliFemtoTrackCutPdtHe3::IsTritonTPCdEdx(float mom, float dEdx){
