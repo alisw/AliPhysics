@@ -46,7 +46,10 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
                                                                std::vector<float> massMaxKz = {-1.},
                                                                std::vector<float> massMinLa = {-1.},
                                                                std::vector<float> massMaxLa = {-1.},
-                                                               int AODProtection = 0)
+                                                               int AODProtection = 0,
+                                                               bool applyMultWeights = false,
+                                                               std::string fileNameMultWeights = "",
+                                                               std::string histoMultWeights = "")
 {
     // \brief: AddTask for AliAnalysisTaskSEHFResonanceBuilder
     // \authors:
@@ -62,6 +65,16 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
         ::Fatal("AddTaskHFResonanceBuilder", "Cut file not found on Grid: analysis will not start!\n");
     else
         printf("Cut file correctly found\n");
+
+    TH1F* hMultWeights = NULL;
+    if (applyMultWeights) {
+        TFile *fileMultWeights = TFile::Open(fileNameMultWeights.data());
+        if (!fileMultWeights || (fileMultWeights && !fileMultWeights->IsOpen()))
+            ::Fatal("AddTaskHFResonanceBuilder", "Multiplicity weight file not found!\n");
+        hMultWeights = (TH1F*)fileMultWeights->Get(histoMultWeights.data());
+        if (!hMultWeights)
+            ::Fatal("AddTaskHFResonanceBuilder", "Multiplicity weight histo not found!\n");
+    }
 
     AliRDHFCuts *analysisCuts = NULL;
     if(decCh == AliAnalysisTaskSEHFResonanceBuilder::kD0toKpi)
@@ -94,6 +107,9 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
     hfResoTask->SetReadMC(readMC);
     hfResoTask->EnableBachelors(enablePi, enableKa, enablePr, enableDe);
     hfResoTask->EnableV0s(enableKz, enableLa);
+    if (applyMultWeights) {
+        hfResoTask->SetMultiplicityWeights(hMultWeights);
+    }
     mgr->AddTask(hfResoTask);
 
     // Create containers for input/output
