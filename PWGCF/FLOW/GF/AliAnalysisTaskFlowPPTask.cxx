@@ -774,9 +774,18 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 		double dcaY = pos[1] - vtxp[1];
 		double dcaZ = abs(pos[2] - vtxp[2]);
 		double dcaXY = TMath::Sqrt(dcaX*dcaX+dcaY*dcaY);
-		hDCAxyBefore->Fill(dcaXY, aodTrk->Pt());
-		hDCAzBefore->Fill(dcaZ,aodTrk->Pt());
-		hChi2Before->Fill(aodTrk->GetTPCchi2perCluster());
+		
+		double fb = (fCurrSystFlag == 1) ? 768 : 96;
+		if (aodTrk->TestFilterBit(fb)) {
+			//Only pass TPC or Global tracks once
+			//do not contain both of them
+			hDCAxyBefore->Fill(dcaXY, aodTrk->Pt());
+			hDCAzBefore->Fill(dcaZ,aodTrk->Pt());
+			hChi2Before->Fill(aodTrk->GetTPCchi2perCluster());
+		}
+		// hDCAxyBefore->Fill(dcaXY, aodTrk->Pt());
+		// hDCAzBefore->Fill(dcaZ,aodTrk->Pt());
+		// hChi2Before->Fill(aodTrk->GetTPCchi2perCluster());
 
 		if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
 
