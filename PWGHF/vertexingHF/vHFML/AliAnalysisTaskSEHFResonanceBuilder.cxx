@@ -296,6 +296,10 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
                 fHistMCGenDmeson[1] = new THnSparseF("hNonPromptDmesonMCGen_411", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi", 3, nBinsGen, binMinsGen, binMaxsGen);
                 fHistMCRecoDmeson[0] = new THnSparseF("hPromptDmesonMCReco_411", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#it{M} (GeV/#it{c}^{2}); BDT score bkg; BDT score prompt; BDT score non-prompt", 7, nBinsRecoD, binMinsRecoD, binMaxsRecoD);
                 fHistMCRecoDmeson[1] = new THnSparseF("hNonPromptDmesonMCReco_411", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#it{M} (GeV/#it{c}^{2}); BDT score bkg; BDT score prompt; BDT score non-prompt", 7, nBinsRecoD, binMinsRecoD, binMaxsRecoD);
+                fHistMCGenDmeson[0]->Sumw2();
+                fHistMCGenDmeson[1]->Sumw2();
+                fHistMCRecoDmeson[0]->Sumw2();
+                fHistMCRecoDmeson[1]->Sumw2();
                 fOutput->Add(fHistMCGenDmeson[0]);
                 fOutput->Add(fHistMCGenDmeson[1]);
                 fOutput->Add(fHistMCRecoDmeson[0]);
@@ -327,6 +331,10 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
                 fHistMCGenDmeson[1] = new THnSparseF("hNonPromptDmesonMCGen_413", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi", 3, nBinsGen, binMinsGen, binMaxsGen);
                 fHistMCRecoDmeson[0] = new THnSparseF("hPromptDmesonMCReco_413", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#Delta#it{M} (GeV/#it{c}^{2}); BDT score bkg; BDT score prompt; BDT score non-prompt;", 7, nBinsRecoD, binMinsRecoD, binMaxsRecoD);
                 fHistMCRecoDmeson[1] = new THnSparseF("hNonPromptDmesonMCReco_413", ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#Delta#it{M} (GeV/#it{c}^{2}); BDT score bkg; BDT score prompt; BDT score non-prompt;", 7, nBinsRecoD, binMinsRecoD, binMaxsRecoD);
+                fHistMCGenDmeson[0]->Sumw2();
+                fHistMCGenDmeson[1]->Sumw2();
+                fHistMCRecoDmeson[0]->Sumw2();
+                fHistMCRecoDmeson[1]->Sumw2();
                 fOutput->Add(fHistMCGenDmeson[0]);
                 fOutput->Add(fHistMCGenDmeson[1]);
                 fOutput->Add(fHistMCRecoDmeson[0]);
@@ -361,6 +369,8 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
 
                 fHistMCGenV0[iV0] = new THnSparseF(Form("hV0MCGen_%d", kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi", 3, nBinsGen, binMinsGen, binMaxsGen);
                 fHistMCRecoV0[iV0] = new THnSparseF(Form("hV0MCReco_%d", kPdgV0IDs[iV0]), ";#it{p}_{T} (GeV/#it{c});#it{y};#varphi;#it{M} (GeV/#it{c}^{2}); cos(#vartheta_{P}); radius (cm); min daughter DCA (cm);", 7, nBinsRecoV0, binMinsRecoV0, binMaxsRecoV0);
+                fHistMCGenV0[iV0]->Sumw2();
+                fHistMCRecoV0[iV0]->Sumw2();
                 fOutput->Add(fHistMCGenV0[iV0]);
                 fOutput->Add(fHistMCRecoV0[iV0]);
             }
@@ -472,6 +482,12 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
     int nTracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fAOD, -1., 1.);
     fCounter->StoreEvent(fAOD, fRDCuts, fReadMC, nTracklets); // fill also multiplicity for INEL>0
 
+    // get multiplicity weight
+    float multWeight = 1.;
+    if (fApplyMultWeights && fHistMultWeights) {
+        multWeight = fHistMultWeights->GetBinContent(fHistMultWeights->GetXaxis()->FindBin(nTracklets));
+    }
+
     bool isEvSel = fRDCuts->IsEventSelected(fAOD);
 
     if (fRDCuts->IsEventRejectedDueToTrigger())
@@ -511,7 +527,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
             PostData(1, fOutput);
             return;
         }
-        FillMCGenHistos(arrayMC, mcHeader);
+        FillMCGenHistos(arrayMC, mcHeader, multWeight);
     }
 
     if (!isEvSel)
@@ -636,7 +652,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                             double minDCAV0 = (std::abs(v0->DcaPosToPrimVertex()) < std::abs(v0->DcaNegToPrimVertex())) ? std::abs(v0->DcaPosToPrimVertex()) : std::abs(v0->DcaNegToPrimVertex());
                             double array4Sparse[7] = {v0->Pt(), v0->Y(kPdgV0IDs[iHypo]), v0->Phi(), massV0, v0->CosPointingAngle(posPrimVtx), radV0, minDCAV0};
                             if (isSignal[iHypo]) { // if not PhysicalPrimary, it is not signal for us
-                                fHistMCRecoV0[iHypo]->Fill(array4Sparse);
+                                fHistMCRecoV0[iHypo]->Fill(array4Sparse, multWeight);
                             }
                             break;
                         }
@@ -829,9 +845,9 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserExec(Option_t * /*option*/)
                 }
             }
             if (orig == 4)
-                fHistMCRecoDmeson[0]->Fill(arr4Sparse.data());
+                fHistMCRecoDmeson[0]->Fill(arr4Sparse.data(), multWeight);
             else if (orig == 5)
-                fHistMCRecoDmeson[1]->Fill(arr4Sparse.data());
+                fHistMCRecoDmeson[1]->Fill(arr4Sparse.data(), multWeight);
         }
 
         // loop over tracks
@@ -1528,7 +1544,7 @@ int AliAnalysisTaskSEHFResonanceBuilder::MatchResoToMC(AliAODMCParticle *partD, 
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader) {
+void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, float multWeight) {
 
     std::array<std::vector<int>, 2> pdgReso{};
     switch(fDecChannel) {
@@ -1603,7 +1619,7 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
                     continue;
 
                 double arr4Sparse[3] = {mcPart->Pt(), mcPart->Y(), mcPart->Phi()};
-                fHistMCGenV0[whichV0]->Fill(arr4Sparse);
+                fHistMCGenV0[whichV0]->Fill(arr4Sparse, multWeight);
             }
             else if (std::abs(pdgPart) == fPdgD) {
                 int isGoodDmesonDecay = -1;
@@ -1631,10 +1647,10 @@ void AliAnalysisTaskSEHFResonanceBuilder::FillMCGenHistos(TClonesArray *arrayMC,
                 double arr4Sparse[3] = {mcPart->Pt(), rapid, mcPart->Phi()};
                 int orig = AliVertexingHFUtils::CheckOrigin(arrayMC, mcPart, true);
                 if (orig == 4) {
-                    fHistMCGenDmeson[0]->Fill(arr4Sparse);
+                    fHistMCGenDmeson[0]->Fill(arr4Sparse, multWeight);
                 }
                 else if (orig == 5) {
-                    fHistMCGenDmeson[1]->Fill(arr4Sparse);
+                    fHistMCGenDmeson[1]->Fill(arr4Sparse, multWeight);
                 }
             }
             else 

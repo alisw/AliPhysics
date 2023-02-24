@@ -155,7 +155,12 @@ private:
     bool IsDaughterTrack(AliAODTrack *&track, AliAODRecoDecayHF *&dMeson, TClonesArray *&arrayCandDDau, AliAnalysisVertexingHF *vHF);
     int MatchResoToMC(AliAODMCParticle *partD, AliAODMCParticle *partLight, TClonesArray* arrayMC);
 
-    void FillMCGenHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader);
+    void FillMCGenHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, float multWeight=1.);
+
+    void SetMultiplicityWeights(TH1F* hMultWeights) {
+        fApplyMultWeights = true;
+        fHistMultWeights = (TH1F*)hMultWeights->Clone("fHistMultWeights");
+    }
 
     std::array<int, kNumBachIDs> kPdgBachIDs = {211, 321, 2212, 1000010020};
     std::array<int, kNumV0IDs> kPdgV0IDs = {310, 3122};
@@ -183,6 +188,9 @@ private:
                                                                                           /// -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
     TList *fListCuts = nullptr;                                                           /// list of cuts
     AliRDHFCuts *fRDCuts = nullptr;                                                       /// Cuts for Analysis
+
+    bool fApplyMultWeights{false};                                                        /// Flag to apply multiplicity weights to V0 and D efficiencies
+    TH1F* fHistMultWeights = nullptr;                                                     /// Histogram with multiplicity weights
 
     double fCentMin = -1.;                                                                /// minimum centrality (percentile)
     double fCentMax = 101.;                                                               /// maximum centrality (percentile)
@@ -224,7 +232,7 @@ private:
     std::vector<float> fInvMassResoLaMax{1.5};                                            /// minimum invariant mass values for HF resonance (in case of lambda combination)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 14); /// AliAnalysisTaskSE for production of HF resonance trees
+    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 15); /// AliAnalysisTaskSE for production of HF resonance trees
                                                /// \endcond
 };
 
