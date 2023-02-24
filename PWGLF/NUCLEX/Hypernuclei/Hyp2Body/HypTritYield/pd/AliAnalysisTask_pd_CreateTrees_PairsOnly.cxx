@@ -2210,7 +2210,7 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
 
   // define deuteron and antideuteron track cuts
   double Proton_pT_min = 0.0;
-  double Proton_pT_max = 5.0;
+  double Proton_pT_max = 4.0;
   double Proton_eta_min = -0.8;
   double Proton_eta_max = +0.8;
   double Proton_DCAxy_max = 0.2; // cm
@@ -2439,26 +2439,26 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
   // define deuteron and antideuteron track cuts
   double Deuteron_pT_min = 0.0;
-  double Deuteron_pT_max = 5.0;
-  double Deuteron_eta_min = -0.9;
-  double Deuteron_eta_max = +0.9;
-  double Deuteron_DCAxy_max = 0.3; // cm
-  double Deuteron_DCAz_max = 0.2; // cm
+  double Deuteron_pT_max = 4.0;
+  double Deuteron_eta_min = -0.8;
+  double Deuteron_eta_max = +0.8;
+  double Deuteron_DCAxy_max = 0.2; // cm
+  double Deuteron_DCAz_max = 0.1; // cm
 
-  double Deuteron_TPC_RatioRowsFindableCluster_min = 0.73;
-  double Deuteron_TPC_dEdx_nSigma_max = 4.0;
+  double Deuteron_TPC_RatioRowsFindableCluster_min = 0.83;
+  double Deuteron_TPC_dEdx_nSigma_max = 3.0;
   double Deuteron_TPC_Chi2perCluster_max = 4.0;
   double Deuteron_TPC_Chi2perNDF_max = 4.0;
-  int Deuteron_TPC_nCluster_min = 70;
-  int Deuteron_TPC_nCrossedRows_min = 60;
-  int Deuteron_TPC_nSharedCluster_max = 1;
+  int Deuteron_TPC_nCluster_min = 80;
+  int Deuteron_TPC_nCrossedRows_min = 70;
+  int Deuteron_TPC_nSharedCluster_max = 0;
   double Deuteron_TPC_Threshold = 1.0;
 
-  double Deuteron_TOF_m2_nSigma_max = 4.0;
-  double Deuteron_TOF_m2_nSigma_max_low_pTPC = 8.0;
+  double Deuteron_TOF_m2_nSigma_max = 3.0;
+  double Deuteron_TOF_m2_nSigma_max_low_pTPC = 7.0;
 
   double Deuteron_ITS_dEdx_nSigma_max = 3.0;
-  int Deuteron_ITS_nCluster_min = 1;
+  int Deuteron_ITS_nCluster_min = 2;
 
   bool UseTOF = true;
   bool UseITS = true;
