@@ -561,7 +561,7 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
     delete fHistJetNsd_Part;
     delete fFastJetWrapper;
     delete fFastJetWrapper_Part;
-    
+
   }
   delete fOutput;
   delete fTrackCuts2pr;
@@ -1330,7 +1330,7 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fHistPrimVertX = new TH1F("hPrimVertX", " Primary Vertex ; x (cm)", 400, -0.5, 0.5);
   fHistPrimVertY = new TH1F("hPrimVertY", " Primary Vertex ; y (cm)", 400, -0.5, 0.5);
   fHistPrimVertZ = new TH1F("hPrimVertZ", " Primary Vertex ; z (cm)", 400, -20.0, 20.0);
-  fHistPrimVertContr = new TH1F("fHistPrimVertContr", " Primary Vertex ; N contributors", 20001, -0.5, 20000.5);
+  fHistPrimVertContr = new TH1F("fHistPrimVertContr", " Primary Vertex ; N contributors", 200, -0.5, 199.5);
   fHist2ProngVertX = new TH1F("h2ProngVertX", " Secondary Vertex ; x (cm)", 1000, -2., 2.);
   fHist2ProngVertY = new TH1F("h2ProngVertY", " Secondary Vertex ; y (cm)", 1000, -2., 2.);
   fHist2ProngVertZ = new TH1F("h2ProngVertZ", " Secondary Vertex ; z (cm)", 1000, -20.0, 20.0);
@@ -1789,7 +1789,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
 
   AliVEvent* vevt = InputEvent();
   AliESDEvent* esd = (AliESDEvent*)(vevt);
- 
+
   if (!esd) {
     printf("AliAnalysisTaskHFSimpleVertices::UserExec(): bad ESD\n");
     return;
@@ -3473,7 +3473,7 @@ void AliAnalysisTaskHFSimpleVertices::FindGenJets(AliMCEvent* mcEvent, Int_t lab
   Int_t daughter_1_Label = cand->GetDaughterLabel(1);
   Bool_t isHFJet_Part = kFALSE;
   fFastJetWrapper_Part->Clear();
-  fFastJetWrapper_Part->SetR(jetR); 
+  fFastJetWrapper_Part->SetR(jetR);
   fFastJetWrapper_Part->SetAlgorithm(fastjet::JetAlgorithm::antikt_algorithm);
   fFastJetWrapper_Part->SetRecombScheme(fastjet::RecombinationScheme::E_scheme);
   fFastJetWrapper_Part->SetStrategy(fastjet::Strategy::Best);
@@ -3489,7 +3489,7 @@ void AliAnalysisTaskHFSimpleVertices::FindGenJets(AliMCEvent* mcEvent, Int_t lab
     if (part->GetLabel() == daughter_0_Label || part->GetLabel() == daughter_1_Label) continue;
     if (!part->IsPhysicalPrimary()) continue;
     if (TMath::Abs(part->Charge()) == 0.0) continue;
-    if (part->Pt() < jetTrackPtMin_Part || part->Pt() >= jetTrackPtMax_Part || part->Eta() < jetTrackEtaMin_Part || part->Eta() > jetTrackEtaMax_Part) continue; 
+    if (part->Pt() < jetTrackPtMin_Part || part->Pt() >= jetTrackPtMax_Part || part->Eta() < jetTrackEtaMin_Part || part->Eta() > jetTrackEtaMax_Part) continue;
     fFastJetWrapper_Part->AddInputVector(part->Px(), part->Py(), part->Pz(), part->E(), i + 2);
   }
   fFastJetWrapper_Part->Run();
@@ -3497,7 +3497,7 @@ void AliAnalysisTaskHFSimpleVertices::FindGenJets(AliMCEvent* mcEvent, Int_t lab
   for (Int_t ijet_Part = 0; ijet_Part < jets_Part.size(); ijet_Part++) {
     isHFJet_Part = kFALSE;
     fastjet::PseudoJet jet_Part = jets_Part[ijet_Part];
-    if (jet_Part.pt() < jetPtMin_Part|| jet_Part.perp() >= jetPtMax_Part || jet_Part.eta() < jetTrackEtaMin_Part+jetR || jet_Part.eta() > jetTrackEtaMax_Part-jetR) continue;  
+    if (jet_Part.pt() < jetPtMin_Part|| jet_Part.perp() >= jetPtMax_Part || jet_Part.eta() < jetTrackEtaMin_Part+jetR || jet_Part.eta() > jetTrackEtaMax_Part-jetR) continue;
     std::vector<fastjet::PseudoJet> constituents_Part(fFastJetWrapper_Part->GetJetConstituents(ijet_Part));
     NConstituents_Part = constituents_Part.size();
     for (Int_t iconstituent_Part = 0; iconstituent_Part < NConstituents_Part; iconstituent_Part++) {
@@ -3563,7 +3563,7 @@ void AliAnalysisTaskHFSimpleVertices::FindGenJets(AliMCEvent* mcEvent, Int_t lab
 
 #else
   std::cout << "You need to have fastjet installed to get meaningful results" <<std::endl;
-#endif 
+#endif
 }
 
 //_______________________________________________________________________________________
