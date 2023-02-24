@@ -138,6 +138,11 @@ public:
 
     void SetCentralityInterval(double centMin, double centMax) { fCentMin=centMin; fCentMax=centMax; }
 
+    void SetMultiplicityWeights(TH1F* hMultWeights) {
+        fApplyMultWeights = true;
+        fHistMultWeights = (TH1F*)hMultWeights->Clone("fHistMultWeights");
+    }
+
     // Implementation of interface methods
     virtual void UserCreateOutputObjects();
     virtual void LocalInit();
@@ -156,11 +161,6 @@ private:
     int MatchResoToMC(AliAODMCParticle *partD, AliAODMCParticle *partLight, TClonesArray* arrayMC);
 
     void FillMCGenHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, float multWeight=1.);
-
-    void SetMultiplicityWeights(TH1F* hMultWeights) {
-        fApplyMultWeights = true;
-        fHistMultWeights = (TH1F*)hMultWeights->Clone("fHistMultWeights");
-    }
 
     std::array<int, kNumBachIDs> kPdgBachIDs = {211, 321, 2212, 1000010020};
     std::array<int, kNumV0IDs> kPdgV0IDs = {310, 3122};
