@@ -66,16 +66,6 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
     else
         printf("Cut file correctly found\n");
 
-    TH1F* hMultWeights = NULL;
-    if (applyMultWeights) {
-        TFile *fileMultWeights = TFile::Open(fileNameMultWeights.data());
-        if (!fileMultWeights || (fileMultWeights && !fileMultWeights->IsOpen()))
-            ::Fatal("AddTaskHFResonanceBuilder", "Multiplicity weight file not found!\n");
-        hMultWeights = (TH1F*)fileMultWeights->Get(histoMultWeights.data());
-        if (!hMultWeights)
-            ::Fatal("AddTaskHFResonanceBuilder", "Multiplicity weight histo not found!\n");
-    }
-
     AliRDHFCuts *analysisCuts = NULL;
     if(decCh == AliAnalysisTaskSEHFResonanceBuilder::kD0toKpi)
     {
@@ -96,6 +86,18 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
     {
         ::Fatal("AddTaskHFResonanceBuilder", "Specific AliRDHFCuts not found!\n");
         return NULL;
+    }
+
+    TH1F* hMultWeights = NULL;
+    if (applyMultWeights) {
+        TFile *fileMultWeights = TFile::Open(fileNameMultWeights.data());
+        if (!fileMultWeights || (fileMultWeights && !fileMultWeights->IsOpen()))
+            ::Fatal("AddTaskHFResonanceBuilder", "Multiplicity weight file not found!\n");
+        hMultWeights = (TH1F*)fileMultWeights->Get(histoMultWeights.data());
+        if (!hMultWeights)
+            ::Fatal("AddTaskHFResonanceBuilder", "Multiplicity weight histo not found!\n");
+        hMultWeights->SetDirectory(0);
+        fileMultWeights->Close();
     }
 
     // Analysis Task

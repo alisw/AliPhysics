@@ -190,7 +190,7 @@ private:
     AliRDHFCuts *fRDCuts = nullptr;                                                       /// Cuts for Analysis
 
     bool fApplyMultWeights{false};                                                        /// Flag to apply multiplicity weights to V0 and D efficiencies
-    TH1F* fHistMultWeights = nullptr;                                                     /// Histogram with multiplicity weights
+    TH1F* fHistMultWeights = nullptr;                                                     //-> Histogram with multiplicity weights
 
     double fCentMin = -1.;                                                                /// minimum centrality (percentile)
     double fCentMax = 101.;                                                               /// maximum centrality (percentile)

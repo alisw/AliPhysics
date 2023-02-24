@@ -1219,6 +1219,9 @@ int AliAnalysisTaskSEHFResonanceBuilder::IsCandidateSelected(AliAODRecoDecayHF *
 
         return isMLsel;
     }
+    modelPred.resize(3);
+    modelPredSecond.resize(3);
+
     if (fDecChannel != kD0toKpi || (isSelected == 1 || isSelected == 3)) {
         fInvMassVsPt->Fill(dMeson->Pt(), massD[0]);
     }
