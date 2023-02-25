@@ -1022,13 +1022,13 @@ int fcent2=0;
    
 	if(isPionNsigma)
 	collect[0]=true;
-	else if (isKaonNsigma)
-	collect[1]=true; 
-	else if (isProtonNsigma)
-	collect[2]=true;	
+	//else if (isKaonNsigma)
+	//collect[1]=true; 
+	//else if (isProtonNsigma)
+	//collect[2]=true;	
   	}
   
-	for(int h=0;h<3;h++){
+	for(int h=0;h<1;h++){
 		if(collect[h]==false)
 		evpass=false;
 	}
