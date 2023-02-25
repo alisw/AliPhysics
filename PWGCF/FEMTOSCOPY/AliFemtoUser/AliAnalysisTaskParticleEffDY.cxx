@@ -425,12 +425,14 @@ void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
     hname+= i;
     
 
-    fHistEvCuts[i] = new TH1F(hname,Form("Event Cuts M%d",i) , 5, 0, 6);
+    fHistEvCuts[i] = new TH1F(hname,Form("Event Cuts M%d",i) , 7, 0, 8);
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(1,"All");
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(2,"NoVertex");
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(3,"PileUp");
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(4,"z-vertex>10");
-    fHistEvCuts[i]->GetXaxis()->SetBinLabel(5,"trackcuts");
+    fHistEvCuts[i]->GetXaxis()->SetBinLabel(5,"eventspions");
+    fHistEvCuts[i]->GetXaxis()->SetBinLabel(6,"eventskaons");
+    fHistEvCuts[i]->GetXaxis()->SetBinLabel(7,"eventsprotons");
     fHistoList->Add(fHistEvCuts[i]);
 
     for(Int_t chg=0;chg<2;chg++){
@@ -458,12 +460,15 @@ void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
   fHistQA[7] = new TH1F("fHistPhi", "Phi distribution" , 100, -TMath::Pi(), TMath::Pi());
   fHistQA[8] = new TH1F("fHistY", "Y distribution" , 100, -2, 2);
  
-  fHistQA[9] = new TH1F("fHistEventCuts", "Event Cuts" , 5, 0, 6);
+  fHistQA[9] = new TH1F("fHistEventCuts", "Event Cuts" , 7, 0, 8);
   fHistQA[9]->GetXaxis()->SetBinLabel(1,"All");
   fHistQA[9]->GetXaxis()->SetBinLabel(2,"NoVertex");
   fHistQA[9]->GetXaxis()->SetBinLabel(3,"PileUp");
   fHistQA[9]->GetXaxis()->SetBinLabel(4,"z-vertex>10");
-  fHistQA[9]->GetXaxis()->SetBinLabel(5,"trackcuts");
+  fHistQA[9]->GetXaxis()->SetBinLabel(5,"eventspions");
+  fHistQA[9]->GetXaxis()->SetBinLabel(6,"eventskaons");
+  fHistQA[9]->GetXaxis()->SetBinLabel(7,"eventsprotons");
+
 
 
   fHistQA[10] = new TH1F("fHistTrackCuts", "Track Cuts" , 7, 0.5, 7.5);
@@ -982,7 +987,7 @@ int fcent2=0;
   TObjArray recoParticleArray[PARTTYPES];
 
   bool evpass=true;  	
-  bool collect[3] = {false,false, false};  	
+  bool collect[3] = {false,false,false};  	
   	
   fHistQA[10]->Fill(1,aodEvent->GetNumberOfTracks());
   //loop over AOD tracks 
@@ -1020,26 +1025,48 @@ int fcent2=0;
 	isKaonNsigma = (!IsPionNSigma3(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
 	isProtonNsigma = (!IsPionNSigma3(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
    
-	if(isPionNsigma)
-	collect[0]=true;
-	//else if (isKaonNsigma)
-	//collect[1]=true; 
-	//else if (isProtonNsigma)
-	//collect[2]=true;	
+   
+   
+   	if (isPionNsigma)
+	collect[0]=true; 
+	else if (isKaonNsigma)
+	collect[1]=true; 
+	else if (isProtonNsigma)
+	collect[2]=true;	
   	}
-  
-	for(int h=0;h<1;h++){
-		if(collect[h]==false)
-		evpass=false;
-	}
-	if(!evpass) return;
 
+
+
+if(collect[0]==true){
 	fHistQA[9]->Fill(5);
 	if(fcent2==10)fHistEvCuts[0]->Fill(5);
 	else if(fcent2==1)fHistEvCuts[1]->Fill(5);
 	else if(fcent2==2)fHistEvCuts[2]->Fill(5);
 	else if(fcent2==3)fHistEvCuts[3]->Fill(5);
+}
 
+if(collect[1]==true){
+	fHistQA[9]->Fill(6);
+	if(fcent2==10)fHistEvCuts[0]->Fill(6);
+	else if(fcent2==1)fHistEvCuts[1]->Fill(6);
+	else if(fcent2==2)fHistEvCuts[2]->Fill(6);
+	else if(fcent2==3)fHistEvCuts[3]->Fill(6);
+}
+
+
+if(collect[2]==true){
+	fHistQA[9]->Fill(7);
+	if(fcent2==10)fHistEvCuts[0]->Fill(7);
+	else if(fcent2==1)fHistEvCuts[1]->Fill(7);
+	else if(fcent2==2)fHistEvCuts[2]->Fill(7);
+	else if(fcent2==3)fHistEvCuts[3]->Fill(7);
+}
+
+
+
+
+	//if(!evpass) return;
+	
   for (Int_t iTracks = 0; iTracks < aodEvent->GetNumberOfTracks(); iTracks++) {
     //get track 
     
