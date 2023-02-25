@@ -1848,27 +1848,20 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		if(charge == chargeAsso) fFlagLS = kTRUE;
 		if(charge != chargeAsso) fFlagULS = kTRUE;
 	
-		dphiAss = aAssotrack->Phi() - track->Phi();
-		dphiAss = TMath::ATan2(TMath::Sin(dphiAss),TMath::Cos(dphiAss)); 
-		if(dphiAss < -TMath::Pi()/2) dphiAss += 2*TMath::Pi();
 
-                if(fFlagZeeAssPhiCut) // for Z->ee, pair e is away-side
-                  {
-                   if(dphiAss<2.0 || dphiAss>4.0)continue;
-                   fHistZeeDphi->Fill(TrkPt,dphiAss);
-                  }
-
-         	Int_t ilabel_ass = TMath::Abs(track->GetLabel());
-	        AliAODMCParticle* fMCTrackpart_ass = (AliAODMCParticle*) fMCarray->At(ilabel_ass);
-		Int_t pdg_ass = fMCTrackpart->GetPdgCode();
 		Int_t pdgorg_ass = -1;
-                if(TMath::Abs(pdg_ass)==11)
-                  {
-		   Int_t ilabelM_ass = -1;
-		   Double_t Eta_Z_ass = -999.9;
-	           FindWZdecay(fMCTrackpart_ass,ilabelM_ass,pdgorg_ass,Eta_Z_ass);
-                  }
-
+         	Int_t ilabel_ass = TMath::Abs(track->GetLabel());
+                if(ilabel_ass>0)
+		{
+			AliAODMCParticle* fMCTrackpart_ass = (AliAODMCParticle*) fMCarray->At(ilabel_ass);
+			Int_t pdg_ass = fMCTrackpart->GetPdgCode();
+			if(TMath::Abs(pdg_ass)==11)
+			{
+				Int_t ilabelM_ass = -1;
+				Double_t Eta_Z_ass = -999.9;
+				FindWZdecay(fMCTrackpart_ass,ilabelM_ass,pdgorg_ass,Eta_Z_ass);
+			}
+		}
 
 		//------track cuts applied
 		if(fAOD) {
@@ -1888,6 +1881,16 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		if(nsigma < -3 || nsigma > 3) continue;
 		if(AssoTPCchi2perNDF >= 4) continue;
 		if(!(aAssotrack->GetStatus()&AliAODTrack::kITSrefit) || !(aAssotrack->GetStatus()&AliAODTrack::kTPCrefit)) continue;
+
+		dphiAss = aAssotrack->Phi() - track->Phi();
+		dphiAss = TMath::ATan2(TMath::Sin(dphiAss),TMath::Cos(dphiAss)); 
+		if(dphiAss < -TMath::Pi()/2) dphiAss += 2*TMath::Pi();
+
+                if(fFlagZeeAssPhiCut) // for Z->ee, pair e is away-side
+                  {
+                   if(dphiAss<2.0 || dphiAss>4.0)continue;
+                   fHistZeeDphi->Fill(TrkPt,dphiAss);
+                  }
 
 		//-------define KFParticle to get mass
 		AliKFParticle::SetField(fVevent->GetMagneticField());
