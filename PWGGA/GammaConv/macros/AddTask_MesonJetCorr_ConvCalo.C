@@ -77,6 +77,7 @@ void AddTask_MesonJetCorr_ConvCalo(
   TString fileNameMultWeights = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FMUW:");
   TString fileNamedEdxPostCalib = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FEPC:");
   TString fileNameCustomTriggerMimicOADB = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FTRM:");
+  TString fileNameMatBudWeights = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FMAW:");
 
   TString corrTaskSetting = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
   if (corrTaskSetting.CompareTo(""))
@@ -314,14 +315,16 @@ void AddTask_MesonJetCorr_ConvCalo(
     //---------------------------------------------------------//
     analysisConvCuts[i] = new AliConversionPhotonCuts();
 
-    // if (enableMatBudWeightsPi0 > 0){
-    //   if (isMC > 0){
-    // if (analysisConvCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
-    //   initializedMatBudWeigths_existing = kTRUE;}
-    // else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
-    //   }
-    //   else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
-    // }
+    if (enableMatBudWeightsPi0 > 0){
+      if (isMC > 0){
+        if (!analysisConvCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
+          cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;
+          enableMatBudWeightsPi0 = false;
+        }
+      } else {
+        cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;
+      }
+    }
 
     analysisConvCuts[i]->SetV0ReaderName(V0ReaderName);
     if (enableElecDeDxPostCalibration) {
@@ -373,7 +376,7 @@ void AddTask_MesonJetCorr_ConvCalo(
   task->SetCaloCutList(numberOfCuts, ClusterCutList);
   task->SetMesonCutList(numberOfCuts, MesonCutList);
   task->SetConversionCutList(numberOfCuts, ConvCutList);
-  //   task->SetDoMesonAnalysis(kTRUE); // I think we dont need that!
+  if(enableMatBudWeightsPi0) task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(true);
   task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
                                          //   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
