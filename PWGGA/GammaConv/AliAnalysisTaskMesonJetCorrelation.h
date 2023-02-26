@@ -82,8 +82,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool MCParticleIsSelected(AliAODMCParticle* particle, bool isConv, bool checkConversion);
   int GetPhotonMotherLabel(AliAODConversionPhoton* gammaCand, int& convertedPhotonLabel, bool isCaloPhoton);
   void RelabelAODPhotonCandidates(Bool_t mode);
-  bool ProcessTrueMesonCandidatesAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand = 0);
-  void ProcessTrueMesonCandidatesInTrueJetsAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand = 0);
+  bool ProcessTrueMesonCandidatesAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand = 0, const double weightMatBudget = 1.);
+  void ProcessTrueMesonCandidatesInTrueJetsAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand = 0, const double weightMatBudget = 1.);
   // void IsTrueParticle(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, Bool_t matched);
   bool CheckAcceptance(AliAODMCParticle* gamma0, AliAODMCParticle* gamma1);
   bool IsParticleFromPartonFrag(AliAODMCParticle* particle, int idParton);
@@ -226,6 +226,11 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   Int_t* fMCEventNeg;  //!
   Int_t* fESDArrayPos; //!
   Int_t* fESDArrayNeg; //!
+
+  //-------------------------------
+  // Materil Budged Weights
+  //-------------------------------
+  std::vector<double> vecWeightsMatWeightsGammas;    //! vector with weights for photons. Indexing is the same as for fGammaCandidates
 
   //-------------------------------
   // binning settings
@@ -448,7 +453,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 10);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 11);
 };
 
 #endif
