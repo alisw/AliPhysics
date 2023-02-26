@@ -1850,8 +1850,8 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 	
 
 		Int_t pdgorg_ass = -1;
-         	Int_t ilabel_ass = TMath::Abs(track->GetLabel());
-                if(ilabel_ass>0)
+         	Int_t ilabel_ass = TMath::Abs(aAssotrack->GetLabel());
+                if(ilabel_ass>0 && fMCarray)
 		{
 			AliAODMCParticle* fMCTrackpart_ass = (AliAODMCParticle*) fMCarray->At(ilabel_ass);
 			Int_t pdg_ass = fMCTrackpart->GetPdgCode();
