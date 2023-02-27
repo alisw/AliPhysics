@@ -58,7 +58,7 @@ enum {kCh = 0, kPi = 1, kKa = 2, kPr = 4};
 class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskDeform();
-  AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, Bool_t HasMpt=kFALSE, TString StageSwitch="", TString ContainerSubfix="", Int_t Nkeys = 1);
+  AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="", TString ContainerSubfix="", Int_t Nkeys = 1);
   virtual ~AliAnalysisTaskDeform();
   virtual void UserCreateOutputObjects();
   virtual void NotifyRun();
@@ -73,12 +73,11 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void FillSpectraMC(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   //void ProduceEfficiencies(AliESDEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void VnMpt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
-  void MeanPt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
   void LoadWeightAndMPT();
-  void LoadCorrectionsFromLists(UInt_t correctionFlag, bool MptStage = 0);
+  void LoadCorrectionsFromLists();
   void GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf="");
   void FillWPCounter(Double_t[5], Double_t, Double_t);
   void FillWPCounter(vector<vector<double>> &inarr, double w, double p);
@@ -99,7 +98,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetEtaV2Sep(Double_t newval) { fEtaV2Sep = newval; };
   void SetChargedPt(Double_t chPtMin, Double_t chPtMax) { fUseChargedPtCut = true; fchPtMin = chPtMin; fchPtMax = chPtMax; }
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
-  void SetUseWeightsOne(Bool_t newval) { fUseWeightsOne = newval; };
+  void SetUseWeightsOne(Bool_t newvalNUA, Bool_t newvalNUE) { fUseNUAOne = newvalNUA; fUseNUEOne = newvalNUE; };
   void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
   void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
   void SetDCAxyFunctionalForm(TString newval) { fDCAxyFunctionalForm = newval; } //Call after SystFlag
@@ -165,7 +164,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Double_t fV0MCentMax;
   Bool_t fUseNchInV0M;
   Bool_t fUseNch;
-  Bool_t fUseWeightsOne;
+  Bool_t fUseNUAOne;
+  Bool_t fUseNUEOne;
   Double_t fEtaMpt;
   Double_t fEtaLow;
   Double_t fEtaAcceptance;
@@ -191,9 +191,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   AliProfileBS **fCovariance; //!
   AliProfileBS **fCovariancePID; //!
   AliProfileBS **fCovariancePowerMpt; //!
-  AliProfileBS **fCovarianceCM; //!
   AliProfileBS **fMpt; //!
-  TH1D **fMptInput; //!
   UInt_t fTriggerType;
   TList *fWeightList; //!
   AliGFWWeights **fWeights;//! This should be stored in TList
