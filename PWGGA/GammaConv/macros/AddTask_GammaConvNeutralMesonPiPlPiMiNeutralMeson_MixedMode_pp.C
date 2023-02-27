@@ -48,6 +48,8 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
     Bool_t    usePtDepSelectionWindowCut  = kFALSE,                   // use pt dependent meson selection window cut
     Bool_t    enableSortingMCLabels       = kTRUE,                    // enable sorting for MC cluster labels
     Int_t     enableMatBudWeightsPi0      = 0,                        // 1 = three radial bins, 2 = 10 radial bins (2 is the default when using weights)
+    Bool_t    enableMLBckRedStudy         = kFALSE,                   // enable saving the output as tree for ML reduction study
+    Int_t     MLBckRedStudyCutOff         = 10,                       // every which case that is not true meson should be saved
     TString   additionalTrainConfig       = "0"                       // additional counter for trainconfig, this has to be always the last parameter
   ) {
 
@@ -222,6 +224,14 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   }
   task->SetTolerance(tolerance);
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
+
+  if(enableMLBckRedStudy && !isMC){
+    cout << "Error: Trees for ML studies implemented only for MC. Returning..." << endl;
+    return;
+  }
+  if(enableMLBckRedStudy){
+    task->SetBckgReductionTree(MLBckRedStudyCutOff);
+  }
 
 
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2350,6 +2360,12 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   }
 
   Int_t numberOfCuts = cuts.GetNCuts();
+  if( numberOfCuts > 1 && enableMLBckRedStudy) {
+    cout << "\n\n****************************************************" << endl;
+    cout << "ERROR: Trees for ML studies implemented only for one cut at the time. Returning..." << endl;
+    cout << "****************************************************\n\n" << endl;
+    return;
+  }
 
   TList *EventCutList = new TList();
   TList *ConvCutList  = new TList();
@@ -2548,13 +2564,20 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   }
 
   //connect containers
+  AliAnalysisDataContainer *couttree  = 0;
   AliAnalysisDataContainer *coutput =
   mgr->CreateContainer(Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig), TList::Class(),
               AliAnalysisManager::kOutputContainer,Form("GammaConvNeutralMesonPiPlPiMiNeutralMeson_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig));
-
+  if(enableMLBckRedStudy){
+    couttree = mgr->CreateContainer( Form("GammaConvNeutralMesonPiPlPiMiNeutralMesonTree_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig),
+                                    TTree::Class(),
+                                    AliAnalysisManager::kOutputContainer,
+                                    Form("GammaConvNeutralMesonPiPlPiMiNeutralMesonTree_%i_%i_%i.root",selectHeavyNeutralMeson,neutralPionMode, trainConfig) );
+  }
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);
   mgr->ConnectOutput(task,1,coutput);
+  if(enableMLBckRedStudy) mgr->ConnectOutput(task,2,couttree);
 
   return;
 
