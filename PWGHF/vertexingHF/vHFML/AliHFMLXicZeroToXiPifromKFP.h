@@ -53,6 +53,7 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         void                    SetStoreOnlyMLoutput(Bool_t IsStoreOnlyMLoutput) {fIsStoreOnlyMLoutput=IsStoreOnlyMLoutput;}
         void                    SetMLConfigFile(TString path = "") {fConfigPath = path;}
         void                    SetAnaOmegac0(Bool_t IsAnaOmegac0) {fIsAnaOmegac0=IsAnaOmegac0;}
+        void                    SetStoreLikeSign(Bool_t IsStoreLS) {fIsStoreLS=IsStoreLS;}
         void                    SelectTrack(AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks, Bool_t *seleFlags);
         Bool_t                  MakeMCAnalysis(TClonesArray *mcArray);
         void                    MakeAnaXicZeroFromV0(AliAODEvent *AODEvent, TClonesArray *mcArray, KFParticle PV);
@@ -117,6 +118,7 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         Bool_t                  fIsAnaOmegac0; ///< Flag of Omegac0 analysis
         Bool_t                  fIsPbPb; ///< Flag to switch to PbPb analysis
         Bool_t                  fIsStoreOnlyMLoutput; ///< Flag to store only ML application output tree
+        Bool_t                  fIsStoreLS; ///< Flag to store like-sign pairs
 
         Double_t                fCentrality; //!<! V0M percentile 
         Int_t                   fNtracklets; //!<! SPD tracklet
@@ -419,7 +421,7 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         AliHFMLXicZeroToXiPifromKFP(const AliHFMLXicZeroToXiPifromKFP &source); // not implemented
         AliHFMLXicZeroToXiPifromKFP& operator=(const AliHFMLXicZeroToXiPifromKFP& source); // not implemented
 
-        ClassDef(AliHFMLXicZeroToXiPifromKFP, 1);
+        ClassDef(AliHFMLXicZeroToXiPifromKFP, 2);
 };
 
 #endif

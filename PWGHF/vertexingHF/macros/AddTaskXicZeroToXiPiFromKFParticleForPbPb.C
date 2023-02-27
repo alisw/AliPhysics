@@ -5,7 +5,14 @@
 //#include <TList.h>
 //#endif
 
-AliHFMLXicZeroToXiPifromKFP* AddTaskXicZeroToXiPiFromKFParticleForPbPb (TString cutsfile="", TString confFileML="", Bool_t IsMC=kFALSE, TString cuttype="", Bool_t IsAnaOmegac0=kFALSE, Bool_t IsPbPb=kTRUE, Bool_t IsStoreOnlyMLoutput=kTRUE)
+AliHFMLXicZeroToXiPifromKFP* AddTaskXicZeroToXiPiFromKFParticleForPbPb (TString cutsfile="", // Cut object
+                                                                        TString confFileML="", // ML configuration file
+                                                                        Bool_t IsMC=kFALSE, // kFALSE: data; kTRUE: MC
+                                                                        TString cuttype="", // Cut type: "std", "loose", "tight", "veryloose", "verytight", "veryverytight"
+                                                                        Bool_t IsAnaOmegac0=kFALSE, // kFALSE: Xic0; kTRUE: Omegac0
+                                                                        Bool_t IsPbPb=kTRUE, // kTRUE: Pb-Pb (enable ML output tree); kFALSE: pp and p-Pb
+                                                                        Bool_t IsStoreOnlyMLoutput=kTRUE, // kTRUE: store only ML output tree; kFALSE: store tree with all variables and ML output tree
+                                                                        Bool_t IsStoreLS=kFALSE) // kTRUE: store (Pi+ Xi+), (Pi- Xi-), (Pi+ Xi-) and (Pi- Xi+); kFALSE: store (Pi+ Xi-) and (Pi- Xi+)
 {
 
     Bool_t writeXic0RecTree = kTRUE;
@@ -76,6 +83,7 @@ AliHFMLXicZeroToXiPifromKFP* AddTaskXicZeroToXiPiFromKFParticleForPbPb (TString 
     task->SetAnaPbPb(IsPbPb);
     task->SetMLConfigFile(confFileML);
     task->SetStoreOnlyMLoutput(IsStoreOnlyMLoutput);
+    task->SetStoreLikeSign(IsStoreLS);
 
     /*
     // weight
