@@ -130,6 +130,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   void SetPtMinXicPlus(Double_t a){fPtMinXicPlus=a;}
   void SetPtMinPiFromPrimary(Double_t a){fPtMinPiFromPrimary=a;}
   void SetPtMinPiFromXi(Double_t a){fPtMinPiFromXi=a;}
+  void SetPtMinPiFromXic0ForML(Double_t a){fPtMinPiFromXic0ForML=a;}
   void SetProdTrackEtaRange(Double_t a){fProdTrackEtaRange=a;}
   void SetProdUseAODFilterBit(Bool_t a){fProdUseAODFilterBit=a;}
   void SetProdMassTolLc(Double_t a){fProdMassTolLc=a;}
@@ -196,6 +197,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Double_t GetPtMinXicPlus(){return fPtMinXicPlus;}
   Double_t GetPtMinPiFromPrimary(){return fPtMinPiFromPrimary;}
   Double_t GetPtMinPiFromXi(){return fPtMinPiFromXi;}
+  Double_t GetPtMinPiFromXic0ForML(){return fPtMinPiFromXic0ForML;}
   Double_t GetProdTrackEtaRange(){return fProdTrackEtaRange;}
   Bool_t   GetProdUseAODFilterBit(){return fProdUseAODFilterBit;}
   Double_t GetProdMassTolLc(){return fProdMassTolLc;}
@@ -278,6 +280,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Double_t fPtMinXic0;               /// Minimum pT of Xic0
   Double_t fPtMinPiFromPrimary;      /// Minimum Bachelor pT of pion from primary vtx
   Double_t fPtMinPiFromXi;         /// Minimum Bachelor pT of pion from Xi decay
+  Double_t fPtMinPiFromXic0ForML;   /// Minimum Bachelor pT of pion from Xic0 decay for ML
   Double_t fPtMinPiFromLc;           /// Minimum pT of pion from Lc decay
   Double_t fPtMinXiccPP;            /// Minimum pT of Xicc++
   Double_t fPtMinXicPlus;            /// Minimum pT of XicPlus
@@ -345,7 +348,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   TF1 *fWeight_dw; /// Weight_dw
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsKFP, 10);
+  ClassDef(AliRDHFCutsKFP, 11);
   /// \endcond
 };
 
