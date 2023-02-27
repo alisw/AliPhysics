@@ -240,6 +240,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		TFile*			fPhiWeightFile;	                //! file with phi weights
 		TList*			fPhiWeightPlus;	                //! file with phi weights
 		TList*			fPhiWeightMinus;                //! file with phi weights
+  TH2D*                   hWeight2D;                    // phi weights 2d 60 bins
 		TH2D*                   fh2Weights[kUnknown];           //! container for GF weights (phi,eta,pt) (2D)
 		TH3D*                   fh3Weights[kUnknown];           //! container for GF weights (phi,eta,pt)
 		TH2D*                   fh2AfterWeights[kUnknown];      //! distribution after applying GF weights - lightweight QA (phi)
