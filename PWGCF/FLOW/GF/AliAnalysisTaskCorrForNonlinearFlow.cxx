@@ -317,7 +317,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 
 	int inputslot = 1;
 	if (fNUA) {
-		DefineInput(inputslot, TList::Class());
+		DefineInput(inputslot, TFile::Class());
 		inputslot++;
 	}
 	if (fNUE) {
@@ -465,7 +465,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	int outputslot = 2;
 
 	// int inputslot = 1;
-	DefineInput(1, TList::Class());
+	DefineInput(1, TFile::Class());
 	DefineInput(2, TList::Class());
 }
 
@@ -577,7 +577,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 		if (fPeriod.EqualTo("LHC15oKatarina") ) {
 			fFlowWeightsList = (TList*) GetInputData(inSlotCounter);
 		} else {
-			fFlowWeightsList = (TList*) GetInputData(inSlotCounter);
+			fPhiWeightFile = (TFile*) GetInputData(inSlotCounter);
 		}
 		inSlotCounter++;
 	};
@@ -1464,57 +1464,8 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
 
 Bool_t AliAnalysisTaskCorrForNonlinearFlow::LoadWeightsSystematics() {
 
-	// If the period is not pPb LHC16qt
-	if (!fPeriod.EqualTo("LHC16qt")) {
-		// Only if it is the new LHC16,17,18, We need the period NUA
-		if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18")) {
-			std::string ppperiod = ReturnPPperiod(fAOD->GetRunNumber());
-			if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s", ppperiod.c_str()));
-			if(!fWeightsSystematics)
-			{
-				printf("Weights could not be found in list!\n");
-				return kFALSE;
-			}
-			fWeightsSystematics->CreateNUA();
-		} else {
-			if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
-			else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
-			if(!fWeightsSystematics)
-			{
-				printf("Weights could not be found in list!\n");
-				return kFALSE;
-			}
-			fWeightsSystematics->CreateNUA();
-		}
-
-	} 
-	// If it is the pPb LHC16qt
-	else {
-		int EvFlag = 0, TrFlag = 0;
-		if (fCurrSystFlag == 0) EvFlag = 0, TrFlag = 0;
-		if (fCurrSystFlag == 1) EvFlag = 0, TrFlag = 1;
-		if (fCurrSystFlag == 2) EvFlag = 0, TrFlag = 3;
-		if (fCurrSystFlag == 3) EvFlag = 0, TrFlag = 0; // Abandoned
-		if (fCurrSystFlag == 4) EvFlag = 0, TrFlag = 2;
-		if (fCurrSystFlag == 5) EvFlag = 0, TrFlag = 3;
-		if (fCurrSystFlag == 6) EvFlag = 0, TrFlag = 8;
-		if (fCurrSystFlag == 7) EvFlag = 0, TrFlag = 9;
-		if (fCurrSystFlag == 8) EvFlag = 0, TrFlag = 10;
-
-		if (fCurrSystFlag == 17) EvFlag = 1, TrFlag = 0;
-		if (fCurrSystFlag == 18) EvFlag = 2, TrFlag = 0;
-		if (fCurrSystFlag == 19) EvFlag = 3, TrFlag = 0;
-
-
-		fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_Ev%d_Tr%d",fAOD->GetRunNumber(),EvFlag,TrFlag));
-		if(!fWeightsSystematics)
-		{
-			printf("Weights could not be found in list!\n");
-			return kFALSE;
-		}
-		fWeightsSystematics->CreateNUA();
-	}
-	return kTRUE;
+	  hWeight2D = (TH2D*)fPhiWeightFile->FindObject("hNUA");
+  	return kTRUE;
 }
 
 Bool_t AliAnalysisTaskCorrForNonlinearFlow::LoadPtWeights() {
@@ -1628,7 +1579,9 @@ Double_t AliAnalysisTaskCorrForNonlinearFlow::GetFlowWeightSystematics(const Ali
 	double dEta = track->Eta();
 	double dVz = fVtxZ;
 	double dWeight = 1.0;
-	dWeight = fWeightsSystematics->GetNUA(dPhi, dEta, dVz);
+	int nEta = hWeight2D->GetXaxis()->FindBin(dEta);
+	int nPhi = hWeight2D->GetXaxis()->FindBin(dPhi);
+  dWeight = hWeight2D->GetBinContent(nEta,nPhi);
 	return dWeight;
 }
 
