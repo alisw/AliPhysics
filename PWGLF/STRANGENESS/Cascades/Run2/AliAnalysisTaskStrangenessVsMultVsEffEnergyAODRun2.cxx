@@ -1853,6 +1853,7 @@ void AliAnalysisTaskStrangenessVsMultVsEffEnergyAODRun2::UserExec(Option_t *)
     fESDtrackCutsStandardITSTPC2011pp = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE);
     fNTOFtrgPads  = lAODevent->GetTOFHeader()->GetNumberOfTOFtrgPads();
     fNTracksGlobal = 0;
+    fNTracksGlobal0815 = 0;
     fpTSum = 0;
     fNtrk_pTgt2 = 0;
     fNtrk_pTgt3 = 0;
