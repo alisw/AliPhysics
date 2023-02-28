@@ -7,6 +7,7 @@
 #include "AliAnalysisTaskNanoFemtoProtonPion.h"
 
 AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
+    bool isNano = true, //0
     bool isMC = false, //1
     bool doOfficialFemto = true, //2
     TString trigger = "kHM", //3
@@ -31,7 +32,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     return nullptr;
   }
   if (!mgr->GetInputEventHandler()) {
-    printf("This task requires an input event handler!\n");
+    printf("This taskNano requires an input event handler!\n");
     return nullptr;
   }
 
@@ -44,21 +45,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     evtCuts->SetSphericityCuts(SpherDown, 1.0, SphericityMinPt); 
   }
 
-
-  //Track cuts ------------------------------------------------------------------------
-  AliFemtoDreamTrackCuts *TrackCutsPion = NULL;
-  AliFemtoDreamTrackCuts *TrackCutsAntiPion = NULL;
-
- 
-  TrackCutsPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
-  TrackCutsPion->SetFilterBit(PionFilterbit);
-  TrackCutsPion->SetCutCharge(1);
-  TrackCutsAntiPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
-  TrackCutsAntiPion->SetFilterBit(PionFilterbit);
-  TrackCutsAntiPion->SetCutCharge(-1);
-  
-
-  //Proton and AntiProton cuts
+  //Proton & AntiProton cuts --------------------------------------------------------
   AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, false, false);
   TrackCutsProton->SetFilterBit(128);
@@ -69,6 +56,17 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   TrackCutsAntiProton->SetFilterBit(128);
   TrackCutsAntiProton->SetCutCharge(-1);
 
+  //Pion & AntiPion Track cuts -------------------------------------------------------
+  AliFemtoDreamTrackCuts *TrackCutsPion = NULL;
+  AliFemtoDreamTrackCuts *TrackCutsAntiPion = NULL;
+ 
+  TrackCutsPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+  TrackCutsPion->SetFilterBit(PionFilterbit);
+  TrackCutsPion->SetCutCharge(1);
+  TrackCutsAntiPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+  TrackCutsAntiPion->SetFilterBit(PionFilterbit);
+  TrackCutsAntiPion->SetCutCharge(-1);
+  
 
   //Set-up output ------------------------------------------------------------------------
   std::vector<int> PDGParticles;
@@ -219,112 +217,58 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     config->SetMinimalBookingSample(true);
   }
 
-  AliAnalysisTaskNanoFemtoProtonPion *task =
-  new AliAnalysisTaskNanoFemtoProtonPion("FemtoDreamDefault", isMC);
-  if (trigger == "kINT7") {
-    task->SelectCollisionCandidates(AliVEvent::kINT7);
-    std::cout << "Added kINT7 Trigger \n";
-  } else if (trigger == "kHM") {
-    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
-    std::cout << "Added kHighMult Trigger \n";
-  } else {
-    std::cout
-        << "====================================================================="
-        << std::endl;
-    std::cout
-        << "====================================================================="
-        << std::endl;
-    std::cout
-        << "Centrality Estimator not set, fix it else your Results will be empty!"
-        << std::endl;
-    std::cout
-        << "====================================================================="
-        << std::endl;
-    std::cout
-        << "====================================================================="
-        << std::endl;
-  }
-  if (!fullBlastQA) {
-    task->SetRunTaskLightWeight(true);
-  }
-  task->SetEventCuts(evtCuts);
-  task->SetTrackCutsPion(TrackCutsPion);
-  task->SetTrackCutsAntiPion(TrackCutsAntiPion);
-  task->SetTrackCutsProton(TrackCutsProton);
-  task->SetTrackCutsAntiProton(TrackCutsAntiProton);
-  task->SetCollectionConfig(config);
-  task->SetDoPairCleaning(DoPairCleaning);
-  task->SetDoOfficialFemto(doOfficialFemto); 
-  task->SetDoResonanceLorentzFactor(DoResonanceLorentzFactor);
-
-  //Set-up for own looping & calculus -> needed for 3D studies
-  //IMPORTANT: 0, 1, 2, 3 and the names has to correspond to the order given to the offical femto framework!!!!
-  task->SetCombinationInput("00 11 02 13 03 12"); //p-p barp-barp p-pion barp-barpion p-barpion barp-pion
-  task->SetClosePairRejectionInput("true true true true false false");
-  task->SetNameTagInput("Proton AntiProton Pion AntiPion");
-  task->SetDoOwnFemto(!doOfficialFemto); //Do own looping and calculus 
-  task->SetDoThreeDFemto(false); //No 3D femto for now
-  task->SetRunPlotMult(true);
-  task->SetRunPlotPhiTheta(fullBlastQA); 
-  task->SetDoAncestors(DoAncestors); //Does not affect official femto part
-  task->SetRemoveMCResonances(RemoveMCResonances, RemoveMCResonanceDaughters);
-  task->SetDoInvMassPlot(DoInvMass);
-
-  mgr->AddTask(task);
-
+  //============================================================================================================= Output Management
   TString addon = "";
-
   if (trigger == "kINT7") {
     addon += "kINT7";
   } else if (trigger == "kHM") {
     addon += "HM";
   }
-
   suffix = ""; 
+
   TString file = AliAnalysisManager::GetCommonFileName();
-  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  mgr->ConnectInput(task, 0, cinput);
+  AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer(); 
 
   TString EvtCutsName = Form("%s_EvtCuts_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputEvtCuts = mgr->CreateContainer(
         EvtCutsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), EvtCutsName.Data()));
-  mgr->ConnectOutput(task, 1, coutputEvtCuts);
+  
 
   TString TrackCutsName = Form("%s_TrackProton_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputTrkCuts = mgr->CreateContainer(
         TrackCutsName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrackCutsName.Data()));
-  mgr->ConnectOutput(task, 2, coutputTrkCuts);
+
 
   TString AntiTrackCutsName = Form("%s_AntiTrackProton_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntiTrkCuts = mgr->CreateContainer(
         AntiTrackCutsName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
-  mgr->ConnectOutput(task, 3, coutputAntiTrkCuts);
+
 
   TString TrackCutsPionName = Form("%s_TrackPion_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputTrkCutsPion = mgr->CreateContainer(
         TrackCutsPionName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrackCutsPionName.Data()));
-  mgr->ConnectOutput(task, 4, coutputTrkCutsPion);
+ 
 
   TString AntiTrackCutsPionName = Form("%s_AntiTrackPion_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntiTrkCutsPion = mgr->CreateContainer(
         AntiTrackCutsPionName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrackCutsPionName.Data()));
-  mgr->ConnectOutput(task, 5, coutputAntiTrkCutsPion);
+
 
   AliAnalysisDataContainer *coutputResults;
   TString ResultsName = Form("%s_Results_%s", addon.Data(), suffix.Data());
   coutputResults = mgr->CreateContainer(ResultsName.Data(),
                      TList::Class(), AliAnalysisManager::kOutputContainer,
                      Form("%s:%s", file.Data(), ResultsName.Data()));
-  mgr->ConnectOutput(task, 6, coutputResults);
+
 
   AliAnalysisDataContainer *coutputResultsQA;
   TString ResultsQAName = Form("%s_ResultsQA_%s", addon.Data(), suffix.Data());
@@ -334,57 +278,179 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
                        TList::Class(),
                        AliAnalysisManager::kOutputContainer,
                        Form("%s:%s", file.Data(), ResultsQAName.Data()));
-  mgr->ConnectOutput(task, 7, coutputResultsQA);
+
 
   AliAnalysisDataContainer *coutputResultsThreeD;
   TString ResultsThreeDName = Form("%s_ResultsThreeD_%s", addon.Data(), suffix.Data());
   coutputResultsThreeD = mgr->CreateContainer(ResultsThreeDName.Data(),
                      TList::Class(), AliAnalysisManager::kOutputContainer,
                      Form("%s:%s", file.Data(), ResultsThreeDName.Data()));
-  mgr->ConnectOutput(task, 8, coutputResultsThreeD);
+ 
+  AliAnalysisDataContainer *coutputTrkCutsMC;
+  AliAnalysisDataContainer *coutputAntiTrkCutsMC;
+  AliAnalysisDataContainer *coutputTrkCutsPionMC;
+  AliAnalysisDataContainer *coutputTrkCutsAntiPionMC;
 
   if (isMC) {
-    AliAnalysisDataContainer *coutputTrkCutsMC;
     TString TrkCutsMCName = Form("%s_ProtonMC_%s", addon.Data(), suffix.Data());
     coutputTrkCutsMC = mgr->CreateContainer(
                          TrkCutsMCName.Data(),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 9, coutputTrkCutsMC);
 
-    AliAnalysisDataContainer *coutputAntiTrkCutsMC;
-    TString AntiTrkCutsMCName = Form("%s_AntiProtonMC_%s", addon.Data(),
-                                     suffix.Data());
+    TString AntiTrkCutsMCName = Form("%s_AntiProtonMC_%s", addon.Data(), suffix.Data());
     coutputAntiTrkCutsMC = mgr->CreateContainer(
                              //@suppress("Invalid arguments") it works ffs
                              AntiTrkCutsMCName.Data(),
                              TList::Class(),
                              AliAnalysisManager::kOutputContainer,
                              Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 10, coutputAntiTrkCutsMC);
 
-    AliAnalysisDataContainer *coutputv0CutsMC;
-    TString v0CutsMCName = Form("%s_PionMC_%s", addon.Data(), suffix.Data());
-    coutputv0CutsMC = mgr->CreateContainer(
+    TString PionCutsMCName = Form("%s_PionMC_%s", addon.Data(), suffix.Data());
+    coutputTrkCutsPionMC = mgr->CreateContainer(
                         //@suppress("Invalid arguments") it works ffs
-                        v0CutsMCName.Data(),
+                        PionCutsMCName.Data(),
                         TList::Class(),
                         AliAnalysisManager::kOutputContainer,
-                        Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 11, coutputv0CutsMC);
+                        Form("%s:%s", file.Data(), PionCutsMCName.Data()));
 
-    AliAnalysisDataContainer *coutputAntiv0CutsMC;
-    TString Antiv0CutsMCName = Form("%s_AntiPionMC_%s", addon.Data(),
-                                    suffix.Data());
-    coutputAntiv0CutsMC = mgr->CreateContainer(
+    TString AntiPionCutsMCName = Form("%s_AntiPionMC_%s", addon.Data(), suffix.Data());
+    coutputTrkCutsAntiPionMC = mgr->CreateContainer(
                             //@suppress("Invalid arguments") it works ffs
-                            Antiv0CutsMCName.Data(),
+                            AntiPionCutsMCName.Data(),
                             TList::Class(),
                             AliAnalysisManager::kOutputContainer,
-                            Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 12, coutputAntiv0CutsMC);
+                            Form("%s:%s", file.Data(), AntiPionCutsMCName.Data()));
   }
-  return task;
+
+
+  AliAnalysisTaskNanoFemtoProtonPion *taskNano;
+  AliAnalysisTaskFemtoProtonPion *taskAOD;
+
+  if(isNano){
+    taskNano = new AliAnalysisTaskNanoFemtoProtonPion("FemtoDreamDefault", isMC);
+    
+    if (trigger == "kINT7") {
+      taskNano->SelectCollisionCandidates(AliVEvent::kINT7);
+      std::cout << "Added kINT7 Trigger \n";
+    } else if (trigger == "kHM") {
+      taskNano->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+      std::cout << "Added kHighMult Trigger \n";
+    } else {
+      std::cout << "=====================================================================" << std::endl;
+      std::cout << "=====================================================================" << std::endl;
+      std::cout << "Centrality Estimator not set, fix it else your Results will be empty!" << std::endl;
+      std::cout << "=====================================================================" << std::endl;
+      std::cout << "=====================================================================" << std::endl;
+    }
+    if (!fullBlastQA) {
+      taskNano->SetRunTaskLightWeight(true);
+    }
+    taskNano->SetEventCuts(evtCuts);
+    taskNano->SetTrackCutsPion(TrackCutsPion);
+    taskNano->SetTrackCutsAntiPion(TrackCutsAntiPion);
+    taskNano->SetTrackCutsProton(TrackCutsProton);
+    taskNano->SetTrackCutsAntiProton(TrackCutsAntiProton);
+    taskNano->SetCollectionConfig(config);
+    taskNano->SetDoPairCleaning(DoPairCleaning);
+    taskNano->SetDoOfficialFemto(doOfficialFemto); 
+    taskNano->SetDoResonanceLorentzFactor(DoResonanceLorentzFactor);
+    
+    //Set-up for own looping & calculus -> needed for 3D studies
+    //IMPORTANT: 0, 1, 2, 3 and the names has to correspond to the order given to the offical femto framework!!!!
+    taskNano->SetCombinationInput("00 11 02 13 03 12"); //p-p barp-barp p-pion barp-barpion p-barpion barp-pion
+    taskNano->SetClosePairRejectionInput("true true true true false false");
+    taskNano->SetNameTagInput("Proton AntiProton Pion AntiPion");
+    taskNano->SetDoOwnFemto(!doOfficialFemto); //Do own looping and calculus 
+    taskNano->SetDoThreeDFemto(false); //No 3D femto for now
+    taskNano->SetRunPlotMult(true);
+    taskNano->SetRunPlotPhiTheta(fullBlastQA); 
+    taskNano->SetDoAncestors(DoAncestors); //Does not affect official femto part
+    taskNano->SetRemoveMCResonances(RemoveMCResonances, RemoveMCResonanceDaughters);
+    taskNano->SetDoInvMassPlot(DoInvMass);
+    
+    mgr->AddTask(taskNano);
+    mgr->ConnectInput(taskNano, 0, cinput);
+    mgr->ConnectOutput(taskNano, 1, coutputEvtCuts);
+    mgr->ConnectOutput(taskNano, 2, coutputTrkCuts);      
+    mgr->ConnectOutput(taskNano, 3, coutputAntiTrkCuts);
+    mgr->ConnectOutput(taskNano, 4, coutputTrkCutsPion);
+    mgr->ConnectOutput(taskNano, 5, coutputAntiTrkCutsPion);
+    mgr->ConnectOutput(taskNano, 6, coutputResults);
+    mgr->ConnectOutput(taskNano, 7, coutputResultsQA);
+    mgr->ConnectOutput(taskNano, 8, coutputResultsThreeD);
+    if(isMC){
+      mgr->ConnectOutput(taskNano, 9, coutputTrkCutsMC);
+      mgr->ConnectOutput(taskNano, 10, coutputAntiTrkCutsMC);
+      mgr->ConnectOutput(taskNano, 11, coutputTrkCutsPionMC);
+      mgr->ConnectOutput(taskNano, 12, coutputTrkCutsAntiPionMC);
+    }
+  } else {
+    taskAOD = new AliAnalysisTaskFemtoProtonPion("FemtoDreamDefault", isMC);
+    
+    if (trigger == "kINT7") {
+      taskAOD->SelectCollisionCandidates(AliVEvent::kINT7);
+      std::cout << "Added kINT7 Trigger \n";
+    } else if (trigger == "kHM") {
+      taskAOD->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+      std::cout << "Added kHighMult Trigger \n";
+    } else {
+      std::cout << "=====================================================================" << std::endl;
+      std::cout << "=====================================================================" << std::endl;
+      std::cout << "Centrality Estimator not set, fix it else your Results will be empty!" << std::endl;
+      std::cout << "=====================================================================" << std::endl;
+      std::cout << "=====================================================================" << std::endl;
+    }
+    if (!fullBlastQA) {
+      taskAOD->SetRunTaskLightWeight(true);
+    }
+    taskAOD->SetEventCuts(evtCuts);
+    taskAOD->SetTrackCutsPion(TrackCutsPion);
+    taskAOD->SetTrackCutsAntiPion(TrackCutsAntiPion);
+    taskAOD->SetTrackCutsProton(TrackCutsProton);
+    taskAOD->SetTrackCutsAntiProton(TrackCutsAntiProton);
+    taskAOD->SetCollectionConfig(config);
+    taskAOD->SetDoPairCleaning(DoPairCleaning);
+    taskAOD->SetDoOfficialFemto(doOfficialFemto); 
+    taskAOD->SetDoResonanceLorentzFactor(DoResonanceLorentzFactor);
+    
+    //Set-up for own looping & calculus -> needed for 3D studies
+    //IMPORTANT: 0, 1, 2, 3 and the names has to correspond to the order given to the offical femto framework!!!!
+    taskAOD->SetCombinationInput("00 11 02 13 03 12"); //p-p barp-barp p-pion barp-barpion p-barpion barp-pion
+    taskAOD->SetClosePairRejectionInput("true true true true false false");
+    taskAOD->SetNameTagInput("Proton AntiProton Pion AntiPion");
+    taskAOD->SetDoOwnFemto(!doOfficialFemto); //Do own looping and calculus 
+    taskAOD->SetDoThreeDFemto(false); //No 3D femto for now
+    taskAOD->SetRunPlotMult(true);
+    taskAOD->SetRunPlotPhiTheta(fullBlastQA); 
+    taskAOD->SetDoAncestors(DoAncestors); //Does not affect official femto part
+    taskAOD->SetRemoveMCResonances(RemoveMCResonances, RemoveMCResonanceDaughters);
+    taskAOD->SetDoInvMassPlot(DoInvMass);
+    
+    mgr->AddTask(taskAOD);
+    mgr->ConnectInput(taskAOD, 0, cinput);
+    mgr->ConnectOutput(taskAOD, 1, coutputEvtCuts);
+    mgr->ConnectOutput(taskAOD, 2, coutputTrkCuts);      
+    mgr->ConnectOutput(taskAOD, 3, coutputAntiTrkCuts);
+    mgr->ConnectOutput(taskAOD, 4, coutputTrkCutsPion);
+    mgr->ConnectOutput(taskAOD, 5, coutputAntiTrkCutsPion);
+    mgr->ConnectOutput(taskAOD, 6, coutputResults);
+    mgr->ConnectOutput(taskAOD, 7, coutputResultsQA);
+    mgr->ConnectOutput(taskAOD, 8, coutputResultsThreeD);
+    if(isMC){
+      mgr->ConnectOutput(taskAOD, 9, coutputTrkCutsMC);
+      mgr->ConnectOutput(taskAOD, 10, coutputAntiTrkCutsMC);
+      mgr->ConnectOutput(taskAOD, 11, coutputTrkCutsPionMC);
+      mgr->ConnectOutput(taskAOD, 12, coutputTrkCutsAntiPionMC);
+    }
+  }
+   
+  if (isNano) {
+    return taskNano;
+  } else {
+    return taskAOD;
+  }
+  
 }
 
