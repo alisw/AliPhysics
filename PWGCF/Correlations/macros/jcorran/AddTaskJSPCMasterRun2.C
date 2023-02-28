@@ -118,6 +118,13 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
           MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
       }
       break;
+    case 4:   // 4: NEW 18q Coarse binning, minPt = 0.2 for all.
+      MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_%s_s_%s.root",
+        MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data(), configNames[i].Data());
+      break;
+    case 5:   // 5: HIJING, minPt = 0.2 for all.
+      MAPfileNames[i] = Form("%sPhiWeights_20j6a_Hijing_default.root", MAPdirName.Data());
+      break;
     default:
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
         << std::endl;   
