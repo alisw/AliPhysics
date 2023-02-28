@@ -5631,6 +5631,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
       fVars_MLmap["mass_Xi"]           = fVar_Xic0[20]; // mass of Xi (without mass const.)
       fVars_MLmap["chi2topo_XiToXic0"] = fVar_Xic0[32]; // chi2_topo of Xi to Xic0
       fVars_MLmap["DCAxy_XiToPV_KF"]   = fVar_Xic0[38]; // DCA of Xi to PV in x-y plane (calculated from KF after Xi mass constraint)
+      fVars_MLmap["mass_Omega"]        = fVar_Xic0[39]; // mass of Omega (without mass const.)
       // Xi daughters
       fVars_MLmap["chi2geo_Lam"]      = fVar_Xic0[7];  // chi2_geometry of Lambda
       fVars_MLmap["ldl_Lam"]          = fVar_Xic0[8];  // l/dl of Lambda
@@ -5675,6 +5676,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
       fVars_MLmap["mass_Omega"]              = fVar_Xic0[20]; // mass of Omega (without mass const.)
       fVars_MLmap["chi2topo_OmegaToOmegac0"] = fVar_Xic0[32]; // chi2_topo of Omega to Omegac0
       fVars_MLmap["DCAxy_OmegaToPV_KF"]      = fVar_Xic0[38]; // DCA of Omega to PV in x-y plane (calculated from KF after Omega mass constraint)
+      fVars_MLmap["mass_Xi"]                 = fVar_Xic0[39]; // mass of Xi (without mass const.)
       // Omega daughters
       fVars_MLmap["chi2geo_Lam"]         = fVar_Xic0[7];  // chi2_geometry of Lambda
       fVars_MLmap["ldl_Lam"]             = fVar_Xic0[8];  // l/dl of Lambda
