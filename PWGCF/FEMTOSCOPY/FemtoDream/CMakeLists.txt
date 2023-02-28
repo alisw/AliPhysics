@@ -125,6 +125,7 @@ set(SRCS
   AliAnalysisTaskThreeBodyFemtoMixedCharge.cxx;
   AliAnalysisTaskNanoBenchmark.cxx
   AliAnalysisTaskNanoFemtoProtonPion.cxx
+  AliAnalysisTaskFemtoProtonPion.cxx
   AliAnalysisTaskNanoXiPi.cxx
   )
 
