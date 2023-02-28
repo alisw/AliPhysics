@@ -85,6 +85,7 @@ AliAnalysisTaskSEHFResonanceBuilder::~AliAnalysisTaskSEHFResonanceBuilder()
     delete fListCuts;
     delete fRDCuts;
     delete fNtupleCharmReso;
+    delete fHistMultWeights;
 
     if (fApplyML && fMLResponse)
         delete fMLResponse;
@@ -140,6 +141,13 @@ void AliAnalysisTaskSEHFResonanceBuilder::UserCreateOutputObjects()
 
     if (std::accumulate(fEnableBachelor.begin(), fEnableBachelor.end(), 0) && std::accumulate(fEnableV0.begin(), fEnableV0.end(), 0))
         AliFatal("Combination with bachelors and V0s simultenously is not supported");
+
+    if (fApplyMultWeights) {
+        fHistMultWeights = new TH1F("fHistMultWeights", "#it{N}_{tracklets};multiplicity weights", fMultWeightBinLimits.size()-1, fMultWeightBinLimits.data());
+        for (auto iW{0u}; iW<fMultWeights.size(); ++iW) {
+            fHistMultWeights->SetBinContent(iW+1, fMultWeights[iW]);
+        }
+    }
 
     /// Create the output container
     //
