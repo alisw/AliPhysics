@@ -81,7 +81,6 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         void SetWriteXic0Tree(Bool_t a) {fWriteXic0Tree = a;}
         Bool_t GetWriteXic0Tree() const {return fWriteXic0Tree;}
 
-        void FillEventROOTObjects();
         void FillTreeGenXic0(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLoverP);
         void FillTreeRecXic0FromV0(KFParticle kfpXicZero, AliAODTrack *trackPi, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODv0 *v0, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkP, AliAODTrack *trkN, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
         void FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
@@ -104,7 +103,6 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
 //        TObjArray               fMapParticle;         ///< Map of particles in the supporting TClonesArray
         vector<Int_t>           fAodTrackInd;         ///< Translation table: aodTrackInd(mcTrackIndex) = aodTrackIndex
         TList*                  fOutputList;          //!<! Output list
-        TTree*                  fTree_Event;          //!<! tree of event
         Float_t*                fVar_Event;           //!<! variables of event to be written to the tree
         TTree*                  fTree_Xic0;             //!<! tree of the candidate variables
         Float_t*                fVar_Xic0;         //!<! variables of Xic0 to be written to the tree
@@ -421,7 +419,7 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         AliHFMLXicZeroToXiPifromKFP(const AliHFMLXicZeroToXiPifromKFP &source); // not implemented
         AliHFMLXicZeroToXiPifromKFP& operator=(const AliHFMLXicZeroToXiPifromKFP& source); // not implemented
 
-        ClassDef(AliHFMLXicZeroToXiPifromKFP, 2);
+        ClassDef(AliHFMLXicZeroToXiPifromKFP, 3);
 };
 
 #endif
