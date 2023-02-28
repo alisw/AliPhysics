@@ -98,8 +98,6 @@ AliHFMLXicZeroToXiPifromKFP::AliHFMLXicZeroToXiPifromKFP() :
   fAodTrackInd(0),
   fOutputList(0),
   fListCuts(0),
-  fTree_Event(0),
-  fVar_Event(0),
   fTree_Xic0(0),
   fVar_Xic0(0),
   fTree_Xic0MCGen(0),
@@ -422,8 +420,6 @@ AliHFMLXicZeroToXiPifromKFP::AliHFMLXicZeroToXiPifromKFP(const char* name, AliRD
   fAodTrackInd(0),
   fOutputList(0),
   fListCuts(0),
-  fTree_Event(0),
-  fVar_Event(0),
   fTree_Xic0(0),
   fVar_Xic0(0),
   fTree_Xic0MCGen(0),
@@ -734,11 +730,10 @@ AliHFMLXicZeroToXiPifromKFP::AliHFMLXicZeroToXiPifromKFP(const char* name, AliRD
                                         // if you add more output objects, make sure to call PostData for all of them, and to
                                         // make changes to your AddTask macro!
   DefineOutput(2, AliNormalizationCounter::Class());
-  DefineOutput(3, TTree::Class()); // event
-  DefineOutput(4, TTree::Class()); // Xic0
-  DefineOutput(5, TTree::Class()); // Xic0 MCGen
-  DefineOutput(6, TList::Class()); // Omega hist
-  DefineOutput(7, TTree::Class()); // ML output for PbPb
+  DefineOutput(3, TTree::Class()); // Xic0
+  DefineOutput(4, TTree::Class()); // Xic0 MCGen
+  DefineOutput(5, TList::Class()); // Omega hist
+  DefineOutput(6, TTree::Class()); // ML output for PbPb
 
 }
 //_____________________________________________________________________________
@@ -758,16 +753,6 @@ AliHFMLXicZeroToXiPifromKFP::~AliHFMLXicZeroToXiPifromKFP()
     if (fAnaCuts) {
       delete fAnaCuts;
       fAnaCuts = 0;
-    }
-
-    if (fTree_Event) {
-      delete fTree_Event;
-      fTree_Event = 0;
-    }
-
-    if (fVar_Event) {
-      delete fVar_Event;
-      fVar_Event = 0;
     }
 
     if (fTree_Xic0) {
@@ -1606,19 +1591,18 @@ void AliHFMLXicZeroToXiPifromKFP::UserCreateOutputObjects()
   fCounter = new AliNormalizationCounter(normName.Data());
   fCounter->Init();
   PostData(2, fCounter);
-  DefineEvent();
-  PostData(3, fTree_Event);  // postdata will notify the analysis manager of changes / updates to the 
+//  DefineEvent();
 
   DefineTreeRecXic0();
-  PostData(4, fTree_Xic0);
+  PostData(3, fTree_Xic0);
 
   DefineTreeGenXic0();
-  PostData(5, fTree_Xic0MCGen);
-  PostData(6, fOutputList);
+  PostData(4, fTree_Xic0MCGen);
+  PostData(5, fOutputList);
   
   if (fIsPbPb) {
     DefineTreeMLoutput();
-    PostData(7, fTree_MLoutput);
+    PostData(6, fTree_MLoutput);
   }
 
   return;
@@ -1777,8 +1761,6 @@ void AliHFMLXicZeroToXiPifromKFP::UserExec(Option_t *)
 
   if(!fAnaCuts) return;
 
-  FillEventROOTObjects();
-
 /*
     //--------------------------------------------------------------------------------------------------------
     // create a translation table: fAodTrackInd(mcTrackIndex) = aodTrackIndex, or = -1 if there is no aodTrack
@@ -1834,13 +1816,10 @@ void AliHFMLXicZeroToXiPifromKFP::UserExec(Option_t *)
   MakeAnaXicZeroFromCasc(AODEvent, mcArray, PV);
 
   PostData(2, fCounter);
-  PostData(3, fTree_Event);                           // stream the results the analysis of this event to
-                                                        // the output manager which will take care of writing
-                                                        // it to a file
-  PostData(4, fTree_Xic0);
-  PostData(5, fTree_Xic0MCGen);
-  PostData(6, fOutputList);
-  if (fIsPbPb) PostData(7, fTree_MLoutput);
+  PostData(3, fTree_Xic0);
+  PostData(4, fTree_Xic0MCGen);
+  PostData(5, fOutputList);
+  if (fIsPbPb) PostData(6, fTree_MLoutput);
 
   return;
 }
@@ -4780,38 +4759,11 @@ Int_t AliHFMLXicZeroToXiPifromKFP::MatchToXicZeroMC(TClonesArray *mcArray, Int_t
 }
 
 //_____________________________________________________________________________
-void AliHFMLXicZeroToXiPifromKFP::DefineEvent()
-{
-  // This is to define tree variables
-
-  const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
-  fTree_Event = new TTree(nameoutput, "Event");
-  Int_t nVar = 7;
-  fVar_Event = new Float_t[nVar];
-  TString *fVarNames = new TString[nVar];
-
-  fVarNames[0]  = "centrality";
-  fVarNames[1]  = "z_vtx_reco";
-  fVarNames[2]  = "n_vtx_contributors";
-  fVarNames[3]  = "n_tracks";
-  fVarNames[4]  = "is_ev_rej";
-  fVarNames[5]  = "run_number";
-  fVarNames[6]  = "ev_id";
-
-  for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fTree_Event->Branch(fVarNames[ivar].Data(), &fVar_Event[ivar], Form("%s/F", fVarNames[ivar].Data()));
-  }
-
-  return;
-
-}
-
-//_____________________________________________________________________________
 void AliHFMLXicZeroToXiPifromKFP::DefineTreeRecXic0()
 {
   // This is to define tree variables
 
-  const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
+  const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0 = new TTree(nameoutput, "Xic0 variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0 = new TTree(nameoutput, "Omegac0 variables tree");
   Int_t nVar = 51;
@@ -4999,7 +4951,7 @@ void AliHFMLXicZeroToXiPifromKFP::DefineVarTreePiMinus()
 //_____________________________________________________________________________
 void AliHFMLXicZeroToXiPifromKFP::DefineTreeGenXic0()
 {
-  const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
+  const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0MCGen = new TTree(nameoutput,"Xic0 MC variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0MCGen = new TTree(nameoutput,"Omegac0 MC variables tree");
   Int_t nVar = 6;
@@ -5173,25 +5125,6 @@ void AliHFMLXicZeroToXiPifromKFP::FillPiMinusROOTObjects(AliAODTrack *track, TCl
 
 }
 */
-
-//_____________________________________________________________________________
-void AliHFMLXicZeroToXiPifromKFP::FillEventROOTObjects()
-{
-
-  for (Int_t i=0; i<7; i++) {
-    fVar_Event[i] = 0.;
-  }
-
-  Double_t pos[3];
-  fpVtx->GetXYZ(pos);
-
-  fVar_Event[1] = pos[2];
-
-  fTree_Event->Fill();
-
-  return;
-
-}
 
 //_____________________________________________________________________________
 void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODv0 *v0, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0)
@@ -5698,6 +5631,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
       fVars_MLmap["mass_Xi"]           = fVar_Xic0[20]; // mass of Xi (without mass const.)
       fVars_MLmap["chi2topo_XiToXic0"] = fVar_Xic0[32]; // chi2_topo of Xi to Xic0
       fVars_MLmap["DCAxy_XiToPV_KF"]   = fVar_Xic0[38]; // DCA of Xi to PV in x-y plane (calculated from KF after Xi mass constraint)
+      fVars_MLmap["mass_Omega"]        = fVar_Xic0[39]; // mass of Omega (without mass const.)
       // Xi daughters
       fVars_MLmap["chi2geo_Lam"]      = fVar_Xic0[7];  // chi2_geometry of Lambda
       fVars_MLmap["ldl_Lam"]          = fVar_Xic0[8];  // l/dl of Lambda
@@ -5742,6 +5676,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
       fVars_MLmap["mass_Omega"]              = fVar_Xic0[20]; // mass of Omega (without mass const.)
       fVars_MLmap["chi2topo_OmegaToOmegac0"] = fVar_Xic0[32]; // chi2_topo of Omega to Omegac0
       fVars_MLmap["DCAxy_OmegaToPV_KF"]      = fVar_Xic0[38]; // DCA of Omega to PV in x-y plane (calculated from KF after Omega mass constraint)
+      fVars_MLmap["mass_Xi"]                 = fVar_Xic0[39]; // mass of Xi (without mass const.)
       // Omega daughters
       fVars_MLmap["chi2geo_Lam"]         = fVar_Xic0[7];  // chi2_geometry of Lambda
       fVars_MLmap["ldl_Lam"]             = fVar_Xic0[8];  // l/dl of Lambda
@@ -5904,7 +5839,7 @@ void AliHFMLXicZeroToXiPifromKFP::DefineTreeMLoutput()
 {
   // This is to define tree variables
 
-  const char* nameoutput = GetOutputSlot(7)->GetContainer()->GetName();
+  const char* nameoutput = GetOutputSlot(6)->GetContainer()->GetName();
   fTree_MLoutput = new TTree(nameoutput, "ML output tree");
   Int_t nVar = 4;
   fVar_MLoutput = new Float_t[nVar];
