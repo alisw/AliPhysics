@@ -23,7 +23,7 @@ jobs:
         aliroot_tag=$(echo ${{ github.event.inputs.tag }} | sed -e's/-01$//')
         EOF
       id: decide_release_branch
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         ref: "master"
     - name: Tag branch (or create one before tagging if does not exists)
