@@ -550,7 +550,7 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     printf("Creating covariance objects\n");
     fCovList = new TList();
     fCovList->SetOwner(kTRUE);
-    fCovariance = new AliProfileBS*[14];
+    fCovariance = new AliProfileBS*[20];
     fCovariance[0] = new AliProfileBS(Form("covmpt_%s",spNames[0].Data()),Form("covmpt_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
     fCovList->Add(fCovariance[0]);
     fCovariance[1] = new AliProfileBS(Form("covnopt_%s",spNames[0].Data()),Form("covnopt_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
@@ -579,6 +579,19 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     fCovList->Add(fCovariance[12]);
     fCovariance[13] = new AliProfileBS(Form("covpt2_v3_%s",spNames[0].Data()),Form("covpt2_v3_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
     fCovList->Add(fCovariance[13]);
+    //Testing full acceptance for cov24 and cov 26 and even cov28
+    fCovariance[14] = new AliProfileBS(Form("covmpt_v24Full_%s",spNames[0].Data()),Form("covmpt_v24Full_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[14]);
+    fCovariance[15] = new AliProfileBS(Form("covnopt_v24Full_%s",spNames[0].Data()),Form("covnopt_v24Full_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[15]);
+    fCovariance[16] = new AliProfileBS(Form("covmpt_v26Full_%s",spNames[0].Data()),Form("covmpt_v26Full_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[16]);
+    fCovariance[17] = new AliProfileBS(Form("covnopt_v26Full_%s",spNames[0].Data()),Form("covnopt_v26Full_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[17]);
+    fCovariance[18] = new AliProfileBS(Form("covmpt_v28Full_%s",spNames[0].Data()),Form("covmpt_v28Full_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[18]);
+    fCovariance[19] = new AliProfileBS(Form("covnopt_v28Full_%s",spNames[0].Data()),Form("covnopt_v28Full_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[19]);
     if(fFillMptPowers) {
         fCovariancePowerMpt = new AliProfileBS*[3];
         fCovariancePowerMpt[0] = new AliProfileBS(Form("covmpt2_v2_%s",spNames[0].Data()),Form("covmpt2_v2_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
@@ -599,7 +612,7 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
       fCovariancePID[3+4*i] = new AliProfileBS(Form("covnopt_v3_%s",spNames[i+1].Data()),Form("covnopt_v3_%s",spNames[i+1].Data()),fNMultiBins,fMultiBins);
       fCovList->Add(fCovariancePID[3+4*i]);
     }
-    if(fNBootstrapProfiles) for(Int_t i=0;i<14;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
+    if(fNBootstrapProfiles) for(Int_t i=0;i<20;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
     if(fNBootstrapProfiles && !fDisablePID) for(Int_t i=0;i<12;i++) fCovariancePID[i]->InitializeSubsamples(fNBootstrapProfiles);
     if(fFillMptPowers && fNBootstrapProfiles) for(Int_t i=0;i<3;i++) fCovariancePowerMpt[i]->InitializeSubsamples(fNBootstrapProfiles);
     printf("Covariance objects created\n");
@@ -1131,6 +1144,12 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   FillCovariance(fCovariance[9],corrconfigs.at(2),l_Multi,1,wp[0][0],l_Random);
   FillCovariance(fCovariance[10],corrconfigs.at(5),l_Multi,mptev,wp[0][0],l_Random); //v4-pt
   FillCovariance(fCovariance[11],corrconfigs.at(5),l_Multi,1,wp[0][0],l_Random);
+  FillCovariance(fCovariance[14],corrconfigs.at(9),l_Cent,mptev,wp[0][0],l_Random); //v24-pt full
+  FillCovariance(fCovariance[15],corrconfigs.at(9),l_Cent,1,wp[0][0],l_Random);
+  FillCovariance(fCovariance[16],corrconfigs.at(10),l_Cent,mptev,wp[0][0],l_Random); //v26-pt full
+  FillCovariance(fCovariance[17],corrconfigs.at(10),l_Cent,1,wp[0][0],l_Random);
+  FillCovariance(fCovariance[18],corrconfigs.at(11),l_Cent,mptev,wp[0][0],l_Random); //v28-pt full
+  FillCovariance(fCovariance[19],corrconfigs.at(11),l_Cent,1,wp[0][0],l_Random);
   //Covariance of vn with multi-particle pt-correlation
   vector<double> pt2corr = fPtCont[0]->getEventCorrelation(wpPt[0],2);
   if(pt2corr[1]!=0) {
@@ -1229,6 +1248,12 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   FillCovariance(fCovariance[9],corrconfigs.at(2),l_Cent,1,wp[0],l_Random);
   FillCovariance(fCovariance[10],corrconfigs.at(5),l_Cent,mptev,wp[0],l_Random); //v4-pt
   FillCovariance(fCovariance[11],corrconfigs.at(5),l_Cent,1,wp[0],l_Random);
+  FillCovariance(fCovariance[14],corrconfigs.at(9),l_Cent,1,wp[0],l_Random); //v24-pt full
+  FillCovariance(fCovariance[15],corrconfigs.at(9),l_Cent,1,wp[0],l_Random);
+  FillCovariance(fCovariance[16],corrconfigs.at(10),l_Cent,1,wp[0],l_Random); //v26-pt full
+  FillCovariance(fCovariance[17],corrconfigs.at(10),l_Cent,1,wp[0],l_Random);
+  FillCovariance(fCovariance[18],corrconfigs.at(11),l_Cent,1,wp[0],l_Random); //v28-pt full
+  FillCovariance(fCovariance[19],corrconfigs.at(11),l_Cent,1,wp[0],l_Random);
   //Covariance of vn with multi-particle pt-correlation
   vector<double> pt2corr = fPtCont[0]->getEventCorrelation(wpPt[0],2);
   if(pt2corr[1]!=0) {
@@ -1281,12 +1306,12 @@ void AliAnalysisTaskDeform::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("ChSC234","refP {2 3} refN {-2 -3}", kFALSE));    //  ChSC234 6
   corrconfigs.push_back(GetConf("ChSC244","refP {2 4} refN {-2 -4}", kFALSE));    //  ChSC244 7
 
-  corrconfigs.push_back(GetConf("ChFull22","mid {2 -2}", kFALSE));  //ChFull22
-  corrconfigs.push_back(GetConf("ChFull24","mid {2 2 -2 -2}", kFALSE));   //ChFull24
-  corrconfigs.push_back(GetConf("ChFull26","mid {2 2 2 -2 -2 -2}",kFALSE));  //  ChFull26
-  corrconfigs.push_back(GetConf("ChFull28","mid {2 2 2 2 -2 -2 -2 -2}",kFALSE));  //  ChFull28
-  corrconfigs.push_back(GetConf("ChFull32","mid {3 -3}", kFALSE));   //ChFull32
-  corrconfigs.push_back(GetConf("ChFull34","mid {3 3 -3 -3}", kFALSE));    //ChFull34
+  corrconfigs.push_back(GetConf("ChFull22","mid {2 -2}", kFALSE));  //ChFull22 8
+  corrconfigs.push_back(GetConf("ChFull24","mid {2 2 -2 -2}", kFALSE));   //ChFull24 9
+  corrconfigs.push_back(GetConf("ChFull26","mid {2 2 2 -2 -2 -2}",kFALSE));  //  ChFull26 10
+  corrconfigs.push_back(GetConf("ChFull28","mid {2 2 2 2 -2 -2 -2 -2}",kFALSE));  //  ChFull28 11
+  corrconfigs.push_back(GetConf("ChFull32","mid {3 -3}", kFALSE));   //ChFull32 12
+  corrconfigs.push_back(GetConf("ChFull34","mid {3 3 -3 -3}", kFALSE));    //ChFull34 13
 
   if(!fDisablePID){
     corrconfigs.push_back(GetConf("PiGap22","PiRefP {2} PiRefN {-2}", kFALSE));
