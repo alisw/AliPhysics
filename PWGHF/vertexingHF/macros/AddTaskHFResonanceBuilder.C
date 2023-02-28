@@ -96,8 +96,6 @@ AliAnalysisTaskSEHFResonanceBuilder *AddTaskHFResonanceBuilder(int decCh = AliAn
         hMultWeights = (TH1F*)fileMultWeights->Get(histoMultWeights.data());
         if (!hMultWeights)
             ::Fatal("AddTaskHFResonanceBuilder", "Multiplicity weight histo not found!\n");
-        hMultWeights->SetDirectory(0);
-        fileMultWeights->Close();
     }
 
     // Analysis Task
