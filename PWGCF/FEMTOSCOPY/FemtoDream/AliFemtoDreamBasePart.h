@@ -84,6 +84,9 @@ class AliFemtoDreamBasePart {
   bool IsRemovedByOldPC() const {
     return fIsRemovedByOldPC;
   }
+  bool IsRemovedByCrossPC() const {
+    return fIsRemovedByCrossPC;
+  }
   void SetMCMomentum(float px, float py, float pz) {
     fMCP.SetXYZ(px, py, pz);
   }
@@ -317,6 +320,7 @@ class AliFemtoDreamBasePart {
   void SetParticleMult (int mult) { fParticleMult = mult; };
   void SetIsRemovedByOldPC (bool flag) { fIsRemovedByOldPC = flag; };
   void SetIsRemovedByNewPC (bool flag) { fIsRemovedByNewPC = flag; };
+  void SetIsRemovedByCrossPC (bool flag) { fIsRemovedByCrossPC = flag; };
 
   int GetMult ()  { return fMult; };
   float GetZVtx ()  { return fZVtx; };
@@ -380,6 +384,7 @@ class AliFemtoDreamBasePart {
   int fParticleMult;
   bool fIsRemovedByOldPC;
   bool fIsRemovedByNewPC;
+  bool fIsRemovedByCrossPC;
 
   int fMult;
   float fZVtx;
@@ -409,7 +414,7 @@ class AliFemtoDreamBasePart {
   void PhiAtRadii(const AliVTrack *track, const float bfield,
                   std::vector<float> &tmpVec);
 //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-ClassDef(AliFemtoDreamBasePart, 12)
+ClassDef(AliFemtoDreamBasePart, 13)
   ;
 };
 

@@ -1540,8 +1540,10 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 
 	WgtNUAChtrk1  = GetNUAWeightForTrack(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);
 	WgtNUAPIDtrk1 = GetNUAWeightForTrackPID(fVertexZEvent,trk1Phi,trk1Eta,trk1Chrg);
-	ptWgtMCChtrk1 = GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,0);
+	ptWgtMCChtrk1 = GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,0); // this is eff
+	ptWgtMCChtrk1 = 1./ptWgtMCChtrk1; // weight = 1/eff
 	ptWgtMCPIDtrk1= GetMCEfficiencyWeightForTrack(trk1Pt,trk1Chrg,kPIDtrk1);
+	ptWgtMCPIDtrk1 = 1./ptWgtMCPIDtrk1;
 
 	wgtComb1Ch  = WgtNUAChtrk1*ptWgtMCChtrk1;    /// Charge
 	wgtComb1PID = WgtNUAPIDtrk1*ptWgtMCPIDtrk1;  /// PID
@@ -1753,19 +1755,22 @@ void AliAnalysisTaskGammaDeltaPID::UserExec(Option_t*) {
 	      if(gParticleID==0){ /// Both Particles are UN-Identified
 		WgtNUAChtrk2  = GetNUAWeightForTrack(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg);
 		ptWgtMCChtrk2 = GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,0);		
+		ptWgtMCChtrk2 = 1./ptWgtMCChtrk2;
 		wgtComb2part  = WgtNUAChtrk1*ptWgtMCChtrk1 * WgtNUAChtrk2*ptWgtMCChtrk2;      /// Combined weight for Ch
 	      }
 	      else if(gParticleID < 10){/// Both Particles are Identified.			
 		WgtNUAPIDtrk2  = GetNUAWeightForTrackPID(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg);      
 		ptWgtMCPIDtrk2 = GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,kPIDtrk2);
-		
+		ptWgtMCPIDtrk2 = 1./ptWgtMCPIDtrk2;
 		wgtComb2part  = WgtNUAPIDtrk1*ptWgtMCPIDtrk1 * WgtNUAPIDtrk2*ptWgtMCPIDtrk2;  /// Combined weight for PID
 	      }
 	      else if(gParticleID > 10){/// Single Particle is Identified.
 		WgtNUAChtrk2   = GetNUAWeightForTrack(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg);    // first track is Charged
 		ptWgtMCChtrk2  = GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,0);                // first track is Charged
+		ptWgtMCChtrk2 = 1./ptWgtMCChtrk2;
 		WgtNUAPIDtrk2  = GetNUAWeightForTrackPID(fVertexZEvent,trk2Phi,trk2Eta,trk2Chrg); // 2nd is PID
 		ptWgtMCPIDtrk2 = GetMCEfficiencyWeightForTrack(trk2Pt,trk2Chrg,kPIDtrk2);         // 2nd is PID
+		ptWgtMCPIDtrk2 = 1./ptWgtMCPIDtrk2;
 		wgtComb2part  = WgtNUAChtrk1*ptWgtMCChtrk1 * WgtNUAPIDtrk2*ptWgtMCPIDtrk2;        // Wgt for Hybrid Ch+PID Analysis.
 	      }
 	   

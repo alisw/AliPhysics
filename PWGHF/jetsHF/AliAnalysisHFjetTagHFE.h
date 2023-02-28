@@ -70,6 +70,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     void SetMCeta(Bool_t MCEtaFull) { iMCEtaFull = MCEtaFull; };
     void SetSS(Bool_t SSlong) { iSSlong = SSlong; };
     void SetPtHardMax(Double_t PtHardMax) { fPtHardMax = PtHardMax; };
+    void SetUEflow(Double_t UEflow){fUEflow = UEflow;};
 
     /////////////////////////
     ////// Event Plane //////
@@ -151,6 +152,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     Bool_t iMCEtaFull;
     Bool_t iSSlong;
     Double_t fPtHardMax;
+    Double_t fUEflow;
     Int_t NembMCpi0;
     Int_t NembMCeta;
     Int_t NembEPOS;
@@ -196,6 +198,13 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     TH2F *fsubV0AV0Ccos2;  // histogram of cos(2*Delta Psi between V0A and V0C).
     TH2F *fsubV0ATPCcos2;  // histogram of cos(2*Delta Psi between V0A and TPC).
     TH2F *fsubV0CTPCcos2;  // histogram of cos(2*Delta Psi between V0C and TPC).
+    
+    // Background flow subtraction
+    TProfile *fUEv2;
+    TProfile *fUEv2_sys0;
+    TProfile *fUEv2_sys1;
+    TProfile *fUEv2_sys2;
+    TF1 *fUE;
 
     // for yield
     TH2F *fJetPhicos2_ele;    // c
@@ -232,7 +241,7 @@ class AliAnalysisHFjetTagHFE : public AliAnalysisTaskEmcalJet {
     TH1F *fOutPlane_Hadjet;     //
     TH2F *fInPlane_Hadjet_2D;   //
     TH2F *fOutPlane_Hadjet_2D;  //
-
+    TH2F *fHistJetBGflow;
 
 
     TH1F *fHistMultCent;  //!

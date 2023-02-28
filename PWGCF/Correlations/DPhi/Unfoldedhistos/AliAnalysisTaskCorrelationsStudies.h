@@ -165,13 +165,19 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     TH1F                       *fhTrueP;                      ///< True \f$ p \f$ spectrum
     TH1F                       *fhTruePPos;                   ///< True \f$ p \f$ spectrum for positive tracks
     TH1F                       *fhTruePNeg;                   ///< True \f$ p \f$ spectrum for negative tracks
-    TH1F                       *fhPurePt;                     ///< \f$ p_{T} \f$ spectrum with good PID
-    TH1F                       *fhPurePtPos;                  ///< \f$ p_{T} \f$ spectrum for positive tracks with good PID
-    TH1F                       *fhPurePtNeg;                  ///< \f$ p_{T} \f$ spectrum for negative tracks with good PID
-    TH1F                       *fhPureP;                      ///< \f$ p \f$ spectrum with good PID
-    TH1F                       *fhPurePPos;                   ///< \f$ p \f$ spectrum for positive tracks with good PID
-    TH1F                       *fhPurePNeg;                   ///< \f$ p \f$ spectrum for negative tracks with good PID
-    TH1F                       *fhUnConstrainedPt;            ///< not constrained \f$ p_{T} \f$ spectrum
+    TH3F* fhPurePt;                                           ///< \f$ p_{T} \f$ spectrum according to reco and primary truth species
+    TH3F* fhPurePtPos;                                        ///< \f$ p_{T} \f$ spectrum for positive tracks according to reco and primary truth species
+    TH3F* fhPurePtNeg;                                        ///< \f$ p_{T} \f$ spectrum for negative tracks according to reco and primary truth species
+    TH3F* fhPureP;                                            ///< \f$ p \f$ spectrum according to reco and primary truth species
+    TH3F* fhPurePPos;                                         ///< \f$ p \f$ spectrum for positive tracks according to reco and primary truth species
+    TH3F* fhPurePNeg;                                         ///< \f$ p \f$ spectrum for negative tracks according to reco and primary truth species
+    TH3F* fhSecPurePt;                                        ///< \f$ p_{T} \f$ spectrum according to reco and secondary truth species
+    TH3F* fhSecPurePtPos;                                     ///< \f$ p_{T} \f$ spectrum for positive tracks according to reco and secondary truth species
+    TH3F* fhSecPurePtNeg;                                     ///< \f$ p_{T} \f$ spectrum for negative tracks according to reco and secondary truth species
+    TH3F* fhSecPureP;                                         ///< \f$ p \f$ spectrum according to reco and secondary truth species
+    TH3F* fhSecPurePPos;                                      ///< \f$ p \f$ spectrum for positive tracks according to reco and secondary truth species
+    TH3F* fhSecPurePNeg;                                      ///< \f$ p \f$ spectrum for negative tracks according to reco and secondary truth species
+    TH1F* fhUnConstrainedPt;                                  ///< not constrained \f$ p_{T} \f$ spectrum
     TH1F                       *fhPtDifference;               ///< Constrained - unconstrained \f$ p_{T} \f$ spectrum
     TH1F                       *fhEtaB;                       ///< pseudorapidity spectrum before any cut
     TH1F                       *fhEtaA;                       ///< pseudorapidity spectrum after cuts

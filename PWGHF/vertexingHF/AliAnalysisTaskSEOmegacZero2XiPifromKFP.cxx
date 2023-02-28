@@ -43,6 +43,7 @@
 #include "AliPIDResponse.h"
 #include "AliAODMCParticle.h"
 #include "AliRDHFCutsKFP.h"
+#include "AliVertexingHFUtils.h"
 
 //includes added to play with KFParticle
 #ifndef HomogeneousField
@@ -71,15 +72,24 @@ AliAnalysisTaskSEOmegacZero2XiPifromKFP::AliAnalysisTaskSEOmegacZero2XiPifromKFP
   fHistEvents(0),
   fHistMult(0),
   fHistCheckKF(0),
-  fEvCount(0)
+  fEvCount(0),
+  fHistMCPdgCode(0),
+  fHistMCOmegacDauNumber(0),
+  fHistMCOmegacPt(0),
+  fHistMCOmegacEta(0),
+  fHistMCOmegacSign(0),
+  fHistMCOmegacCTau(0),
+  fHistMCOmegacM(0),
+  fHistMCDecayChain(0),
+  fHistMCOrigin(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
-AliAnalysisTaskSEOmegacZero2XiPifromKFP::AliAnalysisTaskSEOmegacZero2XiPifromKFP(const char* name, AliRDHFCutsKFP* cuts) :
+AliAnalysisTaskSEOmegacZero2XiPifromKFP::AliAnalysisTaskSEOmegacZero2XiPifromKFP(const char* name, AliRDHFCutsKFP* cuts, Bool_t isMC) :
   AliAnalysisTaskSE(name),
-  fIsMC(kFALSE),
+  fIsMC(isMC),
   fPID(0),
   fAnaCuts(cuts),
   fpVtx(0),
@@ -92,7 +102,16 @@ AliAnalysisTaskSEOmegacZero2XiPifromKFP::AliAnalysisTaskSEOmegacZero2XiPifromKFP
   fHistEvents(0),
   fHistMult(0),
   fHistCheckKF(0),
-  fEvCount(0)
+  fEvCount(0),
+  fHistMCPdgCode(0),
+  fHistMCOmegacDauNumber(0),
+  fHistMCOmegacPt(0),
+  fHistMCOmegacEta(0),
+  fHistMCOmegacSign(0),
+  fHistMCOmegacCTau(0),
+  fHistMCOmegacM(0),
+  fHistMCDecayChain(0),
+  fHistMCOrigin(0)
 {
     // constructor
   DefineInput(0, TChain::Class());  // define the input of the analysis: in this case we take a 'chain' of events
@@ -214,6 +233,25 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::UserCreateOutputObjects()
 
   fOutputList->Add(fHistCheckKF);
 
+  fHistMCPdgCode= new TH1F("fHistMCPdgCode","fHistMCPdgCode",10000,-5000,5000);
+  fOutputList->Add(fHistMCPdgCode);
+  fHistMCOmegacDauNumber= new TH1F("fHistMCOmegacDauNumber","fHistMCOmegacDauNumber",10,0,10);
+  fOutputList->Add(fHistMCOmegacDauNumber);
+  fHistMCOmegacPt= new TH1F("fHistMCOmegacPt","fHistMCOmegacPt",20,0,20);
+  fOutputList->Add(fHistMCOmegacPt);
+  fHistMCOmegacEta= new TH1F("fHistMCOmegacEta","fHistMCOmegacEta",20,-1,1);
+  fOutputList->Add(fHistMCOmegacEta);
+  fHistMCOmegacSign= new TH1F("fHistMCOmegacSign","fHistMCOmegacSign",10,-5,5);
+  fOutputList->Add(fHistMCOmegacSign);
+  fHistMCOmegacCTau= new TH1F("fHistMCOmegacCTau","fHistMCOmegacCTau",3000,0.,1500.);
+  fOutputList->Add(fHistMCOmegacCTau);
+  fHistMCOmegacM= new TH1F("fHistMCOmegacM","fHistMCOmegacM",500,2.5,2.8);
+  fOutputList->Add(fHistMCOmegacM);
+  fHistMCDecayChain= new TH1F("fHistMCDecayChain","fHistMCDecayChain",10,-5,5);
+  fOutputList->Add(fHistMCDecayChain);
+  fHistMCOrigin= new TH1F("fHistMCOrigin","fHistMCOrigin",20,-10,10);
+  fOutputList->Add(fHistMCOrigin);
+
   //counter for Normalization
   TString normName="NormalizationCounter";
   AliAnalysisDataContainer *cont = GetOutputSlot(2)->GetContainer();
@@ -248,7 +286,6 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::UserExec(Option_t *)
   AliAODEvent* AODEvent = dynamic_cast<AliAODEvent*>(fInputEvent);    // get an event (called AODEvent) from the input file (there's another event format (ESD) which works in a similar way, but is more cpu/memory unfriendly -> for now, we'll stick with aod)
 
   fHistMult->Fill(AODEvent->GetNumberOfTracks());
-
   fHistEvents->Fill(1);
 
   //----------------------------------------------------------------------------
@@ -278,6 +315,39 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::UserExec(Option_t *)
   fHistEvents->Fill(2);
 
   fCounter->StoreEvent(AODEvent,fAnaCuts,fIsMC);
+
+  //----------------------------------------------------------------------------
+  // MC analysis setting
+  //----------------------------------------------------------------------------
+  if(fIsMC){
+
+  TClonesArray *mcArray = 0;
+  AliAODMCHeader *mcHeader = 0;
+
+    // MC array need for maching
+    mcArray = dynamic_cast<TClonesArray*>(AODEvent->FindListObject(AliAODMCParticle::StdBranchName())); //findlistobject(nameobject)=return the pointer to the object with the given name.
+    if ( !mcArray ) {
+      AliError("Could not find Monte-Carlo in AOD");
+      return;
+    }
+
+    // load MC header
+    mcHeader = (AliAODMCHeader*)AODEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()); //getlist=returns a list of AOD objects
+    if ( !mcHeader ) {
+      AliError("AliAnalysisTaskSEOmegacZero2XiPifromKFP::UserExec: MC header branch not found!\n");
+      return;
+    }
+
+    Double_t zMCvtx = mcHeader->GetVtxZ();
+    if ( TMath::Abs(zMCvtx) > fAnaCuts->GetMaxVtxZ() ) {
+      AliDebug(2,Form("Event rejected: fabs(zVtxMC)=%f > fAnaCuts->GetMaxVtxZ()=%f", zMCvtx, fAnaCuts->GetMaxVtxZ()));
+      return;
+    }
+    if ((TMath::Abs(zMCvtx) < fAnaCuts->GetMaxVtxZ()) && (!fAnaCuts->IsEventRejectedDuePhysicsSelection()) && (!fAnaCuts->IsEventRejectedDueToTrigger())) {
+      Bool_t selevt = MakeMCCheck(mcArray);
+      if(!selevt) return;
+    }
+  }
 
   //----------------------------------------------------------------------------
   // Event selection - selecting events kINT7, PhysicsSelection ok, PilueUp ok, con PV reconstructed and trigger selection ok
@@ -352,9 +422,9 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::UserExec(Option_t *)
 
   fEvCount=fEvCount+1;
 
-  if(fEvCount==100){
+  /*if(fEvCount==100){
     fEvCount=0;
-  }
+  }*/
 
   // stream the results the analysis of this event to the output manager which will take care of writing it to a file
   PostData(2, fCounter);
@@ -873,7 +943,7 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::DefineTreeOmegac0()
 
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   fTree_Omegac0 = new TTree(nameoutput, "Omegac0 variables tree");
-  Int_t nVar = 45;
+  Int_t nVar = 46;
   fVar_Omegac0 = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -922,6 +992,7 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::DefineTreeOmegac0()
   fVarNames[42] = "chi2mass_Xi"; // chi2 Xi after using SetNonlinearMassConstraint (before fitting in PV/mother decay point)
   fVarNames[43] = "flag_UnlikeOrLike_Sign"; // flag of unlike sign or like sign pair (0=likesign, 1=unlikesign) , to study the combinatorial bck (likesign)
   fVarNames[44] = "EventCounter"; //int that counts the number of event
+  fVarNames[45] = "pseudorap_Omegac0"; //pseudorapidity of Omegac0
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Omegac0->Branch(fVarNames[ivar].Data(), &fVar_Omegac0[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -936,7 +1007,7 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::FillTreeOmegac0(Int_t flagUSorLS, 
 
 //fill Omegac0 TTree
 
-  for (Int_t i=0; i<45; i++) {
+  for (Int_t i=0; i<46; i++) {
     fVar_Omegac0[i] = -9999.;
   }
 
@@ -1067,6 +1138,7 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::FillTreeOmegac0(Int_t flagUSorLS, 
   fVar_Omegac0[22] = kfpOmegac0_PV.GetPt();
   if ( TMath::Abs(kfpOmegac0_PV.GetE())>TMath::Abs(kfpOmegac0_PV.GetPz()) ) {
     fVar_Omegac0[23] = kfpOmegac0_PV.GetRapidity();
+    fVar_Omegac0[45] = kfpOmegac0_PV.GetEta();
   }
 
   //angle
@@ -1144,3 +1216,121 @@ void AliAnalysisTaskSEOmegacZero2XiPifromKFP::FillTreeOmegac0(Int_t flagUSorLS, 
 
   return;
 }
+
+//_____________________________________________________________________________
+Bool_t AliAnalysisTaskSEOmegacZero2XiPifromKFP::MakeMCCheck(TClonesArray *mcArray)
+{
+    // Analysis AliAODMCParticle
+    
+    Double_t Num_Omegac0 = 0;
+    Int_t    nmcpart = mcArray -> GetEntriesFast();
+    Int_t    NDaughtersOmegac = 2;
+    Int_t    NDaughtersXi = 2;
+    Int_t    NDaughtersLambda = 2;
+    Int_t    sign = 99;
+    
+    for (Int_t i=0; i<nmcpart; i++){
+        AliAODMCParticle *mcpart = NULL;
+        mcpart = (AliAODMCParticle*)mcArray->At(i);
+                
+        if(TMath::Abs(mcpart->GetPdgCode())==4332 && mcpart->GetNDaughters()==NDaughtersOmegac){  // 4332: Omegac0
+          
+            Int_t  CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
+            Bool_t pi_flag = kFALSE;
+            Bool_t xi_flag = kFALSE;
+            Bool_t lambda_flag = kFALSE;
+            Bool_t pifromxi_flag = kFALSE;
+            Bool_t proton_flag = kFALSE;
+            Bool_t pifromlambda_flag = kFALSE;
+            Int_t    correctDecayChannel = 0;
+            AliAODMCParticle *mcpipart = NULL;
+            AliAODMCParticle *mcxipart = NULL;
+            AliAODMCParticle *mclambdapart = NULL;
+            AliAODMCParticle *mcpifromxipart = NULL;
+            AliAODMCParticle *mcpifromlambdapart = NULL;
+            AliAODMCParticle *mcprotonpart = NULL;
+
+            for(Int_t idau = mcpart->GetDaughterFirst(); idau<mcpart->GetDaughterLast()+1; idau++){
+                if(idau <0) break;
+                AliAODMCParticle *mcdau = (AliAODMCParticle*)mcArray->At(idau);
+                if(TMath::Abs(mcdau->GetPdgCode())==3312 && mcdau->GetNDaughters()==NDaughtersXi){  // 3312: xi
+                    xi_flag = kTRUE;
+                    mcxipart = mcdau;
+                }
+                if(TMath::Abs(mcdau->GetPdgCode())==211){   // 211: pion
+                    pi_flag = kTRUE;
+                    mcpipart = mcdau;
+                }
+            }
+
+            if(pi_flag && xi_flag){
+              for(Int_t idau = mcxipart->GetDaughterFirst(); idau<mcxipart->GetDaughterLast()+1; idau++){
+                if(idau <0) break;
+                AliAODMCParticle *mcdau = (AliAODMCParticle*)mcArray->At(idau);
+                if(TMath::Abs(mcdau->GetPdgCode())==3122 && mcdau->GetNDaughters()==NDaughtersLambda){  // 3122: lambda
+                    lambda_flag = kTRUE;
+                    mclambdapart = mcdau;
+                }
+                if(TMath::Abs(mcdau->GetPdgCode())== 211){   // 211: pion
+                    pifromxi_flag = kTRUE;
+                    mcpifromxipart = mcdau;
+                }
+              }
+            }
+
+            if(pi_flag && xi_flag && pifromxi_flag && lambda_flag){
+              for(Int_t idau = mclambdapart->GetDaughterFirst(); idau<mclambdapart->GetDaughterLast()+1; idau++){
+                if(idau <0) break;
+                AliAODMCParticle *mcdau = (AliAODMCParticle*)mcArray->At(idau);
+                if(TMath::Abs(mcdau->GetPdgCode())==2212){  // 2212: proton
+                    proton_flag = kTRUE;
+                    mcprotonpart = mcdau;
+                }
+                if(TMath::Abs(mcdau->GetPdgCode())== 211){   // 211: pion
+                    pifromlambda_flag = kTRUE;
+                    mcpifromlambdapart = mcdau;
+                }
+              }
+            }
+
+            if(pi_flag && xi_flag && pifromxi_flag && lambda_flag && proton_flag && pifromlambda_flag){
+              correctDecayChannel = 2;
+            } else {
+              correctDecayChannel = -2;
+            }
+
+            if(pi_flag && xi_flag && pifromxi_flag && lambda_flag && proton_flag && pifromlambda_flag){
+            if(mcxipart->Charge() < 0 && mcxipart->Charge() != -99){
+              sign = 1; //omegac0
+            } else if (mcxipart->Charge() > 0){
+              sign = -1; //anti-omegac0
+            } else {
+              sign = 4;
+            }
+            }
+
+            if(pi_flag && xi_flag && pifromxi_flag && lambda_flag && proton_flag && pifromlambda_flag){
+              fHistMCDecayChain->Fill(3);
+            } else {
+              fHistMCDecayChain->Fill(-3);
+            }
+
+            AliAODMCParticle *mcdau_0 = (AliAODMCParticle*)mcArray->At(mcpart->GetDaughterFirst());
+            Double_t MLOverP = sqrt( pow(mcpart->Xv() - mcdau_0->Xv(),2.) +  pow(mcpart->Yv() - mcdau_0->Yv(),2.) +  pow(mcpart->Zv() - mcdau_0->Zv(),2.)) * mcpart-> M() / mcpart->P()*1.e4; //cosi' espresso in micrometri
+
+              
+            fHistMCPdgCode->Fill(mcpart->GetPdgCode()); //pdgcode of omegac0 (netries=number of generated omegac0)
+            fHistMCOmegacDauNumber->Fill(mcpart->GetNDaughters()); //number of daughters of omegac0 (netries=number of generated omegac0)
+            fHistMCOmegacPt->Fill(mcpart->Pt()); //Pt distribution of generated omegac0 (netries=number of generated omegac0)
+            fHistMCOmegacEta->Fill(mcpart->Eta()); //pseudorapidity distribution of simulated omegac0 (netries=number of generated omegac0)
+            fHistMCOmegacSign->Fill(sign); //omegac0 or antiomegac0 (netries=number of generated omegac0)
+            fHistMCOmegacCTau->Fill(MLOverP); //ctau distribution of simulated omegac0 (netries=number of generated omegac0)
+            fHistMCOmegacM->Fill(mcpart->M()); //mass distribution of simulated omegac0 (netries=number of generated omegac0)
+            fHistMCOrigin->Fill(CheckOrigin); //0 no quark found, 4 prompt, 5 non prompt (from beauty)
+
+            } //close loop over omegac0      
+    }  // close loop over nmcpart
+    
+    return kTRUE;
+    
+}//close MakeMCCheck

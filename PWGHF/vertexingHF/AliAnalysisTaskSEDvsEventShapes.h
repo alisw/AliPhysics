@@ -63,7 +63,7 @@ public:
         fS0SplName=S0SplName;
         fnSplmult=nSplmult;
         Printf("Printing content of Spline Lists for Spherocity percentages\n");
-        for(int a=0; a <= fnSplmult; a++){
+        for(int a=0; a <= fnSplmult+1; a++){
           fS0SplList[a] = S0SplList[a];
           fsplMult[a] = splMult[a];
           fS0SplList[a]->Print();

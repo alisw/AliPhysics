@@ -58,6 +58,7 @@ class AliJCDijetAna : public TObject
                          double lDeltaPhiCut,
                          double lmatchingR,
                          double ltrackingIneff,
+                         TH1D*  ltrackingIneffHistogram, //Only needed if ltrackingIneff<0.0
                          bool   luseCrho,
                          bool   lThisIsTrueMC);
 
@@ -96,6 +97,8 @@ class AliJCDijetAna : public TObject
         double pionmass;
         double matchingR;
         double ftrackingIneff;
+        TH1D*  ftrackingIneffHisto;
+        double ftrackingIneffTemp;
         bool bEvtHasAreaInfo;
         bool bUseCrho;
         bool bThisIsTrueMC;
@@ -155,7 +158,7 @@ class AliJCDijetAna : public TObject
         unique_ptr<fastjet::ClusterSequenceArea> cs_bge;
 #endif
 
-        ClassDef(AliJCDijetAna, 1); // ClassDef needed if inheriting from TObject
+        ClassDef(AliJCDijetAna, 2); // ClassDef needed if inheriting from TObject
 
 };
 

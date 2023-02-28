@@ -58,6 +58,7 @@ class AliAnalysisTaskSESemileptonicOmegac0KFP : public AliAnalysisTaskSE
    
     void                    SelectTrack(const AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks, Bool_t *seleFlags, TClonesArray *mcArray);
     void                    SelectCascade(const AliVEvent *event,Int_t nCasc,Int_t &nSeleCasc, Bool_t *seleCascFlags, TClonesArray *mcArray);
+    Bool_t                  SelectKFTrack(KFParticle kfpart);
     Bool_t                  PrefilterElectronULS(AliAODTrack *trk, AliAODEvent *aodEvent, Double_t &mass);
     Bool_t                  PrefilterElectronLS(AliAODTrack *trk, AliAODEvent *aodEvent,  Double_t &samesign_mass);
     
@@ -178,13 +179,7 @@ private:
     Double_t                fzVertPoolLims[100];        //[fNzVertPoolsLimSize] limits of the pools in zVertex
     Int_t                   fNMultPoolsLimSize;        /// number of pools in multiplicity for event mixing +1
     Double_t                fMultPoolLims[100];         //[fNMultPoolsLimSize] limits of the pools in multiplicity
-    
     Int_t                   fNOfPools; /// number of pools
-    TTree**                 fEventBuffer;   //!<! structure for event mixing
-    TObjString*             fEventInfo; ///unique event id for mixed event check
-    TObjArray*              fElectronTracks; /// array of electron-compatible tracks
-  
-    ULong64_t               fEventID;  /// eventID to store
     Double_t                fMultiplicityEM;        /// multiplicity for ev mix pools
     TH2F*                   fHistEventTrackletZvME;          //!<! hist. of evnt Tracklet vs. Zv for Mixed Event (ME)
     Bool_t                  fWriteMixedEventTree;  ///< flag to decide whether to write MixedEvent tree
@@ -200,7 +195,7 @@ private:
     
     
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSESemileptonicOmegac0KFP,6);   // class for Omegac0 -> e+Omega KFP
+    ClassDef(AliAnalysisTaskSESemileptonicOmegac0KFP,7);   // class for Omegac0 -> e+Omega KFP
     /// \endcond
 };
 

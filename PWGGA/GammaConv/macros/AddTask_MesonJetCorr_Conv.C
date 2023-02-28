@@ -50,10 +50,7 @@ void AddTask_MesonJetCorr_Conv(
   Bool_t enableElecDeDxPostCalibration = kFALSE,
   // special settings
   Bool_t enableChargedPrimary = kFALSE,
-  Bool_t doSmear = kFALSE, // switches to run user defined smearing
-  Double_t bremSmear = 1.,
-  Double_t smearPar = 0.,      // conv photon smearing params
-  Double_t smearParConst = 0., // conv photon smearing params
+  bool doFillMesonDCATree = false, // swith to enable filling the meson DCA tree for pile-up estimation
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig + special settings
 )
@@ -72,12 +69,16 @@ void AddTask_MesonJetCorr_Conv(
   TString fileNameMultWeights = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FMUW:");
   TString fileNamedEdxPostCalib = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FEPC:");
   TString fileNameCustomTriggerMimicOADB = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FTRM:");
+  TString fileNameMatBudWeights = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FMAW:");
 
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   TString strTrackMatcherRunningMode = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "TM", "", addTaskName);
   if (additionalTrainConfig.Contains("TM"))
     trackMatcherRunningMode = strTrackMatcherRunningMode.Atoi();
 
+  TString nameJetFinder = (additionalTrainConfig.Contains("JET") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET", "", addTaskName) : "";
+  printf("nameJetFinder: %s\n", nameJetFinder.Data());
+  
   TObjArray* rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   if (rmaxFacPtHardSetting->GetEntries() < 1) {
     cout << "ERROR: AddTask_MesonJetCorr_pp during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl;
@@ -178,15 +179,18 @@ void AddTask_MesonJetCorr_Conv(
   if (trainConfig == 1) {
     cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "0152103500000000"); // config without jet requirement
   } else if (trainConfig == 2) {
-    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "2r52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "2s52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
   } else if (trainConfig == 3) {
     cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "2152103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
   } else if (trainConfig == 6) {
-    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
     cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "2s52103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, rotation back
-  } else if (trainConfig == 6) {
-    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
+  } else if (trainConfig == 7) {
     cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2s52103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, rotation back
+  } else if (trainConfig == 16) { // same as 6 but with mixed jet back
+    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
+  } else if (trainConfig == 17) { // same as 7 but with mixed jet back
+    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
+   
     //---------------------------------------
     // configs for eta meson pp 13 TeV
     //---------------------------------------
@@ -257,14 +261,16 @@ void AddTask_MesonJetCorr_Conv(
     //---------------------------------------------------------//
     analysisConvCuts[i] = new AliConversionPhotonCuts();
 
-    // if (enableMatBudWeightsPi0 > 0){
-    //   if (isMC > 0){
-    // if (analysisConvCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
-    //   initializedMatBudWeigths_existing = kTRUE;}
-    // else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
-    //   }
-    //   else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
-    // }
+    if (enableMatBudWeightsPi0 > 0){
+      if (isMC > 0){
+        if (!analysisConvCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
+          cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;
+          enableMatBudWeightsPi0 = false;
+        }
+      } else {
+        cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;
+      }
+    }
 
     analysisConvCuts[i]->SetV0ReaderName(V0ReaderName);
     if (enableElecDeDxPostCalibration) {
@@ -306,23 +312,28 @@ void AddTask_MesonJetCorr_Conv(
 
   task->SetMesonKind(meson);
   task->SetIsConv(true);
+  task->SetJetContainerAddName(nameJetFinder);
   task->SetEventCutList(numberOfCuts, EventCutList);
   task->SetMesonCutList(numberOfCuts, MesonCutList);
   task->SetConversionCutList(numberOfCuts, ConvCutList);
-  //   task->SetDoMesonAnalysis(kTRUE); // I think we dont need that!
-  task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
+  task->SetDoMesonQA(enableQAMesonTask); 
   task->SetUseTHnSparseForResponse(enableTHnSparse);
+  if(enableMatBudWeightsPi0) task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(true);
+  if(doFillMesonDCATree) task->SetFillMesonDCATree(true);
 
   //connect containers
-  AliAnalysisDataContainer* coutput =
-    mgr->CreateContainer(Form("MesonJetCorrelation_Conv_%i_%i", meson, trainConfig), TList::Class(),
-                         AliAnalysisManager::kOutputContainer, Form("MesonJetCorrelation_Conv_%i_%i.root", meson, trainConfig));
-
+  TString nameContainer = Form("MesonJetCorrelation_Conv_%i_%i%s", meson, trainConfig, nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );
+  AliAnalysisDataContainer* coutput = mgr->CreateContainer(nameContainer, TList::Class(), AliAnalysisManager::kOutputContainer, Form("MesonJetCorrelation_Conv_%i_%i.root", meson, trainConfig));
+  
   mgr->AddTask(task);
-  cout << "before connect input\n";
   mgr->ConnectInput(task, 0, cinput);
-  cout << "before ConnectOutput\n";
   mgr->ConnectOutput(task, 1, coutput);
+
+  if(doFillMesonDCATree){
+    for(int i = 0; i<numberOfCuts; i++){
+      mgr->ConnectOutput(task,2+i,mgr->CreateContainer(Form("%s_%s_%s %s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data(), nameJetFinder.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("MesonJetCorrelation_Conv_%i_%i.root", meson, trainConfig)) );
+    }
+  }
 
   return;
 }

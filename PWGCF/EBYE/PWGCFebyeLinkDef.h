@@ -20,6 +20,7 @@
 #pragma link C++ class AliAnalysisTaskEfficiencyBFPsi+;
 #pragma link C++ class AliAnalysisTaskEffContBF+;
 #pragma link C++ class AliAnalysisTaskEffContPIDBF+;
+#pragma link C++ class AliAnalysisTaskRecEff+;
 #pragma link C++ class AliAnalysisTaskToyModel+;
 #pragma link C++ class AliAnalysisTaskLcToD0MC+;
 #pragma link C++ class AliAnalysisTaskAODFilterBitQA+;
@@ -128,12 +129,17 @@
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityROOT6+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2+;
-
+#pragma link C++ class AliAnalysisTaskCorrPP+;
+#pragma link C++ class AliAnalysisTaskCorrPbPb+;
+#pragma link C++ class AliAnalysisTaskCorrPPHM+;
+#pragma link C++ class AliAnalysisTaskCorrPbPbMC+;
+#pragma link C++ class AliAnalysisTaskCorrPPMC+;
 
 #pragma link C++ class AliAnalysisTaskNFMs+;
 
 #pragma link C++ class AliAnalysisHMMeanPt+;
 #pragma link C++ class AliAnalysisMeanPt+;
+#pragma link C++ class AliAnalysisMCMeanPt+;
 
 
 #endif

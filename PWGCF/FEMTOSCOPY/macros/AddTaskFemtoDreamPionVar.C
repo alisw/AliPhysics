@@ -1,6 +1,6 @@
 AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
-    bool isMC=false, bool MCtemplatefit=false, bool doSpherCut=true,float fSpherDown=0.7, float ptLow=0.5, float fdPhidEta=0.01,
-    TString CentEst="kInt7", const char *cutVar = "0") {
+    bool isMC=false, bool MCtemplatefit=false, bool doSharedCut=false, float fSpherDown=0.7, float fdPhidEta=0.01,
+    TString CentEst="kInt7", bool isRun1=false, bool oldreject=false, const char *cutVar = "0") {
 
   TString suffix = TString::Format("%s", cutVar);
 
@@ -16,23 +16,34 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
     return nullptr;
   }
 
-  AliFemtoDreamEventCuts *evtCuts=
+  AliFemtoDreamEventCuts *evtCuts = new AliFemtoDreamEventCuts;
+  if(isRun1) {
+      AliFemtoDreamEventCuts::StandardCutsRun1();
+    printf("This task uses StandardCutsRun1!\n");
+  } else {
       AliFemtoDreamEventCuts::StandardCutsRun2();
+    printf("This task uses StandardCutsRun2!\n");
+  }
   //This sets the method we want to use to clean up events with negative or too
   //low multiplicity. Usually you use the matching multiplicity estiamtor in your
   //event collection
   // Not mention in AN oder Indico
   evtCuts->CleanUpMult(false,false,false,true);
-  evtCuts->SetZVtxPosition(-10., 10.);
+  if(isRun1 && oldreject) {
+ 	evtCuts->SetCutMinContrib(3);
+  	evtCuts->SetZVtxPosition(-8., 8.);
+  } else {
+  	evtCuts->SetCutMinContrib(2);
+  	evtCuts->SetZVtxPosition(-10., 10.);
+  }
   // Only use those events where more than two primary tracks with |eta|<0.8 and pT>0.5 GeV/c see AN
+  evtCuts->SetSphericityCuts(fSpherDown, 1.0, 0.5);
 
+  //Create objects for setting the track cuts
   AliFemtoDreamTrackCuts *fTrackCutsPosPion=new AliFemtoDreamTrackCuts();
   AliFemtoDreamTrackCuts *fTrackCutsNegPion=new AliFemtoDreamTrackCuts();
-  fTrackCutsPosPion->SetMultDCAPlots(19,31);
-  fTrackCutsNegPion->SetMultDCAPlots(19,31);
-
-  if (suffix == "1") {//pT low
-  fSpherDown = 0.7;
+  
+if (suffix == "1") {//pT low
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.012;
@@ -63,7 +74,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if (suffix == "2") {//pT high
-  fSpherDown = 0.71;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.011;
@@ -94,7 +104,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "3" ) {//eta low
-  fSpherDown = 0.73;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.010;
@@ -125,7 +134,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "4" ) {//eta high
-  fSpherDown = 0.69;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.009;
@@ -156,7 +164,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "5" ) {//eta high conservative
-  fSpherDown = 0.7;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.008;
@@ -187,7 +194,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "6" ) {//eta low conservative
-  fSpherDown = 0.68;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.009;
@@ -218,7 +224,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "7" ) {//#TPC Cls low
-  fSpherDown = 0.67;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.010;
@@ -249,7 +254,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "8" ) {//#TPC Cls high conservative
-  fSpherDown = 0.67;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.011;
@@ -280,7 +284,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "9" ) {//#TPC Cls high
-  fSpherDown = 0.68;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.012;
@@ -311,7 +314,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "10" ) {//#TPC Cls low conservative
-  fSpherDown = 0.69;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.008;
@@ -342,7 +344,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "11" ) {//DCA XYZ low conservative
-  fSpherDown = 0.7;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.009;
@@ -373,7 +374,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "12" ) {//DCA XYZ high conservative
-  fSpherDown = 0.71;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.010;
@@ -404,7 +404,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "13" ) {//DCA XYZ high
-  fSpherDown = 0.72;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.011;
@@ -435,7 +434,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "14" ) {//DCA XYZ low
-  fSpherDown = 0.73;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.012;
@@ -466,7 +464,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "15" ) {//Sphericity low
-  fSpherDown = 0.72;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.012;
@@ -497,7 +494,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "16" ) {//Sphericity high
-  fSpherDown = 0.71;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.011;
@@ -528,7 +524,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "17" ) {//PID low
-  fSpherDown = 0.7;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.011;
@@ -559,7 +554,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "18" ) {//PID high
-  fSpherDown = 0.69;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.01;
@@ -590,7 +584,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "19" ) {//CPR low
-  fSpherDown = 0.68;
   fdPhidEta=0.01;
   //Track Cuts are defined here
   //positive pions
@@ -621,7 +614,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "20" ) {//CPR high
-  fSpherDown = 0.67;
   fdPhidEta=0.009;
   //Track Cuts are defined here
   //positive pions
@@ -652,7 +644,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if (suffix == "21") {//pT high
-  fSpherDown = 0.67;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.009;
@@ -683,7 +674,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "22" ) {//eta low
-  fSpherDown = 0.68;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.008;
@@ -714,7 +704,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "23" ) {//eta high
-  fSpherDown = 0.69;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.008;
@@ -745,7 +734,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "24" ) {//eta high conservative
-  fSpherDown = 0.7;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.008;
@@ -776,7 +764,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "25" ) {//eta low conservative
-  fSpherDown = 0.7;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.008;
@@ -807,7 +794,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "26" ) {//#TPC Cls low
-  fSpherDown = 0.71;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.009;
@@ -838,7 +824,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "27" ) {//#TPC Cls high conservative
-  fSpherDown = 0.71;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.009;
@@ -869,7 +854,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "28" ) {//#TPC Cls high
-  fSpherDown = 0.72;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.01;
@@ -900,7 +884,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "29" ) {//#TPC Cls low conservative
-  fSpherDown = 0.72;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.01;
@@ -931,7 +914,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "30" ) {//DCA XYZ low conservative
-  fSpherDown = 0.73;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.011;
@@ -962,7 +944,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "31" ) {//DCA XYZ high conservative
-  fSpherDown = 0.73;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.011;
@@ -993,7 +974,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "32" ) {//DCA XYZ high
-  fSpherDown = 0.69;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.012;
@@ -1024,7 +1004,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "33" ) {//DCA XYZ low
-  fSpherDown = 0.69;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.012;
@@ -1055,7 +1034,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "34" ) {//Sphericity low
-  fSpherDown = 0.68;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.008;
@@ -1086,7 +1064,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "35" ) {//Sphericity low
-  fSpherDown = 0.68;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.009;
@@ -1117,7 +1094,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "36" ) {//Sphericity low
-  fSpherDown = 0.72;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.01;
@@ -1148,7 +1124,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "37" ) {//Sphericity high
-  fSpherDown = 0.71;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.011;
@@ -1179,7 +1154,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "38" ) {//PID low
-  fSpherDown = 0.67;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.012;
@@ -1210,7 +1184,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "39" ) {//PID high
-  fSpherDown = 0.67;
   //Track Cuts are defined here
   //positive pions
   fdPhidEta=0.012;
@@ -1241,7 +1214,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "40" ) {//CPR low
-  fSpherDown = 0.69;
   fdPhidEta=0.011;
   //Track Cuts are defined here
   //positive pions
@@ -1272,7 +1244,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "41" ) {//CPR high
-  fSpherDown = 0.71;
   fdPhidEta=0.01;
   //Track Cuts are defined here
   //positive pions
@@ -1303,7 +1274,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "42" ) {//CPR low
-  fSpherDown = 0.7;
   fdPhidEta=0.008;
   //Track Cuts are defined here
   //positive pions
@@ -1334,7 +1304,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "43" ) {//CPR high
-  fSpherDown = 0.7;
   fdPhidEta=0.009;
   //Track Cuts are defined here
   //positive pions
@@ -1365,7 +1334,6 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
   } else if ( suffix == "44" ) {//CPR high
-  fSpherDown = 0.7;
   fdPhidEta=0.01;
   //Track Cuts are defined here
   //positive pions
@@ -1395,11 +1363,20 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.51);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
-  } else {//Default
-  //Track Cuts are defined here
+  } else {
+//Track Cuts are defined here
   //positive pions
+  //Track Cuts tuned according to:
+  //https://alice-notes.web.cern.ch/system/files/notes/analysis/911/2019-05-06-NotepPP_Spher_ver3.pdf
+  //+ most recent Indico-Präsentation:
+  //https://indico.cern.ch/event/761862/contributions/3594774/attachments/1922911/3181566/pipi_KK_Sep2019.pdf
   fTrackCutsPosPion->SetIsMonteCarlo(isMC);
   fTrackCutsPosPion->SetCutCharge(1);
+  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
+  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
+  fTrackCutsPosPion->SetNClsTPC(80);
+  // Not mention in AN oder Indico
+  fTrackCutsPosPion->SetDCAReCalculation(true);//Get the dca from the PropagateToVetex
   if ( !MCtemplatefit ) {
     fTrackCutsPosPion->SetFilterBit(96); // Filterbit 5+6
     fTrackCutsPosPion->SetDCAVtxZ(0.3);
@@ -1407,13 +1384,16 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   } else {
     fTrackCutsPosPion->SetFilterBit(128); // Filterbit 7
   }
-  fTrackCutsPosPion->SetPtRange(0.14, 4.0);
-  fTrackCutsPosPion->SetEtaRange(-0.8, 0.8);
-  fTrackCutsPosPion->SetNClsTPC(80);
-  fTrackCutsPosPion->SetDCAReCalculation(true);
+  // Cut on avrg. separation in TPC: <Dr> < 12 cm (10 cm, 3 cm); Share quality < 1.0; share fraction < 0.05
+  if ( doSharedCut ) { fTrackCutsPosPion->SetCutSharedCls(true);}
+  fTrackCutsPosPion->SetNClsTPC(80); // In Indico + additional Chi²/NDF <4
   fTrackCutsPosPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsPosPion->SetRejLowPtPionsTOF(false);
   fTrackCutsPosPion->SetMinimalBooking(false);
+  //this checks if the sigma of the wanted hypothesis is the smallest, and if
+  //another particle has a smaller sigma, the track is rejected.
+  // Not mention in AN oder Indico
+  //fTrackCutsPosPion->SetCutSmallestSig(true);
   fTrackCutsPosPion->SetPlotDCADist(true);
 
   //MC Template treatment
@@ -1421,27 +1401,30 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
     //fTrackCutsPosPion->SetPlotContrib(true);
     fTrackCutsPosPion->CheckParticleMothers(true);
     fTrackCutsPosPion->SetPlotDCADist(true);
-    fTrackCutsPosPion->SetOriginMultiplicityHists(true);
-    fTrackCutsPosPion->SetFillQALater(true);
+    //fTrackCutsPosPion->SetOriginMultiplicityHists(true);
+    fTrackCutsPosPion->SetFillQALater(false); //Be careful about this flag! When the MinimalBooking is set
   }
 
   //The same things for negative pions
   fTrackCutsNegPion->SetIsMonteCarlo(isMC);
   fTrackCutsNegPion->SetCutCharge(-1);
-  if ( !MCtemplatefit ) {
-    fTrackCutsPosPion->SetFilterBit(96); // Filterbit 5+6
-    fTrackCutsPosPion->SetDCAVtxZ(0.3);
-    fTrackCutsPosPion->SetDCAVtxXY(0.3);
-  } else {
-    fTrackCutsPosPion->SetFilterBit(128); // Filterbit 7
-  }
   fTrackCutsNegPion->SetPtRange(0.14, 4.0);
   fTrackCutsNegPion->SetEtaRange(-0.8, 0.8);
   fTrackCutsNegPion->SetNClsTPC(80);
   fTrackCutsNegPion->SetDCAReCalculation(true);
+  if ( !MCtemplatefit ) {
+    fTrackCutsNegPion->SetFilterBit(96);
+    fTrackCutsNegPion->SetDCAVtxZ(0.3);
+    fTrackCutsNegPion->SetDCAVtxXY(0.3);
+  } else {
+    fTrackCutsNegPion->SetFilterBit(128);
+  }
+  if ( doSharedCut ) { fTrackCutsNegPion->SetCutSharedCls(true);}
+  fTrackCutsNegPion->SetNClsTPC(80);
   fTrackCutsNegPion->SetPID(AliPID::kPion, 0.5);
   fTrackCutsNegPion->SetRejLowPtPionsTOF(false);
   fTrackCutsNegPion->SetMinimalBooking(false);
+  //fTrackCutsNegPion->SetCutSmallestSig(true);
   fTrackCutsNegPion->SetPlotDCADist(true);
 
   //MC Template treatment
@@ -1449,15 +1432,13 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
     //fTrackCutsNegPion->SetPlotContrib(true);
     fTrackCutsNegPion->CheckParticleMothers(true);
     fTrackCutsNegPion->SetPlotDCADist(true);
-    fTrackCutsNegPion->SetOriginMultiplicityHists(true);
-    fTrackCutsNegPion->SetFillQALater(true);
+    //fTrackCutsNegPion->SetOriginMultiplicityHists(true);
+    fTrackCutsNegPion->SetFillQALater(false); //Be careful about this flag! When the MinimalBooking is set
   }
+
+
   }
 
-  if(doSpherCut){evtCuts->SetSphericityCuts(fSpherDown, 1.0, ptLow);}  
-
-
- 
   //Now we define stuff we want for our Particle collection
   //Thanks, CINT - will not compile due to an illegal constructor
   //std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
@@ -1470,7 +1451,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
 
   //We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
-  ZVtxBins.push_back(-10);
+  if(isRun1) ZVtxBins.push_back(-10);
   ZVtxBins.push_back(-8);
   ZVtxBins.push_back(-6);
   ZVtxBins.push_back(-4);
@@ -1480,7 +1461,7 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   ZVtxBins.push_back(4);
   ZVtxBins.push_back(6);
   ZVtxBins.push_back(8);
-  ZVtxBins.push_back(10);
+  if(isRun1) ZVtxBins.push_back(10);
   //The Multiplicity bins are set here
   std::vector<int> MultBins;
   MultBins.push_back(0);
@@ -1514,6 +1495,15 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   closeRejection.push_back(false); // pi+ pi- 
   closeRejection.push_back(true); // pi- pi-
 
+  if (suffix == "5") {
+    //Deactivate the ClosePairRejection
+    fdPhidEta=0.;
+    closeRejection.clear();
+    closeRejection.push_back(false); // pi+ pi+
+    closeRejection.push_back(false); // pi+ pi-
+    closeRejection.push_back(false); // pi- pi-
+  }
+
   //QA plots for tracks
   std::vector<int> pairQA;
   pairQA.push_back(11); // pi+ pi+
@@ -1541,10 +1531,12 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   config->SetkTBinning(true);
   config->SetmTBinning(true);
   config->SetMinimalBookingME(false);
-  config->SetdPhidEtaPlots(false);
+  config->SetdPhidEtaPlots(true);
   config->SetkTandMultBinning(true);
-  config->SetdPhidEtaPlotsSmallK(false);
-  config->SetPhiEtaBinnign(false);
+  config->SetkTandMultPtBinning(true);
+  if(isMC) config->SetkTandMultMCTrueBinning(true);
+  config->SetdPhidEtaPlotsSmallK(true);
+  config->SetPhiEtaBinnign(true);
   
   if (isMC) {
       config->SetMomentumResolution(true);
@@ -1564,9 +1556,15 @@ AliAnalysisTaskSE* AddTaskFemtoDreamPionVar(
   //kINT7 == Minimum bias
   //kHighMultV0 high multiplicity triggered by the V0 detector
   if(CentEst == "kInt7"){
-	task->SetTrigger(AliVEvent::kINT7);
-    task->SelectCollisionCandidates(AliVEvent::kINT7);
-    std::cout << "Added kINT7 Trigger \n";
+    if(isRun1) {
+    	task->SetTrigger(AliVEvent::kMB);
+    	task->SelectCollisionCandidates(AliVEvent::kMB);
+    	std::cout << "Added kMB Trigger \n";
+    } else {
+    	task->SetTrigger(AliVEvent::kINT7);
+    	task->SelectCollisionCandidates(AliVEvent::kINT7);
+    	std::cout << "Added kINT7 Trigger \n";
+    }
   } else if (CentEst == "kHM") {
     task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
     std::cout << "Added kHighMultV0 Trigger \n";

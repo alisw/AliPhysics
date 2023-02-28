@@ -162,10 +162,23 @@ void AliAnalysisTaskUpcPhi0::Init()
 		dca_1_T[i] = -999;
 		HasPointOnITSLayer_0_T[i] = -999;
 		HasPointOnITSLayer_1_T[i] = -999;
+		HasPointOnITSLayer_2_T[i] = -999;
+		HasPointOnITSLayer_3_T[i] = -999;
+		HasPointOnITSLayer_4_T[i] = -999;
+		HasPointOnITSLayer_5_T[i] = -999;
 		TrackPx_T[i] = -999;
 		TrackPy_T[i] = -999;
 		TrackPz_T[i] = -999;
 		TrackPt_T[i] = -999;
+		TrackdEdxTunedOnData_T[i] = -999;
+    	TrackexpTPCmeanKaon_T[i] = -999;
+    	TrackexpTPCmeanMuon_T[i] = -999;
+    	TrackexpTPCmeanPion_T[i] = -999;
+    	TrackexpTPCmeanElectron_T[i] = -999;
+    	TrackexpTPCwidthKaon_T[i] = -999;
+    	TrackexpTPCwidthMuon_T[i] = -999;
+    	TrackexpTPCwidthPion_T[i] = -999;
+    	TrackexpTPCwidthElectron_T[i] = -999;
 	}
 	for (Int_t i = 0; i < 3; i++)
 	{
@@ -276,6 +289,10 @@ void AliAnalysisTaskUpcPhi0::UserCreateOutputObjects()
 	fTree->Branch("dca_1_T", &dca_1_T, "dca_1_T[7]/F");
 	fTree->Branch("HasPointOnITSLayer_0_T", &HasPointOnITSLayer_0_T, "HasPointOnITSLayer_0_T[7]/O");
 	fTree->Branch("HasPointOnITSLayer_1_T", &HasPointOnITSLayer_1_T, "HasPointOnITSLayer_1_T[7]/O");
+	fTree->Branch("HasPointOnITSLayer_2_T", &HasPointOnITSLayer_2_T, "HasPointOnITSLayer_2_T[7]/O");
+	fTree->Branch("HasPointOnITSLayer_3_T", &HasPointOnITSLayer_3_T, "HasPointOnITSLayer_3_T[7]/O");
+	fTree->Branch("HasPointOnITSLayer_4_T", &HasPointOnITSLayer_4_T, "HasPointOnITSLayer_4_T[7]/O");
+	fTree->Branch("HasPointOnITSLayer_5_T", &HasPointOnITSLayer_5_T, "HasPointOnITSLayer_5_T[7]/O");
 	fTree->Branch("ITSSA_T", &ITSSA_T, "ITSSA_T[7]/O");
 	fTree->Branch("Lets_Theta_T", &Lets_Theta_T, "Lets_Theta_T[177]/F");
 	fTree->Branch("Lets_Phi_T", &Lets_Phi_T, "Lets_Phi_T[177]/F");
@@ -288,6 +305,15 @@ void AliAnalysisTaskUpcPhi0::UserCreateOutputObjects()
 	fTree->Branch("ADCTime_T", &ADCTime_T, "ADCTime_T/F");
 	fTree->Branch("NbPMADA_T", &NbPMADA_T, "NbPMADA_T/F");
 	fTree->Branch("NbPMADC_T", &NbPMADC_T, "NbPMADC_T/F");
+	fTree->Branch("TrackdEdxTunedOnData_T", &TrackdEdxTunedOnData_T, "TrackdEdxTunedOnData_T[7]/F");
+	fTree->Branch("TrackexpTPCmeanKaon_T", &TrackexpTPCmeanKaon_T, "TrackexpTPCmeanKaon_T[7]/F");
+	fTree->Branch("TrackexpTPCmeanMuon_T", &TrackexpTPCmeanMuon_T, "TrackexpTPCmeanMuon_T[7]/F");
+	fTree->Branch("TrackexpTPCmeanPion_T", &TrackexpTPCmeanPion_T, "TrackexpTPCmeanPion_T[7]/F");
+	fTree->Branch("TrackexpTPCmeanElectron_T", &TrackexpTPCmeanElectron_T, "TrackexpTPCmeanElectron_T[7]/F");
+	fTree->Branch("TrackexpTPCwidthKaon_T", &TrackexpTPCwidthKaon_T, "TrackexpTPCwidthKaon_T[7]/F");
+	fTree->Branch("TrackexpTPCwidthMuon_T", &TrackexpTPCwidthMuon_T, "TrackexpTPCwidthMuon_T[7]/F");
+	fTree->Branch("TrackexpTPCwidthPion_T", &TrackexpTPCwidthPion_T, "TrackexpTPCwidthPion_T[7]/F");
+	fTree->Branch("TrackexpTPCwidthElectron_T", &TrackexpTPCwidthElectron_T, "TrackexpTPCwidthElectron_T[7]/F");
 
 	if (debugMode)
 		std::cout << "Defining MC ttree..." << std::endl;
@@ -537,10 +563,23 @@ void AliAnalysisTaskUpcPhi0::UserExec(Option_t *)
 		dca_1_T[i] = -999;
 		HasPointOnITSLayer_0_T[i] = -999;
 		HasPointOnITSLayer_1_T[i] = -999;
+		HasPointOnITSLayer_2_T[i] = -999;
+		HasPointOnITSLayer_3_T[i] = -999;
+		HasPointOnITSLayer_4_T[i] = -999;
+		HasPointOnITSLayer_5_T[i] = -999;
 		TrackPx_T[i] = -999;
 		TrackPy_T[i] = -999;
 		TrackPz_T[i] = -999;
 		TrackPt_T[i] = -999;
+		TrackdEdxTunedOnData_T[i] = -999;
+    	TrackexpTPCmeanKaon_T[i] = -999;
+    	TrackexpTPCmeanMuon_T[i] = -999;
+    	TrackexpTPCmeanPion_T[i] = -999;
+    	TrackexpTPCmeanElectron_T[i] = -999;
+    	TrackexpTPCwidthKaon_T[i] = -999;
+    	TrackexpTPCwidthMuon_T[i] = -999;
+    	TrackexpTPCwidthPion_T[i] = -999;
+    	TrackexpTPCwidthElectron_T[i] = -999;
 	}
 
 	if (debugMode)
@@ -554,27 +593,21 @@ void AliAnalysisTaskUpcPhi0::UserExec(Option_t *)
 		if (fOption.Contains("GeoCut"))
 			esdTrackCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
 
-		if (!trk)
-			continue;
-		// if( trk->IsOn(AliESDtrack::kITSpureSA) ) continue;
-		// if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
-		// if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
-		// if(trk->GetTPCNcls() < fTPCNcls) continue;
-		// if(trk->GetTPCNcls() < 1) continue;
+		if( !trk ) continue;
+		if( trk->IsOn(AliESDtrack::kITSpureSA) ) continue;
+		if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
+		if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
+		if(trk->GetTPCNcls() < fTPCNcls) continue;
 		// if(trk->GetTPCchi2()/trk->GetTPCNcls() > 4) continue;
-		// if(!((trk->HasPointOnITSLayer(0))&&(trk->HasPointOnITSLayer(1)))) continue;
+		if(!((trk->HasPointOnITSLayer(0))&&(trk->HasPointOnITSLayer(1)))) continue;
 		Float_t dca[2] = {0.0, 0.0};
 		AliExternalTrackParam cParam;
 		if (!trk->RelateToVertex(fESDVertex, esd->GetMagneticField(), 300., &cParam))
 			continue;
 		trk->GetImpactParameters(dca[0], dca[1]);
-		if (TMath::Abs(dca[1]) > 5.)
-			continue;
-		if (TMath::Abs(dca[0]) > 5.)
-			continue;
-		// if(TMath::Abs(dca[1]) > 2) continue;
-		// Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
-		// if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+		if(TMath::Abs(dca[1]) > 2) continue;
+		Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
+		if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
 
 		// fill variables for good tracks
 		TPCrefit_T[nGoodTracks] = (trk->GetStatus() & AliESDtrack::kTPCrefit); // TPC refitted tracks
@@ -588,6 +621,10 @@ void AliAnalysisTaskUpcPhi0::UserExec(Option_t *)
 		dca_1_T[nGoodTracks] = dca[1];										   // Get distance closeset aproach in logitudinal plane
 		HasPointOnITSLayer_0_T[nGoodTracks] = trk->HasPointOnITSLayer(0);	   // test if points on ITS layer 0 (map of clusters, one bit per a layer)
 		HasPointOnITSLayer_1_T[nGoodTracks] = trk->HasPointOnITSLayer(1);	   // test if points on ITS layer 1
+		HasPointOnITSLayer_2_T[nGoodTracks] = trk->HasPointOnITSLayer(2);	   // test if points on ITS layer 2
+		HasPointOnITSLayer_3_T[nGoodTracks] = trk->HasPointOnITSLayer(3);	   // test if points on ITS layer 3
+		HasPointOnITSLayer_4_T[nGoodTracks] = trk->HasPointOnITSLayer(4);	   // test if points on ITS layer 4
+		HasPointOnITSLayer_5_T[nGoodTracks] = trk->HasPointOnITSLayer(5);	   // test if points on ITS layer 5
 
 		// store good track index
 		TrackIndex[nGoodTracks] = itr;
@@ -769,6 +806,16 @@ void AliAnalysisTaskUpcPhi0::UserExec(Option_t *)
 			PIDTPCPion_T[i] = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kPion);
 			PIDTPCKaon_T[i] = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kKaon);
 			PIDTPCMuon_T[i] = fPIDResponse->NumberOfSigmasTPC(trk, AliPID::kMuon);
+
+			TrackdEdxTunedOnData_T[i] = trk->GetTPCsignalTunedOnData();
+            TrackexpTPCmeanKaon_T[i] = fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, trk, AliPID::kKaon);
+            TrackexpTPCmeanMuon_T[i] = fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, trk, AliPID::kMuon);
+            TrackexpTPCmeanPion_T[i] = fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, trk, AliPID::kPion);
+            TrackexpTPCmeanElectron_T[i] = fPIDResponse->GetExpectedSignal(AliPIDResponse::kTPC, trk, AliPID::kElectron);
+            TrackexpTPCwidthKaon_T[i] = fPIDResponse->GetExpectedSigma(AliPIDResponse::kTPC, trk, AliPID::kKaon);
+            TrackexpTPCwidthMuon_T[i] = fPIDResponse->GetExpectedSigma(AliPIDResponse::kTPC, trk, AliPID::kMuon);
+            TrackexpTPCwidthPion_T[i] = fPIDResponse->GetExpectedSigma(AliPIDResponse::kTPC, trk, AliPID::kPion);
+            TrackexpTPCwidthElectron_T[i] = fPIDResponse->GetExpectedSigma(AliPIDResponse::kTPC, trk, AliPID::kElectron);
 
 			// ITS PID n-sigma
 			PIDITSElectron_T[i] = fPIDResponse->NumberOfSigmasITS(trk, AliPID::kElectron);

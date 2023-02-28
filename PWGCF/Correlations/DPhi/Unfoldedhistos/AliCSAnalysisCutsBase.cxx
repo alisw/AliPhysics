@@ -38,6 +38,8 @@ AliInputEventHandler               *AliCSAnalysisCutsBase::fgInputHandler = NULL
 AliInputEventHandler               *AliCSAnalysisCutsBase::fgMCHandler = NULL;
 Bool_t                              AliCSAnalysisCutsBase::fgIsESD = kTRUE;
 TClonesArray                       *AliCSAnalysisCutsBase::fgMCArray = NULL;
+const AliVVertex* AliCSAnalysisCutsBase::fVertex = nullptr;
+double AliCSAnalysisCutsBase::fMagField = 0.0;
 
 /// Default constructor for serialization
 AliCSAnalysisCutsBase::AliCSAnalysisCutsBase() :
@@ -671,6 +673,11 @@ void AliCSAnalysisCutsBase::NotifyRunGlobal() {
       // LHC18x anchored MCs
   } else if (szLHCPeriod.Contains("LHC18l8")) {
       fgDataPeriod = kLHC18l8;
+      fgAnchorPeriod = kLHC18r;
+      fgIsMC = kTRUE;
+      fgEnergy = kPbPb5TeV;
+  } else if (szLHCPeriod.Contains("LHC20e3")) {
+      fgDataPeriod = kLHC20e3;
       fgAnchorPeriod = kLHC18r;
       fgIsMC = kTRUE;
       fgEnergy = kPbPb5TeV;

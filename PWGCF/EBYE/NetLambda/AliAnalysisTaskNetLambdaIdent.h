@@ -182,11 +182,12 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   const Float_t massPi = 0.139570;
   const Float_t massP = 0.938272;
   const Float_t massLambda = 1.115683;
+  const Float_t massXi = 1.32171;
 
   //AliMCEvent*              fMcEvent;    //! MC event
   //AliInputEventHandler*    fMcHandler;  //! MCEventHandler 
  
-  ClassDef(AliAnalysisTaskNetLambdaIdent,15);
+  ClassDef(AliAnalysisTaskNetLambdaIdent,16);
 };
 
 //_____________________________________________________________________________

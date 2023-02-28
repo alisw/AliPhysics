@@ -3742,6 +3742,12 @@ void AddTask_GammaConvV1_PbPb(
       cuts.AddCutPCM("11310e03", "0d200009ab770c00amd0400000", "0152101500000000"); // 10-30%
       cuts.AddCutPCM("13530e03", "0d200009ab770c00amd0400000", "0152101500000000"); // 30-50%
       cuts.AddCutPCM("15910e03", "0d200009ab770c00amd0400000", "0152101500000000"); // 50-90%
+      // same as 990 but with pass1 pileup cut
+  } else if (trainConfig == 991){ //____________________-___
+      cuts.AddCutPCM("10130a03", "0d200009ab770c00amd0400000", "0152101500000000"); // 0-10%
+      cuts.AddCutPCM("11310a03", "0d200009ab770c00amd0400000", "0152101500000000"); // 10-30%
+      cuts.AddCutPCM("13530a03", "0d200009ab770c00amd0400000", "0152101500000000"); // 30-50%
+      cuts.AddCutPCM("15910a03", "0d200009ab770c00amd0400000", "0152101500000000"); // 50-90%
 
   //****************************************************************************************************
 
@@ -3985,7 +3991,7 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("11310053", "0d200009ab770c00amd0400000", "0152101500000000"); // 10-30%
     cuts.AddCutPCM("13530053", "0d200009ab770c00amd0400000", "0152101500000000"); // 30-50%
     cuts.AddCutPCM("15910053", "0d200009ab770c00amd0400000", "0152101500000000"); // 50-90%
-    // same with particle rejection == 2, copy a (no pileup in LHC20g10)
+    // same with particle rejection == 2, copy a, for addedSignals production LHC20g10 (no pileup in LHC20g10)
   } else if (trainConfig == 2516){ 
     cuts.AddCutPCM("10130023", "0d200009ab770c00amd0400000", "0152101500000000"); // 0-10%
     cuts.AddCutPCM("11310023", "0d200009ab770c00amd0400000", "0152101500000000"); // 10-30%
@@ -4009,6 +4015,30 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("11310023", "0d200009ab770c00amd0400000", "0152101500000000"); // 10-30%
     cuts.AddCutPCM("13530023", "0d200009ab770c00amd0400000", "0152101500000000"); // 30-50%
     cuts.AddCutPCM("15910023", "0d200009ab770c00amd0400000", "0152101500000000"); // 50-90%
+  // 4 more copies of 2515 copy a
+  } else if (trainConfig == 2520){ 
+    cuts.AddCutPCM("10130053", "0d200009ab770c00amd0400000", "0152101500000000"); // 0-10%
+    cuts.AddCutPCM("11310053", "0d200009ab770c00amd0400000", "0152101500000000"); // 10-30%
+    cuts.AddCutPCM("13530053", "0d200009ab770c00amd0400000", "0152101500000000"); // 30-50%
+    cuts.AddCutPCM("15910053", "0d200009ab770c00amd0400000", "0152101500000000"); // 50-90%
+  // copy of 2515, copy b
+  } else if (trainConfig == 2521){ 
+    cuts.AddCutPCM("10130053", "0d200009ab770c00amd0400000", "0152101500000000"); // 0-10%
+    cuts.AddCutPCM("11310053", "0d200009ab770c00amd0400000", "0152101500000000"); // 10-30%
+    cuts.AddCutPCM("13530053", "0d200009ab770c00amd0400000", "0152101500000000"); // 30-50%
+    cuts.AddCutPCM("15910053", "0d200009ab770c00amd0400000", "0152101500000000"); // 50-90%
+  // copy of 2515, copy c
+  } else if (trainConfig == 2522){ 
+    cuts.AddCutPCM("10130053", "0d200009ab770c00amd0400000", "0152101500000000"); // 0-10%
+    cuts.AddCutPCM("11310053", "0d200009ab770c00amd0400000", "0152101500000000"); // 10-30%
+    cuts.AddCutPCM("13530053", "0d200009ab770c00amd0400000", "0152101500000000"); // 30-50%
+    cuts.AddCutPCM("15910053", "0d200009ab770c00amd0400000", "0152101500000000"); // 50-90%
+  // copy of 2515, copy d
+  } else if (trainConfig == 2523){ 
+    cuts.AddCutPCM("10130053", "0d200009ab770c00amd0400000", "0152101500000000"); // 0-10%
+    cuts.AddCutPCM("11310053", "0d200009ab770c00amd0400000", "0152101500000000"); // 10-30%
+    cuts.AddCutPCM("13530053", "0d200009ab770c00amd0400000", "0152101500000000"); // 30-50%
+    cuts.AddCutPCM("15910053", "0d200009ab770c00amd0400000", "0152101500000000"); // 50-90%
 
 
   } else {

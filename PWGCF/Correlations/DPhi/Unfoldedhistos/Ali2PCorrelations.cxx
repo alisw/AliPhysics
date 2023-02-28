@@ -31,95 +31,76 @@
 #include "AliAnalysisManager.h"
 #include "Ali2PCorrelations.h"
 
-const char *Ali2PCorrelations::TrackPairsNames[] = {"OO","OT","TO","TT"};
-
 /// Default constructor for object serialization
-Ali2PCorrelations::Ali2PCorrelations() :
-    AliTwoParticleCorrelationsBase(),
-    fhPositivePtAverage(nullptr),
-    fhNegativePtAverage(nullptr),
-    fId_1(nullptr),
-    fCharge_1(nullptr),
-    fIxEta_1(nullptr),
-    fIxPhi_1(nullptr),
-    fIxPt_1(nullptr),
-    fAvgPt_1(nullptr),
-    fCorrection_1(nullptr),
-    fId_2(nullptr),
-    fCharge_2(nullptr),
-    fIxEta_2(nullptr),
-    fIxPhi_2(nullptr),
-    fIxPt_2(nullptr),
-    fAvgPt_2(nullptr),
-    fCorrection_2(nullptr),
+Ali2PCorrelations::Ali2PCorrelations()
+  : AliTwoParticleCorrelationsBase(),
+    fhPtAverage{},
+    fPID(nullptr),
+    fIxEta(nullptr),
+    fIxPhi(nullptr),
+    fIxPt(nullptr),
+    fAvgPt(nullptr),
+    fCorrection(nullptr),
     /* pair bins */
     fNBins_deltaphi(72),
     fMin_deltaphi(0.0),
-    fMax_deltaphi(TMath::Pi()*2.0),
-    fWidth_deltaphi(TMath::Pi()*2.0/72.0),
-    fNBins_deltaeta(20*2-1),
+    fMax_deltaphi(TMath::Pi() * 2.0),
+    fWidth_deltaphi(TMath::Pi() * 2.0 / 72.0),
+    fNBins_deltaeta(20 * 2 - 1),
     fMin_deltaeta(-2.0),
     fMax_deltaeta(2.0),
-    fWidth_deltaeta(4.0/(20*2-1)),
+    fWidth_deltaeta(4.0 / (20 * 2 - 1)),
     /* histograms */
-    fhN2_12_vsPtPt{nullptr,nullptr,nullptr,nullptr},
-    fhN2_12_vsDEtaDPhi{nullptr,nullptr,nullptr,nullptr},
-    fhN2_12_vsDEtaDPhi_na{nullptr,nullptr,nullptr,nullptr},
-    fhSum2PtPt_12_vsDEtaDPhi{nullptr,nullptr,nullptr,nullptr},
-    fhSum2DptDpt_12_vsDEtaDPhi{nullptr,nullptr,nullptr,nullptr},
-    fhSum2DptDpt_12_vsDEtaDPhi_na{nullptr,nullptr,nullptr,nullptr},
+    fhN2_12_vsPtPt{},
+    fhN2_12_vsDEtaDPhi{},
+    fhN2_12_vsDEtaDPhi_na{},
+    fhSum2PtPt_12_vsDEtaDPhi{},
+    fhSum2DptDpt_12_vsDEtaDPhi{},
+    fhSum2DptDpt_12_vsDEtaDPhi_na{},
     /* vs centrality profiles */
-    fhN2_12_vsC{nullptr,nullptr,nullptr,nullptr},
-    fhSum2PtPt_12_vsC{nullptr,nullptr,nullptr,nullptr},
-    fhSum2DptDpt_12_vsC{nullptr,nullptr,nullptr,nullptr},
-    fhN2nw_12_vsC{nullptr,nullptr,nullptr,nullptr},
-    fhSum2PtPtnw_12_vsC{nullptr,nullptr,nullptr,nullptr},
-    fhSum2DptDptnw_12_vsC{nullptr,nullptr,nullptr,nullptr}
+    fhN2_12_vsC{},
+    fhSum2PtPt_12_vsC{},
+    fhSum2DptDpt_12_vsC{},
+    fhN2nw_12_vsC{},
+    fhSum2PtPtnw_12_vsC{},
+    fhSum2DptDptnw_12_vsC{}
 {
 }
 
 /// Normal constructor
 /// \param name the name for the object instance
-Ali2PCorrelations::Ali2PCorrelations(const char *name) :
-    AliTwoParticleCorrelationsBase(name),
-    fhPositivePtAverage(nullptr),
-    fhNegativePtAverage(nullptr),
-    fId_1(nullptr),
-    fCharge_1(nullptr),
-    fIxEta_1(nullptr),
-    fIxPhi_1(nullptr),
-    fIxPt_1(nullptr),
-    fAvgPt_1(nullptr),
-    fCorrection_1(nullptr),
-    fId_2(nullptr),
-    fCharge_2(nullptr),
-    fIxEta_2(nullptr),
-    fIxPhi_2(nullptr),
-    fIxPt_2(nullptr),
-    fAvgPt_2(nullptr),
-    fCorrection_2(nullptr),
+Ali2PCorrelations::Ali2PCorrelations(const char* name)
+  : AliTwoParticleCorrelationsBase(name),
+    fhPtAverage{},
+    fPID(nullptr),
+    fIxEta(nullptr),
+    fIxPhi(nullptr),
+    fIxPt(nullptr),
+    fAvgPt(nullptr),
+    fCorrection(nullptr),
     /* pair bins */
     fNBins_deltaphi(72),
     fMin_deltaphi(0.0),
-    fMax_deltaphi(TMath::Pi()*2.0),
-    fWidth_deltaphi(TMath::Pi()*2.0/72.0),
-    fNBins_deltaeta(20*2-1),
+    fMax_deltaphi(TMath::Pi() * 2.0),
+    fWidth_deltaphi(TMath::Pi() * 2.0 / 72.0),
+    fNBins_deltaeta(20 * 2 - 1),
     fMin_deltaeta(-2.0),
     fMax_deltaeta(2.0),
-    fWidth_deltaeta(4.0/(20*2-1)),
+    fWidth_deltaeta(4.0 / (20 * 2 - 1)),
     /* histograms */
-    fhN2_12_vsPtPt{nullptr,nullptr,nullptr,nullptr},
-    fhN2_12_vsDEtaDPhi{nullptr,nullptr,nullptr,nullptr},
-    fhN2_12_vsDEtaDPhi_na{nullptr,nullptr,nullptr,nullptr},
-    fhSum2PtPt_12_vsDEtaDPhi{nullptr,nullptr,nullptr,nullptr},
-    fhSum2DptDpt_12_vsDEtaDPhi{nullptr,nullptr,nullptr,nullptr},
-    fhSum2DptDpt_12_vsDEtaDPhi_na{nullptr,nullptr,nullptr,nullptr},
-    fhN2_12_vsC{nullptr,nullptr,nullptr,nullptr},
-    fhSum2PtPt_12_vsC{nullptr,nullptr,nullptr,nullptr},
-    fhSum2DptDpt_12_vsC{nullptr,nullptr,nullptr,nullptr},
-    fhN2nw_12_vsC{nullptr,nullptr,nullptr,nullptr},
-    fhSum2PtPtnw_12_vsC{nullptr,nullptr,nullptr,nullptr},
-    fhSum2DptDptnw_12_vsC{nullptr,nullptr,nullptr,nullptr}
+    fhN2_12_vsPtPt{},
+    fhN2_12_vsDEtaDPhi{},
+    fhN2_12_vsDEtaDPhi_na{},
+    fhSum2PtPt_12_vsDEtaDPhi{},
+    fhSum2DptDpt_12_vsDEtaDPhi{},
+    fhSum2DptDpt_12_vsDEtaDPhi_na{},
+    /* vs centrality profiles */
+    fhN2_12_vsC{},
+    fhSum2PtPt_12_vsC{},
+    fhSum2DptDpt_12_vsC{},
+    fhN2nw_12_vsC{},
+    fhSum2PtPtnw_12_vsC{},
+    fhSum2DptDptnw_12_vsC{}
 {
 }
 
@@ -127,22 +108,12 @@ Ali2PCorrelations::Ali2PCorrelations(const char *name) :
 /// Deallocates the allocated memory
 Ali2PCorrelations::~Ali2PCorrelations() {
   /* track 1 storage */
-  delete [] fId_1;
-  delete [] fCharge_1;
-  delete [] fIxEta_1;
-  delete [] fIxPhi_1;
-  delete [] fIxPt_1;
-  delete [] fAvgPt_1;
-  delete [] fCorrection_1;
-
-  /* track 2 storage */
-  delete [] fId_2;
-  delete [] fCharge_2;
-  delete [] fIxEta_2;
-  delete [] fIxPhi_2;
-  delete [] fIxPt_2;
-  delete [] fAvgPt_2;
-  delete [] fCorrection_2;
+  delete[] fPID;
+  delete[] fIxEta;
+  delete[] fIxPhi;
+  delete[] fIxPt;
+  delete[] fAvgPt;
+  delete[] fCorrection;
 }
 
 
@@ -182,16 +153,16 @@ TString Ali2PCorrelations::GetBinningConfigurationString() const {
 }
 
 /// \brief Stores the average pt distribution in eta phi
-/// \param h2_1 the avg pT for positive tracks
-/// \param h2_2 the avg pT for negative tracks
-bool Ali2PCorrelations::SetPtAvg(const TH2 *h2_1, const TH2 *h2_2) {
-  if (h2_1 != nullptr && h2_2 != nullptr) {
-    AliInfo("Stored transvers momentum average distributions");
-    fhPositivePtAverage = h2_1;
-    fhNegativePtAverage = h2_2;
+/// \param h2 the avg pT for the different species
+bool Ali2PCorrelations::SetPtAvg(std::vector<const TH2*> h2)
+{
+  if (h2.size() > 0) {
+    AliInfo("Stored transverse momentum average distributions");
+    for (uint i = 0; i < h2.size(); ++i) {
+      fhPtAverage.push_back(h2[i]);
+    }
     return true;
-  }
-  else {
+  } else {
     AliError("Transvers momentum average distributions empty!!! P2 will not work!!!");
     return false;
   }
@@ -206,11 +177,11 @@ void Ali2PCorrelations::Initialize()
 
   AliTwoParticleCorrelationsBase::Initialize();
 
-  fNBins_deltaeta    = fNBins_eta_1*2 -1;
-  fMin_deltaeta      = fMin_eta_1 - fMax_eta_1;
-  fMax_deltaeta      = fMax_eta_1 - fMin_eta_1;
+  fNBins_deltaeta = fNBins_eta * 2 - 1;
+  fMin_deltaeta = fMin_eta - fMax_eta;
+  fMax_deltaeta = fMax_eta - fMin_eta;
   fWidth_deltaeta    = (fMax_deltaeta - fMin_deltaeta) / fNBins_deltaeta;
-  fNBins_deltaphi    = fNBins_phi_1;
+  fNBins_deltaphi = fNBins_phi;
   fWidth_deltaphi    = TMath::TwoPi() / fNBins_deltaphi;
   fMin_deltaphi      = 0.0 - fWidth_deltaphi / 2.0;
   fMax_deltaphi      = TMath::TwoPi() - fWidth_deltaphi / 2.0;
@@ -218,61 +189,65 @@ void Ali2PCorrelations::Initialize()
   /* incorporate configuration parameters */
   fOutput->Add(new TParameter<Bool_t>("DifferentialOutput",true,'f'));
 
-  /* track 1 storage */
-  fId_1 = new Int_t[fArraySize];
-  fCharge_1 = new Int_t[fArraySize];
-  fIxEta_1 = new Int_t[fArraySize];
-  fIxPhi_1 = new Int_t[fArraySize];
-  fIxPt_1 = new Int_t[fArraySize];
-  fAvgPt_1 = new float[fArraySize];
-  fCorrection_1 = new Float_t[fArraySize];
-
-  /* track 2 storage */
-  fId_2 = new Int_t[fArraySize];
-  fCharge_2 = new Int_t[fArraySize];
-  fIxEta_2 = new Int_t[fArraySize];
-  fIxPhi_2 = new Int_t[fArraySize];
-  fIxPt_2 = new Int_t[fArraySize];
-  fAvgPt_2 = new float[fArraySize];
-  fCorrection_2 = new Float_t[fArraySize];
+  /* track storage */
+  fPID = new Int_t[fArraySize];
+  fIxEta = new Int_t[fArraySize];
+  fIxPhi = new Int_t[fArraySize];
+  fIxPt = new Int_t[fArraySize];
+  fAvgPt = new float[fArraySize];
+  fCorrection = new Float_t[fArraySize];
 
   if (!fSinglesOnly)  {
     /* histograms for track pairs */
-    for (int i = 0; i<nTrackPairs; ++i) {
-      const char *pname = TrackPairsNames[i];
-      fhN2_12_vsDEtaDPhi[i] = new TH2F(TString::Format("n2_12_vsDEtaDPhi_%s",pname),TString::Format("#LT n_{2} #GT (%s);#Delta#eta;#Delta#varphi;#LT n_{2} #GT",pname),
-          fNBins_deltaeta,fMin_deltaeta,fMax_deltaeta,fNBins_deltaphi,fMin_deltaphi,fMax_deltaphi);
-      fhN2_12_vsDEtaDPhi_na[i] = new TH2F(TString::Format("n2_12_vsDEtaDPhiNa_%s",pname),TString::Format("#LT n_{2} #GT na (%s);#Delta#eta;#Delta#varphi;#LT n_{2} #GT",pname),
-          fNBins_deltaeta,fMin_deltaeta,fMax_deltaeta,fNBins_deltaphi,fMin_deltaphi,fMax_deltaphi);
-      fhSum2PtPt_12_vsDEtaDPhi[i] = new TH2F(TString::Format("sumPtPt_12_vsDEtaDPhi_%s",pname),TString::Format("#LT #Sigma p_{t,1}p_{t,2} #GT (%s);#Delta#eta;#Delta#varphi;#LT #Sigma p_{t,1}p_{t,2} #GT (GeV^{2})",pname),
-          fNBins_deltaeta,fMin_deltaeta,fMax_deltaeta,fNBins_deltaphi,fMin_deltaphi,fMax_deltaphi);
-      fhSum2DptDpt_12_vsDEtaDPhi[i] = new TH2F(TString::Format("sumDptDpt_12_vsDEtaDPhi_%s",pname),TString::Format("#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (%s);#Delta#eta;#Delta#varphi;#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (GeV^{2})",pname),
-          fNBins_deltaeta,fMin_deltaeta,fMax_deltaeta,fNBins_deltaphi,fMin_deltaphi,fMax_deltaphi);
-      fhSum2DptDpt_12_vsDEtaDPhi_na[i] = new TH2F(TString::Format("sumDptDpt_12_vsDEtaDPhiNa_%s",pname),TString::Format("#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT na (%s);#Delta#eta;#Delta#varphi;#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (GeV^{2})",pname),
-          fNBins_deltaeta,fMin_deltaeta,fMax_deltaeta,fNBins_deltaphi,fMin_deltaphi,fMax_deltaphi);
-      fhN2_12_vsPtPt[i] = new TH2F(TString::Format("n2_12_vsPtVsPt_%s",pname),TString::Format("#LT n_{2} #GT (%s);p_{t,1} (GeV/c);p_{t,2} (GeV/c);#LT n_{2} #GT",pname),
-          fNBins_pt_1,fMin_pt_1,fMax_pt_1,fNBins_pt_2,fMin_pt_2,fMax_pt_2);
-      fhN2_12_vsC[i] = new TProfile(TString::Format("n2_12_vsM_%s",pname),TString::Format("#LT n_{2} #GT (%s) (weighted);Centrality (%%);#LT n_{2} #GT",pname),100,0.0,100.0);
-      fhSum2PtPt_12_vsC[i] = new TProfile(TString::Format("sumPtPt_12_vsM_%s",pname),TString::Format("#LT #Sigma p_{t,1}p_{t,2} #GT (%s) (weighted);Centrality (%%);#LT #Sigma p_{t,1}p_{t,2} #GT (GeV^{2})",pname),100,0.0,100.0);
-      fhSum2DptDpt_12_vsC[i] = new TProfile(TString::Format("sumDptDpt_12_vsM_%s",pname),TString::Format("#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (%s) (weighted);Centrality (%%);#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (GeV^{2})",pname),100,0.0,100.0);
-      fhN2nw_12_vsC[i] = new TProfile(TString::Format("n2Nw_12_vsM_%s",pname),TString::Format("#LT n_{2} #GT (%s);Centrality (%%);#LT n_{2} #GT",pname),100,0.0,100.0);
-      fhSum2PtPtnw_12_vsC[i] = new TProfile(TString::Format("sumPtPtNw_12_vsM_%s",pname),TString::Format("#LT #Sigma p_{t,1}p_{t,2} #GT (%s);Centrality (%%);#LT #Sigma p_{t,1}p_{t,2} #GT (GeV^{2})",pname),100,0.0,100.0);
-      fhSum2DptDptnw_12_vsC[i] = new TProfile(TString::Format("sumDptDptNw_12_vsM_%s",pname),TString::Format("#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (%s);Centrality (%%);#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (GeV^{2})",pname),100,0.0,100.0);
-    }
 
-    for (int i = 0; i<nTrackPairs; ++i) {
-      fOutput->Add(fhN2_12_vsDEtaDPhi[i]);
-      fOutput->Add(fhN2_12_vsDEtaDPhi_na[i]);
-      fOutput->Add(fhSum2PtPt_12_vsDEtaDPhi[i]);
-      fOutput->Add(fhSum2DptDpt_12_vsDEtaDPhi[i]);
-      fOutput->Add(fhSum2DptDpt_12_vsDEtaDPhi_na[i]);
-      fOutput->Add(fhN2_12_vsPtPt[i]);
-      fOutput->Add(fhN2_12_vsC[i]);
-      fOutput->Add(fhSum2PtPt_12_vsC[i]);
-      fOutput->Add(fhSum2DptDpt_12_vsC[i]);
-      fOutput->Add(fhN2nw_12_vsC[i]);
-      fOutput->Add(fhSum2PtPtnw_12_vsC[i]);
-      fOutput->Add(fhSum2DptDptnw_12_vsC[i]);
+    for (uint pidx = 0; pidx < fSpeciesNames.size(); ++pidx) {
+      fhN2_12_vsDEtaDPhi.resize(fSpeciesNames.size());
+      fhN2_12_vsDEtaDPhi_na.resize(fSpeciesNames.size());
+      fhSum2PtPt_12_vsDEtaDPhi.resize(fSpeciesNames.size());
+      fhSum2DptDpt_12_vsDEtaDPhi.resize(fSpeciesNames.size());
+      fhSum2DptDpt_12_vsDEtaDPhi_na.resize(fSpeciesNames.size());
+      fhN2_12_vsPtPt.resize(fSpeciesNames.size());
+      fhN2_12_vsC.resize(fSpeciesNames.size());
+      fhSum2PtPt_12_vsC.resize(fSpeciesNames.size());
+      fhSum2DptDpt_12_vsC.resize(fSpeciesNames.size());
+      fhN2nw_12_vsC.resize(fSpeciesNames.size());
+      fhSum2PtPtnw_12_vsC.resize(fSpeciesNames.size());
+      fhSum2DptDptnw_12_vsC.resize(fSpeciesNames.size());
+      for (uint pidy = 0; pidy < fSpeciesNames.size(); ++pidy) {
+        char pname[128];
+        sprintf(pname, "%s%s", fSpeciesNames[pidx].c_str(), fSpeciesNames[pidy].c_str());
+        fhN2_12_vsDEtaDPhi[pidx].push_back(new TH2F(TString::Format("n2_12_vsDEtaDPhi_%s", pname), TString::Format("#LT n_{2} #GT (%s);#Delta#eta;#Delta#varphi;#LT n_{2} #GT", pname),
+                                                    fNBins_deltaeta, fMin_deltaeta, fMax_deltaeta, fNBins_deltaphi, fMin_deltaphi, fMax_deltaphi));
+        fhN2_12_vsDEtaDPhi_na[pidx].push_back(new TH2F(TString::Format("n2_12_vsDEtaDPhiNa_%s", pname), TString::Format("#LT n_{2} #GT na (%s);#Delta#eta;#Delta#varphi;#LT n_{2} #GT", pname),
+                                                       fNBins_deltaeta, fMin_deltaeta, fMax_deltaeta, fNBins_deltaphi, fMin_deltaphi, fMax_deltaphi));
+        fhSum2PtPt_12_vsDEtaDPhi[pidx].push_back(new TH2F(TString::Format("sumPtPt_12_vsDEtaDPhi_%s", pname), TString::Format("#LT #Sigma p_{t,1}p_{t,2} #GT (%s);#Delta#eta;#Delta#varphi;#LT #Sigma p_{t,1}p_{t,2} #GT (GeV^{2})", pname),
+                                                          fNBins_deltaeta, fMin_deltaeta, fMax_deltaeta, fNBins_deltaphi, fMin_deltaphi, fMax_deltaphi));
+        fhSum2DptDpt_12_vsDEtaDPhi[pidx].push_back(new TH2F(TString::Format("sumDptDpt_12_vsDEtaDPhi_%s", pname), TString::Format("#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (%s);#Delta#eta;#Delta#varphi;#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (GeV^{2})", pname),
+                                                            fNBins_deltaeta, fMin_deltaeta, fMax_deltaeta, fNBins_deltaphi, fMin_deltaphi, fMax_deltaphi));
+        fhSum2DptDpt_12_vsDEtaDPhi_na[pidx].push_back(new TH2F(TString::Format("sumDptDpt_12_vsDEtaDPhiNa_%s", pname), TString::Format("#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT na (%s);#Delta#eta;#Delta#varphi;#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (GeV^{2})", pname),
+                                                               fNBins_deltaeta, fMin_deltaeta, fMax_deltaeta, fNBins_deltaphi, fMin_deltaphi, fMax_deltaphi));
+        fhN2_12_vsPtPt[pidx].push_back(new TH2F(TString::Format("n2_12_vsPtVsPt_%s", pname), TString::Format("#LT n_{2} #GT (%s);p_{t,1} (GeV/c);p_{t,2} (GeV/c);#LT n_{2} #GT", pname),
+                                                fNBins_pt, fMin_pt, fMax_pt, fNBins_pt, fMin_pt, fMax_pt));
+        fhN2_12_vsC[pidx].push_back(new TProfile(TString::Format("n2_12_vsM_%s", pname), TString::Format("#LT n_{2} #GT (%s) (weighted);Centrality (%%);#LT n_{2} #GT", pname), 100, 0.0, 100.0));
+        fhSum2PtPt_12_vsC[pidx].push_back(new TProfile(TString::Format("sumPtPt_12_vsM_%s", pname), TString::Format("#LT #Sigma p_{t,1}p_{t,2} #GT (%s) (weighted);Centrality (%%);#LT #Sigma p_{t,1}p_{t,2} #GT (GeV^{2})", pname), 100, 0.0, 100.0));
+        fhSum2DptDpt_12_vsC[pidx].push_back(new TProfile(TString::Format("sumDptDpt_12_vsM_%s", pname), TString::Format("#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (%s) (weighted);Centrality (%%);#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (GeV^{2})", pname), 100, 0.0, 100.0));
+        fhN2nw_12_vsC[pidx].push_back(new TProfile(TString::Format("n2Nw_12_vsM_%s", pname), TString::Format("#LT n_{2} #GT (%s);Centrality (%%);#LT n_{2} #GT", pname), 100, 0.0, 100.0));
+        fhSum2PtPtnw_12_vsC[pidx].push_back(new TProfile(TString::Format("sumPtPtNw_12_vsM_%s", pname), TString::Format("#LT #Sigma p_{t,1}p_{t,2} #GT (%s);Centrality (%%);#LT #Sigma p_{t,1}p_{t,2} #GT (GeV^{2})", pname), 100, 0.0, 100.0));
+        fhSum2DptDptnw_12_vsC[pidx].push_back(new TProfile(TString::Format("sumDptDptNw_12_vsM_%s", pname), TString::Format("#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (%s);Centrality (%%);#LT #Sigma (p_{t,1} - #LT p_{t,1} #GT)(p_{t,2} - #LT p_{t,2} #GT) #GT (GeV^{2})", pname), 100, 0.0, 100.0));
+
+        fOutput->Add(fhN2_12_vsDEtaDPhi[pidx][pidy]);
+        fOutput->Add(fhN2_12_vsDEtaDPhi_na[pidx][pidy]);
+        fOutput->Add(fhSum2PtPt_12_vsDEtaDPhi[pidx][pidy]);
+        fOutput->Add(fhSum2DptDpt_12_vsDEtaDPhi[pidx][pidy]);
+        fOutput->Add(fhSum2DptDpt_12_vsDEtaDPhi_na[pidx][pidy]);
+        fOutput->Add(fhN2_12_vsPtPt[pidx][pidy]);
+        fOutput->Add(fhN2_12_vsC[pidx][pidy]);
+        fOutput->Add(fhSum2PtPt_12_vsC[pidx][pidy]);
+        fOutput->Add(fhSum2DptDpt_12_vsC[pidx][pidy]);
+        fOutput->Add(fhN2nw_12_vsC[pidx][pidy]);
+        fOutput->Add(fhSum2PtPtnw_12_vsC[pidx][pidy]);
+        fOutput->Add(fhSum2DptDptnw_12_vsC[pidx][pidy]);
+      }
     }
   }
   TH1::AddDirectory(oldstatus);
@@ -288,70 +263,69 @@ Bool_t Ali2PCorrelations::StartEvent(Float_t centrality, Float_t vertexz) {
 }
 
 /// \brief process a track and store its parameters if feasible
-/// \param trkId the external track Id
-/// \param charge the track charge
+/// \param pid the track PID
 /// \param pT the track \f$ p_T \f$
 /// \param eta the track \f$ \eta \f$
 /// \param phi the track \f$ \phi \f$
 /// \return kTRUE if the track is properly handled kFALSE otherwise
 /// For the time being positive tracks go to bank one and negative tracks go to bank two
-Bool_t Ali2PCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Float_t eta, Float_t ophi) {
+bool Ali2PCorrelations::ProcessTrack(int pid, float pT, float eta, float ophi)
+{
 
-  if(charge == 0) return kFALSE;
+  /* for the time being */
+  if (pid != 0 && pid != 1)
+    return kFALSE;
 
-  /* track 1 */
-  if ((charge > 0) && pT > fMin_pt_1 && pT < fMax_pt_1)
-  {
-    if (!(fNoOfTracks1 < fArraySize)) {
+  if (pT > fMin_pt && pT < fMax_pt) {
+    if (!(fNoOfTracks < fArraySize)) {
       AliError(Form("Storage for track one full: %d", fArraySize));
       return kFALSE;
     }
 
     /* consider a potential phi origin shift */
-    Float_t phi = ophi;
-    if (!(phi < fMax_phi_1)) phi = phi - 2*TMath::Pi();
-    Int_t ixPhi = Int_t ((phi - fMin_phi_1) / fWidth_phi_1);
-    if (ixPhi < 0 || !(ixPhi < fNBins_phi_1)) {
+    float phi = ophi;
+    if (!(phi < fMax_phi))
+      phi = phi - 2 * TMath::Pi();
+    float ixPhi = int((phi - fMin_phi) / fWidth_phi);
+    if (ixPhi < 0 || !(ixPhi < fNBins_phi)) {
       AliWarning("Track one phi out of bins");
       return kFALSE;
     }
 
-    if (eta < fMin_eta_1 ||  fMax_eta_1 < eta) {
+    if (eta < fMin_eta || fMax_eta < eta) {
       AliWarning(Form("Wrongly passed track one with eta: %.2f", eta));
       return kFALSE;
     }
 
-    Int_t ixEta = Int_t ((eta - fMin_eta_1) / fWidth_eta_1);
-    if (ixEta < 0 || !(ixEta < fNBins_eta_1)) {
+    int ixEta = int((eta - fMin_eta) / fWidth_eta);
+    if (ixEta < 0 || !(ixEta < fNBins_eta)) {
       AliWarning(Form("Track one eta bin %d out of bounds", ixEta));
       return kFALSE;
     }
 
-
-    if (pT < fMin_pt_1 ||  fMax_pt_1 < pT) {
+    if (pT < fMin_pt || fMax_pt < pT) {
       AliWarning(Form("Wrongly passed track one with pT: %.2f", pT));
       return kFALSE;
     }
 
-    Int_t ixPt = Int_t((pT - fMin_pt_1 ) / fWidth_pt_1);
-    if (ixPt < 0  || !(ixPt < fNBins_pt_1)) {
+    int ixPt = int((pT - fMin_pt) / fWidth_pt);
+    if (ixPt < 0 || !(ixPt < fNBins_pt)) {
       AliWarning(Form("Track pT bin %d out of bounds",ixPt));
       return kFALSE;
     }
 
-
-    Int_t ixEtaPhi = ixEta*fNBins_phi_1+ixPhi;
-    Int_t ixVertexP1 = fIxVertexZ*fNBins_etaPhiPt_1;
-    Int_t ixZEtaPhiPt = ixVertexP1 + ixEtaPhi*fNBins_pt_1 + ixPt;
-    if (ixZEtaPhiPt < 0 || !(ixZEtaPhiPt < fNBins_zEtaPhiPt_1)) {
+    int ixEtaPhi = ixEta * fNBins_phi + ixPhi;
+    int ixVertexP1 = fIxVertexZ * fNBins_etaPhiPt;
+    int ixZEtaPhiPt = ixVertexP1 + ixEtaPhi * fNBins_pt + ixPt;
+    if (ixZEtaPhiPt < 0 || !(ixZEtaPhiPt < fNBins_zEtaPhiPt)) {
       AliWarning(Form("Event zvertex and track eta phi and pt bin %d out of bounds", ixZEtaPhiPt));
       return kFALSE;
     }
 
-    Float_t effcorr = fEfficiencyCorrection_1[ixPt];
-    Float_t corr;
-    if (fCorrectionWeights_1)
-      corr = fCorrectionWeights_1[ixZEtaPhiPt];
+    float effcorr = fEfficiencyCorrection[pid][ixPt];
+    float corr;
+    if (fCorrectionWeights[pid] != nullptr)
+      corr = fCorrectionWeights[pid][ixZEtaPhiPt];
     else
       corr = 1.0;
 
@@ -360,127 +334,33 @@ Bool_t Ali2PCorrelations::ProcessTrack(Int_t trkId, Int_t charge, Float_t pT, Fl
     corr *= effcorr;
 
     if (fSinglesOnly) {
-      fhN1_1_vsPt->Fill(pT,corr);
-      fhN1_1_vsZEtaPhiPt->Fill(fVertexZ,ixEtaPhi+0.5,pT,corr);
-      fhSum1Pt_1_vsZEtaPhiPt->Fill(fVertexZ,ixEtaPhi+0.5,pT,corr*pT);
-      fhN1_1_vsEtaPhi->Fill(eta,phi,corr);
-      fhSum1Pt_1_vsEtaPhi->Fill(eta,phi,corr*pT);
+      fhN1_vsPt[pid]->Fill(pT, corr);
+      fhN1_vsZEtaPhiPt[pid]->Fill(fVertexZ, ixEtaPhi + 0.5, pT, corr);
+      fhSum1Pt_vsZEtaPhiPt[pid]->Fill(fVertexZ, ixEtaPhi + 0.5, pT, corr * pT);
+      fhN1_vsEtaPhi[pid]->Fill(eta, phi, corr);
+      fhSum1Pt_vsEtaPhi[pid]->Fill(eta, phi, corr * pT);
     }
     else {
-      Float_t corrPt                = corr*pT;
-      fId_1[fNoOfTracks1]           = trkId;
-      fCharge_1[fNoOfTracks1]       = charge;
-      fIxEta_1[fNoOfTracks1]        = ixEta;
-      fIxPhi_1[fNoOfTracks1]        = ixPhi;
-      fIxPt_1[fNoOfTracks1]         = ixPt;
-      fFlags_1[fNoOfTracks1]        = 0x0;
-      fPt_1[fNoOfTracks1]           = pT;
-      fEta_1[fNoOfTracks1]          = eta;
-      fPhi_1[fNoOfTracks1]          = phi;
-      fAvgPt_1[fNoOfTracks1]        = (fhPositivePtAverage != nullptr) ? fhPositivePtAverage->GetBinContent(ixEta+1,ixPhi+1) : 0.0;
-      fCorrection_1[fNoOfTracks1]   = corr;
-      fN1_1                         += corr;
-      fhN1_1_vsEtaPhi->Fill(eta,phi,corr);
-      fSum1Pt_1                     += corrPt;
-      fhSum1Pt_1_vsEtaPhi->Fill(eta,phi,corrPt);
-      fNnw1_1                       += 1;
-      fSum1Ptnw_1                   += pT;
-      fNoOfTracks1++;
-      if (!(fNoOfTracks1 < fArraySize)) {
+      float corrPt = corr * pT;
+      fPID[fNoOfTracks] = pid;
+      fIxEta[fNoOfTracks] = ixEta;
+      fIxPhi[fNoOfTracks] = ixPhi;
+      fIxPt[fNoOfTracks] = ixPt;
+      fFlags[fNoOfTracks] = 0x0;
+      fPt[fNoOfTracks] = pT;
+      fEta[fNoOfTracks] = eta;
+      fPhi[fNoOfTracks] = phi;
+      fAvgPt[fNoOfTracks] = (fhPtAverage[pid] != nullptr) ? fhPtAverage[pid]->GetBinContent(ixEta + 1, ixPhi + 1) : 0.0;
+      fCorrection[fNoOfTracks] = corr;
+      fN1[pid] += corr;
+      fhN1_vsEtaPhi[pid]->Fill(eta, phi, corr);
+      fSum1Pt[pid] += corrPt;
+      fhSum1Pt_vsEtaPhi[pid]->Fill(eta, phi, corrPt);
+      fNnw1[pid] += 1;
+      fSum1Ptnw[pid] += pT;
+      fNoOfTracks++;
+      if (!(fNoOfTracks < fArraySize)) {
         AliError(Form("Storage for track one full: %d", fArraySize));
-        return kFALSE;
-      }
-    }
-  }
-
-
-  /* track 2 */
-  if ((charge < 0) && pT > fMin_pt_2 && pT < fMax_pt_2)
-  {
-    if (!(fNoOfTracks2 < fArraySize)) {
-      AliError(Form("Storage for track two full: %d", fArraySize));
-      return kFALSE;
-    }
-
-    /* consider a potential phi origin shift */
-    Float_t phi = ophi;
-    if (!(phi < fMax_phi_2)) phi = phi - 2*TMath::Pi();
-    Int_t ixPhi = Int_t ((phi - fMin_phi_2) / fWidth_phi_2);
-    if (ixPhi <0 || !(ixPhi < fNBins_phi_2)) {
-      AliWarning("Track two phi out of bins");
-      return kFALSE;
-    }
-
-    if (eta < fMin_eta_2 ||  fMax_eta_2 < eta) {
-      AliWarning(Form("Wrongly passed track two with eta: %.2f", eta));
-      return kFALSE;
-    }
-
-    Int_t ixEta = Int_t((eta - fMin_eta_2) / fWidth_eta_2);
-    if (ixEta < 0 || !(ixEta < fNBins_eta_2)) {
-      AliWarning(Form("Track two eta bin %d out of bounds", ixEta));
-      return kFALSE;
-    }
-
-    if (pT < fMin_pt_2 ||  fMax_pt_2 < pT) {
-      AliWarning(Form("Wrongly passed track two with pT: %.2f", pT));
-      return kFALSE;
-    }
-
-    Int_t ixPt = Int_t((pT - fMin_pt_2 ) / fWidth_pt_2 );
-    if (ixPt < 0 || !(ixPt < fNBins_pt_2)) {
-      AliWarning(Form("Track two pT bin %d out of bounds",ixPt));
-      return kFALSE;
-    }
-
-    Int_t ixEtaPhi = ixEta*fNBins_phi_2+ixPhi;
-    Int_t ixVertexP2 = fIxVertexZ*fNBins_etaPhiPt_2;
-    Int_t ixZEtaPhiPt = ixVertexP2 + ixEtaPhi*fNBins_pt_2 + ixPt;
-    if (ixZEtaPhiPt < 0 || !(ixZEtaPhiPt < fNBins_zEtaPhiPt_2)) {
-      AliWarning(Form("Event zvertex and track eta phi and pt bin %d out of bounds", ixZEtaPhiPt));
-      return kFALSE;
-    }
-
-    Float_t effcorr = fEfficiencyCorrection_2[ixPt];
-    Float_t corr;
-    if (fCorrectionWeights_2)
-      corr = fCorrectionWeights_2[ixZEtaPhiPt];
-    else
-      corr = 1.0;
-
-    /* the final correction incorporates also the efficiency correction */
-    /* and affects to both, track densities and pT */
-    corr *= effcorr;
-
-    if (fSinglesOnly) {
-      fhN1_2_vsPt->Fill(pT,corr);
-      fhN1_2_vsZEtaPhiPt->Fill(fVertexZ,ixEtaPhi+0.5,pT,corr);
-      fhSum1Pt_2_vsZEtaPhiPt->Fill(fVertexZ,ixEtaPhi+0.5,pT,corr*pT);
-      fhN1_2_vsEtaPhi->Fill(eta,phi,corr);
-      fhSum1Pt_2_vsEtaPhi->Fill(eta,phi,corr*pT);
-    }
-    else {
-      Float_t corrPt                = corr*pT;
-      fId_2[fNoOfTracks2]           = trkId;
-      fCharge_2[fNoOfTracks2]       = charge;
-      fIxEta_2[fNoOfTracks2]        = ixEta;
-      fIxPhi_2[fNoOfTracks2]        = ixPhi;
-      fIxPt_2[fNoOfTracks2]         = ixPt;
-      fFlags_2[fNoOfTracks2]        = 0x0;
-      fPt_2[fNoOfTracks2]           = pT;
-      fEta_2[fNoOfTracks2]          = eta;
-      fPhi_2[fNoOfTracks2]          = phi;
-      fAvgPt_2[fNoOfTracks2]        = (fhNegativePtAverage != nullptr) ? fhNegativePtAverage->GetBinContent(ixEta+1,ixPhi+1) : 0.0;
-      fCorrection_2[fNoOfTracks2]   = corr;
-      fN1_2                         += corr;
-      fSum1Pt_2                     += corrPt;
-      fNnw1_2                       += 1;
-      fhN1_2_vsEtaPhi->Fill(eta,phi,corr);
-      fhSum1Pt_2_vsEtaPhi->Fill(eta,phi,corrPt);
-      fSum1Ptnw_2                   += pT;
-      fNoOfTracks2++;
-      if (!(fNoOfTracks2 < fArraySize)) {
-        AliError(Form("Storage for track two full: %d", fArraySize));
         return kFALSE;
       }
     }
@@ -499,362 +379,162 @@ void Ali2PCorrelations::ProcessEventData() {
     /* everything already done */
   }
   else {
-    ProcessLikeSignPairs(1);
-    ProcessLikeSignPairs(2);
-    ProcessUnlikeSignPairs();
+    ProcessPairs();
 
     /* finally fill the individual tracks profiles */
-    fhN1_1_vsC->Fill(fCentrality, fN1_1);
-    fhSum1Pt_1_vsC->Fill(fCentrality, fSum1Pt_1);
-    fhN1nw_1_vsC->Fill(fCentrality, fNnw1_1);
-    fhSum1Ptnw_1_vsC->Fill(fCentrality, fSum1Ptnw_1);
-    fhN1_2_vsC->Fill(fCentrality, fN1_2);
-    fhSum1Pt_2_vsC->Fill(fCentrality, fSum1Pt_2);
-    fhN1nw_2_vsC->Fill(fCentrality, fNnw1_2);
-    fhSum1Ptnw_2_vsC->Fill(fCentrality, fSum1Ptnw_2);
+    for (uint pid = 0; pid < fSpeciesNames.size(); ++pid) {
+      fhN1_vsC[pid]->Fill(fCentrality, fN1[pid]);
+      fhSum1Pt_vsC[pid]->Fill(fCentrality, fSum1Pt[pid]);
+      fhN1nw_vsC[pid]->Fill(fCentrality, fNnw1[pid]);
+      fhSum1Ptnw_vsC[pid]->Fill(fCentrality, fSum1Ptnw[pid]);
+    }
   }
 }
 
 /// \brief Process track combinations with the same charge
 /// \param bank the tracks bank to use
-void Ali2PCorrelations::ProcessLikeSignPairs(Int_t bank) {
+void Ali2PCorrelations::ProcessPairs()
+{
   /* reset pair counters */
-  double fN2_12 = 0;
-  double fSum2PtPt_12 = 0;
-  double fSum2DptDpt_12 = 0;
-  double fNnw2_12 = 0;
-  double fSum2PtPtnw_12 = 0;
-  double fSum2DptDptnw_12 = 0;
+  std::vector<std::vector<double>> fN2_12(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
+  std::vector<std::vector<double>> fSum2PtPt_12(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
+  std::vector<std::vector<double>> fSum2DptDpt_12(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
+  std::vector<std::vector<double>> fNnw2_12(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
+  std::vector<std::vector<double>> fSum2PtPtnw_12(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
+  std::vector<std::vector<double>> fSum2DptDptnw_12(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
 
-  /* pair with same charge. The track list should be identical */
-  if (bank == 1) {
-    /* let's select the pair efficiency correction histogram */
-    /* for the time being bank one is plus charge            */
-    const THn *effcorr = fPairsEfficiency_PP;
-    Int_t bins[4];
+  for (int ix1 = 0; ix1 < fNoOfTracks; ++ix1) {
+    for (int ix2 = ix1 + 1; ix2 < fNoOfTracks; ++ix2) {
+      /* self correlations already excluded */
 
-    /* we use only the bank one of tracks */
-    for (Int_t ix1 = 0; ix1 < fNoOfTracks1; ix1++)
-    {
-      int ixEta_1    = fIxEta_1[ix1];
-      int ixPhi_1    = fIxPhi_1[ix1];
-      int ixPt_1     = fIxPt_1[ix1];
-      float corr_1   = fCorrection_1[ix1];
-      float pt_1     = fPt_1[ix1];
-      float avgpt_1  = fAvgPt_1[ix1];
-      float eta_1    = fEta_1[ix1];
-      float phi_1    = fPhi_1[ix1];
+      bool processpair = kTRUE;
+      /* TODO: probably a table with the crossed PID which could give a certain resonance will help */
+      if (fPID[ix1] != fPID[ix2]) {
+        /* for different species/charges process the resonance suppression for this pair if needed */
+        for (int ires = 0; ires < fgkNoOfResonances; ires++) {
+          if (fThresholdMult[ires] != 0) {
+            /* check if both tracks are flagged for the current resonance */
+            if (((fFlags[ix1] & fFlags[ix2]) & UInt_t(0x1 << ires)) != UInt_t(0x1 << ires)) {
+              /* no, they are not, continue */
+              continue;
+            } else {
+              /* yes, check if applicable */
+              Float_t mass = checkIfResonance(ires, kFALSE, ix1, ix2);
 
-      for (Int_t ix2 = ix1+1; ix2 < fNoOfTracks1; ix2++) {
-        /* excluded self correlations */
-        float corr       = corr_1 * fCorrection_1[ix2];
-        int ixDeltaEta_d   = ixEta_1-fIxEta_1[ix2]+fNBins_eta_1-1;
-        int ixDeltaPhi_d   = ixPhi_1-fIxPhi_1[ix2]; if (ixDeltaPhi_d < 0) ixDeltaPhi_d += fNBins_phi_1;
-        int ixDeltaEta_c   = fIxEta_1[ix2]-ixEta_1+fNBins_eta_1-1;
-        int ixDeltaPhi_c   = fIxPhi_1[ix2]-ixPhi_1; if (ixDeltaPhi_c < 0) ixDeltaPhi_c += fNBins_phi_1;
-        float deltaEta_d   = eta_1 - fEta_1[ix2];
-        float deltaEta_c   = - deltaEta_d;
-        float deltaPhi_d   = float(TVector2::Phi_0_2pi(phi_1 - fPhi_1[ix2]));
-        if (not(deltaPhi_d < fMax_deltaphi)) deltaPhi_d -= TMath::TwoPi();
-        float deltaPhi_c   = float(TVector2::Phi_0_2pi(fPhi_1[ix2] - phi_1));
-        if (not(deltaPhi_c < fMax_deltaphi)) deltaPhi_c -= TMath::TwoPi();
-
-        /* apply the pair correction if applicable */
-        if (effcorr != NULL) {
-          bins[0] = ixDeltaEta_d+1;
-          bins[1] = ixDeltaPhi_d+1;
-          bins[2] = ixPt_1+1;
-          bins[3] = fIxPt_1[ix2]+1;
-          corr = corr / effcorr->GetBinContent(bins);
-        }
-
-        int globalbin_d = fhN2_12_vsDEtaDPhi[kOO]->GetBin(ixDeltaEta_d+1,ixDeltaPhi_d+1);
-        int globalbin_c = fhN2_12_vsDEtaDPhi[kOO]->GetBin(ixDeltaEta_c+1,ixDeltaPhi_c+1);
-        int globalbin_na_d = fhN2_12_vsDEtaDPhi_na[kOO]->FindBin(deltaEta_d,deltaPhi_d);
-        int globalbin_na_c = fhN2_12_vsDEtaDPhi_na[kOO]->FindBin(deltaEta_c,deltaPhi_c);
-
-        fNnw2_12               += 2;
-        fN2_12                 += 2*corr;
-        fhN2_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_d,corr);
-        fhN2_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_c,corr);
-        fhN2_12_vsDEtaDPhi_na[kOO]->AddBinContent(globalbin_na_d,corr);
-        fhN2_12_vsDEtaDPhi_na[kOO]->AddBinContent(globalbin_na_c,corr);
-        float ptpt              = pt_1*fPt_1[ix2];
-        fSum2PtPtnw_12         += 2*ptpt;
-        fSum2PtPt_12           += 2*corr*ptpt;
-        fhSum2PtPt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_d,corr*ptpt);
-        fhSum2PtPt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_c,corr*ptpt);
-        float dptdptnw = (pt_1 - avgpt_1) * (fPt_1[ix2] - fAvgPt_1[ix2]);
-        float dptdpt = (corr_1 * pt_1 - avgpt_1)
-                       * (fCorrection_1[ix2] * fPt_1[ix2] - fAvgPt_1[ix2]);
-        fSum2DptDptnw_12 += 2 * dptdptnw;
-        fSum2DptDpt_12 += 2 * dptdpt;
-        fhSum2DptDpt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_d, dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi[kOO]->AddBinContent(globalbin_c, dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi_na[kOO]->AddBinContent(globalbin_na_d, dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi_na[kOO]->AddBinContent(globalbin_na_c, dptdpt);
-        fhN2_12_vsPtPt[kOO]->Fill(pt_1,fPt_1[ix2],corr);
-        fhN2_12_vsPtPt[kOO]->Fill(fPt_1[ix2],pt_1,corr);
-      } //ix2
-    } //ix1
-    fhN2_12_vsC[kOO]->Fill(fCentrality, fN2_12);
-    fhSum2PtPt_12_vsC[kOO]->Fill(fCentrality, fSum2PtPt_12);
-    fhSum2DptDpt_12_vsC[kOO]->Fill(fCentrality, fSum2DptDpt_12);
-    fhN2nw_12_vsC[kOO]->Fill(fCentrality, fNnw2_12);
-    fhSum2PtPtnw_12_vsC[kOO]->Fill(fCentrality, fSum2PtPtnw_12);
-    fhSum2DptDptnw_12_vsC[kOO]->Fill(fCentrality, fSum2DptDptnw_12);
-
-    /* update the number of entries in the differential histograms filled with AddBinContent */
-    fhN2_12_vsDEtaDPhi[kOO]->SetEntries(fhN2_12_vsDEtaDPhi[kOO]->GetEntries() + fNnw2_12);
-    fhN2_12_vsDEtaDPhi_na[kOO]->SetEntries(fhN2_12_vsDEtaDPhi_na[kOO]->GetEntries() + fNnw2_12);
-    fhSum2PtPt_12_vsDEtaDPhi[kOO]->SetEntries(fhSum2PtPt_12_vsDEtaDPhi[kOO]->GetEntries() + fNnw2_12);
-    fhSum2DptDpt_12_vsDEtaDPhi[kOO]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi[kOO]->GetEntries() + fNnw2_12);
-    fhSum2DptDpt_12_vsDEtaDPhi_na[kOO]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi_na[kOO]->GetEntries() + fNnw2_12);
-  }
-  else if (bank == 2) {
-    /* let's select the pair efficiency correction histogram */
-    /* for the time being bank two is minus charge            */
-    const THn *effcorr = fPairsEfficiency_MM;
-    Int_t bins[4];
-
-    /* we use only the bank two of tracks */
-    for (Int_t ix1 = 0; ix1 < fNoOfTracks2; ix1++)
-    {
-      int ixEta_1    = fIxEta_2[ix1];
-      int ixPhi_1    = fIxPhi_2[ix1];
-      int ixPt_1     = fIxPt_2[ix1];
-      float corr_1   = fCorrection_2[ix1];
-      float pt_1     = fPt_2[ix1];
-      float avgpt_1  = fAvgPt_2[ix1];
-      float eta_1    = fEta_2[ix1];
-      float phi_1    = fPhi_2[ix1];
-
-      for (Int_t ix2 = ix1+1; ix2 < fNoOfTracks2; ix2++) {
-        /* excluded self correlations */
-        float corr      = corr_1 * fCorrection_2[ix2];
-        int ixDeltaEta_d   = ixEta_1-fIxEta_2[ix2]+fNBins_eta_1-1;
-        int ixDeltaPhi_d   = ixPhi_1-fIxPhi_2[ix2]; if (ixDeltaPhi_d < 0) ixDeltaPhi_d += fNBins_phi_1;
-        int ixDeltaEta_c   = fIxEta_2[ix2]-ixEta_1+fNBins_eta_1-1;
-        int ixDeltaPhi_c   = fIxPhi_2[ix2]-ixPhi_1; if (ixDeltaPhi_c < 0) ixDeltaPhi_c += fNBins_phi_1;
-        float deltaEta_d   = eta_1 - fEta_2[ix2];
-        float deltaEta_c   = - deltaEta_d;
-        float deltaPhi_d   = float(TVector2::Phi_0_2pi(phi_1 - fPhi_2[ix2]));
-        if (not(deltaPhi_d < fMax_deltaphi)) deltaPhi_d -= TMath::TwoPi();
-        float deltaPhi_c   = float(TVector2::Phi_0_2pi(fPhi_2[ix2] - phi_1));
-        if (not(deltaPhi_c < fMax_deltaphi)) deltaPhi_c -= TMath::TwoPi();
-
-        /* apply the pair correction if applicable */
-        if (effcorr != NULL) {
-          bins[0] = ixDeltaEta_d+1;
-          bins[1] = ixDeltaPhi_d+1;
-          bins[2] = ixPt_1+1;
-          bins[3] = fIxPt_2[ix2]+1;
-          corr = corr / effcorr->GetBinContent(bins);
-        }
-
-        int globalbin_d = fhN2_12_vsDEtaDPhi[kTT]->GetBin(ixDeltaEta_d+1,ixDeltaPhi_d+1);
-        int globalbin_c = fhN2_12_vsDEtaDPhi[kTT]->GetBin(ixDeltaEta_c+1,ixDeltaPhi_c+1);
-        int globalbin_na_d = fhN2_12_vsDEtaDPhi_na[kTT]->FindBin(deltaEta_d,deltaPhi_d);
-        int globalbin_na_c = fhN2_12_vsDEtaDPhi_na[kTT]->FindBin(deltaEta_c,deltaPhi_c);
-
-        fNnw2_12               += 2;
-        fN2_12                 += 2*corr;
-        fhN2_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_d,corr);
-        fhN2_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_c,corr);
-        fhN2_12_vsDEtaDPhi_na[kTT]->AddBinContent(globalbin_na_d,corr);
-        fhN2_12_vsDEtaDPhi_na[kTT]->AddBinContent(globalbin_na_c,corr);
-        float ptpt              = pt_1*fPt_2[ix2];
-        fSum2PtPtnw_12         += 2*ptpt;
-        fSum2PtPt_12           += 2*corr*ptpt;
-        fhSum2PtPt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_d,corr*ptpt);
-        fhSum2PtPt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_c,corr*ptpt);
-        float dptdptnw = (pt_1 - avgpt_1) * (fPt_2[ix2] - fAvgPt_2[ix2]);
-        float dptdpt = (corr_1 * pt_1 - avgpt_1)
-                       * (fCorrection_2[ix2] * fPt_2[ix2] - fAvgPt_2[ix2]);
-        fSum2DptDptnw_12 += 2 * dptdptnw;
-        fSum2DptDpt_12 += 2 * dptdpt;
-        fhSum2DptDpt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_d, dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi[kTT]->AddBinContent(globalbin_c, dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi_na[kTT]->AddBinContent(globalbin_na_d, dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi_na[kTT]->AddBinContent(globalbin_na_c, dptdpt);
-        fhN2_12_vsPtPt[kTT]->Fill(pt_1,fPt_2[ix2],corr);
-        fhN2_12_vsPtPt[kTT]->Fill(fPt_2[ix2],pt_1,corr);
-      } //ix2
-    } //ix1
-    fhN2_12_vsC[kTT]->Fill(fCentrality, fN2_12);
-    fhSum2PtPt_12_vsC[kTT]->Fill(fCentrality, fSum2PtPt_12);
-    fhSum2DptDpt_12_vsC[kTT]->Fill(fCentrality, fSum2DptDpt_12);
-    fhN2nw_12_vsC[kTT]->Fill(fCentrality, fNnw2_12);
-    fhSum2PtPtnw_12_vsC[kTT]->Fill(fCentrality, fSum2PtPtnw_12);
-    fhSum2DptDptnw_12_vsC[kTT]->Fill(fCentrality, fSum2DptDptnw_12);
-
-    /* update the number of entries in the differential histograms filled with AddBinContent */
-    fhN2_12_vsDEtaDPhi[kTT]->SetEntries(fhN2_12_vsDEtaDPhi[kTT]->GetEntries() + fNnw2_12);
-    fhN2_12_vsDEtaDPhi_na[kTT]->SetEntries(fhN2_12_vsDEtaDPhi_na[kTT]->GetEntries() + fNnw2_12);
-    fhSum2PtPt_12_vsDEtaDPhi[kTT]->SetEntries(fhSum2PtPt_12_vsDEtaDPhi[kTT]->GetEntries() + fNnw2_12);
-    fhSum2DptDpt_12_vsDEtaDPhi[kTT]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi[kTT]->GetEntries() + fNnw2_12);
-    fhSum2DptDpt_12_vsDEtaDPhi_na[kTT]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi_na[kTT]->GetEntries() + fNnw2_12);
-  }
-}
-
-/// \brief Process track combinations with oposite charge
-void Ali2PCorrelations::ProcessUnlikeSignPairs() {
-  AliInfo("");
-  /* flag the resonances / conversion candidates */
-  FlagConversionsAndResonances();
-
-  /* reset pair counters */
-  double fN2_12 = 0;
-  double fSum2PtPt_12 = 0;
-  double fSum2DptDpt_12 = 0;
-  double fNnw2_12 = 0;
-  double fSum2PtPtnw_12 = 0;
-  double fSum2DptDptnw_12 = 0;
-
-  /* pair with different charges. Both track list are different */
-  for (Int_t ix1 = 0; ix1 < fNoOfTracks1; ix1++)
-  {
-    /* let's select the pair efficiency correction histogram */
-    /* we assume in principle that PM and MP corrections are */
-    /* identical when the delta eta and delta phi bins are   */
-    /* properly taken                                        */
-    const THn *effcorr = fPairsEfficiency_PM;
-    Int_t bins[4];
-
-    int ixEta_1    = fIxEta_1[ix1];
-    int ixPhi_1    = fIxPhi_1[ix1];
-    int ixPt_1     = fIxPt_1[ix1];
-    float corr_1   = fCorrection_1[ix1];
-    float pt_1     = fPt_1[ix1];
-    float avgpt_1  = fAvgPt_1[ix1];
-    float eta_1    = fEta_1[ix1];
-    float phi_1    = fPhi_1[ix1];
-
-    for (Int_t ix2 = 0; ix2 < fNoOfTracks2; ix2++) {
-      /* process the resonance suppression for this pair if needed */
-      Bool_t processpair = kTRUE;
-      for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
-        if (fThresholdMult[ires] != 0) {
-          /* check if both tracks are flagged for the current resonance */
-          if (((fFlags_1[ix1] & fFlags_2[ix2]) & UInt_t(0x1 << ires)) != UInt_t(0x1 << ires)) {
-            /* no, they are not, continue */
-            continue;
-          }
-          else {
-            /* yes, check if applicable */
-            Float_t mass = checkIfResonance(ires, kFALSE, ix1, ix2);
-
-            if (0 < mass) {
-              fhDiscardedResonanceMasses->Fill(ires,TMath::Sqrt(mass));
-              processpair = kFALSE;
-              break;
+              if (0 < mass) {
+                fhDiscardedResonanceMasses->Fill(ires, TMath::Sqrt(mass));
+                processpair = kFALSE;
+                break;
+              }
             }
           }
         }
       }
-
       if (processpair) {
-        Float_t corr      = corr_1 * fCorrection_2[ix2];
-        int ixDeltaEta_d   = ixEta_1-fIxEta_2[ix2]+fNBins_eta_1-1;
-        int ixDeltaPhi_d   = ixPhi_1-fIxPhi_2[ix2]; if (ixDeltaPhi_d < 0) ixDeltaPhi_d += fNBins_phi_1;
-        int ixDeltaEta_c   = fIxEta_2[ix2]-ixEta_1+fNBins_eta_1-1;
-        int ixDeltaPhi_c   = fIxPhi_2[ix2]-ixPhi_1; if (ixDeltaPhi_c < 0) ixDeltaPhi_c += fNBins_phi_1;
-        float deltaEta_d   = eta_1 - fEta_2[ix2];
-        float deltaEta_c   = - deltaEta_d;
-        float deltaPhi_d   = float(TVector2::Phi_0_2pi(phi_1 - fPhi_2[ix2]));
-        if (not(deltaPhi_d < fMax_deltaphi)) deltaPhi_d -= TMath::TwoPi();
-        float deltaPhi_c   = float(TVector2::Phi_0_2pi(fPhi_2[ix2] - phi_1));
-        if (not(deltaPhi_c < fMax_deltaphi)) deltaPhi_c -= TMath::TwoPi();
+        float corr = fCorrection[ix1] * fCorrection[ix2];
+        int ixDeltaEta_d = fIxEta[ix1] - fIxEta[ix2] + fNBins_eta - 1;
+        int ixDeltaPhi_d = fIxPhi[ix1] - fIxPhi[ix2];
+        if (ixDeltaPhi_d < 0)
+          ixDeltaPhi_d += fNBins_phi;
+        int ixDeltaEta_c = fIxEta[ix2] - fIxEta[ix1] + fNBins_eta - 1;
+        int ixDeltaPhi_c = fIxPhi[ix2] - fIxPhi[ix1];
+        if (ixDeltaPhi_c < 0)
+          ixDeltaPhi_c += fNBins_phi;
+        float deltaEta_d = fEta[ix1] - fEta[ix2];
+        float deltaEta_c = -deltaEta_d;
+        float deltaPhi_d = float(TVector2::Phi_0_2pi(fPhi[ix1] - fPhi[ix2]));
+        if (not(deltaPhi_d < fMax_deltaphi))
+          deltaPhi_d -= TMath::TwoPi();
+        float deltaPhi_c = float(TVector2::Phi_0_2pi(fPhi[ix2] - fPhi[ix1]));
+        if (not(deltaPhi_c < fMax_deltaphi))
+          deltaPhi_c -= TMath::TwoPi();
 
         /* apply the pair correction if applicable */
+        const THn* effcorr = fPairsEfficiency[fPID[ix1]][fPID[ix2]];
+        int bins[4];
         if (effcorr != NULL) {
-          bins[0] = ixDeltaEta_d+1;
-          bins[1] = ixDeltaPhi_d+1;
-          bins[2] = ixPt_1+1;
-          bins[3] = fIxPt_2[ix2]+1;
+          bins[0] = ixDeltaEta_d + 1;
+          bins[1] = ixDeltaPhi_d + 1;
+          bins[2] = fIxPt[ix1] + 1;
+          bins[3] = fIxPt[ix2] + 1;
           corr = corr / effcorr->GetBinContent(bins);
         }
+        int globalbin_d = fhN2_12_vsDEtaDPhi[fPID[ix1]][fPID[ix2]]->GetBin(ixDeltaEta_d + 1, ixDeltaPhi_d + 1);
+        int globalbin_c = fhN2_12_vsDEtaDPhi[fPID[ix2]][fPID[ix1]]->GetBin(ixDeltaEta_c + 1, ixDeltaPhi_c + 1);
+        int globalbin_na_d = fhN2_12_vsDEtaDPhi_na[fPID[ix1]][fPID[ix2]]->FindBin(deltaEta_d, deltaPhi_d);
+        int globalbin_na_c = fhN2_12_vsDEtaDPhi_na[fPID[ix2]][fPID[ix1]]->FindBin(deltaEta_c, deltaPhi_c);
 
-        int globalbin_d = fhN2_12_vsDEtaDPhi[kOT]->GetBin(ixDeltaEta_d+1,ixDeltaPhi_d+1);
-        int globalbin_c = fhN2_12_vsDEtaDPhi[kTO]->GetBin(ixDeltaEta_c+1,ixDeltaPhi_c+1);
-        int globalbin_na_d = fhN2_12_vsDEtaDPhi_na[kOT]->FindBin(deltaEta_d,deltaPhi_d);
-        int globalbin_na_c = fhN2_12_vsDEtaDPhi_na[kTO]->FindBin(deltaEta_c,deltaPhi_c);
-
-        fNnw2_12               += 1;
-        fN2_12                 += corr;
-        fhN2_12_vsDEtaDPhi[kOT]->AddBinContent(globalbin_d,corr);
-        fhN2_12_vsDEtaDPhi[kTO]->AddBinContent(globalbin_c,corr);
-        fhN2_12_vsDEtaDPhi_na[kOT]->AddBinContent(globalbin_na_d,corr);
-        fhN2_12_vsDEtaDPhi_na[kTO]->AddBinContent(globalbin_na_c,corr);
-        float ptpt              = pt_1*fPt_2[ix2];
-        fSum2PtPtnw_12         += ptpt;
-        fSum2PtPt_12           += corr*ptpt;
-        fhSum2PtPt_12_vsDEtaDPhi[kOT]->AddBinContent(globalbin_d,corr*ptpt);
-        fhSum2PtPt_12_vsDEtaDPhi[kTO]->AddBinContent(globalbin_c,corr*ptpt);
-        float dptdptnw = (pt_1 - avgpt_1) * (fPt_2[ix2] - fAvgPt_2[ix2]);
-        float dptdpt = (corr_1 * pt_1 - avgpt_1)
-                       * (fCorrection_2[ix2] * fPt_2[ix2] - fAvgPt_2[ix2]);
-        fSum2DptDptnw_12 += dptdptnw;
-        fSum2DptDpt_12 += dptdpt;
-        fhSum2DptDpt_12_vsDEtaDPhi[kOT]->AddBinContent(globalbin_d, dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi[kTO]->AddBinContent(globalbin_c, dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi_na[kOT]->AddBinContent(globalbin_na_d, dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi_na[kTO]->AddBinContent(globalbin_na_c, dptdpt);
-        fhN2_12_vsPtPt[kOT]->Fill(pt_1,fPt_2[ix2],corr);
-        fhN2_12_vsPtPt[kTO]->Fill(fPt_2[ix2],pt_1,corr);
+        fNnw2_12[fPID[ix1]][fPID[ix2]] += 1;
+        fNnw2_12[fPID[ix2]][fPID[ix1]] += 1;
+        fN2_12[fPID[ix1]][fPID[ix2]] += corr;
+        fN2_12[fPID[ix2]][fPID[ix1]] += corr;
+        fhN2_12_vsDEtaDPhi[fPID[ix1]][fPID[ix2]]->AddBinContent(globalbin_d, corr);
+        fhN2_12_vsDEtaDPhi[fPID[ix2]][fPID[ix1]]->AddBinContent(globalbin_c, corr);
+        fhN2_12_vsDEtaDPhi_na[fPID[ix1]][fPID[ix2]]->AddBinContent(globalbin_na_d, corr);
+        fhN2_12_vsDEtaDPhi_na[fPID[ix2]][fPID[ix1]]->AddBinContent(globalbin_na_c, corr);
+        float ptpt = fPt[ix1] * fPt[ix2];
+        fSum2PtPtnw_12[fPID[ix1]][fPID[ix2]] += ptpt;
+        fSum2PtPtnw_12[fPID[ix2]][fPID[ix1]] += ptpt;
+        fSum2PtPt_12[fPID[ix1]][fPID[ix2]] += corr * ptpt;
+        fSum2PtPt_12[fPID[ix2]][fPID[ix1]] += corr * ptpt;
+        fhSum2PtPt_12_vsDEtaDPhi[fPID[ix1]][fPID[ix2]]->AddBinContent(globalbin_d, corr * ptpt);
+        fhSum2PtPt_12_vsDEtaDPhi[fPID[ix2]][fPID[ix1]]->AddBinContent(globalbin_c, corr * ptpt);
+        float dptdptnw = (fPt[ix1] - fAvgPt[ix1]) * (fPt[ix2] - fAvgPt[ix2]);
+        float dptdpt = corr * (fPt[ix1] - fAvgPt[ix1]) * (fPt[ix2] - fAvgPt[ix2]);
+        fSum2DptDptnw_12[fPID[ix1]][fPID[ix2]] += dptdptnw;
+        fSum2DptDptnw_12[fPID[ix2]][fPID[ix1]] += dptdptnw;
+        fSum2DptDpt_12[fPID[ix1]][fPID[ix2]] += dptdpt;
+        fSum2DptDpt_12[fPID[ix2]][fPID[ix1]] += dptdpt;
+        fhSum2DptDpt_12_vsDEtaDPhi[fPID[ix1]][fPID[ix2]]->AddBinContent(globalbin_d, dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi[fPID[ix2]][fPID[ix1]]->AddBinContent(globalbin_c, dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[fPID[ix1]][fPID[ix2]]->AddBinContent(globalbin_na_d, dptdpt);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[fPID[ix2]][fPID[ix1]]->AddBinContent(globalbin_na_c, dptdpt);
+        fhN2_12_vsPtPt[fPID[ix1]][fPID[ix2]]->Fill(fPt[ix1], fPt[ix2], corr);
+        fhN2_12_vsPtPt[fPID[ix2]][fPID[ix1]]->Fill(fPt[ix2], fPt[ix1], corr);
       }
-    } //ix2
-  } //ix1
-  fhN2_12_vsC[kOT]->Fill(fCentrality, fN2_12);
-  fhN2_12_vsC[kTO]->Fill(fCentrality, fN2_12);
-  fhSum2PtPt_12_vsC[kOT]->Fill(fCentrality, fSum2PtPt_12);
-  fhSum2PtPt_12_vsC[kTO]->Fill(fCentrality, fSum2PtPt_12);
-  fhSum2DptDpt_12_vsC[kOT]->Fill(fCentrality, fSum2DptDpt_12);
-  fhSum2DptDpt_12_vsC[kTO]->Fill(fCentrality, fSum2DptDpt_12);
-  fhN2nw_12_vsC[kOT]->Fill(fCentrality, fNnw2_12);
-  fhN2nw_12_vsC[kTO]->Fill(fCentrality, fNnw2_12);
-  fhSum2PtPtnw_12_vsC[kOT]->Fill(fCentrality, fSum2PtPtnw_12);
-  fhSum2PtPtnw_12_vsC[kTO]->Fill(fCentrality, fSum2PtPtnw_12);
-  fhSum2DptDptnw_12_vsC[kOT]->Fill(fCentrality, fSum2DptDptnw_12);
-  fhSum2DptDptnw_12_vsC[kTO]->Fill(fCentrality, fSum2DptDptnw_12);
+    }
+  }
+  for (uint pidx = 0; pidx < fSpeciesNames.size(); ++pidx) {
+    for (uint pidy = 0; pidy < fSpeciesNames.size(); ++pidy) {
+      fhN2_12_vsC[pidx][pidy]->Fill(fCentrality, fN2_12[pidx][pidy]);
+      fhSum2PtPt_12_vsC[pidx][pidy]->Fill(fCentrality, fSum2PtPt_12[pidx][pidy]);
+      fhSum2DptDpt_12_vsC[pidx][pidy]->Fill(fCentrality, fSum2DptDpt_12[pidx][pidy]);
+      fhN2nw_12_vsC[pidx][pidy]->Fill(fCentrality, fNnw2_12[pidx][pidy]);
+      fhSum2PtPtnw_12_vsC[pidx][pidy]->Fill(fCentrality, fSum2PtPtnw_12[pidx][pidy]);
+      fhSum2DptDptnw_12_vsC[pidx][pidy]->Fill(fCentrality, fSum2DptDptnw_12[pidx][pidy]);
 
-  /* update the number of entries in the differential histograms filled with AddBinContent */
-  fhN2_12_vsDEtaDPhi[kOT]->SetEntries(fhN2_12_vsDEtaDPhi[kOT]->GetEntries() + fNnw2_12);
-  fhN2_12_vsDEtaDPhi[kTO]->SetEntries(fhN2_12_vsDEtaDPhi[kTO]->GetEntries() + fNnw2_12);
-  fhN2_12_vsDEtaDPhi_na[kOT]->SetEntries(fhN2_12_vsDEtaDPhi_na[kOT]->GetEntries() + fNnw2_12);
-  fhN2_12_vsDEtaDPhi_na[kTO]->SetEntries(fhN2_12_vsDEtaDPhi_na[kTO]->GetEntries() + fNnw2_12);
-  fhSum2PtPt_12_vsDEtaDPhi[kOT]->SetEntries(fhSum2PtPt_12_vsDEtaDPhi[kOT]->GetEntries() + fNnw2_12);
-  fhSum2PtPt_12_vsDEtaDPhi[kTO]->SetEntries(fhSum2PtPt_12_vsDEtaDPhi[kTO]->GetEntries() + fNnw2_12);
-  fhSum2DptDpt_12_vsDEtaDPhi[kOT]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi[kOT]->GetEntries() + fNnw2_12);
-  fhSum2DptDpt_12_vsDEtaDPhi[kTO]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi[kTO]->GetEntries() + fNnw2_12);
-  fhSum2DptDpt_12_vsDEtaDPhi_na[kOT]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi_na[kOT]->GetEntries() + fNnw2_12);
-  fhSum2DptDpt_12_vsDEtaDPhi_na[kTO]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi_na[kTO]->GetEntries() + fNnw2_12);
+      /* update the number of entries in the differential histograms filled with AddBinContent */
+      fhN2_12_vsDEtaDPhi[pidx][pidy]->SetEntries(fhN2_12_vsDEtaDPhi[pidx][pidy]->GetEntries() + fNnw2_12[pidx][pidy]);
+      fhN2_12_vsDEtaDPhi_na[pidx][pidy]->SetEntries(fhN2_12_vsDEtaDPhi_na[pidx][pidy]->GetEntries() + fNnw2_12[pidx][pidy]);
+      fhSum2PtPt_12_vsDEtaDPhi[pidx][pidy]->SetEntries(fhSum2PtPt_12_vsDEtaDPhi[pidx][pidy]->GetEntries() + fNnw2_12[pidx][pidy]);
+      fhSum2DptDpt_12_vsDEtaDPhi[pidx][pidy]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi[pidx][pidy]->GetEntries() + fNnw2_12[pidx][pidy]);
+      fhSum2DptDpt_12_vsDEtaDPhi_na[pidx][pidy]->SetEntries(fhSum2DptDpt_12_vsDEtaDPhi_na[pidx][pidy]->GetEntries() + fNnw2_12[pidx][pidy]);
+    }
+  }
 }
 
 /// \brief Fill the histograms once the whole process is finished
 void  Ali2PCorrelations::FinalizeProcess()
 {
-
   if (fSinglesOnly) {
-    /* for the time being, the errors are trivial so, we do not use results file space */
-    fhN1_1_vsPt->Sumw2(false);
-    fhN1_1_vsZEtaPhiPt->Sumw2(false);
-    fhN1_2_vsPt->Sumw2(false);
-    fhN1_2_vsZEtaPhiPt->Sumw2(false);
-  }
-  else {
-    /* for the time being, the errors are trivial or not valid so, we do not use results file space */
-    fhN1_1_vsEtaPhi->Sumw2(false);
-    fhSum1Pt_1_vsEtaPhi->Sumw2(false);
-    fhN1_2_vsEtaPhi->Sumw2(false);
-    fhSum1Pt_2_vsEtaPhi->Sumw2(false);
-    for (int i = 0; i<nTrackPairs; ++i) {
-      fhN2_12_vsDEtaDPhi[i]->Sumw2(false);
-      fhN2_12_vsDEtaDPhi_na[i]->Sumw2(false);
-      fhSum2PtPt_12_vsDEtaDPhi[i]->Sumw2(false);
-      fhSum2DptDpt_12_vsDEtaDPhi[i]->Sumw2(false);
-      fhSum2DptDpt_12_vsDEtaDPhi_na[i]->Sumw2(false);
-      fhN2_12_vsPtPt[i]->Sumw2(false);
+    for (uint pid = 0; pid < fSpeciesNames.size(); ++pid) {
+      /* for the time being, the errors are trivial so, we do not use results file space */
+      fhN1_vsPt[pid]->Sumw2(false);
+      fhN1_vsZEtaPhiPt[pid]->Sumw2(false);
+    }
+  } else {
+    for (uint pidx = 0; pidx < fSpeciesNames.size(); ++pidx) {
+      /* for the time being, the errors are trivial or not valid so, we do not use results file space */
+      fhN1_vsEtaPhi[pidx]->Sumw2(false);
+      fhSum1Pt_vsEtaPhi[pidx]->Sumw2(false);
+      for (uint pidy = 0; pidy < fSpeciesNames.size(); ++pidy) {
+        fhN2_12_vsDEtaDPhi[pidx][pidy]->Sumw2(false);
+        fhN2_12_vsDEtaDPhi_na[pidx][pidy]->Sumw2(false);
+        fhSum2PtPt_12_vsDEtaDPhi[pidx][pidy]->Sumw2(false);
+        fhSum2DptDpt_12_vsDEtaDPhi[pidx][pidy]->Sumw2(false);
+        fhSum2DptDpt_12_vsDEtaDPhi_na[pidx][pidy]->Sumw2(false);
+        fhN2_12_vsPtPt[pidx][pidy]->Sumw2(false);
+      }
     }
   }
 }

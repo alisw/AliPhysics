@@ -7,7 +7,8 @@
        const char *nclusters          = "usedefault",
        const char* ncells             = "usedefault",
        Double_t Rstep_EF              = 0.1,
-       AliAnalysisTaskEmcalJetEnergyFlow::AnalysisType fAnType           = AliAnalysisTaskEmcalJetEnergyFlow::kppData,
+       Double_t Max_match_dr          = 0.2,
+       AliAnalysisTaskEmcalJetEnergyFlow::AnalysisType fAnType = AliAnalysisTaskEmcalJetEnergyFlow::kppData,
        const char *suffix             = ""
      )
      {
@@ -15,6 +16,7 @@
           nclusters,
           ncells,
           Rstep_EF,                                                                 
+          Max_match_dr,
           fAnType,
           suffix);
     }

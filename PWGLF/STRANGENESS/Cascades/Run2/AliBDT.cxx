@@ -95,22 +95,27 @@ double AliBDT::Predict(double* X, int Nt)
 
   double P = 0.0;
 
-  int nodes = int(fFt->GetNbinsX()/Nt); 
+  int nodes = int(fFt->GetNbinsX()/Nt); //nodes per tree = 2^(tree_depth + 1) - 1
 
   for(int i=0; i<Nt; i++)
   {
     //booster i structure
-    int g = 0;
-    while( int(fFt->GetBinContent((nodes*i)+g+1)) > 0 )
+    int Lidx = 1;			//local index of a node in each tree [1,nodes]
+    int Gidx = (nodes*i)+Lidx;	//global index of a node in Nt trees
+
+    while( Lidx < (nodes+1)/2 )
     {
-      if( X[g] < fSoS->GetBinContent((nodes*i)+g+1) ) 	g = 2*g+1;
-      else 						g = 2*g+2;
+      if( X[int(fFt->GetBinContent(Gidx))] < fSoS->GetBinContent(Gidx) ) Lidx = 2*Lidx;
+
+      else 								 Lidx = 2*Lidx+1;
+
+      Gidx = (nodes*i)+Lidx;
     }
 
     //Sum leaf score
-    P += fSoS->GetBinContent( (nodes*i)+g+1 );
+    P += fSoS->GetBinContent(Gidx);
   }
-
+  
 /*
   //100 boosters
   for(int i=0; i<100; i++)

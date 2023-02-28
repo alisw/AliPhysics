@@ -72,6 +72,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   void                        SetNeedEmbedClusterContainer(Bool_t val)            { fNeedEmbedClusterContainer = val;}
   void                        SetLightTreeMode(Bool_t val)                        { fLightTreeMode = val;}
   void                        SetRejectTPCPileup(Bool_t val)                      { fRejectTPCPileup = val;}
+  void                        SetSaveEPDetails(Bool_t val)                        { fSaveEPDetails = val;}
   
   void                        SetEventCutTriggerTrack(Double_t minPt, Double_t maxPt, Int_t minLabel=-9999999, Int_t maxLabel=+9999999)
                                 { fEventCut_TriggerTrackMinPt = minPt; fEventCut_TriggerTrackMaxPt = maxPt; fEventCut_TriggerTrackMinLabel = minLabel;
@@ -127,6 +128,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   TString                     fMCParticleArrayName;                     ///< Array name of MC particles in event (mcparticles)
   Bool_t                      fNeedEmbedClusterContainer;               ///< If we need to get embedded cluster container (true for hybrid event)
   Bool_t                      fLightTreeMode;                           ///< Save fewer branches to reduce tree/train size
+  Bool_t                      fSaveEPDetails;                           ///< Save EP angles from V0M, V0A, V0C, and TPC
   Int_t                       fQ2Detector;                              ///< Select which detector(s) to use for q2 calculations
   Int_t                       fEPDetector;                              ///< Select which detector(s) to use for EP calculations
 
@@ -188,7 +190,7 @@ class AliAnalysisTaskJetExtractor : public AliAnalysisTaskEmcalJet {
   AliAnalysisTaskJetExtractor &operator=(const AliAnalysisTaskJetExtractor&); // not implemented
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskJetExtractor, 18) // Jet extraction task
+  ClassDef(AliAnalysisTaskJetExtractor, 19) // Jet extraction task
   /// \endcond
 };
 
@@ -221,7 +223,7 @@ class AliEmcalJetTree : public TNamed
     void            AddExtractionJetTypeHM(Int_t type) {fExtractionJetTypes_HM.push_back(type);}
     void            AddExtractionJetTypePM(Int_t type) {fExtractionJetTypes_PM.push_back(type);}
 
-    void            InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveQVector, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks, Bool_t lightTreeMode);
+    void            InitializeTree(Bool_t saveCaloClusters, Bool_t saveMCInformation, Bool_t saveMatchedJets_Det, Bool_t saveMatchedJets_Part, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveConstituentPID, Bool_t saveJetShapes, Bool_t saveQVector, Bool_t saveSplittings, Bool_t saveSecondaryVertices, Bool_t saveTriggerTracks, Bool_t lightTreeMode, Bool_t EPDetails);
 
     // ######################################
     Bool_t          AddJetToTree(AliEmcalJet* jet, Bool_t saveConstituents, Bool_t saveConstituentsIP, Bool_t saveCaloClusters,
@@ -381,7 +383,7 @@ class AliEmcalJetTree : public TNamed
     Int_t           fBuffer_NumSplittings;
 
     /// \cond CLASSIMP
-    ClassDef(AliEmcalJetTree, 17) // Jet tree class
+    ClassDef(AliEmcalJetTree, 18) // Jet tree class
     /// \endcond
 };
 

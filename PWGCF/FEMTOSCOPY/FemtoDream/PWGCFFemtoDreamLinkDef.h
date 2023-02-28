@@ -82,6 +82,7 @@
 
 #pragma link C++ class AliSigma0AODPhotonMotherCuts+;
 #pragma link C++ class AliSigma0PhotonCuts+;
+#pragma link C++ class AliAnalysisTaskNanoXiPi+;
 
 #endif
 
@@ -95,6 +96,8 @@
 #pragma link C++ class AliAnalysisTaskCharmingFemto+;
 #pragma link C++ class CustomQueue<std::vector<TLorentzVector>>+;
 #pragma link C++ std::vector<CustomQueue<std::vector<TLorentzVector>>>+;
+#pragma link C++ class CutContainer+;
+#pragma link C++ class AliEasyFemto+;
 #pragma link C++ class AliAnalysisTaskPionDeuteronMC+;
 #pragma link C++ class AliAnalysisTaskPionDeuteron+;
 

@@ -110,7 +110,9 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetSystFlag(int syst){fCurrSystFlag = syst;} 
 		virtual int    GetSystFlag(){return fCurrSystFlag;}
 		virtual void   UseBootstrap(bool ftest = true){fBootstrapStat = ftest;}
+		virtual void   SetBootstrapRange(int low=-100, int high = 100){sampleLow = low; sampleHigh = high;}
 
+        void SetUsePhiStarCut(Bool_t cut = kTRUE) { fUsePhiStarCut = cut; }
         void SetUseFMDcut(Bool_t cut = kTRUE) { fUseFMDcut = cut; }
         void SetFMDcutParameters(Double_t par0a, Double_t par1a, Double_t par0c, Double_t par1c) { fFMDcutapar0 = par0a; fFMDcutapar1 = par1a; fFMDcutcpar0 = par0c; fFMDcutcpar1 = par1c; }
 		virtual void   SetFMDacceptanceCuts(double AL, double AH, double CL, double CH) { fFMDAacceptanceCutLower = AL; fFMDAacceptanceCutUpper = AH; fFMDCacceptanceCutLower = CL; fFMDCacceptanceCutUpper = CH; }
@@ -118,6 +120,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetBinningMethod(unsigned method) {fBinMethod = method;}
 
 		Double_t RangePhi(Double_t DPhi);
+        Double_t  RangePhiFMD(Double_t DPhi);
 		Double_t GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius);
 
 	private:
@@ -131,6 +134,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		Bool_t AcceptAOD(AliAODEvent *inEv);
 		Bool_t AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
 
+		double 			GetWeight(double phi, double eta, double pt, int run, bool fPlus, double vz, double runNumber);
 		double GetPtWeight(double pt, double eta, float vz, double runNumber);
 
 		Bool_t                  LoadWeights();
@@ -192,6 +196,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		Int_t                   fPoolMinNTracks;                        // Minimum number of tracks to mix
 		Int_t                   fMinEventsToMix;                        // Minimum numver of events to mix
         Bool_t                  fBootstrapStat;                         // Flag to calculate statistical uncertainty with bootstrap
+		Bool_t                  fUsePhiStarCut;                         // [kTRUE]
         Bool_t                  fUseFMDcut;                             // [kTRUE]
         Double_t                fFMDcutapar0;                           // [1.64755]
         Double_t                fFMDcutapar1;                           // [119.602]
@@ -203,6 +208,8 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
         Double_t                fFMDCacceptanceCutUpper;                // FMDCut
 		unsigned                fBinMethod;                             // fBinMethod
 		int                     nSamples;                               // Number of bootstrap samples
+		int                     sampleLow;                              // lower bound of bootstrap sample
+		int                     sampleHigh;                             // higher bound of bootstrap sample
 
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
@@ -233,6 +240,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		TFile*			fPhiWeightFile;	                //! file with phi weights
 		TList*			fPhiWeightPlus;	                //! file with phi weights
 		TList*			fPhiWeightMinus;                //! file with phi weights
+  TH2D*                   hWeight2D;                    // phi weights 2d 60 bins
 		TH2D*                   fh2Weights[kUnknown];           //! container for GF weights (phi,eta,pt) (2D)
 		TH3D*                   fh3Weights[kUnknown];           //! container for GF weights (phi,eta,pt)
 		TH2D*                   fh2AfterWeights[kUnknown];      //! distribution after applying GF weights - lightweight QA (phi)
@@ -279,6 +287,10 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		TH1D*				fEtaTriDisBefore;	//! eta dist before track cuts
 		TH1D*				fEtaAssDis;		    //! eta dist
 		TH1D*				fEtaAssDisBefore;	//! eta dist before track cuts
+		TH1D*				fPhiTriDis;		    //! phi dist
+		TH1D*				fPhiTriDisBefore;	//! phi dist before track cuts
+		TH1D*				fPhiAssDis;		    //! phi dist
+		TH1D*				fPhiAssDisBefore;	//! phi dist before track cuts
 		TH1D*				fPtTriDis;			//! pt dist
 		TH1D*				fPtTriDisBefore;	//! pt dist before track cuts
 		TH1D*				fPtAssDis;			//! pt dist
@@ -316,7 +328,7 @@ class AliAnalysisTaskCorrForNonlinearFlow : public AliAnalysisTaskSE {
 		double fCentrality;            //!
 		Double_t fbSign;               //!
 
-		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 7); // Analysis task
+		ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 8); // Analysis task
 };
 
 #endif

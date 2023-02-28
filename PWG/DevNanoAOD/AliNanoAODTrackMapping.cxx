@@ -58,6 +58,7 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping() :
   fTPCnclsS(-1),
   fFilterMap(-1),
   fTOFBunchCrossing(-1),
+  fGeneratorIndex(-1),
   fcovmat{-1},
   fTOFchi2{-1},
   fTOFsignalDz{-1},
@@ -116,6 +117,7 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
   fTPCnclsS(-1),
   fFilterMap(-1),
   fTOFBunchCrossing(-1),
+  fGeneratorIndex(-1),
   fcovmat{-1},
   fTOFchi2{-1},
   fTOFsignalDz{-1},
@@ -188,6 +190,7 @@ AliNanoAODTrackMapping::AliNanoAODTrackMapping(const char * mappingString) :
     else if(var == "TPCnclsS"         ) fTPCnclsS          = indexInt++;
     else if(var == "FilterMap"        ) fFilterMap         = indexInt++;
     else if(var == "TOFBunchCrossing" ) fTOFBunchCrossing  = index++;
+    else if(var == "GeneratorIndex"   ) fGeneratorIndex    = indexInt++;
     else if(var == "covmat"           ) {
         for(Int_t i=0;i<21;i++){
             fcovmat[i] = index++;
@@ -255,6 +258,7 @@ Int_t AliNanoAODTrackMapping::GetVarIndex(TString varName){
     else if(varName == "TPCnclsS"         ) return fTPCnclsS         ;
     else if(varName == "FilterMap"        ) return fFilterMap        ;
     else if(varName == "TOFBunchCrossing" ) return fTOFBunchCrossing ;
+    else if(varName == "GeneratorIndex"   ) return fGeneratorIndex   ;
     else if(varName == "covmat0"          ) return fcovmat[0]        ;
     else if(varName == "TOFchi2"          ) return fTOFchi2          ;
     else if(varName == "TOFsignalDz"      ) return fTOFsignalDz      ;
@@ -343,6 +347,7 @@ const char * AliNanoAODTrackMapping::GetVarNameInt(Int_t index) const {
     else if(index == fTRDnClusters     )  return "TRDnClusters"     ;
     else if(index == fTPCnclsS         )  return "TPCnclsS"         ;
     else if(index == fFilterMap        )  return "FilterMap"        ;
+    else if(index == fGeneratorIndex   )  return "GeneratorIndex"   ;
     else if(index == fStatus           )  return "Status"           ;
     else if(fStatus != -1 && index == fStatus+1)  return "Status"   ;
     AliFatal(Form("Invalid index %d", index));

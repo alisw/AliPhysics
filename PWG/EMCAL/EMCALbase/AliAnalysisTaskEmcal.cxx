@@ -138,6 +138,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
   fUseBuiltinEventSelection(kFALSE),
+  fUseNoEventSelection(false),
   fReadPyxsecFast(true),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
@@ -265,6 +266,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fMCRejectFilter(kFALSE),
   fCountDownscaleCorrectedEvents(kFALSE),
   fUseBuiltinEventSelection(kFALSE),
+  fUseNoEventSelection(false),
   fReadPyxsecFast(true),
   fPtHardAndJetPtFactor(0.),
   fPtHardAndClusterPtFactor(0.),
@@ -1272,6 +1274,7 @@ Bool_t AliAnalysisTaskEmcal::HasTriggerType(TriggerType trigger)
 }
 
 Bool_t AliAnalysisTaskEmcal::IsEventSelected(){
+  if(fUseNoEventSelection) return true;
   if(fUseBuiltinEventSelection) return IsEventSelectedInternal();
   if(!IsTriggerSelected()) return false;
   if(!CheckMCOutliers()) return false;

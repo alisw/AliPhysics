@@ -15,6 +15,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fmTBinning(false),
       fkTandMultBinning(false),
       fkTandMultPtBinning(false),
+      fkTandMultMCTrueBinning(false),
       fPtQA(false),
       fMassQA(false),
       fMomentumResolution(false),
@@ -63,6 +64,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fmTBinning(config.fmTBinning),
       fkTandMultBinning(config.fkTandMultBinning),
       fkTandMultPtBinning(config.fkTandMultPtBinning),
+      fkTandMultMCTrueBinning(config.fkTandMultMCTrueBinning),
       fPtQA(config.fPtQA),
       fMassQA(config.fMassQA),
       fMomentumResolution(config.fMomentumResolution),
@@ -111,6 +113,7 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fmTBinning(false),
       fkTandMultBinning(false),
       fkTandMultPtBinning(false),
+      fkTandMultMCTrueBinning(false),
       fPtQA(false),
       fMassQA(false),
       fMomentumResolution(false),
@@ -158,6 +161,7 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fmTBinning = config.fmTBinning;
     this->fkTandMultBinning = config.fkTandMultBinning;
     this->fkTandMultPtBinning = config.fkTandMultPtBinning;
+    this->fkTandMultMCTrueBinning = config.fkTandMultMCTrueBinning;
     this->fPtQA = config.fPtQA;
     this->fMassQA = config.fMassQA;
     this->fMomentumResolution = config.fMomentumResolution;

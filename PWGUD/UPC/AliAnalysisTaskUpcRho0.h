@@ -94,6 +94,9 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	Bool_t TriggerSPD_T;
 	Int_t ITSModuleInner_T[2];
 	Int_t ITSModuleOuter_T[2];
+	Float_t TrackEtaGen_T[2];
+	Float_t TrackPhiGen_T[2];
+	Float_t TrackPtGen_T[2]; 
 
 	// MC tree
 	TTree *fMCTree;
@@ -160,7 +163,7 @@ class AliAnalysisTaskUpcRho0 : public AliAnalysisTaskSE {
 	AliAnalysisTaskUpcRho0(const AliAnalysisTaskUpcRho0&); //not implemented
 	AliAnalysisTaskUpcRho0& operator =(const AliAnalysisTaskUpcRho0&); //not implemented
   
- 	ClassDef(AliAnalysisTaskUpcRho0, 9); 
+ 	ClassDef(AliAnalysisTaskUpcRho0, 10); 
 
 };
 

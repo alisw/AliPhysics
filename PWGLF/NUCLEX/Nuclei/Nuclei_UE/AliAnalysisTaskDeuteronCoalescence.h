@@ -66,7 +66,7 @@ private:
     //Average Multiplicity
     Double_t fAverage_Nch_Transv;//
     
-    //Re-shaping Protons 
+    //Re-shaping Protons
     TH1D *hProtonWeights;//
     TF1  *fProtonWeights;//
     TH1D *hWeightToward;//
@@ -146,6 +146,9 @@ private:
     TH2D *hDeltaPhi_Away;//!
     TH2D *hDeltaPhi_INELgtZERO;//!
 
+    //Proton and Deuteron vs. Rapidity
+    TH2D *hAntiProtons_vs_PtRap;//!
+    TH2D *hAntiDeuterons_vs_PtRap[50];//!
 
     
     AliAnalysisTaskDeuteronCoalescence(const AliAnalysisTaskDeuteronCoalescence&);

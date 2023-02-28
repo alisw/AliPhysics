@@ -315,6 +315,7 @@ private:
 //===========================================================================================
     Float_t fCentrality_V0M; //!
     Float_t fCentrality_ZDC; //!
+    Float_t fCentrality_ZN; //!
     Float_t fCentrality_ZDCFired; //!
     Float_t fCentrality_RefMult05; //!
     Float_t fCentrality_RefMult08; //!
@@ -329,7 +330,9 @@ private:
     Int_t  fSPDtracklets; //!
     Int_t  fSPDtrackletsA; //!
     Int_t  fSPDtrackletsC; //!
+    Int_t fSPDtracklets0815;   //!
     Int_t fNTracksGlobal; //!
+    Int_t fNTracksGlobal0815; //!
     Int_t fNtrk_pTgt2; //!
     Int_t fNtrk_pTgt3; //!
     Int_t fNtrk_pTgt5; //!
@@ -452,6 +455,7 @@ private:
     //Event Multiplicity Variables
     Float_t fTreeVariableCentrality_V0M; //!
     Float_t fTreeVariableCentrality_ZDC; //!
+    Float_t fTreeVariableCentrality_ZN; //!
     Float_t fTreeVariableCentrality_ZDCFired; //!
     Float_t fTreeVariableCentrality_RefMult05; //!
     Float_t fTreeVariableCentrality_RefMult08; //!
@@ -472,9 +476,12 @@ private:
     Float_t fTreeVariableMagneticField;
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-//===========================================================================================
-//   Variables for Cascade Candidate Tree
-//===========================================================================================
+    Int_t fTreeVariableSPDtracklets0815;  //!
+    Int_t fTreeVariableNTracksGlobal0815; //!
+
+    //===========================================================================================
+    //   Variables for Cascade Candidate Tree
+    //===========================================================================================
     Int_t fTreeCascVarRun;  //!
     Int_t fTreeCascVarCharge;         //!
     Float_t fTreeCascVarMassAsXi;     //!
@@ -655,6 +662,7 @@ private:
     //Event Multiplicity Variables
     Float_t fTreeCascVarCentrality_V0M; //!
     Float_t fTreeCascVarCentrality_ZDC; //!
+    Float_t fTreeCascVarCentrality_ZN; //!
     Float_t fTreeCascVarCentrality_ZDCFired; //!
     Float_t fTreeCascVarCentrality_RefMult05; //!
     Float_t fTreeCascVarCentrality_RefMult08; //!
@@ -690,9 +698,12 @@ private:
     Float_t fTreeCascVarMagneticField;
     //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-//===========================================================================================
-//   Histograms
-//===========================================================================================
+    Int_t fTreeCascVarSPDtracklets0815;  //!
+    Int_t fTreeCascVarNTracksGlobal0815; //!
+
+    //===========================================================================================
+    //   Histograms
+    //===========================================================================================
 
     TH1D *fHistEventCounter; //!
     TH1D *fHistEventCounterDifferential; //!

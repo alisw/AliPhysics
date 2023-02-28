@@ -41,6 +41,7 @@ set(SRCS
   AliAnalysisTaskChargedFlow.cxx
   AliAnalysisTaskCorrForFlow.cxx
   AliAnalysisTaskCorrForFlowFMD.cxx
+  AliAnalysisTaskCorrForFlowMaster.cxx
   AliAnalysisTaskDeform.cxx
   AliAnalysisTaskFlowExample.cxx
   AliAnalysisTaskGFWPIDFlow.cxx
@@ -54,6 +55,7 @@ set(SRCS
   AliGFWCuts.cxx
   AliGFWFlowContainer.cxx
   AliGFWWeights.cxx
+  AliLWUtils.cxx
   AliPartSimpleForCorr.cxx
   AliProfileSubset.cxx
   AliProfileBS.cxx
@@ -66,6 +68,8 @@ set(SRCS
   AliAnalysisTaskCMWESETrkSyst.cxx
   AliAnalysisTaskPtFlowCorrelation.cxx
   AliAnalysisTaskMomentumFlowCorrelation.cxx
+  AliPtSubEventContainer.cxx
+  AliAnalysisTaskDensity.cxx
   )
 
 if(${ROOT_VERSION} GREATER_EQUAL 6.0)
@@ -75,15 +79,18 @@ if(${ROOT_VERSION} GREATER_EQUAL 6.0)
   list(APPEND SRCS AliAnalysisTaskFlowPPTask.cxx)
   list(APPEND SRCS AliAnalysisTaskGFWFlow.cxx)
   list(APPEND SRCS AliAnalysisTaskJetQ.cxx)
+  list(APPEND SRCS AliAnalysisTaskLWTree.cxx)
   list(APPEND SRCS AliAnalysisTaskMeanPtV2Corr.cxx)
   list(APPEND SRCS AliAnalysisTaskNonlinearFlow.cxx)
   list(APPEND SRCS AliAnalysisTaskCorrForNonlinearFlow.cxx)
+  list(APPEND SRCS AliAnalysisTaskAcceptanceCorr.cxx)
   list(APPEND SRCS AliEffFDContainer.cxx)
   list(APPEND SRCS AliGFWFilter.cxx)
   list(APPEND SRCS AliGFWFilterTask.cxx)
   list(APPEND SRCS CorrelationCalculator.cxx)
   list(APPEND SRCS AliGFWNFCuts.cxx)
   list(APPEND SRCS AliGFWXXCuts.cxx)
+  list(APPEND SRCS AliGFWPbpass23Cuts.cxx)
 endif()
 
 # Headers from sources

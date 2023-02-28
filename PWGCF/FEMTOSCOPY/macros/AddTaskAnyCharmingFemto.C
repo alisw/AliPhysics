@@ -18,6 +18,7 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     bool useMCTruthReco = false,
     bool isMCtruth = false,
     bool useTree = false,
+    bool useLooseSelections = false,
     bool fullBlastQA = true,
     TString trigger = "kINT7",
     int channelHF = AliAnalysisTaskCharmingFemto::kDplustoKpipi,
@@ -26,11 +27,29 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     TString cutHFsuffix = "",
     bool applyML = false, TString configML = "config_ML.yml",
     int useAODProtection = 0,
-    int massSelection = AliAnalysisTaskCharmingFemto::kSignal,
+    AliAnalysisTaskCharmingFemto::MassSelectionType massSelection = AliAnalysisTaskCharmingFemto::kSignal,
     int pdgBuddy = 2212,
     int mixingDepth = 10,
+    std::vector<std::string> colsToSave = {
+      "mult",
+      "kStar",
+      "is_oldpcrm",
+      "is_newpcrm",
+      "heavy_mult",
+      "heavy_invmass",
+      "heavy_pt",
+      "heavy_origin",
+      "light_mult",
+      "light_px",
+      "light_py",
+      "light_eta",
+      "light_nsigtpc",
+      "light_nsigtof",
+      "light_dcaxy",
+      "light_dcaz"},
     const char *cutVariation = "0"
   ) {
+
   TString suffix = TString::Format("%s", cutVariation);
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -345,11 +364,7 @@ if (!isMC) {
   }
 
   // overwrite previous settings and use loose selections if trees are used
-  if (useTree) {
-    // pt
-    TrackCuts->SetPtRange(0.14, 10);
-    AntiTrackCuts->SetPtRange(0.14, 10);
-
+  if (useTree && useLooseSelections) {
     // eta
     TrackCuts->SetEtaRange(-0.9, 0.9);
     AntiTrackCuts->SetEtaRange(-0.9, 0.9);
@@ -358,11 +373,14 @@ if (!isMC) {
     TrackCuts->SetNClsTPC(70);
     AntiTrackCuts->SetNClsTPC(70);
     
-    // PID
     if (aliPIDParticle == AliPID::kPion){
+      TrackCuts->SetPtRange(0.11, 10);
+      AntiTrackCuts->SetPtRange(0.11, 10);
       TrackCuts->SetPID(aliPIDParticle, 0.5, 3.5);
       AntiTrackCuts->SetPID(aliPIDParticle, 0.5, 3.5);
     } else if (aliPIDParticle == AliPID::kKaon){
+      TrackCuts->SetPtRange(0.1, 10);
+      AntiTrackCuts->SetPtRange(0.1, 10);
       TrackCuts->SetPIDkd(true, false, 3.5, 3.5, -999); // last parameter is dummy
       AntiTrackCuts->SetPIDkd(true, false, 3.5, 3.5, -999); // last parameter is dummy
     }
@@ -489,6 +507,8 @@ if (!isMC) {
   task->SetAODMismatchProtection(useAODProtection);
   task->SetMassSelection(massSelection);
   task->SetUseMCTruthReco(useMCTruthReco);
+  task->SetColsToSave(colsToSave);
+
   if(applyML) {
     task->SetDoMLApplication(applyML);
     task->SetMLConfigFile(configML);

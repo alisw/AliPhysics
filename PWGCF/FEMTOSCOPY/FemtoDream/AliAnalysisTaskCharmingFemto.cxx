@@ -31,6 +31,31 @@ static bool dummybool;
 
 ClassImp(AliAnalysisTaskCharmingFemto)
 
+bool isSelectedSignal(const double mass, const double pt, const int pdg) {
+    if (pdg == 413) {
+      Double_t mDstarPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
+      Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+      double massMean = mDstarPDG-mD0PDG; // no extra mass shift because it is deltamass
+    
+      double massWidth = 0.00124673 - pt * 0.000340426 + pt * pt * 4.40729e-05;
+      if(pt > 4 && pt < 5) massWidth = 0.00104329 - 0.000113275 * pt;
+      else if(pt >= 5) massWidth = 0.000519861 - 8.58874e-06 * pt;
+
+      // select D mesons mass window
+      double lowerMass = massMean - 2 * massWidth;
+      double upperMass = massMean + 2 * massWidth;
+
+      if (mass > lowerMass && mass < upperMass) {
+        return true;
+      }
+
+      return false;
+    } else {
+      printf(Form("charmed hadron with pdg %d not implemented!", pdg));
+      return false;
+    }
+}
+
     //____________________________________________________________________________________________________
     AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto()
     : AliAnalysisTaskSE("AliAnalysisTaskCharmingFemto"),
@@ -57,6 +82,24 @@ ClassImp(AliAnalysisTaskCharmingFemto)
       fUseFDPairCleaner(true),
       fUseLFFromEvtsWithPairs(false),
       fGTI(nullptr),
+      fColsToSave({
+        "mult",
+        "kStar",
+        "is_oldpcrm",
+        "is_newpcrm",
+        "is_crosspcrm",
+        "heavy_mult",
+        "heavy_invmass",
+        "heavy_pt",
+        "heavy_origin",
+        "light_mult",
+        "light_px",
+        "light_py",
+        "light_eta",
+        "light_nsigtpc",
+        "light_nsigtof",
+        "light_dcaxy",
+        "light_dcaz"}),
       fQA(nullptr),
       fEvtHistList(nullptr),
       fTrackCutHistList(nullptr),
@@ -157,6 +200,24 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fUseFDPairCleaner(true),
       fUseLFFromEvtsWithPairs(false),
       fGTI(nullptr),
+      fColsToSave({
+        "mult",
+        "kStar",
+        "is_oldpcrm",
+        "is_newpcrm",
+        "is_crosspcrm",
+        "heavy_mult",
+        "heavy_invmass",
+        "heavy_pt",
+        "heavy_origin",
+        "light_mult",
+        "light_px",
+        "light_py",
+        "light_eta",
+        "light_nsigtpc",
+        "light_nsigtof",
+        "light_dcaxy",
+        "light_dcaz"}),
       fQA(nullptr),
       fEvtHistList(nullptr),
       fTrackCutHistList(nullptr),
@@ -474,12 +535,14 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     }
     
     int protonMotherPdg = 0;
+    int protonPdg = 0;
     if (fIsMC && (fTrackCutsPartProton->isSelected(fProtonTrack) || fTrackCutsPartAntiProton->isSelected(fProtonTrack))){
       mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
       if(mcPart){
         mcpdg = mcPart->GetPdgCode();
         int idxMother = mcPart->GetMother();
         auto mcMotherPart = (AliAODMCParticle *)fArrayMCAOD->At(idxMother);
+        protonPdg = fProtonTrack->GetPDGCode();
         protonMotherPdg = mcMotherPart->GetPdgCode();
       }
     }
@@ -493,6 +556,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetPDGCode(mcpdg);
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         protons.push_back(*fProtonTrack);
       }
@@ -504,6 +568,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetPDGCode(mcpdg);
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         protons.push_back(*fProtonTrack);
         fHistBuddyplusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
@@ -518,6 +583,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetPDGCode(mcpdg);
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         antiprotons.push_back(*fProtonTrack);
       }
@@ -529,6 +595,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTPC(fProtonTrack->GetnSigmaTPC(buddyParticle));
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
+        fProtonTrack->SetPDGCode(mcpdg);
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         antiprotons.push_back(*fProtonTrack);
         fHistBuddyminusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
@@ -836,8 +903,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       fHistDminusInvMassPt->Fill(dMeson->Pt(), mass);
     }
 
-
-    if( MassSelection(mass, dMeson->Pt(), absPdgMom) ) {
+    if(IsMassSelected(mass, dMeson->Pt(), absPdgMom, fMassSelectionType, fNSigmaMass, fNSigmaOffsetSideband, fSidebandWidth)) {
       if (dMeson->Charge() > 0) {
         AliFemtoDreamBasePart dplusCand(dMeson, fInputEvent, absPdgMom, fDmesonPDGs);
         if (fIsMC && fMCBeautyRejection
@@ -987,6 +1053,11 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   //     printf("len: %d - dminus_prompt_score\n", dminus_prompt_score.size());
   //   }
   // }
+  if (fUseLFFromEvtsWithPairs) {
+    if (dplus.size() == 0 && dminus.size() == 0) {
+      return;
+    } 
+  }
 
   // set event properties
   int partMult = dplus.size();
@@ -1053,9 +1124,6 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       p.SetIsRemovedByNewPC(!p.UseParticle());
       if (!p.UseParticle()) p.SetUse(true);
     }
-    for (auto &p : protons) {
-      printf("slcnk %d\n", p.IsRemovedByOldPC());
-    }
     for (auto &p : antiprotons) {
       p.SetIsRemovedByNewPC(!p.UseParticle());
       if (!p.UseParticle()) p.SetUse(true);
@@ -1068,17 +1136,51 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       d.SetIsRemovedByNewPC(!d.UseParticle());
       if (!d.UseParticle()) d.SetUse(true);
     }
+
+    // cross pair cleaner
+    auto CrossClean = [this, absPdgMom](std::vector<AliFemtoDreamBasePart> &tracks, std::vector<AliFemtoDreamBasePart> &decays) {
+      for (auto &decay : decays) {
+        if (IsMassSelected(decay.GetInvMass(), decay.GetPt(), absPdgMom, kSignal, fNSigmaMass, fNSigmaOffsetSideband, fSidebandWidth)) {
+          std::vector<int> dauIDs = decay.GetIDTracks();
+          for (auto &track : tracks) {
+            std::vector<int> trackIDs = track.GetIDTracks();
+            for (auto &dauID : dauIDs) {
+              if (dauID == trackIDs.at(0)) {
+                track.SetUse(false);
+              }
+            }
+          }
+        }
+      }
+    };
+
+    CrossClean(protons, dplus);
+    CrossClean(protons, dminus);
+    CrossClean(antiprotons, dplus);
+    CrossClean(antiprotons, dminus);
+
+    for (auto &part : protons) {
+      part.SetIsRemovedByCrossPC(!part.UseParticle());
+      if (!part.UseParticle()) part.SetUse(true);
+    }
+    for (auto &part : antiprotons) {
+      part.SetIsRemovedByCrossPC(!part.UseParticle());
+      if (!part.UseParticle()) part.SetUse(true);
+    }
+    for (auto &part : dplus) {
+      part.SetIsRemovedByCrossPC(!part.UseParticle());
+      if (!part.UseParticle()) part.SetUse(true);
+    }
+    for (auto &part : dminus) {
+      part.SetIsRemovedByCrossPC(!part.UseParticle());
+      if (!part.UseParticle()) part.SetUse(true);
+    }
+
   } else if (fUseFDPairCleaner) {
     fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, true);
     fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, true);
     fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2, true);
     fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3, true);
-  }
-
-  if (fUseLFFromEvtsWithPairs) {
-    if (dplus.size() == 0 && dminus.size() == 0) {
-      return;
-    } 
   }
   
   fPairCleaner->StoreParticle(protons);
@@ -1087,7 +1189,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   fPairCleaner->StoreParticle(dminus);
 
   if (fUseTree) {
-    fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent, fPairTreeSE, fPairTreeME);
+    fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent, fPairTreeSE, fPairTreeME, fUsePart2Buffer);
   } else {
     fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
   }
@@ -1165,84 +1267,94 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
     fPairTreeME->insert({{0, 3}, new TTree("tME_mp", "tME_mp")});
     fPairTreeME->insert({{1, 2}, new TTree("tME_pm", "tME_pm")});
 
+    auto saveCol = [this](const char * col) { return std::find(fColsToSave.begin(), fColsToSave.end(), col)!= fColsToSave.end(); };
+
     for (auto tree : *fPairTreeSE) {
       // event
-      tree.second->Branch("mult", &dummyint);
-      tree.second->Branch("vz", &dummyfloat);
+      if(saveCol("mult")) tree.second->Branch("mult", &dummyint);
+      if(saveCol("vz")) tree.second->Branch("vz", &dummyfloat);
 
       // pair
-      tree.second->Branch("kStar", &dummyfloat);
-      tree.second->Branch("is_oldpcrm", &dummybool);
-      tree.second->Branch("is_newpcrm", &dummybool);
+      if(saveCol("kStar")) tree.second->Branch("kStar", &dummyfloat);
+      if(saveCol("is_oldpcrm")) tree.second->Branch("is_oldpcrm", &dummybool);
+      if(saveCol("is_newpcrm")) tree.second->Branch("is_newpcrm", &dummybool);
+      if(saveCol("is_crosspcrm")) tree.second->Branch("is_crosspcrm", &dummybool);
+      // if(saveCol("inv_mass")) tree.second->Branch("inv_mass", &dummyfloat);
+      // if(saveCol("inv_masspdg")) tree.second->Branch("inv_masspdg", &dummyfloat);
 
       // heavy particle
-      tree.second->Branch("heavy_mult", &dummyint);
-      tree.second->Branch("heavy_invmass", &dummyfloat);
-      tree.second->Branch("heavy_pt", &dummyfloat);
-      tree.second->Branch("heavy_eta", &dummyfloat);
-      tree.second->Branch("heavy_origin", &dummyint);
-      tree.second->Branch("heavy_daus", &dummyvector);
-      tree.second->Branch("heavy_softpion_px", &dummyfloat);
-      tree.second->Branch("heavy_softpion_py", &dummyfloat);
-      tree.second->Branch("heavy_softpion_pz", &dummyfloat);
-      tree.second->Branch("heavy_bkg_score", &dummyfloat);
-      tree.second->Branch("heavy_prompt_score", &dummyfloat);
-      tree.second->Branch("heavy_d0label", &dummyint);
+      if(saveCol("heavy_mult")) tree.second->Branch("heavy_mult", &dummyint);
+      if(saveCol("heavy_invmass")) tree.second->Branch("heavy_invmass", &dummyfloat);
+      if(saveCol("heavy_pt")) tree.second->Branch("heavy_pt", &dummyfloat);
+      if(saveCol("heavy_eta")) tree.second->Branch("heavy_eta", &dummyfloat);
+      if(fIsMC && saveCol("heavy_origin")) tree.second->Branch("heavy_origin", &dummyint);
+      if(saveCol("heavy_daus")) tree.second->Branch("heavy_daus", &dummyvector);
+      if(saveCol("heavy_softpion_px")) tree.second->Branch("heavy_softpion_px", &dummyfloat);
+      if(saveCol("heavy_softpion_py")) tree.second->Branch("heavy_softpion_py", &dummyfloat);
+      if(saveCol("heavy_softpion_pz")) tree.second->Branch("heavy_softpion_pz", &dummyfloat);
+      if(fApplyML && saveCol("heavy_bkg_score")) tree.second->Branch("heavy_bkg_score", &dummyfloat);
+      if(fApplyML && saveCol("heavy_prompt_score")) tree.second->Branch("heavy_prompt_score", &dummyfloat);
+      if(saveCol("heavy_d0label")) tree.second->Branch("heavy_d0label", &dummyint);
 
       // light particle
-      tree.second->Branch("light_mult", &dummyint);
-      tree.second->Branch("light_px", &dummyfloat);
-      tree.second->Branch("light_py", &dummyfloat);
-      tree.second->Branch("light_pz", &dummyfloat);
-      tree.second->Branch("light_eta", &dummyfloat);
-      tree.second->Branch("light_nsigtpc", &dummyfloat);
-      tree.second->Branch("light_nsigtof", &dummyfloat);
-      tree.second->Branch("light_ncls", &dummyint);
-      tree.second->Branch("light_ncrossed", &dummyint);
-      tree.second->Branch("light_dcaz", &dummyfloat);
-      tree.second->Branch("light_dcaxy", &dummyfloat);
-      tree.second->Branch("light_label", &dummyint);
-      tree.second->Branch("light_motherpdg", &dummyint);
+      if(saveCol("light_mult")) tree.second->Branch("light_mult", &dummyint);
+      if(saveCol("light_px")) tree.second->Branch("light_px", &dummyfloat);
+      if(saveCol("light_py")) tree.second->Branch("light_py", &dummyfloat);
+      if(saveCol("light_pz")) tree.second->Branch("light_pz", &dummyfloat);
+      if(saveCol("light_eta")) tree.second->Branch("light_eta", &dummyfloat);
+      if(saveCol("light_nsigtpc")) tree.second->Branch("light_nsigtpc", &dummyfloat);
+      if(saveCol("light_nsigtof")) tree.second->Branch("light_nsigtof", &dummyfloat);
+      if(saveCol("light_ncls")) tree.second->Branch("light_ncls", &dummyint);
+      if(saveCol("light_ncrossed")) tree.second->Branch("light_ncrossed", &dummyint);
+      if(saveCol("light_dcaz")) tree.second->Branch("light_dcaz", &dummyfloat);
+      if(saveCol("light_dcaxy")) tree.second->Branch("light_dcaxy", &dummyfloat);
+      if(saveCol("light_label")) tree.second->Branch("light_label", &dummyint);
+      if(fIsMC && saveCol("light_pdg")) tree.second->Branch("light_pdg", &dummyint);
+      if(fIsMC && saveCol("light_motherpdg")) tree.second->Branch("light_motherpdg", &dummyint);
     }
 
     for (auto tree : *fPairTreeME) {
       // event
-      tree.second->Branch("mult", &dummyint);
-      tree.second->Branch("vz", &dummyfloat);
+      if(saveCol("mult")) tree.second->Branch("mult", &dummyint);
+      if(saveCol("vz")) tree.second->Branch("vz", &dummyfloat);
 
       // pair
-      tree.second->Branch("kStar", &dummyfloat);
-      tree.second->Branch("is_oldpcrm", &dummybool);
-      tree.second->Branch("is_newpcrm", &dummybool);
+      if(saveCol("kStar")) tree.second->Branch("kStar", &dummyfloat);
+      if(saveCol("is_oldpcrm")) tree.second->Branch("is_oldpcrm", &dummybool);
+      if(saveCol("is_newpcrm")) tree.second->Branch("is_newpcrm", &dummybool);
+      if(saveCol("is_crosspcrm")) tree.second->Branch("is_crosspcrm", &dummybool);
+      // if(saveCol("inv_mass")) tree.second->Branch("inv_mass", &dummyfloat);
+      // if(saveCol("inv_masspdg")) tree.second->Branch("inv_masspdg", &dummyfloat);
 
-      // // heavy
-      tree.second->Branch("heavy_mult", &dummyint);
-      tree.second->Branch("heavy_invmass", &dummyfloat);
-      tree.second->Branch("heavy_pt", &dummyfloat);
-      tree.second->Branch("heavy_eta", &dummyfloat);
-      tree.second->Branch("heavy_origin", &dummyint);
-      tree.second->Branch("heavy_daus", &dummyvector);
-      tree.second->Branch("heavy_softpion_px", &dummyfloat);
-      tree.second->Branch("heavy_softpion_py", &dummyfloat);
-      tree.second->Branch("heavy_softpion_pz", &dummyfloat);
-      tree.second->Branch("heavy_bkg_score", &dummyfloat);
-      tree.second->Branch("heavy_prompt_score", &dummyfloat);
-      tree.second->Branch("heavy_d0label", &dummyint);
+      // heavy
+      if(saveCol("heavy_mult")) tree.second->Branch("heavy_mult", &dummyint);
+      if(saveCol("heavy_invmass")) tree.second->Branch("heavy_invmass", &dummyfloat);
+      if(saveCol("heavy_pt")) tree.second->Branch("heavy_pt", &dummyfloat);
+      if(saveCol("heavy_eta")) tree.second->Branch("heavy_eta", &dummyfloat);
+      if(fIsMC && saveCol("heavy_origin")) tree.second->Branch("heavy_origin", &dummyint);
+      if(saveCol("heavy_daus")) tree.second->Branch("heavy_daus", &dummyvector);
+      if(saveCol("heavy_softpion_px")) tree.second->Branch("heavy_softpion_px", &dummyfloat);
+      if(saveCol("heavy_softpion_py")) tree.second->Branch("heavy_softpion_py", &dummyfloat);
+      if(saveCol("heavy_softpion_pz")) tree.second->Branch("heavy_softpion_pz", &dummyfloat);
+      if(fApplyML && saveCol("heavy_bkg_score")) tree.second->Branch("heavy_bkg_score", &dummyfloat);
+      if(fApplyML && saveCol("heavy_prompt_score")) tree.second->Branch("heavy_prompt_score", &dummyfloat);
+      if(saveCol("heavy_d0label")) tree.second->Branch("heavy_d0label", &dummyint);
 
       // light
-      tree.second->Branch("light_mult", &dummyint);
-      tree.second->Branch("light_eta", &dummyfloat);
-      tree.second->Branch("light_px", &dummyfloat);
-      tree.second->Branch("light_py", &dummyfloat);
-      tree.second->Branch("light_pz", &dummyfloat);
-      tree.second->Branch("light_nsigtpc", &dummyfloat);
-      tree.second->Branch("light_nsigtof", &dummyfloat);
-      tree.second->Branch("light_ncls", &dummyint);
-      tree.second->Branch("light_ncrossed", &dummyint);
-      tree.second->Branch("light_dcaz", &dummyfloat);
-      tree.second->Branch("light_dcaxy", &dummyfloat);
-      tree.second->Branch("light_label", &dummyint);
-      tree.second->Branch("light_motherpdg", &dummyint);
+      if(saveCol("light_mult")) tree.second->Branch("light_mult", &dummyint);
+      if(saveCol("light_eta")) tree.second->Branch("light_eta", &dummyfloat);
+      if(saveCol("light_px")) tree.second->Branch("light_px", &dummyfloat);
+      if(saveCol("light_py")) tree.second->Branch("light_py", &dummyfloat);
+      if(saveCol("light_pz")) tree.second->Branch("light_pz", &dummyfloat);
+      if(saveCol("light_nsigtpc")) tree.second->Branch("light_nsigtpc", &dummyfloat);
+      if(saveCol("light_nsigtof")) tree.second->Branch("light_nsigtof", &dummyfloat);
+      if(saveCol("light_ncls")) tree.second->Branch("light_ncls", &dummyint);
+      if(saveCol("light_ncrossed")) tree.second->Branch("light_ncrossed", &dummyint);
+      if(saveCol("light_dcaz")) tree.second->Branch("light_dcaz", &dummyfloat);
+      if(saveCol("light_dcaxy")) tree.second->Branch("light_dcaxy", &dummyfloat);
+      if(saveCol("light_label")) tree.second->Branch("light_label", &dummyint);
+      if(fIsMC && saveCol("light_pdg")) tree.second->Branch("light_pdg", &dummyint);
+      if(fIsMC && saveCol("light_motherpdg")) tree.second->Branch("light_motherpdg", &dummyint);
     }
   }
 
@@ -1709,34 +1821,131 @@ int AliAnalysisTaskCharmingFemto::IsCandidateSelected(AliAODRecoDecayHF *&dMeson
 }
 
 //____________________________________________________________________________________________________
-bool AliAnalysisTaskCharmingFemto::MassSelection(const double mass,
-                                                 const double pt,
-                                                 const int pdg) {
-  if (fMassSelectionType == kAny) {
+// bool AliAnalysisTaskCharmingFemto::MassSelection(const double mass,
+//                                                  const double pt,
+//                                                  const int pdg,
+//                                                  enum MassSelectionType selection) {
+//   if (selection == kTaskDefault) {
+//     selection = fMassSelectionType;
+//   } else if (selection == kSideband) {
+//     if (pdg == 411)
+//       return MassSelection(mass, pt, pdg, kSidebandLeft) || MassSelection(mass, pt, pdg, kSidebandRight);
+//     else if (pdg == 413)
+//       selection = kSidebandRight;
+//     else
+//       AliFatal(Form("charmed hadron with pdg %d not implemented!", pdg));
+//   } else if (selection == kAny) {
+//     if (pdg == 411)
+//       return MassSelection(mass, pt, pdg, kSignal) || MassSelection(mass, pt, pdg, kSidebandLeft) || MassSelection(mass, pt, pdg, kSidebandRight);
+//     else if (pdg == 413)
+//       return MassSelection(mass, pt, pdg, kSignal) || MassSelection(mass, pt, pdg, kSidebandRight);
+//     else
+//       AliFatal(Form("charmed hadron with pdg %d not implemented!", pdg));
+//   }
+
+//   // simple parametrisation from D+ in 5.02 TeV
+//   double massMean = TDatabasePDG::Instance()->GetParticle(pdg)->Mass() + 0.0025;  // mass shift observed in all Run2 data samples for all
+//                                                                                   // D-meson species
+//   double massWidth = 0.;
+//   switch (fDecChannel) {
+//     case kDplustoKpipi:
+//       if (fSystem == kpp5TeV) {
+//         massWidth = 0.0057 + pt * 0.00066;
+//       } else if (fSystem == kpp13TeV) {
+//         massWidth = 0.006758 + pt * 0.0005124;
+//       }
+//       break;
+//     case kDstartoKpipi:
+//       Double_t mDstarPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
+//       Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
+//       massMean = mDstarPDG-mD0PDG; // no extra mass shift because it is deltamass
+//       if (fSystem == kpp5TeV) {
+//         massWidth = 0.00105236 - pt * 0.000255556 + pt * pt * 3.2264e-05;
+//         if(pt > 4 && pt < 5) massWidth = 0.000606852 - 0.000015123 * pt;
+//         else if(pt >= 5) massWidth = 0.000476887 + pt * 1.087e-05;
+//       } else if (fSystem == kpp13TeV) {
+//         massWidth = 0.00124673 - pt * 0.000340426 + pt * pt * 4.40729e-05;
+//         if(pt > 4 && pt < 5) massWidth = 0.00104329 - 0.000113275 * pt;
+//         else if(pt >= 5) massWidth = 0.000519861 - 8.58874e-06 * pt;
+//       }
+//       break;
+//   }
+
+//   // select D mesons mass window
+//   if (fMassSelectionType == kSignal) {
+//     fLowerMassSelection = massMean - fNSigmaMass * massWidth;
+//     fUpperMassSelection = massMean + fNSigmaMass * massWidth;
+//   } else if ( fMassSelectionType == kSidebandLeft) {
+//     fLowerMassSelection = massMean - fNSigmaOffsetSideband * massWidth - fSidebandWidth;
+//     fUpperMassSelection = massMean - fNSigmaOffsetSideband * massWidth;
+//   } else if ( fMassSelectionType == kSidebandRight) {
+//     fLowerMassSelection = massMean + fNSigmaOffsetSideband * massWidth;
+//     fUpperMassSelection = massMean + fNSigmaOffsetSideband * massWidth + fSidebandWidth;
+
+//     if(fDecChannel == kDplustoKpipi){
+//       // additional removal of D*
+//       if ( mass > fLowerDstarRemoval && mass < fUpperDstarRemoval) {
+//         return false;
+//       }
+//     }
+//   }
+
+
+//   if (mass > fLowerMassSelection && mass < fUpperMassSelection) {
+//     return true;
+//   }
+
+//   return false;
+// }
+
+
+bool AliAnalysisTaskCharmingFemto::IsMassSelected(const double mass,
+                                                  const double pt,
+                                                  const int pdg,
+                                                  enum MassSelectionType selection,
+                                                  double nSigmaSignal,
+                                                  double nSigmaOffset,
+                                                  double sidebandWidth,
+                                                  double lowerDstarRemoval,
+                                                  double upperDstarRemoval,
+                                                  CollSystem system) {
+
+  if (selection == kAny) {
     return true;
+  }
+                        
+  if (selection == kSideband) {
+    if (pdg == 411)
+      return IsMassSelected(mass, pt, pdg, kSidebandLeft, nSigmaSignal, nSigmaOffset, sidebandWidth, lowerDstarRemoval, upperDstarRemoval, system) || IsMassSelected(mass, pt, pdg, kSidebandRight, nSigmaSignal, nSigmaOffset, sidebandWidth, lowerDstarRemoval, upperDstarRemoval, system);
+    else if (pdg == 413)
+      selection = kSidebandRight;
+    else {
+      printf("charmed hadron with pdg %d not implemented!", pdg);
+      exit(1);
+    }
   }
 
   // simple parametrisation from D+ in 5.02 TeV
   double massMean = TDatabasePDG::Instance()->GetParticle(pdg)->Mass() + 0.0025;  // mass shift observed in all Run2 data samples for all
                                                                                   // D-meson species
   double massWidth = 0.;
-  switch (fDecChannel) {
-    case kDplustoKpipi:
-      if (fSystem == kpp5TeV) {
+  switch (pdg) {
+    case 411:
+      if (system == kpp5TeV) {
         massWidth = 0.0057 + pt * 0.00066;
-      } else if (fSystem == kpp13TeV) {
+      } else if (system == kpp13TeV) {
         massWidth = 0.006758 + pt * 0.0005124;
       }
       break;
-    case kDstartoKpipi:
+    case 413:
       Double_t mDstarPDG = TDatabasePDG::Instance()->GetParticle(413)->Mass();
       Double_t mD0PDG = TDatabasePDG::Instance()->GetParticle(421)->Mass();
       massMean = mDstarPDG-mD0PDG; // no extra mass shift because it is deltamass
-      if (fSystem == kpp5TeV) {
+      if (system == kpp5TeV) {
         massWidth = 0.00105236 - pt * 0.000255556 + pt * pt * 3.2264e-05;
         if(pt > 4 && pt < 5) massWidth = 0.000606852 - 0.000015123 * pt;
         else if(pt >= 5) massWidth = 0.000476887 + pt * 1.087e-05;
-      } else if (fSystem == kpp13TeV) {
+      } else if (system == kpp13TeV) {
         massWidth = 0.00124673 - pt * 0.000340426 + pt * pt * 4.40729e-05;
         if(pt > 4 && pt < 5) massWidth = 0.00104329 - 0.000113275 * pt;
         else if(pt >= 5) massWidth = 0.000519861 - 8.58874e-06 * pt;
@@ -1745,26 +1954,27 @@ bool AliAnalysisTaskCharmingFemto::MassSelection(const double mass,
   }
 
   // select D mesons mass window
-  if (fMassSelectionType == kSignal) {
-    fLowerMassSelection = massMean - fNSigmaMass * massWidth;
-    fUpperMassSelection = massMean + fNSigmaMass * massWidth;
-  } else if ( fMassSelectionType == kSidebandLeft) {
-    fLowerMassSelection = massMean - fNSigmaOffsetSideband * massWidth - fSidebandWidth;
-    fUpperMassSelection = massMean - fNSigmaOffsetSideband * massWidth;
-  } else if ( fMassSelectionType == kSidebandRight) {
-    fLowerMassSelection = massMean + fNSigmaOffsetSideband * massWidth;
-    fUpperMassSelection = massMean + fNSigmaOffsetSideband * massWidth + fSidebandWidth;
+  double lower=0, upper=0;
+  if (selection == kSignal) {
+    lower = massMean - nSigmaSignal * massWidth;
+    upper = massMean + nSigmaSignal * massWidth;
+  } else if ( selection == kSidebandLeft) {
+    lower = massMean - nSigmaOffset * massWidth - sidebandWidth;
+    upper = massMean - nSigmaOffset * massWidth;
+  } else if ( selection == kSidebandRight) {
+    lower = massMean + nSigmaOffset * massWidth;
+    upper = massMean + nSigmaOffset * massWidth + sidebandWidth;
 
-    if(fDecChannel == kDplustoKpipi){
+    if(pdg == 411){
       // additional removal of D*
-      if ( mass > fLowerDstarRemoval && mass < fUpperDstarRemoval) {
+      if ( mass > lowerDstarRemoval && mass < upperDstarRemoval) {
         return false;
       }
     }
   }
 
 
-  if (mass > fLowerMassSelection && mass < fUpperMassSelection) {
+  if (mass > lower && mass < upper) {
     return true;
   }
 

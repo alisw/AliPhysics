@@ -206,6 +206,7 @@ fNTracksINELgtONE(0),
 fNPartINELgtONE(0),
 fCurrentRun(-1),
 fQuantiles{0.}, /*added Hans*/
+fRaw{0.},
 fEvSelCode(0),
 fNDebug(1),
 fAliCentralityV0M(0),
@@ -386,6 +387,7 @@ fNTracksINELgtONE(0),
 fNPartINELgtONE(0),
 fCurrentRun(-1),
 fQuantiles{0.}, /*added Hans*/
+fRaw{0.},
 fEvSelCode(0),
 fNDebug(1),
 fAliCentralityV0M(0),
@@ -466,6 +468,7 @@ fNForwardMCParticles(0)
   for(Int_t iq=0; iq<kFwdTracks; iq++) fForwardIsPhysicalPrimary[iq] = kFALSE;
   
   for( Int_t iq=0; iq<100; iq++ ) fQuantiles[iq] = -1 ;
+  for( Int_t iq=0; iq<100; iq++ ) fRaw[iq] = 1e+6 ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackDCAz[iq] = 1e+6 ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackDCAxy[iq] = 1e+6 ;
   for( Int_t iq=0; iq<kTrack; iq++ ) fTrackBCID[iq] = 1e+6 ;
@@ -847,6 +850,7 @@ void AliMultSelectionTask::UserCreateOutputObjects()
       //Fixme: Save first 5 quantiles, should be enough for debugging
       for ( Int_t iq=0; iq<fNDebug; iq++) {
         fTreeEvent->Branch(Form("fDebug_Percentile_%i",iq), &fQuantiles[iq], Form("fDebug_Percentile_%i/F",iq));
+	fTreeEvent->Branch(Form("fDebug_Raw_%i",iq), &fRaw[iq], Form("fDebug_Raw_%i/F",iq));
       }
     }
     //Debug functionality
@@ -2261,11 +2265,13 @@ void AliMultSelectionTask::UserExec(Option_t *)
       if ( ! lThisCalibHisto ) {
         lThisQuantile = AliMultSelectionCuts::kNoCalib;
         if( iEst < fNDebug ) fQuantiles[iEst] = lThisQuantile;
+	if( iEst < fNDebug ) fRaw[iEst] = 0.0;
         lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);
       } else {
         lThisQuantile = lThisCalibHisto->GetBinContent( lThisCalibHisto->FindBin( lSelection->GetEstimator(iEst)->GetValue() ));
         if( iEst < fNDebug ) {
           fQuantiles[iEst] = lThisQuantile; //Debug, please
+          fRaw[iEst] = lSelection->GetEstimator(iEst)->GetValue(); //Debug, please
         }
         if(lThisQuantile<1e-6) lThisQuantile = 99.5; //protection for zdc firing
         lSelection->GetEstimator(iEst)->SetPercentile(lThisQuantile);

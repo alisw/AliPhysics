@@ -4,10 +4,12 @@
 class TClonesArray;
 
 #include <TF1.h>
+#include "AliAnalysisTaskEmcal.h"
 
-#include "AliAnalysisTaskSE.h"
+//#include "AliAnalysisTaskSE.h"
 
-class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
+//class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
+class AliEmcalAodTrackFilterTask : public AliAnalysisTaskEmcal {
  public:
   AliEmcalAodTrackFilterTask();
   AliEmcalAodTrackFilterTask(const char *name);
@@ -37,7 +39,9 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
 
  protected:
   void               UserCreateOutputObjects();
-  void               UserExec(Option_t *option);
+//  void               UserExec(Option_t *option);
+  void               ExecOnce();
+  Bool_t             Run();
 
   Int_t              fAODfilterBits[2];     // AOD track filter bit map
   TString            fTracksOutName;        // name of output track array
@@ -59,7 +63,7 @@ class AliEmcalAodTrackFilterTask : public AliAnalysisTaskSE {
   AliEmcalAodTrackFilterTask(const AliEmcalAodTrackFilterTask&);            // not implemented
   AliEmcalAodTrackFilterTask &operator=(const AliEmcalAodTrackFilterTask&); // not implemented
 
-  ClassDef(AliEmcalAodTrackFilterTask, 5); // Task to filter Aod tracks
+  ClassDef(AliEmcalAodTrackFilterTask, 7); // Task to filter Aod tracks
 };
 #endif
 

@@ -125,20 +125,59 @@ AliAnalysisTaskBFR2sphero * AddTaskBFR2sphero
   if ( SpherocityGroup ==1) //corresponds to the spherocity for Reco/Data level
     {
       nSherocity=3;
-      minSherocity[0] = 0.005;       maxSherocity[0]  =0.435;
-      minSherocity[1] = 0.555;     maxSherocity[1]  = 0.655;
-      minSherocity[2] = 0.755;     maxSherocity[2]  = 0.985;
+      minSherocity[0] = 0.005;       maxSherocity[0]  =0.435;  //0- 20%
+      minSherocity[1] = 0.555;     maxSherocity[1]  = 0.655; //40-60%
+      minSherocity[2] = 0.755;     maxSherocity[2]  = 0.985; //80-100%
     }
 
 
     if ( SpherocityGroup ==2) //corresponds to the spherocity for Generator/Truth level
     {
       nSherocity=3;
-      minSherocity[0] = 0.005;       maxSherocity[0]  =0.455;
-      minSherocity[1] = 0.585;     maxSherocity[1]  = 0.675;
-      minSherocity[2] = 0.765;     maxSherocity[2]  = 0.985;
+      minSherocity[0] = 0.005;       maxSherocity[0]  =0.455; //0- 20%
+      minSherocity[1] = 0.585;     maxSherocity[1]  = 0.675;  //40-60%
+      minSherocity[2] = 0.765;     maxSherocity[2]  = 0.985;   //80-100%
     }
 
+
+    if ( SpherocityGroup ==3) //corresponds to the spherocity for Reco/Data level
+    {
+      nSherocity=2;
+      minSherocity[0] = 0.435;       maxSherocity[0]  =0.555;  //20-40%
+      minSherocity[1] = 0.655;     maxSherocity[1]  = 0.755;   //60-80 %
+    }
+
+
+    if ( SpherocityGroup ==4) //corresponds to the spherocity for Gen level
+    {
+      nSherocity=2;
+      minSherocity[0] = 0.455;       maxSherocity[0]  =0.585;  //20-40%
+      minSherocity[1] = 0.675;     maxSherocity[1]  = 0.765;   //60-80 %
+    }
+
+
+    //For all the spherocity classes
+
+
+    if ( SpherocityGroup ==5) //corresponds to the spherocity for Reco/Data level
+    {
+      nSherocity=5;
+      minSherocity[0] = 0.005;       maxSherocity[0]  =0.435;  //0- 20%
+      minSherocity[1] = 0.435;       maxSherocity[1]  =0.555;  //20-40%
+      minSherocity[2] = 0.555;     maxSherocity[2]  = 0.655; //40-60%
+      minSherocity[3] = 0.655;     maxSherocity[3]  = 0.755;   //60-80 %
+      minSherocity[4] = 0.755;     maxSherocity[4]  = 0.985; //80-100%
+    }
+
+    if ( SpherocityGroup ==6) //corresponds to the spherocity for Generator/Truth level
+    {
+      nSherocity=5;
+      minSherocity[0] = 0.005;       maxSherocity[0]  =0.455; //0- 20%
+      minSherocity[1] = 0.455;       maxSherocity[1]  =0.585;  //20-40%
+      minSherocity[2] = 0.585;     maxSherocity[2]  = 0.675;  //40-60%
+      minSherocity[3] = 0.675;     maxSherocity[3]  = 0.765;   //60-80 %
+      minSherocity[4] = 0.765;     maxSherocity[4]  = 0.985;   //80-100%
+    }
   
 
 

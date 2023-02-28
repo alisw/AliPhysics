@@ -1,0 +1,24 @@
+name: PR approvals
+
+on:
+  issue_comment:
+    types:
+      - created
+
+permissions:
+  pull-requests: read
+  statuses: write
+
+jobs:
+  approve:
+    name: Handle comment
+    runs-on: ubuntu-latest
+    # Run only on pull requests. the issue_comment event covers PRs and issues.
+    if: github.event.issue.pull_request
+    steps:
+      - uses: alisw/ali-bot/.github/workflows/pr-approval.yml@pr-approval-workflow
+        inputs:
+          repo: ${{ github.event.repository.full_name }}
+          pr_number: ${{ github.event.issue.pull_request.number }}
+          comment_author: ${{ github.event.comment.user.login }}
+          comment_body: ${{ github.event.comment.body }}

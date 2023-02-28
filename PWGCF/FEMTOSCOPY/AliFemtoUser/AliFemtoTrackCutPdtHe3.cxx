@@ -50,6 +50,8 @@ AliFemtoESDTrackCut()
 
     fUse2pT = 0;
     AlldEdxmode = 0;
+
+    wiolaCrossCheck = 0;
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -97,6 +99,8 @@ AliFemtoESDTrackCut(aCut)
     fUse2pT = aCut.fUse2pT;
     
     AlldEdxmode = aCut.AlldEdxmode;
+
+    wiolaCrossCheck = aCut.wiolaCrossCheck;
    
 }
 
@@ -153,11 +157,28 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
     fUse2pT = aCut.fUse2pT;
 
     AlldEdxmode = aCut.AlldEdxmode;
+
+    wiolaCrossCheck = aCut.wiolaCrossCheck;
     return *this;
 }
 
 bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
-    
+      if(AlldEdxmode){
+	if(fCharge==0){
+		fNTracksFailed++;
+                return false;
+	}
+	  if (fCharge != 0 && (track->Charge() != fCharge)) {
+        	fNTracksFailed++;
+        	return false;
+	    }
+
+        fNTracksPassed++ ;
+        return true;
+     
+    }
+
+ 
     if (fStatus && (track->Flags() & fStatus) != fStatus) {
         return false;
     }
@@ -314,12 +335,6 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 	    }
     }
 
-    if(AlldEdxmode){
-    	fNTracksPassed++ ;
-    	return true;
-    	
-    }
-
 
     // dowang for pion+he3 cut
     if(fPionHe3cut){
@@ -369,6 +384,10 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 	else{
 		FillMom = track->P().Mag();
 	} 
+	
+	if(wiolaCrossCheck==1){
+		FillMom = track->P().Mag();
+	}
 	    //\ for proton PID
             if (fMostProbable == 4) { // proton nsigma-PID required contour adjusting (in LHC10h)
                 if (IsProtonNSigma(FillMom, track->NSigmaTPCP(), track->NSigmaTOFP(),SwitchMom_p) ) {
@@ -408,10 +427,16 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 		}else{
 			imost = 0;
 		}		
-	}
+	}//end inversPID
+
+		if(wiolaCrossCheck==1 && WiolaRejectPion(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) ){
+			
+			imost = 0;
+		}
             }
 	    //\ for deuteron PID
-            else if (fMostProbable == 13){   //cut on Nsigma deuteron
+            else if (fMostProbable == 13 && wiolaCrossCheck==0){   //cut on Nsigma deuteron
+
                 if ( IsDeuteronNSigma(FillMom, track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD(), SwitchMom_d)){
 			imost = 13;
 		}
@@ -425,10 +450,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 				imost = 0;
 			}
 		}
-                //\ dE/dx cut for low pt abnormal
-                if ( fdEdxcut && !IsDeuteronTPCdEdx(track->Pt(), track->TPCsignal()) ){
-                    	imost = 0;
-                }
+            
 		if(fUseDCAvsPt_cut && fCharge>0){
 			float tmpDCAr = TMath::Abs(track->ImpactD());
 			float tmpCut = Return_DCAvsPt_cut_d(track->Pt(),fCharge);
@@ -448,6 +470,11 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 	}	
 		
             }
+	// 2023.2.8
+	else if(fMostProbable == 13 && wiolaCrossCheck==1){
+
+		if (WiolaDCut(track->P().Mag(),track->NSigmaTPCD(), track->NSigmaTOFD())) imost = 13;
+	}
 	    //\ for triton PID
             else if (fMostProbable == 14){   //cut on Nsigma triton
 
@@ -483,6 +510,10 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 			if(abs(track->NSigmaTOFPi()) < 3) imost = 0;
 		}
 		}
+  
+                if ( fdEdxcut &&fMostProbable == 13 && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal()) ){
+                    	imost = 0;
+                }
 	    if (imost != fMostProbable) return false;
 	    if(fUseTOFMassCut){
 		//Mass square!
@@ -582,6 +613,7 @@ bool AliFemtoTrackCutPdtHe3::IsTritonNSigma(float mom, float massTOFPDG, float s
 	}else{
 		float tmpcut = fdcutline_k * mom + fdcutline_b;
 		if(SwitchMom_t > 4.0){	// only TPC
+			//cout<<"sss "<<nsigmaTPCT<<" "<<fNsigmaT<<" "<<fdcutline_k<<" "<<fdcutline_b<<endl;
 			if(nsigmaTPCT >= tmpcut && abs(nsigmaTPCT) < fNsigmaT){
 				return true;
 			}
@@ -715,37 +747,15 @@ bool AliFemtoTrackCutPdtHe3::IsProtonTPCdEdx(float mom, float dEdx){
 }
 //\ follow wiola
 bool AliFemtoTrackCutPdtHe3::IsDeuteronTPCdEdx(float mom, float dEdx){
-// mom actually is pt, not total moment!
-//
-//   double a1 = -250.0,  b1 = 400.0;
-//   double a2 = -135.0,  b2 = 270.0;
-//   double a3 = -80,   b3 = 190.0;
-//   double a4 = 0.0,   b4 = 20.0;
-
-//   double a5 = 125.0,   b5 = -100.0; 
-
-//   if (mom < 1.1) {
-//     if (dEdx < a1*mom+b1) return false;
-//   }
-//   else if (mom < 1.4) {
-//     if (dEdx < a2*mom+b2) return false;
-//   }
-//   else if (mom < 2) {
-//     if (dEdx < a3*mom+b3) return false;
-//   }
-//   else if (mom >= 2) {
-//     if (dEdx < a4*mom+b4) return false;
-//   }
-
-    double a1 = -250.,  b1 = 350.;
-    double a2 = -75.,  b2 = 175.;
-    if (mom < 1.) {
-        if (dEdx < a1*mom+b1) return false;
-    }
-    if (1. <= mom && mom <1.5){// for safe choose 1.5, due to after 1.4 add TOF
-	if (dEdx < a2*mom+b2) return false;
-    }
-    return true;
+	double a1 = -250.0,  b1 = 400.0;
+  	double a2 = -80,   b2 = 190.0;
+  	if (mom < 1.1) {
+    		if (dEdx < a1 * mom+b1) return false;
+  	}
+  	else if (mom < 2) {
+    		if (dEdx < a2 *mom+b2) return false;
+  	}
+    	return true;
 
 }
 bool AliFemtoTrackCutPdtHe3::IsTritonTPCdEdx(float mom, float dEdx){
@@ -978,5 +988,31 @@ void AliFemtoTrackCutPdtHe3::Setf2pT(int aUse){
 }
 void AliFemtoTrackCutPdtHe3::SetAlldEdxMode(int aUse){
 	AlldEdxmode = aUse;
+}
+void AliFemtoTrackCutPdtHe3::SetwiolaCrossCheck(int aUse){
+	wiolaCrossCheck = aUse;
+}
+bool AliFemtoTrackCutPdtHe3::WiolaDCut(float mom, float nsigmaTPCD, float nsigmaTOFD){
+
+	if(mom < 1.3){
+		if(abs(nsigmaTPCD) < 2)	return true;
+	}
+	else{
+		if((abs(nsigmaTPCD) < 2) && (abs(nsigmaTOFD) < 2)) return true;
+	}
+	return false;
+}
+bool AliFemtoTrackCutPdtHe3::WiolaRejectPion(float mom,float nsigmaTPCpi,float nsigmaTOFpi){
+
+	if (mom > 0.5) {
+	        if (TMath::Hypot( nsigmaTOFpi, nsigmaTPCpi ) < 2.)
+	            return true;	
+	}
+    	else {
+        	if (TMath::Abs(nsigmaTPCpi) < 2.)
+            		return true;
+    	}
+    	return false;
+
 }
 

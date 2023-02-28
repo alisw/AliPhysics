@@ -60,7 +60,6 @@ class AliESDtrackCuts;
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
-#include "THnSparse.h"
 #include "TLegend.h"
 #include "TList.h"
 #include "TMath.h"
@@ -88,6 +87,23 @@ Double_t PtbinsFlatSpec[nPtbinsFlatSpecFlatSpec + 1] = {
     0.9, 1.0, 1.25, 1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5,  5.0, 6.0, 7.0,
     8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 30.0, 40.0, 50.0};
 
+const int DCAxyNBins = 121;
+double DCAxyBins[DCAxyNBins + 1] = {
+    -3.025, -2.975, -2.925, -2.875, -2.825, -2.775, -2.725, -2.675, -2.625,
+    -2.575, -2.525, -2.475, -2.425, -2.375, -2.325, -2.275, -2.225, -2.175,
+    -2.125, -2.075, -2.025, -1.975, -1.925, -1.875, -1.825, -1.775, -1.725,
+    -1.675, -1.625, -1.575, -1.525, -1.475, -1.425, -1.375, -1.325, -1.275,
+    -1.225, -1.175, -1.125, -1.075, -1.025, -0.975, -0.925, -0.875, -0.825,
+    -0.775, -0.725, -0.675, -0.625, -0.575, -0.525, -0.475, -0.425, -0.375,
+    -0.325, -0.275, -0.225, -0.175, -0.125, -0.075, -0.025, 0.025,  0.075,
+    0.125,  0.175,  0.225,  0.275,  0.325,  0.375,  0.425,  0.475,  0.525,
+    0.575,  0.625,  0.675,  0.725,  0.775,  0.825,  0.875,  0.925,  0.975,
+    1.025,  1.075,  1.125,  1.175,  1.225,  1.275,  1.325,  1.375,  1.425,
+    1.475,  1.525,  1.575,  1.625,  1.675,  1.725,  1.775,  1.825,  1.875,
+    1.925,  1.975,  2.025,  2.075,  2.125,  2.175,  2.225,  2.275,  2.325,
+    2.375,  2.425,  2.475,  2.525,  2.575,  2.625,  2.675,  2.725,  2.775,
+    2.825,  2.875,  2.925,  2.975,  3.025};
+
 const Int_t nCent = 9;
 Double_t centClassFlatSpec[nCent + 1] = {0.0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
 
@@ -111,19 +127,20 @@ ClassImp(AliAnalysisTaskSpectraFlatenicity) // classimp: necessary for root
     fmultTPCmc(-1), 
     fRemoveTrivialScaling(kFALSE), 
     fnGen(-1), 
+    fnRec(-1), 
+    fnRecWoDCA(-1), 
     fPIDResponse(0x0), 
-    fTrackFilter(0x0), 
+    fTrackFilter(0x0),
+    fTrackFilterwoDCA(0x0),
     fOutputList(0), 
     fEtaCut(0.8), 
     fPtMin(0.5), 
     fv0mpercentile(0), 
+    fdcaxy(-999), 
+    fdcaz(-999),
     fFlat(-1), 
     fFlatMC(-1), 
     fMultSelection(0x0), 
-    hPtPrimIn(0), 
-    hPtPrimOut(0), 
-    hPtSecOut(0), 
-    hPtOut(0), 
     hFlatenicity(0), 
     hFlatenicityMC(0), 
     hFlatResponse(0), 
@@ -139,6 +156,35 @@ ClassImp(AliAnalysisTaskSpectraFlatenicity) // classimp: necessary for root
     hNchV0c(0), 
     hNchV0aMC(0), 
     hNchV0cMC(0), 
+    hPtPrimIn(0), 
+    hPtOutRec(0), 
+    hPtInPrim(0),
+    hPtInPrimLambda(0),
+    hPtInPrimPion(0),
+    hPtInPrimKaon(0),
+    hPtInPrimProton(0),
+    hPtInPrimSigmap(0),
+    hPtInPrimSigmam(0),
+    hPtInPrimOmega(0),
+    hPtInPrimXi(0),
+    hPtInPrimRest(0),
+    hPtOut(0),
+    hPtOutPrim(0),
+    hPtOutSec(0),
+    hPtOutPrimLambda(0),
+    hPtOutPrimPion(0),
+    hPtOutPrimKaon(0),
+    hPtOutPrimProton(0),
+    hPtOutPrimSigmap(0),
+    hPtOutPrimSigmam(0),
+    hPtOutPrimOmega(0),
+    hPtOutPrimXi(0),
+    hPtOutPrimRest(0),
+    hPtVsDCAData(0), 
+    hPtVsDCAPrim(0), 
+    hPtVsDCADec(0), 
+    hPtVsDCAMat(0), 
+    hPtVsDCAAll(0), 
     hFlatVsV0M(0), 
     hEta(0), 
     hEtamc(0), 
@@ -171,19 +217,20 @@ AliAnalysisTaskSpectraFlatenicity::AliAnalysisTaskSpectraFlatenicity(const char 
     fmultTPCmc(-1), 
     fRemoveTrivialScaling(kFALSE), 
     fnGen(-1), 
+    fnRec(-1), 
+    fnRecWoDCA(-1), 
     fPIDResponse(0x0), 
-    fTrackFilter(0x0), 
+    fTrackFilter(0x0),
+    fTrackFilterwoDCA(0x0),
     fOutputList(0), 
     fEtaCut(0.8), 
     fPtMin(0.5), 
     fv0mpercentile(0), 
+    fdcaxy(-999), 
+    fdcaz(-999),
     fFlat(-1), 
     fFlatMC(-1), 
     fMultSelection(0x0), 
-    hPtPrimIn(0), 
-    hPtPrimOut(0), 
-    hPtSecOut(0), 
-    hPtOut(0), 
     hFlatenicity(0), 
     hFlatenicityMC(0), 
     hFlatResponse(0), 
@@ -199,6 +246,35 @@ AliAnalysisTaskSpectraFlatenicity::AliAnalysisTaskSpectraFlatenicity(const char 
     hNchV0c(0), 
     hNchV0aMC(0), 
     hNchV0cMC(0), 
+    hPtPrimIn(0), 
+    hPtOutRec(0), 
+    hPtInPrim(0),
+    hPtInPrimLambda(0),
+    hPtInPrimPion(0),
+    hPtInPrimKaon(0),
+    hPtInPrimProton(0),
+    hPtInPrimSigmap(0),
+    hPtInPrimSigmam(0),
+    hPtInPrimOmega(0),
+    hPtInPrimXi(0),
+    hPtInPrimRest(0),
+    hPtOut(0),
+    hPtOutPrim(0),
+    hPtOutSec(0),
+    hPtOutPrimLambda(0),
+    hPtOutPrimPion(0),
+    hPtOutPrimKaon(0),
+    hPtOutPrimProton(0),
+    hPtOutPrimSigmap(0),
+    hPtOutPrimSigmam(0),
+    hPtOutPrimOmega(0),
+    hPtOutPrimXi(0),
+    hPtOutPrimRest(0),
+    hPtVsDCAData(0), 
+    hPtVsDCAPrim(0), 
+    hPtVsDCADec(0), 
+    hPtVsDCAMat(0), 
+    hPtVsDCAAll(0), 
     hFlatVsV0M(0), 
     hEta(0), 
     hEtamc(0), 
@@ -235,6 +311,7 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
   // create track filters
   fTrackFilter = new AliAnalysisFilter("trackFilter");
   AliESDtrackCuts *fCuts = new AliESDtrackCuts();
+  
   fCuts->SetAcceptKinkDaughters(kFALSE);
   fCuts->SetRequireTPCRefit(kTRUE);
   fCuts->SetRequireITSRefit(kTRUE);
@@ -247,33 +324,34 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
   fCuts->SetMaxChi2PerClusterTPC(4);
   fCuts->SetMaxDCAToVertexZ(2);
   fCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
-  fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-  fCuts->SetMaxChi2PerClusterTPC(4);
-  fCuts->SetMaxDCAToVertexZ(2);
-  fCuts->SetMaxChi2PerClusterITS(36);
   fCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
   fCuts->SetMaxChi2PerClusterITS(36);
   fTrackFilter->AddCuts(fCuts);
 
+  // wo DCA cut  
+  fTrackFilterwoDCA = new AliAnalysisFilter("trackFilterwoDCA");
+  AliESDtrackCuts *fCutswoDCA = new AliESDtrackCuts();
+  SetCutsFilterWoDCA(fCutswoDCA); 
+  
   // create output objects
 
   OpenFile(1);
   fOutputList = new TList(); // this is a list which will contain all of your histograms
   fOutputList->SetOwner(kTRUE); // memory stuff: the list is owner of all
 
-  hFlatenicity = new TH1D("hFlatenicity", "counter", 200, 0., 1.);
+  hFlatenicity = new TH1D("hFlatenicity", "counter", 1020, -0.01, 1.01);
   fOutputList->Add(hFlatenicity);
 
   hEta = new TH1D("hEta", "Eta rec; #eta; counts", 200, -1.0, 1.0); hEta->Sumw2();
   fOutputList->Add(hEta);      
   
-  hFlatVsPt = new TH2D("hFlatVsPt", "Measured; Flatenicity; #it{p}_{T} (GeV/#it{c})", 200, 0., 1., nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+  hFlatVsPt = new TH2D("hFlatVsPt", "Measured; Flatenicity; #it{p}_{T} (GeV/#it{c})", 1020, -0.01, 1.01, nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
   fOutputList->Add(hFlatVsPt);
 
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
-    hFlatVsPtV0M[i_c] = new TH2D(Form("hFlatVsPtV0M_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{p}_{T} (GeV/#it{c})",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]),200, 0., 1., nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    hFlatVsPtV0M[i_c] = new TH2D(Form("hFlatVsPtV0M_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{p}_{T} (GeV/#it{c})",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]),1020, -0.01, 1.01, nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
     fOutputList->Add(hFlatVsPtV0M[i_c]);
-    hFlatVsNchTPCV0M[i_c] = new TH2D(Form("hFlatVsNchTPCV0M_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{N}_{ch}",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]),200, 0., 1., 100, -0.5, 99.5);
+    hFlatVsNchTPCV0M[i_c] = new TH2D(Form("hFlatVsNchTPCV0M_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{N}_{ch}",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]),1020, -0.01, 1.01, 100, -0.5, 99.5);
     fOutputList->Add(hFlatVsNchTPCV0M[i_c]);    
   }
 
@@ -287,34 +365,94 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
     fOutputList->Add(hEtamc);      
     
     for (Int_t i_c = 0; i_c < nCent; ++i_c) {
-        hFlatVsPtV0MMC[i_c] = new TH2D( Form("hFlatVsPtV0MMC_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{p}_{T} (GeV/#it{c})",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]), 200, 0., 1., nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+        hFlatVsPtV0MMC[i_c] = new TH2D( Form("hFlatVsPtV0MMC_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{p}_{T} (GeV/#it{c})",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]), 1020, -0.01, 1.01, nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
         fOutputList->Add(hFlatVsPtV0MMC[i_c]);
-        hFlatVsNchTPCV0MMC[i_c] = new TH2D( Form("hFlatVsNchTPCV0MMC_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{N}_{ch}",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]), 200, 0., 1., 100, -0.5, 99.5);
+        hFlatVsNchTPCV0MMC[i_c] = new TH2D( Form("hFlatVsNchTPCV0MMC_c%d", i_c), Form("Measured %1.0f-%1.0f%%V0M; Flatenicity; #it{N}_{ch}",centClassFlatSpec[i_c], centClassFlatSpec[i_c + 1]), 1020, -0.01, 1.01, 100, -0.5, 99.5);
         fOutputList->Add(hFlatVsNchTPCV0MMC[i_c]);        
     }
 
-    hPtPrimIn = new TH1D("hPtPrimIn", "Prim In; #it{p}_{T} (GeV/#it{c}; counts)", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    hPtPrimIn = new TH1D("hPtPrimIn", "Prim In; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
     fOutputList->Add(hPtPrimIn);
 
-    hPtPrimOut = new TH1D("hPtPrimOut", "Prim Out; #it{p}_{T} (GeV/#it{c}; counts)", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
-    fOutputList->Add(hPtPrimOut);
+    hPtOutRec = new TH1D("hPtOutRec", "all Out; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtOutRec);
+    
+    hPtInPrim = new TH1D("hPtInPrim", "pT prim true; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtInPrim);
+    
+    hPtInPrimLambda = new TH1D("hPtInPrimLambda", "pT prim true; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtInPrimLambda);
 
-    hPtSecOut = new TH1D("hPtSecOut", "Sec Out; #it{p}_{T} (GeV/#it{c}; counts)", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
-    fOutputList->Add(hPtSecOut);
+    hPtInPrimPion = new TH1D("hPtInPrimPion", "pT prim true; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtInPrimPion);
 
-    hPtOut = new TH1D("hPtOut", "all Out; #it{p}_{T} (GeV/#it{c}; counts)", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    hPtInPrimKaon = new TH1D("hPtInPrimKaon", "pT prim true; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtInPrimKaon);
+
+    hPtInPrimProton = new TH1D("hPtInPrimProton", "pT prim true; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtInPrimProton);
+
+    hPtInPrimSigmap = new TH1D("hPtInPrimSigmap", "pT prim true; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtInPrimSigmap);
+
+    hPtInPrimSigmam = new TH1D("hPtInPrimSigmam", "pT prim true; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtInPrimSigmam);
+
+    hPtInPrimOmega = new TH1D("hPtInPrimOmega", "pT prim true; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtInPrimOmega);
+
+    hPtInPrimXi = new TH1D("hPtInPrimXi", "pT prim true; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtInPrimXi);
+
+    hPtInPrimRest = new TH1D("hPtInPrimRest", "pT prim true; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtInPrimRest);
+
+    hPtOut = new TH1D("hPtOut", "pT all rec; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
     fOutputList->Add(hPtOut);
+    
+    hPtOutPrim = new TH1D("hPtOutPrim", "pT prim rec; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtOutPrim);
 
-    hFlatenicityMC = new TH1D("hFlatenicityMC", "counter", 200, 0., 1.);
+    hPtOutSec = new TH1D("hPtOutSec", "pT sec rec; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtOutSec);
+    
+    hPtOutPrimLambda = new TH1D("hPtOutPrimLambda", "pT prim true; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtOutPrimLambda);
+
+    hPtOutPrimPion = new TH1D("hPtOutPrimPion", "pT prim rec; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtOutPrimPion);
+
+    hPtOutPrimKaon = new TH1D("hPtOutPrimKaon", "pT prim rec; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtOutPrimKaon);
+
+    hPtOutPrimProton = new TH1D("hPtOutPrimProton", "pT prim rec; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtOutPrimProton);
+
+    hPtOutPrimSigmap = new TH1D("hPtOutPrimSigmap", "pT prim rec; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtOutPrimSigmap);
+
+    hPtOutPrimSigmam = new TH1D("hPtOutPrimSigmam", "pT prim rec; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtOutPrimSigmam);
+
+    hPtOutPrimOmega = new TH1D("hPtOutPrimOmega", "pT prim rec; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtOutPrimOmega);
+
+    hPtOutPrimXi = new TH1D("hPtOutPrimXi", "pT prim rec; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtOutPrimXi);
+
+    hPtOutPrimRest = new TH1D("hPtOutPrimRest", "pT prim rec; #it{p}_{T} (GeV/#it{c}); counts", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    fOutputList->Add(hPtOutPrimRest);
+    
+    hFlatenicityMC = new TH1D("hFlatenicityMC", "counter", 1020, -0.01, 1.01);
     fOutputList->Add(hFlatenicityMC);
 
-    hFlatResponse = new TH2D("hFlatResponse", "; true flat; measured flat", 200, 0., 1., 200, 0., 1.);
+    hFlatResponse = new TH2D("hFlatResponse", "; true flat; measured flat", 1020, -0.01, 1.01, 1020, -0.01, 1.01);
     fOutputList->Add(hFlatResponse);
 
-    hFlatVsPtMC = new TH2D("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})", 200, 0., 1., nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
+    hFlatVsPtMC = new TH2D("hFlatVsPtMC", "MC true; Flatenicity; #it{p}_{T} (GeV/#it{c})", 1020, -0.01, 1.01, nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec);
     fOutputList->Add(hFlatVsPtMC);
 
-    hFlatVsNchMC = new TH2D("hFlatVsNchMC", "; true flat; true Nch", 200, 0., 1., 100, -0.5, 99.5);
+    hFlatVsNchMC = new TH2D("hFlatVsNchMC", "; true flat; true Nch", 1020, -0.01, 1.01, 100, -0.5, 99.5);
     fOutputList->Add(hFlatVsNchMC);
     
     /// Added V0M multiplicity distribtion 
@@ -333,13 +471,28 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
     hNchV0cMC = new TH1D("hNchV0cMC", ";rec Nch; counts", 400, -0.5, 399.5);
     hNchV0cMC->Sumw2();
     fOutputList->Add(hNchV0cMC);  
-  
+    
   }
 
-  hFlatVsNch = new TH2D("hFlatVsNch", "; rec flat; rec Nch", 200, 0., 1., 100, -0.5, 99.5);
+  hPtVsDCAData = new TH2D("hPtVsDCAData","; #it{p}_{T} (GeV/#it{c}); DCA_{xy} data",nPtbinsFlatSpecFlatSpec,PtbinsFlatSpec,DCAxyNBins, DCAxyBins);
+  fOutputList->Add(hPtVsDCAData);    
+  
+  hPtVsDCAPrim = new TH2D("hPtVsDCAPrim", "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} primaries", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec, DCAxyNBins, DCAxyBins);
+  fOutputList->Add(hPtVsDCAPrim);
+
+  hPtVsDCADec = new TH2D("hPtVsDCADec", "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} decays", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec, DCAxyNBins, DCAxyBins);
+  fOutputList->Add(hPtVsDCADec);
+
+  hPtVsDCAMat = new TH2D("hPtVsDCAMat", "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} material", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec, DCAxyNBins, DCAxyBins);
+  fOutputList->Add(hPtVsDCAMat);
+
+  hPtVsDCAAll = new TH2D("hPtVsDCAAll", "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} all", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec, DCAxyNBins, DCAxyBins);
+  fOutputList->Add(hPtVsDCAAll);
+  
+  hFlatVsNch = new TH2D("hFlatVsNch", "; rec flat; rec Nch", 1020, -0.01, 1.01, 100, -0.5, 99.5);
   fOutputList->Add(hFlatVsNch);
   
-  hFlatVsV0M = new TH2D("hFlatVsV0M", "", nCent, centClassFlatSpec, 200, 0., 1.);
+  hFlatVsV0M = new TH2D("hFlatVsV0M", "", nCent, centClassFlatSpec, 1020, -0.01, 1.01);
   fOutputList->Add(hFlatVsV0M);
 
   hNchV0M = new TH1D("hNchV0M", ";rec Nch; counts", 400, -0.5, 399.5);
@@ -381,6 +534,9 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
   AliHeader *headerMC;
   Bool_t isGoodVtxPosMC = kFALSE;
 
+  vector<Float_t> ptMc;
+  vector<Int_t> idMc;
+
   if (fUseMC) {
     headerMC = fMC->Header();
     AliGenEventHeader *genHeader = headerMC->GenEventHeader();
@@ -391,9 +547,28 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
     if (genHeader) {
       genHeader->PrimaryVertex(vtxMC);
     }
-    if (TMath::Abs(vtxMC[2]) <= 10)
+    if (TMath::Abs(vtxMC[2]) <= 10.)
       isGoodVtxPosMC = kTRUE;
+
+    fnGen = FillArrayMC(ptMc, idMc);
   }
+  
+  // w/ DCA cut
+  vector<Float_t> ptWDCA;
+  vector<Float_t> dcaxyWDCA;
+  vector<Int_t> isprimWDCA;
+  vector<Int_t> idWDCA;
+
+  fnRec = FillArray(ptWDCA, dcaxyWDCA, isprimWDCA, idWDCA, kTRUE);
+  
+
+  // w/o DCA cut
+  vector<Float_t> ptWoDCA;
+  vector<Float_t> dcaxyWoDCA;
+  vector<Int_t> isprimWoDCA;
+  vector<Int_t> idWoDCA;
+
+  fnRecWoDCA = FillArray(ptWoDCA, dcaxyWoDCA, isprimWoDCA, idWoDCA, kFALSE);
 
   // Trigger selection
   UInt_t fSelectMask = fInputHandler->IsEventSelected();
@@ -434,7 +609,7 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
         return;
 */
 
-  CheckMultiplicities();
+  CheckMultiplicities(ptWoDCA, dcaxyWoDCA, fnRecWoDCA);
   
   fFlat = GetFlatenicity();
   
@@ -455,7 +630,11 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
         hFlatResponse->Fill(fFlatMC, fFlat);
         MakeMCanalysis();
     }
-    CheckMultiplicitiesMC();
+    
+    if (isGoodVtxPosMC){
+        GetCorrections(fnGen, fnRec, ptMc, ptWDCA, idMc, idWDCA, isprimWDCA);
+        CheckMultiplicitiesMC(ptWoDCA, dcaxyWoDCA, isprimWoDCA, fnRecWoDCA);
+    }
   } // MC
 
   PostData(1, fOutputList); // stream the result of this event to the output
@@ -483,10 +662,10 @@ void AliAnalysisTaskSpectraFlatenicity::MakeDataanalysis() {
     if (esdtrack->Pt() < fPtMin)
       continue;
     
-//     hFlatVsPt->Fill(fFlat, esdtrack->Pt());
-//     hFlatVsPtV0M[fV0Mindex]->Fill(fFlat, esdtrack->Pt());
-//     hEta->Fill(esdtrack->Eta());
-//     hFlatVsNchTPCV0M[fV0Mindex]->Fill(fFlat, fmultTPC);
+    hFlatVsPt->Fill(fFlat, esdtrack->Pt());
+    hFlatVsPtV0M[fV0Mindex]->Fill(fFlat, esdtrack->Pt());
+    hEta->Fill(esdtrack->Eta());
+    hFlatVsNchTPCV0M[fV0Mindex]->Fill(fFlat, fmultTPC);
   }
 }
 
@@ -527,21 +706,12 @@ void AliAnalysisTaskSpectraFlatenicity::MakeMCanalysis() {
     if (esdtrack->Pt() < fPtMin)
       continue;
     
-    hPtOut->Fill(esdtrack->Pt());
-
-    Int_t mcLabel = -1;
-    mcLabel = TMath::Abs(esdtrack->GetLabel());
-    
-    if (fMC->IsPhysicalPrimary(mcLabel)) {
-      hPtPrimOut->Fill(esdtrack->Pt());
-    } else {
-      hPtSecOut->Fill(esdtrack->Pt());
-    }
+    hPtOutRec->Fill(esdtrack->Pt());
   }
 }
 
 //______________________________________________________________________________
-void AliAnalysisTaskSpectraFlatenicity::CheckMultiplicitiesMC() {
+void AliAnalysisTaskSpectraFlatenicity::CheckMultiplicitiesMC(const vector<Float_t> &ptRecWoDCA, const vector<Float_t> &dcaxyRecWoDCA, const vector<Int_t> &isprimRecWoDCA, Int_t multRecWoDCA) {
 
   fmultV0Amc = 0;
   fmultV0Cmc = 0;
@@ -574,11 +744,25 @@ void AliAnalysisTaskSpectraFlatenicity::CheckMultiplicitiesMC() {
   hNchMidRapMC->Fill(fmultTPCmc);
   hNchV0aMC->Fill(fmultV0Amc);
   hNchV0cMC->Fill(fmultV0Cmc);
-  
+
+  for (Int_t i = 0; i < multRecWoDCA; ++i) {
+
+    hPtVsDCAAll->Fill(ptRecWoDCA[i], dcaxyRecWoDCA[i]);
+
+    if (fUseMC) {
+      if (isprimRecWoDCA[i] == 0) {
+        hPtVsDCAPrim->Fill(ptRecWoDCA[i], dcaxyRecWoDCA[i]);
+      } else if (isprimRecWoDCA[i] == 1) {
+        hPtVsDCADec->Fill(ptRecWoDCA[i], dcaxyRecWoDCA[i]);
+      } else if (isprimRecWoDCA[i] == 2) {
+        hPtVsDCAMat->Fill(ptRecWoDCA[i], dcaxyRecWoDCA[i]);
+      }
+    }
+  }
 }
 
 //______________________________________________________________________________
-void AliAnalysisTaskSpectraFlatenicity::CheckMultiplicities() {
+void AliAnalysisTaskSpectraFlatenicity::CheckMultiplicities(const vector<Float_t> &ptRecWoDCA, const vector<Float_t> &dcaxyRecWoDCA, Int_t multRecWoDCA) {
 
   fmultTPC = 0;
   Int_t nTracks = fESD->GetNumberOfTracks();
@@ -627,6 +811,12 @@ void AliAnalysisTaskSpectraFlatenicity::CheckMultiplicities() {
   hNchMidRap->Fill(fmultTPC);
   hNchV0a->Fill(fmultV0A);
   hNchV0c->Fill(fmultV0C);
+  
+  // Auxiliar distribution to calculate the contamination from secondary
+  // particles, it runs over tracks wo DCA cut
+  for (Int_t i = 0; i < multRecWoDCA; ++i) {
+    hPtVsDCAData->Fill(ptRecWoDCA[i], dcaxyRecWoDCA[i]);
+  }
 }
 
 //______________________________________________________________________________
@@ -904,3 +1094,306 @@ Bool_t AliAnalysisTaskSpectraFlatenicity::HasRecVertex() {
 
   return hasVtx;
 }
+
+//______________________________________________________________________________
+Int_t AliAnalysisTaskSpectraFlatenicity::FillArrayMC(vector<Float_t> &ptArray, vector<Int_t> &idArray)
+{
+//      id 0: pion, 1: kaon, 2: proton, 3: sigma plus, 4: sigma minus, 5: Omega, 6: Xi, 7: other charged
+
+  ptArray.clear();
+  idArray.clear();
+  Int_t nNchGen = 0;
+  
+  for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
+
+    AliMCParticle *particle = (AliMCParticle *)fMC->GetTrack(i);
+    if (!particle)
+      continue;
+    if (!fMC->IsPhysicalPrimary(i))
+      continue;
+    if (TMath::Abs(particle->Eta()) > fEtaCut)
+      continue;
+    if (particle->Pt() < fPtMin)
+      continue;
+
+    Int_t idPart = -1;
+    Int_t partPDG = TMath::Abs(particle->PdgCode());
+    if (partPDG == 3122)
+      idPart = 0; // lambda
+    if (particle->Charge() != 0) {
+      if (partPDG == 211)
+        idPart = 1; // pions
+      else if (partPDG == 321)
+        idPart = 2; // kaons
+      else if (partPDG == 2212)
+        idPart = 3; // protons
+      else if (partPDG == 3222)
+        idPart = 4; // sigma plus
+      else if (partPDG == 3112)
+        idPart = 5; // sigma minus
+      else if (partPDG == 3334)
+        idPart = 6; // Omega
+      else if (partPDG == 3312)
+        idPart = 7; // Xi
+      else
+        idPart = 8; // rest of the charged particles
+    }
+    ptArray.push_back(particle->Pt());
+    idArray.push_back(idPart);
+    nNchGen++;
+  }
+  return nNchGen;
+}
+
+
+//______________________________________________________________________________
+Int_t AliAnalysisTaskSpectraFlatenicity::FillArray(vector<Float_t> &ptArray, vector<Float_t> &dcaxyArray, vector<Int_t> &isprimArray, vector<Int_t> &idArray, const Bool_t wDcaCut)
+{
+//      id 0: pion, 1: kaon, 2: proton, 3: sigma plus, 4: sigma minus, 5: Omega, 6: Xi, 7: other charged
+  ptArray.clear();
+  dcaxyArray.clear();
+  isprimArray.clear();
+  idArray.clear();
+
+  Int_t nTracks = fESD->GetNumberOfTracks();
+  Int_t nNchRec = 0;
+
+  if (wDcaCut) 
+  { // with DCA cut
+    for (Int_t iT = 0; iT < nTracks; ++iT) 
+    {
+      AliESDtrack *esdtrack = static_cast<AliESDtrack *>(fESD->GetTrack(iT));
+      if (!esdtrack)
+        continue;
+
+      fdcaxy = -999;
+      fdcaz = -999;
+
+      if (TMath::Abs(esdtrack->Eta()) > fEtaCut)
+        continue;
+      if (esdtrack->Pt() < fPtMin)
+        continue;
+
+      AliESDtrack *newTrack = 0x0;
+      Int_t isPrim = -1;
+      Int_t idTrack = -1;
+      Int_t mcLabel = -1;
+      
+      if (fUseMC) 
+      {
+        // get label: 0: prim, 1: weak decays, 2: material
+        mcLabel = TMath::Abs(esdtrack->GetLabel());
+        TParticle *mcParticle = fMC->GetTrack(mcLabel)->Particle();
+        if (!mcParticle) {
+          printf("----ERROR: mcParticle not available------------------\n");
+          continue;
+        }
+        
+        Int_t partPDG_rec = TMath::Abs(mcParticle->GetPdgCode());
+        if (partPDG_rec == 3122)
+          idTrack = 0; // lambdas
+        else if (partPDG_rec == 211)
+          idTrack = 1; // pions
+        else if (partPDG_rec == 321)
+          idTrack = 2; // kaons
+        else if (partPDG_rec == 2212)
+          idTrack = 3; // protons
+        else if (partPDG_rec == 3222)
+          idTrack = 4; // sigma plus
+        else if (partPDG_rec == 3112)
+          idTrack = 5; // sigma minus
+        else if (partPDG_rec == 3334)
+          idTrack = 6; // Omega
+        else if (partPDG_rec == 3312)
+          idTrack = 7; // Xi
+        else
+          idTrack = 8; // rest of the charged particles
+      } // MC 
+      
+      if (!fTrackFilter->IsSelected(esdtrack))
+          continue;
+      
+      newTrack = new AliESDtrack(*esdtrack);
+      newTrack->GetImpactParameters(fdcaxy, fdcaz);
+
+      ptArray.push_back(newTrack->Pt());
+      dcaxyArray.push_back(fdcaxy);
+        
+      if (fUseMC) {
+          // get label: 0: prim, 1: weak decays, 2: material
+          if (fMC->IsPhysicalPrimary(mcLabel))
+              isPrim = 0;
+          else if (fMC->IsSecondaryFromWeakDecay(mcLabel))
+              isPrim = 1;
+          else if (fMC->IsSecondaryFromMaterial(mcLabel))
+              isPrim = 2;
+          else
+              continue;
+      }
+
+      isprimArray.push_back(isPrim);
+      idArray.push_back(idTrack);
+      nNchRec++;
+      delete newTrack;
+    }
+  } else { // w/o DCA cut
+    for (Int_t iT = 0; iT < nTracks; ++iT)
+    {
+      AliESDtrack *esdtrack = static_cast<AliESDtrack *>(fESD->GetTrack(iT)); 
+      if (!esdtrack)
+        continue;
+
+      fdcaxy = -999;
+      fdcaz = -999;
+
+      if (TMath::Abs(esdtrack->Eta()) > fEtaCut)
+        continue;
+      if (esdtrack->Pt() < fPtMin)
+        continue;
+
+      AliESDtrack *newTrack = 0x0;
+      Int_t isPrim = -1;
+      Int_t idTrack = -1;
+      Int_t mcLabel = -1;
+      TParticle *mcParticle = 0;
+
+      if (fUseMC) { // get label: 0: prim, 1: weak decays, 2: material
+        mcLabel = TMath::Abs(esdtrack->GetLabel());
+        mcParticle = fMC->GetTrack(mcLabel)->Particle();
+        if (!mcParticle) {
+          printf("----ERROR: mcParticle not available------------------\n");
+          continue;
+        }
+
+        Int_t partPDG_rec = TMath::Abs(mcParticle->GetPdgCode());
+        if (partPDG_rec == 3122)
+          idTrack = 0; // lambdas
+        else if (partPDG_rec == 211)
+          idTrack = 1; // pions
+        else if (partPDG_rec == 321)
+          idTrack = 2; // kaons
+        else if (partPDG_rec == 2212)
+          idTrack = 3; // protons
+        else if (partPDG_rec == 3222)
+          idTrack = 4; // sigma plus
+        else if (partPDG_rec == 3112)
+          idTrack = 5; // sigma minus
+        else if (partPDG_rec == 3334)
+          idTrack = 6; // Omega
+        else if (partPDG_rec == 3312)
+          idTrack = 7; // Xi
+        else
+          idTrack = 8; // rest of the charged particles
+      }
+      
+      if (!fTrackFilterwoDCA->IsSelected(esdtrack))
+          continue;
+      
+      newTrack = new AliESDtrack(*esdtrack);
+      newTrack->GetImpactParameters(fdcaxy, fdcaz);
+
+      ptArray.push_back(newTrack->Pt());
+      dcaxyArray.push_back(fdcaxy);
+
+      if (fUseMC) { // get label: 0: prim, 1: weak decays, 2: material
+          if (fMC->IsPhysicalPrimary(mcLabel))
+              isPrim = 0;
+          else if (fMC->IsSecondaryFromWeakDecay(mcLabel))
+              isPrim = 1;
+          else if (fMC->IsSecondaryFromMaterial(mcLabel))
+              isPrim = 2;
+          else
+              continue;
+      }
+
+      isprimArray.push_back(isPrim);
+      idArray.push_back(idTrack);
+      nNchRec++;
+      delete newTrack;
+    }
+  }
+  return nNchRec;
+}
+
+
+//______________________________________________________________________________
+void AliAnalysisTaskSpectraFlatenicity::SetCutsFilterWoDCA(AliESDtrackCuts *cFilt) 
+{
+  cFilt->SetMinNCrossedRowsTPC(70);
+  cFilt->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  cFilt->SetMaxChi2PerClusterTPC(4);
+  cFilt->SetMaxDCAToVertexZ(2);
+  cFilt->SetAcceptKinkDaughters(kFALSE);
+  cFilt->SetRequireTPCRefit(kTRUE);
+  cFilt->SetRequireITSRefit(kTRUE);
+  cFilt->SetClusterRequirementITS(AliESDtrackCuts::kSPD,AliESDtrackCuts::kAny);
+  cFilt->SetDCAToVertex2D(kFALSE);
+  cFilt->SetRequireSigmaToVertex(kFALSE);
+  cFilt->SetEtaRange(-0.8, 0.8);
+  cFilt->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
+  fTrackFilterwoDCA->AddCuts(cFilt);
+}
+
+//_____________________________________________________________________________
+void AliAnalysisTaskSpectraFlatenicity::GetCorrections(Int_t multGen, Int_t multRec, const vector<Float_t> &ptGen, const vector<Float_t> &ptRec, const vector<Int_t> &idGen, const vector<Int_t> &idRec, const vector<Int_t> &isprimRec)
+{
+  // Histos for efficiencyxacceptance
+    
+  for (Int_t i = 0; i < multGen; ++i) {
+    if (idGen[i] >= 0 && idGen[i] <= 8) {
+      if (idGen[i] > 0) {
+        hPtInPrim->Fill(ptGen[i]); // inital pT distribution (MC gen only charged particles)
+      }
+      if (idGen[i] == 0)
+          hPtInPrimLambda->Fill(ptGen[i]); // lambdas
+      else if (idGen[i] == 1)
+          hPtInPrimPion->Fill(ptGen[i]); // pions
+      else if (idGen[i] == 2)
+          hPtInPrimKaon->Fill(ptGen[i]); // kaons
+      else if (idGen[i] == 3)
+          hPtInPrimProton->Fill(ptGen[i]); // protons
+      else if (idGen[i] == 4)
+          hPtInPrimSigmap->Fill(ptGen[i]); // sigma plus
+      else if (idGen[i] == 5)
+          hPtInPrimSigmam->Fill(ptGen[i]); // sigma minus
+      else if (idGen[i] == 6)
+          hPtInPrimOmega->Fill(ptGen[i]); // Omega
+      else if (idGen[i] == 7)
+          hPtInPrimXi->Fill(ptGen[i]); // Xi
+      else
+          hPtInPrimRest->Fill(ptGen[i]); // rest of the charged particles
+    }
+  }
+
+  for (Int_t i = 0; i < multRec; ++i) { // loop over all these tracks
+    hPtOut->Fill(ptRec[i]);
+    if (idRec[i] >= 0 && idRec[i] <= 8) {
+      if (isprimRec[i] == 0) {
+        hPtOutPrim->Fill(ptRec[i]);
+
+        if (idRec[i] == 0)
+            hPtOutPrimLambda->Fill(ptRec[i]); // lambdas
+        else if (idRec[i] == 1)
+            hPtOutPrimPion->Fill(ptRec[i]); // pions
+        else if (idRec[i] == 2)
+            hPtOutPrimKaon->Fill(ptRec[i]); // kaons
+        else if (idRec[i] == 3)
+            hPtOutPrimProton->Fill(ptRec[i]); // protons
+        else if (idRec[i] == 4)
+            hPtOutPrimSigmap->Fill(ptRec[i]); // sigma plus
+        else if (idRec[i] == 5)
+            hPtOutPrimSigmam->Fill(ptRec[i]); // sigma minus
+        else if (idRec[i] == 6)
+            hPtOutPrimOmega->Fill(ptRec[i]); // Omega
+        else if (idRec[i] == 7)
+            hPtOutPrimXi->Fill(ptRec[i]); // Xi
+        else
+            hPtOutPrimRest->Fill(ptRec[i]); // rest of the charged particles
+      }
+    }
+    if (isprimRec[i] == 1 || isprimRec[i] == 2) {
+      hPtOutSec->Fill(ptRec[i]);
+    }
+  }
+}
+

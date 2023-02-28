@@ -135,6 +135,9 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
 
+    // Function to set name of Jet container
+    void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
+
     void EventDebugMethod();
     void DebugMethod(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1);
     void DebugMethodPrint1(AliAODConversionMother *pi0cand, AliAODConversionPhoton *gamma0, AliAODConversionPhoton *gamma1);
@@ -177,6 +180,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TList*                fMesonCutArray;                                       // List with Meson Cuts
     AliConversionMesonCuts*   fMesonCuts;                                       // MesonCutObject
     AliAnalysisTaskConvJet*   fConvJetReader;                                   // JetReader
+    TString               fAddNameConvJet;                                      // Additional Name of jet container
     AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;                      // JetReader
     AliConversionPhotonCuts*  fConversionCuts;                                  // ConversionPhotonCutObject
     Bool_t                fDoJetAnalysis;                                       // Bool to produce Jet Plots
@@ -321,6 +325,11 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH2F**                fHistoTrueSecondaryPi0FromLambdaInvMassPt;            //! array of histos with validated secondary mothers from Lambda, invMass, pt
     TH1F**                fHistoTrueLambdaWithPi0DaughterMCPt;                  //! array of histos with lambda with reconstructed pi0 as daughter, pt
     TH2F**                fHistoTrueBckGGInvMassPt;                             //! array of histos with pure gamma gamma combinatorial BG, invMass, pt
+    TH2F**                fHistoTrueBckGCInvMassPt;                             //! array of histos with pure gamma gamma combinatorial BG, invMass, pt
+    TH2F**                fHistoTrueBckCCInvMassPt;                             //! array of histos with pure gamma gamma combinatorial BG, invMass, pt
+    TH2F**                fHistoTrueBckPartConvInvMassPt;                       //! array of histos with pure gamma gamma combinatorial BG, invMass, pt
+    TH2F**                fHistoTrueBckPartGammaInvMassPt;                      //! array of histos with pure gamma gamma combinatorial BG, invMass, pt
+    TH2F**                fHistoTrueBckRestInvMassPt;                           //! array of histos with pure gamma gamma combinatorial BG, invMass, pt
     TH2F**                fHistoTrueBckFullMesonContainedInOneClusterInvMassPt; //! array of histos with pi0 fully contained in one cluster, invMass, pt
     TH2F**                fHistoTrueBckAsymEClustersInvMassPt;                  //! array of histos with asymmetry energy distributions of clusters, invMass, pt
     TH2F**                fHistoTrueBckContInvMassPt;                           //! array of histos with contamination BG, invMass, pt
@@ -617,7 +626,7 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaCalo(const AliAnalysisTaskGammaCalo&);                  // Prevent copy-construction
     AliAnalysisTaskGammaCalo &operator=(const AliAnalysisTaskGammaCalo&);       // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaCalo, 91);
+    ClassDef(AliAnalysisTaskGammaCalo, 93);
 };
 
 #endif

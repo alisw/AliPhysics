@@ -8,7 +8,7 @@ Bool_t ConnectToGrid() {
   return kTRUE;
 }
 AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
-                                                  TString efficiencyPath, TString meanPtPath, TString NUAPath, TString subfix1, TString subfix2)
+                                                  TString efficiencyPath, TString NUAPath, TString subfix1, TString subfix2)
 {
   Int_t StageSwitch = 0;
   printf("Stage switch name: %s\n",stage.Data());
@@ -117,7 +117,7 @@ AliAnalysisTaskDeform* AddTaskDeform(TString name, Bool_t IsMC, TString stage,
   return 0;
 }
 AliAnalysisTaskDeform* AddTaskDeform(TString name="name", Bool_t IsMC=kFALSE, TString stage="Efficiency",
-                                                  TString efficiencyPath="", TString meanPtPath="", TString NUAPath="", TString subfix2="")
+                                                  TString efficiencyPath="", TString NUAPath="", TString subfix2="")
 {
-  return AddTaskDeform(name,IsMC,stage,efficiencyPath,meanPtPath,NUAPath,"",subfix2);
+  return AddTaskDeform(name,IsMC,stage,efficiencyPath,NUAPath,"",subfix2);
 }

@@ -34,11 +34,11 @@ AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeig
         if(weightpath.EqualTo("")) { printf("Weight path for containers not set!\n"); return NULL; };
         if(weightpath.Contains("alien:")) TGrid::Connect("alien:");
         TFile *tf = TFile::Open(weightpath.Data());
-        if(!tf) { printf("Could not open weight file %s!\n",weightpath.Data()); return NULL; };
-        TList *tl = (TList*)tf->Get("WeightList");
-        if(!tl) { printf("Could not wetch WeightList from %s!\n",weightpath.Data()); tf->ls(); return NULL; };
-        AliAnalysisDataContainer *cInWeights = mgr->CreateContainer(Form("InputWeights"),TList::Class(), AliAnalysisManager::kInputContainer);
-        cInWeights->SetData(tl);
+        // if(!tf) { printf("Could not open weight file %s!\n",weightpath.Data()); return NULL; };
+        // TList *tl = (TList*)tf->Get("WeightList");
+        // if(!tl) { printf("Could not wetch WeightList from %s!\n",weightpath.Data()); tf->ls(); return NULL; };
+        AliAnalysisDataContainer *cInWeights = mgr->CreateContainer(Form("InputWeights"),TFile::Class(), AliAnalysisManager::kInputContainer);
+        cInWeights->SetData(tf);
         mgr->ConnectInput(task,1,cInWeights);
       } else {
         mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("InputWeights"));
@@ -50,7 +50,7 @@ AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeig
   AliAnalysisDataContainer* cInput0 = mgr->GetCommonInputContainer();
   AliAnalysisDataContainer* cOutput1;
   if(ProduceWeights)
-    cOutput1 = mgr->CreateContainer("OutputList", TList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
+    cOutput1 = mgr->CreateContainer(Form("OutputList%s",subfx.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
   else cOutput1 = mgr->CreateContainer(Form("OutCont%s",subfx.Data()), AliGFWFlowContainer::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
   // Connecting containers to task
   mgr->ConnectInput(task,0,cInput0); // your task needs input: here we connect the manager to your task

@@ -25,4 +25,7 @@
 #pragma link C++ class AliAnalysisTaskMpiUE+;
 #pragma link C++ class AliAnalysisTaskSpectraFlatenicity+;
 #pragma link C++ class AliAnalysisTaskFlatenicityPiKp+;
+#pragma link C++ class AliAnalysisTaskFlatenicityLambdaK0s+;
+#pragma link C++ class AliAnalysisTaskdEdxCalibration+;
+#pragma link C++ class AliAnalysisTaskMCCorrections+;
 #endif

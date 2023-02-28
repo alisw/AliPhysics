@@ -44,7 +44,7 @@
    */
   AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow():
           AliAnalysisTaskEmcalJet(),
-          fHistManager(),fAnalysisType(kppData),R_jet_step(0.1)// , fOutput{0}
+          fHistManager(),fAnalysisType(kppData),R_jet_step(0.1),Max_match_dist(0.2)// , fOutput{0}
   {
   }
   /**
@@ -53,7 +53,7 @@
    */
   AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow(const char* name):
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fHistManager(name),fAnalysisType(kppData),R_jet_step(0.1)// , fOutput{0}
+  fHistManager(name),fAnalysisType(kppData),R_jet_step(0.1),Max_match_dist(0.2)// , fOutput{0}
   {
           SetMakeGeneralHistograms(1);
   }
@@ -121,7 +121,7 @@
           DoTrackLoop();
       //    DoClusterLoop();
       //    DoCellLoop();
-          FillEFHistograms();
+        FillEFHistograms();
           return kTRUE;
   }
   
@@ -145,6 +145,7 @@
            const char *nclusters,
            const char *ncells,
            Double_t   Rstep_EF,
+           Double_t Max_match_dr,
            AnalysisType fAnType,
            const char *suffix )
 {
@@ -249,6 +250,7 @@
     AliAnalysisTaskEmcalJetEnergyFlow* EFTask = new AliAnalysisTaskEmcalJetEnergyFlow(name);
     EFTask->R_jet_step=Rstep_EF;
     EFTask->SetCaloCellsName(cellName);
+    EFTask->Max_match_dist=Max_match_dr;
     EFTask->SetVzRange(-10,10);
     EFTask->SetAnalysisType(fAnType);
     if((fAnType==kppData)||(fAnType==kppMC))EFTask->SetForceBeamType(AliAnalysisTaskEmcal::kpp);  
@@ -412,6 +414,10 @@ for (Int_t cent = 0; cent < fNcentBins; cent++){
           histname = TString::Format("hJetPtDeltaPt_R%03d_%d",int(Rstep*(i+1)*100),cent);
           histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii;P_{t,jet(R=%.2f)}(GeV/c);#Delta P_{t}(GeV/c)",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1));
           fHistManager.CreateTH2(histname,histtitle,fNPtBins,fMinPtBin,fMaxPtBin,fNDPtBins,fMinDPtBin,fMaxDPtBin);
+
+          histname = TString::Format("hJetPtSmallDeltaPt_R%03d_%d",int(Rstep*(i+1)*100),cent);
+          histtitle = TString::Format("Small #DeltaP_{t} between %.2f and %.2f jet radii;P_{t,jet(R=%.2f)}(GeV/c);#Delta P_{t}(GeV/c)",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1));
+          fHistManager.CreateTH2(histname,histtitle,fNPtBins,fMinPtBin,fMaxPtBin,2*fNDPtBins,0,2);
   
 //          histname = TString::Format("hJetPtConstZ_R%03d_%d",int(Rstep*(i+1)*100),cent);
 //          histtitle = TString::Format("Jet constituents P_{t} distribution for R=%.2f;Jet P_{t} (GeV/c);Constituent Z",Rstep*(i+1));
@@ -450,10 +456,19 @@ for (Int_t cent = 0; cent < fNcentBins; cent++){
  
         if((fAnalysisType==kppMC)||(fAnalysisType==kEmbedded)){
         for(Int_t i=0;i<Pair_number;i++){
+
+          histname = TString::Format("hJetMismatchesFraction_R%03d_%d",int(Rstep*(i+1)*100),cent);
+          histtitle = TString::Format("Fraction of mismatches between the two levels for R_{jet}= %.2f;Mismatch fraction",Rstep*(i+2));
+          fHistManager.CreateTH1(histname,histtitle,100,0,1);
+
           histname = TString::Format("hJetPtDeltaPt_R%03d_gen_%d",int(Rstep*(i+1)*100),cent);
           histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii (Generator level);P_{t,jet(R=%.2f)}(GeV/c);#Delta P_{t}(GeV/c)",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1));
           fHistManager.CreateTH2(histname,histtitle,fNPtBins,fMinPtBin,fMaxPtBin,fNDPtBins,fMinDPtBin,fMaxDPtBin);
-  
+
+          histname = TString::Format("hJetPtSmallDeltaPt_R%03d_gen_%d",int(Rstep*(i+1)*100),cent);
+          histtitle = TString::Format("Small #DeltaP_{t} between %.2f and %.2f jet radii (Generator level);P_{t,jet(R=%.2f)}(GeV/c);#Delta P_{t}(GeV/c)",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1));
+          fHistManager.CreateTH2(histname,histtitle,fNPtBins,fMinPtBin,fMaxPtBin,2*fNDPtBins,0,2); 
+ 
 //          histname = TString::Format("hJetPtConstZ_R%02d_gen_%d",int(Rstep*(i+1)*100),cent);
 //          histtitle = TString::Format("Jet constituents P_{t} distribution for R=%.2f (Generator level);Jet P_{t} (Ge  V/c);Constituent Z",Rstep*(i+1));
 //          fHistManager.CreateTH2(histname,histtitle,fNPtBins,fMinPtBin,fMaxPtBin,20,0,1);
@@ -482,6 +497,10 @@ for (Int_t cent = 0; cent < fNcentBins; cent++){
           histtitle = TString::Format("Jet Energy Scale (Hybrid-Truth)  of R=%.2f",Rstep*(i+1));
           fHistManager.CreateTH2(histname, histtitle,fNPtBins,fMinPtBin,fMaxPtBin,100,-100,100);
 
+          histname = TString::Format("hMatchedJetEnergyResponse_R%03d_%d",int(Rstep*(i+1)*100),cent);
+          histtitle = TString::Format("Matched Jet Energy Scale (Hybrid-Truth)  of R=%.2f",Rstep*(i+1));
+          fHistManager.CreateTH2(histname, histtitle,fNPtBins,fMinPtBin,fMaxPtBin,100,-100,100);
+
           histname = TString::Format("ResponseMatrix_R%03d_%d",int(Rstep*(i+1)*100),cent);
           histtitle = TString::Format("Response Matrix of R %.2f;P_{t} (Generator level); P_{t} (Detector level);#DeltaP_{t} (Generator level); #DeltaP_{t} (Detector level)",Rstep*(i+1));  
           fHistManager.CreateTHnSparse(histname,histtitle,4,Bins,MinBin,MaxBin);
@@ -491,7 +510,7 @@ for (Int_t cent = 0; cent < fNcentBins; cent++){
 
           histname = TString::Format("DeltaResponseMatrix_R%03d_%d",int(Rstep*(i+1)*100),cent);
           histtitle = TString::Format("DeltaResponseMatrix_R%.2f;P_{t,low} (GeV/c);P_{t,det}-P_{t,gen} (GeV/c);#DeltaP_{t,det}-#DeltaP_{t,gen} (GeV/c)",Rstep*(i+1));
-          fHistManager.CreateTH3(histname, histtitle,fNPtBins,fMinPtBin,fMaxPtBin,fNDPtBins,fMinDPtBin,fMaxDPtBin,fNDPtBins,fMinDPtBin,fMaxDPtBin);
+          fHistManager.CreateTH3(histname, histtitle,fNPtBins,fMinPtBin,fMaxPtBin,100,-100,100,2*fNDPtBins,-fMaxDPtBin,fMaxDPtBin);
 
         //-------------------------------------------Initial 1D implementation for Response matrix--Pt-----------------------------------------------------------
        //   histname = TString::Format("ResponseMatrix_pt_R%03d",int(Rstep*(i+1)*100));
@@ -543,11 +562,12 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
   Double_t pt_Ldet = 0.0;               //Low R jet pt @ Det level (needed for the R-matrix)
   Double_t pt_Hdet = 0.0;               //High R jet pt @Det level (needed for the R-matrix)
   Double_t DeltaEta = 0.0;
-  Float_t Max_dist = 0.2;               //Maximum distance used as a matching criterion for JetMatcher
+  Double_t Mismatch_count =0.0;         //Counter for mismatches between truth and detector level
+  Double_t Response_count =0.0;         //Counter for all truth level jets which made it to the response matrix
+  Float_t Max_dist = Max_match_dist;    //Maximum distance used as a matching criterion for JetMatcher
   Float_t max_eta = 0.5;                //Maximum eta jet acceptance (cross-check within the JetMatcher)
   Double_t ResponseData[4];             //Array needed for filling the THnSparse R-matrix
-  Bool_t SAFE = kTRUE;                  //Boolean flag for the safeguard of considering only positive pt jets
-
+  Bool_t   Bkg_sub_method =kFALSE;      //Boolean flag in case a constituent subtraction method is chosen instead of rho*A
   AliJetContainer* DetjetCont1=0; // One container for the jets of the lower R (of each comparison pair)
   AliJetContainer* DetjetCont2=0; // One container for the jets of the higher R (of each comparison pair)
   AliJetContainer* GenjetCont1=0; // One container for the jets of the lower R (of each comparison pair)
@@ -571,88 +591,129 @@ Pair_number= NumJet-1;
           pt_Ldet = 0.0;
           pt_Hdet = 0.0;
           DeltaEta = 0.0;
-
+          Mismatch_count=0.;
+          Response_count=0.;
         DetjetCont1=0; DetjetCont2=0; GenjetCont1=0; GenjetCont2=0; //Reseting the containers at the start of each pair loop     
-
         if((fAnalysisType==kppMC)||(fAnalysisType==kEmbedded)){
                 MatchGenDetList.Clear();
                 GenHighRJetsList.Clear();
 
            Contname= dynamic_cast<AliJetContainer*>(fJetCollArray[i])->GetName();
-                if(Contname.Contains("mcparticles"))
+                if(Contname.Contains("TruthJet")||Contname.Contains("GenJet"))
                 {GenjetCont1 = dynamic_cast<AliJetContainer*>(fJetCollArray[i]);
                  GenjetCont1->SetJetEtaLimits(-max_eta,max_eta); 
+                }
+                else if(Contname.Contains("DetJet")&&(fAnalysisType==kEmbedded))
+                {GenjetCont1 = dynamic_cast<AliJetContainer*>(fJetCollArray[i]);
+                 GenjetCont1->SetJetEtaLimits(-max_eta,max_eta);
                 }
                 else{ 
                 DetjetCont1 = dynamic_cast<AliJetContainer*>(fJetCollArray[i]);
                 DetjetCont1->SetJetEtaLimits(-max_eta,max_eta); 
                 }
+                if (Contname.Contains("ConstSub"))Bkg_sub_method=kTRUE;
 
-       Contname= dynamic_cast<AliJetContainer*>(fJetCollArray[i+1])->GetName();
-       
-               if(Contname.Contains("mcparticles"))
-                   {GenjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+1]);
-                    GenjetCont2->SetJetEtaLimits(-max_eta,max_eta);
-                   }
-                else{   
-                    DetjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+1]);
-                    DetjetCont2->SetJetEtaLimits(-max_eta,max_eta);
-                    }       
-
-      Contname= dynamic_cast<AliJetContainer*>(fJetCollArray[i+NumJet])->GetName();
-                  if(Contname.Contains("mcparticles"))
+         Contname= dynamic_cast<AliJetContainer*>(fJetCollArray[i+1])->GetName();
+                  if(Contname.Contains("TruthJet")||Contname.Contains("GenJet"))
+                  {GenjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+1]);
+                   GenjetCont2->SetJetEtaLimits(-max_eta,max_eta);
+                  }
+                  else if(Contname.Contains("DetJet")&&(fAnalysisType==kEmbedded))
+                  {GenjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+1]);
+                   GenjetCont2->SetJetEtaLimits(-max_eta,max_eta);
+                  }
+                  else{ 
+                  DetjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+1]);
+                  DetjetCont2->SetJetEtaLimits(-max_eta,max_eta);
+                  }
+                if (Contname.Contains("ConstSub"))Bkg_sub_method=kTRUE;
+      
+         Contname= dynamic_cast<AliJetContainer*>(fJetCollArray[i+NumJet])->GetName();
+                  if(Contname.Contains("TruthJet")||Contname.Contains("GenJet"))
                   {GenjetCont1 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+NumJet]);
                    GenjetCont1->SetJetEtaLimits(-max_eta,max_eta);
                   }
-                  else{
+                  else if(Contname.Contains("DetJet")&&(fAnalysisType==kEmbedded))
+                  {GenjetCont1 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+NumJet]);
+                   GenjetCont1->SetJetEtaLimits(-max_eta,max_eta);
+                  }
+                  else{ 
                   DetjetCont1 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+NumJet]);
                   DetjetCont1->SetJetEtaLimits(-max_eta,max_eta);
                   }
-  
+                if (Contname.Contains("ConstSub"))Bkg_sub_method=kTRUE;
+
          Contname= dynamic_cast<AliJetContainer*>(fJetCollArray[i+NumJet+1])->GetName();
-  
-                 if(Contname.Contains("mcparticles"))
-                     {GenjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+1+NumJet]);
-                      GenjetCont2->SetJetEtaLimits(-max_eta,max_eta);
-                     }
-                  else{
-                      DetjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+1+NumJet]);
-                      DetjetCont2->SetJetEtaLimits(-max_eta,max_eta);
-                      }
+                  if(Contname.Contains("TruthJet")||Contname.Contains("GenJet"))
+                  {GenjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+NumJet+1]);
+                   GenjetCont2->SetJetEtaLimits(-max_eta,max_eta);
+                  }
+                  else if(Contname.Contains("DetJet")&&(fAnalysisType==kEmbedded))
+                  {GenjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+NumJet+1]);
+                   GenjetCont2->SetJetEtaLimits(-max_eta,max_eta);
+                  }
+                  else{ 
+                  DetjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+NumJet+1]);
+                  DetjetCont2->SetJetEtaLimits(-max_eta,max_eta);
+                  }
+                if (Contname.Contains("ConstSub"))Bkg_sub_method=kTRUE;
+
                 //------------Debugging tool/ check that containers are loaded correctly i.e.All Gen-level followed by all Det-level or vice versa. TLDR no container mixing
-              //  Printf(TString(GenjetCont1->GetName())); //  Printf(TString(GenjetCont2->GetName()));
-              //  Printf(TString(DetjetCont1->GetName())); //  Printf(TString(DetjetCont2->GetName()));
+            //    Printf(TString(GenjetCont1->GetName()));   Printf(TString(GenjetCont2->GetName()));
+           //     Printf(TString(DetjetCont1->GetName()));   Printf(TString(DetjetCont2->GetName()));
                          
                 for(auto jet:DetjetCont1->accepted()) DetLowRJetsList.Add(jet);
                 for(auto jet:DetjetCont2->accepted()) DetHighRJetsList.Add(jet);
                 for(auto jet:GenjetCont1->accepted())if(jet->ClosestJet())MatchGenDetList.Add(jet);
                 for(auto jet:GenjetCont2->accepted()) GenHighRJetsList.Add(jet);
-
                 // First, match and calculate the energy flow on the detector level jets for this R pair iteration
          if(DetLowRJetsList.GetEntries()==0||DetHighRJetsList.GetEntries()==0) continue;
+         //     Printf("Point A \n");
             iLowRIndex_det.Set(DetHighRJetsList.GetEntries()); iHighRIndex_det.Set(DetLowRJetsList.GetEntries());
             JetMatcher(&DetLowRJetsList,kLowRJets,&DetHighRJetsList,kHighRJets, iLowRIndex_det,iHighRIndex_det,0,Max_dist,max_eta);
   //----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
                 for (Int_t j=0; j<iHighRIndex_det.GetSize();j++)      // loop over the low R jets (Detector level)
                     {
+                        //Calculating the jet response between 2 levels e.g. truth-detector
+           //             Printf(Form("Jet: %d",j));
+                        if((dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->ClosestJet()){    
+                        Double_t pt_det_JER=(dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Pt();
+                        Double_t pt_tru_JER=((dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->ClosestJet())->Pt();                      
+                        if(!Bkg_sub_method){
+                        if(DetjetCont1->GetRhoParameter())pt_det_JER = pt_det_JER - DetjetCont1->GetRhoVal() * (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Area();
+                        if(GenjetCont1->GetRhoParameter())pt_tru_JER = pt_tru_JER- DetjetCont1->GetRhoVal()*((dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->ClosestJet())->Area();
+                                                }
+                        histname = TString::Format("hJetEnergyResponse_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
+                        fHistManager.FillTH2(histname,pt_tru_JER,(pt_det_JER-pt_tru_JER));                      
+                                                                                                }
+                        //Check the match conditions between Ri and Ri+1 at the detector level
                             if(iHighRIndex_det[j]>=0){                  // if there is a match
                             Int_t match_index = iHighRIndex_det[j];
                             if (iLowRIndex_det[match_index]==j){        //And if the match is bijective
   
                     Double_t pt_low = (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Pt();
                     Double_t pt_high = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Pt();
+
+                        //In case of PbPb or Embedded analysis correct the jet pt by rho*area (This may have to be removed if we want to look at const subtraction) 
+                    
+                if(!Bkg_sub_method){
                     if(DetjetCont1->GetRhoParameter())pt_low = (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Pt() - DetjetCont1->GetRhoVal() * (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Area();
-                    if(DetjetCont2->GetRhoParameter())pt_high = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Pt() - DetjetCont2->GetRhoVal() *(dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Area();
+                    if(DetjetCont2->GetRhoParameter())pt_high = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Pt() - DetjetCont2->GetRhoVal() *(dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Area();}
+
                     if((pt_low<=0)||(pt_high<=0)) continue;
                     Double_t eta_low = (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Eta();
                     Double_t eta_high = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Eta();
                     if((pt_low>0)&&(pt_high>0)) DeltaPt_det = pt_high-pt_low;
                     Double_t DeltaR = (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->DeltaR((dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index))));
                     Double_t DeltaEta = fabs(eta_high - eta_low);
-                        
+             //           Printf("Point B \n");
                         if((pt_low>0)&&(pt_high>0)){
                     histname = TString::Format("hJetPtDeltaPt_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
-                    fHistManager.FillTH2(histname,pt_low,DeltaPt_det);}
+                    fHistManager.FillTH2(histname,pt_low,DeltaPt_det);
+
+                        if((DeltaPt_det<=2)&&(DeltaPt_det>=0)){
+                   histname = TString::Format("hJetPtSmallDeltaPt_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
+                   fHistManager.FillTH2(histname,pt_low,DeltaPt_det);}
   
 //                    histname = TString::Format("hJetPtConstZ_R%02d_%d",int(Rstep*(i+1)*100),fCentBin);
 //                    for(auto cont:dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j))->GetParticleConstituents()){
@@ -680,13 +741,15 @@ Pair_number= NumJet-1;
   
                     histname = TString::Format("hMatchedJetEta_R%03d_%d",int(Rstep*(i+2)*100),fCentBin);
                     fHistManager.FillTH1(histname,eta_high);
-                                                         }
-                                                              } //And if the match is bijective
+                                                         }}
+               //      Printf("Point C \n");                                    
+                                                             } //And if the match is bijective
                                                   } // if there is a match
+              //          Printf("Point D \n");
                   } // loop over the low R jets (Detector level)
 
                 // Repeat the energy flow calculation on the generator level jets for this R pair iteration (BUT ONLY FOR THE LOW R JETS THAT HAVE A MATCH ON DETECTOR LEVEL)
-
+            //            Printf("Point A1 \n");
            if(MatchGenDetList.GetEntries()==0||GenHighRJetsList.GetEntries()==0) continue;
               iLowRIndex_gen.Set(GenHighRJetsList.GetEntries()); iHighRIndex_gen.Set(MatchGenDetList.GetEntries());
               JetMatcher(&MatchGenDetList,kLowRJets,&GenHighRJetsList,kHighRJets, iLowRIndex_gen,iHighRIndex_gen,0,Max_dist,max_eta);
@@ -699,16 +762,17 @@ Pair_number= NumJet-1;
                         Jet_genlowR = dynamic_cast<AliEmcalJet*>(MatchGenDetList.At(j)); //Useful definition for the following calculations
                       Double_t pt_low = Jet_genlowR->Pt();
                       Double_t pt_high = (dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->Pt();
+                        if(!Bkg_sub_method){
                       if(GenjetCont1->GetRhoParameter())pt_low = Jet_genlowR->Pt() - GenjetCont1->GetRhoVal() * Jet_genlowR->Area();
-                      if(GenjetCont2->GetRhoParameter())pt_high = (dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->Pt()- GenjetCont2->GetRhoVal()* (dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->Area();
-                      if((pt_low<=0)||(pt_high<=0)) continue;
+                      if(GenjetCont2->GetRhoParameter())pt_high = (dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->Pt()- GenjetCont2->GetRhoVal()* (dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->Area();}
+                       if((pt_low>0)&&(pt_high>0)){ 
                       Double_t eta_low = Jet_genlowR->Eta();
                       Double_t eta_high = (dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->Eta();
                       DeltaPt_gen = pt_high-pt_low;
                       Double_t DeltaR = Jet_genlowR->DeltaR((dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index))));
                       Double_t DeltaEta = fabs(eta_high - eta_low);
                         DeltaPt_det = 0.0;
-
+              //          Printf("Point A2 \n");
                       //------- In order to construct the Rmatrix we need to evaluate the pt & Dpt @ Det level while analysing the corresponding jets @ Gen level
                         pt_Ldet = Jet_genlowR->ClosestJet()->Pt();
                         if(DetjetCont1->GetRhoParameter())pt_Ldet = pt_Ldet - DetjetCont1->GetRhoVal() * Jet_genlowR->ClosestJet()->Area(); 
@@ -717,26 +781,31 @@ Pair_number= NumJet-1;
                         if(MI>=0){
                         if(((DetLowRJetsList.At(w) == Jet_genlowR->ClosestJet()))&&(iLowRIndex_det[MI]==w)) {
                                  pt_Hdet = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(MI)))->Pt();
-                                 if(DetjetCont2->GetRhoParameter()) pt_Hdet = pt_Hdet - DetjetCont2->GetRhoVal()*(dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(MI)))->Area();
-                                 DeltaPt_det = pt_Hdet -pt_Ldet;
-                        if((pt_Ldet<=0)||(pt_Hdet<=0)) {SAFE = kFALSE; break;}
-                        else SAFE=kTRUE;
+                                
+                                if((pt_low<0)||(pt_high<0))continue;
+                        if(DetjetCont2->GetRhoParameter())pt_Hdet = pt_Hdet-DetjetCont2->GetRhoVal() * (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(MI)))->Area();
+                                DeltaPt_det = pt_Hdet -pt_Ldet;
                         //        histname = TString::Format("ResponseMatrix_pt_R%03d",int(Rstep*(i+1)*100)); 
                         //        fHistManager.FillTH2(histname,pt_low,pt_Ldet);
                                  histname = TString::Format("ResponseMatrix_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                                  ResponseData[0]=pt_low;ResponseData[1]=pt_Ldet;ResponseData[2]=DeltaPt_gen;ResponseData[3]=DeltaPt_det;      
                                  fHistManager.FillTHnSparse(histname,ResponseData);
+                                Response_count = Response_count+1;
                               //  fHistManager.FillTH2(histname,DeltaPt_gen,DeltaPt_det);
 
                                  histname = TString::Format("DeltaResponseMatrix_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                                 fHistManager.FillTH3(histname,pt_low,pt_Ldet-pt_low,DeltaPt_det-DeltaPt_gen);
+                               if(dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(MI))->DeltaR((dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->ClosestJet())>1e-3)Mismatch_count=Mismatch_count+1; 
                                 break;}}
                                           }
-                        if(SAFE) {                                                                                         
                       histname = TString::Format("hJetPtDeltaPt_R%03d_gen_%d",int(Rstep*(i+1)*100),fCentBin);
                       fHistManager.FillTH2(histname,pt_low,DeltaPt_gen);
+                //        Printf("Point B1 \n");
+                          if((DeltaPt_gen<=2)&&(DeltaPt_gen>=0)){
+                     histname = TString::Format("hJetPtSmallDeltaPt_R%03d_gen_%d",int(Rstep*(i+1)*100),fCentBin);
+                     fHistManager.FillTH2(histname,pt_low,DeltaPt_gen);}
 
-                      histname = TString::Format("hJetEnergyResponse_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
+                      histname = TString::Format("hMatchedJetEnergyResponse_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                         fHistManager.FillTH2(histname,pt_low,(pt_Ldet-pt_low));
 //                      histname = TString::Format("hJetPtConstZ_R%02d_gen_%d",int(Rstep*(i+1)*100),fCentBin);
 //                      for(auto cont:dynamic_cast<AliEmcalJet*>(MatchGenDetList.At(j))->GetParticleConstituents()){
@@ -768,23 +837,27 @@ Pair_number= NumJet-1;
   
                       histname = TString::Format("hMatchedJetEta_R%03d_gen_%d",int(Rstep*(i+2)*100),fCentBin);
                       fHistManager.FillTH1(histname,eta_high);
-                                                           }
-                                                        } //Safeguard for positive jet pt flag
-                                                                } //And if the match is bijective
+                                                           }}
+                  //      Printf("Point C1 \n");                
+                                                } //And if the match is bijective
                                                     } // if there is a match
                     } // loop over the low R jets (Generator level that match to detector level)
+                histname =TString::Format("hJetMismatchesFraction_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
+                fHistManager.FillTH1(histname,Mismatch_count/Response_count);
                  } //End of MC production case
         else{
           // Casting the lower R half of the pair to a container and getting the accepted jets to a list
           DetjetCont1 = dynamic_cast<AliJetContainer*>(fJetCollArray[i]);
           DetjetCont1->SetJetEtaLimits(-max_eta,max_eta);
           for(auto jet:DetjetCont1->accepted()) DetLowRJetsList.Add(jet);
-
+          Contname= DetjetCont1->GetName();
+          if (Contname.Contains("ConstSub"))Bkg_sub_method=kTRUE;
           // Casting the higher R half of the pair to a container and getting the accepted jets to a list
           DetjetCont2 = dynamic_cast<AliJetContainer*>(fJetCollArray[i+1]);
           DetjetCont2->SetJetEtaLimits(-max_eta,max_eta);
           for(auto jet:DetjetCont2->accepted()) DetHighRJetsList.Add(jet);
-
+          Contname= DetjetCont2->GetName();
+          if (Contname.Contains("ConstSub"))Bkg_sub_method=kTRUE;
         // For the case of data, match and calculate the energy flow only on the detector level jets for this R pair iteration
           if(DetLowRJetsList.GetEntries()==0||DetHighRJetsList.GetEntries()==0) continue;
           iLowRIndex_det.Set(DetHighRJetsList.GetEntries()); iHighRIndex_det.Set(DetLowRJetsList.GetEntries());
@@ -799,24 +872,28 @@ Pair_number= NumJet-1;
   
                   Double_t pt_low = (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Pt();
                   Double_t pt_high = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Pt();
-
+                if(!Bkg_sub_method){
                   if(DetjetCont1->GetRhoParameter())pt_low = (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Pt() - DetjetCont1->GetRhoVal() * (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Area();
-                  if(DetjetCont2->GetRhoParameter())pt_high = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Pt() - DetjetCont2->GetRhoVal() *(dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Area();
-                if((pt_low<=0)||(pt_high<=0)) continue;
+                  if(DetjetCont2->GetRhoParameter())pt_high = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Pt() - DetjetCont2->GetRhoVal() *(dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Area();}
+
                   Double_t eta_low = (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->Eta();
                   Double_t eta_high = (dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index)))->Eta();
-                  if((pt_low>0)&&(pt_high>0))DeltaPt_det = pt_high-pt_low;
+                  if((pt_low<=0)||(pt_high<=0))continue;
+                  DeltaPt_det = pt_high-pt_low;
                   Double_t DeltaR = (dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j)))->DeltaR((dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(match_index))));
                   Double_t DeltaEta = fabs(eta_high - eta_low);
                 
                 if((pt_low>0)&&(pt_high>0)){
                   histname = TString::Format("hJetPtDeltaPt_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);             
-                  fHistManager.FillTH2(histname,pt_low,DeltaPt_det);}
+                  fHistManager.FillTH2(histname,pt_low,DeltaPt_det);
        
       //            histname = TString::Format("hJetPtConstZ_R%02d_%d",int(Rstep*(i+1)*100),fCentBin);
       //                for(auto cont:dynamic_cast<AliEmcalJet*>(DetLowRJetsList.At(j))->GetParticleConstituents()){
       //                 fHistManager.FillTH2(histname,pt_low,cont.Pt()/pt_low);}
 
+                if((DeltaPt_det<=2)&&(DeltaPt_det>=0)){
+                   histname = TString::Format("hJetPtSmallDeltaPt_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
+                   fHistManager.FillTH2(histname,pt_low,DeltaPt_det);}
   
                   histname = TString::Format("hJetPtDeltaR_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                   fHistManager.FillTH2(histname,pt_low,DeltaR);
@@ -840,7 +917,7 @@ Pair_number= NumJet-1;
                 
                   histname = TString::Format("hMatchedJetEta_R%03d_%d",int(Rstep*(i+2)*100),fCentBin);
                   fHistManager.FillTH1(histname,eta_high);
-                                               }
+                                               }}
                                                             } //And if the match is bijective
                                                 } // if there is a match
                 } // loop over the low R jets

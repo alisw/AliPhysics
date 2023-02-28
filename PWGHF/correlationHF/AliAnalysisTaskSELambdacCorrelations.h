@@ -67,6 +67,7 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   void SetSystem(Int_t sys){fSys=sys;}
   void SetRejectSDDClusters(Bool_t flag) {fIsRejectSDDClusters=flag; }
   void SetFillGlobalPlots(Bool_t fill=kTRUE){fFillGlobal=fill;}
+  void SetSoftPiFlag(Bool_t piflag) {fSoftPiCut=piflag;}
   void SetMEAxisThresh(Bool_t methresh) {fMEAxisThresh=methresh;}
   void SetKaonCorrelations(Bool_t kaonCorr) {fKaonCorr=kaonCorr;}
   void SetAODMismatchProtection(Int_t opt=0) {fAODProtection=opt;}
@@ -82,6 +83,7 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   Bool_t GetFillGlobalPlots() const {return fFillGlobal;}
   Double_t GetEtaForCorrel() {return fEtaForCorrel;}
   Double_t GetMultEv() {return fMultEv;}
+  Bool_t GetSoftPiFlag() const {return fSoftPiCut;}
   Bool_t GetMEAxisThresh() const {return fMEAxisThresh;}
   Bool_t GetKaonCorrelations() const {return fKaonCorr;}
   Bool_t GetFillTrees() const {return fFillTrees;}
@@ -110,7 +112,7 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   void SetEtaForCorrel(Double_t etacorr) {fEtaForCorrel=etacorr;}
   void SetSpeed(Int_t speed) {fSpeed=speed;}
   void SetMergePools(Bool_t mergepools) {fMergePools=mergepools;}
-  void SetUseDeff(Bool_t useDeff) {fUseDeff=useDeff;}
+  void SetUseLceff(Bool_t UseLceff) {fUseLceff=UseLceff;}
   void SetUseTrackeff(Bool_t useTrackeff) {fUseTrackeff=useTrackeff;}
   void SetMinDPt(Double_t minDPt) {fMinDPt=minDPt;}
   void SetFillTrees(Int_t fillTrees, Double_t fractAccME) {fFillTrees=fillTrees; fFractAccME=fractAccME;}
@@ -183,7 +185,7 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   void CreateCorrelationsObjs();
   void CalculateCorrelations(AliAODRecoDecayHF3Prong* d, Int_t labLambdac=-1, TClonesArray* mcArray=0x0);
   void CalculateCorrelationsMCKine(AliAODMCParticle* d, TClonesArray* mcArray=0x0);
-  void FillSparsePlots(TClonesArray* arrayMC, Double_t mInv[], Int_t origLambdac, Int_t PdgLambdac, AliReducedParticle* track, Int_t ptbin, Int_t type, Double_t wg=1.);
+  void FillSparsePlots(TClonesArray* arrayMC, Double_t mInv[], Int_t origLambdac, Int_t PdgLambdac, AliReducedParticle* track, Int_t ptbin, Int_t type, Int_t softpiME, Double_t wg=1.);
   Int_t CheckTrackOrigin(TClonesArray* arrayMC, AliAODMCParticle *mcPartCandidate) const;
   Bool_t IsDDaughter(AliAODMCParticle* d, AliAODMCParticle* track, TClonesArray* mcArray) const;
   void FillTreeLambdac(AliAODRecoDecayHF3Prong* d, AliAODEvent* aod);  
@@ -241,6 +243,7 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   Double_t  fMultEvV0MEqual;     // event multiplicity (for trigger eff)
   Double_t  fCentEvV0M;     // event multiplicity (for trigger eff)
   Double_t  fzVtx;				// event zVtx position (for track eff)
+  Bool_t    fSoftPiCut;			// flag to activate soft pion cut on Data
   Bool_t    fMEAxisThresh;		// flag to fill threshold axis in ME plots
   Bool_t    fKaonCorr;			// enables correlations of Lambdac-Kcharg and Lambdac-K0
   Double_t  fSignLeft_LowPt;		// Left bound of "signal region" range - up to 8 GeV/c
@@ -251,7 +254,7 @@ class AliAnalysisTaskSELambdacCorrelations : public AliAnalysisTaskSE
   //SpeedType fSpeed;			// Speed up the execution removing bins and histos - 0=std, 1=single-SB bins, 2=single-SB and single-S bins
     Int_t fSpeed;			// Speed up the execution removing bins and histos - 0=std, 1=single-SB bins, 2=single-SB and single-S bins
   Bool_t    fMergePools;		// Put all entries from various pools in _pool0 THnSparses (as old approach) - for testing & low stat!
-  Bool_t    fUseDeff;			// Use D meson efficiency as weight
+  Bool_t    fUseLceff;			// Use D meson efficiency as weight
   Bool_t    fUseTrackeff;   		// Use track efficiency as weight
   Double_t  fPtAssocLimit;   		// Maximum value for associated pT
   Double_t  fMinDPt;			// Minimum pT of the Lambdac to allow selection

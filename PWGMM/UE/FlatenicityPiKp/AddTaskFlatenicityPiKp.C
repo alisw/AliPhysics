@@ -30,15 +30,15 @@ AddTaskFlatenicityPiKp(const Char_t *taskname = "V0_Calibrated", TString detForF
 	if (!taskFlat)
 		return 0x0;
 
-	taskFlat->SetUseMC(false);
+	taskFlat->SetUseMC(true);
 	taskFlat->SetMCclosureTest(kFALSE);
 	taskFlat->SaveDCAxyHistograms(kFALSE);
 	taskFlat->SetDetectorForFlatenicity(detForFlat);
 	taskFlat->SetDeltaV0(kTRUE); 				//@ Set DeltaV0 scaling
-	taskFlat->IsV0MCalibrated(kTRUE); 			//@ Equalize the V0C+V0A signals
+	/* taskFlat->IsV0MCalibrated(kTRUE); 			//@ Equalize the V0C+V0A signals */
 	taskFlat->SetRemoveTrivialScaling(woTrivialscaling);	//@ Trivial Nch scaling
 	taskFlat->IsdEdxCalibrated(kTRUE);
-	taskFlat->SetDataPeriod("16l");
+	taskFlat->SetDataPeriod("18m");
 	taskFlat->SaveThisMultBin("0_1");
 	taskFlat->SetPtMin(0.15);
 	taskFlat->SetNcl(70);

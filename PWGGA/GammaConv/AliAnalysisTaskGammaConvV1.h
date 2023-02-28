@@ -94,6 +94,9 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked);
     void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
     Double_t GetOriginalInvMass(const AliConversionPhotonBase * photon, AliVEvent * event) const;
+    // Function to set name of Jet container
+    void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
+
 
   protected:
     AliV0ReaderV1*                    fV0Reader;                                  //
@@ -118,6 +121,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TList*                            fMesonCutArray;                             //
     TList*                            fClusterCutArray;                           //
     AliAnalysisTaskConvJet*           fConvJetReader;                             //
+    TString                           fAddNameConvJet;                            // Additional Name of jet container
     Bool_t                            fDoJetAnalysis;                             //
     Bool_t                            fDoIsolatedAnalysis;                        //
     Bool_t                            fDoHighPtHadronAnalysis;                    //
@@ -437,7 +441,7 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
 
     AliAnalysisTaskGammaConvV1(const AliAnalysisTaskGammaConvV1&); // Prevent copy-construction
     AliAnalysisTaskGammaConvV1 &operator=(const AliAnalysisTaskGammaConvV1&); // Prevent assignment
-    ClassDef(AliAnalysisTaskGammaConvV1, 57);
+    ClassDef(AliAnalysisTaskGammaConvV1, 58);
 };
 
 #endif

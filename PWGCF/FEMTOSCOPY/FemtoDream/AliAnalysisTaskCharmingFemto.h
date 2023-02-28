@@ -40,10 +40,12 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     kpp13TeV
   };
 
-  enum MassSelection
+  enum MassSelectionType
   {
+    kTaskDefault = -1,
     kAny,
     kSignal,
+    kSideband,
     kSidebandRight,
     kSidebandLeft,
     kStrictCut,
@@ -68,6 +70,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   }
   void SetTrigger(UInt_t trigger) {
     fTrigger = trigger;
+  }
+  void SetColsToSave(std::vector<std::string> cols) {
+    fColsToSave = cols;
   }
   void SetEventCuts(AliFemtoDreamEventCuts *cuts) {
     fEvtCuts = cuts;
@@ -95,6 +100,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   }
   void SetUseUseLFFromEvtsWithPairs(int flag) {
     fUseLFFromEvtsWithPairs = flag;
+  }
+  void SetPart2Buffer(bool flag) {
+    fUsePart2Buffer = flag;
   }
   
   // HF related setters
@@ -124,14 +132,18 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetMLConfigFile(TString path = "") {
     fConfigPath = path;
   }
-  void SetMassSelection(int type) {
+  void SetMassSelection(MassSelectionType type) {
     fMassSelectionType = type;
+  }
+  void SetMassSelection(MassSelectionType type, double nSigma) {
+    fMassSelectionType = type;
+    fNSigmaMass = nSigma;
   }
   void SetNSigmaSelection(double nSigma = 2) {
     fMassSelectionType = kSignal;
     fNSigmaMass = nSigma;
   }
-  void SetSidebandChoice(MassSelection type, double offset, double width) {
+  void SetSidebandChoice(MassSelectionType type, double offset, double width) {
     fMassSelectionType = type;
     fNSigmaOffsetSideband = offset;
     fSidebandWidth = width;
@@ -303,7 +315,17 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliAODTrack *track);
   int IsCandidateSelected(AliAODRecoDecayHF *&dMeson, AliAODRecoDecayHF *&dMesonWithVtx, int absPdgMom, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> &scores);
-  bool MassSelection(const double mass, const double pt, const int pdg);
+  bool MassSelection(const double mass, const double pt, const int pdg, MassSelectionType selection=kTaskDefault);
+  static bool IsMassSelected(const double mass,
+                             const double pt,
+                             const int pdg,
+                             enum MassSelectionType selection,
+                             double nSigmaSignal = 2,
+                             double nSigmaOffset = 5,
+                             double sidebandWidth = 0.2,
+                             double lowerDstarRemoval = 1.992,
+                             double upperDstarRemoval = 2.028,
+                             CollSystem system = kpp13TeV);
 
   // Track / event selection objects
   AliAODEvent *fInputEvent;                          //
@@ -325,6 +347,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   bool fIsLightweight;     //
   bool fUseFDPairCleaner;  //
   bool fUseLFFromEvtsWithPairs; //
+  bool fUsePart2Buffer; //
   UInt_t fTrigger;         //
   int fSystem;             //
 
@@ -337,6 +360,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
 
   std::map <std::pair<int, int>, TTree*> * fPairTreeSE; //!
   std::map <std::pair<int, int>, TTree*> * fPairTreeME; //!
+  std::vector<std::string> fColsToSave; //
 
   TList *fQA;                      //!
   TList *fEvtHistList;             //!
@@ -390,7 +414,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   AliRDHFCuts* fRDHFCuts;                                  // HF cut object
   int fAODProtection;                                      // flag to activate protection against AOD-dAOD mismatch.
                                                            // -1: no protection,  0: check AOD/dAOD nEvents only,  1: check AOD/dAOD nEvents + TProcessID names
-  int fMassSelectionType;			           // Switch for the D meson inv. mass selection type
+  MassSelectionType fMassSelectionType;			           // Switch for the D meson inv. mass selection type
   double fNSigmaMass;					                             // Width of the mass window
   double fNSigmaOffsetSideband;                            // Offset of the mass window from the D inv. mass peak
   double fLowerMassSelection;			                         // Lower boundary of the mass selection
@@ -422,7 +446,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto, 18)
+ClassDef(AliAnalysisTaskCharmingFemto, 20)
 };
 
 #endif

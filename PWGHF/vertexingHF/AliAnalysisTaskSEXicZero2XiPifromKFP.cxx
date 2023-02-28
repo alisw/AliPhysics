@@ -87,6 +87,7 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP() :
   AliAnalysisTaskSE(),
   fIsMC(kFALSE),
   fIsAnaOmegac0(kFALSE),
+  fIsStoreLS(kFALSE),
   fPID(0),
   fAnaCuts(0),
   fpVtx(0),
@@ -104,6 +105,8 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP() :
   fTree_Xic0MCGen(0),
   fVar_Xic0MCGen(0),
   fCounter(0),
+  fCentrality(0),
+  fNtracklets(0),
   fHistMCGen_Lambda_Pt(0),
   fHistMCGen_AntiLambda_Pt(0),
   fHistMCGen_Lambda_Pt_wYcut(0),
@@ -405,6 +408,7 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   AliAnalysisTaskSE(name),
   fIsMC(kFALSE),
   fIsAnaOmegac0(kFALSE),
+  fIsStoreLS(kFALSE),
   fPID(0),
   fAnaCuts(cuts),
   fpVtx(0),
@@ -422,6 +426,8 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   fTree_Xic0MCGen(0),
   fVar_Xic0MCGen(0),
   fCounter(0),
+  fCentrality(0),
+  fNtracklets(0),
   fHistMCGen_Lambda_Pt(0),
   fHistMCGen_AntiLambda_Pt(0),
   fHistMCGen_Lambda_Pt_wYcut(0),
@@ -1572,8 +1578,10 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
   AliAnalysisDataContainer *cont = GetOutputSlot(2)->GetContainer();
   if(cont) normName = (TString)cont->GetName();
   fCounter = new AliNormalizationCounter(normName.Data());
+  fCounter->SetStudyMultiplicity(kTRUE,1.);
   fCounter->Init();
   PostData(2, fCounter);
+
   DefineEvent();
   PostData(3, fTree_Event);  // postdata will notify the analysis manager of changes / updates to the 
 
@@ -1619,7 +1627,14 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
   if (!fpVtx) return;
   fHistEvents->Fill(2);
 
-  fCounter->StoreEvent(AODEvent,fAnaCuts,fIsMC);
+  Int_t vzeroMult=0, vzeroMultA=0, vzeroMultC=0;
+  AliAODVZERO *vzeroAOD = (AliAODVZERO*)AODEvent->GetVZEROData();
+  if (vzeroAOD) {
+    vzeroMultA = static_cast<Int_t>(vzeroAOD->GetMTotV0A());
+    vzeroMultC = static_cast<Int_t>(vzeroAOD->GetMTotV0C());
+    vzeroMult  = vzeroMultA + vzeroMultC;
+  }
+  fCounter->StoreEvent(AODEvent,fAnaCuts,fIsMC,vzeroMult); // Fill "AliNormalizationCounter" with V0A+V0C multiplicity
 
   //------------------------------------------------
   // MC analysis setting                                                                    
@@ -1680,12 +1695,13 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
   }
   fHistEvents->Fill(4);
 
-
   Bool_t IsMB = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kMB)==(AliVEvent::kMB);
   Bool_t IsSemi = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kSemiCentral)==(AliVEvent::kSemiCentral);
   Bool_t IsCent = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kCentral)==(AliVEvent::kCentral);
   Bool_t IsINT7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kINT7)==(AliVEvent::kINT7);
   Bool_t IsEMC7 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kEMC7)==(AliVEvent::kEMC7);
+  Bool_t fIsHMV0 = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kHighMultV0)==(AliVEvent::kHighMultV0);
+  Bool_t fIsHMSPD = (((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected()&AliVEvent::kHighMultSPD)==(AliVEvent::kHighMultSPD);
   if(IsMB) fHTrigger->Fill(1);
   if(IsSemi) fHTrigger->Fill(2);
   if(IsCent) fHTrigger->Fill(3);
@@ -1696,10 +1712,12 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
   if(IsMB&&IsSemi) fHTrigger->Fill(10);
   if(IsMB&&IsCent) fHTrigger->Fill(11);
   if(IsINT7&&IsEMC7) fHTrigger->Fill(12);
+  if(fIsHMV0) fHTrigger->Fill(13);
+  if(fIsHMSPD) fHTrigger->Fill(14); 
 
-//  AliCentrality *cent = AODEvent->GetCentrality();
-//  Float_t Centrality = cent->GetCentralityPercentile("V0M");
-//  fHCentrality->Fill(Centrality);
+  fNtracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
+  AliMultSelection *MultSelection = dynamic_cast<AliMultSelection*>(AODEvent->FindListObject("MultSelection"));
+  if (MultSelection) fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
 
   //------------------------------------------------
   // Check if the event has v0 candidate
@@ -2171,7 +2189,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeGenXic0(AliAODMCParticle *mcp
 {
   // Fill histograms or tree depending
 
-  for(Int_t i=0;i<8;i++){
+  for(Int_t i=0;i<6;i++){
     fVar_Xic0MCGen[i] = -9999.;
   }
 
@@ -2179,10 +2197,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeGenXic0(AliAODMCParticle *mcp
   fVar_Xic0MCGen[1] = mcpart->Pt();
   fVar_Xic0MCGen[2] = CheckOrigin;
   fVar_Xic0MCGen[3] = mcpart->GetPdgCode();
-  fVar_Xic0MCGen[4] = (fAnaCuts->GetWeightFunction())->Eval(mcpart->Pt());
-  fVar_Xic0MCGen[5] = (fAnaCuts->GetWeightFunctionUp())->Eval(mcpart->Pt());;
-  fVar_Xic0MCGen[6] = (fAnaCuts->GetWeightFunctionDw())->Eval(mcpart->Pt());;
-  fVar_Xic0MCGen[7] = MLoverP;
+  fVar_Xic0MCGen[4] = MLoverP;
+  fVar_Xic0MCGen[5] = fNtracklets;
 
   if (fWriteXic0MCGenTree) fTree_Xic0MCGen->Fill();
 
@@ -3692,11 +3708,6 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromV0(AliAODEvent *AOD
 void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *AODEvent, TClonesArray *mcArray, KFParticle PV)
 {
   // Main analysis called from "UserExec"
-    Double_t Centrality = -999.;
-    AliMultSelection *multSelection = dynamic_cast<AliMultSelection*>(AODEvent->FindListObject("MultSelection"));
-    if (multSelection) Centrality = multSelection->GetMultiplicityPercentile("V0M");
-
-    Int_t Ntracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
 
 //  std::cout.setf(std::ios::fixed);
 //  std::cout.setf(std::ios::showpoint);
@@ -3904,43 +3915,45 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
            if (fIsMC) {
              if (!fIsAnaOmegac0) lab_Xic0 = MatchToMCXic0(ptrack, ntrack, btrack, trackP[itrkBP], mcArray);
              if (fIsAnaOmegac0) lab_Xic0  = MatchToMCOmegac0(ptrack, ntrack, btrack, trackP[itrkBP], mcArray);
-             if (lab_Xic0>=0) FillTreeRecXic0FromCasc(1, kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0, Centrality, Ntracklets);
+             if (lab_Xic0>=0) FillTreeRecXic0FromCasc(1, kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0);
            }
            if (!fIsMC) {
-             FillTreeRecXic0FromCasc(1, kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0, Centrality, Ntracklets);
+             FillTreeRecXic0FromCasc(1, kfpXic0, trackP[itrkBP], kfpBP, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0);
            }
          }
          kfpXic0.Clear();
          kfpBP.Clear();
       } // Loop for first bachelor pion+
       // ----------------- Like-sign pairs -----------------
-      for (Int_t itrkBP_LS=0; itrkBP_LS<flag_trkN; itrkBP_LS++) {
-        if ( trackN[itrkBP_LS]->GetID()==ntrack->GetID() || trackN[itrkBP_LS]->GetID()==btrack->GetID() ) continue;
-        if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackN[itrkBP_LS]) ) continue;
-        KFParticle kfpBP_LS = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackN[itrkBP_LS], -211);
-        // reconstruct Xic0 bkg (Like-sign pairs)
-        KFParticle kfpXic0_LS;
-        const KFParticle *vXic0Ds_LS[2] = {&kfpBP_LS, &kfpXiMinus_m};
-        kfpXic0_LS.Construct(vXic0Ds_LS, NDaughters);
-        // chi2>0 && NDF>0
-        if ( kfpXic0_LS.GetNDF()<=0 || kfpXic0_LS.GetChi2()<=0 ) continue;
-        // Prefilter
-        if ( kfpXic0_LS.GetChi2()/kfpXic0_LS.GetNDF() >= fAnaCuts->GetKFPXic0_Chi2geoMax() ) continue;
-        if ( kfpXic0_LS.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
-        // check rapidity of Xic0
-        if ( TMath::Abs(kfpXic0_LS.GetE())<=TMath::Abs(kfpXic0_LS.GetPz()) ) continue;
-        // check covariance matrix
-        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXic0_LS) ) continue;
-        // err_massXic0 > 0
-        Float_t massXic0_LS_Rec, err_massXic0_LS;
-        kfpXic0_LS.GetMass(massXic0_LS_Rec, err_massXic0_LS);
-        if ( err_massXic0_LS<=0 ) continue;
-        if (fWriteXic0Tree) {
-          Int_t lab_Xic0_LS = -9999;
-          FillTreeRecXic0FromCasc(0, kfpXic0_LS, trackN[itrkBP_LS], kfpBP_LS, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0_LS, Centrality, Ntracklets);
+      if (fIsStoreLS) {
+        for (Int_t itrkBP_LS=0; itrkBP_LS<flag_trkN; itrkBP_LS++) {
+          if ( trackN[itrkBP_LS]->GetID()==ntrack->GetID() || trackN[itrkBP_LS]->GetID()==btrack->GetID() ) continue;
+          if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackN[itrkBP_LS]) ) continue;
+          KFParticle kfpBP_LS = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackN[itrkBP_LS], -211);
+          // reconstruct Xic0 bkg (Like-sign pairs)
+          KFParticle kfpXic0_LS;
+          const KFParticle *vXic0Ds_LS[2] = {&kfpBP_LS, &kfpXiMinus_m};
+          kfpXic0_LS.Construct(vXic0Ds_LS, NDaughters);
+          // chi2>0 && NDF>0
+          if ( kfpXic0_LS.GetNDF()<=0 || kfpXic0_LS.GetChi2()<=0 ) continue;
+          // Prefilter
+          if ( kfpXic0_LS.GetChi2()/kfpXic0_LS.GetNDF() >= fAnaCuts->GetKFPXic0_Chi2geoMax() ) continue;
+          if ( kfpXic0_LS.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
+          // check rapidity of Xic0
+          if ( TMath::Abs(kfpXic0_LS.GetE())<=TMath::Abs(kfpXic0_LS.GetPz()) ) continue;
+          // check covariance matrix
+          if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXic0_LS) ) continue;
+          // err_massXic0 > 0
+          Float_t massXic0_LS_Rec, err_massXic0_LS;
+          kfpXic0_LS.GetMass(massXic0_LS_Rec, err_massXic0_LS);
+          if ( err_massXic0_LS<=0 ) continue;
+          if (fWriteXic0Tree) {
+            Int_t lab_Xic0_LS = -9999;
+            FillTreeRecXic0FromCasc(0, kfpXic0_LS, trackN[itrkBP_LS], kfpBP_LS, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0_LS);
+          }
+          kfpXic0_LS.Clear();
+          kfpBP_LS.Clear();
         }
-        kfpXic0_LS.Clear();
-        kfpBP_LS.Clear();
       }
       kfpXiMinus_m.Clear();
       kfpXiMinus.Clear();
@@ -4065,43 +4078,45 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *A
           if (fIsMC) {
             if (!fIsAnaOmegac0) lab_AntiXic0 = MatchToMCAntiXic0(ntrack, ptrack, btrack, trackN[itrkBP], mcArray);
             if (fIsAnaOmegac0)  lab_AntiXic0 = MatchToMCAntiOmegac0(ntrack, ptrack, btrack, trackN[itrkBP], mcArray);
-            if (lab_AntiXic0>=0) FillTreeRecXic0FromCasc(1, kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0, Centrality, Ntracklets);
+            if (lab_AntiXic0>=0) FillTreeRecXic0FromCasc(1, kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0);
           }
           if (!fIsMC) {
-            FillTreeRecXic0FromCasc(1, kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0, Centrality, Ntracklets);
+            FillTreeRecXic0FromCasc(1, kfpAntiXic0, trackN[itrkBP], kfpBP, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0);
           }
         }
         kfpAntiXic0.Clear();
         kfpBP.Clear();
       } // Loop for first bachelor pion-
       // ----------------- Like-sign pairs -----------------
-      for (Int_t itrkBP_LS=0; itrkBP_LS<flag_trkP; itrkBP_LS++) {
-        if ( trackP[itrkBP_LS]->GetID()==ptrack->GetID() || trackP[itrkBP_LS]->GetID()==btrack->GetID() ) continue;
-        if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackP[itrkBP_LS]) ) continue;
-        KFParticle kfpBP_LS = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackP[itrkBP_LS], 211);
-        // reconstruct Anti-Xic0 bkg (Like-sign pairs)
-        KFParticle kfpAntiXic0_LS;
-        const KFParticle *vAntiXic0Ds_LS[2] = {&kfpBP_LS, &kfpXiPlus_m};
-        kfpAntiXic0_LS.Construct(vAntiXic0Ds_LS, NDaughters);
-        // chi2>0 && NDF>0
-        if ( kfpAntiXic0_LS.GetNDF()<=0 || kfpAntiXic0_LS.GetChi2()<=0 ) continue;
-        // Prefilter
-        if ( kfpAntiXic0_LS.GetChi2()/kfpAntiXic0_LS.GetNDF() >= fAnaCuts->GetKFPXic0_Chi2geoMax() ) continue;
-        if ( kfpAntiXic0_LS.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
-        // check rapidity of Xic0
-        if ( TMath::Abs(kfpAntiXic0_LS.GetE())<=TMath::Abs(kfpAntiXic0_LS.GetPz()) ) continue;
-        // check covariance matrix
-        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiXic0_LS) ) continue;
-        // err_massXic0 > 0
-        Float_t massAntiXic0_LS_Rec, err_massAntiXic0_LS;
-        kfpAntiXic0_LS.GetMass(massAntiXic0_LS_Rec, err_massAntiXic0_LS);
-        if ( err_massAntiXic0_LS<=0 ) continue;
-        if (fWriteXic0Tree) {
-          Int_t lab_AntiXic0_LS = -9999;
-          FillTreeRecXic0FromCasc(0, kfpAntiXic0_LS, trackP[itrkBP_LS], kfpBP_LS, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0_LS, Centrality, Ntracklets);
+      if (fIsStoreLS) {
+        for (Int_t itrkBP_LS=0; itrkBP_LS<flag_trkP; itrkBP_LS++) {
+          if ( trackP[itrkBP_LS]->GetID()==ptrack->GetID() || trackP[itrkBP_LS]->GetID()==btrack->GetID() ) continue;
+          if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackP[itrkBP_LS]) ) continue;
+          KFParticle kfpBP_LS = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackP[itrkBP_LS], 211);
+          // reconstruct Anti-Xic0 bkg (Like-sign pairs)
+          KFParticle kfpAntiXic0_LS;
+          const KFParticle *vAntiXic0Ds_LS[2] = {&kfpBP_LS, &kfpXiPlus_m};
+          kfpAntiXic0_LS.Construct(vAntiXic0Ds_LS, NDaughters);
+          // chi2>0 && NDF>0
+          if ( kfpAntiXic0_LS.GetNDF()<=0 || kfpAntiXic0_LS.GetChi2()<=0 ) continue;
+          // Prefilter
+          if ( kfpAntiXic0_LS.GetChi2()/kfpAntiXic0_LS.GetNDF() >= fAnaCuts->GetKFPXic0_Chi2geoMax() ) continue;
+          if ( kfpAntiXic0_LS.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
+          // check rapidity of Xic0
+          if ( TMath::Abs(kfpAntiXic0_LS.GetE())<=TMath::Abs(kfpAntiXic0_LS.GetPz()) ) continue;
+          // check covariance matrix
+          if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiXic0_LS) ) continue;
+          // err_massXic0 > 0
+          Float_t massAntiXic0_LS_Rec, err_massAntiXic0_LS;
+          kfpAntiXic0_LS.GetMass(massAntiXic0_LS_Rec, err_massAntiXic0_LS);
+          if ( err_massAntiXic0_LS<=0 ) continue;
+          if (fWriteXic0Tree) {
+            Int_t lab_AntiXic0_LS = -9999;
+            FillTreeRecXic0FromCasc(0, kfpAntiXic0_LS, trackP[itrkBP_LS], kfpBP_LS, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0_LS);
+          }
+          kfpAntiXic0_LS.Clear();
+          kfpBP_LS.Clear();
         }
-        kfpAntiXic0_LS.Clear();
-        kfpBP_LS.Clear();
       }
       kfpXiPlus_m.Clear();
       kfpXiPlus.Clear();
@@ -4785,7 +4800,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0 = new TTree(nameoutput, "Xic0 variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0 = new TTree(nameoutput, "Omegac0 variables tree");
-  Int_t nVar = 50;
+  Int_t nVar = 48;
   fVar_Xic0 = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -4818,7 +4833,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   fVarNames[19] = "mass_Lam"; // mass of Lambda (without mass const.)
   fVarNames[20] = "mass_Xi"; // mass of Xi (without mass const.)
   fVarNames[21] = "pt_PiFromXic0"; // pt of pion coming from Xic0
-  fVarNames[22] = "pt_Xic0"; // pt of Xic0
+  fVarNames[22] = "pt_Xic0"; // pt of Xic0 at rec. level
   fVarNames[23] = "rap_Xic0"; // rapidity of Xic0
   fVarNames[24] = "mass_Xic0"; // mass of Xic0
   fVarNames[25] = "CosThetaStar_PiFromXic0"; // CosThetaStar of pion coming from Xic0
@@ -4842,6 +4857,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
   fVarNames[42] = "ldl_Xic0"; // l/dl of Xic0
   fVarNames[43] = "ct_Xic0"; // lifetime of Xic0
   fVarNames[44] = "flag_UnlikeOrLike_Sign"; // flag of unlike sign or like sign pair
+  fVarNames[45] = "pt_Xic0_gen"; // pt of Xic0 at gen. level
   }
 
   if (fIsAnaOmegac0) {
@@ -4871,7 +4887,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
     fVarNames[19] = "mass_Lam"; // mass of Lambda (without mass const.)
     fVarNames[20] = "mass_Omega"; // mass of Omega (without mass const.)
     fVarNames[21] = "pt_PiFromOmegac0"; // pt of pion coming from Omegac0
-    fVarNames[22] = "pt_Omegac0"; // pt of Omegac0
+    fVarNames[22] = "pt_Omegac0"; // pt of Omegac0 at rec. level
     fVarNames[23] = "rap_Omegac0"; // rapidity of Omegac0
     fVarNames[24] = "mass_Omegac0"; // mass of Omegac0
     fVarNames[25] = "CosThetaStar_PiFromOmegac0"; // CosThetaStar of pion coming from Omegac0
@@ -4895,13 +4911,11 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeRecXic0()
     fVarNames[42] = "ldl_Omegac0"; // ldl of Omegac0
     fVarNames[43] = "ct_Omegac0"; // lifetime of Omegac0
     fVarNames[44] = "flag_UnlikeOrLike_Sign"; // flag of unlike sign or like sign pair
+    fVarNames[45] = "pt_Omegac0_gen"; // pt of Omegac0 at gen. level
   }
-  fVarNames[45] = "weight";
-  fVarNames[46] = "weight_up";
-  fVarNames[47] = "weight_dw";
 
-  fVarNames[48] = "Centrality";
-  fVarNames[49] = "Ntracklets";
+  fVarNames[46] = "fCentrality";
+  fVarNames[47] = "fNtracklets";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Xic0->Branch(fVarNames[ivar].Data(), &fVar_Xic0[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -4968,7 +4982,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeGenXic0()
   const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0MCGen = new TTree(nameoutput,"Xic0 MC variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0MCGen = new TTree(nameoutput,"Omegac0 MC variables tree");
-  Int_t nVar = 8;
+  Int_t nVar = 6;
   fVar_Xic0MCGen = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
   
@@ -4977,20 +4991,16 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::DefineTreeGenXic0()
     fVarNames[1] = "pt_Xic0";
     fVarNames[2] = "Source_Xic0";
     fVarNames[3] = "PDG_Xic0";
-    fVarNames[4] = "weight";
-    fVarNames[5] = "weight_up";
-    fVarNames[6] = "weight_dw";
-    fVarNames[7] = "MLoverP"; // c*(proper lifetime)
+    fVarNames[4] = "MLoverP"; // c*(proper lifetime)
+    fVarNames[5] = "fNtracklets";
   }
   if (fIsAnaOmegac0) {
     fVarNames[0] = "rap_Omegac0";
     fVarNames[1] = "pt_Omegac0";
     fVarNames[2] = "Source_Omegac0";
     fVarNames[3] = "PDG_Omegac0";
-    fVarNames[4] = "weight";
-    fVarNames[5] = "weight_up";
-    fVarNames[6] = "weight_dw";
-    fVarNames[7] = "MLoverP"; // c*(proper lifetime)
+    fVarNames[4] = "MLoverP"; // c*(proper lifetime)
+    fVarNames[5] = "fNtracklets";
   }
 
   /*
@@ -5395,10 +5405,10 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpX
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0, Double_t Centrality, Int_t Ntracklets)
+void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0)
 {
 
-  for (Int_t i=0; i<50; i++) {
+  for (Int_t i=0; i<48; i++) {
     fVar_Xic0[i] = -9999.;
   }
 
@@ -5597,9 +5607,7 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSo
       AliAODMCParticle *mcPiFromXic0 = static_cast<AliAODMCParticle*>(mcArray->At(labelPiFromXic0));
       Int_t IndexXic0 = mcPiFromXic0->GetMother();
       AliAODMCParticle *mcXic0 = static_cast<AliAODMCParticle*>(mcArray->At(IndexXic0));
-      fVar_Xic0[45] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
-      fVar_Xic0[46] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
-      fVar_Xic0[47] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
+      fVar_Xic0[45] = mcXic0->Pt();
     }
   }
 
@@ -5624,8 +5632,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSo
 
   fVar_Xic0[44] = flagUSorLS; // flag of unlike sign or like sign pair
 
-  fVar_Xic0[48] = Centrality;
-  fVar_Xic0[49] = Ntracklets; 
+  fVar_Xic0[46] = fCentrality;
+  fVar_Xic0[47] = fNtracklets; 
   fTree_Xic0->Fill();
 
 

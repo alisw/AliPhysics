@@ -78,6 +78,9 @@ void AddTask_MesonJetCorr_Calo(
   if (additionalTrainConfig.Contains("TM"))
     trackMatcherRunningMode = strTrackMatcherRunningMode.Atoi();
 
+  TString nameJetFinder = (additionalTrainConfig.Contains("JET") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET", "", addTaskName) : "";
+  printf("nameJetFinder: %s\n", nameJetFinder.Data());
+
   TObjArray* rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   if (rmaxFacPtHardSetting->GetEntries() < 1) {
     cout << "ERROR: AddTask_MesonJetCorr_pp during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl;
@@ -184,17 +187,22 @@ void AddTask_MesonJetCorr_Calo(
     cuts.AddCutCalo("00010103", "411790109fe30230000", "21631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 4) {
     cuts.AddCutCalo("0008e103", "411790109fe30230000", "2s631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, rotation back
-    cuts.AddCutCalo("0008e103", "411790109fe30230000", "21631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 5) {
     cuts.AddCutCalo("0008d103", "411790109fe30230000", "2s631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, rotation back
-    cuts.AddCutCalo("0008d103", "411790109fe30230000", "21631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 6) {
     cuts.AddCutCalo("0009c103", "411790109fe30230000", "2s631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, rotation back
-    cuts.AddCutCalo("0009c103", "411790109fe30230000", "21631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 7) {
     cuts.AddCutCalo("0009b103", "411790109fe30230000", "2s631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
-    cuts.AddCutCalo("0009b103", "411790109fe30230000", "21631034000000d0"); // v in-jet, pi0 mass: 0.1-0.15, mixed jet back
 
+  } else if (trainConfig == 14) { // same as 4 but with mixed jet back
+    cuts.AddCutCalo("0008e103", "411790109fe30230000", "21631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, mixed jet back
+  } else if (trainConfig == 15) {// same as 5 but with mixed jet back
+    cuts.AddCutCalo("0008d103", "411790109fe30230000", "21631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, mixed jet back
+  } else if (trainConfig == 16) {// same as 6 but with mixed jet back
+    cuts.AddCutCalo("0009c103", "411790109fe30230000", "21631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, mixed jet back
+  } else if (trainConfig == 17) {// same as 7 but with mixed jet back
+    cuts.AddCutCalo("0009b103", "411790109fe30230000", "21631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, mixed jet back
+   
     //---------------------------------------
     // configs for eta meson pp 13 TeV
     //---------------------------------------
@@ -307,6 +315,7 @@ void AddTask_MesonJetCorr_Calo(
 
   task->SetMesonKind(meson);
   task->SetIsCalo(true);
+  if(additionalTrainConfig.Contains("JET")){task->SetJetContainerAddName(nameJetFinder);}
   task->SetEventCutList(numberOfCuts, EventCutList);
   task->SetCaloCutList(numberOfCuts, ClusterCutList);
   task->SetMesonCutList(numberOfCuts, MesonCutList);
@@ -317,9 +326,8 @@ void AddTask_MesonJetCorr_Calo(
   task->SetUseTHnSparseForResponse(enableTHnSparse);
 
   //connect containers
-  AliAnalysisDataContainer* coutput =
-    mgr->CreateContainer(!(corrTaskSetting.CompareTo("")) ? Form("MesonJetCorrelation_Calo_%i_%i", meson, trainConfig) : Form("MesonJetCorrelation_Calo_%i_%i_%s", meson, trainConfig, corrTaskSetting.Data()), TList::Class(),
-                         AliAnalysisManager::kOutputContainer, Form("MesonJetCorrelation_Calo_%i_%i.root", meson, trainConfig));
+  TString nameContainer = Form("MesonJetCorrelation_Calo_%i_%i%s%s", meson, trainConfig, corrTaskSetting.EqualTo("") == true ? "" : Form("_%s", corrTaskSetting.Data()), nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );
+  AliAnalysisDataContainer* coutput = mgr->CreateContainer(nameContainer, TList::Class(), AliAnalysisManager::kOutputContainer, Form("MesonJetCorrelation_Calo_%i_%i.root", meson, trainConfig));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task, 0, cinput);

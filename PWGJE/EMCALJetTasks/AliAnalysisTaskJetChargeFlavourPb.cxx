@@ -51,15 +51,21 @@ AliAnalysisTaskJetChargeFlavourPb::AliAnalysisTaskJetChargeFlavourPb() :
   Phi(-999),
   Eta(-999),
   JetCharge(-999),
+  JetChargeMid(-999),
+  JetChargeHigh(-999),
   ParticlePt(-999),
   ParticlePhi(-999),
   ParticleEta(-999),
   ParticleJetCharge(-999),
+  ParticleJetChargeMid(-999),
+  ParticleJetChargeHigh(-999),
   LeadingTrackPt(-999),
   PdgCode(0),
   PtMatchedPdgCode(0),
   GeoMatchedPdgCode(0),
   ProgenetorFraction(-1),
+  nParticles(0),
+  nParticlesParticle(0),
 
 
   fTreeJets(0)
@@ -82,17 +88,21 @@ AliAnalysisTaskJetChargeFlavourPb::AliAnalysisTaskJetChargeFlavourPb(const char 
   Phi(-999),
   Eta(-999),
   JetCharge(-999),
+  JetChargeMid(-999),
+  JetChargeHigh(-999),
   ParticlePt(-999),
   ParticlePhi(-999),
   ParticleEta(-999),
   ParticleJetCharge(-999),
+  ParticleJetChargeMid(-999),
+  ParticleJetChargeHigh(-999),
   LeadingTrackPt(-999),
   PdgCode(0),
   PtMatchedPdgCode(0),
   GeoMatchedPdgCode(0),
   ProgenetorFraction(-1),
-
-
+  nParticles(0),
+  nParticlesParticle(0),
 
 
   fTreeJets(0)
@@ -131,10 +141,14 @@ AliAnalysisTaskJetChargeFlavourPb::~AliAnalysisTaskJetChargeFlavourPb()
   fTreeJets->Branch("Phi",&Phi,"Phi/F");
   fTreeJets->Branch("Eta",&Eta,"Eta/F");
   fTreeJets->Branch("JetCharge",&JetCharge,"JetCharge/F");
+  fTreeJets->Branch("JetChargeMid",&JetChargeMid,"JetChargeMid/F");
+  fTreeJets->Branch("JetChargeHigh",&JetChargeHigh,"JetChargeHigh/F");
   fTreeJets->Branch("ParticlePt",&ParticlePt,"ParticlePt/F");
   fTreeJets->Branch("ParticlePhi",&ParticlePhi,"ParticlePhi/F");
   fTreeJets->Branch("ParticleEta",&ParticleEta,"ParticleEta/F");
   fTreeJets->Branch("ParticleJetCharge",&ParticleJetCharge,"ParticleJetCharge/F");
+  fTreeJets->Branch("ParticleJetChargeMid",&ParticleJetChargeMid,"ParticleJetChargeMid/F");
+  fTreeJets->Branch("ParticleJetChargeHigh",&ParticleJetChargeHigh,"ParticleJetChargeHigh/F");
   fTreeJets->Branch("LeadingTrackPt",&LeadingTrackPt,"LeadingTrackPt/F");
   fTreeJets->Branch("PdgCode",&PdgCode,"pdgcode/I");
   fTreeJets->Branch("PtMatchedPdgCode",&PtMatchedPdgCode,"PtMatchedPdgCode/I");
@@ -142,7 +156,9 @@ AliAnalysisTaskJetChargeFlavourPb::~AliAnalysisTaskJetChargeFlavourPb()
   
   fTreeJets->Branch("ProgenetorFraction",&ProgenetorFraction,"ProgenetorFraction/F");
 
-
+  fTreeJets->Branch("nParticles",&nParticles,"nParticles/I");
+  fTreeJets->Branch("nParticlesParticle",&nParticlesParticle,"nParticlesParticle/I");
+  
 
 
 
@@ -182,27 +198,37 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
   Phi = -999;
   Eta = -999;
   JetCharge = -999;
+  JetChargeMid = -999;
+  JetChargeHigh = -999;
   ParticlePt  = -999;
   ParticlePhi = -999;
   ParticleEta = -999;
   ParticleJetCharge = -999;
+  ParticleJetChargeMid = -999;
+  ParticleJetChargeHigh = -999;
   LeadingTrackPt = -999;
   PdgCode = 0;
   PtMatchedPdgCode = 0;
   GeoMatchedPdgCode = 0;
   ProgenetorFraction = -1;
+  nParticles = 0;
+  nParticlesParticle = 0;
 
   // Initialise Jet shapes
-  Int_t fPdgCodes[100] = {};
+  Int_t fPdgCodes[500] = {};
   Int_t fCurrentPdg = 0;
   Int_t nMothers = 0;
-  Float_t jetCharge = 0;
-  Float_t jetChargeParticle = 0;
+  Double_t jetCharge = 0;
+  Double_t MidjetCharge = 0;
+  Double_t HighjetCharge = 0;
+  Double_t jetChargeParticle = 0;
+  Double_t MidjetChargeParticle = 0;
+  Double_t HighjetChargeParticle = 0;
 
-  Int_t fParticleUniqueID[100] = {};
+  Int_t fParticleUniqueID[500] = {};
   Int_t fCurrentParticleUniqueID = 0;
 
-  Double_t fMotherParticlePt[100] = {};
+  Double_t fMotherParticlePt[500] = {};
   Double_t fCurrentMotherParticlePt = {};
 
 
@@ -231,9 +257,9 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
   //cout << nAcceptedJets << endl;
 
 
-  Float_t JetPhi=0;
-  Float_t JetParticlePhi=0;
-  Float_t JetPt_ForThreshold=0;
+  Double_t JetPhi=0;
+  Double_t JetParticlePhi=0;
+  Double_t JetPt_ForThreshold=0;
 
   //cout << "Tracker 2" << endl;
 
@@ -260,6 +286,8 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
       {
         continue;
       }
+
+      nParticles = nJetConstituents;
 
       JetPt_ForThreshold = Jet1->Pt();
       //cout << "Jet Pt: " << Jet1->Pt() << endl;
@@ -312,6 +340,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
             }
 
 
+
           }
 
         }
@@ -324,6 +353,10 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
 
         if(kHasTruthJet)
         {
+          nParticlesParticle = TruthJet->GetNumberOfTracks();
+
+          //cout << "N Det:  " << nParticles << endl;
+          //cout << "N Part: " << nParticlesParticle << endl;
           //cout << "Has Truth Jet" << endl;
           //Initalise the variables for the new technique.
           //Int_t mcEntries=MCParticleCloneContainer->GetEntriesFast();
@@ -331,7 +364,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
           //cout << mcEntries << endl;
           Double_t ptpart=-1;
           Double_t dR=-99;
-          const Int_t arraySize=99;
+          const Int_t arraySize=255;
           AliAODMCParticle* CountParticle;
 
           Int_t countpart[arraySize] = {};
@@ -384,7 +417,8 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
 
                   //This should only happen if there are too many particles such that the count falls outside of the maximise size of the array
                   if (count >arraySize-1) 
-                  {
+                  { 
+                    //cout << "HEY LOOK OVER HERE THIS IS IMPORTANT HEY!!!!! " << endl << endl << endl << endl << endl << endl;
                     return 0x0; 
                   }    
                   
@@ -429,6 +463,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
 
           // For Testing Perposes.
           //PDGCode = GeoMatchedPdgCode;
+ 
 
 
           if(TruthJet->Pt()<fPtThreshold)
@@ -516,8 +551,9 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
           }
           
           //cout << "Tracker 7" << endl;
-          Int_t UniquePdgCodes[20] = {};            //To be filled, maximium is that there are  20 uniques
-          Float_t UniquePdgFrequency[20] = {};
+          //cout << nMothers << endl;
+          Int_t UniquePdgCodes[255] = {};            //To be filled, maximium is that there are  20 uniques
+          Double_t UniquePdgFrequency[255] = {};
           Int_t nUniques = 0;
           
 
@@ -559,23 +595,23 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
 
           //cout << nMothers << endl;
 
-        if(nMothers > 0)
-        {
-          for(int i = 0; i < nUniques; i++)
+          if(nMothers > 0)
           {
-            UniquePdgFrequency[i] = UniquePdgFrequency[i]/nMothers;
+            for(int i = 0; i < nUniques; i++)
+            {
+              UniquePdgFrequency[i] = UniquePdgFrequency[i]/nMothers;
+            }
           }
-        }
-        else
-        {
-          //cout << "nMothers is Zero " << endl;
-        }
+          else
+          {
+            //cout << "nMothers is Zero " << endl;
+          }
           
           
           
          // Loop to store largest number And corresponding pdg code
          
-          Float_t CurrentFraction;
+          Double_t CurrentFraction;
 
           int IndexOfMaximum = -1;
           CurrentFraction = UniquePdgFrequency[0];
@@ -598,7 +634,7 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
           
         
           Int_t IndexOfMaximumPt = 0;
-          Float_t CurrentHighestPt = 0;
+          Double_t CurrentHighestPt = 0;
 
           for(int i = 0; i < nMothers; i++) 
           {
@@ -616,34 +652,101 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
           //cout << "Tracker 9" << endl;
           // Now Caluclate the jet Charge
 
-
+          double_t DetMidPt = 0;
+          double_t DetHighPt = 0;
+          double_t PartMidPt = 0;
+          double_t PartHighPt = 0;
+          Int_t MidCount = 0;
+          Int_t HighCount = 0;
+          Int_t PartMidCount = 0;
+          Int_t PartHighCount = 0;
+          
 
           // Loop over the consituents
           for (UInt_t iJetConst = 0; iJetConst < nJetConstituents; iJetConst++ )
           {
+            
             AliVParticle *JetParticle = Jet1->Track(iJetConst);
-            jetCharge += JetParticle->Charge()*pow(JetParticle->Pt(),JetChargeK);
+            jetCharge += JetParticle->Charge()*pow(abs(JetParticle->Pt()),JetChargeK);
+            //cout << JetParticle->Pt() << endl;
+            if(JetParticle->Pt() > 0.8)
+            {
+              MidjetCharge += JetParticle->Charge()*pow(abs(JetParticle->Pt()),JetChargeK);
+              DetMidPt += JetParticle->Pt();
+              MidCount += 1;
+            }
+            if(JetParticle->Pt() > 3.0)
+            {
+              HighjetCharge += JetParticle->Charge()*pow(abs(JetParticle->Pt()),JetChargeK);
+              DetHighPt += JetParticle->Pt();
+              HighCount += 1;
+            }
           }
 
           for (UInt_t iTruthConst = 0; iTruthConst < nTruthConstituents; iTruthConst++ )
           {
             AliAODMCParticle* TruthParticle = (AliAODMCParticle*) TruthJet->Track(iTruthConst);
             //Divided by 3 since its parton level and in units of e/3
-            jetChargeParticle += (TruthParticle->Charge()/3)*pow(TruthParticle->Pt(),JetChargeK);
+            jetChargeParticle += (TruthParticle->Charge()/3)*pow(abs(TruthParticle->Pt()),JetChargeK);
+            if(TruthParticle->Pt() > 0.8)
+            {
+              MidjetChargeParticle += (TruthParticle->Charge()/3)*pow(abs(TruthParticle->Pt()),JetChargeK);
+              PartMidPt += TruthParticle->Pt();
+              PartMidCount += 1;
+            }
+            if(TruthParticle->Pt() > 3.0)
+            {
+              HighjetChargeParticle += (TruthParticle->Charge()/3)*pow(abs(TruthParticle->Pt()),JetChargeK);
+              PartHighPt += TruthParticle->Pt();
+              PartHighCount += 1;
+            }
           }
 
 
           //cout << "Det: " << Jet1->Pt() << endl;
           // Normalise the Non Flavoured Jet CHarge
-          jetCharge/=pow(Jet1->Pt(),0.5);
+          if(Jet1 != NULL)
+          {
+            jetCharge/=pow(abs(Jet1->Pt()),JetChargeK);
+            MidjetCharge/=pow(abs(DetMidPt),JetChargeK);
+            HighjetCharge/=pow(abs(DetHighPt),JetChargeK);
+          }
           //cout << "Part: " << TruthJet->Pt() << endl;
           // Normalise Particle level jet charge
-          jetChargeParticle/=pow(TruthJet->Pt(),0.5);
+          if(TruthJet != NULL)
+          {
+            jetChargeParticle/=pow(abs(TruthJet->Pt()),JetChargeK);
+            MidjetChargeParticle/=pow(abs(PartMidPt),JetChargeK);
+            HighjetChargeParticle/=pow(abs(PartHighPt),JetChargeK);
+          }
+
+                    
+          if(MidCount < 2)
+          {
+            MidjetCharge = 0;
+          }
+          if(HighCount < 2)
+          {
+            HighjetCharge = 0;
+          }          
+          if(PartMidCount < 2)
+          {
+            MidjetChargeParticle = 0;
+          }
+          if(PartHighCount < 2)
+          {
+            HighjetChargeParticle = 0;
+          }          
 
 
           //Put The Jet Charge in the right place
           JetCharge = jetCharge;
+          JetChargeMid = MidjetCharge;
+          JetChargeHigh = HighjetCharge;
           ParticleJetCharge = jetChargeParticle;
+          ParticleJetChargeMid = MidjetChargeParticle;
+          ParticleJetChargeHigh = HighjetChargeParticle;
+
 
           PdgCode = fCurrentPdg;
           //PdgCode = PtMatchedPdgCode;
@@ -692,19 +795,46 @@ Bool_t AliAnalysisTaskJetChargeFlavourPb::FillHistograms()
          
         
           cout << endl;
+    
+          for(Int_t ArrayI = 240 ; ArrayI < 255 ; ArrayI++)
+          {
+            if(countpart[ArrayI] != 0)
+            {
+              cout <<" CountPart Size " << ArrayI << " : " << countpart[ArrayI] << endl;
+            }
+            if(fPdgCodes[ArrayI] != 0)
+            {
+              cout <<" fPDGCode Size " << ArrayI << " : " << fPdgCodes[ArrayI] << endl; 
+            }
+
+            if(fParticleUniqueID[ArrayI] != 0)
+            {
+              cout <<" fParticleUniqueID Size " << ArrayI << " : " << fParticleUniqueID[ArrayI] << endl; 
+            }
+
+            if(fMotherParticlePt[ArrayI] != 0)
+            {
+              cout <<" fMotherParticlePt Size " << ArrayI << " : " << fMotherParticlePt[ArrayI] << endl; 
+            }
+            //cout <<" fPDGCode Size " << ArrayI << " : " << fPdgCodes[ArrayI] << endl; 
+            //cout <<" fParticleUniqueID Size " << ArrayI << " : " << fParticleUniqueID[ArrayI] << endl; 
+            //cout <<" fMotherParticlePt Size " << ArrayI << " : " << fMotherParticlePt[ArrayI] << endl; 
+          }
          */
          
           fTreeJets->Fill();
 
 
 
+        }
 
-      }
-
-      //cout << "End of Jet" << endl;
+        //cout << "End of Jet" << endl;
       }
     }
   }
+
+    //Array Size Checker
+
   return kTRUE;
 }
 
@@ -731,3 +861,4 @@ void AliAnalysisTaskJetChargeFlavourPb::Terminate(Option_t *)
   // Normalise historgrams over number of Jets considered
 
 }
+

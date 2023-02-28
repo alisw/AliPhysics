@@ -55,14 +55,16 @@ fTriggerMask(0),
 //AliEventCuts object
 fEventCuts(0),
 //pile-up rejection flag
-fRejectPileupEvts(kTRUE),
+fPileupCut(0),
+//Centrality estimator
+fCentEstimator(0),
 //MC-related variables
 fisMC(kFALSE),
 fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
 fV0_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-fCasc_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+fCasc_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
 //geometrical cut usage
@@ -139,6 +141,9 @@ fHist_PtBacBarCosPA(0),
 fCentLimit_BacBarCosPA(0),
 fisParametricTrackLengthCut(kFALSE),                            
 fHist_CentTrackLengthCut(0),
+fDeadZoneWidth_GeoCut(0),
+fNcrNclLength_GeoCut(0),
+fTPCsignalNCut(0),
 fncentbins(0)
 {
   //default constructor
@@ -160,14 +165,16 @@ fTriggerMask(0),
 //AliEventCuts object
 fEventCuts(0),
 //pile-up rejection flag
-fRejectPileupEvts(kTRUE),
+fPileupCut(0),
+//Centrality estimator
+fCentEstimator("V0M"),
 //MC-related variables
 fisMC(kFALSE),
 fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
 fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 125., 0.5, 0.8, 70., 0.8, 1., 2.5, 5., 20., 30., 0.},
-fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 1., 2.5, 0.005, 1., 0.99, 0.1, 0.1, 0., 0.5, 0.8, 3., 3., 3., 85., 0.2, 0.2, 1.},
+fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 1., 2.5, 0.005, 1., 0.99, 0.1, 0.1, 0., 0.5, 0.8, 3., 3., 0.008, 3., 85., 0.2, 0.2, 1.},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
 //geometrical cut usage
@@ -244,6 +251,9 @@ fHist_PtBacBarCosPA(0),
 fCentLimit_BacBarCosPA(0),
 fisParametricTrackLengthCut(kFALSE),                            
 fHist_CentTrackLengthCut(0),
+fDeadZoneWidth_GeoCut(3.),
+fNcrNclLength_GeoCut(130.),
+fTPCsignalNCut(50),
 fncentbins(0)
 {
   //setting default cuts
@@ -365,8 +375,8 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
       if (icut==kCasc_y || icut==kCasc_etaDaugh) continue;
       for (int ivar = 0; ivar<nvarcut_Casc[icut]; ivar++) {
         if (fParticleAnalysisStatus[kxip]) {
-          if(icut!=kCasc_PropLifetOm) fHistos_XiMin->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins, fcentbinning);
-          if(icut!=kCasc_PropLifetOm) fHistos_XiPlu->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins, fcentbinning);
+          if(icut!=kCasc_PropLifetOm && icut!=kCasc_CompetingXiMass) fHistos_XiMin->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins, fcentbinning);
+          if(icut!=kCasc_PropLifetOm && icut!=kCasc_CompetingXiMass) fHistos_XiPlu->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kXi], fptbinning[kXi], fnmassbins[kXi], fmassbinning[kXi], fncentbins, fcentbinning);
         }
         if (fParticleAnalysisStatus[komp]) {
           if(icut!=kCasc_PropLifetXi) fHistos_OmMin->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kOm], fptbinning[kOm], fnmassbins[kOm], fmassbinning[kOm], fncentbins, fcentbinning);
@@ -382,10 +392,11 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
   inputHandler->SetNeedField();
 
   //fEventCuts Setup
-  if (fRejectPileupEvts) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+  if (fPileupCut==1) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+  if (fPileupCut==2) fEventCuts.SetRejectTPCPileupWithV0CentTPCnTracksCorr(kTRUE);
 
   //geometrical cut Setup
-  fESDTrackCuts.SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
+  fESDTrackCuts.SetCutGeoNcrNcl(fDeadZoneWidth_GeoCut, fNcrNclLength_GeoCut, 1.5, 0.85, 0.7);
   //Output posting
   DataPosting();
 
@@ -455,7 +466,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
     DataPosting(); 
     return; 
   } else {
-    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+    lPercentile = MultSelection->GetMultiplicityPercentile(fCentEstimator);
     lEvSelCode = MultSelection->GetEvSelCode(); //==0 means event is good. Set by AliMultSelectionTask
   }
 
@@ -478,7 +489,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
   //fill number of events after pile-up rejection
   fHistos_eve->FillTH1("henum", 2.);
   
-  if (fRejectPileupEvts) {
+  if (fPileupCut) {
     if (!fEventCuts.PassedCut(AliEventCuts::kTPCPileUp)) {
       DataPosting(); 
       return;
@@ -633,7 +644,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fV0_LeastCRawsOvF = TMath::Min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
 
         //track length cut
-        fV0_TrackLengthCut = (pTrack->GetTPCsignalN()>50 && nTrack->GetTPCsignalN()>50) ? 1 : 0;
+        fV0_TrackLengthCut = (pTrack->GetTPCsignalN()>fTPCsignalNCut && nTrack->GetTPCsignalN()>fTPCsignalNCut) ? 1 : 0;
         if (fESDTrackCuts.AcceptTrack(pTrack) && fESDTrackCuts.AcceptTrack(nTrack)) fV0_TrackLengthCut = fV0_TrackLengthCut+2;
 
         //chi^2 per TPC cluster
@@ -742,7 +753,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fV0_LeastCRawsOvF = TMath::Min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
 
         //track length cut
-        fV0_TrackLengthCut = (pTrack->GetTPCsignalN()>50 && nTrack->GetTPCsignalN()>50) ? 1 : 0;
+        fV0_TrackLengthCut = (pTrack->GetTPCsignalN()>fTPCsignalNCut && nTrack->GetTPCsignalN()>fTPCsignalNCut) ? 1 : 0;
         if (fESDTrackCuts.AcceptVTrack(pTrack) && fESDTrackCuts.AcceptVTrack(nTrack)) fV0_TrackLengthCut = fV0_TrackLengthCut+2;
 
         //chi^2 per TPC cluster
@@ -885,7 +896,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fCasc_LeastCRawsOvF = lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac);
 
         //track length cut
-        fCasc_TrackLengthCut = (pTrackCasc->GetTPCsignalN()>50 && nTrackCasc->GetTPCsignalN()>50 && bTrackCasc->GetTPCsignalN()>50) ? 1 : 0;
+        fCasc_TrackLengthCut = (pTrackCasc->GetTPCsignalN()>fTPCsignalNCut && nTrackCasc->GetTPCsignalN()>fTPCsignalNCut && bTrackCasc->GetTPCsignalN()>fTPCsignalNCut) ? 1 : 0;
         if (fESDTrackCuts.AcceptTrack(pTrackCasc) && fESDTrackCuts.AcceptTrack(nTrackCasc) && fESDTrackCuts.AcceptTrack(bTrackCasc)) fCasc_TrackLengthCut = fCasc_TrackLengthCut+2;
 
         //chi^2 per TPC cluster
@@ -1021,7 +1032,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fCasc_LeastCRawsOvF = lCrosRawsOvFPos<lCrosRawsOvFNeg ? std::min(lCrosRawsOvFPos, lCrosRawsOvFBac) : std::min(lCrosRawsOvFNeg, lCrosRawsOvFBac);
 
         //track length cut
-        fCasc_TrackLengthCut = (pTrackCasc->GetTPCsignalN()>50 && nTrackCasc->GetTPCsignalN()>50 && bTrackCasc->GetTPCsignalN()>50) ? 1 : 0;
+        fCasc_TrackLengthCut = (pTrackCasc->GetTPCsignalN()>fTPCsignalNCut && nTrackCasc->GetTPCsignalN()>fTPCsignalNCut && bTrackCasc->GetTPCsignalN()>fTPCsignalNCut) ? 1 : 0;
         if (fESDTrackCuts.AcceptVTrack(pTrackCasc) && fESDTrackCuts.AcceptVTrack(nTrackCasc) && fESDTrackCuts.AcceptVTrack(bTrackCasc)) fCasc_TrackLengthCut = fCasc_TrackLengthCut+2;
 
         //chi^2 per TPC cluster
@@ -1230,6 +1241,7 @@ void AliAnalysisTaskStrVsMult::SetDefCutVariations() {
   SetCutVariation(kTRUE, kCasc_ITSTOFtracks, 4, 0, 3);
   SetCutVariation(kTRUE, kCasc_PropLifetXi, 7, 2, 5);
   SetCutVariation(kTRUE, kCasc_PropLifetOm, 7, 2, 5);
+  SetCutVariation(kTRUE, kCasc_CompetingXiMass, 5, 0.006, 0.010);
   SetCutVariation(kTRUE, kCasc_V0Rad, 11, 1., 5.);
   SetCutVariation(kTRUE, kCasc_MaxV0Rad, 5, 45., 125.);
   SetCutVariation(kTRUE, kCasc_DcaMesToPV, 11, 0.1, 0.3);
@@ -1332,6 +1344,9 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     // check candidate's proper lifetime (particle hypothesis' dependent). Remember: c*tau = L*m/p
     if((part==kxim || part==kxip) && ((1.32171*fCasc_DistOverTotP)>(4.91*cutval_Casc[kCasc_PropLifetXi]))) return kFALSE;   //4.91 is the ctau of xi in cm
     if((part==komm || part==komp) && ((1.67245*fCasc_DistOverTotP)>(2.461*cutval_Casc[kCasc_PropLifetOm]))) return kFALSE;   //2.461 is the ctau of om in cm
+    // remove Omega candidates with invariant mass close to Xi under Xi particle hypothesis
+    if((part==komm) && ((TMath::Abs(fCasc_InvMassXiMin-1.32171))<cutval_Casc[kCasc_CompetingXiMass])) return kFALSE; 
+    if((part==komp) && ((TMath::Abs(fCasc_InvMassXiPlu-1.32171))<cutval_Casc[kCasc_CompetingXiMass])) return kFALSE; 
     // check DCA bachelor-baryon. If it is too small --> bump structure in Inv Mass
     if(fCasc_BacBarCosPA>cutval_Casc[kCasc_BacBarCosPA]) return kFALSE;
     // check PID for all daughters (particle hypothesis' dependent)
@@ -1460,7 +1475,7 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc, b
           }
         }
         //Xi filling
-        if (i_cut!=kCasc_PropLifetOm) {
+        if (i_cut!=kCasc_PropLifetOm && i_cut!=kCasc_CompetingXiMass) {
           if (fParticleAnalysisStatus[kxip]) {
             SetCutVal(kFALSE, kTRUE, i_cut, varlowcut_Casc[i_cut]+i_var*(varhighcut_Casc[i_cut]-varlowcut_Casc[i_cut])/(nvarcut_Casc[i_cut]-1));
             if(phypri && associFlag[kxim] && ApplyCuts(kxim)) fHistos_XiMin->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fCasc_Pt, fCasc_InvMassXiMin, perc);

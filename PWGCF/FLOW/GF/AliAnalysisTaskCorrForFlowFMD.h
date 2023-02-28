@@ -1,5 +1,6 @@
 /**************************************************************************
- *    Author:       Zuzana Moravcova                                      *
+ *    Author:       Zuzana Moravcova
+ *    Modified by:  Debojit Sarkar                                 *
  *    Framework for calculating di-hadron correlation                     *
  *    for extraction of v_n{2} coefficients of identified particles       *
  *    including primary identified particles (pi, K, p)                   *
@@ -46,6 +47,12 @@
 #include "AliAODForwardMult.h"
 #include "AliAODVZERO.h"
 #include "AliPartSimpleForCorr.h"
+#include "AliVParticle.h"
+#include "AliVTrack.h"
+#include "AliPicoTrack.h"
+#include "TLorentzVector.h"
+
+
 
 class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 {
@@ -68,6 +75,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetColSystem(ColSystem type) { fColSystem = type; }
         void                    SetDoPID(Bool_t pid = kTRUE) { fDoPID = pid; }
         void                    SetDoV0(Bool_t v0 = kTRUE) { fDoV0 = v0; }
+	void                    SetDoPHI(Bool_t Phi = kTRUE) { fDoPHI = Phi; }
         void                    SetIsMC(Bool_t mc = kTRUE, Bool_t tpc = kTRUE, Bool_t fmd = kTRUE) { fIsMC = mc; fIsTPCgen = tpc; fIsFMDgen = fmd; }
         void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
         void                    SetUseOppositeSidesOnly(Bool_t sides = kTRUE) { fUseOppositeSidesOnly = sides; }
@@ -106,8 +114,9 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetnTPCcrossedRows(Int_t cut) { fnTPCcrossedRows = cut; }
         void                    SetMassRejWindowK0(Double_t cut) { fMassRejWindowK0 = cut; }
         void                    SetMassRejWindowLambda(Double_t cut) { fMassRejWindowLambda = cut; }
-        void                    SetK0MassRange(Double_t min, Double_t max) { fMinK0Mass = min; fMaxK0Mass = max; }
-	    void                    SetLambdaMassRange(Double_t min, Double_t max) { fMinLambdaMass = min; fMaxLambdaMass = max; }
+	void                    SetK0MassRange(Double_t min, Double_t max) { fMinK0Mass = min; fMaxK0Mass = max; }
+	void                    SetLambdaMassRange(Double_t min, Double_t max) { fMinLambdaMass = min; fMaxLambdaMass = max; }
+
 
         // correlation related
         void                    SetPtRangeTrig(Double_t min, Double_t max) {fPtMinTrig = min; fPtMaxTrig = max; }
@@ -144,6 +153,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 
         Int_t                   IdentifyTrack(const AliAODTrack* track) const; // PID
         void                    PrepareV0(); // V0
+	void                    PreparePhi(); // Phi
         Bool_t                  IsV0(const AliAODv0* v0) const; // V0s selection
         Bool_t                  IsK0s(const AliAODv0* v0) const;
         Bool_t                  IsLambda(const AliAODv0* v0) const;
@@ -162,7 +172,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         AliAODEvent*            fAOD;           //! input event
         TList*                  fOutputListCharged;    //! output list
         TList*                  fInputListEfficiency;    //! input list
-        TObjArray*              fTracksTrig[6]; //!
+        TObjArray*              fTracksTrig[7]; //!
+	TObjArray*              fTracksTrig_Kaon_Phi; //!
         TObjArray*              fTracksAss; //!
         AliPIDResponse*         fPIDResponse; //! AliPIDResponse container
         AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
@@ -170,16 +181,20 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         //output histograms
         TH1D*                   fhEventCounter; //!
         TH1D*                   fhEventMultiplicity; //!
-        AliTHn*                 fhTrigTracks[6]; //!
-        AliTHn*                 fhSE[6]; //!
-        AliTHn*                 fhME[6]; //!
+        AliTHn*                 fhTrigTracks[7]; //!
+        AliTHn*                 fhSE[7]; //!
+        AliTHn*                 fhME[7]; //!
         TH2D*                   fhEfficiency[6]; //! not eta dependent
         TH2D*                   fhEfficiencyEta[6][8]; //! eta dependent (8 sectors)
         TH2D*                   fHistFMDeta; //! vs PVz
-        TH1D*                   fhV0Counter[2]; //!
+        TH1D*                   fhV0Counter[3]; //!
+        TH1D*                   fhK0sphi; //!
+	TH1D*                   fhLambdaphi; //!
+	TH1D*                   fhPhiphi; //!	   		
         TH1D*                   fhCentCalib; //!
-        TH1D*                   fhPT[6]; //!
-        TH2D*                   fhPTvsMinv[2]; //!
+        TH1D*                   fhPT[7]; //!
+        TH2D*                   fhPTvsMinv[3]; //!
+	TH2D*                   fhPTvsMinv_Phi_LS; //!
         TH2D*                   fh2FMDvsV0[4]; //!
 
         //event and track selection
@@ -192,6 +207,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  fIsHMpp; // [kFALSE]
         Bool_t                  fDoPID; // [kFALSE]
         Bool_t                  fDoV0; // [kFALSE]
+	Bool_t                  fDoPHI; // [kFALSE]
         Bool_t                  fUseNch; // [kFALSE]
         Bool_t                  fUseEfficiency; // [kFALSE]
         Bool_t                  fUseFMDcut; // [kTRUE]
@@ -257,10 +273,15 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fSigmaTPC; // [3.0]
         Double_t                fMassRejWindowK0; // [0.005]
         Double_t                fMassRejWindowLambda; // [0.01]
-        Double_t                fMinK0Mass; // [0.44]
+	
+	Double_t                fMinK0Mass; // [0.44]
         Double_t                fMaxK0Mass; // [0.56]
         Double_t                fMinLambdaMass; // [1.08]
         Double_t                fMaxLambdaMass; // [1.15]
+	Double_t                fMinPhiMass; // [0.99]
+        Double_t                fMaxPhiMass; // [1.07]
+
+
         Double_t                fJetParticleLowPt; // [5.]
         TString                 fCentEstimator; //"V0M"
         TString                 fSystematicsFlag; // ""
@@ -276,7 +297,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         std::vector<Double_t>   fCentBins;
         Double_t                fMergingCut; // [0.02] cut for track spliting/merging
 
-        ClassDef(AliAnalysisTaskCorrForFlowFMD, 17);
+        ClassDef(AliAnalysisTaskCorrForFlowFMD, 18);
 };
 
 #endif

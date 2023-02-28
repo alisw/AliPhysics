@@ -449,7 +449,6 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePPB5TeV2013(){
   eg2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaLowPatch);
   eg2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
   eg2cuts->SetUseRecalcPatches(true);
-  eg2cuts->SetUseSimpleOfflinePatches(true);
   eg2cuts->SetThreshold(89);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EG2", eg2cuts));
 
@@ -569,7 +568,6 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP2016(){
   eg2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaLowPatch);
   eg2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
   eg2cuts->SetUseRecalcPatches(true);
-  eg2cuts->SetUseSimpleOfflinePatches(true);
   eg2cuts->SetThreshold(51);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EG2", eg2cuts));
 
@@ -721,7 +719,6 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePPB5TeV2016(){
   eg2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaLowPatch);
   eg2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
   eg2cuts->SetUseRecalcPatches(true);
-  eg2cuts->SetUseSimpleOfflinePatches(true);
   eg2cuts->SetThreshold(83);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EG2", eg2cuts));
 
@@ -872,7 +869,6 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePPB8TeV2016(){
   eg2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaLowPatch);
   eg2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
   eg2cuts->SetUseRecalcPatches(true);
-  eg2cuts->SetUseSimpleOfflinePatches(true);
   eg2cuts->SetThreshold(70);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EG2", eg2cuts));
 
@@ -1024,7 +1020,6 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP5TeV2017(){
   eg2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaLowPatch);
   eg2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
   eg2cuts->SetUseRecalcPatches(true);
-  eg2cuts->SetUseSimpleOfflinePatches(true);
   eg2cuts->SetThreshold(51);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EG2", eg2cuts));
 
@@ -1240,7 +1235,6 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigurePBPB2018(){
   eg2cuts->SetPatchType(AliEmcalTriggerSelectionCuts::kL1GammaLowPatch);
   eg2cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kADC);
   eg2cuts->SetUseRecalcPatches(true);
-  eg2cuts->SetUseSimpleOfflinePatches(true);
   eg2cuts->SetThreshold(64);
   eg2cuts->SetSubtractRho(true, AliEmcalTriggerSelectionCuts::kOnlineRho);
   this->AddTriggerSelection(new AliEmcalTriggerSelection("EG2", eg2cuts));

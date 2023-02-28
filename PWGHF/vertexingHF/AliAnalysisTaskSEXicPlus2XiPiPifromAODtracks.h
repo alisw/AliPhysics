@@ -146,6 +146,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   THnSparse*  fSparseXicMass;       //!<! xic sparse to study cut variation
   
   TH3F*  fHistoMCSpectrumAccXic;    //!<! Spectrum of generated particles
+  TH3F*  fHistoMCSpectrumAccXic_HM;	// jcho, Spectrum of generated particles only from the HM triggered events
 
   TH1F*	 fHistoMCSpectrum_1;		// jcho, generated Xic pT spectrum
   TH1F*  fHistoMCSpectrum_2;		// jcho, generated Xic pT spectrum
@@ -232,7 +233,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F* fCentralityOfEvt; //jcho 
 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,16); /// class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,17); /// class for Xic->Xipipi
   /// \endcond
 };
 #endif

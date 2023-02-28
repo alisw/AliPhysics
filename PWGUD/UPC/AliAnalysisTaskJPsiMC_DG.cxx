@@ -234,7 +234,14 @@ void AliAnalysisTaskJPsiMC_DG::UserCreateOutputObjects()
     fTreeJPsiMCRec->Branch("fPtGen", &fPtGen, "fPtGen/D");
     fTreeJPsiMCRec->Branch("fMGen", &fMGen, "fMGen/D");
     fTreeJPsiMCRec->Branch("fYGen", &fYGen, "fYGen/D");
-    fTreeJPsiMCRec->Branch("fPhiGen", &fPhiGen, "fPhiGen/D");    
+    fTreeJPsiMCRec->Branch("fPhiGen", &fPhiGen, "fPhiGen/D");  
+    // Two tracks, MC gen:
+    fTreeJPsiMCRec->Branch("fPt1Gen", &fPt1Gen, "fPt1Gen/D");
+    fTreeJPsiMCRec->Branch("fPt2Gen", &fPt2Gen, "fPt2Gen/D");
+    fTreeJPsiMCRec->Branch("fEta1Gen", &fEta1Gen, "fEta1Gen/D");
+    fTreeJPsiMCRec->Branch("fEta2Gen", &fEta2Gen, "fEta2Gen/D");
+    fTreeJPsiMCRec->Branch("fPhi1Gen", &fPhi1Gen, "fPhi1Gen/D");
+    fTreeJPsiMCRec->Branch("fPhi2Gen", &fPhi2Gen, "fPhi2Gen/D");
 
     PostData(1, fTreeJPsiMCRec);
 
@@ -319,6 +326,31 @@ void AliAnalysisTaskJPsiMC_DG::TrkTrkKinematics(Int_t *fIndicesOfGoodTrks, Doubl
     fPhi2 = trk2->Phi();
     fQ1 = trk1->Charge(); 
     fQ2 = trk2->Charge();
+    
+    fPt1Gen = -999; 
+    fEta1Gen = -999;
+    fPhi1Gen = -999;
+    fPt2Gen = -999; 
+    fEta2Gen = -999;
+    fPhi2Gen = -999;
+	
+   if(trk1->GetLabel() >= 0){
+     AliMCEvent *mc = MCEvent();
+     if(!mc) return;
+     AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(trk1->GetLabel());
+     fPt1Gen = mcPart->Pt(); 
+     fEta1Gen = mcPart->Eta();
+     fPhi1Gen = mcPart->Phi();
+     }	
+	
+  if(trk2->GetLabel() >= 0){
+     AliMCEvent *mc = MCEvent();
+     if(!mc) return;
+     AliMCParticle *mcPart = (AliMCParticle*) mc->GetTrack(trk2->GetLabel());
+     fPt2Gen = mcPart->Pt(); 
+     fEta2Gen = mcPart->Eta();
+     fPhi2Gen = mcPart->Phi();
+     }	
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJPsiMC_DG::UserExec(Option_t *)

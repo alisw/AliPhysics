@@ -84,6 +84,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(): AliAnalysisTaskSE(),
   fMesonCutArray(NULL),
   fClusterCutArray(NULL),
   fConvJetReader(NULL),
+  fAddNameConvJet("Jet"),
   fDoJetAnalysis(kFALSE),
   fDoIsolatedAnalysis(kFALSE),
   fDoHighPtHadronAnalysis(kFALSE),
@@ -408,6 +409,7 @@ AliAnalysisTaskGammaConvV1::AliAnalysisTaskGammaConvV1(const char *name):
   fMesonCutArray(NULL),
   fClusterCutArray(NULL),
   fConvJetReader(NULL),
+  fAddNameConvJet("Jet"),
   fDoJetAnalysis(kFALSE),
   fDoIsolatedAnalysis(kFALSE),
   fDoHighPtHadronAnalysis(kFALSE),
@@ -842,8 +844,8 @@ void AliAnalysisTaskGammaConvV1::UserCreateOutputObjects(){
   if( ((AliConversionMesonCuts*)fMesonCutArray->At(0))->DoHighPtHadronAnalysis()) fDoHighPtHadronAnalysis = kTRUE;
 
   if(fDoJetAnalysis){
-    fConvJetReader=(AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskConvJet");
-    if(!fConvJetReader){printf("Error: No AliAnalysisTaskConvJet");return;} // GetV0Reader
+    fConvJetReader=(AliAnalysisTaskConvJet*)AliAnalysisManager::GetAnalysisManager()->GetTask(Form("AliAnalysisTaskConvJet%s", fAddNameConvJet.EqualTo("") == true ? "" : Form("_%s",fAddNameConvJet.Data())));
+    if(!fConvJetReader){printf(Form("ERROR: No AliAnalysisTaskConvJet%s", fAddNameConvJet.EqualTo("") == true ? "" : Form("_%s",fAddNameConvJet.Data())));return;} // GetV0Reader
   }
 
   // Set dimenstions for THnSparse
@@ -2533,24 +2535,20 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
 
     if(fDoJetAnalysis) InitJets(); // has to be called before MC particles are processed
 
-    if(eventNotAccepted){
+    if(eventNotAccepted!= 0){
       // cout << "event rejected due to wrong trigger: " <<eventNotAccepted << endl;
       fHistoNEvents[iCut]->Fill(eventNotAccepted,fWeightJetJetMC); // Check Centrality, PileUp, SDD and V0AND --> Not Accepted => eventQuality = 1
       if( fIsMC > 1 ) fHistoNEventsWOWeight[iCut]->Fill(eventNotAccepted);
       if(fDoCentralityFlat > 0) fHistoNEventsWeighted[iCut]->Fill(eventNotAccepted, fWeightCentrality[iCut]*fWeightJetJetMC);
 
-      if (eventNotAccepted==3 && fIsMC > 0){
-        if(fInputEvent->IsA()==AliESDEvent::Class())
-          ProcessMCParticles(1);
-        if(fInputEvent->IsA()==AliAODEvent::Class())
-          ProcessAODMCParticles(1);
-      } else if (eventNotAccepted==5 && fIsMC > 0){
-        if(fInputEvent->IsA()==AliESDEvent::Class())
-          ProcessMCParticles(2);
-        if(fInputEvent->IsA()==AliAODEvent::Class())
-          ProcessAODMCParticles(2);
+      if(fIsMC > 0){
+        if( eventNotAccepted == 3 && (eventQuality == 0 || eventQuality == 3 || eventQuality == 5)){ // wrong trigger selected. However, we still want to count the MC particles fot these events! If MC particles should be rejected in addition, use IsMCTriggerSelected function
+          if(fInputEvent->IsA()==AliESDEvent::Class())
+            ProcessMCParticles(1);
+          if(fInputEvent->IsA()==AliAODEvent::Class())
+            ProcessAODMCParticles(1);
+        }
       }
-
       continue;
     }
 
@@ -2560,15 +2558,14 @@ void AliAnalysisTaskGammaConvV1::UserExec(Option_t *)
       if( fIsMC > 1 ) fHistoNEventsWOWeight[iCut]->Fill(eventQuality);
       if(fDoCentralityFlat > 0) fHistoNEventsWeighted[iCut]->Fill(eventQuality, fWeightCentrality[iCut]*fWeightJetJetMC);
 
-      if(eventQuality == 5){ // event not accepted due to no vertex
-        if(fIsMC > 0){
+      if(fIsMC > 0){
+        if(eventQuality == 3 || eventQuality == 5){  // 3 = wrong trigger, 5 = GetNumberOfContributorsVtx
           if(fInputEvent->IsA()==AliESDEvent::Class())
             ProcessMCParticles(2);
           if(fInputEvent->IsA()==AliAODEvent::Class())
             ProcessAODMCParticles(2);
         }
       }
-
       continue;
     }
 

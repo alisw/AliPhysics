@@ -26,8 +26,39 @@ AliAnalysisTaskJetQnVectors* AddTaskJEQnVectors(TString taskname = "JetQnVectors
         return NULL;
     }
 
+		//========= Downloading calibration files
+		// Download AODfileName1 to local directory
+		// Download AODfileName2 to local directory
+
+		printf("AddTaskJEQnVectors.C: Copying file from %s\n",AODBfileName1.Data());
+		gSystem->Exec(Form("alien_cp %s file:.",AODBfileName1.Data()));
+		printf("AddTaskJEQnVectors.C: Copying file from %s\n",AODBfileName2.Data());
+		gSystem->Exec(Form("alien_cp %s file:.",AODBfileName2.Data()));
+
+		// temp
+		int iDirLastIndex1=AODBfileName1.Last('/');
+		int iDirLastIndex2=AODBfileName2.Last('/');
+
+		TString fAODBfileName1_Local = AODBfileName1(1+iDirLastIndex1,AODBfileName1.Length()-iDirLastIndex1-1);
+		TString fAODBfileName2_Local = AODBfileName2(1+iDirLastIndex2,AODBfileName2.Length()-iDirLastIndex2-1);
+
+
+		printf("AddTaskJEQnVectors.C: local OADB filename1 = %s\n",fAODBfileName1_Local.Data());
+		printf("AddTaskJEQnVectors.C: local OADB filename2 = %s\n",fAODBfileName1_Local.Data());
+		// debug
+		cout<<"Trying to load files "<<fAODBfileName1_Local<<" and "<<fAODBfileName2_Local<<endl;
+
+		TFile * fAODBfile1 = TFile::Open(fAODBfileName1_Local);
+		TFile * fAODBfile2 = TFile::Open(fAODBfileName2_Local);
+		if (fAODBfile1 && fAODBfile2) {
+			printf("Successfully loaded files %s and %s\n",fAODBfileName1_Local.Data(),fAODBfileName2_Local.Data());
+		} else {
+			::Error("AliAnalysisTaskJetQnVectors","Failed to load files %s and/or %s.",fAODBfileName1_Local.Data(),fAODBfileName2_Local.Data());
+		}
+
     //========= Add task for standard analysis to the ANALYSIS manager ====
-    AliAnalysisTaskJetQnVectors *task = new AliAnalysisTaskJetQnVectors(taskname.Data(),harmonic,calibType,AODBfileName1,AODBfileName2);
+    AliAnalysisTaskJetQnVectors *task = new AliAnalysisTaskJetQnVectors(taskname.Data(),harmonic,calibType,fAODBfileName1_Local,fAODBfileName2_Local);
+    //AliAnalysisTaskJetQnVectors *task = new AliAnalysisTaskJetQnVectors(taskname.Data(),harmonic,calibType,AODBfileName1,AODBfileName2);
     task->SetNormalisationMethod(normmethod);
     if(qnSplineFileName1!="") task->LoadSplinesForqnPercentile(qnSplineFileName1);
     if(qnSplineFileName2!="") task->LoadSplinesForqnPercentile(qnSplineFileName2);
@@ -52,6 +83,9 @@ AliAnalysisTaskJetQnVectors* AddTaskJEQnVectors(TString taskname = "JetQnVectors
         coutputQvecdistr[1] = mgr->CreateContainer("coutputQnVectorTenderQvecDistrPosEta", TH2F::Class(),AliAnalysisManager::kOutputContainer,Form("%sPhiDistr",outputfile.Data()));
         coutputQvecdistr[2] = mgr->CreateContainer("coutputQnVectorTenderQvecDistrNegEta", TH2F::Class(),AliAnalysisManager::kOutputContainer,Form("%sPhiDistr",outputfile.Data()));
     }
+
+		// Adding the calibration files
+		task->CreateQnVectorHandlers();
 
     //connect containers
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());

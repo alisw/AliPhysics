@@ -135,6 +135,8 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
   fHistImpParXYPtMulTPCselSPDanyPrim{nullptr},
   fHistImpParXYPtMulTPCselSPDanySecDec{nullptr},
   fHistImpParXYPtMulTPCselSPDanySecMat{nullptr},
+  fHistTOFMismProb{nullptr},
+  fHistnSigmaPionTOFVsSel{nullptr},
   fHistGenK0s{nullptr},
   fHistInvMassK0s{nullptr},
   fHistInvMassLambda{nullptr},
@@ -222,6 +224,14 @@ AliAnalysisTaskCheckAODTracks::AliAnalysisTaskCheckAODTracks() :
     fHistChi2TPCConstrVsGlobPtFiltBit[jb]=0x0;
     fHistSig1ptCovMatPtFiltBit[jb]=0x0;
   }
+  for (int iS = 0; iS < AliPID::kSPECIESC;++iS) {
+    fHistPtResidVsPtTPCsel[iS]=0x0;
+    fHistPtResidVsPtTPCselITSref[iS]=0x0;
+    fHistOneOverPtResidVsPtTPCsel[iS]=0x0;
+    fHistOneOverPtResidVsPtTPCselITSref[iS]=0x0;
+    fHistnSigmadEdxTPCVsP[iS]=0x0;
+    fHistnSigmaTOFVsP[iS]=0x0;
+  }
   fV0CutArray[0]=0.;
   fV0CutArray[1]=99999.;
   fV0CutArray[2]=-1.;
@@ -304,6 +314,8 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
       delete fHistPtResidVsPtTPCselITSref[iS];
       delete fHistOneOverPtResidVsPtTPCsel[iS];
       delete fHistOneOverPtResidVsPtTPCselITSref[iS];
+      delete fHistnSigmadEdxTPCVsP[iS];
+      delete fHistnSigmaTOFVsP[iS];
     }
     delete fHistPzResidVsPtTPCselAll;
     delete fHistPzResidVsPtTPCselITSrefAll;
@@ -316,6 +328,8 @@ AliAnalysisTaskCheckAODTracks::~AliAnalysisTaskCheckAODTracks(){
     delete fHistImpParXYPtMulTPCselSPDanyPrim;
     delete fHistImpParXYPtMulTPCselSPDanySecDec;
     delete fHistImpParXYPtMulTPCselSPDanySecMat;
+    delete fHistTOFMismProb;
+    delete fHistnSigmaPionTOFVsSel;
     delete fHistGenK0s;
     delete fHistInvMassK0s;
     delete fHistInvMassLambda;
@@ -663,7 +677,21 @@ void AliAnalysisTaskCheckAODTracks::UserCreateOutputObjects() {
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanyPrim);
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecDec);
   fOutput->Add(fHistImpParXYPtMulTPCselSPDanySecMat);
-
+  for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++){
+    fHistnSigmadEdxTPCVsP[jsp] = new TH2F(Form("hnSigmadEdxTPCVsP%s",AliPID::ParticleShortName(jsp)),Form("  ; p_{TPC} (GeV/c) ; n#sigma_{TPC}(%s)",AliPID::ParticleShortName(jsp)),100,0.,5.,200,-10.,10.);
+    fHistnSigmaTOFVsP[jsp] = new TH2F(Form("hnSigmaTOFVsP%s",AliPID::ParticleShortName(jsp)),Form("  ; p (GeV/c) ; n#sigma_{TOF}(%s)",AliPID::ParticleLatexName(jsp)),100,0.,5.,200,-10.,10.);
+    fOutput->Add(fHistnSigmadEdxTPCVsP[jsp]);
+    fOutput->Add(fHistnSigmaTOFVsP[jsp]);
+  }
+  fHistTOFMismProb = new TH1F("hTOFMismProb"," ; TOF mismatch prob",100,0.,1.01);
+  fHistnSigmaPionTOFVsSel= new TH2F("hnSigmaPionTOFVsSel"," ; ; n#sigma_{TOF}(#pi)",4,-0.5,3.5,2000,-1000.,1000.);
+  fHistnSigmaPionTOFVsSel->GetXaxis()->SetBinLabel(1,"!kDetPidOk");
+  fHistnSigmaPionTOFVsSel->GetXaxis()->SetBinLabel(2,"kDetPidOk");
+  fHistnSigmaPionTOFVsSel->GetXaxis()->SetBinLabel(3,"p(mism)>0.01");
+  fHistnSigmaPionTOFVsSel->GetXaxis()->SetBinLabel(4,"p(mism)<0.01");
+  fOutput->Add(fHistTOFMismProb);
+  fOutput->Add(fHistnSigmaPionTOFVsSel);
+  
   fHistGenK0s = new TH2F("hGenK0s"," ; p_{T} ; y",200,0.,10.,20,-1.,1.);
   fHistInvMassK0s = new TH3F("hInvMassK0s"," ; Inv.Mass (GeV/c^{2}) ; p_{T}(K0s) ; R (cm)",200,0.4,0.6,50,0.,10.,50,0.,50.);
   fHistInvMassLambda = new TH3F("hInvMassLambda"," ;Inv.Mass (GeV/c^{2}) ; p_{T}(#Lambda) ; R (cm)",200,1.0,1.2,50,0.,10.,50,0.,50.);
@@ -920,6 +948,8 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
 
     Int_t chtrack=track->Charge();
     Double_t pttrack=track->Pt();
+    Double_t momtrack=track->P();
+    Double_t momtrackTPC=track->GetTPCmomentum();
     Double_t etatrack=track->Eta();
     Double_t phitrack=track->Phi();
     fTreeVarFloat[3]=track->Px();
@@ -1005,6 +1035,7 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
         }
       }
     }
+
     fTreeVarFloat[15]=dedx;
     fTreeVarFloat[16]=nSigmaTPC[0];
     fTreeVarFloat[17]=nSigmaTPC[2];
@@ -1111,6 +1142,25 @@ void AliAnalysisTaskCheckAODTracks::UserExec(Option_t *)
         fHistTPCchi2PerClusPhiPtTPCselSPDany->Fill(chi2clus,pttrack,phitrack);
         fHistSig1ptCovMatPhiPtTPCselSPDany->Fill(curvrelerr,pttrack,phitrack);
       }
+    }
+
+    Double_t nSigmaTOF[AliPID::kSPECIESC];
+    for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++) nSigmaTOF[jsp]=-999.;
+    if(pidResp){
+      for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++) nSigmaTOF[jsp]=pidResp->NumberOfSigmasTOF(track,(AliPID::EParticleType)jsp);
+      AliPIDResponse::EDetPidStatus status = pidResp->CheckPIDStatus(AliPIDResponse::kTOF,track);
+      if (status != AliPIDResponse::kDetPidOk) fHistnSigmaPionTOFVsSel->Fill(0.,nSigmaTOF[AliPID::kPion]);
+      else{
+	fHistnSigmaPionTOFVsSel->Fill(1.,nSigmaTOF[AliPID::kPion]);
+	Float_t probMis = pidResp->GetTOFMismatchProbability(track);
+	fHistTOFMismProb->Fill(probMis);
+	if(probMis > 0.01) fHistnSigmaPionTOFVsSel->Fill(2.,nSigmaTOF[AliPID::kPion]);
+	else{
+	  fHistnSigmaPionTOFVsSel->Fill(3.,nSigmaTOF[AliPID::kPion]);
+	  for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++) fHistnSigmaTOFVsP[jsp]->Fill(momtrack,nSigmaTOF[jsp]);
+	}
+      }
+      for(Int_t jsp=0; jsp<AliPID::kSPECIESC; jsp++) fHistnSigmadEdxTPCVsP[jsp]->Fill(momtrackTPC,nSigmaTPC[jsp]);
     }
 
     bool pid[AliPID::kSPECIESC] = {false};

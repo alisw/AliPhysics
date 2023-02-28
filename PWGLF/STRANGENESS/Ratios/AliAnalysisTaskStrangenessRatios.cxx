@@ -25,7 +25,6 @@ using std::string;
 #include "AliPIDResponse.h"
 #include "AliAODEvent.h"
 #include "AliVEventHandler.h"
-#include "AliVTrack.h"
 #include "AliAODMCHeader.h"
 #include "AliAnalysisUtils.h"
 
@@ -41,6 +40,8 @@ namespace
     return x * x;
   }
 
+  constexpr int kK0sPdg{310};
+  constexpr double kK0sMass{0.497611};
   constexpr int kLambdaPdg{3122};
   constexpr double kLambdaMass{1.115683};
   constexpr int kXiPdg{3312};
@@ -83,6 +84,7 @@ AliAnalysisTaskStrangenessRatios::AliAnalysisTaskStrangenessRatios(bool isMC, TS
   DefineOutput(2, TTree::Class());
   DefineOutput(3, TTree::Class());
   DefineOutput(4, TTree::Class());
+  DefineOutput(5, TTree::Class());
 }
 
 /// Standard destructor
@@ -101,6 +103,7 @@ AliAnalysisTaskStrangenessRatios::~AliAnalysisTaskStrangenessRatios()
   {
     delete fRecCascade;
     delete fRecLambda;
+    delete fRecK0s;
     delete fRecLambdaBDTOut;
   }
 }
@@ -116,22 +119,26 @@ void AliAnalysisTaskStrangenessRatios::UserCreateOutputObjects()
   fEventCut.AddQAplotsToList(fList);
   fRecCascade = fMC ? &fGenCascade : new MiniCascade;
   fRecLambda = fMC ? &fGenLambda : new MiniLambda;
+  fRecK0s = fMC ? &fGenK0s : new MiniK0s;
   fRecLambdaBDTOut = new MiniLambdaBDTOut;
 
   OpenFile(2);
   fTree = new TTree("XiOmegaTree", "Xi and Omega Tree");
   fTreeLambda = new TTree("LambdaTree", "Lambda");
   fTreeLambdaBDTOut = new TTree("LambdaTreeBDTOut", "LambdaBDT");
+  fTreeK0s = new TTree("K0sTree", "K0s");
   if (fMC)
   {
     fTree->Branch("MiniCascadeMC", &fGenCascade);
     fTreeLambda->Branch("MiniLambdaMC", &fGenLambda);
+    fTreeK0s->Branch("MiniK0sMC", &fGenK0s);
     fMCEvent = MCEvent();
   }
   else
   {
     fTree->Branch("MiniCascade", fRecCascade);
     fTreeLambda->Branch("MiniLambda", fRecLambda);
+    fTreeK0s->Branch("MiniK0s", fRecK0s);
     fTreeLambdaBDTOut->Branch("MiniLambdaBDTOut", fRecLambdaBDTOut);
   }
 
@@ -177,7 +184,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
 
   double rdmState{gRandom->Uniform()};
 
-  std::vector<int> checkedLabel, checkedLambdaLabel;
+  std::vector<int> checkedLabel, checkedLambdaLabel, checkedK0sLabel;
 
   if (fFillCascades)
   {
@@ -401,6 +408,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         if (lambda && labMothNeg == labMothPos && std::abs(lambda->GetPdgCode()) == kLambdaPdg)
         {
           lambdaLabel = labMothNeg;
+          fGenLambda.magFieldPolarity = bField > 0.;
           fGenLambda.pdg = lambda->GetPdgCode();
           fGenLambda.ptMC = lambda->Pt();
           fGenLambda.etaMC = lambda->Eta();
@@ -453,11 +461,11 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       //crossed raws
       double lCrosRawsPos = pTrack->GetTPCClusterInfo(2, 1);
       double lCrosRawsNeg = nTrack->GetTPCClusterInfo(2, 1);
-      fLambdaLeastCRaws = std::min(lCrosRawsPos, lCrosRawsNeg);
+      fV0LeastCRaws = std::min(lCrosRawsPos, lCrosRawsNeg);
       //crossed raws / Findable clusters
       double lCrosRawsOvFPos = lCrosRawsPos / ((double)(pTrack->GetTPCNclsF()));
       double lCrosRawsOvFNeg = lCrosRawsNeg / ((double)(nTrack->GetTPCNclsF()));
-      fLambdaLeastCRawsOvF = std::min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
+      fV0LeastCRawsOvF = std::min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
 
       if (IsTopolSelectedLambda())
       {
@@ -499,7 +507,114 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
     }
   }
 
-  if (fMC && (fFillCascades||fFillLambdas))
+  if (fFillK0s && rdmState < fK0sDownscaling)
+  {
+    fGenK0s.isReconstructed = true;
+    for (int iV0{0}; iV0 < ev->GetNumberOfV0s(); ++iV0)
+    {
+      AliAODv0 *v0{ev->GetV0(iV0)};
+      if (!v0)
+        continue;
+      if (v0->GetOnFlyStatus() != fUseOnTheFly)
+        continue;
+
+      fRecK0s->centrality = fEventCut.GetCentrality();
+      fRecK0s->radius = v0->RadiusSecVtx();
+
+      //get daughter tracks (positive, negative and bachelor)
+      AliAODTrack *pTrack = dynamic_cast<AliAODTrack *>(v0->GetDaughter(0));
+      AliAODTrack *nTrack = dynamic_cast<AliAODTrack *>(v0->GetDaughter(1));
+      if (!pTrack || !nTrack)
+      {
+        AliWarning("ERROR: Could not retrieve one of the 2 AOD daughter tracks of the K0ss ...\n");
+        continue;
+      }
+
+      if (!(pTrack->GetStatus() & AliVTrack::kTPCrefit) || !(nTrack->GetStatus() & AliVTrack::kTPCrefit) ||
+          pTrack->GetTPCsignalN() < 50 || nTrack->GetTPCsignalN() < 50 ||
+          std::abs(pTrack->Eta()) > 0.8 || std::abs(nTrack->Eta()) > 0.8 ||
+          pTrack->Chi2perNDF() > 4 || nTrack->Chi2perNDF() > 4)
+      {
+        continue;
+      }
+
+      int K0sLabel{-1};
+      if (fMC)
+      {
+        auto posPart = (AliAODMCParticle *)fMCEvent->GetTrack(std::abs(pTrack->GetLabel()));
+        auto negPart = (AliAODMCParticle *)fMCEvent->GetTrack(std::abs(nTrack->GetLabel()));
+        // Check K0s
+        int labMothPos = posPart->GetMother();
+        int labMothNeg = negPart->GetMother();
+        auto K0s = (AliAODMCParticle *)fMCEvent->GetTrack(labMothNeg);
+        if (K0s && labMothNeg == labMothPos && K0s->GetPdgCode() == kK0sPdg)
+        {
+          K0sLabel = labMothNeg;
+          fGenK0s.ptMC = K0s->Pt();
+          fGenK0s.etaMC = K0s->Eta();
+          fGenK0s.yMC = K0s->Y();
+          fGenK0s.isPrimary = K0s->IsPhysicalPrimary();
+          double ov[3], dv[3];
+          K0s->XvYvZv(ov);
+          posPart->XvYvZv(dv);
+          fGenK0s.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * K0s->M() / K0s->P();
+
+          fGenK0s.flag = 0u;
+          if (K0s->IsPrimary())
+            fGenK0s.flag |= kPrimary;
+          else if (K0s->IsSecondaryFromWeakDecay())
+            fGenK0s.flag |= kSecondaryFromWD;
+          else fGenK0s.flag |= kSecondaryFromMaterial;
+        }
+        if (fOnlyTrueK0s && K0sLabel == -1)
+          continue;
+      }
+
+
+      fRecK0s->pt = v0->Pt();
+      fRecK0s->ptNeg = nTrack->Pt();
+      fRecK0s->ptPos = pTrack->Pt();
+      fRecK0s->eta = v0->Eta();
+      fRecK0s->mass = v0->MassK0Short();
+      fRecK0s->ct = v0->Ct(kK0sPdg, pv);
+      fRecK0s->radius = v0->RadiusV0();
+      fRecK0s->dcaV0PV = v0->DcaV0ToPrimVertex();
+      fRecK0s->dcaPosPV = v0->DcaPosToPrimVertex();
+      fRecK0s->dcaNegPV = v0->DcaNegToPrimVertex();
+      fRecK0s->dcaV0tracks = v0->DcaV0Daughters();
+      fRecK0s->cosPA = v0->CosPointingAngle(pv);
+      fRecK0s->tpcNsigmaNeg = fPID->NumberOfSigmasTPC(nTrack, AliPID::kPion);
+      fRecK0s->tpcNsigmaPos = fPID->NumberOfSigmasTPC(pTrack, AliPID::kPion);
+      fRecK0s->tpcClV0Neg = nTrack->GetTPCsignalN();
+      fRecK0s->tpcClV0Pos = pTrack->GetTPCsignalN();
+      fRecK0s->hasTOFneg = HasTOF(nTrack);
+      fRecK0s->hasTOFpos = HasTOF(pTrack);
+      fRecK0s->hasTOFhit = !pTrack->GetTOFBunchCrossing(bField) || !nTrack->GetTOFBunchCrossing(bField);
+      fRecK0s->hasITSrefit = nTrack->GetStatus() & AliVTrack::kITSrefit || pTrack->GetStatus() & AliVTrack::kITSrefit;
+
+      //crossed raws
+      double lCrosRawsPos = pTrack->GetTPCClusterInfo(2, 1);
+      double lCrosRawsNeg = nTrack->GetTPCClusterInfo(2, 1);
+      fV0LeastCRaws = std::min(lCrosRawsPos, lCrosRawsNeg);
+      //crossed raws / Findable clusters
+      double lCrosRawsOvFPos = lCrosRawsPos / ((double)(pTrack->GetTPCNclsF()));
+      double lCrosRawsOvFNeg = lCrosRawsNeg / ((double)(nTrack->GetTPCNclsF()));
+      fV0LeastCRawsOvF = std::min(lCrosRawsOvFPos, lCrosRawsOvFNeg);
+
+      if (IsTopolSelectedK0s())
+      {
+        if (K0sLabel != -1)
+        {
+          checkedK0sLabel.push_back(K0sLabel);
+        }
+        if (fFillK0s)
+          fTreeK0s->Fill();
+      }
+    }
+  }
+
+
+  if (fMC && (fFillCascades||fFillLambdas||fFillK0s))
   {
     //OOB pileup
     AliAODMCHeader *header = static_cast<AliAODMCHeader *>(ev->FindListObject(AliAODMCHeader::StdBranchName()));
@@ -626,6 +741,63 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         fTreeLambda->Fill();
       }
     }
+
+    if (fFillK0s && rdmState < fK0sDownscaling)
+    {
+      fGenK0s.isReconstructed = false;
+      //loop on generated
+      for (int iT{0}; iT < fMCEvent->GetNumberOfTracks(); ++iT)
+      {
+        auto track = (AliAODMCParticle *)fMCEvent->GetTrack(iT);
+        int pdg = std::abs(track->GetPdgCode());
+        if (pdg != kK0sPdg)
+        {
+          continue;
+        }
+        if (std::find(checkedK0sLabel.begin(), checkedK0sLabel.end(), iT) != checkedK0sLabel.end())
+        {
+          continue;
+        }
+
+        if (std::abs(track->Y()) > fCutY || AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(iT, header, MCTrackArray))
+        { //removal of OOB pileup, cut on Y and PhysPrim
+          continue;
+        }
+        fGenK0s.ptMC = track->Pt();
+        fGenK0s.etaMC = track->Eta();
+        fGenK0s.yMC = track->Y();
+        fGenK0s.isPrimary = track->IsPhysicalPrimary();
+        double ov[3], dv[3];
+        track->XvYvZv(ov);
+        bool neutralDecay{true};
+        for (int iD = track->GetDaughterFirst(); iD <= track->GetDaughterLast(); iD++)
+        {
+          auto daugh = (AliAODMCParticle *)fMCEvent->GetTrack(iD);
+          if (!daugh)
+          {
+            continue;
+          }
+          if (std::abs(daugh->GetPdgCode()) == AliPID::ParticleCode(AliPID::kPion))
+          {
+            neutralDecay = false;
+            daugh->XvYvZv(dv);
+            break;
+          }
+        }
+        if (neutralDecay)
+          continue;
+        fGenK0s.flag = 0u;
+        if (track->IsPrimary())
+          fGenK0s.flag |= kPrimary;
+        else if (track->IsSecondaryFromWeakDecay())
+          fGenK0s.flag |= kSecondaryFromWD;
+        else fGenK0s.flag |= kSecondaryFromMaterial;
+
+        fGenK0s.ctMC = std::sqrt(Sq(ov[0] - dv[0]) + Sq(ov[1] - dv[1]) + Sq(ov[2] - dv[2])) * track->M() / track->P();
+        fTreeK0s->Fill();
+      }
+    }
+
   }
   PostAllData();
 }
@@ -670,11 +842,17 @@ AliAnalysisTaskStrangenessRatios *AliAnalysisTaskStrangenessRatios::AddTask(bool
                            AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   coutput4->SetSpecialOutput();
 
+  AliAnalysisDataContainer *coutput5 =
+      mgr->CreateContainer(Form("%s_treeK0s", tskname.Data()), TTree::Class(),
+                           AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+  coutput5->SetSpecialOutput();
+
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, coutput1);
   mgr->ConnectOutput(task, 2, coutput2);
   mgr->ConnectOutput(task, 3, coutput3);
   mgr->ConnectOutput(task, 4, coutput4);
+  mgr->ConnectOutput(task, 5, coutput5);
   return task;
 }
 
@@ -712,12 +890,27 @@ bool AliAnalysisTaskStrangenessRatios::IsTopolSelectedLambda()
          fRecLambda->dcaPrPV > fCutDCALambdaPrToPV &&
          fRecLambda->dcaPiPV > fCutDCALambdaPiToPV &&
          fRecLambda->dcaV0tracks < fCutDCAV0tracks &&
-         std::abs(Eta2y(fRecLambda->pt, kLambdaMass, fRecCascade->eta)) < fCutY &&
+         std::abs(Eta2y(fRecLambda->pt, kLambdaMass, fRecLambda->eta)) < fCutY &&
          fRecLambda->mass > fCutLambdaMass[0] && fRecLambda->mass < fCutLambdaMass[1] &&
          std::abs(fRecLambda->tpcNsigmaPi) < fCutNsigmaTPC &&
          std::abs(fRecLambda->tpcNsigmaPr) < fCutNsigmaTPC &&
-         fLambdaLeastCRaws > fCutTPCrows &&
-         fLambdaLeastCRawsOvF > fCutRowsOvF;
+         fV0LeastCRaws > fCutTPCrows &&
+         fV0LeastCRawsOvF > fCutRowsOvF;
+}
+
+bool AliAnalysisTaskStrangenessRatios::IsTopolSelectedK0s()
+{
+  return fRecK0s->radius > fCutRadius[2] &&
+         fRecK0s->cosPA > fCosPAK0s &&
+         fRecK0s->dcaPosPV > fCutDCAK0sProngToPV &&
+         fRecK0s->dcaNegPV > fCutDCAK0sProngToPV &&
+         fRecK0s->dcaV0tracks < fCutDCAV0tracks &&
+         std::abs(Eta2y(fRecK0s->pt, kK0sMass, fRecK0s->eta)) < fCutY &&
+         fRecK0s->mass > fCutK0sMass[0] && fRecK0s->mass < fCutK0sMass[1] &&
+         std::abs(fRecK0s->tpcNsigmaPos) < fCutNsigmaTPC &&
+         std::abs(fRecK0s->tpcNsigmaNeg) < fCutNsigmaTPC &&
+         fV0LeastCRaws > fCutTPCrows &&
+         fV0LeastCRawsOvF > fCutRowsOvF;
 }
 
 //
@@ -733,6 +926,7 @@ void AliAnalysisTaskStrangenessRatios::PostAllData()
   PostData(2, fTree);
   PostData(3, fTreeLambda);
   PostData(4, fTreeLambdaBDTOut);
+  PostData(5, fTreeK0s);
 }
 
 Bool_t AliAnalysisTaskStrangenessRatios::UserNotify()
@@ -805,4 +999,11 @@ void AliAnalysisTaskStrangenessRatios::FindWDLambdaMother(AliAODMCParticle *trac
     }
   }
   fGenLambda.ctMotherMC = std::sqrt(Sq(ovMother[0] - dvMother[0]) + Sq(ovMother[1] - dvMother[1]) + Sq(ovMother[2] - dvMother[2])) * mother->M() / mother->P();
+}
+
+bool AliAnalysisTaskStrangenessRatios::HasTOF(AliVTrack *track) {
+  bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
+  bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
+  const float len = track->GetIntegratedLength();
+  return hasTOFout && hasTOFtime && (len > 350.);
 }

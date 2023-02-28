@@ -43,6 +43,7 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
   fTriggerType(AliVEvent::kINT7),
   fProduceWeights(kTRUE),
   fWeightList(0),
+  fWeightFile(0),
   fCentMap(0),
   fWeights(0),
   fFC(0),
@@ -71,6 +72,7 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
   fTriggerType(AliVEvent::kINT7),
   fProduceWeights(ProduceWeights),
   fWeightList(0),
+  fWeightFile(0),
   fCentMap(0),
   fWeights(0),
   fFC(0),
@@ -93,7 +95,7 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
 {
   if(!fProduceWeights) {
     if(fIsTrain) DefineInput(1,TH1D::Class());
-    else DefineInput(1,TList::Class());
+    else DefineInput(1,TFile::Class());
   }
   DefineOutput(1,(fProduceWeights?TList::Class():AliGFWFlowContainer::Class()));
   DefineOutput(2,TH1D::Class());
@@ -284,8 +286,8 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
       fCentMap = (TH1D*) GetInputData(1);
       if(!fCentMap) AliFatal("Could not fetch centrality map!\n");
     } else {
-      fWeightList = (TList*) GetInputData(1);
-      if(!fWeightList) { AliFatal("Could not retrieve weight list!\n"); return; };
+      fWeightFile = (TFile*) GetInputData(1);
+      if(!fWeightFile) { AliFatal("Could not retrieve weight list!\n"); return; };
     };
     CreateCorrConfigs();
   };
@@ -489,8 +491,8 @@ Bool_t AliAnalysisTaskGFWFlow::CheckTriggerVsCentrality(Double_t l_cent) {
   return kTRUE;
 }
 Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) { //Cannot be used when running on the trains
-  if(fWeightList) {
-    fWeights = (AliGFWWeights*)fWeightList->FindObject(Form("w%i%s",runno,GetSystPF(BitIndex(fEvNomFlag), BitIndex(fTrNomFlag)).Data()));
+  if(fWeightFile) {
+    fWeights = (AliGFWWeights*)fWeightFile->Get(Form("w%i%s",runno,GetSystPF(BitIndex(fEvNomFlag), BitIndex(fTrNomFlag)).Data()));
     if(!fWeights) {
       AliFatal("Weights could not be found in the list!\n");
       return kFALSE;
@@ -676,6 +678,8 @@ void AliAnalysisTaskGFWFlow::SetupFlagsByIndex(Int_t ind) {
       break;
     case 22:
       fTrNomFlag = 1<<kFB96MergedDCA;
+    case 23:
+      fTrNomFlag = 1<<kChiSq25;
       break;
   }
 }

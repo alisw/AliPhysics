@@ -1,5 +1,5 @@
 #include "AliAnalysisTaskJetQ.h"
-
+#include "AliAODForwardMult.h"
 AliAnalysisTaskJetQ::AliAnalysisTaskJetQ():
  AliAnalysisTaskSE(),
  fAOD(0),
@@ -24,7 +24,8 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ():
  fRndmGen(0),
  fFCIncl(0),
  fFCTrig(0),
- fGFW(0)
+ fGFW(0),
+ fFMDHist(0)
 {}
 //_____________________________________________________________________________
 AliAnalysisTaskJetQ::AliAnalysisTaskJetQ(const char* name, Bool_t lCalcFlow):
@@ -51,7 +52,8 @@ AliAnalysisTaskJetQ::AliAnalysisTaskJetQ(const char* name, Bool_t lCalcFlow):
  fRndmGen(0),
  fFCIncl(0),
  fFCTrig(0),
- fGFW(0)
+ fGFW(0),
+ fFMDHist(0)
 {
     DefineOutput(1, TList::Class());
     DefineOutput(2, TH1D::Class());
@@ -82,6 +84,8 @@ void AliAnalysisTaskJetQ::UserCreateOutputObjects()
       Double_t ptbs[] = {2.,2.5};
       SetPtBins(1,ptbs);
     };
+
+
     fPtAssocMin = fPtAxis->GetBinLowEdge(1);
     fPtAssocMax = fPtAxis->GetBinUpEdge(fPtAxis->GetNbins());
     fPtDif = fPtBins.size()>2; //if only one pT bin, then assoc is not pt-dif. and use TH2 instead of TH3
@@ -170,6 +174,15 @@ void AliAnalysisTaskJetQ::UserExec(Option_t *)
     PostData(3,fFCIncl);
   };
   if(ind<0) return;
+  //Test for FMD
+  AliAODForwardMult* aodForward=static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
+  if(!aodForward) { printf("\n\n\n\n\n\n**************************\nFMD stuff not found!\n\n\n\n\n\n"); return; }
+  else {
+    const TH2D& d2Ndetadphi = aodForward->GetHistogram();
+    if(!fFMDHist) fFMDHist = (TH2*)d2Ndetadphi.Clone("FMDDist");
+    else fFMDHist->Add(&d2Ndetadphi);
+  }
+  //End of test
   ((TH1D*)fOutList->At(1))->Fill(vz);
   fNormCounter->Fill(l_Cent,0); //Number of triggers
   Int_t nPairs = FillCorrelations(ind,i_Cent,vz);
@@ -184,7 +197,9 @@ void AliAnalysisTaskJetQ::UserExec(Option_t *)
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskJetQ::Terminate(Option_t *)
-{}
+{
+  fFMDHist->Draw("colz");
+}
 //_____________________________________________________________________________
 
 Bool_t AliAnalysisTaskJetQ::CheckTrigger(Double_t l_Cent) {

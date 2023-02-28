@@ -80,28 +80,66 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
         AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, true);  // DCAplots,CombSigma,ContribSplitting
     TrackPosKaonCuts->SetFilterBit(fFilterBit);
     TrackPosKaonCuts->SetCutCharge(1);  /// positive particle
+    TrackPosKaonCuts->SetPtRange(0.15, 1.4);
+        
     if (CutKaon == 0) {
         TrackPosKaonCuts->SetPIDkd();  // Oton
     } else if (CutKaon == 1) {
-        TrackPosKaonCuts->SetPIDkd(true, true);  // Ramona
+        TrackPosKaonCuts->SetFilterBit(128);
+        TrackPosKaonCuts->SetCutCharge(1);
+        TrackPosKaonCuts->SetPtRange(0.15, 1.4);
+        TrackPosKaonCuts->SetPtExclusion(0.3,0.4);
+        TrackPosKaonCuts->SetNClsTPC(70);
+        TrackPosKaonCuts->SetDCAVtxZ(1.0); //large DCa, used by Ramona: we usually use 0.1
+        TrackPosKaonCuts->SetDCAVtxXY(1.0);
+        TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 3); //only if we ignore the proton/kaon rejection
+
+    }
+    else if(CutKaon == 2){
+        TrackPosKaonCuts->SetFilterBit(128);
+        TrackPosKaonCuts->SetCutCharge(1);
+        TrackPosKaonCuts->SetPtRange(0.15, 1.4);
+        TrackPosKaonCuts->SetPtExclusion(0.3,0.4);
+        TrackPosKaonCuts->SetNClsTPC(70);
+        TrackPosKaonCuts->SetPID(AliPID::kKaon, 0.4, 3); //only if we ignore the proton/kaon rejection
     }
 
     AliFemtoDreamTrackCuts *TrackNegKaonCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, true);
     TrackNegKaonCuts->SetFilterBit(fFilterBit);
     TrackNegKaonCuts->SetCutCharge(-1);  /// negative particle
+    TrackNegKaonCuts->SetPtRange(0.15, 1.4);
+    
     if (CutKaon == 0) {
         TrackNegKaonCuts->SetPIDkd();  // Oton
     } else if (CutKaon == 1) {
-        TrackNegKaonCuts->SetPIDkd(true, true);  // Ramona
+        //correct Ramona cuts 
+        //TrackNegKaonCuts->SetPIDkd(true, true);  // Ramona
+        TrackNegKaonCuts->SetFilterBit(128);
+        TrackNegKaonCuts->SetCutCharge(-1);
+        TrackNegKaonCuts->SetPtRange(0.15, 1.4);
+        TrackNegKaonCuts->SetPtExclusion(0.3,0.4);
+        TrackNegKaonCuts->SetNClsTPC(70);
+        TrackNegKaonCuts->SetDCAVtxZ(1.0); //large DCa, used by Ramona: we usually use 0.1
+        TrackNegKaonCuts->SetDCAVtxXY(1.0);
+        TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 3); //only if we ignore the proton/kaon rejection
+
+    }
+    else if(CutKaon == 2){
+        TrackNegKaonCuts->SetFilterBit(128);
+        TrackNegKaonCuts->SetCutCharge(-1);
+        TrackNegKaonCuts->SetPtRange(0.15, 1.4);
+        TrackNegKaonCuts->SetPtExclusion(0.3,0.4);
+        TrackNegKaonCuts->SetNClsTPC(70);
+        TrackNegKaonCuts->SetPID(AliPID::kKaon, 0.4, 3); //only if we ignore the proton/kaon rejection
     }
 
-    if (suffix != "0") {
+    /* if (suffix != "0") {
         evtCuts->SetMinimalBooking(true);
         TrackPosKaonCuts->SetMinimalBooking(false);
         TrackNegKaonCuts->SetMinimalBooking(false);
         v0Cuts->SetMinimalBooking(true);
         Antiv0Cuts->SetMinimalBooking(true);
-    }
+    } */
 
     /// specify the particle we re mixing
     // Femto Collection
@@ -182,7 +220,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
         kMin.push_back(0.);
         kMax.push_back(6.);
     }
-    if (suffix != "0") {  /// what is Systematic
+    /* if (suffix != "0") {  /// what is Systematic
         pairQA[2] = 12;
         pairQA[3] = 12;
         pairQA[5] = 12;
@@ -190,8 +228,8 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
         pairQA[7] = 22;  /// the lambdas are just for a cross check
         pairQA[8] = 22;
         pairQA[9] = 22;
-
-    } else {
+ */
+    //} else {
         pairQA[0] = 11;
         pairQA[1] = 11;
         pairQA[2] = 12;
@@ -203,9 +241,14 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
         pairQA[8] = 22;
         pairQA[9] = 22;
 
-        closeRejection[0] = true;  /// pos kaon - pos kaon
-        closeRejection[4] = true;  /// neg kaon-neg kaon
-    }
+        closeRejection[0] = true;  ///pos kaon - pos kaon
+        closeRejection[2] = true;  ///pos kaon- lambda
+        closeRejection[3] = true;  ///pos kaon- antilambda
+        closeRejection[4] = true;  ///neg kaon-neg kaon
+        closeRejection[5] = true;  ///neg kaon-lambda
+        closeRejection[6] = true;  ///neg kaon-antilambda
+        
+    //}
 
     AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
 
@@ -216,21 +259,24 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
     config->SetMultBins(MultBins);  // the event will be put in the correspondent multiplicity bin
     config->SetPDGCodes(PDGParticles);
     config->SetNBinsHist(NBins);
+    config->SetPhiEtaBinnign(true);
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
     config->SetClosePairRejection(closeRejection);
     config->SetMinKRel(kMin);
     config->SetMaxKRel(kMax);
     config->SetUseEventMixing(true);
     config->SetMixingDepth(30);  /// how many events i want to mix. 10 is usually okay
-    config->SetMinimalBookingME(suffix != "0");
-
-    if (suffix == "0") {
+    //config->SetMinimalBookingME(suffix != "0");
+    
+    /* if (suffix == "0") {
        config->SetPtQA(true);
        config->SetMassQA(true);
        config->SetkTBinning(true);
        config->SetMultBinning(true);
        config->SetmTBinning(true);
     }
-
+ */
     if (isMC) {
         /// create a histogram, which says how e.g. k true (montecarlo s), vs the one we reconstruct
         config->SetMomentumResolution(true);
@@ -253,7 +299,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
     const float KaonEtaUp = 0.85;
     const float KaonNClsLow = 70;
     const float KaonNClsUp = 90;
-    const float KaonPtMax = 999;
+    const float KaonPtMax = 4.0;
 
     AliPID::EParticleType aliPIDParticle;
     aliPIDParticle = AliPID::kKaon;
@@ -272,8 +318,7 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
     };
 
     if (suffix != "0") {
-        if (suffix ==
-            "1") {  /// depending on the value of "suffix", we have a different random combination of kaons and lambdas
+        if (suffix == "1") {  /// depending on the value of "suffix", we have a different random combination of kaons and lambdas
             TrackPosKaonCuts->SetNClsTPC(KaonNClsUp);
             TrackNegKaonCuts->SetNClsTPC(KaonNClsUp);
 
@@ -1173,8 +1218,23 @@ AliAnalysisTaskSE *AddTaskFemtoNanoLKr(
             v0Cuts->SetCutDCADaugToPrimVtx(0.06);
             Antiv0Cuts->SetCutDCADaugToPrimVtx(0.06);
         }
-    }
+        else if(suffix == "103"){
+            TrackPosKaonCuts->SetPtRange(0.15, 0.5);
+            TrackNegKaonCuts->SetPtRange(0.15, 0.5);
 
+        }
+        else if(suffix == "104"){
+            TrackPosKaonCuts->SetPtRange(0.5, 1.0);
+            TrackNegKaonCuts->SetPtRange(0.5, 1.0);
+
+        }       
+        else if(suffix == "105"){
+            TrackPosKaonCuts->SetPtRange(1.0, 1.4);
+            TrackNegKaonCuts->SetPtRange(1.0, 1.4);
+
+        }
+           
+    }
     AliAnalysisTaskNanoLKr *task = new AliAnalysisTaskNanoLKr("AliAnalysisTaskNanoLKr", isMC);
     /// very important
     if (triggerData == "kINT7") {

@@ -88,6 +88,7 @@ class AliAnalysisTaskJetQ : public AliAnalysisTaskSE
         AliGFWFlowContainer *fFCIncl; //FC for all (considered) events
         AliGFWFlowContainer *fFCTrig; //FC for events with trigger track
         AliGFW *fGFW;
+        TH2 *fFMDHist;
         vector<AliGFW::CorrConfig> corrconfigs; //! do not store
         ClassDef(AliAnalysisTaskJetQ, 1);
 };
