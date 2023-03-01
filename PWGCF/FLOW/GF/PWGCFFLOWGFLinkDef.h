@@ -45,6 +45,7 @@
 #pragma link C++ class AliAnalysisTaskFlowPPTask+;
 #pragma link C++ class AliAnalysisTaskGFWFlow+;
 #pragma link C++ class AliGFWFlags+;
+#pragma link C++ defined_in AliGFWFilter;
 #pragma link C++ class AliGFWFilter+;
 #pragma link C++ class AliGFWFilterTask+;
 #pragma link C++ class AliAnalysisTaskJetQ+;
@@ -63,6 +64,7 @@
 #pragma link C++ class AliLWFMDTrack+;
 #pragma link C++ class AliLWEvent+;
 #pragma link C++ class AliAnalysisTaskLWTree+;
-
+#pragma link C++ namespace GFWFlags;
+#pragma link C++ defined_in GFWFlags;
 
 #endif
