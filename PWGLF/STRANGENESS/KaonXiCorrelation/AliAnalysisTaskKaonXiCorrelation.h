@@ -36,6 +36,7 @@ struct MiniKaon {
   Double32_t fEta; //[-1.27,1.28,8]
   Double32_t fNsigmaTPC; //[-6.35,6.4,8]
   Double32_t fNsigmaTOF; //[-6.35,6.4,8]
+  unsigned char fCutBitMap;
 };
 
 struct MiniKaonMC : public MiniKaon {
@@ -57,6 +58,11 @@ public:
     kPrimary = BIT(0),
     kSecondaryFromWD = BIT(1),
     kSecondaryFromMaterial = BIT(2)
+  };
+
+  enum kCutFlag {
+    kDCAtightCut = BIT(0), // 0.05 cm
+    kDCAmidCut = BIT(1), // 0.1 cm
   };
 
   enum kReducedTrigger
@@ -119,8 +125,7 @@ public:
   void SetTPCclsKaonCut(double cut = 70u) { fCutTPCclsKaon = cut; }
   void SetMaxChi2Cut(double cut = 4.) { fCutMaxChi2 = cut; }
   void SetMaxITSChi2Cut(double cut = 36.) { fCutMaxITSChi2 = cut; }
-  void SetDCAzCut(double cut = 1.) { fCutDCAz = cut; }
-  void SetDCAxyCut(double cut = 0.1) { fCutDCAxy = cut; }
+  void SetDCACut(double cutTight = .05, double cutMid = .1, double cutLoose = .5) { fCutDCA[0] = cutTight; fCutDCA[1] = cutMid; fCutDCA[2] = cutLoose; }
   void SetMaxPtKaon(double cut = 1.5) { fMaxPtKaon = cut; }
   void SetPtTofCut(double cut = 0.5) { fPtTofCut = cut; }
 
@@ -198,8 +203,7 @@ private:
   int fCutTPCclsKaon = 70;
   float fCutMaxChi2 = 2.5;
   float fCutMaxITSChi2 = 36.;
-  float fCutDCAz = 1.;
-  float fCutDCAxy = 0.1;
+  float fCutDCA[3] = {0.05, 0.1, 0.5};
   double fCutKaonNsigmaTPC = 5.;
   double fCutKaonNsigmaTOF = 5.;
   double fMaxPtKaon = 1.5;
