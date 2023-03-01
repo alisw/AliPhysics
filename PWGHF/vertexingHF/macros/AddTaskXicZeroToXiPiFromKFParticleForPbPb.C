@@ -126,12 +126,12 @@ AliHFMLXicZeroToXiPifromKFP* AddTaskXicZeroToXiPiFromKFParticleForPbPb (TString 
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("CutsObj_%s", cuttype.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("Counter_%s", cuttype.Data()), AliNormalizationCounter::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("tree_%s_%s", particle.Data(), cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("tree_%s_MCGen_%s", particle.Data(), cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("hist_%s_%s", particle.Data(), cuttype.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    if (IsPbPb) mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("tree_ML_%s_%s", particle.Data(), cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("CutsObj_cent_%d_%d_pT_%d_%d_%s", centmin, centmax, pTmin, pTmax, cuttype.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("Counter_cent_%d_%d_pT_%d_%d_%s", centmin, centmax, pTmin, pTmax, cuttype.Data()), AliNormalizationCounter::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("tree_%s_cent_%d_%d_pT_%d_%d_%s", particle.Data(), centmin, centmax, pTmin, pTmax, cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("tree_%s_MCGen_cent_%d_%d_pT_%d_%d_%s", particle.Data(), centmin, centmax, pTmin, pTmax, cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("hist_%s_cent_%d_%d_pT_%d_%d_%s", particle.Data(), centmin, centmax, pTmin, pTmax, cuttype.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    if (IsPbPb) mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("tree_ML_%s_cent_%d_%d_pT_%d_%d_%s", particle.Data(), centmin, centmax, pTmin, pTmax, cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
