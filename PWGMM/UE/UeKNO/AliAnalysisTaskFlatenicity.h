@@ -119,6 +119,9 @@ private:
   TH1D *hEtamc;
   TH1D *hEtamcAlice;
   TH1D *hCounter;
+//  TH1D *hCountEvent;
+  TH1D *hCountProduV0m;
+  TH1D *hCountAuthV0m;
   TH2D *hMultMCmVsV0M;
   TH2D *hMultMCaVsV0M;
   TH2D *hMultMCcVsV0M;

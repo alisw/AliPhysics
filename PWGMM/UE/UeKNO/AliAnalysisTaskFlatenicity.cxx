@@ -116,10 +116,11 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
       hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
       hActivityV0DataSectBefore(0), hActivityV0DataSect(0), hV0vsVtxz(0),
       hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
-      hEtamc(0), hEtamcAlice(0), hCounter(0), hMultMCmVsV0M(0),
-      hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0), hMultmVsV0Malice(0),
-      hMultaVsV0M(0), hMultcVsV0M(0), hV0MBadruns(0), hChgProdu_pt(0),
-      hChgAuth_pt(0), hChgProdu_V0_pt(0), hChgAuth_V0_pt(0) {
+      hEtamc(0), hEtamcAlice(0), hCounter(0), hCountProduV0m(0),
+      hCountAuthV0m(0), hMultMCmVsV0M(0), hMultMCaVsV0M(0), hMultMCcVsV0M(0),
+      hMultmVsV0M(0), hMultmVsV0Malice(0), hMultaVsV0M(0), hMultcVsV0M(0),
+      hV0MBadruns(0), hChgProdu_pt(0), hChgAuth_pt(0), hChgProdu_V0_pt(0),
+      hChgAuth_V0_pt(0) {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0M[i_c] = 0;
   }
@@ -164,10 +165,11 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
       hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
       hActivityV0DataSectBefore(0), hActivityV0DataSect(0), hV0vsVtxz(0),
       hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
-      hEtamc(0), hEtamcAlice(0), hCounter(0), hMultMCmVsV0M(0),
-      hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0), hMultmVsV0Malice(0),
-      hMultaVsV0M(0), hMultcVsV0M(0), hV0MBadruns(0), hChgProdu_pt(0),
-      hChgAuth_pt(0), hChgProdu_V0_pt(0), hChgAuth_V0_pt(0)
+      hEtamc(0), hEtamcAlice(0), hCounter(0), hCountProduV0m(0),
+      hCountAuthV0m(0), hMultMCmVsV0M(0), hMultMCaVsV0M(0), hMultMCcVsV0M(0),
+      hMultmVsV0M(0), hMultmVsV0Malice(0), hMultaVsV0M(0), hMultcVsV0M(0),
+      hV0MBadruns(0), hChgProdu_pt(0), hChgAuth_pt(0), hChgProdu_V0_pt(0),
+      hChgAuth_V0_pt(0)
 
 {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
@@ -435,6 +437,14 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
 
   hCounter = new TH1D("hCounter", "counter", 15, -0.5, 14.5);
   fOutputList->Add(hCounter);
+
+  //  hCountEvent = new TH1D("hCountEvent", "event counter", 2, 0.5, 2.5);
+  hCountProduV0m = new TH1D("hCountProduV0m", "CounterChg", nCent, centClass);
+  fOutputList->Add(hCountProduV0m);
+
+  hCountAuthV0m = new TH1D("hCountAuthV0m", "CounterChg2", nCent, centClass);
+  fOutputList->Add(hCountAuthV0m);
+
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hMultmVsFlat[i_c] = new TH2D(Form("hMultmVsFlat_c%d", i_c), "", 100, 0.0,
                                  1.0, 1000, -0.5, 999.5);
@@ -507,10 +517,8 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     if (genHeader) {
       genHeader->PrimaryVertex(vtxMC);
     }
-    if (TMath::Abs(vtxMC[2]) <= 10) {
+    if (TMath::Abs(vtxMC[2]) <= 10)
       isGoodVtxPosMC = kTRUE;
-      //        MCchargedProdu();
-    }
   }
 
   if (isGoodVtxPosMC)
@@ -567,6 +575,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   Double_t flatenicity_tpc = GetFlatenicityTPC();
   if (fIsEqualALICE) {
     flatenicity_v0 = GetFlatenicityV0EqualALICE();
+
     ExtractMultiplicitiesEqualALICE();
   } else {
     flatenicity_v0 = GetFlatenicityV0();
@@ -777,6 +786,9 @@ void AliAnalysisTaskFlatenicity::MCchargedProdu() {
     return;
   //! ap   The INEL>0 condition
 
+  //  hCountEvent->Fill(1.0);
+  hCountProduV0m->Fill(fv0mpercentile);
+
   for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
     AliMCParticle *particle = (AliMCParticle *)fMC->GetTrack(i);
     if (!particle)
@@ -822,6 +834,8 @@ void AliAnalysisTaskFlatenicity::MCchargedAuth() {
 
   if (particleschg < 1)
     return;
+  //  hCountEvent->Fill(2.0);
+  hCountAuthV0m->Fill(fv0mpercentile);
 
   for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
     AliMCParticle *particle = (AliMCParticle *)fMC->GetTrack(i);
