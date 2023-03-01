@@ -62,7 +62,7 @@ public:
 
   enum kCutFlag {
     kDCAtightCut = BIT(0), // 0.05 cm
-    kDCAmidCut = BIT(1), // 0.1 cm
+    kDCAmidCut = BIT(1) // 0.1 cm
   };
 
   enum kReducedTrigger
