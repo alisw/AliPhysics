@@ -187,6 +187,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
       int nITS = GetITScls(aodTrack, nSPD);
       float dca[2]{0., 0.};
       aodTrack->GetImpactParameters(dca[0], dca[1]);
+      double dcaMag = std::sqrt(dca[1] * dca[1] + dca[0] * dca[0]);
       bool tof = HasTOF(aodTrack);
 
       double tpcNsigma = fPID->NumberOfSigmasTPC(aodTrack, AliPID::kKaon);
@@ -203,8 +204,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
           aodTrack->GetITSchi2() > fCutMaxITSChi2 ||
           nITS < fCutITSrecPoints ||
           nSPD < fCutSPDrecPoints ||
-          std::abs(dca[1]) > fCutDCAz ||
-          std::abs(dca[0]) > fCutDCAxy ||
+          dcaMag > fCutDCA[2] ||
           std::abs(tpcNsigma) > fCutKaonNsigmaTPC ||
           (aodTrack->Pt() > fPtTofCut && std::abs(tofNsigma) > fCutKaonNsigmaTOF)
         )
@@ -238,6 +238,9 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
       fKaon->fEta = aodTrack->Eta();
       fKaon->fNsigmaTPC = tpcNsigma;
       fKaon->fNsigmaTOF = tofNsigma;
+      fKaon->fCutBitMap = 0u;
+      if (dcaMag < fCutDCA[0]) fKaon->fCutBitMap |= kDCAtightCut;
+      else if (dcaMag < fCutDCA[1]) fKaon->fCutBitMap |= kDCAmidCut;
 
       if (!fMC)
         fRecKaons.push_back(*fKaon);
