@@ -1,5 +1,26 @@
 #include "AliAnalysisDataContainer.h"
+#include "AliGFWWeights.h"
+#include "GFWFlags.h"
 class TNamed;
+using namespace GFWFlags;
+TList *constructList(TFile *infile, TString subfx) {
+  if(!infile) {printf("Input file is not open!\n"); return 0; };
+  if(infile->IsZombie()) {printf("Input file is a zombie!\n"); return 0; };
+  TList *retList = new TList();
+  retList->SetOwner(kTRUE);
+  TList *LoK = infile->GetListOfKeys();
+  UInt_t lEvFlg, lTrFlg;
+  AliAnalysisTaskGFWFlow::SetupFlagsByIndex(subfx.Atoi(),lEvFlg,lTrFlg);
+  TString syspf = GetSystPF(BitIndex(lEvFlg),BitIndex(lTrFlg));
+  for(Int_t i=0; i<LoK->GetEntries(); i++) {
+    TString nm = LoK->At(i)->GetName();
+    TString cmpsyspf=syspf+";1";
+    if(!nm.Contains(syspf.Data())) continue;
+    AliGFWWeights *w = (AliGFWWeights*)infile->Get(LoK->At(i)->GetName());
+    retList->Add(w);
+  };
+  return retList;
+}
 AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeights=kFALSE, Bool_t IsMC=kFALSE, Bool_t IsTrain=kTRUE, TString weightpath="", TString centMap="", TString subfx="")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -11,10 +32,7 @@ AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeig
     return 0x0;
   //My settings:
   mgr->AddTask(task); // add your task to the manager
-
   //Connect weights to a container
-  // printf("Produce weights set to: %s\n",ProduceWeights?"true":"false");
-  // printf("Is train set to: %s\n",IsTrain?"true":"false");
   if(!ProduceWeights) {
     if(IsTrain) {
       if(centMap.IsNull()) return 0; //AliFatal("Centrality map not specified!\n");
@@ -29,20 +47,19 @@ AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeig
       printf("Centrality map set!\n");
     } else {
       TObjArray *AllContainers = mgr->GetContainers();
-      if(!AllContainers->FindObject("InputWeights")) {
+      TString iwName = "InputWeights"+subfx;
+      if(!AllContainers->FindObject(iwName.Data())) {
         printf("InputWeights not loaded yet, loading now!\n");
         if(weightpath.EqualTo("")) { printf("Weight path for containers not set!\n"); return NULL; };
         if(weightpath.Contains("alien:")) TGrid::Connect("alien:");
         TFile *tf = TFile::Open(weightpath.Data());
-        // if(!tf) { printf("Could not open weight file %s!\n",weightpath.Data()); return NULL; };
-        // TList *tl = (TList*)tf->Get("WeightList");
-        // if(!tl) { printf("Could not wetch WeightList from %s!\n",weightpath.Data()); tf->ls(); return NULL; };
-        AliAnalysisDataContainer *cInWeights = mgr->CreateContainer(Form("InputWeights"),TFile::Class(), AliAnalysisManager::kInputContainer);
-        cInWeights->SetData(tf);
+        TList *tl = constructList(tf,subfx);
+        if(!tl) return 0;
+        AliAnalysisDataContainer *cInWeights = mgr->CreateContainer(iwName.Data(),TList::Class(), AliAnalysisManager::kInputContainer);
+        cInWeights->SetData(tl);
         mgr->ConnectInput(task,1,cInWeights);
       } else {
-        mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject("InputWeights"));
-        // printf("InputWeights already loaded\n");
+        mgr->ConnectInput(task,1,(AliAnalysisDataContainer*)AllContainers->FindObject(iwName.Data()));
       };
     };
   };
@@ -57,6 +74,5 @@ AliAnalysisTaskGFWFlow* AddTaskGFWFlow(TString name = "name", Bool_t ProduceWeig
   mgr->ConnectOutput(task,1,cOutput1);
   AliAnalysisDataContainer *multidist = mgr->CreateContainer(Form("MultiDist%s",subfx.Data()), TH1D::Class(), AliAnalysisManager::kOutputContainer, mgr->GetCommonFileName());
   mgr->ConnectOutput(task,2,multidist);
-
   return task;
 }
