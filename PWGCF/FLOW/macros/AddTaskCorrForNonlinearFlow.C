@@ -101,10 +101,11 @@ AliAnalysisTaskCorrForNonlinearFlow* AddTaskCorrForNonlinearFlow(
 
         if(fNUA) {
           if(!AllContainers->FindObject("NUA")) {
-            AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TFile::Class(), AliAnalysisManager::kInputContainer);
+            AliAnalysisDataContainer *cin_NUA = mgr->CreateContainer(Form("NUA"), TList::Class(), AliAnalysisManager::kInputContainer);
             TFile *inNUA = inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/NUA80binpPb16q.root");
+            TList*  weight_list = dynamic_cast<TList*>(inNUA->Get("weightsList"));
             taskFlowEp->SetUseWeigthsRunByRun(true);
-            cin_NUA->SetData(inNUA);
+            cin_NUA->SetData(weight_list);
             mgr->ConnectInput(taskFlowEp,inSlotCounter,cin_NUA);
             inSlotCounter++;
           } else {

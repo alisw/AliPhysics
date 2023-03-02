@@ -317,7 +317,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 
 	int inputslot = 1;
 	if (fNUA) {
-		DefineInput(inputslot, TFile::Class());
+		DefineInput(inputslot, TList::Class());
 		inputslot++;
 	}
 	if (fNUE) {
@@ -465,7 +465,7 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
 	int outputslot = 2;
 
 	// int inputslot = 1;
-	DefineInput(1, TFile::Class());
+	DefineInput(1, TList::Class());
 	DefineInput(2, TList::Class());
 }
 
@@ -577,7 +577,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
 		if (fPeriod.EqualTo("LHC15oKatarina") ) {
 			fFlowWeightsList = (TList*) GetInputData(inSlotCounter);
 		} else {
-			fPhiWeightFile = (TFile*) GetInputData(inSlotCounter);
+			fFlowWeightsList = (TList*) GetInputData(inSlotCounter);
 		}
 		inSlotCounter++;
 	};
@@ -1463,8 +1463,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
 }
 
 Bool_t AliAnalysisTaskCorrForNonlinearFlow::LoadWeightsSystematics() {
-
-	  hWeight2D = (TH2D*)fPhiWeightFile->FindObject("hNUA");
+    hWeight2D = (TH2D*)fFlowWeightsList->FindObject("hNUA");
   	return kTRUE;
 }
 
