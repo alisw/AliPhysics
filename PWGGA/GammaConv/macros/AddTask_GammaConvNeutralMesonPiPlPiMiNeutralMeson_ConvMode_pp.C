@@ -109,7 +109,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pp(
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
     //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-  TString V0ReaderName        = Form("V0ReaderV1_%s_%s",cutnumberEventPhoton.Data());
+  TString V0ReaderName        = Form("V0ReaderV1_%s",cutnumberEventPhoton.Data());
   AliV0ReaderV1 *fV0ReaderV1  =  NULL;
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
     cout << "V0Reader: " << V0ReaderName.Data() << " not found!!"<< endl;
