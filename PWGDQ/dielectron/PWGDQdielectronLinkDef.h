@@ -55,6 +55,7 @@
 #pragma link C++ class AliAnalysisTaskDielectronsPbPb_Efficiency+;
 #pragma link C++ class AliAnalysisTaskeeCor+;
 #pragma link C++ class AliAnalysisTaskMLTreeMaker+;
+#pragma link C++ class AliAnalysisTaskMLTreeMaker2018+;
 #pragma link C++ class AliAnalysisTaskMLTreeMakerEff+;
 #pragma link C++ class AliAnalysisTaskOmegaDielectron_AccEff+;
 #pragma link C++ class AliAnalysisTaskSimpleTreeMaker+;
