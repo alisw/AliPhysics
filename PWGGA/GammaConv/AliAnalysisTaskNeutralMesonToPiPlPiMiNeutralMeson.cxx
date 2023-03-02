@@ -3220,7 +3220,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     fTreeBckgReduction->Branch( "Gamma2_px",          &fBuffer_Gamma2_px,           "Gamma2_px/S");
     fTreeBckgReduction->Branch( "Gamma2_py",          &fBuffer_Gamma2_py,           "Gamma2_py/S");
     fTreeBckgReduction->Branch( "Gamma2_pz",          &fBuffer_Gamma2_pz,           "Gamma2_pz/S");
-    fTreeBckgReduction->Branch( "Gamma2_E",           &fBuffer_Gamma2_E,            "Gamma2_E/");
+    fTreeBckgReduction->Branch( "Gamma2_E",           &fBuffer_Gamma2_E,            "Gamma2_E/S");
     fTreeBckgReduction->Branch( "Gamma2_eta",         &fBuffer_Gamma2_eta,          "Gamma2_eta/S");
     fTreeBckgReduction->Branch( "Gamma2_phi",         &fBuffer_Gamma2_phi,          "Gamma2_phi/s");
     fTreeBckgReduction->Branch( "Gamma2_trueID",      &fBuffer_Gamma2_trueID,       "Gamma2_trueID/O");
