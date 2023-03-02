@@ -282,19 +282,29 @@ void AliGFWPbpass23Cuts::SetupTrackCuts(Int_t sysflag) {
 };
 void AliGFWPbpass23Cuts::SetupEventCuts(Int_t sysflag) {
   switch(sysflag) {
-  case 1:
+  case 1://17
     fVtxZ = 5;
     fRequiresExtraWeight=kTRUE;
     break;
-  case 2:
+  case 2://18
     fVtxZ = 7;
     fRequiresExtraWeight=kTRUE;
     break;
-  case 3:
+  case 3://19
     fVtxZ = 9;
     fRequiresExtraWeight=kTRUE;
     break;
-  case 4:
+  case 14://30
+    // same as default
+    // just for use Default NUA/NUE
+    // fFilterBit=768;
+    // fRequiresExtraWeight=kTRUE;
+    break;
+  case 15://31
+    fFilterBit=768;
+    fRequiresExtraWeight=kTRUE;
+    break;
+  case 4://20
     printf("Warning! Event flag %i (syst. flag %i), CL1 estmator: make sure the proper estimator is used in the task!\n",sysflag, sysflag+fNTrackFlags);
     fRequiresExtraWeight=kFALSE;
     break;
