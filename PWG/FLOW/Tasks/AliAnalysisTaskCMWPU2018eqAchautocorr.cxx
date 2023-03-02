@@ -72,16 +72,16 @@
 #include "AliPhysicsSelection.h"
 #include "AliFlowEventSimple.h"
 #include "AliAnalysisTaskSE.h"
-#include "AliAnalysisTaskCMWPU2018eqAch.h"
+#include "AliAnalysisTaskCMWPU2018eqAchautocorr.h"
 
 using std::cout;
 using std::endl;
 using std::vector;
 
 
-ClassImp(AliAnalysisTaskCMWPU2018eqAch)
+ClassImp(AliAnalysisTaskCMWPU2018eqAchautocorr)
 
-AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch(const char *name): AliAnalysisTaskSE(name),
+AliAnalysisTaskCMWPU2018eqAchautocorr::AliAnalysisTaskCMWPU2018eqAchautocorr(const char *name): AliAnalysisTaskSE(name),
   fVevent(NULL),
   fESD(NULL),
   fAOD(NULL),
@@ -114,6 +114,8 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch(const char *name): 
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
   fMaxEtaCut(0.8),
+  fMinEtaCutAch(-0.8),
+  fMaxEtaCutAch(0.8),
   fTrkChi2Min(0.1),    
   fdEdxMin(10.0),
   fMinVzCut(-10.0),
@@ -209,7 +211,7 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch(const char *name): 
 }
 
 //_______________________empty constructor_______________________
-AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch():
+AliAnalysisTaskCMWPU2018eqAchautocorr::AliAnalysisTaskCMWPU2018eqAchautocorr():
   fVevent(NULL),
   fESD(NULL),
   fAOD(NULL),
@@ -242,6 +244,8 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch():
   fEtaGapPos(0.1),
   fMinEtaCut(-0.8),
   fMaxEtaCut(0.8),
+  fMinEtaCutAch(-0.8),
+  fMaxEtaCutAch(0.8),
   fTrkChi2Min(0.1),    
   fdEdxMin(10.0),
   fMinVzCut(-10.0),
@@ -337,7 +341,7 @@ AliAnalysisTaskCMWPU2018eqAch::AliAnalysisTaskCMWPU2018eqAch():
 }
   
 //__________________ destructor ___________________
-AliAnalysisTaskCMWPU2018eqAch::~AliAnalysisTaskCMWPU2018eqAch()
+AliAnalysisTaskCMWPU2018eqAchautocorr::~AliAnalysisTaskCMWPU2018eqAchautocorr()
 {
   if(fListHist)      delete fListHist;  
   if(fAnalysisUtil)  delete fAnalysisUtil;   // because its 'new' !!
@@ -369,7 +373,7 @@ AliAnalysisTaskCMWPU2018eqAch::~AliAnalysisTaskCMWPU2018eqAch()
 
 
 //________________ Define Histograms _______________
-void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
+void AliAnalysisTaskCMWPU2018eqAchautocorr::UserCreateOutputObjects()
 {
   //std::cout<<"\n UserCreateOutputObject: function begins...\n"<<endl; 
   //Get The Input Hander:
@@ -774,8 +778,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   
 
 
-  //// PileUp Removal Functions: //mainly used for analysis
-  /*
+  //// PileUp Removal Functions:
+  
   fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
 
   Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
@@ -791,8 +795,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   fCenCutLowPU->SetParameters(parV0CL0);
   fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
   fCenCutHighPU->SetParameters(parV0CL0);
-  */
-
+  
+/*
   if (bdataset==0)
     {
       fSPDCutPU = new TF1("fSPDCutPU", "480. + 3.95*x", 0, 50000);
@@ -832,7 +836,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       fMultCutPU->SetParameters(parFB32);
     }
 
-  
+  */
 
 
 
@@ -879,7 +883,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
 
 
 //____________________________ Call Event by Event ___________________________________
-void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
+void AliAnalysisTaskCMWPU2018eqAchautocorr::UserExec(Option_t*) {
  
   //std::cout<<" Info:UserExec() called ..!!!\n";
 
@@ -1166,7 +1170,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
       
 
 
-      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCutAch) && (trkEta >= fMinEtaCutAch) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
 
       //if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= 0.8) && (trkEta >= -0.8) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= 70) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {   //hardcoded
 
@@ -2052,7 +2056,7 @@ Double_t c2cumulantChrgPosChrgNeg =  (sumQ2xChrgPosEtaPos*fSumTPCQn2xNegChNeg + 
 
 
 
-Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp2018(AliAODEvent *faod) {
+Bool_t AliAnalysisTaskCMWPU2018eqAchautocorr::CheckEventIsPileUp2018(AliAODEvent *faod) {
 
 
   /*
@@ -2232,7 +2236,7 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp2018(AliAODEvent *faod) 
 
 
 
-Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp(AliAODEvent *faod) {
+Bool_t AliAnalysisTaskCMWPU2018eqAchautocorr::CheckEventIsPileUp(AliAODEvent *faod) {
 
 
 
@@ -2423,7 +2427,7 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::CheckEventIsPileUp(AliAODEvent *faod) {
 
 
 
-Bool_t AliAnalysisTaskCMWPU2018eqAch::PileUpMultiVertex(const AliAODEvent* faod)
+Bool_t AliAnalysisTaskCMWPU2018eqAchautocorr::PileUpMultiVertex(const AliAODEvent* faod)
 {  // check for multi-vertexer pile-up
   const int    kMinPlpContrib = 5;
   const double kMaxPlpChi2    = 5.0;
@@ -2462,7 +2466,7 @@ Bool_t AliAnalysisTaskCMWPU2018eqAch::PileUpMultiVertex(const AliAODEvent* faod)
 
 
 
-double AliAnalysisTaskCMWPU2018eqAch::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
+double AliAnalysisTaskCMWPU2018eqAchautocorr::GetWDist(const AliVVertex* v0, const AliVVertex* v1)
 {
   // calculate sqrt of weighted distance to other vertex
   if (!v0 || !v1) {
@@ -2503,7 +2507,7 @@ double AliAnalysisTaskCMWPU2018eqAch::GetWDist(const AliVVertex* v0, const AliVV
 
 
 
-void AliAnalysisTaskCMWPU2018eqAch::SetupEventAndTaskConfigInfo(){
+void AliAnalysisTaskCMWPU2018eqAchautocorr::SetupEventAndTaskConfigInfo(){
 
 
 
@@ -2530,7 +2534,7 @@ void AliAnalysisTaskCMWPU2018eqAch::SetupEventAndTaskConfigInfo(){
 
 
 
-Int_t AliAnalysisTaskCMWPU2018eqAch::GetCentralityScaled0to10(Double_t fCent){
+Int_t AliAnalysisTaskCMWPU2018eqAchautocorr::GetCentralityScaled0to10(Double_t fCent){
 
  Int_t cIndex = 0;
 
@@ -2547,7 +2551,7 @@ Int_t AliAnalysisTaskCMWPU2018eqAch::GetCentralityScaled0to10(Double_t fCent){
  
 }//------------GetCentralityScaled0to10------------
 
-void AliAnalysisTaskCMWPU2018eqAch::GetNUACorrectionHist(Int_t run, Int_t kParticleID)
+void AliAnalysisTaskCMWPU2018eqAchautocorr::GetNUACorrectionHist(Int_t run, Int_t kParticleID)
 {
 
   if(fListNUACorr){
@@ -2622,7 +2626,7 @@ void AliAnalysisTaskCMWPU2018eqAch::GetNUACorrectionHist(Int_t run, Int_t kParti
 
 
 
-void AliAnalysisTaskCMWPU2018eqAch::GetV0MCorrectionHist(Int_t run, Int_t kParticleID)
+void AliAnalysisTaskCMWPU2018eqAchautocorr::GetV0MCorrectionHist(Int_t run, Int_t kParticleID)
 {
 
   if(fListV0MCorr){
@@ -2647,7 +2651,7 @@ void AliAnalysisTaskCMWPU2018eqAch::GetV0MCorrectionHist(Int_t run, Int_t kParti
 
 ////---------- SetUp Tracking Efficiency Correction Map ---------------
 
-void AliAnalysisTaskCMWPU2018eqAch::GetMCCorrectionHist(Int_t run,Float_t centr){
+void AliAnalysisTaskCMWPU2018eqAchautocorr::GetMCCorrectionHist(Int_t run,Float_t centr){
 
   if(fListTRKCorr) {
     //cout<<"\n =========> Info: Found TList with MC Tracking Corr Histograms <=========== "<<endl;
