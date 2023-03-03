@@ -121,6 +121,7 @@ set(SRCS
   AliAnalysisTaskGammaNonIsotropicCorr.cxx
   AliAnalysisTaskGammaNonIsotropicCorrUsingWeights.cxx
   AliAnalysisTaskCVEPIDCME.cxx
+  AliAnalysisTaskCVEVZEROCalib.cxx
 )
 
 # Headers from sources

@@ -52,6 +52,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void IfCalculateHadronHadron(bool bCalculateHadronHadron) {this->isCalculateHadronHadron = bCalculateHadronHadron; }
   void IfNarrowDcaCuts768(bool bNarrowDcaCuts768) { this->isNarrowDcaCuts768 = bNarrowDcaCuts768; }
   void IfStrictestProtonCut(bool bStrictestProtonCut) { this->isStrictestProtonCut = bStrictestProtonCut; }
+  void IfCheckDaughterProtonPassAllCuts(bool bCheckDaughterProtonPassAllCuts) { this->isCheckDaughterProtonPassAllCuts = bCheckDaughterProtonPassAllCuts; }
 
   // read in
   void SetListForNUE(TList* flist) { this->fListNUE = (TList*)flist->Clone(); }
@@ -157,6 +158,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   inline double GetEventPlane(double qx, double qy, double harmonic);
   // Range phi
   inline double RangeDPhi(double dphi);
+  // Get DCA
+  bool GetDCA(double &dcaxy, double &dcaz, AliAODTrack* track);
 
   //////////////////////
   // Switch           //
@@ -179,6 +182,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   bool isCalculateHadronHadron;
   bool isNarrowDcaCuts768;
   bool isStrictestProtonCut;
+  bool isCheckDaughterProtonPassAllCuts;
 
   //////////////////////
   // Cuts and options //
@@ -292,6 +296,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   std::vector<std::array<double,9>> vecParticleV0;
   // Vector for daughter particles [pt,eta,phi,id,pdgcode,weight]
   std::vector<std::array<double,6>> vecParticleFromDecay;
+  // Vector for daughter particles which pass the TOF and DCA [pt,eta,phi,id,pdgcode,weight]
+  std::vector<std::array<double,6>> vecParticleFromDecayPassAllCuts;
 
   ///////////////////The following files are read from external sources////////////////////
   ////////////////////////
@@ -556,6 +562,13 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   // γ Λ - daughter(only TPC)
   TProfile* fProfileGammaLambdaProtonDecay[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
   TProfile* fProfileGammaLambdaPionDecay[4];   //![0]:Λ-pi+  [1]:Λ-pi- [2]:Λbar-pi+ [3]:Λbar-pi-
+
+  // δ Λ - daughter (this daughter contribute in the Λ-p)
+  TProfile* fProfileDeltaLambdaProtonDecayPassAllCuts[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  TProfile* fProfileDeltaLambdaPionDecayPassAllCuts[4];   //![0]:Λ-pi+  [1]:Λ-pi- [2]:Λbar-pi+ [3]:Λbar-pi-
+  // γ Λ - daughter(only TPC)
+  TProfile* fProfileGammaLambdaProtonDecayPassAllCuts[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  TProfile* fProfileGammaLambdaPionDecayPassAllCuts[4];   //![0]:Λ-pi+  [1]:Λ-pi- [2]:Λbar-pi+ [3]:Λbar-pi-
 
 
   AliAnalysisTaskCVEPIDCME(const AliAnalysisTaskCVEPIDCME&);
