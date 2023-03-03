@@ -1,5 +1,5 @@
 // @(#)root/base:$Id$
-// Authors: Alexander Borissov, Sergei Solokhin    03/01/23
+// Authors: Alexander Borissov, Sergei Solokhin, Nikita Gladin    03/01/23
 
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
@@ -56,57 +56,55 @@ ClassImp(AliAnalysisTaskSigmaPCMPHOS)
     ////////////////////////////////////////////////////////////////////////////////
     //Default class constructor
     AliAnalysisTaskSigmaPCMPHOS::AliAnalysisTaskSigmaPCMPHOS() : AliAnalysisTaskSE(),
-                                                                 fAODEvent(0), fGlobalEventID(0), fMCEvent(0x0),
+                                                                 fAODEvent(0), fMCEvent(0x0),
                                                                  fPIDResponse(0),
                                                                  fOutputList(0),
-                                                                 fStack(0x0),
+                                                                 fCutsList(0),
+                                                                 fMCList(0),
+                                                                 fMCPhotonArray(0x0),
+                                                                 fMCLambdaArray(0x0),
+                                                                 fMCPHOSArray(0x0),
+                                                                 fAODv0(0x0), fV0(0x0), ntrack1(0x0), ptrack1(0x0),
+                                                                 electronCandidate(0x0),
+                                                                 positronCandidate(0x0),
                                                                  fPHOSGeo(0x0),
                                                                  fTriggerAnalysis(new AliTriggerAnalysis),
-                                                                 fElectronMass(0),
                                                                  fGamma(0x0),
                                                                  fPCM(0x0),
-                                                                 fPi0(0x0),
-                                                                 fPi0Merged(0x0),
-                                                                 fTracksPip(0x0),
-                                                                 fTracksPim(0x0),
-                                                                 fTracksPp(0x0),
-                                                                 fTracksPm(0x0),
                                                                  fLambda(0x0),
                                                                  fMixGamma(0x0),
-                                                                 fMixTracksPp(0x0),
-                                                                 fMixTracksPm(0x0),
                                                                  fMixLambda(0x0),
-                                                                 fAODMCTrackArray(0x0), fOnFlyVector(0x0), fFinderVector(0x0), fV0ParticleIDArray(0x0), fConvPhotonArray(0x0)
+                                                                 fAODMCTrackArray(0x0), fConvPhotonArray(0x0)
 {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Class constructor for I/O operations
 AliAnalysisTaskSigmaPCMPHOS::AliAnalysisTaskSigmaPCMPHOS(const char *name) : AliAnalysisTaskSE(name),
-                                                                             fAODEvent(0), fGlobalEventID(0), fMCEvent(0x0),
+                                                                             fAODEvent(0), fMCEvent(0x0),
                                                                              fPIDResponse(0),
                                                                              fOutputList(0),
-                                                                             fStack(0x0),
+                                                                             fCutsList(0),
+                                                                             fMCList(0),
+                                                                             fMCPhotonArray(0x0),
+                                                                             fMCLambdaArray(0x0),
+                                                                             fMCPHOSArray(0x0),
+                                                                             fAODv0(0x0), fV0(0x0), ntrack1(0x0), ptrack1(0x0),
+                                                                             electronCandidate(0x0),
+                                                                             positronCandidate(0x0),
                                                                              fPHOSGeo(0x0),
                                                                              fTriggerAnalysis(new AliTriggerAnalysis),
-                                                                             fElectronMass(0),
                                                                              fGamma(0x0),
                                                                              fPCM(0x0),
-                                                                             fPi0(0x0),
-                                                                             fPi0Merged(0x0),
-                                                                             fTracksPip(0x0),
-                                                                             fTracksPim(0x0),
-                                                                             fTracksPp(0x0),
-                                                                             fTracksPm(0x0),
                                                                              fLambda(0x0),
                                                                              fMixGamma(0x0),
-                                                                             fMixTracksPp(0x0),
-                                                                             fMixTracksPm(0x0),
                                                                              fMixLambda(0x0),
-                                                                             fAODMCTrackArray(0x0), fOnFlyVector(0x0), fFinderVector(0x0), fV0ParticleIDArray(0x0), fConvPhotonArray(0x0)
+                                                                             fAODMCTrackArray(0x0), fConvPhotonArray(0x0)
 {
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TList::Class());
+  DefineOutput(3, TList::Class());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -115,63 +113,162 @@ AliAnalysisTaskSigmaPCMPHOS::~AliAnalysisTaskSigmaPCMPHOS()
 {
   if (fOutputList)
     delete fOutputList;
+  if (fCutsList)
+    delete fCutsList;
+  if (fMCList)
+    delete fMCList;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // User-defined output objects, called once
 void AliAnalysisTaskSigmaPCMPHOS::UserCreateOutputObjects()
 {
-  // Create AOD histograms
-
-  //Save Particle Masses and other constants for later use
-  fElectronMass = TDatabasePDG::Instance()->GetParticle(11)->Mass();
+  Double_t fLambdaMass = TDatabasePDG::Instance()->GetParticle(3122)->Mass(); //3122 is Lambda, 3212 is Sigma
 
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
 
-  fOutputList->Add(new TH1F("hClusterEnergy", "Cluster energy", 500, 0., 5.));
-  fOutputList->Add(new TH2F("hClusterTOFvsE", "Cluster time vs energy", 100, 0., 10.e-7, 40, 0., 20.));
+  fCutsList = new TList();
+  fCutsList->SetOwner(kTRUE);
 
-  fOutputList->Add(new TH2F("hLambdaMass", "gg mass", 50, 1.105, 1.125, 20, 0., 10.));
-  fOutputList->Add(new TH2F("hLambdaBarMass", "gg mass", 50, 1.105, 1.125, 20, 0., 10.));
+  fMCList = new TList();
+  fMCList->SetOwner(kTRUE);
 
-  //Gamma-gamma
-  Int_t nMgg = 100;
-  Double_t mggMax = 2.;
-  Double_t ptggMax = 10.;
-  Int_t nPtgg = 40;
-  Double_t mHe3Max = 3.5;
-
-  fOutputList->Add(new TH1F("hZvertex", "Z vertex", 200, -50., +50.));
-  fOutputList->Add(new TH1F("hNvertexTracks", "N of primary tracks from the primary vertex", 150, 0., 150.));
-  fOutputList->Add(new TH2F("hmHe3pGam", "hmHe3pGam", nMgg, 3.0, mHe3Max, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hmHe3mGam", "hmHe3mGam", nMgg, 3.0, mHe3Max, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hGamGam", "hGamGam", nMgg, 0, 1., nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hGamGv0", "hGamGv0", nMgg, 0, 1., nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hGv0Gv0", "hGv0Gv0", nMgg, 0, 1., nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hmGamGam", "hmGamGam", nMgg, 0, 1., nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hLamGam", "hLamGam", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hLamGamAlpha", "hLamGamAlpha", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hmLamGam", "hmLamGam", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hmixLamGam", "hmixLamGam", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hmLamGamAlpha", "hmLamGamAlpha", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hmixLamGamAlpha", "hmixLamGamAlpha", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hmcLamGam", "hmcLamGam", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hmcLamGamAlpha", "hmcLamGamAlpha", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hmcLamGamAlpha1", "hmcLamGamAlpha1", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hmcLamGamAlpha2", "hmcLamGamAlpha2", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hmc4piLamGam", "hmc4piLamGam", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hLamGv0", "hLamGv0", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hLamGv0Alpha", "hLamGv0Alpha", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hmLamGv0", "hmLamGv0", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-  fOutputList->Add(new TH2F("hmLamGv0Alpha", "hmLamGv0Alpha", nMgg, 1.117, 1.220, nPtgg, 0., ptggMax));
-
-  fOutputList->Add(new TH1F("hSelEvents", "Selected events", 12, 0.5, 12.5));
   fMixGamma = new TList();
   fMixGamma->SetOwner(kTRUE);
+
   fMixLambda = new TList();
   fMixLambda->SetOwner(kTRUE);
+
+  //Gamma-gamma
+  const Double_t fMaxEta = 1.2;
+  const Int_t nEtaBins = 22;
+
+  const Int_t nMassBins = 100;
+  const Double_t fMaxMass = 1.22;
+  const Double_t fMinMass = 1.12;
+  const Double_t fMaxLambdaMass = 1.22;
+  const Double_t fMinLambdaMass = 1.1;
+  const Double_t fMaxPhotonMass = 1;
+  const Double_t fMinPhotonMass = 0;
+
+  const Int_t nPtBins = 100;
+  const Double_t fMaxPt = 10;
+  const Double_t fMinPt = 0;
+  const Double_t fMaxPtLambda = 10;
+  const Double_t fMaxPtPhoton = 4;
+
+  const Int_t nSigmaBins = 100;
+  const Double_t fMaxNSigma = 10;
+
+  const Double_t fMaxPHOStime = 1.e-6;
+
+  // 1D histos
+  fOutputList->Add(new TH1I("hRunNumbers", "Number of events in runs;run number;N;N_{entries}", 430, 252235, 294925));
+  fOutputList->Add(new TH1F("hZvertex", "Z vertex;cm;N_{entries}", 100, -20, 20));
+  fOutputList->Add(new TH1F("hNvertexTracks", "N of primary tracks from the primary vertex;cm;N_{entries}", 100, 0, 100));
+
+  fCutsList->Add(new TH1F("hPhoton", "Number of photons after cuts;cut;N_{entries}", 15, 0, 15));
+  fCutsList->Add(new TH1F("hLambda", "Number of #Lambda after cuts;cut;N_{entries}", 15, 0, 15));
+
+  // 2D histos
+  fOutputList->Add(new TH2F("hTPCResponse", "TPC Response;p [GeV/c];#frac{dE}{dx} [arb.units]", nPtBins, fMinPt, fMaxPt, 250, 0, 250));
+  fOutputList->Add(new TH2F("hClusterTOFvsE", "Cluster time vs energy;Time of flight [s];E [GeV]", 200, -fMaxPHOStime, fMaxPHOStime, 50, 0, 2.5));
+  fOutputList->Add(new TH2F("hLambdaMass", "#Lambda mass;M_{#Lambda}[GeV/c^{2}];p_{T}[GeV/c]", 50, fLambdaMass - fMaxMassDeviation, fLambdaMass + fMaxMassDeviation, nPtBins, fMinPt, fMaxPtLambda));
+  fOutputList->Add(new TH2F("hLambdaBarMass", "#bar{#Lambda} mass;M_{#bar{#Lambda}}[GeV/c^{2}];p_{T}[GeV/c]", 50, fLambdaMass - fMaxMassDeviation, fLambdaMass + fMaxMassDeviation, nPtBins, fMinPt, fMaxPtLambda));
+
+  for (Double_t etaCut : fEtaRangeCuts)
+  {
+    fOutputList->Add(new TH2F(Form("hDTReGpGp_%g", etaCut), "hDTReGpGp;M_{#gamma+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinPhotonMass, fMaxPhotonMass, nPtBins, fMinPt, fMaxPtPhoton));
+    fOutputList->Add(new TH2F(Form("hDTReGpGc_%g", etaCut), "hDTReGpGc;M_{#gamma+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinPhotonMass, fMaxPhotonMass, nPtBins, fMinPt, fMaxPtPhoton));
+    fOutputList->Add(new TH2F(Form("hDTReGcGc_%g", etaCut), "hDTReGcGc;M_{#gamma+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinPhotonMass, fMaxPhotonMass, nPtBins, fMinPt, fMaxPtPhoton));
+    fOutputList->Add(new TH2F(Form("hDTMiGpGp_%g", etaCut), "hDTMiGpGp;M_{#gamma+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinPhotonMass, fMaxPhotonMass, nPtBins, fMinPt, fMaxPtPhoton));
+
+    fOutputList->Add(new TH2F(Form("hDTReLmGp_%g", etaCut), "hDTReLmGp;M_{#Lambda+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinMass, fMaxMass, nPtBins, fMinPt, fMaxPt));
+    fOutputList->Add(new TH2F(Form("hDTMiLmGp_%g", etaCut), "hDTMiLmGp;M_{#Lambda+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinMass, fMaxMass, nPtBins, fMinPt, fMaxPt));
+    fOutputList->Add(new TH2F(Form("hDTM2LmGp_%g", etaCut), "hDTM2LmGp;M_{#Lambda+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinMass, fMaxMass, nPtBins, fMinPt, fMaxPt));
+    fOutputList->Add(new TH2F(Form("hDTReLmGc_%g", etaCut), "hDTReLmGc;M_{#Lambda+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinMass, fMaxMass, nPtBins, fMinPt, fMaxPt));
+    fOutputList->Add(new TH2F(Form("hDTMiLmGc_%g", etaCut), "hDTMiLmGc;M_{#Lambda+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinMass, fMaxMass, nPtBins, fMinPt, fMaxPt));
+  }
+
+  // PHOS cuts histos
+  for (int i = 0; i < 6; ++i)
+  {
+    fCutsList->Add(new TH1F(Form("hClusterEnergy_%d", i), "Cluster energy", 100, 0, 5));
+    fCutsList->Add(new TH1F(Form("hClusterM02_%d", i), "Cluster assymmetry", 100, -5.0, 5.0));
+    fCutsList->Add(new TH1F(Form("hClusterTOF_%d", i), "Cluster Time OF Flight", 100, -fMaxPHOStime, fMaxPHOStime));
+    fCutsList->Add(new TH1F(Form("hClusterChi2_%d", i), "Cluster Dispersion", 100, 0, 10));
+  }
+
+  // PCM cuts histos
+  for (int i = 0; i < 10; ++i)
+  {
+    fCutsList->Add(new TH1F(Form("hEtaNeg_%d", i), "#eta distribution of conversion electrons", 2 * nEtaBins, -2 * fMaxEta, 2 * fMaxEta));
+    fCutsList->Add(new TH1F(Form("hEtaPos_%d", i), "#eta distribution of MC conversion positrons", 2 * nEtaBins, -2 * fMaxEta, 2 * fMaxEta));
+    fCutsList->Add(new TH1F(Form("hnTPCClusNeg_%d", i), "TPC clusters crossed by electron track", 200, 0, 200));
+    fCutsList->Add(new TH1F(Form("hnTPCClusPos_%d", i), "TPC clusters crossed by electron track", 200, 0, 200));
+    fCutsList->Add(new TH1F(Form("hSigmaElectron_%d", i), "Number of #sigma in TPC for e^{-}", nSigmaBins, -fMaxNSigma, fMaxNSigma));
+    fCutsList->Add(new TH1F(Form("hSigmaPositron_%d", i), "Number of #sigma in TPC for e^{+}", nSigmaBins, -fMaxNSigma, fMaxNSigma));
+    fCutsList->Add(new TH1F(Form("hV0CPA_%d", i), "", 100, 0.5, 1));
+    fCutsList->Add(new TH1F(Form("hV0Radius_%d", i), "", 200, 0, 200));
+    fCutsList->Add(new TH1F(Form("hphotonmass_%d", i), "", 100, 0, 1));
+    fCutsList->Add(new TH1F(Form("hphotonPt_%d", i), "", 100, 0, fMaxPt));
+    fCutsList->Add(new TH2F(Form("hangles_%d", i), "#Delta #theta vs. open angle plot", 100, -TMath::Pi(), TMath::Pi(), 100, -TMath::Pi(), TMath::Pi()));
+    fCutsList->Add(new TH2F(Form("hArPodPhoton_%d", i), "Armenteros-Podolansky plot for photons", 100, -1, 1, 100, 0, 0.25));
+    fCutsList->Add(new TH2F(Form("hPhotonMvsPt_%d", i), "M_{#gamma} vs. p_{T #gamma}", 100, 0, 1, 100, 0, fMaxPt));
+  }
+
+  // Lambda cuts histos
+  for (int i = 0; i < 9; ++i)
+  {
+    fCutsList->Add(new TH1F(Form("hLambdaEtaPr_%d", i), "#eta distribution of Proton", 2 * nEtaBins, -2 * fMaxEta, 2 * fMaxEta));
+    fCutsList->Add(new TH1F(Form("hLambdaEtaPi_%d", i), "#eta distribution of Pion", 2 * nEtaBins, -2 * fMaxEta, 2 * fMaxEta));
+    fCutsList->Add(new TH1F(Form("hLambdaDCA_%d", i), "#Lambda distance of closest approach", 100, 0, 2));
+    fCutsList->Add(new TH1F(Form("hLambdaCPA_%d", i), "#Lambda cosine of pointing angle", 100, 0.9, 1));
+    fCutsList->Add(new TH1F(Form("hLambdaV0Raduis_%d", i), "#Lambda vertex radius", 250, 0, 250));
+    fCutsList->Add(new TH1F(Form("hLambdaMassCut_%d", i), "#Lambda Mass", 100, 1.0, 1.2));
+    fCutsList->Add(new TH1F(Form("hAntiLambdaMass_%d", i), "#bar{#Lambda} Mass", 100, 1.0, 1.2));
+    fCutsList->Add(new TH1F(Form("hLambdaPt_%d", i), "#Lambda p_{T}", 100, 0, 10));
+    fCutsList->Add(new TH1F(Form("hPosTPCNcls_%d", i), "TPC clusters crossed by positive track", 200, 0, 200));
+    fCutsList->Add(new TH1F(Form("hNegTPCNcls_%d", i), "TPC clusters crossed by negative track", 200, 0, 200));
+
+    fCutsList->Add(new TH1F(Form("hSigmaPosProton_%d", i), "Number of #sigma in TPC for p^{+}", nSigmaBins, -fMaxNSigma, fMaxNSigma));
+    fCutsList->Add(new TH1F(Form("hSigmaNegProton_%d", i), "Number of #sigma in TPC for p^{-}", nSigmaBins, -fMaxNSigma, fMaxNSigma));
+    fCutsList->Add(new TH1F(Form("hSigmaPosPion_%d", i), "Number of #sigma in TPC for #pi^{+}", nSigmaBins, -fMaxNSigma, fMaxNSigma));
+    fCutsList->Add(new TH1F(Form("hSigmaNegPion_%d", i), "Number of #sigma in TPC for #pi^{-}", nSigmaBins, -fMaxNSigma, fMaxNSigma));
+
+    fCutsList->Add(new TH2F(Form("hArPodLambda_%d", i), "Armenteros-Podolansky plot for #Lambda", 100, -1, 1, 100, 0, 1));
+    fCutsList->Add(new TH1F(Form("hPosDCA_%d", i), "Positive #Lambda daughter DCA", 250, 0, 2));
+    fCutsList->Add(new TH1F(Form("hNegDCA_%d", i), "Negative #Lambda daughter DCA", 250, 0, 2));
+    fCutsList->Add(new TH1F(Form("hLambdaEta_%d", i), "#Lambda pseudorapidity;#eta;N", 2 * nEtaBins, -2 * fMaxEta, 2 * fMaxEta));
+  }
+
+  // MC particle cuts histos
+  fMCList->Add(new TH1F("hEtaMC", "#eta distribution of MC particles;#eta;N_{entries}", 2 * nEtaBins, -2 * fMaxEta, 2 * fMaxEta));
+
+  fMCList->Add(new TH1F("hMCPhotonMass", "Mass distribution of PCM photons;#eta;N_{entries}", nMassBins, fMinPhotonMass, fMaxPhotonMass));
+  fMCList->Add(new TH1F("hMCPhotonPt", "p_{T} distribution of PCM photons;#eta;N_{entries}", nPtBins, fMinPt, fMaxPtPhoton));
+  fMCList->Add(new TH1F("hMCPhotonEta", "#eta distribution of PCM photons;#eta;N_{entries}", 2 * nEtaBins, -2 * fMaxEta, 2 * fMaxEta));
+
+  fMCList->Add(new TH1F("hMCLambdaMass", "Mass distribution of #Lambda;#eta;N_{entries}", nMassBins, fMinLambdaMass, fMaxLambdaMass));
+  fMCList->Add(new TH1F("hMCLambdaPt", "p_{T} distribution of #Lambda;#eta;N_{entries}", nPtBins, fMinPt, fMaxPtLambda));
+  fMCList->Add(new TH1F("hMCLambdaEta", "#eta distribution of #Lambda;#eta;N_{entries}", 2 * nEtaBins, -2 * fMaxEta, 2 * fMaxEta));
+
+  fMCList->Add(new TH2F("hmc4piLamGam", "hmc4piLamGam;M_{#Lambda+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinMass, fMaxMass, nPtBins, fMinPt, fMaxPt));
+
+  for (Double_t etaCut : fEtaRangeCuts)
+  {
+    fMCList->Add(new TH2F(Form("hmc4piLamGam_%g", etaCut), "hmc4piLamGam;M_{#Lambda+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinMass, fMaxMass, nPtBins, fMinPt, fMaxPt));
+    fMCList->Add(new TH2F(Form("hMCReLmGc_%g", etaCut), "hMCReLmGc;M_{#Lambda+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinMass, fMaxMass, nPtBins, fMinPt, fMaxPt));
+    fMCList->Add(new TH2F(Form("hMCReLmGp_%g", etaCut), "hMCReLmGp;M_{#Lambda+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinMass, fMaxMass, nPtBins, fMinPt, fMaxPt));
+    fMCList->Add(new TH2F(Form("hMCReGpGc_%g", etaCut), "hMCReGpGc;M_{#gamma+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinPhotonMass, fMaxPhotonMass, nPtBins, fMinPt, fMaxPt));
+    fMCList->Add(new TH2F(Form("hMCReGcGc_%g", etaCut), "hMCReGcGc;M_{#gamma+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinPhotonMass, fMaxPhotonMass, nPtBins, fMinPt, fMaxPt));
+    fMCList->Add(new TH2F(Form("hMCReGpGp_%g", etaCut), "hMCReGpGp;M_{#gamma+#gamma}[GeV/c^{2}];p_{T}[GeV/c]", nMassBins, fMinPhotonMass, fMaxPhotonMass, nPtBins, fMinPt, fMaxPt));
+  }
+
   PostData(1, fOutputList);
+  PostData(2, fCutsList);
+  PostData(3, fMCList);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -179,7 +276,6 @@ void AliAnalysisTaskSigmaPCMPHOS::UserCreateOutputObjects()
 void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
 {
   // Main loop, called for each event  Analyze AOD
-
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr || !mgr->GetInputEventHandler())
     return;
@@ -188,29 +284,14 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
   if (!fAODEvent)
     return;
 
-  AliAODHeader *aodHeader = dynamic_cast<AliAODHeader *>(fAODEvent->GetHeader());
-  if (!aodHeader)
-    return;
-
-  AliVHeader *fAODEventHeader = fAODEvent->GetHeader(); //Get the Header from the event
-  if (!fAODEventHeader)
-    return;
-
-  else
-    fGlobalEventID = fAODEventHeader->GetEventIdAsLong(); //Get global ID of the event
+  Int_t fCurrentRunNumber = InputEvent()->GetRunNumber();
+  FillHistogram("hRunNumbers", fCurrentRunNumber);
 
   Int_t nTracks = fAODEvent->GetNumberOfTracks();
   fPIDResponse = mgr->GetInputEventHandler()->GetPIDResponse();
 
   // Event selection flags
-  Bool_t fVerbose = kFALSE;
   Bool_t eventVtxExist = kFALSE;
-  Bool_t eventVtxZ10cm = kFALSE;
-  Bool_t eventPileup = kFALSE;
-  Bool_t eventV0AND = kFALSE;
-  Bool_t fAODEventVtxExist = kFALSE;
-
-  FillHistogram("hSelEvents", 1);
 
   // Check the PID response
   if (!fPIDResponse)
@@ -220,208 +301,148 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
   if (nTracks == 0)
     return; //No point in continuing if there are no tracks
 
-  // Check primary vertex position
-  Double_t primaryVtxPos[3] = {-999, -999, -999};
-  const AliAODVertex *aodVtx = fAODEvent->GetPrimaryVertex();
-  if (!aodVtx)
-    return;
-
-  aodVtx->GetXYZ(primaryVtxPos);
-
-  
-  //Fill V0 arrays
-  fOnFlyVector.clear(); //clear the arrays
-  fFinderVector.clear();
-  fV0ParticleIDArray.clear();
-
-  Int_t nV0 = fAODEvent->GetNumberOfV0s(); //Number of V0s in the event
-
-  for (Int_t iV0 = 0; iV0 < nV0; iV0++)
-  { //Loop over V0s in the event
-
-    AliAODv0 *aodV0 = (AliAODv0 *)fAODEvent->GetV0(iV0); //Get V0 object
-    if (!aodV0)
-      continue;
-
-    // Check basic V0 properties: 2 Daughters, opposite charge, total charge = 0
-    if (aodV0->GetNDaughters() != 2)
-      continue;
-    if (aodV0->GetNProngs() != 2)
-      continue;
-    if (aodV0->GetCharge() != 0)
-      continue;
-    if (aodV0->ChargeProng(0) == aodV0->ChargeProng(1))
-      continue;
-
-    // Get daughter tracks
-    AliAODTrack *trackN = dynamic_cast<AliAODTrack *>(aodV0->GetDaughter(0));
-    AliAODTrack *trackP = dynamic_cast<AliAODTrack *>(aodV0->GetDaughter(1));
-    if (!trackN || !trackP)
-      continue;
-    if (trackN->GetSign() == trackP->GetSign())
-      continue;
-
-    fFinderVector.push_back(trackN->GetID());
-    fFinderVector.push_back(trackP->GetID());
-
-    if (aodV0->GetOnFlyStatus())
-    {
-      fOnFlyVector.push_back(trackN->GetID());
-      fOnFlyVector.push_back(trackP->GetID());
-    }
-  } //End of V0 Loop. Finished prearing the maps ==> To understand
-
-  FillHistogram("hSelEvents", 3);
-
-  /************************Start Event Processing**************************************/
-
   fMCEvent = MCEvent(); // Get MC event (called fMCEvent) from the input file
 
   if (fMCEvent)
   {
-    fAODMCTrackArray = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    fAODMCTrackArray = dynamic_cast<TClonesArray *>(fAODEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     if (!fAODMCTrackArray)
       return;
-    if (fMCEvent->Stack())
-    {
-      printf("-----------------------");
-      fStack = static_cast<AliStack *>(fMCEvent->Stack());
-      if (fStack)
-        ProcessMC();
-    }
+    ProcessMC();
   }
-
   FillV0PhotonArray();
-
-  FillHistogram("hSelEvents", 4);
 
   if (!fPHOSGeo)
     fPHOSGeo = AliPHOSGeometry::GetInstance();
 
-  // Checks if we have a primary vertex	// Get primary vertices form AOD
-  if (fAODEvent->GetPrimaryVertexTracks()->GetNContributors() > 0)
-    fAODEventVtxExist = kTRUE;
-  else if (fAODEvent->GetPrimaryVertexSPD()->GetNContributors() > 0)
-    fAODEventVtxExist = kTRUE;
-  const AliAODVertex *esdVertex5 = fAODEvent->GetPrimaryVertex();
-
-  Double_t vtx5[3];
-  vtx5[0] = esdVertex5->GetX();
-  vtx5[1] = esdVertex5->GetY();
-  vtx5[2] = esdVertex5->GetZ();
-  TVector3 vtx(vtx5);
-
-  FillHistogram("hNvertexTracks", esdVertex5->GetNContributors());
-  FillHistogram("hZvertex", esdVertex5->GetZ());
-  if (TMath::Abs(esdVertex5->GetZ()) > 10.)
+  AliAODVertex *fAODvertex = fAODEvent->GetPrimaryVertex();
+  FillHistogram("hNvertexTracks", fAODvertex->GetNContributors());
+  if (fAODvertex->GetZ() == 0)
     return;
+  FillHistogram("hZvertex", fAODvertex->GetZ());
 
-  FillHistogram("hSelEvents", 5);
+  for (int i = 0; i < fAODEvent->GetNumberOfTracks(); ++i)
+  {
+    AliAODTrack *track = dynamic_cast<AliAODTrack *>(fAODEvent->GetTrack(i));
+    FillHistogram("hTPCResponse", track->P(), track->GetTPCsignal());
+  }
+
+  if (TMath::Abs(fAODvertex->GetZ()) > fMaxZvertex)
+    return;
 
   if (fAODEvent->IsPileupFromSPD())
     return;
 
-  FillHistogram("hSelEvents", 6);
-
-  // Fill event statistics for different selection criteria
-
-  //Vtx class z-bin
-  Int_t zvtx = (Int_t)((vtx5[2] + 10.) / 2.);
-  if (zvtx < 0)
-    zvtx = 0;
-  if (zvtx > 9)
-    zvtx = 9;
-  FillHistogram("hSelEvents", 7);
-
-  //        SelectHadrons() ;
-  FillHistogram("hSelEvents", 8);
   SelectLambda();
-  FillHistogram("hSelEvents", 9);
   SelectGamma();
-  FillHistogram("hSelEvents", 10);
 
-  //================REALs===========
   Int_t nGamma = fGamma->GetEntriesFast();
-  Int_t nPCM = 1; // fPCM->GetEntriesFast() ;
+  Int_t nPCM = fPCM->GetEntriesFast();
   Int_t nLambda = fLambda->GetEntriesFast();
-  Int_t nPp = 0; //fTracksPp->GetEntriesFast() ;
-  Int_t nPm = 0; //fTracksPm->GetEntriesFast() ;
-  FillHistogram("hSelEvents", 11);
+  const Double_t fMaxMass = 1.22;
 
   TLorentzVector pair;
 
   // fill gamma-gamma  ?repeat without tagged photons
   for (Int_t i = 0; i < nGamma; i++)
   {
-    AliCaloPhoton *pv1 = (AliCaloPhoton *)fGamma->At(i);
+    AliCaloPhoton *photonPHOS = dynamic_cast<AliCaloPhoton *>(fGamma->At(i));
+    if (!photonPHOS)
+      continue;
     for (Int_t j = i + 1; j < nGamma; j++)
     {
-      AliCaloPhoton *pv2 = (AliCaloPhoton *)fGamma->At(j);
-      pair = *pv1 + *pv2;
+      AliCaloPhoton *otherPhotonPHOS = dynamic_cast<AliCaloPhoton *>(fGamma->At(j));
+      if (!otherPhotonPHOS)
+        continue;
+
+      pair = *photonPHOS + *otherPhotonPHOS;
       Double_t m = pair.M();
       Double_t pT = pair.Pt();
-      FillHistogram("hGamGam", m, pT);
+      for (Double_t etaCut : fEtaRangeCuts)
+      {
+        if (TMath::Abs(pair.Eta()) < etaCut)
+          FillHistogram(Form("hDTReGpGp_%g", etaCut), m, pT);
+      }
     }
   }
-
-  FillHistogram("hSelEvents", 12);
 
   //Fill gamma-Lambda
   for (Int_t i = 0; i < nGamma; i++)
   {
-    AliCaloPhoton *pv1 = (AliCaloPhoton *)fGamma->At(i);
+    AliCaloPhoton *photonPHOS = dynamic_cast<AliCaloPhoton *>(fGamma->At(i));
+    if (!photonPHOS)
+      continue;
     for (Int_t j = 0; j < nLambda; j++)
     {
-      TLorentzVector *pv2 = (TLorentzVector *)fLambda->At(j);
-      pair = *pv1 + *pv2;
-      Double_t alpha = (pv1->E() - pv2->E()) / (pv1->E() + pv2->E());
+      TLorentzVector *Lambda = dynamic_cast<TLorentzVector *>(fLambda->At(j));
+      if (!Lambda)
+        continue;
+
+      pair = *photonPHOS + *Lambda;
       Double_t m = pair.M();
+      if (m > fMaxMass)
+        continue;
       Double_t pT = pair.Pt();
-      FillHistogram("hLamGam", m, pT); //    -> Fill (m,pT);
-      if (alpha < -0.7)
-        FillHistogram("hLamGamAlpha", m, pT);
+      for (Double_t etaCut : fEtaRangeCuts)
+      {
+        if (TMath::Abs(pair.Eta()) < etaCut)
+          FillHistogram(Form("hDTReLmGp_%g", etaCut), m, pT);
+      }
     }
   }
 
   // Fill gamma_v0-Lambda, idea to separate on Lambdap - particle and Lambdam - antiparticle
   TLorentzVector pvv1, pvv2;
-  const Int_t nConvPhoton = fConvPhotonArray.size();
-  for (Int_t i = 0; i < nConvPhoton - 1; i++)
+  for (Int_t i = 0; i < nPCM; i++)
   {
-    AliAODv0 *v0_1 = (AliAODv0 *)fAODEvent->GetV0(fConvPhotonArray.at(i));
-    if (!v0_1)
+    TLorentzVector *photonPCM = dynamic_cast<TLorentzVector *>(fPCM->At(i));
+    if (!photonPCM)
       continue;
-    pvv1.SetXYZM(v0_1->Px(), v0_1->Py(), v0_1->Pz(), 0);
     for (Int_t j = 0; j < nLambda; j++)
     {
-      TLorentzVector *pv2 = (TLorentzVector *)fLambda->At(j);
-      pair = pvv1 + *pv2;
-      Double_t alpha = (pvv1.E() - pv2->E()) / (pvv1.E() + pv2->E());
+      TLorentzVector *Lambda = dynamic_cast<TLorentzVector *>(fLambda->At(j));
+      if (!Lambda)
+        continue;
+      pair = *photonPCM + *Lambda;
       Double_t pT = pair.Pt();
       Double_t m = pair.M();
-      FillHistogram("hLamGv0", m, pT);
-      if (alpha < -0.7)
-        FillHistogram("hLamGv0Alpha", m, pT);
+      if (m > fMaxMass)
+        continue;
+      for (Double_t etaCut : fEtaRangeCuts)
+      {
+        if (TMath::Abs(pair.Eta()) < etaCut)
+          FillHistogram(Form("hDTReLmGc_%g", etaCut), m, pT);
+      }
     }
     for (Int_t j = 0; j < nGamma; j++)
     {
-      AliCaloPhoton *pv2 = (AliCaloPhoton *)fGamma->At(j);
-      pair = pvv1 + *pv2;
+      AliCaloPhoton *photonPHOS = dynamic_cast<AliCaloPhoton *>(fGamma->At(j));
+      if (!photonPHOS)
+        continue;
+
+      pair = *photonPCM + *photonPHOS;
       Double_t m = pair.M();
       Double_t pT = pair.Pt();
-      FillHistogram("hGamGv0", m, pT); //   -> Fill (m,pT);
+      for (Double_t etaCut : fEtaRangeCuts)
+      {
+        if (TMath::Abs(pair.Eta()) < etaCut)
+          FillHistogram(Form("hDTReGpGc_%g", etaCut), m, pT);
+      }
     }
-    for (Int_t j = i + 1; j < nConvPhoton; j++)
+    for (Int_t j = i + 1; j < nPCM; j++)
     {
 
-      AliAODv0 *v0_2 = (AliAODv0 *)fAODEvent->GetV0(fConvPhotonArray.at(j));
-      if (!v0_2)
+      TLorentzVector *otherPhotonPCM = dynamic_cast<TLorentzVector *>(fPCM->At(i));
+      if (!otherPhotonPCM)
         continue;
-      pvv2.SetXYZM(v0_2->Px(), v0_2->Py(), v0_2->Pz(), 0);
-      pair = pvv1 + pvv2;
+      pair = *photonPCM + *otherPhotonPCM;
       Double_t m = pair.M();
       Double_t pT = pair.Pt();
-      FillHistogram("hGv0Gv0", m, pT); //   -> Fill (m,pT);
+      for (Double_t etaCut : fEtaRangeCuts)
+      {
+        if (TMath::Abs(pair.Eta()) < etaCut)
+          FillHistogram(Form("hDTReGcGc_%g", etaCut), m, pT);
+      }
     }
   } // end of converted photons
 
@@ -439,41 +460,11 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
         pair = *pv1 + *pv2;
         Double_t m = pair.M();
         Double_t pT = pair.Pt();
-        FillHistogram("hmGamGam", m, pT); //   -> Fill (m,pT);
-      }
-    }
-  }
-
-  for (Int_t m = 0; m < fMixGamma->GetSize(); m++)
-  {
-    TClonesArray *tmp = (TClonesArray *)fMixGamma->At(m);
-    for (Int_t i = 0; i < tmp->GetEntriesFast(); i++)
-    {
-      AliCaloPhoton *pv1 = (AliCaloPhoton *)tmp->At(i);
-      for (Int_t j = 0; j < nPp; j++)
-      {
-        AliCaloPhoton *pv2 = (AliCaloPhoton *)fTracksPp->At(j);
-        pair = *pv1 + *pv2;
-        Double_t m = pair.M();
-        Double_t pT = pair.Pt();
-        FillHistogram("hmHe3pGam", m, pT); //   -> Fill (m,pT);
-      }
-    }
-  }
-
-  for (Int_t m = 0; m < fMixGamma->GetSize(); m++)
-  {
-    TClonesArray *tmp = (TClonesArray *)fMixGamma->At(m);
-    for (Int_t i = 0; i < tmp->GetEntriesFast(); i++)
-    {
-      AliCaloPhoton *pv1 = (AliCaloPhoton *)tmp->At(i);
-      for (Int_t j = 0; j < nPm; j++)
-      {
-        AliCaloPhoton *pv2 = (AliCaloPhoton *)fTracksPm->At(j);
-        pair = *pv1 + *pv2;
-        Double_t m = pair.M();
-        Double_t pT = pair.Pt();
-        FillHistogram("hmHe3mGam", m, pT); //   -> Fill (m,pT);
+        for (Double_t etaCut : fEtaRangeCuts)
+        {
+          if (TMath::Abs(pair.Eta()) < etaCut)
+            FillHistogram(Form("hDTMiGpGp_%g", etaCut), m, pT);
+        }
       }
     }
   }
@@ -489,12 +480,15 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
       {
         AliCaloPhoton *pv1 = (AliCaloPhoton *)fGamma->At(i);
         pair = *pv1 + *pv2;
-        Double_t alpha = (pv1->E() - pv2->E()) / (pv1->E() + pv2->E());
         Double_t m = pair.M();
+        if (m > fMaxMass)
+          continue;
         Double_t pT = pair.Pt();
-        FillHistogram("hmixLamGam", m, pT); //   -> Fill (m,pT);
-        if (alpha < -0.7)
-          FillHistogram("hmixLamGamAlpha", m, pT);
+        for (Double_t etaCut : fEtaRangeCuts)
+        {
+          if (TMath::Abs(pair.Eta()) < etaCut)
+            FillHistogram(Form("hDTM2LmGp_%g", etaCut), m, pT);
+        }
       }
     }
   }
@@ -509,12 +503,15 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
       {
         TLorentzVector *pv2 = (TLorentzVector *)fLambda->At(j);
         pair = *pv1 + *pv2;
-        Double_t alpha = (pv1->E() - pv2->E()) / (pv1->E() + pv2->E());
         Double_t m = pair.M();
+        if (m > fMaxMass)
+          continue;
         Double_t pT = pair.Pt();
-        FillHistogram("hmLamGam", m, pT);
-        if (alpha < -0.7)
-          FillHistogram("hmLamGamAlpha", m, pT);
+        for (Double_t etaCut : fEtaRangeCuts)
+        {
+          if (TMath::Abs(pair.Eta()) < etaCut)
+            FillHistogram(Form("hDTMiLmGp_%g", etaCut), m, pT);
+        }
       }
     }
   }
@@ -526,19 +523,102 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
     for (Int_t j = 0; j < tmp->GetEntriesFast(); j++)
     {
       TLorentzVector *pv2 = (TLorentzVector *)tmp->At(j);
-      for (Int_t i = 0; i < nConvPhoton - 1; i++)
+      for (Int_t i = 0; i < fConvPhotonArray.size(); i++)
       {
         AliAODv0 *v0_1 = (AliAODv0 *)fAODEvent->GetV0(fConvPhotonArray.at(i));
         if (!v0_1)
           continue;
         pvv1.SetXYZM(v0_1->Px(), v0_1->Py(), v0_1->Pz(), 0);
         pair = pvv1 + *pv2;
-        Double_t alpha = (pvv1.E() - pv2->E()) / (pvv1.E() + pv2->E());
         Double_t m = pair.M();
+        if (m > fMaxMass)
+          continue;
         Double_t pT = pair.Pt();
-        FillHistogram("hmLamGv0", m, pT); //   -> Fill (m,pT);
-        if (alpha < -0.7)
-          FillHistogram("hmLamGv0Alpha", m, pT); //   -> Fill (m,pT);
+        for (Double_t etaCut : fEtaRangeCuts)
+        {
+          if (TMath::Abs(pair.Eta()) < etaCut)
+            FillHistogram(Form("hDTMiLmGc_%g", etaCut), m, pT);
+        }
+      }
+    }
+  }
+
+  // MC combinations
+  for (long unsigned int i = 0; i < fMCPhotonArray.size(); ++i)
+  {
+    TLorentzVector photon = fMCPhotonArray[i];
+    for (long unsigned int j = 0; j < fMCLambdaArray.size(); ++j)
+    {
+      TLorentzVector Lambda = fMCLambdaArray[j];
+      TLorentzVector Sigma0 = Lambda + photon;
+      Double_t mass = Sigma0.M();
+      if (mass > fMaxMass)
+        continue;
+      Double_t pT = Sigma0.Pt();
+      for (Double_t etaCut : fEtaRangeCuts)
+      {
+        if (TMath::Abs(Sigma0.Eta()) < etaCut)
+          FillMCHistogram(Form("hMCReLmGc_%g", etaCut), mass, pT);
+      }
+    }
+
+    for (long unsigned int j = i + 1; j < fMCPhotonArray.size(); ++j)
+    {
+      TLorentzVector otherPhoton = fMCPhotonArray[j];
+      TLorentzVector photonPair = photon + otherPhoton;
+      Double_t mass = photonPair.M();
+      if (mass > fMaxMass)
+        continue;
+      Double_t pT = photonPair.Pt();
+      for (Double_t etaCut : fEtaRangeCuts)
+      {
+        if (TMath::Abs(photonPair.Eta()) < etaCut)
+          FillMCHistogram(Form("hMCReGcGc_%g", etaCut), mass, pT);
+      }
+    }
+
+    for (long unsigned int j = 0; j < fMCPHOSArray.size(); ++j)
+    {
+      TLorentzVector otherPhoton = fMCPHOSArray[i];
+      TLorentzVector photonPair = otherPhoton + photon;
+      Double_t mass = photonPair.M();
+      if (mass > fMaxMass)
+        continue;
+      Double_t pT = photonPair.Pt();
+      for (Double_t etaCut : fEtaRangeCuts)
+      {
+        if (TMath::Abs(photonPair.Eta()) < etaCut)
+          FillMCHistogram(Form("hMCReGpGc_%g", etaCut), mass, pT);
+      }
+    }
+  }
+
+  for (long unsigned int i = 0; i < fMCPHOSArray.size(); ++i)
+  {
+    TLorentzVector photon = fMCPHOSArray[i];
+    for (long unsigned int j = 0; j < fMCLambdaArray.size(); ++j)
+    {
+      TLorentzVector Lambda = fMCLambdaArray[j];
+      TLorentzVector Sigma0 = Lambda + photon;
+      Double_t mass = Sigma0.M();
+      Double_t pT = Sigma0.Pt();
+      for (Double_t etaCut : fEtaRangeCuts)
+      {
+        if (TMath::Abs(Sigma0.Eta()) < etaCut)
+          FillMCHistogram(Form("hMCReLmGp_%g", etaCut), mass, pT);
+      }
+    }
+
+    for (long unsigned int j = i + 1; j < fMCPHOSArray.size(); ++j)
+    {
+      TLorentzVector otherPhoton = fMCPHOSArray[j];
+      TLorentzVector photonPair = photon + otherPhoton;
+      Double_t mass = photonPair.M();
+      Double_t pT = photonPair.Pt();
+      for (Double_t etaCut : fEtaRangeCuts)
+      {
+        if (TMath::Abs(photonPair.Eta()) < etaCut)
+          FillMCHistogram(Form("hMCReGpGp_%g", etaCut), mass, pT);
       }
     }
   }
@@ -553,7 +633,7 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
     fGamma = 0;
     if (fMixGamma->GetSize() > kMixEvents)
     { //Remove redundant events
-      TClonesArray *tmp = static_cast<TClonesArray *>(fMixGamma->Last());
+      TClonesArray *tmp = dynamic_cast<TClonesArray *>(fMixGamma->Last());
       fMixGamma->RemoveLast();
       delete tmp;
     }
@@ -566,7 +646,7 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
     fLambda = 0;
     if (fMixLambda->GetSize() > kMixEventsHadr)
     { //Remove redundant events
-      TClonesArray *tmp = static_cast<TClonesArray *>(fMixLambda->Last());
+      TClonesArray *tmp = dynamic_cast<TClonesArray *>(fMixLambda->Last());
       fMixLambda->RemoveLast();
       delete tmp;
     }
@@ -574,48 +654,55 @@ void AliAnalysisTaskSigmaPCMPHOS::UserExec(Option_t *option)
 
   // Post output data.
   PostData(1, fOutputList);
+  PostData(2, fCutsList);
+  PostData(3, fMCList);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Process simulated events if Monte-Carlo flag is true
 void AliAnalysisTaskSigmaPCMPHOS::ProcessMC()
 {
-
-  //fill histograms for efficiensy etc. calculation
-
-  const Double_t kRcut = 1.; //cut for primary particles
-  Double_t vtx[3];
-  vtx[0] = fAODEvent->GetPrimaryVertex()->GetX();
-  vtx[1] = fAODEvent->GetPrimaryVertex()->GetY();
-  vtx[2] = fAODEvent->GetPrimaryVertex()->GetZ();
-
-  Int_t Daughter1 = 0;
-  Int_t Daughter2 = 0;
-
-  if (Int_t(fStack->GetNtrack()) < 2)
-    return;
-
   Int_t nMCTracks = fMCEvent->GetNumberOfTracks();
-  //loop over all MC tracks
-  for (Int_t iMCtrack = 1; iMCtrack < nMCTracks; iMCtrack++)
-  {
 
-    AliAODMCParticle *mcPart = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(iMCtrack));
+  for (Int_t iMCtrack = 0; iMCtrack < nMCTracks; iMCtrack++) // index used to be 1
+  {
+    AliAODMCParticle *mcPart = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(iMCtrack));
     if (!mcPart)
       continue;
+    Int_t MCPartPDGCode = mcPart->GetPdgCode();
 
-    if (TMath::Abs(mcPart->Eta()) > 0.5)
-      continue; //Acceptance Cut
-
-    Int_t MCPartPDGCode = mcPart->PdgCode();
-
-    if (!(MCPartPDGCode == 3122 || MCPartPDGCode == -3122))
+    FillMCHistogram("hEtaMC", mcPart->Eta());
+    if (TMath::Abs(mcPart->Eta()) > fMaxMCEta)
       continue;
 
-    Double_t pT = mcPart->Pt();
-    Double_t m = 1.1926; // particle->M();
+    if (mcPart->GetMother() == -1)
+      continue;
+    AliAODMCParticle *mother = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(mcPart->GetMother()));
+    if (!mother)
+      continue;
+    Int_t MCMotherPDGCode = mother->GetPdgCode();
 
-    FillHistogram("hmc4piLamGam", m, pT);
+    if (MCPartPDGCode == 22 && TMath::Abs(MCMotherPDGCode) == 3212)
+    {
+      FillMCHistogram("hMCPhotonMass", mcPart->M());
+      FillMCHistogram("hMCPhotonPt", mcPart->Pt());
+      FillMCHistogram("hMCPhotonEta", mcPart->Eta());
+    }
+
+    if (TMath::Abs(MCPartPDGCode) == 3122 && TMath::Abs(MCMotherPDGCode) == 3212)
+    {
+
+      FillMCHistogram("hMCLambdaMass", mcPart->M());
+      FillMCHistogram("hMCLambdaPt", mcPart->Pt());
+      FillMCHistogram("hMCLambdaEta", mcPart->Eta());
+
+      FillMCHistogram("hmc4piLamGam", mother->M(), mother->Pt());
+      for (Double_t etaCut : fEtaRangeCuts)
+      {
+        if (TMath::Abs(mcPart->Eta()) < etaCut)
+          FillMCHistogram(Form("hmc4piLamGam_%g", etaCut), mother->M(), mother->Pt());
+      }
+    }
   }
 }
 
@@ -629,14 +716,17 @@ void AliAnalysisTaskSigmaPCMPHOS::FillV0PhotonArray()
 
   //Clear V0 Photon Array and reset counter
   fConvPhotonArray.clear();
-  Int_t countPhotons = 0;
+  fMCPhotonArray.clear();
+
+  if (!fPCM)
+    fPCM = new TClonesArray("TLorentzVector", 100);
+  else
+    fPCM->Clear();
+  Int_t inPCM = 0;
 
   Int_t nV0 = fAODEvent->GetNumberOfV0s(); //Number of V0s in the event
   if (nV0 == 0)
     return; //Return if there is no V0 to be processed
-
-  Int_t non = 0;
-  Int_t noff = 0;
 
   for (Int_t iV0 = 0; iV0 < nV0; iV0++)
   { //Loop over V0s in the event
@@ -645,77 +735,72 @@ void AliAnalysisTaskSigmaPCMPHOS::FillV0PhotonArray()
     Bool_t isElectronTPC = kFALSE;
     Bool_t isPositronTPC = kFALSE;
     Bool_t isPhotonTPC = kFALSE;
-    Bool_t isRealV0 = kFALSE;
-    Bool_t isReallyPhoton = kFALSE;
-    Bool_t isPhotonfromSigma = kFALSE;
 
     TVector3 vecN, vecP, vecM;                 //Momentum Vectors for V0 tracks
     TLorentzVector electron, positron, photon; //Lorentzvectors for invariant mass calculation
 
-    // Daughter Track parameters for KF and ExtTrckPar initialization
-    Double_t trackxyz[3];
-    Double_t trackpxpypz[3];
-    Double_t trackparams[6];
-    Double_t covMatrix[21];
-
-    AliAODv0 *aodV0 = (AliAODv0 *)fAODEvent->GetV0(iV0); //Get V0 object
-    if (!aodV0)
+    fAODv0 = dynamic_cast<AliAODv0 *>(fAODEvent->GetV0(iV0)); //Get V0 object
+    if (!fAODv0)
       continue;
-
     // Check basic V0 properties: 2 Daughters, opposite charge, total charge = 0
-    if (aodV0->GetNDaughters() != 2)
+    if (fAODv0->GetNDaughters() != 2)
       continue;
-    if (aodV0->GetNProngs() != 2)
+    if (fAODv0->GetNProngs() != 2)
       continue;
-    if (aodV0->GetCharge() != 0)
+    if (fAODv0->GetCharge() != 0)
       continue;
-    if (aodV0->ChargeProng(0) == aodV0->ChargeProng(1))
+    if (fAODv0->ChargeProng(0) == fAODv0->ChargeProng(1))
       continue;
-
     // Get daughter tracks
-    AliAODTrack *trackN = dynamic_cast<AliAODTrack *>(aodV0->GetDaughter(0));
-    AliAODTrack *trackP = dynamic_cast<AliAODTrack *>(aodV0->GetDaughter(1));
-    if (trackN->GetSign() == trackP->GetSign())
+    electronCandidate = dynamic_cast<AliAODTrack *>(fAODv0->GetDaughter(0));
+    positronCandidate = dynamic_cast<AliAODTrack *>(fAODv0->GetDaughter(1));
+    if (electronCandidate->GetSign() == positronCandidate->GetSign())
       continue;
-    if (trackN->Charge() > 0)
+    if (electronCandidate->Charge() > 0)
     { //Check correct charge
-      trackN = dynamic_cast<AliAODTrack *>(aodV0->GetDaughter(1));
-      trackP = dynamic_cast<AliAODTrack *>(aodV0->GetDaughter(0));
+      electronCandidate = dynamic_cast<AliAODTrack *>(fAODv0->GetDaughter(1));
+      positronCandidate = dynamic_cast<AliAODTrack *>(fAODv0->GetDaughter(0));
     }
 
-    if (!trackP || !trackN)
+    if (!positronCandidate || !electronCandidate)
       continue;
 
-    //If V0 is not On-fly, check the map if there is an equivalent On-fly V0
-    if (!aodV0->GetOnFlyStatus())
+    if (fMCEvent)
     {
-      noff++;
-
-      //Check if the tracks are used by the on-the-fly finder
-      Int_t nFound = fOnFlyVector.size();
-      Bool_t isused = kFALSE;
-      for (Int_t iID = 0; iID < nFound; iID++)
+      AliAODMCParticle *MCNegTrack = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(TMath::Abs(electronCandidate->GetLabel())));
+      AliAODMCParticle *MCPosTrack = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(TMath::Abs(positronCandidate->GetLabel())));
+      if (MCPosTrack && MCNegTrack)
       {
-        if (trackN->GetID() == fFinderVector[iID])
-          isused = kTRUE;
-        if (trackP->GetID() == fFinderVector[iID])
-          isused = kTRUE;
+        AliAODMCParticle *MCNegCandidate = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(MCNegTrack->GetMother()));
+        AliAODMCParticle *MCPosCandidate = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(MCPosTrack->GetMother()));
+        if (MCPosCandidate && MCNegCandidate && (MCNegCandidate == MCPosCandidate))
+        {
+          if (MCNegCandidate->GetPdgCode() == 22)
+          { // only accept photons as mothers
+
+            AliAODMCParticle *MCNegMother = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(MCNegCandidate->GetMother()));
+            AliAODMCParticle *MCPosMother = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(MCPosCandidate->GetMother()));
+            if (MCNegMother && MCPosMother && (MCNegMother == MCPosMother))
+            {
+              if (TMath::Abs(MCPosMother->GetPdgCode()) == 3212)
+              { //only accept photon from Sigma decay
+                TLorentzVector photon(MCNegCandidate->Px(), MCNegCandidate->Py(), MCNegCandidate->Pz(), MCNegCandidate->E());
+                fMCPhotonArray.push_back(photon);
+                FillCutsHistogram("hPhoton", 14);
+              }
+            }
+          }
+        }
       }
-      if (isused)
-        continue;
-    }
-    else
-    {
-      non++;
     }
 
     // Check track quality
-    Int_t nTPCClustNeg = trackN->GetTPCNcls();
-    Int_t nTPCClustPos = trackP->GetTPCNcls();
+    Int_t nTPCClustNeg = electronCandidate->GetTPCNcls();
+    Int_t nTPCClustPos = positronCandidate->GetTPCNcls();
 
     // Daughter track PID using TPC
-    Double_t nSigmaTPCelectron = fPIDResponse->NumberOfSigmasTPC(trackN, AliPID::kElectron);
-    Double_t nSigmaTPCpositron = fPIDResponse->NumberOfSigmasTPC(trackP, AliPID::kElectron);
+    Double_t nSigmaTPCelectron = fPIDResponse->NumberOfSigmasTPC(electronCandidate, AliPID::kElectron);
+    Double_t nSigmaTPCpositron = fPIDResponse->NumberOfSigmasTPC(positronCandidate, AliPID::kElectron);
     if (TMath::Abs(nSigmaTPCelectron) < fMaxNsigDaughtTPC)
       isElectronTPC = kTRUE;
     if (TMath::Abs(nSigmaTPCpositron) < fMaxNsigDaughtTPC)
@@ -723,26 +808,23 @@ void AliAnalysisTaskSigmaPCMPHOS::FillV0PhotonArray()
     if (isElectronTPC && isPositronTPC)
       isPhotonTPC = kTRUE;
 
+    if (!isPhotonTPC)
+      continue;
     // Get topological values
-    Double_t dcaV0Daughters = TMath::Abs(aodV0->DcaV0Daughters());
-    Double_t dcaPosToPrimVtx = TMath::Abs(aodV0->DcaPosToPrimVertex());
-    Double_t dcaNegToPrimVtx = TMath::Abs(aodV0->DcaNegToPrimVertex());
-    Double_t cosPointAngle = aodV0->CosPointingAngle(primaryVtxPos);
+    Double_t dcaV0Daughters = TMath::Abs(fAODv0->DcaV0Daughters());
+    Double_t dcaPosToPrimVtx = TMath::Abs(fAODv0->DcaPosToPrimVertex());
+    Double_t dcaNegToPrimVtx = TMath::Abs(fAODv0->DcaNegToPrimVertex());
+    Double_t V0CPA = fAODv0->CosPointingAngle(primaryVtxPos);
     Double_t vtxPosV0[3];
-    vtxPosV0[0] = aodV0->DecayVertexV0X();
-    vtxPosV0[1] = aodV0->DecayVertexV0Y();
-    vtxPosV0[2] = aodV0->DecayVertexV0Z();
-    Double_t Vtxradius = TMath::Sqrt(vtxPosV0[0] * vtxPosV0[0] + vtxPosV0[1] * vtxPosV0[1]);
-
-    //Calculating DCA of Photon to PV
-    TVector3 CV(aodV0->DecayVertexV0X(), aodV0->DecayVertexV0Y(), aodV0->DecayVertexV0Z()); //Conv. Vertex
-    TVector3 p(aodV0->Px(), aodV0->Py(), aodV0->Pz());                                      //Momentum vectors of the photons
-    Double_t DCAPV = (p.Cross(CV)).Mag() / p.Mag();                                  //DCA to PV of Photons
+    vtxPosV0[0] = fAODv0->DecayVertexV0X();
+    vtxPosV0[1] = fAODv0->DecayVertexV0Y();
+    vtxPosV0[2] = fAODv0->DecayVertexV0Z();
+    Double_t V0Radius = TMath::Sqrt(vtxPosV0[0] * vtxPosV0[0] + vtxPosV0[1] * vtxPosV0[1]);
 
     //Get reconstructed cartesian momentum
-    vecN.SetXYZ(aodV0->MomNegX(), aodV0->MomNegY(), aodV0->MomNegZ()); //negative daughter
-    vecP.SetXYZ(aodV0->MomPosX(), aodV0->MomPosY(), aodV0->MomPosZ()); //positive daughter
-    vecM.SetXYZ(aodV0->MomV0X(), aodV0->MomV0Y(), aodV0->MomV0Z());    //mother
+    vecN.SetXYZ(fAODv0->MomNegX(), fAODv0->MomNegY(), fAODv0->MomNegZ()); //negative daughter
+    vecP.SetXYZ(fAODv0->MomPosX(), fAODv0->MomPosY(), fAODv0->MomPosZ()); //positive daughter
+    vecM.SetXYZ(fAODv0->MomV0X(), fAODv0->MomV0Y(), fAODv0->MomV0Z());    //mother
 
     //Custom Armenteros Podolanski calculation since V0 member functions are not reliable!
     Double_t pLNeg = vecN.Dot(vecM) / vecM.Mag(); //Momentum longitudinal
@@ -751,92 +833,12 @@ void AliAnalysisTaskSigmaPCMPHOS::FillV0PhotonArray()
     Double_t qt = vecN.Perp(vecM);
 
     // Get kinematic values
-    Double_t ptV0 = aodV0->Pt();
-    Double_t pPos = trackP->P();
-    Double_t pNeg = trackN->P();
-    Double_t thetaPos = trackP->Theta();
-    Double_t thetaNeg = trackN->Theta();
-    Double_t totangle = aodV0->OpenAngleV0();
-
-    //*******************AOD V0 MC treatment************************//
-    // * AOD MC treatment
-    if (fMCEvent)
-    {
-      AliAODMCParticle *V0Part = nullptr;
-      AliAODMCParticle *NPart = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(TMath::Abs(trackN->GetLabel())));
-      AliAODMCParticle *PPart = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(TMath::Abs(trackP->GetLabel())));
-      AliAODMCParticle *V2Mother = nullptr;
-      AliAODMCParticle *V1Mother = nullptr;
-      AliAODMCParticle *V1Part = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(NPart->GetMother()));
-      if (V1Part->GetMother() != -1)
-      {
-        V1Mother = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(TMath::Abs(V1Part->GetMother())));
-        if (TMath::Abs(V1Mother->GetPdgCode()) == 3212)
-        {
-          Double_t m = V1Mother->M();
-          Double_t pt = V1Mother->Pt();
-          FillHistogram("hmcLamGamAlpha1", m, pt);
-        }
-      }
-
-      AliAODMCParticle *V2Part = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(PPart->GetMother()));
-      if (V2Part->GetMother() != -1)
-      {
-        V2Mother = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(TMath::Abs(V2Part->GetMother())));
-        if (TMath::Abs(V2Mother->GetPdgCode()) == 3212)
-        {
-          Double_t m = V2Mother->M();
-          Double_t pt = V2Mother->Pt();
-          FillHistogram("hmcLamGamAlpha2", m, pt);
-        }
-      }
-
-      if ((V1Part->GetMother() != -1) &&
-          (V2Part->GetMother() != -1) &&
-          (V1Mother->Pt() == V2Mother->Pt()))
-      {
-        if (TMath::Abs(V1Mother->GetPdgCode()) == 3212 &&
-            TMath::Abs(V2Mother->GetPdgCode()) == 3212 &&
-            V1Mother->Pt() == V2Mother->Pt())
-        {
-          Double_t m = V2Mother->M();
-          Double_t pt = V2Mother->Pt();
-          FillHistogram("hmcLamGamAlpha", m, pt);
-        }
-      }
-
-      if (NPart && PPart)
-      {
-
-        if (NPart->GetMother() == PPart->GetMother() && NPart->GetMother() != -1)
-        {
-          V0Part = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(NPart->GetMother()));
-          if (V0Part)
-          {
-            if (V0Part->GetPdgCode() == 22)
-            {
-              isReallyPhoton = kTRUE;
-
-              AliAODMCParticle *V0Mother = nullptr;
-              if (V0Part->GetMother() != -1)
-                V0Mother = static_cast<AliAODMCParticle *>(fAODMCTrackArray->At(TMath::Abs(V0Part->GetMother())));
-              if (V0Mother)
-              {
-                if (TMath::Abs(V0Mother->GetPdgCode()) == 3212)
-                {
-                  Double_t m = V0Mother->M();
-                  Double_t pt = V0Mother->Pt();
-                  FillHistogram("hmcLamGam", m, pt);
-                }
-              } //Mother of Photon exists and is a (anti)Sigma0
-            }
-          } //Mother exists and is a Photon
-        }   //Both Tracks have a common Mother
-      }     //Both Tracks have matched MC Particle
-    }       //End of isMCEvent
-    //  ***************End of AOD V0 MC treatment*********************** */
+    Double_t thetaPos = positronCandidate->Theta();
+    Double_t thetaNeg = electronCandidate->Theta();
+    Double_t openangle = fAODv0->OpenAngleV0();
 
     //  Reconstruct photon with TLorentzVector
+    Double_t fElectronMass = TDatabasePDG::Instance()->GetParticle(11)->Mass();
     electron.SetXYZM(vecN(0), vecN(1), vecN(2), fElectronMass);
     positron.SetXYZM(vecP(0), vecP(1), vecP(2), fElectronMass);
     photon = electron + positron;
@@ -844,174 +846,84 @@ void AliAnalysisTaskSigmaPCMPHOS::FillV0PhotonArray()
     // Calculate photon invariant mass with TL
     Double_t photonmass = photon.M();
 
+    // Inv. Mass Cut
+    if (photonmass > fMaxphotonMass)
+      continue;
+    if (photon.Pt() < fMinPhotonPt || photon.Pt() > fMaxPhotonPt)
+      continue;
+
+    Double_t photonPt = photon.Pt();
     // Angle calculation
     Double_t deltatheta = thetaPos - thetaNeg;
 
-    // Acceptance Cut
-    if (TMath::Abs(trackN->Eta()) > fMaxDaughtEta)
-      continue;
-    if (TMath::Abs(trackP->Eta()) > fMaxDaughtEta)
-      continue;
+    // Distributions by cuts parameters
 
+    Double_t params[8] = {openangle, deltatheta, V0CPA, V0Radius, photonmass, alpha, qt, photonPt};
+    FillPCMCutHistograms(0, params);
+    // Acceptance Cut
+    if (TMath::Abs(electronCandidate->Eta()) > fMaxDaughtEta)
+      continue;
+    if (TMath::Abs(positronCandidate->Eta()) > fMaxDaughtEta)
+      continue;
+    FillPCMCutHistograms(1, params);
     // Check Track quality and reject poor qualty tracks
     if (nTPCClustNeg < fMinTPCClustDaught)
       continue;
     if (nTPCClustPos < fMinTPCClustDaught)
       continue;
-
+    FillPCMCutHistograms(2, params);
     // Armenteros-Podolanski Cuts
-    if (TMath::Abs(alpha) > fMaxalpha)
+    if (TMath::Abs(alpha) > fMaxAlphaPhoton)
       continue;
-
-    if (TMath::Abs(qt) > fMaxqt)
+    FillPCMCutHistograms(3, params);
+    if (TMath::Abs(qt) > fMaxQtPhoton)
       continue;
-
+    FillPCMCutHistograms(4, params);
     // Angle Cut
-    if (TMath::Abs(totangle) > fMaxopenangle)
+    if (TMath::Abs(openangle) > fMaxopenangle)
       continue;
-
+    FillPCMCutHistograms(5, params);
     if (TMath::Abs(deltatheta) > fMaxdeltatheta)
       continue;
-
+    FillPCMCutHistograms(6, params);
     // CPA Cut
-    if (cosPointAngle < fMinV0CPA)
+    if (V0CPA < fMinV0CPA)
       continue;
-
-    // PID Cut
-    if (!isPhotonTPC)
-      continue;
+    FillPCMCutHistograms(7, params);
 
     //Radius Cut
-    if (Vtxradius < fMinV0Radius)
+    if (V0Radius < fMinV0Radius || V0Radius > fMaxV0Radius)
+      continue;
+    FillPCMCutHistograms(8, params);
+
+    Double_t electronDCA = fAODv0->DcaNegToPrimVertex();
+    Double_t positronDCA = fAODv0->DcaPosToPrimVertex();
+    if (electronDCA < fMinPhotonDaughterDCA || positronDCA < fMinPhotonDaughterDCA)
       continue;
 
-    if (Vtxradius > fMaxV0Radius)
+    Double_t photonDCA = fAODv0->DcaV0Daughters();
+    if (photonDCA > fMaxPhotonDaughterTracksDCA)
       continue;
 
-    // Inv. Mass Cut
-    if (photonmass > fMaxphotonmass)
-      continue;
-
-    // Store Photon candidates after selection
-    fV0ParticleIDArray.push_back(trackN->GetID());
-    fV0ParticleIDArray.push_back(trackP->GetID());
-
+    FillPCMCutHistograms(9, params);
     fConvPhotonArray.push_back(iV0);
-    countPhotons++;
 
+    if (inPCM >= fPCM->GetSize())
+      fPCM->Expand(inPCM + 50);
+    TLorentzVector *photonPCM = new ((*fPCM)[inPCM++]) TLorentzVector(photon.Px(), photon.Py(), photon.Pz(), photon.E());
+
+    //printf("Photon\n");
   } //End of V0 Loop
 
   //return;
 } //End of FillV0PhotonArray()
 
 ////////////////////////////////////////////////////////////////////////////////
-// Template to fill 1D histogram
-void AliAnalysisTaskSigmaPCMPHOS::FillHistogram(const char *key, Double_t x)
-{
-  //FillHistogram
-  TH1 *hist = dynamic_cast<TH1 *>(fOutputList->FindObject(key));
-  if (hist)
-    hist->Fill(x);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Template to fill 2D histogram
-void AliAnalysisTaskSigmaPCMPHOS::FillHistogram(const char *key, Double_t x, Double_t y)
-{
-  //FillHistogram
-  TH1 *th1 = dynamic_cast<TH1 *>(fOutputList->FindObject(key));
-  if (th1)
-    th1->Fill(x, y);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Template to fill 3D histogram
-void AliAnalysisTaskSigmaPCMPHOS::FillHistogram(const char *key, Double_t x, Double_t y, Double_t z)
-{
-  //Fills 1D histograms with key
-  TObject *obj = fOutputList->FindObject(key);
-
-  TH2 *th2 = dynamic_cast<TH2 *>(obj);
-  if (th2)
-  {
-    th2->Fill(x, y, z);
-    return;
-  }
-
-  TH3 *th3 = dynamic_cast<TH3 *>(obj);
-  if (th3)
-  {
-    th3->Fill(x, y, z);
-    return;
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// Select hadrons based on cuts specified in the header file
-void AliAnalysisTaskSigmaPCMPHOS::SelectHadrons()
-{
-  //currently observe only He3 mucleus, have to fime 3_H^(a)Lambda mass peak, have to store also \pi+-
-  // Multiplicity and momentum distribution of tracks
-  const Double_t massPip = 0.13957;
-  const Double_t massK = 0.493677;
-  const Double_t massP = 0.938272;
-  const Double_t massHe3 = 3.016029;
-
-  Int_t nTracks = fAODEvent->GetNumberOfTracks();
-
-  if (!fTracksPp)
-    fTracksPp = new TClonesArray("AliCaloPhoton", fAODEvent->GetNumberOfTracks());
-  else
-    fTracksPp->Clear();
-  if (!fTracksPm)
-    fTracksPm = new TClonesArray("AliCaloPhoton", fAODEvent->GetNumberOfTracks());
-  else
-    fTracksPm->Clear();
-
-  Int_t inPp = 0;
-  Int_t inPm = 0;
-
-  for (Int_t i = 0; i < nTracks; i++)
-  {
-
-    AliAODTrack *track = static_cast<AliAODTrack *>(fAODEvent->GetTrack(i)); // track (type AliAODTrack) from event
-    if (!track->IsHybridGlobalConstrainedGlobal() || TMath::Abs(track->Eta()) > 0.8)
-      continue;
-    AliVParticle *inEvHMain = dynamic_cast<AliVParticle *>(track);
-    if (!track || !track->TestFilterBit(1))
-      continue; // if we failed, skip this track
-
-    Bool_t pidProton = kFALSE;
-    Bool_t pidHe3 = kFALSE;
-    Double_t nsigmaProton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
-
-    if (nsigmaProton < 10.67)
-      pidProton = kTRUE;
-    if (pidProton)
-    {
-      AliCaloPhoton *pr;
-      if (track->Charge() > 0)
-      {
-
-        pr = new ((*fTracksPp)[inPp++]) AliCaloPhoton(track->Px(), track->Py(), track->Pz(), TMath::Sqrt(massP * massP + track->P() * track->P()));
-      }
-      else
-      {
-
-        pr = new ((*fTracksPm)[inPm++]) AliCaloPhoton(track->Px(), track->Py(), track->Pz(), TMath::Sqrt(massP * massP + track->P() * track->P()));
-      }
-      Double_t dca = track->DCA();
-      pr->SetDispBit(dca > 0.8);
-      pr->SetWeight(dca);
-    }
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Select Lambda hyperons based on cuts specified in the header file
 void AliAnalysisTaskSigmaPCMPHOS::SelectLambda()
 {
-  //Select Lmbdas from V0
+  Double_t fLambdaMass = TDatabasePDG::Instance()->GetParticle(3122)->Mass();
+  fMCLambdaArray.clear();
 
   if (!fLambda)
     fLambda = new TClonesArray("TLorentzVector", 100);
@@ -1020,27 +932,28 @@ void AliAnalysisTaskSigmaPCMPHOS::SelectLambda()
 
   Int_t nv0 = fAODEvent->GetNumberOfV0s();
   Int_t inLambda = 0;
+
   const Double_t massLambda = 1.115683;
 
   while (nv0--)
   {
-    AliAODv0 *v0 = fAODEvent->GetV0(nv0);
-    if (!v0)
+    fV0 = fAODEvent->GetV0(nv0);
+    if (!fV0)
     {
       continue;
     }
 
     //Use onfly only
-    if (!v0->GetOnFlyStatus())
+    if (!fV0->GetOnFlyStatus())
       continue;
 
-    const AliAODTrack *ntrack1 = (AliAODTrack *)v0->GetDaughter(1);
-    if (!AcceptTrack(ntrack1))
-      continue;
+    ntrack1 = (AliAODTrack *)fV0->GetDaughter(1);
+    //    if (!AcceptTrack(ntrack1))
+    //  continue;
 
-    const AliAODTrack *ptrack1 = (AliAODTrack *)v0->GetDaughter(0);
-    if (!AcceptTrack(ptrack1))
-      continue;
+    ptrack1 = (AliAODTrack *)fV0->GetDaughter(0);
+    //if (!AcceptTrack(ptrack1))
+    //  continue;
 
     // Remove like-sign
     if (ntrack1->Charge() == ptrack1->Charge())
@@ -1048,71 +961,140 @@ void AliAnalysisTaskSigmaPCMPHOS::SelectLambda()
       continue;
     }
 
-    if (v0->Pt() == 0)
+    if (fMCEvent)
+    {
+      AliAODMCParticle *MCNegTrack = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(TMath::Abs(ntrack1->GetLabel())));
+      AliAODMCParticle *MCPosTrack = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(TMath::Abs(ptrack1->GetLabel())));
+
+      if (MCNegTrack && MCNegTrack)
+      {
+        AliAODMCParticle *MCNegCandidate = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(MCNegTrack->GetMother()));
+        AliAODMCParticle *MCPosCandidate = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(MCPosTrack->GetMother()));
+
+        if (MCNegCandidate && MCPosCandidate && (MCNegCandidate == MCPosCandidate) && (TMath::Abs(MCNegCandidate->GetPdgCode()) == 3122))
+        {
+          AliAODMCParticle *MCNegMother = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(MCNegCandidate->GetMother()));
+          AliAODMCParticle *MCPosMother = dynamic_cast<AliAODMCParticle *>(fAODMCTrackArray->At(MCPosCandidate->GetMother()));
+
+          if (MCNegMother && MCPosMother && (MCNegMother == MCPosMother))
+          {
+            if (TMath::Abs(MCPosMother->GetPdgCode()) == 3212)
+            {
+              TLorentzVector Lambda(MCNegCandidate->Px(), MCNegCandidate->Py(), MCNegCandidate->Pz(), MCNegCandidate->M());
+              fMCLambdaArray.push_back(Lambda);
+              FillCutsHistogram("hLambda", 14);
+            }
+          }
+        }
+      }
+    }
+
+    if (fV0->Pt() == 0)
     {
       continue;
     }
 
     if (ntrack1->GetKinkIndex(0) > 0 || ptrack1->GetKinkIndex(0) > 0)
       continue;
+    FillLambdaCutHistograms(0);
 
-    Double_t lV0Position[3];
-    v0->GetXYZ(lV0Position);
-
-    Double_t lV0Radius = TMath::Sqrt(lV0Position[0] * lV0Position[0] + lV0Position[1] * lV0Position[1]);
-    if (lV0Radius > 180.)
+    // Acceptance Cut
+    if (TMath::Abs(ntrack1->Eta()) > fMaxDaughtEta)
+      continue;
+    if (TMath::Abs(ptrack1->Eta()) > fMaxDaughtEta)
       continue;
 
-    //DCA V0 daughters
-    Double_t dca = v0->DcaV0Daughters();
-    if (dca < 0.06)
-      continue;
-
-    Double_t cpa = v0->CosPointingAngle(fAODEvent->GetPrimaryVertex());
-    if (cpa < 0.993)
-      continue;
+    FillLambdaCutHistograms(1);
 
     Double_t nSigmaPosPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ptrack1, AliPID::kPion));
     Double_t nSigmaNegPion = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ntrack1, AliPID::kPion));
     Double_t nSigmaPosProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ptrack1, AliPID::kProton));
     Double_t nSigmaNegProton = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(ntrack1, AliPID::kProton));
 
+    Double_t lV0Position[3];
+    fV0->GetXYZ(lV0Position);
+    Double_t lV0Radius = TMath::Sqrt(lV0Position[0] * lV0Position[0] + lV0Position[1] * lV0Position[1]);
+
+    if (lV0Radius > fMaxlV0Radius)
+      continue;
+    FillLambdaCutHistograms(2);
+
+    //DCA V0 daughters
+    Double_t dca = fV0->DcaV0Daughters();
+    if (dca > fMaxLambdaDaughterTracksDCA)
+      continue;
+    FillLambdaCutHistograms(3);
+
+    Double_t cpa = fV0->CosPointingAngle(fAODEvent->GetPrimaryVertex());
+
+    if (cpa < fMinCPA)
+      continue;
+    FillLambdaCutHistograms(4);
+
+    if (fV0->Pt() < fMinLambdaPt || fV0->Pt() > fMaxLambdaPt)
+      continue;
+    TVector3 vecN, vecP, vecM; //Momentum Vectors for V0 tracks
+
+    //Get reconstructed cartesian momentum
+    vecN.SetXYZ(fV0->MomNegX(), fV0->MomNegY(), fV0->MomNegZ()); //negative daughter
+    vecP.SetXYZ(fV0->MomPosX(), fV0->MomPosY(), fV0->MomPosZ()); //positive daughter
+    vecM.SetXYZ(fV0->MomV0X(), fV0->MomV0Y(), fV0->MomV0Z());    //mother
+
+    //Custom Armenteros Podolanski calculation since V0 member functions are not reliable!
+    Double_t pLNeg = vecN.Dot(vecM) / vecM.Mag(); //Momentum longitudinal
+    Double_t pLPos = vecP.Dot(vecM) / vecM.Mag(); //to V0 momentum
+    Double_t alpha = (pLPos - pLNeg) / (pLPos + pLNeg);
+    Double_t qt = vecN.Perp(vecM);
+
+    if (TMath::Abs(alpha) > fMaxAlphaLambda || TMath::Abs(alpha) < fMinAlphaLambda)
+      continue;
+    if (TMath::Abs(qt) > fMaxQtLambda || TMath::Abs(qt) < fMinQtLambda)
+      continue;
+
     Bool_t isLambda = 0;
     Bool_t isLambdaBar = 0;
 
-    //DCA pi+- >0.02 cm
-    //SCA p > 0.05 cm
-    Float_t xyNeg = v0->DcaNegToPrimVertex();
-    Float_t xyPos = v0->DcaPosToPrimVertex();
+    Float_t xyNeg = fV0->DcaNegToPrimVertex();
+    Float_t xyPos = fV0->DcaPosToPrimVertex();
+
+    if (TMath::Abs(xyPos) < fMinLambdaDaughterDCA)
+      continue;
+    if (TMath::Abs(xyNeg) < fMinLambdaDaughterDCA)
+      continue;
+    FillLambdaCutHistograms(5);
+
     if (ntrack1->Charge() > 0)
     { //Lambda and proton
-      isLambda = (nSigmaNegProton < 3.7) && (nSigmaPosPion < 3.8) && (TMath::Abs(xyPos) > 0.02) && (TMath::Abs(xyNeg) > 0.05);
-      isLambdaBar = (nSigmaPosProton < 3.9) && (nSigmaNegPion < 4.2) && (TMath::Abs(xyNeg) > 0.02) && (TMath::Abs(xyPos) > 0.05);
+      isLambda = (nSigmaNegProton < fMaxSigmaNegProton) && (nSigmaPosPion < fMaxSigmaPosPion);
+      isLambdaBar = (nSigmaPosProton < fMaxSigmaPosProton) && (nSigmaNegPion < fMaxSigmaNegPion);
     }
     else
     {
-      isLambda = (nSigmaPosProton < 3.7) && (nSigmaNegPion < 3.8) && (TMath::Abs(xyNeg) > 0.02) && (TMath::Abs(xyPos) > 0.05);
-      isLambdaBar = (nSigmaNegProton < 3.9) && (nSigmaPosPion < 4.2) && (TMath::Abs(xyPos) > 0.02) && (TMath::Abs(xyNeg) > 0.05);
+      isLambda = (nSigmaPosProton < fMaxSigmaNegProton) && (nSigmaNegPion < fMaxSigmaPosPion);
+      isLambdaBar = (nSigmaNegProton < fMaxSigmaPosProton) && (nSigmaPosPion < fMaxSigmaNegPion);
     }
 
+    if (isLambda && TMath::Abs(fV0->MassLambda() - massLambda) > fMaxMassDeviation)
+      continue;
+    FillLambdaCutHistograms(6);
+
+    if (isLambdaBar && TMath::Abs(fV0->MassAntiLambda() - massLambda) > fMaxMassDeviation)
+      continue;
+    FillLambdaCutHistograms(7);
+
     if (isLambda)
-      FillHistogram("hLambdaMass", v0->MassLambda(), v0->Pt());
+      FillHistogram("hLambdaMass", fV0->MassLambda(), fV0->Pt());
     if (isLambdaBar)
-      FillHistogram("hLambdaBarMass", v0->MassAntiLambda(), v0->Pt());
+      FillHistogram("hLambdaBarMass", fV0->MassAntiLambda(), fV0->Pt());
 
-    if (isLambda && TMath::Abs(v0->MassLambda() - 1.115) > 0.005)
-      continue;
-    if (isLambdaBar && TMath::Abs(v0->MassAntiLambda() - 1.115) > 0.005)
-      continue;
-
-    if (v0->Pt() < 0.5)
-      continue;
+    FillLambdaCutHistograms(8);
 
     //So far combine Lambda and AntiLambda
 
     if (isLambda || isLambdaBar)
     {
-      new ((*fLambda)[inLambda++]) TLorentzVector(v0->Px(), v0->Py(), v0->Pz(), TMath::Sqrt(massLambda * massLambda + v0->P() * v0->P()));
+      new ((*fLambda)[inLambda++]) TLorentzVector(fV0->Px(), fV0->Py(), fV0->Pz(), TMath::Sqrt(massLambda * massLambda + fV0->P() * fV0->P()));
+      fMCLambdaArray.push_back(TLorentzVector(fV0->Px(), fV0->Py(), fV0->Pz(), TMath::Sqrt(massLambda * massLambda + fV0->P() * fV0->P())));
     }
   }
 }
@@ -1124,12 +1106,12 @@ Bool_t AliAnalysisTaskSigmaPCMPHOS::AcceptTrack(const AliAODTrack *t)
   if (!t->IsOn(AliAODTrack::kTPCrefit))
     return kFALSE;
   Float_t nCrossedRowsTPC = t->GetTPCClusterInfo(2, 1);
-  if (nCrossedRowsTPC < 70)
+  if (nCrossedRowsTPC < fMinCrossedRowsTPC)
     return kFALSE;
   Int_t findable = t->GetTPCNclsF();
   if (findable <= 0)
     return kFALSE;
-  if (nCrossedRowsTPC / findable < 0.8)
+  if (nCrossedRowsTPC / findable < fMinTPCCLusterRatio)
     return kFALSE;
 
   return kTRUE;
@@ -1141,98 +1123,126 @@ void AliAnalysisTaskSigmaPCMPHOS::SelectGamma()
 {
 
   //Select gamma in PHOS
-
-  Int_t inPHOS = 0, iPi0Merged = 0;
+  Int_t inPHOS = 0;
   if (fGamma)
     fGamma->Clear();
   else
     fGamma = new TClonesArray("AliCaloPhoton", 100);
 
-  const AliAODVertex *esdVertex5 = fAODEvent->GetPrimaryVertex();
+  const AliAODVertex *fAODv0PHOS = fAODEvent->GetPrimaryVertex();
 
-  Double_t vtx5[3] = {esdVertex5->GetX(), esdVertex5->GetY(), esdVertex5->GetZ()};
+  Double_t vertexPHOS[3] = {fAODv0PHOS->GetX(), fAODv0PHOS->GetY(), fAODv0PHOS->GetZ()};
 
   Int_t multClust = fAODEvent->GetNumberOfCaloClusters();
 
   for (Int_t i = 0; i < multClust; i++)
   {
     AliAODCaloCluster *clu = fAODEvent->GetCaloCluster(i);
-    if (clu->GetType() != AliVCluster::kPHOSNeutral)
-      continue; // always continue, why?
-    if (clu->E() > 1.500)
-      continue; // Ok 9sep22
-    if (clu->GetM02() < 0.2)
-      continue; // ok 9sep22, stong cut
 
-    FillHistogram("hClusterEnergy", clu->E());
+    AliCaloPhoton photonCandidate;
+    clu->GetMomentum(photonCandidate, vertexPHOS);
+
+    if (fMCEvent)
+    {
+      TLorentzVector photon(photonCandidate.Px(), photonCandidate.Py(), photonCandidate.Pz(), photonCandidate.E());
+      fMCPHOSArray.push_back(photon);
+    }
+
+    FillPHOSCutHistograms(clu, 0);
+    if (clu->GetType() != AliVCluster::kPHOSNeutral)
+      continue;
+    FillPHOSCutHistograms(clu, 1);
+    if (clu->E() > fMaxClusterEnergy || clu->E() < fMinClusterEnergy)
+      continue;
+    FillPHOSCutHistograms(clu, 2);
+    if (clu->GetM02() > fMaxClusterAssymmetry || clu->GetM02() < fMinClusterAssymmetry)
+      continue;
+    FillPHOSCutHistograms(clu, 3);
+
+    if (TMath::Abs(clu->GetTOF()) > fMaxClusterTOF)
+      continue; // TOF cut by D.Peresunko
+    FillPHOSCutHistograms(clu, 4);
+
+    //    FillHistogram("hClusterTOFvsE", clu->GetTOF(), clu->E());
+
+    if (!(clu->GetDispersion() > 0.6 && clu->GetDispersion() < 4))
+      continue;
+
+    if (TMath::Abs(clu->GetTOF()) > fMaxClusterTOF)
+      continue; // TOF cut by D.Peresunko
+    FillPHOSCutHistograms(clu, 5);
+
     FillHistogram("hClusterTOFvsE", clu->GetTOF(), clu->E());
 
-    TLorentzVector pv1;
-    clu->GetMomentum(pv1, vtx5);
     if (inPHOS >= fGamma->GetSize())
-    {
       fGamma->Expand(inPHOS + 50);
-    }
-    AliCaloPhoton *p = new ((*fGamma)[inPHOS++]) AliCaloPhoton(pv1.X(), pv1.Py(), pv1.Z(), pv1.E());
-
-    // what means Set*Bit after the cuts? - means that passed that particular cut?
-    p->SetDispBit(clu->Chi2() < 2.5 * 2.5);
-    p->SetTOFBit((clu->GetTOF() > -50.e-9) && (clu->GetTOF() < 50.e-9));
-    p->SetCPVBit(clu->GetEmcCpvDistance() > 2.5);
-    p->SetCPV2Bit(clu->GetEmcCpvDistance() > 1.);
-    p->SetPrimary(0); //no matched partner yet
+    AliCaloPhoton *p = new ((*fGamma)[inPHOS++]) AliCaloPhoton(photonCandidate.Px(), photonCandidate.Py(), photonCandidate.Pz(), photonCandidate.E());
   }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Return Pi 0 mass
-Double_t AliAnalysisTaskSigmaPCMPHOS::Pi0Mass(Double_t /*pt*/)
+// Template to fill 1D Cuts histogram
+void AliAnalysisTaskSigmaPCMPHOS::FillCutsHistogram(const char *key, Double_t x)
 {
-  return 0.137;
+  //FillHistogram
+  TH1 *hist = dynamic_cast<TH1 *>(fCutsList->FindObject(key));
+  if (hist)
+    hist->Fill(x);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Return Pi 0 width
-Double_t AliAnalysisTaskSigmaPCMPHOS::Pi0Width(Double_t /*pt*/)
+// Template to fill 2D Cuts histogram
+void AliAnalysisTaskSigmaPCMPHOS::FillCutsHistogram(const char *key, Double_t x, Double_t y)
 {
-  return 0.012; //2sigma
+  //FillHistogram
+  TH2 *th2 = dynamic_cast<TH2 *>(fCutsList->FindObject(key));
+  if (th2)
+    th2->Fill(x, y);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Return eta meson mass
-Double_t AliAnalysisTaskSigmaPCMPHOS::EtaMass(Double_t /*pt*/)
+// Template to fill 1D MC histogram
+void AliAnalysisTaskSigmaPCMPHOS::FillMCHistogram(const char *key, Double_t x)
 {
-  return 0.555;
+  TH1 *hist = dynamic_cast<TH1 *>(fMCList->FindObject(key));
+  if (hist)
+    hist->Fill(x);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Return eta meson width
-Double_t AliAnalysisTaskSigmaPCMPHOS::EtaWidth(Double_t /*pt*/)
+// Template to fill 2D MC histogram
+void AliAnalysisTaskSigmaPCMPHOS::FillMCHistogram(const char *key, Double_t x, Double_t y)
 {
-  return 0.030; //2sigma
+  TH2 *th2 = dynamic_cast<TH2 *>(fMCList->FindObject(key));
+  if (th2)
+    th2->Fill(x, y);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Pion Dispersion cut
-Double_t AliAnalysisTaskSigmaPCMPHOS::PionDispCut(Double_t m02, Double_t m20, Double_t E)
+// Template to fill 1D histogram
+void AliAnalysisTaskSigmaPCMPHOS::FillHistogram(const char *key, Double_t x)
 {
-  //Returns ditance to pi0 peak center in sigmas
-  //No Disp cut for soft energies
-  if (E < 25.)
-    return 999;
+  TH1 *hist = dynamic_cast<TH1 *>(fOutputList->FindObject(key));
+  if (hist)
+    hist->Fill(x);
+}
 
-  //Parameterization using single pi0 simulation
-  Double_t longMpi = 1.857398e+00 + 1.208331e+01 * TMath::Exp(-4.977723e-02 * E);
-  Double_t longSpi = 3.820707e-01 + 1.000542e+00 * TMath::Exp(-3.877147e-02 * E);
-  Double_t shortMpi = 1.152118e+00 - 4.076138e-01 * TMath::Exp(-2.372902e-02 * E);
-  Double_t shortSpi = 1.517538e-01 + 9.382205e+00 * TMath::Exp(-1.563037e-01 * E);
-  Double_t powerNpi = 2.055773e+00 + 9.616408e+03 * TMath::Exp(-2.664167e-01 * E);
+////////////////////////////////////////////////////////////////////////////////
+// Template to fill 2D histogram
+void AliAnalysisTaskSigmaPCMPHOS::FillHistogram(const char *key, Double_t x, Double_t y)
+{
+  TH2 *th2 = dynamic_cast<TH2 *>(fOutputList->FindObject(key));
+  if (th2)
+    th2->Fill(x, y);
+}
 
-  Double_t dx = (m02 - longMpi) / longSpi;
-  Double_t dy = (m20 - shortMpi) / shortSpi;
-
-  //we have non-gaussian power, so re-calculate in Gaussian sigmas
-  return TMath::Sign(TMath::Sqrt(TMath::Power(TMath::Abs(dx), powerNpi) + TMath::Power(TMath::Abs(dy), powerNpi)), dx);
+////////////////////////////////////////////////////////////////////////////////
+// Template to fill 3D histogram
+void AliAnalysisTaskSigmaPCMPHOS::FillHistogram(const char *key, Double_t x, Double_t y, Double_t z)
+{
+  TH3 *th3 = dynamic_cast<TH3 *>(fOutputList->FindObject(key));
+  if (th3)
+    th3->Fill(x, y, z);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1240,35 +1250,109 @@ Double_t AliAnalysisTaskSigmaPCMPHOS::PionDispCut(Double_t m02, Double_t m20, Do
 void AliAnalysisTaskSigmaPCMPHOS::Terminate(Option_t *option){};
 
 ////////////////////////////////////////////////////////////////////////////////
-// Return Armenteros-Podolansky plot elements
-void AliAnalysisTaskSigmaPCMPHOS::GetArPod(Double_t pos[3], Double_t neg[3], Double_t moth[3], Double_t arpod[2])
+// Fill PHOS cuts histograms
+void AliAnalysisTaskSigmaPCMPHOS::FillPHOSCutHistograms(const AliAODCaloCluster *clu, const Int_t i)
 {
-
-  //see header file for documentation
-
-  TVector3 momentumVectorPositiveKF(pos[0], pos[1], pos[2]);
-  TVector3 momentumVectorNegativeKF(neg[0], neg[1], neg[2]);
-  TVector3 vecV0(moth[0], moth[1], moth[2]);
-
-  Float_t thetaV0pos = TMath::ACos((momentumVectorPositiveKF * vecV0) / (momentumVectorPositiveKF.Mag() * vecV0.Mag()));
-  Float_t thetaV0neg = TMath::ACos((momentumVectorNegativeKF * vecV0) / (momentumVectorNegativeKF.Mag() * vecV0.Mag()));
-
-  Float_t alfa = ((momentumVectorPositiveKF.Mag()) * TMath::Cos(thetaV0pos) - (momentumVectorNegativeKF.Mag()) * TMath::Cos(thetaV0neg)) /
-                 ((momentumVectorPositiveKF.Mag()) * TMath::Cos(thetaV0pos) + (momentumVectorNegativeKF.Mag()) * TMath::Cos(thetaV0neg));
-
-  Float_t qt = momentumVectorPositiveKF.Mag() * TMath::Sin(thetaV0pos);
-
-  arpod[0] = qt;
-  arpod[1] = alfa;
+  FillCutsHistogram(Form("hClusterEnergy_%d", i), clu->E());
+  FillCutsHistogram(Form("hClusterM02_%d", i), clu->GetM02());
+  FillCutsHistogram(Form("hClusterTOF_%d", i), clu->GetTOF());
+  FillCutsHistogram(Form("hClusterChi2_%d", i), clu->GetDispersion());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Calculate rapidity
-Double_t AliAnalysisTaskSigmaPCMPHOS::Rapidity(Double_t pt, Double_t pz, Double_t m)
+// Fill PCM cuts histograms
+void AliAnalysisTaskSigmaPCMPHOS::FillPCMCutHistograms(const Int_t i, const Double_t params[7])
 {
-  // calculates rapidity keeping the sign in case E == pz
-  Double_t energy = TMath::Sqrt(pt * pt + pz * pz + m * m);
-  if (energy != TMath::Abs(pz))
-    return 0.5 * TMath::Log((energy + pz) / (energy - pz));
-  return TMath::Sign(1.e30, pz);
+  // Daughter track PID using TPC
+  Double_t nSigmaTPCelectron = fPIDResponse->NumberOfSigmasTPC(electronCandidate, AliPID::kElectron);
+  Double_t nSigmaTPCpositron = fPIDResponse->NumberOfSigmasTPC(positronCandidate, AliPID::kElectron);
+  if (TMath::Abs(nSigmaTPCelectron) < fMaxNsigDaughtTPC)
+    FillCutsHistogram(Form("hSigmaElectron_%d", i), nSigmaTPCelectron);
+  if (TMath::Abs(nSigmaTPCpositron) < fMaxNsigDaughtTPC)
+    FillCutsHistogram(Form("hSigmaPositron_%d", i), nSigmaTPCpositron);
+
+  FillCutsHistogram(Form("hEtaNeg_%d", i), electronCandidate->Eta());
+  FillCutsHistogram(Form("hEtaPos_%d", i), positronCandidate->Eta());
+  FillCutsHistogram(Form("hnTPCClusNeg_%d", i), electronCandidate->GetTPCNcls());
+  FillCutsHistogram(Form("hnTPCClusPos_%d", i), positronCandidate->GetTPCNcls());
+  FillCutsHistogram(Form("hangles_%d", i), params[1], params[0]);
+  FillCutsHistogram(Form("hV0CPA_%d", i), params[2]);
+  FillCutsHistogram(Form("hV0Radius_%d", i), params[3]);
+  FillCutsHistogram(Form("hphotonmass_%d", i), params[4]);
+  FillCutsHistogram(Form("hArPodPhoton_%d", i), params[5], params[6]);
+  FillCutsHistogram(Form("hphotonPt_%d", i), params[7]);
+  FillCutsHistogram(Form("hPhotonMvsPt_%d", i), params[4], params[7]);
+  FillCutsHistogram("hPhoton", i);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Fill Lambda cuts histograms
+void AliAnalysisTaskSigmaPCMPHOS::FillLambdaCutHistograms(const Int_t i)
+{
+
+  Bool_t isLambda = 0;
+  Bool_t isLambdaBar = 0;
+
+  Double_t lV0Position[3];
+  fV0->GetXYZ(lV0Position);
+  Double_t lV0Radius = TMath::Sqrt(lV0Position[0] * lV0Position[0] + lV0Position[1] * lV0Position[1]);
+
+  TVector3 vecN, vecP, vecM; //Momentum Vectors for V0 tracks
+
+  //Get reconstructed cartesian momentum
+  vecN.SetXYZ(fV0->MomNegX(), fV0->MomNegY(), fV0->MomNegZ()); //negative daughter
+  vecP.SetXYZ(fV0->MomPosX(), fV0->MomPosY(), fV0->MomPosZ()); //positive daughter
+  vecM.SetXYZ(fV0->MomV0X(), fV0->MomV0Y(), fV0->MomV0Z());    //mother
+
+  //Custom Armenteros Podolanski calculation since V0 member functions are not reliable!
+  Double_t pLNeg = vecN.Dot(vecM) / vecM.Mag(); //Momentum longitudinal
+  Double_t pLPos = vecP.Dot(vecM) / vecM.Mag(); //to V0 momentum
+  Double_t alpha = (pLPos - pLNeg) / (pLPos + pLNeg);
+  Double_t qt = vecN.Perp(vecM);
+
+  Double_t nSigmaPosPion = fPIDResponse->NumberOfSigmasTPC(ptrack1, AliPID::kPion);
+  Double_t nSigmaNegPion = fPIDResponse->NumberOfSigmasTPC(ntrack1, AliPID::kPion);
+  Double_t nSigmaPosProton = fPIDResponse->NumberOfSigmasTPC(ptrack1, AliPID::kProton);
+  Double_t nSigmaNegProton = fPIDResponse->NumberOfSigmasTPC(ntrack1, AliPID::kProton);
+
+  Bool_t isProton = (TMath::Abs(nSigmaPosProton) < fMaxSigmaPosProton);
+  Bool_t isAntiProton = (TMath::Abs(nSigmaNegProton) < fMaxSigmaNegProton);
+  Bool_t isPosPion = (TMath::Abs(nSigmaPosPion) < fMaxSigmaPosPion);
+  Bool_t isNegPion = (TMath::Abs(nSigmaNegPion) < fMaxSigmaNegPion);
+
+  isLambda = isProton && isNegPion;
+  isLambdaBar = isAntiProton && isPosPion;
+
+  TLorentzVector positiveVector(ptrack1->Px(), ptrack1->Py(), ptrack1->Pz(), ptrack1->E());
+  TLorentzVector negativeVector(ntrack1->Px(), ntrack1->Py(), ntrack1->Pz(), ntrack1->E());
+  TLorentzVector Lambda = positiveVector + negativeVector;
+
+  if (isLambda)
+  {
+    FillCutsHistogram(Form("hLambdaEtaPr_%d", i), ptrack1->Eta());
+    FillCutsHistogram(Form("hLambdaEtaPi_%d", i), ntrack1->Eta());
+    FillCutsHistogram(Form("hSigmaPosProton_%d", i), nSigmaPosProton);
+    FillCutsHistogram(Form("hSigmaNegPion_%d", i), nSigmaNegPion);
+    FillCutsHistogram(Form("hLambdaMassCut_%d", i), Lambda.M());
+  }
+
+  if (isLambdaBar)
+  {
+    FillCutsHistogram(Form("hLambdaEtaPr_%d", i), ntrack1->Eta());
+    FillCutsHistogram(Form("hLambdaEtaPi_%d", i), ptrack1->Eta());
+    FillCutsHistogram(Form("hSigmaNegProton_%d", i), nSigmaNegProton);
+    FillCutsHistogram(Form("hSigmaPosPion_%d", i), nSigmaPosPion);
+    FillCutsHistogram(Form("hAntiLambdaMass_%d", i), Lambda.M());
+  }
+  FillCutsHistogram("hLambda", i);
+  FillCutsHistogram(Form("hPosTPCNcls_%d", i), ptrack1->GetTPCNcls());
+  FillCutsHistogram(Form("hNegTPCNcls_%d", i), ntrack1->GetTPCNcls());
+  FillCutsHistogram(Form("hLambdaDCA_%d", i), fV0->DcaV0Daughters());
+  FillCutsHistogram(Form("hLambdaCPA_%d", i), fV0->CosPointingAngle(fAODEvent->GetPrimaryVertex()));
+  FillCutsHistogram(Form("hLambdaV0Raduis_%d", i), lV0Radius);
+  FillCutsHistogram(Form("hLambdaPt_%d", i), Lambda.Pt());
+  FillCutsHistogram(Form("hPosDCA_%d", i), fV0->DcaPosToPrimVertex());
+  FillCutsHistogram(Form("hNegDCA_%d", i), fV0->DcaNegToPrimVertex());
+  FillCutsHistogram(Form("hLambdaEta_%d", i), fV0->Eta());
+  FillCutsHistogram(Form("hArPodLambda_%d", i), alpha, qt);
 }
