@@ -1579,7 +1579,7 @@ Double_t AliAnalysisTaskCorrForNonlinearFlow::GetFlowWeightSystematics(const Ali
 	double dVz = fVtxZ;
 	double dWeight = 1.0;
 	int nEta = hWeight2D->GetXaxis()->FindBin(dEta);
-	int nPhi = hWeight2D->GetXaxis()->FindBin(dPhi);
+	int nPhi = hWeight2D->GetYaxis()->FindBin(dPhi);
   dWeight = hWeight2D->GetBinContent(nEta,nPhi);
 	return dWeight;
 }
