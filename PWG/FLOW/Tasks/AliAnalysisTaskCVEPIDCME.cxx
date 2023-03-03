@@ -96,6 +96,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   isCalculateHadronHadron(false),
   isNarrowDcaCuts768(false),
   isStrictestProtonCut(false),
+  isCheckDaughterProtonPassAllCuts(false),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
   fVzCut(10.0),
@@ -178,6 +179,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   vecParticle(0),
   vecParticleV0(0),
   vecParticleFromDecay(0),
+  vecParticleFromDecayPassAllCuts(0),
   fSPDCutPU(nullptr),
   fV0CutPU(nullptr),
   fCenCutLowPU(nullptr),
@@ -368,6 +370,10 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   for (int i = 0; i < 4; i++) fProfileDeltaLambdaPionDecay[i]   = nullptr;
   for (int i = 0; i < 4; i++) fProfileGammaLambdaProtonDecay[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfileGammaLambdaPionDecay[i]   = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaLambdaProtonDecayPassAllCuts[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaLambdaPionDecayPassAllCuts[i]   = nullptr;
+  for (int i = 0; i < 4; i++) fProfileGammaLambdaProtonDecayPassAllCuts[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileGammaLambdaPionDecayPassAllCuts[i]   = nullptr;
 }
 
 //---------------------------------------------------
@@ -391,6 +397,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   isCalculateHadronHadron(false),
   isNarrowDcaCuts768(false),
   isStrictestProtonCut(false),
+  isCheckDaughterProtonPassAllCuts(false),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
   fVzCut(10.0),
@@ -473,6 +480,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   vecParticle(0),
   vecParticleV0(0),
   vecParticleFromDecay(0),
+  vecParticleFromDecayPassAllCuts(0),
   fSPDCutPU(nullptr),
   fV0CutPU(nullptr),
   fCenCutLowPU(nullptr),
@@ -663,6 +671,11 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   for (int i = 0; i < 4; i++) fProfileDeltaLambdaPionDecay[i]   = nullptr;
   for (int i = 0; i < 4; i++) fProfileGammaLambdaProtonDecay[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfileGammaLambdaPionDecay[i]   = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaLambdaProtonDecayPassAllCuts[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileDeltaLambdaPionDecayPassAllCuts[i]   = nullptr;
+  for (int i = 0; i < 4; i++) fProfileGammaLambdaProtonDecayPassAllCuts[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfileGammaLambdaPionDecayPassAllCuts[i]   = nullptr;
+  
   DefineInput(0,TChain::Class());
   DefineOutput(1,TList::Class());
   DefineOutput(2,TList::Class());
@@ -1385,9 +1398,19 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
       fResultsList->Add(fProfileGammaLambdaProtonDecay[iType]);
       fResultsList->Add(fProfileGammaLambdaPionDecay[iType]);
     }
+    if (isCheckDaughterProtonPassAllCuts) {
+      for (int iType = 0; iType < 4; iType++) {
+        fProfileDeltaLambdaProtonDecayPassAllCuts[iType] = new TProfile(Form("fProfileDeltaLambdaProtonDecayPassAllCuts_%i",iType),";centrality;#delta", 8,0.,80);
+        fProfileDeltaLambdaPionDecayPassAllCuts[iType]   = new TProfile(Form("fProfileDeltaLambdaPionDecayPassAllCuts_%i",iType)  ,";centrality;#delta", 8,0.,80);
+        fProfileGammaLambdaProtonDecayPassAllCuts[iType] = new TProfile(Form("fProfileGammaLambdaProtonDecayPassAllCuts_%i",iType),";centrality;#gamma", 8,0.,80);
+        fProfileGammaLambdaPionDecayPassAllCuts[iType]   = new TProfile(Form("fProfileGammaLambdaPionDecayPassAllCuts_%i",iType)  ,";centrality;#gamma", 8,0.,80);
+        fResultsList->Add(fProfileDeltaLambdaProtonDecayPassAllCuts[iType]);
+        fResultsList->Add(fProfileDeltaLambdaPionDecayPassAllCuts[iType]);
+        fResultsList->Add(fProfileGammaLambdaProtonDecayPassAllCuts[iType]);
+        fResultsList->Add(fProfileGammaLambdaPionDecayPassAllCuts[iType]);
+      }
+    }
   }
-
-
 
   PostData(2,fResultsList);
   if (fDebug) Printf("Post fResultsList Data Success!");
@@ -2090,19 +2113,9 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
     }
 
     //DCA Cut
-    double dcaxy = -999;
-    double dcaz = -999;
-    double r[3];
-    if (track->GetXYZ(r)) {
-      dcaxy = r[0];
-      dcaz  = r[1];
-    } else {
-      double dcax = r[0] - fVertex[0];
-      double dcay = r[1] - fVertex[1];
-      dcaz  = r[2] - fVertex[2];
-      dcaxy = sqrt(dcax*dcax + dcay*dcay);
-    }
-    
+    double dcaxy = -999, dcaz = -999;
+    if(!GetDCA(dcaxy,dcaz,track)) continue;
+
     // if FB = 1, we need to cut dca for the plane
     if (fFilterBit == 1) {
       if (fabs(dcaz) > fDcaCutZ) continue;
@@ -2110,8 +2123,8 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
     }
     // if FB = 96 or 768, we don't need cut dca for the plane
 
-    fHistDcaXY->Fill(dcaxy);
-    fHistDcaZ->Fill(dcaz);
+    fHistDcaXY->Fill(fabs(dcaxy));
+    fHistDcaZ->Fill(fabs(dcaz));
 
     if (pt > fPlanePtMin && pt < fPlanePtMax) {
       //Do we need to set pT as weight for Better resolution?
@@ -2137,7 +2150,7 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
     // but we need to set the dca cut for 768 when we start to choose the paiticle for pair(just for NarrowDCACut)
     if (fFilterBit == 768 && isNarrowDcaCuts768) { 
       if (fabs(dcaz) > 2.0) continue;
-      if (fabs(dcaxy) > 7 * (0.0026 + 0.005/TMath::Power(pt, 1.01))) continue;
+      if (fabs(dcaxy) > 7.0 * (0.0026 + 0.005/TMath::Power(pt, 1.01))) continue;
     }
 
     bool isItProttrk = CheckPIDofParticle(track,3); // 3=proton
@@ -2233,8 +2246,7 @@ bool AliAnalysisTaskCVEPIDCME::LoopV0s()
     if ( nDcaPV<fDaughtersDCAToPrimVtxMin || pDcaPV<fDaughtersDCAToPrimVtxMin) continue;
     int code = GetLambdaCode(pTrack,nTrack);
     if (TMath::Abs(code) != 3122) continue;
-    TVector2 Vt(v0->MomV0X(), v0->MomV0Y());
-    double phi = Vt.Phi() > 0 ? Vt.Phi() : Vt.Phi() + TMath::TwoPi();
+    double phi = v0->Phi();
     int id_daughter_1 = v0->GetPosID();
     int id_daughter_2 = v0->GetNegID();
     double rapLambda = v0->RapLambda();
@@ -2270,6 +2282,19 @@ bool AliAnalysisTaskCVEPIDCME::LoopV0s()
         vecParticleV0.emplace_back(std::array<double,9>{pt,eta,phi,0.,(double)code,1,mass,(double)id_daughter_1,(double)id_daughter_2});
         vecParticleFromDecay.emplace_back(std::array<double,6>{pTrack->Pt(),pTrack->Eta(),pTrack->Phi(),(double)id_daughter_1,(double)2212,1});
         vecParticleFromDecay.emplace_back(std::array<double,6>{nTrack->Pt(),nTrack->Eta(),nTrack->Phi(),(double)id_daughter_2,(double)-211,1});
+        std::cout<<id_daughter_1<<std::endl;
+
+        if(isCheckDaughterProtonPassAllCuts) {
+          int id_proton = id_daughter_1;
+          bool found = std::any_of(vecParticle.begin(), vecParticle.end(), [id_proton](std::array<double, 6>& arr){
+              return (int)arr[3] == id_proton && (int)arr[4] == 2212;
+          });
+          if(found) {
+            vecParticleFromDecayPassAllCuts.emplace_back(std::array<double,6>{pTrack->Pt(),pTrack->Eta(),pTrack->Phi(),(double)id_daughter_1,(double)2212,1});
+            vecParticleFromDecayPassAllCuts.emplace_back(std::array<double,6>{nTrack->Pt(),nTrack->Eta(),nTrack->Phi(),(double)id_daughter_2,(double)-211,1});
+          }
+        }
+
       }
     }
 
@@ -2302,6 +2327,17 @@ bool AliAnalysisTaskCVEPIDCME::LoopV0s()
         vecParticleV0.emplace_back(std::array<double,9>{pt,eta,phi,0.,(double)code,1,mass,(double)id_daughter_1,(double)id_daughter_2});
         vecParticleFromDecay.emplace_back(std::array<double,6>{nTrack->Pt(),nTrack->Eta(),nTrack->Phi(),(double)id_daughter_2,(double)-2212,1});
         vecParticleFromDecay.emplace_back(std::array<double,6>{pTrack->Pt(),pTrack->Eta(),pTrack->Phi(),(double)id_daughter_1,(double)211,1});
+
+        if(isCheckDaughterProtonPassAllCuts) {
+          int id_proton = id_daughter_2;
+          bool found = std::any_of(vecParticle.begin(), vecParticle.end(), [id_proton](const std::array<double, 6>& arr){
+              return (int)arr[3] == id_proton && (int)arr[4] == -2212;
+          });
+          if(found) {
+            vecParticleFromDecayPassAllCuts.emplace_back(std::array<double,6>{nTrack->Pt(),nTrack->Eta(),nTrack->Phi(),(double)id_daughter_2,(double)-2212,1});
+            vecParticleFromDecayPassAllCuts.emplace_back(std::array<double,6>{pTrack->Pt(),pTrack->Eta(),pTrack->Phi(),(double)id_daughter_1,(double)211,1});
+          }
+        }
       }
     }
   }//loop V0 end
@@ -2544,6 +2580,53 @@ bool AliAnalysisTaskCVEPIDCME::PairV0Trk()
         if (bitsLambdaPionDecayPair.TestBitNumber(iBits)) {
           fProfileDeltaLambdaPionDecay[iBits]->Fill(fCent, delta);
           fProfileGammaLambdaPionDecay[iBits]->Fill(fCent, gamma);
+        }
+      }
+    }
+
+
+    if(isCheckDaughterProtonPassAllCuts) {
+      for (auto particle : vecParticleFromDecayPassAllCuts) {
+        double pt     = particle[0];
+        double eta    = particle[1];
+        double phi    = particle[2];
+        int    id     = (int)particle[3];
+        int    code   = (int)particle[4];
+        double weight = particle[5];
+        if (id == id_daughter_1 || id == id_daughter_2) continue;
+  
+        double psi2TPCNoAuto = -999;
+        if (eta > 0.) psi2TPCNoAuto = fPsi2NegTPCNoAuto;
+        else          psi2TPCNoAuto = fPsi2PosTPCNoAuto;
+  
+        double delta = TMath::Cos(phi_lambda - phi);
+        double gamma = TMath::Cos(phi_lambda + phi - 2 * psi2TPCNoAuto);
+  
+        int nBits = 4;
+        TBits bitsLambdaProtonDecayPair(nBits);
+        bitsLambdaProtonDecayPair.SetBitNumber(0, code_lambda ==  3122 && code ==  2212);
+        bitsLambdaProtonDecayPair.SetBitNumber(1, code_lambda ==  3122 && code == -2212);
+        bitsLambdaProtonDecayPair.SetBitNumber(2, code_lambda == -3122 && code ==  2212);
+        bitsLambdaProtonDecayPair.SetBitNumber(3, code_lambda == -3122 && code == -2212);
+  
+        for (int iBits = 0; iBits < nBits; iBits++) {
+          if (bitsLambdaProtonDecayPair.TestBitNumber(iBits)) {
+            fProfileDeltaLambdaProtonDecayPassAllCuts[iBits]->Fill(fCent, delta);
+            fProfileGammaLambdaProtonDecayPassAllCuts[iBits]->Fill(fCent, gamma);
+          }
+        }
+  
+        TBits bitsLambdaPionDecayPair(nBits);
+        bitsLambdaPionDecayPair.SetBitNumber(0, code_lambda ==  3122 && code ==  211);
+        bitsLambdaPionDecayPair.SetBitNumber(1, code_lambda ==  3122 && code == -211);
+        bitsLambdaPionDecayPair.SetBitNumber(2, code_lambda == -3122 && code ==  211);
+        bitsLambdaPionDecayPair.SetBitNumber(3, code_lambda == -3122 && code == -211);
+  
+        for (int iBits = 0; iBits < nBits; iBits++) {
+          if (bitsLambdaPionDecayPair.TestBitNumber(iBits)) {
+            fProfileDeltaLambdaPionDecayPassAllCuts[iBits]->Fill(fCent, delta);
+            fProfileGammaLambdaPionDecayPassAllCuts[iBits]->Fill(fCent, gamma);
+          }
         }
       }
     }
@@ -2825,6 +2908,7 @@ void AliAnalysisTaskCVEPIDCME::ResetVectors()
   std::vector<std::array<double,6>>().swap(vecParticle);
   std::vector<std::array<double,9>>().swap(vecParticleV0);
   std::vector<std::array<double,6>>().swap(vecParticleFromDecay);
+  std::vector<std::array<double,6>>().swap(vecParticleFromDecayPassAllCuts);
 }
 
 //---------------------------------------------------
@@ -3520,5 +3604,20 @@ double AliAnalysisTaskCVEPIDCME::GetTPCPlaneNoAutoCorr(int id_0, int id_1, int i
     psiNoAuto = GetEventPlane(tempSumQ2x,tempSumQ2y,2.);
   } else psiNoAuto = nan("");
   return psiNoAuto;
+}
+
+bool AliAnalysisTaskCVEPIDCME::GetDCA(double &dcaxy, double &dcaz, AliAODTrack* track) {
+  if(!track) return false;
+  double r[3];
+  if (track->GetXYZ(r)) {
+    dcaxy = r[0];
+    dcaz  = r[1];
+  } else {
+    double dcax = r[0] - fVertex[0];
+    double dcay = r[1] - fVertex[1];
+    dcaz  = r[2] - fVertex[2];
+    dcaxy = sqrt(dcax*dcax + dcay*dcay);
+  }
+  return true;
 }
 
