@@ -33,7 +33,7 @@ AliAnalysisTask *AddTaskMLTreeMaker2018(TString taskname = "ESDExample",
               					Bool_t DoULS = kTRUE,
 					        Bool_t DoLS = kTRUE	
 						TString generatorNameForMCSignal  =  "Pythia CC_0;Pythia B_0;Pythia BB_0;",
-              					TString generatorNameForULSSignal =  "Hijing_1;Pythia CC_0;Pythia B_0;Pythia BB_0;",
+              					TString generatorNameForULSSignal =  "Hijing_1;Pythia CC_0;Pythia B_0;Pythia BB_0;"
 
 					     ) {				
 
