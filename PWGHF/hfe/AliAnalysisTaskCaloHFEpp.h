@@ -125,6 +125,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
                 TString festimatorFile;
                 TProfile* estimatorAvg;
                 TProfile* estimatorV0Avg;
+		TString POWHEGweightFile;
+                TH1D *ZmassWeight;		
                 TH1D* NtrkWeightMC;
                 Int_t fmult_type;
 
@@ -199,7 +201,10 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fInv_pT_ULS_forZ_level;
 		TH2F*                   fInv_pT_ULS_forZ_pos;
 		TH2F*                   fInv_pT_ULS_forZ_pos_true;
+		TH2F*                   fInv_pT_ULS_forZ_pos_true_w;
 		TH2F*                   fInv_pT_ULS_forZ_neg;
+		TH2F*                   fInv_pT_ULS_forZ_neg_true;
+		TH2F*                   fInv_pT_ULS_forZ_neg_true_w;
 		TH2F*                   fHistZeeDphi;
 		TH1F*                   fHistPt_Inc;
 		TH1F*                   fHistPt_Iso;
@@ -293,6 +298,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fHistZeOrg;
 		TH2F*                   fHistZeOrgNeg;
 		TH2F*                   fHistZeOrgPos;
+		TH2F*                   fHistZeOrgNeg_w;
+		TH2F*                   fHistZeOrgPos_w;
 		TH1F*                   fHistZeRec0;
 		TH1F*                   fHistZeRec1;
 		TH2F*                   fHist_Zpair_pos;
