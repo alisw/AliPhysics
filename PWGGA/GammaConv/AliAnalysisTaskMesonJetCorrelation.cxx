@@ -105,6 +105,9 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fVectorJetEta({}),
                                                                              fVectorJetPhi({}),
                                                                              fVectorJetArea({}),
+                                                                             fVectorJetNEF({}),
+                                                                             fVectorJetNch({}),
+                                                                             fVectorJetNclus({}),
                                                                              fTrueVectorJetPt({}),
                                                                              fTrueVectorJetPx({}),
                                                                              fTrueVectorJetPy({}),
@@ -172,6 +175,9 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoTruePtJet({}),
                                                                              fHistoTrueMatchedPtJet({}),
                                                                              fHistoTrueUnMatchedPtJet({}),
+                                                                             fHistoNEFVsPtJet({}),
+                                                                             fHistoNchVsPtJet({}),
+                                                                             fHistoNclusVsPtJet({}),
                                                                              // true meon histograms
                                                                              fRespMatrixHandlerTrueMesonInvMassVsPt({}),
                                                                              fRespMatrixHandlerTrueMesonInvMassVsZ({}),
@@ -328,6 +334,9 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fVectorJetEta({}),
                                                                                            fVectorJetPhi({}),
                                                                                            fVectorJetArea({}),
+                                                                                           fVectorJetNEF({}),
+                                                                                           fVectorJetNch({}),
+                                                                                           fVectorJetNclus({}),
                                                                                            fTrueVectorJetPt({}),
                                                                                            fTrueVectorJetPx({}),
                                                                                            fTrueVectorJetPy({}),
@@ -395,6 +404,9 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoTruePtJet({}),
                                                                                            fHistoTrueMatchedPtJet({}),
                                                                                            fHistoTrueUnMatchedPtJet({}),
+                                                                                           fHistoNEFVsPtJet({}),
+                                                                                           fHistoNchVsPtJet({}),
+                                                                                           fHistoNclusVsPtJet({}),
                                                                                            // true meon histograms
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsPt({}),
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsZ({}),
@@ -639,6 +651,11 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
   fHistoJetEta.resize(fnCuts);
   fHistoJetPhi.resize(fnCuts);
   fHistoJetArea.resize(fnCuts);
+  if(!fDoLightOutput){
+    fHistoNEFVsPtJet.resize(fnCuts);
+    fHistoNchVsPtJet.resize(fnCuts);
+    fHistoNclusVsPtJet.resize(fnCuts);
+  }
   if (fIsMC) {
     fHistoTruevsRecJetPt.resize(fnCuts);
     if(!fDoLightOutput){
@@ -1121,6 +1138,17 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fTrueJetList[iCut]->Add(fHistoTrueUnMatchedPtJet[iCut]);
     }
 
+    if(!fDoLightOutput){
+      fHistoNEFVsPtJet[iCut] = new TH2F("JetPt_NEF", "JetPt_NEF", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 20, 0, 1);
+      fJetList[iCut]->Add(fHistoNEFVsPtJet[iCut]);
+
+      fHistoNchVsPtJet[iCut] = new TH2F("JetPt_Ncharged", "JetPt_Ncharged", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 25, vecEquidistFromMinus05.data() );
+      fJetList[iCut]->Add(fHistoNchVsPtJet[iCut]);
+
+      fHistoNclusVsPtJet[iCut] = new TH2F("JetPt_Nneutral", "JetPt_Nneutral", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data(), 25, vecEquidistFromMinus05.data());
+      fJetList[iCut]->Add(fHistoNclusVsPtJet[iCut]);
+    }
+
     // inv mass histograms
     fHistoInvMassVsPt[iCut] = new TH2F("ESD_Mother_InvMass_Pt", "ESD_Mother_InvMass_Pt", fVecBinsMesonInvMass.size() - 1, fVecBinsMesonInvMass.data(), fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data());
     fHistoInvMassVsPt[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
@@ -1574,6 +1602,9 @@ void AliAnalysisTaskMesonJetCorrelation::InitJets()
   fVectorJetEta = fConvJetReader->GetVectorJetEta();
   fVectorJetPhi = fConvJetReader->GetVectorJetPhi();
   fVectorJetArea = fConvJetReader->GetVectorJetArea();
+  fVectorJetNEF = fConvJetReader->GetVectorJetNEF();
+  fVectorJetNch = fConvJetReader->GetVectorJetNtracks();
+  fVectorJetNclus = fConvJetReader->GetVectorJetNclus();
 
   fVectorJetEtaPerp = fConvJetReader->GetVectorJetEta();
   for (auto& eta : fVectorJetEtaPerp) {
@@ -1631,6 +1662,11 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessJets()
       fHistoJetEta[fiCut]->Fill(fVectorJetEta.at(i), fWeightJetJetMC);
       fHistoJetPhi[fiCut]->Fill(fVectorJetPhi.at(i), fWeightJetJetMC);
       fHistoJetArea[fiCut]->Fill(fVectorJetArea.at(i), fWeightJetJetMC);
+      if(!fDoLightOutput){
+        fHistoNEFVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNEF.at(i), fWeightJetJetMC);
+        fHistoNchVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNch.at(i), fWeightJetJetMC);
+        fHistoNclusVsPtJet[fiCut]->Fill(fVectorJetPt.at(i), fVectorJetNclus.at(i), fWeightJetJetMC);
+      }
 
       if (fIsMC > 0 && fConvJetReader->GetNJets() > 0 && fConvJetReader->GetTrueNJets() > 0) {
         Double_t min = 100;
@@ -1832,18 +1868,18 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
     if(fLocalDebugFlag) {printf("ProcessJets\n");}
     ProcessJets();
     if (fIsConvCalo || fIsCalo) {
-      if(fLocalDebugFlag) {printf("ProcessJets\n");}
+      if(fLocalDebugFlag) {printf("ProcessClusters\n");}
       ProcessClusters(); // process calo clusters
     }
     if (fIsConvCalo || fIsConv) {
-      if(fLocalDebugFlag) {printf("ProcessJets\n");}
+      if(fLocalDebugFlag) {printf("ProcessPhotonCandidates\n");}
       ProcessPhotonCandidates(); // Process this cuts gammas
     }
 
-    if(fLocalDebugFlag) {printf("ProcessJets\n");}
+    if(fLocalDebugFlag) {printf("CalculateMesonCandidates\n");}
     CalculateMesonCandidates();
 
-    if(fLocalDebugFlag) {printf("ProcessJets\n");}
+    if(fLocalDebugFlag) {printf("CalculateBackground\n");}
     CalculateBackground();
 
     if (!((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) {

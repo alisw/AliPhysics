@@ -253,6 +253,9 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   vector<double> fVectorJetEta;          //! Vector of JetEta
   vector<double> fVectorJetPhi;          //! Vector of JetPhi
   vector<double> fVectorJetArea;         //! Vector of JetArea
+  vector<double> fVectorJetNEF;          //! Vector of jet neutral energy fraction
+  vector<double> fVectorJetNch;          //! Vector of jet number of tracks
+  vector<double> fVectorJetNclus;        //! Vector of jet number of clusters
   vector<double> fTrueVectorJetPt;       //! Vector of True JetPt
   vector<double> fTrueVectorJetPx;       //! Vector of True JetPx
   vector<double> fTrueVectorJetPy;       //! Vector of True JetPy
@@ -353,7 +356,10 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoTruePtJet;                 //! vector of histos with pt of true jets
   std::vector<TH1F*> fHistoTrueMatchedPtJet;          //! vector of histos with pt of true jets that are matched to a rec jet
   std::vector<TH1F*> fHistoTrueUnMatchedPtJet;        //! vector of histos with pt of jets that are not matched to a rec jet
-
+  std::vector<TH2F*> fHistoNEFVsPtJet;                //! vector of histos with pt of jets vs neutral energy fraction
+  std::vector<TH2F*> fHistoNchVsPtJet;                //! vector of histos with pt of jets vs number of charged tracks in jet
+  std::vector<TH2F*> fHistoNclusVsPtJet;              //! vector of histos with pt of jets vs neutral clusters in jet
+  
   //-------------------------------
   // True meson histograms
   //-------------------------------
