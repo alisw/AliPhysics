@@ -116,6 +116,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask() :
    fComputeSpherocity(kFALSE),
    fTrackFilter(0x0),
    fSpherocity(-10),
+  fSpherocityTrack(10),
    fResonanceFinders(0)
 {
 //
@@ -188,6 +189,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const char *name, Bool_t useMC,Bo
    fComputeSpherocity(kFALSE),
    fTrackFilter(0x0),
    fSpherocity(-10),
+   fSpherocityTrack(10),
    fResonanceFinders(0)
 {
 //
@@ -259,6 +261,7 @@ AliRsnMiniAnalysisTask::AliRsnMiniAnalysisTask(const AliRsnMiniAnalysisTask &cop
    fComputeSpherocity(copy.fComputeSpherocity),
    fTrackFilter(copy.fTrackFilter),
    fSpherocity(copy.fSpherocity),
+   fSpherocityTrack(copy.fSpherocityTrack),
    fResonanceFinders(copy.fResonanceFinders)
 {
 //
@@ -331,6 +334,7 @@ AliRsnMiniAnalysisTask &AliRsnMiniAnalysisTask::operator=(const AliRsnMiniAnalys
    fComputeSpherocity = copy.fComputeSpherocity;
    fTrackFilter = copy.fTrackFilter;
    fSpherocity = copy.fSpherocity;
+   fSpherocityTrack = copy.fSpherocityTrack;
    fResonanceFinders = copy.fResonanceFinders;
 
    return (*this);
@@ -1369,7 +1373,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
     sumapt += pt[i1];
     GoodTracks++;
   }
-  if (GoodTracks < 10) return -10.0;
+   if (GoodTracks < fSpherocityTrack) return -10.0;
   //Getting thrust
   for(Int_t i = 0; i < 360/0.1; ++i){
 	Float_t numerador = 0;
@@ -1405,7 +1409,7 @@ Double_t AliRsnMiniAnalysisTask::ComputeSpherocity()
 	  }
   }
   spherocity=((Spherocity)*TMath::Pi()*TMath::Pi())/4.0;
-  if (GoodTracks > 9) return spherocity;
+  if (GoodTracks >= fSpherocityTrack) return spherocity;
   else return -10.0;
 }
 
