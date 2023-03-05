@@ -14,28 +14,28 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 
 
 AliAnalysisTask *AddTaskMLTreeMaker2018(TString taskname = "ESDExample",
-	       					TString outputname = "AnalysisResults.root",
-              					Bool_t isAOD=kTRUE,
-              					Bool_t getFromAlien = kFALSE,
-              					TString cFileName="Config_jjung_lowmass.C",	
-						Int_t cutsetting = 0,
-              					Int_t triggerMask = AliVEvent::kINT7,
-              					Double_t centMin = 0.,
-              					Double_t centMax = 100.,
-              					Float_t PtMin =  0.4,
-              					Float_t PtMax = 10.0,
-              					Float_t EtaMin = -0.8,
-              					Float_t EtaMax = +0.8,
-						Bool_t DoTracks = kTRUE,
-						Bool_t DoTrackQuality = kTRUE,
+	       				TString outputname = "AnalysisResults.root",
+              				Bool_t isAOD=kTRUE,
+              				Bool_t getFromAlien = kFALSE,
+              				TString cFileName="Config_jjung_lowmass.C",	
+					Int_t cutsetting = 0,
+              				Int_t triggerMask = AliVEvent::kINT7,
+              				Double_t centMin = 0.,
+              				Double_t centMax = 100.,
+              				Float_t PtMin =  0.4,
+              				Float_t PtMax = 10.0,
+              				Float_t EtaMin = -0.8,
+              				Float_t EtaMax = +0.8,
+					Bool_t DoTracks = kTRUE,
+					Bool_t DoTrackQuality = kTRUE,
 
-						Bool_t DoPairing =kTRUE,
-              					Bool_t DoULS = kTRUE,
-					        Bool_t DoLS = kTRUE	
-						TString generatorNameForMCSignal  =  "Pythia CC_0;Pythia B_0;Pythia BB_0;",
-              					TString generatorNameForULSSignal =  "Hijing_1;Pythia CC_0;Pythia B_0;Pythia BB_0;"
+					Bool_t DoPairing =kTRUE,
+              				Bool_t DoULS = kTRUE,
+					Bool_t DoLS = kTRUE,	
+					TString generatorNameForMCSignal  = "Pythia CC_0;Pythia B_0;Pythia BB_0;",
+              				TString generatorNameForULSSignal = "Hijing_1;Pythia CC_0;Pythia B_0;Pythia BB_0;"
 
-					     ) {				
+					) {				
 
 
 AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -64,7 +64,7 @@ std::cout << "Configpath:  " << configFilePath << std::endl;
 Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
 
 if (!gROOT->GetListOfGlobalFunctions()->FindObject(cFileName.Data()))
-gROOT->LoadMacro(configFilePath.Data());  //old root5
+  gROOT->LoadMacro(configFilePath.Data());  //old root5
 
 
 // Check the analysis type using the event handlers connected to the analysis manager.

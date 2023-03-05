@@ -562,8 +562,8 @@ void AliAnalysisTaskMLTreeMaker2018::UserCreateOutputObjects() {
       fTreePairs.at(index)->Branch("pairDCAee", &pairDCAee.at(index));
 
       fTreePairs.at(index)->Branch("primVertx", &primVerticesX.at(index));
-      fTreePairs.at(index)->Branch("primverty", &primVerticesY.at(index));
-      fTreePairs.at(index)->Branch("primvertz", &primVerticesZ.at(index));
+      fTreePairs.at(index)->Branch("primVerty", &primVerticesY.at(index));
+      fTreePairs.at(index)->Branch("primVertz", &primVerticesZ.at(index));
 
       fTreePairs.at(index)->SetAutoSave(100000000);
     }
@@ -1136,9 +1136,9 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
           dcaXY_res_track1[i].push_back(fNegPart[neg_i].fDCAxy_res);    //DCA
           dcaZ_res_track1[i].push_back(fNegPart[neg_i].fDCAz_res);
 
-	  vertx_track2[i].push_back(fNegPart[neg_i].fXv);
-          verty_track2[i].push_back(fNegPart[neg_i].fYv);
-          vertz_track2[i].push_back(fNegPart[neg_i].fZv);
+	  vertx_track1[i].push_back(fNegPart[neg_i].fXv);
+          verty_track1[i].push_back(fNegPart[neg_i].fYv);
+          vertz_track1[i].push_back(fNegPart[neg_i].fZv);
     
 
           eta_track2[i].push_back(fPosPart[pos_i].fEta);
