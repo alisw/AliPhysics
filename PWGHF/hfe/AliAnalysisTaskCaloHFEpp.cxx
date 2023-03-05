@@ -1151,7 +1151,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 	// Get generated WZ 
 	//////////////////////////////
 	//if(fMCarray)CheckMCgen(fMCheader,CutTrackEta[1]);
-	if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
+	//if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
 
         if(fMCarray)
           {
@@ -1162,6 +1162,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
               }
           } 
 
+	if(fMCarray)GetMClevelWdecay(fMCheader,CutTrackEta[1]);
 
 	//////////////////////////////
 	// Get sign of B field
