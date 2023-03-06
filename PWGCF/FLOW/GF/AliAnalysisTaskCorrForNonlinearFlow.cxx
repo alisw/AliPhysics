@@ -214,6 +214,8 @@ AliAnalysisTaskCorrForNonlinearFlow::AliAnalysisTaskCorrForNonlinearFlow(const c
   fNUE(_fNUE),
   fNUA(_fNUA),
   fIsMC(0),
+  fUseTPCTruth(0),
+  fUseFMDTruth(0),
   fNtrksName("Mult"),
   //....
   fPeriod(_fPeriod),
@@ -1220,7 +1222,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
   int fNofTracksAss = 0;
   int fNofTracksTrig = 0;
 
-  if (anaType.EqualTo("TPCTPC")) {
+  if (anaType.EqualTo("TPCTPC") && (!fIsMC || !fUseTPCTruth)) {
     for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
       AliAODTrack* track = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(iTrack));
 
@@ -1260,60 +1262,63 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
       }
     }
   } else if (anaType.EqualTo("TPCFMD")) {
-    for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
-      AliAODTrack* track = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(iTrack));
+    if (!fIsMC || !fUseTPCTruth) {
+      for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+        AliAODTrack* track = dynamic_cast<AliAODTrack*>(fInputEvent->GetTrack(iTrack));
 
-      // Require track to be existing and pass the track selection
-      if (!track) continue;
+        // Require track to be existing and pass the track selection
+        if (!track) continue;
 
-      fPtTriDisBefore->Fill(track->Pt());
-      fEtaTriDisBefore->Fill(track->Eta());
-      fPhiTriDisBefore->Fill(track->Phi());
-
-      track->GetXYZ(pos);
-      if (!AcceptAODTrack(track, pos,vtxp)) continue;
-
-      Double_t pt = track->Pt();
-
-      if (pt > fPtMinTrig && pt < fPtMaxTrig) {
-        fTracksTrigCharged->Add(track);
         fPtTriDisBefore->Fill(track->Pt());
         fEtaTriDisBefore->Fill(track->Eta());
         fPhiTriDisBefore->Fill(track->Phi());
-        fNofTracksTrig++; // number of trigger tracks in the event
-        fhTracksTrigCent->Fill(NtrksCounter, fPVz);
+
+        track->GetXYZ(pos);
+        if (!AcceptAODTrack(track, pos,vtxp)) continue;
+
+        Double_t pt = track->Pt();
+
+        if (pt > fPtMinTrig && pt < fPtMaxTrig) {
+          fTracksTrigCharged->Add(track);
+          fPtTriDisBefore->Fill(track->Pt());
+          fEtaTriDisBefore->Fill(track->Eta());
+          fPhiTriDisBefore->Fill(track->Phi());
+          fNofTracksTrig++; // number of trigger tracks in the event
+          fhTracksTrigCent->Fill(NtrksCounter, fPVz);
+        }
       }
     }
 
-    AliAODForwardMult* aodForward = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
-    const TH2D& d2Ndetadphi = aodForward->GetHistogram();
-    int nEta = d2Ndetadphi.GetXaxis()->GetNbins();
-    int nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
+    if (!fIsMC || !fUseFMDTruth) {
+      AliAODForwardMult* aodForward = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
+      const TH2D& d2Ndetadphi = aodForward->GetHistogram();
+      int nEta = d2Ndetadphi.GetXaxis()->GetNbins();
+      int nPhi = d2Ndetadphi.GetYaxis()->GetNbins();
 
 
-    for (int iEta = 1; iEta <= nEta; iEta++) {
-      for (int iPhi = 1; iPhi <= nPhi; iPhi++) {
+      for (int iEta = 1; iEta <= nEta; iEta++) {
+        for (int iPhi = 1; iPhi <= nPhi; iPhi++) {
 
 
-        double eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta); 
-        double phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi); 
+          double eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta); 
+          double phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi); 
 
 
-        double etaAccepted = false;
-        if ( fFMDAacceptanceCutLower < eta && eta < fFMDAacceptanceCutUpper) etaAccepted = true;
-        if ( fFMDCacceptanceCutLower < eta && eta < fFMDCacceptanceCutUpper) etaAccepted = true;
-        if (!etaAccepted) continue;
+          double etaAccepted = false;
+          if ( fFMDAacceptanceCutLower < eta && eta < fFMDAacceptanceCutUpper) etaAccepted = true;
+          if ( fFMDCacceptanceCutLower < eta && eta < fFMDCacceptanceCutUpper) etaAccepted = true;
+          if (!etaAccepted) continue;
 
-        double mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
-        if (mostProbableN > 0) {
-          fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
-          fEtaAssDis->Fill(eta, mostProbableN);
-          fPhiAssDis->Fill(phi, mostProbableN);
+          double mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
+          if (mostProbableN > 0) {
+            fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
+            fEtaAssDis->Fill(eta, mostProbableN);
+            fPhiAssDis->Fill(phi, mostProbableN);
+          }
         }
-      }
-    } 
-  } else if (anaType.EqualTo("FMDFMD")) {
-
+      } 
+    }
+  } else if (anaType.EqualTo("FMDFMD") && (!fIsMC || !fUseFMDTruth)) {
     AliAODForwardMult* aodForward = static_cast<AliAODForwardMult*>(fAOD->FindListObject("Forward"));
     const TH2D& d2Ndetadphi = aodForward->GetHistogram();
     int nEta = d2Ndetadphi.GetXaxis()->GetNbins();
@@ -1321,8 +1326,8 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 
     for (int iEta = 1; iEta <= nEta; iEta++) {
       for (int iPhi = 1; iPhi <= nPhi; iPhi++) {
-        double eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta); 
-        double phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi); 
+        double eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta);
+        double phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi);
 
         double etaAccepted = false;
         if ( fFMDAacceptanceCutLower < eta && eta < fFMDAacceptanceCutUpper) etaAccepted = true;
@@ -1332,13 +1337,13 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
         double mostProbableN = d2Ndetadphi.GetBinContent(iEta, iPhi);
         if (mostProbableN > 0) {
           if (eta > 0) {
-            fTracksTrigCharged->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
+            fTracksTrigCharged->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN));
             // Set the pt to 1.0
             fhTracksTrigCent->Fill(NtrksCounter, fPVz, mostProbableN);
             fEtaTriDis->Fill(eta, mostProbableN);
             fPhiTriDis->Fill(phi, mostProbableN);
           } else {
-            fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN)); 
+            fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, mostProbableN));
             fEtaAssDis->Fill(eta, mostProbableN);
             fPhiAssDis->Fill(phi, mostProbableN);
           }
@@ -1346,10 +1351,145 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
       } // end loop phi
     } // end loop eta
   }
-
-
   return kTRUE;
 }
+
+Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracksMCTruth() {
+
+  AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
+  if(!mcEvent) return kFALSE;
+
+  Int_t nTracks = mcEvent->GetNumberOfTracks();
+
+  fTracksTrigCharged = new TObjArray;
+  fTracksAss = new TObjArray;
+
+  // TPC-TPC
+  int fNofTracksAss = 0;
+  int fNofTracksTrig = 0;
+
+  if (anaType.EqualTo("TPCTPC") && fUseTPCTruth) {
+    for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+      AliAODMCParticle* track = (AliAODMCParticle*)mcEvent->GetTrack(iTrack);
+
+      // Require track to be existing and pass the track selection
+      if (!track) continue;
+
+      // Fill the QA plot before cuts
+      fPtTriDisBefore->Fill(track->Pt());
+      fPtAssDisBefore->Fill(track->Pt());
+      fEtaTriDisBefore->Fill(track->Eta());
+      fEtaAssDisBefore->Fill(track->Eta());
+      fPhiTriDisBefore->Fill(track->Phi());
+      fPhiAssDisBefore->Fill(track->Phi());
+
+      if (!AcceptMCTruthTrack(track)) continue;
+      // Make sure it is in the TPC region
+      if (track->Eta() < -0.8 || track->Eta() > 0.8) continue;
+
+      Double_t pt = track->Pt();
+      // Only if we consider the TPC-TPC correlation, we use this
+      if (pt > fPtMinAss && pt < fPtMaxAss) {
+        // Mingrui Polarity ??
+        fTracksAss->Add(track);
+        fNofTracksAss++; // number of associate tracks in the event
+        // Fill the QA plot after cuts
+        fPtAssDis->Fill(track->Pt());
+        fEtaAssDis->Fill(track->Eta());
+        fPhiAssDis->Fill(track->Phi());
+      }
+
+      if (pt > fPtMinTrig && pt < fPtMaxTrig) {
+        fTracksTrigCharged->Add(track);
+        fNofTracksTrig++; // number of trigger tracks in the event
+        fhTracksTrigCent->Fill(NtrksCounter, fPVz);
+        fPtTriDis->Fill(track->Pt());
+        fEtaTriDis->Fill(track->Eta());
+        fPhiTriDis->Fill(track->Phi());
+      }
+    }
+  } else if (anaType.EqualTo("TPCFMD")) {
+    if (fUseTPCTruth) {
+      for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+
+        AliAODMCParticle* track = (AliAODMCParticle*)mcEvent->GetTrack(iTrack);
+        if (!AcceptMCTruthTrack(track)) continue;
+        // Make sure it is in the TPC region
+        if (track->Eta() < -0.8 || track->Eta() > 0.8) continue;
+
+        // Require track to be existing and pass the track selection
+        if (!track) continue;
+
+        fPtTriDisBefore->Fill(track->Pt());
+        fEtaTriDisBefore->Fill(track->Eta());
+        fPhiTriDisBefore->Fill(track->Phi());
+
+        Double_t pt = track->Pt();
+
+        if (pt > fPtMinTrig && pt < fPtMaxTrig) {
+          fTracksTrigCharged->Add(track);
+          fPtTriDisBefore->Fill(track->Pt());
+          fEtaTriDisBefore->Fill(track->Eta());
+          fPhiTriDisBefore->Fill(track->Phi());
+          fNofTracksTrig++; // number of trigger tracks in the event
+          fhTracksTrigCent->Fill(NtrksCounter, fPVz);
+        }
+      }
+    }
+    if (fUseFMDTruth) {
+      for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+
+        AliAODMCParticle* track = (AliAODMCParticle*)mcEvent->GetTrack(iTrack);
+        // Require track to be existing and pass the track selection
+        if (!track) continue;
+
+        if (!AcceptMCTruthTrack(track)) continue;
+
+        double eta = track->Eta();
+        double phi = track->Phi();
+        double etaAccepted = false;
+        if ( fFMDAacceptanceCutLower < eta && eta < fFMDAacceptanceCutUpper) etaAccepted = true;
+        if ( fFMDCacceptanceCutLower < eta && eta < fFMDCacceptanceCutUpper) etaAccepted = true;
+        if (!etaAccepted) continue;
+
+        fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, 1)); 
+        fEtaAssDis->Fill(eta, 1);
+        fPhiAssDis->Fill(phi, 1);
+      }
+    }
+  } else if (anaType.EqualTo("FMDFMD") && fUseFMDTruth) {
+    for (Int_t iTrack = 0; iTrack < nTracks; iTrack++) {
+
+      AliAODMCParticle* track = (AliAODMCParticle*)mcEvent->GetTrack(iTrack);
+      // Require track to be existing and pass the track selection
+      if (!track) continue;
+
+      if (!AcceptMCTruthTrack(track)) continue;
+      // Make sure it is in the TPC region
+
+      double eta = track->Eta();
+      double phi = track->Phi();
+      double etaAccepted = false;
+      if ( fFMDAacceptanceCutLower < eta && eta < fFMDAacceptanceCutUpper) etaAccepted = true;
+      if ( fFMDCacceptanceCutLower < eta && eta < fFMDCacceptanceCutUpper) etaAccepted = true;
+      if (!etaAccepted) continue;
+
+      if (eta > 0) {
+        fTracksTrigCharged->Add(new AliPartSimpleForCorr(eta, phi, 1)); 
+        // Set the pt to 1.0
+        fhTracksTrigCent->Fill(NtrksCounter, fPVz, 1);
+        fEtaTriDis->Fill(eta, 1);
+        fPhiTriDis->Fill(phi, 1);
+      } else {
+        fTracksAss->Add(new AliPartSimpleForCorr(eta, phi, 1)); 
+        fEtaAssDis->Fill(eta, 1);
+        fPhiAssDis->Fill(phi, 1);
+      }
+    }
+  }
+  return kTRUE;
+}
+
 
 Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp) {
   // Pt cut
@@ -1484,6 +1624,20 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
 
   return kTRUE;
 }
+
+Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptMCTruthTrack(AliAODMCParticle *mtrk) {
+  // Pt cut
+  if(mtrk->Pt() < fMinPt) return kFALSE;
+  if(mtrk->Pt() > fMaxPt) return kFALSE;
+
+  if(TMath::Abs(mtrk->Eta()) > fEtaCut) return kFALSE;
+
+  if (!(mtrk->IsPhysicalPrimary())) return kFALSE;
+  if (mtrk->Charge() == 0) return kFALSE;
+  return kTRUE;
+}
+
+
 
 Bool_t AliAnalysisTaskCorrForNonlinearFlow::LoadWeightsSystematics() {
   hWeight2D = (TH2D*)fFlowWeightsList->FindObject("hNUA");
