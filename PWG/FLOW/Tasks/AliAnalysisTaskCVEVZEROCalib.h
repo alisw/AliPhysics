@@ -136,7 +136,15 @@ class AliAnalysisTaskCVEVZEROCalib : public AliAnalysisTaskSE
   TH1I* fHistRunNumBin;
   TH1D* fHistCent[2];
   TH1D* fHistVz[2];
-  TH2D* fHist2ChanalMult[2];
+  TProfile* fProfileChanalMult[2];
+  TProfile* fProfileQ2xV0CCent[2];
+  TProfile* fProfileQ2yV0CCent[2];
+  TProfile* fProfileQ2xV0ACent[2];
+  TProfile* fProfileQ2yV0ACent[2];
+  TProfile* fProfileQ2xV0CVz[2];
+  TProfile* fProfileQ2yV0CVz[2];
+  TProfile* fProfileQ2xV0AVz[2];
+  TProfile* fProfileQ2yV0AVz[2];
 
   /////////////
   // Results //

@@ -2282,7 +2282,6 @@ bool AliAnalysisTaskCVEPIDCME::LoopV0s()
         vecParticleV0.emplace_back(std::array<double,9>{pt,eta,phi,0.,(double)code,1,mass,(double)id_daughter_1,(double)id_daughter_2});
         vecParticleFromDecay.emplace_back(std::array<double,6>{pTrack->Pt(),pTrack->Eta(),pTrack->Phi(),(double)id_daughter_1,(double)2212,1});
         vecParticleFromDecay.emplace_back(std::array<double,6>{nTrack->Pt(),nTrack->Eta(),nTrack->Phi(),(double)id_daughter_2,(double)-211,1});
-        std::cout<<id_daughter_1<<std::endl;
 
         if(isCheckDaughterProtonPassAllCuts) {
           int id_proton = id_daughter_1;
