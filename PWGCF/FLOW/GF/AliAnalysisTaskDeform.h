@@ -128,6 +128,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetAMPTCentralityMap(vector<double> b, vector<double> cent) { for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i]; }
   void SetUseMcParticleForEfficiency(bool newval) { fUseMcParticleForEfficiency = newval; }
   void SetFillAdditionalTrackQAPlots(Bool_t newval) { fFillAdditionalQA = newval; }
+  void SetCalculateGFWCumulants(bool newval) { fCalculateGFWCumulants = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -150,6 +151,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TRandom *fRndm; 
   Int_t fNBootstrapProfiles; //Number of profiles for bootstrapping
   Bool_t fFillAdditionalQA;
+  Bool_t fCalculateGFWCumulants;
   TAxis *fPtAxis;
   TAxis *fEtaAxis;
   TAxis *fMultiAxis;      //Multiplicity axis (either for V0M or Nch)
@@ -237,6 +239,10 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH1D** fChi2TPCcls; //!
   TH1D* fEtaMptAcceptance; //!
   TH1D* fPtMptAcceptance; //!
+  AliProfileBS* fc22;
+  AliProfileBS* fc24;
+  AliProfileBS* fc26;
+  AliProfileBS* fc28;
   Double_t fImpactParameterMC;
   int EventNo;
   unsigned int fEventWeight; 
@@ -244,6 +250,9 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   vector<vector<vector<double>>>  wpPtSubP;
   vector<vector<vector<double>>>  wpPtSubN;
   std::map<double,double> centralitymap;  
+  static const Int_t      fNumHarms = 20;            
+  static const Int_t      fNumPowers = 20;            
+  TComplex Qvector[fNumHarms][fNumPowers];
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
@@ -275,6 +284,18 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fFillMptPowers;
   Bool_t fUseMcParticleForEfficiency;
   Double_t *GetBinsFromAxis(TAxis *inax);
+  void FillGFWProfiles(const Double_t &cent, const Double_t &l_rndm);
+  void FillQvector(double w, double phi);
+  TComplex Q(int n, int p);
+  void ResetFlowVector(TComplex (&array)[fNumHarms][fNumPowers]);
+  TComplex Two(int n1, int n2);
+  TComplex Three(int n1, int n2, int n3);
+  TComplex Four(int n1, int n2, int n3, int n4);
+  TComplex Five(int n1, int n2, int n3, int n4, int n5);
+  TComplex Six(int n1, int n2, int n3, int n4, int n5, int n6);
+  TComplex Seven(int n1, int n2, int n3, int n4, int n5, int n6, int n7);
+  TComplex Eight(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8);
+
   ClassDef(AliAnalysisTaskDeform,1);
 };
 
