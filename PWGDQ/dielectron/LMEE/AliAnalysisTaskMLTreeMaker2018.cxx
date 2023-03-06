@@ -609,34 +609,25 @@ void AliAnalysisTaskMLTreeMaker2018::UserCreateOutputObjects() {
   if(hasMC){
 
     TObjArray arr = *(fGeneratorName.Tokenize(";"));
-    std::cout << "Used Generators: " << std::endl;
+    //std::cout << "Used Generators: " << std::endl;
     for (int i = 0; i < arr.GetEntries(); ++i){
       TString temp = arr.At(i)->GetName();
-      std::cout << "--- " << temp << std::endl;
       fGeneratorHashs.push_back(temp.Hash());
     }
   
     arr = *(fGeneratorMCSignalName.Tokenize(";"));
-    std::cout << "Used Generators for MCSignals: " << std::endl;
+    //std::cout << "Used Generators for MCSignals: " << std::endl;
     for (int i = 0; i < arr.GetEntries(); ++i){
       TString temp = arr.At(i)->GetName();
-      std::cout << "--- " << temp << std::endl;
       fGeneratorMCSignalHashs.push_back(temp.Hash());
     }
   
     arr = *(fGeneratorULSSignalName.Tokenize(";"));
-    std::cout << "Used Generators for ULSSignals: " << std::endl;
+    //std::cout << "Used Generators for ULSSignals: " << std::endl;
     for (int i = 0; i < arr.GetEntries(); ++i){
       TString temp = arr.At(i)->GetName();
-      std::cout << "--- " << temp << std::endl;
       fGeneratorULSSignalHashs.push_back(temp.Hash());
     }
-
-
-    std::cout << fGeneratorHashs[0] << "  " << fGeneratorHashs[1] << std::endl;
-    std::cout << fGeneratorMCSignalHashs[0] << "  " << fGeneratorMCSignalHashs[1]  << std::endl;
-    std::cout << fGeneratorULSSignalHashs[0] << "  " << fGeneratorULSSignalHashs[1] << std::endl;
-
   }
 }
 //________________________________________________________________________
@@ -1281,24 +1272,24 @@ std::tuple<int, int, int> AliAnalysisTaskMLTreeMaker2018::GetAcceptedPairs(AliVE
 
   }
 
-  std::cout << "+++ Pairs +++" << std::endl;
+  //std::cout << "+++ Pairs +++" << std::endl;
 
   Int_t numberPairsULS = 0;
   Int_t numberPairsLSmm = 0;
   Int_t numberPairsLSpp = 0;
   if(doULS){
-    std::cout << "Filling ULS pairs" << std::endl;
+    //std::cout << "Filling ULS pairs" << std::endl;
     numberPairsULS = FillSimplePairs(fNegPart, fPosPart, event, 0);
   }
   if(doLS){
-    std::cout << "Filling LSmm pairs" << std::endl;
+    //std::cout << "Filling LSmm pairs" << std::endl;
     numberPairsLSmm = FillSimplePairs(fNegPart, fNegPart, event, 1);
     
-    std::cout << "Filling LSmm pairs" << std::endl;
+    //std::cout << "Filling LSmm pairs" << std::endl;
     numberPairsLSpp = FillSimplePairs(fPosPart, fPosPart, event, 2);
   }
   if(fPairMCSignal.size() > 0){
-    std::cout << "Filling MCsignal pairs" << std::endl;
+    //std::cout << "Filling MCsignal pairs" << std::endl;
     Int_t check =  FillSignalPairs(event);
   }
 
@@ -1814,7 +1805,7 @@ void AliAnalysisTaskMLTreeMaker2018::SetupEventCuts(AliDielectronEventCuts* f)
 
 
 bool AliAnalysisTaskMLTreeMaker2018::CheckGenerator(int trackID, std::vector<unsigned int> vecHashes, Bool_t isGen){
-  std::cout << "Entering Generator" << std::endl;
+  //std::cout << "Entering Generator" << std::endl;
   //if(fRejectParticleFromOOB){
   //  if(isAOD){//for AOD
   //    AliAODMCHeader* mcHeader = (AliAODMCHeader*)fEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
@@ -1835,7 +1826,6 @@ bool AliAnalysisTaskMLTreeMaker2018::CheckGenerator(int trackID, std::vector<uns
   //}
 
   if (vecHashes.size() == 0){
-    std::cout << "leaving Generator" << std::endl;
     return true;
   }
 
@@ -1845,14 +1835,12 @@ bool AliAnalysisTaskMLTreeMaker2018::CheckGenerator(int trackID, std::vector<uns
   //Int_t genID = p->GetGeneratorIndex();
   //AliInfo(Form("genID = %d , generator name = %s",genID,genname.Data()));
 
-  std::cout << "  Generator: " << genname << std::endl;
   if(!hasGenerator) {
     Printf("no cocktail header list was found for this track");
     return false;
   }
   else{
     for (unsigned int i = 0; i < vecHashes.size(); ++i){
-      std::cout << genname.Hash() << " " << vecHashes[i] << std::endl;
       if (genname.Hash() == vecHashes[i]) return true;
     }//end of vecHashes loop
     return false;
