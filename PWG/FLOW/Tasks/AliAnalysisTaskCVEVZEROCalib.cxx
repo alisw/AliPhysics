@@ -124,7 +124,15 @@ AliAnalysisTaskCVEVZEROCalib::AliAnalysisTaskCVEVZEROCalib() :
   for (int i = 0; i < 2; i++) hQy2mV0[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistCent[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistVz[i] = nullptr;
-  for (int i = 0; i < 2; i++) fHist2ChanalMult[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileChanalMult[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2xV0CCent[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2yV0CCent[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2xV0ACent[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2yV0ACent[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2xV0CVz[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2yV0CVz[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2xV0AVz[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2yV0AVz[i] = nullptr;
   for (int i = 0; i < 150; i++) p2D_V0C_meanQ2x_cent_vz[i] = nullptr;
   for (int i = 0; i < 150; i++) p2D_V0C_meanQ2y_cent_vz[i] = nullptr;
   for (int i = 0; i < 150; i++) p2D_V0A_meanQ2x_cent_vz[i] = nullptr;
@@ -180,7 +188,15 @@ AliAnalysisTaskCVEVZEROCalib::AliAnalysisTaskCVEVZEROCalib(const char *name) :
   for (int i = 0; i < 2; i++) hQy2mV0[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistCent[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistVz[i] = nullptr;
-  for (int i = 0; i < 2; i++) fHist2ChanalMult[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileChanalMult[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2xV0CCent[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2yV0CCent[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2xV0ACent[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2yV0ACent[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2xV0CVz[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2yV0CVz[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2xV0AVz[i] = nullptr;
+  for (int i = 0; i < 2; i++) fProfileQ2yV0AVz[i] = nullptr;
   for (int i = 0; i < 150; i++) p2D_V0C_meanQ2x_cent_vz[i] = nullptr;
   for (int i = 0; i < 150; i++) p2D_V0C_meanQ2y_cent_vz[i] = nullptr;
   for (int i = 0; i < 150; i++) p2D_V0A_meanQ2x_cent_vz[i] = nullptr;
@@ -387,11 +403,36 @@ void AliAnalysisTaskCVEVZEROCalib::UserCreateOutputObjects()
   fQAList->Add(fHistVz[0]);
   fQAList->Add(fHistVz[1]);
 
-  fHist2ChanalMult[0] = new TH2D("fHist2ChanalMult_RAW", ";Chanal;Energy", 64, 0., 64., 0,120,1200);
-  fHist2ChanalMult[1] = new TH2D("fHist2ChanalMult_BGE", ";Chanal;Energy", 64, 0., 64., 0,120,1200);
-  fQAList->Add(fHist2ChanalMult[0]);
-  fQAList->Add(fHist2ChanalMult[1]);
+  fProfileChanalMult[0] = new TProfile("fProfileChanalMult_RAW", ";Chanal;Energy", 64, 0., 64.);
+  fProfileChanalMult[1] = new TProfile("fProfileChanalMult_BGE", ";Chanal;Energy", 64, 0., 64.);
+  fQAList->Add(fProfileChanalMult[0]);
+  fQAList->Add(fProfileChanalMult[1]);
+  
+  std::string name;
+  for (int i = 0; i < 2; i++) {
+    if (i == 0) name = "BfRC";
+    if (i == 1) name = "AfRC";
+    fProfileQ2xV0CCent[i] = new TProfile(Form("fProfileQ2xV0CCent_%s",name.c_str()),Form("fProfileQ2xV0CCent_%s;Cent;<Q2x>",name.c_str()),fCentBinNum,0.,80);
+    fProfileQ2yV0CCent[i] = new TProfile(Form("fProfileQ2yV0CCent_%s",name.c_str()),Form("fProfileQ2yV0CCent_%s;Cent;<Q2y>",name.c_str()),fCentBinNum,0.,80);
+    fProfileQ2xV0ACent[i] = new TProfile(Form("fProfileQ2xV0ACent_%s",name.c_str()),Form("fProfileQ2xV0ACent_%s;Cent;<Q2x>",name.c_str()),fCentBinNum,0.,80);
+    fProfileQ2yV0ACent[i] = new TProfile(Form("fProfileQ2yV0ACent_%s",name.c_str()),Form("fProfileQ2yV0ACent_%s;Cent;<Q2y>",name.c_str()),fCentBinNum,0.,80);
 
+    fProfileQ2xV0CVz[i] = new TProfile(Form("fProfileQ2xV0CVz_%s",name.c_str()),Form("fProfileQ2xV0CVz_%s;Vz;<Q2x>",name.c_str()),10,-10,10);
+    fProfileQ2yV0CVz[i] = new TProfile(Form("fProfileQ2yV0CVz_%s",name.c_str()),Form("fProfileQ2yV0CVz_%s;Vz;<Q2y>",name.c_str()),10,-10,10);
+    fProfileQ2xV0AVz[i] = new TProfile(Form("fProfileQ2xV0AVz_%s",name.c_str()),Form("fProfileQ2xV0AVz_%s;Vz;<Q2x>",name.c_str()),10,-10,10);
+    fProfileQ2yV0AVz[i] = new TProfile(Form("fProfileQ2yV0AVz_%s",name.c_str()),Form("fProfileQ2yV0AVz_%s;Vz;<Q2y>",name.c_str()),10,-10,10);
+
+    fQAList->Add(fProfileQ2xV0CCent[i]);
+    fQAList->Add(fProfileQ2yV0CCent[i]);
+    fQAList->Add(fProfileQ2xV0ACent[i]);
+    fQAList->Add(fProfileQ2yV0ACent[i]);
+
+    fQAList->Add(fProfileQ2xV0CVz[i]);
+    fQAList->Add(fProfileQ2yV0CVz[i]);
+    fQAList->Add(fProfileQ2xV0AVz[i]);
+    fQAList->Add(fProfileQ2yV0AVz[i]);
+  }
+  
 
   fResultsList = new TList();
   fResultsList -> SetName("fResultsList");
@@ -604,19 +645,19 @@ bool AliAnalysisTaskCVEVZEROCalib::RecenterVZEROQVector()
   
     if (iCh < 32) { // C-side
       if (fPeriod.EqualTo("LHC10h") || fPeriod.EqualTo("LHC15o")) {
-        fHist2ChanalMult[0] -> Fill(iCh+0.5, multCh);
+        fProfileChanalMult[0] -> Fill(iCh+0.5, multCh);
         if      (iCh <  8)              multCh = multCh/multMean[iCh] * multMean[0];
         else if (iCh >= 8  && iCh < 16) multCh = multCh/multMean[iCh] * multMean[8];
         else if (iCh >= 16 && iCh < 24) multCh = multCh/multMean[iCh] * multMean[16];
         else if (iCh >= 24 && iCh < 32) multCh = multCh/multMean[iCh] * multMean[24];
-        fHist2ChanalMult[1] -> Fill(iCh+0.5, multCh);
+        fProfileChanalMult[1] -> Fill(iCh+0.5, multCh);
       }
       if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")){
-        fHist2ChanalMult[0] -> Fill(iCh+0.5, multCh);
+        fProfileChanalMult[0] -> Fill(iCh+0.5, multCh);
         int    ibinV0     = fHCorrectV0ChWeghts->FindBin(fVertex[2],iCh);
         double gainFactor = (double)fHCorrectV0ChWeghts->GetBinContent(ibinV0);
         multCh *= gainFactor;
-        fHist2ChanalMult[1] -> Fill(iCh+0.5, multCh);
+        fProfileChanalMult[1] -> Fill(iCh+0.5, multCh);
       }
 
       if (multCh < 1.e-6) return false;
@@ -626,20 +667,20 @@ bool AliAnalysisTaskCVEVZEROCalib::RecenterVZEROQVector()
       multV0C += multCh;
 
     } else if (iCh >= 32 && iCh < 64) { // A-side
-      fHist2ChanalMult[0] -> Fill(iCh+0.5, multCh);
+      fProfileChanalMult[0] -> Fill(iCh+0.5, multCh);
       if (fPeriod.EqualTo("LHC10h") || fPeriod.EqualTo("LHC15o")) {
         if      (iCh >= 32 && iCh < 40) multCh = multCh/multMean[iCh] * multMean[0];
         else if (iCh >= 40 && iCh < 48) multCh = multCh/multMean[iCh] * multMean[8];
         else if (iCh >= 48 && iCh < 56) multCh = multCh/multMean[iCh] * multMean[16];
         else if (iCh >= 56 && iCh < 64) multCh = multCh/multMean[iCh] * multMean[24];
-        fHist2ChanalMult[1] -> Fill(iCh+0.5, multCh);
+        fProfileChanalMult[1] -> Fill(iCh+0.5, multCh);
       }
       if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")){
-        fHist2ChanalMult[0] -> Fill(iCh+0.5, multCh);
+        fProfileChanalMult[0] -> Fill(iCh+0.5, multCh);
         int    ibinV0     = fHCorrectV0ChWeghts->FindBin(fVertex[2],iCh);
         double gainFactor = (double)fHCorrectV0ChWeghts->GetBinContent(ibinV0);
         multCh *= gainFactor;
-        fHist2ChanalMult[1] -> Fill(iCh+0.5, multCh);
+        fProfileChanalMult[1] -> Fill(iCh+0.5, multCh);
       }
 
       if (multCh < 1.e-6) return false;
@@ -663,6 +704,14 @@ bool AliAnalysisTaskCVEVZEROCalib::RecenterVZEROQVector()
   p2D_V0A_meanQ2x_cent_vz[rumNumbin] -> Fill(fCentSPD0, fVertex[2], Q2xV0A);
   p2D_V0A_meanQ2y_cent_vz[rumNumbin] -> Fill(fCentSPD0, fVertex[2], Q2yV0A);
 
+  fProfileQ2xV0CCent[0]->Fill(fCentSPD0,Q2xV0C);
+  fProfileQ2yV0CCent[0]->Fill(fCentSPD0,Q2yV0C);
+  fProfileQ2xV0ACent[0]->Fill(fCentSPD0,Q2xV0A);
+  fProfileQ2yV0ACent[0]->Fill(fCentSPD0,Q2yV0A);
+  fProfileQ2xV0CVz[0]->Fill(fVertex[2],Q2xV0C);
+  fProfileQ2yV0CVz[0]->Fill(fVertex[2],Q2yV0C);
+  fProfileQ2xV0AVz[0]->Fill(fVertex[2],Q2xV0A);
+  fProfileQ2yV0AVz[0]->Fill(fVertex[2],Q2yV0A);
   return true;
 }
 
