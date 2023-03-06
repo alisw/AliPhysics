@@ -24,6 +24,7 @@
 #include "AliVEvent.h"
 #include "AliVTrack.h"
 #include "AliVVertex.h"
+#include "AliMCEvent.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisFilter.h"
 #include "AliESDtrackCuts.h"
@@ -85,7 +86,7 @@ public:
   virtual void   SetMinCent(Double_t maxCent){fCentMin = maxCent;}
   
   virtual void   SetIsSample(Int_t IsSample){fSample = IsSample;}
-  virtual void   SetIsMC(Bool_t isMC){fIsMC = isMC;}
+  virtual void   SetIsMC(Bool_t isMC, Bool_t useTPCTruth, Bool_t useFMDTruth){fIsMC = isMC; fUseTPCTruth = useTPCTruth; fUseFMDTruth = useFMDTruth;}
   virtual void   SetNtrksName(TString ntrksname){fNtrksName = ntrksname;}
   virtual void   SetUseWeigthsRunByRun(Bool_t bRunByRun = kTRUE) { fFlowRunByRunWeights = bRunByRun; }
   virtual void   SetUsePeriodWeigths(Bool_t weight = kTRUE) { fFlowPeriodWeights = weight; }
@@ -131,10 +132,12 @@ private:
 
   virtual void NTracksCalculation(AliVEvent* aod);
   Bool_t PrepareTPCFMDTracks();
+  Bool_t PrepareTPCFMDTracksMCTruth();
   virtual void FillCorrelations();
   virtual void FillCorrelationsMixed();
   Bool_t AcceptAOD(AliAODEvent *inEv);
   Bool_t AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
+  Bool_t AcceptMCTruthTrack(AliAODMCParticle *mtrk);
 
   double 			GetWeight(double phi, double eta, double pt, int run, bool fPlus, double vz, double runNumber);
   double GetPtWeight(double pt, double eta, float vz, double runNumber);
@@ -178,6 +181,8 @@ private:
   Bool_t			fNUE;					// flag for NUE correction
   Bool_t			fNUA;					// 0: no NUA correction, 1: NUA correction
   bool                    fIsMC;                                  // The observable for MonteCarlo truth
+  bool                    fUseTPCTruth;                           // Use the MC truth particles of TPC
+  bool                    fUseFMDTruth;                           // Use the MC truth particles of TPC
   TString                 fNtrksName;                             // Cent or Mult
   TString                 anaType;                                // TPC-TPC or TPC-FMD
   TString					fPeriod;								// period
@@ -332,7 +337,7 @@ private:
   double fCentrality;            //!
   Double_t fbSign;               //!
 
-  ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 10); // Analysis task
+  ClassDef(AliAnalysisTaskCorrForNonlinearFlow, 11); // Analysis task
 };
 
 #endif
