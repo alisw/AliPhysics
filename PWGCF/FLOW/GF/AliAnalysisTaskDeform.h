@@ -239,10 +239,10 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH1D** fChi2TPCcls; //!
   TH1D* fEtaMptAcceptance; //!
   TH1D* fPtMptAcceptance; //!
-  AliProfileBS* fc22;
-  AliProfileBS* fc24;
-  AliProfileBS* fc26;
-  AliProfileBS* fc28;
+  AliProfileBS* fc22; //!
+  AliProfileBS* fc24; //!
+  AliProfileBS* fc26; //!
+  AliProfileBS* fc28; //!
   Double_t fImpactParameterMC;
   int EventNo;
   unsigned int fEventWeight; 
