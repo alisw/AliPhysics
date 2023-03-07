@@ -236,7 +236,7 @@ void AddTask_MesonJetCorr_ConvCalo(
     //---------------------------------------
     // configs for eta meson pp 13 TeV
     //---------------------------------------
-   else if (trainConfig == 1002) {
+  } else if (trainConfig == 1002) {
     cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2r63103l00000010"); // in-Jet, mass cut eta: 0.5-0.6, rotation back
   } else if (trainConfig == 1003) {
     cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2163103l00000010"); // in-Jet, mass cut eta: 0.5-0.6, mixed jet back
