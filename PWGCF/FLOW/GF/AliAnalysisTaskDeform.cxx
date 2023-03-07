@@ -562,12 +562,14 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     delete oba;
     PostData(2,fFC);
     Int_t pows[] = {3,0,2,2,3,3,3}; //5th harm. sum = 3, b/c {-2 -3}
-    Int_t powsFull[] = {9,0,8,4,7,3,6,0,5}; //For v2{8}
+    //Int_t powsFull[] = {9,0,8,4,7,3,6,0,5}; //For v2{8}
+    //Int_t powsFull[] = {13,0,12,4,11,3,10,0,9,0,8,0,7}; //For v2{12}
+    Int_t powsFull[] = {17,0,16,4,15,3,14,0,15,0,14,0,13,0,12,0,11}; //For v2{16}
     fGFW = new AliGFW();
     fGFW->AddRegion("refN",7,pows,-fEtaAcceptance,-fEtaV2Sep,1,1);
     fGFW->AddRegion("refP",7,pows,fEtaV2Sep,fEtaAcceptance,1,1);
     if(fEtaV2Sep>=0) fGFW->AddRegion("subMid",7,pows,-fEtaV2Sep,fEtaV2Sep,1,1);
-    fGFW->AddRegion("mid",9,powsFull,-fEtaAcceptance,fEtaAcceptance,1,2);
+    fGFW->AddRegion("mid",13,powsFull,-fEtaAcceptance,fEtaAcceptance,1,2);
 
     fGFW->AddRegion("PiRefN",7,pows,-fEtaAcceptance,-fEtaV2Sep,1,4);
     fGFW->AddRegion("PiRefP",7,pows,fEtaV2Sep,fEtaAcceptance,1,4);
@@ -1378,6 +1380,8 @@ void AliAnalysisTaskDeform::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("ChFull28","mid {2 2 2 2 -2 -2 -2 -2}",kFALSE));  //  ChFull28 11
   corrconfigs.push_back(GetConf("ChFull32","mid {3 -3}", kFALSE));   //ChFull32 12
   corrconfigs.push_back(GetConf("ChFull34","mid {3 3 -3 -3}", kFALSE));    //ChFull34 13
+  corrconfigs.push_back(GetConf("ChFull212","mid {2 2 2 2 2 2 -2 -2 -2 -2 -2 -2}", kFALSE));    //ChFull212 14
+  corrconfigs.push_back(GetConf("ChFull212","mid {2 2 2 2 2 2 2 2 -2 -2 -2 -2 -2 -2 -2 -2}", kFALSE));    //ChFull216 14
 
   if(!fDisablePID){
     corrconfigs.push_back(GetConf("PiGap22","PiRefP {2} PiRefN {-2}", kFALSE));
