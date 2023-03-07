@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISTASKPARTICLEEFFDY
-#define ALIANALYSISTASKPARTICLEEFFDY
+#ifndef AliAnalysisTaskParticleEffDYM0_H
+#define AliAnalysisTaskParticleEffDYM0_H
 
 
 
@@ -14,7 +14,7 @@
 #include "AliAODpidUtil.h"
 class AliAnalysisUtils;
 
-class AliAnalysisTaskParticleEffDY :public AliAnalysisTaskSE{
+class AliAnalysisTaskParticleEffDYM0 :public AliAnalysisTaskSE{
  public:
 
   enum EventMult {kRefMult=0, kV0M=1, kV0A=2};
@@ -23,7 +23,9 @@ class AliAnalysisTaskParticleEffDY :public AliAnalysisTaskSE{
   enum PidMethod {kNSigma=0, kNSigmaNoDoubleCounting=1, kExclusivePID=2, kExclusivePIDDiffRejection=3};
   typedef enum PidMethod PidMethod;
 
- AliAnalysisTaskParticleEffDY() :  AliAnalysisTaskSE(), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0),fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(96), fPidMethod(kExclusivePIDDiffRejection), fEstEventMult(kV0M), fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0PileUpRemoval(kFALSE)
+
+//AliAnalysisTaskParticleEffDYM0();
+/*AliAnalysisTaskParticleEffDYM0() :  AliAnalysisTaskSE(), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0),fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(768), fPidMethod(kNSigma), fEstEventMult(kRefMult), fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0), fTrackPileUpRemoval(kFALSE), fV0PileUpRemoval(kFALSE)
 
     {
 
@@ -47,9 +49,9 @@ class AliAnalysisTaskParticleEffDY :public AliAnalysisTaskSE{
 	if(i<4) fHistP[i]=NULL;
       }
     }
-
-  AliAnalysisTaskParticleEffDY(TString name, int pidMethod=3, int filterbit=96); // default constructor
-  virtual ~AliAnalysisTaskParticleEffDY(); // default destructor
+*/
+  AliAnalysisTaskParticleEffDYM0(TString name, int pidMethod=3, int filterbit=96); // default constructor
+  virtual ~AliAnalysisTaskParticleEffDYM0(); // default destructor
   virtual void UserCreateOutputObjects(); // user create output objects
   virtual void UserExec(Option_t *option); // user exec
   //void Terminate(Option_t *option);
@@ -66,8 +68,8 @@ class AliAnalysisTaskParticleEffDY :public AliAnalysisTaskSE{
   void AnalyseCascades(int fcent, AliAODEvent* aodEvent, TClonesArray  *arrayMC);
 
  private:
-  AliAnalysisTaskParticleEffDY(const AliAnalysisTaskParticleEffDY &); // copy constructor
-  AliAnalysisTaskParticleEffDY &operator=(const AliAnalysisTaskParticleEffDY &); // operator=
+  AliAnalysisTaskParticleEffDYM0(const AliAnalysisTaskParticleEffDYM0 &); // copy constructor
+  AliAnalysisTaskParticleEffDYM0 &operator=(const AliAnalysisTaskParticleEffDYM0 &); // operator=
   //AliAODEvent *aodEvent;
   AliCentrality *centrality;
   //AliAODTrack *fTpcTracks;
@@ -84,7 +86,7 @@ class AliAnalysisTaskParticleEffDY :public AliAnalysisTaskSE{
   TH2F *fHistQA2D[3];
   TH2F *fHistQAPID[5][PARTTYPES][2];
   TH2F *fHistQAPIDFail[5][PARTTYPES][2];
-  TH1F* fHistEvCuts[4];
+  TH1F* fHistEvCuts[MULTBINS];
   TH2F *fHistQALambdas[2];
   TH2F *fOriginLambdas[5][2];
   TH2F *fHistQAXi[2];
@@ -179,9 +181,10 @@ class AliAnalysisTaskParticleEffDY :public AliAnalysisTaskSE{
   AliPIDResponse *fpidResponse;
   AliAODpidUtil  *fAODpidUtil;
   AliEventCuts   *fEventCuts;
-  ClassDef(AliAnalysisTaskParticleEffDY, 0);
+  ClassDef(AliAnalysisTaskParticleEffDYM0, 0);
   Bool_t fTrackPileUpRemoval;
   Bool_t fV0PileUpRemoval;
+  
   
 
 };
