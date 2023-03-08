@@ -116,6 +116,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void SetOtherMesons(std::vector<int> vec) { fOtherMesonsPDGCodes = vec; }
   void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
   void SetFillMesonDCATree(bool tmp) { fFillDCATree = tmp; }
+  void SetDoUseCentralEvtSelection(bool tmp) { fUseCentralEventSelection = tmp; }
 
   void SetEventCutList(Int_t nCuts,
                        TList* CutArray)
@@ -160,6 +161,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliVEvent* fInputEvent;         // current event
   AliMCEvent* fMCEvent;           // corresponding MC event
   TClonesArray* fAODMCTrackArray; // pointer to track array
+  AliEventCuts fAliEventCuts;     ///<  Event cuts (run2 defaults)
 
   //-------------------------------
   // Lists for cut folders and output containers
@@ -219,6 +221,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool fUseThNForResponse;                              // flag if THnSparse or TH2 should be used for the 4d response matrices
   bool fEnableSortForClusMC;                            // flag if cluster mc labels should be sorted
   bool fFillDCATree;                                    // flag if DCA tree should be filled or not
+  bool fUseCentralEventSelection;                       // flag if central event selection (AliEventSelection.cxx) should be used
   //-------------------------------
   // conversions
   //-------------------------------
@@ -459,7 +462,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 11);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 12);
 };
 
 #endif
