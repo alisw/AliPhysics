@@ -28,4 +28,5 @@
 #pragma link C++ class AliAnalysisTaskFlatenicityLambdaK0s+;
 #pragma link C++ class AliAnalysisTaskdEdxCalibration+;
 #pragma link C++ class AliAnalysisTaskMCCorrections+;
+#pragma link C++ class AliAnalysisTaskOnlyFlatenicity+;
 #endif

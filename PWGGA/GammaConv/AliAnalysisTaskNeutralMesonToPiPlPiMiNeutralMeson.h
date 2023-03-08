@@ -83,6 +83,9 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     void SetEnableSortingOfMCClusLabels(Bool_t enableSort)  { fEnableSortForClusMC   = enableSort; }
     void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag) { fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
     void SetDoMaterialBudgetWeightingOfGammasForInvMassHistogram(Bool_t flag) { fUseMatBudWeightsForInvMassHistogram = flag;}
+    void SetBckgReductionTree(Int_t cutoff){ 
+      fEnableBckgReductionStudy = kTRUE;
+      fMLtreeCutOff = cutoff; }
 
 
   private:
@@ -527,12 +530,120 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t                          fDoProfileMaterialBudgetWeights;                      /// Number of MaterialBudgetWeight Bins
     TProfile**                      fProfileMaterialBudgetWeights;                        //!<! histo to track MaterialBudgetWeights
     Int_t                           fNumberOfMaterialBudgetBins;                          /// Number of MaterialBudgetWeight Bins
-
+    Bool_t                          fEnableBckgReductionStudy;                            /// enable the tree for ML based background reduction study
+    Int_t                           fMLtreeCutOff;
+    TH1F*                           fHistoBckReduction;                                   
 
     TArrayI                         fMCEventPos;                                          //!<! Pos. in MC event pos. leg of the photon (for relabelling)
     TArrayI                         fMCEventNeg;                                          //!<! Pos. in MC event neg. leg of the photon (for relabelling)
     TArrayI                         fESDArrayPos;                                         //!<! Pos. in MC AOD array pos. leg of the photon (for relabelling)
     TArrayI                         fESDArrayNeg;                                         //!<! Pos. in MC AOD array pos. leg of the photon (for relabelling)
+
+    /** Tree containing information for the ML based background reduction */
+    TTree*                            fTreeBckgReduction;                                 //!<!
+    // charged pions branches
+    Short_t                           fBuffer_PiPl_px;
+    Short_t                           fBuffer_PiPl_py;
+    Short_t                           fBuffer_PiPl_pz;
+    UShort_t                          fBuffer_PiPl_E;
+    Char_t                            fBuffer_PiPl_charge;
+    UShort_t                          fBuffer_PiPl_DCAR;
+    Short_t                           fBuffer_PiPl_DCAz;
+    UShort_t                          fBuffer_PiPl_TPCClus;
+    Short_t                           fBuffer_PiPl_dEdxSigma;
+    Short_t                           fBuffer_PiPl_TOFdEdxSigma;
+    Bool_t                            fBuffer_PiPl_trueID;
+
+    Short_t                           fBuffer_PiMi_px;
+    Short_t                           fBuffer_PiMi_py;
+    Short_t                           fBuffer_PiMi_pz;
+    UShort_t                          fBuffer_PiMi_E;
+    Char_t                            fBuffer_PiMi_charge;
+    UShort_t                          fBuffer_PiMi_DCAR;
+    Short_t                           fBuffer_PiMi_DCAz;
+    Short_t                           fBuffer_PiMi_TPCClus;
+    Short_t                           fBuffer_PiMi_dEdxSigma;
+    Short_t                           fBuffer_PiMi_TOFdEdxSigma;
+    Bool_t                            fBuffer_PiMi_trueID;
+
+    Char_t                            fBuffer_PionPair_trueMotherID;        // 0 - not from the same mother, 1 - from the reconstructed NDM, 2 - from NDM but different one <- the plan, for now just the true meson value (1 for neutral pion, 2 for eta, 0 for not true meson)
+
+    // gamma branches
+    Short_t                           fBuffer_Gamma1_px;
+    Short_t                           fBuffer_Gamma1_py;
+    Short_t                           fBuffer_Gamma1_pz;
+    UShort_t                          fBuffer_Gamma1_E;
+    Short_t                           fBuffer_Gamma1_eta;
+    UShort_t                          fBuffer_Gamma1_phi;
+    Bool_t                            fBuffer_Gamma1_trueID;
+
+    Short_t                           fBuffer_Gamma2_px;
+    Short_t                           fBuffer_Gamma2_py;
+    Short_t                           fBuffer_Gamma2_pz;
+    UShort_t                          fBuffer_Gamma2_E;
+    Short_t                           fBuffer_Gamma2_eta;
+    UShort_t                          fBuffer_Gamma2_phi;
+    Bool_t                            fBuffer_Gamma2_trueID;
+
+    // ----- PCM standard cuts
+    Short_t                           fBuffer_Gamma1_eMomentum;
+    Short_t                           fBuffer_Gamma1_eTPCClus;     
+    Short_t                           fBuffer_Gamma1_edEdxSigma;  
+    Short_t                           fBuffer_Gamma1_epidEdxSigma;
+    Short_t                           fBuffer_Gamma1_eTOFPID;     
+
+    Short_t                           fBuffer_Gamma1_pMomentum;
+    Short_t                           fBuffer_Gamma1_pTPCClus;     
+    Short_t                           fBuffer_Gamma1_pdEdxSigma;  
+    Short_t                           fBuffer_Gamma1_ppidEdxSigma;
+    Short_t                           fBuffer_Gamma1_pTOFPID;  
+
+    Short_t                           fBuffer_Gamma1_R;
+    Short_t                           fBuffer_Gamma1_ArmenterosQt;
+    Short_t                           fBuffer_Gamma1_ArmenterosAlpha; 
+    Short_t                           fBuffer_Gamma1_chiSquared;
+    Short_t                           fBuffer_Gamma1_PsiPair;
+
+    // ***
+
+    Short_t                           fBuffer_Gamma2_eMomentum;
+    Short_t                           fBuffer_Gamma2_eTPCClus;     
+    Short_t                           fBuffer_Gamma2_edEdxSigma;  
+    Short_t                           fBuffer_Gamma2_epidEdxSigma;
+    Short_t                           fBuffer_Gamma2_eTOFPID;     
+
+    Short_t                           fBuffer_Gamma2_pMomentum;
+    Short_t                           fBuffer_Gamma2_pTPCClus;     
+    Short_t                           fBuffer_Gamma2_pdEdxSigma;  
+    Short_t                           fBuffer_Gamma2_ppidEdxSigma;
+    Short_t                           fBuffer_Gamma2_pTOFPID;  
+
+    Short_t                           fBuffer_Gamma2_R;
+    Short_t                           fBuffer_Gamma2_ArmenterosQt;
+    Short_t                           fBuffer_Gamma2_ArmenterosAlpha; 
+    Short_t                           fBuffer_Gamma2_chiSquared;
+    Short_t                           fBuffer_Gamma2_PsiPair;
+
+    // -------- EMC cuts
+    Short_t                           fBuffer_Gamma1_M02;
+    Short_t                           fBuffer_Gamma2_M02;
+
+    // ---- common 
+    Short_t                           fBuffer_GammaPair_OpeningAngle;
+    Short_t                           fBuffer_GammaPair_Alpha;
+    Short_t                           fBuffer_GammaPair_invMassRec;
+    Bool_t                            fBuffer_GammaPair_trueMotherID;         
+
+    // neutral meson 
+    Short_t                           fBuffer_NDM_px;
+    Short_t                           fBuffer_NDM_py;
+    Short_t                           fBuffer_NDM_pz;
+    Short_t                           fBuffer_NDM_E;
+    Short_t                           fBuffer_NDM_invMassRec;
+    Bool_t                            fBuffer_NDM_trueID;
+
+
+
 
 private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented

@@ -115,7 +115,6 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         std::vector<int>      fProtonArray2;              //!<! Stricter Selection for Mixing
         std::vector<int>      fConvPhotonArray;           //!<! V0 Photon candidates
         std::vector<int>      fCaloPhotonArray;           //!<! Calo Photon candidates
-        std::vector<std::pair<int,int>>  PairIndexArray;  //!<! V0 Photon candidates
 
         Bool_t                isMonteCarlo;               //True if MC information is available  
 
@@ -465,6 +464,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
 
         //Branches of TTree "fSigmaCandTree"
         Bool_t                fIsMCSigma;
+        Bool_t                fIsMCDalitz;
         Bool_t                fIsMCPrimary;
         Bool_t                fIsV01Onthefly;
         Bool_t                fIsV02Onthefly;

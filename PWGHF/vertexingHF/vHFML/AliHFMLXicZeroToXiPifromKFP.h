@@ -53,6 +53,7 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         void                    SetStoreOnlyMLoutput(Bool_t IsStoreOnlyMLoutput) {fIsStoreOnlyMLoutput=IsStoreOnlyMLoutput;}
         void                    SetMLConfigFile(TString path = "") {fConfigPath = path;}
         void                    SetAnaOmegac0(Bool_t IsAnaOmegac0) {fIsAnaOmegac0=IsAnaOmegac0;}
+        void                    SetStoreLikeSign(Bool_t IsStoreLS) {fIsStoreLS=IsStoreLS;}
         void                    SelectTrack(AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks, Bool_t *seleFlags);
         Bool_t                  MakeMCAnalysis(TClonesArray *mcArray);
         void                    MakeAnaXicZeroFromV0(AliAODEvent *AODEvent, TClonesArray *mcArray, KFParticle PV);
@@ -80,7 +81,6 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         void SetWriteXic0Tree(Bool_t a) {fWriteXic0Tree = a;}
         Bool_t GetWriteXic0Tree() const {return fWriteXic0Tree;}
 
-        void FillEventROOTObjects();
         void FillTreeGenXic0(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLoverP);
         void FillTreeRecXic0FromV0(KFParticle kfpXicZero, AliAODTrack *trackPi, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODv0 *v0, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkP, AliAODTrack *trkN, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
         void FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
@@ -103,7 +103,6 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
 //        TObjArray               fMapParticle;         ///< Map of particles in the supporting TClonesArray
         vector<Int_t>           fAodTrackInd;         ///< Translation table: aodTrackInd(mcTrackIndex) = aodTrackIndex
         TList*                  fOutputList;          //!<! Output list
-        TTree*                  fTree_Event;          //!<! tree of event
         Float_t*                fVar_Event;           //!<! variables of event to be written to the tree
         TTree*                  fTree_Xic0;             //!<! tree of the candidate variables
         Float_t*                fVar_Xic0;         //!<! variables of Xic0 to be written to the tree
@@ -117,6 +116,7 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         Bool_t                  fIsAnaOmegac0; ///< Flag of Omegac0 analysis
         Bool_t                  fIsPbPb; ///< Flag to switch to PbPb analysis
         Bool_t                  fIsStoreOnlyMLoutput; ///< Flag to store only ML application output tree
+        Bool_t                  fIsStoreLS; ///< Flag to store like-sign pairs
 
         Double_t                fCentrality; //!<! V0M percentile 
         Int_t                   fNtracklets; //!<! SPD tracklet
@@ -419,7 +419,7 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         AliHFMLXicZeroToXiPifromKFP(const AliHFMLXicZeroToXiPifromKFP &source); // not implemented
         AliHFMLXicZeroToXiPifromKFP& operator=(const AliHFMLXicZeroToXiPifromKFP& source); // not implemented
 
-        ClassDef(AliHFMLXicZeroToXiPifromKFP, 1);
+        ClassDef(AliHFMLXicZeroToXiPifromKFP, 3);
 };
 
 #endif

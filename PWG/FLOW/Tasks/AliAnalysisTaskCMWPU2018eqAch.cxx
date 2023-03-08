@@ -774,7 +774,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   
 
 
-  //// PileUp Removal Functions:
+  //// PileUp Removal Functions: //mainly used for analysis
   /*
   fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
 

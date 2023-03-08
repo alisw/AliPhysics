@@ -185,7 +185,7 @@ vector<double> AliPtContainer::getEventCorrelation(const vector<vector<double>> 
   double sumDenum = 0;
   vector<double> valNum;
   vector<double> valDenum;
-  for(int m(1); m<=mpar; ++m)
+  for(int m(1); m<=mOrder; ++m)
   {
     for(int k(1);k<=m;++k)
     {

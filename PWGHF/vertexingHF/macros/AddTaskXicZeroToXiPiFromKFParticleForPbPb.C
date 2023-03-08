@@ -5,7 +5,16 @@
 //#include <TList.h>
 //#endif
 
-AliHFMLXicZeroToXiPifromKFP* AddTaskXicZeroToXiPiFromKFParticleForPbPb (TString cutsfile="", TString confFileML="", Bool_t IsMC=kFALSE, TString cuttype="", Bool_t IsAnaOmegac0=kFALSE, Bool_t IsPbPb=kTRUE, Bool_t IsStoreOnlyMLoutput=kTRUE)
+AliHFMLXicZeroToXiPifromKFP* AddTaskXicZeroToXiPiFromKFParticleForPbPb (TString cutsfile="", // Cut object
+                                                                        TString confFileML="", // ML configuration file
+                                                                        Bool_t IsMC=kFALSE, // kFALSE: data; kTRUE: MC
+                                                                        TString cuttype="", // Cut type: "std", "loose", "tight", "veryloose", "verytight", "veryverytight"
+                                                                        Bool_t IsAnaOmegac0=kFALSE, // kFALSE: Xic0; kTRUE: Omegac0
+                                                                        Bool_t IsPbPb=kTRUE, // kTRUE: Pb-Pb (enable ML output tree); kFALSE: pp and p-Pb
+                                                                        Bool_t IsStoreOnlyMLoutput=kTRUE, // kTRUE: store only ML output tree; kFALSE: store tree with all variables and ML output tree
+                                                                        Bool_t IsStoreLS=kFALSE, // kTRUE: store (Pi+ Xi+), (Pi- Xi-), (Pi+ Xi-) and (Pi- Xi+); kFALSE: store (Pi+ Xi-) and (Pi- Xi+)
+                                                                        Int_t centmin=0, Int_t centmax=100, // centrality
+                                                                        Int_t pTmin=0, Int_t pTmax=100) // pT
 {
 
     Bool_t writeXic0RecTree = kTRUE;
@@ -62,6 +71,7 @@ AliHFMLXicZeroToXiPifromKFP* AddTaskXicZeroToXiPiFromKFParticleForPbPb (TString 
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":PWGHF_D2H_KFP_";      // create a subfolder in the file
+    fileName += Form("cent_%d_%d_pT_%d_%d_", centmin, centmax, pTmin, pTmax);
     fileName += cuttype.Data();
     // now we create an instance of your task
     AliHFMLXicZeroToXiPifromKFP* task = new AliHFMLXicZeroToXiPifromKFP("AliHFMLXicZeroToXiPifromKFP", RDHFCutsKFP);
@@ -76,6 +86,7 @@ AliHFMLXicZeroToXiPifromKFP* AddTaskXicZeroToXiPiFromKFParticleForPbPb (TString 
     task->SetAnaPbPb(IsPbPb);
     task->SetMLConfigFile(confFileML);
     task->SetStoreOnlyMLoutput(IsStoreOnlyMLoutput);
+    task->SetStoreLikeSign(IsStoreLS);
 
     /*
     // weight
@@ -115,13 +126,12 @@ AliHFMLXicZeroToXiPifromKFP* AddTaskXicZeroToXiPiFromKFParticleForPbPb (TString 
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("CutsObj_%s", cuttype.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("Counter_%s", cuttype.Data()), AliNormalizationCounter::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("tree_event_char_%s", cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("tree_%s_%s", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("tree_%s_MCGen_%s", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("hist_%s_%s", particle.Data(),cuttype.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    if (IsPbPb) mgr->ConnectOutput(task,7,mgr->CreateContainer(Form("tree_ML_%s_%s", particle.Data(),cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("CutsObj_cent_%d_%d_pT_%d_%d_%s", centmin, centmax, pTmin, pTmax, cuttype.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("Counter_cent_%d_%d_pT_%d_%d_%s", centmin, centmax, pTmin, pTmax, cuttype.Data()), AliNormalizationCounter::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("tree_%s_cent_%d_%d_pT_%d_%d_%s", particle.Data(), centmin, centmax, pTmin, pTmax, cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,4,mgr->CreateContainer(Form("tree_%s_MCGen_cent_%d_%d_pT_%d_%d_%s", particle.Data(), centmin, centmax, pTmin, pTmax, cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,5,mgr->CreateContainer(Form("hist_%s_cent_%d_%d_pT_%d_%d_%s", particle.Data(), centmin, centmax, pTmin, pTmax, cuttype.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    if (IsPbPb) mgr->ConnectOutput(task,6,mgr->CreateContainer(Form("tree_ML_%s_cent_%d_%d_pT_%d_%d_%s", particle.Data(), centmin, centmax, pTmin, pTmax, cuttype.Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid

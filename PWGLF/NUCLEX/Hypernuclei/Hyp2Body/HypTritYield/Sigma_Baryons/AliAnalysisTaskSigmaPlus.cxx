@@ -241,6 +241,7 @@ fMaxNsigElecTOF(2),
 fRejOtherTOF(kTRUE),
 
 fIsMCSigma(kFALSE),
+fIsMCDalitz(kFALSE),
 fIsMCPrimary(kFALSE),
 fIsV01Onthefly(kFALSE),
 fIsV02Onthefly(kFALSE),
@@ -432,16 +433,16 @@ fSaveProtons(kTRUE),
 fProcessV0s(kTRUE), 
 fProcessReco(kTRUE), 
 fSavePartCand(kTRUE),
-fFillPairTreeSE(kTRUE),
-fFillPairTreeME(kTRUE),
+fFillPairTreeSE(kFALSE),
+fFillPairTreeME(kFALSE),
 fSaveMixedBackground(kTRUE),
 
 fProcessClusters(kTRUE),
 fMapClusterstoTracks(kTRUE),
 fProcessRecoPHOS(kTRUE),
 fSavePartCandPHOS(kTRUE),
-fFillPHOSPairTreeSE(kTRUE),
-fFillPHOSPairTreeME(kTRUE),
+fFillPHOSPairTreeSE(kFALSE),
+fFillPHOSPairTreeME(kFALSE),
 fSavePHOSMixedBackground(kTRUE),
 fSaveAdditionalBranches(kFALSE),
 fSaveMCBranches(kTRUE),
@@ -563,6 +564,7 @@ fMaxNsigElecTOF(2),
 fRejOtherTOF(kTRUE),
 
 fIsMCSigma(kFALSE),
+fIsMCDalitz(kFALSE),
 fIsMCPrimary(kFALSE),
 fIsV01Onthefly(kFALSE),
 fIsV02Onthefly(kFALSE),
@@ -902,6 +904,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaCandTree->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
     if(fSaveMCBranches){
         fSigmaCandTree->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+        fSigmaCandTree->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
         fSigmaCandTree->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
         fSigmaCandTree->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
         fSigmaCandTree->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
@@ -1016,6 +1019,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaMEBackgroundTree->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
     if(fSaveMCBranches){
         fSigmaMEBackgroundTree->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+        fSigmaMEBackgroundTree->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
         fSigmaMEBackgroundTree->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
         fSigmaMEBackgroundTree->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
         fSigmaMEBackgroundTree->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
@@ -1156,6 +1160,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreeSE->Branch("fPairProtonChi2",&fPairProtonChi2,"fPairProtonChi2/F");
     if(fSaveMCBranches){
         fSigmaPairTreeSE->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+        fSigmaPairTreeSE->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
         fSigmaPairTreeSE->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
         fSigmaPairTreeSE->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
         fSigmaPairTreeSE->Branch("fPrimVertYMC",&fPrimVertYMC,"fPrimVertYMC/F");
@@ -1294,6 +1299,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreeME->Branch("fPairProtonChi2",&fPairProtonChi2,"fPairProtonChi2/F");
     if(fSaveMCBranches){
         fSigmaPairTreeME->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+        fSigmaPairTreeME->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
         fSigmaPairTreeME->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
         fSigmaPairTreeME->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
         fSigmaPairTreeME->Branch("fPrimVertYMC",&fPrimVertYMC,"fPrimVertYMC/F");
@@ -1411,6 +1417,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPHOSCandTree->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
     if(fSaveMCBranches){
       fSigmaPHOSCandTree->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+      fSigmaPHOSCandTree->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
       fSigmaPHOSCandTree->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
       fSigmaPHOSCandTree->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
       fSigmaPHOSCandTree->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
@@ -1539,6 +1546,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPHOSMEBkgTree->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
     if(fSaveMCBranches){
       fSigmaPHOSMEBkgTree->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+      fSigmaPHOSMEBkgTree->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
       fSigmaPHOSMEBkgTree->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
       fSigmaPHOSMEBkgTree->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
       fSigmaPHOSMEBkgTree->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
@@ -1694,6 +1702,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreePHOSSE->Branch("fPairProtonChi2",&fPairProtonChi2,"fPairProtonChi2/F");
     if(fSaveMCBranches){
       fSigmaPairTreePHOSSE->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+      fSigmaPairTreePHOSSE->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
       fSigmaPairTreePHOSSE->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
       fSigmaPairTreePHOSSE->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
       fSigmaPairTreePHOSSE->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
@@ -1851,6 +1860,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreePHOSME->Branch("fPairProtonChi2",&fPairProtonChi2,"fPairProtonChi2/F");
     if(fSaveMCBranches){
       fSigmaPairTreePHOSME->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+      fSigmaPairTreePHOSME->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
       fSigmaPairTreePHOSME->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
       fSigmaPairTreePHOSME->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
       fSigmaPairTreePHOSME->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
@@ -4817,6 +4827,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
       Bool_t isReallyPi0fromSigma = kFALSE;
       Bool_t isReallyPi0fromDelta = kFALSE;
       Bool_t isPrimary = kFALSE;
+      Bool_t isDalitzDecay = kFALSE;
       Int_t Pi0MotherLabel=-1;
       TLorentzVector MCSigmaMom; 
 
@@ -4865,6 +4876,41 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
                   }}//Photon Mother exists and is Pi0
                 }//Photon and Single electron have common mother
               }}//MC Photon exists
+              //Consider dalitz decays
+              if(V0Part1&&V0Part2){if((V0Part1->GetPdgCode()==22&&V0Part2->GetPdgCode()==111)||(V0Part1->GetPdgCode()==111&&V0Part2->GetPdgCode()==22)){
+                if(TMath::Abs(V0Part1->GetMother())==TMath::Abs(V0Part2->GetLabel())||TMath::Abs(V0Part2->GetMother())==TMath::Abs(V0Part1->GetLabel())){
+                  isReallyPi0=kTRUE;
+                  isDalitzDecay = kTRUE;
+
+                  TVector3 prdvtx;
+                  if(V0Part1->GetPdgCode()==22) prdvtx.SetXYZ(V0Part1->Xv(),V0Part1->Yv(),V0Part1->Zv());   
+                  if(V0Part2->GetPdgCode()==22) prdvtx.SetXYZ(V0Part2->Xv(),V0Part2->Yv(),V0Part2->Zv());   
+                  MCPi0DCAPV = prdvtx.Perp();
+                  MCPi0decayX = prdvtx.X();
+                  MCPi0decayY = prdvtx.Y();
+                  MCPi0decayZ = prdvtx.Z();
+
+                  AliAODMCParticle* Pi0Part = NULL;
+                  if(V0Part1->GetPdgCode()==111) Pi0Part = V0Part1;
+                  else Pi0Part = V0Part2;
+                  AliAODMCParticle* Pi0Mother = NULL;
+
+                  if(Pi0Part->GetMother()!=-1){
+                    Pi0MotherLabel=Pi0Part->GetMother(); 
+                    Pi0Mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(Pi0Part->GetMother())));
+                  }
+
+                  if(Pi0Mother){
+                    if(TMath::Abs(Pi0Mother->GetPdgCode())==3222) {
+                      isReallyPi0fromSigma = kTRUE; 
+                      if(Pi0Mother->IsPrimary()||Pi0Mother->IsPhysicalPrimary()) isPrimary = kTRUE; 
+                      MCSigmaMom.SetXYZM(Pi0Mother->Px(),Pi0Mother->Py(),Pi0Mother->Pz(),cSigmaMass);
+                    }
+                    if(TMath::Abs(Pi0Mother->GetPdgCode())==2214) isReallyPi0fromDelta = kTRUE;
+                  }
+
+                } //V0s belong together
+              }} //V0s exist and one is Photon and one is from dalitz decay
             }//Electrons have common mother
           }//Daughters are all electrons
         }//V0 Daughters exist
@@ -5181,7 +5227,9 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
 
           // Fill the Sigma Candidate Trees
           fIsMCSigma = kFALSE; 
+          fIsMCDalitz = kFALSE; 
           if(isReallySigma) fIsMCSigma = kTRUE;
+          if(isDalitzDecay) fIsMCDalitz = kTRUE;
           fIsMCPrimary = kFALSE;
           if(isReallySigma&&isPrimary) fIsMCPrimary = kTRUE;
           fIsV01Onthefly = v0_1->GetOnFlyStatus();
@@ -5895,6 +5943,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
         Double_t ClustEMC;
         Int_t    SigmaMCLabel=-1;
         Bool_t   isReallySigma = kFALSE;
+        Bool_t   isDalitzDecay = kFALSE;
         Bool_t   isPrimary = kFALSE;
         TLorentzVector MCSigmaMom, MCCaloMom; 
 
@@ -5912,6 +5961,10 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
                 if(V0Part->GetPdgCode()==22){
                   Pi0ID = V0Part->GetMother();
                 }//V0 is photon
+                if(V0Part->GetPdgCode()==111){
+                  Pi0ID = V0Part->Label();
+                  isDalitzDecay = kTRUE;
+                }//V0 is from dalitz decay
               }//V0 Particle exists
             }//V0 Daughters have common mother
           }//V0 Daughters exist
@@ -6070,7 +6123,9 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
 
         // Fill the Sigma Candidate Trees
         fIsMCSigma = kFALSE; 
+        fIsMCDalitz = kFALSE; 
         if(isReallySigma) fIsMCSigma = kTRUE;
+        if(isDalitzDecay) fIsMCDalitz = kTRUE;
         fIsMCPrimary = kFALSE;
         if(isReallySigma&&isPrimary) fIsMCPrimary = kTRUE;
         fIsV01Onthefly = v0_1->GetOnFlyStatus();

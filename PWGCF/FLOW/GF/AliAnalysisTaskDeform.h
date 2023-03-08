@@ -58,7 +58,7 @@ enum {kCh = 0, kPi = 1, kKa = 2, kPr = 4};
 class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskDeform();
-  AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, Bool_t HasMpt=kFALSE, TString StageSwitch="", TString ContainerSubfix="", Int_t Nkeys = 1);
+  AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="", TString ContainerSubfix="", Int_t Nkeys = 1);
   virtual ~AliAnalysisTaskDeform();
   virtual void UserCreateOutputObjects();
   virtual void NotifyRun();
@@ -73,12 +73,11 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void FillSpectraMC(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   //void ProduceEfficiencies(AliESDEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void VnMpt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
-  void MeanPt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   Int_t GetStageSwitch(TString instr);
   AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
   void CreateCorrConfigs();
   void LoadWeightAndMPT();
-  void LoadCorrectionsFromLists(UInt_t correctionFlag, bool MptStage = 0);
+  void LoadCorrectionsFromLists();
   void GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf="");
   void FillWPCounter(Double_t[5], Double_t, Double_t);
   void FillWPCounter(vector<vector<double>> &inarr, double w, double p);
@@ -99,7 +98,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetEtaV2Sep(Double_t newval) { fEtaV2Sep = newval; };
   void SetChargedPt(Double_t chPtMin, Double_t chPtMax) { fUseChargedPtCut = true; fchPtMin = chPtMin; fchPtMax = chPtMax; }
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
-  void SetUseWeightsOne(Bool_t newval) { fUseWeightsOne = newval; };
+  void SetUseWeightsOne(Bool_t newvalNUA, Bool_t newvalNUE) { fUseNUAOne = newvalNUA; fUseNUEOne = newvalNUE; };
   void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
   void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
   void SetDCAxyFunctionalForm(TString newval) { fDCAxyFunctionalForm = newval; } //Call after SystFlag
@@ -128,6 +127,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetUsePIDNUA(bool newval) { fUsePIDNUA = newval; }
   void SetAMPTCentralityMap(vector<double> b, vector<double> cent) { for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i]; }
   void SetUseMcParticleForEfficiency(bool newval) { fUseMcParticleForEfficiency = newval; }
+  void SetFillAdditionalTrackQAPlots(Bool_t newval) { fFillAdditionalQA = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -149,6 +149,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
   TRandom *fRndm; 
   Int_t fNBootstrapProfiles; //Number of profiles for bootstrapping
+  Bool_t fFillAdditionalQA;
   TAxis *fPtAxis;
   TAxis *fEtaAxis;
   TAxis *fMultiAxis;      //Multiplicity axis (either for V0M or Nch)
@@ -165,7 +166,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Double_t fV0MCentMax;
   Bool_t fUseNchInV0M;
   Bool_t fUseNch;
-  Bool_t fUseWeightsOne;
+  Bool_t fUseNUAOne;
+  Bool_t fUseNUEOne;
   Double_t fEtaMpt;
   Double_t fEtaLow;
   Double_t fEtaAcceptance;
@@ -191,9 +193,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   AliProfileBS **fCovariance; //!
   AliProfileBS **fCovariancePID; //!
   AliProfileBS **fCovariancePowerMpt; //!
-  AliProfileBS **fCovarianceCM; //!
   AliProfileBS **fMpt; //!
-  TH1D **fMptInput; //!
   UInt_t fTriggerType;
   TList *fWeightList; //!
   AliGFWWeights **fWeights;//! This should be stored in TList
@@ -229,6 +229,14 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TF1 *fCenCutLowPU; //Store these
   TF1 *fCenCutHighPU; //Store these
   TF1 *fMultCutPU; //Store these
+  TH1D** fPhi; //!
+  TH1D** fPt; //!
+  TH1D** fEta; //!
+  TH1D** fDCAxy; //!
+  TH1D** fDCAz; //!
+  TH1D** fChi2TPCcls; //!
+  TH1D* fEtaMptAcceptance; //!
+  TH1D* fPtMptAcceptance; //!
   Double_t fImpactParameterMC;
   int EventNo;
   unsigned int fEventWeight; 
@@ -236,6 +244,9 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   vector<vector<vector<double>>>  wpPtSubP;
   vector<vector<vector<double>>>  wpPtSubN;
   std::map<double,double> centralitymap;  
+  static const Int_t      fNumHarms = 20;            
+  static const Int_t      fNumPowers = 20;            
+  TComplex Qvector[fNumHarms][fNumPowers];
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
@@ -244,6 +255,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
+  void FillAdditionalTrackQAPlots(AliAODTrack &track, Double_t weff, Double_t wacc, Double_t* vtxp, Bool_t beforeCuts);
   void SetupAxes();
   void CreateWeightOutputObjects();
   void CreateEfficiencyOutputObjects();
@@ -266,6 +278,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fFillMptPowers;
   Bool_t fUseMcParticleForEfficiency;
   Double_t *GetBinsFromAxis(TAxis *inax);
+
   ClassDef(AliAnalysisTaskDeform,1);
 };
 

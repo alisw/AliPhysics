@@ -44,6 +44,7 @@ class AliAnalysisTaskParticleEffDY :public AliAnalysisTaskSE{
       for ( Int_t i = 0; i < 11; i++) {
 	fHistQA[i] = NULL;
 	if(i<3) fHistQA2D[i] = NULL;
+	if(i<4) fHistP[i]=NULL;
       }
     }
 
@@ -79,6 +80,7 @@ class AliAnalysisTaskParticleEffDY :public AliAnalysisTaskSE{
   TH1F *fHistEv[4];
 
   TH1F *fHistQA[11];
+  TH1F *fHistP[4];
   TH2F *fHistQA2D[3];
   TH2F *fHistQAPID[5][PARTTYPES][2];
   TH2F *fHistQAPIDFail[5][PARTTYPES][2];

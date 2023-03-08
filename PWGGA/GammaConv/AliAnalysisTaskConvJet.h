@@ -46,6 +46,9 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   std::vector<Double_t> GetVectorJetEta() { return fVectorJetEta; }
   std::vector<Double_t> GetVectorJetPhi() { return fVectorJetPhi; }
   std::vector<Double_t> GetVectorJetArea() { return fVectorJetR; }
+  std::vector<Double_t> GetVectorJetNEF() { return fVectorJetNEF; }
+  std::vector<Double_t> GetVectorJetNtracks() { return fVectorJetNCh; }
+  std::vector<Double_t> GetVectorJetNclus() { return fVectorJetNClus; }
 
   Double_t GetTrueNJets() { return fTrueNJets; }
   std::vector<Double_t> GetTrueVectorJetPt() { return fTrueVectorJetPt; }
@@ -87,6 +90,9 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   std::vector<Double_t> fVectorJetEta; // Vector for the eta of the reconstructed jets
   std::vector<Double_t> fVectorJetPhi; // Vector for the phi of the reconstructed jets
   std::vector<Double_t> fVectorJetR;   // Vector for the radius of the reconstructed jets
+  std::vector<Double_t> fVectorJetNEF; // Vector for the neutral energy fraction of the reconstructed jets
+  std::vector<Double_t> fVectorJetNClus;   // Vector for the number of calo clusters of the reconstructed jets
+  std::vector<Double_t> fVectorJetNCh; // Vector for the number of tracks of the reconstructed jets
 
   Double_t fTrueNJets;                     // Number of true jets
   std::vector<Double_t> fTrueVectorJetPt;  // Vector for the pt of the true jets
@@ -105,7 +111,7 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 12);
+  ClassDef(AliAnalysisTaskConvJet, 13);
   /// \endcond
 };
 #endif

@@ -42,8 +42,8 @@ public:
   void ExtractMultiplicitiesMC();
   void MakeMCanalysis();
   void MakeDataanalysis();
-    void MakeanalysispureMCBefore();
-    void MakeanalysispureMCAfter();
+  void MCchargedProdu();
+  void MCchargedAuth();
 
   void SetPtMin(Double_t val) {
     fPtMin = val;
@@ -119,6 +119,9 @@ private:
   TH1D *hEtamc;
   TH1D *hEtamcAlice;
   TH1D *hCounter;
+//  TH1D *hCountEvent;
+  TH1D *hCountProduV0m;
+  TH1D *hCountAuthV0m;
   TH2D *hMultMCmVsV0M;
   TH2D *hMultMCaVsV0M;
   TH2D *hMultMCcVsV0M;
@@ -127,8 +130,10 @@ private:
   TH2D *hMultaVsV0M;
   TH2D *hMultcVsV0M;
   TH1D *hV0MBadruns;
-    TH1D *hPtBefore;
-    TH1D *hPtAfter;
+  TH1D *hChgProdu_pt;
+  TH1D *hChgAuth_pt;
+  TH2D *hChgProdu_V0_pt;
+  TH2D *hChgAuth_V0_pt;
   TH2D *hFlatVsPtV0M[9];
   TH2D *hFlatVsPtV0MMC[9];
   TH2D *hComponentsMult[4];

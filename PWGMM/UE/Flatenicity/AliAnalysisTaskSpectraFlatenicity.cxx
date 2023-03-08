@@ -633,6 +633,7 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
     
     if (isGoodVtxPosMC){
         GetCorrections(fnGen, fnRec, ptMc, ptWDCA, idMc, idWDCA, isprimWDCA);
+// //         GetCorrections(fnGen, fnRecWoDCA, ptMc, ptWoDCA, idMc, idWoDCA, isprimWoDCA);
         CheckMultiplicitiesMC(ptWoDCA, dcaxyWoDCA, isprimWoDCA, fnRecWoDCA);
     }
   } // MC
@@ -685,6 +686,8 @@ void AliAnalysisTaskSpectraFlatenicity::MakeMCanalysis() {
       continue;
     if (TMath::Abs(particle->Charge()) < 0.1)
       continue;
+    if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i,fMC))
+      continue;    
     
     hFlatVsPtMC->Fill(fFlatMC, particle->Pt());
     hFlatVsPtV0MMC[fV0Mindex]->Fill(fFlatMC, particle->Pt());
@@ -728,6 +731,8 @@ void AliAnalysisTaskSpectraFlatenicity::CheckMultiplicitiesMC(const vector<Float
       continue;
     if (TMath::Abs(particle->Charge()) < 0.1)
       continue;
+    if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i,fMC))
+      continue;    
 
     Double_t eta_a = particle->Eta();
     if (eta_a >= 2.8 && eta_a < 4.5) { // v0a acceptance (excluding first ring)
@@ -885,14 +890,14 @@ Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicity() {
   }
 
   Float_t mRho = 0;
-  Float_t multRho = 0;
+//   Float_t multRho = 0;
   Float_t flatenicity = -1;
   for (Int_t iCh = 0; iCh < nCells; iCh++) {
     mRho    += RhoLattice[iCh];
-    multRho += multLattice[iCh];
+//     multRho += multLattice[iCh];
   }
   Float_t multV0Mdeta = mRho;
-  Float_t multV0M = multRho;
+//   Float_t multV0M = multRho;
 
   // average activity per cell
   mRho /= (1.0 * nCells);
@@ -906,7 +911,7 @@ Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicity() {
   Float_t sRho = TMath::Sqrt(sRho_tmp);
   if (mRho > 0) {
     if (fRemoveTrivialScaling) {
-      flatenicity = TMath::Sqrt(multV0M) * sRho / mRho; // scaling by absolute tot mult
+      flatenicity = TMath::Sqrt(multV0Mdeta) * sRho / mRho; // scaling by absolute tot mult
     } else {
       flatenicity = sRho / mRho;
     }
@@ -914,8 +919,8 @@ Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicity() {
     flatenicity = -1;
   }
   
-  hFlatVsNch->Fill(flatenicity, multV0M);
-  hNchV0M->Fill(multV0M);
+  hFlatVsNch->Fill(flatenicity, multV0Mdeta);
+  hNchV0M->Fill(multV0Mdeta);
 
   return flatenicity;
 }
@@ -961,7 +966,9 @@ Double_t AliAnalysisTaskSpectraFlatenicity::GetFlatenicityMC() {
       continue;
     if (TMath::Abs(particle->Charge()) < 0.1)
       continue;
-    
+    if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i,fMC))
+      continue;    
+
     Double_t phi = particle->Phi();
     Double_t eta = particle->Eta();
 
@@ -1115,6 +1122,8 @@ Int_t AliAnalysisTaskSpectraFlatenicity::FillArrayMC(vector<Float_t> &ptArray, v
       continue;
     if (particle->Pt() < fPtMin)
       continue;
+    if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i,fMC))
+      continue;    
 
     Int_t idPart = -1;
     Int_t partPDG = TMath::Abs(particle->PdgCode());
@@ -1144,7 +1153,6 @@ Int_t AliAnalysisTaskSpectraFlatenicity::FillArrayMC(vector<Float_t> &ptArray, v
   }
   return nNchGen;
 }
-
 
 //______________________________________________________________________________
 Int_t AliAnalysisTaskSpectraFlatenicity::FillArray(vector<Float_t> &ptArray, vector<Float_t> &dcaxyArray, vector<Int_t> &isprimArray, vector<Int_t> &idArray, const Bool_t wDcaCut)
@@ -1314,7 +1322,6 @@ Int_t AliAnalysisTaskSpectraFlatenicity::FillArray(vector<Float_t> &ptArray, vec
   }
   return nNchRec;
 }
-
 
 //______________________________________________________________________________
 void AliAnalysisTaskSpectraFlatenicity::SetCutsFilterWoDCA(AliESDtrackCuts *cFilt) 

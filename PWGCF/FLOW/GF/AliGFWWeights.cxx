@@ -19,6 +19,15 @@ AliGFWWeights::AliGFWWeights():
   fbinsPt(0)
 {
 };
+AliGFWWeights::AliGFWWeights(const AliGFWWeights& target):
+  TNamed(target)
+{
+  fDataFilled = target.fDataFilled;
+  fMCFilled = target.fMCFilled;
+  if(target.fW_data) fW_data = (TObjArray*)target.fW_data->Clone(target.fW_data->GetName());
+  if(target.fW_mcrec) fW_mcrec = (TObjArray*)target.fW_mcrec->Clone(target.fW_mcrec->GetName());
+  if(target.fW_mcgen) fW_mcgen = (TObjArray*)target.fW_mcgen->Clone(target.fW_mcgen->GetName());
+};
 AliGFWWeights::~AliGFWWeights()
 {
   delete fW_data;

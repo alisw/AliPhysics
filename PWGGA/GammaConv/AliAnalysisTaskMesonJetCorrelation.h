@@ -82,8 +82,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool MCParticleIsSelected(AliAODMCParticle* particle, bool isConv, bool checkConversion);
   int GetPhotonMotherLabel(AliAODConversionPhoton* gammaCand, int& convertedPhotonLabel, bool isCaloPhoton);
   void RelabelAODPhotonCandidates(Bool_t mode);
-  bool ProcessTrueMesonCandidatesAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand = 0);
-  void ProcessTrueMesonCandidatesInTrueJetsAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand = 0);
+  bool ProcessTrueMesonCandidatesAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand = 0, const double weightMatBudget = 1.);
+  void ProcessTrueMesonCandidatesInTrueJetsAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand = 0, const double weightMatBudget = 1.);
   // void IsTrueParticle(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, Bool_t matched);
   bool CheckAcceptance(AliAODMCParticle* gamma0, AliAODMCParticle* gamma1);
   bool IsParticleFromPartonFrag(AliAODMCParticle* particle, int idParton);
@@ -116,6 +116,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void SetOtherMesons(std::vector<int> vec) { fOtherMesonsPDGCodes = vec; }
   void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
   void SetFillMesonDCATree(bool tmp) { fFillDCATree = tmp; }
+  void SetDoUseCentralEvtSelection(bool tmp) { fUseCentralEventSelection = tmp; }
 
   void SetEventCutList(Int_t nCuts,
                        TList* CutArray)
@@ -160,6 +161,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliVEvent* fInputEvent;         // current event
   AliMCEvent* fMCEvent;           // corresponding MC event
   TClonesArray* fAODMCTrackArray; // pointer to track array
+  AliEventCuts fAliEventCuts;     ///<  Event cuts (run2 defaults)
 
   //-------------------------------
   // Lists for cut folders and output containers
@@ -219,6 +221,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool fUseThNForResponse;                              // flag if THnSparse or TH2 should be used for the 4d response matrices
   bool fEnableSortForClusMC;                            // flag if cluster mc labels should be sorted
   bool fFillDCATree;                                    // flag if DCA tree should be filled or not
+  bool fUseCentralEventSelection;                       // flag if central event selection (AliEventSelection.cxx) should be used
   //-------------------------------
   // conversions
   //-------------------------------
@@ -226,6 +229,11 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   Int_t* fMCEventNeg;  //!
   Int_t* fESDArrayPos; //!
   Int_t* fESDArrayNeg; //!
+
+  //-------------------------------
+  // Materil Budged Weights
+  //-------------------------------
+  std::vector<double> vecWeightsMatWeightsGammas;    //! vector with weights for photons. Indexing is the same as for fGammaCandidates
 
   //-------------------------------
   // binning settings
@@ -248,6 +256,9 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   vector<double> fVectorJetEta;          //! Vector of JetEta
   vector<double> fVectorJetPhi;          //! Vector of JetPhi
   vector<double> fVectorJetArea;         //! Vector of JetArea
+  vector<double> fVectorJetNEF;          //! Vector of jet neutral energy fraction
+  vector<double> fVectorJetNch;          //! Vector of jet number of tracks
+  vector<double> fVectorJetNclus;        //! Vector of jet number of clusters
   vector<double> fTrueVectorJetPt;       //! Vector of True JetPt
   vector<double> fTrueVectorJetPx;       //! Vector of True JetPx
   vector<double> fTrueVectorJetPy;       //! Vector of True JetPy
@@ -348,7 +359,10 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoTruePtJet;                 //! vector of histos with pt of true jets
   std::vector<TH1F*> fHistoTrueMatchedPtJet;          //! vector of histos with pt of true jets that are matched to a rec jet
   std::vector<TH1F*> fHistoTrueUnMatchedPtJet;        //! vector of histos with pt of jets that are not matched to a rec jet
-
+  std::vector<TH2F*> fHistoNEFVsPtJet;                //! vector of histos with pt of jets vs neutral energy fraction
+  std::vector<TH2F*> fHistoNchVsPtJet;                //! vector of histos with pt of jets vs number of charged tracks in jet
+  std::vector<TH2F*> fHistoNclusVsPtJet;              //! vector of histos with pt of jets vs neutral clusters in jet
+  
   //-------------------------------
   // True meson histograms
   //-------------------------------
@@ -448,7 +462,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 10);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 12);
 };
 
 #endif
