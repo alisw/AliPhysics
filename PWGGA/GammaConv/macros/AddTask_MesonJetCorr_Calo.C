@@ -49,6 +49,7 @@ void AddTask_MesonJetCorr_Calo(
   TString periodNameAnchor = "",               //
   // special settings
   Bool_t enableSortingMCLabels = kTRUE, // enable sorting for MC cluster labels
+  bool useCentralEvtSelection = true,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig
 
@@ -344,6 +345,7 @@ void AddTask_MesonJetCorr_Calo(
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
                                          //   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetUseTHnSparseForResponse(enableTHnSparse);
+  task->SetDoUseCentralEvtSelection(useCentralEvtSelection);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_Calo_%i_%i%s%s", meson, trainConfig, corrTaskSetting.EqualTo("") == true ? "" : Form("_%s", corrTaskSetting.Data()), nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );
