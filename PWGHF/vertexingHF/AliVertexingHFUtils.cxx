@@ -3597,8 +3597,9 @@ void AliVertexingHFUtils::GetGeneratedSpherocity(TClonesArray *arrayMC,
     Float_t phi  = part->Phi();
     Int_t charge = part->Charge();
     Bool_t isPhysPrim = part->IsPhysicalPrimary();
+    Bool_t isD0 = (TMath::Abs(part->GetPdgCode()) == 421);  //Added in the spherocity calculation for D0 and D* analyses
     if(!isPhysPrim) continue;
-    if(charge==0) continue;
+    if(charge==0 && !isD0) continue;
     if(eta<etaMin || eta>etaMax) continue;
     if(pt<ptMin || pt>ptMax) continue;
 
