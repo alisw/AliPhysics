@@ -61,7 +61,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fRndm(0),
   fNBootstrapProfiles(10),
   fFillAdditionalQA(kFALSE),
-  fCalculateGFWCumulants(kFALSE),
   fPtAxis(0),
   fEtaAxis(0),
   fMultiAxis(0),
@@ -142,10 +141,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fChi2TPCcls(0),
   fEtaMptAcceptance(0),
   fPtMptAcceptance(0),
-  fc22(0),
-  fc24(0),
-  fc26(0),
-  fc28(0),
   fImpactParameterMC(-1.0),
   EventNo(0),
   fStdTPCITS2011(0),
@@ -181,7 +176,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fUseRecoNchForMC(kFALSE),
   fNBootstrapProfiles(10),
   fFillAdditionalQA(kFALSE),
-  fCalculateGFWCumulants(kFALSE),
   fRndm(0),
   fPtAxis(0),
   fEtaAxis(0),
@@ -263,10 +257,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fChi2TPCcls(0),
   fEtaMptAcceptance(0),
   fPtMptAcceptance(0),
-  fc22(0),
-  fc24(0),
-  fc26(0),
-  fc28(0),
   fImpactParameterMC(-1.0),
   EventNo(0),
   fStdTPCITS2011(0),
@@ -497,12 +487,6 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
       fptVarList->Add(fNchTrueVsReco);
     }
     printf("Multiplicity objects created\n");
-    if(fCalculateGFWCumulants){
-      fc22 = new AliProfileBS("c22","c22",fNMultiBins,fMultiBins); fptVarList->Add(fc22); fc22->InitializeSubsamples(fNBootstrapProfiles);
-      fc24 = new AliProfileBS("c24","c24",fNMultiBins,fMultiBins); fptVarList->Add(fc24); fc24->InitializeSubsamples(fNBootstrapProfiles);
-      fc26 = new AliProfileBS("c26","c26",fNMultiBins,fMultiBins); fptVarList->Add(fc26); fc26->InitializeSubsamples(fNBootstrapProfiles);
-      fc28 = new AliProfileBS("c28","c28",fNMultiBins,fMultiBins); fptVarList->Add(fc28); fc28->InitializeSubsamples(fNBootstrapProfiles);
-    }
 
     PostData(1,fptVarList);
     //Setting up the FlowContainer
@@ -526,6 +510,7 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     oba->Add(new TNamed("ChSC244","ChSC244")); //for SC{2,3}
 
     oba->Add(new TNamed("ChFull28","ChFull28"));
+    oba->Add(new TNamed("ChFull212","ChFull212"));
     if(!fDisablePID) {
       oba->Add(new TNamed("PiGap22","PiGap22"));
       oba->Add(new TNamed("PiFull22","PiFull22"));
@@ -563,8 +548,7 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     PostData(2,fFC);
     Int_t pows[] = {3,0,2,2,3,3,3}; //5th harm. sum = 3, b/c {-2 -3}
     //Int_t powsFull[] = {9,0,8,4,7,3,6,0,5}; //For v2{8}
-    //Int_t powsFull[] = {13,0,12,4,11,3,10,0,9,0,8,0,7}; //For v2{12}
-    Int_t powsFull[] = {17,0,16,4,15,3,14,0,15,0,14,0,13,0,12,0,11}; //For v2{16}
+    Int_t powsFull[] = {13,0,12,4,11,3,10,0,9,0,8,0,7}; //For v2{12}
     fGFW = new AliGFW();
     fGFW->AddRegion("refN",7,pows,-fEtaAcceptance,-fEtaV2Sep,1,1);
     fGFW->AddRegion("refP",7,pows,fEtaV2Sep,fEtaAcceptance,1,1);
@@ -1049,7 +1033,6 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   wpPt.clear(); wpPt.resize(4,vector<vector<double>>(10,vector<double>(10)));
   wpPtSubP.clear(); wpPtSubP.resize(4,vector<vector<double>>(10,vector<double>(10)));
   wpPtSubN.clear(); wpPtSubN.resize(4,vector<vector<double>>(10,vector<double>(10)));
-  if(fCalculateGFWCumulants) ResetFlowVector(Qvector);
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
   iCent--;
@@ -1134,7 +1117,6 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       }
       Double_t wacc = fWeights[0]->GetNUA(lTrack->Phi(),lTrack->Eta(),vz);
       fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),((fUseNUAOne)?1.0:wacc)*((fUseNUEOne)?1.0:weff),3); //filling both gap (bit mask 1) and full (bit mask 2)
-      if(fCalculateGFWCumulants) FillQvector(((fUseNUAOne)?1.0:wacc)*((fUseNUEOne)?1.0:weff),lTrack->Phi());
       if(fFillAdditionalQA) FillAdditionalTrackQAPlots(*lTrack,weff,wacc,vtxp,kFALSE);
       if(PIDIndex){
         Double_t weff_PID = (fUse2DEff)?fEfficiency[iCent][PIDIndex]->GetBinContent(fEfficiency[iCent][PIDIndex]->FindBin(lpt,leta)):weff;
@@ -1192,7 +1174,6 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   }
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
-  if(fCalculateGFWCumulants) FillGFWProfiles(l_Multi,l_Random);
   PostData(1,fptVarList);
   //Filling FCs
   for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
@@ -1381,7 +1362,6 @@ void AliAnalysisTaskDeform::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("ChFull32","mid {3 -3}", kFALSE));   //ChFull32 12
   corrconfigs.push_back(GetConf("ChFull34","mid {3 3 -3 -3}", kFALSE));    //ChFull34 13
   corrconfigs.push_back(GetConf("ChFull212","mid {2 2 2 2 2 2 -2 -2 -2 -2 -2 -2}", kFALSE));    //ChFull212 14
-  corrconfigs.push_back(GetConf("ChFull212","mid {2 2 2 2 2 2 2 2 -2 -2 -2 -2 -2 -2 -2 -2}", kFALSE));    //ChFull216 14
 
   if(!fDisablePID){
     corrconfigs.push_back(GetConf("PiGap22","PiRefP {2} PiRefN {-2}", kFALSE));
@@ -1719,429 +1699,4 @@ Bool_t AliAnalysisTaskDeform::AcceptCustomEvent(AliESDEvent* fESD) { //From Alex
   if(AliESDtrackCuts::GetReferenceMultiplicity(fESD,estType,0.8) < 0) return kFALSE;
   if(fESD->IsIncompleteDAQ()) return kFALSE;
   return kTRUE;
-}
-void AliAnalysisTaskDeform::FillGFWProfiles(const Double_t &cent, const Double_t &l_rndm){
-    TComplex c[4][2] = {{TComplex(0.0,0.0,kFALSE),TComplex(0.0,0.0,kFALSE)},
-                        {TComplex(0.0,0.0,kFALSE),TComplex(0.0,0.0,kFALSE)},
-                        {TComplex(0.0,0.0,kFALSE),TComplex(0.0,0.0,kFALSE)},
-                        {TComplex(0.0,0.0,kFALSE),TComplex(0.0,0.0,kFALSE)}};
-    c[0][0] = Two(0,0); c[0][1] = Two(2,-2);
-    c[1][0] = Four(0,0,0,0); c[1][1] = Four(2,2,-2,-2);
-    c[2][0] = Six(0,0,0,0,0,0); c[2][1] = Six(2,2,2,-2,-2,-2);
-    c[3][0] = Eight(0,0,0,0,0,0,0,0); c[3][1] = Eight(2,2,2,2,-2,-2,-2,-2);
-    double d[4][2], val[4];
-    d[0][0] = c[0][0].Re(); d[0][1] = c[0][1].Re();
-    d[1][0] = c[1][0].Re(); d[1][1] = c[1][1].Re();
-    d[2][0] = c[2][0].Re(); d[2][1] = c[2][1].Re();
-    d[3][0] = c[3][0].Re(); d[3][1] = c[3][1].Re();
-    if(d[0][0]>0.0) val[0] = d[0][1]/d[0][0];
-    if(d[1][0]>0.0) val[1] = d[1][1]/d[1][0];
-    if(d[2][0]>0.0) val[2] = d[2][1]/d[2][0];
-    if(d[3][0]>0.0) val[3] = d[3][1]/d[3][0];
-    if(TMath::Abs(val[0]) < 1.0) fc22->FillProfile(cent,val[0],d[0][0],l_rndm);
-    if(TMath::Abs(val[1]) < 1.0) fc24->FillProfile(cent,val[1],d[1][0],l_rndm);
-    if(TMath::Abs(val[2]) < 1.0) fc26->FillProfile(cent,val[2],d[2][0],l_rndm);
-    if(TMath::Abs(val[3]) < 1.0) fc28->FillProfile(cent,val[3],d[3][0],l_rndm);
-
-    return;
-}
-void AliAnalysisTaskDeform::FillQvector(double w, double phi){
-  for(Int_t iHarm(0); iHarm < fNumHarms; iHarm++) 
-      for(Int_t iPower(0); iPower < fNumPowers; iPower++)
-      {
-          Double_t dCos = TMath::Power(w,iPower) * TMath::Cos(iHarm * phi);
-          Double_t dSin = TMath::Power(w,iPower) * TMath::Sin(iHarm * phi);
-          Qvector[iHarm][iPower] += TComplex(dCos,dSin,kFALSE);
-      } 
-  return;
-}
-TComplex AliAnalysisTaskDeform::Q(int n, int p)
-{
-
-	if(n>=0) return Qvector[n][p];
-  else return TComplex::Conjugate(Qvector[-n][p]);
-
-}
-void AliAnalysisTaskDeform::ResetFlowVector(TComplex (&array)[fNumHarms][fNumPowers])
-{
-  for(Int_t iHarm(0); iHarm < fNumHarms; ++iHarm) {
-    for(Int_t iPower(0); iPower < fNumPowers; ++iPower) {
-      array[iHarm][iPower](0.0,0.0);
-    }
-  }
-  return;
-}
-TComplex AliAnalysisTaskDeform::Two(int n1, int n2)
-{
-	TComplex formula = Q(n1,1)*Q(n2,1) - Q(n1+n2,2);
-  return formula;
-}
-TComplex AliAnalysisTaskDeform::Three(int n1, int n2, int n3)
-{
-    
-    TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)-Q(n1+n2,2)*Q(n3,1)-Q(n2,1)*Q(n1+n3,2)
-    - Q(n1,1)*Q(n2+n3,2)+2.*Q(n1+n2+n3,3);
-    return formula;
-    
-}
-TComplex AliAnalysisTaskDeform::Four(int n1, int n2, int n3, int n4)
-{
-	TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)-Q(n2,1)*Q(n1+n3,2)*Q(n4,1)
-                 		- Q(n1,1)*Q(n2+n3,2)*Q(n4,1)+2.*Q(n1+n2+n3,3)*Q(n4,1)-Q(n2,1)*Q(n3,1)*Q(n1+n4,2)
-                 		+ Q(n2+n3,2)*Q(n1+n4,2)-Q(n1,1)*Q(n3,1)*Q(n2+n4,2)+Q(n1+n3,2)*Q(n2+n4,2)
-                 		+ 2.*Q(n3,1)*Q(n1+n2+n4,3)-Q(n1,1)*Q(n2,1)*Q(n3+n4,2)+Q(n1+n2,2)*Q(n3+n4,2)
-                 		+ 2.*Q(n2,1)*Q(n1+n3+n4,3)+2.*Q(n1,1)*Q(n2+n3+n4,3)-6.*Q(n1+n2+n3+n4,4);
-    return formula;
-}
-//___________________________________________________________________
-TComplex AliAnalysisTaskDeform::Five(int n1, int n2, int n3, int n4, int n5)
-{
-    
-    TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)*Q(n5,1)
-    - Q(n2,1)*Q(n1+n3,2)*Q(n4,1)*Q(n5,1)-Q(n1,1)*Q(n2+n3,2)*Q(n4,1)*Q(n5,1)
-    + 2.*Q(n1+n2+n3,3)*Q(n4,1)*Q(n5,1)-Q(n2,1)*Q(n3,1)*Q(n1+n4,2)*Q(n5,1)
-    + Q(n2+n3,2)*Q(n1+n4,2)*Q(n5,1)-Q(n1,1)*Q(n3,1)*Q(n2+n4,2)*Q(n5,1)
-    + Q(n1+n3,2)*Q(n2+n4,2)*Q(n5,1)+2.*Q(n3,1)*Q(n1+n2+n4,3)*Q(n5,1)
-    - Q(n1,1)*Q(n2,1)*Q(n3+n4,2)*Q(n5,1)+Q(n1+n2,2)*Q(n3+n4,2)*Q(n5,1)
-    + 2.*Q(n2,1)*Q(n1+n3+n4,3)*Q(n5,1)+2.*Q(n1,1)*Q(n2+n3+n4,3)*Q(n5,1)
-    - 6.*Q(n1+n2+n3+n4,4)*Q(n5,1)-Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n1+n5,2)
-    + Q(n2+n3,2)*Q(n4,1)*Q(n1+n5,2)+Q(n3,1)*Q(n2+n4,2)*Q(n1+n5,2)
-    + Q(n2,1)*Q(n3+n4,2)*Q(n1+n5,2)-2.*Q(n2+n3+n4,3)*Q(n1+n5,2)
-    - Q(n1,1)*Q(n3,1)*Q(n4,1)*Q(n2+n5,2)+Q(n1+n3,2)*Q(n4,1)*Q(n2+n5,2)
-    + Q(n3,1)*Q(n1+n4,2)*Q(n2+n5,2)+Q(n1,1)*Q(n3+n4,2)*Q(n2+n5,2)
-    - 2.*Q(n1+n3+n4,3)*Q(n2+n5,2)+2.*Q(n3,1)*Q(n4,1)*Q(n1+n2+n5,3)
-    - 2.*Q(n3+n4,2)*Q(n1+n2+n5,3)-Q(n1,1)*Q(n2,1)*Q(n4,1)*Q(n3+n5,2)
-    + Q(n1+n2,2)*Q(n4,1)*Q(n3+n5,2)+Q(n2,1)*Q(n1+n4,2)*Q(n3+n5,2)
-    + Q(n1,1)*Q(n2+n4,2)*Q(n3+n5,2)-2.*Q(n1+n2+n4,3)*Q(n3+n5,2)
-    + 2.*Q(n2,1)*Q(n4,1)*Q(n1+n3+n5,3)-2.*Q(n2+n4,2)*Q(n1+n3+n5,3)
-    + 2.*Q(n1,1)*Q(n4,1)*Q(n2+n3+n5,3)-2.*Q(n1+n4,2)*Q(n2+n3+n5,3)
-    - 6.*Q(n4,1)*Q(n1+n2+n3+n5,4)-Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4+n5,2)
-    + Q(n1+n2,2)*Q(n3,1)*Q(n4+n5,2)+Q(n2,1)*Q(n1+n3,2)*Q(n4+n5,2)
-    + Q(n1,1)*Q(n2+n3,2)*Q(n4+n5,2)-2.*Q(n1+n2+n3,3)*Q(n4+n5,2)
-    + 2.*Q(n2,1)*Q(n3,1)*Q(n1+n4+n5,3)-2.*Q(n2+n3,2)*Q(n1+n4+n5,3)
-    + 2.*Q(n1,1)*Q(n3,1)*Q(n2+n4+n5,3)-2.*Q(n1+n3,2)*Q(n2+n4+n5,3)
-    - 6.*Q(n3,1)*Q(n1+n2+n4+n5,4)+2.*Q(n1,1)*Q(n2,1)*Q(n3+n4+n5,3)
-    - 2.*Q(n1+n2,2)*Q(n3+n4+n5,3)-6.*Q(n2,1)*Q(n1+n3+n4+n5,4)
-    - 6.*Q(n1,1)*Q(n2+n3+n4+n5,4)+24.*Q(n1+n2+n3+n4+n5,5);
-    return formula;
-    
-}
-//___________________________________________________________________
-TComplex AliAnalysisTaskDeform::Six(int n1, int n2, int n3, int n4, int n5, int n6)
-{
-    TComplex formula = Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n6,1)-Q(n1+n2,2)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n6,1)
-              - Q(n2,1)*Q(n1+n3,2)*Q(n4,1)*Q(n5,1)*Q(n6,1)-Q(n1,1)*Q(n2+n3,2)*Q(n4,1)*Q(n5,1)*Q(n6,1)
-              + 2.*Q(n1+n2+n3,3)*Q(n4,1)*Q(n5,1)*Q(n6,1)-Q(n2,1)*Q(n3,1)*Q(n1+n4,2)*Q(n5,1)*Q(n6,1)
-              + Q(n2+n3,2)*Q(n1+n4,2)*Q(n5,1)*Q(n6,1)-Q(n1,1)*Q(n3,1)*Q(n2+n4,2)*Q(n5,1)*Q(n6,1)
-              + Q(n1+n3,2)*Q(n2+n4,2)*Q(n5,1)*Q(n6,1)+2.*Q(n3,1)*Q(n1+n2+n4,3)*Q(n5,1)*Q(n6,1)
-              - Q(n1,1)*Q(n2,1)*Q(n3+n4,2)*Q(n5,1)*Q(n6,1)+Q(n1+n2,2)*Q(n3+n4,2)*Q(n5,1)*Q(n6,1)
-              + 2.*Q(n2,1)*Q(n1+n3+n4,3)*Q(n5,1)*Q(n6,1)+2.*Q(n1,1)*Q(n2+n3+n4,3)*Q(n5,1)*Q(n6,1)
-              - 6.*Q(n1+n2+n3+n4,4)*Q(n5,1)*Q(n6,1)-Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n1+n5,2)*Q(n6,1)
-              + Q(n2+n3,2)*Q(n4,1)*Q(n1+n5,2)*Q(n6,1)+Q(n3,1)*Q(n2+n4,2)*Q(n1+n5,2)*Q(n6,1)
-              + Q(n2,1)*Q(n3+n4,2)*Q(n1+n5,2)*Q(n6,1)-2.*Q(n2+n3+n4,3)*Q(n1+n5,2)*Q(n6,1)
-              - Q(n1,1)*Q(n3,1)*Q(n4,1)*Q(n2+n5,2)*Q(n6,1)+Q(n1+n3,2)*Q(n4,1)*Q(n2+n5,2)*Q(n6,1)
-              + Q(n3,1)*Q(n1+n4,2)*Q(n2+n5,2)*Q(n6,1)+Q(n1,1)*Q(n3+n4,2)*Q(n2+n5,2)*Q(n6,1)
-              - 2.*Q(n1+n3+n4,3)*Q(n2+n5,2)*Q(n6,1)+2.*Q(n3,1)*Q(n4,1)*Q(n1+n2+n5,3)*Q(n6,1)
-              - 2.*Q(n3+n4,2)*Q(n1+n2+n5,3)*Q(n6,1)-Q(n1,1)*Q(n2,1)*Q(n4,1)*Q(n3+n5,2)*Q(n6,1)
-              + Q(n1+n2,2)*Q(n4,1)*Q(n3+n5,2)*Q(n6,1)+Q(n2,1)*Q(n1+n4,2)*Q(n3+n5,2)*Q(n6,1)
-              + Q(n1,1)*Q(n2+n4,2)*Q(n3+n5,2)*Q(n6,1)-2.*Q(n1+n2+n4,3)*Q(n3+n5,2)*Q(n6,1)
-              + 2.*Q(n2,1)*Q(n4,1)*Q(n1+n3+n5,3)*Q(n6,1)-2.*Q(n2+n4,2)*Q(n1+n3+n5,3)*Q(n6,1)
-              + 2.*Q(n1,1)*Q(n4,1)*Q(n2+n3+n5,3)*Q(n6,1)-2.*Q(n1+n4,2)*Q(n2+n3+n5,3)*Q(n6,1)
-              - 6.*Q(n4,1)*Q(n1+n2+n3+n5,4)*Q(n6,1)-Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4+n5,2)*Q(n6,1)
-              + Q(n1+n2,2)*Q(n3,1)*Q(n4+n5,2)*Q(n6,1)+Q(n2,1)*Q(n1+n3,2)*Q(n4+n5,2)*Q(n6,1)
-              + Q(n1,1)*Q(n2+n3,2)*Q(n4+n5,2)*Q(n6,1)-2.*Q(n1+n2+n3,3)*Q(n4+n5,2)*Q(n6,1)
-              + 2.*Q(n2,1)*Q(n3,1)*Q(n1+n4+n5,3)*Q(n6,1)-2.*Q(n2+n3,2)*Q(n1+n4+n5,3)*Q(n6,1)
-              + 2.*Q(n1,1)*Q(n3,1)*Q(n2+n4+n5,3)*Q(n6,1)-2.*Q(n1+n3,2)*Q(n2+n4+n5,3)*Q(n6,1)
-              - 6.*Q(n3,1)*Q(n1+n2+n4+n5,4)*Q(n6,1)+2.*Q(n1,1)*Q(n2,1)*Q(n3+n4+n5,3)*Q(n6,1)
-              - 2.*Q(n1+n2,2)*Q(n3+n4+n5,3)*Q(n6,1)-6.*Q(n2,1)*Q(n1+n3+n4+n5,4)*Q(n6,1)
-              - 6.*Q(n1,1)*Q(n2+n3+n4+n5,4)*Q(n6,1)+24.*Q(n1+n2+n3+n4+n5,5)*Q(n6,1)
-              - Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n1+n6,2)+Q(n2+n3,2)*Q(n4,1)*Q(n5,1)*Q(n1+n6,2)
-              + Q(n3,1)*Q(n2+n4,2)*Q(n5,1)*Q(n1+n6,2)+Q(n2,1)*Q(n3+n4,2)*Q(n5,1)*Q(n1+n6,2)
-              - 2.*Q(n2+n3+n4,3)*Q(n5,1)*Q(n1+n6,2)+Q(n3,1)*Q(n4,1)*Q(n2+n5,2)*Q(n1+n6,2)
-              - Q(n3+n4,2)*Q(n2+n5,2)*Q(n1+n6,2)+Q(n2,1)*Q(n4,1)*Q(n3+n5,2)*Q(n1+n6,2)
-              - Q(n2+n4,2)*Q(n3+n5,2)*Q(n1+n6,2)-2.*Q(n4,1)*Q(n2+n3+n5,3)*Q(n1+n6,2)
-              + Q(n2,1)*Q(n3,1)*Q(n4+n5,2)*Q(n1+n6,2)-Q(n2+n3,2)*Q(n4+n5,2)*Q(n1+n6,2)
-              - 2.*Q(n3,1)*Q(n2+n4+n5,3)*Q(n1+n6,2)-2.*Q(n2,1)*Q(n3+n4+n5,3)*Q(n1+n6,2)
-              + 6.*Q(n2+n3+n4+n5,4)*Q(n1+n6,2)-Q(n1,1)*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n2+n6,2)
-              + Q(n1+n3,2)*Q(n4,1)*Q(n5,1)*Q(n2+n6,2)+Q(n3,1)*Q(n1+n4,2)*Q(n5,1)*Q(n2+n6,2)
-              + Q(n1,1)*Q(n3+n4,2)*Q(n5,1)*Q(n2+n6,2)-2.*Q(n1+n3+n4,3)*Q(n5,1)*Q(n2+n6,2)
-              + Q(n3,1)*Q(n4,1)*Q(n1+n5,2)*Q(n2+n6,2)-Q(n3+n4,2)*Q(n1+n5,2)*Q(n2+n6,2)
-              + Q(n1,1)*Q(n4,1)*Q(n3+n5,2)*Q(n2+n6,2)-Q(n1+n4,2)*Q(n3+n5,2)*Q(n2+n6,2)
-              - 2.*Q(n4,1)*Q(n1+n3+n5,3)*Q(n2+n6,2)+Q(n1,1)*Q(n3,1)*Q(n4+n5,2)*Q(n2+n6,2)
-              - Q(n1+n3,2)*Q(n4+n5,2)*Q(n2+n6,2)-2.*Q(n3,1)*Q(n1+n4+n5,3)*Q(n2+n6,2)
-              - 2.*Q(n1,1)*Q(n3+n4+n5,3)*Q(n2+n6,2)+6.*Q(n1+n3+n4+n5,4)*Q(n2+n6,2)
-              + 2.*Q(n3,1)*Q(n4,1)*Q(n5,1)*Q(n1+n2+n6,3)-2.*Q(n3+n4,2)*Q(n5,1)*Q(n1+n2+n6,3)
-              - 2.*Q(n4,1)*Q(n3+n5,2)*Q(n1+n2+n6,3)-2.*Q(n3,1)*Q(n4+n5,2)*Q(n1+n2+n6,3)
-              + 4.*Q(n3+n4+n5,3)*Q(n1+n2+n6,3)-Q(n1,1)*Q(n2,1)*Q(n4,1)*Q(n5,1)*Q(n3+n6,2)
-              + Q(n1+n2,2)*Q(n4,1)*Q(n5,1)*Q(n3+n6,2)+Q(n2,1)*Q(n1+n4,2)*Q(n5,1)*Q(n3+n6,2)
-              + Q(n1,1)*Q(n2+n4,2)*Q(n5,1)*Q(n3+n6,2)-2.*Q(n1+n2+n4,3)*Q(n5,1)*Q(n3+n6,2)
-              + Q(n2,1)*Q(n4,1)*Q(n1+n5,2)*Q(n3+n6,2)-Q(n2+n4,2)*Q(n1+n5,2)*Q(n3+n6,2)
-              + Q(n1,1)*Q(n4,1)*Q(n2+n5,2)*Q(n3+n6,2)-Q(n1+n4,2)*Q(n2+n5,2)*Q(n3+n6,2)
-              - 2.*Q(n4,1)*Q(n1+n2+n5,3)*Q(n3+n6,2)+Q(n1,1)*Q(n2,1)*Q(n4+n5,2)*Q(n3+n6,2)
-              - Q(n1+n2,2)*Q(n4+n5,2)*Q(n3+n6,2)-2.*Q(n2,1)*Q(n1+n4+n5,3)*Q(n3+n6,2)
-              - 2.*Q(n1,1)*Q(n2+n4+n5,3)*Q(n3+n6,2)+6.*Q(n1+n2+n4+n5,4)*Q(n3+n6,2)
-              + 2.*Q(n2,1)*Q(n4,1)*Q(n5,1)*Q(n1+n3+n6,3)-2.*Q(n2+n4,2)*Q(n5,1)*Q(n1+n3+n6,3)
-              - 2.*Q(n4,1)*Q(n2+n5,2)*Q(n1+n3+n6,3)-2.*Q(n2,1)*Q(n4+n5,2)*Q(n1+n3+n6,3)
-              + 4.*Q(n2+n4+n5,3)*Q(n1+n3+n6,3)+2.*Q(n1,1)*Q(n4,1)*Q(n5,1)*Q(n2+n3+n6,3)
-              - 2.*Q(n1+n4,2)*Q(n5,1)*Q(n2+n3+n6,3)-2.*Q(n4,1)*Q(n1+n5,2)*Q(n2+n3+n6,3)
-              - 2.*Q(n1,1)*Q(n4+n5,2)*Q(n2+n3+n6,3)+4.*Q(n1+n4+n5,3)*Q(n2+n3+n6,3)
-              - 6.*Q(n4,1)*Q(n5,1)*Q(n1+n2+n3+n6,4)+6.*Q(n4+n5,2)*Q(n1+n2+n3+n6,4)
-              - Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n5,1)*Q(n4+n6,2)+Q(n1+n2,2)*Q(n3,1)*Q(n5,1)*Q(n4+n6,2)
-              + Q(n2,1)*Q(n1+n3,2)*Q(n5,1)*Q(n4+n6,2)+Q(n1,1)*Q(n2+n3,2)*Q(n5,1)*Q(n4+n6,2)
-              - 2.*Q(n1+n2+n3,3)*Q(n5,1)*Q(n4+n6,2)+Q(n2,1)*Q(n3,1)*Q(n1+n5,2)*Q(n4+n6,2)
-              - Q(n2+n3,2)*Q(n1+n5,2)*Q(n4+n6,2)+Q(n1,1)*Q(n3,1)*Q(n2+n5,2)*Q(n4+n6,2)
-              - Q(n1+n3,2)*Q(n2+n5,2)*Q(n4+n6,2)-2.*Q(n3,1)*Q(n1+n2+n5,3)*Q(n4+n6,2)
-              + Q(n1,1)*Q(n2,1)*Q(n3+n5,2)*Q(n4+n6,2)-Q(n1+n2,2)*Q(n3+n5,2)*Q(n4+n6,2)
-              - 2.*Q(n2,1)*Q(n1+n3+n5,3)*Q(n4+n6,2)-2.*Q(n1,1)*Q(n2+n3+n5,3)*Q(n4+n6,2)
-              + 6.*Q(n1+n2+n3+n5,4)*Q(n4+n6,2)+2.*Q(n2,1)*Q(n3,1)*Q(n5,1)*Q(n1+n4+n6,3)
-              - 2.*Q(n2+n3,2)*Q(n5,1)*Q(n1+n4+n6,3)-2.*Q(n3,1)*Q(n2+n5,2)*Q(n1+n4+n6,3)
-              - 2.*Q(n2,1)*Q(n3+n5,2)*Q(n1+n4+n6,3)+4.*Q(n2+n3+n5,3)*Q(n1+n4+n6,3)
-              + 2.*Q(n1,1)*Q(n3,1)*Q(n5,1)*Q(n2+n4+n6,3)-2.*Q(n1+n3,2)*Q(n5,1)*Q(n2+n4+n6,3)
-              - 2.*Q(n3,1)*Q(n1+n5,2)*Q(n2+n4+n6,3)-2.*Q(n1,1)*Q(n3+n5,2)*Q(n2+n4+n6,3)
-              + 4.*Q(n1+n3+n5,3)*Q(n2+n4+n6,3)-6.*Q(n3,1)*Q(n5,1)*Q(n1+n2+n4+n6,4)
-              + 6.*Q(n3+n5,2)*Q(n1+n2+n4+n6,4)+2.*Q(n1,1)*Q(n2,1)*Q(n5,1)*Q(n3+n4+n6,3)
-              - 2.*Q(n1+n2,2)*Q(n5,1)*Q(n3+n4+n6,3)-2.*Q(n2,1)*Q(n1+n5,2)*Q(n3+n4+n6,3)
-              - 2.*Q(n1,1)*Q(n2+n5,2)*Q(n3+n4+n6,3)+4.*Q(n1+n2+n5,3)*Q(n3+n4+n6,3)
-              - 6.*Q(n2,1)*Q(n5,1)*Q(n1+n3+n4+n6,4)+6.*Q(n2+n5,2)*Q(n1+n3+n4+n6,4)
-              - 6.*Q(n1,1)*Q(n5,1)*Q(n2+n3+n4+n6,4)+6.*Q(n1+n5,2)*Q(n2+n3+n4+n6,4)
-              + 24.*Q(n5,1)*Q(n1+n2+n3+n4+n6,5)-Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n5+n6,2)
-              + Q(n1+n2,2)*Q(n3,1)*Q(n4,1)*Q(n5+n6,2)+Q(n2,1)*Q(n1+n3,2)*Q(n4,1)*Q(n5+n6,2)
-              + Q(n1,1)*Q(n2+n3,2)*Q(n4,1)*Q(n5+n6,2)-2.*Q(n1+n2+n3,3)*Q(n4,1)*Q(n5+n6,2)
-              + Q(n2,1)*Q(n3,1)*Q(n1+n4,2)*Q(n5+n6,2)-Q(n2+n3,2)*Q(n1+n4,2)*Q(n5+n6,2)
-              + Q(n1,1)*Q(n3,1)*Q(n2+n4,2)*Q(n5+n6,2)-Q(n1+n3,2)*Q(n2+n4,2)*Q(n5+n6,2)
-              - 2.*Q(n3,1)*Q(n1+n2+n4,3)*Q(n5+n6,2)+Q(n1,1)*Q(n2,1)*Q(n3+n4,2)*Q(n5+n6,2)
-              - Q(n1+n2,2)*Q(n3+n4,2)*Q(n5+n6,2)-2.*Q(n2,1)*Q(n1+n3+n4,3)*Q(n5+n6,2)
-              - 2.*Q(n1,1)*Q(n2+n3+n4,3)*Q(n5+n6,2)+6.*Q(n1+n2+n3+n4,4)*Q(n5+n6,2)
-              + 2.*Q(n2,1)*Q(n3,1)*Q(n4,1)*Q(n1+n5+n6,3)-2.*Q(n2+n3,2)*Q(n4,1)*Q(n1+n5+n6,3)
-              - 2.*Q(n3,1)*Q(n2+n4,2)*Q(n1+n5+n6,3)-2.*Q(n2,1)*Q(n3+n4,2)*Q(n1+n5+n6,3)
-              + 4.*Q(n2+n3+n4,3)*Q(n1+n5+n6,3)+2.*Q(n1,1)*Q(n3,1)*Q(n4,1)*Q(n2+n5+n6,3)
-              - 2.*Q(n1+n3,2)*Q(n4,1)*Q(n2+n5+n6,3)-2.*Q(n3,1)*Q(n1+n4,2)*Q(n2+n5+n6,3)
-              - 2.*Q(n1,1)*Q(n3+n4,2)*Q(n2+n5+n6,3)+4.*Q(n1+n3+n4,3)*Q(n2+n5+n6,3)
-              - 6.*Q(n3,1)*Q(n4,1)*Q(n1+n2+n5+n6,4)+6.*Q(n3+n4,2)*Q(n1+n2+n5+n6,4)
-              + 2.*Q(n1,1)*Q(n2,1)*Q(n4,1)*Q(n3+n5+n6,3)-2.*Q(n1+n2,2)*Q(n4,1)*Q(n3+n5+n6,3)
-              - 2.*Q(n2,1)*Q(n1+n4,2)*Q(n3+n5+n6,3)-2.*Q(n1,1)*Q(n2+n4,2)*Q(n3+n5+n6,3)
-              + 4.*Q(n1+n2+n4,3)*Q(n3+n5+n6,3)-6.*Q(n2,1)*Q(n4,1)*Q(n1+n3+n5+n6,4)
-              + 6.*Q(n2+n4,2)*Q(n1+n3+n5+n6,4)-6.*Q(n1,1)*Q(n4,1)*Q(n2+n3+n5+n6,4)
-              + 6.*Q(n1+n4,2)*Q(n2+n3+n5+n6,4)+24.*Q(n4,1)*Q(n1+n2+n3+n5+n6,5)
-              + 2.*Q(n1,1)*Q(n2,1)*Q(n3,1)*Q(n4+n5+n6,3)-2.*Q(n1+n2,2)*Q(n3,1)*Q(n4+n5+n6,3)
-              - 2.*Q(n2,1)*Q(n1+n3,2)*Q(n4+n5+n6,3)-2.*Q(n1,1)*Q(n2+n3,2)*Q(n4+n5+n6,3)
-              + 4.*Q(n1+n2+n3,3)*Q(n4+n5+n6,3)-6.*Q(n2,1)*Q(n3,1)*Q(n1+n4+n5+n6,4)
-              + 6.*Q(n2+n3,2)*Q(n1+n4+n5+n6,4)-6.*Q(n1,1)*Q(n3,1)*Q(n2+n4+n5+n6,4)
-              + 6.*Q(n1+n3,2)*Q(n2+n4+n5+n6,4)+24.*Q(n3,1)*Q(n1+n2+n4+n5+n6,5)
-              - 6.*Q(n1,1)*Q(n2,1)*Q(n3+n4+n5+n6,4)+6.*Q(n1+n2,2)*Q(n3+n4+n5+n6,4)
-              + 24.*Q(n2,1)*Q(n1+n3+n4+n5+n6,5)+24.*Q(n1,1)*Q(n2+n3+n4+n5+n6,5)
-              - 120.*Q(n1+n2+n3+n4+n5+n6,6);
-    return formula;
-}
-//_________________________________________________________________________________
-TComplex AliAnalysisTaskDeform::Seven(int n1, int n2, int n3, int n4, int n5, int n6, int n7)
-{
-    
-    TComplex Correlation = {0, 0};
-    int Narray[] = {n1, n2, n3, n4, n5, n6};
-    
-    for(int k=7; k-->0; )
-    {// backward loop of k from m-1 until 0, where m is the m-particle correlation, in this case m=4
-        
-        int array[6] = {0,1,2,3,4,5};
-        int iPerm = 0;
-        //int argument = 0;
-        int count = 0;
-        
-        // k==6: there is just one combination, we can add it manually
-        if(k==6){
-            Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-            Six(n1, n2, n3, n4, n5, n6)*Q(n7, 7-k);
-        }// k==6
-        
-        else if(k==5){
-            do{
-                iPerm += 1;
-                if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4]){
-                    count += 1;
-                    Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-                    Five(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])],
-                         Narray[int(array[3])], Narray[int(array[4])])*
-                    Q(Narray[int(array[5])]+n7, 7-k);
-                }
-            }while(std::next_permutation(array, array+6));
-        }// k==5
-        
-        else if(k==4){
-            do{
-                iPerm += 1;
-                if(iPerm%2 == 1){
-                    if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3]){
-                        Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-                        Four(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])],
-                             Narray[int(array[3])])*
-                        Q(Narray[int(array[4])]+Narray[int(array[5])]+n7, 7-k);
-                    }
-                }
-            }while(std::next_permutation(array, array+6));
-        }// k==4
-        
-        else if(k==3){
-            do{
-                iPerm += 1;
-                if(iPerm%6 == 1){
-                    if(array[0] < array[1] && array[1] < array[2]){
-                        Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-                        Three(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])])*
-                        Q(Narray[int(array[3])]+Narray[int(array[4])]+Narray[int(array[5])]+n7, 7-k);
-                    }
-                }
-            }while(std::next_permutation(array, array+6));
-        }// k==3
-        
-        else if(k==2){
-            do{
-                iPerm += 1;
-                if(iPerm%24 == 1){
-                    if(array[0] < array[1]){
-                        Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*
-                        Two(Narray[int(array[0])], Narray[int(array[1])])*
-                        Q(Narray[int(array[2])]+Narray[int(array[3])]+Narray[int(array[4])]
-                          +Narray[int(array[5])]+n7, 7-k);
-                    }
-                }
-            }while(std::next_permutation(array, array+6));
-        }// k==2
-        
-        else if(k == 1){
-            Correlation = Correlation
-            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n1, 1)*Q(n2+n3+n4+n5+n6+n7, 7-k)
-            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n2, 1)*Q(n1+n3+n4+n5+n6+n7, 7-k)
-            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n3, 1)*Q(n1+n2+n4+n5+n6+n7, 7-k)
-            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n4, 1)*Q(n1+n2+n3+n5+n6+n7, 7-k)
-            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n5, 1)*Q(n1+n2+n3+n4+n6+n7, 7-k)
-            + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n6, 1)*Q(n1+n2+n3+n4+n5+n7, 7-k);
-        }// k==1
-        
-        else if(k == 0){
-            Correlation = Correlation + TMath::Power(-1, 7-k-1)*TMath::Factorial(7-k-1)*Q(n1+n2+n3+n4+n5+n6+n7, 7-k);
-        }// k==0
-        
-        else{
-            cout<<"invalid range of k"<<endl;
-            return {0,0};
-        }
-        
-    }// loop over k
-    
-    return Correlation;
-    
-}
-//_____________________________________________________________________________
-TComplex AliAnalysisTaskDeform::Eight(int n1, int n2, int n3, int n4, int n5, int n6, int n7, int n8)
-{
-    
-    TComplex Correlation = {0, 0};
-    int Narray[] = {n1, n2, n3, n4, n5, n6, n7};
-    
-    for(int k=8; k-->0; )
-    {// backward loop of k from m-1 until 0, where m is the m-particle correlation, in this case m=4
-        
-        int array[7] = {0,1,2,3,4,5,6};
-        int iPerm = 0;
-        //int argument = 0;
-        int count = 0;
-        
-        // k==7: there is just one combination, we can add it manually
-        if(k==7){
-            Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-            Seven(n1, n2, n3, n4, n5, n6, n7)*Q(n8, 8-k);
-        }// k==7
-        
-        else if(k==6){
-            do{
-                iPerm += 1;
-                if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4] && array[4] < array[5]){
-                    count += 1;
-                    Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-                    Six(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])],
-                        Narray[int(array[3])], Narray[int(array[4])], Narray[int(array[5])])*
-                    Q(Narray[int(array[6])]+n8, 8-k);
-                }
-            }while(std::next_permutation(array, array+7));
-        }// k==6
-        
-        else if(k==5){
-            do{
-                iPerm += 1;
-                if(iPerm%2 == 1){
-                    if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3] && array[3] < array[4]){
-                        Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-                        Five(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])],
-                             Narray[int(array[3])], Narray[int(array[4])])*
-                        Q(Narray[int(array[5])]+Narray[int(array[6])]+n8, 8-k);
-                    }
-                }
-            }while(std::next_permutation(array, array+7));
-        }// k==5
-        
-        else if(k==4){
-            do{
-                iPerm += 1;
-                if(iPerm%6 == 1){
-                    if(array[0] < array[1] && array[1] < array[2] && array[2] < array[3]){
-                        Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-                        Four(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])], Narray[int(array[3])])*
-                        Q(Narray[int(array[4])]+Narray[int(array[5])]+Narray[int(array[6])]+n8, 8-k);
-                    }
-                }
-            }while(std::next_permutation(array, array+7));
-        }// k==4
-        
-        else if(k==3){
-            do{
-                iPerm += 1;
-                if(iPerm%24 == 1){
-                    if(array[0] < array[1] && array[1] < array[2]){
-                        Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-                        Three(Narray[int(array[0])], Narray[int(array[1])], Narray[int(array[2])])*
-                        Q(Narray[int(array[3])]+Narray[int(array[4])]+Narray[int(array[5])]+Narray[int(array[6])]+n8, 8-k);
-                    }
-                }
-            }while(std::next_permutation(array, array+7));
-        }// k==3
-        
-        else if(k==2){
-            do{
-                iPerm += 1;
-                if(iPerm%120 == 1){
-                    if(array[0] < array[1]){
-                        Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*
-                        Two(Narray[int(array[0])], Narray[int(array[1])])*
-                        Q(Narray[int(array[2])]+Narray[int(array[3])]+Narray[int(array[4])]
-                          +Narray[int(array[5])]+Narray[int(array[6])]+n8, 8-k);
-                    }
-                }
-            }while(std::next_permutation(array, array+7));
-        }// k==2
-        
-        else if(k == 1){
-            Correlation = Correlation
-            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n1, 1)*Q(n2+n3+n4+n5+n6+n7+n8, 8-k)
-            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n2, 1)*Q(n1+n3+n4+n5+n6+n7+n8, 8-k)
-            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n3, 1)*Q(n1+n2+n4+n5+n6+n7+n8, 8-k)
-            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n4, 1)*Q(n1+n2+n3+n5+n6+n7+n8, 8-k)
-            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n5, 1)*Q(n1+n2+n3+n4+n6+n7+n8, 8-k)
-            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n6, 1)*Q(n1+n2+n3+n4+n5+n7+n8, 8-k)
-            + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n7, 1)*Q(n1+n2+n3+n4+n5+n6+n8, 8-k);
-        }// k==1
-        
-        else if(k == 0){
-            Correlation = Correlation + TMath::Power(-1, 8-k-1)*TMath::Factorial(8-k-1)*Q(n1+n2+n3+n4+n5+n6+n7+n8, 8-k);
-        }// k==0
-        
-        else{
-            cout<<"invalid range of k"<<endl;
-            return {0,0};
-        }
-        
-    }// loop over k
-    
-    return Correlation;
-    
 }
