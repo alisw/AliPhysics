@@ -57,7 +57,7 @@ public:
     };
     
   enum DetFlev{
-      kFullTPC,         ///< use all TPC Qn Vector
+      kFullTPC,         ///< use all T54PC Qn Vector
       kPosTPC,          ///< use positive eta TPC Qn Vector
       kNegTPC,          ///< use negative eta TPC Qn Vector
       kFullV0,          ///< use A and C V0 Qn Vector
@@ -114,6 +114,7 @@ public:
 
 
   //== s == Setter Prepare  ################################################
+  void SetMessageLevel(Int_t mesLev) {fMesLev = mesLev;}
   void SetRunListFileName(std::string fileName) {fRunListFileName = fileName;}
   
   void SetUseAliEventCuts(Bool_t b)      { fUseAliEventCuts = b; }
@@ -131,6 +132,7 @@ public:
   void SetQnCalibType(TString iQnVCalibType){fQnVCalibType = iQnVCalibType;}
   void SetTPCQnMeasure(Bool_t bTPCQnMeasure){fTPCQnMeasure = bTPCQnMeasure;}
 
+  void SetOwnEventCut(Bool_t bOwnEventCut){fOwnEventCut = bOwnEventCut;}
   void SetDoEP(Bool_t bDoEP){fDoEP = bDoEP;}
   void SetDoTrack(Bool_t bDoTrack){fDoTrack = bDoTrack;}
   void SetDoBkg(Bool_t bDoBkg){fDoBkg = bDoBkg;}
@@ -222,6 +224,8 @@ private:
     AliAODEvent* fAOD;                /// AOD event
     TString fOADBFileName;            /// OADB input file name
     
+    Int_t   fMesLev = 0;              ///<
+
     Bool_t  fPileupCut = kFALSE;      ///<
     Bool_t  fTPCQnMeasure = kFALSE;   ///<
     
@@ -230,6 +234,7 @@ private:
     Bool_t  fGainCalibQA = kFALSE;    ///<
     Bool_t  fReCentCalibQA = kFALSE;  ///<
 
+    Bool_t  fOwnEventCut = kFALSE;    ///<
     Bool_t  fDoEP = kFALSE;           ///<
     Bool_t  fDoTrack = kFALSE;        ///<
     Bool_t  fDoBkg = kFALSE;          ///<
@@ -278,6 +283,7 @@ private:
     Bool_t     QnJEHandlarEPGet();
     Bool_t     QnGainCalibration();
     Bool_t     QnRecenteringCalibration();
+    Bool_t     QnCalcWOCalib();
 
     Double_t CalcEPAngle(double Qx,double Qy) const {return (TMath::Pi()+TMath::ATan2(-Qy,-Qx))/2;}
     Double_t CalcEPReso(Int_t n, Double_t &psiA, Double_t &psiB, Double_t &psiC);
@@ -490,12 +496,10 @@ private:
     AliAnalysisTaskRawJetWithEP(const AliAnalysisTaskRawJetWithEP&); // not implemented
     AliAnalysisTaskRawJetWithEP &operator=(const AliAnalysisTaskRawJetWithEP&);
 
-    ClassDef(AliAnalysisTaskRawJetWithEP, 135);
+    ClassDef(AliAnalysisTaskRawJetWithEP, 137);
 };
 
 #endif
-
-
 
 
 
