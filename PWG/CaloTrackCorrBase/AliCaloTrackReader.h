@@ -280,7 +280,7 @@ public:
   virtual Bool_t   IsArtificialTrackEffCutOn()                 const { return fApplyArtificialTrackEffCut           ; }
   virtual void     SwitchOnArtificialTrackEffCut()                   { fApplyArtificialTrackEffCut = kTRUE          ; }
   virtual void     SwitchOffArtificialTrackEffCut()                  { fApplyArtificialTrackEffCut = kFALSE         ; }
-  void             SetArtificialTrackingEfficiency(Int_t fYear, TString fRunName ) ; //For every period and run set the correct artificial efficiency
+  void             SetArtificialTrackingEfficiency(Int_t fYear, TString fPeriodLetter ) ; //For every period and run set the correct artificial efficiency
 
 
   // Cluster/track/cells switchs
@@ -1030,7 +1030,7 @@ public:
   Bool_t           fUseTrackDCACut;                ///<  Do DCA selection.
   Double_t         fTrackDCACut[3];                ///<  Remove tracks with DCA larger than cut, parameters of function stored here.
 
-  TString          fRunName;                       ///<  Run name based on the Run number
+  TString          fPeriodLetter;                       ///<  Run name based on the Run number
   Bool_t           fApplyArtificialTrackEffCut;    ///<  Activate Artificial Tracking efficiency cut
   Float_t          fPtBinXTrackEffCut[17];         ///<  PtBinning for selecting the efficiency cut
   Float_t          fTrackEfficiencyCentr[16];
@@ -1367,7 +1367,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,102) ;
+  ClassDef(AliCaloTrackReader,103) ;
   /// \endcond
 
 } ;

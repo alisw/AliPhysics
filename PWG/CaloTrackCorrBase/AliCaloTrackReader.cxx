@@ -192,7 +192,7 @@ fNMCGenerToAccept(0),        fMCGenerEventHeaderToAccept(""),
 fGenEventHeader(0),          fGenPythiaEventHeader(0),        fCheckPythiaEventHeader(1),
 fAcceptMCPromptPhotonOnly(0),fRejectMCFragmentationPhoton(0),
 //Artificial Tracking efficiency
-fRunName(""), fApplyArtificialTrackEffCut(0), 
+fPeriodLetter(""), fApplyArtificialTrackEffCut(0), 
 fRejectPileUpMCParticle(0)
 {
   for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsE   [i]= 0x0 ;
@@ -2351,20 +2351,20 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
     if (fRunNumber >= 244824 && fRunNumber <= 246994)
     {
       fYear = 15;
-      fRunName = "o";
-      SetArtificialTrackingEfficiency(fYear, fRunName);
+      fPeriodLetter = "o";
+      SetArtificialTrackingEfficiency(fYear, fPeriodLetter);
     }
     else if (fRunNumber >= 295274 && fRunNumber <= 296623) // q
     {
       fYear = 18; // maybe error for the starting
-      fRunName = "q";
-      SetArtificialTrackingEfficiency(fYear, fRunName);
+      fPeriodLetter = "q";
+      SetArtificialTrackingEfficiency(fYear, fPeriodLetter);
     }
     else if (fRunNumber >= 296690 && fRunNumber <= 297624) // r
     {
       fYear = 18;
-      fRunName = "r";
-      SetArtificialTrackingEfficiency(fYear, fRunName);
+      fPeriodLetter = "r";
+      SetArtificialTrackingEfficiency(fYear, fPeriodLetter);
     }
     else
     {
@@ -5495,14 +5495,14 @@ void AliCaloTrackReader::SetMC(AliMCEvent * mc)
 /// The values for PbPb Run2 are defined.
 //____________________________________________________________
 
-void AliCaloTrackReader::SetArtificialTrackingEfficiency(Int_t fYear, TString fRunName)
+void AliCaloTrackReader::SetArtificialTrackingEfficiency(Int_t fYear, TString fPeriodLetter)
 {
   Double_t ptBin[17] = {0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 999.0};
   for(int iPt = 0; iPt < 17; iPt++)
     {
       fPtBinXTrackEffCut[iPt] = ptBin[iPt];
     }
-  if (fYear == 18 && fRunName == "q")
+  if (fYear == 18 && fPeriodLetter == "q")
   {
     double effCentr[16] = {0.964, 0.964, 0.939, 0.936, 0.949, 0.958, 0.976, 0.967, 0.967, 0.967, 0.967, 0.976, 0.976, 0.984, 0.976, 0.976}; // central
     double effPeriph[16] = {0.966, 0.966, 0.958, 0.958, 0.958, 0.967, 0.976, 0.984, 0.984, 0.983, 0.983, 0.983, 0.983, 0.983, 0.983, 0.983};// semiperip
@@ -5510,10 +5510,10 @@ void AliCaloTrackReader::SetArtificialTrackingEfficiency(Int_t fYear, TString fR
     { 
       fTrackEfficiencyCentr[iEff]  =  effCentr[iEff];
       fTrackEfficiencyPeriph[iEff] =  effPeriph[iEff];
-      AliDebug(1,Form("AliCaloTrackReader()::SetArtificialEfficiency - LHC%d%s Eff Centr %1.3f \n", fYear, fRunName.Data(), fTrackEfficiencyCentr[iEff]));
+      AliDebug(1,Form("AliCaloTrackReader()::SetArtificialEfficiency - LHC%d%s Eff Centr %1.3f \n", fYear, fPeriodLetter.Data(), fTrackEfficiencyCentr[iEff]));
     }
   }
-  else if ((fYear == 18 && fRunName == "r") || (fYear == 15 && fRunName == "o"))
+  else if ((fYear == 18 && fPeriodLetter == "r") || (fYear == 15 && fPeriodLetter == "o"))
   {
     double effCentr[16] = {0.963, 0.963, 0.940, 0.936, 0.949, 0.958, 0.977, 0.967, 0.976, 0.966, 0.975, 0.975, 0.975, 0.982, 0.982, 0.982};  // central
     double effPeriph[16] = {0.965, 0.965, 0.958, 0.956, 0.959, 0.967, 0.986, 0.978, 0.986, 0.978, 0.986, 0.986, 0.986, 0.986, 0.986, 0.986}; // semiperiph
@@ -5521,7 +5521,7 @@ void AliCaloTrackReader::SetArtificialTrackingEfficiency(Int_t fYear, TString fR
     { 
       fTrackEfficiencyCentr[iEff]  =  effCentr[iEff];
       fTrackEfficiencyPeriph[iEff] =  effPeriph[iEff];
-      AliDebug(1,Form("AliCaloTrackReader()::SetArtificialEfficiency - LHC%d%s Eff Centr %1.3f \n", fYear, fRunName.Data(), fTrackEfficiencyCentr[iEff]));
+      AliDebug(1,Form("AliCaloTrackReader()::SetArtificialEfficiency - LHC%d%s Eff Centr %1.3f \n", fYear, fPeriodLetter.Data(), fTrackEfficiencyCentr[iEff]));
     }
   }
 
