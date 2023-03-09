@@ -3370,7 +3370,7 @@ bool AliAnalysisTaskCVEPIDCME::CheckPIDofParticle(AliAODTrack* ftrack, int pidTo
   /// Although someone barely needs to change it given the purity..
 
   float nSigTPC = 0, nSigTOF = 0, nSigRMS = 0;
-  bool trkPtPID  = ftrack->Pt();
+  double trkPtPID  = ftrack->Pt();
   int  trkChargePID = ftrack->Charge();
 
   ///Pion =>
@@ -3380,7 +3380,7 @@ bool AliAnalysisTaskCVEPIDCME::CheckPIDofParticle(AliAODTrack* ftrack, int pidTo
     nSigRMS = TMath::Sqrt(nSigTPC*nSigTPC + nSigTOF*nSigTOF);
 
     if (trkPtPID<=0.5 && TMath::Abs(nSigTPC)<=fNSigmaTPCCut) return true;
-    if (trkPtPID>0.5  && TMath::Abs(nSigRMS)<=fNSigmaTOFCut) return true;
+    if (trkPtPID> 0.5 && TMath::Abs(nSigRMS)<=fNSigmaTOFCut) return true;
     return false;
   }
   ///Kaon =>
@@ -3390,7 +3390,7 @@ bool AliAnalysisTaskCVEPIDCME::CheckPIDofParticle(AliAODTrack* ftrack, int pidTo
     nSigRMS = TMath::Sqrt(nSigTPC*nSigTPC + nSigTOF*nSigTOF);
 
     if (trkPtPID<=0.45 && TMath::Abs(nSigTPC)<=fNSigmaTPCCut) return true;
-    if (trkPtPID>0.45  && TMath::Abs(nSigRMS)<=fNSigmaTOFCut) return true;
+    if (trkPtPID> 0.45 && TMath::Abs(nSigRMS)<=fNSigmaTOFCut) return true;
     return false;
   }
   ///proton =>
@@ -3402,7 +3402,9 @@ bool AliAnalysisTaskCVEPIDCME::CheckPIDofParticle(AliAODTrack* ftrack, int pidTo
     if(isStrictestProtonCut) { //if Set the Strictest Cut to proton
       if(trkPtPID > 0.5 && trkPtPID < 3.) {
         float nSigTPCPion = fPIDResponse->NumberOfSigmasTPC(ftrack, AliPID::kPion);
-        if(nSigRMS < 2. && nSigTPCPion > 3.) return true;
+        float nSigTOFPion = fPIDResponse->NumberOfSigmasTOF(ftrack, AliPID::kPion);
+        float nSigRMSPion = TMath::Sqrt(nSigTPCPion*nSigTPCPion + nSigTOFPion*nSigTOFPion);
+        if(nSigRMS < 2. && TMath::Abs(nSigRMSPion) > 2.) return true;
       }
       return false;
     } else {
