@@ -116,6 +116,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetMassRejWindowLambda(Double_t cut) { fMassRejWindowLambda = cut; }
 	void                    SetK0MassRange(Double_t min, Double_t max) { fMinK0Mass = min; fMaxK0Mass = max; }
 	void                    SetLambdaMassRange(Double_t min, Double_t max) { fMinLambdaMass = min; fMaxLambdaMass = max; }
+	void                    SetPhiMassRange(Double_t min, Double_t max) { fMinPhiMass = min; fMaxPhiMass = max; }
 
 
         // correlation related

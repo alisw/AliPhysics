@@ -49,6 +49,7 @@ void AddTask_MesonJetCorr_Calo(
   TString periodNameAnchor = "",               //
   // special settings
   Bool_t enableSortingMCLabels = kTRUE, // enable sorting for MC cluster labels
+  bool useCentralEvtSelection = true,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig
 
@@ -179,29 +180,49 @@ void AddTask_MesonJetCorr_Calo(
   //---------------------------------------
   // configs for pi0 meson pp 13 TeV
   //---------------------------------------
+  // configs without NonLinearity as NonLin is applied in CF
   if (trainConfig == 1) {
-    cuts.AddCutCalo("00010103", "411790109fe30230000", "0s631031000000d0"); // test config without in-jet selection
+    cuts.AddCutCalo("00010103", "411790009fe30230000", "0s631031000000d0"); // test config without in-jet selection
   } else if (trainConfig == 2) {
-    cuts.AddCutCalo("00010103", "411790109fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+    cuts.AddCutCalo("00010103", "411790009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
   } else if (trainConfig == 3) {
-    cuts.AddCutCalo("00010103", "411790109fe30230000", "21631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, mixed jet back
+    cuts.AddCutCalo("00010103", "411790009fe30230000", "21631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 4) {
-    cuts.AddCutCalo("0008e103", "411790109fe30230000", "2s631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, rotation back
+    cuts.AddCutCalo("0008e103", "411790009fe30230000", "2s631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, rotation back
   } else if (trainConfig == 5) {
-    cuts.AddCutCalo("0008d103", "411790109fe30230000", "2s631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, rotation back
+    cuts.AddCutCalo("0008d103", "411790009fe30230000", "2s631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, rotation back
   } else if (trainConfig == 6) {
-    cuts.AddCutCalo("0009c103", "411790109fe30230000", "2s631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+    cuts.AddCutCalo("0009c103", "411790009fe30230000", "2s631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, rotation back
   } else if (trainConfig == 7) {
-    cuts.AddCutCalo("0009b103", "411790109fe30230000", "2s631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+    cuts.AddCutCalo("0009b103", "411790009fe30230000", "2s631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
 
   } else if (trainConfig == 14) { // same as 4 but with mixed jet back
-    cuts.AddCutCalo("0008e103", "411790109fe30230000", "21631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, mixed jet back
+    cuts.AddCutCalo("0008e103", "411790009fe30230000", "21631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 15) {// same as 5 but with mixed jet back
-    cuts.AddCutCalo("0008d103", "411790109fe30230000", "21631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, mixed jet back
+    cuts.AddCutCalo("0008d103", "411790009fe30230000", "21631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 16) {// same as 6 but with mixed jet back
-    cuts.AddCutCalo("0009c103", "411790109fe30230000", "21631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, mixed jet back
+    cuts.AddCutCalo("0009c103", "411790009fe30230000", "21631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 17) {// same as 7 but with mixed jet back
-    cuts.AddCutCalo("0009b103", "411790109fe30230000", "21631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, mixed jet back
+    cuts.AddCutCalo("0009b103", "411790009fe30230000", "21631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, mixed jet back
+
+
+  // configs with NonLinearity 
+  } else if (trainConfig == 21) {
+    cuts.AddCutCalo("00010103", "411790109fe30230000", "0s631031000000d0"); // test config without in-jet selection
+  } else if (trainConfig == 22) {
+    cuts.AddCutCalo("00010103", "411790109fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 23) {
+    cuts.AddCutCalo("00010103", "411790109fe30230000", "21631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, mixed jet back
+  } else if (trainConfig == 24) {
+    cuts.AddCutCalo("0008e103", "411790109fe30230000", "2s631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 25) {
+    cuts.AddCutCalo("0008d103", "411790109fe30230000", "2s631034000000d0"); // EG1 in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 26) {
+    cuts.AddCutCalo("0009c103", "411790109fe30230000", "2s631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 27) {
+    cuts.AddCutCalo("0009b103", "411790109fe30230000", "2s631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+
+
    
     //---------------------------------------
     // configs for eta meson pp 13 TeV
@@ -324,6 +345,7 @@ void AddTask_MesonJetCorr_Calo(
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
                                          //   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetUseTHnSparseForResponse(enableTHnSparse);
+  task->SetDoUseCentralEvtSelection(useCentralEvtSelection);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_Calo_%i_%i%s%s", meson, trainConfig, corrTaskSetting.EqualTo("") == true ? "" : Form("_%s", corrTaskSetting.Data()), nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );

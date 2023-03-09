@@ -34,6 +34,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fInputEvent(nullptr),
                                                                              fMCEvent(nullptr),
                                                                              fAODMCTrackArray(nullptr),
+                                                                             fAliEventCuts(false),
                                                                              // cut folders
                                                                              fCutFolder(nullptr),
                                                                              fESDList(nullptr),
@@ -82,6 +83,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fUseThNForResponse(true),
                                                                              fEnableSortForClusMC(true),
                                                                              fFillDCATree(false),
+                                                                             fUseCentralEventSelection(true),
                                                                              // aod relabeling
                                                                              fMCEventPos(nullptr),
                                                                              fMCEventNeg(nullptr),
@@ -263,6 +265,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fInputEvent(nullptr),
                                                                                            fMCEvent(nullptr),
                                                                                            fAODMCTrackArray(nullptr),
+                                                                                           fAliEventCuts(false),
                                                                                            // cut folders
                                                                                            fCutFolder(nullptr),
                                                                                            fESDList(nullptr),
@@ -311,6 +314,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fUseThNForResponse(true),
                                                                                            fEnableSortForClusMC(true),
                                                                                            fFillDCATree(false),
+                                                                                           fUseCentralEventSelection(true),
                                                                                            // aod relabeling
                                                                                            fMCEventPos(nullptr),
                                                                                            fMCEventNeg(nullptr),
@@ -480,6 +484,9 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fDCATree_JetPt(0),
                                                                                            fDCATree_isTrueMeson(false)
 {
+  // Do not perform trigger selection in the AliEvent cuts but let the task do this before
+  fAliEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
+
   // Define output slots here
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -1370,6 +1377,10 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
           fTrueList[iCut]->Add(fRespMatrixHandlerFragTrueJets[iCut]->GetTH2("Frag_JetPt_TrueVsRec_ForTrueJets"));
       }
     }
+    
+    if(fUseCentralEventSelection){
+      fAliEventCuts.AddQAplotsToList(fESDList[iCut]);
+    }
 
     // Call Sumw2 forall histograms in list
     if (fIsMC) {
@@ -1810,6 +1821,12 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
         fHistoNEvents[iCut]->Fill(10, fWeightJetJetMC);
         if (fIsMC > 1)
           fHistoNEventsWOWeight[iCut]->Fill(10);
+        continue;
+      }
+    }
+    
+    if(fUseCentralEventSelection){
+      if(!fAliEventCuts.AcceptEvent(fInputEvent)){
         continue;
       }
     }

@@ -51,6 +51,7 @@ void AddTask_MesonJetCorr_Conv(
   // special settings
   Bool_t enableChargedPrimary = kFALSE,
   bool doFillMesonDCATree = false, // swith to enable filling the meson DCA tree for pile-up estimation
+  bool useCentralEvtSelection = true,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig + special settings
 )
@@ -320,6 +321,7 @@ void AddTask_MesonJetCorr_Conv(
   task->SetUseTHnSparseForResponse(enableTHnSparse);
   if(enableMatBudWeightsPi0) task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(true);
   if(doFillMesonDCATree) task->SetFillMesonDCATree(true);
+  task->SetDoUseCentralEvtSelection(useCentralEvtSelection);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_Conv_%i_%i%s", meson, trainConfig, nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );

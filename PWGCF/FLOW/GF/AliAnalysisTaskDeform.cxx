@@ -258,7 +258,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fEtaMptAcceptance(0),
   fPtMptAcceptance(0),
   fImpactParameterMC(-1.0),
-    EventNo(0),
+  EventNo(0),
   fStdTPCITS2011(0),
   fDisablePID(kTRUE),
   fConsistencyFlag(3),
@@ -487,6 +487,7 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
       fptVarList->Add(fNchTrueVsReco);
     }
     printf("Multiplicity objects created\n");
+
     PostData(1,fptVarList);
     //Setting up the FlowContainer
     printf("Creating flow container\n");
@@ -509,6 +510,7 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     oba->Add(new TNamed("ChSC244","ChSC244")); //for SC{2,3}
 
     oba->Add(new TNamed("ChFull28","ChFull28"));
+    oba->Add(new TNamed("ChFull212","ChFull212"));
     if(!fDisablePID) {
       oba->Add(new TNamed("PiGap22","PiGap22"));
       oba->Add(new TNamed("PiFull22","PiFull22"));
@@ -545,12 +547,13 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     delete oba;
     PostData(2,fFC);
     Int_t pows[] = {3,0,2,2,3,3,3}; //5th harm. sum = 3, b/c {-2 -3}
-    Int_t powsFull[] = {9,0,8,4,7,3,6,0,5}; //For v2{8}
+    //Int_t powsFull[] = {9,0,8,4,7,3,6,0,5}; //For v2{8}
+    Int_t powsFull[] = {13,0,12,4,11,3,10,0,9,0,8,0,7}; //For v2{12}
     fGFW = new AliGFW();
     fGFW->AddRegion("refN",7,pows,-fEtaAcceptance,-fEtaV2Sep,1,1);
     fGFW->AddRegion("refP",7,pows,fEtaV2Sep,fEtaAcceptance,1,1);
     if(fEtaV2Sep>=0) fGFW->AddRegion("subMid",7,pows,-fEtaV2Sep,fEtaV2Sep,1,1);
-    fGFW->AddRegion("mid",9,powsFull,-fEtaAcceptance,fEtaAcceptance,1,2);
+    fGFW->AddRegion("mid",13,powsFull,-fEtaAcceptance,fEtaAcceptance,1,2);
 
     fGFW->AddRegion("PiRefN",7,pows,-fEtaAcceptance,-fEtaV2Sep,1,4);
     fGFW->AddRegion("PiRefP",7,pows,fEtaV2Sep,fEtaAcceptance,1,4);
@@ -678,7 +681,6 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
       fPtMptAcceptance = new TH1D("hPtMptAcceptance","#it{p}_{T} in [#it{p}_{T}] acceptance;#it{p}_{T};Counts",100,0,5);
       fQAList->Add(fPtMptAcceptance);
     }
-    
     printf("QA objects created!\n");
     PostData(4,fQAList);
 }
@@ -1359,6 +1361,7 @@ void AliAnalysisTaskDeform::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("ChFull28","mid {2 2 2 2 -2 -2 -2 -2}",kFALSE));  //  ChFull28 11
   corrconfigs.push_back(GetConf("ChFull32","mid {3 -3}", kFALSE));   //ChFull32 12
   corrconfigs.push_back(GetConf("ChFull34","mid {3 3 -3 -3}", kFALSE));    //ChFull34 13
+  corrconfigs.push_back(GetConf("ChFull212","mid {2 2 2 2 2 2 -2 -2 -2 -2 -2 -2}", kFALSE));    //ChFull212 14
 
   if(!fDisablePID){
     corrconfigs.push_back(GetConf("PiGap22","PiRefP {2} PiRefN {-2}", kFALSE));
