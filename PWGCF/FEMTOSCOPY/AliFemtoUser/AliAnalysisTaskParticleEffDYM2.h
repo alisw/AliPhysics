@@ -1,5 +1,6 @@
-#ifndef AliAnalysisTaskParticleEffDYM0_H
-#define AliAnalysisTaskParticleEffDYM0_H
+#ifndef ALIANALYSISTASKPARTICLEEFFDYM2_H
+#define ALIANALYSISTASKPARTICLEEFFDYM2_H
+
 
 
 
