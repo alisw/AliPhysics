@@ -335,6 +335,11 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   for (int i = 0; i < 4; i++) fProfile2DiffDeltaLambdaLambdaDPt[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffDeltaProtonProtonDPt[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffDeltaHadronHadronDPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffDeltaLambdaProtonSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffDeltaLambdaHadronSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffDeltaLambdaLambdaSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffDeltaProtonProtonSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffDeltaHadronHadronSPt[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffDeltaLambdaProtonDEta[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffDeltaLambdaHadronDEta[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffDeltaLambdaLambdaDEta[i] = nullptr;
@@ -348,6 +353,11 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   for (int i = 0; i < 4; i++) fProfile2DiffGammaLambdaLambdaDPt[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffGammaProtonProtonDPt[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffGammaHadronHadronDPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffGammaLambdaProtonSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffGammaLambdaHadronSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffGammaLambdaLambdaSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffGammaProtonProtonSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffGammaHadronHadronSPt[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffGammaLambdaProtonDEta[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffGammaLambdaHadronDEta[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffGammaLambdaLambdaDEta[i] = nullptr;
@@ -636,6 +646,11 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   for (int i = 0; i < 4; i++) fProfile2DiffDeltaLambdaLambdaDPt[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffDeltaProtonProtonDPt[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffDeltaHadronHadronDPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffDeltaLambdaProtonSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffDeltaLambdaHadronSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffDeltaLambdaLambdaSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffDeltaProtonProtonSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffDeltaHadronHadronSPt[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffDeltaLambdaProtonDEta[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffDeltaLambdaHadronDEta[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffDeltaLambdaLambdaDEta[i] = nullptr;
@@ -649,6 +664,11 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   for (int i = 0; i < 4; i++) fProfile2DiffGammaLambdaLambdaDPt[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffGammaProtonProtonDPt[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffGammaHadronHadronDPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffGammaLambdaProtonSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffGammaLambdaHadronSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffGammaLambdaLambdaSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffGammaProtonProtonSPt[i] = nullptr;
+  for (int i = 0; i < 4; i++) fProfile2DiffGammaHadronHadronSPt[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffGammaLambdaProtonDEta[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffGammaLambdaHadronDEta[i] = nullptr;
   for (int i = 0; i < 4; i++) fProfile2DiffGammaLambdaLambdaDEta[i] = nullptr;
@@ -1273,72 +1293,94 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
   }
 
   if (isCalculateDiffResult) {
+    // δ
     for (int iType = 0; iType < 4; iType++) {
       fProfile2DiffDeltaLambdaProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaLambdaProtonDPt_%i",iType),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
+      fProfile2DiffDeltaLambdaProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaLambdaProtonSPt_%i",iType),";centrality;#sum pT;#delta",8,0.,80.,16,0,16);
       fProfile2DiffDeltaLambdaProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaProtonDEta_%i",iType),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
       fProfile2DiffDeltaLambdaProtonMass[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaProtonMass_%i",iType),";centrality;#Lambda Mass;#delta",8,0.,80,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
       fResultsList->Add(fProfile2DiffDeltaLambdaProtonDPt[iType]);
+      fResultsList->Add(fProfile2DiffDeltaLambdaProtonSPt[iType]);
       fResultsList->Add(fProfile2DiffDeltaLambdaProtonDEta[iType]);
       fResultsList->Add(fProfile2DiffDeltaLambdaProtonMass[iType]);
       fProfile2DiffDeltaLambdaHadronDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaLambdaHadronDPt_%i",iType),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
+      fProfile2DiffDeltaLambdaHadronSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaLambdaHadronSPt_%i",iType),";centrality;#sum pT;#delta",8,0.,80.,16,0,16);
       fProfile2DiffDeltaLambdaHadronDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaHadronDEta_%i",iType),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
       fProfile2DiffDeltaLambdaHadronMass[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaHadronMass_%i",iType),";centrality;#Lambda Mass;#delta",8,0.,80,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
       fResultsList->Add(fProfile2DiffDeltaLambdaHadronDPt[iType]);
+      fResultsList->Add(fProfile2DiffDeltaLambdaHadronSPt[iType]);
       fResultsList->Add(fProfile2DiffDeltaLambdaHadronDEta[iType]);
       fResultsList->Add(fProfile2DiffDeltaLambdaHadronMass[iType]);
 
       if (isCalculateLambdaLambda) {
         fProfile2DiffDeltaLambdaLambdaDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaLambdaLambdaDPt_%i",iType),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
+        fProfile2DiffDeltaLambdaLambdaSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaLambdaLambdaSPt_%i",iType),";centrality;#sum pT;#delta",8,0.,80.,16,0,16);
         fProfile2DiffDeltaLambdaLambdaDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaLambdaDEta_%i",iType),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
         fProfile2DiffDeltaLambdaLambdaMass[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaLambdaMass_%i",iType),";centrality;#Lambda Mass;#delta",8,0.,80,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
         fResultsList->Add(fProfile2DiffDeltaLambdaLambdaDPt[iType]);
+        fResultsList->Add(fProfile2DiffDeltaLambdaLambdaSPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaLambdaLambdaDEta[iType]);
         fResultsList->Add(fProfile2DiffDeltaLambdaLambdaMass[iType]);
       }
       if (isCalculateProtonProton) {
         fProfile2DiffDeltaProtonProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaProtonProtonDPt_%i",iType),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
+        fProfile2DiffDeltaProtonProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaProtonProtonSPt_%i",iType),";centrality;#sum pT;#delta",8,0.,80.,16,0,16);
         fProfile2DiffDeltaProtonProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaProtonProtonDEta_%i",iType),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
         fResultsList->Add(fProfile2DiffDeltaProtonProtonDPt[iType]);
+        fResultsList->Add(fProfile2DiffDeltaProtonProtonSPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaProtonProtonDEta[iType]);
       }
       if (isCalculateHadronHadron) {
         fProfile2DiffDeltaHadronHadronDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaHadronHadronDPt_%i",iType),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
+        fProfile2DiffDeltaHadronHadronSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaHadronHadronSPt_%i",iType),";centrality;#sum pT;#delta",8,0.,80.,16,-8,8);
         fProfile2DiffDeltaHadronHadronDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaHadronHadronDEta_%i",iType),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
         fResultsList->Add(fProfile2DiffDeltaHadronHadronDPt[iType]);
+        fResultsList->Add(fProfile2DiffDeltaHadronHadronSPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaHadronHadronDEta[iType]);
       }
 
-      fProfile2DiffGammaLambdaProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaProtonDPt_%i",iType),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
-      fProfile2DiffGammaLambdaProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaProtonDEta_%i",iType),";centrality;#Delta #Eta;#delta",8,0.,80.,16,-1.6,1.6);
-      fProfile2DiffGammaLambdaProtonMass[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaProtonMass_%i",iType),";centrality;#Lambda Mass;#delta",8,0.,80,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
+      // γ
+      fProfile2DiffGammaLambdaProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaProtonDPt_%i",iType),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
+      fProfile2DiffGammaLambdaProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaProtonSPt_%i",iType),";centrality;#sum pT;#gamma",8,0.,80.,16,0,16);
+      fProfile2DiffGammaLambdaProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaProtonDEta_%i",iType),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
+      fProfile2DiffGammaLambdaProtonMass[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaProtonMass_%i",iType),";centrality;#Lambda Mass;#gamma",8,0.,80,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
       fResultsList->Add(fProfile2DiffGammaLambdaProtonDPt[iType]);
+      fResultsList->Add(fProfile2DiffGammaLambdaProtonSPt[iType]);
       fResultsList->Add(fProfile2DiffGammaLambdaProtonDEta[iType]);
       fResultsList->Add(fProfile2DiffGammaLambdaProtonMass[iType]);
-      fProfile2DiffGammaLambdaHadronDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaHadronDPt_%i",iType),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
-      fProfile2DiffGammaLambdaHadronDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaHadronDEta_%i",iType),";centrality;#Delta #Eta;#delta",8,0.,80.,16,-1.6,1.6);
-      fProfile2DiffGammaLambdaHadronMass[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaHadronMass_%i",iType),";centrality;#Lambda Mass;#delta",8,0.,80,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
+      fProfile2DiffGammaLambdaHadronDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaHadronDPt_%i",iType),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
+      fProfile2DiffGammaLambdaHadronSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaHadronSPt_%i",iType),";centrality;#sum pT;#gamma",8,0.,80.,16,-8,8);
+      fProfile2DiffGammaLambdaHadronDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaHadronDEta_%i",iType),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
+      fProfile2DiffGammaLambdaHadronMass[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaHadronMass_%i",iType),";centrality;#Lambda Mass;#gamma",8,0.,80,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
       fResultsList->Add(fProfile2DiffGammaLambdaHadronDPt[iType]);
+      fResultsList->Add(fProfile2DiffGammaLambdaHadronSPt[iType]);
       fResultsList->Add(fProfile2DiffGammaLambdaHadronDEta[iType]);
       fResultsList->Add(fProfile2DiffGammaLambdaHadronMass[iType]);
       
       if (isCalculateLambdaLambda) {
-        fProfile2DiffGammaLambdaLambdaDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaLambdaDPt_%i",iType),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
-        fProfile2DiffGammaLambdaLambdaDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaLambdaDEta_%i",iType),";centrality;#Delta #Eta;#delta",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffGammaLambdaLambdaMass[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaLambdaMass_%i",iType),";centrality;#Lambda Mass;#delta",8,0.,80,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
+        fProfile2DiffGammaLambdaLambdaDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaLambdaDPt_%i",iType),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
+        fProfile2DiffGammaLambdaLambdaSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaLambdaSPt_%i",iType),";centrality;#sum pT;#gamma",8,0.,80.,16,0,16);
+        fProfile2DiffGammaLambdaLambdaDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaLambdaDEta_%i",iType),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
+        fProfile2DiffGammaLambdaLambdaMass[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaLambdaMass_%i",iType),";centrality;#Lambda Mass;#gamma",8,0.,80,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
         fResultsList->Add(fProfile2DiffGammaLambdaLambdaDPt[iType]);
+        fResultsList->Add(fProfile2DiffGammaLambdaLambdaSPt[iType]);
         fResultsList->Add(fProfile2DiffGammaLambdaLambdaDEta[iType]);
         fResultsList->Add(fProfile2DiffGammaLambdaLambdaMass[iType]);
       }
       if (isCalculateProtonProton) {
-        fProfile2DiffGammaProtonProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaProtonProtonDPt_%i",iType),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
-        fProfile2DiffGammaProtonProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaProtonProtonDEta_%i",iType),";centrality;#Delta #Eta;#delta",8,0.,80.,16,-1.6,1.6);
+        fProfile2DiffGammaProtonProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaProtonProtonDPt_%i",iType),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
+        fProfile2DiffGammaProtonProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaProtonProtonSPt_%i",iType),";centrality;#sum pT;#gamma",8,0.,80.,16,-8,8);
+        fProfile2DiffGammaProtonProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaProtonProtonDEta_%i",iType),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
         fResultsList->Add(fProfile2DiffGammaProtonProtonDPt[iType]);
+        fResultsList->Add(fProfile2DiffGammaProtonProtonSPt[iType]);
         fResultsList->Add(fProfile2DiffGammaProtonProtonDEta[iType]);
       }
       if (isCalculateHadronHadron) {
-        fProfile2DiffGammaHadronHadronDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaHadronHadronDPt_%i",iType),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
-        fProfile2DiffGammaHadronHadronDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaHadronHadronDEta_%i",iType),";centrality;#Delta #Eta;#delta",8,0.,80.,16,-1.6,1.6);
+        fProfile2DiffGammaHadronHadronDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaHadronHadronDPt_%i",iType),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
+        fProfile2DiffGammaHadronHadronSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaHadronHadronSPt_%i",iType),";centrality;#sum pT;#gamma",8,0.,80.,16,-8,8);
+        fProfile2DiffGammaHadronHadronDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaHadronHadronSEta_%i",iType),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
         fResultsList->Add(fProfile2DiffGammaHadronHadronDPt[iType]);
+        fResultsList->Add(fProfile2DiffGammaHadronHadronSPt[iType]);
         fResultsList->Add(fProfile2DiffGammaHadronHadronDEta[iType]);
       }
     }
@@ -2489,9 +2531,11 @@ bool AliAnalysisTaskCVEPIDCME::PairV0Trk()
           }
           if (isCalculateDiffResult) {
             fProfile2DiffDeltaLambdaProtonDPt[iBits]  -> Fill(fCent,   pt_lambda - pt, delta);
+            fProfile2DiffDeltaLambdaProtonSPt[iBits]  -> Fill(fCent,   pt_lambda + pt, delta);
             fProfile2DiffDeltaLambdaProtonDEta[iBits] -> Fill(fCent, eta_lambda - eta, delta);
             fProfile2DiffDeltaLambdaProtonMass[iBits] -> Fill(fCent,      mass_lambda, delta);
             fProfile2DiffGammaLambdaProtonDPt[iBits]  -> Fill(fCent,   pt_lambda - pt, gamma[0]);
+            fProfile2DiffGammaLambdaProtonSPt[iBits]  -> Fill(fCent,   pt_lambda + pt, gamma[0]);
             fProfile2DiffGammaLambdaProtonDEta[iBits] -> Fill(fCent, eta_lambda - eta, gamma[0]);
             fProfile2DiffGammaLambdaProtonMass[iBits] -> Fill(fCent,      mass_lambda, gamma[0]);
           }
@@ -2523,9 +2567,11 @@ bool AliAnalysisTaskCVEPIDCME::PairV0Trk()
           }
           if (isCalculateDiffResult) {
             fProfile2DiffDeltaLambdaHadronDPt[iBits]  -> Fill(fCent,   pt_lambda - pt, delta);
+            fProfile2DiffDeltaLambdaHadronSPt[iBits]  -> Fill(fCent,   pt_lambda + pt, delta);
             fProfile2DiffDeltaLambdaHadronDEta[iBits] -> Fill(fCent, eta_lambda - eta, delta);
             fProfile2DiffDeltaLambdaHadronMass[iBits] -> Fill(fCent,      mass_lambda, delta);
             fProfile2DiffGammaLambdaHadronDPt[iBits]  -> Fill(fCent,   pt_lambda - pt, gamma[0]);
+            fProfile2DiffGammaLambdaHadronSPt[iBits]  -> Fill(fCent,   pt_lambda + pt, gamma[0]);
             fProfile2DiffGammaLambdaHadronDEta[iBits] -> Fill(fCent, eta_lambda - eta, gamma[0]);
             fProfile2DiffGammaLambdaHadronMass[iBits] -> Fill(fCent,      mass_lambda, gamma[0]);
           }
@@ -2762,9 +2808,11 @@ bool AliAnalysisTaskCVEPIDCME::PairV0V0()
             }
             if (isCalculateDiffResult) {
               fProfile2DiffDeltaLambdaLambdaDPt[iBits]  -> Fill(fCent,   pt_a - pt_b, delta);
+              fProfile2DiffDeltaLambdaLambdaSPt[iBits]  -> Fill(fCent,   pt_a + pt_b, delta);
               fProfile2DiffDeltaLambdaLambdaDEta[iBits] -> Fill(fCent, eta_a - eta_b, delta);
               fProfile2DiffDeltaLambdaLambdaMass[iBits] -> Fill(fCent,        mass_a, delta);
               fProfile2DiffGammaLambdaLambdaDPt[iBits]  -> Fill(fCent,   pt_a - pt_b, gamma[0]);
+              fProfile2DiffGammaLambdaLambdaSPt[iBits]  -> Fill(fCent,   pt_a + pt_b, gamma[0]);
               fProfile2DiffGammaLambdaLambdaDEta[iBits] -> Fill(fCent, eta_a - eta_b, gamma[0]);
               fProfile2DiffGammaLambdaLambdaMass[iBits] -> Fill(fCent,        mass_a, gamma[0]);
             }
@@ -2839,8 +2887,10 @@ bool AliAnalysisTaskCVEPIDCME::PairTrkTrk()
              }
              if (isCalculateDiffResult) {
                fProfile2DiffDeltaProtonProtonDPt[iBits]  -> Fill(fCent,   pt_a - pt_b, delta);
+               fProfile2DiffDeltaProtonProtonSPt[iBits]  -> Fill(fCent,   pt_a + pt_b, delta);
                fProfile2DiffDeltaProtonProtonDEta[iBits] -> Fill(fCent, eta_a - eta_b, delta);
                fProfile2DiffGammaProtonProtonDPt[iBits]  -> Fill(fCent,   pt_a - pt_b, gamma[0]);
+               fProfile2DiffGammaProtonProtonSPt[iBits]  -> Fill(fCent,   pt_a + pt_b, gamma[0]);
                fProfile2DiffGammaProtonProtonDEta[iBits] -> Fill(fCent, eta_a - eta_b, gamma[0]);
              }
              if (isCalculateDeltaPhiSumPhi) {
@@ -2873,8 +2923,10 @@ bool AliAnalysisTaskCVEPIDCME::PairTrkTrk()
               }
               if (isCalculateDiffResult) {
                 fProfile2DiffDeltaHadronHadronDPt[iBits]  -> Fill(fCent,   pt_a - pt_b, delta);
+                fProfile2DiffDeltaHadronHadronSPt[iBits]  -> Fill(fCent,   pt_a + pt_b, delta);
                 fProfile2DiffDeltaHadronHadronDEta[iBits] -> Fill(fCent, eta_a - eta_b, delta);
                 fProfile2DiffGammaHadronHadronDPt[iBits]  -> Fill(fCent,   pt_a - pt_b, gamma[0]);
+                fProfile2DiffGammaHadronHadronSPt[iBits]  -> Fill(fCent,   pt_a + pt_b, gamma[0]);
                 fProfile2DiffGammaHadronHadronDEta[iBits] -> Fill(fCent, eta_a - eta_b, gamma[0]);
               }
               if (isCalculateDeltaPhiSumPhi) {
