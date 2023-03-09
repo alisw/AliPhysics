@@ -40,7 +40,7 @@
 ClassImp(AliAnalysisTaskParticleEffDYM0)
 //ClassImp(AliAnalysisTaskParticleEff)
 
-double fV1M0[3];
+double fV1multzero[3];
 
 
 void AliAnalysisTaskParticleEffDYM0::SetFB(int fb)
@@ -74,11 +74,9 @@ void AliAnalysisTaskParticleEffDYM0::SetPidMethod(int method)
 
 //_______________________________________________________
 
-
 AliAnalysisTaskParticleEffDYM0::AliAnalysisTaskParticleEffDYM0(TString name, int pidMethod, int filterbit) : 
-AliAnalysisTaskSE(), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0), fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(96), fPidMethod(kExclusivePIDDiffRejection),  fEstEventMult(kV0M),fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
+AliAnalysisTaskSE(name), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0), fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(96), fPidMethod(kExclusivePIDDiffRejection),  fEstEventMult(kV0M),fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
 {
-
 
   for(Int_t i = 0; i < MULTBINS*PARTTYPES; i++)  {
     for(Int_t chg=0;chg<2;chg++){
@@ -619,8 +617,7 @@ void AliAnalysisTaskParticleEffDYM0::UserCreateOutputObjects()
   fHistoList->Add(fRecPtLambdaMC);
   fHistoList->Add(fRecPtAntiLambdaMC);
 
-  
-  
+
 //********** PID ****************
 
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
@@ -635,7 +632,7 @@ void AliAnalysisTaskParticleEffDYM0::UserCreateOutputObjects()
 
 //_____________________________________________________________________
 
-bool IsPionNSigmaM0(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
+bool IsPionNSigmamultzero(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
 {
 
     if (mom > 0.5) {
@@ -650,7 +647,7 @@ bool IsPionNSigmaM0(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFti
   return false;
 }
 
-bool IsPionNSigmaV0M0(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
+bool IsPionNSigmaV0multzero(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
 
   if (TMath::Abs(nsigmaTPCPi) < 3.0) return true;
@@ -658,7 +655,7 @@ bool IsPionNSigmaV0M0(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
   return false;
 }
 
-bool IsPionNSigmaV0TPC5M0(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
+bool IsPionNSigmaV0TPC5multzero(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 {
 
   if (TMath::Abs(nsigmaTPCPi) < 5.0) return true;
@@ -667,7 +664,7 @@ bool IsPionNSigmaV0TPC5M0(float mom, float nsigmaTPCPi, float nsigmaTOFPi)
 }
 
 
-bool IsProtonNSigmaV0TPC5M0(float mom, float nsigmaTPCP, float nsigmaTOFP)
+bool IsProtonNSigmaV0TPC5multzero(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
 
   if (TMath::Abs(nsigmaTPCP) < 5.0) return true;
@@ -675,7 +672,7 @@ bool IsProtonNSigmaV0TPC5M0(float mom, float nsigmaTPCP, float nsigmaTOFP)
   return false;
 }
 
-bool IsPionNSigma3M0(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
+bool IsPionNSigma3multzero(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFtime)
 {
 
     if (mom > 0.5) {
@@ -690,7 +687,7 @@ bool IsPionNSigma3M0(float mom, float nsigmaTPCPi, float nsigmaTOFPi, float TOFt
   return false;
 }
 
-bool IsKaonNSigmaM0(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
+bool IsKaonNSigmamultzero(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
 {
     if (mom > 0.5) {
       //rejection of unwanted contamination
@@ -709,7 +706,7 @@ bool IsKaonNSigmaM0(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime
   return false;
 }
 
-bool IsKaonNSigma3M0(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
+bool IsKaonNSigma3multzero(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtime)
 {
   if (mom > 0.5) {
     //rejection of unwanted contamination
@@ -728,7 +725,7 @@ bool IsKaonNSigma3M0(float mom, float nsigmaTPCK, float nsigmaTOFK, float TOFtim
   return false;
 }
 
-bool IsProtonNSigmaM0(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
+bool IsProtonNSigmamultzero(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
 {
 
     if (mom > 0.5) {
@@ -750,7 +747,7 @@ bool IsProtonNSigmaM0(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFti
   return false;
 }
 
-bool IsProtonNSigmaV0M0(float mom, float nsigmaTPCP, float nsigmaTOFP)
+bool IsProtonNSigmaV0multzero(float mom, float nsigmaTPCP, float nsigmaTOFP)
 {
 
   if (mom < 0.8) {
@@ -766,7 +763,7 @@ bool IsProtonNSigmaV0M0(float mom, float nsigmaTPCP, float nsigmaTOFP)
   return false;
 }
 
-bool IsProtonNSigma3M0(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
+bool IsProtonNSigma3multzero(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFtime)
 {
   if (mom > 0.5) {
    
@@ -788,7 +785,7 @@ bool IsProtonNSigma3M0(float mom, float nsigmaTPCP, float nsigmaTOFP, float TOFt
 }
 
 
-bool IsElectronM0(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
+bool IsElectronmultzero(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsigmaTPCP)
 {
   if(TMath::Abs(nsigmaTPCe)<3 && TMath::Abs(nsigmaTPCPi)>3 && TMath::Abs(nsigmaTPCK)>3 && TMath::Abs(nsigmaTPCP)>3)
       return true;
@@ -908,7 +905,7 @@ int fcent2=0;
 
   //"ESDs/pass2/AOD049/*AliAOD.root");
   const AliAODVertex* vertex =(AliAODVertex*) aodEvent->GetPrimaryVertex();
-  vertex->GetPosition(fV1M0);
+  vertex->GetPosition(fV1multzero);
   if (!vertex || vertex->GetNContributors()<=0) return;
 
   fHistQA[9]->Fill(2);
@@ -1067,9 +1064,9 @@ int fcent2=0;
 	float tTofSig = aodtrackpid->GetTOFsignal();
 	double pidTime[5]; aodtrackpid->GetIntegratedTimes(pidTime);
 
-	isPionNsigma = (IsPionNSigmaM0(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3M0(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3M0(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-	isKaonNsigma = (!IsPionNSigma3M0(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaM0(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3M0(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-	isProtonNsigma = (!IsPionNSigma3M0(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3M0(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaM0(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+	isPionNsigma = (IsPionNSigmamultzero(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3multzero(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3multzero(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+	isKaonNsigma = (!IsPionNSigma3multzero(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmamultzero(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3multzero(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+	isProtonNsigma = (!IsPionNSigma3multzero(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3multzero(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmamultzero(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
    
    
    
@@ -1208,7 +1205,7 @@ if(collect[2]==true){
     float nSigmaTPCK = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
     float nSigmaTPCP = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
     float nSigmaTPCe = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kElectron);
-    if(IsElectronM0(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
+    if(IsElectronmultzero(nSigmaTPCe,nSigmaTPCPi,nSigmaTPCK,nSigmaTPCP))
       continue;
     fHistQA[10]->Fill(7);
     
@@ -1258,9 +1255,9 @@ if(collect[2]==true){
 
     if(fPidMethod==kNSigma){
     //******** With double counting *******************
-      isPionNsigma = (IsPionNSigmaM0(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
-      isKaonNsigma = (IsKaonNSigmaM0(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
-      isProtonNsigma = (IsProtonNSigmaM0(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isPionNsigma = (IsPionNSigmamultzero(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
+      isKaonNsigma = (IsKaonNSigmamultzero(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
+      isProtonNsigma = (IsProtonNSigmamultzero(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
     }
     else if(fPidMethod==kNSigmaNoDoubleCounting){
       //******** Without double counting *******************
@@ -1278,26 +1275,26 @@ if(collect[2]==true){
       }
 
       if(nSigmaPIDPi<nSigmaPIDK && nSigmaPIDPi<nSigmaPIDP){
-	isPionNsigma = (IsPionNSigmaM0(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
+	isPionNsigma = (IsPionNSigmamultzero(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]));
       }
       else if(nSigmaPIDK<nSigmaPIDPi && nSigmaPIDK<nSigmaPIDP){
-	isKaonNsigma = (IsKaonNSigmaM0(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
+	isKaonNsigma = (IsKaonNSigmamultzero(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]));
       }
       else if(nSigmaPIDP<nSigmaPIDPi && nSigmaPIDP<nSigmaPIDK){
-	isProtonNsigma = (IsProtonNSigmaM0(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+	isProtonNsigma = (IsProtonNSigmamultzero(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
       }
     }
     else if(fPidMethod==kExclusivePID){
       //******** Exclusive PID ********************
-      isPionNsigma = (IsPionNSigmaM0(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigmaM0(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaM0(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isKaonNsigma = (!IsPionNSigmaM0(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaM0(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmaM0(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isProtonNsigma = (!IsPionNSigmaM0(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmaM0(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaM0(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isPionNsigma = (IsPionNSigmamultzero(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigmamultzero(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmamultzero(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isKaonNsigma = (!IsPionNSigmamultzero(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmamultzero(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigmamultzero(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isProtonNsigma = (!IsPionNSigmamultzero(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmamultzero(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmamultzero(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
     }
     else if(fPidMethod==kExclusivePIDDiffRejection){
       //******** Exclusive PID, different rejection  ********************
-      isPionNsigma = (IsPionNSigmaM0(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3M0(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3M0(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isKaonNsigma = (!IsPionNSigma3M0(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaM0(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3M0(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
-      isProtonNsigma = (!IsPionNSigma3M0(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3M0(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmaM0(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isPionNsigma = (IsPionNSigmamultzero(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3multzero(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3multzero(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isKaonNsigma = (!IsPionNSigma3multzero(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmamultzero(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3multzero(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+      isProtonNsigma = (!IsPionNSigma3multzero(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3multzero(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigmamultzero(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
     }
     if (isPionNsigma){
       fHistQAPID[0][1][charge]->Fill(tPt,tdEdx);
@@ -1522,8 +1519,8 @@ if(collect[2]==true){
       fCutsLambda->Fill(cutLam++);
       fCutsAntiLambda->Fill(cutALam++);
       
-      if (aodv0->CosPointingAngle(fV1M0) < 0.99) continue;
-      //if (aodv0->CosPointingAngle(fV1M0) < 0.95) continue;
+      if (aodv0->CosPointingAngle(fV1multzero) < 0.99) continue;
+      //if (aodv0->CosPointingAngle(fV1multzero) < 0.95) continue;
       fCutsLambda->Fill(cutLam++);
       fCutsAntiLambda->Fill(cutALam++);
       
@@ -1568,7 +1565,7 @@ if(collect[2]==true){
       //fCutsLambda->Fill(cutLam++);
       //fCutsAntiLambda->Fill(cutALam++);
       
-      if(aodv0->DecayLength(fV1M0) > 60) continue;
+      if(aodv0->DecayLength(fV1multzero) > 60) continue;
       fCutsLambda->Fill(cutLam++);
       fCutsAntiLambda->Fill(cutALam++);
  
@@ -1696,10 +1693,10 @@ if(collect[2]==true){
       bool isPionNsigmaNeg = 0;
       bool isProtonNsigmaNeg  = 0;
 
-      isPionNsigmaPos = IsPionNSigmaV0TPC5M0(trackpos->Pt(),nSigmaTPCPiPos,nSigmaTOFPiPos);
-      isProtonNsigmaPos = IsProtonNSigmaV0TPC5M0(trackpos->Pt(),nSigmaTPCPPos,nSigmaTOFPPos);
-      isPionNsigmaNeg = IsPionNSigmaV0TPC5M0(trackneg->Pt(),nSigmaTPCPiNeg,nSigmaTOFPiNeg);
-      isProtonNsigmaNeg = IsProtonNSigmaV0TPC5M0(trackneg->Pt(),nSigmaTPCPNeg,nSigmaTOFPNeg);
+      isPionNsigmaPos = IsPionNSigmaV0TPC5multzero(trackpos->Pt(),nSigmaTPCPiPos,nSigmaTOFPiPos);
+      isProtonNsigmaPos = IsProtonNSigmaV0TPC5multzero(trackpos->Pt(),nSigmaTPCPPos,nSigmaTOFPPos);
+      isPionNsigmaNeg = IsPionNSigmaV0TPC5multzero(trackneg->Pt(),nSigmaTPCPiNeg,nSigmaTOFPiNeg);
+      isProtonNsigmaNeg = IsProtonNSigmaV0TPC5multzero(trackneg->Pt(),nSigmaTPCPNeg,nSigmaTOFPNeg);
 
       bool Lambda = false;
       bool AntiLambda = false;
@@ -1720,7 +1717,7 @@ if(collect[2]==true){
 	    fPtAntiLambda->Fill(aodv0->Pt());
 	    fYAntiLambda->Fill(TMath::Abs(aodv0->Y()));
 	    fHistQALambdas[1]->Fill(1,aodv0->Pt());
-	    fAllVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1M0),aodv0->Pt());
+	    fAllVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1multzero),aodv0->Pt());
 	    fAllVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	  fAllVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
@@ -1744,7 +1741,7 @@ if(collect[2]==true){
 	    fPtLambda->Fill(aodv0->Pt());
 	    fYLambda->Fill(TMath::Abs(aodv0->Y()));
 	    fHistQALambdas[0]->Fill(1,aodv0->Pt());
-	    fAllVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1M0),aodv0->Pt());
+	    fAllVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1multzero),aodv0->Pt());
 	    fAllVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 
 	  }
@@ -1821,7 +1818,7 @@ if(collect[2]==true){
 	{
 	  fPrimVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1M0),aodv0->Pt()); 
+	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1multzero),aodv0->Pt()); 
 	    fPrimVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1829,7 +1826,7 @@ if(collect[2]==true){
 	{
 	  fPrimVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1M0),aodv0->Pt()); 
+	    fPrimVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1multzero),aodv0->Pt()); 
 	    fPrimVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1837,7 +1834,7 @@ if(collect[2]==true){
 	{
 	  fSecWeakVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1M0),aodv0->Pt()); 
+	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1multzero),aodv0->Pt()); 
 	    fSecWeakVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1845,7 +1842,7 @@ if(collect[2]==true){
 	{
 	  fSecWeakVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1M0),aodv0->Pt()); 
+	    fSecWeakVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1multzero),aodv0->Pt()); 
 	    fSecWeakVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt()); 
 	  }
 	}
@@ -1853,7 +1850,7 @@ if(collect[2]==true){
 	{
 	fSecMatVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1M0),aodv0->Pt()); 
+	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1multzero),aodv0->Pt()); 
 	    fSecMatVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1861,7 +1858,7 @@ if(collect[2]==true){
 	{
 	fSecMatVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt());
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){ 
-	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1M0),aodv0->Pt()); 
+	    fSecMatVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1multzero),aodv0->Pt()); 
 	    fSecMatVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	}
@@ -1871,7 +1868,7 @@ if(collect[2]==true){
 	  fFakeVsDCA[PARTTYPES*fcent+4][0]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1M0),aodv0->Pt()); 
+	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][0]->Fill(aodv0->CosPointingAngle(fV1multzero),aodv0->Pt()); 
 	    fFakeVsDecayRadius[PARTTYPES*fcent+4][0]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }
 	
@@ -1881,7 +1878,7 @@ if(collect[2]==true){
  
 	  fFakeVsDCA[PARTTYPES*fcent+4][1]->Fill(aodv0->DcaV0ToPrimVertex(),aodv0->Pt()); 
 	  if( aodv0->DcaV0ToPrimVertex() < fDCAtoPrimVtx){
-	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1M0),aodv0->Pt()); 
+	    fFakeVsCosPointingAngle[PARTTYPES*fcent+4][1]->Fill(aodv0->CosPointingAngle(fV1multzero),aodv0->Pt()); 
 	    fFakeVsDecayRadius[PARTTYPES*fcent+4][1]->Fill(aodv0->RadiusV0(),aodv0->Pt());
 	  }	  
 	}

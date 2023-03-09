@@ -1,7 +1,5 @@
-#ifndef AliAnalysisTaskParticleEffDYM1_H
-#define AliAnalysisTaskParticleEffDYM1_H
-
-
+#ifndef ALIANALYSISTASKPARTICLEEFFDYM1_H
+#define ALIANALYSISTASKPARTICLEEFFDYM1_H
 
 #define MULTBINS 1
 #define PARTTYPES 6
@@ -86,7 +84,7 @@ class AliAnalysisTaskParticleEffDYM1 :public AliAnalysisTaskSE{
   TH2F *fHistQA2D[3];
   TH2F *fHistQAPID[5][PARTTYPES][2];
   TH2F *fHistQAPIDFail[5][PARTTYPES][2];
-  TH1F* fHistEvCuts[MULTBINS];
+  TH1F* fHistEvCuts[4];
   TH2F *fHistQALambdas[2];
   TH2F *fOriginLambdas[5][2];
   TH2F *fHistQAXi[2];
