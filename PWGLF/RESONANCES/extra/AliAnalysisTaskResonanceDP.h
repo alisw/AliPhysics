@@ -81,5 +81,4 @@ class AliAnalysisTaskResonanceDP : public AliAnalysisTaskSE {
   AliAnalysisTaskResonanceDP& operator=(const AliAnalysisTaskResonanceDP&);  
   ClassDef(AliAnalysisTaskResonanceDP, 1);
 };
-
 #endif

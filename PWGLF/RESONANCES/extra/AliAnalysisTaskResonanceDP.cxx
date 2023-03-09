@@ -43,11 +43,11 @@ using std::endl;
 
 ClassImp(AliAnalysisTaskResonanceDP)
 
-AliAnalysisTaskResonanceDP::AliAnalysisTaskResonanceDP(): AliAnalysisTaskSE(), fTreeEvent(NULL), fPIDResponse(NULL), fESDtrackCuts(NULL), fEventCuts(0), fTreeTrackVariableCentrality(0), fTreeTrackVariableVtxz(0), fTreeTrackVariableNTrack(0)
+AliAnalysisTaskResonanceDP::AliAnalysisTaskResonanceDP(): AliAnalysisTaskSE(), fTreeEvent(NULL), fPIDResponse(NULL), fESDtrackCuts(NULL), fEventCuts(0), fTriggerMask(0), fTreeTrackVariableCentrality(0), fTreeTrackVariableVtxz(0), fTreeTrackVariableNTrack(0)
 { 
 }
 
-AliAnalysisTaskResonanceDP::AliAnalysisTaskResonanceDP(const char *name): AliAnalysisTaskSE(name), fTreeEvent(NULL), fPIDResponse(NULL), fESDtrackCuts(NULL), fEventCuts(0), fTreeTrackVariableCentrality(0), fTreeTrackVariableVtxz(0), fTreeTrackVariableNTrack(0)
+AliAnalysisTaskResonanceDP::AliAnalysisTaskResonanceDP(const char *name): AliAnalysisTaskSE(name), fTreeEvent(NULL), fPIDResponse(NULL), fESDtrackCuts(NULL), fEventCuts(0), fTriggerMask(0), fTreeTrackVariableCentrality(0), fTreeTrackVariableVtxz(0), fTreeTrackVariableNTrack(0)
 {
 
   std::cout<<" i am in constrctor "<<std::endl;
