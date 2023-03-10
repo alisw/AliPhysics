@@ -38,67 +38,80 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         Bool_t AcceptV0(const AliAODv0 *v0, Double_t *vertex);
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
+        virtual void            Fill2DHist(Double_t DPhi, Double_t DEta, TH3F* hist, Double_t fWeight);
+        virtual void            FillDPhiHist(Double_t DPhi, TH2F* hist, Double_t fWeight);
         AliEventCuts            fEventCuts; // event cuts
 
     private:
        AliAODEvent*            fAOD;           //! input event
        TList*                  fOutputList;    //! output list
-       AliPIDResponse*         fPIDResponse;  //! pid response object’
-       TH1F*                   fHistMK0;        //! dummy histogram
-       TH1F*                   fHistMK0Cuts;        //! dummy histogram
-       TH1F*                   fHistNV0;        //! dummy histogram
-       TH1F*                   fHistKChPt;     //! dummy histogram
-       TH1F*                   fHistK0Pt;     //! dummy histogram
-       TH1F*                   fKChPhi;     //! dummy histogram
-       TH1F*                   fK0Phi;     //! dummy histogram 
-       TH1F*                   fHistKpPhi;     //! dummy histogram 
-       TH1F*                   fHistKnPhi;     //! dummy histogram 
-       TH1F*                   fVtx;        //! dummy histogram
-       TH1F*                   fClusters;    //! dummy histogram
-       TH2F*                   fPID;        //! dummy histogram
-       TH2F*                   fPIDKa;      //! dummy histogram
+       AliPIDResponse*         fPIDResponse;   //! pid response object’
+
+       TH1F*                   fEnergy;        //! dummy histogram
+       TH1F*                   fEnergyCuts;    //! dummy histogram
+       TH2F*                   fPID;            //! dummy histogram
        TH2F*                   fPIDKaon;        //! dummy histogram
-       TH2F*                   fPIDK;       //! dummy histogram
-       TH2F*                   fPIDKeCut;       //! dummy histogram
+       TH2F*                   fPIDK;           //! dummy histogram
        TH2F*                   fPIDKpiCut;      //! dummy histogram
-       TH3F*                   fHistK0PhiEta;       //! dummy histogram
-       TH2F*                   fHistK0Phi;          //! dummy histogram
-       TH2F*                   fHistK0Eta;      //! dummy histogram
-       TH2F*                   fHistChPhi;      //! dummy histogram
-       TH2F*                   fHistChEta;      //! dummy histogram
-       TH2F*                   fHistChRap;      //! dummy histogram
-       TH2F*                   fHistPosPhi;     //! dummy histogram
-       TH2F*                   fHistPosEta;     //! dummy histogram
-       TH3F*                   fHistPosPhiEta;  //! dummy histogram
-       TH2F*                   fHistPosRap;     //! dummy histogram
-       TH2F*                   fHistNegPhi;     //! dummy histogram
-       TH2F*                   fHistNegEta;     //! dummy histogram
-       TH3F*                   fHistNegPhiEta;  //! dummy histogram
-       TH2F*                   fHistNegRap;     //! dummy histogram
        TH2F*                   fnsigmakaon;     //! dummy histogram
        TH2F*                   fNsigmaKaon;     //! dummy histogram
        TH2F*                   fNsigmaTOFK;     //! dummy histogram
-       TH2F*                   fNsigmaTOFKaon;      //! dummy histogram
-       TH2F*                   fNsigmaTPCTOFK;      //! dummy histogram
-       TH1F*                   fHistNEvents;        //! dummy histogram
+       TH2F*                   fNsigmaTOFKaon;  //! dummy histogram
+       TH2F*                   fNsigmaTPCTOFK;  //! dummy histogram
+
+       TH1F*                   fVtx;            //! dummy histogram
+       TH1F*                   fClusters;       //! dummy histogram
+       TH1F*                   fHistNEvents;    //! dummy histogram
+       TH1F*                   fHistNV0;       //! dummy histogram
        TH1F*                   fHistEta;        //! dummy histogram
        TH1F*                   fHistDEta;       //! dummy histogram
        TH1F*                   fHistPhi;        //! dummy histogram
        TH1F*                   fHistDPhi;       //! dummy histogram
-       TH1F*                   fHistMult;        //! dummy histogram
+       TH1F*                   fHistMult;       //! dummy histogram
        TH1F*                   fHistCent;       //! dummy histogram
-       TH1F*                   fHistSigCent;    //! dummy histogram
-       TH2F*                   fHistInvCent;    //! dummy histogram
-       TH2F*                   fHistCFPhi;      //! dummy histogram
-       TH2F*                   fHistCFEta;      //! dummy histogram
-       TH3F*                   fHistCF;     //! dummy histogram
-       TH3F*                   fHistKChCh;      //! dummy histogram
-       TH3F*                   fHistKPosKPos;       //! dummy histogram
-       TH3F*                   fHistKPosKNeg;       //! dummy histogram
-       TH3F*                   fHistKNegKNeg;       //! dummy histogram
-       TH3F*                   fHistK0K0;       //! dummy histogram
-       TH1F*                   fHistPPionPhi;       //! dummy histogram
-       TH1F*                   fHistNPionPhi;       //! dummy histogram
+       TH2F*                   fHistTPCTracksVsClusters; //! dummy histogram
+
+       TH1F*                   fHistMK0;       //! dummy histogram
+       TH1F*                   fHistMK0Cuts;   //! dummy histogram
+       TH1F*                   fHistKChPt;     //! dummy histogram
+       TH1F*                   fHistK0Pt;      //! dummy histogram
+       TH1F*                   fHistKChPhi;    //! dummy histogram
+       TH1F*                   fHistK0Phi;     //! dummy histogram 
+       TH1F*                   fHistKpPhi;     //! dummy histogram 
+       TH1F*                   fHistKnPhi;     //! dummy histogram 
+       TH1F*                   fHistPPionPhi;   //! dummy histogram
+       TH1F*                   fHistNPionPhi;   //! dummy histogram
+       
+       TH2F*                   f2DHistK0Phi;      //! dummy histogram
+       TH2F*                   f2DHistK0Eta;      //! dummy histogram
+       TH2F*                   f2DHistChPhi;      //! dummy histogram
+       TH2F*                   f2DHistChEta;      //! dummy histogram
+       TH2F*                   f2DHistChRap;      //! dummy histogram
+       TH2F*                   f2DHistPosPhi;     //! dummy histogram
+       TH2F*                   f2DHistPosEta;     //! dummy histogram
+       TH2F*                   f2DHistPosRap;     //! dummy histogram
+       TH2F*                   f2DHistNegPhi;     //! dummy histogram
+       TH2F*                   f2DHistNegEta;     //! dummy histogram
+       TH2F*                   f2DHistNegRap;     //! dummy histogram
+
+       TH3F*                   fHistK0PhiEta;    //! dummy histogram
+       TH3F*                   fHistPosPhiEta;   //! dummy histogram
+       TH3F*                   fHistNegPhiEta;   //! dummy histogram
+
+       TH2F*                   fHistCFPhi;       //! dummy histogram
+       TH2F*                   fHistCFEta;       //! dummy histogram
+       TH2F*                   fHistKChKChPhi;   //! dummy histogram
+       TH2F*                   fHistKPosKNegPhi; //! dummy histogram
+       TH3F*                   fHistCF;          //! dummy histogram
+       TH3F*                   fHistKChKCh;       //! dummy histogram
+       TH3F*                   fHistKPosKNeg;    //! dummy histogram
+       
+
+       //Bool_t                fAnalysisMC; // enable MC study
+       Bool_t                  fRejectEventPileUp; // enable to use Pile-up cuts
+
+       Double_t        PVx;
+       Double_t        PVy;
        Double_t        PVz;
        Double_t        fLpTCut;        //not a pointer???
        Double_t        fUpTCut;
@@ -117,10 +130,10 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        Double_t        fSigNegv0Cut;
 
 
-        AliAnalysisTaskKaon2PC(const AliAnalysisTaskKaon2PC&); // not implemented
-        AliAnalysisTaskKaon2PC& operator=(const AliAnalysisTaskKaon2PC&); // not implemented
+       AliAnalysisTaskKaon2PC(const AliAnalysisTaskKaon2PC&); // not implemented
+       AliAnalysisTaskKaon2PC& operator=(const AliAnalysisTaskKaon2PC&); // not implemented
 
-        ClassDef(AliAnalysisTaskKaon2PC, 1);
+       ClassDef(AliAnalysisTaskKaon2PC, 1);
 };
 
 #endif
