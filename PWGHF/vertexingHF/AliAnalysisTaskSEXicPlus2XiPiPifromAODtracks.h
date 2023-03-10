@@ -146,7 +146,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   THnSparse*  fSparseXicMass;       //!<! xic sparse to study cut variation
   
   TH3F*  fHistoMCSpectrumAccXic;    //!<! Spectrum of generated particles
-  TH3F*  fHistoMCSpectrumAccXic_HM;	// jcho, Spectrum of generated particles only from the HM triggered events
+  TH3F*  fHistoMCSpectrumAccXic_HM;	//!<! jcho, Spectrum of generated particles only from the HM triggered events
 
 //  TH1F*  fHistoMCSpectrum_1;		// jcho, generated Xic pT spectrum
 //  TH1F*  fHistoMCSpectrum_2;		// jcho, generated Xic pT spectrum
