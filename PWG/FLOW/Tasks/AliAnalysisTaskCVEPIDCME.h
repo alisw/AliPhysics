@@ -53,7 +53,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void IfNarrowDcaCuts768(bool bNarrowDcaCuts768) { this->isNarrowDcaCuts768 = bNarrowDcaCuts768; }
   void IfStrictestProtonCut(bool bStrictestProtonCut) { this->isStrictestProtonCut = bStrictestProtonCut; }
   void IfCheckDaughterProtonPassAllCuts(bool bCheckDaughterProtonPassAllCuts) { this->isCheckDaughterProtonPassAllCuts = bCheckDaughterProtonPassAllCuts; }
-
+  void IfUsePionRejection(bool bUsePionRejection) { this->isUsePionRejection = bUsePionRejection; }
   // read in
   void SetListForNUE(TList* flist) { this->fListNUE = (TList*)flist->Clone(); }
   void SetListForNUA(TList* flist) { this->fListNUA = (TList*)flist->Clone(); }
@@ -183,6 +183,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   bool isNarrowDcaCuts768;
   bool isStrictestProtonCut;
   bool isCheckDaughterProtonPassAllCuts;
+  bool isUsePionRejection;
 
   //////////////////////
   // Cuts and options //

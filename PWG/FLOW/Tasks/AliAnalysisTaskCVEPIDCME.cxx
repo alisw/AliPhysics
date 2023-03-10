@@ -97,6 +97,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   isNarrowDcaCuts768(false),
   isStrictestProtonCut(false),
   isCheckDaughterProtonPassAllCuts(false),
+  isUsePionRejection(true),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
   fVzCut(10.0),
@@ -408,6 +409,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   isNarrowDcaCuts768(false),
   isStrictestProtonCut(false),
   isCheckDaughterProtonPassAllCuts(false),
+  isUsePionRejection(true),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
   fVzCut(10.0),
@@ -3401,10 +3403,19 @@ bool AliAnalysisTaskCVEPIDCME::CheckPIDofParticle(AliAODTrack* ftrack, int pidTo
 
     if(isStrictestProtonCut) { //if Set the Strictest Cut to proton
       if(trkPtPID > 0.5 && trkPtPID < 3.) {
-        float nSigTPCPion = fPIDResponse->NumberOfSigmasTPC(ftrack, AliPID::kPion);
-        float nSigTOFPion = fPIDResponse->NumberOfSigmasTOF(ftrack, AliPID::kPion);
-        float nSigRMSPion = TMath::Sqrt(nSigTPCPion*nSigTPCPion + nSigTOFPion*nSigTOFPion);
-        if(nSigRMS < 2. && TMath::Abs(nSigRMSPion) > 2.) return true;
+        if (isUsePionRejection) {
+          float nSigTPCPion = fPIDResponse->NumberOfSigmasTPC(ftrack, AliPID::kPion);
+          float nSigTOFPion = fPIDResponse->NumberOfSigmasTOF(ftrack, AliPID::kPion);
+          float nSigRMSPion = TMath::Sqrt(nSigTPCPion*nSigTPCPion + nSigTOFPion*nSigTOFPion);
+          double mom = ftrack->P();
+          if(mom < 1.e-6) return false;
+          if(mom > 0.5 && TMath::Abs(nSigRMS) < 2. && TMath::Abs(nSigRMSPion) > 2.) return true;
+          if(mom < 0.5 && TMath::Abs(nSigRMS) < 2. && TMath::Abs(nSigTPCPion) > 2.) return true;
+          return false;
+        } else {
+          if(nSigRMS < 2.) return true;
+          return false;
+        }
       }
       return false;
     } else {
