@@ -422,7 +422,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
           fXi->fMass = casc->MassXi();
           fXi->fBdtOut = -1.;
 
-          if (fMC)
+          if (fMC && !fApplyBdtToMC)
           {
             fGenCascades.push_back(fGenXi);
             continue;
@@ -447,7 +447,10 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
             }
             fXi->fBdtOut = bdt_out[0];
 
-            fRecCascades.push_back(*fXi);
+            if (!fMC)
+              fRecCascades.push_back(*fXi);
+            else
+              fGenCascades.push_back(fGenXi);
           }
         }
         else if (fMC && std::find(checkedLabelCasc.begin(), checkedLabelCasc.end(), labMothBac) != checkedLabelCasc.end() && (pdgCascade == kXiPdg))

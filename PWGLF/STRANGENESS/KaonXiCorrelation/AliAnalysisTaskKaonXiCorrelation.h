@@ -85,6 +85,7 @@ public:
   AliEventCuts  fEventCuts; ///<
 
   void SetFillCascades(bool toogle = true) { fFillCascades = toogle; }
+  void SetApplyBdtToMC(bool toogle = true) { fApplyBdtToMC = toogle; }
 
   // Setters for configurable cuts
   void SetRadiusCut(float cut = 1.2) { fCutRadius = cut; }
@@ -159,6 +160,7 @@ private:
   bool fOnlyTrueCandidates = true;  ///< Save only true Xi in MC
   bool fFillCascades = true;
   bool fFillKaons = true;
+  bool fApplyBdtToMC = false;
 
   // configurable cuts
   float fCutRadius = 1.2;
