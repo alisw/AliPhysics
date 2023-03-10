@@ -32,7 +32,7 @@ struct MiniXiMC : public MiniXi {
 };
 
 struct MiniKaon {
-  Double32_t fPt; //[-12.7,12.8,8]
+  Double32_t fPt; //[-3.175,3.2,8]
   Double32_t fEta; //[-1.27,1.28,8]
   Double32_t fNsigmaTPC; //[-6.35,6.4,8]
   Double32_t fNsigmaTOF; //[-6.35,6.4,8]
@@ -40,7 +40,7 @@ struct MiniKaon {
 };
 
 struct MiniKaonMC : public MiniKaon {
-  Double32_t fPtMC; //[-12.7,12.8,8]
+  Double32_t fPtMC; //[-3.175,3.2,8]
   Double32_t fEtaMC; //[-1.27,1.28,8]
   bool fIsReconstructed;
   unsigned char fFlag;
@@ -85,6 +85,7 @@ public:
   AliEventCuts  fEventCuts; ///<
 
   void SetFillCascades(bool toogle = true) { fFillCascades = toogle; }
+  void SetApplyBdtToMC(bool toogle = true) { fApplyBdtToMC = toogle; }
 
   // Setters for configurable cuts
   void SetRadiusCut(float cut = 1.2) { fCutRadius = cut; }
@@ -159,6 +160,7 @@ private:
   bool fOnlyTrueCandidates = true;  ///< Save only true Xi in MC
   bool fFillCascades = true;
   bool fFillKaons = true;
+  bool fApplyBdtToMC = false;
 
   // configurable cuts
   float fCutRadius = 1.2;
