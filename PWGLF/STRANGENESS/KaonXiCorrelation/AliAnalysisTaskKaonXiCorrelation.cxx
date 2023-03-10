@@ -499,7 +499,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
         fGenKaon.fPtMC = pdg > 0 ? track->Pt() : -track->Pt();
         fGenKaon.fEtaMC = track->Eta();
         fGenKaon.fFlag = 0u;
-        if (track->IsPrimary())
+        if (track->IsPhysicalPrimary())
           fGenKaon.fFlag |= kPrimary;
         else
           fGenKaon.fFlag |= track->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
@@ -549,7 +549,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
         if (!goodDecay)
           continue;
         fGenXi.fFlag = 0u;
-        if (track->IsPrimary())
+        if (track->IsPhysicalPrimary())
           fGenXi.fFlag |= kPrimary;
         else
           fGenXi.fFlag |= track->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
