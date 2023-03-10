@@ -148,22 +148,22 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH3F*  fHistoMCSpectrumAccXic;    //!<! Spectrum of generated particles
   TH3F*  fHistoMCSpectrumAccXic_HM;	// jcho, Spectrum of generated particles only from the HM triggered events
 
-  TH1F*	 fHistoMCSpectrum_1;		// jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_2;		// jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_3;        // jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_4;        // jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_5;        // jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_6;        // jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_7;        // jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_8;        // jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_9;        // jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_10;        // jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_11;        // jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_12;        // jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_13;        // jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_14;        // jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_15;        // jcho, generated Xic pT spectrum
-  TH1F*  fHistoMCSpectrum_16;        // jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_1;		// jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_2;		// jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_3;        // jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_4;        // jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_5;        // jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_6;        // jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_7;        // jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_8;        // jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_9;        // jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_10;        // jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_11;        // jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_12;        // jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_13;        // jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_14;        // jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_15;        // jcho, generated Xic pT spectrum
+//  TH1F*  fHistoMCSpectrum_16;        // jcho, generated Xic pT spectrum
 
   TH1F*  fHistoDcaPi1Pi2;                    //!<!  DCA between pions
   TH1F*  fHistoDcaPi1Casc;                    //!<! DCA between pi and cascade
