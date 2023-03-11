@@ -1539,7 +1539,9 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
       fPeriod.EqualTo("LHC16ZM") ||
       fPeriod.EqualTo("LHC17ZM") ||
       fPeriod.EqualTo("LHC18ZM") ) {
-    fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
+    if (fTrigger == 1) {
+      fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
+    }
   }
 
 
