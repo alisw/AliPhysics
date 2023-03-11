@@ -142,7 +142,6 @@ private:
   double 			GetWeight(double phi, double eta, double pt, int run, bool fPlus, double vz, double runNumber);
   double GetPtWeight(double pt, double eta, float vz, double runNumber);
 
-  Bool_t                  LoadWeights();
   Bool_t                  LoadWeightsKatarina();
   Bool_t                  LoadPtWeights();
   Bool_t                  LoadPtWeightsKatarina();
