@@ -123,10 +123,7 @@ ClassImp(AliAnalysisTaskCorrelationTree)
                                                                        fBuffer_ClusterCandidate_MC_Mother_Pz(0),
                                                                        fBuffer_ClusterCandidate_MC_Mother_PDG(0),
                                                                        fBuffer_ClusterCandidate_MC_GrandMother_PDG(0),
-                                                                       fIsMC(false),
-                                                                       fnGammaCandidates(1),
-                                                                       fMCStackPos(NULL),
-                                                                       fMCStackNeg(NULL)
+                                                                       fIsMC(false)
 {
   fBuffer_EventTrigger = new Int_t[kMaxTriggers];
   fBuffer_ElectronCandidate_E = new Float_t[kMaxTracks];
@@ -278,10 +275,7 @@ AliAnalysisTaskCorrelationTree::AliAnalysisTaskCorrelationTree(const char *name)
                                                                                    fBuffer_ClusterCandidate_MC_Mother_Pz(0),
                                                                                    fBuffer_ClusterCandidate_MC_Mother_PDG(0),
                                                                                    fBuffer_ClusterCandidate_MC_GrandMother_PDG(0),
-                                                                                   fIsMC(false),
-                                                                                   fnGammaCandidates(1),
-                                                                                   fMCStackPos(NULL),
-                                                                                   fMCStackNeg(NULL)
+                                                                                   fIsMC(false)
 {
   // Default constructor
   fBuffer_EventTrigger = new Int_t[kMaxTriggers];
@@ -378,7 +372,7 @@ void AliAnalysisTaskCorrelationTree::UserCreateOutputObjects()
 
   fAnalysisTree->Branch("NVertexContributors", &fBuffer_NContributors, "NVertexContributors/I"); // max 200 for now
   fAnalysisTree->Branch("NEventTriggers", &fBuffer_NEventTriggers, "NEventTriggers/I"); // max 200 for now
-  fAnalysisTree->Branch("EventTrigger", fBuffer_EventTrigger, "EventTrigger/I");        // max 200 for now
+  fAnalysisTree->Branch("EventTrigger", fBuffer_EventTrigger, "EventTrigger[NEventTriggers]/I");        // max 200 for now
 
   fAnalysisTree->Branch("NElectronCandidates", &fBuffer_NElectronCandidates, "NElectronCandidates/I"); // max 200 for now
   fAnalysisTree->Branch("ElectronCandidate_E", fBuffer_ElectronCandidate_E, "ElectronCandidate_E[NElectronCandidates]/F");
@@ -505,7 +499,7 @@ void AliAnalysisTaskCorrelationTree::UserExec(Option_t *)
   Int_t eventQuality = ((AliConvEventCuts *)fV0Reader->GetEventCuts())->GetEventQuality();
 
   if(eventQuality == 2 || eventQuality == 3){
-        cout << "Event not accepted with event quality " << eventQuality << endl;
+        // cout << "Event not accepted with event quality " << eventQuality << endl;
     return;
   }
 
@@ -545,7 +539,7 @@ void AliAnalysisTaskCorrelationTree::UserExec(Option_t *)
 
   if (TMath::Abs(fInputEvent->GetPrimaryVertex()->GetZ()) > fMaxVertexZ)
     return;
-
+  fBuffer_NEventTriggers = 0;
   TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
   TString triggerClasses[11] = {"CEMC7MUL", "CEMC7MSL", "CEMC7MSH", "CDMC7MUL", "CDMC7MSL", "CDMC7MSH", "CEMC7", "CDMC7", "CMUL7", "CMSL7", "CMSH7"};
   if(fIsMC){
@@ -567,25 +561,6 @@ void AliAnalysisTaskCorrelationTree::UserExec(Option_t *)
     return;
   }
 
-  // if a JetJet MC is used, check conversion products for their MC header origin
-  if (fMCEvent)
-  {
-    if (fEventCuts->GetSignalRejection() != 0)
-    {
-      if (fInputEvent->IsA() == AliESDEvent::Class())
-      {
-        fEventCuts->GetNotRejectedParticles(fEventCuts->GetSignalRejection(),
-                                            fEventCuts->GetAcceptedHeader(),
-                                            fMCEvent);
-      }
-      else if (fInputEvent->IsA() == AliAODEvent::Class())
-      {
-        fEventCuts->GetNotRejectedParticles(fEventCuts->GetSignalRejection(),
-                                            fEventCuts->GetAcceptedHeader(),
-                                            fInputEvent);
-      }
-    }
-  }
 
   fPidResponse = fInputHandler->GetPIDResponse();
   if (!fPidResponse)
@@ -612,7 +587,7 @@ void AliAnalysisTaskCorrelationTree::UserExec(Option_t *)
 void AliAnalysisTaskCorrelationTree::ProcessElectrons()
 {
   AliVEvent *event = (AliVEvent *)InputEvent();
-
+  fBuffer_NElectronCandidates = 0;
   Int_t ntracks = event->GetNumberOfTracks();
 
   double fEtaCutMax = 0.9;
@@ -796,7 +771,7 @@ void AliAnalysisTaskCorrelationTree::ProcessElectrons()
 void AliAnalysisTaskCorrelationTree::ProcessMuons()
 {
   AliVEvent *event = (AliVEvent *)InputEvent();
-
+  fBuffer_NMuonCandidates = 0;
   Double_t fEtaCutMax = -2.5;
   Double_t fEtaCutMin = -4.0;
   Double_t fPtCutMainMuon = 0.1;
@@ -905,6 +880,7 @@ void AliAnalysisTaskCorrelationTree::ProcessMuons()
 void AliAnalysisTaskCorrelationTree::ProcessClusters()
 {
   Int_t nclus = 0;
+  fBuffer_NClusterCandidates = 0;
   float WeightJetJetMC = 1;
   Double_t tempClusterWeight = WeightJetJetMC;
   if (!fCorrTaskSetting.CompareTo(""))
