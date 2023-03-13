@@ -4217,7 +4217,7 @@ float** AliAnalysisTaskHFSimpleVertices::GetJsonMatrix(const char* jsonFileName,
     fgets(line, 500, fj);
     if (strstr(line, section) && !(section && !section[0])){
       corrSection = true;
-      if (strstr(section, "selector"))
+      if (strstr(section, "selector") || strstr(section, "index-skim-creator"))
         moveToValues = true;
     }
     if (strstr(line, key)) {
