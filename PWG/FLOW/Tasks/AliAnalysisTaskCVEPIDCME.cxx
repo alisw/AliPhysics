@@ -123,22 +123,22 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   fNSigmaTPCCut(3.0),
   fNSigmaTOFCut(3.0),
   fV0PtMin(0.5),
-  fV0CPAMin(0.995),
+  fV0CPAMin(0.997),
   fV0RapidityMax(0.5),
   fV0DecayLengthMin(3.0),
   fV0DecayLengthMax(100.),
   fV0DCAToPrimVtxMax(1.5),
-  fV0DcaBetweenDaughtersMax(1.0),
+  fV0DcaBetweenDaughtersMax(0.5),
   fDaughtersPtMax(20.0),
   fDaughtersEtaMax(0.8),
   fDaughtersTPCNclsMin(70),
-  fDaughtersDCAToPrimVtxMin(0.02),
-  fV0PosProtonTPCNsigma(4.0),
-  fV0NegPionTPCNsigma(4.0),
-  fV0NegProtonTPCNsigma(4.0),
-  fV0PosPionTPCNsigma(4.0),
+  fDaughtersDCAToPrimVtxMin(0.05),
+  fV0PosProtonTPCNsigma(3.0),
+  fV0NegPionTPCNsigma(3.0),
+  fV0NegProtonTPCNsigma(3.0),
+  fV0PosPionTPCNsigma(3.0),
   fV0PosProtonTOFNsigma(4.0),
-  fV0NegPionTOFNsigma(false),
+  fV0NegPionTOFNsigma(4.0),
   fV0NegProtonTOFNsigma(4.0),
   fV0PosPionTOFNsigma(4.0),
   fLambdaMassMean(1.115683),
@@ -435,22 +435,22 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   fNSigmaTPCCut(3.0),
   fNSigmaTOFCut(3.0),
   fV0PtMin(0.5),
-  fV0CPAMin(0.995),
+  fV0CPAMin(0.997),
   fV0RapidityMax(0.5),
   fV0DecayLengthMin(3.0),
   fV0DecayLengthMax(100.),
   fV0DCAToPrimVtxMax(1.5),
-  fV0DcaBetweenDaughtersMax(1.0),
+  fV0DcaBetweenDaughtersMax(0.5),
   fDaughtersPtMax(20.0),
   fDaughtersEtaMax(0.8),
   fDaughtersTPCNclsMin(70),
-  fDaughtersDCAToPrimVtxMin(0.02),
-  fV0PosProtonTPCNsigma(4.0),
-  fV0NegPionTPCNsigma(4.0),
-  fV0NegProtonTPCNsigma(4.0),
-  fV0PosPionTPCNsigma(4.0),
+  fDaughtersDCAToPrimVtxMin(0.05),
+  fV0PosProtonTPCNsigma(3.0),
+  fV0NegPionTPCNsigma(3.0),
+  fV0NegProtonTPCNsigma(3.0),
+  fV0PosPionTPCNsigma(3.0),
   fV0PosProtonTOFNsigma(4.0),
-  fV0NegPionTOFNsigma(false),
+  fV0NegPionTOFNsigma(4.0),
   fV0NegProtonTOFNsigma(4.0),
   fV0PosPionTOFNsigma(4.0),
   fLambdaMassMean(1.115683),
@@ -3527,30 +3527,31 @@ bool AliAnalysisTaskCVEPIDCME::IsGoodV0(AliAODv0 *aodV0)
   // Offline reconstructed V0 only
   if (aodV0->GetOnFlyStatus()) return false;
   // Get daughters and check them
-  AliAODTrack *myTrackNegTest = dynamic_cast<AliAODTrack*>(aodV0->GetDaughter(1));
   AliAODTrack *myTrackPosTest = dynamic_cast<AliAODTrack*>(aodV0->GetDaughter(0));
+  AliAODTrack *myTrackNegTest = dynamic_cast<AliAODTrack*>(aodV0->GetDaughter(1));
   if (!myTrackPosTest || !myTrackNegTest) {
     Printf("strange analysis::UserExec:: Error:Could not retreive one of the daughter track\n");
     return false;
   }
   // Unlike signs of daughters
-  if (myTrackNegTest->Charge() == myTrackPosTest->Charge()) return false;
-  // Cosinus of pointing angle
+  if (myTrackNegTest->Charge() * myTrackPosTest->Charge() > 0) return false;
+  // Cosinus of pointing angle < 0.997
   double dCPA = aodV0->CosPointingAngle(fVertex);
-  // cut on Cosinus of pointing angle
   if (dCPA < fV0CPAMin) return false;
-  // DCA of V0
+  // DCA of V0 < 1.5 cm
   double dV0Dca = aodV0->DcaV0ToPrimVertex();
   if (TMath::Abs(dV0Dca) > fV0DCAToPrimVtxMax) return false;
-  // V0 path length before decay
+  // V0 path length before decay 3-100 cm
   double dDecayLength = aodV0->DecayLengthV0(fVertex);
   if (dDecayLength > fV0DecayLengthMax) return false;
   if (dDecayLength < fV0DecayLengthMin) return false;
-  // DCA between daughters
+  // DCA between daughters < 0.5cm
   double dDCA = aodV0->DcaV0Daughters();
   if (dDCA > fV0DcaBetweenDaughtersMax) return false;
+  // Transverse momentum > 0.5 GeV/c
   double dPt = aodV0->Pt();
   if (dPt < fV0PtMin ) return false;
+  // Pseudorapidity < 0.5
   double dRapidity = aodV0->RapLambda();
   if (TMath::Abs(dRapidity) > fV0RapidityMax) return false;
   return kTRUE;
