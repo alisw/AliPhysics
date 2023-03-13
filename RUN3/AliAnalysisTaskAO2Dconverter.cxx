@@ -230,7 +230,6 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     fTrackFilter(Form("AO2Dconverter%s", name), Form("fTrackFilter%s", name)),
     fEventCuts{},
     fTriggerAnalysis(),
-    fGRP(nullptr),
     collision(),
     eventextra(),
     bc(),

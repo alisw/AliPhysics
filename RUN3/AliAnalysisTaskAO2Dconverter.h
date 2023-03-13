@@ -190,7 +190,7 @@ private:
   Bool_t fUseTriggerAnalysis = kTRUE;    // Use or not trigger analysis
   AliEventCuts fEventCuts;      // Standard event cuts
   AliTriggerAnalysis fTriggerAnalysis; // Trigger analysis object for event selection
-  AliGRPObject *fGRP;           //! Global run parameters
+  AliGRPObject *fGRP = nullptr; //! Global run parameters
   AliVEvent *fVEvent = nullptr; //! input ESD or AOD event
   AliESDEvent *fESD  = nullptr; //! input ESD event
   AliAODEvent *fAOD  = nullptr; //! input AOD event
