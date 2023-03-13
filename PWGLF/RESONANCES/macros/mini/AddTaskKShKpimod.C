@@ -53,7 +53,7 @@ enum eventMixConfig { kDisabled = -1,
 #ifdef __CLING__
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #include <PWGLF/RESONANCES/macros/mini/ConfigKShKpimod.C>
-//#include "ConfigKShKpimod.C"
+//#include "ConfigKShKpimod2.C"
 #endif
 
 
@@ -76,11 +76,13 @@ Bool_t       k0sSwitch=0,
  Float_t     massTol = 0.03,
  Int_t       tol_switch = 1,
  Double_t    tol_sigma = 6, 
+ Double_t    tol_sigmabkg = 6, 
  Float_t     pLife = 12,
  Float_t     radiuslow = 5,
  Float_t     radiuslowbkg = 5,
  Float_t     k0sDCA = 0.3,
  Float_t     k0sCosPoinAn = 0.99,
+ Float_t     k0sCosPoinAnbkg = 0.99,
  Float_t     k0sDaughDCA = 0.3,
  Int_t       NTPCcluster = 70,
  TString     outNameSuffix = "KStarPlusMinus_V0Mass_Pt",
@@ -90,7 +92,7 @@ Bool_t       k0sSwitch=0,
  Int_t       Sys= 0,
  UInt_t      triggerMask=AliVEvent::kINT7,
  Int_t       nmix=10,
- Int_t        nNKS=3,
+ Int_t       nNKS=3,
  Int_t       imbin=90,
  Float_t     limbin=0.6,
  Float_t     himbin=1.5,
@@ -100,9 +102,9 @@ Bool_t       k0sSwitch=0,
  Int_t       multbin=100,
  Float_t     lmultbin=0,
  Float_t     hmultbin=100,
- Int_t        nm=1,
- Bool_t      timeRangeCut      = kTRUE
-
+ Bool_t massflag=kFALSE,
+ Float_t LE     =0.97,
+ Float_t RE     =1.04
 
  )
 {
@@ -110,6 +112,7 @@ Bool_t       k0sSwitch=0,
     // event cuts
     //-------------------------------------------
 
+  Bool_t      timeRangeCut      = kTRUE;
   Float_t     maxDiffAngleMixDeg = 20.0;
   Float_t     maxDiffVzMix = 1.0;
   Float_t     maxDiffMultMix = 5.0; 
@@ -292,7 +295,7 @@ Bool_t       k0sSwitch=0,
     } else
        Printf("========================== DATA analysis - PID cuts used");
     
-     if(!ConfigKShKpimod(task, isMC, piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, enableMonitor, monitorOpt.Data(), UseTolCut, ArmentousParameter, k0sSwitch, massTol, tol_switch, tol_sigma, pLife, radiuslow, radiuslowbkg, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", DCAxy, enableSys, crossedRows, rowsbycluster, Sys, nNKS, imbin, limbin, himbin, ptbin, lptbin, hptbin, multbin, lmultbin, hmultbin, triggerMask, nm)) return 0x0;
+     if(!ConfigKShKpimod(task, isMC, piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, enableMonitor, monitorOpt.Data(), UseTolCut, ArmentousParameter, k0sSwitch, massTol, tol_switch, tol_sigma, tol_sigmabkg, pLife, radiuslow, radiuslowbkg, k0sDCA, k0sCosPoinAn, k0sCosPoinAnbkg, k0sDaughDCA, NTPCcluster, "", DCAxy, enableSys, crossedRows, rowsbycluster, Sys, nNKS, imbin, limbin, himbin, ptbin, lptbin, hptbin, multbin, lmultbin, hmultbin, triggerMask, massflag, LE, RE)) return 0x0;
 
      //if(!ConfigKStarPlusMinusPbPb2018arm(task, isMC, piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, enableMonitor, monitorOpt.Data(), UseTolCut, ArmentousParameter, massTol, tol_switch, tol_sigma, pLife, radiuslow, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", DCAxy, enableSys, crossedRows, rowsbycluster, Sys, imbin, limbin, himbin, ptbin, lptbin, hptbin, multbin, lmultbin, hmultbin)) return 0x0;
     
