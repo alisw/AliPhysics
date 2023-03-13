@@ -187,10 +187,10 @@ void AliAnalysisTaskUpc2Pi2E::UserCreateOutputObjects()
 
   	if(debugMode) std::cout<<"Defining ttree..."<<std::endl;
 	f2Pi2ETree1 = new TTree("SelectedRhoJpsi","Selected RhoJpsi events");
-//	f4PiTree1->Branch("RunNum1_T",&RunNum_T,"RunNum_T/I");
-//	f4PiTree1->Branch("PeriodNumber1_T",&PeriodNumber_T,"PeriodNumber_T/i");
-//	f4PiTree1->Branch("OrbitNumber1_T",&OrbitNumber_T,"OrbitNumber_T/i");
-//	f4PiTree1->Branch("BunchCrossNumber1_T",&BunchCrossNumber_T,"BunchCrossNumber_T/s");
+	f2Pi2ETree1->Branch("RunNum1_T",&RunNum_T,"RunNum_T/I");
+	f2Pi2ETree1->Branch("PeriodNumber1_T",&PeriodNumber_T,"PeriodNumber_T/i");
+	f2Pi2ETree1->Branch("OrbitNumber1_T",&OrbitNumber_T,"OrbitNumber_T/i");
+	f2Pi2ETree1->Branch("BunchCrossNumber1_T",&BunchCrossNumber_T,"BunchCrossNumber_T/s");
 //	f4PiTree1->Branch("LikeSign1_T",&LikeSign_T,"LikeSign_T/O");
 //	f4PiTree1->Branch("Mass1_T",&Mass_T,"Mass_T/F");
 //	f4PiTree1->Branch("Pt1_T",&Pt_T,"Pt_T/F");
@@ -202,27 +202,27 @@ void AliAnalysisTaskUpc2Pi2E::UserCreateOutputObjects()
 	f2Pi2ETree1->Branch("ZPCenergy1_T",&ZPCenergy_T,"ZPCenergy_T/F");
 	f2Pi2ETree1->Branch("ZDCAtime1_T",&ZDCAtime_T,"ZDCAtime_T[4]/F");
 	f2Pi2ETree1->Branch("ZDCCtime1_T",&ZDCCtime_T,"ZDCCtime_T[4]/F");
-	f2Pi2ETree1->Branch("PIDTPCPion1_T",&PIDTPCPion_T,"PIDTPCPion_T[100]/F");
-	f2Pi2ETree1->Branch("PIDTPCMuon1_T",&PIDTPCMuon_T,"PIDTPCMuon_T[100]/F");
-	f2Pi2ETree1->Branch("PIDTPCElectron1_T",&PIDTPCElectron_T,"PIDTPCElectron_T[100]/F");
-	f2Pi2ETree1->Branch("PIDTPCKaon1_T",&PIDTPCKaon_T,"PIDTPCKaon_T[100]/F");
-	f2Pi2ETree1->Branch("PIDTPCProton1_T",&PIDTPCProton_T,"PIDTPCProton_T[100]/F");
-	f2Pi2ETree1->Branch("TPCsignal1_T",&TPCsignal_T,"TPCsignal_T[100]/I");
-	f2Pi2ETree1->Branch("TPCrefit1_T",&TPCrefit_T,"TPCrefit_T[100]/O");
-	f2Pi2ETree1->Branch("TPCNcls1_T",&TPCNcls_T,"TPCNcls_T[100]/I");
-	f2Pi2ETree1->Branch("TPCchi21_T",&TPCchi2_T,"TPCchi2_T[100]/F");
-	f2Pi2ETree1->Branch("ISTrefit1_T",&ITSrefit_T,"ITSrefit_T[100]/O");
-	f2Pi2ETree1->Branch("ITSI1_T",&ITSI_T,"ITSI_T[100]/O");
-	f2Pi2ETree1->Branch("ITSO1_T",&ITSO_T,"ITSO_T[100]/O");
-	f2Pi2ETree1->Branch("ITSSA1_T",&ITSSA_T,"ITSSA_T[100]/O");
-	f2Pi2ETree1->Branch("TrackCuts_T",&TrackCuts_T,"TrackCuts_T[100]/O");
-	f2Pi2ETree1->Branch("ITSNcls1_T",&ITSNcls_T,"ITSNcls_T[100]/I");
-	f2Pi2ETree1->Branch("TrackP1_T",&TrackP_T,"TrackP_T[100]/F");
-	f2Pi2ETree1->Branch("TrackDCAxy1_T",&TrackDCAxy_T,"TrackDCAxy_T[100]/F");
-	f2Pi2ETree1->Branch("TrackDCAz1_T",&TrackDCAz_T,"TrackDCAz_T[100]/F");
-	f2Pi2ETree1->Branch("TrackC1_T",&TrackC_T,"TrackC_T[100]/I");
-	f2Pi2ETree1->Branch("TrackEta1_T",&TrackEta_T,"TrackEta_T[100]/F");
-	f2Pi2ETree1->Branch("TrackPhi1_T",&TrackPhi_T,"TrackPhi_T[100]/F");
+	f2Pi2ETree1->Branch("PIDTPCPion1_T",&PIDTPCPion_T,"PIDTPCPion_T[20]/F");
+	f2Pi2ETree1->Branch("PIDTPCMuon1_T",&PIDTPCMuon_T,"PIDTPCMuon_T[20]/F");
+	f2Pi2ETree1->Branch("PIDTPCElectron1_T",&PIDTPCElectron_T,"PIDTPCElectron_T[20]/F");
+	f2Pi2ETree1->Branch("PIDTPCKaon1_T",&PIDTPCKaon_T,"PIDTPCKaon_T[20]/F");
+	f2Pi2ETree1->Branch("PIDTPCProton1_T",&PIDTPCProton_T,"PIDTPCProton_T[20]/F");
+	f2Pi2ETree1->Branch("TPCsignal1_T",&TPCsignal_T,"TPCsignal_T[20]/I");
+	f2Pi2ETree1->Branch("TPCrefit1_T",&TPCrefit_T,"TPCrefit_T[20]/O");
+	f2Pi2ETree1->Branch("TPCNcls1_T",&TPCNcls_T,"TPCNcls_T[20]/I");
+	f2Pi2ETree1->Branch("TPCchi21_T",&TPCchi2_T,"TPCchi2_T[20]/F");
+	f2Pi2ETree1->Branch("ISTrefit1_T",&ITSrefit_T,"ITSrefit_T[20]/O");
+	f2Pi2ETree1->Branch("ITSI1_T",&ITSI_T,"ITSI_T[20]/O");
+	f2Pi2ETree1->Branch("ITSO1_T",&ITSO_T,"ITSO_T[20]/O");
+	f2Pi2ETree1->Branch("ITSSA1_T",&ITSSA_T,"ITSSA_T[20]/O");
+	f2Pi2ETree1->Branch("TrackCuts_T",&TrackCuts_T,"TrackCuts_T[20]/O");
+	f2Pi2ETree1->Branch("ITSNcls1_T",&ITSNcls_T,"ITSNcls_T[20]/I");
+	f2Pi2ETree1->Branch("TrackP1_T",&TrackP_T,"TrackP_T[20]/F");
+	f2Pi2ETree1->Branch("TrackDCAxy1_T",&TrackDCAxy_T,"TrackDCAxy_T[20]/F");
+	f2Pi2ETree1->Branch("TrackDCAz1_T",&TrackDCAz_T,"TrackDCAz_T[20]/F");
+	f2Pi2ETree1->Branch("TrackC1_T",&TrackC_T,"TrackC_T[20]/I");
+	f2Pi2ETree1->Branch("TrackEta1_T",&TrackEta_T,"TrackEta_T[20]/F");
+	f2Pi2ETree1->Branch("TrackPhi1_T",&TrackPhi_T,"TrackPhi_T[20]/F");
 	f2Pi2ETree1->Branch("Trigger1_T",&Trigger_T,"Trigger_T/I");
 //	f4PiTree1->Branch("TrackPx1_T",&TrackPx_T,"TrackPx_T[8]/F");
 //	f4PiTree1->Branch("TrackPy1_T",&TrackPy_T,"TrackPy_T[8]/F");
@@ -233,23 +233,23 @@ void AliAnalysisTaskUpc2Pi2E::UserCreateOutputObjects()
 //	f4PiTree1->Branch("VtxContrib1_T",&VtxContrib_T,"VtxContrib_T/I");
 //	f4PiTree1->Branch("VtxChi21_T",&VtxChi2_T,"VtxChi2_T/F");
 //	f4PiTree1->Branch("VtxNDF1_T",&VtxNDF_T,"VtxNDF_T/F");
-//	f4PiTree1->Branch("SpdVtxX1_T",&SpdVertex_T[0],"SpdVtxX_T/F");
-//	f4PiTree1->Branch("SpdVtxY1_T",&SpdVertex_T[1],"SpdVtxY_T/F");
-//	f4PiTree1->Branch("SpdVtxZ1_T",&SpdVertex_T[2],"SpdVtxZ_T/F");
-//	f4PiTree1->Branch("SpdVtxContrib1_T",&SpdVtxContrib_T,"SpdVtxContrib_T/I");
+	f2Pi2ETree1->Branch("SpdVtxX1_T",&SpdVertex_T[0],"SpdVtxX_T/F");
+	f2Pi2ETree1->Branch("SpdVtxY1_T",&SpdVertex_T[1],"SpdVtxY_T/F");
+	f2Pi2ETree1->Branch("SpdVtxZ1_T",&SpdVertex_T[2],"SpdVtxZ_T/F");
+	f2Pi2ETree1->Branch("SpdVtxContrib1_T",&SpdVtxContrib_T,"SpdVtxContrib_T/I");
 	f2Pi2ETree1->Branch("V0Adecision1_T",&V0Adecision_T,"V0Adecision_T/I");
 	f2Pi2ETree1->Branch("V0Cdecision1_T",&V0Cdecision_T,"V0Cdecision_T/I");
 	f2Pi2ETree1->Branch("ADAdecision1_T",&ADAdecision_T,"ADAdecision_T/I");
 	f2Pi2ETree1->Branch("ADCdecision1_T",&ADCdecision_T,"ADCdecision_T/I");
 	f2Pi2ETree1->Branch("NTracks1_T",&NTracks_T,"NTracks_T/I");
-	f2Pi2ETree1->Branch("fMatchingSPD_T", &fMatchingSPD_T, "fMatchingSPD_T[100]/O");
+	f2Pi2ETree1->Branch("fMatchingSPD_T", &fMatchingSPD_T, "fMatchingSPD_T[20]/O");
 //	f4PiTree1->Branch("UBAfired1_T",&UBAfired_T,"UBAfired_T/O");
 //	f4PiTree1->Branch("UBCfired1_T",&UBCfired_T,"UBCfired_T/O");
 //	f4PiTree1->Branch("VBAfired1_T",&VBAfired_T,"VBAfired_T/O");
 //	f4PiTree1->Branch("VBCfired1_T",&VBCfired_T,"VBCfired_T/O");
 //	f4PiTree1->Branch("Ntracklets1_T",&Ntracklets_T,"Ntracklets_T/I");
-	f2Pi2ETree1->Branch("ITSModuleInner_T",&ITSModuleInner_T,"ITSModuleInner_T[100]/I");
-	f2Pi2ETree1->Branch("ITSModuleOuter_T",&ITSModuleOuter_T,"ITSModuleOuter_T[100]/I");
+	f2Pi2ETree1->Branch("ITSModuleInner_T",&ITSModuleInner_T,"ITSModuleInner_T[20]/I");
+	f2Pi2ETree1->Branch("ITSModuleOuter_T",&ITSModuleOuter_T,"ITSModuleOuter_T[20]/I");
 	f2Pi2ETree1->Branch("FOmodules_T",&fFOmodules_T,"FOmodules_T[240]/I");
 	f2Pi2ETree1->Branch("ChipCut1_T",&ChipCut_T,"ChipCut_T/O");
 	//f4PiTree1->Branch("FORChip1_T",&FORChip);
@@ -470,7 +470,7 @@ void AliAnalysisTaskUpc2Pi2E::UserExec(Option_t *)
   if (!isMC) { // data
 	if (esd->GetRunNumber() < 295828){
   	if (trigger.Contains("CCUP9-B")) Trigger_T = 2;
-  	if (trigger.Contains("CCUP8")) Trigger_T = 1;
+  	else if (trigger.Contains("CCUP8")) Trigger_T = 1;
 	}
       //if(esd->GetRunNumber()>=295881 && esd->GetRunNumber()<296594)
       if(esd->GetRunNumber()>=295881)
@@ -565,7 +565,7 @@ for (Int_t it=0;it < Maxtrk; it++){
 //	if (fOption.Contains("GeoCut")) esdTrackCuts->SetCutGeoNcrNcl(3.,130.,1.5,0.85,0.7);
 
     if( !trk ) continue;
-// 	if( trk->IsOn(AliESDtrack::kITSpureSA) ) continue;
+ 	if( trk->IsOn(AliESDtrack::kITSpureSA) ) continue;
 //    if(!(trk->GetStatus() & AliESDtrack::kTPCrefit) ) continue;
     if(!(trk->GetStatus() & AliESDtrack::kITSrefit) ) continue;
 //    if(trk->GetTPCNcls() < fTPCNcls)continue;
@@ -577,7 +577,7 @@ for (Int_t it=0;it < Maxtrk; it++){
     //if(TMath::Abs(dca[1]) > 2) continue;
     if(TMath::Abs(dca[1]) > 3) continue;
     Double_t cut_DCAxy = (0.0182 + 0.0350/TMath::Power(trk->Pt(),1.01));
-    //if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
+//    if(TMath::Abs(dca[0]) > cut_DCAxy) continue;
     if(TMath::Abs(dca[0]) > 3) continue;
 
 	// store good track index
