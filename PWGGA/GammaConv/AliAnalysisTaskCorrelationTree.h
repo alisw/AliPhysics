@@ -157,9 +157,6 @@ class AliAnalysisTaskCorrelationTree : public AliAnalysisTaskSE{
     Int_t*                      fBuffer_ClusterCandidate_MC_Mother_PDG;
     Int_t*                      fBuffer_ClusterCandidate_MC_GrandMother_PDG;
     Bool_t                      fIsMC;                      //
-    Int_t                       fnGammaCandidates;          //
-    Int_t*                      fMCStackPos;                //[fnGammaCandidates]
-    Int_t*                      fMCStackNeg;                //[fnGammaCandidates]
 
     const Int_t kMaxTracks = 200;
     const Int_t kMaxTriggers = 20;
