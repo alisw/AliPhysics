@@ -243,6 +243,9 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
     mccalolabel(),
     mccollisionlabel(),
     mcparticle(),
+    hepMcCrossSections(),
+    hepMcPdfInfo(),
+    hepMcHeavyIon(),
 #ifdef USE_TOF_CLUST
     tofClusters(),
 #endif
@@ -274,8 +277,10 @@ AliAnalysisTaskAO2Dconverter::AliAnalysisTaskAO2Dconverter(const char* name)
 
 AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
 {
-  fOutputList->Delete();
-  delete fOutputList;
+  if (fOutputList) {
+    fOutputList->Delete();
+    delete fOutputList;
+  }
 } // AliAnalysisTaskAO2Dconverter::~AliAnalysisTaskAO2Dconverter()
 
 void AliAnalysisTaskAO2Dconverter::NotifyRun(){
