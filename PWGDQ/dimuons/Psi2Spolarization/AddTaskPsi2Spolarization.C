@@ -29,11 +29,11 @@ AliAnalysisTaskPsi2Spolarization* AddTaskPsi2Spolarization(TString name = "name"
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
 
-        gROOT->ProcessLine(".L $ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-    Bool_t isMC=kFALSE;
-    Bool_t enablePileupCuts=kTRUE;
-    AliPhysicsSelectionTask*physSelTask= new AliPhysicsSelectionTask();
-    physSelTask-> AddTaskPhysicsSelection(isMC,enablePileupCuts);
+       //  gROOT->ProcessLine(".L $ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
+    // Bool_t isMC=kFALSE;
+    // Bool_t enablePileupCuts=kTRUE;
+    // AliPhysicsSelectionTask*physSelTask= new AliPhysicsSelectionTask();
+    // physSelTask-> AddTaskPhysicsSelection(isMC,enablePileupCuts);
       
 
     
