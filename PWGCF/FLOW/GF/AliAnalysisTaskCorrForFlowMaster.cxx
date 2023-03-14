@@ -57,6 +57,8 @@ AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster() : AliAnalys
     fPtMaxTrig(10.0),
     fPtMinAss(0.5),
     fPtMaxAss(1.5),
+    fPtRefMin(0.2),
+    fPtRefMax(3.0),
     fCentMin(0.0),
     fCentMax(10.0),
     fCentrality(-10.0),
@@ -120,6 +122,8 @@ AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster(const char* n
     fPtMaxAss(1.5),
     fCentMin(0.0),
     fCentMax(10.0),
+    fPtRefMin(0.2),
+    fPtRefMax(3.0),
     fCentrality(-10.0),
     fAbsEtaMax(0.8),
     fPVz(100.0),
@@ -238,6 +242,7 @@ void AliAnalysisTaskCorrForFlowMaster::UserExec(Option_t *)
     if(fUseEfficiency && fColSystem == sPP && (fRunNumber != fAOD->GetRunNumber()) && !AreEfficienciesLoaded()) { return; }
 
     if(!fIsTPCgen || fUseNch)  {
+      
       if(!PrepareTPCTracks()){
             if(fTracksTrig) delete fTracksTrig;
             PostData(1, fOutputListCharged);
@@ -252,7 +257,7 @@ void AliAnalysisTaskCorrForFlowMaster::UserExec(Option_t *)
             return;
       }
     } // end MC
-
+    
     if(!fTracksAss->IsEmpty() && !fSkipCorr){
         FillCorrelations();
         FillCorrelationsMixed();
@@ -374,9 +379,10 @@ Bool_t AliAnalysisTaskCorrForFlowMaster::IsTrackSelected(const AliAODTrack* trac
   if(fRejectSecondariesFromMC){
     AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
     if(!mcEvent) return kFALSE;
-    AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(track->GetLabel());
+    AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(track->GetLabel()); //Get
     if(!part) return kFALSE;
     if(!part->IsPhysicalPrimary()) { return kFALSE; }
+    std::cout <<part->IsPhysicalPrimary() << std::endl; 
   }
 
   return kTRUE;
@@ -432,6 +438,10 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
   binscont[2] = fPVz;
   binscont[3] = fSampleIndex;
 
+  Double_t binscontref[4];
+  binscontref[2] = fPVz;
+  binscontref[3] = fSampleIndex;
+
   for(Int_t iTrig(0); iTrig < fTracksTrig->GetEntriesFast(); iTrig++){
     AliVParticle* track = dynamic_cast<AliVParticle*>(fTracksTrig->At(iTrig));
     if(!track) continue;
@@ -453,7 +463,7 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
       AliVParticle* trackAss = dynamic_cast<AliVParticle*>(fTracksAss->At(iAss));
       if(!trackAss) continue;
       AliAODTrack* trackAODAss = nullptr;
-      if(!fIsMC) trackAODAss = (AliAODTrack*)fTracksAss->At(iAss);
+      trackAODAss = (AliAODTrack*)fTracksAss->At(iAss); //if(!fIsMC) 
 
       Double_t assPt = trackAss->Pt();
       Double_t assEta = trackAss->Eta();
@@ -461,22 +471,25 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
       Double_t assCharge = trackAss->Charge();
       Double_t assEff = 1.0;
 
-
+      if(!fIsMC && trackAOD->GetID() == trackAODAss->GetID()) continue;
+      if(fIsMC && (Int_t)track->GetUniqueID() == (Int_t)trackAss->GetUniqueID()) {continue;}
 
       //Ref vs ref - fill seperate histogram for the situation were both tracks are from the large ref. range
-      if(0.2<trigPt<3.0 && 0.2<assPt<3.0 && trigPt>assPt){
+      if(fPtRefMin<trigPt<fPtRefMax && fPtRefMin<assPt<fPtRefMax && trigPt>assPt){
         if(fUseEfficiency) {
           assEff = GetEff(assPt, 0, assEta);
           if(assEff < 0.001) continue;
         }
 
-        binscont[0] = trigEta - assEta;
-        binscont[1] = RangePhi(trigPhi - assPhi);
-        binscont[5] = assPt;
+        binscontref[0] = trigEta - assEta;
+        binscontref[1] = RangePhi(trigPhi - assPhi);
+        //binscont[5] = assPt;
+        
+         
+        
+        if(fUsePhiStar && CheckDPhiStar(binscontref[0], trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
 
-        if(fUsePhiStar && CheckDPhiStar(binscont[0], trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
-
-        fhSEref->Fill(binscont,0,1./(trigEff*assEff));
+        fhSEref->Fill(binscontref,0,1./(trigEff*assEff));
       }
       //All other situations
       Int_t TrigBin = h->FindBin(trigPt);
@@ -491,15 +504,16 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
         if(assEff < 0.001) continue;
       }
 
-      if(!fIsMC && trackAOD->GetID() == trackAODAss->GetID()) continue;
 
       binscont[0] = trigEta - assEta;
       binscont[1] = RangePhi(trigPhi - assPhi);
       binscont[5] = assPt;
 
+     
+      
 
       if(fUsePhiStar && CheckDPhiStar(binscont[0], trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
-  
+      
       fhSE->Fill(binscont,0,1./(trigEff*assEff));
     }
   }
@@ -523,6 +537,10 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelationsMixed()
     Double_t binscont[6];
     binscont[2] = fPVz;
     binscont[3] = fSampleIndex;
+
+    Double_t binscontref[4];
+    binscontref[2] = fPVz;
+    binscontref[3] = fSampleIndex;
 
     for(Int_t iTrig(0); iTrig < fTracksTrig->GetEntriesFast(); iTrig++){
       AliVParticle* track = dynamic_cast<AliVParticle*>(fTracksTrig->At(iTrig));
@@ -552,19 +570,19 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelationsMixed()
           Double_t assEff = 1.0;
 
           //Ref vs ref - fill seperate histogram for the situation were both tracks are from the large ref. range
-          if(0.2<trigPt<3.0 && 0.2<assPt<3.0 && trigPt>assPt){
+          if(fPtRefMin<trigPt<fPtRefMax && fPtRefMin<assPt<fPtRefMax && trigPt>assPt){
             if(fUseEfficiency) {
               assEff = GetEff(assPt, 0, assEta);
               if(assEff < 0.001) continue;
             }
 
-            binscont[0] = trigEta - assEta;
-            binscont[1] = RangePhi(trigPhi - assPhi);
-            binscont[5] = assPt;
+            binscontref[0] = trigEta - assEta;
+            binscontref[1] = RangePhi(trigPhi - assPhi);
+            //binscont[5] = assPt;
 
-            if(fUsePhiStar && CheckDPhiStar(binscont[0], trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
+            if(fUsePhiStar && CheckDPhiStar(binscontref[0], trigPhi, trigPt, trigCharge, assPhi, assPt, assCharge)) continue;
 
-            fhMEref->Fill(binscont,0,1./((Double_t)nMix*(trigEff*assEff)));
+            fhMEref->Fill(binscontref,0,1./((Double_t)nMix*(trigEff*assEff)));
             
           }
           //All other situations
@@ -723,6 +741,9 @@ void AliAnalysisTaskCorrForFlowMaster::CreateTHnCorrelations(){
     Int_t iBinningTPCTPC[] = {32,72,10,sizeOfSamples,sizePtTrig, sizePtAss};
     Int_t nTrackBin_tpctpc = sizeof(iBinningTPCTPC) / sizeof(Int_t);
 
+    Int_t iBinningTPCTPCref[] = {32,72,10,sizeOfSamples};
+    Int_t nTrackBin_tpctpcref = sizeof(iBinningTPCTPCref) / sizeof(Int_t);
+
    
 
     fhSE = new AliTHn(nameS[0], nameS[0], nSteps, nTrackBin_tpctpc, iBinningTPCTPC);
@@ -760,11 +781,11 @@ void AliAnalysisTaskCorrForFlowMaster::CreateTHnCorrelations(){
 
     //Ref vs ref
 
-    fhSEref = new AliTHn(nameSref[0], nameSref[0], nSteps, nTrackBin_tpctpc, iBinningTPCTPC);
+    fhSEref = new AliTHn(nameSref[0], nameSref[0], nSteps, nTrackBin_tpctpcref, iBinningTPCTPCref);
     fhSEref->SetBinLimits(0, binning_deta_tpctpc);
     fhSEref->SetBinLimits(1, binning_dphi);
 
-    fhMEref = new AliTHn(nameMref[0], nameMref[0], nSteps, nTrackBin_tpctpc, iBinningTPCTPC);
+    fhMEref = new AliTHn(nameMref[0], nameMref[0], nSteps, nTrackBin_tpctpcref, iBinningTPCTPCref);
     fhMEref->SetBinLimits(0, binning_deta_tpctpc);
     fhMEref->SetBinLimits(1, binning_dphi);
     fhSEref->SetBinLimits(2, -10,10);
@@ -773,10 +794,10 @@ void AliAnalysisTaskCorrForFlowMaster::CreateTHnCorrelations(){
     fhSEref->SetVarTitle(1, "#Delta#phi");
     fhSEref->SetVarTitle(2, "PVz [cm]");
     fhSEref->SetVarTitle(3, "Sample");
-    fhSEref->SetBinLimits(4, fPtBinsTrigCharged.data());
-    fhSEref->SetBinLimits(5, fPtBinsAssCharged.data());
-    fhSEref->SetVarTitle(4, "p_{T} [GeV/c] (trig)");
-    fhSEref->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
+    // fhSEref->SetBinLimits(4, fPtBinsTrigCharged.data());
+    // fhSEref->SetBinLimits(5, fPtBinsAssCharged.data());
+    // fhSEref->SetVarTitle(4, "p_{T} [GeV/c] (trig)");
+    // fhSEref->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
     
     fOutputListCharged->Add(fhSEref);
 
@@ -786,10 +807,10 @@ void AliAnalysisTaskCorrForFlowMaster::CreateTHnCorrelations(){
     fhMEref->SetVarTitle(1, "#Delta#phi");
     fhMEref->SetVarTitle(2, "PVz [cm]");
     fhMEref->SetVarTitle(3, "Sample");
-    fhMEref->SetBinLimits(4, fPtBinsTrigCharged.data());
-    fhMEref->SetBinLimits(5, fPtBinsAssCharged.data());
-    fhMEref->SetVarTitle(4, "p_{T} [GeV/c] (trig)");
-    fhMEref->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
+    // fhMEref->SetBinLimits(4, fPtBinsTrigCharged.data());
+    // fhMEref->SetBinLimits(5, fPtBinsAssCharged.data());
+    // fhMEref->SetVarTitle(4, "p_{T} [GeV/c] (trig)");
+    // fhMEref->SetVarTitle(5, "p_{T} [GeV/c] (ass)");
     
     fOutputListCharged->Add(fhMEref);
   
@@ -881,41 +902,50 @@ Bool_t AliAnalysisTaskCorrForFlowMaster::PrepareMCTracks(){
   AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
   if(!mcEvent) return kFALSE;
 
+  vector<AliMCParticle*> tempVec(0);
+  vector<vector<AliMCParticle*>> vecTrack(fPtBinsTrigCharged.size(), tempVec);
+
   Double_t binscont[3] = {fPVz, fSampleIndex, 0.};
 
   for(Int_t i(0); i < mcEvent->GetNumberOfTracks(); i++) {
     AliMCParticle* part = (AliMCParticle*)mcEvent->GetTrack(i);
+    if(!fIsTPCgen) continue;
+    if(part->Charge()==0.) continue;
     if(!part->IsPhysicalPrimary()) continue;
-    Double_t partEta = part->Eta();
-    Double_t partPt = part->Pt();
-    Double_t partPhi = part->Phi();
-    Double_t partRapidity = part->Y();
-    binscont[2] = partPt;
+    if(fAbsEtaMax > 0.0 && TMath::Abs(part->Eta()) > fAbsEtaMax) {continue;}
+    Double_t trackPt = part->Pt();
 
-    if(fBoostAMPT) {
-      partEta=TransverseBoost(part);
-      partRapidity=partRapidity-0.465;
-    }
-
-    // TPC region
-    if(TMath::Abs(partEta) < 0.8){
-      if(!fIsTPCgen) continue;
-      Int_t partPDG = TMath::Abs(part->PdgCode());
-      Int_t partIdx = -1;
-      if(partPDG == 211) partIdx = 1;
-      else if(partPDG == 321) partIdx = 2;
-      else if(partPDG == 2212) partIdx = 3;
-      else if(partPDG == 310) partIdx = 4;
-      else if(partPDG == 3122) partIdx = 5;
-
-      if(partIdx < 4 && part->Charge()==0.) continue;
-      if(partPt > fPtMinTrig && partPt < fPtMaxTrig){
-        fTracksTrig->Add((AliMCParticle*)part);
-        fhTrigTracks->Fill(binscont,0,1.);
+    for(Int_t j(0); j<fPtBinsTrigCharged.size()-1; j++) {
+      if(fPtBinsTrigCharged[j+1]>trackPt){
+          vecTrack[j].emplace_back((AliMCParticle*)part);
+          break;
       }
-      if(partPt > fPtMinAss && partPt < fPtMaxAss) fTracksAss->Add((AliMCParticle*)part);
-    } // end eta within 0.8
-  } // end MC track loop
+    }
+  }
+
+
+  for (Int_t i(0); i<vecTrack.size(); i++){
+    if(fUseEventBias && vecTrack[i].size()<fNumEventBias){continue;}
+    for (Int_t j(0); j<vecTrack[i].size(); j++){
+      AliMCParticle* track = vecTrack[i][j];
+      Double_t trackPt = track->Pt();
+      binscont[2] = trackPt;
+      track->SetUniqueID((Int_t)i*10000+j);
+      if(trackPt<fPtMaxTrig && trackPt>fPtMinTrig){
+
+        fhTrigTracks->Fill(binscont,0,1.);
+        
+        fTracksTrig->Add((AliMCParticle*)track);
+      }
+      
+      if(trackPt<fPtMaxAss && trackPt>fPtMinAss){
+        
+        fTracksAss->Add((AliMCParticle*)track);
+      }
+
+    }
+  }
+  
 
 
   return kTRUE;
