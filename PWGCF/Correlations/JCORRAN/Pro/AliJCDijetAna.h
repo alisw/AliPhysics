@@ -66,16 +66,29 @@ class AliJCDijetAna : public TObject
         void SetJets(vector<fastjet::PseudoJet> jetsOutside);
         void SetPythiaInfo(double flptHardBin, double flsigma, double fltrial) {fptHardBin = flptHardBin; fPythiaSigma=flsigma; fPythiaTrial=fltrial;}
         void FillJetsDijets(AliJCDijetHistos *fhistos, int lCBin, double hisWeight=1.0);
-        void CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSublead, int lcentBin, AliJCDijetHistos *fhistos, double hisWeight=1.0);
+        void CalculateDeltaM(int iJetSet, unsigned uLead, unsigned uSublead, int lcentBin, AliJCDijetHistos *fhistos, double hisWeight);
         void CalculateResponse(AliJCDijetAna *anaDetMC, AliJCDijetHistos *fhistos, int iJetSetPart, int iJetSetDet, double hisWeight=1.0);
         void ResetObjects();
         double DeltaR(fastjet::PseudoJet jet1, fastjet::PseudoJet jet2);
         double DeltaR(double eta1, double eta2, double phi1, double phi2);
         bool CheckDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet, double deltaPhiCut);
         double GetDeltaPhi(fastjet::PseudoJet leadingJet, fastjet::PseudoJet subleadingJet);
+        double GetRho(){return rho;}
 
 #endif
-        enum jetClasses {iAcc, iBGSubtr, iBGSubtrConstCut, iConstCut, iktJets, iBGSubtrCutsRaw, iBGSubtrConstCutCutsRaw, jetClassesSize};
+
+        enum jetClasses {iAcc,                      //0:  Raw jets within jet acceptance
+                         iBGSubtr,                  //1:  BG subtracted jets in jet acceptance, generated from raw jets within jet acceptance
+                         iBGSubtrConstCut,          //2:  ^Same but require a high pt leading constituent
+                         iConstCut,                 //3:  Raw jets within jet acceptance + require a high pt leading constituent
+                         iktJets,                   //4:  Raw kt jets
+                         iBGSubtrCutsRaw,           //5:  Same as iBGSubtr but kinematical cuts of dijet done with equivalent iAcc raw jets
+                         iBGSubtrConstCutCutsRaw,   //6:  ^Same but require a high pt leading constituent
+                         iBGSubtrCommonEta,         //7:  BG subtracted jets generated from raw jets within jet acceptance (no extra check for eta again after BG subtr)
+                         iBGSubtrConstCutCommonEta, //8:  ^Same but require a high pt leading constituent
+                         iBGSubtrIndEta,            //9:  BG subtracted jets within jet acceptance from all raw jets (no eta cut).
+                         iBGSubtrConstCutIndEta,    //10: ^Same but require a high pt leading constituent
+                         jetClassesSize};
         TString sDijetTypes[jetClassesSize] = {"raw", "bg. subtr.", "bg. subtr. const. cut", "const. cut", "kt", "bg. subtr. cuts raw", "bg. subtr. const. cut cuts raw"};
 
     private:
@@ -99,7 +112,6 @@ class AliJCDijetAna : public TObject
         double ftrackingIneff;
         TH1D*  ftrackingIneffHisto;
         double ftrackingIneffTemp;
-        bool bEvtHasAreaInfo;
         bool bUseCrho;
         bool bThisIsTrueMC;
 
@@ -158,7 +170,7 @@ class AliJCDijetAna : public TObject
         unique_ptr<fastjet::ClusterSequenceArea> cs_bge;
 #endif
 
-        ClassDef(AliJCDijetAna, 2); // ClassDef needed if inheriting from TObject
+        ClassDef(AliJCDijetAna, 3); // ClassDef needed if inheriting from TObject
 
 };
 

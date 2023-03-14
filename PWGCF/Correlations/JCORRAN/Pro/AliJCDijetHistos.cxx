@@ -104,6 +104,7 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_jetBGSubtrDeltaR(),
     fh_jetResponse(),
     fh_jetResponse_ALICE(),
+    fh_jetResponse_ALICEScalar(),
     fh_deltaPtResponse(),
     fh_deltaPtResponse_ALICE(),
     fh_deltaPtResponseEvery(),
@@ -127,6 +128,8 @@ AliJCDijetHistos::AliJCDijetHistos() :
     fh_dijetdeltaM5(),
     fh_dijetdeltaM5Alt(),
     fh_dijetdeltaM5Binned(),
+    fh_dijetdeltaMScaled(),
+    fh_dijetdeltaMScaledBinned(),
     fh_dijetdeltaM5NearCone(),
     fh_dijetdeltaM5NearConeAlt(),
     fh_dijetMLocalRho(),
@@ -217,6 +220,7 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_jetBGSubtrDeltaR(obj.fh_jetBGSubtrDeltaR),
     fh_jetResponse(obj.fh_jetResponse),
     fh_jetResponse_ALICE(obj.fh_jetResponse_ALICE),
+    fh_jetResponse_ALICEScalar(obj.fh_jetResponse_ALICEScalar),
     fh_deltaPtResponse(obj.fh_deltaPtResponse),
     fh_deltaPtResponse_ALICE(obj.fh_deltaPtResponse_ALICE),
     fh_deltaPtResponseEvery(obj.fh_deltaPtResponseEvery),
@@ -240,6 +244,8 @@ AliJCDijetHistos::AliJCDijetHistos(const AliJCDijetHistos& obj) :
     fh_dijetdeltaM5(obj.fh_dijetdeltaM5),
     fh_dijetdeltaM5Alt(obj.fh_dijetdeltaM5Alt),
     fh_dijetdeltaM5Binned(obj.fh_dijetdeltaM5Binned),
+    fh_dijetdeltaMScaled(obj.fh_dijetdeltaMScaled),
+    fh_dijetdeltaMScaledBinned(obj.fh_dijetdeltaMScaledBinned),
     fh_dijetdeltaM5NearCone(obj.fh_dijetdeltaM5NearCone),
     fh_dijetdeltaM5NearConeAlt(obj.fh_dijetdeltaM5NearConeAlt),
     fh_dijetMLocalRho(obj.fh_dijetMLocalRho),
@@ -460,7 +466,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << "END" ;
 
     fh_jetPtTransBGSub
-        << TH1D("h_jetPtTransBGSub","h_jetPtTransBGSub", 310, 0, 310 )
+        << TH1D("h_jetPtTransBGSub","h_jetPtTransBGSub", 360, -50, 310 )
         << fHistCentBin << fJetBin
         << "END" ;
 
@@ -470,7 +476,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << "END" ;
 
     fh_jetEta
-        << TH1D("h_jetEta", "h_jetEta", 100, -1.0, 1.0)
+        << TH1D("h_jetEta", "h_jetEta", 500, -5.0, 5.0)
         << fHistCentBin << fJetBin
         << "END" ;
 
@@ -480,7 +486,7 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << "END" ;
 
     fh_jetEtaPhi
-        << TH2D("h_jetEtaPhi", "h_jetEtaPhi", 100, -1.0, 1.0, 100, -TMath::Pi(), TMath::Pi())
+        << TH2D("h_jetEtaPhi", "h_jetEtaPhi", 500, -5.0, 5.0, 100, -TMath::Pi(), TMath::Pi())
         << fHistCentBin << fJetBin
         << "END" ;
 
@@ -685,6 +691,10 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << TH2D("h_jetResponse_ALICE", "h_jetResponse_ALICE", 310, 0, 310, 310, 0, 310 )
         << fJetBin << fJetBin << "END" ;
 
+    fh_jetResponse_ALICEScalar
+        << TH2D("h_jetResponse_ALICEScalar", "h_jetResponse_ALICEScalar", 360, -50, 310, 360, -50, 310 )
+        << "END" ;
+
     fh_deltaPtResponse
         << TH2D("h_deltaPtResponse", "h_deltaPtResponse", NBINSJet, LogBinsXJet, NBINSJet, LogBinsXJet )
         << fJetBin << "END" ;
@@ -777,6 +787,14 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << TH1D("h_dijetdeltaM5Binned", "h_dijetdeltaM5Binned", 751, -250.5, 500.5)
         << fJetBin << fMBin << "END" ;
 
+    fh_dijetdeltaMScaled
+        << TH1D("h_dijetdeltaMScaled", "h_dijetdeltaMScaled", 201, -1.005, 1.005)
+        << fJetBin << "END" ;
+
+    fh_dijetdeltaMScaledBinned
+        << TH1D("h_dijetdeltaMScaledBinned", "h_dijetdeltaMScaledBinned", 201, -1.005, 1.005)
+        << fJetBin << fMBin << "END" ;
+
     fh_dijetdeltaM5NearCone
         << TH1D("h_dijetdeltaM5NearCone", "h_dijetdeltaM5NearCone", 751, -250.5, 500.5)
         << fJetBin << "END" ;
@@ -793,6 +811,9 @@ void AliJCDijetHistos::CreateEventTrackHistos(){
         << TH1D("h_dijetMLocalRhoAlt", "h_dijetMLocalRhoAlt", 500, 0, 500)
         << fJetBin << "END" ;
 
+    fh_dijetMLocalRhoAlt
+        << TH1D("h_dijetMLocalRhoAlt", "h_dijetMLocalRhoAlt", 500, 0, 500)
+        << fJetBin << "END" ;
     fh_deltaMResponse
         << TH2D("h_deltaMResponse", "h_deltaMResponse", NBINSDijet, logBinsXDijet, NBINSDijet, logBinsXDijet )
         << fJetBin << "END" ;
