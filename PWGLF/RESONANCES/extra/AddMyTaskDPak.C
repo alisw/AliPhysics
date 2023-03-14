@@ -36,7 +36,7 @@ AliAnalysisTaskResonanceDP* AddMyTaskDPak(
     // add your task to the manager                                                                                                                                                      
     mgr->AddTask(task);
     
-    TString outfilename = Form("AnalysisResultsTree%s.root",runtype);
+    TString outfilename = "AnalysisResults.root";
     
     // create containers for input/output
     AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
