@@ -95,6 +95,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    SetPhiStarCur(Double_t phiStar) {fMergingCut = phiStar; }
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
         void                    SetNofSamples(Int_t n) { fNOfSamples = n; }
+        void                    SetPtRefRange(Double_t min, Double_t max) {fPtRefMin=min; fPtRefMax=max; }
 
         //FMD
         void                    SetBoostAMPT(Bool_t flag = kTRUE){ fBoostAMPT = flag; }
@@ -177,6 +178,8 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         Double_t                fPtMaxTrig;
         Double_t                fPtMinAss;
         Double_t                fPtMaxAss;
+        Double_t                fPtRefMin; // [0.2]
+        Double_t                fPtRefMax; // [3.0]
         std::vector<Double_t>   fPtBinsTrigCharged;
         std::vector<Double_t>   fPtBinsAssCharged;
         Double_t                fCentMin;
