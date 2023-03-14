@@ -1218,7 +1218,7 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
     FillCovariance(fCovariance[12],corrconfigs.at(0),l_Multi,pt2ev,pt2corr[1],l_Random); //v2-pt^2
     FillCovariance(fCovariance[13],corrconfigs.at(0),l_Multi,1,pt2corr[1],l_Random); 
     FillCovariance(fCovariance[14],corrconfigs.at(3),l_Multi,pt2ev,pt2corr[1],l_Random); //v3-pt^2
-    FillCovariance(fCovariance[15],corrconfigs.at(3),l_Multi,pt2ev,1,l_Random);
+    FillCovariance(fCovariance[15],corrconfigs.at(3),l_Multi,1,pt2corr[1],l_Random);
   }
   vector<double> pt3corr = fPtCont[0]->getEventCorrelation(wpPt[0],3);
     if(pt3corr[1]!=0) {
