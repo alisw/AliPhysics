@@ -135,7 +135,8 @@ set(SRCS
     AliAnalysisTaskCharmingFemto.cxx
     AliEasyFemto.cxx
     AliAnalysisTaskPionDeuteronMC.cxx
-    AliAnalysisTaskPionDeuteron.cxx)
+    AliAnalysisTaskPionDeuteron.cxx
+    AliAnalysisTaskCharmingFemto_og.cxx)
 endif()
 
 # Headers from sources
