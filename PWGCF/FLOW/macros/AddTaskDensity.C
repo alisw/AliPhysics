@@ -1,10 +1,6 @@
 #include "TGrid.h"
 #include "TString.h"
-Bool_t ConnectToGrid() {
-  if(!gGrid) TGrid::Connect("alien:");
-  if(!gGrid) {printf("Task requires connection to grid, but it could not be established!\n"); return kFALSE; };
-  return kTRUE;
-}
+class TNamed;
 
 AliAnalysisTaskDensity* AddTaskDensity(TString name = "name", TString efficiencyFile = "")
 {
@@ -36,24 +32,21 @@ AliAnalysisTaskDensity* AddTaskDensity(TString name = "name", TString efficiency
   if(useEfficiency) {
     TObjArray* taskContainers = mgr->GetContainers();
     if(!taskContainers) { printf("Task containers does not exists!\n"); return NULL; }
-    AliAnalysisDataContainer* efficiency = (AliAnalysisDataContainer*) taskContainers->FindObject("inputEfficiency");
-    if(!efficiency) {
-      if(efficiencyFile.Contains("alien:")) if(!ConnectToGrid()) return 0;
-      printf("Input file name: %s \n", efficiencyFile.Data());
 
-      TFile* efficiency_file = TFile::Open(efficiencyFile.Data(),"READ");
-      if(!efficiency_file) { printf("Input file with efficiency not found!\n"); return NULL; }
+    printf("Input file name: %s \n", efficiencyFile.Data());
+    if(efficiencyFile.Contains("alien:")){ if(!gGrid) TGrid::Connect("alien:"); }; 
 
-      TList* efficiency_list = (TList*)efficiency_file->Get("EffAndFD");
-      if(!efficiency_list) { printf("E-AddTask: Input list with efficiency not found!\n"); efficiency_file->ls(); return NULL; }
+    TFile* efficiency_file = TFile::Open(efficiencyFile.Data(),"READ");
+    if(!efficiency_file) { printf("Input file with efficiency not found!\n"); return NULL; }
 
-      AliAnalysisDataContainer* cInputEfficiency = mgr->CreateContainer("inputEfficiency", TList::Class(), AliAnalysisManager::kInputContainer);
-      cInputEfficiency->SetData(efficiency_list);
-      mgr->ConnectInput(task,1,cInputEfficiency);
-    }
-    else {
-      mgr->ConnectInput(task,1,efficiency);
-    }
+    TList* efficiency_list = (TList*)efficiency_file->Get("EffAndFD");
+    if(!efficiency_list) { printf("E-AddTask: Input list with efficiency not found!\n"); efficiency_file->ls(); return NULL; }
+
+    AliAnalysisDataContainer* cInputEfficiency = mgr->CreateContainer("inputEfficiency", TList::Class(), AliAnalysisManager::kInputContainer);
+    cInputEfficiency->SetData(efficiency_list);
+    mgr->ConnectInput(task,1,cInputEfficiency);  
   }
   return task;
 }
+
+
