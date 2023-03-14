@@ -49,7 +49,7 @@ AliAnalysisTaskDensity::AliAnalysisTaskDensity() : AliAnalysisTaskSE(),
     fhChiPerTPCCls(0),
     fhChiPerITSCls(0),
     fhNofPileupSelected(0),
-    fUseEffeciency(kFALSE),
+    fUseEffeciency(0),
     fSystFlag(0),
     fGFWSelection(0)
 {
