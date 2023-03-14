@@ -483,34 +483,34 @@ if (!isMC) {
   }
   // Cutvariation currently not implemented for mctruth gen/reco
 
-  // if(useMCTruthReco){
-  //   task->SetBuddyOriginMCTRUTH(0);
-  //   task->SetDmesonOriginMCTRUTH(0);
-  //   if (suffix == "1") {
-  //     task->SetBuddyOriginMCTRUTH(0);
-  //     task->SetDmesonOriginMCTRUTH(1);
-  //   }
-  //   if (suffix == "2") {
-  //     task->SetBuddyOriginMCTRUTH(0);
-  //     task->SetDmesonOriginMCTRUTH(2);
-  //   }
-  //   if (suffix == "3") {
-  //     task->SetBuddyOriginMCTRUTH(1);
-  //     task->SetDmesonOriginMCTRUTH(1);
-  //   }
-  //   if (suffix == "4") {
-  //     task->SetBuddyOriginMCTRUTH(1);
-  //     task->SetDmesonOriginMCTRUTH(2);
-  //   }
-  //   if (suffix == "5") {
-  //     task->SetBuddyOriginMCTRUTH(2);
-  //     task->SetDmesonOriginMCTRUTH(1);
-  //   }
-  //   if (suffix == "6") {
-  //     task->SetBuddyOriginMCTRUTH(2);
-  //     task->SetDmesonOriginMCTRUTH(2);
-  //   }
-  // }
+  if(useMCTruthReco){
+    task->SetBuddyOriginMCTRUTH(0);
+    task->SetDmesonOriginMCTRUTH(0);
+    if (suffix == "1") {
+      task->SetBuddyOriginMCTRUTH(0);
+      task->SetDmesonOriginMCTRUTH(1);
+    }
+    if (suffix == "2") {
+      task->SetBuddyOriginMCTRUTH(0);
+      task->SetDmesonOriginMCTRUTH(2);
+    }
+    if (suffix == "3") {
+      task->SetBuddyOriginMCTRUTH(1);
+      task->SetDmesonOriginMCTRUTH(1);
+    }
+    if (suffix == "4") {
+      task->SetBuddyOriginMCTRUTH(1);
+      task->SetDmesonOriginMCTRUTH(2);
+    }
+    if (suffix == "5") {
+      task->SetBuddyOriginMCTRUTH(2);
+      task->SetDmesonOriginMCTRUTH(1);
+    }
+    if (suffix == "6") {
+      task->SetBuddyOriginMCTRUTH(2);
+      task->SetDmesonOriginMCTRUTH(2);
+    }
+  }
 
   mgr->AddTask(task);
 
