@@ -208,7 +208,7 @@ AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP() :
         fQy3sV0C[iZvtx] = nullptr;  
     }
 
-    for(int iCent = 0; iCent < 9; iCent++) {
+    for(int iCent = 0; iCent < 11; iCent++) {
         fWeightsTPCPosEta[iCent] = nullptr;
         fWeightsTPCNegEta[iCent] = nullptr;
     }
@@ -399,7 +399,7 @@ AliAnalysisTaskRawJetWithEP::AliAnalysisTaskRawJetWithEP(const char *name) :
         fQy3sV0C[iZvtx] = nullptr;  
     }
 
-    for(int iCent = 0; iCent < 10; iCent++) {
+    for(int iCent = 0; iCent < 11; iCent++) {
         fWeightsTPCPosEta[iCent] = nullptr;
         fWeightsTPCNegEta[iCent] = nullptr;
     }
@@ -2813,7 +2813,7 @@ short AliAnalysisTaskRawJetWithEP::GetVertexZbin() const
 //__________________________________________________________
 Int_t AliAnalysisTaskRawJetWithEP::GetCentBin()
 {
-    Int_t centbin = -10;
+    Int_t centbin = 9;
     
     if (fCentrality >= 0. && fCentrality < 5.)        centbin = 0;
     else if (fCentrality >= 5. && fCentrality < 10.)  centbin = 1;
@@ -2824,7 +2824,7 @@ Int_t AliAnalysisTaskRawJetWithEP::GetCentBin()
     else if (fCentrality >= 50. && fCentrality < 60.) centbin = 6;
     else if (fCentrality >= 60. && fCentrality < 70.) centbin = 7;
     else if (fCentrality >= 70. && fCentrality < 80.) centbin = 8;
-    else if (fCentrality >= 80. && fCentrality < 90.) centbin = 9;
+    else if (fCentrality >= 80.) centbin = 9;
 
     return centbin;
 }
