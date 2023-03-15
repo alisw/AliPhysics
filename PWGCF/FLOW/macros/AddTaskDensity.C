@@ -1,11 +1,6 @@
 #include "TGrid.h"
 #include "TString.h"
-Bool_t ConnectToGrid() {
-  if(!gGrid) TGrid::Connect("alien:");
-  if(!gGrid) {printf("Task requires connection to grid, but it could not be established!\n"); return kFALSE; };
-  return kTRUE;
-}
-
+class TNamed;
 AliAnalysisTaskDensity* AddTaskDensity(TString name = "name", TString efficiencyFile = "")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -36,10 +31,11 @@ AliAnalysisTaskDensity* AddTaskDensity(TString name = "name", TString efficiency
   if(useEfficiency) {
     TObjArray* taskContainers = mgr->GetContainers();
     if(!taskContainers) { printf("Task containers does not exists!\n"); return NULL; }
+
     AliAnalysisDataContainer* efficiency = (AliAnalysisDataContainer*) taskContainers->FindObject("inputEfficiency");
-    if(!efficiency) {
-      if(efficiencyFile.Contains("alien:")) if(!ConnectToGrid()) return 0;
+    if(!efficiency){
       printf("Input file name: %s \n", efficiencyFile.Data());
+      if(efficiencyFile.Contains("alien:")){ if(!gGrid) TGrid::Connect("alien:"); }; 
 
       TFile* efficiency_file = TFile::Open(efficiencyFile.Data(),"READ");
       if(!efficiency_file) { printf("Input file with efficiency not found!\n"); return NULL; }
@@ -49,11 +45,11 @@ AliAnalysisTaskDensity* AddTaskDensity(TString name = "name", TString efficiency
 
       AliAnalysisDataContainer* cInputEfficiency = mgr->CreateContainer("inputEfficiency", TList::Class(), AliAnalysisManager::kInputContainer);
       cInputEfficiency->SetData(efficiency_list);
-      mgr->ConnectInput(task,1,cInputEfficiency);
+      mgr->ConnectInput(task,1,cInputEfficiency);  
     }
-    else {
-      mgr->ConnectInput(task,1,efficiency);
-    }
+  else {
+    mgr->ConnectInput(task,1,efficiency);
+  }
   }
   return task;
 }
