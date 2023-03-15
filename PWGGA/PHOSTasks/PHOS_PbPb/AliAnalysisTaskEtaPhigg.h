@@ -1,18 +1,18 @@
 #ifndef AliAnalysisTaskEtaPhigg_cxx
 #define AliAnalysisTaskEtaPhigg_cxx
 
-// example of an analysis task creating a p_t spectrum
-// Authors: Panos Cristakoglou, Jan Fiete Grosse-Oetringhaus, Christian Klein-Boesing
+// Class for analysis of photon ggHBT correlations
+// Authors: D.Peresunko
 
 class THashList ;
 class AliPHOSGeometry;
 class AliCaloPhoton ;
 class AliAODTrack ;
+class AliAODEvent ;
 class AliEPFlattener ;
 class AliV0ReaderV1 ;
 class AliConvEventCuts ;
 class AliConversionPhotonCuts ;
-class AliAODConversionPhoton ;
 class AliEMCALGeometry ;
 
 #include "AliAnalysisTaskSE.h"
@@ -30,21 +30,6 @@ public:
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
  
-  void SetMassWindow(Float_t MinMass, Float_t MaxMass) { fMinMass = MinMass; fMaxMass = MaxMass; }
-  void SetKappaWindow(Float_t MinKappa, Float_t MaxKappa) { fMinKappa = MinKappa; fMaxKappa = MaxKappa; }
-  void SetEventCutList(Int_t nCuts, TList *CutArray){
-        fnCuts = nCuts;
-        fEventCutArray = CutArray;
-    }
-  void SetConversionCutList(Int_t nCuts, TList *CutArray){
-        fnCuts = nCuts;
-        fCutArray = CutArray;
-    }
-  void SetDoMesonAnalysis(Bool_t flag){fDoMesonAnalysis = flag;}
-  void SetDoMesonQA(Int_t flag){fDoMesonQA = flag;}
-  void SetDoPhotonQA(Int_t flag){fDoPhotonQA = flag;}
-  void SetIsHeavyIon(Int_t flag){fIsHeavyIon = flag; }
-  
   
   
 protected:
@@ -56,67 +41,60 @@ protected:
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z) const ; //Fill 3D histogram witn name key
   void FillHistogram(const char * key,Double_t x, Double_t y, Double_t z, Double_t w) const ; //Fill 3D histogram witn name key
 
-  
   Int_t ConvertRunNumber(Int_t run) ; 
   Bool_t PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t cut) const ; 
-  Bool_t PHOSCut(const AliCaloPhoton * ph1, Int_t cut) const ; 
-  Bool_t SecondaryPi0Cut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2) const ;
-  void ProcessPCMPhotonCandidates() ;
-  Bool_t TestPHOSEvent(AliAODEvent * event) ;
-  
+  Bool_t IsGoodChannel(Int_t ix,Int_t iz); //for CPV in Mod3
+  Int_t FindTrackMatching(int det, TVector3 &locPHOS, int mod, float &dxMin, float &dzMin );
+  int TestCPV(int mod, double e, double xPHOS, double zPHOS, double dxPHOS, double dzPHOS, int itr);
 
-protected:
-//  AliStack * fStack ;
+protected: 
+  static constexpr int kCuts = 166;     //PID cuts
+  static constexpr int kCentBins = 7;   //centrality 
+  static constexpr int kVtxBins = 5;    //z-vertex
+  static constexpr int kPRBins = 6;     //Reaction plane
+  static constexpr int kKtbins = 4;     //Kt bins for OSL param
+  static constexpr double kgMass=0. ;   //photon mass
+  char fcut[kCuts][30] ;
+  double fKtBins[kKtbins+1] = {0.2,0.4,0.7,1.,2.} ;  
+
   THashList *   fOutputContainer;        //final histogram container
   AliAODEvent * fEvent ;        //!
-//  TClonesArray * fStack ;  
-  TList *       fPHOSEvents[10][10][10] ;  //Containers for events with PHOS photons
-  TList *       fEMCALEvents[10][10][10] ; //Containers for events with EMCAL photons
-  TList *       fPCMEvents[10][10][10] ;   //Containers for events with PHOS photons
+  TList *       fPHOSEvents[kVtxBins][kCentBins][kPRBins] ;  //Containers for events with PHOS photons [zvtx][fCenBin][irp]
   TClonesArray* fPHOSEvent ;     //PHOS photons in current event
-  TClonesArray* fEMCALEvent ;    //EMCAL photons in current event
-  TClonesArray* fPCMEvent ;      //PCM photons in current event
+  TClonesArray* fCPVEvent ;      //CPV event
   
   //Reaction plain for v2
   AliEPFlattener * fV0AFlat ; //!
   AliEPFlattener * fV0CFlat ; //!
   Double_t         fRP ;      //!
+  int              fMF;
 
   Int_t fRunNumber ;    //Current run number
   Float_t fCentrality ; //!Centrality of the currecnt event
   Int_t fCenBin ;       //! Current centrality bin
 
   AliPHOSGeometry  *fPHOSGeo;  //! PHOS geometry
-  AliEMCALGeometry *fEMCALgeo; //! EMCAL geometry
   Int_t fEventCounter;         // number of analyzed events
+  
+  TH2C * fBadMap ;
 
-  AliV0ReaderV1	*fV0Reader;											//
-  Bool_t         fIsFromMBHeader;									//
-  Bool_t         fDoMesonAnalysis;									//
-  Int_t          fDoMesonQA;											//
-  Int_t          fDoPhotonQA;										//
-  Int_t          fnCuts;												//
-  Int_t          fiCut;												//
-  Int_t          fIsHeavyIon;	
-  Float_t        fPtGamma;											//
-  Float_t        fDCAzPhoton;										//
-  Float_t        fRConvPhoton;										//
-  Float_t        fEtaPhoton;											//
-  UChar_t        fiCatPhoton;											//
-  UChar_t        fiPhotonMCInfo; 										//
-  Float_t               fMinMass;                        //
-  Float_t               fMaxMass;                        //
-  Float_t               fMinKappa;                       //
-  Float_t               fMaxKappa;                       //
-  TList                   *fEventCutArray;									//
-  AliConvEventCuts	  *fEventCuts;										//
-  TList                   *fCutArray;											//
-  AliConversionPhotonCuts *fConversionCuts;									//
-  TClonesArray            *fGammaCandidates;									//
-  TList                  **fCutFolder;										//
-  
-  
-  ClassDef(AliAnalysisTaskEtaPhigg, 1); // PHOS analysis task
+  TH2F * fhReQinv[kCentBins][kCuts];
+  TH2F * fhMiQinv[kCentBins][kCuts];
+  TH2F * fhReQinvCut[kCentBins][kCuts];
+  TH2F * fhMiQinvCut[kCentBins][kCuts];
+  TH2F * fhReq[kCentBins][kCuts];
+  TH2F * fhMiq[kCentBins][kCuts];
+  TH2F * fhReqCut[kCentBins][kCuts];
+  TH2F * fhMiqCut[kCentBins][kCuts];
+
+  TH3F * fhReOSL[kCentBins][kKtbins] ;
+  TH3F * fhMiOSL[kCentBins][kKtbins] ;
+  TH3F * fhReCPVOSL[kCentBins][kKtbins] ;
+  TH3F * fhMiCPVOSL[kCentBins][kKtbins] ;
+
+
+
+  ClassDef(AliAnalysisTaskEtaPhigg, 2); // PHOS analysis task
 };
 
 #endif
