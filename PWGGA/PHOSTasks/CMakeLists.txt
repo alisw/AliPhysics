@@ -94,7 +94,6 @@ set(SRCS
     PHOS_PbPb/AliAnalysisTaskggMC.cxx
     PHOS_PbPb/AliAnalysisTaskPHOSPCMgg.cxx
     PHOS_PbPb/AliAnalysisTaskEtaPhigg.cxx
-    PHOS_PbPb/AliAnalysisTaskEtaPhiMultgg.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCAOD.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMC.cxx
     PHOS_PbPb/AliAnalysisTaskPi0FlowMCHijing.cxx
@@ -202,7 +201,6 @@ install(FILES PHOS_PbPb/AddTaskPHOSPCMgg.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb
 install(FILES PHOS_PbPb/AddTaskPHOSPi0Flow.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
 install(FILES PHOS_PbPb/AddTaskPHOSPi0FlowMC.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
 install(FILES PHOS_PbPb/AddTaskPHOSEtaPhi.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
-install(FILES PHOS_PbPb/AddTaskPHOSEtaPhiMult.C DESTINATION PWGGA/PHOSTasks/PHOS_PbPb)
 install(DIRECTORY PHOSCalib/macros          DESTINATION  PWGGA/PHOSTasks/PHOSCalib)
 install(DIRECTORY UserTasks/macros          DESTINATION  PWGGA/PHOSTasks/UserTasks)
 install(DIRECTORY CaloCellQA/macros         DESTINATION PWGGA/PHOSTasks/CaloCellQA)
