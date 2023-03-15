@@ -1257,9 +1257,9 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
         // Fill the QA plot after cuts
         double weight = 1;
         if(fNUA == 1) weight = GetFlowWeightSystematics(track, fPVz, kRefs);
-        fPtAssDis->Fill(track->Pt()*weight);
-        fEtaAssDis->Fill(track->Eta()*weight);
-        fPhiAssDis->Fill(track->Phi()*weight);
+        fPtAssDis->Fill(track->Pt(),weight);
+        fEtaAssDis->Fill(track->Eta(),weight);
+        fPhiAssDis->Fill(track->Phi(),weight);
       }
 
       if (pt > fPtMinTrig && pt < fPtMaxTrig) {
@@ -1268,9 +1268,9 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
         fhTracksTrigCent->Fill(NtrksCounter, fPVz);
         double weight = 1;
         if(fNUA == 1) weight= GetFlowWeightSystematics(track, fPVz, kRefs);
-        fPtTriDis->Fill(track->Pt()*weight);
-        fEtaTriDis->Fill(track->Eta()*weight);
-        fPhiTriDis->Fill(track->Phi()*weight);
+        fPtTriDis->Fill(track->Pt(),weight);
+        fEtaTriDis->Fill(track->Eta(),weight);
+        fPhiTriDis->Fill(track->Phi(),weight);
       }
     }
   } else if (anaType.EqualTo("TPCFMD")) {
