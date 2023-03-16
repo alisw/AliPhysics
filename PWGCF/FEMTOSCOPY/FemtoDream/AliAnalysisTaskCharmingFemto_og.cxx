@@ -100,6 +100,7 @@ ClassImp(AliAnalysisTaskCharmingFemto_og)
       fMCBeautyRejection(false),
       fMCBeautyScalingFactor(1.),
       fUseTrueDOnly(false),
+      fUsePairCleaner(false),
       fInvMassCutLow(0.),
       fInvMassCutHigh(0.),
       fBuddypTlow(0.),
@@ -195,6 +196,7 @@ AliAnalysisTaskCharmingFemto_og::AliAnalysisTaskCharmingFemto_og(const char *nam
       fMCBeautyRejection(false),
       fMCBeautyScalingFactor(1.),
       fUseTrueDOnly(false),
+      fUsePairCleaner(false),
       fInvMassCutLow(0.),
       fInvMassCutHigh(0.),
       fBuddypTlow(0.),
@@ -766,10 +768,12 @@ void AliAnalysisTaskCharmingFemto_og::UserExec(Option_t * /*option*/) {
   }
 
   // PAIR CLEANING AND FEMTO
-  // fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0);
-  // fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1);
-  // fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2);
-  // fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3);
+  if(fUsePairCleaner){
+    fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0);
+    fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1);
+    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dplus, 2);
+    fPairCleaner->CleanTrackAndDecay(&antiprotons, &dminus, 3);
+  }
 
   fPairCleaner->StoreParticle(protons);
   fPairCleaner->StoreParticle(antiprotons);
