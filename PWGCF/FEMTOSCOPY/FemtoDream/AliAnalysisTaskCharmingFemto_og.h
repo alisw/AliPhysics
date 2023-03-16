@@ -150,6 +150,9 @@ class AliAnalysisTaskCharmingFemto_og : public AliAnalysisTaskSE {
   void UseTrueDOnly() {
     fUseTrueDOnly = true;
   }
+  void UsePairCleaner() {
+    fUsePairCleaner = true;
+  }
   void SetCutWindowMCTRUTH(float low, float high) {
     fInvMassCutLow = low;
     fInvMassCutHigh = high;
@@ -380,6 +383,7 @@ class AliAnalysisTaskCharmingFemto_og : public AliAnalysisTaskSE {
   bool fMCBeautyRejection;                                 // Switch for scaling the beauty feed-down fraction in MC
   double fMCBeautyScalingFactor;                           // Factor for scaling the beauty feed-down
   bool fUseTrueDOnly;
+  bool fUsePairCleaner;
 
   //MC Truth Stuff
   float fInvMassCutLow;    //
@@ -400,7 +404,7 @@ class AliAnalysisTaskCharmingFemto_og : public AliAnalysisTaskSE {
   std::vector<std::vector<double> > fMLScoreCuts;          // score cuts used in case application of ML model is done in MLSelector task   
   std::vector<std::vector<std::string> > fMLOptScoreCuts;  // score cut options (lower, upper) used in case application of ML model is done in MLSelector task   
 
-ClassDef(AliAnalysisTaskCharmingFemto_og, 1)
+ClassDef(AliAnalysisTaskCharmingFemto_og, 2)
 };
 
 #endif
