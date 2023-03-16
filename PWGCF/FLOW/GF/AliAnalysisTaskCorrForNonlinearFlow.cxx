@@ -1292,9 +1292,9 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 
         if (pt > fPtMinTrig && pt < fPtMaxTrig) {
           fTracksTrigCharged->Add(track);
-          fPtTriDisBefore->Fill(track->Pt());
-          fEtaTriDisBefore->Fill(track->Eta());
-          fPhiTriDisBefore->Fill(track->Phi());
+          fPtTriDis->Fill(track->Pt());
+          fEtaTriDis->Fill(track->Eta());
+          fPhiTriDis->Fill(track->Phi());
           fNofTracksTrig++; // number of trigger tracks in the event
           fhTracksTrigCent->Fill(NtrksCounter, fPVz);
         }
@@ -1440,9 +1440,9 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracksMCTruth() {
 
         if (pt > fPtMinTrig && pt < fPtMaxTrig) {
           fTracksTrigCharged->Add(track);
-          fPtTriDisBefore->Fill(track->Pt());
-          fEtaTriDisBefore->Fill(track->Eta());
-          fPhiTriDisBefore->Fill(track->Phi());
+          fPtTriDis->Fill(track->Pt());
+          fEtaTriDis->Fill(track->Eta());
+          fPhiTriDis->Fill(track->Phi());
           fNofTracksTrig++; // number of trigger tracks in the event
           fhTracksTrigCent->Fill(NtrksCounter, fPVz);
         }
