@@ -1352,7 +1352,7 @@ Bool_t AliTriggerAnalysis::IsSTGCrossedAndFired(const AliVEvent *event, const TB
 
   Int_t spd[4][2];
   for (Int_t itrk : trkIds) {
-    AliESDtrack *track = (AliESDtrack*) event->GetTrack(itrk);
+    AliESDtrack* track = (AliESDtrack*)event->GetTrack(itrk);
     spd[0][itrk] = track->GetITSModuleIndex(0);
     spd[1][itrk] = track->GetITSModuleIndex(1);
     spd[2][itrk] = track->GetITSModuleIndex(6);
@@ -1432,7 +1432,6 @@ Bool_t AliTriggerAnalysis::IsLaserWarmUpTPCEvent(const AliVEvent* event){
   if (trackCounter > 15) return kTRUE;
   return kFALSE;
 }
-
 
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::IsHVdipTPCEvent(const AliVEvent* event) {
