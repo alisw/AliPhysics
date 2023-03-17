@@ -26,6 +26,7 @@
 #include "TF1.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include "TFile.h"
 #include "TList.h"
 #include "TIterator.h"
 #include "TParameter.h"
@@ -53,6 +54,7 @@ ClassImp(AliTriggerAnalysis)
 AliTriggerAnalysis::AliTriggerAnalysis(TString name) :
 AliOADBTriggerAnalysis(name.Data()),
 fSPDGFOEfficiency(0),
+fTOFMaxipadEfficiency(0),
 fDoFMD(kFALSE),
 fMC(kFALSE),
 fPileupCutsEnabled(kFALSE),
@@ -400,6 +402,10 @@ const char* AliTriggerAnalysis::GetTriggerName(Trigger trigger){
     case kTRDHSE :         str = "TRD Single Electron";       break;
     case kTRDHQU :         str = "TRD Quarkonia";             break;
     case kTRDHEE :         str = "TRD Dielectron";            break;
+    case kOM2 :            str = "TOF Min 2 Maxipads";        break;
+    case kOMU :            str = "TOF BackToBack";            break;
+    case kSTG :            str = "SPD BackToBack";            break;
+    case kSTGCF :          str = "SPD B2B Crossed & Fired";   break;
     default:               str = "";                          break;
   }
   if (trigger & kOfflineFlag) str += " OFFLINE";
@@ -468,6 +474,10 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliVEvent* event, Trigger trigge
       || triggerNoFlags==kTRDHSE
       || triggerNoFlags==kTRDHQU
       || triggerNoFlags==kTRDHEE
+      || triggerNoFlags==kOM2
+      || triggerNoFlags==kOMU
+      || triggerNoFlags==kSTG
+      || triggerNoFlags==kSTGCF
       ) AliFatal(Form("Online trigger not available for trigger %d", triggerNoFlags));
   } else {
     if (  triggerNoFlags==kCTPV0A 
@@ -534,6 +544,10 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliVEvent* event, Trigger trigge
     case kTRDHSE:          return TRDTrigger(event,kTRDHSE);
     case kTRDHQU:          return TRDTrigger(event,kTRDHQU);
     case kTRDHEE:          return TRDTrigger(event,kTRDHEE);
+    case kOM2:             return TOFTrigger(event, kOM2);
+    case kOMU:             return TOFTrigger(event, kOMU);
+    case kSTG:             return SPDTrigger(event, kSTG);
+    case kSTGCF:           return SPDTrigger(event, kSTGCF);
     case kCentral: {
       if (!event->GetVZEROData()) { AliWarning("V0 centrality trigger bits were not filled!"); return kFALSE; }
       if (!event->GetVZEROData()->TestBit(AliVVZERO::kTriggerChargeBitsFilled)) return kFALSE;
@@ -1113,6 +1127,236 @@ Bool_t AliTriggerAnalysis::TRDTrigger(const AliVEvent* event, Trigger trigger){
   return kFALSE;
 }
 
+//-------------------------------------------------------------------------------------------------
+TBits AliTriggerAnalysis::ApplyTOFefficiency(const UInt_t *triggerMask) {
+  TBits maxipads(72 * 23);
+  for (Int_t ltm = 0; ltm < 72; ltm++) {
+    for (Int_t ch = 0; ch < 23; ch++) {
+      if (!(triggerMask[ltm] & 1 << ch))
+        continue;
+      if (fMC && gRandom->Rndm(1.) > fTOFMaxipadEfficiency->GetBinContent(ltm + 1, ch + 1))
+        continue;
+      maxipads.SetBitNumber(23 * ltm + ch);
+    }
+  }
+  return maxipads;
+}
+
+//-------------------------------------------------------------------------------------------------
+Bool_t AliTriggerAnalysis::IsOMUfired(const TBits& maxipads) {
+  UInt_t nFired = maxipads.CountBits();
+  if (nFired < 2)
+    return false;
+  if (nFired > 6)
+    return false;
+  Bool_t fLTMarray[36];
+  for (bool ltm : fLTMarray)
+    ltm = false;
+  for (Int_t ltm = 0; ltm < 72; ltm++) {
+    for (Int_t ch = 0; ch < 23; ch++) {
+      if (!maxipads.TestBitNumber(23 * ltm + ch)) continue;
+      fLTMarray[ltm % 36] |= 1;
+    }
+  }
+
+  Bool_t isOMUfired = false;
+  for(Int_t i=0; i<36;i++){
+    if (!fLTMarray[i])
+      continue;
+    for(Int_t j = i + 1; j < 36; j++){
+      if(!fLTMarray[j])
+        continue;
+      Int_t DeSlots = j - i;
+      Int_t AntiDeSlots = 36 - DeSlots;
+      isOMUfired |= DeSlots >= 15 && DeSlots <= 18;
+      isOMUfired |= AntiDeSlots >= 15 && AntiDeSlots <= 18;
+    }
+  }
+
+  return isOMUfired;
+}
+
+//-------------------------------------------------------------------------------------------------
+Bool_t AliTriggerAnalysis::TOFTrigger(const AliVEvent *event, AliTriggerAnalysis::Trigger trigger) {
+  if (trigger != AliTriggerAnalysis::kOM2 &&
+      trigger != AliTriggerAnalysis::kOMU) {
+    AliFatal("Unknown TOF trigger");
+  }
+
+  if (!fMC) {
+    TString firedTriggerClasses = event->GetFiredTriggerClasses();
+    if (!firedTriggerClasses.Contains("CCUP") &&
+        !firedTriggerClasses.Contains("CTRUE") &&
+        !firedTriggerClasses.Contains("C1ZED"))
+      return false;
+  }
+
+  UInt_t tofTriggerMask[72];
+  for (UInt_t k = 0; k < 72; k++){
+    tofTriggerMask[k] = event->GetTOFHeader()->GetTriggerMask()->GetTriggerMask(k);
+  }
+  TBits maxipads = ApplyTOFefficiency(&tofTriggerMask[0]);
+
+  if (trigger == AliTriggerAnalysis::kOM2) {
+    return IsOM2fired(maxipads);
+  } else if (trigger == AliTriggerAnalysis::kOMU) {
+    return IsOMUfired(maxipads);
+  }
+}
+
+//-------------------------------------------------------------------------------------------------
+TBits AliTriggerAnalysis::ApplySPDefficiency(TBits *FOmap) {
+  TBits bits(1200);
+  for (Int_t i = 0; i < 1200; i++) {
+    if (!FOmap->TestBitNumber(i))
+      continue;
+    if (fMC && gRandom->Rndm(1.) > fSPDGFOEfficiency->GetBinContent(i+1))
+      continue;
+    bits.SetBitNumber(i, true);
+  }
+  return bits;
+}
+
+//-------------------------------------------------------------------------------------------------
+Bool_t AliTriggerAnalysis::IsSTGFired(const TBits& bits, Int_t dphiMin, Int_t dphiMax, Bool_t tolerance) {
+  UInt_t n1 = bits.CountBits(400);
+  UInt_t n0 = bits.CountBits() - n1;
+  if (n0 < 2 || n1 < 2)
+    return false;
+  Bool_t stg = false;
+  Bool_t l0[20] = {false};
+  Bool_t l1[40] = {false};
+  Bool_t phi[20] = {false};
+  for (Int_t i=0; i < 400; i++)
+    if (bits.TestBitNumber(i))
+      l0[i/20] = true;
+  for (Int_t i = 400; i < 1200; i++)
+    if (bits.TestBitNumber(i))
+      l1[(i - 400) / 20] = true;
+  for (Int_t i = 0; i < 20; i++) {
+    if (tolerance)
+      phi[i] = l0[i] & (l1[(2 * i) % 40] | l1[(2 * i + 1) % 40] | l1[(2 * i + 2) % 40] | l1[(2 * i + 39) % 40]);
+    else
+      phi[i] = l0[i] & (l1[(2 * i) % 40] | l1[(2 * i + 1) % 40]);
+  }
+  for (Int_t dphi = dphiMin; dphi <= dphiMax; dphi++)
+    for (Int_t i = 0; i < 20; i++)
+      stg |= phi[i] & phi[(i + dphi) % 20];
+  return stg;
+}
+
+//-------------------------------------------------------------------------------------------------
+Int_t AliTriggerAnalysis::GetChipId(Int_t index, Int_t &chipId2) {
+  Int_t status   = (index % 1000000) / 100000;
+  Int_t iModule  = index / 1000000;                                                   // 0 - 239
+  Int_t iPhi     = iModule / 4;                                                       // 0-19 - inner, 20-59 outer
+  Int_t iModuleZ = iModule % 4;                                                       // 0-3
+  Int_t iSign    = (index % 100000) / 10000;                                          // 1-4
+  Int_t signZ    = iPhi < 20 ? (iSign % 2 == 1 ? 1 : -1) : (iSign % 2 == 0 ? 1 : -1); // 1 or -1
+  Int_t iX       = (index % 10000) / 100;                                             // ??
+  Int_t iZ       = index % 100;                                                       // 0-36 [mm]
+  Int_t signZiZ  = (36 - signZ * iZ);
+  Int_t chipId   = iModule * 5 + signZiZ * 5 / 72;
+  if (chipId < 0) return 1200;
+  if (chipId >= 1200) return 1201;
+  if (signZiZ < 0) return 1202;
+  if (signZiZ > 72) return 1203;
+  if (signZiZ == 72 && chipId % 20 == 0 && chipId >= 400) return 1204;
+  chipId2 = chipId;
+
+  if (signZiZ == 0  && chipId % 20 != 0)  chipId2 = chipId - 1;
+  if (signZiZ == 72 && chipId % 20 != 19) chipId2 = chipId + 1;
+  if (signZiZ == 13) chipId2 = chipId + 1;
+  if (signZiZ == 14) chipId2 = chipId + 1;
+  if (signZiZ == 15) chipId2 = chipId - 1;
+  if (signZiZ == 16) chipId2 = chipId - 1;
+  if (signZiZ == 27) chipId2 = chipId + 1;
+  if (signZiZ == 28) chipId2 = chipId + 1;
+  if (signZiZ == 29) chipId2 = chipId - 1;
+  if (signZiZ == 30) chipId2 = chipId - 1;
+  if (signZiZ == 42) chipId2 = chipId + 1;
+  if (signZiZ == 43) chipId2 = chipId + 1;
+  if (signZiZ == 44) chipId2 = chipId - 1;
+  if (signZiZ == 45) chipId2 = chipId - 1;
+  if (signZiZ == 56) chipId2 = chipId + 1;
+  if (signZiZ == 57) chipId2 = chipId + 1;
+  if (signZiZ == 58) chipId2 = chipId - 1;
+  if (signZiZ == 59) chipId2 = chipId - 1;
+  return chipId;
+}
+
+//-------------------------------------------------------------------------------------------------
+TBits AliTriggerAnalysis::SetCrossed(Int_t spd[4][2]) {
+  TBits crossed(1200);
+  Int_t chipId2;
+  if (spd[0][0] > 0) { crossed.SetBitNumber(GetChipId(spd[0][0], chipId2)); crossed.SetBitNumber(chipId2); }
+  if (spd[0][1] > 0) { crossed.SetBitNumber(GetChipId(spd[0][1], chipId2)); crossed.SetBitNumber(chipId2); }
+  if (spd[1][0] > 0) { crossed.SetBitNumber(GetChipId(spd[1][0], chipId2)); crossed.SetBitNumber(chipId2); }
+  if (spd[1][1] > 0) { crossed.SetBitNumber(GetChipId(spd[1][1], chipId2)); crossed.SetBitNumber(chipId2); }
+  if (spd[2][0] > 0) { crossed.SetBitNumber(GetChipId(spd[2][0], chipId2)); crossed.SetBitNumber(chipId2); }
+  if (spd[2][1] > 0) { crossed.SetBitNumber(GetChipId(spd[2][1], chipId2)); crossed.SetBitNumber(chipId2); }
+  if (spd[3][0] > 0) { crossed.SetBitNumber(GetChipId(spd[3][0], chipId2)); crossed.SetBitNumber(chipId2); }
+  if (spd[3][1] > 0) { crossed.SetBitNumber(GetChipId(spd[3][1], chipId2)); crossed.SetBitNumber(chipId2); }
+  return crossed;
+}
+
+//-------------------------------------------------------------------------------------------------
+Bool_t AliTriggerAnalysis::IsSTGCrossedAndFired(const AliVEvent *event, const TBits& fired, Int_t dphiMin, Int_t dphiMax, Bool_t tolerance) {
+  Int_t nTracks = event->GetNumberOfTracks();
+
+  Int_t nPassed = 0;
+  for (Int_t itrk = 0; itrk < nTracks; ++itrk) {
+    AliESDtrack* track = (AliESDtrack*)event->GetTrack(itrk);
+    if (!track)
+      continue;
+    UChar_t itsMap = track->GetITSClusterMap();
+    if (TESTBIT(itsMap,0) && TESTBIT(itsMap,1))
+      nPassed++;
+    if (nPassed > 2)
+      break;
+  }
+
+  if (nPassed != 2)
+    return false;
+
+  Int_t spd[4][2];
+  TBits crossed = SetCrossed(spd);
+  TBits crossedAndFired = crossed & fired;
+
+  return IsSTGFired(crossedAndFired, fCurrentRunNumber >= 295753 ? 9 : 3, dphiMin, dphiMax);
+}
+
+//-------------------------------------------------------------------------------------------------
+Bool_t AliTriggerAnalysis::SPDTrigger(const AliVEvent *event, AliTriggerAnalysis::Trigger trigger) {
+  if (trigger != AliTriggerAnalysis::kSTG &&
+      trigger != AliTriggerAnalysis::kSTGCF) {
+    AliFatal("Unknown SPD trigger");
+  }
+
+  if (!fMC) {
+    TString firedTriggerClasses = event->GetFiredTriggerClasses();
+    if (!firedTriggerClasses.Contains("CCUP") &&
+        !firedTriggerClasses.Contains("CTRUE") &&
+        !firedTriggerClasses.Contains("C1ZED"))
+      return false;
+  }
+
+  const AliVMultiplicity* mult = event->GetMultiplicity();
+  if (!mult) {
+    AliError("AliVMultiplicity not available");
+    return false;
+  }
+
+  TBits FOmap = mult->GetFastOrFiredChips();
+  TBits fired = ApplySPDefficiency(&FOmap);
+
+  if (trigger == AliTriggerAnalysis::kSTG) {
+    return IsSTGFired(fired, fCurrentRunNumber >= 295753 ? 9 : 3);
+  }
+  if (trigger == AliTriggerAnalysis::kSTGCF) {
+    return IsSTGCrossedAndFired(event, fired, fCurrentRunNumber >= 295753 ? 9 : 3);
+  }
+}
 
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::EMCALTrigger(const AliVEvent* event, Trigger trigger){
