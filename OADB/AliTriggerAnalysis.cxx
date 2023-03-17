@@ -1331,14 +1331,18 @@ Bool_t AliTriggerAnalysis::IsSTGCrossedAndFired(const AliVEvent *event, const TB
 
   Int_t nTracks = event->GetNumberOfTracks();
 
+  std::vector<Int_t> trkIds;
+
   Int_t nPassed = 0;
   for (Int_t itrk = 0; itrk < nTracks; ++itrk) {
     AliESDtrack* track = (AliESDtrack*)event->GetTrack(itrk);
     if (!track)
       continue;
     UChar_t itsMap = track->GetITSClusterMap();
-    if (TESTBIT(itsMap,0) && TESTBIT(itsMap,1))
+    if (TESTBIT(itsMap,0) && TESTBIT(itsMap,1)) {
       nPassed++;
+      trkIds.push_back(itrk);
+    }
     if (nPassed > 2)
       break;
   }
@@ -1346,7 +1350,15 @@ Bool_t AliTriggerAnalysis::IsSTGCrossedAndFired(const AliVEvent *event, const TB
   if (nPassed != 2)
     return false;
 
-  Int_t spd[4][2] = {0};
+  Int_t spd[4][2];
+  for (Int_t itrk : trkIds) {
+    AliESDtrack *track = (AliESDtrack*) event->GetTrack(itrk);
+    spd[0][itrk] = track->GetITSModuleIndex(0);
+    spd[1][itrk] = track->GetITSModuleIndex(1);
+    spd[2][itrk] = track->GetITSModuleIndex(6);
+    spd[3][itrk] = track->GetITSModuleIndex(7);
+  }
+
   TBits crossed = SetCrossed(spd);
   TBits crossedAndFired = crossed & fired;
 
