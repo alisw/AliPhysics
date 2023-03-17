@@ -1128,18 +1128,32 @@ Bool_t AliTriggerAnalysis::TRDTrigger(const AliVEvent* event, Trigger trigger){
 }
 
 //-------------------------------------------------------------------------------------------------
-TBits AliTriggerAnalysis::ApplyTOFefficiency(const UInt_t *triggerMask) {
-  TBits maxipads(72 * 23);
+void AliTriggerAnalysis::GetTOFFiredMaxipads(const AliVEvent *event, TBits& maxipads) {
+  UInt_t triggerMask[72];
+  for (UInt_t k = 0; k < 72; k++){
+    triggerMask[k] = event->GetTOFHeader()->GetTriggerMask()->GetTriggerMask(k);
+  }
   for (Int_t ltm = 0; ltm < 72; ltm++) {
     for (Int_t ch = 0; ch < 23; ch++) {
       if (!(triggerMask[ltm] & 1 << ch))
         continue;
-      if (fMC && gRandom->Rndm(1.) > fTOFMaxipadEfficiency->GetBinContent(ltm + 1, ch + 1))
-        continue;
-      maxipads.SetBitNumber(23 * ltm + ch);
+      maxipads.SetBitNumber(23 * ltm + ch, kTRUE);
     }
   }
-  return maxipads;
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void AliTriggerAnalysis::ApplyTOFefficiency(TBits& fired) {
+  for (Int_t ltm = 0; ltm < 72; ltm++) {
+    for (Int_t ch = 0; ch < 23; ch++) {
+      if (fired.TestBit(23 * ltm + ch))
+        continue;
+      if (gRandom->Rndm(1.) > fTOFMaxipadEfficiency->GetBinContent(ltm + 1, ch + 1))
+        continue;
+      fired.SetBit(23 * ltm + ch);
+    }
+  }
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1191,30 +1205,38 @@ Bool_t AliTriggerAnalysis::TOFTrigger(const AliVEvent *event, AliTriggerAnalysis
       return false;
   }
 
-  UInt_t tofTriggerMask[72];
-  for (UInt_t k = 0; k < 72; k++){
-    tofTriggerMask[k] = event->GetTOFHeader()->GetTriggerMask()->GetTriggerMask(k);
-  }
-  TBits maxipads = ApplyTOFefficiency(&tofTriggerMask[0]);
+  TBits fired(72 * 23);
+  GetTOFFiredMaxipads(event, fired);
+  if (fMC)
+    ApplyTOFefficiency(fired);
 
   if (trigger == AliTriggerAnalysis::kOM2) {
-    return IsOM2fired(maxipads);
+    return IsOM2fired(fired);
   } else if (trigger == AliTriggerAnalysis::kOMU) {
-    return IsOMUfired(maxipads);
+    return IsOMUfired(fired);
   }
 }
 
 //-------------------------------------------------------------------------------------------------
-TBits AliTriggerAnalysis::ApplySPDefficiency(TBits *FOmap) {
-  TBits bits(1200);
-  for (Int_t i = 0; i < 1200; i++) {
-    if (!FOmap->TestBitNumber(i))
-      continue;
-    if (fMC && gRandom->Rndm(1.) > fSPDGFOEfficiency->GetBinContent(i+1))
-      continue;
-    bits.SetBitNumber(i, true);
+void AliTriggerAnalysis::GetSPDFiredChips(const AliVEvent *event, TBits& chips) {
+  const AliVMultiplicity* mult = event->GetMultiplicity();
+  if (!mult) {
+    AliError("AliVMultiplicity not available");
+    return;
   }
-  return bits;
+  chips = mult->GetFastOrFiredChips();
+}
+
+
+//-------------------------------------------------------------------------------------------------
+void AliTriggerAnalysis::ApplySPDefficiency(TBits& fired) {
+  for (Int_t i = 0; i < 1200; i++) {
+    if (!fired.TestBitNumber(i))
+      continue;
+    if (gRandom->Rndm(1.) > fSPDGFOEfficiency->GetBinContent(i+1))
+      continue;
+    fired.SetBitNumber(i, kTRUE);
+  }
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1324,11 +1346,11 @@ Bool_t AliTriggerAnalysis::IsSTGCrossedAndFired(const AliVEvent *event, const TB
   if (nPassed != 2)
     return false;
 
-  Int_t spd[4][2];
+  Int_t spd[4][2] = {0};
   TBits crossed = SetCrossed(spd);
   TBits crossedAndFired = crossed & fired;
 
-  return IsSTGFired(crossedAndFired, fCurrentRunNumber >= 295753 ? 9 : 3, dphiMin, dphiMax);
+  return IsSTGFired(crossedAndFired, dphiMin, dphiMax, tolerance);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1346,14 +1368,10 @@ Bool_t AliTriggerAnalysis::SPDTrigger(const AliVEvent *event, AliTriggerAnalysis
       return false;
   }
 
-  const AliVMultiplicity* mult = event->GetMultiplicity();
-  if (!mult) {
-    AliError("AliVMultiplicity not available");
-    return false;
-  }
-
-  TBits FOmap = mult->GetFastOrFiredChips();
-  TBits fired = ApplySPDefficiency(&FOmap);
+  TBits fired;
+  GetSPDFiredChips(event, fired);
+  if (fMC)
+    ApplySPDefficiency(fired);
 
   if (trigger == AliTriggerAnalysis::kSTG) {
     return IsSTGFired(fired, fCurrentRunNumber >= 295753 ? 9 : 3);

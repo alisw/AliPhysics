@@ -112,12 +112,14 @@ protected:
   Int_t FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Int_t fillHists = 0);
 
   // TOF trigger helpers
-  TBits ApplyTOFefficiency(const UInt_t triggerMask[]);
+  void GetTOFFiredMaxipads(const AliVEvent* event, TBits& maxipads);
+  void ApplyTOFefficiency(TBits& fired);
   Bool_t IsOM2fired(const TBits& maxipads) { return maxipads.CountBits() >= 2; }
   Bool_t IsOMUfired(const TBits& maxipads);
 
   // SPD trigger helpers
-  TBits ApplySPDefficiency(TBits* FOmap);
+  void GetSPDFiredChips(const AliVEvent* event, TBits& chips);
+  void ApplySPDefficiency(TBits& fired);
   Int_t GetChipId(Int_t index, Int_t &chipId2);
   TBits SetCrossed(Int_t spd[4][2]);
   Bool_t IsSTGFired(const TBits& bits, Int_t dphiMin = 4, Int_t dphiMax = 10, Bool_t tolerance = true);
