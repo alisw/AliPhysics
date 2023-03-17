@@ -536,7 +536,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     
     int protonMotherPdg = 0;
     int protonPdg = 0;
-    if (fIsMC && (fTrackCutsPartProton->isSelected(fProtonTrack) || fTrackCutsPartAntiProton->isSelected(fProtonTrack))){
+    bool isProtonSelected = fTrackCutsPartProton->isSelected(fProtonTrack);
+    bool isAntiProtonSelected = fTrackCutsPartAntiProton->isSelected(fProtonTrack);
+
+    if (fIsMC && (isProtonSelected || isAntiProtonSelected)){
       mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
       if(mcPart){
         mcpdg = mcPart->GetPdgCode();
@@ -547,7 +550,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
     }
     
-    if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
+    if (isProtonSelected) {
       if (fUseMCTruthReco && (mcpdg == fTrackCutsPartProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)){
         fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
         fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
@@ -574,7 +577,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fHistBuddyplusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }
     }
-    if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
+    if (isAntiProtonSelected) {
       if(fUseMCTruthReco && (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)) {
         fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
         fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
