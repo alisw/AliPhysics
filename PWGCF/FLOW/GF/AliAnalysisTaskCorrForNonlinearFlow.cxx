@@ -748,13 +748,15 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserExec(Option_t *) {
     }
   }
 
-  AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
-  if(!multSelection) { return; }
-  fCentrality = multSelection->GetMultiplicityPercentile("V0M");
-  if (fCentrality < fCentMin || fCentrality > fCentMax) {
-    PostData(1, fListOfObjects);
-    PostData(2, fListOfProfile);
-    return;
+  if (!fIsMC) {
+    AliMultSelection* multSelection = (AliMultSelection*) fAOD->FindListObject("MultSelection");
+    if(!multSelection) { return; }
+    fCentrality = multSelection->GetMultiplicityPercentile("V0M");
+    if (fCentrality < fCentMin || fCentrality > fCentMax) {
+      PostData(1, fListOfObjects);
+      PostData(2, fListOfProfile);
+      return;
+    }
   }
 
   // checking the run number for aplying weights & loading TList with weights
@@ -885,7 +887,10 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
 
     // Start the two loop
     for (Int_t iTrig = 0; iTrig < fTracksTrigCharged->GetEntriesFast(); iTrig++) {
-      AliAODTrack* trackTrig = dynamic_cast<AliAODTrack*>(fTracksTrigCharged->At(iTrig));
+      AliVParticle* trackTrig = dynamic_cast<AliVParticle*>(fTracksTrigCharged->At(iTrig));
+      
+      AliAODTrack* trackTrigAOD = nullptr;
+      if (!fIsMC) trackTrigAOD = dynamic_cast<AliAODTrack*>(fTracksTrigCharged->At(iTrig));
 
       Double_t ptTrig = trackTrig->Pt();
       Double_t phiTrig = trackTrig->Phi();
@@ -896,7 +901,9 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
       if(fNUE == 1) trigEff /= GetPtWeight(ptTrig, etaTrig, fPVz, fInputEvent->GetRunNumber());
 
       for (Int_t iAss = 0; iAss < fTracksAss->GetEntriesFast(); iAss++) {
-        AliAODTrack* trackAss = dynamic_cast<AliAODTrack*>(fTracksTrigCharged->At(iAss));
+        AliVParticle* trackAss = dynamic_cast<AliVParticle*>(fTracksAss->At(iAss));
+        AliAODTrack* trackAssAOD = nullptr;
+        if (!fIsMC) trackAssAOD = dynamic_cast<AliAODTrack*>(fTracksAss->At(iAss));
         Double_t ptAss = trackAss->Pt();
         Double_t phiAss = trackAss->Phi();
         Double_t etaAss = trackAss->Eta();
@@ -905,7 +912,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
         if(fNUA == 1) assEff /= GetFlowWeightSystematics(trackAss, fPVz, kRefs);
         if(fNUE == 1) assEff /= GetPtWeight(ptAss, etaAss, fPVz, fInputEvent->GetRunNumber());
 
-        if (trackTrig->GetID() == trackAss->GetID()) {
+        if (!fIsMC && trackTrigAOD->GetID() == trackAssAOD->GetID()) {
           continue;
         }
 
@@ -952,7 +959,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelations() {
 
     // Start the two loop for TPC-FMD
     for (Int_t iTrig = 0; iTrig < fTracksTrigCharged->GetEntriesFast(); iTrig++) {
-      AliAODTrack* trackTrig = dynamic_cast<AliAODTrack*>(fTracksTrigCharged->At(iTrig));
+      AliVParticle* trackTrig = dynamic_cast<AliVParticle*>(fTracksTrigCharged->At(iTrig));
 
       Double_t ptTrig = trackTrig->Pt();
       Double_t phiTrig = trackTrig->Phi();
@@ -1044,7 +1051,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
 
     if (anaType.EqualTo("TPCTPC")) {
       for (Int_t iTrig = 0; iTrig < fTracksTrigCharged->GetEntriesFast(); iTrig++) {
-        AliAODTrack* trackTrig = dynamic_cast<AliAODTrack*>(fTracksTrigCharged->At(iTrig));
+        AliVParticle* trackTrig = dynamic_cast<AliVParticle*>(fTracksTrigCharged->At(iTrig));
 
         Double_t ptTrig = trackTrig->Pt();
         Double_t phiTrig = trackTrig->Phi();
@@ -1060,7 +1067,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
           TObjArray* mixTracks = pool->GetEvent(iMix);
           for (Int_t iAss = 0; iAss < mixTracks->GetEntriesFast(); iAss++) {
 
-            AliAODTrack* trackAss = dynamic_cast<AliAODTrack*>(mixTracks->At(iAss));
+            AliVParticle* trackAss = dynamic_cast<AliVParticle*>(mixTracks->At(iAss));
 
             Double_t ptAss = trackAss->Pt();
             Double_t phiAss = trackAss->Phi();
@@ -1117,7 +1124,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::FillCorrelationsMixed() {
     else if (anaType.EqualTo("TPCFMD")) {
 
       for (Int_t iTrig = 0; iTrig < fTracksTrigCharged->GetEntriesFast(); iTrig++) {
-        AliAODTrack* trackTrig = dynamic_cast<AliAODTrack*>(fTracksTrigCharged->At(iTrig));
+        AliVParticle* trackTrig = dynamic_cast<AliVParticle*>(fTracksTrigCharged->At(iTrig));
 
         Double_t ptTrig = trackTrig->Pt();
         Double_t phiTrig = trackTrig->Phi();
@@ -1292,9 +1299,9 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 
         if (pt > fPtMinTrig && pt < fPtMaxTrig) {
           fTracksTrigCharged->Add(track);
-          fPtTriDisBefore->Fill(track->Pt());
-          fEtaTriDisBefore->Fill(track->Eta());
-          fPhiTriDisBefore->Fill(track->Phi());
+          fPtTriDis->Fill(track->Pt());
+          fEtaTriDis->Fill(track->Eta());
+          fPhiTriDis->Fill(track->Phi());
           fNofTracksTrig++; // number of trigger tracks in the event
           fhTracksTrigCent->Fill(NtrksCounter, fPVz);
         }
@@ -1314,7 +1321,6 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracks() {
 
           double eta = d2Ndetadphi.GetXaxis()->GetBinCenter(iEta); 
           double phi = d2Ndetadphi.GetYaxis()->GetBinCenter(iPhi); 
-
 
           double etaAccepted = false;
           if ( fFMDAacceptanceCutLower < eta && eta < fFMDAacceptanceCutUpper) etaAccepted = true;
@@ -1440,9 +1446,9 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::PrepareTPCFMDTracksMCTruth() {
 
         if (pt > fPtMinTrig && pt < fPtMaxTrig) {
           fTracksTrigCharged->Add(track);
-          fPtTriDisBefore->Fill(track->Pt());
-          fEtaTriDisBefore->Fill(track->Eta());
-          fPhiTriDisBefore->Fill(track->Phi());
+          fPtTriDis->Fill(track->Pt());
+          fEtaTriDis->Fill(track->Eta());
+          fPhiTriDis->Fill(track->Phi());
           fNofTracksTrig++; // number of trigger tracks in the event
           fhTracksTrigCent->Fill(NtrksCounter, fPVz);
         }
