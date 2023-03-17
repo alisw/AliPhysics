@@ -189,7 +189,7 @@ protected:
 
   TMap* fTriggerClasses;     // counts the active trigger classes (uses the full string)
 
-  ClassDef(AliTriggerAnalysis, 35)
+  ClassDef(AliTriggerAnalysis, 36)
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);
   AliTriggerAnalysis& operator=(const AliTriggerAnalysis&);
