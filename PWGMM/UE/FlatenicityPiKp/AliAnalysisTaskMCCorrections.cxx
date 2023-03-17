@@ -84,9 +84,10 @@ using std::endl;
 
 static const Int_t nCent = 9;
 static const Int_t nEta = 4;
+static const int nflatClass = 8;
 
-static Double_t centClass[nCent + 1] = {0.0,1.0,5.0,10.0,20.0,30.0,40.0,50.0,70.0,100.0};
-
+static const double centClass[nCent + 1] = {0.0,1.0,5.0,10.0,20.0,30.0,40.0,50.0,70.0,100.0};
+static const double flatClass[nflatClass + 1] = {0.0, 0.102, 0.12, 0.132, 0.151, 0.168, 0.186, 0.205, 1.0};
 static const Char_t* etaClass[nEta] = {"02","24","46","68"};
 static const Char_t* ParticleType[3] = {"Primaries","MaterialInt","WeakDecays"};
 
@@ -106,7 +107,7 @@ AliAnalysisTaskMCCorrections::AliAnalysisTaskMCCorrections()
 	fMultSelection(0x0),
 	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0),
 	hActivityV0McSect(0), hFlatVsNchMC(0), hTrueINEL_vtx(0), hAccINEL_vtx(0),
-	hTrueINEL_evts(0), hAccINEL_evts(0),
+	hTrueINEL_evts(0), hAccINEL_evts(0), hTrueINELWithFlat_evts(0), hAccINELWithFlat_evts(0),
 	hMCPtPionPos(0),hMCPtKaonPos(0),hMCPtProtonPos(0),
 	hMCPtPionNeg(0),hMCPtKaonNeg(0),hMCPtProtonNeg(0),
 	hTPCRecTracksPionPos(0), hTPCRecTracksKaonPos(0), hTPCRecTracksProtonPos(0),
@@ -141,6 +142,8 @@ AliAnalysisTaskMCCorrections::AliAnalysisTaskMCCorrections()
 	for(Int_t i = 0; i < 8; ++i){
 		hTrueINEL_pT[i] = 0;
 		hAccINEL_pT[i] = 0;
+		hTrueINELWithFlat_pT[i] = 0;
+		hAccINELWithFlat_pT[i] = 0;
 	}
 
 }
@@ -155,7 +158,7 @@ AliAnalysisTaskMCCorrections::AliAnalysisTaskMCCorrections(const char *name)
 	fMultSelection(0x0),
 	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0),
 	hActivityV0McSect(0), hFlatVsNchMC(0), hTrueINEL_vtx(0), hAccINEL_vtx(0),
-	hTrueINEL_evts(0), hAccINEL_evts(0),
+	hTrueINEL_evts(0), hAccINEL_evts(0), hTrueINELWithFlat_evts(0), hAccINELWithFlat_evts(0),
 	hMCPtPionPos(0),hMCPtKaonPos(0),hMCPtProtonPos(0),
 	hMCPtPionNeg(0),hMCPtKaonNeg(0),hMCPtProtonNeg(0),
 	hTPCRecTracksPionPos(0), hTPCRecTracksKaonPos(0), hTPCRecTracksProtonPos(0),
@@ -189,6 +192,8 @@ AliAnalysisTaskMCCorrections::AliAnalysisTaskMCCorrections(const char *name)
 	for(Int_t i = 0; i < 8; ++i){
 		hTrueINEL_pT[i] = 0;
 		hAccINEL_pT[i] = 0;
+		hTrueINELWithFlat_pT[i] = 0;
+		hAccINELWithFlat_pT[i] = 0;
 	}
 
 	DefineInput(0, TChain::Class()); // define the input of the analysis: in this
@@ -457,14 +462,21 @@ void AliAnalysisTaskMCCorrections::UserCreateOutputObjects() {
 	fOutputList->Add(hTrueINEL_evts);
 	hAccINEL_evts = new TH1F("hAccINEL_evts","; V0M Percentile; Counts", nCent, centClass );
 	fOutputList->Add(hAccINEL_evts);
+	hTrueINELWithFlat_evts = new TH1F("hTrueINELWithFlat_evts","; Flatenicity cut; Counts", nflatClass, flatClass);
+	fOutputList->Add(hTrueINELWithFlat_evts);
+	hAccINELWithFlat_evts = new TH1F("hAccINELWithFlat_evts","; Flatenicity cut; Counts", nflatClass, flatClass);
+	fOutputList->Add(hAccINELWithFlat_evts);
 
 	const char* PIDnames[] = {"Charged","Pion","Kaon","Proton","K0s","Lambda","Phi","Electron"};
 	for(Int_t i = 0; i < 8; ++i){
 		hTrueINEL_pT[i] = new TH2F(Form("hTrueINEL_pT_%s",PIDnames[i]),"; #it{p}_{T} (GeV/#it{c}); V0M Percentile",nPtbins,Ptbins,nCent,centClass);
 		fOutputList->Add(hTrueINEL_pT[i]);
-
 		hAccINEL_pT[i] = new TH2F(Form("hAccINEL_pT_%s",PIDnames[i]),"; #it{p}_{T} (GeV/#it{c}); V0M Percentile",nPtbins,Ptbins,nCent,centClass);
 		fOutputList->Add(hAccINEL_pT[i]);
+		hTrueINELWithFlat_pT[i] = new TH2F(Form("hTrueINELWithFlat_pT_%s",PIDnames[i]),"; #it{p}_{T} (GeV/#it{c}); Flatenicity cut",nPtbins,Ptbins,nflatClass,flatClass);
+		fOutputList->Add(hTrueINELWithFlat_pT[i]);
+		hAccINELWithFlat_pT[i] = new TH2F(Form("hAccINELWithFlat_pT_%s",PIDnames[i]),"; #it{p}_{T} (GeV/#it{c}); Flatenicity cut",nPtbins,Ptbins,nflatClass,flatClass);
+		fOutputList->Add(hAccINELWithFlat_pT[i]);
 	}
 
 	hActivityV0McSect = new TProfile("hActivityV0McSect", "true; V0 sector; #LTmultiplicity#GT", 64, -0.5, 63.5);
@@ -529,6 +541,9 @@ void AliAnalysisTaskMCCorrections::UserExec(Option_t *) {
 	fv0mpercentile = -999;
 	fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
 
+	// 
+	fFlat = GetFlatenicityV0();
+
 	// True INEL > 0 
 	// If this condition is false: |z|<= 10 cm
 	// then the event is ignored
@@ -564,9 +579,7 @@ void AliAnalysisTaskMCCorrections::UserExec(Option_t *) {
 
 	/* fMidRapidityMult = GetMidRapidityMultiplicity(); */
 	/* fFlatTPC = GetFlatenicityTPC(); */ 
-	fFlat = GetFlatenicityV0();
 	fFlatMC = -1;
-
 	if (fUseMC) {
 		if (!isGoodVtxPosMC) { return; }
 		MakeMCanalysisPID();
@@ -609,6 +622,7 @@ void AliAnalysisTaskMCCorrections::TrueINEL() {
 	// This is the INEL > 0 condition
 	if (particles < 1) { return; }
 	hTrueINEL_evts->Fill(fv0mpercentile);
+	hTrueINELWithFlat_evts->Fill(fFlat);
 
 	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) 
 	{
@@ -634,11 +648,13 @@ void AliAnalysisTaskMCCorrections::TrueINEL() {
 		double pt = particle->Pt();
 
 		// K0s and Lambda
-		if ((TMath::Abs(particle->Charge()) < 0.1) && (pidCode==4 || pidCode==5)) { hTrueINEL_pT[pidCode]->Fill(pt,fv0mpercentile); }
+		if ((TMath::Abs(particle->Charge()) < 0.1) && (pidCode==4 || pidCode==5)) { hTrueINEL_pT[pidCode]->Fill(pt,fv0mpercentile); hTrueINELWithFlat_pT[pidCode]->Fill(pt,fFlat); }
 		if (TMath::Abs(particle->Charge()) < 0.1) { continue; }
 		hTrueINEL_pT[0]->Fill(pt,fv0mpercentile);
+		hTrueINELWithFlat_pT[0]->Fill(pt,fFlat);
 		if (pidCode > 7) { continue; }
 		hTrueINEL_pT[pidCode]->Fill(pt,fv0mpercentile);
+		hTrueINELWithFlat_pT[pidCode]->Fill(pt,fFlat);
 	}
 }
 //______________________________________________________________________________
@@ -668,6 +684,7 @@ void AliAnalysisTaskMCCorrections::AccINEL() {
 	// INEL > 0 condition
 	if (particles < 1) { return; }
 	hAccINEL_evts->Fill(fv0mpercentile);
+	hAccINELWithFlat_evts->Fill(fFlat);
 
 	for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) 
 	{
@@ -693,11 +710,13 @@ void AliAnalysisTaskMCCorrections::AccINEL() {
 		double pt = particle->Pt();
 
 		// K0s and Lambda
-		if ((TMath::Abs(particle->Charge()) < 0.1) && (pidCode==4 || pidCode==5)) { hAccINEL_pT[pidCode]->Fill(pt,fv0mpercentile); }
+		if ((TMath::Abs(particle->Charge()) < 0.1) && (pidCode==4 || pidCode==5)) { hAccINEL_pT[pidCode]->Fill(pt,fv0mpercentile); hAccINELWithFlat_pT[pidCode]->Fill(pt,fFlat); }
 		if (TMath::Abs(particle->Charge()) < 0.1) { continue; }
-		hAccINEL_pT[0]->Fill(pt,fv0mpercentile);
+		hAccINEL_pT[0]->Fill(pt,fv0mpercentile); 
+		hAccINELWithFlat_pT[0]->Fill(pt,fFlat);
 		if (pidCode > 7) { continue; }
 		hAccINEL_pT[pidCode]->Fill(pt,fv0mpercentile);
+		hAccINELWithFlat_pT[pidCode]->Fill(pt,fFlat);
 	}
 }
 //______________________________________________________________________________
