@@ -1302,6 +1302,11 @@ TBits AliTriggerAnalysis::SetCrossed(Int_t spd[4][2]) {
 
 //-------------------------------------------------------------------------------------------------
 Bool_t AliTriggerAnalysis::IsSTGCrossedAndFired(const AliVEvent *event, const TBits& fired, Int_t dphiMin, Int_t dphiMax, Bool_t tolerance) {
+  if (event->GetDataLayoutType() == AliVEvent::kAOD) {
+    AliWarning("IsSTGCrossedAndFired is not available for AOD");
+    return false;
+  }
+
   Int_t nTracks = event->GetNumberOfTracks();
 
   Int_t nPassed = 0;
