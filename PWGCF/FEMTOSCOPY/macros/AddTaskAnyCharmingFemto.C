@@ -84,12 +84,12 @@ AliAnalysisTaskSE *AddTaskAnyCharmingFemto(
     TrackCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
     TrackCuts->SetFilterBit(96);
     TrackCuts->SetCutCharge(1);
-    TrackCuts->SetPtRange(0, 4.0);
+    TrackCuts->SetPtRange(0.14, 4.0);
 
     AntiTrackCuts = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
     AntiTrackCuts->SetFilterBit(96);
     AntiTrackCuts->SetCutCharge(-1);
-    AntiTrackCuts->SetPtRange(0, 4.0);
+    AntiTrackCuts->SetPtRange(0.14, 4.0);
   }
   else if(std::abs(pdgBuddy) == 321) {
     TrackCuts = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
@@ -374,13 +374,13 @@ if (!isMC) {
     AntiTrackCuts->SetNClsTPC(70);
     
     if (aliPIDParticle == AliPID::kPion){
-      TrackCuts->SetPtRange(0.11, 10);
-      AntiTrackCuts->SetPtRange(0.11, 10);
+      TrackCuts->SetPtRange(0.11, 4);
+      AntiTrackCuts->SetPtRange(0.11, 4);
       TrackCuts->SetPID(aliPIDParticle, 0.5, 3.5);
       AntiTrackCuts->SetPID(aliPIDParticle, 0.5, 3.5);
     } else if (aliPIDParticle == AliPID::kKaon){
-      TrackCuts->SetPtRange(0.1, 10);
-      AntiTrackCuts->SetPtRange(0.1, 10);
+      TrackCuts->SetPtRange(0.1, 4);
+      AntiTrackCuts->SetPtRange(0.1, 4);
       TrackCuts->SetPIDkd(true, false, 3.5, 3.5, -999); // last parameter is dummy
       AntiTrackCuts->SetPIDkd(true, false, 3.5, 3.5, -999); // last parameter is dummy
     }
