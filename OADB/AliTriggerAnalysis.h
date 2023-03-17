@@ -93,8 +93,6 @@ public:
   void FillHistograms(const AliVEvent* event, Bool_t onlineDecision, Bool_t offlineDecision);
   void FillTriggerClasses(const AliVEvent* event);
 
-  void SetCurrentRunNumber(Int_t runNumber) { fCurrentRunNumber = runNumber; }
-
   void SetSPDGFOEfficiency(TH1D* hist) { delete fSPDGFOEfficiency; fSPDGFOEfficiency = hist; }
   void SetTOFMaxipadEfficiency(TH2F* hist) { delete fTOFMaxipadEfficiency; fTOFMaxipadEfficiency = hist; }
   void SetDoFMD(Bool_t flag = kTRUE) {fDoFMD = flag;}
@@ -108,7 +106,6 @@ public:
   void Browse(TBrowser *b);
 
 protected:
-  Int_t fCurrentRunNumber{-1};
   Int_t FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Int_t fillHists = 0);
 
   // TOF trigger helpers

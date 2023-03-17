@@ -1147,11 +1147,10 @@ void AliTriggerAnalysis::GetTOFFiredMaxipads(const AliVEvent *event, TBits& maxi
 void AliTriggerAnalysis::ApplyTOFefficiency(TBits& fired) {
   for (Int_t ltm = 0; ltm < 72; ltm++) {
     for (Int_t ch = 0; ch < 23; ch++) {
-      if (fired.TestBit(23 * ltm + ch))
+      if (!fired.TestBitNumber(23 * ltm + ch))
         continue;
       if (gRandom->Rndm(1.) > fTOFMaxipadEfficiency->GetBinContent(ltm + 1, ch + 1))
-        continue;
-      fired.SetBit(23 * ltm + ch);
+        fired.SetBitNumber(23 * ltm + ch, kFALSE);
     }
   }
 }
@@ -1234,8 +1233,7 @@ void AliTriggerAnalysis::ApplySPDefficiency(TBits& fired) {
     if (!fired.TestBitNumber(i))
       continue;
     if (gRandom->Rndm(1.) > fSPDGFOEfficiency->GetBinContent(i+1))
-      continue;
-    fired.SetBitNumber(i, kTRUE);
+      fired.SetBitNumber(i, kFALSE);
   }
 }
 
@@ -1386,10 +1384,10 @@ Bool_t AliTriggerAnalysis::SPDTrigger(const AliVEvent *event, AliTriggerAnalysis
     ApplySPDefficiency(fired);
 
   if (trigger == AliTriggerAnalysis::kSTG) {
-    return IsSTGFired(fired, fCurrentRunNumber >= 295753 ? 9 : 3);
+    return IsSTGFired(fired, event->GetRunNumber() >= 295753 ? 9 : 3);
   }
   if (trigger == AliTriggerAnalysis::kSTGCF) {
-    return IsSTGCrossedAndFired(event, fired, fCurrentRunNumber >= 295753 ? 9 : 3);
+    return IsSTGCrossedAndFired(event, fired, event->GetRunNumber() >= 295753 ? 9 : 3);
   }
 }
 
