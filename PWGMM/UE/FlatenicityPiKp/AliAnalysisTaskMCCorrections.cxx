@@ -412,24 +412,23 @@ void AliAnalysisTaskMCCorrections::UserCreateOutputObjects() {
 	fOutputList->Add(hrTPCRecTracksProton);
 
 	for(Int_t i = 0; i < 3; ++i){
-		hPionTOFDCAxyNeg[i] = new TH2F(Form("hPion%sTOFDCAxyNeg",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
+		hPionTOFDCAxyNeg[i] = new TH2F(Form("hPion%sTOFDCAxyNeg",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);
 		fOutputList->Add(hPionTOFDCAxyNeg[i]);
-		hProtonTOFDCAxyNeg[i] = new TH2F(Form("hProton%sTOFDCAxyNeg",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
+		hProtonTOFDCAxyNeg[i] = new TH2F(Form("hProton%sTOFDCAxyNeg",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
 		fOutputList->Add(hProtonTOFDCAxyNeg[i]);
-		hPionTOFDCAxyPos[i] = new TH2F(Form("hPion%sTOFDCAxyPos",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
+		hPionTOFDCAxyPos[i] = new TH2F(Form("hPion%sTOFDCAxyPos",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
 		fOutputList->Add(hPionTOFDCAxyPos[i]);
-		hProtonTOFDCAxyPos[i] = new TH2F(Form("hProton%sTOFDCAxyPos",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
+		hProtonTOFDCAxyPos[i] = new TH2F(Form("hProton%sTOFDCAxyPos",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
 		fOutputList->Add(hProtonTOFDCAxyPos[i]);
 
-		hPionTPCDCAxyNeg[i] = new TH2F(Form("hPion%sTPCDCAxyNeg",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
+		hPionTPCDCAxyNeg[i] = new TH2F(Form("hPion%sTPCDCAxyNeg",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
 		fOutputList->Add(hPionTPCDCAxyNeg[i]);
-		hProtonTPCDCAxyNeg[i] = new TH2F(Form("hProton%sTPCDCAxyNeg",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
+		hProtonTPCDCAxyNeg[i] = new TH2F(Form("hProton%sTPCDCAxyNeg",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
 		fOutputList->Add(hProtonTPCDCAxyNeg[i]);
-		hPionTPCDCAxyPos[i] = new TH2F(Form("hPion%sTPCDCAxyPos",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
+		hPionTPCDCAxyPos[i] = new TH2F(Form("hPion%sTPCDCAxyPos",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
 		fOutputList->Add(hPionTPCDCAxyPos[i]);
-		hProtonTPCDCAxyPos[i] = new TH2F(Form("hProton%sTPCDCAxyPos",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 1000, -3.5, 3.5 );	
+		hProtonTPCDCAxyPos[i] = new TH2F(Form("hProton%sTPCDCAxyPos",ParticleType[i]),"; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
 		fOutputList->Add(hProtonTPCDCAxyPos[i]);
-
 	}
 
 	for (int i_eta = 0; i_eta < nEta; ++i_eta) 
@@ -565,27 +564,18 @@ void AliAnalysisTaskMCCorrections::UserExec(Option_t *) {
 
 	/* fMidRapidityMult = GetMidRapidityMultiplicity(); */
 	/* fFlatTPC = GetFlatenicityTPC(); */ 
-	/* fFlat = GetFlatenicityV0(); */
-
+	fFlat = GetFlatenicityV0();
 	fFlatMC = -1;
+
 	if (fUseMC) {
 		if (!isGoodVtxPosMC) { return; }
+		MakeMCanalysisPID();
+		nSigmaContamination();
 		fFlatMC = GetFlatenicityMC();
 		hFlatenicityMC->Fill(fFlatMC,fv0mpercentile);
 		hFlatenicityMCRec->Fill(fFlat,fv0mpercentile);
 		hFlatResponse->Fill(fFlatMC, fFlat);
-		MakeMCanalysisPID();
-		nSigmaContamination();
 	}
-
-	/* if (fFlat >= 0.0) { */
-
-	/* 	hFlat->Fill(fFlat); */
-	/* 	// piKp as a function of Flattenicity */
-	/* 	/1* MakePIDanalysis(); *1/ */
-	/* 	// Charged particle spectra as a function of Flattenicity */
-	/* 	/1* MakeDataanalysis(); *1/ */
-	/* } */
 
 	PostData(1, fOutputList); // stream the result of this event to the output
 				  // manager which will write it to a file
@@ -605,7 +595,7 @@ void AliAnalysisTaskMCCorrections::TrueINEL() {
 			continue;
 		if (TMath::Abs(particle->Eta()) > 1.0)
 			continue;
-		if (particle->Pt() <= 0.0)
+		if (particle->Pt() < fPtMin)
 			continue;
 		if (TMath::Abs(particle->Charge()) < 0.1)
 			continue;
@@ -664,7 +654,7 @@ void AliAnalysisTaskMCCorrections::AccINEL() {
 			continue;
 		if (TMath::Abs(particle->Eta()) > 1.0)
 			continue;
-		if (particle->Pt() <= 0.0)
+		if (particle->Pt() < fPtMin)
 			continue;
 		if (TMath::Abs(particle->Charge()) < 0.1)
 			continue;
@@ -1117,16 +1107,16 @@ Double_t AliAnalysisTaskMCCorrections::GetFlatenicityMC() {
 	}
 	sRho_tmp /= (1.0 * nCells * nCells);
 	Float_t sRho = TMath::Sqrt(sRho_tmp);
-	if (mRho > 0) {
+	if (mRho > 0.0) {
 		if (fRemoveTrivialScaling) {
 			flatenicity = TMath::Sqrt(1.0 * nMult) * sRho / mRho;
 		} else {
 			flatenicity = sRho / mRho;
 		}
+		hFlatVsNchMC->Fill(flatenicity, nMult);
 	} else {
-		sRho = 9999;
+		flatenicity = 999;
 	}
-	hFlatVsNchMC->Fill(flatenicity, nMult);
 	return flatenicity;
 }
 //______________________________________________________________________________
