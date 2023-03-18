@@ -80,6 +80,7 @@ bool isSelectedSignal(const double mass, const double pt, const int pdg) {
       fDmesonPDGs{},
       fLightPDG(0),
       fUseFDPairCleaner(true),
+      fDoPreClean(true),
       fUseLFFromEvtsWithPairs(false),
       fGTI(nullptr),
       fColsToSave({
@@ -198,6 +199,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fDmesonPDGs{},
       fLightPDG(0),
       fUseFDPairCleaner(true),
+      fDoPreClean(true),
       fUseLFFromEvtsWithPairs(false),
       fGTI(nullptr),
       fColsToSave({
@@ -1094,6 +1096,21 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   // PAIR CLEANING AND FEMTO
 
   if (fUseTree) {
+    if (fDoPreClean) {
+      auto Clean = [](std::vector<AliFemtoDreamBasePart>particles) {
+        std::vector<AliFemtoDreamBasePart> cleaned = {};
+        for (const auto &particle : particles)
+          if (particle.UseParticle())
+            cleaned.push_back(particle);
+        return cleaned;
+      };
+
+      protons = Clean(protons);
+      antiprotons = Clean(antiprotons);
+      dplus = Clean(dplus);
+      dminus = Clean(dminus);
+    }
+
     // flag pair removed by old pair clenaer
     fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, false);
     fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, false);

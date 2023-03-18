@@ -98,6 +98,9 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   void SetUseFDPairCleaner(int flag) {
     fUseFDPairCleaner = flag;
   }
+  void SetDoPreClean(int flag) {
+    fDoPreClean = flag;
+  }
   void SetUseUseLFFromEvtsWithPairs(int flag) {
     fUseLFFromEvtsWithPairs = flag;
   }
@@ -346,6 +349,7 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
   bool fIsMCtruth;         //
   bool fIsLightweight;     //
   bool fUseFDPairCleaner;  //
+  bool fDoPreClean;  //
   bool fUseLFFromEvtsWithPairs; //
   bool fUsePart2Buffer; //
   UInt_t fTrigger;         //
