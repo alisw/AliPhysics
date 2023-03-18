@@ -521,6 +521,14 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
       isGoodVtxPosMC = kTRUE;
   }
 
+  fMultSelection = (AliMultSelection *)fESD->FindListObject("MultSelection");
+  if (!fMultSelection)
+    cout << "------- No AliMultSelection Object Found --------"
+         << fMultSelection << endl;
+
+  fv0mpercentile = -999;
+  fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+
   if (isGoodVtxPosMC)
     MCchargedProdu();
 
@@ -551,15 +559,15 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   hCounter->Fill(3.0);
 
   // good multiplicity
-  fMultSelection = (AliMultSelection *)fESD->FindListObject("MultSelection");
-  if (!fMultSelection)
-    cout << "------- No AliMultSelection Object Found --------"
-         << fMultSelection << endl;
+  //  fMultSelection = (AliMultSelection
+  //  *)fESD->FindListObject("MultSelection"); if (!fMultSelection)
+  //    cout << "------- No AliMultSelection Object Found --------"
+  //         << fMultSelection << endl;
 
   hCounter->Fill(4.0);
   // Multiplicity Estimation
-  fv0mpercentile = -999;
-  fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+  //  fv0mpercentile = -999;
+  //  fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
   int v0multalice = fMultSelection->GetEstimator("V0M")->GetValue();
   hCounter->Fill(10.0);
 
@@ -571,6 +579,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
       continue;
     }
   }
+
   Double_t flatenicity_v0 = -1;
   Double_t flatenicity_tpc = GetFlatenicityTPC();
   if (fIsEqualALICE) {
@@ -762,7 +771,6 @@ void AliAnalysisTaskFlatenicity::MakeMCanalysis() {
 //______________________________________________________________________________
 void AliAnalysisTaskFlatenicity::MCchargedProdu() {
 
-  //! ap  to assure INEL>0
   int particleschg = 0;
 
   for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
@@ -784,7 +792,6 @@ void AliAnalysisTaskFlatenicity::MCchargedProdu() {
 
   if (particleschg < 1)
     return;
-  //! ap   The INEL>0 condition
 
   //  hCountEvent->Fill(1.0);
   hCountProduV0m->Fill(fv0mpercentile);
@@ -810,8 +817,6 @@ void AliAnalysisTaskFlatenicity::MCchargedProdu() {
 
 //______________________________________________________________________________
 void AliAnalysisTaskFlatenicity::MCchargedAuth() {
-
-  //! ap  to assure INEL>0
 
   int particleschg = 0;
 

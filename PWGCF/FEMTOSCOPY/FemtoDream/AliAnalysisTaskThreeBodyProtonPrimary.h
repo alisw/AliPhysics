@@ -142,6 +142,10 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   void SetRunPlotPt(bool RunPlotPt){
     fRunPlotPt=RunPlotPt;
   }
+  void SetCutElectrons(bool CutElectrons){
+    fCutElectrons=CutElectrons;
+  }
+
 
   void SetStandardMixing(bool StandardMixing){
     fStandardMixing = StandardMixing;
@@ -261,6 +265,8 @@ class AliAnalysisTaskThreeBodyProtonPrimary : public AliAnalysisTaskSE {
   bool fRunOfficialTwoBody; // ADDED BY RAFFA
   bool fDoKinematicsPlots;
   bool fPlotP1;
+  bool fCutElectrons;
+
 
   bool fClosePairRejectionForAll; 
   bool fturnoffClosePairRejectionCompletely; 

@@ -17,11 +17,8 @@ namespace PtSpace {
     };
     enum kObs {
         kCorr,
-        kCM,
-        kCmlt,
-        kCmltCM,
-        kNorm,
-        kNormCM
+        kCum,
+        kNorm
     };
 };
 
@@ -38,7 +35,6 @@ class AliPtContainer: public TNamed {
         void FillSkew(const vector<vector<double>> &inarr, const double &lMult, const double &rn);
         void FillKurtosis(const vector<vector<double>> &inarr, const double &lMult, const double &rn);
         void FillRecursive(const vector<vector<double>> &inarr,const double &lMult, const double &rn, TString sub = "");
-        vector<vector<double>> FillCentralMoments(const vector<vector<double>> &inarr, const double &mpt, const double &lMult, const double &rn);
         vector<double> getEventCorrelation(const vector<vector<double>> &inarr, int mOrder);
         TList* GetCkList() { return fCkTermList; }
         TList* GetSkewList() { return fSkewTermList; }
@@ -54,15 +50,6 @@ class AliPtContainer: public TNamed {
         TH1* getRecursiveHist(int ind, int m, unsigned int l_obs, bool sub = false);
         TH1* getSubeventCorrelation(int ind, int m);
         int getMpar() { return mpar;}
-        void CalculateCk();
-        void CalculateSkew();
-        void CalculateKurtosis();
-        TH1* RecalculateCkHists(vector<TH1*> inh);
-        TH1* RecalculateSkewHists(vector<TH1*> inh);
-        TH1* RecalculateKurtosisHists(vector<TH1*> inh);
-        void CalculateCumulantHists(vector<TH1*> inh, int ind, bool normalized); 
-        void CalculateCentralCumulantHists(vector<TH1*> inh, int ind, bool normalized);
-        void CalculateRecursive(bool fromCM, bool normalized);
         Long64_t Merge(TCollection *collist);
     protected:
         TList* fCkTermList;
@@ -73,20 +60,23 @@ class AliPtContainer: public TNamed {
         TList* fKurtosisList;
         TList* fCorrList;
         TList* fSubList;
-        TList* fCMList;
         TList* fCumulantList;
-        TList* fCumulantCMList;
         TList* fNormList;
-        TList* fNormCMList;
         const int mpar;
         unsigned int fEventWeight;
         bool fSubevent;
         double OrderedAddition(vector<double> vec, int size);
         TH1* getPowerHist(TH1* inh, double p);
         void FillRecursiveProfiles(const vector<double> &corr, const vector<double> &sumw, const double &lMult, const double &rn, TString sub);
-        double PolynomialExpansion(int k, const vector<vector<double>> &inarr, const double &mpt);
+        void CalculateCk();
+        void CalculateSkew();
+        void CalculateKurtosis();
+        TH1* RecalculateCkHists(vector<TH1*> inh);
+        TH1* RecalculateSkewHists(vector<TH1*> inh);
+        TH1* RecalculateKurtosisHists(vector<TH1*> inh);
+        void CalculateCumulantHists(vector<TH1*> inh, int ind, bool normalized); 
+        void CalculateRecursive(bool normalized);
         int factorial(const int n) { return (n<2)?1:factorial(n - 1)*n; }
-        int binomial(const int n, const int m) { return factorial(n)/(factorial(m)*factorial(n-m)); };
 
       private:
         static double           fFactorial[9];

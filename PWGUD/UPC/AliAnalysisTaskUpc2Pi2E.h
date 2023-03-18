@@ -55,7 +55,7 @@ class AliAnalysisTaskUpc2Pi2E : public AliAnalysisTaskSE {
   	TString fOption;
 
   	// tree
-	static const int Maxtrk=100;
+	static const int Maxtrk=20;
 	Int_t ntrk;
   	TTree *f2Pi2ETree;	//! Tree with all candidates
   	TTree *f2Pi2ETree1;	//! Tree with 0 sum charge and only 4 tracks
@@ -84,26 +84,26 @@ class AliAnalysisTaskUpc2Pi2E : public AliAnalysisTaskSE {
 	Float_t ZPCenergy_T;
 	Float_t ZDCAtime_T[4];
 	Float_t ZDCCtime_T[4];
-	Float_t PIDTPCPion_T[100];
-	Float_t PIDTPCMuon_T[100];
-	Float_t PIDTPCKaon_T[100];
-	Float_t PIDTPCProton_T[100];
-	Float_t PIDTPCElectron_T[100];
-	Int_t TPCsignal_T[100];
-	Bool_t TPCrefit_T[100];
-	Bool_t ITSrefit_T[100];
-	Bool_t ITSO_T[100];
-	Bool_t ITSI_T[100];
-	Bool_t ITSSA_T[100];
-	Bool_t TrackCuts_T[100];
-	Float_t TrackDCAxy_T[100];
-	Float_t TrackDCAz_T[100];
-	Bool_t fMatchingSPD_T[100];
-	Int_t TPCNcls_T[100];
-	Int_t ITSNcls_T[100];
-	Float_t TPCchi2_T[100];
-	Float_t TrackP_T[100];
-	Int_t TrackC_T[100];
+	Float_t PIDTPCPion_T[20];
+	Float_t PIDTPCMuon_T[20];
+	Float_t PIDTPCKaon_T[20];
+	Float_t PIDTPCProton_T[20];
+	Float_t PIDTPCElectron_T[20];
+	Int_t TPCsignal_T[20];
+	Bool_t TPCrefit_T[20];
+	Bool_t ITSrefit_T[20];
+	Bool_t ITSO_T[20];
+	Bool_t ITSI_T[20];
+	Bool_t ITSSA_T[20];
+	Bool_t TrackCuts_T[20];
+	Float_t TrackDCAxy_T[20];
+	Float_t TrackDCAz_T[20];
+	Bool_t fMatchingSPD_T[20];
+	Int_t TPCNcls_T[20];
+	Int_t ITSNcls_T[20];
+	Float_t TPCchi2_T[20];
+	Float_t TrackP_T[20];
+	Int_t TrackC_T[20];
 	Float_t Vertex_T[3];
 	Int_t VtxContrib_T;
 	Float_t VtxChi2_T,VtxNDF_T;
@@ -112,16 +112,16 @@ class AliAnalysisTaskUpc2Pi2E : public AliAnalysisTaskSE {
 	Int_t Ntracklets_T;
 	Float_t Phi_T;
 	Int_t NTracks_T;
-	Float_t TrackEta_T[100];
-	Float_t TrackPhi_T[100];
-	Float_t TrackPx_T[100];
-	Float_t TrackPy_T[100];
-	Float_t TrackPz_T[100];
+	Float_t TrackEta_T[20];
+	Float_t TrackPhi_T[20];
+	Float_t TrackPx_T[20];
+	Float_t TrackPy_T[20];
+	Float_t TrackPz_T[20];
 	Bool_t ChipCut_T;
 	Bool_t TriggerTOF_T;
 	Bool_t TriggerSPD_T;
-	Int_t ITSModuleInner_T[100];
-	Int_t ITSModuleOuter_T[100];
+	Int_t ITSModuleInner_T[20];
+	Int_t ITSModuleOuter_T[20];
 	Int_t fFOmodules_T[240];
 
 	// MC tree
@@ -181,7 +181,7 @@ class AliAnalysisTaskUpc2Pi2E : public AliAnalysisTaskSE {
 	AliAnalysisTaskUpc2Pi2E(const AliAnalysisTaskUpc2Pi2E&); //not implemented
 	AliAnalysisTaskUpc2Pi2E& operator =(const AliAnalysisTaskUpc2Pi2E&); //not implemented
   
- 	ClassDef(AliAnalysisTaskUpc2Pi2E, 5); 
+ 	ClassDef(AliAnalysisTaskUpc2Pi2E, 6); 
 
 };
 

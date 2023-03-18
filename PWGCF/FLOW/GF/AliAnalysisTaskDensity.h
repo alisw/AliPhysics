@@ -11,6 +11,10 @@
 #include "AliAODMCParticle.h"
 #include "AliGFWCuts.h"
 
+#include <iostream>
+#include <utility>
+#include <vector>
+
 // root basics
 #include "TString.h"
 #include "TRandom.h"
@@ -25,6 +29,8 @@ class AliAODEvent;
 class AliAODTrack;
 class AliMCEvent;
 class AliGFWCuts;
+class TProfile;
+class TH2D;
 
 class AliPtSubEventContainer;
 
@@ -65,7 +71,7 @@ class AliAnalysisTaskDensity : public AliAnalysisTaskSE
 
         void ProcessTrack(Double_t lweight, Double_t lpt, Double_t leta);
         void ProcessEventCorrelation(Int_t id);
-        void FillWPCounter(vector<vector<double>> &inarr, double w, double p);
+        void FillWPCounter(std::vector<std::vector<Double_t>> &inarr, Double_t w, Double_t p);
         void ClearWPCounter();
 
         Double_t WeightPt(Double_t pt);
@@ -119,17 +125,14 @@ class AliAnalysisTaskDensity : public AliAnalysisTaskSE
         TH1D*       fhChiPerITSCls;         //!
         TH1D*       fhNofPileupSelected;    //!
 
-        TH1D*       fhEffeciencyPt;
+        TH1D*       fhEffeciencyPt;         //!
 
     // Other
         std::vector<std::vector<std::vector<Double_t>>> wpThreeSubEvent;
         std::vector<std::vector<std::vector<Double_t>>> wpTwoSubEvent;
         std::vector<std::vector<Double_t>> wp;
         TRandom* rndGenerator;
-
-        AliAnalysisTaskDensity(const AliAnalysisTaskDensity&); // not implemented
-        AliAnalysisTaskDensity& operator=(const AliAnalysisTaskDensity&); // not implemented
-
+        
         ClassDef(AliAnalysisTaskDensity, 2);
 };
 

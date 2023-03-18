@@ -92,6 +92,8 @@ class AliAnalysisTaskMCCorrections : public AliAnalysisTaskSE {
 		TH1F* hAccINEL_vtx;
 		TH1F* hTrueINEL_evts;
 		TH1F* hAccINEL_evts;
+		TH1F* hTrueINELWithFlat_evts;
+		TH1F* hAccINELWithFlat_evts;
 
 		TH2F* nsigma_kaon_h[4];
 		TH2F* random_cont_in_kaon_h[4];
@@ -134,6 +136,8 @@ class AliAnalysisTaskMCCorrections : public AliAnalysisTaskSE {
 		TH1F* hrTPCRecTracksProton;
 		TH2F* hTrueINEL_pT[8];
 		TH2F* hAccINEL_pT[8];
+		TH2F* hTrueINELWithFlat_pT[8];
+		TH2F* hAccINELWithFlat_pT[8];
 
 		AliAnalysisTaskMCCorrections(
 				const AliAnalysisTaskMCCorrections &); // not implemented

@@ -150,6 +150,7 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_jetBGSubtrDeltaR;              //! // DeltaR between BG subtr jet and raw jet.
         AliJTH2D fh_jetResponse;                   //! // Jet response matrix
         AliJTH2D fh_jetResponse_ALICE;             //! // Jet response matrix with ALICE bins
+        AliJTH2D fh_jetResponse_ALICEScalar;       //! // Jet response matrix with ALICE bins (bg subtr with scalar rho*A quantity)
         AliJTH2D fh_deltaPtResponse;               //! // delta-pt response matrix 
         AliJTH2D fh_deltaPtResponse_ALICE;         //! // delta-pt response matrix with ALICE bins
         AliJTH2D fh_deltaPtResponseEvery;          //! // delta-pt response matrix, filled for every true bin
@@ -174,10 +175,13 @@ class AliJCDijetHistos : public AliJHistogramInterface
         AliJTH1D fh_dijetdeltaM5;             //! // Dijet deltaM
         AliJTH1D fh_dijetdeltaM5Alt;             //! // Dijet deltaM
         AliJTH1D fh_dijetdeltaM5Binned;             //! // Dijet deltaM
+        AliJTH1D fh_dijetdeltaMScaled;             //! // Dijet deltaM
+        AliJTH1D fh_dijetdeltaMScaledBinned;             //! // Dijet deltaM
         AliJTH1D fh_dijetdeltaM5NearCone;             //! // Dijet deltaM
         AliJTH1D fh_dijetdeltaM5NearConeAlt;             //! // Dijet deltaM
         AliJTH1D fh_dijetMLocalRho;            //! // Dijet deltaM with localrho
         AliJTH1D fh_dijetMLocalRhoAlt;            //! // Dijet deltaM with localrho
+        AliJTH1D fh_dijetMLocalRhoAltMjjBins;            //! // Dijet deltaM with localrho
         AliJTH2D fh_deltaMResponse;           //! // deltaM response matrix 
         AliJTH2D fh_dijetResponseTrunc;            //! // Dijet response matrix truncated from above and below
         AliJTH2D fh_dijetResponseTrunc2;            //! // Dijet response matrix truncated from above and below

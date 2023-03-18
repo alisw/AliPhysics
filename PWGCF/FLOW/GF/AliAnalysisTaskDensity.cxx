@@ -3,11 +3,8 @@
  *  Task for transverse momentum correlation with sub-events
  * 
 */
-
-#include <iostream>
-#include <utility>
-#include <vector>
 #include <cmath>
+#include <vector>
 
 // root basics
 #include "TChain.h"
@@ -86,7 +83,7 @@ AliAnalysisTaskDensity::AliAnalysisTaskDensity(const char* name, Bool_t bUseEff)
     SetDefaultSettings();
     // constructor
     DefineInput(0, TChain::Class());                // event chain
-    if(bUseEff){DefineInput(1, TList::Class());}    // effeciency list    
+    if(bUseEff){DefineInput(1, TList::Class());};   // effeciency list    
     DefineOutput(1, TList::Class());   
     DefineOutput(2, TList::Class());   
     DefineOutput(3, TList::Class()); 
@@ -345,19 +342,19 @@ bool AliAnalysisTaskDensity::AcceptMCTrack(AliAODMCParticle* track)
 //_____________________________________________________________________________
 void AliAnalysisTaskDensity::ClearWPCounter()
 {
-    wp.clear(); wp.resize(fMPar+1,vector<Double_t>(fMPar+1));
+    wp.clear(); wp.resize(fMPar+1,std::vector<Double_t>(fMPar+1));
     wpTwoSubEvent.resize(2);
     for(int i(0); i < 2; i++){
         wpTwoSubEvent[i].clear();
-        wpTwoSubEvent[i].resize(fMPar+1,vector<Double_t>(fMPar+1));
+        wpTwoSubEvent[i].resize(fMPar+1,std::vector<Double_t>(fMPar+1));
     }
     wpThreeSubEvent.resize(3);
     for(int i(0); i < 3; i++){
         wpThreeSubEvent[i].clear();
-        wpThreeSubEvent[i].resize(fMPar+1,vector<Double_t>(fMPar+1));
+        wpThreeSubEvent[i].resize(fMPar+1,std::vector<Double_t>(fMPar+1));
     }
 }
-void AliAnalysisTaskDensity::FillWPCounter(vector<vector<Double_t>> &inarr, double w, double p)
+void AliAnalysisTaskDensity::FillWPCounter(std::vector<std::vector<Double_t>> &inarr, Double_t w, Double_t p)
 {
     for(int i=0;i<=fMPar;++i){
         for(int j=0;j<=fMPar;++j){

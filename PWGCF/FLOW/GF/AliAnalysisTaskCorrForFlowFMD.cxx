@@ -43,7 +43,9 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fIsHMpp(kFALSE),
     fDoPID(kFALSE),
     fDoV0(kFALSE),
-    fDoPHI(kFALSE),				   
+    fDoPHI(kFALSE),
+    fshiftphi_PHI(kFALSE),
+    fshiftrap_PHI(kFALSE),
     fUseNch(kFALSE),
     fUseEfficiency(kFALSE),
     fUseFMDcut(kTRUE),
@@ -111,7 +113,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fMaxK0Mass(0.56),
     fMinLambdaMass(1.08),
     fMaxLambdaMass(1.15),
-    fMinPhiMass(0.99),
+    fMinPhiMass(0.98),
     fMaxPhiMass(1.07),				   
     fJetParticleLowPt(5.),
     fCentEstimator("V0M"),
@@ -146,7 +148,9 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fIsHMpp(kFALSE),
     fDoPID(kFALSE),
     fDoV0(kFALSE),
-    fDoPHI(kFALSE),				   										     
+    fDoPHI(kFALSE),
+    fshiftphi_PHI(kFALSE),
+    fshiftrap_PHI(kFALSE),
     fUseNch(kFALSE),
     fUseEfficiency(bUseEff),
     fUseFMDcut(kTRUE),
@@ -214,7 +218,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fMaxK0Mass(0.56),
     fMinLambdaMass(1.08),
     fMaxLambdaMass(1.15),
-    fMinPhiMass(0.99),
+    fMinPhiMass(0.98),
     fMaxPhiMass(1.07),
     fJetParticleLowPt(5.),
     fCentEstimator("V0M"),
@@ -943,7 +947,9 @@ void AliAnalysisTaskCorrForFlowFMD::PreparePhi()
 
 
   // moving phi form [-pi,pi] -> [0,2pi] for consistency with other species
-  Double_t dPhi = mom.Phi() + TMath::Pi();
+   Double_t dPhi = mom.Phi();
+
+  if (fshiftphi_PHI) dPhi = mom.Phi() + TMath::Pi();
 
   Double_t dpT = mom.Pt();
 
@@ -969,11 +975,14 @@ void AliAnalysisTaskCorrForFlowFMD::PreparePhi()
    fhV0Counter[2]->Fill("Mass OK",1);
 
     TLorentzVector vect;
-    vect.SetPtEtaPhiM(dpT, dEta, mom.Phi(), dMass);//for the mother V0, using PDG mass will create a gaussian distribition of the daughter's added momentum in the mother's rest frame 
+    vect.SetPtEtaPhiM(dpT, dEta, dPhi, dMass);//for the mother V0, using PDG mass will create a gaussian distribition of the daughter's added momentum in the mother's rest frame 
 
     double rap = vect.Rapidity();
    
+ if (fshiftrap_PHI) {
    if( rap > 0.5) continue;//this is same as the K0s and Lambda cases (can we change it?)
+    }	  
+	  
   fhV0Counter[2]->Fill("Rap Phi OK",1);
 
     // mother (phi) candidate passing all criteria (except for charge)
