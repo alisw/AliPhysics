@@ -198,6 +198,14 @@ AliAnalysisTaskMLTreeMaker2018::AliAnalysisTaskMLTreeMaker2018():
   pairPtees({}),
   pairOpAngs({}),
   pairDCAee({}),
+ 
+  //pairPhiV({}),
+  pairCosPointAngs({}),
+  pairDecayLengths({}),
+  pairRs({}),
+  
+
+
 
   fFillPairSignalOffset(0)
 
@@ -345,6 +353,10 @@ AliAnalysisTaskMLTreeMaker2018::AliAnalysisTaskMLTreeMaker2018(const char *name)
   pairPtees({}),
   pairOpAngs({}),
   pairDCAee({}),
+
+  pairCosPointAngs({}),
+  pairDecayLengths({}),
+  pairRs({}),
 
   fFillPairSignalOffset(0)
 {
@@ -501,6 +513,11 @@ void AliAnalysisTaskMLTreeMaker2018::UserCreateOutputObjects() {
       pairOpAngs.push_back({0});
       pairDCAee.push_back({0});
 
+      pairCosPointAngs.push_back({0});
+      pairDecayLengths.push_back({0});
+      pairRs.push_back({0});
+
+
     }
 
 
@@ -560,6 +577,11 @@ void AliAnalysisTaskMLTreeMaker2018::UserCreateOutputObjects() {
       fTreePairs.at(index)->Branch("pairPtee", &pairPtees.at(index));
       fTreePairs.at(index)->Branch("pairOpAng", &pairOpAngs.at(index));
       fTreePairs.at(index)->Branch("pairDCAee", &pairDCAee.at(index));
+
+
+      fTreePairs.at(index)->Branch("pairCosPointAng", &pairCosPointAngs.at(index));
+      fTreePairs.at(index)->Branch("pairDecayLength", &pairDecayLengths.at(index));
+      fTreePairs.at(index)->Branch("pairR", &pairRs.at(index));
 
       fTreePairs.at(index)->Branch("primVertx", &primVerticesX.at(index));
       fTreePairs.at(index)->Branch("primVerty", &primVerticesY.at(index));
@@ -825,6 +847,11 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
   std::vector<Float_t> pairOpAng;
   std::vector<Float_t> pairDCA;
 
+  std::vector<Float_t> pairCosPointAng;
+  std::vector<Float_t> pairDecayLength;
+  std::vector<Float_t> pairR;
+
+
   Int_t filledPairs = 0;
   for (unsigned int pos_i = 0; pos_i < parts1.size(); ++pos_i){
     for (unsigned int pos_j = 0; pos_j < parts2.size(); ++pos_j){
@@ -835,6 +862,23 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
         pos_j = pos_i+1;
         if(pos_j >= parts2.size()) break;
       } 
+
+      AliDielectronPair candidate;
+      candidate.SetKFUsage(kTRUE);
+      candidate.SetTracks(static_cast<AliVTrack*>(event->GetTrack(parts1[pos_i].GetTrackID())), -11,
+                          static_cast<AliVTrack*>(event->GetTrack(parts2[pos_j].GetTrackID())),  11);
+
+      // Fill AliDielectronPair specific information
+      const AliKFParticle &kfPair = candidate.GetKFParticle();
+      float DecayLength = kfPair.GetDecayLengthXY();
+      float R = kfPair.GetR();
+      //kfPair.GetChi2()/kfPair.GetNDF();
+      float CosPointAng = event ? candidate.GetCosPointingAngle(event->GetPrimaryVertex()) : -1;
+
+      //fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
+      //fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
+
+
 
       TLorentzVector Lvec1;
       TLorentzVector Lvec2;
@@ -886,6 +930,12 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
       pairPtee.push_back(pairpt);
       pairOpAng.push_back(opangle);
       pairDCA.push_back(dcaee);
+      
+      pairCosPointAng.push_back(CosPointAng);
+      pairDecayLength.push_back(DecayLength);
+      pairR.push_back(R);
+
+
 
       filledPairs++;
     }
@@ -936,6 +986,11 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSimplePairs(std::vector<Particle> part
     pairPtees[index] = pairPtee;
     pairOpAngs[index] = pairOpAng;
     pairDCAee[index] = pairDCA;
+
+    pairCosPointAngs[index] = pairCosPointAng;
+    pairDecayLengths[index] = pairDecayLength;
+    pairRs[index] = pairR;
+
   }
  
   return filledPairs;
@@ -1003,7 +1058,12 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
   std::vector<std::vector<Float_t>> pairPtee;
   std::vector<std::vector<Float_t>> pairOpAng;
   std::vector<std::vector<Float_t>> pairDCA;
- 
+
+  std::vector<std::vector<Float_t>> pairCosPointAng;
+  std::vector<std::vector<Float_t>> pairDecayLength;
+  std::vector<std::vector<Float_t>> pairR;
+
+
   for(int signal=0; signal < fPairMCSignal.size(); signal++){
 
     primVertx.push_back({});
@@ -1041,39 +1101,31 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
     pairOpAng.push_back({});
     pairDCA.push_back({});
 
+    pairCosPointAng.push_back({});
+    pairDecayLength.push_back({});
+    pairR.push_back({});
+
   }
 
   for (unsigned int neg_i = 0; neg_i < fNegPart.size(); ++neg_i){
     for (unsigned int pos_i = 0; pos_i < fPosPart.size(); ++pos_i){
-      AliVParticle* mcPart1 = fMCEvent->GetTrack(fNegPart[neg_i].GetTrackID());
-      AliVParticle* mcPart2 = fMCEvent->GetTrack(fPosPart[pos_i].GetTrackID());
+      AliVParticle* mcPart1 = fMCEvent->GetTrack(fNegPart[neg_i].GetTrackLabel());
+      AliVParticle* mcPart2 = fMCEvent->GetTrack(fPosPart[pos_i].GetTrackLabel());
 
-      //Double_t xyz[3] = {0};
+      AliDielectronPair candidate;
+      candidate.SetKFUsage(kFALSE);
+      candidate.SetTracks(static_cast<AliVTrack*>(event->GetTrack(fNegPart[neg_i].GetTrackID())), -11,
+                          static_cast<AliVTrack*>(event->GetTrack(fPosPart[pos_i].GetTrackID())),  11);
 
-      //std::cout << "This might die here :("  << std::endl; 
-      //std::cout << "  " <<  fMCEvent->GetTrack(fNegPart[neg_i].GetTrackID()) << "  " << (static_cast<AliVTrack*>(fMCEvent->GetTrack(fNegPart[neg_i].GetTrackID())))->GetXYZ(xyz) << std::endl; 
-      //std::cout << "  " <<  fMCEvent->GetTrack(fPosPart[pos_i].GetTrackID()) << "  " << (static_cast<AliVTrack*>(fMCEvent->GetTrack(fPosPart[pos_i].GetTrackID())))->GetXYZ(xyz) << std::endl; 
+      // Fill AliDielectronPair specific information
+      const AliKFParticle &kfPair = candidate.GetKFParticle();
+      float DecayLength = kfPair.GetDecayLength();
+      float R = kfPair.GetR();
+      //kfPair.GetChi2()/kfPair.GetNDF();
+      float CosPointAng = event ? candidate.GetCosPointingAngle(event->GetPrimaryVertex()) : -1;
 
-      //std::cout << "  " <<  fEvent->GetTrack(fNegPart[neg_i].GetTrackID()) << "  " << static_cast<AliVTrack*>(fEvent->GetTrack(fNegPart[neg_i].GetTrackID())) << std::endl; 
-
-
-
-      //AliVParticle* negTrack =fMCEvent->GetTrack(fNegPart[neg_i].GetTrackID());
-      //AliVParticle* posTrack =fMCEvent->GetTrack(fPosPart[pos_i].GetTrackID());
-
-      //std::cout << "  ### " << std::endl;
-
-      //std::cout << "  " <<  negTrack << "  " << (static_cast<AliVTrack*>(negTrack))->GetXYZ(xyz) << std::endl; 
-      //std::cout << "  " <<  posTrack << "  " << (static_cast<AliVTrack*>(posTrack))->GetXYZ(xyz) << std::endl; 
-
-      //AliDielectronPair *candidate = new AliDielectronPair;
-      //candidate->SetKFUsage(kFALSE);
-      //candidate.SetTracks(static_cast<AliVTrack*>(event->GetTrack(fNegPart[neg_i].GetTrackID())), -11,
-      //                    static_cast<AliVTrack*>(event->GetTrack(fPosPart[pos_i].GetTrackID())),  11);
-      //candidate->SetTracks(static_cast<AliVTrack*>(fMCEvent->GetTrack(fNegPart[neg_i].GetTrackID())), -11,
-      //                    static_cast<AliVTrack*>(fMCEvent->GetTrack(fPosPart[pos_i].GetTrackID())),  11);
-      //candidate->SetTracks(static_cast<AliVTrack*>(negTrack), 11, static_cast<AliVTrack*>(posTrack), -11);
-      //std::cout << "Oh, it survived :)"  << std::endl; 
+      //fgEvent ? pair->PsiPair(fgEvent->GetMagneticField()) : -5;
+      //fgEvent ? pair->PhivPair(fgEvent->GetMagneticField()) : -5;
 
 
       // Check if electrons are from MCSignal Generator
@@ -1158,6 +1210,10 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
           pairOpAng[i].push_back(opangle);
 	  pairDCA[i].push_back(dcaee);
 
+          pairCosPointAng[i].push_back(CosPointAng);
+          pairDecayLength[i].push_back(DecayLength);
+          pairR[i].push_back(R);
+
         }
       } // end of loop over all MCsignals
     } // end of loop over all positive particles
@@ -1203,6 +1259,10 @@ Int_t AliAnalysisTaskMLTreeMaker2018::FillSignalPairs(AliVEvent *event){
     pairPtees[signal] = pairPtee[signal-fFillPairSignalOffset];
     pairOpAngs[signal] = pairOpAng[signal-fFillPairSignalOffset];
     pairDCAee[signal] = pairDCA[signal-fFillPairSignalOffset];
+
+    pairCosPointAngs[signal] = pairCosPointAng[signal-fFillPairSignalOffset];
+    pairDecayLengths[signal] = pairDecayLength[signal-fFillPairSignalOffset];
+    pairRs[signal] = pairR[signal-fFillPairSignalOffset];
 
 
   }
@@ -1269,6 +1329,10 @@ std::tuple<int, int, int> AliAnalysisTaskMLTreeMaker2018::GetAcceptedPairs(AliVE
     pairMasses[i].clear();
     pairPtees[i].clear();
     pairOpAngs[i].clear();
+
+    pairCosPointAngs[i].clear();
+    pairDecayLengths[i].clear();
+    pairRs[i].clear();
 
   }
 
@@ -1442,6 +1506,8 @@ Int_t AliAnalysisTaskMLTreeMaker2018::GetAcceptedTracks(AliVEvent *event, Double
       AliError(Form("Could not receive track %d", iTracks));
       continue;
     }
+
+    //std::cout << "Track issue: " << track->GetLabel() << "  " << iTracks << "  " <<  event->GetNumberOfTracks() << std::endl;
 
     if(!isAOD) fQAHistTracks->Fill("Not AOD track",1);
     else       fQAHistTracks->Fill("Is AOD track",1);
@@ -1715,7 +1781,10 @@ Int_t AliAnalysisTaskMLTreeMaker2018::GetAcceptedTracks(AliVEvent *event, Double
       int motherID = TMath::Abs(fMCEvent->GetTrack(abslabel)->GetMother());
       Particle part  = CreateParticle(track);
       part.isMCSignal = mcSignal_acc;
-      part.SetTrackID(fabs(track->GetLabel())); //iTracks
+//      part.SetTrackID(fabs(track->GetLabel())); //iTracks
+      part.SetTrackID(iTracks); //iTracks
+      part.SetTrackLabel(fabs(track->GetLabel())); //iTracks
+
       part.SetMotherID(motherID);
       part.SetULSSignalPair(generatorForULSSignal);
       part.SetMCSignalPair(generatorForMCSignal);
@@ -1727,24 +1796,6 @@ Int_t AliAnalysisTaskMLTreeMaker2018::GetAcceptedTracks(AliVEvent *event, Double
       // check if electron comes from a mother with ele+pos as daughters
 //      CheckIfFromMotherWithDielectronAsDaughter(part);
 
-
-//        Double_t xyz[3] = {0};
-//	Bool_t pass = kFALSE;
-//        if(fEvent->GetTrack(fabs(track->GetLabel()))){
-//	       	std::cout << "  kicked out? " << fEvent << "  " << fEvent->GetTrack(fabs(track->GetLabel())) << "  " << (static_cast<AliVTrack*>(fEvent->GetTrack(fabs(track->GetLabel()))))->GetXYZ(xyz) << std::endl; 
-//		if(!((static_cast<AliVTrack*>(fEvent->GetTrack(fabs(track->GetLabel()))))->GetXYZ(xyz))){
-//                  fQAHist->Fill("Tracks passed final test",1);
-//		  //pass = kTRUE;
-//                  continue;
-//		}
-//	}
-//        if(event->GetTrack(fabs(track->GetLabel()))){
-//	       	std::cout << "  kicked out? " << event  << "  " <<  event->GetTrack(fabs(track->GetLabel())) << "  " << (static_cast<AliVTrack*>(event->GetTrack(fabs(track->GetLabel()))))->GetXYZ(xyz) << std::endl;
-//                if(! ((static_cast<AliVTrack*>(event->GetTrack(fabs(track->GetLabel()))))->GetXYZ(xyz))){
-//                  fQAHist->Fill("Tracks failed final test",1);
-//                  continue;
-//		}
-//	}
 
       if(doPairing == true && part.fCharge < 0) fNegPart.push_back(part);
       if(doPairing == true && part.fCharge > 0) fPosPart.push_back(part);
