@@ -57,11 +57,11 @@ protected:
   char fcut[kCuts][30] ;
   double fKtBins[kKtbins+1] = {0.2,0.4,0.7,1.,2.} ;  
 
-  THashList *   fOutputContainer;        //final histogram container
-  AliAODEvent * fEvent ;        //!
-  TList *       fPHOSEvents[kVtxBins][kCentBins][kPRBins] ;  //Containers for events with PHOS photons [zvtx][fCenBin][irp]
-  TClonesArray* fPHOSEvent ;     //PHOS photons in current event
-  TClonesArray* fCPVEvent ;      //CPV event
+  THashList *   fOutputContainer;       //final histogram container
+  AliAODEvent * fEvent ;                //!
+  TList *       fPHOSEvents[kVtxBins][kCentBins][kPRBins] ;  // !Containers for events with PHOS photons [zvtx][fCenBin][irp]
+  TClonesArray* fPHOSEvent ;            //!PHOS photons in current event
+  TClonesArray* fCPVEvent ;             //!CPV event
   
   //Reaction plain for v2
   AliEPFlattener * fV0AFlat ; //!
@@ -76,23 +76,21 @@ protected:
   AliPHOSGeometry  *fPHOSGeo;  //! PHOS geometry
   Int_t fEventCounter;         // number of analyzed events
   
-  TH2C * fBadMap ;
+  TH2C * fBadMap ;                       //!
 
-  TH2F * fhReQinv[kCentBins][kCuts];
-  TH2F * fhMiQinv[kCentBins][kCuts];
-  TH2F * fhReQinvCut[kCentBins][kCuts];
-  TH2F * fhMiQinvCut[kCentBins][kCuts];
-  TH2F * fhReq[kCentBins][kCuts];
-  TH2F * fhMiq[kCentBins][kCuts];
-  TH2F * fhReqCut[kCentBins][kCuts];
-  TH2F * fhMiqCut[kCentBins][kCuts];
+  TH2F * fhReQinv[kCentBins][kCuts];     //!
+  TH2F * fhMiQinv[kCentBins][kCuts];     //!
+  TH2F * fhReQinvCut[kCentBins][kCuts];  //!
+  TH2F * fhMiQinvCut[kCentBins][kCuts];  //!
+  TH2F * fhReq[kCentBins][kCuts];        //!
+  TH2F * fhMiq[kCentBins][kCuts];        //!
+  TH2F * fhReqCut[kCentBins][kCuts];     //!
+  TH2F * fhMiqCut[kCentBins][kCuts];     //!
 
-  TH3F * fhReOSL[kCentBins][kKtbins] ;
-  TH3F * fhMiOSL[kCentBins][kKtbins] ;
-  TH3F * fhReCPVOSL[kCentBins][kKtbins] ;
-  TH3F * fhMiCPVOSL[kCentBins][kKtbins] ;
-
-
+  TH3F * fhReOSL[kCentBins][kKtbins] ;   //!
+  TH3F * fhMiOSL[kCentBins][kKtbins] ;   //!
+  TH3F * fhReCPVOSL[kCentBins][kKtbins]; //! 
+  TH3F * fhMiCPVOSL[kCentBins][kKtbins]; //!
 
   ClassDef(AliAnalysisTaskEtaPhigg, 2); // PHOS analysis task
 };
