@@ -1,4 +1,4 @@
-AliAnalysisTaskLambdaK0s*AddTaskLambdaK0s(TString taskName = "name",int trigger,float cenMin, float cenMax,  bool effCorr = 0, bool isMC=0,bool eventMixing = 0,TString container_name_extension = "",TString fileName_extension = "",TString EffFileNameWithPath = ""){
+AliAnalysisTaskLambdaK0s*AddTaskLambdaK0s(TString taskName = "name",float cenMin = 0, float cenMax = 100,  bool effCorr = 0, bool isMC=0,bool eventMixing = 0,TString container_name_extension = "",TString fileName_extension = "",TString EffFileNameWithPath = ""){
 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
@@ -77,7 +77,7 @@ TString fileName = AliAnalysisManager::GetCommonFileName();
 
 
 
-     TGrid::Connect("alien://");
+   //  TGrid::Connect("alien://");
     TFile * file = TFile::Open(Form("alien:///alice/cern.ch/user/%s.root",EffFileNameWithPath.Data()));
     //TFile * file = TFile::Open(Form("%s.root",EffFileNameWithPath.Data()));
 

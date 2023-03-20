@@ -71,7 +71,8 @@ AliRsnMiniAnalysisTask * AddTaskLstarpp_sp
  Float_t     nsigmaKa=3.,
  Float_t     nsigmaTOFPr = 3.0,
  Float_t     nsigmaTOFKa= 3.,
- Bool_t      enableMonitor=kTRUE
+ Bool_t      enableMonitor=kTRUE,
+ Int_t       gSphTrack=10
  )
 {  
   //-------------------------------------------
@@ -136,7 +137,7 @@ AliRsnMiniAnalysisTask * AddTaskLstarpp_sp
  
   // Objects name
   AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-  
+  task->SetTrackInSpherocity(gSphTrack);  //no of track used in spherocity calculation
   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kINEL10 && evtCutSetID!=eventCutSet::kIGZ10 && evtCutSetID!=eventCutSet::kIGZ){
     if(!isAOD)task->UseESDTriggerMask(triggerMask); //ESD
     task->SelectCollisionCandidates(triggerMask); //AOD

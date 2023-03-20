@@ -5,10 +5,15 @@
 #ifndef AliAnalysisTaskDensity_H
 #define AliAnalysisTaskDensity_H
 
+// ali basic
 #include "AliAnalysisTaskSE.h"
 #include "AliEventCuts.h"
 #include "AliAODMCParticle.h"
+#include "AliGFWCuts.h"
 
+#include <iostream>
+#include <utility>
+#include <vector>
 
 // root basics
 #include "TString.h"
@@ -23,15 +28,17 @@ class TList;
 class AliAODEvent;
 class AliAODTrack;
 class AliMCEvent;
+class AliGFWCuts;
+class TProfile;
+class TH2D;
 
 class AliPtSubEventContainer;
-
 
 class AliAnalysisTaskDensity : public AliAnalysisTaskSE  
 {
     public:
         AliAnalysisTaskDensity();
-        AliAnalysisTaskDensity(const char *name);
+        AliAnalysisTaskDensity(const char *name, Bool_t bUseEff);
         virtual ~AliAnalysisTaskDensity();
 
         virtual void UserCreateOutputObjects();
@@ -47,69 +54,86 @@ class AliAnalysisTaskDensity : public AliAnalysisTaskSE
 
         void SetMaxPileup(Int_t npilup){ fMaxPileup = npilup;};
         void SetMaxPrimaryVz(Double_t vz){ fMaxPrimaryVertexZ = vz; };
-        void SetTightEventCuts(Double_t zvertex, Int_t pileup);
 
         void SetFilterBit(UInt_t bit){ fFilterBit = bit; };
         void SetTPCMinCls(UShort_t tpcmin){fTPCMinCls = tpcmin;};
         void SetPtRange(Double_t low, Double_t high){ fPtLow = low; fPtHigh = high;};
         void SetMaxDCAz(Double_t dcaz){fMaxDCAz = dcaz;};
-        void SetTightTrackCuts(UInt_t filterbit, UShort_t ncls, Double_t dcaz);
+        void SetEtaGap(Double_t gap) { fEtaGap = gap; };
+        void SetSystFlag(Int_t iflag){ if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(iflag);};
+        void SetDCAxyFunctionalForm(TString iform) { fDCAxyFunctionalForm = iform; }; //Call after SystFlag
+        void SetAbsEta(Double_t ieta) {fAbsEta = ieta;};
 
+        bool CheckTrigger(Double_t lCent);
         bool AcceptAODTrack(AliAODTrack* track);
         bool AcceptMCTrack(AliAODMCParticle* track);
         bool AcceptAODEvent(AliAODEvent* event);
 
-        void FillTrackSelection(AliAODTrack* track);
-
+        void ProcessTrack(Double_t lweight, Double_t lpt, Double_t leta);
         void ProcessEventCorrelation(Int_t id);
-        void FillWPCounter(vector<vector<double>> &inarr, double w, double p);
+        void FillWPCounter(std::vector<std::vector<Double_t>> &inarr, Double_t w, Double_t p);
         void ClearWPCounter();
 
+        Double_t WeightPt(Double_t pt);
+
     protected:
-        // QA
+    // QA
         AliEventCuts fEventCuts;
 
     private:
-        // containers
+    // input/output containers
         TList*                  fPtSampleList;          //! output list for BS samples        
-        TList*                  fQAList;                //! QA AliEvents cuts 
+        TList*                  fInputListEfficiency;   
+        TList*                  fQAEventList;           //! QA AliEvents cuts 
         TList*                  fQATrackList;           //! QA for track cuts
-        // classes
-        AliAODEvent*            fAOD;                    //! input event
-        AliMCEvent*             fMCEvent;                //! mc event
-        AliPtSubEventContainer** PtSubContainer;        
-        // event settings
+    // ali classes
+        AliGFWCuts*                 fGFWSelection;
+        AliAODEvent*                fAOD;                  //! input event
+        AliMCEvent*                 fMCEvent;              //! mc event
+        AliPtSubEventContainer**    PtSubContainer;         
+    // task setting
+        Int_t       fSystFlag;
+
+    // event settings
+        Bool_t      fUseEffeciency;
         Double_t    fCentrality;
         Double_t    fMaxPrimaryVertexZ;
         Int_t       fMaxPileup;
         Double_t    fPtLow;
         Double_t    fPtHigh;
-        // track settings
+        Double_t    fEtaGap;
+        Double_t    fAbsEta;
+    // track settings
         UInt_t      fFilterBit;
         UShort_t    fTPCMinCls;
         Int_t       fMPar;
         Int_t       fNOfTPCClusters;
         Double_t    fMaxDCAz;
-
         TString     fMultSelMethod;
         TString     fMode;
+        TString     fDCAxyFunctionalForm;
+        Double_t    fChi2PerClusterTPC;
+    // histos
+        TH1D*       fhDCAzDistribution;     //!
+        TH1D*       fhDCAxyDistribution;    //!
+        TH1D*       fhEtaDistribution;      //!
+        TH2D*       fhPtDistribution;       //!
+        TH2D*       fhCentSelected;         //!
+        TH1D*       fhPrimaryVzSelected;    //!
+        TH1D*       fhCrossedRowsTPC;       //!
+        TH1D*       fhChiPerTPCCls;         //!
+        TH1D*       fhChiPerITSCls;         //!
+        TH1D*       fhNofPileupSelected;    //!
 
-        // histos
-        TH1D*       fhDCAzDistribution;
-        TH1D*       fhDCAxyDistribution;
-        TH1D*       fhEtaDistribution;
-        TH1D*       fhPtDistribution;
+        TH1D*       fhEffeciencyPt;         //!
 
-        // Other
-        std::vector<std::vector<std::vector<Double_t>>> wpSubEvent;
+    // Other
+        std::vector<std::vector<std::vector<Double_t>>> wpThreeSubEvent;
+        std::vector<std::vector<std::vector<Double_t>>> wpTwoSubEvent;
         std::vector<std::vector<Double_t>> wp;
         TRandom* rndGenerator;
-
-
-        AliAnalysisTaskDensity(const AliAnalysisTaskDensity&); // not implemented
-        AliAnalysisTaskDensity& operator=(const AliAnalysisTaskDensity&); // not implemented
-
-        ClassDef(AliAnalysisTaskDensity, 1);
+        
+        ClassDef(AliAnalysisTaskDensity, 2);
 };
 
 #endif

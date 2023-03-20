@@ -33,4 +33,5 @@
 #pragma link C++ class AliHFTreeHandlerApplyLc2V0bachelor+;
 #pragma link C++ class AliHFTreeHandlerApplyDstartoKpipi+;
 #pragma link C++ class AliParticleTreeHandlerApply+;
+#pragma link C++ class AliHFMLXicZeroToXiPifromKFP+;
 #endif

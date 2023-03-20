@@ -2,9 +2,9 @@
 #define AliAnalysisTaskV0sInJetsEmcal_cxx
 
 //-------------------------------------------------------------------------
-//     task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+//     task for analysis of V0s (K0S, (anti-)Lambda) in charged jets (+ Xi analysis)
 //     fork of AliAnalysisTaskV0sInJets for the EMCal framework
-//     Author: Vit Kucera (vit.kucera@cern.ch)
+//     Author: Vit Kucera (vit.kucera@cern.ch)                       (Xi analysis added by Ekaterina Grecka)
 //-------------------------------------------------------------------------
 
 class TH1D;
@@ -16,6 +16,7 @@ class TRandom;
 class AliAODv0;
 class AliAODVertex;
 class AliAODJet;
+class AliAODcascade;
 
 class AliJetContainer;
 class AliParticleContainer;
@@ -105,7 +106,7 @@ public:
   Double_t GetNormalPhi(Double_t phi) {while(phi >= fgkdDeltaPhiMax) phi -= TMath::TwoPi(); while(phi < fgkdDeltaPhiMin) phi += TMath::TwoPi(); return phi;} // restrict azimuth to desired range
 
   // upper edges of centrality bins
-  static const Int_t fgkiNBinsCent = 9; // number of centrality bins
+  static const Int_t fgkiNBinsCent = 1; // number of centrality bins
   static const Int_t fgkiCentBinRanges[fgkiNBinsCent]; // upper edges of centrality bins
   // centrality bins for event mixing
   static const Int_t fgkiNBinsCentMix = 2; // number of centrality bins for event mixing
@@ -133,6 +134,23 @@ public:
   // delta phi range
   static const Double_t fgkdDeltaPhiMin; // minimum delta-phi_V0-jet
   static const Double_t fgkdDeltaPhiMax; // maximum delta-phi_V0-jet
+//New public functions and parameters for the Xi analysis
+//------------------------------------------------------------------------------------------
+  void FillCascadeCandidates(Double_t mXi, Bool_t isXi, Int_t iCut, Int_t iCent);
+  void FillQAHistogramXi(AliAODVertex* vtx, const AliAODcascade* cascade, Int_t iIndexHisto, Bool_t IsCandXi, Bool_t IsInPeakXi);
+  // set functions 
+  void SetCutDCACascadeBachToPrimVtxMin(Double_t val = 0.04) {fdCutDCACascadeBachToPrimVtxMin = val;}
+  void SetCutDCACascadeV0ToPrimVtxMin(Double_t val = 0.1) {fdCutDCACascadeV0ToPrimVtxMin = val;}
+  void SetCutDCACascadeDaughtersToPrimVtxMin(Double_t val = 0.03) {fdCutDCACascadeDaughtersToPrimVtxMin = val;}
+  void SetCutDCACascadeV0DaughtersMax(Double_t val = 1.) {fdCutDCACascadeV0DaughtersMax = val;}
+  void SetCutDCACascadeBachToV0Max(Double_t val = 1.3) {fdCutDCACascadeBachToV0Max = val;}
+  void SetCutCPACascadeMin(Double_t val = 0.97) {fdCutCPACascadeMin = val;} 
+  void SetCutCPACascadeV0Min(Double_t val = 0.998) {fdCutCPACascadeV0Min = val;} 
+  // axis: Xi invariant mass
+  static const Int_t fgkiNBinsMassXi; // number of bins (uniform binning)
+  static const Double_t fgkdMassXiMin; // minimum
+  static const Double_t fgkdMassXiMax; // maximum  
+//------------------------------------------------------------------------------------------
 
 protected:
   void ExecOnce();
@@ -199,6 +217,7 @@ private:
   Double_t fdCutRapV0Max; // (0.75) max |rapidity| of V0 (turned off)
   Double_t fdCutNTauKMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, K0S
   Double_t fdCutNTauLMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Lambda
+  Double_t fdCutNTauXMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Xi
   Bool_t fbCutArmPod; // (yes) Armenteros-Podolanski for K0S
   Bool_t fbCutCross; // (no) cross-contamination
 
@@ -472,6 +491,96 @@ private:
 
   TH2D* fh2Tau3DVs2D[fgkiNQAIndeces]; //! pt vs ratio 3D lifetime / 2D lifetime
   */
+
+//New private parameters and histograms for the Xi selection
+//------------------------------------------------------------------------------------------
+  Double_t fdCutDCACascadeBachToPrimVtxMin; // [cm] min DCA of bachelor track to the prim vtx
+  Double_t fdCutDCACascadeV0ToPrimVtxMin;   // [cm] min DCA of V0 (from cascade decay) to the prim vtx
+  Double_t fdCutDCACascadeDaughtersToPrimVtxMin; // [cm] min DCA of daughters (from secondary V0 decay) to the prim vtx
+  Double_t fdCutDCACascadeV0DaughtersMax; // 1.5; // [sigma of TPC tracking] max DCA between Cascade V0 daughters
+  Double_t fdCutDCACascadeBachToV0Max; // 1.3; // [cm] max DCA between bachelor track to V0   
+  Double_t fdCutCPACascadeMin;   // min cosine of the pointing angle of the cascade
+  Double_t fdCutCPACascadeV0Min; // min cosine of the pointing angle of the V0 in the cascade
+
+  static const Int_t fgkiNCategCascade = 21; // number of Cascade selection steps  
+  //Histograms 
+  TH1D* fh1CascadeCandPerEvent; //! number of Cascade cand per event
+   //QA 
+  TH1D* fh1QACascadeStatus[fgkiNQAIndeces]; //! online vs offline reconstructed Cascade candidates
+  TH1D* fh1QACascadeTPCRefit[fgkiNQAIndeces]; //! TPC refit on vs off
+  TH1D* fh1QACascadeTPCRows[fgkiNQAIndeces]; //! crossed TPC pad rows
+  TH1D* fh1QACascadeTPCFindable[fgkiNQAIndeces]; //! findable clusters
+  TH1D* fh1QACascadeTPCRowsFind[fgkiNQAIndeces]; //! ratio rows/clusters
+  TH1D* fh1QACascadeEta[fgkiNQAIndeces]; //! pseudorapidity
+  TH2D* fh2QACascadeEtaRows[fgkiNQAIndeces]; //! pseudorapidity vs TPC rows
+  TH2D* fh2QACascadePtRows[fgkiNQAIndeces]; //! pt vs TPC rows
+  TH2D* fh2QACascadePhiRows[fgkiNQAIndeces]; //! azimuth vs TPC rows
+  TH2D* fh2QACascadeNClRows[fgkiNQAIndeces]; //! clusters vs TPC rows
+  TH2D* fh2QACascadeEtaNCl[fgkiNQAIndeces]; //! pseudorapidity vs clusters
+  // Xi
+  TH1D* fh1CascadeCounterCentXi[fgkiNBinsCent]; //! number of Xi candidates after various cuts
+  TH1D* fh1CascadeInvMassXiAll[fgkiNCategCascade]; //! 
+  TH2D* fh2QACascadeEtaPtXiPeak[fgkiNQAIndeces]; //!
+  TH2D* fh2QACascadeEtaEtaXi[fgkiNQAIndeces]; //!
+  TH2D* fh2QACascadePhiPhiXi[fgkiNQAIndeces]; //!
+  TH1D* fh1QACascadeRapXi[fgkiNQAIndeces]; //!
+  TH2D* fh2QACascadePtPtXiPeak[fgkiNQAIndeces]; //!
+  TH2D* fh2ArmPodXi[fgkiNQAIndeces]; //! ??
+  TH1D* fh1CascadeCandPerEventCentXi[fgkiNBinsCent]; //!
+  TH1D* fh1CascadeInvMassXiCent[fgkiNBinsCent]; //!
+  // Xi Inclusive
+  THnSparse* fhnCascadeInclusiveXi[fgkiNBinsCent]; //!
+  // Xi Cones
+  THnSparse* fhnCascadeInJetXi[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeInPerpXi[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeInRndXi[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeInMedXi[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeOutJetXi[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeNoJetXi[fgkiNBinsCent]; //!
+  TH2D* fh2CascadePtJetAngleXi[fgkiNBinsCent]; //!
+  TH1D* fh1DCAInXi[fgkiNBinsCent]; //!
+  TH1D* fh1DCAOutXi[fgkiNBinsCent]; //! 
+  // MC histograms
+  // inclusive
+  TH1D* fh1CascadeXiPtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1CascadeXiPtMCRec[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeXiPtMassMCRec[fgkiNBinsCent]; //!
+  TH1D* fh1CascadeXiPtMCRecFalse[fgkiNBinsCent]; //!
+  // inclusive eta-pT efficiency
+  TH2D* fh2CascadeXiEtaPtMCGen[fgkiNBinsCent]; //!
+  THnSparse* fh3CascadeXiEtaPtMassMCRec[fgkiNBinsCent]; //!
+  // MC daughter eta inclusive  //  THnSparse* fhnCascadeXiInclDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_Cascade generated
+  THnSparse* fhnCascadeXiInclDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_Cascade reconstructed
+  // in jets
+  TH2D* fh2CascadeXiInJetPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeXiInJetPtMCRec[fgkiNBinsCent]; //!
+  THnSparse* fh3CascadeXiInJetPtMassMCRec[fgkiNBinsCent]; //!
+  // in jets eta-pT efficiency
+  THnSparse* fh3CascadeXiInJetEtaPtMCGen[fgkiNBinsCent]; //!
+  THnSparse* fh4CascadeXiInJetEtaPtMassMCRec[fgkiNBinsCent]; //!
+  // MC daughter eta in  CascadeXiInJetsDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
+  THnSparse* fhnCascadeXiInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 reconstructed
+  // resolution
+  TH2D* fh2CascadeXiMCResolMPt[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeXiMCPtGenPtRec[fgkiNBinsCent]; //!
+  
+  TH1D* fh1QACascadePt[fgkiNQAIndeces]; //! pt
+  TH1D* fh1QACascadeCharge[fgkiNQAIndeces]; //! charge
+  TH1D* fh1QACascadeDCAVtx[fgkiNQAIndeces]; //! DCA of daughters to prim vtx
+  TH1D* fh1QACascadeDCAV0[fgkiNQAIndeces]; //! DCA between daughters
+  TH1D* fh1QACascadeDCAV0ToPrimVtx[fgkiNQAIndeces];  // dca V0 to primary vertex
+  TH1D* fh1QACascadeDCABachToPrimVtx[fgkiNQAIndeces]; // dca bachelor to primary vertex
+  TH1D* fh1QACascadeDCABachToV0[fgkiNQAIndeces];   // dca bachelor to V0  
+  TH1D* fh1QACascadeV0Cos[fgkiNQAIndeces]; //! cosine of pointing angle (CPA)
+  TH1D* fh1QACascadeXiCos[fgkiNQAIndeces]; //! cosine of pointing angle (CPA) (Xi)
+
+  TH1D* fh1QACascadeV0R[fgkiNQAIndeces]; //! radial distance between prim vtx and V0 decay vertex
+  TH1D* fh1QACascadeCTau2D[fgkiNQAIndeces]; //! lifetime calculated in xy
+  TH1D* fh1QACascadeCTau3D[fgkiNQAIndeces]; //! lifetime calculated in xyz
+
+  //jet histograms
+  TH1D* fh1DistanceCascadeJetsXi[fgkiNBinsCent]; //! distance in eta-phi between Cascade and the closest jet
+//-------------------------------------------------------------------------------------------
 
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented

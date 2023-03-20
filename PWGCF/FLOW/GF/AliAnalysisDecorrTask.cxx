@@ -631,7 +631,7 @@ void AliAnalysisDecorrTask::UserExec(Option_t *)
         if(bRef) refData.push_back(StoreRef());
         if(bDiff||bPtA||bPtRef) ptaData.push_back(StorePtA());
         if(bPtB) ptbData.push_back(StorePtB());
-        if(fCorrOrder==4&&bPtRef) if(task->fiHarm[1] > 0) iPtRefLS = fTaskCounter; else iPtRefOS = fTaskCounter;
+        if(fCorrOrder==4&&bPtRef) { if(task->fiHarm[1] > 0) iPtRefLS = fTaskCounter; else iPtRefOS = fTaskCounter; }
         FillRPvectors(task);
         if(bRef) { CalculateCorrelations(task, lCent, -1.0, -1.0, bRef, kFALSE, kFALSE, kFALSE, kFALSE); } 
         if(!(bDiff || bPtA || bPtRef || bPtB)) continue;  
@@ -763,7 +763,10 @@ void AliAnalysisDecorrTask::CalculateGFW(TComplex c[2], const AliDecorrFlowCorrT
         {
             case 0 :             
                 if(fCorrOrder==2) { c[0] = Two(0,0); c[1] = Two(task->fiHarm[0],task->fiHarm[1]); }
-                else { c[0] = Four(0,0,0,0); c[1] = Four(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]); }
+                else if(fCorrOrder==4) { c[0] = Four(0,0,0,0); c[1] = Four(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]); }
+                else if(fCorrOrder==6) { c[0] = Six(0,0,0,0,0,0); c[1] = Six(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5]); }
+                else if(fCorrOrder==8) { c[0] = Eight(0,0,0,0,0,0,0,0); c[1] = Eight(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3],task->fiHarm[4],task->fiHarm[5],task->fiHarm[6],task->fiHarm[7]); }
+                break;
             case 1 :
                 if(fCorrOrder==2) { c[0] = TwoDiff(0,0); c[1] = TwoDiff(task->fiHarm[0],task->fiHarm[1]); }
                 else { c[0] = FourDiff(0,0,0,0); c[1] = FourDiff(task->fiHarm[0],task->fiHarm[1],task->fiHarm[2],task->fiHarm[3]); }

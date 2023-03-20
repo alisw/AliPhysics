@@ -212,6 +212,7 @@ public:
       /// \brief MC's corresponding to 2018 data
       ///@{
       kLHC18l8, ///< anchored to LHC18q/r Pb-Pb 5.02 TeV general purpose
+      kLHC20e3, ///< anchored to LHC18q/r pass3 Pb-Pb 5.02 general purpose
       ///@}
       /// \name fast MC productions
       ///@{

@@ -193,7 +193,7 @@ void AliNormalizationCounter::StoreEvent(AliVEvent *event,AliRDHFCuts *rdCut,Boo
   Int_t runNumber = event->GetRunNumber();
  
   // Evaluate the multiplicity
-  if(fMultiplicity && multiplicity==-9999) Multiplicity(event);
+  if(fMultiplicity && multiplicity==-9999) multiplicity = Multiplicity(event);
 
   //Find CINT1B
   AliESDEvent *eventESD = (AliESDEvent*)event;

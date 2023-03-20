@@ -19,11 +19,8 @@ AliPtContainer::AliPtContainer():
     fKurtosisList(0),
     fCorrList(0),
     fSubList(0),
-    fCMList(0),
     fCumulantList(0),
-    fCumulantCMList(0),
     fNormList(0),
-    fNormCMList(0),
     mpar(0),
     fEventWeight(kWeight::kWmaxperm),
     fSubevent(false)
@@ -31,7 +28,6 @@ AliPtContainer::AliPtContainer():
 AliPtContainer::~AliPtContainer()
 {
     delete fCorrList;
-    delete fCMList;
     delete fCkTermList;
     delete fSkewTermList;
     delete fKurtosisTermList;
@@ -46,11 +42,8 @@ AliPtContainer::AliPtContainer(const char* name, const char* title, int nbinsx, 
     fKurtosisList(0),
     fCorrList(0),
     fSubList(0),
-    fCMList(0),
     fCumulantList(0),
-    fCumulantCMList(0),
     fNormList(0),
-    fNormCMList(0),
     mpar(m),
     fEventWeight(kWeight::kWmaxperm),
     fSubevent(sub)
@@ -67,11 +60,8 @@ AliPtContainer::AliPtContainer(const char* name, const char* title, int nbinsx, 
     fKurtosisList(0),
     fCorrList(0),
     fSubList(0),
-    fCMList(0),
     fCumulantList(0),
-    fCumulantCMList(0),
     fNormList(0),
-    fNormCMList(0),
     mpar(m),
     fEventWeight(kWeight::kWmaxperm),
     fSubevent(sub)
@@ -91,9 +81,6 @@ void AliPtContainer::Initialize(int nbinsx, double* xbins) {
     if(fCorrList) delete fCorrList;
     fCorrList = new TList();
     fCorrList->SetOwner(kTRUE);
-    if(fCMList) delete fCMList;
-    fCMList = new TList();
-    fCMList->SetOwner(kTRUE);
     if(fSubevent)     {
         if(fSubList) delete fSubList;
         fSubList = new TList();
@@ -114,7 +101,6 @@ void AliPtContainer::Initialize(int nbinsx, double* xbins) {
             fSubList->Add(new AliProfileBS(Form("corr_%ipar_subP",m+1),this->GetTitle(),nbinsx,xbins));
             fSubList->Add(new AliProfileBS(Form("corr_%ipar_subN",m+1),this->GetTitle(),nbinsx,xbins));
         }
-        fCMList->Add(new AliProfileBS(Form("cm%i",m+1),this->GetTitle(),nbinsx,xbins));
     }
     printf("Container %s initialized with m = %i\n",this->GetName(),mpar);
 };
@@ -131,9 +117,6 @@ void AliPtContainer::Initialize(int nbinsx, double xlow, double xhigh) {
     if(fCorrList) delete fCorrList;
     fCorrList = new TList();
     fCorrList->SetOwner(kTRUE);
-    if(fCMList) delete fCMList;
-    fCMList = new TList();
-    fCMList->SetOwner(kTRUE);
     if(fSubevent)
     {
         if(fSubList) delete fSubList;
@@ -158,23 +141,23 @@ void AliPtContainer::Initialize(int nbinsx, double xlow, double xhigh) {
             fSubList->Add(new AliProfileBS(Form("corr_%ipar_subP",m+1),this->GetTitle(),nbinsx,xlow,xhigh));
             fSubList->Add(new AliProfileBS(Form("corr_%ipar_subN",m+1),this->GetTitle(),nbinsx,xlow,xhigh));
         }
-        fCMList->Add(new AliProfileBS(Form("cm%i",m+1),this->GetTitle(),nbinsx,xlow,xhigh));
     }
     printf("Container %s initialized with m = %i\n",this->GetName(),mpar);
 };
 void AliPtContainer::InitializeSubsamples(const int &nsub) {
-    if(!fCkTermList || !fSkewTermList || !fKurtosisTermList || !fCorrList || !fCMList) return;
+    if(!fCkTermList || !fSkewTermList || !fCorrList) return;
     for(int i=0; i<fCkTermList->GetEntries();++i)
         ((AliProfileBS*)fCkTermList->At(i))->InitializeSubsamples(nsub);
     for(int i=0; i<fSkewTermList->GetEntries();++i)
         ((AliProfileBS*)fSkewTermList->At(i))->InitializeSubsamples(nsub);
     for(int i=0; i<fKurtosisTermList->GetEntries();++i)
         ((AliProfileBS*)fKurtosisTermList->At(i))->InitializeSubsamples(nsub);
-    for(int i=0; i<fCorrList->GetEntries();++i) {
+    for(int i=0; i<fCorrList->GetEntries();++i)
         ((AliProfileBS*)fCorrList->At(i))->InitializeSubsamples(nsub);
-        ((AliProfileBS*)fCMList->At(i))->InitializeSubsamples(nsub);
-        if(!fSubList) continue;
-        ((AliProfileBS*)fSubList->At(i))->InitializeSubsamples(nsub);
+    if(fSubevent) {
+        if(!fSubList) return;
+        for(int i=0; i<fSubList->GetEntries();++i)
+            ((AliProfileBS*)fSubList->At(i))->InitializeSubsamples(nsub);
     }
     return;
 };
@@ -201,43 +184,6 @@ vector<double> AliPtContainer::getEventCorrelation(const vector<vector<double>> 
     sumw[m] = sumDenum;
   }
   vector<double> outvec = {corr[mOrder],sumw[mOrder]};
-  return outvec;
-}
-double AliPtContainer::PolynomialExpansion(int k, const vector<vector<double>> &inarr, const double &mpt){
-  double polexp = 0;
-  for(int l(0);l<=k;++l){
-    polexp += fSign[l]*binomial(k,l)*inarr[k][k-l]/inarr[k][0]*pow(mpt,l);
-  }
-  return polexp;
-}
-vector<vector<double>> AliPtContainer::FillCentralMoments(const vector<vector<double>> &inarr, const double &mpt, const double &lMult, const double &rn){
-  vector<double> corr(mpar+1,0.0); corr[0] = 1.0;
-  vector<double> sumw(mpar+1,0.0); sumw[0] = 1.0;
-  vector<double> tau(mpar+1,0.0); tau[0] = 1.0;
-  for(int k(1);k<=mpar;++k) tau[k] = inarr[k+1][0]/pow(inarr[1][0],k+1);
-  double sumNum = 0;
-  double sumDenum = 0;
-  vector<double> valNum;
-  vector<double> valDenum;
-  for(int m(1); m<=mpar; ++m)
-  {
-    for(int k(1);k<=m;++k)
-    {
-      valNum.push_back(fSign[k-1]*corr[m-k]*(fFactorial[m-1]/fFactorial[m-k])*tau[k-1]*PolynomialExpansion(k,inarr,mpt));
-      valDenum.push_back(fSign[k-1]*sumw[m-k]*(fFactorial[m-1]/fFactorial[m-k])*tau[k-1]);
-    }
-    sumNum = OrderedAddition(valNum, m);
-    sumDenum = OrderedAddition(valDenum, m);
-    valNum.clear();
-    valDenum.clear();
-  
-    corr[m] = sumNum;
-    sumw[m] = sumDenum;
-    ((AliProfileBS*)fCMList->At(m-1))->FillProfile(lMult,corr[m]/sumw[m],(fEventWeight==PtSpace::kOne)?1.0:(pow(inarr[1][0],m)*sumw[m]),rn);
-  }
-  vector<vector<double>> outvec;
-  outvec.push_back(corr);
-  outvec.push_back(sumw);;
   return outvec;
 }
 void AliPtContainer::FillRecursive(const vector<vector<double>> &inarr,const double &lMult, const double &rn, TString sub) {
@@ -348,7 +294,6 @@ void AliPtContainer::RebinMulti(Int_t nbins) {
     if(fSkewTermList) for(Int_t i=0;i<fSkewTermList->GetEntries();i++) ((AliProfileBS*)fSkewTermList->At(i))->RebinMulti(nbins); 
     if(fKurtosisTermList) for(Int_t i=0;i<fKurtosisTermList->GetEntries();i++) ((AliProfileBS*)fKurtosisTermList->At(i))->RebinMulti(nbins); 
     if(fCorrList) for(Int_t i=0;i<fCorrList->GetEntries();i++) ((AliProfileBS*)fCorrList->At(i))->RebinMulti(nbins); 
-    if(fCMList) for(Int_t i=0;i<fCMList->GetEntries();i++) ((AliProfileBS*)fCMList->At(i))->RebinMulti(nbins); 
     if(fSubList) for(Int_t i=0;i<fSubList->GetEntries();i++) ((AliProfileBS*)fSubList->At(i))->RebinMulti(nbins); 
     return;
 }
@@ -357,7 +302,6 @@ void AliPtContainer::RebinMulti(Int_t nbins, Double_t *binedges) {
     if(fSkewTermList) for(Int_t i=0;i<fSkewTermList->GetEntries();i++) ((AliProfileBS*)fSkewTermList->At(i))->RebinMulti(nbins,binedges); 
     if(fKurtosisTermList) for(Int_t i=0;i<fKurtosisTermList->GetEntries();i++) ((AliProfileBS*)fKurtosisTermList->At(i))->RebinMulti(nbins,binedges); 
     if(fCorrList) for(Int_t i=0;i<fCorrList->GetEntries();i++) ((AliProfileBS*)fCorrList->At(i))->RebinMulti(nbins,binedges); 
-    if(fCMList) for(Int_t i=0;i<fCMList->GetEntries();i++) ((AliProfileBS*)fCMList->At(i))->RebinMulti(nbins,binedges); 
     if(fSubList) for(Int_t i=0;i<fSubList->GetEntries();i++) ((AliProfileBS*)fSubList->At(i))->RebinMulti(nbins,binedges); 
     return;
 }
@@ -497,35 +441,22 @@ TH1 *AliPtContainer::RecalculateKurtosisHists(vector<TH1*> inh) {
   return (TH1*)inh[0]->Clone("hRec");
 }
 TH1* AliPtContainer::getRecursiveHist(int ind, int m, unsigned int l_obs, bool sub) {
-  if(l_obs==kObs::kCM) return ((AliProfileBS*)fCMList->At(m-1))->getHist(ind);
-  if(l_obs==kObs::kCmltCM) {
-      if(!fCumulantCMList) CalculateRecursive(true,false);
-      if(!fCumulantCMList) return 0;
-      if(ind+1<fCumulantCMList->GetEntries()) return (TH1*)fCumulantCMList->At((ind+1)*mpar+m-1);
-  }
-  if(l_obs==kObs::kNormCM)
-  {
-      if(!fNormCMList) CalculateRecursive(true,true);
-      if(!fNormCMList) return 0;
-      if(ind+1<fNormCMList->GetEntries()) return (TH1*)fNormCMList->At((ind+1)*mpar+m-1);
-  }
   if(l_obs==kObs::kCorr) {
       if(!sub) return ((AliProfileBS*)fCorrList->At(m-1))->getHist(ind);
       else return getSubeventCorrelation(ind, m);
   }
-  if(l_obs==kObs::kCmlt) 
+  if(l_obs==kObs::kCum) 
   {
-      if(!fCumulantList) CalculateRecursive(false,false);
+      if(!fCumulantList) CalculateRecursive(false);
       if(!fCumulantList) return 0;
       if(ind+1<fCumulantList->GetEntries()) return (TH1*)fCumulantList->At((ind+1)*mpar+m-1);
   } 
   if(l_obs==kObs::kNorm)
   {
-      if(!fNormList) CalculateRecursive(false,true);
+      if(!fNormList) CalculateRecursive(true);
       if(!fNormList) return 0;
       if(ind+1<fNormList->GetEntries()) return (TH1*)fNormList->At((ind+1)*mpar+m-1);
   }
-
   return 0;
 }
 TH1* AliPtContainer::getSubeventCorrelation(int ind, int m) {
@@ -540,69 +471,38 @@ TH1* AliPtContainer::getSubeventCorrelation(int ind, int m) {
         TH1* sub2N = ((AliProfileBS*)fSubList->At(3))->getHist(ind);
         TH1* sub1P = ((AliProfileBS*)fSubList->At(0))->getHist(ind);
         TH1* sub1N = ((AliProfileBS*)fSubList->At(1))->getHist(ind);
-        TH1* sub1Psq = (TH1*)sub1P->Clone("sub1Psq");
-        TH1* sub1Nsq = (TH1*)sub1N->Clone("sub1Nsq");
-        sub1Psq->Multiply(sub1P);
-        sub1Nsq->Multiply(sub1N);
-        reth->Add(sub1Psq,-1);
-        reth->Multiply(sub1N);
-        sub2N->Add(sub1Nsq,-1);
-        sub2N->Multiply(sub1P);
-        reth->Add(sub2N);       
-        /*
         reth->Multiply(sub1N);
         sub2N->Multiply(sub1P);
         reth->Add(sub2N);
-        */
         reth->Scale(0.5);
     }
     else if(m==4) {
         reth = ((AliProfileBS*)fSubList->At(2))->getHist(ind);
         TH1* sub2N = ((AliProfileBS*)fSubList->At(3))->getHist(ind);
-        TH1* sub1P = ((AliProfileBS*)fSubList->At(0))->getHist(ind);
-        TH1* sub1N = ((AliProfileBS*)fSubList->At(1))->getHist(ind);
-        TH1* sub1Psq = (TH1*)sub1P->Clone("sub1Psq");
-        TH1* sub1Nsq = (TH1*)sub1N->Clone("sub1Nsq");
-        sub1Psq->Multiply(sub1P);
-        sub1Nsq->Multiply(sub1N);
-        reth->Add(sub1Psq,-1);
-        sub2N->Add(sub1Nsq,-1);
-        reth->Multiply(sub2N);    
+        reth->Multiply(sub2N);
     }
     else { printf("Subevent only for 2-,3- and 4-particle\n"); return 0; }
     return reth;
 }
-void AliPtContainer::CalculateRecursive(bool fromCM, bool normalized) { 
-  if(fromCM){
-    if(normalized)
-    {
-        if(fNormCMList) delete fNormCMList;
-        fNormCMList = new TList();
-        fNormCMList->SetOwner(kTRUE); 
-    }
-    if(fCumulantCMList) delete fCumulantCMList;
-    fCumulantCMList = new TList();
-    fCumulantCMList->SetOwner(kTRUE);
-    ((AliProfileBS*)fCMList->At(0))->PresetWeights((AliProfileBS*)fCMList->At(mpar-1));
-      for(int i=-1;i<((AliProfileBS*)fCMList->At(0))->getNSubs();++i) {
-          vector<TH1*> hTs;
-          for(int j=0;j<mpar;++j) {
-              ((AliProfileBS*)fCMList->At(j))->SetErrorOption("g");
-              hTs.push_back(((AliProfileBS*)fCMList->At(j))->getHist(i));
-          }
-          CalculateCentralCumulantHists(hTs,i,normalized);
-      }
-      ((AliProfileBS*)fCMList->At(0))->PresetWeights(0);
-  } else {
+void AliPtContainer::CalculateRecursive(bool normalized) { 
     if(normalized)
     {
         if(fNormList) delete fNormList;
         fNormList = new TList();
-        fNormList->SetOwner(kTRUE); 
+        fNormList->SetOwner(); 
+        if(!fCumulantList)
+        {
+            fCumulantList = new TList();
+            fCumulantList->SetOwner(); 
+            printf("cumulant list created!\n") ;
+        }
     }
-    fCumulantList = new TList();
-    fCumulantList->SetOwner(); 
-    printf("cumulant list created!\n") ;
+    else
+    {
+        if(fCumulantList) delete fCumulantList;
+        fCumulantList = new TList();
+        fCumulantList->SetOwner();
+    }
     ((AliProfileBS*)fCorrList->At(0))->PresetWeights((AliProfileBS*)fCorrList->At(mpar-1));
     for(int i=-1;i<((AliProfileBS*)fCorrList->At(0))->getNSubs();++i) {
         vector<TH1*> hTs;
@@ -613,11 +513,10 @@ void AliPtContainer::CalculateRecursive(bool fromCM, bool normalized) {
         CalculateCumulantHists(hTs,i,normalized);
     }
     ((AliProfileBS*)fCorrList->At(0))->PresetWeights(0);
-  }
-  return;
+    return;
 }
 void AliPtContainer::CalculateCumulantHists(vector<TH1*> inh, int ind, bool normalized) {
-    //auto binomial = [&](const int n, const int m) { return factorial(n)/(factorial(m)*factorial(n-m)); };
+    auto binomial = [&](const int n, const int m) { return factorial(n)/(factorial(m)*factorial(n-m)); };
     int lMax = (((AliProfileBS*)fCorrList->At(0))->getNSubs()+1)*mpar;
     if((normalized && fCumulantList->GetEntries()<lMax) || !normalized)
     {
@@ -651,40 +550,6 @@ void AliPtContainer::CalculateCumulantHists(vector<TH1*> inh, int ind, bool norm
 
     return;
 }
-void AliPtContainer::CalculateCentralCumulantHists(vector<TH1*> inh, int ind, bool normalized) {
-    //auto binomial = [&](const int n, const int m) { return factorial(n)/(factorial(m)*factorial(n-m)); };
-    int lMax = (((AliProfileBS*)fCMList->At(0))->getNSubs()+1)*mpar;
-    if((normalized && fCumulantCMList->GetEntries()<lMax) || !normalized)
-    {
-        for(int m=1;m<=mpar;++m)
-        {
-            TH1* reth = (TH1*)inh[m-1]->Clone(Form("hCM%i%i_%i",m,ind,normalized));
-            TH1* hWeights = (TH1*)inh[m-1]->Clone(Form("hWeightsCM%i%i_%i",m,ind,normalized));
-            for(int k=1;k<m;++k)
-            {
-                TH1* corrh = (TH1*)inh[m-k-1]->Clone(Form("hCM%i%i%i_%i",m,k,ind,normalized));
-                corrh->Multiply((TH1*)fCumulantCMList->At((ind+1)*mpar+k-1));
-                corrh->Scale(binomial(m-1,k-1));
-                reth->Add(corrh,-1);
-                delete corrh;
-            }
-            for(int i=1;i<=hWeights->GetNbinsX();++i) reth->SetBinError(i,hWeights->GetBinError(i));
-            delete hWeights;
-            fCumulantCMList->Add(reth->Clone(Form("rethCM%i%i",m,ind)));
-        }
-    }
-    if(normalized)
-    {
-        TH1* sigmah = (TH1*)fCumulantCMList->At((ind+1)*mpar+1)->Clone(Form("sigmaCMh%i",ind));
-        for(int m = 1; m<=mpar;++m)
-        {
-            TH1* normh = (TH1*)fCumulantCMList->At((ind+1)*mpar+m-1)->Clone(Form("normCMh%i%i",m,ind));
-            normh->Divide(getPowerHist(sigmah,0.5*(m)));
-            fNormCMList->Add(normh);
-        }
-    }
-    return;
-}
 TH1* AliPtContainer::getPowerHist(TH1* inh, double p) {
     TH1D* reth = (TH1D*)inh->Clone("reth");
     reth->SetName(Form("power%.2f_%s",p,inh->GetName()));
@@ -715,12 +580,9 @@ Long64_t AliPtContainer::Merge(TCollection *collist) {
       TList *t_Skew = l_PTC->fSkewList;
       TList *t_Kurtosis = l_PTC->fKurtosisList;
       TList* t_Corr = l_PTC->fCorrList;
-      TList* t_Sub = l_PTC->fSubList;
-      TList* t_CM = l_PTC->fCMList;
+      TList* t_Sub = l_PTC->fCorrList;
       TList* t_Cum = l_PTC->fCumulantList;
-      TList* t_CumCM = l_PTC->fCumulantCMList;
       TList* t_Norm = l_PTC->fNormList;
-      TList* t_NormCM = l_PTC->fNormCMList;
       if(t_CkTerm) {
         if(!fCkTermList) fCkTermList = (TList*)t_CkTerm->Clone();
         else MergeBSLists(fCkTermList,t_CkTerm);
@@ -759,25 +621,13 @@ Long64_t AliPtContainer::Merge(TCollection *collist) {
           if(!fSubList) fSubList = (TList*)t_Sub->Clone();
           else MergeBSLists(fSubList,t_Sub);
       };
-      if(t_CM) {
-        if(!fCMList) fCMList = (TList*)t_CM->Clone();
-        else MergeBSLists(fCMList,t_CM);
-      }
       if(t_Cum) {
           if(!fCumulantList) fCumulantList = (TList*)t_Cum->Clone();
           else MergeBSLists(fCumulantList,t_Cum);
       };
-      if(t_CumCM) {
-          if(!fCumulantCMList) fCumulantCMList = (TList*)t_CumCM->Clone();
-          else MergeBSLists(fCumulantCMList,t_CumCM);
-      };
       if(t_Norm) {
           if(!fNormList) fNormList = (TList*)t_Norm->Clone();
           else MergeBSLists(fNormList,t_Norm);
-      }
-      if(t_NormCM) {
-          if(!fNormCMList) fNormCMList = (TList*)t_NormCM->Clone();
-          else MergeBSLists(fNormCMList,t_NormCM);
       }
   }
   return nmerged;

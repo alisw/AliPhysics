@@ -52,7 +52,10 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     void SetIsMCassoc(bool IsMCassoc){fisMCassoc = IsMCassoc;};
 
     //pile-up rejection setter
-    void SetRejectPileUpEvts(bool RejectPileupEvts){fRejectPileupEvts = RejectPileupEvts;};
+    void SetRejectPileUpEvts(bool RejectPileupEvts, int PileupCut=1){if(RejectPileupEvts==kTRUE) fPileupCut = PileupCut;};
+
+    //centrality estimator setter
+    void SetCentralityEstimator(TString CentEstimator){fCentEstimator = CentEstimator;};
 
   private:
     THistManager* fHistos_eve;                                //!
@@ -72,8 +75,11 @@ class AliAnalysisTaskStrVsMult : public AliAnalysisTaskSE {
     AliEventCuts fEventCuts;                                  //
 
     //pile-up rejection flag
-    bool fRejectPileupEvts;                                   //
+    int fPileupCut;                                           //
 
+    //Centrality estimator
+    TString fCentEstimator;                                   //
+    
     //MC-realted variables
     bool fisMC;                                               //
     bool fisMCassoc;                                          //

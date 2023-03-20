@@ -1,28 +1,55 @@
-AliAnalysisTaskDensity* AddTaskDensity(TString name = "name")
+#include "TGrid.h"
+#include "TString.h"
+class TNamed;
+AliAnalysisTaskDensity* AddTaskDensity(TString name = "name", TString efficiencyFile = "")
 {
-    AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-    if (!mgr) {
-        return 0x0;
-    }
-    
-    if (!mgr->GetInputEventHandler()) {
-        return 0x0;
-    }
-    TString fileName = AliAnalysisManager::GetCommonFileName();
-    fileName += ":DensityTask";     
-    
-    AliAnalysisTaskDensity* task = new AliAnalysisTaskDensity(name.Data());   
-    if(!task) return 0x0;
-    task->SelectCollisionCandidates(AliVEvent::kINT7+AliVEvent::kCentral+AliVEvent::kSemiCentral);    
-    mgr->AddTask(task);
-    
-    // input
-    mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
-    
-    // output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer("PtSubEventSamples", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,2,mgr->CreateContainer("QAAliEventCuts", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-    mgr->ConnectOutput(task,3,mgr->CreateContainer("QATrackCuts", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
+  if (!mgr) return 0x0; 
+  if (!mgr->GetInputEventHandler()) return 0x0;
 
-    return task;
+  TString fileName = AliAnalysisManager::GetCommonFileName();
+  fileName += ":DensityTask";     
+  
+  Bool_t useEfficiency = kFALSE;
+  if(!efficiencyFile.IsNull()) useEfficiency = kTRUE;
+
+  // setup task
+  printf("Setting task");
+  AliAnalysisTaskDensity* task = new AliAnalysisTaskDensity(name.Data(), useEfficiency);   
+  if(!task) return 0x0;
+  task->SelectCollisionCandidates(AliVEvent::kINT7+AliVEvent::kCentral+AliVEvent::kSemiCentral);    
+  mgr->AddTask(task);
+  
+  // input
+  mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
+  // output
+  mgr->ConnectOutput(task,1,mgr->CreateContainer("PtSubEventSamples", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,2,mgr->CreateContainer("QAAliEventCuts", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,3,mgr->CreateContainer("QATrackCuts", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+
+  // get NUE files as input
+  if(useEfficiency) {
+    TObjArray* taskContainers = mgr->GetContainers();
+    if(!taskContainers) { printf("Task containers does not exists!\n"); return NULL; }
+
+    AliAnalysisDataContainer* efficiency = (AliAnalysisDataContainer*) taskContainers->FindObject("inputEfficiency");
+    if(!efficiency){
+      printf("Input file name: %s \n", efficiencyFile.Data());
+      if(efficiencyFile.Contains("alien:")){ if(!gGrid) TGrid::Connect("alien:"); }; 
+
+      TFile* efficiency_file = TFile::Open(efficiencyFile.Data(),"READ");
+      if(!efficiency_file) { printf("Input file with efficiency not found!\n"); return NULL; }
+
+      TList* efficiency_list = (TList*)efficiency_file->Get("EffAndFD");
+      if(!efficiency_list) { printf("E-AddTask: Input list with efficiency not found!\n"); efficiency_file->ls(); return NULL; }
+
+      AliAnalysisDataContainer* cInputEfficiency = mgr->CreateContainer("inputEfficiency", TList::Class(), AliAnalysisManager::kInputContainer);
+      cInputEfficiency->SetData(efficiency_list);
+      mgr->ConnectInput(task,1,cInputEfficiency);  
+    }
+  else {
+    mgr->ConnectInput(task,1,efficiency);
+  }
+  }
+  return task;
 }

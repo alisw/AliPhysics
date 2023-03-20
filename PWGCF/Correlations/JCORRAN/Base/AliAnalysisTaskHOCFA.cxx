@@ -329,11 +329,13 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
     fCorrel2p[i]->SetName(Form("fCorrel2p_Bin%d", i));
     fCorrel2p[i]->SetTitle(Form("2-p terms, no #Delta #eta, bin%d", i));
     fCorrel2p[i]->SetStats(kTRUE);
+    fCorrel2p[i]->Sumw2();  // NEW (seems not needed but safer to have it)
     fCentralityList[i]->Add(fCorrel2p[i]);
 
     fCorrel2pEtaGap[i] = new TProfile("", "", 8, 0., 8.);
     fCorrel2pEtaGap[i]->SetName(Form("ffCorrel2pEtaGap_Bin%d", i));
     fCorrel2pEtaGap[i]->SetTitle(Form("2-p terms, |#it{#Delta #eta}| > %.1f, bin%d", fEtaGap, i));
+    fCorrel2pEtaGap[i]->Sumw2();  // NEW (seems not needed but safer to have it)
     fCorrel2pEtaGap[i]->SetStats(kTRUE);
     if (fApplyEtaGap) {fCentralityList[i]->Add(fCorrel2pEtaGap[i]);}
 
@@ -362,6 +364,7 @@ void AliAnalysisTaskHOCFA::BookFinalResults()
     fCorrel3h[i] = new TProfile("", "", 9, 0., 9.);
     fCorrel3h[i]->SetName(Form("fCorrel3h_Bin%d", i));
     fCorrel3h[i]->SetTitle(Form("3-h terms for SC, bin%d", i));
+    fCorrel3h[i]->Sumw2();  // NEW    
     fCorrel3h[i]->SetStats(kTRUE);
     if (fGetSC) {fCentralityList[i]->Add(fCorrel3h[i]);}
 

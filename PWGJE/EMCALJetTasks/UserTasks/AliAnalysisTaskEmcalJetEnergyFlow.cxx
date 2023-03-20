@@ -44,7 +44,7 @@
    */
   AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow():
           AliAnalysisTaskEmcalJet(),
-          fHistManager(),fAnalysisType(kppData),R_jet_step(0.1)// , fOutput{0}
+          fHistManager(),fAnalysisType(kppData),R_jet_step(0.1),Max_match_dist(0.2)// , fOutput{0}
   {
   }
   /**
@@ -53,7 +53,7 @@
    */
   AliAnalysisTaskEmcalJetEnergyFlow::AliAnalysisTaskEmcalJetEnergyFlow(const char* name):
   AliAnalysisTaskEmcalJet(name, kTRUE),
-  fHistManager(name),fAnalysisType(kppData),R_jet_step(0.1)// , fOutput{0}
+  fHistManager(name),fAnalysisType(kppData),R_jet_step(0.1),Max_match_dist(0.2)// , fOutput{0}
   {
           SetMakeGeneralHistograms(1);
   }
@@ -145,6 +145,7 @@
            const char *nclusters,
            const char *ncells,
            Double_t   Rstep_EF,
+           Double_t Max_match_dr,
            AnalysisType fAnType,
            const char *suffix )
 {
@@ -249,6 +250,7 @@
     AliAnalysisTaskEmcalJetEnergyFlow* EFTask = new AliAnalysisTaskEmcalJetEnergyFlow(name);
     EFTask->R_jet_step=Rstep_EF;
     EFTask->SetCaloCellsName(cellName);
+    EFTask->Max_match_dist=Max_match_dr;
     EFTask->SetVzRange(-10,10);
     EFTask->SetAnalysisType(fAnType);
     if((fAnType==kppData)||(fAnType==kppMC))EFTask->SetForceBeamType(AliAnalysisTaskEmcal::kpp);  
@@ -455,6 +457,10 @@ for (Int_t cent = 0; cent < fNcentBins; cent++){
         if((fAnalysisType==kppMC)||(fAnalysisType==kEmbedded)){
         for(Int_t i=0;i<Pair_number;i++){
 
+          histname = TString::Format("hJetMismatchesFraction_R%03d_%d",int(Rstep*(i+1)*100),cent);
+          histtitle = TString::Format("Fraction of mismatches between the two levels for R_{jet}= %.2f;Mismatch fraction",Rstep*(i+2));
+          fHistManager.CreateTH1(histname,histtitle,100,0,1);
+
           histname = TString::Format("hJetPtDeltaPt_R%03d_gen_%d",int(Rstep*(i+1)*100),cent);
           histtitle = TString::Format("#DeltaP_{t} between %.2f and %.2f jet radii (Generator level);P_{t,jet(R=%.2f)}(GeV/c);#Delta P_{t}(GeV/c)",Rstep*(i+1),Rstep*(i+2),Rstep*(i+1));
           fHistManager.CreateTH2(histname,histtitle,fNPtBins,fMinPtBin,fMaxPtBin,fNDPtBins,fMinDPtBin,fMaxDPtBin);
@@ -556,7 +562,9 @@ void AliAnalysisTaskEmcalJetEnergyFlow::FillEFHistograms(){
   Double_t pt_Ldet = 0.0;               //Low R jet pt @ Det level (needed for the R-matrix)
   Double_t pt_Hdet = 0.0;               //High R jet pt @Det level (needed for the R-matrix)
   Double_t DeltaEta = 0.0;
-  Float_t Max_dist = 0.2;               //Maximum distance used as a matching criterion for JetMatcher
+  Double_t Mismatch_count =0.0;         //Counter for mismatches between truth and detector level
+  Double_t Response_count =0.0;         //Counter for all truth level jets which made it to the response matrix
+  Float_t Max_dist = Max_match_dist;    //Maximum distance used as a matching criterion for JetMatcher
   Float_t max_eta = 0.5;                //Maximum eta jet acceptance (cross-check within the JetMatcher)
   Double_t ResponseData[4];             //Array needed for filling the THnSparse R-matrix
   Bool_t   Bkg_sub_method =kFALSE;      //Boolean flag in case a constituent subtraction method is chosen instead of rho*A
@@ -583,6 +591,8 @@ Pair_number= NumJet-1;
           pt_Ldet = 0.0;
           pt_Hdet = 0.0;
           DeltaEta = 0.0;
+          Mismatch_count=0.;
+          Response_count=0.;
         DetjetCont1=0; DetjetCont2=0; GenjetCont1=0; GenjetCont2=0; //Reseting the containers at the start of each pair loop     
         if((fAnalysisType==kppMC)||(fAnalysisType==kEmbedded)){
                 MatchGenDetList.Clear();
@@ -780,10 +790,12 @@ Pair_number= NumJet-1;
                                  histname = TString::Format("ResponseMatrix_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                                  ResponseData[0]=pt_low;ResponseData[1]=pt_Ldet;ResponseData[2]=DeltaPt_gen;ResponseData[3]=DeltaPt_det;      
                                  fHistManager.FillTHnSparse(histname,ResponseData);
+                                Response_count = Response_count+1;
                               //  fHistManager.FillTH2(histname,DeltaPt_gen,DeltaPt_det);
 
                                  histname = TString::Format("DeltaResponseMatrix_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                                 fHistManager.FillTH3(histname,pt_low,pt_Ldet-pt_low,DeltaPt_det-DeltaPt_gen);
+                               if(dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(MI))->DeltaR((dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->ClosestJet())>1e-3)Mismatch_count=Mismatch_count+1; 
                                 break;}}
                                           }
                       histname = TString::Format("hJetPtDeltaPt_R%03d_gen_%d",int(Rstep*(i+1)*100),fCentBin);
@@ -830,6 +842,8 @@ Pair_number= NumJet-1;
                                                 } //And if the match is bijective
                                                     } // if there is a match
                     } // loop over the low R jets (Generator level that match to detector level)
+                histname =TString::Format("hJetMismatchesFraction_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
+                fHistManager.FillTH1(histname,Mismatch_count/Response_count);
                  } //End of MC production case
         else{
           // Casting the lower R half of the pair to a container and getting the accepted jets to a list

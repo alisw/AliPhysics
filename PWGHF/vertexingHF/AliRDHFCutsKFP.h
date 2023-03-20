@@ -130,6 +130,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   void SetPtMinXicPlus(Double_t a){fPtMinXicPlus=a;}
   void SetPtMinPiFromPrimary(Double_t a){fPtMinPiFromPrimary=a;}
   void SetPtMinPiFromXi(Double_t a){fPtMinPiFromXi=a;}
+  void SetPtMinPiFromXic0ForML(Double_t a){fPtMinPiFromXic0ForML=a;}
   void SetProdTrackEtaRange(Double_t a){fProdTrackEtaRange=a;}
   void SetProdUseAODFilterBit(Bool_t a){fProdUseAODFilterBit=a;}
   void SetProdMassTolLc(Double_t a){fProdMassTolLc=a;}
@@ -178,6 +179,15 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   void SetProdTrackTPCsignalNMin(Int_t a) {fProdTrackTPCsignalNMin=a;}
   void SetPriTrackChi2perNDFMax(Double_t a) {fPriTrackChi2perNDFMax=a;}
   void SetPriTrackITSNclsMin(Int_t a) {fPriTrackITSNclsMin=a;}
+  void SetCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0(Double_t a) {fCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0=a;}
+  void SetCut_nSigmaTPC_PiFromXi_or_KaFromOmega(Double_t a) {fCut_nSigmaTPC_PiFromXi_or_KaFromOmega=a;}
+  void SetCut_nSigmaTPC_PrFromLam(Double_t a) {fCut_nSigmaTPC_PrFromLam=a;}
+  void SetCut_nSigmaTPC_PiFromLam(Double_t a) {fCut_nSigmaTPC_PiFromLam=a;}
+  void SetCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0(Double_t a) {fCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0=a;}
+  void SetCut_nSigmaTOF_PiFromXi_or_KaFromOmega(Double_t a) {fCut_nSigmaTOF_PiFromXi_or_KaFromOmega=a;}
+  void SetCut_nSigmaTOF_PrFromLam(Double_t a) {fCut_nSigmaTOF_PrFromLam=a;}
+  void SetCut_nSigmaTOF_PiFromLam(Double_t a) {fCut_nSigmaTOF_PiFromLam=a;}
+  void SetCut_Armenteros(Double_t a) {fCut_Armenteros=a;}
 
   Double_t GetPtMinLc(){return fPtMinLc;}
   Double_t GetPtMinPrFromLc(){return fPtMinPrFromLc;}
@@ -187,6 +197,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Double_t GetPtMinXicPlus(){return fPtMinXicPlus;}
   Double_t GetPtMinPiFromPrimary(){return fPtMinPiFromPrimary;}
   Double_t GetPtMinPiFromXi(){return fPtMinPiFromXi;}
+  Double_t GetPtMinPiFromXic0ForML(){return fPtMinPiFromXic0ForML;}
   Double_t GetProdTrackEtaRange(){return fProdTrackEtaRange;}
   Bool_t   GetProdUseAODFilterBit(){return fProdUseAODFilterBit;}
   Double_t GetProdMassTolLc(){return fProdMassTolLc;}
@@ -235,6 +246,15 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Int_t    GetProdTrackTPCsignalNMin() {return fProdTrackTPCsignalNMin;}
   Double_t GetPriTrackChi2perNDFMax() {return fPriTrackChi2perNDFMax;}
   Int_t    GetPriTrackITSNclsMin() {return fPriTrackITSNclsMin;}
+  Double_t GetCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0() {return fCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0;}
+  Double_t GetCut_nSigmaTPC_PiFromXi_or_KaFromOmega() {return fCut_nSigmaTPC_PiFromXi_or_KaFromOmega;}
+  Double_t GetCut_nSigmaTPC_PrFromLam() {return fCut_nSigmaTPC_PrFromLam;}
+  Double_t GetCut_nSigmaTPC_PiFromLam() {return fCut_nSigmaTPC_PiFromLam;}
+  Double_t GetCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0() {return fCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0;}
+  Double_t GetCut_nSigmaTOF_PiFromXi_or_KaFromOmega() {return fCut_nSigmaTOF_PiFromXi_or_KaFromOmega;}
+  Double_t GetCut_nSigmaTOF_PrFromLam() {return fCut_nSigmaTOF_PrFromLam;}
+  Double_t GetCut_nSigmaTOF_PiFromLam() {return fCut_nSigmaTOF_PiFromLam;}
+  Double_t GetCut_Armenteros() {return fCut_Armenteros;}
 
   void useSetNPtBins(Int_t nptBins){SetNPtBins(nptBins);}
  protected:
@@ -260,6 +280,7 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Double_t fPtMinXic0;               /// Minimum pT of Xic0
   Double_t fPtMinPiFromPrimary;      /// Minimum Bachelor pT of pion from primary vtx
   Double_t fPtMinPiFromXi;         /// Minimum Bachelor pT of pion from Xi decay
+  Double_t fPtMinPiFromXic0ForML;   /// Minimum Bachelor pT of pion from Xic0 decay for ML
   Double_t fPtMinPiFromLc;           /// Minimum pT of pion from Lc decay
   Double_t fPtMinXiccPP;            /// Minimum pT of Xicc++
   Double_t fPtMinXicPlus;            /// Minimum pT of XicPlus
@@ -312,13 +333,22 @@ class AliRDHFCutsKFP : public AliRDHFCuts
   Double_t fKFPXic0_Chi2geoMax; /// chi2/ndf(geo) cut of Xic0 reconstruction from KFParticle
   Double_t fKFPXicPlus_Chi2geoMax; /// chi2/ndf(geo) cut of XicPlus reconstruction from KFParticle
   Double_t fKFPXiccPP_Chi2geoMax; /// chi2/ndf(geo) cut of Xicc++ reconstruction from KFParticle
+  Double_t fCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0; /// nSigmaTPC_PiFromXic0 or nSigmaTPC_PiFromOmegac0 cut
+  Double_t fCut_nSigmaTPC_PiFromXi_or_KaFromOmega; // nSigmaTPC_PiFromXi or nSigmaTPC_KaFromOmega cut
+  Double_t fCut_nSigmaTPC_PrFromLam; /// nSigmaTPC_PrFromLam cut
+  Double_t fCut_nSigmaTPC_PiFromLam; /// nSigmaTPC_PiFromLam cut
+  Double_t fCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0; /// nSigmaTOF_PiFromXic0 or nSigmaTOF_PiFromOmegac0 cut
+  Double_t fCut_nSigmaTOF_PiFromXi_or_KaFromOmega; /// nSigmaTOF_PiFromXi or nSigmaTOF_KaFromOmega cut
+  Double_t fCut_nSigmaTOF_PrFromLam; /// nSigmaTOF_PrFromLam cut
+  Double_t fCut_nSigmaTOF_PiFromLam; /// nSigmaTOF_PiFromLam cut
+  Double_t fCut_Armenteros; /// Armenteros-Podolanski (qT/|alpha|) cut
 
   TF1 *fWeight; /// Weight
   TF1 *fWeight_up; /// Weight_up
   TF1 *fWeight_dw; /// Weight_dw
 
   /// \cond CLASSIMP
-  ClassDef(AliRDHFCutsKFP, 9);
+  ClassDef(AliRDHFCutsKFP, 11);
   /// \endcond
 };
 

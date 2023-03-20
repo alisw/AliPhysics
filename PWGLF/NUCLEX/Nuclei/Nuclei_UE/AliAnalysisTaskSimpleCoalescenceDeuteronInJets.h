@@ -63,19 +63,29 @@ private:
     TH1D *hNumberOfEvents;//!
 
     //p_{T} Spectra
-    TH1D *hProtons;//!
-    TH1D *hNeutrons;//!
-    TH1D *hProtons_pythia;//!
-    TH1D *hNeutrons_pythia;//!
-    TH1D *hDeuterons[4];//!
-    TH1D *hDeuterons_ptoverA[4];//!
-    TH1D *hDeuterons_pythia[4];//!
-    TH1D *hDeuterons_ptoverA_pythia[4];//!
+    TH1D *hProtons[6];//!
+    TH1D *hNeutrons[6];//!
+    TH1D *hProtons_pythia[6];//!
+    TH1D *hNeutrons_pythia[6];//!
+    TH1D *hDeuterons[6];//!
+    TH1D *hDeuterons_ptoverA[6];//!
+    TH1D *hDeuterons_pythia[6];//!
+    TH1D *hDeuterons_ptoverA_pythia[6];//!
 
     //General Histograms
     TH1I *hNumberOfParticlesInJet;//!
-    TH1D *hMultiplicityBin;//!
+    TH1I *hNumberOfProtonsInJet;//!
+    TH1I *hNumberOfAntiProtonsInJet;//!
+    TH1D *hEventsVsMultiplicity;//!
     
+    //Correlations
+    TH1D *hDeltaP_Lab[6];//!
+    TH1D *hDeltaP_CM[6];//!
+    TH1D *hPtProtonsCoal[6];//!
+    TH1D *hPtNeutronsCoal[6];//!
+    TH1D *hTheta_Lab[6];//!
+    TH1D *hTheta_CM[6];//!
+
     
     AliAnalysisTaskSimpleCoalescenceDeuteronInJets(const AliAnalysisTaskSimpleCoalescenceDeuteronInJets&);
     AliAnalysisTaskSimpleCoalescenceDeuteronInJets& operator=(const AliAnalysisTaskSimpleCoalescenceDeuteronInJets&);

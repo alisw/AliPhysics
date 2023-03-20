@@ -83,6 +83,8 @@ class AliHFCorrelator : public TNamed
 	
 	void SetD0Properties(AliAODRecoDecayHF2Prong* d, Int_t D0hyp)
 	{fD0cand = d; fhypD0 = D0hyp;}
+	void SetLcProperties(AliAODRecoDecayHF3Prong* d, Int_t Lchyp)
+	{fLccand = d; fhypLc = Lchyp;}
 	
 	void SetUseReco(Bool_t useReco) {fUseReco = useReco;}
 	void SetNMultBins(Int_t nMultBins){fnMultBins=nMultBins;}
@@ -141,6 +143,9 @@ class AliHFCorrelator : public TNamed
 	AliAODRecoDecayHF2Prong* fD0cand; //D0 candidate
 	Int_t fhypD0; //hypothesis necessary for
 	Int_t fDCharge; // charge of a daughter of the D meson
+	AliAODRecoDecayHF3Prong* fLccand; //Lc candidate
+	Int_t fhypLc; //hypothesis necessary for
+	
 	
 	Bool_t fmixing;// switch for event mixing
 	Bool_t fmontecarlo; // switch for MonteCarlo

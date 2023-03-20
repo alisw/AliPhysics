@@ -114,6 +114,7 @@ AliAnalysisTaskSE(),
   fCentEvV0M(0.),
   fzVtx(0.),
   fMEAxisThresh(kFALSE),
+  fSoftPiCut(kFALSE),
   fKaonCorr(kFALSE),
   fSignLeft_LowPt(0),
   fSignRight_LowPt(0),
@@ -199,6 +200,7 @@ AliAnalysisTaskSELambdacCorrelations::AliAnalysisTaskSELambdacCorrelations(const
   fCentEvV0M(0.),
   fzVtx(0.),
   fMEAxisThresh(kFALSE),
+  fSoftPiCut(kFALSE),
   fKaonCorr(kFALSE),
   fSignLeft_LowPt(0),
   fSignRight_LowPt(0),
@@ -307,7 +309,7 @@ AliAnalysisTaskSELambdacCorrelations::AliAnalysisTaskSELambdacCorrelations(const
   fMultEvV0MEqual(source.fMultEvV0MEqual),
   fCentEvV0M(source.fCentEvV0M),
   fzVtx(source.fzVtx),
-//  fSoftPiCut(source.fSoftPiCut),
+  fSoftPiCut(source.fSoftPiCut),
   fMEAxisThresh(source.fMEAxisThresh),
   fKaonCorr(source.fKaonCorr),
   fSignLeft_LowPt(source.fSignLeft_LowPt),
@@ -446,6 +448,7 @@ AliAnalysisTaskSELambdacCorrelations& AliAnalysisTaskSELambdacCorrelations::oper
   fMultEvV0MEqual = orig.fMultEvV0MEqual;
   fCentEvV0M = orig.fCentEvV0M;
   fzVtx = orig.fzVtx;
+  fSoftPiCut = orig.fSoftPiCut;
   fMEAxisThresh = orig.fMEAxisThresh;
   fKaonCorr = orig.fKaonCorr;
   fSignLeft_LowPt = orig.fSignLeft_LowPt;
@@ -568,7 +571,9 @@ void AliAnalysisTaskSELambdacCorrelations::UserCreateOutputObjects()
   fCorrelatorTr->SetUseReco(fRecoTr);// sets (if MC analysis) wheter to analyze Reco or Kinem tracks
 
 
-
+  if(fMixing && fSoftPiCut) {
+    fCorrelatorTr->SetStoreInfoSoftPiME(kTRUE);
+  }
  
   Bool_t pooldefTr = fCorrelatorTr->DefineEventPool();// method that defines the properties ot the event mixing (zVtx and Multipl. bins)
 
@@ -615,8 +620,8 @@ void AliAnalysisTaskSELambdacCorrelations::UserCreateOutputObjects()
 
     //MC signal
     if(fReadMC){
-      TH1F* tmpSt = new TH1F(nameSgn.Data(), "\Lambda_{c} invariant mass c - MC; M [GeV]; Entries",150,1.9864,2.5864);
-      TH1F* tmpStWg = new TH1F(nameSgnWg.Data(), "\Lambda_{c} invariant mass c - MC; M [GeV] - weight 1/Lambdaceff; Entries",150,1.9864,2.5864);
+      TH1F* tmpSt = new TH1F(nameSgn.Data(), "#Lambda_{c} invariant mass c - MC; M [GeV]; Entries",150,1.9864,2.5864);
+      TH1F* tmpStWg = new TH1F(nameSgnWg.Data(), "#Lambda_{c} invariant mass c - MC; M [GeV] - weight 1/Lambdaceff; Entries",150,1.9864,2.5864);
       tmpSt->Sumw2();
       tmpStWg->Sumw2();
 
@@ -676,8 +681,8 @@ void AliAnalysisTaskSELambdacCorrelations::UserCreateOutputObjects()
 
     //MC signal
     if(fReadMC){
-      TH1F* tmpSt = new TH1F(nameSgn.Data(), "\Lambda_{c} invariant mass b - MC; M [GeV]; Entries",150,1.9864,2.5864);
-      TH1F* tmpStWg = new TH1F(nameSgnWg.Data(), "\Lambda_{c} invariant mass b - MC; M [GeV] - weight 1/Lambdaceff; Entries",150,1.9864,2.5864);
+      TH1F* tmpSt = new TH1F(nameSgn.Data(), "#Lambda_{c} invariant mass b - MC; M [GeV]; Entries",150,1.9864,2.5864);
+      TH1F* tmpStWg = new TH1F(nameSgnWg.Data(), "#Lambda_{c} invariant mass b - MC; M [GeV] - weight 1/Lambdaceff; Entries",150,1.9864,2.5864);
       tmpSt->Sumw2();
       tmpStWg->Sumw2();
 
@@ -1114,33 +1119,34 @@ void AliAnalysisTaskSELambdacCorrelations::UserExec(Option_t */*option*/)
             modelPred.push_back(-1.);
           }
           
-                  FillMassHists(d,mcArray,fCutsLambdac,fOutputMass,aod);
-                  
-                  if(!fReadMC) {
-          if (TMath::Abs(d->Eta())<fEtaForCorrel) {
-	    if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);			
-            if(!fMixing && !fAlreadyFilled) {
- 	      ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
-	      ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv);
-            }
-	    if(fFillTrees==kNoTrees) CalculateCorrelations(d); //correlations on real data
-	  
-	  }
-        } else { //correlations on MC -> association of selected Lambdac to MCinfo with MCtruth
-          if (TMath::Abs(d->Eta())<fEtaForCorrel) {
-            Int_t pdgDgLambdactopKpi[3]={2212,321,211};
-    	    Int_t labLambdac = d->MatchToMC(4122,mcArray,3,pdgDgLambdactopKpi); //return MC particle label if the array corresponds to a Lambdac, -1 if not
-            if (labLambdac>-1) {
-  	      if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);
+          FillMassHists(d,mcArray,fCutsLambdac,fOutputMass,aod);
+          //Set special Properties for Lc (i.e. soft pion subtraction)
+          fCorrelatorTr->SetLcProperties(d,fIsSelectedCandidate); //sets special properties for Lc
+
+          if(!fReadMC) {
+            if (TMath::Abs(d->Eta())<fEtaForCorrel) {
+	            if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);			
               if(!fMixing && !fAlreadyFilled) {
-		((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
-                ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
+ 	              ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
+	              ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv);
               }
-	      if(fFillTrees==kNoTrees) CalculateCorrelations(d,labLambdac,mcArray);
-	    }
+   	          if(fFillTrees==kNoTrees) CalculateCorrelations(d); //correlations on real data
+	          }
+          } else { //correlations on MC -> association of selected Lambdac to MCinfo with MCtruth
+            if (TMath::Abs(d->Eta())<fEtaForCorrel) {
+              Int_t pdgDgLambdactopKpi[3]={2212,321,211};
+    	        Int_t labLambdac = d->MatchToMC(4122,mcArray,3,pdgDgLambdactopKpi); //return MC particle label if the array corresponds to a Lambdac, -1 if not
+              if (labLambdac>-1) {
+  	            if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);
+                if(!fMixing && !fAlreadyFilled) {
+		              ((TH1F*)fOutputStudy->FindObject("hZvtx"))->Fill(vtx1->GetZ());
+                  ((TH1F*)fOutputStudy->FindObject(Form("hMultiplEvt_Bin%d",ptbin)))->Fill(fMultEv); //Fill multiplicity histo
+                }
+	              if(fFillTrees==kNoTrees) CalculateCorrelations(d,labLambdac,mcArray);
+	            }
+            }
           }
-        }
-       } //isMLsel loop ends here
+        } //isMLsel loop ends here
       }
     }
   }
@@ -1832,6 +1838,21 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
  
     //both for SE and for ME
     
+    //Sigmac feeddown pions rejection histos
+    namePlot = "hSigmacPionsVsDmass_Bin"; namePlot+=i;
+    TH2F *hSigmacPions = new TH2F(namePlot.Data(), "Tracks rejected for Sigmac inv.mass cut vs Lc inv mass; # Tracks",2,0.,2.,150,1.9864,2.5864);
+    hSigmacPions->GetXaxis()->SetBinLabel(1,"Not rejected");
+    hSigmacPions->GetXaxis()->SetBinLabel(2,"Rejected");
+    hSigmacPions->SetMinimum(0);
+    fOutputStudy->Add(hSigmacPions); 
+
+    namePlot = "hSigmacPionsVsdeltaPhi_Bin"; namePlot+=i;
+    TH2F *hSigmacPions2 = new TH2F(namePlot.Data(), "Tracks rejected for Sigmac inv.mass cut vs deltaPhi; # Tracks",2,0.,2.,64,-TMath::Pi()/2.,3.*TMath::Pi()/2.);
+    hSigmacPions2->GetXaxis()->SetBinLabel(1,"Not rejected");
+    hSigmacPions2->GetXaxis()->SetBinLabel(2,"Rejected");
+    hSigmacPions2->SetMinimum(0);
+    fOutputStudy->Add(hSigmacPions2); 
+    
     if(!fFillTrees) {
       //ME filling control plots
       namePlot="hEvtsPerPool_"; namePlot+=i;
@@ -1988,7 +2009,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
     hPhiDistKAll->SetMinimum(0);
     fOutputStudy->Add(hPhiDistKAll);
 
-    TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_Lambdac", "\Lambda_{c} phi distr. (All); #varphi (rad)",64,0,6.283);
+    TH1F *hPhiDistDAll = new TH1F("hist_PhiDistr_Lambdac", "#Lambda_{c} phi distr. (All); #varphi (rad)",64,0,6.283);
     hPhiDistDAll->SetMinimum(0);
     fOutputStudy->Add(hPhiDistDAll);
 
@@ -2005,7 +2026,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
     hEtaDistKAll->SetMinimum(0);
     fOutputStudy->Add(hEtaDistKAll);
 
-    TH1F *hEtaDistDAll = new TH1F("hist_EtaDistr_Lambdac", "\Lambda_{c} eta distr. (All); #eta (rad)",40,-1,1);
+    TH1F *hEtaDistDAll = new TH1F("hist_EtaDistr_Lambdac", "#Lambda_{c} eta distr. (All); #eta (rad)",40,-1,1);
     hEtaDistDAll->SetMinimum(0);
     fOutputStudy->Add(hEtaDistDAll);
     
@@ -2022,7 +2043,7 @@ void AliAnalysisTaskSELambdacCorrelations::CreateCorrelationsObjs() {
     hPhiVsEtaDistKAll->SetMinimum(0);
     fOutputStudy->Add(hPhiVsEtaDistKAll);  
     
-    TH2F *hPhiVsEtaDistDAll = new TH2F("hist_PhiVsEtaDistr_Lambdac", "Phi vs Eta distribution - \Lambda_{c}",64,0,6.283,40,-1,1);
+    TH2F *hPhiVsEtaDistDAll = new TH2F("hist_PhiVsEtaDistr_Lambdac", "Phi vs Eta distribution - #Lambda_{c}",64,0,6.283,40,-1,1);
     hPhiVsEtaDistDAll->SetMinimum(0);
     fOutputStudy->Add(hPhiVsEtaDistDAll);  
     }
@@ -2272,8 +2293,34 @@ mLambdacbar = d->InvMassLcpiKp();
       if(!effTr) ((TH1F*)fOutputStudy->FindObject("hZeroEff"))->Fill(3.5); 
         else ((TH1F*)fOutputStudy->FindObject("hZeroEff"))->Fill(2.5);
 
+	if(!fMixing) {
+        if(fSoftPiCut && !track->CheckSoftPi()) { //removal of soft pions
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdac);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdacbar);
+          ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(1.,fCorrelatorTr->GetDeltaPhi());
+    	  continue; //in SE events, just reject the soft pion
+        } else { //not a soft pion
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdac);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdacbar);
+          ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(0.,fCorrelatorTr->GetDeltaPhi());
+        }
+      }
+      if(fMixing) { 
+        if(fSoftPiCut && !fCutsTracks->InvMassSigmacRejection(d,track,fIsSelectedCandidate)) { //removal of soft pions
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdac);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(1.,mLambdacbar);
+          ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(1.,fCorrelatorTr->GetDeltaPhi());
+          if(fMixing) FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,1,1./eff); //in ME events, fill the THnSparse under the softpi hypothesis
+    	  continue; 
+        } else { //not a soft pion
+          if (fIsSelectedCandidate == 1 || fIsSelectedCandidate == 3) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdac);
+          if (fIsSelectedCandidate >= 2) ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsDmass_Bin%d",ptbin)))->Fill(0.,mLambdacbar);
+          ((TH2F*)fOutputStudy->FindObject(Form("hSigmacPionsVsdeltaPhi_Bin%d",ptbin)))->Fill(0.,fCorrelatorTr->GetDeltaPhi());
+        }
+      } 
 
-      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,1./eff); //fills for charged tracks
+
+      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,0,1./eff); //fills for charged tracks
 
       if(!fMixing) N_Charg++;
 
@@ -2411,7 +2458,7 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
       if (IsDDaughter(d,trkMC,mcArray)) continue;
    //   if (fSoftPiCut && IsSoftPion_MCKine(d,trkMC,mcArray)) continue; //remove soft pions (if requestes, e.g. for templates)
 
-      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack); //fills for charged tracks
+      FillSparsePlots(mcArray,mInv,origLambdac,PDGLambdac,track,ptbin,kTrack,0); //fills for charged tracks
 
       //retrieving leading info...
       if(track->Pt() > highPt) {
@@ -2455,7 +2502,7 @@ void AliAnalysisTaskSELambdacCorrelations::CalculateCorrelationsMCKine(AliAODMCP
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray, Double_t mInv[], Int_t origLambdac, Int_t PdgLambdac, AliReducedParticle* track, Int_t ptbin, Int_t type, Double_t wg) {
+void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray, Double_t mInv[], Int_t origLambdac, Int_t PdgLambdac, AliReducedParticle* track, Int_t ptbin, Int_t type, Int_t softpiME, Double_t wg) {
   //
   //fills the THnSparse for correlations, calculating the variables
   //
@@ -2624,7 +2671,11 @@ void AliAnalysisTaskSELambdacCorrelations::FillSparsePlots(TClonesArray* mcArray
       fillSpPhiLambdacbar[3] = ptTrack;
     }
    
-
+    if(softpiME==1) { //it's a softPi in the ME analysis! Fill it in the dedicated slice of ME THnSparse
+          fillSpPhiLambdac[4] = 1;
+          fillSpPhiLambdacbar[4] = 1;
+    	}
+    	
     Bool_t allowLambdac = 0;
     Bool_t allowLambdacbar = 0;
     if(fSpeed==kOneBinSB) { //filling of sidebands in speed mode: 1 bin for LSB, 1 for RSB, no filling outside signal region and SB

@@ -65,6 +65,7 @@
 
 // mesons-jet correlation
 #pragma link C++ class AliAnalysisTaskMesonJetCorrelation+;
+#pragma link C++ class AliAnalysisTaskCorrelationTree+;
 
 // Old tasks
 // #pragma link C++ class AliAnaConvIsolation+;

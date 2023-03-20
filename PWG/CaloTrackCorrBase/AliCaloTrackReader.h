@@ -275,6 +275,14 @@ public:
   virtual void     SwitchOnMaskRun2HardcodedEMCalRegions() { fMaskRun2HardcodedEMCalRegions = kTRUE ; }
   virtual void     SwitchOffMaskRun2HardcodedEMCalRegions(){ fMaskRun2HardcodedEMCalRegions = kFALSE; }
 
+ // Apply artificial tracking efficiency cut
+
+  virtual Bool_t   IsArtificialTrackEffCutOn()                 const { return fApplyArtificialTrackEffCut           ; }
+  virtual void     SwitchOnArtificialTrackEffCut()                   { fApplyArtificialTrackEffCut = kTRUE          ; }
+  virtual void     SwitchOffArtificialTrackEffCut()                  { fApplyArtificialTrackEffCut = kFALSE         ; }
+  void             SetArtificialTrackingEfficiency(Int_t fYear, TString fPeriodLetter ) ; //For every period and run set the correct artificial efficiency
+
+
   // Cluster/track/cells switchs
   
   Bool_t           IsCTSSwitchedOn()                 const { return fFillCTS               ; }
@@ -1022,6 +1030,14 @@ public:
   Bool_t           fUseTrackDCACut;                ///<  Do DCA selection.
   Double_t         fTrackDCACut[3];                ///<  Remove tracks with DCA larger than cut, parameters of function stored here.
 
+  TString          fPeriodLetter;                       ///<  Run name based on the Run number
+  Bool_t           fApplyArtificialTrackEffCut;    ///<  Activate Artificial Tracking efficiency cut
+  Float_t          fPtBinXTrackEffCut[17];         ///<  PtBinning for selecting the efficiency cut
+  Float_t          fTrackEfficiencyCentr[16];
+  Float_t          fTrackEfficiencyPeriph[16];
+  Int_t            nPtBinXTrackEff;  
+
+
   /// List with AOD branches created and needed in analysis.
   TList          * fAODBranchList ;                //-> 
   
@@ -1351,7 +1367,7 @@ public:
   AliCaloTrackReader & operator = (const AliCaloTrackReader & r) ; 
   
   /// \cond CLASSIMP
-  ClassDef(AliCaloTrackReader,102) ;
+  ClassDef(AliCaloTrackReader,103) ;
   /// \endcond
 
 } ;

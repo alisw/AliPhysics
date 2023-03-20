@@ -1041,8 +1041,10 @@ void AddTask_GammaConvCalo_pPb(
 
   } else if (trainConfig == 1007) {
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530ha01cc00000","0h63103100000010"); // 0-100% with NL 1
+  } else if (trainConfig == 1008) { // timing cut effi u, new default
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 0-100% with NL 1
+  
   ///PCM-Variation
-
   } else if (trainConfig == 1010) {
 
     cuts.AddCutPCMCalo("80010113","0dm00069f9730000dge0404000","24466530ha01cc00000","0h63103100000010"); // min pT 40 MeV
@@ -1090,7 +1092,7 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0400000","24466530ha01cc00000","0h63103100000010"); // same as std + maximum past future rejection
   
   } else if (trainConfig == 1019){ // timing Cut variation  std -30+30ns
-|   //                                                                  |
+    //                                                                  |
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","244665301a01cc00000","0h63103100000010"); //1:     -1000  +1000 ns
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","244665305a01cc00000","0h63103100000010"); //5:     -50    +50   ns
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","244665307a01cc00000","0h63103100000010"); //7:     -30    +30   ns

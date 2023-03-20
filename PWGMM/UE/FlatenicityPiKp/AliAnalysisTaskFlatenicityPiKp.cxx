@@ -102,7 +102,7 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp()
 	fUseMC(kFALSE), fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
 	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fdEdxCalibrated(kTRUE),
-	fSaveDCAxyHistograms(kFALSE), fEtaCalibrationPos(0x0), fEtaCalibrationNeg(0x0),
+	fSaveDCAxyHistograms(kFALSE), fEtaCalibrationPos(0), fEtaCalibrationNeg(0), felededxfitPos(0), felededxfitNeg(0),
 	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
 	ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
 	fMultSelection(0x0), hFlat(0),
@@ -182,7 +182,7 @@ AliAnalysisTaskFlatenicityPiKp::AliAnalysisTaskFlatenicityPiKp(const char *name)
 	fUseMC(kFALSE), fV0MMultiplicity(-1.0), fDetFlat("V0"), fV0MBin("0_1"), fIsMCclosure(kFALSE),
 	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fdEdxCalibrated(kTRUE), 
-	fSaveDCAxyHistograms(kFALSE), fEtaCalibrationPos(0x0), fEtaCalibrationNeg(0x0),
+	fSaveDCAxyHistograms(kFALSE), fEtaCalibrationPos(0), fEtaCalibrationNeg(0), felededxfitPos(0), felededxfitNeg(0),
 	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
 	ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
 	fMultSelection(0x0), hFlat(0),
@@ -313,8 +313,153 @@ void AliAnalysisTaskFlatenicityPiKp::UserCreateOutputObjects() {
 	fCutsPID->SetMaxChi2PerClusterITS(36);
 	fTrackFilterPID->AddCuts(fCutsPID);
 
-	fEtaCalibrationPos = new TF1("fDeDxVsEtaPos", "pol7", 0.0, 1.0);
-	fEtaCalibrationNeg = new TF1("fDeDxVsEtaNeg", "pol7", -1.0, 0.0);
+	const std::map<std::string, std::array<double, 9>> neg_eta_mip{
+		{"18b",{49.8668, 12.2863, 259.435, 2060.93, 8446.22, 19854.3, 27051.4, 19835.5, 6041.59}},
+			{"18d",{49.9868, 20.5379, 372.253, 2754.23, 10730.7, 24146.8, 31618.4, 22361.2, 6593.44}},
+			{"18e",{49.9502, 19.4593, 362.489, 2717.93, 10675.4, 24154.7, 31761.2, 22543.5, 6669.84}},
+			{"18f",{49.9843, 19.3543, 355.345, 2659.38, 10440.5, 23610.6, 31019.1, 21989.3, 6495.44}},
+			{"18g",{2.41851e-314, 2.41851e-314, 2.41852e-314, 2.41852e-314, 2.41853e-314, 2.41853e-314, 2.41853e-314, 3.02765e-314, 3.02765e-314}},
+			{"18h",{2.41851e-314, 2.41851e-314, 2.41852e-314, 2.41852e-314, 2.41853e-314, 2.41853e-314, 2.41853e-314, 3.02765e-314, 3.02765e-314}},
+			{"18i",{49.8488, 15.5784, 317.835, 2415.84, 9475.32, 21359.3, 28019.5, 19886.4, 5895.86}},
+			{"18j",{2.41851e-314, 2.41851e-314, 2.41852e-314, 2.41852e-314, 2.41853e-314, 2.41853e-314, 2.41853e-314, 3.02765e-314, 3.02765e-314}},
+			{"18k",{49.927, 18.6596, 360.176, 2692.77, 10441.7, 23259.7, 30111.7, 21068.5, 6154.48}},
+			{"18l",{49.7486, 20.5767, 394.317, 2987.78, 11792.4, 26741.7, 35191.3, 24979.6, 7389.03}},
+			{"18m",{49.7772, 20.4881, 371.619, 2757.56, 10763.5, 24233, 31728.5, 22440.1, 6619.96}},
+			{"18o",{49.7787, 18.0261, 338.343, 2531.96, 9940.15, 22541.3, 29769.8, 21249, 6326.01}},
+			{"16d",{49.9734, 8.26292, 182.129, 1441.79, 5838.95, 13595.8, 18467.1, 13585.3, 4169.83}},
+			{"16e",{49.9699, 11.34, 251.41, 2013.77, 8226.55, 19144.7, 25735.7, 18602, 5588.55}},
+			{"16g",{50.0053, 18.9008, 385.551, 2988.53, 11902.3, 26999.7, 35344.2, 24877.4, 7286.33}},
+			{"16h",{50.0607, 18.6326, 392.199, 3144.56, 12846.9, 29706.4, 39457.8, 28084.3, 8297.16}},
+			{"16i",{50.07, 17.8159, 373.451, 2988.92, 12147.5, 27904.1, 36824.4, 26063.5, 7665.41}},
+			{"16j",{50.0813, 19.7903, 412.257, 3289.53, 13358, 30679.1, 40470.6, 28615.6, 8401.52}},
+			{"16k",{50.1712, 15.966, 294.311, 2286.7, 9311.34, 21743.3, 29397.8, 21402.8, 6483.97}},
+			{"16l",{50.2007, 15.9971, 291.383, 2254.17, 9185.31, 21530.5, 29268.9, 21438.3, 6533.7}},
+			{"16o",{50.0424, 15.9223, 343.917, 2772.75, 11372.6, 26452.9, 35405.7, 25413.5, 7571.52}},
+			{"16p",{50.0558, 17.5436, 368.288, 2900.47, 11622, 26442.1, 34706.4, 24506, 7204.09}}
+	};
+
+	const std::map<std::string, std::array<double, 9>> pos_eta_mip{
+		{"18b",{49.804, -5.41725, 150.569, -1281.28, 5360.52, -12658.9, 17229.5, -12588.2, 3812.03}},
+			{"18d",{49.8368, -0.700672, 92.1073, -1014.41, 4789.02, -12182.8, 17440.7, -13200.9, 4099.71}},
+			{"18e",{49.8207, -2.64836, 119.148, -1162.13, 5188.24, -12712, 17682.9, -13082, 3987.94}},
+			{"18f",{49.8689, -4.23401, 141.049, -1333.73, 5942.55, -14612.2, 20405.2, -15142.9, 4627.71}},
+			{"18g",{49.8785, -7.15882, 174.404, -1459.63, 6097.56, -14398.4, 19570.9, -14263.2, 4306.47}},
+			{"18h",{2.41851e-314, 2.41851e-314, 2.41852e-314, 2.41852e-314, 2.41853e-314, 2.41853e-314, 2.41853e-314, 3.02765e-314, 3.02765e-314}},
+			{"18i",{49.7489, -4.13738, 140.656, -1249.28, 5305.89, -12612.7, 17225.4, -12611.7, 3825.18}},
+			{"18j",{2.41851e-314, 2.41851e-314, 2.41852e-314, 2.41852e-314, 2.41853e-314, 2.41853e-314, 2.41853e-314, 3.02765e-314, 3.02765e-314}},
+			{"18k",{49.7975, -2.9696, 127.625, -1212.21, 5296.91, -12736, 17441.6, -12748.8, 3852.52}},
+			{"18l",{49.6025, -1.46048, 105.497, -1094.46, 4999.54, -12406, 17422, -13000.2, 3996.79}},
+			{"18m",{49.6393, -4.74755, 143.275, -1307.48, 5671.19, -13622.4, 18657.4, -13639.1, 4121.86}},
+			{"18o",{49.6328, -0.941546, 94.8448, -1025.84, 4800.12, -12136.6, 17304.4, -13070, 4057.81}},
+			{"16d",{49.9598, -6.27035, 165.621, -1388.86, 5852.57, -14055.9, 19514.1, -14540.6, 4485.2}},
+			{"16e",{49.9218, -5.5296, 164.462, -1420.32, 6042.03, -14514.7, 20054.1, -14830.4, 4534.49}},
+			{"16g",{49.8685, -3.28044, 137.568, -1273.78, 5562.06, -13506.7, 18736.3, -13864.5, 4234.32}},
+			{"16h",{49.9075, -2.49821, 111.517, -1093.5, 4958.3, -12387.3, 17582, -13258.9, 4113.83}},
+			{"16i",{49.9301, -3.05879, 121.567, -1200.96, 5509.67, -13884.4, 19811.4, -14984.3, 4656.93}},
+			{"16j",{49.9267, -1.58978, 96.2437, -986.505, 4519.85, -11306.1, 16031.9, -12075.5, 3742.29}},
+			{"16k",{50.028, -1.65448, 46.8913, -523.373, 2705.39, -7593.22, 11921.5, -9793.56, 3264.29}},
+			{"16l",{50.0438, -1.71624, 49.5086, -542.689, 2766.84, -7689.99, 11992.4, -9809.14, 3261.24}},
+			{"16o",{49.9187, -3.68235, 132.208, -1237.58, 5477.21, -13453.5, 18847.6, -14068.6, 4330.22}},
+			{"16p",{49.9181, -3.37394, 130.832, -1251.02, 5578.24, -13730, 19228.6, -14332.4, 4402.7}}
+	};
+
+	const auto map_neg_eta_mip = neg_eta_mip.find(fPeriod);
+	const std::array<double,9> pars_neg_eta_mip = map_neg_eta_mip->second;
+
+	const auto map_pos_eta_mip = pos_eta_mip.find(fPeriod);
+	const std::array<double,9> pars_pos_eta_mip = map_pos_eta_mip->second;
+
+	fEtaCalibrationPos = new TF1("fDeDxVsEtaPos", "pol8", 0.0, 1.0);
+	fEtaCalibrationNeg = new TF1("fDeDxVsEtaNeg", "pol8", -1.0, 0.0);
+
+	for (int par = 0; par < 9; ++par)
+	{
+		fEtaCalibrationNeg->SetParameter(par,0.0);
+		fEtaCalibrationPos->SetParameter(par,0.0);
+		fEtaCalibrationNeg->SetParameter(par,pars_neg_eta_mip[par]);
+		fEtaCalibrationPos->SetParameter(par,pars_pos_eta_mip[par]);
+	}
+
+	std::cout << "fPeriod = " << fPeriod << '\n';
+	std::cout << "MIP negative eta parameters: " << '\n';
+	for (int par = 0; par < 9; ++par)
+	{
+		std::cout << "par = " << pars_neg_eta_mip[par] << '\n';
+	}
+
+	std::cout << "MIP positive eta parameters: " << '\n';
+	for (int par = 0; par < 9; ++par)
+	{
+		std::cout << "par = " << pars_pos_eta_mip[par] << '\n';
+	}
+
+	// These are the Plateau calibration parameters
+	const std::map<std::string, std::array<double, 5>> neg_eta{
+		{"18b",{78.0584, -9.92534, -43.4941, -74.9382, -43.5307}},
+			{"18d",{78.2565, -10.3295, -43.4784, -68.978, -36.1958}},
+			{"18e",{78.4238, -8.72674, -39.6735, -68.3232, -39.2252}},
+			{"18f",{78.3869, -10.1457, -46.4504, -79.7451, -45.6895}},
+			{"18g",{78.2767, -8.64306, -33.9562, -51.945, -26.884}},
+			{"18h",{78.2488, -13.6366, -62.1845, -106.582, -61.3608}},
+			{"18i",{78.1277, -9.55994, -40.8765, -70.2554, -41.2268}},
+			{"18j",{75.4719, -74.3785, -361.481, -602.121, -323.142}},
+			{"18k",{78.2423, -10.1552, -43.4763, -73.0076, -41.5902}},
+			{"18l",{77.8836, -13.14, -57.3167, -94.4722, -52.2078}},
+			{"18m",{78.0229, -10.2569, -45.1534, -77.6259, -45.2149}},
+			{"18o",{77.9943, -11.072, -46.4452, -74.317, -39.5181}},
+			{"16d",{78.3978, -9.39313, -45.2739, -85.8433, -52.9036}},
+			{"16e",{78.5115, -10.575, -48.2195, -84.9406, -48.9549}},
+			{"16g",{78.3259, -11.7637, -49.5636, -82.687, -45.3562}},
+			{"16h",{78.5328, -12.2705, -57.7146, -101.312, -57.5771}},
+			{"16i",{78.7061, -10.1328, -50.0004, -90.9223, -53.1454}},
+			{"16j",{78.5559, -11.504, -56.6088, -101.704, -58.4783}},
+			{"16k",{79.7335, -8.64085, -44.1529, -84.0726, -51.4506}},
+			{"16l",{79.8256, -8.85733, -46.6177, -89.6549, -55.4802}},
+			{"16o",{78.4585, -12.6594, -61.3969, -110.308, -63.8506}},
+			{"16p",{78.4266, -11.1231, -50.8061, -88.0376, -48.9562}}
+	};
+
+	const std::map<std::string, std::array<double, 5>> pos_eta{
+		{"18b",{78.1418, 12.3115, -58.9967, 106.955, -63.9435}},
+			{"18d",{78.7388, 11.0431, -61.3579, 116.231, -70.7895}},
+			{"18e",{78.6326, 11.8068, -61.526, 112.217, -66.4458}},
+			{"18f",{78.6414, 12.1778, -64.3007, 117.807, -70.0741}},
+			{"18g",{78.2821, 13.5853, -68.2264, 125.483, -75.7091}},
+			{"18h",{78.7728, 9.77365, -50.9454, 93.2052, -55.6025}},
+			{"18i",{78.2028, 13.0052, -62.5986, 112.765, -67.2408}},
+			{"18j",{78.1961, 41.8608, -270.187, 573.874, -384.229}},
+			{"18k",{78.5361, 12.6516, -65.5564, 120.462, -72.2361}},
+			{"18l",{78.3832, 11.1527, -59.8539, 112.631, -68.757}},
+			{"18m",{78.3155, 12.5582, -66.5439, 124.659, -76.06}},
+			{"18o",{78.4926, 8.86145, -48.2071, 88.5975, -51.5732}},
+			{"16d",{78.689, 9.42784, -45.7495, 85.2206, -51.8471}},
+			{"16e",{78.668, 10.7527, -48.0636, 83.0091, -47.2603}},
+			{"16g",{78.6351, 14.9114, -73.4522, 132.114, -77.3137}},
+			{"16h",{78.8393, 11.6098, -61.0424, 114.416, -68.4445}},
+			{"16i",{78.8459, 12.3258, -65.2223, 122.571, -73.7102}},
+			{"16j",{78.7301, 12.7389, -66.9754, 124.931, -74.3142}},
+			{"16k",{80.0008, 6.93231, -42.3245, 87.4325, -55.7795}},
+			{"16l",{80.1504, 4.98, -31.3886, 66.3694, -43.2082}},
+			{"16o",{78.7704, 10.0829, -53.0814, 100.967, -61.0128}},
+			{"16p",{78.7037, 11.2722, -57.0117, 103.02, -58.7785}}
+	};
+
+	const auto map_neg_eta = neg_eta.find(fPeriod);
+	const std::array<double,5> pars_neg_eta = map_neg_eta->second;
+
+	const auto map_pos_eta = pos_eta.find(fPeriod);
+	const std::array<double,5> pars_pos_eta = map_pos_eta->second;
+
+	felededxfitPos = new TF1("felededxfitPos", "pol4", 0.0, 1.0);
+	felededxfitNeg = new TF1("felededxfitNeg", "pol4", -1.0, 0.0);
+
+	for(int i = 0; i < 5; ++i)
+	{
+		felededxfitNeg->SetParameter(i,0.0);
+		felededxfitPos->SetParameter(i,0.0);
+		felededxfitNeg->SetParameter(i,pars_neg_eta[i]);
+		felededxfitPos->SetParameter(i,pars_pos_eta[i]);
+	}
 
 	fcutLow = new TF1("StandardPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 50);
 	fcutHigh = new TF1("StandardPhiCutHigh", "0.12/x+pi/18.0+0.035", 0, 50);
@@ -953,7 +1098,7 @@ void AliAnalysisTaskFlatenicityPiKp::MakePIDanalysis()
 		if (Ncl < fNcl)
 			continue;
 
-		if (fdEdxCalibrated) dEdx *= 50.0/EtaCalibration(eta);
+		if (fdEdxCalibrated) { dEdx *= (50.0/EtaCalibration(eta)); }
 
 		hdEdx[nh]->Fill(momentum,dEdx,fFlat);
 		hPtrTPC[nh]->Fill(pt,fFlat);
@@ -973,7 +1118,7 @@ void AliAnalysisTaskFlatenicityPiKp::MakePIDanalysis()
 			if ( ( lengthtrack != 0 ) && ( timeTOF != 0) )
 				beta = inttime[0] / timeTOF;
 		}
-		
+
 		if(beta>1.0){
 			histPiTof2[nh]->Fill(momentum,dEdx);
 		}
@@ -1186,8 +1331,7 @@ void AliAnalysisTaskFlatenicityPiKp::AnalyzeV0s()
 						       Double_t dedx     = track->GetTPCsignal();
 						       Double_t dedxUnc  = track->GetTPCsignal();
 
-						       if(fdEdxCalibrated)
-							       dedx *= 50.0/EtaCalibration(eta);
+						       if(fdEdxCalibrated) { dedx *= (50.0/EtaCalibration(eta)); }
 
 						       if(fillPos&&fillNeg){
 							       if(dedxUnc < 60.0 && dedxUnc > 40.0){
@@ -1259,8 +1403,7 @@ void AliAnalysisTaskFlatenicityPiKp::AnalyzeV0s()
 					       Double_t phi      = track->Phi();
 					       Double_t momentum = track->P();
 
-					       if(fdEdxCalibrated)
-						       dedx *= 50.0/EtaCalibration(eta);
+					       if(fdEdxCalibrated) { dedx *= (50.0/EtaCalibration(eta)); }
 
 					       if(track->GetTPCsignalN()<fNcl) { continue; }
 
@@ -1928,142 +2071,22 @@ Bool_t AliAnalysisTaskFlatenicityPiKp::TOFPID(AliESDtrack * track)
 	return kTRUE;
 }
 //______________________________________________________________________________
-Double_t AliAnalysisTaskFlatenicityPiKp::EtaCalibration(const Double_t &eta) {
+Double_t AliAnalysisTaskFlatenicityPiKp::EtaCalibration(const Double_t &eta) 
+{
+	double calibration = 999.0;
+	if (eta<0.0){ calibration = fEtaCalibrationNeg->Eval(eta); } 
+	else{ calibration = fEtaCalibrationPos->Eval(eta); }
 
-	double aPos = 0.0;
-	double bPos = 0.0;
-	double cPos = 0.0;
-	double dPos = 0.0;
-	double ePos = 0.0;
-	double fPos = 0.0;
-	double gPos = 0.0;
-	double hPos = 0.0;
-
-	double aNeg = 0.0;
-	double bNeg = 0.0;
-	double cNeg = 0.0;
-	double dNeg = 0.0;
-	double eNeg = 0.0;
-	double fNeg = 0.0;
-	double gNeg = 0.0;
-	double hNeg = 0.0;
-
-	if (fPeriod == "16l"){
-		aPos = 49.9216; bPos = 3.07252; cPos = -42.8044; dPos = 259.666; ePos = -910.432; fPos = 1776.09; gPos = -1740.65; hPos = 662.232;
-		aNeg = 49.9732; bNeg = 4.03575; cNeg = 65.6189;  dNeg = 374.429; eNeg = 951.459;  fNeg = 1153.75; gNeg = 618.493;  hNeg = 100.499;
-	} else if(fPeriod == "16k"){
-		aPos = 49.9421; bPos = 2.3446; cPos = -41.2765; dPos = 279.695; ePos = -1027.73; fPos = 2022.84; gPos = -1967.79; hPos = 738.823;
-		aNeg = 50.0477; bNeg = 8.27344; cNeg = 125.29;  dNeg = 736.8;   eNeg = 2057.75;  fNeg = 2935.38; gNeg = 2064.03;  hNeg = 565.983;
-	} else if(fPeriod == "16d" || fPeriod == "16e" || fPeriod == "16g" || fPeriod == "16h" || fPeriod == "16i" || fPeriod == "16j" || fPeriod == "16o" || fPeriod == "16p"){
-		aPos = 49.9743; bPos = 2.3388; cPos = -44.1496; dPos = 296.029; ePos = -1056.56; fPos = 2031.44; gPos = -1946.51; hPos = 723.89;
-		aNeg = 50.0329; bNeg = 6.99747; cNeg = 107.168;  dNeg = 649.001; eNeg = 1875.17;  fNeg = 2785.78; gNeg = 2063.77;  hNeg = 606.868;
-	} else if(fPeriod == "17data"){
-		aPos = 49.6097; bPos = 0.922856; cPos = -6.57484; dPos = 65.3117; ePos = -372.142; fPos = 950.451; gPos = -1085.27; hPos = 458.144;
-		aNeg = 49.6555; bNeg = 6.98696; cNeg = 102.734;  dNeg = 566.424; eNeg = 1513.64;  fNeg = 2092.01; gNeg = 1429.32;  hNeg = 375.642;
-	} else{
-		aPos = 49.6975; bPos = 2.32535; cPos = -42.6516; dPos = 283.058; ePos = -1009.58; fPos = 1945.89; gPos = -1871.23; hPos = 698.552;
-		aNeg = 49.8071; bNeg = 9.78466; cNeg = 120.018;  dNeg = 603.325; eNeg = 1470.92;  fNeg = 1819.63; gNeg = 1073.82;  hNeg = 230.142;
-	}
-
-	for (Int_t i = 0; i < 8; ++i){
-		fEtaCalibrationPos->SetParameter(i,0);
-		fEtaCalibrationNeg->SetParameter(i,0);
-	}
-
-	Double_t Calibration = 0.0;
-
-	if (eta<=0.0){
-		fEtaCalibrationNeg->SetParameter(0,aNeg);
-		fEtaCalibrationNeg->SetParameter(1,bNeg);
-		fEtaCalibrationNeg->SetParameter(2,cNeg);
-		fEtaCalibrationNeg->SetParameter(3,dNeg);
-		fEtaCalibrationNeg->SetParameter(4,eNeg);
-		fEtaCalibrationNeg->SetParameter(5,fNeg);
-		fEtaCalibrationNeg->SetParameter(6,gNeg);
-		fEtaCalibrationNeg->SetParameter(7,hNeg);
-
-		Calibration = fEtaCalibrationNeg->Eval(eta);
-	} else {
-		fEtaCalibrationPos->SetParameter(0,aPos);
-		fEtaCalibrationPos->SetParameter(1,bPos);
-		fEtaCalibrationPos->SetParameter(2,cPos);
-		fEtaCalibrationPos->SetParameter(3,dPos);
-		fEtaCalibrationPos->SetParameter(4,ePos);
-		fEtaCalibrationPos->SetParameter(5,fPos);
-		fEtaCalibrationPos->SetParameter(6,gPos);
-		fEtaCalibrationPos->SetParameter(7,hPos);
-
-		Calibration = fEtaCalibrationPos->Eval(eta);
-	}
-
-	return Calibration;
+	return calibration;
 }
 //________________________________________________________________________
 double AliAnalysisTaskFlatenicityPiKp::EtaCalibrationEl(const double &eta)
 {
+	double calibration = 999.0;
+	if (eta<0.0){ calibration = felededxfitNeg->Eval(eta); }
+	else{ calibration = felededxfitPos->Eval(eta); }
 
-	double aPos = 0.0;
-	double bPos = 0.0;
-	double cPos = 0.0;
-	double dPos = 0.0;
-	double ePos = 0.0;
-
-	double aNeg = 0.0;
-	double bNeg = 0.0;
-	double cNeg = 0.0;
-	double dNeg = 0.0;
-	double eNeg = 0.0;
-
-	if(fPeriod=="16l"){
-		aPos = 79.4195; bPos = 7.82459; cPos = -23.3466; dPos = 26.5577; ePos = -8.27151;
-		aNeg = 79.8571; bNeg = -14.2921; cNeg = -66.6972; dNeg = -103.794; eNeg = -50.5771;
-	}else if(fPeriod=="16k"){
-		aPos = 80.254; bPos = 6.37076; cPos = -50.9878; dPos = 116.611; ePos = -79.0483;
-		aNeg = 79.8728; bNeg = -3.08265; cNeg = -11.3778; dNeg = -20.6605; eNeg = -12.3861;
-	}else if(fPeriod=="16deghijop"){
-		aPos = 80.0719; bPos = 7.10053; cPos = -42.4788; dPos = 86.1074; ePos = -54.0891;
-		aNeg = 79.6155; bNeg = -12.1254; cNeg = -66.2488; dNeg = -132.426; eNeg = -85.0155;
-	}else if(fPeriod=="17data"){
-		aPos = 82.4621; bPos = 5.20353; cPos = -32.2608; dPos = 63.4788; ePos = -39.3277;
-		aNeg = 82.306; bNeg = -4.04076; cNeg = -22.133; dNeg = -40.5782; eNeg = -23.8157;
-	}else{
-		aPos = 79.7726; bPos = 6.83744; cPos = -40.0469; dPos = 78.987; ePos = -50.1373;
-		aNeg = 79.4863; bNeg = -5.00403; cNeg = -21.6184;  dNeg = -39.1295; eNeg = -24.8757;
-	}
-
-	TF1* felededxfitPos = new TF1("felededxfitPos", "pol4", 0.0, 1.0);
-	TF1* felededxfitNeg = new TF1("felededxfitNeg", "pol4", -1.0, 0.0);
-	double dedx_electrons = 999;
-
-	for(int i=0; i<5; ++i){
-		felededxfitNeg->SetParameter(i,0.0);
-		felededxfitPos->SetParameter(i,0.0);
-	}
-
-	if(eta<0.0){
-		felededxfitNeg->SetParameter(0,aNeg);
-		felededxfitNeg->SetParameter(1,bNeg);
-		felededxfitNeg->SetParameter(2,cNeg);
-		felededxfitNeg->SetParameter(3,dNeg);
-		felededxfitNeg->SetParameter(4,eNeg);
-
-		dedx_electrons = felededxfitNeg->Eval(eta);
-	}
-	else{
-		felededxfitPos->SetParameter(0,aPos);
-		felededxfitPos->SetParameter(1,bPos);
-		felededxfitPos->SetParameter(2,cPos);
-		felededxfitPos->SetParameter(3,dPos);
-		felededxfitPos->SetParameter(4,ePos);
-
-		dedx_electrons = felededxfitPos->Eval(eta);
-	}
-
-	delete felededxfitPos;
-	delete felededxfitNeg;
-
-	return dedx_electrons;
-
+	return calibration;
 }
 //______________________________________________________________________________
 void AliAnalysisTaskFlatenicityPiKp::nSigmaContamination() {

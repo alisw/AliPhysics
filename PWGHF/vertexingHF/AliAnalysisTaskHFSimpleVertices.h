@@ -10,6 +10,7 @@
 //
 //*************************************************************************
 
+#include "AliFJWrapper.h"
 #include <map>
 #include <string>
 #include "DCAFitterN.h"
@@ -48,6 +49,10 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
     fEnableCPUTimeCheck = enable;
     fCountTimeInMilliseconds = milliseconds;
   }
+  void SetDoJetFinding(Bool_t set) {doJetFinding=set;}
+  void SetJetMatching(Bool_t set) {matchedJetsOnly = set;}
+  void SetDoJetSubstructure(Bool_t set) {doJetSubstructure=set;}
+
 
  private:
   AliAnalysisTaskHFSimpleVertices(const AliAnalysisTaskHFSimpleVertices& source);
@@ -81,10 +86,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   Int_t LcSkimCuts(AliAODRecoDecayHF3Prong* cand);
   Int_t DzeroSelectionCuts(AliAODRecoDecayHF2Prong* cand);
   Int_t DplusSelectionCuts(AliAODRecoDecayHF3Prong* cand, Double_t bzkG);
+  Int_t DsSelectionCuts(AliAODRecoDecayHF3Prong* cand);
   Int_t JpsiSelectionCuts(AliAODRecoDecayHF2Prong* cand, AliESDtrack* trk_p, AliESDtrack* trk_n, AliESDVertex* primvtx, float bzkG);
   Int_t LcSelectionCuts(AliAODRecoDecayHF3Prong* cand);
   Int_t MatchToMC(AliAODRecoDecay* rd, Int_t pdgabs, AliMCEvent* mcEvent, Int_t ndgCk, const TObjArray* trkArray, const Int_t* pdgDg) const;
-
+  void FindJets(AliESDEvent *esd, Int_t iNegTrack_0, Int_t iPosTrack_0, AliAODRecoDecayHF2Prong* the2Prong, AliESDVertex* primVtx, AliMCEvent* mcEvent = nullptr, Int_t labD=-100);
+  void FindGenJets(AliMCEvent* mcEvent, Int_t labD);
   enum ESelBits2prong { kbitDzero = 0,
                         kbitDzerobar,
                         kbitJpsi };
@@ -99,6 +106,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
          kNCutVarsLc = 7 };
   enum { kMaxNPtBinsDplus = 100,
          kNCutVarsDplus = 8 };
+  enum { kMaxNPtBinsDs = 100,
+         kNCutVarsDs = 10 };
   enum { kMaxNPtBinsSingleTrack = 100,
          kNCutVarsSingleTrack = 2 };
   enum { kMaxNPtBins2ProngsSkims = 100,
@@ -136,17 +145,17 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH1F* fHistITSmapAllTracks;         //!<!  histo with its map all tracks
   TH1F* fHistITSmapSelTracks;         //!<!  histo withits map selected tracks
 
-  TH1F* fHistPrimVertX;    //!<!  histo of prim vertex x
-  TH1F* fHistPrimVertY;    //!<!  histo of prim vertex y
-  TH1F* fHistPrimVertZ;    //!<!  histo of prim vertex z
-  TH1F* fHistPrimVertContr;//!<!  histo of prim vertex N contributors
-  TH1F* fHist2ProngVertX;  //!<!  histo of 2-prong vertex x
-  TH1F* fHist2ProngVertY;  //!<!  histo of 2-prong vertex y
-  TH1F* fHist2ProngVertZ;  //!<!  histo of 2-prong vertex z
-  TH1F* fHist3ProngVertX;  //!<!  histo of 3-prong vertex x
-  TH1F* fHist3ProngVertY;  //!<!  histo of 3-prong vertex y
-  TH1F* fHist3ProngVertZ;  //!<!  histo of 3-prong vertex z
-  TH1F* fHistDist12LcpKpi; //!<!  histo of LcpKpi+ distance between primary and secondary vertex reconstructed from the pair of tracks
+  TH1F* fHistPrimVertX;     //!<!  histo of prim vertex x
+  TH1F* fHistPrimVertY;     //!<!  histo of prim vertex y
+  TH1F* fHistPrimVertZ;     //!<!  histo of prim vertex z
+  TH1F* fHistPrimVertContr; //!<!  histo of prim vertex N contributors
+  TH1F* fHist2ProngVertX;   //!<!  histo of 2-prong vertex x
+  TH1F* fHist2ProngVertY;   //!<!  histo of 2-prong vertex y
+  TH1F* fHist2ProngVertZ;   //!<!  histo of 2-prong vertex z
+  TH1F* fHist3ProngVertX;   //!<!  histo of 3-prong vertex x
+  TH1F* fHist3ProngVertY;   //!<!  histo of 3-prong vertex y
+  TH1F* fHist3ProngVertZ;   //!<!  histo of 3-prong vertex z
+  TH1F* fHistDist12LcpKpi;  //!<!  histo of LcpKpi+ distance between primary and secondary vertex reconstructed from the pair of tracks
 
   TH1F* fHistInvMassD0;           //!<!  histo with D0 inv mass
   TH1F* fHistPtD0;                //!<!  histo with D0 pt
@@ -231,8 +240,21 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH1F* fHistInvMassDsRefl;   //!<!  histo with Ds->KKpi inv mass (reflection)
   TH1F* fHistPtDs;            //!<!  histo with Ds pt
   TH2F* fHistYPtDs;           //!<!  histo with Ds y vs pt
+  TH1F* fHistPtDsDau0;        //!<!  histo with Ds prong pt
+  TH1F* fHistPtDsDau1;        //!<!  histo with Ds prong pt
+  TH1F* fHistPtDsDau2;        //!<!  histo with Ds prong pt
+  TH1F* fHistImpParDsDau0;    //!<!  histo with Ds prong d0
+  TH1F* fHistImpParDsDau1;    //!<!  histo with Ds prong d0
+  TH1F* fHistImpParDsDau2;    //!<!  histo with Ds prong d0
   TH1F* fHistDecLenDs;        //!<!  histo with Ds decay length
+  TH1F* fHistDecLenXYDs;      //!<!  histo with Ds decay length XY
+  TH1F* fHistNormDecLenXYDs;  //!<!  histo with Ds normalized decay length XY
   TH1F* fHistCosPointDs;      //!<!  histo with Ds cosine of pointing angle
+  TH1F* fHistCosPointXYDs;    //!<!  histo with Ds cosine of pointing angle XY
+  TH1F* fHistImpParXYDs;      //!<!  histo with Ds impact parameter XY
+  TH1F* fHistNormIPDs;        //!<!  histo with max difference between prong observed and expeceted impact parameters
+  TH1F* fHistDeltaMassPhiDs;  //!<!  histo with abs. mass difference between KK pair and phi meson 
+  TH1F* fHistCos3PiKDs;       //!<!  histo with cube of cosine of angle between pion and kaon
 
   TH1F* fHistInvMassLc;             //!<!  histo with LcpKpi+ inv mass
   TH1F* fHistPtLc;                  //!<!  histo with LcpKpi+ pt
@@ -303,6 +325,26 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH2F* fHistWallTimeTrackVsNTracks; //!<! histo with wall time for track selection vs number of selected tracks for candidates
   TH2F* fHistWallTimeCandVsNTracks;  //!<! histo with wall time for candidate selection vs number of selected tracks for candidates
 
+  TH1F* fHistJetPt; //!<! histo with Jet transverse momentum
+  TH1F* fHistJetE; //!<! histo with Jet energy
+  TH1F* fHistJetPhi; //!<! histo with Jet phi
+  TH1F* fHistJetEta; //!<! histo with Jet pseudorapidity
+  TH1F* fHistJetNConstituents; //!<! histo with number of jet constituents
+  TH1F* fHistJetCandPt; //!<! histo with HF candidate transverese momentum in Jet
+  TH1F* fHistJetZg; //!<! histo with Zg
+  TH1F* fHistJetRg; //!<! histo with Rg
+  TH1F* fHistJetNsd; //!<! histo with Nsd
+
+  TH1F* fHistJetPt_Part; //!<! histo with Jet transverse momentum at particle level
+  TH1F* fHistJetE_Part; //!<! histo with Jet energy at particle level
+  TH1F* fHistJetPhi_Part; //!<! histo with Jet phi at particle level
+  TH1F* fHistJetEta_Part; //!<! histo with Jet pseudorapidity at particle level
+  TH1F* fHistJetNConstituents_Part; //!<! histo with number of jet constituents at particle level
+  TH1F* fHistJetCandPt_Part; //!<! histo with HF candidate transverese momentum in Jet at particle level
+  TH1F* fHistJetZg_Part; //!<! histo with Zg at particle level
+  TH1F* fHistJetRg_Part; //!<! histo with Rg at particle level
+  TH1F* fHistJetNsd_Part; //!<! histo with Nsd at particle level
+
   Bool_t fReadMC;              // flag for access to MC
   Bool_t fUsePhysSel;          // flag use/not use phys sel
   Bool_t fUseAliEventCuts;     // flag to use/not use default AliEventCuts
@@ -333,12 +375,12 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   Double_t fVertexerMinParamChange;            // min ParamChange vertexer
   Double_t fVertexerMinRelChi2Change;          // min rel chi2 change vertexer
   Bool_t fVertexerUseAbsDCA;                   // use abs DCA vertexer
-  AliEventCuts fEventCuts;          // Standard AliEvent cuts
-  AliESDtrackCuts* fTrackCuts2pr;   // Track cut object for 2 prongs
-  AliESDtrackCuts* fTrackCuts3pr;   // Track cut object for 3 prongs
-  AliESDtrackCuts* fTrackCutsBach;  // Track cut object for bachelor
-  AliESDtrackCuts* fTrackCutsV0Dau; // Track cut object for V0 daughters
-  Int_t fMaxTracksToProcess;        // Max n. of tracks, to limit test duration
+  AliEventCuts fEventCuts;                     // Standard AliEvent cuts
+  AliESDtrackCuts* fTrackCuts2pr;              // Track cut object for 2 prongs
+  AliESDtrackCuts* fTrackCuts3pr;              // Track cut object for 3 prongs
+  AliESDtrackCuts* fTrackCutsBach;             // Track cut object for bachelor
+  AliESDtrackCuts* fTrackCutsV0Dau;            // Track cut object for V0 daughters
+  Int_t fMaxTracksToProcess;                   // Max n. of tracks, to limit test duration
 
   Int_t fNPtBinsSingleTrack;                                                     // Number of pt bins for single track cuts
   Double_t fPtBinLimsSingleTrack[kMaxNPtBinsDzero];                              // [fNPtBinsSingleTrack+1] limits of pt bins for single track cuts
@@ -358,6 +400,8 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   Double_t fMaxPtDzero;                                              // D0 max pt
   Double_t fMinPtDplus;                                              // D+ min pt
   Double_t fMaxPtDplus;                                              // D+ max pt
+  Double_t fMinPtDs;                                                 // Ds min pt
+  Double_t fMaxPtDs;                                                 // Ds max pt
   Double_t fMinPtJpsi;                                               // Jpsi min pt
   Double_t fMaxPtJpsi;                                               // Jpsi max pt
   Double_t fMinPtLc;                                                 // Lc min pt
@@ -371,21 +415,25 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   Double_t fXicSkimCuts[kMaxNPtBins3ProngsSkims][kNCutVars3Prong];   // Xic skimming cuts
   Double_t fDzeroCuts[kMaxNPtBinsDzero][kNCutVarsDzero];             // D0 cuts
   Double_t fDplusCuts[kMaxNPtBinsDplus][kNCutVarsDplus];             // D+ cuts
+  Double_t fDsCuts[kMaxNPtBinsDs][kNCutVarsDs];                      // Ds cuts
   Double_t fJpsiCuts[kMaxNPtBinsJpsi][kNCutVarsJpsi];                // Jpsi cuts
   Double_t fLcCuts[kMaxNPtBinsLc][kNCutVarsLc];                      // LcpKpi+ cuts
   Double_t fMinPt3Prong;                                             // Min pt for 3 prong candidate
   Double_t fMaxRapidityCand;                                         // Max rapidity cut (if -999 use pt dependent cut)
-  static constexpr Int_t fNPtBinsDzero = 25;                                               // Number of pt bins Dzero
-  static constexpr Int_t fNPtBinsDplus = 12;                                               // Number of pt bins Dplus
-  static constexpr Int_t fNPtBinsJpsi = 9;                                                // Number of pt bins Jpsi
-  static constexpr Int_t fNPtBinsLc = 10;                                                  // Number of pt bins Lc
+  static constexpr Int_t fNPtBinsDzero = 25;                         // Number of pt bins Dzero
+  static constexpr Int_t fNPtBinsDplus = 12;                         // Number of pt bins Dplus
+  static constexpr Int_t fNPtBinsDs = 8;                            // Number of pt bins Ds
+  static constexpr Int_t fNPtBinsJpsi = 9;                           // Number of pt bins Jpsi
+  static constexpr Int_t fNPtBinsLc = 10;                            // Number of pt bins Lc
   Double_t fPtBinLimsDzero[kMaxNPtBinsDzero];                        // [fNPtBinsDzero+1] limits of pt bins
   Double_t fPtBinLimsDplus[kMaxNPtBinsDplus];                        // [fNPtBinsDplus+1] limits of pt bins
+  Double_t fPtBinLimsDs[kMaxNPtBinsDs];                              // [fNPtBinsDs+1] limits of pt bins
   Double_t fPtBinLimsJpsi[kMaxNPtBinsJpsi];                          // [fNPtBinsJpsi+1] limits of pt bins
   Double_t fPtBinLimsLc[kMaxNPtBinsLc];                              // [fNPtBinsLc+1] limits of pt bins
   Int_t fSelectD0;                                                   // flag to activate cuts for D0
   Int_t fSelectD0bar;                                                // flag to activate cuts for D0bar
   Int_t fSelectDplus;                                                // flag to activate cuts for Dplus
+  Int_t fSelectDs;                                                   // flag to activate cuts for Ds
   Int_t fSelectJpsi;                                                 // flag to activate cuts for Jpsi
   Int_t fSelectLcpKpi;                                               // flag to activate cuts for LcpKpi
   Bool_t fFindVertexForCascades;                                     // flag to activate vertex reco for V0+bachelor
@@ -395,8 +443,43 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
 
   Bool_t fEnableCPUTimeCheck;      // flag to enable CPU time benchmark
   Bool_t fCountTimeInMilliseconds; // flag to switch from seconds (default) to milliseconds
+  
+  Bool_t doJetFinding;
+  Bool_t matchedJetsOnly;
+  Bool_t doJetSubstructure;
+  AliFJWrapper* fFastJetWrapper;
+  AliFJWrapper* fFastJetWrapper_Part;
 
-  ClassDef(AliAnalysisTaskHFSimpleVertices, 28);
+  Double_t jetPtMin;                         // minimum jet pT
+  Double_t jetPtMax;                         // maximum jet pT
+  Double_t jetR;                             // jet resolution parameter
+  Double_t jetTrackPtMin;                   // minimum track pT for jet finding
+  Double_t jetTrackPtMax;                   // maximum track pT for jet finding
+  Double_t jetTrackEtaMin;                  // maximum track eta for jet finding
+  Double_t jetTrackEtaMax;                  // minimum track eta for jet finding
+  Double_t jetCandPtMin;                   // maximum candidate pT for jet finding
+  Double_t jetCandPtMax;                   // minimum candidate pT for jet find
+  Double_t jetCandYMin;                    // maximum candidate rapidity for jet find
+  Double_t jetCandYMax;                    // minimum candidate rapidity for jet find
+
+  Double_t jetPtMin_Part;
+  Double_t jetPtMax_Part;
+  Double_t jetR_Part;
+  Double_t jetTrackPtMin_Part;
+  Double_t jetTrackPtMax_Part;
+  Double_t jetTrackEtaMin_Part;
+  Double_t jetTrackEtaMax_Part;
+  Double_t jetCandPtMin_Part;
+  Double_t jetCandPtMax_Part;
+  Double_t jetCandYMin_Part;
+  Double_t jetCandYMax_Part;
+
+  Double_t zCut;
+  Double_t beta;
+  Double_t zCut_Part;
+  Double_t beta_Part;
+
+  ClassDef(AliAnalysisTaskHFSimpleVertices, 29);
 };
 
 #endif

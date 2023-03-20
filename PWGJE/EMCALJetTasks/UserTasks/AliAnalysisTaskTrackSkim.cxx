@@ -60,6 +60,7 @@ AliAnalysisTaskTrackSkim::AliAnalysisTaskTrackSkim()
  : AliAnalysisTaskEmcalJet("AliAnalysisTaskTrackSkim", kTRUE),
   fYAMLConfig(),
   fConfigurationInitialized{false},
+  fChargeScaling{false},
   fNAcceptedFirstTrackCollection{nullptr},
   fTriggerBitINT7{false},
   fCentralityForTree{-1},
@@ -84,6 +85,7 @@ AliAnalysisTaskTrackSkim::AliAnalysisTaskTrackSkim(const char* name)
  : AliAnalysisTaskEmcalJet(name, kTRUE),
   fYAMLConfig(),
   fConfigurationInitialized{false},
+  fChargeScaling{false},
   fNAcceptedFirstTrackCollection{nullptr},
   fTriggerBitINT7{false},
   fCentralityForTree{-1},
@@ -113,6 +115,7 @@ AliAnalysisTaskTrackSkim::AliAnalysisTaskTrackSkim(
  const AliAnalysisTaskTrackSkim& other)
  : fYAMLConfig(other.fYAMLConfig),
   fConfigurationInitialized(other.fConfigurationInitialized),
+  fChargeScaling{other.fChargeScaling},
   fNAcceptedFirstTrackCollection{nullptr},
   fTriggerBitINT7{other.fTriggerBitINT7},
   fCentralityForTree{other.fCentralityForTree},
@@ -153,6 +156,12 @@ void AliAnalysisTaskTrackSkim::RetrieveAndSetTaskPropertiesFromYAMLConfig()
     fMinCent = centRange.first;
     fMaxCent = centRange.second;
   }
+  bool chargeScaling;
+  res  = fYAMLConfig.GetProperty({ baseName, "chargeScaling" }, chargeScaling, false);
+  if (res) {
+    fChargeScaling = chargeScaling;
+    AliDebugStream(3) << "Charge scaling enabled.\n";
+  }
 }
 
 /**
@@ -161,7 +170,6 @@ void AliAnalysisTaskTrackSkim::RetrieveAndSetTaskPropertiesFromYAMLConfig()
 bool AliAnalysisTaskTrackSkim::Initialize()
 {
   fConfigurationInitialized = false;
-
   // Always initialize for streaming purposes
   fYAMLConfig.Initialize();
 
@@ -177,7 +185,6 @@ bool AliAnalysisTaskTrackSkim::Initialize()
   fConfigurationInitialized = true;
   return fConfigurationInitialized;
 }
-
 /**
   * Define particle kinematics branches.
   */
@@ -187,7 +194,6 @@ void AliAnalysisTaskTrackSkim::AddParticleKinematicsToMap(std::map<std::string, 
   map["eta"] = {};
   map["phi"] = {};
 }
-
 /**
   * Define particle label branches.
   */
@@ -386,7 +392,12 @@ Bool_t AliAnalysisTaskTrackSkim::FillHistograms()
   }
   
   for (auto particle : particles->accepted()) {
-    fFirstTrackCollectionKinematics["pt"].push_back(particle->Pt());
+    if(fChargeScaling && particle->Charge() < 0) {
+        fFirstTrackCollectionKinematics["pt"].push_back(particle->Pt()*-1);
+    }
+    else { 
+        fFirstTrackCollectionKinematics["pt"].push_back(particle->Pt()); 
+    }
     fFirstTrackCollectionKinematics["eta"].push_back(particle->Eta());
     fFirstTrackCollectionKinematics["phi"].push_back(particle->Phi());
     if (fIsPythia) {
@@ -493,6 +504,13 @@ std::string AliAnalysisTaskTrackSkim::toString() const
   else {
     tempSS << "disabled.\n";
   }
+  tempSS << "\tCharge scaling: ";
+  if (fChargeScaling) {
+    tempSS << "enabled.\n";
+  }
+  else {
+    tempSS << "disabled.\n";
+  }
   // Particle variables:
   tempSS << "Particle variables:\n";
   tempSS << "First track collection:\n";
@@ -570,6 +588,7 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskTrackSkim& first,
   // Same ordering as in the constructors (for consistency)
   swap(first.fYAMLConfig, second.fYAMLConfig);
   swap(first.fConfigurationInitialized, second.fConfigurationInitialized);
+  swap(first.fChargeScaling, second.fChargeScaling);
   swap(first.fNAcceptedFirstTrackCollection, second.fNAcceptedFirstTrackCollection);
   swap(first.fTriggerBitINT7, second.fTriggerBitINT7),
   swap(first.fCentralityForTree, second.fCentralityForTree),

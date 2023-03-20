@@ -11,7 +11,7 @@ ClassImp(AliAnalysisTaskOmegaDielectron_AccEff);
 AliAnalysisTaskOmegaDielectron_AccEff::AliAnalysisTaskOmegaDielectron_AccEff()
 : AliAnalysisTaskSE(),
 // General member variables
-fOutputList(nullptr), fEvent(nullptr), fMCEvent(nullptr), fEventCuts(nullptr),
+fOutputList(nullptr), fEvent(nullptr), fMCEvent(nullptr), fEventCuts(nullptr), fEventCuts_VertexZ(nullptr),
 fFilter_TrackCuts(), fFilter_PID(),
 fPIDResponse(nullptr),
 fMinEta(-0.8), fMaxEta(0.8), fMinPt(0.2), fMaxPt(10.0),
@@ -57,7 +57,7 @@ fHist_Rec_Omegas_TrackPID(nullptr)
 AliAnalysisTaskOmegaDielectron_AccEff::AliAnalysisTaskOmegaDielectron_AccEff(const char *name)
 : AliAnalysisTaskSE(name),
 // General member variables
-fOutputList(nullptr), fEvent(nullptr), fMCEvent(nullptr), fEventCuts(nullptr),
+fOutputList(nullptr), fEvent(nullptr), fMCEvent(nullptr), fEventCuts(nullptr), fEventCuts_VertexZ(nullptr),
 fFilter_TrackCuts(), fFilter_PID(),
 fPIDResponse(nullptr),
 fMinEta(-0.8), fMaxEta(0.8), fMinPt(0.2), fMaxPt(10.0),
@@ -106,9 +106,10 @@ void AliAnalysisTaskOmegaDielectron_AccEff::UserCreateOutputObjects() {
   fOutputList = new TList();
   fOutputList->SetOwner();
 
-  fHistVertex             = new TH2D("zVertex", "zVertex; Event selection ; z(cm)", 2, 0.5, 2.5, 300, -15.0, 15.0);
-  fHistVertex->GetXaxis()->SetBinLabel(1, "without");
-  fHistVertex->GetXaxis()->SetBinLabel(2, "with");
+  fHistVertex             = new TH2D("zVertex", "zVertex; Event selection ; z(cm)", 3, 0.5, 3.5, 300, -15.0, 15.0);
+  fHistVertex->GetXaxis()->SetBinLabel(1, "without Event Cuts");
+  fHistVertex->GetXaxis()->SetBinLabel(2, "Event Cuts --> without SetVertexZ(-10,10)");
+  fHistVertex->GetXaxis()->SetBinLabel(3, "with Event Cuts");
   fOutputList->Add(fHistVertex);
 
   // Histogram to check Rapidity distribution
@@ -161,11 +162,17 @@ void AliAnalysisTaskOmegaDielectron_AccEff::UserCreateOutputObjects() {
   fOutputList->Add(fHist_Rec_Omegas_TrackPID);
 
   /// --- --- --- EventCuts (for AOD/ ESD) --- --- --- ///
-  fEventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
+  fEventCuts=new AliDielectronEventCuts("eventCuts","Vertex Track && ncontrib>0");
   fEventCuts->SetVertexType(AliDielectronEventCuts::kVtxSPD);
   fEventCuts->SetRequireVertex();
-  fEventCuts->SetVertexZ(-10.,10.);
   fEventCuts->SetMinVtxContributors(1);
+
+  fEventCuts_VertexZ=new AliDielectronEventCuts("eventCuts_VertexZ","|vtxZ|<10");
+  fEventCuts_VertexZ=new AliDielectronEventCuts("eventCuts","Vertex Track && |vtxZ|<10 && ncontrib>0");
+  fEventCuts_VertexZ->SetVertexType(AliDielectronEventCuts::kVtxSPD);
+  fEventCuts_VertexZ->SetRequireVertex();
+  fEventCuts_VertexZ->SetVertexZ(-10.,10.);
+  fEventCuts_VertexZ->SetMinVtxContributors(1);
 
   InitCuts();
 
@@ -218,7 +225,18 @@ void AliAnalysisTaskOmegaDielectron_AccEff::UserExec(Option_t *) {
   if (vtx_post) {
     vtxZGlobal_post = vtx_post->GetZ();
   }
-  fHistVertex->Fill(2.0, vtxZGlobal); // all events Vertex z
+  fHistVertex->Fill(2.0, vtxZGlobal_post); // all events Vertex z
+
+
+  if (!fEventCuts_VertexZ->IsSelected(fEvent)){ // https://github.com/alisw/AliPhysics/blob/master/OADB/AliEventCuts.cxx
+    return;
+  }
+  const AliVVertex* vtx_post_vZ = fEvent->GetPrimaryVertex();
+  Double_t vtxZGlobal_post_vZ = -99.;
+  if (vtx_post_vZ) {
+    vtxZGlobal_post_vZ = vtx_post_vZ->GetZ();
+  }
+  fHistVertex->Fill(3.0, vtxZGlobal_post_vZ); // all events Vertex z
 
 
   ///-------------------- Loop over Generated MC Particles ---OMEGAS --------------------///

@@ -144,6 +144,10 @@ ClassImp(AliAnalysisTaskSpherocity)
 		hMultPercvsNch(0x0),
 		hSOtvsSOrV0M(0x0),
 		hSOtvsSOrCL1(0x0),
+		hSOmV0M(0x0),
+		hSOmCL1(0x0),
+		hSOgV0M(0x0),
+		hSOgCL1(0x0),
 		fEtaCalibrationNeg(0x0),
 		fEtaCalibrationPos(0x0),
 		fcutDCAxy(0x0),
@@ -315,6 +319,10 @@ AliAnalysisTaskSpherocity::AliAnalysisTaskSpherocity(const char *name):
 	hMultPercvsNch(0x0),
 	hSOtvsSOrV0M(0x0),
 	hSOtvsSOrCL1(0x0),
+	hSOmV0M(0x0),
+	hSOmCL1(0x0),
+	hSOgV0M(0x0),
+	hSOgCL1(0x0),
 	fEtaCalibrationNeg(0x0),
 	fEtaCalibrationPos(0x0),
 	fcutDCAxy(0x0),
@@ -712,6 +720,12 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 	hSOtvsSOrV0M = new TH3F("hSOtvsSOrV0M",";#it{S}_{O}^{r};#it{S}_{O}^{t};V0M",nBinsSO,BinsSO,nBinsSO,BinsSO,nBinsPer,BinsPer);
 	hSOtvsSOrCL1 = new TH3F("hSOtvsSOrCL1",";#it{S}_{O}^{r};#it{S}_{O}^{t};CL1",nBinsSO,BinsSO,nBinsSO,BinsSO,nBinsPer,BinsPer);
 
+	hSOmV0M = new TH2F("hSOmV0M",";#it{S}_{O}^{r};V0M",nBinsSO,BinsSO,nBinsPer,BinsPer);
+	hSOmCL1 = new TH2F("hSOmCL1",";#it{S}_{O}^{r};V0M",nBinsSO,BinsSO,nBinsPer,BinsPer);
+
+	hSOgV0M = new TH2F("hSOtV0M",";#it{S}_{O}^{r};V0M",nBinsSO,BinsSO,nBinsPer,BinsPer);
+	hSOgCL1 = new TH2F("hSOtCL1",";#it{S}_{O}^{r};V0M",nBinsSO,BinsSO,nBinsPer,BinsPer);
+
 	hPionSimvsSOV0M = new TH3F("hPionSimvsSOV0M",";#it{p}_{T};#it{S}_{O}^{r};V0M",nPtBins,ptBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
 	hPionGenvsSOV0M = new TH3F("hPionGenvsSOV0M",";#it{p}_{T};#it{S}_{O}^{r};V0M",nPtBins,ptBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
 	hKaonSimvsSOV0M = new TH3F("hKaonSimvsSOV0M",";#it{p}_{T};#it{S}_{O}^{r};V0M",nPtBins,ptBins,nBinsSO,BinsSO,nBinsPer,BinsPer);
@@ -891,6 +905,10 @@ void AliAnalysisTaskSpherocity::UserCreateOutputObjects()
 
 
 	else{
+		fListOfObjects->Add(hSOmV0M);
+		fListOfObjects->Add(hSOmCL1);
+		fListOfObjects->Add(hSOgV0M);
+		fListOfObjects->Add(hSOgCL1);
 		fListOfObjects->Add(hSOtvsSOrV0M);
 		fListOfObjects->Add(hSOtvsSOrCL1);
 		fListOfObjects->Add(hPionSimvsSOV0M);
@@ -1087,8 +1105,16 @@ void AliAnalysisTaskSpherocity::UserExec(Option_t *)
 
 	if(fAnalysisMC){
 
-		hSOtvsSOrV0M->Fill(SOm,SOt,V0MPercentile);
-		hSOtvsSOrCL1->Fill(SOm,SOt,RefPercentile);
+		double randomUE = gRandom->Uniform(0.0,1.0);
+		if(randomUE<=0.5){// corrections (50% stat.)
+			hSOtvsSOrV0M->Fill(SOm,SOt,V0MPercentile);
+			hSOtvsSOrCL1->Fill(SOm,SOt,RefPercentile);
+		}else{
+			hSOmV0M->Fill(SOm,V0MPercentile);
+			hSOmCL1->Fill(SOm,RefPercentile);
+			hSOgV0M->Fill(SOt,V0MPercentile);
+			hSOgCL1->Fill(SOt,RefPercentile);
+		}
 
 		ProcessMCTruthV0M(V0MPercentile,SOt,SOm);
 		ProcessMCTruthCL1(RefPercentile,SOt,SOm);
