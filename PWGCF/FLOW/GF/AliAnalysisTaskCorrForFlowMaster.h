@@ -67,6 +67,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    SetJetEventsLowPtCut(Double_t cut) { fJetParticleLowPt = cut; }
         void                    SetUsePhiStar(Bool_t flag) {fUsePhiStar = flag;}
         void                    SetUseEfficiency(Bool_t flag) {fUseEfficiency = flag;}
+        void                    SetCreateQAPlots(Bool_t flag) {fCreateQAPlots = flag;}
 
         // event selection
         void                    SetNumEventBias(Int_t num) {fNumEventBias = num;}
@@ -145,6 +146,10 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         TH2D*                   fhEfficiencyEta[8]; //! eta dependent (8 sectors)
         TH1D*                   fhCentCalib; //!
         TH1D*                   fhPT; //!
+        TH1D*                   fhPhi; //!
+        TH1D*                   fhEta; //!
+        TH1D*                   fhPVz; //!
+
 
         //event and track selection
         AnaType                 fAnalType;
@@ -163,10 +168,13 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         Bool_t                  fRejectSecondariesFromMC; // [kFALSE]
         Bool_t                  fBoostAMPT; // [kFALSE] = boost to CMS in pPb collisions for the gen level of AMPT
         Bool_t                  fUsePhiStar; // [kFALSE]
+        Bool_t                  fCreateQAPlots; //[kFALSE]
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
         Int_t                   fNofTracks;
+        Int_t                   fNofTrackGlobal; // [0]
+        Int_t                   fNofEventGlobal; // [0]
         Int_t                   fNofMinHighPtTracksForRejection;
         Int_t                   fNchMin;
         Int_t                   fNchMax;
