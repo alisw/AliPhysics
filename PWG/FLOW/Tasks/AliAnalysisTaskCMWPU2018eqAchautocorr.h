@@ -179,6 +179,7 @@ class AliAnalysisTaskCMWPU2018eqAchautocorr : public AliAnalysisTaskSE {
   TH1D          *fHCorrectMCnegPion;
   TH1D          *fHCorrectMCnegKaon;
   TH1D          *fHCorrectMCnegProt;
+  TH2F            *fHistAChrgVsCent;  //!
 
   TH3F          *fHCorrectNUAposChrg;   //!  = centrality bins
   TH3F          *fHCorrectNUAnegChrg;   //! 

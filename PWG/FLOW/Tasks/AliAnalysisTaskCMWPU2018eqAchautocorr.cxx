@@ -131,6 +131,7 @@ AliAnalysisTaskCMWPU2018eqAchautocorr::AliAnalysisTaskCMWPU2018eqAchautocorr(con
   fHCorrectMCnegPion(NULL),
   fHCorrectMCnegKaon(NULL),
   fHCorrectMCnegProt(NULL),      
+  fHistAChrgVsCent(NULL),
 
   fHCorrectNUAposChrg(NULL),  
   fHCorrectNUAnegChrg(NULL),  
@@ -260,7 +261,8 @@ AliAnalysisTaskCMWPU2018eqAchautocorr::AliAnalysisTaskCMWPU2018eqAchautocorr():
   fHCorrectMCnegChrg(NULL),
   fHCorrectMCnegPion(NULL),
   fHCorrectMCnegKaon(NULL),
-  fHCorrectMCnegProt(NULL),    
+  fHCorrectMCnegProt(NULL),
+  fHistAChrgVsCent(NULL),    
 
   fHCorrectNUAposChrg(NULL),  
   fHCorrectNUAnegChrg(NULL),  
@@ -420,6 +422,8 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserCreateOutputObjects()
 
   Double_t centRange[10] = {0,5,10,20,30,40,50,60,80,90};
 
+  fHistAChrgVsCent = new TH2F("fHistAChrgVsCent","Ach vs Cent;Cent;Ach",18,0,90,1000,-1.0,1.0);
+  fListHist->Add(fHistAChrgVsCent);
 
   //18q
   // Acharge Binning with Equal Event per bin:
@@ -779,7 +783,7 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserCreateOutputObjects()
 
 
   //// PileUp Removal Functions:
-  
+  /*
   fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
 
   Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
@@ -795,8 +799,8 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserCreateOutputObjects()
   fCenCutLowPU->SetParameters(parV0CL0);
   fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
   fCenCutHighPU->SetParameters(parV0CL0);
-  
-/*
+  */
+
   if (bdataset==0)
     {
       fSPDCutPU = new TF1("fSPDCutPU", "480. + 3.95*x", 0, 50000);
@@ -836,7 +840,7 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserCreateOutputObjects()
       fMultCutPU->SetParameters(parFB32);
     }
 
-  */
+  
 
 
 
@@ -1333,7 +1337,7 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserExec(Option_t*) {
  
 
 
-  
+  fHistAChrgVsCent->Fill(centrality, fAchrgNet, fWgtEvent);
 
 
 
