@@ -1650,7 +1650,7 @@ Bool_t AliAnalysisTaskCorrForNonlinearFlow::AcceptMCTruthTrack(AliAODMCParticle 
   if(mtrk->Pt() < fMinPt) return kFALSE;
   if(mtrk->Pt() > fMaxPt) return kFALSE;
 
-  if(TMath::Abs(mtrk->Eta()) > fEtaCut) return kFALSE;
+  // if(TMath::Abs(mtrk->Eta()) > fEtaCut) return kFALSE;
 
   if (!(mtrk->IsPhysicalPrimary())) return kFALSE;
   if (mtrk->Charge() == 0) return kFALSE;
