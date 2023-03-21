@@ -217,7 +217,6 @@ private:
   Double_t fdCutRapV0Max; // (0.75) max |rapidity| of V0 (turned off)
   Double_t fdCutNTauKMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, K0S
   Double_t fdCutNTauLMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Lambda
-  Double_t fdCutNTauXMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Xi
   Bool_t fbCutArmPod; // (yes) Armenteros-Podolanski for K0S
   Bool_t fbCutCross; // (no) cross-contamination
 
@@ -502,6 +501,8 @@ private:
   Double_t fdCutCPACascadeMin;   // min cosine of the pointing angle of the cascade
   Double_t fdCutCPACascadeV0Min; // min cosine of the pointing angle of the V0 in the cascade
 
+  Double_t fdCutNTauXMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Xi
+
   static const Int_t fgkiNCategCascade = 21; // number of Cascade selection steps  
   //Histograms 
   TH1D* fh1CascadeCandPerEvent; //! number of Cascade cand per event
@@ -640,7 +641,7 @@ private:
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 23) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 24) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

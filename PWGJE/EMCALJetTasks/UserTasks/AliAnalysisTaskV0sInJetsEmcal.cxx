@@ -2254,7 +2254,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   Double_t dCascadeEtaMax = 0.75; // max |pseudorapidity| of Cascade
   // Selection of active cuts
   Bool_t bCutEtaV0Daughter = 1; // V0 daughter pseudorapidity
-  Bool_t bCutRapCascade = 0; // Cascade rapidity
+//  Bool_t bCutRapCascade = 0; // Cascade rapidity
   Bool_t bCutEtaCascade = 1; // Cascade pseudorapidity
   //Bool_t bCutCascadeTau = 1; // Cascade lifetime  
   Double_t dCTauXi = 4.917; // [cm] c tau of Xi
@@ -2262,8 +2262,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   Double_t dMassPDGXiMinus = TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass();  
   //Double_t dMassPDGXiPlus = TDatabasePDG::Instance()->GetParticle(kXiPlus)->Mass();  
   // PDG codes of used particles
-  Int_t iPdgCodeXiMinus = 3312;
-  Int_t iPdgCodeXiPlus = -3312;
+  //  Int_t iPdgCodeXiMinus = 3312;
+  //  Int_t iPdgCodeXiPlus = -3312;
 //------------------------------------------------------------------------------------------ 
   
   Double_t dCutEtaJetMax = fdCutEtaV0Max - fdDistanceV0JetMax; // max jet |pseudorapidity|, to make sure that V0s can appear in the entire jet area
@@ -3781,7 +3781,7 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     const AliAODTrack* trackBach = (AliAODTrack*)Cascade->GetDecayVertexXi()->GetDaughter(0); // bachelor daughter track    
     const AliAODTrack* trackPos  = (AliAODTrack*)Cascade->GetDaughter(0); // positive daughter track
     const AliAODTrack* trackNeg  = (AliAODTrack*)Cascade->GetDaughter(1); // negative daughter track  
-    Double_t dPtBach = trackBach->Pt(); 
+  //Double_t dPtBach = trackBach->Pt(); 
     Double_t dPtDaughterPos = trackPos->Pt(); // transverse momentum of a daughter track
     Double_t dPtDaughterNeg = trackNeg->Pt();
     Double_t dEtaDaughterNeg = trackNeg->Eta(); // = Cascade->EtaProng(1), pseudorapidity of a daughter track
@@ -3801,18 +3801,17 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     Double_t dCPAV0 = Cascade->CosPointingAngle(primVtx);  //??(dV0VtxPos); // cosine of the pointing angle
 
     Double_t dRapXi = Cascade->RapXi(); // rapidity calculated for Xi assumption
-    Double_t dRapOmega = Cascade->RapOmega(); // rapidity calculated for Omega assumption
     Double_t dEtaCascade = Cascade->Eta(); // Cascade  pseudorapidity
  
     //Calculations for the proper lifetime      
     Double_t dXiDecayPath[3];
     for(Int_t iPos = 0; iPos < 3; iPos++)
       dXiDecayPath[iPos] = dXiVtxPos[iPos] - dPrimVtxPos[iPos]; // vector of the Xi path      
-    Double_t dXiDecLen = TMath::Sqrt(dXiDecayPath[0] * dXiDecayPath[0] + dXiDecayPath[1] * dXiDecayPath[1] + dXiDecayPath[2] * dXiDecayPath[2]); // path length L
+    // Double_t dXiDecLen = TMath::Sqrt(dXiDecayPath[0] * dXiDecayPath[0] + dXiDecayPath[1] * dXiDecayPath[1] + dXiDecayPath[2] * dXiDecayPath[2]); // path length L
     Double_t dXiDecLen2D = TMath::Sqrt(dXiDecayPath[0] * dXiDecayPath[0] + dXiDecayPath[1] * dXiDecayPath[1]); // transverse path length R
-    Double_t dLOverP = dXiDecLen / Cascade->P(); // L/p
+    // Double_t dLOverP = dXiDecLen / Cascade->P(); // L/p
     Double_t dROverPt = dXiDecLen2D / dPtCascade; // R/pT  
-    Double_t dMLOverPXi = dMassPDGXiMinus * dLOverP; // m*L/p = c*(proper lifetime)
+    // Double_t dMLOverPXi = dMassPDGXiMinus * dLOverP; // m*L/p = c*(proper lifetime)
     Double_t dMROverPtXi = dMassPDGXiMinus * dROverPt; // m*R/pT
 
     Double_t dNSigmaPosPion   = (fPIDResponse ? TMath::Abs(fPIDResponse->NumberOfSigmasTPC(trackPos, AliPID::kPion)) : 0.); // difference between measured and expected signal of the dE/dx in the TPC
@@ -4417,7 +4416,7 @@ void AliAnalysisTaskV0sInJetsEmcal::FillQAHistogramXi(AliAODVertex* vtx, const A
  
   AliAODTrack* trackNeg  = (AliAODTrack*)cascade->GetDaughter(1); // negative track
   AliAODTrack* trackPos  = (AliAODTrack*)cascade->GetDaughter(0); // positive track
-  AliAODTrack* trackBach = (AliAODTrack*)cascade->GetDecayVertexXi()->GetDaughter(0); // bachelor daughter track 
+  //AliAODTrack* trackBach = (AliAODTrack*)cascade->GetDecayVertexXi()->GetDaughter(0); // bachelor daughter track 
     
   Short_t fTotalCharge = 0;
   for(Int_t i = 0; i < 2; i++)
