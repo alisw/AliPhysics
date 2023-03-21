@@ -45,6 +45,7 @@ class AliAnalysisTaskMCCorrections : public AliAnalysisTaskSE {
 		double GetFlatenicityMC();
 		void MakeMCanalysisPID();
 		void nSigmaContamination();
+		void SetSystVarTrkCuts(const int SystVar=9) { fSystVarTrkCuts = SystVar; }
 		void TrueINEL();
 		void AccINEL();
 		void SetPtMin(Double_t val) { fPtMin = val; } // Set pT cut for associated particles
@@ -78,6 +79,7 @@ class AliAnalysisTaskMCCorrections : public AliAnalysisTaskSE {
 		TF1* fcutLow;
 		TF1* fcutHigh;
 		TF1* fcutDCAxy;
+		int fSystVarTrkCuts;
 		Double_t fv0mpercentile;
 		Double_t fFlat;
 		Double_t fFlatTPC;
