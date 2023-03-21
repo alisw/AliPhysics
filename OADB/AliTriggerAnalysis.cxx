@@ -544,10 +544,30 @@ Int_t AliTriggerAnalysis::EvaluateTrigger(const AliVEvent* event, Trigger trigge
     case kTRDHSE:          return TRDTrigger(event,kTRDHSE);
     case kTRDHQU:          return TRDTrigger(event,kTRDHQU);
     case kTRDHEE:          return TRDTrigger(event,kTRDHEE);
-    case kOM2:             return TOFTrigger(event, kOM2);
-    case kOMU:             return TOFTrigger(event, kOMU);
-    case kSTG:             return SPDTrigger(event, kSTG);
-    case kSTGCF:           return SPDTrigger(event, kSTGCF);
+    case kOM2:            {
+      Bool_t isOM2 = kFALSE;
+      Bool_t isOMU = kFALSE;
+      TOFTrigger(event, isOM2, isOMU);
+      return isOM2;
+    }
+    case kOMU:            {
+      Bool_t isOM2 = kFALSE;
+      Bool_t isOMU = kFALSE;
+      TOFTrigger(event, isOM2, isOMU);
+      return isOMU;
+    }
+    case kSTG:            {
+      Bool_t isSTG = kFALSE;
+      Bool_t isSTGCF = kFALSE;
+      SPDTrigger(event, isSTG, isSTGCF);
+      return isSTG;
+    }
+    case kSTGCF:            {
+      Bool_t isSTG = kFALSE;
+      Bool_t isSTGCF = kFALSE;
+      SPDTrigger(event, isSTG, isSTGCF);
+      return isSTGCF;
+    }
     case kCentral: {
       if (!event->GetVZEROData()) { AliWarning("V0 centrality trigger bits were not filled!"); return kFALSE; }
       if (!event->GetVZEROData()->TestBit(AliVVZERO::kTriggerChargeBitsFilled)) return kFALSE;
@@ -1190,18 +1210,13 @@ Bool_t AliTriggerAnalysis::IsOMUfired(const TBits& maxipads) {
 }
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::TOFTrigger(const AliVEvent *event, AliTriggerAnalysis::Trigger trigger) {
-  if (trigger != AliTriggerAnalysis::kOM2 &&
-      trigger != AliTriggerAnalysis::kOMU) {
-    AliFatal("Unknown TOF trigger");
-  }
-
+void AliTriggerAnalysis::TOFTrigger(const AliVEvent *event, Bool_t& isOM2, Bool_t& isOMU) {
   if (!fMC) {
     TString firedTriggerClasses = event->GetFiredTriggerClasses();
     if (!firedTriggerClasses.Contains("CCUP") &&
         !firedTriggerClasses.Contains("CTRUE") &&
         !firedTriggerClasses.Contains("C1ZED"))
-      return false;
+      return;
   }
 
   TBits fired(72 * 23);
@@ -1209,11 +1224,8 @@ Bool_t AliTriggerAnalysis::TOFTrigger(const AliVEvent *event, AliTriggerAnalysis
   if (fMC)
     ApplyTOFefficiency(fired);
 
-  if (trigger == AliTriggerAnalysis::kOM2) {
-    return IsOM2fired(fired);
-  } else if (trigger == AliTriggerAnalysis::kOMU) {
-    return IsOMUfired(fired);
-  }
+  isOM2 = IsOM2fired(fired);
+  isOMU = IsOMUfired(fired);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1333,7 +1345,7 @@ Bool_t AliTriggerAnalysis::IsSTGCrossedAndFired(const AliVEvent *event, const TB
 
   Int_t nPassed = 0;
   for (Int_t itrk = 0; itrk < nTracks; ++itrk) {
-    AliESDtrack* track = (AliESDtrack*)event->GetTrack(itrk);
+    AliESDtrack* track = dynamic_cast<AliESDtrack*>(event->GetTrack(itrk));
     if (!track)
       continue;
     UChar_t itsMap = track->GetITSClusterMap();
@@ -1348,13 +1360,15 @@ Bool_t AliTriggerAnalysis::IsSTGCrossedAndFired(const AliVEvent *event, const TB
   if (nPassed != 2)
     return false;
 
-  Int_t spd[4][2];
-  for (Int_t itrk : trkIds) {
-    AliESDtrack* track = (AliESDtrack*)event->GetTrack(itrk);
+  Int_t spd[4][2] = {0};
+  Int_t itrk = 0;
+  for (Int_t trkId : trkIds) {
+    AliESDtrack* track = dynamic_cast<AliESDtrack*>(event->GetTrack(trkId));
     spd[0][itrk] = track->GetITSModuleIndex(0);
     spd[1][itrk] = track->GetITSModuleIndex(1);
     spd[2][itrk] = track->GetITSModuleIndex(6);
     spd[3][itrk] = track->GetITSModuleIndex(7);
+    itrk++;
   }
 
   TBits crossed = SetCrossed(spd);
@@ -1364,18 +1378,13 @@ Bool_t AliTriggerAnalysis::IsSTGCrossedAndFired(const AliVEvent *event, const TB
 }
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::SPDTrigger(const AliVEvent *event, AliTriggerAnalysis::Trigger trigger) {
-  if (trigger != AliTriggerAnalysis::kSTG &&
-      trigger != AliTriggerAnalysis::kSTGCF) {
-    AliFatal("Unknown SPD trigger");
-  }
-
+void AliTriggerAnalysis::SPDTrigger(const AliVEvent *event, Bool_t& isSTG, Bool_t& isSTGCF) {
   if (!fMC) {
     TString firedTriggerClasses = event->GetFiredTriggerClasses();
     if (!firedTriggerClasses.Contains("CCUP") &&
         !firedTriggerClasses.Contains("CTRUE") &&
         !firedTriggerClasses.Contains("C1ZED"))
-      return false;
+      return;
   }
 
   TBits fired;
@@ -1383,12 +1392,9 @@ Bool_t AliTriggerAnalysis::SPDTrigger(const AliVEvent *event, AliTriggerAnalysis
   if (fMC)
     ApplySPDefficiency(fired);
 
-  if (trigger == AliTriggerAnalysis::kSTG) {
-    return IsSTGFired(fired, event->GetRunNumber() >= 295753 ? 9 : 3);
-  }
-  if (trigger == AliTriggerAnalysis::kSTGCF) {
-    return IsSTGCrossedAndFired(event, fired, event->GetRunNumber() >= 295753 ? 9 : 3);
-  }
+  Int_t dphiMin = event->GetRunNumber() >= 295753 ? 9 : 3;
+  isSTG = IsSTGFired(fired, dphiMin);
+  isSTGCF = IsSTGCrossedAndFired(event, fired, dphiMin);
 }
 
 //-------------------------------------------------------------------------------------------------
