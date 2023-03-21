@@ -87,8 +87,8 @@ public:
   Bool_t EMCALTrigger            (const AliVEvent* event, Trigger trigger);
   Bool_t EMCALCellsTrigger       (const AliVEvent* event);
   Bool_t FMDTrigger              (const AliVEvent* event, AliceSide side);
-  Bool_t TOFTrigger              (const AliVEvent* event, Trigger trigger);
-  Bool_t SPDTrigger              (const AliVEvent* event, Trigger trigger);
+  void TOFTrigger                (const AliVEvent* event, Bool_t& isOM2, Bool_t& isOMU);
+  void SPDTrigger                (const AliVEvent* event, Bool_t& isSTG, Bool_t& isSTGCF);
 
   void FillHistograms(const AliVEvent* event, Bool_t onlineDecision, Bool_t offlineDecision);
   void FillTriggerClasses(const AliVEvent* event);
