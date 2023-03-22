@@ -721,15 +721,6 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
 //________________________________________________________________________
 void AliAnalysisTaskEtaPhigg::Terminate(Option_t *)
 {
-
-  TFile fout("histos.root","recreate") ;  
-    // Draw result to the screen
-  // Called once at the end of the query
-  for(Int_t i=0; i<fOutputContainer->GetSize();i++){  
-     fOutputContainer->At(i)->Write() ;
-      
-  }
-  fout.Close() ;
 }
 
 //_____________________________________________________________________________
