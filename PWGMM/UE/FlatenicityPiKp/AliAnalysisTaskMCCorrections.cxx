@@ -102,7 +102,7 @@ AliAnalysisTaskMCCorrections::AliAnalysisTaskMCCorrections()
 	fUseMC(kFALSE), fV0MMultiplicity(-1.0),
 	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fPIDResponse(0x0),
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), 
-	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0),
+	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fSystVarTrkCuts(0),
 	fv0mpercentile(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
 	fMultSelection(0x0),
 	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0),
@@ -153,7 +153,7 @@ AliAnalysisTaskMCCorrections::AliAnalysisTaskMCCorrections(const char *name)
 	fUseMC(kFALSE), fV0MMultiplicity(-1.0),
 	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fPIDResponse(0x0),
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70),
-	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0),
+	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fSystVarTrkCuts(0),
 	fv0mpercentile(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
 	fMultSelection(0x0),
 	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0),
@@ -255,6 +255,91 @@ void AliAnalysisTaskMCCorrections::UserCreateOutputObjects() {
 	fCutsPID->SetDCAToVertex2D(kFALSE);
 	fCutsPID->SetRequireSigmaToVertex(kFALSE);
 	fCutsPID->SetMaxChi2PerClusterITS(36);
+
+	if(fSystVarTrkCuts==1){ //! Lower: SetMinNCrossedRowsTPC(60)
+		fCutsPID->SetMinNCrossedRowsTPC(60);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else if(fSystVarTrkCuts==2){ //! Higher: SetMinNCrossedRowsTPC(100)
+		fCutsPID->SetMinNCrossedRowsTPC(100);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else if(fSystVarTrkCuts==3){ //! Lower: SetMinRatioCrossedRowsOverFindableClustersTPC(0.7)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else if(fSystVarTrkCuts==4){ //! Higher: SetMinRatioCrossedRowsOverFindableClustersTPC(0.9)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else if(fSystVarTrkCuts==5){ //! Lower: SetMaxChi2PerClusterTPC(3)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(3);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else if(fSystVarTrkCuts==6){ //! Higher: SetMaxChi2PerClusterTPC(5)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(5);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else if(fSystVarTrkCuts==7){ //! Lower: SetMaxChi2PerClusterITS(25)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(25);
+	}
+	else if(fSystVarTrkCuts==8){ //! Higher: SetMaxChi2PerClusterITS(49)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(49);
+	}
+	else if(fSystVarTrkCuts==9){ //! Lower: SetMaxDCAToVertexZ(1)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(1);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else if(fSystVarTrkCuts==10){ //! Lower: SetMaxDCAToVertexZ(5)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(5);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else{ //! Nominal values
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+
+	std::cout << "GetMinNCrossedRowsTPC = " << fCutsPID->GetMinNCrossedRowsTPC() << '\n';
+	std::cout << "GetMinRatioCrossedRowsOverFindableClustersTPC = " << fCutsPID->GetMinRatioCrossedRowsOverFindableClustersTPC() << '\n';
+	std::cout << "GetMaxChi2PerClusterTPC = " << fCutsPID->GetMaxChi2PerClusterTPC() << '\n';
+	std::cout << "GetMaxDCAToVertexZ = " << fCutsPID->GetMaxDCAToVertexZ() << '\n';
+	std::cout << "GetMaxChi2PerClusterITS = " << fCutsPID->GetMaxChi2PerClusterITS() << '\n';
+
 	fTrackFilterPID->AddCuts(fCutsPID);
 
 	fcutLow = new TF1("StandardPhiCutLow",  "0.1/x/x+pi/18.0-0.025", 0, 50);
