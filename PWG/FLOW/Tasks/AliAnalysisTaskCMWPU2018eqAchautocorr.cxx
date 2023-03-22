@@ -157,6 +157,7 @@ AliAnalysisTaskCMWPU2018eqAchautocorr::AliAnalysisTaskCMWPU2018eqAchautocorr(con
   for(int i=0;i<1;i++){
     for(int j=0;j<9;j++){
       fHistv2AchChrgPos[i][j] = NULL;
+      fHistv2AchChrgPosWhole[i][j] = NULL;
       fHistv2AchKaonPos[i][j] = NULL;    
       fHistv2AchProtPos[i][j] = NULL;      
       fHistv2AchPionPos[i][j] = NULL;
@@ -167,6 +168,7 @@ AliAnalysisTaskCMWPU2018eqAchautocorr::AliAnalysisTaskCMWPU2018eqAchautocorr(con
       fHistv2AchProtPosProtNeg[i][j] = NULL;
       
       fHistv2AchChrgNeg[i][j] = NULL;
+      fHistv2AchChrgNegWhole[i][j] = NULL;
       fHistv2AchPionNeg[i][j] = NULL;      
       fHistv2AchKaonNeg[i][j] = NULL;
       fHistv2AchProtNeg[i][j] = NULL;
@@ -288,6 +290,7 @@ AliAnalysisTaskCMWPU2018eqAchautocorr::AliAnalysisTaskCMWPU2018eqAchautocorr():
   for(int i=0;i<1;i++){
     for(int j=0;j<9;j++){
       fHistv2AchChrgPos[i][j] = NULL;
+      fHistv2AchChrgPosWhole[i][j] = NULL;
       fHistv2AchKaonPos[i][j] = NULL;    
       fHistv2AchProtPos[i][j] = NULL;      
       fHistv2AchPionPos[i][j] = NULL;
@@ -298,6 +301,7 @@ AliAnalysisTaskCMWPU2018eqAchautocorr::AliAnalysisTaskCMWPU2018eqAchautocorr():
       fHistv2AchProtPosProtNeg[i][j] = NULL;
       
       fHistv2AchChrgNeg[i][j] = NULL;
+      fHistv2AchChrgNegWhole[i][j] = NULL;
       fHistv2AchPionNeg[i][j] = NULL;      
       fHistv2AchKaonNeg[i][j] = NULL;
       fHistv2AchProtNeg[i][j] = NULL;
@@ -605,6 +609,19 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserCreateOutputObjects()
       fHistv2AchChrgNeg[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
       fHistv2AchChrgNeg[i][j]->Sumw2();
       fListHist->Add(fHistv2AchChrgNeg[i][j]);
+
+
+
+      sprintf(name,"fHistv2AchChrgPosWhole_Method%d_Cent%d",i,j);
+      sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
+      fHistv2AchChrgPosWhole[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchChrgPosWhole[i][j]->Sumw2();
+      fListHist->Add(fHistv2AchChrgPosWhole[i][j]);
+      sprintf(name,"fHistv2AchChrgNegWhole_Method%d_Cent%d",i,j);
+      sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[j],centRange[j+1]);
+      fHistv2AchChrgNegWhole[i][j] = new TProfile(name,title,10,fAchBinSelect,"");
+      fHistv2AchChrgNegWhole[i][j]->Sumw2();
+      fListHist->Add(fHistv2AchChrgNegWhole[i][j]);
 
 
 
@@ -1880,6 +1897,9 @@ if (c2WeightChrg!=0.0)
 
   Double_t c2WeightChrgPos   =  NumOfChrgPosEtaPos*fSumWgtEtaNeg;
   Double_t c2WeightChrgNeg   =  NumOfChrgNegEtaPos*fSumWgtEtaNegChNeg;
+
+  Double_t c2WeightChrgPosWhole   =  NumOfChrgPosEtaPos*fSumWgtEtaNegWhole;
+  Double_t c2WeightChrgNegWhole   =  NumOfChrgNegEtaPos*fSumWgtEtaNegWhole;
   
   //  Double_t c2WeightChrgPosChrgNeg   =  NumOfChrgPosEtaPos*fSumWgtEtaNegChNeg; //positive charge correlation with negative charge in opp subevent
   //Double_t c2WeightChrgNegChrgPos   =  NumOfChrgNegEtaPos*fSumWgtEtaNeg;
@@ -1921,6 +1941,11 @@ if (c2WeightChrg!=0.0)
     fHistv2AchChrgPos[0][iCent]->Fill(fAchrgNet, c2cumulantChrgPos, c2WeightChrgPos*eventwgtcharge);   /// for denominator
   }
   
+  if((c2WeightChrgPosWhole)!=0.0){
+  Double_t c2cumulantChrgPosWhole = (sumQ2xChrgPosEtaPos*fSumTPCQn2xNegWhole + sumQ2yChrgPosEtaPos*fSumTPCQn2yNegWhole)/c2WeightChrgPosWhole;
+  fHistv2AchChrgPosWhole[0][iCent]->Fill(fAchrgNet, c2cumulantChrgPosWhole, c2WeightChrgPosWhole*eventwgtcharge);   /// for denominator
+ }
+
   if((NumOfChrgNegEtaPos*fSumWgtEtaNegChNeg)!=0.0){  
     ///Chrg-:  
     //Double_t c2WeightChrgNeg   =  NumOfChrgNegEtaPos*fSumWgtEtaNegChNeg;
@@ -1928,6 +1953,11 @@ if (c2WeightChrg!=0.0)
     fHistv2AchChrgNeg[0][iCent]->Fill(fAchrgNet, c2cumulantChrgNeg, c2WeightChrgNeg*eventwgtcharge);   /// for denominator
   }
   
+
+  if((c2WeightChrgNegWhole)!=0.0){
+  Double_t c2cumulantChrgNegWhole = (sumQ2xChrgNegEtaPos*fSumTPCQn2xNegWhole + sumQ2yChrgNegEtaPos*fSumTPCQn2yNegWhole)/c2WeightChrgNegWhole;
+  fHistv2AchChrgNegWhole[0][iCent]->Fill(fAchrgNet, c2cumulantChrgNegWhole, c2WeightChrgNegWhole*eventwgtcharge);   /// for denominator
+ }
 
 
   if((c2WeightChrgPosChrgNeg)!=0.0){
