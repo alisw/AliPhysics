@@ -440,14 +440,14 @@ void AliAnalysisTaskXDeptFlow::UserCreateOutputObjects()
   // unsigned fgFlowHarmonics;        //! calculate v2, v3, v4, v5
   // unsigned fgFlowHarmonicsHigher;  //! calculate v6, v7, v8 ..
   // unsigned fgFlowHarmonicsMult;    //! calculate v2{4}  v2{6}, v2{8}
-  // unsigned fgXDeptFlow;        //! calculate v_4,22, v_5,32
+  // unsigned fgNonlinearFlow;        //! calculate v_4,22, v_5,32
   // unsigned fgSymmetricCumulants;   //! calculate SC(3,2), SC(4,2)
   //
 
-  fgTwoParticleCorrelation       = fgFlowHarmonics | fgSymmetricCumulants | fgXDeptFlow;
+  fgTwoParticleCorrelation       = fgFlowHarmonics | fgSymmetricCumulants | fgNonlinearFlow;
   fgTwoParticleCorrelationHigher = fgFlowHarmonicsHigher;
-  fgThreeParticleCorrelation     = fgXDeptFlow;
-  fgFourParticleCorrelation      = fgXDeptFlow | fgSymmetricCumulants | fgFlowHarmonicsMult;
+  fgThreeParticleCorrelation     = fgNonlinearFlow;
+  fgFourParticleCorrelation      = fgNonlinearFlow | fgSymmetricCumulants | fgFlowHarmonicsMult;
   fgSixParticleCorrelation       = fgFlowHarmonicsMult;
   fgEightParticleCorrelation     = fgFlowHarmonicsMult;
 
