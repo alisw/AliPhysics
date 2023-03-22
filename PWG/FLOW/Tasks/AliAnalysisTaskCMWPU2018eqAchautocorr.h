@@ -179,7 +179,7 @@ class AliAnalysisTaskCMWPU2018eqAchautocorr : public AliAnalysisTaskSE {
   TH1D          *fHCorrectMCnegPion;
   TH1D          *fHCorrectMCnegKaon;
   TH1D          *fHCorrectMCnegProt;
-  TH2F            *fHistAChrgVsCent;  //!
+  TH2F          *fHistAChrgVsCent;  //!
 
   TH3F          *fHCorrectNUAposChrg;   //!  = centrality bins
   TH3F          *fHCorrectNUAnegChrg;   //! 
@@ -210,10 +210,12 @@ class AliAnalysisTaskCMWPU2018eqAchautocorr : public AliAnalysisTaskSE {
 
   ///v2 vs Ach (Results)
   TProfile     *fHistv2AchChrgPos[1][9];
+  TProfile     *fHistv2AchChrgPosWhole[1][9];
   TProfile     *fHistv2AchPionPos[1][9]; //! [1st] = method, [2nd] = centrality.
   TProfile     *fHistv2AchKaonPos[1][9]; //!
   TProfile     *fHistv2AchProtPos[1][9]; //!
   TProfile     *fHistv2AchChrgNeg[1][9];
+  TProfile     *fHistv2AchChrgNegWhole[1][9];
   TProfile     *fHistv2AchPionNeg[1][9]; //! [1st] = method, [2nd] = centrality.
   TProfile     *fHistv2AchKaonNeg[1][9]; //!
   TProfile     *fHistv2AchProtNeg[1][9]; //!
