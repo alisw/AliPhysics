@@ -139,8 +139,10 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects()
   //PHOS QA 			
   
   //Bad Map
-  fOutputContainer->Add(new TH2F("hCluLow","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluHigh","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluLowM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluLowM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluLowM3","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCluLowM4","Cell (X,Z), M4" ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hDisp","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hTrackVeto","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
   fOutputContainer->Add(new TH2F("hDispTrackVeto","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
@@ -279,31 +281,31 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects()
   snprintf(fcut[93],20,"D20CPV2Disp") ;
   snprintf(fcut[94],20,"D20CPVCTS") ; 
   //D20 Emin 0.2
-  snprintf(fcut[95],20,"D20E2All") ;
-  snprintf(fcut[96],20,"D20E2Disp") ;
-  snprintf(fcut[97],20,"D20E2CTS") ;
-  snprintf(fcut[98],20,"D20E2CTS2") ;
-  snprintf(fcut[99],20,"D20E2CTSDisp") ;
-  snprintf(fcut[100],20,"D20E2CTS2Disp") ;
-  snprintf(fcut[101],20,"D20E2Mod3") ;
-  snprintf(fcut[102],20,"D20E2CPV") ;
-  snprintf(fcut[103],20,"D20E2CPV2") ;
-  snprintf(fcut[104],20,"D20E2CPVDisp") ;
-  snprintf(fcut[105],20,"D20E2CPV2Disp") ;
-  snprintf(fcut[106],20,"D20E2CPVCTS") ;
+  snprintf(fcut[95],20,"DzE2All") ;
+  snprintf(fcut[96],20,"DzE2Disp") ;
+  snprintf(fcut[97],20,"DzE2CTS") ;
+  snprintf(fcut[98],20,"DzE2CTS2") ;
+  snprintf(fcut[99],20,"DzE2CTSDisp") ;
+  snprintf(fcut[100],20,"DzE2CTS2Disp") ;
+  snprintf(fcut[101],20,"DzE2Mod3") ;
+  snprintf(fcut[102],20,"DzE2CPV") ;
+  snprintf(fcut[103],20,"DzE2CPV2") ;
+  snprintf(fcut[104],20,"DzE2CPVDisp") ;
+  snprintf(fcut[105],20,"DzE2CPV2Disp") ;
+  snprintf(fcut[106],20,"DzE2CPVCTS") ;
   //D20 Emin 0.3
-  snprintf(fcut[107],20,"D20E3All") ;
-  snprintf(fcut[108],20,"D20E3Disp") ;
-  snprintf(fcut[109],20,"D20E3CTS") ;
-  snprintf(fcut[110],20,"D20E3CTS2") ;
-  snprintf(fcut[111],20,"D20E3CTSDisp") ;
-  snprintf(fcut[112],20,"D20E3CTS2Disp") ;
-  snprintf(fcut[113],20,"D20E3Mod3") ;
-  snprintf(fcut[114],20,"D20E3CPV") ;
-  snprintf(fcut[115],20,"D20E3CPV2") ;
-  snprintf(fcut[116],20,"D20E3CPVDisp") ;
-  snprintf(fcut[117],20,"D20E3CPV2Disp") ;
-  snprintf(fcut[118],20,"D20E3CPVCTS") ;
+  snprintf(fcut[107],20,"DzE3All") ;
+  snprintf(fcut[108],20,"DzE3Disp") ;
+  snprintf(fcut[109],20,"DzE3CTS") ;
+  snprintf(fcut[110],20,"DzE3CTS2") ;
+  snprintf(fcut[111],20,"DzE3CTSDisp") ;
+  snprintf(fcut[112],20,"DzE3CTS2Disp") ;
+  snprintf(fcut[113],20,"DzE3Mod3") ;
+  snprintf(fcut[114],20,"DzE3CPV") ;
+  snprintf(fcut[115],20,"DzE3CPV2") ;
+  snprintf(fcut[116],20,"DzE3CPVDisp") ;
+  snprintf(fcut[117],20,"DzE3CPV2Disp") ;
+  snprintf(fcut[118],20,"DzE3CPVCTS") ;
   //D25   
   snprintf(fcut[119],20,"D25E3All") ; 
   snprintf(fcut[120],20,"D25E3Disp") ; 
@@ -594,7 +596,7 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
     FillHistogram(Form("hTofM%d",mod),clu->E(),clu->GetTOF()) ;
     if(clu->E()>1.)
       FillHistogram("hCenTOF",fCentrality,clu->GetTOF()) ;
-    if((clu->GetTOF()>30.e-9) || (clu->GetTOF() <-30.e-7) )
+    if((clu->GetTOF()>150.e-9) || (clu->GetTOF() <-150.e-7) )
      continue ;
     // if((clu->GetTOF()>100.e-9) || (clu->GetTOF() <-100.e-7) )
     //   continue ;
@@ -606,10 +608,7 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
     TLorentzVector pv1 ;
     clu->GetMomentum(pv1 ,vtx5);
     
-    FillHistogram("hCluLow",cellX,cellZ,1.);
-    if(clu->E()>1.5){
-      FillHistogram("hCluHigh",cellX,cellZ,1.);
-    }
+    FillHistogram(Form("hCluLowM%d",mod),cellX,cellZ,1.);
     
     FillHistogram("hAllSp",clu->E(),fCentrality) ;    
     bool disp=clu->Chi2()<2.5*2.5 ;
@@ -649,8 +648,6 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
     AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;    
     for (Int_t i2=i1+1; i2<inPHOS; i2++) {
       AliCaloPhoton * ph2=(AliCaloPhoton*)fPHOSEvent->At(i2) ;
-      if(ph1->Module()!=ph2->Module())
-          continue ;
       double qinv= (*ph1 + *ph2).M();
       double kT = 0.5*(*ph1 + *ph2).Pt() ;
       TVector3 gammaBeta((*ph1 + *ph2).BoostVector()) ;
@@ -677,9 +674,6 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
       TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
       for(Int_t i2=0; i2<mixPHOS->GetEntriesFast();i2++){
         AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
-        if(ph1->Module()!=ph2->Module()){
-          continue ;
-        }
         double qinv= (*ph1 + *ph2).M();
         double kT = 0.5*(*ph1 + *ph2).Pt() ;
         TVector3 gammaBeta((*ph1 + *ph2).BoostVector()) ;
@@ -722,7 +716,6 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t *)
 void AliAnalysisTaskEtaPhigg::Terminate(Option_t *)
 {
 }
-
 //_____________________________________________________________________________
 void AliAnalysisTaskEtaPhigg::FillHistogram(const char * key,double x)const{
   //FillHistogram
@@ -808,9 +801,9 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton * ph1, const AliCaloPh
   
   
   //First distance cut based on non-overlapping CPV cuts
-  if(ph1->Module()!=ph2->Module()){
-    return false ;
-  }
+  // if(ph1->Module()!=ph2->Module()){
+  //   return false ;
+  // }
   double r = ph1->Angle(ph2->Vect()) ;
   const double r1cut = TMath::ATan2(5.,460.) ;
   const double r2cut = TMath::ATan2(10.,460.) ;
@@ -839,12 +832,12 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton * ph1, const AliCaloPh
   case 2: return r>r1cut && ph1->IsDispOK()&& ph2->IsDispOK();  
   case 3: return r>r1cut && track1CPV && track2CPV ;  
   case 4: return r>r1cut && track1CPV && ph1->IsDispOK() && track2CPV && ph2->IsDispOK();  
-  case 5: return r>r1cut && ph1->Module() == 3;
-  case 6: return r>r1cut && ph1->Module() == 3 && cpv1CPV && cpv2CPV ;
-  case 7: return r>r1cut && ph1->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK() && ph2->IsDispOK();
-  case 8: return r>r1cut && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;
-  case 9: return r>r1cut && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
-  case 10: return r>r1cut && ph1->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+  case 5: return r>r1cut && ph1->Module() == 3 && ph2->Module() == 3;
+  case 6: return r>r1cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV ;
+  case 7: return r>r1cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+  case 8: return r>r1cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;
+  case 9: return r>r1cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+  case 10: return r>r1cut && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
   //D10
   case 11: return r>r2cut;   
   case 12: return r>r2cut  && ph1->IsDispOK()&& ph2->IsDispOK();   
@@ -852,12 +845,12 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton * ph1, const AliCaloPh
   case 14: return r>r2cut && track1CPV2 && track2CPV2;
   case 15: return r>r2cut && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
   case 16: return r>r2cut && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 17: return r>r2cut && ph1->Module() == 3;
-  case 18: return r>r2cut && ph1->Module() == 3 && cpv1CPV && cpv2CPV ;
-  case 19: return r>r2cut && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
-  case 20: return r>r2cut && ph1->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 21: return r>r2cut && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
-  case 22: return r>r2cut && ph1->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+  case 17: return r>r2cut && ph1->Module() == 3 && ph2->Module() == 3;
+  case 18: return r>r2cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV ;
+  case 19: return r>r2cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
+  case 20: return r>r2cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 21: return r>r2cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
+  case 22: return r>r2cut && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
   //D10 Emin 0.2
   case 23: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2;   
   case 24: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->IsDispOK()&& ph2->IsDispOK();   
@@ -865,12 +858,12 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton * ph1, const AliCaloPh
   case 26: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && track1CPV2 && track2CPV2;
   case 27: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
   case 28: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 29: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3;
-  case 30: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpv1CPV && cpv2CPV ;
-  case 31: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
-  case 32: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 33: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
-  case 34: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+  case 29: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3;
+  case 30: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV ;
+  case 31: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
+  case 32: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 33: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
+  case 34: return r>r2cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
   //D10 Emin 0.3
   case 35: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3;   
   case 36: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->IsDispOK()&& ph2->IsDispOK();   
@@ -878,12 +871,12 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton * ph1, const AliCaloPh
   case 38: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV2 && track2CPV2;
   case 39: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
   case 40: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 41: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3;
-  case 42: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV && cpv2CPV ;
-  case 43: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
-  case 44: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 45: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
-  case 46: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+  case 41: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3;
+  case 42: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV ;
+  case 43: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
+  case 44: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 45: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
+  case 46: return r>r2cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
   //D15   
   case 47: return r>r3cut;   
   case 48: return r>r3cut  && ph1->IsDispOK()&& ph2->IsDispOK();   
@@ -891,12 +884,12 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton * ph1, const AliCaloPh
   case 50: return r>r3cut && track1CPV2 && track2CPV2;
   case 51: return r>r3cut && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
   case 52: return r>r3cut && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 53: return r>r3cut && ph1->Module() == 3;
-  case 54: return r>r3cut && ph1->Module() == 3 && cpv1CPV && cpv2CPV ;
-  case 55: return r>r3cut && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
-  case 56: return r>r3cut && ph1->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 57: return r>r3cut && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
-  case 58: return r>r3cut && ph1->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+  case 53: return r>r3cut && ph1->Module() == 3 && ph2->Module() == 3;
+  case 54: return r>r3cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV ;
+  case 55: return r>r3cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
+  case 56: return r>r3cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 57: return r>r3cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
+  case 58: return r>r3cut && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
   //D15 Emin 0.2
   case 59: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2;   
   case 60: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->IsDispOK()&& ph2->IsDispOK();   
@@ -904,12 +897,12 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton * ph1, const AliCaloPh
   case 62: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && track1CPV2 && track2CPV2;
   case 63: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
   case 64: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 65: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3;
-  case 66: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpv1CPV && cpv2CPV ;
-  case 67: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
-  case 68: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 69: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
-  case 70: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+  case 65: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3;
+  case 66: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV ;
+  case 67: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
+  case 68: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 69: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
+  case 70: return r>r3cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
   //D15 Emin 0.3
   case 71: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3;   
   case 72: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->IsDispOK()&& ph2->IsDispOK();   
@@ -917,12 +910,12 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton * ph1, const AliCaloPh
   case 74: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV2 && track2CPV2;
   case 75: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
   case 76: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 77: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3;
-  case 78: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV && cpv2CPV ;
-  case 79: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
-  case 80: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 81: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
-  case 82: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+  case 77: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3;
+  case 78: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV ;
+  case 79: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
+  case 80: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 81: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
+  case 82: return r>r3cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
   //D20   
   case 83: return r>r4cut;   
   case 84: return r>r4cut && ph1->IsDispOK()&& ph2->IsDispOK();   
@@ -930,38 +923,38 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton * ph1, const AliCaloPh
   case 86: return r>r4cut && track1CPV2 && track2CPV2;
   case 87: return r>r4cut && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
   case 88: return r>r4cut && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 89: return r>r4cut && ph1->Module() == 3;
-  case 90: return r>r4cut && ph1->Module() == 3 && cpv1CPV && cpv2CPV ;
-  case 91: return r>r4cut && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
-  case 92: return r>r4cut && ph1->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 93: return r>r4cut && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
-  case 94: return r>r4cut && ph1->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
-  //D20 Emin 0.2
-  case 95: return r>r4cut && ph1->E()>0.2 && ph2->E()>0.2;   
-  case 96: return r>r4cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->IsDispOK()&& ph2->IsDispOK();   
-  case 97: return r>r4cut && ph1->E()>0.2 && ph2->E()>0.2 && track1CPV && track2CPV;   
-  case 98: return r>r4cut && ph1->E()>0.2 && ph2->E()>0.2 && track1CPV2 && track2CPV2;
-  case 99: return r>r4cut && ph1->E()>0.2 && ph2->E()>0.2 && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
-  case 100: return r>r4cut && ph1->E()>0.2 && ph2->E()>0.2 && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 101: return r>r4cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3;
-  case 102: return r>r4cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpv1CPV && cpv2CPV ;
-  case 103: return r>r4cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
-  case 104: return r>r4cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 105: return r>r4cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
-  case 106: return r>r4cut && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
-  //D20 Emin 0.3
-  case 107: return r>r4cut && ph1->E()>0.3 && ph2->E()>0.3;   
-  case 108: return r>r4cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->IsDispOK()&& ph2->IsDispOK();   
-  case 109: return r>r4cut && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV && track2CPV;   
-  case 110: return r>r4cut && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV2 && track2CPV2;
-  case 111: return r>r4cut && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
-  case 112: return r>r4cut && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 113: return r>r4cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3;
-  case 114: return r>r4cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV && cpv2CPV ;
-  case 115: return r>r4cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
-  case 116: return r>r4cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 117: return r>r4cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
-  case 118: return r>r4cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+  case 89: return r>r4cut && ph1->Module() == 3 && ph2->Module() == 3;
+  case 90: return r>r4cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV ;
+  case 91: return r>r4cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
+  case 92: return r>r4cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 93: return r>r4cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
+  case 94: return r>r4cut && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+  //Dz Emin 0.2
+  case 95: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.2 && ph2->E()>0.2;   
+  case 96: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.2 && ph2->E()>0.2 && ph1->IsDispOK()&& ph2->IsDispOK();   
+  case 97: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.2 && ph2->E()>0.2 && track1CPV && track2CPV;   
+  case 98: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.2 && ph2->E()>0.2 && track1CPV2 && track2CPV2;
+  case 99: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.2 && ph2->E()>0.2 && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
+  case 100: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.2 && ph2->E()>0.2 && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 101: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3;
+  case 102: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV ;
+  case 103: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
+  case 104: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 105: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
+  case 106: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.2 && ph2->E()>0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+  //Dz Emin 0.3
+  case 107: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.3 && ph2->E()>0.3;   
+  case 108: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.3 && ph2->E()>0.3 && ph1->IsDispOK()&& ph2->IsDispOK();   
+  case 109: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV && track2CPV;   
+  case 110: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV2 && track2CPV2;
+  case 111: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
+  case 112: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 113: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3;
+  case 114: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV ;
+  case 115: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
+  case 116: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 117: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
+  case 118: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
   //D25   
   case 119: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3;   
   case 120: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->IsDispOK()&& ph2->IsDispOK();   
@@ -969,11 +962,11 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton * ph1, const AliCaloPh
   case 122: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV2 && track2CPV2;
   case 123: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
   case 124: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3 && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 125: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3;
-  case 126: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV && cpv2CPV ;
-  case 127: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
-  case 128: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 129: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
+  case 125: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3;
+  case 126: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV ;
+  case 127: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
+  case 128: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 129: return r>r5cut && ph1->E()>0.3 && ph2->E()>0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
   //NExMax  
   //D10
   case 130: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded();   
@@ -982,12 +975,12 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton * ph1, const AliCaloPh
   case 133: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && track1CPV2 && track2CPV2;
   case 134: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
   case 135: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 136: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3;
-  case 137: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && cpv1CPV && cpv2CPV ;
-  case 138: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
-  case 139: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 140: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
-  case 141: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+  case 136: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && ph2->Module() == 3;
+  case 137: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV ;
+  case 138: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
+  case 139: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 140: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
+  case 141: return r>r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
   //DZ
   case 142: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) ;   
   case 143: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->IsDispOK()&& ph2->IsDispOK();   
@@ -995,12 +988,12 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton * ph1, const AliCaloPh
   case 145: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && track1CPV2 && track2CPV2;
   case 146: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
   case 147: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 148: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->Module() == 3;
-  case 149: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->Module() == 3 && cpv1CPV && cpv2CPV ;
-  case 150: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
-  case 151: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 152: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
-  case 153: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+  case 148: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->Module() == 3 && ph2->Module() == 3;
+  case 149: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV ;
+  case 150: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
+  case 151: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 152: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
+  case 153: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(6.,460.) && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
   //DZ2
   case 154: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) ;   
   case 155: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && ph1->IsDispOK()&& ph2->IsDispOK();   
@@ -1008,12 +1001,12 @@ bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton * ph1, const AliCaloPh
   case 157: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && track1CPV2 && track2CPV2;
   case 158: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && track1CPV && track2CPV && ph1->IsDispOK()&& ph2->IsDispOK();   
   case 159: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && track1CPV2 && track2CPV2 && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 160: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && ph1->Module() == 3;
-  case 161: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && ph1->Module() == 3 && cpv1CPV && cpv2CPV ;
-  case 162: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
-  case 163: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && ph1->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
-  case 164: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && ph1->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
-  case 165: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && ph1->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+  case 160: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && ph1->Module() == 3 && ph2->Module() == 3;
+  case 161: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV ;
+  case 162: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 ;  
+  case 163: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK()&& ph2->IsDispOK();
+  case 164: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK() ;  
+  case 165: return abs(ph1->Theta()-ph2->Theta())>TMath::ATan2(9.,460.) && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
   default: return false;
   }
 }
