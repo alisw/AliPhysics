@@ -855,7 +855,7 @@ void AliAnalysisTaskGammaPHOSPP::FillTwoPhotonHistograms()
  } //end of loop   i1
 }
 //______________________________________________________________________________
-void AliAnalysisTaskGammaPHOSPP::MixPhotons()
+void AliAnalysisTaskGammaPHOSPP_test::MixPhotons()
 {
   TLorentzVector p1, p2, p12, pv1, pv2, pv12, p11;
 
@@ -869,7 +869,6 @@ void AliAnalysisTaskGammaPHOSPP::MixPhotons()
   
   TList * prevPHOS = fPHOSEvents[zvtx][centr] ;
 
-
   for (Int_t i1 = 0; i1 < fInPHOS-1; i1 ++ ) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
     if (fLHCRunN == 1 && ph1->GetBC() != 0 ) continue; //Run 1
@@ -878,38 +877,51 @@ void AliAnalysisTaskGammaPHOSPP::MixPhotons()
     Double_t pt1 = ph1->Pt();
     Int_t sm1 = ph1->Module();
 
-    for (Int_t i2 = i1+1; i2 < fInPHOS; i2++) {
-      AliCaloPhoton * ph2=(AliCaloPhoton*)fPHOSEvent->At(i2) ;
-      if (fLHCRunN == 1 && ph2->GetBC() != 0 ) continue; //Run 1
-      pv2 = *(ph2->GetMomV2());
-      Double_t P2 = pv2.P();
-      Double_t pt2 = ph2->Pt();
-      Int_t sm2 = ph2->Module();
+    for (Int_t ev = 0; ev < prevPHOS->GetSize(); ev ++) {
+      TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
 
-      Double_t asym = TMath::Abs((P1-P2)/(P1+P2));
-      FillHistogram("hAsym", asym);
-      p12  = *ph1  + *ph2;
-      pv12 = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
-      Double_t ma12 = pv12.M();
-      Double_t pt12 = pv12.Pt();
+      for (Int_t i2 = 0; i2 < mixPHOS->GetEntriesFast(); i2 ++) {
+        AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
+        if (fLHCRunN == 1 && ph2->GetBC() != 0 ) continue; //Run 1
+        pv2 = *(ph2->GetMomV2());
+        Double_t P2 = pv2.P();
+        Double_t pt2 = ph2->Pt();
+        Int_t sm2 = ph2->Module();
 
-      std::vector<TString> passed_cuts = {"all"};
-      Bool_t CPVBit = ph1->IsCPVOK() && ph2->IsCPVOK();
-      Bool_t DispBit = ph1->IsDispOK() && ph2->IsDispOK();
-      if (CPVBit) passed_cuts.emplace_back("cpv");
-      if (DispBit) passed_cuts.emplace_back("disp");
-      if (CPVBit && DispBit) passed_cuts.emplace_back("both");
+        Double_t asym = TMath::Abs((P1-P2)/(P1+P2));
+        FillHistogram("hAsym", asym);
+        p12  = *ph1  + *ph2;
+        pv12 = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
+        Double_t ma12 = pv12.M();
+        Double_t pt12 = pv12.Pt();
 
-      for (auto cut : passed_cuts) {
-        FillHistogram(Form("hMiMassPt_%s", cut.Data()), ma12 , pt12 );
-        FillHistogram(Form("hMiMassPt_asym_%s", cut.Data()), ma12, pt12, asym);
-        if (sm1 == sm2) FillHistogram(Form("hMiMassPt_%s_M%d", cut.Data(), sm1), ma12, pt12);
-        FillHistogram(Form("hMiMassSingle_%s", cut.Data()), ma12, pt1) ;
-        FillHistogram(Form("hMiMassSingle_%s", cut.Data()), ma12, pt2) ;
-        FillHistogram(Form("hMiMassSingle_asym_%s", cut.Data()), ma12, pt1, asym);
-        FillHistogram(Form("hMiMassSingle_asym_%s", cut.Data()), ma12, pt2, asym);
-        FillHistogram(Form("hMiMassSingle_%s_M%d", cut.Data(), sm1), ma12, pt1);
-        FillHistogram(Form("hMiMassSingle_%s_M%d", cut.Data(), sm2), ma12, pt2);
+        std::vector<TString> passed_cuts = {"all"};
+        Bool_t cpvBit1 = ph1->IsCPVOK(), cpvBit2 = ph1->IsCPVOK();
+        Bool_t dispBit1  = ph1->IsDispOK(), dispBit2 = ph2->IsDispOK();
+        if (cpvBit1 && cpvBit2) passed_cuts.emplace_back("cpv");
+        if (dispBit1 && dispBit2) passed_cuts.emplace_back("disp");
+        if ((cpvBit1 && cpvBit2) && (dispBit1 && dispBit2)) passed_cuts.emplace_back("both");
+        
+        if (cpvBit1 || cpvBit2) passed_cuts.emplace_back("all_cpv");
+        if (dispBit1 || dispBit2) passed_cuts.emplace_back("all_disp");
+
+        if (!cpvBit1 || !cpvBit2) passed_cuts.emplace_back("all_anticpv");
+        if (!dispBit1 || !dispBit2) passed_cuts.emplace_back("all_antidisp");
+
+        if ((cpvBit1 && !dispBit2) || (!dispBit1 && cpvBit2)) passed_cuts.emplace_back("cpv_antidisp");
+        if ((!cpvBit1 && dispBit2) || (dispBit1 && !cpvBit2)) passed_cuts.emplace_back("anticpv_disp");
+
+        for (auto cut : passed_cuts) {
+          FillHistogram(Form("hMiMassPt_%s", cut.Data()), ma12 , pt12 );
+          FillHistogram(Form("hMiMassPt_asym_%s", cut.Data()), ma12, pt12, asym);
+          //if (sm1 == sm2) FillHistogram(Form("hMiMassPt_%s_M%d", cut.Data(), sm1), ma12, pt12);
+          FillHistogram(Form("hMiMassSingle_%s", cut.Data()), ma12, pt1) ;
+          FillHistogram(Form("hMiMassSingle_%s", cut.Data()), ma12, pt2) ;
+          FillHistogram(Form("hMiMassSingle_asym_%s", cut.Data()), ma12, pt1, asym);
+          FillHistogram(Form("hMiMassSingle_asym_%s", cut.Data()), ma12, pt2, asym);
+         // FillHistogram(Form("hMiMassSingle_%s_M%d", cut.Data(), sm1), ma12, pt1);
+         // FillHistogram(Form("hMiMassSingle_%s_M%d", cut.Data(), sm2), ma12, pt2);
+        }
       }
     }
   }  
@@ -924,7 +936,6 @@ void AliAnalysisTaskGammaPHOSPP::MixPhotons()
     }
   }
 }
-
 //_____________________________________________________________________________
 Int_t AliAnalysisTaskGammaPHOSPP::GetPrimaryLabelAtVertex(AliVCluster *clu) //Returns label at vertex
 {
