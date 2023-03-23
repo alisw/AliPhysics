@@ -233,9 +233,9 @@ void AliAnalysisTaskUpc2Pi2E::UserCreateOutputObjects()
 //	f4PiTree1->Branch("VtxContrib1_T",&VtxContrib_T,"VtxContrib_T/I");
 //	f4PiTree1->Branch("VtxChi21_T",&VtxChi2_T,"VtxChi2_T/F");
 //	f4PiTree1->Branch("VtxNDF1_T",&VtxNDF_T,"VtxNDF_T/F");
-	f2Pi2ETree1->Branch("SpdVtxX1_T",&SpdVertex_T[0],"SpdVtxX_T/F");
-	f2Pi2ETree1->Branch("SpdVtxY1_T",&SpdVertex_T[1],"SpdVtxY_T/F");
-	f2Pi2ETree1->Branch("SpdVtxZ1_T",&SpdVertex_T[2],"SpdVtxZ_T/F");
+//	f2Pi2ETree1->Branch("SpdVtxX1_T",&SpdVertex_T[0],"SpdVtxX_T/F");
+//	f2Pi2ETree1->Branch("SpdVtxY1_T",&SpdVertex_T[1],"SpdVtxY_T/F");
+//	f2Pi2ETree1->Branch("SpdVtxZ1_T",&SpdVertex_T[2],"SpdVtxZ_T/F");
 	f2Pi2ETree1->Branch("SpdVtxContrib1_T",&SpdVtxContrib_T,"SpdVtxContrib_T/I");
 	f2Pi2ETree1->Branch("V0Adecision1_T",&V0Adecision_T,"V0Adecision_T/I");
 	f2Pi2ETree1->Branch("V0Cdecision1_T",&V0Cdecision_T,"V0Cdecision_T/I");
@@ -256,7 +256,7 @@ void AliAnalysisTaskUpc2Pi2E::UserCreateOutputObjects()
 //	f4PiTree1->Branch("TriggerSPD1_T",&TriggerSPD_T,"TriggerSPD_T/O");
 //	f4PiTree1->Branch("TriggerTOF1_T",&TriggerTOF_T,"TriggerTOF_T/O");
 
-	f2Pi2ETree = new TTree("Selected","Selected Rho0 events");
+/*	f2Pi2ETree = new TTree("Selected","Selected Rho0 events");
 	//define branches
 	f2Pi2ETree->Branch("RunNum_T",&RunNum_T,"RunNum_T/I");
 	f2Pi2ETree->Branch("PeriodNumber_T",&PeriodNumber_T,"PeriodNumber_T/i");
@@ -311,7 +311,7 @@ void AliAnalysisTaskUpc2Pi2E::UserCreateOutputObjects()
 	f2Pi2ETree->Branch("TriggerSPD_T",&TriggerSPD_T,"TriggerSPD_T/O");
 	f2Pi2ETree->Branch("TriggerTOF_T",&TriggerTOF_T,"TriggerTOF_T/O");
 	//f4PiTree->Branch("FORChip_T",&FORChip);
-
+*/
 	if(debugMode) std::cout<<"Defining MC ttree..."<<std::endl;
 	// MC tree
 	if (isMC){
@@ -470,7 +470,7 @@ void AliAnalysisTaskUpc2Pi2E::UserExec(Option_t *)
   if (!isMC) { // data
 	if (esd->GetRunNumber() < 295828){
   	if (trigger.Contains("CCUP9-B")) Trigger_T = 2;
-  	else if (trigger.Contains("CCUP8")) Trigger_T = 1;
+//  	else if (trigger.Contains("CCUP8")) Trigger_T = 1;
 	}
       //if(esd->GetRunNumber()>=295881 && esd->GetRunNumber()<296594)
       if(esd->GetRunNumber()>=295881)
@@ -527,11 +527,11 @@ void AliAnalysisTaskUpc2Pi2E::UserExec(Option_t *)
 	}
 
 	//SPD primary vertex
-	AliESDVertex *fSPDVertex = (AliESDVertex*) esd->GetPrimaryVertexSPD();
-	SpdVtxContrib_T = fSPDVertex->GetNContributors();
-	SpdVertex_T[0] = fSPDVertex->GetX();
-	SpdVertex_T[1] = fSPDVertex->GetY();
-	SpdVertex_T[2] = fSPDVertex->GetZ();
+//	AliESDVertex *fSPDVertex = (AliESDVertex*) esd->GetPrimaryVertexSPD();
+//	SpdVtxContrib_T = fSPDVertex->GetNContributors();
+//	SpdVertex_T[0] = fSPDVertex->GetX();
+//	SpdVertex_T[1] = fSPDVertex->GetY();
+//	SpdVertex_T[2] = fSPDVertex->GetZ();
 
 	// Tracklets
 	Ntracklets_T = esd->GetMultiplicity()->GetNumberOfTracklets();
