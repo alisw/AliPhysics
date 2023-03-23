@@ -84,10 +84,11 @@ using std::endl;
 
 static const Int_t nCent = 9;
 static const Int_t nEta = 4;
-static const int nflatClass = 8;
 
 static const double centClass[nCent + 1] = {0.0,1.0,5.0,10.0,20.0,30.0,40.0,50.0,70.0,100.0};
-static const double flatClass[nflatClass + 1] = {0.0, 0.102, 0.12, 0.132, 0.151, 0.168, 0.186, 0.205, 1.0};
+static const double Flatbins_16kl[9] = { -0.01, 0.102, 0.12, 0.132, 0.151, 0.168, 0.186, 0.205, 1.01 };
+static const double Flatbins_lhc16deghijp[9] = { -0.01, 0.1, 0.117, 0.129, 0.148, 0.165, 0.183, 0.202, 1.01 };
+static const double Flatbins_lhc18bdefghijklmo[9] = { -0.01, 0.099, 0.117, 0.129, 0.148, 0.165, 0.183, 0.202, 1.01 };
 static const Char_t* etaClass[nEta] = {"02","24","46","68"};
 static const Char_t* ParticleType[3] = {"Primaries","MaterialInt","WeakDecays"};
 
@@ -104,7 +105,7 @@ AliAnalysisTaskMCCorrections::AliAnalysisTaskMCCorrections()
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), 
 	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fSystVarTrkCuts(0),
 	fv0mpercentile(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
-	fMultSelection(0x0),
+	fMultSelection(0x0), fPeriod("16k"),
 	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0),
 	hActivityV0McSect(0), hFlatVsNchMC(0), hTrueINEL_vtx(0), hAccINEL_vtx(0),
 	hTrueINEL_evts(0), hAccINEL_evts(0), hTrueINELWithFlat_evts(0), hAccINELWithFlat_evts(0),
@@ -155,7 +156,7 @@ AliAnalysisTaskMCCorrections::AliAnalysisTaskMCCorrections(const char *name)
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70),
 	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fSystVarTrkCuts(0),
 	fv0mpercentile(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
-	fMultSelection(0x0),
+	fMultSelection(0x0), fPeriod("16k"),
 	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0),
 	hActivityV0McSect(0), hFlatVsNchMC(0), hTrueINEL_vtx(0), hAccINEL_vtx(0),
 	hTrueINEL_evts(0), hAccINEL_evts(0), hTrueINELWithFlat_evts(0), hAccINELWithFlat_evts(0),
@@ -420,6 +421,27 @@ void AliAnalysisTaskMCCorrections::UserCreateOutputObjects() {
 
 	for (int i = 0; i <= nV0Sectorsbins; ++i){
 		V0Sectorsbins[i] = -0.5 + (double)i;
+	}
+
+	const int nflatClass = 8;
+	double flatClass[nflatClass + 1];
+	if (fPeriod=="16k" || fPeriod=="16l") {
+		for (int i = 0; i <= nFlatbins; ++i) 
+		{
+			flatClass[i] = Flatbins_16kl[i];
+		}
+	}
+	else if (fPeriod=="16d" || fPeriod=="16e" || fPeriod=="16g" || fPeriod=="16h" || fPeriod=="16i" || fPeriod=="16j" || fPeriod=="16o" || fPeriod=="16p") {
+		for (int i = 0; i <= nFlatbins; ++i) 
+		{
+			flatClass[i] = Flatbins_lhc16deghijp[i];
+		}
+	}
+	else{
+		for (int i = 0; i <= nFlatbins; ++i) 
+		{
+			flatClass[i] = Flatbins_lhc18bdefghijklmo[i];
+		}
 	}
 
 	OpenFile(1);
