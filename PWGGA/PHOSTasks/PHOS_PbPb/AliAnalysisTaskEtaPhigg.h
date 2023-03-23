@@ -57,9 +57,9 @@ protected:
   char fcut[kCuts][30] ;
   double fKtBins[kKtbins+1] = {0.2,0.4,0.7,1.,2.} ;  
 
-  THashList *   fOutputContainer;       //final histogram container
+  THashList *   fOutputContainer;       //! final histogram container
   AliAODEvent * fEvent ;                //!
-  TList *       fPHOSEvents[kVtxBins][kCentBins][kPRBins] ;  // !Containers for events with PHOS photons [zvtx][fCenBin][irp]
+  TList *       fPHOSEvents[kVtxBins][kCentBins][kPRBins] ;  //! Containers for events with PHOS photons [zvtx][fCenBin][irp]
   TClonesArray* fPHOSEvent ;            //!PHOS photons in current event
   TClonesArray* fCPVEvent ;             //!CPV event
   
