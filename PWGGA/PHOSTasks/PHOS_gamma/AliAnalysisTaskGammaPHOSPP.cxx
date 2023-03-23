@@ -855,7 +855,7 @@ void AliAnalysisTaskGammaPHOSPP::FillTwoPhotonHistograms()
  } //end of loop   i1
 }
 //______________________________________________________________________________
-void AliAnalysisTaskGammaPHOSPP_test::MixPhotons()
+void AliAnalysisTaskGammaPHOSPP::MixPhotons()
 {
   TLorentzVector p1, p2, p12, pv1, pv2, pv12, p11;
 
