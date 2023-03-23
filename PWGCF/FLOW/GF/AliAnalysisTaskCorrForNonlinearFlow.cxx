@@ -518,7 +518,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
   // BinMethod 1:Bootstrap, 2:Pt, 4:Nch, 8:Vtx
   std::vector<Double_t>   fCentBins; 
   std::vector<Double_t>   fCentBinsForMixing;
-  fCentBinsForMixing.assign({0,5,10,15,20,25,30,40,50,60,70,80,90,100,110,120,130,140,150}); 
+  fCentBinsForMixing.assign({0,5});
   if (fBinMethod & 4) fCentBins.assign({0,5,10,15,20,25,30,40,50,60,70,80,90,100,110,120,130,140,150}); 
   else fCentBins.assign({0, 150});
   for (int i = 0; i < fCentBins.size(); i++) fCentBins[i] += 0.5;
@@ -551,7 +551,7 @@ void AliAnalysisTaskCorrForNonlinearFlow::UserCreateOutputObjects() {
   Int_t sizeEta = 0;
   if (anaType.EqualTo("TPCTPC")) sizeEta = 36;
   else if (anaType.EqualTo("TPCFMD")) sizeEta = 42;
-  else if (anaType.EqualTo("FMDFMD")) sizeEta = 25;
+  else if (anaType.EqualTo("FMDFMD")) sizeEta = 24;
 
   const Int_t sizeCent = fCentBins.size() - 1;
   Int_t sizeOfSamples = (fBinMethod & 1) ? nSamples : 1;
