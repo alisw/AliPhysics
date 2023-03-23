@@ -90,6 +90,7 @@ class AliAnalysisTaskCorrelationTree : public AliAnalysisTaskSE{
     Bool_t                      fIsHeavyIon;                //
     TList*                      fOutputList;                //
     AliPIDResponse 			*fPidResponse;
+    TH1F*                  fHistoNEvents;                                      //! array of histos with event information
     Int_t                       fBuffer_NContributors; //
     Int_t                       fBuffer_NEventTriggers; //
     Int_t*                      fBuffer_EventTrigger; //
