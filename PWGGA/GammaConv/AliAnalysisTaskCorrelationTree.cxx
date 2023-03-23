@@ -54,6 +54,7 @@ ClassImp(AliAnalysisTaskCorrelationTree)
                                                                        fIsHeavyIon(false),
                                                                        fOutputList(NULL),
                                                                        fPidResponse(0),
+                                                                       fHistoNEvents(NULL),
 
                                                                        fBuffer_NContributors(0),
                                                                        fBuffer_NEventTriggers(0),
@@ -206,6 +207,7 @@ AliAnalysisTaskCorrelationTree::AliAnalysisTaskCorrelationTree(const char *name)
                                                                                    fIsHeavyIon(false),
                                                                                    fOutputList(NULL),
                                                                                    fPidResponse(0),
+  fHistoNEvents(NULL),
 
                                                                                    fBuffer_NContributors(0),
                                                                                    fBuffer_NEventTriggers(0),
@@ -367,12 +369,29 @@ void AliAnalysisTaskCorrelationTree::UserCreateOutputObjects()
   {
     fOutputList = new TList();
     fOutputList->SetOwner(true);
+        fHistoNEvents                           = new TH1F("NEvents","NEvents",14,-0.5,13.5);
+            fHistoNEvents->GetXaxis()->SetBinLabel(1,"Accepted");
+    fHistoNEvents->GetXaxis()->SetBinLabel(2,"Centrality");
+    fHistoNEvents->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
+    fHistoNEvents->GetXaxis()->SetBinLabel(4,"Trigger");
+    fHistoNEvents->GetXaxis()->SetBinLabel(5,"Vertex Z");
+    fHistoNEvents->GetXaxis()->SetBinLabel(6,"Cont. Vertex");
+    fHistoNEvents->GetXaxis()->SetBinLabel(7,"Pile-Up");
+    fHistoNEvents->GetXaxis()->SetBinLabel(8,"no SDD");
+    fHistoNEvents->GetXaxis()->SetBinLabel(9,"no V0AND");
+    fHistoNEvents->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problems");
+    fHistoNEvents->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
+    fHistoNEvents->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
+    fHistoNEvents->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
+    fHistoNEvents->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
+    fOutputList->Add(fHistoNEvents);
+
   }
   fAnalysisTree = new TTree(Form("CorrelationTree_%s_%s", (fEventCuts->GetCutNumber()).Data(), (fConversionCuts->GetCutNumber()).Data()), Form("CorrelationTree_%s_%s", (fEventCuts->GetCutNumber()).Data(), (fConversionCuts->GetCutNumber()).Data()));
 
   fAnalysisTree->Branch("NVertexContributors", &fBuffer_NContributors, "NVertexContributors/I"); // max 200 for now
-  fAnalysisTree->Branch("NEventTriggers", &fBuffer_NEventTriggers, "NEventTriggers/I"); // max 200 for now
-  fAnalysisTree->Branch("EventTrigger", fBuffer_EventTrigger, "EventTrigger[NEventTriggers]/I");        // max 200 for now
+  fAnalysisTree->Branch("NEventTriggers", &fBuffer_NEventTriggers, "NEventTriggers/I");          // max 200 for now
+  fAnalysisTree->Branch("EventTrigger", fBuffer_EventTrigger, "EventTrigger[NEventTriggers]/I"); // max 200 for now
 
   fAnalysisTree->Branch("NElectronCandidates", &fBuffer_NElectronCandidates, "NElectronCandidates/I"); // max 200 for now
   fAnalysisTree->Branch("ElectronCandidate_E", fBuffer_ElectronCandidate_E, "ElectronCandidate_E[NElectronCandidates]/F");
@@ -493,20 +512,25 @@ Bool_t AliAnalysisTaskCorrelationTree::Notify()
 void AliAnalysisTaskCorrelationTree::UserExec(Option_t *)
 {
   ResetBuffer();
+  fInputEvent = InputEvent();
 
   Double_t fMaxVertexZ = 10.0;
 
   Int_t eventQuality = ((AliConvEventCuts *)fV0Reader->GetEventCuts())->GetEventQuality();
+  if(fInputEvent->IsIncompleteDAQ()==true) eventQuality = 2;  // incomplete event
+  fHistoNEvents->Fill(eventQuality);
 
-  if(eventQuality == 2 || eventQuality == 3){
-        // cout << "Event not accepted with event quality " << eventQuality << endl;
+  if (eventQuality == 2 || eventQuality == 3)
+  {
+    // cout << "Event not accepted with event quality " << eventQuality << endl;
     return;
   }
 
-  fInputEvent = InputEvent();
-  if (fIsMC){
+  if (fIsMC)
+  {
     fMCEvent = MCEvent();
-    if (!fMCEvent) {
+    if (!fMCEvent)
+    {
       AliError("ERROR: Could not retrieve MC event");
       return;
     }
@@ -542,10 +566,13 @@ void AliAnalysisTaskCorrelationTree::UserExec(Option_t *)
   fBuffer_NEventTriggers = 0;
   TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
   TString triggerClasses[11] = {"CEMC7MUL", "CEMC7MSL", "CEMC7MSH", "CDMC7MUL", "CDMC7MSL", "CDMC7MSH", "CEMC7", "CDMC7", "CMUL7", "CMSL7", "CMSH7"};
-  if(fIsMC){
+  if (fIsMC)
+  {
     fBuffer_EventTrigger[fBuffer_NEventTriggers] = 0;
     fBuffer_NEventTriggers++;
-  } else {
+  }
+  else
+  {
     for (Int_t i = 0; i < 11; i++)
     {
       if (firedTrigClass.Contains(triggerClasses[i]))
@@ -556,11 +583,11 @@ void AliAnalysisTaskCorrelationTree::UserExec(Option_t *)
       }
     }
   }
-  if (fBuffer_NEventTriggers == 0){
+  if (fBuffer_NEventTriggers == 0)
+  {
     // cout << "No trigger fired" << endl;
     return;
   }
-
 
   fPidResponse = fInputHandler->GetPIDResponse();
   if (!fPidResponse)
@@ -717,12 +744,14 @@ void AliAnalysisTaskCorrelationTree::ProcessElectrons()
     fBuffer_ElectronCandidate_NSigmaProtonTPC[fBuffer_NElectronCandidates] = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
     // cout << "\ttrack " << j << "\tpx " << track->Px() << "\tpy " << track->Py() << "\tpz " << track->Pz() << "\tE " << track->E() << endl;
 
-    if (fIsMC){
+    if (fIsMC)
+    {
       // cout << "\ttrack " << j << "\tpx " << track->Px() << "\tpy " << track->Py() << "\tpz " << track->Pz() << "\tE " << track->E() << endl;
       // AliAODMCParticle *mcTrack = (AliAODMCParticle *)fAODMCTrackArray->At(TMath::Abs(track->GetLabel()));
-      AliAODMCParticle *mcTrack = dynamic_cast<AliAODMCParticle*>(fMCEvent->GetTrack(track->GetLabel()));
+      AliAODMCParticle *mcTrack = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(track->GetLabel()));
 
-      if (!mcTrack){
+      if (!mcTrack)
+      {
         AliError("Could not receive MC particle");
         continue;
       }
@@ -732,16 +761,18 @@ void AliAnalysisTaskCorrelationTree::ProcessElectrons()
       fBuffer_ElectronCandidate_MC_Py[fBuffer_NElectronCandidates] = mcTrack->Py();
       fBuffer_ElectronCandidate_MC_Pz[fBuffer_NElectronCandidates] = mcTrack->Pz();
       fBuffer_ElectronCandidate_MC_PDG[fBuffer_NElectronCandidates] = mcTrack->GetPdgCode();
-      AliAODMCParticle *mcMother = dynamic_cast<AliAODMCParticle*>(fMCEvent->GetTrack(mcTrack->GetMother()));
-      if (mcMother){
+      AliAODMCParticle *mcMother = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(mcTrack->GetMother()));
+      if (mcMother)
+      {
         fBuffer_ElectronCandidate_MC_Mother_E[fBuffer_NElectronCandidates] = mcMother->E();
         fBuffer_ElectronCandidate_MC_Mother_Px[fBuffer_NElectronCandidates] = mcMother->Px();
         fBuffer_ElectronCandidate_MC_Mother_Py[fBuffer_NElectronCandidates] = mcMother->Py();
         fBuffer_ElectronCandidate_MC_Mother_Pz[fBuffer_NElectronCandidates] = mcMother->Pz();
         fBuffer_ElectronCandidate_MC_Mother_PDG[fBuffer_NElectronCandidates] = mcMother->GetPdgCode();
 
-        AliAODMCParticle *mcGrandMother = dynamic_cast<AliAODMCParticle*>(fMCEvent->GetTrack(mcMother->GetMother()));
-        if (mcGrandMother){
+        AliAODMCParticle *mcGrandMother = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(mcMother->GetMother()));
+        if (mcGrandMother)
+        {
           // fBuffer_ElectronCandidate_MC_GrandMother_E[fBuffer_NElectronCandidates] = mcGrandMother->E();
           // fBuffer_ElectronCandidate_MC_GrandMother_Px[fBuffer_NElectronCandidates] = mcGrandMother->Px();
           // fBuffer_ElectronCandidate_MC_GrandMother_Py[fBuffer_NElectronCandidates] = mcGrandMother->Py();
@@ -778,7 +809,8 @@ void AliAnalysisTaskCorrelationTree::ProcessMuons()
 
   Int_t ntracks = event->GetNumberOfTracks();
 
-  enum {
+  enum
+  {
     kMuEta = BIT(0),
     kMuThetaAbs = BIT(1),
     kMuPdca = BIT(2),
@@ -796,22 +828,20 @@ void AliAnalysisTaskCorrelationTree::ProcessMuons()
     if (!mutrack->IsMuonTrack())
       continue;
 
-
-
     double eta = mutrack->Eta();
     if (eta > fEtaCutMax || eta < fEtaCutMin)
       continue;
 
-  // Int_t matchTrig = AliAnalysisMuonUtility::GetMatchTrigger(track);
-  Int_t matchTrig = static_cast<const AliAODTrack*>(mutrack)->GetMatchTrigger();
-  // Int_t cutLevel[3] = {kMuMatchApt, kMuMatchLpt, kMuMatchHpt};
+    // Int_t matchTrig = AliAnalysisMuonUtility::GetMatchTrigger(track);
+    Int_t matchTrig = static_cast<const AliAODTrack *>(mutrack)->GetMatchTrigger();
+    // Int_t cutLevel[3] = {kMuMatchApt, kMuMatchLpt, kMuMatchHpt};
 
-  Double_t pt = mutrack->Pt();
-  // for ( Int_t ilevel=0; ilevel<3; ilevel++ ) {
-  //   if ( matchTrig < ilevel+1 ) break;
-  //   if ( fSharpPtCut && pt < fOADBParam.GetSharpPtCut(ilevel) ) break;
-  //   selectionMask |= cutLevel[ilevel];
-  // }
+    Double_t pt = mutrack->Pt();
+    // for ( Int_t ilevel=0; ilevel<3; ilevel++ ) {
+    //   if ( matchTrig < ilevel+1 ) break;
+    //   if ( fSharpPtCut && pt < fOADBParam.GetSharpPtCut(ilevel) ) break;
+    //   selectionMask |= cutLevel[ilevel];
+    // }
 
     if (pt < fPtCutMainMuon)
       continue;
@@ -826,13 +856,14 @@ void AliAnalysisTaskCorrelationTree::ProcessMuons()
     fBuffer_MuonCandidate_DCA[fBuffer_NMuonCandidates] = mutrack->DCA();
     fBuffer_MuonCandidate_MatchTrigger[fBuffer_NMuonCandidates] = matchTrig;
 
-
-    if (fIsMC){
+    if (fIsMC)
+    {
       // cout << "\ttrack " << j << "\tpx " << track->Px() << "\tpy " << track->Py() << "\tpz " << track->Pz() << "\tE " << track->E() << endl;
       // AliAODMCParticle *mcTrack = (AliAODMCParticle *)fAODMCTrackArray->At(TMath::Abs(track->GetLabel()));
-      AliAODMCParticle *mcTrack = dynamic_cast<AliAODMCParticle*>(fMCEvent->GetTrack(mutrack->GetLabel()));
+      AliAODMCParticle *mcTrack = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(mutrack->GetLabel()));
 
-      if (!mcTrack){
+      if (!mcTrack)
+      {
         AliError("Could not receive MC particle");
         continue;
       }
@@ -842,16 +873,18 @@ void AliAnalysisTaskCorrelationTree::ProcessMuons()
       fBuffer_MuonCandidate_MC_Py[fBuffer_NMuonCandidates] = mcTrack->Py();
       fBuffer_MuonCandidate_MC_Pz[fBuffer_NMuonCandidates] = mcTrack->Pz();
       fBuffer_MuonCandidate_MC_PDG[fBuffer_NMuonCandidates] = mcTrack->GetPdgCode();
-      AliAODMCParticle *mcMother = dynamic_cast<AliAODMCParticle*>(fMCEvent->GetTrack(mcTrack->GetMother()));
-      if (mcMother){
+      AliAODMCParticle *mcMother = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(mcTrack->GetMother()));
+      if (mcMother)
+      {
         fBuffer_MuonCandidate_MC_Mother_E[fBuffer_NMuonCandidates] = mcMother->E();
         fBuffer_MuonCandidate_MC_Mother_Px[fBuffer_NMuonCandidates] = mcMother->Px();
         fBuffer_MuonCandidate_MC_Mother_Py[fBuffer_NMuonCandidates] = mcMother->Py();
         fBuffer_MuonCandidate_MC_Mother_Pz[fBuffer_NMuonCandidates] = mcMother->Pz();
         fBuffer_MuonCandidate_MC_Mother_PDG[fBuffer_NMuonCandidates] = mcMother->GetPdgCode();
 
-        AliAODMCParticle *mcGrandMother = dynamic_cast<AliAODMCParticle*>(fMCEvent->GetTrack(mcMother->GetMother()));
-        if (mcGrandMother){
+        AliAODMCParticle *mcGrandMother = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(mcMother->GetMother()));
+        if (mcGrandMother)
+        {
           // fBuffer_MuonCandidate_MC_GrandMother_E[fBuffer_NMuonCandidates] = mcGrandMother->E();
           // fBuffer_MuonCandidate_MC_GrandMother_Px[fBuffer_NMuonCandidates] = mcGrandMother->Px();
           // fBuffer_MuonCandidate_MC_GrandMother_Py[fBuffer_NMuonCandidates] = mcGrandMother->Py();
@@ -939,7 +972,8 @@ void AliAnalysisTaskCorrelationTree::ProcessClusters()
     fBuffer_ClusterCandidate_Phi[fBuffer_NClusterCandidates] = clusterVector.Phi();
     fBuffer_ClusterCandidate_M02[fBuffer_NClusterCandidates] = clus->GetM02();
 
-    if(fIsMC){
+    if (fIsMC)
+    {
       Int_t mcLabel = clus->GetLabel();
       if (mcLabel >= 0)
       {
@@ -973,7 +1007,7 @@ void AliAnalysisTaskCorrelationTree::ProcessClusters()
         }
       }
     }
-      
+
     fBuffer_NClusterCandidates++;
     if (kMaxTracks <= fBuffer_NClusterCandidates)
     {
@@ -1230,7 +1264,7 @@ void AliAnalysisTaskCorrelationTree::ResetBuffer()
     fBuffer_MuonCandidate_DCA[ccand] = 0;
     fBuffer_MuonCandidate_Charge[ccand] = 0;
     fBuffer_MuonCandidate_MatchTrigger[ccand] = 0;
- 
+
     if (fIsMC)
     {
       fBuffer_MuonCandidate_MC_E[ccand] = 0;
