@@ -60,11 +60,11 @@ class AliAnalysisTaskUpc2Pi2E : public AliAnalysisTaskSE {
   	TTree *f2Pi2ETree;	//! Tree with all candidates
   	TTree *f2Pi2ETree1;	//! Tree with 0 sum charge and only 4 tracks
 	// tree variables and branches
-	Int_t RunNum_T;
 	std::vector<int> FORChip;
 	UShort_t BunchCrossNumber_T;
 	UInt_t OrbitNumber_T;
 	UInt_t PeriodNumber_T;
+	Int_t RunNum_T;
 	Bool_t LikeSign_T;
 	Float_t Mass_T;
 	Float_t Pt_T;
