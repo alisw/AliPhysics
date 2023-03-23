@@ -914,13 +914,13 @@ void AliAnalysisTaskGammaPHOSPP::MixPhotons()
         for (auto cut : passed_cuts) {
           FillHistogram(Form("hMiMassPt_%s", cut.Data()), ma12 , pt12 );
           FillHistogram(Form("hMiMassPt_asym_%s", cut.Data()), ma12, pt12, asym);
-          //if (sm1 == sm2) FillHistogram(Form("hMiMassPt_%s_M%d", cut.Data(), sm1), ma12, pt12);
+          if (sm1 == sm2) FillHistogram(Form("hMiMassPt_%s_M%d", cut.Data(), sm1), ma12, pt12);
           FillHistogram(Form("hMiMassSingle_%s", cut.Data()), ma12, pt1) ;
           FillHistogram(Form("hMiMassSingle_%s", cut.Data()), ma12, pt2) ;
           FillHistogram(Form("hMiMassSingle_asym_%s", cut.Data()), ma12, pt1, asym);
           FillHistogram(Form("hMiMassSingle_asym_%s", cut.Data()), ma12, pt2, asym);
-         // FillHistogram(Form("hMiMassSingle_%s_M%d", cut.Data(), sm1), ma12, pt1);
-         // FillHistogram(Form("hMiMassSingle_%s_M%d", cut.Data(), sm2), ma12, pt2);
+          FillHistogram(Form("hMiMassSingle_%s_M%d", cut.Data(), sm1), ma12, pt1);
+          FillHistogram(Form("hMiMassSingle_%s_M%d", cut.Data(), sm2), ma12, pt2);
         }
       }
     }
