@@ -87,6 +87,9 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   isQATPC(true),
   isQAVZERO(true),
   isQAZDC(true),
+  isNarrowDcaCuts768(false),
+  isProtonCustomizedDCACut(false),
+  isUsePionRejection(false),
   isCalculatePIDFlow(true),
   isCalculateDeltaGamma(true),
   isCalculateDiffResult(true),
@@ -94,10 +97,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   isCalculateLambdaLambda(false),
   isCalculateProtonProton(false),
   isCalculateHadronHadron(false),
-  isNarrowDcaCuts768(false),
-  isStrictestProtonCut(false),
   isCheckDaughterProtonPassAllCuts(false),
-  isUsePionRejection(true),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
   fVzCut(10.0),
@@ -116,15 +116,13 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   fPtMax(5.),
   fEtaCut(0.8),
   fDedxCut(10.),
-  fProtonPtMin(0.2),
+  fProtonPtMin(0.4),
   fProtonPtMax(5.0),
-  fAntiProtonPtMin(0.2),
+  fAntiProtonPtMin(0.4),
   fAntiProtonPtMax(5.0),
   fNSigmaTPCCut(3.0),
   fNSigmaTOFCut(3.0),
-  fV0PtMin(0.5),
   fV0CPAMin(0.997),
-  fV0RapidityMax(0.5),
   fV0DecayLengthMin(3.0),
   fV0DecayLengthMax(100.),
   fV0DCAToPrimVtxMax(1.5),
@@ -141,11 +139,17 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   fV0NegPionTOFNsigma(4.0),
   fV0NegProtonTOFNsigma(4.0),
   fV0PosPionTOFNsigma(4.0),
-  fLambdaMassMean(1.115683),
+  fLambdaPtMin(0.5),
+  fLambdaPtMax(20.0),
+  fAntiLambdaPtMin(0.5),
+  fAntiLambdaPtMax(20.0),
+  fLambdaRapidityMax(0.5),
+  fAntiLambdaRapidityMax(0.5),
   fLambdaMassRightCut(0.005),
   fLambdaMassLeftCut(0.005),
   fAntiLambdaMassRightCut(0.005),
   fAntiLambdaMassLeftCut(0.005),
+  fLambdaMassMean(1.115683),
   fAOD(nullptr),
   fPIDResponse(nullptr),
   fUtils(nullptr),
@@ -399,6 +403,9 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   isQATPC(true),
   isQAVZERO(true),
   isQAZDC(true),
+  isNarrowDcaCuts768(false),
+  isProtonCustomizedDCACut(false),
+  isUsePionRejection(false),
   isCalculatePIDFlow(true),
   isCalculateDeltaGamma(true),
   isCalculateDiffResult(true),
@@ -406,10 +413,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   isCalculateLambdaLambda(false),
   isCalculateProtonProton(false),
   isCalculateHadronHadron(false),
-  isNarrowDcaCuts768(false),
-  isStrictestProtonCut(false),
   isCheckDaughterProtonPassAllCuts(false),
-  isUsePionRejection(true),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
   fVzCut(10.0),
@@ -428,15 +432,13 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   fPtMax(5.),
   fEtaCut(0.8),
   fDedxCut(10.),
-  fProtonPtMin(0.2),
+  fProtonPtMin(0.4),
   fProtonPtMax(5.0),
-  fAntiProtonPtMin(0.2),
+  fAntiProtonPtMin(0.4),
   fAntiProtonPtMax(5.0),
   fNSigmaTPCCut(3.0),
   fNSigmaTOFCut(3.0),
-  fV0PtMin(0.5),
   fV0CPAMin(0.997),
-  fV0RapidityMax(0.5),
   fV0DecayLengthMin(3.0),
   fV0DecayLengthMax(100.),
   fV0DCAToPrimVtxMax(1.5),
@@ -453,11 +455,17 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   fV0NegPionTOFNsigma(4.0),
   fV0NegProtonTOFNsigma(4.0),
   fV0PosPionTOFNsigma(4.0),
-  fLambdaMassMean(1.115683),
+  fLambdaPtMin(0.5),
+  fLambdaPtMax(20.0),
+  fAntiLambdaPtMin(0.5),
+  fAntiLambdaPtMax(20.0),
+  fLambdaRapidityMax(0.5),
+  fAntiLambdaRapidityMax(0.5),
   fLambdaMassRightCut(0.005),
   fLambdaMassLeftCut(0.005),
   fAntiLambdaMassRightCut(0.005),
   fAntiLambdaMassLeftCut(0.005),
+  fLambdaMassMean(1.115683),
   fAOD(nullptr),
   fPIDResponse(nullptr),
   fUtils(nullptr),
@@ -1092,7 +1100,7 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
   //Proton QA
   fHistProtonPt      = new TH1D("fHistProtonPt"     , "fHistProtonPt;p_{T}"      , 200, 0., 20.);
   fHistProtonEta     = new TH1D("fHistProtonEta"    , "fHistProtonEta;#eta"      , 100, -2., 2.);
-  fHistProtonPhi     = new TH1D("fHistProtonPhi"    , "fHistProtonPhi;#phi"      , 100, 0., TMath::TwoPi());
+  fHistProtonPhi     = new TH1D("fHistProtonPhi"    , "fHistProtonPhi;#phi"      , 360, 0., TMath::TwoPi());
   fHistProtonDcaXY   = new TH1D("fHistProtonDcaXY"  , "fHistProtonDcaXY;DcaXY"   , 500, 0., 5);
   fHistProtonDcaZ    = new TH1D("fHistProtonDcaZ "  , "fHistProtonDcaZ;DcaZ"     , 500, 0., 5);
   fHist2ProtonSigTPC = new TH2D("fHist2ProtonSigTPC", "fHist2ProtonSigTPC;SigTPC", 25, 0., 5., 100, 0.,10.);
@@ -1106,7 +1114,7 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
   fQAList->Add(fHist2ProtonSigTOF);
   fHistAntiProtonPt      = new TH1D("fHistAntiProtonPt"     , "fHistAntiProtonPt;p_{T}"      , 200, 0., 20.); 
   fHistAntiProtonEta     = new TH1D("fHistAntiProtonEta"    , "fHistAntiProtonEta;#eta"      , 100, -2., 2.); 
-  fHistAntiProtonPhi     = new TH1D("fHistAntiProtonPhi"    , "fHistAntiProtonPhi;#phi"      , 100, 0., TMath::TwoPi()); 
+  fHistAntiProtonPhi     = new TH1D("fHistAntiProtonPhi"    , "fHistAntiProtonPhi;#phi"      , 360, 0., TMath::TwoPi()); 
   fHistAntiProtonDcaXY   = new TH1D("fHistAntiProtonDcaXY"  , "fHistAntiProtonDcaXY;DcaXY"   , 500, 0., 5); 
   fHistAntiProtonDcaZ    = new TH1D("fHistAntiProtonDcaZ "  , "fHistAntiProtonDcaZ;DcaZ"     , 500, 0., 5); 
   fHist2AntiProtonSigTPC = new TH2D("fHist2AntiProtonSigTPC", "fHist2AntiProtonSigTPC;p_{T};SigTPC", 25, 0., 5., 100, 0.,10.); 
@@ -2191,22 +2199,21 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
       }
     }
     
-    // but we need to set the dca cut for 768 when we start to choose the paiticle for pair(just for NarrowDCACut)
+    // but we need to set the dca cut for 768 when we start to choose the paiticle for pair(just for NarrowDCACut Set)
     if (fFilterBit == 768 && isNarrowDcaCuts768) { 
       if (fabs(dcaz) > 2.0) continue;
       if (fabs(dcaxy) > 7.0 * (0.0026 + 0.005/TMath::Power(pt, 1.01))) continue;
     }
 
     bool isItProttrk = CheckPIDofParticle(track,3); // 3=proton
-    isItProttrk = isItProttrk && (pt < fProtonPtMax && pt > fProtonPtMin);
-    if(isStrictestProtonCut) {
-      // Proton need a customized dca cut
-      isItProttrk = isItProttrk && (fabs(dcaz) < 1. && fabs(dcaxy) < (0.0105 + 0.035/TMath::Power(pt,1.1))); 
-    }
+    
+    // Proton Maybe need a customized DCA cut
+    if(isProtonCustomizedDCACut) isItProttrk = isItProttrk && (fabs(dcaz) < 1. && fabs(dcaxy) < (0.0105 + 0.035/TMath::Power(pt,1.1))); 
 
     int code = 0;
     if(charge > 0) {
       code = 999;
+      isItProttrk = isItProttrk && (pt < fProtonPtMax && pt > fProtonPtMin);
       if(isItProttrk) {
         code =  2212;
         fHistProtonPt->Fill(pt);
@@ -2222,6 +2229,7 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
       }
     } else {
       code =-999;
+      isItProttrk = isItProttrk && (pt < fAntiProtonPtMax && pt > fAntiProtonPtMin);
       if(isItProttrk) {
         code = -2212;
         fHistAntiProtonPt->Fill(pt);
@@ -2293,7 +2301,7 @@ bool AliAnalysisTaskCVEPIDCME::LoopV0s()
     double phi = v0->Phi();
     int id_daughter_1 = v0->GetPosID();
     int id_daughter_2 = v0->GetNegID();
-    double rapLambda = v0->RapLambda();
+    double rap = v0->RapLambda();
 
     if (code == 3122) {
       double mass  = v0->MassLambda();
@@ -2304,9 +2312,11 @@ bool AliAnalysisTaskCVEPIDCME::LoopV0s()
       fHistLambdaCPA[0]             -> Fill(CPA);
       fHistLambdaDecayLength[0]     -> Fill(dl);
       fHistLambdaMass[0]            -> Fill(mass);
-      fHist2LambdaMassPtY[0]        -> Fill(pt, rapLambda);
+      fHist2LambdaMassPtY[0]        -> Fill(pt, rap);
 
       bool isLambda = true;
+      isLambda = isLambda && (pt > fLambdaPtMin && pt < fLambdaPtMax);
+      isLambda = isLambda && (fabs(rap) < fLambdaRapidityMax);
       isLambda = isLambda && (mass > fLambdaMassMean - fLambdaMassLeftCut);
       isLambda = isLambda && (mass < fLambdaMassMean + fLambdaMassRightCut);
 
@@ -2321,7 +2331,7 @@ bool AliAnalysisTaskCVEPIDCME::LoopV0s()
         fHistLambdaCPA[1]             -> Fill(CPA);
         fHistLambdaDecayLength[1]     -> Fill(dl);
         fHistLambdaMass[1]            -> Fill(mass);
-        fHist2LambdaMassPtY[1]        -> Fill(pt, rapLambda);
+        fHist2LambdaMassPtY[1]        -> Fill(pt, rap);
 
         vecParticleV0.emplace_back(std::array<double,9>{pt,eta,phi,0.,(double)code,1,mass,(double)id_daughter_1,(double)id_daughter_2});
         vecParticleFromDecay.emplace_back(std::array<double,6>{pTrack->Pt(),pTrack->Eta(),pTrack->Phi(),(double)id_daughter_1,(double)2212,1});
@@ -2350,14 +2360,16 @@ bool AliAnalysisTaskCVEPIDCME::LoopV0s()
       fHistAntiLambdaCPA[0]             -> Fill(CPA);
       fHistAntiLambdaDecayLength[0]     -> Fill(dl);
       fHistAntiLambdaMass[0]            -> Fill(mass);
-      fHist2AntiLambdaMassPtY[0]        -> Fill(pt, rapLambda);
+      fHist2AntiLambdaMassPtY[0]        -> Fill(pt, rap);
 
       bool isAntiLambda = true;
+      isAntiLambda = isAntiLambda && (pt > fAntiLambdaPtMin && pt < fAntiLambdaPtMax);
+      isAntiLambda = isAntiLambda && (fabs(rap) < fAntiLambdaRapidityMax);
+
       isAntiLambda = isAntiLambda && (mass > fLambdaMassMean - fAntiLambdaMassLeftCut);
       isAntiLambda = isAntiLambda && (mass < fLambdaMassMean + fAntiLambdaMassRightCut);
 
       if (isAntiLambda) {
-        //if a particle has been used as daughter particle before(It happends), we have to refuse a new one.
         fHistAntiLambdaPt[1]              -> Fill(pt);
         fHistAntiLambdaEta[1]             -> Fill(eta);
         fHistAntiLambdaPhi[1]             -> Fill(phi);
@@ -2365,7 +2377,7 @@ bool AliAnalysisTaskCVEPIDCME::LoopV0s()
         fHistAntiLambdaCPA[1]             -> Fill(CPA);
         fHistAntiLambdaDecayLength[1]     -> Fill(dl);
         fHistAntiLambdaMass[1]            -> Fill(mass);
-        fHist2AntiLambdaMassPtY[1]        -> Fill(pt, rapLambda);
+        fHist2AntiLambdaMassPtY[1]        -> Fill(pt, rap);
 
         vecParticleV0.emplace_back(std::array<double,9>{pt,eta,phi,0.,(double)code,1,mass,(double)id_daughter_1,(double)id_daughter_2});
         vecParticleFromDecay.emplace_back(std::array<double,6>{nTrack->Pt(),nTrack->Eta(),nTrack->Phi(),(double)id_daughter_2,(double)-2212,1});
@@ -3401,32 +3413,19 @@ bool AliAnalysisTaskCVEPIDCME::CheckPIDofParticle(AliAODTrack* ftrack, int pidTo
     nSigTOF = fPIDResponse->NumberOfSigmasTOF(ftrack, AliPID::kProton);
     nSigRMS = TMath::Sqrt(nSigTPC*nSigTPC + nSigTOF*nSigTOF);
 
-    if(isStrictestProtonCut) { //if Set the Strictest Cut to proton
-      if(trkPtPID > 0.5 && trkPtPID < 3.) {
-        if (isUsePionRejection) {
-          float nSigTPCPion = fPIDResponse->NumberOfSigmasTPC(ftrack, AliPID::kPion);
-          float nSigTOFPion = fPIDResponse->NumberOfSigmasTOF(ftrack, AliPID::kPion);
-          float nSigRMSPion = TMath::Sqrt(nSigTPCPion*nSigTPCPion + nSigTOFPion*nSigTOFPion);
-          double mom = ftrack->P();
-          if(mom < 1.e-6) return false;
-          if(mom > 0.5 && TMath::Abs(nSigRMS) < 2. && TMath::Abs(nSigRMSPion) > 2.) return true;
-          if(mom < 0.5 && TMath::Abs(nSigRMS) < 2. && TMath::Abs(nSigTPCPion) > 2.) return true;
-          return false;
-        } else {
-          if(nSigRMS < 2.) return true;
-          return false;
-        }
-      }
-      return false;
-    } else {
-      if(trkChargePID>0 && trkPtPID<0.4) return false;
-      if(trkPtPID < 0.6) {
-        if(TMath::Abs(nSigTPC)<=fNSigmaTPCCut) return true;
-      } else {
-        if(TMath::Abs(nSigRMS)<=fNSigmaTOFCut) return true;
-      }
-      return false;
+    bool isProton = true;
+    isProton = TMath::Abs(nSigRMS) < fNSigmaTOFCut;
+
+    if(isUsePionRejection) {
+      float nSigTPCPion = fPIDResponse->NumberOfSigmasTPC(ftrack, AliPID::kPion);
+      float nSigTOFPion = fPIDResponse->NumberOfSigmasTOF(ftrack, AliPID::kPion);
+      float nSigRMSPion = TMath::Sqrt(nSigTPCPion*nSigTPCPion + nSigTOFPion*nSigTOFPion);
+      double mom = ftrack->P();
+      bool isPassPionRejection = (mom > 0.5 && TMath::Abs(nSigRMSPion) > 3.);
+      isPassPionRejection = isPassPionRejection || (mom < 0.5 && TMath::Abs(nSigTPCPion) > 3.);
+      isProton = isProton && isPassPionRejection;
     }
+    return isProton;
   } else {
     Printf("\n -Ve number not allowed! Choose among: 0,1,2,3 (Charge Pion, Kaon, Proton)\n return with kFALSE \n");
     return false;
@@ -3548,12 +3547,6 @@ bool AliAnalysisTaskCVEPIDCME::IsGoodV0(AliAODv0 *aodV0)
   // DCA between daughters < 0.5cm
   double dDCA = aodV0->DcaV0Daughters();
   if (dDCA > fV0DcaBetweenDaughtersMax) return false;
-  // Transverse momentum > 0.5 GeV/c
-  double dPt = aodV0->Pt();
-  if (dPt < fV0PtMin ) return false;
-  // Pseudorapidity < 0.5
-  double dRapidity = aodV0->RapLambda();
-  if (TMath::Abs(dRapidity) > fV0RapidityMax) return false;
   return kTRUE;
 }
 
