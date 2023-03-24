@@ -43,6 +43,10 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void IfQATPC(bool bQATPC) { this->isQATPC = bQATPC; }
   void IfQAVZERO(bool bQAVZERO) { this->isQAVZERO = bQAVZERO; }
   void IfQAZDC(bool bQAZDC) { this->isQAZDC = bQAZDC; }
+  void IfNarrowDcaCuts768(bool bNarrowDcaCuts768) { this->isNarrowDcaCuts768 = bNarrowDcaCuts768; }
+  void IfProtonCustomizedDCACut(bool bProtonCustomizedDCACut) { this->isProtonCustomizedDCACut = bProtonCustomizedDCACut; }
+  void IfUsePionRejection(bool bUsePionRejection) { this->isUsePionRejection = bUsePionRejection; }
+
   void IfCalculatePIDFlow(bool bCalculatePIDFlow) { this->isCalculatePIDFlow = bCalculatePIDFlow; }
   void IfCalculateDeltaGamma(bool bCalculateDeltaGamma) { this->isCalculateDeltaGamma = bCalculateDeltaGamma; }
   void IfCalculateDiffResult(bool bCalculateDiffResult) { this->isCalculateDiffResult = bCalculateDiffResult; }
@@ -50,10 +54,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void IfCalculateLambdaLambda(bool bCalculateLambdaLambda) {this->isCalculateLambdaLambda = bCalculateLambdaLambda; }
   void IfCalculateProtonProton(bool bCalculateProtonProton) {this->isCalculateProtonProton = bCalculateProtonProton; }
   void IfCalculateHadronHadron(bool bCalculateHadronHadron) {this->isCalculateHadronHadron = bCalculateHadronHadron; }
-  void IfNarrowDcaCuts768(bool bNarrowDcaCuts768) { this->isNarrowDcaCuts768 = bNarrowDcaCuts768; }
-  void IfStrictestProtonCut(bool bStrictestProtonCut) { this->isStrictestProtonCut = bStrictestProtonCut; }
   void IfCheckDaughterProtonPassAllCuts(bool bCheckDaughterProtonPassAllCuts) { this->isCheckDaughterProtonPassAllCuts = bCheckDaughterProtonPassAllCuts; }
-  void IfUsePionRejection(bool bUsePionRejection) { this->isUsePionRejection = bUsePionRejection; }
+
   // read in
   void SetListForNUE(TList* flist) { this->fListNUE = (TList*)flist->Clone(); }
   void SetListForNUA(TList* flist) { this->fListNUA = (TList*)flist->Clone(); }
@@ -84,15 +86,13 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void SetDedxCut(float dedxCut) { this->fDedxCut = dedxCut; }
   void SetProtonPtMin(double protonPtMin) { this->fProtonPtMin = protonPtMin; }
   void SetProtonPtMax(double protonPtMax) { this->fProtonPtMax = protonPtMax; }
-  void SetAntiProtonPtMin(double protonPtMin) { this->fProtonPtMin = protonPtMin; }
-  void SetAntiProtonPtMax(double protonPtMax) { this->fProtonPtMax = protonPtMax; }
+  void SetAntiProtonPtMin(double antiprotonPtMin) { this->fAntiProtonPtMin = antiprotonPtMin; }
+  void SetAntiProtonPtMax(double antiprotonPtMax) { this->fAntiProtonPtMax = antiprotonPtMax; }
   // PID
   void SetNSigmaTPCCut(double nSigmaTPC) { this->fNSigmaTPCCut = nSigmaTPC; }
   void SetNSigmaTOFCut(double nSigmaTOF) { this->fNSigmaTOFCut = nSigmaTOF; }
   // V0
-  void SetV0PtMin(double v0PtMin) { this->fV0PtMin = v0PtMin; }
   void SetV0CPAMin(double v0CPAMin) { this->fV0CPAMin = v0CPAMin; }
-  void SetV0RapidityMax(double v0RapidityMax) { this->fV0RapidityMax = v0RapidityMax; }
   void SetV0DecayLengthMax(double v0DecayLengthMax) { this->fV0DecayLengthMax = v0DecayLengthMax; }
   void SetV0DecayLengthMin(double v0DecayLengthMin) { this->fV0DecayLengthMin = v0DecayLengthMin; }
   void SetV0DCAToPrimVtxMax(double v0DCAToPrimVtxMax) { this->fV0DCAToPrimVtxMax = v0DCAToPrimVtxMax; }
@@ -110,7 +110,11 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void SetNegPionTOFNsigma(float V0NegPionTOFNsigma) { this->fV0NegPionTOFNsigma = V0NegPionTOFNsigma; }
   void SetNegProtonTOFNsigma(float V0NegProtonTOFNsigma) { this->fV0NegProtonTOFNsigma = V0NegProtonTOFNsigma; }
   void SetPosPionTOFNsigma(float V0PosPionTOFNsigma) { this->fV0PosPionTOFNsigma = V0PosPionTOFNsigma; }
-  // Lambda Mass Cut
+  // Lambda Cut
+  void SetLambdaPtMin(double lambdaPtMin) { this->fLambdaPtMin = lambdaPtMin; }
+  void SetLambdaPtMax(double lambdaPtMax) { this->fLambdaPtMax = lambdaPtMax; }
+  void SetAntiLambdaPtMin(double antiLambdaPtMin) { this->fAntiLambdaPtMin = antiLambdaPtMin; }
+  void SetAntiLambdaPtMax(double antiLambdaPtMax) { this->fAntiLambdaPtMax = antiLambdaPtMax; }
   void SetLambdaMassLeftCut(double lambdaMassRightCut) { this->fLambdaMassRightCut = lambdaMassRightCut; }
   void SetLambdaMassRightCut(double lambdaMassLeftCut) { this->fLambdaMassLeftCut = lambdaMassLeftCut; }
   void SetAntiLambdaMassLeftCut(double antiLambdaMassRightCut) { this->fAntiLambdaMassRightCut = antiLambdaMassRightCut; }
@@ -173,6 +177,10 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   bool isQATPC;
   bool isQAVZERO; // flag for V0 qn QA
   bool isQAZDC;
+  bool isNarrowDcaCuts768;
+  bool isProtonCustomizedDCACut;
+  bool isUsePionRejection;
+
   bool isCalculatePIDFlow;        // if fill PID Flow
   bool isCalculateDeltaGamma;     // if fill γ and δ
   bool isCalculateDiffResult;     // if fill Diff Reslut
@@ -180,10 +188,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   bool isCalculateLambdaLambda;
   bool isCalculateProtonProton;
   bool isCalculateHadronHadron;
-  bool isNarrowDcaCuts768;
-  bool isStrictestProtonCut;
   bool isCheckDaughterProtonPassAllCuts;
-  bool isUsePionRejection;
 
   //////////////////////
   // Cuts and options //
@@ -218,9 +223,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   float fNSigmaTPCCut;
   float fNSigmaTOFCut;
   // V0
-  double fV0PtMin;                  //
   double fV0CPAMin;                 //
-  double fV0RapidityMax;            //
   double fV0DecayLengthMin;         //
   double fV0DecayLengthMax;         //
   double fV0DCAToPrimVtxMax;        //
@@ -238,12 +241,18 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   float fV0NegPionTOFNsigma;        //
   float fV0NegProtonTOFNsigma;      //
   float fV0PosPionTOFNsigma;        //
-  // Lambda Mass Cut
-  double fLambdaMassMean;
-  double fLambdaMassRightCut;     //
-  double fLambdaMassLeftCut;      //
-  double fAntiLambdaMassRightCut; //
-  double fAntiLambdaMassLeftCut;  //
+  // Lambda Cut
+  double fLambdaPtMin;              //
+  double fLambdaPtMax;              //
+  double fAntiLambdaPtMin;          //
+  double fAntiLambdaPtMax;          //
+  double fLambdaRapidityMax;        //
+  double fAntiLambdaRapidityMax;    //
+  double fLambdaMassRightCut;       //
+  double fLambdaMassLeftCut;        //
+  double fAntiLambdaMassRightCut;   //
+  double fAntiLambdaMassLeftCut;    //
+  double fLambdaMassMean;           //
 
   ///////////////////The following files are from the data//////////////////////////////////
   /////////////
