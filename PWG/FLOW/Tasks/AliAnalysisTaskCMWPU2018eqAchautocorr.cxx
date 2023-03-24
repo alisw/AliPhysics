@@ -106,6 +106,7 @@ AliAnalysisTaskCMWPU2018eqAchautocorr::AliAnalysisTaskCMWPU2018eqAchautocorr(con
   fDCAxyMax(2.4),
   fDCAzMax(3.2),
   fChi2(4.0),
+  usecrfc(0),
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
 //bSkipNUA(kFALSE), 
@@ -239,6 +240,7 @@ AliAnalysisTaskCMWPU2018eqAchautocorr::AliAnalysisTaskCMWPU2018eqAchautocorr():
   fDCAxyMax(2.4),
   fDCAzMax(3.2),
   fChi2(4.0),
+  usecrfc(0),
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
 //bSkipNUA(kFALSE), 
@@ -478,46 +480,100 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserCreateOutputObjects()
   // Acharge Binning with Equal Event per bin:                                                                                               
   //Cent 0-5                                                                                                                                 
   Double_t fAchBinCent000[11] = {-0.09, -0.018, -0.01, -0.004, 0, 0.004, 0.008, 0.012, 0.018, 0.024, 1};
-  //Cent 5-10                                                                                                                                
+  //Cent 5-10                                                                                                                               
   Double_t fAchBinCent111[11] = {-0.1, -0.02, -0.012, -0.006, -0.002, 0.004, 0.008, 0.012, 0.018, 0.026, 1};
-  //Cent 10-20                                                                                                                               
+  //Cent 10-20                                                                                                                              
   Double_t fAchBinCent222[11] = {-0.146, -0.024, -0.014, -0.008, -0.002, 0.004, 0.008, 0.014, 0.02, 0.03, 1};
-  //Cent 20-30                                                                                                                               
+  //Cent 20-30                                                                                                                              
   Double_t fAchBinCent333[11] = {-0.144, -0.03, -0.018, -0.01, -0.004,  0.004, 0.01, 0.016, 0.024, 0.036, 1};
-  //Cent 30-40                                                                                                                               
+  //Cent 30-40                                                                                                                              
   Double_t fAchBinCent444[11] = {-0.186, -0.038, -0.024, -0.014, -0.006, 0.002, 0.012, 0.02, 0.03, 0.044, 1};
-  //Cent 40-50                                                                                                                               
+  //Cent 40-50                                                                                                                              
   Double_t fAchBinCent555[11] = {-0.23, -0.052, -0.032, -0.018, -0.008, 0.004, 0.014, 0.024, 0.038, 0.058, 1};
-  //Cent 50-60                                                                                                                               
+  //Cent 50-60                                                                                                                              
   Double_t fAchBinCent666[11] = {-0.332, -0.07, -0.044, -0.026, -0.012, 0.002, 0.018, 0.032, 0.05, 0.076, 1};
-  //Cent 60-80                                                                                                                               
+  //Cent 60-80                                                                                                                              
   Double_t fAchBinCent777[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
-  //Cent 80-90                                                                                                                               
+  //Cent 80-90                                                                                                                              
   Double_t fAchBinCent888[11] = {-0.996, -0.128, -0.08, -0.048, -0.022, 0.002, 0.028, 0.054, 0.086, 0.134, 1};
 
 
-  //15op2 negpol                                                                                                                             
-  // Acharge Binning with Equal Event per bin:                                                                                               
-  //Cent 0-5                                                                                                                                 
+  
+  //15op2 negpol                                                                                                                            
+  // Acharge Binning with Equal Event per bin:                                                                                              
+  //Cent 0-5                                                                                                                                
   Double_t fAchBinCent0000[11] = {-0.148, -0.022, -0.014, -0.01, -0.006, -0.002, 0.002, 0.008, 0.012, 0.02, 1};
-  //Cent 5-10                                                                                                                                
+  //Cent 5-10                                                                                                                               
   Double_t fAchBinCent1111[11] = {-0.132, -0.024, -0.016, -0.01, -0.006, 0, 0.004, 0.008, 0.014, 0.022, 1};
-  //Cent 10-20                                                                                                                               
+  //Cent 10-20                                                                                                                              
   Double_t fAchBinCent2222[11] = {-0.166, -0.028, -0.018, -0.012, -0.006, 0, 0.004, 0.01, 0.016, 0.026, 1};
-  //Cent 20-30                                                                                                                               
+  //Cent 20-30                                                                                                                              
   Double_t fAchBinCent3333[11] = {-0.182, -0.034, -0.022, -0.014, -0.008, 0, 0.006, 0.012, 0.022, 0.032, 1};
-  //Cent 30-40                                                                                                                               
+  //Cent 30-40                                                                                                                              
   Double_t fAchBinCent4444[11] = {-0.216, -0.042, -0.028, -0.018, -0.008, 0, 0.008, 0.016, 0.026, 0.042, 1};
   //Cent 40-50                                                                                                                              
   Double_t fAchBinCent5555[11] = {-0.246, -0.054, -0.036, -0.022, -0.012, -0.002, 0.01, 0.022, 0.034, 0.054, 1};
-  //Cent 50-60                                                                                                                               
+  //Cent 50-60                                                                                                                              
   Double_t fAchBinCent6666[11] = {-0.372, -0.074, -0.048, -0.03, -0.014, 0.002, 0.014, 0.03, 0.048, 0.072, 1};
-  //Cent 60-80                                                                                                                               
+  //Cent 60-80                                                                                                                              
   Double_t fAchBinCent7777[11] = {-0.996, -0.132, -0.084, -0.052, -0.024, 0.002, 0.024, 0.05, 0.082, 0.13, 1};
-  //Cent 80-90                                                                                                                               
+  //Cent 80-90                                                                                                                              
   Double_t fAchBinCent8888[11] = {-0.996, -0.132, -0.084, -0.052, -0.024, 0.002, 0.024, 0.05, 0.082, 0.13, 1};
 
 
+
+  //18q etap2
+  //18q
+  // Acharge Binning with Equal Event per bin:
+  //Cent 0-5
+  Double_t fAchBinCent00000[11] = {-0.212, -0.046, -0.028, -0.016, -0.004, 0.004, 0.014, 0.026, 0.038, 0.054, 1};
+  //Cent 5-10
+  Double_t fAchBinCent11111[11] = {-0.236, -0.05, -0.032, -0.018, -0.006, 0.006, 0.016, 0.028, 0.042, 0.06, 1};
+  //Cent 10-20 
+  Double_t fAchBinCent22222[11] = {-0.268, -0.06, -0.038, -0.022, -0.008, 0.004, 0.018, 0.032, 0.048, 0.07, 1};
+  //Cent 20-30 
+  Double_t fAchBinCent33333[11] = {-0.34, -0.076, -0.048, -0.028, -0.01, 0.006, 0.02, 0.038, 0.056, 0.084, 1};
+  //Cent 30-40 
+  Double_t fAchBinCent44444[11] = {-0.478, -0.096, -0.06, -0.036, -0.014, 0.006, 0.024, 0.046, 0.07, 0.104, 1};
+  //Cent 40-50 
+  Double_t fAchBinCent55555[11] = {-0.6, -0.124, -0.08, -0.048, -0.02, 0.002, 0.03, 0.056, 0.088, 0.134, 1};
+  //Cent 50-60 
+  Double_t fAchBinCent66666[11] = {-0.768, -0.168, -0.11, -0.066, -0.028, 0.002, 0.038, 0.074, 0.118, 0.178, 1};
+  //Cent 60-80 
+  Double_t fAchBinCent77777[11] = {-0.996, -0.332, -0.2, -0.11, -0.054, 0.002, 0.06, 0.122, 0.202, 0.334, 1};
+  //Cent 80-90 
+  Double_t fAchBinCent88888[11] = {-0.996, -0.332, -0.2, -0.11, -0.054, 0.002, 0.06, 0.122, 0.202, 0.334, 1};
+
+
+
+   //18r etap2
+  //18r
+  // Acharge Binning with Equal Event per bin:
+  //Cent 0-5
+  Double_t fAchBinCent000000[11] = {-0.226, -0.052, -0.034, -0.022, -0.012, -0.002, 0.008, 0.018, 0.03, 0.048, 1};
+  //Cent 5-10
+  Double_t fAchBinCent111111[11] = {-0.246, -0.056, -0.038, -0.024, -0.012, -0.002, 0.01, 0.022, 0.036, 0.054, 1};
+  //Cent 10-20 
+  Double_t fAchBinCent222222[11] = {-0.268, -0.066, -0.044, -0.028, -0.014, -0.002, 0.012, 0.026, 0.042, 0.064, 1};
+  //Cent 20-30 
+  Double_t fAchBinCent333333[11] = {-0.348, -0.08, -0.052, -0.032, -0.016, 0.002, 0.016, 0.032, 0.052, 0.08, 1};
+  //Cent 30-40 
+  Double_t fAchBinCent444444[11] = {-0.47, -0.1, -0.066, -0.04, -0.02, 0.002, 0.02, 0.04, 0.066, 0.1, 1};
+  //Cent 40-50 
+  Double_t fAchBinCent555555[11] = {-0.666, -0.128, -0.084, -0.052, -0.026, 0.002, 0.026, 0.052, 0.084, 0.128, 1};
+  //Cent 50-60 
+  Double_t fAchBinCent666666[11] = {-0.996, -0.172, -0.11, -0.07, -0.034, 0.002, 0.034, 0.07, 0.112, 0.172, 1};
+  //Cent 60-80 
+  Double_t fAchBinCent777777[11] = {-0.996, -0.332, -0.2, -0.118, -0.058, 0.002, 0.056, 0.112, 0.202, 0.306, 1};
+  //Cent 80-90 
+  Double_t fAchBinCent888888[11] = {-0.996, -0.332, -0.2, -0.118, -0.058, 0.002, 0.056, 0.112, 0.202, 0.306, 1};
+
+  
+
+
+
+
+  
 
 
   Double_t fAchBinSelect[11] = {0.0};
@@ -596,7 +652,40 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserCreateOutputObjects()
 
         }
 
+
+
+            else if (bdataset==4)
+	{
+          if(j==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent00000[k]; } }
+          if(j==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent11111[k]; } }
+          if(j==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent22222[k]; } }
+          if(j==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent33333[k]; } }
+          if(j==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent44444[k]; } }
+          if(j==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent55555[k]; } }
+          if(j==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent66666[k]; } }
+          if(j==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent77777[k]; } }
+          if(j==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent88888[k]; } }
+
+        }
+
+
+            else if (bdataset==5)
+	{
+          if(j==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent000000[k]; } }
+          if(j==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent111111[k]; } }
+          if(j==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent222222[k]; } }
+          if(j==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent333333[k]; } }
+          if(j==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent444444[k]; } }
+          if(j==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent555555[k]; } }
+          if(j==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent666666[k]; } }
+          if(j==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent777777[k]; } }
+          if(j==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent888888[k]; } }
+
+        }
+
       
+
+
 
       ////Charge:
       sprintf(name,"fHistv2AchChrgPos_Method%d_Cent%d",i,j);
@@ -787,6 +876,34 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserCreateOutputObjects()
       }
 
 
+       else if (bdataset==4)
+      {
+	if(i==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent00000[k]; } }
+	if(i==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent11111[k]; } }
+	if(i==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent22222[k]; } }
+	if(i==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent33333[k]; } }
+	if(i==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent44444[k]; } }
+	if(i==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent55555[k]; } }
+	if(i==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent66666[k]; } }
+	if(i==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent77777[k]; } }
+	if(i==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent88888[k]; } }
+      }
+
+
+           else if (bdataset==5)
+      {
+	if(i==0){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent000000[k]; } }
+	if(i==1){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent111111[k]; } }
+	if(i==2){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent222222[k]; } }
+	if(i==3){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent333333[k]; } }
+	if(i==4){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent444444[k]; } }
+	if(i==5){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent555555[k]; } }
+	if(i==6){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent666666[k]; } }
+	if(i==7){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent777777[k]; } }
+	if(i==8){ for(int k=0; k<11; k++){ fAchBinSelect[k] = fAchBinCent888888[k]; } }
+      }
+
+
     ////Charge:
     sprintf(name,"fHistv2cumAchChrgAllQcumCent%d",i);
     sprintf(title,"Cent %2.0f-%2.0f; A_{ch}; v_{2}",centRange[i],centRange[i+1]);
@@ -800,7 +917,7 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserCreateOutputObjects()
 
 
   //// PileUp Removal Functions:
-  /*
+  
   fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
 
   Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
@@ -816,8 +933,8 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserCreateOutputObjects()
   fCenCutLowPU->SetParameters(parV0CL0);
   fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
   fCenCutHighPU->SetParameters(parV0CL0);
-  */
-
+  
+  /*
   if (bdataset==0)
     {
       fSPDCutPU = new TF1("fSPDCutPU", "480. + 3.95*x", 0, 50000);
@@ -856,7 +973,7 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserCreateOutputObjects()
       fMultCutPU = new TF1("fMultCutPU", "[0]+[1]*x+[2]*exp([3]-[4]*x) - 6.*([5]+[6]*exp([7]-[8]*x))", 0, 100);
       fMultCutPU->SetParameters(parFB32);
     }
-
+  */
   
 
 
@@ -1135,9 +1252,11 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserExec(Option_t*) {
   Float_t fMultGlobal  = 0;  // global track multiplicity
   
   
-  Float_t trkPt=0,trkPhi=0,trkEta=0,trkDCAxy=0.0, trkDCAz=0.0;
+  Float_t trkPt=0,trkPhi=0,trkEta=0,trkDCAxy=0.0, trkDCAz=0.0,trkTpcnc=0.0, ratiocrfc=0.0;
   Float_t trkChi2=0,trkdEdx=0,trkWgt=1.0;
   Int_t   trkChrg=0, trkTpcNC=0;
+  UShort_t trkFindcls=0;
+
   ////PID variables:
   Double_t nSigTOFpion=-99, nSigTPCpion=-99;
   Double_t nSigTOFkaon=-99, nSigTPCkaon=-99;
@@ -1181,6 +1300,8 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserExec(Option_t*) {
       trkChrg  = AODtrack->Charge();
       trkChi2  = AODtrack->Chi2perNDF();
       trkTpcNC = AODtrack->GetTPCNcls();
+      trkTpcnc = AODtrack->GetTPCCrossedRows();
+      trkFindcls = AODtrack -> GetTPCNclsF();
       trkDCAxy=  AODtrack->DCA();
       trkDCAz=   AODtrack->ZAtDCA();
 
@@ -1189,9 +1310,23 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserExec(Option_t*) {
       /// This Next function is called After Filter bit is validated!! (Otherwise code breaks!)
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();
       
+      ratiocrfc= trkTpcnc/trkFindcls;
 
+      if (usecrfc)
+	{
+	  trkTpcNC=trkTpcnc;
+	  cout<<"**************Hi i am inside usecrfc*******************"<<endl;
+	}
+      else if(usecrfc==0)
+	{
+	  ratiocrfc=1.0;
+	  cout<<"**************Hi i am inside usecrfc but false*******************"<<endl;
+	}
+      
 
-      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCutAch) && (trkEta >= fMinEtaCutAch) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCutAch) && (trkEta >= fMinEtaCutAch) && (trkdEdx >= fdEdxMin) && (trkTpcNC >=fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && (ratiocrfc > 0.8) ) {
+
+	  //if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCutAch) && (trkEta >= fMinEtaCutAch) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) { //original
 
       //if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= 0.8) && (trkEta >= -0.8) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= 70) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= 4.0) && TMath::Abs(trkChrg)) {   //hardcoded
 
@@ -1430,6 +1565,8 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserExec(Option_t*) {
       trkChrg  = AODtrack->Charge();
       trkChi2  = AODtrack->Chi2perNDF();
       trkTpcNC = AODtrack->GetTPCNcls();
+      trkTpcnc = AODtrack->GetTPCCrossedRows();
+      trkFindcls = AODtrack -> GetTPCNclsF();
       trkDCAxy=  AODtrack->DCA();
       trkDCAz=   AODtrack->ZAtDCA();
             
@@ -1437,11 +1574,26 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserExec(Option_t*) {
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
 
 
+      ratiocrfc= trkTpcnc/trkFindcls;
+
+      if (usecrfc)
+	{
+	  trkTpcNC=trkTpcnc;
+	}
+      else if(usecrfc==0)
+	{
+	  ratiocrfc=1.0;
+	}
+      
+
+      
       
       //Apply track cuts here:
-      //if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
 
-	if((trkPt <= 3.0) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+      
+      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCutAch) && (trkEta >= fMinEtaCutAch) && (trkdEdx >= fdEdxMin) && (trkTpcNC >=fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && (ratiocrfc > 0.8) ) {
+    
+	//if((trkPt <= 3.0) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) { //original
 
 
 
