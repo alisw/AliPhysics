@@ -22,6 +22,7 @@ struct MiniXi {
   Double32_t fEta; //[-1.27,1.28,8]
   Double32_t fMass; //[1.29,1.35375,8]
   Double32_t fBdtOut; //[0.5,1.,16]
+  unsigned char fRecFlag;
 };
 
 struct MiniXiMC : public MiniXi {
@@ -58,6 +59,11 @@ public:
     kPrimary = BIT(0),
     kSecondaryFromWD = BIT(1),
     kSecondaryFromMaterial = BIT(2)
+  };
+
+  enum kXiFlag {
+    kHasTOFhitOrITSrefit = BIT(0),
+    kCompetingMassCut = BIT(1)
   };
 
   enum kCutFlag {
@@ -104,7 +110,7 @@ public:
   void SetNsigmaTPCCut(float cut = 4.0) { fCutNsigmaTPC = cut; }
   void SetCtCut(float cut = 4) { fCutCt = cut; }
   void SetCtV0Cut(float cut = 30) { fCutCtV0 = cut; }
-  void SetCompetingMassCut(float cut = 0.) { fCutCompetingMass = cut; }
+  void SetCompetingMassCut(float cut = 0.008) { fCutCompetingMass = cut; }
   void SetTPCcluCut(int cut = 70) { fCutTPCclu = cut; }
   void SetSaveOnlyTrueCandidates(bool cut = true) { fOnlyTrueCandidates = cut; }
   void SetTPCRowsCut(float cut = 80.) { fCutTPCrows = cut; }
@@ -114,12 +120,12 @@ public:
   void SetMaxCentrality(int maxCentrality = 90) { fMaxCentrality = maxCentrality; }
   void SetMinPt(double minPt = 0.5) { fMinPt = minPt; }
   void SetMaxPt(double maxPt = 4.5) { fMaxPt = maxPt; }
-  void SetRadiusOverflowCut(double cut = 25.) { fRadiusOverflowCut = cut; }
-  void SetRadiusV0OverflowCut(double cut = 25.) { fRadiusV0OverflowCut = cut; }
-  void SetDCAV0piToPVOverflowCut(double cut = 2.5) { fDCAV0piToPVOverflowCut = cut; }
-  void SetDCAV0prToPVOverflowCut(double cut = 2.5) { fDCAV0prToPVOverflowCut = cut; }
+  void SetRadiusOverflowCut(double cut = 10000.) { fRadiusOverflowCut = cut; }
+  void SetRadiusV0OverflowCut(double cut = 10000.) { fRadiusV0OverflowCut = cut; }
+  void SetDCAV0piToPVOverflowCut(double cut = 25.) { fDCAV0piToPVOverflowCut = cut; }
+  void SetDCAV0prToPVOverflowCut(double cut = 12.7) { fDCAV0prToPVOverflowCut = cut; }
   void SetDCABachToPVOverflowCut(double cut = 2.5) { fDCABachToPVOverflowCut = cut; }
-  void SetDCAV0toPVOverflowCut(double cut = 2.5) { fDCAV0toPVOverflowCut = cut; }
+  void SetDCAV0toPVOverflowCut(double cut = 10.) { fDCAV0toPVOverflowCut = cut; }
   void SetBdtOutCut(double cut = 0.9) { fBdtOutCut = cut; }
 
   void SetFilterBit(double bit = BIT(4)) { fFilterBit = bit; }
@@ -179,7 +185,7 @@ private:
   float fCutNsigmaTPC = 4.0;
   float fCutCt = 4;
   float fCutCtV0 = 30;
-  float fCutCompetingMass = 0.;
+  float fCutCompetingMass = 0.008;
   int fCutTPCclu = 70;
   float fCutTPCrows = 80.;
   float fCutRowsOvF = 0.8;
@@ -191,12 +197,12 @@ private:
   double fMaxCentrality = 90;
   double fMinPt = 0.5;
   double fMaxPt = 4.5;
-  double fRadiusOverflowCut = 25;
-  double fRadiusV0OverflowCut = 25;
-  double fDCAV0piToPVOverflowCut = 2.5;
-  double fDCAV0prToPVOverflowCut = 2.5;
-  double fDCABachToPVOverflowCut = 2.5;
-  double fDCAV0toPVOverflowCut = 2.5;
+  double fRadiusOverflowCut = 51;
+  double fRadiusV0OverflowCut = 100;
+  double fDCAV0piToPVOverflowCut = 25;
+  double fDCAV0prToPVOverflowCut = 12.7;
+  double fDCABachToPVOverflowCut = 12.7;
+  double fDCAV0toPVOverflowCut = 10.1;
   double fBdtOutCut = 0.9;
 
   int fFilterBit = BIT(4);

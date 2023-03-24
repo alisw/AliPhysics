@@ -42,6 +42,7 @@ namespace
   constexpr int kKaonPdg{321};
   constexpr int kXiPdg{3312};
   constexpr int kLambdaPdg(3122);
+  constexpr double kOmegaMass{1.67245};
   constexpr double kXiMass{1.32171};
   constexpr double kLambdaMass{1.115683};
   constexpr double kKaonMass{0.493677};
@@ -354,7 +355,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
       bool hasITSrefit = (nTrackCasc->GetStatus() & AliVTrack::kITSrefit) || (pTrackCasc->GetStatus() & AliVTrack::kITSrefit) || (bTrackCasc->GetStatus() & AliVTrack::kITSrefit);
 
       double V0invMassDelta = ((matter) ? casc->MassLambda() : casc->MassAntiLambda()) - kLambdaMass;
-      double competingMass = std::abs(casc->MassXi() - kXiMass);
+      double competingMass = std::abs(casc->MassOmega() - kOmegaMass);
 
       // transverse momentum and eta
       double pt = std::sqrt(casc->Pt2Xi());
@@ -397,7 +398,6 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
             std::abs(tpcNsigmaV0Pr) < fCutNsigmaTPC &&
             std::abs(tpcNsigmaV0Pi) < fCutNsigmaTPC &&
             ct < fCutCt * kcTauXi &&
-            competingMass > fCutCompetingMass &&
             tpcClBach > fCutTPCclu &&
             tpcClV0Pi > fCutTPCclu &&
             tpcClV0Pr > fCutTPCclu &&
@@ -421,6 +421,11 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
           fXi->fEta = eta;
           fXi->fMass = casc->MassXi();
           fXi->fBdtOut = -1.;
+          fXi->fRecFlag = 0u;
+          if (hasTOFhit || hasITSrefit)
+            fXi->fRecFlag |= kHasTOFhitOrITSrefit;
+          if (competingMass > fCutCompetingMass)
+            fXi->fRecFlag |= kCompetingMassCut;
 
           if (fMC && !fApplyBdtToMC)
           {
@@ -441,7 +446,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
             double features[]={dcaBachPV, dcaV0PV, dcaV0piPV, dcaV0prPV, dcaV0tracks, dcaBachV0, cosPA, cosPAV0, V0invMassDelta, tpcNsigmaBach, tpcNsigmaV0Pr};
             std::vector<double> bdt_out;
             fBDT[model_index]->Predict(features, 11, bdt_out, false);
-            if (bdt_out[0] < fBdtOutCut)
+            if (bdt_out[0] < fBdtOutCut && !fMC)
             {
               continue;
             }
