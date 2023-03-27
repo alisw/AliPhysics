@@ -99,6 +99,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetChargedPt(Double_t chPtMin, Double_t chPtMax) { fUseChargedPtCut = true; fchPtMin = chPtMin; fchPtMax = chPtMax; }
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newvalNUA, Bool_t newvalNUE) { fUseNUAOne = newvalNUA; fUseNUEOne = newvalNUE; };
+  void SetUseEventWeightsOne(Bool_t newval) { fUseEventWeightOne = newval; };
   void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
   void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
   void SetDCAxyFunctionalForm(TString newval) { fDCAxyFunctionalForm = newval; } //Call after SystFlag
@@ -168,6 +169,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fUseNch;
   Bool_t fUseNUAOne;
   Bool_t fUseNUEOne;
+  Bool_t fUseEventWeightOne;
   Double_t fEtaMpt;
   Double_t fEtaLow;
   Double_t fEtaAcceptance;

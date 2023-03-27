@@ -79,6 +79,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fUseNch(kFALSE),
   fUseNUAOne(kFALSE),
   fUseNUEOne(kFALSE),
+  fUseEventWeightOne(kFALSE),
   fEtaMpt(0.4),
   fEtaLow(-9999),
   fEtaAcceptance(0.8),
@@ -195,6 +196,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fUseNch(kFALSE),
   fUseNUAOne(kFALSE),
   fUseNUEOne(kFALSE),
+  fUseEventWeightOne(kFALSE),
   fEtaMpt(0.4),
   fEtaLow(-9999),
   fEtaAcceptance(0.8),
@@ -438,7 +440,7 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
       fptVarList->Add(fCkCont[i]);
       fPtCont[i] = new AliPtContainer(Form("ptcont_%s",spNames[i].Data()),Form("ptcont_%s",spNames[i].Data()),fNMultiBins,fMultiBins,8,true);
       fptVarList->Add(fPtCont[i]);
-      fPtCont[i]->SetEventWeight(fEventWeight);
+      fPtCont[i]->SetEventWeight((fUseEventWeightOne)?(PtSpace::kOne):fEventWeight);
       if(fNBootstrapProfiles) {
         fCkCont[i]->InitializeSubsamples(fNBootstrapProfiles);
         fPtCont[i]->InitializeSubsamples(fNBootstrapProfiles);
@@ -1255,7 +1257,7 @@ Bool_t AliAnalysisTaskDeform::FillFCs(const AliGFW::CorrConfig &corconf, const D
     val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
     if(debug) printf("FillFCs: val = %f\n",val);
     if(TMath::Abs(val)<1)
-      fFC->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
+      fFC->FillProfile(corconf.Head.Data(),cent,val,(fUseEventWeightOne)?1.0:dnx,rndmn);
     return kTRUE;
   };
   return kTRUE;
@@ -1365,7 +1367,7 @@ Bool_t AliAnalysisTaskDeform::FillCovariance(AliProfileBS *target, const AliGFW:
   if(!corconf.pTDif) {
     val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
     if(TMath::Abs(val)<1)
-      target->FillProfile(cent,val*d_mpt,dnx*dw_mpt,l_rndm);
+      target->FillProfile(cent,val*d_mpt,(fUseEventWeightOne)?1.0:dnx*dw_mpt,l_rndm);
     return kTRUE;
   };
   return kTRUE;
