@@ -1,55 +1,30 @@
-/*
- * AliDPG - ALICE Experiment Data Preparation Group
- * Simulation steering script
- *
- */
+void sim(Int_t nev=50) {
 
-/*****************************************************************/
-/*****************************************************************/
-/*****************************************************************/
+  if (gSystem->Getenv("SIM_EVENTS"))
+    nev = atoi(gSystem->Getenv("SIM_EVENTS"));
 
-void sim() 
-{
+  printf("GENERATE << %d >> events \n",nev);
 
-  // run number
-  Int_t runNumber = -1;
-  if (gSystem->Getenv("CONFIG_RUN"))
-    runNumber = atoi(gSystem->Getenv("CONFIG_RUN"));
-  if (runNumber <= 0) {
-    printf("Invalid run number: %d \n", runNumber);
-    abort();
-  }
+  AliSimulation simulator;
+  simulator.SetMakeSDigits("PHOS");
+  simulator.SetMakeDigits("PHOS");
 
-  // number of events configuration
-  Int_t nev = 200;
-  if (gSystem->Getenv("CONFIG_NEVENTS"))
-    nev = atoi(gSystem->Getenv("CONFIG_NEVENTS"));
+  simulator.SetDefaultStorage("alien://Folder=/alice/data/2018/OCDB");
 
-  // simulation configuration
-  gROOT->LoadMacro("Sim/SimulationConfig.C");
-  Int_t simulationConfig = kSimulationDefault;
-  if (gSystem->Getenv("CONFIG_SIMULATION")) {
-    Bool_t valid = kFALSE;
-    for (Int_t isim = 0; isim < kNSimulations; isim++)
-      if (strcmp(gSystem->Getenv("CONFIG_SIMULATION"), SimulationName[isim]) == 0) {
-        simulationConfig = isim;
-        valid = kTRUE;
-        break;
-      }
-    if (!valid) {
-      printf(">>>>> Unknown simulation configuration: %s \n", gSystem->Getenv("CONFIG_SIMULATION"));
-      abort();
-    }
-  }
+  simulator.SetRunHLT("");
 
-  /* initialisation */
-  AliSimulation sim("Sim/Config.C");
+  AliPHOSSimParam *simParam =  AliPHOSSimParam::GetInstance() ;
+  simParam->SetAPDNoise(0.000001) ;
+  simParam->SetCellNonLineairyA(0.001) ;
+  simParam->SetCellNonLineairyB(0.2) ;
+  simParam->SetCellNonLineairyC(1.031) ; //no NL
 
-  /* configuration */
-  SimulationConfig(sim, simulationConfig, runNumber);
+  simulator.UseMagFieldFromGRP();
+  simulator.SetRunQA(":") ;
 
-  /* run */
-  sim.Run(nev);
+  gSystem->Load("liblhapdf");      // Parton density functions
+  gSystem->Load("libEGPythia6");   // TGenerator interface
+  gSystem->Load("libpythia6");        // Pythia 6.2
 
+  simulator.Run(nev);
 }
-

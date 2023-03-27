@@ -66,6 +66,7 @@
 // PHOS_Run2embedding
 #pragma link C++ class AliPHOSEmbeddingRun2+;
 #pragma link C++ class AliPHOSEventCounter+;
+#pragma link C++ class AliPHOSEmbedggHBT+;
 
 //PHOS_GAFlow
 #pragma link C++ class AliAnalysisTaskThermalGAFlow+;
