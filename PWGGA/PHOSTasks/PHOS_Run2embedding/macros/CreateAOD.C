@@ -3,21 +3,6 @@ void CreateAOD()
 {
   // Main
   
-  // LoadLibraries
-  gSystem->Load("libTree.so");
-  gSystem->Load("libGeom.so");
-  gSystem->Load("libVMC.so");
-  gSystem->Load("libXMLIO.so");
-  gSystem->Load("libMatrix.so");
-  gSystem->Load("libPhysics.so");
-  gSystem->Load("libSTEERBase.so");
-  gSystem->Load("libESD.so");
-  gSystem->Load("libAOD.so");
-  gSystem->Load("libANALYSIS.so");
-  gSystem->Load("libANALYSISalice.so");
-  gSystem->Load("libCORRFW.so");
-
-
   //Data
   TChain *chain       = new TChain("esdTree") ;
   chain->Add("AliESDs.root");
@@ -123,9 +108,9 @@ void CreateAOD()
   jetCuts1006->SetRequireSigmaToVertex(kFALSE);
 
   jetCuts1006->SetEtaRange(-0.9,0.9);
-  jetCuts1006->SetPtRange(0.15, 1E+15.);
+  jetCuts1006->SetPtRange(0.15, 100.);
 
-  AliESDtrackCuts* esdTrackCutsHG0 = jetCuts1006->Clone("JetCuts10001006");
+  AliESDtrackCuts* esdTrackCutsHG0 = (AliESDtrackCuts*) jetCuts1006->Clone("JetCuts10001006");
   esdTrackCutsHG0->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
 
 
@@ -140,13 +125,13 @@ void CreateAOD()
   
   // the complement to the one with SPD requirement
   //  AliESDtrackCuts* esdTrackCutsHG1 = CreateTrackCutsPWGJE(10011006);
-  AliESDtrackCuts* esdTrackCutsHG1 = jetCuts1006->Clone("JetCuts10011006");
+  AliESDtrackCuts* esdTrackCutsHG1 = (AliESDtrackCuts*)jetCuts1006->Clone("JetCuts10011006");
   esdTrackCutsHG1->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kNone);
 
   // the tracks that must not be taken pass this cut and
   // non HGC1 and HG
   //  AliESDtrackCuts* esdTrackCutsHG2 = CreateTrackCutsPWGJE(10021006);
-  AliESDtrackCuts* esdTrackCutsHG2 = jetCuts1006->Clone("JetCuts10021006");
+  AliESDtrackCuts* esdTrackCutsHG2 = (AliESDtrackCuts*)jetCuts1006->Clone("JetCuts10021006");
   esdTrackCutsHG2->SetMaxChi2PerClusterITS(1E10);
 
 
@@ -165,7 +150,7 @@ void CreateAOD()
 
 
   //  AliESDtrackCuts* esdTrackCutsGCOnly = CreateTrackCutsPWGJE(10041006);
-  AliESDtrackCuts* esdTrackCutsGCOnly = jetCuts1006->Clone("JetCuts10041006");
+  AliESDtrackCuts* esdTrackCutsGCOnly = (AliESDtrackCuts*)jetCuts1006->Clone("JetCuts10041006");
   esdTrackCutsGCOnly->SetRequireITSRefit(kFALSE);
 
 

@@ -40,10 +40,11 @@ class AliPHOSEmbeddingRun2 : public AliAnalysisTaskSE
   AliPHOSEmbeddingRun2(const AliPHOSEmbeddingRun2&);            // not implemented
   AliPHOSEmbeddingRun2& operator=(const AliPHOSEmbeddingRun2&); // not implemented
 
+  void RunSignalSimulation(int nevents);
   void Init();
   void InitMF(); // Mag.Field initialization for track matching
 
-  void GetNextSignalEvent(void);
+  bool GetNextSignalEvent(void); // returns true is successfully read
 
   void CopyRecalibrateSignal();
   void CopyRecalibrateBackground();
