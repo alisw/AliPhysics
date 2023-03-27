@@ -106,6 +106,7 @@ AliAnalysisTaskCMWPU2018::AliAnalysisTaskCMWPU2018(const char *name): AliAnalysi
   fDCAxyMax(2.4),
   fDCAzMax(3.2),
   fChi2(4.0),
+  usecrfc(0),
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
   bSkipPileUpCut(kFALSE), 
@@ -183,6 +184,7 @@ AliAnalysisTaskCMWPU2018::AliAnalysisTaskCMWPU2018():
   fDCAxyMax(2.4),
   fDCAzMax(3.2),
   fChi2(4.0),
+  usecrfc(0),
   fPileUpSlopeParm(3.43),
   fPileUpConstParm(43),
   bSkipPileUpCut(kFALSE), 
@@ -678,9 +680,11 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
   Float_t fMultGlobal  = 0;  // global track multiplicity
   
 
-  Float_t trkPt=0,trkPhi=0,trkEta=0,trkDCAxy=0.0, trkDCAz=0.0;
+  Float_t trkPt=0,trkPhi=0,trkEta=0,trkDCAxy=0.0, trkDCAz=0.0, trkTpcnc=0.0, ratiocrfc=0.0;
   Float_t trkChi2=0,trkdEdx=0,trkWgt=1.0;
   Int_t   trkChrg=0, trkTpcNC=0;
+  UShort_t trkFindcls=0;
+    
   ////PID variables:
   Double_t nSigTOFpion=-99, nSigTPCpion=-99;
   Double_t nSigTOFkaon=-99, nSigTPCkaon=-99;
@@ -724,16 +728,33 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
       trkChrg  = AODtrack->Charge();
       trkChi2  = AODtrack->Chi2perNDF();
       trkTpcNC = AODtrack->GetTPCNcls();
+      trkTpcnc = AODtrack->GetTPCCrossedRows();
+      trkFindcls = AODtrack -> GetTPCNclsF();
       trkDCAxy=  AODtrack->DCA();
       trkDCAz=   AODtrack->ZAtDCA();
 
+
+      ratiocrfc= trkTpcnc/trkFindcls;
+      
+      if (usecrfc)
+	{
+	  trkTpcNC=trkTpcnc;
+	  //cout<<"**************Hi i am inside usecrfc*******************"<<endl;
+	}
+      else if(usecrfc==0)
+	{
+	  ratiocrfc=1.0;
+	  //cout<<"**************Hi i am inside usecrfc but false*******************"<<endl;
+	}
+
+      
             
       /// This Next function is called After Filter bit is validated!! (Otherwise code breaks!)
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();
 
-      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+      //if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
 
-
+      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >=fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && (ratiocrfc > 0.8) ) {
 	          
 	//---------->  Here I do All my track level analysis:
     	
@@ -805,18 +826,31 @@ void AliAnalysisTaskCMWPU2018::UserExec(Option_t*) {
       trkChrg  = AODtrack->Charge();
       trkChi2  = AODtrack->Chi2perNDF();
       trkTpcNC = AODtrack->GetTPCNcls();
+      trkTpcnc = AODtrack->GetTPCCrossedRows();
+      trkFindcls = AODtrack -> GetTPCNclsF();
       trkDCAxy=  AODtrack->DCA();
       trkDCAz=   AODtrack->ZAtDCA();
             
       /// This Next function is called After Filter bit is validated!! (Otherwise code breaks!)
       trkdEdx  = AODtrack->GetDetPid()->GetTPCsignal();  
 
+      ratiocrfc= trkTpcnc/trkFindcls;
+
+      if (usecrfc)
+	{
+	  trkTpcNC=trkTpcnc;
+	}
+      else if(usecrfc==0)
+	{
+	  ratiocrfc=1.0;
+	}
       
 
       //Apply track cuts here:
-      if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
+      //if((trkPt <= fMaxPtCut) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) {
 
-       
+      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCutAch) && (trkEta >= fMinEtaCutAch) && (trkdEdx >= fdEdxMin) && (trkTpcNC >=fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && (ratiocrfc > 0.8) ) {
+	
 	//---------->  Here I do All my track level analysis:
 
 	
