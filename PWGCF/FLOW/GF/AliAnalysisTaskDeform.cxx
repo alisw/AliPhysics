@@ -1207,12 +1207,12 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   FillCovariance(fCovariance[9],corrconfigs.at(2),l_Multi,1,wp[0][0],l_Random);
   FillCovariance(fCovariance[10],corrconfigs.at(5),l_Multi,mptev,wp[0][0],l_Random); //v4-pt
   FillCovariance(fCovariance[11],corrconfigs.at(5),l_Multi,1,wp[0][0],l_Random);
-  FillCovariance(fCovariance[20],corrconfigs.at(9),l_Cent,mptev,wp[0][0],l_Random); //v24-pt full
-  FillCovariance(fCovariance[21],corrconfigs.at(9),l_Cent,1,wp[0][0],l_Random);
-  FillCovariance(fCovariance[22],corrconfigs.at(10),l_Cent,mptev,wp[0][0],l_Random); //v26-pt full
-  FillCovariance(fCovariance[23],corrconfigs.at(10),l_Cent,1,wp[0][0],l_Random);
-  FillCovariance(fCovariance[24],corrconfigs.at(11),l_Cent,mptev,wp[0][0],l_Random); //v28-pt full
-  FillCovariance(fCovariance[25],corrconfigs.at(11),l_Cent,1,wp[0][0],l_Random);
+  FillCovariance(fCovariance[20],corrconfigs.at(9),l_Multi,mptev,wp[0][0],l_Random); //v24-pt full
+  FillCovariance(fCovariance[21],corrconfigs.at(9),l_Multi,1,wp[0][0],l_Random);
+  FillCovariance(fCovariance[22],corrconfigs.at(10),l_Multi,mptev,wp[0][0],l_Random); //v26-pt full
+  FillCovariance(fCovariance[23],corrconfigs.at(10),l_Multi,1,wp[0][0],l_Random);
+  FillCovariance(fCovariance[24],corrconfigs.at(11),l_Multi,mptev,wp[0][0],l_Random); //v28-pt full
+  FillCovariance(fCovariance[25],corrconfigs.at(11),l_Multi,1,wp[0][0],l_Random);
   //Covariance of vn with multi-particle pt-correlation
   vector<double> pt2corr = fPtCont[0]->getEventCorrelation(wpPt[0],2);
   if(pt2corr[1]!=0) {
@@ -1325,18 +1325,26 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   FillCovariance(fCovariance[9],corrconfigs.at(2),l_Cent,1,wp[0],l_Random);
   FillCovariance(fCovariance[10],corrconfigs.at(5),l_Cent,mptev,wp[0],l_Random); //v4-pt
   FillCovariance(fCovariance[11],corrconfigs.at(5),l_Cent,1,wp[0],l_Random);
-  FillCovariance(fCovariance[14],corrconfigs.at(9),l_Cent,1,wp[0],l_Random); //v24-pt full
-  FillCovariance(fCovariance[15],corrconfigs.at(9),l_Cent,1,wp[0],l_Random);
-  FillCovariance(fCovariance[16],corrconfigs.at(10),l_Cent,1,wp[0],l_Random); //v26-pt full
-  FillCovariance(fCovariance[17],corrconfigs.at(10),l_Cent,1,wp[0],l_Random);
-  FillCovariance(fCovariance[18],corrconfigs.at(11),l_Cent,1,wp[0],l_Random); //v28-pt full
-  FillCovariance(fCovariance[19],corrconfigs.at(11),l_Cent,1,wp[0],l_Random);
   //Covariance of vn with multi-particle pt-correlation
   vector<double> pt2corr = fPtCont[0]->getEventCorrelation(wpPt[0],2);
   if(pt2corr[1]!=0) {
     double pt2ev = pt2corr[0]/pt2corr[1];
     FillCovariance(fCovariance[12],corrconfigs.at(0),l_Cent,pt2ev,pt2corr[1],l_Random); //v2-pt^2
-    FillCovariance(fCovariance[13],corrconfigs.at(3),l_Cent,pt2ev,pt2corr[1],l_Random); //v3-pt^2
+    FillCovariance(fCovariance[13],corrconfigs.at(0),l_Cent,1,pt2corr[1],l_Random); 
+    FillCovariance(fCovariance[14],corrconfigs.at(3),l_Cent,pt2ev,pt2corr[1],l_Random); //v3-pt^2
+    FillCovariance(fCovariance[15],corrconfigs.at(3),l_Cent,1,pt2corr[1],l_Random);
+  }
+  vector<double> pt3corr = fPtCont[0]->getEventCorrelation(wpPt[0],3);
+    if(pt3corr[1]!=0) {
+    double pt3ev = pt3corr[0]/pt3corr[1];
+    FillCovariance(fCovariance[16],corrconfigs.at(0),l_Cent,pt3ev,pt3corr[1],l_Random); //v2-pt^3
+    FillCovariance(fCovariance[17],corrconfigs.at(0),l_Cent,1,pt3corr[1],l_Random); 
+  }
+  vector<double> pt4corr = fPtCont[0]->getEventCorrelation(wpPt[0],3);
+  if(pt4corr[1]!=0) {
+    double pt4ev = pt4corr[0]/pt4corr[1];
+    FillCovariance(fCovariance[18],corrconfigs.at(0),l_Cent,pt4ev,pt4corr[1],l_Random); //v2-pt^4
+    FillCovariance(fCovariance[19],corrconfigs.at(0),l_Cent,1,pt4corr[1],l_Random); 
   }
   //Covariance of vn with powers of mpt
   if(fFillMptPowers) {
