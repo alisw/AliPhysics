@@ -127,6 +127,7 @@ public:
   void SetDCABachToPVOverflowCut(double cut = 2.5) { fDCABachToPVOverflowCut = cut; }
   void SetDCAV0toPVOverflowCut(double cut = 10.) { fDCAV0toPVOverflowCut = cut; }
   void SetBdtOutCut(double cut = 0.9) { fBdtOutCut = cut; }
+  void SetNFeatures(int f = 9) { fNFeatures = 9; }
 
   void SetFilterBit(double bit = BIT(4)) { fFilterBit = bit; }
   void SetTPCclsKaonCut(double cut = 70u) { fCutTPCclsKaon = cut; }
@@ -204,6 +205,7 @@ private:
   double fDCABachToPVOverflowCut = 12.7;
   double fDCAV0toPVOverflowCut = 10.1;
   double fBdtOutCut = 0.9;
+  int fNFeatures = 9;
 
   int fFilterBit = BIT(4);
   int fCutITSrecPoints = 2;
