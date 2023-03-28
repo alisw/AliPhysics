@@ -443,9 +443,9 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
               AliError("ERROR: BDT not loaded, skip prediction ...\n");
               continue;
             }
-            double features[]={dcaBachPV, dcaV0PV, dcaV0piPV, dcaV0prPV, dcaV0tracks, dcaBachV0, cosPA, cosPAV0, tpcNsigmaV0Pr};
+            double features[]={dcaV0tracks, dcaBachV0, cosPA, cosPAV0, tpcNsigmaV0Pr, dcaBachPV, dcaV0PV, dcaV0piPV, dcaV0prPV};
             std::vector<double> bdt_out;
-            fBDT[model_index]->Predict(features, 9, bdt_out, false);
+            fBDT[model_index]->Predict(features, fNFeatures, bdt_out, false);
             if (bdt_out[0] < fBdtOutCut && !fMC)
             {
               continue;
