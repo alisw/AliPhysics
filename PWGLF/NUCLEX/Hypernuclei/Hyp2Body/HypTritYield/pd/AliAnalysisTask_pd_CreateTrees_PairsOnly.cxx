@@ -51,6 +51,7 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fHeader(0),
   fPIDResponse(0),
   fCollisionSystem(0),
+  fUseOpenCuts(0),
   fSaveTree_Proton(0),
   fProton_px(0),
   fProton_py(0),
@@ -2198,7 +2199,7 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
     Proton_ITS_dEdx_nSigma_max = 3.0;
     Proton_ITS_nCluster_min = 2;
 
-    UseTOF = true;
+    UseTOF = false;
     UseITS = true;
 
   } // end of UseOpenCuts == false
@@ -2479,7 +2480,7 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
     Deuteron_ITS_dEdx_nSigma_max = 3.0;
     Deuteron_ITS_nCluster_min = 2;
 
-    UseTOF = true;
+    UseTOF = false;
     UseITS = true;
 
   } // end of UseOpenCuts == false
