@@ -83,6 +83,8 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    SetutDCAz(Double_t cut) { fCutDCAz = cut; }
         void                    SetutDCAxy(Double_t cut) { fCutDCAxySigma = cut; }
         void                    SetCutTPCchi2pCl(Double_t cut) { fCutTPCchi2pCl = cut; }
+        void                    SetUseLikeSign(Bool_t flag) {fUseLikeSign = flag;}
+        void                    SetUseUnlikeSign(Bool_t flag) {fUseUnlikeSign = flag;}
 
         //track selection V0s
         void                    SetNSigmaTPC(Double_t cut) { fSigmaTPC = cut; }
@@ -169,6 +171,8 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         Bool_t                  fBoostAMPT; // [kFALSE] = boost to CMS in pPb collisions for the gen level of AMPT
         Bool_t                  fUsePhiStar; // [kFALSE]
         Bool_t                  fCreateQAPlots; //[kFALSE]
+        Bool_t                  fUseLikeSign; // [kFALSE]
+        Bool_t                  fUseUnlikeSign; // [kFALSE]
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
