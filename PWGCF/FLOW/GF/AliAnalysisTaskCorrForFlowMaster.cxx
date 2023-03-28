@@ -43,6 +43,8 @@ AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster() : AliAnalys
     fRejectSecondariesFromMC(kFALSE),
     fBoostAMPT(kFALSE),
     fCreateQAPlots(kFALSE),
+    fUseLikeSign(kFALSE),
+    fUseUnlikeSign(kFALSE),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
@@ -109,6 +111,8 @@ AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster(const char* n
     fRejectSecondariesFromMC(kFALSE),
     fBoostAMPT(kFALSE),
     fCreateQAPlots(kFALSE),
+    fUseLikeSign(kFALSE),
+    fUseUnlikeSign(kFALSE),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
@@ -513,6 +517,12 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
           assEff = GetEff(assPt, 0, assEta);
           if(assEff < 0.001) continue;
         }
+        if(fUseLikeSign){
+          if(trigCharge*assCharge < 0) continue;
+        }
+        if(fUseUnlikeSign){
+          if(trigCharge*assCharge > 0) continue;
+        }
 
         binscontref[0] = trigEta - assEta;
         binscontref[1] = RangePhi(trigPhi - assPhi);
@@ -535,6 +545,13 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelations()
       if(fUseEfficiency) {
         assEff = GetEff(assPt, 0, assEta);
         if(assEff < 0.001) continue;
+      }
+
+      if(fUseLikeSign){
+        if(trigCharge*assCharge < 0) continue;
+      }
+      if(fUseUnlikeSign){
+        if(trigCharge*assCharge > 0) continue;
       }
 
 
@@ -608,7 +625,12 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelationsMixed()
               assEff = GetEff(assPt, 0, assEta);
               if(assEff < 0.001) continue;
             }
-
+            if(fUseLikeSign){
+              if(trigCharge*assCharge < 0) continue;
+            }
+            if(fUseUnlikeSign){
+              if(trigCharge*assCharge > 0) continue;
+            }
             binscontref[0] = trigEta - assEta;
             binscontref[1] = RangePhi(trigPhi - assPhi);
             //binscont[5] = assPt;
@@ -629,6 +651,12 @@ void AliAnalysisTaskCorrForFlowMaster::FillCorrelationsMixed()
           if(fUseEfficiency) {
             assEff = GetEff(assPt, 0, assEta);
             if(assEff < 0.001) continue;
+          }
+          if(fUseLikeSign){
+            if(trigCharge*assCharge < 0) continue;
+          }
+          if(fUseUnlikeSign){
+            if(trigCharge*assCharge > 0) continue;
           }
 
           binscont[0] = trigEta - assEta;
