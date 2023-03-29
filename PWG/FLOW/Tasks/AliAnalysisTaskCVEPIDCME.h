@@ -48,13 +48,17 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void IfUsePionRejection(bool bUsePionRejection) { this->isUsePionRejection = bUsePionRejection; }
 
   void IfCalculatePIDFlow(bool bCalculatePIDFlow) { this->isCalculatePIDFlow = bCalculatePIDFlow; }
-  void IfCalculateDeltaGamma(bool bCalculateDeltaGamma) { this->isCalculateDeltaGamma = bCalculateDeltaGamma; }
   void IfCalculateDiffResult(bool bCalculateDiffResult) { this->isCalculateDiffResult = bCalculateDiffResult; }
   void IfCalculateDeltaPhiSumPhi(bool bCalculateDeltaPhiSumPhi) { this->isCalculateDeltaPhiSumPhi = bCalculateDeltaPhiSumPhi; }
+
+  void IfCalculateLambdaProton(bool bCalculateLambdaProton) {this->isCalculateLambdaProton = bCalculateLambdaProton; }
+  void IfCalculateLambdaHadron(bool bCalculateLambdaHadron) {this->isCalculateLambdaHadron = bCalculateLambdaHadron; }
   void IfCalculateLambdaLambda(bool bCalculateLambdaLambda) {this->isCalculateLambdaLambda = bCalculateLambdaLambda; }
   void IfCalculateProtonProton(bool bCalculateProtonProton) {this->isCalculateProtonProton = bCalculateProtonProton; }
   void IfCalculateHadronHadron(bool bCalculateHadronHadron) {this->isCalculateHadronHadron = bCalculateHadronHadron; }
-  void IfCheckDaughterProtonPassAllCuts(bool bCheckDaughterProtonPassAllCuts) { this->isCheckDaughterProtonPassAllCuts = bCheckDaughterProtonPassAllCuts; }
+  
+  void IfCheckLambdaProtonFromDecay(bool bCheckLambdaProtonFromDecay) {this->isCheckLambdaProtonFromDecay = bCheckLambdaProtonFromDecay; }
+  void IfCheckLambdaProtonFromDecayFoundInTrackLoops(bool bCheckLambdaProtonFromDecayFoundInTrackLoops) {this->isCheckLambdaProtonFromDecayFoundInTrackLoops = bCheckLambdaProtonFromDecayFoundInTrackLoops; }
 
   // read in
   void SetListForNUE(TList* flist) { this->fListNUE = (TList*)flist->Clone(); }
@@ -182,13 +186,17 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   bool isUsePionRejection;
 
   bool isCalculatePIDFlow;        // if fill PID Flow
-  bool isCalculateDeltaGamma;     // if fill γ and δ
   bool isCalculateDiffResult;     // if fill Diff Reslut
   bool isCalculateDeltaPhiSumPhi; // if fill C(delta_phi)
+
+  bool isCalculateLambdaProton;
+  bool isCalculateLambdaHadron;
   bool isCalculateLambdaLambda;
   bool isCalculateProtonProton;
   bool isCalculateHadronHadron;
-  bool isCheckDaughterProtonPassAllCuts;
+  
+  bool isCheckLambdaProtonFromDecay;
+  bool isCheckLambdaProtonFromDecayFoundInTrackLoops;
 
   //////////////////////
   // Cuts and options //
@@ -306,8 +314,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   std::vector<std::array<double,9>> vecParticleV0;
   // Vector for daughter particles [pt,eta,phi,id,pdgcode,weight]
   std::vector<std::array<double,6>> vecParticleFromDecay;
-  // Vector for daughter particles which pass the TOF and DCA [pt,eta,phi,id,pdgcode,weight]
-  std::vector<std::array<double,6>> vecParticleFromDecayPassAllCuts;
+  // Vector for daughter particles found in the track loop [pt,eta,phi,id,pdgcode,weight]
+  std::vector<std::array<double,6>> vecParticleFromFoundInTrackLoops;
 
   ///////////////////The following files are read from external sources////////////////////
   ////////////////////////
@@ -404,7 +412,6 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TH1D* fHistDcaXY;
   TH1D* fHistDcaZ;
   TH1D* fHistPhi[2];
-  TH2D* fHist2EtaPhi[2];
   // Psi QA
   // V0C [0]GE [1]RC
   TProfile* fProfileV0CQxCent[2];
@@ -463,7 +470,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TH1D* fHistLambdaDcaToPrimVertex[2];     //
   TH1D* fHistLambdaCPA[2];                 //
   TH1D* fHistLambdaDecayLength[2];         //
-  TH1D* fHistLambdaMass[2];                //
+  TH2D* fHist2LambdaMass[2];               // [cent][mass]
   TH2D* fHist2LambdaMassPtY[2];            //
   TH1D* fHistAntiLambdaPt[2];              //
   TH1D* fHistAntiLambdaEta[2];             //
@@ -471,7 +478,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TH1D* fHistAntiLambdaDcaToPrimVertex[2]; //
   TH1D* fHistAntiLambdaCPA[2];             //
   TH1D* fHistAntiLambdaDecayLength[2];     //
-  TH1D* fHistAntiLambdaMass[2];            //
+  TH2D* fHist2AntiLambdaMass[2];           // [cent][mass]
   TH2D* fHist2AntiLambdaMassPtY[2];        //
 
 
@@ -584,13 +591,12 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   // γ Λ - daughter(only TPC)
   TProfile* fProfileGammaLambdaProtonDecay[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
   TProfile* fProfileGammaLambdaPionDecay[4];   //![0]:Λ-pi+  [1]:Λ-pi- [2]:Λbar-pi+ [3]:Λbar-pi-
-
-  // δ Λ - daughter (this daughter contribute in the Λ-p)
-  TProfile* fProfileDeltaLambdaProtonDecayPassAllCuts[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
-  TProfile* fProfileDeltaLambdaPionDecayPassAllCuts[4];   //![0]:Λ-pi+  [1]:Λ-pi- [2]:Λbar-pi+ [3]:Λbar-pi-
+  // δ Λ - daughter (this daughter is found in track loops)
+  TProfile* fProfileDeltaLambdaProtonFoundInTrackLoops[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  TProfile* fProfileDeltaLambdaPionFoundInTrackLoops[4];   //![0]:Λ-pi+  [1]:Λ-pi- [2]:Λbar-pi+ [3]:Λbar-pi-
   // γ Λ - daughter(only TPC)
-  TProfile* fProfileGammaLambdaProtonDecayPassAllCuts[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
-  TProfile* fProfileGammaLambdaPionDecayPassAllCuts[4];   //![0]:Λ-pi+  [1]:Λ-pi- [2]:Λbar-pi+ [3]:Λbar-pi-
+  TProfile* fProfileGammaLambdaProtonFoundInTrackLoops[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  TProfile* fProfileGammaLambdaPionFoundInTrackLoops[4];   //![0]:Λ-pi+  [1]:Λ-pi- [2]:Λbar-pi+ [3]:Λbar-pi-
 
 
   AliAnalysisTaskCVEPIDCME(const AliAnalysisTaskCVEPIDCME&);
