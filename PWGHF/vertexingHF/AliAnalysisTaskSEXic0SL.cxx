@@ -644,7 +644,9 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 	}//a, nTracks
 	fEleNum = nEle;
 	if (ValidEvtOnly && nEle==0) return; //!!
-	if (nXi>0 && nEle>0) fTree->Fill(); //#
+
+	if (!IsMC && (nXi==0 || nEle==0)) return; //!!
+	fTree->Fill(); //#
 
 	ControlOutputContainers(1);
 	return;
