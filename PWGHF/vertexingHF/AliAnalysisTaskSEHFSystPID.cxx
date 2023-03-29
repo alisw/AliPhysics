@@ -779,7 +779,7 @@ void AliAnalysisTaskSEHFSystPID::UserExec(Option_t */*option*/)
       fTag |= kIsKaonFromOmega;
     }
     else
-      fTag &= ~kIsKaonFromKinks;
+      fTag &= ~kIsKaonFromOmega;
 
     if(TMath::Abs(fPIDresp->NumberOfSigmasTOF(track,AliPID::kKaon))<fNsigmaMaxForKaonTag && isDetOk[kTOF]) {
       filltree = true;
