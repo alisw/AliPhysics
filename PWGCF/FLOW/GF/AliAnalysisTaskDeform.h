@@ -129,6 +129,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetAMPTCentralityMap(vector<double> b, vector<double> cent) { for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i]; }
   void SetUseMcParticleForEfficiency(bool newval) { fUseMcParticleForEfficiency = newval; }
   void SetFillAdditionalTrackQAPlots(Bool_t newval) { fFillAdditionalQA = newval; }
+  void SetPtMPar(int newval) { fPtMpar = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -170,6 +171,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fUseNUAOne;
   Bool_t fUseNUEOne;
   Bool_t fUseEventWeightOne;
+  Int_t fPtMpar;
   Double_t fEtaMpt;
   Double_t fEtaLow;
   Double_t fEtaAcceptance;
