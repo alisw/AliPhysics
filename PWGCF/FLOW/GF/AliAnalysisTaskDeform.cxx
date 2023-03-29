@@ -80,6 +80,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fUseNUAOne(kFALSE),
   fUseNUEOne(kFALSE),
   fUseEventWeightOne(kFALSE),
+  fPtMpar(6),
   fEtaMpt(0.4),
   fEtaLow(-9999),
   fEtaAcceptance(0.8),
@@ -197,6 +198,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fUseNUAOne(kFALSE),
   fUseNUEOne(kFALSE),
   fUseEventWeightOne(kFALSE),
+  fPtMpar(6),
   fEtaMpt(0.4),
   fEtaLow(-9999),
   fEtaAcceptance(0.8),
@@ -438,7 +440,7 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     for(Int_t i=0;i<endPID;i++) {
       fCkCont[i] = new AliCkContainer(Form("ckcont_%s",spNames[i].Data()),Form("ckcont_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
       fptVarList->Add(fCkCont[i]);
-      fPtCont[i] = new AliPtContainer(Form("ptcont_%s",spNames[i].Data()),Form("ptcont_%s",spNames[i].Data()),fNMultiBins,fMultiBins,8,true);
+      fPtCont[i] = new AliPtContainer(Form("ptcont_%s",spNames[i].Data()),Form("ptcont_%s",spNames[i].Data()),fNMultiBins,fMultiBins,fPtMpar,true);
       fptVarList->Add(fPtCont[i]);
       fPtCont[i]->SetEventWeight((fUseEventWeightOne)?(PtSpace::kOne):fEventWeight);
       if(fNBootstrapProfiles) {
@@ -1029,9 +1031,9 @@ void AliAnalysisTaskDeform::FillWPCounter(Double_t inArr[5], Double_t w, Double_
 }
 void AliAnalysisTaskDeform::FillWPCounter(vector<vector<double>> &inarr, double w, double p)
 {
-  for(int i=0;i<=6;++i)
+  for(int i=0;i<=fPtMpar;++i)
   {
-    for(int j=0;j<=6;++j)
+    for(int j=0;j<=fPtMpar;++j)
     {
       inarr[i][j] += pow(w,i)*pow(p,j);
     }
@@ -1125,6 +1127,8 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       Double_t weff = (fUse2DEff)?fEfficiency[iCent][0]->GetBinContent(fEfficiency[iCent][0]->FindBin(lpt,leta)):fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
       if(weff==0.0) continue;
       weff = 1./weff; 
+      if(leta<-fEtaV2Sep) FillWPCounter(wpPtSubN[0],(fUseNUEOne)?1.0:weff,lpt);
+      if(leta > fEtaV2Sep) FillWPCounter(wpPtSubP[0],(fUseNUEOne)?1.0:weff,lpt);
       if(TMath::Abs(lTrack->Eta())<fEtaMpt)  { 
         FillWPCounter(wp[0],(fUseNUEOne)?1.0:weff,lpt); 
         FillWPCounter(wpPt[0],(fUseNUEOne)?1.0:weff,lpt);
@@ -1165,9 +1169,10 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   int endPID = (fDisablePID)?1:4;
   for(int i(0);i<endPID;++i){
     fCkCont[i]->FillObs(wp[i],l_Multi,l_Random);
-    fPtCont[i]->FillRecursive(wpPt[i],l_Multi,l_Random);
-    fPtCont[i]->FillRecursive(wpPtSubP[i],l_Multi,l_Random,"subP");
-    fPtCont[i]->FillRecursive(wpPtSubN[i],l_Multi,l_Random,"subN");
+    fPtCont[i]->FillRecursive(wpPt[i],0);
+    fPtCont[i]->FillRecursive(wpPtSubP[i],1);
+    fPtCont[i]->FillRecursive(wpPtSubN[i],2);
+    fPtCont[i]->FillRecursiveProfiles(l_Multi,l_Random);
     fPtCont[i]->FillCk(wpPt[i],l_Multi,l_Random);
     fPtCont[i]->FillSkew(wpPt[i],l_Multi,l_Random);
     fPtCont[i]->FillKurtosis(wpPt[i],l_Multi,l_Random);
@@ -1214,7 +1219,7 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   FillCovariance(fCovariance[24],corrconfigs.at(11),l_Multi,mptev,wp[0][0],l_Random); //v28-pt full
   FillCovariance(fCovariance[25],corrconfigs.at(11),l_Multi,1,wp[0][0],l_Random);
   //Covariance of vn with multi-particle pt-correlation
-  vector<double> pt2corr = fPtCont[0]->getEventCorrelation(wpPt[0],2);
+  vector<double> pt2corr = fPtCont[0]->getEventCorrelation(2,0);
   if(pt2corr[1]!=0) {
     double pt2ev = pt2corr[0]/pt2corr[1];
     FillCovariance(fCovariance[12],corrconfigs.at(0),l_Multi,pt2ev,pt2corr[1],l_Random); //v2-pt^2
@@ -1222,13 +1227,13 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
     FillCovariance(fCovariance[14],corrconfigs.at(3),l_Multi,pt2ev,pt2corr[1],l_Random); //v3-pt^2
     FillCovariance(fCovariance[15],corrconfigs.at(3),l_Multi,1,pt2corr[1],l_Random);
   }
-  vector<double> pt3corr = fPtCont[0]->getEventCorrelation(wpPt[0],3);
+  vector<double> pt3corr = fPtCont[0]->getEventCorrelation(3,0);
     if(pt3corr[1]!=0) {
     double pt3ev = pt3corr[0]/pt3corr[1];
     FillCovariance(fCovariance[16],corrconfigs.at(0),l_Multi,pt3ev,pt3corr[1],l_Random); //v2-pt^3
     FillCovariance(fCovariance[17],corrconfigs.at(0),l_Multi,1,pt3corr[1],l_Random); 
   }
-  vector<double> pt4corr = fPtCont[0]->getEventCorrelation(wpPt[0],3);
+  vector<double> pt4corr = fPtCont[0]->getEventCorrelation(4,0);
   if(pt4corr[1]!=0) {
     double pt4ev = pt4corr[0]/pt4corr[1];
     FillCovariance(fCovariance[18],corrconfigs.at(0),l_Multi,pt4ev,pt4corr[1],l_Random); //v2-pt^4
@@ -1291,7 +1296,8 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   if(wp[0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   Double_t l_Random = fRndm->Rndm();
   fCkCont[0]->FillObs(wp,l_Cent,l_Random);
-  fPtCont[0]->FillRecursive(wpPt[0],l_Cent,l_Random);
+  fPtCont[0]->FillRecursive(wpPt[0]);
+  fPtCont[0]->FillRecursiveProfiles(l_Cent,l_Random);
   fPtCont[0]->FillCk(wpPt[0],l_Cent,l_Random);
   fPtCont[0]->FillSkew(wpPt[0],l_Cent,l_Random);
   fPtCont[0]->FillKurtosis(wpPt[0],l_Cent,l_Random);
@@ -1326,7 +1332,7 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   FillCovariance(fCovariance[10],corrconfigs.at(5),l_Cent,mptev,wp[0],l_Random); //v4-pt
   FillCovariance(fCovariance[11],corrconfigs.at(5),l_Cent,1,wp[0],l_Random);
   //Covariance of vn with multi-particle pt-correlation
-  vector<double> pt2corr = fPtCont[0]->getEventCorrelation(wpPt[0],2);
+  vector<double> pt2corr = fPtCont[0]->getEventCorrelation(2,0);
   if(pt2corr[1]!=0) {
     double pt2ev = pt2corr[0]/pt2corr[1];
     FillCovariance(fCovariance[12],corrconfigs.at(0),l_Cent,pt2ev,pt2corr[1],l_Random); //v2-pt^2
@@ -1334,13 +1340,13 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
     FillCovariance(fCovariance[14],corrconfigs.at(3),l_Cent,pt2ev,pt2corr[1],l_Random); //v3-pt^2
     FillCovariance(fCovariance[15],corrconfigs.at(3),l_Cent,1,pt2corr[1],l_Random);
   }
-  vector<double> pt3corr = fPtCont[0]->getEventCorrelation(wpPt[0],3);
+  vector<double> pt3corr = fPtCont[0]->getEventCorrelation(3,0);
     if(pt3corr[1]!=0) {
     double pt3ev = pt3corr[0]/pt3corr[1];
     FillCovariance(fCovariance[16],corrconfigs.at(0),l_Cent,pt3ev,pt3corr[1],l_Random); //v2-pt^3
     FillCovariance(fCovariance[17],corrconfigs.at(0),l_Cent,1,pt3corr[1],l_Random); 
   }
-  vector<double> pt4corr = fPtCont[0]->getEventCorrelation(wpPt[0],3);
+  vector<double> pt4corr = fPtCont[0]->getEventCorrelation(4,0);
   if(pt4corr[1]!=0) {
     double pt4ev = pt4corr[0]/pt4corr[1];
     FillCovariance(fCovariance[18],corrconfigs.at(0),l_Cent,pt4ev,pt4corr[1],l_Random); //v2-pt^4

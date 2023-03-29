@@ -22,8 +22,10 @@ AliPtContainer::AliPtContainer():
     fCumulantList(0),
     fNormList(0),
     mpar(0),
-    fEventWeight(kWeight::kWmaxperm),
-    fSubevent(false)
+    fEventWeight(kWeight::kOne),
+    fSubevent(false),
+    fCorr(),
+    fSumw()
 {};
 AliPtContainer::~AliPtContainer()
 {
@@ -45,8 +47,10 @@ AliPtContainer::AliPtContainer(const char* name, const char* title, int nbinsx, 
     fCumulantList(0),
     fNormList(0),
     mpar(m),
-    fEventWeight(kWeight::kWmaxperm),
-    fSubevent(sub)
+    fEventWeight(kWeight::kOne),
+    fSubevent(sub),
+    fCorr(),
+    fSumw()
 {
     Initialize(nbinsx,xbins);
 };
@@ -69,6 +73,8 @@ AliPtContainer::AliPtContainer(const char* name, const char* title, int nbinsx, 
     Initialize(nbinsx,xlow,xhigh);
 };
 void AliPtContainer::Initialize(int nbinsx, double* xbins) {
+    fCorr.resize(3);
+    fSumw.resize(3);
     if(fCkTermList) delete fCkTermList;
     fCkTermList = new TList();
     fCkTermList->SetOwner(kTRUE);
@@ -100,11 +106,14 @@ void AliPtContainer::Initialize(int nbinsx, double* xbins) {
         if(fSubevent) {
             fSubList->Add(new AliProfileBS(Form("corr_%ipar_subP",m+1),this->GetTitle(),nbinsx,xbins));
             fSubList->Add(new AliProfileBS(Form("corr_%ipar_subN",m+1),this->GetTitle(),nbinsx,xbins));
+            fSubList->Add(new AliProfileBS(Form("corr_%ipar_sub",m+1),this->GetTitle(),nbinsx,xbins));
         }
     }
     printf("Container %s initialized with m = %i\n",this->GetName(),mpar);
 };
 void AliPtContainer::Initialize(int nbinsx, double xlow, double xhigh) {
+    fCorr.resize(3);
+    fSumw.resize(3);
     if(fCkTermList) delete fCkTermList;
     fCkTermList = new TList();
     fCkTermList->SetOwner(kTRUE);
@@ -140,6 +149,7 @@ void AliPtContainer::Initialize(int nbinsx, double xlow, double xhigh) {
         if(fSubevent) {
             fSubList->Add(new AliProfileBS(Form("corr_%ipar_subP",m+1),this->GetTitle(),nbinsx,xlow,xhigh));
             fSubList->Add(new AliProfileBS(Form("corr_%ipar_subN",m+1),this->GetTitle(),nbinsx,xlow,xhigh));
+            fSubList->Add(new AliProfileBS(Form("corr_%ipar_sub",m+1),this->GetTitle(),nbinsx,xlow,xhigh));
         }
     }
     printf("Container %s initialized with m = %i\n",this->GetName(),mpar);
@@ -161,34 +171,14 @@ void AliPtContainer::InitializeSubsamples(const int &nsub) {
     }
     return;
 };
-vector<double> AliPtContainer::getEventCorrelation(const vector<vector<double>> &inarr, int mOrder) {
-  vector<double> corr(mpar+1,0.0); corr[0] = 1.0;
-  vector<double> sumw(mpar+1,0.0); sumw[0] = 1.0;
-  double sumNum = 0;
-  double sumDenum = 0;
-  vector<double> valNum;
-  vector<double> valDenum;
-  for(int m(1); m<=mpar; ++m)
-  {
-    for(int k(1);k<=m;++k)
-    {
-      valNum.push_back(fSign[k-1]*corr[m-k]*(fFactorial[m-1]/fFactorial[m-k])*inarr[k][k]);
-      valDenum.push_back(fSign[k-1]*sumw[m-k]*(fFactorial[m-1]/fFactorial[m-k])*inarr[k][0]);
-    }
-    sumNum = OrderedAddition(valNum, m);
-    sumDenum = OrderedAddition(valDenum, m);
-    valNum.clear();
-    valDenum.clear();
-  
-    corr[m] = sumNum;
-    sumw[m] = sumDenum;
-  }
-  vector<double> outvec = {corr[mOrder],sumw[mOrder]};
+vector<double> AliPtContainer::getEventCorrelation(int mOrder, Int_t subIndex) {
+  vector<double> outvec = {fCorr[subIndex][mOrder],fSumw[subIndex][mOrder]};
   return outvec;
 }
-void AliPtContainer::FillRecursive(const vector<vector<double>> &inarr,const double &lMult, const double &rn, TString sub) {
-  vector<double> corr(mpar+1,0.0); corr[0] = 1.0;
-  vector<double> sumw(mpar+1,0.0); sumw[0] = 1.0;
+void AliPtContainer::FillRecursive(const vector<vector<double>> &inarr, Int_t subIndex) {
+  if(subIndex<0||subIndex>2) return;
+  fCorr[subIndex].clear(); fCorr[subIndex].resize(mpar+1,0); fCorr[subIndex][0] = 1.0;
+  fSumw[subIndex].clear(); fSumw[subIndex].resize(mpar+1,0); fSumw[subIndex][0] = 1.0;
   double sumNum = 0;
   double sumDenum = 0;
   vector<double> valNum;
@@ -197,32 +187,83 @@ void AliPtContainer::FillRecursive(const vector<vector<double>> &inarr,const dou
   {
     for(int k(1);k<=m;++k)
     {
-      valNum.push_back(fSign[k-1]*corr[m-k]*(fFactorial[m-1]/fFactorial[m-k])*inarr[k][k]);
-      valDenum.push_back(fSign[k-1]*sumw[m-k]*(fFactorial[m-1]/fFactorial[m-k])*inarr[k][0]);
+      valNum.push_back(fSign[k-1]*fCorr[subIndex][m-k]*(fFactorial[m-1]/fFactorial[m-k])*inarr[k][k]);
+      valDenum.push_back(fSign[k-1]*fSumw[subIndex][m-k]*(fFactorial[m-1]/fFactorial[m-k])*inarr[k][0]);
     }
     sumNum = OrderedAddition(valNum, m);
     sumDenum = OrderedAddition(valDenum, m);
     valNum.clear();
     valDenum.clear();
   
-    corr[m] = sumNum;
-    sumw[m] = sumDenum;
+    fCorr[subIndex][m] = sumNum;
+    fSumw[subIndex][m] = sumDenum;
   }
-  FillRecursiveProfiles(corr,sumw,lMult,rn,sub);
   return;
 }
-void AliPtContainer::FillRecursiveProfiles(const vector<double> &corr, const vector<double> &sumw, const double &lMult, const double &rn, TString sub) {
+void AliPtContainer::FillRecursiveProfiles(const double &lMult, const double &rn) {
     for(int m=1;m<=mpar;++m)
     {
-        if(sumw[m]==0) continue; 
-        if(sub.IsNull())
-            ((AliProfileBS*)fCorrList->At(m-1))->FillProfile(lMult,corr[m]/sumw[m],(fEventWeight==PtSpace::kOne)?1.0:sumw[m],rn);
-        if(sub.Contains("subP"))
-            ((AliProfileBS*)fSubList->At(2*(m-1)))->FillProfile(lMult,corr[m]/sumw[m],(fEventWeight==PtSpace::kOne)?1.0:sumw[m],rn);
-        if(sub.Contains("subN"))
-            ((AliProfileBS*)fSubList->At(2*(m-1)+1))->FillProfile(lMult,corr[m]/sumw[m],(fEventWeight==PtSpace::kOne)?1.0:sumw[m],rn);
+        if(fSumw[0][m]!=0) ((AliProfileBS*)fCorrList->At(m-1))->FillProfile(lMult,fCorr[0][m]/fSumw[0][m],(fEventWeight==PtSpace::kOne)?1.0:fSumw[0][m],rn);
+        if(fSubevent){
+          if(fSumw[1][m]!=0) ((AliProfileBS*)fSubList->At(3*(m-1)))->FillProfile(lMult,fCorr[1][m]/fSumw[1][m],(fEventWeight==PtSpace::kOne)?1.0:fSumw[1][m],rn);
+          if(fSumw[2][m]!=0) ((AliProfileBS*)fSubList->At(3*(m-1)+1))->FillProfile(lMult,fCorr[2][m]/fSumw[2][m],(fEventWeight==PtSpace::kOne)?1.0:fSumw[2][m],rn);
+          vector<double> vSub = getSubeventCorrelation(m);
+          if(vSub[1]!=0) ((AliProfileBS*)fSubList->At(3*(m-1)+2))->FillProfile(lMult,vSub[0],(fEventWeight==PtSpace::kOne)?1.0:vSub[1],rn);
+        }
     }
     return;
+}
+vector<Double_t> AliPtContainer::getSubeventCorrelation(Int_t mOrder){
+  vector<double> outvec;
+  double val = 0;
+  double sumw = 0;
+  switch(mOrder){
+    case 1:
+      val = (fCorr[1][1]/fSumw[1][1]+fCorr[2][1]/fSumw[2][1])/2;
+      sumw = (fSumw[1][1]+fSumw[2][1])/2;
+      outvec = {val,sumw};
+      return outvec;
+    case 2:
+      val = fCorr[1][1]/fSumw[1][1]*fCorr[2][1]/fSumw[2][1];
+      sumw = fSumw[1][1]*fSumw[2][1];
+      outvec = {val,sumw};
+      return outvec;
+    case 3:
+      val = (fCorr[1][2]/fSumw[1][2]*fCorr[2][1]/fSumw[2][1] + fCorr[2][2]/fSumw[2][2]*fCorr[1][1]/fSumw[1][1])/2;
+      sumw = (fSumw[1][2]*fSumw[2][1] + fSumw[2][2]*fSumw[1][1])/2;
+      outvec = {val,sumw};
+      return outvec;
+    case 4:
+      val = fCorr[1][2]/fSumw[1][2]*fCorr[2][2]/fSumw[2][2];
+      sumw = fSumw[1][2]*fSumw[2][2];
+      outvec = {val,sumw};
+      return outvec;
+    case 5:
+      val = (fCorr[1][2]/fSumw[1][2]*fCorr[2][3]/fSumw[2][3] + fCorr[1][3]/fSumw[1][3]*fCorr[2][2]/fSumw[2][2])/2;
+      sumw = (fSumw[1][2]*fSumw[2][3] + fSumw[1][3]*fSumw[2][2])/2;
+      outvec = {val,sumw};
+      return outvec;
+    case 6:
+      val = fCorr[1][3]/fSumw[1][3]*fCorr[2][3]/fSumw[2][3];
+      sumw = fSumw[1][3]*fSumw[2][3];
+      outvec = {val,sumw};
+      return outvec;
+    case 7:
+      val = (fCorr[1][4]/fSumw[1][4]*fCorr[2][3]/fSumw[2][3] + fCorr[1][3]/fSumw[1][3]*fCorr[2][4]/fSumw[2][4])/2;
+      sumw = (fSumw[1][4]*fSumw[2][3] + fSumw[1][3]*fSumw[2][4])/2;
+      outvec = {val,sumw};
+      return outvec;
+    case 8:
+      val = fCorr[1][4]/fSumw[1][4]*fCorr[2][4]/fSumw[2][4];
+      sumw = fSumw[1][4]*fSumw[2][4];
+      outvec = {val,sumw};
+      return outvec;
+    default:
+      outvec = {0.0,0.0};
+      return outvec;
+  }
+  outvec = {0,0};
+  return outvec;
 }
 double AliPtContainer::OrderedAddition(vector<double> vec, int size) {
   double sum = 0;
@@ -443,7 +484,7 @@ TH1 *AliPtContainer::RecalculateKurtosisHists(vector<TH1*> inh) {
 TH1* AliPtContainer::getRecursiveHist(int ind, int m, unsigned int l_obs, bool sub) {
   if(l_obs==kObs::kCorr) {
       if(!sub) return ((AliProfileBS*)fCorrList->At(m-1))->getHist(ind);
-      else return getSubeventCorrelation(ind, m);
+      else return getSubeventCumulantHist(ind, m);
   }
   if(l_obs==kObs::kCum) 
   {
@@ -459,12 +500,14 @@ TH1* AliPtContainer::getRecursiveHist(int ind, int m, unsigned int l_obs, bool s
   }
   return 0;
 }
-TH1* AliPtContainer::getSubeventCorrelation(int ind, int m) {
+TH1* AliPtContainer::getSubeventCumulantHist(int ind, int m) {
     TH1* reth;
     if(m==2) {
-        reth = ((AliProfileBS*)fSubList->At(0))->getHist(ind);
-        TH1* sub = ((AliProfileBS*)fSubList->At(1))->getHist(ind);
-        reth->Multiply(sub);
+        reth = ((AliProfileBS*)fSubList->At(2))->getHist(ind);
+        TH1* sub1N = ((AliProfileBS*)fSubList->At(1))->getHist(ind);
+        TH1* sub1P = ((AliProfileBS*)fSubList->At(0))->getHist(ind);
+        sub1N->Multiply(sub1P);
+        reth->Add(sub1N,-1);
     }
     else if(m==3) {
         reth = ((AliProfileBS*)fSubList->At(2))->getHist(ind);
