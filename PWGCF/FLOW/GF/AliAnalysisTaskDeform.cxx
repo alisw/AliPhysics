@@ -1274,8 +1274,9 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   Int_t nTracks = fMCEvent->GetNumberOfPrimaries();
   if(nTracks < 1) { return; }
   Double_t wp[5] = {0,0,0,0,0}; //Initial values, [species][w*p]
-  wpPt.clear();
-  wpPt.resize(1,vector<vector<double>>(10,vector<double>(10)));
+  wpPt.clear(); wpPt.resize(1,vector<vector<double>>(10,vector<double>(10)));
+  wpPtSubP.clear(); wpPtSubP.resize(4,vector<vector<double>>(10,vector<double>(10)));
+  wpPtSubN.clear(); wpPtSubN.resize(4,vector<vector<double>>(10,vector<double>(10)));
   fGFW->Clear();
   Double_t ptMin = fPtBins[0];
   Double_t ptMax = fPtBins[fNPtBins];
@@ -1287,6 +1288,8 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
     Double_t l_eta=lPart->Eta();
     if (TMath::Abs(l_eta) > fEtaAcceptance) continue;
     if (l_pt<ptMin || l_pt>ptMax) continue;
+    if(l_eta<-fEtaV2Sep) FillWPCounter(wpPtSubN[0],1,l_pt);
+    if(l_eta > fEtaV2Sep) FillWPCounter(wpPtSubP[0],1,l_pt);
     if(TMath::Abs(l_eta)<fEtaMpt)  { //for mean pt, only consider -0.4-0.4 region
       FillWPCounter(wp,1,l_pt); 
       FillWPCounter(wpPt[0],1,l_pt);
@@ -1297,6 +1300,8 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   Double_t l_Random = fRndm->Rndm();
   fCkCont[0]->FillObs(wp,l_Cent,l_Random);
   fPtCont[0]->FillRecursive(wpPt[0]);
+  fPtCont[0]->FillRecursive(wpPtSubP[0],1);
+  fPtCont[0]->FillRecursive(wpPtSubN[0],2);
   fPtCont[0]->FillRecursiveProfiles(l_Cent,l_Random);
   fPtCont[0]->FillCk(wpPt[0],l_Cent,l_Random);
   fPtCont[0]->FillSkew(wpPt[0],l_Cent,l_Random);
