@@ -2,6 +2,25 @@
 /* See cxx source for full Copyright notice */
 /* Add a description of your MPI analysis */
 
+
+/*!ap  info
+AliAnalysisTaskFlatenicity__2a.h        Modified Antonio Paz    2023-mar29
+AliAnalysisTaskFlatenicity.h     Created antonio ortiz (received by !ap on 2023jan12)
+*/
+
+/*
+!ap  Changes 2023mar29
+ -  Added    fnDetec
+ -  Added    FillMCarray
+ -  Redefined   MCchargedProdu   to   GetMCchargedTrueDists  
+    (from 0 parameters to 4 parameters)
+ -  Redefined   MCchargedAuth   to   GetMCchargedDistributionsTrue  
+    (from 0 parameters to 4 parameters)
+ -  Added   fnRecon  
+ -  Added  FillArray
+    
+*/
+
 #ifndef AliAnalysisTaskFlatenicity_H
 #define AliAnalysisTaskFlatenicity_H
 
@@ -42,8 +61,12 @@ public:
   void ExtractMultiplicitiesMC();
   void MakeMCanalysis();
   void MakeDataanalysis();
-  void MCchargedProdu();
-  void MCchargedAuth();
+  void GetMCchargedTrueDists(  Int_t multGen,
+                                    const std::vector<Float_t> &ptGen,
+                                    const std::vector<Int_t> &idGen);
+  void GetMCchargedDetDists(  Int_t multRec,
+                                    const std::vector<Float_t> &ptRec,
+                                    const std::vector<Int_t> &idRec);
 
   void SetPtMin(Double_t val) {
     fPtMin = val;
@@ -61,6 +84,11 @@ public:
   }
 
   bool HasRecVertex();
+  
+  Int_t FillMCarray(std::vector<Float_t> &pt, std::vector<Int_t> &id);
+
+  Int_t FillArray(std::vector<Float_t> &pt, std::vector<Int_t> &id, 
+                    std::vector<Int_t> &isprim);
 
 protected:
 private:
@@ -88,6 +116,8 @@ private:
   TString fDetFlat;
   Bool_t fRemoveTrivialScaling;
   Int_t fnGen;
+  Int_t fnDetec;
+  Int_t fnRecon;
   AliPIDResponse *fPIDResponse;
   AliAnalysisFilter *fTrackFilter;
   TList *fOutputList; //! output list in the root file

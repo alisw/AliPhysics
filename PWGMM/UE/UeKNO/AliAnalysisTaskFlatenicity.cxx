@@ -16,6 +16,49 @@
  * Anatask to compute flatenicity (arXiv:2204.13733)                      *
  **************************************************************************/
 
+/*!ap  info
+AliAnalysisTaskFlatenicity__2a.cxx      Modified Antonio Paz    2023-mar29
+
+
+!ap  Changes 2023mar29
+ -  Split    MCchargedProdu()  and also   MCchargedAuth()  in two parts. this
+    is to have a coding that is equivalent to others in Alyphysics (e.g. like
+    AliAnalysisTaskChargedVsRT )
+     -  Added    AliAnalysisTaskFlatenicity::FillMCarray    which is the first
+        part of    MCchargedProdu   and  MCchargedAuth.
+     -  Added    ptMC   idMC   to store values of generated charged
+        particles
+     -  Activated   fnGen     to store return of    FillMCarray    for  Ncharged
+        generated    (fnGen was already defined in the class, but unused)
+     -  Using   FillMCarray  to obtain    fnGen   and to fill vectors  ptMC
+        idMC     which will be fed to      GetMCchargedTrueDists
+     -  Redefined   MCchargedProdu   to    GetMCchargedTrueDists
+        (From requiring 0 parameters, to requiring 3 parameters.  Inspired by
+        AliAnalysisTaskFlatenicity::GetMultiplicityDistributionsTrue()  )
+
+     -  Added      ptDetMC   idDetMC     to store values of detected
+        charged particles
+     -  Added   fnDetec     to store return of    FillMCarray    for  Ncharged
+        filtered
+     -  Using   FillMCarray  to obtain    fnDetec   and to fill vectors  ptDetMC
+        idDetMC     to be fed to      GetMCchargedDetDists
+     -  Redefined   MCchargedAuth   to    GetMCchargedDetDists
+        (From requiring 0 parameters, to requiring 3 parameters.  Inspired by
+        AliAnalysisTaskFlatenicity::GetMultiplicityDistributions()  )
+
+
+ -  Transformed the Analysis to be easier to perform an   MCclosureTest
+    Followed mostly    AliAnalysisTaskChargedVsRT.cxx   by Paola    and
+    AliAnalysisTaskMcKnoUe.cxx     by  Feng
+     -  Added class   FillArray   to  process  fESD tracks
+
+     -  Added   fnRecon     to store return of  FillArray for   Ncharged
+        reconstructed
+     -  Using   FillArray  to obtain    fnRecon   and to fill vectors   ptRecon
+        idRecon  isprimRecon
+
+*/
+
 class TTree;
 
 class AliESDtrackCuts;
@@ -108,9 +151,9 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
       fParVtx(0x0), ParVtxNorm(-1), fV0Mindex(-1), fmultTPC(-1), fmultV0A(-1),
       fmultV0C(-1), fmultADA(-1), fmultADC(-1), fmultTPCmc(-1), fmultV0Amc(-1),
       fmultV0Cmc(-1), fmultADAmc(-1), fmultADCmc(-1), fDetFlat("V0"),
-      fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
-      fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),
-      ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
+      fRemoveTrivialScaling(kFALSE), fnGen(-1), fnDetec(-1), fnRecon(-1),
+      fPIDResponse(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8),
+      fPtMin(0.5), ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
       hFlatV0vsFlatTPC(0), hFlatenicityBefore(0), hFlatenicity(0),
       hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
@@ -157,9 +200,9 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
       fParVtx(0x0), ParVtxNorm(-1), fV0Mindex(-1), fmultTPC(-1), fmultV0A(-1),
       fmultV0C(-1), fmultADA(-1), fmultADC(-1), fmultTPCmc(-1), fmultV0Amc(-1),
       fmultV0Cmc(-1), fmultADAmc(-1), fmultADCmc(-1), fDetFlat("V0"),
-      fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
-      fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5),
-      ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
+      fRemoveTrivialScaling(kFALSE), fnGen(-1), fnDetec(-1), fnRecon(-1),
+      fPIDResponse(0x0), fTrackFilter(0x0), fOutputList(0), fEtaCut(0.8),
+      fPtMin(0.5), ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatMC(-1),
       fMultSelection(0x0), hPtPrimIn(0), hPtPrimOut(0), hPtSecOut(0), hPtOut(0),
       hFlatV0vsFlatTPC(0), hFlatenicityBefore(0), hFlatenicity(0),
       hFlatenicityMC(0), hFlatResponse(0), hFlatVsPt(0), hFlatVsPtMC(0),
@@ -491,7 +534,9 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     this->Dump();
     return;
   }
+
   hCounter->Fill(0.0);
+
   if (fUseMC) {
     //      E S D
     fMC = dynamic_cast<AliMCEvent *>(MCEvent());
@@ -514,9 +559,9 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     vtxMC[0] = 9999;
     vtxMC[1] = 9999;
     vtxMC[2] = 9999; // initialize with dummy
-    if (genHeader) {
+    if (genHeader)
       genHeader->PrimaryVertex(vtxMC);
-    }
+
     if (TMath::Abs(vtxMC[2]) <= 10)
       isGoodVtxPosMC = kTRUE;
   }
@@ -528,9 +573,20 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
 
   fv0mpercentile = -999;
   fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+  int v0multalice = fMultSelection->GetEstimator("V0M")->GetValue();
 
-  if (isGoodVtxPosMC)
-    MCchargedProdu();
+  vector<Float_t> ptMC;
+  vector<Int_t> idMC;
+
+  if (isGoodVtxPosMC) {
+    fnGen = FillMCarray(ptMC, idMC);
+    GetMCchargedTrueDists(fnGen, ptMC, idMC);
+  }
+
+  vector<Float_t> ptRecon;
+  vector<Int_t> idRecon;
+  vector<Int_t> isprimRecon;
+  fnRecon = FillArray(ptRecon, idRecon, isprimRecon);
 
   // Trigger selection
   UInt_t fSelectMask = fInputHandler->IsEventSelected();
@@ -545,10 +601,14 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     return;
   }
 
-  hCounter->Fill(2.0);
+  vector<Float_t> ptDetMC;
+  vector<Int_t> idDetMC;
+  if (isGoodVtxPosMC) {
+    fnDetec = FillMCarray(ptDetMC, idDetMC);
+    GetMCchargedDetDists(fnDetec, ptDetMC, idDetMC);
+  }
 
-  if (isGoodVtxPosMC)
-    MCchargedAuth();
+  hCounter->Fill(2.0);
 
   // Good vertex
   Bool_t hasRecVertex = kFALSE;
@@ -565,11 +625,17 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   //         << fMultSelection << endl;
 
   hCounter->Fill(4.0);
+  //! ap   This counter seems superfluos, and
+  //      hCounter 4.0 will have same counts as
+  //      hCounter 3.0
   // Multiplicity Estimation
   //  fv0mpercentile = -999;
   //  fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
-  int v0multalice = fMultSelection->GetEstimator("V0M")->GetValue();
+  //  int v0multalice = fMultSelection->GetEstimator("V0M")->GetValue();
   hCounter->Fill(10.0);
+  //! ap   This counter seems superfluos, and
+  //      hCounter 10.0 will have same counts as
+  //      hCounter 4.0
 
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     if (fv0mpercentile >= centClass[i_c] &&
@@ -584,12 +650,12 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   Double_t flatenicity_tpc = GetFlatenicityTPC();
   if (fIsEqualALICE) {
     flatenicity_v0 = GetFlatenicityV0EqualALICE();
-
     ExtractMultiplicitiesEqualALICE();
   } else {
     flatenicity_v0 = GetFlatenicityV0();
     ExtractMultiplicities();
   }
+
   float com1mc = 0;
   float com2mc = 0;
   float com3mc = 0;
@@ -743,6 +809,7 @@ void AliAnalysisTaskFlatenicity::MakeMCanalysis() {
     hFlatVsPtV0MMC[fV0Mindex]->Fill(fFlatMC, particle->Pt());
     hPtPrimIn->Fill(particle->Pt());
   }
+
   // rec
   Int_t nTracks = fESD->GetNumberOfTracks();
   for (Int_t iT = 0; iT < nTracks; ++iT) {
@@ -765,99 +832,6 @@ void AliAnalysisTaskFlatenicity::MakeMCanalysis() {
     } else {
       hPtSecOut->Fill(esdtrack->Pt());
     }
-  }
-}
-
-//______________________________________________________________________________
-void AliAnalysisTaskFlatenicity::MCchargedProdu() {
-
-  int particleschg = 0;
-
-  for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
-    AliMCParticle *particle = (AliMCParticle *)fMC->GetTrack(i);
-    if (!particle)
-      continue;
-    if (!fMC->IsPhysicalPrimary(i))
-      continue;
-    if (TMath::Abs(particle->Eta()) > fEtaCut)
-      continue;
-    if (particle->Pt() < fPtMin)
-      continue;
-    if (TMath::Abs(particle->Charge()) < 0.1)
-      continue;
-    if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMC))
-      continue;
-    particleschg++;
-  }
-
-  if (particleschg < 1)
-    return;
-
-  //  hCountEvent->Fill(1.0);
-  hCountProduV0m->Fill(fv0mpercentile);
-
-  for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
-    AliMCParticle *particle = (AliMCParticle *)fMC->GetTrack(i);
-    if (!particle)
-      continue;
-    if (!fMC->IsPhysicalPrimary(i))
-      continue;
-    if (TMath::Abs(particle->Eta()) > fEtaCut)
-      continue;
-    if (particle->Pt() < fPtMin)
-      continue;
-    if (TMath::Abs(particle->Charge()) < 0.1)
-      continue;
-    if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMC))
-      continue;
-    hChgProdu_pt->Fill(particle->Pt());
-    hChgProdu_V0_pt->Fill(particle->Pt(), fv0mpercentile);
-  }
-}
-
-//______________________________________________________________________________
-void AliAnalysisTaskFlatenicity::MCchargedAuth() {
-
-  int particleschg = 0;
-
-  for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
-    AliMCParticle *particle = (AliMCParticle *)fMC->GetTrack(i);
-    if (!particle)
-      continue;
-    if (!fMC->IsPhysicalPrimary(i))
-      continue;
-    if (TMath::Abs(particle->Eta()) > fEtaCut)
-      continue;
-    if (particle->Pt() < fPtMin)
-      continue;
-    if (TMath::Abs(particle->Charge()) < 0.1)
-      continue;
-    if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMC))
-      continue;
-    particleschg++;
-  }
-
-  if (particleschg < 1)
-    return;
-  //  hCountEvent->Fill(2.0);
-  hCountAuthV0m->Fill(fv0mpercentile);
-
-  for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
-    AliMCParticle *particle = (AliMCParticle *)fMC->GetTrack(i);
-    if (!particle)
-      continue;
-    if (!fMC->IsPhysicalPrimary(i))
-      continue;
-    if (TMath::Abs(particle->Eta()) > fEtaCut)
-      continue;
-    if (particle->Pt() < fPtMin)
-      continue;
-    if (TMath::Abs(particle->Charge()) < 0.1)
-      continue;
-    if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMC))
-      continue;
-    hChgAuth_pt->Fill(particle->Pt());
-    hChgAuth_V0_pt->Fill(particle->Pt(), fv0mpercentile);
   }
 }
 
@@ -1416,6 +1390,7 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityMC() {
   return flatenicity;
 }
 
+//______________________________________________________________________
 Bool_t AliAnalysisTaskFlatenicity::HasRecVertex() {
 
   float fMaxDeltaSpdTrackAbsolute = 0.5f;
@@ -1482,4 +1457,177 @@ Bool_t AliAnalysisTaskFlatenicity::HasRecVertex() {
                   (TESTBIT(fFlag, AliEventCuts::kVertexQuality));
   fVtxz = vtSPD->GetZ();
   return hasVtx;
+}
+
+//______________________________________________________________________
+Int_t AliAnalysisTaskFlatenicity::FillMCarray(vector<Float_t> &ptArray,
+                                              vector<Int_t> &idArray) {
+  /*
+     id 0: lambda, id 1: pion, 2: kaon, 3: proton, 4: sigma plus,
+     5: sigma minus, 6: Omega, 7: Xi, 8: other charged
+   */
+
+  ptArray.clear();
+  idArray.clear();
+
+  Int_t nParticlesChg = 0;
+  //! ap   To be used to verify if INEL>0  ( when
+  //      nPrticlesChag>0  )
+
+  for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
+    AliMCParticle *particle = (AliMCParticle *)fMC->GetTrack(i);
+    if (!particle)
+      continue;
+    if (!fMC->IsPhysicalPrimary(i))
+      continue;
+    if (TMath::Abs(particle->Eta()) > fEtaCut)
+      continue;
+    if (particle->Pt() < fPtMin)
+      continue;
+    if (TMath::Abs(particle->Charge()) < 0.1)
+      continue;
+    if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMC))
+      continue;
+
+    Int_t idPart = -1;
+    Int_t partPDG = TMath::Abs(particle->PdgCode());
+    if (partPDG == 3122)
+      idPart = 0; // lambda
+    if (particle->Charge() != 0) {
+      if (partPDG == 211)
+        idPart = 1; // pions
+      else if (partPDG == 321)
+        idPart = 2; // kaons
+      else if (partPDG == 2212)
+        idPart = 3; // protons
+      else if (partPDG == 3222)
+        idPart = 4; // sigma plus
+      else if (partPDG == 3112)
+        idPart = 5; // sigma minus
+      else if (partPDG == 3334)
+        idPart = 6; // Omega
+      else if (partPDG == 3312)
+        idPart = 7; // Xi
+      else
+        idPart = 8; // rest of the charged particles
+    }
+
+    ptArray.push_back(particle->Pt());
+    idArray.push_back(idPart);
+
+    nParticlesChg++;
+  }
+
+  return nParticlesChg;
+}
+
+//______________________________________________________________________
+Int_t AliAnalysisTaskFlatenicity::FillArray(vector<Float_t> &ptArray,
+                                            vector<Int_t> &idArray,
+                                            vector<Int_t> &isprimArray) {
+  /*
+     id 0: lambda, id 1: pion, 2: kaon, 3: proton, 4: sigma plus,
+     5: sigma minus, 6: Omega, 7: Xi, 8: other charged
+   */
+
+  ptArray.clear();
+  idArray.clear();
+  isprimArray.clear();
+
+  Int_t nParticlesChgRec = 0;
+  //! ap   To be used to verify if INEL>0  ( when
+  //      nPrticlesChag>0  )
+
+  Int_t nTracks = fESD->GetNumberOfTracks();
+
+  for (Int_t iT = 0; iT < nTracks; ++iT) {
+    AliESDtrack *esdtrack = static_cast<AliESDtrack *>(
+        fESD->GetTrack(iT)); // get a track (type AliesdTrack)
+    if (!esdtrack)
+      continue;
+    if (!fTrackFilter->IsSelected(esdtrack))
+      continue;
+    if (TMath::Abs(esdtrack->Eta()) > fEtaCut)
+      continue;
+    if (esdtrack->Pt() < fPtMin)
+      continue;
+
+    //      AliESDtrack *newTrack = 0x0;
+    //      newTrack = new AliESDtrack(*esdtrack);
+    //      ptArray.push_back(newTrack->Pt());
+    ptArray.push_back(esdtrack->Pt());
+
+    Int_t isPrim = -1;
+    Int_t mcLabel = -1;
+    Int_t idTrack = -1;
+
+    if (fUseMC) { // get label: 0: prim, 1: weak decays, 2: material
+      mcLabel = TMath::Abs(esdtrack->GetLabel());
+      TParticle *mcParticle = fMC->GetTrack(mcLabel)->Particle();
+      if (!mcParticle) {
+        printf("----ERROR: mcParticle not available------------------\n");
+        continue;
+      }
+      if (fMC->IsPhysicalPrimary(mcLabel))
+        isPrim = 0;
+
+      Int_t partPDG_rec = TMath::Abs(mcParticle->GetPdgCode());
+      if (partPDG_rec == 3122)
+        idTrack = 0; // lambdas
+      else if (partPDG_rec == 211)
+        idTrack = 1; // pions
+      else if (partPDG_rec == 321)
+        idTrack = 2; // kaons
+      else if (partPDG_rec == 2212)
+        idTrack = 3; // protons
+      else if (partPDG_rec == 3222)
+        idTrack = 4; // sigma plus
+      else if (partPDG_rec == 3112)
+        idTrack = 5; // sigma minus
+      else if (partPDG_rec == 3334)
+        idTrack = 6; // Omega
+      else if (partPDG_rec == 3312)
+        idTrack = 7; // Xi
+      else
+        idTrack = 8; // rest of the charged particles
+    }
+
+    isprimArray.push_back(isPrim);
+    idArray.push_back(idTrack);
+
+    nParticlesChgRec++;
+  }
+
+  return nParticlesChgRec;
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskFlatenicity::GetMCchargedTrueDists(
+    Int_t multGen, const vector<Float_t> &ptGen, const vector<Int_t> &idGen) {
+
+  if (multGen < 1)
+    return;
+
+  //  hCountEvent->Fill(1.0);
+  hCountProduV0m->Fill(fv0mpercentile);
+
+  for (Int_t i = 0; i < multGen; ++i) {
+    hChgProdu_pt->Fill(ptGen[i]);
+    hChgProdu_V0_pt->Fill(ptGen[i], fv0mpercentile);
+  }
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskFlatenicity::GetMCchargedDetDists(
+    Int_t multRec, const vector<Float_t> &ptRec, const vector<Int_t> &idRec) {
+
+  if (multRec < 1)
+    return;
+  //! ap   The INEL>0 condition
+  hCountAuthV0m->Fill(fv0mpercentile);
+
+  for (Int_t i = 0; i < multRec; ++i) {
+    hChgAuth_pt->Fill(ptRec[i]);
+    hChgAuth_V0_pt->Fill(ptRec[i], fv0mpercentile);
+  }
 }
