@@ -105,7 +105,10 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
       break;  
     case 22 :     // Syst: (chi2 in [0.1, 2.3])
       configNames.push_back("chi2low23");
-      break;  
+      break;
+    case 23 :
+      configNames.push_back("hybridBaseDCA");
+      break;
     default :
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
         << std::endl;
@@ -185,7 +188,7 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     }
 
     /// Filtering, kinematic and detector cuts.
-    if (strcmp(configNames[i].Data(), "hybrid") == 0) {
+    if (strcmp(configNames[i].Data(), "hybrid") == 0 || strcmp(configNames[i].Data(), "hybridBaseDCA") == 0) {
       fJCatalyst[i]->SetTestFilterBit(hybridCut);
     } else {  // Default: global tracks.
       fJCatalyst[i]->SetTestFilterBit(globalCut);
@@ -232,6 +235,9 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     } else if (strcmp(configNames[i].Data(), "pqq") == 0) {
       fJCatalyst[i]->SetParticleCharge(1);
     }   // Default: charge = 0 to accept all charges.
+    if (strcmp(configNames[i].Data(), "hybridBaseDCA") == 0) {
+      fJCatalyst->SetDCABaseCuts(true);
+    }
 
     // TBA: subA systematics.
 
