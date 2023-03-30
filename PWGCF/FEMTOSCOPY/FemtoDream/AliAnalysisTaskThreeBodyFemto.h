@@ -29,7 +29,7 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliVTrack *track);
 
-  void FillMTDistributionsTriplet(float pt1, float pt2, float pt3, float m1, float m2, float m3, TH2F* pair, TH2F* triplet, float Q3);
+  void FillMTDistributionsTriplet(TLorentzVector &PartOne, TLorentzVector &PartTwo, TLorentzVector &PartThree, float m1, float m2, float m3, TH2F* pair, TH2F* triplet, float Q3);
   
   void FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* Res, TH2F* ResAll, bool isMC, TH2F* pairMT, TH2F* tripletMT);//, TH2F* InvMassSame);
   void FillTripletDistributionPPL(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMassSame, TH2F* InvMassDET,TH2F* InvMassPDG);
