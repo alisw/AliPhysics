@@ -154,6 +154,7 @@ public:
 
 // Methods to apply tighter cuts on Run2.
 	void SetTightCuts(bool usePrimary) {fUseTightCuts = usePrimary;}
+	void SetDCABaseCuts(bool usePrimary) {bUseDCAbaseCut = usePrimary;}
 	void SetESDpileupCuts(bool ESDpileup, double slope, double intercept, bool saveQA) {fAddESDpileupCuts = ESDpileup;
 		fESDpileup_slope = slope; fESDpileup_inter = intercept; fSaveESDpileupQA = saveQA;}
 	void SetTPCpileupCuts(bool TPCpileup, bool saveQA) {fAddTPCpileupCuts = TPCpileup; fSaveTPCpileupQA = saveQA;}
@@ -219,11 +220,13 @@ private:
 	double fChi2perNDF_max;	// Maximum requirement for chi2/ndf for TPC
 	double fDCAxy_max;	// Maximum requirement for the DCA in transverse plane.
 	double fDCAz_max;	// Maximum requirement for the DCA along the beam axis.
+	bool bDCABaseCut;
 	bool fUseITSMinClusters;	// if true use cut for minimum number of ITS clusters
 	double fITSMinClusters;		// minimum number of required ITS clusters
 
 // Data members for the use of tighter cuts in Run2.
 	bool fUseTightCuts;		// if kTRUE: apply tighter cuts on DCAxy and goldenChi2
+	bool bUseDCAbaseCut;
 	bool fAddESDpileupCuts;	// if true: apply a cut on the correlations between ESD and TPConly tracks.
 	double fESDpileup_slope;	// Slope of the cut M_ESD >= 15000 + 3.38*M_TPC
 	double fESDpileup_inter;	// Intercept of the cut.
