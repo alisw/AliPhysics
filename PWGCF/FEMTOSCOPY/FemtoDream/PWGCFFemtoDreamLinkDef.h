@@ -84,6 +84,9 @@
 #pragma link C++ class AliSigma0PhotonCuts+;
 #pragma link C++ class AliAnalysisTaskNanoXiPi+;
 
+#pragma link C++ class AliAnalysisTaskOtonXx+;
+
+
 #endif
 
 #ifdef __CLING__
