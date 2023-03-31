@@ -42,7 +42,6 @@
 #include "AliAnalysisAlien.h"
 #include "AliEventCuts.h"
 #include "AliAODVZERO.h"
-#include "AliPartSimpleForCorr.h"
 #include "AliVParticle.h"
 #include "TLorentzVector.h"
 #include "AliAnalysisTaskKaon2PC.h"
