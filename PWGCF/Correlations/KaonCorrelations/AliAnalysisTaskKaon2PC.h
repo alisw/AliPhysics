@@ -15,6 +15,7 @@
 #include "AliAODVertex.h"
 #include "AliAnalysisTaskPIDResponse.h"
 #include "TMacro.h"
+#include "AliEventPoolManager.h" //required in the header
 
 class AliAODEvent;
 class TList;
@@ -42,7 +43,14 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         virtual void            FillDPhiHist(Double_t DPhi, TH2F* hist, Double_t fWeight);
         AliEventCuts            fEventCuts; // event cuts
 
+        void                    SetMCRead(Bool_t flag) {fAnalysisMC = flag;}
+        //mixing
+        //void                  SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
+        void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
+        
     private:
+       void RunData();
+       
        AliAODEvent*            fAOD;           //! input event
        TList*                  fOutputList;    //! output list
        AliPIDResponse*         fPIDResponse;   //! pid response object’
@@ -105,9 +113,13 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH3F*                   fHistCF;          //! dummy histogram
        TH3F*                   fHistKChKCh;       //! dummy histogram
        TH3F*                   fHistKPosKNeg;    //! dummy histogram
-       
 
-       //Bool_t                fAnalysisMC; // enable MC study
+       TH1F*                   hPt;
+       TH1F*                   hPt_kPos;
+       TH2F*                   fHistCF_Bg;
+
+
+       Bool_t                  fAnalysisMC; // enable MC study
        Bool_t                  fRejectEventPileUp; // enable to use Pile-up cuts
 
        Double_t        PVx;
@@ -128,6 +140,34 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        Double_t        fCosPACut;
        Double_t        fSigPosv0Cut;
        Double_t        fSigNegv0Cut;
+
+
+       // mixing
+
+        TObjArray*              fSelectedKCh; //!
+        TObjArray*              fSelectedK0s; //!
+        AliEventPoolManager*    fPoolMgr;  //!  event pool manager for Event Mixing
+        // Int_t                   fNOfSamples;
+        // std::vector<Double_t>   fsampleBins; //sampling
+
+        Int_t                   fPoolMaxNEvents;   // maximum number of events in the pool
+        Int_t                   fPoolMinNTracks;   // minimum number of tracks in the pool
+        Int_t                   fMinEventsToMix;   // minimum number of events for mixing
+        Int_t                   fNzVtxBins; // number of PV z bins
+        Int_t                   fNCentBins; // number of centrality bins
+        std::vector<Double_t>   fzVtxBins;
+        std::vector<Double_t>   fCentBins;
+        //Double_t                fMergingCut; // [0.02] cut for track spliting/merging
+        //Int_t                   fSampleIndex;
+        
+        //TString                 fSystematicsFlag; // ""
+        //Int_t                   fEtaPolarity; // trig particles in one half of detector, -1,0,1
+
+        // Double_t                fPVzCut;
+        // Double_t                fCutDCAz;
+        // Double_t                fCutDCAxySigma;
+        // Double_t                fCutTPCchi2pCl;
+        // Double_t                fTPCclMin;
 
 
        AliAnalysisTaskKaon2PC(const AliAnalysisTaskKaon2PC&); // not implemented
