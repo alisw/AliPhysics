@@ -20,25 +20,23 @@ AliGFWCumulant::AliGFWCumulant():
 
 AliGFWCumulant::~AliGFWCumulant()
 {
-  //printf("Destructor (?) for some reason called?\n");
-  //DestroyComplexVectorArray();
 };
-void AliGFWCumulant::FillArray(Double_t eta, Int_t ptin, Double_t phi, Double_t weight, Double_t SecondWeight) {
+void AliGFWCumulant::FillArray(Int_t ptin, Double_t phi, Double_t weight, Double_t SecondWeight) {
   if(!fInitialized)
     CreateComplexVectorArray(1,1,1);
   if(fPt==1) ptin=0; //If one bin, then just fill it straight; otherwise, if ptin is out-of-range, do not fill
   else if(ptin<0 || ptin>=fPt) return;
   fFilledPts[ptin] = kTRUE;
   for(Int_t lN = 0; lN<fN; lN++) {
-    Double_t lSin = TMath::Sin(lN*phi); //No need to recalculate for each power
-    Double_t lCos = TMath::Cos(lN*phi); //No need to recalculate for each power
+    Double_t lSin = sin(lN*phi); //No need to recalculate for each power
+    Double_t lCos = cos(lN*phi); //No need to recalculate for each power
     for(Int_t lPow=0; lPow<PW(lN); lPow++) {
       Double_t lPrefactor = 0;
       //Dont calculate it twice; multiplication is cheaper that power
       //Also, if second weight is specified, then keep the first weight with power no more than 1, and us the other weight otherwise
       //this is important when POIs are a subset of REFs and have different weights than REFs
-      if(SecondWeight>0 && lPow>1) lPrefactor = TMath::Power(SecondWeight, lPow-1)*weight;
-      else lPrefactor = TMath::Power(weight,lPow);
+      if(SecondWeight>0 && lPow>1) lPrefactor = pow(SecondWeight, lPow-1)*weight;
+      else lPrefactor = pow(weight,lPow);
       Double_t qsin = lPrefactor * lSin;
       Double_t qcos = lPrefactor * lCos;
       fQvector[ptin][lN][lPow]+=complex<Double_t>(qcos,qsin);

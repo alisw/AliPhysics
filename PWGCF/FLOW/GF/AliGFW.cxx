@@ -66,17 +66,11 @@ void AliGFW::AddRegion(string refName, Int_t lNhar, Int_t *lNparVec, Double_t lE
   lOneRegion.BitMask = BitMask; //Bit mask
   AddRegion(lOneRegion);
 };
-void AliGFW::SplitRegions() {
-  //Simple case. Will not look for overlaps, etc. Everything is left for end-used
-};
-
 Int_t AliGFW::CreateRegions() {
   if(fRegions.size()<1) {
     printf("No regions set. Skipping...\n");
     return 0;
   };
-  SplitRegions();
-  //for(auto pitr = fRegions.begin(); pitr!=fRegions.end(); pitr++) pitr->PrintStructure();
   Int_t nRegions=0;
   for(auto pItr=fRegions.begin(); pItr!=fRegions.end(); pItr++) {
     AliGFWCumulant *lCumulant = new AliGFWCumulant();
@@ -96,7 +90,7 @@ void AliGFW::Fill(Double_t eta, Int_t ptin, Double_t phi, Double_t weight, Int_t
   if(!fInitialized) return;
   for(Int_t i=0;i<(Int_t)fRegions.size();++i) {
     if(fRegions.at(i).EtaMin<eta && fRegions.at(i).EtaMax>eta && (fRegions.at(i).BitMask&mask))
-      fCumulants.at(i).FillArray(eta,ptin,phi,weight,SecondWeight);
+      fCumulants.at(i).FillArray(ptin,phi,weight,SecondWeight);
   };
 };
 complex<Double_t> AliGFW::TwoRec(Int_t n1, Int_t n2, Int_t p1, Int_t p2, Int_t ptbin, AliGFWCumulant *r1, AliGFWCumulant *r2, AliGFWCumulant *r3) {
@@ -303,6 +297,4 @@ Bool_t AliGFW::s_tokenize(string &instr, string &subs, Int_t &spos, const string
   subs = instr.substr(spos,lpos-spos);
   spos=lpos+1;
   return kTRUE;
-  //2 -2
-  //0123 ->4
 }
