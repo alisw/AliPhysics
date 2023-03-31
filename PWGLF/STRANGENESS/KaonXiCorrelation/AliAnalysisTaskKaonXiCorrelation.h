@@ -53,6 +53,20 @@ struct MiniCollision {
   unsigned char fTrigger;
 };
 
+struct XiDaughter {
+  XiDaughter(const double p_x, const double p_y, const double p_z, const int c) :
+   px{p_x},
+   py{p_y},
+   pz{p_z},
+   charge{c}
+  {}
+  bool IsSame(const XiDaughter other) { return std::abs(px - other.px) < 1.e-15 && std::abs(py - other.py) < 1.e-15 && std::abs(pz - other.pz) < 1.e-15 && charge == other.charge; }
+  double px;
+  double py;
+  double pz;
+  int charge;
+};
+
 class AliAnalysisTaskKaonXiCorrelation : public AliAnalysisTaskSE {
 public:
   enum kStatusFlag {
@@ -76,7 +90,8 @@ public:
     kINT7 = BIT(0),
     kCentral = BIT(1),
     kSemiCentral = BIT(2),
-    kPositiveB = BIT(3)
+    kPositiveB = BIT(3),
+    kHasTwoXiFromSameDaughter = BIT(4)
   };
 
   AliAnalysisTaskKaonXiCorrelation(bool isMC = false, TString taskname = "KaonXiCorrelation");
@@ -111,6 +126,7 @@ public:
   void SetCtCut(float cut = 4) { fCutCt = cut; }
   void SetCtV0Cut(float cut = 30) { fCutCtV0 = cut; }
   void SetCompetingMassCut(float cut = 0.008) { fCutCompetingMass = cut; }
+  void SetCascMassWindow(float cut = 0.006) { fCascMassWindow = cut; }
   void SetTPCcluCut(int cut = 70) { fCutTPCclu = cut; }
   void SetSaveOnlyTrueCandidates(bool cut = true) { fOnlyTrueCandidates = cut; }
   void SetTPCRowsCut(float cut = 80.) { fCutTPCrows = cut; }
@@ -187,6 +203,7 @@ private:
   float fCutCt = 4;
   float fCutCtV0 = 30;
   float fCutCompetingMass = 0.008;
+  float fCascMassWindow = 0.006;
   int fCutTPCclu = 70;
   float fCutTPCrows = 80.;
   float fCutRowsOvF = 0.8;
@@ -228,6 +245,7 @@ private:
   int WhichBDT(double pt);
   int GetITScls(AliAODTrack *track, int &nSPD);
   bool HasTOF(AliAODTrack *track);
+  bool HasTwoXiFromSameDaughters(std::vector<XiDaughter> daughters);
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskKaonXiCorrelation, 1);

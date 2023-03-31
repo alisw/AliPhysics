@@ -167,6 +167,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
   fPID = handl->GetPIDResponse();
 
   std::vector<int> checkedLabelCasc, checkedLabelKaon;
+  std::vector<XiDaughter> xiDaughters;
 
   fGenCascades.clear();
   fGenKaons.clear();
@@ -452,6 +453,14 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
             }
             fXi->fBdtOut = bdt_out[0];
 
+            if (std::abs(fXi->fMass - kXiMass) < fCascMassWindow)
+            {
+              XiDaughter pDaughter(pTrackCasc->Px(), pTrackCasc->Py(), pTrackCasc->Pz(), 1);
+              XiDaughter nDaughter(nTrackCasc->Px(), nTrackCasc->Py(), nTrackCasc->Pz(), -1);
+              XiDaughter bDaughter(bTrackCasc->Px(), bTrackCasc->Py(), bTrackCasc->Pz(), matter ? -1 : 1);
+              xiDaughters.push_back(pDaughter); xiDaughters.push_back(nDaughter); xiDaughters.push_back(bDaughter);
+            }
+
             if (!fMC)
               fRecCascades.push_back(*fXi);
             else
@@ -463,6 +472,9 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
           checkedLabelCasc.erase(std::find(checkedLabelCasc.begin(), checkedLabelCasc.end(), labMothBac)); //checked particles that didn't pass the topological cut (have to be filled later)
         }
       }
+    }
+    if (HasTwoXiFromSameDaughters(xiDaughters)){
+      fRecCollision.fTrigger |= kHasTwoXiFromSameDaughter;
     }
   }
 
@@ -664,4 +676,19 @@ bool AliAnalysisTaskKaonXiCorrelation::HasTOF(AliAODTrack *track)
   const float len = track->GetIntegratedLength();
   bool hasTOF = hasTOFout && hasTOFtime && (len > 350.);
   return hasTOF;
+}
+
+bool AliAnalysisTaskKaonXiCorrelation::HasTwoXiFromSameDaughters(std::vector<XiDaughter> daughters)
+{
+  for (ULong_t iD = 0; iD < daughters.size(); ++iD)
+  {
+    for (ULong_t jD = iD + 1; jD < daughters.size(); ++jD)
+    {
+      if (daughters[iD].IsSame(daughters[jD]))
+      {
+        return true;
+      }
+    }
+  }
+  return false;
 }
