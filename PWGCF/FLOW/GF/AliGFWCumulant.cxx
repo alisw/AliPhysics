@@ -6,7 +6,6 @@ A container to store Q vectors for one subevent with an extra layer to recursive
 If used, modified, or distributed, please aknowledge the author of this code.
 */
 #include "AliGFWCumulant.h"
-
 AliGFWCumulant::AliGFWCumulant():
   fQvector(0),
   fUsed(kBlank),
@@ -42,7 +41,7 @@ void AliGFWCumulant::FillArray(Double_t eta, Int_t ptin, Double_t phi, Double_t 
       else lPrefactor = TMath::Power(weight,lPow);
       Double_t qsin = lPrefactor * lSin;
       Double_t qcos = lPrefactor * lCos;
-      fQvector[ptin][lN][lPow](fQvector[ptin][lN][lPow].Re()+qcos,fQvector[ptin][lN][lPow].Im()+qsin);//+=TComplex(qcos,qsin);
+      fQvector[ptin][lN][lPow]+=complex<Double_t>(qcos,qsin);
     };
   };
   Inc();
@@ -53,7 +52,7 @@ void AliGFWCumulant::ResetQs() {
     fFilledPts[i] = kFALSE;
     for(Int_t lN=0;lN<fN;lN++) {
       for(Int_t lPow=0;lPow<PW(lN);lPow++) {
-  	       fQvector[i][lN][lPow](0.,0.);
+  	       fQvector[i][lN][lPow] = fNullQ;
       };
     };
   };
@@ -88,23 +87,23 @@ void AliGFWCumulant::CreateComplexVectorArrayVarPower(Int_t N, vector<Int_t> Pow
   fPt=Pt;
   fFilledPts = new Bool_t[Pt];
   fPowVec = PowVec;
-  fQvector = new TComplex**[fPt];
+  fQvector = new complex<Double_t>**[fPt];
   for(Int_t i=0;i<fPt;i++) {
-    fQvector[i] = new TComplex*[fN];
+    fQvector[i] = new complex<Double_t>*[fN];
   };
   for(Int_t l_n=0;l_n<fN;l_n++) {
     for(Int_t i=0;i<fPt;i++) {
-      fQvector[i][l_n] = new TComplex[PW(l_n)];
+      fQvector[i][l_n] = new complex<Double_t>[PW(l_n)];
     };
   };
   ResetQs();
   fInitialized=kTRUE;
 };
-TComplex AliGFWCumulant::Vec(Int_t n, Int_t p, Int_t ptbin) {
+complex<Double_t> AliGFWCumulant::Vec(Int_t n, Int_t p, Int_t ptbin) {
   if(!fInitialized) return 0;
   if(ptbin>=fPt || ptbin<0) ptbin=0;
   if(n>=0) return fQvector[ptbin][n][p];
-  return TComplex::Conjugate(fQvector[ptbin][-n][p]);
+  return conj(fQvector[ptbin][-n][p]);
 };
 Bool_t AliGFWCumulant::IsPtBinFilled(Int_t ptb) {
    if(!fFilledPts) return kFALSE;

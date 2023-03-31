@@ -1,7 +1,7 @@
 #ifndef DEFORMATION__H
 #define DEFORMATION__H
 #include "AliAnalysisTaskSE.h"
-#include "TComplex.h"
+// #include "TComplex.h"
 #include "AliEventCuts.h"
 #include "AliVEvent.h"
 #include "AliGFW.h"
@@ -27,7 +27,7 @@ class TH2D;
 class TH3D;
 class TProfile;
 class TProfile2D;
-class TComplex;
+// class TComplex;
 class AliAODEvent;
 class AliVTrack;
 class AliVVertex;
@@ -149,7 +149,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fOnTheFly;
   AliMCEvent *fMCEvent; //! MC event
   Bool_t fUseRecoNchForMC; //Flag to use Nch from reconstructed, when running MC closure
-  TRandom *fRndm; 
+  TRandom *fRndm;
   Int_t fNBootstrapProfiles; //Number of profiles for bootstrapping
   Bool_t fFillAdditionalQA;
   TAxis *fPtAxis;
@@ -175,7 +175,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Double_t fEtaMpt;
   Double_t fEtaLow;
   Double_t fEtaAcceptance;
-  Double_t fEtaV2Sep; 
+  Double_t fEtaV2Sep;
   Double_t fchPtMin;
   Double_t fchPtMax;
   Bool_t fUseChargedPtCut;
@@ -243,13 +243,13 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH1D* fPtMptAcceptance; //!
   Double_t fImpactParameterMC;
   int EventNo;
-  unsigned int fEventWeight; 
+  unsigned int fEventWeight;
   vector<vector<vector<double>>>  wpPt;
   vector<vector<vector<double>>>  wpPtSubP;
   vector<vector<vector<double>>>  wpPtSubN;
-  std::map<double,double> centralitymap;  
-  static const Int_t      fNumHarms = 20;            
-  static const Int_t      fNumPowers = 20;            
+  std::map<double,double> centralitymap;
+  static const Int_t      fNumHarms = 20;
+  static const Int_t      fNumPowers = 20;
   TComplex Qvector[fNumHarms][fNumPowers];
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);

@@ -374,10 +374,10 @@ void AliAnalysisTaskJetQ::SetupFlowOutput() {
 //Have to be very careful here to fill the correct pt bins!
 void AliAnalysisTaskJetQ::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn, const Bool_t &TrFound) {
   Double_t dnx, val;
-  dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
+  dnx = fGFW->Calculate(corconf,0,kTRUE).real();
   if(dnx==0) return;
   if(!corconf.pTDif) {
-    val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
+    val = fGFW->Calculate(corconf,0,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1) {
       fFCIncl->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
       if(TrFound) fFCTrig->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
@@ -386,9 +386,9 @@ void AliAnalysisTaskJetQ::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Dou
   };
   //It seems that here filling I end up filling non-existing bins. Try to check in GFWFlowContainer what is (attempted) to access
   for(Int_t i=corconf.ptInd.back()+1;i<=fPtAxis->GetNbins();i++) { //It's kind of a triangle. If ref flow starts at ptInd 1, then (1,1) is calculated as integrated, so we start from (1,2)
-    dnx = fGFW->Calculate(corconf,i,kTRUE).Re();
+    dnx = fGFW->Calculate(corconf,i,kTRUE).real();
     if(dnx==0) continue;
-    val = fGFW->Calculate(corconf,i,kFALSE).Re()/dnx;
+    val = fGFW->Calculate(corconf,i,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1) {
       fFCIncl->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);
       if(TrFound) fFCTrig->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);

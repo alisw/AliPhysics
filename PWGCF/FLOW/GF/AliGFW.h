@@ -13,8 +13,10 @@ If used, modified, or distributed, please aknowledge the author of this code.
 #include <algorithm>
 #include "TString.h"
 #include "TObjArray.h"
+#include <complex>
 using std::vector;
-
+using std::complex;
+using std::string;
 class AliGFW {
  public:
   struct Region {
@@ -23,7 +25,7 @@ class AliGFW {
     Double_t EtaMin=-999;
     Double_t EtaMax=-999;
     Int_t BitMask=1;
-    TString rName="";
+    string rName="";
     bool operator<(const Region& a) const {
       return EtaMin < a.EtaMin;
     };
@@ -38,21 +40,15 @@ class AliGFW {
       BitMask=a.BitMask;
       return *this;
     };
-    void PrintStructure() {printf("%s: eta [%f.. %f].",rName.Data(),EtaMin,EtaMax); };
+    void PrintStructure() {printf("%s: eta [%f.. %f].",rName.c_str(),EtaMin,EtaMax); };
   };
   struct CorrConfig {
     vector<vector<Int_t>> Regs {};
     vector<vector<Int_t>> Hars {};
     vector<Int_t> Overlap;
     vector<Int_t> ptInd;
-    /*vector<Int_t> Regs {};
-    vector<Int_t> Hars {};
-    vector<Int_t> Regs2 {};
-    vector<Int_t> Hars2 {};
-    Int_t Overlap1=-1;
-    Int_t Overlap2=-1;*/
     Bool_t pTDif=kFALSE;
-    TString Head="";
+    string Head="";
   };
   AliGFW();
   ~AliGFW();
@@ -65,31 +61,28 @@ class AliGFW {
   void Fill(Double_t eta, Int_t ptin, Double_t phi, Double_t weight, Int_t mask, Double_t secondWeight=-1);
   void Clear();// { for(auto ptr = fCumulants.begin(); ptr!=fCumulants.end(); ++ptr) ptr->ResetQs(); };
   AliGFWCumulant GetCumulant(Int_t index) { return fCumulants.at(index); };
-  TComplex Calculate(TString config, Bool_t SetHarmsToZero=kFALSE);
   CorrConfig GetCorrelatorConfig(TString config, TString head = "", Bool_t ptdif=kFALSE);
-  TComplex Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZero, Bool_t DisableOverlap=kFALSE);
-  // TComplex Calculate(CorrConfig corconf, vector<Int_t> ptbins, Bool_t SetHarmsToZero, Bool_t DisableOverlap=kFALSE);
- private:
+  complex<Double_t> Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZero, Bool_t DisableOverlap=kFALSE);
+  // complex<Double_t> Calculate(CorrConfig corconf, vector<Int_t> ptbins, Bool_t SetHarmsToZero, Bool_t DisableOverlap=kFALSE);
+public:
   Bool_t fInitialized;
   void SplitRegions();
   AliGFWCumulant fEmptyCumulant;
-  TComplex TwoRec(Int_t n1, Int_t n2, Int_t p1, Int_t p2, Int_t ptbin, AliGFWCumulant*, AliGFWCumulant*, AliGFWCumulant*);
-  TComplex RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGFWCumulant *qol, Int_t ptbin, vector<Int_t> &hars, vector<Int_t> &pows); //POI, Ref. flow, overlapping region
-  TComplex RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGFWCumulant *qol, Int_t ptbin, vector<Int_t> &hars); //POI, Ref. flow, overlapping region
+  complex<Double_t> TwoRec(Int_t n1, Int_t n2, Int_t p1, Int_t p2, Int_t ptbin, AliGFWCumulant*, AliGFWCumulant*, AliGFWCumulant*);
+  complex<Double_t> RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGFWCumulant *qol, Int_t ptbin, vector<Int_t> &hars, vector<Int_t> &pows); //POI, Ref. flow, overlapping region
+  complex<Double_t> RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qref, AliGFWCumulant *qol, Int_t ptbin, vector<Int_t> &hars); //POI, Ref. flow, overlapping region
   //Deprecated and not used (for now):
   void AddRegion(Region inreg) { fRegions.push_back(inreg); };
   Region GetRegion(Int_t index) { return fRegions.at(index); };
-  Int_t FindRegionByName(TString refName);
-  vector<TString> fCalculatedNames;
-  vector<TComplex> fCalculatedQs;
-  Int_t FindCalculated(TString identifier);
+  Int_t FindRegionByName(string refName);
   //Calculateing functions:
-  TComplex Calculate(Int_t poi, Int_t ref, vector<Int_t> hars, Int_t ptbin=0); //For differential, need POI and reference
-  TComplex Calculate(Int_t poi, vector<Int_t> hars); //For integrated case
-  //Process one string (= one region)
-  TComplex CalculateSingle(TString config);
-
-  Bool_t SetHarmonicsToZero(TString &instr);
-
+  complex<Double_t> Calculate(Int_t poi, Int_t ref, vector<Int_t> hars, Int_t ptbin=0); //For differential, need POI and reference
+  complex<Double_t> Calculate(Int_t poi, vector<Int_t> hars); //For integrated case
+  //Operations on strings. Equivalent to TString operations, but one to rid of root dependence
+  Int_t s_index(string &instr, const string &pattern, const Int_t &spos=0);
+  Bool_t s_contains(string &instr, const string &pattern);
+  void s_replace(string &instr, const string &pattern1, const string &pattern2, const Int_t &spos=0);
+  void s_replace_all(string &instr, const string &pattern1, const string &pattern2);
+  Bool_t s_tokenize(string &instr, string &substr, Int_t &spos, const string &delim);
 };
 #endif

@@ -7,11 +7,11 @@ If used, modified, or distributed, please aknowledge the author of this code.
 */
 #ifndef ALIGFWCUMULANT__H
 #define ALIGFWCUMULANT__H
-#include "TComplex.h"
-#include "TNamed.h"
 #include "TMath.h"
 #include "TAxis.h"
+#include <complex>
 using std::vector;
+using std::complex;
 class AliGFWCumulant {
  public:
   AliGFWCumulant();
@@ -23,11 +23,11 @@ class AliGFWCumulant {
   void Inc() { fNEntries++; };
   Int_t GetN() { return fNEntries; };
   // protected:
-  TComplex ***fQvector;
+  complex<Double_t> ***fQvector;
   UInt_t fUsed;
   Int_t fNEntries;
   //Q-vectors. Could be done recursively, but maybe defining each one of them explicitly is easier to read
-  TComplex Vec(Int_t, Int_t, Int_t ptbin=0); //envelope class to summarize pt-dif. Q-vec getter
+  complex<Double_t> Vec(Int_t, Int_t, Int_t ptbin=0); //envelope class to summarize pt-dif. Q-vec getter
   Int_t fN; //! Harmonics
   Int_t fPow; //! Power
   vector<Int_t> fPowVec; //! Powers array
@@ -39,6 +39,7 @@ class AliGFWCumulant {
   Int_t PW(Int_t ind) { return fPowVec.at(ind); }; //No checks to speed up, be carefull!!!
   void DestroyComplexVectorArray();
   Bool_t IsPtBinFilled(Int_t ptb);
+  complex<Double_t> fNullQ = complex<Double_t>(0.,0.);
 };
 
 #endif
