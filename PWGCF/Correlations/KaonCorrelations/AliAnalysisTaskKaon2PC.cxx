@@ -26,7 +26,6 @@
 #include "AliAnalysisManager.h"
 #include "AliEventPoolManager.h"
 #include "AliAODEvent.h"
-#include "AliTHn.h"
 #include "AliAODv0.h"
 #include "AliAODInputHandler.h"
 #include "AliAODTrack.h"
