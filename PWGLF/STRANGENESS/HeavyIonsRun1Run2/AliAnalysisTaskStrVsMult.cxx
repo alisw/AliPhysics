@@ -1454,7 +1454,7 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc, b
             SetCutVal(kFALSE, kFALSE, i_cut, varlowcut_V0[i_cut]+i_var*(varhighcut_V0[i_cut]-varlowcut_V0[i_cut])/(nvarcut_V0[i_cut]-1));
             if (phypri && associFlag[kk0s] && ApplyCuts(kk0s)) {
               fHistos_K0S->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassK0s, perc);
-              if (i_cut==kV0_ArmenterosK0s && i_var==0 && perc>0. && perc<10.) fHistos_K0S->FillTH3("h3_armptarmalphapt", fV0_pTArm, fV0_AlphaArm, fV0_Pt);
+              if (i_cut==kV0_ArmenterosK0s && i_var==0 && perc>0. && perc<10.) fHistos_K0S->FillTH3("h3_armptarmalphapt_central", fV0_pTArm, fV0_AlphaArm, fV0_Pt);
             }
           }
         }
