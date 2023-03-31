@@ -236,7 +236,7 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
       fJCatalyst[i]->SetParticleCharge(1);
     }   // Default: charge = 0 to accept all charges.
     if (strcmp(configNames[i].Data(), "hybridBaseDCA") == 0) {
-      fJCatalyst->SetDCABaseCuts(true);
+      fJCatalyst[i]->SetDCABaseCuts(true);
     }
 
     // TBA: subA systematics.
