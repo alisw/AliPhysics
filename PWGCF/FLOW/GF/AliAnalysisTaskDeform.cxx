@@ -1374,7 +1374,7 @@ Bool_t AliAnalysisTaskDeform::Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, co
   if(!corconf.pTDif) {
     val = fGFW->Calculate(corconf,0,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1)
-      ((AliGFWFlowContainer*)fV2dPtList->At(index))->FillProfile(corconf.Head.Data(),dpt,val,dnx,rndmn);
+      ((AliGFWFlowContainer*)fV2dPtList->At(index))->FillProfile(corconf.Head.c_str(),dpt,val,dnx,rndmn);
     return kTRUE;
   };
   return kTRUE;

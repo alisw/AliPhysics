@@ -17,7 +17,7 @@ AliGFW::~AliGFW() {
     pItr->DestroyComplexVectorArray();
 };
 
-void AliGFW::AddRegion(TString refName, Int_t lNhar, Int_t lNpar, Double_t lEtaMin, Double_t lEtaMax, Int_t lNpT, Int_t BitMask) {
+void AliGFW::AddRegion(string refName, Int_t lNhar, Int_t lNpar, Double_t lEtaMin, Double_t lEtaMax, Int_t lNpT, Int_t BitMask) {
   if(lNpT < 1) {
     printf("Number of pT bins cannot be less than 1! Not adding anything.\n");
     return;
@@ -26,7 +26,7 @@ void AliGFW::AddRegion(TString refName, Int_t lNhar, Int_t lNpar, Double_t lEtaM
     printf("Eta min. cannot be more than eta max! Not adding...\n");
     return;
   };
-  if(refName.EqualTo("")) {
+  if(refName=="") {
     printf("Region must have a name!\n");
     return;
   };
@@ -41,7 +41,7 @@ void AliGFW::AddRegion(TString refName, Int_t lNhar, Int_t lNpar, Double_t lEtaM
   lOneRegion.BitMask = BitMask; //Bit mask
   AddRegion(lOneRegion);
 };
-void AliGFW::AddRegion(TString refName, Int_t lNhar, Int_t *lNparVec, Double_t lEtaMin, Double_t lEtaMax, Int_t lNpT, Int_t BitMask) {
+void AliGFW::AddRegion(string refName, Int_t lNhar, Int_t *lNparVec, Double_t lEtaMin, Double_t lEtaMax, Int_t lNpT, Int_t BitMask) {
   if(lNpT < 1) {
     printf("Number of pT bins cannot be less than 1! Not adding anything.\n");
     return;
@@ -50,7 +50,7 @@ void AliGFW::AddRegion(TString refName, Int_t lNhar, Int_t *lNparVec, Double_t l
     printf("Eta min. cannot be more than eta max! Not adding...\n");
     return;
   };
-  if(refName.EqualTo("")) {
+  if(refName=="") {
     printf("Region must have a name!\n");
     return;
   };
@@ -154,8 +154,7 @@ complex<Double_t> AliGFW::RecursiveCorr(AliGFWCumulant *qpoi, AliGFWCumulant *qr
 void AliGFW::Clear() {
   for(auto ptr = fCumulants.begin(); ptr!=fCumulants.end(); ++ptr) ptr->ResetQs();
 };
-AliGFW::CorrConfig AliGFW::GetCorrelatorConfig(TString config1, TString head, Bool_t ptdif) {
-  string config=config1.Data();
+AliGFW::CorrConfig AliGFW::GetCorrelatorConfig(string config, string head, Bool_t ptdif) {
   //First remove all ; and ,:
   s_replace_all(config,","," ");
   s_replace_all(config,";"," ");

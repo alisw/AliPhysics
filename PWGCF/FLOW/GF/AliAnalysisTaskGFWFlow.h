@@ -54,7 +54,7 @@ class AliAnalysisTaskGFWFlow : public AliAnalysisTaskSE {
   static void SetupFlagsByIndex(const Int_t &ind, UInt_t &l_EvFlag, UInt_t &l_TrFlag); //Function to setup flags. Static, so one is able to call from the outside
   void SetCustomNoFlags(Int_t nEvFlags, Int_t nTrFlags) {fTotTrackFlags=nTrFlags; fTotEvFlags=nEvFlags; };
   vector<AliGFW::CorrConfig> corrconfigs; //! do not store
-  AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
+  AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc.Data(),head.Data(),ptdif);};
   void CreateCorrConfigs();
   void SetTriggerType(UInt_t newval) { fTriggerType = newval; };
   Bool_t CheckTriggerVsCentrality(Double_t l_cent); //Hard cuts on centrality for special triggers

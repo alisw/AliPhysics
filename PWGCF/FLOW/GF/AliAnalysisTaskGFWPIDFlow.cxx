@@ -663,7 +663,7 @@ Bool_t AliAnalysisTaskGFWPIDFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t c
     if(dnx==0) return kFALSE;
     val = fGFW->Calculate(corconf,0,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1)
-      fFC->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
+      fFC->FillProfile(corconf.Head.c_str(),cent,val,dnx,rndmn);
     return kTRUE;
   } else {
     for(Int_t i=1; i<=fPtAxis->GetNbins();i++) {
@@ -672,8 +672,8 @@ Bool_t AliAnalysisTaskGFWPIDFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t c
       val = fGFW->Calculate(corconf,i-1,kFALSE).real()/dnx;
       if(EnableDebug) printf("dnx cut passed. Dnx = %f\t val = %f\n",dnx,val);
       if(TMath::Abs(val)<1) {
-        fFC->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);
-      if(EnableDebug) printf("Just filled %s with %f and %f\n",Form("%s_pt_%i",corconf.Head.Data(),i),val,dnx);
+        fFC->FillProfile(Form("%s_pt_%i",corconf.Head.c_str(),i),cent,val,dnx,rndmn);
+      if(EnableDebug) printf("Just filled %s with %f and %f\n",Form("%s_pt_%i",corconf.Head.c_str(),i),val,dnx);
       }
     }
   }

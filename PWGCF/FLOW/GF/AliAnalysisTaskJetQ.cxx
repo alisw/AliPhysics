@@ -379,8 +379,8 @@ void AliAnalysisTaskJetQ::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Dou
   if(!corconf.pTDif) {
     val = fGFW->Calculate(corconf,0,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1) {
-      fFCIncl->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
-      if(TrFound) fFCTrig->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
+      fFCIncl->FillProfile(corconf.Head.c_str(),cent,val,dnx,rndmn);
+      if(TrFound) fFCTrig->FillProfile(corconf.Head.c_str(),cent,val,dnx,rndmn);
     };
     return;
   };
@@ -390,8 +390,8 @@ void AliAnalysisTaskJetQ::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Dou
     if(dnx==0) continue;
     val = fGFW->Calculate(corconf,i,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1) {
-      fFCIncl->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);
-      if(TrFound) fFCTrig->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);
+      fFCIncl->FillProfile(Form("%s_pt_%i",corconf.Head.c_str(),i),cent,val,dnx,rndmn);
+      if(TrFound) fFCTrig->FillProfile(Form("%s_pt_%i",corconf.Head.c_str(),i),cent,val,dnx,rndmn);
     };
   };
 };

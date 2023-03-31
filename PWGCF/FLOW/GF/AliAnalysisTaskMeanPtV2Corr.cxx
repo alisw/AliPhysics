@@ -598,7 +598,7 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::FillFCs(const AliGFW::CorrConfig &corconf, c
     val = fGFW->Calculate(corconf,0,kFALSE).real()/dnx;
     if(debug) printf("FillFCs: val = %f\n",val);
     if(TMath::Abs(val)<1)
-      fFC->FillProfile(corconf.Head.Data(),cent,val,fUseWeightsOne?1:dnx,rndmn);
+      fFC->FillProfile(corconf.Head.c_str(),cent,val,fUseWeightsOne?1:dnx,rndmn);
     return kTRUE;
   };
   return kTRUE;
@@ -611,7 +611,7 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::Fillv2dPtFCs(const AliGFW::CorrConfig &corco
   if(!corconf.pTDif) {
     val = fGFW->Calculate(corconf,0,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1)
-      ((AliGFWFlowContainer*)fV2dPtList->At(index))->FillProfile(corconf.Head.Data(),dpt,val,fUseWeightsOne?1:dnx,rndmn);
+      ((AliGFWFlowContainer*)fV2dPtList->At(index))->FillProfile(corconf.Head.c_str(),dpt,val,fUseWeightsOne?1:dnx,rndmn);
     return kTRUE;
   };
   return kTRUE;

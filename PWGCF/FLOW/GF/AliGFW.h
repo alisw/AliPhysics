@@ -11,7 +11,6 @@ If used, modified, or distributed, please aknowledge the author of this code.
 #include <vector>
 #include <utility>
 #include <algorithm>
-#include "TString.h"
 #include "TObjArray.h"
 #include <complex>
 using std::vector;
@@ -55,13 +54,13 @@ class AliGFW {
   vector<Region> fRegions;
   vector<AliGFWCumulant> fCumulants;
   vector<Int_t> fEmptyInt;
-  void AddRegion(TString refName, Int_t lNhar, Int_t lNpar, Double_t lEtaMin, Double_t lEtaMax, Int_t lNpT=1, Int_t BitMask=1);
-  void AddRegion(TString refName, Int_t lNhar, Int_t *lNparVec, Double_t lEtaMin, Double_t lEtaMax, Int_t lNpT=1, Int_t BitMask=1);
+  void AddRegion(string refName, Int_t lNhar, Int_t lNpar, Double_t lEtaMin, Double_t lEtaMax, Int_t lNpT=1, Int_t BitMask=1);
+  void AddRegion(string refName, Int_t lNhar, Int_t *lNparVec, Double_t lEtaMin, Double_t lEtaMax, Int_t lNpT=1, Int_t BitMask=1);
   Int_t CreateRegions();
   void Fill(Double_t eta, Int_t ptin, Double_t phi, Double_t weight, Int_t mask, Double_t secondWeight=-1);
   void Clear();// { for(auto ptr = fCumulants.begin(); ptr!=fCumulants.end(); ++ptr) ptr->ResetQs(); };
   AliGFWCumulant GetCumulant(Int_t index) { return fCumulants.at(index); };
-  CorrConfig GetCorrelatorConfig(TString config, TString head = "", Bool_t ptdif=kFALSE);
+  CorrConfig GetCorrelatorConfig(string config, string head = "", Bool_t ptdif=kFALSE);
   complex<Double_t> Calculate(CorrConfig corconf, Int_t ptbin, Bool_t SetHarmsToZero, Bool_t DisableOverlap=kFALSE);
   // complex<Double_t> Calculate(CorrConfig corconf, vector<Int_t> ptbins, Bool_t SetHarmsToZero, Bool_t DisableOverlap=kFALSE);
 public:

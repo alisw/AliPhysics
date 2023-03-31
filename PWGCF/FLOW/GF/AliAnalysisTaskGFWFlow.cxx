@@ -516,7 +516,7 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent
   if(!corconf.pTDif) {
     val = fGFW->Calculate(corconf,0,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1)
-      fFC->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
+      fFC->FillProfile(corconf.Head.c_str(),cent,val,dnx,rndmn);
     return kTRUE;
   };
   Bool_t NeedToDisable=kFALSE;
@@ -525,7 +525,7 @@ Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent
     if(dnx==0) continue;
     val = fGFW->Calculate(corconf,i-1,kFALSE,NeedToDisable).real()/dnx;
     if(TMath::Abs(val)<1)
-      fFC->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);
+      fFC->FillProfile(Form("%s_pt_%i",corconf.Head.c_str(),i),cent,val,dnx,rndmn);
   };
   return kTRUE;
 };
