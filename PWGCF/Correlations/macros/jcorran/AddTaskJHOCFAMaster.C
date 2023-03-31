@@ -178,6 +178,18 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
           MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
       }
       break;
+    case 5:   // Same as case 3 but for 18q
+      if (strcmp(configNames[i].Data(), "zvtx7") == 0) {
+        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_zvtx9_s_zvtx9.root",
+          MAPdirName.Data(), sCorrection[period].Data());
+      } else if ((strcmp(configNames[i].Data(), "chi2low23") == 0)) {
+        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_Chi2low23_s_chi2low23.root",
+          MAPdirName.Data(), sCorrection[period].Data());
+      } else {
+        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_%s_s_%s.root",
+          MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data(),configNames[i].Data());
+      }
+      break;
     default:
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
         << std::endl;   

@@ -99,6 +99,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetChargedPt(Double_t chPtMin, Double_t chPtMax) { fUseChargedPtCut = true; fchPtMin = chPtMin; fchPtMax = chPtMax; }
   void SetUseNch(Bool_t newval) { fUseNch = newval; };
   void SetUseWeightsOne(Bool_t newvalNUA, Bool_t newvalNUE) { fUseNUAOne = newvalNUA; fUseNUEOne = newvalNUE; };
+  void SetUseEventWeightsOne(Bool_t newval) { fUseEventWeightOne = newval; };
   void ExtendV0MAcceptance(Bool_t newval) { fExtendV0MAcceptance = newval; };
   void SetSystFlag(Int_t newval) { if(!fGFWSelection) fGFWSelection = new AliGFWCuts(); fGFWSelection->SetupCuts(newval); }; //Flag for systematics
   void SetDCAxyFunctionalForm(TString newval) { fDCAxyFunctionalForm = newval; } //Call after SystFlag
@@ -128,6 +129,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetAMPTCentralityMap(vector<double> b, vector<double> cent) { for(size_t i(0); i<b.size(); ++i) centralitymap[b[i]]=cent[i]; }
   void SetUseMcParticleForEfficiency(bool newval) { fUseMcParticleForEfficiency = newval; }
   void SetFillAdditionalTrackQAPlots(Bool_t newval) { fFillAdditionalQA = newval; }
+  void SetPtMPar(int newval) { fPtMpar = newval; }
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -168,6 +170,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fUseNch;
   Bool_t fUseNUAOne;
   Bool_t fUseNUEOne;
+  Bool_t fUseEventWeightOne;
+  Int_t fPtMpar;
   Double_t fEtaMpt;
   Double_t fEtaLow;
   Double_t fEtaAcceptance;

@@ -51,6 +51,7 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fHeader(0),
   fPIDResponse(0),
   fCollisionSystem(0),
+  fUseOpenCuts(0),
   fSaveTree_Proton(0),
   fProton_px(0),
   fProton_py(0),
@@ -175,12 +176,13 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
 
 
 
-AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOnly(const char *name,int CollisionSystem) : AliAnalysisTaskSE(name),
+AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOnly(const char *name,int CollisionSystem, bool UseOpenCuts) : AliAnalysisTaskSE(name),
   fAODEvent(0),
   fAODHandler(0),
   fHeader(0),
   fPIDResponse(0),
   fCollisionSystem(CollisionSystem),
+  fUseOpenCuts(UseOpenCuts),
   fSaveTree_Proton(0),
   fProton_px(0),
   fProton_py(0),
@@ -550,7 +552,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
   // debug analysis
   bool DebugEventSelection  = false;
 
- 
 
   // define event cuts
   double PrimaryVertexMaxZ  = 10.0; // cm
@@ -701,7 +702,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(!Track) continue;
 
     // apply proton cuts
-    bool PassedProtonCuts = CheckProtonCuts(*Track,*fPIDResponse,true,RunNumber);
+    bool PassedProtonCuts = CheckProtonCuts(*Track,*fPIDResponse,true,RunNumber,fUseOpenCuts);
     if(!PassedProtonCuts) continue;
   
     float xv[2];
@@ -835,7 +836,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
   
 
     // apply deuteron cuts
-    bool PassedDeuteronCuts = CheckDeuteronCuts(*Track,*fPIDResponse,true,RunNumber);
+    bool PassedDeuteronCuts = CheckDeuteronCuts(*Track,*fPIDResponse,true,RunNumber,fUseOpenCuts);
     if(!PassedDeuteronCuts) continue;
   
     float xv[2];
@@ -1197,7 +1198,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
   
 
     // apply antiproton cuts
-    bool PassedAntiProtonCuts = CheckProtonCuts(*Track,*fPIDResponse,false,RunNumber);
+    bool PassedAntiProtonCuts = CheckProtonCuts(*Track,*fPIDResponse,false,RunNumber,fUseOpenCuts);
     if(!PassedAntiProtonCuts) continue;
   
     float xv[2];
@@ -1335,7 +1336,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
   
 
     // apply antideuteron cuts
-    bool PassedAntiDeuteronCuts = CheckDeuteronCuts(*Track,*fPIDResponse,false,RunNumber);
+    bool PassedAntiDeuteronCuts = CheckDeuteronCuts(*Track,*fPIDResponse,false,RunNumber,fUseOpenCuts);
     if(!PassedAntiDeuteronCuts) continue;
   
     float xv[2];
@@ -2124,36 +2125,88 @@ double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(dou
 
 
 // apply track cuts for protons and antiprotons
-bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber)
+bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Track, AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, bool UseOpenCuts)
 {
 
   bool PassedParticleCuts = false;
 
-  // define deuteron and antideuteron track cuts
-  double Proton_pT_min = 0.0;
-  double Proton_pT_max = 4.0;
-  double Proton_eta_min = -0.9;
-  double Proton_eta_max = +0.9;
-  double Proton_DCAxy_max = 0.3; // cm
-  double Proton_DCAz_max = 0.2; // cm
-
-  double Proton_TPC_RatioRowsFindableCluster_min = 0.73;
-  double Proton_TPC_dEdx_nSigma_max = 4.0;
-  double Proton_TPC_Chi2perCluster_max = 5.0;
-  double Proton_TPC_Chi2perNDF_max = 5.0;
-  int Proton_TPC_nCluster_min = 70;
-  int Proton_TPC_nCrossedRows_min = 60;
-  int Proton_TPC_nSharedCluster_max = 2;
-  double Proton_TPC_Threshold = 0.7;
-
-  double Proton_TOF_m2_nSigma_max = 4.0;
-  double Proton_TOF_m2_nSigma_max_low_pTPC = 8.0;
-
-  double Proton_ITS_dEdx_nSigma_max = 4.0;
-  int Proton_ITS_nCluster_min = 1;
-
+  double Proton_pT_min, Proton_pT_max, Proton_eta_min, Proton_eta_max;
+  double Proton_DCAxy_max, Proton_DCAz_max;
+  double Proton_TPC_RatioRowsFindableCluster_min;
+  double Proton_TPC_dEdx_nSigma_max, Proton_TPC_Chi2perCluster_max, Proton_TPC_Chi2perNDF_max;
+  int Proton_TPC_nCluster_min, Proton_TPC_nCrossedRows_min, Proton_TPC_nSharedCluster_max;
+  double Proton_TPC_Threshold;
+  double Proton_TOF_m2_nSigma_max, Proton_TOF_m2_nSigma_max_low_pTPC;
+  double Proton_ITS_dEdx_nSigma_max;
+  int Proton_ITS_nCluster_min;
   bool UseTOF = true;
   bool UseITS = true;
+
+  if(UseOpenCuts == true){
+
+    // define open proton and antiproton track cuts
+    Proton_pT_min = 0.0;
+    Proton_pT_max = 5.0;
+    Proton_eta_min = -0.9;
+    Proton_eta_max = +0.9;
+    Proton_DCAxy_max = 0.3; // cm
+    Proton_DCAz_max = 0.2; // cm
+
+    Proton_TPC_RatioRowsFindableCluster_min = 0.73;
+    Proton_TPC_dEdx_nSigma_max = 4.0;
+    Proton_TPC_Chi2perCluster_max = 5.0;
+    Proton_TPC_Chi2perNDF_max = 5.0;
+    Proton_TPC_nCluster_min = 70;
+    Proton_TPC_nCrossedRows_min = 60;
+    Proton_TPC_nSharedCluster_max = 2;
+    Proton_TPC_Threshold = 1.0;
+
+    Proton_TOF_m2_nSigma_max = 4.0;
+    Proton_TOF_m2_nSigma_max_low_pTPC = 8.0;
+
+    Proton_ITS_dEdx_nSigma_max = 4.0;
+    Proton_ITS_nCluster_min = 1;
+
+    UseTOF = true;
+    UseITS = true;
+
+  } // end of UseOpenCuts == true
+
+
+
+  if(UseOpenCuts == false){
+
+    // define closed proton and antiproton track cuts
+    Proton_pT_min = 0.0;
+    Proton_pT_max = 4.0;
+    Proton_eta_min = -0.8;
+    Proton_eta_max = +0.8;
+    Proton_DCAxy_max = 0.2; // cm
+    Proton_DCAz_max = 0.1; // cm
+
+    Proton_TPC_RatioRowsFindableCluster_min = 0.83;
+    Proton_TPC_dEdx_nSigma_max = 3.0;
+    Proton_TPC_Chi2perCluster_max = 4.0;
+    Proton_TPC_Chi2perNDF_max = 4.0;
+    Proton_TPC_nCluster_min = 80;
+    Proton_TPC_nCrossedRows_min = 70;
+    Proton_TPC_nSharedCluster_max = 0;
+    Proton_TPC_Threshold = 0.7;
+
+    Proton_TOF_m2_nSigma_max = 3.0;
+    Proton_TOF_m2_nSigma_max_low_pTPC = 7.0;
+
+    Proton_ITS_dEdx_nSigma_max = 3.0;
+    Proton_ITS_nCluster_min = 2;
+
+    UseTOF = false;
+    UseITS = true;
+
+  } // end of UseOpenCuts == false
+
+
+
+
 
 
   // check if TPC information is available
@@ -2353,36 +2406,86 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
 
 
 // apply track cuts for deuterons and antideuterons
-bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber)
+bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Track, AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, bool UseOpenCuts)
 {
 
   bool PassedParticleCuts = false;
 
-  // define deuteron and antideuteron track cuts
-  double Deuteron_pT_min = 0.0;
-  double Deuteron_pT_max = 2.0;
-  double Deuteron_eta_min = -0.9;
-  double Deuteron_eta_max = +0.9;
-  double Deuteron_DCAxy_max = 0.3; // cm
-  double Deuteron_DCAz_max = 0.2; // cm
-
-  double Deuteron_TPC_RatioRowsFindableCluster_min = 0.73;
-  double Deuteron_TPC_dEdx_nSigma_max = 4.0;
-  double Deuteron_TPC_Chi2perCluster_max = 5.0;
-  double Deuteron_TPC_Chi2perNDF_max = 5.0;
-  int Deuteron_TPC_nCluster_min = 70;
-  int Deuteron_TPC_nCrossedRows_min = 60;
-  int Deuteron_TPC_nSharedCluster_max = 2;
-  double Deuteron_TPC_Threshold = 1.0;
-
-  double Deuteron_TOF_m2_nSigma_max = 4.0;
-  double Deuteron_TOF_m2_nSigma_max_low_pTPC = 8.0;
-
-  double Deuteron_ITS_dEdx_nSigma_max = 4.0;
-  int Deuteron_ITS_nCluster_min = 1;
-
+  double Deuteron_pT_min, Deuteron_pT_max, Deuteron_eta_min, Deuteron_eta_max;
+  double Deuteron_DCAxy_max, Deuteron_DCAz_max;
+  double Deuteron_TPC_RatioRowsFindableCluster_min;
+  double Deuteron_TPC_dEdx_nSigma_max, Deuteron_TPC_Chi2perCluster_max, Deuteron_TPC_Chi2perNDF_max;
+  int Deuteron_TPC_nCluster_min, Deuteron_TPC_nCrossedRows_min, Deuteron_TPC_nSharedCluster_max;
+  double Deuteron_TPC_Threshold;
+  double Deuteron_TOF_m2_nSigma_max, Deuteron_TOF_m2_nSigma_max_low_pTPC;
+  double Deuteron_ITS_dEdx_nSigma_max;
+  int Deuteron_ITS_nCluster_min;
   bool UseTOF = true;
   bool UseITS = true;
+
+
+  if(UseOpenCuts == true){
+
+    // define open deuteron and antideuteron track cuts
+    Deuteron_pT_min = 0.0;
+    Deuteron_pT_max = 2.0;
+    Deuteron_eta_min = -0.9;
+    Deuteron_eta_max = +0.9;
+    Deuteron_DCAxy_max = 0.3; // cm
+    Deuteron_DCAz_max = 0.2; // cm
+
+    Deuteron_TPC_RatioRowsFindableCluster_min = 0.73;
+    Deuteron_TPC_dEdx_nSigma_max = 4.0;
+    Deuteron_TPC_Chi2perCluster_max = 5.0;
+    Deuteron_TPC_Chi2perNDF_max = 5.0;
+    Deuteron_TPC_nCluster_min = 70;
+    Deuteron_TPC_nCrossedRows_min = 60;
+    Deuteron_TPC_nSharedCluster_max = 2;
+    Deuteron_TPC_Threshold = 1.5;
+
+    Deuteron_TOF_m2_nSigma_max = 4.0;
+    Deuteron_TOF_m2_nSigma_max_low_pTPC = 8.0;
+
+    Deuteron_ITS_dEdx_nSigma_max = 4.0;
+    Deuteron_ITS_nCluster_min = 1;
+
+    UseTOF = true;
+    UseITS = true;
+
+  } // end of UseOpenCuts == true
+
+
+  if(UseOpenCuts == false){
+
+    // define closed deuteron and antideuteron track cuts
+    Deuteron_pT_min = 0.0;
+    Deuteron_pT_max = 2.0;
+    Deuteron_eta_min = -0.8;
+    Deuteron_eta_max = +0.8;
+    Deuteron_DCAxy_max = 0.2; // cm
+    Deuteron_DCAz_max = 0.1; // cm
+
+    Deuteron_TPC_RatioRowsFindableCluster_min = 0.83;
+    Deuteron_TPC_dEdx_nSigma_max = 3.0;
+    Deuteron_TPC_Chi2perCluster_max = 4.0;
+    Deuteron_TPC_Chi2perNDF_max = 4.0;
+    Deuteron_TPC_nCluster_min = 80;
+    Deuteron_TPC_nCrossedRows_min = 70;
+    Deuteron_TPC_nSharedCluster_max = 0;
+    Deuteron_TPC_Threshold = 1.4;
+
+    Deuteron_TOF_m2_nSigma_max = 3.0;
+    Deuteron_TOF_m2_nSigma_max_low_pTPC = 7.0;
+
+    Deuteron_ITS_dEdx_nSigma_max = 3.0;
+    Deuteron_ITS_nCluster_min = 2;
+
+    UseTOF = false;
+    UseITS = true;
+
+  } // end of UseOpenCuts == false
+
+
 
 
   // check if TPC information is available

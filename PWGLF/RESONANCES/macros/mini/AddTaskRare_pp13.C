@@ -3742,7 +3742,7 @@ Bool_t Config_Xik0(
     Double_t mass= 0.497611+1.32171;
     
     bool PbpRapidityCut=kFALSE;
-    Double_t PairRapidity=0.7; // 0.8;
+    Double_t PairRapidity=0.8;
     
     // selections for V0 daughters
     
@@ -3751,7 +3751,7 @@ Bool_t Config_Xik0(
     Float_t v0d_dcaxy=0.06;
     
     AliESDtrackCuts* esdTrackCuts=new AliESDtrackCuts("qualityDaughterK0s");
-    esdTrackCuts->SetEtaRange(-0.9,0.9);
+    esdTrackCuts->SetEtaRange(-0.8,0.8);
     esdTrackCuts->SetRequireTPCRefit();
     esdTrackCuts->SetAcceptKinkDaughters(0);
     esdTrackCuts->SetMinNCrossedRowsTPC(v0d_xrows);
@@ -3767,7 +3767,7 @@ Bool_t Config_Xik0(
     Float_t k0s_radiushigh=200.;
     Float_t k0s_massTolSigma=4;
     Int_t   k0s_massTolID=0;
-    Float_t k0s_massTol=0.022; // 0.03;
+    Float_t k0s_massTol=0.03; // 0.022;
     Float_t k0s_massTolVeto=0.004;
     Bool_t  k0sSwitch=kTRUE;
     Float_t k0sCosPoinAn=0.97;
@@ -3793,7 +3793,7 @@ Bool_t Config_Xik0(
     cutK0s->SetToleranceVeto(k0s_massTolVeto);//Rejection range for Competing V0 Rejection
     cutK0s->SetSwitch(k0sSwitch);
     cutK0s->SetMinCosPointingAngle(k0sCosPoinAn);
-    cutK0s->SetMaxPseudorapidity(0.9);
+    cutK0s->SetMaxPseudorapidity(0.8);
     cutK0s->SetMinTPCcluster(-1);
     
     AliRsnCutSet* cutSetK0s=new AliRsnCutSet("setK0s",AliRsnTarget::kDaughter);
@@ -3807,9 +3807,9 @@ Bool_t Config_Xik0(
     Float_t V0dDCA=1.6;
     Float_t XidDCA=1.4; // 1.6;
     Float_t XiMinDCA=0.07;
-    Float_t Xi_massTol=0.009; // 0.007;
+    Float_t Xi_massTol=0.007;
     Float_t Xi_massTolVeto=0.007;
-    Float_t Xi_V0massTol=0.007; // 0.006;
+    Float_t Xi_V0massTol=0.006;
     Float_t V0CosPoinAn=0.97;
     Float_t XiCosPoinAn=0.97;
     Float_t V0lifetime=40.;
@@ -3844,7 +3844,7 @@ Bool_t Config_Xik0(
     cutXi->SetSwitch(kFALSE); // not using
     cutXi->SetV0MinCosPointingAngle(V0CosPoinAn);
     cutXi->SetCascadeMinCosPointingAngle(XiCosPoinAn);
-    cutXi->SetMaxPseudorapidity(0.9);
+    cutXi->SetMaxPseudorapidity(0.8);
     cutXi->SetMinTPCcluster(-1);
     
     AliRsnCutCascade* cutXibar=new AliRsnCutCascade("cutXibar",kXiPlusBar);
@@ -3869,7 +3869,7 @@ Bool_t Config_Xik0(
     cutXibar->SetSwitch(kFALSE); // not using
     cutXibar->SetV0MinCosPointingAngle(V0CosPoinAn);
     cutXibar->SetCascadeMinCosPointingAngle(XiCosPoinAn);
-    cutXibar->SetMaxPseudorapidity(0.9);
+    cutXibar->SetMaxPseudorapidity(0.8);
     cutXibar->SetMinTPCcluster(-1);
     
     AliRsnCutSet* cutSetXi=new AliRsnCutSet("setXi",AliRsnTarget::kDaughter);
@@ -3941,14 +3941,7 @@ Bool_t Config_Xik0(
         multbins[nmult]=15.; nmult++;
         for(j=2;j<=10;j++){multbins[nmult]=j*10; nmult++;}
     }else{
-        multbins[nmult]=1e-4; nmult++;
-        multbins[nmult]=0.001; nmult++;
-        multbins[nmult]=0.002; nmult++;
-        multbins[nmult]=0.005; nmult++;
-        multbins[nmult]=0.01; nmult++;
-        multbins[nmult]=0.02; nmult++;
-        multbins[nmult]=0.03; nmult++;
-        multbins[nmult]=0.04; nmult++;
+        multbins[nmult]=0.; nmult++;
         multbins[nmult]=0.05; nmult++;
         multbins[nmult]=0.06; nmult++;
         multbins[nmult]=0.07; nmult++;
@@ -4022,7 +4015,7 @@ Bool_t Config_Xik0(
     AliRsnMiniOutput* out;
     
     task->SetMotherAcceptanceCutMinPt(0.15);
-    task->SetMotherAcceptanceCutMaxEta(0.9);
+    task->SetMotherAcceptanceCutMaxEta(0.8);
     task->KeepMotherInAcceptance(true);
     
     for(i=0;i<2;i++) for(j=0;j<=10;j++){
@@ -4100,7 +4093,7 @@ Bool_t Config_Xik0(
         
         if(j<=6){
             //if(xID==imID) out->AddAxis(imID,240,1.8,3);// axis X: invmass
-            if(xID==imID || xID==mmID) out->AddAxis(xID,300,1.85,2.15);// axis X: invmass
+            if(xID==imID || xID==mmID) out->AddAxis(xID,380,1.82,2.2);// axis X: invmass
             else out->AddAxis(diffID,200,-0.02,0.02);// axis X: resolution
             out->AddAxis(ptID,npt,ptbins);//200,0.0,20.0);// axis Y: transverse momentum
             out->AddAxis(centID,nmult,multbins);// axis Z: centrality-multiplicity
@@ -4120,8 +4113,7 @@ Bool_t Config_Xik0(
     
     if(isMC){
         AliRsnCutMiniPair* cutEta=new AliRsnCutMiniPair("cutPseudorapidity", AliRsnCutMiniPair::kPseudorapidityRangeMC);
-        //cutEta->SetRangeD(-0.9,0.9);
-        cutEta->SetRangeD(-1000.0,1000.0);
+        cutEta->SetRangeD(-0.8,0.8);
         
         AliRsnCutSet* cutsPairDaughter=new AliRsnCutSet("pairCutsDaughter", AliRsnTarget::kMother);
         cutsPairDaughter->AddCut(cutEta);

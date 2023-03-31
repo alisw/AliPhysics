@@ -104,11 +104,13 @@ class AliAnalysisTaskMLTreeMaker2018 : public AliAnalysisTaskSE {
   class Particle{
     public:
       Particle() :
-        fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fXv(-99), fYv(-99), fZv(-99), fDCAxy(-99), fDCAz(-99), fDCAxy_res(-99), fDCAz_res(-99), fTrackID(0), fMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal(), DielectronPairFromSameMother() {}
+        fPt(-99), fEta(-99), fPhi(-99), fCharge(-99), fXv(-99), fYv(-99), fZv(-99), fDCAxy(-99), fDCAz(-99), fDCAxy_res(-99), fDCAz_res(-99), fTrackID(0), fTrackLabel(0), fMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal(), DielectronPairFromSameMother() {}
       Particle(double pt, double eta, double phi, short charge, float x, float y, float z) :
-        fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fXv(x), fYv(y), fZv(z), fDCAxy(-99), fDCAz(-99), fDCAxy_res(-99), fDCAz_res(-99), fTrackID(0), fMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal(), DielectronPairFromSameMother() {}
+        fPt(pt), fEta(eta), fPhi(phi), fCharge(charge), fXv(x), fYv(y), fZv(z), fDCAxy(-99), fDCAz(-99), fDCAxy_res(-99), fDCAz_res(-99), fTrackID(0), fTrackLabel(0), fMotherID(0), fMCSignalPair(false), fULSSignalPair(false), isMCSignal(), DielectronPairFromSameMother() {}
 
       void SetTrackID(int id) {fTrackID = id;}
+      void SetTrackLabel(int label) {fTrackLabel = label;}
+
       void SetMotherID(int id) {fMotherID = id;}
       void SetMCSignalPair (bool value) {fMCSignalPair = value;}
       void SetULSSignalPair(bool value) {fULSSignalPair = value;}
@@ -119,8 +121,10 @@ class AliAnalysisTaskMLTreeMaker2018 : public AliAnalysisTaskSE {
 
       int  GetTrackID() {return fTrackID;}
       int  GetMotherID() {return fMotherID;}
+      int  GetTrackLabel() {return fTrackLabel;}
       bool GetMCSignalPair() {return fMCSignalPair;}
       bool GetULSSignalPair() {return fULSSignalPair;}
+
 
       float fPt;
       float fEta;
@@ -137,6 +141,8 @@ class AliAnalysisTaskMLTreeMaker2018 : public AliAnalysisTaskSE {
       float fDCAz_res;
 
       int     fTrackID;
+      int     fTrackLabel;
+
       int     fMotherID;
       bool    fMCSignalPair;
       bool    fULSSignalPair;
@@ -163,7 +169,7 @@ class AliAnalysisTaskMLTreeMaker2018 : public AliAnalysisTaskSE {
   std::vector<Bool_t> HasSPDfirstHit;
   std::vector<Float_t> RatioCrossedRowsFindableClusters;
   std::vector<Int_t> NTPCSignal;
-  Bool_t loCuts;        //loose cuts?
+  //Bool_t loCuts;        //loose cuts?
 
 //  std::vector<Int_t> IsBG;
 
@@ -354,13 +360,16 @@ class AliAnalysisTaskMLTreeMaker2018 : public AliAnalysisTaskSE {
   std::vector<std::vector<Float_t>> pairPtees;
   std::vector<std::vector<Float_t>> pairOpAngs;
   std::vector<std::vector<Float_t>> pairDCAee;
-
+  
+  std::vector<std::vector<Float_t>> pairCosPointAngs;
+  std::vector<std::vector<Float_t>> pairDecayLengths;
+  std::vector<std::vector<Float_t>> pairRs;
 
 //  TH2D* fHistTrackStats;//QA histogram for track filter bit statistics vs. centrality
 
 //  TH3D* fHistEtaPhiPt;//QA histogram for eta/phi/pt distribution
 
 
-  ClassDef(AliAnalysisTaskMLTreeMaker2018, 1);
+  ClassDef(AliAnalysisTaskMLTreeMaker2018, 3);
 
 };

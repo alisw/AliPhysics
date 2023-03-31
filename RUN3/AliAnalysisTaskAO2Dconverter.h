@@ -190,7 +190,7 @@ private:
   Bool_t fUseTriggerAnalysis = kTRUE;    // Use or not trigger analysis
   AliEventCuts fEventCuts;      // Standard event cuts
   AliTriggerAnalysis fTriggerAnalysis; // Trigger analysis object for event selection
-  AliGRPObject *fGRP;           //! Global run parameters
+  AliGRPObject *fGRP = nullptr; //! Global run parameters
   AliVEvent *fVEvent = nullptr; //! input ESD or AOD event
   AliESDEvent *fESD  = nullptr; //! input ESD event
   AliAODEvent *fAOD  = nullptr; //! input AOD event
@@ -275,7 +275,7 @@ private:
 
   struct {
     ULong64_t fDataframeID = 0; /// ID of this data frame (important for merging DFs)
-  } origin;
+  } origin;    //! structure for origin table
 
   struct {
     // Track data
@@ -695,7 +695,7 @@ private:
     // D* -> D0pi candidates
     Int_t fIndexHf2Prongs = -1; /// D0 index
     Int_t fIndexTracks_0 = -1;  /// Track index of soft pion
-  } hfDStar;
+  } hfDStar;                  //! structure for HF Dstar
 
   /// Offsets to convert the IDs within one collision to global IDs
   Int_t fOffsetMuTrackID = 0; ///! Offset of MUON track  (used in the clusters)

@@ -8,6 +8,7 @@
 #pragma link C++ class AliAnalysisTaskCorrForFlow+;
 #pragma link C++ class AliAnalysisTaskCorrForFlowFMD+;
 #pragma link C++ class AliAnalysisTaskCorrForFlowMaster+;
+#pragma link C++ class AliAnalysisTaskCorrForFlowEta+;
 #pragma link C++ class AliAnalysisTaskDeform+;
 #pragma link C++ class AliAnalysisTaskGFWPIDFlow+;
 #pragma link C++ class AliAnalysisTaskFlowExample+;
@@ -50,6 +51,7 @@
 #pragma link C++ class AliGFWFilterTask+;
 #pragma link C++ class AliAnalysisTaskJetQ+;
 #pragma link C++ class AliAnalysisTaskMeanPtV2Corr+;
+#pragma link C++ class AliAnalysisTaskXDeptFlow+;
 #pragma link C++ class AliAnalysisTaskNonlinearFlow+;
 #pragma link C++ class AliAnalysisTaskCorrForNonlinearFlow+;
 #pragma link C++ class AliAnalysisTaskAcceptanceCorr+;

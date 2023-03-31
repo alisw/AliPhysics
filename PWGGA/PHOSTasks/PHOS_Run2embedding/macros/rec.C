@@ -9,11 +9,13 @@ void rec() {
    AliQAManager::QAManager(AliQAv1::kSIMMODE) ;
 
 
-  reco.SetCDBSnapshotMode("Sim/OCDBrec.root");
+  reco.SetDefaultStorage("alien://Folder=/alice/data/2018/OCDB");
   reco.SetRunReconstruction("PHOS") ;
   reco.SetRunQA(":") ;
   reco.SetRunGlobalQA(kFALSE) ;
 
+ reco.SetSpecificStorage("GRP/GRP/Data",
+                          Form("local://%s",gSystem->pwd()));
   TStopwatch timer;
   timer.Start();
   reco.Run();

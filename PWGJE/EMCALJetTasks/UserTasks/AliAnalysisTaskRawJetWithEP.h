@@ -128,6 +128,7 @@ public:
 
   // void SetPileupCutQA(Bool_t bPileupCutQA){fPileupCutQA =  bPileupCutQA;}
   void SetEventQA(Int_t qaEventNum){fQaEventNum = qaEventNum;}
+  void SetV0KindForBKG(Int_t iV0KindForBkg){fV0KindForBkg = iV0KindForBkg;}
   void SetV0Combine(Bool_t bV0Combin){fV0Combin = bV0Combin;}
   void SetQnCalibType(TString iQnVCalibType){fQnVCalibType = iQnVCalibType;}
   void SetTPCQnMeasure(Bool_t bTPCQnMeasure){fTPCQnMeasure = bTPCQnMeasure;}
@@ -248,6 +249,7 @@ private:
     Bool_t  fSepEP = kFALSE;          ///<
     
 
+    Int_t         fV0KindForBkg = 0;        ///< 0:V0M, 1:V0C, 2:V0A
     TString       fQnVCalibType = "kOrig";  ///< fCalibration Type
     Bool_t        fV0Combin = kFALSE;       ///<
     int           fQaEventNum = -1;         ///<
@@ -273,15 +275,15 @@ private:
     
     void       MeasureTpcEPQA();
     
-    Bool_t     MeasureBkg();
-    void       BkgFitEvaluation(TH1F* hBkgTracks, TF1* fFitModulation);
+    Bool_t     MeasureBkg(Double_t baseJetRho);
+    void       BkgFitEvaluation(Double_t baseJetRho, TH1F* hBkgTracks, TF1* fFitModulation);
     
     Bool_t     DoEventPlane();
     void       DoJetLoop();
     void       DoTrackLoop();
     
     Bool_t     QnJEHandlarEPGet();
-    Bool_t     QnGainCalibration();
+    Bool_t     QnV0GainCalibration();
     Bool_t     QnRecenteringCalibration();
     Bool_t     QnCalcWOCalib();
 
@@ -337,9 +339,10 @@ private:
     // TF1   *fMultCutPU;      //!<!
     // TF1   *fCenCutLowPU;    //!<!
     // TF1   *fCenCutHighPU;   //!<!
-
-    Double_t V0Mult2[3];    /// For q2 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
-    Double_t V0Mult3[3];    /// For q3 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
+    
+    Double_t V0Mult2[3];    ///< For q2 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
+    Double_t V0Mult3[3];    ///< For q3 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
+    Double_t V0MultForAngle[8];    ///< Multiplicity for 8 region
     
     //qnVector 0:x, 1:y
     Double_t q2VecV0M[2];   ///< Q2 V0 C+A vector(x,y)
@@ -407,7 +410,7 @@ private:
     
 
     short GetVertexZbin() const;
-    short GetCentBin() const;
+    Int_t GetCentBin();
     bool OpenInfoCalbration();
 
     bool IsTrackSelected(AliAODTrack* track);
@@ -483,10 +486,10 @@ private:
     TH1D* fQx3sV0C[14];          ///< sigma Qxn V0C
     TH1D* fQy3sV0C[14];          ///< sigma Qyn V0C
 
-    bool fV0CalibZvtxDiff;       //< flag to properly manage Zvtx differential V0 calibrations
+    bool fV0CalibZvtxDiff;       ///< flag to properly manage Zvtx differential V0 calibrations
 
-    TH1D* fWeightsTPCPosEta[9];  ///< Weights for TPC tracks with eta > 0
-    TH1D* fWeightsTPCNegEta[9];  ///< Weights for TPC tracks with eta < 0
+    TH1D* fWeightsTPCPosEta[10];  ///< Weights for TPC tracks with eta > 0
+    TH1D* fWeightsTPCNegEta[10];  ///< Weights for TPC tracks with eta < 0
     bool fEnablePhiDistrHistos;  ///< Enable phi distribution histos
     TH2F* fPhiVsCentrTPC[2];     ///< Phi vs. centr TH2 of selected TPC tracks in eta>0 and eta<0
     
@@ -496,7 +499,7 @@ private:
     AliAnalysisTaskRawJetWithEP(const AliAnalysisTaskRawJetWithEP&); // not implemented
     AliAnalysisTaskRawJetWithEP &operator=(const AliAnalysisTaskRawJetWithEP&);
 
-    ClassDef(AliAnalysisTaskRawJetWithEP, 137);
+    ClassDef(AliAnalysisTaskRawJetWithEP, 140);
 };
 
 #endif

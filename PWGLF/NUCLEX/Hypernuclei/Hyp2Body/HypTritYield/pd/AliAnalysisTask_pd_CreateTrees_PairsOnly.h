@@ -19,7 +19,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
   public:
 
     AliAnalysisTask_pd_CreateTrees_PairsOnly();
-    AliAnalysisTask_pd_CreateTrees_PairsOnly(const char *name,int CollisionSystem);
+    AliAnalysisTask_pd_CreateTrees_PairsOnly(const char *name,int CollisionSystem, bool UseOpenCuts);
     AliAnalysisTask_pd_CreateTrees_PairsOnly& operator = (const AliAnalysisTask_pd_CreateTrees_PairsOnly &task);
     AliAnalysisTask_pd_CreateTrees_PairsOnly(const AliAnalysisTask_pd_CreateTrees_PairsOnly &task);
     virtual ~AliAnalysisTask_pd_CreateTrees_PairsOnly();
@@ -30,8 +30,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     double CalculateBetaTOF(AliAODTrack &track); 
     double CalculateMassSquareTOF(AliAODTrack &track);
     double CalculateSigmaMassSquareTOF(double pT, double massSq, int ParticleSpecies, int RunNumber);
-    bool CheckProtonCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
-    bool CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
+    bool CheckProtonCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, bool UseOpenCuts);
+    bool CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, bool UseOpenCuts);
     double CalculateSigmadEdxITS(AliAODTrack &Track, int ParticleSpecies, int RunNumber);
 
 
@@ -43,6 +43,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     AliPIDResponse	  *fPIDResponse;
 
     int			  fCollisionSystem;
+    bool		  fUseOpenCuts;
 
     TTree     *fSaveTree_Proton;
     float     fProton_px;

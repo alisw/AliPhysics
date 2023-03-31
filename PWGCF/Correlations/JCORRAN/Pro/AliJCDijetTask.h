@@ -171,6 +171,6 @@ class AliJCDijetTask : public AliAnalysisTaskSE {
         PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///< yaml configuration
         TString fsAnchorPeriod;
 
-        ClassDef(AliJCDijetTask, 2); 
+        ClassDef(AliJCDijetTask, 3); 
 };
 #endif // ALIJCDIJETTASK_H

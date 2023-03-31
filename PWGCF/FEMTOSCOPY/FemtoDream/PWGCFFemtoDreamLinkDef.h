@@ -84,6 +84,9 @@
 #pragma link C++ class AliSigma0PhotonCuts+;
 #pragma link C++ class AliAnalysisTaskNanoXiPi+;
 
+#pragma link C++ class AliAnalysisTaskOtonXx+;
+
+
 #endif
 
 #ifdef __CLING__
@@ -94,6 +97,7 @@
 
 //the classes below work only in ROOT6
 #pragma link C++ class AliAnalysisTaskCharmingFemto+;
+#pragma link C++ class AliAnalysisTaskCharmingFemto_og+;
 #pragma link C++ class CustomQueue<std::vector<TLorentzVector>>+;
 #pragma link C++ std::vector<CustomQueue<std::vector<TLorentzVector>>>+;
 #pragma link C++ class CutContainer+;

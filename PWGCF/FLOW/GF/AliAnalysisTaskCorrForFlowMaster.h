@@ -67,6 +67,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    SetJetEventsLowPtCut(Double_t cut) { fJetParticleLowPt = cut; }
         void                    SetUsePhiStar(Bool_t flag) {fUsePhiStar = flag;}
         void                    SetUseEfficiency(Bool_t flag) {fUseEfficiency = flag;}
+        void                    SetCreateQAPlots(Bool_t flag) {fCreateQAPlots = flag;}
 
         // event selection
         void                    SetNumEventBias(Int_t num) {fNumEventBias = num;}
@@ -82,6 +83,8 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    SetutDCAz(Double_t cut) { fCutDCAz = cut; }
         void                    SetutDCAxy(Double_t cut) { fCutDCAxySigma = cut; }
         void                    SetCutTPCchi2pCl(Double_t cut) { fCutTPCchi2pCl = cut; }
+        void                    SetUseLikeSign(Bool_t flag) {fUseLikeSign = flag;}
+        void                    SetUseUnlikeSign(Bool_t flag) {fUseUnlikeSign = flag;}
 
         //track selection V0s
         void                    SetNSigmaTPC(Double_t cut) { fSigmaTPC = cut; }
@@ -95,6 +98,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    SetPhiStarCur(Double_t phiStar) {fMergingCut = phiStar; }
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
         void                    SetNofSamples(Int_t n) { fNOfSamples = n; }
+        void                    SetPtRefRange(Double_t min, Double_t max) {fPtRefMin=min; fPtRefMax=max; }
 
         //FMD
         void                    SetBoostAMPT(Bool_t flag = kTRUE){ fBoostAMPT = flag; }
@@ -144,6 +148,10 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         TH2D*                   fhEfficiencyEta[8]; //! eta dependent (8 sectors)
         TH1D*                   fhCentCalib; //!
         TH1D*                   fhPT; //!
+        TH1D*                   fhPhi; //!
+        TH1D*                   fhEta; //!
+        TH1D*                   fhPVz; //!
+
 
         //event and track selection
         AnaType                 fAnalType;
@@ -162,10 +170,15 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         Bool_t                  fRejectSecondariesFromMC; // [kFALSE]
         Bool_t                  fBoostAMPT; // [kFALSE] = boost to CMS in pPb collisions for the gen level of AMPT
         Bool_t                  fUsePhiStar; // [kFALSE]
+        Bool_t                  fCreateQAPlots; //[kFALSE]
+        Bool_t                  fUseLikeSign; // [kFALSE]
+        Bool_t                  fUseUnlikeSign; // [kFALSE]
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
         Int_t                   fNofTracks;
+        Int_t                   fNofTrackGlobal; // [0]
+        Int_t                   fNofEventGlobal; // [0]
         Int_t                   fNofMinHighPtTracksForRejection;
         Int_t                   fNchMin;
         Int_t                   fNchMax;
@@ -177,6 +190,8 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         Double_t                fPtMaxTrig;
         Double_t                fPtMinAss;
         Double_t                fPtMaxAss;
+        Double_t                fPtRefMin; // [0.2]
+        Double_t                fPtRefMax; // [3.0]
         std::vector<Double_t>   fPtBinsTrigCharged;
         std::vector<Double_t>   fPtBinsAssCharged;
         Double_t                fCentMin;

@@ -32,10 +32,14 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         void                    SetRejectAddPileUp(Bool_t use = kTRUE) { fEventRejectAddPileUp = use; }
         void                    SetCentralityEst(TString est){ fCentEstimator = est; }
         void                    SetFilterBit(UInt_t filter) { fFilterBit = filter; }
+        void                    SetDCAZmax(Double_t dcaz) { fDCAZcut = dcaz; }
         AliEventCuts            fEventCuts;
         void                    SetAbsEta(Double_t etaAbs) {fAbsEtaMax = etaAbs; }
         void                    SetUseWeightsRunByRun(Bool_t bRunByRun) { fFlowRunByRunWeights = bRunByRun; }
         void                    Set2018(Bool_t dataSet) { fIs2018Data = dataSet; }
+
+        void                    SetDCAzMax(Double_t dcaz) {  fCutDCAzMax = dcaz; }
+        void                    SetDCAxyMax(Double_t dcaxy) {  fCutDCAxyMax = dcaxy; }
 
         void                    SetVtxZCut(Double_t zCut) { fVtxZCuts = zCut; }
         void                    SetPhiBins(Int_t PhiBin) { fNPhiBins = PhiBin; }
@@ -144,7 +148,11 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         TH3F*                   fHistPhiCor3D;    //!
         TH1F*                   fHistTPCchi2;   //!
         TH1F*                   fHistITSchi2;   //!
+
+        TH1F*                   fHistDCAxy;      //!
+        TH1F*                   fHistDCAz;      //!
         TH3F*                   fHistMCPtEtaVz; //!
+        TH1F*                   fHistPhiCorrPt; //!
 
         TH2D*                   fhQAEventsfMult32vsCentr;   //!
         TH2D*                   fhQAEventsfMult128vsCentr;   //!
@@ -395,6 +403,7 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         AliVEvent::EOfflineTriggerTypes    fTrigger;
         Bool_t                  fEventRejectAddPileUp;
         UInt_t                  fFilterBit;
+        Double_t                fDCAZcut;
         Double_t                fAbsEtaMax;
         Double_t                fVtxZCuts;
         Int_t                   fNPhiBins;
@@ -448,6 +457,8 @@ class AliAnalysisTaskESEFlow : public AliAnalysisTaskSE
         Bool_t                  fCheckChi2ITS;
         Float_t                 vTPCChi2Bound;
         Float_t                 vITSChi2Bound;
+        Double_t                fCutDCAzMax;
+        Double_t                fCutDCAxyMax;
         Bool_t                  fFillQARej;
         Bool_t                  fUseNUEWeights;
         Bool_t                  fUseEfficiency;
