@@ -291,7 +291,7 @@ void AliGFW::s_replace_all(string &instr, const string &pattern1, const string &
   while(lpos>-1) { s_replace(instr,pattern1,pattern2,lpos); lpos=s_index(instr,pattern1,lpos); };
 };
 Bool_t AliGFW::s_tokenize(string &instr, string &subs, Int_t &spos, const string &delim) {
-  if(spos<0 || spos>=instr.size()) {spos=-1; subs=""; return kFALSE;};
+  if(spos<0 || spos>=(Int_t)instr.size()) {spos=-1; subs=""; return kFALSE;};
   Int_t lpos = s_index(instr,delim,spos);
   if(lpos<0) lpos=instr.size();
   subs = instr.substr(spos,lpos-spos);
