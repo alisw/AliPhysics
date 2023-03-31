@@ -116,6 +116,7 @@
 #pragma link C++ class MiniXiMC+;
 #pragma link C++ class MiniKaon+;
 #pragma link C++ class MiniKaonMC+;
+#pragma link C++ class XiDaughter+;
 #pragma link C++ class std::vector<MiniXi>+;
 #pragma link C++ class std::vector<MiniXiMC>+;
 #pragma link C++ class std::vector<MiniKaon>+;

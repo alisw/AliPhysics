@@ -511,21 +511,21 @@ void AliAnalysisTaskGFWFlow::NotifyRun() {
 }
 Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn, Bool_t DisableOverlap) {
   Double_t dnx, val;
-  dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
+  dnx = fGFW->Calculate(corconf,0,kTRUE).real();
   if(dnx==0) return kFALSE;
   if(!corconf.pTDif) {
-    val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
+    val = fGFW->Calculate(corconf,0,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1)
-      fFC->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
+      fFC->FillProfile(corconf.Head.c_str(),cent,val,dnx,rndmn);
     return kTRUE;
   };
   Bool_t NeedToDisable=kFALSE;
   for(Int_t i=1;i<=fPtAxis->GetNbins();i++) {
-    dnx = fGFW->Calculate(corconf,i-1,kTRUE,NeedToDisable).Re();
+    dnx = fGFW->Calculate(corconf,i-1,kTRUE,NeedToDisable).real();
     if(dnx==0) continue;
-    val = fGFW->Calculate(corconf,i-1,kFALSE,NeedToDisable).Re()/dnx;
+    val = fGFW->Calculate(corconf,i-1,kFALSE,NeedToDisable).real()/dnx;
     if(TMath::Abs(val)<1)
-      fFC->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);
+      fFC->FillProfile(Form("%s_pt_%i",corconf.Head.c_str(),i),cent,val,dnx,rndmn);
   };
   return kTRUE;
 };
