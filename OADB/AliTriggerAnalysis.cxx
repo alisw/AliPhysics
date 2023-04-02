@@ -1346,7 +1346,7 @@ Bool_t AliTriggerAnalysis::IsSTGCrossedAndFired(const AliVEvent *event, const TB
   Int_t nPassed = 0;
   for (Int_t itrk = 0; itrk < nTracks; ++itrk) {
     AliESDtrack* track = dynamic_cast<AliESDtrack*>(event->GetTrack(itrk));
-    if (!track)
+    if (!track || track->GetTPCNcls()==0)
       continue;
     UChar_t itsMap = track->GetITSClusterMap();
     if (TESTBIT(itsMap,0) && TESTBIT(itsMap,1)) {
