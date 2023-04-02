@@ -215,7 +215,7 @@ void AliPtContainer::FillRecursiveProfiles(const double &lMult, const double &rn
           ++k;
         }
       }
-      else if(fSumw[0][m]!=0) { ((AliProfileBS*)fCorrList->At(k))->FillProfile(lMult,fCorr[0][m]/fSumw[0][m],(fEventWeight==PtSpace::kOne)?1.0:fSumw[0][m],rn); ++k; }
+      else if(fSumw[0][m]!=0) { ((AliProfileBS*)fCorrList->At(k))->FillProfile(lMult,fCorr[0][m]/fSumw[0][m],(fEventWeight==PtSpace::kOne)?1.0:fSumw[0][m],rn); ++k;}
       if(fSubevent){
         if(fSumw[1][m]!=0) ((AliProfileBS*)fSubList->At(3*(m-1)))->FillProfile(lMult,fCorr[1][m]/fSumw[1][m],(fEventWeight==PtSpace::kOne)?1.0:fSumw[1][m],rn);
         if(fSumw[2][m]!=0) ((AliProfileBS*)fSubList->At(3*(m-1)+1))->FillProfile(lMult,fCorr[2][m]/fSumw[2][m],(fEventWeight==PtSpace::kOne)?1.0:fSumw[2][m],rn);
