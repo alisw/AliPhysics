@@ -107,6 +107,9 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       break;  
     case 22 :     // Syst: (chi2 in [0.1, 2.3])
       configNames.push_back("chi2low23");
+      break;
+    case 23 :
+      configNames.push_back("hybridBaseDCA");
       break;  
     default :
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
@@ -257,7 +260,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     }
 
     /// Filtering and detector cuts.
-    if (strcmp(configNames[i].Data(), "hybrid") == 0) {
+    if (strcmp(configNames[i].Data(), "hybrid") == 0 || strcmp(configNames[i].Data(), "hybridBaseDCA") == 0) {
       fJCatalyst[i]->SetTestFilterBit(hybridCut);
     } else {  // Default: global tracks.
       fJCatalyst[i]->SetTestFilterBit(globalCut);
@@ -304,6 +307,10 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     } else if (strcmp(configNames[i].Data(), "pqq") == 0) {
      fJCatalyst[i]->SetParticleCharge(1);
     }   // Default: charge = 0 to accept all charges.
+
+    if (strcmp(configNames[i].Data(), "hybridBaseDCA") == 0) {
+      fJCatalyst[i]->SetDCABaseCuts(true);
+    }
 
     /// Kinematic cuts and last fine tuning.
     fJCatalyst[i]->SetPtRange(ptMin, ptMax);
