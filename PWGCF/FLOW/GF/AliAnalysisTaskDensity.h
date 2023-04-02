@@ -72,6 +72,7 @@ class AliAnalysisTaskDensity : public AliAnalysisTaskSE
         void ProcessTrack(Double_t lweight, Double_t lpt, Double_t leta);
         void ProcessEventCorrelation(Int_t id);
         void FillWPCounter(std::vector<std::vector<Double_t>> &inarr, Double_t w, Double_t p);
+        void FillEventQA(Double_t lCent, Int_t lNch);
         void ClearWPCounter();
 
         Double_t WeightPt(Double_t pt);
@@ -84,7 +85,7 @@ class AliAnalysisTaskDensity : public AliAnalysisTaskSE
     // input/output containers
         TList*                  fPtSampleList;          //! output list for BS samples        
         TList*                  fInputListEfficiency;   
-        TList*                  fQAEventList;           //! QA AliEvents cuts 
+        TList*                  fQAEventList;           //! QA AliEvents cuts + Costum QA 
         TList*                  fQATrackList;           //! QA for track cuts
     // ali classes
         AliGFWCuts*                 fGFWSelection;
@@ -124,6 +125,8 @@ class AliAnalysisTaskDensity : public AliAnalysisTaskSE
         TH1D*       fhChiPerTPCCls;         //!
         TH1D*       fhChiPerITSCls;         //!
         TH1D*       fhNofPileupSelected;    //!
+        TH2D*       fhSubEtaDistribution;   //!
+        TH2D*       fhMultSelected;         //!
 
         TH1D*       fhEffeciencyPt;         //!
 
