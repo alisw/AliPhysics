@@ -56,7 +56,7 @@ class AliAnalysisTaskJetQ : public AliAnalysisTaskSE
 
         void fixPhi(Double_t &inPhi) { if(inPhi<-C_PI_HALF) inPhi+=C_TWOPI; else if(inPhi>C_PI_TH) inPhi-=C_TWOPI; };
         void setupAxis(Int_t &nBins, Double_t *&bins, vector<Double_t> &binCont, TAxis *&ax) {if(binCont.size()>0) binCont.clear(); for(Int_t i=0;i<=nBins;i++) binCont.push_back(bins[i]); if(ax) delete ax; ax = new TAxis(nBins, bins); };
-        AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
+        AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc.Data(),head.Data(),ptdif);};
         void FillFCs(Double_t cent, Double_t rndm, const Bool_t &TrFound) {for(auto a : corrconfigs) FillFCs(a,cent,rndm,TrFound); };
         void FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn, const Bool_t &TrFound);
         AliAODEvent *fAOD; //! do not store

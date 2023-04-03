@@ -50,6 +50,9 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fVectorJetEta(0),
                                                    fVectorJetPhi(0),
                                                    fVectorJetR(0),
+                                                   fVectorJetNEF({}),
+                                                   fVectorJetNClus({}),
+                                                   fVectorJetNCh({}),
                                                    fTrueNJets(0),
                                                    fTrueVectorJetPt(0),
                                                    fTrueVectorJetPx(0),
@@ -72,6 +75,9 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fVectorJetEta(0),
                                                                    fVectorJetPhi(0),
                                                                    fVectorJetR(0),
+                                                                   fVectorJetNEF({}),
+                                                                   fVectorJetNClus({}),
+                                                                   fVectorJetNCh({}),
                                                                    fTrueVectorJetPt(0),
                                                                    fTrueVectorJetPx(0),
                                                                    fTrueVectorJetPy(0),
@@ -135,6 +141,10 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       fVectorJetEta.clear();
       fVectorJetPhi.clear();
       fVectorJetR.clear();
+      fVectorJetNEF.clear();
+      fVectorJetNClus.clear();
+      fVectorJetNCh.clear();
+
       for (auto const& jet : jetCont->accepted()) {
         if (!jet)
           continue;
@@ -146,6 +156,9 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         fVectorJetEta.push_back(jet->Eta());
         fVectorJetPhi.push_back(jet->Phi());
         fVectorJetR.push_back(jet->Area());
+        fVectorJetNEF.push_back(jet->NEF());
+        fVectorJetNClus.push_back(jet->Nn());
+        fVectorJetNCh.push_back(jet->Nch());
       }
       fNJets = count;
     } else {
@@ -203,12 +216,9 @@ void AliAnalysisTaskConvJet::FindPartonsJet(TClonesArray* arrMCPart)
         double dEta = particle->Eta() - fTrueVectorJetEta[j];
         double dPhi = particle->Phi() - fTrueVectorJetPhi[j];
         double deltaR2tmp = dEta * dEta + dPhi * dPhi;
-        // std::cout << "deltaR2tmp " << deltaR2tmp << "   deltaR2 " << deltaR2 <<"   JetR2 " << JetR2 << std::endl;
         if (deltaR2tmp < JetR2 && deltaR2tmp < deltaR2) {
           indexNearestJet = j;
           deltaR2 = deltaR2tmp;
-          // std::cout << "indexNearestJet " << indexNearestJet << std::endl;
-          // std::cout << "deltaR2tmp " << deltaR2tmp << "   deltaR2 " << deltaR2 <<"   JetR2 " << JetR2 << std::endl;
         }
       }
       if (indexNearestJet == -1) {

@@ -95,7 +95,7 @@ AliAnalysisTaskSigmaPlus::AliAnalysisTaskSigmaPlus() : AliAnalysisTaskSE(),
 fOutputList(0), aodEvent(0x0), mcEvent(0x0), AODMCTrackArray(0x0), 
 fPIDResponse(0), fEvPoolMgr(0x0), fEvPoolMgr2(0x0), fEvPoolMgr3(0x0), isMonteCarlo(kFALSE),
 fSigmaCandTree(0x0), fSigmaPairTreeSE(0x0), fSigmaPairTreeME(0x0), fSigmaMEBackgroundTree(0x0),
-fSigmaPHOSCandTree(0x0), fSigmaPairTreePHOSSE(0x0), fSigmaPairTreePHOSME(0x0), fSigmaPHOSMEBkgTree(0x0), 
+fSigmaPHOSCandTree(0x0), fSigmaPairTreePHOSSE(0x0), fSigmaPairTreePHOSME(0x0), fSigmaPHOSMEBkgTree(0x0), fProtonTree(0x0),
 cElectronMass(0), cProtonMass(0), cSigmaMass(0), cPi0Mass(0), c(0), Bz(0),
 primaryVtxPosX(-999), primaryVtxPosY(-999), primaryVtxPosZ(-999),
 primaryVtxPosXMC(-999), primaryVtxPosYMC(-999), primaryVtxPosZMC(-999), 
@@ -105,20 +105,21 @@ fEventhasSigma(kFALSE), fEventhasProton(kFALSE), fEventhasSigmaCand(kFALSE), fDe
 
 fProcessMCParticles(kTRUE), 
 
-fProcessProtons(kTRUE), 
+fProcessProtons(kTRUE),
+fSaveProtons(kTRUE), 
 fProcessV0s(kTRUE), 
 fProcessReco(kTRUE), 
 fSavePartCand(kTRUE),
-fFillPairTreeSE(kTRUE),
-fFillPairTreeME(kTRUE),
+fFillPairTreeSE(kFALSE),
+fFillPairTreeME(kFALSE),
 fSaveMixedBackground(kTRUE),
 
 fProcessClusters(kTRUE),
 fMapClusterstoTracks(kTRUE),
 fProcessRecoPHOS(kTRUE),
 fSavePartCandPHOS(kTRUE),
-fFillPHOSPairTreeSE(kTRUE),
-fFillPHOSPairTreeME(kTRUE),
+fFillPHOSPairTreeSE(kFALSE),
+fFillPHOSPairTreeME(kFALSE),
 fSavePHOSMixedBackground(kTRUE),
 fSaveAdditionalBranches(kFALSE),
 fSaveMCBranches(kTRUE),
@@ -149,8 +150,8 @@ fRequireSigmaCand(kTRUE),
 fUseAbsZ(kTRUE),
 fUseAbsZCorr(kTRUE),
 
-fRejectNegIDs(0),
-fRejectZeroFilterBit(0),
+fRejectNegIDs(kTRUE),
+fRejectZeroFilterBit(kFALSE),
 fMaxProtEta(1),    
 fMinTPCClustProt(40),
 fMaxNsigProtTPC(4),
@@ -192,7 +193,7 @@ fMaxClusterM02(4),
 fCleanAutoCorr(kTRUE),
 fMinPi0Mass(0.06), 
 fMaxPi0Mass(0.19),  
-fMaxSigmaPA(0.06),
+fMaxSigmaPA(0.05),
 fMaxSigmaY(0.9),  
 fMaxSigmaMass(1.4),
 fMinProtonDCAxy(0.005),
@@ -223,15 +224,24 @@ fMaxCorrSigmaPA(0.06),
 fMinCorrSigmaMass(1.13),   
 fMaxCorrSigmaMass(1.25),   
 fMinCorrProtonDCAxy(0.005),
-fMaxCorrPairProtonDCAxy(9999),
-fMaxCorrPairProtonDCAz(9999),
+fMaxCorrPairProtonDCAxy(0.2),
+fMaxCorrPairProtonDCAz(0.4),
 fMaxCorrkstar(600),
 
 fMinCorrPi0MassPHOS(0.09),
 fMaxCorrPi0MassPHOS(0.16),
-fMaxCorrSigmaPAPHOS(0.03),
+fMaxCorrSigmaPAPHOS(0.02),
+
+fMaxNsigPionTPC(2),
+fMaxNsigKaonTPC(2),
+fMaxNsigElecTPC(2),
+fMaxNsigPionTOF(2),
+fMaxNsigKaonTOF(2),
+fMaxNsigElecTOF(2),
+fRejOtherTOF(kTRUE),
 
 fIsMCSigma(kFALSE),
+fIsMCDalitz(kFALSE),
 fIsMCPrimary(kFALSE),
 fIsV01Onthefly(kFALSE),
 fIsV02Onthefly(kFALSE),
@@ -370,10 +380,14 @@ fClustNCells(-999),
 fClustDisttoBC(-999),
 
 fPairProtonIsMC(kFALSE),
+fPairProtonPDG(-999),
 fPairProtonIsPrimary(kFALSE),
 fPairProtonPx(-999),
 fPairProtonPy(-999),
 fPairProtonPz(-999),
+fPairProtonPxMC(-999),
+fPairProtonPyMC(-999),
+fPairProtonPzMC(-999),
 fPairProtonP(-999),
 fPairProtonEta(-999),
 fPairProtonCharge(-999),
@@ -404,7 +418,7 @@ AliAnalysisTaskSigmaPlus::AliAnalysisTaskSigmaPlus(const char* name) : AliAnalys
 fOutputList(0), aodEvent(0x0), mcEvent(0x0), AODMCTrackArray(0x0), 
 fPIDResponse(0), fEvPoolMgr(0x0), fEvPoolMgr2(0x0), fEvPoolMgr3(0x0), isMonteCarlo(kFALSE),
 fSigmaCandTree(0x0), fSigmaPairTreeSE(0x0), fSigmaPairTreeME(0x0), fSigmaMEBackgroundTree(0x0),
-fSigmaPHOSCandTree(0x0), fSigmaPairTreePHOSSE(0x0), fSigmaPairTreePHOSME(0x0), fSigmaPHOSMEBkgTree(0x0), 
+fSigmaPHOSCandTree(0x0), fSigmaPairTreePHOSSE(0x0), fSigmaPairTreePHOSME(0x0), fSigmaPHOSMEBkgTree(0x0), fProtonTree(0x0),
 cElectronMass(0), cProtonMass(0), cSigmaMass(0), cPi0Mass(0), c(0), Bz(0),
 primaryVtxPosX(-999), primaryVtxPosY(-999), primaryVtxPosZ(-999),
 primaryVtxPosXMC(-999), primaryVtxPosYMC(-999), primaryVtxPosZMC(-999), 
@@ -415,19 +429,20 @@ fEventhasSigma(kFALSE), fEventhasProton(kFALSE), fEventhasSigmaCand(kFALSE), fDe
 fProcessMCParticles(kTRUE), 
 
 fProcessProtons(kTRUE), 
+fSaveProtons(kTRUE), 
 fProcessV0s(kTRUE), 
 fProcessReco(kTRUE), 
 fSavePartCand(kTRUE),
-fFillPairTreeSE(kTRUE),
-fFillPairTreeME(kTRUE),
+fFillPairTreeSE(kFALSE),
+fFillPairTreeME(kFALSE),
 fSaveMixedBackground(kTRUE),
 
 fProcessClusters(kTRUE),
 fMapClusterstoTracks(kTRUE),
 fProcessRecoPHOS(kTRUE),
 fSavePartCandPHOS(kTRUE),
-fFillPHOSPairTreeSE(kTRUE),
-fFillPHOSPairTreeME(kTRUE),
+fFillPHOSPairTreeSE(kFALSE),
+fFillPHOSPairTreeME(kFALSE),
 fSavePHOSMixedBackground(kTRUE),
 fSaveAdditionalBranches(kFALSE),
 fSaveMCBranches(kTRUE),
@@ -458,8 +473,8 @@ fRequireSigmaCand(kTRUE),
 fUseAbsZ(kTRUE),
 fUseAbsZCorr(kTRUE),
 
-fRejectNegIDs(0),
-fRejectZeroFilterBit(0),
+fRejectNegIDs(kTRUE),
+fRejectZeroFilterBit(kFALSE),
 fMaxProtEta(1),    
 fMinTPCClustProt(40),
 fMaxNsigProtTPC(4),
@@ -501,7 +516,7 @@ fMaxClusterM02(4),
 fCleanAutoCorr(kTRUE),
 fMinPi0Mass(0.06), 
 fMaxPi0Mass(0.19),  
-fMaxSigmaPA(0.06),
+fMaxSigmaPA(0.05),
 fMaxSigmaY(0.9),  
 fMaxSigmaMass(1.4),
 fMinProtonDCAxy(0.005),
@@ -532,15 +547,24 @@ fMaxCorrSigmaPA(0.06),
 fMinCorrSigmaMass(1.13),   
 fMaxCorrSigmaMass(1.25),   
 fMinCorrProtonDCAxy(0.005),
-fMaxCorrPairProtonDCAxy(9999),
-fMaxCorrPairProtonDCAz(9999),
+fMaxCorrPairProtonDCAxy(0.2),
+fMaxCorrPairProtonDCAz(0.4),
 fMaxCorrkstar(600),
 
 fMinCorrPi0MassPHOS(0.09),
 fMaxCorrPi0MassPHOS(0.16),
-fMaxCorrSigmaPAPHOS(0.03),
+fMaxCorrSigmaPAPHOS(0.02),
+
+fMaxNsigPionTPC(2),
+fMaxNsigKaonTPC(2),
+fMaxNsigElecTPC(2),
+fMaxNsigPionTOF(2),
+fMaxNsigKaonTOF(2),
+fMaxNsigElecTOF(2),
+fRejOtherTOF(kTRUE),
 
 fIsMCSigma(kFALSE),
+fIsMCDalitz(kFALSE),
 fIsMCPrimary(kFALSE),
 fIsV01Onthefly(kFALSE),
 fIsV02Onthefly(kFALSE),
@@ -679,10 +703,14 @@ fClustNCells(-999),
 fClustDisttoBC(-999),
 
 fPairProtonIsMC(kFALSE),
+fPairProtonPDG(-999),
 fPairProtonIsPrimary(kFALSE),
 fPairProtonPx(-999),
 fPairProtonPy(-999),
 fPairProtonPz(-999),
+fPairProtonPxMC(-999),
+fPairProtonPyMC(-999),
+fPairProtonPzMC(-999),
 fPairProtonP(-999),
 fPairProtonEta(-999),
 fPairProtonCharge(-999),
@@ -722,6 +750,7 @@ fSigmaProtonpropkstar(-999)
     DefineOutput(7, TTree::Class());    //Tree with Sigma Proton Pairs Same Event
     DefineOutput(8, TTree::Class());    //Tree with Sigma Proton Pairs Mixed Event
     DefineOutput(9, TTree::Class());    //Tree with Sigma candidate Mixed Event Background
+    DefineOutput(10,TTree::Class());    //Tree Protons
 }
 //_____________________________________________________________________________
 AliAnalysisTaskSigmaPlus::~AliAnalysisTaskSigmaPlus()
@@ -739,6 +768,7 @@ AliAnalysisTaskSigmaPlus::~AliAnalysisTaskSigmaPlus()
     if(fSigmaPairTreePHOSSE) delete fSigmaPairTreePHOSSE;
     if(fSigmaPairTreePHOSME) delete fSigmaPairTreePHOSME;
     if(fSigmaPHOSMEBkgTree) delete fSigmaPHOSMEBkgTree;
+    if(fProtonTree) delete fProtonTree;
     //Pool managers
     if(fEvPoolMgr) delete fEvPoolMgr;
     if(fEvPoolMgr2) delete fEvPoolMgr2;
@@ -820,69 +850,32 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
 
     // Create TTree of Sigma Candidates
     fSigmaCandTree = new TTree("fSigmaCandTree","Tree of Sigma Candidates");
-    fSigmaCandTree->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
-    fSigmaCandTree->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
     fSigmaCandTree->Branch("fIsV01Onthefly",&fIsV01Onthefly,"fIsV01Onthefly/O");
     fSigmaCandTree->Branch("fIsV02Onthefly",&fIsV02Onthefly,"fIsV02Onthefly/O");
-    fSigmaCandTree->Branch("fHas4DiffIDs",&fHas4DiffIDs,"fHas4DiffIDs/O");
     fSigmaCandTree->Branch("fSigRunnumber",&fSigRunnumber,"fSigRunnumber/I");
     fSigmaCandTree->Branch("fSigTriggerMask",&fSigTriggerMask,"fSigTriggerMask/i");
-    fSigmaCandTree->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
     fSigmaCandTree->Branch("fSigProtonID",&fSigProtonID,"fSigProtonID/I");
     fSigmaCandTree->Branch("fSigProtonStatus",&fSigProtonStatus,"fSigProtonStatus/l");
     fSigmaCandTree->Branch("fSigProtonFilterMap",&fSigProtonFilterMap,"fSigProtonFilterMap/i");
     fSigmaCandTree->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaCandTree->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
-    fSigmaCandTree->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
     fSigmaCandTree->Branch("fSigRefMultComb08",&fSigRefMultComb08,"fSigRefMultComb08/S");
-    fSigmaCandTree->Branch("fSigRefMultComb10",&fSigRefMultComb10,"fSigRefMultComb10/S");
     fSigmaCandTree->Branch("fSigBField",&fSigBField,"fSigBField/F");
     fSigmaCandTree->Branch("fInvSigMass",&fInvSigMass,"fInvSigMass/F");
     fSigmaCandTree->Branch("fInvSigpropMass",&fInvSigpropMass,"fInvSigpropMass/F");
-    fSigmaCandTree->Branch("fSigY",&fSigY,"fSigY/F");
     fSigmaCandTree->Branch("fSigYprop",&fSigYprop,"fSigYprop/F");
-    fSigmaCandTree->Branch("fSigPA",&fSigPA,"fSigPA/F");
     fSigmaCandTree->Branch("fSigPAprop",&fSigPAprop,"fSigPAprop/F");
     fSigmaCandTree->Branch("fSigAntiPA",&fSigAntiPA,"fSigAntiPA/F");
     fSigmaCandTree->Branch("fSigCharge",&fSigCharge,"fSigCharge/F");
-    fSigmaCandTree->Branch("fSigPx",&fSigPx,"fSigPx/F");
-    fSigmaCandTree->Branch("fSigPy",&fSigPy,"fSigPy/F");
-    fSigmaCandTree->Branch("fSigPz",&fSigPz,"fSigPz/F");
     fSigmaCandTree->Branch("fSigPt",&fSigPt,"fSigPt/F");
     fSigmaCandTree->Branch("fSigPxprop",&fSigPxprop,"fSigPxprop/F");
     fSigmaCandTree->Branch("fSigPyprop",&fSigPyprop,"fSigPyprop/F");
     fSigmaCandTree->Branch("fSigPzprop",&fSigPzprop,"fSigPzprop/F");
-    fSigmaCandTree->Branch("fPrimVertX",&fPrimVertX,"fPrimVertX/F");
-    fSigmaCandTree->Branch("fPrimVertY",&fPrimVertY,"fPrimVertY/F");
     fSigmaCandTree->Branch("fPrimVertZ",&fPrimVertZ,"fPrimVertZ/F");
-    fSigmaCandTree->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
-    fSigmaCandTree->Branch("fPrimVertYMC",&fPrimVertYMC,"fPrimVertYMC/F");
-    fSigmaCandTree->Branch("fPrimVertZMC",&fPrimVertZMC,"fPrimVertZMC/F");
-    fSigmaCandTree->Branch("fSigDecayVertX",&fSigDecayVertX,"fSigDecayVertX/F");
-    fSigmaCandTree->Branch("fSigDecayVertY",&fSigDecayVertY,"fSigDecayVertY/F");
-    fSigmaCandTree->Branch("fSigDecayVertZ",&fSigDecayVertZ,"fSigDecayVertZ/F");
     fSigmaCandTree->Branch("fSigFlightDist",&fSigFlightDist,"fSigFlightDist/F");
-    fSigmaCandTree->Branch("fSigDecayVertXMC",&fSigDecayVertXMC,"fSigDecayVertXMC/F");
-    fSigmaCandTree->Branch("fSigDecayVertYMC",&fSigDecayVertYMC,"fSigDecayVertYMC/F");
-    fSigmaCandTree->Branch("fSigDecayVertZMC",&fSigDecayVertZMC,"fSigDecayVertZMC/F");
-    fSigmaCandTree->Branch("fSigPxMC",&fSigPxMC,"fSigPxMC/F");
-    fSigmaCandTree->Branch("fSigPyMC",&fSigPyMC,"fSigPyMC/F");
-    fSigmaCandTree->Branch("fSigPzMC",&fSigPzMC,"fSigPzMC/F");
-    fSigmaCandTree->Branch("fPhoton1Px",&fPhoton1Px,"fPhoton1Px/F");
-    fSigmaCandTree->Branch("fPhoton1Py",&fPhoton1Py,"fPhoton1Py/F");
-    fSigmaCandTree->Branch("fPhoton1Pz",&fPhoton1Pz,"fPhoton1Pz/F");
-    fSigmaCandTree->Branch("fPhoton2Px",&fPhoton2Px,"fPhoton2Px/F");
-    fSigmaCandTree->Branch("fPhoton2Py",&fPhoton2Py,"fPhoton2Py/F");
-    fSigmaCandTree->Branch("fPhoton2Pz",&fPhoton2Pz,"fPhoton2Pz/F");
     fSigmaCandTree->Branch("fPhoton1Radius",&fPhoton1Radius,"fPhoton1Radius/F");
     fSigmaCandTree->Branch("fPhoton2Radius",&fPhoton2Radius,"fPhoton2Radius/F");
-    fSigmaCandTree->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
-    fSigmaCandTree->Branch("fPhoton2DCAPV",&fPhoton2DCAPV,"fPhoton2DCAPV/F");
-    fSigmaCandTree->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
-    fSigmaCandTree->Branch("fPhoton2DCASV",&fPhoton2DCASV,"fPhoton2DCASV/F");
-    fSigmaCandTree->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
-    fSigmaCandTree->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
-    fSigmaCandTree->Branch("fKFChi2",&fKFChi2,"fKFChi2/F");
+    //fSigmaCandTree->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
     fSigmaCandTree->Branch("fPhotonsMinCluster",&fPhotonsMinCluster,"fPhotonsMinCluster/F");
     fSigmaCandTree->Branch("fPhotonsMinITSCluster",&fPhotonsMinITSCluster,"fPhotonsMinITSCluster/F");
     fSigmaCandTree->Branch("fPhotonsMaxalpha",&fPhotonsMaxalpha,"fPhotonsMaxalpha/F");
@@ -896,23 +889,11 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaCandTree->Branch("fPhoton1CPA",&fPhoton1CPA,"fPhoton1CPA/F");
     fSigmaCandTree->Branch("fPhoton2CPA",&fPhoton2CPA,"fPhoton2CPA/F");
     fSigmaCandTree->Branch("fInvPi0Mass",&fInvPi0Mass,"fInvPi0Mass/F");
-    fSigmaCandTree->Branch("fPi0Px",&fPi0Px,"fPi0Px/F");
-    fSigmaCandTree->Branch("fPi0Py",&fPi0Py,"fPi0Py/F");
-    fSigmaCandTree->Branch("fPi0Pz",&fPi0Pz,"fPi0Pz/F");
-    fSigmaCandTree->Branch("fPi0DecayVertX",&fPi0DecayVertX,"fPi0DecayVertX/F");
-    fSigmaCandTree->Branch("fPi0DecayVertY",&fPi0DecayVertY,"fPi0DecayVertY/F");
-    fSigmaCandTree->Branch("fPi0DecayVertZ",&fPi0DecayVertZ,"fPi0DecayVertZ/F");
     fSigmaCandTree->Branch("fPi0PhotPhotDCA",&fPi0PhotPhotDCA,"fPi0PhotPhotDCA/F");
     fSigmaCandTree->Branch("fProtonPx",&fProtonPx,"fProtonPx/F");
     fSigmaCandTree->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
     fSigmaCandTree->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
-    fSigmaCandTree->Branch("fProtonX",&fProtonX,"fProtonX/F");
-    fSigmaCandTree->Branch("fProtonY",&fProtonY,"fProtonY/F");
-    fSigmaCandTree->Branch("fProtonZ",&fProtonZ,"fProtonZ/F");
     fSigmaCandTree->Branch("fProtonEta",&fProtonEta,"fProtonEta/F");
-    fSigmaCandTree->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
-    fSigmaCandTree->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
-    fSigmaCandTree->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
     fSigmaCandTree->Branch("fProtonDCAtoPVxy",&fProtonDCAtoPVxy,"fProtonDCAtoPVxy/F");
     fSigmaCandTree->Branch("fProtonDCAtoPVz",&fProtonDCAtoPVz,"fProtonDCAtoPVz/F");
     fSigmaCandTree->Branch("fProtonPi0DCA",&fProtonPi0DCA,"fProtonPi0DCA/F");
@@ -921,18 +902,71 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaCandTree->Branch("fProtonNCluster",&fProtonNCluster,"fProtonNCluster/I");
     fSigmaCandTree->Branch("fProtonNITSCluster",&fProtonNITSCluster,"fProtonNITSCluster/I");
     fSigmaCandTree->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
-    fSigmaCandTree->Branch("fProtonNSigTPCPion",&fProtonNSigTPCPion,"fProtonNSigTPCPion/F");
-    fSigmaCandTree->Branch("fProtonNSigTPCKaon",&fProtonNSigTPCKaon,"fProtonNSigTPCKaon/F");
-    fSigmaCandTree->Branch("fProtonNSigTPCElec",&fProtonNSigTPCElec,"fProtonNSigTPCElec/F");
-    fSigmaCandTree->Branch("fProtonNSigTOFPion",&fProtonNSigTOFPion,"fProtonNSigTOFPion/F");
-    fSigmaCandTree->Branch("fProtonNSigTOFKaon",&fProtonNSigTOFKaon,"fProtonNSigTOFKaon/F");
-    fSigmaCandTree->Branch("fProtonNSigTOFElec",&fProtonNSigTOFElec,"fProtonNSigTOFElec/F");
-
+    if(fSaveMCBranches){
+        fSigmaCandTree->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+        fSigmaCandTree->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
+        fSigmaCandTree->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
+        fSigmaCandTree->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
+        fSigmaCandTree->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
+        fSigmaCandTree->Branch("fPrimVertYMC",&fPrimVertYMC,"fPrimVertYMC/F");
+        fSigmaCandTree->Branch("fPrimVertZMC",&fPrimVertZMC,"fPrimVertZMC/F");
+        fSigmaCandTree->Branch("fSigDecayVertXMC",&fSigDecayVertXMC,"fSigDecayVertXMC/F");
+        fSigmaCandTree->Branch("fSigDecayVertYMC",&fSigDecayVertYMC,"fSigDecayVertYMC/F");
+        fSigmaCandTree->Branch("fSigDecayVertZMC",&fSigDecayVertZMC,"fSigDecayVertZMC/F");
+        fSigmaCandTree->Branch("fSigPxMC",&fSigPxMC,"fSigPxMC/F");
+        fSigmaCandTree->Branch("fSigPyMC",&fSigPyMC,"fSigPyMC/F");
+        fSigmaCandTree->Branch("fSigPzMC",&fSigPzMC,"fSigPzMC/F");
+    }
+    if(fSaveAdditionalBranches){
+        fSigmaCandTree->Branch("fHas4DiffIDs",&fHas4DiffIDs,"fHas4DiffIDs/O");
+        fSigmaCandTree->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
+        fSigmaCandTree->Branch("fSigRefMultComb10",&fSigRefMultComb10,"fSigRefMultComb10/S");
+        fSigmaCandTree->Branch("fSigY",&fSigY,"fSigY/F");
+        fSigmaCandTree->Branch("fSigPA",&fSigPA,"fSigPA/F");
+        fSigmaCandTree->Branch("fSigPx",&fSigPx,"fSigPx/F");
+        fSigmaCandTree->Branch("fSigPy",&fSigPy,"fSigPy/F");
+        fSigmaCandTree->Branch("fSigPz",&fSigPz,"fSigPz/F");
+        fSigmaCandTree->Branch("fPrimVertX",&fPrimVertX,"fPrimVertX/F");
+        fSigmaCandTree->Branch("fPrimVertY",&fPrimVertY,"fPrimVertY/F");
+        fSigmaCandTree->Branch("fSigDecayVertX",&fSigDecayVertX,"fSigDecayVertX/F");
+        fSigmaCandTree->Branch("fSigDecayVertY",&fSigDecayVertY,"fSigDecayVertY/F");
+        fSigmaCandTree->Branch("fSigDecayVertZ",&fSigDecayVertZ,"fSigDecayVertZ/F");
+        fSigmaCandTree->Branch("fPhoton1Px",&fPhoton1Px,"fPhoton1Px/F");
+        fSigmaCandTree->Branch("fPhoton1Py",&fPhoton1Py,"fPhoton1Py/F");
+        fSigmaCandTree->Branch("fPhoton1Pz",&fPhoton1Pz,"fPhoton1Pz/F");
+        fSigmaCandTree->Branch("fPhoton2Px",&fPhoton2Px,"fPhoton2Px/F");
+        fSigmaCandTree->Branch("fPhoton2Py",&fPhoton2Py,"fPhoton2Py/F");
+        fSigmaCandTree->Branch("fPhoton2Pz",&fPhoton2Pz,"fPhoton2Pz/F");
+        fSigmaCandTree->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
+        fSigmaCandTree->Branch("fPhoton2DCAPV",&fPhoton2DCAPV,"fPhoton2DCAPV/F");
+        fSigmaCandTree->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
+        fSigmaCandTree->Branch("fPhoton2DCASV",&fPhoton2DCASV,"fPhoton2DCASV/F");
+        fSigmaCandTree->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
+        fSigmaCandTree->Branch("fKFChi2",&fKFChi2,"fKFChi2/F");
+        fSigmaCandTree->Branch("fPi0Px",&fPi0Px,"fPi0Px/F");
+        fSigmaCandTree->Branch("fPi0Py",&fPi0Py,"fPi0Py/F");
+        fSigmaCandTree->Branch("fPi0Pz",&fPi0Pz,"fPi0Pz/F");
+        fSigmaCandTree->Branch("fPi0DecayVertX",&fPi0DecayVertX,"fPi0DecayVertX/F");
+        fSigmaCandTree->Branch("fPi0DecayVertY",&fPi0DecayVertY,"fPi0DecayVertY/F");
+        fSigmaCandTree->Branch("fPi0DecayVertZ",&fPi0DecayVertZ,"fPi0DecayVertZ/F");
+        fSigmaCandTree->Branch("fProtonX",&fProtonX,"fProtonX/F");
+        fSigmaCandTree->Branch("fProtonY",&fProtonY,"fProtonY/F");
+        fSigmaCandTree->Branch("fProtonZ",&fProtonZ,"fProtonZ/F");
+        fSigmaCandTree->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
+        fSigmaCandTree->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
+        fSigmaCandTree->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
+        fSigmaCandTree->Branch("fProtonNSigTPCPion",&fProtonNSigTPCPion,"fProtonNSigTPCPion/F");
+        fSigmaCandTree->Branch("fProtonNSigTPCKaon",&fProtonNSigTPCKaon,"fProtonNSigTPCKaon/F");
+        fSigmaCandTree->Branch("fProtonNSigTPCElec",&fProtonNSigTPCElec,"fProtonNSigTPCElec/F");
+        fSigmaCandTree->Branch("fProtonNSigTOFPion",&fProtonNSigTOFPion,"fProtonNSigTOFPion/F");
+        fSigmaCandTree->Branch("fProtonNSigTOFKaon",&fProtonNSigTOFKaon,"fProtonNSigTOFKaon/F");
+        fSigmaCandTree->Branch("fProtonNSigTOFElec",&fProtonNSigTOFElec,"fProtonNSigTOFElec/F");
+    }
+    
     // Create TTree of Sigma Candidate Mixed Event Background
     fSigmaMEBackgroundTree = new TTree("fSigmaMEBackgroundTree","Tree of Sigma Mixed Event Background");
     fSigmaMEBackgroundTree->Branch("fIsV01Onthefly",&fIsV01Onthefly,"fIsV01Onthefly/O");
     fSigmaMEBackgroundTree->Branch("fIsV02Onthefly",&fIsV02Onthefly,"fIsV02Onthefly/O");
-    fSigmaMEBackgroundTree->Branch("fHas4DiffIDs",&fHas4DiffIDs,"fHas4DiffIDs/O");
     fSigmaMEBackgroundTree->Branch("fSigRunnumber",&fSigRunnumber,"fSigRunnumber/I");
     fSigmaMEBackgroundTree->Branch("fSigTriggerMask",&fSigTriggerMask,"fSigTriggerMask/i");
     fSigmaMEBackgroundTree->Branch("fSigProtonID",&fSigProtonID,"fSigProtonID/I");
@@ -940,60 +974,23 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaMEBackgroundTree->Branch("fSigProtonFilterMap",&fSigProtonFilterMap,"fSigProtonFilterMap/i");
     fSigmaMEBackgroundTree->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaMEBackgroundTree->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
-    fSigmaMEBackgroundTree->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
     fSigmaMEBackgroundTree->Branch("fSigRefMultComb08",&fSigRefMultComb08,"fSigRefMultComb08/S");
-    fSigmaMEBackgroundTree->Branch("fSigRefMultComb10",&fSigRefMultComb10,"fSigRefMultComb10/S");
     fSigmaMEBackgroundTree->Branch("fSigBField",&fSigBField,"fSigBField/F");
     fSigmaMEBackgroundTree->Branch("fInvSigMass",&fInvSigMass,"fInvSigMass/F");
     fSigmaMEBackgroundTree->Branch("fInvSigpropMass",&fInvSigpropMass,"fInvSigpropMass/F");
-    fSigmaMEBackgroundTree->Branch("fSigY",&fSigY,"fSigY/F");
     fSigmaMEBackgroundTree->Branch("fSigYprop",&fSigYprop,"fSigYprop/F");
-    fSigmaMEBackgroundTree->Branch("fSigPA",&fSigPA,"fSigPA/F");
     fSigmaMEBackgroundTree->Branch("fSigPAprop",&fSigPAprop,"fSigPAprop/F");
     fSigmaMEBackgroundTree->Branch("fSigAntiPA",&fSigAntiPA,"fSigAntiPA/F");
     fSigmaMEBackgroundTree->Branch("fSigCharge",&fSigCharge,"fSigCharge/F");
-    fSigmaMEBackgroundTree->Branch("fSigPx",&fSigPx,"fSigPx/F");
-    fSigmaMEBackgroundTree->Branch("fSigPy",&fSigPy,"fSigPy/F");
-    fSigmaMEBackgroundTree->Branch("fSigPz",&fSigPz,"fSigPz/F");
     fSigmaMEBackgroundTree->Branch("fSigPt",&fSigPt,"fSigPt/F");
     fSigmaMEBackgroundTree->Branch("fSigPxprop",&fSigPxprop,"fSigPxprop/F");
     fSigmaMEBackgroundTree->Branch("fSigPyprop",&fSigPyprop,"fSigPyprop/F");
     fSigmaMEBackgroundTree->Branch("fSigPzprop",&fSigPzprop,"fSigPzprop/F");
-    fSigmaMEBackgroundTree->Branch("fPrimVertX",&fPrimVertX,"fPrimVertX/F");
-    fSigmaMEBackgroundTree->Branch("fPrimVertY",&fPrimVertY,"fPrimVertY/F");
     fSigmaMEBackgroundTree->Branch("fPrimVertZ",&fPrimVertZ,"fPrimVertZ/F");
-    fSigmaMEBackgroundTree->Branch("fSigDecayVertX",&fSigDecayVertX,"fSigDecayVertX/F");
-    fSigmaMEBackgroundTree->Branch("fSigDecayVertY",&fSigDecayVertY,"fSigDecayVertY/F");
-    fSigmaMEBackgroundTree->Branch("fSigDecayVertZ",&fSigDecayVertZ,"fSigDecayVertZ/F");
     fSigmaMEBackgroundTree->Branch("fSigFlightDist",&fSigFlightDist,"fSigFlightDist/F");
-    fSigmaMEBackgroundTree->Branch("fSigDecayVertXMC",&fSigDecayVertXMC,"fSigDecayVertXMC/F");
-    fSigmaMEBackgroundTree->Branch("fSigDecayVertYMC",&fSigDecayVertYMC,"fSigDecayVertYMC/F");
-    fSigmaMEBackgroundTree->Branch("fSigDecayVertZMC",&fSigDecayVertZMC,"fSigDecayVertZMC/F");
-    fSigmaMEBackgroundTree->Branch("fSigPxMC",&fSigPxMC,"fSigPxMC/F");
-    fSigmaMEBackgroundTree->Branch("fSigPyMC",&fSigPyMC,"fSigPyMC/F");
-    fSigmaMEBackgroundTree->Branch("fSigPzMC",&fSigPzMC,"fSigPzMC/F");
-    fSigmaMEBackgroundTree->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
-    fSigmaMEBackgroundTree->Branch("fPrimVertYMC",&fPrimVertYMC,"fPrimVertYMC/F");
-    fSigmaMEBackgroundTree->Branch("fPrimVertZMC",&fPrimVertZMC,"fPrimVertZMC/F");
-    fSigmaMEBackgroundTree->Branch("fPhoton1Px",&fPhoton1Px,"fPhoton1Px/F");
-    fSigmaMEBackgroundTree->Branch("fPhoton1Py",&fPhoton1Py,"fPhoton1Py/F");
-    fSigmaMEBackgroundTree->Branch("fPhoton1Pz",&fPhoton1Pz,"fPhoton1Pz/F");
-    fSigmaMEBackgroundTree->Branch("fPhoton2Px",&fPhoton2Px,"fPhoton2Px/F");
-    fSigmaMEBackgroundTree->Branch("fPhoton2Py",&fPhoton2Py,"fPhoton2Py/F");
-    fSigmaMEBackgroundTree->Branch("fPhoton2Pz",&fPhoton2Pz,"fPhoton2Pz/F");
-    fSigmaMEBackgroundTree->Branch("fPhotonDaughtMaxEta",&fPhotonDaughtMaxEta,"fPhotonDaughtMaxEta/F");
-    fSigmaMEBackgroundTree->Branch("fPhotonsMaxDeltaTheta",&fPhotonsMaxDeltaTheta,"fPhotonsMaxDeltaTheta/F");
-    fSigmaMEBackgroundTree->Branch("fPhoton1CPA",&fPhoton1CPA,"fPhoton1CPA/F");
-    fSigmaMEBackgroundTree->Branch("fPhoton2CPA",&fPhoton2CPA,"fPhoton2CPA/F");
     fSigmaMEBackgroundTree->Branch("fPhoton1Radius",&fPhoton1Radius,"fPhoton1Radius/F");
     fSigmaMEBackgroundTree->Branch("fPhoton2Radius",&fPhoton2Radius,"fPhoton2Radius/F");
-    fSigmaMEBackgroundTree->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
-    fSigmaMEBackgroundTree->Branch("fPhoton2DCAPV",&fPhoton2DCAPV,"fPhoton2DCAPV/F");
-    fSigmaMEBackgroundTree->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
-    fSigmaMEBackgroundTree->Branch("fPhoton2DCASV",&fPhoton2DCASV,"fPhoton2DCASV/F");
-    fSigmaMEBackgroundTree->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
-    fSigmaMEBackgroundTree->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
-    fSigmaMEBackgroundTree->Branch("fKFChi2",&fKFChi2,"fKFChi2/F");
+    //fSigmaMEBackgroundTree->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
     fSigmaMEBackgroundTree->Branch("fPhotonsMinCluster",&fPhotonsMinCluster,"fPhotonsMinCluster/F");
     fSigmaMEBackgroundTree->Branch("fPhotonsMinITSCluster",&fPhotonsMinITSCluster,"fPhotonsMinITSCluster/F");
     fSigmaMEBackgroundTree->Branch("fPhotonsMaxalpha",&fPhotonsMaxalpha,"fPhotonsMaxalpha/F");
@@ -1002,24 +999,16 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaMEBackgroundTree->Branch("fPhotonsMaxinvmass",&fPhotonsMaxinvmass,"fPhotonsMaxinvmass/F");
     fSigmaMEBackgroundTree->Branch("fPhotonsMaxNSigTPC",&fPhotonsMaxNSigTPC,"fPhotonsMaxNSigTPC/F");
     fSigmaMEBackgroundTree->Branch("fPhotonsMaxChi2",&fPhotonsMaxChi2,"fPhotonsMaxChi2/F");    
+    fSigmaMEBackgroundTree->Branch("fPhotonDaughtMaxEta",&fPhotonDaughtMaxEta,"fPhotonDaughtMaxEta/F");
+    fSigmaMEBackgroundTree->Branch("fPhotonsMaxDeltaTheta",&fPhotonsMaxDeltaTheta,"fPhotonsMaxDeltaTheta/F");
+    fSigmaMEBackgroundTree->Branch("fPhoton1CPA",&fPhoton1CPA,"fPhoton1CPA/F");
+    fSigmaMEBackgroundTree->Branch("fPhoton2CPA",&fPhoton2CPA,"fPhoton2CPA/F");
     fSigmaMEBackgroundTree->Branch("fInvPi0Mass",&fInvPi0Mass,"fInvPi0Mass/F");
-    fSigmaMEBackgroundTree->Branch("fPi0Px",&fPi0Px,"fPi0Px/F");
-    fSigmaMEBackgroundTree->Branch("fPi0Py",&fPi0Py,"fPi0Py/F");
-    fSigmaMEBackgroundTree->Branch("fPi0Pz",&fPi0Pz,"fPi0Pz/F");
-    fSigmaMEBackgroundTree->Branch("fPi0DecayVertX",&fPi0DecayVertX,"fPi0DecayVertX/F");
-    fSigmaMEBackgroundTree->Branch("fPi0DecayVertY",&fPi0DecayVertY,"fPi0DecayVertY/F");
-    fSigmaMEBackgroundTree->Branch("fPi0DecayVertZ",&fPi0DecayVertZ,"fPi0DecayVertZ/F");
     fSigmaMEBackgroundTree->Branch("fPi0PhotPhotDCA",&fPi0PhotPhotDCA,"fPi0PhotPhotDCA/F");
     fSigmaMEBackgroundTree->Branch("fProtonPx",&fProtonPx,"fProtonPx/F");
     fSigmaMEBackgroundTree->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
     fSigmaMEBackgroundTree->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
-    fSigmaMEBackgroundTree->Branch("fProtonX",&fProtonX,"fProtonX/F");
-    fSigmaMEBackgroundTree->Branch("fProtonY",&fProtonY,"fProtonY/F");
-    fSigmaMEBackgroundTree->Branch("fProtonZ",&fProtonZ,"fProtonZ/F");
     fSigmaMEBackgroundTree->Branch("fProtonEta",&fProtonEta,"fProtonEta/F");
-    fSigmaMEBackgroundTree->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
-    fSigmaMEBackgroundTree->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
-    fSigmaMEBackgroundTree->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
     fSigmaMEBackgroundTree->Branch("fProtonDCAtoPVxy",&fProtonDCAtoPVxy,"fProtonDCAtoPVxy/F");
     fSigmaMEBackgroundTree->Branch("fProtonDCAtoPVz",&fProtonDCAtoPVz,"fProtonDCAtoPVz/F");
     fSigmaMEBackgroundTree->Branch("fProtonPi0DCA",&fProtonPi0DCA,"fProtonPi0DCA/F");
@@ -1028,19 +1017,70 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaMEBackgroundTree->Branch("fProtonNCluster",&fProtonNCluster,"fProtonNCluster/I");
     fSigmaMEBackgroundTree->Branch("fProtonNITSCluster",&fProtonNITSCluster,"fProtonNITSCluster/I");
     fSigmaMEBackgroundTree->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
-    fSigmaMEBackgroundTree->Branch("fProtonNSigTPCPion",&fProtonNSigTPCPion,"fProtonNSigTPCPion/F");
-    fSigmaMEBackgroundTree->Branch("fProtonNSigTPCKaon",&fProtonNSigTPCKaon,"fProtonNSigTPCKaon/F");
-    fSigmaMEBackgroundTree->Branch("fProtonNSigTPCElec",&fProtonNSigTPCElec,"fProtonNSigTPCElec/F");
-    fSigmaMEBackgroundTree->Branch("fProtonNSigTOFPion",&fProtonNSigTOFPion,"fProtonNSigTOFPion/F");
-    fSigmaMEBackgroundTree->Branch("fProtonNSigTOFKaon",&fProtonNSigTOFKaon,"fProtonNSigTOFKaon/F");
-    fSigmaMEBackgroundTree->Branch("fProtonNSigTOFElec",&fProtonNSigTOFElec,"fProtonNSigTOFElec/F");
+    if(fSaveMCBranches){
+        fSigmaMEBackgroundTree->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+        fSigmaMEBackgroundTree->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
+        fSigmaMEBackgroundTree->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
+        fSigmaMEBackgroundTree->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
+        fSigmaMEBackgroundTree->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
+        fSigmaMEBackgroundTree->Branch("fPrimVertYMC",&fPrimVertYMC,"fPrimVertYMC/F");
+        fSigmaMEBackgroundTree->Branch("fPrimVertZMC",&fPrimVertZMC,"fPrimVertZMC/F");
+        fSigmaMEBackgroundTree->Branch("fSigDecayVertXMC",&fSigDecayVertXMC,"fSigDecayVertXMC/F");
+        fSigmaMEBackgroundTree->Branch("fSigDecayVertYMC",&fSigDecayVertYMC,"fSigDecayVertYMC/F");
+        fSigmaMEBackgroundTree->Branch("fSigDecayVertZMC",&fSigDecayVertZMC,"fSigDecayVertZMC/F");
+        fSigmaMEBackgroundTree->Branch("fSigPxMC",&fSigPxMC,"fSigPxMC/F");
+        fSigmaMEBackgroundTree->Branch("fSigPyMC",&fSigPyMC,"fSigPyMC/F");
+        fSigmaMEBackgroundTree->Branch("fSigPzMC",&fSigPzMC,"fSigPzMC/F");
+    }
+    if(fSaveAdditionalBranches){
+        fSigmaMEBackgroundTree->Branch("fHas4DiffIDs",&fHas4DiffIDs,"fHas4DiffIDs/O");
+        fSigmaMEBackgroundTree->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
+        fSigmaMEBackgroundTree->Branch("fSigRefMultComb10",&fSigRefMultComb10,"fSigRefMultComb10/S");
+        fSigmaMEBackgroundTree->Branch("fSigY",&fSigY,"fSigY/F");
+        fSigmaMEBackgroundTree->Branch("fSigPA",&fSigPA,"fSigPA/F");
+        fSigmaMEBackgroundTree->Branch("fSigPx",&fSigPx,"fSigPx/F");
+        fSigmaMEBackgroundTree->Branch("fSigPy",&fSigPy,"fSigPy/F");
+        fSigmaMEBackgroundTree->Branch("fSigPz",&fSigPz,"fSigPz/F");
+        fSigmaMEBackgroundTree->Branch("fPrimVertX",&fPrimVertX,"fPrimVertX/F");
+        fSigmaMEBackgroundTree->Branch("fPrimVertY",&fPrimVertY,"fPrimVertY/F");
+        fSigmaMEBackgroundTree->Branch("fSigDecayVertX",&fSigDecayVertX,"fSigDecayVertX/F");
+        fSigmaMEBackgroundTree->Branch("fSigDecayVertY",&fSigDecayVertY,"fSigDecayVertY/F");
+        fSigmaMEBackgroundTree->Branch("fSigDecayVertZ",&fSigDecayVertZ,"fSigDecayVertZ/F");
+        fSigmaMEBackgroundTree->Branch("fPhoton1Px",&fPhoton1Px,"fPhoton1Px/F");
+        fSigmaMEBackgroundTree->Branch("fPhoton1Py",&fPhoton1Py,"fPhoton1Py/F");
+        fSigmaMEBackgroundTree->Branch("fPhoton1Pz",&fPhoton1Pz,"fPhoton1Pz/F");
+        fSigmaMEBackgroundTree->Branch("fPhoton2Px",&fPhoton2Px,"fPhoton2Px/F");
+        fSigmaMEBackgroundTree->Branch("fPhoton2Py",&fPhoton2Py,"fPhoton2Py/F");
+        fSigmaMEBackgroundTree->Branch("fPhoton2Pz",&fPhoton2Pz,"fPhoton2Pz/F");
+        fSigmaMEBackgroundTree->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
+        fSigmaMEBackgroundTree->Branch("fPhoton2DCAPV",&fPhoton2DCAPV,"fPhoton2DCAPV/F");
+        fSigmaMEBackgroundTree->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
+        fSigmaMEBackgroundTree->Branch("fPhoton2DCASV",&fPhoton2DCASV,"fPhoton2DCASV/F");
+        fSigmaMEBackgroundTree->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
+        fSigmaMEBackgroundTree->Branch("fKFChi2",&fKFChi2,"fKFChi2/F");
+        fSigmaMEBackgroundTree->Branch("fPi0Px",&fPi0Px,"fPi0Px/F");
+        fSigmaMEBackgroundTree->Branch("fPi0Py",&fPi0Py,"fPi0Py/F");
+        fSigmaMEBackgroundTree->Branch("fPi0Pz",&fPi0Pz,"fPi0Pz/F");
+        fSigmaMEBackgroundTree->Branch("fPi0DecayVertX",&fPi0DecayVertX,"fPi0DecayVertX/F");
+        fSigmaMEBackgroundTree->Branch("fPi0DecayVertY",&fPi0DecayVertY,"fPi0DecayVertY/F");
+        fSigmaMEBackgroundTree->Branch("fPi0DecayVertZ",&fPi0DecayVertZ,"fPi0DecayVertZ/F");
+        fSigmaMEBackgroundTree->Branch("fProtonX",&fProtonX,"fProtonX/F");
+        fSigmaMEBackgroundTree->Branch("fProtonY",&fProtonY,"fProtonY/F");
+        fSigmaMEBackgroundTree->Branch("fProtonZ",&fProtonZ,"fProtonZ/F");
+        fSigmaMEBackgroundTree->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
+        fSigmaMEBackgroundTree->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
+        fSigmaMEBackgroundTree->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
+        fSigmaMEBackgroundTree->Branch("fProtonNSigTPCPion",&fProtonNSigTPCPion,"fProtonNSigTPCPion/F");
+        fSigmaMEBackgroundTree->Branch("fProtonNSigTPCKaon",&fProtonNSigTPCKaon,"fProtonNSigTPCKaon/F");
+        fSigmaMEBackgroundTree->Branch("fProtonNSigTPCElec",&fProtonNSigTPCElec,"fProtonNSigTPCElec/F");
+        fSigmaMEBackgroundTree->Branch("fProtonNSigTOFPion",&fProtonNSigTOFPion,"fProtonNSigTOFPion/F");
+        fSigmaMEBackgroundTree->Branch("fProtonNSigTOFKaon",&fProtonNSigTOFKaon,"fProtonNSigTOFKaon/F");
+        fSigmaMEBackgroundTree->Branch("fProtonNSigTOFElec",&fProtonNSigTOFElec,"fProtonNSigTOFElec/F");
+    }
 
     // Create TTree of Sigma Proton Pairs in Same Event
     fSigmaPairTreeSE = new TTree("fSigmaPairTreeSE","Tree of Sigma Proton Pairs in Same Event");
-    fSigmaPairTreeSE->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
-    fSigmaPairTreeSE->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
     fSigmaPairTreeSE->Branch("fIsV01Onthefly",&fIsV01Onthefly,"fIsV01Onthefly/O");
-    fSigmaPairTreeSE->Branch("fIsV02Onthefly",&fIsV02Onthefly,"fIsV02Onthefly/O");
     fSigmaPairTreeSE->Branch("fHas4DiffIDs",&fHas4DiffIDs,"fHas4DiffIDs/O");
     fSigmaPairTreeSE->Branch("fSigRunnumber",&fSigRunnumber,"fSigRunnumber/I");
     fSigmaPairTreeSE->Branch("fSigTriggerMask",&fSigTriggerMask,"fSigTriggerMask/i");
@@ -1050,56 +1090,21 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreeSE->Branch("fSigProtonFilterMap",&fSigProtonFilterMap,"fSigProtonFilterMap/i");
     fSigmaPairTreeSE->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaPairTreeSE->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
-    fSigmaPairTreeSE->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
     fSigmaPairTreeSE->Branch("fSigRefMultComb08",&fSigRefMultComb08,"fSigRefMultComb08/S");
-    fSigmaPairTreeSE->Branch("fSigRefMultComb10",&fSigRefMultComb10,"fSigRefMultComb10/S");
     fSigmaPairTreeSE->Branch("fSigBField",&fSigBField,"fSigBField/F");
-    fSigmaPairTreeSE->Branch("fInvSigMass",&fInvSigMass,"fInvSigMass/F");
     fSigmaPairTreeSE->Branch("fInvSigpropMass",&fInvSigpropMass,"fInvSigpropMass/F");
-    fSigmaPairTreeSE->Branch("fSigY",&fSigY,"fSigY/F");
     fSigmaPairTreeSE->Branch("fSigYprop",&fSigYprop,"fSigYprop/F");
-    fSigmaPairTreeSE->Branch("fSigPA",&fSigPA,"fSigPA/F");
     fSigmaPairTreeSE->Branch("fSigPAprop",&fSigPAprop,"fSigPAprop/F");
     fSigmaPairTreeSE->Branch("fSigAntiPA",&fSigAntiPA,"fSigAntiPA/F");
     fSigmaPairTreeSE->Branch("fSigCharge",&fSigCharge,"fSigCharge/F");
-    fSigmaPairTreeSE->Branch("fSigPx",&fSigPx,"fSigPx/F");
-    fSigmaPairTreeSE->Branch("fSigPy",&fSigPy,"fSigPy/F");
-    fSigmaPairTreeSE->Branch("fSigPz",&fSigPz,"fSigPz/F");
     fSigmaPairTreeSE->Branch("fSigPt",&fSigPt,"fSigPt/F");
     fSigmaPairTreeSE->Branch("fSigPxprop",&fSigPxprop,"fSigPxprop/F");
     fSigmaPairTreeSE->Branch("fSigPyprop",&fSigPyprop,"fSigPyprop/F");
     fSigmaPairTreeSE->Branch("fSigPzprop",&fSigPzprop,"fSigPzprop/F");
-    fSigmaPairTreeSE->Branch("fPrimVertX",&fPrimVertX,"fPrimVertX/F");
-    fSigmaPairTreeSE->Branch("fPrimVertY",&fPrimVertY,"fPrimVertY/F");
     fSigmaPairTreeSE->Branch("fPrimVertZ",&fPrimVertZ,"fPrimVertZ/F");
-    fSigmaPairTreeSE->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
-    fSigmaPairTreeSE->Branch("fPrimVertYMC",&fPrimVertYMC,"fPrimVertYMC/F");
-    fSigmaPairTreeSE->Branch("fPrimVertZMC",&fPrimVertZMC,"fPrimVertZMC/F");
-    fSigmaPairTreeSE->Branch("fSigDecayVertX",&fSigDecayVertX,"fSigDecayVertX/F");
-    fSigmaPairTreeSE->Branch("fSigDecayVertY",&fSigDecayVertY,"fSigDecayVertY/F");
-    fSigmaPairTreeSE->Branch("fSigDecayVertZ",&fSigDecayVertZ,"fSigDecayVertZ/F");
     fSigmaPairTreeSE->Branch("fSigFlightDist",&fSigFlightDist,"fSigFlightDist/F");
-    fSigmaPairTreeSE->Branch("fSigDecayVertXMC",&fSigDecayVertXMC,"fSigDecayVertXMC/F");
-    fSigmaPairTreeSE->Branch("fSigDecayVertYMC",&fSigDecayVertYMC,"fSigDecayVertYMC/F");
-    fSigmaPairTreeSE->Branch("fSigDecayVertZMC",&fSigDecayVertZMC,"fSigDecayVertZMC/F");
-    fSigmaPairTreeSE->Branch("fSigPxMC",&fSigPxMC,"fSigPxMC/F");
-    fSigmaPairTreeSE->Branch("fSigPyMC",&fSigPyMC,"fSigPyMC/F");
-    fSigmaPairTreeSE->Branch("fSigPzMC",&fSigPzMC,"fSigPzMC/F");
-    fSigmaPairTreeSE->Branch("fPhoton1Px",&fPhoton1Px,"fPhoton1Px/F");
-    fSigmaPairTreeSE->Branch("fPhoton1Py",&fPhoton1Py,"fPhoton1Py/F");
-    fSigmaPairTreeSE->Branch("fPhoton1Pz",&fPhoton1Pz,"fPhoton1Pz/F");
-    fSigmaPairTreeSE->Branch("fPhoton2Px",&fPhoton2Px,"fPhoton2Px/F");
-    fSigmaPairTreeSE->Branch("fPhoton2Py",&fPhoton2Py,"fPhoton2Py/F");
-    fSigmaPairTreeSE->Branch("fPhoton2Pz",&fPhoton2Pz,"fPhoton2Pz/F");
     fSigmaPairTreeSE->Branch("fPhoton1Radius",&fPhoton1Radius,"fPhoton1Radius/F");
     fSigmaPairTreeSE->Branch("fPhoton2Radius",&fPhoton2Radius,"fPhoton2Radius/F");
-    fSigmaPairTreeSE->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
-    fSigmaPairTreeSE->Branch("fPhoton2DCAPV",&fPhoton2DCAPV,"fPhoton2DCAPV/F");
-    fSigmaPairTreeSE->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
-    fSigmaPairTreeSE->Branch("fPhoton2DCASV",&fPhoton2DCASV,"fPhoton2DCASV/F");
-    fSigmaPairTreeSE->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
-    fSigmaPairTreeSE->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
-    fSigmaPairTreeSE->Branch("fKFChi2",&fKFChi2,"fKFChi2/F");
     fSigmaPairTreeSE->Branch("fPhotonsMinCluster",&fPhotonsMinCluster,"fPhotonsMinCluster/F");
     fSigmaPairTreeSE->Branch("fPhotonsMinITSCluster",&fPhotonsMinITSCluster,"fPhotonsMinITSCluster/F");
     fSigmaPairTreeSE->Branch("fPhotonsMaxalpha",&fPhotonsMaxalpha,"fPhotonsMaxalpha/F");
@@ -1113,23 +1118,11 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreeSE->Branch("fPhoton1CPA",&fPhoton1CPA,"fPhoton1CPA/F");
     fSigmaPairTreeSE->Branch("fPhoton2CPA",&fPhoton2CPA,"fPhoton2CPA/F");
     fSigmaPairTreeSE->Branch("fInvPi0Mass",&fInvPi0Mass,"fInvPi0Mass/F");
-    fSigmaPairTreeSE->Branch("fPi0Px",&fPi0Px,"fPi0Px/F");
-    fSigmaPairTreeSE->Branch("fPi0Py",&fPi0Py,"fPi0Py/F");
-    fSigmaPairTreeSE->Branch("fPi0Pz",&fPi0Pz,"fPi0Pz/F");
-    fSigmaPairTreeSE->Branch("fPi0DecayVertX",&fPi0DecayVertX,"fPi0DecayVertX/F");
-    fSigmaPairTreeSE->Branch("fPi0DecayVertY",&fPi0DecayVertY,"fPi0DecayVertY/F");
-    fSigmaPairTreeSE->Branch("fPi0DecayVertZ",&fPi0DecayVertZ,"fPi0DecayVertZ/F");
     fSigmaPairTreeSE->Branch("fPi0PhotPhotDCA",&fPi0PhotPhotDCA,"fPi0PhotPhotDCA/F");
     fSigmaPairTreeSE->Branch("fProtonPx",&fProtonPx,"fProtonPx/F");
     fSigmaPairTreeSE->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
     fSigmaPairTreeSE->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
-    fSigmaPairTreeSE->Branch("fProtonX",&fProtonX,"fProtonX/F");
-    fSigmaPairTreeSE->Branch("fProtonY",&fProtonY,"fProtonY/F");
-    fSigmaPairTreeSE->Branch("fProtonZ",&fProtonZ,"fProtonZ/F");
     fSigmaPairTreeSE->Branch("fProtonEta",&fProtonEta,"fProtonEta/F");
-    fSigmaPairTreeSE->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
-    fSigmaPairTreeSE->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
-    fSigmaPairTreeSE->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
     fSigmaPairTreeSE->Branch("fProtonDCAtoPVxy",&fProtonDCAtoPVxy,"fProtonDCAtoPVxy/F");
     fSigmaPairTreeSE->Branch("fProtonDCAtoPVz",&fProtonDCAtoPVz,"fProtonDCAtoPVz/F");
     fSigmaPairTreeSE->Branch("fProtonPi0DCA",&fProtonPi0DCA,"fProtonPi0DCA/F");
@@ -1144,10 +1137,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreeSE->Branch("fProtonNSigTOFPion",&fProtonNSigTOFPion,"fProtonNSigTOFPion/F");
     fSigmaPairTreeSE->Branch("fProtonNSigTOFKaon",&fProtonNSigTOFKaon,"fProtonNSigTOFKaon/F");
     fSigmaPairTreeSE->Branch("fProtonNSigTOFElec",&fProtonNSigTOFElec,"fProtonNSigTOFElec/F");
-    fSigmaPairTreeSE->Branch("fSigmaProtonkstar",&fSigmaProtonkstar,"fSigmaProtonkstar/F");
     fSigmaPairTreeSE->Branch("fSigmaProtonpropkstar",&fSigmaProtonpropkstar,"fSigmaProtonpropkstar/F");
-    fSigmaPairTreeSE->Branch("fPairProtonIsMC",&fPairProtonIsMC,"fPairProtonIsMC/O");
-    fSigmaPairTreeSE->Branch("fPairProtonIsPrimary",&fPairProtonIsPrimary,"fPairProtonIsPrimary/O");
     fSigmaPairTreeSE->Branch("fPairProtonID",&fPairProtonID,"fPairProtonID/I");
     fSigmaPairTreeSE->Branch("fPairProtonStatus",&fPairProtonStatus,"fPairProtonStatus/l");
     fSigmaPairTreeSE->Branch("fPairProtonFilterMap",&fPairProtonFilterMap,"fPairProtonFilterMap/i");
@@ -1167,13 +1157,69 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreeSE->Branch("fPairProtNSigTOFPion",&fPairProtNSigTOFPion,"fPairProtNSigTOFPion/F");
     fSigmaPairTreeSE->Branch("fPairProtonCluster",&fPairProtonCluster,"fPairProtonCluster/I");
     fSigmaPairTreeSE->Branch("fPairProtonITSCluster",&fPairProtonITSCluster,"fPairProtonITSCluster/I");
+    fSigmaPairTreeSE->Branch("fPairProtonChi2",&fPairProtonChi2,"fPairProtonChi2/F");
+    if(fSaveMCBranches){
+        fSigmaPairTreeSE->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+        fSigmaPairTreeSE->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
+        fSigmaPairTreeSE->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
+        fSigmaPairTreeSE->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
+        fSigmaPairTreeSE->Branch("fPrimVertYMC",&fPrimVertYMC,"fPrimVertYMC/F");
+        fSigmaPairTreeSE->Branch("fPrimVertZMC",&fPrimVertZMC,"fPrimVertZMC/F");
+        fSigmaPairTreeSE->Branch("fSigDecayVertXMC",&fSigDecayVertXMC,"fSigDecayVertXMC/F");
+        fSigmaPairTreeSE->Branch("fSigDecayVertYMC",&fSigDecayVertYMC,"fSigDecayVertYMC/F");
+        fSigmaPairTreeSE->Branch("fSigDecayVertZMC",&fSigDecayVertZMC,"fSigDecayVertZMC/F");
+        fSigmaPairTreeSE->Branch("fSigPxMC",&fSigPxMC,"fSigPxMC/F");
+        fSigmaPairTreeSE->Branch("fSigPyMC",&fSigPyMC,"fSigPyMC/F");
+        fSigmaPairTreeSE->Branch("fSigPzMC",&fSigPzMC,"fSigPzMC/F");
+        fSigmaPairTreeSE->Branch("fPairProtonIsMC",&fPairProtonIsMC,"fPairProtonIsMC/O");
+        fSigmaPairTreeSE->Branch("fPairProtonIsPrimary",&fPairProtonIsPrimary,"fPairProtonIsPrimary/O");
+    }
+    if(fSaveAdditionalBranches){
+        fSigmaPairTreeSE->Branch("fIsV02Onthefly",&fIsV02Onthefly,"fIsV02Onthefly/O");
+        fSigmaPairTreeSE->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
+        fSigmaPairTreeSE->Branch("fSigRefMultComb10",&fSigRefMultComb10,"fSigRefMultComb10/S");
+        fSigmaPairTreeSE->Branch("fInvSigMass",&fInvSigMass,"fInvSigMass/F");
+        fSigmaPairTreeSE->Branch("fSigY",&fSigY,"fSigY/F");
+        fSigmaPairTreeSE->Branch("fSigPA",&fSigPA,"fSigPA/F");
+        fSigmaPairTreeSE->Branch("fSigPx",&fSigPx,"fSigPx/F");
+        fSigmaPairTreeSE->Branch("fSigPy",&fSigPy,"fSigPy/F");
+        fSigmaPairTreeSE->Branch("fSigPz",&fSigPz,"fSigPz/F");
+        fSigmaPairTreeSE->Branch("fPrimVertX",&fPrimVertX,"fPrimVertX/F");
+        fSigmaPairTreeSE->Branch("fPrimVertY",&fPrimVertY,"fPrimVertY/F");
+        fSigmaPairTreeSE->Branch("fSigDecayVertX",&fSigDecayVertX,"fSigDecayVertX/F");
+        fSigmaPairTreeSE->Branch("fSigDecayVertY",&fSigDecayVertY,"fSigDecayVertY/F");
+        fSigmaPairTreeSE->Branch("fSigDecayVertZ",&fSigDecayVertZ,"fSigDecayVertZ/F");
+        fSigmaPairTreeSE->Branch("fPhoton1Px",&fPhoton1Px,"fPhoton1Px/F");
+        fSigmaPairTreeSE->Branch("fPhoton1Py",&fPhoton1Py,"fPhoton1Py/F");
+        fSigmaPairTreeSE->Branch("fPhoton1Pz",&fPhoton1Pz,"fPhoton1Pz/F");
+        fSigmaPairTreeSE->Branch("fPhoton2Px",&fPhoton2Px,"fPhoton2Px/F");
+        fSigmaPairTreeSE->Branch("fPhoton2Py",&fPhoton2Py,"fPhoton2Py/F");
+        fSigmaPairTreeSE->Branch("fPhoton2Pz",&fPhoton2Pz,"fPhoton2Pz/F");
+        fSigmaPairTreeSE->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
+        fSigmaPairTreeSE->Branch("fPhoton2DCAPV",&fPhoton2DCAPV,"fPhoton2DCAPV/F");
+        fSigmaPairTreeSE->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
+        fSigmaPairTreeSE->Branch("fPhoton2DCASV",&fPhoton2DCASV,"fPhoton2DCASV/F");
+        fSigmaPairTreeSE->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
+        fSigmaPairTreeSE->Branch("fKFChi2",&fKFChi2,"fKFChi2/F");
+        //fSigmaPairTreeSE->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
+        fSigmaPairTreeSE->Branch("fPi0Px",&fPi0Px,"fPi0Px/F");
+        fSigmaPairTreeSE->Branch("fPi0Py",&fPi0Py,"fPi0Py/F");
+        fSigmaPairTreeSE->Branch("fPi0Pz",&fPi0Pz,"fPi0Pz/F");
+        fSigmaPairTreeSE->Branch("fPi0DecayVertX",&fPi0DecayVertX,"fPi0DecayVertX/F");
+        fSigmaPairTreeSE->Branch("fPi0DecayVertY",&fPi0DecayVertY,"fPi0DecayVertY/F");
+        fSigmaPairTreeSE->Branch("fPi0DecayVertZ",&fPi0DecayVertZ,"fPi0DecayVertZ/F");
+        fSigmaPairTreeSE->Branch("fProtonX",&fProtonX,"fProtonX/F");
+        fSigmaPairTreeSE->Branch("fProtonY",&fProtonY,"fProtonY/F");
+        fSigmaPairTreeSE->Branch("fProtonZ",&fProtonZ,"fProtonZ/F");
+        fSigmaPairTreeSE->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
+        fSigmaPairTreeSE->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
+        fSigmaPairTreeSE->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
+        fSigmaPairTreeSE->Branch("fSigmaProtonkstar",&fSigmaProtonkstar,"fSigmaProtonkstar/F");
+    }
 
     // Create TTree of Sigma Proton Pairs in Mixed Event
     fSigmaPairTreeME = new TTree("fSigmaPairTreeME","Tree of Sigma Proton Pairs in Mixed Event");
-    fSigmaPairTreeME->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
-    fSigmaPairTreeME->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
     fSigmaPairTreeME->Branch("fIsV01Onthefly",&fIsV01Onthefly,"fIsV01Onthefly/O");
-    fSigmaPairTreeME->Branch("fIsV02Onthefly",&fIsV02Onthefly,"fIsV02Onthefly/O");
     fSigmaPairTreeME->Branch("fHas4DiffIDs",&fHas4DiffIDs,"fHas4DiffIDs/O");
     fSigmaPairTreeME->Branch("fSigRunnumber",&fSigRunnumber,"fSigRunnumber/I");
     fSigmaPairTreeME->Branch("fSigTriggerMask",&fSigTriggerMask,"fSigTriggerMask/i");
@@ -1183,56 +1229,21 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreeME->Branch("fSigProtonFilterMap",&fSigProtonFilterMap,"fSigProtonFilterMap/i");
     fSigmaPairTreeME->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaPairTreeME->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
-    fSigmaPairTreeME->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
     fSigmaPairTreeME->Branch("fSigRefMultComb08",&fSigRefMultComb08,"fSigRefMultComb08/S");
-    fSigmaPairTreeME->Branch("fSigRefMultComb10",&fSigRefMultComb10,"fSigRefMultComb10/S");
     fSigmaPairTreeME->Branch("fSigBField",&fSigBField,"fSigBField/F");
-    fSigmaPairTreeME->Branch("fInvSigMass",&fInvSigMass,"fInvSigMass/F");
     fSigmaPairTreeME->Branch("fInvSigpropMass",&fInvSigpropMass,"fInvSigpropMass/F");
-    fSigmaPairTreeSE->Branch("fSigY",&fSigY,"fSigY/F");
-    fSigmaPairTreeSE->Branch("fSigYprop",&fSigYprop,"fSigYprop/F");
-    fSigmaPairTreeME->Branch("fSigPA",&fSigPA,"fSigPA/F");
+    fSigmaPairTreeME->Branch("fSigYprop",&fSigYprop,"fSigYprop/F");
     fSigmaPairTreeME->Branch("fSigPAprop",&fSigPAprop,"fSigPAprop/F");
     fSigmaPairTreeME->Branch("fSigAntiPA",&fSigAntiPA,"fSigAntiPA/F");
     fSigmaPairTreeME->Branch("fSigCharge",&fSigCharge,"fSigCharge/F");
-    fSigmaPairTreeME->Branch("fSigPx",&fSigPx,"fSigPx/F");
-    fSigmaPairTreeME->Branch("fSigPy",&fSigPy,"fSigPy/F");
-    fSigmaPairTreeME->Branch("fSigPz",&fSigPz,"fSigPz/F");
-    fSigmaPairTreeSE->Branch("fSigPt",&fSigPt,"fSigPt/F");
+    fSigmaPairTreeME->Branch("fSigPt",&fSigPt,"fSigPt/F");
     fSigmaPairTreeME->Branch("fSigPxprop",&fSigPxprop,"fSigPxprop/F");
     fSigmaPairTreeME->Branch("fSigPyprop",&fSigPyprop,"fSigPyprop/F");
     fSigmaPairTreeME->Branch("fSigPzprop",&fSigPzprop,"fSigPzprop/F");
-    fSigmaPairTreeME->Branch("fPrimVertX",&fPrimVertX,"fPrimVertX/F");
-    fSigmaPairTreeME->Branch("fPrimVertY",&fPrimVertY,"fPrimVertY/F");
     fSigmaPairTreeME->Branch("fPrimVertZ",&fPrimVertZ,"fPrimVertZ/F");
-    fSigmaPairTreeME->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
-    fSigmaPairTreeME->Branch("fPrimVertYMC",&fPrimVertYMC,"fPrimVertYMC/F");
-    fSigmaPairTreeME->Branch("fPrimVertZMC",&fPrimVertZMC,"fPrimVertZMC/F");
-    fSigmaPairTreeME->Branch("fSigDecayVertX",&fSigDecayVertX,"fSigDecayVertX/F");
-    fSigmaPairTreeME->Branch("fSigDecayVertY",&fSigDecayVertY,"fSigDecayVertY/F");
-    fSigmaPairTreeME->Branch("fSigDecayVertZ",&fSigDecayVertZ,"fSigDecayVertZ/F");
-    fSigmaPairTreeSE->Branch("fSigFlightDist",&fSigFlightDist,"fSigFlightDist/F");
-    fSigmaPairTreeME->Branch("fSigDecayVertXMC",&fSigDecayVertXMC,"fSigDecayVertXMC/F");
-    fSigmaPairTreeME->Branch("fSigDecayVertYMC",&fSigDecayVertYMC,"fSigDecayVertYMC/F");
-    fSigmaPairTreeME->Branch("fSigDecayVertZMC",&fSigDecayVertZMC,"fSigDecayVertZMC/F");
-    fSigmaPairTreeME->Branch("fSigPxMC",&fSigPxMC,"fSigPxMC/F");
-    fSigmaPairTreeME->Branch("fSigPyMC",&fSigPyMC,"fSigPyMC/F");
-    fSigmaPairTreeME->Branch("fSigPzMC",&fSigPzMC,"fSigPzMC/F");
-    fSigmaPairTreeME->Branch("fPhoton1Px",&fPhoton1Px,"fPhoton1Px/F");
-    fSigmaPairTreeME->Branch("fPhoton1Py",&fPhoton1Py,"fPhoton1Py/F");
-    fSigmaPairTreeME->Branch("fPhoton1Pz",&fPhoton1Pz,"fPhoton1Pz/F");
-    fSigmaPairTreeME->Branch("fPhoton2Px",&fPhoton2Px,"fPhoton2Px/F");
-    fSigmaPairTreeME->Branch("fPhoton2Py",&fPhoton2Py,"fPhoton2Py/F");
-    fSigmaPairTreeME->Branch("fPhoton2Pz",&fPhoton2Pz,"fPhoton2Pz/F");
+    fSigmaPairTreeME->Branch("fSigFlightDist",&fSigFlightDist,"fSigFlightDist/F");
     fSigmaPairTreeME->Branch("fPhoton1Radius",&fPhoton1Radius,"fPhoton1Radius/F");
     fSigmaPairTreeME->Branch("fPhoton2Radius",&fPhoton2Radius,"fPhoton2Radius/F");
-    fSigmaPairTreeME->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
-    fSigmaPairTreeME->Branch("fPhoton2DCAPV",&fPhoton2DCAPV,"fPhoton2DCAPV/F");
-    fSigmaPairTreeME->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
-    fSigmaPairTreeME->Branch("fPhoton2DCASV",&fPhoton2DCASV,"fPhoton2DCASV/F");
-    fSigmaPairTreeME->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
-    fSigmaPairTreeME->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
-    fSigmaPairTreeME->Branch("fKFChi2",&fKFChi2,"fKFChi2/F");
     fSigmaPairTreeME->Branch("fPhotonsMinCluster",&fPhotonsMinCluster,"fPhotonsMinCluster/F");
     fSigmaPairTreeME->Branch("fPhotonsMinITSCluster",&fPhotonsMinITSCluster,"fPhotonsMinITSCluster/F");
     fSigmaPairTreeME->Branch("fPhotonsMaxalpha",&fPhotonsMaxalpha,"fPhotonsMaxalpha/F");
@@ -1246,23 +1257,11 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreeME->Branch("fPhoton1CPA",&fPhoton1CPA,"fPhoton1CPA/F");
     fSigmaPairTreeME->Branch("fPhoton2CPA",&fPhoton2CPA,"fPhoton2CPA/F");
     fSigmaPairTreeME->Branch("fInvPi0Mass",&fInvPi0Mass,"fInvPi0Mass/F");
-    fSigmaPairTreeME->Branch("fPi0Px",&fPi0Px,"fPi0Px/F");
-    fSigmaPairTreeME->Branch("fPi0Py",&fPi0Py,"fPi0Py/F");
-    fSigmaPairTreeME->Branch("fPi0Pz",&fPi0Pz,"fPi0Pz/F");
-    fSigmaPairTreeME->Branch("fPi0DecayVertX",&fPi0DecayVertX,"fPi0DecayVertX/F");
-    fSigmaPairTreeME->Branch("fPi0DecayVertY",&fPi0DecayVertY,"fPi0DecayVertY/F");
-    fSigmaPairTreeME->Branch("fPi0DecayVertZ",&fPi0DecayVertZ,"fPi0DecayVertZ/F");
     fSigmaPairTreeME->Branch("fPi0PhotPhotDCA",&fPi0PhotPhotDCA,"fPi0PhotPhotDCA/F");
     fSigmaPairTreeME->Branch("fProtonPx",&fProtonPx,"fProtonPx/F");
     fSigmaPairTreeME->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
     fSigmaPairTreeME->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
-    fSigmaPairTreeME->Branch("fProtonX",&fProtonX,"fProtonX/F");
-    fSigmaPairTreeME->Branch("fProtonY",&fProtonY,"fProtonY/F");
-    fSigmaPairTreeME->Branch("fProtonZ",&fProtonZ,"fProtonZ/F");
     fSigmaPairTreeME->Branch("fProtonEta",&fProtonEta,"fProtonEta/F");
-    fSigmaPairTreeME->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
-    fSigmaPairTreeME->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
-    fSigmaPairTreeME->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
     fSigmaPairTreeME->Branch("fProtonDCAtoPVxy",&fProtonDCAtoPVxy,"fProtonDCAtoPVxy/F");
     fSigmaPairTreeME->Branch("fProtonDCAtoPVz",&fProtonDCAtoPVz,"fProtonDCAtoPVz/F");
     fSigmaPairTreeME->Branch("fProtonPi0DCA",&fProtonPi0DCA,"fProtonPi0DCA/F");
@@ -1277,10 +1276,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreeME->Branch("fProtonNSigTOFPion",&fProtonNSigTOFPion,"fProtonNSigTOFPion/F");
     fSigmaPairTreeME->Branch("fProtonNSigTOFKaon",&fProtonNSigTOFKaon,"fProtonNSigTOFKaon/F");
     fSigmaPairTreeME->Branch("fProtonNSigTOFElec",&fProtonNSigTOFElec,"fProtonNSigTOFElec/F");
-    fSigmaPairTreeME->Branch("fSigmaProtonkstar",&fSigmaProtonkstar,"fSigmaProtonkstar/F");
     fSigmaPairTreeME->Branch("fSigmaProtonpropkstar",&fSigmaProtonpropkstar,"fSigmaProtonpropkstar/F");
-    fSigmaPairTreeME->Branch("fPairProtonIsMC",&fPairProtonIsMC,"fPairProtonIsMC/O");
-    fSigmaPairTreeME->Branch("fPairProtonIsPrimary",&fPairProtonIsPrimary,"fPairProtonIsPrimary/O");
     fSigmaPairTreeME->Branch("fPairProtonID",&fPairProtonID,"fPairProtonID/I");
     fSigmaPairTreeME->Branch("fPairProtonStatus",&fPairProtonStatus,"fPairProtonStatus/l");
     fSigmaPairTreeME->Branch("fPairProtonFilterMap",&fPairProtonFilterMap,"fPairProtonFilterMap/i");
@@ -1300,6 +1296,65 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreeME->Branch("fPairProtNSigTOFPion",&fPairProtNSigTOFPion,"fPairProtNSigTOFPion/F");
     fSigmaPairTreeME->Branch("fPairProtonCluster",&fPairProtonCluster,"fPairProtonCluster/I");
     fSigmaPairTreeME->Branch("fPairProtonITSCluster",&fPairProtonITSCluster,"fPairProtonITSCluster/I");
+    fSigmaPairTreeME->Branch("fPairProtonChi2",&fPairProtonChi2,"fPairProtonChi2/F");
+    if(fSaveMCBranches){
+        fSigmaPairTreeME->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+        fSigmaPairTreeME->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
+        fSigmaPairTreeME->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
+        fSigmaPairTreeME->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
+        fSigmaPairTreeME->Branch("fPrimVertYMC",&fPrimVertYMC,"fPrimVertYMC/F");
+        fSigmaPairTreeME->Branch("fPrimVertZMC",&fPrimVertZMC,"fPrimVertZMC/F");
+        fSigmaPairTreeME->Branch("fSigDecayVertXMC",&fSigDecayVertXMC,"fSigDecayVertXMC/F");
+        fSigmaPairTreeME->Branch("fSigDecayVertYMC",&fSigDecayVertYMC,"fSigDecayVertYMC/F");
+        fSigmaPairTreeME->Branch("fSigDecayVertZMC",&fSigDecayVertZMC,"fSigDecayVertZMC/F");
+        fSigmaPairTreeME->Branch("fSigPxMC",&fSigPxMC,"fSigPxMC/F");
+        fSigmaPairTreeME->Branch("fSigPyMC",&fSigPyMC,"fSigPyMC/F");
+        fSigmaPairTreeME->Branch("fSigPzMC",&fSigPzMC,"fSigPzMC/F");
+        fSigmaPairTreeME->Branch("fPairProtonIsMC",&fPairProtonIsMC,"fPairProtonIsMC/O");
+        fSigmaPairTreeME->Branch("fPairProtonIsPrimary",&fPairProtonIsPrimary,"fPairProtonIsPrimary/O");
+    }
+    if(fSaveAdditionalBranches){
+        fSigmaPairTreeME->Branch("fIsV02Onthefly",&fIsV02Onthefly,"fIsV02Onthefly/O");
+        fSigmaPairTreeME->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
+        fSigmaPairTreeME->Branch("fSigRefMultComb10",&fSigRefMultComb10,"fSigRefMultComb10/S");
+        fSigmaPairTreeME->Branch("fInvSigMass",&fInvSigMass,"fInvSigMass/F");
+        fSigmaPairTreeME->Branch("fSigY",&fSigY,"fSigY/F");
+        fSigmaPairTreeME->Branch("fSigPA",&fSigPA,"fSigPA/F");
+        fSigmaPairTreeME->Branch("fSigPx",&fSigPx,"fSigPx/F");
+        fSigmaPairTreeME->Branch("fSigPy",&fSigPy,"fSigPy/F");
+        fSigmaPairTreeME->Branch("fSigPz",&fSigPz,"fSigPz/F");
+        fSigmaPairTreeME->Branch("fPrimVertX",&fPrimVertX,"fPrimVertX/F");
+        fSigmaPairTreeME->Branch("fPrimVertY",&fPrimVertY,"fPrimVertY/F");
+        fSigmaPairTreeME->Branch("fSigDecayVertX",&fSigDecayVertX,"fSigDecayVertX/F");
+        fSigmaPairTreeME->Branch("fSigDecayVertY",&fSigDecayVertY,"fSigDecayVertY/F");
+        fSigmaPairTreeME->Branch("fSigDecayVertZ",&fSigDecayVertZ,"fSigDecayVertZ/F");
+        fSigmaPairTreeME->Branch("fPhoton1Px",&fPhoton1Px,"fPhoton1Px/F");
+        fSigmaPairTreeME->Branch("fPhoton1Py",&fPhoton1Py,"fPhoton1Py/F");
+        fSigmaPairTreeME->Branch("fPhoton1Pz",&fPhoton1Pz,"fPhoton1Pz/F");
+        fSigmaPairTreeME->Branch("fPhoton2Px",&fPhoton2Px,"fPhoton2Px/F");
+        fSigmaPairTreeME->Branch("fPhoton2Py",&fPhoton2Py,"fPhoton2Py/F");
+        fSigmaPairTreeME->Branch("fPhoton2Pz",&fPhoton2Pz,"fPhoton2Pz/F");
+        fSigmaPairTreeME->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
+        fSigmaPairTreeME->Branch("fPhoton2DCAPV",&fPhoton2DCAPV,"fPhoton2DCAPV/F");
+        fSigmaPairTreeME->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
+        fSigmaPairTreeME->Branch("fPhoton2DCASV",&fPhoton2DCASV,"fPhoton2DCASV/F");
+        fSigmaPairTreeME->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
+        fSigmaPairTreeME->Branch("fKFChi2",&fKFChi2,"fKFChi2/F");
+        //fSigmaPairTreeME->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
+        fSigmaPairTreeME->Branch("fPi0Px",&fPi0Px,"fPi0Px/F");
+        fSigmaPairTreeME->Branch("fPi0Py",&fPi0Py,"fPi0Py/F");
+        fSigmaPairTreeME->Branch("fPi0Pz",&fPi0Pz,"fPi0Pz/F");
+        fSigmaPairTreeME->Branch("fPi0DecayVertX",&fPi0DecayVertX,"fPi0DecayVertX/F");
+        fSigmaPairTreeME->Branch("fPi0DecayVertY",&fPi0DecayVertY,"fPi0DecayVertY/F");
+        fSigmaPairTreeME->Branch("fPi0DecayVertZ",&fPi0DecayVertZ,"fPi0DecayVertZ/F");
+        fSigmaPairTreeME->Branch("fProtonX",&fProtonX,"fProtonX/F");
+        fSigmaPairTreeME->Branch("fProtonY",&fProtonY,"fProtonY/F");
+        fSigmaPairTreeME->Branch("fProtonZ",&fProtonZ,"fProtonZ/F");
+        fSigmaPairTreeME->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
+        fSigmaPairTreeME->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
+        fSigmaPairTreeME->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
+        fSigmaPairTreeME->Branch("fSigmaProtonkstar",&fSigmaProtonkstar,"fSigmaProtonkstar/F");
+    }
 
     // Create TTree of PHOS Sigma Candidates
     fSigmaPHOSCandTree = new TTree("fSigmaPHOSCandTree","Tree of PHOS Sigma Candidates");
@@ -1314,6 +1369,11 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPHOSCandTree->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
     fSigmaPHOSCandTree->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
     fSigmaPHOSCandTree->Branch("fSigBField",&fSigBField,"fSigBField/F");
+    fSigmaPHOSCandTree->Branch("fSigRefMultComb08",&fSigRefMultComb08,"fSigRefMultComb08/S");
+    fSigmaPHOSCandTree->Branch("fSigPxprop",&fSigPxprop,"fSigPxprop/F");
+    fSigmaPHOSCandTree->Branch("fSigPyprop",&fSigPyprop,"fSigPyprop/F");
+    fSigmaPHOSCandTree->Branch("fSigPzprop",&fSigPzprop,"fSigPzprop/F");
+    fSigmaPHOSCandTree->Branch("fPrimVertZ",&fPrimVertZ,"fPrimVertZ/F");
     fSigmaPHOSCandTree->Branch("fInvSigpropMass",&fInvSigpropMass,"fInvSigpropMass/F");
     fSigmaPHOSCandTree->Branch("fInvSigMassUncorr",&fInvSigMassUncorr,"fInvSigMassUncorr/F");
     fSigmaPHOSCandTree->Branch("fSigYprop",&fSigYprop,"fSigYprop/F");
@@ -1349,89 +1409,85 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPHOSCandTree->Branch("fClustM02",&fClustM02,"fClustM02/F");
     fSigmaPHOSCandTree->Branch("fClustNCells",&fClustNCells,"fClustNCells/I");
     fSigmaPHOSCandTree->Branch("fClustDisttoBC",&fClustDisttoBC,"fClustDisttoBC/F");
-    fSigmaPHOSCandTree->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
-    fSigmaPHOSCandTree->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
-    fSigmaPHOSCandTree->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
     fSigmaPHOSCandTree->Branch("fProtonDCAtoPVz",&fProtonDCAtoPVz,"fProtonDCAtoPVz/F");
     fSigmaPHOSCandTree->Branch("fProtonNITSCluster",&fProtonNITSCluster,"fProtonNITSCluster/I");
+    fSigmaPHOSCandTree->Branch("fProtonPx",&fProtonPx,"fProtonPx/F");
+    fSigmaPHOSCandTree->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
+    fSigmaPHOSCandTree->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
+    fSigmaPHOSCandTree->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
     if(fSaveMCBranches){
-        fSigmaPHOSCandTree->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
-        fSigmaPHOSCandTree->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
-        fSigmaPHOSCandTree->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
-        fSigmaPHOSCandTree->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
-        fSigmaPHOSCandTree->Branch("fPrimVertYMC",&fPrimVertYMC,"fPrimVertYMC/F");
-        fSigmaPHOSCandTree->Branch("fPrimVertZMC",&fPrimVertZMC,"fPrimVertZMC/F");
-        fSigmaPHOSCandTree->Branch("fSigDecayVertXMC",&fSigDecayVertXMC,"fSigDecayVertXMC/F");
-        fSigmaPHOSCandTree->Branch("fSigDecayVertYMC",&fSigDecayVertYMC,"fSigDecayVertYMC/F");
-        fSigmaPHOSCandTree->Branch("fSigDecayVertZMC",&fSigDecayVertZMC,"fSigDecayVertZMC/F");
-        fSigmaPHOSCandTree->Branch("fSigPxMC",&fSigPxMC,"fSigPxMC/F");
-        fSigmaPHOSCandTree->Branch("fSigPyMC",&fSigPyMC,"fSigPyMC/F");
-        fSigmaPHOSCandTree->Branch("fSigPzMC",&fSigPzMC,"fSigPzMC/F");
-        fSigmaPHOSCandTree->Branch("fCaloPhotonPxMC",&fCaloPhotonPxMC,"fCaloPhotonPxMC/F");
-        fSigmaPHOSCandTree->Branch("fCaloPhotonPyMC",&fCaloPhotonPyMC,"fCaloPhotonPyMC/F");
-        fSigmaPHOSCandTree->Branch("fCaloPhotonPzMC",&fCaloPhotonPzMC,"fCaloPhotonPzMC/F");
-        fSigmaPHOSCandTree->Branch("fCaloPhotonEMC",&fCaloPhotonEMC,"fCaloPhotonEMC/F");
-        fSigmaPHOSCandTree->Branch("fClustNLabels",&fClustNLabels,"fClustNLabels/I");
-        fSigmaPHOSCandTree->Branch("fClustPDGCode",&fClustPDGCode,"fClustPDGCode/I");
+      fSigmaPHOSCandTree->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+      fSigmaPHOSCandTree->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
+      fSigmaPHOSCandTree->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
+      fSigmaPHOSCandTree->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
+      fSigmaPHOSCandTree->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
+      fSigmaPHOSCandTree->Branch("fPrimVertYMC",&fPrimVertYMC,"fPrimVertYMC/F");
+      fSigmaPHOSCandTree->Branch("fPrimVertZMC",&fPrimVertZMC,"fPrimVertZMC/F");
+      fSigmaPHOSCandTree->Branch("fSigDecayVertXMC",&fSigDecayVertXMC,"fSigDecayVertXMC/F");
+      fSigmaPHOSCandTree->Branch("fSigDecayVertYMC",&fSigDecayVertYMC,"fSigDecayVertYMC/F");
+      fSigmaPHOSCandTree->Branch("fSigDecayVertZMC",&fSigDecayVertZMC,"fSigDecayVertZMC/F");
+      fSigmaPHOSCandTree->Branch("fSigPxMC",&fSigPxMC,"fSigPxMC/F");
+      fSigmaPHOSCandTree->Branch("fSigPyMC",&fSigPyMC,"fSigPyMC/F");
+      fSigmaPHOSCandTree->Branch("fSigPzMC",&fSigPzMC,"fSigPzMC/F");
+      fSigmaPHOSCandTree->Branch("fCaloPhotonPxMC",&fCaloPhotonPxMC,"fCaloPhotonPxMC/F");
+      fSigmaPHOSCandTree->Branch("fCaloPhotonPyMC",&fCaloPhotonPyMC,"fCaloPhotonPyMC/F");
+      fSigmaPHOSCandTree->Branch("fCaloPhotonPzMC",&fCaloPhotonPzMC,"fCaloPhotonPzMC/F");
+      fSigmaPHOSCandTree->Branch("fCaloPhotonEMC",&fCaloPhotonEMC,"fCaloPhotonEMC/F");
+      fSigmaPHOSCandTree->Branch("fClustNLabels",&fClustNLabels,"fClustNLabels/I");
+      fSigmaPHOSCandTree->Branch("fClustPDGCode",&fClustPDGCode,"fClustPDGCode/I");
     }
     if(fSaveAdditionalBranches){
-        fSigmaPHOSCandTree->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
-        fSigmaPHOSCandTree->Branch("fSigRefMultComb08",&fSigRefMultComb08,"fSigRefMultComb08/S");
-        fSigmaPHOSCandTree->Branch("fSigRefMultComb10",&fSigRefMultComb10,"fSigRefMultComb10/S");
-        fSigmaPHOSCandTree->Branch("fInvSigMass",&fInvSigMass,"fInvSigMass/F");
-        fSigmaPHOSCandTree->Branch("fSigY",&fSigY,"fSigY/F");
-        fSigmaPHOSCandTree->Branch("fSigPA",&fSigPA,"fSigPA/F");
-        fSigmaPHOSCandTree->Branch("fSigPx",&fSigPx,"fSigPx/F");
-        fSigmaPHOSCandTree->Branch("fSigPy",&fSigPy,"fSigPy/F");
-        fSigmaPHOSCandTree->Branch("fSigPz",&fSigPz,"fSigPz/F");
-        fSigmaPHOSCandTree->Branch("fSigPxprop",&fSigPxprop,"fSigPxprop/F");
-        fSigmaPHOSCandTree->Branch("fSigPyprop",&fSigPyprop,"fSigPyprop/F");
-        fSigmaPHOSCandTree->Branch("fSigPzprop",&fSigPzprop,"fSigPzprop/F");
-        fSigmaPHOSCandTree->Branch("fPrimVertX",&fPrimVertX,"fPrimVertX/F");
-        fSigmaPHOSCandTree->Branch("fPrimVertY",&fPrimVertY,"fPrimVertY/F");
-        fSigmaPHOSCandTree->Branch("fPrimVertZ",&fPrimVertZ,"fPrimVertZ/F");
-        fSigmaPHOSCandTree->Branch("fSigDecayVertX",&fSigDecayVertX,"fSigDecayVertX/F");
-        fSigmaPHOSCandTree->Branch("fSigDecayVertY",&fSigDecayVertY,"fSigDecayVertY/F");
-        fSigmaPHOSCandTree->Branch("fSigDecayVertZ",&fSigDecayVertZ,"fSigDecayVertZ/F");
-        fSigmaPHOSCandTree->Branch("fPhoton1Px",&fPhoton1Px,"fPhoton1Px/F");
-        fSigmaPHOSCandTree->Branch("fPhoton1Py",&fPhoton1Py,"fPhoton1Py/F");
-        fSigmaPHOSCandTree->Branch("fPhoton1Pz",&fPhoton1Pz,"fPhoton1Pz/F");
-        fSigmaPHOSCandTree->Branch("fPhoton2Px",&fPhoton2Px,"fPhoton2Px/F");
-        fSigmaPHOSCandTree->Branch("fPhoton2Py",&fPhoton2Py,"fPhoton2Py/F");
-        fSigmaPHOSCandTree->Branch("fPhoton2Pz",&fPhoton2Pz,"fPhoton2Pz/F");
-        fSigmaPHOSCandTree->Branch("fCaloPhotonX",&fCaloPhotonX,"fCaloPhotonX/F");
-        fSigmaPHOSCandTree->Branch("fCaloPhotonY",&fCaloPhotonY,"fCaloPhotonY/F");
-        fSigmaPHOSCandTree->Branch("fCaloPhotonZ",&fCaloPhotonZ,"fCaloPhotonZ/F");
-        fSigmaPHOSCandTree->Branch("fConvPhotonX",&fConvPhotonX,"fConvPhotonX/F");
-        fSigmaPHOSCandTree->Branch("fConvPhotonY",&fConvPhotonY,"fConvPhotonY/F");
-        fSigmaPHOSCandTree->Branch("fConvPhotonZ",&fConvPhotonZ,"fConvPhotonZ/F");
-        fSigmaPHOSCandTree->Branch("fCaloPhotonEcorr",&fCaloPhotonEcorr,"fCaloPhotonEcorr/F");
-        fSigmaPHOSCandTree->Branch("fClustDispersion",&fClustDispersion,"fClustDispersion/F");
-        fSigmaPHOSCandTree->Branch("fClustNTracksMatched",&fClustNTracksMatched,"fClustNTracksMatched/I");
-        fSigmaPHOSCandTree->Branch("fClustTOF",&fClustTOF,"fClustTOF/F");
-        fSigmaPHOSCandTree->Branch("fClustBeta",&fClustBeta,"fClustBeta/F");
-        fSigmaPHOSCandTree->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
-        fSigmaPHOSCandTree->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
-        fSigmaPHOSCandTree->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
-        fSigmaPHOSCandTree->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
-        fSigmaPHOSCandTree->Branch("fKFChi2",&fKFChi2,"fKFChi2/F");
-        fSigmaPHOSCandTree->Branch("fPhoton1CPA",&fPhoton1CPA,"fPhoton1CPA/F");
-        fSigmaPHOSCandTree->Branch("fPi0Px",&fPi0Px,"fPi0Px/F");
-        fSigmaPHOSCandTree->Branch("fPi0Py",&fPi0Py,"fPi0Py/F");
-        fSigmaPHOSCandTree->Branch("fPi0Pz",&fPi0Pz,"fPi0Pz/F");
-        fSigmaPHOSCandTree->Branch("fProtonPx",&fProtonPx,"fProtonPx/F");
-        fSigmaPHOSCandTree->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
-        fSigmaPHOSCandTree->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
-        fSigmaPHOSCandTree->Branch("fProtonX",&fProtonX,"fProtonX/F");
-        fSigmaPHOSCandTree->Branch("fProtonY",&fProtonY,"fProtonY/F");
-        fSigmaPHOSCandTree->Branch("fProtonZ",&fProtonZ,"fProtonZ/F");
-        fSigmaPHOSCandTree->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
-        fSigmaPHOSCandTree->Branch("fProtonNSigTPCPion",&fProtonNSigTPCPion,"fProtonNSigTPCPion/F");
-        fSigmaPHOSCandTree->Branch("fProtonNSigTPCKaon",&fProtonNSigTPCKaon,"fProtonNSigTPCKaon/F");
-        fSigmaPHOSCandTree->Branch("fProtonNSigTPCElec",&fProtonNSigTPCElec,"fProtonNSigTPCElec/F");
-        fSigmaPHOSCandTree->Branch("fProtonNSigTOFPion",&fProtonNSigTOFPion,"fProtonNSigTOFPion/F");
-        fSigmaPHOSCandTree->Branch("fProtonNSigTOFKaon",&fProtonNSigTOFKaon,"fProtonNSigTOFKaon/F");
-        fSigmaPHOSCandTree->Branch("fProtonNSigTOFElec",&fProtonNSigTOFElec,"fProtonNSigTOFElec/F");
+      fSigmaPHOSCandTree->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
+      fSigmaPHOSCandTree->Branch("fSigRefMultComb10",&fSigRefMultComb10,"fSigRefMultComb10/S");
+      fSigmaPHOSCandTree->Branch("fInvSigMass",&fInvSigMass,"fInvSigMass/F");
+      fSigmaPHOSCandTree->Branch("fSigY",&fSigY,"fSigY/F");
+      fSigmaPHOSCandTree->Branch("fSigPA",&fSigPA,"fSigPA/F");
+      fSigmaPHOSCandTree->Branch("fSigPx",&fSigPx,"fSigPx/F");
+      fSigmaPHOSCandTree->Branch("fSigPy",&fSigPy,"fSigPy/F");
+      fSigmaPHOSCandTree->Branch("fSigPz",&fSigPz,"fSigPz/F");
+      fSigmaPHOSCandTree->Branch("fPrimVertX",&fPrimVertX,"fPrimVertX/F");
+      fSigmaPHOSCandTree->Branch("fPrimVertY",&fPrimVertY,"fPrimVertY/F");
+      fSigmaPHOSCandTree->Branch("fSigDecayVertX",&fSigDecayVertX,"fSigDecayVertX/F");
+      fSigmaPHOSCandTree->Branch("fSigDecayVertY",&fSigDecayVertY,"fSigDecayVertY/F");
+      fSigmaPHOSCandTree->Branch("fSigDecayVertZ",&fSigDecayVertZ,"fSigDecayVertZ/F");
+      fSigmaPHOSCandTree->Branch("fPhoton1Px",&fPhoton1Px,"fPhoton1Px/F");
+      fSigmaPHOSCandTree->Branch("fPhoton1Py",&fPhoton1Py,"fPhoton1Py/F");
+      fSigmaPHOSCandTree->Branch("fPhoton1Pz",&fPhoton1Pz,"fPhoton1Pz/F");
+      fSigmaPHOSCandTree->Branch("fPhoton2Px",&fPhoton2Px,"fPhoton2Px/F");
+      fSigmaPHOSCandTree->Branch("fPhoton2Py",&fPhoton2Py,"fPhoton2Py/F");
+      fSigmaPHOSCandTree->Branch("fPhoton2Pz",&fPhoton2Pz,"fPhoton2Pz/F");
+      fSigmaPHOSCandTree->Branch("fCaloPhotonX",&fCaloPhotonX,"fCaloPhotonX/F");
+      fSigmaPHOSCandTree->Branch("fCaloPhotonY",&fCaloPhotonY,"fCaloPhotonY/F");
+      fSigmaPHOSCandTree->Branch("fCaloPhotonZ",&fCaloPhotonZ,"fCaloPhotonZ/F");
+      fSigmaPHOSCandTree->Branch("fConvPhotonX",&fConvPhotonX,"fConvPhotonX/F");
+      fSigmaPHOSCandTree->Branch("fConvPhotonY",&fConvPhotonY,"fConvPhotonY/F");
+      fSigmaPHOSCandTree->Branch("fConvPhotonZ",&fConvPhotonZ,"fConvPhotonZ/F");
+      fSigmaPHOSCandTree->Branch("fCaloPhotonEcorr",&fCaloPhotonEcorr,"fCaloPhotonEcorr/F");
+      fSigmaPHOSCandTree->Branch("fClustDispersion",&fClustDispersion,"fClustDispersion/F");
+      fSigmaPHOSCandTree->Branch("fClustNTracksMatched",&fClustNTracksMatched,"fClustNTracksMatched/I");
+      fSigmaPHOSCandTree->Branch("fClustTOF",&fClustTOF,"fClustTOF/F");
+      fSigmaPHOSCandTree->Branch("fClustBeta",&fClustBeta,"fClustBeta/F");
+      fSigmaPHOSCandTree->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
+      fSigmaPHOSCandTree->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
+      fSigmaPHOSCandTree->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
+      //fSigmaPHOSCandTree->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
+      fSigmaPHOSCandTree->Branch("fKFChi2",&fKFChi2,"fKFChi2/F");
+      fSigmaPHOSCandTree->Branch("fPhoton1CPA",&fPhoton1CPA,"fPhoton1CPA/F");
+      fSigmaPHOSCandTree->Branch("fPi0Px",&fPi0Px,"fPi0Px/F");
+      fSigmaPHOSCandTree->Branch("fPi0Py",&fPi0Py,"fPi0Py/F");
+      fSigmaPHOSCandTree->Branch("fPi0Pz",&fPi0Pz,"fPi0Pz/F");
+      fSigmaPHOSCandTree->Branch("fProtonX",&fProtonX,"fProtonX/F");
+      fSigmaPHOSCandTree->Branch("fProtonY",&fProtonY,"fProtonY/F");
+      fSigmaPHOSCandTree->Branch("fProtonZ",&fProtonZ,"fProtonZ/F");
+      fSigmaPHOSCandTree->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
+      fSigmaPHOSCandTree->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
+      fSigmaPHOSCandTree->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
+      fSigmaPHOSCandTree->Branch("fProtonNSigTPCPion",&fProtonNSigTPCPion,"fProtonNSigTPCPion/F");
+      fSigmaPHOSCandTree->Branch("fProtonNSigTPCKaon",&fProtonNSigTPCKaon,"fProtonNSigTPCKaon/F");
+      fSigmaPHOSCandTree->Branch("fProtonNSigTPCElec",&fProtonNSigTPCElec,"fProtonNSigTPCElec/F");
+      fSigmaPHOSCandTree->Branch("fProtonNSigTOFPion",&fProtonNSigTOFPion,"fProtonNSigTOFPion/F");
+      fSigmaPHOSCandTree->Branch("fProtonNSigTOFKaon",&fProtonNSigTOFKaon,"fProtonNSigTOFKaon/F");
+      fSigmaPHOSCandTree->Branch("fProtonNSigTOFElec",&fProtonNSigTOFElec,"fProtonNSigTOFElec/F");
     }
 
     // Create TTree of PHOS Sigma Candidates
@@ -1482,13 +1538,15 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPHOSMEBkgTree->Branch("fClustM02",&fClustM02,"fClustM02/F");
     fSigmaPHOSMEBkgTree->Branch("fClustNCells",&fClustNCells,"fClustNCells/I");
     fSigmaPHOSMEBkgTree->Branch("fClustDisttoBC",&fClustDisttoBC,"fClustDisttoBC/F");
-    fSigmaPHOSMEBkgTree->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
-    fSigmaPHOSMEBkgTree->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
-    fSigmaPHOSMEBkgTree->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
     fSigmaPHOSMEBkgTree->Branch("fProtonDCAtoPVz",&fProtonDCAtoPVz,"fProtonDCAtoPVz/F");
     fSigmaPHOSMEBkgTree->Branch("fProtonNITSCluster",&fProtonNITSCluster,"fProtonNITSCluster/I");
+    fSigmaPHOSMEBkgTree->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
+    fSigmaPHOSMEBkgTree->Branch("fProtonPx",&fProtonPx,"fProtonPx/F");
+    fSigmaPHOSMEBkgTree->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
+    fSigmaPHOSMEBkgTree->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
     if(fSaveMCBranches){
       fSigmaPHOSMEBkgTree->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+      fSigmaPHOSMEBkgTree->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
       fSigmaPHOSMEBkgTree->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
       fSigmaPHOSMEBkgTree->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
       fSigmaPHOSMEBkgTree->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
@@ -1546,19 +1604,18 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
       fSigmaPHOSMEBkgTree->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
       fSigmaPHOSMEBkgTree->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
       fSigmaPHOSMEBkgTree->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
-      fSigmaPHOSMEBkgTree->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
+      //fSigmaPHOSMEBkgTree->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
       fSigmaPHOSMEBkgTree->Branch("fKFChi2",&fKFChi2,"fKFChi2/F");
       fSigmaPHOSMEBkgTree->Branch("fPhoton1CPA",&fPhoton1CPA,"fPhoton1CPA/F");
       fSigmaPHOSMEBkgTree->Branch("fPi0Px",&fPi0Px,"fPi0Px/F");
       fSigmaPHOSMEBkgTree->Branch("fPi0Py",&fPi0Py,"fPi0Py/F");
       fSigmaPHOSMEBkgTree->Branch("fPi0Pz",&fPi0Pz,"fPi0Pz/F");
-      fSigmaPHOSMEBkgTree->Branch("fProtonPx",&fProtonPx,"fProtonPx/F");
-      fSigmaPHOSMEBkgTree->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
-      fSigmaPHOSMEBkgTree->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
       fSigmaPHOSMEBkgTree->Branch("fProtonX",&fProtonX,"fProtonX/F");
       fSigmaPHOSMEBkgTree->Branch("fProtonY",&fProtonY,"fProtonY/F");
       fSigmaPHOSMEBkgTree->Branch("fProtonZ",&fProtonZ,"fProtonZ/F");
-      fSigmaPHOSMEBkgTree->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
+      fSigmaPHOSMEBkgTree->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
+      fSigmaPHOSMEBkgTree->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
+      fSigmaPHOSMEBkgTree->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
       fSigmaPHOSMEBkgTree->Branch("fProtonNSigTPCPion",&fProtonNSigTPCPion,"fProtonNSigTPCPion/F");
       fSigmaPHOSMEBkgTree->Branch("fProtonNSigTPCKaon",&fProtonNSigTPCKaon,"fProtonNSigTPCKaon/F");
       fSigmaPHOSMEBkgTree->Branch("fProtonNSigTPCElec",&fProtonNSigTPCElec,"fProtonNSigTPCElec/F");
@@ -1615,9 +1672,6 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreePHOSSE->Branch("fClustM02",&fClustM02,"fClustM02/F");
     fSigmaPairTreePHOSSE->Branch("fClustNCells",&fClustNCells,"fClustNCells/I");
     fSigmaPairTreePHOSSE->Branch("fClustDisttoBC",&fClustDisttoBC,"fClustDisttoBC/F");
-    fSigmaPairTreePHOSSE->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
-    fSigmaPairTreePHOSSE->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
-    fSigmaPairTreePHOSSE->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
     fSigmaPairTreePHOSSE->Branch("fProtonDCAtoPVz",&fProtonDCAtoPVz,"fProtonDCAtoPVz/F");
     fSigmaPairTreePHOSSE->Branch("fProtonNITSCluster",&fProtonNITSCluster,"fProtonNITSCluster/I");
     fSigmaPairTreePHOSSE->Branch("fSigmaProtonkstar",&fSigmaProtonkstar,"fSigmaProtonkstar/F");
@@ -1641,8 +1695,14 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreePHOSSE->Branch("fPairProtNSigTOFPion",&fPairProtNSigTOFPion,"fPairProtNSigTOFPion/F");
     fSigmaPairTreePHOSSE->Branch("fPairProtonCluster",&fPairProtonCluster,"fPairProtonCluster/I");
     fSigmaPairTreePHOSSE->Branch("fPairProtonITSCluster",&fPairProtonITSCluster,"fPairProtonITSCluster/I");
+    fSigmaPairTreePHOSSE->Branch("fProtonPx",&fProtonPx,"fProtonPx/F");
+    fSigmaPairTreePHOSSE->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
+    fSigmaPairTreePHOSSE->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
+    fSigmaPairTreePHOSSE->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
+    fSigmaPairTreePHOSSE->Branch("fPairProtonChi2",&fPairProtonChi2,"fPairProtonChi2/F");
     if(fSaveMCBranches){
       fSigmaPairTreePHOSSE->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+      fSigmaPairTreePHOSSE->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
       fSigmaPairTreePHOSSE->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
       fSigmaPairTreePHOSSE->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
       fSigmaPairTreePHOSSE->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
@@ -1702,19 +1762,18 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
       fSigmaPairTreePHOSSE->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
       fSigmaPairTreePHOSSE->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
       fSigmaPairTreePHOSSE->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
-      fSigmaPairTreePHOSSE->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
+      //fSigmaPairTreePHOSSE->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
       fSigmaPairTreePHOSSE->Branch("fKFChi2",&fKFChi2,"fKFChi2/F");
       fSigmaPairTreePHOSSE->Branch("fPhoton1CPA",&fPhoton1CPA,"fPhoton1CPA/F");
       fSigmaPairTreePHOSSE->Branch("fPi0Px",&fPi0Px,"fPi0Px/F");
       fSigmaPairTreePHOSSE->Branch("fPi0Py",&fPi0Py,"fPi0Py/F");
       fSigmaPairTreePHOSSE->Branch("fPi0Pz",&fPi0Pz,"fPi0Pz/F");
-      fSigmaPairTreePHOSSE->Branch("fProtonPx",&fProtonPx,"fProtonPx/F");
-      fSigmaPairTreePHOSSE->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
-      fSigmaPairTreePHOSSE->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
+      fSigmaPairTreePHOSSE->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
+      fSigmaPairTreePHOSSE->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
+      fSigmaPairTreePHOSSE->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
       fSigmaPairTreePHOSSE->Branch("fProtonX",&fProtonX,"fProtonX/F");
       fSigmaPairTreePHOSSE->Branch("fProtonY",&fProtonY,"fProtonY/F");
       fSigmaPairTreePHOSSE->Branch("fProtonZ",&fProtonZ,"fProtonZ/F");
-      fSigmaPairTreePHOSSE->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
       fSigmaPairTreePHOSSE->Branch("fProtonNSigTPCPion",&fProtonNSigTPCPion,"fProtonNSigTPCPion/F");
       fSigmaPairTreePHOSSE->Branch("fProtonNSigTPCKaon",&fProtonNSigTPCKaon,"fProtonNSigTPCKaon/F");
       fSigmaPairTreePHOSSE->Branch("fProtonNSigTPCElec",&fProtonNSigTPCElec,"fProtonNSigTPCElec/F");
@@ -1771,9 +1830,6 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreePHOSME->Branch("fClustM02",&fClustM02,"fClustM02/F");
     fSigmaPairTreePHOSME->Branch("fClustNCells",&fClustNCells,"fClustNCells/I");
     fSigmaPairTreePHOSME->Branch("fClustDisttoBC",&fClustDisttoBC,"fClustDisttoBC/F");
-    fSigmaPairTreePHOSME->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
-    fSigmaPairTreePHOSME->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
-    fSigmaPairTreePHOSME->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
     fSigmaPairTreePHOSME->Branch("fProtonDCAtoPVz",&fProtonDCAtoPVz,"fProtonDCAtoPVz/F");
     fSigmaPairTreePHOSME->Branch("fProtonNITSCluster",&fProtonNITSCluster,"fProtonNITSCluster/I");
     fSigmaPairTreePHOSME->Branch("fSigmaProtonkstar",&fSigmaProtonkstar,"fSigmaProtonkstar/F");
@@ -1797,8 +1853,14 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreePHOSME->Branch("fPairProtNSigTOFPion",&fPairProtNSigTOFPion,"fPairProtNSigTOFPion/F");
     fSigmaPairTreePHOSME->Branch("fPairProtonCluster",&fPairProtonCluster,"fPairProtonCluster/I");
     fSigmaPairTreePHOSME->Branch("fPairProtonITSCluster",&fPairProtonITSCluster,"fPairProtonITSCluster/I");
+    fSigmaPairTreePHOSME->Branch("fProtonPx",&fProtonPx,"fProtonPx/F");
+    fSigmaPairTreePHOSME->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
+    fSigmaPairTreePHOSME->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
+    fSigmaPairTreePHOSME->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
+    fSigmaPairTreePHOSME->Branch("fPairProtonChi2",&fPairProtonChi2,"fPairProtonChi2/F");
     if(fSaveMCBranches){
       fSigmaPairTreePHOSME->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
+      fSigmaPairTreePHOSME->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
       fSigmaPairTreePHOSME->Branch("fIsMCPrimary",&fIsMCPrimary,"fIsMCPrimary/O");
       fSigmaPairTreePHOSME->Branch("fSigMCLabel",&fSigMCLabel,"fSigMCLabel/I");
       fSigmaPairTreePHOSME->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
@@ -1858,25 +1920,73 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
       fSigmaPairTreePHOSME->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
       fSigmaPairTreePHOSME->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
       fSigmaPairTreePHOSME->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
-      fSigmaPairTreePHOSME->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
+      //fSigmaPairTreePHOSME->Branch("fTrackDCASVKF",&fTrackDCASVKF,"fTrackDCASVKF/F");
       fSigmaPairTreePHOSME->Branch("fKFChi2",&fKFChi2,"fKFChi2/F");
       fSigmaPairTreePHOSME->Branch("fPhoton1CPA",&fPhoton1CPA,"fPhoton1CPA/F");
       fSigmaPairTreePHOSME->Branch("fPi0Px",&fPi0Px,"fPi0Px/F");
       fSigmaPairTreePHOSME->Branch("fPi0Py",&fPi0Py,"fPi0Py/F");
       fSigmaPairTreePHOSME->Branch("fPi0Pz",&fPi0Pz,"fPi0Pz/F");
-      fSigmaPairTreePHOSME->Branch("fProtonPx",&fProtonPx,"fProtonPx/F");
-      fSigmaPairTreePHOSME->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
-      fSigmaPairTreePHOSME->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
+      fSigmaPairTreePHOSME->Branch("fProtonpropPx",&fProtonpropPx,"fProtonpropPx/F");
+      fSigmaPairTreePHOSME->Branch("fProtonpropPy",&fProtonpropPy,"fProtonpropPy/F");
+      fSigmaPairTreePHOSME->Branch("fProtonpropPz",&fProtonpropPz,"fProtonpropPz/F");
       fSigmaPairTreePHOSME->Branch("fProtonX",&fProtonX,"fProtonX/F");
       fSigmaPairTreePHOSME->Branch("fProtonY",&fProtonY,"fProtonY/F");
       fSigmaPairTreePHOSME->Branch("fProtonZ",&fProtonZ,"fProtonZ/F");
-      fSigmaPairTreePHOSME->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
       fSigmaPairTreePHOSME->Branch("fProtonNSigTPCPion",&fProtonNSigTPCPion,"fProtonNSigTPCPion/F");
       fSigmaPairTreePHOSME->Branch("fProtonNSigTPCKaon",&fProtonNSigTPCKaon,"fProtonNSigTPCKaon/F");
       fSigmaPairTreePHOSME->Branch("fProtonNSigTPCElec",&fProtonNSigTPCElec,"fProtonNSigTPCElec/F");
       fSigmaPairTreePHOSME->Branch("fProtonNSigTOFPion",&fProtonNSigTOFPion,"fProtonNSigTOFPion/F");
       fSigmaPairTreePHOSME->Branch("fProtonNSigTOFKaon",&fProtonNSigTOFKaon,"fProtonNSigTOFKaon/F");
       fSigmaPairTreePHOSME->Branch("fProtonNSigTOFElec",&fProtonNSigTOFElec,"fProtonNSigTOFElec/F");
+    }
+
+    // Create TTree of Protons
+    fProtonTree = new TTree("fProtonTree","Tree of Protons");
+    fProtonTree->Branch("fSigRunnumber",&fSigRunnumber,"fSigRunnumber/I");
+    fProtonTree->Branch("fSigTriggerMask",&fSigTriggerMask,"fSigTriggerMask/i");
+    fProtonTree->Branch("fSigEventID",&fSigEventID,"fSigEventID/l");
+    fProtonTree->Branch("fSigCentrality",&fSigCentrality,"fSigCentrality/F");
+    fProtonTree->Branch("fSigBField",&fSigBField,"fSigBField/F");
+    fProtonTree->Branch("fSigRefMultComb08",&fSigRefMultComb08,"fSigRefMultComb08/S");
+    fProtonTree->Branch("fPrimVertZ",&fPrimVertZ,"fPrimVertZ/F");
+    fProtonTree->Branch("fPairProtonID",&fPairProtonID,"fPairProtonID/I");
+    fProtonTree->Branch("fPairProtonStatus",&fPairProtonStatus,"fPairProtonStatus/l");
+    fProtonTree->Branch("fPairProtonFilterMap",&fPairProtonFilterMap,"fPairProtonFilterMap/i");
+    fProtonTree->Branch("fPairProtonCharge",&fPairProtonCharge,"fPairProtonCharge/F");
+    fProtonTree->Branch("fPairProtonPx",&fPairProtonPx,"fPairProtonPx/F");
+    fProtonTree->Branch("fPairProtonPy",&fPairProtonPy,"fPairProtonPy/F");
+    fProtonTree->Branch("fPairProtonPz",&fPairProtonPz,"fPairProtonPz/F");
+    fProtonTree->Branch("fPairProtonP",&fPairProtonP,"fPairProtonP/F");
+    fProtonTree->Branch("fPairProtonEta",&fPairProtonEta,"fPairProtonEta/F");
+    fProtonTree->Branch("fPairProtonDCAtoPVxy",&fPairProtonDCAtoPVxy,"fPairProtonDCAtoPVxy/F");
+    fProtonTree->Branch("fPairProtonDCAtoPVz",&fPairProtonDCAtoPVz,"fPairProtonDCAtoPVz/F");
+    fProtonTree->Branch("fPairProtonNSigTPC",&fPairProtonNSigTPC,"fPairProtonNSigTPC/F");
+    fProtonTree->Branch("fPairProtonNSigTOF",&fPairProtonNSigTOF,"fPairProtonNSigTOF/F");
+    fProtonTree->Branch("fPairProtNSigTPCKaon",&fPairProtNSigTPCKaon,"fPairProtNSigTPCKaon/F");
+    fProtonTree->Branch("fPairProtNSigTOFKaon",&fPairProtNSigTOFKaon,"fPairProtNSigTOFKaon/F");
+    fProtonTree->Branch("fPairProtNSigTPCPion",&fPairProtNSigTPCPion,"fPairProtNSigTPCPion/F");
+    fProtonTree->Branch("fPairProtNSigTOFPion",&fPairProtNSigTOFPion,"fPairProtNSigTOFPion/F");
+    fProtonTree->Branch("fPairProtNSigTPCElec",&fPairProtNSigTPCElec,"fPairProtNSigTPCElec/F");
+    fProtonTree->Branch("fPairProtNSigTOFElec",&fPairProtNSigTOFElec,"fPairProtNSigTOFElec/F");
+    fProtonTree->Branch("fPairProtonCluster",&fPairProtonCluster,"fPairProtonCluster/I");
+    fProtonTree->Branch("fPairProtonITSCluster",&fPairProtonITSCluster,"fPairProtonITSCluster/I");
+    fProtonTree->Branch("fPairProtonChi2",&fPairProtonChi2,"fPairProtonChi2/F");
+    if(fSaveMCBranches){
+      fProtonTree->Branch("fPrimVertXMC",&fPrimVertXMC,"fPrimVertXMC/F");
+      fProtonTree->Branch("fPrimVertYMC",&fPrimVertYMC,"fPrimVertYMC/F");
+      fProtonTree->Branch("fPrimVertZMC",&fPrimVertZMC,"fPrimVertZMC/F");
+      fProtonTree->Branch("fPairProtonPxMC",&fPairProtonPxMC,"fPairProtonPxMC/F");
+      fProtonTree->Branch("fPairProtonPyMC",&fPairProtonPyMC,"fPairProtonPyMC/F");
+      fProtonTree->Branch("fPairProtonPzMC",&fPairProtonPzMC,"fPairProtonPzMC/F");
+      fProtonTree->Branch("fPairProtonIsMC",&fPairProtonIsMC,"fPairProtonIsMC/O");
+      fProtonTree->Branch("fPairProtonPDG",&fPairProtonPDG,"fPairProtonPDG/I");
+      fProtonTree->Branch("fPairProtonIsPrimary",&fPairProtonIsPrimary,"fPairProtonIsPrimary/O");
+    }
+    if(fSaveAdditionalBranches){
+      fProtonTree->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
+      fProtonTree->Branch("fSigRefMultComb10",&fSigRefMultComb10,"fSigRefMultComb10/S");
+      fProtonTree->Branch("fPrimVertX",&fPrimVertX,"fPrimVertX/F");
+      fProtonTree->Branch("fPrimVertY",&fPrimVertY,"fPrimVertY/F");
     }
 
     //Save Particle Masses and other constants for later use
@@ -1889,7 +1999,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
 /**************************Histograms********************************/
 
     //Book Keeper for used Cuts 
-    TH1D* fHistCutBookKeeper           = new TH1D("fHistCutBookKeeper", "Book Keeper for used Cuts", 97, 0.5, 97.5);
+    TH1D* fHistCutBookKeeper           = new TH1D("fHistCutBookKeeper", "Book Keeper for used Cuts", 104, 0.5, 104.5);
 
     //Event related                    
     TH1F* fHistMCGenPileup             = new TH1F("fHistMCGenPileup", "Generated pile-up;IsPileUp;", 2, -0.5, 1.5);
@@ -2365,7 +2475,14 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fHistCutBookKeeper->GetXaxis()->SetBinLabel(94,"fMinCorrPi0MassPHOS");
     fHistCutBookKeeper->GetXaxis()->SetBinLabel(95,"fMaxCorrPi0MassPHOS");
     fHistCutBookKeeper->GetXaxis()->SetBinLabel(96,"fMaxCorrSigmaPAPHOS");
-    fHistCutBookKeeper->GetXaxis()->SetBinLabel(97,"Number of Fills");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(97,"fMaxNsigPionTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(98,"fMaxNsigKaonTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(99,"fMaxNsigElecTPC");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(100,"fMaxNsigPionTOF");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(101,"fMaxNsigKaonTOF");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(102,"fMaxNsigElecTOF");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(103,"fRejOtherTOF");
+    fHistCutBookKeeper->GetXaxis()->SetBinLabel(104,"Number of Fills");
 
     fHistCutBookKeeper->SetBinContent(1,fRemoveGenPileup);
     fHistCutBookKeeper->SetBinContent(2,fMaxVertexZ);
@@ -2463,7 +2580,14 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fHistCutBookKeeper->SetBinContent(94,fMinCorrPi0MassPHOS);
     fHistCutBookKeeper->SetBinContent(95,fMaxCorrPi0MassPHOS);
     fHistCutBookKeeper->SetBinContent(96,fMaxCorrSigmaPAPHOS);
-    fHistCutBookKeeper->SetBinContent(97,1);
+    fHistCutBookKeeper->SetBinContent(97,fMaxNsigPionTPC);
+    fHistCutBookKeeper->SetBinContent(98,fMaxNsigKaonTPC);
+    fHistCutBookKeeper->SetBinContent(99,fMaxNsigElecTPC);
+    fHistCutBookKeeper->SetBinContent(100,fMaxNsigPionTOF);
+    fHistCutBookKeeper->SetBinContent(101,fMaxNsigKaonTOF);
+    fHistCutBookKeeper->SetBinContent(102,fMaxNsigElecTOF);
+    fHistCutBookKeeper->SetBinContent(103,fRejOtherTOF);
+    fHistCutBookKeeper->SetBinContent(104,1);
 
     fHistMCCounter->GetXaxis()->SetBinLabel(1,"Events");
     fHistMCCounter->GetXaxis()->SetBinLabel(2,"MC Particles");
@@ -3088,6 +3212,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     PostData(7, fSigmaPairTreePHOSSE);  
     PostData(8, fSigmaPairTreePHOSME);  
     PostData(9, fSigmaPHOSMEBkgTree);   
+    PostData(10,fProtonTree);   
 
 }//end of UserCreateOutputObjects()
 
@@ -3384,6 +3509,10 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
   if(fDebug&&fProcessRecoPHOS) cout << "Reconstructing Pi0s and Sigmas. One PHOS Photon\n";
   if(fProcessRecoPHOS) ReconstructParticlesPHOS();
 
+  //Save Protons
+  if(fDebug&&fSaveProtons) cout << "Saving Protons\n";
+  if(fSaveProtons&&fEventhasSigmaCand) FillProtonTree();
+
   //Update Event Pools at the End of the Event if Event Mixing is enabled
   if(fSaveMixedBackground){
     if(fDebug) cout << "Updating Event Pool\n";
@@ -3496,6 +3625,7 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
   PostData(7, fSigmaPairTreePHOSSE);  
   PostData(8, fSigmaPairTreePHOSME);  
   PostData(9, fSigmaPHOSMEBkgTree);   
+  PostData(10,fProtonTree);   
 
   if(fDebug) cout << "Returning from UserExec()\n";
   return;
@@ -3504,7 +3634,7 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
 
 //_____________________________________________________________________________
 
-void AliAnalysisTaskSigmaPlus::FillProtonArray() {
+void AliAnalysisTaskSigmaPlus::FillProtonArray(){
 
   Double_t primaryVtxPos[3] = {primaryVtxPosX,primaryVtxPosY,primaryVtxPosZ};
 
@@ -3736,6 +3866,139 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray() {
 return;
 
 }//End of FillProtonArray  
+
+//_____________________________________________________________________________
+
+void AliAnalysisTaskSigmaPlus::FillProtonTree(){
+
+  //Loop for Proton Selection
+  for(Int_t iTrack=0; iTrack < nTracks; iTrack++) {
+
+    AliAODTrack *aodTrack = dynamic_cast<AliAODTrack*>(aodEvent->GetTrack(iTrack));
+    if(!aodTrack){
+      AliWarning("No AOD Track!");
+      continue;
+    }
+
+    //Reject Tracks with negative ESD ID (Rejected anyways, Global Tracks have positive IDs)
+    if(aodTrack->GetID()<0&&fRejectNegIDs) continue; 
+
+    //Reject Tracks with Filterbit 0 (These Tracks have low quality and are only stored because the are used by the V0 finder)
+    if(!aodTrack->GetFilterMap()&&fRejectZeroFilterBit) continue; 
+
+    //Acceptance Cut
+    if(TMath::Abs(aodTrack->Eta()) > fMaxProtEta) continue; 
+
+    // Cluster Cut
+    if(aodTrack->GetTPCNcls()<fMinTPCClustProt) continue;
+
+    Float_t  DCAxy = -999., DCAz = -999.;
+    aodTrack->GetImpactParameters(DCAxy,DCAz);
+
+    //DCA to PV Cut
+    if(TMath::Abs(DCAxy)>fMaxCorrPairProtonDCAxy) continue;
+    if(TMath::Abs(DCAz)>fMaxCorrPairProtonDCAz) continue;
+
+    Bool_t isReallyProton  = kFALSE;
+    Int_t  ParticlePdg = -999;
+    Bool_t isPrimary = kFALSE;
+    Float_t MCPx = -999;
+    Float_t MCPy = -999;
+    Float_t MCPz = -999;
+
+    //Check MC Truth
+    if(isMonteCarlo){
+      AliAODMCParticle* mcPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(aodTrack->GetLabel())));
+      if(mcPart){
+        ParticlePdg = mcPart->GetPdgCode();
+        if(mcPart->IsPrimary()||mcPart->IsPhysicalPrimary()) isPrimary = kTRUE;
+        MCPx = mcPart->Px();
+        MCPy = mcPart->Py();
+        MCPz = mcPart->Pz();
+        if(TMath::Abs(ParticlePdg)==2212){isReallyProton = kTRUE;}//is Proton or Anti-Proton
+      }//MC Particle exists
+    }//MC treatment
+
+    Float_t nSigmaTPCProt = fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kProton);
+    Float_t nSigmaTPCPion = fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kPion);
+    Float_t nSigmaTPCKaon = fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kKaon);
+    Float_t nSigmaTPCElec = fPIDResponse->NumberOfSigmasTPC(aodTrack,AliPID::kElectron);
+    Float_t nSigmaTOFProt = fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kProton);
+    Float_t nSigmaTOFPion = fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kPion);
+    Float_t nSigmaTOFKaon = fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kKaon);
+    Float_t nSigmaTOFElec = fPIDResponse->NumberOfSigmasTOF(aodTrack,AliPID::kElectron);
+
+    Bool_t isTPCProt = (TMath::Abs(nSigmaTPCProt)<fMaxNsigProtTPC);
+    Bool_t isTPCPion = (TMath::Abs(nSigmaTPCPion)<fMaxNsigPionTPC);
+    Bool_t isTPCKaon = (TMath::Abs(nSigmaTPCKaon)<fMaxNsigKaonTPC);
+    Bool_t isTPCElec = (TMath::Abs(nSigmaTPCElec)<fMaxNsigElecTPC);
+    Bool_t isTOFProt = (TMath::Abs(nSigmaTOFProt)<fMaxNsigProtTOF);
+    Bool_t isTOFPion = (TMath::Abs(nSigmaTOFPion)<fMaxNsigPionTOF);
+    Bool_t isTOFKaon = (TMath::Abs(nSigmaTOFKaon)<fMaxNsigKaonTOF);
+    Bool_t isTOFElec = (TMath::Abs(nSigmaTOFElec)<fMaxNsigElecTOF);
+
+    Bool_t isTPCOther = (isTPCPion||isTPCKaon||isTPCElec);
+    Bool_t isTOFOther = (isTOFPion||isTOFKaon||isTOFElec);
+
+    // TPC PID Cut
+    if(!isTPCProt) continue;
+
+    // if p > 0.x require TOF or reject other TPC bands
+    if(aodTrack->GetTPCmomentum() > fMaxpOnlyTPCPID && !isTOFProt && isTPCOther) continue;
+
+    // Reject other TOF bands
+    if(aodTrack->GetTPCmomentum() > fMaxpOnlyTPCPID && isTOFOther && isTPCOther && fRejOtherTOF) continue;
+
+    fSigRunnumber = aodEvent->GetRunNumber();        
+    fSigTriggerMask = EventTriggers;      
+    fSigEventID = fGlobalEventID;          
+    fSigCentrality = Centrality;       
+    fSigBField = Bz;           
+    fSigRefMultComb05 = fRefMultComb05;    
+    fSigRefMultComb08 = fRefMultComb08;    
+    fSigRefMultComb10 = fRefMultComb10;    
+    fPrimVertX = primaryVtxPosX;           
+    fPrimVertY = primaryVtxPosY;           
+    fPrimVertZ = primaryVtxPosZ;           
+    fPairProtonID = aodTrack->GetID();        
+    fPairProtonStatus = aodTrack->GetStatus();    
+    fPairProtonFilterMap = aodTrack->GetFilterMap(); 
+    fPairProtonCharge = aodTrack->Charge();    
+    fPairProtonPx = aodTrack->Px();        
+    fPairProtonPy = aodTrack->Py();        
+    fPairProtonPz = aodTrack->Pz();        
+    fPairProtonP = aodTrack->GetTPCmomentum();         
+    fPairProtonEta = aodTrack->Eta();       
+    fPairProtonDCAtoPVxy = DCAxy; 
+    fPairProtonDCAtoPVz = DCAz;  
+    fPairProtonNSigTPC = nSigmaTPCProt;   
+    fPairProtNSigTPCKaon = nSigmaTPCPion; 
+    fPairProtNSigTPCPion = nSigmaTPCKaon; 
+    fPairProtNSigTPCElec = nSigmaTPCElec; 
+    fPairProtonNSigTOF = nSigmaTOFProt;   
+    fPairProtNSigTOFKaon = nSigmaTOFPion; 
+    fPairProtNSigTOFPion = nSigmaTOFKaon; 
+    fPairProtNSigTOFElec = nSigmaTOFElec; 
+    fPairProtonCluster = aodTrack->GetTPCNcls();   
+    fPairProtonITSCluster = aodTrack->GetITSNcls();
+    fPairProtonChi2 = aodTrack->GetTPCchi2();
+    fPrimVertXMC = primaryVtxPosXMC;         
+    fPrimVertYMC = primaryVtxPosYMC;         
+    fPrimVertZMC = primaryVtxPosZMC;         
+    fPairProtonPxMC = MCPx;
+    fPairProtonPyMC = MCPy;
+    fPairProtonPzMC = MCPz;
+    fPairProtonIsMC = isReallyProton;  
+    fPairProtonPDG = ParticlePdg;    
+    fPairProtonIsPrimary = isPrimary; 
+
+    fProtonTree->Fill();
+
+  } // End of proton track loop
+
+return;
+
+}//End of FillProtonTree  
 
 //_____________________________________________________________________________
 
@@ -4564,6 +4827,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
       Bool_t isReallyPi0fromSigma = kFALSE;
       Bool_t isReallyPi0fromDelta = kFALSE;
       Bool_t isPrimary = kFALSE;
+      Bool_t isDalitzDecay = kFALSE;
       Int_t Pi0MotherLabel=-1;
       TLorentzVector MCSigmaMom; 
 
@@ -4612,6 +4876,41 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
                   }}//Photon Mother exists and is Pi0
                 }//Photon and Single electron have common mother
               }}//MC Photon exists
+              //Consider dalitz decays
+              if(V0Part1&&V0Part2){if((V0Part1->GetPdgCode()==22&&V0Part2->GetPdgCode()==111)||(V0Part1->GetPdgCode()==111&&V0Part2->GetPdgCode()==22)){
+                if(TMath::Abs(V0Part1->GetMother())==TMath::Abs(V0Part2->GetLabel())||TMath::Abs(V0Part2->GetMother())==TMath::Abs(V0Part1->GetLabel())){
+                  isReallyPi0=kTRUE;
+                  isDalitzDecay = kTRUE;
+
+                  TVector3 prdvtx;
+                  if(V0Part1->GetPdgCode()==22) prdvtx.SetXYZ(V0Part1->Xv(),V0Part1->Yv(),V0Part1->Zv());   
+                  if(V0Part2->GetPdgCode()==22) prdvtx.SetXYZ(V0Part2->Xv(),V0Part2->Yv(),V0Part2->Zv());   
+                  MCPi0DCAPV = prdvtx.Perp();
+                  MCPi0decayX = prdvtx.X();
+                  MCPi0decayY = prdvtx.Y();
+                  MCPi0decayZ = prdvtx.Z();
+
+                  AliAODMCParticle* Pi0Part = NULL;
+                  if(V0Part1->GetPdgCode()==111) Pi0Part = V0Part1;
+                  else Pi0Part = V0Part2;
+                  AliAODMCParticle* Pi0Mother = NULL;
+
+                  if(Pi0Part->GetMother()!=-1){
+                    Pi0MotherLabel=Pi0Part->GetMother(); 
+                    Pi0Mother = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(Pi0Part->GetMother())));
+                  }
+
+                  if(Pi0Mother){
+                    if(TMath::Abs(Pi0Mother->GetPdgCode())==3222) {
+                      isReallyPi0fromSigma = kTRUE; 
+                      if(Pi0Mother->IsPrimary()||Pi0Mother->IsPhysicalPrimary()) isPrimary = kTRUE; 
+                      MCSigmaMom.SetXYZM(Pi0Mother->Px(),Pi0Mother->Py(),Pi0Mother->Pz(),cSigmaMass);
+                    }
+                    if(TMath::Abs(Pi0Mother->GetPdgCode())==2214) isReallyPi0fromDelta = kTRUE;
+                  }
+
+                } //V0s belong together
+              }} //V0s exist and one is Photon and one is from dalitz decay
             }//Electrons have common mother
           }//Daughters are all electrons
         }//V0 Daughters exist
@@ -4849,7 +5148,8 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
           prot->GetXYZatR(SigmaRadius,Bz,Trackpnt,0);
           TVector3 TrackpntVec(Trackpnt[0],Trackpnt[1],Trackpnt[2]);  
           Double_t DCATrack = (TrackpntVec-SV).Mag();
-          Double_t DCATrackKF = TMath::Abs(KFProton.GetDistanceFromParticle(KFSigmaPlus));
+          Double_t DCATrackKF = -999;
+          //DCATrackKF = TMath::Abs(KFProton.GetDistanceFromParticle(KFSigmaPlus));
 
           Float_t  DCAxy = -999., DCAz = -999.;
           prot->GetImpactParameters(DCAxy,DCAz);
@@ -4927,7 +5227,9 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
 
           // Fill the Sigma Candidate Trees
           fIsMCSigma = kFALSE; 
+          fIsMCDalitz = kFALSE; 
           if(isReallySigma) fIsMCSigma = kTRUE;
+          if(isDalitzDecay) fIsMCDalitz = kTRUE;
           fIsMCPrimary = kFALSE;
           if(isReallySigma&&isPrimary) fIsMCPrimary = kTRUE;
           fIsV01Onthefly = v0_1->GetOnFlyStatus();
@@ -5035,6 +5337,8 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
           fProtonNSigTOFPion = fPIDResponse->NumberOfSigmasTOF(prot,AliPID::kPion);
           fProtonNSigTOFKaon = fPIDResponse->NumberOfSigmasTOF(prot,AliPID::kKaon);
           fProtonNSigTOFElec = fPIDResponse->NumberOfSigmasTOF(prot,AliPID::kElectron);
+
+          fEventhasSigmaCand = kTRUE;
           if(fSavePartCand) fSigmaCandTree->Fill();
 
           //Now apply some Selections to filter out potential Sigma Candidates.
@@ -5179,6 +5483,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
               fPairProtNSigTOFKaon = mixprot->NumberOfSigmasTOFKaon();
               fPairProtNSigTPCPion = mixprot->NumberOfSigmasTPCPion();        
               fPairProtNSigTOFPion = mixprot->NumberOfSigmasTOFPion();
+              fPairProtonChi2 = mixprot->GetTPCchi2();    
               fPairProtonCluster = mixprot->GetTPCNcls();
               fPairProtonITSCluster = mixprot->GetITSNcls();
               fPairProtonID = mixprot->GetID();
@@ -5271,7 +5576,8 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
             TVector3 SV(KFSigmaPlus.GetX(),KFSigmaPlus.GetY(),KFSigmaPlus.GetZ()); //Sec. Vertex
             Double_t DCASV1 = (p1.Cross((CV1-SV))).Mag()/p1.Mag();                 //DCA to SV of Photons
             Double_t DCASV2 = (p1.Cross((CV2-SV))).Mag()/p2.Mag();                 
-            Double_t DCATrackKF = TMath::Abs(KFProton.GetDistanceFromParticle(KFSigmaPlus));
+            Double_t DCATrackKF = -999; 
+            //DCATrackKF = TMath::Abs(KFProton.GetDistanceFromParticle(KFSigmaPlus));
 
             Float_t  DCAxy = -999., DCAz = -999.;
             mixprot->GetImpactParameters(DCAxy,DCAz);
@@ -5609,7 +5915,8 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
       prot->GetXYZatR(SigmaRadius,Bz,Trackpnt,0);
       TVector3 TrackpntVec(Trackpnt[0],Trackpnt[1],Trackpnt[2]);  
       Double_t DCATrack = (TrackpntVec-SV).Mag();
-      Double_t DCATrackKF = TMath::Abs(KFProton.GetDistanceFromParticle(KFSigmaPlus));
+      Double_t DCATrackKF = -999; 
+      //DCATrackKF = TMath::Abs(KFProton.GetDistanceFromParticle(KFSigmaPlus));
 
       //Clone proton and propagate it to the secondary vertex
       TLorentzVector trackProtonRot = trackProton;
@@ -5636,6 +5943,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
         Double_t ClustEMC;
         Int_t    SigmaMCLabel=-1;
         Bool_t   isReallySigma = kFALSE;
+        Bool_t   isDalitzDecay = kFALSE;
         Bool_t   isPrimary = kFALSE;
         TLorentzVector MCSigmaMom, MCCaloMom; 
 
@@ -5653,6 +5961,10 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
                 if(V0Part->GetPdgCode()==22){
                   Pi0ID = V0Part->GetMother();
                 }//V0 is photon
+                if(V0Part->GetPdgCode()==111){
+                  Pi0ID = V0Part->Label();
+                  isDalitzDecay = kTRUE;
+                }//V0 is from dalitz decay
               }//V0 Particle exists
             }//V0 Daughters have common mother
           }//V0 Daughters exist
@@ -5811,7 +6123,9 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
 
         // Fill the Sigma Candidate Trees
         fIsMCSigma = kFALSE; 
+        fIsMCDalitz = kFALSE; 
         if(isReallySigma) fIsMCSigma = kTRUE;
+        if(isDalitzDecay) fIsMCDalitz = kTRUE;
         fIsMCPrimary = kFALSE;
         if(isReallySigma&&isPrimary) fIsMCPrimary = kTRUE;
         fIsV01Onthefly = v0_1->GetOnFlyStatus();
@@ -6083,6 +6397,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
             fPairProtNSigTOFKaon = mixprot->NumberOfSigmasTOFKaon();
             fPairProtNSigTPCPion = mixprot->NumberOfSigmasTPCPion();        
             fPairProtNSigTOFPion = mixprot->NumberOfSigmasTOFPion();
+            fPairProtonChi2 = mixprot->GetTPCchi2();    
             fPairProtonCluster = mixprot->GetTPCNcls();
             fPairProtonITSCluster = mixprot->GetITSNcls();
             fPairProtonID = mixprot->GetID();

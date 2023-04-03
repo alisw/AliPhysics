@@ -5,7 +5,7 @@ Extention of Generic Flow (https://arxiv.org/abs/1312.3572)
 #ifndef AliAnalysisTaskGFWPIDFlow__H
 #define AliAnalysisTaskGFWPIDFlow__H
 #include "AliAnalysisTaskSE.h"
-#include "TComplex.h"
+// #include "TComplex.h"
 #include "AliEventCuts.h"
 #include "AliVEvent.h"
 #include "AliGFW.h"
@@ -17,7 +17,7 @@ class TH2D;
 class TH3D;
 class TProfile;
 class TProfile2D;
-class TComplex;
+// class TComplex;
 class AliAODEvent;
 class AliVTrack;
 class AliVVertex;
@@ -52,7 +52,7 @@ class AliAnalysisTaskGFWPIDFlow : public AliAnalysisTaskSE {
   void FillMeanPt(AliAODEvent*, Double_t vz, Double_t l_Cent);
   void FillCK(AliAODEvent *fAOD, Double_t vz, Double_t l_Cent);
   Int_t GetStageSwitch(TString instr);
-  AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
+  AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc.Data(),head.Data(),ptdif);};
   void CreateCorrConfigs();
   void LoadWeightAndMPT(AliAODEvent*);
   void GetSingleWeightFromList(AliGFWWeights **inWeights, Int_t runno, TString pf="");

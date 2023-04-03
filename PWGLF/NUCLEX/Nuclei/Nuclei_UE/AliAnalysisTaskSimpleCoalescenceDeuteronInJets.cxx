@@ -31,16 +31,24 @@ fOutputList(nullptr),
 fQAList(nullptr),
 fProtonWeights(nullptr),
 hNumberOfEvents(nullptr),
-hProtons(nullptr),
-hNeutrons(nullptr),
-hProtons_pythia(nullptr),
-hNeutrons_pythia(nullptr),
+hProtons{},
+hNeutrons{},
+hProtons_pythia{},
+hNeutrons_pythia{},
 hDeuterons{},
 hDeuterons_pythia{},
 hDeuterons_ptoverA{},
 hDeuterons_ptoverA_pythia{},
+hDeltaP_Lab{},
+hDeltaP_CM{},
+hPtProtonsCoal{},
+hPtNeutronsCoal{},
+hTheta_Lab{},
+hTheta_CM{},
 hNumberOfParticlesInJet(nullptr),
-hMultiplicityBin(nullptr),
+hNumberOfProtonsInJet(nullptr),
+hNumberOfAntiProtonsInJet(nullptr),
+hEventsVsMultiplicity(nullptr),
 fMaximumPt(5.0),
 fJetRadius(0.5)
 {}
@@ -53,16 +61,24 @@ fOutputList(nullptr),
 fQAList(nullptr),
 fProtonWeights(nullptr),
 hNumberOfEvents(nullptr),
-hProtons(nullptr),
-hNeutrons(nullptr),
-hProtons_pythia(nullptr),
-hNeutrons_pythia(nullptr),
+hProtons{},
+hNeutrons{},
+hProtons_pythia{},
+hNeutrons_pythia{},
 hDeuterons{},
 hDeuterons_pythia{},
 hDeuterons_ptoverA{},
 hDeuterons_ptoverA_pythia{},
+hDeltaP_Lab{},
+hDeltaP_CM{},
+hPtProtonsCoal{},
+hPtNeutronsCoal{},
+hTheta_Lab{},
+hTheta_CM{},
 hNumberOfParticlesInJet(nullptr),
-hMultiplicityBin(nullptr),
+hNumberOfProtonsInJet(nullptr),
+hNumberOfAntiProtonsInJet(nullptr),
+hEventsVsMultiplicity(nullptr),
 fMaximumPt(5.0),
 fJetRadius(0.5)
 {
@@ -80,18 +96,28 @@ AliAnalysisTaskSimpleCoalescenceDeuteronInJets::~AliAnalysisTaskSimpleCoalescenc
     delete fQAList;
     delete fProtonWeights;
     delete hNumberOfEvents;
-    delete hProtons;
-    delete hNeutrons;
-    delete hProtons_pythia;
-    delete hNeutrons_pythia;
     delete hNumberOfParticlesInJet;
-    delete hMultiplicityBin;
-
-    for (Int_t i=0 ; i<4 ; i++) {
+    delete hNumberOfProtonsInJet;
+    delete hNumberOfAntiProtonsInJet;
+    delete hEventsVsMultiplicity;
+    
+    for (Int_t i=0 ; i<6 ; i++) {
+        
+        delete hProtons[i];
+        delete hNeutrons[i];
+        delete hProtons_pythia[i];
+        delete hNeutrons_pythia[i];
         delete hDeuterons[i];
         delete hDeuterons_pythia[i];
         delete hDeuterons_ptoverA[i];
         delete hDeuterons_ptoverA_pythia[i];
+       
+        delete hDeltaP_Lab[i];
+        delete hDeltaP_CM[i];
+        delete hPtProtonsCoal[i];
+        delete hPtNeutronsCoal[i];
+        delete hTheta_Lab[i];
+        delete hTheta_CM[i];
     }
 }
 //_______________________________________________________________________________________________________________________________________
@@ -108,31 +134,30 @@ void AliAnalysisTaskSimpleCoalescenceDeuteronInJets::UserCreateOutputObjects()  
     hNumberOfEvents -> Sumw2();
     fOutputList -> Add(hNumberOfEvents);
     
-    
-    //p_{T} Spectra of Nucleons: Re-weighted
-    hProtons    = new TH1D ("hProtons","",500,0,5);
-    hNeutrons   = new TH1D ("hNeutrons","",500,0,5);
-    hProtons    -> Sumw2();
-    hNeutrons   -> Sumw2();
-    fOutputList -> Add(hProtons);
-    fOutputList -> Add(hNeutrons);
-    
-    //p_{T} Spectra of Nucleons: from PYTHIA
-    hProtons_pythia  = new TH1D ("hProtons_pythia","",500,0,5);
-    hNeutrons_pythia = new TH1D ("hNeutrons_pythia","",500,0,5);
-    hProtons_pythia  -> Sumw2();
-    hNeutrons_pythia -> Sumw2();
-    fOutputList      -> Add(hProtons_pythia);
-    fOutputList      -> Add(hNeutrons_pythia);
-
-    
-    //p_{T} Spectra Deuterons
-    for (Int_t i=0 ; i<4 ; i++)  {
         
-        hDeuterons[i]                = new TH1D (Form("hDeuterons[%d]",i),"",500,0,5);
-        hDeuterons_pythia[i]         = new TH1D (Form("hDeuterons_pythia[%d]",i),"",500,0,5);
-        hDeuterons_ptoverA[i]        = new TH1D (Form("hDeuterons_ptoverA[%d]",i),"",500,0,5);
-        hDeuterons_ptoverA_pythia[i] = new TH1D (Form("hDeuterons_ptoverA_pythia[%d]",i),"",500,0,5);
+    for (Int_t i=0 ; i<6 ; i++)  {
+        
+        //p_{T} Spectra of Nucleons: Re-weighted
+        hProtons[i]  = new TH1D (Form("hProtons[%d]",i),"",1000,0,10);
+        hNeutrons[i] = new TH1D (Form("hNeutrons[%d]",i),"",1000,0,10);
+        hProtons[i]  -> Sumw2();
+        hNeutrons[i] -> Sumw2();
+        fOutputList  -> Add(hProtons[i]);
+        fOutputList  -> Add(hNeutrons[i]);
+        
+        //p_{T} Spectra of Nucleons: from PYTHIA
+        hProtons_pythia[i]  = new TH1D (Form("hProtons_pythia[%d]",i),"",1000,0,10);
+        hNeutrons_pythia[i] = new TH1D (Form("hNeutrons_pythia[%d]",i),"",1000,0,10);
+        hProtons_pythia[i]  -> Sumw2();
+        hNeutrons_pythia[i] -> Sumw2();
+        fOutputList         -> Add(hProtons_pythia[i]);
+        fOutputList         -> Add(hNeutrons_pythia[i]);
+
+        //p_{T} Spectra Deuterons
+        hDeuterons[i]                = new TH1D (Form("hDeuterons[%d]",i),"",1000,0,10);
+        hDeuterons_pythia[i]         = new TH1D (Form("hDeuterons_pythia[%d]",i),"",1000,0,10);
+        hDeuterons_ptoverA[i]        = new TH1D (Form("hDeuterons_ptoverA[%d]",i),"",1000,0,10);
+        hDeuterons_ptoverA_pythia[i] = new TH1D (Form("hDeuterons_ptoverA_pythia[%d]",i),"",1000,0,10);
         hDeuterons[i]                -> Sumw2();
         hDeuterons_pythia[i]         -> Sumw2();
         hDeuterons_ptoverA[i]        -> Sumw2();
@@ -141,19 +166,59 @@ void AliAnalysisTaskSimpleCoalescenceDeuteronInJets::UserCreateOutputObjects()  
         fOutputList -> Add(hDeuterons_pythia[i]);
         fOutputList -> Add(hDeuterons_ptoverA[i]);
         fOutputList -> Add(hDeuterons_ptoverA_pythia[i]);
+        
+        //DeltaP Lab
+        hDeltaP_Lab[i]  = new TH1D (Form("hDeltaP_Lab[%d]",i),"",1000,0,1);
+        hDeltaP_Lab[i]  -> Sumw2();
+        fOutputList -> Add(hDeltaP_Lab[i]);
+        
+        //DeltaP CM
+        hDeltaP_CM[i]  = new TH1D (Form("hDeltaP_CM[%d]",i),"",1000,0,1);
+        hDeltaP_CM[i]  -> Sumw2();
+        fOutputList -> Add(hDeltaP_CM[i]);
+        
+        //p_{T} Spectrum Coalescing Protons
+        hPtProtonsCoal[i]  = new TH1D (Form("hPtProtonsCoal[%d]",i),"",500,0,5);
+        hPtProtonsCoal[i]  -> Sumw2();
+        fOutputList -> Add(hPtProtonsCoal[i]);
+
+        //p_{T} Spectrum Coalescing Neutrons
+        hPtNeutronsCoal[i]  = new TH1D (Form("hPtNeutronsCoal[%d]",i),"",500,0,5);
+        hPtNeutronsCoal[i]  -> Sumw2();
+        fOutputList -> Add(hPtNeutronsCoal[i]);
+
+        //Theta Lab
+        hTheta_Lab[i]  = new TH1D (Form("hTheta_Lab[%d]",i),"",3600,0,360);
+        hTheta_Lab[i]  -> Sumw2();
+        fOutputList -> Add(hTheta_Lab[i]);
+
+        //Theta CM
+        hTheta_CM[i]  = new TH1D (Form("hTheta_CM[%d]",i),"",3600,0,360);
+        hTheta_CM[i]  -> Sumw2();
+        fOutputList -> Add(hTheta_CM[i]);
     }
     
     //General Histograms
     hNumberOfParticlesInJet = new TH1I ("hNumberOfParticlesInJet","",200,0,200);
     hNumberOfParticlesInJet -> Sumw2();
     fOutputList -> Add(hNumberOfParticlesInJet);
+    
+    hNumberOfProtonsInJet = new TH1I ("hNumberOfProtonsInJet","",200,0,200);
+    hNumberOfProtonsInJet -> Sumw2();
+    fOutputList -> Add(hNumberOfProtonsInJet);
 
+    hNumberOfAntiProtonsInJet = new TH1I ("hNumberOfAntiProtonsInJet","",200,0,200);
+    hNumberOfAntiProtonsInJet -> Sumw2();
+    fOutputList -> Add(hNumberOfAntiProtonsInJet);
+
+    
     //Histogram to select Multiplicity Bin
-    Double_t multiplicity_interval[]={0,12,30,200};
+    Double_t multiplicity_interval[]={0,5,10,20,30,200};
     Int_t nMultBins  = sizeof(multiplicity_interval)/sizeof(Double_t)-1;
-    hMultiplicityBin = new TH1D ("hMultiplicityBin","",nMultBins,multiplicity_interval);
-    
-    
+    hEventsVsMultiplicity = new TH1D ("hEventsVsMultiplicity","",nMultBins,multiplicity_interval);
+    fOutputList -> Add(hEventsVsMultiplicity);
+
+  
     //Post Data
     PostData(1, fOutputList);
     PostData(2, fQAList);
@@ -177,10 +242,10 @@ void AliAnalysisTaskSimpleCoalescenceDeuteronInJets::UserExec(Option_t *)  {
     //List of Particle Indices
     vector<Int_t> particle_ID;
     
-    //Leading Particle
+    //Leading Particle ID
     Int_t leading_ID;
 
-    //Specific Flags
+    //Flags
     Bool_t containsProton(kFALSE);
     Bool_t containsNeutron(kFALSE);
     
@@ -207,7 +272,7 @@ void AliAnalysisTaskSimpleCoalescenceDeuteronInJets::UserExec(Option_t *)  {
         if (pdg==2112) containsNeutron=kTRUE;
 
         //Select Leading Particle
-        if (particle->Pt()>pt_max) { leading_ID = i; pt_max = particle->Pt(); }
+        if (particle->Charge()!=0 && particle->Pt()>pt_max) { leading_ID = i; pt_max = particle->Pt(); }
         
         //Store Array Element
         particle_ID.push_back(i);
@@ -217,7 +282,6 @@ void AliAnalysisTaskSimpleCoalescenceDeuteronInJets::UserExec(Option_t *)  {
     if ((Int_t)particle_ID.size()<2) return;
     if (!containsProton)   return;
     if (pt_max<fMaximumPt) return;
-    
     
     //4-Momentum of Leading Particle
     TLorentzVector P_leading (0,0,0,0);
@@ -304,35 +368,56 @@ void AliAnalysisTaskSimpleCoalescenceDeuteronInJets::UserExec(Option_t *)  {
     } while (exit==0);
     
     //************************************************************************************************
-
-    
-    //Protons and Neutrons IDs
-    vector<Int_t> proton_ID;
-    vector<Int_t> neutron_ID;
-    vector<Int_t> neutron_status;
-    
+  
     //Charged-Particle Counter
     Int_t nParticlesJet(0);
-    
+    Int_t nProtons(0);
+    Int_t nAntiProtons(0);
+
     //Loop over Particles inside Jets
     for (Int_t i=0 ; i<(Int_t)jet_particle_ID.size() ; i++)  {
         
         //Get Particle
         AliMCParticle *particle = (AliMCParticle*) fMCEvent->GetTrack(jet_particle_ID[i]);
         if (particle->Charge()!=0) nParticlesJet++;
+        if (particle->PdgCode()==2212) nProtons++;
+        if (particle->PdgCode()==-2212) nAntiProtons++;
+    }
+    
+    //Fill Multiplicity
+    hNumberOfParticlesInJet -> Fill(nParticlesJet);
+    hNumberOfProtonsInJet   -> Fill(nProtons);
+    hNumberOfAntiProtonsInJet   -> Fill(nAntiProtons);
+
+    //Selection of Multiplicity Bin
+    Int_t iMult = hEventsVsMultiplicity->FindBin(nParticlesJet);
+    hEventsVsMultiplicity->Fill(nParticlesJet);
+    
+    //Protons and Neutrons IDs
+    vector<Int_t> proton_ID;
+    vector<Int_t> neutron_ID;
+    vector<Int_t> neutron_status;
+    
+    for (Int_t i=0 ; i<(Int_t)jet_particle_ID.size() ; i++)  {
+        
+        //Get Particle
+        AliMCParticle *particle = (AliMCParticle*) fMCEvent->GetTrack(jet_particle_ID[i]);
         if (!particle->IsPhysicalPrimary()) continue;
 
         //Variables
         Double_t pt = particle->Pt();
         Double_t wp = GetProtonWeight (pt);
         Int_t pdg = TMath::Abs(particle->PdgCode());
+        if (pt>5.0) continue;
         
         //Store Proton ID
         if (pdg==2212) {
             proton_ID.push_back(jet_particle_ID[i]);
             if (TMath::Abs(particle->Y())<0.5) {
-                hProtons        -> Fill(particle->Pt(),wp);
-                hProtons_pythia -> Fill(particle->Pt());
+                hProtons[0]            -> Fill(particle->Pt(),wp);
+                hProtons_pythia[0]     -> Fill(particle->Pt());
+                hProtons[iMult]        -> Fill(particle->Pt(),wp);
+                hProtons_pythia[iMult] -> Fill(particle->Pt());
             }
         }
         
@@ -341,25 +426,19 @@ void AliAnalysisTaskSimpleCoalescenceDeuteronInJets::UserExec(Option_t *)  {
             neutron_ID.push_back(jet_particle_ID[i]);
             neutron_status.push_back(0);
             if (TMath::Abs(particle->Y())<0.5) {
-                hNeutrons        -> Fill(particle->Pt(),wp);
-                hNeutrons_pythia -> Fill(particle->Pt());
+                hNeutrons[0]            -> Fill(particle->Pt(),wp);
+                hNeutrons_pythia[0]     -> Fill(particle->Pt());
+                hNeutrons[iMult]        -> Fill(particle->Pt(),wp);
+                hNeutrons_pythia[iMult] -> Fill(particle->Pt());
             }
         }
     }
-    
-    //Fill Multiplicity
-    hNumberOfParticlesInJet -> Fill(nParticlesJet);
-
-    
+        
     //Skip Events with not Enough Nucleons
     if ((Int_t)proton_ID.size()<1)  return;
     if ((Int_t)neutron_ID.size()<1) return;
 
-    
-    //Selection of Multiplicity Bin
-    Int_t iMult = hMultiplicityBin->FindBin(nParticlesJet);
-    
-    
+
     //Deuteron Counter
     Int_t nDeuterons(0);
 
@@ -387,14 +466,22 @@ void AliAnalysisTaskSimpleCoalescenceDeuteronInJets::UserExec(Option_t *)  {
             Double_t beta_y = p_deuteron.Py()/p_deuteron.E();
             Double_t beta_z = p_deuteron.Pz()/p_deuteron.E();
             TVector3 beta (beta_x,beta_y,beta_z);
-
+            
+            //Beta
+            Double_t beta_d = beta.Mag();
+            if (beta_d>=1) continue;
+            
             //Lorentz Transformation
             TLorentzVector p_proton_prime  = LorentzTransform (p_proton,beta);
             TLorentzVector p_neutron_prime = LorentzTransform (p_neutron,beta);
                 
             //Variables
             Double_t deltaP     = (p_proton_prime-p_neutron_prime).P();
+            Double_t deltaP_Lab = (p_proton-p_neutron).P();
             Double_t deutWeight = GetDeuteronWeight (p_proton.Pt(),p_neutron.Pt());
+            Double_t angle_Lab  = (180.0/TMath::Pi())* p_proton.Angle(p_neutron.Vect());
+            Double_t angle_CM   = (180.0/TMath::Pi())* p_proton_prime.Angle(p_neutron_prime.Vect());
+
 
             //Skip already used Neutrons
             if (neutron_status[in]==1) continue;
@@ -402,13 +489,25 @@ void AliAnalysisTaskSimpleCoalescenceDeuteronInJets::UserExec(Option_t *)  {
             //Skip Particle-Antiparticle Combinations
             if (pdg_proton*pdg_neutron<0) continue;
                 
+            //DeltaP
+            hDeltaP_CM[0]      -> Fill(deltaP);
+            hDeltaP_CM[iMult]  -> Fill(deltaP);
+            hDeltaP_Lab[0]     -> Fill(deltaP_Lab);
+            hDeltaP_Lab[iMult] -> Fill(deltaP_Lab);
+
+            //Theta
+            hTheta_Lab[0]      -> Fill(angle_Lab);
+            hTheta_Lab[iMult]  -> Fill(angle_Lab);
+            hTheta_CM[0]       -> Fill(angle_CM);
+            hTheta_CM[iMult]   -> Fill(angle_CM);
+
             //Coalescence Condition
             if (TwoBodyCoalescence(deltaP,p0))  {
                     
                 neutron_status[in]=1;
                 Double_t y = p_deuteron.Rapidity();
                 if (TMath::Abs(y)<0.5) {
-                        
+                   
                     //Deuteron Spectra (with Weights)
                     hDeuterons[0]             -> Fill(p_deuteron.Pt(),deutWeight);
                     hDeuterons_ptoverA[0]     -> Fill(p_deuteron.Pt()/2.0,deutWeight);
@@ -421,6 +520,11 @@ void AliAnalysisTaskSimpleCoalescenceDeuteronInJets::UserExec(Option_t *)  {
                     hDeuterons_pythia[iMult]         -> Fill(p_deuteron.Pt(),(3.0/4.0));
                     hDeuterons_ptoverA_pythia[iMult] -> Fill(p_deuteron.Pt()/2.0,(3.0/4.0));
 
+                    //Proton and Neutron p_{T} Spectra
+                    hPtProtonsCoal[0]      -> Fill(p_proton.Pt());
+                    hPtProtonsCoal[iMult]  -> Fill(p_proton.Pt());
+                    hPtNeutronsCoal[0]     -> Fill(p_neutron.Pt());
+                    hPtNeutronsCoal[iMult] -> Fill(p_neutron.Pt());
                     nDeuterons++;
                 }
                 break;

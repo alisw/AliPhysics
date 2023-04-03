@@ -107,6 +107,9 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       break;  
     case 22 :     // Syst: (chi2 in [0.1, 2.3])
       configNames.push_back("chi2low23");
+      break;
+    case 23 :
+      configNames.push_back("hybridBaseDCA");
       break;  
     default :
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
@@ -157,7 +160,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
           MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
       }
       break;
-    case 3:   // 3: Coarse binning, full PU cuts, minPt = 0.2 for all.
+    case 3:   // 3: Coarse binning, full PU cuts (15000), minPt = 0.2 for all.
       if (strcmp(configNames[i].Data(), "default") == 0) {
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_Default_s_%s.root",
           MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
@@ -167,6 +170,27 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       } else {
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_s_%s.root",
           MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
+      }
+      break;
+    case 4:   // Same as case 3 but with PU=500
+      if (strcmp(configNames[i].Data(), "zvtx7") == 0) {
+        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_PUcuts500_s_zvtx9.root",
+          MAPdirName.Data(), sCorrection[period].Data());
+      } else {
+        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_PUcuts500_s_%s.root",
+          MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data());
+      }
+      break;
+    case 5:   // Same as case 3 but for 18q
+      if (strcmp(configNames[i].Data(), "zvtx7") == 0) {
+        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_zvtx9_s_zvtx9.root",
+          MAPdirName.Data(), sCorrection[period].Data());
+      } else if ((strcmp(configNames[i].Data(), "chi2low23") == 0)) {
+        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_Chi2low23_s_chi2low23.root",
+          MAPdirName.Data(), sCorrection[period].Data());
+      } else {
+        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_%s_s_%s.root",
+          MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data(),configNames[i].Data());
       }
       break;
     default:
@@ -236,7 +260,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     }
 
     /// Filtering and detector cuts.
-    if (strcmp(configNames[i].Data(), "hybrid") == 0) {
+    if (strcmp(configNames[i].Data(), "hybrid") == 0 || strcmp(configNames[i].Data(), "hybridBaseDCA") == 0) {
       fJCatalyst[i]->SetTestFilterBit(hybridCut);
     } else {  // Default: global tracks.
       fJCatalyst[i]->SetTestFilterBit(globalCut);
@@ -283,6 +307,10 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     } else if (strcmp(configNames[i].Data(), "pqq") == 0) {
      fJCatalyst[i]->SetParticleCharge(1);
     }   // Default: charge = 0 to accept all charges.
+
+    if (strcmp(configNames[i].Data(), "hybridBaseDCA") == 0) {
+      fJCatalyst[i]->SetDCABaseCuts(true);
+    }
 
     /// Kinematic cuts and last fine tuning.
     fJCatalyst[i]->SetPtRange(ptMin, ptMax);

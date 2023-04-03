@@ -50,6 +50,7 @@
 #include "AliVertexingHFUtils.h"
 #include "AliNormalizationCounter.h"
 #include "AliAnalysisTaskSVtaskMCFilter.h"
+#include "AliGenEventHeader.h"
 
 ClassImp(AliAnalysisTaskSVtaskMCFilter)
 
@@ -252,7 +253,7 @@ Bool_t AliAnalysisTaskSVtaskMCFilter::Run()
         track = dynamic_cast<AliAODTrack *>(trackIterator.second);  // Get the full track
         if(track){
            lab     = TMath::Abs(track->GetLabel());
-           nameGen = AliVertexingHFUtils::GetGenerator(lab,fMCHeader);
+           nameGen = GetGenerator(lab,fMCHeader);
 
            while(nameGen.IsWhitespace()){    //if this particle does not have any generator name execute this loop
               mcpart = (AliAODMCParticle*) fMCPartArray->At(lab);  //find the corresponding MC particle
@@ -266,7 +267,7 @@ Bool_t AliAnalysisTaskSVtaskMCFilter::Run()
                  break;
               }
               lab = mother;   // change label to the mother
-              nameGen = AliVertexingHFUtils::GetGenerator(mother,fMCHeader); //change the name of generator to mother
+              nameGen = GetGenerator(mother,fMCHeader); //change the name of generator to mother
            }
            if(!(nameGen.IsWhitespace() || nameGen.Contains("EPOS"))){
              new ((*fFilteredTracksArray)[n]) AliAODTrack(*track);
@@ -326,7 +327,7 @@ Bool_t AliAnalysisTaskSVtaskMCFilter::Run()
 	 initialmcParticle = dynamic_cast<AliAODMCParticle*>(trackIterator.second);  // Get the full track
          if(initialmcParticle){
             lab     = index;//TMath::Abs(initialmcParticle->GetLabel());
-            nameGen = AliVertexingHFUtils::GetGenerator(lab,fMCHeader);
+            nameGen = GetGenerator(lab,fMCHeader);
 
             while(nameGen.IsWhitespace()){    //if this particle does not have any generator name execute this loop
                mcParticle = (AliAODMCParticle*) fMCPartArray->At(lab);  //find the corresponding MC particle
@@ -341,7 +342,7 @@ Bool_t AliAnalysisTaskSVtaskMCFilter::Run()
                   break;
                }
                lab = mother;   // change label to the mother
-               nameGen = AliVertexingHFUtils::GetGenerator(mother,fMCHeader); //change the name of generator to mother
+               nameGen = GetGenerator(mother,fMCHeader); //change the name of generator to mother
             }
 
             if(!(nameGen.IsWhitespace() || nameGen.Contains("EPOS"))){
@@ -355,4 +356,23 @@ Bool_t AliAnalysisTaskSVtaskMCFilter::Run()
 
 
    return kTRUE;
+}
+
+//______________________________________________________________________
+//Implementation originally from AliVertexingHFUtils. Moved to here due to library problems
+TString AliAnalysisTaskSVtaskMCFilter::GetGenerator(Int_t label, AliAODMCHeader* header){
+    /// get the name of the generator that produced a given particle
+
+    Int_t nsumpart=0;
+    TList *lh=header->GetCocktailHeaders();
+    Int_t nh=lh->GetEntries();
+    for(Int_t i=0;i<nh;i++){
+        AliGenEventHeader* gh=(AliGenEventHeader*)lh->At(i);
+        TString genname=gh->GetName();
+        Int_t npart=gh->NProduced();
+        if(label>=nsumpart && label<(nsumpart+npart)) return genname;
+        nsumpart+=npart;
+    }
+    TString empty="";
+    return empty;
 }

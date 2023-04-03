@@ -87,6 +87,7 @@ class AliAnalysisTaskTrackSkim : public AliAnalysisTaskEmcalJet
   // Basic configuration
   PWG::Tools::AliYAMLConfiguration fYAMLConfig; ///<  YAML configuration file.
   bool fConfigurationInitialized;               ///<  True if the task configuration has been successfully initialized.
+  bool fChargeScaling;                          ///<  Flag explicitly whether charge scaling is enabled.
 
   TH1F* fNAcceptedFirstTrackCollection;         //!<! Keep track of number of tracks in the first collection (which also tracks events with zero accepted tracks)
 
@@ -108,7 +109,7 @@ class AliAnalysisTaskTrackSkim : public AliAnalysisTaskEmcalJet
 
  private:
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskTrackSkim, 1)  // Track skim
+  ClassDef(AliAnalysisTaskTrackSkim, 2)  // Track skim
   /// \endcond
 };
 

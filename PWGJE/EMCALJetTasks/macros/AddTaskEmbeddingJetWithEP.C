@@ -1,14 +1,14 @@
-
-AliAnalysisTaskEmbeddingJetWithEP* AddTaskEmbeddingJetWithEP(
-  const char *ntracks = "usedefault", 
-  const char *nclusters = "usedefault",
-  const char* ncells = "usedefault", 
-  const char *suffix = ""
-)
+AliAnalysisTaskEmbeddingJetWithEP* AddTaskEmbeddingJetWithEP(TString EPCailbType,
+    TString EPCalibJEHandRefFileName,TString EPCalibOrigRefFileName,
+    const char *ntracks, const char *nclusters, const char* ncells, const char *suffix)
 {
-  return AliAnalysisTaskEmbeddingJetWithEP::AddTaskEmbeddingJetWithEP(
-      ntracks, 
-      nclusters,
-      ncells, 
-      suffix);
+    return AliAnalysisTaskEmbeddingJetWithEP::AddTaskEmbeddingJetWithEP(
+        EPCailbType,
+        EPCalibJEHandRefFileName,
+        EPCalibOrigRefFileName,
+        ntracks, 
+        nclusters,
+        ncells,
+        suffix);
 }
+

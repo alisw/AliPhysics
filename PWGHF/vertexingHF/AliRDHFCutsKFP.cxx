@@ -75,6 +75,7 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fPtMinXic0(0.),
   fPtMinPiFromPrimary(0.),
   fPtMinPiFromXi(0.),
+  fPtMinPiFromXic0ForML(0.),
   fProdTrackEtaRange(9999.),
   fProdUseAODFilterBit(kTRUE),
   fProdMassTolLc(9999.),
@@ -121,6 +122,15 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const char* name) :
   fProdTrackTPCsignalNMin(0),
   fPriTrackChi2perNDFMax(99.),
   fPriTrackITSNclsMin(0),
+  fCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0(6.),
+  fCut_nSigmaTPC_PiFromXi_or_KaFromOmega(6.),
+  fCut_nSigmaTPC_PrFromLam(6.),
+  fCut_nSigmaTPC_PiFromLam(6.),
+  fCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0(6.),
+  fCut_nSigmaTOF_PiFromXi_or_KaFromOmega(6.),
+  fCut_nSigmaTOF_PrFromLam(6.),
+  fCut_nSigmaTOF_PiFromLam(6.),
+  fCut_Armenteros(1.),
   fWeight(0),
   fWeight_up(0),
   fWeight_dw(0)
@@ -204,6 +214,7 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fPtMinXic0(source.fPtMinXic0),
   fPtMinPiFromPrimary(source.fPtMinPiFromPrimary),
   fPtMinPiFromXi(source.fPtMinPiFromXi),
+  fPtMinPiFromXic0ForML(source.fPtMinPiFromXic0ForML),
   fProdTrackEtaRange(source.fProdTrackEtaRange),
   fProdUseAODFilterBit(source.fProdUseAODFilterBit),
   fProdMassTolLc(source.fProdMassTolLc),
@@ -250,6 +261,15 @@ AliRDHFCutsKFP::AliRDHFCutsKFP(const AliRDHFCutsKFP &source) :
   fProdTrackTPCsignalNMin(source.fProdTrackTPCsignalNMin),
   fPriTrackChi2perNDFMax(source.fPriTrackChi2perNDFMax),
   fPriTrackITSNclsMin(source.fPriTrackITSNclsMin),
+  fCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0(source.fCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0),
+  fCut_nSigmaTPC_PiFromXi_or_KaFromOmega(source.fCut_nSigmaTPC_PiFromXi_or_KaFromOmega),
+  fCut_nSigmaTPC_PrFromLam(source.fCut_nSigmaTPC_PrFromLam),
+  fCut_nSigmaTPC_PiFromLam(source.fCut_nSigmaTPC_PiFromLam),
+  fCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0(source.fCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0),
+  fCut_nSigmaTOF_PiFromXi_or_KaFromOmega(source.fCut_nSigmaTOF_PiFromXi_or_KaFromOmega),
+  fCut_nSigmaTOF_PrFromLam(source.fCut_nSigmaTOF_PrFromLam),
+  fCut_nSigmaTOF_PiFromLam(source.fCut_nSigmaTOF_PiFromLam),
+  fCut_Armenteros(source.fCut_Armenteros),
   fWeight(source.fWeight),
   fWeight_up(source.fWeight_up),
   fWeight_dw(source.fWeight_dw)
@@ -291,6 +311,7 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fPtMinXic0 = source.fPtMinXic0;
   fPtMinPiFromPrimary = source.fPtMinPiFromPrimary;
   fPtMinPiFromXi = source.fPtMinPiFromXi;
+  fPtMinPiFromXic0ForML = source.fPtMinPiFromXic0ForML;
   fProdTrackEtaRange = source.fProdTrackEtaRange;
   fProdMassTolLc = source.fProdMassTolLc;
   fProdMassTolKs0 = source.fProdMassTolKs0;
@@ -334,6 +355,15 @@ AliRDHFCutsKFP &AliRDHFCutsKFP::operator=(const AliRDHFCutsKFP &source)
   fProdTrackTPCsignalNMin = source.fProdTrackTPCsignalNMin;
   fPriTrackChi2perNDFMax = source.fPriTrackChi2perNDFMax;
   fPriTrackITSNclsMin = source.fPriTrackITSNclsMin;
+  fCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0 = source.fCut_nSigmaTPC_PiFromXic0_or_PiFromOmegac0;
+  fCut_nSigmaTPC_PiFromXi_or_KaFromOmega = source.fCut_nSigmaTPC_PiFromXi_or_KaFromOmega;
+  fCut_nSigmaTPC_PrFromLam = source.fCut_nSigmaTPC_PrFromLam;
+  fCut_nSigmaTPC_PiFromLam = source.fCut_nSigmaTPC_PiFromLam;
+  fCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0 = source.fCut_nSigmaTOF_PiFromXic0_or_PiFromOmegac0;
+  fCut_nSigmaTOF_PiFromXi_or_KaFromOmega = source.fCut_nSigmaTOF_PiFromXi_or_KaFromOmega;
+  fCut_nSigmaTOF_PrFromLam = source.fCut_nSigmaTOF_PrFromLam;
+  fCut_nSigmaTOF_PiFromLam = source.fCut_nSigmaTOF_PiFromLam;
+  fCut_Armenteros = source.fCut_Armenteros;
   fWeight = source.fWeight;
   fWeight_up = source.fWeight_up;
   fWeight_dw = source.fWeight_dw;
@@ -666,7 +696,7 @@ Bool_t AliRDHFCutsKFP::SingleTrkCuts(AliAODTrack *trk)
 
   if(fProdUseAODFilterBit && !trk->TestFilterMask(BIT(4))) return kFALSE;
   //	if(!fAnalCuts->IsDaughterSelected(trk,fV1,esdTrackCuts)) return kFALSE;
-  if(fabs(trk->Eta())>fProdTrackEtaRange) return kFALSE;
+  if(fabs(trk->Eta()) >= fProdTrackEtaRange) return kFALSE;
   if(trk->Pt()<fPtMinPiFromPrimary) return kFALSE;
 
   return kTRUE;
@@ -681,7 +711,7 @@ Bool_t AliRDHFCutsKFP::PassedTrackQualityCuts_PrimaryPion(AliAODTrack *trk)
 
   // Kinematic Cuts & Acceptance
   if ( trk->Pt()<=fPtMinPiFromPrimary || trk->Pt()>=100.0 ) return kFALSE;
-  if ( TMath::Abs(trk->Eta()) >= 0.8 ) return kFALSE;
+  if ( TMath::Abs(trk->Eta()) >= fProdTrackEtaRange ) return kFALSE;
 
   // Track Selection Cuts (TPC)
 //  if ( trk->GetTPCNcls() <= 70 ) return kFALSE;
@@ -733,7 +763,7 @@ Bool_t AliRDHFCutsKFP::PassedTrackQualityCuts_SecondaryPion(AliAODTrack *trk)
 
   // Kinematic Cuts & Acceptance
   if ( trk->Pt()<=fPtMinPiFromXi || trk->Pt()>=100.0 ) return kFALSE;
-  if ( TMath::Abs(trk->Eta()) >= 0.8 ) return kFALSE;
+  if ( TMath::Abs(trk->Eta()) >= fProdTrackEtaRange ) return kFALSE;
 
   // Track Selection Cuts (TPC)
 //  if ( trk->GetTPCNcls() <= 70 ) return kFALSE;
@@ -794,7 +824,7 @@ Bool_t AliRDHFCutsKFP::SingleV0LambdaTotCuts(AliAODv0 *v0)
   if ( !trackP || !trackN ) return kFALSE;
 
   // daughter tracks eta cut
-  if ( TMath::Abs(trackP->Eta()) >= 0.8 || TMath::Abs(trackN->Eta()) >= 0.8 ) return kFALSE;
+  if ( TMath::Abs(trackP->Eta()) >= fProdTrackEtaRange || TMath::Abs(trackN->Eta()) >= fProdTrackEtaRange ) return kFALSE;
 
   Int_t chargeSumDau = trackP->Charge() + trackN->Charge();
   if (chargeSumDau!=0) return kFALSE;
@@ -881,7 +911,7 @@ Bool_t AliRDHFCutsKFP::PreSelForLc2pKs0(AliAODRecoCascadeHF *Lc2pKs0)
 
 // === selection for Ks0 daughter tracks ===
   // Kinematic Cuts & Acceptance for Ks0 daughter tracks
-  if ( TMath::Abs(v0Pos->Eta()) >= 0.8 || TMath::Abs(v0Neg->Eta()) >= 0.8 ) return kFALSE;
+  if ( TMath::Abs(v0Pos->Eta()) >= fProdTrackEtaRange || TMath::Abs(v0Neg->Eta()) >= fProdTrackEtaRange ) return kFALSE;
   // Track Selection Cuts (TPC)
 //  if ( v0Pos->GetTPCNcls() <= 70 ) return kFALSE;
   if ( v0Pos->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
@@ -899,7 +929,7 @@ Bool_t AliRDHFCutsKFP::PreSelForLc2pKs0(AliAODRecoCascadeHF *Lc2pKs0)
 // === selection for bachlor ===
   // Kinematic Cuts & Acceptance for the bachelor
   if ( bachPart->Pt()<=fPtMinPrFromLc || bachPart->Pt()>=100.0 ) return kFALSE;
-  if ( TMath::Abs(bachPart->Eta()) >= 0.8 ) return kFALSE;
+  if ( TMath::Abs(bachPart->Eta()) >= fProdTrackEtaRange ) return kFALSE;
 
   // Track Selection Cuts (TPC)
 //  if ( bachPart->GetTPCNcls() <= 70 ) return kFALSE;
@@ -954,7 +984,7 @@ Bool_t AliRDHFCutsKFP::PreSelForLc2Lpi(AliAODRecoCascadeHF *Lc2Lpi)
 
 // === selection for Lambda daughter tracks ===
   // Kinematic Cuts & Acceptance for Lambda daughter tracks
-  if ( TMath::Abs(v0Pos->Eta()) >= 0.8 || TMath::Abs(v0Neg->Eta()) >= 0.8 ) return kFALSE;
+  if ( TMath::Abs(v0Pos->Eta()) >= fProdTrackEtaRange || TMath::Abs(v0Neg->Eta()) >= fProdTrackEtaRange ) return kFALSE;
   // Track Selection Cuts (TPC)
 //  if ( v0Pos->GetTPCNcls() <= 70 ) return kFALSE;
   if ( v0Pos->GetTPCNCrossedRows() <= fProdTrackTPCNCrossedRowsMin ) return kFALSE;
@@ -972,7 +1002,7 @@ Bool_t AliRDHFCutsKFP::PreSelForLc2Lpi(AliAODRecoCascadeHF *Lc2Lpi)
 // === selection for bachlor ===
   // Kinematic Cuts & Acceptance for the bachelor
   if ( bachPart->Pt()<=fPtMinPiFromLc || bachPart->Pt()>=100.0 ) return kFALSE;
-  if ( TMath::Abs(bachPart->Eta()) >= 0.8 ) return kFALSE;
+  if ( TMath::Abs(bachPart->Eta()) >= fProdTrackEtaRange ) return kFALSE;
 
   // Track Selection Cuts (TPC)
 //  if ( bachPart->GetTPCNcls() <= 70 ) return kFALSE;
@@ -1038,7 +1068,7 @@ Bool_t AliRDHFCutsKFP::SingleCascCuts(AliAODcascade *casc, Bool_t IsAnaOmegac0)
   }
 
   // v0 daughter tracks eta cut
-  if ( TMath::Abs(ptrack->Eta()) >= 0.8 || TMath::Abs(ntrack->Eta()) >= 0.8 ) return kFALSE;
+  if ( TMath::Abs(ptrack->Eta()) >= fProdTrackEtaRange || TMath::Abs(ntrack->Eta()) >= fProdTrackEtaRange ) return kFALSE;
 
   // Track Selection Cuts (TPC)
 //  if ( ptrack->GetTPCNcls() <= 70 ) return kFALSE;
@@ -1076,7 +1106,7 @@ Bool_t AliRDHFCutsKFP::SingleCascCuts(AliAODcascade *casc, Bool_t IsAnaOmegac0)
 // === selection for bachlor ===
   // Kinematic Cuts & Acceptance for the bachelor
   if ( btrack->Pt()<=fPtMinPiFromXi || btrack->Pt()>=100.0 ) return kFALSE;
-  if ( TMath::Abs(btrack->Eta()) >= 0.8 ) return kFALSE;
+  if ( TMath::Abs(btrack->Eta()) >= fProdTrackEtaRange ) return kFALSE;
 
   // Track Selection Cuts (TPC)
 //  if ( btrack->GetTPCNcls() <= 70 ) return kFALSE;

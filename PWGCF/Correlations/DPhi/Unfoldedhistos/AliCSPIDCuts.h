@@ -70,6 +70,7 @@ class AliCSPIDCuts : public AliCSTrackCutsBase {
   /// \enum cutsIds
   /// \brief The ids of the different track cuts currently supported
   enum cutsIds {
+    kMom,              ///< momentum cut
     kITSdEdxSigmaCut,  ///< ITS dEdx \f$ n \sigma \f$ cut
     kTPCdEdxSigmaCut,  ///< TPC dEdx \f$ n \sigma \f$ cut
     kTOFSigmaCut,      ///< TOF \f$ n \sigma \f$ cut
@@ -94,6 +95,7 @@ class AliCSPIDCuts : public AliCSTrackCutsBase {
   virtual void InitCuts(const char* name = NULL);
   virtual void NotifyRun();
   virtual void NotifyEvent();
+  AliPID::EParticleType GetTargetSpecies() { return fTargetSpecies; }
   virtual Bool_t IsTrackAccepted(AliVTrack* trk, float*);
   virtual Bool_t IsTrueTrackAccepted(AliVTrack* trk);
   virtual Bool_t IsTrueTrackAccepted(Int_t itrk);
@@ -322,16 +324,17 @@ inline bool AliCSPIDCuts::accept(AliVTrack* ttrk)
     return false;
   }
 
+  /* initialize the mask of activated cuts */
+  fCutsActivatedMask.ResetAllBits();
+
   /* if not in the momentum range it is not accepted */
   if (ttrk->P() < fMinP || fMaxP < ttrk->P()) {
+    fCutsActivatedMask.SetBitNumber(kMom);
     return false;
   }
 
   /* for the time being */
   bool accepted = true;
-
-  /* initialize the mask of activated cuts */
-  fCutsActivatedMask.ResetAllBits();
 
   /* consider a potential constrained track */
   AliVTrack* trk = ttrk;

@@ -76,6 +76,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetDoPID(Bool_t pid = kTRUE) { fDoPID = pid; }
         void                    SetDoV0(Bool_t v0 = kTRUE) { fDoV0 = v0; }
 	void                    SetDoPHI(Bool_t Phi = kTRUE) { fDoPHI = Phi; }
+	void                    SetPHIkinematics(Bool_t phishift = kFALSE, Bool_t rapshift = kFALSE) { fshiftphi_PHI = phishift; fshiftrap_PHI = rapshift; }
+
         void                    SetIsMC(Bool_t mc = kTRUE, Bool_t tpc = kTRUE, Bool_t fmd = kTRUE) { fIsMC = mc; fIsTPCgen = tpc; fIsFMDgen = fmd; }
         void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
         void                    SetUseOppositeSidesOnly(Bool_t sides = kTRUE) { fUseOppositeSidesOnly = sides; }
@@ -116,6 +118,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetMassRejWindowLambda(Double_t cut) { fMassRejWindowLambda = cut; }
 	void                    SetK0MassRange(Double_t min, Double_t max) { fMinK0Mass = min; fMaxK0Mass = max; }
 	void                    SetLambdaMassRange(Double_t min, Double_t max) { fMinLambdaMass = min; fMaxLambdaMass = max; }
+	void                    SetPhiMassRange(Double_t min, Double_t max) { fMinPhiMass = min; fMaxPhiMass = max; }
 
 
         // correlation related
@@ -208,6 +211,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  fDoPID; // [kFALSE]
         Bool_t                  fDoV0; // [kFALSE]
 	Bool_t                  fDoPHI; // [kFALSE]
+	Bool_t                  fshiftphi_PHI; // [kFALSE]
+        Bool_t                  fshiftrap_PHI; // [kFALSE]
         Bool_t                  fUseNch; // [kFALSE]
         Bool_t                  fUseEfficiency; // [kFALSE]
         Bool_t                  fUseFMDcut; // [kTRUE]

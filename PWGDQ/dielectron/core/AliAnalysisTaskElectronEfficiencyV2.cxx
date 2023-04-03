@@ -119,6 +119,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(): AliA
   fPairPtBins(),
   fPhiVBins(),
   fDoGenSmearing(false),
+  fDoRecSmearing(false),
   fPtMin(0.),
   fPtMax(0.),
   fEtaMin(-99.),
@@ -276,6 +277,7 @@ AliAnalysisTaskElectronEfficiencyV2::AliAnalysisTaskElectronEfficiencyV2(const c
   fPairPtBins(),
   fPhiVBins(),
   fDoGenSmearing(false),
+  fDoRecSmearing(false),
   fPtMin(0.),
   fPtMax(0.),
   fEtaMin(-99.),
@@ -1177,6 +1179,20 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
     // check if electron comes from a mother with ele+pos as daughters
     CheckIfFromMotherWithDielectronAsDaughter(part);
 
+    // Test:Smear reconstructed particles to fill list for cutsetting
+    if (fDoRecSmearing == true && fArrResoPt){
+      AliMCParticle *mc_part = (AliMCParticle*)fMC->GetTrack(TMath::Abs(label));
+      Double_t mcPt     = mc_part->Pt();
+      Double_t mcEta    = mc_part->Eta();
+      Double_t mcPhi    = mc_part->Phi();
+      Short_t  mcCharge = mc_part->Charge();
+      TLorentzVector smearedVec = ApplyResolution(mcPt, mcEta, mcPhi, mcCharge);
+      part.fPt_smeared  = smearedVec.Pt();
+      part.fEta_smeared = smearedVec.Eta();
+      if (smearedVec.Phi() < 0) part.fPhi_smeared = smearedVec.Phi()+ 2 * pi;
+      else part.fPhi_smeared = smearedVec.Phi();
+    }
+
     // ##########################################################
     if      (fDoPairing == true && part.fCharge < 0) fRecNegPart.push_back(part);
     else if (fDoPairing == true && part.fCharge > 0) fRecPosPart.push_back(part);
@@ -1590,7 +1606,11 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
           TLorentzVector Lvec2;
           Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt, fRecNegPart[neg_i].fEta, fRecNegPart[neg_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
           Lvec2.SetPtEtaPhiM(fRecPosPart[pos_i].fPt, fRecPosPart[pos_i].fEta, fRecPosPart[pos_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
-          TLorentzVector LvecM = Lvec1 + Lvec2;
+	  if (fDoRecSmearing == true && fArrResoPt){
+	    Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt_smeared, fRecNegPart[neg_i].fEta_smeared, fRecNegPart[neg_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	    Lvec2.SetPtEtaPhiM(fRecPosPart[pos_i].fPt_smeared, fRecPosPart[pos_i].fEta_smeared, fRecPosPart[pos_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	  }
+	  TLorentzVector LvecM = Lvec1 + Lvec2;
           double mass = LvecM.M();
           double pairpt = LvecM.Pt();
 	  double opangle = Lvec1.Angle(Lvec2.Vect());
@@ -1636,6 +1656,10 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
         TLorentzVector Lvec2;
         Lvec1.SetPtEtaPhiM(track1->Pt(), track1->Eta(), track1->Phi(), AliPID::ParticleMass(AliPID::kElectron));
         Lvec2.SetPtEtaPhiM(track2->Pt(), track2->Eta(), track2->Phi(), AliPID::ParticleMass(AliPID::kElectron));
+	if (fDoRecSmearing == true && fArrResoPt){
+	  Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt_smeared, fRecNegPart[neg_i].fEta_smeared, fRecNegPart[neg_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	  Lvec2.SetPtEtaPhiM(fRecPosPart[pos_i].fPt_smeared, fRecPosPart[pos_i].fEta_smeared, fRecPosPart[pos_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	}
         TLorentzVector LvecM = Lvec1 + Lvec2;
         double mass = LvecM.M();
         double pairpt = LvecM.Pt();
@@ -1702,6 +1726,10 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
         TLorentzVector Lvec2;
         Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt, fRecNegPart[neg_i].fEta, fRecNegPart[neg_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
         Lvec2.SetPtEtaPhiM(fRecNegPart[neg_j].fPt, fRecNegPart[neg_j].fEta, fRecNegPart[neg_j].fPhi, AliPID::ParticleMass(AliPID::kElectron));
+	if (fDoRecSmearing == true && fArrResoPt){
+	  Lvec1.SetPtEtaPhiM(fRecNegPart[neg_i].fPt_smeared, fRecNegPart[neg_i].fEta_smeared, fRecNegPart[neg_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	  Lvec2.SetPtEtaPhiM(fRecNegPart[neg_j].fPt_smeared, fRecNegPart[neg_j].fEta_smeared, fRecNegPart[neg_j].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	}
         TLorentzVector LvecM = Lvec1 + Lvec2;
         double mass = LvecM.M();
         double pairpt = LvecM.Pt();
@@ -1732,6 +1760,10 @@ void AliAnalysisTaskElectronEfficiencyV2::UserExec(Option_t* option){
         TLorentzVector Lvec2;
         Lvec1.SetPtEtaPhiM(fRecPosPart[pos_i].fPt, fRecPosPart[pos_i].fEta, fRecPosPart[pos_i].fPhi, AliPID::ParticleMass(AliPID::kElectron));
         Lvec2.SetPtEtaPhiM(fRecPosPart[pos_j].fPt, fRecPosPart[pos_j].fEta, fRecPosPart[pos_j].fPhi, AliPID::ParticleMass(AliPID::kElectron));
+	if (fDoRecSmearing == true && fArrResoPt){
+	  Lvec1.SetPtEtaPhiM(fRecPosPart[pos_i].fPt_smeared, fRecPosPart[pos_i].fEta_smeared, fRecPosPart[pos_i].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	  Lvec2.SetPtEtaPhiM(fRecPosPart[pos_j].fPt_smeared, fRecPosPart[pos_j].fEta_smeared, fRecPosPart[pos_j].fPhi_smeared, AliPID::ParticleMass(AliPID::kElectron));
+	}
         TLorentzVector LvecM = Lvec1 + Lvec2;
         double mass = LvecM.M();
         double pairpt = LvecM.Pt();

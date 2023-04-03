@@ -222,7 +222,7 @@ void AliAnalysisTaskSEXic0SL::UserCreateOutputObjects()
 	fHisto = new THistManager("Histo");
 	fHisto->CreateTH1("RunNo", ";run", cut_runNoUp - cut_runNoLo, cut_runNoLo, cut_runNoUp, "s");
 
-	vector<const char*> evtCuts = {"Bfield", "Mult", "PID", "Trig>0", "VtxZ10", "PileupX", "INEL>0"};
+	vector<const char*> evtCuts = {"Bfield", "Mult", "PID", "Trig>0", "INEL>0", "VtxZ10", "PileupX"};
 	TH1* H1_cutEff = fHisto->CreateTH1("EvtCut", ";cut", evtCuts.size(), 0, (float)evtCuts.size(), "s");
 	for (unsigned int a=0; a<evtCuts.size(); a++) H1_cutEff->GetXaxis()->SetBinLabel(a+1, evtCuts[a]);
 
@@ -330,6 +330,10 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 		fEvtVtx = fEvt->GetPrimaryVertex();
 		if (!fEvtVtx) return; //Return 7d
 
+		//Check INEL>0
+		if (AliPPVsMultUtils::IsINELgtZERO(fEvt)==true)	fEvtINELLgt0 = true;
+		if (fEvtINELLgt0) fHisto->FillTH1("EvtCut", "INEL>0", 1); //@
+
 		//Store AliNormalizationCounter: DO NOT CHANGE THIS POSITION! (after vtx found, before |vtxZ| < 10)
 		if (t_trigFiredMB)
 		{
@@ -372,10 +376,6 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 		if (t_pileup_MB != t_pileup_HMV0) AliFatal("Pileup status is different between MB and HMV0");
 		else if (t_pileup_MB && t_pileup_HMV0) return; //Return 10d
 		else fHisto->FillTH1("EvtCut", "PileupX", 1); //@
-
-		//Check INEL>0
-		if (AliPPVsMultUtils::IsINELgtZERO(fEvt)==true)	fEvtINELLgt0 = true;
-		if (fEvtINELLgt0) fHisto->FillTH1("EvtCut", "INEL>0", 1); //@
 
 		//Dec. 21, newly added
 		if (IsLegacy==false && fEvtGoodMB==false && fEvtGoodHMV0==false) return; //Return 11d
@@ -531,7 +531,9 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 		}
 
 		//xCheck, Dec. 2022
-		if ( (fCascDecayLenXiOld[nXi] > cutCasc_minDecayLenXi) && (fCascDecayLenV0Old[nXi] > cutCasc_minDecayLenV0) )
+		if ( (fCascDecayLenXiOld[nXi] > cutCasc_minDecayLenXi) &&
+			 (fCascDecayLenV0Old[nXi] > cutCasc_minDecayLenV0) &&
+			 (fabs(fCasc->MassXi() - MassXi) < 0.01) )
 		{
 			fHisto->FillTH1("c_massXi", fCasc->MassXi());
 
@@ -642,7 +644,9 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 	}//a, nTracks
 	fEleNum = nEle;
 	if (ValidEvtOnly && nEle==0) return; //!!
-	if (nXi>0 && nEle>0) fTree->Fill(); //#
+
+	if (!IsMC && (nXi==0 || nEle==0)) return; //!!
+	fTree->Fill(); //#
 
 	ControlOutputContainers(1);
 	return;

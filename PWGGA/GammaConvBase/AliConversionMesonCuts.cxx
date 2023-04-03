@@ -4869,10 +4869,10 @@ Bool_t AliConversionMesonCuts::MesonIsSelectedByMassCut(AliAODConversionMother *
           //----------
           //Width
           //----------
-          if ((meson->Pt())<1){
-              pt=1;
-          } else if ((meson->Pt())>10){
-              pt=10;
+          if ((meson->Pt())<0.5){
+              pt=0.5;
+          } else if ((meson->Pt())>7){
+              pt=7;
           } else {
               pt=(meson->Pt());
           }

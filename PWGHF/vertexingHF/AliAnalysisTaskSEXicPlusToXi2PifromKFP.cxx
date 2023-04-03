@@ -1703,7 +1703,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
                        kfpXicPlus_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic.GetChi2()/kfpXicPlus_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic.GetNDF() < fAnaCuts->GetKFPXicPlus_Chi2geoMax() && // Prefilter
                        kfpXicPlus_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic.GetPt() >= fAnaCuts->GetPtMinXicPlus() // Prefilter
                      ) {
-                    FillQATreeXicPlusFromCasc_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic(kfpLambda_wMassConst_To_Xi_wMassConst, kfpXiMinus_wMassAndTopoConstForLam_wMassAndTopoConstForXi, kfpXicPlus_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic, PV, trackPiFromXicPlus_HighPt, mcArray, lab_XicPlus, AODEvent);
+                    FillQATreeXicPlusFromCasc_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic(kfpLambda_wMassConst_To_Xi_wMassConst, kfpXiMinus_wMassAndTopoConstForLam_wMassAndTopoConstForXi, kfpXicPlus_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic, PV, trackPiFromXicPlus_HighPt, trackPiFromXicPlus_LowPt, btrack, ptrack, ntrack, kfpBP_HighPt, kfpBP_LowPt, kfpPion_ForXi, kfpProton, kfpPionMinus, mcArray, lab_XicPlus, AODEvent);
                   }
                   kfpXicPlus_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic.Clear();
                 }
@@ -2195,7 +2195,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::MakeAnaXicPlusFromCasc(AliAODEvent 
                        kfpXicMinus_wMassAndTopoConstForAntiLam_wMassAndTopoConstForXi_wTopoConstForXic.GetChi2()/kfpXicMinus_wMassAndTopoConstForAntiLam_wMassAndTopoConstForXi_wTopoConstForXic.GetNDF() < fAnaCuts->GetKFPXicPlus_Chi2geoMax() && // Prefilter
                        kfpXicMinus_wMassAndTopoConstForAntiLam_wMassAndTopoConstForXi_wTopoConstForXic.GetPt() >= fAnaCuts->GetPtMinXicPlus() // Prefilter
                      ) {
-                    FillQATreeXicPlusFromCasc_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic(kfpAntiLambda_wMassConst_To_XiPlus_wMassConst, kfpXiPlus_wMassAndTopoConstForAntiLam_wMassAndTopoConstForXi, kfpXicMinus_wMassAndTopoConstForAntiLam_wMassAndTopoConstForXi_wTopoConstForXic, PV, trackPiFromXicMinus_HighPt, mcArray, lab_XicMinus, AODEvent);
+                    FillQATreeXicPlusFromCasc_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic(kfpAntiLambda_wMassConst_To_XiPlus_wMassConst, kfpXiPlus_wMassAndTopoConstForAntiLam_wMassAndTopoConstForXi, kfpXicMinus_wMassAndTopoConstForAntiLam_wMassAndTopoConstForXi_wTopoConstForXic, PV, trackPiFromXicMinus_HighPt, trackPiFromXicMinus_LowPt, btrack, ntrack, ptrack, kfpBP_HighPt, kfpBP_LowPt, kfpPion_ForXiPlus, kfpAntiProton, kfpPionPlus, mcArray, lab_XicMinus, AODEvent);
                   }
                   kfpXicMinus_wMassAndTopoConstForAntiLam_wMassAndTopoConstForXi_wTopoConstForXic.Clear();
                 }
@@ -3202,7 +3202,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeQAXicPlus_wMassAndTopoCon
 {
   const char* nameoutput = GetOutputSlot(14)->GetContainer()->GetName();
   fTree_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic = new TTree(nameoutput, "XicPlus variables QA tree wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic");
-  Int_t nVar = 17;
+  Int_t nVar = 32;
   fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic = new Float_t[nVar-1];
   TString *fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic = new TString[nVar];
 
@@ -3220,9 +3220,24 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::DefineTreeQAXicPlus_wMassAndTopoCon
   fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[11] = "SV_X_MC";
   fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[12] = "SV_Y_MC";
   fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[13] = "SV_Z_MC";
-  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[14] = "pt_XicPlus_MC";
-  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[15] = "Source_XicPlus";
-  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[16] = "event_ID";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[14] = "PV_X_MC";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[15] = "PV_Y_MC";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[16] = "PV_Z_MC";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[17] = "PV_X_rec";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[18] = "PV_Y_rec";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[19] = "PV_Z_rec";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[20] = "PV_sigma_X_rec";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[21] = "PV_sigma_Y_rec";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[22] = "PV_sigma_Z_rec";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[23] = "recalPV_woKFrefit_X";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[24] = "recalPV_woKFrefit_Y";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[25] = "recalPV_woKFrefit_Z";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[26] = "recalPV_woKFrefit_sigma_X";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[27] = "recalPV_woKFrefit_sigma_Y";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[28] = "recalPV_woKFrefit_sigma_Z";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[29] = "pt_XicPlus_MC";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[30] = "Source_XicPlus";
+  fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[31] = "event_ID";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     if (ivar<(nVar-1))  fTree_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic->Branch(fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[ivar].Data(), &fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[ivar], Form("%s/F", fVarNames_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[ivar].Data()));
@@ -3683,7 +3698,7 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillTreeRecXicPlusFromCasc(AliAODEv
     fVar_XicPlus_QA[2] = PV_Gen[2]; // PV: Z_{MC}
   }
 
-  Double_t pos_PV[3],cov_PV[6];
+  Double_t pos_PV[3]={0.}, cov_PV[6]={0.};
   fpVtx->GetXYZ(pos_PV);
   fpVtx->GetCovarianceMatrix(cov_PV);
   fVar_XicPlus_QA[3] = pos_PV[0]; // PV: X_{rec}
@@ -4471,9 +4486,9 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillQATreeXicPlusFromCasc_wMassAndT
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillQATreeXicPlusFromCasc_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic(KFParticle kfpLambda_wMassConst_To_Xi_wMassConst, KFParticle kfpXiMinus_wMassAndTopoConstForLam_wMassAndTopoConstForXi, KFParticle kfpXicPlus_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic, KFParticle PV, AliAODTrack *trackPiFromXicPlus_HighPt, TClonesArray *mcArray, Int_t lab_XicPlus, AliAODEvent *AODEvent)
+void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillQATreeXicPlusFromCasc_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic(KFParticle kfpLambda_wMassConst_To_Xi_wMassConst, KFParticle kfpXiMinus_wMassAndTopoConstForLam_wMassAndTopoConstForXi, KFParticle kfpXicPlus_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic, KFParticle PV, AliAODTrack *trackPiFromXicPlus_HighPt, AliAODTrack *trackPiFromXicPlus_LowPt, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODTrack *trackPrFromLam, AliAODTrack *trackPiFromLam, KFParticle kfpBP_HighPt, KFParticle kfpBP_LowPt, KFParticle kfpPion_ForXi, KFParticle kfpProton_ForLam, KFParticle kfpPion_ForLam, TClonesArray *mcArray, Int_t lab_XicPlus, AliAODEvent *AODEvent)
 {
-  for (Int_t i=0;i<16;i++) {
+  for (Int_t i=0;i<31;i++) {
     fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[i] = -9999.;
   }
 
@@ -4519,17 +4534,55 @@ void AliAnalysisTaskSEXicPlusToXi2PifromKFP::FillQATreeXicPlusFromCasc_wMassAndT
     fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[12] = mcPiFromXicPlus_HighPt->Yv();
     // SV_Z_MC
     fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[13] = mcPiFromXicPlus_HighPt->Zv();
+    // PV_X_MC
+    Double_t PV_Gen[3]={0.};
+    AliAODMCHeader *mcHeader = (AliAODMCHeader*)AODEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+    mcHeader->GetVertex(PV_Gen);
+    fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[14] = PV_Gen[0];
+    // PV_Y_MC
+    fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[15] = PV_Gen[1];
+    // PV_Z_MC
+    fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[16] = PV_Gen[2];
 
     AliAODMCParticle* mcXicPlusCand = static_cast<AliAODMCParticle*>(mcArray->At(mcPiFromXicPlus_HighPt->GetMother()));
-    if (abs(mcXicPlusCand->GetPdgCode()) == 4232) fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[14] = mcXicPlusCand->Pt();
+    if (abs(mcXicPlusCand->GetPdgCode()) == 4232) fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[29] = mcXicPlusCand->Pt();
     if (abs(mcXicPlusCand->GetPdgCode()) == 3324) {
       AliAODMCParticle* mcXicPlusCand_DecayToResonance = static_cast<AliAODMCParticle*>(mcArray->At(mcXicPlusCand->GetMother()));
-      if (abs(mcXicPlusCand_DecayToResonance->GetPdgCode()) == 4232) fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[14] = mcXicPlusCand_DecayToResonance->Pt();
+      if (abs(mcXicPlusCand_DecayToResonance->GetPdgCode()) == 4232) fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[29] = mcXicPlusCand_DecayToResonance->Pt();
     }
   }
 
+  // PV_rec
+  Double_t pos_PV[3]={0.}, cov_PV[6]={0.};
+  fpVtx->GetXYZ(pos_PV);
+  fpVtx->GetCovarianceMatrix(cov_PV);
+  fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[17] = pos_PV[0]; // PV: X_{rec}
+  fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[18] = pos_PV[1]; // PV: Y_{rec}
+  fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[19] = pos_PV[2]; // PV: Z_{rec}
+  fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[20] = sqrt(cov_PV[0]); // PV: sigma_X^{rec}
+  fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[21] = sqrt(cov_PV[2]); // PV: sigma_Y^{rec}
+  fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[22] = sqrt(cov_PV[5]); // PV: sigma_Z^{rec}
+
+  // === Recalculate PV after removing Xic+ daughters and adding Xic+ (w/o KF Refit) ===
+  KFParticle recalPV_woKFrefit = PV;
+  if (trackPiFromXicPlus_HighPt->GetUsedForPrimVtxFit()) kfpBP_HighPt.SubtractFromVertex(recalPV_woKFrefit);
+  if (trackPiFromXicPlus_LowPt->GetUsedForPrimVtxFit()) kfpBP_LowPt.SubtractFromVertex(recalPV_woKFrefit);
+  if (trackPiFromXiOrKaonFromOmega->GetUsedForPrimVtxFit()) kfpPion_ForXi.SubtractFromVertex(recalPV_woKFrefit);
+  if (trackPrFromLam->GetUsedForPrimVtxFit()) kfpProton_ForLam.SubtractFromVertex(recalPV_woKFrefit);
+  if (trackPiFromLam->GetUsedForPrimVtxFit()) kfpPion_ForLam.SubtractFromVertex(recalPV_woKFrefit);
+  recalPV_woKFrefit.AddDaughter(kfpXicPlus_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic);
+
+  fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[23] = recalPV_woKFrefit.GetX(); // recalPV_woKFrefit: X
+  fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[24] = recalPV_woKFrefit.GetY(); // recalPV_woKFrefit: Y
+  fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[25] = recalPV_woKFrefit.GetZ(); // recalPV_woKFrefit: Z
+  fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[26] = recalPV_woKFrefit.GetErrX(); // recalPV_woKFrefit: sigma_X
+  fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[27] = recalPV_woKFrefit.GetErrY(); // recalPV_woKFrefit: sigma_Y
+  fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[28] = recalPV_woKFrefit.GetErrZ(); // recalPV_woKFrefit: sigma_Z
+
+  recalPV_woKFrefit.Clear();
+
   // Source_XicPlus
-  fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[15] = lab_XicPlus;
+  fVar_XicPlus_QA_wMassAndTopoConstForLam_wMassAndTopoConstForXi_wTopoConstForXic[30] = lab_XicPlus;
 
   // event_ID
   if (fIsMC) fVar_XicPlus_EvtID = GetMCEventID();
@@ -4554,7 +4607,7 @@ AliAODVertex* AliAnalysisTaskSEXicPlusToXi2PifromKFP::PrimaryVertex(const TObjAr
   AliESDVertex *vertexESD = NULL;
   AliAODVertex *vertexAOD = NULL;
   
-  Double_t pos_PV[3],cov_PV[6];
+  Double_t pos_PV[3]={0.}, cov_PV[6]={0.};
   fpVtx->GetXYZ(pos_PV);
   fpVtx->GetCovarianceMatrix(cov_PV);
 

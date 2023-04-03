@@ -191,6 +191,8 @@ fhNEventsPerTriggerAfterCutCen(0),       fhNEventsPerTriggerMakerSelectedAfterCu
 fNMCGenerToAccept(0),        fMCGenerEventHeaderToAccept(""),
 fGenEventHeader(0),          fGenPythiaEventHeader(0),        fCheckPythiaEventHeader(1),
 fAcceptMCPromptPhotonOnly(0),fRejectMCFragmentationPhoton(0),
+//Artificial Tracking efficiency
+fPeriodLetter(""), fApplyArtificialTrackEffCut(0), 
 fRejectPileUpMCParticle(0)
 {
   for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsE   [i]= 0x0 ;
@@ -198,10 +200,10 @@ fRejectPileUpMCParticle(0)
   for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsESignal   [i]= 0x0 ;
   for(Int_t i = 0; i < 9; i++) fhEMCALClusterCutsECenSignal[i]= 0x0 ;
   for(Int_t i = 0; i < 7; i++) fhPHOSClusterCutsE    [i]= 0x0 ;
-  for(Int_t i = 0; i < 6; i++) fhCTSTrackCutsPt      [i]= 0x0 ;
-  for(Int_t i = 0; i < 6; i++) fhCTSTrackCutsPtSignal[i]= 0x0 ;
-  for(Int_t i = 0; i < 6; i++) fhCTSTrackCutsPtCen   [i]= 0x0 ;
-  for(Int_t i = 0; i < 6; i++) fhCTSTrackCutsPtCenSignal[i]= 0x0 ;
+  for(Int_t i = 0; i < 7; i++) fhCTSTrackCutsPt      [i]= 0x0 ;
+  for(Int_t i = 0; i < 7; i++) fhCTSTrackCutsPtSignal[i]= 0x0 ;
+  for(Int_t i = 0; i < 7; i++) fhCTSTrackCutsPtCen   [i]= 0x0 ;
+  for(Int_t i = 0; i < 7; i++) fhCTSTrackCutsPtCenSignal[i]= 0x0 ;
   for(Int_t j = 0; j < 5; j++) { fMCGenerToAccept    [j] =  ""; fMCGenerIndexToAccept[j] = -1; }
   for(Int_t j = 0; j < 4; j++) { fhSpherocityMinPtCut[j] = 0  ; fhSpherocityCenMinPtCut[j] = 0 ; fSpherocityPtCut[j] = -10 ;}
   
@@ -1555,14 +1557,15 @@ TList * AliCaloTrackReader::GetCreateControlHistograms()
   
   if ( fFillCTS )
   {
-    TString names[] = {"NoCut", "Status", "ESD_AOD", "TOF", "DCA","PtAcceptanceMult"};
+    TString names[] = {"NoCut", "Status", "ESD_AOD", "TOF", "DCA","PtAcceptanceMult","ApplyArtificialInefficiency"};
 
-    for(Int_t i = 0; i < 6; i++)
+    for(Int_t i = 0; i < 7; i++)
     {
-      if ( names[i].Contains("Acceptance")  && !fFiducialCut    ) continue;
-      if ( names[i] == "Status"             && !fTrackStatus    ) continue;
-      if ( names[i] == "DCA"                && !fUseTrackDCACut ) continue;
-      if ( names[i] == "TOF"                && !fAccessTrackTOF ) continue;
+      if ( names[i].Contains("Acceptance")            && !fFiducialCut    ) continue;
+      if ( names[i] == "Status"                       && !fTrackStatus    ) continue;
+      if ( names[i] == "DCA"                          && !fUseTrackDCACut ) continue;
+      if ( names[i] == "TOF"                          && !fAccessTrackTOF ) continue;
+      if ( names[i] == "ApplyArtificialInefficiency"  && !fApplyArtificialTrackEffCut ) continue;
      
       if ( !fHistoCentDependent )
       {
@@ -2328,6 +2331,47 @@ Bool_t AliCaloTrackReader::FillInputEvent(Int_t iEntry, const char * /*curFileNa
       AliWarning(Form("Run number %d out of expected ranges, year not set", fRunNumber));
     }
   }
+
+
+  // SetArtificial tracking efficiency
+
+    // Assign year, only for Run 2.
+    //
+    // LHC15   pp: n 244340-244628; PbPb: o 244824-246994,
+    // LHC16   pp: i 255515-255650; j 256146-256420; k 256504-258574; l 258883-260187; o 262395-264035; p 264076-264347
+    // LHC16  pPb: q 265015-265525; r 265589-266318; s 266405-267131; t 267161-267166
+    // LHC17   pp: h 271839-273103; i 274442-274442; j 274591-274671; k 274690-276508; l 276551-278729; m 278818-280140; o 280282-281961; r 282504-282704
+    // LHC17   Xe: n 280234-280235; pp 5 TeV: p 282008-282343 ; q 282365-282441
+    // LHC18   pp: d 285978-286350; e 286380-286958; f 286982-287977; g 288619-288750; h 288804-288806; ij 288861-288943; k 289165-289201; l 289240-289971
+    //             m 290167-292839; n 293357-293362; o 293368-293898; p 294009-295232;
+    // LHC18 PbPb: q 295274-296623 ; r 296690-297624
+
+    // Adding this run to a period. It will unlikely change during the analsis
+    // but do it once per change of run.
+    if (fRunNumber >= 244824 && fRunNumber <= 246994)
+    {
+      fYear = 15;
+      fPeriodLetter = "o";
+      SetArtificialTrackingEfficiency(fYear, fPeriodLetter);
+    }
+    else if (fRunNumber >= 295274 && fRunNumber <= 296623) // q
+    {
+      fYear = 18; // maybe error for the starting
+      fPeriodLetter = "q";
+      SetArtificialTrackingEfficiency(fYear, fPeriodLetter);
+    }
+    else if (fRunNumber >= 296690 && fRunNumber <= 297624) // r
+    {
+      fYear = 18;
+      fPeriodLetter = "r";
+      SetArtificialTrackingEfficiency(fYear, fPeriodLetter);
+    }
+    else
+    {
+      fYear = -1;
+      AliWarning(Form("Run number %d out of expected ranges, for this year tracking efficiency not set", fRunNumber));
+    }
+  
 
   if ( !fHistoCentDependent ) fhNEventsAfterCut   ->Fill(0.5);
   else                        fhNEventsAfterCutCen->Fill(0.5,cen);
@@ -3196,6 +3240,43 @@ void AliCaloTrackReader::FillInputCTSSelectTrack(AliVTrack * track, Int_t itrack
       else                        fhCTSTrackCutsPtCenSignal[5]->Fill(track->Pt(),cen);
     }
   }
+
+  if ( fApplyArtificialTrackEffCut )
+  {
+    fRandom.SetSeed(0);
+    Double_t trackInefficiency = 1.;
+    for(int iPt = 0; iPt < 16 ; iPt++)
+    {
+      if ((track->Pt())>= fPtBinXTrackEffCut[iPt] && (track->Pt()) < fPtBinXTrackEffCut[iPt+1])
+      {
+        if ( cen < 30 )
+          trackInefficiency = 1. - fTrackEfficiencyCentr[iPt];
+        else if (cen >= 30 )
+          trackInefficiency = 1. - fTrackEfficiencyPeriph[iPt];
+      }
+    }
+    Double_t rnd = fRandom.Rndm();
+
+    if ( rnd > trackInefficiency ) //track accepted because rnd > than inefficiency
+    {
+      if ( !fHistoCentDependent ) fhCTSTrackCutsPt   [6]->Fill(track->Pt());
+      else                        fhCTSTrackCutsPtCen[6]->Fill(track->Pt(),cen);
+
+      if ( fillEmbedSignalTrack )
+      {
+        if ( !fHistoCentDependent ) fhCTSTrackCutsPtSignal   [6]->Fill(track->Pt());
+        else                        fhCTSTrackCutsPtCenSignal[6]->Fill(track->Pt(),cen);
+      }
+    }
+    else if (rnd < trackInefficiency ) //track rejected because rnd < than inefficiency
+    {
+
+      AliDebug(2,Form("Track %d rejected due to artificial tracking inefficiency", itrack));
+      return ;
+    }
+
+  }
+  
   
   // ------------------------------
   // Add selected tracks to array
@@ -5407,3 +5488,42 @@ void AliCaloTrackReader::SetMC(AliMCEvent * mc)
     }
   } // embedded
 }
+
+
+//____________________________________________________________
+/// Set the pt-dependent tracking efficiency from the JET YAML file.
+/// The values for PbPb Run2 are defined.
+//____________________________________________________________
+
+void AliCaloTrackReader::SetArtificialTrackingEfficiency(Int_t fYear, TString fPeriodLetter)
+{
+  Double_t ptBin[17] = {0.0, 0.5, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 999.0};
+  for(int iPt = 0; iPt < 17; iPt++)
+    {
+      fPtBinXTrackEffCut[iPt] = ptBin[iPt];
+    }
+  if (fYear == 18 && fPeriodLetter == "q")
+  {
+    double effCentr[16] = {0.964, 0.964, 0.939, 0.936, 0.949, 0.958, 0.976, 0.967, 0.967, 0.967, 0.967, 0.976, 0.976, 0.984, 0.976, 0.976}; // central
+    double effPeriph[16] = {0.966, 0.966, 0.958, 0.958, 0.958, 0.967, 0.976, 0.984, 0.984, 0.983, 0.983, 0.983, 0.983, 0.983, 0.983, 0.983};// semiperip
+    for(int iEff = 0; iEff < 16; iEff++)
+    { 
+      fTrackEfficiencyCentr[iEff]  =  effCentr[iEff];
+      fTrackEfficiencyPeriph[iEff] =  effPeriph[iEff];
+      AliDebug(1,Form("AliCaloTrackReader()::SetArtificialEfficiency - LHC%d%s Eff Centr %1.3f \n", fYear, fPeriodLetter.Data(), fTrackEfficiencyCentr[iEff]));
+    }
+  }
+  else if ((fYear == 18 && fPeriodLetter == "r") || (fYear == 15 && fPeriodLetter == "o"))
+  {
+    double effCentr[16] = {0.963, 0.963, 0.940, 0.936, 0.949, 0.958, 0.977, 0.967, 0.976, 0.966, 0.975, 0.975, 0.975, 0.982, 0.982, 0.982};  // central
+    double effPeriph[16] = {0.965, 0.965, 0.958, 0.956, 0.959, 0.967, 0.986, 0.978, 0.986, 0.978, 0.986, 0.986, 0.986, 0.986, 0.986, 0.986}; // semiperiph
+    for(int iEff = 0; iEff < 16; iEff++)
+    { 
+      fTrackEfficiencyCentr[iEff]  =  effCentr[iEff];
+      fTrackEfficiencyPeriph[iEff] =  effPeriph[iEff];
+      AliDebug(1,Form("AliCaloTrackReader()::SetArtificialEfficiency - LHC%d%s Eff Centr %1.3f \n", fYear, fPeriodLetter.Data(), fTrackEfficiencyCentr[iEff]));
+    }
+  }
+
+}
+

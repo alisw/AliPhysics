@@ -588,11 +588,11 @@ void AliAnalysisTaskParticleEffpbpb5020::UserExec(Option_t *)
   else if (mult >= 5 && mult < 10) fcent = 1;
   else if (mult >= 10 && mult < 20) fcent = 2;
   else if (mult >= 20 && mult < 30) fcent = 3;
-  else if (mult >= 30 && mult < 40) fcent = 4;
-  else if (mult >= 40 && mult < 50) fcent = 5;
-  else if (mult >= 50 && mult < 60) fcent = 6;
-  else if (mult >= 60 && mult < 70) fcent = 7;
-  else if (mult >= 70 && mult < 80) fcent = 8;
+  //else if (mult >= 30 && mult < 40) fcent = 4;
+  //else if (mult >= 40 && mult < 50) fcent = 5;
+  //else if (mult >= 50 && mult < 60) fcent = 6;
+  //else if (mult >= 60 && mult < 70) fcent = 7;
+  //else if (mult >= 70 && mult < 80) fcent = 8;
   else return;
 
 

@@ -22,6 +22,7 @@
 #include "DCAFitterN.h"
 #include "AliAnalysisTaskHFSimpleVertices.h"
 #include "AliLog.h"
+#include "AliAODMCParticle.h"
 
 #include <TH1F.h>
 #include <TSystem.h>
@@ -165,8 +166,21 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistInvMassDsRefl{nullptr},
   fHistPtDs{nullptr},
   fHistYPtDs{nullptr},
+  fHistPtDsDau0{nullptr},
+  fHistPtDsDau1{nullptr},
+  fHistPtDsDau2{nullptr},
+  fHistImpParDsDau0{nullptr},
+  fHistImpParDsDau1{nullptr},
+  fHistImpParDsDau2{nullptr},
   fHistDecLenDs{nullptr},
+  fHistDecLenXYDs{nullptr},
+  fHistNormDecLenXYDs{nullptr},
   fHistCosPointDs{nullptr},
+  fHistCosPointXYDs{nullptr},
+  fHistImpParXYDs{nullptr},
+  fHistNormIPDs{nullptr},
+  fHistDeltaMassPhiDs{nullptr},
+  fHistCos3PiKDs{nullptr},
   fHistInvMassLc{nullptr},
   fHistPtLc{nullptr},
   fHistEtaLc{nullptr},
@@ -247,7 +261,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fVertexerMaxDZIni(4.),
   fVertexerMinParamChange(1.e-3),
   fVertexerMinRelChi2Change(0.9),
-  fVertexerUseAbsDCA(true),
+  fVertexerUseAbsDCA(false),
   fEventCuts{},
   fTrackCuts2pr{nullptr},
   fTrackCuts3pr{nullptr},
@@ -260,6 +274,8 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMaxPtDzero(9999.),
   fMinPtDplus(0.),
   fMaxPtDplus(9999.),
+  fMinPtDs(0.),
+  fMaxPtDs(9999.),
   fMinPtJpsi(0.),
   fMaxPtJpsi(9999.),
   fMinPtLc(0.),
@@ -270,6 +286,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fSelectD0(1),
   fSelectD0bar(1),
   fSelectDplus(1),
+  fSelectDs(1),
   fSelectJpsi(1),
   fSelectLcpKpi(1),
   fFindVertexForCascades(kFALSE),
@@ -277,7 +294,57 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fMinCosPointV0(0.),
   fCutOnK0sMass(0.1),
   fEnableCPUTimeCheck(kFALSE),
-  fCountTimeInMilliseconds(kFALSE)
+  fCountTimeInMilliseconds(kFALSE),
+  doJetFinding(kFALSE),
+  matchedJetsOnly(kFALSE),
+  doJetSubstructure(kFALSE),
+  fHistJetPt{ nullptr },
+  fHistJetE{ nullptr },
+  fHistJetPhi{ nullptr },
+  fHistJetEta{ nullptr },
+  fHistJetNConstituents{ nullptr },
+  fHistJetCandPt {nullptr },
+  fHistJetZg {nullptr },
+  fHistJetRg {nullptr },
+  fHistJetNsd {nullptr },
+  fHistJetPt_Part{ nullptr },
+  fHistJetE_Part{ nullptr },
+  fHistJetPhi_Part{ nullptr },
+  fHistJetEta_Part{ nullptr },
+  fHistJetNConstituents_Part{ nullptr },
+  fHistJetCandPt_Part { nullptr },
+  fHistJetZg_Part {nullptr },
+  fHistJetRg_Part {nullptr },
+  fHistJetNsd_Part {nullptr },
+  fFastJetWrapper{ nullptr },
+  fFastJetWrapper_Part{ nullptr },
+  jetPtMin(0.0),
+  jetPtMax(1000.0),
+  jetR(0.4),
+  jetTrackPtMin(0.15),
+  jetTrackPtMax(1000.0),
+  jetTrackEtaMin(-0.8),
+  jetTrackEtaMax(0.8),
+  jetCandPtMin(0.0),
+  jetCandPtMax(1000.0),
+  jetCandYMin(-0.8),
+  jetCandYMax(0.8),
+  zCut(0.1),
+  beta(0.0),
+  jetPtMin_Part(0.0),
+  jetPtMax_Part(1000.0),
+  jetR_Part(0.4),
+  jetTrackPtMin_Part(0.15),
+  jetTrackPtMax_Part(1000.0),
+  jetTrackEtaMin_Part(-0.8),
+  jetTrackEtaMax_Part(0.8),
+  jetCandPtMin_Part(0.0),
+  jetCandPtMax_Part(1000.0),
+  jetCandYMin_Part(-0.8),
+  jetCandYMax_Part(0.8),
+  zCut_Part(0.1),
+  beta_Part(0.0)
+
 {
   //
   InitDefault();
@@ -419,8 +486,21 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
     delete fHistInvMassDsRefl;
     delete fHistPtDs;
     delete fHistYPtDs;
+    delete fHistPtDsDau0;
+    delete fHistPtDsDau1;
+    delete fHistPtDsDau2;
+    delete fHistImpParDsDau0;
+    delete fHistImpParDsDau1;
+    delete fHistImpParDsDau2;
     delete fHistDecLenDs;
+    delete fHistDecLenXYDs;
+    delete fHistNormDecLenXYDs;
     delete fHistCosPointDs;
+    delete fHistCosPointXYDs;
+    delete fHistImpParXYDs;
+    delete fHistNormIPDs;
+    delete fHistDeltaMassPhiDs;
+    delete fHistCos3PiKDs;
     delete fHistInvMassLc;
     delete fHistPtLc;
     delete fHistEtaLc;
@@ -490,6 +570,26 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
       delete fHistWallTimeTrackVsNTracks;
     if (fHistWallTimeCandVsNTracks)
       delete fHistWallTimeCandVsNTracks;
+    delete fHistJetPt;
+    delete fHistJetE;
+    delete fHistJetPhi;
+    delete fHistJetEta;
+    delete fHistJetNConstituents;
+    delete fHistJetCandPt;
+    delete fHistJetZg;
+    delete fHistJetRg;
+    delete fHistJetNsd;
+    delete fHistJetPt_Part;
+    delete fHistJetE_Part;
+    delete fHistJetPhi_Part;
+    delete fHistJetEta_Part;
+    delete fHistJetNConstituents_Part;
+    delete fHistJetCandPt_Part;
+    delete fHistJetZg_Part;
+    delete fHistJetRg_Part;
+    delete fHistJetNsd_Part;
+    delete fFastJetWrapper;
+    delete fFastJetWrapper_Part;
   }
   delete fOutput;
   delete fTrackCuts2pr;
@@ -680,6 +780,25 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault()
     }
   }
 
+  Double_t defaultPtBinsDs[fNPtBinsDs+1] = {2., 3., 4., 5., 6., 8., 12., 16., 24.};
+  for (Int_t ib = 0; ib < fNPtBinsDs + 1; ib++)
+    fPtBinLimsDs[ib] = defaultPtBinsDs[ib];
+
+  Double_t defaultDsCuts[fNPtBinsDs][kNCutVarsDs] =
+    {{0.2, 0.3, 0.3, 0.02, 4., 0.92, 0.92, 0.014, 0.010, 0.10},  /* 2  < pT < 3  */
+     {0.2, 0.3, 0.3, 0.02, 4., 0.92, 0.92, 0.014, 0.010, 0.10},  /* 3  < pT < 4  */
+     {0.2, 0.3, 0.3, 0.03, 4., 0.90, 0.90, 0.012, 0.010, 0.05},  /* 4  < pT < 5  */
+     {0.2, 0.3, 0.3, 0.03, 4., 0.90, 0.90, 0.012, 0.010, 0.05},  /* 5  < pT < 6  */
+     {0.2, 0.3, 0.3, 0.03, 4., 0.90, 0.90, 0.012, 0.010, 0.05},  /* 6  < pT < 8  */
+     {0.2, 0.3, 0.3, 0.03, 4., 0.90, 0.90, 0.012, 0.010, 0.00},  /* 8  < pT < 12 */
+     {0.2, 0.3, 0.3, 0.05, 4., 0.85, 0.85, 0.012, 0.015, 0.00},  /* 12 < pT < 16 */
+     {0.2, 0.3, 0.3, 0.05, 4., 0.85, 0.85, 0.012, 0.015, 0.00}}; /* 16 < pT < 24 */
+  for (Int_t ib = 0; ib < fNPtBinsDs; ib++) {
+    for (Int_t jc = 0; jc < kNCutVarsDs; jc++) {
+      fDsCuts[ib][jc] = defaultDsCuts[ib][jc];
+    }
+  }
+
   Double_t defaultPtBinsLc[fNPtBinsLc+1] = {0., 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 12.0, 24.0, 36.0};
   for (Int_t ib = 0; ib < fNPtBinsLc + 1; ib++)
     fPtBinLimsLc[ib] = defaultPtBinsLc[ib];
@@ -722,7 +841,6 @@ void AliAnalysisTaskHFSimpleVertices::InitDefault()
     }
   }
 }
-
 //___________________________________________________________________________
 void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
 {
@@ -765,6 +883,10 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     printf("selectionFlagDplus = %d\n", selectDplus);
     if (selectDplus >= 0)
       fSelectDplus = selectDplus;
+    Int_t selectDs = GetJsonInteger(filename.Data(), "hf-task-ds", "selectionFlagDs");
+    printf("selectionFlagDs = %d\n", selectDs);
+    if (selectDs >= 0)
+      fSelectDs = selectDs;
     Int_t selectJpsi = GetJsonInteger(filename.Data(), "hf-task-jpsi", "selectionFlagJpsi");
     printf("selectionFlagJpsi = %d\n", selectJpsi);
     if (selectJpsi >= 0)
@@ -816,35 +938,38 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
 
     // vertexer parameters
     printf("--- DCAFitterN parameters ---\n");
+    Int_t useAbsDCA = GetJsonBool(filename.Data(), "hf-track-index-skim-creator", "useAbsDCA");
+    if (useAbsDCA == 1) {
+      fVertexerUseAbsDCA = true;
+    } else if (useAbsDCA == 0) {
+      fVertexerUseAbsDCA = false;
+    }
+    printf("useAbsDCA = %d\n", fVertexerUseAbsDCA);
     Int_t propagateToPCA = GetJsonBool(filename.Data(), "hf-track-index-skim-creator", "propagateToPCA");
     if (propagateToPCA == 1) {
       fVertexerPropagateToPCA = true;
-      printf("propagateToPCA = %d\n", fVertexerPropagateToPCA);
     } else if (propagateToPCA == 0) {
       fVertexerPropagateToPCA = false;
-      printf("propagateToPCA = %d\n", fVertexerPropagateToPCA);
     }
+    printf("propagateToPCA = %d\n", fVertexerPropagateToPCA);
     Double_t maxR = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "maxR");
     if (maxR > 0) {
       fMaxDecVertRadius2 = maxR * maxR;
       fVertexerMaxR = maxR;
-      printf("maxR = %g\n", fVertexerMaxR);
     }
+    printf("maxR = %g\n", fVertexerMaxR);
     Double_t maxDZIni = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "maxDZIni");
-    if (maxDZIni > 0) {
+    if (maxDZIni > 0)
       fVertexerMaxDZIni = maxDZIni;
-      printf("maxDZIni = %g\n", fVertexerMaxDZIni);
-    }
+    printf("maxDZIni = %g\n", fVertexerMaxDZIni);
     Double_t minParamChange = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "minParamChange");
-    if (minParamChange > 0) {
+    if (minParamChange > 0)
       fVertexerMinParamChange = minParamChange;
-      printf("minParamChange = %g\n", fVertexerMinParamChange);
-    }
+    printf("minParamChange = %g\n", fVertexerMinParamChange);
     Double_t minRelChi2Change = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator", "minRelChi2Change");
-    if (minRelChi2Change) {
+    if (minRelChi2Change)
       fVertexerMinRelChi2Change = minRelChi2Change;
-      printf("minRelChi2Change = %g\n", fVertexerMinRelChi2Change);
-    }
+    printf("minRelChi2Change = %g\n", fVertexerMinRelChi2Change);
     printf("----------------\n");
     Double_t ptMinCand = GetJsonFloat(filename.Data(), "hf-candidate-selector-d0", "ptCandMin");
     printf("Min pt Dzero cand = %g\n", ptMinCand);
@@ -862,6 +987,14 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     printf("Max pt Dplus cand = %g\n", ptMaxCandDplus);
     if (ptMaxCandDplus >= 0. && ptMaxCandDplus >= fMinPtDplus)
       fMaxPtDplus = ptMaxCandDplus;
+    Double_t ptMinCandDs = GetJsonFloat(filename.Data(), "hf-candidate-selector-ds-to-k-k-pi", "ptCandMin");
+    printf("Min pt Ds cand = %g\n", ptMinCandDs);
+    if (ptMinCandDs >= 0.)
+      fMinPtDs = ptMinCandDs;
+    Double_t ptMaxCandDs = GetJsonFloat(filename.Data(), "hf-candidate-selector-ds-to-k-k-pi", "ptCandMax");
+    printf("Max pt Ds cand = %g\n", ptMaxCandDs);
+    if (ptMaxCandDs >= 0. && ptMaxCandDs >= fMinPtDs)
+      fMaxPtDs = ptMaxCandDs;
     Double_t ptMinCandLc = GetJsonFloat(filename.Data(), "hf-candidate-selector-lc", "ptCandMin");
     printf("Min pt Lc cand = %g\n", ptMinCandLc);
     if (ptMinCandLc >= 0.)
@@ -1006,6 +1139,12 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     if (nptbinlimsDplus - 1 != nptDplus)
       AliFatal("Number of pT bins in JSON for Dplus at candidate selection level not consistent, please check it");
 
+    int nptbinlimsDs = 0, ncDs = 0, nptDs = 0;
+    float* ptbinlimsDs = GetJsonArray(filename.Data(), "hf-candidate-selector-ds-to-k-k-pi", "binsPt", nptbinlimsDs);
+    float** cutsDs = GetJsonMatrix(filename.Data(), "hf-candidate-selector-ds-to-k-k-pi", "cuts", nptDs, ncDs);
+    if (nptbinlimsDs - 1 != nptDs)
+      AliFatal("Number of pT bins in JSON for Ds at candidate selection level not consistent, please check it");
+
     int nptbinlimsLc = 0, ncLc = 0, nptLc = 0;
     float* ptbinlimsLc = GetJsonArray(filename.Data(), "hf-candidate-selector-lc", "binsPt", nptbinlimsLc);
     float** cutsLc = GetJsonMatrix(filename.Data(), "hf-candidate-selector-lc", "cuts", nptLc, ncLc);
@@ -1042,6 +1181,16 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       AliInfo(Form("Dplus cuts: %g < pt < %g  ; %g < mass < %g  ;  cospoint > %g  ; declen > %g\n", fPtBinLimsDplus[ib], fPtBinLimsDplus[ib + 1], fDplusCuts[ib][0], fDplusCuts[ib][1], fDplusCuts[ib][2], fDplusCuts[ib][3]));
     }
 
+    for (Int_t ib = 0; ib < nptbinlimsDs; ib++) {
+      fPtBinLimsDs[ib] = ptbinlimsDs[ib];
+    }
+    for (Int_t ib = 0; ib < nptDs; ib++) {
+      for (Int_t jc = 0; jc < ncDs; jc++) {
+        fDsCuts[ib][jc] = cutsDs[ib][jc];
+      }
+      AliInfo(Form("Ds cuts: %g < pt < %g  ; deltamass < %g  ;  pt Pi > %g  ;  pt K > %g  ; declen > %g  ;  normdeclenxy > %g  ;  cospoint > %g  ;  cospointxy > %g  ;  impparxy < %g  ;  deltamassKK < %g  ;  cos3PiKPhi > %g\n", fPtBinLimsDs[ib], fPtBinLimsDs[ib + 1], fDsCuts[ib][0], fDsCuts[ib][1], fDsCuts[ib][2], fDsCuts[ib][3], fDsCuts[ib][4], fDsCuts[ib][5], fDsCuts[ib][6], fDsCuts[ib][7], fDsCuts[ib][8], fDsCuts[ib][9]));
+    }
+
     for (Int_t ib = 0; ib < nptbinlimsLc; ib++) {
       fPtBinLimsLc[ib] = ptbinlimsLc[ib];
     }
@@ -1054,6 +1203,99 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
 
     printf("---------------------------------------------\n");
 
+    if (doJetFinding) {
+      if (!fReadMC) {
+        jetPtMin = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-data", "jetPtMin");
+        printf("Min pt jet= %g\n", jetPtMin);
+        jetPtMax = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-data", "jetPtMax");
+        printf("Max pt jet= %g\n", jetPtMax);
+        jetR = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-data", "jetR");
+        printf("jet resolution parameter= %g\n", jetR);
+        jetTrackPtMin = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-data", "trackPtMin");
+        printf("Min pt track for jet finding= %g\n", jetTrackPtMin);
+        jetTrackPtMax = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-data", "trackPtMax");
+        printf("Max pt track for jet finding= %g\n", jetTrackPtMax);
+        jetTrackEtaMin = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-data", "trackEtaMin");
+        printf("Min eta track for jet finding= %g\n", jetTrackEtaMin);
+        jetTrackEtaMax = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-data", "trackEtaMax");
+        printf("Max eta track for jet finding= %g\n", jetTrackEtaMax);
+        jetCandPtMin = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-data", "candPtMin");
+        printf("Min pt Cand for jet finding= %g\n", jetCandPtMin);
+        jetCandPtMax = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-data", "candPtMax");
+        printf("Max pt Cand for jet finding= %g\n", jetCandPtMax);
+        jetCandYMin = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-data", "candYMin");
+        printf("Min Y Cand for jet finding= %g\n", jetCandYMin);
+        jetCandYMax = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-data", "candYMax");
+        printf("Max Y Cand for jet finding= %g\n", jetCandYMax);
+        if (doJetSubstructure){
+          zCut = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-substrcture-hf-data", "zCut");
+          printf("z cut= %g\n", zCut);
+          beta = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-substrcture-hf-data", "beta");
+          printf("beta= %g\n", beta);
+        }
+      }
+      else {
+        jetPtMin = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcd", "jetPtMin");
+        printf("Min pt jet= %g\n", jetPtMin);
+        jetPtMax = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcd", "jetPtMax");
+        printf("Max pt jet= %g\n", jetPtMax);
+        jetR = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcd", "jetR");
+        printf("jet resolution parameter= %g\n", jetR);
+        jetTrackPtMin = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcd", "trackPtMin");
+        printf("Min pt track for jet finding= %g\n", jetTrackPtMin);
+        jetTrackPtMax = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcd", "trackPtMax");
+        printf("Max pt track for jet finding= %g\n", jetTrackPtMax);
+        jetTrackEtaMin = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcd", "trackEtaMin");
+        printf("Min eta track for jet finding= %g\n", jetTrackEtaMin);
+        jetTrackEtaMax = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcd", "trackEtaMax");
+        printf("Max eta track for jet finding= %g\n", jetTrackEtaMax);
+        jetCandPtMin = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcd", "candPtMin");
+        printf("Min pt Cand for jet finding= %g\n", jetCandPtMin);
+        jetCandPtMax = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcd", "candPtMax");
+        printf("Max pt Cand for jet finding= %g\n", jetCandPtMax);
+        jetCandYMin = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcd", "candYMin");
+        printf("Min Y Cand for jet finding= %g\n", jetCandYMin);
+        jetCandYMax = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcd", "candYMax");
+        printf("Max Y Cand for jet finding= %g\n", jetCandYMax);
+
+        if (doJetSubstructure){
+          zCut = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-substrcture-hf-mcd", "zCut");
+          printf("z cut= %g\n", zCut);
+          beta = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-substrcture-hf-mcd", "beta");
+          printf("beta= %g\n", beta);
+        }
+
+        jetPtMin_Part = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcp", "jetPtMin");
+        printf("Min pt jet part= %g\n", jetPtMin_Part);
+        jetPtMax_Part = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcp", "jetPtMax");
+        printf("Max pt jet part = %g\n", jetPtMax_Part);
+        jetR_Part = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcp", "jetR");
+        printf("jet resolution parameter part = %g\n", jetR_Part);
+        jetTrackPtMin_Part = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcp", "trackPtMin");
+        printf("Min pt track for jet finding part = %g\n", jetTrackPtMin_Part);
+        jetTrackPtMax_Part = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcp", "trackPtMax");
+        printf("Max pt track for jet finding part = %g\n", jetTrackPtMax_Part);
+        jetTrackEtaMin_Part = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcp", "trackEtaMin");
+        printf("Min eta track for jet finding part = %g\n", jetTrackEtaMin_Part);
+        jetTrackEtaMax_Part = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcp", "trackEtaMax");
+        printf("Max eta track for jet finding part = %g\n", jetTrackEtaMax_Part);
+        jetCandPtMin_Part = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcp", "candPtMin");
+        printf("Min pt Cand for jet finding part = %g\n", jetCandPtMin_Part);
+        jetCandPtMax_Part = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcp", "candPtMax");
+        printf("Max pt Cand for jet finding part = %g\n", jetCandPtMax_Part);
+        jetCandYMin_Part = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcp", "candYMin");
+        printf("Min eta Cand for jet finding part = %g\n", jetCandYMin_Part);
+        jetCandYMax_Part = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-finder-hf-mcp", "candYMax");
+        printf("Max eta Cand for jet finding part = %g\n", jetCandYMax_Part);
+
+        if (doJetSubstructure){
+          zCut_Part = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-substrcture-hf-mcp", "zCut");
+          printf("z cut= %g\n", zCut_Part);
+          beta_Part = GetJsonFloat(filename.Data(), "o2-analysis-je-jet-substrcture-hf-mcp", "beta");
+          printf("beta= %g\n", beta_Part);
+        }
+      }
+    }
   } else {
     AliError(Form("Json configuration file %s not found\n", filename.Data()));
   }
@@ -1166,7 +1408,7 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fHistPrimVertX = new TH1F("hPrimVertX", " Primary Vertex ; x (cm)", 400, -0.5, 0.5);
   fHistPrimVertY = new TH1F("hPrimVertY", " Primary Vertex ; y (cm)", 400, -0.5, 0.5);
   fHistPrimVertZ = new TH1F("hPrimVertZ", " Primary Vertex ; z (cm)", 400, -20.0, 20.0);
-  fHistPrimVertContr = new TH1F("fHistPrimVertContr", " Primary Vertex ; N contributors", 20001, -0.5, 20000.5);
+  fHistPrimVertContr = new TH1F("fHistPrimVertContr", " Primary Vertex ; N contributors", 200, -0.5, 199.5);
   fHist2ProngVertX = new TH1F("h2ProngVertX", " Secondary Vertex ; x (cm)", 1000, -2., 2.);
   fHist2ProngVertY = new TH1F("h2ProngVertY", " Secondary Vertex ; y (cm)", 1000, -2., 2.);
   fHist2ProngVertZ = new TH1F("h2ProngVertZ", " Secondary Vertex ; z (cm)", 1000, -20.0, 20.0);
@@ -1281,7 +1523,6 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fHistJpsiSignalVertY = new TH1F("hJpsiSignalVertY", " Secondary Vertex ; y (cm)", 1000, -2., 2.);
   fHistJpsiSignalVertZ = new TH1F("hJpsiSignalVertZ", " Secondary Vertex ; z (cm)", 1000, -20.0, 20.0);
   fHistInvMassJpsiSignal = new TH1F("hInvMassJpsiSignal", " ; M_{K#pi} (GeV/c^{2})", 500, 0, 5.0);
-  // fHistInvMassD0Refl = new TH1F("hInvMassD0Refl", " ; M_{K#pi} (GeV/c^{2})", 500, 0, 5.0);
   fOutput->Add(fHistJpsiSignalVertX);
   fOutput->Add(fHistJpsiSignalVertY);
   fOutput->Add(fHistJpsiSignalVertZ);
@@ -1291,13 +1532,13 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fHistInvMassDplus = new TH1F("hInvMassDplus", " ; M_{K#pi#pi} (GeV/c^{2})", 350, 1.7, 2.05);
   fHistInvMassDplusSignal = new TH1F("hInvMassDplusSignal", " ; M_{K#pi#pi} (GeV/c^{2})", 350, 1.7, 2.05);
   fHistPtDplus = new TH1F("hPtDplus", " ; D^{+} p_{T} (GeV/c)", 360, 0., 36.);
-  fHistYPtDplus = new TH2F("hYPtDplus", " ; D^{+} p_{T} (GeV/c) ; y", 360, 0., 36., 120, -1.2, 1.2);
+  fHistYPtDplus = new TH2F("hYPtDplus", " ; D^{+} p_{T} (GeV/c) ; y", 360, 0., 36., 100, -5., 5.);
   fHistPtDplusDau0 = new TH1F("hPtDplusDau0", " D^{+} prong0 ; p_{T} (GeV/c)", 360, 0., 36.);
-  fHistPtDplusDau1 = new TH1F("hPtDplusDau1", " D^{+} prong0 ; p_{T} (GeV/c)", 360, 0., 36.);
-  fHistPtDplusDau2 = new TH1F("hPtDplusDau2", " D^{+} prong0 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistPtDplusDau1 = new TH1F("hPtDplusDau1", " D^{+} prong1 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistPtDplusDau2 = new TH1F("hPtDplusDau2", " D^{+} prong2 ; p_{T} (GeV/c)", 360, 0., 36.);
   fHistImpParDplusDau0 = new TH1F("hImpParDplusDau0", " D^{+} prong0 ; d_{0}^{xy} (cm)", 100, -1.0, 1.0);
-  fHistImpParDplusDau1 = new TH1F("hImpParDplusDau1", " D^{+} prong0 ; d_{0}^{xy} (cm)", 100, -1.0, 1.0);
-  fHistImpParDplusDau2 = new TH1F("hImpParDplusDau2", " D^{+} prong0 ; d_{0}^{xy} (cm)", 100, -1.0, 1.0);
+  fHistImpParDplusDau1 = new TH1F("hImpParDplusDau1", " D^{+} prong1 ; d_{0}^{xy} (cm)", 100, -1.0, 1.0);
+  fHistImpParDplusDau2 = new TH1F("hImpParDplusDau2", " D^{+} prong2 ; d_{0}^{xy} (cm)", 100, -1.0, 1.0);
   fHistDecLenDplus = new TH1F("hDecLenDplus", " ; Decay Length (cm)", 200, 0., 2.0);
   fHistDecLenXYDplus = new TH1F("hDecLenXYDplus", " ; Decay Length xy (cm)", 200, 0., 2.0);
   fHistNormDecLenXYDplus = new TH1F("hNormDecLenXYDplus", " ; Norm. Decay Length xy (cm)", 80, 0., 80.);
@@ -1348,20 +1589,46 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fOutput->Add(fHistCovMatSecVZZ3Prong);
 
   // Ds->KKpi candidate histos
-  fHistInvMassDs = new TH1F("hInvMassDs", " ; M_{KK#pi} (GeV/c^{2})", 500, 1.7, 2.2);
-  fHistInvMassDsSignal = new TH1F("hInvMassDsSignal", " ; M_{KK#pi} (GeV/c^{2})", 500, 1.7, 2.2);
-  fHistInvMassDsRefl = new TH1F("hInvMassDsRefl", " ; M_{KK#pi} (GeV/c^{2})", 500, 1.7, 2.2);
+  fHistInvMassDs = new TH1F("hInvMassDs", " ; M_{KK#pi} (GeV/c^{2})", 400, 1.77, 2.17);
+  fHistInvMassDsSignal = new TH1F("hInvMassDsSignal", " ; M_{KK#pi} (GeV/c^{2})", 400, 1.77, 2.17);
+  fHistInvMassDsRefl = new TH1F("hInvMassDsRefl", " ; M_{KK#pi} (GeV/c^{2})", 400, 1.77, 2.17);
   fHistPtDs = new TH1F("hPtDs", " ; D_{s} p_{T} (GeV/c)", 360, 0., 36.);
-  fHistYPtDs = new TH2F("hYPtDs", " ; D_{s} p_{T} (GeV/c) ; y", 360, 0., 36., 120, -1.2, 1.2);
+  fHistYPtDs = new TH2F("hYPtDs", " ; D_{s} p_{T} (GeV/c) ; y", 360, 0., 36., 100, -5., 5);
+  fHistPtDsDau0 = new TH1F("hPtDsDau0", " D_{s} prong0 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistPtDsDau1 = new TH1F("hPtDsDau1", " D_{s} prong1 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistPtDsDau2 = new TH1F("hPtDsDau2", " D_{s} prong2 ; p_{T} (GeV/c)", 360, 0., 36.);
+  fHistImpParDsDau0 = new TH1F("hImpParDsDau0", " D_{s} prong0 ; d_{0}^{xy} (cm)", 100, -1.0, 1.0);
+  fHistImpParDsDau1 = new TH1F("hImpParDsDau1", " D_{s} prong1 ; d_{0}^{xy} (cm)", 100, -1.0, 1.0);
+  fHistImpParDsDau2 = new TH1F("hImpParDsDau2", " D_{s} prong2 ; d_{0}^{xy} (cm)", 100, -1.0, 1.0);
   fHistDecLenDs = new TH1F("hDecLenDs", " ; Decay Length (cm)", 200, 0., 2.0);
-  fHistCosPointDs = new TH1F("hCosPointDs", " ; cos(#theta_{P})", 110, -1.1, 1.1);
+  fHistDecLenXYDs = new TH1F("hDecLenXYDs", " ; Decay Length xy (cm)", 200, 0., 2.0);
+  fHistNormDecLenXYDs = new TH1F("hNormDecLenXYDs", " ; Norm. Decay Length xy (cm)", 80, 0., 80.);
+  fHistCosPointDs = new TH1F("hCosPointDs", " ; cos(#theta_{P})", 100, -1., 1.);
+  fHistCosPointXYDs = new TH1F("hCosPointXYDs", " ; cos(#theta^{xy}_{P})", 100, -1., 1.);
+  fHistImpParXYDs = new TH1F("hImpParXYDs", " ; d_{0}^{xy} (cm)", 200, -1., 1.);
+  fHistNormIPDs = new TH1F("hNormIPDs", " ; Norm. IP", 200, -20., 20.);
+  fHistDeltaMassPhiDs = new TH1F("hDeltaMassPhiDs", "|M(KK) - M(#phi)| (GeV/#it{c}^{2})", 40, 0., 0.02);
+  fHistCos3PiKDs = new TH1F("hCos3PiKDs", "cos^{3} #theta'(K)", 100, -1., 1.);  
   fOutput->Add(fHistInvMassDs);
   fOutput->Add(fHistInvMassDsSignal);
   fOutput->Add(fHistInvMassDsRefl);
   fOutput->Add(fHistPtDs);
   fOutput->Add(fHistYPtDs);
+  fOutput->Add(fHistPtDsDau0);
+  fOutput->Add(fHistPtDsDau1);
+  fOutput->Add(fHistPtDsDau2);
+  fOutput->Add(fHistImpParDsDau0);
+  fOutput->Add(fHistImpParDsDau1);
+  fOutput->Add(fHistImpParDsDau2);
   fOutput->Add(fHistDecLenDs);
+  fOutput->Add(fHistDecLenXYDs);
+  fOutput->Add(fHistNormDecLenXYDs);
   fOutput->Add(fHistCosPointDs);
+  fOutput->Add(fHistCosPointXYDs);
+  fOutput->Add(fHistImpParXYDs);
+  fOutput->Add(fHistNormIPDs);
+  fOutput->Add(fHistDeltaMassPhiDs);
+  fOutput->Add(fHistCos3PiKDs);
 
   // Lc pKpi candidate histos
   fHistInvMassLc = new TH1F("hInvMassLc", " ; M_{pK#pi} (GeV/c^{2})", 600, 1.98, 2.58);
@@ -1397,7 +1664,7 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fOutput->Add(fHistImpParLcDau1);
   fOutput->Add(fHistImpParLcDau2);
 
-    // Lc pKpi candidate histos MC Prompt
+  // Lc pKpi candidate histos MC Prompt
   fHistInvMassLcPrompt = new TH1F("hInvMassLcPrompt", " ; M_{pK#pi} (GeV/c^{2})", 600, 1.98, 2.58);
   fHistEtaLcPrompt = new TH1F("hEtaLcPrompt", " ; #Lambda_{c} #it{#eta}", 100, -2., 2.);
   fHistPhiLcPrompt = new TH1F("hPhiLcPrompt", " ; #Lambda_{c} #it{#Phi}", 100, 0., 6.3);
@@ -1570,6 +1837,52 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
     fOutput->Add(fHistWallTimeTrackVsNTracks);
   }
 
+  if (doJetFinding){
+  fHistJetPt = new TH1F("fHistJetPt", " ; pt jet (#GeV/c) ; Entries", 100, 0., 100.);
+  fOutput->Add(fHistJetPt);
+  fHistJetE = new TH1F("fHistJetE", " ; jet E (#GeV); Entries", 100, 0., 100.);
+  fOutput->Add(fHistJetE);
+  fHistJetPhi = new TH1F("fHistJetPhi", " ; jet phi ; Entries", 140, -7.0, 7.0);
+  fOutput->Add(fHistJetPhi);
+  fHistJetEta = new TH1F("fHistJetEta", " ; jet rapidity ; Entries", 30, -1.5, 1.5);
+  fOutput->Add(fHistJetEta);
+  fHistJetNConstituents = new TH1F("fHistJetNConstituents", " ; number of jet constituents ; Entries", 150, -0.5, 99.5);
+  fOutput->Add(fHistJetNConstituents);
+  fHistJetCandPt = new TH1F("fHistJetCandPt", " ; pt cand (#GeV/c) ; Entries", 100, 0., 100.);
+  fOutput->Add(fHistJetCandPt);
+  if (doJetSubstructure){
+    fHistJetZg = new TH1F("fHistJetZg", " ; Z_{g} ; Entries", 8, 0.1, 0.5);
+    fOutput->Add(fHistJetZg);
+    fHistJetRg = new TH1F("fHistJetRg", " ; R_{g} ; Entries", 10, 0.0, 0.5);
+    fOutput->Add(fHistJetRg);
+    fHistJetNsd = new TH1F("fHistJetNsd", " ; n_{SD} ; Entries", 7, -0.5, 6.5);
+    fOutput->Add(fHistJetNsd);
+  }
+
+  if (fReadMC) {
+      fHistJetPt_Part = new TH1F("fHistJetPt_Part", " ; pt jet (#GeV/c) ; Entries", 100, 0., 100.);
+      fOutput->Add(fHistJetPt_Part);
+      fHistJetE_Part = new TH1F("fHistJetE_Part", " ; jet E (#GeV); Entries", 100, 0., 100.);
+      fOutput->Add(fHistJetE_Part);
+      fHistJetPhi_Part = new TH1F("fHistJetPhi_Part", " ; jet phi ; Entries", 140, -7.0, 7.0);
+      fOutput->Add(fHistJetPhi_Part);
+      fHistJetEta_Part = new TH1F("fHistJetEta_Part", " ; jet rapidity ; Entries", 30, -1.5, 1.5);
+      fOutput->Add(fHistJetEta_Part);
+      fHistJetNConstituents_Part = new TH1F("fHistJetNConstituents_Part", " ; number of jet constituents ; Entries", 150, -0.5, 99.5);
+      fOutput->Add(fHistJetNConstituents_Part);
+      fHistJetCandPt_Part = new TH1F("fHistJetCandPt_Part", " ; pt cand (#GeV/c) ; Entries", 100, 0., 100.);
+      fOutput->Add(fHistJetCandPt_Part);
+      if (doJetSubstructure) {
+        fHistJetZg_Part = new TH1F("fHistJetZg_Part", " ; Z_{g} ; Entries", 8, 0.1, 0.5);
+        fOutput->Add(fHistJetZg_Part);
+        fHistJetRg_Part = new TH1F("fHistJetRg_Part", " ; R_{g} ; Entries", 10, 0.0, 0.5);
+        fOutput->Add(fHistJetRg_Part);
+        fHistJetNsd_Part = new TH1F("fHistJetNsd_Part", " ; n_{SD} ; Entries", 7, -0.5, 6.5);
+        fOutput->Add(fHistJetNsd_Part);
+      }
+  }
+  }
+
   PostData(1, fOutput);
 }
 //______________________________________________________________________________
@@ -1579,6 +1892,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
 
   AliVEvent* vevt = InputEvent();
   AliESDEvent* esd = (AliESDEvent*)(vevt);
+
   if (!esd) {
     printf("AliAnalysisTaskHFSimpleVertices::UserExec(): bad ESD\n");
     return;
@@ -1686,6 +2000,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
                 fHistPhiGenLimAccFeeddw[iPart]->Fill(phigen);
               }
             }
+            if (absPdg == 421 && !matchedJetsOnly && doJetFinding  && (isFromB==4 ||isFromB==5) ) FindGenJets(mcEvent, i); //Find MC generator level jets //FIXME
           }
         }
       }
@@ -1711,6 +2026,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
 
   AliESDVertex* primVtxTrk = (AliESDVertex*)esd->GetPrimaryVertex();
   AliESDVertex* primVtxSPD = (AliESDVertex*)esd->GetPrimaryVertexSPD();
+  AliESDVertex *primVtx = ((AliESDVertex*)esd->GetPrimaryVertex()) ? (AliESDVertex*)esd->GetPrimaryVertex() : (AliESDVertex*)esd->GetPrimaryVertexSPD();
   TString titTrc = primVtxTrk->GetTitle();
   // AliEventCuts ignores the SPD/tracks vertex position and reconstruction individual flags
   // so the selections below would reject more events than intended. Disable in case AliEventCuts required
@@ -1781,7 +2097,6 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
     clockStartTrack = std::clock();
     startTimeTrack = std::chrono::high_resolution_clock::now();
   }
-
   // Apply single track cuts and flag them
   int nTracksSel = 0;
   UChar_t* status = new UChar_t[totTracks];
@@ -2030,8 +2345,10 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
           fHistNormDecLenXYD0->Fill(the2Prong->NormalizedDecayLengthXY());
           fHistDecLenErrD0->Fill(the2Prong->DecayLengthError());
           fHistDecLenXYErrD0->Fill(the2Prong->DecayLengthXYError());
+          Int_t labD  = -1;
+          Int_t orig = -1;
           if (fReadMC && mcEvent) {
-            Int_t labD = MatchToMC(the2Prong, 421, mcEvent, 2, twoTrackArray, pdgD0dau);
+            labD = MatchToMC(the2Prong, 421, mcEvent, 2, twoTrackArray, pdgD0dau);
             if (labD >= 0) {
               fHistD0SignalVertX->Fill(trkv->GetX());
               fHistD0SignalVertY->Fill(trkv->GetY());
@@ -2049,7 +2366,7 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
               }
               AliMCParticle* dmes = (AliMCParticle*)mcEvent->GetTrack(labD);
               if (dmes) {
-                Int_t orig = AliVertexingHFUtils::CheckOrigin(mcEvent, dmes, kFALSE);
+                orig = AliVertexingHFUtils::CheckOrigin(mcEvent, dmes, kFALSE);
                 Double_t ptgen = dmes->Pt();
                 if (orig == 4) {
                   fHistPtRecoPrompt[0]->Fill(ptD);
@@ -2060,6 +2377,9 @@ void AliAnalysisTaskHFSimpleVertices::UserExec(Option_t*)
                 }
               }
             }
+          }
+          if(doJetFinding){
+            FindJets(esd, iNegTrack_0, iPosTrack_0, the2Prong, primVtx, mcEvent, labD); //Jet finding on data and detector level. Also if matched jets are required the generator information is also filled FIXME
           }
         }
 
@@ -2271,21 +2591,58 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
   }
   if (massSel & (1 << kbitDs)) {
     Int_t dsSel = 3;
-    if (fCandidateCutLevel >= 1) {
+    if (fCandidateCutLevel == 2 && fSelectDs > 0) {
+      dsSel = DsSelectionCuts(the3Prong);
+    } else if (fCandidateCutLevel == 1) {
       dsSel = DsSkimCuts(the3Prong);
     }
     Double_t rapid = the3Prong->Y(431);
     if (dsSel > 0 && IsInFiducialAcceptance(ptcand_3prong, rapid)) {
       Double_t mKKpi = the3Prong->InvMassDsKKpi();
       Double_t mpiKK = the3Prong->InvMassDspiKK();
-      if (dsSel == 1 || dsSel == 3)
+      Double_t massPhi = TDatabasePDG::Instance()->GetParticle(333)->Mass();
+      if (dsSel == 1 || dsSel == 3) {
         fHistInvMassDs->Fill(mKKpi);
-      if (dsSel == 2 || dsSel == 3)
+        fHistDeltaMassPhiDs->Fill(TMath::Abs(the3Prong->InvMass2Prongs(0, 1, 321, 321) - massPhi));
+        Double_t cosPiKPhi = the3Prong->CosPiKPhiRFrameKKpi();
+        fHistCos3PiKDs->Fill(cosPiKPhi * cosPiKPhi * cosPiKPhi);
+        fHistPtDs->Fill(ptcand_3prong);
+        fHistYPtDs->Fill(ptcand_3prong, rapid);
+        fHistPtDsDau0->Fill(the3Prong->PtProng(0));
+        fHistPtDsDau1->Fill(the3Prong->PtProng(1));
+        fHistPtDsDau2->Fill(the3Prong->PtProng(2));
+        fHistImpParDsDau0->Fill(the3Prong->Getd0Prong(0));
+        fHistImpParDsDau1->Fill(the3Prong->Getd0Prong(1));
+        fHistImpParDsDau2->Fill(the3Prong->Getd0Prong(2));
+        fHistDecLenDs->Fill(the3Prong->DecayLength());
+        fHistDecLenXYDs->Fill(the3Prong->DecayLengthXY());
+        fHistNormDecLenXYDs->Fill(the3Prong->NormalizedDecayLengthXY());
+        fHistCosPointDs->Fill(the3Prong->CosPointingAngle());
+        fHistCosPointXYDs->Fill(the3Prong->CosPointingAngleXY());
+        fHistImpParXYDs->Fill(the3Prong->ImpParXY());
+        fHistNormIPDs->Fill(AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(the3Prong, bzkG));
+      }
+      if (dsSel == 2 || dsSel == 3) {
         fHistInvMassDs->Fill(mpiKK);
-      fHistPtDs->Fill(ptcand_3prong);
-      fHistYPtDs->Fill(ptcand_3prong, rapid);
-      fHistDecLenDs->Fill(the3Prong->DecayLength());
-      fHistCosPointDs->Fill(the3Prong->CosPointingAngle());
+        fHistDeltaMassPhiDs->Fill(TMath::Abs(the3Prong->InvMass2Prongs(1, 2, 321, 321) - massPhi));
+        Double_t cosPiKPhi = the3Prong->CosPiKPhiRFramepiKK();
+        fHistCos3PiKDs->Fill(cosPiKPhi * cosPiKPhi * cosPiKPhi);
+        fHistPtDs->Fill(ptcand_3prong);
+        fHistYPtDs->Fill(ptcand_3prong, rapid);
+        fHistPtDsDau0->Fill(the3Prong->PtProng(0));
+        fHistPtDsDau1->Fill(the3Prong->PtProng(1));
+        fHistPtDsDau2->Fill(the3Prong->PtProng(2));
+        fHistImpParDsDau0->Fill(the3Prong->Getd0Prong(0));
+        fHistImpParDsDau1->Fill(the3Prong->Getd0Prong(1));
+        fHistImpParDsDau2->Fill(the3Prong->Getd0Prong(2));
+        fHistDecLenDs->Fill(the3Prong->DecayLength());
+        fHistDecLenXYDs->Fill(the3Prong->DecayLengthXY());
+        fHistNormDecLenXYDs->Fill(the3Prong->NormalizedDecayLengthXY());
+        fHistCosPointDs->Fill(the3Prong->CosPointingAngle());
+        fHistCosPointXYDs->Fill(the3Prong->CosPointingAngleXY());
+        fHistImpParXYDs->Fill(the3Prong->ImpParXY());
+        fHistNormIPDs->Fill(AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(the3Prong, bzkG));
+      }
       if (fReadMC && mcEvent) {
         Int_t labD = MatchToMC(the3Prong, 431, mcEvent, 3, threeTrackArray, pdgDsdau);
         if (labD >= 0) {
@@ -2819,6 +3176,63 @@ Int_t AliAnalysisTaskHFSimpleVertices::DsSkimCuts(AliAODRecoDecayHF3Prong* cand)
   return returnValue;
 }
 //______________________________________________________________________________
+Int_t AliAnalysisTaskHFSimpleVertices::DsSelectionCuts(AliAODRecoDecayHF3Prong* cand)
+{
+  Double_t ptCand = cand->Pt();
+  if (ptCand < fMinPtDs || ptCand > fMaxPtDs)
+    return 0;
+  Int_t iPtDs = GetPtBin(ptCand, fPtBinLimsDs, fNPtBinsDs);
+  if (iPtDs < 0)
+    return 0;
+
+  if (cand->DecayLength() < fDsCuts[iPtDs][3])
+    return 0;
+  if (cand->NormalizedDecayLengthXY() < fDsCuts[iPtDs][4])
+    return 0;
+  if (cand->CosPointingAngle() < fDsCuts[iPtDs][5])
+    return 0;
+  if (cand->CosPointingAngleXY() < fDsCuts[iPtDs][6])
+    return 0;
+  if (TMath::Abs(cand->ImpParXY()) > fDsCuts[iPtDs][7])
+    return 0;
+
+  bool isKKpi = true;
+  bool ispiKK = true;
+  
+  if (cand->PtProng(0) < fDsCuts[iPtDs][2] || cand->PtProng(1) < fDsCuts[iPtDs][2] || cand->PtProng(2) < fDsCuts[iPtDs][1])
+    isKKpi = false;
+  if (cand->PtProng(0) < fDsCuts[iPtDs][1] || cand->PtProng(1) < fDsCuts[iPtDs][2] || cand->PtProng(2) < fDsCuts[iPtDs][2])
+    ispiKK = false;
+
+  if (TMath::Abs(cand->InvMassDsKKpi() - fMassDs) > fDsCuts[iPtDs][0])
+    isKKpi = false;
+  if (TMath::Abs(cand->InvMassDspiKK() - fMassDs) > fDsCuts[iPtDs][0])
+    ispiKK = false;
+
+  Double_t massPhi = TDatabasePDG::Instance()->GetParticle(333)->Mass();
+  if (TMath::Abs(cand->InvMass2Prongs(0, 1, 321, 321) - massPhi) > fDsCuts[iPtDs][8])
+    isKKpi = false;
+  if (TMath::Abs(cand->InvMass2Prongs(1, 2, 321, 321) - massPhi) > fDsCuts[iPtDs][8])
+    ispiKK = false;
+  
+  Double_t cosPiKPhiRefKKPi = cand->CosPiKPhiRFrameKKpi();
+  Double_t cosPiKPhiRefPiKK = cand->CosPiKPhiRFramepiKK();
+  if (TMath::Abs(cosPiKPhiRefKKPi * cosPiKPhiRefKKPi * cosPiKPhiRefKKPi) < fDsCuts[iPtDs][9])
+    isKKpi = false;
+  if (TMath::Abs(cosPiKPhiRefPiKK * cosPiKPhiRefPiKK * cosPiKPhiRefPiKK) < fDsCuts[iPtDs][9])
+    ispiKK = false;
+  
+  if (!isKKpi && !ispiKK)
+    return 0;
+
+  Int_t returnValue = 0;
+  if (isKKpi)
+    returnValue += 1;
+  if (ispiKK)
+    returnValue += 2;
+  return returnValue;
+}
+//______________________________________________________________________________
 Int_t AliAnalysisTaskHFSimpleVertices::LcSkimCuts(AliAODRecoDecayHF3Prong* cand)
 {
   bool ispKpi = true;
@@ -3241,6 +3655,417 @@ Int_t AliAnalysisTaskHFSimpleVertices::MatchToMC(AliAODRecoDecay* rd, Int_t pdga
   return labMother;
 }
 
+//_______________________________________________________________________________________
+void AliAnalysisTaskHFSimpleVertices::FindGenJets(AliMCEvent* mcEvent, Int_t labD) {
+#ifdef HAVE_FASTJET
+  fFastJetWrapper_Part = new AliFJWrapper("fFastJetWrapper_Part", "fFastJetWrapper_Part");
+  Int_t NConstituents_Part = -1;
+  Double_t candpT = 0.0;
+  AliAODMCParticle* cand = (AliAODMCParticle*)mcEvent->GetTrack(labD);
+
+  if (cand->Pt() < jetCandPtMin_Part || cand->Pt() >= jetCandPtMax_Part) return;
+  if (cand->Y() < jetCandYMin_Part || cand->Y() >= jetCandYMax_Part) return;
+
+  Int_t daughter_0_Label = cand->GetDaughterLabel(0);
+  Int_t daughter_1_Label = cand->GetDaughterLabel(1);
+  Bool_t isHFJet_Part = kFALSE;
+  fFastJetWrapper_Part->Clear();
+  fFastJetWrapper_Part->SetR(jetR);
+  fFastJetWrapper_Part->SetAlgorithm(fastjet::JetAlgorithm::antikt_algorithm);
+  fFastJetWrapper_Part->SetRecombScheme(fastjet::RecombinationScheme::E_scheme);
+  fFastJetWrapper_Part->SetStrategy(fastjet::Strategy::Best);
+  fFastJetWrapper_Part->SetGhostArea(0.005);
+  fFastJetWrapper_Part->SetAreaType(fastjet::AreaType::active_area);
+
+  for (Int_t i = 0; i < mcEvent->GetNumberOfTracks(); i++) {
+    AliAODMCParticle* part = (AliAODMCParticle*)mcEvent->GetTrack(i);
+    if (i == labD) {
+      fFastJetWrapper_Part->AddInputVector(part->Px(), part->Py(), part->Pz(), part->E(), 1);
+      continue;
+    }
+    if (part->GetLabel() == daughter_0_Label || part->GetLabel() == daughter_1_Label) continue;
+    if (!part->IsPhysicalPrimary()) continue;
+    if (TMath::Abs(part->Charge()) == 0.0) continue;
+    if (part->Pt() < jetTrackPtMin_Part || part->Pt() >= jetTrackPtMax_Part || part->Eta() < jetTrackEtaMin_Part || part->Eta() > jetTrackEtaMax_Part)
+      continue;
+    fFastJetWrapper_Part->AddInputVector(part->Px(), part->Py(), part->Pz(), part->E(), i + 2);
+  }
+  fFastJetWrapper_Part->Run();
+  std::vector<fastjet::PseudoJet> jets_Part = fFastJetWrapper_Part->GetInclusiveJets();
+  for (Int_t ijet_Part = 0; ijet_Part < jets_Part.size(); ijet_Part++) {
+    isHFJet_Part = kFALSE;
+    fastjet::PseudoJet jet_Part = jets_Part[ijet_Part];
+    if (jet_Part.pt() < jetPtMin_Part || jet_Part.perp() >= jetPtMax_Part || jet_Part.eta() < jetTrackEtaMin_Part + jetR || jet_Part.eta() > jetTrackEtaMax_Part - jetR)
+      continue;
+    std::vector<fastjet::PseudoJet> constituents_Part(fFastJetWrapper_Part->GetJetConstituents(ijet_Part));
+    NConstituents_Part = constituents_Part.size();
+    for (Int_t iconstituent_Part = 0; iconstituent_Part < NConstituents_Part; iconstituent_Part++) {
+      if (constituents_Part[iconstituent_Part].user_index() == 1) {
+        isHFJet_Part = kTRUE;
+        candpT = constituents_Part[iconstituent_Part].perp();
+        break;
+      }
+    }
+    if (!isHFJet_Part) continue;
+    fHistJetPt_Part->Fill(jet_Part.pt());
+    fHistJetE_Part->Fill(jet_Part.E());
+    fHistJetPhi_Part->Fill(jet_Part.phi());
+    fHistJetEta_Part->Fill(jet_Part.rap());
+    fHistJetNConstituents_Part->Fill(NConstituents_Part);
+    fHistJetCandPt_Part->Fill(candpT);
+
+    if (doJetSubstructure) {
+      bool softDropped = kFALSE;
+      double nsd = 0.0;
+      fastjet::JetDefinition jet_Def_Recluster_Part(fastjet::cambridge_algorithm, 5.0 * jetR, fastjet::E_scheme, fastjet::Best);
+      try {
+        std::vector<fastjet::PseudoJet> jet_Part_Constituents = jet_Part.constituents();
+        fastjet::ClusterSequence reclustering_Part(jet_Part_Constituents, jet_Def_Recluster_Part);
+        fastjet::PseudoJet jet_Reclustered_Part = (reclustering_Part.inclusive_jets(0.0)).at(0);  // get the reclusterd jet
+        fastjet::PseudoJet subjet_1_Part;
+        fastjet::PseudoJet subjet_2_Part;
+        while (jet_Reclustered_Part.has_parents(subjet_1_Part, subjet_2_Part)) {
+          if (subjet_1_Part.perp() < subjet_2_Part.perp()) {
+            std::swap(subjet_1_Part, subjet_2_Part);
+          }
+          double z = subjet_2_Part.perp() / (subjet_1_Part.perp() + subjet_2_Part.perp());
+          double theta = subjet_1_Part.delta_R(subjet_2_Part);
+          if (z >= zCut_Part * TMath::Power(theta / jetR, beta_Part)) {
+            if (!softDropped) {
+              fHistJetZg_Part->Fill(z);
+              fHistJetRg_Part->Fill(theta);
+              softDropped = kTRUE;
+            }
+            nsd++;
+          }
+          Bool_t isHFInSubjet1 = kFALSE;
+              for (int i = 0; i < subjet_1_Part.constituents().size(); i++) {
+                if (subjet_1_Part.constituents().at(i).user_index() == 1) {
+                  isHFInSubjet1 = kTRUE;
+                }
+              }
+              if (isHFInSubjet1) {
+                jet_Reclustered_Part = subjet_1_Part;
+              }
+              else {
+                jet_Reclustered_Part = subjet_2_Part;
+              }
+        }
+        fHistJetNsd_Part->Fill(nsd);
+      }
+      catch (fastjet::Error) { /*return -1;*/
+      }
+    }
+
+    break;
+  }
+
+#else
+  std::cout << "You need to have fastjet installed to get meaningful results" <<std::endl;
+#endif
+}
+
+//_______________________________________________________________________________________
+void AliAnalysisTaskHFSimpleVertices::FindJets(AliESDEvent* esd, Int_t iNegTrack_0, Int_t iPosTrack_0, AliAODRecoDecayHF2Prong* the2Prong, AliESDVertex* primVtx, AliMCEvent* mcEvent, Int_t labD) {
+#ifdef HAVE_FASTJET
+  if (the2Prong->Y(421) < jetCandYMin || the2Prong->Y(421) > jetCandYMax) return;
+  if (the2Prong->Pt() < jetCandPtMin || the2Prong->Pt() >= jetCandPtMax) return;
+
+  if (fReadMC && labD < 0) return;
+
+  fFastJetWrapper = new AliFJWrapper("fFastJetWrapper", "fFastJetWrapper");
+  fFastJetWrapper_Part = new AliFJWrapper("fFastJetWrapper_Part", "fFastJetWrapper_Part");
+
+  fFastJetWrapper->Clear();
+  fFastJetWrapper->SetR(jetR);
+  fFastJetWrapper->SetAlgorithm(fastjet::JetAlgorithm::antikt_algorithm);
+  fFastJetWrapper->SetRecombScheme(fastjet::RecombinationScheme::E_scheme);
+  fFastJetWrapper->SetStrategy(fastjet::Strategy::Best);
+  fFastJetWrapper->SetGhostArea(0.005);
+  fFastJetWrapper->SetAreaType(fastjet::AreaType::passive_area);
+
+  fastjet::PseudoJet jet;
+  fastjet::PseudoJet jet_Part;
+
+  Int_t NConstituents = -1;
+  Int_t NConstituents_Part = -1;
+  Double_t candpT = -1.0;
+  Double_t candpT_Part = -1.0;
+  Int_t daughter_0_Label = -1;
+  Int_t daughter_1_Label = -1;
+  Double_t Zg = -1.0;
+  Double_t Rg = -1.0;
+  Double_t Nsd = -1.0;
+  Double_t Zg_Part = -1.0;
+  Double_t Rg_Part = -1.0;
+  Double_t Nsd_Part = -1.0;
+  Bool_t softDropped = kFALSE;
+  Bool_t softDropped_Part = kFALSE;
+
+  if (matchedJetsOnly) {
+    const AliVVertex* mcVert = mcEvent->GetPrimaryVertex();
+    if (TMath::Abs(mcVert->GetZ()) >= fMaxZVert) return;
+    AliMCParticle* mcD = (AliMCParticle*)mcEvent->GetTrack(labD);
+    TParticle* partD = (TParticle*)mcEvent->Particle(labD);
+
+    Int_t absPdg = TMath::Abs(partD->GetPdgCode());
+    if (absPdg != 421) return;  // FIXME
+    Int_t dummy[4];
+    Int_t deca = AliVertexingHFUtils::CheckD0Decay(mcEvent, labD, dummy);
+    if (deca != 1) return;
+    daughter_0_Label = mcD->GetDaughterLabel(0);
+    daughter_1_Label = mcD->GetDaughterLabel(1);
+    // can add prompt and non-prompt info too
+  }
+
+  Bool_t isHFJet = kFALSE;
+  for (Int_t iTrack = 0; iTrack < esd->GetNumberOfTracks(); iTrack++) {
+    AliESDtrack* track = esd->GetTrack(iTrack);
+    if (TMath::Abs(track->Charge()) == 0.0) continue;  // FIXME
+
+    AliESDtrackCuts* jetTrackCuts = new AliESDtrackCuts("AliESDtrackCuts");
+
+    jetTrackCuts->SetPtRange(jetTrackPtMin, jetTrackPtMax);
+    jetTrackCuts->SetEtaRange(jetTrackEtaMin, jetTrackEtaMax);
+    jetTrackCuts->SetRequireITSRefit(kTRUE);
+    jetTrackCuts->SetRequireTPCRefit(kTRUE);
+    // jetTrackCuts->SetChi2TPCConstrainedVsGlobal(kTRUE);
+    jetTrackCuts->SetMinNCrossedRowsTPC(70);
+    jetTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+    jetTrackCuts->SetMaxChi2PerClusterTPC(4.);
+    jetTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+    jetTrackCuts->SetMaxChi2PerClusterITS(36.0);
+    jetTrackCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/(pt^1.1)");
+    jetTrackCuts->SetMaxDCAToVertexZ(2.0);
+    if (!jetTrackCuts->IsSelected(track)) continue;
+    if (track->GetChi2TPCConstrainedVsGlobal(primVtx) <= 0. || track->GetChi2TPCConstrainedVsGlobal(primVtx) >= 36.) continue;  // goldenChi2
+    if (iTrack == iNegTrack_0 || iTrack == iPosTrack_0) {
+      continue;
+    }
+    fFastJetWrapper->AddInputVector(track->Px(), track->Py(), track->Pz(), TMath::Sqrt(track->P() * track->P() + 0.139 * 0.139), iTrack + 2);
+  }
+  fFastJetWrapper->AddInputVector(the2Prong->Px(), the2Prong->Py(), the2Prong->Pz(), the2Prong->ED0(), 1);
+  fFastJetWrapper->Run();
+  std::vector<fastjet::PseudoJet> jets = fFastJetWrapper->GetInclusiveJets();
+  for (Int_t ijet = 0; ijet < jets.size(); ijet++) {
+    isHFJet = kFALSE;
+    jet = jets[ijet];
+    if (jet.pt() < jetPtMin || jet.perp() >= jetPtMax || jet.eta() < jetTrackEtaMin + jetR || jet.eta() > jetTrackEtaMax - jetR) continue;
+    std::vector<fastjet::PseudoJet> constituents(fFastJetWrapper->GetJetConstituents(ijet));
+    NConstituents = constituents.size();
+    for (Int_t iconstituent = 0; iconstituent < NConstituents; iconstituent++) {
+      if (constituents[iconstituent].user_index() == 1) {
+        isHFJet = kTRUE;
+        candpT = constituents[iconstituent].perp();
+        break;
+      }
+    }
+    if (isHFJet) {
+      if (doJetSubstructure) {
+        softDropped = kFALSE;
+        double nsd = 0.0;
+        fastjet::JetDefinition jet_Def_Recluster(fastjet::cambridge_algorithm, 5 * jetR, fastjet::E_scheme, fastjet::Best);
+        try {
+          std::vector<fastjet::PseudoJet> jet_Constituents = jet.constituents();
+          fastjet::ClusterSequence reclustering(jet_Constituents, jet_Def_Recluster);
+          fastjet::PseudoJet jet_Reclustered = (reclustering.inclusive_jets(0.0)).at(0);  // get the reclusterd jet
+          fastjet::PseudoJet subjet_1;
+          fastjet::PseudoJet subjet_2;
+          while (jet_Reclustered.has_parents(subjet_1, subjet_2)) {
+            if (subjet_1.perp() < subjet_2.perp()) {
+              std::swap(subjet_1, subjet_2);
+            }
+            double z = subjet_2.perp() / (subjet_1.perp() + subjet_2.perp());
+            double theta = subjet_1.delta_R(subjet_2);
+            if (z >= zCut * TMath::Power(theta / jetR, beta)) {
+              if (!softDropped) {
+                Zg = z;
+                Rg = theta;
+                softDropped = kTRUE;
+              }
+              nsd++;
+            }
+            Bool_t isHFInSubjet1 = kFALSE;
+            for (int i = 0; i < subjet_1.constituents().size(); i++) {
+              if (subjet_1.constituents().at(i).user_index() == 1) {
+                isHFInSubjet1 = kTRUE;
+              }
+            }
+            if (isHFInSubjet1) {
+              jet_Reclustered = subjet_1;
+            }
+            else {
+              jet_Reclustered = subjet_2;
+            }
+          }
+          Nsd = nsd;
+        } catch (fastjet::Error) { /*return -1;*/
+        }
+      }
+      break;
+    }
+  }
+
+  Bool_t isHFJet_Part = kFALSE;
+  if (matchedJetsOnly && mcEvent && labD > 0) {
+    fFastJetWrapper_Part->Clear();
+    fFastJetWrapper_Part->SetR(jetR);
+    fFastJetWrapper_Part->SetAlgorithm(fastjet::JetAlgorithm::antikt_algorithm);
+    fFastJetWrapper_Part->SetRecombScheme(fastjet::RecombinationScheme::E_scheme);
+    fFastJetWrapper_Part->SetStrategy(fastjet::Strategy::Best);
+    fFastJetWrapper_Part->SetGhostArea(0.005);
+    fFastJetWrapper_Part->SetAreaType(fastjet::AreaType::passive_area);
+
+    for (Int_t i = 0; i < mcEvent->GetNumberOfTracks(); i++) {
+      AliAODMCParticle* part = (AliAODMCParticle*)mcEvent->GetTrack(i);
+      if (i == labD) {
+        fFastJetWrapper_Part->AddInputVector(part->Px(), part->Py(), part->Pz(), part->E(), 1);
+        continue;
+      }
+      if (!part->IsPhysicalPrimary()) continue;
+      if (TMath::Abs(part->Charge()) == 0.0) continue;
+      if (part->GetLabel() == daughter_0_Label || part->GetLabel() == daughter_1_Label) continue;  // FIXME
+      if (part->Pt() < jetTrackPtMin_Part || part->Pt() >= jetTrackPtMax_Part || part->Eta() < jetTrackEtaMin_Part || part->Eta() > jetTrackEtaMax_Part) continue;
+      fFastJetWrapper_Part->AddInputVector(part->Px(), part->Py(), part->Pz(), part->E(), i + 2);
+    }
+
+    fFastJetWrapper_Part->Run();
+    std::vector<fastjet::PseudoJet> jets_Part = fFastJetWrapper_Part->GetInclusiveJets();
+    for (Int_t ijet_Part = 0; ijet_Part < jets_Part.size(); ijet_Part++) {
+      isHFJet_Part = kFALSE;
+      jet_Part = jets_Part[ijet_Part];
+      if (jet_Part.pt() < jetPtMin_Part || jet_Part.perp() >= jetPtMax_Part || jet_Part.eta() < jetTrackEtaMin_Part + jetR || jet_Part.eta() > jetTrackEtaMax_Part - jetR) continue;
+      std::vector<fastjet::PseudoJet> constituents_Part(fFastJetWrapper_Part->GetJetConstituents(ijet_Part));
+      NConstituents_Part = constituents_Part.size();
+      for (Int_t iconstituent_Part = 0; iconstituent_Part < NConstituents_Part; iconstituent_Part++) {
+        if (constituents_Part[iconstituent_Part].user_index() == 1) {
+          isHFJet_Part = kTRUE;
+          candpT_Part = constituents_Part[iconstituent_Part].perp();
+          break;
+        }
+      }
+      if (isHFJet_Part) {
+        if (doJetSubstructure) {
+          softDropped_Part = kFALSE;
+          double nsd = 0.0;
+          fastjet::JetDefinition jet_Def_Recluster_Part(fastjet::cambridge_algorithm, 5 * jetR, fastjet::E_scheme, fastjet::Best);
+          try {
+            std::vector<fastjet::PseudoJet> jet_Part_Constituents = jet_Part.constituents();
+            fastjet::ClusterSequence reclustering_Part(jet_Part_Constituents, jet_Def_Recluster_Part);
+            fastjet::PseudoJet jet_Reclustered_Part = (reclustering_Part.inclusive_jets(0.0)).at(0);  // get the reclusterd jet
+            fastjet::PseudoJet subjet_1_Part;
+            fastjet::PseudoJet subjet_2_Part;
+            while (jet_Reclustered_Part.has_parents(subjet_1_Part, subjet_2_Part)) {
+              if (subjet_1_Part.perp() < subjet_2_Part.perp()) {
+                std::swap(subjet_1_Part, subjet_2_Part);
+              }
+              double z = subjet_2_Part.perp() / (subjet_1_Part.perp() + subjet_2_Part.perp());
+              double theta = subjet_1_Part.delta_R(subjet_2_Part);
+              if (z >= zCut_Part * TMath::Power(theta / jetR, beta_Part)) {
+                if (!softDropped_Part) {
+                  Zg_Part = z;
+                  Rg_Part = theta;
+                  softDropped_Part = kTRUE;
+                }
+                nsd++;
+              }
+              Bool_t isHFInSubjet1 = kFALSE;
+              for (int i = 0; i < subjet_1_Part.constituents().size(); i++) {
+                if (subjet_1_Part.constituents().at(i).user_index() == 1) {
+                  isHFInSubjet1 = kTRUE;
+                }
+              }
+              if (isHFInSubjet1) {
+                jet_Reclustered_Part = subjet_1_Part;
+              }
+              else {
+                jet_Reclustered_Part = subjet_2_Part;
+              }
+            }
+            Nsd_Part = nsd;
+          } catch (fastjet::Error) { /*return -1;*/
+          }
+        }
+        break;
+      }
+    }
+  }
+
+  if (!mcEvent) {
+    if (isHFJet) {
+      fHistJetPt->Fill(jet.pt());
+      fHistJetE->Fill(jet.E());
+      fHistJetPhi->Fill(jet.phi());
+      fHistJetEta->Fill(jet.rap());
+      fHistJetNConstituents->Fill(NConstituents);
+      fHistJetCandPt->Fill(candpT);
+      if (doJetSubstructure) {
+        if (softDropped) {
+          fHistJetZg->Fill(Zg);
+          fHistJetRg->Fill(Rg);
+        }
+        fHistJetNsd->Fill(Nsd);
+      }
+    }
+  }
+  else {
+    if (matchedJetsOnly) {
+      if (isHFJet && isHFJet_Part) {
+        fHistJetPt->Fill(jet.pt());
+        fHistJetE->Fill(jet.E());
+        fHistJetPhi->Fill(jet.phi());
+        fHistJetEta->Fill(jet.rap());
+        fHistJetNConstituents->Fill(NConstituents);
+        fHistJetCandPt->Fill(candpT);
+        if (doJetSubstructure) {
+          if (softDropped) {
+            fHistJetZg->Fill(Zg);
+            fHistJetRg->Fill(Rg);
+          }
+          fHistJetNsd->Fill(Nsd);
+        }
+
+        fHistJetPt_Part->Fill(jet_Part.pt());
+        fHistJetE_Part->Fill(jet_Part.E());
+        fHistJetPhi_Part->Fill(jet_Part.phi());
+        fHistJetEta_Part->Fill(jet_Part.rap());
+        fHistJetNConstituents_Part->Fill(NConstituents_Part);
+        fHistJetCandPt_Part->Fill(candpT_Part);
+        if (doJetSubstructure) {
+          if (softDropped_Part) {
+            fHistJetZg_Part->Fill(Zg_Part);
+            fHistJetRg_Part->Fill(Rg_Part);
+          }
+          fHistJetNsd_Part->Fill(Nsd_Part);
+        }
+      }
+    }
+    else {
+      if (isHFJet) {
+        fHistJetPt->Fill(jet.pt());
+        fHistJetE->Fill(jet.E());
+        fHistJetPhi->Fill(jet.phi());
+        fHistJetEta->Fill(jet.rap());
+        fHistJetNConstituents->Fill(NConstituents);
+        fHistJetCandPt->Fill(candpT);
+        if (doJetSubstructure) {
+          if (softDropped) {
+            fHistJetZg->Fill(Zg);
+            fHistJetRg->Fill(Rg);
+          }
+          fHistJetNsd->Fill(Nsd);
+        }
+      }
+    }
+  }
+
+  delete fFastJetWrapper_Part;
+  delete fFastJetWrapper;
+#else
+  std::cout << "You need to have fastjet installed to get meaningful results" << std::endl;
+#endif
+}
+
 //______________________________________________________________________________
 std::string AliAnalysisTaskHFSimpleVertices::GetJsonString(const char* jsonFileName, const char* section, const char* key)
 {
@@ -3406,7 +4231,7 @@ float** AliAnalysisTaskHFSimpleVertices::GetJsonMatrix(const char* jsonFileName,
     fgets(line, 500, fj);
     if (strstr(line, section) && !(section && !section[0])){
       corrSection = true;
-      if (strstr(section, "selector"))
+      if (strstr(section, "selector") || strstr(section, "index-skim-creator"))
         moveToValues = true;
     }
     if (strstr(line, key)) {

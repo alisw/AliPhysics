@@ -31,6 +31,7 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/JETFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWGJE/EMCALJetTasks
+                    ${AliPhysics_SOURCE_DIR}/PWG/Tools/yaml-cpp/include
   )
 
 # Sources - alphabetical order

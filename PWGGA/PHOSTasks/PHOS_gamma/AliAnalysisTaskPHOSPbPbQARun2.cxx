@@ -130,10 +130,17 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserCreateOutputObjects()
     fOutputContainer->Add(new TH2F(key, "ncells vs cluster energy", nPtPhot, 0., ptPhotMax, 40, 0, 40));
 
     snprintf(key,55,"hPi0All_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+    TString  mhTitle =  "Invariant mass, All clusters;M_{#gamma#gamma};p_{T}";
+    fOutputContainer->Add(new TH2F(key, mhTitle , nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
 
     snprintf(key,55,"hMiPi0All_cen%d",cent) ;
-    fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+    fOutputContainer->Add(new TH2F(key, mhTitle ,nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+
+    snprintf(key,55,"hPi0SingleAll_cen%d",cent) ;
+    fOutputContainer->Add(new TH2F(key,mhTitle ,nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+
+    snprintf(key,55,"hMiPi0SingleAll_cen%d",cent) ;
+    fOutputContainer->Add(new TH2F(key, mhTitle, nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
     
     snprintf(key,55,"hGammaMC_cen%d", cent); 
     fOutputContainer->Add(new  TH2F(key, "MC #gamma;p_{T};y", nPtPhot, 0, ptPhotMax, 240, -1.2, 1.2));
@@ -150,10 +157,16 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserCreateOutputObjects()
        fOutputContainer->Add(new TH2F(key, "ncells vs cluster energy", nPtPhot, 0., ptPhotMax, 40, 0, 40));
 
        snprintf(key,55,"hPi0AllSM%d_cen%d",sm,cent) ;
-       fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+       fOutputContainer->Add(new TH2F(key, mhTitle ,nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
 
        snprintf(key,55,"hMiPi0AllSM%d_cen%d",sm,cent) ;
-       fOutputContainer->Add(new TH2F(key,"All clusters",nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+       fOutputContainer->Add(new TH2F(key,mhTitle,nM,mMin,mMax,nPtPhot,0.,ptPhotMax));
+
+       snprintf(key,55,"hPi0SingleAllSM%d_cen%d",sm,cent) ;
+       fOutputContainer->Add(new TH2F(key, mhTitle, nM, mMin, mMax, nPtPhot, 0., ptPhotMax));
+
+       snprintf(key,55,"hMiPi0SingleAllSM%d_cen%d",sm,cent) ;
+       fOutputContainer->Add(new TH2F(key, mhTitle, nM, mMin, mMax, nPtPhot, 0., ptPhotMax));
     }
 
   }
@@ -251,10 +264,10 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
 
     AliAODCaloCluster *clu = event->GetCaloCluster(i);
 
-    if ( !clu->IsPHOS() || clu->E() < 0.3) continue;
-    if(clu->GetNCells() < 3) continue;
+    if (!clu->IsPHOS() || clu->GetCoreEnergy() < 0.3) continue;
+    if (clu->GetNCells() < 3) continue;
 
-    if (clu->GetType() != AliVCluster::kPHOSNeutral) continue;
+    if (clu->GetType() != AliVCluster::kPHOSNeutral) continue; //select calorimeter clusters
 
     fMCArray = (TClonesArray*)event->FindListObject(AliAODMCParticle::StdBranchName());
     if (!fMCArray && TMath::Abs(clu->GetTOF()) > 12.5e-9) continue; // TOF cut for real data only!
@@ -280,10 +293,16 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
     FillHistogram(Form("hNcellvsEcl_cen%d", fCenBin), clu->E(), clu->GetNCells()); 
     FillHistogram(Form("hNcellvsEclM%d_cen%d", mod, fCenBin), clu->E(), clu->GetNCells()); 
 
+    //ratio of core energy to total cluster energy
+    Double_t ecore = clu->GetCoreEnergy();
+    Double_t efull = clu->E();
+    Double_t r     = ecore/efull;
+
     TLorentzVector pv1 ;
     clu->GetMomentum(pv1 ,vtx);
+    pv1 = pv1*r;
 
-    if(inPHOS>=fPHOSEvent->GetSize()){
+    if (inPHOS>=fPHOSEvent->GetSize()){
       fPHOSEvent->Expand(inPHOS+50) ;
     }
 
@@ -324,9 +343,17 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
       snprintf(key,55,"hPi0All_cen%d",fCenBin) ;
       FillHistogram(key,p12.M() ,p12.Pt()) ; 
 
-      if(sm1==sm2) {
+      snprintf(key,55,"hPi0SingleAll_cen%d",fCenBin) ;
+      FillHistogram(key,p12.M() ,ph1->Pt()) ; 
+      FillHistogram(key,p12.M() ,ph2->Pt()) ; 
+
+      if (sm1==sm2) {
 	snprintf(key,55,"hPi0AllSM%d_cen%d",sm1,fCenBin) ;
-	 FillHistogram(key,p12.M() ,p12.Pt()) ; 
+	FillHistogram(key,p12.M() ,p12.Pt()) ; 
+
+	snprintf(key,55,"hPi0SingleAllSM%d_cen%d",sm1,fCenBin) ;
+        FillHistogram(key,p12.M() ,ph1->Pt()) ; 
+        FillHistogram(key,p12.M() ,ph2->Pt()) ; 
       }
 
     } // end of loop i2
@@ -349,11 +376,18 @@ void AliAnalysisTaskPHOSPbPbQARun2::UserExec(Option_t *)
 	snprintf(key,55,"hMiPi0All_cen%d",fCenBin) ;
 	FillHistogram(key,p12.M() ,p12.Pt()) ;
 
-	if(sm1==sm2) {
+	snprintf(key,55,"hMiPi0SingleAll_cen%d",fCenBin) ;
+	FillHistogram(key,p12.M() ,ph1->Pt()) ;
+	FillHistogram(key,p12.M() ,ph2->Pt()) ;
+
+	if (sm1==sm2) {
 	  snprintf(key,55,"hMiPi0AllSM%d_cen%d",sm1,fCenBin) ;
 	  FillHistogram(key,p12.M() ,p12.Pt()) ; 
-	}
 
+	  snprintf(key,55,"hMiPi0SingleAllSM%d_cen%d",sm1,fCenBin) ;
+	  FillHistogram(key,p12.M() ,ph1->Pt()) ;
+	  FillHistogram(key,p12.M() ,ph2->Pt()) ;
+	}
       } // end of loop i2
     }
   } // end of loop i1

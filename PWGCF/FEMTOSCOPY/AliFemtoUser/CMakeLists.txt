@@ -143,7 +143,6 @@ set(SRCS
   AliFemtoPairCutMergedFraction_pik.cxx
   AliFemtoCorrFctnDEtaDPhiSimple.cxx
   AliFemtoCorrFctnDEtaDPhiSimpleWithCorrections.cxx
-  AliFemtoCorrFctnDYDPhiSimple.cxx
   AliFemtoV0TrackCutNSigmaFilter.cxx
   AliFemtoXiTrackCutNSigmaFilter.cxx
   AliFemtoCutMonitorEventPartCollSize.cxx
@@ -165,14 +164,15 @@ set(SRCS
   AliFemtoCutMonitorEventSphericity.cxx # Sphericity monitor
   AliFemtoKKTrackCutTest.cxx # new class
   AliFemtoCorrFctnInvMass.cxx
+  AliFemtoCorrFctnMezonPhi.cxx
   AliFemtoCutMonitorV0CosPointingAngle.cxx
   AliFemtoCutMonitorPairMomRes.cxx
   AliFemtoCorrFctnPairsForCorrFit.cxx
   AliAnalysisTaskParticleEffWRZ.cxx
   AliFemtoWRzTrackCut.cxx
-  AliFemtoCorrFctnDYDPhiSimpleWithCorrections.cxx
   AliFemtoTrackCutPdtHe3.cxx	# p-d/t/He3 track cut
   AliFemtoCorrFctnpdtHe3.cxx
+  #Daniela
   AliAnalysisTaskParticleEffDY04.cxx
   AliAnalysisTaskParticleEffDY06.cxx
   AliAnalysisEffTaskFilterBit768.cxx
@@ -181,12 +181,17 @@ set(SRCS
   AliAnalysisTaskEfficiencyFB128.cxx
   AliAnalysisEffTaskDoubleCountPID.cxx
   AliAnalysisEffTaskExclusivePID.cxx
+  AliFemtoPairCutRadialDistanceDR.cxx
+  AliFemtoCorrFctnDYDPhiSimpleWithCorrections.cxx
+  AliFemtoCorrFctnDYDPhiSimple.cxx
   AliAnalysisEfficiencyPbPbExclusivePID.cxx
   AliAnalysisEfficiencyPbPbNodoublecount.cxx
-  AliFemtoPairCutRadialDistanceDR.cxx
-  
+  AliAnalysisTaskParticleEffDYM3.cxx
+  AliAnalysisTaskParticleEffDYM1.cxx
+ AliAnalysisTaskParticleEffDYM2.cxx
+ AliAnalysisTaskParticleEffDYM0.cxx
 
-  )
+    )
 
 
 

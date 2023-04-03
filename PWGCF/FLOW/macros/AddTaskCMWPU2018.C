@@ -1,5 +1,5 @@
 
-void AddTaskCMWPU2018(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.0,Double_t fdcaxy=2.4, Double_t fdcaz=3.2, Double_t fChi2=4.0,Double_t fSlope=3.45, Float_t fConst=100, Bool_t bSkipPileUp=kFALSE, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8, Int_t gNclustTPC=70, TString sCentEstimator="V0M", Double_t fCentralityMin=0., Double_t fCentralityMax=90.,Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", Int_t fparticle=3,Double_t nSigTPC = 3.0, Double_t nSigTOF = 3.0, Int_t vnHarmonic=2,Double_t fEtaGapNeg=-0.1,Double_t fEtaGapPos=0.1,TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/HijingMC_LHC18q_FB768_DeftCut.root",TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root",TString sEVNTWGTFilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root",const char *suffix = "")
+void AddTaskCMWPU2018(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtMax=10.0,Double_t fdcaxy=2.4, Double_t fdcaz=3.2, Double_t fChi2=4.0, Bool_t usecrfc=1, Double_t fSlope=3.45, Float_t fConst=100, Bool_t bSkipPileUp=kFALSE, Double_t fEtaMin=-0.8, Double_t fEtaMax=0.8, Int_t gNclustTPC=70, TString sCentEstimator="V0M", Double_t fCentralityMin=0., Double_t fCentralityMax=90.,Float_t fVzMin = -10.0, Float_t fVzMax = 10.0, TString sTrigger="kINT7", Int_t fparticle=3,Double_t nSigTPC = 3.0, Double_t nSigTOF = 3.0, Int_t vnHarmonic=2,Double_t fEtaGapNeg=-0.1,Double_t fEtaGapPos=0.1,TString sMCfilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/HijingMC_LHC18q_FB768_DeftCut.root",TString sNUAFilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root",TString sEVNTWGTFilePath = "alien:///alice/cern.ch/user/m/mhaque/nuanue18/wgtCharge_NUAFB768NoPUcutRun296244.root",const char *suffix = "")
 {
   // standard with task
   printf("===================================================================================\n");
@@ -71,6 +71,7 @@ void AddTaskCMWPU2018(Int_t gFilterBit = 768, Double_t fPtMin=0.2, Double_t fPtM
   task_CMW->SetDCAXYRangeMax(fdcaxy);
   task_CMW->SetDCAZRangeMax(fdcaz);
   task_CMW->SetChi2Range(fChi2);
+  task_CMW->SetCrossrowtofindcluster(usecrfc);
   task_CMW->SetEtaNeg(fEtaGapNeg);
   task_CMW->SetEtaPos(fEtaGapPos);
   /// HardCoded at the moment. Can also be passed as AddTask Argument.

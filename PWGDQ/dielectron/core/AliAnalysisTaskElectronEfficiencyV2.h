@@ -94,6 +94,7 @@ public:
    void   SetResolutionFileFromAlien(std::string filename) {fResoFilenameFromAlien = filename; }
    void   SetResolutionFile(std::string filenamelocal,std::string filenamealien);
    void   SetSmearGenerated(bool setSmearingGen) { fDoGenSmearing = setSmearingGen; }
+   void   SetSmearReconstructed(bool setSmearingRec) { fDoRecSmearing = setSmearingRec; }
    void   SetResolutionDeltaPtBins(std::vector<double> ResolutionDeltaPtBins)             {fResolutionDeltaPtBins = ResolutionDeltaPtBins;}
    void   SetResolutionDeltaPtBinsLinear (const double min, const double max, const unsigned int steps){SetBinsLinear("ptDelta_reso", min, max, steps);}
    void   SetResolutionRelPtBinsLinear   (const double min, const double max, const unsigned int steps){SetBinsLinear("ptRel_reso", min, max, steps);}
@@ -264,6 +265,7 @@ private:
   std::vector<double> fPairPtBins;
   std::vector<double> fPhiVBins;
   bool fDoGenSmearing;
+  bool fDoRecSmearing;
 
   int    fNGenpt;// pt binning for resolution map
   double fGenptMin;// pt binning for resolution map
@@ -397,7 +399,7 @@ private:
   AliAnalysisTaskElectronEfficiencyV2(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
   AliAnalysisTaskElectronEfficiencyV2& operator=(const AliAnalysisTaskElectronEfficiencyV2&); // not implemented
 
-  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 12);
+  ClassDef(AliAnalysisTaskElectronEfficiencyV2, 13);
 };
 
 

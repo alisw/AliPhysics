@@ -60,6 +60,7 @@ set(SRCS
   AliAnalysisTaskAODTrackPairUtils.cxx
   AliAnalysisTaskAODTrackPair.cxx
   AliAnalysisTaskAODTrackPairMC.cxx
+  AliAnalysisTaskResonanceDP.cxx
   )
 
 # Headers from sources
@@ -106,6 +107,7 @@ install(FILES AddAnalysisTaskEffMatrix.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddAnalysisTaskPhiCount.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddAnalysisTask_Phi_MC.C DESTINATION PWGLF/RESONANCES/extra)
 install(FILES AddTaskAODTrackPair.C DESTINATION PWGLF/RESONANCES/extra)
+install(FILES AddMyTaskDPak.C DESTINATION PWGLF/RESONANCES/extra)
 
 # Install directories
 install(DIRECTORY RESOSA DESTINATION PWGLF/RESONANCES/extra)

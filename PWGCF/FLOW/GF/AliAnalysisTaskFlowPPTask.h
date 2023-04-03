@@ -7,6 +7,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliGFWXXCuts.h"
+#include "AliGFWPbpass23Cuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
 #include "AliEventCuts.h"
@@ -219,6 +220,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		virtual void   SetUseDCAxyCut(Bool_t usedcaxy){fUseDCAxyCut = usedcaxy;}
 		virtual void   SetDCAxyCut(Double_t dcaxy){fDCAxy = dcaxy;}
 		virtual void   SetDCAxyCutDefault(Double_t dcaxy){fDCAxyDefault = dcaxy;} // The dcaxy cut for NtrksCounter
+		virtual void   SetUseCL1Cent(Bool_t CL1cent){fUseCL1Centrality = CL1cent;}
 		virtual void   SetIsSample(Int_t IsSample){fSample = IsSample;}
 		virtual void   SetCentFlag(Short_t nCent){fCentFlag = nCent;}
 		virtual void   SetTrigger(Int_t trig){fTrigger = trig;}
@@ -233,6 +235,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
         virtual void   SetSystFlag(int flag) { fCurrSystFlag = flag; }
         virtual int    GetSystFlag() { return fCurrSystFlag; }
 		virtual void	SetOnlineTrackCorrection(Bool_t UseCorrectedNTracks){fUseCorrectedNTracks = UseCorrectedNTracks;}
+		virtual void	SetAdditionalDCACut(Bool_t UseAdditionalDCACut){fUseAdditionalDCACut = UseAdditionalDCACut;}
         
         //===================================================================================
 
@@ -253,6 +256,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 
 		AliEventCuts	fEventCuts;					// Event cuts
 		AliGFWXXCuts*     fGFWSelection;                                  //!
+		AliGFWPbpass23Cuts*     fGFWSelectionPbPb;                                  //!
 		AliAODEvent* fAOD;                                              //! AOD object
 
 		// Cuts and options
@@ -272,6 +276,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		Int_t			fMinITSClus;				// min ITS clusters, LHC15ijl
 		Double_t		fMaxChi2;				// max chi2 per ITS cluster, LHC15ijl
 		Bool_t			fUseDCAzCut;				// switch to choose whether I want to use DCAz cut or not (for systematic studies, otherwise it is in FB selection by default)
+		Bool_t			fUseCL1Centrality;				// switch to choose whether I want to use DCAz cut or not (for systematic studies, otherwise it is in FB selection by default)
 		Double_t		fDCAz;					// max DCAz, for systematics
 		Double_t		fDCAzDefault;				// max DCAz, (for NtrksCounter)
 		Bool_t			fUseDCAxyCut;				// the same switch as for DCAxy
@@ -288,6 +293,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TString			fPeriod;				// period
                 Int_t                   fCurrSystFlag;                          // Systematics flag
 		Bool_t			fUseCorrectedNTracks;	// flag for online track correction
+		Bool_t			fUseAdditionalDCACut;	// flag for online track correction
 
 
 		Double_t			fCurrCentrality;	//! Centrality of Ongoing Event
@@ -319,6 +325,7 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TH1F*			hMult;				//! multiplicity distribution
 		TH2F*			hMultCent;				//! multiplicity-centrality distribution
 		TH1F*			fCentralityDis;			//! distribution of centrality percentile using V0M estimator
+		TH1F*			hVtz;			//! distribution of Vertex
 
 
 		// // Track histograms
@@ -326,6 +333,13 @@ class AliAnalysisTaskFlowPPTask : public AliAnalysisTaskSE
 		TH2F*				hDCAzBefore; 		//!
 		TH2F*				hDCAxy; 		//!
 		TH2F*				hDCAz; 			//!
+		TH1D*				hChi2Before; 			//!
+		TH1D*				hChi2; 			//!
+		TH1D*			hPhi;			//! distribution of Phi
+		TH1D*			hPhiBefore;			//! distribution of Phi
+		TH1D*			fEtaDis;			//! distribution of Phi
+		TH1D*			fPtDis;			//! distribution of Phi
+		TH1D*			hnTPCClu;			//! distribution of Phi
 
 		// Global variables
 		double NtrksCounter = 0;               //!

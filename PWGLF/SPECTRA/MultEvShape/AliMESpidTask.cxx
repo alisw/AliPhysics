@@ -87,6 +87,12 @@ void AliMESpidTask::UserExec(Option_t *opt)
   Double_t vec_hNoEvts[7]; // vector used to fill hNoEvts
   THnSparseD *hNoEvts = (THnSparseD *)fHistosQA->At(slot_NoEvts);
 
+  // if (hNoEvts->Projection(0)->GetBinContent(4) > 9){
+  //   return;
+  // }
+  // printf("\n\n\n Current analyzed event = %g\n\n\n", hNoEvts->Projection(0)->GetBinContent(4));
+
+
   Double_t mult_comb08 = fEvInfo->GetMultiplicity(AliMESeventInfo::kComb); // combined multiplicity with |eta| < 0.8
   Double_t mult_V0M = fEvInfo->GetMultiplicity(AliMESeventInfo::kV0M);     // V0M percentile
 
@@ -256,7 +262,8 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
   enum axis_hResponse{ l_comb08_resp, l_directivity_resp, l_pT_resp, l_trigger_resp, l_pidTOF_resp, l_rapidity_resp, l_delta_phi_resp, l_delta_y_resp, l_MC_comb08_resp, l_MC_directivity_resp, l_MC_pT_resp, l_MCprimary_resp, l_MCPID_resp, l_MC_delta_phi_resp, l_MC_delta_y_resp};
 
-  enum axis_hFakes{l_comb08_fake, l_directivity_fake, l_pT_fake, l_charge_fake, l_pidTPC_fake, l_pidTOF_fake, l_rapidity_fake, l_TOFmatching_fake, l_delta_phi_fake, l_delta_y_fake};
+  // enum axis_hFakes{l_comb08_fake, l_directivity_fake, l_pT_fake, l_charge_fake, l_pidTPC_fake, l_pidTOF_fake, l_rapidity_fake, l_TOFmatching_fake, l_delta_phi_fake, l_delta_y_fake};
+  enum axis_hFakes{l_comb08_fake, l_directivity_fake, l_pT_fake, l_charge_fake, l_pidTOF_fake, l_rapidity_fake, l_delta_phi_fake, l_delta_y_fake};
 
   // printf("\n\n\nNew event\n");
   // printf("\nESD loop:\n");
@@ -282,13 +289,13 @@ void AliMESpidTask::UserExec(Option_t *opt)
     Double_t vec_hAllESD[14];   // vector used to fill hAllESD
     Double_t vec_hDeltaPhi[9];  // vector used to fill hDeltaPhi
     Double_t vec_hResponse[15]; // vector used to fill hResponse
-    // Double_t vec_hFakes[10]; 	// vector used to fill hResponse
+    Double_t vec_hFakes[10]; 	// vector used to fill hResponse
 
     THnSparseD *hAllESD = (THnSparseD *)fHistosQA->At(slot_AllESD);
 
     THnSparseD *hResponse = (THnSparseD *)fHistosQA->At(slot_Response);
-    // THnSparseD *hFakes = (THnSparseD*)fHistosQA->At(slot_Fakes);
-
+    THnSparseD *hFakes = (THnSparseD*)fHistosQA->At(slot_Fakes);
+  
     // ---------------------------
     // compute y after PID
     // Double_t  mass[AliPID::kSPECIES] = {0.00051, 0.10565, 0.13957, 0.49368, 0.93827};
@@ -300,6 +307,27 @@ void AliMESpidTask::UserExec(Option_t *opt)
     vec_hAllESD[l_rapidity] = t->Eta();
     if (TMath::Abs(vec_hAllESD[l_rapidity]) > 0.8) continue;
     // ---------------------------
+
+    if(HasMCdata()){
+      // fill the Fakes sparse
+      if (!tMC || !(tMC->HasOrigin(AliMEStrackInfo::kPrimary))){ // if we have no corresponding MC particle
+        vec_hFakes[l_comb08_fake] = mult_comb08;
+        vec_hFakes[l_directivity_fake] = directivity;
+        vec_hFakes[l_pT_fake] = vec_hAllESD[l_pT];
+        vec_hFakes[l_charge_fake] = vec_hAllESD[l_charge];
+        // vec_hFakes[l_pidTPC_fake] = vec_hAllESD[l_pidTPC];
+        vec_hFakes[l_pidTOF_fake] = -9999.;
+        vec_hFakes[l_rapidity_fake] = vec_hAllESD[l_rapidity];
+        // vec_hFakes[l_TOFmatching_fake] = vec_hAllESD[l_TOFmatching];
+        vec_hFakes[l_delta_phi_fake] = vec_hAllESD[l_delta_phi];
+        vec_hFakes[l_delta_y_fake] = vec_hAllESD[l_delta_y];
+
+        hFakes->Fill(vec_hFakes);
+
+        continue;
+      }
+    }
+
 
     // set the y for the LP (NOTE: the LP is always the first one in the list)
     if (it == 0){
@@ -420,23 +448,7 @@ void AliMESpidTask::UserExec(Option_t *opt)
 
     if (HasMCdata())
     { // run only on MC
-      /*
-          // fill the Fakes sparse
-          if(!tMC){   // if we have no corresponding MC particle
-            vec_hFakes[l_comb08_fake] = mult_comb08;
-            vec_hFakes[l_directivity_fake] = directivity;
-            vec_hFakes[l_pT_fake] = vec_hAllESD[l_pT];
-            vec_hFakes[l_charge_fake] = vec_hAllESD[l_charge];
-            vec_hFakes[l_pidTPC_fake] = vec_hAllESD[l_pidTPC];
-            vec_hFakes[l_pidTOF_fake] = vec_hAllESD[l_pidTOF];
-            vec_hFakes[l_rapidity_fake] = vec_hAllESD[l_rapidity];
-            vec_hFakes[l_TOFmatching_fake] = vec_hAllESD[l_TOFmatching];
-            vec_hFakes[l_delta_phi_fake] = vec_hAllESD[l_delta_phi];
-            vec_hFakes[l_delta_y_fake] = vec_hAllESD[l_delta_y];
 
-            hFakes->Fill(vec_hFakes);
-          }
-      */
       // ---------------------------
       // get the MC PDG code
       Int_t MC_identity = -9999;
@@ -506,6 +518,20 @@ void AliMESpidTask::UserExec(Option_t *opt)
     hDeltaPhi->Fill(vec_hDeltaPhi);
     hAllESD->Fill(vec_hAllESD);
     hResponse->Fill(vec_hResponse);
+
+    // printf("Response: - REC:\n\tcomb08 = %g\tspher = %g\tpT = %g\t dPhi = %g\teta= %g\n",
+    //        vec_hResponse[l_comb08_resp],
+    //        vec_hResponse[l_directivity_resp],
+    //        vec_hResponse[l_pT_resp],
+    //        vec_hResponse[l_delta_phi_resp],
+    //        vec_hResponse[l_rapidity_resp]);
+
+    // printf("Response: - GEN:\n\tcomb08 = %g\tspher = %g\tpT = %g\t dPhi = %g\tprimary = %g\n\n",
+    //        vec_hResponse[l_MC_comb08_resp],
+    //        vec_hResponse[l_MC_directivity_resp],
+    //        vec_hResponse[l_MC_pT_resp],
+    //        vec_hResponse[l_MC_delta_phi_resp],
+    //        vec_hResponse[l_MCprimary_resp]);
 
     // fill the PID QA sparse
     THnSparseD *hPIDQA = (THnSparseD *)fHistosQA->At(slot_PIDQA);
@@ -735,6 +761,13 @@ void AliMESpidTask::UserExec(Option_t *opt)
   		// fill the hSparse
   		hGen->Fill(vec_hGen);
 
+      // printf("Generated: - GEN:\n\tcomb08 = %g\tspher = %g\tpT = %g\t dPhi = %g \t eta = %g\n\n",
+      //        vec_hGen[l_MC_comb08],
+      //        vec_hGen[l_MC_directivity],
+      //        vec_hGen[l_MC_pT],
+      //        vec_hGen[l_MC_delta_phi],
+      //        vec_hGen[l_MC_rapidity]);
+
       if(it == 0){
         pT_LP_MC = vec_hGen[l_MC_pT];
         y_LP_MC = vec_hGen[l_MC_rapidity];
@@ -766,6 +799,13 @@ void AliMESpidTask::UserExec(Option_t *opt)
 				
 				
         hMiss->Fill(vec_hMiss);
+
+        // printf("Miss: - GEN:\n\tcomb08 = %g\tspher = %g\tpT = %g\t dPhi = %g\t eta = %g\n\n",
+        //        vec_hMiss[l_comb08_miss],
+        //        vec_hMiss[l_directivity_miss],
+        //        vec_hMiss[l_pT_miss],
+        //        vec_hMiss[l_delta_phi_miss],
+        //        vec_hMiss[l_rapidity_miss] = vec_hGen[l_MC_rapidity]);
 
         // printf("Filled hMiss\n\n");
       }
@@ -834,27 +874,29 @@ Bool_t AliMESpidTask::BuildQAHistos()
   // hResponse->GetAxis(10)->Set(42, binLimits_reduced);
   hResponse->GetAxis(10)->Set(87, binLimits);
   fHistosQA->AddAt(hResponse, slot_Response);
-/*
+
   // test fakes
-  const Int_t ndimFakes(10);
-  const Int_t cldNbinsFakes[ndimFakes]   = {110, 20, 10, 2, 5, 5, 20, 2, 80, 20};
-  const Double_t cldMinFakes[ndimFakes]  = {-10., 0., 0., -2., -0.5, -0.5, -1., -0.5, -TMath::PiOver2(), -2.},
-  cldMaxFakes[ndimFakes]  = {100., 1., 3., 2., 4.5, 4.5, 1., 1.5, (3.*TMath::PiOver2()), 2.};
-  THnSparseD *hFakes = new THnSparseD("Fakes","Fakes;combined08;directivity;p_{T};charge;PID_TPC;PID_TPCTOF;y;TOFmatching;delta_phi;delta_y;", ndimFakes, cldNbinsFakes, cldMinFakes, cldMaxFakes);
+  const Int_t ndimFakes(8);
+  const Int_t cldNbinsFakes[ndimFakes]   = {9, 5, 87, 2, 5, 20, 4, 9};
+  const Double_t cldMinFakes[ndimFakes]  = {0., 0., 0., -2., -0.5, -1., 0., -1.6},
+  cldMaxFakes[ndimFakes]  = {100., 1., 20., 2., 4.5, 1., 4., 1.6};
+  THnSparseD *hFakes = new THnSparseD("Fakes","Fakes;combined08;directivity;p_{T};charge;PID_TPCTOF;y;delta_phi;delta_y;", ndimFakes, cldNbinsFakes, cldMinFakes, cldMaxFakes);
   // hFakes->GetAxis(2)->Set(42, binLimits_reduced);
+  hFakes->GetAxis(0)->Set(9, binLimits_mult);
+  hFakes->GetAxis(2)->Set(87, binLimits);
   fHistosQA->AddAt(hFakes, slot_Fakes);
-*/
+
   // test miss
   const Int_t ndimMiss(8);
-  const Int_t cldNbinsMiss[ndimMiss]   = {7, 5, 87, 2, 5, 20, 4, 9};
+  const Int_t cldNbinsMiss[ndimMiss]   = {9, 5, 87, 2, 5, 20, 4, 9};
   // const Int_t cldNbinsMiss[ndimMiss]   = {7, 5, 87, 2, 5, 20, 80, 20};
   // const Int_t cldNbinsMiss[ndimMiss]   = {20, 10, 42, 2, 5, 20, 80, 20};
   const Double_t cldMinMiss[ndimMiss]  = {0., 0., 0., -2., -0.5, -1., 0, -1.6},
-  cldMaxMiss[ndimMiss]  = {100., 1.0, 20., 2., 4.5, 1., 4., 1.6};
+  cldMaxMiss[ndimMiss]  = {100., 1., 20., 2., 4.5, 1., 4., 1.6};
   // const Double_t cldMinMiss[ndimMiss]  = {0., 0., 0., -2., -0.5, -1., -TMath::PiOver2(), -2.},
   // cldMaxMiss[ndimMiss]  = {100., 1.0, 20., 2., 4.5, 1., (3.*TMath::PiOver2()), 2.};
   THnSparseD *hMiss = new THnSparseD("Miss","Miss;combined08;directivity;p_{T};charge;PID_MC;y;delta_phi;delta_y;", ndimMiss, cldNbinsMiss, cldMinMiss, cldMaxMiss);
-  hMiss->GetAxis(0)->Set(7, binLimits_mult);
+  hMiss->GetAxis(0)->Set(9, binLimits_mult);
   // hMiss->GetAxis(2)->Set(42, binLimits_reduced);
   hMiss->GetAxis(2)->Set(87, binLimits);
   fHistosQA->AddAt(hMiss, slot_Miss);
@@ -877,7 +919,7 @@ Bool_t AliMESpidTask::BuildQAHistos()
 
   // used for tracking efficiency
   const Int_t ndimGen(10);
-  const Int_t cldNbinsGen[ndimGen]   = {7, 5, 87, 2, 5, 20, 4, 9, 150, 20};
+  const Int_t cldNbinsGen[ndimGen]   = {9, 5, 87, 2, 5, 20, 4, 9, 150, 20};
   // const Int_t cldNbinsGen[ndimGen]   = {7, 5, 87, 2, 5, 20, 80, 20, 150, 20};
   // const Int_t cldNbinsGen[ndimGen]   = {20, 10, 42, 2, 5, 20, 80, 20, 150, 20};
   const Double_t cldMinGen[ndimGen]  = {0., 0., 0., -2., -0.5, -1., 0., -1.6, 0.5, 0.},
@@ -885,7 +927,7 @@ Bool_t AliMESpidTask::BuildQAHistos()
   // const Double_t cldMinGen[ndimGen]  = {0., 0., 0., -2., -0.5, -1., -TMath::PiOver2(), -2., 0.5, 0.},
   // cldMaxGen[ndimGen]  = {100., 1., 20., 2., 4.5, 1., (3.*TMath::PiOver2()), 2., 150.5, 1.};
   THnSparseD *hGen = new THnSparseD("Gen","Gen;MCmultiplicity;MCdirectivity;MCp_{T};MCcharge;MCPID;MCy;MCdelta_phi;MCdelta_y;ESDmultiplicity;ESDdirectivity;",ndimGen, cldNbinsGen, cldMinGen, cldMaxGen);
-  hGen->GetAxis(0)->Set(7, binLimits_mult);
+  hGen->GetAxis(0)->Set(9, binLimits_mult);
   // hGen->GetAxis(2)->Set(42, binLimits_reduced);
   hGen->GetAxis(2)->Set(87, binLimits);
   fHistosQA->AddAt(hGen, slot_Gen);
@@ -895,9 +937,9 @@ Bool_t AliMESpidTask::BuildQAHistos()
 
   // used for scaling
   const Int_t ndimNoEvts(7);
-  const Int_t cldNbinsNoEvts[ndimNoEvts]   = {4, 150, 118, 21, 150, 102, 20};
+  const Int_t cldNbinsNoEvts[ndimNoEvts]   = {4, 150, 118, 20, 150, 102, 20};
   const Double_t cldMinNoEvts[ndimNoEvts]  = {-0.5, 0.5, 0., 0., 0.5, 0., 0.},
-  cldMaxNoEvts[ndimNoEvts]  = {3.5, 150.5, 100., 1.05, 150.5, 100., 1.};
+  cldMaxNoEvts[ndimNoEvts]  = {3.5, 150.5, 100., 1., 150.5, 100., 1.};
   THnSparseD *hNoEvts = new THnSparseD("NoEvts","NoEvts;step;combined 0.8;V0M;directivity;MCmultiplicity;MCV0M;MCdirectivity;",ndimNoEvts, cldNbinsNoEvts, cldMinNoEvts, cldMaxNoEvts);
   hNoEvts->GetAxis(0)->SetBinLabel(1, "Tender OK");
   hNoEvts->GetAxis(0)->SetBinLabel(2, "Pile-up Rejection");

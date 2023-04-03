@@ -79,7 +79,11 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		void                    SetMinNtr(Double_t minNtr) {MinNtr = minNtr;};
 		void                    SetEstimatorFile(TString filename) {festimatorFile = filename;}
 		void                    SetMultType(Int_t mult_type) {fmult_type = mult_type;}
-               
+                void                    SetIsolationCut_E(Double_t isoEcut){fisoEcut = isoEcut;}               
+                void                    SetIsolationCut_Tr(Int_t isoTrcut){fisoTrcut = isoTrcut;}               
+
+		void                    SetZeeAssCut(Bool_t fZeeAssPhiCut){fFlagZeeAssPhiCut = fZeeAssPhiCut;}
+		void                    SetZeeAssNtrkCut(Bool_t fZeeAssNtrkCut){fFlagZeeAssNtrkCut = fZeeAssNtrkCut;}
 
 		//void      SetWeightNtrkl(TH1D* hWeight){
 		//	if(fweightNtrkl) delete fweightNtrkl;
@@ -111,6 +115,10 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		Double_t CutMimClE;
 		TString pTe;
 		Double_t massMin;
+                Double_t fisoEcut;
+                Int_t fisoTrcut;
+                Bool_t fFlagZeeAssPhiCut;
+                Bool_t fFlagZeeAssNtrkCut;
 		Double_t Nref;
 		Double_t NrefV0;
 		Int_t Nch;
@@ -119,6 +127,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
                 TString festimatorFile;
                 TProfile* estimatorAvg;
                 TProfile* estimatorV0Avg;
+		TString POWHEGweightFile;
+                TH1D *ZmassWeight;		
                 TH1D* NtrkWeightMC;
                 Int_t fmult_type;
 
@@ -192,7 +202,12 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fInv_pT_ULS_forZ;
 		TH2F*                   fInv_pT_ULS_forZ_level;
 		TH2F*                   fInv_pT_ULS_forZ_pos;
+		TH2F*                   fInv_pT_ULS_forZ_pos_true;
+		TH2F*                   fInv_pT_ULS_forZ_pos_true_w;
 		TH2F*                   fInv_pT_ULS_forZ_neg;
+		TH2F*                   fInv_pT_ULS_forZ_neg_true;
+		TH2F*                   fInv_pT_ULS_forZ_neg_true_w;
+		TH2F*                   fHistZeeDphi;
 		TH1F*                   fHistPt_Inc;
 		TH1F*                   fHistPt_Iso;
 		TH2F*                   fHistPt_R_Iso;
@@ -285,6 +300,8 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fHistZeOrg;
 		TH2F*                   fHistZeOrgNeg;
 		TH2F*                   fHistZeOrgPos;
+		TH2F*                   fHistZeOrgNeg_w;
+		TH2F*                   fHistZeOrgPos_w;
 		TH1F*                   fHistZeRec0;
 		TH1F*                   fHistZeRec1;
 		TH2F*                   fHist_Zpair_pos;

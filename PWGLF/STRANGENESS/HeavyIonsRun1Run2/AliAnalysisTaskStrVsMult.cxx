@@ -55,13 +55,15 @@ fTriggerMask(0),
 //AliEventCuts object
 fEventCuts(0),
 //pile-up rejection flag
-fRejectPileupEvts(kTRUE),
+fPileupCut(0),
+//Centrality estimator
+fCentEstimator(0),
 //MC-related variables
 fisMC(kFALSE),
 fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
-fV0_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+fV0_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 fCasc_Cuts{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
@@ -94,6 +96,8 @@ fV0_ITSTOFtracks(0),
 fV0_NegTrackStatus(0),
 fV0_PosTrackStatus(0),
 fV0_kinkidx(0),
+fV0_AlphaArm(0),
+fV0_pTArm(0),
 //variables for Cascade analysis
 fCasc_DcaCascDaught(0),
 fCasc_CascCosPA(0),
@@ -163,13 +167,15 @@ fTriggerMask(0),
 //AliEventCuts object
 fEventCuts(0),
 //pile-up rejection flag
-fRejectPileupEvts(kTRUE),
+fPileupCut(0),
+//Centrality estimator
+fCentEstimator("V0M"),
 //MC-related variables
 fisMC(kFALSE),
 fisMCassoc(kTRUE),
 //default cuts configuration
 fDefOnly(kFALSE),
-fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 125., 0.5, 0.8, 70., 0.8, 1., 2.5, 5., 20., 30., 0.},
+fV0_Cuts{1., 0.11, 0.11, 0.97, 1., 125., 0.5, 0.8, 70., 0.8, 1., 2.5, 5., 20., 30., 0.13, 0.},
 fCasc_Cuts{1., 0.99, 1., 4., 80., 0.8, 1., 2.5, 0.005, 1., 0.99, 0.1, 0.1, 0., 0.5, 0.8, 3., 3., 0.008, 3., 85., 0.2, 0.2, 1.},
 //particle to be analysed
 fParticleAnalysisStatus{true, true, true, true, true, true, true},
@@ -202,6 +208,8 @@ fV0_ITSTOFtracks(0),
 fV0_NegTrackStatus(0),
 fV0_PosTrackStatus(0),
 fV0_kinkidx(0),
+fV0_AlphaArm(0),
+fV0_pTArm(0),
 //variables for Cascade analysis
 fCasc_DcaCascDaught(0),
 fCasc_CascCosPA(0),
@@ -314,6 +322,7 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
     fHistos_K0S = new THistManager("histos_K0S");
     if(fisMC) fHistos_K0S->CreateTH2("h2_gen", "", fnptbins[kK0s], fptbinning[kK0s], fncentbins, fcentbinning);
     fHistos_K0S->CreateTH3("h3_ptmasscent_def", "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins, fcentbinning);
+    fHistos_K0S->CreateTH3("h3_armptarmalphapt_central", "", 300, 0., 0.3, 200, -1., 1., fnptbins[kK0s], fptbinning[kK0s][0], fptbinning[kK0s][fnptbins[kK0s]]);
   }
   if (fParticleAnalysisStatus[klam]) {
     fHistos_Lam = new THistManager("histos_Lam");
@@ -337,7 +346,7 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
           if (icut!=kV0_PropLifetLam) fHistos_K0S->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins, fcentbinning);
         }
         if (fParticleAnalysisStatus[klam]) {
-          if (icut!=kV0_PropLifetK0s) {
+          if (icut!=kV0_PropLifetK0s && icut!=kV0_ArmenterosK0s) {
             fHistos_Lam->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins, fcentbinning);
             fHistos_ALam->CreateTH3(Form("h3_ptmasscent[%d][%d]", icut, ivar), "", fnptbins[kLam], fptbinning[kLam], fnmassbins[kLam], fmassbinning[kLam], fncentbins, fcentbinning);
             if(fisMC){
@@ -388,7 +397,8 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
   inputHandler->SetNeedField();
 
   //fEventCuts Setup
-  if (fRejectPileupEvts) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+  if (fPileupCut==1) fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+  if (fPileupCut==2) fEventCuts.SetRejectTPCPileupWithV0CentTPCnTracksCorr(kTRUE);
 
   //geometrical cut Setup
   fESDTrackCuts.SetCutGeoNcrNcl(fDeadZoneWidth_GeoCut, fNcrNclLength_GeoCut, 1.5, 0.85, 0.7);
@@ -461,7 +471,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
     DataPosting(); 
     return; 
   } else {
-    lPercentile = MultSelection->GetMultiplicityPercentile("V0M");
+    lPercentile = MultSelection->GetMultiplicityPercentile(fCentEstimator);
     lEvSelCode = MultSelection->GetEvSelCode(); //==0 means event is good. Set by AliMultSelectionTask
   }
 
@@ -484,7 +494,7 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
   //fill number of events after pile-up rejection
   fHistos_eve->FillTH1("henum", 2.);
   
-  if (fRejectPileupEvts) {
+  if (fPileupCut) {
     if (!fEventCuts.PassedCut(AliEventCuts::kTPCPileUp)) {
       DataPosting(); 
       return;
@@ -677,6 +687,10 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         fV0_NegTrackStatus = nTrack->GetStatus();
         fV0_PosTrackStatus = pTrack->GetStatus();
 
+        //Armenteros variables
+        fV0_AlphaArm = v0->AlphaV0();
+        fV0_pTArm = v0->PtArmV0();
+
         // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
         fV0_ITSTOFtracks = ((fV0_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrack->GetTOFBunchCrossing(lMagField) > -95.)) ? 1 : 0;
         if((fV0_PosTrackStatus & AliESDtrack::kITSrefit) || (pTrack->GetTOFBunchCrossing(lMagField) > -95.)) fV0_ITSTOFtracks++;
@@ -781,6 +795,10 @@ void AliAnalysisTaskStrVsMult::UserExec(Option_t *)
         //track status: ( fV0_NegTrackStatus & AliESDtrack::kITSrefit ) is the codition to check kITSrefit
         fV0_NegTrackStatus = nTrack->GetStatus();
         fV0_PosTrackStatus = pTrack->GetStatus();
+
+        //Armenteros variables
+        fV0_AlphaArm = v0->AlphaV0();
+        fV0_pTArm = v0->PtArmV0();
 
         // check if at least one of candidate's daughter has a hit in the TOF or has ITSrefit flag (removes Out Of Bunch Pileup)
         fV0_ITSTOFtracks = ((fV0_NegTrackStatus & AliESDtrack::kITSrefit) || (nTrack->GetTOFBunchCrossing(lMagField) > -95.)) ? 1 : 0;
@@ -1219,6 +1237,7 @@ void AliAnalysisTaskStrVsMult::SetDefCutVariations() {
   SetCutVariation(kFALSE, kV0_NSigPID, 6, 2, 7);
   SetCutVariation(kFALSE, kV0_PropLifetK0s, 11, 10, 40);
   SetCutVariation(kFALSE, kV0_PropLifetLam, 11, 10, 40);
+  SetCutVariation(kFALSE, kV0_ArmenterosK0s, 21, 0., 0.2);
   SetCutVariation(kFALSE, kV0_ITSTOFtracks, 3, 0, 2);
 
   SetCutVariation(kTRUE, kCasc_DcaCascDaught, 10, 0.5, 1.4);
@@ -1287,6 +1306,8 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     if (fV0_ITSTOFtracks<cutval_V0[kV0_ITSTOFtracks]-0.1) return kFALSE;
     // TPC refit, should be already verified for Offline V0s
     if (!(fV0_PosTrackStatus & AliESDtrack::kTPCrefit) || !(fV0_NegTrackStatus & AliESDtrack::kTPCrefit)) return kFALSE;
+    // Armenteros-Podolanski selection (box cut) 
+    if (fV0_pTArm<cutval_V0[kV0_ArmenterosK0s]) return kFALSE;
     // check that none of daughters is a kink
     if (fV0_kinkidx>0) return kFALSE;
 
@@ -1431,11 +1452,14 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc, b
         if (i_cut!=kV0_PropLifetLam) {
           if (fParticleAnalysisStatus[kk0s]) {
             SetCutVal(kFALSE, kFALSE, i_cut, varlowcut_V0[i_cut]+i_var*(varhighcut_V0[i_cut]-varlowcut_V0[i_cut])/(nvarcut_V0[i_cut]-1));
-            if (phypri && associFlag[kk0s] && ApplyCuts(kk0s)) fHistos_K0S->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassK0s, perc);
+            if (phypri && associFlag[kk0s] && ApplyCuts(kk0s)) {
+              fHistos_K0S->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassK0s, perc);
+              if (i_cut==kV0_ArmenterosK0s && i_var==0 && perc>0. && perc<10.) fHistos_K0S->FillTH3("h3_armptarmalphapt_central", fV0_pTArm, fV0_AlphaArm, fV0_Pt);
+            }
           }
         }
         //Lam and AntiLam filling
-        if (i_cut!=kV0_PropLifetK0s) {
+        if (i_cut!=kV0_PropLifetK0s && i_cut!=kV0_ArmenterosK0s) {
           if (fParticleAnalysisStatus[klam]) {
             SetCutVal(kFALSE, kFALSE, i_cut, varlowcut_V0[i_cut]+i_var*(varhighcut_V0[i_cut]-varlowcut_V0[i_cut])/(nvarcut_V0[i_cut]-1));
             if (phypri && associFlag[klam] && ApplyCuts(klam)) fHistos_Lam->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassLam, perc);

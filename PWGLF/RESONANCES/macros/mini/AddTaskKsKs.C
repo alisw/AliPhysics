@@ -20,6 +20,7 @@
 #ifdef __CLING__
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #include <PWGLF/RESONANCES/macros/mini/ConfigKsKs.C>
+//#include "ConfigKsKs.C"
 #endif
 
 enum pairYCutSet { kPairDefault,    // USED ONLY FOR pA
@@ -62,7 +63,7 @@ AliRsnMiniAnalysisTask *AddTaskKsKs
  Float_t     piPIDCut = 3.0,
  Int_t       customQualityCutsID=1,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPiCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidphikstarpPb2016,
- Float_t  ThetaStar=AliRsnMiniValue::kCosThetaHeAbs,
+ Int_t       polaxis=0,
  Float_t     pi_k0s_PIDCut = 5.0,
  Float_t     massTol = 0.03,
  Float_t     massTolVeto = 0.0043,
@@ -265,11 +266,14 @@ AliRsnMiniAnalysisTask *AddTaskKsKs
     } else
         Printf("========================== DATA analysis - PID cuts used");
 
-  #ifdef __CINT__
-  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKsKs.C");
-  #endif 
-    if (!ConfigKsKs(task, isPP, isMC,customQualityCutsID, aodFilterBit,enableMonitor,enaMultSel, monitorOpt.Data(),cutPiCandidate,ThetaStar, piPIDCut, pi_k0s_PIDCut, massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, Sys,masslow,massup,nbins,ptlow,ptup,nbinspt,coslow,cosup,nbinscos)) return 0x0;
+    // #ifdef __CINT__
+    //  gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigKsKs.C");
+      // gROOT->LoadMacro("ConfigKsKs.C");
+    // #endif 
+          if (!ConfigKsKs(task, isPP, isMC,customQualityCutsID, aodFilterBit,enableMonitor,enaMultSel, monitorOpt.Data(),cutPiCandidate,polaxis, piPIDCut, pi_k0s_PIDCut, massTol, massTolVeto, tol_switch, tol_sigma, pLife, radiuslow, Switch, k0sDCA, k0sCosPoinAn, k0sDaughDCA, "", PairCutsSame, PairCutsMix, DCAxy, enableSys, Sys,masslow,massup,nbins,ptlow,ptup,nbinspt,coslow,cosup,nbinscos)) return 0x0;
     // -- CONTAINERS --------------------------------------------------------------------------------  //
+   
+
     TString outputFileName = AliAnalysisManager::GetCommonFileName();
     //  outputFileName += ":Rsn";
     Printf("AddTaskKStarPlusMinus - Set OutputFileName : \n %s\n", outputFileName.Data() );

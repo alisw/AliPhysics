@@ -8,6 +8,8 @@ AliFemtoWRzTrackCut::AliFemtoWRzTrackCut():
      fNsigmaRejection = 3.0;
      fNSigmaMass = -1;
      fmaxmom = 4;
+     fNsTPC = 2.0;
+     fNsTOF = 2.0;
   }
 
 AliFemtoWRzTrackCut::AliFemtoWRzTrackCut(const AliFemtoWRzTrackCut &aCut) : AliFemtoESDTrackCut(aCut)
@@ -234,6 +236,12 @@ bool AliFemtoWRzTrackCut::Pass( const AliFemtoTrack* track)
         if ( IsDeuteronNSigma(track->P().Mag(),track->MassTOF(), fNsigmaMass, track->NSigmaTPCD(), track->NSigmaTOFD()) && (IsPionNSigmaRejection(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) || IsKaonNSigmaRejection(track->P().Mag(),track->NSigmaTPCK(), track->NSigmaTOFK()) || IsProtonNSigmaRejection(track->P().Mag(),track->NSigmaTPCP(), track->NSigmaTOFP()) || IsElectronNSigmaRejection(track->P().Mag(),track->NSigmaTPCE())) )
           imost = 15;
       }
+      else if (fMostProbable == 16) { //setting for a purity calculation (when we have the selection with the rejection method)
+        if (IsDeuteronNSigma16(track->P().Mag(), track->NSigmaTPCD(), track->NSigmaTOFD()) )
+          imost = 16;
+        if ( fdEdxcut && (track->P().Mag() < 3) && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal(), fmaxmom) )
+          imost = 0;
+      }
     }
 
     //****Contour Method****
@@ -340,6 +348,24 @@ bool AliFemtoWRzTrackCut::IsDeuteronNSigma(float mom, float massTOFPDG,float sig
 	 return true;
 
   }
+  return false;
+}
+
+bool AliFemtoWRzTrackCut::IsDeuteronNSigma16(float mom, float nsigmaTPCD, float nsigmaTOFD)
+{
+  if (fNsigmaTPCTOF) {
+    //for purity crosscheck
+    if (mom > 1.3){
+      if ((TMath::Abs(nsigmaTPCD) < fNsTPC) && (TMath::Abs(nsigmaTOFD) < fNsTOF))
+        return true;
+    }
+    else{
+      if (TMath::Abs(nsigmaTPCD) < fNsTPC)
+        return true;
+    } 
+  }
+
+
   return false;
 }
 

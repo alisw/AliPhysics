@@ -1,20 +1,22 @@
-#include "AliAnalysisTask_pd_CreateTrees_PairsOnly.cxx"
-
 
 
 AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
   TString Name = "AnalysisTask_pd_CreateTrees_PairsOnly",
   int CollisionSystem = 1,
-  const char *Variation = "0") {
+  const char *Variation = "0",
+  bool UseOpenCuts = true) {
 
-
-  bool DebugAddTask = false;
+  bool DebugAddTask = true;
 
   // CollisionSystem:
   //
-  // 0 = pp collisions
   // 1 = Pb-Pb collisions (central: 0-10%)
   // 2 = Pb-Pb collisions (semi-central: 30-50%)
+  // 3 = pp collisions (MetaLHC16)
+  // 4 = pp collisions (MetaLHC17)
+  // 5 = pp collisions (MetaLHC18)
+
+
 
   TString suffix = TString::Format("%s",Variation);
   TString prefix = TString::Format("%i",CollisionSystem);
@@ -42,7 +44,7 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
 
 
 
-  AliAnalysisTask_pd_CreateTrees_PairsOnly* task = new AliAnalysisTask_pd_CreateTrees_PairsOnly(Name.Data(),CollisionSystem);   
+  AliAnalysisTask_pd_CreateTrees_PairsOnly* task = new AliAnalysisTask_pd_CreateTrees_PairsOnly(Name.Data(),CollisionSystem,UseOpenCuts);   
   if(!task)
   {
     std::cout << "AddTask_pd_CreateTrees_PairsOnly: x-x-x-x-> No AliAnalysisTask found" << std::endl;
@@ -73,7 +75,15 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
   if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: Input container connected" << std::endl;
  
 
-  if(CollisionSystem == 0){
+  if((CollisionSystem == 1) || (CollisionSystem == 2)){
+
+    task->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
+    std::cout << "AddTask_pd_CreateTrees_PairsOnly: SelectCollisionCandidates(AliVEvent::kSemiCentral || AliVEvent::kCentral)" << std::endl;
+
+  }
+
+
+  if((CollisionSystem == 3) || (CollisionSystem == 4) || CollisionSystem == 5){
  
     task->SelectCollisionCandidates(AliVEvent::kINT7 | AliVEvent::kHighMultV0);
     std::cout << "AddTask_pd_CreateTrees_PairsOnly: SelectCollisionCandidates(AliVEvent::kHighMultV0)" << std::endl;
@@ -81,12 +91,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
   }
 
 
-  if((CollisionSystem == 1) || (CollisionSystem == 2)){
-
-    task->SelectCollisionCandidates(AliVEvent::kSemiCentral | AliVEvent::kCentral);
-    std::cout << "AddTask_pd_CreateTrees_PairsOnly: SelectCollisionCandidates(AliVEvent::kSemiCentral || AliVEvent::kCentral)" << std::endl;
-
-  }
 
   if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: Collision candidates selected" << std::endl;
 
@@ -134,6 +138,15 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
   if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: AntiDeuteronContainer created" << std::endl;
 
 
+  TString HistogramName = Form("%sHistograms%s",prefix.Data(),suffix.Data());
+  AliAnalysisDataContainer *HistogramContainer = manager->CreateContainer(
+    HistogramName.Data(),
+    TList::Class(),
+    AliAnalysisManager::kOutputContainer,
+    TaskName.Data()
+  );
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: HistogramContainer created" << std::endl;
+
 
 
   manager->ConnectOutput(task,1,ProtonTreeContainer);
@@ -147,6 +160,9 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
 
   manager->ConnectOutput(task,4,AntiDeuteronTreeContainer);
   if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: Output container 4 connected" << std::endl;
+
+  manager->ConnectOutput(task,5,HistogramContainer);
+  if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: Output container 5 connected" << std::endl;
 
 
   // return a pointer to the task
