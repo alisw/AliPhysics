@@ -34,7 +34,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
                                                           "pileup10", "zvtx6","zvtx10","zvtx7",
                                                           "NTPC80", "NTPC90", "NTPC100",
                                                           "chi2def", "chi2tight23", "DCAz1", "DCAz05",
-                                                          "nqq", "pqq", "subA"}; //for reference, these variations are allowed
+                                                          "nqq", "pqq", "subA", "hybridBaseDCA"}; //for reference, these variations are allowed
 
   int PassedVariations = 0;
   std::vector<TString> configNames;
@@ -124,6 +124,10 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
       break;
     case 5:   // 5: HIJING, minPt = 0.2 for all.
       MAPfileNames[i] = Form("%sPhiWeights_20j6a_Hijing_default.root", MAPdirName.Data());
+      break;
+    case 6:   // 6: 15o, hybridBaseDCAcuts
+      MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_%s_s_%s.root", MAPdirName.Data(), sCorrection[period].Data(),
+       configNames[i].Data(), configNames[i].Data());
       break;
     default:
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
@@ -224,6 +228,10 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
     } else if (strcmp(configNames[i].Data(), "pqq") == 0) {
      fJCatalyst[i]->SetParticleCharge(1);
     }   // Default: charge = 0 to accept all charges.
+
+    if (strcmp(configNames[i].Data(), "hybridBaseDCA") == 0) {
+      fJCatalyst[i]->SetDCABaseCuts(true);
+    } // Default: Other DCA cuts
 
     /// Kinematic cuts and last fine tuning.
     fJCatalyst[i]->SetPtRange(ptMin, ptMax);
