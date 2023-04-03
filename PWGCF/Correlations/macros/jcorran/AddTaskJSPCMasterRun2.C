@@ -126,8 +126,8 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
       MAPfileNames[i] = Form("%sPhiWeights_20j6a_Hijing_default.root", MAPdirName.Data());
       break;
     case 6:   // 6: 15o, hybridBaseDCAcuts
-      MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_%s_s_%s.root", MAPdirName.Data(), sCorrection[period].Data(),
-       configNames[i].Data(), configNames[i].Data());
+      MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_s_%s.root", MAPdirName.Data(), sCorrection[period].Data(),
+       configNames[i].Data());
       break;
     default:
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
