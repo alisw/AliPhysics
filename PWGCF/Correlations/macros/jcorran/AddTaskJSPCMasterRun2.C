@@ -29,7 +29,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
   //-------- Read in passed Variations -------- 
   std::istringstream iss(Variations);
 
-  const int NPossibleVariations = 18;
+  const int NPossibleVariations = 19;
   std::string PossibleVariations[NPossibleVariations] = { "default","hybrid", "SPD", "noPileup",
                                                           "pileup10", "zvtx6","zvtx10","zvtx7",
                                                           "NTPC80", "NTPC90", "NTPC100",
