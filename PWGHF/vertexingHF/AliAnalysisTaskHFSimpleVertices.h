@@ -255,6 +255,7 @@ class AliAnalysisTaskHFSimpleVertices : public AliAnalysisTaskSE
   TH1F* fHistNormIPDs;        //!<!  histo with max difference between prong observed and expeceted impact parameters
   TH1F* fHistDeltaMassPhiDs;  //!<!  histo with abs. mass difference between KK pair and phi meson 
   TH1F* fHistCos3PiKDs;       //!<!  histo with cube of cosine of angle between pion and kaon
+  TH1F* fHistAbsCos3PiKDs;    //!<!  histo with absolute value of cube of cosine of angle between pion and kaon
 
   TH1F* fHistInvMassLc;             //!<!  histo with LcpKpi+ inv mass
   TH1F* fHistPtLc;                  //!<!  histo with LcpKpi+ pt
