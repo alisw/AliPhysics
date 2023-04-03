@@ -74,7 +74,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   //void ProduceEfficiencies(AliESDEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   void VnMpt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   Int_t GetStageSwitch(TString instr);
-  AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
+  AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc.Data(),head.Data(),ptdif);};
   void CreateCorrConfigs();
   void LoadWeightAndMPT();
   void LoadCorrectionsFromLists();
@@ -236,8 +236,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH1D** fPhi; //!
   TH1D** fPt; //!
   TH1D** fEta; //!
-  TH1D** fDCAxy; //!
-  TH1D** fDCAz; //!
+  TH2D** fDCAxy; //!
+  TH2D** fDCAz; //!
   TH1D** fChi2TPCcls; //!
   TH1D* fEtaMptAcceptance; //!
   TH1D* fPtMptAcceptance; //!
@@ -248,9 +248,6 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   vector<vector<vector<double>>>  wpPtSubP;
   vector<vector<vector<double>>>  wpPtSubN;
   std::map<double,double> centralitymap;  
-  static const Int_t      fNumHarms = 20;            
-  static const Int_t      fNumPowers = 20;            
-  TComplex Qvector[fNumHarms][fNumPowers];
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
   Bool_t Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index);
