@@ -94,7 +94,7 @@ AliAnalysisTaskEmcalJetValidation::AliAnalysisTaskEmcalJetValidation() :
    fMinPt(0.15),
    fJetEtaRange(0.5),
    fJetR(0.4),
-   fJetAlgo(AliJetContainer::antikt_algorithm),  
+   fJetAlgo(AliJetContainer::antikt_algorithm),
    fGhostArea(0.005),
    fRecoScheme(AliJetContainer::E_scheme)
 {
@@ -120,9 +120,10 @@ AliAnalysisTaskEmcalJetValidation::AliAnalysisTaskEmcalJetValidation(const char*
    fMinPt(0.15),
    fJetEtaRange(0.5),
    fJetR(0.4),
-   fJetAlgo(AliJetContainer::antikt_algorithm),  
+   fJetAlgo(AliJetContainer::antikt_algorithm),
    fGhostArea(0.005),
    fRecoScheme(AliJetContainer::E_scheme)
+
 
 {
     // constructor
@@ -210,11 +211,11 @@ void AliAnalysisTaskEmcalJetValidation::InitFromJson(TString filename){
    /// read configuration from json file
    if (filename != "" && gSystem->Exec(Form("ls %s > /dev/null", filename.Data())) == 0) {
       printf("------Read configuration from JSON file------\n");
-      
-      fJetAlgo    = AliJetContainer::antikt_algorithm; //not yet in JSON 
-      fRecoScheme = AliJetContainer::E_scheme;         //not yet in JSON 
-      fGhostArea = 0.005;                              //not yet in JSON 
-      
+
+      fJetAlgo    = AliJetContainer::antikt_algorithm; //not yet in JSON
+      fRecoScheme = AliJetContainer::E_scheme;         //not yet in JSON
+      fGhostArea = 0.005;                              //not yet in JSON
+
       int   njetRadii = 0;
       float* jetRadii = GetJsonArray(filename.Data(), "jet-finder-data", "jetR", njetRadii);
       if(njetRadii > 0){
@@ -223,14 +224,14 @@ void AliAnalysisTaskEmcalJetValidation::InitFromJson(TString filename){
          AliFatal("Missing Jet R in JSON, please check it");
       }
    }
-   return; 
+   return;
 }
 //_________________________________________________
 void AliAnalysisTaskEmcalJetValidation::ExecOnceLocal(){
     //this function will be call just once from the UserExec
     fInitializedLocal = kTRUE;
 
-    
+
 
     fFastJetWrapper = new AliFJWrapper("FJWrapper", "FJWrapper");     // Initialization of my jet finder
     fFastJetWrapper->SetAreaType(fastjet::active_area);
@@ -245,26 +246,30 @@ void AliAnalysisTaskEmcalJetValidation::ExecOnceLocal(){
     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     fTrackCuts = new AliESDtrackCuts("AliESDtrackCuts", "default");
     fTrackCuts->SetName("Global Hybrid tracks, loose DCA");
-    fTrackCuts->SetMinNClustersTPC(70);
-    //fTrackCuts->SetMinNCrossedRowsOverFindableClustersTPC(0.8); //included from Johanna's set of trackcuts in o2;
-                                                                  //ERROR: no member named 'SetMinNCrossedRowsOverFindableClustersTPC' in 'AliESDtrackCuts'
-    fTrackCuts->SetMaxChi2PerClusterTPC(4.0);                   //included from Johanna's set of trackcuts in o2
-    fTrackCuts->SetPtRange(0.1, 1.e10);
+    fTrackCuts->SetPtRange(0.15, 1.e15);
     fTrackCuts->SetEtaRange(-0.9, +0.9);
-
     fTrackCuts->SetRequireITSRefit(kTRUE);
     fTrackCuts->SetRequireTPCRefit(kTRUE);
+    //fTrackCuts->SetMinNClustersTPC(70);
+    fTrackCuts->SetMinNCrossedRowsTPC(70);    // Marta suggested to use this instead of the cut on l.253
+                                              //because basically we do track selections on the no. of crossed rows
+
+    fTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);   // similar to SetMinNCrossedRowsOverFindableClustersTPC(0.8) used in O2
+    fTrackCuts->SetMaxChi2PerClusterTPC(4.0);
     fTrackCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
-                                          AliESDtrackCuts::kAny);    // Is this something similar to SetRequireHitsInITSLayers(1, {0, 1})
-                                                                    // and SetMaxChi2PerClusterITS(36.f) used in O2 ? I didn't see these 2 in AliPhysics
-    fTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);
-    fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);
-    //fTrackCuts->SetMaxDcaXYPtDep([](float pt) { return 0.0105f + 0.0350f / pow(pt, 1.1f); }); //included from Johanna's set of trackcuts in o2
-                                                                                //ERROR: no member named 'SetMaxDcaXYPtDep' in 'AliESDtrackCuts'
-    fTrackCuts->SetAcceptKinkDaughters(kFALSE);
+                                          AliESDtrackCuts::kAny);    // similar to SetRequireHitsInITSLayers(1, {0, 1}) in O2
+    fTrackCuts->SetMaxChi2PerClusterITS(36.0);
+  //  fTrackCuts->SetMaxDCAToVertexXYPtDep("(0.0105 + 0.0350 / TMath::Power(pt, 1.1))"); //similar to "SetMaxDcaXYPtDep" implemented in O2 task (?)
+
+    fTrackCuts->SetMaxChi2TPCConstrainedGlobal(36);              // same as SetRequireGoldenChi2(true) in O2
+    fTrackCuts->SetMaxFractionSharedTPCClusters(0.4);           //Not yet in O2
+
+    fTrackCuts->SetAcceptKinkDaughters(kFALSE);                 //Not yet in O2 task
     fTrackCuts->SetMaxDCAToVertexXY(2.4);
-    fTrackCuts->SetMaxDCAToVertexZ(3.2);
-    fTrackCuts->SetDCAToVertex2D(kTRUE);
+    fTrackCuts->SetMaxDCAToVertexZ(3.2);                        // Loose DCA cuts: similar to SetMaxDcaZ in O2 task
+    //fTrackCuts->SetDCAToVertex2D(kTRUE);
+    fTrackCuts->SetDCAToVertex2D(kFALSE);                          //Marta suggested to set the flag as kFalse
+                                                                  //because there's no option to use the 2D cut for the DCA in O2
 
 }
 //_________________________________________________
@@ -357,9 +362,16 @@ void AliAnalysisTaskEmcalJetValidation::UserExec(Option_t *)
      if(!track) continue;
      if(!fTrackCuts->AcceptTrack(track)) continue;
 
-     lVec.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), 0.13957);   //assume that track is pion
-     fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E()); //fill jet constituents
+    // lVec.SetPtEtaPhiM(track->Pt(), track->Eta(), track->Phi(), 0.13957);   //assume that track is pion
+    // fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E()); //fill jet constituents
 
+    // Test for 2 hardcoded tracks : E_scheme
+    /* lVec.SetPtEtaPhiM(10, 0, 0, 0.13957);
+     fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E());
+
+     lVec.SetPtEtaPhiM(10, 0.01, 0.01, 0.13957);
+     fFastJetWrapper->AddInputVector(lVec.Px(), lVec.Py(), lVec.Pz(), lVec.E());*/
+    // Test for 2 harcoded tracks : pt_scheme
 
      //Filling Track Histograms
      fHistTrackPt->Fill(track->Pt());
@@ -611,6 +623,3 @@ float** AliAnalysisTaskEmcalJetValidation::GetJsonMatrix(const char* jsonFileNam
   return arrVals;
 }
 //______________________________________________________________________________
-
-
-
