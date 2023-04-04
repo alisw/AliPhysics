@@ -109,6 +109,15 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     case 23 :
       configNames.push_back("hybridBaseDCA");
       break;
+    case 24 :
+      configNames.push_back("DCAz15");
+      break;
+    case 25 :
+      configNames.push_back("pileup500");
+      break;
+    case 26 :
+      configNames.push_back("NTPC65");
+      break;
     default :
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
         << std::endl;
@@ -169,8 +178,10 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     /// Event selection: pileup cuts and Zvtx.
     if (strcmp(configNames[i].Data(), "noPileup") != 0) {   // Set flag only if we cut on pileup.
       fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);
-      if (strcmp(configNames[i].Data(), "pileup10") == 0) {fJCatalyst[i]->SetESDpileupCuts(true, slope, 10000, saveQA_ESDpileup);}
-      else {fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQA_ESDpileup);}
+      if (strcmp(configNames[i].Data(), "pileup10") == 0) {fJCatalyst[i]->SetESDpileupCuts(true, slope, 10000, saveQA_ESDpileup);
+      } else if (strcmp(configNames[i].Data(), "pileup500") == 0) {   // Vary the cut on the ESD pileup.
+        fJCatalyst[i]->SetESDpileupCuts(true, slope, 500, saveQA_ESDpileup);
+      } else {fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQA_ESDpileup);}
 
       fJCatalyst[i]->SetTPCpileupCuts(TPCpileup, saveQA_TPCpileup); // Reject the TPC pileup.
     }
@@ -200,6 +211,8 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
       fJCatalyst[i]->SetNumTPCClusters(90);
     } else if (strcmp(configNames[i].Data(), "NTPC100") == 0) {
       fJCatalyst[i]->SetNumTPCClusters(100);
+    } else if (strcmp(configNames[i].Data(), "NTPC65") == 0) {
+      fJCatalyst[i]->SetNumTPCClusters(65);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetNumTPCClusters(70);
     }
@@ -226,6 +239,8 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
       fJCatalyst[i]->SetDCAzCut(1.0);
     } else if (strcmp(configNames[i].Data(), "DCAz05") == 0) {
       fJCatalyst[i]->SetDCAzCut(0.5);
+    } else if (strcmp(configNames[i].Data(), "DCAz15") == 0) {
+      fJCatalyst[i]->SetDCAzCut(1.5);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetDCAzCut(2.0);
     }
