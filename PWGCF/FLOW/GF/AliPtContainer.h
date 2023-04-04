@@ -11,9 +11,7 @@ using namespace std;
 namespace PtSpace {
     enum kWeight {
         kOne,
-        kWpt,
-        kWperms,
-        kWmaxperm
+        kWperms
     };
     enum kObs {
         kCorr,

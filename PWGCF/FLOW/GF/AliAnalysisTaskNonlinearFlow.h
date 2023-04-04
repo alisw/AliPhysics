@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKNONLINEARFLOW_H
 #define ALIANALYSISTASKNONLINEARFLOW_H
 #include "AliAnalysisTaskSE.h"
-#include "AliGFWCuts.h"
+#include "AliGFWMCuts.h"
 #include "AliGFWNFCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
@@ -279,7 +279,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		const char* ReturnPPperiodMC(const Int_t runNumber) const;
 
 		AliEventCuts	  fEventCuts;					// Event cuts
-		AliGFWCuts*     fGFWSelection;                                  //!
+		AliGFWMCuts*     fGFWSelection;                                  //!
 		AliGFWNFCuts*   fGFWSelection15o;                               //!
 		AliAODEvent*    fAOD;                                           //! AOD object
 

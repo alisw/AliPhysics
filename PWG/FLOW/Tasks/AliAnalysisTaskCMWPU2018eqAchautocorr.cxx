@@ -1591,7 +1591,7 @@ void AliAnalysisTaskCMWPU2018eqAchautocorr::UserExec(Option_t*) {
       //Apply track cuts here:
 
       
-      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCutAch) && (trkEta >= fMinEtaCutAch) && (trkdEdx >= fdEdxMin) && (trkTpcNC >=fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && (ratiocrfc > 0.8) ) {
+      if((trkPt <= 10) && (trkPt >= 0.2) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >=fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg) && (ratiocrfc > 0.8) ) {
     
 	//if((trkPt <= 3.0) && (trkPt >= fMinPtCut) && (trkEta <= fMaxEtaCut) && (trkEta >= fMinEtaCut) && (trkdEdx >= fdEdxMin) && (trkTpcNC >= fTPCclustMin) && (trkChi2 >= fTrkChi2Min) && (trkChi2 <= fChi2) && TMath::Abs(trkChrg)) { //original
 

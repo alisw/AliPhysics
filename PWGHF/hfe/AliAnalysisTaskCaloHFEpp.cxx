@@ -93,6 +93,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
 	fisoEcut(0.05),
 	fisoTrcut(3),
 	fFlagZeeAssPhiCut(kFALSE),
+	fFlagZeeAssNtrkCut(kFALSE),
 	Nref(0),
 	NrefV0(0),
 	Nch(0),
@@ -322,6 +323,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
 	fisoEcut(0.05),
 	fisoTrcut(3),
 	fFlagZeeAssPhiCut(kFALSE),
+	fFlagZeeAssNtrkCut(kFALSE),
 	Nref(0),
 	NrefV0(0),
 	Nch(0),
@@ -1941,6 +1943,14 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
                    fHistZeeDphi->Fill(TrkPt,dphiAss);
                   }
 
+                if(fFlagZeeAssNtrkCut)
+                 {
+                   Int_t AssNtrackCone = 999;
+                   Double_t IsoEnergyAssTrack = 999.9;
+                   IsolationTrackBase(jtrack, aAssotrack, 999.9 ,IsoEnergyAssTrack, AssNtrackCone);
+                   if(AssNtrackCone>3.1)continue;
+                 }
+          
 		//-------define KFParticle to get mass
 		AliKFParticle::SetField(fVevent->GetMagneticField());
 		AliKFParticle ge1 = AliKFParticle(*track, fPDGe1);
@@ -1956,9 +1966,13 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		MassCorrect = recg.GetMass(mass,width);
                 Double_t RecoPt = recg.GetPt();
                 Double_t RecoEta = recg.GetEta();
- 
-                Int_t iMassbin = ZmassWeight->FindBin(Zmass_gen);
-                Double_t powheg_w = ZmassWeight->GetBinContent(iMassbin);
+  
+                Double_t powheg_w = 999.9;
+                if(ZmassWeight)
+                  {
+                   Int_t iMassbin = ZmassWeight->FindBin(Zmass_gen);
+                   powheg_w = ZmassWeight->GetBinContent(iMassbin);
+                  }
 
 		if(fFlagLS){
 			//if(mass < 0.002)cout <<"Px="<<aAssotrack->Px() <<" Py="<<aAssotrack->Py()<<" Pz="<<aAssotrack->Pz()<<endl;

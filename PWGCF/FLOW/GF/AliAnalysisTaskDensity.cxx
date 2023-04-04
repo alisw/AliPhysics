@@ -49,6 +49,8 @@ AliAnalysisTaskDensity::AliAnalysisTaskDensity() : AliAnalysisTaskSE(),
     fhChiPerTPCCls(0),
     fhChiPerITSCls(0),
     fhNofPileupSelected(0),
+    fhSubEtaDistribution(0),
+    fhMultSelected(0),
     fUseEffeciency(0),
     fSystFlag(0),
     fGFWSelection(0)
@@ -75,6 +77,8 @@ AliAnalysisTaskDensity::AliAnalysisTaskDensity(const char* name, Bool_t bUseEff)
     fhChiPerTPCCls(0),
     fhChiPerITSCls(0),
     fhNofPileupSelected(0),
+    fhSubEtaDistribution(0),
+    fhMultSelected(0),
     fUseEffeciency(bUseEff),
     fSystFlag(0),
     fGFWSelection(0)
@@ -150,11 +154,16 @@ void AliAnalysisTaskDensity::UserCreateOutputObjects()
     fhNofPileupSelected = new TH1D("nofpileup",                 "nofpileup",                200, 0, 20000);
     fhPrimaryVzSelected = new TH1D("vtxz distribution",         "vtxz distribution",        300, -15., 15);
     fhCentSelected      = new TH2D("centrality distribution",   "centrality distribution",  200, 0., 100., 3., 0, 3.);
-    const char* ncentbins[3] = {"Minbias", "Central", "Semi-Central"};
-    for (int i(1);i<=3;i++) { fhCentSelected->GetYaxis()->SetBinLabel(i,ncentbins[i-1]); }
+    fhMultSelected  = new TH2D("multiplicity distribution",     "multiplicity distribution",300, 0., 12000., 3., 0, 3.);
+    const char* ntriggerbins[3] = {"Minbias", "Central", "Semi-Central"};
+
+    for (int i(1);i<=3;i++) { fhCentSelected->GetYaxis()->SetBinLabel(i,ntriggerbins[i-1]); }
+    for (int i(1);i<=3;i++) { fhMultSelected->GetYaxis()->SetBinLabel(i,ntriggerbins[i-1]); }
+
     fQAEventList->Add(fhNofPileupSelected);
     fQAEventList->Add(fhPrimaryVzSelected);
     fQAEventList->Add(fhCentSelected);
+    fQAEventList->Add(fhMultSelected);
     PostData(2,fQAEventList);
     printf("QA Event objects created!\n");
 
@@ -167,8 +176,12 @@ void AliAnalysisTaskDensity::UserCreateOutputObjects()
     fhDCAxyDistribution = new TH1D("DCAxy distribution", "DCAxy distribution",  400, -2, 2);
     fhEtaDistribution   = new TH1D("eta distribution",   "eta distribution",    200, -1, 1);
     fhPtDistribution    = new TH2D("pt distributoon",    "pt distribution",     600, 0., 10., 3., 0, 3.);
+    fhSubEtaDistribution = new TH2D("sub eta distributoon",    "sub eta distributoon", 200, -1, 1, 3., 0, 3.);
+
     const char* nptbins[3] = {"Full", "Trig", "TrigWeighted"};
+    const char* netabins[3] = {"Full", "Two-Sub", "Three-Sub"};
     for (int i(1);i<=3;i++) { fhPtDistribution->GetYaxis()->SetBinLabel(i,nptbins[i-1]); }
+    for (int i(1);i<=3;i++) { fhSubEtaDistribution->GetYaxis()->SetBinLabel(i,netabins[i-1]); }
     fQATrackList->Add(fhCrossedRowsTPC);
     fQATrackList->Add(fhChiPerTPCCls);
     fQATrackList->Add(fhChiPerITSCls);
@@ -176,6 +189,7 @@ void AliAnalysisTaskDensity::UserCreateOutputObjects()
     fQATrackList->Add(fhDCAxyDistribution);
     fQATrackList->Add(fhEtaDistribution);
     fQATrackList->Add(fhPtDistribution);
+    fQATrackList->Add(fhSubEtaDistribution);
     PostData(3,fQATrackList);
     printf("QA Tracks objects created!\n\n");
 }
@@ -202,12 +216,15 @@ void AliAnalysisTaskDensity::UserExec(Option_t *)
     
     if(!CheckTrigger(fCentrality)) return;
     if(!AcceptAODEvent(fAOD)) return;
+    Int_t NchSelected=0;
     for(Int_t i(0); i < fAOD->GetNumberOfTracks(); i++) 
     {                 
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
         if(!AcceptAODTrack(track)) continue;
         ProcessTrack( WeightPt(track->Pt()), track->Pt(), track->Eta());
-    }                             
+        NchSelected++;
+    }                      
+    FillEventQA(fCentrality, NchSelected);       
     ProcessEventCorrelation(rndGenerator->Integer(10));
     PostData(1, fPtSampleList);
 }
@@ -219,12 +236,17 @@ void AliAnalysisTaskDensity::Terminate(Option_t *)
 //_____________________________________________________________________________
 void AliAnalysisTaskDensity::ProcessTrack(Double_t lweight, Double_t lpt, Double_t leta)
 {
-    FillWPCounter(wp, lweight, lpt);                                                                        // regular [-0.8 < eta < 0.8]
+    FillWPCounter(wp, lweight, lpt);                                                            // regular [-0.8 < eta < 0.8]
     if( (-fAbsEta<leta) && (leta<-fEtaGap))  FillWPCounter(wpTwoSubEvent[0], lweight, lpt);     // two sub [-0.8 < eta < -0.4]
     if( (fEtaGap<leta)  && (leta<fAbsEta))   FillWPCounter(wpTwoSubEvent[1], lweight, lpt);     // two sub [0.4 < eta < 0.8 ]
     if( -fAbsEta<leta && leta<-0.4) FillWPCounter(wpThreeSubEvent[0], lweight, lpt);                        // three sub [-0.8 < eta < -0.4]
     if(std::abs(leta) < 0.2)        FillWPCounter(wpThreeSubEvent[1], lweight, lpt);                        // three sub [-0.2 < eta < 0.2]
     if( 0.4<leta && leta<fAbsEta)   FillWPCounter(wpThreeSubEvent[2], lweight, lpt);                        // three sub [0.4 < eta < 0.8 ]
+    // Fill sub-event
+    if( std::abs(leta)<fAbsEta) fhSubEtaDistribution->Fill(leta, "Full", 1);
+    if( (-fAbsEta<leta) && (leta<-fEtaGap) || (fEtaGap<leta)  && (leta<fAbsEta)) fhSubEtaDistribution->Fill(leta, "Two-Sub", 1);
+    if( (-fAbsEta<leta) && (leta<-0.4) || (std::abs(leta)<0.2) || (0.4<leta) && (leta<fAbsEta)) fhSubEtaDistribution->Fill(leta, "Three-Sub", 1);
+
 }
 void AliAnalysisTaskDensity::ProcessEventCorrelation(Int_t id)
 {
@@ -274,7 +296,6 @@ void AliAnalysisTaskDensity::SetDefaultSettings(){
 bool AliAnalysisTaskDensity::AcceptAODEvent(AliAODEvent* event){
     if(!fEventCuts.AcceptEvent(event)) return kFALSE;
     if(!fGFWSelection->AcceptVertex(event)) return kFALSE;
-    //if(fMaxPileup < event->GetNumberOfPileupVerticesTracks()) return kFALSE;
     // all triggers passed -> write to hist
     fhNofPileupSelected->Fill( event->GetNumberOfPileupVerticesTracks() );
     fhPrimaryVzSelected->Fill( event->GetPrimaryVertex()->GetZ() );
@@ -288,11 +309,27 @@ bool AliAnalysisTaskDensity::CheckTrigger(Double_t lCent){
     if(fSelMask&AliVEvent::kINT7) { fhCentSelected->Fill(lCent, "Minbias", 1); return kTRUE; }; 
     if((fSelMask&AliVEvent::kCentral) && lCent>10) {return kFALSE; }; 
     if((fSelMask&AliVEvent::kSemiCentral) && (lCent<30 || lCent>50)) {return kFALSE; };
-    // fill selected trigger
-    if(fSelMask&AliVEvent::kCentral) fhCentSelected->Fill(lCent, "Central", 1);
-    if(fSelMask&AliVEvent::kSemiCentral) fhCentSelected->Fill(lCent, "Semi-Central", 1);
     return kTRUE;
 }
+
+
+void AliAnalysisTaskDensity::FillEventQA(Double_t lCent, Int_t lNch)
+{
+    UInt_t fSelMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    if(fSelMask&AliVEvent::kINT7){
+        fhCentSelected->Fill(lCent, "Minbias", 1);
+        fhMultSelected->Fill(lNch,  "Minbias", 1);
+    }
+    if(fSelMask&AliVEvent::kCentral){
+        fhCentSelected->Fill(lCent, "Central", 1);
+        fhMultSelected->Fill(lNch,  "Central", 1);
+    }
+    if(fSelMask&AliVEvent::kSemiCentral){
+        fhCentSelected->Fill(lCent, "Semi-Central", 1);
+        fhMultSelected->Fill(lNch,  "Semi-Central", 1);
+    }
+}
+
 
 //_____________________________________________________________________________
 bool AliAnalysisTaskDensity::AcceptAODTrack(AliAODTrack* track)
@@ -316,7 +353,7 @@ bool AliAnalysisTaskDensity::AcceptAODTrack(AliAODTrack* track)
     // physics selection
     fhEtaDistribution->Fill(track->Eta());
     fhPtDistribution->Fill(track->Pt(), "Trig", 1);
-    fhPtDistribution->Fill(track->Pt()*WeightPt(track->Pt()), "TrigWeighted", 1);
+    fhPtDistribution->Fill(track->Pt(), "TrigWeighted", WeightPt(track->Pt()));
     // detector selection
     fhDCAxyDistribution->Fill(ltrackXYZ[0]+ltrackXYZ[1]);
     fhDCAzDistribution->Fill(ltrackXYZ[2]);
@@ -332,12 +369,9 @@ bool AliAnalysisTaskDensity::AcceptMCTrack(AliAODMCParticle* track)
     // physics cuts
     if(track->Pt() < fPtLow) return kFALSE;
     if(track->Pt() > fPtHigh) return kFALSE;
-    if(std::abs(track->Eta()) > 0.8 ) return kFALSE;
+    if(std::abs(track->Eta()) > fAbsEta ) return kFALSE;
     return kTRUE;
 }
-
-
-
 
 //_____________________________________________________________________________
 void AliAnalysisTaskDensity::ClearWPCounter()

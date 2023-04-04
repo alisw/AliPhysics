@@ -3347,7 +3347,7 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
     Pion_ITS_nCluster_min = 1;
 
     UseTOF = false;
-    UseITS = false;
+    UseITS = true;
 
   } // end of UseOpenCuts == true
 
@@ -3487,13 +3487,12 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
 
   if((ITSisOK == true) && (UseITS == true)){
 
-/*
+
     int ParticleSpecies = 0;
-    if(isMatter) ParticleSpecies = 1;
-    if(!isMatter) ParticleSpecies = 3;
-*/  
-    //double ITS_dEdx_Sigma = CalculateSigmadEdxITS(Track,ParticleSpecies,RunNumber);
-    double ITS_dEdx_Sigma = fPIDResponse.NumberOfSigmasITS(&Track,AliPID::kPion);
+    if(isMatter) ParticleSpecies = 5;
+    if(!isMatter) ParticleSpecies = 6;
+  
+    double ITS_dEdx_Sigma = CalculateSigmadEdxITS(Track,ParticleSpecies,RunNumber);
     if(TMath::Abs(ITS_dEdx_Sigma) > Pion_ITS_dEdx_nSigma_max) return PassedParticleCuts;
 
     // apply ITS cluster cut
@@ -3595,9 +3594,9 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckLambdaCuts(AliAODv0 &v0, dou
   double pT_max = 999.0; // GeV/c
   double DecayRadius_min = 0.2; // cm
   double DecayRadius_max = 100.0; // cm
-  double LambdaMassVariaion = 0.004; // GeV/c²
+  double LambdaMassVariaion = 0.05; // GeV/c²
   double DCAv0ToPrimaryVertex_max = 1.5; // cm
-  double ArmenterosPodolanskiFactor = 0.2;
+ // double ArmenterosPodolanskiFactor = 0.2;
   double CosinePointingAngle_min = 0.9;
 
   bool UseReconstructionOnTheFly = true;
@@ -3643,6 +3642,8 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckLambdaCuts(AliAODv0 &v0, dou
   if(TMath::IsNaN(DCAv0Daughters)) return PassedParticleCuts;
   if((TMath::Abs(DCAv0Daughters) < DCAv0Daughters_min) || (TMath::Abs(DCAv0Daughters) > DCAv0Daughters_max)) return PassedParticleCuts;
 
+
+/*
   double MomentumDaughterPosX = v0.MomPosX();
   double MomentumDaughterPosY = v0.MomPosY();
   double MomentumDaughterPosZ = v0.MomPosZ();
@@ -3682,7 +3683,7 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckLambdaCuts(AliAODv0 &v0, dou
   if(TMath::IsNaN(qT)) return PassedParticleCuts;
 
   if(TMath::Abs(qT) > (TMath::Abs(Alpha) * ArmenterosPodolanskiFactor)) return PassedParticleCuts;
-
+*/
 
 
 
@@ -3987,11 +3988,16 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
   bool isDeuteron     = false;
   bool isAntiProton   = false;
   bool isAntiDeuteron = false;
+  bool isPion	      = false;
+  bool isAntiPion     = false;
+
 
   if(ParticleSpecies == 1) isProton = true;
   if(ParticleSpecies == 2) isDeuteron = true;
   if(ParticleSpecies == 3) isAntiProton = true;
   if(ParticleSpecies == 4) isAntiDeuteron = true;
+  if(ParticleSpecies == 5) isPion = true;
+  if(ParticleSpecies == 6) isAntiPion = true;
 
   double p = Track.P();
 
@@ -4021,6 +4027,23 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
   }
 
+  if((isPion == true) || (isAntiPion == true)){
+
+    Mean->FixParameter(0,2.02983e-12);
+    Mean->FixParameter(1,-55831.1);
+    Mean->FixParameter(2,-238672);
+    Mean->FixParameter(3,1187.83);
+    Mean->FixParameter(4,12309.8);
+    Mean->FixParameter(5,1);
+    Mean->FixParameter(6,0.13957);
+
+  }
+
+
+
+
+
+
   double mean = Mean->Eval(p);
   Mean->Delete();
 
@@ -4028,15 +4051,19 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
   if(((isProton == true) || (isAntiProton == true))	&& (MetaLHC16 == true)) Resolution = 0.126;
   if(((isDeuteron == true) || (isAntiDeuteron == true)) && (MetaLHC16 == true)) Resolution = 9.14588e-02;
+  if(((isPion == true) || (isAntiPion == true)) && (MetaLHC16 == true)) Resolution = 1.28499e-01;
 
   if(((isProton == true) || (isAntiProton == true))	&& (MetaLHC17 == true)) Resolution = 1.34216e-01;
   if(((isDeuteron == true) || (isAntiDeuteron == true)) && (MetaLHC17 == true)) Resolution = 9.00246e-02;
+  if(((isPion == true) || (isAntiPion == true)) && (MetaLHC17 == true)) Resolution = 1.31156e-01;
 
   if(((isProton == true) || (isAntiProton == true))	&& (MetaLHC18 == true)) Resolution = 1.32506e-01;
   if(((isDeuteron == true) || (isAntiDeuteron == true)) && (MetaLHC18 == true)) Resolution = 8.82121e-02;
+  if(((isPion == true) || (isAntiPion == true)) && (MetaLHC18 == true)) Resolution = 1.32900e-01;
 
   if(((isProton == true) || (isAntiProton == true))	&& ((LHC18q == true) || (LHC18r == true))) Resolution = 0.10;
   if(((isDeuteron == true) || (isAntiDeuteron == true)) && ((LHC18q == true) || (LHC18r == true))) Resolution = 0.10;
+  if(((isPion == true) || (isAntiPion == true)) && ((LHC18q == true) || (LHC18r == true))) Resolution = 1.71541e-01;
 
   double ScaleFactor = 1.0-(Resolution);
   double sigma = (mean*ScaleFactor) - mean;

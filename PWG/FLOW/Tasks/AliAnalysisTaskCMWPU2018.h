@@ -87,6 +87,7 @@ class AliAnalysisTaskCMWPU2018 : public AliAnalysisTaskSE {
   void SetDCAXYRangeMax(Double_t dcaxy)          {this->fDCAxyMax    = dcaxy;}
   void SetDCAZRangeMax(Double_t dcaz)            {this->fDCAzMax    =  dcaz;}
   void SetChi2Range(Double_t chi2)               {this->fChi2    =  chi2;}
+  void SetCrossrowtofindcluster(Bool_t crfc)     {this->usecrfc    =  crfc;}
   void SetEtaNeg(Double_t etaL)                  {this->fEtaGapNeg   = etaL;}
   void SetEtaPos(Double_t etaH)                  {this->fEtaGapPos   = etaH;}
 
@@ -133,7 +134,8 @@ class AliAnalysisTaskCMWPU2018 : public AliAnalysisTaskSE {
   Float_t               fMaxPtCut;  //
   Float_t               fDCAxyMax;  //                                                                                                        
   Float_t                fDCAzMax;  // 
-  Float_t                   fChi2; 
+  Float_t                   fChi2;
+  Bool_t                 usecrfc; 
   Double_t       fPileUpSlopeParm;  //
   Double_t       fPileUpConstParm;  //
   Bool_t           bSkipPileUpCut;  //

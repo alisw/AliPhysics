@@ -1,7 +1,7 @@
 #include "TGrid.h"
 #include "TString.h"
 class TNamed;
-AliAnalysisTaskDensity* AddTaskDensity(TString name = "name", TString efficiencyFile = "")
+AliAnalysisTaskDensity* AddTaskDensity(TString name = "name", TString efficiencyFile = "", const char* suffix = "")
 {
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) return 0x0; 
@@ -9,13 +9,14 @@ AliAnalysisTaskDensity* AddTaskDensity(TString name = "name", TString efficiency
 
   TString fileName = AliAnalysisManager::GetCommonFileName();
   fileName += ":DensityTask";     
-  
+  TString taskName = Form("%s_%s", name.Data(), suffix);
+
   Bool_t useEfficiency = kFALSE;
   if(!efficiencyFile.IsNull()) useEfficiency = kTRUE;
 
   // setup task
   printf("Setting task");
-  AliAnalysisTaskDensity* task = new AliAnalysisTaskDensity(name.Data(), useEfficiency);   
+  AliAnalysisTaskDensity* task = new AliAnalysisTaskDensity(taskName.Data(), useEfficiency);   
   if(!task) return 0x0;
   task->SelectCollisionCandidates(AliVEvent::kINT7+AliVEvent::kCentral+AliVEvent::kSemiCentral);    
   mgr->AddTask(task);
@@ -23,9 +24,9 @@ AliAnalysisTaskDensity* AddTaskDensity(TString name = "name", TString efficiency
   // input
   mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
   // output
-  mgr->ConnectOutput(task,1,mgr->CreateContainer("PtSubEventSamples", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-  mgr->ConnectOutput(task,2,mgr->CreateContainer("QAAliEventCuts", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
-  mgr->ConnectOutput(task,3,mgr->CreateContainer("QATrackCuts", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("PtSubEventSamples_%s", taskName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,2,mgr->CreateContainer(Form("QAAliEventCuts_%s", taskName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+  mgr->ConnectOutput(task,3,mgr->CreateContainer(Form("QATrackCuts_%s", taskName.Data()), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
 
   // get NUE files as input
   if(useEfficiency) {
