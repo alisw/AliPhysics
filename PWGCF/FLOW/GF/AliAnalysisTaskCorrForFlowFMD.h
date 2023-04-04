@@ -87,6 +87,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetRejectSecondariesFromMC(Bool_t flag = kTRUE) { fRejectSecondariesFromMC = flag; }
         void                    SetVetoJetEvents(Bool_t flag = kTRUE) { fVetoJetEvents = flag; }
         void                    SetJetEventsLowPtCut(Double_t cut) { fJetParticleLowPt = cut; }
+	void                    SetParticlemassbias((Bool_t massbias = kFALSE) { fParticlemass_bias_corr = massbias; }
+
 
         // event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
@@ -285,6 +287,10 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fMaxLambdaMass; // [1.15]
 	Double_t                fMinPhiMass; // [0.99]
         Double_t                fMaxPhiMass; // [1.07]
+	Bool_t                  fParticlemass_bias_corr;
+        Int_t                   fProtonSigcount;
+        Int_t                   fLambdaSigcount;
+        Int_t                   fPhiSigcount;
 
 
         Double_t                fJetParticleLowPt; // [5.]
