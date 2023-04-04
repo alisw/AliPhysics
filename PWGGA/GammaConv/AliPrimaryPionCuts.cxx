@@ -118,8 +118,9 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fHistTPCdEdxafter(NULL),
 	fHistTPCdEdxSignalbefore(NULL),
 	fHistTPCdEdxSignalafter(NULL),
-	fHistoTOFSigbefore(NULL),
 	fHistTOFbefore(NULL),
+	fHistTOFSigbefore(NULL),
+	fHistTOFafter(NULL),
 	fHistTOFSigafter(NULL),
 	fHistTrackDCAxyPtbefore(NULL),
 	fHistTrackDCAxyPtafter(NULL),
@@ -200,8 +201,9 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const AliPrimaryPionCuts &ref) : AliAnaly
 	fHistTPCdEdxafter(NULL),
 	fHistTPCdEdxSignalbefore(NULL),
 	fHistTPCdEdxSignalafter(NULL),
-	fHistoTOFSigbefore(NULL),
 	fHistTOFbefore(NULL),
+	fHistTOFSigbefore(NULL),
+	fHistTOFafter(NULL),
 	fHistTOFSigafter(NULL),
 	fHistTrackDCAxyPtbefore(NULL),
 	fHistTrackDCAxyPtafter(NULL),
@@ -285,30 +287,27 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
 	TAxis *AxisBeforeTOFSig  = NULL;
 	TAxis *axisBeforedEdxSignal = NULL;
     if(!fDoLightOutput){
-      fHistTPCdEdxbefore=new TH2F(Form("Pion_dEdx_before %s",cutName.Data()),"dEdx pion before" ,170,0.05,50,400,-10,10);
-      fHistograms->Add(fHistTPCdEdxbefore);
-      axisBeforedEdx = fHistTPCdEdxbefore->GetXaxis();
-
-      fHistTPCdEdxSignalbefore=new TH2F(Form("Pion_dEdxSignal_before %s",cutName.Data()),"dEdx pion signal before" ,170,0.05,50.0,800,0.0,200);
-      fHistograms->Add(fHistTPCdEdxSignalbefore);
-      axisBeforedEdxSignal = fHistTPCdEdxSignalbefore->GetXaxis();
       if(preCut){
-        fHistITSdEdxbefore=new TH2F(Form("Pion_ITS_before %s",cutName.Data()),"ITS dEdx pion before" ,170,0.05,50,400,-10,10);
+		fHistTPCdEdxbefore=new TH2F(Form("Pion_dEdx_before %s",cutName.Data()),"dEdx pion before" ,400,0.05,50,400,-10,10);
+        fHistograms->Add(fHistTPCdEdxbefore);
+        axisBeforedEdx = fHistTPCdEdxbefore->GetXaxis();
+	    fHistTPCdEdxSignalbefore=new TH2F(Form("Pion_dEdxSignal_before %s",cutName.Data()),"dEdx pion signal before" ,400,0.05,50.0,400,0.0,200);
+        fHistograms->Add(fHistTPCdEdxSignalbefore);
+        axisBeforedEdxSignal = fHistTPCdEdxSignalbefore->GetXaxis();
+
+        fHistITSdEdxbefore=new TH2F(Form("Pion_ITS_before %s",cutName.Data()),"ITS dEdx pion before" ,100,0.05,50,100,-10,10);
         fHistograms->Add(fHistITSdEdxbefore);
         axisBeforeITS = fHistITSdEdxbefore->GetXaxis();
 
-
-
-        fHistTOFbefore=new TH2F(Form("Pion_TOF_before %s",cutName.Data()),"TOF pion before" ,170,0.03,20,100,-1000,10000);
+        fHistTOFbefore=new TH2F(Form("Pion_TOF_before %s",cutName.Data()),"TOF pion before" ,400,0.03,20,600,-0.2,1.3);
         fHistograms->Add(fHistTOFbefore);
         axisBeforeTOF = fHistTOFbefore->GetXaxis();
-		fHistoTOFSigbefore=new TH2F(Form("Pion_TOFSig_before %s",cutName.Data()),"TOF sigma pion before"  ,170,0.05,50,400,-6,10);
-      	fHistograms->Add(fHistoTOFSigbefore);
-      	AxisBeforeTOFSig = fHistoTOFSigbefore->GetXaxis();
+		fHistTOFSigbefore=new TH2F(Form("Pion_TOFSig_before %s",cutName.Data()),"TOF sigma pion before"  ,400,0.05,50,400,-6,10);
+      	fHistograms->Add(fHistTOFSigbefore);
+      	AxisBeforeTOFSig = fHistTOFSigbefore->GetXaxis();
 
         fHistTrackDCAxyPtbefore = new TH2F(Form("hTrack_DCAxy_Pt_before %s",cutName.Data()),"DCAxy Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
         fHistograms->Add(fHistTrackDCAxyPtbefore);
-
         fHistTrackDCAzPtbefore  = new TH2F(Form("hTrack_DCAz_Pt_before %s",cutName.Data()), "DCAz  Vs Pt of tracks before",800,-4.0,4.0,400,0.,10.);
         fHistograms->Add(fHistTrackDCAzPtbefore);
 
@@ -316,40 +315,39 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
         fHistograms->Add(fHistTrackNFindClsPtTPCbefore);
       }
 
-      fHistITSdEdxafter=new TH2F(Form("Pion_ITS_after %s",cutName.Data()),"ITS dEdx pion after" ,170,0.05,50,400, -10,10);
+      fHistITSdEdxafter=new TH2F(Form("Pion_ITS_after %s",cutName.Data()),"ITS dEdx pion after" ,100,0.05,50,100, -10,10);
       fHistograms->Add(fHistITSdEdxafter);
 
-      fHistTPCdEdxafter=new TH2F(Form("Pion_dEdx_after %s",cutName.Data()),"dEdx pion after" ,170,0.05,50,400, -10,10);
+      fHistTPCdEdxafter=new TH2F(Form("Pion_dEdx_after %s",cutName.Data()),"dEdx pion after" ,400,0.05,50,400, -10,10);
       fHistograms->Add(fHistTPCdEdxafter);
-
-      fHistTPCdEdxSignalafter=new TH2F(Form("Pion_dEdxSignal_after %s",cutName.Data()),"dEdx pion signal after" ,170,0.05,50.0,800,0.0,200);
+      fHistTPCdEdxSignalafter=new TH2F(Form("Pion_dEdxSignal_after %s",cutName.Data()),"dEdx pion signal after" ,400,0.05,50.0,400,0.0,200);
       fHistograms->Add(fHistTPCdEdxSignalafter);
 
-      fHistTOFSigafter=new TH2F(Form("Pion_TOFSig_after %s",cutName.Data()),"TOF sigma pion after" ,170,0.05,50,400,-6,10);
+      fHistTOFafter=new TH2F(Form("Pion_TOF_after %s",cutName.Data()),"TOF pion after" ,400,0.05,50,600,-0.2,1.3);
+      fHistograms->Add(fHistTOFafter);
+      fHistTOFSigafter=new TH2F(Form("Pion_TOFSig_after %s",cutName.Data()),"TOF sigma pion after" ,400,0.05,50,400,-6,10);
       fHistograms->Add(fHistTOFSigafter);
 
       fHistTrackDCAxyPtafter  = new TH2F(Form("hTrack_DCAxy_Pt_after %s",cutName.Data()),"DCAxy Vs Pt of tracks after",800,-4.0,4.0,400,0.,10.);
       fHistograms->Add(fHistTrackDCAxyPtafter);
-
       fHistTrackDCAzPtafter  = new TH2F(Form("hTrack_DCAz_Pt_after %s",cutName.Data()), "DCAz Vs Pt of tracks  after",800,-4.0,4.0,400,0.,10.);
       fHistograms->Add(fHistTrackDCAzPtafter);
 
       fHistTrackNFindClsPtTPCafter = new TH2F(Form("hTrack_NFindCls_Pt_TPC_after %s",cutName.Data()),"Track: N Findable Cls TPC Vs Pt after",100,0,1,400,0.,10.);
       fHistograms->Add(fHistTrackNFindClsPtTPCafter);
 
-			fHistTrackSelectedEta = new TH1F(Form("fHistTrackSelectedEta %s",cutName.Data()),"Selected Track Eta",200,-1,1);
+	  fHistTrackSelectedEta = new TH1F(Form("fHistTrackSelectedEta %s",cutName.Data()),"Selected Track Eta",200,-1,1);
       fHistograms->Add(fHistTrackSelectedEta);
 
-			fHistTrackSelectedPhi = new TH1F(Form("fHistTrackSelectedPhi %s",cutName.Data()),"Selected Track Phi",200,0.,2*TMath::Pi());
+	  fHistTrackSelectedPhi = new TH1F(Form("fHistTrackSelectedPhi %s",cutName.Data()),"Selected Track Phi",200,0.,2*TMath::Pi());
       fHistograms->Add(fHistTrackSelectedPhi);
 
-			fHistTrackSelectedPt = new TH1F(Form("fHistTrackSelectedPt %s",cutName.Data()),"Selected Track Pt",500,0.,50.);
+	  fHistTrackSelectedPt = new TH1F(Form("fHistTrackSelectedPt %s",cutName.Data()),"Selected Track Pt",500,0.,50.);
       fHistograms->Add(fHistTrackSelectedPt);
 
-			fHistTrackSelectedPtWithoutITS = new TH1F(Form("fHistTrackSelectedPtWithoutITS %s",cutName.Data()),"Selected Track Pt w/o ITS refit and cluster requirement",500,0.,50.);
+	  fHistTrackSelectedPtWithoutITS = new TH1F(Form("fHistTrackSelectedPtWithoutITS %s",cutName.Data()),"Selected Track Pt w/o ITS refit and cluster requirement",500,0.,50.);
       fHistograms->Add(fHistTrackSelectedPtWithoutITS);
-    }
-    if(!fDoLightOutput){
+
       TAxis *AxisAfter = fHistTPCdEdxafter->GetXaxis();
       Int_t bins = AxisAfter->GetNbins();
       Double_t from = AxisAfter->GetXmin();
@@ -361,18 +359,19 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
       AxisAfter->Set(bins, newBins);
       AxisAfter = fHistTOFSigafter->GetXaxis();
       AxisAfter->Set(bins, newBins);
+      AxisAfter = fHistTOFafter->GetXaxis();
+      AxisAfter->Set(bins, newBins);
       AxisAfter = fHistITSdEdxafter->GetXaxis();
       AxisAfter->Set(bins,newBins);
       AxisAfter = fHistTPCdEdxSignalafter->GetXaxis();
       AxisAfter->Set(bins,newBins);
 
-      if (axisBeforedEdx) axisBeforedEdx->Set(bins, newBins);
-      if (axisBeforedEdxSignal) axisBeforedEdxSignal->Set(bins,newBins);
       if(preCut){
         axisBeforeITS->Set(bins, newBins);
         axisBeforeTOF->Set(bins, newBins);
         AxisBeforeTOFSig->Set(bins, newBins);
-
+		axisBeforedEdx->Set(bins, newBins);
+		axisBeforedEdxSignal->Set(bins,newBins);
       }
 
       delete [] newBins;
@@ -694,14 +693,16 @@ Bool_t AliPrimaryPionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
     // check for TOF signal: AliVTrack::kTOFout means that a tof signal is matched, AliVTrack::kTIME means that the track length (and then the expected times) was extrapolated properly
     if((fCurrentTrack->GetStatus() & AliVTrack::kTOFout ) && (fCurrentTrack->GetStatus() & AliVTrack::kTIME)){
 		if(fHistTOFbefore){
-      		Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P());
-     		Double_t  times[AliPID::kSPECIESC];
-     		fCurrentTrack->GetIntegratedTimes(times,AliPID::kSPECIESC);
+			Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P()); // in ps
       		Double_t TOFsignal = fCurrentTrack->GetTOFsignal();
-     		Double_t dT = TOFsignal - t0 - times[0];
-     		fHistTOFbefore->Fill(fCurrentTrack->P(),dT);
+			Double_t TimeForSpeedOfLight = fPIDResponse->GetTOFResponse().GetExpectedSignal(fCurrentTrack,AliPID::kElectron);
+			Double_t Beta_TOF = TimeForSpeedOfLight/(TOFsignal-t0);
+     		// Double_t  times[AliPID::kSPECIESC];
+     		// fCurrentTrack->GetIntegratedTimes(times,AliPID::kSPECIESC);
+     		// Double_t dT = TOFsignal - t0 - times[0];
+     		fHistTOFbefore->Fill(fCurrentTrack->P(),Beta_TOF);
     	}
-		if(fHistoTOFSigbefore) fHistoTOFSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion));
+		if(fHistTOFSigbefore) fHistTOFSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion));
 		if(fUseTOFpid){
 			if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion)>fPIDnSigmaAbovePionLineTOF ||
 				fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion)<fPIDnSigmaBelowPionLineTOF ){
@@ -709,6 +710,16 @@ Bool_t AliPrimaryPionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
 				return kFALSE;
 			}
 		}
+		if(fHistTOFafter){
+      		Double_t t0 = fPIDResponse->GetTOFResponse().GetStartTime(fCurrentTrack->P()); // in ps
+      		Double_t TOFsignal = fCurrentTrack->GetTOFsignal();
+			Double_t TimeForSpeedOfLight = fPIDResponse->GetTOFResponse().GetExpectedSignal(fCurrentTrack,AliPID::kElectron);
+			Double_t Beta_TOF = TimeForSpeedOfLight/(TOFsignal-t0);
+     		// Double_t  times[AliPID::kSPECIESC];
+     		// fCurrentTrack->GetIntegratedTimes(times,AliPID::kSPECIESC);
+     		// Double_t dT = TOFsignal - t0 - times[0];
+     		fHistTOFafter->Fill(fCurrentTrack->P(),Beta_TOF);
+    	}
 		if(fHistTOFSigafter)fHistTOFSigafter->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion));
 	} else if ( fRequireTOF == kTRUE ) {
 		if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);

@@ -442,6 +442,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                          fHistoTruePionPionInvMassPt;                          //!<! histos with reconstructed validated two pion, invariant mass, pT
     TH2F**                          fHistoTruePionPionFromSameMotherInvMassPt;            //!<! histos with reconstructed validated two pion from same mother, invariant mass, pT
     TH2F**                          fHistoTruePionPionFromHNMInvMassPt;                   //!<! histos with reconstructed validated two pion from eta , invariant mass, pT
+    TH2F**                          fHistoTruePionFromHNMInvMassPt;                       //!<! histos with reconstructed validated one pion from eta , invariant mass, pT
 
     TH2F**                          fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt;         //!<! histos with reconstructed validated pi+ pi-  from omega, invariant mass, pT
     TH2F**                          fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt;       //!<! histos with reconstructed validated pi+ pi-  from eta, invariant mass, pT
@@ -649,7 +650,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 31);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 32);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
