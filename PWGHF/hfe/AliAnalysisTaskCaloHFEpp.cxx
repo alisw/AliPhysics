@@ -1966,9 +1966,13 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		MassCorrect = recg.GetMass(mass,width);
                 Double_t RecoPt = recg.GetPt();
                 Double_t RecoEta = recg.GetEta();
- 
-                Int_t iMassbin = ZmassWeight->FindBin(Zmass_gen);
-                Double_t powheg_w = ZmassWeight->GetBinContent(iMassbin);
+  
+                Double_t powheg_w = 999.9;
+                if(ZmassWeight)
+                  {
+                   Int_t iMassbin = ZmassWeight->FindBin(Zmass_gen);
+                   powheg_w = ZmassWeight->GetBinContent(iMassbin);
+                  }
 
 		if(fFlagLS){
 			//if(mass < 0.002)cout <<"Px="<<aAssotrack->Px() <<" Py="<<aAssotrack->Py()<<" Pz="<<aAssotrack->Pz()<<endl;
