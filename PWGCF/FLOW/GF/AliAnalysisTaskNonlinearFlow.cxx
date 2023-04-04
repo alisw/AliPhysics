@@ -2,7 +2,7 @@
  * Maintainer: Mingrui Zhao
  */
 #include "AliAnalysisTaskNonlinearFlow.h"
-#include "AliGFWCuts.h"
+#include "AliGFWMCuts.h"
 #include "AliGFWNFCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
@@ -426,7 +426,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
     fGFWSelection15o = new AliGFWNFCuts();
     fGFWSelection15o->PrintSetup();
   } else {
-    fGFWSelection = new AliGFWCuts();
+    fGFWSelection = new AliGFWMCuts();
     fGFWSelection->PrintSetup();
   }
 
@@ -775,7 +775,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
     NTracksCalculation(fInputEvent);
 
-    // Setup AliGFWCuts for a specific systematics
+    // Setup AliGFWMCuts for a specific systematics
     if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
       fGFWSelection15o->SetupCuts(fCurrSystFlag);
       if (!fGFWSelection15o->AcceptVertex(fAOD)) {
