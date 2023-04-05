@@ -673,7 +673,7 @@ Double_t AliAnalysisTaskCorrForFlowFMD::GetDPhiStar(Double_t phi1, Double_t pt1,
   return dPhiStar;
 }
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskCorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) const// called inside prepareTPCTracks() once after IsTrackSelected() to identify Pi, Ka Pr
+Int_t AliAnalysisTaskCorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) // called inside prepareTPCTracks() once after IsTrackSelected() to identify Pi, Ka Pr
 {
   // checking detector statuses
   Bool_t bIsTPCok = HasTrackPIDTPC(track);
@@ -807,7 +807,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const //called i
   return kTRUE;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const //called inside PrepareV0() once to specifically selecet Lambda candidates after preselecting V0 cnadidates through IsV0()
+Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) //called inside PrepareV0() once to specifically selecet Lambda candidates after preselecting V0 cnadidates through IsV0()
 {
   fhV0Counter[1]->Fill("Input",1);
   Bool_t isL = kFALSE;
