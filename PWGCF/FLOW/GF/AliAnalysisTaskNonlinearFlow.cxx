@@ -433,7 +433,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   if (fOnTheFly) {
     nn = 1000;
     for (int i = 0; i <= 1000; i++) {
-      xbins[i] = 30.0/i;
+      xbins[i] = 30.0/nn*i;
     }
   } else {
     if (fNtrksName == "Mult") {
