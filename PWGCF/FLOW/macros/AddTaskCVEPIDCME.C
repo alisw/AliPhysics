@@ -7,7 +7,7 @@
 #include "AliAnalysisTaskCVEPIDCME.h"
 
 AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
-  TString trigger               = "kINT7+kCentral+kSemiCentral",
+  TString trigger               = "kINT7+kSemiCentral",
   TString period                = "LHC18r",
   int filterBit                 = 768,
   bool bCalculatePIDFlow        = false,
@@ -55,6 +55,7 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
   bool bUsePionRejection       = false;
   bool bCalculateLambdaProtonFromDecay = false;
   bool bCalculateLambdaProtonFromDecayFoundInTrackLoops = false;
+  bool bUseOneSideTPCPlane     = false;
   // --- instantiate analysis task
   AliAnalysisTaskCVEPIDCME* task = new AliAnalysisTaskCVEPIDCME("TaskCVEPIDCME");
   task->SetTrigger(trigger);
@@ -88,6 +89,7 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
   task->IfCheckLambdaProtonFromDecay(bCalculateLambdaProtonFromDecay);
   task->IfCheckLambdaProtonFromDecayFoundInTrackLoops(bCalculateLambdaProtonFromDecayFoundInTrackLoops);
 
+  task->IfUseOneSideTPCPlane(bUseOneSideTPCPlane);
 
 
   //=========================================================================

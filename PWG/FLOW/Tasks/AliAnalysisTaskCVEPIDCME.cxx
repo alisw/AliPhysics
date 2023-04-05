@@ -100,6 +100,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   isCalculateHadronHadron(false),
   isCheckLambdaProtonFromDecay(false),
   isCheckLambdaProtonFromDecayFoundInTrackLoops(false),
+  isUseOneSideTPCPlane(false),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
   fVzCut(10.0),
@@ -142,15 +143,15 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   fV0NegProtonTOFNsigma(4.0),
   fV0PosPionTOFNsigma(4.0),
   fLambdaPtMin(0.5),
-  fLambdaPtMax(20.0),
+  fLambdaPtMax(10.0),
   fAntiLambdaPtMin(0.5),
-  fAntiLambdaPtMax(20.0),
+  fAntiLambdaPtMax(10.0),
   fLambdaRapidityMax(0.5),
   fAntiLambdaRapidityMax(0.5),
-  fLambdaMassRightCut(0.005),
-  fLambdaMassLeftCut(0.005),
-  fAntiLambdaMassRightCut(0.005),
-  fAntiLambdaMassLeftCut(0.005),
+  fLambdaMassRightCut(0.02),
+  fLambdaMassLeftCut(0.02),
+  fAntiLambdaMassRightCut(0.02),
+  fAntiLambdaMassLeftCut(0.02),
   fLambdaMassMean(1.115683),
   fAOD(nullptr),
   fPIDResponse(nullptr),
@@ -178,11 +179,13 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   fPsi2V0A(-999),
   fPsi1ZNC(-999),
   fPsi1ZNA(-999),
+  fPsi2TPC(-999),
   isRightTPCPlane(false),
   isRightVZEROPlane(false),
   isRightZDCPlane(false),
   mapTPCPosTrksIDPhiWgt(0),
   mapTPCNegTrksIDPhiWgt(0),
+  mapTPCTrksIDPhiWgt(0),
   vecParticle(0),
   vecParticleV0(0),
   vecParticleFromDecay(0),
@@ -263,6 +266,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   fHist2Psi2V0ACent(nullptr),
   fHist2Psi1ZNCCent(nullptr),
   fHist2Psi1ZNACent(nullptr),
+  fHist2Psi2TPCCent(nullptr),
   fProfileTPCPsi2Correlation(nullptr),
   fProfileV0MPsi2Correlation(nullptr),
   fProfileZDCPsi1Correlation(nullptr),
@@ -270,7 +274,9 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   fProfileV0CTPCPosPsi2Correlation(nullptr),
   fProfileV0ATPCPosPsi2Correlation(nullptr),
   fProfileV0CTPCNegPsi2Correlation(nullptr),
-  fProfileV0ATPCNegPsi2Correlation(nullptr)
+  fProfileV0ATPCNegPsi2Correlation(nullptr),
+  fProfileV0CTPCPsi2Correlation(nullptr),
+  fProfileV0ATPCPsi2Correlation(nullptr)
 {
   for (int i = 0; i < 3; i++) fVertex[i] = -999;
   for (int i = 0; i < 3; i++) pV0XMeanRead[i] = nullptr;
@@ -313,7 +319,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   for (int i = 0; i < 2; i++) fHistLambdaDcaToPrimVertex[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistLambdaCPA[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistLambdaDecayLength[i] = nullptr;
-  for (int i = 0; i < 2; i++) fHist2LambdaMass[i] = nullptr;
+  for (int i = 0; i < 2; i++) fHist3LambdaCentPtMass[i] = nullptr;
   for (int i = 0; i < 2; i++) fHist2LambdaMassPtY[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistAntiLambdaPt[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistAntiLambdaEta[i] = nullptr;
@@ -321,7 +327,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   for (int i = 0; i < 2; i++) fHistAntiLambdaDcaToPrimVertex[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistAntiLambdaCPA[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistAntiLambdaDecayLength[i] = nullptr;
-  for (int i = 0; i < 2; i++) fHist2AntiLambdaMass[i] = nullptr;
+  for (int i = 0; i < 2; i++) fHist3AntiLambdaCentPtMass[i] = nullptr;
   for (int i = 0; i < 2; i++) fHist2AntiLambdaMassPtY[i] = nullptr;
   for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfile2RawFlowPtCentHadron[i][j] = nullptr;
   for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfile2RawFlowPtCentProton[i][j] = nullptr;
@@ -417,6 +423,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   isCalculateHadronHadron(false),
   isCheckLambdaProtonFromDecay(false),
   isCheckLambdaProtonFromDecayFoundInTrackLoops(false),
+  isUseOneSideTPCPlane(false),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
   fVzCut(10.0),
@@ -459,15 +466,15 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   fV0NegProtonTOFNsigma(4.0),
   fV0PosPionTOFNsigma(4.0),
   fLambdaPtMin(0.5),
-  fLambdaPtMax(20.0),
+  fLambdaPtMax(10.0),
   fAntiLambdaPtMin(0.5),
-  fAntiLambdaPtMax(20.0),
+  fAntiLambdaPtMax(10.0),
   fLambdaRapidityMax(0.5),
   fAntiLambdaRapidityMax(0.5),
-  fLambdaMassRightCut(0.005),
-  fLambdaMassLeftCut(0.005),
-  fAntiLambdaMassRightCut(0.005),
-  fAntiLambdaMassLeftCut(0.005),
+  fLambdaMassRightCut(0.02),
+  fLambdaMassLeftCut(0.02),
+  fAntiLambdaMassRightCut(0.02),
+  fAntiLambdaMassLeftCut(0.02),
   fLambdaMassMean(1.115683),
   fAOD(nullptr),
   fPIDResponse(nullptr),
@@ -495,11 +502,13 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   fPsi2V0A(-999),
   fPsi1ZNC(-999),
   fPsi1ZNA(-999),
+  fPsi2TPC(-999),
   isRightTPCPlane(false),
   isRightVZEROPlane(false),
   isRightZDCPlane(false),
   mapTPCPosTrksIDPhiWgt(0),
   mapTPCNegTrksIDPhiWgt(0),
+  mapTPCTrksIDPhiWgt(0),
   vecParticle(0),
   vecParticleV0(0),
   vecParticleFromDecay(0),
@@ -580,6 +589,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   fHist2Psi2V0ACent(nullptr),
   fHist2Psi1ZNCCent(nullptr),
   fHist2Psi1ZNACent(nullptr),
+  fHist2Psi2TPCCent(nullptr),
   fProfileTPCPsi2Correlation(nullptr),
   fProfileV0MPsi2Correlation(nullptr),
   fProfileZDCPsi1Correlation(nullptr),
@@ -587,7 +597,9 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   fProfileV0CTPCPosPsi2Correlation(nullptr),
   fProfileV0ATPCPosPsi2Correlation(nullptr),
   fProfileV0CTPCNegPsi2Correlation(nullptr),
-  fProfileV0ATPCNegPsi2Correlation(nullptr)
+  fProfileV0ATPCNegPsi2Correlation(nullptr),
+  fProfileV0CTPCPsi2Correlation(nullptr),
+  fProfileV0ATPCPsi2Correlation(nullptr)
 {
   for (int i = 0; i < 3; i++) fVertex[i] = -999;
   for (int i = 0; i < 3; i++) pV0XMeanRead[i] = nullptr;
@@ -630,7 +642,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   for (int i = 0; i < 2; i++) fHistLambdaDcaToPrimVertex[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistLambdaCPA[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistLambdaDecayLength[i] = nullptr;
-  for (int i = 0; i < 2; i++) fHist2LambdaMass[i] = nullptr;
+  for (int i = 0; i < 2; i++) fHist3LambdaCentPtMass[i] = nullptr;
   for (int i = 0; i < 2; i++) fHist2LambdaMassPtY[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistAntiLambdaPt[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistAntiLambdaEta[i] = nullptr;
@@ -638,7 +650,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   for (int i = 0; i < 2; i++) fHistAntiLambdaDcaToPrimVertex[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistAntiLambdaCPA[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistAntiLambdaDecayLength[i] = nullptr;
-  for (int i = 0; i < 2; i++) fHist2AntiLambdaMass[i] = nullptr;
+  for (int i = 0; i < 2; i++) fHist3AntiLambdaCentPtMass[i] = nullptr;
   for (int i = 0; i < 2; i++) fHist2AntiLambdaMassPtY[i] = nullptr;
   for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfile2RawFlowPtCentHadron[i][j] = nullptr;
   for (int i = 0; i < 5; i++) for (int j = 0; j < 2; j++) fProfile2RawFlowPtCentProton[i][j] = nullptr;
@@ -1151,7 +1163,6 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
     fHistLambdaDcaToPrimVertex[i] = new TH1D(Form("hLambdaDcaToPrimVertex_%sMassCut",charLambdaMassCut.data()),"DcatoPV",200, 0., 20.);
     fHistLambdaCPA[i] = new TH1D(Form("hLambdaCPA_%sMassCut",charLambdaMassCut.data()),";CPA",200, 0.9, 1.);
     fHistLambdaDecayLength[i] = new TH1D(Form("hLambdaDecayLength_%sMassCut",charLambdaMassCut.data()),";DecayLength", 250, 0., 500.);
-    fHist2LambdaMass[i] = new TH2D(Form("hLambdaMass_%sMassCut",charLambdaMassCut.data()),";Centrality;Mass",8,0,80,1000,1.,1.25); //  Current bin size = 0.00025
     fHist2LambdaMassPtY[i] = new TH2D(Form("fHist2LambdaMassPtY_%sMassCut",charLambdaMassCut.data()),";pT;yH",12,0.,6.,20,-1.,1.);
     fQAList->Add(fHistLambdaPt[i]);
     fQAList->Add(fHistLambdaEta[i]);
@@ -1159,7 +1170,6 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
     fQAList->Add(fHistLambdaDcaToPrimVertex[i]);
     fQAList->Add(fHistLambdaCPA[i]);
     fQAList->Add(fHistLambdaDecayLength[i]);
-    fQAList->Add(fHist2LambdaMass[i]);
     fQAList->Add(fHist2LambdaMassPtY[i]);
 
     // AntiLambda
@@ -1169,7 +1179,6 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
     fHistAntiLambdaDcaToPrimVertex[i] = new TH1D(Form("hAntiLambdaDcaToPrimVertex_%sMassCut",charLambdaMassCut.data()),"DcatoPV",200, 0., 20.);
     fHistAntiLambdaCPA[i] = new TH1D(Form("hAntiLambdaCPA_%sMassCut",charLambdaMassCut.data()),";CPA",200, 0.9, 1.);
     fHistAntiLambdaDecayLength[i] = new TH1D(Form("hAntiLambdaDecayLength_%sMassCut",charLambdaMassCut.data()),";DecayLength", 250, 0., 500.);
-    fHist2AntiLambdaMass[i] = new TH2D(Form("hAntiLambdaMass_%sMassCut",charLambdaMassCut.data()),";Centrality;Mass",8,0,80,1000,1.,1.25); //  Current bin size = 0.00025
     fHist2AntiLambdaMassPtY[i] = new TH2D(Form("fHist2AntiLambdaMassPtY_%sMassCut",charLambdaMassCut.data()),";pT;yH",12,0.,6.,20,-1.,1.);
     fQAList->Add(fHistAntiLambdaPt[i]);
     fQAList->Add(fHistAntiLambdaEta[i]);
@@ -1177,9 +1186,18 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
     fQAList->Add(fHistAntiLambdaDcaToPrimVertex[i]);
     fQAList->Add(fHistAntiLambdaCPA[i]);
     fQAList->Add(fHistAntiLambdaDecayLength[i]);
-    fQAList->Add(fHist2AntiLambdaMass[i]);
     fQAList->Add(fHist2AntiLambdaMassPtY[i]);
   }
+  fHist3LambdaCentPtMass[0] = new TH3D(Form("fHist3LambdaCentPtMass_%sMassCut",charLambdaMassCut.data()),";Centrality;Pt;Mass",8,0,80,20,0,10,1000,1.,1.25); //  Current bin size = 0.00025
+  fHist3LambdaCentPtMass[1] = new TH3D(Form("fHist3LambdaCentPtMass_%sMassCut",charLambdaMassCut.data()),";Centrality;Pt;Mass",8,0,80,20,0,10,15,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
+  fQAList->Add(fHist3LambdaCentPtMass[0]);
+  fQAList->Add(fHist3LambdaCentPtMass[1]);
+
+  fHist3AntiLambdaCentPtMass[0] = new TH3D(Form("fHist3AntiLambdaCentPtMass_%sMassCut",charLambdaMassCut.data()),";Centrality;Pt;Mass",8,0,80,20,0,10,1000,1.,1.25); //  Current bin size = 0.00025
+  fHist3AntiLambdaCentPtMass[1] = new TH3D(Form("fHist3AntiLambdaCentPtMass_%sMassCut",charLambdaMassCut.data()),";Centrality;Pt;Mass",8,0,80,20,0,10,15,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
+  fQAList->Add(fHist3AntiLambdaCentPtMass[0]);
+  fQAList->Add(fHist3AntiLambdaCentPtMass[1]);
+
   PostData(1,fQAList);
   if (fDebug) Printf("Post fQAList Data Success!");
 
@@ -1197,6 +1215,7 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
   fHist2Psi2V0ACent    = new TH2D("fHist2Psi2V0ACent","fHist2Psi2V0ACent;centrality;#Psi(V0A)",8,0.,80.,100,0.,TMath::Pi());
   fHist2Psi1ZNCCent    = new TH2D("fHist2Psi1ZNCCent","fHist2Psi1ZNCCent;centrality;#Psi(ZNC)",8,0.,80.,100,0.,TMath::TwoPi());
   fHist2Psi1ZNACent    = new TH2D("fHist2Psi1ZNACent","fHist2Psi1ZNACent;centrality;#Psi(ZNA)",8,0.,80.,100,0.,TMath::TwoPi());
+  fHist2Psi2TPCCent    = new TH2D("fHist2Psi2TPCCent","fHist2Psi2TPCCent;centrality;#Psi(TPC)",8,0.,80.,100,0.,TMath::Pi());
   
   fResultsList->Add(fHist2Psi2TPCPosCent);
   fResultsList->Add(fHist2Psi2TPCNegCent);
@@ -1204,6 +1223,7 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
   fResultsList->Add(fHist2Psi2V0ACent);
   fResultsList->Add(fHist2Psi1ZNCCent);
   fResultsList->Add(fHist2Psi1ZNACent);
+  fResultsList->Add(fHist2Psi2TPCCent);
 
   // Res
   fProfileTPCPsi2Correlation       = new TProfile("fProfileTPCPsi2Correlation","fProfileTPCPsi2Correlation;centrality;Res",8,0.,80.);
@@ -1214,6 +1234,8 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
   fProfileV0ATPCPosPsi2Correlation = new TProfile("fProfileV0ATPCPosPsi2Correlation","fProfileV0ATPCPosPsi2Correlation;centrality;Res",8,0.,80.);
   fProfileV0CTPCNegPsi2Correlation = new TProfile("fProfileV0CTPCNegPsi2Correlation","fProfileV0CTPCNegPsi2Correlation;centrality;Res",8,0.,80.);
   fProfileV0ATPCNegPsi2Correlation = new TProfile("fProfileV0ATPCNegPsi2Correlation","fProfileV0ATPCNegPsi2Correlation;centrality;Res",8,0.,80.);
+  fProfileV0CTPCPsi2Correlation    = new TProfile("fProfileV0CTPCPsi2Correlation","fProfileV0CTPCPsi2Correlation;centrality;Res",8,0.,80.);
+  fProfileV0ATPCPsi2Correlation    = new TProfile("fProfileV0ATPCPsi2Correlation","fProfileV0ATPCPsi2Correlation;centrality;Res",8,0.,80.);
   fResultsList->Add(fProfileTPCPsi2Correlation);
   fResultsList->Add(fProfileV0MPsi2Correlation);
   fResultsList->Add(fProfileZDCPsi1Correlation);
@@ -1222,6 +1244,8 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
   fResultsList->Add(fProfileV0ATPCPosPsi2Correlation);
   fResultsList->Add(fProfileV0CTPCNegPsi2Correlation);
   fResultsList->Add(fProfileV0ATPCNegPsi2Correlation);
+  fResultsList->Add(fProfileV0CTPCPsi2Correlation);
+  fResultsList->Add(fProfileV0ATPCPsi2Correlation);
 
   // Flow
   //[0]TPC [1]V0C [2]V0A [3]ZNC [4]ZNA
@@ -1313,7 +1337,7 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
         fProfile2DiffDeltaLambdaProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaLambdaProtonDPt_%i",iType),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
         fProfile2DiffDeltaLambdaProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaLambdaProtonSPt_%i",iType),";centrality;#sum pT;#delta",8,0.,80.,16,0,16);
         fProfile2DiffDeltaLambdaProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaProtonDEta_%i",iType),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffDeltaLambdaProtonMass[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaProtonMass_%i",iType),";centrality;#Delta Mass;#delta",8,0.,80.,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
+        fProfile2DiffDeltaLambdaProtonMass[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaProtonMass_%i",iType),";centrality;#Delta Mass;#delta",8,0.,80.,15,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
         fResultsList->Add(fProfile2DiffDeltaLambdaProtonDPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaLambdaProtonSPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaLambdaProtonDEta[iType]);
@@ -1323,7 +1347,7 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
         fProfile2DiffDeltaLambdaHadronDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaLambdaHadronDPt_%i",iType),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
         fProfile2DiffDeltaLambdaHadronSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaLambdaHadronSPt_%i",iType),";centrality;#sum pT;#delta",8,0.,80.,16,0,16);
         fProfile2DiffDeltaLambdaHadronDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaHadronDEta_%i",iType),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffDeltaLambdaHadronMass[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaHadronMass_%i",iType),";centrality;#Lambda Mass;#delta",8,0.,80,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
+        fProfile2DiffDeltaLambdaHadronMass[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaHadronMass_%i",iType),";centrality;#Lambda Mass;#delta",8,0.,80,15,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
         fResultsList->Add(fProfile2DiffDeltaLambdaHadronDPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaLambdaHadronSPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaLambdaHadronDEta[iType]);
@@ -1333,7 +1357,7 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
         fProfile2DiffDeltaLambdaLambdaDPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaLambdaLambdaDPt_%i",iType),";centrality;#Delta pT;#delta",8,0.,80.,16,-8,8);
         fProfile2DiffDeltaLambdaLambdaSPt[iType]  = new TProfile2D(Form("fProfile2DiffDeltaLambdaLambdaSPt_%i",iType),";centrality;#sum pT;#delta",8,0.,80.,16,0,16);
         fProfile2DiffDeltaLambdaLambdaDEta[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaLambdaDEta_%i",iType),";centrality;#Delta Eta;#delta",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffDeltaLambdaLambdaMass[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaLambdaMass_%i",iType),";centrality;#Lambda Mass;#delta",8,0.,80,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
+        fProfile2DiffDeltaLambdaLambdaMass[iType] = new TProfile2D(Form("fProfile2DiffDeltaLambdaLambdaMass_%i",iType),";centrality;#Lambda Mass;#delta",8,0.,80,15,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
         fResultsList->Add(fProfile2DiffDeltaLambdaLambdaDPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaLambdaLambdaSPt[iType]);
         fResultsList->Add(fProfile2DiffDeltaLambdaLambdaDEta[iType]);
@@ -1361,7 +1385,7 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
         fProfile2DiffGammaLambdaProtonDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaProtonDPt_%i",iType),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
         fProfile2DiffGammaLambdaProtonSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaProtonSPt_%i",iType),";centrality;#sum pT;#gamma",8,0.,80.,16,0,16);
         fProfile2DiffGammaLambdaProtonDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaProtonDEta_%i",iType),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffGammaLambdaProtonMass[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaProtonMass_%i",iType),";centrality;#Lambda Mass;#gamma",8,0.,80,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
+        fProfile2DiffGammaLambdaProtonMass[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaProtonMass_%i",iType),";centrality;#Lambda Mass;#gamma",8,0.,80,15,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
         fResultsList->Add(fProfile2DiffGammaLambdaProtonDPt[iType]);
         fResultsList->Add(fProfile2DiffGammaLambdaProtonSPt[iType]);
         fResultsList->Add(fProfile2DiffGammaLambdaProtonDEta[iType]);
@@ -1371,7 +1395,7 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
         fProfile2DiffGammaLambdaHadronDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaHadronDPt_%i",iType),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
         fProfile2DiffGammaLambdaHadronSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaHadronSPt_%i",iType),";centrality;#sum pT;#gamma",8,0.,80.,16,0,16);
         fProfile2DiffGammaLambdaHadronDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaHadronDEta_%i",iType),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffGammaLambdaHadronMass[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaHadronMass_%i",iType),";centrality;#Lambda Mass;#gamma",8,0.,80,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
+        fProfile2DiffGammaLambdaHadronMass[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaHadronMass_%i",iType),";centrality;#Lambda Mass;#gamma",8,0.,80,15,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
         fResultsList->Add(fProfile2DiffGammaLambdaHadronDPt[iType]);
         fResultsList->Add(fProfile2DiffGammaLambdaHadronSPt[iType]);
         fResultsList->Add(fProfile2DiffGammaLambdaHadronDEta[iType]);
@@ -1381,7 +1405,7 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
         fProfile2DiffGammaLambdaLambdaDPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaLambdaDPt_%i",iType),";centrality;#Delta pT;#gamma",8,0.,80.,16,-8,8);
         fProfile2DiffGammaLambdaLambdaSPt[iType]  = new TProfile2D(Form("fProfile2DiffGammaLambdaLambdaSPt_%i",iType),";centrality;#sum pT;#gamma",8,0.,80.,16,0,16);
         fProfile2DiffGammaLambdaLambdaDEta[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaLambdaDEta_%i",iType),";centrality;#Delta #Eta;#gamma",8,0.,80.,16,-1.6,1.6);
-        fProfile2DiffGammaLambdaLambdaMass[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaLambdaMass_%i",iType),";centrality;#Lambda Mass;#gamma",8,0.,80,10,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
+        fProfile2DiffGammaLambdaLambdaMass[iType] = new TProfile2D(Form("fProfile2DiffGammaLambdaLambdaMass_%i",iType),";centrality;#Lambda Mass;#gamma",8,0.,80,15,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
         fResultsList->Add(fProfile2DiffGammaLambdaLambdaDPt[iType]);
         fResultsList->Add(fProfile2DiffGammaLambdaLambdaSPt[iType]);
         fResultsList->Add(fProfile2DiffGammaLambdaLambdaDEta[iType]);
@@ -1539,6 +1563,8 @@ void AliAnalysisTaskCVEPIDCME::UserExec(Option_t *)
   isTrigselected = mask & AliVEvent::kMB;
   else if (fTrigger.EqualTo("kINT7"))
   isTrigselected = mask & AliVEvent::kINT7;
+  else if (fTrigger.EqualTo("kINT7++kSemiCentral"))
+  isTrigselected = mask & (AliVEvent::kINT7 + AliVEvent::kSemiCentral);
   else if (fTrigger.EqualTo("kINT7+kCentral+kSemiCentral"))
   isTrigselected = mask & (AliVEvent::kINT7 + AliVEvent::kCentral + AliVEvent::kSemiCentral);
   if (isTrigselected == false) return;
@@ -1685,17 +1711,26 @@ void AliAnalysisTaskCVEPIDCME::UserExec(Option_t *)
   //----------------------------
   // Fill Resolution
   //----------------------------
-  fHist2Psi2TPCPosCent -> Fill(fCent, fPsi2TPCPos);
-  fHist2Psi2TPCNegCent -> Fill(fCent, fPsi2TPCNeg);
-  fProfileTPCPsi2Correlation -> Fill(fCent, TMath::Cos(2*(fPsi2TPCNeg - fPsi2TPCPos)));
+  if(isUseOneSideTPCPlane) {
+    fHist2Psi2TPCPosCent -> Fill(fCent, fPsi2TPCPos);
+    fHist2Psi2TPCNegCent -> Fill(fCent, fPsi2TPCNeg);
+    fProfileTPCPsi2Correlation -> Fill(fCent, TMath::Cos(2*(fPsi2TPCNeg - fPsi2TPCPos)));
+  } else {
+    fHist2Psi2TPCCent -> Fill(fCent, fPsi2TPC);
+  }
   if (isUseVZEROPlane) {
     fHist2Psi2V0CCent -> Fill(fCentSPD1, fPsi2V0C);
     fHist2Psi2V0ACent -> Fill(fCentSPD1, fPsi2V0A);
     fProfileV0MPsi2Correlation -> Fill(fCent, TMath::Cos(2*(fPsi2V0C - fPsi2V0A)));
-    fProfileV0CTPCPosPsi2Correlation -> Fill(fCent, TMath::Cos(2*(fPsi2V0C - fPsi2TPCPos)));
-    fProfileV0ATPCPosPsi2Correlation -> Fill(fCent, TMath::Cos(2*(fPsi2V0A - fPsi2TPCPos)));
-    fProfileV0CTPCNegPsi2Correlation -> Fill(fCent, TMath::Cos(2*(fPsi2V0C - fPsi2TPCNeg)));
-    fProfileV0ATPCNegPsi2Correlation -> Fill(fCent, TMath::Cos(2*(fPsi2V0A - fPsi2TPCNeg)));
+    if(isUseOneSideTPCPlane) {
+      fProfileV0CTPCPosPsi2Correlation -> Fill(fCent, TMath::Cos(2*(fPsi2V0C - fPsi2TPCPos)));
+      fProfileV0ATPCPosPsi2Correlation -> Fill(fCent, TMath::Cos(2*(fPsi2V0A - fPsi2TPCPos)));
+      fProfileV0CTPCNegPsi2Correlation -> Fill(fCent, TMath::Cos(2*(fPsi2V0C - fPsi2TPCNeg)));
+      fProfileV0ATPCNegPsi2Correlation -> Fill(fCent, TMath::Cos(2*(fPsi2V0A - fPsi2TPCNeg)));
+    } else {
+      fProfileV0CTPCPsi2Correlation -> Fill(fCent, TMath::Cos(2*(fPsi2V0C - fPsi2TPC)));
+      fProfileV0ATPCPsi2Correlation -> Fill(fCent, TMath::Cos(2*(fPsi2V0A - fPsi2TPC)));
+    }
   }
   if (isUseZDCPlane) {
     fHist2Psi1ZNCCent    -> Fill(fCent, fPsi1ZNC);
@@ -2204,22 +2239,32 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
 
     if (pt > fPlanePtMin && pt < fPlanePtMax) {
       //Do we need to set pT as weight for Better resolution?
-      if (eta >= fEtaGapPos) {
-        fSumQ2xTPCPos  += weight * TMath::Cos(2 * phi);
-        fSumQ2yTPCPos  += weight * TMath::Sin(2 * phi);
-        fWgtMultTPCPos += weight;
-        std::vector<double> vec_phi_weight(2);
+      if (isUseOneSideTPCPlane) {
+        if (eta >= fEtaGapPos) {
+          fSumQ2xTPCPos  += weight * TMath::Cos(2 * phi);
+          fSumQ2yTPCPos  += weight * TMath::Sin(2 * phi);
+          fWgtMultTPCPos += weight;
+          std::vector<double> vec_phi_weight;
+          vec_phi_weight.emplace_back(phi);
+          vec_phi_weight.emplace_back(weight);
+          mapTPCPosTrksIDPhiWgt[id] = vec_phi_weight;
+        } else if (eta <= fEtaGapNeg) {
+          fSumQ2xTPCNeg  += weight * TMath::Cos(2 * phi);
+          fSumQ2yTPCNeg  += weight * TMath::Sin(2 * phi);
+          fWgtMultTPCNeg += weight;
+          std::vector<double> vec_phi_weight;
+          vec_phi_weight.emplace_back(phi);
+          vec_phi_weight.emplace_back(weight);
+          mapTPCNegTrksIDPhiWgt[id] = vec_phi_weight;
+        } else continue;
+      } else {
+        fSumQ2xTPC  += weight * TMath::Cos(2 * phi);
+        fSumQ2yTPC  += weight * TMath::Sin(2 * phi);
+        fWgtMultTPC += weight;
+        std::vector<double> vec_phi_weight;
         vec_phi_weight.emplace_back(phi);
         vec_phi_weight.emplace_back(weight);
-        mapTPCPosTrksIDPhiWgt[id] = vec_phi_weight;
-      } else if (eta <= fEtaGapNeg) {
-        fSumQ2xTPCNeg  += weight * TMath::Cos(2 * phi);
-        fSumQ2yTPCNeg  += weight * TMath::Sin(2 * phi);
-        fWgtMultTPCNeg += weight;
-        std::vector<double> vec_phi_weight(2);
-        vec_phi_weight.emplace_back(phi);
-        vec_phi_weight.emplace_back(weight);
-        mapTPCNegTrksIDPhiWgt[id] = vec_phi_weight;
+        mapTPCTrksIDPhiWgt[id] = vec_phi_weight;
       }
     }
     
@@ -2272,8 +2317,13 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
     vecParticle.emplace_back(std::array<double,6>{pt,eta,phi,(double)id,(double)code,weight});
 
   }
-  if(fabs(fSumQ2xTPCNeg)<1.e-6 || fabs(fSumQ2yTPCNeg)<1.e-6) return false;
-  if(fabs(fSumQ2xTPCPos)<1.e-6 || fabs(fSumQ2yTPCPos)<1.e-6) return false;
+
+  if(isUseOneSideTPCPlane) {
+    if(fabs(fSumQ2xTPCNeg)<1.e-6 || fabs(fSumQ2yTPCNeg)<1.e-6 || fWgtMultTPCNeg < 1.e-6) return false;
+    if(fabs(fSumQ2xTPCPos)<1.e-6 || fabs(fSumQ2yTPCPos)<1.e-6 || fWgtMultTPCPos < 1.e-6) return false;
+  } else {
+    if(fabs(fSumQ2xTPC)<1.e-6 || fabs(fSumQ2yTPC)<1.e-6 || fWgtMultTPC < 1.e-6) return false;
+  }
   return true;
 }
 
@@ -2281,11 +2331,18 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
 
 bool AliAnalysisTaskCVEPIDCME::GetTPCPlane()
 {
-  double psi2TPCPos = GetEventPlane(fSumQ2xTPCPos,fSumQ2yTPCPos,2);
-  double psi2TPCNeg = GetEventPlane(fSumQ2xTPCNeg,fSumQ2yTPCNeg,2);
-  if (TMath::IsNaN(psi2TPCPos) || TMath::IsNaN(psi2TPCNeg)) return false;
+  double psi2TPCPos = -999;
+  double psi2TPCNeg = -999;
+  double psi2TPC    = -999;
+  if(isUseOneSideTPCPlane) {
+    psi2TPCPos = GetEventPlane(fSumQ2xTPCPos,fSumQ2yTPCPos,2);
+    psi2TPCNeg = GetEventPlane(fSumQ2xTPCNeg,fSumQ2yTPCNeg,2);
+  } else {
+    psi2TPC = GetEventPlane(fSumQ2xTPC,fSumQ2yTPC,2);
+  }
   fPsi2TPCPos = psi2TPCPos;
   fPsi2TPCNeg = psi2TPCNeg;
+  fPsi2TPC    = psi2TPC;
   return true;
 }
 
@@ -2335,7 +2392,7 @@ bool AliAnalysisTaskCVEPIDCME::LoopV0s()
       fHistLambdaDcaToPrimVertex[0] -> Fill(dcaToPV);
       fHistLambdaCPA[0]             -> Fill(CPA);
       fHistLambdaDecayLength[0]     -> Fill(dl);
-      fHist2LambdaMass[0]           -> Fill(fCent,mass);
+      fHist3LambdaCentPtMass[0]     -> Fill(fCent, pt, mass);
       fHist2LambdaMassPtY[0]        -> Fill(pt, rap);
 
       bool isLambda = true;
@@ -2357,7 +2414,7 @@ bool AliAnalysisTaskCVEPIDCME::LoopV0s()
         fHistLambdaDcaToPrimVertex[1] -> Fill(dcaToPV);
         fHistLambdaCPA[1]             -> Fill(CPA);
         fHistLambdaDecayLength[1]     -> Fill(dl);
-        fHist2LambdaMass[1]           -> Fill(fCent,mass);
+        fHist3LambdaCentPtMass[1]     -> Fill(fCent, pt, mass);
         fHist2LambdaMassPtY[1]        -> Fill(pt, rap);
 
         vecParticleV0.emplace_back(std::array<double,9>{pt,eta,phi,0.,(double)code,1,mass,(double)id_daughter_1,(double)id_daughter_2});
@@ -2386,7 +2443,7 @@ bool AliAnalysisTaskCVEPIDCME::LoopV0s()
       fHistAntiLambdaDcaToPrimVertex[0] -> Fill(dcaToPV);
       fHistAntiLambdaCPA[0]             -> Fill(CPA);
       fHistAntiLambdaDecayLength[0]     -> Fill(dl);
-      fHist2AntiLambdaMass[0]           -> Fill(fCent,mass);
+      fHist3AntiLambdaCentPtMass[0]     -> Fill(fCent, pt, mass);
       fHist2AntiLambdaMassPtY[0]        -> Fill(pt, rap);
 
       bool isAntiLambda = true;
@@ -2409,7 +2466,7 @@ bool AliAnalysisTaskCVEPIDCME::LoopV0s()
         fHistAntiLambdaDcaToPrimVertex[1] -> Fill(dcaToPV);
         fHistAntiLambdaCPA[1]             -> Fill(CPA);
         fHistAntiLambdaDecayLength[1]     -> Fill(dl);
-        fHist2AntiLambdaMass[1]           -> Fill(fCent,mass);
+        fHist3AntiLambdaCentPtMass[1]     -> Fill(fCent, pt, mass);
         fHist2AntiLambdaMassPtY[1]        -> Fill(pt, rap);
 
         vecParticleV0.emplace_back(std::array<double,9>{pt,eta,phi,0.,(double)code,1,mass,(double)id_daughter_1,(double)id_daughter_2});
@@ -2448,71 +2505,22 @@ bool AliAnalysisTaskCVEPIDCME::PairV0Trk()
     int    id_daughter_1 = (int)lambda[7];
     int    id_daughter_2 = (int)lambda[8];
 
-    // NOTE: Remove AutoCorrelation:
-    // Get the Total sum of Pos TPC Qx,Qy locally, then Remove AutoCorr if needed.
-    double repeQ2xTPCPos = 0., repeQ2yTPCPos = 0. , repeWgtMultTPCPos = 0.;
-    double repeQ2xTPCNeg = 0., repeQ2yTPCNeg = 0. , repeWgtMultTPCNeg = 0.;
-    // use EP from opposite eta than the charged track! One way to remove AutoCorrelation.
-    double tempSumQ2xTPCPos   = fSumQ2xTPCPos;
-    double tempSumQ2yTPCPos   = fSumQ2yTPCPos;
-    double tempWgtMultTPCPos = fWgtMultTPCPos;
+    // Get TPC Plane For This Loop, Remove TPC Plane AutoCorrelation
+    std::array<double, 2> arrOneSidePsi2TPCNoAuto = {nan(""), nan("")};
+    double psi2TPC_forLambdaFlow = nan("");
 
-    double tempSumQ2xTPCNeg   = fSumQ2xTPCNeg;
-    double tempSumQ2yTPCNeg   = fSumQ2yTPCNeg;
-    double tempWgtMultTPCNeg = fWgtMultTPCNeg;
-
-    //for TPCPos
-    std::unordered_map<int, std::vector<double>> ::iterator itDaughter1TPCPos = mapTPCPosTrksIDPhiWgt.find(id_daughter_1);
-    std::unordered_map<int, std::vector<double>> ::iterator itDaughter2TPCPos = mapTPCPosTrksIDPhiWgt.find(id_daughter_2);
-
-    //for TPCNeg
-    std::unordered_map<int, std::vector<double>> ::iterator itDaughter1TPCNeg = mapTPCNegTrksIDPhiWgt.find(id_daughter_1);
-    std::unordered_map<int, std::vector<double>> ::iterator itDaughter2TPCNeg = mapTPCNegTrksIDPhiWgt.find(id_daughter_2);
-
-    if(itDaughter1TPCPos != mapTPCPosTrksIDPhiWgt.end()) {
-      repeQ2xTPCPos     += itDaughter1TPCPos->second[1] * TMath::Cos(2* (itDaughter1TPCPos->second)[0]);
-      repeQ2yTPCPos     += itDaughter1TPCPos->second[1] * TMath::Sin(2* (itDaughter1TPCPos->second)[0]);
-      repeWgtMultTPCPos += itDaughter1TPCPos->second[1];
-    } 
-    if(itDaughter2TPCPos != mapTPCPosTrksIDPhiWgt.end()) {
-      repeQ2xTPCPos     += itDaughter2TPCPos->second[1] * TMath::Cos(2* (itDaughter2TPCPos->second)[0]);
-      repeQ2yTPCPos     += itDaughter2TPCPos->second[1] * TMath::Sin(2* (itDaughter2TPCPos->second)[0]);
-      repeWgtMultTPCPos += itDaughter2TPCPos->second[1];
+    if (isUseOneSideTPCPlane) {
+      arrOneSidePsi2TPCNoAuto = GetOneSideTPCPlaneNoAutoCorr({id_daughter_1, id_daughter_2});
+      psi2TPC_forLambdaFlow = arrOneSidePsi2TPCNoAuto[0];
+    } else {
+      psi2TPC_forLambdaFlow = GetTPCPlaneNoAutoCorr({id_daughter_1, id_daughter_2});
     }
-
-    if(itDaughter1TPCNeg != mapTPCNegTrksIDPhiWgt.end()) {
-      repeQ2xTPCNeg     += itDaughter1TPCNeg->second[1] * TMath::Cos(2* (itDaughter1TPCNeg->second)[0]);
-      repeQ2yTPCNeg     += itDaughter1TPCNeg->second[1] * TMath::Sin(2* (itDaughter1TPCNeg->second)[0]);
-      repeWgtMultTPCNeg += itDaughter1TPCNeg->second[1];
-    }
-
-    if(itDaughter2TPCNeg != mapTPCNegTrksIDPhiWgt.end()) {
-      repeQ2xTPCNeg     += itDaughter2TPCNeg->second[1] * TMath::Cos(2* (itDaughter2TPCNeg->second)[0]);
-      repeQ2yTPCNeg     += itDaughter2TPCNeg->second[1] * TMath::Sin(2* (itDaughter2TPCNeg->second)[0]);
-      repeWgtMultTPCNeg += itDaughter2TPCNeg->second[1];
-    } 
-
-    tempSumQ2xTPCPos  -= repeQ2xTPCPos;
-    tempSumQ2yTPCPos  -= repeQ2yTPCPos;
-    tempWgtMultTPCPos -= repeWgtMultTPCPos;
-    tempSumQ2xTPCNeg  -= repeQ2xTPCNeg;
-    tempSumQ2yTPCNeg  -= repeQ2yTPCNeg;
-    tempWgtMultTPCNeg -= repeWgtMultTPCNeg;
-
-    if (tempWgtMultTPCPos > 1.e-6 && tempWgtMultTPCNeg > 1.e-6) {
-      tempSumQ2xTPCPos /= tempWgtMultTPCPos;
-      tempSumQ2yTPCPos /= tempWgtMultTPCPos;
-      tempSumQ2xTPCNeg /= tempWgtMultTPCNeg;
-      tempSumQ2yTPCNeg /= tempWgtMultTPCNeg;
-    } else continue;
-
-    double fPsi2PosTPCNoAuto = GetEventPlane(tempSumQ2xTPCPos,tempSumQ2yTPCPos,2.);   //AutoCorrelation Removed Pos EP.
-    double fPsi2NegTPCNoAuto = GetEventPlane(tempSumQ2xTPCNeg,tempSumQ2yTPCNeg,2.);   //AutoCorrelation Removed Neg EP.
+    if(std::isnan(psi2TPC_forLambdaFlow)) continue;
 
     //Check the PID Flow
     if (isCalculatePIDFlow) {
       if (code_lambda == 3122) {
-        fProfile2RawFlowPtCentLambda[0][0] -> Fill(fCent, pt_lambda , TMath::Cos(2 * (phi_lambda - fPsi2PosTPCNoAuto)));
+        fProfile2RawFlowPtCentLambda[0][0] -> Fill(fCent, pt_lambda , TMath::Cos(2 * (phi_lambda - psi2TPC_forLambdaFlow)));
         if(isUseVZEROPlane) {
           fProfile2RawFlowPtCentLambda[1][0] -> Fill(fCentSPD1, pt_lambda , TMath::Cos(2 * (phi_lambda - fPsi2V0C)));
           fProfile2RawFlowPtCentLambda[2][0] -> Fill(fCentSPD1, pt_lambda , TMath::Cos(2 * (phi_lambda - fPsi2V0A)));
@@ -2524,7 +2532,7 @@ bool AliAnalysisTaskCVEPIDCME::PairV0Trk()
       }
 
       if (code_lambda == -3122) {
-        fProfile2RawFlowPtCentLambda[0][1] -> Fill(fCent, pt_lambda , TMath::Cos(2 * (phi_lambda - fPsi2PosTPCNoAuto)));
+        fProfile2RawFlowPtCentLambda[0][1] -> Fill(fCent, pt_lambda , TMath::Cos(2 * (phi_lambda - psi2TPC_forLambdaFlow)));
         if(isUseVZEROPlane) {
           fProfile2RawFlowPtCentLambda[1][1] -> Fill(fCentSPD1, pt_lambda , TMath::Cos(2 * (phi_lambda - fPsi2V0C)));
           fProfile2RawFlowPtCentLambda[2][1] -> Fill(fCentSPD1, pt_lambda , TMath::Cos(2 * (phi_lambda - fPsi2V0A)));
@@ -2545,13 +2553,18 @@ bool AliAnalysisTaskCVEPIDCME::PairV0Trk()
       double weight = particle[5];
       if (id == id_daughter_1 || id == id_daughter_2) continue;
 
-      double psi2TPCNoAuto = -999;
-      if (eta > 0.) psi2TPCNoAuto = fPsi2NegTPCNoAuto;
-      else          psi2TPCNoAuto = fPsi2PosTPCNoAuto;
+      double psi2TPC_forThisPair = nan("");
+      if(isUseOneSideTPCPlane) {
+        if (eta > 0.) psi2TPC_forThisPair = arrOneSidePsi2TPCNoAuto[1];
+        else          psi2TPC_forThisPair = arrOneSidePsi2TPCNoAuto[0];
+      } else {
+        psi2TPC_forThisPair = GetTPCPlaneNoAutoCorr({id_daughter_1, id_daughter_2, id});
+      }
+      if (std::isnan(psi2TPC_forThisPair)) continue;
 
       double delta = TMath::Cos(phi_lambda - phi);
       double gamma[5] = {0.,0.,0.,0.,0.,};
-      gamma[0] = TMath::Cos(phi_lambda + phi - 2 * psi2TPCNoAuto);
+      gamma[0] = TMath::Cos(phi_lambda + phi - 2 * psi2TPC_forThisPair);
       gamma[1] = TMath::Cos(phi_lambda + phi - 2 * fPsi2V0C);
       gamma[2] = TMath::Cos(phi_lambda + phi - 2 * fPsi2V0A);
       gamma[3] = TMath::Cos(phi_lambda + phi - 2 * fPsi1ZNC);
@@ -2588,7 +2601,7 @@ bool AliAnalysisTaskCVEPIDCME::PairV0Trk()
           }
           if (isCalculateDeltaPhiSumPhi) {
             double dphi_ranged = RangeDPhi(phi_lambda - phi);
-            double sphi_ranged = RangeDPhi(phi_lambda + phi - 2 * psi2TPCNoAuto);
+            double sphi_ranged = RangeDPhi(phi_lambda + phi - 2 * psi2TPC_forThisPair);
             fHist2DEtaDPhiLambdaProton[fCentBin][iBits] -> Fill(eta_lambda - eta, dphi_ranged);
             fHist2DEtaSPhiLambdaProton[fCentBin][iBits] -> Fill(eta_lambda - eta, sphi_ranged);
           }
@@ -2624,7 +2637,7 @@ bool AliAnalysisTaskCVEPIDCME::PairV0Trk()
           }
           if (isCalculateDeltaPhiSumPhi) {
             double dphi_ranged = RangeDPhi(phi_lambda - phi);
-            double sphi_ranged = RangeDPhi(phi_lambda + phi - 2 * psi2TPCNoAuto);
+            double sphi_ranged = RangeDPhi(phi_lambda + phi - 2 * psi2TPC_forThisPair);
             fHist2DEtaDPhiLambdaHadron[fCentBin][iBits] -> Fill(eta_lambda - eta, dphi_ranged);
             fHist2DEtaSPhiLambdaHadron[fCentBin][iBits] -> Fill(eta_lambda - eta, sphi_ranged);
           }
@@ -2642,12 +2655,17 @@ bool AliAnalysisTaskCVEPIDCME::PairV0Trk()
         double weight = particle[5];
         if (id == id_daughter_1 || id == id_daughter_2) continue;
   
-        double psi2TPCNoAuto = -999;
-        if (eta > 0.) psi2TPCNoAuto = fPsi2NegTPCNoAuto;
-        else          psi2TPCNoAuto = fPsi2PosTPCNoAuto;
-  
+        double psi2TPC_forThisPair = nan("");
+        if(isUseOneSideTPCPlane) {
+          if (eta > 0.) psi2TPC_forThisPair = arrOneSidePsi2TPCNoAuto[1];
+          else          psi2TPC_forThisPair = arrOneSidePsi2TPCNoAuto[0];
+        } else {
+          psi2TPC_forThisPair = GetTPCPlaneNoAutoCorr({id_daughter_1, id_daughter_2, id});
+        }
+        if (std::isnan(psi2TPC_forThisPair)) continue;
+
         double delta = TMath::Cos(phi_lambda - phi);
-        double gamma = TMath::Cos(phi_lambda + phi - 2 * psi2TPCNoAuto);
+        double gamma = TMath::Cos(phi_lambda + phi - 2 * psi2TPC_forThisPair);
   
         int nBits = 4;
         TBits bitsLambdaProtonDecayPair(nBits);
@@ -2688,12 +2706,17 @@ bool AliAnalysisTaskCVEPIDCME::PairV0Trk()
         double weight = particle[5];
         if (id == id_daughter_1 || id == id_daughter_2) continue;
   
-        double psi2TPCNoAuto = -999;
-        if (eta > 0.) psi2TPCNoAuto = fPsi2NegTPCNoAuto;
-        else          psi2TPCNoAuto = fPsi2PosTPCNoAuto;
-  
+        double psi2TPC_forThisPair = nan("");
+        if(isUseOneSideTPCPlane) {
+          if (eta > 0.) psi2TPC_forThisPair = arrOneSidePsi2TPCNoAuto[1];
+          else          psi2TPC_forThisPair = arrOneSidePsi2TPCNoAuto[0];
+        } else {
+          psi2TPC_forThisPair = GetTPCPlaneNoAutoCorr({id_daughter_1, id_daughter_2, id});
+        }
+        if (std::isnan(psi2TPC_forThisPair)) continue;
+
         double delta = TMath::Cos(phi_lambda - phi);
-        double gamma = TMath::Cos(phi_lambda + phi - 2 * psi2TPCNoAuto);
+        double gamma = TMath::Cos(phi_lambda + phi - 2 * psi2TPC_forThisPair);
   
         int nBits = 4;
         TBits bitsLambdaProtonDecayPair(nBits);
@@ -2735,8 +2758,15 @@ bool AliAnalysisTaskCVEPIDCME::PairV0Trk()
       double weight = particle[5];
 
       double v2_tmp_plane[5] = {0.,0.,0.,0.,0.};
-      if(eta > 0.) v2_tmp_plane[0] = TMath::Cos(2 * (phi - fPsi2TPCNeg));
-      else         v2_tmp_plane[0] = TMath::Cos(2 * (phi - fPsi2TPCPos));
+
+      if(isUseOneSideTPCPlane) {
+        if(eta > 0.) v2_tmp_plane[0] = TMath::Cos(2 * (phi - fPsi2TPCNeg));
+        else         v2_tmp_plane[0] = TMath::Cos(2 * (phi - fPsi2TPCPos));
+      } else {
+        double psi2TPC_forFlow = GetTPCPlaneNoAutoCorr({id});
+        v2_tmp_plane[0] = TMath::Cos(2 * (phi - psi2TPC_forFlow));
+      }
+
       v2_tmp_plane[1] = TMath::Cos(2 * (phi - fPsi2V0C));
       v2_tmp_plane[2] = TMath::Cos(2 * (phi - fPsi2V0A));
       v2_tmp_plane[3] = TMath::Cos(2 * (phi - fPsi2V0C));
@@ -2823,6 +2853,17 @@ bool AliAnalysisTaskCVEPIDCME::PairV0V0()
       b_nice_pair = b_nice_pair && (id_a_daughter_2 != id_b_daughter_2);
       if(!b_nice_pair) continue;
 
+      // Get TPC Plane for this pair
+      std::array<double, 2> arrOneSidePsi2TPCNoAuto = {nan(""), nan("")};
+      double psi2TPC_forThisPair = nan("");
+      if(isUseOneSideTPCPlane) {
+        arrOneSidePsi2TPCNoAuto = GetOneSideTPCPlaneNoAutoCorr({id_a_daughter_1, id_a_daughter_2, id_b_daughter_1, id_b_daughter_2});
+        psi2TPC_forThisPair = arrOneSidePsi2TPCNoAuto[0];
+      } else {
+        psi2TPC_forThisPair = GetTPCPlaneNoAutoCorr({id_a_daughter_1, id_a_daughter_2, id_b_daughter_1, id_b_daughter_2});
+      }
+      if (std::isnan(psi2TPC_forThisPair)) continue;
+
       int nBits = 4;
       TBits bitsLambdaLambdaPair(nBits);
       bitsLambdaLambdaPair.SetBitNumber(0, code_a ==  3122 && code_b ==  3122);
@@ -2830,12 +2871,9 @@ bool AliAnalysisTaskCVEPIDCME::PairV0V0()
       bitsLambdaLambdaPair.SetBitNumber(2, code_a == -3122 && code_b ==  3122);
       bitsLambdaLambdaPair.SetBitNumber(3, code_a == -3122 && code_b == -3122);
 
-      double psi2TPCNoAuto = GetTPCPlaneNoAutoCorr(id_a_daughter_1,id_a_daughter_2,id_b_daughter_1,id_b_daughter_2);
-      if(TMath::IsNaN(psi2TPCNoAuto)) continue;
-
       double delta = TMath::Cos(phi_a - phi_b);
       double gamma[5] = {0.,0.,0.,0.,0.,};
-      gamma[0] = TMath::Cos(phi_a + phi_b - 2 * psi2TPCNoAuto);
+      gamma[0] = TMath::Cos(phi_a + phi_b - 2 * psi2TPC_forThisPair);
       gamma[1] = TMath::Cos(phi_a + phi_b - 2 * fPsi2V0C);
       gamma[2] = TMath::Cos(phi_a + phi_b - 2 * fPsi2V0A);
       gamma[3] = TMath::Cos(phi_a + phi_b - 2 * fPsi1ZNC);
@@ -2865,7 +2903,7 @@ bool AliAnalysisTaskCVEPIDCME::PairV0V0()
           }
           if (isCalculateDeltaPhiSumPhi) {
             double dphi_ranged = RangeDPhi(phi_a - phi_b);
-            double sphi_ranged = RangeDPhi(phi_a + phi_b - 2 * psi2TPCNoAuto);
+            double sphi_ranged = RangeDPhi(phi_a + phi_b - 2 * psi2TPC_forThisPair);
             fHist2DEtaDPhiLambdaLambda[fCentBin][iBits] -> Fill(eta_a - eta_b, dphi_ranged);
             fHist2DEtaSPhiLambdaLambda[fCentBin][iBits] -> Fill(eta_a - eta_b, sphi_ranged);
           }
@@ -2888,6 +2926,12 @@ bool AliAnalysisTaskCVEPIDCME::PairTrkTrk()
     int    code_a   = (int)paticle_a[4];
     double weight_a = paticle_a[5];
 
+    // Get TPC Plane
+    std::array<double, 2> arrOneSidePsi2TPCNoAuto = {nan(""), nan("")};
+    if (isUseOneSideTPCPlane) {
+      arrOneSidePsi2TPCNoAuto = GetOneSideTPCPlaneNoAutoCorr({id_a});
+    }
+
     for (auto paticle_b : vecParticle) {
       double pt_b     = paticle_b[0];
       double eta_b    = paticle_b[1];
@@ -2896,15 +2940,20 @@ bool AliAnalysisTaskCVEPIDCME::PairTrkTrk()
       int    code_b   = (int)paticle_b[4];
       double weight_b = paticle_b[5];
       if (id_a == id_b) continue;
-    
-      double psi2TPCNoAuto = -999;
-      if      ( eta_a > 0. && eta_b > 0.) psi2TPCNoAuto = fPsi2TPCNeg; 
-      else if ( eta_a < 0. && eta_b < 0.) psi2TPCNoAuto = fPsi2TPCPos;
-      else continue;
+
+      // Get TPC Plane For This Pair, Remove TPC Plane AutoCorrelation
+      double psi2TPC_forThisPair = nan("");
+      if (isUseOneSideTPCPlane) {
+        if (eta_b > 0) psi2TPC_forThisPair = arrOneSidePsi2TPCNoAuto[1];
+        else           psi2TPC_forThisPair = arrOneSidePsi2TPCNoAuto[0];
+      } else {
+        psi2TPC_forThisPair = GetTPCPlaneNoAutoCorr({id_a, id_b});
+      }
+      if (std::isnan(psi2TPC_forThisPair)) continue;
 
       double delta = TMath::Cos(phi_a - phi_b);
       double gamma[5] = {0.,0.,0.,0.,0.,};
-      gamma[0] = TMath::Cos(phi_a + phi_b - 2 * psi2TPCNoAuto);
+      gamma[0] = TMath::Cos(phi_a + phi_b - 2 * psi2TPC_forThisPair);
       gamma[1] = TMath::Cos(phi_a + phi_b - 2 * fPsi2V0C);
       gamma[2] = TMath::Cos(phi_a + phi_b - 2 * fPsi2V0A);
       gamma[3] = TMath::Cos(phi_a + phi_b - 2 * fPsi1ZNC);
@@ -2939,7 +2988,7 @@ bool AliAnalysisTaskCVEPIDCME::PairTrkTrk()
            }
            if (isCalculateDeltaPhiSumPhi) {
              double dphi_ranged = RangeDPhi(phi_a - phi_b);
-             double sphi_ranged = RangeDPhi(phi_a + phi_b - 2 * psi2TPCNoAuto);
+             double sphi_ranged = RangeDPhi(phi_a + phi_b - 2 * psi2TPC_forThisPair);
              fHist2DEtaDPhiProtonProton[fCentBin][iBits] -> Fill(eta_a - eta_b, dphi_ranged);
              fHist2DEtaSPhiProtonProton[fCentBin][iBits] -> Fill(eta_a - eta_b, sphi_ranged);
            }
@@ -2975,7 +3024,7 @@ bool AliAnalysisTaskCVEPIDCME::PairTrkTrk()
             }
             if (isCalculateDeltaPhiSumPhi) {
               double dphi_ranged = RangeDPhi(phi_a - phi_b);
-              double sphi_ranged = RangeDPhi(phi_a + phi_b - 2 * psi2TPCNoAuto);
+              double sphi_ranged = RangeDPhi(phi_a + phi_b - 2 * psi2TPC_forThisPair);
               fHist2DEtaDPhiHadronHadron[fCentBin][iBits] -> Fill(eta_a - eta_b, dphi_ranged);
               fHist2DEtaSPhiHadronHadron[fCentBin][iBits] -> Fill(eta_a - eta_b, sphi_ranged);
             }
@@ -2997,8 +3046,12 @@ void AliAnalysisTaskCVEPIDCME::ResetVectors()
   fSumQ2xTPCNeg = 0.;
   fSumQ2yTPCNeg = 0.;
   fWgtMultTPCNeg = 0.;
+  fSumQ2xTPC = 0.;
+  fSumQ2yTPC = 0.;
+  fWgtMultTPC = 0.;
   std::unordered_map<int, std::vector<double>>().swap(mapTPCPosTrksIDPhiWgt);
   std::unordered_map<int, std::vector<double>>().swap(mapTPCNegTrksIDPhiWgt);
+  std::unordered_map<int, std::vector<double>>().swap(mapTPCTrksIDPhiWgt);
   std::vector<std::array<double,6>>().swap(vecParticle);
   std::vector<std::array<double,9>>().swap(vecParticleV0);
   std::vector<std::array<double,6>>().swap(vecParticleFromDecay);
@@ -3656,40 +3709,104 @@ inline double AliAnalysisTaskCVEPIDCME::RangeDPhi(double dphi)
 
 //---------------------------------------------------
 
-double AliAnalysisTaskCVEPIDCME::GetTPCPlaneNoAutoCorr(int id_0, int id_1, int id_2, int id_3)
+//[0]: TPC Pos [1] TPC Neg [2] TPC
+std::array<double,2> AliAnalysisTaskCVEPIDCME::GetOneSideTPCPlaneNoAutoCorr(std::vector<int> vec_id)
 {
-  double tempSumQ2x  = fSumQ2xTPCPos;
-  double tempSumQ2y  = fSumQ2yTPCPos;
-  double tempWgtMult = fWgtMultTPCPos;
+  double tempSumQ2xPos  = fSumQ2xTPCPos;
+  double tempSumQ2yPos  = fSumQ2yTPCPos;
+  double tempWgtMultPos = fWgtMultTPCPos;
+
+  double tempSumQ2xNeg  = fSumQ2xTPCNeg;
+  double tempSumQ2yNeg  = fSumQ2yTPCNeg;
+  double tempWgtMultNeg = fWgtMultTPCNeg;
+
+  double repeQ2xPos = 0., repeQ2yPos = 0., repeWgtMultPos = 0.;
+  double repeQ2xNeg = 0., repeQ2yNeg = 0., repeWgtMultNeg = 0.;
+
+  std::vector<std::unordered_map<int, std::vector<double>> ::iterator> vec_it_pos;
+  std::vector<std::unordered_map<int, std::vector<double>> ::iterator> vec_it_neg;
+
+  for (auto id : vec_id) {
+    vec_it_pos.push_back(mapTPCPosTrksIDPhiWgt.find(id));
+    vec_it_neg.push_back(mapTPCNegTrksIDPhiWgt.find(id));
+  }
+
+  for (auto it : vec_it_pos) {
+    if(it != mapTPCPosTrksIDPhiWgt.end()) {
+      repeQ2xPos     += it->second[1] * TMath::Cos(2 * (it->second)[0]);
+      repeQ2yPos     += it->second[1] * TMath::Sin(2 * (it->second)[0]);
+      repeWgtMultPos += it->second[1];
+    }
+  }
+
+  for (auto it : vec_it_neg) {
+    if(it != mapTPCNegTrksIDPhiWgt.end()) {
+      repeQ2xNeg     += it->second[1] * TMath::Cos(2 * (it->second)[0]);
+      repeQ2yNeg     += it->second[1] * TMath::Sin(2 * (it->second)[0]);
+      repeWgtMultNeg += it->second[1];
+    }
+  }
+
+  tempSumQ2xPos  -= repeQ2xPos;
+  tempSumQ2yPos  -= repeQ2yPos;
+  tempWgtMultPos -= repeWgtMultPos;
+
+  tempSumQ2xNeg  -= repeQ2xNeg;
+  tempSumQ2yNeg  -= repeQ2yNeg;
+  tempWgtMultNeg -= repeWgtMultNeg;
+
+  double psiNoAutoPos = nan(""), psiNoAutoNeg = nan("");
+  if (tempWgtMultPos > 1.e-6) {
+    tempSumQ2xPos /= tempWgtMultPos;
+    tempSumQ2yPos /= tempWgtMultPos;
+    psiNoAutoPos = GetEventPlane(tempSumQ2xPos,tempSumQ2yPos,2.);
+  } else psiNoAutoPos = nan("");
+
+  if (tempWgtMultNeg > 1.e-6) {
+    tempSumQ2xNeg /= tempWgtMultNeg;
+    tempSumQ2yNeg /= tempWgtMultNeg;
+    psiNoAutoNeg = GetEventPlane(tempSumQ2xNeg,tempSumQ2yNeg,2.);
+  } else psiNoAutoNeg = nan("");
+
+  return {psiNoAutoPos, psiNoAutoNeg};
+}
+
+//---------------------------------------------------
+double AliAnalysisTaskCVEPIDCME::GetTPCPlaneNoAutoCorr(std::vector<int> vec_id) {
+  double psiNoAuto = nan("");
+
+  double tempSumQ2x = fSumQ2xTPC;
+  double tempSumQ2y = fSumQ2yTPC;
+  double tempWgtMult = fWgtMultTPC;
   double repeQ2x = 0., repeQ2y = 0., repeWgtMult = 0.;
 
-  std::vector<std::unordered_map<int, std::vector<double>> ::iterator> vec_it;  
-  vec_it.push_back(mapTPCPosTrksIDPhiWgt.find(id_0));
-  vec_it.push_back(mapTPCPosTrksIDPhiWgt.find(id_1));
-  vec_it.push_back(mapTPCPosTrksIDPhiWgt.find(id_2));
-  vec_it.push_back(mapTPCPosTrksIDPhiWgt.find(id_3));
+  std::vector<std::unordered_map<int, std::vector<double>> ::iterator> vec_it;
+  for (int id : vec_id) {
+    vec_it.push_back(mapTPCTrksIDPhiWgt.find(id));
+  }
 
   for (auto it : vec_it) {
-    if(it != mapTPCPosTrksIDPhiWgt.end()) {
+    if(it != mapTPCTrksIDPhiWgt.end()) {
       repeQ2x     += it->second[1] * TMath::Cos(2 * (it->second)[0]);
       repeQ2y     += it->second[1] * TMath::Sin(2 * (it->second)[0]);
       repeWgtMult += it->second[1];
     }
   }
-    
+
   tempSumQ2x  -= repeQ2x;
   tempSumQ2y  -= repeQ2y;
   tempWgtMult -= repeWgtMult;
-
-  double psiNoAuto = -999;
 
   if (tempWgtMult > 1.e-6) {
     tempSumQ2x /= tempWgtMult;
     tempSumQ2y /= tempWgtMult;
     psiNoAuto = GetEventPlane(tempSumQ2x,tempSumQ2y,2.);
   } else psiNoAuto = nan("");
+
   return psiNoAuto;
 }
+
+//---------------------------------------------------
 
 bool AliAnalysisTaskCVEPIDCME::GetDCA(double &dcaxy, double &dcaz, AliAODTrack* track) {
   if(!track) return false;
@@ -3705,4 +3822,5 @@ bool AliAnalysisTaskCVEPIDCME::GetDCA(double &dcaxy, double &dcaz, AliAODTrack* 
   }
   return true;
 }
+//---------------------------------------------------
 
