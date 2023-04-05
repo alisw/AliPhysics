@@ -87,6 +87,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetRejectSecondariesFromMC(Bool_t flag = kTRUE) { fRejectSecondariesFromMC = flag; }
         void                    SetVetoJetEvents(Bool_t flag = kTRUE) { fVetoJetEvents = flag; }
         void                    SetJetEventsLowPtCut(Double_t cut) { fJetParticleLowPt = cut; }
+	void                    SetParticlemassbias(Bool_t massbias = kFALSE) { fParticlemass_bias_corr = massbias; }
+
 
         // event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
@@ -154,12 +156,12 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  PrepareFMDTracks();
         Bool_t                  PrepareMCTracks();
 
-        Int_t                   IdentifyTrack(const AliAODTrack* track) const; // PID
+        Int_t                   IdentifyTrack(const AliAODTrack* track); // PID
         void                    PrepareV0(); // V0
 	void                    PreparePhi(); // Phi
         Bool_t                  IsV0(const AliAODv0* v0) const; // V0s selection
         Bool_t                  IsK0s(const AliAODv0* v0) const;
-        Bool_t                  IsLambda(const AliAODv0* v0) const;
+        Bool_t                  IsLambda(const AliAODv0* v0);
         Double_t                ProperLifetime(const AliAODv0* v0, const Double_t massPDG) const;
         Bool_t                  HasTrackPIDTPC(const AliAODTrack* track) const; // is TPC PID OK for this track ?
         Bool_t                  HasTrackPIDTOF(const AliAODTrack* track) const; // is TOF PID OK for this track ?
@@ -285,6 +287,10 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fMaxLambdaMass; // [1.15]
 	Double_t                fMinPhiMass; // [0.99]
         Double_t                fMaxPhiMass; // [1.07]
+	Bool_t                  fParticlemass_bias_corr;
+        Int_t                   fProtonSigcount;
+        Int_t                   fLambdaSigcount;
+        Int_t                   fPhiSigcount;
 
 
         Double_t                fJetParticleLowPt; // [5.]
