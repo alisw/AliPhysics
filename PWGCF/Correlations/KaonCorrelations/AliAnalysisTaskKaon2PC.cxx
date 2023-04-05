@@ -766,7 +766,7 @@ void AliAnalysisTaskKaon2PC::RunData() {
         fHistMK0->Fill(v0->MassK0Short());
         if(!AcceptV0(v0, vertex)) continue;
         Double_t pT = v0->Pt();
-        if (pT <= fUpTv0Cut || pT >= fLpTv0Cut) continue;
+        if (pT <= fLpTv0Cut || pT >= fUpTv0Cut) continue;
         fHistMK0Cuts->Fill(v0->MassK0Short());
     }
     
@@ -890,7 +890,7 @@ for(Int_t j=0; j < nv0s; j++) {
     if(!AcceptV0(v0, vertex)) continue;
     fHistK0Pt->Fill(V0Pt);
     Double_t pT = v0->Pt();
-    if (pT <= fUpTv0Cut || pT >= fLpTv0Cut) continue;
+    if (pT <= fLpTv0Cut || pT >= fUpTv0Cut) continue;
     fSelectedK0s->Add(v0);
     //fill single particle neutral kaon histograms
     fHistK0Phi->Fill(V0Phi);
