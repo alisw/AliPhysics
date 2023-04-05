@@ -295,11 +295,11 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
         fHistograms->Add(fHistTPCdEdxSignalbefore);
         axisBeforedEdxSignal = fHistTPCdEdxSignalbefore->GetXaxis();
 
-        fHistITSdEdxbefore=new TH2F(Form("Pion_ITS_before %s",cutName.Data()),"ITS dEdx pion before" ,100,0.05,50,100,-10,10);
+        fHistITSdEdxbefore=new TH2F(Form("Pion_ITS_before %s",cutName.Data()),"ITS dEdx pion before" ,400,0.05,50,100,-10,10);
         fHistograms->Add(fHistITSdEdxbefore);
         axisBeforeITS = fHistITSdEdxbefore->GetXaxis();
 
-        fHistTOFbefore=new TH2F(Form("Pion_TOF_before %s",cutName.Data()),"TOF pion before" ,400,0.03,20,600,-0.2,1.3);
+        fHistTOFbefore=new TH2F(Form("Pion_TOF_before %s",cutName.Data()),"TOF pion before" ,400,0.05,50,600,-0.2,1.3);
         fHistograms->Add(fHistTOFbefore);
         axisBeforeTOF = fHistTOFbefore->GetXaxis();
 		fHistTOFSigbefore=new TH2F(Form("Pion_TOFSig_before %s",cutName.Data()),"TOF sigma pion before"  ,400,0.05,50,400,-6,10);
@@ -315,7 +315,7 @@ void AliPrimaryPionCuts::InitCutHistograms(TString name, Bool_t preCut,TString c
         fHistograms->Add(fHistTrackNFindClsPtTPCbefore);
       }
 
-      fHistITSdEdxafter=new TH2F(Form("Pion_ITS_after %s",cutName.Data()),"ITS dEdx pion after" ,100,0.05,50,100, -10,10);
+      fHistITSdEdxafter=new TH2F(Form("Pion_ITS_after %s",cutName.Data()),"ITS dEdx pion after" ,400,0.05,50,100, -10,10);
       fHistograms->Add(fHistITSdEdxafter);
 
       fHistTPCdEdxafter=new TH2F(Form("Pion_dEdx_after %s",cutName.Data()),"dEdx pion after" ,400,0.05,50,400, -10,10);
