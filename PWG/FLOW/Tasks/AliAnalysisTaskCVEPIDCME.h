@@ -60,6 +60,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void IfCheckLambdaProtonFromDecay(bool bCheckLambdaProtonFromDecay) {this->isCheckLambdaProtonFromDecay = bCheckLambdaProtonFromDecay; }
   void IfCheckLambdaProtonFromDecayFoundInTrackLoops(bool bCheckLambdaProtonFromDecayFoundInTrackLoops) {this->isCheckLambdaProtonFromDecayFoundInTrackLoops = bCheckLambdaProtonFromDecayFoundInTrackLoops; }
 
+  void IfUseOneSideTPCPlane(bool bUseOneSideTPCPlane) { this->isUseOneSideTPCPlane = bUseOneSideTPCPlane; }
+
   // read in
   void SetListForNUE(TList* flist) { this->fListNUE = (TList*)flist->Clone(); }
   void SetListForNUA(TList* flist) { this->fListNUA = (TList*)flist->Clone(); }
@@ -162,7 +164,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   bool IsGoodDaughterTrack(const AliAODTrack* track);
   int GetLambdaCode(const AliAODTrack* pTrack, const AliAODTrack* ntrack);
   // Plane
-  double GetTPCPlaneNoAutoCorr(int id_0, int id_1, int id_2, int id_3);
+  std::array<double,2> GetOneSideTPCPlaneNoAutoCorr(std::vector<int> vec_id);
+  double GetTPCPlaneNoAutoCorr(std::vector<int> vec_id);
   inline double GetEventPlane(double qx, double qy, double harmonic);
   // Range phi
   inline double RangeDPhi(double dphi);
@@ -197,6 +200,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   
   bool isCheckLambdaProtonFromDecay;
   bool isCheckLambdaProtonFromDecayFoundInTrackLoops;
+  bool isUseOneSideTPCPlane;
 
   //////////////////////
   // Cuts and options //
@@ -292,6 +296,9 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   double fSumQ2xTPCNeg;
   double fSumQ2yTPCNeg;
   double fWgtMultTPCNeg;
+  double fSumQ2xTPC;
+  double fSumQ2yTPC;
+  double fWgtMultTPC;
   // Plane
   double fPsi2TPCPos;
   double fPsi2TPCNeg;
@@ -299,6 +306,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   double fPsi2V0A;
   double fPsi1ZNC;
   double fPsi1ZNA;
+  double fPsi2TPC;
   // Are we get the right plane?
   bool isRightTPCPlane;
   bool isRightVZEROPlane;
@@ -307,6 +315,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   // Plane tracks Map key:id value:(phi,weight)
   std::unordered_map<int, std::vector<double>> mapTPCPosTrksIDPhiWgt;
   std::unordered_map<int, std::vector<double>> mapTPCNegTrksIDPhiWgt;
+  std::unordered_map<int, std::vector<double>> mapTPCTrksIDPhiWgt;
   
   // Vector for particles from Tracks [pt,eta,phi,id,pdgcode,weight]
   std::vector<std::array<double,6>> vecParticle;
@@ -470,7 +479,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TH1D* fHistLambdaDcaToPrimVertex[2];     //
   TH1D* fHistLambdaCPA[2];                 //
   TH1D* fHistLambdaDecayLength[2];         //
-  TH2D* fHist2LambdaMass[2];               // [cent][mass]
+  TH3D* fHist3LambdaCentPtMass[2];         //
   TH2D* fHist2LambdaMassPtY[2];            //
   TH1D* fHistAntiLambdaPt[2];              //
   TH1D* fHistAntiLambdaEta[2];             //
@@ -478,7 +487,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TH1D* fHistAntiLambdaDcaToPrimVertex[2]; //
   TH1D* fHistAntiLambdaCPA[2];             //
   TH1D* fHistAntiLambdaDecayLength[2];     //
-  TH2D* fHist2AntiLambdaMass[2];           // [cent][mass]
+  TH3D* fHist3AntiLambdaCentPtMass[2];     //
   TH2D* fHist2AntiLambdaMassPtY[2];        //
 
 
@@ -493,6 +502,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TH2D* fHist2Psi2V0ACent;
   TH2D* fHist2Psi1ZNCCent;
   TH2D* fHist2Psi1ZNACent;
+  TH2D* fHist2Psi2TPCCent;
 
   // Res
   TProfile* fProfileTPCPsi2Correlation;       // TPCPos-TPCNeg
@@ -503,6 +513,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TProfile* fProfileV0ATPCPosPsi2Correlation; // V0A-TPCNeg
   TProfile* fProfileV0CTPCNegPsi2Correlation; // V0C-TPCNeg
   TProfile* fProfileV0ATPCNegPsi2Correlation; // V0A-TPCNeg
+  TProfile* fProfileV0CTPCPsi2Correlation;    // V0C-TPC
+  TProfile* fProfileV0ATPCPsi2Correlation;    // V0A-TPC
 
   // Flow
   // [0]TPC [1]V0C [2]V0A [3]ZNC [4]ZNA
