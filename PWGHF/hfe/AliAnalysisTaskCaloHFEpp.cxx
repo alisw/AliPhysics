@@ -1945,7 +1945,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 
                 if(fFlagZeeAssNtrkCut)
                  {
-                   Int_t AssNtrackCone = 999;
+                   Int_t AssNtrackCone = 0;
                    Double_t IsoEnergyAssTrack = 999.9;
                    IsolationTrackBase(jtrack, aAssotrack, 999.9 ,IsoEnergyAssTrack, AssNtrackCone);
                    if(AssNtrackCone>3.1)continue;
@@ -2538,6 +2538,8 @@ void AliAnalysisTaskCaloHFEpp::IsolationTrackBase(Int_t itrack, AliVTrack *track
 
                if(ConeRtr>CutConeR) continue;
 
+               NtrackCone++;
+
 	       Int_t EMCalIndex_TrCone = aWassotrack->GetEMCALcluster();  // get index of EMCal cluster which matched to track
                if(EMCalIndex_TrCone<0)continue;
 	       AliVCluster *Assoclust_TrCone = 0x0;     
@@ -2549,7 +2551,7 @@ void AliAnalysisTaskCaloHFEpp::IsolationTrackBase(Int_t itrack, AliVTrack *track
                 }
                //cout << "risoTrack = " << risoTrack << endl;
 
-               NtrackCone++;
+               //NtrackCone++;
 
 	}  // end track loop
 
