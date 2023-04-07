@@ -41,10 +41,10 @@ AliFemtoCorrFctnMezonPhi::AliFemtoCorrFctnMezonPhi(const char* title, const int&
   
   fNumInvMass2D = new TH2D(num_name_2D, num_title_2D, aBins, fpMin, fpMax, aBins, fMin, fMax) ;
   
-  char *den_name_2D = Form("NumInvMass2D%s", title);
-  char *den_title_2D = Form("Minv Numerator 2D - (masses = %g, %g); P_{t} GeV; M_{inv}_GeV", fMass1, fMass2);
+  char *den_name_2D = Form("DenInvMass2D%s", title);
+  char *den_title_2D = Form("Minv Denominator 2D - (masses = %g, %g); P_{t} GeV; M_{inv}_GeV", fMass1, fMass2);
   
-  fDenInvMass2D = new TH2D(num_name_2D, num_title_2D, aBins, fpMin, fpMax, aBins, fMin, fMax) ;
+  fDenInvMass2D = new TH2D(den_name_2D, den_title_2D, aBins, fpMin, fpMax, aBins, fMin, fMax) ;
 
 	for(int i = 0; i<fSections;i++){
 		// set up numerator
