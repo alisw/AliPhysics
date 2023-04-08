@@ -15,6 +15,7 @@
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TMath.h>
+#include "AliAODMCHeader.h"
 #include "AliVEvent.h"
 #include "AliVTrack.h"
 #include "AliCSEventCuts.h"
@@ -38,20 +39,20 @@
 /// \file AliCSEventCuts.cxx
 /// \brief Implementation of event cuts class within the correlation studies analysis
 
-const char *AliCSEventCuts::fgkCutsNames[AliCSEventCuts::kNCuts] = {
-    "MC without proper MC data",
-    "DAQ incomplete",
-    "No tracks",
-    "Offline trigger",
-    "Vertex contributors",
-    "Vertex quality",
-    "SPD and tracks vertex distance",
-    "z_{vtx}",
-    "Pile up",
-    "2015 Pile up",
-    "SPD clusters vs tracklets",
-    "Centrality"
-};
+const char* AliCSEventCuts::fgkCutsNames[AliCSEventCuts::kNCuts] = {
+  "MC without proper MC data",
+  "MC generated pile up",
+  "DAQ incomplete",
+  "No tracks",
+  "Offline trigger",
+  "Vertex contributors",
+  "Vertex quality",
+  "SPD and tracks vertex distance",
+  "z_{vtx}",
+  "Pile up",
+  "2015 Pile up",
+  "SPD clusters vs tracklets",
+  "Centrality"};
 
 Float_t AliCSEventCuts::fgkVertexResolutionThreshold = 0.25;
 Float_t AliCSEventCuts::fgkVertexResolutionThreshold_pPb = 0.25;
@@ -325,6 +326,31 @@ Bool_t AliCSEventCuts::IsEventAccepted(AliVEvent *fInputEvent) {
       if (arrayMC == NULL) {
         fCutsActivatedMask.SetBitNumber(kMCdataQuality);
         accepted = kFALSE;
+      }
+      /* check if pile-up generated event for AOD format*/
+      AliAODMCHeader* header = (AliAODMCHeader*)((AliAODEvent*)AliCSAnalysisCutsBase::GetInputEventHandler()->GetEvent())->GetList()->FindObject(AliAODMCHeader::StdBranchName());
+      if (header != nullptr) {
+        for (auto h : *header->GetCocktailHeaders()) {
+          auto genname = [](auto header) {
+            TString str = header->GetName();
+            str.ToLower();
+            if (str.Contains("hijing")) {
+              return "Hijing";
+            } else if (str.Contains("pythia")) {
+              return "Phytia";
+            } else if (str.Contains("phojet")) {
+              return "Phojet";
+            } else {
+              return "";
+            }
+          };
+          TString gname = genname(h);
+          if (gname.Length() > 0 && (AliAnalysisUtils::IsPileupInGeneratedEvent(header, gname) || AliAnalysisUtils::IsSameBunchPileupInGeneratedEvent(header, gname))) {
+            AliInfo("Event rejected. Pile up generated event");
+            fCutsActivatedMask.SetBitNumber(kMCGeneratedPileUp);
+            accepted = false;
+          }
+        }
       }
     }
   }
