@@ -1118,8 +1118,8 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     
     if(AntiPionTOFisOK == true){
 
-      AntiPion_TOF_m2	    = CalculateMassSquareTOF(*AntiPionTrack);
-      AntiPion_TOF_m2_nSigma  = CalculateSigmaMassSquareTOF(AntiPionTrack->Pt(),AntiPion_TOF_m2,1,RunNumber);
+      AntiPion_TOF_m2	      = CalculateMassSquareTOF(*AntiPionTrack);
+      AntiPion_TOF_m2_nSigma  = CalculateSigmaMassSquareTOF(AntiPionTrack->Pt(),AntiPion_TOF_m2,6,RunNumber);
 
     }
 
@@ -1134,7 +1134,7 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(AntiPionITSisOK == true){
 
       AntiPion_ITS_dEdx	      = AntiPionTrack->GetITSsignal();
-      AntiPion_ITS_dEdx_nSigma  = CalculateSigmadEdxITS(*AntiPionTrack,1,RunNumber);
+      AntiPion_ITS_dEdx_nSigma  = CalculateSigmadEdxITS(*AntiPionTrack,6,RunNumber);
       AntiPion_ITS_nCluster     = AntiPionTrack->GetITSNcls();
       if(AntiPion_ITS_nCluster < 0) AntiPion_ITS_nCluster = 0;
 
@@ -1927,7 +1927,7 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(AntiProtonITSisOK == true){
 
       AntiProton_ITS_dEdx	      = AntiProtonTrack->GetITSsignal();
-      AntiProton_ITS_dEdx_nSigma  = CalculateSigmadEdxITS(*AntiProtonTrack,1,RunNumber);
+      AntiProton_ITS_dEdx_nSigma  = CalculateSigmadEdxITS(*AntiProtonTrack,3,RunNumber);
       AntiProton_ITS_nCluster     = AntiProtonTrack->GetITSNcls();
       if(AntiProton_ITS_nCluster < 0) AntiProton_ITS_nCluster = 0;
 
@@ -1951,7 +1951,7 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(PionTOFisOK == true){
 
       Pion_TOF_m2	    = CalculateMassSquareTOF(*PionTrack);
-      Pion_TOF_m2_nSigma  = CalculateSigmaMassSquareTOF(PionTrack->Pt(),Pion_TOF_m2,1,RunNumber);
+      Pion_TOF_m2_nSigma  = CalculateSigmaMassSquareTOF(PionTrack->Pt(),Pion_TOF_m2,5,RunNumber);
 
     }
 
@@ -1966,7 +1966,7 @@ void AliAnalysisTask_Ld_CreateTrees_PairsOnly::UserExec(Option_t*)
     if(PionITSisOK == true){
 
       Pion_ITS_dEdx	      = PionTrack->GetITSsignal();
-      Pion_ITS_dEdx_nSigma  = CalculateSigmadEdxITS(*PionTrack,1,RunNumber);
+      Pion_ITS_dEdx_nSigma  = CalculateSigmadEdxITS(*PionTrack,5,RunNumber);
       Pion_ITS_nCluster     = PionTrack->GetITSNcls();
       if(Pion_ITS_nCluster < 0) Pion_ITS_nCluster = 0;
 
@@ -2682,11 +2682,15 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(dou
   bool isDeuteron     = false;
   bool isAntiProton   = false;
   bool isAntiDeuteron = false;
+  bool isPion	      = false;
+  bool isAntiPion     = false;
 
   if(ParticleSpecies == 1) isProton	  = true;
   if(ParticleSpecies == 2) isDeuteron	  = true;
   if(ParticleSpecies == 3) isAntiProton	  = true;
   if(ParticleSpecies == 4) isAntiDeuteron = true;
+  if(ParticleSpecies == 5) isPion	  = true;
+  if(ParticleSpecies == 6) isAntiPion	  = true;
   
 
   TF1 *Mean = new TF1("Mean","[0] + ([1] * (x)) + [2] * pow((1 -([3] / (x))),[4])",0.0,6.0);
@@ -2758,6 +2762,37 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(dou
 
   }
 
+  if((MetaLHC16 == true) && (isPion == true)){
+
+    Mean->FixParameter(0,0.0155002);
+    Mean->FixParameter(1,0);
+    Mean->FixParameter(2,0.00550021);
+    Mean->FixParameter(3,-3.22578e+08);
+    Mean->FixParameter(4,0);
+
+    Sigma->FixParameter(0,-0.00402705);
+    Sigma->FixParameter(1,0.0177918);
+    Sigma->FixParameter(2,-0.00101698);
+    Sigma->FixParameter(3,-1.89407);
+    Sigma->FixParameter(4,-27.8531);
+
+  }
+
+  if((MetaLHC16 == true) && (isAntiPion == true)){
+
+    Mean->FixParameter(0,0.0182403);
+    Mean->FixParameter(1,0);
+    Mean->FixParameter(2,0.0032403);
+    Mean->FixParameter(3,-1.59699e+07);
+    Mean->FixParameter(4,0);
+
+    Sigma->FixParameter(0,-0.0684207);
+    Sigma->FixParameter(1,0.0168145);
+    Sigma->FixParameter(2,0.0621792);
+    Sigma->FixParameter(3,0.000471401);
+    Sigma->FixParameter(4,-40.3507);
+
+  }
 
 
   // MetaLHC17 pp data 
@@ -2826,8 +2861,37 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(dou
 
   }
 
+  if((MetaLHC17 == true) && (isPion == true)){
 
+    Mean->FixParameter(0,0.0155);
+    Mean->FixParameter(1,0);
+    Mean->FixParameter(2,0.0055);
+    Mean->FixParameter(3,-3e+09);
+    Mean->FixParameter(4,0);
 
+    Sigma->FixParameter(0,0);
+    Sigma->FixParameter(1,0.01);
+    Sigma->FixParameter(2,-0.001);
+    Sigma->FixParameter(3,0.1);
+    Sigma->FixParameter(4,1);
+
+  }
+
+  if((MetaLHC17 == true) && (isAntiPion == true)){
+
+    Mean->FixParameter(0,0.0172665);
+    Mean->FixParameter(1,0.00177955);
+    Mean->FixParameter(2,0.00226655);
+    Mean->FixParameter(3,-3.03171e+07);
+    Mean->FixParameter(4,0);
+
+    Sigma->FixParameter(0,0);
+    Sigma->FixParameter(1,0.01);
+    Sigma->FixParameter(2,-0.001);
+    Sigma->FixParameter(3,0.1);
+    Sigma->FixParameter(4,1);
+
+  }
 
   // MetaLHC18 pp data 
   if((MetaLHC18 == true) && (isProton == true)){
@@ -2894,7 +2958,39 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(dou
 
   }
 
-  // MetaLHC18q PbPb data 
+  if((MetaLHC18 == true) && (isPion == true)){
+
+    Mean->FixParameter(0,0.0155001);
+    Mean->FixParameter(1,0);
+    Mean->FixParameter(2,0.0055001);
+    Mean->FixParameter(3,-1.06371e+09);
+    Mean->FixParameter(4,0);
+
+    Sigma->FixParameter(0,0);
+    Sigma->FixParameter(1,0.01);
+    Sigma->FixParameter(2,-0.001);
+    Sigma->FixParameter(3,0.1);
+    Sigma->FixParameter(4,1);
+
+  }
+
+  if((MetaLHC18 == true) && (isAntiPion == true)){
+
+    Mean->FixParameter(0,0.0181884);
+    Mean->FixParameter(1,0);
+    Mean->FixParameter(2,0.00318841);
+    Mean->FixParameter(3,-3.22095e+07);
+    Mean->FixParameter(4,0);
+
+    Sigma->FixParameter(0,0);
+    Sigma->FixParameter(1,0.01);
+    Sigma->FixParameter(2,-0.001);
+    Sigma->FixParameter(3,0.1);
+    Sigma->FixParameter(4,1);
+
+  }
+
+  // LHC18q PbPb data 
   if((LHC18q == true) && (isProton == true)){
 
     Mean->FixParameter(0,0.882663);
@@ -2959,6 +3055,39 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(dou
 
   }
 
+  if((LHC18q == true) && (isPion == true)){
+
+    Mean->FixParameter(0,0.0154622);
+    Mean->FixParameter(1,0);
+    Mean->FixParameter(2,0.00546224);
+    Mean->FixParameter(3,-6.76792e+07);
+    Mean->FixParameter(4,0);
+
+    Sigma->FixParameter(0,0);
+    Sigma->FixParameter(1,0.01);
+    Sigma->FixParameter(2,-0.001);
+    Sigma->FixParameter(3,0.1);
+    Sigma->FixParameter(4,1);
+
+  }
+
+  if((LHC18q == true) && (isAntiPion == true)){
+
+    Mean->FixParameter(0,0.0155);
+    Mean->FixParameter(1,0);
+    Mean->FixParameter(2,0.0055);
+    Mean->FixParameter(3,-3e+09);
+    Mean->FixParameter(4,0);
+
+    Sigma->FixParameter(0,0);
+    Sigma->FixParameter(1,0.01);
+    Sigma->FixParameter(2,-0.001);
+    Sigma->FixParameter(3,0.1);
+    Sigma->FixParameter(4,1);
+
+  }
+
+
   // LHC18r PbPb data 
   if((LHC18r == true) && (isProton == true)){
 
@@ -3021,6 +3150,38 @@ double AliAnalysisTask_Ld_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(dou
     Sigma->FixParameter(2,0.00261934);
     Sigma->FixParameter(3,-2.12772);
     Sigma->FixParameter(4,3.38546);
+
+  }
+
+  if((LHC18r == true) && (isPion == true)){
+
+    Mean->FixParameter(0,0.0154343);
+    Mean->FixParameter(1,0);
+    Mean->FixParameter(2,0.00543432);
+    Mean->FixParameter(3,-3.75269e+07);
+    Mean->FixParameter(4,0);
+
+    Sigma->FixParameter(0,0);
+    Sigma->FixParameter(1,0.01);
+    Sigma->FixParameter(2,-0.001);
+    Sigma->FixParameter(3,0.1);
+    Sigma->FixParameter(4,1);
+
+  }
+
+  if((LHC18r == true) && (isAntiPion == true)){
+
+    Mean->FixParameter(0,0.0155);
+    Mean->FixParameter(1,0);
+    Mean->FixParameter(2,0.0055);
+    Mean->FixParameter(3,-2.02299e+09);
+    Mean->FixParameter(4,0);
+
+    Sigma->FixParameter(0,0);
+    Sigma->FixParameter(1,0.01);
+    Sigma->FixParameter(2,-0.001);
+    Sigma->FixParameter(3,0.1);
+    Sigma->FixParameter(4,1);
 
   }
 
@@ -3109,8 +3270,10 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
     Proton_pT_max = 4.0;
     Proton_eta_min = -0.8;
     Proton_eta_max = +0.8;
-    Proton_DCAxy_max = 0.2; // cm
-    Proton_DCAz_max = 0.1; // cm
+    Proton_DCAxy_min = 0.02; // cm
+    Proton_DCAxy_max = 999.0; // cm
+    Proton_DCAz_min = 0.02; // cm
+    Proton_DCAz_max = 999.0; // cm
 
     Proton_TPC_RatioRowsFindableCluster_min = 0.83;
     Proton_TPC_dEdx_nSigma_max = 3.0;
@@ -3317,8 +3480,6 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
   bool UseTOF = false;
   bool UseITS = false;
 
-  UseOpenCuts = true;
-
   if(UseOpenCuts == true){
 
     // define open Pion and antiPion track cuts
@@ -3326,9 +3487,9 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
     Pion_pT_max = 4.0;
     Pion_eta_min = -0.9;
     Pion_eta_max = +0.9;
-    Pion_DCAxy_min = 0.02; // cm
+    Pion_DCAxy_min = 0.0; // cm
     Pion_DCAxy_max = 999.0; // cm
-    Pion_DCAz_min = 0.02; // cm
+    Pion_DCAz_min = 0.0; // cm
     Pion_DCAz_max = 999.0; // cm
 
     Pion_TPC_RatioRowsFindableCluster_min = 0.73;
@@ -3346,7 +3507,7 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
     Pion_ITS_dEdx_nSigma_max = 4.0;
     Pion_ITS_nCluster_min = 1;
 
-    UseTOF = false;
+    UseTOF = true;
     UseITS = true;
 
   } // end of UseOpenCuts == true
@@ -3360,8 +3521,10 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
     Pion_pT_max = 4.0;
     Pion_eta_min = -0.8;
     Pion_eta_max = +0.8;
-    Pion_DCAxy_max = 0.2; // cm
-    Pion_DCAz_max = 0.1; // cm
+    Pion_DCAxy_min = 0.02; // cm
+    Pion_DCAxy_max = 999.0; // cm
+    Pion_DCAxy_min = 0.02; // cm
+    Pion_DCAz_max = 999.0; // cm
 
     Pion_TPC_RatioRowsFindableCluster_min = 0.83;
     Pion_TPC_dEdx_nSigma_max = 3.0;
@@ -3487,7 +3650,6 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
 
   if((ITSisOK == true) && (UseITS == true)){
 
-
     int ParticleSpecies = 0;
     if(isMatter) ParticleSpecies = 5;
     if(!isMatter) ParticleSpecies = 6;
@@ -3509,32 +3671,28 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
   if((TOFisOK == true) && (isMatter == false))	h_AntiPion_TOF_m2_NoTOFcut->Fill(pT,CalculateMassSquareTOF(Track));
 
   if((TOFisOK == true) && (UseTOF == true)){
-/*
+
     int ParticleSpecies = 0;
-    if(isMatter) ParticleSpecies = 1;
-    if(!isMatter) ParticleSpecies = 3;
-*/
-//    double TOF_m2	  = CalculateMassSquareTOF(Track);
-//    double TOF_m2_nSigma  = CalculateSigmaMassSquareTOF(pT,TOF_m2,ParticleSpecies,RunNumber);
-//    double TOF_Beta	  = CalculateBetaTOF(Track);
-    double TOF_Beta_nSigma = fPIDResponse.NumberOfSigmasTOF(&Track,AliPID::kPion);
+    if(isMatter) ParticleSpecies = 5;
+    if(!isMatter) ParticleSpecies = 6;
+
+    double TOF_m2	  = CalculateMassSquareTOF(Track);
+    double TOF_m2_nSigma  = CalculateSigmaMassSquareTOF(pT,TOF_m2,ParticleSpecies,RunNumber);
 
     // apply tight TOF m2 cut above pTPC threshold   
     if(pTPC >= Pion_TPC_Threshold){
 
-      //if(TMath::Abs(TOF_m2_nSigma) > Pion_TOF_m2_nSigma_max) return PassedParticleCuts;
-      if(TMath::Abs(TOF_Beta_nSigma) > Pion_TOF_m2_nSigma_max) return PassedParticleCuts;
+      if(TMath::Abs(TOF_m2_nSigma) > Pion_TOF_m2_nSigma_max) return PassedParticleCuts;
 
     }
 
     // apply loose TOF m2 cut below pTPC threshold
     if(pTPC < Pion_TPC_Threshold){
 
-      //if(TMath::Abs(TOF_m2_nSigma) > Pion_TOF_m2_nSigma_max_low_pTPC) return PassedParticleCuts;
-      if(TMath::Abs(TOF_Beta_nSigma) > Pion_TOF_m2_nSigma_max_low_pTPC) return PassedParticleCuts;
+      if(TMath::Abs(TOF_m2_nSigma) > Pion_TOF_m2_nSigma_max_low_pTPC) return PassedParticleCuts;
 
     }
- 
+
   } // end of TOFisOK
 
 
