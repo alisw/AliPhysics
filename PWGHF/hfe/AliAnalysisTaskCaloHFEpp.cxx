@@ -275,6 +275,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistZeRec1(0),
         fHist_Zee_pT_pos(0),
         fHist_Zee_pT_neg(0),
+        fHist_Zee_pT_neg2(0),
         fHist_Zpair_pos(0),
         fHist_Zpair_neg(0),
         fHistZrap(0),
@@ -506,6 +507,7 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistZeRec1(0),
         fHist_Zee_pT_pos(0),
         fHist_Zee_pT_neg(0),
+        fHist_Zee_pT_neg2(0),
         fHist_Zpair_pos(0),
         fHist_Zpair_neg(0),
         fHistZrap(0),
@@ -672,6 +674,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistZeRec1        = new TH1F("fHistZeRec1","particle level Z->e",90,10,100);
 	fHist_Zee_pT_pos   = new TH2F("fHist_Zee_pT_pos","pair Z->ee pT",100,0,100,100,0,100);
 	fHist_Zee_pT_neg   = new TH2F("fHist_Zee_pT_neg","pair Z->ee pT",100,0,100,100,0,100);
+	fHist_Zee_pT_neg2  = new TH2F("fHist_Zee_pT_neg2","pair Z->ee pT",100,0,100,100,0,100);
 	fHist_Zpair_pos        = new TH2F("fHist_Zpair_pos","pair Z->e",100,-5,5,100,0,100);
 	fHist_Zpair_neg        = new TH2F("fHist_Zpair_neg","pair Z->e",100,-5,5,100,0,100);
 	fHistZrap        = new TH1F("fHistZrap","parent Z rap",200,-5,5);
@@ -910,6 +913,7 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHistZeRec1); 
 	fOutputList->Add(fHist_Zee_pT_pos); 
 	fOutputList->Add(fHist_Zee_pT_neg); 
+	fOutputList->Add(fHist_Zee_pT_neg2); 
 	fOutputList->Add(fHist_Zpair_pos); 
 	fOutputList->Add(fHist_Zpair_neg); 
 	fOutputList->Add(fHistZrap); 
@@ -2010,6 +2014,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
                                     if(TMath::Abs(pdgorg_ass)==23)fInv_pT_ULS_forZ_neg_true->Fill(TrkPt,mass);  // true Z->ee pair
                                     if(TMath::Abs(pdgorg_ass)==23)fInv_pT_ULS_forZ_neg_true_w->Fill(mass,TrkPt,powheg_w);  // true Z->ee pair
                                     if(TMath::Abs(pdgorg_ass)==23)fHist_Zee_pT_neg->Fill(TrkPt,aAssotrack->Pt());  // true Z->ee pair
+                                    if(TMath::Abs(pdgorg_ass)==23 && (mass>60.0 && mass<108.0))fHist_Zee_pT_neg2->Fill(TrkPt,aAssotrack->Pt());  // true Z->ee pair
                                     if(TMath::Abs(pdgorg_ass)==23)fHistZeeDphi->Fill(TrkPt,dphiAss);  // true Z->ee pair
                                     if(mass>75.0 && mass<100.0)fHist_Zpair_neg->Fill(aAssotrack->Eta(),TrkPt);
                                     if(mass>75.0 && mass<100.0 && TrkPt>30.0)fHist_Zeta_neg->Fill(RecoEta);
