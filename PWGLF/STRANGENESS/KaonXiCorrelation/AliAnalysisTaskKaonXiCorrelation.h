@@ -108,6 +108,8 @@ public:
   void SetFillCascades(bool toogle = true) { fFillCascades = toogle; }
   void SetApplyBdtToMC(bool toogle = true) { fApplyBdtToMC = toogle; }
 
+  void SetEstimator(const int estimator = 0) { fEstimator = estimator; }
+
   // Setters for configurable cuts
   void SetRadiusCut(float cut = 1.2) { fCutRadius = cut; }
   void SetRadiusV0Cut(float cut = 3.0) { fCutRadiusV0 = cut; }
@@ -184,6 +186,8 @@ private:
   bool fFillCascades = true;
   bool fFillKaons = true;
   bool fApplyBdtToMC = false;
+
+  int fEstimator = 0;
 
   // configurable cuts
   float fCutRadius = 1.2;
