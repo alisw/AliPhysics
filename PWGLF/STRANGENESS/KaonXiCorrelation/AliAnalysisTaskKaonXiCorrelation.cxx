@@ -139,7 +139,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
   }
 
   double bFfield{ev->GetMagneticField()};
-  fRecCollision.fCent = fEventCuts.GetCentrality();
+  fRecCollision.fCent = fEventCuts.GetCentrality(fEstimator);
   if (fRecCollision.fCent < fMinCentrality || fRecCollision.fCent > fMaxCentrality)
   {
     PostAllData();
