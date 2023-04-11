@@ -1949,7 +1949,9 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 
                 if(fFlagZeeAssPhiCut) // for Z->ee, pair e is away-side
                   {
-                   if(dphiAss<2.0 || dphiAss>4.0)continue;
+                   Double_t MaxPhi = 1.5*TMath::Pi();
+                   Double_t MimPhi = 0.5*TMath::Pi();
+                   if(dphiAss<MimPhi || dphiAss>MaxPhi)continue;
                    //fHistZeeDphi->Fill(TrkPt,dphiAss);
                   }
 
