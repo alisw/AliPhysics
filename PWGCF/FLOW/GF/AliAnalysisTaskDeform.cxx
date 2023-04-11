@@ -575,7 +575,7 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     printf("Creating covariance objects\n");
     fCovList = new TList();
     fCovList->SetOwner(kTRUE);
-    fCovariance = new AliProfileBS*[22];
+    fCovariance = new AliProfileBS*[25];
     //v2-pt
     fCovariance[0] = new AliProfileBS(Form("v2pt_3pc_%s",spNames[0].Data()),Form("v2pt_3pc_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
     fCovList->Add(fCovariance[0]);
@@ -628,6 +628,14 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     fCovList->Add(fCovariance[20]);
     fCovariance[21] = new AliProfileBS(Form("v2_6pc_%s",spNames[0].Data()),Form("v2_6pc_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
     fCovList->Add(fCovariance[21]);
+    //v2^4 - pt^2
+    fCovariance[22] = new AliProfileBS(Form("v24pt2_6pc_%s",spNames[0].Data()),Form("v24pt2_6pc_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[22]);
+    fCovariance[23] = new AliProfileBS(Form("v24pt_6pc_%s",spNames[0].Data()),Form("v24pt_6pc_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[23]);
+    fCovariance[24] = new AliProfileBS(Form("v24_6pc_%s",spNames[0].Data()),Form("v24_6pc_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fCovList->Add(fCovariance[24]);
+
     if(fFillMptPowers) {
         fCovariancePowerMpt = new AliProfileBS*[3];
         fCovariancePowerMpt[0] = new AliProfileBS(Form("covmpt2_v2_%s",spNames[0].Data()),Form("covmpt2_v2_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
@@ -648,7 +656,7 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
       fCovariancePID[3+4*i] = new AliProfileBS(Form("covnopt_v3_%s",spNames[i+1].Data()),Form("covnopt_v3_%s",spNames[i+1].Data()),fNMultiBins,fMultiBins);
       fCovList->Add(fCovariancePID[3+4*i]);
     }
-    if(fNBootstrapProfiles) for(Int_t i=0;i<22;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
+    if(fNBootstrapProfiles) for(Int_t i=0;i<25;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
     if(fNBootstrapProfiles && !fDisablePID) for(Int_t i=0;i<12;i++) fCovariancePID[i]->InitializeSubsamples(fNBootstrapProfiles);
     if(fFillMptPowers && fNBootstrapProfiles) for(Int_t i=0;i<3;i++) fCovariancePowerMpt[i]->InitializeSubsamples(fNBootstrapProfiles);
     printf("Covariance objects created\n");
@@ -1218,8 +1226,10 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
     FillCovariance(fCovariance[10],corrconfigs.at(0),l_Multi,pt2ev,pt2corr[1],l_Random); //v2-pt^2
     FillCovariance(fCovariance[11],corrconfigs.at(0),l_Multi,mptev,pt2corr[1],l_Random);
     FillCovariance(fCovariance[12],corrconfigs.at(0),l_Multi,1,pt2corr[1],l_Random);
+    FillCovariance(fCovariance[22],corrconfigs.at(1),l_Multi,pt2ev,pt2corr[1],l_Random);  //v24-pt^2
+    FillCovariance(fCovariance[23],corrconfigs.at(1),l_Multi,mptev,pt2corr[1],l_Random);  
+    FillCovariance(fCovariance[24],corrconfigs.at(1),l_Multi,1,pt2corr[1],l_Random);  
   }
-  
   if(pt3corr[1]!=0 && pt2corr[1]!=0) {
     double pt3ev = pt3corr[0]/pt3corr[1];
     double pt2ev = pt2corr[0]/pt2corr[1];
