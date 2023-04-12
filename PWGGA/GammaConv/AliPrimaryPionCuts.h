@@ -165,8 +165,10 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Double_t fPIDnSigmaBelowPionLineTPC; // sigma cut TPC
 	Double_t fPIDnSigmaAbovePionLineTOF; // sigma cut TOF
 	Double_t fPIDnSigmaBelowPionLineTOF; // sigma cut TOF 
+	Double_t fPIDnSigmaAroundKpTOF; // sigma around kaons and protons for Kp rejection
 	Bool_t   fUseCorrectedTPCClsInfo; // flag to use corrected tpc cl info
 	Bool_t   fUseTOFpid; // flag to use tof pid
+	Bool_t   fUseTOFKpRejection; // flag to use tof to reject kaons and protons
 	Bool_t   fRequireTOF; //flg to analyze only tracks with TOF signal
     Bool_t   fDoMassCut;
     Bool_t   fDoMassCut_WithNDM;

@@ -90,6 +90,7 @@ AliPrimaryPionCuts::AliPrimaryPionCuts(const char *name,const char *title) : Ali
 	fPIDnSigmaBelowPionLineTOF(-100), // RRnewTOF
 	fUseCorrectedTPCClsInfo(kFALSE),
 	fUseTOFpid(kFALSE),
+	fUseTOFKpRejection(kFALSE),
 	fRequireTOF(kFALSE),
 	fDoMassCut(kFALSE),
     fDoMassCut_WithNDM(kFALSE),
@@ -704,7 +705,13 @@ Bool_t AliPrimaryPionCuts::dEdxCuts(AliVTrack *fCurrentTrack){
     	}
 		if(fHistTOFSigbefore) fHistTOFSigbefore->Fill(fCurrentTrack->P(),fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion));
 		if(fUseTOFpid){
-			if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion)>fPIDnSigmaAbovePionLineTOF ||
+			if(fUseTOFKpRejection){	// Reject pions, if they are outside the pion band AND inside the kaon or proton band of the TOF
+				if(   (fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion)>fPIDnSigmaAbovePionLineTOF  || fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion)<fPIDnSigmaBelowPionLineTOF    )
+				   && (fabs(fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kKaon))<fPIDnSigmaAroundKpTOF || fabs(fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kProton))<fPIDnSigmaAroundKpTOF ) ){
+					if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
+					return kFALSE;
+				}
+			} else if( fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion)>fPIDnSigmaAbovePionLineTOF ||
 				fPIDResponse->NumberOfSigmasTOF(fCurrentTrack, AliPID::kPion)<fPIDnSigmaBelowPionLineTOF ){
 				if(fHistdEdxCuts)fHistdEdxCuts->Fill(cutIndex);
 				return kFALSE;
@@ -1505,6 +1512,38 @@ Bool_t AliPrimaryPionCuts::SetTOFPionPIDCut(Int_t TOFelectronPID){
 			fUseTOFpid  = kTRUE;
 			fPIDnSigmaBelowPionLineTOF= -3;
 			fPIDnSigmaAbovePionLineTOF=  3;
+			break;
+		case 6: // Kaon + proton rejection
+			fRequireTOF = kFALSE;
+			fUseTOFpid = kTRUE;
+			fUseTOFKpRejection = kTRUE;
+			fPIDnSigmaBelowPionLineTOF=-3;
+			fPIDnSigmaAbovePionLineTOF=3;
+			fPIDnSigmaAroundKpTOF=3;
+			break;
+		case 7: // Kaon + proton rejection
+			fRequireTOF = kFALSE;
+			fUseTOFpid = kTRUE;
+			fUseTOFKpRejection = kTRUE;
+			fPIDnSigmaBelowPionLineTOF=-3;
+			fPIDnSigmaAbovePionLineTOF=3;
+			fPIDnSigmaAroundKpTOF=2;
+			break;
+		case 8: // Kaon + proton rejection
+			fRequireTOF = kFALSE;
+			fUseTOFpid = kTRUE;
+			fUseTOFKpRejection = kTRUE;
+			fPIDnSigmaBelowPionLineTOF=-3;
+			fPIDnSigmaAbovePionLineTOF=3;
+			fPIDnSigmaAroundKpTOF=1;
+			break;
+		case 9: // Kaon + proton rejection
+			fRequireTOF = kFALSE;
+			fUseTOFpid = kTRUE;
+			fUseTOFKpRejection = kTRUE;
+			fPIDnSigmaBelowPionLineTOF=-5;
+			fPIDnSigmaAbovePionLineTOF=5;
+			fPIDnSigmaAroundKpTOF=3;
 			break;
 		default:
 			cout<<"Warning: TOFPionCut not defined "<<TOFelectronPID<<endl;
