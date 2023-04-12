@@ -162,7 +162,6 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s", taskName.Data(), configNames[i].Data()));
     std::cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << std::endl;
     fJCatalyst[i]->SetSaveAllQA(saveQA);
-    fJCatalyst[i]->SetDebugLevel(2);
 
     /// Trigger and centrality selection.
     fJCatalyst[i]->SelectCollisionCandidates(selEvt);
