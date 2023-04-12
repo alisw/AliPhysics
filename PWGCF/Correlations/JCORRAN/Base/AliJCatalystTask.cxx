@@ -574,7 +574,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
       // New: Apply the cuts on the DCA values of the track.
       if(TMath::Abs(DCAxy) > fDCAxy_max) {continue;}
       if(TMath::Abs(DCAz) > fDCAz_max) {continue;}
-      if(!bDCABaseCut) {continue;}
+      if((bUseDCAbaseCut) && (!bDCABaseCut)) {continue;}
 
       // New: Apply the cut on the chi2 per ndf for the TPC tracks.
       Double_t chi2NDF = track->Chi2perNDF(); // TBC: is this 100% the right one?
