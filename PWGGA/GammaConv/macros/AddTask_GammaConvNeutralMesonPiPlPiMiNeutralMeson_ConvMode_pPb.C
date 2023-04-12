@@ -221,13 +221,18 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
     cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070a","0103113s00000000","0153503000000000"); // PCM 2 sigma, pT > 0.4
     cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070a","0103123s00000000","0153503000000000"); // PCM 2 sigma, pT > 0.7
     cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070a","0103133s00000000","0153503000000000"); // PCM 2 sigma, pT > 0.9
-  }else if (trainConfig == 1011){ // TOF+DCA variations to increase charged pion purity
-    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070a","0000003z00000000","0400503000000000"); // Standard
-    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51072a","0000003z00000000","0400503000000000"); // TOF PID if available +-5 sigma
-    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c31070a","0000003z00000000","0400503000000000"); // DCA xy pT dep.
-    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c31072a","0000003z00000000","0400503000000000"); // TOF PID if available +-5 sigma + DCA xy pT dep.
-    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c71070a","0000003z00000000","0400503000000000"); // DCA xyz pT dep.
-    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c71072a","0000003z00000000","0400503000000000"); // TOF PID if available +-5 sigma + DCA xyz pT dep.
+  }else if (trainConfig == 1011){ // TOF variations to increase charged pion purity
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51076a","0000003z00000000","0400503000000000"); // TOF Kaon Proton rejection
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070a","0000003z00000000","0400503000000000"); // No cut
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51072a","0000003z00000000","0400503000000000"); // TOF Pion selection
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51077a","0000003z00000000","0400503000000000"); // TOF Kaon Proton rejection
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51078a","0000003z00000000","0400503000000000"); // TOF Kaon Proton rejection
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51079a","0000003z00000000","0400503000000000"); // TOF Kaon Proton rejection
+  }else if (trainConfig == 1012){ // DCA variations to increase charged pion purity
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c41076a","0000003z00000000","0400503000000000"); // TOF Kaon Proton rejection + DCA 0.5/3
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c31076a","0000003z00000000","0400503000000000"); // TOF Kaon Proton rejection + DCA pTdep/3
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c71076a","0000003z00000000","0400503000000000"); // TOF Kaon Proton rejection + DCA pTdep/pTdep
+
 
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
