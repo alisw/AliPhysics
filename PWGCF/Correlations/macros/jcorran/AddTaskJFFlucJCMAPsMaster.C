@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_pass2", UInt_t period = 0,
+AliAnalysisTask *AddTaskJFFlucJCMAPsMaster1(TString taskName = "JFFlucJCMAP_Run2_pass2", UInt_t period = 0,
   double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 2 4 5 8 11 13",
   bool saveQA = kFALSE, bool ESDpileup = false, double intercept = 15000,
   bool TPCpileup = false, bool saveQA_TPCpileup = false)
@@ -133,14 +133,12 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
   TString MAPdirname = "alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
   AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask");
   TString sCorrection[3] = { "15o", "18q", "18r" }; // 17i2a for 15o?
-
   if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
     cmaptask->EnableCentFlattening(Form("alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC%s_pass13.root", speriod[period].Data()));
     cmaptask->EnableEffCorrection(Form("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC18l8-0-Lists.root", speriod[period].Data()));
   } else if (period == lhc15o) {    // 2015 PbPb dataset.
     cmaptask->EnableEffCorrection(Form("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC16g-0-Lists.root", speriod[period].Data()));
   }  
-
   MAPfilenames = Form("%sPhiWeights_LHC%s_Error_pt02_s_%s.root", MAPdirname.Data(), sCorrection[period].Data(), configName.Data());
   cmaptask->EnablePhiCorrection(0, MAPfilenames);  // i = 0: index for 'SetPhiCorrectionIndex(i)'.
   mgr->AddTask((AliAnalysisTask *) cmaptask);
@@ -164,6 +162,7 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s", taskName.Data(), configNames[i].Data()));
     std::cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << std::endl;
     fJCatalyst[i]->SetSaveAllQA(saveQA);
+    fJCatalyst[i]->SetDebugLevel(2);
 
     /// Trigger and centrality selection.
     fJCatalyst[i]->SelectCollisionCandidates(selEvt);
@@ -250,6 +249,7 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     } else if (strcmp(configNames[i].Data(), "pqq") == 0) {
       fJCatalyst[i]->SetParticleCharge(1);
     }   // Default: charge = 0 to accept all charges.
+
     if (strcmp(configNames[i].Data(), "hybridBaseDCA") == 0) {
       fJCatalyst[i]->SetDCABaseCuts(true);
     }
