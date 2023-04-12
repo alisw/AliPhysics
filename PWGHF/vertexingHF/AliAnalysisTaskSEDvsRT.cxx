@@ -905,7 +905,7 @@ Double_t AliAnalysisTaskSEDvsRT::CalculateRTVal(AliAODEvent* esdEvent)
          UInt_t selectDebug = 0;
          if (!fUseHybridTracks && fTrackFilter[i])
          {
-	   printf(">>>>>>> I am using the old track selections.. \n");
+	   //printf(">>>>>>> I am using the old track selections.. \n");
             selectDebug = fTrackFilter[i]->IsSelected(part);
             if (!selectDebug)
             {
@@ -916,7 +916,7 @@ Double_t AliAnalysisTaskSEDvsRT::CalculateRTVal(AliAODEvent* esdEvent)
 	    fPhiDistributionGlobalTracks->Fill(part->Phi());
             if (!part) continue;
          } else if (fUseHybridTracks && fTrackFilterGlobal && fTrackFilterComplementary ){
-	   printf(">>>>>>> I am using the hybrid track selections.. \n");
+	   //printf(">>>>>>> I am using the hybrid track selections.. \n");
 	   if(fTrackFilterGlobal->IsSelected(part)) {
 	     fCTSTracks->Add(part);
 	     fPhiDistributionGlobalTracks->Fill(part->Phi());
