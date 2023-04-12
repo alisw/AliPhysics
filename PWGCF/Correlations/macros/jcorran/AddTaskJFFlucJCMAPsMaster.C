@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-AliAnalysisTask *AddTaskJFFlucJCMAPsMaster1(TString taskName = "JFFlucJCMAP_Run2_pass2", UInt_t period = 0,
+AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_pass2", UInt_t period = 0,
   double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 2 4 5 8 11 13",
   bool saveQA = kFALSE, bool ESDpileup = false, double intercept = 15000,
   bool TPCpileup = false, bool saveQA_TPCpileup = false)
