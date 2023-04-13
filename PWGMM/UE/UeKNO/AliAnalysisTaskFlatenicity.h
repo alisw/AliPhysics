@@ -3,23 +3,6 @@
 /* Add a description of your MPI analysis */
 
 
-/*!ap  info
-AliAnalysisTaskFlatenicity__2a.h        Modified Antonio Paz    2023-mar29
-AliAnalysisTaskFlatenicity.h     Created antonio ortiz (received by !ap on 2023jan12)
-*/
-
-/*
-!ap  Changes 2023mar29
- -  Added    fnDetec
- -  Added    FillMCarray
- -  Redefined   MCchargedProdu   to   GetMCchargedTrueDists  
-    (from 0 parameters to 4 parameters)
- -  Redefined   MCchargedAuth   to   GetMCchargedDistributionsTrue  
-    (from 0 parameters to 4 parameters)
- -  Added   fnRecon  
- -  Added  FillArray
-    
-*/
 
 #ifndef AliAnalysisTaskFlatenicity_H
 #define AliAnalysisTaskFlatenicity_H
@@ -125,6 +108,7 @@ private:
   Double_t fPtMin;
   Double_t ftrackmult08;
   Double_t fv0mpercentile;
+  Double_t fFlatPercentileMC;
   Float_t fFlat;
   Float_t fFlatMC;
   AliMultSelection *fMultSelection;
@@ -152,6 +136,8 @@ private:
 //  TH1D *hCountEvent;
   TH1D *hCountProduV0m;
   TH1D *hCountAuthV0m;
+  TH1D *hCountProdu_FlatMC;
+  TH1D *hCountAuth_FlatMC;
   TH2D *hMultMCmVsV0M;
   TH2D *hMultMCaVsV0M;
   TH2D *hMultMCcVsV0M;
@@ -164,6 +150,8 @@ private:
   TH1D *hChgAuth_pt;
   TH2D *hChgProdu_V0_pt;
   TH2D *hChgAuth_V0_pt;
+  TH2D *hChgProdu_Flat_pt;
+  TH2D *hChgAuth_Flat_pt;
   TH2D *hFlatVsPtV0M[9];
   TH2D *hFlatVsPtV0MMC[9];
   TH2D *hComponentsMult[4];

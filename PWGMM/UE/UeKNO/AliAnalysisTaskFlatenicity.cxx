@@ -16,49 +16,6 @@
  * Anatask to compute flatenicity (arXiv:2204.13733)                      *
  **************************************************************************/
 
-/*!ap  info
-AliAnalysisTaskFlatenicity__2a.cxx      Modified Antonio Paz    2023-mar29
-
-
-!ap  Changes 2023mar29
- -  Split    MCchargedProdu()  and also   MCchargedAuth()  in two parts. this
-    is to have a coding that is equivalent to others in Alyphysics (e.g. like
-    AliAnalysisTaskChargedVsRT )
-     -  Added    AliAnalysisTaskFlatenicity::FillMCarray    which is the first
-        part of    MCchargedProdu   and  MCchargedAuth.
-     -  Added    ptMC   idMC   to store values of generated charged
-        particles
-     -  Activated   fnGen     to store return of    FillMCarray    for  Ncharged
-        generated    (fnGen was already defined in the class, but unused)
-     -  Using   FillMCarray  to obtain    fnGen   and to fill vectors  ptMC
-        idMC     which will be fed to      GetMCchargedTrueDists
-     -  Redefined   MCchargedProdu   to    GetMCchargedTrueDists
-        (From requiring 0 parameters, to requiring 3 parameters.  Inspired by
-        AliAnalysisTaskFlatenicity::GetMultiplicityDistributionsTrue()  )
-
-     -  Added      ptDetMC   idDetMC     to store values of detected
-        charged particles
-     -  Added   fnDetec     to store return of    FillMCarray    for  Ncharged
-        filtered
-     -  Using   FillMCarray  to obtain    fnDetec   and to fill vectors  ptDetMC
-        idDetMC     to be fed to      GetMCchargedDetDists
-     -  Redefined   MCchargedAuth   to    GetMCchargedDetDists
-        (From requiring 0 parameters, to requiring 3 parameters.  Inspired by
-        AliAnalysisTaskFlatenicity::GetMultiplicityDistributions()  )
-
-
- -  Transformed the Analysis to be easier to perform an   MCclosureTest
-    Followed mostly    AliAnalysisTaskChargedVsRT.cxx   by Paola    and
-    AliAnalysisTaskMcKnoUe.cxx     by  Feng
-     -  Added class   FillArray   to  process  fESD tracks
-
-     -  Added   fnRecon     to store return of  FillArray for   Ncharged
-        reconstructed
-     -  Using   FillArray  to obtain    fnRecon   and to fill vectors   ptRecon
-        idRecon  isprimRecon
-
-*/
-
 class TTree;
 
 class AliESDtrackCuts;
@@ -133,7 +90,9 @@ Double_t Ptbins[nPtbins + 1] = {
 const Int_t nCent = 9;
 Double_t centClass[nCent + 1] = {0.0,  1.0,  5.0,  10.0, 20.0,
                                  30.0, 40.0, 50.0, 70.0, 100.0};
-
+const Int_t nFlatClass = 8;
+Double_t FlatClass[nFlatClass + 1] = {0.0,  0.01, 0.05, 0.10, 0.20,
+                                      0.30, 0.40, 0.50, 1.0};
 // const Int_t nCent = 2;
 // Double_t centClass[nCent + 1] = {0.0, 50.0, 100.0};
 const Int_t nDet = 4;
@@ -160,10 +119,11 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
       hActivityV0DataSectBefore(0), hActivityV0DataSect(0), hV0vsVtxz(0),
       hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
       hEtamc(0), hEtamcAlice(0), hCounter(0), hCountProduV0m(0),
-      hCountAuthV0m(0), hMultMCmVsV0M(0), hMultMCaVsV0M(0), hMultMCcVsV0M(0),
-      hMultmVsV0M(0), hMultmVsV0Malice(0), hMultaVsV0M(0), hMultcVsV0M(0),
-      hV0MBadruns(0), hChgProdu_pt(0), hChgAuth_pt(0), hChgProdu_V0_pt(0),
-      hChgAuth_V0_pt(0) {
+      hCountAuthV0m(0), hCountProdu_FlatMC(0), hCountAuth_FlatMC(0),
+      hMultMCmVsV0M(0), hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0),
+      hMultmVsV0Malice(0), hMultaVsV0M(0), hMultcVsV0M(0), hV0MBadruns(0),
+      hChgProdu_pt(0), hChgAuth_pt(0), hChgProdu_V0_pt(0), hChgAuth_V0_pt(0),
+      hChgProdu_Flat_pt(0), hChgAuth_Flat_pt(0) {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0M[i_c] = 0;
   }
@@ -209,10 +169,11 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
       hActivityV0DataSectBefore(0), hActivityV0DataSect(0), hV0vsVtxz(0),
       hActivityV0McSect(0), hFlatVsNchMC(0), hFlatVsV0M(0), hFlatMCVsV0M(0),
       hEtamc(0), hEtamcAlice(0), hCounter(0), hCountProduV0m(0),
-      hCountAuthV0m(0), hMultMCmVsV0M(0), hMultMCaVsV0M(0), hMultMCcVsV0M(0),
-      hMultmVsV0M(0), hMultmVsV0Malice(0), hMultaVsV0M(0), hMultcVsV0M(0),
-      hV0MBadruns(0), hChgProdu_pt(0), hChgAuth_pt(0), hChgProdu_V0_pt(0),
-      hChgAuth_V0_pt(0)
+      hCountAuthV0m(0), hCountProdu_FlatMC(0), hCountAuth_FlatMC(0),
+      hMultMCmVsV0M(0), hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0),
+      hMultmVsV0Malice(0), hMultaVsV0M(0), hMultcVsV0M(0), hV0MBadruns(0),
+      hChgProdu_pt(0), hChgAuth_pt(0), hChgProdu_V0_pt(0), hChgAuth_V0_pt(0),
+      hChgProdu_Flat_pt(0), hChgAuth_Flat_pt(0)
 
 {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
@@ -276,16 +237,21 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
   fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
   fCuts->SetMaxChi2PerClusterTPC(4);
   fCuts->SetMaxDCAToVertexZ(2);
-  fCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
-  fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-  fCuts->SetMaxChi2PerClusterTPC(4);
-  fCuts->SetMaxDCAToVertexZ(2);
+  //  fCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
+  //! ap   Cut eliminated because Omar doesn't have it
+  //      as requested on mail april 9, 2023
+  //  fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  //! ap   Repeated cut
+  //  fCuts->SetMaxChi2PerClusterTPC(4);
+  //! ap   Repeated cut
+  //  fCuts->SetMaxDCAToVertexZ(2);
+  //! ap   Repeated cut
   fCuts->SetMaxChi2PerClusterITS(36);
   fCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-  fCuts->SetMaxChi2PerClusterITS(36);
+  //  fCuts->SetMaxChi2PerClusterITS(36);
+  //! ap   Repeated cut
   fTrackFilter->AddCuts(fCuts);
 
-  // create output objects
   float min_flat = -0.01;
   float max_flat = 1.01;
   int nbins_flat = 1020;
@@ -295,6 +261,7 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
     nbins_flat = 2000;
   }
 
+  // create output objects
   fParVtx = new TF1("vtxpar", "pol2", -15, 15);
   fParVtx->SetParameters(89.8737, 0.127185, 0.00572492);
   ParVtxNorm = 89.943;
@@ -437,6 +404,23 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
         new TH2D("hMultMCcVsV0M", "", nCent, centClass, 1000, -0.5, 999.5);
     fOutputList->Add(hMultMCcVsV0M);
 
+    //  hCountEvent = new TH1D("hCountEvent", "event counter", 2, 0.5, 2.5);
+    hCountProduV0m =
+        new TH1D("hCountProduV0m", "CountChgV0m_prod", nCent, centClass);
+    fOutputList->Add(hCountProduV0m);
+
+    hCountAuthV0m =
+        new TH1D("hCountAuthV0m", "CountChgV0m_auth", nCent, centClass);
+    fOutputList->Add(hCountAuthV0m);
+
+    hCountProdu_FlatMC = new TH1D("hCountProdu_FlatMC", "CountChgFlat_prod",
+                                  nFlatClass, FlatClass);
+    fOutputList->Add(hCountProdu_FlatMC);
+
+    hCountAuth_FlatMC = new TH1D("hCountAuth_FlatMC", "CountChgFlat_auth",
+                                 nFlatClass, FlatClass);
+    fOutputList->Add(hCountAuth_FlatMC);
+
     hChgProdu_pt = new TH1D("hChgProdu_pt", "hChgProdu_pt", nPtbins, Ptbins);
     fOutputList->Add(hChgProdu_pt);
 
@@ -445,6 +429,12 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
                  nPtbins, Ptbins, nCent, centClass);
     fOutputList->Add(hChgProdu_V0_pt);
 
+    hChgProdu_Flat_pt =
+        new TH2D("hChgProdu_Flat_pt",
+                 "; #it{p}_{T} (GeV/#it{c}); Flatenicity Percentile", nPtbins,
+                 Ptbins, nFlatClass, FlatClass);
+    fOutputList->Add(hChgProdu_Flat_pt);
+
     hChgAuth_pt = new TH1D("hChgAuth_pt", "hChgAuth_pt", nPtbins, Ptbins);
     fOutputList->Add(hChgAuth_pt);
 
@@ -452,6 +442,11 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
         new TH2D("hChgAuth_V0_pt", "; #it{p}_{T} (GeV/#it{c}); V0M Percentile",
                  nPtbins, Ptbins, nCent, centClass);
     fOutputList->Add(hChgAuth_V0_pt);
+
+    hChgAuth_Flat_pt = new TH2D(
+        "hChgAuth_Flat_pt", "; #it{p}_{T} (GeV/#it{c}); Flatenicity Percentile",
+        nPtbins, Ptbins, nFlatClass, FlatClass);
+    fOutputList->Add(hChgAuth_Flat_pt);
   }
 
   hActivityV0DataSectBefore = new TProfile(
@@ -481,18 +476,12 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
   hCounter = new TH1D("hCounter", "counter", 15, -0.5, 14.5);
   fOutputList->Add(hCounter);
 
-  //  hCountEvent = new TH1D("hCountEvent", "event counter", 2, 0.5, 2.5);
-  hCountProduV0m = new TH1D("hCountProduV0m", "CounterChg", nCent, centClass);
-  fOutputList->Add(hCountProduV0m);
-
-  hCountAuthV0m = new TH1D("hCountAuthV0m", "CounterChg2", nCent, centClass);
-  fOutputList->Add(hCountAuthV0m);
-
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hMultmVsFlat[i_c] = new TH2D(Form("hMultmVsFlat_c%d", i_c), "", 100, 0.0,
                                  1.0, 1000, -0.5, 999.5);
     fOutputList->Add(hMultmVsFlat[i_c]);
   }
+
   hMultmVsV0M =
       new TH2D("hMultmVsV0M", "", nCent, centClass, 1000, -0.5, 999.5);
   fOutputList->Add(hMultmVsV0M);
@@ -575,9 +564,14 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
   int v0multalice = fMultSelection->GetEstimator("V0M")->GetValue();
 
+  fFlatPercentileMC = -1;
+  if (fUseMC) {
+    fFlatPercentileMC = GetFlatenicityMC();
+    //    if (fFlatPercentileMC >= 0) {}
+  }
+
   vector<Float_t> ptMC;
   vector<Int_t> idMC;
-
   if (isGoodVtxPosMC) {
     fnGen = FillMCarray(ptMC, idMC);
     GetMCchargedTrueDists(fnGen, ptMC, idMC);
@@ -601,13 +595,6 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     return;
   }
 
-  vector<Float_t> ptDetMC;
-  vector<Int_t> idDetMC;
-  if (isGoodVtxPosMC) {
-    fnDetec = FillMCarray(ptDetMC, idDetMC);
-    GetMCchargedDetDists(fnDetec, ptDetMC, idDetMC);
-  }
-
   hCounter->Fill(2.0);
 
   // Good vertex
@@ -615,6 +602,16 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   hasRecVertex = HasRecVertex();
   if (!hasRecVertex)
     return;
+
+  vector<Float_t> ptDetMC;
+  vector<Int_t> idDetMC;
+  if (isGoodVtxPosMC) {
+    fnDetec = FillMCarray(ptDetMC, idDetMC);
+    GetMCchargedDetDists(fnDetec, ptDetMC, idDetMC);
+  }
+
+  //  const AliVVertex *vtTrc = fMC->GetPrimaryVertex();
+  //  if (!vtTrc) return;
 
   hCounter->Fill(3.0);
 
@@ -906,132 +903,6 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityTPC() {
 }
 
 //______________________________________________________________________________
-void AliAnalysisTaskFlatenicity::ExtractMultiplicities() {
-
-  fmultTPC = 0;
-  Int_t nTracks = fESD->GetNumberOfTracks();
-  for (Int_t iT = 0; iT < nTracks; ++iT) {
-
-    AliESDtrack *esdtrack = static_cast<AliESDtrack *>(
-        fESD->GetTrack(iT)); // get a track (type AliesdTrack)
-    if (!esdtrack)
-      continue;
-    if (!fTrackFilter->IsSelected(esdtrack))
-      continue;
-    if (TMath::Abs(esdtrack->Eta()) > fEtaCut)
-      continue;
-    if (esdtrack->Pt() < fPtMin)
-      continue;
-    fmultTPC++;
-  }
-
-  AliVVZERO *lVV0 = 0x0;
-  AliVEvent *lVevent = 0x0;
-  lVevent = dynamic_cast<AliVEvent *>(InputEvent());
-  if (!lVevent) {
-    AliWarning("ERROR: ESD / AOD event not available \n");
-    return;
-  }
-  // Get VZERO Information for multiplicity later
-  lVV0 = lVevent->GetVZEROData();
-  if (!lVV0) {
-    AliError("AliVVZERO not available");
-    return;
-  }
-
-  const Int_t nChannels = 64;
-  float fmultV0C_tmp = 0;
-  float fmultV0A_tmp = 0;
-  for (Int_t iCh = 0; iCh < nChannels; iCh++) {
-    float mult = lVV0->GetMultiplicity(iCh);
-    if (fIsCalib) {
-      mult *= fParVtx->Eval(0.0) / fParVtx->Eval(fVtxz);
-    }
-    if (iCh < 32) { // V0C
-      fmultV0C_tmp += mult;
-    } else { // V0A
-      fmultV0A_tmp += mult;
-    }
-  }
-
-  fmultV0C = fmultV0C_tmp;
-  fmultV0A = fmultV0A_tmp;
-
-  AliVAD *lVAD = 0x0;
-  lVAD = lVevent->GetADData();
-  if (!lVAD) {
-    AliError("AliVAD not available");
-    return;
-  }
-  fmultADA = 0;
-  fmultADC = 0;
-  // Get Multiplicity info per AD 16 channel: C-side : 0-7, A-side 8-15
-  for (Int_t i = 0; i < 8; i++) {
-    fmultADA += lVAD->GetMultiplicityADA(i);
-  }
-  for (Int_t i = 8; i < 16; i++) {
-    fmultADC += lVAD->GetMultiplicityADC(i - 8);
-  }
-}
-
-//______________________________________________________________________________
-void AliAnalysisTaskFlatenicity::ExtractMultiplicitiesEqualALICE() {
-
-  fmultTPC = 0;
-  Int_t nTracks = fESD->GetNumberOfTracks();
-  for (Int_t iT = 0; iT < nTracks; ++iT) {
-
-    AliESDtrack *esdtrack = static_cast<AliESDtrack *>(
-        fESD->GetTrack(iT)); // get a track (type AliesdTrack)
-    if (!esdtrack)
-      continue;
-    if (!fTrackFilter->IsSelected(esdtrack))
-      continue;
-    if (TMath::Abs(esdtrack->Eta()) > fEtaCut)
-      continue;
-    if (esdtrack->Pt() < fPtMin)
-      continue;
-    fmultTPC++;
-  }
-
-  AliVVZERO *lVV0 = 0x0;
-  AliVEvent *lVevent = 0x0;
-  lVevent = dynamic_cast<AliVEvent *>(InputEvent());
-  if (!lVevent) {
-    AliWarning("ERROR: ESD / AOD event not available \n");
-    return;
-  }
-  // Get VZERO Information for multiplicity later
-  lVV0 = lVevent->GetVZEROData();
-  if (!lVV0) {
-    AliError("AliVVZERO not available");
-    return;
-  }
-  float fmultV0A_tmp = 0;
-  float fmultV0C_tmp = 0;
-  fmultV0A_tmp = AliESDUtils::GetCorrV0A(lVV0->GetMTotV0A(), fVtxz);
-  fmultV0C_tmp = AliESDUtils::GetCorrV0C(lVV0->GetMTotV0C(), fVtxz);
-
-  fmultV0A = fmultV0A_tmp;
-  fmultV0C = fmultV0C_tmp;
-
-  AliVAD *lVAD = 0x0;
-  lVAD = lVevent->GetADData();
-  if (!lVAD) {
-    AliError("AliVAD not available");
-    return;
-  }
-  fmultADA = 0;
-  fmultADC = 0;
-  // Get Multiplicity info per AD 16 channel: C-side : 0-7, A-side 8-15
-  for (Int_t i = 0; i < 8; i++) {
-    fmultADA += lVAD->GetMultiplicityADA(i);
-  }
-  for (Int_t i = 8; i < 16; i++) {
-    fmultADC += lVAD->GetMultiplicityADC(i - 8);
-  }
-}
-
 Double_t AliAnalysisTaskFlatenicity::GetFlatenicityV0EqualALICE() {
 
   AliVVZERO *lVV0 = 0x0;
@@ -1255,47 +1126,6 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityV0() {
 }
 
 //______________________________________________________________________________
-void AliAnalysisTaskFlatenicity::ExtractMultiplicitiesMC() {
-
-  fmultV0Amc = 0;
-  fmultV0Cmc = 0;
-  fmultADAmc = 0;
-  fmultADCmc = 0;
-  fmultTPCmc = 0;
-
-  for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
-
-    AliMCParticle *particle = (AliMCParticle *)fMC->GetTrack(i);
-    if (!particle)
-      continue;
-    if (!fMC->IsPhysicalPrimary(i))
-      continue;
-    if (particle->Pt() <= 0.0)
-      continue;
-    if (TMath::Abs(particle->Charge()) < 0.1)
-      continue;
-    Double_t eta_a = particle->Eta();
-    hEtamc->Fill(eta_a);
-    hEtamcAlice->Fill(eta_a);
-    if (eta_a >= 2.8 && eta_a < 5.1) { // v0a acceptance (excluding first ring)
-      fmultV0Amc++;
-    }
-    if (eta_a >= 4.8 && eta_a < 6.3) { // ada acceptance
-      fmultADAmc++;
-    }
-    if (eta_a >= -3.7 && eta_a < -1.7) { // v0c
-      fmultV0Cmc++;
-    }
-    if (eta_a >= -7.0 && eta_a < -4.9) { // adc
-      fmultADCmc++;
-    }
-    if (TMath::Abs(eta_a) < 0.8) { // adc
-      fmultTPCmc++;
-    }
-  }
-}
-
-//______________________________________________________________________________
 Double_t AliAnalysisTaskFlatenicity::GetFlatenicityMC() {
 
   // Flatenicity calculation
@@ -1390,6 +1220,174 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityMC() {
   return flatenicity;
 }
 
+//______________________________________________________________________________
+void AliAnalysisTaskFlatenicity::ExtractMultiplicities() {
+
+  fmultTPC = 0;
+  Int_t nTracks = fESD->GetNumberOfTracks();
+  for (Int_t iT = 0; iT < nTracks; ++iT) {
+
+    AliESDtrack *esdtrack = static_cast<AliESDtrack *>(
+        fESD->GetTrack(iT)); // get a track (type AliesdTrack)
+    if (!esdtrack)
+      continue;
+    if (!fTrackFilter->IsSelected(esdtrack))
+      continue;
+    if (TMath::Abs(esdtrack->Eta()) > fEtaCut)
+      continue;
+    if (esdtrack->Pt() < fPtMin)
+      continue;
+    fmultTPC++;
+  }
+
+  AliVVZERO *lVV0 = 0x0;
+  AliVEvent *lVevent = 0x0;
+  lVevent = dynamic_cast<AliVEvent *>(InputEvent());
+  if (!lVevent) {
+    AliWarning("ERROR: ESD / AOD event not available \n");
+    return;
+  }
+  // Get VZERO Information for multiplicity later
+  lVV0 = lVevent->GetVZEROData();
+  if (!lVV0) {
+    AliError("AliVVZERO not available");
+    return;
+  }
+
+  const Int_t nChannels = 64;
+  float fmultV0C_tmp = 0;
+  float fmultV0A_tmp = 0;
+  for (Int_t iCh = 0; iCh < nChannels; iCh++) {
+    float mult = lVV0->GetMultiplicity(iCh);
+    if (fIsCalib) {
+      mult *= fParVtx->Eval(0.0) / fParVtx->Eval(fVtxz);
+    }
+    if (iCh < 32) { // V0C
+      fmultV0C_tmp += mult;
+    } else { // V0A
+      fmultV0A_tmp += mult;
+    }
+  }
+
+  fmultV0C = fmultV0C_tmp;
+  fmultV0A = fmultV0A_tmp;
+
+  AliVAD *lVAD = 0x0;
+  lVAD = lVevent->GetADData();
+  if (!lVAD) {
+    AliError("AliVAD not available");
+    return;
+  }
+  fmultADA = 0;
+  fmultADC = 0;
+  // Get Multiplicity info per AD 16 channel: C-side : 0-7, A-side 8-15
+  for (Int_t i = 0; i < 8; i++) {
+    fmultADA += lVAD->GetMultiplicityADA(i);
+  }
+  for (Int_t i = 8; i < 16; i++) {
+    fmultADC += lVAD->GetMultiplicityADC(i - 8);
+  }
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskFlatenicity::ExtractMultiplicitiesEqualALICE() {
+
+  fmultTPC = 0;
+  Int_t nTracks = fESD->GetNumberOfTracks();
+  for (Int_t iT = 0; iT < nTracks; ++iT) {
+
+    AliESDtrack *esdtrack = static_cast<AliESDtrack *>(
+        fESD->GetTrack(iT)); // get a track (type AliesdTrack)
+    if (!esdtrack)
+      continue;
+    if (!fTrackFilter->IsSelected(esdtrack))
+      continue;
+    if (TMath::Abs(esdtrack->Eta()) > fEtaCut)
+      continue;
+    if (esdtrack->Pt() < fPtMin)
+      continue;
+    fmultTPC++;
+  }
+
+  AliVVZERO *lVV0 = 0x0;
+  AliVEvent *lVevent = 0x0;
+  lVevent = dynamic_cast<AliVEvent *>(InputEvent());
+  if (!lVevent) {
+    AliWarning("ERROR: ESD / AOD event not available \n");
+    return;
+  }
+  // Get VZERO Information for multiplicity later
+  lVV0 = lVevent->GetVZEROData();
+  if (!lVV0) {
+    AliError("AliVVZERO not available");
+    return;
+  }
+  float fmultV0A_tmp = 0;
+  float fmultV0C_tmp = 0;
+  fmultV0A_tmp = AliESDUtils::GetCorrV0A(lVV0->GetMTotV0A(), fVtxz);
+  fmultV0C_tmp = AliESDUtils::GetCorrV0C(lVV0->GetMTotV0C(), fVtxz);
+
+  fmultV0A = fmultV0A_tmp;
+  fmultV0C = fmultV0C_tmp;
+
+  AliVAD *lVAD = 0x0;
+  lVAD = lVevent->GetADData();
+  if (!lVAD) {
+    AliError("AliVAD not available");
+    return;
+  }
+  fmultADA = 0;
+  fmultADC = 0;
+  // Get Multiplicity info per AD 16 channel: C-side : 0-7, A-side 8-15
+  for (Int_t i = 0; i < 8; i++) {
+    fmultADA += lVAD->GetMultiplicityADA(i);
+  }
+  for (Int_t i = 8; i < 16; i++) {
+    fmultADC += lVAD->GetMultiplicityADC(i - 8);
+  }
+}
+
+//______________________________________________________________________________
+void AliAnalysisTaskFlatenicity::ExtractMultiplicitiesMC() {
+
+  fmultV0Amc = 0;
+  fmultV0Cmc = 0;
+  fmultADAmc = 0;
+  fmultADCmc = 0;
+  fmultTPCmc = 0;
+
+  for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
+
+    AliMCParticle *particle = (AliMCParticle *)fMC->GetTrack(i);
+    if (!particle)
+      continue;
+    if (!fMC->IsPhysicalPrimary(i))
+      continue;
+    if (particle->Pt() <= 0.0)
+      continue;
+    if (TMath::Abs(particle->Charge()) < 0.1)
+      continue;
+    Double_t eta_a = particle->Eta();
+    hEtamc->Fill(eta_a);
+    hEtamcAlice->Fill(eta_a);
+    if (eta_a >= 2.8 && eta_a < 5.1) { // v0a acceptance (excluding first ring)
+      fmultV0Amc++;
+    }
+    if (eta_a >= 4.8 && eta_a < 6.3) { // ada acceptance
+      fmultADAmc++;
+    }
+    if (eta_a >= -3.7 && eta_a < -1.7) { // v0c
+      fmultV0Cmc++;
+    }
+    if (eta_a >= -7.0 && eta_a < -4.9) { // adc
+      fmultADCmc++;
+    }
+    if (TMath::Abs(eta_a) < 0.8) { // adc
+      fmultTPCmc++;
+    }
+  }
+}
+
 //______________________________________________________________________
 Bool_t AliAnalysisTaskFlatenicity::HasRecVertex() {
 
@@ -1471,8 +1469,6 @@ Int_t AliAnalysisTaskFlatenicity::FillMCarray(vector<Float_t> &ptArray,
   idArray.clear();
 
   Int_t nParticlesChg = 0;
-  //! ap   To be used to verify if INEL>0  ( when
-  //      nPrticlesChag>0  )
 
   for (Int_t i = 0; i < fMC->GetNumberOfTracks(); ++i) {
     AliMCParticle *particle = (AliMCParticle *)fMC->GetTrack(i);
@@ -1482,7 +1478,7 @@ Int_t AliAnalysisTaskFlatenicity::FillMCarray(vector<Float_t> &ptArray,
       continue;
     if (TMath::Abs(particle->Eta()) > fEtaCut)
       continue;
-    if (particle->Pt() < fPtMin)
+    if (particle->Pt() < 0.0)
       continue;
     if (TMath::Abs(particle->Charge()) < 0.1)
       continue;
@@ -1535,8 +1531,6 @@ Int_t AliAnalysisTaskFlatenicity::FillArray(vector<Float_t> &ptArray,
   isprimArray.clear();
 
   Int_t nParticlesChgRec = 0;
-  //! ap   To be used to verify if INEL>0  ( when
-  //      nPrticlesChag>0  )
 
   Int_t nTracks = fESD->GetNumberOfTracks();
 
@@ -1549,7 +1543,7 @@ Int_t AliAnalysisTaskFlatenicity::FillArray(vector<Float_t> &ptArray,
       continue;
     if (TMath::Abs(esdtrack->Eta()) > fEtaCut)
       continue;
-    if (esdtrack->Pt() < fPtMin)
+    if (esdtrack->Pt() < 0.)
       continue;
 
     //      AliESDtrack *newTrack = 0x0;
@@ -1610,10 +1604,12 @@ void AliAnalysisTaskFlatenicity::GetMCchargedTrueDists(
 
   //  hCountEvent->Fill(1.0);
   hCountProduV0m->Fill(fv0mpercentile);
+  hCountProdu_FlatMC->Fill(fFlatPercentileMC);
 
   for (Int_t i = 0; i < multGen; ++i) {
     hChgProdu_pt->Fill(ptGen[i]);
     hChgProdu_V0_pt->Fill(ptGen[i], fv0mpercentile);
+    hChgProdu_Flat_pt->Fill(ptGen[i], fFlatPercentileMC);
   }
 }
 
@@ -1623,11 +1619,12 @@ void AliAnalysisTaskFlatenicity::GetMCchargedDetDists(
 
   if (multRec < 1)
     return;
-  //! ap   The INEL>0 condition
   hCountAuthV0m->Fill(fv0mpercentile);
+  hCountAuth_FlatMC->Fill(fFlatPercentileMC);
 
   for (Int_t i = 0; i < multRec; ++i) {
     hChgAuth_pt->Fill(ptRec[i]);
     hChgAuth_V0_pt->Fill(ptRec[i], fv0mpercentile);
+    hChgAuth_Flat_pt->Fill(ptRec[i], fFlatPercentileMC);
   }
 }
