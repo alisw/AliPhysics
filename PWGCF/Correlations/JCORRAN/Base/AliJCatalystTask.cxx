@@ -1253,7 +1253,10 @@ void AliJCatalystTask::FillControlHistograms(AliAODTrack *thisTrack, Int_t which
   fTPCClustersHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetTPCNcls());
   fITSClustersHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetITSNcls());
   fChiSquareTPCHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Chi2perNDF());
-  fChiSquareITSHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetITSchi2()/(float)thisTrack->GetITSNcls());
+  
+  if (!thisTrack->GetITSNcls()==0) { // If check needed to avoid floating point exception for some cases.
+    fChiSquareITSHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetITSchi2()/(float)thisTrack->GetITSNcls());
+  }
   fDCAzHistogram[CentralityBin][whichHisto]->Fill(ValueDCAz);
   fDCAxyHistogram[CentralityBin][whichHisto]->Fill(ValueDCAxy);
   fChargeHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Charge());
