@@ -1,4 +1,4 @@
-AliSPDpPbAnalysisTaskData* AddMyTask(TString name = "name")
+AliSPDpPbAnalysisTaskData* AddTaskSPDData(TString name = "name")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
