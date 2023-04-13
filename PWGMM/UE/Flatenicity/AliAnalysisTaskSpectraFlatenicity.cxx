@@ -124,7 +124,8 @@ ClassImp(AliAnalysisTaskSpectraFlatenicity) // classimp: necessary for root
     fmultV0Amc(-1), 
     fmultV0Cmc(-1), 
     fmultTPCmc(-1), 
-    fRemoveTrivialScaling(kFALSE), 
+    fRemoveTrivialScaling(kFALSE),
+    fSysVarTrkCuts(0),
     fnGen(-1), 
     fnRec(-1), 
     fnRecWoDCA(-1), 
@@ -214,7 +215,8 @@ AliAnalysisTaskSpectraFlatenicity::AliAnalysisTaskSpectraFlatenicity(const char 
     fmultV0Amc(-1), 
     fmultV0Cmc(-1), 
     fmultTPCmc(-1), 
-    fRemoveTrivialScaling(kFALSE), 
+    fRemoveTrivialScaling(kFALSE),
+    fSysVarTrkCuts(0),
     fnGen(-1), 
     fnRec(-1), 
     fnRecWoDCA(-1), 
@@ -318,12 +320,86 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
   fCuts->SetDCAToVertex2D(kFALSE);
   fCuts->SetRequireSigmaToVertex(kFALSE);
   fCuts->SetEtaRange(-0.8, 0.8);
-  fCuts->SetMinNCrossedRowsTPC(70);
-  fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-  fCuts->SetMaxChi2PerClusterTPC(4);
-  fCuts->SetMaxDCAToVertexZ(2);
   fCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-  fCuts->SetMaxChi2PerClusterITS(36);
+  
+  if(fSysVarTrkCuts==1){ //! Lower: SetMinNCrossedRowsTPC(60)
+      fCuts->SetMinNCrossedRowsTPC(60);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else if(fSysVarTrkCuts==2){ //! Higher: SetMinNCrossedRowsTPC(100)
+      fCuts->SetMinNCrossedRowsTPC(100);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else if(fSysVarTrkCuts==3){ //! Lower: SetMinRatioCrossedRowsOverFindableClustersTPC(0.7)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else if(fSysVarTrkCuts==4){ //! Higher: SetMinRatioCrossedRowsOverFindableClustersTPC(0.9)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else if(fSysVarTrkCuts==5){ //! Lower: SetMaxChi2PerClusterTPC(3)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(3);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else if(fSysVarTrkCuts==6){ //! Higher: SetMaxChi2PerClusterTPC(5)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(5);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else if(fSysVarTrkCuts==7){ //! Lower: SetMaxChi2PerClusterITS(25)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(25);
+  }
+  else if(fSysVarTrkCuts==8){ //! Higher: SetMaxChi2PerClusterITS(49)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(49);
+  }
+  else if(fSysVarTrkCuts==9){ //! Lower: SetMaxDCAToVertexZ(1)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(1);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else if(fSysVarTrkCuts==10){ //! Lower: SetMaxDCAToVertexZ(5)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(5);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else{ //! Default values
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);	
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+
   fTrackFilter->AddCuts(fCuts);
 
   // wo DCA cut  
