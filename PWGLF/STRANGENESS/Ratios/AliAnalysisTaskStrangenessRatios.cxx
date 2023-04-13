@@ -85,6 +85,7 @@ AliAnalysisTaskStrangenessRatios::AliAnalysisTaskStrangenessRatios(bool isMC, TS
   DefineOutput(3, TTree::Class());
   DefineOutput(4, TTree::Class());
   DefineOutput(5, TTree::Class());
+  DefineOutput(6, TTree::Class());
 }
 
 /// Standard destructor
@@ -97,11 +98,16 @@ AliAnalysisTaskStrangenessRatios::~AliAnalysisTaskStrangenessRatios()
     delete fList;
   if (fTree)
     delete fTree;
+  if (fTreeK0s)
+    delete fTreeK0s;
+  if (fTreeTrain)
+    delete fTreeTrain;
   if (fTreeLambda)
     delete fTreeLambda;
   if (!fMC)
   {
     delete fRecCascade;
+    delete fRecCascadeTrain;
     delete fRecLambda;
     delete fRecK0s;
     delete fRecLambdaBDTOut;
@@ -118,18 +124,21 @@ void AliAnalysisTaskStrangenessRatios::UserCreateOutputObjects()
   fList->SetOwner(kTRUE);
   fEventCut.AddQAplotsToList(fList);
   fRecCascade = fMC ? &fGenCascade : new MiniCascade;
+  fRecCascadeTrain = fMC ? &fGenCascadeTrain : new MiniCascadeTrain;
   fRecLambda = fMC ? &fGenLambda : new MiniLambda;
   fRecK0s = fMC ? &fGenK0s : new MiniK0s;
   fRecLambdaBDTOut = new MiniLambdaBDTOut;
 
   OpenFile(2);
   fTree = new TTree("XiOmegaTree", "Xi and Omega Tree");
+  fTreeTrain = new TTree("XiOmegaTreeTrain", "Xi and Omega Tree (train)");
   fTreeLambda = new TTree("LambdaTree", "Lambda");
   fTreeLambdaBDTOut = new TTree("LambdaTreeBDTOut", "LambdaBDT");
   fTreeK0s = new TTree("K0sTree", "K0s");
   if (fMC)
   {
     fTree->Branch("MiniCascadeMC", &fGenCascade);
+    fTreeTrain->Branch("MiniCascadeTrainMC", &fGenCascadeTrain);
     fTreeLambda->Branch("MiniLambdaMC", &fGenLambda);
     fTreeK0s->Branch("MiniK0sMC", &fGenK0s);
     fMCEvent = MCEvent();
@@ -137,6 +146,7 @@ void AliAnalysisTaskStrangenessRatios::UserCreateOutputObjects()
   else
   {
     fTree->Branch("MiniCascade", fRecCascade);
+    fTreeTrain->Branch("MiniCascadeTrain", fRecCascadeTrain);
     fTreeLambda->Branch("MiniLambda", fRecLambda);
     fTreeK0s->Branch("MiniK0s", fRecK0s);
     fTreeLambdaBDTOut->Branch("MiniLambdaBDTOut", fRecLambdaBDTOut);
@@ -186,11 +196,12 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
 
   std::vector<int> checkedLabel, checkedLambdaLabel, checkedK0sLabel;
 
-  if (fFillCascades)
+  if (fFillCascades || fFillCascadesTrain)
   {
     fRecCascade->centrality = fEventCut.GetCentrality();
 
     fGenCascade.isReconstructed = true;
+    fGenCascadeTrain.isReconstructed = true;
 
     for (int iCasc = 0; iCasc < ev->GetNumberOfCascades(); iCasc++)
     {
@@ -236,6 +247,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       if (fMC)
       {
         fGenCascade.pdg = 0;
+        fGenCascadeTrain.pdg = 0;
         auto posPart = (AliAODMCParticle *)fMCEvent->GetTrack(std::abs(pTrackCasc->GetLabel()));
         auto negPart = (AliAODMCParticle *)fMCEvent->GetTrack(std::abs(nTrackCasc->GetLabel()));
         auto bacPart = (AliAODMCParticle *)fMCEvent->GetTrack(std::abs(bTrackCasc->GetLabel()));
@@ -256,6 +268,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           if (labMothLam == labMothBac && (pdgCascade == kXiPdg || pdgCascade == kOmegaPdg))
           {
             fGenCascade.pdg = cascade->GetPdgCode();
+            fGenCascadeTrain.pdg = cascade->GetPdgCode();
             fGenCascade.ptMC = cascade->Pt();
             fGenCascade.etaMC = cascade->Eta();
             fGenCascade.yMC = cascade->Y();
@@ -270,6 +283,13 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
             bacPart->XvYvZv(sv);
             fGenCascade.ctMC = std::sqrt(Sq(pv[0] - sv[0]) + Sq(pv[1] - sv[1]) + Sq(pv[2] - sv[2])) * cascade->M() / cascade->P();
             checkedLabel.push_back(labMothBac);
+
+            //train cascade
+            fGenCascadeTrain.ptMC = fGenCascade.ptMC;
+            fGenCascadeTrain.etaMC = fGenCascade.etaMC;
+            fGenCascadeTrain.ctMC = fGenCascade.ctMC;
+            fGenCascadeTrain.yMC = fGenCascade.yMC;
+            fGenCascadeTrain.flag = fGenCascade.flag;
           }
         }
         if (fOnlyTrueCandidates && fGenCascade.pdg == 0)
@@ -329,16 +349,35 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       double lOverP = std::sqrt((Sq(vtxCasc[0] - pv[0]) + Sq(vtxCasc[1] - pv[1]) + Sq(vtxCasc[2] - pv[2])) / (casc->Ptot2Xi() + 1e-10));
       // double ctLambda = std::sqrt(Sq(vtxCasc[0] - casc->GetSecVtxX()) + Sq(vtxCasc[1] - casc->GetSecVtxY()) + Sq(vtxCasc[2] - casc->GetSecVtxZ())) / (casc->P() + 1e-10);
 
+      //training cascade
+      fRecCascadeTrain->dcaBachV0 = fRecCascade->dcaBachV0;
+      fRecCascadeTrain->dcaBachPV = fRecCascade->dcaBachPV;
+      fRecCascadeTrain->dcaV0prPV = fRecCascade->dcaV0prPV;
+      fRecCascadeTrain->dcaV0piPV = fRecCascade->dcaV0piPV;
+      fRecCascadeTrain->dcaV0tracks = fRecCascade->dcaV0tracks;
+      fRecCascadeTrain->dcaV0PV = fRecCascade->dcaV0PV;
+      fRecCascadeTrain->cosPA = fRecCascade->cosPA;
+      fRecCascadeTrain->cosPAV0 = fRecCascade->cosPAV0;
+      fRecCascadeTrain->tpcNsigmaV0Pr = fRecCascade->tpcNsigmaV0Pr;
+      fRecCascadeTrain->centrality = fRecCascade->centrality;
+      fRecCascadeTrain->pt = fRecCascade->matter ? fRecCascade->pt : -fRecCascade->pt;;
+
       if (std::abs(casc->MassOmega() - kOmegaMass) * 1000 < 30)
       {
         fRecCascade->mass = casc->MassOmega();
         fRecCascade->ct = lOverP * kOmegaMass;
         fRecCascade->tpcNsigmaBach = fPID->NumberOfSigmasTPC(bTrackCasc, AliPID::kKaon);
         fRecCascade->competingMass = std::abs(casc->MassXi() - kXiMass);
+
+        fRecCascadeTrain->mass = fRecCascade->mass;
         if (physPrim && IsTopolSelected(true))
         {
           fRecCascade->isOmega = true;
-          fTree->Fill();
+          fRecCascadeTrain->mass = -fRecCascadeTrain->mass;
+          if (fFillCascadesTrain)
+            fTreeTrain->Fill();
+          if (fFillCascades)
+            fTree->Fill();
         }
         else if (fMC && std::find(checkedLabel.begin(), checkedLabel.end(), labMothBac) != checkedLabel.end() && (pdgCascade == kOmegaPdg))
         {
@@ -351,10 +390,16 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         fRecCascade->ct = lOverP * kXiMass;
         fRecCascade->tpcNsigmaBach = fPID->NumberOfSigmasTPC(bTrackCasc, AliPID::kPion);
         fRecCascade->competingMass = std::abs(casc->MassOmega() - kOmegaMass);
+
+        fRecCascadeTrain->mass = fRecCascade->mass;
         if (physPrim && IsTopolSelected(false))
         {
           fRecCascade->isOmega = false;
-          fTree->Fill();
+          fRecCascadeTrain->mass = -fRecCascadeTrain->mass;
+          if (fFillCascadesTrain)
+            fTreeTrain->Fill();
+          if (fFillCascades)
+            fTree->Fill();
         }
         else if (fMC && std::find(checkedLabel.begin(), checkedLabel.end(), labMothBac) != checkedLabel.end() && (pdgCascade == kXiPdg))
         {
@@ -614,7 +659,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
   }
 
 
-  if (fMC && (fFillCascades||fFillLambdas||fFillK0s))
+  if (fMC && (fFillCascades||fFillLambdas||fFillK0s||fFillCascadesTrain))
   {
     //OOB pileup
     AliAODMCHeader *header = static_cast<AliAODMCHeader *>(ev->FindListObject(AliAODMCHeader::StdBranchName()));
@@ -632,9 +677,10 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
       return;
     }
 
-    if (fFillCascades)
+    if (fFillCascades || fFillCascadesTrain)
     {
       fGenCascade.isReconstructed = false;
+      fGenCascadeTrain.isReconstructed = false;
       //loop on generated
       for (int iT{0}; iT < fMCEvent->GetNumberOfTracks(); ++iT)
       {
@@ -656,6 +702,7 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
         fGenCascade.etaMC = track->Eta();
         fGenCascade.yMC = track->Y();
         fGenCascade.pdg = track->GetPdgCode();
+        fGenCascadeTrain.pdg = track->GetPdgCode();
         double pv[3], sv[3];
         track->XvYvZv(pv);
         bool goodDecay{false};
@@ -681,7 +728,18 @@ void AliAnalysisTaskStrangenessRatios::UserExec(Option_t *)
           fGenCascade.flag |= kPrimary;
         else
           fGenCascade.flag |= track->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
-        fTree->Fill();
+
+        //train cascade
+        fGenCascadeTrain.ptMC = fGenCascade.ptMC;
+        fGenCascadeTrain.etaMC = fGenCascade.etaMC;
+        fGenCascadeTrain.ctMC = fGenCascade.ctMC;
+        fGenCascadeTrain.yMC = fGenCascade.yMC;
+        fGenCascadeTrain.flag = fGenCascade.flag;
+
+        if (fFillCascadesTrain)
+          fTreeTrain->Fill();
+        if (fFillCascades)
+          fTree->Fill();
       }
     }
 
@@ -833,19 +891,24 @@ AliAnalysisTaskStrangenessRatios *AliAnalysisTaskStrangenessRatios::AddTask(bool
   coutput2->SetSpecialOutput();
 
   AliAnalysisDataContainer *coutput3 =
-      mgr->CreateContainer(Form("%s_treeLambda", tskname.Data()), TTree::Class(),
+      mgr->CreateContainer(Form("%s_treeCascadesTrain", tskname.Data()), TTree::Class(),
                            AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   coutput3->SetSpecialOutput();
 
   AliAnalysisDataContainer *coutput4 =
-      mgr->CreateContainer(Form("%s_treeLambdaBDTOut", tskname.Data()), TTree::Class(),
+      mgr->CreateContainer(Form("%s_treeLambda", tskname.Data()), TTree::Class(),
                            AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   coutput4->SetSpecialOutput();
 
   AliAnalysisDataContainer *coutput5 =
-      mgr->CreateContainer(Form("%s_treeK0s", tskname.Data()), TTree::Class(),
+      mgr->CreateContainer(Form("%s_treeLambdaBDTOut", tskname.Data()), TTree::Class(),
                            AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
   coutput5->SetSpecialOutput();
+
+  AliAnalysisDataContainer *coutput6 =
+      mgr->CreateContainer(Form("%s_treeK0s", tskname.Data()), TTree::Class(),
+                           AliAnalysisManager::kOutputContainer, "AnalysisResults.root");
+  coutput6->SetSpecialOutput();
 
   mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
   mgr->ConnectOutput(task, 1, coutput1);
@@ -853,6 +916,7 @@ AliAnalysisTaskStrangenessRatios *AliAnalysisTaskStrangenessRatios::AddTask(bool
   mgr->ConnectOutput(task, 3, coutput3);
   mgr->ConnectOutput(task, 4, coutput4);
   mgr->ConnectOutput(task, 5, coutput5);
+  mgr->ConnectOutput(task, 6, coutput6);
   return task;
 }
 
@@ -880,7 +944,8 @@ bool AliAnalysisTaskStrangenessRatios::IsTopolSelected(bool isOmega)
          fRecCascade->tpcClV0Pi > fCutTPCclu &&
          fRecCascade->tpcClV0Pr > fCutTPCclu &&
          fCascLeastCRaws > fCutTPCrows &&
-         fCascLeastCRawsOvF > fCutRowsOvF;
+         fCascLeastCRawsOvF > fCutRowsOvF &&
+         (!fUseAdditionalCuts || (fUseAdditionalCuts && (fRecCascade->bachBarCosPA < fCutBachBarCosPA) && (fRecCascade->hasTOFhit || fRecCascade->hasITSrefit)));
 }
 
 bool AliAnalysisTaskStrangenessRatios::IsTopolSelectedLambda()
@@ -924,9 +989,10 @@ void AliAnalysisTaskStrangenessRatios::PostAllData()
 {
   PostData(1, fList);
   PostData(2, fTree);
-  PostData(3, fTreeLambda);
-  PostData(4, fTreeLambdaBDTOut);
-  PostData(5, fTreeK0s);
+  PostData(3, fTreeTrain);
+  PostData(4, fTreeLambda);
+  PostData(5, fTreeLambdaBDTOut);
+  PostData(6, fTreeK0s);
 }
 
 Bool_t AliAnalysisTaskStrangenessRatios::UserNotify()

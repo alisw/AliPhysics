@@ -106,6 +106,8 @@
 #pragma link C++ class AliAnalysisTaskKaonXiCorrelation+;
 #pragma link C++ class MiniCascade+;
 #pragma link C++ class MiniCascadeMC+;
+#pragma link C++ class MiniCascadeTrain+;
+#pragma link C++ class MiniCascadeTrainMC+;
 #pragma link C++ class MiniLambda+;
 #pragma link C++ class MiniLambdaMC+;
 #pragma link C++ class MiniK0s+;
