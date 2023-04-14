@@ -76,7 +76,6 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
   combinedName.Form("siweyhmi_%s", suffix);
   TString configFilePath(configBasePath+configFileName);
   std::cout << " Info::siweyhmi: Configpath:  " << configFilePath << " year = " << year << " --- period name = " << periodName << " --- pass = " << passIndex << " --- lookUpTableIndex = " << lookUpTableIndex << " --- settingType = " << settingType << std::endl;
-  //
 
   AliAnalysisJetHadro* task(0x0);
   #ifdef __CLING__
@@ -100,7 +99,7 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
 
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   task->SetIsMCtrue(hasMC);
-  task->SetUseCouts(kTRUE);
+//  task->SetUseCouts(kTRUE);
   printf(" ========================= MC info %d ========================= \n",hasMC);
   mgr->AddTask(task);
   // mgr->Dump(); task->Dump();
@@ -124,7 +123,7 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
   //define output containers, please use 'username'_'somename'
   AliAnalysisDataContainer *cinput, *coutput1, *coutput2, *coutput3, *coutput4;
   AliAnalysisDataContainer *coutput5, *coutput6, *coutput7, *coutput8, *coutput9;
-  AliAnalysisDataContainer *coutput10, *coutput11, *coutput12, *coutput13;
+  AliAnalysisDataContainer *coutput10, *coutput11, *coutput12, *coutput13,*coutput14, *coutput15, *coutput16, *coutput17, *coutput18, *coutput19, *coutput20, *coutput21;
   //
   //  find and connect input container // Output files --> File opening order is important
   cinput  = mgr->GetCommonInputContainer();
@@ -139,11 +138,11 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
     fileDirStructure = Form("%s", outputFileName);  // TDirectoryFile name to put all containers; AnalysisResults.root --> trees and hists
     listName = "cleanHists";
   } else if (containerNameMode==1){
-    dirName = "PWGCF_marsland";                     // TDirectoryFile name to put all containers; AnalysisResults.root --> PWGCF_marsland --> trees and hists
+    dirName = "PWGJE_siweyhmi";                     // TDirectoryFile name to put all containers; AnalysisResults.root --> PWGJE_siweyhmi --> trees and hists
     fileDirStructure = Form("%s:%s", outputFileName, dirName.Data());
     listName = combinedName+"_cleanHists";
   } else if (containerNameMode==2){
-    dirName = Form("PWGCF_marsland_%s",suffix);     // TDirectoryFile name to put all containers; AnalysisResults.root --> PWGCF_marsland_<setting> --> trees and hists
+    dirName = Form("PWGJE_siweyhmi_%s",suffix);     // TDirectoryFile name to put all containers; AnalysisResults.root --> PWGJE_siweyhmi_<setting> --> trees and hists
     fileDirStructure = Form("%s:%s", outputFileName, dirName.Data());
     listName = combinedName+"_cleanHists";
   }
@@ -155,14 +154,21 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
   coutput4  = mgr->CreateContainer(combinedName+"_fTreeMC",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
   coutput5  = mgr->CreateContainer(combinedName+"_jetsFJ",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
   coutput6  = mgr->CreateContainer(combinedName+"_BGjetsFJ",      TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput7  = mgr->CreateContainer(combinedName+"_tracks",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput8 = mgr->CreateContainer(combinedName+"_jetsFJconst",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput9 = mgr->CreateContainer(combinedName+"_resonance",     TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput10 = mgr->CreateContainer(combinedName+"_eventInfo",     TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput11 = mgr->CreateContainer(combinedName+"_dscaled",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput12 = mgr->CreateContainer(combinedName+"_jetsFJGen",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput13 = mgr->CreateContainer(combinedName+"_jetEMC",          TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-
+  coutput7  = mgr->CreateContainer(combinedName+"_mcFull",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput8  = mgr->CreateContainer(combinedName+"_mcGen",         TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput9  = mgr->CreateContainer(combinedName+"_fTreedEdxCheck",TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput10  = mgr->CreateContainer(combinedName+"_tracks",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput11 = mgr->CreateContainer(combinedName+"_jetsFJconst",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput12  = mgr->CreateContainer(combinedName+"_dnchdeta",      TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput13  = mgr->CreateContainer(combinedName+"_fullacc",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput14 = mgr->CreateContainer(combinedName+"_resonance",     TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput15 = mgr->CreateContainer(combinedName+"_mcGenMoms",     TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput16 = mgr->CreateContainer(combinedName+"_eventInfo",     TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput17 = mgr->CreateContainer(combinedName+"_dscaled",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput18 = mgr->CreateContainer(combinedName+"_jetsFJGen",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput19 = mgr->CreateContainer(combinedName+"_jetEMC",          TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput20 = mgr->CreateContainer(combinedName+"_mcMoms",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput21 = mgr->CreateContainer(combinedName+"_expecteds",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
   mgr->ConnectOutput (task,  1, coutput1);
   mgr->ConnectOutput (task,  2, coutput2);
   mgr->ConnectOutput (task,  3, coutput3);
@@ -176,6 +182,14 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
   mgr->ConnectOutput (task,  11, coutput11);
   mgr->ConnectOutput (task,  12, coutput12);
   mgr->ConnectOutput (task,  13, coutput13);
+  mgr->ConnectOutput (task,  14, coutput14);
+  mgr->ConnectOutput (task,  15, coutput15);
+  mgr->ConnectOutput (task,  16, coutput16);
+  mgr->ConnectOutput (task,  17, coutput17);
+  mgr->ConnectOutput (task,  18, coutput18);
+  mgr->ConnectOutput (task,  19, coutput19);
+  mgr->ConnectOutput (task,  20, coutput20);
+  mgr->ConnectOutput (task,  21, coutput21);
 
   std::cout << " Info::siweyhmi: === Containers are ready === " << std::endl;
   return task;
