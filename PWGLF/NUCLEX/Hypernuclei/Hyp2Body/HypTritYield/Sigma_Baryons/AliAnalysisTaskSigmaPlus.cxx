@@ -3416,6 +3416,16 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
     FillHistogram("fHistVertexZMC",primaryVtxPosZMC);
   }
   
+  if(isMonteCarlo){
+    //Create Pseudo Event ID in case of MC
+    Int_t ParA = aodEvent->GetRunNumber();
+    Int_t ParB = aodEvent->GetNumberOfTracks();
+    Int_t ParC = mcEvent->GetNumberOfTracks();
+    UInt_t ParD = (*reinterpret_cast<unsigned int*>(&primaryVtxPosZMC));
+    ULong64_t PseudoEventID = (((ULong64_t)ParA<<48)|((ULong64_t)ParB<<32)|((ULong64_t)ParC<<16)|((ULong64_t)ParD));
+    fGlobalEventID = PseudoEventID;
+  }	
+	
   //Magnetic Field
   Bz = aodEvent->GetMagneticField();    
   //Set Magnetic field for ALL KFParticles
