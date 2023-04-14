@@ -185,13 +185,16 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
         continue;
       }
 
-      int nSPD = 0.;
-      int nITS = GetITScls(aodTrack, nSPD);
+      int nSPD = 0;
+      int nSDD = 0;
+      int nSSD = 0;
+      int nITS = GetITScls(aodTrack, nSPD, nSDD, nSSD);
       float dca[2]{0., 0.};
       aodTrack->GetImpactParameters(dca[0], dca[1]);
       double dcaMag = std::sqrt(dca[1] * dca[1] + dca[0] * dca[0]);
       bool tof = HasTOF(aodTrack);
 
+      double itsNsigma = fPID->NumberOfSigmasITS(aodTrack, AliPID::kKaon);
       double tpcNsigma = fPID->NumberOfSigmasTPC(aodTrack, AliPID::kKaon);
       double tofNsigma = tof ? fPID->NumberOfSigmasTOF(aodTrack, AliPID::kKaon) : -999.f;
 
@@ -208,7 +211,8 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
           nSPD < fCutSPDrecPoints ||
           dcaMag > fCutDCA[2] ||
           std::abs(tpcNsigma) > fCutKaonNsigmaTPC ||
-          (aodTrack->Pt() > fPtTofCut && std::abs(tofNsigma) > fCutKaonNsigmaTOF)
+          (aodTrack->Pt() > fPtTofCut && std::abs(tofNsigma) > fCutKaonNsigmaTOF) ||
+          !( (!fUseITSpid || aodTrack->Pt() > fCutPtITSpid) || (fUseITSpid && std::abs(itsNsigma) < fCutKaonNsigmaITS && ( nSDD + nSSD > fCutSDDSSDrecPoints) && aodTrack->Pt() < fCutPtITSpid) )
         )
       {
         continue;
@@ -238,6 +242,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
       bool charge = aodTrack->Charge() > 0;
       fKaon->fPt = charge ? aodTrack->Pt() : -aodTrack->Pt();
       fKaon->fEta = aodTrack->Eta();
+      fKaon->fNsigmaITS = itsNsigma;
       fKaon->fNsigmaTPC = tpcNsigma;
       fKaon->fNsigmaTOF = tofNsigma;
       fKaon->fCutBitMap = 0u;
@@ -653,12 +658,12 @@ int AliAnalysisTaskKaonXiCorrelation::WhichBDT(double pt)
   return iB;
 }
 
-int AliAnalysisTaskKaonXiCorrelation::GetITScls(AliAODTrack *track, int &nSPD)
+int AliAnalysisTaskKaonXiCorrelation::GetITScls(AliAODTrack *track, int &nSPD, int &nSDD, int &nSSD)
 {
   if (!track) return -1;
   nSPD = 0u;
-  int nSDD = 0u;
-  int nSSD = 0u;
+  nSDD = 0u;
+  nSSD = 0u;
   for (int i = 0; i < 6; ++i) {
     if (track->HasPointOnITSLayer(i)) {
       if (i < 2) nSPD++;

@@ -35,6 +35,7 @@ struct MiniXiMC : public MiniXi {
 struct MiniKaon {
   Double32_t fPt; //[-3.175,3.2,8]
   Double32_t fEta; //[-1.27,1.28,8]
+  Double32_t fNsigmaITS; //[-6.35,6.4,8]
   Double32_t fNsigmaTPC; //[-6.35,6.4,8]
   Double32_t fNsigmaTOF; //[-6.35,6.4,8]
   unsigned char fCutBitMap;
@@ -145,7 +146,7 @@ public:
   void SetDCABachToPVOverflowCut(double cut = 2.5) { fDCABachToPVOverflowCut = cut; }
   void SetDCAV0toPVOverflowCut(double cut = 10.) { fDCAV0toPVOverflowCut = cut; }
   void SetBdtOutCut(double cut = 0.9) { fBdtOutCut = cut; }
-  void SetNFeatures(int f = 9) { fNFeatures = 9; }
+  void SetNFeatures(int f = 9) { fNFeatures = f; }
 
   void SetFilterBit(double bit = BIT(4)) { fFilterBit = bit; }
   void SetTPCclsKaonCut(double cut = 70u) { fCutTPCclsKaon = cut; }
@@ -154,6 +155,8 @@ public:
   void SetDCACut(double cutTight = .05, double cutMid = .1, double cutLoose = .5) { fCutDCA[0] = cutTight; fCutDCA[1] = cutMid; fCutDCA[2] = cutLoose; }
   void SetMaxPtKaon(double cut = 1.5) { fMaxPtKaon = cut; }
   void SetPtTofCut(double cut = 0.5) { fPtTofCut = cut; }
+  void SetCutPtITSpid(double pt = 0.5) { fCutPtITSpid = pt; }
+  void SetUseITSpid(bool toggle = true) { fUseITSpid = toggle; }
 
   void SetBDTPath(const char *path = "") { fBDTPath = path; }
   void SetPtBinsBDT(int nBins, double *ptBins) { fPtBinsBDT.Set(nBins+1,ptBins); }
@@ -231,14 +234,18 @@ private:
   int fFilterBit = BIT(4);
   int fCutITSrecPoints = 2;
   int fCutSPDrecPoints = 1;
+  int fCutSDDSSDrecPoints = 2;
   int fCutTPCclsKaon = 70;
   float fCutMaxChi2 = 2.5;
   float fCutMaxITSChi2 = 36.;
   float fCutDCA[3] = {0.05, 0.1, 0.5};
   double fCutKaonNsigmaTPC = 5.;
   double fCutKaonNsigmaTOF = 5.;
+  double fCutKaonNsigmaITS = 5.;
   double fMaxPtKaon = 1.5;
   double fPtTofCut = 0.5;
+  double fCutPtITSpid = 0.5;
+  bool fUseITSpid = true;
 
   bool fUseOnTheFly = false;
   
@@ -247,7 +254,7 @@ private:
 
   float Eta2y(float pt, float m, float eta) const;
   int WhichBDT(double pt);
-  int GetITScls(AliAODTrack *track, int &nSPD);
+  int GetITScls(AliAODTrack *track, int &nSPD, int &nSDD, int &nSSD);
   bool HasTOF(AliAODTrack *track);
   bool HasTwoXiFromSameDaughters(std::vector<XiDaughter> daughters);
 
