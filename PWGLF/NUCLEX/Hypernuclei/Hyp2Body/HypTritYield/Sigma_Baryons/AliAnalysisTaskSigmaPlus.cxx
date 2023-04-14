@@ -3359,10 +3359,8 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
 
   if(isMonteCarlo) {
     Bool_t isSimPileup = kFALSE;
-    AliAODMCHeader* aodMCHeader = NULL;
-    aodMCHeader=(AliAODMCHeader*)mcEvent->GetHeader();
+    AliAODMCHeader *aodMCHeader = (AliAODMCHeader*) (fInputEvent->GetList()->FindObject(AliAODMCHeader::StdBranchName()));
     if(aodMCHeader){
-      fGlobalEventID = aodMCHeader->GetEventIdAsLong(); //Get global ID of the event in MC
       TString genname = (TString)aodMCHeader->GetGeneratorName();
       isSimPileup = AliAnalysisUtils::IsPileupInGeneratedEvent(aodMCHeader,genname);
     }
@@ -3376,7 +3374,7 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
 		  return; 
 	  }
   }
-       
+
   // Check the PID response
   if(!fPIDResponse) {
     AliError("ERROR: No pid response!");               
@@ -3415,7 +3413,7 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
     primaryVtxPosZMC=primaryVtxPosMC[2];
     FillHistogram("fHistVertexZMC",primaryVtxPosZMC);
   }
-  
+
   if(isMonteCarlo){
     //Create Pseudo Event ID in case of MC
     Int_t ParA = aodEvent->GetRunNumber();
@@ -3424,8 +3422,8 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
     UInt_t ParD = (*reinterpret_cast<unsigned int*>(&primaryVtxPosZMC));
     ULong64_t PseudoEventID = (((ULong64_t)ParA<<48)|((ULong64_t)ParB<<32)|((ULong64_t)ParC<<16)|((ULong64_t)ParD));
     fGlobalEventID = PseudoEventID;
-  }	
-	
+  }
+
   //Magnetic Field
   Bz = aodEvent->GetMagneticField();    
   //Set Magnetic field for ALL KFParticles
@@ -3795,7 +3793,7 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray(){
       if(mcPart){
         if(mcPart->GetPdgCode()==2212 || mcPart->GetPdgCode()==-2212){
           isReallyProton = kTRUE;
-          if(mcPart->IsPrimary()||mcPart->IsPhysicalPrimary()) isPrimaryProton = kTRUE;
+          if(mcPart->IsPhysicalPrimary()) isPrimaryProton = kTRUE;
           if(mcPart->IsSecondaryFromWeakDecay()) isProtonfromWeakDecay = kTRUE;
           if(mcPart->IsSecondaryFromMaterial()) isProtonfromMaterial = kTRUE;
           if(mcPart->GetMother()!=-1){
@@ -3803,7 +3801,7 @@ void AliAnalysisTaskSigmaPlus::FillProtonArray(){
             if(ProtonMotherPart){
               if(ProtonMotherPart->GetPdgCode()==3222 || ProtonMotherPart->GetPdgCode()==-3222){ 
                 isProtonfromSigma = kTRUE;
-                if(ProtonMotherPart->IsPrimary()||ProtonMotherPart->IsPhysicalPrimary()) isPrimarySigma = kTRUE;
+                if(ProtonMotherPart->IsPhysicalPrimary()) isPrimarySigma = kTRUE;
               }//Is really Sigma
               if(ProtonMotherPart->GetPdgCode()==2114) isProtonfromLambda = kTRUE;
             }//MC Mother exists
@@ -4036,7 +4034,7 @@ void AliAnalysisTaskSigmaPlus::FillProtonTree(){
       AliAODMCParticle* mcPart = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(aodTrack->GetLabel())));
       if(mcPart){
         ParticlePdg = mcPart->GetPdgCode();
-        if(mcPart->IsPrimary()||mcPart->IsPhysicalPrimary()) isPrimary = kTRUE;
+        if(mcPart->IsPhysicalPrimary()) isPrimary = kTRUE;
         MCPx = mcPart->Px();
         MCPy = mcPart->Py();
         MCPz = mcPart->Pz();
@@ -4147,7 +4145,7 @@ void AliAnalysisTaskSigmaPlus::ProcessMCParticles() const{
     Int_t MCPartPDGCode = mcPart->PdgCode(); 
     Double_t Rapidity = mcPart->Y();
 
-    if(mcPart->IsPrimary()||mcPart->IsPhysicalPrimary()){
+    if(mcPart->IsPhysicalPrimary()){
         if(MCPartPDGCode == 3222){
             FillHistogram("fHistMCPrimSigmaPtvsRap",mcPart->Pt(),Rapidity);
             if(TMath::Abs(Rapidity)<0.5) FillHistogram("fHistMCPrimSigmaPtRap05",mcPart->Pt());
@@ -4178,7 +4176,7 @@ void AliAnalysisTaskSigmaPlus::ProcessMCParticles() const{
     if(MCPartPDGCode == 3222) FillHistogram("fHistMCSigmaPtvsEta",mcPart->Pt(),TMath::Abs(mcPart->Eta())); 
     if(MCPartPDGCode == -3222) FillHistogram("fHistMCAntiSigmaPtvsEta",mcPart->Pt(),TMath::Abs(mcPart->Eta()));
 
-    if(mcPart->IsPrimary()||mcPart->IsPhysicalPrimary()){
+    if(mcPart->IsPhysicalPrimary()){
       if(MCPartPDGCode == 3222) FillHistogram("fHistMCPrimSigmaPtvsEta",mcPart->Pt(),TMath::Abs(mcPart->Eta())); 
       if(MCPartPDGCode == -3222) FillHistogram("fHistMCPrimAntiSigmaPtvsEta",mcPart->Pt(),TMath::Abs(mcPart->Eta()));
       if(MCPartPDGCode == 3222 && TMath::Abs(mcPart->Eta())<0.8) FillHistogram("fHistMCPrimSigmaPt08",mcPart->Pt()); 
@@ -4194,11 +4192,11 @@ void AliAnalysisTaskSigmaPlus::ProcessMCParticles() const{
     
     if(MCPartPDGCode == 2212)  {FillHistogram("fHistMCCounter",3); 
       FillHistogram("fHistMCProtonPt",mcPart->Pt()); 
-      if(mcPart->IsPrimary()||mcPart->IsPhysicalPrimary()){FillHistogram("fHistMCPrimProtonPt",mcPart->Pt());}
+      if(mcPart->IsPhysicalPrimary()){FillHistogram("fHistMCPrimProtonPt",mcPart->Pt());}
     }
     if(MCPartPDGCode == -2212) {FillHistogram("fHistMCCounter",4); 
       FillHistogram("fHistMCAntiProtonPt",mcPart->Pt()); 
-      if(mcPart->IsPrimary()||mcPart->IsPhysicalPrimary()){FillHistogram("fHistMCPrimAntiProtonPt",mcPart->Pt());}
+      if(mcPart->IsPhysicalPrimary()){FillHistogram("fHistMCPrimAntiProtonPt",mcPart->Pt());}
     }
 
     if(MCPartPDGCode == 2214)  {FillHistogram("fHistMCCounter",5); FillHistogram("fHistMCDeltaPt",mcPart->Pt());}
@@ -4208,7 +4206,7 @@ void AliAnalysisTaskSigmaPlus::ProcessMCParticles() const{
       FillHistogram("fHistSigmaMotherPart",1);
       FillHistogram("fHistMCSigmaPt",mcPart->Pt()); 
       FillHistogram("fHistMCSigmaOrigin",TMath::Sqrt(mcPart->Xv()*mcPart->Xv()+mcPart->Yv()*mcPart->Yv())); 
-      if(mcPart->IsPrimary()||mcPart->IsPhysicalPrimary()){FillHistogram("fHistMCPrimSigmaPt",mcPart->Pt()); FillHistogram("fHistSigmaMotherPart",2); continue;}
+      if(mcPart->IsPhysicalPrimary()){FillHistogram("fHistMCPrimSigmaPt",mcPart->Pt()); FillHistogram("fHistSigmaMotherPart",2); continue;}
     
       AliAODMCParticle* SigmaMother = NULL;
       Int_t SigmaMotherPdg = 0;
@@ -4247,7 +4245,7 @@ void AliAnalysisTaskSigmaPlus::ProcessMCParticles() const{
       FillHistogram("fHistAntiSigmaMotherPart",1); 
       FillHistogram("fHistMCAntiSigmaPt",mcPart->Pt()); 
       FillHistogram("fHistMCAntiSigmaOrigin",TMath::Sqrt(mcPart->Xv()*mcPart->Xv()+mcPart->Yv()*mcPart->Yv()));       
-      if(mcPart->IsPrimary()||mcPart->IsPhysicalPrimary()){FillHistogram("fHistMCPrimAntiSigmaPt",mcPart->Pt()); FillHistogram("fHistAntiSigmaMotherPart",2); continue;}
+      if(mcPart->IsPhysicalPrimary()){FillHistogram("fHistMCPrimAntiSigmaPt",mcPart->Pt()); FillHistogram("fHistAntiSigmaMotherPart",2); continue;}
 
       AliAODMCParticle* SigmaMother = NULL;
       Int_t SigmaMotherPdg = 0;
@@ -4992,7 +4990,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
                     if(Pi0Mother){
                       if(TMath::Abs(Pi0Mother->GetPdgCode())==3222) {
                         isReallyPi0fromSigma = kTRUE; 
-                        if(Pi0Mother->IsPrimary()||Pi0Mother->IsPhysicalPrimary()) isPrimary = kTRUE; 
+                        if(Pi0Mother->IsPhysicalPrimary()) isPrimary = kTRUE; 
                         MCSigmaMom.SetXYZM(Pi0Mother->Px(),Pi0Mother->Py(),Pi0Mother->Pz(),cSigmaMass);
                       }
                       if(TMath::Abs(Pi0Mother->GetPdgCode())==2214) isReallyPi0fromDelta = kTRUE;
@@ -5028,7 +5026,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
                   if(Pi0Mother){
                     if(TMath::Abs(Pi0Mother->GetPdgCode())==3222) {
                       isReallyPi0fromSigma = kTRUE; 
-                      if(Pi0Mother->IsPrimary()||Pi0Mother->IsPhysicalPrimary()) isPrimary = kTRUE; 
+                      if(Pi0Mother->IsPhysicalPrimary()) isPrimary = kTRUE; 
                       MCSigmaMom.SetXYZM(Pi0Mother->Px(),Pi0Mother->Py(),Pi0Mother->Pz(),cSigmaMass);
                     }
                     if(TMath::Abs(Pi0Mother->GetPdgCode())==2214) isReallyPi0fromDelta = kTRUE;
@@ -5608,7 +5606,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
               if(PairProtonPart){
                 if(TMath::Abs(PairProtonPart->GetPdgCode())==2212){
                   fPairProtonIsMC = kTRUE;
-                  if(PairProtonPart->IsPrimary()||PairProtonPart->IsPhysicalPrimary()) fPairProtonIsPrimary = kTRUE;
+                  if(PairProtonPart->IsPhysicalPrimary()) fPairProtonIsPrimary = kTRUE;
                 }//MC Particle is a Proton
               }//MC Particle exists 
             }//End of isMonteCarlo
@@ -6218,7 +6216,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
                 if(TMath::Abs(SigmaPart->GetPdgCode())==3222){
                   SigmaMCLabel = SigmaID;
                   isReallySigma = kTRUE;
-                  if(SigmaPart->IsPrimary()||SigmaPart->IsPhysicalPrimary()) isPrimary = kTRUE; 
+                  if(SigmaPart->IsPhysicalPrimary()) isPrimary = kTRUE; 
                   MCSigmaMom.SetXYZM(SigmaPart->Px(),SigmaPart->Py(),SigmaPart->Pz(),cSigmaMass);
                 }//Particle is Sigma+
               }//Sigma exists
@@ -6615,7 +6613,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
             if(PairProtonPart){
               if(TMath::Abs(PairProtonPart->GetPdgCode())==2212){
                 fPairProtonIsMC = kTRUE;
-                if(PairProtonPart->IsPrimary()||PairProtonPart->IsPhysicalPrimary()) fPairProtonIsPrimary = kTRUE;
+                if(PairProtonPart->IsPhysicalPrimary()) fPairProtonIsPrimary = kTRUE;
               }//MC Particle is a Proton
             }//MC Particle exists 
           }//End of isMonteCarlo
