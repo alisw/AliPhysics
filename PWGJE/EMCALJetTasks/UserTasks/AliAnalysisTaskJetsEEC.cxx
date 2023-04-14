@@ -59,7 +59,7 @@ AliAnalysisTaskJetsEEC::AliAnalysisTaskJetsEEC(): AliAnalysisTaskEmcalJet("AliAn
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
-//  DefineOutput(2, TTree::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 
@@ -76,7 +76,7 @@ AliAnalysisTaskJetsEEC::AliAnalysisTaskJetsEEC(const char *name): AliAnalysisTas
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
-//  DefineOutput(2, TTree::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 
