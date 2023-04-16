@@ -1,6 +1,7 @@
 /**************************************************************************
  *    Author:       Zuzana Moravcova
- *    Modified by:  Debojit Sarkar
+ *    Author:       Debojit Sarkar
+ *    contact:      debojit.sarkar@cern.ch
 
  *    Framework for calculating di-hadron correlation                     *
  *    for extraction of v_n{2} coefficients of identified particles       *
@@ -1683,7 +1684,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
         if(TMath::Abs(deltaPhi - TMath::Pi()) < 0.5) foundSomething = kTRUE;
       }
     }
-    if(!foundSomething){ fhEventCounter->Fill("After Jet Veto",1); }
+    if(foundSomething == kTRUE){ fhEventCounter->Fill("After Jet Veto",1); }//select events with back to back jets in the TPC
     else { return kFALSE; }
   }
 
