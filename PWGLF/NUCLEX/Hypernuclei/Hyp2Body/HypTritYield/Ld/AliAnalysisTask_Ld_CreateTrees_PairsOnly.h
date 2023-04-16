@@ -53,7 +53,6 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fLambda_pz;
     float fLambda_Eta;
     float fLambda_Phi;
-    float fLambda_MassInvariant;
     float fLambda_TransverseRadius;
     float fLambda_CosinePointingAngle;
     float fLambda_DCAv0ToPrimaryVertex;
@@ -71,6 +70,9 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fLambda_Daughter_Proton_px;
     float fLambda_Daughter_Proton_py;
     float fLambda_Daughter_Proton_pz;
+    float fLambda_Daughter_Proton_px_DecayVertex;
+    float fLambda_Daughter_Proton_py_DecayVertex;
+    float fLambda_Daughter_Proton_pz_DecayVertex;
     float fLambda_Daughter_Proton_pTPC;
     float fLambda_Daughter_Proton_Eta;
     float fLambda_Daughter_Proton_Phi;
@@ -94,6 +96,9 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fLambda_Daughter_AntiPion_px;
     float fLambda_Daughter_AntiPion_py;
     float fLambda_Daughter_AntiPion_pz;
+    float fLambda_Daughter_AntiPion_px_DecayVertex;
+    float fLambda_Daughter_AntiPion_py_DecayVertex;
+    float fLambda_Daughter_AntiPion_pz_DecayVertex;
     float fLambda_Daughter_AntiPion_pTPC;
     float fLambda_Daughter_AntiPion_Eta;
     float fLambda_Daughter_AntiPion_Phi;
@@ -150,7 +155,6 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fAntiLambda_pz;
     float fAntiLambda_Eta;
     float fAntiLambda_Phi;
-    float fAntiLambda_MassInvariant;
     float fAntiLambda_TransverseRadius;
     float fAntiLambda_CosinePointingAngle;
     float fAntiLambda_DCAv0ToPrimaryVertex;
@@ -168,6 +172,9 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fAntiLambda_Daughter_AntiProton_px;
     float fAntiLambda_Daughter_AntiProton_py;
     float fAntiLambda_Daughter_AntiProton_pz;
+    float fAntiLambda_Daughter_AntiProton_px_DecayVertex;
+    float fAntiLambda_Daughter_AntiProton_py_DecayVertex;
+    float fAntiLambda_Daughter_AntiProton_pz_DecayVertex;
     float fAntiLambda_Daughter_AntiProton_pTPC;
     float fAntiLambda_Daughter_AntiProton_Eta;
     float fAntiLambda_Daughter_AntiProton_Phi;
@@ -191,6 +198,9 @@ class AliAnalysisTask_Ld_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float fAntiLambda_Daughter_Pion_px;
     float fAntiLambda_Daughter_Pion_py;
     float fAntiLambda_Daughter_Pion_pz;
+    float fAntiLambda_Daughter_Pion_px_DecayVertex;
+    float fAntiLambda_Daughter_Pion_py_DecayVertex;
+    float fAntiLambda_Daughter_Pion_pz_DecayVertex;
     float fAntiLambda_Daughter_Pion_pTPC;
     float fAntiLambda_Daughter_Pion_Eta;
     float fAntiLambda_Daughter_Pion_Phi;
