@@ -14,6 +14,7 @@
 
 class AliPIDResponse;
 class TH2F;
+class TH3F;
 class TList;
 class TTree;
 
@@ -161,6 +162,9 @@ public:
   void SetBDTPath(const char *path = "") { fBDTPath = path; }
   void SetPtBinsBDT(int nBins, double *ptBins) { fPtBinsBDT.Set(nBins+1,ptBins); }
 
+  void SetCustomPidPath(const char* path = "") { fCustomPidPath = path; };
+  void SetUseCustomPid(const bool toggle = true) { fUseCustomPid = toggle; };
+
   // Setters for Kaon track cuts
 
 private:
@@ -251,12 +255,16 @@ private:
   
   TArrayD fPtBinsBDT;
   std::string fBDTPath = "";
+  std::string fCustomPidPath = "";
+  TH3F* fCustomPidCalib[3] = {nullptr, nullptr, nullptr};
+  bool fUseCustomPid = false;
 
   float Eta2y(float pt, float m, float eta) const;
   int WhichBDT(double pt);
   int GetITScls(AliAODTrack *track, int &nSPD, int &nSDD, int &nSSD);
   bool HasTOF(AliAODTrack *track);
   bool HasTwoXiFromSameDaughters(std::vector<XiDaughter> daughters);
+  double GetCustomNsigma(AliAODTrack *t, double cent, int det = 0);
 
   /// \cond CLASSDEF
   ClassDef(AliAnalysisTaskKaonXiCorrelation, 1);
