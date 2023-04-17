@@ -55,6 +55,7 @@ set(SRCS
   AliAnalysisTaskEffMatrix.cxx
   RESOSA/AliAnalysisTaskPhiSA.cxx
   RESOSA/AliAnalysisTaskPhiSAR.cxx
+  RESOSA/Aliresonance.cxx
   AliAnalysisTaskPhiCount.cxx
   AliAnalysisTask_Phi_MC.cxx
   AliAnalysisTaskAODTrackPairUtils.cxx
