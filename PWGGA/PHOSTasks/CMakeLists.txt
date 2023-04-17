@@ -57,6 +57,7 @@ set(SRCS
     PHOS_embedding/AliPHOSEmbedding.cxx
     PHOS_Run2embedding/AliPHOSEmbeddingRun2.cxx
     PHOS_Run2embedding/AliPHOSEventCounter.cxx
+    PHOS_Run2embedding/AliPHOSEmbedggHBT.cxx
     PHOS_EpRatio/AliAnalysisTaskEpRatio.cxx
     PHOS_Fluctuations/AliAnalysisPHOSFluctuations.cxx
     PHOS_GAFlow/AliAnalysisTaskThermalGAFlow.cxx
@@ -208,6 +209,7 @@ install(DIRECTORY CaloCellQA/phys/macros    DESTINATION PWGGA/PHOSTasks/CaloCell
 install(DIRECTORY PHOS_PbPbQA/macros        DESTINATION PWGGA/PHOSTasks/PHOS_PbPbQA)
 install(DIRECTORY PHOS_TriggerQA/macros     DESTINATION PWGGA/PHOSTasks/PHOS_TriggerQA)
 install(DIRECTORY PHOS_pPb                  DESTINATION PWGGA/PHOSTasks)
+install(FILES PHOS_Run2embedding/AddTaskPHOSEmbedding.C DESTINATION PWGGA/PHOSTasks/PHOS_Run2embedding)
 install(DIRECTORY PHOS_Run2embedding/macros DESTINATION PWGGA//PHOSTasks/PHOS_Run2embedding)
 install(DIRECTORY CPVperf/macros            DESTINATION PWGGA/PHOSTasks/CPVperf)
 install(DIRECTORY PHOS_pp_8TeV_2012/macros  DESTINATION PWGGA/PHOSTasks/PHOS_pp_8TeV_2012)

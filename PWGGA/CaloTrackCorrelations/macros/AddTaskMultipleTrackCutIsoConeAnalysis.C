@@ -135,22 +135,36 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
   printf("TList name: %s\n",anaList->GetName());
 
   // Test 2 track matching options (no track matching and open track matching with fix cuts)
-  for(Int_t itm = 0; itm < 3; itm++)
+  if ( tmFix > -1 )
   {
-    if ( itm == tmFix ) continue;
-    TString histoStringTM = Form("TM%d",itm);
+    for(Int_t itm = 0; itm < 3; itm++)
+    {
+      if ( itm == tmFix ) continue;
+      TString histoStringTM = Form("TM%d",itm);
 
-    ConfigureCaloTrackCorrAnalysis
-    ( anaList, calorimeter, simulation, year, col, analysisString, histoStringTM,
-     shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
-     leading, itm, mixOn, printSettings, debug);
+      ConfigureCaloTrackCorrAnalysis
+      ( anaList, calorimeter, simulation, year, col, analysisString, histoStringTM,
+       shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
+       leading, itm, mixOn, printSettings, debug);
+    }
   }
+  else tmFix = 0; // Do only no TM
 
-  // Analysis with open bad distance, fixed min cone distance and track match option
-  TString histoString = Form("TM%d_DistToBadOff",tmFix);
+  // Analysis with open bad distance, fixed min cone distance and track match default option
+  TString histoString = Form("TM%d",tmFix);
+
+  TString analysisString2 = analysisString;
+  if ( analysisString2.Contains("DistToBadOn") )
+    analysisString2.ReplaceAll("DistToBadOn","DistToBadOff");
+
+  if ( !analysisString2.Contains("DistToBad") )
+    histoString += "_DistToBadOff";
+
+  if ( analysisString.Contains("DistToBadOff") )
+    analysisString2.ReplaceAll("DistToBadOff","DistToBadOn");
 
   ConfigureCaloTrackCorrAnalysis
-  ( anaList, calorimeter, simulation, year, col, analysisString+"_DistToBadOff", histoString,
+  ( anaList, calorimeter, simulation, year, col, analysisString2, histoString,
    shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
    leading, tmFix, mixOn, printSettings, debug);
 
@@ -185,7 +199,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
   // Default analysis settings
   //
   histoString = Form("TM%d",tmFix);
-  TString analysisString2 = analysisString;
+  analysisString2 = analysisString;
 
   // Analysis with different UE estimation size region
   if ( analysisString.Contains("IsoBandUEGap") )
@@ -196,13 +210,35 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
       analysisString2.ReplaceAll("MultiIsoR","MultiIsoRAndGaps");
     else
       analysisString2+="_MultiIsoRAndGaps";
+
+    if(analysisString.Contains("UESubMethods"))
+      analysisString2.ReplaceAll("UESubMethods","");
+
   }
   
-  // Default cuts analysis
+  // Default cuts analysis but multi Gap and r min if specified
   ConfigureCaloTrackCorrAnalysis
   ( anaList, calorimeter, simulation, year, col, analysisString2, histoString,
    shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
    leading, tmFix, mixOn, printSettings, debug);
+
+  if ( analysisString.Contains("UESubMethods") )
+  {
+    TString analysisString2 = analysisString;
+    histoString = Form("TM%d_MultiUESub",tmFix);
+
+    if ( analysisString.Contains("AndGaps") )
+    {
+      analysisString2.ReplaceAll("AndGaps","");
+      analysisString2.ReplaceAll("AndGap" ,"");
+    }
+
+    // Default cuts analysis but different UE sub methods
+    ConfigureCaloTrackCorrAnalysis
+    ( anaList, calorimeter, simulation, year, col, analysisString2, histoString,
+     shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
+     leading, tmFix, mixOn, printSettings, debug);
+  }
 
   // Execute some control task only
   if ( doCharged || doQA )

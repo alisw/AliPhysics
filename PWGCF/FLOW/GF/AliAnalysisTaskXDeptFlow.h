@@ -125,12 +125,12 @@ class AliAnalysisTaskXDeptFlow : public AliAnalysisTaskSE {
 		// unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
 		// unsigned fgFlowHarmonicsHigher = 0;  calculate v6, v7, v8 ..
 		// unsigned fgFlowHarmonicsMult = 0;    calculate v2{4} // yet v2{6}, v2{8}
-		// unsigned fgXDeptFlow = 0;        calculate v_4,22, v_5,32
+		// unsigned fgNonlinearFlow = 0;        calculate v_4,22, v_5,32
 		// unsigned fgSymmetricCumulants = 0;   calculate SC(3,2), SC(4,2)
 		virtual void SetCalculateFlowHarmonics(unsigned flag)       { fgFlowHarmonics = flag; }
 		virtual void SetCalculateFlowHarmonicsHigher(unsigned flag) { fgFlowHarmonicsHigher = flag; }
 		virtual void SetCalculateFlowHarmonicsMult(unsigned flag)   { fgFlowHarmonicsMult = flag; }
-		virtual void SetCalculateXDeptFlow(unsigned flag)       { fgXDeptFlow = flag; }
+		virtual void SetCalculateNonlinearFlow(unsigned flag)       { fgNonlinearFlow = flag; }
 		virtual void SetCalculateSymmetricCumulants(unsigned flag)  { fgSymmetricCumulants = flag; }
 
 
@@ -303,7 +303,7 @@ class AliAnalysisTaskXDeptFlow : public AliAnalysisTaskSE {
 		unsigned fgFlowHarmonics = 0;        // calculate v2, v3, v4, v5
 		unsigned fgFlowHarmonicsHigher = 0;  // calculate v6, v7, v8 ..
 		unsigned fgFlowHarmonicsMult = 0;    // calculate v2{4} // yet v2{6}, v2{8}
-                unsigned fgXDeptFlow = 0;        // calculate v_4,22, v_5,32
+    unsigned fgNonlinearFlow = 0;        // calculate v_4,22, v_5,32
 		unsigned fgSymmetricCumulants = 0;   // calculate SC(3,2), SC(4,2)
 
 		unsigned fgTwoParticleCorrelation = 0;       //!
@@ -349,7 +349,7 @@ class AliAnalysisTaskXDeptFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskXDeptFlow, 1);    //Analysis task
+		ClassDef(AliAnalysisTaskXDeptFlow, 2);    //Analysis task
 };
 
 #endif

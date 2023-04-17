@@ -181,6 +181,7 @@ AliAnalysisTaskHFSimpleVertices::AliAnalysisTaskHFSimpleVertices() :
   fHistNormIPDs{nullptr},
   fHistDeltaMassPhiDs{nullptr},
   fHistCos3PiKDs{nullptr},
+  fHistAbsCos3PiKDs{nullptr},
   fHistInvMassLc{nullptr},
   fHistPtLc{nullptr},
   fHistEtaLc{nullptr},
@@ -501,6 +502,7 @@ AliAnalysisTaskHFSimpleVertices::~AliAnalysisTaskHFSimpleVertices()
     delete fHistNormIPDs;
     delete fHistDeltaMassPhiDs;
     delete fHistCos3PiKDs;
+    delete fHistAbsCos3PiKDs;
     delete fHistInvMassLc;
     delete fHistPtLc;
     delete fHistEtaLc;
@@ -1523,7 +1525,6 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fHistJpsiSignalVertY = new TH1F("hJpsiSignalVertY", " Secondary Vertex ; y (cm)", 1000, -2., 2.);
   fHistJpsiSignalVertZ = new TH1F("hJpsiSignalVertZ", " Secondary Vertex ; z (cm)", 1000, -20.0, 20.0);
   fHistInvMassJpsiSignal = new TH1F("hInvMassJpsiSignal", " ; M_{K#pi} (GeV/c^{2})", 500, 0, 5.0);
-  // fHistInvMassD0Refl = new TH1F("hInvMassD0Refl", " ; M_{K#pi} (GeV/c^{2})", 500, 0, 5.0);
   fOutput->Add(fHistJpsiSignalVertX);
   fOutput->Add(fHistJpsiSignalVertY);
   fOutput->Add(fHistJpsiSignalVertZ);
@@ -1608,8 +1609,9 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fHistCosPointXYDs = new TH1F("hCosPointXYDs", " ; cos(#theta^{xy}_{P})", 100, -1., 1.);
   fHistImpParXYDs = new TH1F("hImpParXYDs", " ; d_{0}^{xy} (cm)", 200, -1., 1.);
   fHistNormIPDs = new TH1F("hNormIPDs", " ; Norm. IP", 200, -20., 20.);
-  fHistDeltaMassPhiDs = new TH1F("hDeltaMassPhiDs", "|M(KK) - M(#phi)| (GeV/#it{c}^{2})", 40, 0., 0.02);
-  fHistCos3PiKDs = new TH1F("hCos3PiKDs", "cos^{3} #theta'(K)", 100, -1., 1.);  
+  fHistDeltaMassPhiDs = new TH1F("hDeltaMassPhiDs", "|M(KK) - M(#phi)| (GeV/#it{c}^{2})", 100, 0., 0.1);
+  fHistCos3PiKDs = new TH1F("hCos3PiKDs", "cos^{3} #theta'(K)", 100, -1., 1.);
+  fHistAbsCos3PiKDs = new TH1F("hAbsCos3PiKDs", "|cos^{3} #theta'(K)|", 100, 0., 1.);  
   fOutput->Add(fHistInvMassDs);
   fOutput->Add(fHistInvMassDsSignal);
   fOutput->Add(fHistInvMassDsRefl);
@@ -1630,6 +1632,7 @@ void AliAnalysisTaskHFSimpleVertices::UserCreateOutputObjects()
   fOutput->Add(fHistNormIPDs);
   fOutput->Add(fHistDeltaMassPhiDs);
   fOutput->Add(fHistCos3PiKDs);
+  fOutput->Add(fHistAbsCos3PiKDs);
 
   // Lc pKpi candidate histos
   fHistInvMassLc = new TH1F("hInvMassLc", " ; M_{pK#pi} (GeV/c^{2})", 600, 1.98, 2.58);
@@ -2607,28 +2610,45 @@ void AliAnalysisTaskHFSimpleVertices::ProcessTriplet(TObjArray* threeTrackArray,
         fHistDeltaMassPhiDs->Fill(TMath::Abs(the3Prong->InvMass2Prongs(0, 1, 321, 321) - massPhi));
         Double_t cosPiKPhi = the3Prong->CosPiKPhiRFrameKKpi();
         fHistCos3PiKDs->Fill(cosPiKPhi * cosPiKPhi * cosPiKPhi);
+        fHistAbsCos3PiKDs->Fill(TMath::Abs(cosPiKPhi * cosPiKPhi * cosPiKPhi));
+        fHistPtDs->Fill(ptcand_3prong);
+        fHistYPtDs->Fill(ptcand_3prong, rapid);
+        fHistPtDsDau0->Fill(the3Prong->PtProng(0));
+        fHistPtDsDau1->Fill(the3Prong->PtProng(1));
+        fHistPtDsDau2->Fill(the3Prong->PtProng(2));
+        fHistImpParDsDau0->Fill(the3Prong->Getd0Prong(0));
+        fHistImpParDsDau1->Fill(the3Prong->Getd0Prong(1));
+        fHistImpParDsDau2->Fill(the3Prong->Getd0Prong(2));
+        fHistDecLenDs->Fill(the3Prong->DecayLength());
+        fHistDecLenXYDs->Fill(the3Prong->DecayLengthXY());
+        fHistNormDecLenXYDs->Fill(the3Prong->NormalizedDecayLengthXY());
+        fHistCosPointDs->Fill(the3Prong->CosPointingAngle());
+        fHistCosPointXYDs->Fill(the3Prong->CosPointingAngleXY());
+        fHistImpParXYDs->Fill(the3Prong->ImpParXY());
+        fHistNormIPDs->Fill(AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(the3Prong, bzkG));
       }
       if (dsSel == 2 || dsSel == 3) {
         fHistInvMassDs->Fill(mpiKK);
         fHistDeltaMassPhiDs->Fill(TMath::Abs(the3Prong->InvMass2Prongs(1, 2, 321, 321) - massPhi));
         Double_t cosPiKPhi = the3Prong->CosPiKPhiRFramepiKK();
         fHistCos3PiKDs->Fill(cosPiKPhi * cosPiKPhi * cosPiKPhi);
+        fHistAbsCos3PiKDs->Fill(TMath::Abs(cosPiKPhi * cosPiKPhi * cosPiKPhi));
+        fHistPtDs->Fill(ptcand_3prong);
+        fHistYPtDs->Fill(ptcand_3prong, rapid);
+        fHistPtDsDau0->Fill(the3Prong->PtProng(0));
+        fHistPtDsDau1->Fill(the3Prong->PtProng(1));
+        fHistPtDsDau2->Fill(the3Prong->PtProng(2));
+        fHistImpParDsDau0->Fill(the3Prong->Getd0Prong(0));
+        fHistImpParDsDau1->Fill(the3Prong->Getd0Prong(1));
+        fHistImpParDsDau2->Fill(the3Prong->Getd0Prong(2));
+        fHistDecLenDs->Fill(the3Prong->DecayLength());
+        fHistDecLenXYDs->Fill(the3Prong->DecayLengthXY());
+        fHistNormDecLenXYDs->Fill(the3Prong->NormalizedDecayLengthXY());
+        fHistCosPointDs->Fill(the3Prong->CosPointingAngle());
+        fHistCosPointXYDs->Fill(the3Prong->CosPointingAngleXY());
+        fHistImpParXYDs->Fill(the3Prong->ImpParXY());
+        fHistNormIPDs->Fill(AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(the3Prong, bzkG));
       }
-      fHistPtDs->Fill(ptcand_3prong);
-      fHistYPtDs->Fill(ptcand_3prong, rapid);
-      fHistPtDsDau0->Fill(the3Prong->PtProng(0));
-      fHistPtDsDau1->Fill(the3Prong->PtProng(1));
-      fHistPtDsDau2->Fill(the3Prong->PtProng(2));
-      fHistImpParDsDau0->Fill(the3Prong->Getd0Prong(0));
-      fHistImpParDsDau1->Fill(the3Prong->Getd0Prong(1));
-      fHistImpParDsDau2->Fill(the3Prong->Getd0Prong(2));
-      fHistDecLenDs->Fill(the3Prong->DecayLength());
-      fHistDecLenXYDs->Fill(the3Prong->DecayLengthXY());
-      fHistNormDecLenXYDs->Fill(the3Prong->NormalizedDecayLengthXY());
-      fHistCosPointDs->Fill(the3Prong->CosPointingAngle());
-      fHistCosPointXYDs->Fill(the3Prong->CosPointingAngleXY());
-      fHistImpParXYDs->Fill(the3Prong->ImpParXY());
-      fHistNormIPDs->Fill(AliVertexingHFUtils::ComputeMaxd0MeasMinusExp(the3Prong, bzkG));
       if (fReadMC && mcEvent) {
         Int_t labD = MatchToMC(the3Prong, 431, mcEvent, 3, threeTrackArray, pdgDsdau);
         if (labD >= 0) {

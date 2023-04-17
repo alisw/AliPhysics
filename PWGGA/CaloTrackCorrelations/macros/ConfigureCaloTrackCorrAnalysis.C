@@ -1410,7 +1410,7 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
     ic->SwitchOffConeExcessCorrection();
   
   ic->SetConeSizeBandGap(0.0);
-  if ( thresType >= AliIsolationCut::kSumBkgSubIC )
+  if ( thresType == AliIsolationCut::kSumBkgSubEtaBandIC ||  thresType == AliIsolationCut::kSumBkgSubPhiBandIC )
   {
     // do not count UE particles near the cone limit > R+x
 

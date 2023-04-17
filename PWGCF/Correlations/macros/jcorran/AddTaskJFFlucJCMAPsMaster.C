@@ -105,7 +105,19 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
       break;  
     case 22 :     // Syst: (chi2 in [0.1, 2.3])
       configNames.push_back("chi2low23");
-      break;  
+      break;
+    case 23 :
+      configNames.push_back("hybridBaseDCA");
+      break;
+    case 24 :
+      configNames.push_back("DCAz15");
+      break;
+    case 25 :
+      configNames.push_back("pileup500");
+      break;
+    case 26 :
+      configNames.push_back("NTPC65");
+      break;
     default :
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
         << std::endl;
@@ -121,14 +133,12 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
   TString MAPdirname = "alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
   AliJCorrectionMapTask *cmaptask = new AliJCorrectionMapTask("JCorrectionMapTask");
   TString sCorrection[3] = { "15o", "18q", "18r" }; // 17i2a for 15o?
-
   if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
     cmaptask->EnableCentFlattening(Form("alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC%s_pass13.root", speriod[period].Data()));
     cmaptask->EnableEffCorrection(Form("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC18l8-0-Lists.root", speriod[period].Data()));
   } else if (period == lhc15o) {    // 2015 PbPb dataset.
     cmaptask->EnableEffCorrection(Form("alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC16g-0-Lists.root", speriod[period].Data()));
   }  
-
   MAPfilenames = Form("%sPhiWeights_LHC%s_Error_pt02_s_%s.root", MAPdirname.Data(), sCorrection[period].Data(), configName.Data());
   cmaptask->EnablePhiCorrection(0, MAPfilenames);  // i = 0: index for 'SetPhiCorrectionIndex(i)'.
   mgr->AddTask((AliAnalysisTask *) cmaptask);
@@ -166,8 +176,10 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     /// Event selection: pileup cuts and Zvtx.
     if (strcmp(configNames[i].Data(), "noPileup") != 0) {   // Set flag only if we cut on pileup.
       fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CUT_OUTLIERS);
-      if (strcmp(configNames[i].Data(), "pileup10") == 0) {fJCatalyst[i]->SetESDpileupCuts(true, slope, 10000, saveQA_ESDpileup);}
-      else {fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQA_ESDpileup);}
+      if (strcmp(configNames[i].Data(), "pileup10") == 0) {fJCatalyst[i]->SetESDpileupCuts(true, slope, 10000, saveQA_ESDpileup);
+      } else if (strcmp(configNames[i].Data(), "pileup500") == 0) {   // Vary the cut on the ESD pileup.
+        fJCatalyst[i]->SetESDpileupCuts(true, slope, 500, saveQA_ESDpileup);
+      } else {fJCatalyst[i]->SetESDpileupCuts(ESDpileup, slope, intercept, saveQA_ESDpileup);}
 
       fJCatalyst[i]->SetTPCpileupCuts(TPCpileup, saveQA_TPCpileup); // Reject the TPC pileup.
     }
@@ -185,7 +197,7 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     }
 
     /// Filtering, kinematic and detector cuts.
-    if (strcmp(configNames[i].Data(), "hybrid") == 0) {
+    if (strcmp(configNames[i].Data(), "hybrid") == 0 || strcmp(configNames[i].Data(), "hybridBaseDCA") == 0) {
       fJCatalyst[i]->SetTestFilterBit(hybridCut);
     } else {  // Default: global tracks.
       fJCatalyst[i]->SetTestFilterBit(globalCut);
@@ -197,6 +209,8 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
       fJCatalyst[i]->SetNumTPCClusters(90);
     } else if (strcmp(configNames[i].Data(), "NTPC100") == 0) {
       fJCatalyst[i]->SetNumTPCClusters(100);
+    } else if (strcmp(configNames[i].Data(), "NTPC65") == 0) {
+      fJCatalyst[i]->SetNumTPCClusters(65);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetNumTPCClusters(70);
     }
@@ -223,6 +237,8 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
       fJCatalyst[i]->SetDCAzCut(1.0);
     } else if (strcmp(configNames[i].Data(), "DCAz05") == 0) {
       fJCatalyst[i]->SetDCAzCut(0.5);
+    } else if (strcmp(configNames[i].Data(), "DCAz15") == 0) {
+      fJCatalyst[i]->SetDCAzCut(1.5);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetDCAzCut(2.0);
     }
@@ -232,6 +248,10 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     } else if (strcmp(configNames[i].Data(), "pqq") == 0) {
       fJCatalyst[i]->SetParticleCharge(1);
     }   // Default: charge = 0 to accept all charges.
+
+    if (strcmp(configNames[i].Data(), "hybridBaseDCA") == 0) {
+      fJCatalyst[i]->SetDCABaseCuts(true);
+    }
 
     // TBA: subA systematics.
 

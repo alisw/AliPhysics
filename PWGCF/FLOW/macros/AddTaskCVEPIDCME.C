@@ -7,14 +7,14 @@
 #include "AliAnalysisTaskCVEPIDCME.h"
 
 AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
-  TString trigger               = "kINT7+kCentral+kSemiCentral",
+  TString trigger               = "kINT7+kSemiCentral",
   TString period                = "LHC18r",
-  int  filterBit                = 768,
-  bool bDoNUA                   = true,
-  bool bCalculatePIDFlow        = true,
-  bool bCalculateDeltaGamma     = true,
-  bool bCalculateDiffResult     = true,
-  bool bCalculateDeltaPhiSumPhi = true,
+  int filterBit                 = 768,
+  bool bCalculatePIDFlow        = false,
+  bool bCalculateDiffResult     = false,
+  bool bCalculateDeltaPhiSumPhi = false,
+  bool bCalculateLambdaProton   = false,
+  bool bCalculateLambdaHadron   = false,
   bool bCalculateLambdaLambda   = false,
   bool bCalculateProtonProton   = false,
   bool bCalculateHadronHadron   = false,
@@ -39,39 +39,58 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
     return NULL;
   }
 
-  bool bDebug            = false;
-  bool bUseTPCPlane      = true;
-  bool bUseVZEROPlane    = true;
-  bool bUseZDCPlane      = false;
-  bool bDoNUE            = false;
-  bool bV0DaughterUseTOF = false;
-  bool bQATPC            = true;
-  bool bQAVZERO          = true;
-  bool bQAZDC            = false;
+
+  bool bDebug                  = false;
+  bool bUseTPCPlane            = true;
+  bool bUseVZEROPlane          = true;
+  bool bUseZDCPlane            = false;
+  bool bDoNUE                  = false;
+  bool bDoNUA                  = true;
+  bool bV0DaughterUseTOF       = false;
+  bool bQATPC                  = true;
+  bool bQAVZERO                = true;
+  bool bQAZDC                  = false;
+  bool bNarrowDcaCuts768       = true;
+  bool bProtonCustomizedDCACut = true;
+  bool bUsePionRejection       = false;
+  bool bCalculateLambdaProtonFromDecay = false;
+  bool bCalculateLambdaProtonFromDecayFoundInTrackLoops = false;
+  bool bUseOneSideTPCPlane     = false;
   // --- instantiate analysis task
   AliAnalysisTaskCVEPIDCME* task = new AliAnalysisTaskCVEPIDCME("TaskCVEPIDCME");
+  task->SetTrigger(trigger);
+  task->SetPeriod(period);
+  task->SetFilterBit(filterBit);
+
   task->IfDebug(bDebug);
   task->IfUseTPCPlane(bUseTPCPlane);
   task->IfUseVZEROPlane(bUseVZEROPlane);
   task->IfUseZDCPlane(bUseZDCPlane);
   task->IfDoNUE(bDoNUE);
+  task->IfDoNUA(bDoNUA);
   task->IfV0DaughterUseTOF(bV0DaughterUseTOF);
   task->IfQATPC(bQATPC);
   task->IfQAVZERO(bQAVZERO);
   task->IfQAZDC(bQAZDC);
+  task->IfNarrowDcaCuts768(bNarrowDcaCuts768);
+  task->IfProtonCustomizedDCACut(bProtonCustomizedDCACut);
+  task->IfUsePionRejection(bUsePionRejection);
 
-
-  task->SetPeriod(period);
-  task->SetTrigger(trigger);
-  task->SetFilterBit(filterBit);
-  task->IfDoNUA(bDoNUA);
   task->IfCalculatePIDFlow(bCalculatePIDFlow);
-  task->IfCalculateDeltaGamma(bCalculateDeltaGamma);
   task->IfCalculateDiffResult(bCalculateDiffResult);
   task->IfCalculateDeltaPhiSumPhi(bCalculateDeltaPhiSumPhi);
+
+  task->IfCalculateLambdaProton(bCalculateLambdaProton);
+  task->IfCalculateLambdaHadron(bCalculateLambdaHadron);
   task->IfCalculateLambdaLambda(bCalculateLambdaLambda);
   task->IfCalculateProtonProton(bCalculateProtonProton);
   task->IfCalculateHadronHadron(bCalculateHadronHadron);
+  
+  task->IfCheckLambdaProtonFromDecay(bCalculateLambdaProtonFromDecay);
+  task->IfCheckLambdaProtonFromDecayFoundInTrackLoops(bCalculateLambdaProtonFromDecayFoundInTrackLoops);
+
+  task->IfUseOneSideTPCPlane(bUseOneSideTPCPlane);
+
 
   //=========================================================================
   // Read in Files

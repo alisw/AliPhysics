@@ -1245,9 +1245,9 @@ TLorentzVector AliAnalysisTaskThreeBodyFemto::RelativePairMomentum(
   return qPartOnePartTwo;
 }
 
-void AliAnalysisTaskThreeBodyFemto::FillMTDistributionsTriplet(float pt1, float pt2, float pt3, float m1, float m2, float m3, TH2F* pair, TH2F* triplet, float Q3){
+void AliAnalysisTaskThreeBodyFemto::FillMTDistributionsTriplet(TLorentzVector &PartOne, TLorentzVector &PartTwo, TLorentzVector &PartThree, float m1, float m2, float m3, TH2F* pair, TH2F* triplet, float Q3){
   // first pair
-  auto ptAverage1 = (pt1+pt2)/2.;
+  /*auto ptAverage1 = (pt1+pt2)/2.;
   auto mAverage1 = (m1+m2)/2.;
   auto mTAverage1 = sqrt(pow(ptAverage1,2)+pow(mAverage1,2));
   // second pair
@@ -1257,7 +1257,31 @@ void AliAnalysisTaskThreeBodyFemto::FillMTDistributionsTriplet(float pt1, float 
   // third pair
   auto ptAverage3 = (pt1+pt3)/2.;
   auto mAverage3 = (m1+m3)/2.;
+  auto mTAverage3 = sqrt(pow(ptAverage3,2)+pow(mAverage3,2));*/
+
+
+  TLorentzVector trackSumPair12;
+  trackSumPair12 = PartOne + PartTwo;
+  auto ptAverage1 = 0.5 * trackSumPair12.Pt();
+  auto mAverage1 = (m1+m2)/2.;
+  auto mTAverage1 = sqrt(pow(ptAverage1,2)+pow(mAverage1,2));
+
+
+  
+  TLorentzVector trackSumPair23;
+  trackSumPair23 = PartThree + PartTwo;
+  auto ptAverage2 = 0.5 * trackSumPair23.Pt();
+  auto mAverage2 =  (m2+m3)/2.;
+  auto mTAverage2 = sqrt(pow(ptAverage2,2)+pow(mAverage2,2));
+
+
+  TLorentzVector trackSumPair13;
+  trackSumPair13 = PartThree + PartOne;
+  auto ptAverage3 = 0.5 * trackSumPair13.Pt();
+  auto mAverage3 = (m1+m3)/2.;
   auto mTAverage3 = sqrt(pow(ptAverage3,2)+pow(mAverage3,2));
+
+
 
   // average of the average mT over pairs
   auto ultimateAverage = (mTAverage1 + mTAverage2 + mTAverage3)/3.;
@@ -1382,7 +1406,7 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistribution(std::vector<std::vec
 
         if(!Pair12||!Pair23||!Pair31) {continue;}
 
-        FillMTDistributionsTriplet(iPart1->GetPt(), iPart2->GetPt(), iPart2->GetPt(), massparticle1, massparticle2, massparticle3,  pairMT, tripletMT, Q3);
+        FillMTDistributionsTriplet(part1_LorVec, part2_LorVec, part3_LorVec, massparticle1, massparticle2, massparticle3,  pairMT, tripletMT, Q3);
         hist->Fill(Q3); 
         hist2d->Fill(Q3,mult+1); 
 
@@ -1726,7 +1750,7 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionME(std::vector<std::v
 
             // Now we have the three particles, lets create their Lorentz vectors  
 
-            FillMTDistributionsTriplet(iPart1->GetPt(), iPart2->GetPt(), iPart2->GetPt(), massParticleSE, massParticleME1, massParticleME2,  pairMT, tripletMT, Q3);
+            FillMTDistributionsTriplet(part1_LorVec, part2_LorVec, part3_LorVec, massParticleSE, massParticleME1, massParticleME2,  pairMT, tripletMT, Q3);
        
 
             hist->Fill(Q3); 
@@ -2110,7 +2134,7 @@ void AliAnalysisTaskThreeBodyFemto::FillTripletDistributionSE2ME1(std::vector<st
 
           if(!Pair12||!Pair23||!Pair31) {continue;}
 
-          FillMTDistributionsTriplet(iPart1->GetPt(), iPart2->GetPt(), iPart2->GetPt(), massParticleSE1, massParticleSE2, massParticleME,  pairMT, tripletMT, Q3);
+          FillMTDistributionsTriplet(part1_LorVec, part2_LorVec, part3_LorVec, massParticleSE1, massParticleSE2, massParticleME,  pairMT, tripletMT, Q3);
        
 
           hist->Fill(Q3); 

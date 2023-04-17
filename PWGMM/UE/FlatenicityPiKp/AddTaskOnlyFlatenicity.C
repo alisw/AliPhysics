@@ -35,6 +35,8 @@ AddTaskOnlyFlatenicity(const Char_t *taskname = "V0_Calibrated", TString detForF
 	taskFlat->SetRemoveTrivialScaling(woTrivialscaling);	//@ Trivial Nch scaling
 	taskFlat->IsdEdxCalibrated(kTRUE);
 	taskFlat->SetDataPeriod("18f");
+	taskFlat->IsSystVarTrkCuts(kTRUE);
+	taskFlat->SetSystVarTrkCuts(1);
 	taskFlat->SetPtMin(0.15);
 	taskFlat->SetNcl(70);
 	mgr->AddTask(taskFlat);

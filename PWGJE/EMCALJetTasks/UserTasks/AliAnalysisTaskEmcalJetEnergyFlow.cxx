@@ -795,7 +795,8 @@ Pair_number= NumJet-1;
 
                                  histname = TString::Format("DeltaResponseMatrix_R%03d_%d",int(Rstep*(i+1)*100),fCentBin);
                                 fHistManager.FillTH3(histname,pt_low,pt_Ldet-pt_low,DeltaPt_det-DeltaPt_gen);
-                               if(dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(MI))->DeltaR((dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->ClosestJet())>1e-3)Mismatch_count=Mismatch_count+1; 
+                                if(!(dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->ClosestJet())Mismatch_count=Mismatch_count+1;
+                                else if(dynamic_cast<AliEmcalJet*>(DetHighRJetsList.At(MI))->DeltaR((dynamic_cast<AliEmcalJet*>(GenHighRJetsList.At(match_index)))->ClosestJet())>1e-3)Mismatch_count=Mismatch_count+1;
                                 break;}}
                                           }
                       histname = TString::Format("hJetPtDeltaPt_R%03d_gen_%d",int(Rstep*(i+1)*100),fCentBin);

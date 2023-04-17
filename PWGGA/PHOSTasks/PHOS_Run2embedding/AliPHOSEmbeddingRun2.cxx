@@ -102,7 +102,6 @@ void AliPHOSEmbeddingRun2::UserCreateOutputObjects()
     AliWarning("No output AOD Event Handler connected.");
   }
   PostData(0, fTreeOut);
-  AliInfo("AliPHOSEmbeddingRun2::UserCreateOutputObjects done");
 }
 //______________________________________________________________________________
 void AliPHOSEmbeddingRun2::Init()
@@ -116,20 +115,29 @@ void AliPHOSEmbeddingRun2::Init()
     return;
   }
   fRunNumber = event->GetRunNumber();
+
+  int nEvents =
+    ((AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler()))->GetTree()->GetEntriesFast();
+  RunSignalSimulation(nEvents);
+  // Connect simulated signal
+  TChain* chainAOD = new TChain("aodTree");
+  chainAOD->AddFile("AliAOD.root");
+  SetSignalChain(chainAOD);
+
+  AliCDBManager::Instance()->SetDefaultStorage("raw://");
   AliCDBManager::Instance()->SetRun(fRunNumber);
-
-  fPHOSGeo = AliPHOSGeometry::GetInstance("Run2");
-
-  fPHOSReconstructor = new AliPHOSReconstructor("Run2"); // Name of geometry!
   AliCDBPath path("PHOS", "Calib", "RecoParam");
   AliCDBEntry* entry = AliCDBManager::Instance()->Get(path.GetPath());
   if (!entry) {
     AliError(Form("Can not get OCDB entry %s", path.GetPath().Data()));
     return;
   }
-
   TObjArray* recoParamArray = (TObjArray*)entry->GetObject();
   AliPHOSRecoParam* recoParam = (AliPHOSRecoParam*)recoParamArray->At(2);
+
+  fPHOSGeo = AliPHOSGeometry::GetInstance("Run2");
+
+  fPHOSReconstructor = new AliPHOSReconstructor("Run2"); // Name of geometry!
   fPHOSReconstructor->SetRecoParam(recoParam);
 
   InitMF();
@@ -258,6 +266,8 @@ void AliPHOSEmbeddingRun2::UserExec(Option_t*)
   // Main loop, called for each event
   // Perform embedding
   // To avoid double counting of evens if new was not embedded
+  Init();
+
   if (fmcparticles)
     fmcparticles->Clear();
   if (fSignalClusters)
@@ -271,7 +281,6 @@ void AliPHOSEmbeddingRun2::UserExec(Option_t*)
     PostData(0, fTreeOut);
     return;
   }
-  Init();
 
   TString trigClasses = event->GetFiredTriggerClasses();
   AliInfo(Form("trig.class %s, period %d, bc %d, orbit %d", trigClasses.Data(), event->GetPeriodNumber(),
@@ -330,7 +339,9 @@ void AliPHOSEmbeddingRun2::UserExec(Option_t*)
   // Read next AOD event
   // If necesary method checks if AOD event is good to embed
   // e.g. there are PHOS clusters etc.
-  GetNextSignalEvent();
+  if (!GetNextSignalEvent()) {
+    return;
+  }
 
   CopyRecalibrateSignal();
 
@@ -574,13 +585,13 @@ void AliPHOSEmbeddingRun2::MakeEmbedding()
   ConvertEmbeddedClusters();
 }
 //________________________________________________________________________
-void AliPHOSEmbeddingRun2::GetNextSignalEvent()
+bool AliPHOSEmbeddingRun2::GetNextSignalEvent()
 {
   // Read signal AOD event from the chain
 
   if (fAODChain == nullptr) {
     AliError(Form("No chain to read signal events: "));
-    return;
+    return false;
   }
 
   if (fSignal) {
@@ -588,8 +599,7 @@ void AliPHOSEmbeddingRun2::GetNextSignalEvent()
   }
   fSignal = new AliAODEvent;
   fSignal->ReadFromTree(fAODChain);
-  fAODChain->GetEvent(fNSignal);
-  fNSignal++;
+  return fAODChain->GetEvent(fNSignal++) > 0; // event read without errors
 }
 //______________________________________________________________________________
 void AliPHOSEmbeddingRun2::ConvertEmbeddedClusters()
@@ -1536,4 +1546,26 @@ double AliPHOSEmbeddingRun2::EvalTOF(AliVCluster* clu, AliVCaloCells* cells)
   }
 
   return tMax;
+}
+//________________________________________________________________________
+void AliPHOSEmbeddingRun2::RunSignalSimulation(int nEvents)
+{
+  // run MC simulation
+  AliInfo(Form("Simulating %d events\n", nEvents));
+  // set the seed environment variable
+  gSystem->Setenv("CONFIG_SEED", "0");
+  gSystem->Setenv("CONFIG_RUN_TYPE", "kPythia6"); // kPythia6 or kPhojet
+  gSystem->Setenv("CONFIG_FIELD", "k5kG");        // kNoField or k5kG
+  gSystem->Setenv("CONFIG_ENERGY", "5020");
+  gSystem->Setenv("DC_RUN", Form("%d", fRunNumber));
+  gSystem->Setenv("SIM_EVENTS", Form("%d", nEvents));
+  gSystem->Exec("cp $ALICE_PHYSICS/PWGGA/PHOSTasks/PHOS_Run2embedding/macros/* .");
+  gSystem->Exec("chmod u+x aliroot_gghbtsim.sh");
+  gSystem->Exec("alien_cp alien:///alice/cern.ch/user/p/prsnko/Tagging/macros.LHC15o/alidpg.tgz file:");
+  gSystem->Exec(
+    Form("./aliroot_gghbtsim.sh --run %d --mode simrec  "
+         "--generator Custom --detector PhosOnly --simulation PhosOnly --reconstruction PhosOnly --nevents %d --system "
+         "PbPb --ocdb alien",
+         fRunNumber, nEvents));
+  gSystem->Exec("root -q -b CreateAOD.C");
 }

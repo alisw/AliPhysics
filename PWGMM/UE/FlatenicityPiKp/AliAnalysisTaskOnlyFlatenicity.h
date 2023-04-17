@@ -56,6 +56,8 @@ class AliAnalysisTaskOnlyFlatenicity : public AliAnalysisTaskSE {
 		void IsdEdxCalibrated(Bool_t dEdxCal = kTRUE) { fdEdxCalibrated = dEdxCal; }
 		void SetDetectorForFlatenicity(TString det = "V0") { fDetFlat = det; }
 		void SetDataPeriod(std::string period = "16l") { fPeriod = period;}
+		void IsSystVarTrkCuts(const bool isSystVar=kTRUE) { fIsSystematicVariation = isSystVar; }
+		void SetSystVarTrkCuts(const int SystVar=9) { fSystVarTrkCuts = SystVar; }
 		void SetMCclosureTest(Bool_t flat_flag = kFALSE) { fIsMCclosure = flat_flag; }
 		void SetDeltaV0(Bool_t deltav0 = kFALSE) { fDeltaV0 = deltav0; }
 		void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) { fRemoveTrivialScaling = flat_flag; }
@@ -94,6 +96,8 @@ class AliAnalysisTaskOnlyFlatenicity : public AliAnalysisTaskSE {
 		TF1* fcutHigh;
 		TF1* fcutDCAxy;
 		std::string fPeriod;
+		bool fIsSystematicVariation;
+		int fSystVarTrkCuts;
 		Double_t ftrackmult08;
 		Double_t fv0mpercentile;
 		Double_t fFlat;

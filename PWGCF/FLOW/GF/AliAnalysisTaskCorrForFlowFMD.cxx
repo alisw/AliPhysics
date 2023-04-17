@@ -1,6 +1,7 @@
 /**************************************************************************
  *    Author:       Zuzana Moravcova
- *    Modified by:  Debojit Sarkar
+ *    Author:       Debojit Sarkar
+ *    contact:      debojit.sarkar@cern.ch
 
  *    Framework for calculating di-hadron correlation                     *
  *    for extraction of v_n{2} coefficients of identified particles       *
@@ -114,7 +115,11 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fMinLambdaMass(1.08),
     fMaxLambdaMass(1.15),
     fMinPhiMass(0.98),
-    fMaxPhiMass(1.07),				   
+    fMaxPhiMass(1.07),
+    fParticlemass_bias_corr(kFALSE),
+    fProtonSigcount(0),
+    fLambdaSigcount(0),
+    fPhiSigcount(0),
     fJetParticleLowPt(5.),
     fCentEstimator("V0M"),
     fSystematicsFlag(""),
@@ -220,6 +225,10 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fMaxLambdaMass(1.15),
     fMinPhiMass(0.98),
     fMaxPhiMass(1.07),
+    fParticlemass_bias_corr(kFALSE),
+    fProtonSigcount(0),
+    fLambdaSigcount(0),
+    fPhiSigcount(0),
     fJetParticleLowPt(5.),
     fCentEstimator("V0M"),
     fSystematicsFlag(""),
@@ -400,7 +409,11 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
-{
+{           
+    fProtonSigcount =0;
+    fLambdaSigcount =0;
+    fPhiSigcount =0;
+
     fhEventCounter->Fill("Input",1);
 
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -502,7 +515,14 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
 	if(!fDoV0 && i > 3 && i < 6) continue;
 	if(!fDoPHI && i > 5) continue;
 	
-	  if(fIsAntiparticleCheck && i == 4) continue;
+	if(fIsAntiparticleCheck && i == 4) continue;
+	      
+	if(fParticlemass_bias_corr) {
+	    if(fDoPID && fProtonSigcount < 1) continue;//for PID correlation to fill, at least one proton needed (biasing event selection)
+	    if(fDoV0 && fLambdaSigcount < 1) continue;//for V0 correlation to fill, at least one lambda candidate needed (biasing event selection)
+	    if(fDoPHI && fPhiSigcount < 1) continue;//for Phi correlation to fill, at least one Phi candidate needed (biasing event selection)
+	  }
+	  
 
         FillCorrelations(i);
         FillCorrelationsMixed(i);
@@ -654,7 +674,7 @@ Double_t AliAnalysisTaskCorrForFlowFMD::GetDPhiStar(Double_t phi1, Double_t pt1,
   return dPhiStar;
 }
 //_____________________________________________________________________________
-Int_t AliAnalysisTaskCorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) const// called inside prepareTPCTracks() once after IsTrackSelected() to identify Pi, Ka Pr
+Int_t AliAnalysisTaskCorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) // called inside prepareTPCTracks() once after IsTrackSelected() to identify Pi, Ka Pr
 {
   // checking detector statuses
   Bool_t bIsTPCok = HasTrackPIDTPC(track);
@@ -673,6 +693,8 @@ Int_t AliAnalysisTaskCorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) con
   //check nsigma cuts
   if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)pidInd))>3) return -1;
   if(bIsTOFok && l_TOFUsed) if(TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)pidInd))>3) return -1;
+	
+  if(retInd == 3) fProtonSigcount++;
 
   return retInd;
 }
@@ -786,7 +808,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const //called i
   return kTRUE;
 }
 //_____________________________________________________________________________
-Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const //called inside PrepareV0() once to specifically selecet Lambda candidates after preselecting V0 cnadidates through IsV0()
+Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) //called inside PrepareV0() once to specifically selecet Lambda candidates after preselecting V0 cnadidates through IsV0()
 {
   fhV0Counter[1]->Fill("Input",1);
   Bool_t isL = kFALSE;
@@ -859,7 +881,8 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) const //calle
     fhPTvsMinv[1]->Fill(v0->Pt(),dMass);
     fhLambdaphi->Fill(v0->Phi());
 
-  
+    if(dMass > 1.105 && dMass < 1.129) fLambdaSigcount++;
+
   return kTRUE;
 }
 //_____________________________________________________________________________
@@ -1007,7 +1030,8 @@ void AliAnalysisTaskCorrForFlowFMD::PreparePhi()
 
     fhPhiphi->Fill(dPhi);//dPhi = mom.Phi() + TMath::Pi();
 
-  
+      if(dMass > 1.006 && dMass < 1.035) fPhiSigcount++;
+
       }
       
     } // endfor {iKaon2} : second kaon
@@ -1660,7 +1684,7 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
         if(TMath::Abs(deltaPhi - TMath::Pi()) < 0.5) foundSomething = kTRUE;
       }
     }
-    if(!foundSomething){ fhEventCounter->Fill("After Jet Veto",1); }
+    if(foundSomething == kTRUE){ fhEventCounter->Fill("After Jet Veto",1); }//select events with back to back jets in the TPC
     else { return kFALSE; }
   }
 

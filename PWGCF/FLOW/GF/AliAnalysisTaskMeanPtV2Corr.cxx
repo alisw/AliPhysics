@@ -591,14 +591,14 @@ void AliAnalysisTaskMeanPtV2Corr::CovSkipMpt(AliGFWFlags *lFlags, AliAODEvent *f
 }
 Bool_t AliAnalysisTaskMeanPtV2Corr::FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t debug) {
   Double_t dnx, val;
-  dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
+  dnx = fGFW->Calculate(corconf,0,kTRUE).real();
   if(debug) printf("FillFCs: dnx = %f\n",dnx);
   if(dnx==0) return kFALSE;
   if(!corconf.pTDif) {
-    val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
+    val = fGFW->Calculate(corconf,0,kFALSE).real()/dnx;
     if(debug) printf("FillFCs: val = %f\n",val);
     if(TMath::Abs(val)<1)
-      fFC->FillProfile(corconf.Head.Data(),cent,val,fUseWeightsOne?1:dnx,rndmn);
+      fFC->FillProfile(corconf.Head.c_str(),cent,val,fUseWeightsOne?1:dnx,rndmn);
     return kTRUE;
   };
   return kTRUE;
@@ -606,12 +606,12 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::FillFCs(const AliGFW::CorrConfig &corconf, c
 Bool_t AliAnalysisTaskMeanPtV2Corr::Fillv2dPtFCs(const AliGFW::CorrConfig &corconf, const Double_t &dpt, const Double_t &rndmn, const Int_t index) {
   if(!index || index>fV2dPtList->GetEntries()) return kFALSE;
   Double_t dnx, val;
-  dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
+  dnx = fGFW->Calculate(corconf,0,kTRUE).real();
   if(dnx==0) return kFALSE;
   if(!corconf.pTDif) {
-    val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
+    val = fGFW->Calculate(corconf,0,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1)
-      ((AliGFWFlowContainer*)fV2dPtList->At(index))->FillProfile(corconf.Head.Data(),dpt,val,fUseWeightsOne?1:dnx,rndmn);
+      ((AliGFWFlowContainer*)fV2dPtList->At(index))->FillProfile(corconf.Head.c_str(),dpt,val,fUseWeightsOne?1:dnx,rndmn);
     return kTRUE;
   };
   return kTRUE;
@@ -619,10 +619,10 @@ Bool_t AliAnalysisTaskMeanPtV2Corr::Fillv2dPtFCs(const AliGFW::CorrConfig &corco
 
 Bool_t AliAnalysisTaskMeanPtV2Corr::FillCovariance(AliProfileBS *target, const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &d_mpt, const Double_t &dw_mpt, const Double_t &l_rndm) {
   Double_t dnx, val;
-  dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
+  dnx = fGFW->Calculate(corconf,0,kTRUE).real();
   if(dnx==0) return kFALSE;
   if(!corconf.pTDif) {
-    val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
+    val = fGFW->Calculate(corconf,0,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1)
       target->FillProfile(cent,val*d_mpt,fUseWeightsOne?1:dnx*dw_mpt,l_rndm);
     return kTRUE;

@@ -9,7 +9,8 @@ AliAnalysisTaskSpectraFlatenicity*
 AddTaskSpectraFlatenicity(  const Char_t *taskname = "Flat", 
                             Bool_t woTrivialscaling = kFALSE, 
                             Bool_t useMC = kTRUE,
-                            Double_t minpT = 0.5
+                            Double_t minpT = 0.5,
+                            Int_t tracksyst = 0
                          )
 {
   // get the manager via the static access member. since it's static, you don't
@@ -34,6 +35,7 @@ AddTaskSpectraFlatenicity(  const Char_t *taskname = "Flat",
   taskFlat->SetUseMC(useMC);
   taskFlat->SetPtMin(minpT);
   taskFlat->SetRemoveTrivialScaling(woTrivialscaling);
+  taskFlat->SetSysVarTrkCuts(tracksyst);
   
   mgr->AddTask(taskFlat);
 

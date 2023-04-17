@@ -302,6 +302,9 @@ class AliAnalysisTaskCaloHFEpp : public AliAnalysisTaskSE
 		TH2F*                   fHistZeOrgPos_w;
 		TH1F*                   fHistZeRec0;
 		TH1F*                   fHistZeRec1;
+		TH2F*                   fHist_Zee_pT_pos;
+		TH2F*                   fHist_Zee_pT_neg;
+		TH2F*                   fHist_Zee_pT_neg2;
 		TH2F*                   fHist_Zpair_pos;
 		TH2F*                   fHist_Zpair_neg;
 		TH1F*                   fHistZrap;

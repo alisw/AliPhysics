@@ -82,13 +82,15 @@ using std::endl;
 
 #include "AliAnalysisTaskOnlyFlatenicity.h"
 
-static const Int_t nCent = 9;
-static const Int_t nEta = 4;
+static const int nCent = 9;
+static const int nEta = 4;
 
-static Double_t centClass[nCent + 1] = {0.0,  1.0,  5.0,  10.0, 20.0,
-	30.0, 40.0, 50.0, 70.0, 100.0};
+static double centClass[nCent + 1] = {0.0,  1.0,  5.0,  10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
+static double Flatbins_16kl[9] = { -0.01, 0.102, 0.12, 0.132, 0.151, 0.168, 0.186, 0.205, 1.01 };
+static double Flatbins_lhc16deghijp[9] = { -0.01, 0.1, 0.117, 0.129, 0.148, 0.165, 0.183, 0.202, 1.01 };
+static double Flatbins_lhc18bdefghijklmo[9] = { -0.01, 0.099, 0.117, 0.129, 0.148, 0.165, 0.183, 0.202, 1.01 };
 
-static const Char_t* etaClass[nEta] = {"02","24","46","68"};
+static const char* etaClass[nEta] = {"02","24","46","68"};
 
 static const double C_Value = TMath::C()*(1.e2/1.e12); // cm/ps
 
@@ -102,7 +104,7 @@ AliAnalysisTaskOnlyFlatenicity::AliAnalysisTaskOnlyFlatenicity()
 	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fdEdxCalibrated(kTRUE),
 	fEtaCalibrationPos(0), fEtaCalibrationNeg(0), felededxfitPos(0), felededxfitNeg(0),
-	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
+	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"), fIsSystematicVariation(kTRUE), fSystVarTrkCuts(0),
 	ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
 	fMultSelection(0x0), hFlat(0), hFlatVsMult(0),
 	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0), hFlatVsPtMC(0),
@@ -150,7 +152,7 @@ AliAnalysisTaskOnlyFlatenicity::AliAnalysisTaskOnlyFlatenicity(const char *name)
 	fDeltaV0(kTRUE), fRemoveTrivialScaling(kFALSE), fnGen(-1), fPIDResponse(0x0),
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fdEdxCalibrated(kTRUE), 
 	fEtaCalibrationPos(0), fEtaCalibrationNeg(0), felededxfitPos(0), felededxfitNeg(0),
-	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
+	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"), fIsSystematicVariation(kTRUE), fSystVarTrkCuts(0),
 	ftrackmult08(0), fv0mpercentile(0), fFlat(-1), fFlatTPC(-1.), fFlatMC(-1),
 	fMultSelection(0x0), hFlat(0), hFlatVsMult(0),
 	hFlatenicityMC(0), hFlatenicityMCRec(0), hFlatResponse(0), hFlatVsPtMC(0),
@@ -246,7 +248,97 @@ void AliAnalysisTaskOnlyFlatenicity::UserCreateOutputObjects() {
 	fCutsPID->SetDCAToVertex2D(kFALSE);
 	fCutsPID->SetRequireSigmaToVertex(kFALSE);
 	fCutsPID->SetMaxChi2PerClusterITS(36);
+
+	// This is just to ensure that nominal track cuts
+	// are used when fIsSystematicVariation = kFALSE
+	if (!fIsSystematicVariation) { fSystVarTrkCuts = 0; }
+
+	if(fSystVarTrkCuts==1){ //! Lower: SetMinNCrossedRowsTPC(60)
+		fCutsPID->SetMinNCrossedRowsTPC(60);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else if(fSystVarTrkCuts==2){ //! Higher: SetMinNCrossedRowsTPC(100)
+		fCutsPID->SetMinNCrossedRowsTPC(100);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else if(fSystVarTrkCuts==3){ //! Lower: SetMinRatioCrossedRowsOverFindableClustersTPC(0.7)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else if(fSystVarTrkCuts==4){ //! Higher: SetMinRatioCrossedRowsOverFindableClustersTPC(0.9)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else if(fSystVarTrkCuts==5){ //! Lower: SetMaxChi2PerClusterTPC(3)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(3);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else if(fSystVarTrkCuts==6){ //! Higher: SetMaxChi2PerClusterTPC(5)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(5);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else if(fSystVarTrkCuts==7){ //! Lower: SetMaxChi2PerClusterITS(25)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(25);
+	}
+	else if(fSystVarTrkCuts==8){ //! Higher: SetMaxChi2PerClusterITS(49)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(49);
+	}
+	else if(fSystVarTrkCuts==9){ //! Lower: SetMaxDCAToVertexZ(1)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(1);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else if(fSystVarTrkCuts==10){ //! Lower: SetMaxDCAToVertexZ(5)
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(5);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+	else{ //! Nominal values
+		fCutsPID->SetMinNCrossedRowsTPC(70);
+		fCutsPID->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+		fCutsPID->SetMaxChi2PerClusterTPC(4);
+		fCutsPID->SetMaxDCAToVertexZ(2);
+		fCutsPID->SetMaxChi2PerClusterITS(36);
+	}
+
+	std::cout << "GetMinNCrossedRowsTPC = " << fCutsPID->GetMinNCrossedRowsTPC() << '\n';
+	std::cout << "GetMinRatioCrossedRowsOverFindableClustersTPC = " << fCutsPID->GetMinRatioCrossedRowsOverFindableClustersTPC() << '\n';
+	std::cout << "GetMaxChi2PerClusterTPC = " << fCutsPID->GetMaxChi2PerClusterTPC() << '\n';
+	std::cout << "GetMaxDCAToVertexZ = " << fCutsPID->GetMaxDCAToVertexZ() << '\n';
+	std::cout << "GetMaxChi2PerClusterITS = " << fCutsPID->GetMaxChi2PerClusterITS() << '\n';
+
 	fTrackFilterPID->AddCuts(fCutsPID);
+
 
 	const std::map<std::string, std::array<double, 9>> neg_eta_mip{
 		{"18b",{49.8668, 12.2863, 259.435, 2060.93, 8446.22, 19854.3, 27051.4, 19835.5, 6041.59}},
@@ -457,10 +549,42 @@ void AliAnalysisTaskOnlyFlatenicity::UserCreateOutputObjects() {
 		nbins_flat = 2000;
 	}
 
-	const int nFlatbins = 1020;
-	double Flatbins[nFlatbins+1] = {0.0};
-	for (int i = 0; i <= nFlatbins; ++i) {
-		Flatbins[i] = -0.01 + (double)i * 0.001;
+	int nFlatbins = 0;
+
+	if (!fIsSystematicVariation) {
+		nFlatbins = 1020;
+	}
+	else {
+		nFlatbins = 8;
+	}
+
+	double Flatbins[nFlatbins+1];
+
+	if (!fIsSystematicVariation) {
+		for (int i = 0; i <= nFlatbins; ++i) 
+		{
+			Flatbins[i] = -0.01 + (double)i * 0.001;
+		}
+	}
+	else {
+		if (fPeriod=="16k" || fPeriod=="16l") {
+			for (int i = 0; i <= nFlatbins; ++i) 
+			{
+				Flatbins[i] = Flatbins_16kl[i];
+			}
+		}
+		else if (fPeriod=="16d" || fPeriod=="16e" || fPeriod=="16g" || fPeriod=="16h" || fPeriod=="16i" || fPeriod=="16j" || fPeriod=="16o" || fPeriod=="16p") {
+			for (int i = 0; i <= nFlatbins; ++i) 
+			{
+				Flatbins[i] = Flatbins_lhc16deghijp[i];
+			}
+		}
+		else{
+			for (int i = 0; i <= nFlatbins; ++i) 
+			{
+				Flatbins[i] = Flatbins_lhc18bdefghijklmo[i];
+			}
+		}
 	}
 
 	const int nMultbins = 100;

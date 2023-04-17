@@ -89,20 +89,19 @@ Double_t PtbinsFlatSpec[nPtbinsFlatSpecFlatSpec + 1] = {
 
 const int DCAxyNBins = 121;
 double DCAxyBins[DCAxyNBins + 1] = {
-    -3.025, -2.975, -2.925, -2.875, -2.825, -2.775, -2.725, -2.675, -2.625,
-    -2.575, -2.525, -2.475, -2.425, -2.375, -2.325, -2.275, -2.225, -2.175,
-    -2.125, -2.075, -2.025, -1.975, -1.925, -1.875, -1.825, -1.775, -1.725,
-    -1.675, -1.625, -1.575, -1.525, -1.475, -1.425, -1.375, -1.325, -1.275,
-    -1.225, -1.175, -1.125, -1.075, -1.025, -0.975, -0.925, -0.875, -0.825,
-    -0.775, -0.725, -0.675, -0.625, -0.575, -0.525, -0.475, -0.425, -0.375,
-    -0.325, -0.275, -0.225, -0.175, -0.125, -0.075, -0.025, 0.025,  0.075,
-    0.125,  0.175,  0.225,  0.275,  0.325,  0.375,  0.425,  0.475,  0.525,
-    0.575,  0.625,  0.675,  0.725,  0.775,  0.825,  0.875,  0.925,  0.975,
-    1.025,  1.075,  1.125,  1.175,  1.225,  1.275,  1.325,  1.375,  1.425,
-    1.475,  1.525,  1.575,  1.625,  1.675,  1.725,  1.775,  1.825,  1.875,
-    1.925,  1.975,  2.025,  2.075,  2.125,  2.175,  2.225,  2.275,  2.325,
-    2.375,  2.425,  2.475,  2.525,  2.575,  2.625,  2.675,  2.725,  2.775,
-    2.825,  2.875,  2.925,  2.975,  3.025};
+    -3.025, -2.975, -2.925, -2.875, -2.825, -2.775, -2.725, -2.675, -2.625, -2.575, 
+    -2.525, -2.475, -2.425, -2.375, -2.325, -2.275, -2.225, -2.175, -2.125, -2.075, 
+    -2.025, -1.975, -1.925, -1.875, -1.825, -1.775, -1.725, -1.675, -1.625, -1.575, 
+    -1.525, -1.475, -1.425, -1.375, -1.325, -1.275, -1.225, -1.175, -1.125, -1.075, 
+    -1.025, -0.975, -0.925, -0.875, -0.825, -0.775, -0.725, -0.675, -0.625, -0.575, 
+    -0.525, -0.475, -0.425, -0.375, -0.325, -0.275, -0.225, -0.175, -0.125, -0.075, 
+    -0.025,  0.025,  0.075,  0.125,  0.175,  0.225,  0.275,  0.325,  0.375,  0.425,  
+     0.475,  0.525,  0.575,  0.625,  0.675,  0.725,  0.775,  0.825,  0.875,  0.925,  
+     0.975,  1.025,  1.075,  1.125,  1.175,  1.225,  1.275,  1.325,  1.375,  1.425,
+     1.475,  1.525,  1.575,  1.625,  1.675,  1.725,  1.775,  1.825,  1.875,  1.925,  
+     1.975,  2.025,  2.075,  2.125,  2.175,  2.225,  2.275,  2.325,  2.375,  2.425,  
+     2.475,  2.525,  2.575,  2.625,  2.675,  2.725,  2.775,  2.825,  2.875,  2.925,  
+     2.975,  3.025};
 
 const Int_t nCent = 9;
 Double_t centClassFlatSpec[nCent + 1] = {0.0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
@@ -125,7 +124,8 @@ ClassImp(AliAnalysisTaskSpectraFlatenicity) // classimp: necessary for root
     fmultV0Amc(-1), 
     fmultV0Cmc(-1), 
     fmultTPCmc(-1), 
-    fRemoveTrivialScaling(kFALSE), 
+    fRemoveTrivialScaling(kFALSE),
+    fSysVarTrkCuts(0),
     fnGen(-1), 
     fnRec(-1), 
     fnRecWoDCA(-1), 
@@ -215,7 +215,8 @@ AliAnalysisTaskSpectraFlatenicity::AliAnalysisTaskSpectraFlatenicity(const char 
     fmultV0Amc(-1), 
     fmultV0Cmc(-1), 
     fmultTPCmc(-1), 
-    fRemoveTrivialScaling(kFALSE), 
+    fRemoveTrivialScaling(kFALSE),
+    fSysVarTrkCuts(0),
     fnGen(-1), 
     fnRec(-1), 
     fnRecWoDCA(-1), 
@@ -319,13 +320,86 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
   fCuts->SetDCAToVertex2D(kFALSE);
   fCuts->SetRequireSigmaToVertex(kFALSE);
   fCuts->SetEtaRange(-0.8, 0.8);
-  fCuts->SetMinNCrossedRowsTPC(70);
-  fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-  fCuts->SetMaxChi2PerClusterTPC(4);
-  fCuts->SetMaxDCAToVertexZ(2);
-  fCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
   fCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
-  fCuts->SetMaxChi2PerClusterITS(36);
+  
+  if(fSysVarTrkCuts==1){ //! Lower: SetMinNCrossedRowsTPC(60)
+      fCuts->SetMinNCrossedRowsTPC(60);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else if(fSysVarTrkCuts==2){ //! Higher: SetMinNCrossedRowsTPC(100)
+      fCuts->SetMinNCrossedRowsTPC(100);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else if(fSysVarTrkCuts==3){ //! Lower: SetMinRatioCrossedRowsOverFindableClustersTPC(0.7)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else if(fSysVarTrkCuts==4){ //! Higher: SetMinRatioCrossedRowsOverFindableClustersTPC(0.9)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else if(fSysVarTrkCuts==5){ //! Lower: SetMaxChi2PerClusterTPC(3)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(3);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else if(fSysVarTrkCuts==6){ //! Higher: SetMaxChi2PerClusterTPC(5)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(5);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else if(fSysVarTrkCuts==7){ //! Lower: SetMaxChi2PerClusterITS(25)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(25);
+  }
+  else if(fSysVarTrkCuts==8){ //! Higher: SetMaxChi2PerClusterITS(49)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(49);
+  }
+  else if(fSysVarTrkCuts==9){ //! Lower: SetMaxDCAToVertexZ(1)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(1);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else if(fSysVarTrkCuts==10){ //! Lower: SetMaxDCAToVertexZ(5)
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(5);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+  else{ //! Default values
+      fCuts->SetMinNCrossedRowsTPC(70);
+      fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);	
+      fCuts->SetMaxChi2PerClusterTPC(4);
+      fCuts->SetMaxDCAToVertexZ(2);
+      fCuts->SetMaxChi2PerClusterITS(36);
+  }
+
   fTrackFilter->AddCuts(fCuts);
 
   // wo DCA cut  
@@ -1337,7 +1411,6 @@ void AliAnalysisTaskSpectraFlatenicity::SetCutsFilterWoDCA(AliESDtrackCuts *cFil
   cFilt->SetDCAToVertex2D(kFALSE);
   cFilt->SetRequireSigmaToVertex(kFALSE);
   cFilt->SetEtaRange(-0.8, 0.8);
-  cFilt->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
   fTrackFilterwoDCA->AddCuts(cFilt);
 }
 

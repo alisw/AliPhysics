@@ -315,14 +315,15 @@ void AliAnalysisTaskPtCorr::UserExec(Option_t *)
     fV0MMulti->Fill(l_cent);
     double l_rnd = fRndm->Rndm();
     //Fill recursive pt-correlations
-    fpt->FillRecursive(wp,l_cent,l_rnd);
+    fpt->FillRecursive(wp,0);
     //Test with explicit ck and Skew calculation
     fpt->FillCk(wp,l_cent,l_rnd);
     fpt->FillSkew(wp,l_cent,l_rnd);
     //Fill subevent profiles with appropriate wp arrays
     if(fEtaGap>=0) {
-      fpt->FillRecursive(wpP,l_cent,l_rnd,"subP"); fpt->FillRecursive(wpN,l_cent,l_rnd,"subN");
+      fpt->FillRecursive(wpP,1); fpt->FillRecursive(wpN,2);
     }
+    fpt->FillRecursiveProfiles(l_cent,l_rnd);
     wp.clear();
     wpP.clear();
     wpN.clear();
@@ -586,14 +587,15 @@ void AliAnalysisTaskPtCorr::FillPtCorr(AliAODEvent* fAOD, const double &l_cent, 
     double l_mult = fUseNch?(1.0*nTracks):l_cent;
     double l_rnd = fRndm->Rndm();
     //Fill recursive pt-correlations
-    fpt->FillRecursive(wp,l_mult,l_rnd);
+    fpt->FillRecursive(wp);
     //Test with explicit ck and Skew calculation
     fpt->FillCk(wp,l_mult,l_rnd);
     fpt->FillSkew(wp,l_mult,l_rnd);
     //Fill subevent profiles with appropriate wp arrays
     if(fEtaGap>=0) {
-      fpt->FillRecursive(wpP,l_mult,l_rnd,"subP"); fpt->FillRecursive(wpN,l_mult,l_rnd,"subN");
+      fpt->FillRecursive(wpP,1); fpt->FillRecursive(wpN,2);
     }
+    fpt->FillRecursiveProfiles(l_mult,l_rnd);
     wp.clear();
     wpP.clear();
     wpN.clear();

@@ -273,6 +273,9 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp() : AliAnalysisTaskSE(),
         fHistZeOrgPos_w(0),
         fHistZeRec0(0),
         fHistZeRec1(0),
+        fHist_Zee_pT_pos(0),
+        fHist_Zee_pT_neg(0),
+        fHist_Zee_pT_neg2(0),
         fHist_Zpair_pos(0),
         fHist_Zpair_neg(0),
         fHistZrap(0),
@@ -502,6 +505,9 @@ AliAnalysisTaskCaloHFEpp::AliAnalysisTaskCaloHFEpp(const char* name) : AliAnalys
         fHistZeOrgPos_w(0),
         fHistZeRec0(0),
         fHistZeRec1(0),
+        fHist_Zee_pT_pos(0),
+        fHist_Zee_pT_neg(0),
+        fHist_Zee_pT_neg2(0),
         fHist_Zpair_pos(0),
         fHist_Zpair_neg(0),
         fHistZrap(0),
@@ -666,6 +672,9 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fHistZeOrgNeg_w        = new TH2F("fHistZeOrgNeg_w","particle level Z->e",150,0,150,100,0,100);
 	fHistZeRec0        = new TH1F("fHistZeRec0","particle level Z->e",90,10,100);
 	fHistZeRec1        = new TH1F("fHistZeRec1","particle level Z->e",90,10,100);
+	fHist_Zee_pT_pos   = new TH2F("fHist_Zee_pT_pos","pair Z->ee pT",100,0,100,100,0,100);
+	fHist_Zee_pT_neg   = new TH2F("fHist_Zee_pT_neg","pair Z->ee pT",100,0,100,100,0,100);
+	fHist_Zee_pT_neg2  = new TH2F("fHist_Zee_pT_neg2","pair Z->ee pT",100,0,100,100,0,100);
 	fHist_Zpair_pos        = new TH2F("fHist_Zpair_pos","pair Z->e",100,-5,5,100,0,100);
 	fHist_Zpair_neg        = new TH2F("fHist_Zpair_neg","pair Z->e",100,-5,5,100,0,100);
 	fHistZrap        = new TH1F("fHistZrap","parent Z rap",200,-5,5);
@@ -902,6 +911,9 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fOutputList->Add(fHistZeOrgPos_w); 
 	fOutputList->Add(fHistZeRec0); 
 	fOutputList->Add(fHistZeRec1); 
+	fOutputList->Add(fHist_Zee_pT_pos); 
+	fOutputList->Add(fHist_Zee_pT_neg); 
+	fOutputList->Add(fHist_Zee_pT_neg2); 
 	fOutputList->Add(fHist_Zpair_pos); 
 	fOutputList->Add(fHist_Zpair_neg); 
 	fOutputList->Add(fHistZrap); 
@@ -1937,8 +1949,10 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 
                 if(fFlagZeeAssPhiCut) // for Z->ee, pair e is away-side
                   {
-                   if(dphiAss<2.0 || dphiAss>4.0)continue;
-                   fHistZeeDphi->Fill(TrkPt,dphiAss);
+                   Double_t MaxPhi = 1.5*TMath::Pi();
+                   Double_t MimPhi = 0.5*TMath::Pi();
+                   if(dphiAss<MimPhi || dphiAss>MaxPhi)continue;
+                   //fHistZeeDphi->Fill(TrkPt,dphiAss);
                   }
 
 		//-------define KFParticle to get mass
@@ -1956,9 +1970,13 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		MassCorrect = recg.GetMass(mass,width);
                 Double_t RecoPt = recg.GetPt();
                 Double_t RecoEta = recg.GetEta();
- 
-                Int_t iMassbin = ZmassWeight->FindBin(Zmass_gen);
-                Double_t powheg_w = ZmassWeight->GetBinContent(iMassbin);
+  
+                Double_t powheg_w = 999.9;
+                if(ZmassWeight)
+                  {
+                   Int_t iMassbin = ZmassWeight->FindBin(Zmass_gen);
+                   powheg_w = ZmassWeight->GetBinContent(iMassbin);
+                  }
 
 		if(fFlagLS){
 			//if(mass < 0.002)cout <<"Px="<<aAssotrack->Px() <<" Py="<<aAssotrack->Py()<<" Pz="<<aAssotrack->Pz()<<endl;
@@ -1988,6 +2006,7 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
                                     fInv_pT_ULS_forZ_pos->Fill(TrkPt,mass);
                                     if(TMath::Abs(pdgorg_ass)==23)fInv_pT_ULS_forZ_pos_true->Fill(TrkPt,mass);  // true Z->ee pair
                                     if(TMath::Abs(pdgorg_ass)==23)fInv_pT_ULS_forZ_pos_true_w->Fill(mass,TrkPt,powheg_w);  // true Z->ee pair
+                                    if(TMath::Abs(pdgorg_ass)==23)fHist_Zee_pT_pos->Fill(TrkPt,aAssotrack->Pt());  // true Z->ee pair
                                     if(mass>75.0 && mass<100.0)fHist_Zpair_pos->Fill(aAssotrack->Eta(),TrkPt);
                                     if(mass>75.0 && mass<100.0 && TrkPt>30.0)fHist_Zeta_pos->Fill(RecoEta);
                                    }
@@ -1996,6 +2015,9 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
                                     fInv_pT_ULS_forZ_neg->Fill(TrkPt,mass);
                                     if(TMath::Abs(pdgorg_ass)==23)fInv_pT_ULS_forZ_neg_true->Fill(TrkPt,mass);  // true Z->ee pair
                                     if(TMath::Abs(pdgorg_ass)==23)fInv_pT_ULS_forZ_neg_true_w->Fill(mass,TrkPt,powheg_w);  // true Z->ee pair
+                                    if(TMath::Abs(pdgorg_ass)==23)fHist_Zee_pT_neg->Fill(TrkPt,aAssotrack->Pt());  // true Z->ee pair
+                                    if(TMath::Abs(pdgorg_ass)==23 && (mass>60.0 && mass<108.0))fHist_Zee_pT_neg2->Fill(TrkPt,aAssotrack->Pt());  // true Z->ee pair
+                                    if(TMath::Abs(pdgorg_ass)==23)fHistZeeDphi->Fill(TrkPt,dphiAss);  // true Z->ee pair
                                     if(mass>75.0 && mass<100.0)fHist_Zpair_neg->Fill(aAssotrack->Eta(),TrkPt);
                                     if(mass>75.0 && mass<100.0 && TrkPt>30.0)fHist_Zeta_neg->Fill(RecoEta);
                                    }

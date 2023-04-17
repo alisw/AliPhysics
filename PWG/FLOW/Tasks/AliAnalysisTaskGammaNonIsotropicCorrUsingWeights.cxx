@@ -1417,13 +1417,15 @@ void AliAnalysisTaskGammaNonIsotropicCorrUsingWeights::UserExec(Option_t*) {
   CalculateNonIsotropicTerms();
   CalculateDifferential3pCorrelator();
   
+  fCentDistAfterCut->Fill(centrality);  
+
   // Reset event-by-event variables
   ResetEventByEventQuantities();
   
   fDebugwEventCount->Fill(8.1); ///Left for Analysis
   
+  
   fHistVertexZcm->Fill(pVtxZ);
-  fCentDistAfterCut->Fill(centrality);  
   //Post the Histograms:  
   PostData(1,fListHist);
 
