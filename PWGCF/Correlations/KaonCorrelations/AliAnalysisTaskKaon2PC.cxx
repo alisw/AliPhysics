@@ -1,5 +1,5 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Kaon2PC:
+// AliAnalysisTaskKaon2PC:
 // Description: Analysis task to calculate Two-Particle Angular Correlation Functions of Neutral and Charged Kaons
 // Author: Anjaly Sasikumar Menon
 // (anjaly.sasikumar.menon@cern.ch)
@@ -44,15 +44,15 @@
 #include "AliAODVZERO.h"
 #include "AliVParticle.h"
 #include "TLorentzVector.h"
-#include "Kaon2PC.h"
+#include "AliAnalysisTaskKaon2PC.h"
 
 
-class Kaon2PC;       // This analysis class
+class AliAnalysisTaskKaon2PC;       // This analysis class
 using namespace std; // std namespace: so you can do things like 'cout'
-ClassImp(Kaon2PC)    // classimp: necessary for root
+ClassImp(AliAnalysisTaskKaon2PC)    // classimp: necessary for root
 const Double_t Pi = TMath::Pi();
 
-Kaon2PC::Kaon2PC() : AliAnalysisTaskSE(),  
+AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC() : AliAnalysisTaskSE(),  
 fAOD(0), 
 fOutputList(0), 
 fPIDResponse(0),
@@ -175,7 +175,7 @@ fEventCuts(0)
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
-Kaon2PC::Kaon2PC(const char* name) : AliAnalysisTaskSE(name),
+AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC(const char* name) : AliAnalysisTaskSE(name),
 fAOD(0), 
 fOutputList(0), 
 fPIDResponse(0),
@@ -300,7 +300,7 @@ fEventCuts(0)
     DefineOutput(1, TList::Class());    
 }
 //_____________________________________________________________________________
-Kaon2PC::~Kaon2PC()
+AliAnalysisTaskKaon2PC::~AliAnalysisTaskKaon2PC()
 {
     // destructor
     if(fOutputList) {
@@ -312,7 +312,7 @@ Kaon2PC::~Kaon2PC()
     if(fSelectedKneg) delete fSelectedKneg;
 }
 //_____________________________________________________________________________
-void Kaon2PC::UserCreateOutputObjects()
+void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
 {
     // create output objects
     // this function is called ONCE at the start of your analysis (RUNTIME)
@@ -647,7 +647,7 @@ void Kaon2PC::UserCreateOutputObjects()
     
 }
 
-void Kaon2PC::SetTrackCuts(Double_t c1, Double_t c2, Double_t c3, Double_t c4) {
+void AliAnalysisTaskKaon2PC::SetTrackCuts(Double_t c1, Double_t c2, Double_t c3, Double_t c4) {
     
     fLpTCut = c1;
     fUpTCut = c2;
@@ -655,7 +655,7 @@ void Kaon2PC::SetTrackCuts(Double_t c1, Double_t c2, Double_t c3, Double_t c4) {
     fSigCut = c4;
 }
 
-void Kaon2PC::SetV0TrackCuts(Double_t c5, Double_t c6, Double_t c7, Double_t c8, Double_t c9, Double_t c10, Double_t c11, Double_t c12, Double_t c13, Double_t c14, Double_t c15) {
+void AliAnalysisTaskKaon2PC::SetV0TrackCuts(Double_t c5, Double_t c6, Double_t c7, Double_t c8, Double_t c9, Double_t c10, Double_t c11, Double_t c12, Double_t c13, Double_t c14, Double_t c15) {
     
     fDecayLv0Cut = c5;
     fLpTv0Cut = c6;
@@ -671,7 +671,7 @@ void Kaon2PC::SetV0TrackCuts(Double_t c5, Double_t c6, Double_t c7, Double_t c8,
 }
 //_____________________________________________________________________________
 
-Bool_t Kaon2PC::AcceptTrack(const AliAODTrack *Trk) {
+Bool_t AliAnalysisTaskKaon2PC::AcceptTrack(const AliAODTrack *Trk) {
     if (!Trk->TestFilterBit(96)) return kFALSE;
     if (Trk->Charge() == 0) return kFALSE;         //excluding neutral particles
     if (Trk->Pt() <= fLpTCut || Trk->Pt() >= fUpTCut) return kFALSE; // pt cut
@@ -697,7 +697,7 @@ Bool_t Kaon2PC::AcceptTrack(const AliAODTrack *Trk) {
 
 //_____________________________________________________________________________
 
-Bool_t Kaon2PC::AcceptPosTrack(const AliAODTrack *Trk) {
+Bool_t AliAnalysisTaskKaon2PC::AcceptPosTrack(const AliAODTrack *Trk) {
     if(Trk->Charge() < 0) return kFALSE;        // excluding negative tracks
 
     return kTRUE;
@@ -705,7 +705,7 @@ Bool_t Kaon2PC::AcceptPosTrack(const AliAODTrack *Trk) {
 
 //_____________________________________________________________________________
 
-Bool_t Kaon2PC::AcceptNegTrack(const AliAODTrack *Trk) {
+Bool_t AliAnalysisTaskKaon2PC::AcceptNegTrack(const AliAODTrack *Trk) {
     if(Trk->Charge() > 0) return kFALSE;        // excluding positive tracks
 
     return kTRUE;
@@ -713,7 +713,7 @@ Bool_t Kaon2PC::AcceptNegTrack(const AliAODTrack *Trk) {
 
 //_____________________________________________________________________________
 
-Double_t Kaon2PC::Beta(const AliAODTrack *track)
+Double_t AliAnalysisTaskKaon2PC::Beta(const AliAODTrack *track)
 {
     Double_t startTime     = fPIDResponse->GetTOFResponse().GetStartTime(((AliVTrack*)track)->P());         //in ps
     Double_t stoptime      = track->GetTOFsignal();
@@ -727,7 +727,7 @@ Double_t Kaon2PC::Beta(const AliAODTrack *track)
 
 //___________________________  v0 selection with no pT cut _________________________
 
-Bool_t Kaon2PC::AcceptV0(const AliAODv0 *v0, Double_t *vertex) {
+Bool_t AliAnalysisTaskKaon2PC::AcceptV0(const AliAODv0 *v0, Double_t *vertex) {
 
     if (v0->GetOnFlyStatus()) return kFALSE;
     Double_t length = v0->DecayLengthV0(vertex);
@@ -772,7 +772,7 @@ Bool_t Kaon2PC::AcceptV0(const AliAODv0 *v0, Double_t *vertex) {
 
 // MC Truth Booleans
 
-Bool_t Kaon2PC::SelectK0TracksMC(AliMCParticle *mcTrack ) {
+Bool_t AliAnalysisTaskKaon2PC::SelectK0TracksMC(AliMCParticle *mcTrack ) {
     Int_t mcPartPdg = mcTrack->PdgCode();
     Bool_t isPhysPrim = mcTrack->IsPhysicalPrimary();
     Bool_t SelectK0 =  mcPartPdg==310&& (isPhysPrim); 
@@ -780,7 +780,7 @@ Bool_t Kaon2PC::SelectK0TracksMC(AliMCParticle *mcTrack ) {
     return kTRUE;
 }
 
-Bool_t Kaon2PC::SelectKPosTracksMC(AliMCParticle *mcTrack ) {
+Bool_t AliAnalysisTaskKaon2PC::SelectKPosTracksMC(AliMCParticle *mcTrack ) {
     Int_t mcPartPdg = mcTrack->PdgCode();
     Bool_t isPhysPrim = mcTrack->IsPhysicalPrimary();
     Bool_t SelectKpos =  mcPartPdg==321&& (isPhysPrim); 
@@ -788,7 +788,7 @@ Bool_t Kaon2PC::SelectKPosTracksMC(AliMCParticle *mcTrack ) {
     return kTRUE;
 }
 
-Bool_t Kaon2PC::SelectKNegTracksMC(AliMCParticle *mcTrack ) {
+Bool_t AliAnalysisTaskKaon2PC::SelectKNegTracksMC(AliMCParticle *mcTrack ) {
     Int_t mcPartPdg = mcTrack->PdgCode();
     Bool_t isPhysPrim = mcTrack->IsPhysicalPrimary();
     Bool_t SelectKneg =  mcPartPdg==-321&& (isPhysPrim); 
@@ -796,7 +796,7 @@ Bool_t Kaon2PC::SelectKNegTracksMC(AliMCParticle *mcTrack ) {
     return kTRUE;
 }
 
-Bool_t Kaon2PC::SelectKchTracksMC(AliMCParticle *mcTrack ) {
+Bool_t AliAnalysisTaskKaon2PC::SelectKchTracksMC(AliMCParticle *mcTrack ) {
     Int_t mcPartPdg = mcTrack->PdgCode();
     Bool_t isPhysPrim = mcTrack->IsPhysicalPrimary();
     Bool_t SelectKch =  mcPartPdg==321&& mcPartPdg==-321&& (isPhysPrim); 
@@ -807,7 +807,7 @@ Bool_t Kaon2PC::SelectKchTracksMC(AliMCParticle *mcTrack ) {
 
 //_____________________________________________________________________________
 
-void Kaon2PC::RunData() {
+void AliAnalysisTaskKaon2PC::RunData() {
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());    
     if(!fAOD) return;                                   
     
@@ -1249,7 +1249,7 @@ pool2->UpdatePool(tracksClone2);
 
 //=================== MC Truth Correlation function ========
 
-void Kaon2PC::RunMC() {
+void AliAnalysisTaskKaon2PC::RunMC() {
 
 Int_t nAcceptedParticles =0;
 AliMCParticle *mcTrack = 0x0;
@@ -1372,7 +1372,7 @@ for (Int_t i = 0; i < nMCTracks; i++){
 
 //_____________________________________________________________________________
 
-void Kaon2PC::UserExec(Option_t *)
+void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
 {
     if (!fAnalysisMC) { RunData(); }
     if (fAnalysisMC) { RunMC(); }
@@ -1386,7 +1386,7 @@ void Kaon2PC::UserExec(Option_t *)
 
 //====================  Filling functions  =========================
 
-void Kaon2PC::Fill2DHist(Double_t DPhi, Double_t DEta, TH2F* hist){
+void AliAnalysisTaskKaon2PC::Fill2DHist(Double_t DPhi, Double_t DEta, TH2F* hist){
     DPhi = fabs(DPhi);
     DEta = fabs(DEta);
     if (DPhi > Pi) DPhi = Pi-(DPhi-Pi);
@@ -1402,7 +1402,7 @@ void Kaon2PC::Fill2DHist(Double_t DPhi, Double_t DEta, TH2F* hist){
     }
 }
 
-void Kaon2PC::FillDPhiHist(Double_t DPhi, TH2F* hist, Double_t fWeight=1){
+void AliAnalysisTaskKaon2PC::FillDPhiHist(Double_t DPhi, TH2F* hist, Double_t fWeight=1){
     DPhi = fabs(DPhi);
     if (DPhi > Pi) DPhi = Pi-(DPhi-Pi);
     hist->Fill(DPhi,fWeight);
@@ -1414,7 +1414,7 @@ void Kaon2PC::FillDPhiHist(Double_t DPhi, TH2F* hist, Double_t fWeight=1){
     }
 }
 
-void Kaon2PC::Fill2DHistMCTruth(Double_t DPhi, Double_t DEta, TH2F* hist){
+void AliAnalysisTaskKaon2PC::Fill2DHistMCTruth(Double_t DPhi, Double_t DEta, TH2F* hist){
     DPhi = fabs(DPhi);
     DEta = fabs(DEta);
     if (DPhi > Pi) DPhi = Pi-(DPhi-Pi);
@@ -1431,7 +1431,7 @@ void Kaon2PC::Fill2DHistMCTruth(Double_t DPhi, Double_t DEta, TH2F* hist){
 }
 
 //_____________________________________________________________________________
-void Kaon2PC::Terminate(Option_t *)
+void AliAnalysisTaskKaon2PC::Terminate(Option_t *)
 {
     if(fPoolMgr) delete fPoolMgr;
 }
