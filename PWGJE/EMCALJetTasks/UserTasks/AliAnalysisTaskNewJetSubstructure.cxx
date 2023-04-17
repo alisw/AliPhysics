@@ -60,7 +60,8 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure()
   fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
   fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
   fHLundIterativeMCDet(0x0), fHCheckResolutionSubjets(0x0),
-  fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0), fDoFlow(0), fQVectorReader(0)
+  fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0), fDoFlow(0), fQVectorReader(0),
+  fRejectTPCPileup(kFALSE)
 
 {
   for (Int_t i = 0; i < 18; i++) {
@@ -88,7 +89,8 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
     fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
     fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
     fHLundIterativeMCDet(0x0), fHCheckResolutionSubjets(0x0),
-    fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0), fDoFlow(0), fQVectorReader(0)
+    fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0), fDoFlow(0), fQVectorReader(0),
+    fRejectTPCPileup(kFALSE)
     
 {
   // Standard constructor.
@@ -239,6 +241,12 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
 Bool_t AliAnalysisTaskNewJetSubstructure::Run() {
   // Run analysis code here, if needed. It will be executed before
   // FillHistograms().
+
+  if (fRejectTPCPileup)   {            //possible bug occurs here, use with caution
+      fAliEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);
+      Bool_t acceptEventCuts = fAliEventCuts.AcceptEvent(InputEvent());
+      if(!acceptEventCuts)     return kFALSE;
+    }
 
   return kTRUE;
 }
