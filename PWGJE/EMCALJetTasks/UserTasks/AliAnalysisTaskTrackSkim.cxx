@@ -4,6 +4,7 @@
 
 #include "AliAnalysisTaskTrackSkim.h"
 
+#include <bitset>
 #include <cmath>
 
 #include <TChain.h>
@@ -49,6 +50,11 @@ namespace PWGJE
 namespace EMCALJetTasks
 {
 
+const std::map<std::string, AliMCAnalysisUtils::generator> AliAnalysisTaskTrackSkim::fgkMCUtilsGeneratorMap = {
+  { "kPythia", AliMCAnalysisUtils::generator::kPythia },
+  { "kHerwig",  AliMCAnalysisUtils::generator::kHerwig }
+};
+
 /**
  * Track skimming task for jet analysis
  */
@@ -61,6 +67,9 @@ AliAnalysisTaskTrackSkim::AliAnalysisTaskTrackSkim()
   fYAMLConfig(),
   fConfigurationInitialized{false},
   fChargeScaling{false},
+  fEncodeAdditionalParticleInformation{false},
+  fMCAnalysisUtilsGenerator{AliMCAnalysisUtils::generator::kPythia},
+  fMCAnalysisUtils{nullptr},
   fNAcceptedFirstTrackCollection{nullptr},
   fTriggerBitINT7{false},
   fCentralityForTree{-1},
@@ -86,6 +95,9 @@ AliAnalysisTaskTrackSkim::AliAnalysisTaskTrackSkim(const char* name)
   fYAMLConfig(),
   fConfigurationInitialized{false},
   fChargeScaling{false},
+  fEncodeAdditionalParticleInformation{false},
+  fMCAnalysisUtilsGenerator{AliMCAnalysisUtils::generator::kPythia},
+  fMCAnalysisUtils{nullptr},
   fNAcceptedFirstTrackCollection{nullptr},
   fTriggerBitINT7{false},
   fCentralityForTree{-1},
@@ -116,6 +128,9 @@ AliAnalysisTaskTrackSkim::AliAnalysisTaskTrackSkim(
  : fYAMLConfig(other.fYAMLConfig),
   fConfigurationInitialized(other.fConfigurationInitialized),
   fChargeScaling{other.fChargeScaling},
+  fEncodeAdditionalParticleInformation{fEncodeAdditionalParticleInformation},
+  fMCAnalysisUtilsGenerator{other.fMCAnalysisUtilsGenerator},
+  fMCAnalysisUtils{nullptr},
   fNAcceptedFirstTrackCollection{nullptr},
   fTriggerBitINT7{other.fTriggerBitINT7},
   fCentralityForTree{other.fCentralityForTree},
@@ -141,6 +156,15 @@ AliAnalysisTaskTrackSkim& AliAnalysisTaskTrackSkim::operator=(
   return *this;
 }
 
+AliMCAnalysisUtils * AliAnalysisTaskTrackSkim::GetMCAnalysisUtils()
+{
+  if (!fMCAnalysisUtils){
+    fMCAnalysisUtils = new AliMCAnalysisUtils();
+    fMCAnalysisUtils->SetMCGenerator(fMCAnalysisUtilsGenerator);
+  }
+  return fMCAnalysisUtils;
+}
+
 /**
  * Retrieve task properties from the YAML configuration.
  */
@@ -156,11 +180,22 @@ void AliAnalysisTaskTrackSkim::RetrieveAndSetTaskPropertiesFromYAMLConfig()
     fMinCent = centRange.first;
     fMaxCent = centRange.second;
   }
-  bool chargeScaling;
-  res  = fYAMLConfig.GetProperty({ baseName, "chargeScaling" }, chargeScaling, false);
+  // Scale pt by the charge to encode the charge
+  res = fYAMLConfig.GetProperty({ baseName, "chargeScaling" }, fChargeScaling, false);
   if (res) {
-    fChargeScaling = chargeScaling;
     AliDebugStream(3) << "Charge scaling enabled.\n";
+  }
+  // Settings for additional encoded particle information
+  res = fYAMLConfig.GetProperty({baseName, "encodeAdditionalParticleInformation"}, fEncodeAdditionalParticleInformation, false);
+  if (res) {
+    AliDebugStream(3) << "Will encode additional particle level information.\n";
+  }
+  // MC utils generator
+  std::string tempStr = "";
+  res = fYAMLConfig.GetProperty({baseName, "MCAnalysisUtilsGenerator"}, tempStr, false);
+  if (res) {
+    AliDebugStream(3) << "MC analysis utils generator set to '" << tempStr << "'.\n";
+    fMCAnalysisUtilsGenerator = fgkMCUtilsGeneratorMap.at(tempStr);
   }
 }
 
@@ -201,6 +236,9 @@ void AliAnalysisTaskTrackSkim::AddParticleLabelsToMap(std::map<std::string, std:
 {
   map["particle_ID"] = {};
   map["label"] = {};
+  if (fEncodeAdditionalParticleInformation) {
+    map["encoded_information"] = {};
+  }
 }
 
 /**
@@ -210,9 +248,11 @@ void AliAnalysisTaskTrackSkim::AddParticleLabelsToMap(std::map<std::string, std:
  */
 void AliAnalysisTaskTrackSkim::SetupTree()
 {
-  const char* nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
-  fTreeSkim = new TTree(nameoutput, nameoutput);
-  // Ensure that the size of the trees in memory is reasoanble
+  std::string outputName = GetOutputSlot(2)->GetContainer()->GetName();
+  // Add version to tree name so we can keep track of the outputs.
+  outputName += "_v" + std::to_string(fOutputVersion);
+  fTreeSkim = new TTree(outputName.c_str(), outputName.c_str());
+  // Ensure that the size of the trees in memory is reasonable
   int nEnabledTrees = 1;
   fTreeSkim->SetMaxVirtualSize(1.e+8/nEnabledTrees);
 
@@ -226,7 +266,7 @@ void AliAnalysisTaskTrackSkim::SetupTree()
     // Nothing
   }
   // PbPb specific
-  // NOTE: We use the centrality selection as a proxy for PbPb because the beam type isn't relisable
+  // NOTE: We use the centrality selection as a proxy for PbPb because the beam type isn't reliable
   //       until after the tree is already setup.
   if ((fMinCent != -999) && (fMaxCent != -999)) {
     fTreeSkim->Branch("centrality", &fCentralityForTree);
@@ -239,11 +279,17 @@ void AliAnalysisTaskTrackSkim::SetupTree()
   // Always want the first set of kinematics variables.
   AddParticleKinematicsToMap(fFirstTrackCollectionKinematics);
   if (fIsPythia) {
-    // Add further informaton for pythia.
+    // Add further information for pythia.
     AddParticleLabelsToMap(fFirstTrackCollectionLabels);
     // NOTE: At detector level, the particle ID is apparently returned as 0.
     //       So we skip storing it here by removing it.
     fFirstTrackCollectionLabels.erase("particle_ID");
+    // NOTE: We also skip the encoded information since we don't have a use for it
+    //       for data/det level as of April 2023.
+    // NOTE: Only remove if it's already there...
+    if (fEncodeAdditionalParticleInformation) {
+      fFirstTrackCollectionLabels.erase("encoded_information");
+    }
     AddParticleKinematicsToMap(fSecondTrackCollectionKinematics);
     AddParticleLabelsToMap(fSecondTrackCollectionLabels);
   }
@@ -367,6 +413,35 @@ void AliAnalysisTaskTrackSkim::ClearTree()
   }
 }
 
+std::string AliAnalysisTaskTrackSkim::GetMCHeaderName()
+{
+  AliGenEventHeader * eventHeader = MCEvent()->GenEventHeader();
+  return eventHeader->ClassName();
+}
+
+/**
+  * NOTE: We encode only for particle level because this won't work for detector level
+  */
+void AliAnalysisTaskTrackSkim::EncodeAdditionalParticleLevelInformation(AliVParticle * particle)
+{
+  std::bitset<32> information;
+
+  // Check photon types
+  AliMCAnalysisUtils * mcAnalysisUtils = GetMCAnalysisUtils();
+  TString headerName = GetMCHeaderName();
+  // Using 1 for cluster E as convention since I don't think it's relevant for particle level.
+  Int_t tag = GetMCAnalysisUtils()->CheckOrigin(particle->GetLabel(), MCEvent(), headerName, 1.);
+  if(GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCPrompt)) {
+    information.set(EncodedInformation_t::kPhotonPrompt);
+  }
+  if (GetMCAnalysisUtils()->CheckTagBit(tag, AliMCAnalysisUtils::kMCFragmentation)) {
+    information.set(EncodedInformation_t::kPhotonFragmentation);
+  }
+
+  // Finally, store the encoded information
+  fSecondTrackCollectionLabels["encoded_information"].push_back(static_cast<int>(information.to_ulong()));
+}
+
 Bool_t AliAnalysisTaskTrackSkim::FillHistograms()
 {
   // Reset
@@ -390,13 +465,13 @@ Bool_t AliAnalysisTaskTrackSkim::FillHistograms()
     AliErrorStream() << GetName() << ": Unable to retrieve particles in slot 0!\n";
     return false;
   }
-  
+
   for (auto particle : particles->accepted()) {
     if(fChargeScaling && particle->Charge() < 0) {
         fFirstTrackCollectionKinematics["pt"].push_back(particle->Pt()*-1);
     }
-    else { 
-        fFirstTrackCollectionKinematics["pt"].push_back(particle->Pt()); 
+    else {
+        fFirstTrackCollectionKinematics["pt"].push_back(particle->Pt());
     }
     fFirstTrackCollectionKinematics["eta"].push_back(particle->Eta());
     fFirstTrackCollectionKinematics["phi"].push_back(particle->Phi());
@@ -429,6 +504,8 @@ Bool_t AliAnalysisTaskTrackSkim::FillHistograms()
       fSecondTrackCollectionLabels["particle_ID"].push_back(particle->PdgCode());
       // Label
       fSecondTrackCollectionLabels["label"].push_back(particle->GetLabel());
+      // Encode additional particle level information
+      EncodeAdditionalParticleLevelInformation(particle);
     }
   }
 
@@ -504,12 +581,10 @@ std::string AliAnalysisTaskTrackSkim::toString() const
   else {
     tempSS << "disabled.\n";
   }
-  tempSS << "\tCharge scaling: ";
-  if (fChargeScaling) {
-    tempSS << "enabled.\n";
-  }
-  else {
-    tempSS << "disabled.\n";
+  tempSS << "\tCharge scaling: " << fChargeScaling;
+  tempSS << "\tEncode additional particle information: " << fEncodeAdditionalParticleInformation;
+  if (fEncodeAdditionalParticleInformation && fMCAnalysisUtils) {
+    tempSS << "\t\tMC analysis utils generator: " << fMCAnalysisUtils->GetMCGeneratorString() << "\n";
   }
   // Particle variables:
   tempSS << "Particle variables:\n";
@@ -589,6 +664,9 @@ void swap(PWGJE::EMCALJetTasks::AliAnalysisTaskTrackSkim& first,
   swap(first.fYAMLConfig, second.fYAMLConfig);
   swap(first.fConfigurationInitialized, second.fConfigurationInitialized);
   swap(first.fChargeScaling, second.fChargeScaling);
+  swap(first.fEncodeAdditionalParticleInformation, second.fEncodeAdditionalParticleInformation);
+  swap(first.fMCAnalysisUtilsGenerator, second.fMCAnalysisUtilsGenerator);
+  swap(first.fMCAnalysisUtils, second.fMCAnalysisUtils);
   swap(first.fNAcceptedFirstTrackCollection, second.fNAcceptedFirstTrackCollection);
   swap(first.fTriggerBitINT7, second.fTriggerBitINT7),
   swap(first.fCentralityForTree, second.fCentralityForTree),
