@@ -151,7 +151,7 @@ fMinEventsToMix(10),
 fNzVtxBins(10),
 fNCentBins(15),
 fKpKnCorr(kTRUE),
-fK0KchCorr(kFALSE),
+fK0KchCorr(kTRUE),
 /*
 fNOfSamples(1.0),
 fSampleIndex(0.0),
@@ -274,7 +274,7 @@ fMinEventsToMix(10),
 fNzVtxBins(10),
 fNCentBins(15),
 fKpKnCorr(kTRUE),
-fK0KchCorr(kFALSE),
+fK0KchCorr(kTRUE),
 /*
 fNOfSamples(1.0),
 fSampleIndex(0.0),
@@ -976,6 +976,7 @@ Int_t nSelectedKneg = fSelectedKneg->GetEntries();
 cout << " nSelectedKneg is " << nSelectedKneg << endl;
 
 //======== Neutral Kaon Selection ==========
+
 fSelectedK0s = new TObjArray;
 fSelectedK0s->SetOwner(kTRUE);
 
@@ -1139,18 +1140,18 @@ fHistMult->Fill(iTracks);
 fHistCent->Fill(CentV0M); 
 
 //================== mixing ============================ (You can create a seperate function FillCorrelationsMixed() later)
+AliEventPool *pool = fPoolMgr->GetEventPool(CentV0M, PVz);
+if(pool) {cout << "Good news....!!!!!!! Pool found.. " << endl; }
+if(!pool) { AliError(Form("No pool found for centrality = %f, zVtx = %f", CentV0M,PVz)); return; }
+
 if (fK0KchCorr){
 
-AliEventPool *pool1 = fPoolMgr->GetEventPool(CentV0M, PVz);
-if(pool1) {cout << "Good news....!!!!!!! Pool found.. " << endl; }
-if(!pool1) { AliError(Form("No pool found for centrality = %f, zVtx = %f", CentV0M,PVz)); return; }
+if(pool->IsReady() || pool->NTracksInPool() > fPoolMinNTracks ||  pool->GetCurrentNEvents() >= fMinEventsToMix) {
 
-if(pool1->IsReady() || pool1->NTracksInPool() > fPoolMinNTracks ||  pool1->GetCurrentNEvents() >= fMinEventsToMix) {
-
-Int_t nMix = pool1->GetCurrentNEvents();
+Int_t nMix = pool->GetCurrentNEvents();
 
     for (Int_t jMix=0; jMix< nMix; jMix++){
-        TObjArray* bgTracks = pool1->GetEvent(jMix);  //bgTracks are from the mixed events
+        TObjArray* bgTracks = pool->GetEvent(jMix);  //bgTracks are from the mixed events
 
         for(Int_t iTrig(0); iTrig < fSelectedK0s->GetEntries(); iTrig++){
             AliVParticle* K0Trig = dynamic_cast<AliVParticle*>(fSelectedK0s->At(iTrig));
@@ -1185,37 +1186,32 @@ Int_t nMix = pool1->GetCurrentNEvents();
 
 }//end of pool
 
-    TObjArray* tracksClone = (TObjArray*) fSelectedKCh->Clone();
-    tracksClone->SetOwner(kTRUE);
-    pool1->UpdatePool(tracksClone);   
-
 }
 
 //================== mixing ============================ (for k+k- CF)
 
 if (fKpKnCorr){
 
-AliEventPool *pool2 = fPoolMgr->GetEventPool(CentV0M, PVz);
-if(pool2) {cout << "Good news....!!!!!!! Pool found.. " << endl; }
-if(!pool2) { AliError(Form("No pool found for centrality = %f, zVtx = %f", CentV0M,PVz)); return; }
+if(pool->IsReady() || pool->NTracksInPool() > fPoolMinNTracks ||  pool->GetCurrentNEvents() >= fMinEventsToMix) {
 
-if(pool2->IsReady() || pool2->NTracksInPool() > fPoolMinNTracks ||  pool2->GetCurrentNEvents() >= fMinEventsToMix) {
-
-Int_t nMix = pool2->GetCurrentNEvents();
+Int_t nMix = pool->GetCurrentNEvents();
 
     for (Int_t jMix=0; jMix< nMix; jMix++){
-        TObjArray* bgTracks2 = pool2->GetEvent(jMix);  //bgTracks are from the mixed events
+        TObjArray* bgTracks2 = pool->GetEvent(jMix);  //bgTracks are from the mixed events
 
-        for(Int_t iTrig(0); iTrig < fSelectedKpos->GetEntries(); iTrig++){
-            AliVParticle* KposTrig = dynamic_cast<AliVParticle*>(fSelectedKpos->At(iTrig));
-            if(!KposTrig) continue;
+        for(Int_t iTrig(0); iTrig < fSelectedKCh->GetEntries(); iTrig++){
+            AliVParticle* KaonTrig = dynamic_cast<AliVParticle*>(fSelectedKCh->At(iTrig));
+            if(!KaonTrig) continue;
 
             for (Int_t iAss(0); iAss < bgTracks2->GetEntries(); iAss++){
-            AliVParticle* KnegAssoc = dynamic_cast<AliVParticle*> (bgTracks2->At(iAss));
-            if(!KnegAssoc) continue;
 
-            Double_t DPhiMix = fabs(KposTrig->Phi() - KnegAssoc->Phi());
-            Double_t DEtaMix = fabs(KposTrig->Eta() - KnegAssoc->Eta());
+            AliVParticle* KaonAssoc = dynamic_cast<AliVParticle*> (bgTracks2->At(iAss));
+
+            if(!KaonAssoc) continue;
+            if( KaonAssoc->Charge() != KaonTrig->Charge() ) continue;
+
+            Double_t DPhiMix = fabs(KaonTrig->Phi() - KaonAssoc->Phi());
+            Double_t DEtaMix = fabs(KaonTrig->Eta() - KaonAssoc->Eta());
 
             if (DPhiMix > Pi) DPhiMix = Pi-(DPhiMix-Pi);
 
@@ -1239,11 +1235,12 @@ Int_t nMix = pool2->GetCurrentNEvents();
 
 }//end of pool
 
-TObjArray* tracksClone2 = (TObjArray*) fSelectedKneg->Clone();
-tracksClone2->SetOwner(kTRUE);
-pool2->UpdatePool(tracksClone2); 
-
 }
+
+TObjArray* tracksClone = (TObjArray*) fSelectedKCh->Clone();
+tracksClone->SetOwner(kTRUE);
+pool->UpdatePool(tracksClone);   
+
 
 } //end of RunData function
 
