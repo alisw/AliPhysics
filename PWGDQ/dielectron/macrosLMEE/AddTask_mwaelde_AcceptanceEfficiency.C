@@ -1,4 +1,4 @@
-AliAnalysisTask* AddTask_mwaelde_AcceptanceEfficiency(TString cFileName ="Config_mwaelde_AccEff.C")
+AliAnalysisTask* AddTask_mwaelde_AcceptanceEfficiency(TString name = "name", TString cFileName ="Config_mwaelde_AccEff.C")
   {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -33,7 +33,7 @@ AliAnalysisTask* AddTask_mwaelde_AcceptanceEfficiency(TString cFileName ="Config
     // by default, a file is open for writing. here, we get the filename
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":MyTask";      // create a subfolder in the file
-    AliAnalysisTaskOmegaDielectron_AccEff* task = new AliAnalysisTaskOmegaDielectron_AccEff(Form("cutVari"));
+    AliAnalysisTaskOmegaDielectron_AccEff* task = new AliAnalysisTaskOmegaDielectron_AccEff(name.Data());
     if(!task) return 0x0;
     // task->SelectCollisionCandidates(AliVEvent::kINT7);// kAnyINT
 
