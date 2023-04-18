@@ -857,18 +857,6 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       fTriggerMask = triggerMask[triggerMaskFromJSON];
     }
 
-    Double_t ptmintrack2 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "ptMinTrack2Prong");
-    printf("Min pt track (2 prong)= %g\n", ptmintrack2);
-    if (ptmintrack2 > 0)
-      fTrackCuts2pr->SetPtRange(ptmintrack2, 1.e10);
-    Double_t ptmintrack3 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "ptMinTrack3Prong");
-    printf("Min pt track (3 prong)= %g\n", ptmintrack3);
-    if (ptmintrack3 > 0)
-      fTrackCuts3pr->SetPtRange(ptmintrack3, 1.e10);
-    Double_t ptmintrackb = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "ptMinTrackBach");
-    printf("Min pt track (bachelor)= %g\n", ptmintrackb);
-    if (ptmintrackb > 0)
-      fTrackCutsBach->SetPtRange(ptmintrackb, 1.e10);
     Int_t do3Prongs = GetJsonInteger(filename.Data(), "hf-track-index-skim-creator", "do3Prong");
     printf("do3Prong     = %d\n", do3Prongs);
     if (do3Prongs > 0)
@@ -897,6 +885,20 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     printf("selectionFlagLc = %d\n", selectLcpKpi);
     if (selectLcpKpi >= 0)
       fSelectLcpKpi = selectLcpKpi;
+
+    printf("------- TRACK SELECTIONS -------\n");
+    Double_t ptmintrack2 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "ptMinTrack2Prong");
+    printf("Min pt track (2 prong)= %g\n", ptmintrack2);
+    if (ptmintrack2 > 0)
+      fTrackCuts2pr->SetPtRange(ptmintrack2, 1.e10);
+    Double_t ptmintrack3 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "ptMinTrack3Prong");
+    printf("Min pt track (3 prong)= %g\n", ptmintrack3);
+    if (ptmintrack3 > 0)
+      fTrackCuts3pr->SetPtRange(ptmintrack3, 1.e10);
+    Double_t ptmintrackb = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "ptMinTrackBach");
+    printf("Min pt track (bachelor)= %g\n", ptmintrackb);
+    if (ptmintrackb > 0)
+      fTrackCutsBach->SetPtRange(ptmintrackb, 1.e10);
     Int_t minncluTPC = GetJsonInteger(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "tpcNClsFoundMin");
     if (minncluTPC > 0)
       printf("minncluTPC   = %d\n", minncluTPC);
@@ -918,13 +920,14 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
     for (Int_t ib = 0; ib < nptbinlimsSingleTrack - 1; ib++) {
       for (Int_t jc = 0; jc < nc2Prong; jc++) {
         fSingleTrackCuts2Prong[ib][jc] = cutsSingleTrack2Prong[ib][jc];
-        AliInfo(Form("2prong %d, %d, %g", ib, jc, cutsSingleTrack2Prong[ib][jc]));
       }
+      AliInfo(Form("2prong track cuts: %g < pt < %g;  %g < DCAxy to primary < %g", fPtBinLimsSingleTrack[ib], fPtBinLimsSingleTrack[ib + 1], fSingleTrackCuts2Prong[ib][0], fSingleTrackCuts2Prong[ib][1]));
       for (Int_t jc = 0; jc < nc3Prong; jc++) {
         fSingleTrackCuts3Prong[ib][jc] = cutsSingleTrack3Prong[ib][jc];
-        AliInfo(Form("3prong %d %d, %d, %g", nc2Prong, ib, jc, cutsSingleTrack2Prong[ib][jc]));
       }
+      AliInfo(Form("3prong track cuts: %g < pt < %g;  %g < DCAxy to primary < %g", fPtBinLimsSingleTrack[ib], fPtBinLimsSingleTrack[ib + 1], fSingleTrackCuts3Prong[ib][0], fSingleTrackCuts3Prong[ib][1]));
     }
+
     Double_t etamax2 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-tag-sel-tracks", "etaMaxTrack2Prong");
     printf("Max eta  (2 prong) = %g\n", etamax2);
     if (etamax2 > 0)
@@ -1056,7 +1059,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       for (Int_t jc = 0; jc < ncDzeroSkims; jc++) {
         fDzeroSkimCuts[ib][jc] = cutsDzeroSkims[ib][jc];
       }
-      AliInfo(Form("Dzero cuts: %g < pt < %g  ;  %g < mass < %g  ;  cospoint > %g  ; d0xd0  < %g\n", fPtBinLimsDzeroSkims[ib], fPtBinLimsDzeroSkims[ib + 1], fDzeroSkimCuts[ib][0], fDzeroSkimCuts[ib][1], fDzeroSkimCuts[ib][2], fDzeroSkimCuts[ib][3]));
+      AliInfo(Form("Dzero cuts: %g < pt < %g; %g < mass < %g; cospoint > %g; d0xd0  < %g", fPtBinLimsDzeroSkims[ib], fPtBinLimsDzeroSkims[ib + 1], fDzeroSkimCuts[ib][0], fDzeroSkimCuts[ib][1], fDzeroSkimCuts[ib][2], fDzeroSkimCuts[ib][3]));
     }
 
     for (Int_t ib = 0; ib < nptbinlimsJpsiSkims; ib++) {
@@ -1066,7 +1069,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       for (Int_t jc = 0; jc < ncJpsiSkims; jc++) {
         fJpsiSkimCuts[ib][jc] = cutsJpsiSkims[ib][jc];
       }
-      AliInfo(Form("J/psi cuts: %g < pt < %g  ;  %g < mass < %g  ;  cospoint > %g  ; d0xd0  < %g\n", fPtBinLimsJpsiSkims[ib], fPtBinLimsJpsiSkims[ib + 1], fJpsiSkimCuts[ib][0], fJpsiSkimCuts[ib][1], fJpsiSkimCuts[ib][2], fJpsiSkimCuts[ib][3]));
+      AliInfo(Form("J/psi cuts: %g < pt < %g; %g < mass < %g; cospoint > %g; d0xd0  < %g", fPtBinLimsJpsiSkims[ib], fPtBinLimsJpsiSkims[ib + 1], fJpsiSkimCuts[ib][0], fJpsiSkimCuts[ib][1], fJpsiSkimCuts[ib][2], fJpsiSkimCuts[ib][3]));
     }
 
     for (Int_t ib = 0; ib < nptbinlimsDplusSkims; ib++) {
@@ -1076,7 +1079,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       for (Int_t jc = 0; jc < ncDplusSkims; jc++) {
         fDplusSkimCuts[ib][jc] = cutsDplusSkims[ib][jc];
       }
-      AliInfo(Form("Dplus cuts: %g < pt < %g  ; %g < mass < %g  ;  cospoint > %g  ; declen > %g\n", fPtBinLimsDplusSkims[ib], fPtBinLimsDplusSkims[ib + 1], fDplusSkimCuts[ib][0], fDplusSkimCuts[ib][1], fDplusSkimCuts[ib][2], fDplusSkimCuts[ib][3]));
+      AliInfo(Form("Dplus cuts: %g < pt < %g; %g < mass < %g; cospoint > %g; declen > %g", fPtBinLimsDplusSkims[ib], fPtBinLimsDplusSkims[ib + 1], fDplusSkimCuts[ib][0], fDplusSkimCuts[ib][1], fDplusSkimCuts[ib][2], fDplusSkimCuts[ib][3]));
     }
 
     for (Int_t ib = 0; ib < nptbinlimsDsSkims; ib++) {
@@ -1086,7 +1089,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       for (Int_t jc = 0; jc < ncDsSkims; jc++) {
         fDsSkimCuts[ib][jc] = cutsDsSkims[ib][jc];
       }
-      AliInfo(Form("Ds cuts: %g < pt < %g  ;  %g < mass < %g  ;  cospoint > %g  ; declen > %g\n", fPtBinLimsDsSkims[ib], fPtBinLimsDsSkims[ib + 1], fDsSkimCuts[ib][0], fDsSkimCuts[ib][1], fDsSkimCuts[ib][2], fDsSkimCuts[ib][3]));
+      AliInfo(Form("Ds cuts: %g < pt < %g; %g < mass < %g; cospoint > %g; declen > %g", fPtBinLimsDsSkims[ib], fPtBinLimsDsSkims[ib + 1], fDsSkimCuts[ib][0], fDsSkimCuts[ib][1], fDsSkimCuts[ib][2], fDsSkimCuts[ib][3]));
     }
 
     for (Int_t ib = 0; ib < nptbinlimsLcSkims; ib++) {
@@ -1096,7 +1099,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       for (Int_t jc = 0; jc < ncLcSkims; jc++) {
         fLcSkimCuts[ib][jc] = cutsLcSkims[ib][jc];
       }
-      AliInfo(Form("Lc cuts: %g < pt < %g  ;  %g < mass < %g  ;  cospoint > %g  ; declen > %g\n", fPtBinLimsLcSkims[ib], fPtBinLimsLcSkims[ib + 1], fLcSkimCuts[ib][0], fLcSkimCuts[ib][1], fLcSkimCuts[ib][2], fLcSkimCuts[ib][3]));
+      AliInfo(Form("Lc cuts: %g < pt < %g; %g < mass < %g; cospoint > %g; declen > %g", fPtBinLimsLcSkims[ib], fPtBinLimsLcSkims[ib + 1], fLcSkimCuts[ib][0], fLcSkimCuts[ib][1], fLcSkimCuts[ib][2], fLcSkimCuts[ib][3]));
     }
 
     for (Int_t ib = 0; ib < nptbinlimsXicSkims; ib++) {
@@ -1106,7 +1109,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       for (Int_t jc = 0; jc < ncXicSkims; jc++) {
         fXicSkimCuts[ib][jc] = cutsXicSkims[ib][jc];
       }
-      AliInfo(Form("Xic cuts: %g < pt < %g  ;  %g < mass < %g  ;  cospoint > %g  ; declen > %g\n", fPtBinLimsXicSkims[ib], fPtBinLimsXicSkims[ib + 1], fXicSkimCuts[ib][0], fXicSkimCuts[ib][1], fXicSkimCuts[ib][2], fXicSkimCuts[ib][3]));
+      AliInfo(Form("Xic cuts: %g < pt < %g; %g < mass < %g; cospoint > %g; declen > %g", fPtBinLimsXicSkims[ib], fPtBinLimsXicSkims[ib + 1], fXicSkimCuts[ib][0], fXicSkimCuts[ib][1], fXicSkimCuts[ib][2], fXicSkimCuts[ib][3]));
     }
 
     Double_t cutcpaV0 = GetJsonFloat(filename.Data(), "hf-track-index-skim-creator-cascades", "cpaV0Min");
@@ -1160,7 +1163,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       for (Int_t jc = 0; jc < ncDzero; jc++) {
         fDzeroCuts[ib][jc] = cutsDzero[ib][jc];
       }
-      AliInfo(Form("Dzero cuts: %g < pt < %g  ;  %g < mass < %g  ;  cospoint > %g  ; d0xd0  < %g\n", fPtBinLimsDzero[ib], fPtBinLimsDzero[ib + 1], fDzeroCuts[ib][0], fDzeroCuts[ib][1], fDzeroCuts[ib][2], fDzeroCuts[ib][3]));
+      AliInfo(Form("Dzero cuts: %g < pt < %g; %g < mass < %g; cospoint > %g; d0xd0  < %g", fPtBinLimsDzero[ib], fPtBinLimsDzero[ib + 1], fDzeroCuts[ib][0], fDzeroCuts[ib][1], fDzeroCuts[ib][2], fDzeroCuts[ib][3]));
     }
 
     for (Int_t ib = 0; ib < nptbinlimsJpsi; ib++) {
@@ -1170,7 +1173,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       for (Int_t jc = 0; jc < ncJpsi; jc++) {
         fJpsiCuts[ib][jc] = cutsJpsi[ib][jc];
       }
-      AliInfo(Form("J/psi cuts: %g < pt < %g  ;  %g < mass < %g  ;  cospoint > %g  ; d0xd0  < %g\n", fPtBinLimsJpsi[ib], fPtBinLimsJpsi[ib + 1], fJpsiCuts[ib][0], fJpsiCuts[ib][1], fJpsiCuts[ib][2], fJpsiCuts[ib][3]));
+      AliInfo(Form("J/psi cuts: %g < pt < %g; %g < mass < %g; cospoint > %g; d0xd0  < %g", fPtBinLimsJpsi[ib], fPtBinLimsJpsi[ib + 1], fJpsiCuts[ib][0], fJpsiCuts[ib][1], fJpsiCuts[ib][2], fJpsiCuts[ib][3]));
     }
 
     for (Int_t ib = 0; ib < nptbinlimsDplus; ib++) {
@@ -1180,7 +1183,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       for (Int_t jc = 0; jc < ncDplus; jc++) {
         fDplusCuts[ib][jc] = cutsDplus[ib][jc];
       }
-      AliInfo(Form("Dplus cuts: %g < pt < %g  ; %g < mass < %g  ;  cospoint > %g  ; declen > %g\n", fPtBinLimsDplus[ib], fPtBinLimsDplus[ib + 1], fDplusCuts[ib][0], fDplusCuts[ib][1], fDplusCuts[ib][2], fDplusCuts[ib][3]));
+      AliInfo(Form("Dplus cuts: %g < pt < %g; deltamass < %g; pt Pi > %g; pt K > %g; declen > %g; normdeclenxy > %g; cospoint > %g; cospointxy > %g; maxnormdeltaIP < %g; ", fPtBinLimsDplus[ib], fPtBinLimsDplus[ib + 1], fDplusCuts[ib][0], fDplusCuts[ib][1], fDplusCuts[ib][2], fDplusCuts[ib][3], fDplusCuts[ib][4], fDplusCuts[ib][5], fDplusCuts[ib][6], fDplusCuts[ib][7]));
     }
 
     for (Int_t ib = 0; ib < nptbinlimsDs; ib++) {
@@ -1190,7 +1193,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       for (Int_t jc = 0; jc < ncDs; jc++) {
         fDsCuts[ib][jc] = cutsDs[ib][jc];
       }
-      AliInfo(Form("Ds cuts: %g < pt < %g  ; deltamass < %g  ;  pt Pi > %g  ;  pt K > %g  ; declen > %g  ;  normdeclenxy > %g  ;  cospoint > %g  ;  cospointxy > %g  ;  impparxy < %g  ;  deltamassKK < %g  ;  cos3PiKPhi > %g\n", fPtBinLimsDs[ib], fPtBinLimsDs[ib + 1], fDsCuts[ib][0], fDsCuts[ib][1], fDsCuts[ib][2], fDsCuts[ib][3], fDsCuts[ib][4], fDsCuts[ib][5], fDsCuts[ib][6], fDsCuts[ib][7], fDsCuts[ib][8], fDsCuts[ib][9]));
+      AliInfo(Form("Ds cuts: %g < pt < %g; deltamass < %g; pt Pi > %g; pt K > %g; declen > %g; normdeclenxy > %g; cospoint > %g; cospointxy > %g; impparxy < %g; deltamassKK < %g; cos3PiKPhi > %g", fPtBinLimsDs[ib], fPtBinLimsDs[ib + 1], fDsCuts[ib][0], fDsCuts[ib][1], fDsCuts[ib][2], fDsCuts[ib][3], fDsCuts[ib][4], fDsCuts[ib][5], fDsCuts[ib][6], fDsCuts[ib][7], fDsCuts[ib][8], fDsCuts[ib][9]));
     }
 
     for (Int_t ib = 0; ib < nptbinlimsLc; ib++) {
@@ -1200,7 +1203,7 @@ void AliAnalysisTaskHFSimpleVertices::InitFromJson(TString filename)
       for (Int_t jc = 0; jc < ncLc; jc++) {
         fLcCuts[ib][jc] = cutsLc[ib][jc];
       }
-      AliInfo(Form("Lc candidate selection cuts: %g < pt < %g  ;  delta mass < %g  ;  pt p > %g  ;  pt K > %g  ;  pt Pi > %g  ;  Chi2PCA < %g  ;  declen > %g  ;  cospoint > %g\n", fPtBinLimsLc[ib], fPtBinLimsLc[ib + 1], fLcCuts[ib][0], fLcCuts[ib][1], fLcCuts[ib][2], fLcCuts[ib][3], fLcCuts[ib][4], fLcCuts[ib][5], fLcCuts[ib][6]));
+      AliInfo(Form("Lc candidate selection cuts: %g < pt < %g; delta mass < %g; pt p > %g; pt K > %g; pt Pi > %g; Chi2PCA < %g; declen > %g; cospoint > %g", fPtBinLimsLc[ib], fPtBinLimsLc[ib + 1], fLcCuts[ib][0], fLcCuts[ib][1], fLcCuts[ib][2], fLcCuts[ib][3], fLcCuts[ib][4], fLcCuts[ib][5], fLcCuts[ib][6]));
     }
 
     printf("---------------------------------------------\n");
