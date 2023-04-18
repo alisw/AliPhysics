@@ -943,16 +943,16 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsPP(
     fInputVectors.push_back(PseudoTracks);                                                                                                                                     
   }
 
-  fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
-  fastjet::JetDefinition fJetDef(jetalgo, 1.,
-                                 static_cast<fastjet::RecombinationScheme>(0),
-                                 fastjet::BestFJ30);
+  // fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+  // fastjet::JetDefinition fJetDef(jetalgo, 1.,
+  //                                static_cast<fastjet::RecombinationScheme>(0),
+  //                                fastjet::BestFJ30);
 
   fastjet::GhostedAreaSpec ghost_spec(1, 1, 0.05);
-  // fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
-  // fastjet::JetDefinition fJetDef(jetalgo, 1., fPowerAlgo,
-  //                              static_cast<fastjet::RecombinationScheme>(0),
-  //                             fastjet::BestFJ30);
+  fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
+  fastjet::JetDefinition fJetDef(jetalgo, 1., fPowerAlgo,
+                               static_cast<fastjet::RecombinationScheme>(0),
+                              fastjet::BestFJ30);
   fastjet::AreaDefinition fAreaDef(fastjet::passive_area, ghost_spec);
 
   try {
@@ -1068,11 +1068,15 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
 
 
   
-  fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+  // fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+  // fastjet::JetDefinition fJetDef(jetalgo, 1.,
+  //                                static_cast<fastjet::RecombinationScheme>(0),
+  //                                fastjet::BestFJ30);
 
-  fastjet::JetDefinition fJetDef(jetalgo, 1.,
-                                 static_cast<fastjet::RecombinationScheme>(0),
-                                 fastjet::BestFJ30);
+  fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
+  fastjet::JetDefinition fJetDef(jetalgo, 1., fPowerAlgo,
+                               static_cast<fastjet::RecombinationScheme>(0),
+                              fastjet::BestFJ30);
 
 
   try {
@@ -1177,11 +1181,15 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAveragePP(
 
   }
   
-  fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+  // fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
 
-  fastjet::JetDefinition fJetDef(jetalgo, 1.,
-                                 static_cast<fastjet::RecombinationScheme>(0),
-                                 fastjet::BestFJ30);
+  // fastjet::JetDefinition fJetDef(jetalgo, 1.,
+  //                                static_cast<fastjet::RecombinationScheme>(0),
+  //                                fastjet::BestFJ30);
+  fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
+  fastjet::JetDefinition fJetDef(jetalgo, 1., fPowerAlgo,
+                               static_cast<fastjet::RecombinationScheme>(0),
+                              fastjet::BestFJ30);
 
 
   try {
