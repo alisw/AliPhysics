@@ -1176,14 +1176,14 @@ void AliTriggerAnalysis::ApplyTOFefficiency(TBits& fired) {
 }
 
 //-------------------------------------------------------------------------------------------------
-Bool_t AliTriggerAnalysis::IsOMUfired(const TBits& maxipads) {
+Bool_t AliTriggerAnalysis::IsOMUfired(TBits maxipads) {
   UInt_t nFired = maxipads.CountBits();
   if (nFired < 2)
     return false;
   if (nFired > 6)
     return false;
   Bool_t fLTMarray[36];
-  for (bool ltm : fLTMarray)
+  for (bool& ltm : fLTMarray)
     ltm = false;
   for (Int_t ltm = 0; ltm < 72; ltm++) {
     for (Int_t ch = 0; ch < 23; ch++) {
