@@ -78,8 +78,8 @@ private:
   AliMCEvent*         fMCEvent;         //!<! MC event
   AliDielectronEventCuts  *fEventCuts;       //!<! Event cuts
   AliDielectronEventCuts  *fEventCuts_VertexZ;       //!<! Event cuts
-  std::vector<AliAnalysisFilter*> fFilter_TrackCuts;  //!<! Analysis Filter
-  std::vector<AliAnalysisFilter*> fFilter_PID;    //!<! Analysis Filter
+  std::vector<AliAnalysisFilter*> fFilter_TrackCuts;
+  std::vector<AliAnalysisFilter*> fFilter_PID;
   AliPIDResponse*     fPIDResponse;           //!<! Analysis Filter
 
   // Acceptance cuts for tracks
