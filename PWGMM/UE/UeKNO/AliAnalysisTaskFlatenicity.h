@@ -2,8 +2,6 @@
 /* See cxx source for full Copyright notice */
 /* Add a description of your MPI analysis */
 
-
-
 #ifndef AliAnalysisTaskFlatenicity_H
 #define AliAnalysisTaskFlatenicity_H
 
@@ -44,12 +42,10 @@ public:
   void ExtractMultiplicitiesMC();
   void MakeMCanalysis();
   void MakeDataanalysis();
-  void GetMCchargedTrueDists(  Int_t multGen,
-                                    const std::vector<Float_t> &ptGen,
-                                    const std::vector<Int_t> &idGen);
-  void GetMCchargedDetDists(  Int_t multRec,
-                                    const std::vector<Float_t> &ptRec,
-                                    const std::vector<Int_t> &idRec);
+  void GetMCchargedTrueDists(Int_t multGen, const std::vector<Float_t> &ptGen,
+                             const std::vector<Int_t> &idGen);
+  void GetMCchargedDetDists(Int_t multRec, const std::vector<Float_t> &ptRec,
+                            const std::vector<Int_t> &idRec);
 
   void SetPtMin(Double_t val) {
     fPtMin = val;
@@ -67,11 +63,11 @@ public:
   }
 
   bool HasRecVertex();
-  
+
   Int_t FillMCarray(std::vector<Float_t> &pt, std::vector<Int_t> &id);
 
-  Int_t FillArray(std::vector<Float_t> &pt, std::vector<Int_t> &id, 
-                    std::vector<Int_t> &isprim);
+  Int_t FillArray(std::vector<Float_t> &pt, std::vector<Int_t> &id,
+                  std::vector<Int_t> &isprim);
 
 protected:
 private:
@@ -108,7 +104,7 @@ private:
   Double_t fPtMin;
   Double_t ftrackmult08;
   Double_t fv0mpercentile;
-  Double_t fFlatPercentileMC;
+  Double_t fFlatAltMC;
   Float_t fFlat;
   Float_t fFlatMC;
   AliMultSelection *fMultSelection;
@@ -133,7 +129,7 @@ private:
   TH1D *hEtamc;
   TH1D *hEtamcAlice;
   TH1D *hCounter;
-//  TH1D *hCountEvent;
+  //  TH1D *hCountEvent;
   TH1D *hCountProduV0m;
   TH1D *hCountAuthV0m;
   TH1D *hCountProdu_FlatMC;
@@ -146,12 +142,12 @@ private:
   TH2D *hMultaVsV0M;
   TH2D *hMultcVsV0M;
   TH1D *hV0MBadruns;
-  TH1D *hChgProdu_pt;
-  TH1D *hChgAuth_pt;
-  TH2D *hChgProdu_V0_pt;
-  TH2D *hChgAuth_V0_pt;
-  TH2D *hChgProdu_Flat_pt;
-  TH2D *hChgAuth_Flat_pt;
+  TH1D *hChgProdu_All_pt;
+  TH1D *hChgAuth_All_pt;
+  TH2D *hChgProdu_pt_V0;
+  TH2D *hChgAuth_pt_V0;
+  TH2D *hChgProdu_pt_Flat;
+  TH2D *hChgAuth_pt_Flat;
   TH2D *hFlatVsPtV0M[9];
   TH2D *hFlatVsPtV0MMC[9];
   TH2D *hComponentsMult[4];
