@@ -105,7 +105,7 @@ public:
   void PrintTriggerClasses() const;
   void Browse(TBrowser *b);
 
-//protected:
+protected:
   Int_t FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Int_t fillHists = 0);
 
   // TOF trigger helpers
