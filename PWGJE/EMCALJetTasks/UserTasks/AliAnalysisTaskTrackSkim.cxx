@@ -581,10 +581,10 @@ std::string AliAnalysisTaskTrackSkim::toString() const
   else {
     tempSS << "disabled.\n";
   }
-  tempSS << "\tCharge scaling: " << fChargeScaling;
-  tempSS << "\tEncode additional particle information: " << fEncodeAdditionalParticleInformation;
-  if (fEncodeAdditionalParticleInformation && fMCAnalysisUtils) {
-    tempSS << "\t\tMC analysis utils generator: " << fMCAnalysisUtils->GetMCGeneratorString() << "\n";
+  tempSS << "\tCharge scaling: " << fChargeScaling << "\n";
+  tempSS << "\tEncode additional particle information: " << fEncodeAdditionalParticleInformation << "\n";
+  if (fEncodeAdditionalParticleInformation) {
+    tempSS << "\t\tMC analysis utils generator: " << fMCAnalysisUtilsGenerator << "\n";
   }
   // Particle variables:
   tempSS << "Particle variables:\n";
