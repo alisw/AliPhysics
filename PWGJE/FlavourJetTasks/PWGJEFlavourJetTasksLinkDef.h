@@ -80,6 +80,7 @@
 #pragma link C++ class AliAnalysisTaskDmesonJetsDetectorResponse+;
 
 #pragma link C++ class AliAnalysisTaskHFSubstructure+;
+#pragma link C++ class AliAnalysisTaskHFEECorrelators+;
 
 
 #pragma link C++ class AliHFAODMCParticleContainer+;
