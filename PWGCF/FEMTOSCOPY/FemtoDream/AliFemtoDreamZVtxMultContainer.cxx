@@ -110,6 +110,10 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
             ++itPart2;
             continue;
           }
+          if (!HigherMath->PassesMDPairSelection(*itPart1, *itPart2)) {
+            ++itPart2;
+            continue;
+          }
           RelativeK = HigherMath->FillSameEvent(HistCounter, iMult, cent,
                                                 part1,
                                                 *itPDGPar1,
