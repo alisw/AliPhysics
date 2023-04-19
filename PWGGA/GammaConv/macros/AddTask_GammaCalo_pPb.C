@@ -1101,6 +1101,8 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010113","24466540ha01cc00000","0163103100000010"); // non-lin 2
   } else if (trainConfig == 519) { 
     cuts.AddCutCalo("80010113","244665300a01cc00000","0163103100000010"); // no timing cut for timing cut studies
+    cuts.AddCutCalo("80010113","24466530ua01cc00000","0163103100000010"); // non-lin 1
+
 
   } else if (trainConfig == 520) {  // JJ MC
     cuts.AddCutCalo("80010123","24466420ha012200000","0163103100000010"); // standard
