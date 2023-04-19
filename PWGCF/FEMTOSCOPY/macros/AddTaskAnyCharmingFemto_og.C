@@ -224,9 +224,15 @@ if (!isMC) {
   config->SetZBins(ZVtxBins);
   config->SetMomentumResolution(isMC);
 
-  config->SetDeltaEtaMax(0.012);
-  config->SetDeltaPhiMax(0.012);
+  // config->SetDeltaEtaMax(0.012);
+  // config->SetDeltaPhiMax(0.012);
   config->SetClosePairRejection(closeRejection);
+
+  // if (!isMCtruth) {
+  //   config->SetPhiEtaBinnign(suffix == "0" && fullBlastQA);
+  // }
+  
+  config->RejectMotherDaughter(true);
 
   config->SetmTBinning((suffix == "0" && fullBlastQA));
   config->SetPtQA((suffix == "0" && fullBlastQA));

@@ -294,6 +294,12 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool GetDoDeltaEtaDeltaPhiCut() const {
     return fDoDeltaEtaDeltaPhiCut;
   }
+  void RejectMotherDaughter(bool doIt){
+    fRejectMotherDaughter = doIt;
+  }
+  bool GetRejectMotherDaughter() const {
+    return fRejectMotherDaughter;
+  }
   void SetSummedPtCut(float limit1, float limit2){
     fSummedPtLimit1 = limit1;
     fSummedPtLimit2 = limit2;
@@ -350,10 +356,11 @@ class AliFemtoDreamCollConfig : public TNamed {
   float fDeltaEtaMax;           //
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
+  bool fRejectMotherDaughter;   //
   bool fCoutVariables;
   float fSummedPtLimit1;
   float fSummedPtLimit2;
-  ClassDef(AliFemtoDreamCollConfig,18);
+  ClassDef(AliFemtoDreamCollConfig,19);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */
