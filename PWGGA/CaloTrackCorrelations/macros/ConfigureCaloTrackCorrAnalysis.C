@@ -770,7 +770,13 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     ana->SetMaxEnergy(1000);
     ana->SetMinDistanceToBadChannel(2, 4, 5); // could have been already applied at reader level
     if ( kAnaCaloTrackCorr.Contains("DistToBadOff") )
+    {
       ana->SetMinDistanceToBadChannel(0, 2, 4);
+
+      // Bad map open in reader, closed in analysis
+      if ( kAnaCutsString.Contains("DistToBadOn") )
+        ana->SetMinDistanceToBadChannel(2, 4, 6);
+    }
 
     ana->SetTimeCut(-1e10,1e10); // open cut
   }
@@ -782,8 +788,21 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     ana->SetTimeCut(-1e10,1e10); // open cut, usual time window of [425-825] ns if time recalibration is off
                                  // restrict to less than 100 ns when time calibration is on
     ana->SetMinDistanceToBadChannel(2, 4, 6); // could have been already applied at reader level
+
     if ( kAnaCaloTrackCorr.Contains("DistToBadOff") )
+    {
       ana->SetMinDistanceToBadChannel(0, 2, 4);
+
+      // Bad map open in reader, closed in analysis
+      if ( kAnaCaloTrackCorr.Contains("DistToBadOff") )
+      {
+        ana->SetMinDistanceToBadChannel(0, 2, 4);
+
+        // Bad map open in reader, closed in analysis
+        if ( kAnaCutsString.Contains("DistToBadOn") )
+          ana->SetMinDistanceToBadChannel(2, 4, 6);
+      }
+    }
 
     if ( kAnaCutsString.Contains("ExoCut") )
     {
@@ -2358,6 +2377,9 @@ void ConfigureCaloTrackCorrAnalysis
 
   if ( analysisString.Contains("DistToBadOff") && !kAnaCaloTrackCorr.Contains("DistToBadOff") )
     kAnaCaloTrackCorr+= "_DistToBadOff";
+
+  if ( analysisString.Contains("DistToBadOn") && kAnaCaloTrackCorr.Contains("DistToBadOff") )
+    kAnaCaloTrackCorr+= "_DistToBadOn";
 
   if ( analysisString.Contains("ExoCut") )
     kAnaCaloTrackCorr+= "_ExoCut";
