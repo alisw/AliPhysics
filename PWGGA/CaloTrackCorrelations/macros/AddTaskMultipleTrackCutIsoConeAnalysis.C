@@ -249,8 +249,11 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
   // Default cuts analysis but multi UE methods if specified
   if (  analysisString.Contains("MultiIso") && analysisString.Contains("UEAreas") )
   {
+    if(analysisString.Contains("UEAreasWithJet"))
+      isoPtTh = AliIsolationCut::kSumBkgSubJetRhoIC; // Make sure jet median output is checked
+
     ConfigureCaloTrackCorrAnalysis
-    ( anaList, calorimeter, simulation, year, col, analysisString+"UESubMethods", histoString,
+    ( anaList, calorimeter, simulation, year, col, analysisString+"UESubMethods", histoString+"_UEAreas",
      shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
      leading, tmFix, mixOn, printSettings, debug);
   }
