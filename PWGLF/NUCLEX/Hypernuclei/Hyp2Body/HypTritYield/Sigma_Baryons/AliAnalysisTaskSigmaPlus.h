@@ -578,6 +578,9 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Int_t                 fTrackPDGCode;
         Int_t                 fTrackMotherID;       // -1 if Particle is primary
         Int_t                 fTrackMotherPDGCode;
+        Float_t               fTrackMotherMCPx;
+        Float_t               fTrackMotherMCPy;
+        Float_t               fTrackMotherMCPz;
         Float_t               fTrackMCPx;
         Float_t               fTrackMCPy;
         Float_t               fTrackMCPz;
