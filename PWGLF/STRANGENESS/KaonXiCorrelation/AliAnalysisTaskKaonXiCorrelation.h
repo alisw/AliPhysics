@@ -83,8 +83,12 @@ public:
   };
 
   enum kCutFlag {
-    kDCAtightCut = BIT(0), // 0.05 cm
-    kDCAmidCut = BIT(1) // 0.1 cm
+    kDCAtightCut = BIT(0),   // 0.05 cm
+    kDCAmidCut = BIT(1),     // 0.1 cm
+    kTPCclsTightCut = BIT(2),// 80
+    kTPCclsMidCut = BIT(3),  // 70
+    kChi2TightCut = BIT(4),  // 2
+    kChi2MidCut = BIT(5)     // 2.5
   };
 
   enum kReducedTrigger
@@ -154,6 +158,8 @@ public:
   void SetMaxChi2Cut(double cut = 4.) { fCutMaxChi2 = cut; }
   void SetMaxITSChi2Cut(double cut = 36.) { fCutMaxITSChi2 = cut; }
   void SetDCACut(double cutTight = .05, double cutMid = .1, double cutLoose = .5) { fCutDCA[0] = cutTight; fCutDCA[1] = cutMid; fCutDCA[2] = cutLoose; }
+  void SetTPCclsCut(int cutTight = 80, int cutMid = 70, int cutLoose = 60) { fCutTPCcls[0] = cutTight; fCutTPCcls[1] = cutMid; fCutTPCcls[2] = cutLoose; }
+  void SetChi2Cut(double cutTight = 2., double cutMid = 2.5, double cutLoose = 3.) { fCutChi2[0] = cutTight; fCutChi2[1] = cutMid; fCutChi2[2] = cutLoose; }
   void SetMaxPtKaon(double cut = 1.5) { fMaxPtKaon = cut; }
   void SetPtTofCut(double cut = 0.5) { fPtTofCut = cut; }
   void SetCutPtITSpid(double pt = 0.5) { fCutPtITSpid = pt; }
@@ -243,6 +249,8 @@ private:
   float fCutMaxChi2 = 2.5;
   float fCutMaxITSChi2 = 36.;
   float fCutDCA[3] = {0.05, 0.1, 0.5};
+  int fCutTPCcls[3] = {80, 70, 60};
+  float fCutChi2[3] = {2, 2.5, 3};
   double fCutKaonNsigmaTPC = 5.;
   double fCutKaonNsigmaTOF = 5.;
   double fCutKaonNsigmaITS = 5.;
