@@ -54,6 +54,7 @@ set(SRCS
   Flatenicity/AliAnalysisTaskSpectraFlatenicity.cxx
   FlatenicityPiKp/AliAnalysisTaskFlatenicityPiKp.cxx
   FlatenicityLambdaK0s/AliAnalysisTaskFlatenicityLambdaK0s.cxx
+  FlatenicityLambdaK0s/AliAnalysisTaskFlatenicityLambdaK0sMC.cxx
   FlatenicityPiKp/AliAnalysisTaskdEdxCalibration.cxx
   )
 

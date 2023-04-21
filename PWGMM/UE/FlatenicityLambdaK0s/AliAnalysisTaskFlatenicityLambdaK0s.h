@@ -9,6 +9,8 @@
 class AliESDtrackCuts;
 class AliESDAD;
 class AliESDEvent;
+class AliAnalysisUtils;
+class AliPIDResponse;
 class AliAnalysisTaskFlatenicityLambdaK0s : public AliAnalysisTaskSE
 {
 public:
@@ -33,12 +35,13 @@ private:
   TH1F *hinvmassLambda;     //! dummy histogram
   TH1F *hinvmassAntiLambda; //! dummy histogram
   TH1F *hflat;              //! dummy histogram
-
+//  AliAnalysisFilter *fTrackFilter;
   Float_t invmK0s;
   Float_t invpK0s;
   Float_t invptK0s;
   Float_t invyK0s;
   Float_t flatenicityK0s;
+  AliESDtrackCuts *fESDtrackCuts; // ESD track cuts used for primary track definition
 
   TTree *treeK0s;
 
