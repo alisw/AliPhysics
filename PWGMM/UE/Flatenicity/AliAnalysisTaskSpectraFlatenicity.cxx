@@ -81,14 +81,16 @@ using std::endl;
 
 #include "AliAnalysisTaskSpectraFlatenicity.h"
 
-const Int_t nPtbinsFlatSpecFlatSpec = 36;
-Double_t PtbinsFlatSpec[nPtbinsFlatSpecFlatSpec + 1] = {
-    0.0, 0.1, 0.15, 0.2,  0.25, 0.3,  0.35, 0.4,  0.45, 0.5,  0.6, 0.7, 0.8,
-    0.9, 1.0, 1.25, 1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5,  5.0, 6.0, 7.0,
-    8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 30.0, 40.0, 50.0};
-
-const int DCAxyNBins = 121;
-double DCAxyBins[DCAxyNBins + 1] = {
+const Int_t nPtbinsFlatSpecFlatSpec = 41;
+Double_t PtbinsFlatSpec[nPtbinsFlatSpecFlatSpec+1] = {
+    0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 
+    0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1 , 1.2, 1.3 , 1.4, 
+     1.5, 1.6, 1.7 , 1.8, 1.9 , 2.0, 2.2 , 2.4, 2.6 , 2.8, 
+     3.0, 3.2, 3.4, 3.6 , 3.8, 4.0 , 4.5, 5.0 , 6.0, 8.0 , 
+     10.0, 20.0};    
+    
+const Int_t DCAxyNBins = 121;
+Double_t DCAxyBins[DCAxyNBins + 1] = {
     -3.025, -2.975, -2.925, -2.875, -2.825, -2.775, -2.725, -2.675, -2.625, -2.575, 
     -2.525, -2.475, -2.425, -2.375, -2.325, -2.275, -2.225, -2.175, -2.125, -2.075, 
     -2.025, -1.975, -1.925, -1.875, -1.825, -1.775, -1.725, -1.675, -1.625, -1.575, 
