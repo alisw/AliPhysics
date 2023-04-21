@@ -57,6 +57,8 @@ ClassImp(AliAnalysisTaskCorrelationTree)
                                                                        fHistoNEvents(NULL),
 
                                                                        fBuffer_NContributors(0),
+                                                                       fBuffer_RunNumber(0),
+                                                                       fBuffer_VertexZ(0),
                                                                        fBuffer_NEventTriggers(0),
                                                                        fBuffer_EventTrigger(0),
                                                                        fBuffer_NElectronCandidates(0),
@@ -64,6 +66,8 @@ ClassImp(AliAnalysisTaskCorrelationTree)
                                                                        fBuffer_ElectronCandidate_Px(0),
                                                                        fBuffer_ElectronCandidate_Py(0),
                                                                        fBuffer_ElectronCandidate_Pz(0),
+                                                                       fBuffer_ElectronCandidate_PropEta(0),
+                                                                       fBuffer_ElectronCandidate_PropPhi(0),
                                                                        fBuffer_ElectronCandidate_Charge(0),
                                                                        fBuffer_ElectronCandidate_NSigmaElecTPC(0),
                                                                        fBuffer_ElectronCandidate_NSigmaElecTOF(0),
@@ -82,6 +86,9 @@ ClassImp(AliAnalysisTaskCorrelationTree)
                                                                        fBuffer_ElectronCandidate_MC_Mother_Pz(0),
                                                                        fBuffer_ElectronCandidate_MC_Mother_PDG(0),
                                                                        fBuffer_ElectronCandidate_MC_GrandMother_PDG(0),
+                                                                       fBuffer_ElectronCandidate_MC_GrandMother_Pt(0),
+                                                                       fBuffer_ElectronCandidate_MC_GGrandMother_PDG(0),
+                                                                       fBuffer_ElectronCandidate_MC_GGrandMother_Pt(0),
 
                                                                        fBuffer_NMuonCandidates(0),
                                                                        fBuffer_MuonCandidate_E(0),
@@ -104,6 +111,9 @@ ClassImp(AliAnalysisTaskCorrelationTree)
                                                                        fBuffer_MuonCandidate_MC_Mother_Pz(0),
                                                                        fBuffer_MuonCandidate_MC_Mother_PDG(0),
                                                                        fBuffer_MuonCandidate_MC_GrandMother_PDG(0),
+                                                                       fBuffer_MuonCandidate_MC_GrandMother_Pt(0),
+                                                                       fBuffer_MuonCandidate_MC_GGrandMother_PDG(0),
+                                                                       fBuffer_MuonCandidate_MC_GGrandMother_Pt(0),
 
                                                                        fBuffer_NClusterCandidates(0),
                                                                        fBuffer_ClusterCandidate_E(0),
@@ -131,6 +141,8 @@ ClassImp(AliAnalysisTaskCorrelationTree)
   fBuffer_ElectronCandidate_Px = new Float_t[kMaxTracks];
   fBuffer_ElectronCandidate_Py = new Float_t[kMaxTracks];
   fBuffer_ElectronCandidate_Pz = new Float_t[kMaxTracks];
+  fBuffer_ElectronCandidate_PropEta = new Float_t[kMaxTracks];
+  fBuffer_ElectronCandidate_PropPhi = new Float_t[kMaxTracks];
   fBuffer_ElectronCandidate_Charge = new Float_t[kMaxTracks];
   fBuffer_ElectronCandidate_NSigmaElecTPC = new Float_t[kMaxTracks];
   fBuffer_ElectronCandidate_NSigmaElecTOF = new Float_t[kMaxTracks];
@@ -149,6 +161,9 @@ ClassImp(AliAnalysisTaskCorrelationTree)
   fBuffer_ElectronCandidate_MC_Mother_Pz = new Float_t[kMaxTracks];
   fBuffer_ElectronCandidate_MC_Mother_PDG = new Int_t[kMaxTracks];
   fBuffer_ElectronCandidate_MC_GrandMother_PDG = new Int_t[kMaxTracks];
+  fBuffer_ElectronCandidate_MC_GrandMother_Pt = new Float_t[kMaxTracks];
+  fBuffer_ElectronCandidate_MC_GGrandMother_PDG = new Int_t[kMaxTracks];
+  fBuffer_ElectronCandidate_MC_GGrandMother_Pt = new Float_t[kMaxTracks];
 
   fBuffer_MuonCandidate_E = new Float_t[kMaxTracks];
   fBuffer_MuonCandidate_Px = new Float_t[kMaxTracks];
@@ -170,6 +185,9 @@ ClassImp(AliAnalysisTaskCorrelationTree)
   fBuffer_MuonCandidate_MC_Mother_Pz = new Float_t[kMaxTracks];
   fBuffer_MuonCandidate_MC_Mother_PDG = new Int_t[kMaxTracks];
   fBuffer_MuonCandidate_MC_GrandMother_PDG = new Int_t[kMaxTracks];
+  fBuffer_MuonCandidate_MC_GrandMother_Pt = new Float_t[kMaxTracks];
+  fBuffer_MuonCandidate_MC_GGrandMother_PDG = new Int_t[kMaxTracks];
+  fBuffer_MuonCandidate_MC_GGrandMother_Pt = new Float_t[kMaxTracks];
 
   fBuffer_ClusterCandidate_E = new Float_t[kMaxTracks];
   fBuffer_ClusterCandidate_Px = new Float_t[kMaxTracks];
@@ -207,9 +225,11 @@ AliAnalysisTaskCorrelationTree::AliAnalysisTaskCorrelationTree(const char *name)
                                                                                    fIsHeavyIon(false),
                                                                                    fOutputList(NULL),
                                                                                    fPidResponse(0),
-  fHistoNEvents(NULL),
+                                                                                   fHistoNEvents(NULL),
 
                                                                                    fBuffer_NContributors(0),
+                                                                                   fBuffer_RunNumber(0),
+                                                                                   fBuffer_VertexZ(0),
                                                                                    fBuffer_NEventTriggers(0),
                                                                                    fBuffer_EventTrigger(0),
                                                                                    fBuffer_NElectronCandidates(0),
@@ -217,6 +237,8 @@ AliAnalysisTaskCorrelationTree::AliAnalysisTaskCorrelationTree(const char *name)
                                                                                    fBuffer_ElectronCandidate_Px(0),
                                                                                    fBuffer_ElectronCandidate_Py(0),
                                                                                    fBuffer_ElectronCandidate_Pz(0),
+                                                                                   fBuffer_ElectronCandidate_PropEta(0),
+                                                                                   fBuffer_ElectronCandidate_PropPhi(0),
                                                                                    fBuffer_ElectronCandidate_Charge(0),
                                                                                    fBuffer_ElectronCandidate_NSigmaElecTPC(0),
                                                                                    fBuffer_ElectronCandidate_NSigmaElecTOF(0),
@@ -235,6 +257,9 @@ AliAnalysisTaskCorrelationTree::AliAnalysisTaskCorrelationTree(const char *name)
                                                                                    fBuffer_ElectronCandidate_MC_Mother_Pz(0),
                                                                                    fBuffer_ElectronCandidate_MC_Mother_PDG(0),
                                                                                    fBuffer_ElectronCandidate_MC_GrandMother_PDG(0),
+                                                                                   fBuffer_ElectronCandidate_MC_GrandMother_Pt(0),
+                                                                                   fBuffer_ElectronCandidate_MC_GGrandMother_PDG(0),
+                                                                                   fBuffer_ElectronCandidate_MC_GGrandMother_Pt(0),
 
                                                                                    fBuffer_NMuonCandidates(0),
                                                                                    fBuffer_MuonCandidate_E(0),
@@ -257,6 +282,9 @@ AliAnalysisTaskCorrelationTree::AliAnalysisTaskCorrelationTree(const char *name)
                                                                                    fBuffer_MuonCandidate_MC_Mother_Pz(0),
                                                                                    fBuffer_MuonCandidate_MC_Mother_PDG(0),
                                                                                    fBuffer_MuonCandidate_MC_GrandMother_PDG(0),
+                                                                                   fBuffer_MuonCandidate_MC_GrandMother_Pt(0),
+                                                                                   fBuffer_MuonCandidate_MC_GGrandMother_PDG(0),
+                                                                                   fBuffer_MuonCandidate_MC_GGrandMother_Pt(0),
 
                                                                                    fBuffer_NClusterCandidates(0),
                                                                                    fBuffer_ClusterCandidate_E(0),
@@ -285,6 +313,8 @@ AliAnalysisTaskCorrelationTree::AliAnalysisTaskCorrelationTree(const char *name)
   fBuffer_ElectronCandidate_Px = new Float_t[kMaxTracks];
   fBuffer_ElectronCandidate_Py = new Float_t[kMaxTracks];
   fBuffer_ElectronCandidate_Pz = new Float_t[kMaxTracks];
+  fBuffer_ElectronCandidate_PropEta = new Float_t[kMaxTracks];
+  fBuffer_ElectronCandidate_PropPhi = new Float_t[kMaxTracks];
   fBuffer_ElectronCandidate_Charge = new Float_t[kMaxTracks];
   fBuffer_ElectronCandidate_NSigmaElecTPC = new Float_t[kMaxTracks];
   fBuffer_ElectronCandidate_NSigmaElecTOF = new Float_t[kMaxTracks];
@@ -304,6 +334,9 @@ AliAnalysisTaskCorrelationTree::AliAnalysisTaskCorrelationTree(const char *name)
   fBuffer_ElectronCandidate_MC_Mother_Pz = new Float_t[kMaxTracks];
   fBuffer_ElectronCandidate_MC_Mother_PDG = new Int_t[kMaxTracks];
   fBuffer_ElectronCandidate_MC_GrandMother_PDG = new Int_t[kMaxTracks];
+  fBuffer_ElectronCandidate_MC_GrandMother_Pt = new Float_t[kMaxTracks];
+  fBuffer_ElectronCandidate_MC_GGrandMother_PDG = new Int_t[kMaxTracks];
+  fBuffer_ElectronCandidate_MC_GGrandMother_Pt = new Float_t[kMaxTracks];
 
   fBuffer_MuonCandidate_E = new Float_t[kMaxTracks];
   fBuffer_MuonCandidate_Px = new Float_t[kMaxTracks];
@@ -325,6 +358,9 @@ AliAnalysisTaskCorrelationTree::AliAnalysisTaskCorrelationTree(const char *name)
   fBuffer_MuonCandidate_MC_Mother_Pz = new Float_t[kMaxTracks];
   fBuffer_MuonCandidate_MC_Mother_PDG = new Int_t[kMaxTracks];
   fBuffer_MuonCandidate_MC_GrandMother_PDG = new Int_t[kMaxTracks];
+  fBuffer_MuonCandidate_MC_GrandMother_Pt = new Float_t[kMaxTracks];
+  fBuffer_MuonCandidate_MC_GGrandMother_PDG = new Int_t[kMaxTracks];
+  fBuffer_MuonCandidate_MC_GGrandMother_Pt = new Float_t[kMaxTracks];
 
   fBuffer_ClusterCandidate_E = new Float_t[kMaxTracks];
   fBuffer_ClusterCandidate_Px = new Float_t[kMaxTracks];
@@ -369,27 +405,28 @@ void AliAnalysisTaskCorrelationTree::UserCreateOutputObjects()
   {
     fOutputList = new TList();
     fOutputList->SetOwner(true);
-        fHistoNEvents                           = new TH1F("NEvents","NEvents",14,-0.5,13.5);
-            fHistoNEvents->GetXaxis()->SetBinLabel(1,"Accepted");
-    fHistoNEvents->GetXaxis()->SetBinLabel(2,"Centrality");
-    fHistoNEvents->GetXaxis()->SetBinLabel(3,"Miss. MC or inc. ev.");
-    fHistoNEvents->GetXaxis()->SetBinLabel(4,"Trigger");
-    fHistoNEvents->GetXaxis()->SetBinLabel(5,"Vertex Z");
-    fHistoNEvents->GetXaxis()->SetBinLabel(6,"Cont. Vertex");
-    fHistoNEvents->GetXaxis()->SetBinLabel(7,"Pile-Up");
-    fHistoNEvents->GetXaxis()->SetBinLabel(8,"no SDD");
-    fHistoNEvents->GetXaxis()->SetBinLabel(9,"no V0AND");
-    fHistoNEvents->GetXaxis()->SetBinLabel(10,"EMCAL/TPC problems");
-    fHistoNEvents->GetXaxis()->SetBinLabel(11,"rejectedForJetJetMC");
-    fHistoNEvents->GetXaxis()->SetBinLabel(12,"SPD hits vs tracklet");
-    fHistoNEvents->GetXaxis()->SetBinLabel(13,"Out-of-Bunch pileup Past-Future");
-    fHistoNEvents->GetXaxis()->SetBinLabel(14,"Pileup V0M-TPCout Tracks");
+    fHistoNEvents = new TH1F("NEvents", "NEvents", 14, -0.5, 13.5);
+    fHistoNEvents->GetXaxis()->SetBinLabel(1, "Accepted");
+    fHistoNEvents->GetXaxis()->SetBinLabel(2, "Centrality");
+    fHistoNEvents->GetXaxis()->SetBinLabel(3, "Miss. MC or inc. ev.");
+    fHistoNEvents->GetXaxis()->SetBinLabel(4, "Trigger");
+    fHistoNEvents->GetXaxis()->SetBinLabel(5, "Vertex Z");
+    fHistoNEvents->GetXaxis()->SetBinLabel(6, "Cont. Vertex");
+    fHistoNEvents->GetXaxis()->SetBinLabel(7, "Pile-Up");
+    fHistoNEvents->GetXaxis()->SetBinLabel(8, "no SDD");
+    fHistoNEvents->GetXaxis()->SetBinLabel(9, "no V0AND");
+    fHistoNEvents->GetXaxis()->SetBinLabel(10, "EMCAL/TPC problems");
+    fHistoNEvents->GetXaxis()->SetBinLabel(11, "rejectedForJetJetMC");
+    fHistoNEvents->GetXaxis()->SetBinLabel(12, "SPD hits vs tracklet");
+    fHistoNEvents->GetXaxis()->SetBinLabel(13, "Out-of-Bunch pileup Past-Future");
+    fHistoNEvents->GetXaxis()->SetBinLabel(14, "Pileup V0M-TPCout Tracks");
     fOutputList->Add(fHistoNEvents);
-
   }
   fAnalysisTree = new TTree(Form("CorrelationTree_%s_%s", (fEventCuts->GetCutNumber()).Data(), (fConversionCuts->GetCutNumber()).Data()), Form("CorrelationTree_%s_%s", (fEventCuts->GetCutNumber()).Data(), (fConversionCuts->GetCutNumber()).Data()));
 
   fAnalysisTree->Branch("NVertexContributors", &fBuffer_NContributors, "NVertexContributors/I"); // max 200 for now
+  fAnalysisTree->Branch("RunNumber", &fBuffer_RunNumber, "RunNumber/I");                         // max 200 for now
+  fAnalysisTree->Branch("Vertex_Z", &fBuffer_VertexZ, "Vertex_Z/F");                             // max 200 for now
   fAnalysisTree->Branch("NEventTriggers", &fBuffer_NEventTriggers, "NEventTriggers/I");          // max 200 for now
   fAnalysisTree->Branch("EventTrigger", fBuffer_EventTrigger, "EventTrigger[NEventTriggers]/I"); // max 200 for now
 
@@ -398,6 +435,8 @@ void AliAnalysisTaskCorrelationTree::UserCreateOutputObjects()
   fAnalysisTree->Branch("ElectronCandidate_Px", fBuffer_ElectronCandidate_Px, "ElectronCandidate_Px[NElectronCandidates]/F");
   fAnalysisTree->Branch("ElectronCandidate_Py", fBuffer_ElectronCandidate_Py, "ElectronCandidate_Py[NElectronCandidates]/F");
   fAnalysisTree->Branch("ElectronCandidate_Pz", fBuffer_ElectronCandidate_Pz, "ElectronCandidate_Pz[NElectronCandidates]/F");
+  fAnalysisTree->Branch("ElectronCandidate_PropEta", fBuffer_ElectronCandidate_PropEta, "ElectronCandidate_PropEta[NElectronCandidates]/F");
+  fAnalysisTree->Branch("ElectronCandidate_PropPhi", fBuffer_ElectronCandidate_PropPhi, "ElectronCandidate_PropPhi[NElectronCandidates]/F");
   fAnalysisTree->Branch("ElectronCandidate_Charge", fBuffer_ElectronCandidate_Charge, "ElectronCandidate_Charge[NElectronCandidates]/F");
   fAnalysisTree->Branch("ElectronCandidate_NSigmaElecTPC", fBuffer_ElectronCandidate_NSigmaElecTPC, "ElectronCandidate_NSigmaElecTPC[NElectronCandidates]/F");
   fAnalysisTree->Branch("ElectronCandidate_NSigmaElecTOF", fBuffer_ElectronCandidate_NSigmaElecTOF, "ElectronCandidate_NSigmaElecTOF[NElectronCandidates]/F");
@@ -412,13 +451,16 @@ void AliAnalysisTaskCorrelationTree::UserCreateOutputObjects()
     fAnalysisTree->Branch("ElectronCandidate_MC_Px", fBuffer_ElectronCandidate_MC_Px, "ElectronCandidate_MC_Px[NElectronCandidates]/F");
     fAnalysisTree->Branch("ElectronCandidate_MC_Py", fBuffer_ElectronCandidate_MC_Py, "ElectronCandidate_MC_Py[NElectronCandidates]/F");
     fAnalysisTree->Branch("ElectronCandidate_MC_Pz", fBuffer_ElectronCandidate_MC_Pz, "ElectronCandidate_MC_Pz[NElectronCandidates]/F");
-    fAnalysisTree->Branch("ElectronCandidate_MC_PDG", fBuffer_ElectronCandidate_MC_PDG, "ElectronCandidate_MC_PDG[NElectronCandidates]/b");
+    fAnalysisTree->Branch("ElectronCandidate_MC_PDG", fBuffer_ElectronCandidate_MC_PDG, "ElectronCandidate_MC_PDG[NElectronCandidates]/I");
     fAnalysisTree->Branch("ElectronCandidate_MC_Mother_E", fBuffer_ElectronCandidate_MC_Mother_E, "ElectronCandidate_MC_Mother_E[NElectronCandidates]/F");
     fAnalysisTree->Branch("ElectronCandidate_MC_Mother_Px", fBuffer_ElectronCandidate_MC_Mother_Px, "ElectronCandidate_MC_Mother_Px[NElectronCandidates]/F");
     fAnalysisTree->Branch("ElectronCandidate_MC_Mother_Py", fBuffer_ElectronCandidate_MC_Mother_Py, "ElectronCandidate_MC_Mother_Py[NElectronCandidates]/F");
     fAnalysisTree->Branch("ElectronCandidate_MC_Mother_Pz", fBuffer_ElectronCandidate_MC_Mother_Pz, "ElectronCandidate_MC_Mother_Pz[NElectronCandidates]/F");
     fAnalysisTree->Branch("ElectronCandidate_MC_Mother_PDG", fBuffer_ElectronCandidate_MC_Mother_PDG, "ElectronCandidate_MC_Mother_PDG[NElectronCandidates]/I");
     fAnalysisTree->Branch("ElectronCandidate_MC_GrandMother_PDG", fBuffer_ElectronCandidate_MC_GrandMother_PDG, "ElectronCandidate_MC_GrandMother_PDG[NElectronCandidates]/I");
+    fAnalysisTree->Branch("ElectronCandidate_MC_GrandMother_Pt", fBuffer_ElectronCandidate_MC_GrandMother_Pt, "ElectronCandidate_MC_GrandMother_Pt[NElectronCandidates]/F");
+    fAnalysisTree->Branch("ElectronCandidate_MC_GGrandMother_PDG", fBuffer_ElectronCandidate_MC_GGrandMother_PDG, "ElectronCandidate_MC_GGrandMother_PDG[NElectronCandidates]/I");
+    fAnalysisTree->Branch("ElectronCandidate_MC_GGrandMother_Pt", fBuffer_ElectronCandidate_MC_GGrandMother_Pt, "ElectronCandidate_MC_GGrandMother_Pt[NElectronCandidates]/F");
   }
   fAnalysisTree->Branch("NMuonCandidates", &fBuffer_NMuonCandidates, "NMuonCandidates/I"); // max 200 for now
   fAnalysisTree->Branch("MuonCandidate_E", fBuffer_MuonCandidate_E, "MuonCandidate_E[NMuonCandidates]/F");
@@ -437,13 +479,16 @@ void AliAnalysisTaskCorrelationTree::UserCreateOutputObjects()
     fAnalysisTree->Branch("MuonCandidate_MC_Px", fBuffer_MuonCandidate_MC_Px, "MuonCandidate_MC_Px[NMuonCandidates]/F");
     fAnalysisTree->Branch("MuonCandidate_MC_Py", fBuffer_MuonCandidate_MC_Py, "MuonCandidate_MC_Py[NMuonCandidates]/F");
     fAnalysisTree->Branch("MuonCandidate_MC_Pz", fBuffer_MuonCandidate_MC_Pz, "MuonCandidate_MC_Pz[NMuonCandidates]/F");
-    fAnalysisTree->Branch("MuonCandidate_MC_PDG", fBuffer_MuonCandidate_MC_PDG, "MuonCandidate_MC_PDG[NMuonCandidates]/b");
+    fAnalysisTree->Branch("MuonCandidate_MC_PDG", fBuffer_MuonCandidate_MC_PDG, "MuonCandidate_MC_PDG[NMuonCandidates]/I");
     fAnalysisTree->Branch("MuonCandidate_MC_Mother_E", fBuffer_MuonCandidate_MC_Mother_E, "MuonCandidate_MC_Mother_E[NMuonCandidates]/F");
     fAnalysisTree->Branch("MuonCandidate_MC_Mother_Px", fBuffer_MuonCandidate_MC_Mother_Px, "MuonCandidate_MC_Mother_Px[NMuonCandidates]/F");
     fAnalysisTree->Branch("MuonCandidate_MC_Mother_Py", fBuffer_MuonCandidate_MC_Mother_Py, "MuonCandidate_MC_Mother_Py[NMuonCandidates]/F");
     fAnalysisTree->Branch("MuonCandidate_MC_Mother_Pz", fBuffer_MuonCandidate_MC_Mother_Pz, "MuonCandidate_MC_Mother_Pz[NMuonCandidates]/F");
     fAnalysisTree->Branch("MuonCandidate_MC_Mother_PDG", fBuffer_MuonCandidate_MC_Mother_PDG, "MuonCandidate_MC_Mother_PDG[NMuonCandidates]/I");
     fAnalysisTree->Branch("MuonCandidate_MC_GrandMother_PDG", fBuffer_MuonCandidate_MC_GrandMother_PDG, "MuonCandidate_MC_GrandMother_PDG[NMuonCandidates]/I");
+    fAnalysisTree->Branch("MuonCandidate_MC_GrandMother_Pt", fBuffer_MuonCandidate_MC_GrandMother_Pt, "MuonCandidate_MC_GrandMother_Pt[NMuonCandidates]/F");
+    fAnalysisTree->Branch("MuonCandidate_MC_GGrandMother_PDG", fBuffer_MuonCandidate_MC_GGrandMother_PDG, "MuonCandidate_MC_GGrandMother_PDG[NMuonCandidates]/I");
+    fAnalysisTree->Branch("MuonCandidate_MC_GGrandMother_Pt", fBuffer_MuonCandidate_MC_GGrandMother_Pt, "MuonCandidate_MC_GGrandMother_Pt[NMuonCandidates]/F");
   }
   fAnalysisTree->Branch("NClusterCandidates", &fBuffer_NClusterCandidates, "NClusterCandidates/I"); // max 200 for now
   fAnalysisTree->Branch("ClusterCandidate_E", fBuffer_ClusterCandidate_E, "ClusterCandidate_E[NClusterCandidates]/F");
@@ -460,7 +505,7 @@ void AliAnalysisTaskCorrelationTree::UserCreateOutputObjects()
     fAnalysisTree->Branch("ClusterCandidate_MC_Px", fBuffer_ClusterCandidate_MC_Px, "ClusterCandidate_MC_Px[NClusterCandidates]/F");
     fAnalysisTree->Branch("ClusterCandidate_MC_Py", fBuffer_ClusterCandidate_MC_Py, "ClusterCandidate_MC_Py[NClusterCandidates]/F");
     fAnalysisTree->Branch("ClusterCandidate_MC_Pz", fBuffer_ClusterCandidate_MC_Pz, "ClusterCandidate_MC_Pz[NClusterCandidates]/F");
-    fAnalysisTree->Branch("ClusterCandidate_MC_PDG", fBuffer_ClusterCandidate_MC_PDG, "ClusterCandidate_MC_PDG[NClusterCandidates]/b");
+    fAnalysisTree->Branch("ClusterCandidate_MC_PDG", fBuffer_ClusterCandidate_MC_PDG, "ClusterCandidate_MC_PDG[NClusterCandidates]/I");
     fAnalysisTree->Branch("ClusterCandidate_MC_Mother_E", fBuffer_ClusterCandidate_MC_Mother_E, "ClusterCandidate_MC_Mother_E[NClusterCandidates]/F");
     fAnalysisTree->Branch("ClusterCandidate_MC_Mother_Px", fBuffer_ClusterCandidate_MC_Mother_Px, "ClusterCandidate_MC_Mother_Px[NClusterCandidates]/F");
     fAnalysisTree->Branch("ClusterCandidate_MC_Mother_Py", fBuffer_ClusterCandidate_MC_Mother_Py, "ClusterCandidate_MC_Mother_Py[NClusterCandidates]/F");
@@ -517,10 +562,12 @@ void AliAnalysisTaskCorrelationTree::UserExec(Option_t *)
   Double_t fMaxVertexZ = 10.0;
 
   Int_t eventQuality = ((AliConvEventCuts *)fV0Reader->GetEventCuts())->GetEventQuality();
-  if(fInputEvent->IsIncompleteDAQ()==true) eventQuality = 2;  // incomplete event
+  if (fInputEvent->IsIncompleteDAQ() == true)
+    eventQuality = 2; // incomplete event
+    
   fHistoNEvents->Fill(eventQuality);
 
-  if (eventQuality == 2 || eventQuality == 3)
+  if (eventQuality == 2)
   {
     // cout << "Event not accepted with event quality " << eventQuality << endl;
     return;
@@ -560,12 +607,14 @@ void AliAnalysisTaskCorrelationTree::UserExec(Option_t *)
   //   // return;
   // }
   fBuffer_NContributors = fInputEvent->GetPrimaryVertex()->GetNContributors();
-
+  fBuffer_RunNumber = fInputEvent->GetRunNumber();
   if (TMath::Abs(fInputEvent->GetPrimaryVertex()->GetZ()) > fMaxVertexZ)
     return;
+  fBuffer_VertexZ = fInputEvent->GetPrimaryVertex()->GetZ();
   fBuffer_NEventTriggers = 0;
   TString firedTrigClass = fInputEvent->GetFiredTriggerClasses();
-  TString triggerClasses[11] = {"CEMC7MUL", "CEMC7MSL", "CEMC7MSH", "CDMC7MUL", "CDMC7MSL", "CDMC7MSH", "CEMC7", "CDMC7", "CMUL7", "CMSL7", "CMSH7"};
+  const int nTriggers = 13;
+  TString triggerClasses[nTriggers] = {"CEMC7MUL-B-NOPF-ALLNOTRD", "CEMC7MSL-B-NOPF-ALLNOTRD", "CEMC7MSH-B-NOPF-ALLNOTRD", "CDMC7MUL-B-NOPF-ALLNOTRD", "CDMC7MSL-B-NOPF-ALLNOTRD", "CDMC7MSH-B-NOPF-ALLNOTRD", "CMUL7-B-NOPF-ALLNOTRD", "CMSL7-B-NOPF-ALLNOTRD", "CMSH7-B-NOPF-ALLNOTRD", "CEMC7-B-NOPF-ALLNOTRD", "CDMC7-B-NOPF-ALLNOTRD", "CPHI7MSL-B-NOPF-ALLNOTRD", "CPHI7-B-NOPF-ALLNOTRD"};
   if (fIsMC)
   {
     fBuffer_EventTrigger[fBuffer_NEventTriggers] = 0;
@@ -573,7 +622,7 @@ void AliAnalysisTaskCorrelationTree::UserExec(Option_t *)
   }
   else
   {
-    for (Int_t i = 0; i < 11; i++)
+    for (Int_t i = 0; i < nTriggers; i++)
     {
       if (firedTrigClass.Contains(triggerClasses[i]))
       {
@@ -601,6 +650,11 @@ void AliAnalysisTaskCorrelationTree::UserExec(Option_t *)
   ProcessElectrons();
   ProcessMuons();
 
+  if (fBuffer_NMuonCandidates == 0)
+    return;
+  if (fBuffer_NElectronCandidates == 0 && fBuffer_NClusterCandidates == 0)
+    return;
+
   // fill tree for each accepted event
   if (fAnalysisTree)
   {
@@ -617,8 +671,7 @@ void AliAnalysisTaskCorrelationTree::ProcessElectrons()
   fBuffer_NElectronCandidates = 0;
   Int_t ntracks = event->GetNumberOfTracks();
 
-  double fEtaCutMax = 0.9;
-  double fEtaCutMin = -0.9;
+  double absEtaCut = 0.9;
   // double fTPCnCrossedRows = -0.8;
 
   double fPtCutMainEle = 0.4;
@@ -631,7 +684,7 @@ void AliAnalysisTaskCorrelationTree::ProcessElectrons()
       AliFatal("Not a standard AOD");
 
     double eta = track->Eta();
-    if (eta > fEtaCutMax || eta < fEtaCutMin)
+    if (abs(eta) > absEtaCut)
       continue;
 
     if (!track->TestFilterBit(16))
@@ -742,6 +795,39 @@ void AliAnalysisTaskCorrelationTree::ProcessElectrons()
     fBuffer_ElectronCandidate_NSigmaPionTPC[fBuffer_NElectronCandidates] = fPidResponse->NumberOfSigmasTPC(track, AliPID::kPion);
     fBuffer_ElectronCandidate_NSigmaPionTOF[fBuffer_NElectronCandidates] = fPidResponse->NumberOfSigmasTOF(track, AliPID::kPion);
     fBuffer_ElectronCandidate_NSigmaProtonTPC[fBuffer_NElectronCandidates] = fPidResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+
+    bool doPropagation = true;
+    if (doPropagation)
+    {
+      AliExternalTrackParam *trackParam = 0;
+      if (TMath::Abs(track->GetTrackEtaOnEMCal()) < 0.75)
+      {
+        if (!(track->GetTrackPhiOnEMCal() < 70 * TMath::DegToRad() || track->GetTrackPhiOnEMCal() > 190 * TMath::DegToRad()) && (track->GetTrackPhiOnEMCal() < 250 * TMath::DegToRad() || track->GetTrackPhiOnEMCal() > 340 * TMath::DegToRad()))
+        {
+          Double_t xyz[3] = {0}, pxpypz[3] = {0}, cv[21] = {0};
+          track->GetPxPyPz(pxpypz);
+          track->GetXYZ(xyz);
+          track->GetCovarianceXYZPxPyPz(cv);
+          trackParam = new AliExternalTrackParam(xyz, pxpypz, cv, track->Charge());
+          Float_t eta, phi, pt;
+          AliExternalTrackParam emcParam(*trackParam);
+
+          if (!AliEMCALRecoUtils::ExtrapolateTrackToEMCalSurface(&emcParam, 440., 0.139, 20., eta, phi, pt))
+          {
+            delete trackParam;
+          }
+          else
+          {
+            if (TMath::Abs(eta) < 0.75 && ((phi > 70 * TMath::DegToRad() && phi < 190 * TMath::DegToRad()) || (phi > 250 * TMath::DegToRad() && phi < 340 * TMath::DegToRad())))
+            {
+              fBuffer_ElectronCandidate_PropEta[fBuffer_NElectronCandidates] = eta;
+              fBuffer_ElectronCandidate_PropPhi[fBuffer_NElectronCandidates] = phi;
+            }
+            delete trackParam;
+          }
+        }
+      }
+    }
     // cout << "\ttrack " << j << "\tpx " << track->Px() << "\tpy " << track->Py() << "\tpz " << track->Pz() << "\tE " << track->E() << endl;
 
     if (fIsMC)
@@ -773,14 +859,17 @@ void AliAnalysisTaskCorrelationTree::ProcessElectrons()
         AliAODMCParticle *mcGrandMother = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(mcMother->GetMother()));
         if (mcGrandMother)
         {
-          // fBuffer_ElectronCandidate_MC_GrandMother_E[fBuffer_NElectronCandidates] = mcGrandMother->E();
-          // fBuffer_ElectronCandidate_MC_GrandMother_Px[fBuffer_NElectronCandidates] = mcGrandMother->Px();
-          // fBuffer_ElectronCandidate_MC_GrandMother_Py[fBuffer_NElectronCandidates] = mcGrandMother->Py();
-          // fBuffer_ElectronCandidate_MC_GrandMother_Pz[fBuffer_NElectronCandidates] = mcGrandMother->Pz();
           fBuffer_ElectronCandidate_MC_GrandMother_PDG[fBuffer_NElectronCandidates] = mcGrandMother->GetPdgCode();
+          fBuffer_ElectronCandidate_MC_GrandMother_Pt[fBuffer_NElectronCandidates] = mcGrandMother->Pt();
+
+          AliAODMCParticle *mcGGrandMother = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(mcGrandMother->GetMother()));
+          if (mcGGrandMother)
+          {
+            fBuffer_ElectronCandidate_MC_GGrandMother_PDG[fBuffer_NElectronCandidates] = mcGGrandMother->GetPdgCode();
+            fBuffer_ElectronCandidate_MC_GGrandMother_PDG[fBuffer_NElectronCandidates] = mcGGrandMother->Pt();
+          }
         }
       }
-
       // fBuffer_ElectronCandidate_MCStatusCode[fBuffer_NElectronCandidates] = mcTrack->GetStatusCode();
       // fBuffer_ElectronCandidate_MCIsPrimary[fBuffer_NElectronCandidates] = mcTrack->IsPrimary();
       // fBuffer_ElectronCandidate_MCIsSecondaryFromWeakDecay[fBuffer_NElectronCandidates] = mcTrack->IsSecondaryFromWeakDecay();
@@ -885,11 +974,15 @@ void AliAnalysisTaskCorrelationTree::ProcessMuons()
         AliAODMCParticle *mcGrandMother = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(mcMother->GetMother()));
         if (mcGrandMother)
         {
-          // fBuffer_MuonCandidate_MC_GrandMother_E[fBuffer_NMuonCandidates] = mcGrandMother->E();
-          // fBuffer_MuonCandidate_MC_GrandMother_Px[fBuffer_NMuonCandidates] = mcGrandMother->Px();
-          // fBuffer_MuonCandidate_MC_GrandMother_Py[fBuffer_NMuonCandidates] = mcGrandMother->Py();
-          // fBuffer_MuonCandidate_MC_GrandMother_Pz[fBuffer_NMuonCandidates] = mcGrandMother->Pz();
           fBuffer_MuonCandidate_MC_GrandMother_PDG[fBuffer_NMuonCandidates] = mcGrandMother->GetPdgCode();
+          fBuffer_MuonCandidate_MC_GrandMother_Pt[fBuffer_NMuonCandidates] = mcGrandMother->Pt();
+
+          AliAODMCParticle *mcGGrandMother = dynamic_cast<AliAODMCParticle *>(fMCEvent->GetTrack(mcGrandMother->GetMother()));
+          if (mcGGrandMother)
+          {
+            fBuffer_MuonCandidate_MC_GGrandMother_PDG[fBuffer_NMuonCandidates] = mcGGrandMother->GetPdgCode();
+            fBuffer_MuonCandidate_MC_GGrandMother_Pt[fBuffer_NMuonCandidates] = mcGGrandMother->Pt();
+          }
         }
       }
 
@@ -1141,74 +1234,6 @@ void AliAnalysisTaskCorrelationTree::ProcessClusters()
 // }
 
 //________________________________________________________________________
-// UInt_t AliAnalysisTaskCorrelationTree::GetTrueMotherInfoAOD(AliAODConversionPhoton *TruePhotonCandidate)
-// {
-//   UInt_t kind = 9;
-//   TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray *>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
-//   if (AODMCTrackArray != NULL && TruePhotonCandidate != NULL)
-//   {
-//     if (TruePhotonCandidate->GetMCLabelPositive() == -1 || TruePhotonCandidate->GetMCLabelNegative() == -1)
-//     {
-//       return kind;
-//     }
-//     AliAODMCParticle *positiveMC = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelPositive()));
-//     AliAODMCParticle *negativeMC = static_cast<AliAODMCParticle *>(AODMCTrackArray->At(TruePhotonCandidate->GetMCLabelNegative()));
-
-//     Int_t gammaMCLabel = -1;
-//     if (!positiveMC || !negativeMC)
-//       return kind;
-
-//     if (positiveMC->GetMother() > -1 && (negativeMC->GetMother() == positiveMC->GetMother()))
-//     {
-//       gammaMCLabel = positiveMC->GetMother();
-//     }
-//     AliAODMCParticle *photonCandMCParticle = (AliAODMCParticle *)AODMCTrackArray->At(gammaMCLabel);
-//     Int_t pdgCodeMother = 0;
-
-//     if (photonCandMCParticle == NULL)
-//     {
-//       // particle does not exist
-//       kind = 9;
-//     }
-//     else if (photonCandMCParticle->GetMother() == -1)
-//     {
-//       // particle mother is no particle
-//       kind = 9;
-//     }
-//     else
-//     {
-//       // get mother and save ID of mother
-//       AliAODMCParticle *photonMotherParticle = (AliAODMCParticle *)AODMCTrackArray->At(photonCandMCParticle->GetMother());
-//       if (photonMotherParticle != NULL)
-//       {
-//         fBuffer_ElectronCandidate_MC_Mother_ID[fBuffer_NElectronCandidates] = photonCandMCParticle->GetMother();
-//         // get true Pt of mother particle
-//         fBuffer_ElectronCandidate_MC_Mother_TruePt[fBuffer_NElectronCandidates] = photonMotherParticle->Pt();
-
-//         // get PDG code of mother and save it
-//         pdgCodeMother = photonMotherParticle->GetPdgCode();
-//         fBuffer_ElectronCandidate_MC_Mother_PDG[fBuffer_NElectronCandidates] = pdgCodeMother;
-
-//         if (TMath::Abs(pdgCodeMother) == 111)
-//         {
-//           if (photonMotherParticle->GetMother() != -1)
-//           {
-//             AliAODMCParticle *photonGrandMotherParticle = (AliAODMCParticle *)AODMCTrackArray->At(photonMotherParticle->GetMother());
-//             fBuffer_ElectronCandidate_MC_GrandMother_PDG[fBuffer_NElectronCandidates] = photonGrandMotherParticle->GetPdgCode();
-//             return 5;
-//           }
-//           else
-//           {
-//             return 0;
-//           }
-//         }
-//       }
-//     }
-//   }
-//   return kind;
-// }
-
-//________________________________________________________________________
 void AliAnalysisTaskCorrelationTree::Terminate(Option_t *)
 {
 }
@@ -1218,6 +1243,8 @@ void AliAnalysisTaskCorrelationTree::ResetBuffer()
 
   fBuffer_NEventTriggers = 0;
   fBuffer_NContributors = 0;
+  fBuffer_RunNumber = 0;
+  fBuffer_VertexZ = 0;
   for (Int_t ntrig = 0; ntrig < kMaxTriggers; ntrig++)
   {
     fBuffer_EventTrigger[ntrig] = 0;
@@ -1233,6 +1260,8 @@ void AliAnalysisTaskCorrelationTree::ResetBuffer()
     fBuffer_ElectronCandidate_Px[ccand] = 0;
     fBuffer_ElectronCandidate_Py[ccand] = 0;
     fBuffer_ElectronCandidate_Pz[ccand] = 0;
+    fBuffer_ElectronCandidate_PropEta[ccand] = 0;
+    fBuffer_ElectronCandidate_PropPhi[ccand] = 0;
     fBuffer_ElectronCandidate_Charge[ccand] = 0;
     fBuffer_ElectronCandidate_NSigmaElecTPC[ccand] = 0;
     fBuffer_ElectronCandidate_NSigmaElecTOF[ccand] = 0;
@@ -1254,6 +1283,9 @@ void AliAnalysisTaskCorrelationTree::ResetBuffer()
       fBuffer_ElectronCandidate_MC_Mother_Pz[ccand] = 0;
       fBuffer_ElectronCandidate_MC_Mother_PDG[ccand] = 0;
       fBuffer_ElectronCandidate_MC_GrandMother_PDG[ccand] = 0;
+      fBuffer_ElectronCandidate_MC_GrandMother_Pt[ccand] = 0;
+      fBuffer_ElectronCandidate_MC_GGrandMother_PDG[ccand] = 0;
+      fBuffer_ElectronCandidate_MC_GGrandMother_Pt[ccand] = 0;
     }
     fBuffer_MuonCandidate_E[ccand] = 0;
     fBuffer_MuonCandidate_Px[ccand] = 0;
@@ -1278,6 +1310,9 @@ void AliAnalysisTaskCorrelationTree::ResetBuffer()
       fBuffer_MuonCandidate_MC_Mother_Pz[ccand] = 0;
       fBuffer_MuonCandidate_MC_Mother_PDG[ccand] = 0;
       fBuffer_MuonCandidate_MC_GrandMother_PDG[ccand] = 0;
+      fBuffer_MuonCandidate_MC_GrandMother_Pt[ccand] = 0;
+      fBuffer_MuonCandidate_MC_GGrandMother_PDG[ccand] = 0;
+      fBuffer_MuonCandidate_MC_GGrandMother_Pt[ccand] = 0;
     }
     fBuffer_ClusterCandidate_E[ccand] = 0;
     fBuffer_ClusterCandidate_Px[ccand] = 0;
