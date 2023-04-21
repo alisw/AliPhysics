@@ -49,19 +49,20 @@ public:
   /// \enum cutsIds
   /// \brief The ids of the different cuts currently supported
   enum cutsIds {
-    kMCdataQuality,             ///< MC analysis without proper MC data
-    kDAQIncompleteCut,          ///< Incomplete data event cut
-    kNoTracks,                  ///< Event with no tracks
-    kOfflineTriggerCut,         ///< Offline trigger cut
-    kVertexContributorsCut,     ///< Vertex contributor cut
-    kVertexQualityCut,          ///< Vertex quality cut
-    kSPDTrackVtxDistance,       ///< Distance between SPD and tracks vertex cut
-    kVertexCut,                 ///< Vertex z cut
-    kPileUpCut,                 ///< Pile up cut
-    k2015PileUpCut,             ///< 2015 PbPb additional pile up cut
-    kSPDClsVsTrkaletsCut,       ///< SPD clusters vs tracklets cut
-    kCentralityCut,             ///< Centrality cut
-    kNCuts                      ///< The number of supported cuts
+    kMCdataQuality,         ///< MC analysis without proper MC data
+    kMCGeneratedPileUp,     ///< MC generated pile up event
+    kDAQIncompleteCut,      ///< Incomplete data event cut
+    kNoTracks,              ///< Event with no tracks
+    kOfflineTriggerCut,     ///< Offline trigger cut
+    kVertexContributorsCut, ///< Vertex contributor cut
+    kVertexQualityCut,      ///< Vertex quality cut
+    kSPDTrackVtxDistance,   ///< Distance between SPD and tracks vertex cut
+    kVertexCut,             ///< Vertex z cut
+    kPileUpCut,             ///< Pile up cut
+    k2015PileUpCut,         ///< 2015 PbPb additional pile up cut
+    kSPDClsVsTrkaletsCut,   ///< SPD clusters vs tracklets cut
+    kCentralityCut,         ///< Centrality cut
+    kNCuts                  ///< The number of supported cuts
   };
 
   /// \enum SystemType

@@ -167,6 +167,8 @@ void AliGFWFilter::CreateStandardCutMasks(kLocalTrackFlags lStandardChi2Cut) {
   fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2010 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
   //Standard FB96 with chi2 < 2.5 cut -- for testing LHC15o_pass1, assuming that standard is 4.0
   fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + klTPCchi2PC25 + klNTPCcls70);
+  //Same as the nominal tracks, but need to replicate for NUA rebinning
+  fTrackMasks.push_back(klFB96 + klDCAz20 + klDCAxy2011 + lStandardChi2Cut + klNTPCcls70);
 
   //Event cuts:
   // if(!fEventMasks) fEventMasks = new UInt_t[gNEventFlags];

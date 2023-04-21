@@ -2,7 +2,7 @@
  * Maintainer: Mingrui Zhao
  */
 #include "AliAnalysisTaskNonlinearFlow.h"
-#include "AliGFWCuts.h"
+#include "AliGFWMCuts.h"
 #include "AliGFWNFCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
@@ -99,6 +99,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fUseAdditionalDCACut(false),
     fUseDefaultWeight(false),
     fEtaGap3Sub(0.4),
+    fOnTheFly(false),
 
     fListOfObjects(0),
     fListOfProfile(0),
@@ -131,6 +132,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     hDCAzBefore(0),
     hITSclustersBefore(0),
     hChi2Before(0),
+    hnTPCClu(0),
     hDCAxy(0),
     hDCAz(0),
     hITSclusters(0),
@@ -184,6 +186,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fUseAdditionalDCACut(false),
   fUseDefaultWeight(false),
   fEtaGap3Sub(0.4),
+  fOnTheFly(false),
 
   fListOfObjects(0),
   fListOfProfile(0),
@@ -215,6 +218,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   hDCAzBefore(0),
   hITSclustersBefore(0),
   hChi2Before(0),
+  hnTPCClu(0),
   hDCAxy(0),
   hDCAz(0),
   hITSclusters(0),
@@ -297,6 +301,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fUseAdditionalDCACut(false),
   fUseDefaultWeight(false),
   fEtaGap3Sub(0.4),
+  fOnTheFly(false),
 
   fListOfObjects(0),
   fListOfProfile(0),
@@ -331,6 +336,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   hDCAzBefore(0),
   hITSclustersBefore(0),
   hChi2Before(0),
+  hnTPCClu(0),
   hDCAxy(0),
   hDCAz(0),
   hITSclusters(0),
@@ -420,28 +426,35 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
     fGFWSelection15o = new AliGFWNFCuts();
     fGFWSelection15o->PrintSetup();
   } else {
-    fGFWSelection = new AliGFWCuts();
+    fGFWSelection = new AliGFWMCuts();
     fGFWSelection->PrintSetup();
   }
 
-  if (fNtrksName == "Mult") {
-    if (!fUseNarrowBin) {
-       nn = 200 + 56;
-       // 56 = (3000-200)/50
-       for (int i = 0; i <= 200; i++) {
-         xbins[i] = i + 0.5;
-       }
-       for (int i = 1; i <= 56; i++) {
-         xbins[200+i] = 50*i + 200 + 0.5;
-       } 
-    } else {
-       nn = 3000;
-       for (int i = 0; i <= 3000; i++) xbins[i] = i;  
+  if (fOnTheFly) {
+    nn = 1000;
+    for (int i = 0; i <= 1000; i++) {
+      xbins[i] = 30.0/nn*i;
     }
   } else {
-    nn = 100;
-    for (int i = 0; i <= 100; i++) {
-      xbins[i] = i;
+    if (fNtrksName == "Mult") {
+      if (!fUseNarrowBin) {
+        nn = 200 + 56;
+        // 56 = (3000-200)/50
+        for (int i = 0; i <= 200; i++) {
+          xbins[i] = i + 0.5;
+        }
+        for (int i = 1; i <= 56; i++) {
+          xbins[200+i] = 50*i + 200 + 0.5;
+        } 
+      } else {
+        nn = 3000;
+        for (int i = 0; i <= 3000; i++) xbins[i] = i;  
+      }
+    } else {
+      nn = 100;
+      for (int i = 0; i <= 100; i++) {
+        xbins[i] = i;
+      }
     }
   }
 
@@ -556,18 +569,21 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   hnCorrectedTracks = new TProfile("hnCorrectedTracks", "Number of corrected tracks in a ntracks bin", nn, xbins);
   fListOfObjects->Add(hnCorrectedTracks);
 
-  hDCAxy = new TH2D("hDCAxy", "DCAxy distribution", 100, 0, 1, 100, 0, 5);
+  hDCAxy = new TH2D("hDCAxy", "DCAxy distribution", 100, 0, 0.2, 600, 0, 3);
   fListOfObjects->Add(hDCAxy);
-  hDCAz  = new TH1D("hDCAz",  "DCAz distribution", 100, 0, 4);
+  hDCAz  = new TH1D("hDCAz",  "DCAz distribution", 100, 0, 5);
   fListOfObjects->Add(hDCAz);
-  hDCAxyBefore = new TH2D("hDCAxyBefore", "DCAxy distribution", 100, 0, 1, 100, 0, 5);
+  hDCAxyBefore = new TH2D("hDCAxyBefore", "DCAxy distribution", 100, 0, 0.2, 100, 0, 3);
   fListOfObjects->Add(hDCAxyBefore);
-  hDCAzBefore  = new TH1D("hDCAzBefore",  "DCAz distribution", 100, 0, 4);
+  hDCAzBefore  = new TH1D("hDCAzBefore",  "DCAz distribution", 100, 0, 5);
   fListOfObjects->Add(hDCAzBefore);
   hChi2  = new TH1D("hChi2", "TPC chi2 per cluster", 100, 0, 5);
   fListOfObjects->Add(hChi2);
   hChi2Before  = new TH1D("hChi2Before", "TPC chi2 per cluster", 100, 0, 5);
   fListOfObjects->Add(hChi2Before);
+  hnTPCClu  = new TH1D("hnTPCClu",  "Number of TPC clusters", 100, 40, 140);
+  fListOfObjects->Add(hnTPCClu);
+
 
   Int_t inSlotCounter=1;
   if(fNUA) {
@@ -645,7 +661,7 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
 void AliAnalysisTaskNonlinearFlow::NotifyRun() {
     if (fAddTPCPileupCuts) {
       Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
-	  fEventCuts.fUseVariablesCorrelationCuts = true;
+	    fEventCuts.fUseVariablesCorrelationCuts = true;
       fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
       fEventCuts.fESDvsTPConlyLinearCut[0] = fESDvsTPConlyLinearCut;
     }
@@ -658,103 +674,151 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
   // Check if it can pass the trigger
   //..apply physics selection
-  UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  Bool_t isTrigselected = false;
-  if (fTrigger == 0) {
-    isTrigselected = fSelectMask&AliVEvent::kINT7;
-    fAliTrigger = AliVEvent::kINT7;
-  } else if (fTrigger == 1) {
-    isTrigselected = fSelectMask&AliVEvent::kHighMultV0;
-    fAliTrigger = AliVEvent::kHighMultV0;
-  }
-  if(isTrigselected == false) return;
-
-  //..check if I have AOD
-  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
-  if(!fAOD) {
-    Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
-    return;
-  }
-
-  // Check if it passed the standard AOD selection
-  if (!AcceptAOD(fAOD) ) {
-    PostData(1,fListOfObjects);
-    int outputslot = 2;
-    PostData(2, fListOfProfile);
-    for (int i = 0; i < 30; i++) {
-      outputslot++;
-      PostData(outputslot, fListOfProfiles[i]);
+  if (!fOnTheFly) {
+    UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+    Bool_t isTrigselected = false;
+    if (fTrigger == 0) {
+      isTrigselected = fSelectMask&AliVEvent::kINT7;
+      fAliTrigger = AliVEvent::kINT7;
+    } else if (fTrigger == 1) {
+      isTrigselected = fSelectMask&AliVEvent::kHighMultV0;
+      fAliTrigger = AliVEvent::kHighMultV0;
     }
-    return;
+    if(isTrigselected == false) return;
   }
-  hEventCount->Fill("after fEventCuts", 1.);
 
-  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
-    fGFWSelection15o->ResetCuts();
+  if (fOnTheFly) { fMCEvent = getMCEvent(); }
+  else {
+    //..check if I have AOD
+    fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+    if(!fAOD) {
+      Printf("%s:%d AODEvent not found in Input Manager",(char*)__FILE__,__LINE__);
+      return;
+    }
+  }
+
+  if (fOnTheFly) {
+    hEventCount->Fill("after fEventCuts", 1.);
+    bootstrap_value = rand.Integer(30);
   } else {
-    fGFWSelection->ResetCuts();
-  }
-  //..filling Vz distribution
-  AliVVertex *vtx = fAOD->GetPrimaryVertex();
-  float fVtxZ = vtx->GetZ();
-
-  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
-	   if (!fGFWSelection15o->AcceptVertex(fAOD)) {
-	    PostData(1,fListOfObjects);
-	    int outputslot = 2;
-	    PostData(2, fListOfProfile);
-	    for (int i = 0; i < 30; i++) {
-	      outputslot++;
-	      PostData(outputslot, fListOfProfiles[i]);
-	    }
-	    return;
-	  }
-  } else {
-	  if (!fGFWSelection->AcceptVertex(fAOD)) {
-	    PostData(1,fListOfObjects);
-	    int outputslot = 2;
-	    PostData(2, fListOfProfile);
-	    for (int i = 0; i < 30; i++) {
-	      outputslot++;
-	      PostData(outputslot, fListOfProfiles[i]);
-	    }
-	    return;
-	  }
-  }
-
-  // checking the run number for aplying weights & loading TList with weights
-  //
-  if (lastRunNumber != fAOD->GetRunNumber()) {
-    lastRunNumber = fAOD->GetRunNumber();
-    if (fPeriod.EqualTo("LHC15oKatarina")) {
-      if (fNUA && !LoadWeightsKatarina()) {
-        AliFatal("Trying to Load Systematics but weights not loaded!");
-        return;
+    // Check if it passed the standard AOD selection
+    if (!AcceptAOD(fAOD) ) {
+      PostData(1,fListOfObjects);
+      int outputslot = 2;
+      PostData(2, fListOfProfile);
+      for (int i = 0; i < 30; i++) {
+        outputslot++;
+        PostData(outputslot, fListOfProfiles[i]);
       }
-      if (fNUE && !LoadPtWeightsKatarina()) {
-        AliFatal("PtWeights not loaded!");
-        return;
-      }
+      return;
+    }
+    hEventCount->Fill("after fEventCuts", 1.);
 
+    if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
+      fGFWSelection15o->ResetCuts();
     } else {
-      if (fNUA && !LoadWeightsSystematics()) {
-        AliFatal("Trying to Load Systematics but weights not loaded!");
+      fGFWSelection->ResetCuts();
+    }
+    //..filling Vz distribution
+    AliVVertex *vtx = fAOD->GetPrimaryVertex();
+    float fVtxZ = vtx->GetZ();
+
+    if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
+      if (!fGFWSelection15o->AcceptVertex(fAOD)) {
+        PostData(1,fListOfObjects);
+        int outputslot = 2;
+        PostData(2, fListOfProfile);
+        for (int i = 0; i < 30; i++) {
+          outputslot++;
+          PostData(outputslot, fListOfProfiles[i]);
+        }
         return;
       }
-      if (fNUE && !LoadPtWeights()) {
-        AliFatal("PtWeights not loaded!");
+    } else {
+      if (!fGFWSelection->AcceptVertex(fAOD)) {
+        PostData(1,fListOfObjects);
+        int outputslot = 2;
+        PostData(2, fListOfProfile);
+        for (int i = 0; i < 30; i++) {
+          outputslot++;
+          PostData(outputslot, fListOfProfiles[i]);
+        }
         return;
       }
     }
 
-  }
+    // checking the run number for aplying weights & loading TList with weights
+    //
+    if (lastRunNumber != fAOD->GetRunNumber()) {
+      lastRunNumber = fAOD->GetRunNumber();
+      if (fPeriod.EqualTo("LHC15oKatarina")) {
+        if (fNUA && !LoadWeightsKatarina()) {
+          AliFatal("Trying to Load Systematics but weights not loaded!");
+          return;
+        }
+        if (fNUE && !LoadPtWeightsKatarina()) {
+          AliFatal("PtWeights not loaded!");
+          return;
+        }
 
-  NTracksCalculation(fInputEvent);
+      } else {
+        if (fNUA && !LoadWeightsSystematics()) {
+          AliFatal("Trying to Load Systematics but weights not loaded!");
+          return;
+        }
+        if (fNUE && !LoadPtWeights()) {
+          AliFatal("PtWeights not loaded!");
+          return;
+        }
+      }
+    }
 
-  // Setup AliGFWCuts for a specific systematics
-  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
-    fGFWSelection15o->SetupCuts(fCurrSystFlag);
-    if (!fGFWSelection15o->AcceptVertex(fAOD)) {
+
+    NTracksCalculation(fInputEvent);
+
+    // Setup AliGFWMCuts for a specific systematics
+    if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
+      fGFWSelection15o->SetupCuts(fCurrSystFlag);
+      if (!fGFWSelection15o->AcceptVertex(fAOD)) {
+        PostData(1,fListOfObjects);
+        int outputslot = 2;
+        PostData(2, fListOfProfile);
+        for (int i = 0; i < 30; i++) {
+          outputslot++;
+          PostData(outputslot, fListOfProfiles[i]);
+        }
+        return;
+      }
+    } else {
+      fGFWSelection->SetupCuts(fCurrSystFlag);
+      if (!fGFWSelection->AcceptVertex(fAOD)) {
+        PostData(1,fListOfObjects);
+        int outputslot = 2;
+        PostData(2, fListOfProfile);
+        for (int i = 0; i < 30; i++) {
+          outputslot++;
+          PostData(outputslot, fListOfProfiles[i]);
+        }
+        return;
+      }
+    }
+    // Check the VtxZ distribution
+    fVtxAfterCuts->Fill(fVtxZ);
+
+    hMult->Fill(NtrksCounter);
+
+    //..standard event plots (cent. percentiles, mult-vs-percentile)
+    const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
+    const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
+    float centrV0 = dCentrality;
+    float cent = dCentrality;
+    float centSPD = 0;
+
+    fCentralityDis->Fill(cent);
+    fV0CentralityDis->Fill(centrV0);
+    fV0CentralityDisNarrow->Fill(centrV0);
+
+    if (cent > fCentralityCut) {
       PostData(1,fListOfObjects);
       int outputslot = 2;
       PostData(2, fListOfProfile);
@@ -764,52 +828,17 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
       }
       return;
     }
-  } else {
-   fGFWSelection->SetupCuts(fCurrSystFlag);
-    if (!fGFWSelection->AcceptVertex(fAOD)) {
-      PostData(1,fListOfObjects);
-      int outputslot = 2;
-      PostData(2, fListOfProfile);
-      for (int i = 0; i < 30; i++) {
-        outputslot++;
-        PostData(outputslot, fListOfProfiles[i]);
-      }
-      return;
+
+    //..all charged particles
+    if (!fIsMC) {
+      AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
+    } else {
+      AnalyzeMCTruth(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
     }
   }
-  // Check the VtxZ distribution
-  fVtxAfterCuts->Fill(fVtxZ);
 
-  hMult->Fill(NtrksCounter);
-
-  //..standard event plots (cent. percentiles, mult-vs-percentile)
-  const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
-  const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
-  float centrV0 = dCentrality;
-  float cent = dCentrality;
-  float centSPD = 0;
-
-  fCentralityDis->Fill(cent);
-  fV0CentralityDis->Fill(centrV0);
-  fV0CentralityDisNarrow->Fill(centrV0);
-
-  if (cent > fCentralityCut) {
-	  PostData(1,fListOfObjects);
-	  int outputslot = 2;
-	  PostData(2, fListOfProfile);
-	  for (int i = 0; i < 30; i++) {
-		  outputslot++;
-		  PostData(outputslot, fListOfProfiles[i]);
-	  }
-	  return;
-  }
-
-
-  //..all charged particles
-  if (!fIsMC) {
-     AnalyzeAOD(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
-  } else {
-    AnalyzeMCTruth(fInputEvent, centrV0, cent, centSPD, fVtxZ, false);
+  if (fOnTheFly) {
+    AnalyzeMCOnTheFly(fMCEvent);
   }
 
   // Post output data.
@@ -969,17 +998,17 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     }
 
     aodTrk->GetXYZ(pos);
-
-    double pos[3];
-    aodTrk->GetXYZ(pos);
     double dcaX = pos[0] - vtxp[0]; 
     double dcaY = pos[1] - vtxp[1];
     double dcaZ = abs(pos[2] - vtxp[2]);
     double dcaXY = TMath::Sqrt(dcaX*dcaX+dcaY*dcaY);
 
-	hDCAxyBefore->Fill(dcaXY, aodTrk->Pt());
-	hDCAzBefore->Fill(dcaZ);
-    hChi2Before->Fill(aodTrk->GetTPCchi2perCluster());
+    double fb = (fCurrSystFlag == 1) ? 768 : 96;
+    if (aodTrk->TestFilterBit(fb)) {
+	    hDCAxyBefore->Fill(dcaXY, aodTrk->Pt());
+	    hDCAzBefore->Fill(dcaZ);
+      hChi2Before->Fill(aodTrk->GetTPCchi2perCluster());
+    }
 
     if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
     if (fUseAdditionalDCACut) {
@@ -987,9 +1016,10 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
        if (dcaZ > 1) continue;
     }
 
-	hDCAxy->Fill(dcaXY, aodTrk->Pt());
-	hDCAz->Fill(dcaZ);
+	  hDCAxy->Fill(dcaXY, aodTrk->Pt());
+	  hDCAz->Fill(dcaZ);
     hChi2->Fill(aodTrk->GetTPCchi2perCluster());
+    hnTPCClu->Fill(aodTrk->GetTPCNclsF());
     NtrksAfter += 1;
 
     //..get phi-weight for NUA correction
@@ -1585,6 +1615,341 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
 
 }
 
+
+//________________________________________________________________________
+void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
+{
+
+  NtrksCounter = fImpactParameterMC;
+
+  // Init the number of tracks
+  NtrksAfter = 0;
+  NtrksAfterGap0M = 0;
+  NtrksAfterGap0P = 0;
+  NtrksAfterGap2M = 0;
+  NtrksAfterGap2P = 0;
+  NtrksAfterGap4M = 0;
+  NtrksAfterGap4P = 0;
+  NtrksAfterGap6M = 0;
+  NtrksAfterGap6P = 0;
+  NtrksAfterGap8M = 0;
+  NtrksAfterGap8P = 0;
+  NtrksAfterGap10M = 0;
+  NtrksAfterGap10P = 0;
+  NtrksAfterGap14M = 0;
+  NtrksAfterGap14P = 0;
+  NtrksAfter3subL = 0;
+  NtrksAfter3subM = 0;
+  NtrksAfter3subR = 0;
+
+
+  //..for DCA
+  // double pos[3], vz, vx, vy;
+  // vz = aod->GetPrimaryVertex()->GetZ();
+  // vx = aod->GetPrimaryVertex()->GetX();
+  // vy = aod->GetPrimaryVertex()->GetY();
+  // double vtxp[3] = {vx, vy, vz};
+  // Assume that DCA cuts not needed here
+
+  double Qcos[20][20] = {0};
+  double Qsin[20][20] = {0};
+  double QcosGap0M[20][20] = {0};
+  double QsinGap0M[20][20] = {0};
+  double QcosGap0P[20][20] = {0};
+  double QsinGap0P[20][20] = {0};
+  double QcosGap2M[20][20] = {0};
+  double QsinGap2M[20][20] = {0};
+  double QcosGap2P[20][20] = {0};
+  double QsinGap2P[20][20] = {0};
+  double QcosGap4M[20][20] = {0};
+  double QsinGap4M[20][20] = {0};
+  double QcosGap4P[20][20] = {0};
+  double QsinGap4P[20][20] = {0};
+  double QcosGap6M[20][20] = {0};
+  double QsinGap6M[20][20] = {0};
+  double QcosGap6P[20][20] = {0};
+  double QsinGap6P[20][20] = {0};
+  double QcosGap8M[20][20] = {0};
+  double QsinGap8M[20][20] = {0};
+  double QcosGap8P[20][20] = {0};
+  double QsinGap8P[20][20] = {0};
+  double QcosGap10M[20][20] = {0};
+  double QsinGap10M[20][20] = {0};
+  double QcosGap10P[20][20] = {0};
+  double QsinGap10P[20][20] = {0};
+  double QcosGap14M[20][20] = {0};
+  double QsinGap14M[20][20] = {0};
+  double QcosGap14P[20][20] = {0};
+  double QsinGap14P[20][20] = {0};
+  double QcosSubLeft[20][20] = {0};
+  double QsinSubLeft[20][20] = {0};
+  double QcosSubMiddle[20][20] = {0};
+  double QsinSubMiddle[20][20] = {0};
+  double QcosSubRight[20][20] = {0};
+  double QsinSubRight[20][20] = {0};
+
+
+
+  // double runNumber = fInputEvent->GetRunNumber();
+  // Weight is not needed
+
+  int nAODTracks = aod->GetNumberOfPrimaries();
+  //..LOOP OVER TRACKS........
+  //........................................
+  for(Int_t nt = 0; nt < nAODTracks; nt++) {
+
+    AliMCParticle *track = (AliMCParticle*)(aod->GetTrack(nt));
+
+    if (!track) {
+      continue;
+    }
+
+    // track->GetXYZ(pos);
+    // if (!AcceptMCTruthTrack(track)) continue;
+    if(track->Pt() < fMinPt) continue;
+    if(track->Pt() > fMaxPt) continue;
+    if(TMath::Abs(track->Eta()) > fEtaCut) continue;
+    // if (!(track->IsPhysicalPrimary())) return kFALSE;
+    if (track->Charge() == 0) continue;
+
+    NtrksAfter += 1;
+
+    //..get phi-weight for NUA correction
+    double weight = 1;
+    double weightPt = 1;
+
+    //..calculate Q-vectors
+    //..no eta gap
+    // Calculate the values upto v7
+    if (fuQStandard) {
+      for(int iharm=0; iharm<8; iharm++) {
+        for(int ipow=0; ipow<6; ipow++) {
+          Qcos[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+          Qsin[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+        }
+      }
+    }
+    //..Gap > 0.0
+    if (fuQ0Gap) {
+      if(track->Eta() < 0) {
+        NtrksAfterGap0M++;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosGap0M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinGap0M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+      if(track->Eta() > 0) {
+        NtrksAfterGap0P++;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosGap0P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinGap0P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+    }
+
+    if (fuQGapScan) {
+      //..Gap > 0.2
+      if(track->Eta() < -0.1) {
+        NtrksAfterGap2M++;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosGap2M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinGap2M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+      if(track->Eta() > 0.1) {
+        NtrksAfterGap2P++;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosGap2P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinGap2P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+
+      //..Gap > 0.4
+      if(track->Eta() < -0.2) {
+        NtrksAfterGap4M++;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosGap4M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinGap4M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+      if(track->Eta() > 0.2) {
+        NtrksAfterGap4P++;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosGap4P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinGap4P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+
+      //..Gap > 0.6
+      if(track->Eta() < -0.3) {
+        NtrksAfterGap6M++;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosGap6M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinGap6M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+      if(track->Eta() > 0.3) {
+        NtrksAfterGap6P++;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosGap6P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinGap6P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+
+      //..Gap > 0.8
+      if(track->Eta() < -0.4) {
+        NtrksAfterGap8M++;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosGap8M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinGap8M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+      if(track->Eta() > 0.4) {
+        NtrksAfterGap8P++;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosGap8P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinGap8P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+    }
+
+    if (fuQLargeGap) {
+      //..Gap > 1.0
+      if(track->Eta() < -0.5) {
+        NtrksAfterGap10M++;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosGap10M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinGap10M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+      if(track->Eta() > 0.5) {
+        NtrksAfterGap10P++;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosGap10P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinGap10P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+
+      //..Gap > 1.4
+      if(track->Eta() < -0.7) {
+        NtrksAfterGap14M++;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosGap14M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinGap14M[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+      if(track->Eta() > 0.7) {
+        NtrksAfterGap14P++;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosGap14P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinGap14P[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+    }
+
+    if (fuQThreeSub) {
+      //..3-subevent method
+      if(track->Eta() < -fEtaGap3Sub) {//..left part
+        NtrksAfter3subL += 1;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosSubLeft[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinSubLeft[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+      if(track->Eta() >= -fEtaGap3Sub && track->Eta() <= fEtaGap3Sub) {//..middle part
+        NtrksAfter3subM += 1;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosSubMiddle[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinSubMiddle[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+      if(track->Eta() > fEtaGap3Sub) {//..right part
+        NtrksAfter3subR += 1;
+        for(int iharm=0; iharm<8; iharm++) {
+          for(int ipow=0; ipow<6; ipow++) {
+            QcosSubRight[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
+            QsinSubRight[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
+          }
+        }
+      }
+    }
+  } // end loop of all track
+
+  //............................
+  //..GENERIC FRAMEWORK RP
+  //............................
+
+  //..calculate Q-vector for each harmonics n and power p
+  if (fuQStandard) correlator.FillQVector(correlator.Qvector, Qcos, Qsin);
+  if (fuQ0Gap) {
+    correlator.FillQVector(correlator.Qvector0M, QcosGap0M, QsinGap0M);
+    correlator.FillQVector(correlator.Qvector0P, QcosGap0P, QsinGap0P);
+  }
+  if (fuQGapScan) {
+    correlator.FillQVector(correlator.Qvector2M, QcosGap2M, QsinGap2M);
+    correlator.FillQVector(correlator.Qvector2P, QcosGap2P, QsinGap2P);
+    correlator.FillQVector(correlator.Qvector4M, QcosGap4M, QsinGap4M);
+    correlator.FillQVector(correlator.Qvector4P, QcosGap4P, QsinGap4P);
+    correlator.FillQVector(correlator.Qvector6M, QcosGap6M, QsinGap6M);
+    correlator.FillQVector(correlator.Qvector6P, QcosGap6P, QsinGap6P);
+    correlator.FillQVector(correlator.Qvector8M, QcosGap8M, QsinGap8M);
+    correlator.FillQVector(correlator.Qvector8P, QcosGap8P, QsinGap8P);
+  }
+  if (fuQLargeGap) {
+    correlator.FillQVector(correlator.Qvector10M, QcosGap10M, QsinGap10M);
+    correlator.FillQVector(correlator.Qvector10P, QcosGap10P, QsinGap10P);
+    correlator.FillQVector(correlator.Qvector14M, QcosGap14M, QsinGap14M);
+    correlator.FillQVector(correlator.Qvector14P, QcosGap14P, QsinGap14P);
+  }
+  if (fuQThreeSub) {
+    correlator.FillQVector(correlator.QvectorSubLeft, QcosSubLeft, QsinSubLeft);
+    correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight);
+    correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
+  }
+
+  if (fNtrksName == "Mult") {
+    CalculateProfile(multProfile, NtrksCounter);
+    CalculateProfile(multProfile_bin[bootstrap_value], NtrksCounter);
+  } else {
+    CalculateProfile(multProfile, NtrksCounter);
+    CalculateProfile(multProfile_bin[bootstrap_value], NtrksCounter);
+  }
+
+}
+
+
 //____________________________________________________________________
 //	END OF MAIN PROGRAM
 //____________________________________________________________________
@@ -1688,7 +2053,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
     int EvFlag = 0, TrFlag = 0;
     if (fCurrSystFlag == 0) EvFlag = 0, TrFlag = 0;
     if (fCurrSystFlag == 1) EvFlag = 0, TrFlag = 1;
-    if (fCurrSystFlag == 2) EvFlag = 0, TrFlag = 3;
+    if (fCurrSystFlag == 2) EvFlag = 0, TrFlag = 5;
     if (fCurrSystFlag == 3) EvFlag = 0, TrFlag = 0; // Abandoned
     if (fCurrSystFlag == 4) EvFlag = 0, TrFlag = 2;
     if (fCurrSystFlag == 5) EvFlag = 0, TrFlag = 3;
@@ -1732,7 +2097,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
   else {
     if (fCurrSystFlag == 0) EvFlag = 0, TrFlag = 0;
     if (fCurrSystFlag == 1) EvFlag = 0, TrFlag = 1;
-    if (fCurrSystFlag == 2) EvFlag = 0, TrFlag = 3;
+    if (fCurrSystFlag == 2) EvFlag = 0, TrFlag = 5;
     if (fCurrSystFlag == 3) EvFlag = 0, TrFlag = 0; // Abandoned
     if (fCurrSystFlag == 4) EvFlag = 0, TrFlag = 2;
     if (fCurrSystFlag == 5) EvFlag = 0, TrFlag = 3;
@@ -2316,7 +2681,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *
     mtr->GetXYZ(ltrackXYZ);
     ltrackXYZ[0] = ltrackXYZ[0]-vtxp[0];
     ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
-    ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
+    ltrackXYZ[2] = abs(ltrackXYZ[2]-vtxp[2]);
   } else return kFALSE; //DCA cut is a must for now
 
   // Additional cut for TPCchi2perCluster
@@ -2333,6 +2698,8 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptMCTruthTrack(AliAODMCParticle *mtrk) 
   // Pt cut
   if(mtrk->Pt() < fMinPt) return kFALSE;
   if(mtrk->Pt() > fMaxPt) return kFALSE;
+
+  if(TMath::Abs(mtrk->Eta()) > fEtaCut) return kFALSE;
 
   if (!(mtrk->IsPhysicalPrimary())) return kFALSE;
   if (mtrk->Charge() == 0) return kFALSE;
@@ -3449,4 +3816,28 @@ int AliAnalysisTaskNonlinearFlow::GetEtaPtFlag(double dEta) {
     if(dEta < -0.2) return 3;
     return 1;
   }
+}
+
+AliMCEvent *AliAnalysisTaskNonlinearFlow::getMCEvent() {
+  AliMCEvent* ev = dynamic_cast<AliMCEvent*>(MCEvent());
+  if(!ev) { AliFatal("MC event not found!"); return 0; }
+  AliGenEventHeader *header = dynamic_cast<AliGenEventHeader*>(ev->GenEventHeader());
+  if(!header) { AliFatal("MC event not generated!"); return 0; }
+  AliCollisionGeometry* headerH;
+  TString genName;
+  TList *ltgen = (TList*)ev->GetCocktailList();
+  if (ltgen) {
+    for(auto&& listObject: *ltgen){
+      genName = Form("%s",listObject->GetName());
+      if (genName.Contains("Hijing")) {
+        headerH = dynamic_cast<AliCollisionGeometry*>(listObject);
+        break;
+      }
+    }
+  }
+  else headerH = dynamic_cast<AliCollisionGeometry*>(ev->GenEventHeader());
+  if(headerH){
+    fImpactParameterMC = headerH->ImpactParameter();
+  }
+  return ev;
 }

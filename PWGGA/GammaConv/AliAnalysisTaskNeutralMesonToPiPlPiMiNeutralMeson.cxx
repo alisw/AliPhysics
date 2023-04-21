@@ -308,6 +308,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoTruePionPionInvMassPt(nullptr),
   fHistoTruePionPionFromSameMotherInvMassPt(nullptr),
   fHistoTruePionPionFromHNMInvMassPt(nullptr),
+  fHistoTruePionFromHNMInvMassPt(nullptr),
   fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt(nullptr),
   fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt(nullptr),
   fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt(nullptr),
@@ -382,10 +383,93 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fDoProfileMaterialBudgetWeights(kFALSE),
   fProfileMaterialBudgetWeights(nullptr),
   fNumberOfMaterialBudgetBins(12),
+  fEnableBckgReductionStudy(kFALSE),
+  fMLtreeCutOff(100),
+  fHistoBckReduction(nullptr),
   fMCEventPos(),
   fMCEventNeg(),
   fESDArrayPos(),
-  fESDArrayNeg()
+  fESDArrayNeg(),
+  fTreeBckgReduction(nullptr),
+  fBuffer_PiPl_px(0),
+  fBuffer_PiPl_py(0),
+  fBuffer_PiPl_pz(0),
+  fBuffer_PiPl_E(0),
+  fBuffer_PiPl_charge(1),
+  fBuffer_PiPl_DCAR(0),
+  fBuffer_PiPl_DCAz(0),
+  fBuffer_PiPl_TPCClus(0),
+  fBuffer_PiPl_dEdxSigma(0),
+  fBuffer_PiPl_TOFdEdxSigma(0),
+  fBuffer_PiPl_trueID(0),
+  fBuffer_PiMi_px(0),
+  fBuffer_PiMi_py(0),
+  fBuffer_PiMi_pz(0),
+  fBuffer_PiMi_E(0),
+  fBuffer_PiMi_charge(0),
+  fBuffer_PiMi_DCAR(0),
+  fBuffer_PiMi_DCAz(0),
+  fBuffer_PiMi_TPCClus(0),
+  fBuffer_PiMi_dEdxSigma(0),
+  fBuffer_PiMi_TOFdEdxSigma(0),
+  fBuffer_PiMi_trueID(0),
+  fBuffer_PionPair_trueMotherID(0),
+  fBuffer_Gamma1_px(0),
+  fBuffer_Gamma1_py(0),
+  fBuffer_Gamma1_pz(0),
+  fBuffer_Gamma1_E(0),
+  fBuffer_Gamma1_eta(0),
+  fBuffer_Gamma1_phi(0),
+  fBuffer_Gamma1_trueID(0),
+  fBuffer_Gamma2_px(0),
+  fBuffer_Gamma2_py(0),
+  fBuffer_Gamma2_pz(0),
+  fBuffer_Gamma2_E(0),
+  fBuffer_Gamma2_eta(0),
+  fBuffer_Gamma2_phi(0),
+  fBuffer_Gamma2_trueID(0),
+  fBuffer_Gamma1_eMomentum(0),
+  fBuffer_Gamma1_eTPCClus(0),
+  fBuffer_Gamma1_edEdxSigma(0),
+  fBuffer_Gamma1_epidEdxSigma(0),
+  fBuffer_Gamma1_eTOFPID(0),
+  fBuffer_Gamma1_pMomentum(0),
+  fBuffer_Gamma1_pTPCClus(0),
+  fBuffer_Gamma1_pdEdxSigma(0),
+  fBuffer_Gamma1_ppidEdxSigma(0),
+  fBuffer_Gamma1_pTOFPID(0),
+  fBuffer_Gamma1_R(0),
+  fBuffer_Gamma1_ArmenterosQt(0),
+  fBuffer_Gamma1_ArmenterosAlpha(0),
+  fBuffer_Gamma1_chiSquared(0),
+  fBuffer_Gamma1_PsiPair(0),
+  fBuffer_Gamma2_eMomentum(0),
+  fBuffer_Gamma2_eTPCClus(0),
+  fBuffer_Gamma2_edEdxSigma(0),
+  fBuffer_Gamma2_epidEdxSigma(0),
+  fBuffer_Gamma2_eTOFPID(0),
+  fBuffer_Gamma2_pMomentum(0),
+  fBuffer_Gamma2_pTPCClus(0),
+  fBuffer_Gamma2_pdEdxSigma(0),
+  fBuffer_Gamma2_ppidEdxSigma(0),
+  fBuffer_Gamma2_pTOFPID(0),
+  fBuffer_Gamma2_R(0),
+  fBuffer_Gamma2_ArmenterosQt(0),
+  fBuffer_Gamma2_ArmenterosAlpha(0),
+  fBuffer_Gamma2_chiSquared(0),
+  fBuffer_Gamma2_PsiPair(0),
+  fBuffer_Gamma1_M02(0),
+  fBuffer_Gamma2_M02(0),
+  fBuffer_GammaPair_OpeningAngle(0),
+  fBuffer_GammaPair_Alpha(0),
+  fBuffer_GammaPair_invMassRec(0),
+  fBuffer_GammaPair_trueMotherID(0),
+  fBuffer_NDM_px(0),
+  fBuffer_NDM_py(0),
+  fBuffer_NDM_pz(0),
+  fBuffer_NDM_E(0),
+  fBuffer_NDM_invMassRec(0),
+  fBuffer_NDM_trueID(0)
 {
 
 }
@@ -644,6 +728,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoTruePionPionInvMassPt(nullptr),
   fHistoTruePionPionFromSameMotherInvMassPt(nullptr),
   fHistoTruePionPionFromHNMInvMassPt(nullptr),
+  fHistoTruePionFromHNMInvMassPt(nullptr),
   fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt(nullptr),
   fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt(nullptr),
   fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt(nullptr),
@@ -718,12 +803,96 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fDoProfileMaterialBudgetWeights(kFALSE),
   fProfileMaterialBudgetWeights(nullptr),
   fNumberOfMaterialBudgetBins(12),
+  fEnableBckgReductionStudy(kFALSE),
+  fMLtreeCutOff(100),
+  fHistoBckReduction(nullptr),
   fMCEventPos(),
   fMCEventNeg(),
   fESDArrayPos(),
-  fESDArrayNeg()
+  fESDArrayNeg(),
+  fTreeBckgReduction(NULL),
+  fBuffer_PiPl_px(0),
+  fBuffer_PiPl_py(0),
+  fBuffer_PiPl_pz(0),
+  fBuffer_PiPl_E(0),
+  fBuffer_PiPl_charge(1),
+  fBuffer_PiPl_DCAR(0),
+  fBuffer_PiPl_DCAz(0),
+  fBuffer_PiPl_TPCClus(0),
+  fBuffer_PiPl_dEdxSigma(0),
+  fBuffer_PiPl_TOFdEdxSigma(0),
+  fBuffer_PiPl_trueID(0),
+  fBuffer_PiMi_px(0),
+  fBuffer_PiMi_py(0),
+  fBuffer_PiMi_pz(0),
+  fBuffer_PiMi_E(0),
+  fBuffer_PiMi_charge(0),
+  fBuffer_PiMi_DCAR(0),
+  fBuffer_PiMi_DCAz(0),
+  fBuffer_PiMi_TPCClus(0),
+  fBuffer_PiMi_dEdxSigma(0),
+  fBuffer_PiMi_TOFdEdxSigma(0),
+  fBuffer_PiMi_trueID(0),
+  fBuffer_PionPair_trueMotherID(0),
+  fBuffer_Gamma1_px(0),
+  fBuffer_Gamma1_py(0),
+  fBuffer_Gamma1_pz(0),
+  fBuffer_Gamma1_E(0),
+  fBuffer_Gamma1_eta(0),
+  fBuffer_Gamma1_phi(0),
+  fBuffer_Gamma1_trueID(0),
+  fBuffer_Gamma2_px(0),
+  fBuffer_Gamma2_py(0),
+  fBuffer_Gamma2_pz(0),
+  fBuffer_Gamma2_E(0),
+  fBuffer_Gamma2_eta(0),
+  fBuffer_Gamma2_phi(0),
+  fBuffer_Gamma2_trueID(0),
+  fBuffer_Gamma1_eMomentum(0),
+  fBuffer_Gamma1_eTPCClus(0),
+  fBuffer_Gamma1_edEdxSigma(0),
+  fBuffer_Gamma1_epidEdxSigma(0),
+  fBuffer_Gamma1_eTOFPID(0),
+  fBuffer_Gamma1_pMomentum(0),
+  fBuffer_Gamma1_pTPCClus(0),
+  fBuffer_Gamma1_pdEdxSigma(0),
+  fBuffer_Gamma1_ppidEdxSigma(0),
+  fBuffer_Gamma1_pTOFPID(0),
+  fBuffer_Gamma1_R(0),
+  fBuffer_Gamma1_ArmenterosQt(0),
+  fBuffer_Gamma1_ArmenterosAlpha(0),
+  fBuffer_Gamma1_chiSquared(0),
+  fBuffer_Gamma1_PsiPair(0),
+  fBuffer_Gamma2_eMomentum(0),
+  fBuffer_Gamma2_eTPCClus(0),
+  fBuffer_Gamma2_edEdxSigma(0),
+  fBuffer_Gamma2_epidEdxSigma(0),
+  fBuffer_Gamma2_eTOFPID(0),
+  fBuffer_Gamma2_pMomentum(0),
+  fBuffer_Gamma2_pTPCClus(0),
+  fBuffer_Gamma2_pdEdxSigma(0),
+  fBuffer_Gamma2_ppidEdxSigma(0),
+  fBuffer_Gamma2_pTOFPID(0),
+  fBuffer_Gamma2_R(0),
+  fBuffer_Gamma2_ArmenterosQt(0),
+  fBuffer_Gamma2_ArmenterosAlpha(0),
+  fBuffer_Gamma2_chiSquared(0),
+  fBuffer_Gamma2_PsiPair(0),
+  fBuffer_Gamma1_M02(0),
+  fBuffer_Gamma2_M02(0),
+  fBuffer_GammaPair_OpeningAngle(0),
+  fBuffer_GammaPair_Alpha(0),
+  fBuffer_GammaPair_invMassRec(0),
+  fBuffer_GammaPair_trueMotherID(0),
+  fBuffer_NDM_px(0),
+  fBuffer_NDM_py(0),
+  fBuffer_NDM_pz(0),
+  fBuffer_NDM_E(0),
+  fBuffer_NDM_invMassRec(0),
+  fBuffer_NDM_trueID(0)
 {
   DefineOutput(1, TList::Class());
+  DefineOutput(2, TTree::Class());
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -1918,6 +2087,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoTruePionPionInvMassPt                               = new TH2F*[fnCuts];
         fHistoTruePionPionFromSameMotherInvMassPt                 = new TH2F*[fnCuts];
         fHistoTruePionPionFromHNMInvMassPt                        = new TH2F*[fnCuts];
+        fHistoTruePionFromHNMInvMassPt                        = new TH2F*[fnCuts];
 
         fHistoTrueMesonFlags                                      = new TH1F*[fnCuts];
 
@@ -2547,6 +2717,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistoTruePionPionFromHNMInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoTruePionPionFromHNMInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePionPionFromHNMInvMassPt[iCut]);
+          fHistoTruePionFromHNMInvMassPt[iCut]          = new TH2F("ESD_TruePiPlusOrPiNegFromHNM_InvMassPt","ESD_TruePiPlusOrPiNegFromHNM_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1], HistoNPtBins, arrPtBinning);
+          fHistoTruePionFromHNMInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
+          fHistoTruePionFromHNMInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePionFromHNMInvMassPt[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePionFromHNMInvMassPt[iCut]);
 
           fHistoTruevParticleChi2PerNDF[iCut] = new TH1F("fHistoTruevParticleChi2PerNDF","fHistoTruevParticleChi2PerNDF",300,0,300);
           fHistoTruevParticleChi2PerNDF[iCut]->GetXaxis()->SetTitle("#chi^{2}/ndf");
@@ -3004,7 +3179,130 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
     }
   }
 
+
+  if( fEnableBckgReductionStudy ){
+    fHistoBckReduction = new TH1F("InvMassHisto","InvMassHisto",HistoNMassBins,HistoMassRange[0],HistoMassRange[1]);
+    fHistoBckReduction->GetXaxis()->SetTitle(Form("M_{#pi^{+} #pi^{-} %s} (GeV/c^{2})",NameNDMLatex.Data()));
+    fOutputContainer->Add(fHistoBckReduction);
+  }
+    
   PostData(1, fOutputContainer);
+
+  if( fEnableBckgReductionStudy ) {
+    fTreeBckgReduction = new TTree( "MLBckgReductionTree", "MLBckgReductionTree_%s" );
+
+    fTreeBckgReduction->Branch( "PiPl_px",            &fBuffer_PiPl_px,             "PiPl_px/S");
+    fTreeBckgReduction->Branch( "PiPl_py",            &fBuffer_PiPl_py,             "PiPl_py/S");
+    fTreeBckgReduction->Branch( "PiPl_pz",            &fBuffer_PiPl_pz,             "PiPl_pz/S");
+    fTreeBckgReduction->Branch( "PiPl_E",             &fBuffer_PiPl_E,              "PiPl_E/s");
+    fTreeBckgReduction->Branch( "PiPl_charge",        &fBuffer_PiPl_charge,         "PiPl_charge/O");
+    fTreeBckgReduction->Branch( "PiPl_DCAR",          &fBuffer_PiPl_DCAR,           "PiPl_DCAR/s");
+    fTreeBckgReduction->Branch( "PiPl_DCAz",          &fBuffer_PiPl_DCAz,           "PiPl_DCAz/S");
+    fTreeBckgReduction->Branch( "PiPl_TPCClus",       &fBuffer_PiPl_TPCClus,        "PiPl_TPCClus/S");
+    fTreeBckgReduction->Branch( "PiPl_dEdxSigma",     &fBuffer_PiPl_dEdxSigma,      "PiPl_dEdxSigma/S");
+    fTreeBckgReduction->Branch( "PiPl_TOFdEdxSigma",  &fBuffer_PiPl_TOFdEdxSigma,   "PiPl_TOFdEdxSigma/S");
+    fTreeBckgReduction->Branch( "PiPl_trueID",        &fBuffer_PiPl_trueID,         "PiPl_trueID/O");
+
+    fTreeBckgReduction->Branch( "PiMi_px",            &fBuffer_PiMi_px,             "PiMi_px/S");
+    fTreeBckgReduction->Branch( "PiMi_py",            &fBuffer_PiMi_py,             "PiMi_py/S");
+    fTreeBckgReduction->Branch( "PiMi_pz",            &fBuffer_PiMi_pz,             "PiMi_pz/S");
+    fTreeBckgReduction->Branch( "PiMi_E",             &fBuffer_PiMi_E,              "PiMi_E/s");
+    fTreeBckgReduction->Branch( "PiMi_charge",        &fBuffer_PiMi_charge,         "PiMi_charge/S");
+    fTreeBckgReduction->Branch( "PiMi_DCAR",          &fBuffer_PiMi_DCAR,           "PiMi_DCAR/s");
+    fTreeBckgReduction->Branch( "PiMi_DCAz",          &fBuffer_PiMi_DCAz,           "PiMi_DCAz/S");
+    fTreeBckgReduction->Branch( "PiMi_TPCClus",       &fBuffer_PiMi_TPCClus,        "PiMi_TPCClus/S");
+    fTreeBckgReduction->Branch( "PiMi_dEdxSigma",     &fBuffer_PiMi_dEdxSigma,      "PiMi_dEdxSigma/S");
+    fTreeBckgReduction->Branch( "PiMi_TOFdEdxSigma",  &fBuffer_PiMi_TOFdEdxSigma,   "PiMi_TOFdEdxSigma/S");
+    fTreeBckgReduction->Branch( "PiMi_trueID",        &fBuffer_PiMi_trueID,         "PiMi_trueID/O");
+
+    fTreeBckgReduction->Branch( "PionPair_trueMotherID",    &fBuffer_PionPair_trueMotherID,   "PionPair_trueMotherID/B");
+
+    fTreeBckgReduction->Branch( "Gamma1_px",          &fBuffer_Gamma1_px,           "Gamma1_px/S");
+    fTreeBckgReduction->Branch( "Gamma1_py",          &fBuffer_Gamma1_py,           "Gamma1_py/S");
+    fTreeBckgReduction->Branch( "Gamma1_pz",          &fBuffer_Gamma1_pz,           "Gamma1_pz/S");
+    fTreeBckgReduction->Branch( "Gamma1_E",           &fBuffer_Gamma1_E,            "Gamma1_E/s");
+    fTreeBckgReduction->Branch( "Gamma1_eta",         &fBuffer_Gamma1_eta,          "Gamma1_eta/S");
+    fTreeBckgReduction->Branch( "Gamma1_phi",         &fBuffer_Gamma1_phi,          "Gamma1_phi/s");
+    fTreeBckgReduction->Branch( "Gamma1_trueID",      &fBuffer_Gamma1_trueID,       "Gamma1_trueID/O");
+
+    fTreeBckgReduction->Branch( "Gamma2_px",          &fBuffer_Gamma2_px,           "Gamma2_px/S");
+    fTreeBckgReduction->Branch( "Gamma2_py",          &fBuffer_Gamma2_py,           "Gamma2_py/S");
+    fTreeBckgReduction->Branch( "Gamma2_pz",          &fBuffer_Gamma2_pz,           "Gamma2_pz/S");
+    fTreeBckgReduction->Branch( "Gamma2_E",           &fBuffer_Gamma2_E,            "Gamma2_E/S");
+    fTreeBckgReduction->Branch( "Gamma2_eta",         &fBuffer_Gamma2_eta,          "Gamma2_eta/S");
+    fTreeBckgReduction->Branch( "Gamma2_phi",         &fBuffer_Gamma2_phi,          "Gamma2_phi/s");
+    fTreeBckgReduction->Branch( "Gamma2_trueID",      &fBuffer_Gamma2_trueID,       "Gamma2_trueID/O");
+
+    if( fNDMRecoMode == 0 ){
+      fTreeBckgReduction->Branch( "Gamma1_eMomentum",               &fBuffer_Gamma1_eMomentum,        "Gamma1_eMomentum/S");
+      fTreeBckgReduction->Branch( "Gamma1_eTPCClus",                &fBuffer_Gamma1_eTPCClus,         "Gamma1_eTPCClus/S");
+      fTreeBckgReduction->Branch( "Gamma1_edEdxSigma",              &fBuffer_Gamma1_edEdxSigma,       "Gamma1_edEdxSigma/S");
+      fTreeBckgReduction->Branch( "Gamma1_epidEdxSigma",            &fBuffer_Gamma1_epidEdxSigma,     "Gamma1_epidEdxSigma/S");
+      fTreeBckgReduction->Branch( "Gamma1_eTOFPID",                 &fBuffer_Gamma1_eTOFPID,          "Gamma1_eTOFPID/S");
+      fTreeBckgReduction->Branch( "Gamma1_pMomentum",               &fBuffer_Gamma1_pMomentum,        "Gamma1_pMomentum/S");
+      fTreeBckgReduction->Branch( "Gamma1_pTPCClus",                &fBuffer_Gamma1_pTPCClus,         "Gamma1_pTPCClus/S");
+      fTreeBckgReduction->Branch( "Gamma1_pdEdxSigma",              &fBuffer_Gamma1_pdEdxSigma,       "Gamma1_pdEdxSigma/S");
+      fTreeBckgReduction->Branch( "Gamma1_ppidEdxSigma",            &fBuffer_Gamma1_ppidEdxSigma,     "Gamma1_ppidEdxSigma/S");
+      fTreeBckgReduction->Branch( "Gamma1_pTOFPID",                 &fBuffer_Gamma1_pTOFPID,          "Gamma1_pTOFPID/S");
+      fTreeBckgReduction->Branch( "Gamma1_R",                       &fBuffer_Gamma1_R,                "Gamma1_R/S");
+      fTreeBckgReduction->Branch( "fBuffer_Gamma1_ArmenterosQt",    &fBuffer_Gamma1_ArmenterosQt,     "fBuffer_Gamma1_ArmenterosQt/S");
+      fTreeBckgReduction->Branch( "fBuffer_Gamma1_ArmenterosAlpha", &fBuffer_Gamma1_ArmenterosAlpha,  "fBuffer_Gamma1_ArmenterosAlpha/S");
+      fTreeBckgReduction->Branch( "Gamma1_chiSquared",              &fBuffer_Gamma1_chiSquared,       "Gamma1_chiSquared/S");
+      fTreeBckgReduction->Branch( "Gamma1_PsiPair",                 &fBuffer_Gamma1_PsiPair,          "Gamma1_PsiPair/S");
+
+      fTreeBckgReduction->Branch( "Gamma2_eMomentum",               &fBuffer_Gamma2_eMomentum,        "Gamma2_eMomentum/S");
+      fTreeBckgReduction->Branch( "Gamma2_eTPCClus",                &fBuffer_Gamma2_eTPCClus,         "Gamma2_eTPCClus/S");
+      fTreeBckgReduction->Branch( "Gamma2_edEdxSigma",              &fBuffer_Gamma2_edEdxSigma,       "Gamma2_edEdxSigma/S");
+      fTreeBckgReduction->Branch( "Gamma2_epidEdxSigma",            &fBuffer_Gamma2_epidEdxSigma,     "Gamma2_epidEdxSigma/S");
+      fTreeBckgReduction->Branch( "Gamma2_eTOFPID",                 &fBuffer_Gamma2_eTOFPID,          "Gamma2_eTOFPID/S");
+      fTreeBckgReduction->Branch( "Gamma2_pMomentum",               &fBuffer_Gamma2_pMomentum,        "Gamma2_pMomentum/S");
+      fTreeBckgReduction->Branch( "Gamma2_pTPCClus",                &fBuffer_Gamma2_pTPCClus,         "Gamma2_pTPCClus/S");
+      fTreeBckgReduction->Branch( "Gamma2_pdEdxSigma",              &fBuffer_Gamma2_pdEdxSigma,       "Gamma2_pdEdxSigma/S");
+      fTreeBckgReduction->Branch( "Gamma2_ppidEdxSigma",            &fBuffer_Gamma2_ppidEdxSigma,     "Gamma2_ppidEdxSigma/S");
+      fTreeBckgReduction->Branch( "Gamma2_pTOFPID",                 &fBuffer_Gamma2_pTOFPID,          "Gamma2_pTOFPID/S");
+      fTreeBckgReduction->Branch( "Gamma2_R",                       &fBuffer_Gamma2_R,                "Gamma2_R/S");
+      fTreeBckgReduction->Branch( "fBuffer_Gamma2_ArmenterosQt",    &fBuffer_Gamma2_ArmenterosQt,     "fBuffer_Gamma2_ArmenterosQt/S");
+      fTreeBckgReduction->Branch( "fBuffer_Gamma2_ArmenterosAlpha", &fBuffer_Gamma2_ArmenterosAlpha,  "fBuffer_Gamma2_ArmenterosAlpha/S");
+      fTreeBckgReduction->Branch( "Gamma2_chiSquared",              &fBuffer_Gamma2_chiSquared,       "Gamma2_chiSquared/S");
+      fTreeBckgReduction->Branch( "Gamma2_PsiPair",                 &fBuffer_Gamma2_PsiPair,          "Gamma2_PsiPair/S");
+    } else if( fNDMRecoMode == 1 ){
+      fTreeBckgReduction->Branch( "Gamma1_eMomentum",               &fBuffer_Gamma1_eMomentum,        "Gamma1_eMomentum/S");
+      fTreeBckgReduction->Branch( "Gamma1_eTPCClus",                &fBuffer_Gamma1_eTPCClus,         "Gamma1_eTPCClus/S");
+      fTreeBckgReduction->Branch( "Gamma1_edEdxSigma",              &fBuffer_Gamma1_edEdxSigma,       "Gamma1_edEdxSigma/S");
+      fTreeBckgReduction->Branch( "Gamma1_epidEdxSigma",            &fBuffer_Gamma1_epidEdxSigma,     "Gamma1_epidEdxSigma/S");
+      fTreeBckgReduction->Branch( "Gamma1_eTOFPID",                 &fBuffer_Gamma1_eTOFPID,          "Gamma1_eTOFPID/S");
+      fTreeBckgReduction->Branch( "Gamma1_pMomentum",               &fBuffer_Gamma1_pMomentum,        "Gamma1_pMomentum/S");
+      fTreeBckgReduction->Branch( "Gamma1_pTPCClus",                &fBuffer_Gamma1_pTPCClus,         "Gamma1_pTPCClus/S");
+      fTreeBckgReduction->Branch( "Gamma1_pdEdxSigma",              &fBuffer_Gamma1_pdEdxSigma,       "Gamma1_pdEdxSigma/S");
+      fTreeBckgReduction->Branch( "Gamma1_ppidEdxSigma",            &fBuffer_Gamma1_ppidEdxSigma,     "Gamma1_ppidEdxSigma/S");
+      fTreeBckgReduction->Branch( "Gamma1_pTOFPID",                 &fBuffer_Gamma1_pTOFPID,          "Gamma1_pTOFPID/S");
+      fTreeBckgReduction->Branch( "Gamma1_R",                       &fBuffer_Gamma1_R,                "Gamma1_R/S");
+      fTreeBckgReduction->Branch( "fBuffer_Gamma1_ArmenterosQt",    &fBuffer_Gamma1_ArmenterosQt,     "fBuffer_Gamma1_ArmenterosQt/S");
+      fTreeBckgReduction->Branch( "fBuffer_Gamma1_ArmenterosAlpha", &fBuffer_Gamma1_ArmenterosAlpha,  "fBuffer_Gamma1_ArmenterosAlpha/S");
+      fTreeBckgReduction->Branch( "Gamma1_chiSquared",              &fBuffer_Gamma1_chiSquared,       "Gamma1_chiSquared/S");
+      fTreeBckgReduction->Branch( "Gamma1_PsiPair",                 &fBuffer_Gamma1_PsiPair,          "Gamma1_PsiPair/S");
+
+      fTreeBckgReduction->Branch( "Gamma2_M02",       &fBuffer_Gamma2_M02,            "Gamma2_M02/S");
+    } else if( fNDMRecoMode == 2){
+      fTreeBckgReduction->Branch( "Gamma1_M02",       &fBuffer_Gamma1_M02,            "Gamma1_M02/S");
+      fTreeBckgReduction->Branch( "Gamma2_M02",       &fBuffer_Gamma2_M02,            "Gamma2_M02/S");
+    }
+
+    fTreeBckgReduction->Branch( "GammaPair_OpeningAngle",     &fBuffer_GammaPair_OpeningAngle,        "GammaPair_OpeningAngle/S");
+    fTreeBckgReduction->Branch( "GammaPair_Alpha",            &fBuffer_GammaPair_Alpha,               "GammaPair_Alpha/S");
+    fTreeBckgReduction->Branch( "GammaPair_invMassRec",       &fBuffer_GammaPair_invMassRec,          "GammaPair_invMassRec/S");
+    fTreeBckgReduction->Branch( "GammaPair_trueMotherID",     &fBuffer_GammaPair_trueMotherID,        "GammaPair_trueMotherID/O");
+
+    fTreeBckgReduction->Branch( "NDM_px",           &fBuffer_NDM_px,            "NDM_px/S");
+    fTreeBckgReduction->Branch( "NDM_py",           &fBuffer_NDM_py,            "NDM_py/S");
+    fTreeBckgReduction->Branch( "NDM_pz",           &fBuffer_NDM_pz,            "NDM_pz/S");
+    fTreeBckgReduction->Branch( "NDM_E",            &fBuffer_NDM_E,             "NDM_E/S");
+    fTreeBckgReduction->Branch( "NDM_invMassRec",   &fBuffer_NDM_invMassRec,    "NDM_invMassRec/S");
+    fTreeBckgReduction->Branch( "NDM_trueID",       &fBuffer_NDM_trueID,        "NDM_trueID/O");
+
+    OpenFile(2);
+    PostData(2, fTreeBckgReduction);
+  }
 
 }
 
@@ -3035,6 +3333,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserExec(Option_t *){
   fReaderGammas    = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
   fSelectorNegPionIndex = fPionSelector->GetReconstructedNegPionIndex(); // Electrons from default Cut
   fSelectorPosPionIndex = fPionSelector->GetReconstructedPosPionIndex(); // Positrons from default Cut
+
+  if(!(fInputEvent->IsA()==AliAODEvent::Class()) && fEnableBckgReductionStudy){
+    cout <<"Error: Trees for ML studies implemented only for AOD. Returning..." << endl;
+    return;
+  }
 
   fNumberOfESDTracks = fV0Reader->GetNumberOfPrimaryTracks();
   //AddTaskContainers(); //Add conatiner
@@ -4029,9 +4332,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
 
   if(isTrueNDM){// True Pion
     if (previouslyNotFoundTrueMesons){
-      Pi0Candidate->SetTrueMesonValue(11);
+      if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MCLabel))->PdgCode() == 111) Pi0Candidate->SetTrueMesonValue(11);              // neutral pion
+      else if( ((AliMCParticle*)fMCEvent->GetTrack(gamma1MCLabel))->PdgCode() == 221 ) Pi0Candidate->SetTrueMesonValue(12);       // eta
     } else {
-      Pi0Candidate->SetTrueMesonValue(1);
+      if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MCLabel))->PdgCode() == 111) Pi0Candidate->SetTrueMesonValue(1);              // neutral pion
+      else if( ((AliMCParticle*)fMCEvent->GetTrack(gamma1MCLabel))->PdgCode() == 221 ) Pi0Candidate->SetTrueMesonValue(2);       // eta
     }
     Pi0Candidate->SetMCLabel(gamma0MotherLabel);
     if (fEnableTreeTrueNDMFromHNM){
@@ -4161,9 +4466,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
 
   if(isTrueNDM){// True Pion
     if (previouslyNotFoundTrueMesons){
-      Pi0Candidate->SetTrueMesonValue(11);
+      if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MCLabel))->PdgCode() == 111) Pi0Candidate->SetTrueMesonValue(11);              // neutral pion
+      else if( ((AliMCParticle*)fMCEvent->GetTrack(gamma1MCLabel))->PdgCode() == 221 ) Pi0Candidate->SetTrueMesonValue(12);       // eta
     } else {
-      Pi0Candidate->SetTrueMesonValue(1);
+      if(((AliMCParticle*)fMCEvent->GetTrack(gamma1MCLabel))->PdgCode() == 111) Pi0Candidate->SetTrueMesonValue(1);              // neutral pion
+      else if( ((AliMCParticle*)fMCEvent->GetTrack(gamma1MCLabel))->PdgCode() == 221 ) Pi0Candidate->SetTrueMesonValue(2);       // eta
     }
     Pi0Candidate->SetMCLabel(gamma0MotherLabel);
     if (fEnableTreeTrueNDMFromHNM){
@@ -4333,7 +4640,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueNeutralPionCa
   if (AODMCTrackArray!=nullptr && TrueGammaCandidate0 != nullptr){
     AliAODMCParticle *positiveMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TrueGammaCandidate0->GetMCLabelPositive()));
     AliAODMCParticle *negativeMC = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TrueGammaCandidate0->GetMCLabelNegative()));
-
+    
     Int_t gamma0MCLabel = -1;
     Int_t gamma0MotherLabel = -1;
     if(!positiveMC||!negativeMC)
@@ -5063,6 +5370,30 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
                       AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
                     }
                   }
+                  switch( fSelectedHeavyNeutralMeson ) {
+                  case 0: // ETA MESON
+                    if( IsEtaPiPlPiMiPiZeroDaughter(labeln) || IsEtaPiPlPiMiPiZeroDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  case 1: // OMEGA MESON
+                    if( IsOmegaPiPlPiMiPiZeroDaughter(labeln) || IsOmegaPiPlPiMiPiZeroDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  case 2: // ETA PRIME MESON
+                    if( IsEtaPrimePiPlPiMiEtaDaughter(labeln) || IsEtaPrimePiPlPiMiEtaDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  case 3: // D0 MESON
+                    if( IsD0PiPlPiMiPiZeroDaughter(labeln) || IsD0PiPlPiMiPiZeroDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  default:
+                    AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+                  }
                 }
               }
             } else {
@@ -5107,6 +5438,30 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidates(){
                     AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
                   }
                 }
+                switch( fSelectedHeavyNeutralMeson ) {
+                  case 0: // ETA MESON
+                    if( IsEtaPiPlPiMiPiZeroDaughter(labeln) || IsEtaPiPlPiMiPiZeroDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  case 1: // OMEGA MESON
+                    if( IsOmegaPiPlPiMiPiZeroDaughter(labeln) || IsOmegaPiPlPiMiPiZeroDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  case 2: // ETA PRIME MESON
+                    if( IsEtaPrimePiPlPiMiEtaDaughter(labeln) || IsEtaPrimePiPlPiMiEtaDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  case 3: // D0 MESON
+                    if( IsD0PiPlPiMiPiZeroDaughter(labeln) || IsD0PiPlPiMiPiZeroDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  default:
+                    AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+                  }
               }
             }
           }
@@ -5403,7 +5758,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
 
       }
       // AliInfo(Form("virtualPhoton chi2 = %f", virtualPhoton->GetChi2perNDF()));
-      //AliInfo(Form("virtualPhoton distance pi+ pi- = %f", negPionCandidateKF.GetDeviationFromParticle(posPionCandidateKF)));
+      // AliInfo(Form("virtualPhoton distance pi+ pi- = %f", negPionCandidateKF.GetDeviationFromParticle(posPionCandidateKF)));
 
       AliAODConversionPhoton *vParticle = new AliAODConversionPhoton(virtualPhoton); //To apply mass 2 pion mass cut
 
@@ -5483,6 +5838,30 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
                       AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
                     }
                   }
+                  switch( fSelectedHeavyNeutralMeson ) {
+                  case 0: // ETA MESON
+                    if( IsEtaPiPlPiMiPiZeroDaughter(labeln) || IsEtaPiPlPiMiPiZeroDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  case 1: // OMEGA MESON
+                    if( IsOmegaPiPlPiMiPiZeroDaughter(labeln) || IsOmegaPiPlPiMiPiZeroDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  case 2: // ETA PRIME MESON
+                    if( IsEtaPrimePiPlPiMiEtaDaughter(labeln) || IsEtaPrimePiPlPiMiEtaDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  case 3: // D0 MESON
+                    if( IsD0PiPlPiMiPiZeroDaughter(labeln) || IsD0PiPlPiMiPiZeroDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  default:
+                    AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+                  }
                 }
               }
             } else {
@@ -5527,6 +5906,30 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
                     AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
                   }
                 }
+                switch( fSelectedHeavyNeutralMeson ) {
+                  case 0: // ETA MESON
+                    if( IsEtaPiPlPiMiPiZeroDaughter(labeln) || IsEtaPiPlPiMiPiZeroDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  case 1: // OMEGA MESON
+                    if( IsOmegaPiPlPiMiPiZeroDaughter(labeln) || IsOmegaPiPlPiMiPiZeroDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  case 2: // ETA PRIME MESON
+                    if( IsEtaPrimePiPlPiMiEtaDaughter(labeln) || IsEtaPrimePiPlPiMiEtaDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  case 3: // D0 MESON
+                    if( IsD0PiPlPiMiPiZeroDaughter(labeln) || IsD0PiPlPiMiPiZeroDaughter(labelp)){
+                      fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                    }
+                    break;
+                  default:
+                    AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+                  }
               }
             }
           }
@@ -6356,11 +6759,230 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
           NegPiontmp.SetPxPyPzE(negPionCandidatetmp->Px(), negPionCandidatetmp->Py(), negPionCandidatetmp->Pz(), negPionCandidatetmp->E());
           PosPiontmp.SetPxPyPzE(posPionCandidatetmp->Px(), posPionCandidatetmp->Py(), posPionCandidatetmp->Pz(), posPionCandidatetmp->E());
 
+          if( fEnableBckgReductionStudy && fMCEvent){
+
+            // for true information
+            TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+            if (AODMCTrackArray == NULL) return;
+
+            // Filling tree branches for positive pion candidate for the ML background study
+            Float_t b[2]; 
+            Float_t bCov[3];
+            posPionCandidatetmp->GetImpactParameters(b,bCov);
+
+            Float_t   dcaToVertexXY = b[0];
+            Float_t   dcaToVertexZ  = b[1];
+            Float_t   dcaToVertex   = -1;
+            dcaToVertex = TMath::Sqrt(dcaToVertexXY*dcaToVertexXY + dcaToVertexZ*dcaToVertexZ);
+
+            fBuffer_PiPl_px               = static_cast<Short_t>(posPionCandidatetmp->Px()*1000);
+            fBuffer_PiPl_py               = static_cast<Short_t>(posPionCandidatetmp->Py()*1000);
+            fBuffer_PiPl_pz               = static_cast<Short_t>(posPionCandidatetmp->Pz()*1000);
+            fBuffer_PiPl_E                = static_cast<Short_t>(posPionCandidatetmp->E()*1000);
+            fBuffer_PiPl_charge           = static_cast<Bool_t>(posPionCandidatetmp->Charge());
+            fBuffer_PiPl_DCAR             = static_cast<Short_t>(dcaToVertex*1000);
+            fBuffer_PiPl_DCAz             = static_cast<Short_t>(dcaToVertexZ*1000);
+            fBuffer_PiPl_TPCClus          = static_cast<UShort_t>(posPionCandidatetmp->GetTPCNcls());
+            fBuffer_PiPl_dEdxSigma        = static_cast<Short_t>( ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(posPionCandidatetmp,AliPID::kPion)*1000 );
+            fBuffer_PiPl_TOFdEdxSigma     = static_cast<Short_t>( ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTOF(posPionCandidatetmp,AliPID::kPion)*1000 );
+            fBuffer_PiPl_trueID           = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(vParticle->GetMCLabelPositive()))->PdgCode()==211 ? 1 : 0;
+            // Filling tree branches for negative pion candidate for the ML background study
+            negPionCandidatetmp->GetImpactParameters(b,bCov);
+
+            dcaToVertexXY = b[0];
+            dcaToVertexZ  = b[1];
+            dcaToVertex   = -1;
+            dcaToVertex = TMath::Sqrt(dcaToVertexXY*dcaToVertexXY + dcaToVertexZ*dcaToVertexZ);
+
+            fBuffer_PiMi_px               = static_cast<Short_t>(negPionCandidatetmp->Px()*1000);
+            fBuffer_PiMi_py               = static_cast<Short_t>(negPionCandidatetmp->Py()*1000);
+            fBuffer_PiMi_pz               = static_cast<Short_t>(negPionCandidatetmp->Pz()*1000);
+            fBuffer_PiMi_E                = static_cast<Short_t>(negPionCandidatetmp->E()*1000);
+            fBuffer_PiMi_charge           = static_cast<Bool_t>(negPionCandidatetmp->Charge());
+            fBuffer_PiMi_DCAR             = static_cast<Short_t>(dcaToVertex*1000);
+            fBuffer_PiMi_DCAz             = static_cast<Short_t>(dcaToVertexZ*1000);
+            fBuffer_PiMi_TPCClus          = static_cast<UShort_t>(negPionCandidatetmp->GetTPCNcls());
+            fBuffer_PiMi_dEdxSigma        = static_cast<Short_t>( ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(negPionCandidatetmp,AliPID::kPion)*1000 );
+            fBuffer_PiMi_TOFdEdxSigma     = static_cast<Short_t>( ((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTOF(negPionCandidatetmp,AliPID::kPion)*1000 );
+            fBuffer_PiMi_trueID           = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(vParticle->GetMCLabelNegative()))->PdgCode()==-211 ? 1 : 0;
+          }
+
 
           // Fix Pz of pi0 candidate to match pi0 PDG mass
           AliAODConversionMother NDMtmp;
           NDMtmp.SetPxPyPzE(neutralDecayMeson->Px(), neutralDecayMeson->Py(), neutralDecayMeson->Pz(), neutralDecayMeson->Energy());
           FixPzToMatchPDGInvMassNDM(&NDMtmp);
+
+          if( fEnableBckgReductionStudy && fMCEvent){
+            TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+            if (AODMCTrackArray == NULL) return;
+
+            fBuffer_GammaPair_OpeningAngle    = static_cast<Short_t>(neutralDecayMeson->GetOpeningAngle()*1000);
+            fBuffer_GammaPair_Alpha           = static_cast<Short_t>(neutralDecayMeson->GetAlpha()*1000);           // ??
+            fBuffer_GammaPair_invMassRec      = static_cast<Short_t>(NDMtmp.M()*1000);
+            
+            Int_t   gamma1label     = neutralDecayMeson->GetLabel1();
+            Int_t   gamma2label     = neutralDecayMeson->GetLabel2();
+
+            AliAODConversionPhoton *Gamma1  = NULL;
+            AliAODConversionPhoton *Gamma2  = NULL;
+
+            //  fNDMRecoMode: 2 pure calo, 1 mixed, 0 conv 
+            if( fNDMRecoMode == 2 && fClusterCandidates->GetEntries()>1 ) {                                 // pure calo (EMC)
+              Gamma1 = dynamic_cast<AliAODConversionPhoton*>( fClusterCandidates->At(gamma1label));
+              Gamma2 = dynamic_cast<AliAODConversionPhoton*>( fClusterCandidates->At(gamma2label));
+              if( Gamma1==nullptr || Gamma2== nullptr ) continue;
+              if( Gamma1->GetCaloPhotonMCLabel(0) < 0 || Gamma2->GetCaloPhotonMCLabel(0) < 0 ) continue;
+
+              fBuffer_Gamma1_px       = static_cast<Short_t>(Gamma1->Px()*1000);
+              fBuffer_Gamma1_py       = static_cast<Short_t>(Gamma1->Py()*1000);
+              fBuffer_Gamma1_pz       = static_cast<Short_t>(Gamma1->Pz()*1000);
+              fBuffer_Gamma1_E        = static_cast<Short_t>(Gamma1->E()*1000);
+              fBuffer_Gamma1_eta      = static_cast<Short_t>(Gamma1->GetPhotonEta()*1000);
+              fBuffer_Gamma1_phi      = static_cast<UShort_t>(Gamma1->GetPhotonPhi()*1000);
+              fBuffer_Gamma1_trueID   = static_cast<AliAODMCParticle*>(AODMCTrackArray->At( Gamma1->GetCaloPhotonMCLabel(0)))->PdgCode()==22 ? 1 : 0;
+
+              fBuffer_Gamma2_px       = static_cast<Short_t>(Gamma2->Px()*1000);
+              fBuffer_Gamma2_py       = static_cast<Short_t>(Gamma2->Py()*1000);
+              fBuffer_Gamma2_pz       = static_cast<Short_t>(Gamma2->Pz()*1000);
+              fBuffer_Gamma2_E        = static_cast<Short_t>(Gamma2->E()*1000);
+              fBuffer_Gamma2_eta      = static_cast<Short_t>(Gamma2->GetPhotonEta()*1000);
+              fBuffer_Gamma2_phi      = static_cast<UShort_t>(Gamma2->GetPhotonPhi()*1000);
+              fBuffer_Gamma2_trueID   = static_cast<AliAODMCParticle*>(AODMCTrackArray->At( Gamma2->GetCaloPhotonMCLabel(0)))->PdgCode()==22 ? 1 : 0;
+
+              Long_t clusRef1       = Gamma1->GetCaloClusterRef();
+              Long_t clusRef2       = Gamma2->GetCaloClusterRef();   
+
+              std::unique_ptr<AliVCluster> clus1;
+              if(fInputEvent->IsA()==AliESDEvent::Class())      clus1 = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(clusRef1)));
+              else if(fInputEvent->IsA()==AliAODEvent::Class()) clus1 = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(clusRef1)));    
+
+              std::unique_ptr<AliVCluster> clus2;
+              if(fInputEvent->IsA()==AliESDEvent::Class())      clus2 = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(clusRef2)));
+              else if(fInputEvent->IsA()==AliAODEvent::Class()) clus2 = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(clusRef2)));   
+
+              if( !clus1 || !clus2 ) continue;
+
+              fBuffer_Gamma1_M02  = static_cast<Short_t>(clus1->GetM02()*1000);
+              fBuffer_Gamma2_M02  = static_cast<Short_t>(clus2->GetM02()*1000);
+              
+            } else if( fNDMRecoMode == 0 && fGoodConvGammas->GetEntries()>1 ){
+              Gamma1 = dynamic_cast<AliAODConversionPhoton*>( fGoodConvGammas->At(gamma1label) );
+              Gamma2 = dynamic_cast<AliAODConversionPhoton*>( fGoodConvGammas->At(gamma2label) );
+              if( Gamma1==nullptr || Gamma2== nullptr ) continue;
+              if( Gamma1->GetMCParticleLabel(fMCEvent) < 0 || Gamma2->GetMCParticleLabel(fMCEvent) < 0 ) continue;
+
+              AliVTrack *negTrack1    = ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetTrack(fInputEvent, Gamma1->GetTrackLabelNegative());
+              AliVTrack *posTrack1    = ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetTrack(fInputEvent, Gamma1->GetTrackLabelPositive());
+
+              AliVTrack *negTrack2    = ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetTrack(fInputEvent, Gamma2->GetTrackLabelNegative());
+              AliVTrack *posTrack2    = ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetTrack(fInputEvent, Gamma2->GetTrackLabelPositive());
+
+              fBuffer_Gamma1_px       = static_cast<Short_t>(Gamma1->Px()*1000);
+              fBuffer_Gamma1_py       = static_cast<Short_t>(Gamma1->Py()*1000);
+              fBuffer_Gamma1_pz       = static_cast<Short_t>(Gamma1->Pz()*1000);
+              fBuffer_Gamma1_E        = static_cast<Short_t>(Gamma1->E()*1000);
+              fBuffer_Gamma1_eta      = static_cast<Short_t>(Gamma1->GetPhotonEta()*1000);
+              fBuffer_Gamma1_phi      = static_cast<UShort_t>(Gamma1->GetPhotonPhi()*1000);
+              fBuffer_Gamma1_trueID   = static_cast<AliAODMCParticle*>(AODMCTrackArray->At( Gamma1->GetMCParticleLabel(fMCEvent)))->PdgCode()==22 ? 1 : 0;
+
+              fBuffer_Gamma1_R                = static_cast<Short_t>( Gamma1->GetConversionRadius()*1000 ); 
+              fBuffer_Gamma1_ArmenterosQt     = static_cast<Short_t>( Gamma1->GetArmenterosQt()*1000 );
+              fBuffer_Gamma1_ArmenterosAlpha  = static_cast<Short_t>( Gamma1->GetArmenterosAlpha()*1000 );
+              fBuffer_Gamma1_chiSquared       = static_cast<Short_t>( Gamma1->GetChi2perNDF()*1000 );
+              fBuffer_Gamma1_PsiPair          = static_cast<Short_t>( Gamma1->GetPsiPair()*1000 );
+
+              fBuffer_Gamma1_eMomentum    = static_cast<Short_t>( negTrack1->P()*1000 );
+              fBuffer_Gamma1_eTPCClus     = static_cast<Short_t>( TMath::Abs(negTrack1->GetNcls(1)) );
+              fBuffer_Gamma1_edEdxSigma   = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(negTrack1, AliPID::kElectron)*1000);
+              fBuffer_Gamma1_epidEdxSigma = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(negTrack1, AliPID::kPion)*1000 );
+              fBuffer_Gamma1_eTOFPID      = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTOF(negTrack1, AliPID::kElectron)*1000);
+
+              fBuffer_Gamma1_pMomentum    = static_cast<Short_t>( posTrack1->P()*1000 );
+              fBuffer_Gamma1_pTPCClus     = static_cast<Short_t>( TMath::Abs(posTrack1->GetNcls(1)) );
+              fBuffer_Gamma1_pdEdxSigma   = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(posTrack1, AliPID::kElectron)*1000 );
+              fBuffer_Gamma1_ppidEdxSigma = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(posTrack1, AliPID::kPion)*1000 );
+              fBuffer_Gamma1_pTOFPID      = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTOF(posTrack1, AliPID::kElectron)*1000 );
+
+              fBuffer_Gamma2_px       = static_cast<Short_t>(Gamma2->Px()*1000);
+              fBuffer_Gamma2_py       = static_cast<Short_t>(Gamma2->Py()*1000);
+              fBuffer_Gamma2_pz       = static_cast<Short_t>(Gamma2->Pz()*1000);
+              fBuffer_Gamma2_E        = static_cast<Short_t>(Gamma2->E()*1000);
+              fBuffer_Gamma2_eta      = static_cast<Short_t>(Gamma2->GetPhotonEta()*1000);
+              fBuffer_Gamma2_phi      = static_cast<UShort_t>(Gamma2->GetPhotonPhi()*1000);
+              fBuffer_Gamma2_trueID   = static_cast<AliAODMCParticle*>(AODMCTrackArray->At( Gamma2->GetMCParticleLabel(fMCEvent)))->PdgCode()==22 ? 1 : 0;
+
+              fBuffer_Gamma2_R                = static_cast<Short_t>( Gamma2->GetConversionRadius()*1000 ); 
+              fBuffer_Gamma2_ArmenterosQt     = static_cast<Short_t>( Gamma2->GetArmenterosQt()*1000 );
+              fBuffer_Gamma2_ArmenterosAlpha  = static_cast<Short_t>( Gamma2->GetArmenterosAlpha()*1000 );
+              fBuffer_Gamma2_chiSquared       = static_cast<Short_t>( Gamma2->GetChi2perNDF()*1000 );
+              fBuffer_Gamma2_PsiPair          = static_cast<Short_t>( Gamma2->GetPsiPair()*1000 );
+
+              fBuffer_Gamma2_eMomentum    = static_cast<Short_t>( negTrack2->P()*1000 );
+              fBuffer_Gamma2_eTPCClus     = static_cast<Short_t>( TMath::Abs(negTrack2->GetNcls(1)) );
+              fBuffer_Gamma2_edEdxSigma   = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(negTrack2, AliPID::kElectron)*1000 );
+              fBuffer_Gamma2_epidEdxSigma = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(negTrack2, AliPID::kPion)*1000 );
+              fBuffer_Gamma2_eTOFPID      = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTOF(negTrack2, AliPID::kElectron)*1000 );
+
+              fBuffer_Gamma2_pMomentum    = static_cast<Short_t>( posTrack2->P()*1000 );
+              fBuffer_Gamma2_pTPCClus     = static_cast<Short_t>( TMath::Abs(posTrack2->GetNcls(1)) );
+              fBuffer_Gamma2_pdEdxSigma   = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(posTrack2, AliPID::kElectron)*1000 );
+              fBuffer_Gamma2_ppidEdxSigma = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(posTrack2, AliPID::kPion)*1000 );
+              fBuffer_Gamma2_pTOFPID      = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTOF(posTrack2, AliPID::kElectron)*1000 );
+            } else if( fNDMRecoMode == 1 && fGoodConvGammas->GetEntries()>1 && fClusterCandidates->GetEntries()>1){
+              Gamma1 = dynamic_cast<AliAODConversionPhoton*>( fGoodConvGammas->At(gamma1label) );
+              Gamma2 = dynamic_cast<AliAODConversionPhoton*>( fClusterCandidates->At(gamma2label));
+              if( Gamma1==nullptr || Gamma2== nullptr ) continue;
+              if( Gamma1->GetMCParticleLabel(fMCEvent) < 0 || Gamma2->GetCaloPhotonMCLabel(0) <0 ) continue;
+
+              AliVTrack *negTrack1    = ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetTrack(fInputEvent, Gamma1->GetTrackLabelNegative());
+              AliVTrack *posTrack1    = ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetTrack(fInputEvent, Gamma1->GetTrackLabelPositive());
+
+              fBuffer_Gamma1_px       = static_cast<Short_t>(Gamma1->Px()*1000);
+              fBuffer_Gamma1_py       = static_cast<Short_t>(Gamma1->Py()*1000);
+              fBuffer_Gamma1_pz       = static_cast<Short_t>(Gamma1->Pz()*1000);
+              fBuffer_Gamma1_E        = static_cast<Short_t>(Gamma1->E()*1000);
+              fBuffer_Gamma1_eta      = static_cast<Short_t>(Gamma1->GetPhotonEta()*1000);
+              fBuffer_Gamma1_phi      = static_cast<UShort_t>(Gamma1->GetPhotonPhi()*1000);
+              fBuffer_Gamma1_trueID   = static_cast<AliAODMCParticle*>(AODMCTrackArray->At( Gamma1->GetMCParticleLabel(fMCEvent)))->PdgCode()==22 ? 1 : 0;
+
+              fBuffer_Gamma1_R                = static_cast<Short_t>( Gamma1->GetConversionRadius()*1000 ); 
+              fBuffer_Gamma1_ArmenterosQt     = static_cast<Short_t>( Gamma1->GetArmenterosQt()*1000 );
+              fBuffer_Gamma1_ArmenterosAlpha  = static_cast<Short_t>( Gamma1->GetArmenterosAlpha()*1000 );
+              fBuffer_Gamma1_chiSquared       = static_cast<Short_t>( Gamma1->GetChi2perNDF()*1000 );
+              fBuffer_Gamma1_PsiPair          = static_cast<Short_t>( Gamma1->GetPsiPair()*1000 );
+
+              fBuffer_Gamma1_eMomentum    = static_cast<Short_t>( negTrack1->P()*1000 );
+              fBuffer_Gamma1_eTPCClus     = static_cast<Short_t>( TMath::Abs(negTrack1->GetNcls(1)) );
+              fBuffer_Gamma1_edEdxSigma   = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(negTrack1, AliPID::kElectron)*1000);
+              fBuffer_Gamma1_epidEdxSigma = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(negTrack1, AliPID::kPion)*1000 );
+              fBuffer_Gamma1_eTOFPID      = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTOF(negTrack1, AliPID::kElectron)*1000);
+
+              fBuffer_Gamma1_pMomentum    = static_cast<Short_t>( posTrack1->P()*1000 );
+              fBuffer_Gamma1_pTPCClus     = static_cast<Short_t>( TMath::Abs(posTrack1->GetNcls(1)) );
+              fBuffer_Gamma1_pdEdxSigma   = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(posTrack1, AliPID::kElectron)*1000 );
+              fBuffer_Gamma1_ppidEdxSigma = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(posTrack1, AliPID::kPion)*1000 );
+              fBuffer_Gamma1_pTOFPID      = static_cast<Short_t>( ((AliConversionPhotonCuts*)fGammaCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTOF(posTrack1, AliPID::kElectron)*1000 );
+
+              fBuffer_Gamma2_px       = static_cast<Short_t>(Gamma2->Px()*1000);
+              fBuffer_Gamma2_py       = static_cast<Short_t>(Gamma2->Py()*1000);
+              fBuffer_Gamma2_pz       = static_cast<Short_t>(Gamma2->Pz()*1000);
+              fBuffer_Gamma2_E        = static_cast<Short_t>(Gamma2->E()*1000);
+              fBuffer_Gamma2_eta      = static_cast<Short_t>(Gamma2->GetPhotonEta()*1000);
+              fBuffer_Gamma2_phi      = static_cast<UShort_t>(Gamma2->GetPhotonPhi()*1000);
+              fBuffer_Gamma2_trueID   = static_cast<AliAODMCParticle*>(AODMCTrackArray->At( Gamma2->GetCaloPhotonMCLabel(0)))->PdgCode()==22 ? 1 : 0;
+
+              Long_t clusRef2       = Gamma2->GetCaloClusterRef();   
+
+              std::unique_ptr<AliVCluster> clus2;
+              if(fInputEvent->IsA()==AliESDEvent::Class())      clus2 = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(clusRef2)));
+              else if(fInputEvent->IsA()==AliAODEvent::Class()) clus2 = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(clusRef2)));   
+              if( !clus2 ) continue;
+
+              fBuffer_Gamma2_M02  = static_cast<Short_t>(clus2->GetM02()*1000);
+            }
+
+          }
 
           //Variables for Dalitz plot and Pi0 Pi+- Mass Cut
           AliGAKFParticle PosPionKFtmp( *posPionCandidatetmp, 211 );
@@ -6475,6 +7097,44 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
                     ProcessTrueMesonCandidates(mesoncand,neutralDecayMeson,vParticle, weightMatBudget);
                   if(fInputEvent->IsA()==AliAODEvent::Class())
                     ProcessTrueMesonCandidatesAOD(mesoncand,neutralDecayMeson,vParticle, weightMatBudget);
+                }
+
+                if(fEnableBckgReductionStudy && fMCEvent){
+                  fBuffer_NDM_px          = static_cast<Short_t>( mesoncand->Px()*1000 );
+                  fBuffer_NDM_py          = static_cast<Short_t>( mesoncand->Py()*1000 );
+                  fBuffer_NDM_pz          = static_cast<Short_t>( mesoncand->Pz()*1000 );
+                  fBuffer_NDM_E           = static_cast<Short_t>( mesoncand->E()*1000 );
+                  fBuffer_NDM_invMassRec  = static_cast<Short_t>( mesoncand->M()*1000 );
+
+                  Double_t HistoMassRange[2]                          = {0.4,1.0};
+                  switch( fSelectedHeavyNeutralMeson ) {
+                    case 0: //ETA MESON
+                      HistoMassRange[0]                                 = 0.3;
+                      HistoMassRange[1]                                 = 0.7;
+                      break;
+                    case 1: // OMEGA MESON
+                      HistoMassRange[0]                                 = 0.5;
+                      HistoMassRange[1]                                 = 1.0;
+                      break;
+                    case 2: // ETA PRIME MESON
+                      HistoMassRange[0]                                 = 0.6;
+                      HistoMassRange[1]                                 = 1.2;
+                      break;
+                    case 3: // D0 MESON
+                      HistoMassRange[0]                                 = 1.4;
+                      HistoMassRange[1]                                 = 2.0;
+                      break;
+                    default:
+                      AliError(Form("Heavy neutral meson not correctly selected (only 0,1,2,3 valid)... selected: %d",fSelectedHeavyNeutralMeson));
+                  }
+
+                  if( fBuffer_NDM_trueID && mesoncand->M() > HistoMassRange[0] && mesoncand->M() < HistoMassRange[1] ) {
+                    fTreeBckgReduction->Fill();
+                    fHistoBckReduction->Fill(mesoncand->M());
+                  } else if( (static_cast<Int_t>(fRandom.Rndm()) )%fMLtreeCutOff == 0 && mesoncand->M() > HistoMassRange[0] && mesoncand->M() < HistoMassRange[1] ) {
+                    fTreeBckgReduction->Fill();
+                    fHistoBckReduction->Fill(mesoncand->M());
+                  }
                 }
               }else{ //else KinematicCut
                 if(!fDoLightOutput){
@@ -7287,7 +7947,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
 
   if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(1);} //All candidates
 
-  if ( !(trueMesonFlag == 1 && NDMMCLabel != -1)){ //more understandable: (trueMesonFlag != 1 || NDMMCLabel == -1)
+  if ( !(trueMesonFlag == 1 && NDMMCLabel != -1) || !(trueMesonFlag == 2 && NDMMCLabel != -1)){ //more understandable: (trueMesonFlag != 1 || NDMMCLabel == -1)
     if((fDoMesonQA>0 ) && (!fDoLightOutput)){
      fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
     }
@@ -7603,7 +8263,7 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
 
   if (fDoMesonQA>0){fHistoTrueMesonFlags[fiCut]->Fill(1);} //All candidates
 
-  if ( !(trueMesonFlag == 1 && NDMMCLabel != -1)){ //more understandable: (trueMesonFlag != 1 || NDMMCLabel == -1)
+  if ( !(trueMesonFlag == 1 && NDMMCLabel != -1) || !(trueMesonFlag == 2 && NDMMCLabel != -1)){ //more understandable: (trueMesonFlag != 1 || NDMMCLabel == -1)
     if((fDoMesonQA>0 ) && (!fDoLightOutput)){
       fHistoTruePiPlPiMiNDMContamination_Crosscheck_InvMassPt[fiCut]->Fill(mesoncand->M(),mesoncand->Pt(),weighted);
     }
@@ -7690,6 +8350,13 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessTrueMesonCandidat
     } else {
       isDifferentMesonContribution  = kTRUE;
     }
+  }
+
+  if(fEnableBckgReductionStudy){
+    fBuffer_NDM_trueID  = isTrueMeson;
+    if(isSameMotherPiPlPiMi&&isTrueMeson) fBuffer_PionPair_trueMotherID = 1;
+    else if(isSameMotherPiPlPiMi) fBuffer_PionPair_trueMotherID = 2;
+    fBuffer_GammaPair_trueMotherID = NDMMC_PDGCheck;
   }
 
   Int_t iNumberOfDeclarationFlags=0;

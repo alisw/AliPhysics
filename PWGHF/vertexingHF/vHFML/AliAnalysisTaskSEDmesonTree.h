@@ -123,7 +123,7 @@ public:
 private:
     enum
     {
-        knVarForSparseAcc    = 6,
+        knVarForSparseAcc    = 5,
         knVarForSparseReco   = 10
     };
 

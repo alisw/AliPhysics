@@ -8,6 +8,7 @@
 
 #include "AliAODpidUtil.h"
 #include "AliAODTrack.h"
+#include "AliHelperPID.h"
 #include "AliESDtrack.h"
 #include "AliVTrack.h"
 #include "AliAODTrack.h"
@@ -164,8 +165,10 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Double_t fPIDnSigmaBelowPionLineTPC; // sigma cut TPC
 	Double_t fPIDnSigmaAbovePionLineTOF; // sigma cut TOF
 	Double_t fPIDnSigmaBelowPionLineTOF; // sigma cut TOF 
+	Double_t fPIDnSigmaAroundKpTOF; // sigma around kaons and protons for Kp rejection
 	Bool_t   fUseCorrectedTPCClsInfo; // flag to use corrected tpc cl info
 	Bool_t   fUseTOFpid; // flag to use tof pid
+	Bool_t   fUseTOFKpRejection; // flag to use tof to reject kaons and protons
 	Bool_t   fRequireTOF; //flg to analyze only tracks with TOF signal
     Bool_t   fDoMassCut;
     Bool_t   fDoMassCut_WithNDM;
@@ -178,16 +181,18 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	Bool_t   fDoWeights;
     Double_t fMaxDCAToVertexZ;
     Double_t fMaxDCAToVertexXY;
+    Bool_t fUsePtDepZDCA;
     Bool_t fUsePtDepXYDCA;
     Bool_t fUseDCAToVertex2D;
     TString fMaxDCAToVertexXYPtDep;
+    TString fMaxDCAToVertexZPtDep;
 	Int_t  fRunFlag; // runflag used to set track prefiltering
 	
 
 
 	// Histograms
 	TObjString *fCutString; // cut number used for analysis
-  TString fCutStringRead;
+  	TString fCutStringRead;
 	TH1F *fHistCutIndex; // bookkeeping for cuts
 	TH1F *fHistdEdxCuts;  // bookkeeping for dEdx cuts
 	TH2F *fHistITSdEdxbefore; // ITS dEdx before cuts
@@ -196,8 +201,10 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	TH2F *fHistTPCdEdxafter; // TPC dEdx after cuts
 	TH2F *fHistTPCdEdxSignalbefore; //TPC dEdx signal before
 	TH2F *fHistTPCdEdxSignalafter; //TPC dEdx signal  after
-	TH2F *fHistTOFbefore; // TOF after cuts
+	TH2F *fHistTOFbefore; // TOF before cuts
+	TH2F *fHistTOFSigbefore; // TOF signal before cuts
 	TH2F *fHistTOFafter; // TOF after cuts
+	TH2F *fHistTOFSigafter; // TOF signal after cuts
 	TH2F *fHistTrackDCAxyPtbefore;
 	TH2F *fHistTrackDCAxyPtafter;
 	TH2F *fHistTrackDCAzPtbefore;
@@ -218,7 +225,7 @@ class AliPrimaryPionCuts : public AliAnalysisCuts {
 	AliPrimaryPionCuts& operator=(const AliPrimaryPionCuts&); // not implemented
 
 
-    ClassDef(AliPrimaryPionCuts,15)
+    ClassDef(AliPrimaryPionCuts,17)
 };
 
 #endif

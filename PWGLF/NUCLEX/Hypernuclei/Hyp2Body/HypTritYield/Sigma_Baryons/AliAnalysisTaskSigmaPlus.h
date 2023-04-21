@@ -115,7 +115,6 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         std::vector<int>      fProtonArray2;              //!<! Stricter Selection for Mixing
         std::vector<int>      fConvPhotonArray;           //!<! V0 Photon candidates
         std::vector<int>      fCaloPhotonArray;           //!<! Calo Photon candidates
-        std::vector<std::pair<int,int>>  PairIndexArray;  //!<! V0 Photon candidates
 
         Bool_t                isMonteCarlo;               //True if MC information is available  
 
@@ -172,6 +171,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Bool_t                fSavePHOSMixedBackground = kTRUE;
         Bool_t                fSaveAdditionalBranches = kTRUE;
         Bool_t                fSaveMCBranches = kTRUE;
+        Bool_t                fSaveAddMCBranches = kTRUE;
 
         //Event Cuts
         Double_t              fMaxVertexZ = 10;    
@@ -330,6 +330,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         void SetActivatePHOSMEBkg(Bool_t savephosmebkg) {fSavePHOSMixedBackground = savephosmebkg;}
         void SetActivateExtraBranches(Bool_t savextrabr) {fSaveAdditionalBranches = savextrabr;}
         void SetActivateMCBranches(Bool_t savemcbr) {fSaveMCBranches = savemcbr;}
+        void SetActivateAddMCBranches(Bool_t saveaddmcbr) {fSaveAddMCBranches = saveaddmcbr;}
 
         //Event Cuts
         void SetMaxVertexZ(Double_t maxvertexz) {fMaxVertexZ = maxvertexz;}
@@ -465,6 +466,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
 
         //Branches of TTree "fSigmaCandTree"
         Bool_t                fIsMCSigma;
+        Bool_t                fIsMCDalitz;
         Bool_t                fIsMCPrimary;
         Bool_t                fIsV01Onthefly;
         Bool_t                fIsV02Onthefly;
@@ -572,6 +574,34 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Float_t               fProtonNSigTOFPion;
         Float_t               fProtonNSigTOFKaon;
         Float_t               fProtonNSigTOFElec;
+        Int_t                 fTrackLabel;
+        Int_t                 fTrackPDGCode;
+        Int_t                 fTrackMotherID;       // -1 if Particle is primary
+        Int_t                 fTrackMotherPDGCode;
+        Float_t               fTrackMotherMCPx;
+        Float_t               fTrackMotherMCPy;
+        Float_t               fTrackMotherMCPz;
+        Float_t               fTrackMCPx;
+        Float_t               fTrackMCPy;
+        Float_t               fTrackMCPz;
+        Int_t                 fPhoton1Label;       // -1 if fake V0
+        Int_t                 fPhoton1PDGCode;
+        Int_t                 fPhoton1MotherID;
+        Int_t                 fPhoton1MotherPDGCode;
+        Int_t                 fPhoton1GMotherID;
+        Int_t                 fPhoton1GMotherPDGCode;
+        Float_t               fPhoton1MCPx;
+        Float_t               fPhoton1MCPy;
+        Float_t               fPhoton1MCPz;
+        Int_t                 fPhoton2Label;       // -1 if fake V0
+        Int_t                 fPhoton2PDGCode;
+        Int_t                 fPhoton2MotherID;
+        Int_t                 fPhoton2MotherPDGCode;
+        Int_t                 fPhoton2GMotherID;
+        Int_t                 fPhoton2GMotherPDGCode;
+        Float_t               fPhoton2MCPx;
+        Float_t               fPhoton2MCPy;
+        Float_t               fPhoton2MCPz;
         //End of Branches of "fSigmaCandTree"
 
         //Extra Branches of TTree "fSigmaPHOSCandTree"

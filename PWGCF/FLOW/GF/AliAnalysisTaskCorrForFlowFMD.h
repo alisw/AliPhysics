@@ -76,6 +76,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetDoPID(Bool_t pid = kTRUE) { fDoPID = pid; }
         void                    SetDoV0(Bool_t v0 = kTRUE) { fDoV0 = v0; }
 	void                    SetDoPHI(Bool_t Phi = kTRUE) { fDoPHI = Phi; }
+	void                    SetPHIkinematics(Bool_t phishift = kFALSE, Bool_t rapshift = kFALSE) { fshiftphi_PHI = phishift; fshiftrap_PHI = rapshift; }
+
         void                    SetIsMC(Bool_t mc = kTRUE, Bool_t tpc = kTRUE, Bool_t fmd = kTRUE) { fIsMC = mc; fIsTPCgen = tpc; fIsFMDgen = fmd; }
         void                    SetIsHMpp(Bool_t hm = kTRUE) { fIsHMpp = hm; }
         void                    SetUseOppositeSidesOnly(Bool_t sides = kTRUE) { fUseOppositeSidesOnly = sides; }
@@ -85,6 +87,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetRejectSecondariesFromMC(Bool_t flag = kTRUE) { fRejectSecondariesFromMC = flag; }
         void                    SetVetoJetEvents(Bool_t flag = kTRUE) { fVetoJetEvents = flag; }
         void                    SetJetEventsLowPtCut(Double_t cut) { fJetParticleLowPt = cut; }
+	void                    SetParticlemassbias(Bool_t massbias = kFALSE) { fParticlemass_bias_corr = massbias; }
+
 
         // event selection
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
@@ -116,6 +120,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetMassRejWindowLambda(Double_t cut) { fMassRejWindowLambda = cut; }
 	void                    SetK0MassRange(Double_t min, Double_t max) { fMinK0Mass = min; fMaxK0Mass = max; }
 	void                    SetLambdaMassRange(Double_t min, Double_t max) { fMinLambdaMass = min; fMaxLambdaMass = max; }
+	void                    SetPhiMassRange(Double_t min, Double_t max) { fMinPhiMass = min; fMaxPhiMass = max; }
 
 
         // correlation related
@@ -151,12 +156,12 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  PrepareFMDTracks();
         Bool_t                  PrepareMCTracks();
 
-        Int_t                   IdentifyTrack(const AliAODTrack* track) const; // PID
+        Int_t                   IdentifyTrack(const AliAODTrack* track); // PID
         void                    PrepareV0(); // V0
 	void                    PreparePhi(); // Phi
         Bool_t                  IsV0(const AliAODv0* v0) const; // V0s selection
         Bool_t                  IsK0s(const AliAODv0* v0) const;
-        Bool_t                  IsLambda(const AliAODv0* v0) const;
+        Bool_t                  IsLambda(const AliAODv0* v0);
         Double_t                ProperLifetime(const AliAODv0* v0, const Double_t massPDG) const;
         Bool_t                  HasTrackPIDTPC(const AliAODTrack* track) const; // is TPC PID OK for this track ?
         Bool_t                  HasTrackPIDTOF(const AliAODTrack* track) const; // is TOF PID OK for this track ?
@@ -208,6 +213,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  fDoPID; // [kFALSE]
         Bool_t                  fDoV0; // [kFALSE]
 	Bool_t                  fDoPHI; // [kFALSE]
+	Bool_t                  fshiftphi_PHI; // [kFALSE]
+        Bool_t                  fshiftrap_PHI; // [kFALSE]
         Bool_t                  fUseNch; // [kFALSE]
         Bool_t                  fUseEfficiency; // [kFALSE]
         Bool_t                  fUseFMDcut; // [kTRUE]
@@ -280,6 +287,10 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fMaxLambdaMass; // [1.15]
 	Double_t                fMinPhiMass; // [0.99]
         Double_t                fMaxPhiMass; // [1.07]
+	Bool_t                  fParticlemass_bias_corr;
+        Int_t                   fProtonSigcount;
+        Int_t                   fLambdaSigcount;
+        Int_t                   fPhiSigcount;
 
 
         Double_t                fJetParticleLowPt; // [5.]

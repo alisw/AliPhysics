@@ -241,8 +241,8 @@ void AliPtSubEventContainer::FillTwoSubAnalsysis(const vector<vector<double>> &i
   double prod, prodw;
   for (int m(1); m <= mpar-1; m++){
     for(int k(1); k <= m; k++){
-      prod =  (arrA[0][m-k]/arrA[1][m-k])*(arrB[0][k]/arrB[1][k]);
-      prodw = arrA[1][m-k]*arrB[1][k];
+      prod =  (arrA[0][1+m-k]/arrA[1][1+m-k])*(arrB[0][k]/arrB[1][k]);
+      prodw = arrA[1][1+m-k]*arrB[1][k];
       ((TProfile*)((TList*)fTwoSubAnalysisList->At(m-1+2))->At(k-1))->Fill(lMult,prod,(fEventWeight==WeightSpace::kOne)?1.0:prodw);
     }
   }

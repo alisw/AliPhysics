@@ -63,6 +63,8 @@ AliAnalysisTaskESEFlow* AddESEFlowTask(AliAnalysisTaskESEFlow::ColSystem colSys,
 
 
     task->SetFilterBit(96);
+    task->SetDCAzMax(2.5); // check default cuts!!
+    task->SetDCAxyMax(7);
     task->SetVtxZCut(10.0);
     task->SetPhiBins(60);
     task->SetEtaBins(32);

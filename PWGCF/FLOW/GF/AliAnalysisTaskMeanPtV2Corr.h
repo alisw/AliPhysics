@@ -2,7 +2,7 @@
 #ifndef MEANPTV2CORRELATIONS__H
 #define MEANPTV2CORRELATIONS__H
 #include "AliAnalysisTaskSE.h"
-#include "TComplex.h"
+// #include "TComplex.h"
 #include "AliEventCuts.h"
 #include "AliVEvent.h"
 #include "AliGFW.h"
@@ -31,7 +31,7 @@ class TH2D;
 class TH3D;
 class TProfile;
 class TProfile2D;
-class TComplex;
+// class TComplex;
 class AliAODEvent;
 class AliVTrack;
 class AliVVertex;
@@ -64,7 +64,7 @@ class AliAnalysisTaskMeanPtV2Corr : public AliAnalysisTaskSE {
   void SetupFlagsByIndex(Int_t); //Setting up event and track flags
   void CovSkipMpt(AliGFWFlags *lFlags, AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp);
   Int_t GetStageSwitch(TString instr);
-  AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc,head,ptdif);};
+  AliGFW::CorrConfig GetConf(TString head, TString desc, Bool_t ptdif) { return fGFW->GetCorrelatorConfig(desc.Data(),head.Data(),ptdif);};
   void CreateCorrConfigs();
   void FillWPCounter(Double_t[5], Double_t, Double_t);
   Bool_t LoadMyWeights(const Int_t &lRunNo = 0);

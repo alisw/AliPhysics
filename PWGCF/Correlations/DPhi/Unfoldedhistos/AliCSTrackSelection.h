@@ -8,6 +8,7 @@
 #include <TNamed.h>
 #include <TObjArray.h>
 #include "AliCSTrackCutsBase.h"
+#include "AliPID.h"
 
 class TBits;
 class TH1F;
@@ -59,17 +60,22 @@ class AliCSTrackSelection : public TNamed {
   virtual void                       NotifyRun();
   virtual void                       NotifyEvent();
   virtual Bool_t                     IsTrackAccepted(AliVTrack *trk);
+  virtual poiIds GetAcceptedTrackPOIId() { return fTrackId; };
   virtual Bool_t                     IsTrueTrackAccepted(AliVTrack *trk);
   virtual Bool_t                     IsTrueTrackAccepted(Int_t itrk);
+  virtual poiIds GetAcceptedParticlePOIId() { return fParticleId; };
 
-  static Bool_t                      IsTruePrimary(AliVTrack *trk);
+  static Bool_t IsTruePrimary(AliVTrack* trk);
   Bool_t                             IsFromMCInjectedSignal(Int_t itrk);
+  static poiIds poiid(AliPID::EParticleType sp);
 
-private:
-  void                               DefineHistograms();
+ private:
+  void DefineHistograms();
 
-private:
-  AliCSAnalysisCutsBase::QALevel     fQALevel;                           ///< the level of the QA histograms output
+ private:
+  poiIds fTrackId;                                                       ///< the track PID encoded as POI Id
+  poiIds fParticleId;                                                    ///< the particle PID encoded as POI Id
+  AliCSAnalysisCutsBase::QALevel fQALevel;                               ///< the level of the QA histograms output
   TObjArray                          fInclusiveTrackCuts;                ///< the set of inclusive track cuts
   TObjArray                          fInclusivePIDCuts;                  ///< the set of inclusive PID track cuts
   TObjArray                          fInclusiveCutsStrings;              ///< the strings to configure the inclusive track cuts
@@ -98,10 +104,14 @@ private:
   TH2F                              *fhTPCdEdxSignalVsP[2];              ///< TPC dE/dx signal vs P(b/a)
   TH2F* fhTPCdEdxSelSignalVsP[3];                                        ///< TPC dE/dx signal vs P for the different selected species
   TH2F                              *fhTOFSignalVsP[2];                  ///< TOF signal vs P(b/a)
+  TH2F* fhTOFSelSignalVsP[3];                                            ///< TOF signal vs P for the different selected species
   TH3F* fhTPCTOFSigmaVsP[3][2];                                          ///< TOF n sigmas vs TPC n sigmas vs P  to the pi, k, p lines (b/a)
   TH2F* fhTPCdEdxSignalDiffVsP[3][2];                                    ///< TPC dE/dx signal difference to the pi, k, p lines vs P (b/a)
+  TH2F* fhTOFSignalDiffVsP[3][2];                                        ///< TOF signal difference to the pi, k, p lines vs P (b/a)
   TH2F* fhTPCdEdxSelSignalDiffVsP[3][3];                                 ///< TPC dE/dx signal difference to the pi, k, p lines vs P  for the different selected species
-  TH2F* fhPvsTOFMassSq[2];                                               ///< momentum vs TOF estimated mass (b/a)
+  TH2F* fhTOFSelSignalDiffVsP[3][3];                                     ///< TOF signal difference to the pi, k, p lines vs P  for the different selected species
+  TH2F* fhPvsTOFMassSq[2];                                               ///< momentum vs TOF estimated squared mass (b/a)
+  TH2F* fhSelPvsTOFMassSq[3];                                            ///< momentum vs TOF estimated squared mass for the different selected species
 
   TList                             *fHistogramsList;                    ///< the list of histograms used
 

@@ -7,8 +7,7 @@
 ///
 /// The main output is stored in a THnSparse histogram or in a TTree.
 ///
-/// \author Salvatore Aiola <salvatore.aiola@cern.ch>, Yale University
-/// \date Oct 13, 2017
+/// \author Nima Zardoshti
 
 #ifndef ALIANALYSISTASKHFSUBSTRUCTURE_H
 #define ALIANALYSISTASKHFSUBSTRUCTURE_H

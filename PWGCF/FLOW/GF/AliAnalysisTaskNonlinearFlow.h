@@ -1,7 +1,7 @@
 #ifndef ALIANALYSISTASKNONLINEARFLOW_H
 #define ALIANALYSISTASKNONLINEARFLOW_H
 #include "AliAnalysisTaskSE.h"
-#include "AliGFWCuts.h"
+#include "AliGFWMCuts.h"
 #include "AliGFWNFCuts.h"
 #include "AliGFWWeights.h"
 #include "CorrelationCalculator.h"
@@ -20,12 +20,18 @@
 // AliRoot includes
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
+#include "AliMCEvent.h"
 #include "AliVEvent.h"
 #include "AliVTrack.h"
 #include "AliVVertex.h"
 #include "AliAODMCParticle.h"
 #include "AliAnalysisFilter.h"
 #include "AliESDtrackCuts.h"
+
+#include "AliAODMCHeader.h"
+#include "AliGenEventHeader.h"
+#include "AliCollisionGeometry.h"
+#include "AliGenHijingEventHeader.h"
 
 #ifndef __CINT__
 // ROOT includes
@@ -107,7 +113,7 @@ class PhysicsProfile : public TObject {
 		TProfile*     	 fChsc3232_3subRRMLB;			//! SC(3,2)_A 3subevent method
 		TProfile*     	 fChsc3223_3sub;			//! SC(3,2)_B 3subevent method
 		TProfile*     	 fChsc3232_3subGap2;			//! SC(3,2)_A 3subevent method |#Delta#eta| > 0.2
-		TProfile*     	 fChsc3223_3subGap2;			//! SC(3,2)_B 3subevent method |#Delta#eta| > 0.2
+    TProfile*     	 fChsc3223_3subGap2;			//! SC(3,2)_B 3subevent method |#Delta#eta| > 0.2
 
 		// Standard correlation profiles for different harmonics
 		TProfile*	 fChc422;          //!
@@ -229,9 +235,9 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetTPCchi2perCluster(double fchi2 = 4) {fTPCchi2perCluster = fchi2;}
 		virtual void   SetUseAdditionalDCACut(double flag = true) {fUseAdditionalDCACut = flag;}
 		virtual void   SetUseDefaultWeight(double flag = true) {fUseDefaultWeight = flag;}
-		virtual void   SetEtaGap3Sub(Double_t feta = 0.4) {fEtaGap3Sub = feta;}
+    virtual void   SetEtaGap3Sub(Double_t feta = 0.4) {fEtaGap3Sub = feta;}
 		virtual void   SetCentralityCut(Double_t cent = 100) {fCentralityCut = cent;}
-
+    virtual void   SetOnTheFly(Bool_t flag=false) {fOnTheFly = flag;} 
 		// unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
 		// unsigned fgFlowHarmonicsHigher = 0;  calculate v6, v7, v8 ..
 		// unsigned fgFlowHarmonicsMult = 0;    calculate v2{4} // yet v2{6}, v2{8}
@@ -249,8 +255,10 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		AliAnalysisTaskNonlinearFlow(const AliAnalysisTaskNonlinearFlow&);
 		AliAnalysisTaskNonlinearFlow& operator=(const AliAnalysisTaskNonlinearFlow&);
 
+    AliMCEvent*     getMCEvent();
 		virtual void		AnalyzeAOD(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus);
 		virtual void		AnalyzeMCTruth(AliVEvent* aod, float centrV0, float cent, float centSPD, float fVtxZ, bool fPlus);
+    virtual void		AnalyzeMCOnTheFly(AliMCEvent* event);
 		virtual void            NTracksCalculation(AliVEvent* aod);
 		Bool_t                  AcceptAOD(AliAODEvent *inEv);
 		Bool_t                  AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp);
@@ -271,7 +279,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		const char* ReturnPPperiodMC(const Int_t runNumber) const;
 
 		AliEventCuts	  fEventCuts;					// Event cuts
-		AliGFWCuts*     fGFWSelection;                                  //!
+		AliGFWMCuts*     fGFWSelection;                                  //!
 		AliGFWNFCuts*   fGFWSelection15o;                               //!
 		AliAODEvent*    fAOD;                                           //! AOD object
 
@@ -300,6 +308,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Bool_t                  fUseAdditionalDCACut;                   // Additianal cuts for dca: < 1 cm
 		Bool_t                  fUseDefaultWeight;                      // Force to use the default weight 
 		Double_t                fEtaGap3Sub;                            // The Eta Gap for 3 sub sample, the default is 0.4
+    Bool_t                  fOnTheFly;                              // flag to tune on on-the-fly
 
 		// Output objects
 		TList*			fListOfObjects;			//! Output list of objects
@@ -347,6 +356,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH1D*				hDCAzBefore; 		//!
 		TH1F*				hITSclustersBefore; 	//!
 		TH1D*				hChi2Before; 		//!
+    TH1D*				hnTPCClu;  		//!
 		TH2D*				hDCAxy; 		//!
 		TH1D*				hDCAz; 			//!
 		TH1F*				hITSclusters; 		//!
@@ -365,6 +375,8 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH2D* QDis3subL[10];        // QDistribution for 3sub
 		TH2D* QDis3subM[10];        // QDistribution for 3sub
 		TH2D* QDis3subR[10];        // QDistribution for 3sub
+
+    AliMCEvent *fMCEvent;           //! MC event
 
 		// Global variables
 		double NtrksCounter = 0;       //!
@@ -443,12 +455,14 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		bool fuQThreeSub = 0; //!
 		bool fuQGapScan  = 0; //!
 
+    Double_t fImpactParameterMC;                       //! Impact parameter
+
 		double xbins[3000+10] = {}; //!
 		int nn = 0; //!
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 18);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 19);    //Analysis task
 };
 
 #endif

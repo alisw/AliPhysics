@@ -57,7 +57,7 @@ public:
     };
     
   enum DetFlev{
-      kFullTPC,         ///< use all TPC Qn Vector
+      kFullTPC,         ///< use all T54PC Qn Vector
       kPosTPC,          ///< use positive eta TPC Qn Vector
       kNegTPC,          ///< use negative eta TPC Qn Vector
       kFullV0,          ///< use A and C V0 Qn Vector
@@ -114,6 +114,7 @@ public:
 
 
   //== s == Setter Prepare  ################################################
+  void SetMessageLevel(Int_t mesLev) {fMesLev = mesLev;}
   void SetRunListFileName(std::string fileName) {fRunListFileName = fileName;}
   
   void SetUseAliEventCuts(Bool_t b)      { fUseAliEventCuts = b; }
@@ -127,14 +128,21 @@ public:
 
   // void SetPileupCutQA(Bool_t bPileupCutQA){fPileupCutQA =  bPileupCutQA;}
   void SetEventQA(Int_t qaEventNum){fQaEventNum = qaEventNum;}
+  void SetV0KindForBKG(Int_t iV0KindForBkg){fV0KindForBkg = iV0KindForBkg;}
   void SetV0Combine(Bool_t bV0Combin){fV0Combin = bV0Combin;}
   void SetQnCalibType(TString iQnVCalibType){fQnVCalibType = iQnVCalibType;}
   void SetTPCQnMeasure(Bool_t bTPCQnMeasure){fTPCQnMeasure = bTPCQnMeasure;}
 
-  void SetEPQA(Bool_t bEPQA){fEPQA = bEPQA;}
-  void SetTrackQA(Bool_t bTrackQA){fTrackQA = bTrackQA;}
-  void SetBkgQA(Bool_t bBkgQA){fBkgQA = bBkgQA;}
-  void SetJetQA(Bool_t bJetQA){fJetQA = bJetQA;}
+  void SetOwnEventCut(Bool_t bOwnEventCut){fOwnEventCut = bOwnEventCut;}
+  void SetDoEP(Bool_t bDoEP){fDoEP = bDoEP;}
+  void SetDoTrack(Bool_t bDoTrack){fDoTrack = bDoTrack;}
+  void SetDoBkg(Bool_t bDoBkg){fDoBkg = bDoBkg;}
+  void SetDoJet(Bool_t bDoJet){fDoJet = bDoJet;}
+  void SetEPHistQA(Bool_t bEPQA){fEPQA = bEPQA;}
+  void SetTrackHistQA(Bool_t bTrackQA){fTrackQA = bTrackQA;}
+  void SetBkgHistQA(Bool_t bBkgQA){fBkgQA = bBkgQA;}
+  void SetJetHistQA(Bool_t bJetQA){fJetQA = bJetQA;}
+
   void SetJetHistWEP(Bool_t bSepEP){fSepEP = bSepEP;}
 
 
@@ -216,7 +224,8 @@ private:
     
     AliAODEvent* fAOD;                /// AOD event
     TString fOADBFileName;            /// OADB input file name
-    TList*  fCalibRefObjList;         ///<
+    
+    Int_t   fMesLev = 0;              ///<
 
     Bool_t  fPileupCut = kFALSE;      ///<
     Bool_t  fTPCQnMeasure = kFALSE;   ///<
@@ -225,13 +234,22 @@ private:
     Bool_t  fCalibQA = kFALSE;        ///<
     Bool_t  fGainCalibQA = kFALSE;    ///<
     Bool_t  fReCentCalibQA = kFALSE;  ///<
+
+    Bool_t  fOwnEventCut = kFALSE;    ///<
+    Bool_t  fDoEP = kFALSE;           ///<
+    Bool_t  fDoTrack = kFALSE;        ///<
+    Bool_t  fDoBkg = kFALSE;          ///<
+    Bool_t  fDoJet = kFALSE;          ///<
+    
     Bool_t  fEPQA = kFALSE;           ///<
     Bool_t  fTrackQA = kFALSE;        ///<
     Bool_t  fBkgQA = kFALSE;          ///<
     Bool_t  fJetQA = kFALSE;          ///<
+
     Bool_t  fSepEP = kFALSE;          ///<
     
 
+    Int_t         fV0KindForBkg = 0;        ///< 0:V0M, 1:V0C, 2:V0A
     TString       fQnVCalibType = "kOrig";  ///< fCalibration Type
     Bool_t        fV0Combin = kFALSE;       ///<
     int           fQaEventNum = -1;         ///<
@@ -257,16 +275,17 @@ private:
     
     void       MeasureTpcEPQA();
     
-    Bool_t     MeasureBkg();
-    void       BkgFitEvaluation(TH1F* hBkgTracks, TF1* fFitModulation);
+    Bool_t     MeasureBkg(Double_t baseJetRho);
+    void       BkgFitEvaluation(Double_t baseJetRho, TH1F* hBkgTracks, TF1* fFitModulation);
     
     Bool_t     DoEventPlane();
     void       DoJetLoop();
     void       DoTrackLoop();
     
     Bool_t     QnJEHandlarEPGet();
-    Bool_t     QnGainCalibration();
+    Bool_t     QnV0GainCalibration();
     Bool_t     QnRecenteringCalibration();
+    Bool_t     QnCalcWOCalib();
 
     Double_t CalcEPAngle(double Qx,double Qy) const {return (TMath::Pi()+TMath::ATan2(-Qy,-Qx))/2;}
     Double_t CalcEPReso(Int_t n, Double_t &psiA, Double_t &psiB, Double_t &psiC);
@@ -278,16 +297,16 @@ private:
     // TH1F*   GetResoFromOutputFile(detectorType det, Int_t h, TArrayD* cen);
     Double_t CalculateEventPlaneChi(Double_t res);
 
-    static Double_t ChiSquarePDF(Int_t ndf, Double_t x) {
+    /* inline */  static Double_t ChiSquarePDF(Int_t ndf, Double_t x) {
         Double_t n(ndf/2.), denom(TMath::Power(2, n)*TMath::Gamma(n));
         if (denom!=0)  return ((1./denom)*TMath::Power(x, n-1)*TMath::Exp(-x/2.)); 
         return -999; 
     }
 
     // note that the cdf of the chisquare distribution is the normalized lower incomplete gamma function
-    static Double_t ChiSquareCDF(Int_t ndf, Double_t x) { return TMath::Gamma(ndf/2., x/2.); }
+    /* inline */  static Double_t ChiSquareCDF(Int_t ndf, Double_t x) { return TMath::Gamma(ndf/2., x/2.); }
 
-    static Double_t ChiSquare(TH1& histo, TF1* func) {
+    /* inline */  static Double_t ChiSquare(TH1& histo, TF1* func) {
         // evaluate the chi2 using a poissonian error estimate on bins
         Double_t chi2(0.);
         for(Int_t i(0); i < histo.GetXaxis()->GetNbins(); i++) {
@@ -320,9 +339,10 @@ private:
     // TF1   *fMultCutPU;      //!<!
     // TF1   *fCenCutLowPU;    //!<!
     // TF1   *fCenCutHighPU;   //!<!
-
-    Double_t V0Mult2[3];    /// For q2 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
-    Double_t V0Mult3[3];    /// For q3 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
+    
+    Double_t V0Mult2[3];    ///< For q2 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
+    Double_t V0Mult3[3];    ///< For q3 V0 0:combin, 1:eta negative (C side), 2:eta positive (A side)
+    Double_t V0MultForAngle[8];    ///< Multiplicity for 8 region
     
     //qnVector 0:x, 1:y
     Double_t q2VecV0M[2];   ///< Q2 V0 C+A vector(x,y)
@@ -360,16 +380,16 @@ private:
     Double_t fV2ResoV0;     ///<  V2 resolution value
     Double_t fV3ResoV0;     ///<  V3 resolution value
 
-
-    TH2F *fHCorrV0ChWeghts;   //!<!
-    TH1D *fHCorrQ2xV0C;       //!<!
-    TH1D *fHCorrQ2yV0C;       //!<!
-    TH1D *fHCorrQ2xV0A;       //!<!
-    TH1D *fHCorrQ2yV0A;       //!<!
-    TH1D *fHCorrQ3xV0C;       //!<!
-    TH1D *fHCorrQ3yV0C;       //!<!
-    TH1D *fHCorrQ3xV0A;       //!<!
-    TH1D *fHCorrQ3yV0A;       //!<! 
+    TList     *fCalibRefObjList;   ///<
+    TH2F      *fHCorrV0ChWeghts;   //!<!
+    TH1D      *fHCorrQ2xV0C;       //!<!
+    TH1D      *fHCorrQ2yV0C;       //!<!
+    TH1D      *fHCorrQ2xV0A;       //!<!
+    TH1D      *fHCorrQ2yV0A;       //!<!
+    TH1D      *fHCorrQ3xV0C;       //!<!
+    TH1D      *fHCorrQ3yV0C;       //!<!
+    TH1D      *fHCorrQ3xV0A;       //!<!
+    TH1D      *fHCorrQ3yV0A;       //!<! 
     
     int fPrevEventRun;         ///< run number of event previously analysed
 
@@ -390,7 +410,7 @@ private:
     
 
     short GetVertexZbin() const;
-    short GetCentBin() const;
+    Int_t GetCentBin();
     bool OpenInfoCalbration();
 
     bool IsTrackSelected(AliAODTrack* track);
@@ -466,10 +486,10 @@ private:
     TH1D* fQx3sV0C[14];          ///< sigma Qxn V0C
     TH1D* fQy3sV0C[14];          ///< sigma Qyn V0C
 
-    bool fV0CalibZvtxDiff;       //< flag to properly manage Zvtx differential V0 calibrations
+    bool fV0CalibZvtxDiff;       ///< flag to properly manage Zvtx differential V0 calibrations
 
-    TH1D* fWeightsTPCPosEta[9];  ///< Weights for TPC tracks with eta > 0
-    TH1D* fWeightsTPCNegEta[9];  ///< Weights for TPC tracks with eta < 0
+    TH1D* fWeightsTPCPosEta[10];  ///< Weights for TPC tracks with eta > 0
+    TH1D* fWeightsTPCNegEta[10];  ///< Weights for TPC tracks with eta < 0
     bool fEnablePhiDistrHistos;  ///< Enable phi distribution histos
     TH2F* fPhiVsCentrTPC[2];     ///< Phi vs. centr TH2 of selected TPC tracks in eta>0 and eta<0
     
@@ -479,12 +499,10 @@ private:
     AliAnalysisTaskRawJetWithEP(const AliAnalysisTaskRawJetWithEP&); // not implemented
     AliAnalysisTaskRawJetWithEP &operator=(const AliAnalysisTaskRawJetWithEP&);
 
-    ClassDef(AliAnalysisTaskRawJetWithEP, 131);
+    ClassDef(AliAnalysisTaskRawJetWithEP, 140);
 };
 
 #endif
-
-
 
 
 

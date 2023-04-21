@@ -2,9 +2,9 @@
 #define AliAnalysisTaskV0sInJetsEmcal_cxx
 
 //-------------------------------------------------------------------------
-//     task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+//     task for analysis of V0s (K0S, (anti-)Lambda) in charged jets (+ Xi analysis)
 //     fork of AliAnalysisTaskV0sInJets for the EMCal framework
-//     Author: Vit Kucera (vit.kucera@cern.ch)
+//     Author: Vit Kucera (vit.kucera@cern.ch)                       (Xi analysis added by Ekaterina Grecka)
 //-------------------------------------------------------------------------
 
 class TH1D;
@@ -16,6 +16,7 @@ class TRandom;
 class AliAODv0;
 class AliAODVertex;
 class AliAODJet;
+class AliAODcascade;
 
 class AliJetContainer;
 class AliParticleContainer;
@@ -105,7 +106,7 @@ public:
   Double_t GetNormalPhi(Double_t phi) {while(phi >= fgkdDeltaPhiMax) phi -= TMath::TwoPi(); while(phi < fgkdDeltaPhiMin) phi += TMath::TwoPi(); return phi;} // restrict azimuth to desired range
 
   // upper edges of centrality bins
-  static const Int_t fgkiNBinsCent = 9; // number of centrality bins
+  static const Int_t fgkiNBinsCent = 1; // number of centrality bins
   static const Int_t fgkiCentBinRanges[fgkiNBinsCent]; // upper edges of centrality bins
   // centrality bins for event mixing
   static const Int_t fgkiNBinsCentMix = 2; // number of centrality bins for event mixing
@@ -133,6 +134,23 @@ public:
   // delta phi range
   static const Double_t fgkdDeltaPhiMin; // minimum delta-phi_V0-jet
   static const Double_t fgkdDeltaPhiMax; // maximum delta-phi_V0-jet
+//New public functions and parameters for the Xi analysis
+//------------------------------------------------------------------------------------------
+  void FillCascadeCandidates(Double_t mXi, Bool_t isXiMinus, Bool_t isXiPlus, Int_t iCut, Int_t iCent);
+  void FillQAHistogramXi(AliAODVertex* vtx, const AliAODcascade* cascade, Int_t iIndexHisto,  Bool_t IsCandXiMinus, Bool_t IsCandXiPlus, Bool_t IsInPeakXi);
+  // set functions 
+  void SetCutDCACascadeBachToPrimVtxMin(Double_t val = 0.04) {fdCutDCACascadeBachToPrimVtxMin = val;}
+  void SetCutDCACascadeV0ToPrimVtxMin(Double_t val = 0.1) {fdCutDCACascadeV0ToPrimVtxMin = val;}
+  void SetCutDCACascadeDaughtersToPrimVtxMin(Double_t val = 0.03) {fdCutDCACascadeDaughtersToPrimVtxMin = val;}
+  void SetCutDCACascadeV0DaughtersMax(Double_t val = 1.) {fdCutDCACascadeV0DaughtersMax = val;}
+  void SetCutDCACascadeBachToV0Max(Double_t val = 1.3) {fdCutDCACascadeBachToV0Max = val;}
+  void SetCutCPACascadeMin(Double_t val = 0.97) {fdCutCPACascadeMin = val;} 
+  void SetCutCPACascadeV0Min(Double_t val = 0.998) {fdCutCPACascadeV0Min = val;} 
+  // axis: Xi invariant mass
+  static const Int_t fgkiNBinsMassXi; // number of bins (uniform binning)
+  static const Double_t fgkdMassXiMin; // minimum
+  static const Double_t fgkdMassXiMax; // maximum  
+//------------------------------------------------------------------------------------------
 
 protected:
   void ExecOnce();
@@ -473,10 +491,157 @@ private:
   TH2D* fh2Tau3DVs2D[fgkiNQAIndeces]; //! pt vs ratio 3D lifetime / 2D lifetime
   */
 
+//New private parameters and histograms for the Xi selection
+//------------------------------------------------------------------------------------------
+  Double_t fdCutDCACascadeBachToPrimVtxMin; // [cm] min DCA of bachelor track to the prim vtx
+  Double_t fdCutDCACascadeV0ToPrimVtxMin;   // [cm] min DCA of V0 (from cascade decay) to the prim vtx
+  Double_t fdCutDCACascadeDaughtersToPrimVtxMin; // [cm] min DCA of daughters (from secondary V0 decay) to the prim vtx
+  Double_t fdCutDCACascadeV0DaughtersMax; // 1.5; // [sigma of TPC tracking] max DCA between Cascade V0 daughters
+  Double_t fdCutDCACascadeBachToV0Max; // 1.3; // [cm] max DCA between bachelor track to V0   
+  Double_t fdCutCPACascadeMin;   // min cosine of the pointing angle of the cascade
+  Double_t fdCutCPACascadeV0Min; // min cosine of the pointing angle of the V0 in the cascade
+
+  Double_t fdCutNTauXMax; // (5.0) [tau] max proper lifetime in multiples of the mean lifetime, Xi
+
+  static const Int_t fgkiNCategCascade = 21; // number of Cascade selection steps  
+  //Histograms 
+  TH1D* fh1CascadeCandPerEvent; //! number of Cascade cand per event
+   //QA 
+  TH1D* fh1QACascadeStatus[fgkiNQAIndeces]; //! online vs offline reconstructed Cascade candidates
+  TH1D* fh1QACascadeTPCRefit[fgkiNQAIndeces]; //! TPC refit on vs off
+  TH1D* fh1QACascadeTPCRows[fgkiNQAIndeces]; //! crossed TPC pad rows
+  TH1D* fh1QACascadeTPCFindable[fgkiNQAIndeces]; //! findable clusters
+  TH1D* fh1QACascadeTPCRowsFind[fgkiNQAIndeces]; //! ratio rows/clusters
+  TH1D* fh1QACascadeEta[fgkiNQAIndeces]; //! pseudorapidity
+  TH2D* fh2QACascadeEtaRows[fgkiNQAIndeces]; //! pseudorapidity vs TPC rows
+  TH2D* fh2QACascadePtRows[fgkiNQAIndeces]; //! pt vs TPC rows
+  TH2D* fh2QACascadePhiRows[fgkiNQAIndeces]; //! azimuth vs TPC rows
+  TH2D* fh2QACascadeNClRows[fgkiNQAIndeces]; //! clusters vs TPC rows
+  TH2D* fh2QACascadeEtaNCl[fgkiNQAIndeces]; //! pseudorapidity vs clusters
+  // XiMinus
+  //-------------------------
+  TH1D* fh1CascadeCounterCentXiMinus[fgkiNBinsCent]; //! number of Xi candidates after various cuts
+  TH1D* fh1CascadeInvMassXiMinusAll[fgkiNCategCascade]; //! 
+  TH2D* fh2QACascadeEtaPtXiMinusPeak[fgkiNQAIndeces]; //!
+  TH2D* fh2QACascadeEtaEtaXiMinus[fgkiNQAIndeces]; //!
+  TH2D* fh2QACascadePhiPhiXiMinus[fgkiNQAIndeces]; //!
+  TH1D* fh1QACascadeRapXiMinus[fgkiNQAIndeces]; //!
+  TH2D* fh2QACascadePtPtXiMinusPeak[fgkiNQAIndeces]; //!
+  TH2D* fh2ArmPodXiMinus[fgkiNQAIndeces]; //! ??
+  TH1D* fh1CascadeCandPerEventCentXiMinus[fgkiNBinsCent]; //!
+  TH1D* fh1CascadeInvMassXiMinusCent[fgkiNBinsCent]; //!
+  // XiMinus Inclusive
+  THnSparse* fhnCascadeInclusiveXiMinus[fgkiNBinsCent]; //!
+  // XiMinus Cones
+  THnSparse* fhnCascadeInJetXiMinus[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeInPerpXiMinus[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeInRndXiMinus[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeInMedXiMinus[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeOutJetXiMinus[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeNoJetXiMinus[fgkiNBinsCent]; //!
+  TH2D* fh2CascadePtJetAngleXiMinus[fgkiNBinsCent]; //!
+  TH1D* fh1DCAInXiMinus[fgkiNBinsCent]; //!
+  TH1D* fh1DCAOutXiMinus[fgkiNBinsCent]; //! 
+  // MC histograms
+  // inclusive
+  TH1D* fh1CascadeXiMinusPtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1CascadeXiMinusPtMCRec[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeXiMinusPtMassMCRec[fgkiNBinsCent]; //!
+  TH1D* fh1CascadeXiMinusPtMCRecFalse[fgkiNBinsCent]; //!
+  // inclusive eta-pT efficiency
+  TH2D* fh2CascadeXiMinusEtaPtMCGen[fgkiNBinsCent]; //!
+  THnSparse* fh3CascadeXiMinusEtaPtMassMCRec[fgkiNBinsCent]; //!
+  // MC daughter eta inclusive  //  THnSparse* fhnCascadeXiMinusInclDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_Cascade generated
+  THnSparse* fhnCascadeXiMinusInclDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_Cascade reconstructed
+  // in jets
+  TH2D* fh2CascadeXiMinusInJetPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeXiMinusInJetPtMCRec[fgkiNBinsCent]; //!
+  THnSparse* fh3CascadeXiMinusInJetPtMassMCRec[fgkiNBinsCent]; //!
+  // in jets eta-pT efficiency
+  THnSparse* fh3CascadeXiMinusInJetEtaPtMCGen[fgkiNBinsCent]; //!
+  THnSparse* fh4CascadeXiMinusInJetEtaPtMassMCRec[fgkiNBinsCent]; //!
+  // MC daughter eta in  CascadeXiMinusInJetsDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
+  THnSparse* fhnCascadeXiMinusInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 reconstructed
+  // resolution
+  TH2D* fh2CascadeXiMinusMCResolMPt[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeXiMinusMCPtGenPtRec[fgkiNBinsCent]; //!
+
+  //jet histograms
+  TH1D* fh1DistanceCascadeJetsXiMinus[fgkiNBinsCent]; //! distance in eta-phi between Cascade and the closest jet
+  //XiMinus-------------------------
+  // XiPlus
+  //-------------------------
+  TH1D* fh1CascadeCounterCentXiPlus[fgkiNBinsCent]; //! number of Xi candidates after various cuts
+  TH1D* fh1CascadeInvMassXiPlusAll[fgkiNCategCascade]; //! 
+  TH2D* fh2QACascadeEtaPtXiPlusPeak[fgkiNQAIndeces]; //!
+  TH2D* fh2QACascadeEtaEtaXiPlus[fgkiNQAIndeces]; //!
+  TH2D* fh2QACascadePhiPhiXiPlus[fgkiNQAIndeces]; //!
+  TH1D* fh1QACascadeRapXiPlus[fgkiNQAIndeces]; //!
+  TH2D* fh2QACascadePtPtXiPlusPeak[fgkiNQAIndeces]; //!
+  TH2D* fh2ArmPodXiPlus[fgkiNQAIndeces]; //! ??
+  TH1D* fh1CascadeCandPerEventCentXiPlus[fgkiNBinsCent]; //!
+  TH1D* fh1CascadeInvMassXiPlusCent[fgkiNBinsCent]; //!
+  // XiPlus Inclusive
+  THnSparse* fhnCascadeInclusiveXiPlus[fgkiNBinsCent]; //!
+  // XiPlus Cones
+  THnSparse* fhnCascadeInJetXiPlus[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeInPerpXiPlus[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeInRndXiPlus[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeInMedXiPlus[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeOutJetXiPlus[fgkiNBinsCent]; //!
+  THnSparse* fhnCascadeNoJetXiPlus[fgkiNBinsCent]; //!
+  TH2D* fh2CascadePtJetAngleXiPlus[fgkiNBinsCent]; //!
+  TH1D* fh1DCAInXiPlus[fgkiNBinsCent]; //!
+  TH1D* fh1DCAOutXiPlus[fgkiNBinsCent]; //! 
+  // MC histograms
+  // inclusive
+  TH1D* fh1CascadeXiPlusPtMCGen[fgkiNBinsCent]; //!
+  TH1D* fh1CascadeXiPlusPtMCRec[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeXiPlusPtMassMCRec[fgkiNBinsCent]; //!
+  TH1D* fh1CascadeXiPlusPtMCRecFalse[fgkiNBinsCent]; //!
+  // inclusive eta-pT efficiency
+  TH2D* fh2CascadeXiPlusEtaPtMCGen[fgkiNBinsCent]; //!
+  THnSparse* fh3CascadeXiPlusEtaPtMassMCRec[fgkiNBinsCent]; //!
+  // MC daughter eta inclusive  //  THnSparse* fhnCascadeXiPlusInclDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_Cascade generated
+  THnSparse* fhnCascadeXiPlusInclDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_Cascade reconstructed
+  // in jets
+  TH2D* fh2CascadeXiPlusInJetPtMCGen[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeXiPlusInJetPtMCRec[fgkiNBinsCent]; //!
+  THnSparse* fh3CascadeXiPlusInJetPtMassMCRec[fgkiNBinsCent]; //!
+  // in jets eta-pT efficiency
+  THnSparse* fh3CascadeXiPlusInJetEtaPtMCGen[fgkiNBinsCent]; //!
+  THnSparse* fh4CascadeXiPlusInJetEtaPtMassMCRec[fgkiNBinsCent]; //!
+  // MC daughter eta in  CascadeXiPlusInJetsDaughterEtaPtPtMCGen[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 generated
+  THnSparse* fhnCascadeXiPlusInJetsDaughterEtaPtPtMCRec[fgkiNBinsCent]; //! eta_daughter-pt_daughter-pt_V0 reconstructed
+  // resolution
+  TH2D* fh2CascadeXiPlusMCResolMPt[fgkiNBinsCent]; //!
+  TH2D* fh2CascadeXiPlusMCPtGenPtRec[fgkiNBinsCent]; //!
+
+  //jet histograms
+  TH1D* fh1DistanceCascadeJetsXiPlus[fgkiNBinsCent]; //! distance in eta-phi between Cascade and the closest jet
+  //XiPlus------------------------
+  
+  TH1D* fh1QACascadePt[fgkiNQAIndeces]; //! pt
+  TH1D* fh1QACascadeCharge[fgkiNQAIndeces]; //! charge
+  TH1D* fh1QACascadeDCAVtx[fgkiNQAIndeces]; //! DCA of daughters to prim vtx
+  TH1D* fh1QACascadeDCAV0[fgkiNQAIndeces]; //! DCA between daughters
+  TH1D* fh1QACascadeDCAV0ToPrimVtx[fgkiNQAIndeces];  // dca V0 to primary vertex
+  TH1D* fh1QACascadeDCABachToPrimVtx[fgkiNQAIndeces]; // dca bachelor to primary vertex
+  TH1D* fh1QACascadeDCABachToV0[fgkiNQAIndeces];   // dca bachelor to V0  
+  TH1D* fh1QACascadeV0Cos[fgkiNQAIndeces]; //! cosine of pointing angle (CPA)
+  TH1D* fh1QACascadeXiCos[fgkiNQAIndeces]; //! cosine of pointing angle (CPA) (Xi)
+
+  TH1D* fh1QACascadeV0R[fgkiNQAIndeces]; //! radial distance between prim vtx and V0 decay vertex
+  TH1D* fh1QACascadeCTau2D[fgkiNQAIndeces]; //! lifetime calculated in xy
+  TH1D* fh1QACascadeCTau3D[fgkiNQAIndeces]; //! lifetime calculated in xyz
+
+
+//-------------------------------------------------------------------------------------------
+
   AliAnalysisTaskV0sInJetsEmcal(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
   AliAnalysisTaskV0sInJetsEmcal& operator=(const AliAnalysisTaskV0sInJetsEmcal&); // not implemented
 
-  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 23) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
+  ClassDef(AliAnalysisTaskV0sInJetsEmcal, 24) // task for analysis of V0s (K0S, (anti-)Lambda) in charged jets
 };
 
 #endif

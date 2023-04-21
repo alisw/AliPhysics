@@ -27,7 +27,7 @@
 #include "AliAODInputHandler.h"
 #include "AliAODMCParticle.h"
 #include "AliPIDResponse.h"
-//#include "AliAnalysisUtils.h"
+#include "AliMultSelection.h"
 
 #include "AliAODpidUtil.h"
 #include "AliAODHeader.h"
@@ -70,14 +70,12 @@ void AliAnalysisTaskParticleEffDY::SetPidMethod(int method)
   case 3: fPidMethod=kExclusivePIDDiffRejection;
     break;
   }
-
 }
-
 
 //_______________________________________________________
 
 AliAnalysisTaskParticleEffDY::AliAnalysisTaskParticleEffDY(TString name, int pidMethod, int filterbit) :
-  AliAnalysisTaskSE(name), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0), fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(96), fPidMethod(kExclusivePIDDiffRejection),  fEstEventMult(kRefMult),fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
+  AliAnalysisTaskSE(name), centrality(0), fHistoList(0),  fMassInvLambdaPass(0),fMassInvAntiLambdaPass(0), fMassInvLambdaFail(0), fMassInvAntiLambdaFail(0),fYLambda(0),fPtLambda(0), fYAntiLambda(0),fPtAntiLambda(0), fCutsLambda(0), fCutsAntiLambda(0), fTruePtLambdaMC(0), fRecPtLambdaMC(0), fTruePtAntiLambdaMC(0),fRecPtAntiLambdaMC(0), fMassInvXimPass(0),fMassInvXipPass(0), fMassInvXimFail(0), fMassInvXipFail(0),fYXim(0),fPtXim(0), fYXip(0),fPtXip(0), fCutsXim(0), fCutsXip(0), recoParticleArrayXi(0), fTruePtXimMC(0), fRecPtXimMC(0), fTruePtXipMC(0), fRecPtXipMC(0), fDCAtoPrimVtx(0), fIfAliEventCuts(kFALSE), fFB(96), fPidMethod(kExclusivePIDDiffRejection),  fEstEventMult(kV0M),fIfXiAnalysis(kFALSE), fpidResponse(0), fAODpidUtil(0), fEventCuts(0)
 
 {
 
@@ -109,6 +107,7 @@ AliAnalysisTaskParticleEffDY::AliAnalysisTaskParticleEffDY(TString name, int pid
     if(i<4) fHistEv[i] = NULL;
     fHistQA[i] = NULL;
     if(i<3) fHistQA2D[i] = NULL;
+    if(i<4) fHistP[i]=NULL;
   }
 
   /* init track cuts */
@@ -422,15 +421,22 @@ void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
     fHistoList->Add(fHistEv[i]);
 
 
-  for(Int_t i = 0; i < MULTBINS; i++)  {
+  for(Int_t i = 0; i < 4; i++)  {
     hname = "fHistEventCutsM";
     hname+= i;
     
-    fHistEvCuts[i] = new TH1F(hname,Form("Event Cuts M%d",i) , 4, 0, 5);
+
+    fHistEvCuts[i] = new TH1F(hname,Form("Event Cuts M%d",i) , 10, 0, 11);
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(1,"All");
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(2,"NoVertex");
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(3,"PileUp");
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(4,"z-vertex>10");
+    fHistEvCuts[i]->GetXaxis()->SetBinLabel(5,"eventspions");
+    fHistEvCuts[i]->GetXaxis()->SetBinLabel(6,"eventskaons");
+    fHistEvCuts[i]->GetXaxis()->SetBinLabel(7,"eventsprotons");
+    fHistEvCuts[i]->GetXaxis()->SetBinLabel(8,"eventspions T");
+    fHistEvCuts[i]->GetXaxis()->SetBinLabel(9,"eventskaons T");
+    fHistEvCuts[i]->GetXaxis()->SetBinLabel(10,"eventsprotons T");
     fHistoList->Add(fHistEvCuts[i]);
 
     for(Int_t chg=0;chg<2;chg++){
@@ -458,11 +464,17 @@ void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
   fHistQA[7] = new TH1F("fHistPhi", "Phi distribution" , 100, -TMath::Pi(), TMath::Pi());
   fHistQA[8] = new TH1F("fHistY", "Y distribution" , 100, -2, 2);
  
-  fHistQA[9] = new TH1F("fHistEventCuts", "Event Cuts" , 4, 0, 5);
+  fHistQA[9] = new TH1F("fHistEventCuts", "Event Cuts" , 10, 0, 11);
   fHistQA[9]->GetXaxis()->SetBinLabel(1,"All");
   fHistQA[9]->GetXaxis()->SetBinLabel(2,"NoVertex");
   fHistQA[9]->GetXaxis()->SetBinLabel(3,"PileUp");
   fHistQA[9]->GetXaxis()->SetBinLabel(4,"z-vertex>10");
+  fHistQA[9]->GetXaxis()->SetBinLabel(5,"eventspions");
+  fHistQA[9]->GetXaxis()->SetBinLabel(6,"eventskaons");
+  fHistQA[9]->GetXaxis()->SetBinLabel(7,"eventsprotons");
+  fHistQA[9]->GetXaxis()->SetBinLabel(8,"eventspions T");
+  fHistQA[9]->GetXaxis()->SetBinLabel(9,"eventskaons T");
+  fHistQA[9]->GetXaxis()->SetBinLabel(10,"eventsprotons T");
 
 
   fHistQA[10] = new TH1F("fHistTrackCuts", "Track Cuts" , 7, 0.5, 7.5);
@@ -473,6 +485,20 @@ void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
   fHistQA[10]->GetXaxis()->SetBinLabel(5,"Pt");
   fHistQA[10]->GetXaxis()->SetBinLabel(6,"DCA");
   fHistQA[10]->GetXaxis()->SetBinLabel(7,"Electron Rejection");
+
+  for(Int_t i = 0; i < 4; i++)  {
+   hname = "fHistParticleCounterM";
+   hname+= i;
+    
+  fHistP[i] = new TH1F(hname,Form("fHistParticleCounterM%d",i), 7, 0, 8);
+  fHistP[i]->GetXaxis()->SetBinLabel(1,"pions R");
+  fHistP[i]->GetXaxis()->SetBinLabel(2,"kaons R");
+  fHistP[i]->GetXaxis()->SetBinLabel(3,"protons R");
+  fHistP[i]->GetXaxis()->SetBinLabel(4,"pions T");
+  fHistP[i]->GetXaxis()->SetBinLabel(5,"kaons T");
+  fHistP[i]->GetXaxis()->SetBinLabel(6,"protons T");
+  fHistoList->Add(fHistP[i]);
+}
 
   fHistQA2D[0] = new TH2F("dcaHistDcaXY","DCA XY",50, 0, 5,210, -2.1, 2.1);
   fHistQA2D[1] = new TH2F("dcaHistDcaZ","DCA Z", 50, 0, 5, 210, -2.1, 2.1);
@@ -506,7 +532,9 @@ void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
   for ( Int_t i = 0; i < 11; i++)
     {
       fHistoList->Add(fHistQA[i]);
+      if(i<4) fHistoList->Add(fHistP[i]);
       if(i<3) fHistoList->Add(fHistQA2D[i]);
+      
       if(i<5) {
 	for(Int_t j = 0 ; j<PARTTYPES; j++)
 	  for(int chg=0;chg<2;chg++)
@@ -772,6 +800,7 @@ bool IsElectron1(float nsigmaTPCe, float nsigmaTPCPi,float nsigmaTPCK, float nsi
 void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
 {
 
+
   AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   AliAODEvent *fAOD = aodH->GetEvent();
   fAODpidUtil = aodH->GetAODpidUtil();
@@ -796,22 +825,23 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
     if(fEstEventMult == kV0M)
     {
       AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
-      mult = alicent->GetCentralityPercentile("V0M"); 
+      AliMultSelection *mult_selection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
+      mult = mult_selection->GetMultiplicityPercentile("V0M"); 
     }
-  else if(fEstEventMult == kRefMult)
+    else if(fEstEventMult == kRefMult)
     {
       AliAODHeader *fAODheader = (AliAODHeader*)aodEvent->GetHeader();
       mult = fAODheader->GetRefMultiplicity(); 
-     
-    }
- 
-  else if(fEstEventMult == kV0A)
+
+   }
+   else if(fEstEventMult == kV0A)
     {
       AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
       mult = alicent->GetCentralityPercentile("V0A"); 
+
     }
-  if(mult < 0.001 || mult > 100000) return;
-  fHistEv[0]->Fill(mult);
+  //if(mult < 0.001 || mult > 100000) return;
+  //fHistEv[0]->Fill(mult);
 
 
   if(fIfAliEventCuts){
@@ -861,16 +891,19 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
   //else fcent = 7;
   //if (fcent == 7) return;
 
-  if(mult >= 0.001 && mult <=100000)  fcent = 0;
-  else if(mult >= 2 && mult <=19) fcent = 1;
-  else if(mult >= 20 && mult <=49) fcent = 2;
-  else if(mult >= 50 && mult <=150) fcent = 3;
-  else return;
- 
-  if(fcent==0)fHistEvCuts[0]->Fill(1);
-  else if(fcent==1)fHistEvCuts[1]->Fill(1);
-  else if(fcent==2)fHistEvCuts[2]->Fill(1);
-  else if(fcent==3)fHistEvCuts[3]->Fill(1);
+fcent=0;
+int fcent2=0;
+  if(mult >= 0 && mult <=20)  fcent2 = 10;
+  else if(mult >= 20 && mult <=40) fcent2 = 1;
+  else if(mult >= 40 && mult <=70) fcent2 = 2;
+  else if(mult >= 70 && mult <=100) fcent2 = 3;
+  //if(fcent2!=3) return; // check this
+ // else return;
+
+  if(fcent2==10)fHistEvCuts[0]->Fill(1);
+  else if(fcent2==1)fHistEvCuts[1]->Fill(1);
+  else if(fcent2==2)fHistEvCuts[2]->Fill(1);
+  else if(fcent2==3)fHistEvCuts[3]->Fill(1);
 
   //"ESDs/pass2/AOD049/*AliAOD.root");
   const AliAODVertex* vertex =(AliAODVertex*) aodEvent->GetPrimaryVertex();
@@ -878,10 +911,10 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
   if (!vertex || vertex->GetNContributors()<=0) return;
 
   fHistQA[9]->Fill(2);
- if(fcent==0)fHistEvCuts[0]->Fill(2);
-  else if(fcent==1)fHistEvCuts[1]->Fill(2);
-  else if(fcent==2)fHistEvCuts[2]->Fill(2);
-  else if(fcent==3)fHistEvCuts[3]->Fill(2);
+ if(fcent2==10)fHistEvCuts[0]->Fill(2);
+  else if(fcent2==1)fHistEvCuts[1]->Fill(2);
+  else if(fcent2==2)fHistEvCuts[2]->Fill(2);
+  else if(fcent2==3)fHistEvCuts[3]->Fill(2);
 
 
 //********* Pile-up removal*******************
@@ -895,7 +928,7 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
   Int_t fMinPlpContribSPD = 3;
 
   if(fpA2013)
-    if(anaUtil->IsVertexSelected2013pA(aodEvent)==kFALSE) return;
+  if(anaUtil->IsVertexSelected2013pA(aodEvent)==kFALSE) return;
  
   if(fMVPlp) anaUtil->SetUseMVPlpSelection(kTRUE);
   else anaUtil->SetUseMVPlpSelection(kFALSE);
@@ -904,15 +937,15 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
   if(fMinPlpContribSPD) anaUtil->SetMinPlpContribSPD(fMinPlpContribSPD);
 
   if(fisPileUp)
-    if(anaUtil->IsPileUpEvent(aodEvent)) return;
+  if(anaUtil->IsPileUpEvent(aodEvent)) return;
 
   delete anaUtil;   
 
- fHistQA[9]->Fill(3);
-  if(fcent==0)fHistEvCuts[0]->Fill(3);
-  else if(fcent==1)fHistEvCuts[1]->Fill(3);
-  else if(fcent==2)fHistEvCuts[2]->Fill(3);
-  else if(fcent==3)fHistEvCuts[3]->Fill(3);
+  fHistQA[9]->Fill(3);
+  if(fcent2==10)fHistEvCuts[0]->Fill(3);
+  else if(fcent2==1)fHistEvCuts[1]->Fill(3);
+  else if(fcent2==2)fHistEvCuts[2]->Fill(3);
+  else if(fcent2==3)fHistEvCuts[3]->Fill(3);
 
   //TString vtxTtl = vertex->GetTitle();
   //if (!vtxTtl.Contains("VertexerTracks")) return;
@@ -920,11 +953,11 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
   if (TMath::Abs(zvtx) > 10) return;
   fHistQA[0]->Fill(zvtx);
   fHistQA[9]->Fill(4);
-  if(fcent==0)fHistEvCuts[0]->Fill(4);
-  else if(fcent==1)fHistEvCuts[1]->Fill(4);
-  else if(fcent==2)fHistEvCuts[2]->Fill(4);
-  else if(fcent==3)fHistEvCuts[3]->Fill(4);
-
+  if(fcent2==10)fHistEvCuts[0]->Fill(4);
+  else if(fcent2==1)fHistEvCuts[1]->Fill(4);
+  else if(fcent2==2)fHistEvCuts[2]->Fill(4);
+  else if(fcent2==3)fHistEvCuts[3]->Fill(4);
+  
  //**** getting MC array ******
   TClonesArray  *arrayMC;
 
@@ -962,6 +995,7 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
 
   // looking for global tracks and saving their numbers to copy from them PID information to TPC-only tracks in the main loop over tracks
   for (int i=0;i<aodEvent->GetNumberOfTracks();i++) {
+  
     const AliAODTrack *aodtrack=(AliAODTrack*)aodEvent->GetTrack(i);
     if (!aodtrack->TestFilterBit(128)) {
       if(aodtrack->GetID() < 0) continue;
@@ -975,12 +1009,128 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
 
   TObjArray recoParticleArray[PARTTYPES];
 
+  bool evpass=true;  	
+  bool collect[3] = {false,false,false};  	
+ 
+  int hmPionsR=0, hmKaonsR=0, hmProtonsR=0;
+
+
   fHistQA[10]->Fill(1,aodEvent->GetNumberOfTracks());
   //loop over AOD tracks 
   for (Int_t iTracks = 0; iTracks < aodEvent->GetNumberOfTracks(); iTracks++) {
+  	AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iTracks); 
+	if (!track)continue;
+	if(track->Y() < -0.5 || track->Y() > 0.5)
+      		continue; 
+      	
+	
+	UInt_t filterBit = fFB;
+	if(!track->TestFilterBit(filterBit))continue;		
+        
+	bool isPionNsigma = 0;
+	bool isKaonNsigma = 0;
+	bool isProtonNsigma  = 0;
+
+    	if (isPionNsigma){
+		if (track->Pt() > 0.2 || track->Pt() < 2.5){
+		continue;
+		}
+	}
+	if (isKaonNsigma){
+     		if (track->Pt() > 0.5 || track->Pt() < 2.5){
+     		continue;
+     		}
+        }
+     	if (isProtonNsigma){
+     		if (track->Pt() > 0.5 || track->Pt() < 2.5){
+     		continue;
+     		}
+        }
+        
+	AliAODTrack* aodtrackpid;
+		
+	if(filterBit==(1 << (7)))
+	aodtrackpid =(AliAODTrack*)aodEvent->GetTrack(labels[-1-aodEvent->GetTrack(iTracks)->GetID()]);
+	else
+	aodtrackpid = track;
+
+	float nSigmaTPCPi = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kPion);
+	float nSigmaTPCK = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
+	float nSigmaTPCP = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kProton);
+    
+	double nSigmaTOFPi = fpidResponse->NumberOfSigmasTOF(aodtrackpid,AliPID::kPion);
+	double nSigmaTOFK = fpidResponse->NumberOfSigmasTOF(aodtrackpid,AliPID::kKaon);
+	double nSigmaTOFP = fpidResponse->NumberOfSigmasTOF(aodtrackpid,AliPID::kProton);
+
+
+	float tTofSig = aodtrackpid->GetTOFsignal();
+	double pidTime[5]; aodtrackpid->GetIntegratedTimes(pidTime);
+
+	isPionNsigma = (IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigma3(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+	isKaonNsigma = (!IsPionNSigma3(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigma(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma3(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+	isProtonNsigma = (!IsPionNSigma3(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigma3(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]));
+   
+   
+   
+   	if (isPionNsigma){
+	collect[0]=true; 
+	if(fcent2==10)fHistP[0]->Fill(1);
+	else if(fcent2==1)fHistP[1]->Fill(1);
+	else if(fcent2==2)fHistP[2]->Fill(1);
+	else if(fcent2==3)fHistP[3]->Fill(1);
+	}
+  	if (isKaonNsigma){
+	collect[1]=true; 
+	if(fcent2==10)fHistP[0]->Fill(2);
+	else if(fcent2==1)fHistP[1]->Fill(2);
+	else if(fcent2==2)fHistP[2]->Fill(2);
+	else if(fcent2==3)fHistP[3]->Fill(2);
+	}
+	if (isProtonNsigma){
+	collect[2]=true;
+	if(fcent2==10)fHistP[0]->Fill(3);
+	else if(fcent2==1)fHistP[1]->Fill(3);
+	else if(fcent2==2)fHistP[2]->Fill(3);
+	else if(fcent2==3)fHistP[3]->Fill(3);
+	}	
+  	}
+
+
+
+if(collect[0]==true){
+	fHistQA[9]->Fill(5);
+	if(fcent2==10)fHistEvCuts[0]->Fill(5);
+	else if(fcent2==1)fHistEvCuts[1]->Fill(5);
+	else if(fcent2==2)fHistEvCuts[2]->Fill(5);
+	else if(fcent2==3)fHistEvCuts[3]->Fill(5);
+}
+
+if(collect[1]==true){
+	fHistQA[9]->Fill(6);
+	if(fcent2==10)fHistEvCuts[0]->Fill(6);
+	else if(fcent2==1)fHistEvCuts[1]->Fill(6);
+	else if(fcent2==2)fHistEvCuts[2]->Fill(6);
+	else if(fcent2==3)fHistEvCuts[3]->Fill(6);
+}
+
+
+if(collect[2]==true){
+	fHistQA[9]->Fill(7);
+	if(fcent2==10)fHistEvCuts[0]->Fill(7);
+	else if(fcent2==1)fHistEvCuts[1]->Fill(7);
+	else if(fcent2==2)fHistEvCuts[2]->Fill(7);
+	else if(fcent2==3)fHistEvCuts[3]->Fill(7);
+}
+
+
+
+
+	//if(!evpass) return;
+	
+  for (Int_t iTracks = 0; iTracks < aodEvent->GetNumberOfTracks(); iTracks++) {
     //get track 
     
-    //AliESDtrack* track = AliESDtrackCuts::GetTPCOnlyTrack(const_cast<AliESDEvent*>(esdEvent),iTracks);
+
     AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iTracks); 
     if (!track)continue;
     fHistQA[10]->Fill(2);
@@ -988,42 +1138,22 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
       UInt_t filterBit = fFB;
     if(!track->TestFilterBit(filterBit))continue;		
 
-    //charge
-    //  if(track->Charge() < 0 ) continue;
     Int_t charge = 0;
     if(track->Charge() > 0 ) charge=0;
     else if (track->Charge() < 0 ) charge=1; 
-    //if(!track->IsHybridGlobalConstrainedGlobal())continue;
-    //if((track->IsHybridGlobalConstrainedGlobal())==false)continue;
-    // if(!track->IsHybridTPCConstrainedGlobal())continue;	
-    // if(!track->IsTPCConstrained())continue;	
-    //if(!track->IsGlobalConstrained())continue;
-    //if((track->TestFilterMask(AliAODTrack::kTrkTPCOnly)==false))continue;//cut0_BIT(0)
   
-    //   if((track->IsHybridGlobalConstrainedGlobal())==false)
-    //  continue;//def_BIT(272)
-
-    //if((track->TestFilterMask(AliAODTrack::kTrkGlobal)==false))continue;//cut1_BIT(5)
-
     fHistQA[10]->Fill(3);
      
     if(track->Y() < -0.5 || track->Y() > 0.5)
       continue; 
     fHistQA[10]->Fill(4);
 
-    /*if (track->Pt() < 0.2 || track->Pt() > 2.5)
-    continue;
-    fHistQA[10]->Fill(5);
-*/
-    //single track cuts
-    // if(track->Chi2perNDF() > 4.0) continue;
-    // if(track->GetTPCNcls() < 70) continue;
-
+    
     //DCA
     
     Double_t DCAXY;
     Double_t DCAZ;
-    //  if(filterBit==(1 << (7))){
+
     DCAXY = -TMath::Abs(track->DCA());
     DCAZ = -TMath::Abs(track->ZAtDCA());
  
@@ -1060,12 +1190,6 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
       Double_t DCAY = pos[1] - vertexY;
       DCAZ = pos[2] - vertexZ;
       DCAXY = TMath::Sqrt((DCAX*DCAX) + (DCAY*DCAY));
-
-      //if(TMath::Abs(DCAXY) > 0.0182 + 0.035*TMath::Power(track->Pt(), -1.01)) continue; //XY, Pt dep
-      //if(TMath::Abs(impactD) > 0.44 + 0.07*TMath::Power(tPt, -1.94)) continue; //XY, Pt dep
-      //no DCA cut
-      //if(TMath::Abs(DCAXY) > 1000.0) continue;
-      //if(TMath::Abs(DCAZ) > 1000.0) continue;
     }
 
     fHistQA[10]->Fill(6);
@@ -1077,7 +1201,7 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
       aodtrackpid =(AliAODTrack*)aodEvent->GetTrack(labels[-1-aodEvent->GetTrack(iTracks)->GetID()]);
     else
       aodtrackpid = track;
-   
+
     //Electron rejection
     float nSigmaTPCPi = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kPion);
     float nSigmaTPCK = fpidResponse->NumberOfSigmasTPC(aodtrackpid,AliPID::kKaon);
@@ -1089,8 +1213,8 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
     
     fHistQA[1]->Fill(track->GetTPCClusterInfo(2,1)); 
     //fHistQA[2]->Fill(track->GetTPCNclsF());
-     fHistQA[3]->Fill(DCAXY);
-     fHistQA[4]->Fill(DCAZ);
+    fHistQA[3]->Fill(DCAXY);
+    fHistQA[4]->Fill(DCAZ);
     Float_t chi2Tpc = track->Chi2perNDF();
     fHistQA[5]->Fill(chi2Tpc);
     fHistQA[6]->Fill(track->Pt());
@@ -1126,7 +1250,6 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
     fHistQAPIDFail[2][0][charge]->Fill(tPt,nSigmaTOFPi);
     fHistQAPIDFail[3][0][charge]->Fill(tPt,nSigmaTPCPi);
     fHistQAPIDFail[4][0][charge]->Fill(nSigmaTPCPi,nSigmaTOFPi);
-
 
     bool isPionNsigma = 0;
     bool isKaonNsigma = 0;
@@ -1221,10 +1344,8 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
 	fHistQAPIDFail[4][3][charge]->Fill(nSigmaTPCP,nSigmaTOFP);
       }
 
-	//if (track->Pt()<=2.5 && track->Pt()>2.5)
-      fReconstructedAfterCuts[PARTTYPES*fcent][charge]->Fill(track->Y(), track->Pt());//Fills hist. for all reconstructed particles after cuts
- 
-
+	fReconstructedAfterCuts[PARTTYPES*fcent][charge]->Fill(track->Y(), track->Pt());//Fills hist. for all reconstructed particles after cuts
+    
     if(!arrayMC){
       continue;
     }
@@ -1307,7 +1428,7 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
       fReconstructedPrimaries[PARTTYPES*fcent+3][charge]->Fill(track->Y(), track->Pt());
     } 
 
-    
+
 
     //step 1, TOF Matching
     UInt_t status;
@@ -1377,16 +1498,11 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
       {
 	fContamination[PARTTYPES*fcent+3][charge]-> Fill(PDGcode,track->Pt()); // filling contamination histogram for protons
       }
-    
+  
   }
 
-
-
-
-
-  
-  
   //loop over V0s
+
   for (Int_t i = 0; i < aodEvent->GetNumberOfV0s(); i++) 
     {
       double LambdaMass = 1.115683;
@@ -1635,9 +1751,6 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
 	  Lambda = true;
 	}
 
- 
-
-  
 
       if(!arrayMC) continue;
 	      
@@ -1825,18 +1938,103 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
     }
 
 
- 
-
-
   // MONTECARLO PARTICLES 
   if(!arrayMC){
     AliError("Array of MC particles not found");
     return;
   }
+
+  bool evpassT=true;  	
+  bool collectT[3] = {false,false,false};  	
+  	
   // loop over MC stack 
+  int hmPionsT=0, hmKaonsT=0, hmProtonsT=0;
   for (Int_t ipart = 0; ipart < arrayMC->GetEntries(); ipart++) {
-    //std::cout<<"Entered MC loop"<<std::endl;
+    AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
+
+    if (!MCtrk) continue;
     
+	if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5){
+	continue; }
+	
+      if(MCtrk->GetPdgCode() == 211){
+      	if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+      }
+      if(MCtrk->GetPdgCode() == 321){
+      	if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+       }
+       if(MCtrk->GetPdgCode() == 3122){
+      	if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+       }
+      
+      // check physical primary 
+
+      if(MCtrk->IsPhysicalPrimary()) // Not from weak decay!
+	{
+    
+    Int_t PDGcode = TMath::Abs(MCtrk->GetPdgCode()); 
+
+   	if (PDGcode==211){
+	collectT[0]=true; 
+	if(fcent2==10)fHistP[0]->Fill(4);
+	else if(fcent2==1)fHistP[1]->Fill(4);
+	else if(fcent2==2)fHistP[2]->Fill(4);
+	else if(fcent2==3)fHistP[3]->Fill(4);
+	}
+  	if (PDGcode==321){
+	collectT[1]=true; 
+	if(fcent2==10)fHistP[0]->Fill(5);
+	else if(fcent2==1)fHistP[1]->Fill(5);
+	else if(fcent2==2)fHistP[2]->Fill(5);
+	else if(fcent2==3)fHistP[3]->Fill(5);
+	}
+	if (PDGcode==2212){
+	collectT[2]=true;
+	if(fcent2==10)fHistP[0]->Fill(6);
+	else if(fcent2==1)fHistP[1]->Fill(6);
+	else if(fcent2==2)fHistP[2]->Fill(6);
+	else if(fcent2==3)fHistP[3]->Fill(6);
+	}
+	}
+   }
+  	
+
+        if(collectT[0]==true){
+        	fHistQA[9]->Fill(8);
+		if(fcent2==10)fHistEvCuts[0]->Fill(8);
+		else if(fcent2==1)fHistEvCuts[1]->Fill(8);
+		else if(fcent2==2)fHistEvCuts[2]->Fill(8);
+		else if(fcent2==3)fHistEvCuts[3]->Fill(8);
+        }
+
+	if(collectT[1]==true){
+		fHistQA[9]->Fill(9);
+		if(fcent2==10)fHistEvCuts[0]->Fill(9);
+		else if(fcent2==1)fHistEvCuts[1]->Fill(9);
+		else if(fcent2==2)fHistEvCuts[2]->Fill(9);
+		else if(fcent2==3)fHistEvCuts[3]->Fill(9);
+	}
+
+
+	if(collectT[2]==true){
+		fHistQA[9]->Fill(10);
+		if(fcent2==10)fHistEvCuts[0]->Fill(10);
+		else if(fcent2==1)fHistEvCuts[1]->Fill(10);
+		else if(fcent2==2)fHistEvCuts[2]->Fill(10);
+		else if(fcent2==3)fHistEvCuts[3]->Fill(10);
+
+	}
+  
+  
+  
+  
+      for (Int_t ipart = 0; ipart < arrayMC->GetEntries(); ipart++) {
     AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
 
     if (!MCtrk) continue;
@@ -1858,7 +2056,7 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
 	else if(MCtrk->GetPdgCode() == -3122) charge = 1;
       }
 
-    
+
      
     //*** PID - check if pion ***
     //if(PDGcode!=211) continue; //(PDGcode==11 || PDGcode==321 || PDGcode==2212 || PDGcode==13)
@@ -1866,12 +2064,26 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
       if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5){
 	continue; }
 	
-      if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5){
-	continue;}
+      if(MCtrk->GetPdgCode() == 211){
+      	if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+      }
+      if(MCtrk->GetPdgCode() == 321){
+      	if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+       }
+       if(MCtrk->GetPdgCode() == 3122){
+      	if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+       }
 
 
       
       // check physical primary 
+
       if(MCtrk->IsPhysicalPrimary()) // Not from weak decay!
 	{
 
@@ -1880,7 +2092,7 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
 
 	 Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
 	 fGeneratedMCPrimaries4D[fcent*PARTTYPES][charge]->Fill(val);
-	
+
 	 if(PDGcode==211){
 	  fGeneratedMCPrimaries[fcent*PARTTYPES+1][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
 	  fGeneratedMCPrimaries4D[fcent*PARTTYPES+1][charge]->Fill(val);}
@@ -1897,7 +2109,6 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
 	  //Filling data from MC truth particles only for particles that were reconstruced
 	if (recoParticleArray[0].Contains(MCtrk)){ //All
 	  fMCPrimariesThatAreReconstructed[fcent*PARTTYPES][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
-	  
 	  Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
 	  fMCPrimariesThatAreReconstructed4D[fcent*PARTTYPES][charge]->Fill(val);
 	  
@@ -1912,6 +2123,7 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
 	    fMCPrimariesThatAreReconstructedNoNsigma[fcent*PARTTYPES+4][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
 	}
 	if (recoParticleArray[1].Contains(MCtrk)){ //Pions
+	
 	  if(PDGcode==211){
 	    fMCPrimariesThatAreReconstructed[fcent*PARTTYPES+1][charge]->Fill(MCtrk->Y(), MCtrk->Pt());
 	    Double_t val[] = {MCtrk->Y(), MCtrk->Pt(), MCtrk->Zv() ,MCtrk->Phi()};
@@ -1941,7 +2153,7 @@ void AliAnalysisTaskParticleEffDY::UserExec(Option_t *)
 	}
 
       }
-    
+
   }
   PostData(1, fHistoList);
 }

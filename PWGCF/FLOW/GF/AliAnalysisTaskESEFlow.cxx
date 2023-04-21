@@ -106,7 +106,10 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fHistPhiCor3D(0),
     fHistTPCchi2(0),
     fHistITSchi2(0),
+    fHistDCAxy(0),
+    fHistDCAz(0),
     fHistMCPtEtaVz(0),
+    fHistPhiCorrPt(0),
     fhQAEventsfMult32vsCentr(0),
     fhQAEventsfMult128vsCentr(0),
     fhQAEventsfMult96vsCentr(0),
@@ -182,6 +185,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fTrigger(AliVEvent::kINT7),
     fEventRejectAddPileUp(kFALSE),
     fFilterBit(96),
+    fDCAZcut(2.5),
     fAbsEtaMax(0.8),
     fVtxZCuts(10.0),
     fNPhiBins(120),
@@ -222,6 +226,8 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow() : AliAnalysisTaskSE(),
     fCheckChi2ITS(kFALSE),
     vTPCChi2Bound(4.0),
     vITSChi2Bound(36.0),
+    fCutDCAzMax(0.0),
+    fCutDCAxyMax(0.0),
     fFillQARej(kFALSE),
 
     fUseNUEWeights(kFALSE),
@@ -280,7 +286,10 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fHistPhiCor3D(0),
     fHistTPCchi2(0),
     fHistITSchi2(0),
+    fHistDCAxy(0),
+    fHistDCAz(0),
     fHistMCPtEtaVz(0),
+    fHistPhiCorrPt(0),
     fhQAEventsfMult32vsCentr(0),
     fhQAEventsfMult128vsCentr(0),
     fhQAEventsfMult96vsCentr(0),
@@ -356,6 +365,7 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fTrigger(AliVEvent::kINT7),
     fEventRejectAddPileUp(kFALSE),
     fFilterBit(96),
+    fDCAZcut(2.5),
     fAbsEtaMax(0.8),
     fVtxZCuts(10.0),
     fNPhiBins(120),
@@ -396,6 +406,8 @@ AliAnalysisTaskESEFlow::AliAnalysisTaskESEFlow(const char* name, ColSystem colSy
     fCheckChi2ITS(kFALSE),
     vTPCChi2Bound(4.0),
     vITSChi2Bound(36.0),
+    fCutDCAzMax(0.0),
+    fCutDCAxyMax(0.0),
     fFillQARej(kFALSE),
 
     fUseNUEWeights(kFALSE),
@@ -555,8 +567,13 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fHistTPCchi2 = new TH1F("fHistChi2TPC","fHistChi2TPC",10,0,10);
     fHistITSchi2 = new TH1F("fHistChi2ITS","fHistChi2ITS",40,0,40);
 
+    fHistDCAxy = new TH1F("fHistDCAxy","fHistDCAxy",100,0,15);
+    fHistDCAz = new TH1F("fHistDCAz","fHistDCAz",100,-5,5);
+
     fHistMCPtEtaVz = new TH3F("fMCHistPtEtaVz","fMCHistPtEtaVz; pT; #eta; Vz", 50, fFlowRFPsPtMin, fFlowRFPsPtMax, fNEtaBins, -1.0, 1.0, fVtxZCuts*2,-fVtxZCuts,fVtxZCuts);
     fHistMCPtEtaVz->Sumw2();
+
+    fHistPhiCorrPt = new TH1F("fHistPhiCorrPt","#phi", fNPhiBins, 0.0, TMath::TwoPi());
 
     fProfNPar = new TProfile("fProfNparvsCent",";Centrality;N_{Particles}",100,0,100);
 
@@ -1281,11 +1298,15 @@ void AliAnalysisTaskESEFlow::UserCreateOutputObjects()
     fObservables->Add(fHistPhiCor3D);
     fObservables->Add(fHistTPCchi2);
     fObservables->Add(fHistITSchi2);
+
+    fObservables->Add(fHistDCAxy);
+    fObservables->Add(fHistDCAz);
     fObservables->Add(fProfNPar);
     fObservables->Add(fhV0Multiplicity);
     fObservables->Add(fHistPtEtaVz);
 
     fObservables->Add(fHistMCPtEtaVz);
+    fObservables->Add(fHistPhiCorrPt);
 
     fObservables->Add(fhV0CorrMult);
 
@@ -1667,7 +1688,6 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
     fProfNPar->Fill(centrality,iTracks);
 
 
-
     for(Int_t i(0); i < iTracks; ++i)
     {
         AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
@@ -1701,10 +1721,32 @@ void AliAnalysisTaskESEFlow::FillObsDistributions(const Float_t centrality)
         fHistTPCchi2->Fill(tpcchi2percls);
         fHistITSchi2->Fill(itschi2percls);
 
+        // fill dca
+        Double_t dTrackXYZ[3] = {0.0,0.0,0.0};
+        Double_t dVtxXYZ[3] = {0.0,0.0,0.0};
+        Double_t dDCAXYZ[3] = {0.0,0.0,0.0};
+        if(fCutDCAzMax > 0.0 || fCutDCAxyMax > 0.0)
+        {
+            const AliAODVertex* vtx = fAOD->GetPrimaryVertex();
+
+            track->GetXYZ(dTrackXYZ);
+            vtx->GetXYZ(dVtxXYZ);
+            for(Int_t i(0); i < 3; ++i) { dDCAXYZ[i] = dTrackXYZ[i]-dVtxXYZ[i]; }
+            Double_t dDCAxy = TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0]+dDCAXYZ[1]*dDCAXYZ[1]);
+            fHistDCAxy->Fill(dDCAxy);
+            fHistDCAz->Fill(dDCAXYZ[2]);
+        }
+        // stop dca
 
         Double_t dWeight = GetFlowWeight(track, dVz);
         fHistPhiCor->Fill(dPhi,dWeight);
         fHistPhiCor3D->Fill(dPhi, dEta, dVz, dWeight);
+
+        if (fUseEfficiency){
+          dEffWeight = GetEfficiency(dPt,centrality);
+          fHistPhiCorrPt->Fill(dPhi,dWeight*dEffWeight);
+        }
+
         //fHistPtCor3D->Fill(dPt,dEta,dVz,dPtWeight);
 
     } // ending track loop
@@ -2995,6 +3037,23 @@ Bool_t AliAnalysisTaskESEFlow::IsTrackSelected(const AliAODTrack* track) const
     Float_t itschi2percls = (nitscls==0)?0.0:chi2its/nitscls;
 
     if (itschi2percls > vITSChi2Bound) { return kFALSE; }
+  }
+
+  //dca cut
+  Double_t dTrackXYZ[3] = {0.0,0.0,0.0};
+  Double_t dVtxXYZ[3] = {0.0,0.0,0.0};
+  Double_t dDCAXYZ[3] = {0.0,0.0,0.0};
+  if(fCutDCAzMax > 0.0 || fCutDCAxyMax > 0.0)
+  {
+      const AliAODVertex* vtx = fAOD->GetPrimaryVertex();
+      if(!vtx) { return kFALSE; }
+
+      track->GetXYZ(dTrackXYZ);
+      vtx->GetXYZ(dVtxXYZ);
+      for(Int_t i(0); i < 3; ++i) { dDCAXYZ[i] = dTrackXYZ[i]-dVtxXYZ[i]; }
+
+      if(fCutDCAzMax > 0.0 && TMath::Abs(dDCAXYZ[2]) > fCutDCAzMax) { return kFALSE; }
+      if(fCutDCAxyMax > 0.0 && TMath::Sqrt(dDCAXYZ[0]*dDCAXYZ[0]+dDCAXYZ[1]*dDCAXYZ[1]) > (0.0105+0.0350/pow(track->Pt(),1.1))*fCutDCAxyMax) { return kFALSE; }
   }
 
   return kTRUE;

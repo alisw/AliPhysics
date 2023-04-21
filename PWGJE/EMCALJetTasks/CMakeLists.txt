@@ -286,6 +286,7 @@ if(FASTJET_FOUND)
       AliAnalysisTaskJetCharge.cxx
       AliAnalysisTaskJetChargeFlavourTemplates.cxx
       AliAnalysisTaskJetChargeFlavourPb.cxx
+      UserTasks/AliAnalysisJetHadro.cxx
 	    UserTasks/AliAnalysisTaskEmcalQGTagging.cxx
 	    UserTasks/AliAnalysisTaskNewJetSubstructure.cxx
             UserTasks/AliAnalysisTaskJetPull.cxx
@@ -293,6 +294,7 @@ if(FASTJET_FOUND)
 	    UserTasks/AliAnalysisTaskJetPull.cxx
 	    UserTasks/AliAnalysisTaskJetQnVectors.cxx
 	    UserTasks/AliAnalysisTaskLundPlane.cxx
+            UserTasks/AliAnalysisTaskJetsEEC.cxx
 	    UserTasks/AliAnalysisTaskJetDynamicalGrooming.cxx
 	    UserTasks/AliAnalysisTaskJetHardestKt.cxx
 	    UserTasks/AliAnalysisTaskHardestBranch.cxx
@@ -323,6 +325,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskEmcalSubjet.cxx
 	    UserTasks/AliAnalysisTaskJetCoreEmcal.cxx
         UserTasks/AliAnalysisTaskEmcalJetCDF.cxx
+        UserTasks/AliAnalysisTaskEmcalJetValidation.cxx
         Tracks/AliAnalysisTaskEmcalJetSpectrumSDPart.cxx
         Tracks/AliAnalysisTaskPtEfficiencyJets.cxx
         Tracks/AliHighPtReconstructionEfficiency.cxx

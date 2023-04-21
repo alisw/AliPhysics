@@ -45,8 +45,8 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// \param clustersArray : A string with the array of clusters not being the default (default is empty string)
 /// \param gloCutsString : A string with list of global cuts/parameters (activate pile-up ...)
 /// \param nonLinOn : A bool to set the use of the non linearity correction
-/// \param analysisString : String that contains what analysis to activate, options: Photon, DecayPi0, MergedPi0, Charged, QA, Isolation, Correlation, Generator
-/// \param exoCut : A float setting the exoticity cut, set only if tighter than in reader
+/// \param analysisString : String that contains what analysis to activate, options: Photon, DecayPi0, MergedPi0, Charged, QA, Isolation, Correlation, Generator. Also different options to tell the framework to do different cut variation: -DistToBadOff- or -DistToBadOn- (will do the opposite once, check reader setting);  -MultiIso- +: -IsoBandUEGap-, activate different UE gaps and r_min in isolation, and -UEAreas-, activate UE estimation by different bands in isolation.
+/// \param exoCut : A float telling the default exoticity cut, and variate depending it to 0.93, 0.95, 0.97
 /// \param doNLM: loose NLM cut, 3, 4, open
 /// \param doQA: add basic QA task
 /// \param doCharged: add basic Charged particle task
@@ -57,7 +57,7 @@ R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 /// \param isoMethod : An int setting the isolation method: AliIsolationCut::kPtThresIC, ...
 /// \param isoContent : An int setting the type of particles inside the isolation cone: AliIsolationCut::kNeutralAndCharged, AliIsolationCut::kOnlyNeutral, AliIsolationCut::kOnlyCharged
 /// \param leading : An int setting the type of leading particle selection: 0, select all;l 1: absolute  leading of charged; 2: absolute  leading of charged and neutral; 3: near side leading absolute of charged; 4: near side leading absolute of charged and neutral
-/// \param tmFix: default TM option, except in dedicated variation
+/// \param tmFix: default TM option, except in dedicated variation. -1 no variation.
 /// \param minCen : An int to select the minimum centrality, -1 means no selection
 /// \param maxCen : An int to select the maximum centrality, -1 means no selection
 /// \param mixOn : A bool to switch the correlation mixing analysis
@@ -135,34 +135,77 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
   printf("TList name: %s\n",anaList->GetName());
 
   // Test 2 track matching options (no track matching and open track matching with fix cuts)
-  for(Int_t itm = 0; itm < 3; itm++)
+  if ( tmFix > -1 )
   {
-    if ( itm == tmFix ) continue;
-    TString histoStringTM = Form("TM%d",itm);
+    for(Int_t itm = 0; itm < 3; itm++)
+    {
+      if ( itm == tmFix ) continue;
+      TString histoStringTM = Form("TM%d",itm);
 
-    ConfigureCaloTrackCorrAnalysis
-    ( anaList, calorimeter, simulation, year, col, analysisString, histoStringTM,
-     shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
-     leading, itm, mixOn, printSettings, debug);
+      ConfigureCaloTrackCorrAnalysis
+      ( anaList, calorimeter, simulation, year, col, analysisString, histoStringTM,
+       shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
+       leading, itm, mixOn, printSettings, debug);
+    }
+  }
+  else tmFix = 0; // Do only no TM
+
+  // Analysis with open bad distance, fixed min cone distance and track match default option
+  TString histoStringB = Form("TM%d",tmFix);
+
+  TString analysisString2 = analysisString;
+  if ( analysisString2.Contains("DistToBadOn") )
+  {
+    analysisString2.ReplaceAll("DistToBadOn","DistToBadOff");
+    histoStringB += "_DistToBadOff";
   }
 
-  // Analysis with open bad distance, fixed min cone distance and track match option
-  TString histoString = Form("TM%d_DistToBadOff",tmFix);
+  if ( !analysisString2.Contains("DistToBad") )
+    histoStringB += "_DistToBadOff";
+
+  if ( analysisString.Contains("DistToBadOff") )
+  {
+    analysisString2.ReplaceAll("DistToBadOff","DistToBadOn");
+    histoStringB += "_DistToBadOn";
+  }
 
   ConfigureCaloTrackCorrAnalysis
-  ( anaList, calorimeter, simulation, year, col, analysisString+"_DistToBadOff", histoString,
+  ( anaList, calorimeter, simulation, year, col, analysisString2, histoStringB,
    shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
    leading, tmFix, mixOn, printSettings, debug);
 
-  // Analysis with tighter exoticity, fixed min cone distance and track match option
+  // Analysis with tighter and/or looser exoticity, fixed min cone distance and track match option
   if ( exoCut < 1 )
   {
-    TString histoString = Form("TM%d_ExoCut%0.2f",tmFix,exoCut);
+    if ( exoCut < 0.97 )
+    {
+      TString histoStringExo = Form("TM%d_ExoCut0.97",tmFix);
 
-    ConfigureCaloTrackCorrAnalysis
-    ( anaList, calorimeter, simulation, year, col, analysisString+Form("_ExoCut%0.2f",exoCut), histoString,
-     shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
-     leading, tmFix, mixOn, printSettings, debug);
+      ConfigureCaloTrackCorrAnalysis
+      ( anaList, calorimeter, simulation, year, col, analysisString+"_ExoCut0.97", histoStringExo,
+       shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
+       leading, tmFix, mixOn, printSettings, debug);
+    }
+
+    if ( exoCut > 0.955 || exoCut < 0.945 )
+    {
+      TString histoStringExo = Form("TM%d_ExoCut0.95",tmFix);
+
+      ConfigureCaloTrackCorrAnalysis
+      ( anaList, calorimeter, simulation, year, col, analysisString+"_ExoCut0.93", histoStringExo,
+       shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
+       leading, tmFix, mixOn, printSettings, debug);
+    }
+
+    if ( exoCut > 0.93 )
+    {
+      TString histoStringExo = Form("TM%d_ExoCut0.93",tmFix);
+
+      ConfigureCaloTrackCorrAnalysis
+      ( anaList, calorimeter, simulation, year, col, analysisString+"_ExoCut0.93", histoStringExo,
+       shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
+       leading, tmFix, mixOn, printSettings, debug);
+    }
   }
 
   // Analysis with looser nlm cut, fixed min cone distance and track match option
@@ -184,25 +227,36 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
 
   // Default analysis settings
   //
-  histoString = Form("TM%d",tmFix);
-  TString analysisString2 = analysisString;
+  TString histoString = Form("TM%d",tmFix);
+  analysisString2 = analysisString;
 
   // Analysis with different UE estimation size region
-  if ( analysisString.Contains("IsoBandUEGap") )
+  if ( analysisString.Contains("MultiIso") )
   {
-    histoString = Form("TM%d_MultiIsoRAndGaps",tmFix);
-
-    if ( analysisString.Contains("MultiIsoR") )
-      analysisString2.ReplaceAll("MultiIsoR","MultiIsoRAndGaps");
-    else
-      analysisString2+="_MultiIsoRAndGaps";
+    histoString+="_MultiIso";
+    if ( analysisString.Contains("IsoBandUEGap") )
+    {
+      analysisString2+="AndGap";
+    }
   }
   
-  // Default cuts analysis
+  // Default cuts analysis but multi Gap and r min
   ConfigureCaloTrackCorrAnalysis
   ( anaList, calorimeter, simulation, year, col, analysisString2, histoString,
    shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
    leading, tmFix, mixOn, printSettings, debug);
+
+  // Default cuts analysis but multi UE methods if specified
+  if (  analysisString.Contains("MultiIso") && analysisString.Contains("UEAreas") )
+  {
+    if(analysisString.Contains("UEAreasWithJet"))
+      isoPtTh = AliIsolationCut::kSumBkgSubJetRhoIC; // Make sure jet median output is checked
+
+    ConfigureCaloTrackCorrAnalysis
+    ( anaList, calorimeter, simulation, year, col, analysisString+"UESubMethods", histoString+"_UEAreas",
+     shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
+     leading, tmFix, mixOn, printSettings, debug);
+  }
 
   // Execute some control task only
   if ( doCharged || doQA )

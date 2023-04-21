@@ -26,7 +26,7 @@ class AliGFWCuts {
   Int_t AcceptVertex(AliESDEvent*, Int_t BitShift=0);
   Int_t AcceptTrack(AliAODTrack*&, Double_t*, const Int_t &BitShift=0, const Bool_t &lDisableDCAxyCheck=kTRUE);
   Int_t AcceptTrack(AliESDtrack*&, Double_t*, const Int_t &BitShift, UInt_t &PrimFlags);
-  void SetPtDepDCAXY(TString newval) { if(fPtDepXYCut) delete fPtDepXYCut; fPtDepXYCut = new TF1("ptDepDCAxy",newval.Data(),0.001,100); };
+  void SetPtDepDCAXY(TString newval) { if(fPtDepXYCut) delete fPtDepXYCut; fPtDepXYCut = new TF1("ptDepDCAxy",newval.Data(),0.001,100); fPtDepXYCut->SetParameter(0,fDCAxyCut); };
   void ResetCuts();
   void PrintSetup();
   void SetupCuts(Int_t);

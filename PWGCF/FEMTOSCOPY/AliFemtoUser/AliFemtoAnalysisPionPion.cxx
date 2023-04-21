@@ -88,12 +88,12 @@ struct Configuration<AliFemtoAnalysisPionPion> {
 TString AliFemtoAnalysisPionPion::make_random_string(const TString &prefix)
 {
   std::random_device rd;
-  std::uniform_int_distribution<char> dist('a', 'z');
+  std::uniform_int_distribution<uint8_t> dist(97, 122); // was using 'a' and 'z' as range, which is breaking compilation due to non-int type, temporarily replace with corresponding ASCII codes (a - 97, z - 122) which ends up in same behaviour
   TString result = prefix;
 
   int N = std::uniform_int_distribution<>(6, 12)(rd);
   for (int n = 0; n < N; ++n) {
-    result += dist(rd);
+    result += static_cast<char>(dist(rd));
   }
   return result;
 }

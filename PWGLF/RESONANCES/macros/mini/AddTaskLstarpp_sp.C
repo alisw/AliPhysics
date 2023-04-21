@@ -64,6 +64,7 @@ AliRsnMiniAnalysisTask * AddTaskLstarpp_sp
  Int_t       pairCutSetID=0,
  Int_t       mixingConfigID=0,
  Int_t       aodFilterBit=5,
+ Int_t       spBin=500,
  Int_t       customQualityCutsID=1,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstar,
  AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstar,
@@ -71,7 +72,8 @@ AliRsnMiniAnalysisTask * AddTaskLstarpp_sp
  Float_t     nsigmaKa=3.,
  Float_t     nsigmaTOFPr = 3.0,
  Float_t     nsigmaTOFKa= 3.,
- Bool_t      enableMonitor=kTRUE
+ Bool_t      enableMonitor=kTRUE,
+ Int_t       gSphTrack=10
  )
 {  
   //-------------------------------------------
@@ -136,7 +138,7 @@ AliRsnMiniAnalysisTask * AddTaskLstarpp_sp
  
   // Objects name
   AliRsnMiniAnalysisTask* task=new AliRsnMiniAnalysisTask(taskName.Data(),isMC);
-  
+  task->SetTrackInSpherocity(gSphTrack);  //no of track used in spherocity calculation
   if(evtCutSetID!=eventCutSet::kNoEvtSel && evtCutSetID!=eventCutSet::kINEL10 && evtCutSetID!=eventCutSet::kIGZ10 && evtCutSetID!=eventCutSet::kIGZ){
     if(!isAOD)task->UseESDTriggerMask(triggerMask); //ESD
     task->SelectCollisionCandidates(triggerMask); //AOD
@@ -145,8 +147,8 @@ AliRsnMiniAnalysisTask * AddTaskLstarpp_sp
 
   if(isPP){
     if(MultBins==1) task->UseMultiplicity("AliMultSelection_V0M");
-    else if(MultBins==2) task->UseMultiplicity("AliMultSelection_SPDTracklets08");// C here
-    else if(MultBins==3) task->UseMultiplicity("AliMultSelection_SPDTracklets08to15");
+    else if(MultBins==2) task->UseMultiplicity("AliMultSelection_SPDTracklets");// C here
+    else if(MultBins==3) task->UseMultiplicity("AliMultSelection_RefMult08");
     else task->UseMultiplicity("QUALITY");
   }else task->UseCentrality("V0M");
 
@@ -226,6 +228,21 @@ AliRsnMiniAnalysisTask * AddTaskLstarpp_sp
 
   // -- EVENT-ONLY COMPUTATIONS -------------------------------------------------------------------
 
+  
+  Double_t multbins[200];
+  int j,nmult=0;
+  if(triggerMask==AliVEvent::kHighMultV0){
+    for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+    for(j=1;j<=10;j++){multbins[nmult]=0.1*j; nmult++;}
+  }else{
+    for(j=0;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+    for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
+  }
+  nmult--;
+
+ 
+
   //vertex
   Int_t vtxID=task->CreateValue(AliRsnMiniValue::kVz,kFALSE);
   AliRsnMiniOutput* outVtx=task->CreateOutput("eventVtx","HIST","EVENT");
@@ -234,29 +251,19 @@ AliRsnMiniAnalysisTask * AddTaskLstarpp_sp
   //multiplicity or centrality
   Int_t multID=task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
   AliRsnMiniOutput* outMult=task->CreateOutput("eventMult","HIST","EVENT");
-
-  Int_t multb;
-  Double_t multlow,multhigh;
-    if(isPP && !MultBins){
-      multb =400;
-      multlow=0.;
-      multhigh=400.;}
-    else{multb =110;
-      multlow=0.;
-      multhigh=110.;}
-      
-    outMult->AddAxis(multID,multb,multlow,multhigh);
+  if(isPP && !MultBins) outMult->AddAxis(multID,400,0.5,400.5);
+  else outMult->AddAxis(multID,110,0.,110.);
 
   
   TH2F* hvz=new TH2F("hVzVsCent","",110,0.,110., 240,-12.0,12.0);
   task->SetEventQAHist("vz",hvz);//plugs this histogram into the fHAEventVz data member
 
  
-  TH2F* hmc=new TH2F("MultiVsCent","", 110,0.,110., multb,multlow,multhigh);
+  TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 101,-0.5,100.5);
     hmc->GetYaxis()->SetTitle("QUALITY");
     task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
-      TH2F* hsp=new TH2F("hSpherocityVsCent","",110,0.,110., 100.,0.,1.);
+      TH2F* hsp=new TH2F("hSpherocityVsCent","",nmult,multbins,spBin,0.0,1.0);
        task->SetEventQAHist("spherocitycent",hsp);//plugs this histogram into the fHASpherocityCent data member
   // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
 
@@ -271,11 +278,11 @@ AliRsnMiniAnalysisTask * AddTaskLstarpp_sp
 
   // -- CONFIG ANALYSIS --------------------------------------------------------------------------
 #if !defined (__CINT__) || defined (__CLING__)
-  if (!ConfigureLstarpp_sp(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa,nsigmaTOFPr, nsigmaTOFKa,  enableMonitor,triggerMask)) return 0x0;
+  if (!ConfigureLstarpp_sp(task, isMC, isPP, "", cutsPair, aodFilterBit,spBin, customQualityCutsID, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa,nsigmaTOFPr, nsigmaTOFKa,  enableMonitor,triggerMask)) return 0x0;
 #else
   gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/ConfigureLstarpp_sp.C");
   // gROOT->LoadMacro("ConfigureLstarpp_sp.C");
-  if (!ConfigureLstarpp_sp(task, isMC, isPP, "", cutsPair, aodFilterBit, customQualityCutsID, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa,nsigmaTOFPr, nsigmaTOFKa,  enableMonitor,triggerMask)) return 0x0;
+  if (!ConfigureLstarpp_sp(task, isMC, isPP, "", cutsPair, aodFilterBit,spBin, customQualityCutsID, cutPrCandidate, cutKaCandidate, nsigmaPr, nsigmaKa,nsigmaTOFPr, nsigmaTOFKa,  enableMonitor,triggerMask)) return 0x0;
 
 #endif 
 

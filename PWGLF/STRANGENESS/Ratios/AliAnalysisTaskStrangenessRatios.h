@@ -92,12 +92,12 @@ struct MiniCascade {
   Double32_t eta;
   Double32_t mass;
   Double32_t ct;
-  Double32_t radius; //[0,25.4,8]
-  Double32_t radiusV0; //[0,25.4,8]
-  Double32_t dcaBachPV; //[0,2.54,8]
-  Double32_t dcaV0PV; //[0,2.54,16]
-  Double32_t dcaV0piPV; //[0,2.54,8]
-  Double32_t dcaV0prPV; //[0,2.54,8]
+  Double32_t radius; //[0,51.1,8]
+  Double32_t radiusV0; //[0,102.0,8]
+  Double32_t dcaBachPV; //[0,12.75,16]
+  Double32_t dcaV0PV; //[0,10.16,16]
+  Double32_t dcaV0piPV; //[0,25.5,16]
+  Double32_t dcaV0prPV; //[0,12.75,16]
   Double32_t dcaV0tracks; //[0,2.54,8]
   Double32_t dcaBachV0; //[0,2.54,8]
   Double32_t cosPA; //[0.95,1,16]
@@ -119,6 +119,31 @@ struct MiniCascade {
 };
 
 struct MiniCascadeMC : public MiniCascade {
+  float ptMC;
+  float etaMC;
+  float ctMC;
+  float yMC;
+  int pdg;
+  bool isReconstructed;
+  unsigned char flag;
+};
+
+struct MiniCascadeTrain {
+  float pt;
+  float mass;
+  double dcaBachPV;
+  double dcaV0PV;
+  double dcaV0piPV;
+  double dcaV0prPV;
+  double dcaV0tracks;
+  double dcaBachV0;
+  double cosPA;
+  double cosPAV0;
+  double tpcNsigmaV0Pr;
+  unsigned char centrality;
+};
+
+struct MiniCascadeTrainMC : public MiniCascadeTrain {
   float ptMC;
   float etaMC;
   float ctMC;
@@ -163,6 +188,7 @@ public:
   void SetFillK0s(bool toogle = true) { fFillK0s = toogle; }
   void SetFillLambdas(bool toogle = true) { fFillLambdas = toogle; }
   void SetFillCascades(bool toogle = true) { fFillCascades = toogle; }
+  void SetFillCascadesTrain(bool toogle = true) { fFillCascadesTrain = toogle; }
   void SetFillLambdasBDTOut(bool toogle = true) { fFillLambdasBDTOut = toogle; }
   void SetLambdaDownscaling(float scale = true) { fLambdaDownscaling = scale; }
   void SetK0sDownscaling(float scale = true) { fK0sDownscaling = scale; }
@@ -208,6 +234,8 @@ public:
   void SetSDDSSDclsCut(int cut = -1) { fSDDSSDclsCut = cut; }
   void SetSPDclsCut(int cut = -1) { fSPDclsCut = cut; }
 
+  void SetUseAdditionalCuts(int toggle = true) { fUseAdditionalCuts = toggle; }
+
   void SetBDTPath(const char *path = "") { fBDTPath = path; }
   void SetCtBinsBDT(int nBins, double *ctBins) { fCtBinsBDT.Set(nBins+1,ctBins); }
 
@@ -219,12 +247,15 @@ private:
 
   TList*          fList = nullptr;             //!<! List of the output histograms
   TTree*          fTree = nullptr;             //!<! Tree for Xis and Omegas
+  TTree*          fTreeTrain = nullptr;        //!<! Tree for Xis and Omegas (training)
   TTree*          fTreeLambda = nullptr;       //!<! Tree for Lambdas
   TTree*          fTreeK0s = nullptr;          //!<! Tree for K0s
   TTree*          fTreeLambdaBDTOut = nullptr; //!<! Tree for Lambdas
 
   MiniCascade* fRecCascade = nullptr;          //!<! Transient fRecCascade
   MiniCascadeMC fGenCascade;
+  MiniCascadeTrain* fRecCascadeTrain = nullptr;//!<! Transient fRecCascadeTrain
+  MiniCascadeTrainMC fGenCascadeTrain;
   MiniLambda* fRecLambda = nullptr;          //!<! Transient fRecLambda
   MiniLambdaMC fGenLambda;
   MiniK0s* fRecK0s = nullptr;          //!<! Transient fRecK0s
@@ -238,6 +269,7 @@ private:
   bool fFillLambdas = false;
   bool fFillLambdasBDTOut = false;
   bool fFillCascades = false;
+  bool fFillCascadesTrain = false;
   bool fOnlyTrueK0s = true;          ///< Save only true K0s in MC
   bool fOnlyTrueLambdas = true;      ///< Save only true Lambdas in MC
   float fLambdaDownscaling = 1.;
@@ -261,6 +293,7 @@ private:
   float fCutCt = 4;
   float fCutCtV0 = 30;
   float fCutCompetingMass[2]{0.,0.};
+  float fCutBachBarCosPA = 0.99995;
   int fCutTPCclu = 70;
   float fCutTPCrows = 80.;
   float fCutRowsOvF = 0.8;
@@ -293,6 +326,8 @@ private:
   float fCosPAK0s = 0.97;
   float fCutDCAK0sProngToPV = 0.08;
   float fCutK0sMass[2] = {0.497611 - 0.015, 0.497611 + 0.015};
+
+  bool fUseAdditionalCuts = false;
 
   bool fUseOnTheFly = false;
 

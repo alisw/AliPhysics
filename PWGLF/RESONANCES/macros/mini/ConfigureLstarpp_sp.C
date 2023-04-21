@@ -30,6 +30,7 @@ Bool_t ConfigureLstarpp_sp
     const char             *suffix,
     AliRsnCutSet           *cutsPair,
     Int_t                  aodFilterBit = 5,
+     Int_t                  _spBin=500,
     Int_t                  customQualityCutsID=AliRsnCutSetDaughterParticle::kDisableCustom,
     AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,
     AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,
@@ -143,6 +144,17 @@ Bool_t ConfigureLstarpp_sp
   Int_t   cutID2  [12] = {iCutK     ,iCutK     ,iCutK    ,iCutK      ,iCutK   ,iCutK   ,iCutK    ,iCutK    ,iCutK    ,iCutK    ,iCutK   ,iCutK   };
   Int_t   PDGCode [12] = {3124      ,3124      ,3124     ,3124       ,3124    ,3124    ,3124     ,-3124    ,3124     ,-3124    ,3124    ,-3124   };
 
+   Double_t multbins[200];
+  int j,nmult=0;
+  if(triggerMask==AliVEvent::kHighMultV0){
+    for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+    for(j=1;j<=10;j++){multbins[nmult]=0.1*j; nmult++;}
+  }else{
+    for(j=0;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+    for(j=1;j<=10;j++){multbins[nmult]=j; nmult++;}
+  }
+
   for (Int_t i = 0; i < 12; i++) {
     if (!use[i]) continue;
     AliRsnMiniOutput *out = task->CreateOutput(Form("Lstar_%s%s", name[i].Data(), suffix), output[i].Data(), comp[i].Data());
@@ -158,19 +170,19 @@ Bool_t ConfigureLstarpp_sp
 
     // axis X: invmass (or resolution)
     if (useIM[i]) 
-      out->AddAxis(imID, 120, 1.4, 2.0);
+      out->AddAxis(imID, 240, 1.4, 2.0);
     else
       out->AddAxis(resID, 200, -0.02, 0.02);
     
     //axis Y: transverse momentum of pair as default - else chosen value
-    out->AddAxis(ptID,100,0.,10.);//default use mother pt
+    out->AddAxis(ptID,200,0.,10.);//default use mother pt
 
     // axis Z: centrality-multiplicity
     // axis Z: centrality-multiplicity
 
      
      if(isPP && !MultBins)  out->AddAxis(centID, 400, 0., 400.);
-     else out->AddAxis(centID, 110, 0., 110.);
+     else out->AddAxis(centID,nmult,multbins);
     
    	  
     // axis W: pseudorapidity
@@ -178,7 +190,7 @@ Bool_t ConfigureLstarpp_sp
     // axis J: rapidity
     //out->AddAxis(yID, 12, -0.6, 0.6);
 
-     out->AddAxis(SpherocityID, 100,0.,1.);
+     out->AddAxis(SpherocityID, _spBin,0.,1.);
     
   }
   return kTRUE;
@@ -200,7 +212,7 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
     trkQualityCut->SetDefaults2011(kTRUE,kTRUE);
     Printf("::::: SetCustomQualityCut:: using standard 2011 track quality cuts.............");
     
-    // if(!customFilterBit)
+   if(!customFilterBit)
     {//ESD
       if(customQualityCutsID==11){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
       else if(customQualityCutsID==2){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.0200/pt^1.1");}
@@ -226,7 +238,33 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
       
       else if(customQualityCutsID==19){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.9);}
       else if(customQualityCutsID==20){trkQualityCut->GetESDtrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC(0.7);}
-    }
+    }else{//AOD
+       Printf("::::: SetCustomQualityCut:: using standard 2011 track quality cuts + AOD custom track cuts......");
+            trkQualityCut->SetCheckOnlyFilterBit(kFALSE);
+	     if(customQualityCutsID==11){trkQualityCut->SetDCARPtFormula("0.0150+0.0500/pt^1.1");}
+	     else if(customQualityCutsID==2){trkQualityCut->SetDCARPtFormula("0.006+0.0200/pt^1.1");}
+             else if(customQualityCutsID==3){trkQualityCut->SetDCAZmax(0.2);}
+	     else if(customQualityCutsID==4){trkQualityCut->SetDCAZmax(1.0);}
+             else if(customQualityCutsID==5){trkQualityCut->SetTPCmaxChi2(2.3);}
+	     else if(customQualityCutsID==6){trkQualityCut->SetTPCmaxChi2(3.5);}
+             else if(customQualityCutsID==7){trkQualityCut->SetTPCmaxChi2(3.);}   //
+             else if(customQualityCutsID==8){trkQualityCut->SetMinNCrossedRowsTPC(100,kTRUE);}
+	     else if(customQualityCutsID==9){trkQualityCut->SetMinNCrossedRowsTPC(80,kTRUE);}
+	     else if(customQualityCutsID==10){trkQualityCut->SetMinNCrossedRowsTPC(60,kTRUE);}
+	      else if(customQualityCutsID==13){trkQualityCut->SetITSmaxChi2(49.);}
+	      else if(customQualityCutsID==14){trkQualityCut->SetITSmaxChi2(4.);}
+	      else if(customQualityCutsID==15){trkQualityCut->SetITSmaxChi2(25.);}
+	      else if(customQualityCutsID==16){trkQualityCut->SetMaxChi2TPCConstrainedGlobal(49.);}
+	      else if(customQualityCutsID==17){trkQualityCut->SetMaxChi2TPCConstrainedGlobal(25.);}
+              else if(customQualityCutsID==19){trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.9,kTRUE);}
+	      else if(customQualityCutsID==20){trkQualityCut->SetMinNCrossedRowsOverFindableClsTPC(0.7,kTRUE);}
+	      else if(customQualityCutsID==21){trkQualityCut->SetTrackMaxChi2(2.3);}
+	      else if(customQualityCutsID==22){trkQualityCut->SetTrackMaxChi2(3.5);}
+         
+       
+        }
+    
+
     
     trkQualityCut->Print();
     return kTRUE;

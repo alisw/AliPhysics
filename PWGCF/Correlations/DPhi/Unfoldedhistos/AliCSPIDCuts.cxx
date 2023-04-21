@@ -299,7 +299,11 @@ AliPID::EParticleType AliCSPIDCuts::GetTrueSpecies(AliVTrack *trk) {
 /// Get the true species associated to a true particle
 /// \param par the true particle
 /// \return the ID of the particle species
-AliPID::EParticleType AliCSPIDCuts::GetTrueSpecies(AliVParticle *par) {
+AliPID::EParticleType AliCSPIDCuts::GetTrueSpecies(AliVParticle* par)
+{
+  if (par == nullptr) {
+    return AliPID::kUnknown;
+  }
 
   switch(par->PdgCode()) {
   case ::kPositron:

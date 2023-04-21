@@ -19,7 +19,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
   public:
 
     AliAnalysisTask_pd_CreateTrees_PairsOnly();
-    AliAnalysisTask_pd_CreateTrees_PairsOnly(const char *name,int CollisionSystem);
+    AliAnalysisTask_pd_CreateTrees_PairsOnly(const char *name,int CollisionSystem, bool UseOpenCuts);
     AliAnalysisTask_pd_CreateTrees_PairsOnly& operator = (const AliAnalysisTask_pd_CreateTrees_PairsOnly &task);
     AliAnalysisTask_pd_CreateTrees_PairsOnly(const AliAnalysisTask_pd_CreateTrees_PairsOnly &task);
     virtual ~AliAnalysisTask_pd_CreateTrees_PairsOnly();
@@ -30,9 +30,9 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     double CalculateBetaTOF(AliAODTrack &track); 
     double CalculateMassSquareTOF(AliAODTrack &track);
     double CalculateSigmaMassSquareTOF(double pT, double massSq, int ParticleSpecies, int RunNumber);
-    bool CheckProtonCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
-    bool CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
-    bool IsWithinITSBand(AliAODTrack &Track, int whichParticle, int RunNumber, double ScalingFactor);
+    bool CheckProtonCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, bool UseOpenCuts);
+    bool CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, bool UseOpenCuts);
+    double CalculateSigmadEdxITS(AliAODTrack &Track, int ParticleSpecies, int RunNumber);
 
 
   private:
@@ -43,6 +43,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     AliPIDResponse	  *fPIDResponse;
 
     int			  fCollisionSystem;
+    bool		  fUseOpenCuts;
 
     TTree     *fSaveTree_Proton;
     float     fProton_px;
@@ -54,8 +55,6 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float     fProton_TPC_Chi2;
     float     fProton_TPC_dEdx;
     float     fProton_TPC_dEdx_nSigma;
-    float     fProton_TOF_Beta;
-    float     fProton_TOF_Beta_nSigma;
     float     fProton_TOF_Mass2;
     float     fProton_TOF_Mass2_nSigma;
     float     fProton_ITS_dEdx;
@@ -69,10 +68,10 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fProton_TPC_nSharedCluster;
     unsigned short    fProton_TPC_nFindableCluster;
     unsigned short    fProton_TPC_nCluster;
-    short	      fProton_ITS_nCluster;
-    unsigned short    fProton_Event_nParticles;
+    unsigned short    fProton_ITS_nCluster;
     unsigned int      fProton_ID;
-    unsigned int      fProton_Event_Identifier;
+    unsigned int      fProton_Event_Multiplicity;
+    unsigned long     fProton_Event_Identifier;
 
 
     TTree     *fSaveTree_Deuteron;
@@ -85,8 +84,6 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float     fDeuteron_TPC_Chi2;
     float     fDeuteron_TPC_dEdx;
     float     fDeuteron_TPC_dEdx_nSigma;
-    float     fDeuteron_TOF_Beta;
-    float     fDeuteron_TOF_Beta_nSigma;
     float     fDeuteron_TOF_Mass2;
     float     fDeuteron_TOF_Mass2_nSigma;
     float     fDeuteron_ITS_dEdx;
@@ -100,10 +97,10 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fDeuteron_TPC_nSharedCluster;
     unsigned short    fDeuteron_TPC_nFindableCluster;
     unsigned short    fDeuteron_TPC_nCluster;
-    short	      fDeuteron_ITS_nCluster;
-    unsigned short    fDeuteron_Event_nParticles;
+    unsigned short    fDeuteron_ITS_nCluster;
     unsigned int      fDeuteron_ID;
-    unsigned int      fDeuteron_Event_Identifier;
+    unsigned int      fDeuteron_Event_Multiplicity;
+    unsigned long     fDeuteron_Event_Identifier;
 
 
     TTree     *fSaveTree_AntiProton;
@@ -116,8 +113,6 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float     fAntiProton_TPC_Chi2;
     float     fAntiProton_TPC_dEdx;
     float     fAntiProton_TPC_dEdx_nSigma;
-    float     fAntiProton_TOF_Beta;
-    float     fAntiProton_TOF_Beta_nSigma;
     float     fAntiProton_TOF_Mass2;
     float     fAntiProton_TOF_Mass2_nSigma;
     float     fAntiProton_ITS_dEdx;
@@ -131,10 +126,10 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fAntiProton_TPC_nSharedCluster;
     unsigned short    fAntiProton_TPC_nFindableCluster;
     unsigned short    fAntiProton_TPC_nCluster;
-    short	      fAntiProton_ITS_nCluster;
-    unsigned short    fAntiProton_Event_nParticles;
+    unsigned short    fAntiProton_ITS_nCluster;
     unsigned int      fAntiProton_ID;
-    unsigned int      fAntiProton_Event_Identifier;
+    unsigned int      fAntiProton_Event_Multiplicity;
+    unsigned long     fAntiProton_Event_Identifier;
 
 
     TTree     *fSaveTree_AntiDeuteron;
@@ -147,8 +142,6 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float     fAntiDeuteron_TPC_Chi2;
     float     fAntiDeuteron_TPC_dEdx;
     float     fAntiDeuteron_TPC_dEdx_nSigma;
-    float     fAntiDeuteron_TOF_Beta;
-    float     fAntiDeuteron_TOF_Beta_nSigma;
     float     fAntiDeuteron_TOF_Mass2;
     float     fAntiDeuteron_TOF_Mass2_nSigma;
     float     fAntiDeuteron_ITS_dEdx;
@@ -162,10 +155,10 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fAntiDeuteron_TPC_nSharedCluster;
     unsigned short    fAntiDeuteron_TPC_nFindableCluster;
     unsigned short    fAntiDeuteron_TPC_nCluster;
-    short	      fAntiDeuteron_ITS_nCluster;
-    unsigned short    fAntiDeuteron_Event_nParticles;
+    unsigned short    fAntiDeuteron_ITS_nCluster;
     unsigned int      fAntiDeuteron_ID;
-    unsigned int      fAntiDeuteron_Event_Identifier;
+    unsigned int      fAntiDeuteron_Event_Multiplicity;
+    unsigned long     fAntiDeuteron_Event_Identifier;
 
     TList     *fHistoList;
     TH2F      *h_Proton_TOF_m2_NoTOFcut;

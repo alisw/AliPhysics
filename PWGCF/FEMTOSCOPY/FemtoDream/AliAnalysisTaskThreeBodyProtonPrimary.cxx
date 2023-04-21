@@ -111,6 +111,7 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary()
       fQ3MinValue(0.),
       fCleanWithLambdas(false),
       fDoOnlyThreeBody(true),
+      fCutElectrons(false),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
       fSameEventTripletMultArray12(nullptr),
@@ -298,6 +299,7 @@ AliAnalysisTaskThreeBodyProtonPrimary::AliAnalysisTaskThreeBodyProtonPrimary(con
       fQ3MinValue(0.),
       fCleanWithLambdas(false),
       fDoOnlyThreeBody(true),
+      fCutElectrons(false),
       fSameEventTripletArray(nullptr),
       fSameEventTripletMultArray(nullptr),
       fSameEventTripletMultArray12(nullptr),
@@ -1686,28 +1688,57 @@ void AliAnalysisTaskThreeBodyProtonPrimary::UserExec(Option_t *option) {
   std::vector<AliFemtoDreamBasePart> Primaries;
   std::vector<AliFemtoDreamBasePart> AntiPrimaries;
 
-
+  double pTMinP = 0.6;
+  double pTMaxP = 0.8;
+  double pTMinPrim = 0.3;
+  double pTMaxPrim = 0.4;
 
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   for (int iTrack = 0; iTrack < fInputEvent->GetNumberOfTracks(); ++iTrack) { // TO DO: think about double track selection
     AliVTrack *track = static_cast<AliVTrack *>(fInputEvent->GetTrack(iTrack));
     fTrack->SetTrack(track, fInputEvent);
-    if (fProton->isSelected(fTrack)) {
-      Protons.push_back(*fTrack);
-      if (fPlotsMC) fpTvsEtaRecoProtons->Fill(track->Pt(),track->Eta());
+
+    if(fCutElectrons){ // this is a strct cut suggested by Ramona to reject electrons
+
+      if (fProton->isSelected(fTrack)&&(fTrack->GetPt()<pTMinP||fTrack->GetPt()>pTMaxP)) {
+        Protons.push_back(*fTrack);
+        if (fPlotsMC) fpTvsEtaRecoProtons->Fill(track->Pt(),track->Eta());
+      }
+      if (fAntiProton->isSelected(fTrack)&&(fTrack->GetPt()<pTMinP||fTrack->GetPt()>pTMaxP)) {
+        AntiProtons.push_back(*fTrack);
+        if (fPlotsMC) fpTvsEtaRecoAntiProtons->Fill(track->Pt(),track->Eta());
+      }
+      if (fPrimary->isSelected(fTrack)&&(fTrack->GetPt()<pTMinPrim||fTrack->GetPt()>pTMaxPrim)) {
+        Primaries.push_back(*fTrack);
+        if (fPlotsMC) fpTvsEtaRecoKaons->Fill(track->Pt(),track->Eta());
+      }
+      if (fAntiPrimary->isSelected(fTrack)&&(fTrack->GetPt()<pTMinPrim||fTrack->GetPt()>pTMaxPrim)) {
+        AntiPrimaries.push_back(*fTrack);
+        if (fPlotsMC) fpTvsEtaRecoAntiKaons->Fill(track->Pt(),track->Eta());
+      }
+
+    }else{
+
+      if (fProton->isSelected(fTrack)) {
+        Protons.push_back(*fTrack);
+        if (fPlotsMC) fpTvsEtaRecoProtons->Fill(track->Pt(),track->Eta());
+      }
+      if (fAntiProton->isSelected(fTrack)) {
+        AntiProtons.push_back(*fTrack);
+        if (fPlotsMC) fpTvsEtaRecoAntiProtons->Fill(track->Pt(),track->Eta());
+      }
+      if (fPrimary->isSelected(fTrack)) {
+        Primaries.push_back(*fTrack);
+        if (fPlotsMC) fpTvsEtaRecoKaons->Fill(track->Pt(),track->Eta());
+      }
+      if (fAntiPrimary->isSelected(fTrack)) {
+        AntiPrimaries.push_back(*fTrack);
+        if (fPlotsMC) fpTvsEtaRecoAntiKaons->Fill(track->Pt(),track->Eta());
+      }
+
     }
-    if (fAntiProton->isSelected(fTrack)) {
-      AntiProtons.push_back(*fTrack);
-      if (fPlotsMC) fpTvsEtaRecoAntiProtons->Fill(track->Pt(),track->Eta());
-    }
-    if (fPrimary->isSelected(fTrack)) {
-      Primaries.push_back(*fTrack);
-      if (fPlotsMC) fpTvsEtaRecoKaons->Fill(track->Pt(),track->Eta());
-    }
-    if (fAntiPrimary->isSelected(fTrack)) {
-      AntiPrimaries.push_back(*fTrack);
-      if (fPlotsMC) fpTvsEtaRecoAntiKaons->Fill(track->Pt(),track->Eta());
-    }
+
+
   }
 
 

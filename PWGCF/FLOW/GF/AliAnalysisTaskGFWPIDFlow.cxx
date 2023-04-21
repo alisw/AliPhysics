@@ -650,30 +650,30 @@ void AliAnalysisTaskGFWPIDFlow::FillCustomWeights(AliAODEvent *fAOD, Double_t vz
 }
 
 Bool_t AliAnalysisTaskGFWPIDFlow::GetIntValAndDNX(AliGFW::CorrConfig corconf, Double_t &l_val, Double_t &l_dnx) {
-  l_dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
+  l_dnx = fGFW->Calculate(corconf,0,kTRUE).real();
   if(l_dnx==0) return kFALSE;
-  l_val = fGFW->Calculate(corconf,0,kFALSE).Re()/l_dnx;
+  l_val = fGFW->Calculate(corconf,0,kFALSE).real()/l_dnx;
   if(TMath::Abs(l_val)>1) return kFALSE;
   return kTRUE;
 };
 Bool_t AliAnalysisTaskGFWPIDFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn, Bool_t EnableDebug) {
   Double_t dnx, val;
   if(!corconf.pTDif) {
-    dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
+    dnx = fGFW->Calculate(corconf,0,kTRUE).real();
     if(dnx==0) return kFALSE;
-    val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
+    val = fGFW->Calculate(corconf,0,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1)
-      fFC->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
+      fFC->FillProfile(corconf.Head.c_str(),cent,val,dnx,rndmn);
     return kTRUE;
   } else {
     for(Int_t i=1; i<=fPtAxis->GetNbins();i++) {
-      dnx = fGFW->Calculate(corconf,i-1,kTRUE).Re();
+      dnx = fGFW->Calculate(corconf,i-1,kTRUE).real();
       if(dnx==0) continue;
-      val = fGFW->Calculate(corconf,i-1,kFALSE).Re()/dnx;
+      val = fGFW->Calculate(corconf,i-1,kFALSE).real()/dnx;
       if(EnableDebug) printf("dnx cut passed. Dnx = %f\t val = %f\n",dnx,val);
       if(TMath::Abs(val)<1) {
-        fFC->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);
-      if(EnableDebug) printf("Just filled %s with %f and %f\n",Form("%s_pt_%i",corconf.Head.Data(),i),val,dnx);
+        fFC->FillProfile(Form("%s_pt_%i",corconf.Head.c_str(),i),cent,val,dnx,rndmn);
+      if(EnableDebug) printf("Just filled %s with %f and %f\n",Form("%s_pt_%i",corconf.Head.c_str(),i),val,dnx);
       }
     }
   }
@@ -681,10 +681,10 @@ Bool_t AliAnalysisTaskGFWPIDFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t c
 };
 Bool_t AliAnalysisTaskGFWPIDFlow::FillCovariance(AliGFW::CorrConfig corconf, Double_t cent, Double_t d_mpt, Double_t dw_mpt) {
   Double_t dnx, val;
-  dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
+  dnx = fGFW->Calculate(corconf,0,kTRUE).real();
   if(dnx==0) return kFALSE;
   if(!corconf.pTDif) {
-    val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
+    val = fGFW->Calculate(corconf,0,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1)
       fCovariance->Fill(cent,val*d_mpt,dnx*dw_mpt);
     return kTRUE;

@@ -21,7 +21,7 @@
 
 class AliFemtoCorrFctnMezonPhi : public AliFemtoCorrFctn {
 public:
-  AliFemtoCorrFctnMezonPhi(const char* title, const int& aBins, const double& aMin, const double& aMax, const double& aMass1, const double& aMass2);
+  AliFemtoCorrFctnMezonPhi(const char* title, const int& aBins, const double& aMin, const double& aMax, const double& aMass1, const double& aMass2, const int& sections, const double& pMin, const double& pMax);
   AliFemtoCorrFctnMezonPhi(const AliFemtoCorrFctnMezonPhi& aCorrFctn);
   virtual ~AliFemtoCorrFctnMezonPhi();
 
@@ -46,16 +46,22 @@ public:
 
 protected:
 
-  TH1D *fNumInvMass; //invariant mass plot same events
-  TH1D *fDenInvMass; //invariant mass plot mixed events
-  TH1D *fNumTransvMom; //transver momentum of same events parent particle
-  TH1D *fDenTransvMom; //transver momentum of mixed events parent particle
+  TH1D **fNumInvMass; //invariant mass plot same events
+  TH1D **fDenInvMass; //invariant mass plot mixed events
+  TH1D **fNumTransvMom; //transver momentum of same events parent particle
+  TH1D **fDenTransvMom; //transver momentum of mixed events parent particle
+  TH2D *fNumInvMass2D;
+  TH2D *fDenInvMass2D;
   
   int fBins;
+  int fSections;
   double fMin;
   double fMax;
+  double fpMin;
+  double fpMax;
   double fMass1;
   double fMass2;
+  double fIntersection;
   
   TString fTitle;
 

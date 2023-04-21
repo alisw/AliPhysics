@@ -505,12 +505,20 @@ void AliJCDijetTask::UserExec(Option_t* /*option*/)
         fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtrConstCut,AliJCDijetAna::iBGSubtrConstCut);
         fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iConstCut,AliJCDijetAna::iConstCut);
         fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtrCutsRaw,AliJCDijetAna::iBGSubtrCutsRaw);
+        fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtrIndEta,AliJCDijetAna::iBGSubtrIndEta);
+        fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtrConstCutIndEta,AliJCDijetAna::iBGSubtrConstCutIndEta);
+        fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtrCommonEta,AliJCDijetAna::iBGSubtrCommonEta);
+        fana->CalculateResponse(fanaMC,fhistosDetMC,AliJCDijetAna::iBGSubtrConstCutCommonEta,AliJCDijetAna::iBGSubtrConstCutCommonEta);
         //we can run custom configuration with an argument
-        if( !((iUnfJetClassTrue==AliJCDijetAna::iAcc             && iUnfJetClassDet==AliJCDijetAna::iAcc)
-        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtr         && iUnfJetClassDet==AliJCDijetAna::iBGSubtr)
-        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtrConstCut && iUnfJetClassDet==AliJCDijetAna::iBGSubtrConstCut)
-        ||    (iUnfJetClassTrue==AliJCDijetAna::iConstCut        && iUnfJetClassDet==AliJCDijetAna::iConstCut)
-        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtrCutsRaw  && iUnfJetClassDet==AliJCDijetAna::iBGSubtrCutsRaw) 
+        if( !((iUnfJetClassTrue==AliJCDijetAna::iAcc                      && iUnfJetClassDet==AliJCDijetAna::iAcc)
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtr                  && iUnfJetClassDet==AliJCDijetAna::iBGSubtr)
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtrConstCut          && iUnfJetClassDet==AliJCDijetAna::iBGSubtrConstCut)
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iConstCut                 && iUnfJetClassDet==AliJCDijetAna::iConstCut)
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtrCutsRaw           && iUnfJetClassDet==AliJCDijetAna::iBGSubtrCutsRaw) 
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtrIndEta            && iUnfJetClassDet==AliJCDijetAna::iBGSubtrIndEta) 
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtrConstCutIndEta    && iUnfJetClassDet==AliJCDijetAna::iBGSubtrConstCutIndEta) 
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtrCommonEta         && iUnfJetClassDet==AliJCDijetAna::iBGSubtrCommonEta) 
+        ||    (iUnfJetClassTrue==AliJCDijetAna::iBGSubtrConstCutCommonEta && iUnfJetClassDet==AliJCDijetAna::iBGSubtrConstCutCommonEta) 
              )) {
             fana->CalculateResponse(fanaMC,fhistosDetMC,iUnfJetClassTrue,iUnfJetClassDet);
         }

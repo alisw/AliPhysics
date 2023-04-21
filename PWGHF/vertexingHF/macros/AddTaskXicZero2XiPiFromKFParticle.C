@@ -5,7 +5,11 @@
 #include <TList.h>
 #endif
 
-AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString finname="", Bool_t IsMC=kFALSE, TString cuttype="", Bool_t IsAnaOmegac0=kFALSE)
+AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString cutsfile="", // Cut object
+                                                                        Bool_t IsMC=kFALSE, // kFALSE: data; kTRUE: MC
+                                                                        TString cuttype="", // Cut type: "std", "loose", "tight", "veryloose", "verytight", "veryverytight"
+                                                                        Bool_t IsAnaOmegac0=kFALSE, // kFALSE: Xic0; kTRUE: Omegac0
+                                                                        Bool_t IsStoreLS=kFALSE) // kTRUE: store (Pi+ Xi+), (Pi- Xi-), (Pi+ Xi-) and (Pi- Xi+); kFALSE: store (Pi+ Xi-) and (Pi- Xi+)
 {
     Bool_t writeXic0RecTree = kTRUE;
     Bool_t writeXic0MCGenTree = kFALSE;
@@ -32,10 +36,10 @@ AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString 
     // check input cut object
     Bool_t stdCuts = kFALSE;
     TFile* fileCuts;
-    if ( finname.EqualTo("") ) {
+    if ( cutsfile.EqualTo("") ) {
       stdCuts = kTRUE;
     } else {
-      fileCuts = TFile::Open(finname.Data());
+      fileCuts = TFile::Open(cutsfile.Data());
       if( !fileCuts || (fileCuts && !fileCuts->IsOpen()) ) {
         cout << "Input file not found : check your cut object" << endl;
         return NULL;
@@ -71,6 +75,7 @@ AliAnalysisTaskSEXicZero2XiPifromKFP* AddTaskXicZero2XiPiFromKFParticle(TString 
     task->SetDebugLevel(1);
     task->SetWriteXic0MCGenTree(writeXic0MCGenTree);
     task->SetWriteXic0Tree(writeXic0RecTree);
+    task->SetStoreLikeSign(IsStoreLS);
 
     /*
     // weight

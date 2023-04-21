@@ -30,6 +30,7 @@ ClassImp(AliAnalysisTaskFlowPPTask) // classimp: necessary for root
 
 AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(), 
     fGFWSelection(NULL),
+    fGFWSelectionPbPb(NULL),
 	fAOD(0),
     fFilterbit(96),
     fFilterbitDefault(96),
@@ -48,6 +49,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
     fUseDCAzCut(0),
     fDCAz(0),
     fUseDCAxyCut(0),
+	fUseCL1Centrality(0),
     fDCAxy(0),
     fSample(1),
     fCentFlag(0),
@@ -59,6 +61,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
     //....
     fPeriod("LHC15o"),
 	fUseCorrectedNTracks(false),
+	fUseAdditionalDCACut(false),
     fListOfObjects(0),
 
     fTrackEfficiency(0),
@@ -77,6 +80,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
 	hTracksCorrection2d(0),
     hnCorrectedTracks(0),
     fCentralityDis(0),
+    hVtz(0),
 
     hDCAxyBefore(0),
     hDCAzBefore(0),
@@ -84,6 +88,11 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
     hDCAz(0),
 	hChi2(0),
 	hChi2Before(0),
+	hPhi(0),
+	hPhiBefore(0),
+	fEtaDis(0),
+	fPtDis(0),
+	hnTPCClu(0),
     rand(32213)
 {
     // default constructor, don't allocate memory here!
@@ -92,6 +101,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask() : AliAnalysisTaskSE(),
 //_____________________________________________________________________________
 AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnalysisTaskSE(name),
     fGFWSelection(NULL),
+    fGFWSelectionPbPb(NULL),
 	fAOD(0),
 	fFilterbit(96),
 	fEtaCut(0.8),
@@ -108,6 +118,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 	fDCAz(0),
 	fDCAzDefault(0),
 	fUseDCAxyCut(0),
+	fUseCL1Centrality(0),
 	fDCAxy(0),
 	fDCAxyDefault(0),
 	fSample(1),
@@ -121,6 +132,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 	//....
 	fPeriod("LHC15o"),
 	fUseCorrectedNTracks(false),
+	fUseAdditionalDCACut(false),
 	fListOfObjects(0),
 
 	fTrackEfficiency(0),
@@ -139,6 +151,7 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 	hTracksCorrection2d(0),
     hnCorrectedTracks(0),
 	fCentralityDis(0),
+	hVtz(0),
 
 	hDCAxyBefore(0),
 	hDCAzBefore(0),
@@ -146,6 +159,11 @@ AliAnalysisTaskFlowPPTask::AliAnalysisTaskFlowPPTask(const char* name) : AliAnal
 	hDCAz(0),
 	hChi2(0),
 	hChi2Before(0),
+	hPhi(0),
+	hPhiBefore(0),
+	fEtaDis(0),
+	fPtDis(0),
+	hnTPCClu(0),
 	rand(32213)
 {
     // constructor
@@ -172,6 +190,7 @@ AliAnalysisTaskFlowPPTask::~AliAnalysisTaskFlowPPTask()
     if (fListOfObjects)
 		delete fListOfObjects;
 	if (fGFWSelection) delete fGFWSelection;
+	if (fGFWSelectionPbPb) delete fGFWSelectionPbPb;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
@@ -208,7 +227,11 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
 
 	//Create an AliGFWXXCuts Selection
 	fGFWSelection = new AliGFWXXCuts();
+	Print("GFW selection for pass1(XeXe and pp)");
     fGFWSelection->PrintSetup();
+	fGFWSelectionPbPb = new AliGFWPbpass23Cuts();
+	Print("GFW selection for pass2/3(PbPb)");
+	fGFWSelectionPbPb->PrintSetup();
 
 
     if (fNtrksName == "Mult") {//Bin Numbers are different between multiplicity and centrality 
@@ -255,6 +278,18 @@ void AliAnalysisTaskFlowPPTask::UserCreateOutputObjects()
   	fListOfObjects->Add(hChi2);
   	hChi2Before  = new TH1D("hChi2Before", "TPC chi2 per cluster", 100, 0, 5);
   	fListOfObjects->Add(hChi2Before);
+	hVtz = new TH1F("hVtz", "Vertex z after event cuts; v_{z}(cm); Events", 100, -20, 20);
+	fListOfObjects->Add(hVtz);
+	hPhiBefore = new TH1D("hPhiBefore", "phi distribution before the weight correction", 60, 0, 2*3.1415926);
+  	fListOfObjects->Add(hPhiBefore);
+  	hPhi  = new TH1D("hPhi", "phi distribution after the weight correction", 60, 0, 2*3.1415926);
+  	fListOfObjects->Add(hPhi);
+	fEtaDis = new TH1D("hEtaDis", "eta distribution", 100, -2, 2);
+	fListOfObjects->Add(fEtaDis);
+	fPtDis = new TH1D("hPtDis", "pt distribution", 100, 0, 5);
+	fListOfObjects->Add(fPtDis);
+	hnTPCClu  = new TH1D("hnTPCClu",  "Number of TPC clusters", 100, 40, 180);
+  	fListOfObjects->Add(hnTPCClu);
 
     Int_t inSlotCounter=1;
 	if(fNUA) {
@@ -420,38 +455,57 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 	hEventCount->GetXaxis()->SetBinLabel(4,"after fEventCuts");
 	hEventCount->Fill(3.5);
 
-	fGFWSelection->ResetCuts();
-	fGFWSelection->SetupCuts(fCurrSystFlag);
-	if (!fGFWSelection->AcceptVertex(fAOD)){
-		PostData(1,fListOfObjects);
-		return;
+	if(fPeriod.EqualTo("LHC15o")||fPeriod.EqualTo("LHC15o_pass2")||fPeriod.EqualTo("LHC18qr_pass3")){
+		fGFWSelectionPbPb->ResetCuts();
+		fGFWSelectionPbPb->SetupCuts(fCurrSystFlag);
+		if (!fGFWSelectionPbPb->AcceptVertex(fAOD)){
+			PostData(1,fListOfObjects);
+			return;
+		}
+
+		hEventCount->GetXaxis()->SetBinLabel(5,"after fGFWSelPb");
+		hEventCount->Fill(4.5);
 	}
+	else{
+		fGFWSelection->ResetCuts();
+		fGFWSelection->SetupCuts(fCurrSystFlag);
+		if (!fGFWSelection->AcceptVertex(fAOD)){
+			PostData(1,fListOfObjects);
+			return;
+		}
 
-
-	hEventCount->GetXaxis()->SetBinLabel(5,"after fGFWSelection");
-	hEventCount->Fill(4.5);
+		hEventCount->GetXaxis()->SetBinLabel(5,"after fGFWSelection");
+		hEventCount->Fill(4.5);
+	}
+	
 
 	//..filling Vz distribution
 	AliVVertex *vtx = fAOD->GetPrimaryVertex();
 	float fVtxZ = vtx->GetZ();
 	//use |Vz|<10.0 cm cut
-	if(TMath::Abs(fVtxZ) > fVtxCut) return;
+	//if(TMath::Abs(fVtxZ) > fVtxCut) return;
 	//calculate Ntraks for every event
 	//When(Mult)fNtrksName is multiplicity, in opposite is centrality
 	NTracksCalculation(fInputEvent);
 	//in this case, fVtxCut = fVtxCutDefault = 10.0
-	if(TMath::Abs(fVtxZ) > fVtxCutDefault) return;
-
+	//if(TMath::Abs(fVtxZ) > fVtxCutDefault) return;
+	hVtz->Fill(fVtxZ);
 	//..standard event plots (cent. percentiles, mult-vs-percentile)
 
 	const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
 	const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
+	const auto CL1Centrality(pms->GetMultiplicityPercentile("CL1"));
+	//Printf("V0M Cent: %f",dCentrality);
+	//Printf("CL1 Cent: %f",CL1Centrality);
 	float fMultV0Meq = 0;
 	float fMultMeanV0M = 0;
 	float fMultSPD = 0;
 	float fMultMeanSPD = 0;
 	float centrV0 = 0;
 	float cent = dCentrality;
+	if(fUseCL1Centrality){
+		cent = CL1Centrality;
+	}
 	float centSPD = 0;
 	float v0Centr = 0;
 	float cl1Centr = 0;
@@ -513,7 +567,11 @@ void AliAnalysisTaskFlowPPTask::UserExec(Option_t *)
 Bool_t AliAnalysisTaskFlowPPTask::CheckTrigger(){
 	const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
 	const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
+	const auto CL1Centrality(pms->GetMultiplicityPercentile("CL1"));
 	float cent = dCentrality;
+	if(fUseCL1Centrality){
+		cent = CL1Centrality;
+	}
 	UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
 
 	if (fTrigger == 0){
@@ -713,15 +771,24 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 			continue;
 		}
 
+		aodTrk->GetXYZ(pos);
 		double dcaX = pos[0] - vtxp[0]; 
 		double dcaY = pos[1] - vtxp[1];
 		double dcaZ = abs(pos[2] - vtxp[2]);
 		double dcaXY = TMath::Sqrt(dcaX*dcaX+dcaY*dcaY);
-		hDCAxyBefore->Fill(dcaXY, aodTrk->Pt());
-		hDCAzBefore->Fill(dcaZ,aodTrk->Pt());
-		hChi2Before->Fill(aodTrk->GetTPCchi2perCluster());
 
-		aodTrk->GetXYZ(pos);
+		double fb = (fCurrSystFlag == 1) ? 768 : 96;
+		if (aodTrk->TestFilterBit(fb)) {
+			//Only pass TPC or Global tracks once
+			//do not contain both of them
+			hDCAxyBefore->Fill(dcaXY, aodTrk->Pt());
+			hDCAzBefore->Fill(dcaZ,aodTrk->Pt());
+			hChi2Before->Fill(aodTrk->GetTPCchi2perCluster());
+		}
+		// hDCAxyBefore->Fill(dcaXY, aodTrk->Pt());
+		// hDCAzBefore->Fill(dcaZ,aodTrk->Pt());
+		// hChi2Before->Fill(aodTrk->GetTPCchi2perCluster());
+
 		if (!AcceptAODTrack(aodTrk, pos, vtxp)) continue;
 
 		//Fill DCAxy&z after Cuts
@@ -772,6 +839,7 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 		// if(TMath::Abs(aodTrk->Eta()) > fEtaCut) continue;
 
 		hChi2->Fill(aodTrk->GetTPCchi2perCluster());
+		hnTPCClu->Fill(aodTrk->GetTPCNclsF());
 		NtrksAfter += 1;
 
 		//..get phi-weight for NUA correction
@@ -788,6 +856,11 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 		double weightPt = 1;
 		if(fNUE == 1) weightPt = GetPtWeight(aodTrk->Pt(), aodTrk->Eta(), fVtxZ, runNumber);
 		NtrksBefore += weightPt;
+
+		hPhiBefore->Fill(aodTrk->Phi());
+    	fPtDis->Fill(aodTrk->Pt());
+    	fEtaDis->Fill(aodTrk->Eta());
+    	hPhi->Fill(aodTrk->Phi(), weight*weightPt);
 
 		//..calculate Q-vectors
 		//..no eta gap
@@ -1094,6 +1167,11 @@ void AliAnalysisTaskFlowPPTask::AnalyzeAOD(AliVEvent* aod, float centrV0, float 
 //____________________________________________________________________
 double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, double runNumber)
 {
+	//0~8: According to AliGFW framework
+	//10~12 in Xe, 17~19 in Pb: VtxZ cut
+	//30: Pileup cut (only change in wagons, not code)
+	//31: FB96
+	//32: FB96+Tight DCA
 	Int_t IntCent = 0;
 	if(fCurrCentrality>=5 && fCurrCentrality<10)IntCent=1;
 	else if(fCurrCentrality>=10 && fCurrCentrality<20)IntCent=2;
@@ -1113,8 +1191,13 @@ double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, d
 		//And use Default NUE for this Systematics
 		hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d",IntCent));
 	}
-	else if(fCurrSystFlag>0&&fCurrSystFlag<9&&fCurrSystFlag!=3)
-	hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag));
+	else if(fCurrSystFlag>0&&fCurrSystFlag<9&&fCurrSystFlag!=3){
+		hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d_SystFlag%d_",IntCent,fCurrSystFlag));
+	}
+	else if(fCurrSystFlag>=30){
+		//For Additional Systematic Cuts
+		hTrackEfficiencyRun = (TH1D*)fTrackEfficiency->FindObject(Form("EffRescaled_Cent%d",IntCent));
+	}
 	else{
 		if(fPeriod.EqualTo("LHC15o")||fPeriod.EqualTo("LHC15o_pass2")||fPeriod.EqualTo("LHC18qr_pass3")){
 			//PbPb NUE
@@ -1156,6 +1239,11 @@ double AliAnalysisTaskFlowPPTask::GetPtWeight(double pt, double eta, float vz, d
 }
 Bool_t AliAnalysisTaskFlowPPTask::LoadWeightsSystematics()
 {
+	//0~8: According to AliGFW framework
+	//10~12 in Xe, 17~19 in Pb: VtxZ cut
+	//30: Pileup cut (only change in wagons, not code)
+	//31: FB96
+	//32: FB96+Tight DCA
 	if(fCurrSystFlag == 0) {
 		fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
 	}
@@ -1163,6 +1251,10 @@ Bool_t AliAnalysisTaskFlowPPTask::LoadWeightsSystematics()
 		//Be Careful
 		//Here I use DCAxy<6sigma for sys3
 		//And use Default NUA for this systematics
+		fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+	}
+	else if(fCurrSystFlag>=30){
+		//For Additional Systematic Cuts
 		fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
 	}
     else {
@@ -1610,10 +1702,23 @@ Bool_t AliAnalysisTaskFlowPPTask::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltr
     mtr->GetXYZ(ltrackXYZ);
     ltrackXYZ[0] = ltrackXYZ[0]-vtxp[0];
     ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
-    ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
+    ltrackXYZ[2] = abs(ltrackXYZ[2]-vtxp[2]);
   } else return kFALSE; //DCA cut is a must for now
+  double dcaX = ltrackXYZ[0]; 
+  double dcaY = ltrackXYZ[1];
+  double dcaZ = ltrackXYZ[2];
+  double dcaXY = TMath::Sqrt(dcaX*dcaX+dcaY*dcaY);
+  if(fUseAdditionalDCACut){
+	if (dcaXY > 1) return kFALSE;
+    if (dcaZ > 1) return kFALSE;
+  }
 
-  return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+  if(fPeriod.EqualTo("LHC15o")||fPeriod.EqualTo("LHC15o_pass2")||fPeriod.EqualTo("LHC18qr_pass3")){
+  	return fGFWSelectionPbPb->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+  }
+  else{
+  	return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+  }
 }
 
 Bool_t AliAnalysisTaskFlowPPTask::AcceptAODEvent(AliAODEvent* aliev){

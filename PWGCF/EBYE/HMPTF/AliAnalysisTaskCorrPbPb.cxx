@@ -544,10 +544,13 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
 		ptBinNo = fEffKaonPlus[centrality_bin]->FindBin(trkPt);
 		BinCont = fEffKaonPlus[centrality_bin]->GetBinContent(ptBinNo);
 		if(BinCont!=0) EffWgt = 1.0/BinCont;
-	   
-		no_KaonPlus_perevent += 1.0;
-		no_KaonPlus_perevent_corrected += EffWgt;
-		noByEffSquare_KaonPlus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+
+		if(trkPt > 0.4 && trkPt < 1.6)
+		  {
+		    no_KaonPlus_perevent += 1.0;
+		    no_KaonPlus_perevent_corrected += EffWgt;
+		    noByEffSquare_KaonPlus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+		  }
 	    
 		if(trkPt < 2.0)
 		  {
@@ -566,10 +569,13 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
 		ptBinNo = fEffKaonMinus[centrality_bin]->FindBin(trkPt);
 		BinCont = fEffKaonMinus[centrality_bin]->GetBinContent(ptBinNo);
 		if(BinCont!=0) EffWgt = 1.0/BinCont;
-	   
-		no_KaonMinus_perevent += 1.0;
-		no_KaonMinus_perevent_corrected += EffWgt;
-		noByEffSquare_KaonMinus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+
+		if(trkPt > 0.4 && trkPt < 1.6)
+		  {
+		    no_KaonMinus_perevent += 1.0;
+		    no_KaonMinus_perevent_corrected += EffWgt;
+		    noByEffSquare_KaonMinus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+		  }
 	   
 		if(trkPt < 2.0)
 		  {
@@ -589,11 +595,14 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
 		    ptBinNo = fEffProtonPlus[centrality_bin]->FindBin(trkPt);
 		    BinCont = fEffProtonPlus[centrality_bin]->GetBinContent(ptBinNo);
 		    if(BinCont!=0) EffWgt = 1.0/BinCont;
-	
-		    no_ProtonPlus_perevent += 1.0;
-		    no_ProtonPlus_perevent_corrected += EffWgt;
-		    noByEffSquare_ProtonPlus_perevent_corrected += TMath::Power(EffWgt, 2.0);
 
+		    if(trkPt > 0.4 && trkPt < 1.6)
+		      {
+			no_ProtonPlus_perevent += 1.0;
+			no_ProtonPlus_perevent_corrected += EffWgt;
+			noByEffSquare_ProtonPlus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+		      }
+		    
 		    if(trkPt < 2.0)
 		      {
 			no_ProtonPlus_perevent_ptmax2 += 1.0;
@@ -614,10 +623,13 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
 		    ptBinNo = fEffProtonMinus[centrality_bin]->FindBin(trkPt);
 		    BinCont = fEffProtonMinus[centrality_bin]->GetBinContent(ptBinNo);
 		    if(BinCont!=0) EffWgt = 1.0/BinCont;
-		  
-		    no_ProtonMinus_perevent += 1.0;
-		    no_ProtonMinus_perevent_corrected += EffWgt;
-		    noByEffSquare_ProtonMinus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+
+		    if(trkPt > 0.4 && trkPt < 1.6)
+		      {
+			no_ProtonMinus_perevent += 1.0;
+			no_ProtonMinus_perevent_corrected += EffWgt;
+			noByEffSquare_ProtonMinus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+		      }
 
 		    if(trkPt < 2.0)
 		      {
@@ -636,10 +648,14 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
 		ptBinNo = fEffPionPlus[centrality_bin]->FindBin(trkPt);
 		BinCont = fEffPionPlus[centrality_bin]->GetBinContent(ptBinNo);
 		if(BinCont!=0) EffWgt = 1.0/BinCont;
-	   
-		no_PionPlus_perevent += 1.0;
-	    	no_PionPlus_perevent_corrected += EffWgt;
-		noByEffSquare_PionPlus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+
+		
+		if(trkPt > 0.4 && trkPt < 1.6)
+		  {
+		    no_PionPlus_perevent += 1.0;
+		    no_PionPlus_perevent_corrected += EffWgt;
+		    noByEffSquare_PionPlus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+		  }
 
 		if(trkPt < 2.0)
 		  {
@@ -659,10 +675,12 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
 		BinCont = fEffPionMinus[centrality_bin]->GetBinContent(ptBinNo);
 		if(BinCont!=0) EffWgt = 1.0/BinCont;
 	      
-
-		no_PionMinus_perevent += 1.0;
-	    	no_PionMinus_perevent_corrected += EffWgt;
-		noByEffSquare_PionMinus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+		if(trkPt > 0.4 && trkPt < 1.6)
+		  {
+		    no_PionMinus_perevent += 1.0;
+		    no_PionMinus_perevent_corrected += EffWgt;
+		    noByEffSquare_PionMinus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+		  }
 
 	
 		if(trkPt < 2.0)

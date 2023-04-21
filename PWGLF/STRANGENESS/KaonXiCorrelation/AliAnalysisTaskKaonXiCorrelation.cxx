@@ -11,7 +11,9 @@ using std::string;
 // ROOT includes
 #include <TAxis.h>
 #include <TChain.h>
+#include <TFile.h>
 #include <TH2F.h>
+#include <TH3F.h>
 #include <TList.h>
 #include <TRandom3.h>
 #include <TTree.h>
@@ -42,6 +44,7 @@ namespace
   constexpr int kKaonPdg{321};
   constexpr int kXiPdg{3312};
   constexpr int kLambdaPdg(3122);
+  constexpr double kOmegaMass{1.67245};
   constexpr double kXiMass{1.32171};
   constexpr double kLambdaMass{1.115683};
   constexpr double kKaonMass{0.493677};
@@ -111,6 +114,13 @@ void AliAnalysisTaskKaonXiCorrelation::UserCreateOutputObjects()
     }
   }
 
+  const char* det[] = {"ITS", "TPC", "TOF"};
+  TFile calib_file(fCustomPidPath.data());
+  for (int iD = 0; iD < 3; ++iD)
+  {
+    fCustomPidCalib[iD] = (TH3F*)calib_file.Get(Form("fCustom%spidCalib", det[iD]));
+  }
+
   fList = new TList();
   fList->SetOwner(kTRUE);
   fEventCuts.AddQAplotsToList(fList);
@@ -137,8 +147,8 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
     fMCEvent = MCEvent();
   }
 
-  double bFfield{ev->GetMagneticField()};
-  fRecCollision.fCent = fEventCuts.GetCentrality();
+  double bField{ev->GetMagneticField()};
+  fRecCollision.fCent = fEventCuts.GetCentrality(fEstimator);
   if (fRecCollision.fCent < fMinCentrality || fRecCollision.fCent > fMaxCentrality)
   {
     PostAllData();
@@ -160,12 +170,13 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
     tgr |= kCentral;
   if (handl->IsEventSelected() & AliVEvent::kSemiCentral)
     tgr |= kSemiCentral;
-  int magField = bFfield > 0 ? kPositiveB : 0;
+  int magField = bField > 0 ? kPositiveB : 0;
 
   fRecCollision.fTrigger = tgr + magField;
   fPID = handl->GetPIDResponse();
 
   std::vector<int> checkedLabelCasc, checkedLabelKaon;
+  std::vector<XiDaughter> xiDaughters;
 
   fGenCascades.clear();
   fGenKaons.clear();
@@ -183,31 +194,34 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
         continue;
       }
 
-      int nSPD = 0.;
-      int nITS = GetITScls(aodTrack, nSPD);
+      int nSPD = 0;
+      int nSDD = 0;
+      int nSSD = 0;
+      int nITS = GetITScls(aodTrack, nSPD, nSDD, nSSD);
       float dca[2]{0., 0.};
       aodTrack->GetImpactParameters(dca[0], dca[1]);
+      double dcaMag = std::sqrt(dca[1] * dca[1] + dca[0] * dca[0]);
       bool tof = HasTOF(aodTrack);
 
-      double tpcNsigma = fPID->NumberOfSigmasTPC(aodTrack, AliPID::kKaon);
-      double tofNsigma = tof ? fPID->NumberOfSigmasTOF(aodTrack, AliPID::kKaon) : -999.f;
+      double itsNsigma = GetCustomNsigma(aodTrack, fRecCollision.fCent, 0);
+      double tpcNsigma = GetCustomNsigma(aodTrack, fRecCollision.fCent, 1);
+      double tofNsigma = tof ? GetCustomNsigma(aodTrack, fRecCollision.fCent, 2) : -999.f;
+
+      if (!aodTrack->TestFilterBit(fFilterBit) && fFilterBit) continue;
 
       if (!(aodTrack->GetStatus() & AliVTrack::kTPCrefit) ||
           !(aodTrack->GetStatus() & AliVTrack::kITSrefit) ||
           std::abs(Eta2y(aodTrack->Pt(), kKaonMass, aodTrack->Eta())) > fCutY ||
           std::abs(aodTrack->Eta()) > 0.8 ||
-          aodTrack->Chi2perNDF() > 4 ||
-          aodTrack->GetTPCNcls() < fCutTPCrecPoints ||
-          aodTrack->GetTPCFoundFraction() < fCutTPCfoundFraction ||
-          aodTrack->GetTPCsignalN() < fCutTPCsignal ||
-          aodTrack->GetTPCsignal() < fCutMinEnergyLoss ||
+          aodTrack->Chi2perNDF() > fCutChi2[2] ||
+          aodTrack->GetTPCsignalN() < fCutTPCcls[2] ||
           aodTrack->GetITSchi2() > fCutMaxITSChi2 ||
           nITS < fCutITSrecPoints ||
           nSPD < fCutSPDrecPoints ||
-          dca[0] > fCutDCAz ||
-          dca[1] > fCutDCAxy ||
+          dcaMag > fCutDCA[2] ||
           std::abs(tpcNsigma) > fCutKaonNsigmaTPC ||
-          (tof && std::abs(tofNsigma) > fCutKaonNsigmaTOF)
+          (aodTrack->Pt() > fPtTofCut && std::abs(tofNsigma) > fCutKaonNsigmaTOF) ||
+          !( (!fUseITSpid || aodTrack->Pt() > fCutPtITSpid) || (fUseITSpid && std::abs(itsNsigma) < fCutKaonNsigmaITS && ( nSDD + nSSD > fCutSDDSSDrecPoints) && aodTrack->Pt() < fCutPtITSpid) )
         )
       {
         continue;
@@ -237,8 +251,16 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
       bool charge = aodTrack->Charge() > 0;
       fKaon->fPt = charge ? aodTrack->Pt() : -aodTrack->Pt();
       fKaon->fEta = aodTrack->Eta();
+      fKaon->fNsigmaITS = itsNsigma;
       fKaon->fNsigmaTPC = tpcNsigma;
       fKaon->fNsigmaTOF = tofNsigma;
+      fKaon->fCutBitMap = 0u;
+      if (dcaMag < fCutDCA[0]) fKaon->fCutBitMap |= kDCAtightCut;
+      else if (dcaMag < fCutDCA[1]) fKaon->fCutBitMap |= kDCAmidCut;
+      if (aodTrack->GetTPCsignalN() < fCutTPCcls[0]) fKaon->fCutBitMap |= kTPCclsTightCut;
+      else if (aodTrack->GetTPCsignalN() < fCutTPCcls[1]) fKaon->fCutBitMap |= kTPCclsMidCut;
+      if (aodTrack->Chi2perNDF() < fCutChi2[0]) fKaon->fCutBitMap |= kChi2TightCut;
+      else if (aodTrack->Chi2perNDF() < fCutChi2[1]) fKaon->fCutBitMap |= kChi2MidCut;
 
       if (!fMC)
         fRecKaons.push_back(*fKaon);
@@ -346,13 +368,13 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
       double cosPAV0 = casc->CosPointingAngle(pv);
 
       // TOF matching
-      bool hasTOFhit = !pTrackCasc->GetTOFBunchCrossing(bFfield) || !nTrackCasc->GetTOFBunchCrossing(bFfield) || !bTrackCasc->GetTOFBunchCrossing(bFfield);
+      bool hasTOFhit = !pTrackCasc->GetTOFBunchCrossing(bField) || !nTrackCasc->GetTOFBunchCrossing(bField) || !bTrackCasc->GetTOFBunchCrossing(bField);
 
       // track status: ( fCasc_NegTrackStatus & AliESDtrack::kITSrefit ) is the codition to check kITSrefit
       bool hasITSrefit = (nTrackCasc->GetStatus() & AliVTrack::kITSrefit) || (pTrackCasc->GetStatus() & AliVTrack::kITSrefit) || (bTrackCasc->GetStatus() & AliVTrack::kITSrefit);
 
       double V0invMassDelta = ((matter) ? casc->MassLambda() : casc->MassAntiLambda()) - kLambdaMass;
-      double competingMass = std::abs(casc->MassXi() - kXiMass);
+      double competingMass = std::abs(casc->MassOmega() - kOmegaMass);
 
       // transverse momentum and eta
       double pt = std::sqrt(casc->Pt2Xi());
@@ -395,7 +417,6 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
             std::abs(tpcNsigmaV0Pr) < fCutNsigmaTPC &&
             std::abs(tpcNsigmaV0Pi) < fCutNsigmaTPC &&
             ct < fCutCt * kcTauXi &&
-            competingMass > fCutCompetingMass &&
             tpcClBach > fCutTPCclu &&
             tpcClV0Pi > fCutTPCclu &&
             tpcClV0Pr > fCutTPCclu &&
@@ -419,8 +440,13 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
           fXi->fEta = eta;
           fXi->fMass = casc->MassXi();
           fXi->fBdtOut = -1.;
+          fXi->fRecFlag = 0u;
+          if (hasTOFhit || hasITSrefit)
+            fXi->fRecFlag |= kHasTOFhitOrITSrefit;
+          if (competingMass > fCutCompetingMass)
+            fXi->fRecFlag |= kCompetingMassCut;
 
-          if (fMC)
+          if (fMC && !fApplyBdtToMC)
           {
             fGenCascades.push_back(fGenXi);
             continue;
@@ -436,16 +462,27 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
               AliError("ERROR: BDT not loaded, skip prediction ...\n");
               continue;
             }
-            double features[]={dcaBachPV, dcaV0PV, dcaV0piPV, dcaV0prPV, dcaV0tracks, dcaBachV0, cosPA, cosPAV0, V0invMassDelta, tpcNsigmaBach, tpcNsigmaV0Pr};
+            double features[]={dcaV0tracks, dcaBachV0, cosPA, cosPAV0, tpcNsigmaV0Pr, dcaBachPV, dcaV0PV, dcaV0piPV, dcaV0prPV};
             std::vector<double> bdt_out;
-            fBDT[model_index]->Predict(features, 11, bdt_out, false);
-            if (bdt_out[0] < fBdtOutCut)
+            fBDT[model_index]->Predict(features, fNFeatures, bdt_out, false);
+            if (bdt_out[0] < fBdtOutCut && !fMC)
             {
               continue;
             }
             fXi->fBdtOut = bdt_out[0];
 
-            fRecCascades.push_back(*fXi);
+            if (std::abs(fXi->fMass - kXiMass) < fCascMassWindow)
+            {
+              XiDaughter pDaughter(pTrackCasc->Px(), pTrackCasc->Py(), pTrackCasc->Pz(), 1);
+              XiDaughter nDaughter(nTrackCasc->Px(), nTrackCasc->Py(), nTrackCasc->Pz(), -1);
+              XiDaughter bDaughter(bTrackCasc->Px(), bTrackCasc->Py(), bTrackCasc->Pz(), matter ? -1 : 1);
+              xiDaughters.push_back(pDaughter); xiDaughters.push_back(nDaughter); xiDaughters.push_back(bDaughter);
+            }
+
+            if (!fMC)
+              fRecCascades.push_back(*fXi);
+            else
+              fGenCascades.push_back(fGenXi);
           }
         }
         else if (fMC && std::find(checkedLabelCasc.begin(), checkedLabelCasc.end(), labMothBac) != checkedLabelCasc.end() && (pdgCascade == kXiPdg))
@@ -453,6 +490,9 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
           checkedLabelCasc.erase(std::find(checkedLabelCasc.begin(), checkedLabelCasc.end(), labMothBac)); //checked particles that didn't pass the topological cut (have to be filled later)
         }
       }
+    }
+    if (HasTwoXiFromSameDaughters(xiDaughters)){
+      fRecCollision.fTrigger |= kHasTwoXiFromSameDaughter;
     }
   }
 
@@ -497,7 +537,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
         fGenKaon.fPtMC = pdg > 0 ? track->Pt() : -track->Pt();
         fGenKaon.fEtaMC = track->Eta();
         fGenKaon.fFlag = 0u;
-        if (track->IsPrimary())
+        if (track->IsPhysicalPrimary())
           fGenKaon.fFlag |= kPrimary;
         else
           fGenKaon.fFlag |= track->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
@@ -547,7 +587,7 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
         if (!goodDecay)
           continue;
         fGenXi.fFlag = 0u;
-        if (track->IsPrimary())
+        if (track->IsPhysicalPrimary())
           fGenXi.fFlag |= kPrimary;
         else
           fGenXi.fFlag |= track->IsSecondaryFromWeakDecay() ? kSecondaryFromWD : kSecondaryFromMaterial;
@@ -631,12 +671,12 @@ int AliAnalysisTaskKaonXiCorrelation::WhichBDT(double pt)
   return iB;
 }
 
-int AliAnalysisTaskKaonXiCorrelation::GetITScls(AliAODTrack *track, int &nSPD)
+int AliAnalysisTaskKaonXiCorrelation::GetITScls(AliAODTrack *track, int &nSPD, int &nSDD, int &nSSD)
 {
   if (!track) return -1;
   nSPD = 0u;
-  int nSDD = 0u;
-  int nSSD = 0u;
+  nSDD = 0u;
+  nSSD = 0u;
   for (int i = 0; i < 6; ++i) {
     if (track->HasPointOnITSLayer(i)) {
       if (i < 2) nSPD++;
@@ -654,4 +694,46 @@ bool AliAnalysisTaskKaonXiCorrelation::HasTOF(AliAODTrack *track)
   const float len = track->GetIntegratedLength();
   bool hasTOF = hasTOFout && hasTOFtime && (len > 350.);
   return hasTOF;
+}
+
+bool AliAnalysisTaskKaonXiCorrelation::HasTwoXiFromSameDaughters(std::vector<XiDaughter> daughters)
+{
+  for (ULong_t iD = 0; iD < daughters.size(); ++iD)
+  {
+    for (ULong_t jD = iD + 1; jD < daughters.size(); ++jD)
+    {
+      if (daughters[iD].IsSame(daughters[jD]))
+      {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+double AliAnalysisTaskKaonXiCorrelation::GetCustomNsigma(AliAODTrack *t, double cent, int det)
+{
+  double nsigma = 0.;
+  switch (det) {
+    case 0:
+      nsigma = fPID->NumberOfSigmasITS(t, AliPID::kKaon);
+      break;
+    case 1:
+      nsigma = fPID->NumberOfSigmasTPC(t, AliPID::kKaon);
+      break;
+    case 2:
+      nsigma = fPID->NumberOfSigmasTOF(t, AliPID::kKaon);
+      break;
+  }
+  if (fUseCustomPid && fCustomPidCalib[det]) {
+    int binX = fCustomPidCalib[det]->GetXaxis()->FindBin(cent);
+    int binY = fCustomPidCalib[det]->GetYaxis()->FindBin(t->Pt());
+    int binZ = fCustomPidCalib[det]->GetZaxis()->FindBin(t->Eta());
+    double muCalib = fCustomPidCalib[det]->GetBinContent(binX, binY, binZ);
+    double sigCalib = fCustomPidCalib[det]->GetBinError(binX, binY, binZ);
+    if (muCalib > 1.e-12 || sigCalib > 1.e-12){
+      return ( nsigma - muCalib ) / sigCalib;
+    }
+  }
+  return nsigma;
 }
