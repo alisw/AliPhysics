@@ -1287,6 +1287,12 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("8008e103","0dm00009f9730000dge0404000","411793105f030230000","0h63103100b00010");
     cuts.AddCutPCMCalo("8008d103","0dm00009f9730000dge0404000","411793105f030230000","0h63103100b00010");
 
+  } else if (trainConfig == 2061) { // no NCell cut, no NL correction
+    cuts.AddCutPCMCalo("80010103","0dm00009f9730000dge0404000","411790005f030230000","0h63103100b00010"); // INT7
+  } else if (trainConfig == 2062) { // no NCell cut, no NL correction
+    cuts.AddCutPCMCalo("8008e103","0dm00009f9730000dge0404000","411790005f030230000","0h63103100b00010"); // EG2
+    cuts.AddCutPCMCalo("8008d103","0dm00009f9730000dge0404000","411790005f030230000","0h63103100b00010"); // EG1
+
   } else if (trainConfig == 2061) { // no NL, NCell Effi MC
     cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","411790005f03h230000","0h63103100b00010");
     cuts.AddCutPCMCalo("8008e123","0dm00009f9730000dge0404000","411790005f03h230000","0h63103100b00010");

@@ -1925,6 +1925,14 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("8808d103","4117932050032230000","01631031000000d0"); // 80-100
     cuts.AddCutCalo("8908d103","4117932050032230000","01631031000000d0"); // 90-100
 
+
+
+  } else if (trainConfig == 2400){ // EMCAL+DCAL clusters standard cuts, triggers, no NL, no NCell cut
+    cuts.AddCutCalo("80010103","411790005f030230000","01631031000000d0"); // INT7
+  } else if (trainConfig == 2401){ // EMCAL+DCAL clusters standard cuts, triggers, no NL, no NCell cut
+    cuts.AddCutCalo("8008e103","411790005f030230000","01631031000000d0"); // EG2
+    cuts.AddCutCalo("8008d103","411790005f030230000","01631031000000d0"); // EG1
+  
   // PHOS pPb8TeV
   } else if (trainConfig == 3000){ // settings Jens
     cuts.AddCutCalo("80010103","24466190ua012300000","0163103100000010"); // INT7
