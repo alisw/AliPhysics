@@ -54,7 +54,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
 
         void                    SetMCRead(Bool_t flag) {fAnalysisMC = flag;}
         void                    SetFilterBit(Int_t filterbit) {fBit = filterbit;}
-        //void                  SetPtLimits(Double_t ptmin, Double_t ptmax) { fLpTCut = ptmin; fUpTCut=ptmax; }
+        void                    SetCentLimit(Double_t CentMin, Double_t CentMax) {fCentMin = CentMin; fCentMax = CentMax; }
+        void                    SetPtLimits(Double_t ptmin, Double_t ptmax) { fLpTCut = ptmin; fUpTCut=ptmax; }
         //void                  SetEtaLimit(Double_t etalimit) { fEta = etalimit; }
         //mixing
         //void                  SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
@@ -68,8 +69,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TList*                  fOutputList;    //! output list
        AliPIDResponse*         fPIDResponse;   //! pid response object’
 
-       TH1F*                   fEnergy;         //! dummy histogram
-       TH1F*                   fEnergyCuts;     //! dummy histogram
+       TH1F*                   fEnergy;        //! dummy histogram
+       TH1F*                   fEnergyCuts;    //! dummy histogram
        TH2F*                   fPID;            //! dummy histogram
        TH2F*                   fPIDKaon;        //! dummy histogram
        TH2F*                   fPIDK;           //! dummy histogram
@@ -84,7 +85,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fVtx;            //! dummy histogram
        TH1F*                   fClusters;       //! dummy histogram
        TH1F*                   fHistNEvents;    //! dummy histogram
-       TH1F*                   fHistNV0;        //! dummy histogram
+       TH1F*                   fHistNV0;       //! dummy histogram
        TH1F*                   fHistEta;        //! dummy histogram
        TH1F*                   fHistDEta;       //! dummy histogram
        TH1F*                   fHistPhi;        //! dummy histogram

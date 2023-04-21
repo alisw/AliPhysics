@@ -53,7 +53,8 @@ ClassImp(AliAnalysisTaskKaon2PC)    // classimp: necessary for root
 const Double_t Pi = TMath::Pi();
 
 AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC() : AliAnalysisTaskSE(),  
-fAOD(0), 
+fAOD(0),
+fmcEvent(0), 
 fOutputList(0), 
 fPIDResponse(0),
 fRejectEventPileUp(kTRUE),
@@ -176,7 +177,8 @@ fEventCuts(0)
 }
 //_____________________________________________________________________________
 AliAnalysisTaskKaon2PC::AliAnalysisTaskKaon2PC(const char* name) : AliAnalysisTaskSE(name),
-fAOD(0), 
+fAOD(0),
+fmcEvent(0), 
 fOutputList(0), 
 fPIDResponse(0),
 fRejectEventPileUp(kTRUE),
@@ -321,7 +323,6 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     // to an output file.
 
     fzVtxBins = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0}; // 10 bins
-    //fzVtxBins = {-10.0,-9.0,-8.0,-7.0,-6.0,-5.0,-4.0,-3.0,-2.0,-1.0,0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0}; // 20 bins
     //fCentBins = {0,5,10,15,20,25,30,35,40,45,50,60,70,80,90,100};
     fCentBins = { 0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.1 }; // 15 bins
     //fsampleBins = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
@@ -391,7 +392,6 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fNsigmaTPCTOFK->SetOption("colz");
 
     fHistTOFKch = new TH2F("fHistTOFKch", "", 500, 0.2,2,700,0,2);
-    //fHistTOFKch->SetOption();
 
     //track and event observables
     fVtx = new TH1F("fVtx", "PV_{z} distribution of Tracks", 100, -13, 13);
@@ -504,12 +504,12 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fHistKChKChPhi = new TH2F("fHistKChKChPhi", "C(#Delta#phi) of Kch-Kch ",32,-0.5*Pi,1.5*Pi,100,0,100);
     fHistKChKChPhi->SetOption("SURF1"); 
 
-    fHistCF = new TH2F("fHistCF","Number of pairs of K^{+/-} and K^{0}",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
+    fHistCF = new TH2F("fHistCF","Number of pairs of K^{+/-} and K^{0}",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6 );
     fHistCF->GetXaxis()->SetTitle("#Delta#phi ");
     fHistCF->GetYaxis()->SetTitle("#Delta#eta");
     fHistCF->SetOption("SURF1");
 
-    fHistKPosKNeg = new TH2F("fHistKPosKNeg","K^{+}-K^{-} Correlation",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
+    fHistKPosKNeg = new TH2F("fHistKPosKNeg","K^{+}-K^{-} Correlation",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6 );
     fHistKPosKNeg->GetXaxis()->SetTitle("#Delta#phi ");
     fHistKPosKNeg->GetYaxis()->SetTitle("#Delta#eta");
     fHistKPosKNeg->SetOption("SURF1");
@@ -527,7 +527,6 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
 
     fHistCF_KpKn_Bg = new TH2F("fHistCF_KpKn_Bg","Background for CF of K^{+} and K^{-}",32,-0.5*Pi,1.5*Pi,32,-1.6,1.6);
     fHistCF_KpKn_Bg->SetOption("SURF1");
-
 
     hPt = new TH1F("hPt", "Track pT distribution", 100, 0, 2);
     hPt_kPos = new TH1F("hPt_kPos", "Track pT distribution", 100, 0, 2);
@@ -569,6 +568,7 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fHistK0KchMC->SetOption("SURF1");
 
     fHistGenMultiplicity = new TH1D ("fHistGenMultiplicity","fHistGenMultiplicity",500,0,500);
+
 
     fOutputList->Add(fEnergy);
     fOutputList->Add(fEnergyCuts);
@@ -691,7 +691,7 @@ Bool_t AliAnalysisTaskKaon2PC::AcceptTrack(const AliAODTrack *Trk) {
     //if (fabs(nSigmakaon < 3.0) && (nSigmaelectron < 3.0)) return kFALSE;
     if (fabs(nSigmakaon) > fSigCut) return kFALSE;
     if (fabs(nSigmaTOFkaon) > 3.0) return kFALSE;
-    
+
     return kTRUE;
 }
 
@@ -928,7 +928,6 @@ for(Int_t i=0; i < iTracks; i++) {
     if(!track) continue;                                                 
     if (!AcceptTrack(track)) continue;
     Double_t TOFsignal = track->GetTOFsignal();
-
     Float_t beta          = 0.0;
     beta                  = Beta(track);
     Int_t chargetrack = track->Charge();
@@ -967,13 +966,13 @@ for(Int_t i=0; i < iTracks; i++) {
 }
 
 Int_t nSelectedKCh = fSelectedKCh->GetEntries();
-cout << " nSelectedKCh is " << nSelectedKCh << endl;
+//cout << " nSelectedKCh is " << nSelectedKCh << endl;
 
 Int_t nSelectedKpos = fSelectedKpos->GetEntries();
-cout << " nSelectedKpos is " << nSelectedKpos << endl;
+//cout << " nSelectedKpos is " << nSelectedKpos << endl;
 
 Int_t nSelectedKneg = fSelectedKneg->GetEntries();
-cout << " nSelectedKneg is " << nSelectedKneg << endl;
+//cout << " nSelectedKneg is " << nSelectedKneg << endl;
 
 //======== Neutral Kaon Selection ==========
 
@@ -1007,10 +1006,7 @@ for(Int_t j=0; j < nv0s; j++) {
     fHistNPionPhi->Fill(nTrack->Phi());
 }
 Int_t nSelectedK0s = fSelectedK0s->GetEntries();
-cout << " nSelectedK0s is " << nSelectedK0s << endl;
-
-//((TH1F*)((AliDirList*)fOutput3->FindObject("Track"))->FindObject("nTracksBf"))->Fill(nTracks);
-//((TH1F*)((AliDirList*)fOutput3->FindObject("Track"))->FindObject("nTracksAf"))->Fill(nSelectedTracks);
+//cout << " nSelectedK0s is " << nSelectedK0s << endl;
     
 //======== KchKch Correlation Loop ==========
 
@@ -1067,6 +1063,9 @@ cout << " nSelectedK0s is " << nSelectedK0s << endl;
             Fill2DHist(DPhiPN,DEtaPN,fHistKPosKNeg);
         }
     }
+
+
+
 
 //======== K0s-Kch Correlation Analysis ==========
     for(Int_t i = 0; i < fSelectedK0s->GetEntriesFast(); i++){
@@ -1140,6 +1139,7 @@ fHistMult->Fill(iTracks);
 fHistCent->Fill(CentV0M); 
 
 //================== mixing ============================ (You can create a seperate function FillCorrelationsMixed() later)
+
 AliEventPool *pool = fPoolMgr->GetEventPool(CentV0M, PVz);
 if(pool) {cout << "Good news....!!!!!!! Pool found.. " << endl; }
 if(!pool) { AliError(Form("No pool found for centrality = %f, zVtx = %f", CentV0M,PVz)); return; }
@@ -1188,8 +1188,6 @@ Int_t nMix = pool->GetCurrentNEvents();
 
 }
 
-//================== mixing ============================ (for k+k- CF)
-
 if (fKpKnCorr){
 
 if(pool->IsReady() || pool->NTracksInPool() > fPoolMinNTracks ||  pool->GetCurrentNEvents() >= fMinEventsToMix) {
@@ -1206,7 +1204,6 @@ Int_t nMix = pool->GetCurrentNEvents();
             for (Int_t iAss(0); iAss < bgTracks2->GetEntries(); iAss++){
 
             AliVParticle* KaonAssoc = dynamic_cast<AliVParticle*> (bgTracks2->At(iAss));
-
             if(!KaonAssoc) continue;
             if( KaonAssoc->Charge() != KaonTrig->Charge() ) continue;
 
@@ -1237,9 +1234,9 @@ Int_t nMix = pool->GetCurrentNEvents();
 
 }
 
-TObjArray* tracksClone = (TObjArray*) fSelectedKCh->Clone();
-tracksClone->SetOwner(kTRUE);
-pool->UpdatePool(tracksClone);   
+    TObjArray* tracksClone = (TObjArray*) fSelectedKCh->Clone();
+    tracksClone->SetOwner(kTRUE);
+    pool->UpdatePool(tracksClone);   
 
 
 } //end of RunData function
@@ -1276,7 +1273,7 @@ for (Int_t i = 0; i < nMCTracks; i++){
             }
     }
 
-cout << "number of accepted particles from MC tracks is"<< nAcceptedParticles << endl;
+//cout << "number of accepted particles from MC tracks is"<< nAcceptedParticles << endl;
 fHistGenMultiplicity->Fill(nAcceptedParticles);
 
 AliMCParticle *mcMotherParticle = 0x0;
@@ -1372,7 +1369,6 @@ for (Int_t i = 0; i < nMCTracks; i++){
 void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
 {
     if (!fAnalysisMC) { RunData(); }
-    if (fAnalysisMC) { RunMC(); }
 
     // deleting TObjArrays
     //fSelectedK0s->Clear();
@@ -1433,5 +1429,4 @@ void AliAnalysisTaskKaon2PC::Terminate(Option_t *)
     if(fPoolMgr) delete fPoolMgr;
 }
 //_____________________________________________________________________________
-
 
