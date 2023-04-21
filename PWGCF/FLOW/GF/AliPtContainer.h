@@ -35,6 +35,7 @@ class AliPtContainer: public TNamed {
         void FillRecursive(const vector<vector<Double_t>> &inarr, Int_t subIndex = 0);
         void FillRecursiveProfiles(const Double_t &lMult, const Double_t &rn);
         vector<Double_t> getEventCorrelation(Int_t mOrder, Int_t subIndex = 0);
+        double getExoticEventCorrelation(int wOrder, int pOrder, const vector<vector<double>> &inarr);
         TList* GetCkList() { return fCkTermList; }
         TList* GetSkewList() { return fSkewTermList; }
         TList* GetKurtosisList() { return fKurtosisTermList; }

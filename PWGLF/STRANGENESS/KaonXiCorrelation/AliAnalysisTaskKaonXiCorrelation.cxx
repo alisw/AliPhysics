@@ -213,8 +213,8 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
           !(aodTrack->GetStatus() & AliVTrack::kITSrefit) ||
           std::abs(Eta2y(aodTrack->Pt(), kKaonMass, aodTrack->Eta())) > fCutY ||
           std::abs(aodTrack->Eta()) > 0.8 ||
-          aodTrack->Chi2perNDF() > fCutMaxChi2 ||
-          aodTrack->GetTPCsignalN() < fCutTPCclsKaon ||
+          aodTrack->Chi2perNDF() > fCutChi2[2] ||
+          aodTrack->GetTPCsignalN() < fCutTPCcls[2] ||
           aodTrack->GetITSchi2() > fCutMaxITSChi2 ||
           nITS < fCutITSrecPoints ||
           nSPD < fCutSPDrecPoints ||
@@ -257,6 +257,10 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
       fKaon->fCutBitMap = 0u;
       if (dcaMag < fCutDCA[0]) fKaon->fCutBitMap |= kDCAtightCut;
       else if (dcaMag < fCutDCA[1]) fKaon->fCutBitMap |= kDCAmidCut;
+      if (aodTrack->GetTPCsignalN() < fCutTPCcls[0]) fKaon->fCutBitMap |= kTPCclsTightCut;
+      else if (aodTrack->GetTPCsignalN() < fCutTPCcls[1]) fKaon->fCutBitMap |= kTPCclsMidCut;
+      if (aodTrack->Chi2perNDF() < fCutChi2[0]) fKaon->fCutBitMap |= kChi2TightCut;
+      else if (aodTrack->Chi2perNDF() < fCutChi2[1]) fKaon->fCutBitMap |= kChi2MidCut;
 
       if (!fMC)
         fRecKaons.push_back(*fKaon);

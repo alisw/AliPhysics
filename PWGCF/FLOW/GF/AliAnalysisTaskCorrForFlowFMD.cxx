@@ -523,6 +523,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
 	    if(fDoPHI && fPhiSigcount < 1) continue;//for Phi correlation to fill, at least one Phi candidate needed (biasing event selection)
 	  }
 	  
+        fhEventCounter->Fill("Used in corr",1);
 
         FillCorrelations(i);
         FillCorrelationsMixed(i);

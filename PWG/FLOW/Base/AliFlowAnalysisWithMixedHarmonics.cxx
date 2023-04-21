@@ -1014,6 +1014,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
   
  this->BookDefault();
  if(fCalculateVsM){this->BookVsM();}
+ if(fCalculateVsZDC){this->BookVsZDC();}
  if(fEvaluateDifferential3pCorrelator){this->BookDifferential();}  
    
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
