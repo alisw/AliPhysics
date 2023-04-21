@@ -25,9 +25,9 @@ class TParticle;
 class TVector3;
 class AliESDtrackCuts;
 class AliESDAD; // AD
-// class AliMCEventHandler;
-// class AliMCEvent;
-// class AliStack;
+class AliMCEventHandler;
+class AliMCEvent;
+class AliStack;
 class AliPIDResponse;
 class AliESDVertex;
 class AliAODVertex;
@@ -88,43 +88,59 @@ class AliAODv0;
 
 using std::cout;
 using std::endl;
-#include "AliAnalysisTaskFlatenicityLambdaK0s.h"
+#include "AliAnalysisTaskFlatenicityLambdaK0sMC.h"
 
-class AliAnalysisTaskFlatenicityLambdaK0s;
+class AliAnalysisTaskFlatenicityLambdaK0sMC;
 
 using namespace std;
 
-ClassImp(AliAnalysisTaskFlatenicityLambdaK0s)
+ClassImp(AliAnalysisTaskFlatenicityLambdaK0sMC)
 
-    AliAnalysisTaskFlatenicityLambdaK0s::AliAnalysisTaskFlatenicityLambdaK0s()
-    : AliAnalysisTaskSE(), fEventCuts(0), fESDtrackCuts(0), fESD(0), fOutputList(0),
-      hinvmassK0s(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0),
-      hflat(0), fESDpid(0x0), treeK0s(0), treeLambda(0), treeAntiLambda(0),
-      invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0),
-      invpLambda(0), invptLambda(0), invyLambda(0), invmAntiLambda(0),
-      invpAntiLambda(0), invptAntiLambda(0), invyAntiLambda(0),
-      flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0)
+    AliAnalysisTaskFlatenicityLambdaK0sMC::
+        AliAnalysisTaskFlatenicityLambdaK0sMC()
+    : AliAnalysisTaskSE(), fEventCuts(0), fESDtrackCuts(0), fESD(0),
+      fOutputList(0), hinvmassK0s(0), fPIDResponse(0),
+      hinvmassLambda(0), hinvmassAntiLambda(0), hflat(0), fESDpid(0x0),
+      treeK0s(0), treeLambda(0), treeAntiLambda(0), invmK0s(0), invpK0s(0),
+      invptK0s(0), invyK0s(0), invmLambda(0), invpLambda(0), invptLambda(0),
+      invyLambda(0), invmAntiLambda(0), invpAntiLambda(0), invptAntiLambda(0),
+      invyAntiLambda(0), flatenicityK0s(0), flatenicityLambda(0),
+      flatenicityAntiLambda(0), hinvmassK0sMC(0), hinvmassLambdaMC(0),
+      hinvmassAntiLambdaMC(0), hNeventMC(0), treeK0sMC(0), treeLambdaMC(0),
+      treeAntiLambdaMC(0), invmK0sMC(0), invpzK0sMC(0), invptK0sMC(0),
+      invyK0sMC(0), invmLambdaMC(0), invpzLambdaMC(0), invptLambdaMC(0),
+      invyLambdaMC(0), invmAntiLambdaMC(0), invpzAntiLambdaMC(0),
+      invptAntiLambdaMC(0), invyAntiLambdaMC(0), flatenicityK0sMC(0),
+      flatenicityLambdaMC(0), flatenicityAntiLambdaMC(0)
 {
   // default constructor, don't allocate memory here!
   // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
-AliAnalysisTaskFlatenicityLambdaK0s::AliAnalysisTaskFlatenicityLambdaK0s(
+AliAnalysisTaskFlatenicityLambdaK0sMC::AliAnalysisTaskFlatenicityLambdaK0sMC(
     const char *name)
-    : AliAnalysisTaskSE(name), fEventCuts(0), fESDtrackCuts(0), fESD(0), fOutputList(0),
-      hinvmassK0s(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0),
-      hflat(0), fESDpid(0x0), treeK0s(0), treeLambda(0), treeAntiLambda(0),
-      invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0),
-      invpLambda(0), invptLambda(0), invyLambda(0), invmAntiLambda(0),
-      invpAntiLambda(0), invptAntiLambda(0), invyAntiLambda(0),
-      flatenicityK0s(0), flatenicityLambda(0), flatenicityAntiLambda(0)
+    : AliAnalysisTaskSE(name), fEventCuts(0), fESDtrackCuts(0), fESD(0),
+      fOutputList(0), hinvmassK0s(0), fPIDResponse(0),
+      hinvmassLambda(0), hinvmassAntiLambda(0), hflat(0), fESDpid(0x0),
+      treeK0s(0), treeLambda(0), treeAntiLambda(0), invmK0s(0), invpK0s(0),
+      invptK0s(0), invyK0s(0), invmLambda(0), invpLambda(0), invptLambda(0),
+      invyLambda(0), invmAntiLambda(0), invpAntiLambda(0), invptAntiLambda(0),
+      invyAntiLambda(0), flatenicityK0s(0), flatenicityLambda(0),
+      flatenicityAntiLambda(0), hinvmassK0sMC(0), hinvmassLambdaMC(0),
+      hinvmassAntiLambdaMC(0), hNeventMC(0), treeK0sMC(0), treeLambdaMC(0),
+      treeAntiLambdaMC(0), invmK0sMC(0), invpzK0sMC(0), invptK0sMC(0),
+      invyK0sMC(0), invmLambdaMC(0), invpzLambdaMC(0), invptLambdaMC(0),
+      invyLambdaMC(0), invmAntiLambdaMC(0), invpzAntiLambdaMC(0),
+      invptAntiLambdaMC(0), invyAntiLambdaMC(0), flatenicityK0sMC(0),
+      flatenicityLambdaMC(0), flatenicityAntiLambdaMC(0)
 {
 
   DefineInput(0, TChain::Class());
   DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________________
-AliAnalysisTaskFlatenicityLambdaK0s::~AliAnalysisTaskFlatenicityLambdaK0s()
+AliAnalysisTaskFlatenicityLambdaK0sMC::
+    ~AliAnalysisTaskFlatenicityLambdaK0sMC()
 {
   // destructor
   if (fOutputList)
@@ -134,9 +150,8 @@ AliAnalysisTaskFlatenicityLambdaK0s::~AliAnalysisTaskFlatenicityLambdaK0s()
   }
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskFlatenicityLambdaK0s::UserCreateOutputObjects()
+void AliAnalysisTaskFlatenicityLambdaK0sMC::UserCreateOutputObjects()
 {
-
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
 
@@ -179,6 +194,48 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserCreateOutputObjects()
   fOutputList->Add(treeLambda);
   fOutputList->Add(treeAntiLambda);
 
+  // hinvmassK0sMC = new TH1F("hinvmassK0sMC", "hinvmassK0sMC", 100, 0.41, 0.58);
+  // hinvmassLambdaMC =
+  //     new TH1F("hinvmassLambdaMC", "hinvmassLambdaMC", 100, 1.08, 1.15);
+  // hinvmassAntiLambdaMC =
+  //     new TH1F("hinvmassAntiLambdaMC", "hinvmassAntiLambdaMC", 100, 1.08, 1.15);
+  hNeventMC = new TH1F("hNeventMC", "hNeventMC", 101, -0.005, 1.005);
+
+  treeK0sMC = new TTree("treeK0sMC", "treeK0sMC");
+  // treeK0sMC->Branch("invmK0sMC", &invmK0sMC, "invmK0sMC/F");
+  treeK0sMC->Branch("invpzK0sMC", &invpzK0sMC, "invpzK0sMC/F");
+  treeK0sMC->Branch("invptK0sMC", &invptK0sMC, "invptK0sMC/F");
+  treeK0sMC->Branch("invyK0sMC", &invyK0sMC, "invyK0sMC/F");
+  // treeK0sMC->Branch("flatenicityK0sMC", &flatenicityK0sMC,
+  //                 "flatenicityK0sMC/F");
+
+  treeLambdaMC = new TTree("treeLambdaMC", "treeLambdaMC");
+  // treeLambdaMC->Branch("invmLambdaMC", &invmLambdaMC, "invmLambdaMC/F");
+  treeLambdaMC->Branch("invpzLambdaMC", &invpzLambdaMC, "invpzLambdaMC/F");
+  treeLambdaMC->Branch("invptLambdaMC", &invptLambdaMC, "invptLambdaMC/F");
+  treeLambdaMC->Branch("invyLambdaMC", &invyLambdaMC, "invyLambdaMC/F");
+  // treeLambdaMC->Branch("flatenicityLambdaMC", &flatenicityLambdaMC,
+  //                     "flatenicityLambdaMC/F");
+
+  treeAntiLambdaMC = new TTree("treeAntiLambdaMC", "treeAntiLambdaMC");
+  // treeAntiLambdaMC->Branch("invmAntiLambdaMC", &invmAntiLambdaMC,
+  //                          "invmAntiLambdaMC/F");
+  treeAntiLambdaMC->Branch("invpzAntiLambdaMC", &invpzAntiLambdaMC,
+                           "invpzAntiLambdaMC/F");
+  treeAntiLambdaMC->Branch("invptAntiLambdaMC", &invptAntiLambdaMC,
+                           "invptAntiLambdaMC/F");
+  treeAntiLambdaMC->Branch("invyAntiLambdaMC", &invyAntiLambdaMC,
+                           "invyAntiLambdaMC/F");
+  // treeAntiLambdaMC->Branch("flatenicityAntiLambdaMC", &flatenicityAntiLambdaMC,
+  //                        "flatenicityAntiLambdaMC/F");
+
+  // fOutputList->Add(hinvmassK0sMC);
+  // fOutputList->Add(hinvmassLambdaMC);
+  // fOutputList->Add(hinvmassAntiLambdaMC);
+  fOutputList->Add(hNeventMC);
+  fOutputList->Add(treeK0sMC);
+  fOutputList->Add(treeLambdaMC);
+  fOutputList->Add(treeAntiLambdaMC);
   // AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   // AliInputEventHandler *inputHandler =
   //     (AliInputEventHandler *)(man->GetInputEventHandler());
@@ -206,8 +263,8 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserCreateOutputObjects()
   // fCuts->SetAcceptKinkDaughters(kFALSE);
   // fCuts->SetRequireTPCRefit(kTRUE);
   // fCuts->SetRequireITSRefit(kTRUE);
-  // fCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
-  // fCuts->SetDCAToVertex2D(kFALSE);
+  // fCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD,
+  // AliESDtrackCuts::kAny); fCuts->SetDCAToVertex2D(kFALSE);
   // fCuts->SetRequireSigmaToVertex(kFALSE);
   // fCuts->SetEtaRange(-0.8, 0.8);
   // fCuts->SetMinNCrossedRowsTPC(70);
@@ -226,7 +283,7 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserCreateOutputObjects()
   PostData(1, fOutputList);
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
+void AliAnalysisTaskFlatenicityLambdaK0sMC::UserExec(Option_t *)
 {
 
   AliVEvent *event = InputEvent();
@@ -243,6 +300,51 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
     AliWarning("ERROR: lESDevent not available \n");
     return;
   }
+
+  AliMCEvent *mcEvent = MCEvent();
+  if (!mcEvent)
+  {
+    Printf("ERROR: Could not retrieve MC event");
+    return;
+  }
+
+  AliStack *lMCstack = NULL;
+
+  lMCstack = mcEvent->Stack();
+  if (!lMCstack)
+  {
+    Printf("ERROR: Could not retrieve stack");
+    return;
+  }
+
+  TArrayF mcPrimaryVtx;
+  AliGenEventHeader *mcHeader = mcEvent->GenEventHeader();
+  if (!mcHeader)
+    return;
+  mcHeader->PrimaryVertex(mcPrimaryVtx);
+
+  Int_t iNumberOfPrimaries = -1;
+  iNumberOfPrimaries = lMCstack->GetNprimary();
+  if (iNumberOfPrimaries < 1)
+    return;
+
+  //////////////////
+
+  //     AliMCEventHandler* eventHandler = dynamic_cast<AliMCEventHandler*>
+  //     (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler());
+  //     if (!eventHandler) {
+  // Printf("ERROR: Could not retrieve MC event handler");
+  // return;
+  //     }
+
+  // AliGenEventHeader* mcHeader=mcEvent->GenEventHeader();
+  // if(!mcHeader) return;
+  // mcHeader->PrimaryVertex(mcPrimaryVtx);
+
+  // if (TMath::Abs(mcPrimaryVtx.At(2)) > cutPrimVertex) return;  /// cut on z
+  // of prim. vertex !!!!!!
+
+  ////////////////
   // cout << event->GetFiredTriggerClasses() << endl;
 
   if (!fEventCuts.AcceptEvent(event))
@@ -279,7 +381,8 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
   AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
   if (man)
   {
-    AliInputEventHandler *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
+    AliInputEventHandler *inputHandler =
+        (AliInputEventHandler *)(man->GetInputEventHandler());
     if (inputHandler)
       fPIDResponse = inputHandler->GetPIDResponse();
     inputHandler->SetNeedField();
@@ -304,7 +407,9 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
   //------------------------------------------------
   // Step 3.2: check the spd vertex resolution and reject if not satisfied
   //------------------------------------------------
-  if (lESDPrimarySPDVtx->GetStatus() && lESDPrimarySPDVtx->IsFromVertexerZ() && !(lESDPrimarySPDVtx->GetDispersion() < 0.04 && lESDPrimarySPDVtx->GetZRes() < 0.25))
+  if (lESDPrimarySPDVtx->GetStatus() && lESDPrimarySPDVtx->IsFromVertexerZ() &&
+      !(lESDPrimarySPDVtx->GetDispersion() < 0.04 &&
+        lESDPrimarySPDVtx->GetZRes() < 0.25))
   {
     return;
   }
@@ -313,7 +418,8 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
   // Step 3.3: check the proximity between the spd vertex and trak vertex, and
   // reject if not satisfied
   //------------------------------------------------
-  if ((TMath::Abs(lESDPrimarySPDVtx->GetZ() - lESDPrimaryTrackingVtx->GetZ()) > 0.5))
+  if ((TMath::Abs(lESDPrimarySPDVtx->GetZ() - lESDPrimaryTrackingVtx->GetZ()) >
+       0.5))
   {
     return;
   }
@@ -332,15 +438,312 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
   Double_t lMagneticField = -10;
 
   Int_t lMultiplicity = -100;
-  lMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
+  lMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(
+      lESDevent, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
   if (!(lMultiplicity >= 1))
   {
     return;
   }
 
+  //==========================================MC
+  // START=========================================
+  Int_t lNbMCPrimary = 0;
+
+  Int_t lPdgcodeCurrentPart = 0;
+  Double_t lRapCurrentPart = 0;
+  Double_t lPtCurrentPart = 0;
+
+  // Int_t lComeFromSigma      = 0;
+
+  // current mc particle 's mother
+  // Int_t iCurrentMother  = 0;
+  lNbMCPrimary = lMCstack->GetNprimary();
+  Long_t lNumberOfCharged = 0;
+
+  //----- Loop on Stack
+  //----------------------------------------------------------------
+  for (Int_t iCurrentLabelStack = 0;
+       iCurrentLabelStack < (lMCstack->GetNtrack());
+       iCurrentLabelStack++)
+  { // This is the begining of the loop on tracks
+    TParticle *particleOne = lMCstack->Particle(iCurrentLabelStack);
+    if (!particleOne)
+      continue;
+    if (!particleOne->GetPDG())
+      continue;
+    Double_t lThisCharge = particleOne->GetPDG()->Charge() / 3.;
+    if (TMath::Abs(lThisCharge) < 0.001)
+      continue;
+    if (!(lMCstack->IsPhysicalPrimary(iCurrentLabelStack)))
+      continue;
+
+    // Double_t gpt = particleOne -> Pt();
+    Double_t geta = particleOne->Eta();
+
+    if (TMath::Abs(geta) < 0.5)
+      lNumberOfCharged++;
+  } // End of loop on tracks
+  //----- End Loop on Stack
+  //------------------------------------------------------------
+
+  // Double_t lpArapidityShift = 0.465;
+  Bool_t lStackNatural = kTRUE;
+  //----- Loop on Lambda, K0Short
+  //----------------------------------------------------------------
+  for (Int_t iCurrentLabelStack = 0;
+       iCurrentLabelStack < (lMCstack->GetNtrack());
+       iCurrentLabelStack++)
+  { // This is the begining of the loop on tracks
+
+    TParticle *lCurrentParticleForLambdaCheck = 0x0;
+    lCurrentParticleForLambdaCheck = lMCstack->Particle(iCurrentLabelStack);
+    if (!lCurrentParticleForLambdaCheck)
+    {
+      Printf("V0s loop %d - MC TParticle pointer to current stack particle = "
+             "0x0 ! Skip ...\n",
+             iCurrentLabelStack);
+      continue;
+    }
+
+    //=================================================================================
+    // Single-Strange checks
+    // Keep only K0s, Lambda and AntiLambda:
+    lPdgcodeCurrentPart = lCurrentParticleForLambdaCheck->GetPdgCode();
+
+    if ((lCurrentParticleForLambdaCheck->GetPdgCode() == 310) ||
+        (lCurrentParticleForLambdaCheck->GetPdgCode() == 3122) ||
+        (lCurrentParticleForLambdaCheck->GetPdgCode() == -3122))
+    {
+      lRapCurrentPart = MyRapidity(lCurrentParticleForLambdaCheck->Energy(),
+                                   lCurrentParticleForLambdaCheck->Pz());
+      lPtCurrentPart = lCurrentParticleForLambdaCheck->Pt();
+
+      // Use Close to PV for filling CloseToPV histograms!
+      Double_t dx, dy, dz;
+
+      dx = ((mcPrimaryVtx.At(0)) - (lCurrentParticleForLambdaCheck->Vx()));
+      dy = ((mcPrimaryVtx.At(1)) - (lCurrentParticleForLambdaCheck->Vy()));
+      dz = ((mcPrimaryVtx.At(2)) - (lCurrentParticleForLambdaCheck->Vz()));
+      Double_t lDistToPV = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
+      // if (lDistToPV <= 0.001)
+      // {
+      //   if (lPdgcodeCurrentPart == 3122)
+      //   {
+      //     f3dHistPrimCloseToPVPtVsYVsMultLambda->Fill(lPtCurrentPart,
+      //     lRapCurrentPart, lMultiplicity);
+      //   }
+      //   if (lPdgcodeCurrentPart == -3122)
+      //   {
+      //     f3dHistPrimCloseToPVPtVsYVsMultAntiLambda->Fill(lPtCurrentPart,
+      //     lRapCurrentPart, lMultiplicity);
+      //   }
+      //   if (lPdgcodeCurrentPart == 310)
+      //   {
+      //     f3dHistPrimCloseToPVPtVsYVsMultK0Short->Fill(lPtCurrentPart,
+      //     lRapCurrentPart, lMultiplicity);
+      //   }
+      // }
+
+      // Use Physical Primaries only for filling PrimRaw Histograms!
+      // if (lMCstack->IsPhysicalPrimary(iCurrentLabelStack) != kTRUE)
+      //   continue;
+
+      lStackNatural = mcEvent->IsFromBGEvent(iCurrentLabelStack); // Is it?
+      if (!lStackNatural)
+      {
+        if (!(lCurrentParticleForLambdaCheck->GetFirstMother() < 0))
+        {
+          lStackNatural = kTRUE; // because there are primaries (ALICE
+                                 // definition) not produced in the collision
+        }
+      }
+
+      if (lPdgcodeCurrentPart == 3122)
+      {
+        if (TMath::Abs(lRapCurrentPart) <= 0.5)
+        {
+          invpzLambdaMC = lCurrentParticleForLambdaCheck->Pz();
+          invptLambdaMC = lPtCurrentPart;
+          invyLambdaMC = lRapCurrentPart;
+          ((TTree *)(fOutputList->FindObject("treeLambdaMC")))->Fill();
+        }
+        // f3dHistPrimRawPtVsYVsMultLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicity);
+        // f3dHistPrimRawPtVsYCMSVsMultLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicity);
+
+        // f3dHistPrimRawPtVsYVsMultV0ALambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicityV0A);
+        // f3dHistPrimRawPtVsYCMSVsMultV0ALambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicityV0A);
+        // f3dHistPrimRawPtVsYVsMultZNALambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicityZNA);
+        // f3dHistPrimRawPtVsYCMSVsMultZNALambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicityZNA);
+        // f3dHistPrimRawPtVsYVsMultTRKLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicityTRK);
+        // f3dHistPrimRawPtVsYCMSVsMultTRKLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicityTRK);
+        // f3dHistPrimRawPtVsYVsMultSPDLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicitySPD);
+        // f3dHistPrimRawPtVsYCMSVsMultSPDLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicitySPD);
+
+        // if (lStackNatural)
+        // {
+        //   f3dHistPrimRawPtVsYVsMultNonInjLambda->Fill(lPtCurrentPart,
+        //   lRapCurrentPart, lMultiplicity);
+        // }
+        // f3dHistPrimRawPtVsYVsMultMCLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lNumberOfCharged);
+        // f3dHistPrimRawPtVsYVsVertexZLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart, mcPrimaryVtx.At(2)); if
+        // (TMath::Abs(lCurrentParticleForLambdaCheck->Eta()) < 1.2 &&
+        // lPtCurrentPart > 2)
+        // {
+        //   lHasHighPtLambda = kTRUE; // Keep track of events with Lambda
+        //   within |eta|<1.2 and pt>2
+        // }
+      }
+      if (lPdgcodeCurrentPart == -3122)
+      {
+        if (TMath::Abs(lRapCurrentPart) <= 0.5)
+        {
+          invpzAntiLambdaMC = lCurrentParticleForLambdaCheck->Pz();
+          invptAntiLambdaMC = lPtCurrentPart;
+          invyAntiLambdaMC = lRapCurrentPart;
+          ((TTree *)(fOutputList->FindObject("treeAntiLambdaMC")))->Fill();
+        }
+        // f3dHistPrimRawPtVsYVsMultAntiLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicity);
+        // f3dHistPrimRawPtVsYCMSVsMultAntiLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicity);
+
+        // f3dHistPrimRawPtVsYVsMultV0AAntiLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicityV0A);
+        // f3dHistPrimRawPtVsYCMSVsMultV0AAntiLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicityV0A);
+        // f3dHistPrimRawPtVsYVsMultZNAAntiLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicityZNA);
+        // f3dHistPrimRawPtVsYCMSVsMultZNAAntiLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicityZNA);
+        // f3dHistPrimRawPtVsYVsMultTRKAntiLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicityTRK);
+        // f3dHistPrimRawPtVsYCMSVsMultTRKAntiLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicityTRK);
+        // f3dHistPrimRawPtVsYVsMultSPDAntiLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicitySPD);
+        // f3dHistPrimRawPtVsYCMSVsMultSPDAntiLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicitySPD);
+
+        // if (lStackNatural)
+        // {
+        //   f3dHistPrimRawPtVsYVsMultNonInjAntiLambda->Fill(lPtCurrentPart,
+        //   lRapCurrentPart, lMultiplicity);
+        // }
+        // f3dHistPrimRawPtVsYVsMultMCAntiLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lNumberOfCharged);
+        // f3dHistPrimRawPtVsYVsVertexZAntiLambda->Fill(lPtCurrentPart,
+        // lRapCurrentPart, mcPrimaryVtx.At(2));
+      }
+      if (lPdgcodeCurrentPart == 310)
+      {
+        if (TMath::Abs(lRapCurrentPart) <= 0.5)
+        {
+          // invmK0s = v0->GetEffMass();
+          invpzK0sMC = lCurrentParticleForLambdaCheck->Pz();
+          invptK0sMC = lPtCurrentPart;
+          invyK0sMC = lRapCurrentPart;
+          ((TTree *)(fOutputList->FindObject("treeK0sMC")))->Fill();
+        }
+        // f3dHistPrimRawPtVsYVsMultK0Short->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicity);
+        // f3dHistPrimRawPtVsYCMSVsMultK0Short->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicity);
+
+        // f3dHistPrimRawPtVsYVsMultV0AK0Short->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicityV0A);
+        // f3dHistPrimRawPtVsYCMSVsMultV0AK0Short->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicityV0A);
+        // f3dHistPrimRawPtVsYVsMultZNAK0Short->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicityZNA);
+        // f3dHistPrimRawPtVsYCMSVsMultZNAK0Short->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicityZNA);
+        // f3dHistPrimRawPtVsYVsMultTRKK0Short->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicityTRK);
+        // f3dHistPrimRawPtVsYCMSVsMultTRKK0Short->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicityTRK);
+        // f3dHistPrimRawPtVsYVsMultSPDK0Short->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lMultiplicitySPD);
+        // f3dHistPrimRawPtVsYCMSVsMultSPDK0Short->Fill(lPtCurrentPart,
+        // lRapCurrentPart + fpArapidityShift, lMultiplicitySPD);
+
+        // if (lStackNatural)
+        // {
+        //   f3dHistPrimRawPtVsYVsMultNonInjK0Short->Fill(lPtCurrentPart,
+        //   lRapCurrentPart, lMultiplicity);
+        // }
+        // f3dHistPrimRawPtVsYVsMultMCK0Short->Fill(lPtCurrentPart,
+        // lRapCurrentPart, lNumberOfCharged);
+        // f3dHistPrimRawPtVsYVsVertexZK0Short->Fill(lPtCurrentPart,
+        // lRapCurrentPart, mcPrimaryVtx.At(2));
+      }
+      // Decay Length
+      // Acquisition=====================================================
+      // Double_t decaylength = -1;
+      // Double_t lV0Mass = -1;
+
+      // if (!(lCurrentParticleForLambdaCheck->GetDaughter(0) < 0))
+      // {
+      //   TParticle *lDght0ofV0 =
+      //   lMCstack->Particle(lCurrentParticleForLambdaCheck->GetDaughter(0));
+      //   // get first daughter if (lDght0ofV0) { // skip if not defined.
+      //     decaylength = TMath::Sqrt(
+      //         TMath::Power(lCurrentParticleForLambdaCheck->Vx() -
+      //         lDght0ofV0->Vx(), 2) +
+      //         TMath::Power(lCurrentParticleForLambdaCheck->Vy() -
+      //         lDght0ofV0->Vy(), 2) +
+      //         TMath::Power(lCurrentParticleForLambdaCheck->Vz() -
+      //         lDght0ofV0->Vz(), 2));
+      //     // Need to correct for relativitity! Involves multiplying by mass
+      //     and dividing by momentum. if (TMath::Abs(lPdgcodeCurrentPart) ==
+      //     3122)
+      //     {
+      //       lV0Mass = 1.115683;
+      //     }
+      //     if (TMath::Abs(lPdgcodeCurrentPart) == 310)
+      //     {
+      //       lV0Mass = 0.497614;
+      //     }
+      //     if (lCurrentParticleForLambdaCheck->P() + 1e-10 != 0)
+      //       decaylength = (lV0Mass * decaylength) /
+      //       (lCurrentParticleForLambdaCheck->P() + 1e-10);
+      //     if (lCurrentParticleForLambdaCheck->P() + 1e-10 == 0)
+      //       decaylength = 1e+5;
+      //   }
+      // }
+      // if (lPdgcodeCurrentPart == 3122)
+      //   f3dHistPrimRawPtVsYVsDecayLengthLambda->Fill(lPtCurrentPart,
+      //   lRapCurrentPart, decaylength);
+      // if (lPdgcodeCurrentPart == -3122)
+      //   f3dHistPrimRawPtVsYVsDecayLengthAntiLambda->Fill(lPtCurrentPart,
+      //   lRapCurrentPart, decaylength);
+      // if (lPdgcodeCurrentPart == 310)
+      //   f3dHistPrimRawPtVsYVsDecayLengthK0Short->Fill(lPtCurrentPart,
+      //   lRapCurrentPart, decaylength);
+    }
+  } // End of loop on tracks
+  //----- End Loop on Lambda, K0Short
+  //------------------------------------------------------------
+
+  //==========================================MC
+  // END=========================================
+
   lMagneticField = lESDevent->GetMagneticField();
   Double_t flat = GetFlatenicityV0();
   ((TH1D *)(fOutputList->FindObject("hflat")))->Fill(1.0 - flat);
+  ((TH1D *)(fOutputList->FindObject("hNeventMC")))->Fill(0.5);
+
   // Run number
   // Int_t fRun = lESDevent->GetRunNumber();
   Int_t lOnFlyStatus = 0; // nv0sOn = 0, nv0sOff = 0;
@@ -603,18 +1006,26 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
     // lPtArmV0 = v0->PtArmV0();
 
     // Official means of acquiring N-sigmas
-    Float_t NSigmasPosProton = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kProton);
-    Float_t NSigmasPosPion = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion);
-    Float_t NSigmasNegProton = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kProton);
-    Float_t NSigmasNegPion = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion);
+    Float_t NSigmasPosProton =
+        fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kProton);
+    Float_t NSigmasPosPion =
+        fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion);
+    Float_t NSigmasNegProton =
+        fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kProton);
+    Float_t NSigmasNegPion =
+        fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion);
 
     // K0Short: Enough to parametrize peak broadening with linear function.
     Double_t lUpperLimitK0Short = (5.63707e-01) + (1.14979e-02) * lPt;
     Double_t lLowerLimitK0Short = (4.30006e-01) - (1.10029e-02) * lPt;
     // Lambda: Linear (for higher pt) plus exponential (for low-pt broadening)
     //[0]+[1]*x+[2]*TMath::Exp(-[3]*x)
-    Double_t lUpperLimitLambda = (1.13688e+00) + (5.27838e-03) * lPt + (8.42220e-02) * TMath::Exp(-(3.80595e+00) * lPt);
-    Double_t lLowerLimitLambda = (1.09501e+00) - (5.23272e-03) * lPt - (7.52690e-02) * TMath::Exp(-(3.46339e+00) * lPt);
+    Double_t lUpperLimitLambda =
+        (1.13688e+00) + (5.27838e-03) * lPt +
+        (8.42220e-02) * TMath::Exp(-(3.80595e+00) * lPt);
+    Double_t lLowerLimitLambda =
+        (1.09501e+00) - (5.23272e-03) * lPt -
+        (7.52690e-02) * TMath::Exp(-(3.46339e+00) * lPt);
 
     v0->ChangeMassHypothesis(310);
     lInvMassK0s = v0->GetEffMass();
@@ -632,9 +1043,11 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
             Float_t ctauK0s = lV0DecayLength * lInvMassK0s / v0->P();
             if (ctauK0s < 20)
             {
-              if (TMath::Abs(NSigmasPosPion) < 5.0 && TMath::Abs(NSigmasNegPion) < 5.0)
+              if (TMath::Abs(NSigmasPosPion) < 5.0 &&
+                  TMath::Abs(NSigmasNegPion) < 5.0)
               {
-                ((TH1F *)(fOutputList->FindObject("hinvmassK0s")))->Fill(lInvMassK0s);
+                ((TH1F *)(fOutputList->FindObject("hinvmassK0s")))
+                    ->Fill(lInvMassK0s);
                 invmK0s = v0->GetEffMass();
                 invpK0s = v0->P();
                 invptK0s = v0->Pt();
@@ -652,7 +1065,8 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
 
     v0->ChangeMassHypothesis(3122);
     lInvMassLambda = v0->GetEffMass();
-    if (lInvMassLambda < lUpperLimitLambda && lInvMassLambda > lLowerLimitLambda)
+    if (lInvMassLambda < lUpperLimitLambda &&
+        lInvMassLambda > lLowerLimitLambda)
     {
       if (lV0CosineOfPointingAngle > 0.995)
       {
@@ -666,7 +1080,8 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
             Float_t ctauLambda = lV0DecayLength * lInvMassLambda / v0->P();
             if (ctauLambda < 30)
             {
-              if (TMath::Abs(NSigmasPosProton) < 5.0 && TMath::Abs(NSigmasNegPion) < 5.0)
+              if (TMath::Abs(NSigmasPosProton) < 5.0 &&
+                  TMath::Abs(NSigmasNegPion) < 5.0)
               {
                 invmLambda = v0->GetEffMass();
                 invpLambda = v0->P();
@@ -675,7 +1090,8 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
                 flatenicityLambda = 1.0 - flat;
 
                 ((TTree *)(fOutputList->FindObject("treeLambda")))->Fill();
-                ((TH1F *)(fOutputList->FindObject("hinvmassLambda")))->Fill(lInvMassLambda);
+                ((TH1F *)(fOutputList->FindObject("hinvmassLambda")))
+                    ->Fill(lInvMassLambda);
               }
             }
           }
@@ -687,7 +1103,8 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
 
     lInvMassAntiLambda = v0->GetEffMass();
 
-    if (lInvMassAntiLambda < lUpperLimitLambda && lInvMassAntiLambda > lLowerLimitLambda)
+    if (lInvMassAntiLambda < lUpperLimitLambda &&
+        lInvMassAntiLambda > lLowerLimitLambda)
     {
       if (lV0CosineOfPointingAngle > 0.995)
       {
@@ -699,10 +1116,12 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
           Float_t lRapAntiLambda = v0->Y(-3122);
           if (TMath::Abs(lRapAntiLambda) < 0.5)
           {
-            Float_t ctauAntiLambda = lV0DecayLength * lInvMassAntiLambda / v0->P();
+            Float_t ctauAntiLambda =
+                lV0DecayLength * lInvMassAntiLambda / v0->P();
             if (ctauAntiLambda < 30)
             {
-              if (TMath::Abs(NSigmasNegProton) < 5.0 && TMath::Abs(NSigmasPosPion) < 5.0)
+              if (TMath::Abs(NSigmasNegProton) < 5.0 &&
+                  TMath::Abs(NSigmasPosPion) < 5.0)
               {
                 invmAntiLambda = v0->GetEffMass();
                 invpAntiLambda = v0->P();
@@ -711,7 +1130,8 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
                 flatenicityAntiLambda = 1.0 - flat;
 
                 ((TTree *)(fOutputList->FindObject("treeAntiLambda")))->Fill();
-                ((TH1F *)(fOutputList->FindObject("hinvmassAntiLambda")))->Fill(lInvMassAntiLambda);
+                ((TH1F *)(fOutputList->FindObject("hinvmassAntiLambda")))
+                    ->Fill(lInvMassAntiLambda);
               }
             }
           }
@@ -723,14 +1143,27 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
   PostData(1, fOutputList);
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskFlatenicityLambdaK0s::Terminate(Option_t *)
+void AliAnalysisTaskFlatenicityLambdaK0sMC::Terminate(Option_t *)
 {
   // terminate
   // called at the END of the anfalysis (when all events are processed)
 }
 //_____________________________________________________________________________
 //________________________________________________________________________
-void AliAnalysisTaskFlatenicityLambdaK0s::CheckChargeV0(AliESDv0 *v0)
+
+Double_t AliAnalysisTaskFlatenicityLambdaK0sMC::MyRapidity(Double_t rE,
+                                                           Double_t rPz) const
+{
+  // Local calculation for rapidity
+  Double_t ReturnValue = -100;
+  if ((rE - rPz + 1.e-13) != 0 && (rE + rPz) != 0)
+  {
+    ReturnValue = 0.5 * TMath::Log((rE + rPz) / (rE - rPz + 1.e-13));
+  }
+  return ReturnValue;
+}
+
+void AliAnalysisTaskFlatenicityLambdaK0sMC::CheckChargeV0(AliESDv0 *v0)
 {
   // This function checks charge of negative and positive daughter tracks.
   // If incorrectly defined (onfly vertexer), swaps out.
@@ -796,7 +1229,7 @@ void AliAnalysisTaskFlatenicityLambdaK0s::CheckChargeV0(AliESDv0 *v0)
 }
 
 //________________________________________________________________________
-Float_t AliAnalysisTaskFlatenicityLambdaK0s::GetDCAz(AliESDtrack *lTrack)
+Float_t AliAnalysisTaskFlatenicityLambdaK0sMC::GetDCAz(AliESDtrack *lTrack)
 // Encapsulation of DCAz calculation
 {
   Float_t b[2];
@@ -814,7 +1247,7 @@ Float_t AliAnalysisTaskFlatenicityLambdaK0s::GetDCAz(AliESDtrack *lTrack)
   return dcaToVertexZ;
 }
 
-Float_t AliAnalysisTaskFlatenicityLambdaK0s::GetFlatenicityV0()
+Float_t AliAnalysisTaskFlatenicityLambdaK0sMC::GetFlatenicityV0()
 {
   AliVVZERO *lVV0 = 0x0;
   AliVEvent *lVevent = 0x0;

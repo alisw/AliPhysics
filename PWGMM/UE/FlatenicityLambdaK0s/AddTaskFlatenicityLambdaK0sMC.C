@@ -1,4 +1,4 @@
-AliAnalysisTaskFlatenicityLambdaK0s *AddTaskFlatenicityLambdaK0s(TString name = "name")
+AliAnalysisTaskFlatenicityLambdaK0sMC *AddTaskFlatenicityLambdaK0sMC(TString name = "name")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -18,7 +18,7 @@ AliAnalysisTaskFlatenicityLambdaK0s *AddTaskFlatenicityLambdaK0s(TString name = 
     TString fileName = AliAnalysisManager::GetCommonFileName();
     fileName += ":MyTask"; // create a subfolder in the file
     // now we create an instance of your task
-    AliAnalysisTaskFlatenicityLambdaK0s *task = new AliAnalysisTaskFlatenicityLambdaK0s(name.Data());
+    AliAnalysisTaskFlatenicityLambdaK0sMC *task = new AliAnalysisTaskFlatenicityLambdaK0sMC(name.Data());
     if (!task)
         return 0x0;
     // task->SelectCollisionCandidates(AliVEvent::kINT7);
@@ -28,11 +28,12 @@ AliAnalysisTaskFlatenicityLambdaK0s *AddTaskFlatenicityLambdaK0s(TString name = 
     mgr->ConnectInput(task, 0, mgr->GetCommonInputContainer());
     // same for the output
     mgr->ConnectOutput(task, 1, mgr->CreateContainer("MyOutputContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+        // mgr->ConnectOutput(task, 2, mgr->CreateContainer("MyOutputContainerMC", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
 
     // gROOT->ProcessLine(".L $ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-    // Bool_t isMC = kFALSE;
+    // Bool_t isMC = kTRUE;
     // Bool_t enablePileupCuts = kTRUE;
     // AliPhysicsSelectionTask *physSelTask = new AliPhysicsSelectionTask();
     // physSelTask->AddTaskPhysicsSelection(isMC, enablePileupCuts);
