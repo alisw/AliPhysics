@@ -119,6 +119,7 @@ private:
   TH2D *hFlatResponse;
   TH2D *hFlatVsPt;
   TH2D *hFlatVsPtMC;
+  TH2D *hRecFlatVsPtMC;
   TProfile *hActivityV0DataSectBefore;
   TProfile *hActivityV0DataSect;
   TProfile *hV0vsVtxz;
@@ -150,6 +151,7 @@ private:
   TH2D *hChgAuth_pt_Flat;
   TH2D *hFlatVsPtV0M[9];
   TH2D *hFlatVsPtV0MMC[9];
+  TH2D *hRecFlatVsPtV0MMC[9];
   TH2D *hComponentsMult[4];
   TH2D *hCombinedMult[3];
   TH2D *hComponentsMultmc[4];
