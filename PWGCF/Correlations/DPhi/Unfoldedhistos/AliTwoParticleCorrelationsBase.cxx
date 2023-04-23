@@ -82,6 +82,7 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase()
     fMin_phi(0.0),
     fMax_phi(TMath::Pi() * 2.0),
     fWidth_phi(TMath::Pi() * 2.0 / 72.0),
+    fExcludeTOFHole(false),
     /* eta bins */
     fNBins_eta(20),
     fMin_eta(-1.0),
@@ -159,6 +160,7 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase(const char* name)
     fMin_phi(0.0),
     fMax_phi(TMath::Pi() * 2.0),
     fWidth_phi(TMath::Pi() * 2.0 / 72.0),
+    fExcludeTOFHole(false),
     /* eta bins */
     fNBins_eta(20),
     fMin_eta(-1.0),
@@ -220,8 +222,17 @@ Bool_t AliTwoParticleCorrelationsBase::ConfigureBinning(const char *confstring) 
 
   TObjArray *a = stritem.Tokenize(",");
   if (a->GetEntries() != DPTDPTCORRBINCONFIGPAR) {
-    delete a;
-    return false;
+    if (a->GetEntries() != DPTDPTCORRBINCONFIGPAR+1) {
+      delete a;
+      return false;
+    } else {
+      if (TString(a->At(DPTDPTCORRBINCONFIGPAR)->GetName()).EqualTo("TOF")) {
+        fExcludeTOFHole = true;
+      } else {
+        delete a;
+        return false;
+      }
+    }
   }
   sscanf(stritem, "%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%d",
       &fMin_vertexZ, &fMax_vertexZ, &fWidth_vertexZ,
@@ -266,10 +277,11 @@ void AliTwoParticleCorrelationsBase::ConfigureResonances(const char *confstring)
 /// \return the configuration string corresponding to the current configuration
 TString AliTwoParticleCorrelationsBase::GetBinningConfigurationString() const
 {
-  return TString::Format("%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%d",
+  return TString::Format("%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%d%s",
                          fMin_vertexZ, fMax_vertexZ, fWidth_vertexZ,
                          fMin_pt, fMax_pt, fWidth_pt,
-                         fMin_eta, fMax_eta, fWidth_eta, fNBins_phi);
+                         fMin_eta, fMax_eta, fWidth_eta, fNBins_phi,
+                         fExcludeTOFHole ? ",TOF" : "");
 }
 
 /// \brief Build the resonances rejection configuration string
@@ -322,6 +334,8 @@ void AliTwoParticleCorrelationsBase::Initialize()
   fOutput->Add(new TParameter<Double_t>("MaxEta", fMax_eta, 'f'));
   fOutput->Add(new TParameter<Double_t>("MinPhi", fMin_phi, 'f'));
   fOutput->Add(new TParameter<Double_t>("MaxPhi", fMax_phi, 'f'));
+  fOutput->Add(new TParameter<Double_t>("NoBinsPhiShift", fNBinsPhiShift, 'f'));
+  fOutput->Add(new TParameter<bool>("ExcludeTOFHole", fExcludeTOFHole, 'f'));
 
   /* incorporate the resonance rejection configuration parameter */
   Int_t rescode = 0;
@@ -391,6 +405,12 @@ void AliTwoParticleCorrelationsBase::Initialize()
     }
   }
   TH1::AddDirectory(oldstatus);
+
+  /* after histogram creation the proper phi upper limit is set according to inclusion or not of the TOF hole */
+  if (fExcludeTOFHole) {
+    const int nPhiBinsTOFHole = 25;
+    fMax_phi = fMax_phi - fWidth_phi * nPhiBinsTOFHole;
+  }
 }
 
 /// \brief Stores the correction weights for the different track species
@@ -640,6 +660,69 @@ Bool_t AliTwoParticleCorrelationsBase::StartEvent(Float_t centrality, Float_t ve
 
   return kTRUE;
 }
+
+/// \brief check if the track is accepted according to the correlations cuts
+///
+/// \param pid the external track Id
+/// \param trk the passed track
+/// \return kTRUE if the track is accepted kFALSE otherwise
+bool AliTwoParticleCorrelationsBase::IsTrackAccepted(int pid, AliVTrack* trk)
+{
+  return IsTrackAccepted((trk->Charge() > 0) ? 0 : 1, float(trk->Pt()), float(trk->Eta()), float(trk->Phi()));
+}
+
+/// \brief check if the true particle is accepted according to the correlations cuts
+///
+/// \param pid the external particle Id
+/// \param part the passed particle
+/// \return kTRUE if the particle is properly handled kFALSE otherwise
+bool AliTwoParticleCorrelationsBase::IsTrackAccepted(int pid, AliVParticle* part)
+{
+  if (part->Charge() != 0) {
+    return IsTrackAccepted((part->Charge() > 0) ? 0 : 1, float(part->Pt()), float(part->Eta()), float(part->Phi()));
+  }
+  else {
+    return kFALSE;
+  }
+}
+
+/// \brief checks if the track is accepted according to the configured cuts 
+/// \param pid the track PID
+/// \param pT the track \f$ p_T \f$
+/// \param eta the track \f$ \eta \f$
+/// \param phi the track \f$ \phi \f$
+/// \return kTRUE if the track is accepted
+/// This is a pre-check so for the time being the pT cut is not checked
+/// to allow PID information depending on momentum
+bool AliTwoParticleCorrelationsBase::IsTrackAccepted(int pid, float, float eta, float ophi)
+{
+  /* for the time being */
+  if (pid != 0 && pid != 1)
+    return kFALSE;
+
+  /* consider a potential phi origin shift */
+  float phi = ophi;
+  if (!(phi < fMax_phi))
+    phi = phi - 2 * TMath::Pi();
+  if (phi < fMin_phi) {
+    return kFALSE;
+  }
+  float ixPhi = int((phi - fMin_phi) / fWidth_phi);
+  if (ixPhi < 0 || !(ixPhi < fNBins_phi)) {
+    return kFALSE;
+  }
+
+  if (eta < fMin_eta || fMax_eta < eta) {
+    return kFALSE;
+  }
+
+  int ixEta = int((eta - fMin_eta) / fWidth_eta);
+  if (ixEta < 0 || !(ixEta < fNBins_eta)) {
+    return kFALSE;
+  }
+  return kTRUE;
+}
+
 
 /// \brief process a track and store its parameters if feasible
 ///
