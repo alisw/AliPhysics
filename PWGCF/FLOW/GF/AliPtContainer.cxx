@@ -180,6 +180,32 @@ vector<double> AliPtContainer::getEventCorrelation(int mOrder, Int_t subIndex) {
   vector<double> outvec = {fCorr[subIndex][mOrder],fSumw[subIndex][mOrder]};
   return outvec;
 }
+double AliPtContainer::getExoticEventCorrelation(int wOrder, int pOrder, const vector<vector<double>> &inarr) {
+  vector<double> corr;
+  corr.resize(wOrder+1,0); corr[0] = 1.0;
+  double sumNum = 0;
+  vector<double> valNum;
+  if((wOrder-pOrder)==1){
+    for(int k(1);k<=wOrder;++k){
+      valNum.push_back(fSign[k-1]*corr[wOrder-k]*(fFactorial[wOrder-1]/fFactorial[wOrder-k])*inarr[k][k-1]);
+    }
+    sumNum = OrderedAddition(valNum, wOrder);
+    valNum.clear();
+  }
+  else if(wOrder>2 && pOrder==1){
+    for(int k(1);k<=wOrder;++k){
+      valNum.push_back(fSign[k-1]*fSumw[0][wOrder-k]*(fFactorial[wOrder-1]/fFactorial[wOrder-k])*inarr[k][1]);
+    }
+    sumNum = OrderedAddition(valNum, wOrder);
+    valNum.clear();
+  }
+  else if(wOrder==4 && pOrder==2){
+    sumNum = inarr[1][1]*inarr[1][1]*inarr[1][0]*inarr[1][0]-inarr[2][2]*inarr[1][0]*inarr[1][0]-inarr[2][0]*inarr[1][1]*inarr[1][1] 
+    +inarr[2][0]*inarr[2][2]-4*inarr[2][1]*inarr[1][1]*inarr[1][0]+4*inarr[3][2]*inarr[1][0] 
+    +4*inarr[3][1]*inarr[1][1]+2*inarr[2][1]*inarr[2][1]-6*inarr[4][2];
+  }
+  return sumNum;
+}
 void AliPtContainer::FillRecursive(const vector<vector<double>> &inarr, Int_t subIndex) {
   if(subIndex<0||subIndex>2) return;
   fCorr[subIndex].clear(); fCorr[subIndex].resize(mpar+1,0); fCorr[subIndex][0] = 1.0;

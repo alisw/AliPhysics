@@ -77,6 +77,9 @@ public:
                               /// \return the histograms list
   TList                      *GetHistogramsList() { return fOutput; }
   virtual bool StartEvent(float centrality, float vertexZ);
+  virtual bool IsTrackAccepted(int id, AliVTrack* trk);
+  virtual bool IsTrackAccepted(int id, AliVParticle* part);
+  virtual bool IsTrackAccepted(int pid, float pT, float eta, float phi);
   virtual bool ProcessTrack(int id, AliVTrack* trk);
   virtual bool ProcessTrack(int id, AliVParticle* part);
   virtual bool ProcessTrack(int pid, float pT, float eta, float phi) = 0;
@@ -129,6 +132,7 @@ protected:
   double fMin_phi;      ///< the track minimum \f$\phi\f$ value
   double fMax_phi;      ///< the track maximum \f$\phi\f$ value
   double fWidth_phi;    ///< the track \f$\phi\f$ bin width
+  bool fExcludeTOFHole; ///< exclude azimuthally the TOF hole 
   int fNBins_eta;       ///< the track \f$\eta\f$ number of bins
   double fMin_eta;      ///< the track minimum \f$\eta\f$ value
   double fMax_eta;      ///< the track maximum \f$\eta\f$ value
@@ -178,7 +182,7 @@ private:
   AliTwoParticleCorrelationsBase& operator=(const AliTwoParticleCorrelationsBase&);
 
   /// \cond CLASSIMP
-  ClassDef(AliTwoParticleCorrelationsBase, 2);
+  ClassDef(AliTwoParticleCorrelationsBase, 3);
   /// \endcond
 };
 

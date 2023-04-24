@@ -19,6 +19,7 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample()
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false),
+      fRejectMotherDaughter(false),
       fMult(0),
       fCent(0),
       fSummedPtLimit1(0.0),
@@ -40,6 +41,7 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
       fDeltaEtaMax(samp.fDeltaEtaMax),
       fDeltaPhiMax(samp.fDeltaPhiMax),
       fDoDeltaEtaDeltaPhiCut(samp.fDoDeltaEtaDeltaPhiCut),
+      fRejectMotherDaughter(samp.fRejectMotherDaughter),
       fMult(samp.fMult),
       fCent(samp.fCent),
       fSummedPtLimit1(samp.fSummedPtLimit1),
@@ -61,6 +63,7 @@ AliFemtoDreamControlSample::AliFemtoDreamControlSample(
       fDeltaEtaMax(conf->GetDeltaEtaMax()),
       fDeltaPhiMax(conf->GetDeltaPhiMax()),
       fDoDeltaEtaDeltaPhiCut(false),
+      fRejectMotherDaughter(false),
       fMult(0),
       fCent(0),
       fSummedPtLimit1(conf->GetSummedPtLimit1()),
@@ -83,6 +86,7 @@ AliFemtoDreamControlSample& AliFemtoDreamControlSample::operator=(
   this->fDeltaEtaMax = samp.fDeltaEtaMax;
   this->fDeltaPhiMax = samp.fDeltaPhiMax;
   this->fDoDeltaEtaDeltaPhiCut = samp.fDoDeltaEtaDeltaPhiCut;
+  this->fRejectMotherDaughter = samp.fRejectMotherDaughter;
   this->fMult = samp.fMult;
   this->fCent = samp.fCent;
   this->fSummedPtLimit1 = samp.fSummedPtLimit1;
@@ -168,6 +172,10 @@ void AliFemtoDreamControlSample::CorrelatedSample(
         ++itPart2;
         continue;
       }
+      if (!fHigherMath->PassesMDPairSelection(*itPart1, *itPart2)) {
+        ++itPart2;
+        continue;
+      }
       RelativeK = fHigherMath->FillSameEvent(HistCounter, fMult, fCent,
                                              *itPart1, PDGPart1,
                                              *itPart2, PDGPart2,fSummedPtLimit1,fSummedPtLimit2);
@@ -223,6 +231,10 @@ void AliFemtoDreamControlSample::PhiSpinning(
       float RelativeK = fHigherMath->RelativePairMomentum(PartOne, PartTwo);
       if (!fHigherMath->PassesPairSelection(HistCounter, *itPart1, *itPart2,
                                             RelativeK, false, true)) {
+        ++itPart2;
+        continue;
+      }
+      if (!fHigherMath->PassesMDPairSelection(*itPart1, *itPart2)) {
         ++itPart2;
         continue;
       }
@@ -289,6 +301,10 @@ void AliFemtoDreamControlSample::LimitedPhiSpinning(
       float RelativeK = fHigherMath->RelativePairMomentum(PartOne, PartTwo);
       if (!fHigherMath->PassesPairSelection(HistCounter, *(*itPart2), *(*itPart2),
                                             RelativeK, false, true)) {
+        ++itPart2;
+        continue;
+      }
+      if (!fHigherMath->PassesMDPairSelection(*(*itPart2), *(*itPart2))) {
         ++itPart2;
         continue;
       }

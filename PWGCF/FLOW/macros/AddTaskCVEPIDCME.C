@@ -17,6 +17,7 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
   bool bCalculateLambdaHadron   = false,
   bool bCalculateLambdaLambda   = false,
   bool bCalculateProtonProton   = false,
+  bool bCalculateProtonHadron   = false,
   bool bCalculateHadronHadron   = false,
   TString uniqueID              = "")
 {
@@ -84,6 +85,7 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
   task->IfCalculateLambdaHadron(bCalculateLambdaHadron);
   task->IfCalculateLambdaLambda(bCalculateLambdaLambda);
   task->IfCalculateProtonProton(bCalculateProtonProton);
+  task->IfCalculateProtonHadron(bCalculateProtonHadron);
   task->IfCalculateHadronHadron(bCalculateHadronHadron);
   
   task->IfCheckLambdaProtonFromDecay(bCalculateLambdaProtonFromDecay);

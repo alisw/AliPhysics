@@ -699,7 +699,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
   if (fOnTheFly) {
     hEventCount->Fill("after fEventCuts", 1.);
-    bootstrap_value = rand.Integer(30);
+    bootstrap_value = rand.Integer(30)-1;
   } else {
     // Check if it passed the standard AOD selection
     if (!AcceptAOD(fAOD) ) {

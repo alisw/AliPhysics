@@ -286,6 +286,9 @@ bool Ali2PCorrelations::ProcessTrack(int pid, float pT, float eta, float ophi)
     float phi = ophi;
     if (!(phi < fMax_phi))
       phi = phi - 2 * TMath::Pi();
+    if (phi < fMin_phi) {
+      return kFALSE;
+    }
     float ixPhi = int((phi - fMin_phi) / fWidth_phi);
     if (ixPhi < 0 || !(ixPhi < fNBins_phi)) {
       AliWarning("Track one phi out of bins");

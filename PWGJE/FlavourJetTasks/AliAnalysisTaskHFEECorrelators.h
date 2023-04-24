@@ -1,4 +1,4 @@
-/// \class AliAnalysisTaskDmesonJets
+/// \class AliAnalysisTaskHFEECorrelators
 /// \brief Analysis task for D meson jets
 ///
 /// This task selects D meson candidates according to predefined cuts,
@@ -9,8 +9,8 @@
 ///
 /// \author Nima Zardoshti
 
-#ifndef ALIANALYSISTASKHFSUBSTRUCTURE_H
-#define ALIANALYSISTASKHFSUBSTRUCTURE_H
+#ifndef ALIANALYSISTASKHFEECORRELATORS_H
+#define ALIANALYSISTASKHFEECORRELATORS_H
 
 /**************************************************************************
  * Copyright(c) 1998-2016, ALICE Experiment at CERN, All rights reserved. *
@@ -63,7 +63,7 @@ class TFile;
 #include "AliRDHFCutsD0toKpi.h"
 
 
-class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
+class AliAnalysisTaskHFEECorrelators : public AliAnalysisTaskEmcal
 {
  public:
 
@@ -116,26 +116,26 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  };
 
  enum TreeSize {
-   nVar = 10,
-   nVar_Splittings =10
+   nVar = 12,
+   nVar_Constituents =8
   };
 
  //enum ECandidateType_t  { kD0toKpi, kDstartoKpipi, kD0toKpiLikeSign };
  enum ECandidateType_t  {kD0toKpi};
 
- AliAnalysisTaskHFSubstructure();
- AliAnalysisTaskHFSubstructure(const char *name);
- virtual ~AliAnalysisTaskHFSubstructure();
+ AliAnalysisTaskHFEECorrelators();
+ AliAnalysisTaskHFEECorrelators(const char *name);
+ virtual ~AliAnalysisTaskHFEECorrelators();
 
 
 
 
- AliAnalysisTaskHFSubstructure* AddTaskAliAnalysisTaskHFSubstructure(const char * ntracksData,
+ AliAnalysisTaskHFEECorrelators* AddTaskAliAnalysisTaskHFEECorrelators(const char * ntracksData,
 								     const char * ntracksTrue,
 								     const char * ntracksDet,
 								     const Double_t R,
-								     AliAnalysisTaskHFSubstructure::ECandidateType_t ECandidateType = AliAnalysisTaskHFSubstructure::kD0toKpi,
-								     AliAnalysisTaskHFSubstructure::JetShapeType jetShapeType = AliAnalysisTaskHFSubstructure::kData);
+								     AliAnalysisTaskHFEECorrelators::ECandidateType_t ECandidateType = AliAnalysisTaskHFEECorrelators::kD0toKpi,
+								     AliAnalysisTaskHFEECorrelators::JetShapeType jetShapeType = AliAnalysisTaskHFEECorrelators::kData);
 
 
 
@@ -162,6 +162,12 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  TString GetCutsType()                                            {return fCutsType;}
  void SetCandidatePDG(Int_t CandidatePDG)                         {fCandidatePDG = CandidatePDG;}
  TString GetCandidatePDG()                                        {return fCandidatePDG;}
+
+ void SetCandidateMinPt(Double_t CandidateMinPt)                  {fCandidateMinPt = CandidateMinPt;}
+ Double_t GetCandidatMinPt()                                      {return fCandidateMinPt;}
+ void SetCandidateMaxY(Double_t CandidateMaxY)                    {fCandidateMaxY = CandidateMaxY;}
+ Double_t GetCandidateMaxY()                                      {return fCandidateMaxY;}
+
  void SetJetRadius(Double_t JetRadius)                            {fJetRadius = JetRadius;}
  Double_t GetJetRadius()                                          {return fJetRadius;}
  void SetJetMinPt(Double_t JetMinPt)                              {fJetMinPt = JetMinPt;}
@@ -198,7 +204,10 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
  TString                            fCutsType;
  Int_t                              fCandidatePDG          ; 
  UInt_t                             fRejectedOrigin        ; 
- UInt_t                             fAcceptedDecay         ; 
+ UInt_t                             fAcceptedDecay         ;
+
+ Double_t                           fCandidateMinPt        ;
+ Double_t                           fCandidateMaxY         ;
 
  Double_t                           fJetRadius             ;
  Double_t                           fJetMinPt              ;
@@ -209,26 +218,22 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
 
  TClonesArray                      *fCandidateArray        ; 
    
- AliAODEvent                       *fAodEvent              ; 
+ AliAODEvent                       *fAodEvent              ;
 
- AliRDHFCuts                       *fRDHFCuts              ; 
- AliFJWrapper                      *fFastJetWrapper        ; //!<! 
- AliFJWrapper                      *fFastJetWrapper_Truth  ; //!<! 
+ AliRDHFCuts *fRDHFCuts;
+ AliFJWrapper *fFastJetWrapper;        //!<!
+ AliFJWrapper *fFastJetWrapper_Truth;  //!<!
 
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_DeltaR;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_DeltaR_Truth;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_Zg;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_Zg_Truth;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_LeadingSubJetpT;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_LeadingSubJetpT_Truth;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_HardestSubJetD0;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_HardestSubJetD0_Truth;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_RadiatorE;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_RadiatorE_Truth;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_RadiatorpT;
- std::vector<std::vector<Double_t>>            fShapesVar_Splittings_RadiatorpT_Truth;
- TTree                               *fTreeResponseMatrixAxis;
- TTree                               *fTreeSplittings;
+ std::vector<Double_t>             fShapesVar_Constituents_E;
+ std::vector<Double_t>             fShapesVar_Constituents_E_Truth;
+ std::vector<Double_t>             fShapesVar_Constituents_pT;
+ std::vector<Double_t>             fShapesVar_Constituents_pT_Truth;
+ std::vector<Double_t>             fShapesVar_Constituents_Phi;
+ std::vector<Double_t>             fShapesVar_Constituents_Phi_Truth;
+ std::vector<Double_t>             fShapesVar_Constituents_Rap;
+ std::vector<Double_t>             fShapesVar_Constituents_Rap_Truth;
+ TTree                               *fTreeJet;
+ TTree                               *fTreeConstituents;
 
 
 
@@ -241,10 +246,10 @@ class AliAnalysisTaskHFSubstructure : public AliAnalysisTaskEmcal
 
  private:
 
- AliAnalysisTaskHFSubstructure(const AliAnalysisTaskHFSubstructure&);            
- AliAnalysisTaskHFSubstructure &operator=(const AliAnalysisTaskHFSubstructure&); 
+ AliAnalysisTaskHFEECorrelators(const AliAnalysisTaskHFEECorrelators&);            
+ AliAnalysisTaskHFEECorrelators &operator=(const AliAnalysisTaskHFEECorrelators&); 
 
- ClassDef(AliAnalysisTaskHFSubstructure, 3)
+ ClassDef(AliAnalysisTaskHFEECorrelators, 1)
     
    };
 

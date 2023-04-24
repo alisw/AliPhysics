@@ -90,9 +90,11 @@ Double_t Ptbins[nPtbins + 1] = {
 const Int_t nCent = 9;
 Double_t centClass[nCent + 1] = {0.0,  1.0,  5.0,  10.0, 20.0,
                                  30.0, 40.0, 50.0, 70.0, 100.0};
+
 const Int_t nFlatClass = 8;
 Double_t FlatClass[nFlatClass + 1] = {0.0,  0.01, 0.05, 0.10, 0.20,
                                       0.30, 0.40, 0.50, 1.0};
+
 // const Int_t nCent = 2;
 // Double_t centClass[nCent + 1] = {0.0, 50.0, 100.0};
 const Int_t nDet = 4;
@@ -122,8 +124,8 @@ ClassImp(AliAnalysisTaskFlatenicity) // classimp: necessary for root
       hCountAuthV0m(0), hCountProdu_FlatMC(0), hCountAuth_FlatMC(0),
       hMultMCmVsV0M(0), hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0),
       hMultmVsV0Malice(0), hMultaVsV0M(0), hMultcVsV0M(0), hV0MBadruns(0),
-      hChgProdu_pt(0), hChgAuth_pt(0), hChgProdu_V0_pt(0), hChgAuth_V0_pt(0),
-      hChgProdu_Flat_pt(0), hChgAuth_Flat_pt(0) {
+      hChgProdu_All_pt(0), hChgAuth_All_pt(0), hChgProdu_pt_V0(0),
+      hChgAuth_pt_V0(0), hChgProdu_pt_Flat(0), hChgAuth_pt_Flat(0) {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     hFlatVsPtV0M[i_c] = 0;
   }
@@ -172,8 +174,8 @@ AliAnalysisTaskFlatenicity::AliAnalysisTaskFlatenicity(const char *name)
       hCountAuthV0m(0), hCountProdu_FlatMC(0), hCountAuth_FlatMC(0),
       hMultMCmVsV0M(0), hMultMCaVsV0M(0), hMultMCcVsV0M(0), hMultmVsV0M(0),
       hMultmVsV0Malice(0), hMultaVsV0M(0), hMultcVsV0M(0), hV0MBadruns(0),
-      hChgProdu_pt(0), hChgAuth_pt(0), hChgProdu_V0_pt(0), hChgAuth_V0_pt(0),
-      hChgProdu_Flat_pt(0), hChgAuth_Flat_pt(0)
+      hChgProdu_All_pt(0), hChgAuth_All_pt(0), hChgProdu_pt_V0(0),
+      hChgAuth_pt_V0(0), hChgProdu_pt_Flat(0), hChgAuth_pt_Flat(0)
 
 {
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
@@ -238,18 +240,12 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
   fCuts->SetMaxChi2PerClusterTPC(4);
   fCuts->SetMaxDCAToVertexZ(2);
   //  fCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
-  //! ap   Cut eliminated because Omar doesn't have it
-  //      as requested on mail april 9, 2023
   //  fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-  //! ap   Repeated cut
   //  fCuts->SetMaxChi2PerClusterTPC(4);
-  //! ap   Repeated cut
   //  fCuts->SetMaxDCAToVertexZ(2);
-  //! ap   Repeated cut
   fCuts->SetMaxChi2PerClusterITS(36);
   fCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
   //  fCuts->SetMaxChi2PerClusterITS(36);
-  //! ap   Repeated cut
   fTrackFilter->AddCuts(fCuts);
 
   float min_flat = -0.01;
@@ -405,48 +401,53 @@ void AliAnalysisTaskFlatenicity::UserCreateOutputObjects() {
     fOutputList->Add(hMultMCcVsV0M);
 
     //  hCountEvent = new TH1D("hCountEvent", "event counter", 2, 0.5, 2.5);
-    hCountProduV0m =
-        new TH1D("hCountProduV0m", "CountChgV0m_prod", nCent, centClass);
+    hCountProduV0m = new TH1D("hCountProduV0m", "CountChgV0m_prod;Events;V0m",
+                              nCent, centClass);
     fOutputList->Add(hCountProduV0m);
 
-    hCountAuthV0m =
-        new TH1D("hCountAuthV0m", "CountChgV0m_auth", nCent, centClass);
+    hCountAuthV0m = new TH1D("hCountAuthV0m", "CountChgV0m_auth;Events;V0m",
+                             nCent, centClass);
     fOutputList->Add(hCountAuthV0m);
 
-    hCountProdu_FlatMC = new TH1D("hCountProdu_FlatMC", "CountChgFlat_prod",
-                                  nFlatClass, FlatClass);
+    hCountProdu_FlatMC =
+        new TH1D("hCountProdu_FlatMC", "CountChgFlat_prod;Events;Flatenicity",
+                 nbins_flat, min_flat, max_flat);
     fOutputList->Add(hCountProdu_FlatMC);
 
-    hCountAuth_FlatMC = new TH1D("hCountAuth_FlatMC", "CountChgFlat_auth",
-                                 nFlatClass, FlatClass);
+    hCountAuth_FlatMC =
+        new TH1D("hCountAuth_FlatMC", "CountChgFlat_auth;Events;Flatenicity",
+                 nbins_flat, min_flat, max_flat);
     fOutputList->Add(hCountAuth_FlatMC);
 
-    hChgProdu_pt = new TH1D("hChgProdu_pt", "hChgProdu_pt", nPtbins, Ptbins);
-    fOutputList->Add(hChgProdu_pt);
+    hChgProdu_All_pt =
+        new TH1D("hChgProdu_All_pt",
+                 "hChgProdu_All_pt;;#it{p}_{T} (GeV/#it{c})", nPtbins, Ptbins);
+    fOutputList->Add(hChgProdu_All_pt);
 
-    hChgProdu_V0_pt =
-        new TH2D("hChgProdu_V0_pt", "; #it{p}_{T} (GeV/#it{c}); V0M Percentile",
-                 nPtbins, Ptbins, nCent, centClass);
-    fOutputList->Add(hChgProdu_V0_pt);
+    hChgAuth_All_pt =
+        new TH1D("hChgAuth_All_pt", "hChgAuth_All_pt;;#it{p}_{T} (GeV/#it{c})",
+                 nPtbins, Ptbins);
+    fOutputList->Add(hChgAuth_All_pt);
 
-    hChgProdu_Flat_pt =
-        new TH2D("hChgProdu_Flat_pt",
-                 "; #it{p}_{T} (GeV/#it{c}); Flatenicity Percentile", nPtbins,
-                 Ptbins, nFlatClass, FlatClass);
-    fOutputList->Add(hChgProdu_Flat_pt);
+    hChgProdu_pt_V0 =
+        new TH2D("hChgProdu_pt_V0", "; V0M Percentile; #it{p}_{T} (GeV/#it{c})",
+                 nCent, centClass, nPtbins, Ptbins);
+    fOutputList->Add(hChgProdu_pt_V0);
 
-    hChgAuth_pt = new TH1D("hChgAuth_pt", "hChgAuth_pt", nPtbins, Ptbins);
-    fOutputList->Add(hChgAuth_pt);
+    hChgAuth_pt_V0 =
+        new TH2D("hChgAuth_pt_V0", "; V0M Percentile; #it{p}_{T} (GeV/#it{c})",
+                 nCent, centClass, nPtbins, Ptbins);
+    fOutputList->Add(hChgAuth_pt_V0);
 
-    hChgAuth_V0_pt =
-        new TH2D("hChgAuth_V0_pt", "; #it{p}_{T} (GeV/#it{c}); V0M Percentile",
-                 nPtbins, Ptbins, nCent, centClass);
-    fOutputList->Add(hChgAuth_V0_pt);
+    hChgAuth_pt_Flat =
+        new TH2D("hChgAuth_pt_Flat", "; Flatenicity; #it{p}_{T} (GeV/#it{c})",
+                 nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
+    fOutputList->Add(hChgAuth_pt_Flat);
 
-    hChgAuth_Flat_pt = new TH2D(
-        "hChgAuth_Flat_pt", "; #it{p}_{T} (GeV/#it{c}); Flatenicity Percentile",
-        nPtbins, Ptbins, nFlatClass, FlatClass);
-    fOutputList->Add(hChgAuth_Flat_pt);
+    hChgProdu_pt_Flat =
+        new TH2D("hChgProdu_pt_Flat", "; Flatenicity; #it{p}_{T} (GeV/#it{c})",
+                 nbins_flat, min_flat, max_flat, nPtbins, Ptbins);
+    fOutputList->Add(hChgProdu_pt_Flat);
   }
 
   hActivityV0DataSectBefore = new TProfile(
@@ -564,10 +565,10 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
   int v0multalice = fMultSelection->GetEstimator("V0M")->GetValue();
 
-  fFlatPercentileMC = -1;
+  fFlatAltMC = -1;
   if (fUseMC) {
-    fFlatPercentileMC = GetFlatenicityMC();
-    //    if (fFlatPercentileMC >= 0) {}
+    fFlatAltMC = GetFlatenicityMC();
+    //    if (fFlatAltMC >= 0) {}
   }
 
   vector<Float_t> ptMC;
@@ -610,9 +611,6 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     GetMCchargedDetDists(fnDetec, ptDetMC, idDetMC);
   }
 
-  //  const AliVVertex *vtTrc = fMC->GetPrimaryVertex();
-  //  if (!vtTrc) return;
-
   hCounter->Fill(3.0);
 
   // good multiplicity
@@ -622,17 +620,11 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   //         << fMultSelection << endl;
 
   hCounter->Fill(4.0);
-  //! ap   This counter seems superfluos, and
-  //      hCounter 4.0 will have same counts as
-  //      hCounter 3.0
   // Multiplicity Estimation
   //  fv0mpercentile = -999;
   //  fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
   //  int v0multalice = fMultSelection->GetEstimator("V0M")->GetValue();
   hCounter->Fill(10.0);
-  //! ap   This counter seems superfluos, and
-  //      hCounter 10.0 will have same counts as
-  //      hCounter 4.0
 
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     if (fv0mpercentile >= centClass[i_c] &&
@@ -659,6 +651,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   if (fUseMC) {
     if (isGoodVtxPosMC) {
       ExtractMultiplicitiesMC();
+
       float activityMC[4] = {0, 0, 0, 0};
       activityMC[0] = fmultADCmc;
       activityMC[1] = fmultV0Cmc;
@@ -675,6 +668,7 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
       hCombinedMultmc[2]->Fill(com3mc, fmultTPCmc);
     }
   }
+
   // these values were obtained from LHC16l pass 2 (and MC)
   float avData[4] = {1819.91, 55.6384, 27.6564, 449.373};
   float avExpect[4] = {9.18629, 15.1672, 11.934, 7.47469};
@@ -703,11 +697,13 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
   hCombinedMult[0]->Fill(com1, fmultTPC);
   hCombinedMult[1]->Fill(com2, fmultTPC);
   hCombinedMult[2]->Fill(com3, fmultTPC);
+
   if (fUseMC) {
     hRmCombinedMult[0]->Fill(com1, com1mc);
     hRmCombinedMult[1]->Fill(com2, com2mc);
     hRmCombinedMult[2]->Fill(com3, com3mc);
   }
+
   fFlat = flatenicity_v0; // default V0
   if (fDetFlat == "VO_TPC") {
     fFlat = (flatenicity_v0 + flatenicity_tpc) / 2.0;
@@ -719,7 +715,6 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
     fFlat = flatenicity_v0;
   }
 
-  hFlatV0vsFlatTPC->Fill(flatenicity_tpc, flatenicity_v0);
   fFlatMC = -1;
   if ((fUseMC) && (fmultV0Cmc) > 0 && (fmultV0Amc > 0)) {
     fFlatMC = GetFlatenicityMC();
@@ -737,6 +732,9 @@ void AliAnalysisTaskFlatenicity::UserExec(Option_t *) {
       MakeMCanalysis();
     }
   }
+
+  hFlatV0vsFlatTPC->Fill(flatenicity_tpc, flatenicity_v0);
+
   if ((fFlat >= 0) && (fmultV0C) > 0 && (fmultV0A > 0)) {
     hFlatenicityBefore->Fill(fFlat);
     if (flatenicity_v0 < 0.9 && flatenicity_tpc < 0.9) {
@@ -1207,6 +1205,7 @@ Double_t AliAnalysisTaskFlatenicity::GetFlatenicityMC() {
   }
   sRho_tmp /= (1.0 * nCells * nCells);
   Float_t sRho = TMath::Sqrt(sRho_tmp);
+
   if (mRho > 0) {
     if (fRemoveTrivialScaling) {
       flatenicity = TMath::Sqrt(1.0 * nMult) * sRho / mRho;
@@ -1478,7 +1477,7 @@ Int_t AliAnalysisTaskFlatenicity::FillMCarray(vector<Float_t> &ptArray,
       continue;
     if (TMath::Abs(particle->Eta()) > fEtaCut)
       continue;
-    if (particle->Pt() < 0.0)
+    if (particle->Pt() < fPtMin)
       continue;
     if (TMath::Abs(particle->Charge()) < 0.1)
       continue;
@@ -1601,15 +1600,16 @@ void AliAnalysisTaskFlatenicity::GetMCchargedTrueDists(
 
   if (multGen < 1)
     return;
+  //! ap   The INEL>0 condition
 
   //  hCountEvent->Fill(1.0);
   hCountProduV0m->Fill(fv0mpercentile);
-  hCountProdu_FlatMC->Fill(fFlatPercentileMC);
+  hCountProdu_FlatMC->Fill(fFlatAltMC);
 
   for (Int_t i = 0; i < multGen; ++i) {
-    hChgProdu_pt->Fill(ptGen[i]);
-    hChgProdu_V0_pt->Fill(ptGen[i], fv0mpercentile);
-    hChgProdu_Flat_pt->Fill(ptGen[i], fFlatPercentileMC);
+    hChgProdu_All_pt->Fill(ptGen[i]);
+    hChgProdu_pt_V0->Fill(fv0mpercentile, ptGen[i]);
+    hChgProdu_pt_Flat->Fill(fFlatAltMC, ptGen[i]);
   }
 }
 
@@ -1619,12 +1619,13 @@ void AliAnalysisTaskFlatenicity::GetMCchargedDetDists(
 
   if (multRec < 1)
     return;
+  //! ap   The INEL>0 condition
   hCountAuthV0m->Fill(fv0mpercentile);
-  hCountAuth_FlatMC->Fill(fFlatPercentileMC);
+  hCountAuth_FlatMC->Fill(fFlatAltMC);
 
   for (Int_t i = 0; i < multRec; ++i) {
-    hChgAuth_pt->Fill(ptRec[i]);
-    hChgAuth_V0_pt->Fill(ptRec[i], fv0mpercentile);
-    hChgAuth_Flat_pt->Fill(ptRec[i], fFlatPercentileMC);
+    hChgAuth_All_pt->Fill(ptRec[i]);
+    hChgAuth_pt_V0->Fill(fv0mpercentile, ptRec[i]);
+    hChgAuth_pt_Flat->Fill(fFlatAltMC, ptRec[i]);
   }
 }

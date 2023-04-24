@@ -355,6 +355,9 @@ fTrackLabel(-999),
 fTrackPDGCode(-999),
 fTrackMotherID(-999),
 fTrackMotherPDGCode(-999),
+fTrackMotherMCPx(-999),
+fTrackMotherMCPy(-999),
+fTrackMotherMCPz(-999),
 fTrackMCPx(-999),
 fTrackMCPy(-999),
 fTrackMCPz(-999),
@@ -705,6 +708,9 @@ fTrackLabel(-999),
 fTrackPDGCode(-999),
 fTrackMotherID(-999),
 fTrackMotherPDGCode(-999),
+fTrackMotherMCPx(-999),
+fTrackMotherMCPy(-999),
+fTrackMotherMCPz(-999),
 fTrackMCPx(-999),
 fTrackMCPy(-999),
 fTrackMCPz(-999),
@@ -972,31 +978,34 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
       fSigmaCandTree->Branch("fSigPzMC",&fSigPzMC,"fSigPzMC/F");
     }
     if(fSaveAddMCBranches){
-      fSigmaCandTree->Branch("fTrackLabel",& fTrackLabel,"fTrackLabel/I");
-      fSigmaCandTree->Branch("fTrackPDGCode",& fTrackPDGCode,"fTrackPDGCode/I");
-      fSigmaCandTree->Branch("fTrackMotherID",& fTrackMotherID,"fTrackMotherID/I");
-      fSigmaCandTree->Branch("fTrackMotherPDGCode",& fTrackMotherPDGCode,"fTrackMotherPDGCode/I");
-      fSigmaCandTree->Branch("fTrackMCPx",& fTrackMCPx,"fTrackMCPx/F");
-      fSigmaCandTree->Branch("fTrackMCPy",& fTrackMCPy,"fTrackMCPy/F");
-      fSigmaCandTree->Branch("fTrackMCPz",& fTrackMCPz,"fTrackMCPz/F");
-      fSigmaCandTree->Branch("fPhoton1Label",& fPhoton1Label,"fPhoton1Label/I");
-      fSigmaCandTree->Branch("fPhoton1PDGCode",& fPhoton1PDGCode,"fPhoton1PDGCode/I");
-      fSigmaCandTree->Branch("fPhoton1MotherID",& fPhoton1MotherID,"fPhoton1MotherID/I");
-      fSigmaCandTree->Branch("fPhoton1MotherPDGCode",& fPhoton1MotherPDGCode,"fPhoton1MotherPDGCode/I");
-      fSigmaCandTree->Branch("fPhoton1GMotherID",& fPhoton1GMotherID,"fPhoton1GMotherID/I");
-      fSigmaCandTree->Branch("fPhoton1GMotherPDGCode",& fPhoton1GMotherPDGCode,"fPhoton1GMotherPDGCode/I");
-      fSigmaCandTree->Branch("fPhoton1MCPx",& fPhoton1MCPx,"fPhoton1MCPx/F");
-      fSigmaCandTree->Branch("fPhoton1MCPy",& fPhoton1MCPy,"fPhoton1MCPy/F");
-      fSigmaCandTree->Branch("fPhoton1MCPz",& fPhoton1MCPz,"fPhoton1MCPz/F");
-      fSigmaCandTree->Branch("fPhoton2Label",& fPhoton2Label,"fPhoton2Label/I");
-      fSigmaCandTree->Branch("fPhoton2PDGCode",& fPhoton2PDGCode,"fPhoton2PDGCode/I");
-      fSigmaCandTree->Branch("fPhoton2MotherID",& fPhoton2MotherID,"fPhoton2MotherID/I");
-      fSigmaCandTree->Branch("fPhoton2MotherPDGCode",& fPhoton2MotherPDGCode,"fPhoton2MotherPDGCode/I");
-      fSigmaCandTree->Branch("fPhoton2GMotherID",& fPhoton2GMotherID,"fPhoton2GMotherID/I");
-      fSigmaCandTree->Branch("fPhoton2GMotherPDGCode",& fPhoton2GMotherPDGCode,"fPhoton2GMotherPDGCode/I");
-      fSigmaCandTree->Branch("fPhoton2MCPx",& fPhoton2MCPx,"fPhoton2MCPx/F");
-      fSigmaCandTree->Branch("fPhoton2MCPy",& fPhoton2MCPy,"fPhoton2MCPy/F");
-      fSigmaCandTree->Branch("fPhoton2MCPz",& fPhoton2MCPz,"fPhoton2MCPz/F");
+      fSigmaCandTree->Branch("fTrackLabel",&fTrackLabel,"fTrackLabel/I");
+      fSigmaCandTree->Branch("fTrackPDGCode",&fTrackPDGCode,"fTrackPDGCode/I");
+      fSigmaCandTree->Branch("fTrackMotherID",&fTrackMotherID,"fTrackMotherID/I");
+      fSigmaCandTree->Branch("fTrackMotherPDGCode",&fTrackMotherPDGCode,"fTrackMotherPDGCode/I");
+      fSigmaCandTree->Branch("fTrackMotherMCPx",&fTrackMotherMCPx,"fTrackMotherMCPx/F");
+      fSigmaCandTree->Branch("fTrackMotherMCPy",&fTrackMotherMCPy,"fTrackMotherMCPy/F");
+      fSigmaCandTree->Branch("fTrackMotherMCPz",&fTrackMotherMCPz,"fTrackMotherMCPz/F");
+      fSigmaCandTree->Branch("fTrackMCPx",&fTrackMCPx,"fTrackMCPx/F");
+      fSigmaCandTree->Branch("fTrackMCPy",&fTrackMCPy,"fTrackMCPy/F");
+      fSigmaCandTree->Branch("fTrackMCPz",&fTrackMCPz,"fTrackMCPz/F");
+      fSigmaCandTree->Branch("fPhoton1Label",&fPhoton1Label,"fPhoton1Label/I");
+      fSigmaCandTree->Branch("fPhoton1PDGCode",&fPhoton1PDGCode,"fPhoton1PDGCode/I");
+      fSigmaCandTree->Branch("fPhoton1MotherID",&fPhoton1MotherID,"fPhoton1MotherID/I");
+      fSigmaCandTree->Branch("fPhoton1MotherPDGCode",&fPhoton1MotherPDGCode,"fPhoton1MotherPDGCode/I");
+      fSigmaCandTree->Branch("fPhoton1GMotherID",&fPhoton1GMotherID,"fPhoton1GMotherID/I");
+      fSigmaCandTree->Branch("fPhoton1GMotherPDGCode",&fPhoton1GMotherPDGCode,"fPhoton1GMotherPDGCode/I");
+      fSigmaCandTree->Branch("fPhoton1MCPx",&fPhoton1MCPx,"fPhoton1MCPx/F");
+      fSigmaCandTree->Branch("fPhoton1MCPy",&fPhoton1MCPy,"fPhoton1MCPy/F");
+      fSigmaCandTree->Branch("fPhoton1MCPz",&fPhoton1MCPz,"fPhoton1MCPz/F");
+      fSigmaCandTree->Branch("fPhoton2Label",&fPhoton2Label,"fPhoton2Label/I");
+      fSigmaCandTree->Branch("fPhoton2PDGCode",&fPhoton2PDGCode,"fPhoton2PDGCode/I");
+      fSigmaCandTree->Branch("fPhoton2MotherID",&fPhoton2MotherID,"fPhoton2MotherID/I");
+      fSigmaCandTree->Branch("fPhoton2MotherPDGCode",&fPhoton2MotherPDGCode,"fPhoton2MotherPDGCode/I");
+      fSigmaCandTree->Branch("fPhoton2GMotherID",&fPhoton2GMotherID,"fPhoton2GMotherID/I");
+      fSigmaCandTree->Branch("fPhoton2GMotherPDGCode",&fPhoton2GMotherPDGCode,"fPhoton2GMotherPDGCode/I");
+      fSigmaCandTree->Branch("fPhoton2MCPx",&fPhoton2MCPx,"fPhoton2MCPx/F");
+      fSigmaCandTree->Branch("fPhoton2MCPy",&fPhoton2MCPy,"fPhoton2MCPy/F");
+      fSigmaCandTree->Branch("fPhoton2MCPz",&fPhoton2MCPz,"fPhoton2MCPz/F");
     }
     if(fSaveAdditionalBranches){
       fSigmaCandTree->Branch("fHas4DiffIDs",&fHas4DiffIDs,"fHas4DiffIDs/O");
@@ -1518,31 +1527,34 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
       fSigmaPHOSCandTree->Branch("fClustPDGCode",&fClustPDGCode,"fClustPDGCode/I");
     }
     if(fSaveAddMCBranches){
-      fSigmaPHOSCandTree->Branch("fTrackLabel",& fTrackLabel,"fTrackLabel/I");
-      fSigmaPHOSCandTree->Branch("fTrackPDGCode",& fTrackPDGCode,"fTrackPDGCode/I");
-      fSigmaPHOSCandTree->Branch("fTrackMotherID",& fTrackMotherID,"fTrackMotherID/I");
-      fSigmaPHOSCandTree->Branch("fTrackMotherPDGCode",& fTrackMotherPDGCode,"fTrackMotherPDGCode/I");
-      fSigmaPHOSCandTree->Branch("fTrackMCPx",& fTrackMCPx,"fTrackMCPx/F");
-      fSigmaPHOSCandTree->Branch("fTrackMCPy",& fTrackMCPy,"fTrackMCPy/F");
-      fSigmaPHOSCandTree->Branch("fTrackMCPz",& fTrackMCPz,"fTrackMCPz/F");
-      fSigmaPHOSCandTree->Branch("fPhoton1Label",& fPhoton1Label,"fPhoton1Label/I");
-      fSigmaPHOSCandTree->Branch("fPhoton1PDGCode",& fPhoton1PDGCode,"fPhoton1PDGCode/I");
-      fSigmaPHOSCandTree->Branch("fPhoton1MotherID",& fPhoton1MotherID,"fPhoton1MotherID/I");
-      fSigmaPHOSCandTree->Branch("fPhoton1MotherPDGCode",& fPhoton1MotherPDGCode,"fPhoton1MotherPDGCode/I");
-      fSigmaPHOSCandTree->Branch("fPhoton1GMotherID",& fPhoton1GMotherID,"fPhoton1GMotherID/I");
-      fSigmaPHOSCandTree->Branch("fPhoton1GMotherPDGCode",& fPhoton1GMotherPDGCode,"fPhoton1GMotherPDGCode/I");
-      fSigmaPHOSCandTree->Branch("fPhoton1MCPx",& fPhoton1MCPx,"fPhoton1MCPx/F");
-      fSigmaPHOSCandTree->Branch("fPhoton1MCPy",& fPhoton1MCPy,"fPhoton1MCPy/F");
-      fSigmaPHOSCandTree->Branch("fPhoton1MCPz",& fPhoton1MCPz,"fPhoton1MCPz/F");
-      fSigmaPHOSCandTree->Branch("fPhoton2Label",& fPhoton2Label,"fPhoton2Label/I");
-      fSigmaPHOSCandTree->Branch("fPhoton2PDGCode",& fPhoton2PDGCode,"fPhoton2PDGCode/I");
-      fSigmaPHOSCandTree->Branch("fPhoton2MotherID",& fPhoton2MotherID,"fPhoton2MotherID/I");
-      fSigmaPHOSCandTree->Branch("fPhoton2MotherPDGCode",& fPhoton2MotherPDGCode,"fPhoton2MotherPDGCode/I");
-      fSigmaPHOSCandTree->Branch("fPhoton2GMotherID",& fPhoton2GMotherID,"fPhoton2GMotherID/I");
-      fSigmaPHOSCandTree->Branch("fPhoton2GMotherPDGCode",& fPhoton2GMotherPDGCode,"fPhoton2GMotherPDGCode/I");
-      fSigmaPHOSCandTree->Branch("fPhoton2MCPx",& fPhoton2MCPx,"fPhoton2MCPx/F");
-      fSigmaPHOSCandTree->Branch("fPhoton2MCPy",& fPhoton2MCPy,"fPhoton2MCPy/F");
-      fSigmaPHOSCandTree->Branch("fPhoton2MCPz",& fPhoton2MCPz,"fPhoton2MCPz/F");
+      fSigmaPHOSCandTree->Branch("fTrackLabel",&fTrackLabel,"fTrackLabel/I");
+      fSigmaPHOSCandTree->Branch("fTrackPDGCode",&fTrackPDGCode,"fTrackPDGCode/I");
+      fSigmaPHOSCandTree->Branch("fTrackMotherID",&fTrackMotherID,"fTrackMotherID/I");
+      fSigmaPHOSCandTree->Branch("fTrackMotherPDGCode",&fTrackMotherPDGCode,"fTrackMotherPDGCode/I");
+      fSigmaPHOSCandTree->Branch("fTrackMotherMCPx",&fTrackMotherMCPx,"fTrackMotherMCPx/F");
+      fSigmaPHOSCandTree->Branch("fTrackMotherMCPy",&fTrackMotherMCPy,"fTrackMotherMCPy/F");
+      fSigmaPHOSCandTree->Branch("fTrackMotherMCPz",&fTrackMotherMCPz,"fTrackMotherMCPz/F");
+      fSigmaPHOSCandTree->Branch("fTrackMCPx",&fTrackMCPx,"fTrackMCPx/F");
+      fSigmaPHOSCandTree->Branch("fTrackMCPy",&fTrackMCPy,"fTrackMCPy/F");
+      fSigmaPHOSCandTree->Branch("fTrackMCPz",&fTrackMCPz,"fTrackMCPz/F");
+      fSigmaPHOSCandTree->Branch("fPhoton1Label",&fPhoton1Label,"fPhoton1Label/I");
+      fSigmaPHOSCandTree->Branch("fPhoton1PDGCode",&fPhoton1PDGCode,"fPhoton1PDGCode/I");
+      fSigmaPHOSCandTree->Branch("fPhoton1MotherID",&fPhoton1MotherID,"fPhoton1MotherID/I");
+      fSigmaPHOSCandTree->Branch("fPhoton1MotherPDGCode",&fPhoton1MotherPDGCode,"fPhoton1MotherPDGCode/I");
+      fSigmaPHOSCandTree->Branch("fPhoton1GMotherID",&fPhoton1GMotherID,"fPhoton1GMotherID/I");
+      fSigmaPHOSCandTree->Branch("fPhoton1GMotherPDGCode",&fPhoton1GMotherPDGCode,"fPhoton1GMotherPDGCode/I");
+      fSigmaPHOSCandTree->Branch("fPhoton1MCPx",&fPhoton1MCPx,"fPhoton1MCPx/F");
+      fSigmaPHOSCandTree->Branch("fPhoton1MCPy",&fPhoton1MCPy,"fPhoton1MCPy/F");
+      fSigmaPHOSCandTree->Branch("fPhoton1MCPz",&fPhoton1MCPz,"fPhoton1MCPz/F");
+      fSigmaPHOSCandTree->Branch("fPhoton2Label",&fPhoton2Label,"fPhoton2Label/I");
+      fSigmaPHOSCandTree->Branch("fPhoton2PDGCode",&fPhoton2PDGCode,"fPhoton2PDGCode/I");
+      fSigmaPHOSCandTree->Branch("fPhoton2MotherID",&fPhoton2MotherID,"fPhoton2MotherID/I");
+      fSigmaPHOSCandTree->Branch("fPhoton2MotherPDGCode",&fPhoton2MotherPDGCode,"fPhoton2MotherPDGCode/I");
+      fSigmaPHOSCandTree->Branch("fPhoton2GMotherID",&fPhoton2GMotherID,"fPhoton2GMotherID/I");
+      fSigmaPHOSCandTree->Branch("fPhoton2GMotherPDGCode",&fPhoton2GMotherPDGCode,"fPhoton2GMotherPDGCode/I");
+      fSigmaPHOSCandTree->Branch("fPhoton2MCPx",&fPhoton2MCPx,"fPhoton2MCPx/F");
+      fSigmaPHOSCandTree->Branch("fPhoton2MCPy",&fPhoton2MCPy,"fPhoton2MCPy/F");
+      fSigmaPHOSCandTree->Branch("fPhoton2MCPz",&fPhoton2MCPz,"fPhoton2MCPz/F");
     }
     if(fSaveAdditionalBranches){
       fSigmaPHOSCandTree->Branch("fSigRefMultComb05",&fSigRefMultComb05,"fSigRefMultComb05/S");
@@ -3416,11 +3428,10 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
 
   if(isMonteCarlo){
     //Create Pseudo Event ID in case of MC
-    Int_t ParA = aodEvent->GetRunNumber();
-    Int_t ParB = aodEvent->GetNumberOfTracks();
-    Int_t ParC = mcEvent->GetNumberOfTracks();
-    UInt_t ParD = (*reinterpret_cast<unsigned int*>(&primaryVtxPosZMC));
-    ULong64_t PseudoEventID = (((ULong64_t)ParA<<48)|((ULong64_t)ParB<<32)|((ULong64_t)ParC<<16)|((ULong64_t)ParD));
+    Short_t ParA = aodEvent->GetNumberOfTracks();
+    Short_t ParB = mcEvent->GetNumberOfTracks();
+    UInt_t ParC = (*reinterpret_cast<unsigned int*>(&primaryVtxPosZMC));
+    ULong64_t PseudoEventID = (((ULong64_t)ParA<<48)|((ULong64_t)ParB<<32)|((ULong64_t)ParC));
     fGlobalEventID = PseudoEventID;
   }
 
@@ -5353,6 +5364,9 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
           fTrackPDGCode = -999;
           fTrackMotherID = -999;
           fTrackMotherPDGCode = -999;
+          fTrackMotherMCPx = -999;
+          fTrackMotherMCPy = -999;
+          fTrackMotherMCPz = -999;
           fTrackMCPx = -999;
           fTrackMCPy = -999;
           fTrackMCPz = -999;
@@ -5387,7 +5401,10 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticles() {
               fTrackMCPz = ProtonPart->Pz();
               AliAODMCParticle* ProtonPartM = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(ProtonPart->GetMother())));
               if(ProtonPartM){
-                fTrackMotherPDGCode = ProtonPart->GetPdgCode();
+                fTrackMotherPDGCode = ProtonPartM->GetPdgCode();
+                fTrackMotherMCPx = ProtonPartM->Px();
+                fTrackMotherMCPy = ProtonPartM->Py();
+                fTrackMotherMCPz = ProtonPartM->Pz();
               }//Proton Mother exists
             }//Track exists
             AliAODMCParticle* V01Daught1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(track1->GetLabel())));
@@ -6348,6 +6365,9 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
         fTrackPDGCode = -999;
         fTrackMotherID = -999;
         fTrackMotherPDGCode = -999;
+        fTrackMotherMCPx = -999;
+        fTrackMotherMCPy = -999;
+        fTrackMotherMCPz = -999;
         fTrackMCPx = -999;
         fTrackMCPy = -999;
         fTrackMCPz = -999;
@@ -6382,7 +6402,10 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
             fTrackMCPz = ProtonPart->Pz();
             AliAODMCParticle* ProtonPartM = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(ProtonPart->GetMother())));
             if(ProtonPartM){
-              fTrackMotherPDGCode = ProtonPart->GetPdgCode();
+              fTrackMotherPDGCode = ProtonPartM->GetPdgCode();
+              fTrackMotherMCPx = ProtonPartM->Px();
+              fTrackMotherMCPy = ProtonPartM->Py();
+              fTrackMotherMCPz = ProtonPartM->Pz();
             }//Proton Mother exists
           }//Track exists
           AliAODMCParticle* V01Daught1 = static_cast<AliAODMCParticle*>(AODMCTrackArray->At(TMath::Abs(track1->GetLabel())));
