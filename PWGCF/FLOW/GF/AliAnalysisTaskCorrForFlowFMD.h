@@ -186,6 +186,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         //output histograms
         TH1D*                   fhEventCounter; //!
         TH1D*                   fhEventMultiplicity; //!
+	TH1D*                   fhEventMultiplicity_massbias; //!
         AliTHn*                 fhTrigTracks[7]; //!
         AliTHn*                 fhSE[7]; //!
         AliTHn*                 fhME[7]; //!
@@ -198,6 +199,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	TH1D*                   fhPhiphi; //!	   		
         TH1D*                   fhCentCalib; //!
         TH1D*                   fhPT[7]; //!
+	TH1D*                   fhPT_trig[7]; //!
         TH2D*                   fhPTvsMinv[3]; //!
 	TH2D*                   fhPTvsMinv_Phi_LS; //!
         TH2D*                   fh2FMDvsV0[4]; //!
