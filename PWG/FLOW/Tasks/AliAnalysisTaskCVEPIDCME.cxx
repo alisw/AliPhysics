@@ -1213,12 +1213,12 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
     fQAList->Add(fHist2AntiLambdaMassPtY[i]);
   }
   fHist3LambdaCentPtMass[0] = new TH3D("fHist3LambdaCentPtMass_BfMassCut",";Centrality;Pt;Mass",8,0,80,20,0,10,1000,1.,1.25); //  Current bin size = 0.00025
-  fHist3LambdaCentPtMass[1] = new TH3D("fHist3LambdaCentPtMass_AfMassCut",";Centrality;Pt;Mass",8,0,80,20,0,10,15,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
+  fHist3LambdaCentPtMass[1] = new TH3D("fHist3LambdaCentPtMass_AfMassCut",";Centrality;Pt;Mass",8,0,80,20,0,10,20,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
   fQAList->Add(fHist3LambdaCentPtMass[0]);
   fQAList->Add(fHist3LambdaCentPtMass[1]);
 
   fHist3AntiLambdaCentPtMass[0] = new TH3D("fHist3AntiLambdaCentPtMass_BfMassCut",";Centrality;Pt;Mass",8,0,80,20,0,10,1000,1.,1.25); //  Current bin size = 0.00025
-  fHist3AntiLambdaCentPtMass[1] = new TH3D("fHist3AntiLambdaCentPtMass_AfMassCut",";Centrality;Pt;Mass",8,0,80,20,0,10,15,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
+  fHist3AntiLambdaCentPtMass[1] = new TH3D("fHist3AntiLambdaCentPtMass_AfMassCut",";Centrality;Pt;Mass",8,0,80,20,0,10,20,fLambdaMassMean-fLambdaMassRightCut,fLambdaMassMean+fLambdaMassLeftCut);
   fQAList->Add(fHist3AntiLambdaCentPtMass[0]);
   fQAList->Add(fHist3AntiLambdaCentPtMass[1]);
 
