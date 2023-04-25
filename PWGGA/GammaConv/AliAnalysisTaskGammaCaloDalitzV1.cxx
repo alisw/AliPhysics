@@ -1,7 +1,7 @@
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *									 									  *
- * Author: Pedro Gonzalez, Baldo Sahlmueller, Friederike Bock				       		  *
+ * Author: Pedro Gonzalez, Baldo Sahlmueller, Friederike Bock			  *
  * Version 1.0								 							  *
  *									 									  *
  *                                                                        *
