@@ -32,6 +32,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fPoolMgr(0),
     fhEventCounter(0),
     fhEventMultiplicity(0),
+    fhEventMultiplicity_jetveto(0),
     fhEventMultiplicity_massbias(0),
     fhK0sphi(0),
     fhLambdaphi(0),
@@ -57,6 +58,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fIsAntiparticleCheck(kFALSE),
     fDoAntiparticleOnly(kFALSE),
     fVetoJetEvents(kFALSE),
+    fJetvetoselectionval(0.5),
     fRejectSecondariesFromMC(kFALSE),
     fBoostAMPT(kFALSE),
     fFilterBit(96),
@@ -142,6 +144,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fPoolMgr(0),
     fhEventCounter(0),
     fhEventMultiplicity(0),
+    fhEventMultiplicity_jetveto(0),
     fhEventMultiplicity_massbias(0),
     fhK0sphi(0),
     fhLambdaphi(0),
@@ -167,6 +170,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fIsAntiparticleCheck(kFALSE),
     fDoAntiparticleOnly(kFALSE),
     fVetoJetEvents(kFALSE),
+    fJetvetoselectionval(0.5),
     fRejectSecondariesFromMC(kFALSE),
     fBoostAMPT(kFALSE),
     fFilterBit(96),
@@ -274,6 +278,9 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
 
     fhEventMultiplicity = new TH1D("fhEventMultiplicity","Event multiplicity; N_{ch}",200,0,200);
     fOutputListCharged->Add(fhEventMultiplicity);
+	
+    fhEventMultiplicity_jetveto = new TH1D("fhEventMultiplicity_jetveto","Event multiplicity; N_{ch}",200,0,200);
+    fOutputListCharged->Add(fhEventMultiplicity_jetveto);
 	
     fhEventMultiplicity_massbias = new TH1D("fhEventMultiplicity_massbias","Event multiplicity; N_{ch}",200,0,200);
     fOutputListCharged->Add(fhEventMultiplicity_massbias);	
@@ -526,9 +533,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
 	if(!fDoPHI && i > 5) continue;
 	
 	if(fIsAntiparticleCheck && i == 4) continue;
-	      
-	fhEventMultiplicity->Fill(fNofTracks);
-	      
+	      	      
 	if(fParticlemass_bias_corr) {
 	    if(fDoPID && fProtonSigcount < 1) continue;//for PID correlation to fill, at least one proton needed (biasing event selection)
 	    if(fDoV0 && fLambdaSigcount < 1) continue;//for V0 correlation to fill, at least one lambda candidate needed (biasing event selection)
@@ -1686,28 +1691,38 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
     if(fNofTracks < fNchMin || fNofTracks > fNchMax) { return kFALSE; }
     fhEventCounter->Fill("Nch cut ok ",1);
   }
+	
+	
+  fhEventMultiplicity->Fill(fNofTracks);
 
-  if(fVetoJetEvents){
-    Double_t foundSomething = kFALSE;
+ if(fVetoJetEvents){
+    
+    Bool_t foundjetsinTPC = kFALSE;
     fhEventCounter->Fill("Before Jet Veto",1); //HPC = high pt cut
-    for(Int_t iTrig(0); iTrig < fTracksJets->GetEntriesFast(); iTrig++){
+    
+    for(Int_t iTrig=0; iTrig < fTracksJets->GetEntriesFast(); iTrig++){
       AliAODTrack* trackTrig = (AliAODTrack*)fTracksJets->At(iTrig);
       if(!trackTrig) continue;
       Double_t trigPhi = trackTrig->Phi();
 
-      for(Int_t iAss(iTrig+1); iAss < fTracksJets->GetEntriesFast()+1; iAss++){
+      for(Int_t iAss=iTrig+1; iAss < fTracksJets->GetEntriesFast(); iAss++){
         AliAODTrack* trackAss = (AliAODTrack*)fTracksJets->At(iAss);
         if(!trackAss) continue;
         Double_t assPhi = trackAss->Phi();
 
         Double_t deltaPhi = RangePhi(trigPhi - assPhi);
-        if(TMath::Abs(deltaPhi - TMath::Pi()) < 0.5) foundSomething = kTRUE;
+        if(TMath::Abs(deltaPhi - TMath::Pi()) < fJetvetoselectionval) foundjetsinTPC = kTRUE;//fJetvetoselectionval= 0.5
       }
     }
-    if(foundSomething == kTRUE){ fhEventCounter->Fill("After Jet Veto",1); }//select events with back to back jets in the TPC
-    else { return kFALSE; }
-  }
+    
+    if(foundjetsinTPC == kFALSE) return kFALSE;//select events with back to back jets in the TPC
 
+    fhEventCounter->Fill("After Jet Veto",1);
+  }
+	
+    fhEventMultiplicity_jetveto->Fill(fNofTracks);
+
+	
   if(fDoV0){
     PrepareV0();
   }
