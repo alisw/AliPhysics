@@ -81,6 +81,8 @@ class AliAnalysisSPCRun2 {
     for (int i = 0; i < 8; i++) {fHarmosArray[obsInd][i] = harmo[i];}
   }
 
+  // LOKI: Added in HIJING investigations.
+  void SetUseWeights(Bool_t WeightsNUE, Bool_t WeightsNUA){this->bUseWeightsNUE = WeightsNUE; this->bUseWeightsNUA = WeightsNUA;}
 
  private:
   AliAnalysisSPCRun2(const AliAnalysisSPCRun2& aat);

@@ -123,7 +123,7 @@ void AliJSPCTaskRun2::UserCreateOutputObjects()
 
   fSPC->SetMinNuPar(fAliSPCRun2MinNumberPart);
 
-  //fSPC->SetUseWeights(bAliSPCRun2UseWeightsNUE, bAliSPCRun2UseWeightsNUA);
+  fSPC->SetUseWeights(bAliSPCRun2UseWeightsNUE, bAliSPCRun2UseWeightsNUA);	// LOKI: Decommented
 
   for (int i=0; i<12; i++) {
     fSPC->SetCorrSet(i, fAliSPCRun2HarmosArray[i]);
