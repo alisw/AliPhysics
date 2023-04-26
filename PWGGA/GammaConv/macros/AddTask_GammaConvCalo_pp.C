@@ -3152,6 +3152,24 @@ void AddTask_GammaConvCalo_pp(
     cuts.AddCutPCMCalo("n2415113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // INEL>0 20-40%
     cuts.AddCutPCMCalo("n4715113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // INEL>0 40-70%
     cuts.AddCutPCMCalo("n7a15113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // INEL>0 70-100%
+
+
+  } else if (trainConfig == 2550){  // EMCal+DCAL clusters standard cuts, Sphericity
+    cuts.AddCutPCMCalo("00010113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INT7
+    cuts.AddCutPCMCalo("00015113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INEL>0 0-100%
+  } else if (trainConfig == 2551){  // EMCal+DCAL clusters standard cuts, Sphericity
+    cuts.AddCutPCMCalo("h0515113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INT7
+    cuts.AddCutPCMCalo("h5a15113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INT7
+    cuts.AddCutPCMCalo("h0a15113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INT7
+    cuts.AddCutPCMCalo("h0315113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INT7
+    cuts.AddCutPCMCalo("h7a15113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INT7
+  } else if (trainConfig == 2552){  // EMCal+DCAL clusters standard cuts, V0M mult selections
+    cuts.AddCutPCMCalo("m0115113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INEL>0 0-1%
+    cuts.AddCutPCMCalo("m1515113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INEL>0 1-5%
+    cuts.AddCutPCMCalo("m5k15113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INEL>0 5-20%
+    cuts.AddCutPCMCalo("n2415113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INEL>0 20-40%
+    cuts.AddCutPCMCalo("n4715113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INEL>0 40-70%
+    cuts.AddCutPCMCalo("n7a15113","0dd00009f9730000dge0404000","24466190sa01cc00000","0163103100000010"); // INEL>0 70-100%
     //*************************************************************************************************
     // 13 TeV PCM-PHOS - Systematics
     //*************************************************************************************************
