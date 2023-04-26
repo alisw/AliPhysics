@@ -82,7 +82,7 @@ class AliAnalysisSPCRun2 {
   }
 
   // LOKI: Added in HIJING investigations.
-  void SetUseWeights(Bool_t WeightsNUE, Bool_t WeightsNUA){this->bUseWeightsNUE = WeightsNUE; this->bUseWeightsNUA = WeightsNUA;}
+ void SetUseWeights(Bool_t WeightsNUE, Bool_t WeightsNUA){this->bUseWeightsNUE = WeightsNUE; this->bUseWeightsNUA = WeightsNUA;}
 
  private:
   AliAnalysisSPCRun2(const AliAnalysisSPCRun2& aat);
