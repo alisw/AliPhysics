@@ -29,6 +29,8 @@ using std::string;
 #include "AliAODMCHeader.h"
 #include "AliAnalysisUtils.h"
 
+#include "AliAODVZERO.h"
+
 ///\cond CLASSIMP
 ClassImp(AliAnalysisTaskKaonXiCorrelation);
 ///\endcond
@@ -173,6 +175,15 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
   int magField = bField > 0 ? kPositiveB : 0;
 
   fRecCollision.fTrigger = tgr + magField;
+
+  AliAODVZERO *vzero = ev->GetVZEROData();
+  fRecCollision.fV0MAmp = 0;
+  for (int i = 0; i < 64; ++i)
+  {
+    fRecCollision.fV0MAmp += vzero->GetMultiplicity(i);
+  }
+  fRecCollision.fNTrk = 0;
+
   fPID = handl->GetPIDResponse();
 
   std::vector<int> checkedLabelCasc, checkedLabelKaon;
@@ -218,8 +229,15 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
           aodTrack->GetITSchi2() > fCutMaxITSChi2 ||
           nITS < fCutITSrecPoints ||
           nSPD < fCutSPDrecPoints ||
-          dcaMag > fCutDCA[2] ||
-          std::abs(tpcNsigma) > fCutKaonNsigmaTPC ||
+          dcaMag > fCutDCA[2]
+        )
+      {
+        continue;
+      }
+      
+      fRecCollision.fNTrk += 1;
+
+      if ( std::abs(tpcNsigma) > fCutKaonNsigmaTPC ||
           (aodTrack->Pt() > fPtTofCut && std::abs(tofNsigma) > fCutKaonNsigmaTOF) ||
           !( (!fUseITSpid || aodTrack->Pt() > fCutPtITSpid) || (fUseITSpid && std::abs(itsNsigma) < fCutKaonNsigmaITS && ( nSDD + nSSD > fCutSDDSSDrecPoints) && aodTrack->Pt() < fCutPtITSpid) )
         )
@@ -266,6 +284,8 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
         fRecKaons.push_back(*fKaon);
       else
         fGenKaons.push_back(fGenKaon);
+      
+      fRecCollision.fNTrk -= 1;
     }
   }
 

@@ -53,6 +53,8 @@ struct MiniCollision {
   Double32_t fZ; //[-12.7,12.8,8]
   unsigned char fCent;
   unsigned char fTrigger;
+  unsigned short fNTrk;
+  unsigned short fV0MAmp;
 };
 
 struct XiDaughter {
