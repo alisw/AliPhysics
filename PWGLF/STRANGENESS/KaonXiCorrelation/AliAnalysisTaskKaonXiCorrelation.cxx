@@ -257,8 +257,8 @@ void AliAnalysisTaskKaonXiCorrelation::UserExec(Option_t *)
       fKaon->fCutBitMap = 0u;
       if (dcaMag < fCutDCA[0]) fKaon->fCutBitMap |= kDCAtightCut;
       else if (dcaMag < fCutDCA[1]) fKaon->fCutBitMap |= kDCAmidCut;
-      if (aodTrack->GetTPCsignalN() < fCutTPCcls[0]) fKaon->fCutBitMap |= kTPCclsTightCut;
-      else if (aodTrack->GetTPCsignalN() < fCutTPCcls[1]) fKaon->fCutBitMap |= kTPCclsMidCut;
+      if (aodTrack->GetTPCsignalN() > fCutTPCcls[0]) fKaon->fCutBitMap |= kTPCclsTightCut;
+      else if (aodTrack->GetTPCsignalN() > fCutTPCcls[1]) fKaon->fCutBitMap |= kTPCclsMidCut;
       if (aodTrack->Chi2perNDF() < fCutChi2[0]) fKaon->fCutBitMap |= kChi2TightCut;
       else if (aodTrack->Chi2perNDF() < fCutChi2[1]) fKaon->fCutBitMap |= kChi2MidCut;
 
