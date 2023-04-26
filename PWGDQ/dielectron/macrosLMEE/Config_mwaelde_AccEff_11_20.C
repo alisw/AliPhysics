@@ -29,7 +29,7 @@ Int_t GetNbinsDeltaPhi(){return NbinsDeltaPhi;}
 
 AliAnalysisCuts* SetupTrackCuts(Int_t cutDefinition);
 AliAnalysisCuts* SetupPIDcuts(Int_t cutDefinition);
-AliAnalysisFilter* Config_mwaelde_AccEff_Track(Int_t cutDefinition);
+AliAnalysisFilter* Config_mwaelde_AccEff(Int_t cutDefinition);
 AliAnalysisFilter* Config_mwaelde_AccEff_PID(Int_t cutDefinition);
 
 
@@ -37,7 +37,7 @@ AliAnalysisFilter* Config_mwaelde_AccEff_PID(Int_t cutDefinition);
 // #########################################################
 
 //________________________________________________________________
-AliAnalysisFilter* Config_mwaelde_AccEff_Track(Int_t cutDefinition)
+AliAnalysisFilter* Config_mwaelde_AccEff(Int_t cutDefinition)
 {
   std::cout << "SetupTrackCutsAndSettings()" <<std::endl;
 

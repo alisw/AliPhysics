@@ -2,8 +2,8 @@
 #include <AliAODInputHandler.h>
 
 // cuts
-TString names("TrackCut_1;TrackCut_2;TrackCut_3;TrackCut_4;TrackCut_5");
-// TString names("TrackCut_21;TrackCut_22;TrackCut_23;TrackCut_24;TrackCut_25;TrackCut_26;TrackCut_27;TrackCut_28;TrackCut_29;TrackCut_30");
+// TString names("TrackCut_1;TrackCut_2;TrackCut_3;TrackCut_4;TrackCut_5");
+TString names("TrackCut_21;TrackCut_22;TrackCut_23;TrackCut_24;TrackCut_25;TrackCut_26;TrackCut_27;TrackCut_28;TrackCut_29;TrackCut_30");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();
 Int_t GetN(){return nDie;}
@@ -29,7 +29,7 @@ Int_t GetNbinsDeltaPhi(){return NbinsDeltaPhi;}
 
 AliAnalysisCuts* SetupTrackCuts(Int_t cutDefinition);
 AliAnalysisCuts* SetupPIDcuts(Int_t cutDefinition);
-AliAnalysisFilter* Config_mwaelde_AccEff_21_30(Int_t cutDefinition, Int_t trackOrPID);
+AliAnalysisFilter* Config_mwaelde_AccEff(Int_t cutDefinition, Int_t trackOrPID);
 AliAnalysisFilter* Config_mwaelde_AccEff_PID(Int_t cutDefinition);
 
 
@@ -37,7 +37,7 @@ AliAnalysisFilter* Config_mwaelde_AccEff_PID(Int_t cutDefinition);
 // #########################################################
 
 //________________________________________________________________
-AliAnalysisFilter* Config_mwaelde_AccEff_21_30(Int_t cutDefinition, Int_t trackOrPID)
+AliAnalysisFilter* Config_mwaelde_AccEff(Int_t cutDefinition, Int_t trackOrPID)
 {
   std::cout << "SetupTrackCutsAndSettings()" <<std::endl;
 
