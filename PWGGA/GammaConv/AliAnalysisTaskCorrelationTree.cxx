@@ -564,8 +564,7 @@ void AliAnalysisTaskCorrelationTree::UserExec(Option_t *)
   Int_t eventQuality = ((AliConvEventCuts *)fV0Reader->GetEventCuts())->GetEventQuality();
   if (fInputEvent->IsIncompleteDAQ() == true)
     eventQuality = 2; // incomplete event
-    
-  fHistoNEvents->Fill(eventQuality);
+
 
   if (eventQuality == 2)
   {
@@ -588,8 +587,10 @@ void AliAnalysisTaskCorrelationTree::UserExec(Option_t *)
     //   }
   }
 
-  // Int_t eventNotAccepted =
-  //     fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(), fInputEvent, fMCEvent, fIsHeavyIon, false);
+  Int_t eventNotAccepted =
+      fEventCuts->IsEventAcceptedByCut(fV0Reader->GetEventCuts(), fInputEvent, fMCEvent, fIsHeavyIon, false);
+  
+  if(!eventNotAccepted && eventQuality!=3) fHistoNEvents->Fill(eventQuality);
 
   // if (eventNotAccepted)
   // {
