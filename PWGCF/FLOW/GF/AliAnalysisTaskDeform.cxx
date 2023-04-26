@@ -669,7 +669,7 @@ void AliAnalysisTaskDeform::UserExec(Option_t*) {
     VnMpt(fAOD,vz,l_Cent,vtxXYZ);
 };
 void AliAnalysisTaskDeform::NotifyRun() {
-  LoadWeights(fInputEvent->GetRunNumber());
+  if(!fIsMC) LoadWeights(fInputEvent->GetRunNumber());
   if(!fEventCutFlag || fEventCutFlag>100) { //Only relevant if we're using the standard AliEventCuts
     //Reinitialize AliEventCuts (done automatically on check):
     Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
