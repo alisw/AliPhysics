@@ -3443,8 +3443,8 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
 
   // apply charge cut
   int charge = Track.Charge();
-//  if(charge < 1 && isMatter)   return PassedParticleCuts;
-//  if(charge > -1 && !isMatter) return PassedParticleCuts;
+  if(charge < 1 && isMatter)   return PassedParticleCuts;
+  if(charge > -1 && !isMatter) return PassedParticleCuts;
 
   // apply pseudo-rapidity cut
   double eta = Track.Eta();
@@ -3691,8 +3691,8 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
 
   // apply charge cut
   int charge = Track.Charge();
-//  if(charge < 1 && isMatter)   return PassedParticleCuts;
-//  if(charge > -1 && !isMatter) return PassedParticleCuts;
+  if(charge < 1 && isMatter)   return PassedParticleCuts;
+  if(charge > -1 && !isMatter) return PassedParticleCuts;
 
   // apply pseudo-rapidity cut
   double eta = Track.Eta();
