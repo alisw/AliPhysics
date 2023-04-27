@@ -3326,7 +3326,6 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
   bool UseTOF = true;
   bool UseITS = true;
 
-  UseOpenCuts = true;
 
   if(UseOpenCuts == true){
 
@@ -3335,9 +3334,9 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
     Proton_pT_max = 4.0;
     Proton_eta_min = -0.9;
     Proton_eta_max = +0.9;
-    Proton_DCAxy_min = 0.02; // cm
+    Proton_DCAxy_min = 0.01; // cm
     Proton_DCAxy_max = 999.0; // cm
-    Proton_DCAz_min = 0.02; // cm
+    Proton_DCAz_min = 0.01; // cm
     Proton_DCAz_max = 999.0; // cm
 
     Proton_TPC_RatioRowsFindableCluster_min = 0.73;
@@ -3347,16 +3346,16 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
     Proton_TPC_nCluster_min = 70;
     Proton_TPC_nCrossedRows_min = 60;
     Proton_TPC_nSharedCluster_max = 2;
-    Proton_TPC_Threshold = 1.0;
+    Proton_TPC_Threshold = 0.8;
 
     Proton_TOF_m2_nSigma_max = 4.0;
-    Proton_TOF_m2_nSigma_max_low_pTPC = 8.0;
+    Proton_TOF_m2_nSigma_max_low_pTPC = 4.0;
 
-    Proton_ITS_dEdx_nSigma_max = 4.0;
-    Proton_ITS_nCluster_min = 1;
+    Proton_ITS_dEdx_nSigma_max = 5.0;
+    Proton_ITS_nCluster_min = 0;
 
     UseTOF = true;
-    UseITS = true;
+    UseITS = false;
 
   } // end of UseOpenCuts == true
 
@@ -3384,10 +3383,10 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
     Proton_TPC_Threshold = 0.7;
 
     Proton_TOF_m2_nSigma_max = 3.0;
-    Proton_TOF_m2_nSigma_max_low_pTPC = 7.0;
+    Proton_TOF_m2_nSigma_max_low_pTPC = 3.0;
 
     Proton_ITS_dEdx_nSigma_max = 3.0;
-    Proton_ITS_nCluster_min = 2;
+    Proton_ITS_nCluster_min = 1;
 
     UseTOF = true;
     UseITS = true;
@@ -3444,8 +3443,8 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckProtonCuts(AliAODTrack &Trac
 
   // apply charge cut
   int charge = Track.Charge();
-  if(charge < 1 && isMatter)   return PassedParticleCuts;
-  if(charge > -1 && !isMatter) return PassedParticleCuts;
+//  if(charge < 1 && isMatter)   return PassedParticleCuts;
+//  if(charge > -1 && !isMatter) return PassedParticleCuts;
 
   // apply pseudo-rapidity cut
   double eta = Track.Eta();
@@ -3586,9 +3585,9 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
     Pion_pT_max = 4.0;
     Pion_eta_min = -0.9;
     Pion_eta_max = +0.9;
-    Pion_DCAxy_min = 0.0; // cm
+    Pion_DCAxy_min = 0.01; // cm
     Pion_DCAxy_max = 999.0; // cm
-    Pion_DCAz_min = 0.0; // cm
+    Pion_DCAz_min = 0.01; // cm
     Pion_DCAz_max = 999.0; // cm
 
     Pion_TPC_RatioRowsFindableCluster_min = 0.73;
@@ -3598,16 +3597,16 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
     Pion_TPC_nCluster_min = 60;
     Pion_TPC_nCrossedRows_min = 50;
     Pion_TPC_nSharedCluster_max = 2;
-    Pion_TPC_Threshold = 1.0;
+    Pion_TPC_Threshold = 2.0;
 
     Pion_TOF_m2_nSigma_max = 4.0;
-    Pion_TOF_m2_nSigma_max_low_pTPC = 8.0;
+    Pion_TOF_m2_nSigma_max_low_pTPC = 4.0;
 
     Pion_ITS_dEdx_nSigma_max = 4.0;
-    Pion_ITS_nCluster_min = 1;
+    Pion_ITS_nCluster_min = 0;
 
     UseTOF = true;
-    UseITS = true;
+    UseITS = false;
 
   } // end of UseOpenCuts == true
 
@@ -3635,7 +3634,7 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
     Pion_TPC_Threshold = 0.7;
 
     Pion_TOF_m2_nSigma_max = 3.0;
-    Pion_TOF_m2_nSigma_max_low_pTPC = 7.0;
+    Pion_TOF_m2_nSigma_max_low_pTPC = 3.0;
 
     Pion_ITS_dEdx_nSigma_max = 3.0;
     Pion_ITS_nCluster_min = 2;
@@ -3692,8 +3691,8 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckPionCuts(AliAODTrack &Track,
 
   // apply charge cut
   int charge = Track.Charge();
-  if(charge < 1 && isMatter)   return PassedParticleCuts;
-  if(charge > -1 && !isMatter) return PassedParticleCuts;
+//  if(charge < 1 && isMatter)   return PassedParticleCuts;
+//  if(charge > -1 && !isMatter) return PassedParticleCuts;
 
   // apply pseudo-rapidity cut
   double eta = Track.Eta();
@@ -3846,7 +3845,7 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckLambdaCuts(AliAODv0 &v0, dou
   bool PassedParticleCuts = false;
 
 
-  double eta_max = 0.8;
+  double eta_max = 0.9;
   double pT_min = 0.0; // GeV/c
   double pT_max = 999.0; // GeV/c
   double DecayRadius_min = 0.0; // cm
@@ -3929,13 +3928,13 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
   int Deuteron_ITS_nCluster_min;
   bool UseTOF = true;
   bool UseITS = true;
-
+  double Pion_TPC_dEdx_nSigma_max, Kaon_TPC_dEdx_nSigma_max, Proton_TPC_dEdx_nSigma_max, Electron_TPC_dEdx_nSigma_max, Muon_TPC_dEdx_nSigma_max;
 
   if(UseOpenCuts == true){
 
     // define open deuteron and antideuteron track cuts
     Deuteron_pT_min = 0.0;
-    Deuteron_pT_max = 2.0;
+    Deuteron_pT_max = 3.0;
     Deuteron_eta_min = -0.9;
     Deuteron_eta_max = +0.9;
     Deuteron_DCAxy_max = 0.3; // cm
@@ -3958,6 +3957,12 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
     UseTOF = true;
     UseITS = true;
+
+    Pion_TPC_dEdx_nSigma_max     = 3.0;
+    Kaon_TPC_dEdx_nSigma_max     = 3.0;
+    Proton_TPC_dEdx_nSigma_max   = 3.0;
+    Electron_TPC_dEdx_nSigma_max = 3.0;
+    Muon_TPC_dEdx_nSigma_max     = 3.0;
 
   } // end of UseOpenCuts == true
 
@@ -3989,6 +3994,12 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
     UseTOF = true;
     UseITS = true;
+
+    Pion_TPC_dEdx_nSigma_max     = 3.0;
+    Kaon_TPC_dEdx_nSigma_max     = 3.0;
+    Proton_TPC_dEdx_nSigma_max   = 3.0;
+    Electron_TPC_dEdx_nSigma_max = 3.0;
+    Muon_TPC_dEdx_nSigma_max     = 3.0;
 
   } // end of UseOpenCuts == false
 
@@ -4149,10 +4160,26 @@ bool AliAnalysisTask_Ld_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
 
 
+  // cut out dEdx band of other particles above pTPC = 1.5 GeV/c²
+  double TPC_dEdx_nSigma_Pion = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kPion);
+  if(TMath::IsNaN(TPC_dEdx_nSigma_Pion)) return PassedParticleCuts;
+  if((pT >= 1.6) && (TMath::Abs(TPC_dEdx_nSigma_Pion) < Pion_TPC_dEdx_nSigma_max)) return PassedParticleCuts;
 
+  double TPC_dEdx_nSigma_Kaon = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kKaon);
+  if(TMath::IsNaN(TPC_dEdx_nSigma_Kaon)) return PassedParticleCuts;
+  if((pT >= 1.6) && (TMath::Abs(TPC_dEdx_nSigma_Kaon) < Kaon_TPC_dEdx_nSigma_max)) return PassedParticleCuts;
 
+  double TPC_dEdx_nSigma_Proton = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kProton);
+  if(TMath::IsNaN(TPC_dEdx_nSigma_Proton)) return PassedParticleCuts;
+  if((pT >= 1.6) && (TMath::Abs(TPC_dEdx_nSigma_Proton) < Proton_TPC_dEdx_nSigma_max)) return PassedParticleCuts;
 
+  double TPC_dEdx_nSigma_Electron = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kElectron);
+  if(TMath::IsNaN(TPC_dEdx_nSigma_Electron)) return PassedParticleCuts;
+  if((pT >= 1.6) && (TMath::Abs(TPC_dEdx_nSigma_Electron) < Electron_TPC_dEdx_nSigma_max)) return PassedParticleCuts;
 
+  double TPC_dEdx_nSigma_Muon = fPIDResponse.NumberOfSigmasTPC(&Track,AliPID::kMuon);
+  if(TMath::IsNaN(TPC_dEdx_nSigma_Muon)) return PassedParticleCuts;
+  if((pT >= 1.6) && (TMath::Abs(TPC_dEdx_nSigma_Muon) < Muon_TPC_dEdx_nSigma_max)) return PassedParticleCuts;
 
 
 
