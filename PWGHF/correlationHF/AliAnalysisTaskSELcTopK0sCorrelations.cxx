@@ -1098,15 +1098,14 @@ void AliAnalysisTaskSELcTopK0sCorrelations::UserExec(Option_t */*option*/)
         if(ptbin==-1) {fNentries->Fill(17); continue;} //out of bounds
 
         fIsSelectedCandidate=fCutsLambdac->IsSelected(d,AliRDHFCuts::kAll,aod); //Lambdac selected
-        AliAODv0 *v0part = dynamic_cast<AliAODv0*>(dynamic_cast<AliAODRecoCascadeHF *>(lc)->Getv0());
+        AliAODv0 *v0part = dynamic_cast<AliAODv0*>(dynamic_cast<AliAODRecoCascadeHF *>(d)->Getv0());
 
         if (v0part->GetOnFlyStatus()) {
             fNentries->Fill(22);
             continue;
         }
 
-        //Lambdac infos
-        //Perform here selection covariance matrix that cannot be performed in the ML implementation
+        //Lambdac
         if(!ReconstructKFLc(d)) continue;
         /* Recompute the main properties of the Lc according to KF particle
         printf("Check values with previous\n");
