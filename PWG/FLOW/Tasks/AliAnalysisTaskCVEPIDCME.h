@@ -109,6 +109,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void SetDaughtersEtaMax(double daughtersEtaMax) { this->fDaughtersEtaMax = daughtersEtaMax; }
   void SetDaughtersTPCNclsMin(double daughtersTPCNclsMin) { this->fDaughtersTPCNclsMin = daughtersTPCNclsMin; }
   void SetDaughtersDCAToPrimVtxMin(double daughtersDCAToPrimVtxMin) { this->fDaughtersDCAToPrimVtxMin = daughtersDCAToPrimVtxMin; }
+  void SetRatioCrossedRowsFindable(double ratioCrossedRowsFindable) { this->fRatioCrossedRowsFindable = ratioCrossedRowsFindable; }
   void SetPosProtonTPCNsigma(float V0PosProtonTPCNsigma) { this->fV0PosProtonTPCNsigma = V0PosProtonTPCNsigma; }
   void SetNegPionTPCNsigma(float V0NegPionTPCNsigma) { this->fV0NegPionTPCNsigma = V0NegPionTPCNsigma; }
   void SetNegProtonTPCNsigma(float V0NegProtonTPCNsigma) { this->fV0NegProtonTPCNsigma = V0NegProtonTPCNsigma; }
@@ -247,6 +248,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   double fDaughtersEtaMax;          //
   double fDaughtersTPCNclsMin;      //
   double fDaughtersDCAToPrimVtxMin; //
+  double fRatioCrossedRowsFindable; //
   float fV0PosProtonTPCNsigma;      //
   float fV0NegPionTPCNsigma;        //
   float fV0NegProtonTPCNsigma;      //
@@ -525,9 +527,6 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TProfile2D* fProfile2RawFlowPtCentProton[5][2];
   TProfile2D* fProfile2RawFlowPtCentLambda[5][2];
 
-  // ΔMass
-  TH2D* fHist2DMass[4];
-
   // δ
   TProfile* fProfileDeltaLambdaProton[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
   TProfile* fProfileDeltaLambdaHadron[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
@@ -567,7 +566,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   // Diff δ(Δmass)
   TProfile2D* fProfile2DiffDeltaLambdaProtonMass[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
   TProfile2D* fProfile2DiffDeltaLambdaHadronMass[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
-  TProfile2D* fProfile2DiffDeltaLambdaLambdaDMass[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
+  TProfile2D* fProfile2DiffDeltaLambdaLambdaMass[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
 
   // Diff γ(ΔpT)(only TPC Plane)
   TProfile2D* fProfile2DiffGammaLambdaProtonDPt[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
@@ -593,7 +592,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   // Diff δ(mass) or δ(Δmass)
   TProfile2D* fProfile2DiffGammaLambdaProtonMass[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
   TProfile2D* fProfile2DiffGammaLambdaHadronMass[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
-  TProfile2D* fProfile2DiffGammaLambdaLambdaDMass[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
+  TProfile2D* fProfile2DiffGammaLambdaLambdaMass[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
 
 
   // C(Δη,Δφ) [cent][pair type]
