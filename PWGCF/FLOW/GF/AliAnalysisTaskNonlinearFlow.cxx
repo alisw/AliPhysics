@@ -1709,6 +1709,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
     if(track->Pt() < fMinPt) continue;
     if(track->Pt() > fMaxPt) continue;
     if(TMath::Abs(track->Eta()) > fEtaCut) continue;
+    if (!(track->IsPhysicalPrimary())) continue;
     // if (!(track->IsPhysicalPrimary())) return kFALSE;
     if (track->Charge() == 0) continue;
 
