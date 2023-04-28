@@ -227,6 +227,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
     fShapesVarNames[20] = "EP";}
 
   for (Int_t ivar = 0; ivar < nVar; ivar++) {
+    if (fShapesVarNames[ivar].Length() != 0)
     fTreeSubstructure->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar],
                               Form("%s/F", fShapesVarNames[ivar].Data()));
   }
@@ -1444,24 +1445,19 @@ bool AliAnalysisTaskNewJetSubstructure::CheckClosePartner(AliEmcalJet* jet, PWG:
     Double_t ptv2 = fTrk2->Pt();
     Double_t deta = fTrk2->Eta() - fTrk1->Eta();
     const Float_t kLimit = fPhiCutValue * 3;
-
     if (TMath::Abs(fTrk1->Eta() - fTrk2->Eta()) < fEtaCutValue * 2.5 * 3) {
       Float_t initdpsinner =
           (phi2 - TMath::ASin(0.075 * chg2 * fMagFieldPolarity * 0.8 / ptv2) -
            (phi1 - TMath::ASin(0.075 * chg1 * fMagFieldPolarity * 0.8 / ptv1)));
-
       Float_t initdpsouter =
           (phi2 - TMath::ASin(0.075 * chg2 * fMagFieldPolarity * 2.5 / ptv2) -
            (phi1 - TMath::ASin(0.075 * chg1 * fMagFieldPolarity * 2.5 / ptv1)));
-
       initdpsinner = TVector2::Phi_mpi_pi(initdpsinner);
       initdpsouter = TVector2::Phi_mpi_pi(initdpsouter);
-
       if (TMath::Abs(initdpsinner) < kLimit ||
           TMath::Abs(initdpsouter) < kLimit ||
           initdpsinner * initdpsouter < 0) {
         Double_t mindps = 1e5;
-
         for (Double_t rad = 0.8; rad < 2.51; rad += 0.01) {
           Double_t dps =
               (phi2 -
