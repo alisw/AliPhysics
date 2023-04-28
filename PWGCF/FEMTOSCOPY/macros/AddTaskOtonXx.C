@@ -49,10 +49,12 @@ bool isMC = false;
   if(KaonCut!=1){ // std, use kaons
    TrackCutsKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
    TrackCutsKaon->SetPIDkd();
+   TrackCutsKaon->SetCutCharge(1);
+   TrackCutsKaon->SetFilterBit(128);
   }else{ //use pions
-/*
-   TrackCutsKaon = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
-*/
+   /*
+   //my pions
+   ////TrackCutsKaon = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
    TrackCutsKaon = new AliFemtoDreamTrackCuts();
    TrackCutsKaon->SetIsMonteCarlo(isMC);
    TrackCutsKaon->SetPtRange(0.14, 4.0);
@@ -67,19 +69,27 @@ bool isMC = false;
    TrackCutsKaon->SetMinimalBooking(false);
    TrackCutsKaon->SetPlotDCADist(true);
    TrackCutsKaon->SetCheckPileUpSPDTOF(true);
+   TrackCutsKaon->SetCutCharge(1);
+   TrackCutsKaon->SetFilterBit(128);
+   */
+   //Marcel's pions:
+   int PionFilterbit = 96;
+   TrackCutsKaon = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+   TrackCutsKaon->SetFilterBit(PionFilterbit);
+   TrackCutsKaon->SetCutCharge(1);
   }
-  TrackCutsKaon->SetCutCharge(1);
-  TrackCutsKaon->SetFilterBit(128);
 
   //antikaons
   AliFemtoDreamTrackCuts *TrackCutsAntiKaon;
   if(KaonCut!=1){ // std, use kaons
    TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
    TrackCutsAntiKaon->SetPIDkd();
+   TrackCutsAntiKaon->SetCutCharge(-1);
+   TrackCutsAntiKaon->SetFilterBit(128);
   }else{ //use pions
-/*
-   TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false); 
-*/
+   /*
+   //my pions
+   ////TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false); 
    TrackCutsAntiKaon = new AliFemtoDreamTrackCuts();
    TrackCutsAntiKaon->SetIsMonteCarlo(isMC);
    TrackCutsAntiKaon->SetPtRange(0.14, 4.0);
@@ -94,9 +104,15 @@ bool isMC = false;
    TrackCutsAntiKaon->SetMinimalBooking(false);
    TrackCutsAntiKaon->SetPlotDCADist(true);
    TrackCutsAntiKaon->SetCheckPileUpSPDTOF(true);
+   TrackCutsAntiKaon->SetCutCharge(-1);
+   TrackCutsAntiKaon->SetFilterBit(128);
+   */
+   //Marcel's pions:
+   int PionFilterbit = 96;
+   TrackCutsAntiKaon = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
+   TrackCutsAntiKaon->SetFilterBit(PionFilterbit);
+   TrackCutsAntiKaon->SetCutCharge(-1);
   }
-  TrackCutsAntiKaon->SetCutCharge(-1);
-  TrackCutsAntiKaon->SetFilterBit(128);
 
 
   //Cascade Cuts 
@@ -200,8 +216,9 @@ bool isMC = false;
    AntiCascadeXiCuts->SetCutXiTransverseRadius(0.8, 200);
    CascadeXiCuts->SetCutv0TransverseRadius(1.4, 200);
    AntiCascadeXiCuts->SetCutv0TransverseRadius(1.4, 200);
-   CascadeXiCuts->SetXiMassRange(1.322, 0.015);      // mass is open!!!
-   AntiCascadeXiCuts->SetXiMassRange(1.322, 0.015);  // mass is open!!!
+   CascadeXiCuts->SetXiMassRange(1.322, 0.020);      // mass is open!!!
+   AntiCascadeXiCuts->SetXiMassRange(1.322, 0.020);  // mass is open!!!
+
   }else{
 Float_t XiDaughterDCA = .8; //std
 Float_t v0MaxDaughterDCA = 1.2; //std
