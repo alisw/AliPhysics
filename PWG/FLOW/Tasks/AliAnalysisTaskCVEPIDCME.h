@@ -109,6 +109,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void SetDaughtersEtaMax(double daughtersEtaMax) { this->fDaughtersEtaMax = daughtersEtaMax; }
   void SetDaughtersTPCNclsMin(double daughtersTPCNclsMin) { this->fDaughtersTPCNclsMin = daughtersTPCNclsMin; }
   void SetDaughtersDCAToPrimVtxMin(double daughtersDCAToPrimVtxMin) { this->fDaughtersDCAToPrimVtxMin = daughtersDCAToPrimVtxMin; }
+  void SetRatioCrossedRowsFindable(double ratioCrossedRowsFindable) { this->fRatioCrossedRowsFindable = ratioCrossedRowsFindable; }
   void SetPosProtonTPCNsigma(float V0PosProtonTPCNsigma) { this->fV0PosProtonTPCNsigma = V0PosProtonTPCNsigma; }
   void SetNegPionTPCNsigma(float V0NegPionTPCNsigma) { this->fV0NegPionTPCNsigma = V0NegPionTPCNsigma; }
   void SetNegProtonTPCNsigma(float V0NegProtonTPCNsigma) { this->fV0NegProtonTPCNsigma = V0NegProtonTPCNsigma; }
@@ -247,6 +248,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   double fDaughtersEtaMax;          //
   double fDaughtersTPCNclsMin;      //
   double fDaughtersDCAToPrimVtxMin; //
+  double fRatioCrossedRowsFindable; //
   float fV0PosProtonTPCNsigma;      //
   float fV0NegPionTPCNsigma;        //
   float fV0NegProtonTPCNsigma;      //

@@ -135,6 +135,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   fDaughtersEtaMax(0.8),
   fDaughtersTPCNclsMin(70),
   fDaughtersDCAToPrimVtxMin(0.05),
+  fRatioCrossedRowsFindable(0.8),
   fV0PosProtonTPCNsigma(3.0),
   fV0NegPionTPCNsigma(3.0),
   fV0NegProtonTPCNsigma(3.0),
@@ -470,6 +471,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   fDaughtersEtaMax(0.8),
   fDaughtersTPCNclsMin(70),
   fDaughtersDCAToPrimVtxMin(0.05),
+  fRatioCrossedRowsFindable(0.8),
   fV0PosProtonTPCNsigma(3.0),
   fV0NegPionTPCNsigma(3.0),
   fV0NegProtonTPCNsigma(3.0),
@@ -3390,10 +3392,6 @@ bool AliAnalysisTaskCVEPIDCME::RejectEvtTFFit()
   UShort_t multV0aOn = aodV0->GetTriggerChargeA();
   UShort_t multV0cOn = aodV0->GetTriggerChargeC();
   UShort_t multV0On = multV0aOn + multV0cOn;
-  
-  // //
-  // Int_t tpcClsTot = fAOD->GetNumberOfTPCClusters();
-  // Float_t nclsDif = Float_t(tpcClsTot) - (53182.6 + 113.326*multV0Tot - 0.000831275*multV0Tot*multV0Tot);
 
   // pile-up cuts
   if (fCentSPD0 < fCenCutLowPU->Eval(fCentV0M)) return false;
@@ -3403,6 +3401,13 @@ bool AliAnalysisTaskCVEPIDCME::RejectEvtTFFit()
   if (Float_t(multTrk) < fMultCutPU->Eval(fCentV0M)) return false;
   if (((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0) return false;
   if (fAOD->IsIncompleteDAQ()) return false;
+
+  // if (isTightPileUp==1){
+  //   Int_t tpcClsTot = fAOD->GetNumberOfTPCClusters();
+  //   Float_t nclsDif = Float_t(tpcClsTot) - (53182.6 + 113.326*multV0Tot - 0.000831275*multV0Tot*multV0Tot);
+  //   if (nclsDif > 200000)//can be varied to 150000, 200000
+  //   return false;
+  // }
 
   fHist2MultCentQA[1]->Fill(fCentV0M, multTrk); //  Mult(FB32) Vs Cent(V0M)
   return true;
@@ -3745,7 +3750,7 @@ bool AliAnalysisTaskCVEPIDCME::IsGoodDaughterTrack(const AliAODTrack *track)
   int findable = track->GetTPCNclsF();
   if (findable <= 0) return false;
   // [number of crossed rows]>0.8  [number of findable clusters].
-  if (nCrossedRowsTPC/findable < 0.8) return false;
+  if (nCrossedRowsTPC/findable < fRatioCrossedRowsFindable) return false;
   return true;
 }
 
