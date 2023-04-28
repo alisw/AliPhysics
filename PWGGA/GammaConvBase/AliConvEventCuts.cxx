@@ -351,6 +351,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fMinFacPtHard(ref.fMinFacPtHard),
   fMaxFacPtHard(ref.fMaxFacPtHard),
   fMaxFacPtHardSingleParticle(ref.fMaxFacPtHardSingleParticle),
+  fMimicTrigger(ref.fMimicTrigger),
   fINELgtZEROTrigger(ref.fINELgtZEROTrigger),
   fPathTriggerMimicSpecialInput(ref.fPathTriggerMimicSpecialInput),
   fRejectTriggerOverlap(ref.fRejectTriggerOverlap),
@@ -5862,6 +5863,7 @@ Bool_t AliConvEventCuts::IsEventINELgtZERO(AliVEvent *event)
     }
     return MultSelectionTask->GetThisEventINELgtZERO();
   }
+  return kFALSE;
 }
 
 //________________________________________________________________________
@@ -6467,7 +6469,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
   fIsSDDFired = !(fInputHandler->IsEventSelected() & AliVEvent::kFastOnly);
 
   Bool_t mimickedTrigger = kTRUE;
-  if (fMimicTrigger)
+  if (fMimicTrigger){
     if(isMC){
       mimickedTrigger = MimicTrigger(event, isMC);
     } else {
@@ -6476,7 +6478,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
       if(isSelected) mimickedTrigger = MimicTrigger(event, isMC);
     }
   // cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
-
+  }
   Bool_t isINELgtZERO = kFALSE;
   if(fINELgtZEROTrigger) isINELgtZERO = IsEventINELgtZERO(event);
 
