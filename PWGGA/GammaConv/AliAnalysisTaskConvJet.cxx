@@ -62,7 +62,10 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fTrueVectorJetPhi(0),
                                                    fTrueVectorJetR(0),
                                                    fTrueVectorJetParton(0),
-                                                   fTrueVectorJetPartonPt(0)
+                                                   fTrueVectorJetPartonPt(0),
+                                                   fTrueVectorJetPartonPx(0),
+                                                   fTrueVectorJetPartonPy(0),
+                                                   fTrueVectorJetPartonPz(0)
 {
 }
 
@@ -86,7 +89,10 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fTrueVectorJetPhi(0),
                                                                    fTrueVectorJetR(0),
                                                                    fTrueVectorJetParton(0),
-                                                                   fTrueVectorJetPartonPt(0)
+                                                                   fTrueVectorJetPartonPt(0),
+                                                                   fTrueVectorJetPartonPx(0),
+                                                                   fTrueVectorJetPartonPy(0),
+                                                                   fTrueVectorJetPartonPz(0)
 {
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -197,6 +203,9 @@ void AliAnalysisTaskConvJet::FindPartonsJet(TClonesArray* arrMCPart)
   // Loop over all primary MC particle
   fTrueVectorJetParton.resize(fTrueNJets);
   fTrueVectorJetPartonPt.resize(fTrueNJets);
+  fTrueVectorJetPartonPx.resize(fTrueNJets);
+  fTrueVectorJetPartonPy.resize(fTrueNJets);
+  fTrueVectorJetPartonPz.resize(fTrueNJets);
   std::vector<double> partonEnergy(fTrueNJets, -1);
   double JetR2 = Get_Jet_Radius() * Get_Jet_Radius();
 
@@ -230,6 +239,10 @@ void AliAnalysisTaskConvJet::FindPartonsJet(TClonesArray* arrMCPart)
         partonEnergy[indexNearestJet] = particle->Pt();
         fTrueVectorJetParton[indexNearestJet] = i;
         fTrueVectorJetPartonPt[indexNearestJet] = particle->Pt();
+        fTrueVectorJetPartonPx[indexNearestJet] = particle->Px();
+        fTrueVectorJetPartonPy[indexNearestJet] = particle->Py();
+        fTrueVectorJetPartonPz[indexNearestJet] = particle->Pz();
+        
       }
     }
   }
