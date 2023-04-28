@@ -4725,8 +4725,10 @@ void AddTask_GammaConvCalo_pp(
     TString TriggerHelperName = Form("CaloTriggerHelper_%s_%i_%i", cuts.GetEventCut(i).Data(),enableTriggerMimicking,TriggerMimickingDDLEffiFlag);
     task->SetCaloTriggerHelperName(TriggerHelperName.Data());
     analysisEventCuts[i]->SetCaloTriggerHelperName(TriggerHelperName.Data());
+    cout << "AddTask_GammaConvCalo_pp: Using trigger mimicking helper with name: " << TriggerHelperName.Data() << endl;
     if( (!(AliCaloTriggerMimicHelper*)mgr->GetTask(TriggerHelperName.Data())) && (!ClusterCutPos.CompareTo("2")) && ( enableTriggerMimicking==3 || enableTriggerMimicking==4 ) ){
       AliCaloTriggerMimicHelper* fMimickHelper = new AliCaloTriggerMimicHelper(TriggerHelperName.Data(), caloCutPos.Atoi(), isMC);
+      // fMimickHelper->SetDebugOutput(6);
       if (enableTriggerMimicking==3 || enableTriggerMimicking==4){
           fMimickHelper->SetPHOSTrigger(AliCaloTriggerMimicHelper::kPHOSAny) ;
       } else {
@@ -4749,6 +4751,7 @@ void AddTask_GammaConvCalo_pp(
           fMimickHelper->SetTriggerHelperRunMode(2);
       }
     }
+    cout << "AddTask_GammaConvCalo_pp: trigger mimicking helper setup complete" << endl;
 
 
     // definition of weighting input
