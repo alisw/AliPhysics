@@ -14,6 +14,7 @@
 #pragma link C++ class AliAnalysisTaskMcKnoUe+;
 #pragma link C++ class AliAnalysisTaskMcKnoUeSystem+;
 #pragma link C++ class AliAnalysisTaskGenMcKnoUe+;
+#pragma link C++ class AliAnalysisTaskGenMcFlattenicity+;
 #pragma link C++ class AliAnalysisTaskGenUeVsMult+;
 #pragma link C++ class AliAnalysisTaskMcKnoUeSyst+;
 #pragma link C++ class AliAnalysisTaskMcKno+;
