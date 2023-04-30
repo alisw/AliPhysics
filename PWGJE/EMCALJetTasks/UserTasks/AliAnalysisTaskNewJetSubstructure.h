@@ -152,6 +152,6 @@ private:
   AliAnalysisTaskNewJetSubstructure &
   operator=(const AliAnalysisTaskNewJetSubstructure &); // not implemented
 
-  ClassDef(AliAnalysisTaskNewJetSubstructure, 13)
+  ClassDef(AliAnalysisTaskNewJetSubstructure, 14)
 };
 #endif
