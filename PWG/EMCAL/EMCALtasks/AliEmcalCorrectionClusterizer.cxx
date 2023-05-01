@@ -601,8 +601,8 @@ void AliEmcalCorrectionClusterizer::RecPoints2Clusters(TClonesArray *clus)
     c->SetLabel(parentList, parentMult);
     if(parentListDE[0]) {
       c->SetClusterMCEdepFractionFromEdepArray(parentListDE);
-    } else{
-      AliWarning("Could not get deposited energy of parents. Particle might not have parents?");
+    } else {
+      if (mcEnergy > 0.) AliWarning("Could not get deposited energy of parents. Particle might not have parents?");
     }
     
     //

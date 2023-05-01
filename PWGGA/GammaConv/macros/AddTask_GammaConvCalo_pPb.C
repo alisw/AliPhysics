@@ -122,17 +122,17 @@ void AddTask_GammaConvCalo_pPb(
   for(Int_t i = 0; i<rmaxFacPtHardSetting->GetEntries() ; i++){
     TObjString* tempObjStrPtHardSetting     = (TObjString*) rmaxFacPtHardSetting->At(i);
     TString strTempSetting                  = tempObjStrPtHardSetting->GetString();
-    if(strTempSetting.BeginsWith("MINPTHFAC:")){
+    if(strTempSetting.BeginsWith("MINPTHFAC:") && isMC == 2){
       strTempSetting.Replace(0,10,"");
       minFacPtHard               = strTempSetting.Atof();
       cout << "running with min pT hard jet fraction of: " << minFacPtHard << endl;
       fMinPtHardSet        = kTRUE;
-    } else if(strTempSetting.BeginsWith("MAXPTHFAC:")){
+    } else if(strTempSetting.BeginsWith("MAXPTHFAC:")&& isMC == 2){
       strTempSetting.Replace(0,10,"");
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
       fMaxPtHardSet        = kTRUE;
-    } else if(strTempSetting.BeginsWith("MAXPTHFACSINGLE:")){
+    } else if(strTempSetting.BeginsWith("MAXPTHFACSINGLE:")&& isMC == 2){
       strTempSetting.Replace(0,16,"");
       maxFacPtHardSingle         = strTempSetting.Atof();
       cout << "running with max single particle pT hard fraction of: " << maxFacPtHardSingle << endl;
@@ -143,19 +143,19 @@ void AddTask_GammaConvCalo_pPb(
         cout << "using MC jet finder for outlier removal" << endl;
         fJetFinderUsage        = kTRUE;
       }
-    } else if(strTempSetting.BeginsWith("PTHFROMFILE:")){
+    } else if(strTempSetting.BeginsWith("PTHFROMFILE:")&& isMC == 2){
       strTempSetting.Replace(0,12,"");
       if(strTempSetting.Atoi()==1){
         cout << "using MC jet finder for outlier removal" << endl;
         fUsePtHardFromFile        = kTRUE;
       }
-    } else if(strTempSetting.BeginsWith("ADDOUTLIERREJ:")){
+    } else if(strTempSetting.BeginsWith("ADDOUTLIERREJ:")&& isMC == 2){
       strTempSetting.Replace(0,14,"");
       if(strTempSetting.Atoi()==1){
         cout << "using path based outlier removal" << endl;
         fUseAddOutlierRej        = kTRUE;
       }
-    } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0){
+    } else if(rmaxFacPtHardSetting->GetEntries()==1 && strTempSetting.Atof()>0 && isMC == 2){
       maxFacPtHard               = strTempSetting.Atof();
       cout << "running with max pT hard jet fraction of: " << maxFacPtHard << endl;
       fMaxPtHardSet        = kTRUE;
@@ -178,8 +178,7 @@ void AddTask_GammaConvCalo_pPb(
   TString cutnumberPhoton = photonCutNumberV0Reader.Data();
   TString cutnumberEvent = "80000003";
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-
-    //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
+  //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
   TString V0ReaderName        = Form("V0ReaderV1_%s_%s",cutnumberEvent.Data(),cutnumberPhoton.Data());
   AliV0ReaderV1 *fV0ReaderV1  =  NULL;
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
@@ -188,7 +187,6 @@ void AddTask_GammaConvCalo_pPb(
   } else {
     cout << "V0Reader: " << V0ReaderName.Data() << " found!!"<< endl;
   }
-
   //================================================
   //========= Add task to the ANALYSIS manager =====
   //================================================
@@ -203,35 +201,27 @@ void AddTask_GammaConvCalo_pPb(
   task->SetTrackMatcherRunningMode(trackMatcherRunningMode);
   if(trainConfig >= 1520 && trainConfig < 1530) task->SetDoHBTHistoOutput(kTRUE);
 
-  // cluster cuts
+    // cluster cuts
   // 0 "ClusterType",  1 "EtaMin", 2 "EtaMax", 3 "PhiMin", 4 "PhiMax", 5 "DistanceToBadChannel", 6 "Timing", 7 "TrackMatching", 8 "ExoticCell",
   // 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinMaxM20", 14 "RecConv", 15 "MaximumDispersion", 16 "NLM"
 
   //************************************************ PCM- EDC analysis 5 TeV pPb *********************************************
   if (trainConfig == 1){ // EMC  INT7 run1 & run2
-    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","411790105f032230000","0h63103100000010"); // 0-100% without NL
-    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC
+    cout << "Line: " << __LINE__ << endl;
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut    
   } else if (trainConfig == 2){ // EMC  INT7 run1 & run2
-    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); // 0-100% PCM NL
-    cuts.AddCutPCMCalo("80010113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC
+    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut
+    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut    
   } else if (trainConfig == 3){ // EMC EMC triggers
-    cuts.AddCutPCMCalo("80052113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EMC7
-    cuts.AddCutPCMCalo("80052113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EMC7
-  } else if (trainConfig == 4){ // EMC EMC triggers
-    cuts.AddCutPCMCalo("80083113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EG1
-    cuts.AddCutPCMCalo("80083113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EG1
-  } else if (trainConfig == 5){ // EMC EMC triggers
-    cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EG2
-    cuts.AddCutPCMCalo("80085113","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EG2
-  } else if (trainConfig == 6){ // EMC EMC triggers
-    cuts.AddCutPCMCalo("80083123","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EG1
-    cuts.AddCutPCMCalo("80083123","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EG1
-  } else if (trainConfig == 7){ // EMC EMC triggers
-    cuts.AddCutPCMCalo("80085123","00200009f9730000dge0400000","111110105f032230000","0h63103100000010"); // 0-100% without NL just EMC, EG2
-    cuts.AddCutPCMCalo("80085123","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC, EG2
-  } else if (trainConfig == 8){ // EMC  INT7 run1 & run2
-    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","411793105f032230000","0h63103100000010"); // 0-100% PCM NL
-    cuts.AddCutPCMCalo("80010123","00200009f9730000dge0400000","111113105f032230000","0h63103100000010"); // 0-100% PCM NL just EMC
+    cout << "Line: " << __LINE__ << endl;
+    cuts.AddCutPCMCalo("80052113","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut EMC7
+    cuts.AddCutPCMCalo("80085113","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut EG2
+    cuts.AddCutPCMCalo("80083113","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut EG1
+  } else if (trainConfig == 4){ // EMC EMC triggers MC rejected
+    cuts.AddCutPCMCalo("80052123","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut EMC7
+    cuts.AddCutPCMCalo("80085123","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut EG2
+    cuts.AddCutPCMCalo("80083123","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut EG1
 
   //************************************************ PCM- EDC analysis 5 TeV pPb INT7 sys *********************************
   } else if (trainConfig == 10) { // PCM variations
@@ -2027,7 +2017,7 @@ void AddTask_GammaConvCalo_pPb(
     if(analysisMesonCuts[i]->DoGammaSwappForBg()) analysisClusterCuts[i]->SetUseEtaPhiMapForBackCand(kTRUE);
     analysisClusterCuts[i]->SetFillCutHistograms("");
   }
-
+  
   task->SetEventCutList(numberOfCuts,EventCutList);
   task->SetConversionCutList(numberOfCuts,ConvCutList);
   task->SetCaloCutList(numberOfCuts,ClusterCutList);
