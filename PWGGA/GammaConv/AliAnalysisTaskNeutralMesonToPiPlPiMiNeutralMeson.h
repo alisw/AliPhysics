@@ -144,6 +144,10 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     Bool_t IsOmegaPiPlPiMiPiZeroDaughterAOD(TClonesArray* trackArray, Int_t label ) const;
     Bool_t IsD0PiPlPiMiPiZeroDaughter( Int_t label ) const;
     Bool_t IsD0PiPlPiMiPiZeroDaughterAOD(TClonesArray* trackArray, Int_t label ) const;
+    Bool_t IsRhoDaughterAOD(TClonesArray* trackArray, Int_t label ) const;
+    Bool_t IsKaonDaughterAOD(TClonesArray* trackArray, Int_t label ) const;
+    AliAODConversionPhoton* ReturnPiPlPiMiOneFromHNMMassClosestToRho(vector<Int_t> lGoodPosPionIndexPrev, vector<Int_t> lGoodNegPionIndexPrev, UInt_t i, UInt_t j);
+
     Bool_t GammaIsNeutralMesonPiPlPiMiNDMDaughter( Int_t label ) const;
     Bool_t GammaIsNeutralMesonPiPlPiMiNDMDaughterAOD(TClonesArray* trackArray, Int_t label ) const;
 
@@ -260,6 +264,12 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                            fHistoPosPionClsTPC;                                //!<! array of histos of positive pion, findable tpc cluster, pT
     TH2F**                            fHistoPionDCAxy;                                    //!<! array of histos of pion, dca_xy, pT
     TH2F**                            fHistoPionDCAz;                                     //!<! array of histos of pion, dca_z, pT
+    TH2F**                            fHistoPionDCAxyFromOmega;                           //!<! array of histos of pions from omegas, dca vs pT
+    TH2F**                            fHistoPionDCAzFromOmega;                            //!<! array of histos of pions from omegas, dca vs pT
+    TH2F**                            fHistoPionDCAxyFromRho;                             //!<! array of histos of pions from rho mesons, dca vs pT
+    TH2F**                            fHistoPionDCAzFromRho;                              //!<! array of histos of pions from rho mesons, dca vs pT
+    TH2F**                            fHistoPionDCAxyFromKaon;                            //!<! array of histos of pions from kaons, dca vs pT
+    TH2F**                            fHistoPionDCAzFromKaon;                             //!<! array of histos of pions from kaons, dca vs pT
     TH2F**                            fHistoPionTPCdEdxNSigma;                            //!<! array of histos of pion, p, TPC nSigma dEdx pion
     TH2F**                            fHistoPionTPCdEdx;                                  //!<! array of histos of pion, p, TPC dEdx
     TH2F**                            fHistoPionPionInvMassPt;                            //!<! array of histos of pion pion, invMass, pT_{pi+pi-}
@@ -442,7 +452,11 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
     TH2F**                          fHistoTruePionPionInvMassPt;                          //!<! histos with reconstructed validated two pion, invariant mass, pT
     TH2F**                          fHistoTruePionPionFromSameMotherInvMassPt;            //!<! histos with reconstructed validated two pion from same mother, invariant mass, pT
     TH2F**                          fHistoTruePionPionFromHNMInvMassPt;                   //!<! histos with reconstructed validated two pion from eta , invariant mass, pT
+    TH2F**                          fHistoTruePionFromHNMInvMassClosestToRhoPt;           //!<! histos filled for each true HNM with the pi+pi- mass closest to rho with one of the pions from the HNM
     TH2F**                          fHistoTruePionFromHNMInvMassPt;                       //!<! histos with reconstructed validated one pion from eta , invariant mass, pT
+    TH2F**                          fHistoTruePionPionArmenteros;                         //!<! histos with reconstructed validated two pion, armenteros (alpha vs qt)
+    TH2F**                          fHistoTruePionPionFromRhoArmenteros;                  //!<! histos with reconstructed validated two pions from a rho meson, armenteros (alpha vs qt)
+    TH2F**                          fHistoTruePionFromHNMArmenteros;                      //!<! histos with reconstructed validated one pion from HNM, armenteros (alpha vs qt)
 
     TH2F**                          fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt;         //!<! histos with reconstructed validated pi+ pi-  from omega, invariant mass, pT
     TH2F**                          fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt;       //!<! histos with reconstructed validated pi+ pi-  from eta, invariant mass, pT
@@ -650,7 +664,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 32);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 33);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H

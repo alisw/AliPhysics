@@ -154,6 +154,12 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoPosPionClsTPC(nullptr),
   fHistoPionDCAxy(nullptr),
   fHistoPionDCAz(nullptr),
+  fHistoPionDCAxyFromOmega(nullptr),
+  fHistoPionDCAzFromOmega(nullptr),
+  fHistoPionDCAxyFromRho(nullptr),
+  fHistoPionDCAzFromRho(nullptr),
+  fHistoPionDCAxyFromKaon(nullptr),
+  fHistoPionDCAzFromKaon(nullptr),
   fHistoPionTPCdEdxNSigma(nullptr),
   fHistoPionTPCdEdx(nullptr),
   fHistoPionPionInvMassPt(nullptr),
@@ -308,7 +314,11 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoTruePionPionInvMassPt(nullptr),
   fHistoTruePionPionFromSameMotherInvMassPt(nullptr),
   fHistoTruePionPionFromHNMInvMassPt(nullptr),
+  fHistoTruePionFromHNMInvMassClosestToRhoPt(nullptr),
   fHistoTruePionFromHNMInvMassPt(nullptr),
+  fHistoTruePionPionArmenteros(nullptr),
+  fHistoTruePionPionFromRhoArmenteros(nullptr),
+  fHistoTruePionFromHNMArmenteros(nullptr),
   fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt(nullptr),
   fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt(nullptr),
   fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt(nullptr),
@@ -574,6 +584,12 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoPosPionClsTPC(nullptr),
   fHistoPionDCAxy(nullptr),
   fHistoPionDCAz(nullptr),
+  fHistoPionDCAxyFromOmega(nullptr),
+  fHistoPionDCAzFromOmega(nullptr),
+  fHistoPionDCAxyFromRho(nullptr),
+  fHistoPionDCAzFromRho(nullptr),
+  fHistoPionDCAxyFromKaon(nullptr),
+  fHistoPionDCAzFromKaon(nullptr),
   fHistoPionTPCdEdxNSigma(nullptr),
   fHistoPionTPCdEdx(nullptr),
   fHistoPionPionInvMassPt(nullptr),
@@ -728,7 +744,11 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   fHistoTruePionPionInvMassPt(nullptr),
   fHistoTruePionPionFromSameMotherInvMassPt(nullptr),
   fHistoTruePionPionFromHNMInvMassPt(nullptr),
+  fHistoTruePionFromHNMInvMassClosestToRhoPt(nullptr),
   fHistoTruePionFromHNMInvMassPt(nullptr),
+  fHistoTruePionPionArmenteros(nullptr),
+  fHistoTruePionPionFromRhoArmenteros(nullptr),
+  fHistoTruePionFromHNMArmenteros(nullptr),
   fHistoTruePiPlPiMiSameMotherFromEtaInvMassPt(nullptr),
   fHistoTruePiPlPiMiSameMotherFromOmegaInvMassPt(nullptr),
   fHistoTruePiPlPiMiSameMotherFromRhoInvMassPt(nullptr),
@@ -2039,6 +2059,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistMCReconstructibleNDMPtHeavyPt            = new TH2F*[fnCuts];
         fHistMCReconstructiblePiPlusPtHeavyPt         = new TH2F*[fnCuts];
         fHistMCReconstructiblePiMinusPtHeavyPt        = new TH2F*[fnCuts];
+        fHistoPionDCAxyFromOmega                      = new TH2F*[fnCuts];
+        fHistoPionDCAzFromOmega                       = new TH2F*[fnCuts];
+        fHistoPionDCAxyFromRho                        = new TH2F*[fnCuts];
+        fHistoPionDCAzFromRho                         = new TH2F*[fnCuts];
+        fHistoPionDCAxyFromKaon                       = new TH2F*[fnCuts];
+        fHistoPionDCAzFromKaon                        = new TH2F*[fnCuts];
       }
     }
     fHistoMCHNMPiPlPiMiNDMPt                     = new TH1F*[fnCuts];
@@ -2087,7 +2113,11 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fHistoTruePionPionInvMassPt                               = new TH2F*[fnCuts];
         fHistoTruePionPionFromSameMotherInvMassPt                 = new TH2F*[fnCuts];
         fHistoTruePionPionFromHNMInvMassPt                        = new TH2F*[fnCuts];
+        fHistoTruePionFromHNMInvMassClosestToRhoPt                        = new TH2F*[fnCuts];
         fHistoTruePionFromHNMInvMassPt                        = new TH2F*[fnCuts];
+        fHistoTruePionPionArmenteros                        = new TH2F*[fnCuts];
+        fHistoTruePionPionFromRhoArmenteros                        = new TH2F*[fnCuts];
+        fHistoTruePionFromHNMArmenteros                        = new TH2F*[fnCuts];
 
         fHistoTrueMesonFlags                                      = new TH1F*[fnCuts];
 
@@ -2717,11 +2747,33 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
           fHistoTruePionPionFromHNMInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoTruePionPionFromHNMInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePionPionFromHNMInvMassPt[iCut]);
+          fHistoTruePionFromHNMInvMassClosestToRhoPt[iCut]          = new TH2F("ESD_TruePiPlusOrPiNegFromHNM_InvMassClosestToRhoPt","ESD_TruePiPlusOrPiNegFromHNM_InvMassClosestToRhoPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1], HistoNPtBins, arrPtBinning);
+          fHistoTruePionFromHNMInvMassClosestToRhoPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
+          fHistoTruePionFromHNMInvMassClosestToRhoPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoTruePionFromHNMInvMassClosestToRhoPt[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePionFromHNMInvMassClosestToRhoPt[iCut]);
           fHistoTruePionFromHNMInvMassPt[iCut]          = new TH2F("ESD_TruePiPlusOrPiNegFromHNM_InvMassPt","ESD_TruePiPlusOrPiNegFromHNM_InvMassPt",HistoNMassBinsPiPlusPiMinus,HistoMassRangePiPlusPiMinus[0],HistoMassRangePiPlusPiMinus[1], HistoNPtBins, arrPtBinning);
           fHistoTruePionFromHNMInvMassPt[iCut]->GetXaxis()->SetTitle("M_{#pi^{+}#pi^{-}} (GeV/c^{2})");
           fHistoTruePionFromHNMInvMassPt[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
           fHistoTruePionFromHNMInvMassPt[iCut]->Sumw2();
           fTrueList[iCut]->Add(fHistoTruePionFromHNMInvMassPt[iCut]);
+
+          fHistoTruePionPionArmenteros[iCut]          = new TH2F("ESD_TruePiPlusPiNeg_Armenteros","ESD_TruePiPlusPiNeg_Armenteros",100,-1,1,100,0,0.5);
+          fHistoTruePionPionArmenteros[iCut]->GetXaxis()->SetTitle("#alpha (#frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}})");
+          fHistoTruePionPionArmenteros[iCut]->GetYaxis()->SetTitle("q_{T} (GeV/c)");
+          fHistoTruePionPionArmenteros[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePionPionArmenteros[iCut]);
+
+          fHistoTruePionPionFromRhoArmenteros[iCut]          = new TH2F("ESD_TruePiPlusPiNegFromRho_Armenteros","ESD_TruePiPlusPiNegFromRho_Armenteros",100,-1,1,100,0,0.5);
+          fHistoTruePionPionFromRhoArmenteros[iCut]->GetXaxis()->SetTitle("#alpha (#frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}})");
+          fHistoTruePionPionFromRhoArmenteros[iCut]->GetYaxis()->SetTitle("q_{T} (GeV/c)");
+          fHistoTruePionPionFromRhoArmenteros[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePionPionFromRhoArmenteros[iCut]);
+          fHistoTruePionFromHNMArmenteros[iCut]          = new TH2F("ESD_TruePiPlusOrPiNegFromHNM_Armenteros","ESD_TruePiPlusOrPiNegFromHNM_Armenteros",100,-1,1,100,0,0.5);
+          fHistoTruePionFromHNMArmenteros[iCut]->GetXaxis()->SetTitle("#alpha (#frac{p_{L}^{+}-p_{L}^{-}}{p_{L}^{+}+p_{L}^{-}})");
+          fHistoTruePionFromHNMArmenteros[iCut]->GetYaxis()->SetTitle("q_{T} (GeV/c)");
+          fHistoTruePionFromHNMArmenteros[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoTruePionFromHNMArmenteros[iCut]);
 
           fHistoTruevParticleChi2PerNDF[iCut] = new TH1F("fHistoTruevParticleChi2PerNDF","fHistoTruevParticleChi2PerNDF",300,0,300);
           fHistoTruevParticleChi2PerNDF[iCut]->GetXaxis()->SetTitle("#chi^{2}/ndf");
@@ -3053,6 +3105,42 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
             fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM_HighPt[iCut]->GetYaxis()->SetTitle(Form("M_{#pi^{-} %s} (GeV/c^{2})", NameNDMLatex.Data()));
             fTrueList[iCut]->Add(fHistoTrueMotherPiPlPiMiNDMDalitzPlotNegSubNDM_HighPt[iCut]);
           }
+
+          fHistoPionDCAxyFromOmega[iCut]          = new TH2F("ESD_PrimaryPions_DCAxy_FromOmega","ESD_PrimaryPions_DCAxy_FromOmega",800,-4.0,4.0,400,0.,10.);
+          fHistoPionDCAxyFromOmega[iCut]->GetXaxis()->SetTitle("DCA_{xy}");
+          fHistoPionDCAxyFromOmega[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoPionDCAxyFromOmega[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoPionDCAxyFromOmega[iCut]);
+
+          fHistoPionDCAxyFromRho[iCut]          = new TH2F("ESD_PrimaryPions_DCAxy_FromRho","ESD_PrimaryPions_DCAxy_FromRho",800,-4.0,4.0,400,0.,10.);
+          fHistoPionDCAxyFromRho[iCut]->GetXaxis()->SetTitle("DCA_{xy}");
+          fHistoPionDCAxyFromRho[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoPionDCAxyFromRho[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoPionDCAxyFromRho[iCut]);
+
+          fHistoPionDCAxyFromKaon[iCut]          = new TH2F("ESD_PrimaryPions_DCAxy_FromKaon","ESD_PrimaryPions_DCAxy_FromKaon",800,-4.0,4.0,400,0.,10.);
+          fHistoPionDCAxyFromKaon[iCut]->GetXaxis()->SetTitle("DCA_{xy}");
+          fHistoPionDCAxyFromKaon[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoPionDCAxyFromKaon[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoPionDCAxyFromKaon[iCut]);
+
+          fHistoPionDCAzFromOmega[iCut]          = new TH2F("ESD_PrimaryPions_DCAz_FromOmega","ESD_PrimaryPions_DCAz_FromOmega",800,-4.0,4.0,400,0.,10.);
+          fHistoPionDCAzFromOmega[iCut]->GetXaxis()->SetTitle("DCA_{z}");
+          fHistoPionDCAzFromOmega[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoPionDCAzFromOmega[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoPionDCAzFromOmega[iCut]);
+
+          fHistoPionDCAzFromRho[iCut]          = new TH2F("ESD_PrimaryPions_DCAz_FromRho","ESD_PrimaryPions_DCAz_FromRho",800,-4.0,4.0,400,0.,10.);
+          fHistoPionDCAzFromRho[iCut]->GetXaxis()->SetTitle("DCA_{z}");
+          fHistoPionDCAzFromRho[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoPionDCAzFromRho[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoPionDCAzFromRho[iCut]);
+
+          fHistoPionDCAzFromKaon[iCut]          = new TH2F("ESD_PrimaryPions_DCAz_FromKaon","ESD_PrimaryPions_DCAz_FromKaon",800,-4.0,4.0,400,0.,10.);
+          fHistoPionDCAzFromKaon[iCut]->GetXaxis()->SetTitle("DCA_{z}");
+          fHistoPionDCAzFromKaon[iCut]->GetYaxis()->SetTitle("p_{T} (GeV/c)");
+          fHistoPionDCAzFromKaon[iCut]->Sumw2();
+          fTrueList[iCut]->Add(fHistoPionDCAzFromKaon[iCut]);
 
           if(fDoMesonQA>1){
             fTreePiPiSameMother[iCut]                         = new TTree("TreePiPiSameMother","TreePiPiSameMother");
@@ -5801,16 +5889,22 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
                   fHistoTruePionPionInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
                   fHistoTruevParticleChi2PerNDF[fiCut]->Fill(chi2);
                   fHistoTruevParticledS[fiCut]->Fill(ds);
+                  Double_t Armenterosqtalpha[2] = {0,0};
+                  AliGAKFParticle::GetArmenterosPodolanski(posPionCandidateKF,negPionCandidateKF,Armenterosqtalpha);
+                  fHistoTruePionPionArmenteros[fiCut]->Fill(Armenterosqtalpha[1],Armenterosqtalpha[0],fWeightJetJetMC);
                   if (motherlabeln == motherlabelp){
                     fHistoTruePionPionFromSameMotherInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
                     fHistoTruevParticleFromSameMotherChi2PerNDF[fiCut]->Fill(chi2);
                     fHistoTruevParticleFromSameMotherdS[fiCut]->Fill(ds);
+                    if(IsRhoDaughterAOD(AODMCTrackArray,labeln)) fHistoTruePionPionFromRhoArmenteros[fiCut]->Fill(Armenterosqtalpha[1],Armenterosqtalpha[0],fWeightJetJetMC);
                     switch( fSelectedHeavyNeutralMeson ) {
                     case 0: // ETA MESON
                       if( IsEtaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labeln) ){
                         fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
                         fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
                         fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                        AliAODConversionPhoton *vParticleClosestToRhoMass = ReturnPiPlPiMiOneFromHNMMassClosestToRho(lGoodPosPionIndexPrev, lGoodNegPionIndexPrev, i, j);
+                        fHistoTruePionFromHNMInvMassClosestToRhoPt[fiCut]->Fill(vParticleClosestToRhoMass->M(), vParticleClosestToRhoMass->Pt(), fWeightJetJetMC);
                       }
                       break;
                     case 1: // OMEGA MESON
@@ -5818,6 +5912,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
                         fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
                         fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
                         fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                        AliAODConversionPhoton *vParticleClosestToRhoMass = ReturnPiPlPiMiOneFromHNMMassClosestToRho(lGoodPosPionIndexPrev, lGoodNegPionIndexPrev, i, j);
+                        fHistoTruePionFromHNMInvMassClosestToRhoPt[fiCut]->Fill(vParticleClosestToRhoMass->M(), vParticleClosestToRhoMass->Pt(), fWeightJetJetMC);
                       }
                       break;
                     case 2: // ETA PRIME MESON
@@ -5825,6 +5921,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
                         fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
                         fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
                         fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                        AliAODConversionPhoton *vParticleClosestToRhoMass = ReturnPiPlPiMiOneFromHNMMassClosestToRho(lGoodPosPionIndexPrev, lGoodNegPionIndexPrev, i, j);
+                        fHistoTruePionFromHNMInvMassClosestToRhoPt[fiCut]->Fill(vParticleClosestToRhoMass->M(), vParticleClosestToRhoMass->Pt(), fWeightJetJetMC);
                       }
                       break;
                     case 3: // D0 MESON
@@ -5832,6 +5930,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
                         fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
                         fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
                         fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                        AliAODConversionPhoton *vParticleClosestToRhoMass = ReturnPiPlPiMiOneFromHNMMassClosestToRho(lGoodPosPionIndexPrev, lGoodNegPionIndexPrev, i, j);
+                        fHistoTruePionFromHNMInvMassClosestToRhoPt[fiCut]->Fill(vParticleClosestToRhoMass->M(), vParticleClosestToRhoMass->Pt(), fWeightJetJetMC);
                       }
                       break;
                     default:
@@ -5842,21 +5942,25 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
                   case 0: // ETA MESON
                     if( IsEtaPiPlPiMiPiZeroDaughter(labeln) || IsEtaPiPlPiMiPiZeroDaughter(labelp)){
                       fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      fHistoTruePionFromHNMArmenteros[fiCut]->Fill(Armenterosqtalpha[1],Armenterosqtalpha[0],fWeightJetJetMC);
                     }
                     break;
                   case 1: // OMEGA MESON
                     if( IsOmegaPiPlPiMiPiZeroDaughter(labeln) || IsOmegaPiPlPiMiPiZeroDaughter(labelp)){
                       fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      fHistoTruePionFromHNMArmenteros[fiCut]->Fill(Armenterosqtalpha[1],Armenterosqtalpha[0],fWeightJetJetMC);
                     }
                     break;
                   case 2: // ETA PRIME MESON
                     if( IsEtaPrimePiPlPiMiEtaDaughter(labeln) || IsEtaPrimePiPlPiMiEtaDaughter(labelp)){
                       fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      fHistoTruePionFromHNMArmenteros[fiCut]->Fill(Armenterosqtalpha[1],Armenterosqtalpha[0],fWeightJetJetMC);
                     }
                     break;
                   case 3: // D0 MESON
                     if( IsD0PiPlPiMiPiZeroDaughter(labeln) || IsD0PiPlPiMiPiZeroDaughter(labelp)){
                       fHistoTruePionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
+                      fHistoTruePionFromHNMArmenteros[fiCut]->Fill(Armenterosqtalpha[1],Armenterosqtalpha[0],fWeightJetJetMC);
                     }
                     break;
                   default:
@@ -5879,6 +5983,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
                       fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
                       fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
                       fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                      AliAODConversionPhoton *vParticleClosestToRhoMass = ReturnPiPlPiMiOneFromHNMMassClosestToRho(lGoodPosPionIndexPrev, lGoodNegPionIndexPrev, i, j);
+                      fHistoTruePionFromHNMInvMassClosestToRhoPt[fiCut]->Fill(vParticleClosestToRhoMass->M(), vParticleClosestToRhoMass->Pt(), fWeightJetJetMC);
                     }
                     break;
                   case 1: // OMEGA MESON
@@ -5886,6 +5992,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
                       fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
                       fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
                       fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                      AliAODConversionPhoton *vParticleClosestToRhoMass = ReturnPiPlPiMiOneFromHNMMassClosestToRho(lGoodPosPionIndexPrev, lGoodNegPionIndexPrev, i, j);
+                      fHistoTruePionFromHNMInvMassClosestToRhoPt[fiCut]->Fill(vParticleClosestToRhoMass->M(), vParticleClosestToRhoMass->Pt(), fWeightJetJetMC);
                     }
                     break;
                   case 2: // ETA PRIME MESON
@@ -5893,6 +6001,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
                       fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
                       fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
                       fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                      AliAODConversionPhoton *vParticleClosestToRhoMass = ReturnPiPlPiMiOneFromHNMMassClosestToRho(lGoodPosPionIndexPrev, lGoodNegPionIndexPrev, i, j);
+                      fHistoTruePionFromHNMInvMassClosestToRhoPt[fiCut]->Fill(vParticleClosestToRhoMass->M(), vParticleClosestToRhoMass->Pt(), fWeightJetJetMC);
                     }
                     break;
                   case 3: // D0 MESON
@@ -5900,6 +6010,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
                       fHistoTruePionPionFromHNMInvMassPt[fiCut]->Fill(vParticle->GetMass(),vParticle->Pt(), fWeightJetJetMC);
                       fHistoTruevParticleFromHNMChi2PerNDF[fiCut]->Fill(chi2);
                       fHistoTruevParticleFromHNMdS[fiCut]->Fill(ds);
+                      AliAODConversionPhoton *vParticleClosestToRhoMass = ReturnPiPlPiMiOneFromHNMMassClosestToRho(lGoodPosPionIndexPrev, lGoodNegPionIndexPrev, i, j);
+                      fHistoTruePionFromHNMInvMassClosestToRhoPt[fiCut]->Fill(vParticleClosestToRhoMass->M(), vParticleClosestToRhoMass->Pt(), fWeightJetJetMC);
                     }
                     break;
                   default:
@@ -6002,6 +6114,22 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
         fHistoPionTPCdEdxNSigma[fiCut]->Fill( negPionCandidate->P(),((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(negPionCandidate, AliPID::kPion), fWeightJetJetMC );
 
         fHistoPionTPCdEdx[fiCut]->Fill(negPionCandidate->P(), TMath::Abs(negPionCandidate->GetTPCsignal()), fWeightJetJetMC);
+
+        if (fMCEvent){
+          Int_t labeln=TMath::Abs(negPionCandidate->GetLabel());
+          if(IsOmegaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labeln)){
+            fHistoPionDCAxyFromOmega[fiCut]->Fill(dcaToVertexXYNeg, negPionCandidate->Pt(), fWeightJetJetMC);
+            fHistoPionDCAzFromOmega[fiCut]->Fill(dcaToVertexZNeg, negPionCandidate->Pt(), fWeightJetJetMC);
+          }
+          else if(IsRhoDaughterAOD(AODMCTrackArray,labeln)){
+            fHistoPionDCAxyFromRho[fiCut]->Fill(dcaToVertexXYNeg, negPionCandidate->Pt(), fWeightJetJetMC);
+            fHistoPionDCAzFromRho[fiCut]->Fill(dcaToVertexZNeg, negPionCandidate->Pt(), fWeightJetJetMC);
+          }
+          else if(IsKaonDaughterAOD(AODMCTrackArray,labeln)){
+            fHistoPionDCAxyFromKaon[fiCut]->Fill(dcaToVertexXYNeg, negPionCandidate->Pt(), fWeightJetJetMC);
+            fHistoPionDCAzFromKaon[fiCut]->Fill(dcaToVertexZNeg, negPionCandidate->Pt(), fWeightJetJetMC);
+          }
+        }
       }
     }
 
@@ -6031,6 +6159,22 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessPionCandidatesAOD
         fHistoPionTPCdEdxNSigma[fiCut]->Fill( posPionCandidate->P(),((AliPrimaryPionCuts*)fPionCutArray->At(fiCut))->GetPIDResponse()->NumberOfSigmasTPC(posPionCandidate, AliPID::kPion), fWeightJetJetMC );
 
         fHistoPionTPCdEdx[fiCut]->Fill(posPionCandidate->P(), TMath::Abs(posPionCandidate->GetTPCsignal()), fWeightJetJetMC);
+
+        if (fMCEvent){
+          Int_t labelp=TMath::Abs(posPionCandidate->GetLabel());
+          if(IsOmegaPiPlPiMiPiZeroDaughterAOD(AODMCTrackArray,labelp)){
+            fHistoPionDCAxyFromOmega[fiCut]->Fill(dcaToVertexXYPos, posPionCandidate->Pt(), fWeightJetJetMC);
+            fHistoPionDCAzFromOmega[fiCut]->Fill(dcaToVertexZPos, posPionCandidate->Pt(), fWeightJetJetMC);
+          }
+          else if(IsRhoDaughterAOD(AODMCTrackArray,labelp)){
+            fHistoPionDCAxyFromRho[fiCut]->Fill(dcaToVertexXYPos, posPionCandidate->Pt(), fWeightJetJetMC);
+            fHistoPionDCAzFromRho[fiCut]->Fill(dcaToVertexZPos, posPionCandidate->Pt(), fWeightJetJetMC);
+          }
+          else if(IsKaonDaughterAOD(AODMCTrackArray,labelp)){
+            fHistoPionDCAxyFromKaon[fiCut]->Fill(dcaToVertexXYPos, posPionCandidate->Pt(), fWeightJetJetMC);
+            fHistoPionDCAzFromKaon[fiCut]->Fill(dcaToVertexZPos, posPionCandidate->Pt(), fWeightJetJetMC);
+          }
+        }
       }
     }
   }
@@ -8789,6 +8933,34 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::IsD0PiPlPiMiPiZeroDaug
   return kFALSE;
 }
 
+//_____________________________________________________________________________________
+Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::IsKaonDaughterAOD(TClonesArray* trackArray, Int_t label ) const {
+  //
+  // Returns true if the particle is a Kaon daughter
+  //
+  if(label<0) return kFALSE;
+  Int_t motherLabel = (static_cast<AliAODMCParticle*>(trackArray->At(label)))->GetMother();
+  if( motherLabel < 0 || motherLabel >= trackArray->GetEntriesFast() ) return kFALSE;
+
+  AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(trackArray->At(motherLabel));
+  Int_t c = fabs(mother->GetPdgCode());
+  return( c == 130 || c == 310 || c == 311);
+}
+
+//_____________________________________________________________________________________
+Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::IsRhoDaughterAOD(TClonesArray* trackArray, Int_t label ) const {
+  //
+  // Returns true if the particle is a Kaon daughter
+  //
+  if(label<0) return kFALSE;
+  Int_t motherLabel = (static_cast<AliAODMCParticle*>(trackArray->At(label)))->GetMother();
+  if( motherLabel < 0 || motherLabel >= trackArray->GetEntriesFast() ) return kFALSE;
+
+  AliAODMCParticle* mother = static_cast<AliAODMCParticle*>(trackArray->At(motherLabel));
+  Int_t c = fabs(mother->GetPdgCode());
+  return( c == 213 || c == 113);
+}
+
 
 //_____________________________________________________________________________
 Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::IsPiPlPiMiPiZeroDecay(AliMCParticle *fMCMother) const
@@ -8913,6 +9085,47 @@ Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::IsPiPlPiMiEtaDecayAOD(
 
   return kFALSE;
 }
+
+//_____________________________________________________________________________________
+AliAODConversionPhoton* AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ReturnPiPlPiMiOneFromHNMMassClosestToRho(vector<Int_t> lGoodPosPionIndexPrev, vector<Int_t> lGoodNegPionIndexPrev, UInt_t i, UInt_t j){
+  //
+  // Returns the a theoretical mother of pi+ pi- with a combined mass closest to the rho, with one of the pions being i (Neg) and j (Pos)
+  //
+  AliAODConversionPhoton *vParticle = NULL;
+  AliAODConversionPhoton *vParticleClosestToRhoMass = NULL;
+  // First loop through all neg pions combined with the fixed pos pion j
+  AliVTrack* posPionCandidatefromHNM = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[j]));
+  AliGAKFParticle posPionCandidatefromHNMKF( *posPionCandidatefromHNM, 211 );
+
+  for(UInt_t i1 = 0; i1 < lGoodNegPionIndexPrev.size(); i1++){
+    AliVTrack* negPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i1]));
+    AliGAKFParticle negPionCandidateKF( *negPionCandidate, 211 );
+    AliKFConversionPhoton* virtualPhoton = new AliKFConversionPhoton(negPionCandidateKF,posPionCandidatefromHNMKF);
+    vParticle = new AliAODConversionPhoton(virtualPhoton);
+    vParticle->SetPxPyPzE(posPionCandidatefromHNMKF.Px() + negPionCandidateKF.Px(),posPionCandidatefromHNMKF.Py() + negPionCandidateKF.Py(),posPionCandidatefromHNMKF.Pz() + negPionCandidateKF.Pz(),posPionCandidatefromHNMKF.E() + negPionCandidateKF.E());
+    if(!vParticleClosestToRhoMass) vParticleClosestToRhoMass = vParticle;
+    if(fabs(vParticle->M()-0.77) < fabs(vParticleClosestToRhoMass->M()-0.77))
+      vParticleClosestToRhoMass = vParticle;
+  }
+
+  // Then loop through all pos pions combined with the fixed neg pion i
+  AliVTrack* negPionCandidatefromHNM = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
+  AliGAKFParticle negPionCandidatefromHNMKF( *negPionCandidatefromHNM, 211 );
+
+  for(UInt_t j1 = 0; j1 < lGoodPosPionIndexPrev.size(); j1++){
+    AliVTrack* posPionCandidate = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodPosPionIndexPrev[j1]));
+    AliGAKFParticle posPionCandidateKF( *posPionCandidate, 211 );
+    AliKFConversionPhoton* virtualPhoton = new AliKFConversionPhoton(posPionCandidateKF,negPionCandidatefromHNMKF);
+    vParticle = new AliAODConversionPhoton(virtualPhoton);
+    vParticle->SetPxPyPzE(negPionCandidatefromHNMKF.Px() + posPionCandidateKF.Px(),negPionCandidatefromHNMKF.Py() + posPionCandidateKF.Py(),negPionCandidatefromHNMKF.Pz() + posPionCandidateKF.Pz(),negPionCandidatefromHNMKF.E() + posPionCandidateKF.E());
+    if(!vParticleClosestToRhoMass) vParticleClosestToRhoMass = vParticle;
+    if(fabs(vParticle->M()-0.77) < fabs(vParticleClosestToRhoMass->M()-0.77))
+      vParticleClosestToRhoMass = vParticle;
+  }
+
+  return vParticleClosestToRhoMass;
+}
+
 
 //_____________________________________________________________________________________
 Bool_t AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::GammaIsNeutralMesonPiPlPiMiNDMDaughter( Int_t label ) const {
