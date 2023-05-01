@@ -88,12 +88,9 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure()
   fTreeSubstructure(0)
 
 {
-  for (Int_t i = 0; i < 18; i++) {
+  for (Int_t i = 0; i < 22; i++) {
     fShapesVar[i] = 0;
   }
-  fShapesVar[18]  =  -1;
-  fShapesVar[19]  =  -1;
-  fShapesVar[20]  =  -1;
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -111,7 +108,8 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
     fPtThreshold(-9999.),
     fRMatching(0.2),
     fCentSelectOn(kTRUE),
-    fCentMin(0), fCentMax(10),
+    fCentMin(0), 
+    fCentMax(10),
     fOneConstSelectOn(kFALSE),
     fTrackCheckPlots(kFALSE),
     fDoFillMCLund(kFALSE),
@@ -141,12 +139,9 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
     
 {
   // Standard constructor.
-  for (Int_t i = 0; i < 18; i++) {
+  for (Int_t i = 0; i < 22; i++) {
     fShapesVar[i] = -1;
   }
-  fShapesVar[18]  =  -1;
-  fShapesVar[19]  =  -1;
-  fShapesVar[20]  =  -1;
   SetMakeGeneralHistograms(kTRUE);
 
   DefineOutput(1, TList::Class());
@@ -227,7 +222,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   }
 
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 21;
+  const Int_t nVar = 22;
   const char *nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeSubstructure = new TTree(nameoutput, nameoutput);
   TString *fShapesVarNames = new TString[nVar];
@@ -272,6 +267,9 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
     fQVectorReader=(AliAnalysisTaskJetQnVectors*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetQnVectors");
     if(!fQVectorReader){printf("Error: No AliAnalysisTaskJetQnVectors");return;} // GetQVectorReader
     fShapesVarNames[20] = "EP";}
+
+  fShapesVarNames[21] = "etaJet";
+  
 
   for (Int_t ivar = 0; ivar < nVar; ivar++) {
     if (fShapesVarNames[ivar].Length() != 0)
@@ -505,6 +503,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
 
       fShapesVar[0] = ptSubtracted;
       fShapesVar[10] = jet1->MaxTrackPt();
+      fShapesVar[21] = jet1->Eta();
       
       if(fCutDoubleCounts==kTRUE && fJetShapeType==kDetEmbPartPythia) if(jet1->MaxTrackPt()>jet2->MaxTrackPt()) continue;
 

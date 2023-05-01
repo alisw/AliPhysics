@@ -105,7 +105,7 @@ protected:
   JetShapeType                  fJetShapeType;         ///< jet type to be used
   JetShapeSub                   fJetShapeSub;          ///< jet subtraction to be used
   JetSelectionType              fJetSelection;         ///< Jet selection: inclusive/recoil jet
-  Float_t                       fShapesVar[21];        ///< jet shapes used for the tagging
+  Float_t                       fShapesVar[22];        ///< jet shapes used for the tagging
   Float_t                       fPtThreshold;          ///<
   Float_t                       fRMatching;            ///<
 
@@ -152,6 +152,6 @@ private:
   AliAnalysisTaskNewJetSubstructure &
   operator=(const AliAnalysisTaskNewJetSubstructure &); // not implemented
 
-  ClassDef(AliAnalysisTaskNewJetSubstructure, 14)
+  ClassDef(AliAnalysisTaskNewJetSubstructure, 15)
 };
 #endif
