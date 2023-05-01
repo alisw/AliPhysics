@@ -394,14 +394,70 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
 //Looping over the jet
     double jet_pt = fJet->Pt();
     jet_pt_hist->Fill(jet_pt); //filling histogram with momentum of jets
-//    constit = fConstitutents.constituents(); //vector of single jet constituents. Using pseudojet jet.constituent
+//For jets with 2 constituents
     for(int j=0; j<int(fConstituents.size()); j++)  //looping over constituents of the fConstituents object
         {
+         if(int(fConstituents.size()) == 2)
+         {
+//For 3 point correlator
             for(int s=0; s<j ; s++)
             {
+                double eee_jss_2 =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
+                double deltaR_jss_2 = fConstituents[j].delta_R(fConstituents[s]);
+                double delta_logR_jss_2 = log(deltaR_jss_2);
+                
+                energy_pairs_tri.push_back(eee_jss_2);
+                max_R_distvec.push_back(deltaR_jss_2);
+                max_logR_distvec.push_back(delta_logR_jss_2);
+                
+                EEEC_hist->Fill(deltaR_jss_2,eee_jss_2);
+                EEEC_pt_hist->Fill(deltaR_jss_2,jet_pt,eee_jss_2);
+                EEEC_pt_hist_log->Fill(delta_logR_jss_2,jet_pt,eee_jss_2);
+    
+            }//close s loop for the 3 point correlator
+//For 2 point correlator
+    for(int s=0; s<j ; s++)
+            {
+                double delta_R_js_2 = fConstituents[j].delta_R(fConstituents[s]);
+                double log_delta_R_js_2 = log(delta_R_js_2);
+                double ee_js_2 = (fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
+
+//Filling the vectors
+                delta_Rvec.push_back(delta_R_js_2);
+                energy_pairs_vec.push_back(ee_js_2);
+                EEC_hist->Fill(delta_R_js_2,ee_js_2);
+                EEC_pt_hist->Fill(delta_R_js_2,jet_pt,ee_js_2);
+                EEC_pt_hist_log->Fill(log_delta_R_js_2,jet_pt,ee_js_2);
+////                fTreeEEC->Fill();
+                }//close s loop for the 2 point correlator
+            }//close if loop
+        }//close j loop
+
+
+//For jets with more than 2 constituents
+    for(int j=0; j<int(fConstituents.size()); j++)  //looping over constituents of the fConstituents object
+        {
+         if(int(fConstituents.size()) == 2) continue;
+            for(int s=0; s<int(fConstituents.size()) ; s++)
+            {
+                if(s==j) continue; //This ensures I don't get stuff like (000) for (jss)
+
+                double eee_jss =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
+                double deltaR_jss = fConstituents[j].delta_R(fConstituents[s]);
+                double delta_logR_jss = log(deltaR_jss);
+                
+                energy_pairs_tri.push_back(eee_jss);
+                max_R_distvec.push_back(deltaR_jss);
+                max_logR_distvec.push_back(delta_logR_jss);
+                
+                EEEC_hist->Fill(deltaR_jss,eee_jss);
+                EEEC_pt_hist->Fill(deltaR_jss,jet_pt,eee_jss);
+                EEEC_pt_hist_log->Fill(delta_logR_jss,jet_pt,eee_jss);
+                
 //For 3 point correlator
-                for( int m=0; m<j; m++)
-                   {
+                for( int m=0; m!=j && m!=s; m++)
+                {
+                   if(s>j) continue;
                    double eee_jsm = ((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt())/(pow(jet_pt,3)));
                    double deltaR_js = fConstituents[j].delta_R(fConstituents[s]);
                    double delta_logR_js = log(deltaR_js);
@@ -435,9 +491,10 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 R_dist.clear();
                 logR_dist.clear();
                    }//close m loop
-            
-//For 2 point correlator
-
+            }//close s loop for the 3 point correlator
+//For loop for EEC
+    for(int s=0; s<j ; s++)
+            {
                 double delta_R_js = fConstituents[j].delta_R(fConstituents[s]);
                 double log_delta_R_js = log(delta_R_js);
                 double ee_js = (fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
@@ -449,8 +506,8 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 EEC_pt_hist->Fill(delta_R_js,jet_pt,ee_js);
                 EEC_pt_hist_log->Fill(log_delta_R_js,jet_pt,ee_js);
 ////                fTreeEEC->Fill();
-                }//close s loop
-             } //close j loop
+                }//close s loop for the 2 point correlator
+        } //close j loop
 
 
 //catch (fastjet::Error)
