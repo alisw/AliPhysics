@@ -98,6 +98,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fTPCchi2perCluster(4.0),
     fUseAdditionalDCACut(false),
     fUseDefaultWeight(false),
+    fV0MRatioCut(0),
     fEtaGap3Sub(0.4),
     fOnTheFly(false),
 
@@ -121,6 +122,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fVtxAfterCuts(0),
     fCentralityDis(0),
     fV0CentralityDis(0),
+    fV0MMultiplicity(0),
+    fV0MRatio(0),
     
     fPhiDis1D(0),
     fPhiDis(0),
@@ -185,6 +188,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fTPCchi2perCluster(4.0),
   fUseAdditionalDCACut(false),
   fUseDefaultWeight(false),
+  fV0MRatioCut(0),
   fEtaGap3Sub(0.4),
   fOnTheFly(false),
 
@@ -207,6 +211,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fVtxAfterCuts(0),
   fCentralityDis(0),
   fV0CentralityDis(0),
+  fV0MMultiplicity(0),
+  fV0MRatio(0),
   
   fPhiDis1D(0),
   fPhiDis(0),
@@ -300,6 +306,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fTPCchi2perCluster(4.0),
   fUseAdditionalDCACut(false),
   fUseDefaultWeight(false),
+  fV0MRatioCut(0),
   fEtaGap3Sub(0.4),
   fOnTheFly(false),
 
@@ -324,6 +331,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fVtxAfterCuts(0),
   fCentralityDis(0),
   fV0CentralityDis(0),
+  fV0MMultiplicity(0),
+  fV0MRatio(0),
   
 
   fPhiDis1D(0),
@@ -556,6 +565,13 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   fV0CentralityDisNarrow = new TH1F("fV0CentralityDisNarrow", "centrality V0/<V0> distribution; centrality; Counts", 1000, 0, 10);
   fListOfObjects->Add(fV0CentralityDisNarrow);
 
+  fV0MMultiplicity = new TH1F("fV0MMultiplicity", "V0 Multiplicity distribution", 1000, 0, 1000);
+  fListOfObjects->Add(fV0MMultiplicity);
+
+  fV0MRatio = new TH1F("fV0MRatio", "V0M / <V0M> distribution", 100, 0, 10);
+  fListOfObjects->Add(fV0MRatio);
+
+
   fPhiDis1DBefore = new TH1D("hPhiDisBefore", "phi distribution before the weight correction", 60, 0, 2*3.1415926);
   fListOfObjects->Add(fPhiDis1DBefore);
   fPhiDis1D  = new TH1D("hPhiDis", "phi distribution after the weight correction", 60, 0, 2*3.1415926);
@@ -699,8 +715,23 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
   if (fOnTheFly) {
     hEventCount->Fill("after fEventCuts", 1.);
-    bootstrap_value = rand.Integer(30);
+    bootstrap_value = rand.Integer(30)-1;
   } else {
+    //..standard event plots (cent. percentiles, mult-vs-percentile)
+    const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
+    const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
+    float centrV0 = dCentrality;
+    float cent = dCentrality;
+    float centSPD = 0;
+
+    fCentralityDis->Fill(cent);
+    fV0CentralityDis->Fill(centrV0);
+    fV0CentralityDisNarrow->Fill(centrV0);
+
+    const auto v0Est = pms->GetEstimator("V0M");
+    fV0MMultiplicity->Fill(v0Est->GetValue());
+    fV0MRatio->Fill(v0Est->GetValue()/v0Est->GetMean());
+
     // Check if it passed the standard AOD selection
     if (!AcceptAOD(fAOD) ) {
       PostData(1,fListOfObjects);
@@ -807,17 +838,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
     hMult->Fill(NtrksCounter);
 
-    //..standard event plots (cent. percentiles, mult-vs-percentile)
-    const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
-    const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
-    float centrV0 = dCentrality;
-    float cent = dCentrality;
-    float centSPD = 0;
-
-    fCentralityDis->Fill(cent);
-    fV0CentralityDis->Fill(centrV0);
-    fV0CentralityDisNarrow->Fill(centrV0);
-
+    
     if (cent > fCentralityCut) {
       PostData(1,fListOfObjects);
       int outputslot = 2;
@@ -1709,6 +1730,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
     if(track->Pt() < fMinPt) continue;
     if(track->Pt() > fMaxPt) continue;
     if(TMath::Abs(track->Eta()) > fEtaCut) continue;
+    if (!(track->IsPhysicalPrimary())) continue;
     // if (!(track->IsPhysicalPrimary())) return kFALSE;
     if (track->Charge() == 0) continue;
 
@@ -2612,6 +2634,10 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
       fPeriod.EqualTo("LHC17ZM") ||
       fPeriod.EqualTo("LHC18ZM") ) {
     fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
+
+    const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
+    const auto v0Est = pms->GetEstimator("V0M");
+    if (v0Est->GetValue()/v0Est->GetMean() < fV0MRatioCut) return kFALSE;
   }
 
   if (fPeriod.EqualTo("LHC15o_pass2")) {

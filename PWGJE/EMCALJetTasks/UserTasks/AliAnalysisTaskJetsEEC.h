@@ -122,6 +122,12 @@ Bool_t fStoreDetLevelJets; ///< store the detector level jet quantities
   TH1D *jet_pt_hist; //initializing histogram with jet pt
   TH2D *EEC_pt_hist; //initializing 2D histogram with correlators and jet pt
   TH2D *EEC_pt_hist_log; //initializing 2D histogram with correlators and jet pt on a log scale
+  
+  TH1D *EEEC_hist; //initializing histogram with correlators
+//  TH1D *jet_pt_hist; //initializing histogram with jet pt
+  TH2D *EEEC_pt_hist; //initializing 2D histogram with correlators and jet pt
+  TH2D *EEEC_pt_hist_log; //initializing 2D histogram with correlators and jet pt on a log scale
+  
 //MIGHT NEED MIGHT NEED
 //  TH1D *fHtrueAll1D;      ///<  histogram of all truth level jets
 //  TH1D *fHtrueMatch1D;      ///<  histogram of matched truth level jets
@@ -132,6 +138,6 @@ private:
   AliAnalysisTaskJetsEEC &
   operator=(const AliAnalysisTaskJetsEEC &); // not implemented
 
-  ClassDef(AliAnalysisTaskJetsEEC, 21)
+  ClassDef(AliAnalysisTaskJetsEEC, 22)
 };
 #endif

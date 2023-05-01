@@ -80,7 +80,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fUseNUAOne(kFALSE),
   fUseNUEOne(kFALSE),
   fUseEventWeightOne(kFALSE),
-  fPtMpar(6),
+  fPtMpar(8),
   fEtaMpt(0.4),
   fEtaLow(-9999),
   fEtaAcceptance(0.8),
@@ -101,7 +101,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fCovList(0),
   fV2dPtList(0),
   fCovariance(0),
-  fCovariancePID(0),
   fCovariancePowerMpt(0),
   fMpt(0),
   fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
@@ -146,23 +145,20 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fImpactParameterMC(-1.0),
   EventNo(0),
   fStdTPCITS2011(0),
+  fEventWeight(PtSpace::kOne),
   fDisablePID(kTRUE),
   fConsistencyFlag(3),
-  fEfficiencyIndex(0),
   fRequireReloadOnRunChange(kFALSE),
-  fRequirePositive(kFALSE),
-  fUse2DEff(kFALSE),
   fUsePIDNUA(kFALSE),
   fFillMptPowers(kFALSE),
   fUseMcParticleForEfficiency(kTRUE),
   fUseExoticPtCorr(kFALSE),
-  fEventWeight(PtSpace::kOne),
   wpPt(0),
   wpPtSubP(0),
   wpPtSubN(0)
 {
 };
-AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TString stageSwitch, TString ContSubfix, int Nkeys):
+AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TString stageSwitch, TString ContSubfix):
   AliAnalysisTaskSE(name),
   fStageSwitch(0),
   fSystFlag(0),
@@ -177,9 +173,9 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fOnTheFly(false),
   fMCEvent(0),
   fUseRecoNchForMC(kFALSE),
+  fRndm(0),
   fNBootstrapProfiles(10),
   fFillAdditionalQA(kFALSE),
-  fRndm(0),
   fPtAxis(0),
   fEtaAxis(0),
   fMultiAxis(0),
@@ -199,7 +195,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fUseNUAOne(kFALSE),
   fUseNUEOne(kFALSE),
   fUseEventWeightOne(kFALSE),
-  fPtMpar(6),
+  fPtMpar(8),
   fEtaMpt(0.4),
   fEtaLow(-9999),
   fEtaAcceptance(0.8),
@@ -220,7 +216,6 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fCovList(0),
   fV2dPtList(0),
   fCovariance(0),
-  fCovariancePID(0),
   fCovariancePowerMpt(0),
   fMpt(0),
   fTriggerType(AliVEvent::kMB+AliVEvent::kINT7),
@@ -265,17 +260,14 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fImpactParameterMC(-1.0),
   EventNo(0),
   fStdTPCITS2011(0),
+  fEventWeight(PtSpace::kWperms),
   fDisablePID(kTRUE),
   fConsistencyFlag(3),
-  fEfficiencyIndex(0),
   fRequireReloadOnRunChange(kFALSE),
-  fRequirePositive(kFALSE),
-  fUse2DEff(kFALSE),
   fUsePIDNUA(kFALSE),
   fFillMptPowers(kFALSE),
   fUseMcParticleForEfficiency(kTRUE),
   fUseExoticPtCorr(kFALSE),
-  fEventWeight(PtSpace::kOne),
   wpPt(0),
   wpPtSubP(0),
   wpPtSubN(0)
@@ -291,11 +283,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   if(fStageSwitch==3) {
     if(!fIsMC) { //Efficiency and NUA only important for data
       DefineInput(1,TList::Class()); //NUA
-      int idx = 2;
-      for(int key(0);key<Nkeys;++key) {
-        int inputNo = idx + key;
-        DefineInput(inputNo,TList::Class());  //NUE
-      }
+      DefineInput(2,TList::Class());  //NUE
     };
     DefineOutput(1,TList::Class());
     DefineOutput(2,AliGFWFlowContainer::Class());
@@ -366,7 +354,6 @@ void AliAnalysisTaskDeform::UserCreateOutputObjects(){
   fBayesPID->SetDefaultTPCPriors();
   fBayesPID->SetSelectedSpecies(AliPID::kSPECIES);
   fBayesPID->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF);
-  LoadWeightAndMPT();
 };
 void AliAnalysisTaskDeform::CreateWeightOutputObjects(){
     fRequireReloadOnRunChange = kFALSE;
@@ -417,10 +404,7 @@ void AliAnalysisTaskDeform::CreateEfficiencyOutputObjects(){
 void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     fRndm = new TRandom(0);
     fRequireReloadOnRunChange = kFALSE;
-    const char* species[] = {"_ch","_pi","_ka","_pr"};
-    int endPID = (fDisablePID)?1:4;
     if(!fIsMC) LoadCorrectionsFromLists(); //Efficiencies and NUA are only for the data or if specified for pseudoefficiencies
-    
     if(fOnTheFly)
     {
       printf("Creating OTF objects\n");
@@ -437,40 +421,34 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     TString spNames[] = {"ch","pi","ka","pr"};
     fptVarList = new TList();
     fptVarList->SetOwner(kTRUE);
-    fPtCont = new AliPtContainer*[4];
-    fCkCont = new AliCkContainer*[4];
-    for(Int_t i=0;i<endPID;i++) {
-      fCkCont[i] = new AliCkContainer(Form("ckcont_%s",spNames[i].Data()),Form("ckcont_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-      fptVarList->Add(fCkCont[i]);
-      fPtCont[i] = new AliPtContainer(Form("ptcont_%s",spNames[i].Data()),Form("ptcont_%s",spNames[i].Data()),fNMultiBins,fMultiBins,fPtMpar,true);
-      fptVarList->Add(fPtCont[i]);
-      fPtCont[i]->SetEventWeight((fUseEventWeightOne)?(PtSpace::kOne):fEventWeight);
-      if(fNBootstrapProfiles) {
-        fCkCont[i]->InitializeSubsamples(fNBootstrapProfiles);
-        fPtCont[i]->InitializeSubsamples(fNBootstrapProfiles);
-      }
-    }
+    fPtCont = new AliPtContainer(Form("ptcont_%s",spNames[0].Data()),Form("ptcont_%s",spNames[0].Data()),fNMultiBins,fMultiBins,fPtMpar,true);
+    fPtCont->SetEventWeight((fUseEventWeightOne)?(PtSpace::kOne):fEventWeight);
+    fptVarList->Add(fPtCont);
+    fCkCont = new AliCkContainer(Form("ckcont_%s",spNames[0].Data()),Form("ckcont_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+    fptVarList->Add(fCkCont);
+    if(fNBootstrapProfiles) {
+      fCkCont->InitializeSubsamples(fNBootstrapProfiles);
+      fPtCont->InitializeSubsamples(fNBootstrapProfiles);
+    }    
     if(fFillMptPowers) {
-      fMpt = new AliProfileBS*[8*4];
-      for(int i(0);i<endPID;++i) {
-        fMpt[8*i] = new AliProfileBS(Form("mpt_%s",spNames[i].Data()),Form("mpt_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-        fptVarList->Add(fMpt[8*i]);
-        fMpt[1+8*i] = new AliProfileBS(Form("mptsq_%s",spNames[i].Data()),Form("mptsq_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-        fptVarList->Add(fMpt[1+8*i]);
-        fMpt[2+8*i] = new AliProfileBS(Form("mptcube_%s",spNames[i].Data()),Form("mptcube_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-        fptVarList->Add(fMpt[2+8*i]);
-        fMpt[3+8*i] = new AliProfileBS(Form("mptquart_%s",spNames[i].Data()),Form("mptquart_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-        fptVarList->Add(fMpt[3+8*i]);
-        fMpt[4+8*i] = new AliProfileBS(Form("mptpent_%s",spNames[i].Data()),Form("mptpent_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-        fptVarList->Add(fMpt[4+8*i]);
-        fMpt[5+8*i] = new AliProfileBS(Form("mpthexa_%s",spNames[i].Data()),Form("mpthexa_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-        fptVarList->Add(fMpt[5+8*i]);
-        fMpt[6+8*i] = new AliProfileBS(Form("mpthept_%s",spNames[i].Data()),Form("mpthept_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-        fptVarList->Add(fMpt[6+8*i]);
-        fMpt[7+8*i] = new AliProfileBS(Form("mptocto_%s",spNames[i].Data()),Form("mptocto_%s",spNames[i].Data()),fNMultiBins,fMultiBins);
-        fptVarList->Add(fMpt[7+8*i]);
-      }
-      if(fNBootstrapProfiles) for(int i(0);i<8*endPID;++i) fMpt[i]->InitializeSubsamples(fNBootstrapProfiles);
+      fMpt = new AliProfileBS*[8];
+        fMpt[0] = new AliProfileBS(Form("mpt_%s",spNames[0].Data()),Form("mpt_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+        fptVarList->Add(fMpt[0]);
+        fMpt[1] = new AliProfileBS(Form("mptsq_%s",spNames[0].Data()),Form("mptsq_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+        fptVarList->Add(fMpt[1]);
+        fMpt[2] = new AliProfileBS(Form("mptcube_%s",spNames[0].Data()),Form("mptcube_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+        fptVarList->Add(fMpt[2]);
+        fMpt[3] = new AliProfileBS(Form("mptquart_%s",spNames[0].Data()),Form("mptquart_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+        fptVarList->Add(fMpt[3]);
+        fMpt[4] = new AliProfileBS(Form("mptpent_%s",spNames[0].Data()),Form("mptpent_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+        fptVarList->Add(fMpt[4]);
+        fMpt[5] = new AliProfileBS(Form("mpthexa_%s",spNames[0].Data()),Form("mpthexa_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+        fptVarList->Add(fMpt[5]);
+        fMpt[6] = new AliProfileBS(Form("mpthept_%s",spNames[0].Data()),Form("mpthept_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+        fptVarList->Add(fMpt[6]);
+        fMpt[7] = new AliProfileBS(Form("mptocto_%s",spNames[0].Data()),Form("mptocto_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
+        fptVarList->Add(fMpt[7]);
+      if(fNBootstrapProfiles) for(int i(0);i<8;++i) fMpt[i]->InitializeSubsamples(fNBootstrapProfiles);
     }
     printf("pt-correlation objects created\n");
     printf("Creating multiplicity objects\n");
@@ -517,33 +495,6 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
 
     oba->Add(new TNamed("ChFull28","ChFull28"));
     oba->Add(new TNamed("ChFull212","ChFull212"));
-    if(!fDisablePID) {
-      oba->Add(new TNamed("PiGap22","PiGap22"));
-      oba->Add(new TNamed("PiFull22","PiFull22"));
-      oba->Add(new TNamed("PiFull24","PiFull24"));
-      oba->Add(new TNamed("PiGap32","PiGap32"));
-      oba->Add(new TNamed("PiFull32","PiFull32"));
-      oba->Add(new TNamed("PiFull34","PiFull34"));
-      oba->Add(new TNamed("KaGap22","KaGap22"));
-      oba->Add(new TNamed("KaFull22","KaFull22"));
-      oba->Add(new TNamed("KaFull24","KaFull24"));
-      oba->Add(new TNamed("KaGap32","KaGap32"));
-      oba->Add(new TNamed("KaFull32","KaFull32"));
-      oba->Add(new TNamed("KaFull34","KaFull34"));
-      oba->Add(new TNamed("PrGap22","PrGap22"));
-      oba->Add(new TNamed("PrFull22","PrFull22"));
-      oba->Add(new TNamed("PrFull24","PrFull24"));
-      oba->Add(new TNamed("PrGap32","PrGap32"));
-      oba->Add(new TNamed("PrFull32","PrFull32"));
-      oba->Add(new TNamed("PrFull34","PrFull34"));
-
-      oba->Add(new TNamed("PiDiff22","PiDiff22"));
-      oba->Add(new TNamed("KaDiff22","KaDiff22"));
-      oba->Add(new TNamed("PrDiff22","PrDiff22"));
-      oba->Add(new TNamed("PiDiff24","PiDiff24"));
-      oba->Add(new TNamed("KaDiff24","KaDiff24"));
-      oba->Add(new TNamed("PrDiff24","PrDiff24"));
-    }
 
     fFC = new AliGFWFlowContainer();
     TString fcname("FlowContainer");
@@ -558,19 +509,8 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     fGFW = new AliGFW();
     fGFW->AddRegion("refN",7,pows,-fEtaAcceptance,-fEtaV2Sep,1,1);
     fGFW->AddRegion("refP",7,pows,fEtaV2Sep,fEtaAcceptance,1,1);
-    if(fEtaV2Sep>=0) fGFW->AddRegion("subMid",7,pows,-fEtaV2Sep,fEtaV2Sep,1,1);
     fGFW->AddRegion("mid",13,powsFull,-fEtaAcceptance,fEtaAcceptance,1,2);
-
-    fGFW->AddRegion("PiRefN",7,pows,-fEtaAcceptance,-fEtaV2Sep,1,4);
-    fGFW->AddRegion("PiRefP",7,pows,fEtaV2Sep,fEtaAcceptance,1,4);
-    fGFW->AddRegion("KaRefN",7,pows,-fEtaAcceptance,-fEtaV2Sep,1,8);
-    fGFW->AddRegion("KaRefP",7,pows,fEtaV2Sep,fEtaAcceptance,1,8);
-    fGFW->AddRegion("PrRefN",7,pows,-fEtaAcceptance,-fEtaV2Sep,1,16);
-    fGFW->AddRegion("PrRefP",7,pows,fEtaV2Sep,fEtaAcceptance,1,16);
-
-    fGFW->AddRegion("PiMid",9,powsFull,-fEtaAcceptance,fEtaAcceptance,1,32);
-    fGFW->AddRegion("KaMid",9,powsFull,-fEtaAcceptance,fEtaAcceptance,1,64);
-    fGFW->AddRegion("PrMid",9,powsFull,-fEtaAcceptance,fEtaAcceptance,1,128);  
+    
     CreateCorrConfigs();
     printf("Flow container created\n");
     //Covariance
@@ -647,19 +587,7 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
         fCovariancePowerMpt[2] = new AliProfileBS(Form("covmpt4_v2_%s",spNames[0].Data()),Form("covmpt4_v2_%s",spNames[0].Data()),fNMultiBins,fMultiBins);
         fCovList->Add(fCovariancePowerMpt[2]);
     };
-    fCovariancePID = new AliProfileBS*[12];
-    for(Int_t i=0;i<(endPID-1);i++) {
-      fCovariancePID[4*i] = new AliProfileBS(Form("covmpt_%s",spNames[i+1].Data()),Form("covmpt_%s",spNames[i+1].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariancePID[4*i]);
-      fCovariancePID[1+4*i] = new AliProfileBS(Form("covnopt_%s",spNames[i+1].Data()),Form("covnopt_%s",spNames[i+1].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariancePID[1+4*i]); 
-      fCovariancePID[2+4*i] = new AliProfileBS(Form("covmpt_v3_%s",spNames[i+1].Data()),Form("covmpt_v3_%s",spNames[i+1].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariancePID[2+4*i]);
-      fCovariancePID[3+4*i] = new AliProfileBS(Form("covnopt_v3_%s",spNames[i+1].Data()),Form("covnopt_v3_%s",spNames[i+1].Data()),fNMultiBins,fMultiBins);
-      fCovList->Add(fCovariancePID[3+4*i]);
-    }
     if(fNBootstrapProfiles) for(Int_t i=0;i<25;i++) fCovariance[i]->InitializeSubsamples(fNBootstrapProfiles);
-    if(fNBootstrapProfiles && !fDisablePID) for(Int_t i=0;i<12;i++) fCovariancePID[i]->InitializeSubsamples(fNBootstrapProfiles);
     if(fFillMptPowers && fNBootstrapProfiles) for(Int_t i=0;i<3;i++) fCovariancePowerMpt[i]->InitializeSubsamples(fNBootstrapProfiles);
     printf("Covariance objects created\n");
     PostData(3,fCovList);
@@ -741,6 +669,7 @@ void AliAnalysisTaskDeform::UserExec(Option_t*) {
     VnMpt(fAOD,vz,l_Cent,vtxXYZ);
 };
 void AliAnalysisTaskDeform::NotifyRun() {
+  if(!fIsMC && fStageSwitch>2) LoadWeights(fInputEvent->GetRunNumber());
   if(!fEventCutFlag || fEventCutFlag>100) { //Only relevant if we're using the standard AliEventCuts
     //Reinitialize AliEventCuts (done automatically on check):
     Bool_t dummy = fEventCuts.AcceptEvent(InputEvent());
@@ -882,7 +811,6 @@ void AliAnalysisTaskDeform::FillWeightsMC(AliAODEvent *fAOD, const Double_t &vz,
   TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
   Int_t nPrim = tca->GetEntries();
   AliVParticle *lPart;
-  Int_t partNotFetched=0;
   for (Int_t ipart = 0; ipart < nPrim; ipart++) {
     lPart = (AliAODMCParticle*)tca->At(ipart);
     if (!lPart) { continue; };
@@ -936,10 +864,11 @@ void AliAnalysisTaskDeform::FillWeights(AliAODEvent *fAOD, const Double_t &vz, c
     if(!AcceptAODTrack(lTrack,trackXYZ,ptMin,ptMax,vtxp)) continue;
     Double_t leta = lTrack->Eta();
     Double_t lpt = lTrack->Pt();
-    ((AliGFWWeights*)fWeightList->At(0))->Fill(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),l_Cent,0);
+    Double_t lphi = lTrack->Phi();
+    ((AliGFWWeights*)fWeightList->At(0))->Fill(lphi,leta,vz,lpt,l_Cent,0);
     if(fDisablePID) continue;
     Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
-    if(PIDIndex) ((AliGFWWeights*)fWeightList->At(PIDIndex))->Fill(lTrack->Phi(),lTrack->Eta(),vz,lTrack->Pt(),l_Cent,0);
+    if(PIDIndex) ((AliGFWWeights*)fWeightList->At(PIDIndex))->Fill(lphi,leta,vz,lpt,l_Cent,0);
   };
   fEventCount->Fill("Tracks",1);
   PostData(1,fWeightList);
@@ -955,7 +884,6 @@ void AliAnalysisTaskDeform::FillSpectraMC(AliAODEvent *fAOD, const Double_t &vz,
   TClonesArray *tca = (TClonesArray*)fInputEvent->FindListObject("mcparticles");
   Int_t nPrim = tca->GetEntries();
   AliVParticle *lPart;
-  Int_t partNotFetched=0;
   Int_t nTotNchMC=0; Int_t nTotNchReco=0;
   Int_t nTotNpiMC=0; Int_t nTotNpiReco=0;
   Int_t nTotNkaMC=0; Int_t nTotNkaReco=0;
@@ -967,7 +895,6 @@ void AliAnalysisTaskDeform::FillSpectraMC(AliAODEvent *fAOD, const Double_t &vz,
     Int_t pdgcode = TMath::Abs(lPart->PdgCode());
     if (!lPart->IsPhysicalPrimary()) continue;
     if (lPart->Charge()==0.) continue;
-    if(fRequirePositive && lPart->Charge()<0) continue;
     if (TMath::Abs(lPart->Eta()) > fEtaBins[fNEtaBins]) continue;
     Double_t pt = lPart->Pt();
     if (pt<ptMin || pt>ptMax) continue;
@@ -986,7 +913,6 @@ void AliAnalysisTaskDeform::FillSpectraMC(AliAODEvent *fAOD, const Double_t &vz,
       lPart = (AliAODMCParticle*)tca->At(TMath::Abs(lTrack->GetLabel()));
       if(!lPart) continue;
       if(!lPart->IsPhysicalPrimary()) continue;
-      if(fRequirePositive && lPart->Charge()<0) continue;
       if(TMath::Abs(lTrack->Eta())>fEtaBins[fNEtaBins]) continue;
       if(!fGFWSelection->AcceptTrack(lTrack,dummyDouble)) continue;
       nTotNchReco++;
@@ -995,9 +921,15 @@ void AliAnalysisTaskDeform::FillSpectraMC(AliAODEvent *fAOD, const Double_t &vz,
       Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
       if(PIDIndex) fSpectraRec[PIDIndex]->Fill(lPart->Pt(),lPart->Eta(),l_Cent);
       switch(PIDIndex) {
-        case 1: nTotNpiReco++; break;
-        case 2: nTotNkaReco++; break;
-        case 3: nTotNprReco++; break;
+        case 1: 
+          nTotNpiReco++; 
+          break;
+        case 2: 
+          nTotNkaReco++; 
+          break;
+        case 3: 
+          nTotNprReco++; 
+          break;
       }
     }
     else {
@@ -1008,9 +940,15 @@ void AliAnalysisTaskDeform::FillSpectraMC(AliAODEvent *fAOD, const Double_t &vz,
       Int_t PIDIndex = GetBayesPIDIndex(lTrack)+1;
       if(PIDIndex) fSpectraRec[PIDIndex]->Fill(lTrack->Pt(),lTrack->Eta(),l_Cent);
       switch(PIDIndex) {
-        case 1: nTotNpiReco++; break;
-        case 2: nTotNkaReco++; break;
-        case 3: nTotNprReco++; break;
+        case 1: 
+          nTotNpiReco++; 
+          break;
+        case 2: 
+          nTotNkaReco++; 
+          break;
+        case 3: 
+          nTotNprReco++; 
+          break;
       }
     }
   };
@@ -1051,13 +989,10 @@ void AliAnalysisTaskDeform::FillWPCounter(vector<vector<double>> &inarr, double 
 }
 void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const Double_t &l_Cent, Double_t *vtxp) {
   AliAODTrack *lTrack;
-  Double_t wp[4][5] = {{0,0,0,0,0},
-                    {0,0,0,0,0},
-                    {0,0,0,0,0},
-                    {0,0,0,0,0}}; //Initial values, [species][w*p]
-  wpPt.clear(); wpPt.resize(4,vector<vector<double>>(10,vector<double>(10)));
-  wpPtSubP.clear(); wpPtSubP.resize(4,vector<vector<double>>(10,vector<double>(10)));
-  wpPtSubN.clear(); wpPtSubN.resize(4,vector<vector<double>>(10,vector<double>(10)));
+  Double_t wp[5] = {0,0,0,0,0};
+  wpPt.clear(); wpPt.resize(fPtMpar+1,vector<double>(fPtMpar+1));
+  wpPtSubP.clear(); wpPtSubP.resize(fPtMpar+1,vector<double>(fPtMpar+1));
+  wpPtSubN.clear(); wpPtSubN.resize(fPtMpar+1,vector<double>(fPtMpar+1));
   Int_t iCent = fV0MMulti->FindBin(l_Cent);
   if(!iCent || iCent>fV0MMulti->GetNbinsX()) return;
   iCent--;
@@ -1079,12 +1014,6 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       lPart = (AliAODMCParticle*)tca->At(ipart);
       if (!lPart->IsPhysicalPrimary()) continue;
       if (lPart->Charge()==0.) continue;
-      if(fRequirePositive && lPart->Charge()<0) continue;
-      Int_t pdgcode = TMath::Abs(lPart->PdgCode());
-      int PIDIndex = 0;
-      if(pdgcode==211) PIDIndex = 1;
-      if(pdgcode==321) PIDIndex = 2;
-      if(pdgcode==2212) PIDIndex = 3;
       //Hardcoded cuts to inhereted from AcceptAODTrack
       Double_t leta = lPart->Eta();
       if(TMath::Abs(leta) > 0.8) continue;
@@ -1094,35 +1023,27 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       if(leta>fEtaV2Sep) lPosCount++;
       if(TMath::Abs(leta)<fEtaAcceptance) nTotNoTracksMC++; //Nch calculated in EtaNch region
       if(leta<-fEtaV2Sep) {
-        FillWPCounter(wpPtSubN[0],1,pt);
-        if(!fDisablePID) FillWPCounter(wpPtSubN[PIDIndex],1,pt); 
+        FillWPCounter(wpPtSubN,1,pt);
       }
       if(leta > fEtaV2Sep) {
-        FillWPCounter(wpPtSubP[0],1,pt);
-        if(!fDisablePID && PIDIndex > 0) FillWPCounter(wpPtSubP[PIDIndex],1,pt); 
+        FillWPCounter(wpPtSubP,1,pt);
       }
       if(TMath::Abs(leta)<fEtaMpt)  { //for mean pt, only consider -0.4-0.4 region
-        FillWPCounter(wp[0],1,pt); 
-        FillWPCounter(wpPt[0],1,pt);
-        if(!fDisablePID && PIDIndex > 0) { FillWPCounter(wp[PIDIndex],1,pt); FillWPCounter(wpPt[PIDIndex],1,pt); }
+        FillWPCounter(wp,1,pt); 
+        FillWPCounter(wpPt,1,pt);
       }
-      if(PIDIndex) fGFW->Fill(leta,1,lPart->Phi(),1,(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); //filling both gap and full for PID
       fGFW->Fill(leta,1,lPart->Phi(),1,3); //filling both gap (bit mask 1) and full (bit maks 2). Since this is MC, weight is 1.
     };
     nTotNoTracks = fUseRecoNchForMC?nTotNoTracksReco:nTotNoTracksMC;
     if(fUseRecoNchForMC) fNchTrueVsReco->Fill(nTotNoTracksMC,nTotNoTracksReco);
   } else {
-    if(!fUsePIDNUA && !LoadMyWeights(fAOD->GetRunNumber())) return; //Only load wieghts for data
+    //if(!LoadMyWeights(fAOD->GetRunNumber())) return; //Only load wieghts for data
     Bool_t usingPseudoEff = (fPseudoEfficiency<1);
     for(Int_t lTr=0;lTr<fAOD->GetNumberOfTracks();lTr++) {
       if(usingPseudoEff) if(fRndm->Uniform()>fPseudoEfficiency) continue;
       lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
       if(!lTrack) continue;
       if(fFillAdditionalQA) FillAdditionalTrackQAPlots(*lTrack,1,1,vtxp,kTRUE);
-      if(fRequirePositive && lTrack->Charge()<0) continue;
-      Int_t PIDIndex = 0;
-      if(!fDisablePID) PIDIndex = GetBayesPIDIndex(lTrack)+1;
-    
       Double_t leta = lTrack->Eta();
       Double_t trackXYZ[] = {0.,0.,0.};
       //Counting FB128 for QA:
@@ -1133,32 +1054,21 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       if(leta>fEtaV2Sep) lPosCount++;
       if(fEtaV2Sep>0 && TMath::Abs(leta)<fEtaV2Sep) lMidCount++;
       Double_t lpt = lTrack->Pt();
-      Double_t weff = (fUse2DEff)?fEfficiency[iCent][0]->GetBinContent(fEfficiency[iCent][0]->FindBin(lpt,leta)):fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
+      Double_t weff = fEfficiencies[iCent]->GetBinContent(fEfficiencies[iCent]->FindBin(lpt));
       if(weff==0.0) continue;
       weff = 1./weff; 
-      if(leta<-fEtaV2Sep) FillWPCounter(wpPtSubN[0],(fUseNUEOne)?1.0:weff,lpt);
-      if(leta > fEtaV2Sep) FillWPCounter(wpPtSubP[0],(fUseNUEOne)?1.0:weff,lpt);
+      if(leta<-fEtaV2Sep) FillWPCounter(wpPtSubN,(fUseNUEOne)?1.0:weff,lpt);
+      if(leta > fEtaV2Sep) FillWPCounter(wpPtSubP,(fUseNUEOne)?1.0:weff,lpt);
       if(TMath::Abs(lTrack->Eta())<fEtaMpt)  { 
-        FillWPCounter(wp[0],(fUseNUEOne)?1.0:weff,lpt); 
-        FillWPCounter(wpPt[0],(fUseNUEOne)?1.0:weff,lpt);
+        FillWPCounter(wp,(fUseNUEOne)?1.0:weff,lpt); 
+        FillWPCounter(wpPt,(fUseNUEOne)?1.0:weff,lpt);
       }
-      Double_t wacc = fWeights[0]->GetNUA(lTrack->Phi(),lTrack->Eta(),vz);
-      fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),((fUseNUAOne)?1.0:wacc)*((fUseNUEOne)?1.0:weff),3); //filling both gap (bit mask 1) and full (bit mask 2)
+      Double_t wacc = fWeights[0]->GetNUA(lTrack->Phi(),leta,vz);
+      fGFW->Fill(leta,1,lTrack->Phi(),((fUseNUAOne)?1.0:wacc)*((fUseNUEOne)?1.0:weff),3); //filling both gap (bit mask 1) and full (bit mask 2)
       if(fFillAdditionalQA) FillAdditionalTrackQAPlots(*lTrack,weff,wacc,vtxp,kFALSE);
-      if(PIDIndex){
-        Double_t weff_PID = (fUse2DEff)?fEfficiency[iCent][PIDIndex]->GetBinContent(fEfficiency[iCent][PIDIndex]->FindBin(lpt,leta)):weff;
-        if(weff_PID== 0.0) continue;
-        weff_PID = 1./weff_PID;
-        if(TMath::Abs(lTrack->Eta())<fEtaMpt)  { 
-          FillWPCounter(wp[PIDIndex],(fUseNUEOne)?1.0:weff_PID,lpt); 
-          FillWPCounter(wpPt[PIDIndex],(fUseNUEOne)?1.0:weff_PID,lpt);
-        }
-        Double_t wacc_PID = (fUsePIDNUA)?fWeights[PIDIndex]->GetNUA(lTrack->Phi(),lTrack->Eta(),vz):wacc;
-        fGFW->Fill(lTrack->Eta(),1,lTrack->Phi(),((fUseNUAOne)?1.0:wacc_PID)*((fUseNUEOne)?1.0:weff_PID),(1<<(PIDIndex+1))+(1<<(PIDIndex+4))); //filling both gap and full for PID
-      }
     };
   };
-  if(wp[0][0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
+  if(wp[0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   fEventCount->Fill("Tracks",1);
   fMultiVsV0MCorr[0]->Fill(l_Cent,nTotNoTracks);
   //here in principle one could use the GFW output to check if the values are calculated, but this is more efficient
@@ -1173,59 +1083,52 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   AliAODHeader *head = (AliAODHeader*)fAOD->GetHeader();
   Int_t nESD = head->GetNumberOfESDTracks();
   fESDvsFB128->Fill(nTotTracksFB128,nESD);
-  if(l_Cent<10) fMptVsNch->Fill(nTotNoTracks,wp[0][1]/wp[0][0],l_Cent);
+  if(l_Cent<10) fMptVsNch->Fill(nTotNoTracks,wp[1]/wp[0],l_Cent);
   Double_t l_Random = fRndm->Rndm();
-  int endPID = (fDisablePID)?1:4;
-  for(int i(0);i<endPID;++i){
-    fCkCont[i]->FillObs(wp[i],l_Multi,l_Random);
-    fPtCont[i]->FillRecursive(wpPt[i],0);
-    fPtCont[i]->FillRecursive(wpPtSubP[i],1);
-    fPtCont[i]->FillRecursive(wpPtSubN[i],2);
-    fPtCont[i]->FillRecursiveProfiles(l_Multi,l_Random);
-    fPtCont[i]->FillCk(wpPt[i],l_Multi,l_Random);
-    fPtCont[i]->FillSkew(wpPt[i],l_Multi,l_Random);
-    fPtCont[i]->FillKurtosis(wpPt[i],l_Multi,l_Random);
-  }
+  fCkCont->FillObs(wp,l_Multi,l_Random);
+  fPtCont->FillRecursive(wpPt,0);
+  fPtCont->FillRecursive(wpPtSubP,1);
+  fPtCont->FillRecursive(wpPtSubN,2);
+  fPtCont->FillRecursiveProfiles(l_Multi,l_Random);
+  fPtCont->FillCk(wpPt,l_Multi,l_Random);
+  fPtCont->FillSkew(wpPt,l_Multi,l_Random);
+  fPtCont->FillKurtosis(wpPt,l_Multi,l_Random);
+  Double_t mptev = wp[1]/wp[0];
   if(fFillMptPowers) {
-    for(int i(0); i<endPID;++i) {
-      if(wp[i][0]==0.0) continue;
-      Double_t mptev = wp[i][1]/wp[i][0];
-      fMpt[8*i]->FillProfile(l_Multi,mptev,wp[i][0],l_Random);
-      fMpt[1+8*i]->FillProfile(l_Multi,mptev*mptev,wp[i][0]*wp[i][0],l_Random);
-      fMpt[2+8*i]->FillProfile(l_Multi,mptev*mptev*mptev,wp[i][0]*wp[i][0]*wp[i][0],l_Random);
-      fMpt[3+8*i]->FillProfile(l_Multi,mptev*mptev*mptev*mptev,wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0],l_Random);
-      fMpt[4+8*i]->FillProfile(l_Multi,mptev*mptev*mptev*mptev*mptev,wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0],l_Random);
-      fMpt[5+8*i]->FillProfile(l_Multi,mptev*mptev*mptev*mptev*mptev*mptev,wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0],l_Random);
-      fMpt[6+8*i]->FillProfile(l_Multi,mptev*mptev*mptev*mptev*mptev*mptev*mptev,wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0],l_Random);
-      fMpt[7+8*i]->FillProfile(l_Multi,mptev*mptev*mptev*mptev*mptev*mptev*mptev*mptev,wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0]*wp[i][0],l_Random);
-    }
+      fMpt[0]->FillProfile(l_Multi,mptev,wp[0],l_Random);
+      fMpt[1]->FillProfile(l_Multi,mptev*mptev,wp[0]*wp[0],l_Random);
+      fMpt[2]->FillProfile(l_Multi,mptev*mptev*mptev,wp[0]*wp[0]*wp[0],l_Random);
+      fMpt[3]->FillProfile(l_Multi,mptev*mptev*mptev*mptev,wp[0]*wp[0]*wp[0]*wp[0],l_Random);
+      fMpt[4]->FillProfile(l_Multi,mptev*mptev*mptev*mptev*mptev,wp[0]*wp[0]*wp[0]*wp[0]*wp[0],l_Random);
+      fMpt[5]->FillProfile(l_Multi,mptev*mptev*mptev*mptev*mptev*mptev,wp[0]*wp[0]*wp[0]*wp[0]*wp[0]*wp[0],l_Random);
+      fMpt[6]->FillProfile(l_Multi,mptev*mptev*mptev*mptev*mptev*mptev*mptev,wp[0]*wp[0]*wp[0]*wp[0]*wp[0]*wp[0]*wp[0],l_Random);
+      fMpt[7]->FillProfile(l_Multi,mptev*mptev*mptev*mptev*mptev*mptev*mptev*mptev,wp[0]*wp[0]*wp[0]*wp[0]*wp[0]*wp[0]*wp[0]*wp[0],l_Random);
   }
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Multi);
   PostData(1,fptVarList);
   //Filling FCs
   for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
-    Bool_t filled = FillFCs(corrconfigs.at(l_ind),l_Multi,l_Random);
+    FillFCs(corrconfigs.at(l_ind),l_Multi,l_Random);
   };
   PostData(2,fFC);
-  Double_t mptev = wp[0][1]/wp[0][0];
-  FillCovariance(fCovariance[0],corrconfigs.at(0),l_Multi,mptev,wp[0][0],l_Random); //v2-pt
-  FillCovariance(fCovariance[1],corrconfigs.at(0),l_Multi,1,wp[0][0],l_Random);
-  FillCovariance(fCovariance[2],corrconfigs.at(3),l_Multi,mptev,wp[0][0],l_Random); //v3-pt
-  FillCovariance(fCovariance[3],corrconfigs.at(3),l_Multi,1,wp[0][0],l_Random);
-  FillCovariance(fCovariance[4],corrconfigs.at(6),l_Multi,mptev,wp[0][0],l_Random); //v2-v3
-  FillCovariance(fCovariance[5],corrconfigs.at(6),l_Multi,1,wp[0][0],l_Random);
-  FillCovariance(fCovariance[6],corrconfigs.at(1),l_Multi,mptev,wp[0][0],l_Random); //v24-pt
-  FillCovariance(fCovariance[7],corrconfigs.at(1),l_Multi,1,wp[0][0],l_Random);
-  FillCovariance(fCovariance[8],corrconfigs.at(2),l_Multi,mptev,wp[0][0],l_Random); //v26-pt
-  FillCovariance(fCovariance[9],corrconfigs.at(2),l_Multi,1,wp[0][0],l_Random);
+  FillCovariance(fCovariance[0],corrconfigs.at(0),l_Multi,mptev,wp[0],l_Random); //v2-pt
+  FillCovariance(fCovariance[1],corrconfigs.at(0),l_Multi,1,wp[0],l_Random);
+  FillCovariance(fCovariance[2],corrconfigs.at(3),l_Multi,mptev,wp[0],l_Random); //v3-pt
+  FillCovariance(fCovariance[3],corrconfigs.at(3),l_Multi,1,wp[0],l_Random);
+  FillCovariance(fCovariance[4],corrconfigs.at(6),l_Multi,mptev,wp[0],l_Random); //v2-v3
+  FillCovariance(fCovariance[5],corrconfigs.at(6),l_Multi,1,wp[0],l_Random);
+  FillCovariance(fCovariance[6],corrconfigs.at(1),l_Multi,mptev,wp[0],l_Random); //v24-pt
+  FillCovariance(fCovariance[7],corrconfigs.at(1),l_Multi,1,wp[0],l_Random);
+  FillCovariance(fCovariance[8],corrconfigs.at(2),l_Multi,mptev,wp[0],l_Random); //v26-pt
+  FillCovariance(fCovariance[9],corrconfigs.at(2),l_Multi,1,wp[0],l_Random);
   //Covariance of vn with multi-particle pt-correlation
-  vector<double> pt2corr = fPtCont[0]->getEventCorrelation(2,0);
-  vector<double> pt3corr = fPtCont[0]->getEventCorrelation(3,0);
-  vector<double> pt4corr = fPtCont[0]->getEventCorrelation(4,0);
+  vector<double> pt2corr = fPtCont->getEventCorrelation(2,0);
+  vector<double> pt3corr = fPtCont->getEventCorrelation(3,0);
+  vector<double> pt4corr = fPtCont->getEventCorrelation(4,0);
   if(pt2corr[1]!=0) {
     double pt2ev = pt2corr[0]/pt2corr[1];
-    double ptev = (fUseExoticPtCorr)?fPtCont[0]->getExoticEventCorrelation(2,1,wpPt[0])/pt2corr[1]:mptev;
+    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(2,1,wpPt)/pt2corr[1]:mptev;
     FillCovariance(fCovariance[10],corrconfigs.at(0),l_Multi,pt2ev,pt2corr[1],l_Random); //v2-pt^2
     FillCovariance(fCovariance[11],corrconfigs.at(0),l_Multi,ptev,pt2corr[1],l_Random);
     FillCovariance(fCovariance[12],corrconfigs.at(0),l_Multi,1,pt2corr[1],l_Random);
@@ -1235,8 +1138,8 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   }
   if(pt3corr[1]!=0 && pt2corr[1]!=0) {
     double pt3ev = pt3corr[0]/pt3corr[1];
-    double pt2ev = (fUseExoticPtCorr)?fPtCont[0]->getExoticEventCorrelation(3,2,wpPt[0])/pt3corr[1]:pt2corr[0]/pt2corr[1];
-    double ptev = (fUseExoticPtCorr)?fPtCont[0]->getExoticEventCorrelation(3,1,wpPt[0])/pt3corr[1]:mptev;
+    double pt2ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(3,2,wpPt)/pt3corr[1]:pt2corr[0]/pt2corr[1];
+    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(3,1,wpPt)/pt3corr[1]:mptev;
     FillCovariance(fCovariance[13],corrconfigs.at(0),l_Multi,pt3ev,pt3corr[1],l_Random); //v2-pt^3
     FillCovariance(fCovariance[14],corrconfigs.at(0),l_Multi,pt2ev,pt3corr[1],l_Random);
     FillCovariance(fCovariance[15],corrconfigs.at(0),l_Multi,ptev,pt3corr[1],l_Random);
@@ -1245,9 +1148,9 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   
   if(pt4corr[1]!=0 && pt3corr[1]!=0 && pt2corr[1]!=0) {
     double pt4ev = pt4corr[0]/pt4corr[1];
-    double pt3ev = (fUseExoticPtCorr)?fPtCont[0]->getExoticEventCorrelation(4,3,wpPt[0])/pt4corr[1]:pt3corr[0]/pt3corr[1];
-    double pt2ev = (fUseExoticPtCorr)?fPtCont[0]->getExoticEventCorrelation(4,2,wpPt[0])/pt4corr[1]:pt2corr[0]/pt2corr[1];
-    double ptev = (fUseExoticPtCorr)?fPtCont[0]->getExoticEventCorrelation(4,1,wpPt[0])/pt4corr[1]:mptev;
+    double pt3ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,3,wpPt)/pt4corr[1]:pt3corr[0]/pt3corr[1];
+    double pt2ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,2,wpPt)/pt4corr[1]:pt2corr[0]/pt2corr[1];
+    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,1,wpPt)/pt4corr[1]:mptev;
     FillCovariance(fCovariance[17],corrconfigs.at(0),l_Multi,pt4ev,pt4corr[1],l_Random); //v2-pt^4
     FillCovariance(fCovariance[18],corrconfigs.at(0),l_Multi,pt3ev,pt4corr[1],l_Random);
     FillCovariance(fCovariance[19],corrconfigs.at(0),l_Multi,pt2ev,pt4corr[1],l_Random);
@@ -1255,16 +1158,9 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
     FillCovariance(fCovariance[21],corrconfigs.at(0),l_Multi,1,pt4corr[1],l_Random);
   }
   if(fFillMptPowers) {
-      FillCovariance(fCovariancePowerMpt[0],corrconfigs.at(0),l_Multi,mptev*mptev,wp[0][0]*wp[0][0],l_Random);
-      FillCovariance(fCovariancePowerMpt[1],corrconfigs.at(0),l_Multi,mptev*mptev*mptev,wp[0][0]*wp[0][0]*wp[0][0],l_Random);
-      FillCovariance(fCovariancePowerMpt[2],corrconfigs.at(0),l_Multi,mptev*mptev*mptev*mptev,wp[0][0]*wp[0][0]*wp[0][0]*wp[0][0],l_Random);
-  }
-  for(int i(0);i<(endPID-1);++i) {
-    Double_t mptev = wp[i+1][1]/wp[i+1][0];
-    FillCovariance(fCovariancePID[4*i],corrconfigs.at(15+i),l_Multi,mptev,wp[i+1][0],l_Random); //v2-pt
-    FillCovariance(fCovariancePID[1+4*i],corrconfigs.at(15+i),l_Multi,1,wp[i+1][0],l_Random);
-    FillCovariance(fCovariancePID[2+4*i],corrconfigs.at(27+i),l_Multi,mptev,wp[i+1][0],l_Random); //v3-pt
-    FillCovariance(fCovariancePID[3+4*i],corrconfigs.at(27+i),l_Multi,1,wp[i+1][0],l_Random);
+      FillCovariance(fCovariancePowerMpt[0],corrconfigs.at(0),l_Multi,mptev*mptev,wp[0]*wp[0],l_Random);
+      FillCovariance(fCovariancePowerMpt[1],corrconfigs.at(0),l_Multi,mptev*mptev*mptev,wp[0]*wp[0]*wp[0],l_Random);
+      FillCovariance(fCovariancePowerMpt[2],corrconfigs.at(0),l_Multi,mptev*mptev*mptev*mptev,wp[0]*wp[0]*wp[0]*wp[0],l_Random);
   }
   PostData(3,fCovList);
 }
@@ -1289,9 +1185,9 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   Int_t nTracks = fMCEvent->GetNumberOfPrimaries();
   if(nTracks < 1) { return; }
   Double_t wp[5] = {0,0,0,0,0}; //Initial values, [species][w*p]
-  wpPt.clear(); wpPt.resize(1,vector<vector<double>>(10,vector<double>(10)));
-  wpPtSubP.clear(); wpPtSubP.resize(4,vector<vector<double>>(10,vector<double>(10)));
-  wpPtSubN.clear(); wpPtSubN.resize(4,vector<vector<double>>(10,vector<double>(10)));
+  wpPt.clear(); wpPt.resize(fPtMpar+1,vector<double>(fPtMpar+1));
+  wpPtSubP.clear(); wpPtSubP.resize(fPtMpar+1,vector<double>(fPtMpar+1));
+  wpPtSubN.clear(); wpPtSubN.resize(fPtMpar+1,vector<double>(fPtMpar+1));
   fGFW->Clear();
   Double_t ptMin = fPtBins[0];
   Double_t ptMax = fPtBins[fNPtBins];
@@ -1304,24 +1200,24 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
     Double_t l_eta=lPart->Eta();
     if (TMath::Abs(l_eta) > fEtaAcceptance) continue;
     if (l_pt<ptMin || l_pt>ptMax) continue;
-    if(l_eta<-fEtaV2Sep) FillWPCounter(wpPtSubN[0],1,l_pt);
-    if(l_eta > fEtaV2Sep) FillWPCounter(wpPtSubP[0],1,l_pt);
+    if(l_eta<-fEtaV2Sep) FillWPCounter(wpPtSubN,1,l_pt);
+    if(l_eta > fEtaV2Sep) FillWPCounter(wpPtSubP,1,l_pt);
     if(TMath::Abs(l_eta)<fEtaMpt)  { //for mean pt, only consider -0.4-0.4 region
       FillWPCounter(wp,1,l_pt); 
-      FillWPCounter(wpPt[0],1,l_pt);
+      FillWPCounter(wpPt,1,l_pt);
     }  //Actually, no need for if() statememnt now since GFW knows about eta's, so I can fill it all the time
     fGFW->Fill(l_eta,1,l_phi,1,3); //filling both gap (bit mask 1) and full (bit mas 2). Since this is MC, weight is 1.
   };
   if(wp[0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
   Double_t l_Random = fRndm->Rndm();
-  fCkCont[0]->FillObs(wp,l_Cent,l_Random);
-  fPtCont[0]->FillRecursive(wpPt[0]);
-  fPtCont[0]->FillRecursive(wpPtSubP[0],1);
-  fPtCont[0]->FillRecursive(wpPtSubN[0],2);
-  fPtCont[0]->FillRecursiveProfiles(l_Cent,l_Random);
-  fPtCont[0]->FillCk(wpPt[0],l_Cent,l_Random);
-  fPtCont[0]->FillSkew(wpPt[0],l_Cent,l_Random);
-  fPtCont[0]->FillKurtosis(wpPt[0],l_Cent,l_Random);
+  fCkCont->FillObs(wp,l_Cent,l_Random);
+  fPtCont->FillRecursive(wpPt);
+  fPtCont->FillRecursive(wpPtSubP,1);
+  fPtCont->FillRecursive(wpPtSubN,2);
+  fPtCont->FillRecursiveProfiles(l_Cent,l_Random);
+  fPtCont->FillCk(wpPt,l_Cent,l_Random);
+  fPtCont->FillSkew(wpPt,l_Cent,l_Random);
+  fPtCont->FillKurtosis(wpPt,l_Cent,l_Random);
   fV0MMulti->Fill(l_Cent);
   fMultiDist->Fill(l_Cent);
   Double_t mptev = wp[1]/wp[0];
@@ -1338,7 +1234,7 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   PostData(1,fptVarList);
   //Filling FCs
   for(Int_t l_ind=0; l_ind<corrconfigs.size(); l_ind++) {
-    Bool_t filled = FillFCs(corrconfigs.at(l_ind),l_Cent,l_Random);
+    FillFCs(corrconfigs.at(l_ind),l_Cent,l_Random);
   };
   FillCovariance(fCovariance[0],corrconfigs.at(0),l_Cent,mptev,wp[0],l_Random); //v2-pt
   FillCovariance(fCovariance[1],corrconfigs.at(0),l_Cent,1,wp[0],l_Random);
@@ -1351,12 +1247,12 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   FillCovariance(fCovariance[8],corrconfigs.at(2),l_Cent,mptev,wp[0],l_Random); //v26-pt
   FillCovariance(fCovariance[9],corrconfigs.at(2),l_Cent,1,wp[0],l_Random);
   //Covariance of vn with multi-particle pt-correlation
-  vector<double> pt2corr = fPtCont[0]->getEventCorrelation(2,0);
-  vector<double> pt3corr = fPtCont[0]->getEventCorrelation(3,0);
-  vector<double> pt4corr = fPtCont[0]->getEventCorrelation(4,0);
+  vector<double> pt2corr = fPtCont->getEventCorrelation(2,0);
+  vector<double> pt3corr = fPtCont->getEventCorrelation(3,0);
+  vector<double> pt4corr = fPtCont->getEventCorrelation(4,0);
   if(pt2corr[1]!=0) {
     double pt2ev = pt2corr[0]/pt2corr[1];
-    double ptev = (fUseExoticPtCorr)?fPtCont[0]->getExoticEventCorrelation(2,1,wpPt[0])/pt2corr[1]:mptev;
+    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(2,1,wpPt)/pt2corr[1]:mptev;
     FillCovariance(fCovariance[10],corrconfigs.at(0),l_Cent,pt2ev,pt2corr[1],l_Random); //v2-pt^2
     FillCovariance(fCovariance[11],corrconfigs.at(0),l_Cent,ptev,pt2corr[1],l_Random);
     FillCovariance(fCovariance[12],corrconfigs.at(0),l_Cent,1,pt2corr[1],l_Random);
@@ -1366,8 +1262,8 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   }
   if(pt3corr[1]!=0 && pt2corr[1]!=0) {
     double pt3ev = pt3corr[0]/pt3corr[1];
-    double pt2ev = (fUseExoticPtCorr)?fPtCont[0]->getExoticEventCorrelation(3,2,wpPt[0])/pt3corr[1]:pt2corr[0]/pt2corr[1];
-    double ptev = (fUseExoticPtCorr)?fPtCont[0]->getExoticEventCorrelation(3,1,wpPt[0])/pt3corr[1]:mptev;
+    double pt2ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(3,2,wpPt)/pt3corr[1]:pt2corr[0]/pt2corr[1];
+    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(3,1,wpPt)/pt3corr[1]:mptev;
     FillCovariance(fCovariance[13],corrconfigs.at(0),l_Cent,pt3ev,pt3corr[1],l_Random); //v2-pt^3
     FillCovariance(fCovariance[14],corrconfigs.at(0),l_Cent,pt2ev,pt3corr[1],l_Random);
     FillCovariance(fCovariance[15],corrconfigs.at(0),l_Cent,ptev,pt3corr[1],l_Random);
@@ -1376,9 +1272,9 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   
   if(pt4corr[1]!=0 && pt3corr[1]!=0 && pt2corr[1]!=0) {
     double pt4ev = pt4corr[0]/pt4corr[1];
-    double pt3ev = (fUseExoticPtCorr)?fPtCont[0]->getExoticEventCorrelation(4,3,wpPt[0])/pt4corr[1]:pt3corr[0]/pt3corr[1];
-    double pt2ev = (fUseExoticPtCorr)?fPtCont[0]->getExoticEventCorrelation(4,2,wpPt[0])/pt4corr[1]:pt2corr[0]/pt2corr[1];
-    double ptev = (fUseExoticPtCorr)?fPtCont[0]->getExoticEventCorrelation(4,1,wpPt[0])/pt4corr[1]:mptev;
+    double pt3ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,3,wpPt)/pt4corr[1]:pt3corr[0]/pt3corr[1];
+    double pt2ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,2,wpPt)/pt4corr[1]:pt2corr[0]/pt2corr[1];
+    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,1,wpPt)/pt4corr[1]:mptev;
     FillCovariance(fCovariance[17],corrconfigs.at(0),l_Cent,pt4ev,pt4corr[1],l_Random); //v2-pt^4
     FillCovariance(fCovariance[18],corrconfigs.at(0),l_Cent,pt3ev,pt4corr[1],l_Random);
     FillCovariance(fCovariance[19],corrconfigs.at(0),l_Cent,pt2ev,pt4corr[1],l_Random);
@@ -1437,55 +1333,6 @@ void AliAnalysisTaskDeform::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("ChFull34","mid {3 3 -3 -3}", kFALSE));    //ChFull34 13
   corrconfigs.push_back(GetConf("ChFull212","mid {2 2 2 2 2 2 -2 -2 -2 -2 -2 -2}", kFALSE));    //ChFull212 14
 
-  if(!fDisablePID){
-    corrconfigs.push_back(GetConf("PiGap22","PiRefP {2} PiRefN {-2}", kFALSE));
-    corrconfigs.push_back(GetConf("KaGap22","KaRefP {2} KaRefN {-2}", kFALSE));
-    corrconfigs.push_back(GetConf("PrGap22","PrRefP {2} PrRefN {-2}", kFALSE));   
-
-    corrconfigs.push_back(GetConf("PiFull22","PiMid {2 -2}", kFALSE));
-    corrconfigs.push_back(GetConf("KaFull22","KaMid {2 -2}", kFALSE));
-    corrconfigs.push_back(GetConf("PrFull22","PrMid {2 -2}", kFALSE));
-
-    corrconfigs.push_back(GetConf("PiGap24","PiRefP {2 2} PiRefN {-2 -2}", kFALSE));
-    corrconfigs.push_back(GetConf("KaGap24","KaRefP {2 2} KaRefN {-2 -2}", kFALSE));
-    corrconfigs.push_back(GetConf("PrGap24","PrRefP {2 2} PrRefN {-2 -2}", kFALSE));
-
-    corrconfigs.push_back(GetConf("PiFull24","PiMid {2 2 -2 -2}", kFALSE));
-    corrconfigs.push_back(GetConf("KaFull24","KaMid {2 2 -2 -2}", kFALSE));
-    corrconfigs.push_back(GetConf("PrFull24","PrMid {2 2 -2 -2}", kFALSE));
-
-    corrconfigs.push_back(GetConf("PiGap32","PiRefP {3} PiRefN {-3}", kFALSE));
-    corrconfigs.push_back(GetConf("KaGap32","KaRefP {3} KaRefN {-3}", kFALSE));
-    corrconfigs.push_back(GetConf("PrGap32","PrRefP {3} PrRefN {-3}", kFALSE));
-
-    corrconfigs.push_back(GetConf("PiFull32","PiMid {3 -3}", kFALSE));
-    corrconfigs.push_back(GetConf("KaFull32","KaMid {3 -3}", kFALSE));
-    corrconfigs.push_back(GetConf("PrFull32","PrMid {3 -3}", kFALSE));
-
-    corrconfigs.push_back(GetConf("PiGap34","PiRefP {3 3} PiRefN {-3 -3}", kFALSE));
-    corrconfigs.push_back(GetConf("KaGap34","KaRefP {3 3} KaRefN {-3 -3}", kFALSE));
-    corrconfigs.push_back(GetConf("PrGap34","PrRefP {3 3} PrRefN {-3 -3}", kFALSE));
-
-    corrconfigs.push_back(GetConf("PiFull34","PiMid {3 3 -3 -3}", kFALSE));
-    corrconfigs.push_back(GetConf("KaFull34","KaMid {3 3 -3 -3}", kFALSE));
-    corrconfigs.push_back(GetConf("PrFull34","PrMid {3 3 -3 -3}", kFALSE));
-
-    corrconfigs.push_back(GetConf("PiSC234","PiRefP {2 3} PiRefN {-2 -3}", kFALSE));    
-    corrconfigs.push_back(GetConf("KaSC234","KaRefP {2 3} KaRefN {-2 -3}", kFALSE));    
-    corrconfigs.push_back(GetConf("PrSC234","PrRefP {2 3} PrRefN {-2 -3}", kFALSE));   
-
-    corrconfigs.push_back(GetConf("PiGap26","PiRefP {2 2 2} PiRefN {-2 -2 -2}",kFALSE));  // 
-    corrconfigs.push_back(GetConf("KaGap26","KaRefP {2 2 2} KaRefN {-2 -2 -2}",kFALSE));  // 
-    corrconfigs.push_back(GetConf("PrGap26","PrRefP {2 2 2} PrRefN {-2 -2 -2}",kFALSE));  //  
-
-    corrconfigs.push_back(GetConf("PiDiff22","PiMid {2} mid {-2}",kFALSE));
-    corrconfigs.push_back(GetConf("KaDiff22","KaMid {2} mid {-2}",kFALSE));
-    corrconfigs.push_back(GetConf("PrDiff22","PrMid {2} mid {-2}",kFALSE));  
-
-    corrconfigs.push_back(GetConf("PiDiff24","PiMid {2} mid {2 -2 -2}",kFALSE));
-    corrconfigs.push_back(GetConf("KaDiff24","KaMid {2} mid {2 -2 -2}",kFALSE));
-    corrconfigs.push_back(GetConf("PrDiff24","PrMid {2} mid {2 -2 -2}",kFALSE));
-  }
   return;
 };
 void AliAnalysisTaskDeform::FillAdditionalTrackQAPlots(AliAODTrack &track, Double_t weff, Double_t wacc, Double_t* vtxp, Bool_t beforeCuts){
@@ -1515,21 +1362,23 @@ void AliAnalysisTaskDeform::FillAdditionalTrackQAPlots(AliAODTrack &track, Doubl
     fChi2TPCcls[1]->Fill(track.GetTPCchi2perCluster());
   }
 }
-void AliAnalysisTaskDeform::GetSingleWeightFromList(AliGFWWeights **inWeights, TString pf) {
-  (*inWeights) = (AliGFWWeights*)fWeightList->FindObject(Form("weight_%s",pf.Data()));
-  if(!(*inWeights)) AliFatal(Form("Could not find weight %s in weight list\n", pf.Data()));
-  if(!(*inWeights)->CalculateIntegratedEff()) AliFatal("Could not calculate integrated efficiency!\n");
-  (*inWeights)->CreateNUA();
-};
-void AliAnalysisTaskDeform::LoadWeightAndMPT() {//AliAODEvent *inEv) {
-  if(!fRequireReloadOnRunChange) return;
-  if(!fWeightList) AliFatal("Weight list not set!\n");
 
-  // Int_t l_RunNo = inEv->GetRunNumber();
-  TString spNames[] = {"ch","pi","ka","pr"};
-  fWeights = new AliGFWWeights*[4];
-  for(Int_t i=0;i<4;i++) GetSingleWeightFromList(&fWeights[i],spNames[i]);
-}
+Bool_t AliAnalysisTaskDeform::LoadWeights(const Int_t &runno) { //Cannot be used when running on the trains
+  if(fWeightList) {
+    // fWeights[0] = (AliGFWWeights*)fWeightList->FindObject(Form("w%i",runno));
+    fWeights[0] = (AliGFWWeights*)fWeightList->FindObject(Form("w%i%s",runno,fGFWSelection->GetSystPF()));
+    if(!fWeights) {
+      AliFatal("Weights could not be found in the list!\n");
+      return kFALSE;
+    };
+    fWeights[0]->CreateNUA();
+    return kTRUE;
+  } else {
+    AliFatal("Weight list (for some reason) not set!\n");
+    return kFALSE;
+  };
+};
+
 void AliAnalysisTaskDeform::LoadCorrectionsFromLists(){
   const char* species[] = {"_ch","_pi","_ka","_pr"};
   fWeightList = (TList*)GetInputData(1);
@@ -1547,32 +1396,17 @@ void AliAnalysisTaskDeform::LoadCorrectionsFromLists(){
       fWeights[i]->CreateNUA();
     }
   }
-  fEfficiencyList = (TList*)GetInputData(2+fEfficiencyIndex); //Efficiencies start from input slot 2
-  if(fUse2DEff) {
-    fEfficiency.resize(fNV0MBinsDefault,vector<TH2D*>(4));
-    for(int iSp=0;iSp<4;++iSp) {
-      for(Int_t i=0;i<fNV0MBinsDefault;i++) {
-        fEfficiency[i][iSp] = (TH2D*)fEfficiencyList->FindObject(Form("EffRescaled%s_Cent%i%s",species[iSp],i,fGFWSelection->GetSystPF()));
-        if(!fEfficiency[i][iSp]) {
-          if(!i) AliFatal(Form("Could not fetch efficiency EffRescaled%s_Cent%i%s\n",species[iSp],i,fGFWSelection->GetSystPF()));
-          printf("Could not find efficiency for V0M bin no. %i! Cloning the previous efficiency instead...\n",i);
-          fEfficiency[i][iSp] = (TH2D*)fEfficiency[i-1][iSp]->Clone(Form("EffRescaled%s_Cent%i%s",species[iSp],i,fGFWSelection->GetSystPF()));
-        };
-      }
-    }
-  }
-  else {
-    fEfficiencies = new TH1D*[fNV0MBinsDefault];
-    for(Int_t i=0;i<fNV0MBinsDefault;i++) {
+  fEfficiencyList = (TList*)GetInputData(2); //Efficiencies start from input slot 2
+  fEfficiencies = new TH1D*[fNV0MBinsDefault];
+  for(Int_t i=0;i<fNV0MBinsDefault;i++) {
 
-        fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
-        if(fEfficiencies[i] && fPseudoEfficiency<1) fEfficiencies[i]->Scale(fPseudoEfficiency);
-        if(!fEfficiencies[i]) {
-          if(!i) AliFatal("Could not fetch efficiency!\n");
-          printf("Could not find efficiency for V0M bin no. %i! Cloning the previous efficiency instead...\n",i);
-          fEfficiencies[i] = (TH1D*)fEfficiencies[i-1]->Clone(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
-        };
-    }
+      fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
+      if(fEfficiencies[i] && fPseudoEfficiency<1) fEfficiencies[i]->Scale(fPseudoEfficiency);
+      if(!fEfficiencies[i]) {
+        if(!i) AliFatal("Could not fetch efficiency!\n");
+        printf("Could not find efficiency for V0M bin no. %i! Cloning the previous efficiency instead...\n",i);
+        fEfficiencies[i] = (TH1D*)fEfficiencies[i-1]->Clone(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
+      };
   }
   return;
 }

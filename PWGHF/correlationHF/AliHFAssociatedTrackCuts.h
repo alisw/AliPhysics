@@ -32,6 +32,7 @@
 #include "AliAODEvent.h"
 #include "AliAODRecoDecayHF2Prong.h"
 #include "AliAODRecoDecayHF3Prong.h"
+#include "AliAODRecoCascadeHF.h"
 #include "AliReducedParticle.h"
 #include <TClonesArray.h>
 #include <TH3D.h>
@@ -66,6 +67,8 @@ class AliHFAssociatedTrackCuts : public AliAnalysisCuts
 	Bool_t InvMassDstarRejection(AliAODRecoDecayHF2Prong* d, AliReducedParticle *track, Int_t hypD0) const;
 	Bool_t InvMassSigmacRejection(AliAODRecoDecayHF3Prong* d, AliAODTrack *track, Int_t hypLc) const;
 	Bool_t InvMassSigmacRejection(AliAODRecoDecayHF3Prong* d, AliReducedParticle *track, Int_t hypLc) const;
+	Bool_t InvMassSigmacRejection(AliAODRecoCascadeHF* d, AliAODTrack *track, Double_t KFmass) const;
+	Bool_t InvMassSigmacRejection(AliAODRecoCascadeHF* d, AliReducedParticle *track, Double_t KFmass) const;
 	void SetPidAssociated();	
 	
 	// getters

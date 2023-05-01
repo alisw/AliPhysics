@@ -70,6 +70,10 @@ public:
   void   AddTrackCut(AliAnalysisFilter* filter) {fFilter_TrackCuts.push_back(filter);}
   void   AddPIDCut(AliAnalysisFilter* filter_PID) {fFilter_PID.push_back(filter_PID);}
 
+  //Bool flag for sys Unc. -- cut variations
+  void   SetBoolsysUncOutput(Bool_t sysUncOutput) {fsysUnc = sysUncOutput;}
+
+
 private:
 
   TList*              fOutputList;		  //!<! Output list
@@ -87,6 +91,7 @@ private:
   Double_t              fMaxEta;        ///< Maximum eta cut
   Double_t              fMinPt;			    ///< Minimum pT cut
   Double_t              fMaxPt;			    ///< Maximum pT cut
+  Bool_t                fsysUnc;        ///< sys unc cut variation
 
   // pdg codes:
   Int_t                felectron_pdg;   //!
@@ -103,35 +108,32 @@ private:
 
 
   // Output Histograms
-  TH2D* fHistVertex;                            //!<! Histogram for event counting
+  std::vector<TH3D*> fHist_MC_Omegas_gen;                 //!<! Histogram of generated omegas for different Event Cut Settings
+  TH3D* fHist_MC_Omegas_gen_DaughtersinAcc;               //!<! Histogram of generated omegas with dielectron daughters in Acc
+  std::vector<TH3D*> fHist_Rec_Omegas_TrackPID;           //!<! Histogram of reconstructed omegas within track and PID cuts
 
-  TH1F* fHist_MC_Omegas_Rapidity;                //!<! Histogram for event counting
-  TH3D* fHist_MC_Omegas_gen_DaughtersinAcc;      //!<! Histogram of generated primaries
+  TH2D* fHistVertex;                                      //!<! Histogram for z vertex distribution different EventCut stages
+  TH1F* fHist_MC_Omegas_Rapidity;                         //!<! Histogram for omega rapidity distribution
 
-  TH3D* fHist_MC_elec_gen;                 //!<! Histogram of generated primaries
-  TH3D* fHist_MC_posi_gen;                 //!<! Histogram of generated primaries
-  TH3D* fHist_MC_elec_gen_inAcc;                 //!<! Histogram of generated primaries
-  TH3D* fHist_MC_posi_gen_inAcc;                  //!<! Histogram of generated primaries
-  TH3D* fHist_MC_Omegas_withoutCuts;              //!<! Histogram of generated primaries
+  TH3D* fHist_MC_elec_gen;                                //!<! Histogram of generated electrons
+  TH3D* fHist_MC_posi_gen;                                //!<! Histogram of generated positrons
+  TH3D* fHist_MC_elec_gen_inAcc;                          //!<! Histogram of generated electrons in Acceptance
+  TH3D* fHist_MC_posi_gen_inAcc;                          //!<! Histogram of generated positrons in Acceptance
 
-  TH3D* fHist_Rec_Omegas_withoutCuts;              //!<! Histogram of generated primaries
+  TH3D* fHist_MC_Omegas_withoutCuts;                      //!<! Histogram of generated Omegas (MCParticles)
+  TH3D* fHist_Rec_Omegas_withoutCuts;                     //!<! Histogram of Omegas (AliVTracks)
 
+  std::vector<TH3D*> fHist_elec_rec_inAcc;                //!<! Histogram of reconstructed electrons in Acceptance
+  std::vector<TH3D*> fHist_elec_rec_inAcc_Track;          //!<! Histogram of reconstructed electrons within Acceptance, TrackCuts
+  std::vector<TH3D*> fHist_elec_rec_inAcc_Track_PID;      //!<! Histogram of reconstructed electrons within Acceptance, TrackCuts and PID
+  std::vector<TH3D*> fHist_posi_rec_inAcc;                //!<! Histogram of reconstructed positrons within Acceptance
+  std::vector<TH3D*> fHist_posi_rec_inAcc_Track;          //!<! Histogram of reconstructed positrons within Acceptance, TrackCuts
+  std::vector<TH3D*> fHist_posi_rec_inAcc_Track_PID;      //!<! Histogram of reconstructed positrons within Acceptance, TrackCuts and PID
 
+  std::vector<TH3D*> fHist_MC_Omegas_TrackCuts;           //!<! Histogram of generated Omegas within TrackCuts
+  std::vector<TH3D*> fHist_MC_Omegas_TrackPID;            //!<! Histogram of generated Omegas within TrackCuts, PID
+  std::vector<TH3D*> fHist_Rec_Omegas_TrackCuts;          //!<! Histogram of reconstructed Omegas within TrackCuts
 
-  std::vector<TH3D*> fHist_MC_Omegas_gen;                     //!<! Histogram of generated primaries
-  std::vector<TH3D*> fHist_elec_rec_inAcc;                 //!<! Histogram of generated primaries
-  std::vector<TH3D*> fHist_elec_rec_inAcc_Track;                 //!<! Histogram of generated primaries
-  std::vector<TH3D*> fHist_elec_rec_inAcc_Track_PID;                 //!<! Histogram of generated primaries
-  std::vector<TH3D*> fHist_posi_rec_inAcc;                 //!<! Histogram of generated primaries
-  std::vector<TH3D*> fHist_posi_rec_inAcc_Track;                 //!<! Histogram of generated primaries
-  std::vector<TH3D*> fHist_posi_rec_inAcc_Track_PID;                 //!<! Histogram of generated primaries
-
-  // std::vector<TH3D*> fHist_MC_Omegas_withoutCuts;              //!<! Histogram of generated primaries
-  std::vector<TH3D*> fHist_MC_Omegas_TrackCuts;               //!<! Histogram of generated primaries
-  std::vector<TH3D*> fHist_MC_Omegas_TrackPID;                //!<! Histogram of generated primaries
-  // std::vector<TH3D*> fHist_Rec_Omegas_withoutCuts;              //!<! Histogram of generated primaries
-  std::vector<TH3D*> fHist_Rec_Omegas_TrackCuts;              //!<! Histogram of generated primaries
-  std::vector<TH3D*> fHist_Rec_Omegas_TrackPID;               //!<! Histogram of generated primaries
 
 
   void    SetPIDResponse(AliPIDResponse *fPIDRespIn)        {fPIDResponse = fPIDRespIn;} //!<! pid response

@@ -87,6 +87,8 @@ if(ROOT_VERSION_MAJOR EQUAL 6)
 	AliAnalysisTaskDHFeCorr.cxx
         AliHFMLResponseLambdactopKpi.cxx
         AliAnalysisTaskSELambdacCorrelations.cxx
+        AliHFMLResponseLambdactopK0s.cxx
+        AliAnalysisTaskSELcTopK0sCorrelations.cxx
 	)
 endif(ROOT_VERSION_MAJOR EQUAL 6)
 

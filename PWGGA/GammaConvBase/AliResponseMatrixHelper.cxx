@@ -74,10 +74,10 @@ MatrixHandler4D::MatrixHandler4D(std::vector<double> arrMesonX, std::vector<doub
   h2d = (TH2F*)h->Clone();
 }
 
-//____________________________________________________________________________________________________________________________
-MatrixHandler4D::~MatrixHandler4D()
-{
-}
+// //____________________________________________________________________________________________________________________________
+// MatrixHandler4D::~MatrixHandler4D()
+// {
+// }
 
 //____________________________________________________________________________________________________________________________
 int MatrixHandler4D::getBinIndexMesonX(const double val) const
@@ -328,3 +328,225 @@ TH2F* MatrixHandler4D::GetResponseMatrix(int binX, int binY, const char* name)
   }
   return hMesonResp;
 }
+
+
+
+
+
+
+//=============================================================//
+//============ Implementation of N dimensional handler ========//
+//=============================================================//
+//____________________________________________________________________________________________________________________________
+MatrixHandlerNDim::MatrixHandlerNDim(std::vector<std::vector<double>> arrBinsX, std::vector<std::vector<double>> arrBinsY, bool useTHN)
+{
+  if(arrBinsX.size() != arrBinsY.size()){
+    printf("MatrixHandlerNDim::MatrixHandlerNDim: ERROR. Vectors of different size\n");
+  }
+
+  vecBinsX = arrBinsX;
+  vecBinsY = arrBinsY;
+  useTHNSparese = useTHN;
+  if (useTHNSparese) {
+    // in case of thnsparse, just use equidistant binning
+
+    std::vector<double> vecXBins = MakeAxis1D(arrBinsX);
+    std::vector<double> vecYBins = MakeAxis1D(arrBinsY);
+    int nBinsX = vecXBins.size()-1;
+    int nBinsY = vecYBins.size()-1;
+    
+    std::array<int, 2> arrNBins = {nBinsX, nBinsY};
+    std::array<double, 2> arrXBins = {0, 0};
+    std::array<double, 2> arrYBins = {static_cast<double>(nBinsX), static_cast<double>(nBinsY)};
+
+    hSparseResponse = new THnSparseF("ResponseMatrix_dyn", "ResponseMatrix_dyn", arrNBins.size(), arrNBins.data(), arrXBins.data(), arrYBins.data());
+
+  } else {
+    std::vector<double> vecXBins = MakeAxis1D(arrBinsX);
+    std::vector<double> vecYBins = MakeAxis1D(arrBinsY);
+    if (h2d) {
+      delete h2d;
+    }
+    h2d = new TH2F("ResponseMatrix_stat", "ResponseMatrix_stat", vecXBins.size() - 1, vecXBins.data(), vecYBins.size() - 1, vecYBins.data());
+  }
+}
+
+
+//____________________________________________________________________________________________________________________________
+std::vector<double> MatrixHandlerNDim::MakeAxis1D(const std::vector<std::vector<double>> vecND){
+  const unsigned int dim = vecND.size();
+
+    std::vector<unsigned int> vecDim(dim, 0);
+
+    unsigned int nBins = 1;
+    for(const auto & v : vecND){
+        nBins*=(v.size()-1);
+    }
+    std::vector<double> vecBins(nBins+1);
+
+    for(unsigned int i = 0; i < nBins-1; ++i){
+        if(i==0) vecBins[i] = GetBinLowEdge(vecDim, vecND);
+        for(int d = dim-1; d >= 0; --d){
+            if(vecDim[d] == vecND[d].size()-2){
+                vecDim[d] = 0;
+                continue;
+            }
+            if(vecDim[d] < vecND[d].size()-2) {
+                vecDim[d]++;
+                break;
+            }            
+        }
+        vecBins[i+1] =  GetBinLowEdge(vecDim, vecND);        
+    }
+    vecBins.back()=vecND[0].back();
+    // printf("nBins %d\n", nBins);
+    // for(const auto & i : vecBins){
+    //   printf("%f, ", i);
+    // }
+    // printf("\n");
+
+    return vecBins;
+}
+
+
+//____________________________________________________________________________________________________________________________
+double MatrixHandlerNDim::GetBinLowEdge(std::vector<unsigned int> vecDim, const std::vector<std::vector<double>> vecND){
+    std::vector<std::vector<double>> vecNDTmp = vecND;
+    std::vector<unsigned int> vecDimTmp = vecDim;
+
+    const unsigned int nDim = vecND.size()-1;
+    double scaleFac = 1;
+    // shrink first vector into specified second one
+    for(unsigned int d = 1; d <= nDim; ++d){
+        double dist = std::abs(vecND[d-1][vecDim[d-1]] - vecND[d-1][vecDim[d-1]+1]);
+        double SizeVec = std::abs(vecND[d][0] - vecND[d].back());
+        scaleFac *= dist/SizeVec;
+        // cout << "scaleFac " << scaleFac << "   dist " << dist << "  SizeVec " << SizeVec << endl;
+        for(unsigned int i = 0; i < vecND[d].size(); ++i){
+            // cout << scaleFac*(vecND[d][i] - vecND[d][0]) << ", ";
+            vecNDTmp[d][i] = scaleFac*(vecND[d][i] - vecND[d][0]);
+        }
+        // cout << endl;
+    }
+
+    double binCont = 0;
+    for(unsigned int d = 0; d <= nDim; ++d){
+        if(d == 0) binCont+=vecND[d][vecDim[d]];
+        else binCont+=(vecNDTmp[d][vecDim[d]] - vecNDTmp[d][0]);
+    }
+
+    // cout << "----> " << binCont << endl;
+    return binCont;  
+}
+
+//____________________________________________________________________________________________________________________________
+unsigned int MatrixHandlerNDim::getIndex(std::vector<double> vecVal, bool isXAxis){
+  std::vector<std::vector<double>> vecBins = isXAxis == true ? vecBinsX : vecBinsY;
+  const unsigned int dim = vecBins.size();
+
+  std::vector<unsigned int> vecDim(dim, 0);
+
+  unsigned int nBins = 1;
+  for(const auto & v : vecBins){
+      nBins*=(v.size()-1);
+  }
+
+  unsigned int index = 0;
+  for(unsigned int i = 0; i < nBins-1; ++i){
+    bool indexFound = true;
+      for(int d = dim-1; d >= 0; --d){
+        // printf("vecBins[d][vecDim[d]] = %f,   vecVal[d] = %f ,   vecBins[d][vecDim[d]+1] = %f\n", vecBins[d][vecDim[d]], vecVal[d], vecBins[d][vecDim[d]+1]);
+        if(!(vecVal[d] > vecBins[d][vecDim[d]] && vecVal[d] < vecBins[d][vecDim[d]+1])){
+          indexFound = false;
+          index = i;
+        }
+      }
+      // printf("indexFound %d\n", indexFound);
+      if(indexFound) break;
+      for(int d = dim-1; d >= 0; --d){
+          if(vecDim[d] == vecBins[d].size()-2){
+              vecDim[d] = 0;
+              continue;
+          }
+          if(vecDim[d] < vecBins[d].size()-2) {
+              vecDim[d]++;
+              break;
+          }            
+      }
+  }
+  return index;
+}
+
+//____________________________________________________________________________________________________________________________
+void MatrixHandlerNDim::Fill(std::vector<double> vecValX, std::vector<double> vecValY, double val)
+{
+  int indexX = getIndex(vecValX, true);
+  int indexY = getIndex(vecValY, false);
+  // printf("indexX = %d\n", indexX);
+  // printf("indexY = %d\n", indexY);
+
+  if (useTHNSparese) {
+    std::array<double, 2> arrFill;
+    arrFill[0] = indexX + 0.5;
+    arrFill[1] = indexY + 0.5;
+    // printf("Fill the thnsparse\n");
+    hSparseResponse->Fill(arrFill.data(), val);
+  } else {
+    std::array<int, 2> arrFill;
+    arrFill[0] = indexX;
+    arrFill[1] = indexY;
+    h2d->Fill(h2d->GetXaxis()->GetBinCenter(arrFill[0]), h2d->GetYaxis()->GetBinCenter(arrFill[1]), val);
+  }
+}
+
+//____________________________________________________________________________________________________________________________
+TH2F* MatrixHandlerNDim::GetTH2(const char* name)
+{
+  if (useTHNSparese) {
+    if (!hSparseResponse) {
+      printf("Attention! hSparseResponse does not exist yet!\n");
+      return nullptr;
+    }
+    std::vector<double> vecXBins = MakeAxis1D(vecBinsX);
+    std::vector<double> vecYBins = MakeAxis1D(vecBinsY);
+    if (h2d) {
+      delete h2d;
+    }
+    h2d = new TH2F(name, name, vecXBins.size() - 1, vecXBins.data(), vecYBins.size() - 1, vecYBins.data());
+
+    // transfer the values
+    for (int x = 0; x < h2d->GetXaxis()->GetNbins(); ++x) {
+      for (int y = 0; y < h2d->GetYaxis()->GetNbins(); ++y) {
+        std::array<int, 2> arrBins = {x + 1, y + 1};
+        double binCont = hSparseResponse->GetBinContent(arrBins.data());
+        double binErr = hSparseResponse->GetBinError(arrBins.data());
+        // printf("x %d, y %d = %f\n", x, y, binCont);
+        h2d->SetBinContent(x + 1, y + 1, binCont);
+        h2d->SetBinError(x + 1, y + 1, binErr);
+      }
+    }
+    return h2d;
+
+  } else {
+    if (!h2d) {
+      printf("Attention! 2d histogram does not exist yet!\n");
+      return nullptr;
+    }
+    h2d->SetName(name);
+    return h2d;
+  }
+}
+
+//____________________________________________________________________________________________________________________________
+THnSparseF* MatrixHandlerNDim::GetTHnSparseClone(const char* name)
+{
+  return (THnSparseF*)hSparseResponse->Clone(name);
+}
+
+//____________________________________________________________________________________________________________________________
+THnSparseF* MatrixHandlerNDim::GetTHnSparse(const char* name)
+{
+  hSparseResponse->SetName(name);
+  return hSparseResponse;
+}
+

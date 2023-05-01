@@ -58,7 +58,7 @@ enum {kCh = 0, kPi = 1, kKa = 2, kPr = 4};
 class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskDeform();
-  AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="", TString ContainerSubfix="", Int_t Nkeys = 1);
+  AliAnalysisTaskDeform(const char *name, Bool_t IsMC=kTRUE, TString StageSwitch="", TString ContainerSubfix="");
   virtual ~AliAnalysisTaskDeform();
   virtual void UserCreateOutputObjects();
   virtual void NotifyRun();
@@ -120,8 +120,6 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetEventWeight(unsigned int weight) { fEventWeight = weight; };
   void SetDisablePileup(bool disable) { fDisablePileup = disable; };
   void SetRequirePositiveCharge(bool newval) {fRequirePositive = newval;};
-  void SetUse2DEfficiencies(bool newval) {fUse2DEff = newval;};
-  void SetEfficiencyIndex(UInt_t newval) {fEfficiencyIndex = newval;}
   void SetOnTheFly(bool newval) {fOnTheFly = newval;}
   void SetFillMptPowers(bool newval) { fFillMptPowers = newval; }
   void SetIPBins(Int_t nBins, Double_t *multibins);
@@ -191,12 +189,11 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TH2D *fESDvsFB128;
   TList *fptVarList;
   TList* fMptList;
-  AliCkContainer **fCkCont;
-  AliPtContainer  **fPtCont;
+  AliCkContainer *fCkCont;
+  AliPtContainer  *fPtCont;
   TList *fCovList;
   TList *fV2dPtList;
   AliProfileBS **fCovariance; //!
-  AliProfileBS **fCovariancePID; //!
   AliProfileBS **fCovariancePowerMpt; //!
   AliProfileBS **fMpt; //!
   UInt_t fTriggerType;
@@ -245,9 +242,9 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Double_t fImpactParameterMC;
   int EventNo;
   unsigned int fEventWeight; 
-  vector<vector<vector<double>>>  wpPt;
-  vector<vector<vector<double>>>  wpPtSubP;
-  vector<vector<vector<double>>>  wpPtSubN;
+  vector<vector<double>>  wpPt;
+  vector<vector<double>>  wpPtSubP;
+  vector<vector<double>>  wpPtSubN;
   std::map<double,double> centralitymap;  
   AliESDtrackCuts *fStdTPCITS2011; //Needed for counting tracks for custom event cuts
   Bool_t FillFCs(const AliGFW::CorrConfig &corconf, const Double_t &cent, const Double_t &rndmn, const Bool_t deubg=kFALSE);
@@ -265,6 +262,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void CreateMptOutputObjects();
   Bool_t AcceptCustomEvent(AliAODEvent*);
   Bool_t AcceptCustomEvent(AliESDEvent*);
+  Bool_t LoadWeights(const Int_t &runno);
   AliMCEvent *getMCEvent();
   double getAMPTCentrality();
   void ProcessOnTheFly();
@@ -272,10 +270,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   vector<Double_t> getPowerEfficiency(double &lpt, int iCent);
   Bool_t fDisablePID;
   UInt_t fConsistencyFlag;
-  UInt_t fEfficiencyIndex;
   Bool_t fRequireReloadOnRunChange;
   Bool_t fRequirePositive;
-  Bool_t fUse2DEff;
   Bool_t fUsePIDNUA;
   Bool_t fFillMptPowers;
   Bool_t fUseMcParticleForEfficiency;

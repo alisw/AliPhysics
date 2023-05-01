@@ -85,7 +85,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetSkipCorrelations(Bool_t flag = kTRUE) { fSkipCorr = flag; }
         void                    SetIsAniparticleCheck(Bool_t flag = kTRUE, Bool_t antip = kTRUE) { fIsAntiparticleCheck = flag; fDoAntiparticleOnly = antip; }
         void                    SetRejectSecondariesFromMC(Bool_t flag = kTRUE) { fRejectSecondariesFromMC = flag; }
-        void                    SetVetoJetEvents(Bool_t flag = kTRUE) { fVetoJetEvents = flag; }
+        void                    SetVetoJetEvents(Bool_t flag, Double_t selectionval) { fVetoJetEvents = flag; fJetvetoselectionval = selectionval; }
         void                    SetJetEventsLowPtCut(Double_t cut) { fJetParticleLowPt = cut; }
 	void                    SetParticlemassbias(Bool_t massbias = kFALSE) { fParticlemass_bias_corr = massbias; }
 
@@ -186,6 +186,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         //output histograms
         TH1D*                   fhEventCounter; //!
         TH1D*                   fhEventMultiplicity; //!
+	TH1D*                   fhEventMultiplicity_jetveto; //!
+	TH1D*                   fhEventMultiplicity_massbias; //!
         AliTHn*                 fhTrigTracks[7]; //!
         AliTHn*                 fhSE[7]; //!
         AliTHn*                 fhME[7]; //!
@@ -198,6 +200,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	TH1D*                   fhPhiphi; //!	   		
         TH1D*                   fhCentCalib; //!
         TH1D*                   fhPT[7]; //!
+	TH1D*                   fhPT_trig[7]; //!
         TH2D*                   fhPTvsMinv[3]; //!
 	TH2D*                   fhPTvsMinv_Phi_LS; //!
         TH2D*                   fh2FMDvsV0[4]; //!
@@ -280,6 +283,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Double_t                fSigmaTPC; // [3.0]
         Double_t                fMassRejWindowK0; // [0.005]
         Double_t                fMassRejWindowLambda; // [0.01]
+	Double_t                fJetvetoselectionval; //[0.5]
 	
 	Double_t                fMinK0Mass; // [0.44]
         Double_t                fMaxK0Mass; // [0.56]

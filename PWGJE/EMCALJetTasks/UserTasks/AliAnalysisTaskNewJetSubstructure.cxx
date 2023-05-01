@@ -50,26 +50,47 @@ ClassImp(AliAnalysisTaskNewJetSubstructure)
     //________________________________________________________________________
 AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure()
 : AliAnalysisTaskEmcalJet("AliAnalysisTaskNewJetSubstructure", kTRUE),
-  fContainer(0), fMinFractionShared(0), fJetShapeType(kData),
-  fJetShapeSub(kNoSub), fJetSelection(kInclusive), fPtThreshold(-9999.),
-  fRMatching(0.2), fCentSelectOn(kTRUE), fCentMin(0), fCentMax(10),
-  fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE),
-  fDoFillMCLund(kFALSE), fCheckResolution(kFALSE), fSubjetCutoff(0.1),
-  fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
-  fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
-  fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
-  fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
-  fHLundIterativeMCDet(0x0), fHCheckResolutionSubjets(0x0),
-  fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0), fDoFlow(0), fQVectorReader(0),
-  fRejectTPCPileup(kFALSE)
+  fContainer(0),
+  fMinFractionShared(0),
+  fJetShapeType(kData),
+  fJetShapeSub(kNoSub), 
+  fJetSelection(kInclusive), 
+  fPtThreshold(-9999.),
+  fRMatching(0.2),
+  fCentSelectOn(kTRUE), 
+  fCentMin(0), 
+  fCentMax(10),
+  fOneConstSelectOn(kFALSE),
+  fTrackCheckPlots(kFALSE),
+  fDoFillMCLund(kFALSE),
+  fCheckResolution(kFALSE), 
+  fSubjetCutoff(0.1),
+  fMinPtConst(1), 
+  fHardCutoff(0),
+  fDoTwoTrack(kFALSE),
+  fCutDoubleCounts(kTRUE),
+  fDoAreaIterative(kTRUE),
+  fPowerAlgo(1),
+  fPhiCutValue(0.02),
+  fEtaCutValue(0.02), 
+  fMagFieldPolarity(1),
+  fDerivSubtrOrder(0),
+  fStoreDetLevelJets(0),
+  fDoSubJet(0),
+  fDoFlow(0),
+  fQVectorReader(0),
+  fRejectTPCPileup(kFALSE),
+  fPtJet(0x0),
+  fHLundIterative(0x0), 
+  fHLundIterativeMC(0x0),
+  fHLundIterativeMCDet(0x0),
+  fHCheckResolutionSubjets(0x0),
+  fTreeSubstructure(0)
 
 {
-  for (Int_t i = 0; i < 18; i++) {
+  for (Int_t i = 0; i < 22; i++) {
     fShapesVar[i] = 0;
   }
-  fShapesVar[18]  =  -1;
-  fShapesVar[19]  =  -1;
-  fShapesVar[20]  =  -1;
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -78,28 +99,49 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure()
 //________________________________________________________________________
 AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
 								     const char *name)
-  : AliAnalysisTaskEmcalJet(name, kTRUE), fContainer(0),
-    fMinFractionShared(0), fJetShapeType(kData), fJetShapeSub(kNoSub),
-    fJetSelection(kInclusive), fPtThreshold(-9999.), fRMatching(0.2),
-    fCentSelectOn(kTRUE), fCentMin(0), fCentMax(10),
-    fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE),
-    fDoFillMCLund(kFALSE), fCheckResolution(kFALSE), fSubjetCutoff(0.1),
-    fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
-    fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
-    fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
-    fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
-    fHLundIterativeMCDet(0x0), fHCheckResolutionSubjets(0x0),
-    fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0), fDoFlow(0), fQVectorReader(0),
-    fRejectTPCPileup(kFALSE)
+  : AliAnalysisTaskEmcalJet(name, kTRUE),
+    fContainer(0),
+    fMinFractionShared(0), 
+    fJetShapeType(kData), 
+    fJetShapeSub(kNoSub),
+    fJetSelection(kInclusive),
+    fPtThreshold(-9999.),
+    fRMatching(0.2),
+    fCentSelectOn(kTRUE),
+    fCentMin(0), 
+    fCentMax(10),
+    fOneConstSelectOn(kFALSE),
+    fTrackCheckPlots(kFALSE),
+    fDoFillMCLund(kFALSE),
+    fCheckResolution(kFALSE),
+    fSubjetCutoff(0.1),
+    fMinPtConst(1), 
+    fHardCutoff(0), 
+    fDoTwoTrack(kFALSE),
+    fCutDoubleCounts(kTRUE),
+    fDoAreaIterative(kTRUE), 
+    fPowerAlgo(1), 
+    fPhiCutValue(0.02),
+    fEtaCutValue(0.02),
+    fMagFieldPolarity(1),
+    fDerivSubtrOrder(0),
+    fStoreDetLevelJets(0),
+    fDoSubJet(0),
+    fDoFlow(0),
+    fQVectorReader(0),
+    fRejectTPCPileup(kFALSE),
+    fPtJet(0x0),
+    fHLundIterative(0x0), 
+    fHLundIterativeMC(0x0),
+    fHLundIterativeMCDet(0x0), 
+    fHCheckResolutionSubjets(0x0),
+    fTreeSubstructure(0)
     
 {
   // Standard constructor.
-  for (Int_t i = 0; i < 18; i++) {
+  for (Int_t i = 0; i < 22; i++) {
     fShapesVar[i] = -1;
   }
-  fShapesVar[18]  =  -1;
-  fShapesVar[19]  =  -1;
-  fShapesVar[20]  =  -1;
   SetMakeGeneralHistograms(kTRUE);
 
   DefineOutput(1, TList::Class());
@@ -180,7 +222,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   }
 
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 21;
+  const Int_t nVar = 22;
   const char *nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeSubstructure = new TTree(nameoutput, nameoutput);
   TString *fShapesVarNames = new TString[nVar];
@@ -226,7 +268,11 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
     if(!fQVectorReader){printf("Error: No AliAnalysisTaskJetQnVectors");return;} // GetQVectorReader
     fShapesVarNames[20] = "EP";}
 
+  fShapesVarNames[21] = "etaJet";
+  
+
   for (Int_t ivar = 0; ivar < nVar; ivar++) {
+    if (fShapesVarNames[ivar].Length() != 0)
     fTreeSubstructure->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar],
                               Form("%s/F", fShapesVarNames[ivar].Data()));
   }
@@ -457,6 +503,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
 
       fShapesVar[0] = ptSubtracted;
       fShapesVar[10] = jet1->MaxTrackPt();
+      fShapesVar[21] = jet1->Eta();
       
       if(fCutDoubleCounts==kTRUE && fJetShapeType==kDetEmbPartPythia) if(jet1->MaxTrackPt()>jet2->MaxTrackPt()) continue;
 
@@ -1444,24 +1491,19 @@ bool AliAnalysisTaskNewJetSubstructure::CheckClosePartner(AliEmcalJet* jet, PWG:
     Double_t ptv2 = fTrk2->Pt();
     Double_t deta = fTrk2->Eta() - fTrk1->Eta();
     const Float_t kLimit = fPhiCutValue * 3;
-
     if (TMath::Abs(fTrk1->Eta() - fTrk2->Eta()) < fEtaCutValue * 2.5 * 3) {
       Float_t initdpsinner =
           (phi2 - TMath::ASin(0.075 * chg2 * fMagFieldPolarity * 0.8 / ptv2) -
            (phi1 - TMath::ASin(0.075 * chg1 * fMagFieldPolarity * 0.8 / ptv1)));
-
       Float_t initdpsouter =
           (phi2 - TMath::ASin(0.075 * chg2 * fMagFieldPolarity * 2.5 / ptv2) -
            (phi1 - TMath::ASin(0.075 * chg1 * fMagFieldPolarity * 2.5 / ptv1)));
-
       initdpsinner = TVector2::Phi_mpi_pi(initdpsinner);
       initdpsouter = TVector2::Phi_mpi_pi(initdpsouter);
-
       if (TMath::Abs(initdpsinner) < kLimit ||
           TMath::Abs(initdpsouter) < kLimit ||
           initdpsinner * initdpsouter < 0) {
         Double_t mindps = 1e5;
-
         for (Double_t rad = 0.8; rad < 2.51; rad += 0.01) {
           Double_t dps =
               (phi2 -
