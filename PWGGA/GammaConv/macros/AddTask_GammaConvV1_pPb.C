@@ -170,7 +170,7 @@ void AddTask_GammaConvV1_pPb(
   // new standard configurations  MB
   if(trainConfig == 1){
     cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0162103500900000"); // new default
-    cuts.AddCutPCM("80010113", "00200009327000008250400000", "0162103500900000"); // new default, no to close
+    cuts.AddCutPCM("80010113", "00200009327000008250400000", "0162103500900000"); // new default, no to close    
   } else if (trainConfig == 2){
     cuts.AddCutPCM("80010113", "00200009f9730000dge0400000", "0162103500000000"); // new default
     cuts.AddCutPCM("80010113", "00200009327000008250400000", "0162103500000000"); // new default, no to close
@@ -180,16 +180,10 @@ void AddTask_GammaConvV1_pPb(
   } else if (trainConfig == 4){
     cuts.AddCutPCM("80010123", "00200009f9730000dge0400000", "0162103500000000"); // new default
     cuts.AddCutPCM("80010123", "00200009327000008250400000", "0162103500000000"); // new default, no to close
-  } else if (trainConfig == 5){ // past-future protection
-    cuts.AddCutPCM("80010213", "00200009f9730000dge0400000", "0162103500900000"); // new default, +-2.225\mus no other interaction
-    cuts.AddCutPCM("80010213", "00200009327000008250400000", "0162103500900000"); // new default, no to close, +-2.225\mus no other interaction
-    cuts.AddCutPCM("80010513", "00200009f9730000dge0400000", "0162103500900000"); // new default, +-1.075\mus no other interaction
-    cuts.AddCutPCM("80010513", "00200009327000008250400000", "0162103500900000"); // new default, no to close, +-1.075\mus no other interaction
-  } else if (trainConfig == 6){ // past-future protection
-    cuts.AddCutPCM("80010213", "00200009f9730000dge0400000", "0162103500000000"); // new default,  +-2.225\mus no other interaction
-    cuts.AddCutPCM("80010213", "00200009327000008250400000", "0162103500000000"); // new default, no to close, +-2.225\mus no other interaction
-    cuts.AddCutPCM("80010513", "00200009f9730000dge0400000", "0162103500000000"); // new default,  +-1.075\mus no other interaction
-    cuts.AddCutPCM("80010513", "00200009327000008250400000", "0162103500000000"); // new default, no to close,  +-1.075\mus no other interaction
+  } else if (trainConfig == 5){ 
+    cuts.AddCutPCM("80010113", "0dm00009f9730000dge0404000", "0162103500000000"); // new default 13TeV
+  } else if (trainConfig == 6){
+    cuts.AddCutPCM("80010123", "0dm00009f9730000dge0404000", "0162103500000000"); // new default 13TeV diff MC treatment
   } else if (trainConfig == 7){
     cuts.AddCutPCM("80010123", "00200009f9730000dge0400000", "0162103500900000"); // new default
     cuts.AddCutPCM("80010123", "00200009327000008250400000", "0162103500900000"); // new default, no to close
