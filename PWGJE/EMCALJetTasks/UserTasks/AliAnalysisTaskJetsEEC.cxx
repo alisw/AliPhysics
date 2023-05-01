@@ -429,7 +429,7 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 EEC_pt_hist->Fill(delta_R_js_2,jet_pt,ee_js_2);
                 EEC_pt_hist_log->Fill(log_delta_R_js_2,jet_pt,ee_js_2);
 ////                fTreeEEC->Fill();
-                }//close s loop for the 2 point correlator
+                }//close s loop for eec
             }//close if loop
         }//close j loop
 
