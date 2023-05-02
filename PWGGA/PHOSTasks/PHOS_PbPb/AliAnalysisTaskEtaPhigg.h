@@ -5,6 +5,7 @@
 // Authors: D.Peresunko
 
 class THashList;
+class TH3F;
 class AliPHOSGeometry;
 class AliCaloPhoton;
 class AliAODTrack;
@@ -49,7 +50,7 @@ class AliAnalysisTaskEtaPhigg : public AliAnalysisTaskSE
  protected:
   static constexpr int kCuts = 166;    // PID cuts
   static constexpr int kCentBins = 7;  // centrality
-  static constexpr int kVtxBins = 5;   // z-vertex
+  static constexpr int kVtxBins = 20;  // z-vertex
   static constexpr int kPRBins = 6;    // Reaction plane
   static constexpr int kKtbins = 4;    // Kt bins for OSL param
   static constexpr double kgMass = 0.; // photon mass
@@ -86,10 +87,10 @@ class AliAnalysisTaskEtaPhigg : public AliAnalysisTaskSE
   TH2F* fhReqCut[kCentBins][kCuts];    //!
   TH2F* fhMiqCut[kCentBins][kCuts];    //!
 
-  // TH3F* fhReOSL[kCentBins][kKtbins];    //!
-  // TH3F* fhMiOSL[kCentBins][kKtbins];    //!
-  // TH3F* fhReCPVOSL[kCentBins][kKtbins]; //!
-  // TH3F* fhMiCPVOSL[kCentBins][kKtbins]; //!
+  TH3F* fhReOSL[kCentBins][kKtbins];    //!
+  TH3F* fhMiOSL[kCentBins][kKtbins];    //!
+  TH3F* fhReOSLCTS[kCentBins][kKtbins];    //!
+  TH3F* fhMiOSLCTS[kCentBins][kKtbins];    //!
 
   ClassDef(AliAnalysisTaskEtaPhigg, 2); // PHOS analysis task
 };
