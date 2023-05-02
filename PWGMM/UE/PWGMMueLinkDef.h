@@ -31,4 +31,5 @@
 #pragma link C++ class AliAnalysisTaskdEdxCalibration+;
 #pragma link C++ class AliAnalysisTaskMCCorrections+;
 #pragma link C++ class AliAnalysisTaskOnlyFlatenicity+;
+#pragma link C++ class AliAnalysisTaskSystematicsV0M+;
 #endif
