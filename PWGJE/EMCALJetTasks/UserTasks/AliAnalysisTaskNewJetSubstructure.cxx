@@ -88,7 +88,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure()
   fTreeSubstructure(0)
 
 {
-  for (Int_t i = 0; i < 22; i++) {
+  for (Int_t i = 0; i < 23; i++) {
     fShapesVar[i] = 0;
   }
   SetMakeGeneralHistograms(kTRUE);
@@ -139,7 +139,7 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
     
 {
   // Standard constructor.
-  for (Int_t i = 0; i < 22; i++) {
+  for (Int_t i = 0; i < 23; i++) {
     fShapesVar[i] = -1;
   }
   SetMakeGeneralHistograms(kTRUE);
@@ -222,7 +222,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   }
 
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 22;
+  const Int_t nVar = 23;
   const char *nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeSubstructure = new TTree(nameoutput, nameoutput);
   TString *fShapesVarNames = new TString[nVar];
@@ -266,9 +266,11 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   if (fDoFlow) {
     fQVectorReader=(AliAnalysisTaskJetQnVectors*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetQnVectors");
     if(!fQVectorReader){printf("Error: No AliAnalysisTaskJetQnVectors");return;} // GetQVectorReader
-    fShapesVarNames[20] = "EP";}
+    fShapesVarNames[20] = "EP";
+    fShapesVarNames[21] = "EPMatch";
+    }
 
-  fShapesVarNames[21] = "etaJet";
+  fShapesVarNames[22] = "etaJet";
   
 
   for (Int_t ivar = 0; ivar < nVar; ivar++) {
@@ -503,7 +505,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
 
       fShapesVar[0] = ptSubtracted;
       fShapesVar[10] = jet1->MaxTrackPt();
-      fShapesVar[21] = jet1->Eta();
+      fShapesVar[22] = jet1->Eta();
       
       if(fCutDoubleCounts==kTRUE && fJetShapeType==kDetEmbPartPythia) if(jet1->MaxTrackPt()>jet2->MaxTrackPt()) continue;
 
@@ -516,6 +518,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
     
       Float_t ptMatch = 0.;
       Float_t leadTrackMatch = 0.;
+      Double_t EPMatch = 0.;
       Double_t ktgMatch = 0;
       Double_t nsdMatch = 0;
       Double_t zgMatch = 0;
@@ -547,6 +550,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
 
         ptMatch = jet3->Pt();
 	leadTrackMatch = jet3->MaxTrackPt();
+        EPMatch = RelativePhi(jet3->Phi(),fQVectorReader->GetEPangleV0M()); 
         IterativeParentsMCAveragePP(jet3, kMatched, aver1, aver2, aver3, aver4, sub1Det, sub2Det, const1Det, const2Det);
         ktgMatch = aver1;
         nsdMatch = aver2;
@@ -590,6 +594,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
       fShapesVar[8] = zgMatch;
       fShapesVar[9] = rgMatch;
       fShapesVar[11] = leadTrackMatch;
+      fShapesVar[21] = EPMatch;
       if (fStoreDetLevelJets) {
         fShapesVar[12] = ptDet;
         fShapesVar[13] = ktgDet;
@@ -861,8 +866,12 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(
   return;
 }
 //_________________________________________________________________________
-void AliAnalysisTaskNewJetSubstructure::IterativeParents(
-							 AliEmcalJet *fJet, AliJetContainer *fJetCont,fastjet::PseudoJet *sub1,  fastjet::PseudoJet *sub2, std::vector < fastjet::PseudoJet > *const1, std::vector < fastjet::PseudoJet > *const2) {
+void AliAnalysisTaskNewJetSubstructure::IterativeParents(AliEmcalJet *fJet,
+                                        AliJetContainer *fJetCont,fastjet::PseudoJet *sub1,
+                                        fastjet::PseudoJet *sub2, std::vector < fastjet::PseudoJet > *const1, 
+                                        std::vector < fastjet::PseudoJet > *const2) {
+
+  //function taht performs Soft Drop Grooming
 
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
@@ -974,8 +983,10 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
   return;
 }
 
-void AliAnalysisTaskNewJetSubstructure::IterativeParentsPP(
-							 AliEmcalJet *fJet, AliJetContainer *fJetCont,fastjet::PseudoJet *sub1,  fastjet::PseudoJet *sub2, std::vector < fastjet::PseudoJet > *const1, std::vector < fastjet::PseudoJet > *const2) {
+//________________________________________________________
+void AliAnalysisTaskNewJetSubstructure::IterativeParentsPP(AliEmcalJet *fJet, AliJetContainer *fJetCont,
+                                        fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2, 
+                                        std::vector < fastjet::PseudoJet > *const1, std::vector < fastjet::PseudoJet > *const2) {
 
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();

@@ -81,6 +81,7 @@ protected:
   Float_t  Angularity(AliEmcalJet *jet, Int_t jetContNb);
   Float_t  GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb);
   Double_t RelativePhi(Double_t mphi, Double_t vphi);
+
   void     IterativeParents(AliEmcalJet *fJet, AliJetContainer *fJetCont,  fastjet::PseudoJet *sub1, 
                             fastjet::PseudoJet *sub2,std::vector<fastjet::PseudoJet>* const1, std::vector<fastjet::PseudoJet>* const2);
   void     IterativeParentsPP(AliEmcalJet *fJet, AliJetContainer *fJetCont,  fastjet::PseudoJet *sub1,
@@ -105,7 +106,7 @@ protected:
   JetShapeType                  fJetShapeType;         ///< jet type to be used
   JetShapeSub                   fJetShapeSub;          ///< jet subtraction to be used
   JetSelectionType              fJetSelection;         ///< Jet selection: inclusive/recoil jet
-  Float_t                       fShapesVar[22];        ///< jet shapes used for the tagging
+  Float_t                       fShapesVar[23];        ///< jet shapes used for the tagging
   Float_t                       fPtThreshold;          ///<
   Float_t                       fRMatching;            ///<
 
@@ -139,8 +140,7 @@ protected:
   THnSparse *fHLundIterative;                          ///< iterative declustering
   THnSparse *fHLundIterativeMC;                        ///< iterative declustering
   THnSparse *fHLundIterativeMCDet;                     ///< iterative declustering
-  THnSparse
-      *fHCheckResolutionSubjets;                       ///< to evaluate energy resolution of subjets
+  THnSparse *fHCheckResolutionSubjets;                 ///< to evaluate energy resolution of subjets
                                                        ///< as function fo apperture angle
 
   TTree *fTreeSubstructure;                            ///< Tree with tagging variables subtracted MC or true
@@ -152,6 +152,6 @@ private:
   AliAnalysisTaskNewJetSubstructure &
   operator=(const AliAnalysisTaskNewJetSubstructure &); // not implemented
 
-  ClassDef(AliAnalysisTaskNewJetSubstructure, 15)
+  ClassDef(AliAnalysisTaskNewJetSubstructure, 16)
 };
 #endif
