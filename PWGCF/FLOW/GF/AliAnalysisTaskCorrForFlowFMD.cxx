@@ -527,22 +527,23 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
         delete fTracksTrig_Kaon_Phi;	
       }
     
-      for(Int_t i(0); i < 7; i++){//do correlation and delete the TObjArrays
+     if(fParticlemass_bias_corr) {
+	    if(fDoPID && fProtonSigcount < 1) return;//for PID correlation to fill, at least one proton needed (biasing event selection)
+	    if(fDoV0 && fLambdaSigcount < 1) return;//for V0 correlation to fill, at least one lambda candidate needed (biasing event selection)
+	    if(fDoPHI && fPhiSigcount < 1) return;//for Phi correlation to fill, at least one Phi candidate needed (biasing event selection)
+	  }
+	  
+        fhEventCounter->Fill("Used in corr",1);
+	
+	fhEventMultiplicity_massbias->Fill(fNofTracks);
+
+	    
+      for(Int_t i(0); i < 7; i++){//loop for species - do correlation and delete the TObjArrays
         if(!fDoPID && i > 0 && i < 4) continue;
 	if(!fDoV0 && i > 3 && i < 6) continue;
 	if(!fDoPHI && i > 5) continue;
 	
 	if(fIsAntiparticleCheck && i == 4) continue;
-	      	      
-	if(fParticlemass_bias_corr) {
-	    if(fDoPID && fProtonSigcount < 1) continue;//for PID correlation to fill, at least one proton needed (biasing event selection)
-	    if(fDoV0 && fLambdaSigcount < 1) continue;//for V0 correlation to fill, at least one lambda candidate needed (biasing event selection)
-	    if(fDoPHI && fPhiSigcount < 1) continue;//for Phi correlation to fill, at least one Phi candidate needed (biasing event selection)
-	  }
-	  
-        fhEventCounter->Fill("Used in corr",1);
-
-	fhEventMultiplicity_massbias->Fill(fNofTracks);
 
         FillCorrelations(i);
         FillCorrelationsMixed(i);
