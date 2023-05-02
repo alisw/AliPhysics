@@ -32,7 +32,7 @@ AliAnalysisTask *AddTaskJSPCMasterClosureRun2(TString taskName = "JSPCMaster", d
         MAPfilenames[i] = Form("%sPhiWeights_LHC10h_tpconly_pt%02d_9904.root", MAPdirname.Data(), Int_t (ptMin * 10));  // Azimuthal correction.  
       }
       else {  
-        MAPfilenames[i] = Form("%sPhiWeights_LHC17i2a_Error_pt02_s_hybrid.root", MAPdirname.Data());
+        MAPfilenames[i] = Form("%sPhiWeights_LHC17i2a_Error_pt02_s_global.root", MAPdirname.Data());
       }      
     }
     else {
@@ -57,18 +57,19 @@ AliAnalysisTask *AddTaskJSPCMasterClosureRun2(TString taskName = "JSPCMaster", d
 // Setting of the general parameters.
 
   Int_t tpconlyCut = 128;
-  Int_t hybridCut = 768; 
+  Int_t hybridCut = 768;
+  Int_t defaultCut = 96;
 
   Int_t UsedCut=0;
   if(IsLHC10h){
     UsedCut = tpconlyCut;
   }
   else {  
-    UsedCut = hybridCut;  
+    UsedCut = defaultCut;  
   } 
 
   UInt_t selEvt;
-  selEvt = AliVEvent::kAny;// Minimum bias trigger for LHC10h.
+  selEvt = AliVEvent::kINT7;// Minimum bias trigger for LHC15o.
 
   AliJCatalystTask *fJCatalyst[Nsets];  // One catalyst needed per configuration.
 
