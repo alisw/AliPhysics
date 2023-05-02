@@ -66,8 +66,8 @@ fUpTCut(0.8),
 fEtaCut(0.8), 
 fSigCut(2.0),
 fBit(96),
-fCentMin(20),
-fCentMax(30),
+fCentMin(0),
+fCentMax(10),
 //V0 cuts
 fDecayLv0Cut(8.05), 
 fLpTv0Cut(0.4), 
@@ -147,7 +147,7 @@ fSelectedKpos(0),
 fSelectedKneg(0),
 fPoolMgr(0x0),
 fPoolMaxNEvents(1000),
-fPoolMinNTracks(10000),
+fPoolMinNTracks(5000),
 fMinEventsToMix(10),
 fNzVtxBins(10),
 fNCentBins(15),
@@ -190,8 +190,8 @@ fUpTCut(0.8),
 fEtaCut(0.8), 
 fSigCut(2.0),
 fBit(96),
-fCentMin(20),
-fCentMax(30),
+fCentMin(0),
+fCentMax(10),
 //V0 cuts
 fDecayLv0Cut(8.05), 
 fLpTv0Cut(0.4), 
@@ -271,7 +271,7 @@ fSelectedKpos(0),
 fSelectedKneg(0),
 fPoolMgr(0x0),
 fPoolMaxNEvents(1000),
-fPoolMinNTracks(10000),
+fPoolMinNTracks(5000),
 fMinEventsToMix(10),
 fNzVtxBins(10),
 fNCentBins(15),
@@ -690,7 +690,7 @@ Bool_t AliAnalysisTaskKaon2PC::AcceptTrack(const AliAODTrack *Trk) {
     //if (fabs(nSigmakaon < 3.0) && (nSigmaproton < 3.0)) return kFALSE;
     //if (fabs(nSigmakaon < 3.0) && (nSigmaelectron < 3.0)) return kFALSE;
     if (fabs(nSigmakaon) > fSigCut) return kFALSE;
-    if (fabs(nSigmaTOFkaon) > 3.0) return kFALSE;
+    //if (fabs(nSigmaTOFkaon) > 3.0) return kFALSE;
 
     return kTRUE;
 }
@@ -890,7 +890,6 @@ void AliAnalysisTaskKaon2PC::RunData() {
         if (fabs(nSigmaTOFkaon)<3.0) {fNsigmaTOFKaon->Fill(track->Pt(), nSigmaTOFkaon);}
         if ((fabs(nSigmakaon)<3.0) && (fabs(nSigmaelectron) > 3.0 ) && (fabs(nSigmapion) > 3.0 ) &&
             (fabs(nSigmaTOFelectron) > 3.0 ) && (fabs(nSigmaTOFpion) > 3.0 ) && (fabs(nSigmaTOFkaon)<3.0)){
-            fNsigmaTPCTOFK->Fill(track->Pt(), nSigmaTOFkaon);
             fPIDKpiCut->Fill(track->Pt(),track->GetTPCsignal()); }
          
     }   //end of PID loop
@@ -934,7 +933,9 @@ for(Int_t i=0; i < iTracks; i++) {
     Double_t trackPhi = track->Phi();
     Double_t trackEta = track->Eta();
     Double_t trackPt = track->Pt();
+    Double_t nSigmaTOFkaon = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
     //cout << "TOFsignal is" << TOFsignal << endl;
+    fNsigmaTPCTOFK->Fill(trackPt, nSigmaTOFkaon);
     fHistTOFKch->Fill(trackPt, beta);
     fSelectedKCh->Add((AliAODTrack*)track);
 
@@ -1197,15 +1198,16 @@ Int_t nMix = pool->GetCurrentNEvents();
     for (Int_t jMix=0; jMix< nMix; jMix++){
         TObjArray* bgTracks2 = pool->GetEvent(jMix);  //bgTracks are from the mixed events
 
-        for(Int_t iTrig(0); iTrig < fSelectedKCh->GetEntries(); iTrig++){
-            AliVParticle* KaonTrig = dynamic_cast<AliVParticle*>(fSelectedKCh->At(iTrig));
+        for(Int_t iTrig(0); iTrig < fSelectedKpos->GetEntries(); iTrig++){
+            AliVParticle* KaonTrig = dynamic_cast<AliVParticle*>(fSelectedKpos->At(iTrig));
             if(!KaonTrig) continue;
 
             for (Int_t iAss(0); iAss < bgTracks2->GetEntries(); iAss++){
 
             AliVParticle* KaonAssoc = dynamic_cast<AliVParticle*> (bgTracks2->At(iAss));
             if(!KaonAssoc) continue;
-            if( KaonAssoc->Charge() != KaonTrig->Charge() ) continue;
+            if( KaonAssoc->Charge() > 0.0 ) continue;
+            //if( KaonAssoc->Charge() != KaonTrig->Charge() ) continue;
 
             Double_t DPhiMix = fabs(KaonTrig->Phi() - KaonAssoc->Phi());
             Double_t DEtaMix = fabs(KaonTrig->Eta() - KaonAssoc->Eta());
