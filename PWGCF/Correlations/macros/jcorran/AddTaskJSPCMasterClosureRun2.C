@@ -32,7 +32,7 @@ AliAnalysisTask *AddTaskJSPCMasterClosureRun2(TString taskName = "JSPCMaster", d
         MAPfilenames[i] = Form("%sPhiWeights_LHC10h_tpconly_pt%02d_9904.root", MAPdirname.Data(), Int_t (ptMin * 10));  // Azimuthal correction.  
       }
       else {  
-        MAPfilenames[i] = Form("%sPhiWeights_LHC17i2a_Error_pt02_s_hybrid.root", MAPdirname.Data());
+        MAPfilenames[i] = Form("%sPhiWeights_LHC17i2a_Error_pt02_s_global.root", MAPdirname.Data());
       }      
     }
     else {
@@ -57,18 +57,19 @@ AliAnalysisTask *AddTaskJSPCMasterClosureRun2(TString taskName = "JSPCMaster", d
 // Setting of the general parameters.
 
   Int_t tpconlyCut = 128;
-  Int_t hybridCut = 768; 
+  Int_t hybridCut = 768;
+  Int_t defaultCut = 96;
 
   Int_t UsedCut=0;
   if(IsLHC10h){
     UsedCut = tpconlyCut;
   }
   else {  
-    UsedCut = hybridCut;  
+    UsedCut = defaultCut;  
   } 
 
   UInt_t selEvt;
-  selEvt = AliVEvent::kAny;// Minimum bias trigger for LHC10h.
+  selEvt = AliVEvent::kINT7;// Minimum bias trigger for LHC15o.
 
   AliJCatalystTask *fJCatalyst[Nsets];  // One catalyst needed per configuration.
 
@@ -84,11 +85,14 @@ AliAnalysisTask *AddTaskJSPCMasterClosureRun2(TString taskName = "JSPCMaster", d
   fJCatalyst[0]->SetSaveHMOhist(kFALSE);
   fJCatalyst[0]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
   fJCatalyst[0]->SetInitializeCentralityArray();
-  fJCatalyst[0]->SetCentDetName("CL1"); //ADDED + CHECK changed to CL1 as in default analysis 
+  fJCatalyst[0]->SetCentDetName("V0M"); //ADDED + CHECK changed to V0M as in default analysis 
   fJCatalyst[0]->SetTestFilterBit(UsedCut); //ADDED + CHECK changed to tpc only like in default analysis
-  fJCatalyst[0]->SetZVertexCut(10.);
+  fJCatalyst[0]->SetZVertexCut(8.);
   fJCatalyst[0]->SetPtRange(ptMin, 5.0);
   fJCatalyst[0]->SetEtaRange(-0.8, 0.8);
+  fJCatalyst[0]->SetNumTPCClusters(70);
+  fJCatalyst[0]->SetDCAzCut(2.0);
+  fJCatalyst[0]->SetChi2Cuts(0.1, 4.0);
   mgr->AddTask((AliAnalysisTask *)fJCatalyst[0]); 
 
   //MC Reco
@@ -101,11 +105,14 @@ AliAnalysisTask *AddTaskJSPCMasterClosureRun2(TString taskName = "JSPCMaster", d
   fJCatalyst[1]->SetSaveHMOhist(kFALSE);
   fJCatalyst[1]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
   fJCatalyst[1]->SetInitializeCentralityArray();
-  fJCatalyst[1]->SetCentDetName("CL1"); //ADDED + CHECK changed to CL1 as in default analysis 
+  fJCatalyst[1]->SetCentDetName("V0M"); //ADDED + CHECK changed to V0M as in default analysis 
   fJCatalyst[1]->SetTestFilterBit(UsedCut); //ADDED + CHECK changed to tpc only like in default analysis
-  fJCatalyst[1]->SetZVertexCut(10.);
+  fJCatalyst[1]->SetZVertexCut(8.);
   fJCatalyst[1]->SetPtRange(ptMin, 5.0);
   fJCatalyst[1]->SetEtaRange(-0.8, 0.8);
+  fJCatalyst[1]->SetNumTPCClusters(70);
+  fJCatalyst[1]->SetDCAzCut(2.0);
+  fJCatalyst[1]->SetChi2Cuts(0.1, 4.0);
   fJCatalyst[1]->SetPhiCorrectionIndex(1); //ADDED + CHECK
   mgr->AddTask((AliAnalysisTask *)fJCatalyst[1]); //ADDED + CHECK
 
@@ -119,11 +126,14 @@ AliAnalysisTask *AddTaskJSPCMasterClosureRun2(TString taskName = "JSPCMaster", d
   fJCatalyst[2]->SetSaveHMOhist(kFALSE);
   fJCatalyst[2]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
   fJCatalyst[2]->SetInitializeCentralityArray();
-  fJCatalyst[2]->SetCentDetName("CL1"); //ADDED + CHECK changed to CL1 as in default analysis 
+  fJCatalyst[2]->SetCentDetName("V0M"); //ADDED + CHECK changed to V0M as in default analysis 
   fJCatalyst[2]->SetTestFilterBit(UsedCut); //ADDED + CHECK changed to tpc only like in default analysis
-  fJCatalyst[2]->SetZVertexCut(10.);
+  fJCatalyst[2]->SetZVertexCut(8.);
   fJCatalyst[2]->SetPtRange(ptMin, 5.0);
   fJCatalyst[2]->SetEtaRange(-0.8, 0.8);
+  fJCatalyst[2]->SetNumTPCClusters(70);
+  fJCatalyst[2]->SetDCAzCut(2.0);
+  fJCatalyst[2]->SetChi2Cuts(0.1, 4.0);
   fJCatalyst[2]->SetPhiCorrectionIndex(2); //ADDED + CHECK
   mgr->AddTask((AliAnalysisTask *)fJCatalyst[2]); //ADDED + CHECK
 
@@ -131,6 +141,7 @@ AliAnalysisTask *AddTaskJSPCMasterClosureRun2(TString taskName = "JSPCMaster", d
   const int SPCCombination = 3;
   TString SPC[SPCCombination] = { "2SPC", "4SPC", "5SPC" };
   AliJSPCTaskRun2 *myTask[Nsets][SPCCombination];
+  Bool_t corr[Nsets] = {kFALSE, kFALSE, kTRUE};
   
   for(Int_t i = 0; i < Nsets; i++){
     if (doSPC == 0) {
@@ -140,6 +151,8 @@ AliAnalysisTask *AddTaskJSPCMasterClosureRun2(TString taskName = "JSPCMaster", d
         myTask[i][j]->AliSPCRun2SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
         myTask[i][j]->AliSPCRun2SetSaveAllQA(kTRUE);
         myTask[i][j]->AliSPCRun2SetMinNuPar(14.);
+        myTask[i][j]->AliSPCRun2SetUseWeights(kTRUE, corr[i]);
+
 
         if (j == 0) {
           Int_t harmonicArray1[maxNrComb][8] = {
