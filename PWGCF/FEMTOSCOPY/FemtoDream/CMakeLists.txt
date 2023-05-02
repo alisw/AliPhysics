@@ -128,6 +128,7 @@ set(SRCS
   AliAnalysisTaskFemtoProtonPion.cxx
   AliAnalysisTaskNanoXiPi.cxx
   AliAnalysisTaskOtonXx.cxx
+  AliAnalysisTaskNanoFemtoProtonKaonPlus.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
