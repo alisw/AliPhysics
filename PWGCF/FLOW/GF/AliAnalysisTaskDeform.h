@@ -231,9 +231,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TF1 *fCenCutLowPU; //Store these
   TF1 *fCenCutHighPU; //Store these
   TF1 *fMultCutPU; //Store these
-  TH1D** fPhi; //!
+  TH3D** fPhiEtaVz; //!
   TH1D** fPt; //!
-  TH1D** fEta; //!
   TH2D** fDCAxy; //!
   TH2D** fDCAz; //!
   TH1D** fChi2TPCcls; //!
@@ -254,7 +253,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
-  void FillAdditionalTrackQAPlots(AliAODTrack &track, Double_t weff, Double_t wacc, Double_t* vtxp, Bool_t beforeCuts);
+  void FillAdditionalTrackQAPlots(AliAODTrack &track, Double_t weff, Double_t wacc, const Double_t &vz, Double_t* vtxp, Bool_t beforeCuts);
   void SetupAxes();
   void CreateWeightOutputObjects();
   void CreateEfficiencyOutputObjects();
