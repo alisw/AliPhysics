@@ -306,6 +306,7 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
     fQAList->Add(new TH1F("event plane angle","event plane angle;angle [rad];",100,0.,TMath::TwoPi())); //3
 
     fQAList->Add(new TH3F("fHistZPTowerSignal","fHistZPTowerSignal; Centrality (%); ZDC(P) tower; ZDC signal (a.u.) #times 10^{3}",100,0,100,10,0.5,10.5,601,-0.5,600.5));
+    fQAList->Add(new TH3F("fHistZNTowerSignal","fHistZNTowerSignal; Centrality (%); ZDC(N) tower; ZDC signal (a.u.) #times 10^{3}",100,0,100,10,0.5,10.5,601,-0.5,600.5));
 
     PostData(2,fQAList);
   }
@@ -617,6 +618,9 @@ void AliAnalysisTaskFlowEvent::FillZDCInfo(AliAODEvent *myAOD) {
   if(fFlowEvent) {
     fFlowEvent->SetZPAEnergy(gZPATowerRawAOD[0]);
     fFlowEvent->SetZPCEnergy(gZPCTowerRawAOD[0]);
+
+    fFlowEvent->SetZNAEnergy(gZNATowerRawAOD[0]);
+    fFlowEvent->SetZNCEnergy(gZNCTowerRawAOD[0]);
   }
   
   Double_t gZNATowerRaw[5] = {0.,0.,0.,0.,0.};
@@ -636,9 +640,13 @@ void AliAnalysisTaskFlowEvent::FillZDCInfo(AliAODEvent *myAOD) {
 
     //QA
     if (fQAon) {
-      TH3* h3 = static_cast<TH3F*>(fQAList->FindObject("fHistZPTowerSignal"));
-      h3->Fill(gCentralityV0M,iChannel+1,gZPATowerRawAOD[iChannel]/1000);
-      h3->Fill(gCentralityV0M,5+iChannel+1,gZPCTowerRawAOD[iChannel]/1000);
+      TH3* h3ZP = static_cast<TH3F*>(fQAList->FindObject("fHistZPTowerSignal"));
+      h3ZP->Fill(gCentralityV0M,iChannel+1,gZPATowerRawAOD[iChannel]/1000);
+      h3ZP->Fill(gCentralityV0M,5+iChannel+1,gZPCTowerRawAOD[iChannel]/1000);
+
+      TH3* h3ZN = static_cast<TH3F*>(fQAList->FindObject("fHistZNTowerSignal"));
+      h3ZN->Fill(gCentralityV0M,iChannel+1,gZNATowerRawAOD[iChannel]/1000);
+      h3ZN->Fill(gCentralityV0M,5+iChannel+1,gZNCTowerRawAOD[iChannel]/1000);
     }
   }
 }
