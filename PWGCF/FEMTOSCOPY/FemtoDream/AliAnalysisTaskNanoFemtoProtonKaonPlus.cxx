@@ -270,16 +270,28 @@ void AliAnalysisTaskNanoFemtoProtonKaonPlus::UserExec(Option_t*) {
 
     fTrack->SetTrack(track, fInputEvent);
 
-    if (fTrackCutsProton->isSelected(fTrack)) {
+    bool isProton = fTrackCutsProton->isSelected(fTrack);
+    bool isAntiProton = fTrackCutsAntiProton->isSelected(fTrack);
+    bool isKaon = fTrackCutsKaon->isSelected(fTrack);
+    bool isAntiKaon = fTrackCutsAntiKaon->isSelected(fTrack);
+
+    if (isProton && isKaon){
+      continue;
+    }
+    if (isAntiProton && isAntiKaon){
+      continue;
+    }
+
+    if (isProton) {
       SelectedProtons.push_back(*fTrack);
     }
-    if (fTrackCutsAntiProton->isSelected(fTrack)) {
+    if (isAntiProton) {
       SelectedAntiProtons.push_back(*fTrack);
     }
-    if (fTrackCutsKaon->isSelected(fTrack)){ 
+    if (isKaon){ 
       SelectedKaons.push_back(*fTrack);
     }
-    if (fTrackCutsAntiKaon->isSelected(fTrack)){
+    if (isAntiKaon){
       SelectedAntiKaons.push_back(*fTrack);
     }
   }
@@ -305,13 +317,13 @@ void AliAnalysisTaskNanoFemtoProtonKaonPlus::UserExec(Option_t*) {
     }
   }
 
-//BRELOOM Probably remove (or turn off bool)
+  fPairCleaner->ResetArray();
+
   if(fDoPairCleaning){
     fPairCleaner->CleanTrackAndDecay(&SelectedProtons, &SelectedKaons, 0); 
     fPairCleaner->CleanTrackAndDecay(&SelectedAntiProtons, &SelectedAntiKaons, 1); 
   }
 
-  fPairCleaner->ResetArray();
   fPairCleaner->StoreParticle(SelectedProtons);
   fPairCleaner->StoreParticle(SelectedAntiProtons);
   fPairCleaner->StoreParticle(SelectedKaons);
@@ -319,9 +331,6 @@ void AliAnalysisTaskNanoFemtoProtonKaonPlus::UserExec(Option_t*) {
 
   //Official FemtoDream Two-Body Calculations
   fPartColl->SetEvent(fPairCleaner->GetCleanParticles(),fEvent->GetZVertex(), fEvent->GetRefMult08(), fEvent->GetV0MCentrality());
-
-
- 
 
   PostData(1, fEvtList);
   PostData(2, fProtonList);
