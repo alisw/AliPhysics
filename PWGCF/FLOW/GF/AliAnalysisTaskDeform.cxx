@@ -134,9 +134,8 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fCenCutLowPU(0),
   fCenCutHighPU(0),
   fMultCutPU(0),
-  fPhi(0),
+  fPhiEtaVz(0),
   fPt(0),
-  fEta(0),
   fDCAxy(0),
   fDCAz(0),
   fChi2TPCcls(0),
@@ -249,9 +248,8 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fCenCutLowPU(0),
   fCenCutHighPU(0),
   fMultCutPU(0),
-  fPhi(0),
+  fPhiEtaVz(0),
   fPt(0),
-  fEta(0),
   fDCAxy(0),
   fDCAz(0),
   fChi2TPCcls(0),
@@ -608,23 +606,20 @@ void AliAnalysisTaskDeform::CreateVnMptOutputObjects(){
     fMptVsNch = new TH3D("fMptVsNch","[#it{p}_{T}] vs N_{ch}",NNchBins,NchBins,fNPtBins,fPtBins,NdummyCentBins,dummyCentBins);
     fQAList->Add(fMptVsNch);
     if(fFillAdditionalQA) {
-      fPhi = new TH1D*[2];
+      fPhiEtaVz = new TH3D*[2];
       fPt = new TH1D*[2];
-      fEta = new TH1D*[2];
       fDCAxy = new TH2D*[2];
       fDCAz = new TH2D*[2];
       fChi2TPCcls = new TH1D*[2];
       TString str_cut[] = {"beforeCuts","afterCuts"};
       for(int i(0);i<2;++i){
-        fPhi[i] = new TH1D(Form("hPhi_%s",str_cut[i].Data()),Form("#phi %s;#varphi;Counts",str_cut[i].Data()),100,0,TMath::TwoPi());
-        fQAList->Add(fPhi[i]);
+        fPhiEtaVz[i] = new TH3D(Form("hPhiEtaVz_%s",str_cut[i].Data()),Form("#phi,#eta,v_{z} %s;#varphi;#eta;v_{z};Counts",str_cut[i].Data()),60,0,TMath::TwoPi(),64,-1.6,1.6,40,-10,10);
+        fQAList->Add(fPhiEtaVz[i]);
         fPt[i] = new TH1D(Form("hPt_%s",str_cut[i].Data()),Form("#it{p}_{T} %s;#it{p}_{T};Counts",str_cut[i].Data()),100,0,20);
         fQAList->Add(fPt[i]);
-        fEta[i] = new TH1D(Form("hEta_%s",str_cut[i].Data()),Form("#eta %s;#eta;Counts",str_cut[i].Data()),120,-1.1,1.1);
-        fQAList->Add(fEta[i]);
-        fDCAxy[i] = new TH2D(Form("hDCAxy_%s",str_cut[i].Data()),Form("DCAxy vs pt %s;#it{p}_{T};DCA_{xy}",str_cut[i].Data()),100,0.2,3.0,100,0,6);
+        fDCAxy[i] = new TH2D(Form("hDCAxy_%s",str_cut[i].Data()),Form("DCAxy vs pt %s;#it{p}_{T};DCA_{xy}",str_cut[i].Data()),100,0.2,3.0,250,0,2.5);
         fQAList->Add(fDCAxy[i]);
-        fDCAz[i] = new TH2D(Form("hDCAz_%s",str_cut[i].Data()),Form("DCAz vs pt %s;#it{p}_{T};DCA_{z}",str_cut[i].Data()),100,0.2,3.0,100,0,6);
+        fDCAz[i] = new TH2D(Form("hDCAz_%s",str_cut[i].Data()),Form("DCAz vs pt %s;#it{p}_{T};DCA_{z}",str_cut[i].Data()),100,0.2,3.0,200,0,4);
         fQAList->Add(fDCAz[i]);
         fChi2TPCcls[i] = new TH1D(Form("chi2prTPCcls_%s",str_cut[i].Data()),Form("Chi2TPCcls %s;#chi^{2} pr. TPC cluster;Counts",str_cut[i].Data()),100,0,6);
         fQAList->Add(fChi2TPCcls[i]);
@@ -1033,6 +1028,14 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
         FillWPCounter(wpPt,1,pt);
       }
       fGFW->Fill(leta,1,lPart->Phi(),1,3); //filling both gap (bit mask 1) and full (bit maks 2). Since this is MC, weight is 1.
+      if(fFillAdditionalQA) {
+        fPhiEtaVz[1]->Fill(lPart->Phi(),lPart->Eta(),vz);
+        fPt[1]->Fill(lPart->Pt());
+        if(TMath::Abs(leta)<fEtaMpt){
+          fEtaMptAcceptance->Fill(lPart->Eta());
+          fPtMptAcceptance->Fill(lPart->Pt());
+        }
+      }
     };
     nTotNoTracks = fUseRecoNchForMC?nTotNoTracksReco:nTotNoTracksMC;
     if(fUseRecoNchForMC) fNchTrueVsReco->Fill(nTotNoTracksMC,nTotNoTracksReco);
@@ -1043,7 +1046,7 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       if(usingPseudoEff) if(fRndm->Uniform()>fPseudoEfficiency) continue;
       lTrack = (AliAODTrack*)fAOD->GetTrack(lTr);
       if(!lTrack) continue;
-      if(fFillAdditionalQA) FillAdditionalTrackQAPlots(*lTrack,1,1,vtxp,kTRUE);
+      if(fFillAdditionalQA) FillAdditionalTrackQAPlots(*lTrack,1,1,vz,vtxp,kTRUE);
       Double_t leta = lTrack->Eta();
       Double_t trackXYZ[] = {0.,0.,0.};
       //Counting FB128 for QA:
@@ -1065,7 +1068,7 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       }
       Double_t wacc = fWeights[0]->GetNUA(lTrack->Phi(),leta,vz);
       fGFW->Fill(leta,1,lTrack->Phi(),((fUseNUAOne)?1.0:wacc)*((fUseNUEOne)?1.0:weff),3); //filling both gap (bit mask 1) and full (bit mask 2)
-      if(fFillAdditionalQA) FillAdditionalTrackQAPlots(*lTrack,weff,wacc,vtxp,kFALSE);
+      if(fFillAdditionalQA) FillAdditionalTrackQAPlots(*lTrack,weff,wacc,vz,vtxp,kFALSE);
     };
   };
   if(wp[0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
@@ -1335,24 +1338,22 @@ void AliAnalysisTaskDeform::CreateCorrConfigs() {
 
   return;
 };
-void AliAnalysisTaskDeform::FillAdditionalTrackQAPlots(AliAODTrack &track, Double_t weff, Double_t wacc, Double_t* vtxp, Bool_t beforeCuts){
+void AliAnalysisTaskDeform::FillAdditionalTrackQAPlots(AliAODTrack &track, Double_t weff, Double_t wacc, const Double_t &vz, Double_t* vtxp, Bool_t beforeCuts){
   Double_t trackXYZ[] = {0.,0.,0.};
   track.GetXYZ(trackXYZ);
   trackXYZ[0] = trackXYZ[0]-vtxp[0];
   trackXYZ[1] = trackXYZ[1]-vtxp[1];
   trackXYZ[2] = trackXYZ[2]-vtxp[2];
   if(beforeCuts){
-    fEta[0]->Fill(track.Eta());
     fDCAxy[0]->Fill(track.Pt(),TMath::Sqrt(trackXYZ[0]*trackXYZ[0]+trackXYZ[1]*trackXYZ[1]));
     fDCAz[0]->Fill(track.Pt(),TMath::Abs(trackXYZ[2]));
     fChi2TPCcls[0]->Fill(track.GetTPCchi2perCluster());
   }
   else {
-    fPhi[0]->Fill(track.Phi());
+    fPhiEtaVz[0]->Fill(track.Phi(),track.Eta(),vz);
     fPt[0]->Fill(track.Pt());
-    fPhi[1]->Fill(track.Phi(),wacc);
+    fPhiEtaVz[1]->Fill(track.Phi(),track.Eta(),vz,wacc);
     fPt[1]->Fill(track.Pt(),weff);
-    fEta[1]->Fill(track.Eta());
     if(TMath::Abs(track.Eta())<fEtaMpt) {
       fEtaMptAcceptance->Fill(track.Eta());
       fPtMptAcceptance->Fill(track.Pt(),weff);
