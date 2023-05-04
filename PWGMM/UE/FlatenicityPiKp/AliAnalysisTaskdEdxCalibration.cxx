@@ -97,7 +97,7 @@ AliAnalysisTaskdEdxCalibration::AliAnalysisTaskdEdxCalibration()
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fdEdxCalibrated(kTRUE),
 	fEtaCalibrationPos(0x0), fEtaCalibrationNeg(0x0),
 	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
-	fv0mpercentile(0),
+	fv0mpercentile(0), fFlat(-1),
 	fMultSelection(0x0),
 	hPionTPCDCAxyNegData(0), hPionTPCDCAxyPosData(0), hProtonTPCDCAxyNegData(0), hProtonTPCDCAxyPosData(0),
 	hPionTOFDCAxyNegData(0), hPionTOFDCAxyPosData(0), hProtonTOFDCAxyNegData(0), hProtonTOFDCAxyPosData(0),
@@ -124,7 +124,7 @@ AliAnalysisTaskdEdxCalibration::AliAnalysisTaskdEdxCalibration(const char *name)
 	fTrackFilter(0x0), fTrackFilterPID(0x0), fOutputList(0), fEtaCut(0.8), fPtMin(0.5), fNcl(70), fdEdxCalibrated(kTRUE), 
 	fEtaCalibrationPos(0x0), fEtaCalibrationNeg(0x0),
 	fcutLow(0x0), fcutHigh(0x0), fcutDCAxy(0x0), fPeriod("16l"),
-	fv0mpercentile(0),
+	fv0mpercentile(0), fFlat(-1),
 	fMultSelection(0x0), 
 	hPionTPCDCAxyNegData(0), hPionTPCDCAxyPosData(0), hProtonTPCDCAxyNegData(0), hProtonTPCDCAxyPosData(0),
 	hPionTOFDCAxyNegData(0), hPionTOFDCAxyPosData(0), hProtonTOFDCAxyNegData(0), hProtonTOFDCAxyPosData(0),
@@ -239,18 +239,32 @@ void AliAnalysisTaskdEdxCalibration::UserCreateOutputObjects() {
 		Betabins[i] = 0.6 + 0.009 * ((double)i);
 	}
 
+	const int nDCAbins = 200;
+	double DCAbins[nDCAbins+1] = {0.0};
+
+	for (int i = 0; i <= nDCAbins; ++i){
+		DCAbins[i] = -3.0 + i*0.03;
+	}
+
+	const int nFlatbins = 1020;
+	double Flatbins[nFlatbins+1] = {0.0};
+	for (int i = 0; i <= nFlatbins; ++i) {
+		Flatbins[i] = -0.01 + (double)i * 0.001;
+	}
+
+
 	OpenFile(1);
 	fOutputList = new TList(); // this is a list which will contain all of your histograms
 	fOutputList->SetOwner(kTRUE); // memory stuff: the list is owner of all
 
-	hPionTPCDCAxyNegData = new TH2F("hPionTPCDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
-	hPionTPCDCAxyPosData = new TH2F("hPionTPCDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
-	hProtonTPCDCAxyNegData = new TH2F("hProtonTPCDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
-	hProtonTPCDCAxyPosData = new TH2F("hProtonTPCDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
-	hPionTOFDCAxyNegData = new TH2F("hPionTOFDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
-	hPionTOFDCAxyPosData = new TH2F("hPionTOFDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
-	hProtonTOFDCAxyNegData = new TH2F("hProtonTOFDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
-	hProtonTOFDCAxyPosData = new TH2F("hProtonTOFDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}", nPtbins, Ptbins, 600, -3.0, 3.0);	
+	hPionTPCDCAxyNegData = new TH3F("hPionTPCDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}; Flattenicity",nPtbins,Ptbins,nDCAbins,DCAbins,nFlatbins,Flatbins);
+	hPionTPCDCAxyPosData = new TH3F("hPionTPCDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}; Flattenicity",nPtbins,Ptbins,nDCAbins,DCAbins,nFlatbins,Flatbins);	
+	hProtonTPCDCAxyNegData = new TH3F("hProtonTPCDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}; Flattenicity",nPtbins,Ptbins,nDCAbins,DCAbins,nFlatbins,Flatbins);
+	hProtonTPCDCAxyPosData = new TH3F("hProtonTPCDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}; Flattenicity",nPtbins,Ptbins,nDCAbins,DCAbins,nFlatbins,Flatbins);	
+	hPionTOFDCAxyNegData = new TH3F("hPionTOFDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}; Flattenicity",nPtbins,Ptbins,nDCAbins,DCAbins,nFlatbins,Flatbins);
+	hPionTOFDCAxyPosData = new TH3F("hPionTOFDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}; Flattenicity",nPtbins,Ptbins,nDCAbins,DCAbins,nFlatbins,Flatbins);	
+	hProtonTOFDCAxyNegData = new TH3F("hProtonTOFDCAxyNeg","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}; Flattenicity",nPtbins,Ptbins,nDCAbins,DCAbins,nFlatbins,Flatbins);	
+	hProtonTOFDCAxyPosData = new TH3F("hProtonTOFDCAxyPos","; #it{p}_{T} (GeV/#it{c}); DCA_{xy}; Flattenicity",nPtbins,Ptbins,nDCAbins,DCAbins,nFlatbins,Flatbins);	
 
 	hMIPVsEta = new TH2F("hMIPVsEta","; #eta ; dE/dx",50,-0.8,0.8,100,40.0,60.0);	
 	pMIPVsEta = new TProfile("pMIPVsEta","; #eta; #LT dE/dx #GT_{MIP, primary tracks}",50,-0.8,0.8,40.0,60.0);
@@ -372,6 +386,14 @@ void AliAnalysisTaskdEdxCalibration::UserExec(Option_t *) {
 		cout << "------- No AliMultSelection Object Found --------"
 			<< fMultSelection << endl;
 	fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
+	float v0multalice = fMultSelection->GetEstimator("V0M")->GetValue();
+
+	// This is to reject the very few low-multiplicity events V0M Percentile 70-100%
+	// that have a very large V0M Amplitude
+	if (fv0mpercentile >= 70.0 && fv0mpercentile < 100.0) {	if (v0multalice >= 400.0) { return; } }
+
+	fFlat = -1.0;
+	fFlat = GetFlatenicityV0();
 
 	// Analyze V0s for the MB sample
 	AnalyzeV0s();
@@ -382,6 +404,118 @@ void AliAnalysisTaskdEdxCalibration::UserExec(Option_t *) {
 }
 //______________________________________________________________________________
 void AliAnalysisTaskdEdxCalibration::Terminate(Option_t *) {}
+//______________________________________________________________________________
+double AliAnalysisTaskdEdxCalibration::GetFlatenicityV0() {
+
+	AliVVZERO *lVV0 = 0x0;
+	AliVEvent *lVevent = 0x0;
+	lVevent = dynamic_cast<AliVEvent *>(InputEvent());
+	if (!lVevent) {
+		AliWarning("ERROR: ESD / AOD event not available \n");
+		return -1;
+	}
+	// Get VZERO Information for multiplicity later
+	lVV0 = lVevent->GetVZEROData();
+	if (!lVV0) {
+		AliError("AliVVZERO not available");
+		return 9999;
+	}
+
+	// Flatenicity calculation
+	const Int_t nRings = 4;
+	const Int_t nSectors = 8;
+	Float_t minEtaV0C[nRings] = {-3.7, -3.2, -2.7, -2.2};
+	Float_t maxEtaV0C[nRings] = {-3.2, -2.7, -2.2, -1.7};
+	Float_t maxEtaV0A[nRings] = {5.1, 4.5, 3.9, 3.4};
+	Float_t minEtaV0A[nRings] = {4.5, 3.9, 3.4, 2.8};
+	// Grid
+	const Int_t nCells = nRings * 2 * nSectors;
+	float RhoLattice[nCells];
+	for (Int_t iCh = 0; iCh < nCells; iCh++) {
+		RhoLattice[iCh] = 0.0;
+	}
+
+	// before calibration
+	for (Int_t iCh = 0; iCh < nCells; iCh++) {
+		Float_t mult = lVV0->GetMultiplicity(iCh);
+		RhoLattice[iCh] = mult;
+		/* hActivityV0DataSectBefore->Fill(iCh, RhoLattice[iCh]); */
+	}
+	// after calibration
+	/* if (fIsCalib) { */
+	/* 	for (Int_t iCh = 0; iCh < nCells; iCh++) { */
+	/* 		RhoLattice[iCh] *= fParVtx->Eval(0.0) / fParVtx->Eval(fVtxz); */
+	/* 	} */
+	/* } */
+
+	// Filling histos with mult info
+	/* float total_v0_tmp = 0.0; */
+	/* for (Int_t iCh = 0; iCh < nCells; iCh++) { */
+	/* 	hActivityV0DataSect->Fill(iCh, RhoLattice[iCh]); */
+	/* total_v0_tmp += RhoLattice[iCh]; */
+	/* } */
+	/* float total_v0 = total_v0_tmp; */
+	/* cout << "total_v0 = " << total_v0 << endl; */
+	/* hV0vsVtxz->Fill(fVtxz, total_v0); */
+
+	Int_t nringA = 0;
+	Int_t nringC = 0;
+	for (Int_t iCh = 0; iCh < nCells; iCh++) {
+		Float_t detaV0 = -1;
+		// Float_t mult = lVV0->GetMultiplicity(iCh);
+		if (iCh < 32) { // V0C
+			if (iCh < 8) {
+				nringC = 0;
+			} else if (iCh >= 8 && iCh < 16) {
+				nringC = 1;
+			} else if (iCh >= 16 && iCh < 24) {
+				nringC = 2;
+			} else {
+				nringC = 3;
+			}
+			detaV0 = maxEtaV0C[nringC] - minEtaV0C[nringC];
+		} else { // V0A
+			if (iCh < 40) {
+				nringA = 0;
+			} else if (iCh >= 40 && iCh < 48) {
+				nringA = 1;
+			} else if (iCh >= 48 && iCh < 56) {
+				nringA = 2;
+			} else {
+				nringA = 3;
+			}
+			detaV0 = maxEtaV0A[nringA] - minEtaV0A[nringA];
+		}
+		// consider the different eta coverage
+		RhoLattice[iCh] /= detaV0;
+	}
+	Float_t mRho = 0;
+	Float_t flatenicity = -1;
+	for (Int_t iCh = 0; iCh < nCells; iCh++) {
+		mRho += RhoLattice[iCh];
+	}
+	Float_t multiplicityV0M = mRho;
+	// average activity per cell
+	mRho /= (1.0 * nCells);
+	// get sigma
+	Double_t sRho_tmp = 0;
+	for (Int_t iCh = 0; iCh < nCells; iCh++) {
+		sRho_tmp += TMath::Power(1.0 * RhoLattice[iCh] - mRho, 2);
+	}
+	sRho_tmp /= (1.0 * nCells * nCells);
+	Float_t sRho = TMath::Sqrt(sRho_tmp);
+	const bool fRemoveTrivialScaling = false;
+	if (mRho > 0) {
+		if (fRemoveTrivialScaling) {
+			flatenicity = TMath::Sqrt(multiplicityV0M) * sRho / mRho;
+		} else {
+			flatenicity = sRho / mRho;
+		}
+	} else {
+		flatenicity = 9999;
+	}
+	return flatenicity;
+}
 //______________________________________________________________________________
 void AliAnalysisTaskdEdxCalibration::dEdxMIP() 
 {
@@ -433,21 +567,21 @@ void AliAnalysisTaskdEdxCalibration::dEdxMIP()
 
 		// These are for calculating the Feed-Down correction
 		if(charge < 0){
-			if( (nSigmaPi >= -2.0) && (nSigmaPi <= 2.0) ) { hPionTPCDCAxyNegData->Fill(pt,DCAxy); }
-			if( (nSigmaP >= -2.0) && (nSigmaP <= 2.0) ) { hProtonTPCDCAxyNegData->Fill(pt,DCAxy); }
+			if( (nSigmaPi >= -2.0) && (nSigmaPi <= 2.0) ) { hPionTPCDCAxyNegData->Fill(pt,DCAxy,fFlat); }
+			if( (nSigmaP >= -2.0) && (nSigmaP <= 2.0) ) { hProtonTPCDCAxyNegData->Fill(pt,DCAxy,fFlat); }
 
 			if( TOFPID(esdTrack) ){
-				if( TMath::Sqrt(nSigmaPi*nSigmaPi + nSigmaPiTOF*nSigmaPiTOF) < 2.0) { hPionTOFDCAxyNegData->Fill(pt,DCAxy); }
-				if( TMath::Sqrt(nSigmaP*nSigmaP + nSigmaPTOF*nSigmaPTOF) < 2.0) { hProtonTOFDCAxyNegData->Fill(pt,DCAxy); }
+				if( TMath::Sqrt(nSigmaPi*nSigmaPi + nSigmaPiTOF*nSigmaPiTOF) < 2.0) { hPionTOFDCAxyNegData->Fill(pt,DCAxy,fFlat); }
+				if( TMath::Sqrt(nSigmaP*nSigmaP + nSigmaPTOF*nSigmaPTOF) < 2.0) { hProtonTOFDCAxyNegData->Fill(pt,DCAxy,fFlat); }
 			}
 
 		}else{
-			if( (nSigmaPi >= -2.0) && (nSigmaPi <= 2.0) ) { hPionTPCDCAxyPosData->Fill(pt,DCAxy); }
-			if( (nSigmaP >= -2.0) && (nSigmaP <= 2.0)) { hProtonTPCDCAxyPosData->Fill(pt,DCAxy); }
+			if( (nSigmaPi >= -2.0) && (nSigmaPi <= 2.0) ) { hPionTPCDCAxyPosData->Fill(pt,DCAxy,fFlat); }
+			if( (nSigmaP >= -2.0) && (nSigmaP <= 2.0)) { hProtonTPCDCAxyPosData->Fill(pt,DCAxy,fFlat); }
 
 			if( TOFPID(esdTrack) ){
-				if(TMath::Sqrt(nSigmaPi*nSigmaPi + nSigmaPiTOF*nSigmaPiTOF) < 2.0) { hPionTOFDCAxyPosData->Fill(pt,DCAxy); }
-				if(TMath::Sqrt(nSigmaP*nSigmaP + nSigmaPTOF*nSigmaPTOF) < 2.0) { hProtonTOFDCAxyPosData->Fill(pt,DCAxy); }
+				if(TMath::Sqrt(nSigmaPi*nSigmaPi + nSigmaPiTOF*nSigmaPiTOF) < 2.0) { hPionTOFDCAxyPosData->Fill(pt,DCAxy,fFlat); }
+				if(TMath::Sqrt(nSigmaP*nSigmaP + nSigmaPTOF*nSigmaPTOF) < 2.0) { hProtonTOFDCAxyPosData->Fill(pt,DCAxy,fFlat); }
 			}
 		}
 
