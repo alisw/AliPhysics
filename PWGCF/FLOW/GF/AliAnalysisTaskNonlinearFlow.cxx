@@ -715,7 +715,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
   if (fOnTheFly) {
     hEventCount->Fill("after fEventCuts", 1.);
-    bootstrap_value = rand.Integer(30)-1;
+    // bootstrap_value = rand.Integer(30);
   } else {
     //..standard event plots (cent. percentiles, mult-vs-percentile)
     const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
@@ -1642,6 +1642,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
 {
 
   NtrksCounter = fImpactParameterMC;
+  bootstrap_value = (((int)(NtrksCounter * 233)) % 30 + 30) % 30;
 
   // Init the number of tracks
   NtrksAfter = 0;
