@@ -960,6 +960,8 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
   NtrksAfter3subM = 0;
   NtrksAfter3subR = 0;
 
+  sumPt = 0;
+  eventWeight = 0;
 
   //..for DCA
   double pos[3], vz, vx, vy;
@@ -1061,6 +1063,8 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     fPtDis->Fill(aodTrk->Pt());
     fEtaDis->Fill(aodTrk->Eta());
     fPhiDis1D->Fill(aodTrk->Phi(), weight*weightPt);
+
+
 
     //..calculate Q-vectors
     //..no eta gap
@@ -1219,7 +1223,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
       }
     }
 
-    if (fuQThreeSub) {
+    if (fuQThreeSub || fgVnPtCorr) {
       //..3-subevent method
       if(aodTrk->Eta() < -fEtaGap3Sub) {//..left part
         NtrksAfter3subL += 1;
@@ -1231,6 +1235,9 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
         }
       }
       if(aodTrk->Eta() >= -fEtaGap3Sub && aodTrk->Eta() <= fEtaGap3Sub) {//..middle part
+        eventWeight += weight*weightPt;
+        sumPt+=weight*weightPt*aodTrk->Pt();
+
         NtrksAfter3subM += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -2619,6 +2626,20 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
     multProfile.fChsc4242_3subRRMLB->Sumw2();
     listOfProfile->Add(multProfile.fChsc4242_3subRRMLB);
   }
+
+  if (fgVnPtCorr) {
+    multProfile.fMeanPt = new TProfile(Form("fPt%s", label.Data()), "Mean Pt", nn, xbins);
+    multProfile.fMeanPt->Sumw2();
+    listOfProfile->Add(multProfile.fMeanPt);
+
+    multProfile.fc22w = new TProfile(Form("fChc22w%s", label.Data()), "v2^2 with event weight", nn, xbins);
+    multProfile.fc22w->Sumw2();
+    listOfProfile->Add(multProfile.fc22w);
+
+    multProfile.fPcc = new TProfile(Form("fV2Pt%s", label.Data()), "v2-Pt correlation", nn, xbins);
+    multProfile.fPcc->Sumw2();
+    listOfProfile->Add(multProfile.fPcc);
+  }
 }
 
 Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
@@ -2735,6 +2756,20 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptMCTruthTrack(AliAODMCParticle *mtrk) 
 
 
 void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, double Ntrks) {
+  //..calculate the PCC
+  if (fgVnPtCorr) {
+    double Dn2GapLR = correlator.TwoGap10(0, 0).Re();
+    if(NtrksAfter3subL > 0 && NtrksAfter3subM > 0 && NtrksAfter3subR > 0
+       && Dn2GapLR != 0)
+      {
+        TComplex v22_3subLR = correlator.Two_3SubLR(2, -2);
+        double v22Re_3subLR = v22_3subLR.Re()/Dn2GapLR;
+        profile.fc22w->Fill(Ntrks, v22Re_3subLR, Dn2GapLR*eventWeight);
+        profile.fPcc->Fill(Ntrks,  v22Re_3subLR*sumPt/eventWeight, Dn2GapLR*eventWeight);
+        profile.fMeanPt->Fill(Ntrks, sumPt/eventWeight, eventWeight);
+      }
+  }
+
   //..calculate 2-particle correlations
   //..................................
   double Dn2 = 0, Dn2Gap0 = 0, Dn2Gap10 = 0, Dn2Gap14 = 0, Dn2_3subLM = 0, Dn2_3subRM = 0, Dn2_3subLR = 0;
@@ -3687,7 +3722,10 @@ PhysicsProfile::PhysicsProfile() :
   fChc532_3subMA(nullptr),
   fChc532_3subMB(nullptr),
   fChc532_3subRA(nullptr),
-  fChc532_3subRB(nullptr)
+  fChc532_3subRB(nullptr),
+  fMeanPt(nullptr),
+  fc22w(nullptr),
+  fPcc(nullptr)
 {
   memset(fChcn2, 0, sizeof(fChcn2));
   memset(fChcn2_Gap0, 0, sizeof(fChcn2_Gap0));
@@ -3793,7 +3831,10 @@ PhysicsProfile::PhysicsProfile(const PhysicsProfile& profile) :
   fChc532_3subMA(nullptr),
   fChc532_3subMB(nullptr),
   fChc532_3subRA(nullptr),
-  fChc532_3subRB(nullptr)
+  fChc532_3subRB(nullptr),
+  fMeanPt(nullptr),
+  fc22w(nullptr),
+  fPcc(nullptr)
 {
   memset(fChcn2, 0, sizeof(fChcn2));
   memset(fChcn2_Gap0, 0, sizeof(fChcn2_Gap0));
