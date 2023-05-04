@@ -52,6 +52,11 @@ AliFemtoESDTrackCut()
     AlldEdxmode = 0;
 
     wiolaCrossCheck = 0;
+    fUsePtotalCut = 0;
+    MinPtotal = 0.;
+    MaxPtotal = 100.;
+    pionrejectcut = 2.;
+
 }
 
 AliFemtoTrackCutPdtHe3::AliFemtoTrackCutPdtHe3(const AliFemtoTrackCutPdtHe3 &aCut) : 
@@ -101,7 +106,11 @@ AliFemtoESDTrackCut(aCut)
     AlldEdxmode = aCut.AlldEdxmode;
 
     wiolaCrossCheck = aCut.wiolaCrossCheck;
-   
+    
+    fUsePtotalCut = aCut.fUsePtotalCut;
+       MinPtotal = aCut.MinPtotal;
+    MaxPtotal = aCut.MaxPtotal;
+  pionrejectcut = aCut.pionrejectcut; 
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -159,6 +168,10 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
     AlldEdxmode = aCut.AlldEdxmode;
 
     wiolaCrossCheck = aCut.wiolaCrossCheck;
+    fUsePtotalCut = aCut.fUsePtotalCut;
+MinPtotal = MinPtotal;
+MaxPtotal = MaxPtotal;
+pionrejectcut = aCut.pionrejectcut;
     return *this;
 }
 
@@ -335,6 +348,12 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 	    }
     }
 
+    if(fUsePtotalCut){
+        if((tTotalP < MinPtotal) || ( tTotalP > MaxPtotal)) { 
+		fNTracksFailed++;
+		return false;
+	}
+    }
 
     // dowang for pion+he3 cut
     if(fPionHe3cut){
@@ -430,7 +449,6 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
 	}//end inversPID
 
 		if(wiolaCrossCheck==1 && WiolaRejectPion(track->P().Mag(),track->NSigmaTPCPi(), track->NSigmaTOFPi()) ){
-			
 			imost = 0;
 		}
             }
@@ -514,6 +532,7 @@ bool AliFemtoTrackCutPdtHe3::Pass(const AliFemtoTrack* track){
                 if ( fdEdxcut &&fMostProbable == 13 && !IsDeuteronTPCdEdx(track->P().Mag(), track->TPCsignal()) ){
                     	imost = 0;
                 }
+//cout<<"xxx "<<imost<<" "<<fMostProbable<<endl;
 	    if (imost != fMostProbable) return false;
 	    if(fUseTOFMassCut){
 		//Mass square!
@@ -1003,16 +1022,22 @@ bool AliFemtoTrackCutPdtHe3::WiolaDCut(float mom, float nsigmaTPCD, float nsigma
 	return false;
 }
 bool AliFemtoTrackCutPdtHe3::WiolaRejectPion(float mom,float nsigmaTPCpi,float nsigmaTOFpi){
-
 	if (mom > 0.5) {
-	        if (TMath::Hypot( nsigmaTOFpi, nsigmaTPCpi ) < 2.)
-	            return true;	
+	        if (TMath::Hypot( nsigmaTOFpi, nsigmaTPCpi ) < pionrejectcut) return true;	
 	}
     	else {
-        	if (TMath::Abs(nsigmaTPCpi) < 2.)
-            		return true;
+        	if (TMath::Abs(nsigmaTPCpi) < pionrejectcut) return true;
     	}
     	return false;
 
 }
-
+void AliFemtoTrackCutPdtHe3::SetUsePtotal(int aUse){
+fUsePtotalCut = aUse;
+}
+void AliFemtoTrackCutPdtHe3::SetPtotalRange(float aMin,float aMax){
+	 MinPtotal = aMin;
+         MaxPtotal = aMax;
+}
+void AliFemtoTrackCutPdtHe3::Setpionrejectcut(float aRejectCut){
+pionrejectcut = aRejectCut;
+}
