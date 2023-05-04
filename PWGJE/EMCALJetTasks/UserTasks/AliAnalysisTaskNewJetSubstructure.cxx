@@ -871,7 +871,7 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(AliEmcalJet *fJet,
                                         fastjet::PseudoJet *sub2, std::vector < fastjet::PseudoJet > *const1, 
                                         std::vector < fastjet::PseudoJet > *const2) {
 
-  //function taht performs Soft Drop Grooming
+  //function that performs Soft Drop Grooming
 
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
@@ -898,25 +898,29 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(AliEmcalJet *fJet,
   //                                static_cast<fastjet::RecombinationScheme>(0),
   //                                fastjet::BestFJ30);
 
+
+  //define parameters for reclustering
   fastjet::GhostedAreaSpec ghost_spec(1, 1, 0.05);
   fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
   fastjet::JetDefinition fJetDef(jetalgo, 1., fPowerAlgo,
                                static_cast<fastjet::RecombinationScheme>(0),
-                              fastjet::BestFJ30);
+                               fastjet::BestFJ30);
   fastjet::AreaDefinition fAreaDef(fastjet::passive_area, ghost_spec);
+
   try {
     fastjet::ClusterSequenceArea fClustSeqSA(fInputVectors, fJetDef, fAreaDef);
     std::vector<fastjet::PseudoJet> fOutputJets;
     fOutputJets.clear();
     fOutputJets = fClustSeqSA.inclusive_jets(0);
   
-    fastjet::PseudoJet jj;
-    fastjet::PseudoJet j1;
-    fastjet::PseudoJet j2;
+    fastjet::PseudoJet jj;        //1st reclustered jet
+    fastjet::PseudoJet j1;        //parent 1 of reclustered jet (pseudojet before merging)
+    fastjet::PseudoJet j2;        //parent 2 of reclustered jet (pseudojet before merging)
     fastjet::PseudoJet j1first;
     fastjet::PseudoJet j2first;
     jj = fOutputJets[0];
 
+    //initialize groomed variables
     double nall = 0;
     double nsd = 0;
     int flagSubjet = 0;
@@ -928,28 +932,28 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(AliEmcalJet *fJet,
     double cumtf = 0;
     while (jj.has_parents(j1, j2)) {
       nall = nall + 1;
-      if (j1.perp() < j2.perp())
-        swap(j1, j2);
+      if (j1.perp() < j2.perp())    swap(j1, j2);  //order parents with highest pT first
       flagConst=0;
       double delta_R = j1.delta_R(j2);
       double xkt = j2.perp() * sin(delta_R);
       double lnpt_rel = log(xkt);
       double y = log(1. / delta_R);
-      double form = 2 * 0.197 * j2.e() / (xkt * xkt);
+      double form = 2 * 0.197 * j2.e() / (xkt * xkt);   //formation time
       double rad = j1.e()+j2.e();
       double z = j2.perp() / (j2.perp() + j1.perp());
       vector < fastjet::PseudoJet > constitj1 = sorted_by_pt(j1.constituents());
       if(constitj1[0].perp()>fMinPtConst) flagConst=1; 
-      
+
+      //check Soft Drop condition
       if (z > fHardCutoff)
         nsd = nsd + 1;
-      if (z > fHardCutoff && flagSubjet == 0) {
+      if (z > fHardCutoff && flagSubjet == 0) {  //record first splitting
         zg = z;
         xktg = xkt;
         Rg = delta_R;
-	j1first =j1;
+	j1first = j1;
 	*sub1 = j1first;
-	j2first =j2;
+	j2first = j2;
 	*sub2 = j2first;
         flagSubjet = 1;
       }
