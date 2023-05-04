@@ -70,10 +70,11 @@ ClassImp(AliAnalysisTaskEtaPhigg)
 {
   // Constructor
   for (Int_t i = 0; i < kVtxBins; i++) {
-    for (Int_t j = 0; j < kCentBins; j++)
+    for (Int_t j = 0; j < kCentBins; j++) {
       for (Int_t k = 0; k < kPRBins; k++) { // no RP bins
         fPHOSEvents[i][j][k] = nullptr;
       }
+    }
   }
 
   // Output slots #0 write into a TH1 container
@@ -191,21 +192,25 @@ void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects()
       fOutputContainer->Add(fhMiq[cen][iCut]);
     }
   }
-  
-  //3D part
-  Int_t nQ=120 ;
-  Double_t qMax=0.3 ;
-  for(Int_t cen=0; cen<kCentBins; cen++){  
-    for(Int_t ikT=0; ikT<kKtbins; ikT++){ 
-      fhReOSL[cen][ikT] = new TH3F(Form("hReOSL_DzCr_Kt%3.1f-%3.1f_cen%d",fKtBins[ikT],fKtBins[ikT+1],cen),"real Out-Side-Long",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax) ;
+
+  // 3D part
+  Int_t nQ = 120;
+  Double_t qMax = 0.3;
+  for (Int_t cen = 0; cen < kCentBins; cen++) {
+    for (Int_t ikT = 0; ikT < kKtbins; ikT++) {
+      fhReOSL[cen][ikT] = new TH3F(Form("hReOSL_DzCr_Kt%3.1f-%3.1f_cen%d", fKtBins[ikT], fKtBins[ikT + 1], cen),
+                                   "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ, -qMax, qMax);
       fOutputContainer->Add(fhReOSL[cen][ikT]);
-      fhMiOSL[cen][ikT] = new TH3F(Form("hMiOSL_DzCr_Kt%3.1f-%3.1f_cen%d",fKtBins[ikT],fKtBins[ikT+1],cen),"real Out-Side-Long",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax) ;
+      fhMiOSL[cen][ikT] = new TH3F(Form("hMiOSL_DzCr_Kt%3.1f-%3.1f_cen%d", fKtBins[ikT], fKtBins[ikT + 1], cen),
+                                   "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ, -qMax, qMax);
       fOutputContainer->Add(fhMiOSL[cen][ikT]);
-      fhReOSLCTS[cen][ikT] = new TH3F(Form("hReOSL_DzCTS_Kt%3.1f-%3.1f_cen%d",fKtBins[ikT],fKtBins[ikT+1],cen),"real Out-Side-Long",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax) ;
+      fhReOSLCTS[cen][ikT] = new TH3F(Form("hReOSL_DzCTS_Kt%3.1f-%3.1f_cen%d", fKtBins[ikT], fKtBins[ikT + 1], cen),
+                                      "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ, -qMax, qMax);
       fOutputContainer->Add(fhReOSLCTS[cen][ikT]);
-      fhMiOSLCTS[cen][ikT] = new TH3F(Form("hMiOSL_DzCTS_Kt%3.1f-%3.1f_cen%d",fKtBins[ikT],fKtBins[ikT+1],cen),"real Out-Side-Long",nQ,-qMax,qMax,nQ,-qMax,qMax,nQ,-qMax,qMax) ;
+      fhMiOSLCTS[cen][ikT] = new TH3F(Form("hMiOSL_DzCTS_Kt%3.1f-%3.1f_cen%d", fKtBins[ikT], fKtBins[ikT + 1], cen),
+                                      "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ, -qMax, qMax);
       fOutputContainer->Add(fhMiOSLCTS[cen][ikT]);
-    }      
+    }
   }
 }
 
@@ -253,7 +258,7 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t*)
     return;
   }
   // Vtx class z-bin
-  Int_t zvtx = (Int_t)((vtx5[2] + 10.) / 0.5);
+  Int_t zvtx = (Int_t)((vtx5[2] + 10.) / 1.);
   if (zvtx < 0)
     zvtx = 0;
   if (zvtx >= kVtxBins)
@@ -500,20 +505,25 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t*)
         fhReQinv[fCenBin][iCut]->Fill(qinv, kT);
         fhReq[fCenBin][iCut]->Fill(q, kT);
       }
-      if(kT>fKtBins[0] && kT<fKtBins[kKtbins]){
-        int iKt=0;
-        while(kT<fKtBins[iKt+1]){
+      if (kT > fKtBins[0] && kT < fKtBins[kKtbins]) {
+        int iKt = 0;
+        while (kT > fKtBins[iKt + 1]) {
           iKt++;
         }
-        double qo=0.5*(sum.Px()*gammaCMq.Px()+sum.Py()*gammaCMq.Py())/kT;
-        double qs= (ph1->Px()*ph2->Py()-ph2->Px()*ph1->Py())/kT;
-        double ql=gammaCMq.Pz();
-
-        if(PairCut(ph1, ph2, 170)){
-          fhReOSLCTS[fCenBin][iKt]->Fill(qo,qs,ql);
+        double qo = 0.5 * (sum.Px() * gammaCMq.Px() + sum.Py() * gammaCMq.Py()) / kT;
+        double qs = (ph1->Px() * ph2->Py() - ph2->Px() * ph1->Py()) / kT;
+        double ql = gammaCMq.Pz();
+        if (gRandom->Uniform() < 0.5) { // remove ordering during reconstruction
+          qo = -qo;
+          qs = -qs;
+          ql = -ql;
         }
-        if(PairCut(ph1, ph2, 175)){
-          fhReOSL[fCenBin][iKt]->Fill(qo,qs,ql);
+
+        if (PairCut(ph1, ph2, 170)) {
+          fhReOSLCTS[fCenBin][iKt]->Fill(qo, qs, ql);
+        }
+        if (PairCut(ph1, ph2, 175)) {
+          fhReOSL[fCenBin][iKt]->Fill(qo, qs, ql);
         }
       }
     }
@@ -543,20 +553,21 @@ void AliAnalysisTaskEtaPhigg::UserExec(Option_t*)
           fhMiQinv[fCenBin][iCut]->Fill(qinv, kT);
           fhMiq[fCenBin][iCut]->Fill(q, kT);
         }
-        if(kT>fKtBins[0] && kT<fKtBins[kKtbins]){
-          int iKt=0;
-          while(kT<fKtBins[iKt+1]){
+        if (kT > fKtBins[0] && kT < fKtBins[kKtbins]) {
+          int iKt = 0;
+          while (kT > fKtBins[iKt + 1]) {
             iKt++;
           }
-          double qo=0.5*(sum.Px()*gammaCMq.Px()+sum.Py()*gammaCMq.Py())/kT;
-          double qs= (ph1->Px()*ph2->Py()-ph2->Px()*ph1->Py())/kT;
-          double ql=gammaCMq.Pz();
 
-          if(PairCut(ph1, ph2, 170)){
-            fhMiOSLCTS[fCenBin][iKt]->Fill(qo,qs,ql);
+          double qo = 0.5 * (sum.Px() * gammaCMq.Px() + sum.Py() * gammaCMq.Py()) / kT;
+          double qs = (ph1->Px() * ph2->Py() - ph2->Px() * ph1->Py()) / kT;
+          double ql = gammaCMq.Pz();
+
+          if (PairCut(ph1, ph2, 170)) {
+            fhMiOSLCTS[fCenBin][iKt]->Fill(qo, qs, ql);
           }
-          if(PairCut(ph1, ph2, 175)){
-            fhMiOSL[fCenBin][iKt]->Fill(qo,qs,ql);
+          if (PairCut(ph1, ph2, 175)) {
+            fhMiOSL[fCenBin][iKt]->Fill(qo, qs, ql);
           }
         }
       }

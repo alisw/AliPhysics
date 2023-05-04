@@ -48,7 +48,7 @@ class AliAnalysisTaskEtaPhigg : public AliAnalysisTaskSE
   void SetCutNames();
 
  protected:
-  static constexpr int kCuts = 166;    // PID cuts
+  static constexpr int kCuts = 190;    // PID cuts
   static constexpr int kCentBins = 7;  // centrality
   static constexpr int kVtxBins = 20;  // z-vertex
   static constexpr int kPRBins = 6;    // Reaction plane
@@ -89,8 +89,8 @@ class AliAnalysisTaskEtaPhigg : public AliAnalysisTaskSE
 
   TH3F* fhReOSL[kCentBins][kKtbins];    //!
   TH3F* fhMiOSL[kCentBins][kKtbins];    //!
-  TH3F* fhReOSLCTS[kCentBins][kKtbins];    //!
-  TH3F* fhMiOSLCTS[kCentBins][kKtbins];    //!
+  TH3F* fhReOSLCTS[kCentBins][kKtbins]; //!
+  TH3F* fhMiOSLCTS[kCentBins][kKtbins]; //!
 
   ClassDef(AliAnalysisTaskEtaPhigg, 2); // PHOS analysis task
 };
