@@ -55,6 +55,7 @@ AliFemtoESDTrackCut()
     fUsePtotalCut = 0;
     MinPtotal = 0.;
     MaxPtotal = 100.;
+    pionrejectcut = 2.;
 
 }
 
@@ -109,7 +110,7 @@ AliFemtoESDTrackCut(aCut)
     fUsePtotalCut = aCut.fUsePtotalCut;
        MinPtotal = aCut.MinPtotal;
     MaxPtotal = aCut.MaxPtotal;
-   
+  pionrejectcut = aCut.pionrejectcut; 
 }
 
 AliFemtoTrackCutPdtHe3::~AliFemtoTrackCutPdtHe3()
@@ -170,7 +171,7 @@ AliFemtoTrackCutPdtHe3& AliFemtoTrackCutPdtHe3::operator=(const AliFemtoTrackCut
     fUsePtotalCut = aCut.fUsePtotalCut;
 MinPtotal = MinPtotal;
 MaxPtotal = MaxPtotal;
-
+pionrejectcut = aCut.pionrejectcut;
     return *this;
 }
 
@@ -1037,4 +1038,7 @@ fUsePtotalCut = aUse;
 void AliFemtoTrackCutPdtHe3::SetPtotalRange(float aMin,float aMax){
 	 MinPtotal = aMin;
          MaxPtotal = aMax;
+}
+void AliFemtoTrackCutPdtHe3::Setpionrejectcut(float aRejectCut){
+pionrejectcut = aRejectCut;
 }
