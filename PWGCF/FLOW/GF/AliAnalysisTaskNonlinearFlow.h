@@ -152,6 +152,10 @@ class PhysicsProfile : public TObject {
 		TProfile*        fChc532_3subRA;    //!
 		TProfile*        fChc532_3subRB;    //!
 
+    TProfile*  fMeanPt;         //! Average of Pt
+    TProfile*  fc22w;           //! vn^2 with event weight
+    TProfile*  fPcc;            //! v2^2-pt
+
 		TProfile*	 fChcn2[6]; 			//! <<2>> in unit bins of Ntrks
 		TProfile*    	 fChcn2_Gap0[6];  		//! <<2>> |#Delta#eta| > 0.0
 		TProfile*	 fChcn2_Gap2[6];  		//! <<2>> |#Delta#eta| > 0.2
@@ -187,7 +191,7 @@ class PhysicsProfile : public TObject {
 		TProfile*	 fChcn8_Gap0[6];  		//! <<8>> |#Delta#eta| > 0.0
 
 	private:
-		ClassDef(PhysicsProfile, 6);    //Analysis task
+		ClassDef(PhysicsProfile, 7);    //Analysis task
 };
 
 class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
@@ -249,7 +253,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void SetCalculateFlowHarmonicsMult(unsigned flag)   { fgFlowHarmonicsMult = flag; }
 		virtual void SetCalculateNonlinearFlow(unsigned flag)       { fgNonlinearFlow = flag; }
 		virtual void SetCalculateSymmetricCumulants(unsigned flag)  { fgSymmetricCumulants = flag; }
-
+    virtual void SetCalculateVnPtCorr(unsigned flag)  { fgVnPtCorr = flag; }
 
 
 	private:
@@ -411,6 +415,8 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		PhysicsProfile multProfile_bin[30]; //!
 
 		CorrelationCalculator correlator; //!
+    Double_t sumPt; //!
+    Double_t eventWeight; //!
 		TRandom3 rand;         //!
 		Int_t bootstrap_value = -1; //!
 
@@ -418,8 +424,9 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		unsigned fgFlowHarmonics = 0;        // calculate v2, v3, v4, v5
 		unsigned fgFlowHarmonicsHigher = 0;  // calculate v6, v7, v8 ..
 		unsigned fgFlowHarmonicsMult = 0;    // calculate v2{4} // yet v2{6}, v2{8}
-                unsigned fgNonlinearFlow = 0;        // calculate v_4,22, v_5,32
+    unsigned fgNonlinearFlow = 0;        // calculate v_4,22, v_5,32
 		unsigned fgSymmetricCumulants = 0;   // calculate SC(3,2), SC(4,2)
+    unsigned fgVnPtCorr = 0;             // calculate <v2^2-[pt]>
 
 		unsigned fgTwoParticleCorrelation = 0;       //!
 		unsigned fgTwoParticleCorrelationHigher = 0; //!
@@ -466,7 +473,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 20);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 21);    //Analysis task
 };
 
 #endif
