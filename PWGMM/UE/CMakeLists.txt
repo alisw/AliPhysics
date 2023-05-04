@@ -42,6 +42,7 @@ set(SRCS
   UeKNO/AliAnalysisTaskMcKnoUe.cxx
   UeKNO/AliAnalysisTaskMcKnoUeSystem.cxx
   UeKNO/AliAnalysisTaskGenMcKnoUe.cxx
+  UeKNO/AliAnalysisTaskGenMcFlattenicity.cxx
   UeKNO/AliAnalysisTaskGenUeVsMult.cxx
   UeKNO/AliAnalysisTaskMcKnoUeSyst.cxx
   UeKNO/AliAnalysisTaskMcKno.cxx
@@ -54,9 +55,11 @@ set(SRCS
   Flatenicity/AliAnalysisTaskSpectraFlatenicity.cxx
   FlatenicityPiKp/AliAnalysisTaskFlatenicityPiKp.cxx
   FlatenicityLambdaK0s/AliAnalysisTaskFlatenicityLambdaK0s.cxx
+  FlatenicityLambdaK0s/AliAnalysisTaskFlatenicityLambdaK0sMC.cxx
   FlatenicityPiKp/AliAnalysisTaskdEdxCalibration.cxx
   FlatenicityPiKp/AliAnalysisTaskMCCorrections.cxx
   FlatenicityPiKp/AliAnalysisTaskOnlyFlatenicity.cxx
+  FlatenicityPiKp/AliAnalysisTaskSystematicsV0M.cxx
   )
 
 # Headers from sources

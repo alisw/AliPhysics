@@ -3688,6 +3688,47 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("n47at113","4117901090e30220000","01631031000000d0"); // INEL>0,CaloFast,EG2 40-70%
     cuts.AddCutCalo("n7aat113","4117901090e30220000","01631031000000d0"); // INEL>0,CaloFast,EG2 70-100%
 
+  // full cross check of cuts with 13 TeV for pp 5 TeV paper (MB only for now)
+  } else if (trainConfig == 2370){  // EMCal+DCAL clusters standard cuts, Sphericity
+    cuts.AddCutCalo("00010113","411790109fe30220000","0s631031000000d0"); // std
+    cuts.AddCutCalo("00015113","411790109fe30220000","0s631031000000d0"); // std INEL>0
+  } else if (trainConfig == 2371){  // EMCal+DCAL clusters standard cuts, Sphericity
+    cuts.AddCutCalo("h0510113","411790109fe30220000","0s631031000000d0"); // std
+    cuts.AddCutCalo("h5a10113","411790109fe30220000","0s631031000000d0"); // std
+    cuts.AddCutCalo("h0a10113","411790109fe30220000","0s631031000000d0"); // std
+    cuts.AddCutCalo("h0310113","411790109fe30220000","0s631031000000d0"); // std
+    cuts.AddCutCalo("h7a10113","411790109fe30220000","0s631031000000d0"); // std
+  } else if (trainConfig == 2372){  // EMCal+DCAL clusters standard cuts, V0M mult selections
+    cuts.AddCutCalo("m0115113","411790109fe30220000","0s631031000000d0"); // INEL>0 0-1%
+    cuts.AddCutCalo("m1515113","411790109fe30220000","0s631031000000d0"); // INEL>0 1-5%
+    cuts.AddCutCalo("m5k15113","411790109fe30220000","0s631031000000d0"); // INEL>0 5-20%
+    cuts.AddCutCalo("n2415113","411790109fe30220000","0s631031000000d0"); // INEL>0 20-40%
+    cuts.AddCutCalo("n4715113","411790109fe30220000","0s631031000000d0"); // INEL>0 40-70%
+    cuts.AddCutCalo("n7a15113","411790109fe30220000","0s631031000000d0"); // INEL>0 70-100%
+
+
+  // PHOS configs for pp 5 TeV based on pp 13 TeV
+  } else if (trainConfig == 2377){ // PHOS INT7, 300MeV
+    cuts.AddCutCalo("00010113","24466190sa01cc00000","0163103100000010"); //Int7 no Trigger
+    cuts.AddCutCalo("00015113","24466190sa01cc00000","0163103100000010"); //Int7 no Trigger
+  } else if (trainConfig == 2378){ // PHOS INT7, 300MeV
+    cuts.AddCutCalo("h0510113","24466190sa01cc00000","0163103100000010"); // std
+    cuts.AddCutCalo("h5a10113","24466190sa01cc00000","0163103100000010"); // std
+    cuts.AddCutCalo("h0a10113","24466190sa01cc00000","0163103100000010"); // std
+    cuts.AddCutCalo("h0310113","24466190sa01cc00000","0163103100000010"); // std
+    cuts.AddCutCalo("h7a10113","24466190sa01cc00000","0163103100000010"); // std
+  } else if (trainConfig == 2379){  // EMCal+DCAL clusters standard cuts, V0M mult selections
+    cuts.AddCutCalo("m0115113","24466190sa01cc00000","0163103100000010"); // INEL>0 0-1%
+    cuts.AddCutCalo("m1515113","24466190sa01cc00000","0163103100000010"); // INEL>0 1-5%
+    cuts.AddCutCalo("m5k15113","24466190sa01cc00000","0163103100000010"); // INEL>0 5-20%
+    cuts.AddCutCalo("n2415113","24466190sa01cc00000","0163103100000010"); // INEL>0 20-40%
+    cuts.AddCutCalo("n4715113","24466190sa01cc00000","0163103100000010"); // INEL>0 40-70%
+    cuts.AddCutCalo("n7a15113","24466190sa01cc00000","0163103100000010"); // INEL>0 70-100%
+    // cuts.AddCutCalo("00010113","24466190s001cc00000","0163103100000010"); //Int7 no Trigger (no TM)
+  // } else if (trainConfig == 2379){ // PHOS PHI7, 300MeV
+  //   cuts.AddCutCalo("00062113","24466190sa01cc00000","0163103100000010"); //PHI7
+  //   cuts.AddCutCalo("00062113","24466190s001cc00000","0163103100000010"); //PHI7 (no TM)
+
   // CONFIGS for sys pp 5 TeV MB with TM
   } else if (trainConfig == 2380) { // configs for 0-1%
     cuts.AddCutCalo("m0110113","411790109fe3n220000","01631031000000d0"); // n cells >= 2
@@ -4938,6 +4979,7 @@ void AddTask_GammaCalo_pp(
     analysisEventCuts[i]->SetCaloTriggerHelperName(TriggerHelperName.Data());
     if( (!(AliCaloTriggerMimicHelper*)mgr->GetTask(TriggerHelperName.Data())) && (!ClusterCutPos.CompareTo("2")) && ( enableTriggerMimicking==3 || enableTriggerMimicking==4 ) ){
       AliCaloTriggerMimicHelper* fMimickHelper = new AliCaloTriggerMimicHelper(TriggerHelperName.Data(), caloCutPos.Atoi(), isMC);
+      // fMimickHelper->SetDebugOutput(6);
       if (enableTriggerMimicking==3 || enableTriggerMimicking==4){
           fMimickHelper->SetPHOSTrigger(AliCaloTriggerMimicHelper::kPHOSAny) ;
       } else {

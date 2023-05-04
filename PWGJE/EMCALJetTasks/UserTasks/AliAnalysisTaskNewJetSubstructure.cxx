@@ -50,25 +50,47 @@ ClassImp(AliAnalysisTaskNewJetSubstructure)
     //________________________________________________________________________
 AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure()
 : AliAnalysisTaskEmcalJet("AliAnalysisTaskNewJetSubstructure", kTRUE),
-  fContainer(0), fMinFractionShared(0), fJetShapeType(kData),
-  fJetShapeSub(kNoSub), fJetSelection(kInclusive), fPtThreshold(-9999.),
-  fRMatching(0.2), fCentSelectOn(kTRUE), fCentMin(0), fCentMax(10),
-  fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE),
-  fDoFillMCLund(kFALSE), fCheckResolution(kFALSE), fSubjetCutoff(0.1),
-  fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
-  fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
-  fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
-  fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
-  fHLundIterativeMCDet(0x0), fHCheckResolutionSubjets(0x0),
-  fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0), fDoFlow(0), fQVectorReader(0)
+  fContainer(0),
+  fMinFractionShared(0),
+  fJetShapeType(kData),
+  fJetShapeSub(kNoSub), 
+  fJetSelection(kInclusive), 
+  fPtThreshold(-9999.),
+  fRMatching(0.2),
+  fCentSelectOn(kTRUE), 
+  fCentMin(0), 
+  fCentMax(10),
+  fOneConstSelectOn(kFALSE),
+  fTrackCheckPlots(kFALSE),
+  fDoFillMCLund(kFALSE),
+  fCheckResolution(kFALSE), 
+  fSubjetCutoff(0.1),
+  fMinPtConst(1), 
+  fHardCutoff(0),
+  fDoTwoTrack(kFALSE),
+  fCutDoubleCounts(kTRUE),
+  fDoAreaIterative(kTRUE),
+  fPowerAlgo(1),
+  fPhiCutValue(0.02),
+  fEtaCutValue(0.02), 
+  fMagFieldPolarity(1),
+  fDerivSubtrOrder(0),
+  fStoreDetLevelJets(0),
+  fDoSubJet(0),
+  fDoFlow(0),
+  fQVectorReader(0),
+  fRejectTPCPileup(kFALSE),
+  fPtJet(0x0),
+  fHLundIterative(0x0), 
+  fHLundIterativeMC(0x0),
+  fHLundIterativeMCDet(0x0),
+  fHCheckResolutionSubjets(0x0),
+  fTreeSubstructure(0)
 
 {
-  for (Int_t i = 0; i < 18; i++) {
+  for (Int_t i = 0; i < 23; i++) {
     fShapesVar[i] = 0;
   }
-  fShapesVar[18]  =  -1;
-  fShapesVar[19]  =  -1;
-  fShapesVar[20]  =  -1;
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
   DefineOutput(2, TTree::Class());
@@ -77,27 +99,49 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure()
 //________________________________________________________________________
 AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
 								     const char *name)
-  : AliAnalysisTaskEmcalJet(name, kTRUE), fContainer(0),
-    fMinFractionShared(0), fJetShapeType(kData), fJetShapeSub(kNoSub),
-    fJetSelection(kInclusive), fPtThreshold(-9999.), fRMatching(0.2),
-    fCentSelectOn(kTRUE), fCentMin(0), fCentMax(10),
-    fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE),
-    fDoFillMCLund(kFALSE), fCheckResolution(kFALSE), fSubjetCutoff(0.1),
-    fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
-    fDoAreaIterative(kTRUE), fPowerAlgo(1), fPhiCutValue(0.02),
-    fEtaCutValue(0.02), fMagFieldPolarity(1), fDerivSubtrOrder(0),
-    fPtJet(0x0), fHLundIterative(0x0), fHLundIterativeMC(0x0),
-    fHLundIterativeMCDet(0x0), fHCheckResolutionSubjets(0x0),
-    fStoreDetLevelJets(0), fTreeSubstructure(0), fDoSubJet(0), fDoFlow(0), fQVectorReader(0)
+  : AliAnalysisTaskEmcalJet(name, kTRUE),
+    fContainer(0),
+    fMinFractionShared(0), 
+    fJetShapeType(kData), 
+    fJetShapeSub(kNoSub),
+    fJetSelection(kInclusive),
+    fPtThreshold(-9999.),
+    fRMatching(0.2),
+    fCentSelectOn(kTRUE),
+    fCentMin(0), 
+    fCentMax(10),
+    fOneConstSelectOn(kFALSE),
+    fTrackCheckPlots(kFALSE),
+    fDoFillMCLund(kFALSE),
+    fCheckResolution(kFALSE),
+    fSubjetCutoff(0.1),
+    fMinPtConst(1), 
+    fHardCutoff(0), 
+    fDoTwoTrack(kFALSE),
+    fCutDoubleCounts(kTRUE),
+    fDoAreaIterative(kTRUE), 
+    fPowerAlgo(1), 
+    fPhiCutValue(0.02),
+    fEtaCutValue(0.02),
+    fMagFieldPolarity(1),
+    fDerivSubtrOrder(0),
+    fStoreDetLevelJets(0),
+    fDoSubJet(0),
+    fDoFlow(0),
+    fQVectorReader(0),
+    fRejectTPCPileup(kFALSE),
+    fPtJet(0x0),
+    fHLundIterative(0x0), 
+    fHLundIterativeMC(0x0),
+    fHLundIterativeMCDet(0x0), 
+    fHCheckResolutionSubjets(0x0),
+    fTreeSubstructure(0)
     
 {
   // Standard constructor.
-  for (Int_t i = 0; i < 18; i++) {
+  for (Int_t i = 0; i < 23; i++) {
     fShapesVar[i] = -1;
   }
-  fShapesVar[18]  =  -1;
-  fShapesVar[19]  =  -1;
-  fShapesVar[20]  =  -1;
   SetMakeGeneralHistograms(kTRUE);
 
   DefineOutput(1, TList::Class());
@@ -178,7 +222,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   }
 
   TH1::AddDirectory(oldStatus);
-  const Int_t nVar = 21;
+  const Int_t nVar = 23;
   const char *nameoutput = GetOutputSlot(2)->GetContainer()->GetName();
   fTreeSubstructure = new TTree(nameoutput, nameoutput);
   TString *fShapesVarNames = new TString[nVar];
@@ -222,9 +266,15 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   if (fDoFlow) {
     fQVectorReader=(AliAnalysisTaskJetQnVectors*)AliAnalysisManager::GetAnalysisManager()->GetTask("AliAnalysisTaskJetQnVectors");
     if(!fQVectorReader){printf("Error: No AliAnalysisTaskJetQnVectors");return;} // GetQVectorReader
-    fShapesVarNames[20] = "EP";}
+    fShapesVarNames[20] = "EP";
+    fShapesVarNames[21] = "EPMatch";
+    }
+
+  fShapesVarNames[22] = "etaJet";
+  
 
   for (Int_t ivar = 0; ivar < nVar; ivar++) {
+    if (fShapesVarNames[ivar].Length() != 0)
     fTreeSubstructure->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar],
                               Form("%s/F", fShapesVarNames[ivar].Data()));
   }
@@ -239,6 +289,12 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
 Bool_t AliAnalysisTaskNewJetSubstructure::Run() {
   // Run analysis code here, if needed. It will be executed before
   // FillHistograms().
+
+  if (fRejectTPCPileup)   {            //possible bug occurs here, use with caution
+      fAliEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1);
+      Bool_t acceptEventCuts = fAliEventCuts.AcceptEvent(InputEvent());
+      if(!acceptEventCuts)     return kFALSE;
+    }
 
   return kTRUE;
 }
@@ -449,6 +505,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
 
       fShapesVar[0] = ptSubtracted;
       fShapesVar[10] = jet1->MaxTrackPt();
+      fShapesVar[22] = jet1->Eta();
       
       if(fCutDoubleCounts==kTRUE && fJetShapeType==kDetEmbPartPythia) if(jet1->MaxTrackPt()>jet2->MaxTrackPt()) continue;
 
@@ -461,6 +518,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
     
       Float_t ptMatch = 0.;
       Float_t leadTrackMatch = 0.;
+      Double_t EPMatch = 0.;
       Double_t ktgMatch = 0;
       Double_t nsdMatch = 0;
       Double_t zgMatch = 0;
@@ -492,6 +550,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
 
         ptMatch = jet3->Pt();
 	leadTrackMatch = jet3->MaxTrackPt();
+        EPMatch = RelativePhi(jet3->Phi(),fQVectorReader->GetEPangleV0M()); 
         IterativeParentsMCAveragePP(jet3, kMatched, aver1, aver2, aver3, aver4, sub1Det, sub2Det, const1Det, const2Det);
         ktgMatch = aver1;
         nsdMatch = aver2;
@@ -535,6 +594,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
       fShapesVar[8] = zgMatch;
       fShapesVar[9] = rgMatch;
       fShapesVar[11] = leadTrackMatch;
+      fShapesVar[21] = EPMatch;
       if (fStoreDetLevelJets) {
         fShapesVar[12] = ptDet;
         fShapesVar[13] = ktgDet;
@@ -806,8 +866,12 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(
   return;
 }
 //_________________________________________________________________________
-void AliAnalysisTaskNewJetSubstructure::IterativeParents(
-							 AliEmcalJet *fJet, AliJetContainer *fJetCont,fastjet::PseudoJet *sub1,  fastjet::PseudoJet *sub2, std::vector < fastjet::PseudoJet > *const1, std::vector < fastjet::PseudoJet > *const2) {
+void AliAnalysisTaskNewJetSubstructure::IterativeParents(AliEmcalJet *fJet,
+                                        AliJetContainer *fJetCont,fastjet::PseudoJet *sub1,
+                                        fastjet::PseudoJet *sub2, std::vector < fastjet::PseudoJet > *const1, 
+                                        std::vector < fastjet::PseudoJet > *const2) {
+
+  //function taht performs Soft Drop Grooming
 
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
@@ -919,8 +983,10 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(
   return;
 }
 
-void AliAnalysisTaskNewJetSubstructure::IterativeParentsPP(
-							 AliEmcalJet *fJet, AliJetContainer *fJetCont,fastjet::PseudoJet *sub1,  fastjet::PseudoJet *sub2, std::vector < fastjet::PseudoJet > *const1, std::vector < fastjet::PseudoJet > *const2) {
+//________________________________________________________
+void AliAnalysisTaskNewJetSubstructure::IterativeParentsPP(AliEmcalJet *fJet, AliJetContainer *fJetCont,
+                                        fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2, 
+                                        std::vector < fastjet::PseudoJet > *const1, std::vector < fastjet::PseudoJet > *const2) {
 
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
@@ -935,16 +1001,16 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsPP(
     fInputVectors.push_back(PseudoTracks);                                                                                                                                     
   }
 
-  fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
-  fastjet::JetDefinition fJetDef(jetalgo, 1.,
-                                 static_cast<fastjet::RecombinationScheme>(0),
-                                 fastjet::BestFJ30);
+  // fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+  // fastjet::JetDefinition fJetDef(jetalgo, 1.,
+  //                                static_cast<fastjet::RecombinationScheme>(0),
+  //                                fastjet::BestFJ30);
 
   fastjet::GhostedAreaSpec ghost_spec(1, 1, 0.05);
-  // fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
-  // fastjet::JetDefinition fJetDef(jetalgo, 1., fPowerAlgo,
-  //                              static_cast<fastjet::RecombinationScheme>(0),
-  //                             fastjet::BestFJ30);
+  fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
+  fastjet::JetDefinition fJetDef(jetalgo, 1., fPowerAlgo,
+                               static_cast<fastjet::RecombinationScheme>(0),
+                              fastjet::BestFJ30);
   fastjet::AreaDefinition fAreaDef(fastjet::passive_area, ghost_spec);
 
   try {
@@ -1060,11 +1126,15 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
 
 
   
-  fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+  // fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+  // fastjet::JetDefinition fJetDef(jetalgo, 1.,
+  //                                static_cast<fastjet::RecombinationScheme>(0),
+  //                                fastjet::BestFJ30);
 
-  fastjet::JetDefinition fJetDef(jetalgo, 1.,
-                                 static_cast<fastjet::RecombinationScheme>(0),
-                                 fastjet::BestFJ30);
+  fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
+  fastjet::JetDefinition fJetDef(jetalgo, 1., fPowerAlgo,
+                               static_cast<fastjet::RecombinationScheme>(0),
+                              fastjet::BestFJ30);
 
 
   try {
@@ -1169,11 +1239,15 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAveragePP(
 
   }
   
-  fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
+  // fastjet::JetAlgorithm jetalgo(fastjet::cambridge_algorithm);
 
-  fastjet::JetDefinition fJetDef(jetalgo, 1.,
-                                 static_cast<fastjet::RecombinationScheme>(0),
-                                 fastjet::BestFJ30);
+  // fastjet::JetDefinition fJetDef(jetalgo, 1.,
+  //                                static_cast<fastjet::RecombinationScheme>(0),
+  //                                fastjet::BestFJ30);
+  fastjet::JetAlgorithm jetalgo(fastjet::genkt_algorithm);
+  fastjet::JetDefinition fJetDef(jetalgo, 1., fPowerAlgo,
+                               static_cast<fastjet::RecombinationScheme>(0),
+                              fastjet::BestFJ30);
 
 
   try {
@@ -1428,24 +1502,19 @@ bool AliAnalysisTaskNewJetSubstructure::CheckClosePartner(AliEmcalJet* jet, PWG:
     Double_t ptv2 = fTrk2->Pt();
     Double_t deta = fTrk2->Eta() - fTrk1->Eta();
     const Float_t kLimit = fPhiCutValue * 3;
-
     if (TMath::Abs(fTrk1->Eta() - fTrk2->Eta()) < fEtaCutValue * 2.5 * 3) {
       Float_t initdpsinner =
           (phi2 - TMath::ASin(0.075 * chg2 * fMagFieldPolarity * 0.8 / ptv2) -
            (phi1 - TMath::ASin(0.075 * chg1 * fMagFieldPolarity * 0.8 / ptv1)));
-
       Float_t initdpsouter =
           (phi2 - TMath::ASin(0.075 * chg2 * fMagFieldPolarity * 2.5 / ptv2) -
            (phi1 - TMath::ASin(0.075 * chg1 * fMagFieldPolarity * 2.5 / ptv1)));
-
       initdpsinner = TVector2::Phi_mpi_pi(initdpsinner);
       initdpsouter = TVector2::Phi_mpi_pi(initdpsouter);
-
       if (TMath::Abs(initdpsinner) < kLimit ||
           TMath::Abs(initdpsouter) < kLimit ||
           initdpsinner * initdpsouter < 0) {
         Double_t mindps = 1e5;
-
         for (Double_t rad = 0.8; rad < 2.51; rad += 0.01) {
           Double_t dps =
               (phi2 -

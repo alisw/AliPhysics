@@ -61,6 +61,9 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
 
   std::vector<int> GetTrueVectorJetParton() { return fTrueVectorJetParton; }
   std::vector<double> GetTrueVectorJetPartonPt() { return fTrueVectorJetPartonPt; }
+  std::vector<double> GetTrueVectorJetPartonPx() { return fTrueVectorJetPartonPx; }
+  std::vector<double> GetTrueVectorJetPartonPy() { return fTrueVectorJetPartonPy; }
+  std::vector<double> GetTrueVectorJetPartonPz() { return fTrueVectorJetPartonPz; }
 
   Double_t Get_Jet_Radius()
   {
@@ -105,13 +108,16 @@ class AliAnalysisTaskConvJet : public AliAnalysisTaskEmcalJet
 
   std::vector<int> fTrueVectorJetParton;      // vector containing the mc stack id from the leading parton ("seed of the jet")
   std::vector<double> fTrueVectorJetPartonPt; // vector containing the pt of the leading parton ("seed of the jet")
+  std::vector<double> fTrueVectorJetPartonPx; // vector containing the pt of the leading parton ("seed of the jet")
+  std::vector<double> fTrueVectorJetPartonPy; // vector containing the pt of the leading parton ("seed of the jet")
+  std::vector<double> fTrueVectorJetPartonPz; // vector containing the pt of the leading parton ("seed of the jet")
 
  private:
   AliAnalysisTaskConvJet(const AliAnalysisTaskConvJet&);
   AliAnalysisTaskConvJet& operator=(const AliAnalysisTaskConvJet&);
 
   /// \cond CLASSIMP
-  ClassDef(AliAnalysisTaskConvJet, 13);
+  ClassDef(AliAnalysisTaskConvJet, 14);
   /// \endcond
 };
 #endif

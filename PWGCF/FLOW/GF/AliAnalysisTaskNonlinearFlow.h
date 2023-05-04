@@ -235,6 +235,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetTPCchi2perCluster(double fchi2 = 4) {fTPCchi2perCluster = fchi2;}
 		virtual void   SetUseAdditionalDCACut(double flag = true) {fUseAdditionalDCACut = flag;}
 		virtual void   SetUseDefaultWeight(double flag = true) {fUseDefaultWeight = flag;}
+    virtual void   SetV0MRatioCut(double ratio=5) {fV0MRatioCut = ratio;}
     virtual void   SetEtaGap3Sub(Double_t feta = 0.4) {fEtaGap3Sub = feta;}
 		virtual void   SetCentralityCut(Double_t cent = 100) {fCentralityCut = cent;}
     virtual void   SetOnTheFly(Bool_t flag=false) {fOnTheFly = flag;} 
@@ -307,6 +308,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Double_t                fTPCchi2perCluster;                     // Additional cuts for TPC chi2 / cluster
 		Bool_t                  fUseAdditionalDCACut;                   // Additianal cuts for dca: < 1 cm
 		Bool_t                  fUseDefaultWeight;                      // Force to use the default weight 
+    Double_t                fV0MRatioCut;                              // Cut on V0M / <V0M>
 		Double_t                fEtaGap3Sub;                            // The Eta Gap for 3 sub sample, the default is 0.4
     Bool_t                  fOnTheFly;                              // flag to tune on on-the-fly
 
@@ -341,8 +343,10 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH1F*			hMult;				//! multiplicity distribution
 		TH1F*			fVtxAfterCuts;			//! Vertex z dist after cuts
 		TH1F*			fCentralityDis;			//! distribution of centrality percentile using V0M estimator
-		TH1F*			fV0CentralityDis;		//! distribution of V0M/<V0M>
-		TH1F*			fV0CentralityDisNarrow;	//! distribution of V0M/<V0M>
+    TH1F*			fV0CentralityDis;		//! distribution of centrality percentile using V0M estimator
+    TH1F*			fV0CentralityDisNarrow;	//! distribution centrality percentile using V0M estimator
+    TH1F*     fV0MMultiplicity;       //! V0M multiplicity
+    TH1F*     fV0MRatio;              //! V0M multiplicity ratio: V0M/<V0M>
 
 		// Track histograms
 		TH1D*				fPhiDis1D;		//! phi dis 1D
@@ -462,7 +466,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 19);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 20);    //Analysis task
 };
 
 #endif

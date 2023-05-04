@@ -41,7 +41,7 @@ class MatrixHandler4D
   MatrixHandler4D(MatrixHandler4D&&) = delete;                 // move ctor
   MatrixHandler4D& operator=(const MatrixHandler4D&) = delete; // copy assignment
   MatrixHandler4D& operator=(MatrixHandler4D&&) = delete;      // move assignment
-  virtual ~MatrixHandler4D();
+  virtual ~MatrixHandler4D() = default;
 
   int getBinIndexMesonX(const double val) const;
   int getBinIndexMesonY(const double val) const;
@@ -77,6 +77,63 @@ class MatrixHandler4D
   THnSparseF* hSparseResponse = nullptr;
 
   ClassDef(MatrixHandler4D, 3)
+};
+
+
+
+class MatrixHandlerNDim
+{
+
+ public:
+  MatrixHandlerNDim() = default;
+  MatrixHandlerNDim(std::vector<std::vector<double>> arrBinsX, std::vector<std::vector<double>> arrBinsY, bool useTHN = false);
+  MatrixHandlerNDim(std::vector<std::vector<double>> arrBinsX, std::vector<std::vector<double>> arrBinsY, THnSparse* h = nullptr);
+  MatrixHandlerNDim(std::vector<std::vector<double>> arrBinsX, std::vector<std::vector<double>> arrBinsY, TH2F* h = nullptr);
+  MatrixHandlerNDim(const MatrixHandlerNDim&) = delete;            // copy ctor
+  MatrixHandlerNDim(MatrixHandlerNDim&&) = delete;                 // move ctor
+  MatrixHandlerNDim& operator=(const MatrixHandlerNDim&) = delete; // copy assignment
+  MatrixHandlerNDim& operator=(MatrixHandlerNDim&&) = delete;      // move assignment
+  virtual ~MatrixHandlerNDim() = default;
+
+  int getBinIndexMesonX(const double val) const;
+  int getBinIndexMesonY(const double val) const;
+  int getBinIndexJetX(const double val) const;
+  int getBinIndexJetY(const double val) const;
+
+  unsigned int getIndex(std::vector<double> vecVal, bool isXAxis);
+
+  double getValueForBinIndexMesonX(const int index) const;
+  double getValueForBinIndexJetX(const int index) const;
+  double getValueForBinIndexMesonY(const int index) const;
+  double getValueForBinIndexJetY(const int index) const;
+
+  void Fill(double valJetX, double valJetY, double valMesonX, double valMesonY, double val = 1);
+  void Fill(std::vector<double> valRec, std::vector<double> valTrue, double val = 1);
+
+  void AddBinContent(double valJetX, double valJetY, double valMesonX, double valMesonY, double val = 1, double err = 1);
+  void AddBinContent(std::vector<double> valRec, std::vector<double> valTrue, double val = 1, double err = 1);
+
+  double GetBinLowEdge(std::vector<unsigned int> vecDim, const std::vector<std::vector<double>> vecND);
+  std::vector<double> MakeAxis1D(const std::vector<std::vector<double>> vecND);
+
+  THnSparseF* GetTHnSparseClone(const char* name = "hSparseResponse_Clone");
+  THnSparseF* GetTHnSparse(const char* name = "");
+
+  TH2F* GetTH2(const char* name = "hSparseResponse_Clone");
+  TH2F* GetResponseMatrix(int binX, int binY, const char* name = "dummy");
+  TH2F* GetResponseMatrix(std::vector<double> vecBins, const char* name = "dummy");
+
+ private:
+  bool useTHNSparese = false;
+  int nBinsJet = 0;
+  std::vector<std::vector<double>> vecBinsX = {};
+  std::vector<std::vector<double>> vecBinsY = {};
+  TH2F* h2d = nullptr;
+  TH1F* h1dJet = nullptr;
+  TH1F* h1dMeson = nullptr;
+  THnSparseF* hSparseResponse = nullptr;
+
+  ClassDef(MatrixHandlerNDim, 1)
 };
 
 #endif

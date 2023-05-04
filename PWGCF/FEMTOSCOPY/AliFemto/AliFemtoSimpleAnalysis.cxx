@@ -184,7 +184,7 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis():
   fVerbose(kTRUE),
   fPerformSharedDaughterCut(kFALSE),
   fEnablePairMonitors(kFALSE),
-  freverseParticleVariables(kFALSE)
+  fEnablePairMonitorsMixEv(kFALSE)
 {
   // Default constructor
   fCorrFctnCollection = new AliFemtoCorrFctnCollection;
@@ -208,7 +208,7 @@ AliFemtoSimpleAnalysis::AliFemtoSimpleAnalysis(const AliFemtoSimpleAnalysis& a):
   fVerbose(a.fVerbose),
   fPerformSharedDaughterCut(a.fPerformSharedDaughterCut),
   fEnablePairMonitors(a.fEnablePairMonitors),
-  freverseParticleVariables(a.freverseParticleVariables)
+  fEnablePairMonitorsMixEv(a.fEnablePairMonitorsMixEv)
 {
   /// Copy constructor
 
@@ -405,7 +405,7 @@ AliFemtoSimpleAnalysis& AliFemtoSimpleAnalysis::operator=(const AliFemtoSimpleAn
   fVerbose = aAna.fVerbose;
   fPerformSharedDaughterCut = aAna.fPerformSharedDaughterCut;
   fEnablePairMonitors = aAna.fEnablePairMonitors;
-  freverseParticleVariables = aAna.freverseParticleVariables;
+  fEnablePairMonitorsMixEv = aAna.fEnablePairMonitorsMixEv;
   return *this;
 }
 //______________________
@@ -549,15 +549,15 @@ void AliFemtoSimpleAnalysis::ProcessEvent(const AliFemtoEvent* hbtEvent)
 
     // If identical - only mix the first particle collections
     if (AnalyzeIdenticalParticles()) {
-      MakePairs("mixed", collection1, storedEvent->FirstParticleCollection());
+      MakePairs("mixed", collection1, storedEvent->FirstParticleCollection(), EnablePairMonitorsMixEv());
 
     // If non-identical - mix both combinations of first and second particles
     } else {
         MakePairs("mixed", collection1,
-                           storedEvent->SecondParticleCollection());
+                           storedEvent->SecondParticleCollection(), EnablePairMonitorsMixEv());
 
         MakePairs("mixed", storedEvent->FirstParticleCollection(),
-                           collection2);
+                           collection2, EnablePairMonitorsMixEv());
     }
   }
 
@@ -641,17 +641,6 @@ void AliFemtoSimpleAnalysis::MakePairs(const char* typeIn,
     // If we have two collections - set the first track
     if (partCollection2 != nullptr) {
       tPair->SetTrack1(*tPartIter1);
-      
-        if(freverseParticleVariables){
-	    //This works only if you set the variable on true (default=false). Temporary function. see the comment in .h file
-            AliFemtoParticle *fTrack1=(AliFemtoParticle*)*tPartIter1;
-	    AliFemtoLorentzVector p1 = (AliFemtoLorentzVector) fTrack1->FourMomentum();
-            p1.SetX(-1.0*p1.x());
-            p1.SetY(-1.0*p1.y());
-            p1.SetZ(-1.0*p1.z());
-            fTrack1->ResetFourMomentum(p1);
-            tPair->SetTrack1(fTrack1);
-	}
     }
 
     // Begin the inner loop

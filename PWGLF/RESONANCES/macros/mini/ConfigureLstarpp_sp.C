@@ -30,6 +30,7 @@ Bool_t ConfigureLstarpp_sp
     const char             *suffix,
     AliRsnCutSet           *cutsPair,
     Int_t                  aodFilterBit = 5,
+     Int_t                  _spBin=500,
     Int_t                  customQualityCutsID=AliRsnCutSetDaughterParticle::kDisableCustom,
     AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutPrCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,
     AliRsnCutSetDaughterParticle::ERsnDaughterCutSet cutKaCandidate = AliRsnCutSetDaughterParticle::kTPCTOFpidLstar13ppTeV,
@@ -143,6 +144,17 @@ Bool_t ConfigureLstarpp_sp
   Int_t   cutID2  [12] = {iCutK     ,iCutK     ,iCutK    ,iCutK      ,iCutK   ,iCutK   ,iCutK    ,iCutK    ,iCutK    ,iCutK    ,iCutK   ,iCutK   };
   Int_t   PDGCode [12] = {3124      ,3124      ,3124     ,3124       ,3124    ,3124    ,3124     ,-3124    ,3124     ,-3124    ,3124    ,-3124   };
 
+   Double_t multbins[200];
+  int j,nmult=0;
+  if(triggerMask==AliVEvent::kHighMultV0){
+    for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
+    for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
+    for(j=1;j<=10;j++){multbins[nmult]=0.1*j; nmult++;}
+  }else{
+    for(j=0;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
+    for(j=1;j<=10;j++){multbins[nmult]=j; nmult++;}
+  }
+
   for (Int_t i = 0; i < 12; i++) {
     if (!use[i]) continue;
     AliRsnMiniOutput *out = task->CreateOutput(Form("Lstar_%s%s", name[i].Data(), suffix), output[i].Data(), comp[i].Data());
@@ -158,19 +170,19 @@ Bool_t ConfigureLstarpp_sp
 
     // axis X: invmass (or resolution)
     if (useIM[i]) 
-      out->AddAxis(imID, 120, 1.4, 2.0);
+      out->AddAxis(imID, 240, 1.4, 2.0);
     else
       out->AddAxis(resID, 200, -0.02, 0.02);
     
     //axis Y: transverse momentum of pair as default - else chosen value
-    out->AddAxis(ptID,100,0.,10.);//default use mother pt
+    out->AddAxis(ptID,200,0.,10.);//default use mother pt
 
     // axis Z: centrality-multiplicity
     // axis Z: centrality-multiplicity
 
      
      if(isPP && !MultBins)  out->AddAxis(centID, 400, 0., 400.);
-     else out->AddAxis(centID, 110, 0., 110.);
+     else out->AddAxis(centID,nmult,multbins);
     
    	  
     // axis W: pseudorapidity
@@ -178,7 +190,7 @@ Bool_t ConfigureLstarpp_sp
     // axis J: rapidity
     //out->AddAxis(yID, 12, -0.6, 0.6);
 
-     out->AddAxis(SpherocityID, 100,0.,1.);
+     out->AddAxis(SpherocityID, _spBin,0.,1.);
     
   }
   return kTRUE;

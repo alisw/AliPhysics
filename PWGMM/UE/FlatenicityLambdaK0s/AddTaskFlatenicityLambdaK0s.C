@@ -31,10 +31,21 @@ AliAnalysisTaskFlatenicityLambdaK0s *AddTaskFlatenicityLambdaK0s(TString name = 
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
 
-    gROOT->ProcessLine(".L $ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
-    Bool_t isMC = kFALSE;
-    Bool_t enablePileupCuts = kTRUE;
-    AliPhysicsSelectionTask *physSelTask = new AliPhysicsSelectionTask();
-    physSelTask->AddTaskPhysicsSelection(isMC, enablePileupCuts);
+    // gROOT->ProcessLine(".L $ALICE_PHYSICS/OADB/macros/AddTaskPhysicsSelection.C");
+    // Bool_t isMC = kFALSE;
+    // Bool_t enablePileupCuts = kTRUE;
+    // AliPhysicsSelectionTask *physSelTask = new AliPhysicsSelectionTask();
+    // physSelTask->AddTaskPhysicsSelection(isMC, enablePileupCuts);
+
+    // // load the macro and add the task
+    // TMacro PIDadd(gSystem->ExpandPathName("$ALICE_ROOT/ANALYSIS/macros/AddTaskPIDResponse.C"));
+    // AliAnalysisTaskPIDResponse *PIDresponseTask = reinterpret_cast<AliAnalysisTaskPIDResponse *>(PIDadd.Exec());
+
+    // gROOT->LoadMacro("$ALICE_PHYSICS/OADB/macros/AddTaskPIDResponse.C");
+    // AddTaskPIDResponse();
+    // Bool_t isMC = kFALSE;
+    // Bool_t enablePileupCuts = kTRUE;
+    // AliPhysicsSelectionTask *physSelTask = new AliPhysicsSelectionTask();
+    // physSelTask->AddTaskPhysicsSelection(isMC, enablePileupCuts);
     return task;
 }

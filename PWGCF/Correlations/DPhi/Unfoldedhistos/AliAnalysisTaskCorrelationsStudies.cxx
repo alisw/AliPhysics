@@ -1807,6 +1807,11 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated)
 
     Bool_t bTrackAccepted = fTrackSelectionCuts->IsTrackAccepted(vtrack);
     AliCSTrackSelection::poiIds pid = fTrackSelectionCuts->GetAcceptedTrackPOIId();
+    /* pre-check the particle acceptance */
+    if (fDoProcessCorrelations) {
+      bTrackAccepted = bTrackAccepted && fProcessCorrelations->IsTrackAccepted(i, vtrack);
+    }
+
 
     /* only fill histograms if this is not an additional simulated event */
     if (!simulated) {
@@ -2046,6 +2051,14 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTrueTracks()
       }
       else {
         part = (AliAODMCParticle *) arrayMC->At(iTrack);
+      }
+
+      /* pre-check the particle acceptance */
+      if (fDoProcessCorrelations) {
+        if (!fProcessTrueCorrelations->IsTrackAccepted(iTrack, part)) {
+          /* particle not accepted by the correlations cuts */
+          continue;
+        }
       }
 
       p = part->P();

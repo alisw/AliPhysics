@@ -92,6 +92,8 @@ class AliAnalysisTaskCorrelationTree : public AliAnalysisTaskSE{
     AliPIDResponse 			*fPidResponse;
     TH1F*                  fHistoNEvents;                                      //! array of histos with event information
     Int_t                       fBuffer_NContributors; //
+    Float_t                     fBuffer_RunNumber; //
+    Int_t                       fBuffer_VertexZ; //
     Int_t                       fBuffer_NEventTriggers; //
     Int_t*                      fBuffer_EventTrigger; //
     Int_t                       fBuffer_NElectronCandidates; //
@@ -99,6 +101,8 @@ class AliAnalysisTaskCorrelationTree : public AliAnalysisTaskSE{
     Float_t*                    fBuffer_ElectronCandidate_Px; //
     Float_t*                    fBuffer_ElectronCandidate_Py; //
     Float_t*                    fBuffer_ElectronCandidate_Pz; //
+    Float_t*                    fBuffer_ElectronCandidate_PropEta; //
+    Float_t*                    fBuffer_ElectronCandidate_PropPhi; //
     Float_t*                    fBuffer_ElectronCandidate_Charge; //
     Float_t*                    fBuffer_ElectronCandidate_NSigmaElecTPC; //
     Float_t*                    fBuffer_ElectronCandidate_NSigmaElecTOF; //
@@ -117,6 +121,9 @@ class AliAnalysisTaskCorrelationTree : public AliAnalysisTaskSE{
     Float_t*                      fBuffer_ElectronCandidate_MC_Mother_Pz;
     Int_t*                      fBuffer_ElectronCandidate_MC_Mother_PDG;
     Int_t*                      fBuffer_ElectronCandidate_MC_GrandMother_PDG;
+    Float_t*                      fBuffer_ElectronCandidate_MC_GrandMother_Pt;
+    Int_t*                      fBuffer_ElectronCandidate_MC_GGrandMother_PDG;
+    Float_t*                      fBuffer_ElectronCandidate_MC_GGrandMother_Pt;
     Int_t                       fBuffer_NMuonCandidates; //
     Float_t*                    fBuffer_MuonCandidate_E; //
     Float_t*                    fBuffer_MuonCandidate_Px; //
@@ -138,6 +145,9 @@ class AliAnalysisTaskCorrelationTree : public AliAnalysisTaskSE{
     Float_t*                      fBuffer_MuonCandidate_MC_Mother_Pz;
     Int_t*                      fBuffer_MuonCandidate_MC_Mother_PDG;
     Int_t*                      fBuffer_MuonCandidate_MC_GrandMother_PDG;
+    Float_t*                      fBuffer_MuonCandidate_MC_GrandMother_Pt;
+    Int_t*                      fBuffer_MuonCandidate_MC_GGrandMother_PDG;
+    Float_t*                      fBuffer_MuonCandidate_MC_GGrandMother_Pt;
     Int_t                       fBuffer_NClusterCandidates; //
     Float_t*                    fBuffer_ClusterCandidate_E; //
     Float_t*                    fBuffer_ClusterCandidate_Px; //

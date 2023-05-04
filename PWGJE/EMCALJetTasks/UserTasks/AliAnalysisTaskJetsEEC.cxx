@@ -55,7 +55,7 @@ AliAnalysisTaskJetsEEC::AliAnalysisTaskJetsEEC(): AliAnalysisTaskEmcalJet("AliAn
   fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
   fPowerAlgo(1), fPhiCutValue(0.02),
   fEtaCutValue(0.02), fDerivSubtrOrder(0),
-  fStoreDetLevelJets(0), fStoreTrig(kFALSE), EEC_hist(0), jet_pt_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0)
+  fStoreDetLevelJets(0), fStoreTrig(kFALSE), EEC_hist(0), jet_pt_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0), EEEC_hist(0), EEEC_pt_hist(0), EEEC_pt_hist_log(0)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -71,7 +71,7 @@ AliAnalysisTaskJetsEEC::AliAnalysisTaskJetsEEC(const char *name): AliAnalysisTas
     fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
     fPowerAlgo(1), fPhiCutValue(0.02),
     fEtaCutValue(0.02), fDerivSubtrOrder(0),
-    fStoreDetLevelJets(0), fStoreTrig(kFALSE), EEC_hist(0), jet_pt_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0)
+    fStoreDetLevelJets(0), fStoreTrig(kFALSE), EEC_hist(0), jet_pt_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0), EEEC_hist(0), EEEC_pt_hist(0), EEEC_pt_hist_log(0)
 
 {
   SetMakeGeneralHistograms(kTRUE);
@@ -98,19 +98,30 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
 
   const char *nameoutput = GetOutputSlot(2)->GetContainer()->GetName(); //What does this line do? Can i comment it out
 
-  EEC_hist = new TH1D("EEC_hist","Normalized EEC", 50, 0,1);//for now this is the binning
+  EEC_hist = new TH1D("EEC_hist","EEC", 100, 0,1);//for now this is the binning
   fOutput->Add(EEC_hist);
   
-  jet_pt_hist = new TH1D("jet_pt_hist", "Jet Pt", 100, 0,25);
+  jet_pt_hist = new TH1D("jet_pt_hist", "Jet Pt", 70, 15,50);
 //    jet_pt_hist = new TH1D("jet_pt_hist", "Jet Pt", 50, 0,25); //keep this same as 2D histogram
   fOutput->Add(jet_pt_hist);
     
-  EEC_pt_hist = new TH2D("EEC_pt_hist", "EEC and jet_pt 2D", 100, 0,1,50,0,25);
+  EEC_pt_hist = new TH2D("EEC_pt_hist", "EEC and jet_pt 2D", 100, 0,1,70,15,50);
   fOutput->Add(EEC_pt_hist);
     
-  EEC_pt_hist_log = new TH2D("EEC_pt_hist_log", "EEC and jet_pt 2D", 100, -10,10,50,0,25);
+  EEC_pt_hist_log = new TH2D("EEC_pt_hist_log", "EEC and jet_pt 2D", 100, -10,10,70,15,50);
   fOutput->Add(EEC_pt_hist_log);
-   
+  
+ //EEEC histograms
+  EEEC_hist = new TH1D("EEEC_hist","EEEC", 100, 0,1);//for now this is the binning
+  fOutput->Add(EEEC_hist);
+  
+  EEEC_pt_hist = new TH2D("EEEC_pt_hist", "EEEC and jet_pt 2D", 100, 0,1,70,15,50);
+  fOutput->Add(EEEC_pt_hist);
+    
+  EEEC_pt_hist_log = new TH2D("EEEC_pt_hist_log", "EEEC and jet_pt 2D", 100, -10,10,70,15,50);
+  fOutput->Add(EEEC_pt_hist_log);
+
+
 
   PostData(1, fOutput);
 
@@ -374,28 +385,131 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
 //Initializing objects
     std::vector<Double_t> delta_Rvec;
     std::vector<Double_t> energy_pairs_vec; //the weighting vector with EE
+    std::vector<Double_t> energy_pairs_tri; //the weighting vector with EEE
+    std::vector<Double_t> R_dist;
+    std::vector<Double_t> logR_dist;
+    std::vector<Double_t> max_R_distvec;
+    std::vector<Double_t> max_logR_distvec;
 
 //Looping over the jet
-    double jet_pt = fJet->Pt();
-    jet_pt_hist->Fill(jet_pt); //filling histogram with momentum of jets
-//    constit = fConstitutents.constituents(); //vector of single jet constituents. Using pseudojet jet.constituent
+double jet_pt = fJet->Pt();
+jet_pt_hist->Fill(jet_pt); //filling histogram with momentum of jets
+//For jets with 2 constituents
+if(int(fConstituents.size()) == 2)
+{
     for(int j=0; j<int(fConstituents.size()); j++)  //looping over constituents of the fConstituents object
+    {
+        //For 3 point correlator
+        for(int s=0; s<j ; s++)
         {
-            for(int s=0; s<j ; s++)
-            {
-                double delta_R_js = fConstituents[j].delta_R(fConstituents[s]);
-                double log_delta_R_js = log(delta_R_js);
-                double ee_js = (fConstituents[j].e()*fConstituents[s].e())/(pow((jet_pt),2));
+            double eee_jss_2 =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
+            double deltaR_jss_2 = fConstituents[j].delta_R(fConstituents[s]);
+            double delta_logR_jss_2 = log(deltaR_jss_2);
+            
+            energy_pairs_tri.push_back(eee_jss_2);
+            max_R_distvec.push_back(deltaR_jss_2);
+            max_logR_distvec.push_back(delta_logR_jss_2);
+            
+            EEEC_hist->Fill(deltaR_jss_2,eee_jss_2);
+            EEEC_pt_hist->Fill(deltaR_jss_2,jet_pt,eee_jss_2);
+            EEEC_pt_hist_log->Fill(delta_logR_jss_2,jet_pt,eee_jss_2);
+            
+        }//close s loop for the 3 point correlator
+        //For 2 point correlator
+        for(int s=0; s<j ; s++)
+        {
+            double delta_R_js_2 = fConstituents[j].delta_R(fConstituents[s]);
+            double log_delta_R_js_2 = log(delta_R_js_2);
+            double ee_js_2 = (fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
+            
+            //Filling the vectors
+            delta_Rvec.push_back(delta_R_js_2);
+            energy_pairs_vec.push_back(ee_js_2);
+            EEC_hist->Fill(delta_R_js_2,ee_js_2);
+            EEC_pt_hist->Fill(delta_R_js_2,jet_pt,ee_js_2);
+            EEC_pt_hist_log->Fill(log_delta_R_js_2,jet_pt,ee_js_2);
+            ////                fTreeEEC->Fill();
+        }//close s loop for eec
+    }//close j loop
+}//close if loop
 
-//Filling the vectors
-                delta_Rvec.push_back(delta_R_js);
-                energy_pairs_vec.push_back(ee_js);
-                EEC_hist->Fill(delta_R_js,ee_js);
-                EEC_pt_hist->Fill(delta_R_js,jet_pt,ee_js);
-                EEC_pt_hist_log->Fill(log_delta_R_js,jet_pt,ee_js);
-//                fTreeEEC->Fill();
-             } //end of second for loop
-         } //end of first for loop
+//For jets with more than 2 constituents
+else
+{
+    for(int j=0; j<int(fConstituents.size()); j++)  //looping over constituents of the fConstituents object
+    {
+        //         if(int(fConstituents.size()) == 2) continue;
+        for(int s=0; s<int(fConstituents.size()) ; s++)
+        {
+            if(s==j) continue; //This ensures I don't get stuff like (000) for (jss)
+            
+            double eee_jss =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
+            double deltaR_jss = fConstituents[j].delta_R(fConstituents[s]);
+            double delta_logR_jss = log(deltaR_jss);
+            
+            energy_pairs_tri.push_back(eee_jss);
+            max_R_distvec.push_back(deltaR_jss);
+            max_logR_distvec.push_back(delta_logR_jss);
+            
+            EEEC_hist->Fill(deltaR_jss,eee_jss);
+            EEEC_pt_hist->Fill(deltaR_jss,jet_pt,eee_jss);
+            EEEC_pt_hist_log->Fill(delta_logR_jss,jet_pt,eee_jss);
+            
+            //For 3 point correlator
+            for( int m=0; m!=j && m!=s; m++)
+            {
+                if(s>j) continue;
+                double eee_jsm = ((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt())/(pow(jet_pt,3)));
+                double deltaR_js = fConstituents[j].delta_R(fConstituents[s]);
+                double delta_logR_js = log(deltaR_js);
+                
+                double deltaR_jm = fConstituents[j].delta_R(fConstituents[m]);
+                double delta_logR_jm = log(deltaR_jm);
+                
+                double deltaR_sm = fConstituents[s].delta_R(fConstituents[m]);
+                double delta_logR_sm = log(deltaR_sm);
+                
+                energy_pairs_tri.push_back(eee_jsm);
+                //                jetE.push_back(jet_pt);
+                
+                R_dist.push_back(deltaR_js);
+                R_dist.push_back(deltaR_jm);
+                R_dist.push_back(deltaR_sm);
+                
+                logR_dist.push_back(delta_logR_js);
+                logR_dist.push_back(delta_logR_jm);
+                logR_dist.push_back(delta_logR_sm);
+                
+                int max_R = distance(R_dist.begin(), max_element(R_dist.begin(), R_dist.end()));//pick the longest side to compute the correlators with
+                
+                max_R_distvec.push_back(R_dist[max_R]);
+                max_logR_distvec.push_back(logR_dist[max_R]);
+                
+                EEEC_hist->Fill(R_dist[max_R],eee_jsm);
+                EEEC_pt_hist->Fill(R_dist[max_R],jet_pt,eee_jsm);
+                EEEC_pt_hist_log->Fill(logR_dist[max_R],jet_pt,eee_jsm);
+                
+                R_dist.clear();
+                logR_dist.clear();
+            }//close m loop
+        }//close s loop for the 3 point correlator
+        //For loop for EEC
+        for(int s=0; s<j ; s++)
+        {
+            double delta_R_js = fConstituents[j].delta_R(fConstituents[s]);
+            double log_delta_R_js = log(delta_R_js);
+            double ee_js = (fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
+            
+            //Filling the vectors
+            delta_Rvec.push_back(delta_R_js);
+            energy_pairs_vec.push_back(ee_js);
+            EEC_hist->Fill(delta_R_js,ee_js);
+            EEC_pt_hist->Fill(delta_R_js,jet_pt,ee_js);
+            EEC_pt_hist_log->Fill(log_delta_R_js,jet_pt,ee_js);
+            ////                fTreeEEC->Fill();
+        }//close s loop for the 2 point correlator
+    } //close j loop
+}//close else loop
 
 //catch (fastjet::Error)
 // {

@@ -131,7 +131,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal() :
   fClusterCollArray(),
   fTriggers(0),
   fEMCalTriggerMode(kOverlapWithLowThreshold),
-  fUseNewCentralityEstimation(kFALSE),
+  fUseNewCentralityEstimation(kTRUE),
   fGeneratePythiaInfoObject(kFALSE),
   fUsePtHardBinScaling(kFALSE),
   fUseXsecFromHeader(kFALSE),
@@ -259,7 +259,7 @@ AliAnalysisTaskEmcal::AliAnalysisTaskEmcal(const char *name, Bool_t histo) :
   fClusterCollArray(),
   fTriggers(0),
   fEMCalTriggerMode(kOverlapWithLowThreshold),
-  fUseNewCentralityEstimation(kFALSE),
+  fUseNewCentralityEstimation(kTRUE),
   fGeneratePythiaInfoObject(kFALSE),
   fUsePtHardBinScaling(kFALSE),
   fUseXsecFromHeader(kFALSE),
@@ -1642,7 +1642,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
       else if (fCent >= 30 && fCent <   50) fCentBin = 2;
       else if (fCent >= 50 && fCent <= 100) fCentBin = 3;
       else {
-        AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
+        AliWarning(Form("%s: Negative centrality: %f. Assuming 99, cent estimator: %s", GetName(), fCent, fCentEst.Data()));
         fCentBin = fNcentBins-1;
       }
     }
@@ -1656,7 +1656,7 @@ Bool_t AliAnalysisTaskEmcal::RetrieveEventObjects()
         fCentBin = 4;
       }
       else {
-        AliWarning(Form("%s: Negative centrality: %f. Assuming 99", GetName(), fCent));
+        AliWarning(Form("%s: Negative centrality: %f. Assuming 99, cent estimator: %s", GetName(), fCent, fCentEst.Data()));
         fCentBin = fNcentBins-1;
       }
     }
