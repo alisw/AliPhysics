@@ -216,6 +216,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistClusterEtavsPhiAfterQA(NULL),
   fHistClusterEtavsPhiAfterQA_onlyTriggered(NULL),
   fHistClusterEtavsPhiBackground(NULL),
+  fHistClusterEtavsPhiMatchedClusters(NULL),
   fHistClusterTimevsEBeforeQA(NULL),
   fHistClusterTimevsEAfterQA(NULL),
   fHistClusterTimevsELowGain(NULL),
@@ -457,6 +458,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterEtavsPhiAfterQA(NULL),
   fHistClusterEtavsPhiAfterQA_onlyTriggered(NULL),
   fHistClusterEtavsPhiBackground(NULL),
+  fHistClusterEtavsPhiMatchedClusters(NULL),
   fHistClusterTimevsEBeforeQA(NULL),
   fHistClusterTimevsEAfterQA(NULL),
   fHistClusterTimevsELowGain(NULL),
@@ -744,6 +746,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
         fHistograms->Add(fHistClusterEtavsPhiBackground);
       }
+      if(fExtendedMatchAndQA >= 3){
+        fHistClusterEtavsPhiMatchedClusters  = new TH2F(Form("EtaPhi_MatchedClusters %s",GetCutNumber().Data()),"EtaPhi_MatchedClusters",nEmcalPhiBins,EmcalPhiBins,nEmcalEtaBins,EmcalEtaBins);
+        fHistClusterEtavsPhiMatchedClusters->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiMatchedClusters->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiMatchedClusters);
+      }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nEmcalPhiBins,EmcalPhiBins,nEmcalEtaBins,EmcalEtaBins);
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
@@ -769,6 +777,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
         fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
         fHistograms->Add(fHistClusterEtavsPhiBackground);
+      }
+      if(fExtendedMatchAndQA >= 3){
+        fHistClusterEtavsPhiMatchedClusters  = new TH2F(Form("EtaPhi_MatchedClusters %s",GetCutNumber().Data()),"EtaPhi_MatchedClusters",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
+        fHistClusterEtavsPhiMatchedClusters->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiMatchedClusters->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiMatchedClusters);
       }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nPhosPhiBins,PhosPhiRange[0],PhosPhiRange[1],nPhosEtaBins,PhosEtaRange[0],PhosEtaRange[1]);
@@ -799,6 +813,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
         fHistograms->Add(fHistClusterEtavsPhiBackground);
       }
+      if(fExtendedMatchAndQA >= 3){
+        fHistClusterEtavsPhiMatchedClusters  = new TH2F(Form("EtaPhi_MatchedClusters %s",GetCutNumber().Data()),"EtaPhi_MatchedClusters",nDcalPhiBins,4.5,5.7,nDcalEtaBins,-0.66687,0.66465);
+        fHistClusterEtavsPhiMatchedClusters->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiMatchedClusters->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiMatchedClusters);
+      }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",nDcalPhiBins,4.5,5.7,nDcalEtaBins,-0.66687,0.66465);
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
@@ -819,6 +839,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistClusterEtavsPhiBackground->GetXaxis()->SetTitle("#varphi (rad)");
         fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
         fHistograms->Add(fHistClusterEtavsPhiBackground);
+      }
+      if(fExtendedMatchAndQA >= 3){
+        fHistClusterEtavsPhiMatchedClusters  = new TH2F(Form("EtaPhi_MatchedClusters %s",GetCutNumber().Data()),"EtaPhi_MatchedClusters",462,0,2*TMath::Pi(),110,-0.7,0.7);
+        fHistClusterEtavsPhiMatchedClusters->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiMatchedClusters->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiMatchedClusters);
       }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",462,0,2*TMath::Pi(),110,-0.7,0.7);
@@ -841,6 +867,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistClusterEtavsPhiBackground->GetYaxis()->SetTitle("#eta");
         fHistograms->Add(fHistClusterEtavsPhiBackground);
       }
+      if(fExtendedMatchAndQA >= 3){
+        fHistClusterEtavsPhiMatchedClusters  = new TH2F(Form("EtaPhi_MatchedClusters %s",GetCutNumber().Data()),"EtaPhi_MatchedClusters",462,0,2*TMath::Pi(),110,-0.7,0.7);
+        fHistClusterEtavsPhiMatchedClusters->GetXaxis()->SetTitle("#varphi (rad)");
+        fHistClusterEtavsPhiMatchedClusters->GetYaxis()->SetTitle("#eta");
+        fHistograms->Add(fHistClusterEtavsPhiMatchedClusters);
+      }
     }
     fHistClusterEtavsPhiAfterQA     = new TH2F(Form("EtaPhi_afterClusterQA %s",GetCutNumber().Data()),"EtaPhi_afterClusterQA",462,0,2*TMath::Pi(),110,-0.7,0.7);
     fHistClusterEtavsPhiAfterQA->GetXaxis()->SetTitle("#varphi (rad)");
@@ -854,6 +886,9 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEtavsPhiAfterAcc->Sumw2();
       if(fUseEtaPhiMapForBackCand){
         fHistClusterEtavsPhiBackground->Sumw2();
+      }
+      if(fExtendedMatchAndQA >= 3){
+        fHistClusterEtavsPhiMatchedClusters->Sumw2();
       }
     }
     fHistClusterEtavsPhiAfterQA->Sumw2();
@@ -2863,6 +2898,10 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
   if (fVectorMatchedClusterIDs.size()>0 && fUseDistTrackToCluster && fUsePtDepTrackToCluster < 2){
     if( CheckClusterForTrackMatch(cluster) ){
       if(fHistClusterIdentificationCuts)fHistClusterIdentificationCuts->Fill(cutIndex, cluster->E(), weight);//2
+      // Fill eta phi map for matched clusters as QA check
+      if(fExtendedMatchAndQA >= 3){
+        fHistClusterEtavsPhiMatchedClusters->Fill(phiCluster, etaCluster, weight);
+      }
       // TM efficiency histos after TM
       if (fIsMC && isMC && (fExtendedMatchAndQA == 1 || fExtendedMatchAndQA == 3 || fExtendedMatchAndQA == 5)  && !(fIsPureCalo > 0 && cluster->E() < 10.)){ // ignore low energies for merged analysis
         if(IsClusterPi0(event, mcEvent, cluster))
