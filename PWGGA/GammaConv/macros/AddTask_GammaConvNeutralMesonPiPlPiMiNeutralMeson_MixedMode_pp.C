@@ -26,9 +26,12 @@
 void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
     Int_t     trainConfig                   = 1,
     Int_t     isMC                          = 0,                        //run MC
-    TString   photonCutNumberV0Reader       = "",                       // 00000003_00000008400000000100000000 nom. B, 00000003_00000088400000000100000000 low B
-    Int_t     selectHeavyNeutralMeson       = 0,                        //run eta prime instead of omega
-    Int_t     enableQAMesonTask             = 1,                        //enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson
+    TString   conversionEventCutnumber      = "",                       // 00000003
+    TString   photonCutNumberV0Reader       = "",                       // 00000008400000000100000000 nom. B, 00000088400000000100000000 low B
+    Int_t     selectHeavyNeutralMeson       = 0,                        // run eta prime instead of omega
+    Int_t     enableQAMesonTask             = 1,                        // enable QA in AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson; 0: no QA, 1: general meson QA, 2: background QA, 3: 3D histogram, 4: Dalitz plots, 5: trees, 23: enable background calculations; 
+                                                                        //    combinations: 6: 1+2, 7: 1+2+3, 8: 1+2+3+5, 9: 2+3, 10: 2+3+5, 11: 1+2+3+4+5
+                                                                        //    QA can't be run with light output! 
     Int_t     enableExtMatchAndQA           = 0,                        // disabled (0), extMatch (1), extQA_noCellQA (2), extMatch+extQA_noCellQA (3), extQA+cellQA (4), extMatch+extQA+cellQA (5)
     Int_t     enableTriggerMimicking        = 0,                        // enable trigger mimicking
     Bool_t    enableTriggerOverlapRej       = kFALSE,                   // enable trigger overlap rejection
@@ -67,7 +70,7 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_MixedMode_pp(
 
   //parse additionalTrainConfig flag
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
-  TString unsmearingoutputs = "012"; // 0: No correction, 1: One pi0 mass errer subtracted, 2: pz of pi0 corrected to fix its mass, 3: Lambda(alpha)*DeltaPi0 subtracted, 4: Analytic PCMEMC unsmearing
+  TString unsmearingoutputs = "0123"; // 0: No correction, 1: One pi0 mass errer subtracted, 2: pz of pi0 corrected to fix its mass, 3: Lambda(alpha)*DeltaPi0 subtracted, 4: Analytic PCMEMC unsmearing
 
   TObjArray *rAddConfigArr = additionalTrainConfig.Tokenize("_");
   if(rAddConfigArr->GetEntries()<1){cout << "ERROR during parsing of additionalTrainConfig String '" << additionalTrainConfig.Data() << "'" << endl; return;}
@@ -172,7 +175,7 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
 
     //========= Add V0 Reader to  ANALYSIS manager if not yet existent =====
-  TString V0ReaderName        = Form("V0ReaderV1_%s",photonCutNumberV0Reader.Data());
+  TString V0ReaderName        = Form("V0ReaderV1_%s_%s",conversionEventCutnumber.Data(),photonCutNumberV0Reader.Data());
   AliV0ReaderV1 *fV0ReaderV1  =  NULL;
   if( !(AliV0ReaderV1*)mgr->GetTask(V0ReaderName.Data()) ){
     cout << "V0Reader: " << V0ReaderName.Data() << " not found!!"<< endl;
@@ -213,9 +216,9 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
   task->SetIsHeavyIon(isHeavyIon);
   task->SetIsMC(isMC);
   task->SetV0ReaderName(V0ReaderName);
-  if(runLightOutput>=3) {
+  if(runLightOutput>=2) {
       task->SetLightOutput(2);
-  } else if(runLightOutput>=2) {
+  } else if(runLightOutput>=1) {
       task->SetLightOutput(1);
   }
   task->SetTolerance(tolerance);

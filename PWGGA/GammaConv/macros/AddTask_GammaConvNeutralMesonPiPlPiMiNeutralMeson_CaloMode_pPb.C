@@ -637,6 +637,15 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_pPb(
     cuts.AddCutHeavyMesonCalo("80062113","244445104a013200000","32c510700","0103603l00000000","0453503000000000"); // 0-100% PCM NL
   } else if (trainConfig == 2506) {  // PHOS  INT7 run2
     cuts.AddCutHeavyMesonCalo("80010113","24466410ha012200000","32c510700","0103603l00000000","0453503000000000"); // 0-100% PCM NL
+
+
+  //************************************************ PCM- EDC analysis 13 TeV pPb *********************************************
+  } else if (trainConfig == 2010 ){ //EDC 13TeV MB, NCell: v (NCell Cut 2, but with probability in MC to let clusters through )
+    cuts.AddCutHeavyMesonCalo("80010113","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); // INT7
+  } else if (trainConfig == 2011){ //EDC 13TeV MB, NCell: v (NCell Cut 2, but with probability in MC to let clusters through )
+    cuts.AddCutHeavyMesonCalo("8008e113","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); // EG2
+  } else if (trainConfig == 2012){ //EDC 13TeV MB, NCell: v (NCell Cut 2, but with probability in MC to let clusters through )
+    cuts.AddCutHeavyMesonCalo("8008d113","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); // EG1
   } else {
     Error(Form("GammaConvNeutralMeson_CaloMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
