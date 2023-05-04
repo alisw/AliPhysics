@@ -46,6 +46,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 		const char *ncells		= "usedefault",
 		Double_t Rstep_EF               = 0.1,              
                 Double_t Max_match_dr           = 0.2,
+                Double_t Lead_pt_cut            = 0.0,
                 AnalysisType fAnType            =kppData,
                 const char *suffix              = "" );
 	
@@ -75,6 +76,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
 	void                    DoClusterLoop()                         ; ///<May remove later	
 	void                    DoCellLoop()                            ; ///<May remove later
 
+        Double_t                LeadPtCut                               ;///<Pt cut on the jet's leading track
 	Double_t                R_jet_step				;///<Radial step for the dpt calculation
         Double_t                Max_match_dist                          ;///<Maximum distance for the matching between Rjet
 	THistManager            fHistManager                            ;///<Hist manager
@@ -84,7 +86,7 @@ class AliAnalysisTaskEmcalJetEnergyFlow: public AliAnalysisTaskEmcalJet {
  	 AliAnalysisTaskEmcalJetEnergyFlow(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
   	 AliAnalysisTaskEmcalJetEnergyFlow &operator=(const AliAnalysisTaskEmcalJetEnergyFlow&); // not implemented
 
-  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,19);
+  	  ClassDef(AliAnalysisTaskEmcalJetEnergyFlow,20);
 	/// \endcond
 };
 #endif
