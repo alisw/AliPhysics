@@ -612,6 +612,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterEtavsPhiAfterQA;              // eta-phi-distribution of all after cluster quality cuts
     TH2F*     fHistClusterEtavsPhiAfterQA_onlyTriggered;// eta-phi-distribution of all after cluster quality cuts
     TH2F*     fHistClusterEtavsPhiBackground;           // eta-phi-distribution of all clusters in background calculation
+    TH2F*     fHistClusterEtavsPhiMatchedClusters;      // eta-phi-distribution of all track-matched clusters
     TH2F*     fHistClusterTimevsEBeforeQA;              // Cluster time vs E before cluster quality cuts
     TH2F*     fHistClusterTimevsEAfterQA;               // Cluster time vs E after cluster quality cuts
     TH2F*     fHistClusterTimevsELowGain;               // Cluster time vs E for low gain cluster
@@ -740,7 +741,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
 
   private:
 
-    ClassDef(AliCaloPhotonCuts,126)
+    ClassDef(AliCaloPhotonCuts,127)
 };
 
 #endif
