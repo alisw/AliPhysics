@@ -167,16 +167,16 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
       fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("10hlistqncalib"));
     }
     if (period.EqualTo("LHC15o")) {
-      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/VZEROCalibFile.root", "READ");
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/VZEROCalibFile15o.root", "READ");
       fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("VZEROCalibList"));
     }
     if (period.EqualTo("LHC18q")) {
-      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/calibSpq2V0C18qP3.root", "READ");
-      fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("fWgtsV0ZDC"));
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/calibq2V0C18qP3.root", "READ");
+      fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("18qlistspPerc"));
     }
     if (period.EqualTo("LHC18r")) {
-      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/calibSpq2V0C18rP3.root", "READ");
-      fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("fWgtsV0ZDC"));
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/calibq2V0C18rP3.root", "READ");
+      fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("18rlistspPerc"));
     }
     if (fVZEROCalibList) {
       task->SetListForVZEROCalib(fVZEROCalibList);
