@@ -44,6 +44,7 @@
 #pragma link C++ class AliAnalysisTaskCreatePeriodNUA+;
 #pragma link C++ class AliAnalysisTaskEffFDExample+;
 #pragma link C++ class AliAnalysisTaskFlowPPTask+;
+#pragma link C++ class AliAnalysisTaskFlowOnTheFly+;
 #pragma link C++ class AliAnalysisTaskGFWFlow+;
 #pragma link C++ class AliGFWFlags+;
 #pragma link C++ defined_in AliGFWFilter;
@@ -63,6 +64,7 @@
 #pragma link C++ class AliGFWPbpass23Cuts+;
 #pragma link C++ class PhysicsProfile+;
 #pragma link C++ class PhysicsProfilePPTask+;
+#pragma link C++ class PhysicsProfileFlowOnTheFly+;
 #pragma link C++ class AliLWTPCTrack+;
 #pragma link C++ class AliLWFMDTrack+;
 #pragma link C++ class AliLWEvent+;
