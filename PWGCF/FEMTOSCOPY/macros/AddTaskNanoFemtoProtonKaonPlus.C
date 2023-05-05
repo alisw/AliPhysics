@@ -85,7 +85,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   PDGParticles.push_back(2212); 
   PDGParticles.push_back(-2212); 
   PDGParticles.push_back(321); 
-  PDGParticles.push_back(-321); 
+  PDGParticles.push_back(-321);
+
 
   //BRELOOM Will have to enter mT bins
   std::vector<bool> closeRejection;
@@ -96,6 +97,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   mTBins.push_back(1.4); 
   mTBins.push_back(1.7); 
   mTBins.push_back(1.9); 
+  mTBins.push_back(10.0); 
   std::vector<int> pairQA;
   //pairs: 
   // pp             0
@@ -218,12 +220,12 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
     TrackCutsProton->SetMinimalBooking(true);
     TrackCutsAntiProton->SetMinimalBooking(true);
     TrackPosKaonCuts->SetMinimalBooking(true);
-    TrackCutsAntiKaon->SetMinimalBooking(true);
+    TrackNegKaonCuts->SetMinimalBooking(true);
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
   }
 
-  AliAnalysisTaskNanoFemtoProtonKaon *task =
+  AliAnalysisTaskNanoFemtoProtonKaonPlus *task =
   new AliAnalysisTaskNanoFemtoProtonKaonPlus("FemtoDreamDefault", isMC);
   if (trigger == "kINT7") {
     task->SelectCollisionCandidates(AliVEvent::kINT7);

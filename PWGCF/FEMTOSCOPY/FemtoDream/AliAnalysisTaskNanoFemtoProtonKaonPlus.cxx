@@ -76,7 +76,6 @@ AliAnalysisTaskNanoFemtoProtonKaonPlus::AliAnalysisTaskNanoFemtoProtonKaonPlus(
     fResults(nullptr),
     fResultsQA(nullptr){
     
-
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
   DefineOutput(2, TList::Class());  //Output for the Proton Cuts
   DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
@@ -91,7 +90,6 @@ AliAnalysisTaskNanoFemtoProtonKaonPlus::AliAnalysisTaskNanoFemtoProtonKaonPlus(
     DefineOutput(11, TList::Class());  //Output for the AntiKaon MC
   }
 }
-
 
 AliAnalysisTaskNanoFemtoProtonKaonPlus::~AliAnalysisTaskNanoFemtoProtonKaonPlus() {
   delete fEvent;
@@ -136,9 +134,8 @@ void AliAnalysisTaskNanoFemtoProtonKaonPlus::UserCreateOutputObjects() {
     }
   }
 
-
   if (!fTrackCutsKaon) {
-    AliError("No Proton cuts \n");
+    AliError("No Kaon cuts \n");
   } else {
     fTrackCutsKaon->Init();
     fKaonList = fTrackCutsKaon->GetQAHists();
@@ -147,9 +144,8 @@ void AliAnalysisTaskNanoFemtoProtonKaonPlus::UserCreateOutputObjects() {
     }
   }
 
-
   if (!fTrackCutsAntiKaon) {
-    AliError("No Proton cuts \n");
+    AliError("No AntiKaon cuts \n");
   } else {
     fTrackCutsAntiKaon->Init();
     fAntiKaonList = fTrackCutsAntiKaon->GetQAHists();
@@ -197,7 +193,6 @@ void AliAnalysisTaskNanoFemtoProtonKaonPlus::UserCreateOutputObjects() {
     fResults->SetName("Results");
   }
 
-
 //Deleted section on ancestor studies here
 
   PostData(1, fEvtList);
@@ -222,7 +217,6 @@ void AliAnalysisTaskNanoFemtoProtonKaonPlus::UserCreateOutputObjects() {
     PostData(11, fAntiKaonMCList);
   }
 
- 
 } //void AliAnalysisTaskNanoFemtoProtonKaonPlus::UserCreateOutputObjects()
 
 //==================================================================================================================================================
@@ -250,7 +244,6 @@ void AliAnalysisTaskNanoFemtoProtonKaonPlus::UserExec(Option_t*) {
     StoreGlobalTrackReference(track);
   }
 
-
   fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   static std::vector<AliFemtoDreamBasePart> SelectedKaons; 
   SelectedKaons.clear();
@@ -270,28 +263,28 @@ void AliAnalysisTaskNanoFemtoProtonKaonPlus::UserExec(Option_t*) {
 
     fTrack->SetTrack(track, fInputEvent);
 
-    bool isProton = fTrackCutsProton->isSelected(fTrack);
+    /*bool isProton = fTrackCutsProton->isSelected(fTrack);
     bool isAntiProton = fTrackCutsAntiProton->isSelected(fTrack);
     bool isKaon = fTrackCutsKaon->isSelected(fTrack);
-    bool isAntiKaon = fTrackCutsAntiKaon->isSelected(fTrack);
+    bool isAntiKaon = fTrackCutsAntiKaon->isSelected(fTrack);*/
 
-    if (isProton && isKaon){
+    if (fTrackCutsProton->isSelected(fTrack) && fTrackCutsKaon->isSelected(fTrack)){
       continue;
     }
-    if (isAntiProton && isAntiKaon){
+    if (fTrackCutsAntiProton->isSelected(fTrack) && fTrackCutsAntiKaon->isSelected(fTrack)){
       continue;
     }
 
-    if (isProton) {
+    if (fTrackCutsProton->isSelected(fTrack)) {
       SelectedProtons.push_back(*fTrack);
     }
-    if (isAntiProton) {
+    if (fTrackCutsAntiProton->isSelected(fTrack)) {
       SelectedAntiProtons.push_back(*fTrack);
     }
-    if (isKaon){ 
+    if (fTrackCutsKaon->isSelected(fTrack)){ 
       SelectedKaons.push_back(*fTrack);
     }
-    if (isAntiKaon){
+    if (fTrackCutsAntiKaon->isSelected(fTrack)){
       SelectedAntiKaons.push_back(*fTrack);
     }
   }
