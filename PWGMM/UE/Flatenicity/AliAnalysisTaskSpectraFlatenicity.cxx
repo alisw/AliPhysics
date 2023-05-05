@@ -625,7 +625,7 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
     if (genHeader) {
       genHeader->PrimaryVertex(vtxMC);
     }
-    if (TMath::Abs(vtxMC[2]) <= 10.)
+    if (TMath::Abs(vtxMC[2]) <= 5.)
       isGoodVtxPosMC = kTRUE;
 
     fnGen = FillArrayMC(ptMc, idMc);
