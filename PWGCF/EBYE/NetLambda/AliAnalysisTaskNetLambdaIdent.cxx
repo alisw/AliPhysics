@@ -1838,7 +1838,7 @@ Int_t AliAnalysisTaskNetLambdaIdent::IsGenCascade(Int_t Poslabel, Int_t Neglabel
     if(!aodTestMotherPos || !aodTestMotherNeg || !aodTestMotherBach) { return 0; }
     gmLambda = aodTestMotherPos->GetMother();     
     
-    if(mPos == mNeg && gmLambda != 0 && gmLambda == mBach) {	
+    if(mPos == mNeg && gmLambda >= 0 && gmLambda == mBach) {	
       AliVParticle *aodGrandMother = fMCEvent->GetTrack(gmLambda);
       if(aodGrandMother && aodGrandMother->IsPhysicalPrimary()) {	
 	gmPID = aodGrandMother->PdgCode();
@@ -1864,7 +1864,7 @@ Int_t AliAnalysisTaskNetLambdaIdent::IsGenCascade(Int_t Poslabel, Int_t Neglabel
     if(!esdGenTrackPos || !esdGenTrackNeg || !esdGenTrackBach) { return 0; }
     gmLambda = esdTestMotherPos->GetMother();
 
-    if(mPos == mNeg && gmLambda != 0 && gmLambda == mBach) {
+    if(mPos == mNeg && gmLambda >= 0 && gmLambda == mBach) {
       AliMCParticle *esdGrandMother = (AliMCParticle*)fMCEvent->GetTrack(gmLambda);
       if(esdGrandMother && fMCEvent->IsPhysicalPrimary(gmLambda)) {	
 	gmPID = esdGrandMother->PdgCode();
