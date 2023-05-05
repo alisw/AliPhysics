@@ -1098,9 +1098,11 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       aodcascbachtrack = (AliAODTrack*)xivtx->GetDaughter(0);
       aodcascv0postrack = (AliAODTrack*)cascv0vtx->GetDaughter(0);
       aodcascv0negtrack = (AliAODTrack*)cascv0vtx->GetDaughter(1);
-      MCStatusCasc = IsGenCascade(TMath::Abs(aodcascv0postrack->GetLabel()), TMath::Abs(aodcascv0negtrack->GetLabel()), TMath::Abs(aodcascbachtrack->GetLabel()));
-      if(MCStatusCasc > 0) { MCStatusV0 = 3125; }
-      else if(MCStatusCasc < 0) { MCStatusV0 = -3125; }	
+      if(fIsMC) {
+	MCStatusCasc = IsGenCascade(TMath::Abs(aodcascv0postrack->GetLabel()), TMath::Abs(aodcascv0negtrack->GetLabel()), TMath::Abs(aodcascbachtrack->GetLabel()));
+	if(MCStatusCasc > 0) { MCStatusV0 = 3125; }
+	else if(MCStatusCasc < 0) { MCStatusV0 = -3125; }
+      }
       
       // Xi- and bachelor properties
       aodcasc->GetDecayVertexXi()->GetXYZ(AODXiVertexXYZ);
@@ -1151,9 +1153,11 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       esdcascbachtrack = fESD->GetTrack(TMath::Abs(esdcasc->GetBindex()));
       esdcascv0postrack = (AliESDtrack*)fESD->GetTrack(TMath::Abs(esdcasc->GetPindex()));
       esdcascv0negtrack = (AliESDtrack*)fESD->GetTrack(TMath::Abs(esdcasc->GetNindex()));
-      MCStatusCasc = IsGenCascade(TMath::Abs(esdcascv0postrack->GetLabel()), TMath::Abs(esdcascv0negtrack->GetLabel()), TMath::Abs(esdcascbachtrack->GetLabel()));
-      if(MCStatusCasc > 0) { MCStatusV0 = 3125; }
-      else if(MCStatusCasc < 0) { MCStatusV0 = -3125; }	
+      if(fIsMC) {
+	MCStatusCasc = IsGenCascade(TMath::Abs(esdcascv0postrack->GetLabel()), TMath::Abs(esdcascv0negtrack->GetLabel()), TMath::Abs(esdcascbachtrack->GetLabel()));
+	if(MCStatusCasc > 0) { MCStatusV0 = 3125; }
+	else if(MCStatusCasc < 0) { MCStatusV0 = -3125; }
+      }
 
       // Xi- and bachelor properties
       Charge = esdcasc->Charge();    
