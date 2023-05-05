@@ -582,7 +582,7 @@ void AliAnalysisTaskSystematicsV0M::UserCreateOutputObjects() {
 	pMIPVsEta = new TProfile("pMIPVsEta","; #eta; #LT dE/dx #GT_{MIP, primary tracks}", 50, -0.8, 0.8, 40.0, 60.0);
 	pPlateauVsEta = new TProfile("pPlateauVsEta","; #eta; #LT dE/dx #GT_{Plateau, primary tracks}", 50, -0.8, 0.8, 60.0, 110.0);
 	pMIPVsEtaV0s = new TProfile("pMIPVsEtaV0s","; #eta; #LT dE/dx #GT_{MIP, secondary tracks}", 50, -0.8, 0.8, 40.0, 60.0);
-	hFlat = new TH1F("hFlat", "; Flatenicity; Counts", nFlatbins, Flatbins);
+	hFlat = new TH2F("hFlat_vs_V0M", "; V0M; Flatenicity;",nCent,centClass,1020,-0.01,1.01);
 
 	if (!fUseMC) { 
 		fOutputList->Add(hFlat);
@@ -738,7 +738,7 @@ void AliAnalysisTaskSystematicsV0M::UserExec(Option_t *) {
 
 	if (fFlat >= 0.0) {
 
-		hFlat->Fill(fFlat);
+		hFlat->Fill(fv0mpercentile,fFlat);
 		// piKp as a function of Flattenicity
 		MakePIDanalysis();
 		// Charged particle spectra as a function of Flattenicity

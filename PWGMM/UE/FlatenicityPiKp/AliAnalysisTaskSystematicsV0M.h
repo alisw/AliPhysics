@@ -100,7 +100,7 @@ class AliAnalysisTaskSystematicsV0M : public AliAnalysisTaskSE {
 		Double_t fFlat;
 		Double_t fFlatTPC;
 		AliMultSelection *fMultSelection;
-		TH1F *hFlat;
+		TH2F *hFlat;
 		TH3F *hNsigmaPiPos[4];
 		TH3F *hNsigmaKPos[4];
 		TH3F *hNsigmaPPos[4];
