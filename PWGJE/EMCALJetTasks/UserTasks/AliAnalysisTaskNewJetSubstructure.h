@@ -69,7 +69,10 @@ public:
   void     SetDetLevelJetsOn(Bool_t t)            { fStoreDetLevelJets = t; }
   void     SetDoSubJetStudy(Bool_t t)             { fDoSubJet = t; }
   void     SetDoFlow(Bool_t t)                    { fDoFlow = t; }
-  void     SetRejectTPCPileup(Bool_t val)         { fRejectTPCPileup = val;}
+  void     SetRejectTPCPileup(Bool_t t)           { fRejectTPCPileup = t;}
+  void     SetSaveKtg(Bool_t t)                   { fSaveKtg = t;}
+  void     SetSaveNg(Bool_t t)                    { fSaveNg = t;}
+  void     SetSaveZg(Bool_t t)                    { fSaveZg = t;}
 
 
 protected:
@@ -100,9 +103,10 @@ protected:
   Bool_t   CheckClosePartner(AliEmcalJet* jet, PWG::JETFW::AliEmcalParticleJetConstituent & part1);
   Bool_t   CompareSubjets(fastjet::PseudoJet *subDet, fastjet::PseudoJet *subHyb, std::vector<fastjet::PseudoJet> *constDet, 
                             std::vector<fastjet::PseudoJet>* constHyb);
+
   Int_t                         fContainer;            ///< jets to be analyzed 0 for Base, 1 for subtracted.
   Float_t                       fMinFractionShared;    ///< only fill histos for jets if shared fraction
-                                                       // larger than X
+                                                       //   larger than X
   JetShapeType                  fJetShapeType;         ///< jet type to be used
   JetShapeSub                   fJetShapeSub;          ///< jet subtraction to be used
   JetSelectionType              fJetSelection;         ///< Jet selection: inclusive/recoil jet
@@ -122,7 +126,7 @@ protected:
   Float_t                       fHardCutoff;           ///< hard cutoff in the iterative declustering
   Bool_t                        fDoTwoTrack;           ///< switch to consider 2 track effects
   Bool_t                        fCutDoubleCounts;      ///< turn off to avoid true-hybrid cuts to suppress double counting
-  Bool_t                        fDoAreaIterative;      ///<  subtract the area in the declustering
+  Bool_t                        fDoAreaIterative;      ///< subtract the area in the declustering
   Float_t                       fPowerAlgo;            ///< power of the generickt algorithm
   Float_t                       fPhiCutValue;          ///< cuts from HBT
   Float_t                       fEtaCutValue;          ///< cuts from HBT
@@ -134,6 +138,9 @@ protected:
   AliAnalysisTaskJetQnVectors*  fQVectorReader;        ///< Reader for the Qn vector
   Double_t                      fEPangleV0M;           ///< event-plane angle V0M
   Bool_t                        fRejectTPCPileup;      ///< TPC pileup rejection
+  Bool_t                        fSaveKtg;              ///< flag to save ktg
+  Bool_t                        fSaveNg;               ///< flag to save ng
+  Bool_t                        fSaveZg;               ///< flag to save zg
 
   TH1F *fPtJet;                                        ///<
 
@@ -152,6 +159,6 @@ private:
   AliAnalysisTaskNewJetSubstructure &
   operator=(const AliAnalysisTaskNewJetSubstructure &); // not implemented
 
-  ClassDef(AliAnalysisTaskNewJetSubstructure, 16)
+  ClassDef(AliAnalysisTaskNewJetSubstructure, 17)
 };
 #endif
