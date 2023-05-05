@@ -718,6 +718,7 @@ Bool_t AliCSTrackSelection::IsTrueTrackAccepted(Int_t itrk) {
         }
       }
     }
+    inclusivepid = inclusivepid && (fParticleId != kWrongPOIid);
   } else {
     /* if the track is accepted then by default is a hadron */
     fParticleId = kPOIh;
