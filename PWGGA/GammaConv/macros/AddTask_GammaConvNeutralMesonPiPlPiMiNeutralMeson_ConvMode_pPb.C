@@ -339,6 +339,10 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_ConvMode_pPb(
   //************************************************ PCM- PHOS analysis 5 TeV pPb ********************************************
   } else if (trainConfig == 2501){ // PHOS  PHI7 run1
     cuts.AddCutHeavyMesonPCM("80062113","00200009f9730000dge0400000","32c510700","0103603l00000000","0453503000000000"); // 0-100% without NL
+ 
+  //************************************************ PCM- EDC analysis 13 TeV pPb *********************************************
+  } else if (trainConfig == 2010) { // min bias only
+    cuts.AddCutHeavyMesonPCM("80010113","0dm00009f9730000dge0404000","32c51070m","0103603l00000000","0453503000000000"); // INT7
   } else {
     Error(Form("GammaConvNeutralMeson_ConvMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;

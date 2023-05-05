@@ -424,6 +424,14 @@ AliVEventHandler *inputHandler=mgr->GetInputEventHandler();
     cuts.AddCutHeavyMesonPCMCalo("80062113","00200009f9730000dge0400000","244445104a013200000","32c510700","0103603l00000000","0453503000000000"); // 0-100% PCM NL
   } else if (trainConfig == 2506) {  // PHOS  INT7 run2
     cuts.AddCutHeavyMesonPCMCalo("80010113","00200009f9730000dge0400000","24466410ha012200000","32c510700","0103603l00000000","0453503000000000"); // 0-100% PCM NL
+
+//************************************************ PCM- EDC analysis 13 TeV pPb *********************************************
+  } else if (trainConfig == 2010 ) { //EDC 13TeV MB, NCell >=2 + NCell efficiency
+    cuts.AddCutHeavyMesonPCMCalo("80010113","0dm00009f9730000dge0404000","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); // 0-100% without NL
+  } else if (trainConfig == 2011) { //EDC 13TeV MB, NCell >=2 + NCell efficiency
+    cuts.AddCutHeavyMesonPCMCalo("8008e113","0dm00009f9730000dge0404000","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); // 0-100% without NL
+  } else if (trainConfig == 2012) { //EDC 13TeV MB, NCell >=2 + NCell efficiency
+    cuts.AddCutHeavyMesonPCMCalo("8008d113","0dm00009f9730000dge0404000","411790109fe3n230000","32c51070m","0103603l00000000","0453503000000000"); // 0-100% without NL
   } else {
     Error(Form("GammaConvNeutralMeson_MixedMode_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
