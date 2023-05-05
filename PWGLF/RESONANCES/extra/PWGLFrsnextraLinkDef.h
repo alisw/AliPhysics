@@ -25,7 +25,6 @@
 #pragma link C++ class AliAnalysisTaskEffMatrix+;
 #pragma link C++ class AliAnalysisTaskPhiSA+;
 #pragma link C++ class AliAnalysisTaskPhiSAR+;
-#pragma link C++ class AliCompactTrack+;
 #pragma link C++ class AliAnalysisTaskPhiCount+;
 #pragma link C++ class AliAnalysisTask_Phi_MC+;
 #pragma link C++ class AliAnalysisTaskAODTrackPairUtils+;
