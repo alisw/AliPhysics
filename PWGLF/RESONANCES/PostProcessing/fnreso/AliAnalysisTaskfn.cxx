@@ -36,7 +36,7 @@
 #include "AliAODTrack.h"
 #include "AliAODv0.h"
 
-#include "Aliresonance.h"
+#include "AliAnalysisTaskfn.h"
 #include "AliPIDResponse.h"
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
@@ -49,22 +49,22 @@
 using std::cout;
 using std::endl;
 
-ClassImp(Aliresonance)
+ClassImp(AliAnalysisTaskfn)
 ClassImp(AliCompactTrack)
 
-Aliresonance::Aliresonance(): AliAnalysisTaskSE(), fOutput(0), fPoolMgr(0X0), fPIDResponse(0), fVevent(0), lAODevent(0), fEventCuts(0), fHistZVertex(0),fHistCentralityEvtCount(0), fHisteventsummary(0),f1Unlike(0),f1Like(0),f1Mix(0)
+AliAnalysisTaskfn::AliAnalysisTaskfn(): AliAnalysisTaskSE(), fOutput(0), fPoolMgr(0X0), fPIDResponse(0), fVevent(0), lAODevent(0), fEventCuts(0), fHistZVertex(0),fHistCentralityEvtCount(0), fHisteventsummary(0),f1Unlike(0),f1Like(0),f1Mix(0)
 {
 
 }
 
-Aliresonance::Aliresonance(const char *name): AliAnalysisTaskSE(name), fOutput(0), fPoolMgr(0X0), fPIDResponse(0), fVevent(0), lAODevent(0), fEventCuts(0), fHistZVertex(0),fHistCentralityEvtCount(0), fHisteventsummary(0),f1Unlike(0),f1Like(0),f1Mix(0)
+AliAnalysisTaskfn::AliAnalysisTaskfn(const char *name): AliAnalysisTaskSE(name), fOutput(0), fPoolMgr(0X0), fPIDResponse(0), fVevent(0), lAODevent(0), fEventCuts(0), fHistZVertex(0),fHistCentralityEvtCount(0), fHisteventsummary(0),f1Unlike(0),f1Like(0),f1Mix(0)
 {
   DefineInput(0, TChain::Class()); 
   DefineOutput(1, TList::Class()); 
 }
 
 
-Aliresonance::~Aliresonance()
+AliAnalysisTaskfn::~AliAnalysisTaskfn()
 {
   //------------------------------------------------
   // DESTRUCTOR
@@ -97,7 +97,7 @@ Aliresonance::~Aliresonance()
 }
 
 //________________________________________________________________________
-void Aliresonance::UserCreateOutputObjects()
+void AliAnalysisTaskfn::UserCreateOutputObjects()
 {
   AliAnalysisManager *man=AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) (man->GetInputEventHandler());
@@ -136,7 +136,7 @@ void Aliresonance::UserCreateOutputObjects()
 
 
 //________________________________________________________________________
-void Aliresonance::UserExec(Option_t *)
+void AliAnalysisTaskfn::UserExec(Option_t *)
 {
      
   // Main loop
@@ -380,14 +380,14 @@ void Aliresonance::UserExec(Option_t *)
   PostData(1, fOutput);
 }
 //________________________________________________________________________
-void Aliresonance::Terminate(Option_t *)
+void AliAnalysisTaskfn::Terminate(Option_t *)
 {
   
 }
 
 //________________________________________________________________________
 
-Bool_t Aliresonance::GoodEvent(const AliVVertex *vertex) //all cuts taken from alice code github pp analysis from strangeness and correlation analysis
+Bool_t AliAnalysisTaskfn::GoodEvent(const AliVVertex *vertex) //all cuts taken from alice code github pp analysis from strangeness and correlation analysis
 {
 
   Bool_t EventAccepted;
@@ -457,7 +457,7 @@ Bool_t Aliresonance::GoodEvent(const AliVVertex *vertex) //all cuts taken from a
 
 }
 //-----------------------------------------------
-Bool_t Aliresonance::IsPion(AliVTrack *vtrack)
+Bool_t AliAnalysisTaskfn::IsPion(AliVTrack *vtrack)
 {
 
   
@@ -481,7 +481,7 @@ Bool_t Aliresonance::IsPion(AliVTrack *vtrack)
   return kTRUE;
 }
 
-Bool_t Aliresonance::IsKaon(AliVTrack *vtrack)
+Bool_t AliAnalysisTaskfn::IsKaon(AliVTrack *vtrack)
 {
 
   AliAODTrack *aodtrack  = dynamic_cast<AliAODTrack*>(vtrack);
@@ -507,7 +507,7 @@ Bool_t Aliresonance::IsKaon(AliVTrack *vtrack)
 
 
 //_________________________________________________________________________________________________
-Bool_t Aliresonance::IsV0(AliAODv0 *v0, AliAODEvent *lAODEvent)
+Bool_t AliAnalysisTaskfn::IsV0(AliAODv0 *v0, AliAODEvent *lAODEvent)
 {
 
 
@@ -619,7 +619,7 @@ Bool_t Aliresonance::IsV0(AliAODv0 *v0, AliAODEvent *lAODEvent)
 }
 
 //_________________________________________________________________________________________________
-void Aliresonance::MixingEvents() //from git PWGCF correlations code
+void AliAnalysisTaskfn::MixingEvents() //from git PWGCF correlations code
 {
 
   ////////////////////////////
@@ -639,7 +639,7 @@ void Aliresonance::MixingEvents() //from git PWGCF correlations code
 
 
 
-Bool_t Aliresonance::TrackPassesOOBPileupCut(AliAODTrack* t, Double_t b){
+Bool_t AliAnalysisTaskfn::TrackPassesOOBPileupCut(AliAODTrack* t, Double_t b){
   if (!t) return true;
   if ((t->GetStatus() & AliVTrack::kITSrefit) == AliVTrack::kITSrefit) return true;
   if (t->GetTOFExpTDiff(b, true) + 2500 > 1e-6) return true;
@@ -647,7 +647,7 @@ Bool_t Aliresonance::TrackPassesOOBPileupCut(AliAODTrack* t, Double_t b){
 }
 
 
-Bool_t Aliresonance::AcceptAODtracks(AliAODTrack *pTrack, AliAODTrack *nTrack)
+Bool_t AliAnalysisTaskfn::AcceptAODtracks(AliAODTrack *pTrack, AliAODTrack *nTrack)
 {
 
   Double_t peta = pTrack->Eta();

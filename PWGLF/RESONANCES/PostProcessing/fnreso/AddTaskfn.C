@@ -1,5 +1,5 @@
 
-void AddTaskAliresonance(const char *suffix = "Resochrg")
+void AddTaskfn(const char *suffix = "Resochrg")
 
 {
   // standard with task
@@ -23,7 +23,7 @@ void AddTaskAliresonance(const char *suffix = "Resochrg")
   TString TaskResoPID;
   TaskResoPID.Form("gTaskResoCent%d_%d_%s", gCentMin, gCentMax, suffix);
 
-  Aliresonance *task_Reso = new Aliresonance(TaskResoPID);
+  AliAnalysisTaskfn *task_Reso = new AliAnalysisTaskfn(TaskResoPID);
 
   //task_Reso->SelectCollisionCandidates(AliVEvent::kINT7);      // default is kINT7
   //printf("\n =========> AddTaskReso::Info() Trigger = kINT7 \n");

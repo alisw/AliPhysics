@@ -109,6 +109,7 @@ set(SRCS
   PostProcessing/Sigma1385/AliAnalysisTaskTrackMixer.cxx
   PostProcessing/Xi1820/AliAnalysisTaskXi1820BH.cxx
   PostProcessing/f0980/AliAnalysisTaskInclusivef0f2.cxx
+  PostProcessing/fnreso/AliAnalysisTaskfn.cxx
   )
 
 # Headers from sources

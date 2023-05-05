@@ -13,8 +13,8 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-#ifndef Aliresonance_H
-#define Aliresonance_H
+#ifndef AliAnalysisTaskfn_H
+#define AliAnalysisTaskfn_H
 
 #include "AliAnalysisTaskSE.h"
 #include "TString.h"
@@ -47,11 +47,11 @@ class AliPPVsMultUtils;
 class AliAnalysisUtils;
 
 
-class Aliresonance : public AliAnalysisTaskSE {
+class AliAnalysisTaskfn : public AliAnalysisTaskSE {
  public:
-  Aliresonance();
-  Aliresonance(const char *name);
-  virtual ~Aliresonance();
+  AliAnalysisTaskfn();
+  AliAnalysisTaskfn(const char *name);
+  virtual ~AliAnalysisTaskfn();
   
   virtual void   UserCreateOutputObjects();
   virtual void   UserExec(Option_t *option);
@@ -95,9 +95,9 @@ class Aliresonance : public AliAnalysisTaskSE {
   THnSparseD    *f1Mix;//!
 
 
-  Aliresonance(const Aliresonance&);
-  Aliresonance& operator=(const Aliresonance&);  
-  ClassDef(Aliresonance, 1);
+  AliAnalysisTaskfn(const AliAnalysisTaskfn&);
+  AliAnalysisTaskfn& operator=(const AliAnalysisTaskfn&);  
+  ClassDef(AliAnalysisTaskfn, 1);
 };
 
 
