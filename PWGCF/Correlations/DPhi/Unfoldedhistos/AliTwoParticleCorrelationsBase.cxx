@@ -663,23 +663,21 @@ Bool_t AliTwoParticleCorrelationsBase::StartEvent(Float_t centrality, Float_t ve
 
 /// \brief check if the track is accepted according to the correlations cuts
 ///
-/// \param pid the external track Id
 /// \param trk the passed track
 /// \return kTRUE if the track is accepted kFALSE otherwise
-bool AliTwoParticleCorrelationsBase::IsTrackAccepted(int pid, AliVTrack* trk)
+bool AliTwoParticleCorrelationsBase::IsTrackAccepted(AliVTrack* trk)
 {
-  return IsTrackAccepted((trk->Charge() > 0) ? 0 : 1, float(trk->Pt()), float(trk->Eta()), float(trk->Phi()));
+  return IsTrackAccepted(float(trk->Pt()), float(trk->Eta()), float(trk->Phi()));
 }
 
 /// \brief check if the true particle is accepted according to the correlations cuts
 ///
-/// \param pid the external particle Id
 /// \param part the passed particle
 /// \return kTRUE if the particle is properly handled kFALSE otherwise
-bool AliTwoParticleCorrelationsBase::IsTrackAccepted(int pid, AliVParticle* part)
+bool AliTwoParticleCorrelationsBase::IsTrackAccepted(AliVParticle* part)
 {
   if (part->Charge() != 0) {
-    return IsTrackAccepted((part->Charge() > 0) ? 0 : 1, float(part->Pt()), float(part->Eta()), float(part->Phi()));
+    return IsTrackAccepted(float(part->Pt()), float(part->Eta()), float(part->Phi()));
   }
   else {
     return kFALSE;
@@ -687,19 +685,14 @@ bool AliTwoParticleCorrelationsBase::IsTrackAccepted(int pid, AliVParticle* part
 }
 
 /// \brief checks if the track is accepted according to the configured cuts 
-/// \param pid the track PID
 /// \param pT the track \f$ p_T \f$
 /// \param eta the track \f$ \eta \f$
 /// \param phi the track \f$ \phi \f$
 /// \return kTRUE if the track is accepted
 /// This is a pre-check so for the time being the pT cut is not checked
 /// to allow PID information depending on momentum
-bool AliTwoParticleCorrelationsBase::IsTrackAccepted(int pid, float, float eta, float ophi)
+bool AliTwoParticleCorrelationsBase::IsTrackAccepted(float, float eta, float ophi)
 {
-  /* for the time being */
-  if (pid != 0 && pid != 1)
-    return kFALSE;
-
   /* consider a potential phi origin shift */
   float phi = ophi;
   if (!(phi < fMax_phi))
@@ -728,44 +721,56 @@ bool AliTwoParticleCorrelationsBase::IsTrackAccepted(int pid, float, float eta, 
 ///
 /// If simulation is ordered the actual track is discarded and a new one with the
 /// same charge is produced out of the corresponding track pdf
-/// \param trkId the external track Id
+/// \param pid the external track Id
 /// \param trk the passed track
 /// \return kTRUE if the track is properly handled kFALSE otherwise
 bool AliTwoParticleCorrelationsBase::ProcessTrack(int pid, AliVTrack* trk)
 {
 
   if (fUseSimulation) {
-    double pT;
-    double eta;
-    double phi;
+    if (pid > 1) {
+      AliFatal("Simulation still not prepared for PID");
+      return false;
+    } else {
+      double pT;
+      double eta;
+      double phi;
 
-    fTrackCurrentPdf[pid]->GetRandom3(eta, phi, pT);
+      fTrackCurrentPdf[pid]->GetRandom3(eta, phi, pT);
 
-    return ProcessTrack((trk->Charge() > 0) ? 0 : 1, pT, eta, phi);
+      return ProcessTrack((trk->Charge() > 0) ? 0 : 1, pT, eta, phi);
+    }
+  } else {
+    if (trk->Charge() > 0) {
+      return ProcessTrack(2*pid, float(trk->Pt()), float(trk->Eta()), float(trk->Phi()));
+    } else if (trk->Charge() < 0) {
+      return ProcessTrack(2*pid+1, float(trk->Pt()), float(trk->Eta()), float(trk->Phi()));
+    } else {
+      return kFALSE;
+    }
   }
-  else
-    return ProcessTrack((trk->Charge() > 0) ? 0 : 1, float(trk->Pt()), float(trk->Eta()), float(trk->Phi()));
 }
 
 /// \brief process a true particle and store its parameters if feasible
 ///
 /// If simulation is orderd the track is discarded and kFALSE is returned
-/// \param trkId the external particle Id
+/// \param pid the external particle Id
 /// \param part the passed particle
 /// \return kTRUE if the particle is properly handled kFALSE otherwise
-bool AliTwoParticleCorrelationsBase::ProcessTrack(int, AliVParticle* part)
+bool AliTwoParticleCorrelationsBase::ProcessTrack(int pid, AliVParticle* part)
 {
 
   if (fUseSimulation) {
     return kFALSE;
-  }
-  else
-    if (part->Charge() != 0) {
-    return ProcessTrack((part->Charge() > 0) ? 0 : 1, float(part->Pt()), float(part->Eta()), float(part->Phi()));
-    }
-    else {
+  } else {
+    if (part->Charge() > 0) {
+      return ProcessTrack(2*pid, float(part->Pt()), float(part->Eta()), float(part->Phi()));
+    } else if (part->Charge() < 0) {
+      return ProcessTrack(2*pid+1, float(part->Pt()), float(part->Eta()), float(part->Phi()));
+    } else {
       return kFALSE;
     }
+  }
 }
 
 /// \brief Flag the potential products of conversions and / or resonances

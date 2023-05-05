@@ -271,101 +271,102 @@ Bool_t Ali2PCorrelations::StartEvent(Float_t centrality, Float_t vertexz) {
 /// For the time being positive tracks go to bank one and negative tracks go to bank two
 bool Ali2PCorrelations::ProcessTrack(int pid, float pT, float eta, float ophi)
 {
-
-  /* for the time being */
-  if (pid != 0 && pid != 1)
+  if (!(fNoOfTracks < fArraySize)) {
+    AliError(Form("Storage for track one full: %d", fArraySize));
     return kFALSE;
+  }
 
-  if (pT > fMin_pt && pT < fMax_pt) {
+  /* consider a potential phi origin shift */
+  float phi = ophi;
+  if (!(phi < fMax_phi))
+    phi = phi - 2 * TMath::Pi();
+  if (phi < fMin_phi) {
+    return kFALSE;
+  }
+  float ixPhi = int((phi - fMin_phi) / fWidth_phi);
+  if (ixPhi < 0 || !(ixPhi < fNBins_phi)) {
+    AliWarning("Track one phi out of bins");
+    return kFALSE;
+  }
+
+  if (eta < fMin_eta || fMax_eta < eta) {
+    AliWarning(Form("Wrongly passed track one with eta: %.2f", eta));
+    return kFALSE;
+  }
+
+  int ixEta = int((eta - fMin_eta) / fWidth_eta);
+  if (ixEta < 0 || !(ixEta < fNBins_eta)) {
+    AliWarning(Form("Track one eta bin %d out of bounds", ixEta));
+    return kFALSE;
+  }
+
+  if (pT < fMin_pt || fMax_pt < pT) {
+    AliWarning(Form("Wrongly passed track one with pT: %.2f", pT));
+    return kFALSE;
+  }
+
+  int ixPt = int((pT - fMin_pt) / fWidth_pt);
+  if (ixPt < 0 || !(ixPt < fNBins_pt)) {
+    AliWarning(Form("Track pT bin %d out of bounds",ixPt));
+    return kFALSE;
+  }
+
+  int ixEtaPhi = ixEta * fNBins_phi + ixPhi;
+  int ixVertexP1 = fIxVertexZ * fNBins_etaPhiPt;
+  int ixZEtaPhiPt = ixVertexP1 + ixEtaPhi * fNBins_pt + ixPt;
+  if (ixZEtaPhiPt < 0 || !(ixZEtaPhiPt < fNBins_zEtaPhiPt)) {
+    AliWarning(Form("Event zvertex and track eta phi and pt bin %d out of bounds", ixZEtaPhiPt));
+    return kFALSE;
+  }
+
+  float effcorr = fEfficiencyCorrection[pid][ixPt];
+  float corr;
+  if (fCorrectionWeights[pid] != nullptr)
+    corr = fCorrectionWeights[pid][ixZEtaPhiPt];
+  else
+    corr = 1.0;
+
+  /* the final correction incorporates also the efficiency correction */
+  /* and affects to both, track densities and pT */
+  corr *= effcorr;
+
+  if (fSinglesOnly) {
+    auto fillsingles =[&](int ix) {
+      fhN1_vsPt[ix]->Fill(pT, corr);
+      fhN1_vsZEtaPhiPt[ix]->Fill(fVertexZ, ixEtaPhi + 0.5, pT, corr);
+      fhSum1Pt_vsZEtaPhiPt[ix]->Fill(fVertexZ, ixEtaPhi + 0.5, pT, corr * pT);
+      fhN1_vsEtaPhi[ix]->Fill(eta, phi, corr);
+      fhSum1Pt_vsEtaPhi[ix]->Fill(eta, phi, corr * pT);
+    };
+    fillsingles(pid);
+    fillsingles(pid % 2); /* always the whole charged hadrons as well */
+  }
+  else {
+    float corrPt = corr * pT;
+    auto fillsingles =[&](int ix) {
+      fN1[ix] += corr;
+      fhN1_vsEtaPhi[ix]->Fill(eta, phi, corr);
+      fSum1Pt[ix] += corrPt;
+      fhSum1Pt_vsEtaPhi[ix]->Fill(eta, phi, corrPt);
+      fNnw1[ix] += 1;
+      fSum1Ptnw[ix] += pT;
+    };
+    fPID[fNoOfTracks] = pid;
+    fIxEta[fNoOfTracks] = ixEta;
+    fIxPhi[fNoOfTracks] = ixPhi;
+    fIxPt[fNoOfTracks] = ixPt;
+    fFlags[fNoOfTracks] = 0x0;
+    fPt[fNoOfTracks] = pT;
+    fEta[fNoOfTracks] = eta;
+    fPhi[fNoOfTracks] = phi;
+    fAvgPt[fNoOfTracks] = (fhPtAverage[pid] != nullptr) ? fhPtAverage[pid]->GetBinContent(ixEta + 1, ixPhi + 1) : 0.0;
+    fCorrection[fNoOfTracks] = corr;
+    fillsingles(pid);
+    fillsingles(pid % 2); /* always the whole charged hadrons as well */
+    fNoOfTracks++;
     if (!(fNoOfTracks < fArraySize)) {
       AliError(Form("Storage for track one full: %d", fArraySize));
       return kFALSE;
-    }
-
-    /* consider a potential phi origin shift */
-    float phi = ophi;
-    if (!(phi < fMax_phi))
-      phi = phi - 2 * TMath::Pi();
-    if (phi < fMin_phi) {
-      return kFALSE;
-    }
-    float ixPhi = int((phi - fMin_phi) / fWidth_phi);
-    if (ixPhi < 0 || !(ixPhi < fNBins_phi)) {
-      AliWarning("Track one phi out of bins");
-      return kFALSE;
-    }
-
-    if (eta < fMin_eta || fMax_eta < eta) {
-      AliWarning(Form("Wrongly passed track one with eta: %.2f", eta));
-      return kFALSE;
-    }
-
-    int ixEta = int((eta - fMin_eta) / fWidth_eta);
-    if (ixEta < 0 || !(ixEta < fNBins_eta)) {
-      AliWarning(Form("Track one eta bin %d out of bounds", ixEta));
-      return kFALSE;
-    }
-
-    if (pT < fMin_pt || fMax_pt < pT) {
-      AliWarning(Form("Wrongly passed track one with pT: %.2f", pT));
-      return kFALSE;
-    }
-
-    int ixPt = int((pT - fMin_pt) / fWidth_pt);
-    if (ixPt < 0 || !(ixPt < fNBins_pt)) {
-      AliWarning(Form("Track pT bin %d out of bounds",ixPt));
-      return kFALSE;
-    }
-
-    int ixEtaPhi = ixEta * fNBins_phi + ixPhi;
-    int ixVertexP1 = fIxVertexZ * fNBins_etaPhiPt;
-    int ixZEtaPhiPt = ixVertexP1 + ixEtaPhi * fNBins_pt + ixPt;
-    if (ixZEtaPhiPt < 0 || !(ixZEtaPhiPt < fNBins_zEtaPhiPt)) {
-      AliWarning(Form("Event zvertex and track eta phi and pt bin %d out of bounds", ixZEtaPhiPt));
-      return kFALSE;
-    }
-
-    float effcorr = fEfficiencyCorrection[pid][ixPt];
-    float corr;
-    if (fCorrectionWeights[pid] != nullptr)
-      corr = fCorrectionWeights[pid][ixZEtaPhiPt];
-    else
-      corr = 1.0;
-
-    /* the final correction incorporates also the efficiency correction */
-    /* and affects to both, track densities and pT */
-    corr *= effcorr;
-
-    if (fSinglesOnly) {
-      fhN1_vsPt[pid]->Fill(pT, corr);
-      fhN1_vsZEtaPhiPt[pid]->Fill(fVertexZ, ixEtaPhi + 0.5, pT, corr);
-      fhSum1Pt_vsZEtaPhiPt[pid]->Fill(fVertexZ, ixEtaPhi + 0.5, pT, corr * pT);
-      fhN1_vsEtaPhi[pid]->Fill(eta, phi, corr);
-      fhSum1Pt_vsEtaPhi[pid]->Fill(eta, phi, corr * pT);
-    }
-    else {
-      float corrPt = corr * pT;
-      fPID[fNoOfTracks] = pid;
-      fIxEta[fNoOfTracks] = ixEta;
-      fIxPhi[fNoOfTracks] = ixPhi;
-      fIxPt[fNoOfTracks] = ixPt;
-      fFlags[fNoOfTracks] = 0x0;
-      fPt[fNoOfTracks] = pT;
-      fEta[fNoOfTracks] = eta;
-      fPhi[fNoOfTracks] = phi;
-      fAvgPt[fNoOfTracks] = (fhPtAverage[pid] != nullptr) ? fhPtAverage[pid]->GetBinContent(ixEta + 1, ixPhi + 1) : 0.0;
-      fCorrection[fNoOfTracks] = corr;
-      fN1[pid] += corr;
-      fhN1_vsEtaPhi[pid]->Fill(eta, phi, corr);
-      fSum1Pt[pid] += corrPt;
-      fhSum1Pt_vsEtaPhi[pid]->Fill(eta, phi, corrPt);
-      fNnw1[pid] += 1;
-      fSum1Ptnw[pid] += pT;
-      fNoOfTracks++;
-      if (!(fNoOfTracks < fArraySize)) {
-        AliError(Form("Storage for track one full: %d", fArraySize));
-        return kFALSE;
-      }
     }
   }
   return kTRUE;
@@ -467,33 +468,37 @@ void Ali2PCorrelations::ProcessPairs()
         int globalbin_na_d = fhN2_12_vsDEtaDPhi_na[fPID[ix1]][fPID[ix2]]->FindBin(deltaEta_d, deltaPhi_d);
         int globalbin_na_c = fhN2_12_vsDEtaDPhi_na[fPID[ix2]][fPID[ix1]]->FindBin(deltaEta_c, deltaPhi_c);
 
-        fNnw2_12[fPID[ix1]][fPID[ix2]] += 1;
-        fNnw2_12[fPID[ix2]][fPID[ix1]] += 1;
-        fN2_12[fPID[ix1]][fPID[ix2]] += corr;
-        fN2_12[fPID[ix2]][fPID[ix1]] += corr;
-        fhN2_12_vsDEtaDPhi[fPID[ix1]][fPID[ix2]]->AddBinContent(globalbin_d, corr);
-        fhN2_12_vsDEtaDPhi[fPID[ix2]][fPID[ix1]]->AddBinContent(globalbin_c, corr);
-        fhN2_12_vsDEtaDPhi_na[fPID[ix1]][fPID[ix2]]->AddBinContent(globalbin_na_d, corr);
-        fhN2_12_vsDEtaDPhi_na[fPID[ix2]][fPID[ix1]]->AddBinContent(globalbin_na_c, corr);
-        float ptpt = fPt[ix1] * fPt[ix2];
-        fSum2PtPtnw_12[fPID[ix1]][fPID[ix2]] += ptpt;
-        fSum2PtPtnw_12[fPID[ix2]][fPID[ix1]] += ptpt;
-        fSum2PtPt_12[fPID[ix1]][fPID[ix2]] += corr * ptpt;
-        fSum2PtPt_12[fPID[ix2]][fPID[ix1]] += corr * ptpt;
-        fhSum2PtPt_12_vsDEtaDPhi[fPID[ix1]][fPID[ix2]]->AddBinContent(globalbin_d, corr * ptpt);
-        fhSum2PtPt_12_vsDEtaDPhi[fPID[ix2]][fPID[ix1]]->AddBinContent(globalbin_c, corr * ptpt);
-        float dptdptnw = (fPt[ix1] - fAvgPt[ix1]) * (fPt[ix2] - fAvgPt[ix2]);
-        float dptdpt = corr * (fPt[ix1] - fAvgPt[ix1]) * (fPt[ix2] - fAvgPt[ix2]);
-        fSum2DptDptnw_12[fPID[ix1]][fPID[ix2]] += dptdptnw;
-        fSum2DptDptnw_12[fPID[ix2]][fPID[ix1]] += dptdptnw;
-        fSum2DptDpt_12[fPID[ix1]][fPID[ix2]] += dptdpt;
-        fSum2DptDpt_12[fPID[ix2]][fPID[ix1]] += dptdpt;
-        fhSum2DptDpt_12_vsDEtaDPhi[fPID[ix1]][fPID[ix2]]->AddBinContent(globalbin_d, dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi[fPID[ix2]][fPID[ix1]]->AddBinContent(globalbin_c, dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi_na[fPID[ix1]][fPID[ix2]]->AddBinContent(globalbin_na_d, dptdpt);
-        fhSum2DptDpt_12_vsDEtaDPhi_na[fPID[ix2]][fPID[ix1]]->AddBinContent(globalbin_na_c, dptdpt);
-        fhN2_12_vsPtPt[fPID[ix1]][fPID[ix2]]->Fill(fPt[ix1], fPt[ix2], corr);
-        fhN2_12_vsPtPt[fPID[ix2]][fPID[ix1]]->Fill(fPt[ix2], fPt[ix1], corr);
+        auto fillpairs = [&](int pidx1,int pidx2) {
+          fNnw2_12[pidx1][pidx2] += 1;
+          fNnw2_12[pidx2][pidx1] += 1;
+          fN2_12[pidx1][pidx2] += corr;
+          fN2_12[pidx2][pidx1] += corr;
+          fhN2_12_vsDEtaDPhi[pidx1][pidx2]->AddBinContent(globalbin_d, corr);
+          fhN2_12_vsDEtaDPhi[pidx2][pidx1]->AddBinContent(globalbin_c, corr);
+          fhN2_12_vsDEtaDPhi_na[pidx1][pidx2]->AddBinContent(globalbin_na_d, corr);
+          fhN2_12_vsDEtaDPhi_na[pidx2][pidx1]->AddBinContent(globalbin_na_c, corr);
+          float ptpt = fPt[ix1] * fPt[ix2];
+          fSum2PtPtnw_12[pidx1][pidx2] += ptpt;
+          fSum2PtPtnw_12[pidx2][pidx1] += ptpt;
+          fSum2PtPt_12[pidx1][pidx2] += corr * ptpt;
+          fSum2PtPt_12[pidx2][pidx1] += corr * ptpt;
+          fhSum2PtPt_12_vsDEtaDPhi[pidx1][pidx2]->AddBinContent(globalbin_d, corr * ptpt);
+          fhSum2PtPt_12_vsDEtaDPhi[pidx2][pidx1]->AddBinContent(globalbin_c, corr * ptpt);
+          float dptdptnw = (fPt[ix1] - fAvgPt[ix1]) * (fPt[ix2] - fAvgPt[ix2]);
+          float dptdpt = corr * (fPt[ix1] - fAvgPt[ix1]) * (fPt[ix2] - fAvgPt[ix2]);
+          fSum2DptDptnw_12[pidx1][pidx2] += dptdptnw;
+          fSum2DptDptnw_12[pidx2][pidx1] += dptdptnw;
+          fSum2DptDpt_12[pidx1][pidx2] += dptdpt;
+          fSum2DptDpt_12[pidx2][pidx1] += dptdpt;
+          fhSum2DptDpt_12_vsDEtaDPhi[pidx1][pidx2]->AddBinContent(globalbin_d, dptdpt);
+          fhSum2DptDpt_12_vsDEtaDPhi[pidx2][pidx1]->AddBinContent(globalbin_c, dptdpt);
+          fhSum2DptDpt_12_vsDEtaDPhi_na[pidx1][pidx2]->AddBinContent(globalbin_na_d, dptdpt);
+          fhSum2DptDpt_12_vsDEtaDPhi_na[pidx2][pidx1]->AddBinContent(globalbin_na_c, dptdpt);
+          fhN2_12_vsPtPt[pidx1][pidx2]->Fill(fPt[ix1], fPt[ix2], corr);
+          fhN2_12_vsPtPt[pidx2][pidx1]->Fill(fPt[ix2], fPt[ix1], corr);
+        };
+        fillpairs(fPID[ix1],fPID[ix2]);
+        fillpairs(fPID[ix1] % 2,fPID[ix2] % 2); /* always fill the charged hadron correlations */
       }
     }
   }
