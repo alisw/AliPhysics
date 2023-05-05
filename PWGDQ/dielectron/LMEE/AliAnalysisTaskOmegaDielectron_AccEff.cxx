@@ -285,7 +285,6 @@ void AliAnalysisTaskOmegaDielectron_AccEff::UserExec(Option_t *) {
 
 
 
-
     ///-------------------- Loop over Generated MC Particles ---OMEGAS --------------------///
     for(Int_t iGenPart = 0; iGenPart < fMCEvent->GetNumberOfTracks();iGenPart++) {
       AliMCParticle* mcGenParticle  = (AliMCParticle*)fMCEvent->GetTrack(iGenPart);
@@ -295,21 +294,23 @@ void AliAnalysisTaskOmegaDielectron_AccEff::UserExec(Option_t *) {
       }
 
       Int_t pdgcode_gen = mcGenParticle->PdgCode();
-
+      
       if(pdgcode_gen == fmother_pdg){  // Check if MC Particle is an omega
-        if(!fsysUnc){
-          fHist_MC_Omegas_Rapidity->Fill(mcGenParticle->Y());
-        }
 
         if( CheckDielectronDecay(mcGenParticle, kFALSE) ){ // Check if :: w->e+e- and omega within y<+-0.8
           fHist_MC_Omegas_gen.at(i_EventC)->Fill(mcGenParticle->M(), mcGenParticle->Pt(), mcGenParticle->Y());
         }
 
-        if( CheckDielectronDecay(mcGenParticle, kTRUE) ){ // Check if :: w->e+e-and omega within y<+-0.8 --> with /n_e/<0.8 & 0.2<p_T,e < 10GeV/c
-          fHist_MC_Omegas_gen_DaughtersinAcc->Fill(mcGenParticle->M(), mcGenParticle->Pt(), mcGenParticle->Y());
+        if(i_EventC == 2){ // only fill these Histos with the full event selection
+          if( CheckDielectronDecay(mcGenParticle, kTRUE) ){ // Check if :: w->e+e-and omega within y<+-0.8 --> with /n_e/<0.8 & 0.2<p_T,e < 10GeV/c
+            fHist_MC_Omegas_gen_DaughtersinAcc->Fill(mcGenParticle->M(), mcGenParticle->Pt(), mcGenParticle->Y());
+          }
+          if(!fsysUnc){
+            fHist_MC_Omegas_Rapidity->Fill(mcGenParticle->Y());
+          }
         }
       }
-      if(!fsysUnc){
+      if(!fsysUnc && i_EventC == 2){// only fill these Histos with the full event selection && ...
         // for the single electron efficiency:
         if (mcGenParticle->IsPhysicalPrimary() ){
           if(pdgcode_gen == felectron_pdg){  // Check if MC Particle is an electron
