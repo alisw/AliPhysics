@@ -1126,6 +1126,8 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010123","24466000ha01cc00000","0163103100000010"); // 0-100% without non-lin
     cuts.AddCutCalo("80010123","24466530ha01cc00000","0163103100000010"); // 0-100% non-lin 1
     cuts.AddCutCalo("80010123","24466540ha01cc00000","0163103100000010"); // 0-100% non-lin 2
+  } else if (trainConfig == 526) { 
+    cuts.AddCutCalo("80010113","2444c530ua01cc00000","0163103100000010"); // non-lin 1 and new eta-phi
 
   } else if (trainConfig == 528){ // PHOS INT7, 300MeV
     cuts.AddCutCalo("80010123","24466190sa01cc00000","0163103100000010"); //Int7 no Trigger

@@ -5311,6 +5311,10 @@ Bool_t AliCaloPhotonCuts::SetMaxPhiCut(Int_t maxPhi)
     fMaxPhiCut = 5.59;//PHOS acceptance RUN2
     fReduceTriggeredPhiDueBadDDLs = kTRUE;
     break;
+  case 12:
+    if( !fUsePhiCut ) fUsePhiCut=1;
+    fMaxPhiCut = 5.24;//PHOS acceptance RUN2
+    break;
   default:
     AliError(Form("Max Phi Cut not defined %d",maxPhi));
     return kFALSE;

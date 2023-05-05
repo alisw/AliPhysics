@@ -1033,6 +1033,10 @@ void AddTask_GammaConvCalo_pPb(
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530ha01cc00000","0h63103100000010"); // 0-100% with NL 1
   } else if (trainConfig == 1008) { // timing cut effi u, new default
     cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","24466530ua01cc00000","0h63103100000010"); // 0-100% with NL 1
+
+  } else if (trainConfig == 1009) { // timing cut effi u, new default, new eta-phi
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","2444c530ua01cc00000","0h63103100000010"); // 0-100% with NL 1
+  
   
   ///PCM-Variation
   } else if (trainConfig == 1010) {
