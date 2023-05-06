@@ -62,20 +62,20 @@ public:
   Double_t fWidth_deltaeta; ///< the pair \f$\Delta\eta\f$ bin width
 
   /* histograms */
-  std::vector<std::vector<TH2F*>> fhN2_12_vsPtPt;                //!<! two-particle distribution vs \f${p_T}_1, {p_T}_2\f$
-  std::vector<std::vector<TH2F*>> fhN2_12_vsDEtaDPhi;            //!<! two-particle distribution vs \f$\Delta\eta,\;\Delta\phi\f$
-  std::vector<std::vector<TH2F*>> fhN2_12_vsDEtaDPhi_na;         //!<! two-particle distribution vs \f$\Delta\eta,\;\Delta\phi\f$, no aliasing
-  std::vector<std::vector<TH2F*>> fhSum2PtPt_12_vsDEtaDPhi;      //!<! two-particle  \f$\sum {p_T}_1 {p_T}_2\f$ distribution vs \f$\Delta\eta,\;\Delta\phi\f$
-  std::vector<std::vector<TH2F*>> fhSum2DptDpt_12_vsDEtaDPhi;    //!<! two-particle  \f$\sum ({p_T}_1- <{p_T}_1>) ({p_T}_2 - <{p_T}_2>) \f$ distribution vs \f$\Delta\eta,\;\Delta\phi\f$
-  std::vector<std::vector<TH2F*>> fhSum2DptDpt_12_vsDEtaDPhi_na; //!<! two-particle  \f$\sum ({p_T}_1- <{p_T}_1>) ({p_T}_2 - <{p_T}_2>) \f$ distribution vs \f$\Delta\eta,\;\Delta\phi\f$, no aliasing
+  std::vector<std::vector<TH2F*>> fhN2_12_vsPtPt;                ///< two-particle distribution vs \f${p_T}_1, {p_T}_2\f$
+  std::vector<std::vector<TH2F*>> fhN2_12_vsDEtaDPhi;            ///< two-particle distribution vs \f$\Delta\eta,\;\Delta\phi\f$
+  std::vector<std::vector<TH2F*>> fhN2_12_vsDEtaDPhi_na;         ///< two-particle distribution vs \f$\Delta\eta,\;\Delta\phi\f$, no aliasing
+  std::vector<std::vector<TH2F*>> fhSum2PtPt_12_vsDEtaDPhi;      ///< two-particle  \f$\sum {p_T}_1 {p_T}_2\f$ distribution vs \f$\Delta\eta,\;\Delta\phi\f$
+  std::vector<std::vector<TH2F*>> fhSum2DptDpt_12_vsDEtaDPhi;    ///< two-particle  \f$\sum ({p_T}_1- <{p_T}_1>) ({p_T}_2 - <{p_T}_2>) \f$ distribution vs \f$\Delta\eta,\;\Delta\phi\f$
+  std::vector<std::vector<TH2F*>> fhSum2DptDpt_12_vsDEtaDPhi_na; ///< two-particle  \f$\sum ({p_T}_1- <{p_T}_1>) ({p_T}_2 - <{p_T}_2>) \f$ distribution vs \f$\Delta\eta,\;\Delta\phi\f$, no aliasing
 
   /* versus centrality/multiplicity  profiles */
-  std::vector<std::vector<TProfile*>> fhN2_12_vsC;           //!<! weighted accumulated two particle distribution vs event centrality/multiplicity
-  std::vector<std::vector<TProfile*>> fhSum2PtPt_12_vsC;     //!<! weighted accumulated \f${p_T}_1 {p_T}_2\f$ distribution vs event centrality/multiplicity
-  std::vector<std::vector<TProfile*>> fhSum2DptDpt_12_vsC;   //!<! weighted accumulated \f$\sum ({p_T}_1- <{p_T}_1>) ({p_T}_2 - <{p_T}_2>) \f$ distribution vs event centrality/multiplicity
-  std::vector<std::vector<TProfile*>> fhN2nw_12_vsC;         //!<! un-weighted accumulated two particle distribution vs event centrality/multiplicity
-  std::vector<std::vector<TProfile*>> fhSum2PtPtnw_12_vsC;   //!<! un-weighted accumulated \f${p_T}_1 {p_T}_2\f$ distribution vs event centrality/multiplicity
-  std::vector<std::vector<TProfile*>> fhSum2DptDptnw_12_vsC; //!<! un-weighted accumulated \f$\sum ({p_T}_1- <{p_T}_1>) ({p_T}_2 - <{p_T}_2>) \f$ distribution vs \f$\Delta\eta,\;\Delta\phi\f$ distribution vs event centrality/multiplicity
+  std::vector<std::vector<TProfile*>> fhN2_12_vsC;           ///< weighted accumulated two particle distribution vs event centrality/multiplicity
+  std::vector<std::vector<TProfile*>> fhSum2PtPt_12_vsC;     ///< weighted accumulated \f${p_T}_1 {p_T}_2\f$ distribution vs event centrality/multiplicity
+  std::vector<std::vector<TProfile*>> fhSum2DptDpt_12_vsC;   ///< weighted accumulated \f$\sum ({p_T}_1- <{p_T}_1>) ({p_T}_2 - <{p_T}_2>) \f$ distribution vs event centrality/multiplicity
+  std::vector<std::vector<TProfile*>> fhN2nw_12_vsC;         ///< un-weighted accumulated two particle distribution vs event centrality/multiplicity
+  std::vector<std::vector<TProfile*>> fhSum2PtPtnw_12_vsC;   ///< un-weighted accumulated \f${p_T}_1 {p_T}_2\f$ distribution vs event centrality/multiplicity
+  std::vector<std::vector<TProfile*>> fhSum2DptDptnw_12_vsC; ///< un-weighted accumulated \f$\sum ({p_T}_1- <{p_T}_1>) ({p_T}_2 - <{p_T}_2>) \f$ distribution vs \f$\Delta\eta,\;\Delta\phi\f$ distribution vs event centrality/multiplicity
 
  private:
   /// Copy constructor
@@ -87,7 +87,7 @@ public:
   Ali2PCorrelations& operator=(const Ali2PCorrelations&);
 
   /// \cond CLASSIMP
-  ClassDef(Ali2PCorrelations, 3);
+  ClassDef(Ali2PCorrelations, 4);
   /// \endcond
 };
 

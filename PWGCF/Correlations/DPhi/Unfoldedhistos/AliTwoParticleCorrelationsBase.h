@@ -110,11 +110,11 @@ protected:
   float *fEta;     //!<! the array of track \f$\eta\f$
   float *fPhi;     //!<! the array of track \f$\varphi\f$
 
-  std::vector<float *> fCorrectionWeights;                //!<! structure with the track correction weights
-  std::vector<float *> fEfficiencyCorrection;             //!<! structure with the track efficiency correction weights
-  std::vector<std::vector<const THn *>> fPairsEfficiency; //!<! pair efficiency correction for the different pair combinations
-  std::vector<const TObjArray *> fTrackPdfs;              //!<! the tracks density distributions
-  std::vector<TH3F *> fTrackCurrentPdf;                   //!<! current event tracks density distribution
+  std::vector<float *> fCorrectionWeights;                ///< structure with the track correction weights
+  std::vector<float *> fEfficiencyCorrection;             ///< structure with the track efficiency correction weights
+  std::vector<std::vector<const THn *>> fPairsEfficiency; ///< pair efficiency correction for the different pair combinations
+  std::vector<const TObjArray *> fTrackPdfs;              ///< the tracks density distributions
+  std::vector<TH3F *> fTrackCurrentPdf;                   ///< current event tracks density distribution
   int fSimEventsPerEvent;                                 ///< the number of simulated events produced per real event
 
   int fNBins_vertexZ;    ///< the \f$z\f$ vertex component number of bins
@@ -147,16 +147,16 @@ protected:
   std::vector<double> fSum1Ptnw; ///< accumulated sum of not weighted \f$p_T\f$ per species for current event
 
   /* histograms */
-  std::vector<TH1F *> fhN1_vsPt;            //!<! weighted single particle distribution vs \f$p_T\f$ per species
-  std::vector<TH2F *> fhN1_vsEtaPhi;        //!<! weighted single particle distribution vs \f$\eta,\;\phi\f$ per species
-  std::vector<TH2F *> fhSum1Pt_vsEtaPhi;    //!<! accumulated sum of weighted \f$p_T\f$ vs \f$\eta,\;\phi\f$ per species
-  std::vector<TH3F *> fhN1_vsZEtaPhiPt;     //!<! single particle distribution vs \f$\mbox{vtx}_z,\; \eta,\;\phi,\;p_T\f$ per species
-  std::vector<TH3F *> fhSum1Pt_vsZEtaPhiPt; //!<! accumulated sum of weighted \f$p_T\f$ vs \f$\mbox{vtx}_z,\; \eta,\;\phi,\;p_T\f$ per species
+  std::vector<TH1F *> fhN1_vsPt;            ///< weighted single particle distribution vs \f$p_T\f$ per species
+  std::vector<TH2F *> fhN1_vsEtaPhi;        ///< weighted single particle distribution vs \f$\eta,\;\phi\f$ per species
+  std::vector<TH2F *> fhSum1Pt_vsEtaPhi;    ///< accumulated sum of weighted \f$p_T\f$ vs \f$\eta,\;\phi\f$ per species
+  std::vector<TH3F *> fhN1_vsZEtaPhiPt;     ///< single particle distribution vs \f$\mbox{vtx}_z,\; \eta,\;\phi,\;p_T\f$ per species
+  std::vector<TH3F *> fhSum1Pt_vsZEtaPhiPt; ///< accumulated sum of weighted \f$p_T\f$ vs \f$\mbox{vtx}_z,\; \eta,\;\phi,\;p_T\f$ per species
   /* versus centrality  profiles */
-  std::vector<TProfile *> fhN1_vsC;       //!<! weighted single particle distribution vs event centrality/multiplicity per species
-  std::vector<TProfile *> fhSum1Pt_vsC;   //!<! accumulated sum of weighted \f$p_T\f$ vs event centrality/multiplicity per species
-  std::vector<TProfile *> fhN1nw_vsC;     //!<! un-weighted single particle distribution vs event centrality/multiplicity per species
-  std::vector<TProfile *> fhSum1Ptnw_vsC; //!<! accumulated sum of un-weighted \f$p_T\f$ vs event centrality/multiplicity per species
+  std::vector<TProfile *> fhN1_vsC;       ///< weighted single particle distribution vs event centrality/multiplicity per species
+  std::vector<TProfile *> fhSum1Pt_vsC;   ///< accumulated sum of weighted \f$p_T\f$ vs event centrality/multiplicity per species
+  std::vector<TProfile *> fhN1nw_vsC;     ///< un-weighted single particle distribution vs event centrality/multiplicity per species
+  std::vector<TProfile *> fhSum1Ptnw_vsC; ///< accumulated sum of un-weighted \f$p_T\f$ vs event centrality/multiplicity per species
 
 protected:
   std::vector<std::string> fSpeciesNames; ///< the name of the species to consider
@@ -181,7 +181,7 @@ private:
   AliTwoParticleCorrelationsBase &operator=(const AliTwoParticleCorrelationsBase &);
 
   /// \cond CLASSIMP
-  ClassDef(AliTwoParticleCorrelationsBase, 3);
+  ClassDef(AliTwoParticleCorrelationsBase, 4);
   /// \endcond
 };
 

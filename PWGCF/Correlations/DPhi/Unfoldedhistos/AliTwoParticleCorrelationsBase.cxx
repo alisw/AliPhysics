@@ -92,10 +92,10 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase()
     fNBins_etaPhiPt(25920),
     fNBins_zEtaPhiPt(1036800),
     /* accumulated values */
-    fN1{0.0},
-    fNnw1{0.0},
-    fSum1Pt{0.0},
-    fSum1Ptnw{0.0},
+    fN1{},
+    fNnw1{},
+    fSum1Pt{},
+    fSum1Ptnw{},
     /* histograms */
     fhN1_vsPt{},
     fhN1_vsEtaPhi{},
@@ -170,10 +170,10 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase(const char* name)
     fNBins_etaPhiPt(25920),
     fNBins_zEtaPhiPt(1036800),
     /* accumulated values */
-    fN1{0.0},
-    fNnw1{0.0},
-    fSum1Pt{0.0},
-    fSum1Ptnw{0.0},
+    fN1{},
+    fNnw1{},
+    fSum1Pt{},
+    fSum1Ptnw{},
     /* histograms */
     fhN1_vsPt{},
     fhN1_vsEtaPhi{},
@@ -299,6 +299,13 @@ void AliTwoParticleCorrelationsBase::SetSpeciesNames(std::vector<std::string> na
 {
   fSpeciesNames.clear();
   fSpeciesNames.assign(names.begin(), names.end());
+
+  for (auto s : fSpeciesNames) {
+    fN1.push_back(0.0);
+    fSum1Pt.push_back(0.0);
+    fNnw1.push_back(0.0);
+    fSum1Ptnw.push_back(0.0);
+  }
 }
 
 /// \brief Initializes the member data structures
