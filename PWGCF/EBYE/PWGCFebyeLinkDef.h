@@ -135,7 +135,7 @@
 #pragma link C++ class AliAnalysisTaskCorrPbPbMC+;
 #pragma link C++ class AliAnalysisTaskCorrPPMC+;
 
-#pragma link C++ class AliAnalysisTaskNFMs+;
+#pragma link C++ class AliAnalysisTaskNFactorialMoments+;
 
 #pragma link C++ class AliAnalysisHMMeanPt+;
 #pragma link C++ class AliAnalysisMeanPt+;
