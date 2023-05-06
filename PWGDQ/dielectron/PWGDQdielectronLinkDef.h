@@ -54,6 +54,7 @@
 #pragma link C++ class AliAnalysisTaskDielectronsPbPb_Data+;
 #pragma link C++ class AliAnalysisTaskDielectronsPbPb_Efficiency+;
 #pragma link C++ class AliAnalysisTaskeeCor+;
+#pragma link C++ class AliAnalysisTaskGammaPythia+;
 #pragma link C++ class AliAnalysisTaskMLTreeMaker+;
 #pragma link C++ class AliAnalysisTaskMLTreeMaker2018+;
 #pragma link C++ class AliAnalysisTaskMLTreeMakerEff+;
