@@ -145,7 +145,7 @@ set(SRCS
   HMPTF/AliAnalysisTaskCorrPPHM.cxx
   HMPTF/AliAnalysisTaskCorrPbPbMC.cxx
   HMPTF/AliAnalysisTaskCorrPPMC.cxx
-  IntermittencyAnalysis/AliAnalysisTaskNFMs.cxx
+  IntermittencyAnalysis/AliAnalysisTaskNFactorialMoments.cxx
   )
 
 # Headers from sources
