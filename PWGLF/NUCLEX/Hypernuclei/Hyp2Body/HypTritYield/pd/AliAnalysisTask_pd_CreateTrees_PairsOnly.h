@@ -19,7 +19,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
   public:
 
     AliAnalysisTask_pd_CreateTrees_PairsOnly();
-    AliAnalysisTask_pd_CreateTrees_PairsOnly(const char *name,int CollisionSystem, bool UseOpenCuts);
+    AliAnalysisTask_pd_CreateTrees_PairsOnly(const char *name,int CollisionSystem, bool UseOpenCuts, bool IsMC);
     AliAnalysisTask_pd_CreateTrees_PairsOnly& operator = (const AliAnalysisTask_pd_CreateTrees_PairsOnly &task);
     AliAnalysisTask_pd_CreateTrees_PairsOnly(const AliAnalysisTask_pd_CreateTrees_PairsOnly &task);
     virtual ~AliAnalysisTask_pd_CreateTrees_PairsOnly();
@@ -33,22 +33,27 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     bool CheckProtonCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, bool UseOpenCuts);
     bool CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, bool UseOpenCuts);
     double CalculateSigmadEdxITS(AliAODTrack &Track, int ParticleSpecies, int RunNumber);
-
+    short TransformPDG(int PDG);
 
   private:
 
     AliAODEvent		  *fAODEvent;
+    AliMCEvent		  *fMCEvent;
     AliAODInputHandler	  *fAODHandler; 
     AliAODHeader	  *fHeader;
     AliPIDResponse	  *fPIDResponse;
 
     int			  fCollisionSystem;
     bool		  fUseOpenCuts;
+    bool		  fIsMC;
 
     TTree     *fSaveTree_Proton;
     float     fProton_px;
     float     fProton_py;
     float     fProton_pz;
+    float     fProton_px_Generated;
+    float     fProton_py_Generated;
+    float     fProton_pz_Generated;
     float     fProton_pTPC;
     float     fProton_Eta;
     float     fProton_Phi;
@@ -69,6 +74,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fProton_TPC_nFindableCluster;
     unsigned short    fProton_TPC_nCluster;
     unsigned short    fProton_ITS_nCluster;
+    unsigned short    fProton_Origin;
+    short	      fProton_Species;
     unsigned int      fProton_ID;
     unsigned int      fProton_Event_Multiplicity;
     unsigned long     fProton_Event_Identifier;
@@ -78,6 +85,9 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float     fDeuteron_px;
     float     fDeuteron_py;
     float     fDeuteron_pz;
+    float     fDeuteron_px_Generated;
+    float     fDeuteron_py_Generated;
+    float     fDeuteron_pz_Generated;
     float     fDeuteron_pTPC;
     float     fDeuteron_Eta;
     float     fDeuteron_Phi;
@@ -98,6 +108,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fDeuteron_TPC_nFindableCluster;
     unsigned short    fDeuteron_TPC_nCluster;
     unsigned short    fDeuteron_ITS_nCluster;
+    unsigned short    fDeuteron_Origin;
+    short	      fDeuteron_Species;
     unsigned int      fDeuteron_ID;
     unsigned int      fDeuteron_Event_Multiplicity;
     unsigned long     fDeuteron_Event_Identifier;
@@ -107,6 +119,9 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float     fAntiProton_px;
     float     fAntiProton_py;
     float     fAntiProton_pz;
+    float     fAntiProton_px_Generated;
+    float     fAntiProton_py_Generated;
+    float     fAntiProton_pz_Generated;
     float     fAntiProton_pTPC;
     float     fAntiProton_Eta;
     float     fAntiProton_Phi;
@@ -127,6 +142,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fAntiProton_TPC_nFindableCluster;
     unsigned short    fAntiProton_TPC_nCluster;
     unsigned short    fAntiProton_ITS_nCluster;
+    unsigned short    fAntiProton_Origin;
+    short	      fAntiProton_Species;
     unsigned int      fAntiProton_ID;
     unsigned int      fAntiProton_Event_Multiplicity;
     unsigned long     fAntiProton_Event_Identifier;
@@ -136,6 +153,9 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     float     fAntiDeuteron_px;
     float     fAntiDeuteron_py;
     float     fAntiDeuteron_pz;
+    float     fAntiDeuteron_px_Generated;
+    float     fAntiDeuteron_py_Generated;
+    float     fAntiDeuteron_pz_Generated;
     float     fAntiDeuteron_pTPC;
     float     fAntiDeuteron_Eta;
     float     fAntiDeuteron_Phi;
@@ -156,6 +176,8 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fAntiDeuteron_TPC_nFindableCluster;
     unsigned short    fAntiDeuteron_TPC_nCluster;
     unsigned short    fAntiDeuteron_ITS_nCluster;
+    unsigned short    fAntiDeuteron_Origin;
+    short	      fAntiDeuteron_Species;
     unsigned int      fAntiDeuteron_ID;
     unsigned int      fAntiDeuteron_Event_Multiplicity;
     unsigned long     fAntiDeuteron_Event_Identifier;
