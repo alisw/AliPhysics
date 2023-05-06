@@ -80,6 +80,9 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure()
   fDoFlow(0),
   fQVectorReader(0),
   fRejectTPCPileup(kFALSE),
+  fSaveKtg(1),
+  fSaveNg(1),
+  fSaveZg(1),
   fPtJet(0x0),
   fHLundIterative(0x0), 
   fHLundIterativeMC(0x0),
@@ -130,6 +133,9 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
     fDoFlow(0),
     fQVectorReader(0),
     fRejectTPCPileup(kFALSE),
+    fSaveKtg(1),
+    fSaveNg(1),
+    fSaveZg(1),
     fPtJet(0x0),
     fHLundIterative(0x0), 
     fHLundIterativeMC(0x0),
@@ -228,23 +234,23 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   TString *fShapesVarNames = new TString[nVar];
 
   fShapesVarNames[0] = "ptJet";
-  fShapesVarNames[1] = "ktg";
-  fShapesVarNames[2] = "ng";
-  fShapesVarNames[3] = "zg";
+  if (fSaveKtg) fShapesVarNames[1] = "ktg";
+  if (fSaveNg)  fShapesVarNames[2] = "ng";
+  if (fSaveZg)  fShapesVarNames[3] = "zg";
   fShapesVarNames[4] = "rg";
   fShapesVarNames[5] = "ptJetMatch";
-  fShapesVarNames[6] = "ktgMatch";
-  fShapesVarNames[7] = "ngMatch";
-  fShapesVarNames[8] = "zgMatch";
+  if (fSaveKtg) fShapesVarNames[6] = "ktgMatch";
+  if (fSaveNg)  fShapesVarNames[7] = "ngMatch";
+  if (fSaveZg)  fShapesVarNames[8] = "zgMatch";
   fShapesVarNames[9] = "rgMatch";
   fShapesVarNames[10] = "LeadingTrackPt";
   fShapesVarNames[11] = "LeadingTrackPtMatch";
   //  if (fDoSubJet) fStoreDetLevelJets = true;
   if (fStoreDetLevelJets) {
     fShapesVarNames[12] = "ptJetDet";
-    fShapesVarNames[13] = "ktgDet";
-    fShapesVarNames[14] = "ngDet";
-    fShapesVarNames[15] = "zgDet";
+    if (fSaveKtg)  fShapesVarNames[13] = "ktgDet";
+    if (fSaveNg)   fShapesVarNames[14] = "ngDet";
+    if (fSaveZg)   fShapesVarNames[15] = "zgDet";
     fShapesVarNames[16] = "rgDet";
     fShapesVarNames[17] = "LeadingTrackPtDet";
   }
@@ -274,7 +280,7 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   
 
   for (Int_t ivar = 0; ivar < nVar; ivar++) {
-    if (fShapesVarNames[ivar].Length() != 0)
+    if (fShapesVarNames[ivar].Length() != 0)       //initialize branches for non-empty strings
     fTreeSubstructure->Branch(fShapesVarNames[ivar].Data(), &fShapesVar[ivar],
                               Form("%s/F", fShapesVarNames[ivar].Data()));
   }
@@ -693,9 +699,7 @@ Float_t AliAnalysisTaskNewJetSubstructure::Angularity(AliEmcalJet *jet,
 }
 
 //________________________________________________________________________
-Float_t
-AliAnalysisTaskNewJetSubstructure::GetJetAngularity(AliEmcalJet *jet,
-                                                    Int_t jetContNb = 0) {
+Float_t AliAnalysisTaskNewJetSubstructure::GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb = 0) {
 
   if ((fJetShapeSub == kDerivSub) && (jetContNb == 0))
     if (fDerivSubtrOrder == 1)
@@ -707,8 +711,7 @@ AliAnalysisTaskNewJetSubstructure::GetJetAngularity(AliEmcalJet *jet,
 }
 
 //__________________________________________________________________________________
-Double_t AliAnalysisTaskNewJetSubstructure::RelativePhi(Double_t mphi,
-                                                        Double_t vphi) {
+Double_t AliAnalysisTaskNewJetSubstructure::RelativePhi(Double_t mphi, Double_t vphi) {
 
   if (vphi < -1 * TMath::Pi())
     vphi += (2 * TMath::Pi());
@@ -755,8 +758,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::CompareSubjets(fastjet::PseudoJet *sub
 }
 
 //_________________________________________________________________________
-void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(
-    AliEmcalJet *fJet, AliJetContainer *fJetCont) {
+void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(AliEmcalJet *fJet, AliJetContainer *fJetCont) {
   // to still change and implement the 4 vector bkg subtraction to the subjets
   std::vector<fastjet::PseudoJet> fInputVectors;
   fInputVectors.clear();
