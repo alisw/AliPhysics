@@ -729,7 +729,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
     RandomNumber2 = RandomGenerator->Integer(Offset2);
 
     nTracksMC = fMCEvent->GetNumberOfTracks();
-    unsigned int LastPart = (*reinterpret_cast<unsigned int*>(&PrimaryVertexZ));
     EventID = ((((unsigned long) RunNumber * Offset1) + RandomNumber1) * Offset2 * 10) + (unsigned long) RandomNumber2;
 
   } 
@@ -861,6 +860,11 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
       if(MCParticle->IsPhysicalPrimary() == true)	  Origin = 1;
       if(MCParticle->IsSecondaryFromWeakDecay() == true)  Origin = 2;
       if(MCParticle->IsSecondaryFromMaterial() == true)   Origin = 3;
+      if(Origin == 2){
+	int LabelMother = TMath::Abs(MCParticle->GetMother());
+	AliMCParticle *MCParticleMother = (AliMCParticle*) fMCEvent->GetTrack(LabelMother);
+	Origin = TransformOrigin(MCParticleMother->PdgCode());
+      }
       Species = TransformPDG(MCParticle->PdgCode());
       Generated_px = MCParticle->Px();
       Generated_py = MCParticle->Py();
@@ -1032,6 +1036,11 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
       if(MCParticle->IsPhysicalPrimary() == true)	  Origin = 1;
       if(MCParticle->IsSecondaryFromWeakDecay() == true)  Origin = 2;
       if(MCParticle->IsSecondaryFromMaterial() == true)   Origin = 3;
+      if(Origin == 2){
+	int LabelMother = TMath::Abs(MCParticle->GetMother());
+	AliMCParticle *MCParticleMother = (AliMCParticle*) fMCEvent->GetTrack(LabelMother);
+	Origin = TransformOrigin(MCParticleMother->PdgCode());
+      }
       Species = TransformPDG(MCParticle->PdgCode());
       Generated_px = MCParticle->Px();
       Generated_py = MCParticle->Py();
@@ -1413,6 +1422,11 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
       if(MCParticle->IsPhysicalPrimary() == true)	  Origin = 1;
       if(MCParticle->IsSecondaryFromWeakDecay() == true)  Origin = 2;
       if(MCParticle->IsSecondaryFromMaterial() == true)   Origin = 3;
+      if(Origin == 2){
+	int LabelMother = TMath::Abs(MCParticle->GetMother());
+	AliMCParticle *MCParticleMother = (AliMCParticle*) fMCEvent->GetTrack(LabelMother);
+	Origin = TransformOrigin(MCParticleMother->PdgCode());
+      }
       Species = TransformPDG(MCParticle->PdgCode());
       Generated_px = MCParticle->Px();
       Generated_py = MCParticle->Py();
@@ -1588,6 +1602,11 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
       if(MCParticle->IsPhysicalPrimary() == true)	  Origin = 1;
       if(MCParticle->IsSecondaryFromWeakDecay() == true)  Origin = 2;
       if(MCParticle->IsSecondaryFromMaterial() == true)   Origin = 3;
+      if(Origin == 2){
+	int LabelMother = TMath::Abs(MCParticle->GetMother());
+	AliMCParticle *MCParticleMother = (AliMCParticle*) fMCEvent->GetTrack(LabelMother);
+	Origin = TransformOrigin(MCParticleMother->PdgCode());
+      }
       Species = TransformPDG(MCParticle->PdgCode());
       Generated_px = MCParticle->Px();
       Generated_py = MCParticle->Py();
@@ -3054,6 +3073,30 @@ short AliAnalysisTask_pd_CreateTrees_PairsOnly::TransformPDG(int PDG){
 
 } // end of TransformPDG
 
+
+
+unsigned short AliAnalysisTask_pd_CreateTrees_PairsOnly::TransformOrigin(int MotherPDG){
+
+  unsigned short Origin = 2;
+
+  if(TMath::Abs(MotherPDG) == 3122)	    Origin = 21; // Lambda, AntiLambda
+  if(TMath::Abs(MotherPDG) == 3222)	    Origin = 22; // Sigma+, AntiSigma+
+  if(TMath::Abs(MotherPDG) == 3112)	    Origin = 23; // Sigma-, AntiSigma-
+  if(TMath::Abs(MotherPDG) == 1010010030)   Origin = 24; // HyperTriton, AntiHyperTriton
+  if(TMath::Abs(MotherPDG) == 1010010040)   Origin = 25; // HyperHydrogen, AntiHyperHydrogen
+  if(TMath::Abs(MotherPDG) == 1010020040)   Origin = 26; // HyperHelium4, AntiHyperHelium4
+
+
+  if(TMath::Abs(MotherPDG) == 3212)   Origin = 27; // Sigma0, AntiSigma0
+  if(TMath::Abs(MotherPDG) == 3322)   Origin = 28; // Xi0, AntiXi0
+  if(TMath::Abs(MotherPDG) == 3312)   Origin = 29; // Xi-, AntiXi-
+  if(TMath::Abs(MotherPDG) == 3334)   Origin = 30; // Omega-, AntiOmega-
+
+
+
+  return Origin;
+
+} // end of TransformOrigin
 
 
 
