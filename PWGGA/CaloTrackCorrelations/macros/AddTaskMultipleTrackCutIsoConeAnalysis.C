@@ -192,7 +192,7 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
       TString histoStringExo = Form("TM%d_ExoCut0.95",tmFix);
 
       ConfigureCaloTrackCorrAnalysis
-      ( anaList, calorimeter, simulation, year, col, analysisString+"_ExoCut0.93", histoStringExo,
+      ( anaList, calorimeter, simulation, year, col, analysisString+"_ExoCut0.95", histoStringExo,
        shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
        leading, tmFix, mixOn, printSettings, debug);
     }
