@@ -33,8 +33,6 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     bool CheckProtonCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, bool UseOpenCuts);
     bool CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, bool UseOpenCuts);
     double CalculateSigmadEdxITS(AliAODTrack &Track, int ParticleSpecies, int RunNumber);
-    short TransformPDG(int PDG);
-    unsigned short TransformOrigin(int MotherPDG);
 
   private:
 
@@ -75,11 +73,12 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fProton_TPC_nFindableCluster;
     unsigned short    fProton_TPC_nCluster;
     unsigned short    fProton_ITS_nCluster;
-    unsigned short    fProton_Origin;
-    short	      fProton_Species;
+    int		      fProton_PDG;
+    int		      fProton_MotherPDG;
     unsigned int      fProton_ID;
     unsigned int      fProton_Event_Multiplicity;
     unsigned long     fProton_Event_Identifier;
+    bool	      fProton_Event_IsFirstParticle;
 
 
     TTree     *fSaveTree_Deuteron;
@@ -109,11 +108,12 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fDeuteron_TPC_nFindableCluster;
     unsigned short    fDeuteron_TPC_nCluster;
     unsigned short    fDeuteron_ITS_nCluster;
-    unsigned short    fDeuteron_Origin;
-    short	      fDeuteron_Species;
+    int		      fDeuteron_PDG;
+    int		      fDeuteron_MotherPDG;
     unsigned int      fDeuteron_ID;
     unsigned int      fDeuteron_Event_Multiplicity;
     unsigned long     fDeuteron_Event_Identifier;
+    bool	      fDeuteron_Event_IsFirstParticle;
 
 
     TTree     *fSaveTree_AntiProton;
@@ -143,11 +143,12 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fAntiProton_TPC_nFindableCluster;
     unsigned short    fAntiProton_TPC_nCluster;
     unsigned short    fAntiProton_ITS_nCluster;
-    unsigned short    fAntiProton_Origin;
-    short	      fAntiProton_Species;
+    int		      fAntiProton_PDG;
+    int		      fAntiProton_MotherPDG;
     unsigned int      fAntiProton_ID;
     unsigned int      fAntiProton_Event_Multiplicity;
     unsigned long     fAntiProton_Event_Identifier;
+    bool	      fAntiProton_Event_IsFirstParticle;
 
 
     TTree     *fSaveTree_AntiDeuteron;
@@ -177,11 +178,12 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     unsigned short    fAntiDeuteron_TPC_nFindableCluster;
     unsigned short    fAntiDeuteron_TPC_nCluster;
     unsigned short    fAntiDeuteron_ITS_nCluster;
-    unsigned short    fAntiDeuteron_Origin;
-    short	      fAntiDeuteron_Species;
+    int		      fAntiDeuteron_PDG;
+    int		      fAntiDeuteron_MotherPDG;
     unsigned int      fAntiDeuteron_ID;
     unsigned int      fAntiDeuteron_Event_Multiplicity;
     unsigned long     fAntiDeuteron_Event_Identifier;
+    bool	      fAntiDeuteron_Event_IsFirstParticle;
 
     TList     *fHistoList;
     TH2F      *h_Proton_TOF_m2_NoTOFcut;
