@@ -1277,7 +1277,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     correlator.FillQVector(correlator.Qvector0M, QcosGap0M, QsinGap0M);
     correlator.FillQVector(correlator.Qvector0P, QcosGap0P, QsinGap0P);
   }
-  if (fuQGapScan) {
+  if (fuQGapScan || fgVnPtCorr) {
     correlator.FillQVector(correlator.Qvector2M, QcosGap2M, QsinGap2M);
     correlator.FillQVector(correlator.Qvector2P, QcosGap2P, QsinGap2P);
     correlator.FillQVector(correlator.Qvector4M, QcosGap4M, QsinGap4M);
@@ -1956,7 +1956,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
     correlator.FillQVector(correlator.Qvector0M, QcosGap0M, QsinGap0M);
     correlator.FillQVector(correlator.Qvector0P, QcosGap0P, QsinGap0P);
   }
-  if (fuQGapScan) {
+  if (fuQGapScan || fgVnPtCorr) {
     correlator.FillQVector(correlator.Qvector2M, QcosGap2M, QsinGap2M);
     correlator.FillQVector(correlator.Qvector2P, QcosGap2P, QsinGap2P);
     correlator.FillQVector(correlator.Qvector4M, QcosGap4M, QsinGap4M);
@@ -2657,9 +2657,17 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
     multProfile.fc24nw->Sumw2();
     listOfProfile->Add(multProfile.fc24nw);
 
-    multProfile.fPtVariance = new TProfile(Form("fdPt2%s", label.Data()), "Pt variance", nn, xbins);
-    multProfile.fPtVariance->Sumw2();
-    listOfProfile->Add(multProfile.fPtVariance);
+    multProfile.fPtVariancea = new TProfile(Form("fdPt2a%s", label.Data()), "Pt variance", nn, xbins);
+    multProfile.fPtVariancea->Sumw2();
+    listOfProfile->Add(multProfile.fPtVariancea);
+
+    multProfile.fPtVarianceb = new TProfile(Form("fdPt2b%s", label.Data()), "Pt variance", nn, xbins);
+    multProfile.fPtVarianceb->Sumw2();
+    listOfProfile->Add(multProfile.fPtVarianceb);
+
+    multProfile.fPtVariancec = new TProfile(Form("fdPt2c%s", label.Data()), "Pt variance", nn, xbins);
+    multProfile.fPtVariancec->Sumw2();
+    listOfProfile->Add(multProfile.fPtVariancec);
   }
 }
 
@@ -2781,8 +2789,8 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
   if (fgVnPtCorr) {
     double Dn2GapLR = correlator.TwoGap8(0, 0).Re();
     double Dn4GapLR = correlator.FourGap8(0, 0, 0, 0).Re();
-    if(NtrksAfter3subL > 2 && NtrksAfter3subM > 0 && NtrksAfter3subR > 2
-       && Dn2GapLR != 0)
+    if(NtrksAfter3subL > 1 && NtrksAfter3subM > 0 && NtrksAfter3subR > 1
+       && Dn2GapLR != 0 && Dn4GapLR != 0)
       {
         eventWeight = sumWeight;
         eventWeight2 = sumWeight*sumWeight - sumWeight2;
@@ -2795,10 +2803,10 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
         profile.fMeanPt->Fill(Ntrks, meanPt, eventWeight);
 
         // Variance of Pt
-        profile.fPtVariance->Fill((sumPtw*sumPtw-sumPt2w2) / eventWeight2
-                                  - 2*meanPt*(sumWeight*sumPtw-sumPtw2) / eventWeight2
-                                  + meanPt*meanPt
-                                  , eventWeight2);
+        profile.fPtVariancea->Fill(Ntrks, (sumPtw*sumPtw-sumPt2w2)   / eventWeight2, eventWeight2);
+        profile.fPtVarianceb->Fill(Ntrks, (sumWeight*sumPtw-sumPtw2) / eventWeight2, eventWeight2);
+        profile.fPtVariancec->Fill(Ntrks, 1, eventWeight2);
+
         // Variance of vn^2
         profile.fc22nw->Fill(Ntrks, v22Re_3subLR, Dn2GapLR);
         TComplex v24_3subLR = correlator.FourGap8(2, 2, -2, -2);
@@ -3874,7 +3882,9 @@ PhysicsProfile::PhysicsProfile(const PhysicsProfile& profile) :
   fPcc(nullptr),
   fc22nw(nullptr),
   fc24nw(nullptr),
-  fPtVariance(nullptr)
+  fPtVariancea(nullptr),
+  fPtVarianceb(nullptr),
+  fPtVariancec(nullptr)
 {
   memset(fChcn2, 0, sizeof(fChcn2));
   memset(fChcn2_Gap0, 0, sizeof(fChcn2_Gap0));

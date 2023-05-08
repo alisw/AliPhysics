@@ -157,7 +157,9 @@ class PhysicsProfile : public TObject {
     TProfile*  fPcc;            //! v2^2-pt
     TProfile*  fc22nw;           //! vn^2 without event weight
     TProfile*  fc24nw;           //! vn^4 without event weight
-    TProfile*  fPtVariance;                  //! variance of pt
+    TProfile*  fPtVariancea;                  //! for variance of pt
+    TProfile*  fPtVarianceb;                  //! for variance of pt
+    TProfile*  fPtVariancec;                  //! for variance of pt
 
 		TProfile*	 fChcn2[6]; 			//! <<2>> in unit bins of Ntrks
 		TProfile*    	 fChcn2_Gap0[6];  		//! <<2>> |#Delta#eta| > 0.0
