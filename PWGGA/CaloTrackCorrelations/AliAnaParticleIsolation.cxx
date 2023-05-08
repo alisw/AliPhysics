@@ -6403,7 +6403,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
       if ( partInConeType !=  AliIsolationCut::kOnlyCharged && checkClustersBand )
       {
         GetIsolationCut()->CalculateUEBandClusterNormalization
-        (photonEta         , photonPhi         ,
+        (GetCalorimeter()  ,
+         photonEta         , photonPhi         ,
          excessNeEta       , excessNePhi       ,
          excessAreaNeEta   , excessAreaNePhi   ,
          etaBandPtSumNe    , phiBandPtSumNe    ,
@@ -6412,7 +6413,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
         if ( IsEmbedingAnalysisOn ()  && fEmbedUEInPrimMC )
         {
           GetIsolationCut()->CalculateUEBandClusterNormalization
-          (photonEta         , photonPhi         ,
+          (GetCalorimeter()  ,
+           photonEta         , photonPhi         ,
            excessNeEta       , excessNePhi       ,
            excessAreaNeEta   , excessAreaNePhi   ,
            etaBandPtSumNeEmb    , phiBandPtSumNeEmb    ,
