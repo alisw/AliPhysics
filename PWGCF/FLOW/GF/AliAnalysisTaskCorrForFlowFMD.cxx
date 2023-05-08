@@ -59,6 +59,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fDoAntiparticleOnly(kFALSE),
     fVetoJetEvents(kFALSE),
     fJetvetoselectionval(0.5),
+    fselectjetsinTPC(kFALSE),
     fRejectSecondariesFromMC(kFALSE),
     fBoostAMPT(kFALSE),
     fFilterBit(96),
@@ -171,6 +172,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fDoAntiparticleOnly(kFALSE),
     fVetoJetEvents(kFALSE),
     fJetvetoselectionval(0.5),
+    fselectjetsinTPC(kFALSE),
     fRejectSecondariesFromMC(kFALSE),
     fBoostAMPT(kFALSE),
     fFilterBit(96),
@@ -1716,7 +1718,15 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
       }
     }
     
-    if(foundjetsinTPC == kFALSE) return kFALSE;//select events with back to back jets in the TPC
+      if(fselectjetsinTPC == kTRUE) {//select events with back to back jets in TPC
+      if(foundjetsinTPC == kFALSE) return kFALSE;//reject
+    }
+
+
+    if(fselectjetsinTPC == kFALSE) {//reject events with back to back jets in TPC
+      if(foundjetsinTPC == kTRUE) return kFALSE;//reject
+    }
+
 
     fhEventCounter->Fill("After Jet Veto",1);
   }
