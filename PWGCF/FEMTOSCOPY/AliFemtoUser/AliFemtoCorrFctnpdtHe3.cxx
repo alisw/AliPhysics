@@ -549,14 +549,18 @@ int AliFemtoCorrFctnpdtHe3::ReVelocityGate(AliFemtoPair* aPair){
     AliFemtoLorentzVector tFourMom1 = AliFemtoLorentzVector(tPart1->FourMomentum());
     float TotalP = tFourMom1.px() * tFourMom1.px() + tFourMom1.py() * tFourMom1.py() + tFourMom1.pz() * tFourMom1.pz();
     float TotalE = TMath::Sqrt( fP1Mass * fP1Mass + TotalP);
+    TotalP = TMath::Sqrt( TotalP);
     float P1velocity = TotalP/TotalE;
 
     //
-    
+   TotalP = 0.;
+    TotalE = 0.;   
+ 
     AliFemtoParticle *tPart2 = new AliFemtoParticle(*aPair->Track2());
     AliFemtoLorentzVector tFourMom2 = AliFemtoLorentzVector(tPart2->FourMomentum());
     TotalP = tFourMom2.px() * tFourMom2.px() + tFourMom2.py() * tFourMom2.py() + tFourMom2.pz() * tFourMom2.pz();
     TotalE = TMath::Sqrt( fP2Mass * fP2Mass + TotalP);
+    TotalP = TMath::Sqrt( TotalP);
     float P2velocity = TotalP/TotalE;
 
     int ReLabel = 3;
