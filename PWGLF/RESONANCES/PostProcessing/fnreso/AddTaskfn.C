@@ -1,10 +1,10 @@
 
-void AddTaskfn(const char *suffix = "Resochrg")
+void AddTaskfn(const char *suffix = "CMWchrg")
 
 {
   // standard with task
   printf("===================================================================================\n");
-  printf("\n                PID: Initialising AliAnalysisTaskResoPU                             \n");
+  printf("\n                PID: Initialising AliAnalysisTaskCMWPU                             \n");
   printf("===================================================================================\n");
 
   TGrid::Connect("alien://");
@@ -20,19 +20,19 @@ void AddTaskfn(const char *suffix = "Resochrg")
   Int_t gCentMin = 0;
   Int_t gCentMax = 100;
 
-  TString TaskResoPID;
-  TaskResoPID.Form("gTaskResoCent%d_%d_%s", gCentMin, gCentMax, suffix);
+  TString TaskCMWPID;
+  TaskCMWPID.Form("gTaskCMWCent%d_%d_%s", gCentMin, gCentMax, suffix);
 
-  AliAnalysisTaskfn *task_Reso = new AliAnalysisTaskfn(TaskResoPID);
+  AliAnalysisTaskfn *task_CMW = new AliAnalysisTaskfn(TaskCMWPID);
 
-  //task_Reso->SelectCollisionCandidates(AliVEvent::kINT7);      // default is kINT7
-  //printf("\n =========> AddTaskReso::Info() Trigger = kINT7 \n");
+  //task_CMW->SelectCollisionCandidates(AliVEvent::kINT7);      // default is kINT7
+  //printf("\n =========> AddTaskCMW::Info() Trigger = kINT7 \n");
 
 
   ///---> Now Pass data and containers to Analysis Object ----
   
-  mgr->AddTask(task_Reso);                        // connect the task to the analysis manager
-  mgr->ConnectInput(task_Reso, 0, cinput);        // give AOD event to my Task..!!
+  mgr->AddTask(task_CMW);                        // connect the task to the analysis manager
+  mgr->ConnectInput(task_CMW, 0, cinput);        // give AOD event to my Task..!!
 
 
   AliAnalysisDataContainer  *cOutPut1;
@@ -40,10 +40,10 @@ void AddTaskfn(const char *suffix = "Resochrg")
   sMyOutName.Form("SimpleTask_%s",suffix);
   
   cOutPut1 = (AliAnalysisDataContainer *) mgr->CreateContainer(sMyOutName,TList::Class(),AliAnalysisManager::kOutputContainer,list1OutName.Data());
-  mgr->ConnectOutput(task_Reso, 1, cOutPut1);
+  mgr->ConnectOutput(task_CMW, 1, cOutPut1);
   
  
-  printf("\n\n ================> AddTaskReso() Configured properly <==================\n\n");
+  printf("\n\n ================> AddTaskCMW() Configured properly <==================\n\n");
 
   
 }
