@@ -58,6 +58,7 @@ public:
     void SetAverageTransverseMult  (Double_t average_Nch_Transv)        { fAverage_Nch_Transv = average_Nch_Transv; }
     void SetInputData              (Bool_t isMC)                        { fIsMC = isMC; }
     void SetMinPtLeadingTrack      (Double_t pt)                        { fPt_min_leading = pt; }
+    void SetParticleType           (Bool_t isPion)                      { fIsPion = isPion; }
 
     //Process Real and Simulated Event
     void ProcessRealEvent ();
@@ -77,7 +78,8 @@ public:
     Bool_t   IsTrackInTowardRegion                      (AliESDtrack *track, Int_t leading_track_ID);
     Bool_t   IsTrackInAwayRegion                        (AliESDtrack *track, Int_t leading_track_ID);
     Bool_t   IsHighPurityProton                         (AliESDtrack *track);
-    Bool_t   IsProtonCandidate                          (AliESDtrack *track);
+    Bool_t   IsHighPurityPion                           (AliESDtrack* track);
+    Bool_t   IsTrackCandidate                           (AliESDtrack *track);
     Bool_t   PassedTrackQualityCuts_Syst                (AliESDtrack *track, Int_t isyst);
     Double_t GetTransverseDCA                           (AliESDtrack *track);
     Double_t GetLongitudinalDCA                         (AliESDtrack *track);
@@ -92,6 +94,7 @@ private:
     AliMCEvent        *fMCevent;//!
     AliMCEventHandler *fMCEventHandler;//!
     AliESDtrackCuts   *fESDtrackCuts_AntiProton;//!
+    AliESDtrackCuts   *fESDtrackCuts_Pions;//!
     AliESDtrackCuts   *fESDtrackCuts_LeadingTrack;//!
     AliESDtrackCuts   *fESDtrackCuts_TransverseMult;//!
     AliPIDResponse    *fPIDResponse;//!
@@ -106,6 +109,7 @@ private:
     Double_t  fPt_min_leading;//
     Bool_t    fIsMC;//
     Bool_t    fIsITSrecalib;//
+    Bool_t    fIsPion;//
     TH2F      *hMean;//
     TH2F      *hWidth;//
     
@@ -118,6 +122,8 @@ private:
     TH1F *hRtDistribution;//!
     TH1F *hEventsWithLeadingTrack;//!
     TH1I *hNumberOfAntiProtons;//!
+    TH1I *hNumberOfPions;//!
+
 
     //Correlations between Transverse and Integrated Mult
     TH2F *hNchTransv_NchTot;//!
@@ -131,11 +137,17 @@ private:
 
     //***************************************** Data *****************************************
 
+    //antiprotons histograms
+
     //3-Dimensional Histograms (low p_{T})
     THnSparseF *hnsigmaTPC_antiprotons_Toward;//!
     THnSparseF *hnsigmaTPC_antiprotons_Away;//!
     THnSparseF *hnsigmaTPC_antiprotons_Transverse;//!
-    
+
+    THnSparseF *hnsigmaTPC_antiprotons_Toward_noITSpresel;//!
+    THnSparseF *hnsigmaTPC_antiprotons_Away_noITSpresel;//!
+    THnSparseF *hnsigmaTPC_antiprotons_Transverse_noITSpresel;//!
+
     //3-Dimensional Histograms (high p_{T})
     THnSparseF *hnsigmaTOF_antiprotons_Toward;//!
     THnSparseF *hnsigmaTOF_antiprotons_Away;//!
@@ -151,8 +163,38 @@ private:
     THnSparseF *hnsigmaTOF_antiprotons_Syst;//!
     THnSparseF *hDCAxy_antiprotons_Syst;//!
 
+    //pos and neg pions histograms
+
+    //3-Dimensional Histograms (high p_{T})
+    THnSparseF *hnsigmaTOF_pos_pions_Toward;//!
+    THnSparseF *hnsigmaTOF_pos_pions_Away;//!
+    THnSparseF *hnsigmaTOF_pos_pions_Transverse;//!
+
+    THnSparseF *hnsigmaTOF_neg_pions_Toward;//!
+    THnSparseF *hnsigmaTOF_neg_pions_Away;//!
+    THnSparseF *hnsigmaTOF_neg_pions_Transverse;//!
+    
+    //DCA_{xy} Distributions
+    THnSparseF *hDCAxy_pos_pions_Toward;//!
+    THnSparseF *hDCAxy_pos_pions_Away;//!
+    THnSparseF *hDCAxy_pos_pions_Transverse;//!
+
+    THnSparseF *hDCAxy_neg_pions_Toward;//!
+    THnSparseF *hDCAxy_neg_pions_Away;//!
+    THnSparseF *hDCAxy_neg_pions_Transverse;//!
+
+    //4-Dimensional Histograms for Syst. Uncertainties
+    THnSparseF *hnsigmaTOF_pos_pions_Syst;//!
+    THnSparseF *hDCAxy_pos_pions_Syst;//!
+
+    THnSparseF *hnsigmaTOF_neg_pions_Syst;//!
+    THnSparseF *hDCAxy_neg_pions_Syst;//!
+
+
     //****************************************** MC ******************************************
     
+    //antiprotons histograms
+
     //Generated p_{T} Spectra
     TH1F *h_antiprotons_Gen;//!
 
@@ -171,6 +213,30 @@ private:
     TH2F *hnsigmaTOF_antiprotons_Rec_Syst;//!
     THnSparseF *hDCAxy_antiprotons_prim_Syst;//!
     THnSparseF *hDCAxy_antiprotons_sec_Syst;//! 
+
+    //pos and neg pions histograms
+
+    //Generated p_{T} Spectra
+    TH1F *h_pos_pions_Gen;//!
+    TH1F *h_neg_pions_Gen;//!
+
+    //Reconstructed p_{T} Spectra
+    TH2F *hnsigmaTOF_pos_pions_Rec;//!
+    TH2F *hnsigmaTOF_neg_pions_Rec;//!
+
+    //DCA_{xy} distributions
+    TH2F *hDCAxy_pos_pions_prim;//!
+    TH2F *hDCAxy_pos_pions_sec;//!
+    TH2F *hDCAxy_neg_pions_prim;//!
+    TH2F *hDCAxy_neg_pions_sec;//!
+
+    //Histograms for Syst. Uncertainties
+    TH2F *hnsigmaTOF_pos_pions_Rec_Syst;//!
+    TH2F *hnsigmaTOF_neg_pions_Rec_Syst;//!
+    THnSparseF *hDCAxy_pos_pions_prim_Syst;//! 
+    THnSparseF *hDCAxy_neg_pions_prim_Syst;//! 
+    THnSparseF *hDCAxy_pos_pions_sec_Syst;//! 
+    THnSparseF *hDCAxy_neg_pions_sec_Syst;//! 
 
     //****************************************************************************************
     
