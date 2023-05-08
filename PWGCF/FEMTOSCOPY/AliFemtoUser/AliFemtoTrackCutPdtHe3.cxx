@@ -1022,7 +1022,7 @@ bool AliFemtoTrackCutPdtHe3::WiolaDCut(float mom, float nsigmaTPCD, float nsigma
 	return false;
 }
 bool AliFemtoTrackCutPdtHe3::WiolaRejectPion(float mom,float nsigmaTPCpi,float nsigmaTOFpi){
-	if (mom > 0.5) {
+if (mom > 0.5) {
 	        if (TMath::Hypot( nsigmaTOFpi, nsigmaTPCpi ) < pionrejectcut) return true;	
 	}
     	else {
