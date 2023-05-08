@@ -2528,7 +2528,7 @@ void ConfigureCaloTrackCorrAnalysis
                         isoCone,isoConeMin,-1,isoPtTh,0,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
 
-        if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+        if ( analysisString.Contains("UESubMethodsAndJetMedian") )
         {
           anaList->AddAt(ConfigureIsolationAnalysis
                          ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,
@@ -2541,7 +2541,7 @@ void ConfigureCaloTrackCorrAnalysis
         //printf("**** MultiIsoRUESub ****\n");
         for(Int_t isize = 0; isize < nsizes; isize++)
         {
-          if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+          if ( analysisString.Contains("UESubMethodsAndJetMedian") )
           {
             anaList->AddAt(ConfigureIsolationAnalysis
                            ("Photon",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,
@@ -2868,7 +2868,7 @@ void ConfigureCaloTrackCorrAnalysis
                        ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubIC,
                         isoCone,isoConeMin,-1,isoPtTh,0,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
-        if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+        if ( analysisString.Contains("UESubMethodsAndJetMedian") )
         {
           anaList->AddAt(ConfigureIsolationAnalysis
                          ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,
@@ -2903,7 +2903,7 @@ void ConfigureCaloTrackCorrAnalysis
                           conesize[isize],isoConeMin,-1,isoPtTh,0,
                           col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
 
-          if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+          if ( analysisString.Contains("UESubMethodsAndJetMedian") )
           {
             anaList->AddAt(ConfigureIsolationAnalysis
                            ("Random",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,
