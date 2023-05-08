@@ -1,4 +1,5 @@
 
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -57,36 +58,41 @@ class AliAnalysisTaskfn : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   Bool_t         GoodEvent(const AliVVertex *vertex);
-  Bool_t         AcceptAODtracks(AliAODTrack *pTrack, AliAODTrack *nTrack);    
-  void           MixingEvents();
-  Bool_t         TrackPassesOOBPileupCut(AliAODTrack* t, Double_t b);
-  Bool_t         IsPion(AliVTrack *aodtrack);
-  Bool_t         IsKaon(AliVTrack *aodtrack);
-  Bool_t         IsV0(AliAODv0 *v1, AliAODEvent *aod);
+  Bool_t         AcceptESDtracks(AliESDtrack *pTrack, AliESDtrack *nTrack);    
+  void           SetupForMixing();
+  Bool_t         TrackPassesOOBPileupCut(AliESDtrack* t, Double_t b);
+  
 
-  struct AlikkshContainer{
-    Int_t charge; //for distinguishing like and unlike sign
-    Int_t trackid; //to prevent same track counting
-    TLorentzVector particle; //particle invmass
+//---------------------------------------------------------------------------------------
+  Bool_t      IsPion(AliVTrack *esdtrack);
+  Bool_t      IsKaon(AliVTrack *esdtrack);
+  Bool_t      CheckESDV0(AliESDv0 *v1, AliESDEvent *esd);
+
+  struct Alikks0Container{
+    Int_t charge;
+    Int_t tracknumber;
+    TLorentzVector particle;
   };
 
-  struct AlipiContainer{
+  struct AlipionContainer{
     Int_t charge;
-    Int_t trackid;
+    Int_t tracknumber;
     TLorentzVector particle;
   };
 
  private:
   enum
   {
-    kMaxTrack=500
+    kMaxTrack=200
   };
-  AliEventPoolManager *fPoolMgr; //!
+  AliEventPoolManager*fPoolMgr; //!
+  TObjArray* fpionreduced; //!
   TList  *fOutput;//!
   AliPIDResponse   *fPIDResponse;//!
-  AliVEvent        *fVevent;//!VEvent                                                                                 
-  AliAODEvent      *lAODevent;//! aod Event                                                                                 
+  AliVEvent        *fVevent;//!                                                                                 
+  AliESDEvent       *lESDevent;//!
   AliEventCuts fEventCuts; //!
+  AliESDtrackCuts  *fESDtrackCuts;//!                                                                                                        
   TH1F    *fHistZVertex;//!
   TH1F    *fHistCentralityEvtCount;//!
   TH1F    *fHisteventsummary;//!
@@ -100,30 +106,31 @@ class AliAnalysisTaskfn : public AliAnalysisTaskSE {
   ClassDef(AliAnalysisTaskfn, 1);
 };
 
-
+//_____ Reduced Tracks -- contains only quantities requires for this analysis to reduce memory consumption for event mixing
 class AliCompactTrack : public TObject // TObject
 {
  public:
   AliCompactTrack(Double_t px, Double_t py, Double_t pz, Short_t charge)
-    : PX(px), PY(py), PZ(pz), Chrg(charge)
+    : fPxReduced(px), fPyReduced(py), fPzReduced(pz), fChargeReduced(charge)
   {
   }
   ~AliCompactTrack() {}
    
+  // AliVParticle functions
 
-  virtual Double_t Px() const { return PX; }
-  virtual Double_t Py() const { return PY; }
-  virtual Double_t Pz() const { return PZ; }
-  virtual Short_t Charge() const{ return Chrg; }
+  virtual Double_t Px() const { return fPxReduced; }
+  virtual Double_t Py() const { return fPyReduced; }
+  virtual Double_t Pz() const { return fPzReduced; }
+  virtual Short_t Charge() const{ return fChargeReduced; }
     
  private:
     
-  Double_t PX;    
-  Double_t PY;    
-  Double_t PZ;    
-  Short_t Chrg; 
+  Double_t fPxReduced;    // eta
+  Double_t fPyReduced;     // phi
+  Double_t fPzReduced;      // pT
+  Short_t fChargeReduced;  // charge
 
-  ClassDef(AliCompactTrack, 1); 
+  ClassDef(AliCompactTrack, 1); // reduced track class which contains only quantities requires 
 };
 
 #endif
