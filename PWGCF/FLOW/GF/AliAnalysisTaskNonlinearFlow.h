@@ -155,6 +155,9 @@ class PhysicsProfile : public TObject {
     TProfile*  fMeanPt;         //! Average of Pt
     TProfile*  fc22w;           //! vn^2 with event weight
     TProfile*  fPcc;            //! v2^2-pt
+    TProfile*  fc22nw;           //! vn^2 without event weight
+    TProfile*  fc24nw;           //! vn^4 without event weight
+    TProfile*  fPtVariance;                  //! variance of pt
 
 		TProfile*	 fChcn2[6]; 			//! <<2>> in unit bins of Ntrks
 		TProfile*    	 fChcn2_Gap0[6];  		//! <<2>> |#Delta#eta| > 0.0
@@ -191,7 +194,7 @@ class PhysicsProfile : public TObject {
 		TProfile*	 fChcn8_Gap0[6];  		//! <<8>> |#Delta#eta| > 0.0
 
 	private:
-		ClassDef(PhysicsProfile, 7);    //Analysis task
+		ClassDef(PhysicsProfile, 8);    //Analysis task
 };
 
 class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
@@ -414,11 +417,16 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		PhysicsProfile multProfile;    //!
 		PhysicsProfile multProfile_bin[30]; //!
 
-		CorrelationCalculator correlator; //!
-    Double_t sumPt; //!
+    CorrelationCalculator correlator; //!
+    Double_t sumPtw; //!
+    Double_t sumPtw2; //!
+    Double_t sumPt2w2; //!
+    Double_t sumWeight; //!
+    Double_t sumWeight2; //!
     Double_t eventWeight; //!
-		TRandom3 rand;         //!
-		Int_t bootstrap_value = -1; //!
+    Double_t eventWeight2; //!
+    TRandom3 rand;         //!
+    Int_t bootstrap_value = -1; //!
 
 
 		unsigned fgFlowHarmonics = 0;        // calculate v2, v3, v4, v5
@@ -473,7 +481,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 21);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 22);    //Analysis task
 };
 
 #endif

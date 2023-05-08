@@ -960,8 +960,13 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
   NtrksAfter3subM = 0;
   NtrksAfter3subR = 0;
 
-  sumPt = 0;
-  eventWeight = 0;
+  sumPtw = 0;
+  sumPtw2 = 0;
+  sumPt2w2 = 0;
+  sumWeight = 0;
+  sumWeight2 = 0;
+  eventWeight  = 0;
+  eventWeight2 = 0;
 
   //..for DCA
   double pos[3], vz, vx, vy;
@@ -1099,7 +1104,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
       }
     }
 
-    if (fuQGapScan) {
+    if (fuQGapScan || fgVnPtCorr) {
       //..Gap > 0.2
       if(aodTrk->Eta() < -0.1) {
         NtrksAfterGap2M++;
@@ -1235,8 +1240,12 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
         }
       }
       if(aodTrk->Eta() >= -fEtaGap3Sub && aodTrk->Eta() <= fEtaGap3Sub) {//..middle part
-        eventWeight += weight*weightPt;
-        sumPt+=weight*weightPt*aodTrk->Pt();
+        // eventWeight += weightPt;
+        sumPtw+=weightPt*aodTrk->Pt();
+        sumPtw2+=weightPt*weightPt*aodTrk->Pt();
+        sumPt2w2 += weightPt*weightPt*aodTrk->Pt()*aodTrk->Pt();
+        sumWeight += weightPt;
+        sumWeight2 += weightPt*weightPt;
 
         NtrksAfter3subM += 1;
         for(int iharm=0; iharm<8; iharm++) {
@@ -2639,6 +2648,18 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
     multProfile.fPcc = new TProfile(Form("fV2Pt%s", label.Data()), "v2-Pt correlation", nn, xbins);
     multProfile.fPcc->Sumw2();
     listOfProfile->Add(multProfile.fPcc);
+
+    multProfile.fc22nw = new TProfile(Form("fChc22nw%s", label.Data()), "v2^2 without event weight", nn, xbins);
+    multProfile.fc22nw->Sumw2();
+    listOfProfile->Add(multProfile.fc22nw);
+
+    multProfile.fc24nw = new TProfile(Form("fChc24nw%s", label.Data()), "v2^4 with event weight", nn, xbins);
+    multProfile.fc24nw->Sumw2();
+    listOfProfile->Add(multProfile.fc24nw);
+
+    multProfile.fPtVariance = new TProfile(Form("fdPt2%s", label.Data()), "Pt variance", nn, xbins);
+    multProfile.fPtVariance->Sumw2();
+    listOfProfile->Add(multProfile.fPtVariance);
   }
 }
 
@@ -2758,15 +2779,31 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptMCTruthTrack(AliAODMCParticle *mtrk) 
 void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, double Ntrks) {
   //..calculate the PCC
   if (fgVnPtCorr) {
-    double Dn2GapLR = correlator.TwoGap10(0, 0).Re();
-    if(NtrksAfter3subL > 0 && NtrksAfter3subM > 0 && NtrksAfter3subR > 0
+    double Dn2GapLR = correlator.TwoGap8(0, 0).Re();
+    double Dn4GapLR = correlator.FourGap8(0, 0, 0, 0).Re();
+    if(NtrksAfter3subL > 2 && NtrksAfter3subM > 0 && NtrksAfter3subR > 2
        && Dn2GapLR != 0)
       {
-        TComplex v22_3subLR = correlator.Two_3SubLR(2, -2);
+        eventWeight = sumWeight;
+        eventWeight2 = sumWeight*sumWeight - sumWeight2;
+        TComplex v22_3subLR = correlator.TwoGap8(2, -2);
         double v22Re_3subLR = v22_3subLR.Re()/Dn2GapLR;
+
+        double meanPt = sumPtw/sumWeight;
         profile.fc22w->Fill(Ntrks, v22Re_3subLR, Dn2GapLR*eventWeight);
-        profile.fPcc->Fill(Ntrks,  v22Re_3subLR*sumPt/eventWeight, Dn2GapLR*eventWeight);
-        profile.fMeanPt->Fill(Ntrks, sumPt/eventWeight, eventWeight);
+        profile.fPcc->Fill(Ntrks,  v22Re_3subLR*meanPt, Dn2GapLR*eventWeight);
+        profile.fMeanPt->Fill(Ntrks, meanPt, eventWeight);
+
+        // Variance of Pt
+        profile.fPtVariance->Fill((sumPtw*sumPtw-sumPt2w2) / eventWeight2
+                                  - 2*meanPt*(sumWeight*sumPtw-sumPtw2) / eventWeight2
+                                  + meanPt*meanPt
+                                  , eventWeight2);
+        // Variance of vn^2
+        profile.fc22nw->Fill(Ntrks, v22Re_3subLR, Dn2GapLR);
+        TComplex v24_3subLR = correlator.FourGap8(2, 2, -2, -2);
+        double v24Re_3subLR = v24_3subLR.Re()/Dn4GapLR;
+        profile.fc24nw->Fill(Ntrks, v24Re_3subLR, Dn4GapLR);
       }
   }
 
@@ -3834,7 +3871,10 @@ PhysicsProfile::PhysicsProfile(const PhysicsProfile& profile) :
   fChc532_3subRB(nullptr),
   fMeanPt(nullptr),
   fc22w(nullptr),
-  fPcc(nullptr)
+  fPcc(nullptr),
+  fc22nw(nullptr),
+  fc24nw(nullptr),
+  fPtVariance(nullptr)
 {
   memset(fChcn2, 0, sizeof(fChcn2));
   memset(fChcn2_Gap0, 0, sizeof(fChcn2_Gap0));
