@@ -2525,6 +2525,7 @@ void AddTask_GammaCalo_pp(
     cuts.AddCutCalo("00010113","411790109ee302v0000","0s631031000000d0"); // INT7 TM var EoverP 2.00
     cuts.AddCutCalo("00010113","411790109ge302v0000","0s631031000000d0"); // INT7 TM var EoverP 1.5
     cuts.AddCutCalo("00010113","4117901097e302v0000","0s631031000000d0"); // INT7 no E/p var
+    cuts.AddCutCalo("00010113","411790109le302v0000","0s631031000000d0"); // INT7 std + sec TM
     cuts.AddCutCalo("00010113","411790109ne302v0000","0s631031000000d0"); // INT7 TM var, Eta (0.035, 0.010, 2.5); Phi (0.085, 0.015, 2.)
     cuts.AddCutCalo("00010113","411790109oe302v0000","0s631031000000d0"); // INT7 TM var, Eta (0.045, 0.010, 2.5); Phi (0.095, 0.015, 2.)
   } else if (trainConfig == 1916){  // pp 13 TeV variations: Non Linearity
