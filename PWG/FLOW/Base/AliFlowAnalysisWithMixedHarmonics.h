@@ -172,6 +172,20 @@ class AliFlowAnalysisWithMixedHarmonics
   void Set3pCorrelatorVsZN(TProfile* const s3pVsZN) {this->f3pCorrelatorVsZN = s3pVsZN;};
   TProfile* Get3pCorrelatorVsZN() const {return this->f3pCorrelatorVsZN;};
 
+  void Set2pCorrelatorVsZPA(TProfile* const s2pVsZPA) {this->f2pCorrelatorVsZPA = s2pVsZPA;};
+  TProfile* Get2pCorrelatorVsZPA() const {return this->f2pCorrelatorVsZPA;};
+  void Set2pCorrelatorVsZPC(TProfile* const s2pVsZPC) {this->f2pCorrelatorVsZPC = s2pVsZPC;};
+  TProfile* Get2pCorrelatorVsZPC() const {return this->f2pCorrelatorVsZPC;};
+  void Set2pCorrelatorVsZP(TProfile* const s2pVsZP) {this->f2pCorrelatorVsZP = s2pVsZP;};
+  TProfile* Get2pCorrelatorVsZP() const {return this->f2pCorrelatorVsZP;};
+
+  void Set2pCorrelatorVsZNA(TProfile* const s2pVsZNA) {this->f2pCorrelatorVsZNA = s2pVsZNA;};
+  TProfile* Get2pCorrelatorVsZNA() const {return this->f2pCorrelatorVsZNA;};
+  void Set2pCorrelatorVsZNC(TProfile* const s2pVsZNC) {this->f2pCorrelatorVsZNC = s2pVsZNC;};
+  TProfile* Get2pCorrelatorVsZNC() const {return this->f2pCorrelatorVsZNC;};
+  void Set2pCorrelatorVsZN(TProfile* const s2pVsZN) {this->f2pCorrelatorVsZN = s2pVsZN;};
+  TProfile* Get2pCorrelatorVsZN() const {return this->f2pCorrelatorVsZN;};
+
   void SetNonIsotropicTermsVsMPro(TProfile2D* const nitVsMPro) {this->fNonIsotropicTermsVsMPro = nitVsMPro;};
   TProfile2D* GetNonIsotropicTermsVsMPro() const {return this->fNonIsotropicTermsVsMPro;};
 
@@ -317,6 +331,12 @@ class AliFlowAnalysisWithMixedHarmonics
   TProfile *f3pCorrelatorVsZNA; // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> vs ZDC-N A-side 
   TProfile *f3pCorrelatorVsZNC; // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> vs ZDC-N C-side 
   TProfile *f3pCorrelatorVsZN; // 3-p correlator <<cos[n(phi1+phi2-2phi3)]>> vs ZDC-N A+C-side 
+  TProfile *f2pCorrelatorVsZPA; // 2-p correlator <<cos[n(phi1-phi2)]>> vs ZDC-P A-side 
+  TProfile *f2pCorrelatorVsZPC; // 2-p correlator <<cos[n(phi1-phi2)]>> vs ZDC-P C-side 
+  TProfile *f2pCorrelatorVsZP; // 2-p correlator <<cos[n(phi1-phi2)]>> vs ZDC-P A+C-side 
+  TProfile *f2pCorrelatorVsZNA; // 2-p correlator <<cos[n(phi1-phi2)]>> vs ZDC-N A-side 
+  TProfile *f2pCorrelatorVsZNC; // 2-p correlator <<cos[n(phi1-phi2)]>> vs ZDC-N C-side 
+  TProfile *f2pCorrelatorVsZN; // 2-p correlator <<cos[n(phi1-phi2)]>> vs ZDC-N A+C-side 
   TProfile2D *fNonIsotropicTermsVsMPro; // non-isotropic terms in the decomposition of <cos[n(phi1+phi2-2phi3))]> vs multiplicity
   TProfile *f3pCorrelatorVsPtSumDiffPro[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(p1+p2)/2,|p1-p2|]
   TProfile *f3pCorrelatorVsEtaSumDiffPro[2]; // differential 3-p correlator <<cos[psi1+psi2-2phi3)]>> vs [(eta1+eta2)/2,|eta1-eta2|]
