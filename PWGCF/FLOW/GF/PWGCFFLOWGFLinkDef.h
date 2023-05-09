@@ -42,6 +42,7 @@
 
 #pragma link C++ class AliAnalysisTaskCreateNUA+;
 #pragma link C++ class AliAnalysisTaskCreatePeriodNUA+;
+#pragma link C++ class AliAnalysisTaskCreateNUE+;
 #pragma link C++ class AliAnalysisTaskEffFDExample+;
 #pragma link C++ class AliAnalysisTaskFlowPPTask+;
 #pragma link C++ class AliAnalysisTaskGFWFlow+;
