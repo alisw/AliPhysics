@@ -118,7 +118,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   for (int i = 0; i < nPairs; ++i) {
     closeRejection.push_back(false);
     pairQA.push_back(0);
-    NBins.push_back(750);
+    NBins.push_back(1500);
     kMin.push_back(0.);
     kMax.push_back(3.);
   }
