@@ -113,7 +113,7 @@ AliAnalysisTask *AddTaskJSPCMasterClosureRun2(TString taskName = "JSPCMaster", d
   fJCatalyst[1]->SetNumTPCClusters(70);
   fJCatalyst[1]->SetDCAzCut(2.0);
   fJCatalyst[1]->SetChi2Cuts(0.1, 4.0);
-  fJCatalyst[1]->SetPhiCorrectionIndex(1); //ADDED + CHECK
+  fJCatalyst[1]->SetPhiCorrectionIndex(0); //ADDED + CHECK
   mgr->AddTask((AliAnalysisTask *)fJCatalyst[1]); //ADDED + CHECK
 
   //MC Reco without weights
@@ -134,14 +134,12 @@ AliAnalysisTask *AddTaskJSPCMasterClosureRun2(TString taskName = "JSPCMaster", d
   fJCatalyst[2]->SetNumTPCClusters(70);
   fJCatalyst[2]->SetDCAzCut(2.0);
   fJCatalyst[2]->SetChi2Cuts(0.1, 4.0);
-  fJCatalyst[2]->SetPhiCorrectionIndex(2); //ADDED + CHECK
   mgr->AddTask((AliAnalysisTask *)fJCatalyst[2]); //ADDED + CHECK
 
   //Configuration of the analysis task itself.
   const int SPCCombination = 3;
   TString SPC[SPCCombination] = { "2SPC", "4SPC", "5SPC" };
   AliJSPCTaskRun2 *myTask[Nsets][SPCCombination];
-  Bool_t corr[Nsets] = {kFALSE, kFALSE, kTRUE};
   
   for(Int_t i = 0; i < Nsets; i++){
     if (doSPC == 0) {
@@ -151,9 +149,11 @@ AliAnalysisTask *AddTaskJSPCMasterClosureRun2(TString taskName = "JSPCMaster", d
         myTask[i][j]->AliSPCRun2SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
         myTask[i][j]->AliSPCRun2SetSaveAllQA(kTRUE);
         myTask[i][j]->AliSPCRun2SetMinNuPar(14.);
-        myTask[i][j]->AliSPCRun2SetUseWeights(kTRUE, corr[i]);
-
-
+        if(i==1){
+          myTask[i][j]->AliSPCRun2SetUseWeights(kTRUE, kTRUE);
+        } else {
+          myTask[i][j]->AliSPCRun2SetUseWeights(kTRUE, kFALSE);
+        }
         if (j == 0) {
           Int_t harmonicArray1[maxNrComb][8] = {
                                           {4, 6,-2,-2,-2, 0, 0, 0},
