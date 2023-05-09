@@ -37,8 +37,13 @@ using namespace std; // std namespace: so you can do things like 'cout'
 ClassImp(AliAnalysisTaskCreateNUA) // classimp: necessary for root
 
     AliAnalysisTaskCreateNUA::AliAnalysisTaskCreateNUA() : AliAnalysisTaskSE(),
-                                                           fAOD(0), fOutputList(0), fIsMC(false), fPeriod("LHC17"), Last_RunNumer(0),
-                                                           Last_Position(-1), fGFWSelection(NULL), fMinPt(0.2), fMaxPt(3.0), hEventCount(0)
+                                                           fAOD(0), fOutputList(0), fIsMC(false),
+  fPeriod("LHC17"),
+  Last_RunNumer(0),
+  Last_Position(-1),
+  fGFWSelection(NULL),
+  fGFWSelection15o(NULL),
+  fMinPt(0.2), fMaxPt(3.0), hEventCount(0)
 {
   // default constructor, don't allocate memory here!
   // this is used by root for IO purposes, it needs to remain empty
@@ -46,8 +51,14 @@ ClassImp(AliAnalysisTaskCreateNUA) // classimp: necessary for root
 }
 //_____________________________________________________________________________
 AliAnalysisTaskCreateNUA::AliAnalysisTaskCreateNUA(const char *name) : AliAnalysisTaskSE(name),
-                                                                       fAOD(0), fOutputList(0), fIsMC(false), fPeriod("LHC17"), Last_RunNumer(0),
-                                                                       Last_Position(-1), fGFWSelection(NULL), fMinPt(0.2), fMaxPt(3.0), hEventCount(0)
+                                                                       fAOD(0), fOutputList(0), fIsMC(false), fPeriod("LHC17"),
+  Last_RunNumer(0),
+  Last_Position(-1),
+  fGFWSelection(NULL),
+  fGFWSelection15o(NULL),
+  fMinPt(0.2),
+  fMaxPt(3.0),
+  hEventCount(0)
 {
   weights = nullptr;
   // constructor
@@ -69,6 +80,8 @@ AliAnalysisTaskCreateNUA::~AliAnalysisTaskCreateNUA()
   }
   if (fGFWSelection)
     delete fGFWSelection;
+  if (fGFWSelection15o)
+    delete fGFWSelection15o;
 }
 //_____________________________________________________________________________
 void AliAnalysisTaskCreateNUA::UserCreateOutputObjects()
@@ -87,8 +100,13 @@ void AliAnalysisTaskCreateNUA::UserCreateOutputObjects()
   fOutputList->SetName("WeightList");
   fOutputList->SetOwner(kTRUE); // memory stuff: the list is owner of all objects it contains and will delete them
                                 // if requested (dont worry about this now)
-  fGFWSelection = new AliGFWCuts();
-  fGFWSelection->PrintSetup();
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1 and LHC17n
+    fGFWSelection15o = new AliGFWNFCuts();
+    fGFWSelection15o->PrintSetup();
+  } else {
+    fGFWSelection = new AliGFWMCuts();
+    fGFWSelection->PrintSetup();
+  }
 
   //SetRunNumber
   if (fPeriod == "LHC16")
@@ -112,14 +130,6 @@ void AliAnalysisTaskCreateNUA::UserCreateOutputObjects()
           fWeights->SetName(Form("w%s_SystFlag%d_", to_string(*RunIter).c_str(), fCurrSystFlag));
           fWeights->Init(!fIsMC, fIsMC);
         }
-        /*
-          for(int sysflag=1;sysflag<=16;sysflag++){
-            fOutputList->Add(new AliGFWWeights());
-            AliGFWWeights* fWeights = (AliGFWWeights*)fOutputList->Last();
-            fWeights->SetName( Form("w%s_SystFlag%d_",to_string(*RunIter).c_str(),sysflag) );
-            fWeights->Init(!fIsMC,fIsMC);
-          }
-          */
       }
     }
     else
@@ -183,14 +193,14 @@ void AliAnalysisTaskCreateNUA::UserCreateOutputObjects()
       printf("RunNumber list is empty!\n");
     }
   }
-  else if (fPeriod == "LHC15" && fPbPb)
+  else if (fPeriod == "LHC15o")
   {
     vector<int> tempPbPb = {244917, 244918, 244975, 244980, 244982, 244983, 245061, 245064, 245066, 245068, 245145, 245146, 245148, 245151, 245152, 245231, 245232, 245233, 245259, 245343, 245345, 245346, 245347, 245349, 245353, 245396, 245397, 245401, 245407, 245409, 245410, 245411, 245439, 245441, 245446, 245450, 245452, 245453, 245454, 245496, 245497, 245501, 245504, 245505, 245507, 245535, 245540, 245542, 245543, 245544, 245545, 245554, 245683, 245692, 245700, 245702, 245705, 245729, 245731, 245738, 245752, 245759, 245766, 245775, 245785, 245793, 245829, 245831, 245833, 245923, 245949, 245952, 245954, 245963, 246001, 246003, 246012, 246036, 246037, 246042, 246048, 246049, 246052, 246053, 246087, 246089, 246113, 246115, 246148, 246151, 246152, 246153, 246178, 246180, 246181, 246182, 246185, 246217, 246222, 246225, 246271, 246272, 246275, 246276, 246390, 246391, 246392, 246424, 246428, 246431, 246434, 246487, 246488, 246493, 246495, 246540, 246543, 246553, 246567, 246568, 246575, 246583, 246648, 246671, 246675, 246676, 246750, 246751, 246757, 246758, 246759, 246760, 246763, 246765, 246766, 246804, 246805, 246807, 246808, 246809, 246810, 246844, 246845, 246846, 246847, 246851, 246855, 246858, 246859, 246864, 246865, 246867, 246870, 246871, 246928, 246930, 246937, 246942, 246945, 246948, 246949, 246980, 246982, 246984, 246989, 246991, 246994};
-    RunNumber_LHC15 = tempPbPb;
+    RunNumber_LHC15o = tempPbPb;
 
-    if (!RunNumber_LHC15.empty())
+    if (!RunNumber_LHC15o.empty())
     {
-      for (auto RunIter = RunNumber_LHC15.begin(); RunIter != RunNumber_LHC15.end(); RunIter++)
+      for (auto RunIter = RunNumber_LHC15o.begin(); RunIter != RunNumber_LHC15o.end(); RunIter++)
       {
         fOutputList->Add(new AliGFWWeights());
         AliGFWWeights *fWeights = (AliGFWWeights *)fOutputList->Last();
@@ -206,10 +216,80 @@ void AliAnalysisTaskCreateNUA::UserCreateOutputObjects()
         }
       }
     }
-    else
+  } else if (fPeriod == "LHC15o_pass2") {
+    vector<int> tempPbPb = {246994, 246991, 246989, 246984, 246982, 246948, 246945, 246928, 246871, 246870, 246867, 246865, 246864, 246859, 246858, 246851, 246847, 246846, 246845, 246844, 246810, 246809, 246808, 246807, 246805, 246804, 246766, 246765, 246763, 246760, 246759, 246758, 246757, 246751, 246750, 246434, 246431, 246424, 246392, 246391, 246276, 246275, 246272, 246271, 246225, 246222, 246217, 246185, 246182, 246181, 246180, 246178, 246153, 246152, 246151, 246148, 246115, 246113, 246089, 246087, 246053, 246052, 246049, 246048, 246042, 246037, 246036, 246012, 246003, 246001, 245963, 245954, 245952, 245949, 245923, 245833, 245831, 245829, 245793, 245785, 245775, 245766, 245759, 245752, 245731, 245729, 245705, 245702, 245692, 245683, 245554, 245545, 245544, 245543, 245542, 245540, 245535, 245507, 245505, 245504, 245501, 245497, 245496, 245454, 245453, 245450, 245446, 245441, 245411, 245410, 245409, 245407, 245401, 245397, 245396, 245353, 245349, 245347, 245346, 245345, 245343, 245259, 245233, 245232, 245231, 245152, 245151, 245146, 245145, 245068, 245066, 245064, 244983, 244982, 244980, 244975, 244918, 244917};
+    RunNumber_LHC15opass2 = tempPbPb;
+
+    if (!RunNumber_LHC15opass2.empty())
     {
-      printf("RunNumber list is empty!\n");
+      for (auto RunIter = RunNumber_LHC15opass2.begin(); RunIter != RunNumber_LHC15opass2.end(); RunIter++)
+      {
+        fOutputList->Add(new AliGFWWeights());
+        AliGFWWeights *fWeights = (AliGFWWeights *)fOutputList->Last();
+        if (fCurrSystFlag == 0)
+        {
+          fWeights->SetName(Form("w%s", to_string(*RunIter).c_str()));
+          fWeights->Init(!fIsMC, fIsMC);
+        }
+        else
+        {
+          fWeights->SetName(Form("w%s_SystFlag%d_", to_string(*RunIter).c_str(), fCurrSystFlag));
+          fWeights->Init(!fIsMC, fIsMC);
+        }
+      }
     }
+  } else if (fPeriod == "LHC18qr_pass3") {
+    vector<int> tempPbPb = {296623, 296622, 296621, 296619, 296618, 296616, 296615, 296594, 296553, 296552, 296551, 296550, 296548, 296547, 296516, 296512, 296511, 296510, 296509, 296472, 296433, 296424, 296423, 296420, 296419, 296415, 296414, 296383, 296381, 296380, 296379, 296378, 296377, 296376, 296375, 296312, 296309, 296304, 296303, 296280, 296279, 296273, 296270, 296269, 296247, 296246, 296244, 296243, 296242, 296241, 296240, 296198, 296197, 296196, 296195, 296194, 296192, 296191, 296143, 296142, 296135, 296134, 296133, 296132, 296123, 296074, 296066, 296065, 296063, 296062, 296060, 296016, 295942, 295941, 295937, 295936, 295913, 295910, 295909, 295861, 295860, 295859, 295856, 295855, 295854, 295853, 295831, 295829, 295826, 295825, 295822, 295819, 295818, 295816, 295791, 295788, 295786, 295763, 295762, 295759, 295758, 295755, 295754, 295725, 295723, 295721, 295719, 295718, 295717, 295714, 295712, 295676, 295675, 295673, 295668, 295667, 295666, 295615, 295612, 295611, 295610, 295589, 295588, 295586, 295585,
+                            297595, 297590, 297588, 297558, 297544, 297542, 297541, 297540, 297537, 297512, 297483, 297479, 297452, 297451, 297450, 297446, 297442, 297441, 297415, 297414, 297413, 297406, 297405, 297380, 297379, 297372, 297367, 297366, 297363, 297336, 297335, 297333, 297332, 297317, 297311, 297310, 297278, 297222, 297221, 297218, 297196, 297195, 297193, 297133, 297132, 297129, 297128, 297124, 297123, 297119, 297118, 297117, 297085, 297035, 297031, 296966, 296941, 296938, 296935, 296934, 296932, 296931, 296930, 296903, 296900, 296899, 296894, 296852, 296851, 296850, 296848, 296839, 296838, 296836, 296835, 296799, 296794, 296793, 296790, 296787, 296786, 296785, 296784, 296781, 296752, 296694, 296693, 296691, 296690
+    };
+    RunNumber_LHC18qrpass3 = tempPbPb;
+
+    if (!RunNumber_LHC18qrpass3.empty())
+      {
+        for (auto RunIter = RunNumber_LHC18qrpass3.begin(); RunIter != RunNumber_LHC18qrpass3.end(); RunIter++)
+          {
+            fOutputList->Add(new AliGFWWeights());
+            AliGFWWeights *fWeights = (AliGFWWeights *)fOutputList->Last();
+            if (fCurrSystFlag == 0)
+              {
+                fWeights->SetName(Form("w%s", to_string(*RunIter).c_str()));
+                fWeights->Init(!fIsMC, fIsMC);
+              }
+            else
+              {
+                fWeights->SetName(Form("w%s_SystFlag%d_", to_string(*RunIter).c_str(), fCurrSystFlag));
+                fWeights->Init(!fIsMC, fIsMC);
+              }
+          }
+      }
+  }
+  else if (fPeriod == "LHC16qt") {
+     vector<int> tempPbPb = {
+       265309, 265332, 265334, 265335, 265336, 265338, 265339, 265342, 265343, 265344, 265377, 265378, 265381, 265383, 265384, 265385, 265387, 265388, 265419, 265420, 265421, 265422, 265424, 265425, 265426, 265427, 265435, 265499, 265500, 265501, 265521, 265525,
+       267163, 267164, 267165, 267166
+     };
+    RunNumber_LHC16qt = tempPbPb;
+
+    if (!RunNumber_LHC16qt.empty())
+      {
+        for (auto RunIter = RunNumber_LHC16qt.begin(); RunIter != RunNumber_LHC16qt.end(); RunIter++)
+          {
+            fOutputList->Add(new AliGFWWeights());
+            AliGFWWeights *fWeights = (AliGFWWeights *)fOutputList->Last();
+            if (fCurrSystFlag == 0)
+              {
+                fWeights->SetName(Form("w%s", to_string(*RunIter).c_str()));
+                fWeights->Init(!fIsMC, fIsMC);
+              }
+            else
+              {
+                fWeights->SetName(Form("w%s_SystFlag%d_", to_string(*RunIter).c_str(), fCurrSystFlag));
+                fWeights->Init(!fIsMC, fIsMC);
+              }
+          }
+      }
+  } else {
+    printf("RunNumber list is empty!\n");
   }
 
   //must add in the last
@@ -266,12 +346,23 @@ void AliAnalysisTaskCreateNUA::UserExec(Option_t *)
   hEventCount->GetXaxis()->SetBinLabel(3,"After fEventCuts");
   hEventCount->Fill(2.5);
   //AliGFWCuts for Sysmatics
-  fGFWSelection->ResetCuts();
-  fGFWSelection->SetupCuts(fCurrSystFlag);
-  if (!fGFWSelection->AcceptVertex(fAOD))
-  {
-    PostData(1, fOutputList);
-    return;
+
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
+    fGFWSelection15o->ResetCuts();
+    fGFWSelection15o->SetupCuts(fCurrSystFlag);
+    if (!fGFWSelection15o->AcceptVertex(fAOD))
+    {
+      PostData(1, fOutputList);
+      return;
+    }
+  } else {
+    fGFWSelection->ResetCuts();
+    fGFWSelection->SetupCuts(fCurrSystFlag);
+    if (!fGFWSelection->AcceptVertex(fAOD))
+      {
+        PostData(1, fOutputList);
+        return;
+    }
   }
   hEventCount->GetXaxis()->SetBinLabel(4,"After AliGFWCuts");
   hEventCount->Fill(3.5);
@@ -324,122 +415,90 @@ void AliAnalysisTaskCreateNUA::Terminate(Option_t *)
 //Return the position of w in WeightList
 const Int_t AliAnalysisTaskCreateNUA::ReturnPosi_WeightList(const Int_t RunNumber, const Int_t sysflag)
 {
-  
   if (fPeriod == "LHC16")
-  {
-    if (!RunNumber_LHC16.empty())
     {
-      auto it = find(RunNumber_LHC16.begin(), RunNumber_LHC16.end(), RunNumber);
-      if (it == RunNumber_LHC16.end())
-      {
-        return -1;
-      } //can't find the RunNumber
-      int index = &*it - &RunNumber_LHC16[0];
-      return index;
+      if (!RunNumber_LHC16.empty())
+        {
+          auto it = find(RunNumber_LHC16.begin(), RunNumber_LHC16.end(), RunNumber);
+          if (it == RunNumber_LHC16.end())
+            {
+              return -1;
+            } //can't find the RunNumber
+          int index = it - RunNumber_LHC16.begin();
+          return index;
 
-    }
-  }
-  else if (fPeriod == "LHC17")
-  {
+        }
+    } else if (fPeriod == "LHC17") {
     if (!RunNumber_LHC17.empty())
-    {
-      auto it = find(RunNumber_LHC17.begin(), RunNumber_LHC17.end(), RunNumber);
-      if (it == RunNumber_LHC17.end())
       {
-        return -1;
-      } //can't find the RunNumber
-      int index = &*it - &RunNumber_LHC17[0];
-      return index;
-    }
-  }
-  else if (fPeriod == "LHC18")
-  {
+        auto it = find(RunNumber_LHC17.begin(), RunNumber_LHC17.end(), RunNumber);
+        if (it == RunNumber_LHC17.end())
+          {
+            return -1;
+          } //can't find the RunNumber
+        int index = it - RunNumber_LHC17.begin();
+        return index;
+      }
+  } else if (fPeriod == "LHC18") {
     if (!RunNumber_LHC18.empty())
-    {
-      auto it = find(RunNumber_LHC18.begin(), RunNumber_LHC18.end(), RunNumber);
-      if (it == RunNumber_LHC18.end())
       {
-        return -1;
-      } //can't find the RunNumber
-      int index = &*it - &RunNumber_LHC18[0];
-      return index;
-    }
-  }
-  else if (fPeriod == "LHC15" && fPbPb)
-  {
-    if (!RunNumber_LHC15.empty())
-    {
-      auto it = find(RunNumber_LHC15.begin(), RunNumber_LHC15.end(), RunNumber);
-      if (it == RunNumber_LHC15.end())
+        auto it = find(RunNumber_LHC18.begin(), RunNumber_LHC18.end(), RunNumber);
+        if (it == RunNumber_LHC18.end())
+          {
+            return -1;
+          } //can't find the RunNumber
+        int index = it - RunNumber_LHC18.begin();
+        return index;
+      }
+  } else if (fPeriod == "LHC15o") {
+    if (!RunNumber_LHC15o.empty())
       {
-        return -1;
-      } //can't find the RunNumber
-      int index = &*it - &RunNumber_LHC15[0];
-      return index;
-    }
-  }
-  else
-  {
+        auto it = find(RunNumber_LHC15o.begin(), RunNumber_LHC15o.end(), RunNumber);
+        if (it == RunNumber_LHC15o.end())
+          {
+            return -1;
+          } //can't find the RunNumber
+        int index = it - RunNumber_LHC15o.begin();
+        return index;
+      }
+  } else if (fPeriod == "LHC15o_pass2") {
+    if (!RunNumber_LHC15opass2.empty())
+      {
+        auto it = find(RunNumber_LHC15opass2.begin(), RunNumber_LHC15opass2.end(), RunNumber);
+        if (it == RunNumber_LHC15opass2.end())
+          {
+            return -1;
+          } //can't find the RunNumber
+        int index = it - RunNumber_LHC15opass2.begin();
+        return index;
+      }
+  } else if (fPeriod == "LHC18qr_pass3") {
+    if (!RunNumber_LHC18qrpass3.empty())
+      {
+        auto it = find(RunNumber_LHC18qrpass3.begin(), RunNumber_LHC18qrpass3.end(), RunNumber);
+        if (it == RunNumber_LHC18qrpass3.end())
+          {
+            return -1;
+          } //can't find the RunNumber
+        int index = it - RunNumber_LHC18qrpass3.begin();
+        return index;
+      }
+  } else if (fPeriod == "LHC16qt") {
+    if (!RunNumber_LHC16qt.empty())
+      {
+        auto it = find(RunNumber_LHC16qt.begin(), RunNumber_LHC16qt.end(), RunNumber);
+        if (it == RunNumber_LHC16qt.end())
+          {
+            return -1;
+          } //can't find the RunNumber
+        int index = it - RunNumber_LHC16qt.begin();
+        return index;
+      }
+  } else {
     return -1;
   }
-  
-  /*
-  if(Last_RunNumer!=RunNumber){
-    if(fPeriod=="LHC16"){
-      if(!RunNumber_LHC16.empty()){
-        auto it = find(RunNumber_LHC16.begin(),RunNumber_LHC16.end(),RunNumber);
-        if(it==RunNumber_LHC16.end()){return -1;}//can't find the RunNumber
-        int index = &*it-&RunNumber_LHC16[0];
 
-        Last_RunNumer=RunNumber;//setup the last used RunNumber
-        Last_Position=index;//setup the last return position
-
-        return index;
-        
-        //if(sysflag==0){
-        //  return index*17;
-        //}
-        //else{
-        //  return index*17+sysflag;
-        //}
-        
-      }
-    }
-    else if(fPeriod=="LHC17"){
-      if(!RunNumber_LHC17.empty()){
-        auto it = find(RunNumber_LHC17.begin(),RunNumber_LHC17.end(),RunNumber);
-        if(it==RunNumber_LHC17.end()){return -1;}//can't find the RunNumbe
-        int index = &*it-&RunNumber_LHC17[0];
-
-        Last_RunNumer=RunNumber;//setup the last used RunNumber
-        Last_Position=index;//setup the last return position
-
-        return index;
-      }
-    }
-    else if(fPeriod=="LHC18"){
-      if(!RunNumber_LHC18.empty()){
-        auto it = find(RunNumber_LHC18.begin(),RunNumber_LHC18.end(),RunNumber);
-        if(it==RunNumber_LHC18.end()){return -1;}//can't find the RunNumbe
-        int index = &*it-&RunNumber_LHC18[0];
-
-        Last_RunNumer=RunNumber;//setup the last used RunNumber
-        Last_Position=index;//setup the last return position
-        
-        return index;
-      }
-    }
-    else{
-      return -1;
-    }
-  }
-  else{
-    //the RunNumber is the same of last calling
-    //then return the same position without researching
-    Last_RunNumer=RunNumber;
-    return Last_Position;
-  }
-  */
+  return -1;
 }
 
 Bool_t AliAnalysisTaskCreateNUA::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackXYZ, Double_t *vtxp)
@@ -456,12 +515,16 @@ Bool_t AliAnalysisTaskCreateNUA::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltra
     mtr->GetXYZ(ltrackXYZ);
     ltrackXYZ[0] = ltrackXYZ[0] - vtxp[0];
     ltrackXYZ[1] = ltrackXYZ[1] - vtxp[1];
-    ltrackXYZ[2] = ltrackXYZ[2] - vtxp[2];
+    ltrackXYZ[2] = abs(ltrackXYZ[2] - vtxp[2]);
   }
   else
     return kFALSE; //DCA cut is a must for now
 
-  return fGFWSelection->AcceptTrack(mtr, ltrackXYZ, 0, kFALSE);
+  if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
+    return fGFWSelection15o->AcceptTrack(mtr, ltrackXYZ, 0, kFALSE);
+  } else {
+    return fGFWSelection->AcceptTrack(mtr, ltrackXYZ, 0, kFALSE);
+  }
 }
 
 //============================================================================

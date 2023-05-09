@@ -1,14 +1,13 @@
 AliAnalysisTaskCreateNUA* AddTaskCreateNUA(
     TString fPeriod         ="LHC17",
     Int_t   fSystFlag       =0,
-    Bool_t   fPbPbFlag       =false,
-    Bool_t fUseHM            =true,
-    TString	uniqueID    = "Default"
+    Bool_t  fUseHM          =true,
+    TString	uniqueID        = "Default"
 )
 {
         TString name            = "MyNUAtask";
-		Double_t	fMinPt			= 0.2;
-		Double_t	fMaxPt			= 3.0;
+		    Double_t	fMinPt			= 0.2;
+		    Double_t	fMaxPt			= 3.0;
         Bool_t fUseCuts          =true;
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -31,10 +30,9 @@ AliAnalysisTaskCreateNUA* AddTaskCreateNUA(
     task->SetPeriod(fPeriod);
     task->SetSystFlag(fSystFlag);
     task->SetMinPt(fMinPt);
-	task->SetMaxPt(fMaxPt);
+	  task->SetMaxPt(fMaxPt);
     task->SetUseHM(fUseHM);
     task->SetUseCuts(fUseCuts);
-    task->SetPbPbDataset(fPbPbFlag);
     //Minimal bias Trigger
     //task->SelectCollisionCandidates(AliVEvent::kINT7);
     //Hign Multiplicity Trigger
