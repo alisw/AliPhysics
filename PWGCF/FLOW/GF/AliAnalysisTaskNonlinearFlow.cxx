@@ -2810,7 +2810,7 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
   if (fgVnPtCorr) {
     double Dn2GapLR = correlator.TwoGap8(0, 0).Re();
     double Dn4GapLR = correlator.FourGap8(0, 0, 0, 0).Re();
-    if(NtrksAfter3subL > 1 && NtrksAfter3subM > 0 && NtrksAfter3subR > 1
+    if(NtrksAfter3subL > 1 && NtrksAfter3subM > 1 && NtrksAfter3subR > 1
        && Dn2GapLR != 0 && Dn4GapLR != 0)
       {
         eventWeight = sumWeight;
