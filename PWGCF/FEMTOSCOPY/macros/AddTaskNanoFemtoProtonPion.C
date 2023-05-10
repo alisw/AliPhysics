@@ -22,7 +22,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     bool RemoveMCResonanceDaughters = true, //12
     bool DoInvMass = false, //13
     bool DoResonanceLorentzFactor = false, //14
-    bool DoFinemTBinning = false //15
+    bool DoFinemTBinning = false, //15
+    int mTBinningChoice = 1 //16
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -77,18 +78,34 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
 
   std::vector<bool> closeRejection;
   std::vector<float> mTBins;
-  
-  mTBins.push_back(0.53); 
-  mTBins.push_back(0.7); 
-  mTBins.push_back(0.8); 
-  mTBins.push_back(1.0); 
-  mTBins.push_back(1.2); 
-  mTBins.push_back(1.5); 
-  mTBins.push_back(2.0);
-  if(DoFinemTBinning){
-   mTBins.push_back(3.0); 
+
+  if(mTBinningChoice == 0){
+    mTBins.push_back(0.53); 
+    mTBins.push_back(0.7); 
+    mTBins.push_back(0.8); 
+    mTBins.push_back(1.0); 
+    mTBins.push_back(1.2); 
+    mTBins.push_back(1.5); 
+    mTBins.push_back(2.0);
+    if(DoFinemTBinning){
+     mTBins.push_back(3.0); 
+    } 
+    mTBins.push_back(4.0); 
+  } else { 
+    //{0.53, 0.75, 0.95, 1.2, 1.5, 2.0, 2.5, 4.0}
+    mTBins.push_back(0.53); 
+    mTBins.push_back(0.75); 
+    mTBins.push_back(0.95); 
+    mTBins.push_back(1.2); 
+    mTBins.push_back(1.5); 
+    if(DoFinemTBinning){
+     mTBins.push_back(2.0); 
+    } 
+    mTBins.push_back(2.5);
+    mTBins.push_back(4.0); 
   } 
-  mTBins.push_back(4.0); 
+  
+
   
 
   std::vector<int> pairQA;
