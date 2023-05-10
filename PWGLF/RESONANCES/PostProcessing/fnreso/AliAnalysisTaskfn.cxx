@@ -22,6 +22,7 @@
 
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
+#include "AliInputEventHandler.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliESDEvent.h"
 #include "AliAODEvent.h"
@@ -30,6 +31,10 @@
 #include "AliESDtrack.h"
 #include "AliAODTrack.h"
 #include "AliAODv0.h"
+#include "AliVEventHandler.h"
+#include "AliVEvent.h"
+#include "AliVTrack.h"
+#include "AliVParticle.h"
 
 #include "AliMCEvent.h"
 #include "AliMCEventHandler.h"
@@ -37,11 +42,13 @@
 
 #include "AliAnalysisTaskfn.h"
 #include "AliPIDResponse.h"
+#include "AliPhysicsSelection.h"
 #include "AliMultSelection.h"
 #include "AliCentrality.h"
 #include "AliEventCuts.h"
 #include "AliPPVsMultUtils.h"
 #include "AliAnalysisUtils.h"
+
 //_____ Event pool includes
 #include "AliEventPoolManager.h"
 //#include "AliPool.h"
@@ -158,12 +165,21 @@ void AliAnalysisTaskfn::UserExec(Option_t *)
     return;
   }
   
-  ////tigger/////////////
+  ////trigger/////////////
+  /*
   UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Bool_t isSelected = 0;
   isSelected = (maskIsSelected & AliVEvent::kINT7);
   //isSelected = (maskIsSelected & (AliVEvent::kHighMultV0 | AliVEvent::kINT7));
+  */
   
+  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
+  AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
+  UInt_t maskIsSelected = inputHandler->IsEventSelected();
+  Bool_t isSelected = kFALSE;
+  isSelected = maskIsSelected& AliVEvent::kINT7;;
+
+
 
   if ( ! isSelected)
     {
@@ -604,7 +620,7 @@ Bool_t AliAnalysisTaskfn::CheckESDV0(AliESDv0 *v0, AliESDEvent *lESDEvent)
   v0->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] );
   Double_t lV0TotalMomentum =  TMath::Sqrt(tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );
   Double_t fLength = TMath::Sqrt(TMath::Power(v0Position[0]- xPrimaryVertex,2) + TMath::Power(v0Position[1] - yPrimaryVertex,2)+ TMath::Power(v0Position[2]- zPrimaryVertex,2));
-  if( TMath::Abs(0.497*fLength/lV0TotalMomentum) > 20)
+  if( TMath::Abs(0.497*fLength/lV0TotalMomentum) > 15)
     {
       AliDebugClass(2, "Failed Lifetime Cut on positive track V0");
       return kFALSE;
@@ -629,7 +645,7 @@ Bool_t AliAnalysisTaskfn::CheckESDV0(AliESDv0 *v0, AliESDEvent *lESDEvent)
   Double_t posnsTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion));
   Double_t negnsTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion));
   //if(((negnsTPC > 4) && (posnsTPC > 4))) {
-  if(! ((negnsTPC <= 5) && (posnsTPC <= 5)) ) {  
+  if(! ((negnsTPC <= 4) && (posnsTPC <= 4)) ) {  
   return kFALSE;
   }
 
@@ -647,7 +663,7 @@ void AliAnalysisTaskfn::SetupForMixing()
   ////////////////////////////
   const Int_t trackDepth = 10000;
   const Int_t poolsize = 100;
-  const Int_t nmix = 5;
+  const Int_t nmix = 10;
   Double_t centralityBins[] = {0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0,500.0};
   Double_t vertexBins[] = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0};
   const Int_t nCentralityBins = 11;
