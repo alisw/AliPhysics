@@ -228,7 +228,7 @@ void AliJFFlucAnalysis::UserCreateOutputObjects(){
 			<< fHistCentBin
 			<< "END";
 		fh_phietaz
-			<< TH3D("h_phietaz","h_phietaz",200,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0,20,-10.0,10.0)
+			<< TH3D("h_phietaz","h_phietaz",60,-TMath::Pi(),TMath::Pi(),40,-2.0,2.0,8,-10.0,10.0)
 			<< fHistCentBin
 			<< "END";
 	}

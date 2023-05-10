@@ -647,6 +647,9 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
         }
         itrack->SetWeight(phi_module_corr);
 
+        // Uncommentable for local test
+        // if(phi_module_corr<0.5){printf("Track info: %.4f \t %.4f \t %.4f \t %.4f \t %d \n", itrack->Phi(), itrack->Eta(), fZvert, phi_module_corr, fRunNum);}
+
         // Adding centrality weight for a LHC15o track, and given centrality.
         float cent_weight = 1.0;
         if (bUseAlternativeWeights && fperiod == AliJRunTable::kLHC15o) {
