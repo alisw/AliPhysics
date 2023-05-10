@@ -1130,11 +1130,11 @@ void AddTask_GammaCalo_pPb(
     cuts.AddCutCalo("80010113","2444c530ua01cc00000","0163103100000010"); // non-lin 1 and new eta-phi
   
   } else if (trainConfig == 527) { 
-    cuts.AddCutCalo("80010113","2cc466530ua01cc00000","0163103100000010"); 
+    cuts.AddCutCalo("80010113","2cc66530ua01cc00000","0163103100000010"); 
     cuts.AddCutCalo("80010113","2cc4c530ua01cc00000","0163103100000010");
-    cuts.AddCutCalo("80010113","2dd466530ua01cc00000","0163103100000010"); 
+    cuts.AddCutCalo("80010113","2dd66530ua01cc00000","0163103100000010"); 
     cuts.AddCutCalo("80010113","2dd4c530ua01cc00000","0163103100000010");
-    cuts.AddCutCalo("80010113","2bb466530ua01cc00000","0163103100000010"); 
+    cuts.AddCutCalo("80010113","2bb66530ua01cc00000","0163103100000010"); 
     cuts.AddCutCalo("80010113","2bb4c530ua01cc00000","0163103100000010");
 
   } else if (trainConfig == 528){ // PHOS INT7, 300MeV
