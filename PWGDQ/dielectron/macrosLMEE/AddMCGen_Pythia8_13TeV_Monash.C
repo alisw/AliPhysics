@@ -21,11 +21,16 @@ AliGenerator* CreatePythia8Gen(Float_t e_cms,
   AliGenPythiaPlus* gener = new AliGenPythiaPlus(pythia);
 
   //Specify process
-  if(kProcess==0)  (AliPythia8::Instance())->ReadString("SoftQCD:inelastic = on");
-  if(kProcess==1)  (AliPythia8::Instance())->ReadString("PromptPhoton:all = on");
-  if(kProcess==2){//SoftQCD:elastic = on
+  if(kProcess==0){
+    (AliPythia8::Instance())->ReadString("SoftQCD:inelastic = on");
+  }else if(kProcess==1){
+    //    (AliPythia8::Instance())->ReadString("PromptPhoton:all = on");
+    (AliPythia8::Instance())->ReadString("PromptPhoton:qg2qgamma = on");//compton scattering
+    (AliPythia8::Instance())->ReadString("PromptPhoton:qqbar2ggamma = on");//annihilation
+  }else if(kProcess==2){//SoftQCD:elastic = on
     (AliPythia8::Instance())->ReadString("SoftQCD:inelastic = off");
-    (AliPythia8::Instance())->ReadString("PromptPhoton:all = off");
+    (AliPythia8::Instance())->ReadString("PromptPhoton:qg2qgamma = off");//compton scattering
+    (AliPythia8::Instance())->ReadString("PromptPhoton:qqbar2ggamma = off");//annihilation
   }
   
   //Center of Mass energy
