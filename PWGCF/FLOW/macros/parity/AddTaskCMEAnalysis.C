@@ -56,14 +56,14 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 			Int_t gAODfilterBit = 768,
 			Double_t gDCAvtxXY = -1.,
 			Double_t gDCAvtxZ = -1.,
-			Bool_t gRunSP = kTRUE,
-			Bool_t gRunQC = kTRUE,
+			Bool_t gRunSP = kFALSE,
+			Bool_t gRunQC = kFALSE,
 			Bool_t gRunMHLS = kTRUE,
 			Bool_t gRunMHUS = kTRUE,
-			Bool_t doQA = kTRUE,
+			Bool_t doQA = kFALSE,
 			Int_t harmonicMH = 1,
 			Int_t vnHarmonic = 2,
-			Bool_t kZDCStudy = kFALSE,
+			Bool_t kZDCStudy = kTRUE,
 			TString sLabel = "FB768") {
   //Macro to be used for studies of CME for charged particles
   //The macro uses as an input a configuration macro that
@@ -83,6 +83,9 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       break;
     case 2015:
       triggerSelectionString = AliVEvent::kINT7;
+      break;
+    case 2018:
+      triggerSelectionString = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
       break;
     default:
       break;
@@ -262,7 +265,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     }
     
     taskFE_All[iCentralityBin] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",suffixNameAll[iCentralityBin].Data()),"",kFALSE);
-    //taskFE_All[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
+    taskFE_All[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
     
     //Sub events
     Double_t minA = -0.8;//
@@ -317,7 +320,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 
       taskSPv2[iCentralityBin] = new AliAnalysisTaskScalarProduct(Form("TaskScalarProduct_%s",outputSlotAll_NameSPv2[iCentralityBin].Data()),kFALSE);
       taskSPv2[iCentralityBin]->SetHarmonic(vnHarmonic);
-      //taskSPv2[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
+      taskSPv2[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
       taskSPv2[iCentralityBin]->SetRelDiffMsub(1.0);
       taskSPv2[iCentralityBin]->SetTotalQvector(qVector);
       taskSPv2[iCentralityBin]->SetApplyCorrectionForNUA(kTRUE);
@@ -337,7 +340,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
        
       taskQCv2[iCentralityBin] = new AliAnalysisTaskQCumulants(Form("TaskQCumulant_%s",outputSlotAll_NameQCv2[iCentralityBin].Data()),kFALSE);
       taskQCv2[iCentralityBin]->SetHarmonic(vnHarmonic);
-      //taskQCv2[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
+      taskQCv2[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
       taskQCv2[iCentralityBin]->SetUsePhiWeights(kFALSE); 
       taskQCv2[iCentralityBin]->SetUsePtWeights(kFALSE);
       taskQCv2[iCentralityBin]->SetUseEtaWeights(kFALSE); 
@@ -371,7 +374,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     }
     
     taskFE_PP[iCentralityBin] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",suffixNamePP[iCentralityBin].Data()),"",kFALSE);
-    //taskFE_PP[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
+    taskFE_PP[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
     
     if(!isVZERO)
       taskFE_PP[iCentralityBin]->SetSubeventEtaRange(minA, maxA, minB, maxB);
@@ -419,6 +422,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       outputMHLS_PP += ":outputMHLSanalysis";
       outputMHLS_PP += "PlusPlus";
       taskMHLS_PP[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotPP_NameMHLS[iCentralityBin].Data()),kFALSE);
+      taskMHLS_PP[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
       taskMHLS_PP[iCentralityBin]->SetHarmonic(harmonicMH);// n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]                   
       taskMHLS_PP[iCentralityBin]->SetNoOfMultipicityBins(10000);
       taskMHLS_PP[iCentralityBin]->SetMultipicityBinWidth(1.);
@@ -460,7 +464,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     }
     
     taskFE_NN[iCentralityBin] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",suffixNameNN[iCentralityBin].Data()),"",kFALSE);
-    //taskFE_NN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
+    taskFE_NN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
     
     if(!isVZERO)
       taskFE_NN[iCentralityBin]->SetSubeventEtaRange(minA, maxA, minB, maxB);
@@ -506,8 +510,9 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     if(gRunMHLS) {
       TString outputMHLS_NN = fileName;
       outputMHLS_NN += ":outputMHLSanalysis";
-      outputMHLS_NN += "PlusPlus";
+      outputMHLS_NN += "MinusMinus";
       taskMHLS_NN[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsLS_%s",outputSlotNN_NameMHLS[iCentralityBin].Data()),kFALSE);
+      taskMHLS_NN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
       taskMHLS_NN[iCentralityBin]->SetHarmonic(harmonicMH); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]                     
       taskMHLS_NN[iCentralityBin]->SetNoOfMultipicityBins(10000);
       taskMHLS_NN[iCentralityBin]->SetMultipicityBinWidth(1.);
@@ -548,7 +553,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     }
     
     taskFE_PN[iCentralityBin] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",suffixNamePN[iCentralityBin].Data()),"",kFALSE);
-    //taskFE_PN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
+    taskFE_PN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
     
     if(!isVZERO)
       taskFE_PN[iCentralityBin]->SetSubeventEtaRange(minA, maxA, minB, maxB);
@@ -594,8 +599,9 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     if(gRunMHUS) {
       TString outputMHUS_PN = fileName;
       outputMHUS_PN += ":outputMHUSanalysis";
-      outputMHUS_PN += "PlusPlus";
+      outputMHUS_PN += "PlusMinus";
       taskMHUS_PN[iCentralityBin] = new AliAnalysisTaskMixedHarmonics(Form("TaskMixedHarmonicsUS_%s",outputSlotPN_NameMHUS[iCentralityBin].Data()),kFALSE);
+      taskMHUS_PN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
       taskMHUS_PN[iCentralityBin]->SetHarmonic(harmonicMH); // n in cos[n(phi1+phi2-2phi3)] and cos[n(psi1+psi2-2phi3)]                     
       taskMHUS_PN[iCentralityBin]->SetNoOfMultipicityBins(10000);
       taskMHUS_PN[iCentralityBin]->SetMultipicityBinWidth(1.);
