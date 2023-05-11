@@ -548,7 +548,7 @@ TH2F* MatrixHandlerNDim::GetResponseMatrix(std::vector<double> binsX, std::vecto
       if(h2d){
         hResponse->SetBinContent(x+1, y+1, h2d->GetBinContent(indexX + x + 1, indexY + y + 1));
       } else {
-        int tmp[2] = {indexX + x + 1, indexY + y + 1};
+        int tmp[2] = {static_cast<int>(indexX + x + 1), static_cast<int>(indexY + y + 1)};
         hResponse->SetBinContent(x+1, y+1, hSparseResponse->GetBinContent(tmp));
       }
     }
