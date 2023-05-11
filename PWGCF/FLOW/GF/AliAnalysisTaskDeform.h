@@ -129,6 +129,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetFillAdditionalTrackQAPlots(Bool_t newval) { fFillAdditionalQA = newval; }
   void SetPtMPar(int newval) { fPtMpar = newval; }
   void SetUseExoticPtCorr(bool newval) { fUseExoticPtCorr = newval; }
+  void SetEnableFB768DCAxy(bool newval) { fEnableFB768dcaxy = newval;}
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -275,6 +276,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fFillMptPowers;
   Bool_t fUseMcParticleForEfficiency;
   Bool_t fUseExoticPtCorr;
+  Bool_t fEnableFB768dcaxy;
   Double_t *GetBinsFromAxis(TAxis *inax);
 
   ClassDef(AliAnalysisTaskDeform,1);
