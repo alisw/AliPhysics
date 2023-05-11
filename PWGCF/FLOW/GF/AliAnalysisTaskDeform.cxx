@@ -152,6 +152,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform():
   fFillMptPowers(kFALSE),
   fUseMcParticleForEfficiency(kTRUE),
   fUseExoticPtCorr(kFALSE),
+  fEnableFB768dcaxy(kFALSE),
   wpPt(0),
   wpPtSubP(0),
   wpPtSubN(0)
@@ -266,6 +267,7 @@ AliAnalysisTaskDeform::AliAnalysisTaskDeform(const char *name, Bool_t IsMC, TStr
   fFillMptPowers(kFALSE),
   fUseMcParticleForEfficiency(kTRUE),
   fUseExoticPtCorr(kFALSE),
+  fEnableFB768dcaxy(kFALSE),
   wpPt(0),
   wpPtSubP(0),
   wpPtSubN(0)
@@ -662,6 +664,7 @@ void AliAnalysisTaskDeform::UserExec(Option_t*) {
     FillSpectraMC(fAOD,vz,l_Cent,vtxXYZ);
   if(fStageSwitch==3)
     VnMpt(fAOD,vz,l_Cent,vtxXYZ);
+  return;
 };
 void AliAnalysisTaskDeform::NotifyRun() {
   if(!fIsMC && fStageSwitch>2) LoadWeights(fInputEvent->GetRunNumber());
@@ -750,7 +753,7 @@ Bool_t AliAnalysisTaskDeform::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackX
     ltrackXYZ[1] = ltrackXYZ[1]-vtxp[1];
     ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
   } else return kFALSE; //DCA cut is a must for now
-  return fGFWSelection->AcceptTrack(mtr,fSystFlag==1?0:ltrackXYZ,0,kFALSE); //All complementary DCA track cuts for FB768 are disabled
+  return fGFWSelection->AcceptTrack(mtr,(fSystFlag==1&&!fEnableFB768dcaxy)?0:ltrackXYZ,0,kFALSE); //All complementary DCA track cuts for FB768 are disabled
 };
 Bool_t AliAnalysisTaskDeform::AcceptESDTrack(AliESDtrack *mtr, UInt_t& primFlag, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp) {
   if(mtr->Pt()<ptMin) return kFALSE;
@@ -773,7 +776,7 @@ Bool_t AliAnalysisTaskDeform::AcceptAODTrack(AliAODTrack *mtr, Double_t *ltrackX
     ltrackXYZ[2] = ltrackXYZ[2]-vtxp[2];
   } else return kFALSE; //DCA cut is a must for now
   if(fGFWNtotSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE)) nTot++;
-  return fGFWSelection->AcceptTrack(mtr,fSystFlag==1?0:ltrackXYZ,0,kFALSE); //All complementary DCA track cuts for FB768 are disabled
+  return fGFWSelection->AcceptTrack(mtr,(fSystFlag==1&&!fEnableFB768dcaxy)?0:ltrackXYZ,0,kFALSE); //All complementary DCA track cuts for FB768 are disabled
 };
 Bool_t AliAnalysisTaskDeform::AcceptESDTrack(AliESDtrack *mtr, UInt_t& primFlag, Double_t *ltrackXYZ, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot) {
   if(mtr->Pt()<ptMin) return kFALSE;
@@ -1068,7 +1071,7 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
       }
       Double_t wacc = fWeights[0]->GetNUA(lTrack->Phi(),leta,vz);
       fGFW->Fill(leta,1,lTrack->Phi(),((fUseNUAOne)?1.0:wacc)*((fUseNUEOne)?1.0:weff),3); //filling both gap (bit mask 1) and full (bit mask 2)
-      if(fFillAdditionalQA) FillAdditionalTrackQAPlots(*lTrack,weff,wacc,vz,vtxp,kFALSE);
+      if(fFillAdditionalQA) FillAdditionalTrackQAPlots(*lTrack,(fUseNUEOne)?1.0:weff,(fUseNUAOne)?1.0:wacc,vz,vtxp,kFALSE);
     };
   };
   if(wp[0]==0) return; //if no single charged particles, then surely no PID either, no sense to continue
@@ -1400,7 +1403,7 @@ void AliAnalysisTaskDeform::LoadCorrectionsFromLists(){
   fEfficiencyList = (TList*)GetInputData(2); //Efficiencies start from input slot 2
   fEfficiencies = new TH1D*[fNV0MBinsDefault];
   for(Int_t i=0;i<fNV0MBinsDefault;i++) {
-
+      printf("EffRescaled_Cent%i%s\n",i,fGFWSelection->GetSystPF());
       fEfficiencies[i] = (TH1D*)fEfficiencyList->FindObject(Form("EffRescaled_Cent%i%s",i,fGFWSelection->GetSystPF()));
       if(fEfficiencies[i] && fPseudoEfficiency<1) fEfficiencies[i]->Scale(fPseudoEfficiency);
       if(!fEfficiencies[i]) {
