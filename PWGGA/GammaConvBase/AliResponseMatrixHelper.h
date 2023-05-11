@@ -120,8 +120,7 @@ class MatrixHandlerNDim
   THnSparseF* GetTHnSparse(const char* name = "");
 
   TH2F* GetTH2(const char* name = "hSparseResponse_Clone");
-  TH2F* GetResponseMatrix(int binX, int binY, const char* name = "dummy");
-  TH2F* GetResponseMatrix(std::vector<double> vecBins, const char* name = "dummy");
+  TH2F* GetResponseMatrix(std::vector<double> binsX, std::vector<double> binsY, const char* name = "dummy");
 
  private:
   bool useTHNSparese = false;

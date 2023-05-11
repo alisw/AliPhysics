@@ -452,27 +452,25 @@ unsigned int MatrixHandlerNDim::getIndex(std::vector<double> vecVal, bool isXAxi
   }
 
   unsigned int index = 0;
-  for(unsigned int i = 0; i < nBins-1; ++i){
+  for(unsigned int i = 0; i < nBins; ++i){
     bool indexFound = true;
-      for(int d = dim-1; d >= 0; --d){
-        // printf("vecBins[d][vecDim[d]] = %f,   vecVal[d] = %f ,   vecBins[d][vecDim[d]+1] = %f\n", vecBins[d][vecDim[d]], vecVal[d], vecBins[d][vecDim[d]+1]);
-        if(!(vecVal[d] > vecBins[d][vecDim[d]] && vecVal[d] < vecBins[d][vecDim[d]+1])){
-          indexFound = false;
-          index = i;
-        }
+    index = i;
+    for(int d = dim-1; d >= 0; --d){
+      if(!(vecVal[d] > vecBins[d][vecDim[d]] && vecVal[d] < vecBins[d][vecDim[d]+1])){
+        indexFound = false;
       }
-      // printf("indexFound %d\n", indexFound);
-      if(indexFound) break;
-      for(int d = dim-1; d >= 0; --d){
-          if(vecDim[d] == vecBins[d].size()-2){
-              vecDim[d] = 0;
-              continue;
-          }
-          if(vecDim[d] < vecBins[d].size()-2) {
-              vecDim[d]++;
-              break;
-          }            
+    }
+    if(indexFound) break;
+    for(int d = dim-1; d >= 0; --d){
+      if(vecDim[d] == vecBins[d].size()-2){
+          vecDim[d] = 0;
+          continue;
       }
+      if(vecDim[d] < vecBins[d].size()-2) {
+          vecDim[d]++;
+          break;
+      }            
+    }
   }
   return index;
 }
@@ -481,15 +479,14 @@ unsigned int MatrixHandlerNDim::getIndex(std::vector<double> vecVal, bool isXAxi
 void MatrixHandlerNDim::Fill(std::vector<double> vecValX, std::vector<double> vecValY, double val)
 {
   int indexX = getIndex(vecValX, true);
+  
   int indexY = getIndex(vecValY, false);
-  // printf("indexX = %d\n", indexX);
-  // printf("indexY = %d\n", indexY);
+  
 
   if (useTHNSparese) {
     std::array<double, 2> arrFill;
     arrFill[0] = indexX + 0.5;
     arrFill[1] = indexY + 0.5;
-    // printf("Fill the thnsparse\n");
     hSparseResponse->Fill(arrFill.data(), val);
   } else {
     std::array<int, 2> arrFill;
@@ -535,6 +532,28 @@ TH2F* MatrixHandlerNDim::GetTH2(const char* name)
     h2d->SetName(name);
     return h2d;
   }
+}
+
+TH2F* MatrixHandlerNDim::GetResponseMatrix(std::vector<double> binsX, std::vector<double> binsY, const char* name){
+  
+  TH2F* hResponse = new TH2F(name, name, vecBinsX.back().size()-1, vecBinsX.back().data(), vecBinsY.back().size()-1, vecBinsY.back().data());
+
+  binsX.push_back(0.5*(vecBinsX.back()[0] + vecBinsX.back()[1]));
+  binsY.push_back(0.5*(vecBinsY.back()[0] + vecBinsY.back()[1]));
+  int indexX = getIndex(binsX, true);
+  int indexY = getIndex(binsY, false);
+
+  for(unsigned x = 0; x < vecBinsX.back().size()-1; ++x){
+    for(unsigned y = 0; y < vecBinsY.back().size()-1; ++y){
+      if(h2d){
+        hResponse->SetBinContent(x+1, y+1, h2d->GetBinContent(indexX + x + 1, indexY + y + 1));
+      } else {
+        int tmp[2] = {indexX + x + 1, indexY + y + 1};
+        hResponse->SetBinContent(x+1, y+1, hSparseResponse->GetBinContent(tmp));
+      }
+    }
+  }
+  return hResponse;
 }
 
 //____________________________________________________________________________________________________________________________
