@@ -512,7 +512,6 @@ void AliAnalysisTaskEmbeddingJetWithEP::UserCreateOutputObjects()
     }
 
     // == s == Set Out put Hist grams  ###########################################
-    if(fBkgQA)  AllocateBkgHistograms();
     if(fJetQA)  AllocateJetHistograms();
     AllocateMatchedJetHistograms();
     // == e == Set Out put Hist grams  ###########################################
@@ -539,131 +538,6 @@ void AliAnalysisTaskEmbeddingJetWithEP::UserCreateOutputObjects()
     
     PostData(1, fOutputList);
     
-}
-
-void AliAnalysisTaskEmbeddingJetWithEP::AllocateBkgHistograms()
-{
-    TString histName;
-    TString histtitle;
-    TString groupName;
-    groupName="BackgroundFit";
-    fHistManager.CreateHistoGroup(groupName);
-
-    // == s == cdf and pdf of chisquare distribution #############################
-    //  = v2 and v3 combind fit local rho =
-    histName = TString::Format("%s/hPvalueCDF_lRhoCombinFit", groupName.Data());
-    histtitle = TString::Format("%s; CDF #chi^{2}", histName.Data());
-    fHistManager.CreateTH1(histName, histtitle, 50, 0, 1);
-    
-    histName = TString::Format("%s/hPvalueCDFCent_lRhoCombinFit", groupName.Data());
-    histtitle = TString::Format("%s; centrality; p-value", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 100, 40, 0, 1);
-    
-    histName = TString::Format("%s/hChi2Cent_lRhoCombinFit", groupName.Data());
-    histtitle = TString::Format("%s; centrality; #tilde{#chi^{2}}", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 100, 100, 0, 5);
-
-    histName = TString::Format("%s/hPChi2_lRhoCombinFit", groupName.Data());
-    histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
-
-    histName = TString::Format("%s/hPvalueCDFROOT_lRhoCombinFit", groupName.Data());
-    histtitle = TString::Format("%s; CDF #chi^{2} ROOT", histName.Data());
-    fHistManager.CreateTH1(histName, histtitle, 50, 0, 1);
-
-    histName = TString::Format("%s/hPvalueCDFROOTCent_lRhoCombinFit", groupName.Data());
-    histtitle = TString::Format("%s; centrality; p-value ROOT", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 50, 0, 100, 45, 0, 1);
-
-    histName = TString::Format("%s/hChi2ROOTCent_lRhoCombinFit", groupName.Data());
-    histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
-
-    histName = TString::Format("%s/hPChi2ROOT_lRhoCombinFit", groupName.Data());
-    histtitle = TString::Format("%s;CDF #chi^{2}; #tilde{#chi^{2}} ROOT", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
-
-    //  = v2  fit local rho =
-    histName = TString::Format("%s/hPvalueCDF_lRhoV2Fit", groupName.Data());
-    histtitle = TString::Format("%s; CDF #chi^{2}", histName.Data());
-    fHistManager.CreateTH1(histName, histtitle, 50, 0, 1);
-    
-    histName = TString::Format("%s/hPvalueCDFCent_lRhoV2Fit", groupName.Data());
-    histtitle = TString::Format("%s; centrality; p-value", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 50, 0, 100, 100, 0, 1);
-    
-    histName = TString::Format("%s/hChi2Cent_lRhoV2Fit", groupName.Data());
-    histtitle = TString::Format("%s; CDF #chi^{2}; #tilde{#chi^{2}}", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 100, 100, 0, 5);
-
-    histName = TString::Format("%s/hPChi2_lRhoV2Fit", groupName.Data());
-    histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
-
-    histName = TString::Format("%s/hPvalueCDFROOT_lRhoV2Fit", groupName.Data());
-    histtitle = TString::Format("%s; CDF #chi^{2} ROOT", histName.Data());
-    fHistManager.CreateTH1(histName, histtitle, 50, 0, 1);
-
-    histName = TString::Format("%s/hPvalueCDFROOTCent_lRhoV2Fit", groupName.Data());
-    histtitle = TString::Format("%s; centrality; p-value ROOT", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 50, 0, 100, 100, 0, 1);
-
-    histName = TString::Format("%s/hChi2ROOTCent_lRhoV2Fit", groupName.Data());
-    histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
-
-    histName = TString::Format("%s/hPChi2ROOT_lRhoV2Fit", groupName.Data());
-    histtitle = TString::Format("%s;CDF #chi^{2}; #tilde{#chi^{2}} ROOT", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
-
-        //  = fit global rho (rho0) =
-    histName = TString::Format("%s/hPvalueCDF_gRhoFit", groupName.Data());
-    histtitle = TString::Format("%s; CDF #chi^{2}", histName.Data());
-    fHistManager.CreateTH1(histName, histtitle, 50, 0, 1);
-    
-    histName = TString::Format("%s/hPvalueCDFCent_gRhoFit", groupName.Data());
-    histtitle = TString::Format("%s; centrality; p-value", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 50, 0, 100, 100, 0, 1);
-    
-    histName = TString::Format("%s/hChi2Cent_gRhoFit", groupName.Data());
-    histtitle = TString::Format("%s; CDF #chi^{2}; #tilde{#chi^{2}}", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 100, 100, 0, 5);
-
-    histName = TString::Format("%s/hPChi2_gRhoFit", groupName.Data());
-    histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
-
-    histName = TString::Format("%s/hPvalueCDFROOT_gRhoFit", groupName.Data());
-    histtitle = TString::Format("%s; CDF #chi^{2} ROOT", histName.Data());
-    fHistManager.CreateTH1(histName, histtitle, 50, 0, 1);
-
-    histName = TString::Format("%s/hPvalueCDFROOTCent_gRhoFit", groupName.Data());
-    histtitle = TString::Format("%s; centrality; p-value ROOT", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 50, 0, 100, 100, 0, 1);
-
-    histName = TString::Format("%s/hChi2ROOTCent_gRhoFit", groupName.Data());
-    histtitle = TString::Format("%s; p-value; #tilde{#chi^{2}}", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
-
-    histName = TString::Format("%s/hPChi2ROOT_gRhoFit", groupName.Data());
-    histtitle = TString::Format("%s;CDF #chi^{2}; #tilde{#chi^{2}} ROOT", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 1, 100, 0, 5);
-    // == e == cdf and pdf of chisquare distribution #############################
-
-
-    
-    histName = TString::Format("%s/hRhoVsMult", groupName.Data());
-    histtitle = TString::Format("%s; multiplicity; #rho [GeV/c]", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 4000, 100, 0, 250);
-    
-    histName = TString::Format("%s/hRhoAVsMult", groupName.Data());
-    histtitle = TString::Format("%s; multiplicity; #rho * A (jet) [GeV/c]", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 4000, 100, 0, 50);
-    
-    histName = TString::Format("%s/hRhoAVsCent", groupName.Data());
-    histtitle = TString::Format("%s; centrality; #rho * A (jet) [GeV/c]", histName.Data());
-    fHistManager.CreateTH2(histName, histtitle, 100, 0, 100, 100, 0, 50);
-
 }
 
 void AliAnalysisTaskEmbeddingJetWithEP::AllocateTrackHistograms()
@@ -885,8 +759,11 @@ void AliAnalysisTaskEmbeddingJetWithEP::AllocateMatchedJetHistograms()
         // histname = "MatchedJetHistograms/hJESshift";
         histname = branchName + "hJESshift";
         title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#frac{#it{p}_{T,corr}^{det} - #it{p}_{T}^{truth}}{#it{p}_{T}^{truth}}";
-        fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, nbinsz, minz, maxz);
+        fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, 200, -1., 1.);
         
+        histname = branchName + "hEmbDeltaPt";
+        title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#it{p}_{T,corr}^{det} - #it{p}_{T}^{truth}";
+        fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, 200, -50., 50.);
         
         // NEF of det-level matched jets, (centrality, pT-truth, NEF)
         nbinsx = 20; minx = 0; maxx = 100;
@@ -1142,6 +1019,8 @@ Bool_t AliAnalysisTaskEmbeddingJetWithEP::DoEventPlane(){
             }
             
         }else {
+            q2ChiV0C = 1.0;
+            q3ChiV0C = 1.0;            
             q2ChiV0A = 1.0;
             q3ChiV0A = 1.0;
         }
@@ -1692,6 +1571,9 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
                 histName = TString::Format("%s/hJESshift", groupName.Data());
                 fHistManager.FillTH3(histName, fCent, truthPt, (detJetPtCorrLocal-truthPt)/truthPt );
                 
+                histName = TString::Format("%s/hEmbDeltaPt", groupName.Data());
+                fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorr-truthPt );
+            
                 // Fill NEF of det-level matched jets (centrality, pT-truth, NEF)
                 histName = TString::Format("%s/hNEFVsPt", groupName.Data());
                 fHistManager.FillTH3(histName, fCent, truthPt, jet->NEF());
@@ -1735,6 +1617,9 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
                 histName = TString::Format("%s/hJESshift", groupName.Data());
                 fHistManager.FillTH3(histName, fCent, truthPt, (detJetPtCorrLocal-truthPt)/truthPt );
                 
+                histName = TString::Format("%s/hEmbDeltaPt", groupName.Data());
+                fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorr-truthPt );
+            
                 // Fill NEF of det-level matched jets (centrality, pT-truth, NEF)
                 histName = TString::Format("%s/hNEFVsPt", groupName.Data());
                 fHistManager.FillTH3(histName, fCent, truthPt, jet->NEF());
@@ -1777,6 +1662,9 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
             // Fill JES shift (centrality, pT-truth, (pT-det - pT-truth) / pT-truth)
             histName = TString::Format("%s/hJESshift", groupName.Data());
             fHistManager.FillTH3(histName, fCent, truthPt, (detJetPtCorr-truthPt)/truthPt );
+            
+            histName = TString::Format("%s/hEmbDeltaPt", groupName.Data());
+            fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorr-truthPt );
             
             // Fill NEF of det-level matched jets (centrality, pT-truth, NEF)
             histName = TString::Format("%s/hNEFVsPt", groupName.Data());
