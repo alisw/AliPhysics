@@ -1,5 +1,9 @@
-void AddTask_GammaPythia(Double_t maxpT = 20,
-			 Int_t doMultStudies = 1)
+void AddTask_GammaPythia(Double_t maxY     = 0.8,
+			 Double_t maxpT    = 20,
+			 Int_t    Nch_min  = 0,
+			 Int_t    Nch_max  = 30,
+			 Int_t    doMultStudies = 1			 
+			 )
 {
 
   // ================== GetAnalysisManager ===============================
@@ -19,7 +23,10 @@ void AddTask_GammaPythia(Double_t maxpT = 20,
   //            find input container
   AliAnalysisTaskGammaPythia *task=NULL;
   task= new AliAnalysisTaskGammaPythia("GammaPythia");
+  task->SetMaxY(maxY);
   task->SetMaxPt(maxpT);
+  task->SetMinNch(Nch_min);
+  task->SetMaxNch(Nch_max);
   task->SetDoMultStudies(doMultStudies);
 
   //connect containers
