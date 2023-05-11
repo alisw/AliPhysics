@@ -148,8 +148,6 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   pairQA[4] = 11;  // barp barp
   pairQA[5] = 11;  // barp pi+
   pairQA[6] = 11;  // barp pi-
-  pairQA[7] = 11;  // pi+pi+
-  pairQA[9] = 11;  // pi-pi-
 
   //We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
