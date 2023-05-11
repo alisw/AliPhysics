@@ -172,13 +172,17 @@ void AliAnalysisTaskfn::UserExec(Option_t *)
   isSelected = (maskIsSelected & AliVEvent::kINT7);
   //isSelected = (maskIsSelected & (AliVEvent::kHighMultV0 | AliVEvent::kINT7));
   */
-  
+
+  UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
+  Bool_t isSelected = 0;
+  isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
+  /*
   AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
   AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
   UInt_t maskIsSelected = inputHandler->IsEventSelected();
   Bool_t isSelected = kFALSE;
   isSelected = maskIsSelected& AliVEvent::kINT7;;
-
+  */
 
 
   if ( ! isSelected)
