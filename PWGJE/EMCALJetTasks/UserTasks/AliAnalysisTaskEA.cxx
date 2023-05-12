@@ -164,9 +164,14 @@ fhPtTrkSecOrFakeRec(0x0),
 fhJetPtPartLevelCorr(0x0),
 fhJetPtPartLevelZero(0x0),
 fhJetPtPartLevelVsJetPtDetLevelCorr(0x0),                         //1D unfolding
-fhJetPtZeroPartLevelVsJetPtZeroDetLevel(0x0),                         //1D unfolding
+fhJetPtZeroPartLevelVsJetPtZeroDetLevel(0x0),                     //1D unfolding
 fhJetPtZeroPartLevel_Vs_JetPtDetLevelCorr(0x0),                   //1D unfolding (added by KA)
-fhImpurityInclusive_DetJetPtVsPartJetPtCorr(0x0),                          //Impurity distribution (added by KA)
+fhImpurityInclusive_DetJetPtVsPartJetPtCorr(0x0),                 //Impurity distribution (added by KA)
+fhPurity_InclusiveJets(nullptr),                                  //Purity estimation
+fhNormalization_Purity(nullptr),                                  //Purity estimation
+fhJetEnergy_Angle_Resol(nullptr),                                 //Jet energy and angular resolution
+fhInclusiveRespMatrix_HM(nullptr),                                //Check unfolding, HM events
+fhMissedEvents_HM(nullptr),                                       //Check unfolding, HM events
 fhPhi_JetPtPartLevel_InclusiveJets(0x0),                          //2D unfolding
 fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets(0x0),     //2D unfolding
 fhPhi_JetPtZeroPartLevel_InclusiveJets(0x0),                      //2D unfolding (added by KA)
@@ -606,7 +611,12 @@ fhJetPtPartLevelZero(0x0),
 fhJetPtPartLevelVsJetPtDetLevelCorr(0x0),
 fhJetPtZeroPartLevelVsJetPtZeroDetLevel(0x0),
 fhJetPtZeroPartLevel_Vs_JetPtDetLevelCorr(0x0),                   //1D unfolding (added by KA)
-fhImpurityInclusive_DetJetPtVsPartJetPtCorr(0x0),                          //Impurity distribution (added by KA)
+fhImpurityInclusive_DetJetPtVsPartJetPtCorr(0x0),                 //Impurity distribution (added by KA)
+fhPurity_InclusiveJets(nullptr),                                  //Purity estimation
+fhNormalization_Purity(nullptr),                                  //Purity estimation
+fhJetEnergy_Angle_Resol(nullptr),                                 //Jet energy and angular resolution
+fhInclusiveRespMatrix_HM(nullptr),                                //Check unfolding, HM events
+fhMissedEvents_HM(nullptr),                                       //Check unfolding, HM events
 fhPhi_JetPtPartLevel_InclusiveJets(0x0),                          //2D unfolding
 fhPhi_JetPtDetLevel_Vs_Phi_JetPtPartLevel_InclusiveJets(0x0),     //2D unfolding
 fhPhi_JetPtZeroPartLevel_InclusiveJets(0x0),                      //2D unfolding (added by KA)
@@ -1693,7 +1703,7 @@ Bool_t AliAnalysisTaskEA::FillHistograms(){
       fRhoMC = GetMyRho(fKTJetContainerPartLevel); //estimated backround pt density
    }
 
-   if( fMode == AliAnalysisTaskEA::kEmbedding){ //Detector level pythia  for  embedding
+   if(fMode == AliAnalysisTaskEA::kEmbedding){ //Detector level pythia  for  embedding
 
       //fTrkContainerDetLevelEMB = static_cast<AliTrackContainer*> (GetTrackContainer(fMyDetLevelContainerName.Data())); //pythia detector level tracks
       fTrkContainerDetLevelEMB   = static_cast<AliTrackContainer*> (GetTrackContainer(2)); //pythia detector level tracks from AOD
@@ -2540,6 +2550,9 @@ void AliAnalysisTaskEA::FillResponseMatrix(){
             jet = jetIterator.second;  // Get the pointer to jet object
             if(!jet)  continue;
 
+            fhNormalization_Purity->Fill(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi())), 
+                                         jet->Pt() - jet->Area()*fRho);
+
             //Get momentum shift due to fake tracks
             sumAllTrackPtInJet  = 0.;
             sumFakeTrackPtInJet = 0.;
@@ -2573,7 +2586,12 @@ void AliAnalysisTaskEA::FillResponseMatrix(){
 
             //Fill Response matrix
             jetPartMC =  jet->ClosestJet();
-            if(!jetPartMC) continue;
+            
+            if(!jetPartMC){               
+               fhPurity_InclusiveJets->Fill(TMath::Abs(TVector2::Phi_mpi_pi(jet->Phi())), 
+                                            jet->Pt() - jet->Area()*fRho);
+               continue;
+            }
 
             // KA: Set new relax condition "5e-4" because we consider particle level jets with pT > 1 MeV
             if(jetPartMC->Pt() < 5e-4) continue; //prevents matching with a ghost
@@ -2797,10 +2815,10 @@ void AliAnalysisTaskEA::FillResponseMatrix2D(){
 
    if(fIsMinBiasTrig && fMode == AliAnalysisTaskEA::kMC){
       //EVALUATE SINGLE PARTICLE EFFICIENCY + FILL RESPONSE MATRIX
-      AliEmcalJet  *jet             = NULL; //jet pointer real jet
-      AliEmcalJet  *jetDetMC        = NULL; //jet pointed detector level MC jet
-      AliVParticle *track_PartLevel = NULL; //jet constituent
-      AliVParticle *track_DetLevel  = NULL; //mc particle
+      AliEmcalJet  *jet             = nullptr; //jet pointer real jet
+      AliEmcalJet  *jetDetMC        = nullptr; //jet pointed detector level MC jet
+      AliVParticle *track_PartLevel = nullptr; //jet constituent
+      AliVParticle *track_DetLevel  = nullptr; //mc particle
 
       Int_t iterationStep = 0;
       Double_t smearing_Of_PhiAngle = 0;
@@ -2836,10 +2854,18 @@ void AliAnalysisTaskEA::FillResponseMatrix2D(){
                   fhPhi_JetPtPartLevel_InclusiveJets->Fill(TMath::Abs(random_PhiAnglePartLevel), jetPtCorrPart);
                   fhPhi_JetPtZeroPartLevel_InclusiveJets->Fill(TMath::Abs(random_PhiAnglePartLevel), jet->Pt()); // (added by KA)
 
+                  //HM events
+                  if(fMultV0Mnorm  < 4.0) continue; 
+                  fhMissedEvents_HM->Fill(fMultV0Mnorm, TMath::Abs(random_PhiAnglePartLevel), jetPtCorrPart);
+
                } else if(jetDetMC->Pt() < 1e-10){ //associated MC detector level jet is a ghost jet ->  Fill input for the miss function
 
                   fhPhi_JetPtPartLevel_InclusiveJets->Fill(TMath::Abs(random_PhiAnglePartLevel), jetPtCorrPart);
                   fhPhi_JetPtZeroPartLevel_InclusiveJets->Fill(TMath::Abs(random_PhiAnglePartLevel), jet->Pt()); // (added by KA)
+
+                  //HM events
+                  if(fMultV0Mnorm  < 4.0) continue; 
+                  fhMissedEvents_HM->Fill(fMultV0Mnorm, TMath::Abs(random_PhiAnglePartLevel), jetPtCorrPart);
 
                } else { //Associated Detector level jet is a physical jet -> fill response matrix
                   smearing_Of_PhiAngle = jetDetMC->Phi() - jet->Phi(); //Smearing of phi angle
@@ -2861,8 +2887,34 @@ void AliAnalysisTaskEA::FillResponseMatrix2D(){
                   fArray_for_filling[1] = jetDetMC->Pt();
                   fhPhi_JetPtZeroDetLevel_Vs_Phi_JetPtZeroPartLevel_InclusiveJets->Fill(fArray_for_filling); // added by KA
 
-		  //ANGLUAR SMEARING OF INCLUSIVE JETS
-                  fPhiSmearingJet->Fill( fMultV0Mnorm, jetPtCorrDet, TVector2::Phi_mpi_pi(smearing_Of_PhiAngle)); //NEW  should jet pT be particle level or detector level?  
+		            //ANGLUAR SMEARING OF INCLUSIVE JETS
+                  fPhiSmearingJet->Fill(fMultV0Mnorm, jetPtCorrDet, TVector2::Phi_mpi_pi(smearing_Of_PhiAngle)); //NEW  should jet pT be particle level or detector level?
+
+                  //------------------------------------------------
+                  //Jet energy and angle resolution
+                  vector<double> tmp_vector;
+                  if(jetPtCorrPart >= 0.0 && jetPtCorrPart <= 100.0){ // Specified range for jet pT. To exclude overflow/underflow bins
+                     tmp_vector.push_back(fMultV0Mnorm); // Multiplicity norm, det level
+                     tmp_vector.push_back(TVector2::Phi_mpi_pi(smearing_Of_PhiAngle)); // phi anlge resolution
+                     tmp_vector.push_back(TVector2::Phi_0_2pi(jet->Phi())); // phi angle, part level jet
+                     tmp_vector.push_back((jetPtCorrDet - jetPtCorrPart)/jetPtCorrPart); // jet pT resolution
+                     tmp_vector.push_back(jetPtCorrPart); // part level jet pT
+                     fhJetEnergy_Angle_Resol->Fill(&tmp_vector[0]);
+                  }
+                  tmp_vector.clear();
+
+                  //------------------------------------------------
+                  //Inclusive response matrix in HM events
+                  //To save memory, exclude filling of overflow/underflow bins
+                  if(fMultV0Mnorm  < 4.0) continue; 
+                     
+                  tmp_vector.push_back(fMultV0Mnorm);                         // Multiplicity norm, det level
+                  tmp_vector.push_back(random_PhiAngleDetLevel);              // phi anlge det
+                  tmp_vector.push_back(jetPtCorrDet);                         // jet pT det
+                  tmp_vector.push_back(TMath::Abs(random_PhiAnglePartLevel)); // phi anlge part
+                  tmp_vector.push_back(jetPtCorrPart);                        // jet pT part
+                  fhInclusiveRespMatrix_HM->Fill(&tmp_vector[0]);
+                  tmp_vector.clear();
                }
             }
          }//end inclusive jets
@@ -4181,23 +4233,23 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
    //Jet pT corrected on RhokT (added by KA)
    const Int_t numberBins_jetpT_RhokT = 270;
    Double_t jetPtRhokT_Bins[numberBins_jetpT_RhokT + 1];
-   for(Int_t i = 0; i <= numberBins_jetpT_RhokT; i++) jetPtRhokT_Bins[i] = i - 20;  //(-20,250)
+   for(Int_t i = 0; i <= numberBins_jetpT_RhokT; ++i) jetPtRhokT_Bins[i] = i - 20;  //(-20,250)
 
    //Jet pT not corrected on RhokT (added by KA)
    const Int_t numberBins_jetpT_Zero = 250;
    Double_t jetPtZero_Bins[numberBins_jetpT_Zero + 1];
-   for(Int_t i = 0; i <= numberBins_jetpT_Zero; i++) jetPtZero_Bins[i] = i;  //(0,250)
+   for(Int_t i = 0; i <= numberBins_jetpT_Zero; ++i) jetPtZero_Bins[i] = i;  //(0,250)
 
    //Phi angle
    const Int_t ndeltaPhiBins = 40; // Modified by KA. Previous value was 80
    Double_t deltaPhiBins[ndeltaPhiBins+1];
    Double_t p = TMath::Pi()/ndeltaPhiBins;
-   for(Int_t i = 0; i <= ndeltaPhiBins; i++) deltaPhiBins[i] = i*p;  // Modified by KA. Previous range was (0,2*pi)
+   for(Int_t i = 0; i <= ndeltaPhiBins; ++i) deltaPhiBins[i] = i*p;  // Modified by KA. Previous range was (0,2*pi)
 
    //Phi angle: Inclusive jets
-   Double_t deltaPhiBins_InclusiveJets[2*ndeltaPhiBins+1]; // Modified by KA
-   Double_t step = 0.5*TMath::TwoPi()/ndeltaPhiBins;
-   for(Int_t i = 0; i <= 2*ndeltaPhiBins; i++) deltaPhiBins_InclusiveJets[i] = i*step;
+   // Double_t deltaPhiBins_InclusiveJets[2*ndeltaPhiBins+1]; // Modified by KA
+   // Double_t step = 0.5*TMath::TwoPi()/ndeltaPhiBins;
+   // for(Int_t i = 0; i <= 2*ndeltaPhiBins; i++) deltaPhiBins_InclusiveJets[i] = i*step;
 
    //V0M normalized
    Double_t arrV0Mnorm[nbinsV0Mnorm+1];
@@ -4496,6 +4548,13 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
       fhImpurityInclusive_DetJetPtVsPartJetPtCorr = new TH2D(name.Data(), "Matched inclusive jets where part. level one outside TPC fid. cut", numberBins_jetpT_RhokT, jetPtRhokT_Bins, numberBins_jetpT_RhokT, jetPtRhokT_Bins); // (270, -20.0, 250, 270, -20.0, 270) added by KA
       fOutput->Add((TH2D*) fhImpurityInclusive_DetJetPtVsPartJetPtCorr);
 
+      name = Form("Purity_InclusiveJets_Rho%s", rhotype.Data());
+      fhPurity_InclusiveJets = new TH2D(name.Data(), name.Data(), ndeltaPhiBins, deltaPhiBins, numberBins_jetpT_RhokT, jetPtRhokT_Bins);
+      fOutput->Add((TH2D*) fhPurity_InclusiveJets);
+
+      fhNormalization_Purity = new TH2D("Normalization_Purity", "Normalization_Purity", ndeltaPhiBins, deltaPhiBins, numberBins_jetpT_RhokT, jetPtRhokT_Bins);
+      fOutput->Add((TH2D*) fhNormalization_Purity);
+
       for(Int_t itt = 0; itt < fnHadronTTBins; itt++){
          //FF Response matrix filled from recoil jets
 	      name = Form("RecoilJetPtPartLevelVsJetPtDetLevel_Rho%s_TTH%d_%d", rhotype.Data(), fHadronTTLowPt[itt], fHadronTTHighPt[itt]); //FF
@@ -4696,6 +4755,40 @@ void AliAnalysisTaskEA::UserCreateOutputObjects(){
          fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt]->SetBinEdges(3, jetPtZero_Bins); //Jet pT particle level
          fOutput->Add((THnSparse*) fhDeltaPhi_JetPtZeroDetLevel_Vs_DeltaPhi_JetPtZeroPartLevel_CorrespTT[itt]);
       }
+
+
+      //--------------------------------------------------------------------------------------
+      // Jet energy and angular resolution
+      constexpr int numOfDim = 5; //Mult, phi resol, phi, pT resol, pT
+      vector<double> mult_axis {0.0, 4.0, 4.4, 5.0, 9.0, 15.0};
+      const int nBins = mult_axis.size() - 1;
+      vector<int> numOfBins {nBins, 40, 40, 50, 100};
+
+      fhJetEnergy_Angle_Resol = new THnSparseD("JetEnergy_Angle_Resol","JetEnergy_Angle_Resol", numOfDim, &numOfBins[0], nullptr, nullptr);
+      fhJetEnergy_Angle_Resol->GetAxis(0)->Set(numOfBins[0], &mult_axis[0]);
+      fhJetEnergy_Angle_Resol->GetAxis(1)->Set(numOfBins[1], -1.0, 1.0);
+      fhJetEnergy_Angle_Resol->GetAxis(2)->Set(numOfBins[2], 0.0, 2*TMath::Pi());
+      fhJetEnergy_Angle_Resol->GetAxis(3)->Set(numOfBins[3], -1.0, 1.5);
+      fhJetEnergy_Angle_Resol->GetAxis(4)->Set(numOfBins[4], 0.0, 100.0);
+      fOutput->Add((THnSparse*) fhJetEnergy_Angle_Resol);
+
+      //--------------------------------------------------------------------------------------
+      // Inclusive response matrix in HM events
+      mult_axis = {4.0, 4.4, 5.0, 9.0};
+      numOfBins = {(int) mult_axis.size() - 1, ndeltaPhiBins, numberBins_jetpT_RhokT, ndeltaPhiBins, numberBins_jetpT_RhokT};
+
+      fhInclusiveRespMatrix_HM = new THnSparseD("InclusiveRespMatrix_HM","InclusiveRespMatrix_HM", numOfDim, &numOfBins[0], nullptr, nullptr);
+      fhInclusiveRespMatrix_HM->SetBinEdges(0, &mult_axis[0]);
+      fhInclusiveRespMatrix_HM->SetBinEdges(1, deltaPhiBins);
+      fhInclusiveRespMatrix_HM->SetBinEdges(2, jetPtRhokT_Bins);
+      fhInclusiveRespMatrix_HM->SetBinEdges(3, deltaPhiBins);
+      fhInclusiveRespMatrix_HM->SetBinEdges(4, jetPtRhokT_Bins);
+      fOutput->Add((THnSparse*) fhInclusiveRespMatrix_HM);
+
+      // Missed events
+      fhMissedEvents_HM = new TH3D ("MissedEvents_InclusiveJets_HM", "MissedEvents_InclusiveJets_HM", numOfBins[0], &mult_axis[0], ndeltaPhiBins, deltaPhiBins, numberBins_jetpT_RhokT, jetPtRhokT_Bins);
+      fOutput->Add((TH3D*) fhMissedEvents_HM);
+
    }
    //2D unfolding -------------------------------
 
