@@ -54,7 +54,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
   if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: AliAnalysisTask created" << std::endl;
 
 
-
   // add the task to the manager
   manager->AddTask(task);
   if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: task added to AliAnalysisManager" << std::endl;
