@@ -26,7 +26,6 @@
 #include "AliVAODHeader.h"
 
 #include "AliMCParticle.h"
-#include "AliAODMCParticle.h"
 
 #include "AliKFParticleBase.h"
 #include "Riostream.h"
@@ -358,7 +357,6 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   h_AntiProton_ITS_dEdx_NoTOFcutNoITScut(0),
   h_AntiDeuteron_ITS_dEdx_NoTOFcutNoITScut(0)
 {
-
   DefineInput(0,TChain::Class());
   DefineOutput(1,TTree::Class());
   DefineOutput(2,TTree::Class());
