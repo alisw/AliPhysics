@@ -1,7 +1,7 @@
 void AddTask_GammaPythia(Double_t maxY     = 0.8,
 			 Double_t maxpT    = 20,
 			 Int_t    Nch_min  = 0,
-			 Int_t    Nch_max  = 30,
+			 Int_t    Nch_max  = 1000,
 			 Int_t    doMultStudies = 1			 
 			 )
 {
@@ -31,7 +31,9 @@ void AddTask_GammaPythia(Double_t maxY     = 0.8,
 
   //connect containers
   AliAnalysisDataContainer *coutput =
-    mgr->CreateContainer("GammaPythia", TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:GammaPythia",AliAnalysisManager::GetCommonFileName()));
+    mgr->CreateContainer(Form("GammaPythia_%ld_%ld",Nch_min,Nch_max),
+			 TList::Class(),
+			 AliAnalysisManager::kOutputContainer, Form("%s:GammaPythia",AliAnalysisManager::GetCommonFileName()));
 
   mgr->AddTask(task);
   mgr->ConnectInput(task,0,cinput);

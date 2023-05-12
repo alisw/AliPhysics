@@ -50,6 +50,7 @@ class AliAnalysisTaskGammaPythia : public AliAnalysisTaskSE {
 
     // MC functions
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
+    void ProcessMultiplicity();
     bool IsInV0Acceptance(AliVParticle* part) const;
 
     // additional functions
@@ -72,19 +73,10 @@ class AliAnalysisTaskGammaPythia : public AliAnalysisTaskSE {
     TH1I*                 fHistGrandMotherParticlePDG;//! histo for Gammas
     TH2I*                 fHistParticlevsMother;      //! histo for Gammas
 
-    TH1I*                 fHistParticlePDGHM;           //! histo for Gammas
-    TH1I*                 fHistMotherParticlePDGHM;     //! histo for Gammas
-    TH1I*                 fHistGrandMotherParticlePDGHM;//! histo for Gammas
-    TH2I*                 fHistParticlevsMotherHM;      //! histo for Gammas
-
   // histograms gammas
     TH1F*                 fHistPtGamma;                //! histo for Gammas
     TH2F*                 fHistPtYGamma;               //! histo for Gammas
     TH2F*                 fHistPtMultGamma;            //! histo for Gammas
-
-    TH1F*                 fHistPtGammaHM;                //! histo for Gammas
-    TH2F*                 fHistPtYGammaHM;               //! histo for Gammas
-    TH2F*                 fHistPtMultGammaHM;            //! histo for Gammas
 
     TH1D*                 fHistMult;                   //! histo for Pi0 pt vs multiplicity
     TH1D*                 fHistV0Mult;                 //! histo for Pi0 pt vs V0 multiplicity
@@ -105,7 +97,7 @@ class AliAnalysisTaskGammaPythia : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaPythia(const AliAnalysisTaskGammaPythia&); // Prevent copy-construction
     AliAnalysisTaskGammaPythia &operator=(const AliAnalysisTaskGammaPythia&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaPythia, 2);
+    ClassDef(AliAnalysisTaskGammaPythia, 3);
 };
 
 #endif
