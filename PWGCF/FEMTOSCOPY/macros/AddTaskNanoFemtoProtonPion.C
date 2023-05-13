@@ -68,10 +68,22 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   TrackCutsPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
   TrackCutsPion->SetFilterBit(PionFilterbit);
   TrackCutsPion->SetCutCharge(1);
+
+  if(isMC && PionFilterbit == 128){ //for MC template fits
+    TrackCutsPion->CheckParticleMothers(true);
+    TrackCutsPion->SetPlotDCADist(true);
+    TrackCutsPion->SetFillQALater(false);
+  }
+
   TrackCutsAntiPion = AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, false, false);
   TrackCutsAntiPion->SetFilterBit(PionFilterbit);
   TrackCutsAntiPion->SetCutCharge(-1);
   
+  if(isMC && PionFilterbit == 128){ //for MC template fits
+    TrackCutsAntiPion->CheckParticleMothers(true);
+    TrackCutsAntiPion->SetPlotDCADist(true);
+    TrackCutsAntiPion->SetFillQALater(false);
+  }
 
   //Set-up output ------------------------------------------------------------------------
   std::vector<int> PDGParticles;
