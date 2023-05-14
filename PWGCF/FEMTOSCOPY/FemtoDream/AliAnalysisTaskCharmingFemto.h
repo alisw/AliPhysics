@@ -197,6 +197,27 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     //0:no selection, 1:Physical Primary, 2:Secondary From Weak Decay, 3:Secondary From Material, 4: Primary part
     fBuddyOrigin = origin;
   }
+
+  // follow the convention of AliFemtoDreamBaseParticle 
+  int GetBuddyOrigin(AliAODMCParticle *mcPart) {
+    bool isPhysPrim = mcPart->IsPhysicalPrimary();
+    bool isSec = mcPart->IsSecondaryFromWeakDecay();
+    bool isMat = mcPart->IsSecondaryFromMaterial();
+
+    if(isPhysPrim + isSec + isMat >= 2) {
+      AliWarning(Form("Particle has multiple origins! phys. prim: %d, weak: %d, mat. %d\n", 
+                      isPhysPrim, isSec, isMat ));
+      return AliFemtoDreamBasePart::PartOrigin::kUnknown;
+    }
+
+    if(isPhysPrim) return AliFemtoDreamBasePart::PartOrigin::kPhysPrimary;
+    if(isSec) return  AliFemtoDreamBasePart::PartOrigin::kWeak;
+    if(isMat) return  AliFemtoDreamBasePart::PartOrigin::kMaterial;
+
+    AliWarning("Particle has no origin!\n");
+    return AliFemtoDreamBasePart::PartOrigin::kUnknown;
+  }
+
   bool SelectBuddyOrigin(AliAODMCParticle *mcPart) {
     if(fBuddyOrigin==0) {
       return true;

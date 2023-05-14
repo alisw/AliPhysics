@@ -34,7 +34,7 @@ class AliFemtoDreamBasePart {
     kFake = 3,
     kContamination = 4,
     kUnknown = 5,
-    kBeauty = 6
+    kBeauty = 6,
   };
   void SetMCParticle(AliAODMCParticle *mcPart, AliMCEvent *evt);
   void SetMCParticleRePart(AliAODMCParticle *mcPart);
