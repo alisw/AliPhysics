@@ -80,6 +80,7 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void SetPairCutEtaPhi(float aEtaCut,float aPhiCut);
 	
 	void SetPassAllPair(int aUse);
+	void SetGobalVelGate(int aUse);
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -153,7 +154,10 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	float fPairCut_phi;
 	
 	int fPassAllPair;
+
+	int fUseGobalVelGate;
 };
+
 
 #endif
 
