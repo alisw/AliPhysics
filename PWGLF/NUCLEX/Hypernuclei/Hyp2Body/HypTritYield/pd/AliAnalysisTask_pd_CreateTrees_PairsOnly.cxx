@@ -15,7 +15,6 @@
 #include "AliAnalysisTask.h"
 #include "AliAnalysisManager.h"
 #include "AliCentrality.h"
-#include "TDatabasePDG.h"
 #include "AliMultSelection.h"
 
 #include "AliAODEvent.h"
@@ -27,7 +26,6 @@
 
 #include "AliMCParticle.h"
 
-#include "AliKFParticleBase.h"
 #include "Riostream.h"
 #include <iostream>
 #include <fstream>
@@ -2764,6 +2762,7 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
     UseTOF = true;
     UseITS = true;
+    Extend_pT_range = true;
 
     Pion_TPC_dEdx_nSigma_max     = 3.0;
     Kaon_TPC_dEdx_nSigma_max     = 3.0;
@@ -2801,6 +2800,7 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
     UseTOF = false;
     UseITS = true;
+    Extend_pT_range = false;
 
     Pion_TPC_dEdx_nSigma_max     = 3.0;
     Kaon_TPC_dEdx_nSigma_max     = 3.0;
@@ -3013,68 +3013,28 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmadEdxTPC(AliAODTrack &Track, int ParticleSpecies, int RunNumber){
 
 
-  bool LHC18a2a = false;
-  bool LHC18a2b = false;
-  bool LHC18a2b4 = false;
-  bool LHC20l7a = false;
+  bool LHC22f3 = false;
   bool LHC20g7 = false;
 
-  if((RunNumber >= 270581) && (RunNumber <= 282704)) LHC18a2a = true;
-  if((RunNumber >= 252235) && (RunNumber <= 264347)) LHC18a2b = true;
-  if((RunNumber >= 256504) && (RunNumber <= 259888)) LHC18a2b4 = true;
-  if((RunNumber >= 258009) && (RunNumber <= 294925)) LHC20l7a = true;
+  if((RunNumber >= 252235) && (RunNumber <= 294925)) LHC22f3 = true;
   if((RunNumber >= 295585) && (RunNumber <= 297595)) LHC20g7 = true;
 
 
   double Parameters[5];
 
+  if(LHC22f3 == true){
+  // anchored to MetaLHC16, 17 and 18 (pass2)
+   
+    Parameters[0] = 2.52944;
+    Parameters[1] = 20.6343;
+    Parameters[2] = 12.1264;
+    Parameters[3] = 1.95924;
+    Parameters[4] = 0.233686;
 
-  if(LHC18a2a == true){
-  // LHC18a2a (anchored to 2017 data)
-
-    Parameters[0] = 2.63655; 
-    Parameters[1] = 16.8483;
-    Parameters[2] = 0.0854068; 
-    Parameters[3] = 2.03083;
-    Parameters[4] = -1.90682;
-
-  }
-
-  if(LHC18a2b4 == true){
-  // LHC18a2b4 (anchored to 2016 k/l pass2) 
-
-    Parameters[0] = 1.64162; 
-    Parameters[1] = 24.2932;
-    Parameters[2] = 0.464873; 
-    Parameters[3] = 2.0147;
-    Parameters[4] = -0.773004;
-
-  }
-
-  if(LHC18a2b == true){
-  // LHC18a2b (anchored to 2016 data)
-
-    Parameters[0] = 3.74652; 
-    Parameters[1] = 12.159;
-    Parameters[2] = 0.0332405; 
-    Parameters[3] = 1.77673;
-    Parameters[4] = -2.31179;
-
-  }
-
-  if(LHC20l7a == true){
-  // LHC20l7a (anchored to 2018 data)
-
-    // parameters taken from LHC18a2a
-    Parameters[0] = 2.63655; 
-    Parameters[1] = 16.8483;
-    Parameters[2] = 0.0854068; 
-    Parameters[3] = 2.03083;
-    Parameters[4] = -1.90682;
-
-  }
+  } 
 
   if(LHC20g7 == true){
+  // anchored to LHC18q and r (pass3)
 
     // parameters taken from PhD thesis of Esther Bartsch
     // can be used for LHC20g7a, LHC20g7b and LHC20g7c
