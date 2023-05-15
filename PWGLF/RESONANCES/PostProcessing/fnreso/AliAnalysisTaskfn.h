@@ -24,8 +24,8 @@
 #include "AliEventCuts.h"
 #include "AliVParticle.h"
 #include "TObject.h"
-#include "AliInputEventHandler.h" // event mixing
-#include "AliEventPoolManager.h"  // event mixing
+#include "AliInputEventHandler.h"
+#include "AliEventPoolManager.h" 
 #include "THnSparse.h"
 #include "AliVVertex.h"
 
@@ -58,25 +58,24 @@ class AliAnalysisTaskfn : public AliAnalysisTaskSE {
   virtual void   UserExec(Option_t *option);
   virtual void   Terminate(Option_t *);
   Bool_t         GoodEvent(const AliVVertex *vertex);
-  Bool_t         AcceptESDtracks(AliESDtrack *pTrack, AliESDtrack *nTrack);    
-  void           SetupForMixing();
+  void           EventMixing();
   Bool_t         TrackPassesOOBPileupCut(AliESDtrack* t, Double_t b);
   
 
 //---------------------------------------------------------------------------------------
   Bool_t      IsPion(AliVTrack *esdtrack);
   Bool_t      IsKaon(AliVTrack *esdtrack);
-  Bool_t      CheckESDV0(AliESDv0 *v1, AliESDEvent *esd);
+  Bool_t      IsV0(AliESDv0 *v1, AliESDEvent *esd);
 
-  struct Alikks0Container{
+  struct AlikkshPair{
     Int_t charge;
-    Int_t tracknumber;
+    Int_t trkid;
     TLorentzVector particle;
   };
 
-  struct AlipionContainer{
+  struct Alipi{
     Int_t charge;
-    Int_t tracknumber;
+    Int_t trkid;
     TLorentzVector particle;
   };
 
@@ -93,8 +92,8 @@ class AliAnalysisTaskfn : public AliAnalysisTaskSE {
   AliESDEvent       *lESDevent;//!
   AliEventCuts fEventCuts; //!
   AliESDtrackCuts  *fESDtrackCuts;//!                                                                                                        
-  TH1F    *fHistZVertex;//!
-  TH1F    *fHistCentralityEvtCount;//!
+  TH1F    *fHistVz;//!
+  TH1F    *fHistCentrality;//!
   TH1F    *fHisteventsummary;//!
   THnSparseD    *f1Unlike;//!
   THnSparseD    *f1Like;//!
@@ -106,31 +105,30 @@ class AliAnalysisTaskfn : public AliAnalysisTaskSE {
   ClassDef(AliAnalysisTaskfn, 1);
 };
 
-//_____ Reduced Tracks -- contains only quantities requires for this analysis to reduce memory consumption for event mixing
-class AliCompactTrack : public TObject // TObject
+//taken from https://github.com/alisw/AliPhysics/blob/master/PWGCF/Correlations/DPhi/PidPid/AliAnalysisTaskPidPidCorrelations.h
+class AliCompactTrack : public TObject
 {
  public:
   AliCompactTrack(Double_t px, Double_t py, Double_t pz, Short_t charge)
-    : fPxReduced(px), fPyReduced(py), fPzReduced(pz), fChargeReduced(charge)
+    : fPxCompact(px), fPyCompact(py), fPzCompact(pz), fChargeCompact(charge)
   {
   }
   ~AliCompactTrack() {}
    
-  // AliVParticle functions
 
-  virtual Double_t Px() const { return fPxReduced; }
-  virtual Double_t Py() const { return fPyReduced; }
-  virtual Double_t Pz() const { return fPzReduced; }
-  virtual Short_t Charge() const{ return fChargeReduced; }
+  virtual Double_t Px() const { return fPxCompact; }
+  virtual Double_t Py() const { return fPyCompact; }
+  virtual Double_t Pz() const { return fPzCompact; }
+  virtual Short_t Charge() const{ return fChargeCompact; }
     
  private:
     
-  Double_t fPxReduced;    // eta
-  Double_t fPyReduced;     // phi
-  Double_t fPzReduced;      // pT
-  Short_t fChargeReduced;  // charge
+  Double_t fPxCompact;    
+  Double_t fPyCompact;    
+  Double_t fPzCompact;    
+  Short_t fChargeCompact; 
 
-  ClassDef(AliCompactTrack, 1); // reduced track class which contains only quantities requires 
+  ClassDef(AliCompactTrack, 1);
 };
 
 #endif

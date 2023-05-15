@@ -59,12 +59,40 @@ using std::endl;
 ClassImp(AliAnalysisTaskfn)
 ClassImp(AliCompactTrack)
 
-AliAnalysisTaskfn::AliAnalysisTaskfn(): AliAnalysisTaskSE(), fOutput(0), fPoolMgr(0X0), fpionreduced(0), fPIDResponse(0), fVevent(0), lESDevent(0), fEventCuts(0), fESDtrackCuts(0), fHistZVertex(0),fHistCentralityEvtCount(0), fHisteventsummary(0),f1Unlike(0),f1Like(0),f1Mix(0)
+AliAnalysisTaskfn::AliAnalysisTaskfn(): 
+AliAnalysisTaskSE(), 
+fOutput(0), 
+fPoolMgr(0X0), 
+fPIDResponse(0), 
+fVevent(0), 
+lESDevent(0), 
+fEventCuts(0), 
+fESDtrackCuts(0), 
+fHistVz(0),
+fHistCentrality(0), 
+fHisteventsummary(0),
+f1Unlike(0),
+f1Like(0),
+f1Mix(0)
 {
 
 }
 
-AliAnalysisTaskfn::AliAnalysisTaskfn(const char *name): AliAnalysisTaskSE(name), fOutput(0), fPoolMgr(0X0), fpionreduced(0), fPIDResponse(0), fVevent(0), lESDevent(0), fEventCuts(0), fESDtrackCuts(0), fHistZVertex(0),fHistCentralityEvtCount(0), fHisteventsummary(0),f1Unlike(0),f1Like(0),f1Mix(0)
+AliAnalysisTaskfn::AliAnalysisTaskfn(const char *name): 
+AliAnalysisTaskSE(name), 
+fOutput(0), 
+fPoolMgr(0X0), 
+fPIDResponse(0),
+fVevent(0), 
+lESDevent(0), 
+fEventCuts(0), 
+fESDtrackCuts(0), 
+fHistVz(0),
+fHistCentrality(0), 
+fHisteventsummary(0),
+f1Unlike(0),
+f1Like(0),
+f1Mix(0)
 {
   DefineInput(0, TChain::Class()); 
   DefineOutput(1, TList::Class()); 
@@ -117,14 +145,14 @@ void AliAnalysisTaskfn::UserCreateOutputObjects()
   }
 
 
-  SetupForMixing();
+  EventMixing();
 
   fOutput = new TList();
-  fOutput->SetOwner();  // IMPORTANT!
+  fOutput->SetOwner(); 
   OpenFile(1);
   fHisteventsummary            = new TH1F("fHisteventsummary", "Event cut summary", 5,0.0,5.0);       
-  fHistZVertex            = new TH1F("fHistZVertex", "Z vertex distribution", 100,-10,10);       
-  fHistCentralityEvtCount = new TH1F("fHistCentralityEvtCount", "Centrality Event Count", 100,0,100);
+  fHistVz            = new TH1F("fHistZVertex", "Z vertex distribution", 100,-10,10);       
+  fHistCentrality = new TH1F("fHistCentrality", "Centrality distribution", 100,0,100);
 
   Int_t bins[2]={250, 200};
   Double_t xmin[2]={1.0, 0.0};
@@ -140,8 +168,8 @@ void AliAnalysisTaskfn::UserCreateOutputObjects()
 
 
   fOutput->Add(fHisteventsummary);
-  fOutput->Add(fHistZVertex);
-  fOutput->Add(fHistCentralityEvtCount);
+  fOutput->Add(fHistVz);
+  fOutput->Add(fHistCentrality);
   fOutput->Add(f1Unlike);
   fOutput->Add(f1Like);
   fOutput->Add(f1Mix);
@@ -157,6 +185,8 @@ void AliAnalysisTaskfn::UserExec(Option_t *)
   // Called for each event
   //AliAODEvent *lAODevent = 0x0;
   
+
+
   lESDevent = dynamic_cast <AliESDEvent*> (InputEvent());
 
   if (!(lESDevent)) {
@@ -166,24 +196,11 @@ void AliAnalysisTaskfn::UserExec(Option_t *)
   }
   
   ////trigger/////////////
-  /*
-  UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
-  Bool_t isSelected = 0;
-  isSelected = (maskIsSelected & AliVEvent::kINT7);
-  //isSelected = (maskIsSelected & (AliVEvent::kHighMultV0 | AliVEvent::kINT7));
-  */
-
+ 
   UInt_t maskIsSelected = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   Bool_t isSelected = 0;
   isSelected = (maskIsSelected & AliVEvent::kINT7) == AliVEvent::kINT7;
-  /*
-  AliAnalysisManager* mgr = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler* inputHandler = (AliInputEventHandler*) mgr->GetInputEventHandler();
-  UInt_t maskIsSelected = inputHandler->IsEventSelected();
-  Bool_t isSelected = kFALSE;
-  isSelected = maskIsSelected& AliVEvent::kINT7;;
-  */
-
+ 
 
   if ( ! isSelected)
     {
@@ -194,7 +211,6 @@ void AliAnalysisTaskfn::UserExec(Option_t *)
 
   fHisteventsummary->Fill(0.5);
 
-  //AliVEvent *fVevent=0x0;
   fVevent = dynamic_cast<AliVEvent*>(InputEvent());
   if (!fVevent){
     printf("ERROR: fVevent not available\n");
@@ -206,9 +222,6 @@ void AliAnalysisTaskfn::UserExec(Option_t *)
   const AliVVertex *vertex = fVevent->GetPrimaryVertex();
   if (!GoodEvent(vertex)) return; 
   double zv=vertex->GetZ();
-  //double yv=vertex->GetY();
-  //double xv=vertex->GetX();
-  fHistZVertex->Fill(zv);
   ////////////////////////////////
 
 
@@ -230,31 +243,33 @@ void AliAnalysisTaskfn::UserExec(Option_t *)
     
   
 
-  fHistCentralityEvtCount->Fill(lV0M);
+  fHistVz->Fill(zv);
+  fHistCentrality->Fill(lV0M);
   fHisteventsummary->Fill(1.5);
   
-  std::vector<Alikks0Container> kks0Candidates;
-  std::vector<AlipionContainer> pionCandidates;
-  Alikks0Container kks0;
-  AlipionContainer pion;
+  std::vector<AlikkshPair> kks0Candidates;
+  std::vector<Alipi> pionCandidates;
+  AlikkshPair kks0;
+  Alipi pion;
     
-  TLorentzVector daughterk(0.0,0.0,0.0,0.0);
-  TLorentzVector daughterks0(0.0,0.0,0.0,0.0);
-  TLorentzVector motherkks0(0.0,0.0,0.0,0.0);
-  TLorentzVector mother(0.0,0.0,0.0,0.0);
-  TLorentzVector mothermix(0.0,0.0,0.0,0.0);
+  TLorentzVector kaon(0.0,0.0,0.0,0.0);
+  TLorentzVector kshort(0.0,0.0,0.0,0.0);
+  TLorentzVector kaonkshort(0.0,0.0,0.0,0.0);
+  TLorentzVector motherf1(0.0,0.0,0.0,0.0);
+  TLorentzVector motherf1mix(0.0,0.0,0.0,0.0);
     
 
 
   Int_t ntracks = lESDevent->GetNumberOfTracks();
   Int_t nv0s = lESDevent->GetNumberOfV0s();
-    
+  Double_t pionmass=0.139;     
+  Double_t kaonmass=0.4937;     
 
 
-  TObjArray* piontracksAccepted= new TObjArray;
-  piontracksAccepted -> SetOwner(kTRUE);
+  TObjArray* selectedpiontracks= new TObjArray;
+  selectedpiontracks -> SetOwner(kTRUE);
 
-  Int_t nproton=0;
+
   Int_t nkks0pair=0;
   Int_t npion=0;
   int mult=0;
@@ -270,43 +285,50 @@ void AliAnalysisTaskfn::UserExec(Option_t *)
       if(!fESDtrackCuts->AcceptTrack(esdtrack))  continue;
       mult=mult+1;
 
-      if(IsPion(track))
-	{
-	  piontracksAccepted->Add(new AliCompactTrack(track->Px(),track->Py(),track->Pz(),esdtrack->Charge()));
-	  pion.particle.SetXYZM(track->Px(), track->Py(), track->Pz(), 0.1396);
-	  pion.charge=esdtrack->Charge();
-	  pion.tracknumber=itr;
-	  pionCandidates.push_back(pion);
-	  npion=npion+1;
-
-	  
-	}
- 
 
       if(IsKaon(track)){
-	daughterk.SetXYZM(track->Px(), track->Py(), track->Pz(), 0.4937);
+	kaon.SetXYZM(track->Px(), track->Py(), track->Pz(), kaonmass);
 
 	for(Int_t itrv0 = 0; itrv0 < nv0s; itrv0++)
 	  {
 	    AliESDv0 *v0=lESDevent->GetV0(itrv0);
 	    if(!v0) continue;
 	    v0->GetPxPyPz(tV0mom[0],tV0mom[1],tV0mom[2] );
-	    if(!CheckESDV0(v0, lESDevent))continue;
-	    if(v0->GetEffMass()<0.48 || v0->GetEffMass()>0.51) continue;
-            v0->ChangeMassHypothesis(310);
-	    daughterks0.SetXYZM(tV0mom[0], tV0mom[1], tV0mom[2], 0.4976);
-	    motherkks0=daughterk+daughterks0;
-	    kks0.particle.SetXYZM(motherkks0.Px(),motherkks0.Py(),motherkks0.Pz(),motherkks0.M());
+	    if(!IsV0(v0, lESDevent)) continue;
+	    v0->ChangeMassHypothesis(310);
+	    kshort.SetXYZM(tV0mom[0], tV0mom[1], tV0mom[2], 0.4976);
+	    kaonkshort=kaon+kshort;
 	    kks0.charge=esdtrack->Charge();
-	    kks0.tracknumber=itr;
+	    kks0.trkid=itr;
+	    kks0.particle.SetXYZM(kaonkshort.Px(),kaonkshort.Py(),kaonkshort.Pz(),kaonkshort.M());
 	    kks0Candidates.push_back(kks0);
 	    nkks0pair=nkks0pair+1;
 
 	  }
       }
+
+      
+      //hint from https://github.com/alisw/AliPhysics/blob/master/PWGCF/Correlations/DPhi/AliAnalysisTaskLambdaK0s.cxx
+      //and macros in DPhi folders
+      if(IsPion(track))
+	{
+
+	  selectedpiontracks->Add(new AliCompactTrack(track->Px(),track->Py(),track->Pz(),esdtrack->Charge()));
+	  pion.charge=esdtrack->Charge();
+	  pion.trkid=itr;
+	  pion.particle.SetXYZM(track->Px(), track->Py(), track->Pz(), pionmass);
+	  pionCandidates.push_back(pion);
+	  npion=npion+1;
+	  
+	}
+ 
     }
 
-  if(pionCandidates.size()<1 || kks0Candidates.size()<1) 
+  Int_t piontracksize = pionCandidates.size();
+  Int_t kkshorttracksize = kks0Candidates.size();
+
+
+  if(piontracksize<1 || kkshorttracksize<1) 
     {
       PostData(1, fOutput);
       return;
@@ -315,77 +337,90 @@ void AliAnalysisTaskfn::UserExec(Option_t *)
   fHisteventsummary->Fill(2.5);
 
 
-  for(int j=0;j<kks0Candidates.size();j++)
+  //from o2 code of sourav da
+  
+  for (const auto& kks0 : kks0Candidates)
     {
+      if (kks0.particle.M() > 1.04)
+        continue;
 
-      kks0=kks0Candidates[j];
-      if (kks0.particle.M() > 1.04) continue;
-      /////////////make same event pair///////////////////////
-      for(int i=0;i<pionCandidates.size();i++)
+      // Creating same event pair
+      for (const auto& pion : pionCandidates)
 	{
-	  pion=pionCandidates[i];
-	  if(pion.tracknumber==kks0.tracknumber) continue;
-	  mother.SetPxPyPzE(pion.particle.Px()+kks0.particle.Px(), pion.particle.Py()+kks0.particle.Py(), pion.particle.Pz()+kks0.particle.Pz(), pion.particle.E()+kks0.particle.E());
-	  if(mother.M()>2.0) continue;	  
-	  if(pion.charge*kks0.charge<0)
+	  if (pion.trkid == kks0.trkid)
+            continue;
+
+	  motherf1 = pion.particle + kks0.particle;
+	  if (motherf1.M() > 2.0)
+            continue;
+
+	  if (pion.charge * kks0.charge < 0)
 	    {
-	      /////////fill unlike histo//////////
-	      f1Unlike->Fill(mother.M(),mother.Pt());
-	      
+	      // Fill unlike histo
+	      f1Unlike->Fill(motherf1.M(), motherf1.Pt());
 	    }
-	  if(pion.charge*kks0.charge>0)
+	  else if (pion.charge * kks0.charge > 0)
 	    {
-	      /////////fill like histo//////////
-	      f1Like->Fill(mother.M(),mother.Pt());
+	      // Fill like histo
+	      f1Like->Fill(motherf1.M(), motherf1.Pt());
 	    }
 	}
-
     }
+
+
+
  fHisteventsummary->Fill(3.5);
 
   ///////////////////////////////////////////////////////////////////
-      
-  //////////////mixed event///////////////////
-  double pionmixenergy=0.0;
-  AliEventPool* pool = fPoolMgr->GetEventPool(mult,zv); 
-  if (!pool) AliInfo("No pool found for centrality ");
-  else
-    {
-      if (pool->IsReady())
-	{
-	  //Int_t nMix = pool->GetCurrentNEvents();
-	  Int_t nMix=10;
-	  for (Int_t jMix=0; jMix<nMix; jMix++)
-	    {
-	      TObjArray* bgTracks = pool->GetRandomEvent();
-	      Int_t numTracks = bgTracks->GetEntriesFast();
 
-	      for(int ipion = 0; ipion < numTracks; ipion++)
-		{
-		  AliCompactTrack *piontrackmix = (AliCompactTrack*) bgTracks->At(ipion);
-		  if(!piontrackmix)
-		    {
-		      AliFatal(Form("ERROR: Could not receive mix pool track %d\n",ipion));
-		      continue;
-		    }
-		  AliESDtrack *esdtrackmix  = dynamic_cast<AliESDtrack*>(piontrackmix);
-		  for(int j=0;j<kks0Candidates.size();j++)
-		    {
-		      kks0=kks0Candidates[j];
-		      if (kks0.particle.M() > 1.04) continue;
-		      if(piontrackmix->Charge()*kks0.charge>0)continue;
-		      pionmixenergy=TMath::Sqrt(0.139*0.139+piontrackmix->Px()*piontrackmix->Px()+piontrackmix->Py()*piontrackmix->Py()+piontrackmix->Pz()*piontrackmix->Pz());
-		      mothermix.SetPxPyPzE(piontrackmix->Px()+kks0.particle.Px(), piontrackmix->Py()+kks0.particle.Py(), piontrackmix->Pz()+kks0.particle.Pz(), pionmixenergy+kks0.particle.E());
-		      if(mothermix.M()>2.0) continue;
-		      //////////fill mix histo//////////
-		      f1Mix->Fill(mothermix.M(),mothermix.Pt());
-		    }
-		}
+ //taken mostly from https://github.com/alisw/AliPhysics/blob/master/PWGCF/Correlations/DPhi/AliAnalysisTaskLambdaK0s.cxx
+ // and macros from that folder of DPhi
+ 
+ // Mixed event
+ double pionmixenergy = 0.0;
+ AliEventPool* pool = fPoolMgr->GetEventPool(mult, zv);
+ if (pool && pool->IsReady())
+   {
+     Int_t nMix = 10; // Set the number of mixed events
 
-	    }
-	}
-      pool->UpdatePool(piontracksAccepted);
-    }
+     for (Int_t jMix = 0; jMix < nMix; jMix++)
+       {
+	 TObjArray* bgTracks = pool->GetRandomEvent();
+	 Int_t numTracks = bgTracks->GetEntriesFast();
+
+	 for (const auto& bgTrack : *bgTracks)
+	   {
+	     AliCompactTrack* piontrackmix = dynamic_cast<AliCompactTrack*>(bgTrack);
+	     if (!piontrackmix)
+	       {
+		 AliFatal(Form("ERROR: Could not receive mix pool track %d\n", bgTrack->GetUniqueID()));
+		 continue;
+	       }
+
+	     AliESDtrack* esdtrackmix = dynamic_cast<AliESDtrack*>(piontrackmix);
+
+	     for (const auto& kks0 : kks0Candidates)
+	       {
+		 if (kks0.particle.M() > 1.04)
+		   continue;
+
+		 if (piontrackmix->Charge() * kks0.charge > 0)
+		   continue;
+
+		 pionmixenergy = TMath::Sqrt(pionmass * pionmass + piontrackmix->Px() * piontrackmix->Px() + piontrackmix->Py() * piontrackmix->Py() + piontrackmix->Pz() * piontrackmix->Pz());
+		 motherf1mix.SetPxPyPzE(piontrackmix->Px()+kks0.particle.Px(), piontrackmix->Py()+kks0.particle.Py(), piontrackmix->Pz()+kks0.particle.Pz(), pionmixenergy+kks0.particle.E());
+		 if (motherf1mix.M() > 2.0)
+		   continue;
+
+		 // Fill mix histo
+		 f1Mix->Fill(motherf1mix.M(), motherf1mix.Pt());
+	       }
+	   }
+       }
+   }
+
+ if (pool)
+   pool->UpdatePool(selectedpiontracks);
 
 
   /////////////////////////////////////
@@ -402,7 +437,7 @@ void AliAnalysisTaskfn::Terminate(Option_t *)
 
 //________________________________________________________________________
 
-Bool_t AliAnalysisTaskfn::GoodEvent(const AliVVertex *vertex) //all cuts taken from alice code github pp analysis from strangeness and correlation analysis
+Bool_t AliAnalysisTaskfn::GoodEvent(const AliVVertex *vertex) //all cuts taken from alice code github pp analysis from strangeness and correlation analysis and swati's pp code
 {
 
   Bool_t EventAccepted;
@@ -472,7 +507,7 @@ Bool_t AliAnalysisTaskfn::GoodEvent(const AliVVertex *vertex) //all cuts taken f
 
 }
 //-----------------------------------------------
-Bool_t AliAnalysisTaskfn::IsPion(AliVTrack *vtrack)
+Bool_t AliAnalysisTaskfn::IsPion(AliVTrack *vtrack) //code taken from Spin Alignment part of ajay sir's
 {
 
   
@@ -491,8 +526,7 @@ Bool_t AliAnalysisTaskfn::IsPion(AliVTrack *vtrack)
     }
 
   if(TOFHIT)
-    {
-      //if(l<350)return kFALSE;                                                                                                               
+    { 
       if(nsigmatofpion>3.0)return kFALSE;
     }
 
@@ -520,7 +554,7 @@ Bool_t AliAnalysisTaskfn::IsKaon(AliVTrack *vtrack)
 
   if(TOFHIT)
     {
-      //if(l<350)return kFALSE;                                                                                                               
+    
       if(nsigmatofkaon>3.0)return kFALSE;
     }
 
@@ -532,7 +566,7 @@ Bool_t AliAnalysisTaskfn::IsKaon(AliVTrack *vtrack)
 
 
 //_________________________________________________________________________________________________
-Bool_t AliAnalysisTaskfn::CheckESDV0(AliESDv0 *v0, AliESDEvent *lESDEvent)
+Bool_t AliAnalysisTaskfn::IsV0(AliESDv0 *v0, AliESDEvent *lESDEvent)
 {
 
 
@@ -635,7 +669,7 @@ Bool_t AliAnalysisTaskfn::CheckESDV0(AliESDv0 *v0, AliESDEvent *lESDEvent)
   // Competing v0rejection for K0s vs Lambda
   Double_t altmass=0.0;
   Double_t fToleranceVeto=0.004;
-  //Double_t fToleranceVeto=0.01;
+
   
   v0->ChangeMassHypothesis(kLambda0);
   if ((TMath::Abs(v0->GetEffMass() - 1.115683)) < fToleranceVeto) {
@@ -653,13 +687,18 @@ Bool_t AliAnalysisTaskfn::CheckESDV0(AliESDv0 *v0, AliESDEvent *lESDEvent)
   return kFALSE;
   }
 
+
+  if(v0->GetEffMass()<0.48 || v0->GetEffMass()>0.51) {
+    return kFALSE;
+  }
+
   return kTRUE;
   
 
 }
 
 //_________________________________________________________________________________________________
-void AliAnalysisTaskfn::SetupForMixing()
+void AliAnalysisTaskfn::EventMixing()
 {
 
   ////////////////////////////
