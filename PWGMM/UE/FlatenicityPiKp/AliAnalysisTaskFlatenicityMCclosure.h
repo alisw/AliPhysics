@@ -45,33 +45,17 @@ class AliAnalysisTaskFlatenicityMCclosure : public AliAnalysisTaskSE {
 		void MakeMCanalysis();
 		void MakeDataanalysis();
 		void GetMCchargedTrueDists();
-		void GetchargedDists();
-		/* void GetMCchargedDetDists(Int_t multRec, const std::vector<Float_t> &ptRec, */
-		/* 		const std::vector<Int_t> &idRec); */
+		bool HasRecVertex();
 
-		void SetPtMin(Double_t val) {
-			fPtMin = val;
-		} // Set pT cut for associated particles
-		void SetUseMC(Bool_t flat_flag = kFALSE) {
-			fUseMC = flat_flag;
-		} // use to analyse MC data
+		void SetPtMin(Double_t val) { fPtMin = val; }
+		void SetUseMC(Bool_t flat_flag = kFALSE) { fUseMC = flat_flag; }
 		void SetDetectorForFlatenicity(TString det = "V0") { fDetFlat = det; }
-		void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) {
-			fRemoveTrivialScaling = flat_flag;
-		}
+		void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) { fRemoveTrivialScaling = flat_flag; }
 		void SetV0Calib(Bool_t calib_flag = kFALSE) { fIsCalib = calib_flag; }
 		void SetEqualV0Alice(Bool_t calib_flag = kFALSE) {
 			fIsEqualALICE = calib_flag;
 		}
 
-		bool HasRecVertex();
-
-		/* Int_t FillMCarray(std::vector<Float_t> &pt, std::vector<Int_t> &id); */
-
-		/* Int_t FillArray(std::vector<Float_t> &pt, std::vector<Int_t> &id, */
-		/* 		std::vector<Int_t> &isprim); */
-
-	protected:
 	private:
 		AliESDEvent *fESD; //! input ESD event
 		AliEventCuts fEventCuts;
@@ -82,12 +66,10 @@ class AliAnalysisTaskFlatenicityMCclosure : public AliAnalysisTaskSE {
 		Bool_t fIsEqualALICE;
 		Float_t fVtxz;
 		TF1 *fParVtx;
-		Float_t ParVtxNorm;
 		Int_t fV0Mindex;
 		Float_t fmultTPC;
 		int fmultV0A;
 		int fmultV0C;
-		/* int fmultV0AV0C; */
 		Float_t fmultADA;
 		Float_t fmultADC;
 		Float_t fmultTPCmc;
@@ -97,33 +79,18 @@ class AliAnalysisTaskFlatenicityMCclosure : public AliAnalysisTaskSE {
 		Float_t fmultADCmc;
 		TString fDetFlat;
 		Bool_t fRemoveTrivialScaling;
-		/* Int_t fnGen; */
-		/* Int_t fnDetec; */
-		/* Int_t fnRecon; */
-		AliPIDResponse *fPIDResponse;
 		AliAnalysisFilter *fTrackFilter;
-		TList *fOutputList; //! output list in the root file
+		TList *fOutputList;
 		Double_t fEtaCut;
 		Double_t fPtMin;
-		Double_t ftrackmult08;
 		Double_t fv0mamplitude;
 		Double_t fv0mpercentile;
-		/* Double_t fFlatAltMC; */
 		Float_t fFlat;
 		Float_t fFlatMC;
-		/* Int_t fmultV0AV0Cmc; */
 		AliMultSelection *fMultSelection;
-		TH1D *hPtPrimIn;
-		/* TH1D *hPtPrimOut; */
-		/* TH1D *hPtSecOut; */
-		/* TH1D *hPtOut; */
 		TH2D *hFlatV0vsFlatTPC;
-		/* TH1D *hFlatenicityBefore; */
-		/* TH1D *hFlatenicity; */
 		TH1D *hFlatenicityMC;
 		TH2D *hFlatResponse;
-		/* TH2D *hFlatVsPt; */
-		/* TH2D *hFlatVsPtMC; */
 		TProfile *hActivityV0DataSectBefore;
 		TProfile *hActivityV0DataSect;
 		TProfile *hV0vsVtxz;
@@ -132,13 +99,6 @@ class AliAnalysisTaskFlatenicityMCclosure : public AliAnalysisTaskSE {
 		TH2D *hFlatVsV0M;
 		TH2D *hFlatMCVsV0M;
 		TH1D *hEtamc;
-		/* TH1D *hEtamcAlice; */
-		/* TH1D *hCounter; */
-		//  TH1D *hCountEvent;
-		/* TH1D *hCountProduV0m; */
-		/* TH1D *hCountAuthV0m; */
-		/* TH1D *hCountProdu_FlatMC; */
-		/* TH1D *hCountAuth_FlatMC; */
 		TH2D *hMultMCmVsV0M;
 		TH2D *hMultMCaVsV0M;
 		TH2D *hMultMCcVsV0M;
@@ -147,12 +107,6 @@ class AliAnalysisTaskFlatenicityMCclosure : public AliAnalysisTaskSE {
 		TH2D *hMultaVsV0M;
 		TH2D *hMultcVsV0M;
 		TH1D *hV0MBadruns;
-		/* TH1D *hChgProdu_All_pt; */
-		/* TH1D *hChgAuth_All_pt; */
-		/* TH2D *hChgProdu_pt_V0; */
-		/* TH2D *hChgAuth_pt_V0; */
-		/* TH2D *hChgProdu_pt_Flat; */
-		/* TH2D *hChgAuth_pt_Flat; */
 		TH3F *hMultV0AV0CvsFlatvspT_BFTrigSel;
 		TH3F *hAmpV0AV0CvsFlatvspT_BFTrigSel;
 		TH3F *hPercentileV0MvsFlatvspT_BFTrigSel; 
@@ -161,8 +115,6 @@ class AliAnalysisTaskFlatenicityMCclosure : public AliAnalysisTaskSE {
 		TH3F *hPercentileV0MvsFlatvspT_AFTrigSel; 
 		TH3F *hAmpV0AV0CvsFlatvspT;
 		TH3F *hPercentileV0MvsFlatvspT; 
-		/* TH2D *hFlatVsPtV0M[9]; */
-		/* TH2D *hFlatVsPtV0MMC[9]; */
 		TH2D *hComponentsMult[4];
 		TH2D *hCombinedMult[3];
 		TH2D *hComponentsMultmc[4];
