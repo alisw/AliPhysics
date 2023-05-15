@@ -657,6 +657,7 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
     cout << "------- No AliMultSelection Object Found --------" << fMultSelection << endl;
   fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
   hCounter->Fill(1);
+  float v0mult = fMultSelection->GetEstimator("V0M")->GetValue();
 
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     if (fv0mpercentile >= centClassFlatSpec[i_c] && fv0mpercentile < centClassFlatSpec[i_c + 1]) {
@@ -679,8 +680,10 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
   if (fFlat >= 0) {
     hFlatenicity->Fill(fFlat);
     if (fV0Mindex >= 0) {
-      hFlatVsV0M->Fill(fv0mpercentile, fFlat);
-      MakeDataanalysis();
+        if ((fV0Mindex == nCent - 1) && (v0mult > 400.)) { // to reject 70-100% multiplicity class events that have large V0M amplitude
+            hFlatVsV0M->Fill(fv0mpercentile, fFlat);
+            MakeDataanalysis();
+        }
     }
   }
 
