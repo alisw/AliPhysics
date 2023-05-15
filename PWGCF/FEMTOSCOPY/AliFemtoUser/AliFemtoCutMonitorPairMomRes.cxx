@@ -45,7 +45,7 @@ AliFemtoCutMonitorPairMomRes::AliFemtoCutMonitorPairMomRes(const char *aName, do
   snprintf(name, 200, "PairMomResTrueMass_KPpairOnly%s", aName);
   fMomResTrueMass_KPpairOnly = new TH2D(name, "PairMomResTrueMass_KPpairOnly", nbins, qmin, qmax, nbins, qmin, qmax);
 
-  snprintf(name, 200, "PairMomRes_pppairOnly%s", aName);
+  snprintf(name, 200, "PairMomResModifMass_pppairOnly%s", aName);
   fMomRes_pppairOnly = new TH2D(name, "PairMomRes_pppairOnly", nbins, qmin, qmax, nbins, qmin, qmax);
 
   snprintf(name, 200, "PairMomResTrueMass_pppairOnly%s", aName);
@@ -188,16 +188,13 @@ void AliFemtoCutMonitorPairMomRes::Fill(const AliFemtoPair* aPair)
 
    
 		fMomRes->Fill(KStar_rec,KStar_true);
-
+		
 
 	            if((abs(tInfo1->GetPDGPid()) == 321) && (abs(tInfo2->GetPDGPid()) == 2212))
 		      {
 			fMomRes_KPpairOnly->Fill(KStar_rec,KStar_true);
 		      }
-	            if((abs(tInfo1->GetPDGPid()) == 2212) && (abs(tInfo2->GetPDGPid()) == 2212))
-		      {
-			fMomRes_pppairOnly->Fill(KStar_rec,KStar_true);
-		      }
+
 	
 	    }
 	}
@@ -258,11 +255,74 @@ void AliFemtoCutMonitorPairMomRes::Fill(const AliFemtoPair* aPair)
 	
 	    }
 	}
+	
+	
+      //mass from constructor deuterons stuffs, test/check, Wioleta Rzęsa wioleta.rzesa@cern.ch 
+      if((abs(tInfo1->GetPDGPid()) == 2212) && (abs(tInfo2->GetPDGPid()) == 2212))
+        {
+          double tPtrans_deu = tPx*tPx + tPy*tPy;
+          double tMtrans_deu = tPE*tPE - tPz*tPz;
+          if( (tMtrans_deu - tPtrans_deu) > 0)
+	    {
+	      double tPinv = ::sqrt(tMtrans_deu - tPtrans_deu);
+	      tMtrans_deu = ::sqrt(tMtrans_deu);
+	      tPtrans_deu = ::sqrt(tPtrans_deu);
 
+	      double tQinvL = (pE1-pE2)*(pE1-pE2) - (px1-px2)*(px1-px2) -
+	      (py1-py2)*(py1-py2) - (pz1-pz2)*(pz1-pz2);
+	 
+	      double tQ = (mass1_sqrd - mass2_sqrd)/tPinv;
+	  
+	      if((tQ*tQ - tQinvL)>=0.000000001)
+	        {
+	          tQ = ::sqrt( tQ*tQ - tQinvL);
+	          double KStar_true = tQ/2;
+	        
+                  const AliFemtoLorentzVector
+                    &p1_re = aPair->Track1()->FourMomentum(),
+                    &p2_re = aPair->Track2()->FourMomentum();
+                  const double
+                    px1_re = p1_re.x(),
+                    py1_re = p1_re.y(),
+                    pz1_re = p1_re.z(),
+                    pE1_re = p1_re.e(),
+                    mass1_sqrd_re = std::max({0.0, p1_re.m2()}),
 
-      
+                    px2_re = p2_re.x(),
+                    py2_re = p2_re.y(),
+                    pz2_re = p2_re.z();
+                    AliFemtoLorentzVector p2_re2(::sqrt(second->Track()->P().Mag2() + fMassPart2*fMassPart2), second->Track()->P());
+                    const double 
+                      pE2_re = p2_re2.e(),
+                      mass2_sqrd_re = std::max({0.0, p2_re2.m2()});
+                      
+                    const double 
+                      tPx_re = px1_re + px2_re,
+                      tPy_re = py1_re + py2_re,
+                      tPz_re = pz1_re + pz2_re,
+                      tPE_re = pE1_re + pE2_re;
+
+                    double tPtrans_re = tPx_re*tPx_re + tPy_re*tPy_re;
+                    double tMtrans_re = tPE_re*tPE_re - tPz_re*tPz_re;
+                    double tPinv_re = ::sqrt(tMtrans_re - tPtrans_re);
+                    tMtrans_re = ::sqrt(tMtrans_re);
+                    tPtrans_re = ::sqrt(tPtrans_re);
+
+                    double tQinvL_re = (pE1_re-pE2_re)*(pE1_re-pE2_re) - (px1_re-px2_re)*(px1_re-px2_re) -
+                    (py1_re-py2_re)*(py1_re-py2_re) - (pz1_re-pz2_re)*(pz1_re-pz2_re);
+
+                    double tQ_re = (mass1_sqrd_re - mass2_sqrd_re)/tPinv_re;
+                    tQ_re = ::sqrt( tQ_re*tQ_re - tQinvL_re);
+
+                    double KStar_rec2 = tQ_re/2;
+	            if(KStar_true!=0 || KStar_rec2!=0)
+			fMomRes_pppairOnly->Fill(KStar_rec2,KStar_true);		   
+	
+	          }
+	    }
+        }
+        
     }
-    
   }
   
   
