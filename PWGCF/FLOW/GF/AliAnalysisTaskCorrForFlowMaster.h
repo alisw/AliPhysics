@@ -63,8 +63,6 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    SetSystematicsFlag(TString flag) { fSystematicsFlag = flag; }
         void                    SetSkipCorrelations(Bool_t flag = kTRUE) { fSkipCorr = flag; }
         void                    SetRejectSecondariesFromMC(Bool_t flag = kTRUE) { fRejectSecondariesFromMC = flag; }
-        void                    SetVetoJetEvents(Bool_t flag = kTRUE) { fVetoJetEvents = flag; }
-        void                    SetJetEventsLowPtCut(Double_t cut) { fJetParticleLowPt = cut; }
         void                    SetUsePhiStar(Bool_t flag) {fUsePhiStar = flag;}
         void                    SetUseEfficiency(Bool_t flag) {fUseEfficiency = flag;}
         void                    SetCreateQAPlots(Bool_t flag) {fCreateQAPlots = flag;}
@@ -75,6 +73,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         void                    SetPVZcut(Double_t cut) { fPVzCut = cut; }
         void                    SetUseNchRange(Bool_t range, Int_t min, Int_t max) { fUseNch = range; fNchMin = min; fNchMax = max; }
         void                    SetCentrality(TString cent, Double_t min = 0.0, Double_t max = 20.0) { fCentEstimator = cent; fCentMin = min; fCentMax = max; }
+        void                    SetVetoJetEvents(Bool_t flag, Double_t cut, Double_t selectionval, Bool_t selectjetsinTPC) { fVetoJetEvents = flag; fJetParticleLowPt = cut; fJetvetoselectionval = selectionval; fselectjetsinTPC = selectjetsinTPC; }
 
         //track selection (charged + PID + som global )
         void                    SetFilterBit(UInt_t filter) { fFilterBit = filter; }
@@ -173,6 +172,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         Bool_t                  fCreateQAPlots; //[kFALSE]
         Bool_t                  fUseLikeSign; // [kFALSE]
         Bool_t                  fUseUnlikeSign; // [kFALSE]
+        Bool_t                  fselectjetsinTPC; // [kFALSE]
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
@@ -192,6 +192,7 @@ class AliAnalysisTaskCorrForFlowMaster : public AliAnalysisTaskSE
         Double_t                fPtMaxAss;
         Double_t                fPtRefMin; // [0.2]
         Double_t                fPtRefMax; // [3.0]
+        Double_t                fJetvetoselectionval; //[0.5]
         std::vector<Double_t>   fPtBinsTrigCharged;
         std::vector<Double_t>   fPtBinsAssCharged;
         Double_t                fCentMin;

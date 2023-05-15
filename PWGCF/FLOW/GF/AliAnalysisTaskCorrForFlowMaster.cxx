@@ -45,6 +45,8 @@ AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster() : AliAnalys
     fCreateQAPlots(kFALSE),
     fUseLikeSign(kFALSE),
     fUseUnlikeSign(kFALSE),
+    fselectjetsinTPC(kFALSE),
+    fJetvetoselectionval(0.5),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
@@ -113,6 +115,8 @@ AliAnalysisTaskCorrForFlowMaster::AliAnalysisTaskCorrForFlowMaster(const char* n
     fCreateQAPlots(kFALSE),
     fUseLikeSign(kFALSE),
     fUseUnlikeSign(kFALSE),
+    fselectjetsinTPC(kFALSE),
+    fJetvetoselectionval(0.5),
     fFilterBit(96),
     fbSign(0),
     fRunNumber(-1),
@@ -946,24 +950,35 @@ Bool_t AliAnalysisTaskCorrForFlowMaster::PrepareTPCTracks(){
   }
 
   if(fVetoJetEvents){
-    Double_t foundSomething = kFALSE;
+    Bool_t foundjetsinTPC = kFALSE;
     fhEventCounter->Fill("Before Jet Veto",1); //HPC = high pt cut
-    for(Int_t iTrig(0); iTrig < fTracksJets->GetEntriesFast(); iTrig++){
+    
+    for(Int_t iTrig=0; iTrig < fTracksJets->GetEntriesFast(); iTrig++){
       AliAODTrack* trackTrig = (AliAODTrack*)fTracksJets->At(iTrig);
       if(!trackTrig) continue;
       Double_t trigPhi = trackTrig->Phi();
 
-      for(Int_t iAss(iTrig+1); iAss < fTracksJets->GetEntriesFast()+1; iAss++){
+      for(Int_t iAss=iTrig+1; iAss < fTracksJets->GetEntriesFast(); iAss++){
         AliAODTrack* trackAss = (AliAODTrack*)fTracksJets->At(iAss);
         if(!trackAss) continue;
         Double_t assPhi = trackAss->Phi();
 
         Double_t deltaPhi = RangePhi(trigPhi - assPhi);
-        if(TMath::Abs(deltaPhi - TMath::Pi()) < 0.5) foundSomething = kTRUE;
+        if(TMath::Abs(deltaPhi - TMath::Pi()) < fJetvetoselectionval) foundjetsinTPC = kTRUE;//fJetvetoselectionval= 0.5
       }
     }
-    if(!foundSomething){ fhEventCounter->Fill("After Jet Veto",1); }
-    else { return kFALSE; }
+    
+      if(fselectjetsinTPC == kTRUE) {//select events with back to back jets in TPC
+      if(foundjetsinTPC == kFALSE) return kFALSE;//reject
+    }
+
+
+    if(fselectjetsinTPC == kFALSE) {//reject events with back to back jets in TPC
+      if(foundjetsinTPC == kTRUE) return kFALSE;//reject
+    }
+
+
+    fhEventCounter->Fill("After Jet Veto",1);
   }
 
 
