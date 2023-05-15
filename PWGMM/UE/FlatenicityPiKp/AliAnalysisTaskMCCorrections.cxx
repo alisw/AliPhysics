@@ -668,7 +668,7 @@ void AliAnalysisTaskMCCorrections::TrueINEL() {
 			continue;
 		if (TMath::Abs(particle->Eta()) > 1.0)
 			continue;
-		if (particle->Pt() < fPtMin)
+		if (particle->Pt() <= 0.0)
 			continue;
 		if (TMath::Abs(particle->Charge()) < 0.1)
 			continue;
