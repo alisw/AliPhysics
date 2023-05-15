@@ -585,7 +585,6 @@ int AliFemtoCorrFctnpdtHe3::ReVelocityGate(AliFemtoPair* aPair){
     TotalP = TMath::Sqrt( TotalP);
     float P2velocity = TotalP/TotalE;
 
-cout<<"ccc "<<P1velocity<<" "<<P2velocity<<endl;
     int ReLabel = 3;
     if(P1velocity > P2velocity){
         ReLabel = 1;
@@ -593,7 +592,6 @@ cout<<"ccc "<<P1velocity<<" "<<P2velocity<<endl;
     if(P1velocity < P2velocity){
         ReLabel = 2;
     }
-cout<<"re label "<<ReLabel<<endl;
     return ReLabel;
 }
 float AliFemtoCorrFctnpdtHe3::ReAvgDphi(AliFemtoPair* aPair){
