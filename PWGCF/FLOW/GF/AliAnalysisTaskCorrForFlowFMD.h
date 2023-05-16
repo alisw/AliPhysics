@@ -232,7 +232,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         UInt_t                  fFilterBit;
         Int_t                   fbSign;
         Int_t                   fRunNumber; // previous run
-        Int_t                   fNofTracks;
+        Double_t                fNofTracks;
         Int_t                   fNofMinHighPtTracksForRejection;
         Int_t                   fNchMin;
         Int_t                   fNchMax;

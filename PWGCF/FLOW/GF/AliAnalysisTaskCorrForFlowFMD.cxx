@@ -1642,7 +1642,12 @@ Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
       if(fVetoJetEvents && trackPt > fJetParticleLowPt) fTracksJets->Add((AliAODTrack*)track);
       
       if(trackPt > fPtMinAss && trackPt < fPtMaxAss) {//fiil the Assoc TObjArray
-        fNofTracks++;
+	Double_t trkEff = 1.0;
+	if(fUseEfficiency) {
+	  trkEff = GetEff(track->Pt(), 0, track->Eta());
+	 if(trkEff < 0.001) continue;
+	}
+	fNofTracks += 1.0/trkEff;
         if(fAnalType == eFMDAFMDC || fIsTPCgen) continue;
         if(fAnalType == eTPCTPC) fTracksAss->Add((AliAODTrack*)track); 
       }
