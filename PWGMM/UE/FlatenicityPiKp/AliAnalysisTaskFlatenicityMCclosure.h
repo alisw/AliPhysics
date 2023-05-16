@@ -126,6 +126,8 @@ class AliAnalysisTaskFlatenicityMCclosure : public AliAnalysisTaskSE {
 		TH1D *hPtAll;
 		TH1D *hPtPrimaries;
 		TH1D *hPtSecondaries;
+		TH2F *hAmpV0AV0CalicevsFlat;
+		TH3F *hAmpV0AV0CalicevsFlatvspT; 
 		TH2D *hComponentsMult[4];
 		TH2D *hCombinedMult[3];
 		TH2D *hComponentsMultmc[4];
