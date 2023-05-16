@@ -2050,12 +2050,29 @@ double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(dou
   bool MetaLHC18 = false;
   bool LHC18q = false;
   bool LHC18r = false;
+  bool LHC20g7a = false;
+  bool LHC20g7b = false;
+  bool LHC22f3 = false;
 
-  if((RunNumber >= 252235) && (RunNumber <= 264347)) MetaLHC16 = true;
-  if((RunNumber >= 270581) && (RunNumber <= 282704)) MetaLHC17 = true;
-  if((RunNumber >= 285009) && (RunNumber <= 294925)) MetaLHC18 = true;
-  if((RunNumber >= 295585) && (RunNumber <= 296623)) LHC18q = true;
-  if((RunNumber >= 296690) && (RunNumber <= 297585)) LHC18r = true;
+
+  if(fIsMC == false){
+
+    if((RunNumber >= 252235) && (RunNumber <= 264347)) MetaLHC16 = true;
+    if((RunNumber >= 270581) && (RunNumber <= 282704)) MetaLHC17 = true;
+    if((RunNumber >= 285009) && (RunNumber <= 294925)) MetaLHC18 = true;
+    if((RunNumber >= 295585) && (RunNumber <= 296623)) LHC18q = true;
+    if((RunNumber >= 296690) && (RunNumber <= 297585)) LHC18r = true;
+
+  } // end of fIsMC == false
+
+  
+  if(fIsMC == true){
+
+    if(fCollisionSystem == 1) LHC20g7a = true;
+    if(fCollisionSystem == 2) LHC20g7b = true;
+    if(fCollisionSystem  > 2) LHC22f3 = true;
+
+  } // end of fIsMC == true
 
 
   bool isProton	      = false;
@@ -2404,6 +2421,70 @@ double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmaMassSquareTOF(dou
 
   }
 
+  if((LHC20g7a == true || LHC20g7b == true) && (isDeuteron == true)){
+    
+    Mean->FixParameter(0,3.538);
+    Mean->FixParameter(1,0.002);
+    Mean->FixParameter(2,-0.000159028);
+    Mean->FixParameter(3,12.9659);
+    Mean->FixParameter(4,3);
+    
+    Sigma->FixParameter(0,0.0949818);
+    Sigma->FixParameter(1,0);
+    Sigma->FixParameter(2,-0.0123674);
+    Sigma->FixParameter(3,2.48613);
+    Sigma->FixParameter(4,3);
+
+  }
+
+
+  if((LHC20g7a == true || LHC20g7b == true) && (isAntiDeuteron == true)){
+    
+    Mean->FixParameter(0,3.53193);
+    Mean->FixParameter(1,0.002);
+    Mean->FixParameter(2,-0.000163075);
+    Mean->FixParameter(3,12.918);
+    Mean->FixParameter(4,3);
+    
+    Sigma->FixParameter(0,0.0924191);
+    Sigma->FixParameter(1,0);
+    Sigma->FixParameter(2,-0.0116689);
+    Sigma->FixParameter(3,2.57201);
+    Sigma->FixParameter(4,3);
+
+  }
+
+  if((LHC20g7a == true || LHC20g7b == true) && (isProton == true)){
+    
+    Mean->FixParameter(0,0.88);
+    Mean->FixParameter(1,0.01);
+    Mean->FixParameter(2,-5e-07);
+    Mean->FixParameter(3,35);
+    Mean->FixParameter(4,3);
+    
+    Sigma->FixParameter(0,-0.134659);
+    Sigma->FixParameter(1,0.0484266);
+    Sigma->FixParameter(2,0.0656566);
+    Sigma->FixParameter(3,-0.461196);
+    Sigma->FixParameter(4,1.45088);
+
+  }
+
+  if((LHC20g7a == true || LHC20g7b == true) && (isAntiProton == true)){
+    
+    Mean->FixParameter(0,0.88);
+    Mean->FixParameter(1,0.01);
+    Mean->FixParameter(2,-5e-07);
+    Mean->FixParameter(3,35);
+    Mean->FixParameter(4,3);
+    
+    Sigma->FixParameter(0,-0.0635265);
+    Sigma->FixParameter(1,0.0495283);
+    Sigma->FixParameter(2,3.55325e-05);
+    Sigma->FixParameter(3,-75.0814);
+    Sigma->FixParameter(4,1.60841);
+
+  }
 
 
 
@@ -2739,7 +2820,7 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
     // define open deuteron and antideuteron track cuts
     Deuteron_pT_min = 0.0;
-    Deuteron_pT_max = 2.0;
+    Deuteron_pT_max = 3.0;
     Deuteron_eta_min = -0.9;
     Deuteron_eta_max = +0.9;
     Deuteron_DCAxy_max = 0.3; // cm
@@ -2777,7 +2858,7 @@ bool AliAnalysisTask_pd_CreateTrees_PairsOnly::CheckDeuteronCuts(AliAODTrack &Tr
 
     // define closed deuteron and antideuteron track cuts
     Deuteron_pT_min = 0.0;
-    Deuteron_pT_max = 2.0;
+    Deuteron_pT_max = 4.0;
     Deuteron_eta_min = -0.8;
     Deuteron_eta_max = +0.8;
     Deuteron_DCAxy_max = 0.2; // cm
@@ -3094,12 +3175,29 @@ double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
   bool MetaLHC18 = false;
   bool LHC18q = false;
   bool LHC18r = false;
+  bool LHC20g7a = false;
+  bool LHC20g7b = false;
+  bool LHC22f3 = false;
 
-  if((RunNumber >= 252235) && (RunNumber <= 264347)) MetaLHC16 = true;
-  if((RunNumber >= 270581) && (RunNumber <= 282704)) MetaLHC17 = true;
-  if((RunNumber >= 285009) && (RunNumber <= 294925)) MetaLHC18 = true;
-  if((RunNumber >= 295585) && (RunNumber <= 296623)) LHC18q = true;
-  if((RunNumber >= 296690) && (RunNumber <= 297585)) LHC18r = true;
+  if(fIsMC == false){
+  
+    if((RunNumber >= 252235) && (RunNumber <= 264347)) MetaLHC16 = true;
+    if((RunNumber >= 270581) && (RunNumber <= 282704)) MetaLHC17 = true;
+    if((RunNumber >= 285009) && (RunNumber <= 294925)) MetaLHC18 = true;
+    if((RunNumber >= 295585) && (RunNumber <= 296623)) LHC18q = true;
+    if((RunNumber >= 296690) && (RunNumber <= 297585)) LHC18r = true;
+
+  } // end of fIsMC == false
+
+
+  if(fIsMC == true){
+
+    if(fCollisionSystem == 1) LHC20g7a	= true;
+    if(fCollisionSystem == 2) LHC20g7b	= true;
+    if(fCollisionSystem > 2)  LHC22f3	= true;
+
+  } // end of fIsMC == true
+
 
   bool isProton	      = false;
   bool isDeuteron     = false;
@@ -3155,6 +3253,12 @@ double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 
   if(((isProton == true) || (isAntiProton == true))	&& ((LHC18q == true) || (LHC18r == true))) Resolution = 0.10;
   if(((isDeuteron == true) || (isAntiDeuteron == true)) && ((LHC18q == true) || (LHC18r == true))) Resolution = 0.10;
+
+  if(((isProton == true) || (isAntiProton == true))	&& (LHC20g7a == true)) Resolution = 1.31668e-01;
+  if(((isDeuteron == true) || (isAntiDeuteron == true))	&& (LHC20g7a == true)) Resolution = 9.71874e-02;
+
+  if(((isProton == true) || (isAntiProton == true))	&& (LHC20g7b == true)) Resolution = 1.30878e-01;
+  if(((isDeuteron == true) || (isAntiDeuteron == true))	&& (LHC20g7b == true)) Resolution = 9.46815e-02;
 
   double ScaleFactor = 1.0-(Resolution);
   double sigma = (mean*ScaleFactor) - mean;
