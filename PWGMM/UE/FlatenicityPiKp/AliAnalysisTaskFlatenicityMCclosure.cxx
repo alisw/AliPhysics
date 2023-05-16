@@ -88,8 +88,8 @@ using std::endl;
 /* 	0.9, 1.0, 1.25, 1.5,  2.0,  2.5,  3.0,  3.5,  4.0,  4.5,  5.0, 6.0, 7.0, */
 /* 	8.0, 9.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 30.0, 40.0, 50.0}; */
 
-static const Int_t nPtbins = 18;
-static const Double_t Ptbins[nPtbins + 1] = { 0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 6.0, 8.0, 10.0, 15.0, 20.0};
+static const Int_t nPtbins = 13;
+static const Double_t Ptbins[nPtbins + 1] = { 0.0, 0.15, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 6.0, 8.0, 10.0, 20.0};
 
 static const Int_t nCent = 9;
 static const Double_t centClass[nCent + 1] = {0.0,  1.0,  5.0,  10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
@@ -123,7 +123,7 @@ AliAnalysisTaskFlatenicityMCclosure::AliAnalysisTaskFlatenicityMCclosure()
 	hMultV0AV0CvsFlatvspT_BFTrigSel(0), hAmpV0AV0CvsFlatvspT_BFTrigSel(0), hPercentileV0MvsFlatvspT_BFTrigSel(0),
 	hMultV0AV0CvsFlatvspT_AFTrigSel(0), hAmpV0AV0CvsFlatvspT_AFTrigSel(0), hPercentileV0MvsFlatvspT_AFTrigSel(0),
 	hAmpV0AV0CvsFlat(0), hPercentileV0MvsFlat(0), hAmpV0AV0CvsFlatvspT(0), hPercentileV0MvsFlatvspT(0), 
-	hPtAll(0), hPtPrimaries(0), hPtSecondaries(0)
+	hPtAll(0), hPtPrimaries(0), hPtSecondaries(0), hAmpV0AV0CalicevsFlat(0), hAmpV0AV0CalicevsFlatvspT(0)
 {
 	for (Int_t i_d = 0; i_d < nDet; ++i_d) {
 		hComponentsMult[i_d] = 0;
@@ -166,8 +166,8 @@ AliAnalysisTaskFlatenicityMCclosure::AliAnalysisTaskFlatenicityMCclosure(const c
 	hMultV0AV0CvsFlat_AFTrigSel(0), hAmpV0AV0CvsFlat_AFTrigSel(0), hPercentileV0MvsFlat_AFTrigSel(0),
 	hMultV0AV0CvsFlatvspT_BFTrigSel(0), hAmpV0AV0CvsFlatvspT_BFTrigSel(0), hPercentileV0MvsFlatvspT_BFTrigSel(0), 
 	hMultV0AV0CvsFlatvspT_AFTrigSel(0), hAmpV0AV0CvsFlatvspT_AFTrigSel(0), hPercentileV0MvsFlatvspT_AFTrigSel(0),
-	hAmpV0AV0CvsFlat(0), hPercentileV0MvsFlat(0),hAmpV0AV0CvsFlatvspT(0), hPercentileV0MvsFlatvspT(0), 
-	hPtAll(0), hPtPrimaries(0), hPtSecondaries(0)
+	hAmpV0AV0CvsFlat(0), hPercentileV0MvsFlat(0), hAmpV0AV0CvsFlatvspT(0), hPercentileV0MvsFlatvspT(0), 
+	hPtAll(0), hPtPrimaries(0), hPtSecondaries(0), hAmpV0AV0CalicevsFlat(0), hAmpV0AV0CalicevsFlatvspT(0)
 {
 	for (Int_t i_d = 0; i_d < nDet; ++i_d) {
 		hComponentsMult[i_d] = 0;
@@ -244,7 +244,7 @@ void AliAnalysisTaskFlatenicityMCclosure::UserCreateOutputObjects() {
 		Flatbins[i] = -0.01 + (double)i * 0.001;
 	}
 
-	const int nMultbinsForward = 201;
+	const int nMultbinsForward = 801;
 	double MultbinsForward[nMultbinsForward+1] = {0.0};
 	for (int i = 0; i <= nMultbinsForward; ++i) {
 		MultbinsForward[i] = -0.5 + (double)i;
@@ -270,11 +270,17 @@ void AliAnalysisTaskFlatenicityMCclosure::UserCreateOutputObjects() {
 	hAmpV0AV0CvsFlat = new TH2F("hAmpV0AV0CvsFlat", "; V0M measured amplitude; Flattenicity",nV0MAmplitudebins,V0MAmplitudebins,nFlatbins,Flatbins);
 	fOutputList->Add(hAmpV0AV0CvsFlat);
 
+	hAmpV0AV0CalicevsFlat = new TH2F("hAmpV0AV0CalicevsFlat", "; V0M measured amplitude alice; Flattenicity",nV0MAmplitudebins,V0MAmplitudebins,nFlatbins,Flatbins);
+	fOutputList->Add(hAmpV0AV0CalicevsFlat);
+
 	hPercentileV0MvsFlat = new TH2F("hPercentileV0MvsFlat", "; V0M percentile; Flattenicity",nCent,centClass,nFlatbins,Flatbins);
 	fOutputList->Add(hPercentileV0MvsFlat);
 
 	hAmpV0AV0CvsFlatvspT = new TH3F("hAmpV0AV0CvsFlatvspT", "; V0M measured amplitude; Flattenicity; #it{p}_{T} (GeV/#it{c})",nV0MAmplitudebins,V0MAmplitudebins,nFlatbins,Flatbins,nPtbins,Ptbins);
 	fOutputList->Add(hAmpV0AV0CvsFlatvspT);
+
+	hAmpV0AV0CalicevsFlatvspT = new TH3F("hAmpV0AV0CalicevsFlatvspT", "; V0M measured amplitude alice; Flattenicity; #it{p}_{T} (GeV/#it{c})",nV0MAmplitudebins,V0MAmplitudebins,nFlatbins,Flatbins,nPtbins,Ptbins);
+	fOutputList->Add(hAmpV0AV0CalicevsFlatvspT);
 
 	hPercentileV0MvsFlatvspT = new TH3F("hPercentileV0MvsFlatvspT", "; V0M percentile; Flattenicity; #it{p}_{T} (GeV/#it{c})",nCent,centClass,nFlatbins,Flatbins,nPtbins,Ptbins);
 	fOutputList->Add(hPercentileV0MvsFlatvspT);
@@ -356,7 +362,7 @@ void AliAnalysisTaskFlatenicityMCclosure::UserCreateOutputObjects() {
 
 		hPercentileV0MvsFlat_BFTrigSel = new TH2F("hPercentileV0MvsFlat_BFTrigSel","Before Trigger selection; V0M percentile; True Flattenicity",nCent,centClass,nFlatbins,Flatbins);
 		fOutputList->Add(hPercentileV0MvsFlat_BFTrigSel);
-		
+
 		hMultV0AV0CvsFlat_AFTrigSel = new TH2F("hMultV0AV0CvsFlat_AFTrigSel","After Trigger selection; True #it{N}_{ch} in the V0A+V0C acceptance; True Flattenicity",nMultbinsForward,MultbinsForward,nFlatbins,Flatbins);
 		fOutputList->Add(hMultV0AV0CvsFlat_AFTrigSel);
 
@@ -492,7 +498,7 @@ void AliAnalysisTaskFlatenicityMCclosure::UserExec(Option_t *) {
 
 	fv0mpercentile = -999;
 	fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
-	fv0mamplitude = fMultSelection->GetEstimator("V0M")->GetValue();
+	fv0mamplitude   = fMultSelection->GetEstimator("V0M")->GetValue();
 	int v0multalice = fMultSelection->GetEstimator("V0M")->GetValue();
 
 	if (fUseMC) {
@@ -508,6 +514,9 @@ void AliAnalysisTaskFlatenicityMCclosure::UserExec(Option_t *) {
 			// This condition ensures that at least one charged particle 
 			// went into the acceptance of the V0A or V0C and there is 
 			// at least one charged particle in |eta|<0.8
+			hMultV0AV0CvsFlat_BFTrigSel->Fill(fmultV0Amc + fmultV0Cmc,fFlatMC);
+			hAmpV0AV0CvsFlat_BFTrigSel->Fill(fv0mamplitude,fFlatMC);
+			hPercentileV0MvsFlat_BFTrigSel->Fill(fv0mpercentile,fFlatMC);
 			GetMCchargedTrueDists(); 
 		}
 
@@ -636,6 +645,9 @@ void AliAnalysisTaskFlatenicityMCclosure::UserExec(Option_t *) {
 			hMultMCcVsV0M->Fill(fv0mpercentile, fmultV0Cmc);
 			hMultMCaVsV0M->Fill(fv0mpercentile, fmultV0Amc);
 
+			hMultV0AV0CvsFlat_AFTrigSel->Fill(fmultV0Amc + fmultV0Cmc,fFlatMC); 
+			hAmpV0AV0CvsFlat_AFTrigSel->Fill(fv0mamplitude,fFlatMC); 
+			hPercentileV0MvsFlat_AFTrigSel->Fill(fv0mpercentile,fFlatMC);
 			MakeMCanalysis();
 		}
 	}
@@ -653,6 +665,10 @@ void AliAnalysisTaskFlatenicityMCclosure::UserExec(Option_t *) {
 				hMultmVsV0Malice->Fill(fv0mpercentile, v0multalice);
 				hMultcVsV0M->Fill(fv0mpercentile, fmultV0C);
 				hMultaVsV0M->Fill(fv0mpercentile, fmultV0A);
+			
+				hAmpV0AV0CvsFlat->Fill(fmultV0A + fmultV0C, fFlat);
+				hAmpV0AV0CalicevsFlat->Fill(fv0mamplitude, fFlat);
+				hPercentileV0MvsFlat->Fill(fv0mpercentile, fFlat);
 				MakeDataanalysis();
 			}
 		}
@@ -688,10 +704,8 @@ void AliAnalysisTaskFlatenicityMCclosure::MakeDataanalysis() {
 		hPtAll->Fill(esdtrack->Pt());
 		if(fMC->IsPhysicalPrimary(mcLabel)) { hPtPrimaries->Fill(esdtrack->Pt()); }
 		else { hPtSecondaries->Fill(esdtrack->Pt()); }
-		
-		hAmpV0AV0CvsFlat->Fill(fmultV0A + fmultV0C, fFlat);
-		hPercentileV0MvsFlat->Fill(fv0mpercentile, fFlat);
 
+		hAmpV0AV0CalicevsFlatvspT->Fill(fv0mamplitude, fFlat, esdtrack->Pt());
 		hAmpV0AV0CvsFlatvspT->Fill(fmultV0A + fmultV0C, fFlat, esdtrack->Pt());
 		hPercentileV0MvsFlatvspT->Fill(fv0mpercentile, fFlat, esdtrack->Pt());
 	}
@@ -713,10 +727,6 @@ void AliAnalysisTaskFlatenicityMCclosure::MakeMCanalysis() {
 			continue;
 		if (TMath::Abs(particle->Charge()) < 0.1)
 			continue;
-
-		hMultV0AV0CvsFlat_AFTrigSel->Fill(fmultV0Amc + fmultV0Cmc,fFlatMC); 
-		hAmpV0AV0CvsFlat_AFTrigSel->Fill(fv0mamplitude,fFlatMC); 
-		hPercentileV0MvsFlat_AFTrigSel->Fill(fv0mpercentile,fFlatMC);
 
 		hMultV0AV0CvsFlatvspT_AFTrigSel->Fill(fmultV0Amc + fmultV0Cmc,fFlatMC,particle->Pt());
 		hAmpV0AV0CvsFlatvspT_AFTrigSel->Fill(fv0mamplitude,fFlatMC,particle->Pt());
@@ -1377,9 +1387,6 @@ void AliAnalysisTaskFlatenicityMCclosure::GetMCchargedTrueDists() {
 		if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMC))
 			continue;
 
-		hMultV0AV0CvsFlat_BFTrigSel->Fill(fmultV0Amc + fmultV0Cmc,fFlatMC);
-		hAmpV0AV0CvsFlat_BFTrigSel->Fill(fv0mamplitude,fFlatMC);
-		hPercentileV0MvsFlat_BFTrigSel->Fill(fv0mpercentile,fFlatMC);
 		hMultV0AV0CvsFlatvspT_BFTrigSel->Fill(fmultV0Amc + fmultV0Cmc,fFlatMC,particle->Pt());
 		hAmpV0AV0CvsFlatvspT_BFTrigSel->Fill(fv0mamplitude,fFlatMC,particle->Pt());
 		hPercentileV0MvsFlatvspT_BFTrigSel->Fill(fv0mpercentile,fFlatMC,particle->Pt());
