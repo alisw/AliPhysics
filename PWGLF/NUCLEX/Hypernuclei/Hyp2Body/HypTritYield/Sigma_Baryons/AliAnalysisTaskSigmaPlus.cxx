@@ -7476,7 +7476,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesCalc() {
             //Obtain orthonormal basis
             e1 = sigmavertexrot;
             if(nIter!=-1){
-              if(!fThetaFunc||!fPhiFunc){cout << "Resolution functions do not exist!" << endl; break;}
+              if(!fThetaFunc||!fPhiFunc){cout << "Resolution functions do not exist!\n"; break;}
               ThetaVar = fThetaFunc->GetRandom(-fThetaRange,fThetaRange);
               PhiVar = fPhiFunc->GetRandom(-fPhiRange,fPhiRange);
               e1.SetMagThetaPhi(1,sigmavertexrot.Theta()+ThetaVar,sigmavertexrot.Phi()+PhiVar);        
