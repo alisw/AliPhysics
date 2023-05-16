@@ -329,6 +329,8 @@ void AliAnalysisTaskOmegaDielectron_AccEff::UserExec(Option_t *) {
       }
     }
   }
+  
+  if (!fEventCuts_VertexZ->IsSelected(fEvent)){ return; }
 
 
   ///-------------------- Loop over AOD Tracks - electrons// positrons --------------------///
