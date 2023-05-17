@@ -83,7 +83,10 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure()
   fSaveKtg(1),
   fSaveNg(1),
   fSaveZg(1),
+  fSaveKinematicEfficiency(0),
   fPtJet(0x0),
+  fKinematicEfficNumerator(0x0),
+  fKinematicEfficDenominator(0x0),
   fHLundIterative(0x0), 
   fHLundIterativeMC(0x0),
   fHLundIterativeMCDet(0x0),
@@ -136,7 +139,10 @@ AliAnalysisTaskNewJetSubstructure::AliAnalysisTaskNewJetSubstructure(
     fSaveKtg(1),
     fSaveNg(1),
     fSaveZg(1),
+    fSaveKinematicEfficiency(0),
     fPtJet(0x0),
+    fKinematicEfficNumerator(0x0),
+    fKinematicEfficDenominator(0x0),
     fHLundIterative(0x0), 
     fHLundIterativeMC(0x0),
     fHLundIterativeMCDet(0x0), 
@@ -171,27 +177,34 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   fPtJet = new TH1F("fPtJet", "fPtJet", 100, 0, 200);
   fOutput->Add(fPtJet);
 
+  //pT_reco, pT_true, Rg_reco, Rg_true
+  const int nKinEffic = 4;
+  const int nBinsKE[4] = {100, 100, 42, 42};
+  const double loBinKE[4] = {0.0, 0.0, -0.02, -0.02};
+  const double hiBinKE[4] = {100.0, 100.0, 0.4, 0.4};
+  fKinematicEfficNumerator = new THnSparseF("fKinematicEfficNumerator", "fKinematicEfficNumerator", nKinEffic, nBinsKE, loBinKE, hiBinKE);
+  fKinematicEfficDenominator = new TH2F("fKinematicEfficDenominator", "fKinematicEfficDenominator", 100, 0.0, 100.0, 42, -0.02, 0.4);
+  if (fSaveKinematicEfficiency)   {
+      fOutput->Add(fKinematicEfficNumerator);
+      fOutput->Add(fKinematicEfficDenominator);
+  }
 
-  // log(1/theta),log(kt),jetpT,depth, tf, omega//
+  // log(1/theta), log(kt), jetpT, depth, tf, omega//
   const Int_t dimSpec = 7;
   const Int_t nBinsSpec[7] = {50, 100, 200, 20, 100, 50, 2};
   const Double_t lowBinSpec[7] = {0., -3, 0, 0, 0, 0, 0};
   const Double_t hiBinSpec[7] = {5., 2., 200, 20, 200, 50,2};
-  fHLundIterative =
-      new THnSparseF("fHLundIterative",
-                     "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
+  fHLundIterative =  new THnSparseF("fHLundIterative", "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
                      dimSpec, nBinsSpec, lowBinSpec, hiBinSpec);
   fOutput->Add(fHLundIterative);
 
-  // log(1/theta),log(kt),jetpT,depth, tf, omega//
+  // log(1/theta), log(kt), jetpT, depth, tf, omega//
   const Int_t dimSpec2 = 7;
   const Int_t nBinsSpec2[7] = {50, 100, 200, 20, 100, 50,2};
   const Double_t lowBinSpec2[7] = {0., -3, 0, 0, 0, 0, 0};
   const Double_t hiBinSpec2[7] = {5., 2., 200, 20, 200, 50, 2};
-  fHLundIterativeMC = new THnSparseF(
-      "fHLundIterativeMC",
-      "LundIterativePlotMC [log(1/theta),log(z*theta),pTjet,algo]", dimSpec2,
-      nBinsSpec2, lowBinSpec2, hiBinSpec2);
+  fHLundIterativeMC = new THnSparseF("fHLundIterativeMC", "LundIterativePlotMC [log(1/theta),log(z*theta),pTjet,algo]", 
+                                     dimSpec2, nBinsSpec2, lowBinSpec2, hiBinSpec2);
   fOutput->Add(fHLundIterativeMC);
 
   // log(1/theta),log(kt),jetpT,depth, tf, omega//
@@ -360,10 +373,10 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
       // the matching is done between unsubtracted embedded jets and detector
       // level jets unsubtracted and subtracted jets share the label. Once we
       // identify the corresponding unsubtracted jet, jetUS, then we fetch jet2,
-      // which is the matched detector level jet In the case we are not
+      // which is the matched detector level jet. In the case we are not
       // considering constituent subtraction, then the detector-level matched jet
       // is the one that was directly matched to the base jet1. Then, the
-      // particle-level jet jet3 is obtained as the matched one to jet2 In short,
+      // particle-level jet jet3 is obtained as the matched one to jet2. In short,
       // there are 2 consecutive matchinges, between particle-level (jet3) and
       // detector-level (jet2) pythia jets and between jet2 and the embedding
       // unsubtracted jet. Note that the matching obtained via ClosestJet is
@@ -600,7 +613,17 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
       fShapesVar[8] = zgMatch;
       fShapesVar[9] = rgMatch;
       fShapesVar[11] = leadTrackMatch;
-      fShapesVar[21] = EPMatch;
+
+      if (fDoFlow) fShapesVar[21] = EPMatch;
+
+
+      //fill hists for Kinematic Efficiency calculation
+      double KEentries[4] = {jet1->Pt(), jet3->Pt(), fShapesVar[4], rgMatch};
+      fKinematicEfficNumerator->Fill(KEentries);
+      fKinematicEfficDenominator->Fill(jet3->Pt(), rgMatch);
+
+
+
       if (fStoreDetLevelJets) {
         fShapesVar[12] = ptDet;
         fShapesVar[13] = ktgDet;
@@ -636,10 +659,8 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
               fShapesVar[13] = sub2;
 	    }   
 	}
-      if (fDoFlow)
-	{
-          fShapesVar[20] = RelativePhi(jet1->Phi(),fQVectorReader->GetEPangleV0M());
-	}
+      if (fDoFlow)  fShapesVar[20] = RelativePhi(jet1->Phi(),fQVectorReader->GetEPangleV0M());
+	
 
       fTreeSubstructure->Fill();
       delete sub1Det;
