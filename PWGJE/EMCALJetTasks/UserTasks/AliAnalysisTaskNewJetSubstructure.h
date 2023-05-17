@@ -73,6 +73,7 @@ public:
   void     SetSaveKtg(Bool_t t)                   { fSaveKtg = t;}
   void     SetSaveNg(Bool_t t)                    { fSaveNg = t;}
   void     SetSaveZg(Bool_t t)                    { fSaveZg = t;}
+  void     SetSaveLund(Bool_t t)                  { fSaveLund = t;}
   void     SetSaveKinematicEfficiency(Bool_t t)   { fSaveKinematicEfficiency = t;}
 
 protected:
@@ -141,11 +142,12 @@ protected:
   Bool_t                        fSaveKtg;                   ///< flag to save ktg
   Bool_t                        fSaveNg;                    ///< flag to save ng
   Bool_t                        fSaveZg;                    ///< flag to save zg
+  Bool_t                        fSaveLund;                  ///< flag to save Lund hists
   Bool_t                        fSaveKinematicEfficiency;   ///< flag to save kinematic efficiency hists
 
   TH1F *                        fPtJet;                     ///<
   THnSparse *                   fKinematicEfficNumerator;   ///< numerator hist for kinematic efficiency
-  TH2F *                        fKinematicEfficDenominator; ///< denominator hist for kinematic efficiency
+  TH3F *                        fKinematicEfficDenominator; ///< denominator hist for kinematic efficiency
   THnSparse *                   fHLundIterative;            ///< iterative declustering
   THnSparse *                   fHLundIterativeMC;          ///< iterative declustering
   THnSparse *                   fHLundIterativeMCDet;       ///< iterative declustering
@@ -161,6 +163,6 @@ private:
   AliAnalysisTaskNewJetSubstructure &
   operator=(const AliAnalysisTaskNewJetSubstructure &); // not implemented
 
-  ClassDef(AliAnalysisTaskNewJetSubstructure, 18)
+  ClassDef(AliAnalysisTaskNewJetSubstructure, 19)
 };
 #endif
