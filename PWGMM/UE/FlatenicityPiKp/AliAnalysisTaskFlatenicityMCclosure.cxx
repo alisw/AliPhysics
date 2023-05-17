@@ -727,6 +727,8 @@ void AliAnalysisTaskFlatenicityMCclosure::MakeMCanalysis() {
 			continue;
 		if (TMath::Abs(particle->Charge()) < 0.1)
 			continue;
+		if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMC))
+			continue;
 
 		hMultV0AV0CvsFlatvspT_AFTrigSel->Fill(fmultV0Amc + fmultV0Cmc,fFlatMC,particle->Pt());
 		hAmpV0AV0CvsFlatvspT_AFTrigSel->Fill(fv0mamplitude,fFlatMC,particle->Pt());
@@ -1065,6 +1067,9 @@ Double_t AliAnalysisTaskFlatenicityMCclosure::GetFlatenicityMC() {
 			continue;
 		if (TMath::Abs(particle->Charge()) < 0.1)
 			continue;
+		if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMC))
+			continue;
+
 		Double_t phi = particle->Phi();
 		Double_t eta = particle->Eta();
 
@@ -1137,6 +1142,7 @@ void AliAnalysisTaskFlatenicityMCclosure::ExtractMultiplicities() {
 			continue;
 		if (esdtrack->Pt() < fPtMin)
 			continue;
+
 		fmultTPC++;
 	}
 
@@ -1266,6 +1272,9 @@ void AliAnalysisTaskFlatenicityMCclosure::ExtractMultiplicitiesMC() {
 			continue;
 		if (TMath::Abs(particle->Charge()) < 0.1)
 			continue;
+		if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMC))
+			continue;
+
 		Double_t eta_a = particle->Eta();
 		if (eta_a >= 2.8 && eta_a < 5.1) { // v0a acceptance (excluding first ring)
 			fmultV0Amc++;
@@ -1298,6 +1307,9 @@ void AliAnalysisTaskFlatenicityMCclosure::MCkinematics() {
 			continue;
 		if (TMath::Abs(particle->Charge()) < 0.1)
 			continue;
+		if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(i, fMC))
+			continue;
+
 		hEtamc->Fill(particle->Eta());
 	}
 }
