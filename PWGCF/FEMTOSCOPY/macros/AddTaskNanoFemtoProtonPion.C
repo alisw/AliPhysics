@@ -16,14 +16,14 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     float SphericityMinPt = 0.5, //6
     int PionFilterbit = 96, //7
     bool DoPairCleaning = false, //8
-    const char *cutVariation = "0", //9
-    bool DoAncestors = false, //10
-    bool RemoveMCResonances = true, //11 
-    bool RemoveMCResonanceDaughters = true, //12
-    bool DoInvMass = false, //13
-    bool DoResonanceLorentzFactor = false, //14
-    bool DoFinemTBinning = false, //15
-    int mTBinningChoice = 1 //16
+    bool DoAncestors = false, //9
+    bool RemoveMCResonances = true, //10
+    bool RemoveMCResonanceDaughters = true, //11
+    bool DoInvMass = false, //12
+    bool DoResonanceLorentzFactor = false, //13
+    bool DoFinemTBinning = false, //14
+    int mTBinningChoice = 1, //15
+    const char *cutVariation = "0" //16
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
