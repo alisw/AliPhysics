@@ -86,7 +86,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetIsAniparticleCheck(Bool_t flag = kTRUE, Bool_t antip = kTRUE) { fIsAntiparticleCheck = flag; fDoAntiparticleOnly = antip; }
         void                    SetRejectSecondariesFromMC(Bool_t flag = kTRUE) { fRejectSecondariesFromMC = flag; }
         void                    SetVetoJetEvents(Bool_t flag, Double_t cut, Double_t selectionval, Bool_t selectjetsinTPC) { fVetoJetEvents = flag; fJetParticleLowPt = cut; fJetvetoselectionval = selectionval; fselectjetsinTPC = selectjetsinTPC; }
-        void                    SetParticlemassbias(Bool_t massbias = kFALSE) { fParticlemass_bias_corr = massbias; }
+	void                    SetParticlemassbias(Bool_t massbias = kFALSE, Bool_t massbias_Proton=kFALSE, Bool_t massbias_Lambda=kFALSE, Bool_t massbias_Phi=kFALSE) { fParticlemass_bias_corr = massbias; fcheckmassbias_Proton = massbias_Proton; fcheckmassbias_Lambda = massbias_Lambda; fcheckmassbias_Phi = massbias_Phi; }
 
 
         // event selection
@@ -226,7 +226,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         Bool_t                  fIsAntiparticleCheck; // [kFALSE]
         Bool_t                  fDoAntiparticleOnly; // [kFALSE] == positive particles only and lambdas
         Bool_t                  fVetoJetEvents; // [kFALSE]
-        Bool_t                  fselectjetsinTPC; // [kFALSE]
+	Bool_t                  fselectjetsinTPC; // [kFALSE]
         Bool_t                  fRejectSecondariesFromMC; // [kFALSE]
         Bool_t                  fBoostAMPT; // [kFALSE] = boost to CMS in pPb collisions for the gen level of AMPT
         UInt_t                  fFilterBit;
@@ -292,6 +292,9 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	Double_t                fMinPhiMass; // [0.99]
         Double_t                fMaxPhiMass; // [1.07]
 	Bool_t                  fParticlemass_bias_corr;
+	Bool_t                  fcheckmassbias_Proton;//(kFALSE),
+        Bool_t                  fcheckmassbias_Lambda;//(kFALSE),
+        Bool_t                  fcheckmassbias_Phi;//(kFALSE),
         Int_t                   fProtonSigcount;
         Int_t                   fLambdaSigcount;
         Int_t                   fPhiSigcount;
