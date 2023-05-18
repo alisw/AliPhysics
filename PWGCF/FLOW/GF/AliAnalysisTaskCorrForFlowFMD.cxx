@@ -12,15 +12,15 @@
  **************************************************************************/
 
 
-#include "CorrForFlowFMD.h"
+#include "AliAnalysisTaskCorrForFlowFMD.h"
 
 
 using namespace std;
 
-ClassImp(CorrForFlowFMD);
+ClassImp(AliAnalysisTaskCorrForFlowFMD);
 
 
-CorrForFlowFMD::CorrForFlowFMD() : AliAnalysisTaskSE(),
+AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTaskSE(),
     fAOD(0),
     fOutputListCharged(0),
     fInputListEfficiency(0),
@@ -136,7 +136,7 @@ CorrForFlowFMD::CorrForFlowFMD() : AliAnalysisTaskSE(),
     fMergingCut(0.0)
 {}
 //_____________________________________________________________________________
-CorrForFlowFMD::CorrForFlowFMD(const char* name, Bool_t bUseEff, Bool_t bUseCalib) : AliAnalysisTaskSE(name),
+AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, Bool_t bUseEff, Bool_t bUseCalib) : AliAnalysisTaskSE(name),
     fAOD(0),
     fOutputListCharged(0),
     fInputListEfficiency(0),
@@ -260,10 +260,10 @@ CorrForFlowFMD::CorrForFlowFMD(const char* name, Bool_t bUseEff, Bool_t bUseCali
     DefineOutput(1, TList::Class());
 }
 //_____________________________________________________________________________
-CorrForFlowFMD::~CorrForFlowFMD()
+AliAnalysisTaskCorrForFlowFMD::~AliAnalysisTaskCorrForFlowFMD()
 {}
 //_____________________________________________________________________________
-void CorrForFlowFMD::UserCreateOutputObjects()
+void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
 {
     OpenFile(1);
     PrintSetup();
@@ -434,7 +434,7 @@ void CorrForFlowFMD::UserCreateOutputObjects()
     PostData(1, fOutputListCharged);
 }
 //_____________________________________________________________________________
-void CorrForFlowFMD::UserExec(Option_t *)
+void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
 {           
     fProtonSigcount =0;
     fLambdaSigcount =0;
@@ -573,13 +573,13 @@ void CorrForFlowFMD::UserExec(Option_t *)
     return;
 }
 //_____________________________________________________________________________
-void CorrForFlowFMD::Terminate(Option_t *)
+void AliAnalysisTaskCorrForFlowFMD::Terminate(Option_t *)
 {
    if(fPoolMgr) delete fPoolMgr;
    if(fOutputListCharged) delete fOutputListCharged;
 }
 //_____________________________________________________________________________
-Bool_t CorrForFlowFMD::IsEventSelected()
+Bool_t AliAnalysisTaskCorrForFlowFMD::IsEventSelected()
 {
   fhEventCounter->Fill("EventOK",1);
 
@@ -645,7 +645,7 @@ Bool_t CorrForFlowFMD::IsEventSelected()
   return kTRUE;
 }
 //_____________________________________________________________________________
-Bool_t CorrForFlowFMD::IsTrackSelected(const AliAODTrack* track) const //called inside prepareTPC Tracks() once for charged, pi, ka, Pr (default filterbit is 96)
+Bool_t AliAnalysisTaskCorrForFlowFMD::IsTrackSelected(const AliAODTrack* track) const //called inside prepareTPC Tracks() once for charged, pi, ka, Pr (default filterbit is 96)
 {
   if(!track->TestFilterBit(fFilterBit)) { return kFALSE; }
   if(track->GetTPCNcls() < fTPCclMin && fFilterBit != 2) { return kFALSE; }
@@ -684,19 +684,19 @@ Bool_t CorrForFlowFMD::IsTrackSelected(const AliAODTrack* track) const //called 
   return kTRUE;
 }
 //_____________________________________________________________________________
-Double_t CorrForFlowFMD::RangePhiFMD(Double_t DPhi) {
+Double_t AliAnalysisTaskCorrForFlowFMD::RangePhiFMD(Double_t DPhi) {
   DPhi = TMath::ATan2(TMath::Sin(DPhi), TMath::Cos(DPhi));
   if (DPhi < (-0.5*TMath::Pi()-0.0001))    DPhi += 2 * TMath::Pi();
   return DPhi;
 }
 //_____________________________________________________________________________
-Double_t CorrForFlowFMD::RangePhi(Double_t DPhi) {
+Double_t AliAnalysisTaskCorrForFlowFMD::RangePhi(Double_t DPhi) {
   if (DPhi < -TMath::Pi() / 2)   DPhi += 2 * TMath::Pi();
   if (DPhi > 3 * TMath::Pi() / 2) DPhi -= 2*TMath::Pi();
   return DPhi;
 }
 //_____________________________________________________________________________
-Double_t CorrForFlowFMD::GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius){
+Double_t AliAnalysisTaskCorrForFlowFMD::GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charge1, Double_t phi2, Double_t pt2, Double_t charge2, Double_t radius){
   // calculates delta phi *
   Double_t dPhiStar = phi1 - phi2 - charge1 * fbSign * TMath::ASin(0.075 * radius / pt1) + charge2 * fbSign * TMath::ASin(0.075 * radius / pt2);
 
@@ -706,7 +706,7 @@ Double_t CorrForFlowFMD::GetDPhiStar(Double_t phi1, Double_t pt1, Double_t charg
   return dPhiStar;
 }
 //_____________________________________________________________________________
-Int_t CorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) // called inside prepareTPCTracks() once after IsTrackSelected() to identify Pi, Ka Pr
+Int_t AliAnalysisTaskCorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) // called inside prepareTPCTracks() once after IsTrackSelected() to identify Pi, Ka Pr
 {
   // checking detector statuses
   Bool_t bIsTPCok = HasTrackPIDTPC(track);
@@ -731,7 +731,7 @@ Int_t CorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) // called inside p
   return retInd;
 }
 //_____________________________________________________________________________
-Bool_t CorrForFlowFMD::IsV0(const AliAODv0* v0) const //called inside PrepareV0() once to pre-slecet the V0 candidates thorogh the AliAODV0 loop in the PrepareV0()
+Bool_t AliAnalysisTaskCorrForFlowFMD::IsV0(const AliAODv0* v0) const //called inside PrepareV0() once to pre-slecet the V0 candidates thorogh the AliAODV0 loop in the PrepareV0()
 {
   if(!v0) {return kFALSE; }
   if(v0->Pt() < fPtMinTrig || v0->Pt() > fPtMaxTrig) { return kFALSE; }
@@ -770,7 +770,7 @@ Bool_t CorrForFlowFMD::IsV0(const AliAODv0* v0) const //called inside PrepareV0(
   return kTRUE;
 }
 //_____________________________________________________________________________
-Bool_t CorrForFlowFMD::IsK0s(const AliAODv0* v0) const //called inside PrepareV0() once to specifically selecet K0s candidates after preselecting V0 cnadidates through IsV0()
+Bool_t AliAnalysisTaskCorrForFlowFMD::IsK0s(const AliAODv0* v0) const //called inside PrepareV0() once to specifically selecet K0s candidates after preselecting V0 cnadidates through IsV0()
 {
   if(fIsAntiparticleCheck) return kFALSE;
 
@@ -842,7 +842,7 @@ Bool_t CorrForFlowFMD::IsK0s(const AliAODv0* v0) const //called inside PrepareV0
   return kTRUE;
 }
 //_____________________________________________________________________________
-Bool_t CorrForFlowFMD::IsLambda(const AliAODv0* v0) //called inside PrepareV0() once to specifically selecet Lambda candidates after preselecting V0 cnadidates through IsV0()
+Bool_t AliAnalysisTaskCorrForFlowFMD::IsLambda(const AliAODv0* v0) //called inside PrepareV0() once to specifically selecet Lambda candidates after preselecting V0 cnadidates through IsV0()
 {
   fhV0Counter[1]->Fill("Input",1);
   Bool_t isL = kFALSE;
@@ -922,7 +922,7 @@ Bool_t CorrForFlowFMD::IsLambda(const AliAODv0* v0) //called inside PrepareV0() 
   return kTRUE;
 }
 //_____________________________________________________________________________
-Double_t CorrForFlowFMD::ProperLifetime(const AliAODv0* v0, const Double_t massPDG) const
+Double_t AliAnalysisTaskCorrForFlowFMD::ProperLifetime(const AliAODv0* v0, const Double_t massPDG) const
 {
   Double_t dPrimVtxCoor[3] = {0.0,0.0,0.0}; // primary vertex position {x,y,z}
   AliAODVertex* primVtx = fAOD->GetPrimaryVertex();
@@ -932,7 +932,7 @@ Double_t CorrForFlowFMD::ProperLifetime(const AliAODv0* v0, const Double_t massP
   return ( (massPDG / v0->P() ) * length );
 }
 //_____________________________________________________________________________
-void CorrForFlowFMD::PrepareV0()
+void AliAnalysisTaskCorrForFlowFMD::PrepareV0()
 {
   Int_t nOfV0s = fAOD->GetNumberOfV0s();
   if(nOfV0s < 1) { return; }
@@ -957,7 +957,7 @@ void CorrForFlowFMD::PrepareV0()
   return;
 }
 //________________________________________________________________________________
-void CorrForFlowFMD::PreparePhi()
+void AliAnalysisTaskCorrForFlowFMD::PreparePhi()
 
 {
   if(!fTracksTrig_Kaon_Phi) { AliError("Necessary kaon inputs for Phi reconstrction missing, terminating!"); return; }
@@ -1080,21 +1080,21 @@ void CorrForFlowFMD::PreparePhi()
   }
 
 //_____________________________________________________________________________
-Bool_t CorrForFlowFMD::HasTrackPIDTPC(const AliAODTrack* track) const //called inside IdentifyTrack(), IsK0s() and IsLambda() for PID purposes
+Bool_t AliAnalysisTaskCorrForFlowFMD::HasTrackPIDTPC(const AliAODTrack* track) const //called inside IdentifyTrack(), IsK0s() and IsLambda() for PID purposes
 {
   if(!track || !fPIDResponse) return kFALSE;
   AliPIDResponse::EDetPidStatus pidStatusTPC = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTPC, track);
   return (pidStatusTPC == AliPIDResponse::kDetPidOk);
 }
 //_____________________________________________________________________________
-Bool_t CorrForFlowFMD::HasTrackPIDTOF(const AliAODTrack* track) const //called inside IdentifyTrack() only
+Bool_t AliAnalysisTaskCorrForFlowFMD::HasTrackPIDTOF(const AliAODTrack* track) const //called inside IdentifyTrack() only
 {
   if(!track || !fPIDResponse) return kFALSE;
   AliPIDResponse::EDetPidStatus pidStatusTOF = fPIDResponse->CheckPIDStatus(AliPIDResponse::kTOF, track);
   return ((pidStatusTOF == AliPIDResponse::kDetPidOk) && (track->GetStatus()& AliVTrack::kTOFout) && (track->GetStatus()& AliVTrack::kTIME));
 }
 //_____________________________________________________________________________
-void CorrForFlowFMD::FillCorrelations(const Int_t spec)
+void AliAnalysisTaskCorrForFlowFMD::FillCorrelations(const Int_t spec)
 {
   if(!fTracksTrig[spec] || !fhTrigTracks[spec] || !fTracksAss) { AliError("Necessary inputs missing, terminating!"); return; }
   if(!fhSE[spec]) { AliError(Form("Output AliTHn missing for %d , terminating!", spec)); return; }
@@ -1241,7 +1241,7 @@ void CorrForFlowFMD::FillCorrelations(const Int_t spec)
   return;
 }
 //_____________________________________________________________________________
-void CorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
+void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
 {
   if(!fTracksTrig[spec] || !fhTrigTracks[spec] || !fTracksAss) { AliError("Necessary inputs missing, terminating!"); return; }
 
@@ -1398,7 +1398,7 @@ void CorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
   return;
 }
 //_____________________________________________________________________________
-Bool_t CorrForFlowFMD::AreEfficienciesLoaded()
+Bool_t AliAnalysisTaskCorrForFlowFMD::AreEfficienciesLoaded()
 {
   if(!fInputListEfficiency) {AliError("Efficiency input list not loaded"); return kFALSE; }
   TString part[6] = {"ch", "pi", "ka", "pr", "K0s", "Lambda"};
@@ -1431,7 +1431,7 @@ Bool_t CorrForFlowFMD::AreEfficienciesLoaded()
   return kFALSE;
 }
 //_____________________________________________________________________________
-TString CorrForFlowFMD::ReturnPPperiod(const Int_t runNumber) const
+TString AliAnalysisTaskCorrForFlowFMD::ReturnPPperiod(const Int_t runNumber) const
 {
   if(runNumber >= 252235 && runNumber <= 264347){ // LHC16
     if(runNumber >= 252235 && runNumber <= 252375) return "17f6";
@@ -1477,7 +1477,7 @@ TString CorrForFlowFMD::ReturnPPperiod(const Int_t runNumber) const
   return "18j4";
 }
 //_____________________________________________________________________________
-Double_t CorrForFlowFMD::GetEff(const Double_t dPt, const Int_t spec, const Double_t dEta)
+Double_t AliAnalysisTaskCorrForFlowFMD::GetEff(const Double_t dPt, const Int_t spec, const Double_t dEta)
 {
   if(!fUseEfficiency) return 1.0;
   if(fDoV0 && spec == eCharged) return 1.0;
@@ -1494,7 +1494,7 @@ Double_t CorrForFlowFMD::GetEff(const Double_t dPt, const Int_t spec, const Doub
   return 1.0;
 }
 //_____________________________________________________________________________
-Int_t CorrForFlowFMD::GetEtaRegion(const Double_t dEta){
+Int_t AliAnalysisTaskCorrForFlowFMD::GetEtaRegion(const Double_t dEta){
   if(TMath::Abs(dEta) > 0.8) { AliWarning("Eta out of range!"); return -1; }
   if(dEta > 0.0){
     if(dEta > 0.6) return 6;
@@ -1512,7 +1512,7 @@ Int_t CorrForFlowFMD::GetEtaRegion(const Double_t dEta){
   return -1;
 }
 //_____________________________________________________________________________
-void CorrForFlowFMD::CreateTHnCorrelations(){
+void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   Int_t nSteps = 1;
   Double_t binning_dphi[73] = { -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464, -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.087266, 0.0,       0.087266,  0.174533,  0.261799,  0.349066,  0.436332, 0.523599,  0.610865,  0.698132,  0.785398,  0.872665,  0.959931, 1.047198,  1.134464,  1.221730,  1.308997,  1.396263,  1.483530, 1.570796,  1.658063,  1.745329,  1.832596,  1.919862,  2.007129, 2.094395,  2.181662,  2.268928,  2.356194,  2.443461,  2.530727, 2.617994,  2.705260,  2.792527,  2.879793,  2.967060,  3.054326, 3.141593,  3.228859,  3.316126,  3.403392,  3.490659,  3.577925, 3.665191,  3.752458,  3.839724,  3.926991,  4.014257,  4.101524, 4.188790,  4.276057,  4.363323,  4.450590,  4.537856,  4.625123, 4.712389};
   const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
@@ -1638,7 +1638,7 @@ void CorrForFlowFMD::CreateTHnCorrelations(){
   return;
 }
 //_____________________________________________________________________________
-Bool_t CorrForFlowFMD::PrepareTPCTracks(){
+Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareTPCTracks(){
   if(!fAOD) return kFALSE;
   if(!fTracksAss || !fTracksTrig[0] || !fhTrigTracks[0]) {AliError("Cannot prepare TPC tracks!"); return kFALSE; }
 
@@ -1763,7 +1763,7 @@ Bool_t CorrForFlowFMD::PrepareTPCTracks(){
   return kTRUE;
 }
 //_____________________________________________________________________________
-Bool_t CorrForFlowFMD::PrepareFMDTracks(){
+Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareFMDTracks(){
   if(!fTracksAss) { AliError("Problem with fTracksAss, terminating!"); return kFALSE; }
   if(fAnalType == eFMDAFMDC && !fTracksTrig[0]) { AliError("Problem with fTracksTrig (no PID), terminating!"); return kFALSE; }
 
@@ -1849,7 +1849,7 @@ Bool_t CorrForFlowFMD::PrepareFMDTracks(){
   return kTRUE;
 }
 //_____________________________________________________________________________
-Bool_t CorrForFlowFMD::PrepareMCTracks(){
+Bool_t AliAnalysisTaskCorrForFlowFMD::PrepareMCTracks(){
   if(!fTracksAss || !fTracksTrig[0] || !fhTrigTracks[0]) {AliError("Cannot prepare MCC tracks!"); return kFALSE; }
 
   AliMCEvent* mcEvent = dynamic_cast<AliMCEvent*>(MCEvent());
@@ -1943,7 +1943,7 @@ Bool_t CorrForFlowFMD::PrepareMCTracks(){
   return kTRUE;
 }
 //_____________________________________________________________________________
-Double_t CorrForFlowFMD::TransverseBoost(const AliMCParticle *track){
+Double_t AliAnalysisTaskCorrForFlowFMD::TransverseBoost(const AliMCParticle *track){
   Float_t boost=0.465;
   Float_t beta=TMath::TanH(boost);
   Float_t gamma=1./TMath::Sqrt((1.-TMath::Power(beta,2)));
@@ -1968,7 +1968,7 @@ Double_t CorrForFlowFMD::TransverseBoost(const AliMCParticle *track){
   return eta_boosted;
 }
 //_____________________________________________________________________________
-void CorrForFlowFMD::PrintSetup(){
+void AliAnalysisTaskCorrForFlowFMD::PrintSetup(){
   printf("\n\n\n ************** Parameters ************** \n");
   printf("\t fAnalType: (Int_t) %d\n", fAnalType);
   printf("\t fColSystem: (Int_t) %d\n", fColSystem);
