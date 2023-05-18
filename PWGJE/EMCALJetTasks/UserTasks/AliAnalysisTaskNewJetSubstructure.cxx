@@ -179,47 +179,56 @@ void AliAnalysisTaskNewJetSubstructure::UserCreateOutputObjects() {
   fPtJet = new TH1F("fPtJet", "fPtJet", 100, 0, 200);
   fOutput->Add(fPtJet);
 
-  //pT_reco, pT_true, Rg_reco, Rg_true, EP_reco, EP_true
-  double pi = 3.14159265;
-  const int nKinEffic = 6;
-  const int nBinsKE[6] = {100, 100, 42, 42, 2, 2};
-  const double loBinKE[6] = {0.0, 0.0, -0.02, -0.02, 0.0, 0.0};
-  const double hiBinKE[6] = {100.0, 100.0, 0.4, 0.4, pi/2.0, pi/2.0};
-  fKinematicEfficNumerator = new THnSparseF("fKinematicEfficNumerator", "fKinematicEfficNumerator", nKinEffic, nBinsKE, loBinKE, hiBinKE);
-  fKinematicEfficDenominator = new TH3F("fKinematicEfficDenominator", "fKinematicEfficDenominator", 100, 0.0, 100.0, 42, -0.02, 0.4, 2, 0.0, pi/2.0);
   if (fSaveKinematicEfficiency)   {
-      fOutput->Add(fKinematicEfficNumerator);
-      fOutput->Add(fKinematicEfficDenominator);
+     //pT_reco, pT_true, Rg_reco, Rg_true, EP_reco, EP_true
+     double pi = 3.14159265;
+     const int nKinEffic = 6;
+     const int nBinsKE[6] = {100, 100, 42, 42, 2, 2};
+     const double loBinKE[6] = {0.0, 0.0, -0.02, -0.02, 0.0, 0.0};
+     const double hiBinKE[6] = {100.0, 100.0, 0.4, 0.4, pi/2.0, pi/2.0};
+     fKinematicEfficNumerator = new THnSparseF("fKinematicEfficNumerator", "fKinematicEfficNumerator", nKinEffic, nBinsKE, loBinKE, hiBinKE);
+     fKinematicEfficDenominator = new TH3F("fKinematicEfficDenominator", "fKinematicEfficDenominator", 100, 0.0, 100.0, 42, -0.02, 0.4, 2, 0.0, pi/2.0);
+     fKinematicEfficNumerator->GetAxis(0)->SetTitle("#it{p}_{T}^{hybrid}");
+     fKinematicEfficNumerator->GetAxis(1)->SetTitle("#it{p}_{T}^{true}");
+     fKinematicEfficNumerator->GetAxis(2)->SetTitle("#it{R}_{g}^{hybrid}");
+     fKinematicEfficNumerator->GetAxis(3)->SetTitle("#it{R}_{g}^{true}");
+     fKinematicEfficNumerator->GetAxis(4)->SetTitle("#Delta#varphi^{hyrbid}");
+     fKinematicEfficNumerator->GetAxis(5)->SetTitle("#Delta#varphi^{true}");
+       fOutput->Add(fKinematicEfficNumerator);
+       fOutput->Add(fKinematicEfficDenominator);
   }
 
-  // log(1/theta), log(kt), jetpT, depth, tf, omega//
-  const Int_t dimSpec = 7;
-  const Int_t nBinsSpec[7] = {50, 100, 200, 20, 100, 50, 2};
-  const Double_t lowBinSpec[7] = {0., -3, 0, 0, 0, 0, 0};
-  const Double_t hiBinSpec[7] = {5., 2., 200, 20, 200, 50,2};
-  fHLundIterative =  new THnSparseF("fHLundIterative", "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
-                     dimSpec, nBinsSpec, lowBinSpec, hiBinSpec);
-  if (fSaveLund) fOutput->Add(fHLundIterative);
+  if (fSaveLund)   {
+     // log(1/theta), log(kt), jetpT, depth, tf, omega//
+     const Int_t dimSpec = 7;
+     const Int_t nBinsSpec[7] = {50, 100, 200, 20, 100, 50, 2};
+     const Double_t lowBinSpec[7] = {0., -3, 0, 0, 0, 0, 0};
+     const Double_t hiBinSpec[7] = {5., 2., 200, 20, 200, 50,2};
+     fHLundIterative =  new THnSparseF("fHLundIterative", "LundIterativePlot [log(1/theta),log(z*theta),pTjet,algo]",
+                        dimSpec, nBinsSpec, lowBinSpec, hiBinSpec);
+     fOutput->Add(fHLundIterative);
+  
 
-  // log(1/theta), log(kt), jetpT, depth, tf, omega//
-  const Int_t dimSpec2 = 7;
-  const Int_t nBinsSpec2[7] = {50, 100, 200, 20, 100, 50,2};
-  const Double_t lowBinSpec2[7] = {0., -3, 0, 0, 0, 0, 0};
-  const Double_t hiBinSpec2[7] = {5., 2., 200, 20, 200, 50, 2};
-  fHLundIterativeMC = new THnSparseF("fHLundIterativeMC", "LundIterativePlotMC [log(1/theta),log(z*theta),pTjet,algo]", 
-                                     dimSpec2, nBinsSpec2, lowBinSpec2, hiBinSpec2);
-  if (fSaveLund) fOutput->Add(fHLundIterativeMC);
-
-  // log(1/theta),log(kt),jetpT,depth, tf, omega//
-  const Int_t dimSpec3 = 7;
-  const Int_t nBinsSpec3[7] = {50, 100, 200, 20, 100, 50, 2};
-  const Double_t lowBinSpec3[7] = {0., -3, 0, 0, 0, 0,0};
-  const Double_t hiBinSpec3[7] = {5., 2., 200, 20, 200, 50,2};
-  fHLundIterativeMCDet = new THnSparseF(
-      "fHLundIterativeMCDet",
-      "LundIterativePlotMCDet [log(1/theta),log(z*theta),pTjet,algo]", dimSpec3,
-      nBinsSpec3, lowBinSpec3, hiBinSpec3);
-  if (fSaveLund)  fOutput->Add(fHLundIterativeMCDet);
+    // log(1/theta), log(kt), jetpT, depth, tf, omega//
+    const Int_t dimSpec2 = 7;
+    const Int_t nBinsSpec2[7] = {50, 100, 200, 20, 100, 50,2};
+    const Double_t lowBinSpec2[7] = {0., -3, 0, 0, 0, 0, 0};
+    const Double_t hiBinSpec2[7] = {5., 2., 200, 20, 200, 50, 2};
+    fHLundIterativeMC = new THnSparseF("fHLundIterativeMC", "LundIterativePlotMC [log(1/theta),log(z*theta),pTjet,algo]", 
+                                       dimSpec2, nBinsSpec2, lowBinSpec2, hiBinSpec2);
+    fOutput->Add(fHLundIterativeMC);
+  
+    // log(1/theta),log(kt),jetpT,depth, tf, omega//
+    const Int_t dimSpec3 = 7;
+    const Int_t nBinsSpec3[7] = {50, 100, 200, 20, 100, 50, 2};
+    const Double_t lowBinSpec3[7] = {0., -3, 0, 0, 0, 0,0};
+    const Double_t hiBinSpec3[7] = {5., 2., 200, 20, 200, 50,2};
+    fHLundIterativeMCDet = new THnSparseF(
+        "fHLundIterativeMCDet",
+        "LundIterativePlotMCDet [log(1/theta),log(z*theta),pTjet,algo]", dimSpec3,
+        nBinsSpec3, lowBinSpec3, hiBinSpec3);
+    fOutput->Add(fHLundIterativeMCDet);
+  }
 
   ////
   const Int_t dimResol = 5;
@@ -657,9 +666,11 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
       if (fDoFlow)  fShapesVar[20] = RelativePhi(jet1->Phi(),fQVectorReader->GetEPangleV0M());
 	
       //fill hists for Kinematic Efficiency calculation
-      double KEentries[6] = {fShapesVar[0], ptMatch, fShapesVar[4], rgMatch, abs(asin(sin(fShapesVar[20]))), abs(asin(sin(EPMatch)))};
-      fKinematicEfficNumerator->Fill(KEentries);
-      fKinematicEfficDenominator->Fill(ptMatch, rgMatch, abs(asin(sin(EPMatch))));
+      if (fSaveKinematicEfficiency)  {
+          double KEentries[6] = {fShapesVar[0], ptMatch, fShapesVar[4], rgMatch, abs(asin(sin(fShapesVar[20]))), abs(asin(sin(EPMatch)))};
+          fKinematicEfficNumerator->Fill(KEentries);
+          fKinematicEfficDenominator->Fill(ptMatch, rgMatch, abs(asin(sin(EPMatch))));
+      }
 
       fTreeSubstructure->Fill();
       delete sub1Det;
@@ -866,9 +877,10 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsAreaBased(AliEmcalJet *f
 	    flagSubjetkT = 1;
 	  }
 	}
-        Double_t LundEntries[7] = {
-            y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, cumtf};
-        fHLundIterative->Fill(LundEntries);
+        if (fSaveLund)   {
+           Double_t LundEntries[7] = {y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, cumtf};
+           fHLundIterative->Fill(LundEntries);
+        }
       }
 
       jj = jet_sub1;
@@ -985,11 +997,12 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParents(AliEmcalJet *fJet,
 	  flagSubjetkT = 1;
 	}
       }
-      
-      Double_t LundEntries[7] = {
-	y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
-      fHLundIterative->Fill(LundEntries);
-      
+     
+      if (fSaveLund) {
+         Double_t LundEntries[7] = {y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
+         fHLundIterative->Fill(LundEntries);
+      }
+
       jj = j1;
     }
     if (sub1->has_constituents()) *const1 = sub1->constituents();
@@ -1096,11 +1109,12 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsPP(AliEmcalJet *fJet, Al
 	  flagSubjetkT = 1;
 	}
       }
-      
-      Double_t LundEntries[7] = {
-	y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
-      fHLundIterative->Fill(LundEntries);
-      
+
+      if (fSaveLund) { 
+         Double_t LundEntries[7] = {y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
+         fHLundIterative->Fill(LundEntries);
+      }
+
       jj = j1;
     }
     
@@ -1221,12 +1235,13 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAverage(
 	}
       }
       if (fDoFillMCLund == kTRUE) {
-        Double_t LundEntries[7] = {
-            y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
-        fHLundIterativeMC->Fill(LundEntries);
-        if (fStoreDetLevelJets) {
-          fHLundIterativeMCDet->Fill(LundEntries);
-        }
+         if (fSaveLund) {
+            Double_t LundEntries[7] = {y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
+            fHLundIterativeMC->Fill(LundEntries);
+            if (fStoreDetLevelJets) {
+             fHLundIterativeMCDet->Fill(LundEntries);
+            }
+         }
       }
 
       jj = j1;
@@ -1333,12 +1348,13 @@ void AliAnalysisTaskNewJetSubstructure::IterativeParentsMCAveragePP(
 	}
       }
       if (fDoFillMCLund == kTRUE) {
-        Double_t LundEntries[7] = {
-            y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
-        fHLundIterativeMC->Fill(LundEntries);
-        if (fStoreDetLevelJets) {
-          fHLundIterativeMCDet->Fill(LundEntries);
-        }
+         if (fSaveLund)  {
+            Double_t LundEntries[7] = {y, lnpt_rel, fOutputJets[0].perp(), nall, form, rad, flagConst};
+            fHLundIterativeMC->Fill(LundEntries);
+            if (fStoreDetLevelJets) {
+               fHLundIterativeMCDet->Fill(LundEntries);
+            }
+         }
       }
 
       jj = j1;
