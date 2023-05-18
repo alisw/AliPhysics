@@ -1165,10 +1165,9 @@ void AliAnalysisTaskSELcTopK0sCorrelations::UserExec(Option_t */*option*/)
             if (TMath::Abs(d->Eta())<fEtaForCorrel) {
               Int_t pdgLctopK0s[2] = {2212, 310};
               Int_t pdgDgK0stoDaughters[2] = {211, 211};
-                TClonesArray *arrayMC;
               //Int_t oldlabLambdac = d->MatchToMC(4122,mcArray,3,pdgDgLambdactopK0s); //return MC particle label if the array corresponds to a Lambdac, -1 if not
               //Int_t labLambdac = d->MatchToMC(4122,mcArray,0); //Checks if it is a lambdac and return a labelParticle
-              Int_t labLambdac = d->MatchToMC(4122, 310, pdgLctopK0s, pdgDgK0stoDaughters, arrayMC, true);
+              Int_t labLambdac = d->MatchToMC(4122, 310, pdgLctopK0s, pdgDgK0stoDaughters, mcArray, true);
               if (labLambdac>-1) {
   	            if(!fAlreadyFilled && !fFillTrees) ((TH1F*)fOutputStudy->FindObject(Form("hEvtsPerPool_%d",ptbin)))->Fill(fPoolNum+0.5);
                 if(!fMixing && !fAlreadyFilled) {
@@ -1198,7 +1197,6 @@ void AliAnalysisTaskSELcTopK0sCorrelations::UserExec(Option_t */*option*/)
         if (fCutsLambdac->IsInFiducialAcceptance(mcPart->Pt(),mcPart->Y()) ) {
           nSelectedloose++;
           nSelectedtight++; 
-          TClonesArray *arrayMC;
           /* if( MatchLcToMC(mcPart, mcArray) == -1){
             AliAODMCParticle* mcDau1 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(0)));
 	          //AliAODMCParticle* mcDau2 = dynamic_cast<AliAODMCParticle*>(mcArray->At(mcPart->GetDaughterLabel(1)-1));
@@ -1208,8 +1206,8 @@ void AliAnalysisTaskSELcTopK0sCorrelations::UserExec(Option_t */*option*/)
 	              cout << "get pdg     "<< mcDau1->GetPdgCode() <<"  "<<mcDau3->GetPdgCode() <<"  "<<endl;
           } */
           Int_t labDau[3] = {-1, -1, -1}; 
-          Int_t deca = AliVertexingHFUtils::CheckLcV0bachelorDecay(arrayMC, mcPart, labDau);
-          Bool_t daughInAcc= CheckDaugAcc(arrayMC, 3, labDau);
+          Int_t deca = AliVertexingHFUtils::CheckLcV0bachelorDecay(mcArray, mcPart, labDau);
+          Bool_t daughInAcc= CheckDaugAcc(mcArray, 3, labDau);
           //if( MatchLcToMC(mcPart, mcArray) > -1){
             if( deca == 1 && daughInAcc == kTRUE){
             //Removal of cases in which Lambdac decay is not in pK0s!
@@ -1302,8 +1300,7 @@ void AliAnalysisTaskSELcTopK0sCorrelations::FillMassHists(AliAODRecoCascadeHF *p
   Int_t pdgLctopK0s[2] = {2212, 310};
   Int_t pdgDgK0stoDaughters[2] = {211, 211};
   Int_t labLambdac=-1;
-  TClonesArray *arrayMC;
-  if (fReadMC) labLambdac = part->MatchToMC(4122, 310, pdgLctopK0s, pdgDgK0stoDaughters, arrayMC, true); //return MC particle label if the array corresponds to a Lambdac, -1 if not (cf. AliAODRecoDecay.cxx)
+  if (fReadMC) labLambdac = part->MatchToMC(4122, 310, pdgLctopK0s, pdgDgK0stoDaughters, arrMC, true); //return MC particle label if the array corresponds to a Lambdac, -1 if not (cf. AliAODRecoDecay.cxx)
 
   //count candidates selected by cuts
   fNentries->Fill(20);
