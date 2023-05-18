@@ -130,6 +130,8 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
         void                    SetNofSamples(Int_t n) { fNOfSamples = n; }
         void                    SetNofMbins(Int_t n) { fNbinsMinv = n; }
+	void                    SetPvzBins(Int_t nofBins, std::vector<Double_t> bins)  {fNzVtxBins = nofBins; fzVtxBins = bins;}
+
 
         // FMD related
         void                    SetUseFMDcut(Bool_t cut = kTRUE) { fUseFMDcut = cut; }
