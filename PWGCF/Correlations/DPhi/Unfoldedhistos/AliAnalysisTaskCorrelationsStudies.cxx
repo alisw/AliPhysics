@@ -70,7 +70,7 @@ AliCSTrackMaps aodTrackMaps("AODtrackMaps", "The AOD tracks id maps"); ///< the 
 
 /// Default constructor
 AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All data members should be initialised here
-   :AliAnalysisTaskSE(),
+  : AliAnalysisTaskSE(),
     fOutput(NULL),
     fTaskConfigurationString(""),
     fOnTheFlyProduction(""),
@@ -117,7 +117,9 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
     fTrueToRecWrong(NULL),
     fMCRecFlags(NULL),
     fMCTruePrimaryFlags(NULL),
-    fMCFlagsStorageSize(30*1024),
+    fMCFlagsStorageSize(30 * 1024),
+    fRecoTrackPairFlags(nullptr),
+    fRecoTrackPairFlagsSize(30 * 1024),
     fhOnTrueEfficiencyProfile_1(NULL),
     fhOnTrueEfficiencyProfile_2(NULL),
     fhPt(NULL),
@@ -177,8 +179,8 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
 
 /// Analysis task constructor
 /// \param name the name to assign to the task
-AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const char *name) // All data members should be initialized here
-   :AliAnalysisTaskSE(name),
+AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const char* name) // All data members should be initialized here
+  : AliAnalysisTaskSE(name),
     fOutput(NULL),
     fTaskConfigurationString(""),
     fOnTheFlyProduction(""),
@@ -225,7 +227,9 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const cha
     fTrueToRecWrong(NULL),
     fMCRecFlags(NULL),
     fMCTruePrimaryFlags(NULL),
-    fMCFlagsStorageSize(30*1024),
+    fMCFlagsStorageSize(30 * 1024),
+    fRecoTrackPairFlags(nullptr),
+    fRecoTrackPairFlagsSize(30 * 1024),
     fhOnTrueEfficiencyProfile_1(NULL),
     fhOnTrueEfficiencyProfile_2(NULL),
     fhPt(NULL),
@@ -307,6 +311,8 @@ AliAnalysisTaskCorrelationsStudies::~AliAnalysisTaskCorrelationsStudies()
     if (fTrueToRecWrong != NULL) delete fTrueToRecWrong;
     if (fMCRecFlags != NULL) delete [] fMCRecFlags;
     if (fMCTruePrimaryFlags != NULL) delete [] fMCTruePrimaryFlags;
+    if (fRecoTrackPairFlags != nullptr)
+        delete[] fRecoTrackPairFlags;
     if (ffEfficiencyProfile != NULL) delete ffEfficiencyProfile;
     if (fhOnTrueEfficiencyProfile_1 != NULL) delete fhOnTrueEfficiencyProfile_1;
     if (fhOnTrueEfficiencyProfile_2 != NULL) delete fhOnTrueEfficiencyProfile_2;
@@ -554,6 +560,47 @@ Int_t AliAnalysisTaskCorrelationsStudies::GetNoOfTruePrimaries() {
       }
     }
     return nNoOfPrimaries;
+  }
+}
+
+/// \brief Mark diverse pair rejection conditions for the reco particles
+/// For every reconstructed particle several pair combinations are flagged
+/// The first one will be the electron from pair conversions rejection
+/// We loop over particles twice building the invariant mass of the pair
+/// and check for different rejection conditions.
+void AliAnalysisTaskCorrelationsStudies::FlagPreRejectionConditions()
+{
+  AliInfo("");
+  AliVEvent* event = InputEvent();
+  int ntracks = event->GetNumberOfTracks();
+
+  /* allocate the structure if it is not there */
+  if (fRecoTrackPairFlags == nullptr) {
+    if (ntracks < fRecoTrackPairFlagsSize) {
+      fRecoTrackPairFlags = new uint[fRecoTrackPairFlagsSize];
+    } else {
+      fRecoTrackPairFlagsSize = (Int_t(ntracks / 1024) + 5) * 1024;
+      delete[] fRecoTrackPairFlags;
+      fRecoTrackPairFlags = new uint[fRecoTrackPairFlagsSize];
+    }
+  }
+  /* start with everything clean */
+  std::fill_n(fRecoTrackPairFlags, fRecoTrackPairFlagsSize, 0);
+  for (int i = 0; i < ntracks; ++i) {
+    AliVTrack* vtrack1 = dynamic_cast<AliVTrack*>(event->GetTrack(i));
+    if (vtrack1 == nullptr)
+      continue;
+    for (int j = i + 1; j < ntracks; ++j) {
+      AliVTrack* vtrack2 = dynamic_cast<AliVTrack*>(event->GetTrack(j));
+      if (vtrack2 == nullptr)
+        continue;
+      if (vtrack1->Charge() * vtrack2->Charge() > 0)
+        continue;
+      if (0 < fProcessCorrelations->checkIfResonance(fProcessCorrelations->getPhotonConversionIndex(), true, vtrack1->Pt(), vtrack1->Eta(), vtrack1->Phi(), vtrack2->Pt(), vtrack2->Eta(), vtrack2->Phi())) {
+        fRecoTrackPairFlags[i] = 1;
+        fRecoTrackPairFlags[j] = 1;
+      }
+    }
   }
 }
 
@@ -1800,7 +1847,12 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated)
   // Track loop for reconstructed event
   Int_t ntracks = event->GetNumberOfTracks();
   Int_t nNoOfAccepted = 0;
-  for(Int_t i = 0; i < ntracks; i++) {
+  // Prepare for a pre-rejection of electron conversions
+  if (fDoProcessCorrelations && fProcessCorrelations->preRejectResonances()) {
+    FlagPreRejectionConditions();
+  }
+
+  for (Int_t i = 0; i < ntracks; i++) {
     AliVTrack* vtrack = dynamic_cast<AliVTrack*>(event->GetTrack(i)); // pointer to reconstructed to track
     if (!vtrack) {
       AliError(Form("ERROR: Could not retrieve vtrack %d", i));
@@ -1820,7 +1872,10 @@ void AliAnalysisTaskCorrelationsStudies::ProcessTracks(Bool_t simulated)
     if (fDoProcessCorrelations) {
       bTrackAccepted = bTrackAccepted && fProcessCorrelations->IsTrackAccepted(vtrack);
     }
-
+    /* test for a potential pre-reject of decays products */
+    if (fDoProcessCorrelations && fProcessCorrelations->preRejectResonances()) {
+      bTrackAccepted = bTrackAccepted && (fRecoTrackPairFlags[i] != 1);
+    }
 
     /* only fill histograms if this is not an additional simulated event */
     if (!simulated) {
