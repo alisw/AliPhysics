@@ -35,7 +35,6 @@
 Ali2PCorrelations::Ali2PCorrelations()
   : AliTwoParticleCorrelationsBase(),
     fhPtAverage{},
-    fPID(nullptr),
     fIxEta(nullptr),
     fIxPhi(nullptr),
     fIxPt(nullptr),
@@ -72,7 +71,6 @@ Ali2PCorrelations::Ali2PCorrelations()
 Ali2PCorrelations::Ali2PCorrelations(const char* name)
   : AliTwoParticleCorrelationsBase(name),
     fhPtAverage{},
-    fPID(nullptr),
     fIxEta(nullptr),
     fIxPhi(nullptr),
     fIxPt(nullptr),
@@ -107,8 +105,7 @@ Ali2PCorrelations::Ali2PCorrelations(const char* name)
 /// \brief Default destructor
 /// Deallocates the allocated memory
 Ali2PCorrelations::~Ali2PCorrelations() {
-  /* track 1 storage */
-  delete[] fPID;
+  /* track storage */
   delete[] fIxEta;
   delete[] fIxPhi;
   delete[] fIxPt;
@@ -190,7 +187,6 @@ void Ali2PCorrelations::Initialize()
   fOutput->Add(new TParameter<Bool_t>("DifferentialOutput",true,'f'));
 
   /* track storage */
-  fPID = new Int_t[fArraySize];
   fIxEta = new Int_t[fArraySize];
   fIxPhi = new Int_t[fArraySize];
   fIxPt = new Int_t[fArraySize];
@@ -399,6 +395,11 @@ void Ali2PCorrelations::ProcessEventData() {
 /// \param bank the tracks bank to use
 void Ali2PCorrelations::ProcessPairs()
 {
+  /* flag resonances candidates if needed */
+  if (fPostRejectResonances) {
+    FlagConversionsAndResonances();
+  }
+
   /* reset pair counters */
   std::vector<std::vector<double>> fN2_12(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
   std::vector<std::vector<double>> fSum2PtPt_12(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
@@ -413,22 +414,32 @@ void Ali2PCorrelations::ProcessPairs()
 
       bool processpair = kTRUE;
       /* TODO: probably a table with the crossed PID which could give a certain resonance will help */
-      if (fPID[ix1] != fPID[ix2]) {
-        /* for different species/charges process the resonance suppression for this pair if needed */
-        for (int ires = 0; ires < fgkNoOfResonances; ires++) {
-          if (fThresholdMult[ires] != 0) {
-            /* check if both tracks are flagged for the current resonance */
-            if (((fFlags[ix1] & fFlags[ix2]) & UInt_t(0x1 << ires)) != UInt_t(0x1 << ires)) {
-              /* no, they are not, continue */
-              continue;
-            } else {
-              /* yes, check if applicable */
-              Float_t mass = checkIfResonance(ires, kFALSE, ix1, ix2);
+      if (fPostRejectResonances) {
+        /* process post particle selection resonance rejection */
+        if (fPID[ix1] != fPID[ix2]) {
+          /* for different species/charges process the resonance suppression for this pair if needed */
+          for (int ires = 0; ires < fgkNoOfResonances; ires++) {
+            if (fThresholdMult[ires] != 0) {
+              /* check if both tracks are flagged for the current resonance */
+              if (((fFlags[ix1] & fFlags[ix2]) & UInt_t(0x1 << ires)) != UInt_t(0x1 << ires)) {
+                /* no, they are not, continue */
+                continue;
+              } else {
+                /* yes, check if applicable */
+                Float_t mass = checkIfResonance(ires,
+                                                kFALSE,
+                                                fPt[ix1],
+                                                fEta[ix1],
+                                                fPhi[ix1],
+                                                fPt[ix2],
+                                                fEta[ix2],
+                                                fPhi[ix2]);
 
-              if (0 < mass) {
-                fhDiscardedResonanceMasses->Fill(ires, TMath::Sqrt(mass));
-                processpair = kFALSE;
-                break;
+                if (0 < mass) {
+                  fhDiscardedResonanceMasses->Fill(ires, TMath::Sqrt(mass));
+                  processpair = kFALSE;
+                  break;
+                }
               }
             }
           }

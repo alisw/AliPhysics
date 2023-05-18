@@ -45,7 +45,6 @@ public:
   std::vector<const TH2*> fhPtAverage; //!<! corrected avg pT for each of the species
 
   /* the arrays with track information */
-  int* fPID;          //!<! the array of track PIDs
   int* fIxEta;        //!<! the array of track eta bin index
   int* fIxPhi;        //!<! the array of track phi bin index
   int* fIxPt;         //!<! the array of track pT bin index
@@ -87,7 +86,7 @@ public:
   Ali2PCorrelations& operator=(const Ali2PCorrelations&);
 
   /// \cond CLASSIMP
-  ClassDef(Ali2PCorrelations, 4);
+  ClassDef(Ali2PCorrelations, 5);
   /// \endcond
 };
 
