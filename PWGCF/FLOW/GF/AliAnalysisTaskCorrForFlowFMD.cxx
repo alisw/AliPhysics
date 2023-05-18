@@ -274,7 +274,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
 
     if(!fDoV0 && !fDoPHI && !fcheckmassbias_Lambda && !fcheckmassbias_Phi) { fNbinsMinv = 1; }
 
-    fzVtxBins = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0};
+    // fzVtxBins = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0};
 
     fOutputListCharged = new TList();
     fOutputListCharged->SetOwner(kTRUE);
@@ -304,9 +304,11 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
     const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
     const Int_t sizeOfSamples = (Int_t) fNOfSamples;//for bootstrap
     const Int_t sizeMbins = fNbinsMinv;
-    Int_t binsFMD[] = {10, 10};//zvtx, samplesize 
-    Int_t binsPID[] = {10, 10, sizePtTrig};//zvtx, samplesize, pT_trig
-    Int_t binsV0[] = {10, 10, sizePtTrig, sizeMbins};//zvtx, samplesize, pT_trig, inv_mass (keep it same for V0 and Phi)
+    const Int_t sizePvzbins = fzVtxBins.size() - 1;
+    fPVzCut = fabs((Double_t)*fzVtxBins.begin())>=fabs((Double_t)*fzVtxBins.end())?fabs((Double_t)*fzVtxBins.begin()):fabs((Double_t)*fzVtxBins.end());
+    Int_t binsFMD[] = {sizePvzbins, 10};//zvtx, samplesize 
+    Int_t binsPID[] = {sizePvzbins, 10, sizePtTrig};//zvtx, samplesize, pT_trig
+    Int_t binsV0[]  = {sizePvzbins, 10, sizePtTrig, sizeMbins};//zvtx, samplesize, pT_trig, inv_mass (keep it same for V0 and Phi)
     Double_t min[3] = {fMinK0Mass, fMinLambdaMass, fMinPhiMass};
     Double_t max[3] = {fMaxK0Mass, fMaxLambdaMass, fMaxPhiMass};
 
@@ -320,7 +322,7 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
       else if(i < 4) fhTrigTracks[i] = new AliTHn(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s)",pidName[i].Data()), 1, 3, binsPID);//zvtx, samplesize, pT_trig
       else if(i > 3) fhTrigTracks[i] = new AliTHn(Form("fhTrigTracks%s",pidName[i].Data()), Form("fhTrigTracks (%s)",pidName[i].Data()), 1, 4, binsV0);//zvtx, samplesize, pT_trig, inv_mass
       else AliError("This should not happen! There might be a problem with trigher AliTHn!");
-      fhTrigTracks[i]->SetBinLimits(0,-10,10);//zvtx
+      fhTrigTracks[i]->SetBinLimits(0,fzVtxBins.data());//zvtx
       fhTrigTracks[i]->SetBinLimits(1,0,10);//samplesize
       fhTrigTracks[i]->SetVarTitle(0, "PVz [cm]");
       fhTrigTracks[i]->SetVarTitle(1, "Sample");
@@ -373,10 +375,11 @@ void AliAnalysisTaskCorrForFlowFMD::UserCreateOutputObjects()
       fPIDCombined->SetDetectorMask(AliPIDResponse::kDetTPC+AliPIDResponse::kDetTOF); // setting TPC + TOF mask
     }
 
-    //mixing-> poolmanager initialization
+     //mixing-> poolmanager initialization
     fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins,fCentBins.data(), fNzVtxBins, fzVtxBins.data());
     if (!fPoolMgr) { AliError("Event Pool manager not created!"); return; }
     fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);
+
 
     if(!fSkipCorr) CreateTHnCorrelations();//create the binning of the final containers based on the correlations between detectors
 
@@ -1517,6 +1520,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   Double_t binning_dphi[73] = { -1.570796, -1.483530, -1.396263, -1.308997, -1.221730, -1.134464, -1.047198, -0.959931, -0.872665, -0.785398, -0.698132, -0.610865, -0.523599, -0.436332, -0.349066, -0.261799, -0.174533, -0.087266, 0.0,       0.087266,  0.174533,  0.261799,  0.349066,  0.436332, 0.523599,  0.610865,  0.698132,  0.785398,  0.872665,  0.959931, 1.047198,  1.134464,  1.221730,  1.308997,  1.396263,  1.483530, 1.570796,  1.658063,  1.745329,  1.832596,  1.919862,  2.007129, 2.094395,  2.181662,  2.268928,  2.356194,  2.443461,  2.530727, 2.617994,  2.705260,  2.792527,  2.879793,  2.967060,  3.054326, 3.141593,  3.228859,  3.316126,  3.403392,  3.490659,  3.577925, 3.665191,  3.752458,  3.839724,  3.926991,  4.014257,  4.101524, 4.188790,  4.276057,  4.363323,  4.450590,  4.537856,  4.625123, 4.712389};
   const Int_t sizePtTrig = fPtBinsTrigCharged.size() - 1;
   const Int_t sizeOfSamples = (Int_t) fNOfSamples;
+  const Int_t sizePvzbins = fzVtxBins.size() - 1;
   const Int_t sizeMbins = fNbinsMinv;
 
   Double_t min[7] = {0.0, 0.0, 0.0, 0.0, fMinK0Mass, fMinLambdaMass, fMinPhiMass};
@@ -1529,8 +1533,8 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
     Double_t binning_detaFMDTPC[]={-6.,-5.8, -5.6, -5.4, -5.2, -5.0, -4.8, -4.6, -4.4, -4.2, -4., -3.8, -3.6, -3.4, -3.2, -3., -2.8, -2.6, -2.4, -2.2, -2., -1.8, -1.6, -1.4, -1.2, -1., -0.8};
     Double_t binning_detaFMDCTPC[]={ 1., 1.2, 1.4, 1.6, 1.8, 2. , 2.2, 2.4, 2.6, 2.8, 3., 3.2, 3.4, 3.6, 3.8, 4.};
 
-    Int_t iTrackBin_tpcfmdA[] = {26, 72, 10, sizeOfSamples, sizeMbins, sizePtTrig};
-    Int_t iTrackBin_tpcfmdC[] = {15, 72, 10, sizeOfSamples, sizeMbins, sizePtTrig};
+    Int_t iTrackBin_tpcfmdA[] = {26, 72, sizePvzbins, sizeOfSamples, sizeMbins, sizePtTrig};
+    Int_t iTrackBin_tpcfmdC[] = {15, 72, sizePvzbins, sizeOfSamples, sizeMbins, sizePtTrig};
     Int_t nTrackBin_tpcfmd = sizeof(iTrackBin_tpcfmdA) / sizeof(Int_t);
 
     for(Int_t i(0); i < 7; i++){
@@ -1560,7 +1564,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   } // end TPC - FMD
   else if(fAnalType == eFMDAFMDC){
     // Int_t iTrackBin_fmdAfmdC[] = {48, 72, 10};
-    Int_t iTrackBin_fmdAfmdC[] = {24, 20, 10, sizeOfSamples};
+    Int_t iTrackBin_fmdAfmdC[] = {24, 20, sizePvzbins, sizeOfSamples};
     Int_t nTrackBin_fmdAfmdC = sizeof(iTrackBin_fmdAfmdC) / sizeof(Int_t);
 
     // FMD only for unidentified
@@ -1576,7 +1580,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
   } // end FMD - FMD
   else {
     Double_t binning_deta_tpctpc[33] = {-1.6, -1.5, -1.4, -1.3, -1.2, -1.1, -1.0, -0.9, -0.8, -0.7, -0.6, -0.5, -0.4, -0.3, -0.2, -0.1, 0,    0.1,  0.2,  0.3,  0.4,  0.5, 0.6,  0.7,  0.8,  0.9,  1.0,  1.1,  1.2,  1.3,  1.4,  1.5, 1.6};
-    Int_t iBinningTPCTPC[] = {32,72,10,sizeOfSamples,sizeMbins,sizePtTrig};
+    Int_t iBinningTPCTPC[] = {32,72,sizePvzbins,sizeOfSamples,sizeMbins,sizePtTrig};
     Int_t nTrackBin_tpctpc = sizeof(iBinningTPCTPC) / sizeof(Int_t);
 
     for(Int_t i(0); i < 7; i++){
@@ -1606,7 +1610,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
     
     if(fIsAntiparticleCheck && i == 4) continue;
 
-    fhSE[i]->SetBinLimits(2, -10,10);
+    fhSE[i]->SetBinLimits(2, fzVtxBins.data());
     fhSE[i]->SetBinLimits(3, 0,10);
     fhSE[i]->SetVarTitle(0, "#Delta#eta");
     fhSE[i]->SetVarTitle(1, "#Delta#phi");
@@ -1620,7 +1624,7 @@ void AliAnalysisTaskCorrForFlowFMD::CreateTHnCorrelations(){
     }
     fOutputListCharged->Add(fhSE[i]);
 
-    fhME[i]->SetBinLimits(2, -10,10);
+    fhME[i]->SetBinLimits(2, fzVtxBins.data());
     fhME[i]->SetBinLimits(3, 0,10);
     fhME[i]->SetVarTitle(0, "#Delta#eta");
     fhME[i]->SetVarTitle(1, "#Delta#phi");
