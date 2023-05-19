@@ -163,19 +163,16 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
 
 
 // THIS SHOULD BE SET UP AT SOME POINT:
-// THIS SHOULD BE SET UP AT SOME POINT:
-// THIS SHOULD BE SET UP AT SOME POINT:
-// the 2,2 for pair cleaner ?????????????????? no idea ??????????????? 2,2 ????????
+//  pair cleaner config ??????????????
   if (!fConfig) {
     AliError("No Correlation Config \n");
   } else {
     fPartColl = new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
-    fPairCleaner = new AliFemtoDreamPairCleaner(2, 2,fConfig->GetMinimalBookingME()); // ??? 2,2 ?????????????
+    //for now, following the same approach as p-Omega:
+    fPairCleaner = new AliFemtoDreamPairCleaner(2, 2,fConfig->GetMinimalBookingME()); //??????????????????
   }
 
 
-// THIS SHOULD BE SET UP AT SOME POINT:
-// THIS THOULD BE SET UP AT SOME POINT:   true ..... true ?????????????????????
 // THIS SHOULD BE SET UP AT SOME POINT:
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,GetCollisionCandidates(), true);  // true...true ???????
   fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
@@ -185,7 +182,7 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
 
 
   fCascade = new AliFemtoDreamCascade();
-  fCascade->SetUseMCInfo(false);    // should I set isMC or isMCtruth here ?????   ??????  ????? 
+  fCascade->SetUseMCInfo(fIsMC); 
   //PDG Codes should be set assuming Xi- to also work for Xi+
   if(!fisOmega){
    fCascade->SetPDGCode(3312);
@@ -296,9 +293,11 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
 //  fTree->Branch("KaonIs",&fTKaonIs,"fTKaonIs[fTnKaon]/O");
 //  fTree->Branch("KaonIsFD",&fTKaonIsFD,"fTKaonIsFD[fTnKaon]/O");
 //  fTree->Branch("KaonFilterBit",&fTKaonFilterBit,"fTKaonFilterBit[fTnKaon]/O");
-  if(fIsMC||fIsMCtruth)fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/I");
-  if(fIsMC||fIsMCtruth)fTree->Branch("KaonMotherWeak",&fTKaonMotherWeak,"fTKaonMotherWeak[fTnKaon]/I");
-  if(fIsMC||fIsMCtruth)fTree->Branch("KaonOrigin",&fTKaonOrigin,"fTKaonOrigin[fTnKaon]/I");
+//  if(fIsMC||fIsMCtruth)fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/I");
+//  if(fIsMC||fIsMCtruth)fTree->Branch("KaonMotherWeak",&fTKaonMotherWeak,"fTKaonMotherWeak[fTnKaon]/I");
+//  if(fIsMC||fIsMCtruth)fTree->Branch("KaonOrigin",&fTKaonOrigin,"fTKaonOrigin[fTnKaon]/I");
+  if(fIsMC||fIsMCtruth)fTree->Branch("KaonMotherID",&fTKaonMotherID,"fTKaonMotherID[fTnKaon]/I");
+
 
   //Xis:
   fTree->Branch("nXi",&fTnXi,"fTnXi/I");
@@ -331,6 +330,7 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
   fTree->Branch("XiTrackITStime",&fTXiTrackITStime,"fTXiTrackITStime[fTnXi][3]/O");
   fTree->Branch("XiTrackTOFtime",&fTXiTrackTOFtime,"fTXiTrackTOFtime[fTnXi][3]/O");
   fTree->Branch("XiTrackID",&fTXiTrackID,"fTXiTrackID[fTnXi][3]/I");
+  if(fIsMC||fIsMCtruth)fTree->Branch("XiMotherID",&fTXiMotherID,"fTXiMotherID[fTnXi]/I");
 
 
   PostData(1, fEvtList);
@@ -410,6 +410,7 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
    fTKaonPDG[ii]=0.;//sure Zero?
    fTKaonMotherWeak[ii]=0.;//sure Zero?
    fTKaonOrigin[ii]=-1;
+   fTKaonMotherID[ii]=-1;
   }
   fTnKaon=0;
 
@@ -526,6 +527,7 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
     fTXiTrackITStime[ii][jj]=false;
     fTXiTrackTOFtime[ii][jj]=false;
    }
+   fTXiMotherID[ii]=-1;
   }
   fTnXi=0;
  
@@ -539,9 +541,11 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
   for (int iCasc = 0;iCasc< static_cast<TClonesArray *>(aodEvt->GetCascades())->GetEntriesFast();++iCasc) {
 
     Bool_t IsXi = kFALSE;
+    Bool_t IsAntiXi = kFALSE;
 
     AliAODcascade* casc = aodEvt->GetCascade(iCasc);
     fCascade->SetCascade(fInputEvent, casc);
+
 
     if (fCutsXi->isSelected(fCascade)) {
       Xis.push_back(*fCascade);
@@ -549,14 +553,13 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
     }
     if (fCutsAntiXi->isSelected(fCascade)) {
       AntiXis.push_back(*fCascade);
-      IsXi = kTRUE;
+      IsAntiXi = kTRUE;
     }
 
-        if(IsXi) FillXi(fCascade,fisOmega);
+    if(IsXi||IsAntiXi) FillXi(fCascade,fisOmega);
 
 
-    }//cascade loop
-
+  }//cascade loop
 
 
       //fill tree:
@@ -568,19 +571,18 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
      if(fdoFDpairing) FemtoDreamPairing = true;
      if(FemtoDreamPairing){
 
-      // Femto Dream Pair Cleaner. NOT SURE ABOUT THE histcounter !!!!
-      // NOT sure about clean kaons vs Xi !!!!
-      // NOT sure about clean kaons vs Xi !!!!
-      // NOT sure about clean kaons vs Xi !!!!
+      // Femto Dream Pair Cleaner. NOT SURE ABOUT THE histcounter !!!! not sure about the config !!!!
+      // for now following the same approach as p-Omega
     
-      int histcounter=0;
-      fPairCleaner->CleanDecay(&Xis, histcounter); histcounter++;
-      fPairCleaner->CleanDecay(&AntiXis, histcounter); histcounter++;
-
-      fPairCleaner->CleanTrackAndDecay(&Kaons, &Xis, histcounter); histcounter++;// Shouldn't this be AntiKaon vs Xi ??????????????????????????????????????????????????????????????????????
-      fPairCleaner->CleanTrackAndDecay(&AntiKaons, &AntiXis, histcounter); histcounter++;// Shouldn't this be AntiKaon vs Xi ??????????????????????????????????????????????????????????????????????
-
       fPairCleaner->ResetArray();
+
+  fPairCleaner->CleanTrackAndDecay(&Kaons, &AntiXis, 0);
+  fPairCleaner->CleanTrackAndDecay(&AntiKaons, &Xis, 1);
+
+  fPairCleaner->CleanDecay(&Xis, 0);
+  fPairCleaner->CleanDecay(&AntiXis, 1);
+
+
       fPairCleaner->StoreParticle(Kaons);
       fPairCleaner->StoreParticle(AntiKaons);
       fPairCleaner->StoreParticle(Xis);
@@ -734,6 +736,7 @@ Bool_t AliAnalysisTaskOtonXx::FillKaon(AliFemtoDreamTrack *TheTrack) {
         fTKaonOrigin[fTnKaon] = 3;
         break;
      }
+ fTKaonMotherID[fTnKaon] = TheTrack->GetMotherID();
 
 
  fTnKaon++;
@@ -816,6 +819,8 @@ Bool_t AliAnalysisTaskOtonXx::FillXi(AliFemtoDreamCascade *TheCasc, bool isomega
   fTXiTrackITStime[fTnXi][jj] = TheTrack->GetHasITSHit();
   fTXiTrackTOFtime[fTnXi][jj] = TheTrack->GetTOFTimingReuqirement();
  }
+
+ fTXiMotherID[fTnXi] = TheCasc->GetMotherID();
  fTnXi++;
  Filled = kTRUE;
  return Filled;

@@ -37,6 +37,7 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist()
       fMCSecKlongDCAXYPtBins(nullptr),
       fMCSecKshortDCAXYPtBins(nullptr),
       fMCSecKchDCAXYPtBins(nullptr),
+      fMCSecpichDCAXYPtBins(nullptr),
       fPtResolution(nullptr),
       fThetaResolution(nullptr),
       fPhiResolution(nullptr) {
@@ -96,6 +97,7 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
       fMCSecKlongDCAXYPtBins(nullptr),
       fMCSecKshortDCAXYPtBins(nullptr),
       fMCSecKchDCAXYPtBins(nullptr),
+      fMCSecpichDCAXYPtBins(nullptr),
       fPtResolution(nullptr),
       fThetaResolution(nullptr),
       fPhiResolution(nullptr) {
@@ -279,6 +281,7 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
     TString MCSecKlcaPtBinName = TString::Format("DCAPtBinningSecKl");
     TString MCSecKsdcaPtBinName = TString::Format("DCAPtBinningSecKs");
     TString MCSecKchdcaPtBinName = TString::Format("DCAPtBinningSecKch");
+    TString MCSecpichdcaPtBinName = TString::Format("DCAPtBinningSecpich");
 
 
     fMCPrimDCAXYPtBins = new TH2F(MCPridcaPtBinName.Data(),
@@ -364,6 +367,14 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
     fMCSecKchDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
     fMCSecKchDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
     fDCAPlots->Add(fMCSecKchDCAXYPtBins);
+
+    fMCSecpichDCAXYPtBins = new TH2F(MCSecpichdcaPtBinName.Data(),
+                                    MCSecpichdcaPtBinName.Data(), fpTbins,
+                                       fpTmin, fpTmax, 5000, -5, 5);
+    fMCSecpichDCAXYPtBins->GetXaxis()->SetTitle("p_{T}");
+    fMCSecpichDCAXYPtBins->GetYaxis()->SetTitle("dca_{XY}");
+    fDCAPlots->Add(fMCSecpichDCAXYPtBins);
+
   } else {
     fDCAPlots = 0;
     fMCPrimDCAXYPtBins = 0;
@@ -378,6 +389,7 @@ AliFemtoDreamTrackMCHist::AliFemtoDreamTrackMCHist(bool contribSplitting,
     fMCSecKlongDCAXYPtBins = 0;
     fMCSecKshortDCAXYPtBins = 0;
     fMCSecKchDCAXYPtBins = 0;
+    fMCSecpichDCAXYPtBins = 0;
   }
 }
 void AliFemtoDreamTrackMCHist::FillMCDCAXYPtBins(
@@ -408,6 +420,8 @@ void AliFemtoDreamTrackMCHist::FillMCDCAXYPtBins(
       fMCSecKshortDCAXYPtBins->Fill(pT, dcaxy);
     } else if (TMath::Abs(PDGCodeMoth) == 321) {
       fMCSecKchDCAXYPtBins->Fill(pT, dcaxy);
+    } else if (TMath::Abs(PDGCodeMoth) == 211) {
+      fMCSecpichDCAXYPtBins->Fill(pT, dcaxy);
     } else {
       TString ErrHistSP = TString::Format("Feeddown for %d not implemented", PDGCodeMoth);
       AliWarning(ErrHistSP.Data());
