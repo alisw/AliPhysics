@@ -493,8 +493,8 @@ AliFlowCommonHist::~AliFlowCommonHist()
   delete fHarmonic;
   delete fRefMultVsNoOfRPs;
   delete fHistRefMult;  
-  delete fHistMassPOI;  
-  delete fHistList;
+  //delete fHistMassPOI;  
+  //delete fHistList;
 }
 
 
