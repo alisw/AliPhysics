@@ -378,7 +378,8 @@ void AliAnalysisTaskfn::UserExec(Option_t *)
  
  // Mixed event
  double pionmixenergy = 0.0;
- AliEventPool* pool = fPoolMgr->GetEventPool(mult, zv);
+ //AliEventPool* pool = fPoolMgr->GetEventPool(mult, zv);
+ AliEventPool* pool = fPoolMgr->GetEventPool(lV0M, zv);
  if (pool && pool->IsReady())
    {
      Int_t nMix = 10; // Set the number of mixed events
