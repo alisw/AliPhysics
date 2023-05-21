@@ -67,7 +67,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         virtual void            Terminate(Option_t* option);
 
         enum                    AnaType { eTPCFMDA = 0, eTPCFMDC, eFMDAFMDC, eTPCTPC };
-        enum                    PartSpecies { eCharged = 0, ePion, eKaon, eProton, eK0s, eLambda };
+        enum                    PartSpecies { eCharged = 0, ePion, eKaon, eProton, eK0s, eLambda, ePhi };
         enum                    ColSystem { sPP = 0, sPPb, sPbPb};
 
         // global flags
