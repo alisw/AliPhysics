@@ -103,6 +103,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   isCheckLambdaProtonFromDecay(false),
   isCheckLambdaProtonFromDecayFoundInTrackLoops(false),
   isUseOneSideTPCPlane(false),
+  isTightPileUp(false),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
   fVzCut(10.0),
@@ -467,6 +468,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   isCheckLambdaProtonFromDecay(false),
   isCheckLambdaProtonFromDecayFoundInTrackLoops(false),
   isUseOneSideTPCPlane(false),
+  isTightPileUp(false),
   fTrigger("kINT7"),
   fPeriod("LHC18q"),
   fVzCut(10.0),
@@ -3558,12 +3560,12 @@ bool AliAnalysisTaskCVEPIDCME::RejectEvtTFFit()
   if (((AliAODHeader*)fAOD->GetHeader())->GetRefMultiplicityComb08() < 0) return false;
   if (fAOD->IsIncompleteDAQ()) return false;
 
-  // if (isTightPileUp==1){
-  //   Int_t tpcClsTot = fAOD->GetNumberOfTPCClusters();
-  //   Float_t nclsDif = Float_t(tpcClsTot) - (53182.6 + 113.326*multV0Tot - 0.000831275*multV0Tot*multV0Tot);
-  //   if (nclsDif > 200000)//can be varied to 150000, 200000
-  //   return false;
-  // }
+  if (isTightPileUp == true){
+    Int_t tpcClsTot = fAOD->GetNumberOfTPCClusters();
+    Float_t nclsDif = Float_t(tpcClsTot) - (53182.6 + 113.326*multV0Tot - 0.000831275*multV0Tot*multV0Tot);
+    if (nclsDif > 200000)//can be varied to 150000, 200000
+    return false;
+  }
 
   fHist2MultCentQA[1]->Fill(fCentV0M, multTrk); //  Mult(FB32) Vs Cent(V0M)
   return true;
