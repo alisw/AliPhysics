@@ -47,6 +47,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void IfProtonCustomizedDCACut(bool bProtonCustomizedDCACut) { this->isProtonCustomizedDCACut = bProtonCustomizedDCACut; }
   void IfUsePionRejection(bool bUsePionRejection) { this->isUsePionRejection = bUsePionRejection; }
 
+  void IfTightPileUp(bool bTightPileUp) { this->isTightPileUp = bTightPileUp; }
+
   void IfCalculatePIDFlow(bool bCalculatePIDFlow) { this->isCalculatePIDFlow = bCalculatePIDFlow; }
   void IfCalculateDiffResult(bool bCalculateDiffResult) { this->isCalculateDiffResult = bCalculateDiffResult; }
   void IfCalculateDeltaPhiSumPhi(bool bCalculateDeltaPhiSumPhi) { this->isCalculateDeltaPhiSumPhi = bCalculateDeltaPhiSumPhi; }
@@ -209,6 +211,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   bool isCheckLambdaProtonFromDecay;
   bool isCheckLambdaProtonFromDecayFoundInTrackLoops;
   bool isUseOneSideTPCPlane;
+
+  bool isTightPileUp;
 
   //////////////////////
   // Cuts and options //
