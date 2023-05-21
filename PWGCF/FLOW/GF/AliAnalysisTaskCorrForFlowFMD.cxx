@@ -1392,12 +1392,12 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
 
   } // event pool done
 
-  if((!fDoPID && !fDoV0 && spec == eCharged) || (fDoPID && !fDoV0 && spec == eProton) || (fDoV0 && spec == eLambda) ){
+  if((!fDoPID && !fDoV0 && !fDoPHI && spec == eCharged) || (fDoPID && (spec == eProton || spec == eKaon)) || (fDoV0 && (spec == eLambda || spec == eK0s)) || (fDoPHI && spec == ePhi)){
     TObjArray* cloneArray = (TObjArray *)fTracksAss->Clone();
     cloneArray->SetOwner(kTRUE);
     pool->UpdatePool(cloneArray);
   }
-
+	
   return;
 }
 //_____________________________________________________________________________
