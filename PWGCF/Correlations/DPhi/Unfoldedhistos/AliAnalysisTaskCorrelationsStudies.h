@@ -151,7 +151,7 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     UInt_t                     *fMCRecFlags;                  //!<! the flags which qualify MC reconstructed tracks
     UInt_t                     *fMCTruePrimaryFlags;          //!<! the flags which qualify MC primary true tracks
     Int_t                       fMCFlagsStorageSize;          ///< the size of the MC flags storage
-    uint* fRecoTrackPairFlags;                                ///< the pair track flags storage, decay involvement for instance
+    unsigned int *fRecoTrackPairFlags; ///< the pair track flags storage, decay involvement for instance
     int fRecoTrackPairFlagsSize;                              ///< the size of the pair track flags, decay involvement for instance
 
     TH2F                       *fhOnTrueEfficiencyProfile_1;  ///< the histogram for the efficiency profile on true data for track one
