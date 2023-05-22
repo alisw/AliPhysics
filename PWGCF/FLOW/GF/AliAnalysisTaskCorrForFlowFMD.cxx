@@ -543,11 +543,13 @@ void AliAnalysisTaskCorrForFlowFMD::UserExec(Option_t *)
         delete fTracksTrig_Kaon_Phi;	
       }
 
+    if(fDoPID || fDoV0 || fDoPHI) {
       	if(fParticlemass_bias_corr) {
 	    if(fcheckmassbias_Proton && fProtonSigcount < 1) return;//for PID correlation to fill, at least one proton needed (biasing event selection)
 	    if(fcheckmassbias_Lambda && fLambdaSigcount < 1) return;//for V0 correlation to fill, at least one lambda candidate needed (biasing event selection)
 	    if(fcheckmassbias_Phi && fPhiSigcount < 1) return;//for Phi correlation to fill, at least one Phi candidate needed (biasing event selection)
 	  }
+     }
 	  
         fhEventCounter->Fill("Used in corr",1);
 	
