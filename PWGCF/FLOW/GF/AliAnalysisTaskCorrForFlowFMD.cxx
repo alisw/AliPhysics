@@ -110,6 +110,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fCutTauK0s(0.),
     fCutTauLambda(0.),
     fSigmaTPC(3.),
+    fNSigmaTPCTOF(0.),
     fMassRejWindowK0(0.005),
     fMassRejWindowLambda(0.01),
     fMinK0Mass(0.44),
@@ -226,6 +227,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fCutTauK0s(0.),
     fCutTauLambda(0.),
     fSigmaTPC(3.),
+    fNSigmaTPCTOF(0.),
     fMassRejWindowK0(0.005),
     fMassRejWindowLambda(0.01),
     fMinK0Mass(0.44),
@@ -725,9 +727,12 @@ Int_t AliAnalysisTaskCorrForFlowFMD::IdentifyTrack(const AliAODTrack* track) // 
   Int_t retInd = pidInd-AliPID::kPion+1; //realigning
   if(retInd<1 || retInd>3) return -1;
   if(l_Probs[pidInd] < l_MaxProb[retInd-1]) return -1;
-  //check nsigma cuts
-  if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)pidInd))>3) return -1;
-  if(bIsTOFok && l_TOFUsed) if(TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)pidInd))>3) return -1;
+	
+   //check nsigma cuts
+  if(fNSigmaTPCTOF > 0){
+  if(TMath::Abs(fPIDResponse->NumberOfSigmasTPC(track,(AliPID::EParticleType)pidInd))>fNSigmaTPCTOF) return -1;
+  if(bIsTOFok && l_TOFUsed) if(TMath::Abs(fPIDResponse->NumberOfSigmasTOF(track,(AliPID::EParticleType)pidInd))>fNSigmaTPCTOF) return -1;
+  }
 
   if(retInd == 3) fProtonSigcount++;
 
