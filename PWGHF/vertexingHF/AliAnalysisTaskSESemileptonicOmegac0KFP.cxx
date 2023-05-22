@@ -1677,7 +1677,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeElectron(AliAODTrack *tr
 void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpOmegaMinus_woLMassConst, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype)
 {
     
-    for (Int_t i=0; i< 51 ; i++){
+    for (Int_t i=0; i< 63 ; i++){
         fVar_Omegac0[i] = -9999.;
     }
     
@@ -1958,6 +1958,23 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
     Double_t DecayLength_Omega  = TMath::Sqrt(dx_Omega*dx_Omega + dy_Omega*dy_Omega);
     fVar_Omegac0[50] = DecayLength_Omega;
     
+    //------ Add TPC variables
+    fVar_Omegac0[51] = trackElectronFromOmegac0->GetTPCsignalN(); // TPCPID cluster
+    fVar_Omegac0[52] = trackElectronFromOmegac0->GetTPCNCrossedRows(); // Mim. of TPC Crossed Rows
+    fVar_Omegac0[53] = trackElectronFromOmegac0->GetTPCNCrossedRows()/trackElectronFromOmegac0->GetTPCNclsF(); // findable ratio
+    
+    fVar_Omegac0[54] = trkPion->GetTPCsignalN();
+    fVar_Omegac0[55] = trkPion->GetTPCNCrossedRows();
+    fVar_Omegac0[56] = trkPion->GetTPCNCrossedRows()/trkPion->GetTPCNclsF();
+    
+    fVar_Omegac0[57] = trkProton->GetTPCsignalN();
+    fVar_Omegac0[58] = trkProton->GetTPCNCrossedRows();
+    fVar_Omegac0[59] = trkProton->GetTPCNCrossedRows()/trkProton->GetTPCNclsF();
+    
+    fVar_Omegac0[60] = trackKaonFromOmega->GetTPCsignalN();
+    fVar_Omegac0[61] = trackKaonFromOmega->GetTPCNCrossedRows();
+    fVar_Omegac0[62] = trackKaonFromOmega->GetTPCNCrossedRows()/trackKaonFromOmega->GetTPCNclsF();
+    
     if (fWriteOmegac0Tree)
     fTree_Omegac0 -> Fill();
     
@@ -2117,7 +2134,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     
     const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
     fTree_Omegac0 = new TTree(nameoutput, "Omegac0 variables tree");
-    Int_t nVar = 51;
+    Int_t nVar = 63;
     fVar_Omegac0 = new Float_t[nVar];
     TString *fVarNames = new TString[nVar];
     
@@ -2172,6 +2189,18 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     fVarNames[48] = "DCAofBachToPV_KFP";
     fVarNames[49] = "DecayLengthLambda_KFP";
     fVarNames[50] = "DecayLengthOmega_KFP";
+    fVarNames[51] = "Ele_TPCPIDCluster";
+    fVarNames[52] = "Ele_CrossedRows";
+    fVarNames[53] = "Ele_RatioCrossedRowsOverFindable";
+    fVarNames[54] = "Pion_TPCPIDCluster";
+    fVarNames[55] = "Pion_CrossedRows";
+    fVarNames[56] = "Pion_RatioCrossedRowsOverFindable";
+    fVarNames[57] = "Proton_TPCPIDCluster";
+    fVarNames[58] = "Proton_CrossedRows";
+    fVarNames[59] = "Proton_RatioCrossedRowsOverFindable";
+    fVarNames[60] = "Kaon_TPCPIDCluster";
+    fVarNames[61] = "Kaon_CrossedRows";
+    fVarNames[62] = "Kaon_RatioCrossedRowsOverFindable";
     
     for (Int_t ivar = 0; ivar<nVar ; ivar++){
      
