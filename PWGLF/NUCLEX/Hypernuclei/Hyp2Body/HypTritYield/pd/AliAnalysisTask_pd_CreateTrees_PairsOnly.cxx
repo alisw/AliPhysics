@@ -56,6 +56,7 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fCollisionSystem(0),
   fUseOpenCuts(0),
   fIsMC(0),
+  fSaveOnlyPairs(0),
   fSaveTree_Proton(0),
   fProton_px(0),
   fProton_py(0),
@@ -204,7 +205,7 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
 
 
 
-AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOnly(const char *name,int CollisionSystem, bool UseOpenCuts, bool IsMC) : AliAnalysisTaskSE(name),
+AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOnly(const char *name,int CollisionSystem, bool UseOpenCuts, bool IsMC, bool SaveOnlyPairs) : AliAnalysisTaskSE(name),
   fAODEvent(0),
   fMCEvent(0),
   fAODHandler(0),
@@ -213,6 +214,7 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly::AliAnalysisTask_pd_CreateTrees_PairsOn
   fCollisionSystem(CollisionSystem),
   fUseOpenCuts(UseOpenCuts),
   fIsMC(IsMC),
+  fSaveOnlyPairs(SaveOnlyPairs),
   fSaveTree_Proton(0),
   fProton_px(0),
   fProton_py(0),
@@ -1142,7 +1144,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
   } // end of deuteron loop
 
 
-  if((nProtonsSelected > 0) && (nDeuteronsSelected > 0)){
+  if((fSaveOnlyPairs == false) || ((fSaveOnlyPairs == true) && (nProtonsSelected > 0) && (nDeuteronsSelected > 0))){
 
     for(int Proton = 0; Proton < nProtonsSelected; Proton++){
 
@@ -1729,7 +1731,7 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 
 
 
-  if((nAntiProtonsSelected > 0) && (nAntiDeuteronsSelected > 0)){
+  if((fSaveOnlyPairs == false) || ((fSaveOnlyPairs == true) && (nAntiProtonsSelected > 0) && (nAntiDeuteronsSelected > 0))){
 
     for(int AntiProton = 0; AntiProton < nAntiProtonsSelected; AntiProton++){
 
