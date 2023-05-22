@@ -161,6 +161,7 @@ void AliPHOSEmbedggHBT::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliPHOSEmbedggHBT::UserExec(Option_t*)
 {
+  printf(" %s: Start event %d\n", GetName(), fEventCounter);
   // Main loop, called for each event
   FillHistogram("hTotSelEvents", 0.5);
 
@@ -286,6 +287,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   const double dyCPV = -2.;           // V3: 5. V2: -2;  V1:18
   const double dzCPV = 4.9;           // V3: 4.6
   const double slopeZCPV = -0.034745; // tilt of module
+
   for (Int_t j = 0; j < multClust; j++) {
     AliAODCaloCluster* cluCPV = static_cast<AliAODCaloCluster*>(embedded->At(j));
     if (cluCPV->GetType() != AliVCluster::kPHOSCharged)
