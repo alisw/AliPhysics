@@ -577,11 +577,11 @@ void AliAnalysisTaskCorrelationsStudies::FlagPreRejectionConditions()
   /* allocate the structure if it is not there */
   if (fRecoTrackPairFlags == nullptr) {
     if (ntracks < fRecoTrackPairFlagsSize) {
-      fRecoTrackPairFlags = new uint[fRecoTrackPairFlagsSize];
+      fRecoTrackPairFlags = new unsigned int[fRecoTrackPairFlagsSize];
     } else {
       fRecoTrackPairFlagsSize = (Int_t(ntracks / 1024) + 5) * 1024;
       delete[] fRecoTrackPairFlags;
-      fRecoTrackPairFlags = new uint[fRecoTrackPairFlagsSize];
+      fRecoTrackPairFlags = new unsigned int[fRecoTrackPairFlagsSize];
     }
   }
   /* start with everything clean */
