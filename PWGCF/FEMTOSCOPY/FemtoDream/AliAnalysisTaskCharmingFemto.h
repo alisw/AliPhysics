@@ -204,9 +204,8 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     bool isSec = mcPart->IsSecondaryFromWeakDecay();
     bool isMat = mcPart->IsSecondaryFromMaterial();
 
-    if(isPhysPrim + isSec + isMat >= 2) {
-      AliWarning(Form("Particle has multiple origins! phys. prim: %d, weak: %d, mat. %d\n", 
-                      isPhysPrim, isSec, isMat ));
+    if(isPhysPrim + isSec + isMat > 1) {
+      AliWarning(Form("Particle has multiple origins! phys. prim: %d, weak: %d, mat. %d\n", isPhysPrim , isSec, isMat));
       return AliFemtoDreamBasePart::PartOrigin::kUnknown;
     }
 
