@@ -528,8 +528,9 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
           ptSubtracted = jet1->Pt();
       }
 
-      if (ptSubtracted < fPtThreshold)
-        continue;
+      if (!fSaveKinematicEfficiency)  {
+        if (ptSubtracted < fPtThreshold)  continue;
+      }
       
       if ((fCentSelectOn == kFALSE) && (jet1->GetNumberOfTracks() <= 1))
         continue;
@@ -672,7 +673,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
           fKinematicEfficDenominator->Fill(ptMatch, rgMatch, abs(asin(sin(EPMatch))));
       }
 
-      fTreeSubstructure->Fill();
+      if (ptSubtracted >= fPtThreshold)  fTreeSubstructure->Fill();
       delete sub1Det;
       delete sub2Det;
       delete sub1Hyb;
