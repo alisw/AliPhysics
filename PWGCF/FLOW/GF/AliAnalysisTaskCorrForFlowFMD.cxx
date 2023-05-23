@@ -1,6 +1,7 @@
 /**************************************************************************
- *    Author:       Zuzana Moravcova
- *    Modified by:  Debojit Sarkar
+ *    Author:  Zuzana Moravcova
+ *    Author:  Debojit Sarkar
+ *    contact: debojit.sarkar@cern.ch
  *    Framework for calculating di-hadron correlation                     *
  *    for extraction of v_n{2} coefficients of identified particles       *
  *    including primary identified particles (pi, K, p)                   *
@@ -110,7 +111,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fCutTauK0s(0.),
     fCutTauLambda(0.),
     fSigmaTPC(3.),
-    fNSigmaTPCTOF(0.),
+    fNSigmaTPCTOF(3.0),
     fMassRejWindowK0(0.005),
     fMassRejWindowLambda(0.01),
     fMinK0Mass(0.44),
@@ -227,7 +228,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fCutTauK0s(0.),
     fCutTauLambda(0.),
     fSigmaTPC(3.),
-    fNSigmaTPCTOF(0.),
+    fNSigmaTPCTOF(3.0),
     fMassRejWindowK0(0.005),
     fMassRejWindowLambda(0.01),
     fMinK0Mass(0.44),
