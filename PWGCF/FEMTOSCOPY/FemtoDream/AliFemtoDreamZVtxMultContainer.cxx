@@ -174,6 +174,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               int light_label = part1.GetID();
               int light_pdg = part1.GetPDGCode();
               int light_origin = part1.GetParticleOrigin();
+              bool light_isprim = part1.GetIsPrim();
               int light_motherPdg = part1.GetMotherPDG();
 
               // event
@@ -218,6 +219,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesSE(
               if (tree->FindBranch("light_label")) tree->SetBranchAddress("light_label", &light_label);
               if (tree->FindBranch("light_pdg")) tree->SetBranchAddress("light_pdg", &light_pdg);
               if (tree->FindBranch("light_origin")) tree->SetBranchAddress("light_origin", &light_origin);
+              if (tree->FindBranch("light_isprim")) tree->SetBranchAddress("light_isprim", &light_isprim);
               if (tree->FindBranch("light_motherpdg")) tree->SetBranchAddress("light_motherpdg", &light_motherPdg);
               tree->Fill();
             }
@@ -343,6 +345,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesMEPart2Buffer(
                 int light_label = itPart1->GetID();
                 int light_pdg = itPart1->GetPDGCode();
                 int light_origin = itPart1->GetParticleOrigin();
+                bool light_isprim = itPart1->GetIsPrim();
                 int light_motherPdg = itPart1->GetMotherPDG();
 
                 // event
@@ -386,6 +389,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesMEPart2Buffer(
                 if (tree->FindBranch("light_label")) tree->SetBranchAddress("light_label", &light_label);
                 if (tree->FindBranch("light_pdg")) tree->SetBranchAddress("light_pdg", &light_pdg);
                 if (tree->FindBranch("light_origin")) tree->SetBranchAddress("light_origin", &light_origin);
+                if (tree->FindBranch("light_isprim")) tree->SetBranchAddress("light_isprim", &light_isprim);
                 if (tree->FindBranch("light_motherpdg")) tree->SetBranchAddress("light_motherpdg", &light_motherPdg);
                 tree->Fill();
               }
@@ -503,6 +507,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesMEPart1Buffer(
                 int light_label = itPart1->GetID();
                 int light_pdg = itPart1->GetPDGCode();
                 int light_origin = itPart1->GetParticleOrigin();
+                bool light_isprim = itPart1->GetIsPrim();
                 int light_motherPdg = itPart1->GetMotherPDG();
 
                 // event
@@ -546,6 +551,7 @@ void AliFemtoDreamZVtxMultContainer::PairParticlesMEPart1Buffer(
                 if (tree->FindBranch("light_label")) tree->SetBranchAddress("light_label", &light_label);
                 if (tree->FindBranch("light_pdg")) tree->SetBranchAddress("light_pdg", &light_pdg);
                 if (tree->FindBranch("light_origin")) tree->SetBranchAddress("light_origin", &light_origin);
+                if (tree->FindBranch("light_isprim")) tree->SetBranchAddress("light_isprim", &light_isprim);
                 if (tree->FindBranch("light_motherpdg")) tree->SetBranchAddress("light_motherpdg", &light_motherPdg);
                 tree->Fill();
               }

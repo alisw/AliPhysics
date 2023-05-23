@@ -240,6 +240,14 @@ class AliFemtoDreamBasePart {
     return fOrigin;
   }
   ;
+  void SetIsPrim(bool flag) {
+    fIsPrim = flag;
+  }
+  ;
+  bool GetIsPrim() const {
+    return fIsPrim;
+  }
+  ;
   void SetPDGCode(int pdgCode) {
     fPDGCode = pdgCode;
   }
@@ -381,6 +389,7 @@ class AliFemtoDreamBasePart {
   float fCPA;
   float fInvMass;
   PartOrigin fOrigin;
+  bool fIsPrim;
   int fParticleMult;
   bool fIsRemovedByOldPC;
   bool fIsRemovedByNewPC;
@@ -414,7 +423,7 @@ class AliFemtoDreamBasePart {
   void PhiAtRadii(const AliVTrack *track, const float bfield,
                   std::vector<float> &tmpVec);
 //  AliFemtoDreamBasePart(const AliFemtoDreamBasePart&);
-ClassDef(AliFemtoDreamBasePart, 13)
+ClassDef(AliFemtoDreamBasePart, 14)
   ;
 };
 

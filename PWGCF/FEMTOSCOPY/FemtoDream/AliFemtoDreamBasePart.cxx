@@ -36,6 +36,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const int part)
       fCPA(0),
       fInvMass(0),
       fOrigin(kUnknown),
+      fIsPrim(true),
       fParticleMult(-1),
       fIsRemovedByOldPC(false),
       fIsRemovedByNewPC(false),
@@ -88,6 +89,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliFemtoDreamBasePart &part)
       fCPA(part.fCPA),
       fInvMass(part.fInvMass),
       fOrigin(part.fOrigin),
+      fIsPrim(part.fIsPrim),
       fParticleMult(part.fParticleMult),
       fIsRemovedByOldPC(part.fIsRemovedByOldPC),
       fIsRemovedByNewPC(part.fIsRemovedByNewPC),
@@ -144,6 +146,7 @@ AliFemtoDreamBasePart &AliFemtoDreamBasePart::operator=(
   fCPA = obj.fCPA;
   fInvMass = obj.fInvMass;
   fOrigin = obj.fOrigin;
+  fIsPrim = obj.fIsPrim;
   fParticleMult = obj.fParticleMult,
   fIsRemovedByOldPC = obj.fIsRemovedByOldPC,
   fIsRemovedByNewPC = obj.fIsRemovedByNewPC,
@@ -199,6 +202,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(
       fCPA(0),
       fInvMass(gamma->GetPhotonMass()),
       fOrigin(kUnknown),
+      fIsPrim(true),
       fParticleMult(-1),
       fIsRemovedByOldPC(false),
       fIsRemovedByNewPC(false),
@@ -307,6 +311,7 @@ AliFemtoDreamBasePart::AliFemtoDreamBasePart(const AliAODRecoDecayHF *dmeson,
       fCPA(dmeson->Eta()),
       fInvMass(0),
       fOrigin(kUnknown),
+      fIsPrim(true),
       fParticleMult(-1),
       fIsRemovedByOldPC(false),
       fIsRemovedByNewPC(false),
@@ -566,6 +571,7 @@ void AliFemtoDreamBasePart::DumpParticleInformation() {
   std::cout << "CPA: " << fCPA << "\n";
   std::cout << "Invariant mass " << fInvMass << "\n";
   std::cout << "Origin " << fOrigin << "\n";
+  std::cout << "is primary " << fIsPrim << "\n";
   std::cout << "PDG code " << fPDGCode << "\n";
   std::cout << "MC PDG code " << fMCPDGCode << "\n";
   std::cout << "PDG Mother weak " << fPDGMotherWeak << "\n";
