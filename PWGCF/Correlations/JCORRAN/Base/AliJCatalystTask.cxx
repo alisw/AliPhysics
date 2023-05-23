@@ -679,6 +679,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event, Int_t thisCent){
   //event selection here!
   //check vertex
+
   AliVVertex *vtx = event->GetPrimaryVertex();
   if(!vtx || vtx->GetNContributors() <= 0)
     return kFALSE;
