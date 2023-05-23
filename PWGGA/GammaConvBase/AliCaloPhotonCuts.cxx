@@ -7334,8 +7334,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
-          if (fCurrentMC == k13pPb5023GeV) energy *= 0.978;
-          else if (fCurrentMC == k16pPb5023GeV) energy *= 0.994;
+//           if (fCurrentMC == k13pPb5023GeV) energy *= 0.978;
+//           else if (fCurrentMC == k16pPb5023GeV) energy *= 0.994;
         }
 
       } else if ( fClusterType == 2 ){
@@ -7373,7 +7373,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
           // needed to calibrate pi0 masses to same position in 2016 & 2013 (2013 has still old temp calib)
-          if (fCurrentMC == k13pPb5023GeV) energy *= 0.978;
+//           if (fCurrentMC == k13pPb5023GeV) energy *= 0.978;
         }
       }
       break;
