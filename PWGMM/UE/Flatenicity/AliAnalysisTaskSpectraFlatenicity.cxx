@@ -176,7 +176,8 @@ ClassImp(AliAnalysisTaskSpectraFlatenicity) // classimp: necessary for root
     hFlatVsV0M(0), 
     hEta(0), 
     hEtamc(0), 
-    hCounter(0)
+    hCounter(0),
+    hV0MBad(0)
 {
     for (Int_t i_c = 0; i_c < nCent; ++i_c) {
         hFlatVsPtV0M[i_c] = 0;
@@ -267,7 +268,8 @@ AliAnalysisTaskSpectraFlatenicity::AliAnalysisTaskSpectraFlatenicity(const char 
     hFlatVsV0M(0), 
     hEta(0), 
     hEtamc(0), 
-    hCounter(0)
+    hCounter(0),
+    hV0MBad(0)
 {
     for (Int_t i_c = 0; i_c < nCent; ++i_c) {
         hFlatVsPtV0M[i_c] = 0;
@@ -571,6 +573,9 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
   
   hCounter = new TH1D("hCounter", "counter", 10, -0.5, 9.5);
   fOutputList->Add(hCounter);
+  
+  hV0MBad = new TH1D("hV0MBad", "hV0MBad", 1000, -0.5, 999.5);
+  fOutputList->Add(hV0MBad);  
 
   fEventCuts.AddQAplotsToList(fOutputList);
   PostData(1, fOutputList); // postdata will notify the analysis manager of
@@ -681,6 +686,8 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
     hFlatenicity->Fill(fFlat);
     if (fV0Mindex >= 0) {
         if ((fV0Mindex == nCent - 1) && (v0mult > 400.)) { // to reject 70-100% multiplicity class events that have large V0M amplitude
+            hV0MBad->Fill(v0mult);
+        } else {
             hFlatVsV0M->Fill(fv0mpercentile, fFlat);
             MakeDataanalysis();
         }
