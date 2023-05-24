@@ -1961,19 +1961,26 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
     //------ Add TPC variables
     fVar_Omegac0[51] = trackElectronFromOmegac0->GetTPCsignalN(); // TPCPID cluster
     fVar_Omegac0[52] = trackElectronFromOmegac0->GetTPCNCrossedRows(); // Mim. of TPC Crossed Rows
-    fVar_Omegac0[53] = trackElectronFromOmegac0->GetTPCNCrossedRows()/trackElectronFromOmegac0->GetTPCNclsF(); // findable ratio
-    
+    if(trackElectronFromOmegac0->GetTPCNclsF() > 0){
+        fVar_Omegac0[53] = (Float_t)trackElectronFromOmegac0->GetTPCNCrossedRows()/(Float_t)trackElectronFromOmegac0->GetTPCNclsF(); // findable ratio
+    }
     fVar_Omegac0[54] = trkPion->GetTPCsignalN();
     fVar_Omegac0[55] = trkPion->GetTPCNCrossedRows();
-    fVar_Omegac0[56] = trkPion->GetTPCNCrossedRows()/trkPion->GetTPCNclsF();
+    if(trkPion->GetTPCNclsF() > 0){
+        fVar_Omegac0[56] = (Float_t)trkPion->GetTPCNCrossedRows()/(Float_t)trkPion->GetTPCNclsF();
+    }
     
     fVar_Omegac0[57] = trkProton->GetTPCsignalN();
     fVar_Omegac0[58] = trkProton->GetTPCNCrossedRows();
-    fVar_Omegac0[59] = trkProton->GetTPCNCrossedRows()/trkProton->GetTPCNclsF();
+    if(trkProton->GetTPCNclsF() > 0){
+        fVar_Omegac0[59] = (Float_t)trkProton->GetTPCNCrossedRows()/(Float_t)trkProton->GetTPCNclsF();
+    }
     
     fVar_Omegac0[60] = trackKaonFromOmega->GetTPCsignalN();
     fVar_Omegac0[61] = trackKaonFromOmega->GetTPCNCrossedRows();
-    fVar_Omegac0[62] = trackKaonFromOmega->GetTPCNCrossedRows()/trackKaonFromOmega->GetTPCNclsF();
+    if(trackKaonFromOmega->GetTPCNclsF() > 0){
+        fVar_Omegac0[62] = (Float_t)trackKaonFromOmega->GetTPCNCrossedRows()/(Float_t)trackKaonFromOmega->GetTPCNclsF();
+    }
     
     if (fWriteOmegac0Tree)
     fTree_Omegac0 -> Fill();
