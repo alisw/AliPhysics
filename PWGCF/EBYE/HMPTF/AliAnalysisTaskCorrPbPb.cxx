@@ -324,7 +324,7 @@ void AliAnalysisTaskCorrPbPb::UserCreateOutputObjects()  {
 
     
     //TTree object to store variables
-    fTreeEvent = new TTree(fTreeEvent,"Event Tree");
+    fTreeEvent = new TTree("fTreeEvent","Event Tree");
     fTreeEvent->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
     //reconstructed
     fTreeEvent->Branch("fNoKaonPlus_ptmax2", &fNoKaonPlus_ptmax2, "fNoKaonPlus_ptmax2/F");
