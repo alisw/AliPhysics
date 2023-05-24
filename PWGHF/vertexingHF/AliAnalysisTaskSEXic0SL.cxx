@@ -707,19 +707,20 @@ int AliAnalysisTaskSEXic0SL::GetCascLabel(AliMCEvent* MCEvt, AliAODcascade* Casc
 	const Int_t l_v0dNeg = ((AliAODTrack*)Casc->GetDaughter(1))->GetLabel();
 
 	//CAVEAT: truth level hereafter, provide argument wrapped with absolute (otherwise segfault happens, anyway)
+	//DEBUG, May 24, 2023: wrappted all labels with abs during query as it causes segfault at pA MC sample
 	const Int_t m_bachPi = MCEvt->GetTrack( abs(l_bachPi) )->GetMother(); //= Xi (strange, charged)
 	const Int_t m_v0dPos = MCEvt->GetTrack( abs(l_v0dPos) )->GetMother(); //= lambda0
 	const Int_t m_v0dNeg = MCEvt->GetTrack( abs(l_v0dNeg) )->GetMother(); //= lambda0
-	if (m_v0dPos != m_v0dNeg) return -999;
+	if (m_bachPi==-1 || m_v0dPos==-1 || m_v0dNeg==-1 || m_v0dPos!=m_v0dNeg) return -999;
 
-	const Int_t n_v0dPos = MCEvt->GetTrack( m_v0dPos )->GetMother(); //= Xi
-	const Int_t n_v0dNeg = MCEvt->GetTrack( m_v0dNeg )->GetMother(); //= Xi
-	if (n_v0dPos != n_v0dNeg) return -998;
+	const Int_t n_v0dPos = MCEvt->GetTrack( abs(m_v0dPos) )->GetMother(); //= Xi
+	const Int_t n_v0dNeg = MCEvt->GetTrack( abs(m_v0dNeg) )->GetMother(); //= Xi
+	if (n_v0dPos==-1 || n_v0dNeg==-1 || n_v0dPos!=n_v0dNeg) return -998;
 	else if (getLabelXic0 == false) return n_v0dPos;
 
-	if ( getLabelXic0 && (m_bachPi == n_v0dPos) && (m_bachPi == n_v0dNeg) && (n_v0dPos == n_v0dNeg)	)
+	if ( getLabelXic0 && (m_bachPi == n_v0dPos) && (m_bachPi == n_v0dNeg) && (n_v0dPos == n_v0dNeg) )
 	{
-		const Int_t l_Xic0 = MCEvt->GetTrack( m_bachPi )->GetMother();
+		const Int_t l_Xic0 = MCEvt->GetTrack( abs(m_bachPi) )->GetMother();
 		return l_Xic0;
 	}
 	else return -997;
