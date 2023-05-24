@@ -145,7 +145,12 @@ AliAnalysisTaskCorrPbPbMC::AliAnalysisTaskCorrPbPbMC():
   hist_GenProtonPlus(0),
   hist_GenProtonMinus(0),
   hist_GenPionPlus(0),
-  hist_GenPionMinus(0)
+  hist_GenPionMinus(0),
+  fVertexZMax(0),
+  fFBNo(0),
+  fChi2TPC(0),
+  fChi2ITS(0),
+  fPIDnSigmaCut(0)
 {}
 //_____________________________________________________________________________________________________________________________________
 AliAnalysisTaskCorrPbPbMC::AliAnalysisTaskCorrPbPbMC(const char *name):
@@ -215,7 +220,12 @@ AliAnalysisTaskCorrPbPbMC::AliAnalysisTaskCorrPbPbMC(const char *name):
   hist_GenProtonPlus(0),
   hist_GenProtonMinus(0),
   hist_GenPionPlus(0),
-  hist_GenPionMinus(0)
+  hist_GenPionMinus(0),
+  fVertexZMax(0),
+  fFBNo(0),
+  fChi2TPC(0),
+  fChi2ITS(0),
+  fPIDnSigmaCut(0)
 {
   fUtils = new AliAnalysisUtils();
   DefineInput (0, TChain::Class());
@@ -416,13 +426,13 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
     else
       {
 	lV0M = MultSelection->GetMultiplicityPercentile("V0M");
-	cout<<"V0M: "<<lV0M<<endl;
+	//cout<<"V0M: "<<lV0M<<endl;
       }
 
     fMCevent = dynamic_cast<AliMCEvent *>(MCEvent());
     if (!fMCevent) {
       Printf("ERROR: Could not retrieve MC event \n");
-      cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
+      //cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
       PostData(1, fOutputList);
       PostData(2, fQAList);
       PostData(3, fTreeEvent);
@@ -464,13 +474,13 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
     
     //Loop on generated MC tracks
     Int_t noGenMCtracks = fMCevent->GetNumberOfTracks();
-    cout<<"No of generated MC tracks: "<<noGenMCtracks<<endl;
+    //cout<<"No of generated MC tracks: "<<noGenMCtracks<<endl;
     for(Int_t itr_mcgen=0; itr_mcgen < noGenMCtracks; itr_mcgen++)
       {
 	AliAODMCParticle *mcGenTrack = (AliAODMCParticle*) fMCevent->GetTrack(itr_mcgen);
 	if (!mcGenTrack)
 	  {
-	    cout<<"Could not find track in MC generated loop !!!"<<endl;
+	    //cout<<"Could not find track in MC generated loop !!!"<<endl;
 	    continue;
 	  }
 	//cout<<"Found generated MC track !!"<<endl;
@@ -478,7 +488,7 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	//Out of bunch pileup event removal
 	if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(itr_mcgen,fMCevent))
 	  {
-	    cout<<"Track belongs to out of bunch pileup events. Removed !!!!"<<endl;
+	    //cout<<"Track belongs to out of bunch pileup events. Removed !!!!"<<endl;
 	    continue;
 	  }
       
@@ -501,14 +511,16 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	  {
 	    if(TrackGen_charge > 0)  //K+
 	      {
-		no_GenKaonPlus_perevent += 1;
+		if(TrackGen_pt > 0.4 && TrackGen_pt < 1.6)
+		  no_GenKaonPlus_perevent += 1;
 		if(TrackGen_pt < 2.0)
 		  no_GenKaonPlus_perevent_ptmax2 += 1;
 		hist_GenKaonPlus->Fill(TrackGen_pt);
 	      }
 	    if(TrackGen_charge < 0)  //K-
 	      {
-		no_GenKaonMinus_perevent += 1;
+		if(TrackGen_pt > 0.4 && TrackGen_pt < 1.6)
+		  no_GenKaonMinus_perevent += 1;
 		if(TrackGen_pt < 2.0)
 		  no_GenKaonMinus_perevent_ptmax2 += 1;
 		hist_GenKaonMinus->Fill(TrackGen_pt);
@@ -520,14 +532,16 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	  {
 	    if(TrackGen_charge > 0)  //p
 	      {
-		no_GenProtonPlus_perevent += 1;
+		if(TrackGen_pt > 0.4 && TrackGen_pt < 1.6)
+		  no_GenProtonPlus_perevent += 1;
 		if(TrackGen_pt < 2.0)
 		  no_GenProtonPlus_perevent_ptmax2 += 1;
 		hist_GenProtonPlus->Fill(TrackGen_pt);
 	      }
 	    if(TrackGen_charge < 0)  //pbar
 	      {
-		no_GenProtonMinus_perevent += 1;
+		if(TrackGen_pt > 0.4 && TrackGen_pt < 1.6)
+		  no_GenProtonMinus_perevent += 1;
 		if(TrackGen_pt < 2.0)
 		  no_GenProtonMinus_perevent_ptmax2 += 1;
 		hist_GenProtonMinus->Fill(TrackGen_pt);
@@ -539,14 +553,16 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	  {
 	    if(TrackGen_charge > 0)  //pi+
 	      {
-		no_GenPionPlus_perevent += 1;
+		if(TrackGen_pt > 0.4 && TrackGen_pt < 1.6)
+		  no_GenPionPlus_perevent += 1;
 		if(TrackGen_pt < 2.0)
 		  no_GenPionPlus_perevent_ptmax2 += 1;
 		hist_GenPionPlus->Fill(TrackGen_pt);
 	      }
 	    if(TrackGen_charge < 0)  //pi-
 	      {
-		no_GenPionMinus_perevent += 1;
+		if(TrackGen_pt > 0.4 && TrackGen_pt < 1.6)
+		  no_GenPionMinus_perevent += 1;
 		if(TrackGen_pt < 2.0)
 		  no_GenPionMinus_perevent_ptmax2 += 1;
 		hist_GenPionMinus->Fill(TrackGen_pt);
@@ -573,7 +589,7 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 
     //Loop on reconstructed MC tracks
     Int_t noRecMCtracks = fAODevent->GetNumberOfTracks();
-    cout<<"No of reconstructed MC tracks: "<<noRecMCtracks<<endl;
+    //cout<<"No of reconstructed MC tracks: "<<noRecMCtracks<<endl;
     for(Int_t itr_mcrec=0; itr_mcrec < noRecMCtracks; itr_mcrec++)
       {
 	
@@ -586,15 +602,26 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	AliAODMCParticle *mcRecTrack = (AliAODMCParticle*) fMCevent->GetTrack(aodtrk_label);
 	if (!mcRecTrack)
 	  {
-	    cout<<"Could not find MC generted track for the AODtrack Label !!!"<<endl;
+	    //cout<<"Could not find MC generted track for the AODtrack Label !!!"<<endl;
 	    continue;
 	  }
-	cout<<"Found reconstructed MC track (matched with generated) !!"<<endl;
+	//cout<<"Found reconstructed MC track (matched with generated) !!"<<endl;
 
 	if(!mcRecTrack->IsPhysicalPrimary())
 	  continue;
 
-	if(!aodtrack->TestFilterBit(96))  continue;
+	//if(!aodtrack->TestFilterBit(96))  continue;
+	if(!aodtrack->TestFilterBit(fFBNo))  continue;
+
+	//cuts on TPCchi2perClstr and ITSchi2perClstr
+
+	Double_t trkITSchi2 = aodtrack->GetITSchi2();
+	Int_t trkITSNcls = aodtrack->GetITSNcls();
+	Double_t trkITSchi2perNcls = trkITSchi2/trkITSNcls;
+	Double_t trkTPCchi2perNcls = aodtrack->GetTPCchi2perCluster();
+	if (trkTPCchi2perNcls > fChi2TPC) continue;
+	if (trkITSchi2perNcls > fChi2ITS) continue;
+	
 
 	Double_t Track_pt = mcRecTrack->Pt();
 	Double_t Track_charge = mcRecTrack->Charge();
@@ -605,9 +632,9 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	if (Track_pt > 3.0) continue;
 	if (TMath::Abs(Track_eta) > 0.8) continue;
 
-	Bool_t IsKaon = KaonSelector(track);
-	Bool_t IsPion = PionSelector(track);
-	Bool_t IsProton = ProtonSelector(track);
+	Bool_t IsKaon = KaonSelector(track, fPIDnSigmaCut);
+	Bool_t IsPion = PionSelector(track, fPIDnSigmaCut);
+	Bool_t IsProton = ProtonSelector(track, fPIDnSigmaCut);
 	if (!IsKaon && !IsPion && !IsProton) continue;
 
 	
@@ -615,14 +642,15 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	if(IsKaon) flag+=1;
 	if(IsPion) flag+=1;
 	if(IsProton) flag+=1;
-	cout<<"Particle identified as more than on PID: flag= "<<flag<<endl;
+	//cout<<"Particle identified as more than on PID: flag= "<<flag<<endl;
 	if(flag>1) continue;
 	
 	
 
 	if (Track_charge > 0 && IsKaon)   //K+
 	  {
-	    no_KaonPlus_perevent += 1;
+	    if(Track_pt > 0.4 && Track_pt < 1.6)
+	      no_KaonPlus_perevent += 1;
 	    if(Track_pt < 2.0)
 	      no_KaonPlus_perevent_ptmax2 += 1;
 
@@ -634,7 +662,8 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 
 	if (Track_charge < 0 && IsKaon)   //K-
 	  {
-	    no_KaonMinus_perevent += 1;
+	    if(Track_pt > 0.4 && Track_pt < 1.6)
+	      no_KaonMinus_perevent += 1;
 	    if(Track_pt < 2.0)
 	      no_KaonMinus_perevent_ptmax2 += 1;
 
@@ -645,7 +674,8 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 
 	if (Track_charge > 0 && IsProton)   //proton
 	  {
-	    no_ProtonPlus_perevent += 1;
+	    if(Track_pt > 0.4 && Track_pt < 1.6)
+	      no_ProtonPlus_perevent += 1;
 	    if(Track_pt < 2.0)
 	      no_ProtonPlus_perevent_ptmax2 += 1;
 
@@ -657,7 +687,8 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 
 	if (Track_charge < 0 && IsProton)   //anti-proton
 	  {
-	    no_ProtonMinus_perevent += 1;
+	    if(Track_pt > 0.4 && Track_pt < 1.6)
+	      no_ProtonMinus_perevent += 1;
 	    if(Track_pt < 2.0)
 	      no_ProtonMinus_perevent_ptmax2 += 1;
 
@@ -668,7 +699,8 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 
 	if (Track_charge > 0 && IsPion)   //pi+
 	  {
-	    no_PionPlus_perevent += 1;
+	    if(Track_pt > 0.4 && Track_pt < 1.6)
+	      no_PionPlus_perevent += 1;
 	    if(Track_pt < 2.0)
 	      no_PionPlus_perevent_ptmax2 += 1;
 
@@ -680,7 +712,8 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 
 	if (Track_charge < 0 && IsPion)   //pi-
 	  {
-	    no_PionMinus_perevent += 1;
+	    if(Track_pt > 0.4 && Track_pt < 1.6)
+	      no_PionMinus_perevent += 1;
 	    if(Track_pt < 2.0)
 	      no_PionMinus_perevent_ptmax2 += 1;
 
@@ -991,7 +1024,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::PassedTrackQualityCuts (AliAODTrack *track)  {
     return passedTrkSelection;
 }
  //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track, Double_t nSigmaCut)  {
  
   Double_t p[3];
   track->PxPyPz(p);
@@ -1040,7 +1073,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track)  {
       */
       
       //acception
-      if(TMath::Abs(fTPCnSigmaKaon) < 2.0)
+      if(TMath::Abs(fTPCnSigmaKaon) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1064,7 +1097,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track)  {
       if (fTPCplusTOFnSigmaKaon > fTPCplusTOFnSigmaPion) return kFALSE;
 
       //acception
-      if (fTPCplusTOFnSigmaKaon < 2.0)
+      if (fTPCplusTOFnSigmaKaon < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1075,7 +1108,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track)  {
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track, Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1128,7 +1161,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track)  {
       
       //acception
       
-      if(TMath::Abs(fTPCnSigmaPion) < 2.0)
+      if(TMath::Abs(fTPCnSigmaPion) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1154,7 +1187,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track)  {
 
       //acception
       
-      if (fTPCplusTOFnSigmaPion < 2.0)
+      if (fTPCplusTOFnSigmaPion < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1163,7 +1196,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track)  {
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPbMC::ProtonSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPbMC::ProtonSelector(AliVTrack *track, Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1214,7 +1247,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::ProtonSelector(AliVTrack *track)  {
       
       //acception
 
-      if(TMath::Abs(fTPCnSigmaProton) < 2.0)
+      if(TMath::Abs(fTPCnSigmaProton) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1242,7 +1275,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::ProtonSelector(AliVTrack *track)  {
 
       //acception
       
-      if (fTPCplusTOFnSigmaProton < 2.0)
+      if (fTPCplusTOFnSigmaProton < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
