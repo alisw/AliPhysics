@@ -144,7 +144,12 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb():
   fHistMCEffPionPlus(0),
   fHistMCEffPionMinus(0),
   fHistMCEffProtonPlus(0),
-  fHistMCEffProtonMinus(0)
+  fHistMCEffProtonMinus(0),
+  fVertexZMax(0),
+  fFBNo(0),
+  fChi2TPC(0),
+  fChi2ITS(0),
+  fPIDnSigmaCut(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -223,7 +228,12 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb(const char *name):
   fHistMCEffPionPlus(0),
   fHistMCEffPionMinus(0),
   fHistMCEffProtonPlus(0),
-  fHistMCEffProtonMinus(0)
+  fHistMCEffProtonMinus(0),
+  fVertexZMax(0),
+  fFBNo(0),
+  fChi2TPC(0),
+  fChi2ITS(0),
+  fPIDnSigmaCut(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -314,7 +324,7 @@ void AliAnalysisTaskCorrPbPb::UserCreateOutputObjects()  {
 
     
     //TTree object to store variables
-    fTreeEvent = new TTree("fTreeEvent","Event Tree");
+    fTreeEvent = new TTree(fTreeEvent,"Event Tree");
     fTreeEvent->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
     //reconstructed
     fTreeEvent->Branch("fNoKaonPlus_ptmax2", &fNoKaonPlus_ptmax2, "fNoKaonPlus_ptmax2/F");
@@ -504,7 +514,18 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
 
 
 	//Track selectionL FilterBit 96
-	if(!aodtrack->TestFilterBit(96))  continue;
+	//if(!aodtrack->TestFilterBit(96))  continue;
+	if(!aodtrack->TestFilterBit(fFBNo))  continue;
+
+	//cuts on TPCchi2perClstr and ITSchi2perClstr
+
+	Double_t trkITSchi2 = aodtrack->GetITSchi2();
+	Int_t trkITSNcls = aodtrack->GetITSNcls();
+	Double_t trkITSchi2perNcls = trkITSchi2/trkITSNcls;
+	Double_t trkTPCchi2perNcls = aodtrack->GetTPCchi2perCluster();
+	if (trkTPCchi2perNcls > fChi2TPC) continue;
+	if (trkITSchi2perNcls > fChi2ITS) continue;
+	
 
 	Double_t trkPt = aodtrack->Pt();
 	Double_t trkPhi = aodtrack->Phi();
@@ -521,9 +542,9 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
 	if (trkPt > 3.0) continue;
 
 	//PID selection
-	Bool_t IsKaon = KaonSelector(track);
-	Bool_t IsPion = PionSelector(track);
-	Bool_t IsProton = ProtonSelector(track);
+	Bool_t IsKaon = KaonSelector(track, fPIDnSigmaCut);
+	Bool_t IsPion = PionSelector(track, fPIDnSigmaCut);
+	Bool_t IsProton = ProtonSelector(track, fPIDnSigmaCut);
 	if (!IsKaon && !IsPion && !IsProton) continue;
 
 	//Check if a particle is selected as more than one type
@@ -929,7 +950,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
     hNumberOfEvents -> Fill(11.5);
 
     //Primary Vertex Selection
-    if ( vertex_tracks->GetZ() < -10.0 || vertex_tracks->GetZ() > +10.0)
+    if ( vertex_tracks->GetZ() < -fVertexZMax || vertex_tracks->GetZ() > +fVertexZMax)
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
@@ -1012,7 +1033,7 @@ Bool_t AliAnalysisTaskCorrPbPb::PassedTrackQualityCuts (AliAODTrack *track)  {
     return passedTrkSelection;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track, Double_t nSigmaCut)  {
  
   Double_t p[3];
   track->PxPyPz(p);
@@ -1061,7 +1082,7 @@ Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track)  {
       */
       
       //acception
-      if(TMath::Abs(fTPCnSigmaKaon) < 2.0)
+      if(TMath::Abs(fTPCnSigmaKaon) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1085,7 +1106,7 @@ Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track)  {
       if (fTPCplusTOFnSigmaKaon > fTPCplusTOFnSigmaPion) return kFALSE;
 
       //acception
-      if (fTPCplusTOFnSigmaKaon < 2.0)
+      if (fTPCplusTOFnSigmaKaon < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1096,7 +1117,7 @@ Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track)  {
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track, Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1149,7 +1170,7 @@ Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track)  {
       
       //acception
       
-      if(TMath::Abs(fTPCnSigmaPion) < 2.0)
+      if(TMath::Abs(fTPCnSigmaPion) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1175,7 +1196,7 @@ Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track)  {
 
       //acception
       
-      if (fTPCplusTOFnSigmaPion < 2.0)
+      if (fTPCplusTOFnSigmaPion < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1184,7 +1205,7 @@ Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track)  {
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb::ProtonSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPb::ProtonSelector(AliVTrack *track, Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1235,7 +1256,7 @@ Bool_t AliAnalysisTaskCorrPbPb::ProtonSelector(AliVTrack *track)  {
       
       //acception
 
-      if(TMath::Abs(fTPCnSigmaProton) < 2.0)
+      if(TMath::Abs(fTPCnSigmaProton) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1263,7 +1284,7 @@ Bool_t AliAnalysisTaskCorrPbPb::ProtonSelector(AliVTrack *track)  {
 
       //acception
       
-      if (fTPCplusTOFnSigmaProton < 2.0)
+      if (fTPCplusTOFnSigmaProton < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;

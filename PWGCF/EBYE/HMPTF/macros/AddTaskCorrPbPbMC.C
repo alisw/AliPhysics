@@ -1,5 +1,5 @@
 
-AliAnalysisTaskCorrPbPbMC *AddTaskCorrPbPbMC(Int_t fCentralityMin=0, Int_t fCentralityMax=90,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Double_t fdcaxy=0.1, Double_t fdcaz=1, Double_t fchi2tpc=2.5, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileName = "_default", Double_t fEta=0.8)
+AliAnalysisTaskCorrPbPbMC *AddTaskCorrPbPbMC(Int_t fCentralityMin=0, Int_t fCentralityMax=90, Double_t fVzMax=10, Int_t fFilterBit=96, Double_t fchi2tpc=4.0, Double_t fchi2its=36, Double_t fpidnSigma=2.0, TString OutFileName = "_default")
 {
   // standard with task
   printf("===================================================================================\n");
@@ -53,10 +53,16 @@ AliAnalysisTaskCorrPbPbMC *AddTaskCorrPbPbMC(Int_t fCentralityMin=0, Int_t fCent
   // task_Mpt->SetVzRangeMin(fVzMin);
   
   // ///Event cuts:
-  /*
+  
   task_Mpt->SetVzRangeMax(10.0);
-       
 
+  // //Track cuts:
+  task_Mpt->SetTrackFilterBit(fFilterBit);
+  task_Mpt->SetMaxChi2PerTPCClusterRange(fchi2tpc);
+  task_Mpt->SetMaxChi2PerITSClusterRange(fchi2its);
+  task_Mpt->SetPIDnSigmaCut(fpidnSigma);
+  
+  /*
   // //Track cuts:
   task_Mpt->SetDCAXYRangeMax(fdcaxy);
   task_Mpt->SetDCAZRangeMax(fdcaz);

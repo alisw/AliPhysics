@@ -50,9 +50,9 @@ class AliAnalysisTaskCorrPbPb : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
   Bool_t GetEvent();
   Bool_t PassedTrackQualityCuts (AliAODTrack *track);
-  Bool_t KaonSelector (AliVTrack *track); 
-  Bool_t ProtonSelector (AliVTrack *track); 
-  Bool_t PionSelector (AliVTrack *track); 
+  Bool_t KaonSelector (AliVTrack *track, Double_t nSigmaCut); 
+  Bool_t ProtonSelector (AliVTrack *track, Double_t nSigmaCut); 
+  Bool_t PionSelector (AliVTrack *track, Double_t nSigmaCut); 
   Bool_t PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type);
   Bool_t PassedSingleParticlePileUpCuts(AliAODTrack *track);
   void GetMCEffCorrectionHist();
@@ -62,11 +62,28 @@ class AliAnalysisTaskCorrPbPb : public AliAnalysisTaskSE {
  	this->fListTRKCorr = (TList*) fList->Clone();
   }
 
-  /*
   void SetVzRangeMax(Double_t VzMax)
   {
     this->fVertexZMax = VzMax;
   }
+  void SetTrackFilterBit(Int_t FBno)
+  {
+    this->fFBNo = FBno;
+  }
+  void SetMaxChi2PerTPCClusterRange(Double_t chi2tpc)
+  {
+    this->fChi2TPC = chi2tpc;
+  }
+  void SetMaxChi2PerITSClusterRange(Double_t chi2its)
+  {
+    this->fChi2ITS = chi2its;
+  }
+  void SetPIDnSigmaCut(Double_t PIDnSigmaCut)
+  {
+    this->fPIDnSigmaCut = PIDnSigmaCut;
+  }
+  
+  /*
   void SetDCAXYRangeMax(Double_t dcaxy)          
   {
     fDCAxyMax = dcaxy;
@@ -74,14 +91,6 @@ class AliAnalysisTaskCorrPbPb : public AliAnalysisTaskSE {
   void SetDCAZRangeMax(Double_t dcaz)
   {
     fDCAzMax = dcaz;
-  }
-  void SetMaxChi2PerTPCClusterRange(Double_t chi2tpc)
-  {
-    fChi2TPC = chi2tpc;
-  }
-  void SetMaxChi2PerITSClusterRange(Double_t chi2its)
-  {
-    fChi2ITS = chi2its;
   }
   void SetMinNCrossedRowsTPCRange(Double_t nCrossedRow)
   {
@@ -91,6 +100,7 @@ class AliAnalysisTaskCorrPbPb : public AliAnalysisTaskSE {
   {
     fTreeName = TreeName;
   }
+
   void SetEtaCut(Double_t EtaMax)
   {
     fEtaMax=EtaMax;
@@ -179,7 +189,12 @@ class AliAnalysisTaskCorrPbPb : public AliAnalysisTaskSE {
   TH1D *fEffKaonMinus[9];
   TH1D *fEffProtonMinus[9];
  
-
+  Double_t fVertexZMax;
+  Int_t fFBNo;
+  Double_t fChi2TPC;
+  Double_t fChi2ITS;
+  Double_t fPIDnSigmaCut;
+  
 
   /*
   //Custom Functions:
