@@ -189,6 +189,7 @@
 
 // * DoubleHypNuc
 #pragma link C++ class AliAnalysisTaskDoubleHypNucTree+;
+#pragma link C++ class AliAnalysisTaskDoubleHypNucTreeLS+;
 
 /// Utils
 /// * CODEX
