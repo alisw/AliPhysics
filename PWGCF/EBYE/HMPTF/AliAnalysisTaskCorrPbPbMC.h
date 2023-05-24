@@ -49,11 +49,33 @@ class AliAnalysisTaskCorrPbPbMC : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
   Bool_t GetEvent();
   Bool_t PassedTrackQualityCuts (AliAODTrack *track);
-  Bool_t KaonSelector (AliVTrack *track); 
-  Bool_t ProtonSelector (AliVTrack *track); 
-  Bool_t PionSelector (AliVTrack *track); 
+  Bool_t KaonSelector (AliVTrack *track, Double_t nSigmaCut); 
+  Bool_t ProtonSelector (AliVTrack *track, Double_t nSigmaCut); 
+  Bool_t PionSelector (AliVTrack *track, Double_t nSigmaCut); 
   Bool_t PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type);
   Bool_t PassedSingleParticlePileUpCuts(AliAODTrack *track);
+  
+  void SetVzRangeMax(Double_t VzMax)
+  {
+    this->fVertexZMax = VzMax;
+  }
+  void SetTrackFilterBit(Int_t FBno)
+  {
+    this->fFBNo = FBno;
+  }
+  void SetMaxChi2PerTPCClusterRange(Double_t chi2tpc)
+  {
+    this->fChi2TPC = chi2tpc;
+  }
+  void SetMaxChi2PerITSClusterRange(Double_t chi2its)
+  {
+    this->fChi2ITS = chi2its;
+  }
+  void SetPIDnSigmaCut(Double_t PIDnSigmaCut)
+  {
+    this->fPIDnSigmaCut = PIDnSigmaCut;
+  }
+
 
   /*
   void SetVzRangeMax(Double_t VzMax)
@@ -168,7 +190,12 @@ class AliAnalysisTaskCorrPbPbMC : public AliAnalysisTaskSE {
   TH1F *hist_GenProtonPlus;
   TH1F *hist_GenProtonMinus;
   
-
+  Double_t fVertexZMax;
+  Int_t fFBNo;
+  Double_t fChi2TPC;
+  Double_t fChi2ITS;
+  Double_t fPIDnSigmaCut;
+  
   /*
   //Custom Functions:
   TF1 *fCenCutLowPU;
