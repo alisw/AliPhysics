@@ -78,7 +78,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
 
   // MC functions
   void ProcessAODMCParticles(int isCurrentEventSelected = 0);
-  void ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton* TruePhotonCandidate);
+  void ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton* TruePhotonCandidate, const int matchedJet = -1);
   void ProcessTruePhotonCandidatesAOD(AliAODConversionPhoton* TruePhotonCandidate);
   bool MCParticleIsSelected(AliAODMCParticle* particle1, AliAODMCParticle* particle2, bool checkConversion);
   bool MCParticleIsSelected(AliAODMCParticle* particle, bool isConv, bool checkConversion);
@@ -326,6 +326,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
 
   std::vector<TH1F*> fHistoClusterPtInJet; //! vector of histos with number of clusters as function of pt inside of jets
   std::vector<TH1F*> fHistoClusterEInJet;  //! vector of histos with number of clusters as function of E inside of jets
+  std::vector<TH3F*> fHistoClusterPtResolutionInJet;  //! vector of histos with number of clusters as function of E inside of jets
 
   std::vector<TH2F*> fHistoClusterPtVsJetPtInJet; //! vector of histos with number of clusters as function of pt vs. jet pt inside of jets
 
@@ -402,6 +403,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoTrueMesonInTrueJet_JetPtVsTruePt;                     //! vector of histos true meson pt vs true jet pt inside true jets
   std::vector<TH2F*> fHistoTrueMesonInTrueJet_JetPtVsTrueZ;                      //! vector of histos true meson z vs true jet pt inside true jets
   std::vector<TH2F*> fHistoMesonResponse;                                        //! vector of histos with meson response matrix
+  std::vector<TH3F*> fHistoMesonResolutionJetPt;                                 //! vector of histos with meson resolution as function of jet momentum
 
   //-------------------------------
   // Meson double counting
@@ -483,7 +485,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 13);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 14);
 };
 
 #endif

@@ -156,6 +156,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoClusterE({}),
                                                                              fHistoClusterPtInJet({}),
                                                                              fHistoClusterEInJet({}),
+                                                                             fHistoClusterPtResolutionInJet({}),
                                                                              fHistoClusterPtVsJetPtInJet({}),
                                                                              fHistoClusterPtPerpCone({}),
                                                                              // conversion histos
@@ -212,6 +213,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoTrueMesonInTrueJet_JetPtVsTruePt({}),
                                                                              fHistoTrueMesonInTrueJet_JetPtVsTrueZ({}),
                                                                              fHistoMesonResponse({}),
+                                                                             fHistoMesonResolutionJetPt({}),
                                                                              // true meson double counting
                                                                              fMesonDoubleCount({}),
                                                                              fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount({}),
@@ -403,6 +405,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoClusterE({}),
                                                                                            fHistoClusterPtInJet({}),
                                                                                            fHistoClusterEInJet({}),
+                                                                                           fHistoClusterPtResolutionInJet({}),
                                                                                            fHistoClusterPtVsJetPtInJet({}),
                                                                                            fHistoClusterPtPerpCone({}),
                                                                                            // conversion histos
@@ -459,6 +462,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoTrueMesonInTrueJet_JetPtVsTruePt({}),
                                                                                            fHistoTrueMesonInTrueJet_JetPtVsTrueZ({}),
                                                                                            fHistoMesonResponse({}),
+                                                                                           fHistoMesonResolutionJetPt({}),
                                                                                            // true meson double counting
                                                                                            fMesonDoubleCount({}),
                                                                                            fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount({}),
@@ -617,6 +621,9 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoClusterEInJet.resize(fnCuts);
     fHistoClusterPtVsJetPtInJet.resize(fnCuts);
     fHistoClusterPtPerpCone.resize(fnCuts);
+    if(fDoMesonQA > 0 && fIsMC){
+      fHistoClusterPtResolutionInJet.resize(fnCuts);
+    }
   }
   if (!fIsCalo) {
     // conversion histos
@@ -752,11 +759,14 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
 
     fRespMatrixHandlerTrueMesonInvMassVsPtDoubleCount.resize(fnCuts);
     fRespMatrixHandlerTrueMesonInvMassVsZDoubleCount.resize(fnCuts);
+
+    if (fDoMesonQA) {
+      fHistoMesonResponse.resize(fnCuts);
+      fHistoMesonResolutionJetPt.resize(fnCuts);
+    }
+
   }
 
-  if (fDoMesonQA) {
-    fHistoMesonResponse.resize(fnCuts);
-  }
 
   // perpendicular cone
   fHistoInvMassVsPtPerpCone.resize(fnCuts);
@@ -958,12 +968,23 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
 
       fHistoClusterPtVsJetPtInJet[iCut] = new TH2F("ClusGamma_InJet_Pt_VsJetPt", "ClusGamma_InJet_Pt_VsJetPt", fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
       fHistoClusterPtVsJetPtInJet[iCut]->SetXTitle("p_{T} (GeV/c)");
-      fHistoClusterPtVsJetPtInJet[iCut]->SetXTitle("p_{T, jet} (GeV/c)");
+      fHistoClusterPtVsJetPtInJet[iCut]->SetYTitle("p_{T, jet} (GeV/c)");
       fESDList[iCut]->Add(fHistoClusterPtVsJetPtInJet[iCut]);
 
       fHistoClusterPtPerpCone[iCut] = new TH1F("ClusGamma_Pt_PerpCone", "ClusGamma_Pt_PerpCone", fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data());
       fHistoClusterPtPerpCone[iCut]->SetXTitle("p_{T} (GeV/c)");
       fESDList[iCut]->Add(fHistoClusterPtPerpCone[iCut]);
+
+      if(fDoMesonQA && fIsMC){
+        std::vector<double> vecResol;
+        for(int i = 0; i < 100; ++i){
+          vecResol.push_back(0.02*i);
+        }
+        fHistoClusterPtResolutionInJet[iCut] = new TH3F("ClusGammaResolution_InJet_Pt_VsJetPt", "ClusGammaResolution_InJet_Pt_VsJetPt", fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), vecResol.size() - 1, vecResol.data(), fVectorJetPt.size()-1, vecResol.data());
+        fHistoClusterPtResolutionInJet[iCut]->SetXTitle("P_{t, cluster, rec.} (GeV/c)");
+        fHistoClusterPtResolutionInJet[iCut]->SetYTitle("(P_{t, cl, rec} - P_{t, cl, true})/P_{t, cl, rec} (GeV/c)");
+        fTrueList[iCut]->Add(fHistoClusterPtResolutionInJet[iCut]);
+      }
     }
 
     // conversion related histograms
@@ -1367,6 +1388,16 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
         fHistoMesonResponse[iCut]->SetXTitle("p_{T, rec} (GeV/c)");
         fHistoMesonResponse[iCut]->SetYTitle("p_{T, true} (GeV/c)");
         fTrueList[iCut]->Add(fHistoMesonResponse[iCut]);
+
+        std::vector<double> vecResol;
+        for(int i = 0; i < 100; ++i){
+          vecResol.push_back(0.02*i);
+        }
+        fHistoMesonResolutionJetPt[iCut] = new TH3F("ESD_MesonResolution_JetPt", "ESD_MesonResolution_JetPt", fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data(), vecResol.size()-1, vecResol.data(), fVectorJetPt.size()-1, fVectorJetPt.data());
+        fHistoMesonResolutionJetPt[iCut]->SetXTitle("p_{T, meson, rec} (GeV/c)");
+        fHistoMesonResolutionJetPt[iCut]->SetYTitle("(p_{T, rec} - p_{T, true})/p_{T, rec} (GeV/c)");
+        fHistoMesonResolutionJetPt[iCut]->SetZTitle("p_{T, jet} (GeV/c)");
+        fTrueList[iCut]->Add(fHistoMesonResolutionJetPt[iCut]);
       }
     }
 
@@ -2148,11 +2179,13 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
     double etaCluster = clusterVectorJets.Eta();
     double phiCluster = clusterVectorJets.Phi();
 
+    bool isInRecJet = false;
     if (fConvJetReader->GetNJets() > 0) {
       double RJetPi0Cand;
       int matchedJet = -1;
       if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), etaCluster, phiCluster, matchedJet, RJetPi0Cand)) {
         NClusinJets++;
+        isInRecJet = true;
         // fClusterEtaPhiJets[fiCut]->Fill(phiCluster, etaCluster);
         fHistoClusterPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
         fHistoClusterEInJet[fiCut]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
@@ -2186,7 +2219,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
     }
 
     if (fIsMC > 0) {
-      ProcessTrueClusterCandidatesAOD(PhotonCandidate);
+      ProcessTrueClusterCandidatesAOD(PhotonCandidate, isInRecJet);
     }
     // if ( (fIsFromDesiredHeader && !fIsOverlappingWithOtherHeader && !fAllowOverlapHeaders) || (fIsFromDesiredHeader && fAllowOverlapHeaders) ){
     fClusterCandidates.push_back(PhotonCandidate);
@@ -3383,7 +3416,7 @@ int AliAnalysisTaskMesonJetCorrelation::GetPhotonMotherLabel(AliAODConversionPho
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskMesonJetCorrelation::ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton* TruePhotonCandidate)
+void AliAnalysisTaskMesonJetCorrelation::ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton* TruePhotonCandidate, const int matchedJet)
 {
 
   double tempPhotonWeight = fWeightJetJetMC;
@@ -3412,6 +3445,11 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessTrueClusterCandidatesAOD(AliAODC
   // if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
   //   if ( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(TruePhotonCandidate->GetCaloPhotonMCLabel(0), fMCEvent, fInputEvent) == 2) tempPhotonWeight = 1;
   // }
+
+  // Fill resolution plot
+  if( matchedJet >= 0 && fDoMesonQA > 0){
+    fHistoClusterPtResolutionInJet[fiCut]->Fill(TruePhotonCandidate->Pt(), (TruePhotonCandidate->Pt() - Photon->Pt()) / TruePhotonCandidate->Pt(), fVectorJetPt[matchedJet]);
+  }
 
   // True Photon
   if (TruePhotonCandidate->IsLargestComponentPhoton() || (TruePhotonCandidate->IsLargestComponentElectron() && TruePhotonCandidate->IsConversion())) {
@@ -3517,6 +3555,7 @@ bool AliAnalysisTaskMesonJetCorrelation::ProcessTrueMesonCandidatesAOD(AliAODCon
       fHistoTruePrimaryMesonInvMassPt[fiCut]->Fill(mesonMassRec, mesonPtRec, fWeightJetJetMC*weightMatBudget);
      // meson response matrix (no Jet included here). Only use that for x-checks as the response is probably jet pt dependent
       fHistoMesonResponse[fiCut]->Fill(mesonPtRec, mesonPtTrue, fWeightJetJetMC*weightMatBudget);
+      fHistoMesonResolutionJetPt[fiCut]->Fill(mesonPtRec, (mesonPtRec- mesonPtTrue)/mesonPtRec, jetPtRec);
     }
 
     fHistoTrueMesonJetPtVsTrueZ[fiCut]->Fill(z_true, jetPtTrue, fWeightJetJetMC*weightMatBudget);
