@@ -1989,7 +1989,7 @@ Bool_t AliHFMLXicZeroToXiPifromKFP::MakeMCAnalysis(TClonesArray *mcArray)
       if ( pifromOmegac0_flag && Omega_flag && kafromOmega_flag && Lam_flag && pifromLam_flag && prfromLam_flag ) {
         AliAODMCParticle *mcdau_0 = (AliAODMCParticle*) mcArray->At(mcpart->GetDaughterFirst());
         Double_t MLoverP = sqrt( pow(mcpart->Xv()-mcdau_0->Xv(),2.)+pow(mcpart->Yv()-mcdau_0->Yv(),2.)+pow(mcpart->Zv()-mcdau_0->Zv(),2.) ) * mcpart->M() / mcpart->P()*1.e4; // c*(proper lifetime) in um
-        Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
+        Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kFALSE);
         FillTreeGenXic0(mcpart, CheckOrigin, MLoverP);
       }
     }
@@ -2033,7 +2033,7 @@ Bool_t AliHFMLXicZeroToXiPifromKFP::MakeMCAnalysis(TClonesArray *mcArray)
       if ( pifromXic0_flag && Xi_flag && pifromXi_flag && Lam_flag && pifromLam_flag && prfromLam_flag ) {
         AliAODMCParticle *mcdau_0 = (AliAODMCParticle*) mcArray->At(mcpart->GetDaughterFirst());
         Double_t MLoverP = sqrt( pow(mcpart->Xv()-mcdau_0->Xv(),2.)+pow(mcpart->Yv()-mcdau_0->Yv(),2.)+pow(mcpart->Zv()-mcdau_0->Zv(),2.) ) * mcpart->M() / mcpart->P()*1.e4; // c*(proper lifetime) in um
-        Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
+        Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kFALSE);
         FillTreeGenXic0(mcpart, CheckOrigin, MLoverP);
       }
     } // for Xic0
@@ -4179,7 +4179,7 @@ Int_t AliHFMLXicZeroToXiPifromKFP::MatchToMCXic0(AliAODTrack *trackProton, AliAO
 //  if ( mcMother->IsSecondaryFromMaterial() ) return 4;
 //  if ( mcMother->IsFromSubsidiaryEvent() ) return 5;
 
-  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kTRUE);
+  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kFALSE);
   return CheckOrigin;
 }
 
@@ -4232,7 +4232,7 @@ Int_t AliHFMLXicZeroToXiPifromKFP::MatchToMCAntiXic0(AliAODTrack *trackAntiProto
 //  if ( mcMother->IsSecondaryFromMaterial() ) return 4;
 //  if ( mcMother->IsFromSubsidiaryEvent() ) return 5;
 
-  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kTRUE);
+  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kFALSE);
   return CheckOrigin;
 }
 
@@ -4286,7 +4286,7 @@ Int_t AliHFMLXicZeroToXiPifromKFP::MatchToMCOmegac0(AliAODTrack *trackProton, Al
 //  if ( mcMother->IsSecondaryFromMaterial() ) return 4;
 //  if ( mcMother->IsFromSubsidiaryEvent() ) return 5;
 
-  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kTRUE);
+  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kFALSE);
   return CheckOrigin;
 }
 
@@ -4339,7 +4339,7 @@ Int_t AliHFMLXicZeroToXiPifromKFP::MatchToMCAntiOmegac0(AliAODTrack *trackAntiPr
 //  if ( mcMother->IsSecondaryFromMaterial() ) return 4;
 //  if ( mcMother->IsFromSubsidiaryEvent() ) return 5;
 
-  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kTRUE);
+  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kFALSE);
   return CheckOrigin;
 }
 
