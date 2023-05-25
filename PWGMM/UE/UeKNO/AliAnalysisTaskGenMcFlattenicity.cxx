@@ -86,7 +86,10 @@ ClassImp(AliAnalysisTaskGenMcFlattenicity)
     : AliAnalysisTaskSE(), fMC(0x0), fMcHandler(0x0), fMCStack(0x0),
       fGenerator(0), fEtaCut(0.8), fIsPP(kTRUE), fPtMin(0.15), fIsINEL0(0),
       fNchv0(-1), fNchv0a(-1), fNchv0c(-1), fFlattV0(-1), hFlatt(0x0),
-      hflatVsNchV0(0x0), fOutputList(0) {
+      hflatVsNchV0(0x0), hMultVsFlat(0x0), fOutputList(0) {
+  for (Int_t pid = 0; pid < 4; ++pid) {
+    hMultVsFlatVsPt[pid] = 0;
+  }
   for (Int_t pid = 0; pid < 4; ++pid) {
     hFlatVsPt[pid] = 0;
   }
@@ -97,8 +100,10 @@ AliAnalysisTaskGenMcFlattenicity::AliAnalysisTaskGenMcFlattenicity(
     : AliAnalysisTaskSE(name), fMC(0x0), fMcHandler(0x0), fMCStack(0x0),
       fGenerator(0), fEtaCut(0.8), fIsPP(kTRUE), fPtMin(0.15), fIsINEL0(0),
       fNchv0(-1), fNchv0a(-1), fNchv0c(-1), fFlattV0(-1), hFlatt(0x0),
-      hflatVsNchV0(0x0), fOutputList(0) {
-
+      hflatVsNchV0(0x0), hMultVsFlat(0x0), fOutputList(0) {
+  for (Int_t pid = 0; pid < 4; ++pid) {
+    hMultVsFlatVsPt[pid] = 0;
+  }
   for (Int_t pid = 0; pid < 4; ++pid) {
     hFlatVsPt[pid] = 0;
   }
@@ -121,6 +126,23 @@ void AliAnalysisTaskGenMcFlattenicity::UserCreateOutputObjects() {
   fOutputList->SetOwner(kTRUE);
   // create output objects
 
+  // flattenicit binning
+  const int nFlatA = 1020;
+  double FlatA[nFlatA + 1];
+  for (int i = 0; i < 1020; ++i) {
+    FlatA[i] = 0;
+    FlatA[i] = -0.01 + i * 0.001;
+  }
+  FlatA[1020] = 1.01;
+  // multiplicity binning
+  const int NnchBin = 400;
+  double nchBin[NnchBin + 1];
+  for (int i = 0; i < 400; ++i) {
+    nchBin[i] = 0;
+    nchBin[i] = i - 0.5;
+  }
+  nchBin[400] = 399.5;
+
   const int nPtBins = 43;
   double PtBins[nPtBins + 1] = {
       0.,  0.15, 0.25, 0.3,  0.35, 0.4,  0.45, 0.5, 0.55, 0.6,  0.65,
@@ -139,7 +161,21 @@ void AliAnalysisTaskGenMcFlattenicity::UserCreateOutputObjects() {
                               "; Flatenicity; #it{p}_{T} (GeV/#it{c})",
                               nbins_flat, min_flat, max_flat, nPtBins, PtBins);
     fOutputList->Add(hFlatVsPt[pid]);
+
+    hMultVsFlatVsPt[pid] = 0;
+    hMultVsFlatVsPt[pid] =
+        new TH3D(Form("hMultVsFlatVsPt_%s", Pid[pid]),
+                 "; true multiplicity; true flattenicity", NnchBin, nchBin,
+                 nFlatA, FlatA, nPtBins, PtBins);
+    fOutputList->Add(hMultVsFlatVsPt[pid]);
   }
+
+  hMultVsFlat = 0;
+  hMultVsFlat =
+      new TH2D("hMultVsFlat", "; true multiplicity; true flattenicity", 400,
+               -0.5, 399.5, nbins_flat, min_flat, max_flat);
+  fOutputList->Add(hMultVsFlat);
+
   hflatVsNchV0 = 0;
   hflatVsNchV0 =
       new TH2D("hflatVsNchV0", "; #it{N}_{ch} (V0);1-flattenicity (V0)", 500,
@@ -208,6 +244,7 @@ void AliAnalysisTaskGenMcFlattenicity::UserExec(Option_t *) {
   GetFlattenicity(); // leading particle at gen level
   hFlatt->Fill(fFlattV0);
   if (fNchv0a > 0 && fNchv0c > 0 && fIsINEL0) {
+    hMultVsFlat->Fill(fNchv0, fFlattV0);
     hflatVsNchV0->Fill(fNchv0, 1. - fFlattV0);
     MakeAnalysis();
   }
@@ -370,6 +407,7 @@ void AliAnalysisTaskGenMcFlattenicity::MakeAnalysis() {
     if (pdg >= 0 && pdg < 3) {
       if (TMath::Abs(y_a) <= fEtaCut) {
         hFlatVsPt[pdg + 1]->Fill(fFlattV0, pt_a);
+        hMultVsFlatVsPt[pdg + 1]->Fill(fNchv0, fFlattV0, pt_a);
       }
     }
 
@@ -379,6 +417,7 @@ void AliAnalysisTaskGenMcFlattenicity::MakeAnalysis() {
     }
 
     hFlatVsPt[0]->Fill(fFlattV0, pt_a);
+    hMultVsFlatVsPt[0]->Fill(fNchv0, fFlattV0, pt_a);
   }
 }
 //_______________________________________________________
