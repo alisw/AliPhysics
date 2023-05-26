@@ -85,6 +85,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fFillDCATree(false),
                                                                              fUseCentralEventSelection(true),
                                                                              fUsePtForZCalc(false),
+                                                                             fUnsetStablePi0(false),
                                                                              // aod relabeling
                                                                              fMCEventPos(nullptr),
                                                                              fMCEventNeg(nullptr),
@@ -334,6 +335,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fFillDCATree(false),
                                                                                            fUseCentralEventSelection(true),
                                                                                            fUsePtForZCalc(false),
+                                                                                           fUnsetStablePi0(false),
                                                                                            // aod relabeling
                                                                                            fMCEventPos(nullptr),
                                                                                            fMCEventNeg(nullptr),
@@ -978,11 +980,12 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       if(fDoMesonQA && fIsMC){
         std::vector<double> vecResol;
         for(int i = 0; i < 100; ++i){
-          vecResol.push_back(0.02*i);
+          vecResol.push_back(0.02*i - 1);
         }
-        fHistoClusterPtResolutionInJet[iCut] = new TH3F("ClusGammaResolution_InJet_Pt_VsJetPt", "ClusGammaResolution_InJet_Pt_VsJetPt", fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), vecResol.size() - 1, vecResol.data(), fVectorJetPt.size()-1, vecResol.data());
+        fHistoClusterPtResolutionInJet[iCut] = new TH3F("ClusGammaResolution_InJet_Pt_VsJetPt", "ClusGammaResolution_InJet_Pt_VsJetPt", fVecBinsClusterPt.size() - 1, fVecBinsClusterPt.data(), vecResol.size() - 1, vecResol.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
         fHistoClusterPtResolutionInJet[iCut]->SetXTitle("P_{t, cluster, rec.} (GeV/c)");
         fHistoClusterPtResolutionInJet[iCut]->SetYTitle("(P_{t, cl, rec} - P_{t, cl, true})/P_{t, cl, rec} (GeV/c)");
+        fHistoClusterPtResolutionInJet[iCut]->SetZTitle("P_{t, jet, rec.} (GeV/c)");
         fTrueList[iCut]->Add(fHistoClusterPtResolutionInJet[iCut]);
       }
     }
@@ -1391,9 +1394,9 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
 
         std::vector<double> vecResol;
         for(int i = 0; i < 100; ++i){
-          vecResol.push_back(0.02*i);
+          vecResol.push_back(0.02*i - 1);
         }
-        fHistoMesonResolutionJetPt[iCut] = new TH3F("ESD_MesonResolution_JetPt", "ESD_MesonResolution_JetPt", fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data(), vecResol.size()-1, vecResol.data(), fVectorJetPt.size()-1, fVectorJetPt.data());
+        fHistoMesonResolutionJetPt[iCut] = new TH3F("ESD_MesonResolution_JetPt", "ESD_MesonResolution_JetPt", fVecBinsMesonPt.size() - 1, fVecBinsMesonPt.data(), vecResol.size()-1, vecResol.data(), fVecBinsJetPt.size()-1, fVecBinsJetPt.data());
         fHistoMesonResolutionJetPt[iCut]->SetXTitle("p_{T, meson, rec} (GeV/c)");
         fHistoMesonResolutionJetPt[iCut]->SetYTitle("(p_{T, rec} - p_{T, true})/p_{T, rec} (GeV/c)");
         fHistoMesonResolutionJetPt[iCut]->SetZTitle("p_{T, jet} (GeV/c)");
@@ -2179,13 +2182,11 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
     double etaCluster = clusterVectorJets.Eta();
     double phiCluster = clusterVectorJets.Phi();
 
-    bool isInRecJet = false;
+    int matchedJet = -1;
     if (fConvJetReader->GetNJets() > 0) {
       double RJetPi0Cand;
-      int matchedJet = -1;
       if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), etaCluster, phiCluster, matchedJet, RJetPi0Cand)) {
         NClusinJets++;
-        isInRecJet = true;
         // fClusterEtaPhiJets[fiCut]->Fill(phiCluster, etaCluster);
         fHistoClusterPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
         fHistoClusterEInJet[fiCut]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
@@ -2219,7 +2220,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
     }
 
     if (fIsMC > 0) {
-      ProcessTrueClusterCandidatesAOD(PhotonCandidate, isInRecJet);
+      ProcessTrueClusterCandidatesAOD(PhotonCandidate, matchedJet);
     }
     // if ( (fIsFromDesiredHeader && !fIsOverlappingWithOtherHeader && !fAllowOverlapHeaders) || (fIsFromDesiredHeader && fAllowOverlapHeaders) ){
     fClusterCandidates.push_back(PhotonCandidate);
@@ -3078,6 +3079,8 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessAODMCParticles(int isCurrentEven
     if (!particle)
       continue;
 
+    if(fUnsetStablePi0) UnselectStablePi0(particle);
+
     int matchedJet = -1;
     double RJetPi0Cand = 0;
     if (!((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fTrueVectorJetEta, fTrueVectorJetPhi, fConvJetReader->Get_Jet_Radius(), particle->Eta(), particle->Phi(), matchedJet, RJetPi0Cand)) {
@@ -3316,6 +3319,14 @@ bool AliAnalysisTaskMesonJetCorrelation::IsParticleFromPartonFrag(AliAODMCPartic
     }
   }
   return false;
+}
+
+//__________________________________________________________________________________________________________
+void AliAnalysisTaskMesonJetCorrelation::UnselectStablePi0(AliAODMCParticle* part){
+  if(part->PdgCode() == 111 || part->GetPdgCode() == 221){
+    part->SetPhysicalPrimary(false);
+  }
+  // printf("pdgCode: %d  - primary: %d\n", TMath::Abs(part->PdgCode()), part->IsPhysicalPrimary());
 }
 
 //__________________________________________________________________________________________________________
