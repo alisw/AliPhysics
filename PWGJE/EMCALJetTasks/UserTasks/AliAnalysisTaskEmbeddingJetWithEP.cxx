@@ -113,8 +113,11 @@ AliAnalysisTaskEmbeddingJetWithEP::AliAnalysisTaskEmbeddingJetWithEP() :
     fTrackQA(kFALSE),
     fBkgQA(kFALSE),
     fJetQA(kFALSE),
+    f2DRMwithEP2(kFALSE),
+    f2DRMwithEP3(kFALSE),
     fSepEP(kFALSE),
     fV0Combin(kFALSE),
+    fRhoLocalSubType(kFALSE),
     fFitModulationType(kNoFit),
     fV0KindForBkg(0),
     fQnVCalibType("kOrig"),
@@ -301,8 +304,12 @@ AliAnalysisTaskEmbeddingJetWithEP::AliAnalysisTaskEmbeddingJetWithEP(const char 
     fDoJet(kFALSE),
     fTrackQA(kFALSE),
     fBkgQA(kFALSE),
+    fJetQA(kFALSE),
+    f2DRMwithEP2(kFALSE),
+    f2DRMwithEP3(kFALSE),
     fSepEP(kFALSE),
     fV0Combin(kFALSE),
+    fRhoLocalSubType(kFALSE),
     fFitModulationType(kNoFit),
     fV0KindForBkg(0),
     fQnVCalibType("kOrig"),
@@ -483,7 +490,6 @@ AliAnalysisTaskEmbeddingJetWithEP::~AliAnalysisTaskEmbeddingJetWithEP()
 void AliAnalysisTaskEmbeddingJetWithEP::UserCreateOutputObjects()
 {
     AliAnalysisTaskEmcalJet::UserCreateOutputObjects();
-    
     
     // ### Basic container settings
     if(!GetJetContainer(0))
@@ -722,6 +728,18 @@ void AliAnalysisTaskEmbeddingJetWithEP::AllocateMatchedJetHistograms()
     Int_t nbinsy = fMaxPt; Int_t miny = 0; Int_t maxy = fMaxPt;
     Int_t nbinsz = nPtBins1; Int_t minz = fMinPt; Double_t maxz = fMaxPt;
     
+    // Jet matching QA (copied from AliAnalysisTaskEmcalJetHCorrelations.cxx)
+    // histname = "MatchedJetHistograms/fHistJetMatchingQA";
+    histname = "fHistJetMatchingQA";
+    title = histname;
+    std::vector<std::string> binLabels = {"noMatch", "matchedJet", "uniqueMatch", "jetDistance", "passedAllCuts"};
+    auto histMatchedJetCuts = fHistManager.CreateTH1(histname.Data(), title.Data(), binLabels.size(), 0, binLabels.size());
+    // Set label names
+    for (unsigned int i = 1; i <= binLabels.size(); i++) {
+        histMatchedJetCuts->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
+    }
+    histMatchedJetCuts->GetYaxis()->SetTitle("Number of jets");
+            
     for(Int_t branchN = 0; branchN < numOfBranch; branchN++){
         TString branchName = aBranchName[branchN];
         //This is a 5-dim RM with information on the angularity and matching distance
@@ -738,8 +756,8 @@ void AliAnalysisTaskEmbeddingJetWithEP::AllocateMatchedJetHistograms()
             // (1) pt part LvL, (2) pt det LvL, (3) Matching distance (4) shared momentum fraction (5) angularity (6) centrality
             THnSparse* thn = fHistManager.CreateTHnSparse(histname.Data(), histname.Data(), 6, nbinsThn, minThn, maxThn);
             for (Int_t i = 0; i < 6; i++) {
-            thn->GetAxis(i)->SetTitle(titleThn[i]);
-            //thn->SetBinEdges(i, binEdges[i]);
+                thn->GetAxis(i)->SetTitle(titleThn[i]);
+                //thn->SetBinEdges(i, binEdges[i]);
             }
         }
         //This is a 3D RM for PbPb and a 2D RM for pp
@@ -796,17 +814,6 @@ void AliAnalysisTaskEmbeddingJetWithEP::AllocateMatchedJetHistograms()
             title = histname + ";#it{p}_{T}^{det} (GeV/#it{c});#it{p}_{T}^{truth} (GeV/#it{c});R";
             fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, fMaxPt, miny, maxy, nbinsz, minz, maxz);
             
-            // Jet matching QA (copied from AliAnalysisTaskEmcalJetHCorrelations.cxx)
-            // histname = "MatchedJetHistograms/fHistJetMatchingQA";
-            histname = branchName + "fHistJetMatchingQA";
-            title = histname;
-            std::vector<std::string> binLabels = {"noMatch", "matchedJet", "uniqueMatch", "jetDistance", "passedAllCuts"};
-            auto histMatchedJetCuts = fHistManager.CreateTH1(histname.Data(), title.Data(), binLabels.size(), 0, binLabels.size());
-            // Set label names
-            for (unsigned int i = 1; i <= binLabels.size(); i++) {
-            histMatchedJetCuts->GetXaxis()->SetBinLabel(i, binLabels.at(i-1).c_str());
-            }
-            histMatchedJetCuts->GetYaxis()->SetTitle("Number of jets");
         }
         
         if (fDoJetMatchingMCFraction) {
@@ -834,9 +841,45 @@ void AliAnalysisTaskEmbeddingJetWithEP::AllocateMatchedJetHistograms()
         }
     }
     
+    //setup the THnSparse
+    Int_t nCentBins=20;
+    TString titleThFiveForV2[5]= {"#it{p}_{T}^{truth} (GeV/#it{c})", "#it{p}_{T,corr}^{det} (GeV/#it{c})", "#phi^{truth jet}-#Psi_{EP, 2}", "#phi^{det jet}-#Psi_{EP, 2}" , "Centrality (%)"};
+    Int_t nbinsThFiveForV2[5]  = {(Int_t)fMaxPt, (Int_t)fMaxPt, 50, 50, nCentBins};
+    Double_t minThFiveForV2[5] = {0., 0., 0., 0.,0.};
+    Double_t maxThFiveForV2[5] = {fMaxPt, fMaxPt, TMath::TwoPi(), TMath::TwoPi(), 100};
+    histname = "hRMWithEP2Angle";
+    if(f2DRMwithEP2){
+        THnSparse* hRMWithEP2 = fHistManager.CreateTHnSparse(histname.Data(), histname.Data(), 5, nbinsThFiveForV2, minThFiveForV2, maxThFiveForV2);
+        for (Int_t i = 0; i < 5; i++) {
+            hRMWithEP2->GetAxis(i)->SetTitle(titleThFiveForV2[i]);
+        }
+    }
 
+    TString titleThFiveForV3[5]= {"#it{p}_{T}^{truth} (GeV/#it{c})", "#it{p}_{T,corr}^{det} (GeV/#it{c})", "#phi^{truth jet}-#Psi_{EP, 3}", "#phi^{det jet}-#Psi_{EP, 3}" , "Centrality (%)"};
+    Int_t nbinsThFiveForV3[5]  = {(Int_t)fMaxPt, (Int_t)fMaxPt, 50, 50, nCentBins};
+    Double_t minThFiveForV3[5] = {0., 0., 0., 0.,0.};
+    Double_t maxThFiveForV3[5] = {fMaxPt, fMaxPt, TMath::TwoPi(), TMath::TwoPi(), 100};
+    histname = "hRMWithEP3Angle";
+    if(f2DRMwithEP3){
+        THnSparse* hRMWithEP3 = fHistManager.CreateTHnSparse(histname.Data(), histname.Data(), 5, nbinsThFiveForV3, minThFiveForV3, maxThFiveForV3);
+        for (Int_t i = 0; i < 5; i++) {
+            hRMWithEP3->GetAxis(i)->SetTitle(titleThFiveForV3[i]);
+        }
+    }
+
+    histname = "hCentGRhoLRho";
+    title = histname + ";Centrality (%);#rho [GeV/#it{c} / (m^{2})]; local #rho [GeV/#it{c} / (m^{2})]";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), 100, 0, 100, 250, 0, 250, 250, 0., 250.);
+    histname = "hHybJetPtRhoA";
+    title = histname + ";Centrality (%);#it{p}_{T}^{hyb jet} (GeV/#it{c});#rho #it{A}";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), 100, 0, 100, 250, 0, 250, 100, 0., 50.);
+    histname = "hHybJetPtRho";
+    title = histname + ";Centrality (%);#it{p}_{T}^{hyb jet} (GeV/#it{c});#rho";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), 100, 0, 100, 250, 0, 250, 200, 0., 200.);
+    histname = "hHybJetPtA";
+    title = histname + ";Centrality (%);#it{p}_{T}^{hyb jet} (GeV/#it{c});#it{A}";
+    fHistManager.CreateTH3(histname.Data(), title.Data(), 100, 0, 100, 250, 0, 250, 150, 0., 0.2);
 }
-
 
 
 /**
@@ -846,8 +889,121 @@ void AliAnalysisTaskEmbeddingJetWithEP::AllocateMatchedJetHistograms()
 void AliAnalysisTaskEmbeddingJetWithEP::ExecOnce()
 {
     fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
+
+    if(fMesLev==3)std::cout << "Start setup reference calibration values!!" << std::endl;
+    TString EPCalibRefFileName = "";
+    if(fQnVCalibType == "kOrig"){
+        TList *lCalibRefHists = nullptr;
+        
+        if (fAOD->GetRunNumber() < 295584) EPCalibRefFileName = "alien:///alice/cern.ch/user/t/tkumaoka/CalibV0GainCorrectionLHC15o_Oct2021.root"; //LHC15o
+        else if (fAOD->GetRunNumber() <= 296623) EPCalibRefFileName = "alien:///alice/cern.ch/user/t/tkumaoka/CalibV0GainCorrectionLHC18q_Oct2021.root";
+        else if (fAOD->GetRunNumber() > 296623) EPCalibRefFileName = "alien:///alice/cern.ch/user/t/tkumaoka/CalibV0GainCorrectionLHC18r_Oct2021.root";
+        TString tempCalibFileName = AliDataFile::GetFileName(EPCalibRefFileName.Data());
+        TString tempCalibLocalFileName = EPCalibRefFileName;
+        
+        // Check access to CVMFS (will only be displayed locally)
+        if(EPCalibRefFileName.BeginsWith("alien://") && !gGrid){
+            TGrid::Connect("alien://");
+        }
+        TFile* EPCalibRefFile = nullptr;
+        if(!tempCalibFileName.IsNull()) EPCalibRefFile = TFile::Open(tempCalibFileName.Data());
+        if(tempCalibFileName.IsNull())  EPCalibRefFile = TFile::Open(tempCalibLocalFileName.Data());
+        lCalibRefHists = (TList *)EPCalibRefFile->Get("fWgtsV0ZDC");
+        
+        SetCalibOrigRefObjList(lCalibRefHists);
+    }
+    else if(fQnVCalibType == "kJeHand"){
+        if (fAOD->GetRunNumber() < 295584) EPCalibRefFileName = "alien:///alice/cern.ch/user/t/tkumaoka/calibV0TPCRun2Vtx10P115oPass2.root"; //LHC15o
+        else if (fAOD->GetRunNumber() <= 296623) EPCalibRefFileName = "alien:///alice/cern.ch/user/t/tkumaoka/calibV0TPCRun2Vtx10P118qPass3.root"; //LHC18q
+        else if (fAOD->GetRunNumber() > 296623) EPCalibRefFileName = "alien:///alice/cern.ch/user/t/tkumaoka/calibV0TPCRun2Vtx10P118rPass3.root"; //LHC18r
+
+        TString pathToFileLocal = EPCalibRefFileName;
+
+        TString tempCalibFileName = AliDataFile::GetFileName(EPCalibRefFileName.Data());
+        TString tempCalibLocalFileName = EPCalibRefFileName;
+        
+        // Check access to CVMFS (will only be displayed locally)
+        if(EPCalibRefFileName.BeginsWith("alien://") && !gGrid){
+            // AliInfo("Trying to connect to AliEn ...");
+            TGrid::Connect("alien://");
+        }
+        TFile* EPCalibRefFile = nullptr;
+        if(!tempCalibFileName.IsNull()) EPCalibRefFile = TFile::Open(tempCalibFileName.Data());
+        if(tempCalibFileName.IsNull())  EPCalibRefFile = TFile::Open(tempCalibLocalFileName.Data());
+
+        AliOADBContainer *lRefMultV0BefCorPfpx = new AliOADBContainer();
+        TObjArray *lRefQx2am = new TObjArray();
+        TObjArray *lRefQy2am = new TObjArray();
+        TObjArray *lRefQx2as = new TObjArray();
+        TObjArray *lRefQy2as = new TObjArray();
+        TObjArray *lRefQx3am = new TObjArray();
+        TObjArray *lRefQy3am = new TObjArray();
+        TObjArray *lRefQx3as = new TObjArray();
+        TObjArray *lRefQy3as = new TObjArray();
+        TObjArray *lRefQx2cm = new TObjArray();
+        TObjArray *lRefQy2cm = new TObjArray();
+        TObjArray *lRefQx2cs = new TObjArray();
+        TObjArray *lRefQy2cs = new TObjArray();
+        TObjArray *lRefQx3cm = new TObjArray();
+        TObjArray *lRefQy3cm = new TObjArray(); 
+        TObjArray *lRefQx3cs = new TObjArray(); 
+        TObjArray *lRefQy3cs = new TObjArray();
+        TObjArray *lRefTPCposEta = new TObjArray();
+        TObjArray *lRefTPCnegEta = new TObjArray();
+
+
+        lRefMultV0BefCorPfpx = (AliOADBContainer *) EPCalibRefFile->Get("hMultV0BefCorPfpx");
+
+        bool LoadedCaliRef = ExtractRecentPara(EPCalibRefFile, lRefQx2am, lRefQy2am, lRefQx2as, lRefQy2as, lRefQx3am, lRefQy3am, lRefQx3as, lRefQy3as, lRefQx2cm, lRefQy2cm, lRefQx2cs, lRefQy2cs, lRefQx3cm,lRefQy3cm, lRefQx3cs, lRefQy3cs, lRefTPCposEta, lRefTPCnegEta);
+        if (!LoadedCaliRef) {
+            std::cout << "Calibrations failed to load!\n" << std::endl;
+        } else {
+            std::cout << "Calibrations loaded correctly!\n" << std::endl;
+        }
+        
+        SetLRefMultV0BefCorPfpx(lRefMultV0BefCorPfpx);
+        SetLRefQx2am(lRefQx2am);
+        SetLRefQy2am(lRefQy2am);
+        SetLRefQx2as(lRefQx2as);
+        SetLRefQy2as(lRefQy2as);
+        SetLRefQx3am(lRefQx3am);
+        SetLRefQy3am(lRefQy3am);
+        SetLRefQx3as(lRefQx3as);
+        SetLRefQy3as(lRefQy3as);
+        SetLRefQx2cm(lRefQx2cm);
+        SetLRefQy2cm(lRefQy2cm);
+        SetLRefQx2cs(lRefQx2cs);
+        SetLRefQy2cs(lRefQy2cs);
+        SetLRefQx3cm(lRefQx3cm);
+        SetLRefQy3cm(lRefQy3cm);
+        SetLRefQx3cs(lRefQx3cs);
+        SetLRefQy3cs(lRefQy3cs);
+        SetLRefTPCposEta(lRefTPCposEta);
+        SetLRefTPCnegEta(lRefTPCnegEta);
+        
+        if(lRefMultV0BefCorPfpx) delete lRefMultV0BefCorPfpx;
+        if(lRefQx2am) delete lRefQx2am;
+        if(lRefQy2am) delete lRefQy2am;
+        if(lRefQx2as) delete lRefQx2as;
+        if(lRefQy2as) delete lRefQy2as;
+        if(lRefQx3am) delete lRefQx3am;
+        if(lRefQy3am) delete lRefQy3am;
+        if(lRefQx3as) delete lRefQx3as;
+        if(lRefQy3as) delete lRefQy3as;
+        if(lRefQx2cm) delete lRefQx2cm;
+        if(lRefQy2cm) delete lRefQy2cm;
+        if(lRefQx2cs) delete lRefQx2cs;
+        if(lRefQy2cs) delete lRefQy2cs;
+        if(lRefQx3cm) delete lRefQx3cm;
+        if(lRefQy3cm) delete lRefQy3cm;
+        if(lRefQx3cs) delete lRefQx3cs;
+        if(lRefQy3cs) delete lRefQy3cs;
+        if(lRefTPCposEta) delete lRefTPCposEta;
+        if(lRefTPCnegEta) delete lRefTPCnegEta;
+    }
+    if(fMesLev==3)std::cout << "Finish setup reference calibration values!!" << std::endl;
+
     if(fMesLev==3)std::cout << "ExecOnce: Start load fLocalRho ================" << std::endl;
-    
     if(!fLocalRho) {
         fLocalRho = new AliLocalRhoParameter(fLocalRhoName.Data(), 0); 
         if(!(InputEvent()->FindListObject(fLocalRho->GetName()))) {
@@ -871,6 +1027,7 @@ Bool_t AliAnalysisTaskEmbeddingJetWithEP::Run()
 {
     // main event loop
     if(fMesLev==3)std::cout << "Start Run() function #########################" << std::endl;
+    
     if(fOwnEventCut){
         // main event loop
         fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
@@ -945,9 +1102,9 @@ Bool_t AliAnalysisTaskEmbeddingJetWithEP::Run()
     if (fEmbeddingQA.IsInitialized()) fEmbeddingQA.RecordEmbeddedEventProperties();
     
     // Post output data
-    if(fMesLev==3)std::cout << "Run(): Post output data ================" << std::endl;
     PostData(1, fOutput);
     
+    if(fMesLev==3)std::cout << "End Run() function #########################" << std::endl;
     return kTRUE;
 }
 
@@ -1334,15 +1491,15 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetLoop()
     Int_t  jetKindCount = 0;
     while ((jetCont = static_cast<AliJetContainer*>(next()))) {
         groupName = jetCont->GetName();
+        if(fMesLev==3)std::cout << "=== Jet container Name : " << groupName<< std::endl;
         
         UInt_t count = 0;
-        
         Double_t jetR = jetCont->GetJetRadius();
         
         for(auto jet : jetCont->accepted()) {
             if (!jet) continue;
             count++;
-
+            
             Int_t iCentBin = GetCentBin(); //fCentBin
             
             //if (jetCont->GetRhoParameter()) {
@@ -1356,7 +1513,8 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetLoop()
             deltaPhiJetEP = jet->Phi() - psi2V0[0];
             if (jet->Phi() - psi2V0[0] < 0.0) deltaPhiJetEP += TMath::TwoPi();
 
-            if (jetCont->GetRhoParameter()) {
+            if (jetKindCount==0) {
+                // for only hybrid jet
                 rhoVal = jetCont->GetRhoVal();
                 MeasureBkg(rhoVal);
 
@@ -1368,7 +1526,7 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetLoop()
             
             jetPtCorr = jet->Pt() - rhoVal * jet->Area();
             jetPtCorrLocal = jet->Pt() - localRhoValScaled * jet->Area();
-
+            
             //V2 In plane Jet
             if(fSepEP){
                 if ((deltaPhiJetEP < TMath::Pi()/4) || (deltaPhiJetEP >= 7*TMath::Pi()/4)\
@@ -1503,7 +1661,6 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
     Double_t localRhoVal = 0.0;
     Double_t localRhoValScaled = 0.0;
     Double_t detJetPtCorr = 0.0;
-    Double_t detJetPtCorrLocal = 0.0;
     Double_t deltaPhiJetEP = -999.0;
     
     TString jetKindName[3] = {"hybridRawJet", "detectorRawJet", "particleRawJet"};
@@ -1518,11 +1675,12 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
         } else if((jetEPAngle>TMath::Pi()/2)&&(jetEPAngle<TMath::Pi())){
             jetEPAngle = TMath::TwoPi() - jetEPAngle;
         }
+        if(fRhoLocalSubType) detJetPtCorr = jet->Pt() - localRhoValScaled * jet->Area();
+        else detJetPtCorr = jet->Pt() - rhoVal * jet->Area();
 
         Int_t v0Angle = (Int_t) jet->Phi() / (TMath::Pi()/4);
         Double_t tempV0Mult = V0MultForAngle[v0Angle];
-
-        Float_t detJetPtCorr = jet->Pt() - rhoVal * jet->Area();
+        
         deltaPhiJetEP = jet->Phi() - psi2V0[0];
         if (jet->Phi() - psi2V0[0] < 0.0) deltaPhiJetEP += TMath::TwoPi();
         if (hybJetsCont->GetRhoParameter()) {
@@ -1532,44 +1690,76 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
             localRhoValScaled = fLocalRho->GetLocalVal(\
                 jet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
         }
-
-        detJetPtCorr = jet->Pt() - rhoVal * jet->Area();
-        detJetPtCorrLocal = jet->Pt() - localRhoValScaled * jet->Area();
         
+        // Get the matched part-level jet
+        groupName = "";
+        const AliEmcalJet* matchedPartLvJet = GetMatchedPartLevelJet(jet, detJetPtCorr, groupName);
+        if (!matchedPartLvJet) continue;
+        Float_t truthPt = matchedPartLvJet->Pt();
         
+        Double_t angleTruJetVsEP2 = matchedPartLvJet->Phi() - psi2V0[0];
+        if(angleTruJetVsEP2 < 0.) angleTruJetVsEP2 += TMath::TwoPi();
+        Double_t angleDetJetVsEP2 = jet->Phi() - psi2V0[0];
+        if(angleDetJetVsEP2 < 0.) angleDetJetVsEP2 += TMath::TwoPi();
+        Double_t angleTruJetVsEP3 = matchedPartLvJet->Phi() - psi3V0[0];
+        if(angleTruJetVsEP3 < 0.) angleTruJetVsEP3 += TMath::TwoPi();
+        Double_t angleDetJetVsEP3 = jet->Phi() - psi3V0[0];
+        if(angleDetJetVsEP3 < 0.) angleDetJetVsEP3 += TMath::TwoPi();
+        
+        Double_t angularity     = GetAngularity(matchedPartLvJet);
+        Double_t matchDistance  = matchedPartLvJet->ClosestJetDistance();
+        Double_t sharedFraction = detJetsCont->GetFractionSharedPt(jet, nullptr);
 
+        if(fMinSharedMomentumFraction >=  sharedFraction && matchDistance < fJetMatchingR){
+            Double_t xForV2[5] = {truthPt, detJetPtCorr, angleTruJetVsEP2, angleDetJetVsEP2, fCent};
+            if(f2DRMwithEP2){
+                histName = TString::Format("%s/hRMWithEP2Angle", groupName.Data());
+                fHistManager.FillTHnSparse(histName, xForV2);
+            }
+            
+
+            Double_t xForV3[5] = {truthPt, detJetPtCorr, angleTruJetVsEP3, angleDetJetVsEP3, fCent};
+            if(f2DRMwithEP3){
+                histName = TString::Format("%s/hRMWithEP3Angle", groupName.Data());
+                fHistManager.FillTHnSparse(histName, xForV3);
+            }
+        }
+
+        histName = TString::Format("%s/hCentGRhoLRho", groupName.Data());
+        fHistManager.FillTH3(histName, fCent, rhoVal, localRhoValScaled);
+        histName = TString::Format("%s/hHybJetPtRhoA", groupName.Data());
+        fHistManager.FillTH3(histName, fCent, jet->Pt(), localRhoValScaled * jet->Area());
+        histName = TString::Format("%s/hHybJetPtRho", groupName.Data());
+        fHistManager.FillTH3(histName, fCent, jet->Pt(), localRhoValScaled);
+        histName = TString::Format("%s/hHybJetPtA", groupName.Data());
+        fHistManager.FillTH3(histName, fCent, jet->Pt(), jet->Area());
+        
         if(fSepEP){
             if ((deltaPhiJetEP < TMath::Pi()/4) || (deltaPhiJetEP >= 7*TMath::Pi()/4)\
                 || (deltaPhiJetEP >= 3*TMath::Pi()/4 && deltaPhiJetEP < 5*TMath::Pi()/4)) {
                 // == In plane  ==================
                 groupName = "MatchedJetHisto_InPlane";
-                            
-                // Get the matched part-level jet
-                const AliEmcalJet* matchedPartLvJet = GetMatchedPartLevelJet(jet, detJetPtCorrLocal, groupName);
-                if (!matchedPartLvJet) continue;
-                Float_t truthPt = matchedPartLvJet->Pt();
 
                 // Fill response matrix (centrality, pT-truth, pT-det)
                 //This is a 5-dim RM with information on the angularity and matching distance
                 if (fDoDifferentialRM) {
                     histName = TString::Format("%s/hResponseMatrixDiff", groupName.Data());
                     // (1) pt part LvL, (2) pt det LvL, (3) Matching distance (4) angularity (5) centrality
-                    Double_t angularity     = GetAngularity(matchedPartLvJet);
-                    Double_t matchDistance  = matchedPartLvJet->ClosestJetDistance();
-                    // Double_t sharedFraction = fDetJetContainer->GetFractionSharedPt(jet, nullptr);
-                    Double_t sharedFraction = detJetsCont->GetFractionSharedPt(jet, nullptr);
-                    Double_t x[6] = {truthPt, detJetPtCorrLocal, matchDistance, sharedFraction, angularity, fCent};
+                    Double_t x[6] = {truthPt, detJetPtCorr, matchDistance, sharedFraction, angularity, fCent};
                     fHistManager.FillTHnSparse(histName, x);
                 }
                 //This is a 3D RM for PbPb and a 2D RM for pp
                 else {
                     histName = TString::Format("%s/hResponseMatrix", groupName.Data());
-                    fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorrLocal);
+                    fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorr);
                 }
+
+                histName = TString::Format("%s/hMatchingDistance", groupName.Data());
+                fHistManager.FillTH3(histName, detJetPtCorr, truthPt, jet->ClosestJetDistance());
 
                 // Fill JES shift (centrality, pT-truth, (pT-det - pT-truth) / pT-truth)
                 histName = TString::Format("%s/hJESshift", groupName.Data());
-                fHistManager.FillTH3(histName, fCent, truthPt, (detJetPtCorrLocal-truthPt)/truthPt );
+                fHistManager.FillTH3(histName, fCent, truthPt, (detJetPtCorr-truthPt)/truthPt );
                 
                 histName = TString::Format("%s/hEmbDeltaPt", groupName.Data());
                 fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorr-truthPt );
@@ -1589,12 +1779,6 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
             else {
                 // == Out Of Plane  ==================
                 groupName = "MatchedJetHisto_OutOfPlane";
-
-                // Get the matched part-level jet
-                const AliEmcalJet* matchedPartLvJet = GetMatchedPartLevelJet(jet, detJetPtCorrLocal, groupName);
-                if (!matchedPartLvJet) continue;
-                Float_t truthPt = matchedPartLvJet->Pt();
-
                 // Fill response matrix (centrality, pT-truth, pT-det)
                 //This is a 5-dim RM with information on the angularity and matching distance
                 if (fDoDifferentialRM) {
@@ -1604,18 +1788,22 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
                     Double_t matchDistance  = matchedPartLvJet->ClosestJetDistance();
                     // Double_t sharedFraction = fDetJetContainer->GetFractionSharedPt(jet, nullptr);
                     Double_t sharedFraction = detJetsCont->GetFractionSharedPt(jet, nullptr);
-                    Double_t x[6] = {truthPt, detJetPtCorrLocal, matchDistance, sharedFraction, angularity, fCent};
+                    Double_t x[6] = {truthPt, detJetPtCorr, matchDistance, sharedFraction, angularity, fCent};
                     fHistManager.FillTHnSparse(histName, x);
                 }
                 //This is a 3D RM for PbPb and a 2D RM for pp
                 else {
                     histName = TString::Format("%s/hResponseMatrix", groupName.Data());
-                    fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorrLocal);
+                    fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorr);
                 }
+
+                // Fill matching distance between unique matches, without imposing deltaR cut (centrality, pT-truth, R)
+                histName = TString::Format("%s/hMatchingDistance", groupName.Data());
+                fHistManager.FillTH3(histName, detJetPtCorr, truthPt, jet->ClosestJetDistance());
 
                 // Fill JES shift (centrality, pT-truth, (pT-det - pT-truth) / pT-truth)
                 histName = TString::Format("%s/hJESshift", groupName.Data());
-                fHistManager.FillTH3(histName, fCent, truthPt, (detJetPtCorrLocal-truthPt)/truthPt );
+                fHistManager.FillTH3(histName, fCent, truthPt, (detJetPtCorr-truthPt)/truthPt );
                 
                 histName = TString::Format("%s/hEmbDeltaPt", groupName.Data());
                 fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorr-truthPt );
@@ -1805,13 +1993,6 @@ const AliEmcalJet* AliAnalysisTaskEmbeddingJetWithEP::GetMatchedPartLevelJet(con
             else {
                     Double_t truthPt=partLevelJet->Pt();
                     fHistManager.FillTH1(histNameQA, "uniqueMatch");
-                    
-                    // Fill matching distance between unique matches, without imposing deltaR cut (centrality, pT-truth, R)
-                    histName = TString::Format("%s/hMatchingDistance", groupName.Data());
-                    fHistManager.FillTH3(histName, detJetPt, truthPt, detJet->ClosestJetDistance());
-                    
-                    histName = TString::Format("%s/hJESshift", groupName.Data());
-                    fHistManager.FillTH3(histName, detJet->ClosestJetDistance(), truthPt, (detJetPt-truthPt)/truthPt);
             }
             
             // Check if the matching distance cut is passed
@@ -2778,8 +2959,6 @@ bool AliAnalysisTaskEmbeddingJetWithEP::IsTrackSelected(AliAODTrack* track) {
 
 /// ==========================================================================================
 AliAnalysisTaskEmbeddingJetWithEP * AliAnalysisTaskEmbeddingJetWithEP::AddTaskEmbeddingJetWithEP(
-    TString EPCailbType,
-    TString EPCalibJEHandRefFileName, TString EPCalibOrigRefFileName,
     const char *ntracks, const char *nclusters, const char* ncells, const char *suffix)
 {
     // Get the pointer to the existing analysis manager via the static access method.
@@ -2816,116 +2995,7 @@ AliAnalysisTaskEmbeddingJetWithEP * AliAnalysisTaskEmbeddingJetWithEP::AddTaskEm
     }
     
     AliAnalysisTaskEmbeddingJetWithEP* rawJetTask = new AliAnalysisTaskEmbeddingJetWithEP(name);
-    rawJetTask->SetQnCalibType(EPCailbType); //kJeHand, kOrig
     rawJetTask->SetVzRange(-10,10);
-    
-    if(EPCailbType == "kOrig"){
-        TList *lCalibRefHists = nullptr;
-
-        TString tempCalibFileName = AliDataFile::GetFileName(EPCalibOrigRefFileName.Data());
-        TString tempCalibLocalFileName = EPCalibOrigRefFileName;
-        
-        // Check access to CVMFS (will only be displayed locally)
-        if(EPCalibOrigRefFileName.BeginsWith("alien://") && !gGrid){
-            TGrid::Connect("alien://");
-        }
-        TFile* EPCalibRefFile = nullptr;
-        if(!tempCalibFileName.IsNull()) EPCalibRefFile = TFile::Open(tempCalibFileName.Data());
-        if(tempCalibFileName.IsNull())  EPCalibRefFile = TFile::Open(tempCalibLocalFileName.Data());
-        lCalibRefHists = (TList *)EPCalibRefFile->Get("fWgtsV0ZDC");
-        
-        rawJetTask->SetCalibOrigRefObjList(lCalibRefHists);
-    }
-    else if(EPCailbType == "kJeHand"){
-        TString pathToFileLocal = EPCalibJEHandRefFileName;
-
-        TString tempCalibFileName = AliDataFile::GetFileName(EPCalibJEHandRefFileName.Data());
-        TString tempCalibLocalFileName = EPCalibJEHandRefFileName;
-        
-        // Check access to CVMFS (will only be displayed locally)
-        if(EPCalibJEHandRefFileName.BeginsWith("alien://") && !gGrid){
-            // AliInfo("Trying to connect to AliEn ...");
-            TGrid::Connect("alien://");
-        }
-        TFile* EPCalibRefFile = nullptr;
-        if(!tempCalibFileName.IsNull()) EPCalibRefFile = TFile::Open(tempCalibFileName.Data());
-        if(tempCalibFileName.IsNull())  EPCalibRefFile = TFile::Open(tempCalibLocalFileName.Data());
-
-        AliOADBContainer *lRefMultV0BefCorPfpx = new AliOADBContainer();
-        TObjArray *lRefQx2am = new TObjArray();
-        TObjArray *lRefQy2am = new TObjArray();
-        TObjArray *lRefQx2as = new TObjArray();
-        TObjArray *lRefQy2as = new TObjArray();
-        TObjArray *lRefQx3am = new TObjArray();
-        TObjArray *lRefQy3am = new TObjArray();
-        TObjArray *lRefQx3as = new TObjArray();
-        TObjArray *lRefQy3as = new TObjArray();
-        TObjArray *lRefQx2cm = new TObjArray();
-        TObjArray *lRefQy2cm = new TObjArray();
-        TObjArray *lRefQx2cs = new TObjArray();
-        TObjArray *lRefQy2cs = new TObjArray();
-        TObjArray *lRefQx3cm = new TObjArray();
-        TObjArray *lRefQy3cm = new TObjArray(); 
-        TObjArray *lRefQx3cs = new TObjArray(); 
-        TObjArray *lRefQy3cs = new TObjArray();
-        TObjArray *lRefTPCposEta = new TObjArray();
-        TObjArray *lRefTPCnegEta = new TObjArray();
-
-
-        lRefMultV0BefCorPfpx = (AliOADBContainer *) EPCalibRefFile->Get("hMultV0BefCorPfpx");
-
-        bool LoadedCaliRef = rawJetTask->ExtractRecentPara(EPCalibRefFile, lRefQx2am, lRefQy2am, lRefQx2as, lRefQy2as, lRefQx3am, lRefQy3am, lRefQx3as, lRefQy3as, lRefQx2cm, lRefQy2cm, lRefQx2cs, lRefQy2cs, lRefQx3cm,lRefQy3cm, lRefQx3cs, lRefQy3cs, lRefTPCposEta, lRefTPCnegEta);
-        if (!LoadedCaliRef) {
-            std::cout << "Calibrations failed to load!\n" << std::endl;
-        } else {
-            std::cout << "Calibrations loaded correctly!\n" << std::endl;
-        }
-        
-        rawJetTask->SetLRefMultV0BefCorPfpx(lRefMultV0BefCorPfpx);
-        rawJetTask->SetLRefQx2am(lRefQx2am);
-        rawJetTask->SetLRefQy2am(lRefQy2am);
-        rawJetTask->SetLRefQx2as(lRefQx2as);
-        rawJetTask->SetLRefQy2as(lRefQy2as);
-        rawJetTask->SetLRefQx3am(lRefQx3am);
-        rawJetTask->SetLRefQy3am(lRefQy3am);
-        rawJetTask->SetLRefQx3as(lRefQx3as);
-        rawJetTask->SetLRefQy3as(lRefQy3as);
-        rawJetTask->SetLRefQx2cm(lRefQx2cm);
-        rawJetTask->SetLRefQy2cm(lRefQy2cm);
-        rawJetTask->SetLRefQx2cs(lRefQx2cs);
-        rawJetTask->SetLRefQy2cs(lRefQy2cs);
-        rawJetTask->SetLRefQx3cm(lRefQx3cm);
-        rawJetTask->SetLRefQy3cm(lRefQy3cm);
-        rawJetTask->SetLRefQx3cs(lRefQx3cs);
-        rawJetTask->SetLRefQy3cs(lRefQy3cs);
-        rawJetTask->SetLRefTPCposEta(lRefTPCposEta);
-        rawJetTask->SetLRefTPCnegEta(lRefTPCnegEta);
-        
-        
-        if(lRefMultV0BefCorPfpx) delete lRefMultV0BefCorPfpx;
-        if(lRefQx2am) delete lRefQx2am;
-        if(lRefQy2am) delete lRefQy2am;
-        if(lRefQx2as) delete lRefQx2as;
-        if(lRefQy2as) delete lRefQy2as;
-        if(lRefQx3am) delete lRefQx3am;
-        if(lRefQy3am) delete lRefQy3am;
-        if(lRefQx3as) delete lRefQx3as;
-        if(lRefQy3as) delete lRefQy3as;
-        if(lRefQx2cm) delete lRefQx2cm;
-        if(lRefQy2cm) delete lRefQy2cm;
-        if(lRefQx2cs) delete lRefQx2cs;
-        if(lRefQy2cs) delete lRefQy2cs;
-        if(lRefQx3cm) delete lRefQx3cm;
-        if(lRefQy3cm) delete lRefQy3cm;
-        if(lRefQx3cs) delete lRefQx3cs;
-        if(lRefQy3cs) delete lRefQy3cs;
-        if(lRefTPCposEta) delete lRefTPCposEta;
-        if(lRefTPCnegEta) delete lRefTPCnegEta;
-        
-        
-    }
-    
-    std::cout << "Finish setup reference calibration values!!" << std::endl;
     
     if (trackName == "mcparticles") rawJetTask->AddMCParticleContainer(trackName);
     else if (trackName == "tracks") rawJetTask->AddTrackContainer(trackName);
