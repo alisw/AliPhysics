@@ -1100,15 +1100,15 @@ void AliHFMLXicZeroToXiPifromKFP::UserCreateOutputObjects()
   f2DHistXiPlusXY_PV = new TH2F("f2DHistXiPlusXY_PV", "f2DHistXiPlusXY_PV", 1000, -10., 10., 1000, -10., 10.);
 
   if (!fIsAnaOmegac0) {
-    f2DHistNsigmaTPCTOF_PiFromXic0 = new TH2F("f2DHistNsigmaTPCTOF_PiFromXic0", "f2DHistNsigmaTPCTOF_PiFromXic0", 20000, -1000., 1000., 20000, -1000., 1000.);
-    f2DHistNsigmaTPCTOF_PiFromXi = new TH2F("f2DHistNsigmaTPCTOF_PiFromXi", "f2DHistNsigmaTPCTOF_PiFromXi", 20000, -1000., 1000., 20000, -1000., 1000.);
+    f2DHistNsigmaTPCTOF_PiFromXic0 = new TH2F("f2DHistNsigmaTPCTOF_PiFromXic0", "f2DHistNsigmaTPCTOF_PiFromXic0", 4000, -1000., 1000., 4000, -1000., 1000.);
+    f2DHistNsigmaTPCTOF_PiFromXi = new TH2F("f2DHistNsigmaTPCTOF_PiFromXi", "f2DHistNsigmaTPCTOF_PiFromXi", 4000, -1000., 1000., 4000, -1000., 1000.);
   }
   if (fIsAnaOmegac0) {
-    f2DHistNsigmaTPCTOF_PiFromOmegac0 = new TH2F("f2DHistNsigmaTPCTOF_PiFromOmegac0", "f2DHistNsigmaTPCTOF_PiFromOmegac0", 20000, -1000., 1000., 20000, -1000., 1000.);
-    f2DHistNsigmaTPCTOF_KaFromOmega = new TH2F("f2DHistNsigmaTPCTOF_KaFromOmega", "f2DHistNsigmaTPCTOF_KaFromOmega", 20000, -1000., 1000., 20000, -1000., 1000.);
+    f2DHistNsigmaTPCTOF_PiFromOmegac0 = new TH2F("f2DHistNsigmaTPCTOF_PiFromOmegac0", "f2DHistNsigmaTPCTOF_PiFromOmegac0", 4000, -1000., 1000., 4000, -1000., 1000.);
+    f2DHistNsigmaTPCTOF_KaFromOmega = new TH2F("f2DHistNsigmaTPCTOF_KaFromOmega", "f2DHistNsigmaTPCTOF_KaFromOmega", 4000, -1000., 1000., 4000, -1000., 1000.);
   }
-  f2DHistNsigmaTPCTOF_PiFromLam = new TH2F("f2DHistNsigmaTPCTOF_PiFromLam", "f2DHistNsigmaTPCTOF_PiFromLam", 20000, -1000., 1000., 20000, -1000., 1000.);
-  f2DHistNsigmaTPCTOF_PrFromLam = new TH2F("f2DHistNsigmaTPCTOF_PrFromLam", "f2DHistNsigmaTPCTOF_PrFromLam", 20000, -1000., 1000., 20000, -1000., 1000.);
+  f2DHistNsigmaTPCTOF_PiFromLam = new TH2F("f2DHistNsigmaTPCTOF_PiFromLam", "f2DHistNsigmaTPCTOF_PiFromLam", 4000, -1000., 1000., 4000, -1000., 1000.);
+  f2DHistNsigmaTPCTOF_PrFromLam = new TH2F("f2DHistNsigmaTPCTOF_PrFromLam", "f2DHistNsigmaTPCTOF_PrFromLam", 4000, -1000., 1000., 4000, -1000., 1000.);
 
   fHistChargeV0 = new TH1F("fHistChargeV0", "fHistChargeV0", 11, -5.5, 5.5);
   fHistOnFlyStatus = new TH1F("fHistOnFlyStatus"," fHistOnFlyStatus", 3, -1.5, 1.5);
