@@ -22,7 +22,7 @@ class AliPHOSEmbedggHBT : public AliAnalysisTaskEtaPhigg
  public:
   AliPHOSEmbedggHBT() = default;
   AliPHOSEmbedggHBT(const char* name);
-  virtual ~AliPHOSEmbedggHBT() = default;
+  virtual ~AliPHOSEmbedggHBT();
 
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t* option);
