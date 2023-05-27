@@ -49,13 +49,32 @@
 
 ClassImp(AliPHOSEmbedggHBT)
 
-  //________________________________________________________________________
-  AliPHOSEmbedggHBT::AliPHOSEmbedggHBT(const char* name)
+//________________________________________________________________________
+AliPHOSEmbedggHBT::AliPHOSEmbedggHBT(const char* name)
   : AliAnalysisTaskEtaPhigg(name), fSignalEvent(nullptr), fSignalEvents(nullptr)
 {
   // Constructor
 }
-
+//________________________________________________________________________
+AliPHOSEmbedggHBT::~AliPHOSEmbedggHBT(){
+  //Note that histograms are stored in fOutputContainer and should not be deleted explicitely  
+  if(fMCEvents){
+    delete fMCEvents;
+    fMCEvents=nullptr;
+  }
+  if(fMCEvents){
+    delete fMCEvents;  
+    fMCEvents = nullptr;
+  }
+  if(fSignalEvent){
+    delete fSignalEvent;
+    fSignalEvent = nullptr;
+  }
+  if(fSignalEvents){
+    delete fSignalEvents;
+    fSignalEvents = nullptr;
+  }
+}
 //________________________________________________________________________
 void AliPHOSEmbedggHBT::UserCreateOutputObjects()
 {
