@@ -121,6 +121,7 @@ class AliAnalysisTaskCorrPbPb : public AliAnalysisTaskSE {
   AliEventCuts fAODeventCuts;
   TList *fOutputList;
   TList *fQAList;
+  TList *fTreeList;
   Double_t fMultLow;
   Double_t fMultHigh;
   TH1D *hNumberOfEvents;
