@@ -117,15 +117,15 @@ fFillPairTreeSE(kFALSE),
 fFillPairTreeME(kFALSE),
 fSaveMixedBackground(kFALSE),
 
-fProcessClusters(kFALSE),
-fMapClusterstoTracks(kFALSE),
-fProcessRecoPHOS(kFALSE),
-fProcessRecoCalc(kTRUE),
-fSavePartCandPHOS(kFALSE),
-fSavePartCandCalc(kTRUE),
+fProcessClusters(kTRUE),
+fMapClusterstoTracks(kTRUE),
+fProcessRecoPHOS(kTRUE),
+fProcessRecoCalc(kFALSE),
+fSavePartCandPHOS(kTRUE),
+fSavePartCandCalc(kFALSE),
 fFillPHOSPairTreeSE(kFALSE),
 fFillPHOSPairTreeME(kFALSE),
-fSavePHOSMixedBackground(kFALSE),
+fSavePHOSMixedBackground(kTRUE),
 fSaveAdditionalBranches(kFALSE),
 fSaveMCBranches(kTRUE),
 fSaveAddMCBranches(kTRUE),
@@ -412,6 +412,7 @@ fCaloPhotonPxMC(-999),
 fCaloPhotonPyMC(-999),
 fCaloPhotonPzMC(-999),
 fCaloPhotonE(-999),
+fCaloPhotonELead(-999),
 fCaloPhotonEcorr(-999),
 fCaloPhotonEMC(-999),
 fClustNLabels(-999),
@@ -490,15 +491,15 @@ fFillPairTreeSE(kFALSE),
 fFillPairTreeME(kFALSE),
 fSaveMixedBackground(kFALSE),
 
-fProcessClusters(kFALSE),
-fMapClusterstoTracks(kFALSE),
-fProcessRecoPHOS(kFALSE),
-fProcessRecoCalc(kTRUE),
-fSavePartCandPHOS(kFALSE),
-fSavePartCandCalc(kTRUE),
+fProcessClusters(kTRUE),
+fMapClusterstoTracks(kTRUE),
+fProcessRecoPHOS(kTRUE),
+fProcessRecoCalc(kFALSE),
+fSavePartCandPHOS(kTRUE),
+fSavePartCandCalc(kFALSE),
 fFillPHOSPairTreeSE(kFALSE),
 fFillPHOSPairTreeME(kFALSE),
-fSavePHOSMixedBackground(kFALSE),
+fSavePHOSMixedBackground(kTRUE),
 fSaveAdditionalBranches(kFALSE),
 fSaveMCBranches(kTRUE),
 fSaveAddMCBranches(kTRUE),
@@ -785,6 +786,7 @@ fCaloPhotonPxMC(-999),
 fCaloPhotonPyMC(-999),
 fCaloPhotonPzMC(-999),
 fCaloPhotonE(-999),
+fCaloPhotonELead(-999),
 fCaloPhotonEcorr(-999),
 fCaloPhotonEMC(-999),
 fClustNLabels(-999),
@@ -1527,6 +1529,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPHOSCandTree->Branch("fSigPt",&fSigPt,"fSigPt/F");
     fSigmaPHOSCandTree->Branch("fSigFlightDist",&fSigFlightDist,"fSigFlightDist/F");
     fSigmaPHOSCandTree->Branch("fCaloPhotonE",&fCaloPhotonE,"fCaloPhotonE/F");
+    fSigmaPHOSCandTree->Branch("fCaloPhotonELead",&fCaloPhotonELead,"fCaloPhotonELead/F");
     fSigmaPHOSCandTree->Branch("fClustTrackDx",&fClustTrackDx,"fClustTrackDx/F");
     fSigmaPHOSCandTree->Branch("fClustTrackDz",&fClustTrackDz,"fClustTrackDz/F");
     fSigmaPHOSCandTree->Branch("fClustTrackD",&fClustTrackD,"fClustTrackD/F");
@@ -1558,6 +1561,15 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPHOSCandTree->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
     fSigmaPHOSCandTree->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
     fSigmaPHOSCandTree->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
+    fSigmaPHOSCandTree->Branch("fCaloPhotonX",&fCaloPhotonX,"fCaloPhotonX/F");
+    fSigmaPHOSCandTree->Branch("fCaloPhotonY",&fCaloPhotonY,"fCaloPhotonY/F");
+    fSigmaPHOSCandTree->Branch("fCaloPhotonZ",&fCaloPhotonZ,"fCaloPhotonZ/F");
+    fSigmaPHOSCandTree->Branch("fCellsAbsId",&fCellsAbsId,"fCellsAbsId[20]/S");
+    fSigmaPHOSCandTree->Branch("fCaloPhotonEcorr",&fCaloPhotonEcorr,"fCaloPhotonEcorr/F");
+    fSigmaPHOSCandTree->Branch("fClustDispersion",&fClustDispersion,"fClustDispersion/F");
+    fSigmaPHOSCandTree->Branch("fClustNTracksMatched",&fClustNTracksMatched,"fClustNTracksMatched/I");
+    fSigmaPHOSCandTree->Branch("fClustTOF",&fClustTOF,"fClustTOF/F");
+    fSigmaPHOSCandTree->Branch("fClustBeta",&fClustBeta,"fClustBeta/F");
     if(fSaveMCBranches){
       fSigmaPHOSCandTree->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
       fSigmaPHOSCandTree->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
@@ -1629,17 +1641,9 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
       fSigmaPHOSCandTree->Branch("fPhoton2Px",&fPhoton2Px,"fPhoton2Px/F");
       fSigmaPHOSCandTree->Branch("fPhoton2Py",&fPhoton2Py,"fPhoton2Py/F");
       fSigmaPHOSCandTree->Branch("fPhoton2Pz",&fPhoton2Pz,"fPhoton2Pz/F");
-      fSigmaPHOSCandTree->Branch("fCaloPhotonX",&fCaloPhotonX,"fCaloPhotonX/F");
-      fSigmaPHOSCandTree->Branch("fCaloPhotonY",&fCaloPhotonY,"fCaloPhotonY/F");
-      fSigmaPHOSCandTree->Branch("fCaloPhotonZ",&fCaloPhotonZ,"fCaloPhotonZ/F");
       fSigmaPHOSCandTree->Branch("fConvPhotonX",&fConvPhotonX,"fConvPhotonX/F");
       fSigmaPHOSCandTree->Branch("fConvPhotonY",&fConvPhotonY,"fConvPhotonY/F");
       fSigmaPHOSCandTree->Branch("fConvPhotonZ",&fConvPhotonZ,"fConvPhotonZ/F");
-      fSigmaPHOSCandTree->Branch("fCaloPhotonEcorr",&fCaloPhotonEcorr,"fCaloPhotonEcorr/F");
-      fSigmaPHOSCandTree->Branch("fClustDispersion",&fClustDispersion,"fClustDispersion/F");
-      fSigmaPHOSCandTree->Branch("fClustNTracksMatched",&fClustNTracksMatched,"fClustNTracksMatched/I");
-      fSigmaPHOSCandTree->Branch("fClustTOF",&fClustTOF,"fClustTOF/F");
-      fSigmaPHOSCandTree->Branch("fClustBeta",&fClustBeta,"fClustBeta/F");
       fSigmaPHOSCandTree->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
       fSigmaPHOSCandTree->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
       fSigmaPHOSCandTree->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
@@ -1686,6 +1690,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPHOSMEBkgTree->Branch("fSigPt",&fSigPt,"fSigPt/F");
     fSigmaPHOSMEBkgTree->Branch("fSigFlightDist",&fSigFlightDist,"fSigFlightDist/F");
     fSigmaPHOSMEBkgTree->Branch("fCaloPhotonE",&fCaloPhotonE,"fCaloPhotonE/F");
+    fSigmaPHOSMEBkgTree->Branch("fCaloPhotonELead",&fCaloPhotonELead,"fCaloPhotonELead/F");
     fSigmaPHOSMEBkgTree->Branch("fClustTrackDx",&fClustTrackDx,"fClustTrackDx/F");
     fSigmaPHOSMEBkgTree->Branch("fClustTrackDz",&fClustTrackDz,"fClustTrackDz/F");
     fSigmaPHOSMEBkgTree->Branch("fClustTrackD",&fClustTrackD,"fClustTrackD/F");
@@ -1717,6 +1722,15 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPHOSMEBkgTree->Branch("fProtonPx",&fProtonPx,"fProtonPx/F");
     fSigmaPHOSMEBkgTree->Branch("fProtonPy",&fProtonPy,"fProtonPy/F");
     fSigmaPHOSMEBkgTree->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
+    fSigmaPHOSMEBkgTree->Branch("fCaloPhotonX",&fCaloPhotonX,"fCaloPhotonX/F");
+    fSigmaPHOSMEBkgTree->Branch("fCaloPhotonY",&fCaloPhotonY,"fCaloPhotonY/F");
+    fSigmaPHOSMEBkgTree->Branch("fCaloPhotonZ",&fCaloPhotonZ,"fCaloPhotonZ/F");
+    fSigmaPHOSMEBkgTree->Branch("fCellsAbsId",&fCellsAbsId,"fCellsAbsId[20]/S");
+    fSigmaPHOSMEBkgTree->Branch("fCaloPhotonEcorr",&fCaloPhotonEcorr,"fCaloPhotonEcorr/F");
+    fSigmaPHOSMEBkgTree->Branch("fClustDispersion",&fClustDispersion,"fClustDispersion/F");
+    fSigmaPHOSMEBkgTree->Branch("fClustNTracksMatched",&fClustNTracksMatched,"fClustNTracksMatched/I");
+    fSigmaPHOSMEBkgTree->Branch("fClustTOF",&fClustTOF,"fClustTOF/F");
+    fSigmaPHOSMEBkgTree->Branch("fClustBeta",&fClustBeta,"fClustBeta/F");
     if(fSaveMCBranches){
       fSigmaPHOSMEBkgTree->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
       fSigmaPHOSMEBkgTree->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
@@ -1763,17 +1777,9 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
       fSigmaPHOSMEBkgTree->Branch("fPhoton2Px",&fPhoton2Px,"fPhoton2Px/F");
       fSigmaPHOSMEBkgTree->Branch("fPhoton2Py",&fPhoton2Py,"fPhoton2Py/F");
       fSigmaPHOSMEBkgTree->Branch("fPhoton2Pz",&fPhoton2Pz,"fPhoton2Pz/F");
-      fSigmaPHOSMEBkgTree->Branch("fCaloPhotonX",&fCaloPhotonX,"fCaloPhotonX/F");
-      fSigmaPHOSMEBkgTree->Branch("fCaloPhotonY",&fCaloPhotonY,"fCaloPhotonY/F");
-      fSigmaPHOSMEBkgTree->Branch("fCaloPhotonZ",&fCaloPhotonZ,"fCaloPhotonZ/F");
       fSigmaPHOSMEBkgTree->Branch("fConvPhotonX",&fConvPhotonX,"fConvPhotonX/F");
       fSigmaPHOSMEBkgTree->Branch("fConvPhotonY",&fConvPhotonY,"fConvPhotonY/F");
       fSigmaPHOSMEBkgTree->Branch("fConvPhotonZ",&fConvPhotonZ,"fConvPhotonZ/F");
-      fSigmaPHOSMEBkgTree->Branch("fCaloPhotonEcorr",&fCaloPhotonEcorr,"fCaloPhotonEcorr/F");
-      fSigmaPHOSMEBkgTree->Branch("fClustDispersion",&fClustDispersion,"fClustDispersion/F");
-      fSigmaPHOSMEBkgTree->Branch("fClustNTracksMatched",&fClustNTracksMatched,"fClustNTracksMatched/I");
-      fSigmaPHOSMEBkgTree->Branch("fClustTOF",&fClustTOF,"fClustTOF/F");
-      fSigmaPHOSMEBkgTree->Branch("fClustBeta",&fClustBeta,"fClustBeta/F");
       fSigmaPHOSMEBkgTree->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
       fSigmaPHOSMEBkgTree->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
       fSigmaPHOSMEBkgTree->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
@@ -1820,6 +1826,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreePHOSSE->Branch("fSigPt",&fSigPt,"fSigPt/F");
     fSigmaPairTreePHOSSE->Branch("fSigFlightDist",&fSigFlightDist,"fSigFlightDist/F");
     fSigmaPairTreePHOSSE->Branch("fCaloPhotonE",&fCaloPhotonE,"fCaloPhotonE/F");
+    fSigmaPairTreePHOSSE->Branch("fCaloPhotonELead",&fCaloPhotonELead,"fCaloPhotonELead/F");
     fSigmaPairTreePHOSSE->Branch("fClustTrackDx",&fClustTrackDx,"fClustTrackDx/F");
     fSigmaPairTreePHOSSE->Branch("fClustTrackDz",&fClustTrackDz,"fClustTrackDz/F");
     fSigmaPairTreePHOSSE->Branch("fClustTrackD",&fClustTrackD,"fClustTrackD/F");
@@ -1873,6 +1880,15 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreePHOSSE->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
     fSigmaPairTreePHOSSE->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
     fSigmaPairTreePHOSSE->Branch("fPairProtonChi2",&fPairProtonChi2,"fPairProtonChi2/F");
+    fSigmaPairTreePHOSSE->Branch("fCaloPhotonX",&fCaloPhotonX,"fCaloPhotonX/F");
+    fSigmaPairTreePHOSSE->Branch("fCaloPhotonY",&fCaloPhotonY,"fCaloPhotonY/F");
+    fSigmaPairTreePHOSSE->Branch("fCaloPhotonZ",&fCaloPhotonZ,"fCaloPhotonZ/F");
+    fSigmaPairTreePHOSSE->Branch("fCellsAbsId",&fCellsAbsId,"fCellsAbsId[20]/S");
+    fSigmaPairTreePHOSSE->Branch("fCaloPhotonEcorr",&fCaloPhotonEcorr,"fCaloPhotonEcorr/F");
+    fSigmaPairTreePHOSSE->Branch("fClustDispersion",&fClustDispersion,"fClustDispersion/F");
+    fSigmaPairTreePHOSSE->Branch("fClustNTracksMatched",&fClustNTracksMatched,"fClustNTracksMatched/I");
+    fSigmaPairTreePHOSSE->Branch("fClustTOF",&fClustTOF,"fClustTOF/F");
+    fSigmaPairTreePHOSSE->Branch("fClustBeta",&fClustBeta,"fClustBeta/F");
     if(fSaveMCBranches){
       fSigmaPairTreePHOSSE->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
       fSigmaPairTreePHOSSE->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
@@ -1921,17 +1937,9 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
       fSigmaPairTreePHOSSE->Branch("fPhoton2Px",&fPhoton2Px,"fPhoton2Px/F");
       fSigmaPairTreePHOSSE->Branch("fPhoton2Py",&fPhoton2Py,"fPhoton2Py/F");
       fSigmaPairTreePHOSSE->Branch("fPhoton2Pz",&fPhoton2Pz,"fPhoton2Pz/F");
-      fSigmaPairTreePHOSSE->Branch("fCaloPhotonX",&fCaloPhotonX,"fCaloPhotonX/F");
-      fSigmaPairTreePHOSSE->Branch("fCaloPhotonY",&fCaloPhotonY,"fCaloPhotonY/F");
-      fSigmaPairTreePHOSSE->Branch("fCaloPhotonZ",&fCaloPhotonZ,"fCaloPhotonZ/F");
       fSigmaPairTreePHOSSE->Branch("fConvPhotonX",&fConvPhotonX,"fConvPhotonX/F");
       fSigmaPairTreePHOSSE->Branch("fConvPhotonY",&fConvPhotonY,"fConvPhotonY/F");
       fSigmaPairTreePHOSSE->Branch("fConvPhotonZ",&fConvPhotonZ,"fConvPhotonZ/F");
-      fSigmaPairTreePHOSSE->Branch("fCaloPhotonEcorr",&fCaloPhotonEcorr,"fCaloPhotonEcorr/F");
-      fSigmaPairTreePHOSSE->Branch("fClustDispersion",&fClustDispersion,"fClustDispersion/F");
-      fSigmaPairTreePHOSSE->Branch("fClustNTracksMatched",&fClustNTracksMatched,"fClustNTracksMatched/I");
-      fSigmaPairTreePHOSSE->Branch("fClustTOF",&fClustTOF,"fClustTOF/F");
-      fSigmaPairTreePHOSSE->Branch("fClustBeta",&fClustBeta,"fClustBeta/F");
       fSigmaPairTreePHOSSE->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
       fSigmaPairTreePHOSSE->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
       fSigmaPairTreePHOSSE->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
@@ -1978,6 +1986,7 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreePHOSME->Branch("fSigPt",&fSigPt,"fSigPt/F");
     fSigmaPairTreePHOSME->Branch("fSigFlightDist",&fSigFlightDist,"fSigFlightDist/F");
     fSigmaPairTreePHOSME->Branch("fCaloPhotonE",&fCaloPhotonE,"fCaloPhotonE/F");
+    fSigmaPairTreePHOSME->Branch("fCaloPhotonELead",&fCaloPhotonELead,"fCaloPhotonELead/F");
     fSigmaPairTreePHOSME->Branch("fClustTrackDx",&fClustTrackDx,"fClustTrackDx/F");
     fSigmaPairTreePHOSME->Branch("fClustTrackDz",&fClustTrackDz,"fClustTrackDz/F");
     fSigmaPairTreePHOSME->Branch("fClustTrackD",&fClustTrackD,"fClustTrackD/F");
@@ -2031,6 +2040,15 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
     fSigmaPairTreePHOSME->Branch("fProtonPz",&fProtonPz,"fProtonPz/F");
     fSigmaPairTreePHOSME->Branch("fProtonChi2",&fProtonChi2,"fProtonChi2/F");
     fSigmaPairTreePHOSME->Branch("fPairProtonChi2",&fPairProtonChi2,"fPairProtonChi2/F");
+    fSigmaPairTreePHOSME->Branch("fCaloPhotonX",&fCaloPhotonX,"fCaloPhotonX/F");
+    fSigmaPairTreePHOSME->Branch("fCaloPhotonY",&fCaloPhotonY,"fCaloPhotonY/F");
+    fSigmaPairTreePHOSME->Branch("fCaloPhotonZ",&fCaloPhotonZ,"fCaloPhotonZ/F");
+    fSigmaPairTreePHOSME->Branch("fCellsAbsId",&fCellsAbsId,"fCellsAbsId[20]/S");
+    fSigmaPairTreePHOSME->Branch("fCaloPhotonEcorr",&fCaloPhotonEcorr,"fCaloPhotonEcorr/F");
+    fSigmaPairTreePHOSME->Branch("fClustDispersion",&fClustDispersion,"fClustDispersion/F");
+    fSigmaPairTreePHOSME->Branch("fClustNTracksMatched",&fClustNTracksMatched,"fClustNTracksMatched/I");
+    fSigmaPairTreePHOSME->Branch("fClustTOF",&fClustTOF,"fClustTOF/F");
+    fSigmaPairTreePHOSME->Branch("fClustBeta",&fClustBeta,"fClustBeta/F");
     if(fSaveMCBranches){
       fSigmaPairTreePHOSME->Branch("fIsMCSigma",&fIsMCSigma,"fIsMCSigma/O");
       fSigmaPairTreePHOSME->Branch("fIsMCDalitz",&fIsMCDalitz,"fIsMCDalitz/O");
@@ -2079,17 +2097,9 @@ void AliAnalysisTaskSigmaPlus::UserCreateOutputObjects()
       fSigmaPairTreePHOSME->Branch("fPhoton2Px",&fPhoton2Px,"fPhoton2Px/F");
       fSigmaPairTreePHOSME->Branch("fPhoton2Py",&fPhoton2Py,"fPhoton2Py/F");
       fSigmaPairTreePHOSME->Branch("fPhoton2Pz",&fPhoton2Pz,"fPhoton2Pz/F");
-      fSigmaPairTreePHOSME->Branch("fCaloPhotonX",&fCaloPhotonX,"fCaloPhotonX/F");
-      fSigmaPairTreePHOSME->Branch("fCaloPhotonY",&fCaloPhotonY,"fCaloPhotonY/F");
-      fSigmaPairTreePHOSME->Branch("fCaloPhotonZ",&fCaloPhotonZ,"fCaloPhotonZ/F");
       fSigmaPairTreePHOSME->Branch("fConvPhotonX",&fConvPhotonX,"fConvPhotonX/F");
       fSigmaPairTreePHOSME->Branch("fConvPhotonY",&fConvPhotonY,"fConvPhotonY/F");
       fSigmaPairTreePHOSME->Branch("fConvPhotonZ",&fConvPhotonZ,"fConvPhotonZ/F");
-      fSigmaPairTreePHOSME->Branch("fCaloPhotonEcorr",&fCaloPhotonEcorr,"fCaloPhotonEcorr/F");
-      fSigmaPairTreePHOSME->Branch("fClustDispersion",&fClustDispersion,"fClustDispersion/F");
-      fSigmaPairTreePHOSME->Branch("fClustNTracksMatched",&fClustNTracksMatched,"fClustNTracksMatched/I");
-      fSigmaPairTreePHOSME->Branch("fClustTOF",&fClustTOF,"fClustTOF/F");
-      fSigmaPairTreePHOSME->Branch("fClustBeta",&fClustBeta,"fClustBeta/F");
       fSigmaPairTreePHOSME->Branch("fPhoton1DCAPV",&fPhoton1DCAPV,"fPhoton1DCAPV/F");
       fSigmaPairTreePHOSME->Branch("fPhoton1DCASV",&fPhoton1DCASV,"fPhoton1DCASV/F");
       fSigmaPairTreePHOSME->Branch("fTrackDCASV",&fTrackDCASV,"fTrackDCASV/F");
@@ -3969,9 +3979,12 @@ void AliAnalysisTaskSigmaPlus::UserExec(Option_t *)
         for(Int_t k=0; k<nClusterforMixing; k++) {
           AliAODCaloCluster *clust = (AliAODCaloCluster*)aodEvent->GetCaloCluster(fCaloPhotonArray.at(k));
           if(!clust) continue;
+          AliAODCaloCells* calocells;
+          if(clust->IsPHOS()) calocells = (AliAODCaloCells*)aodEvent->GetPHOSCells();
+          if(clust->IsEMCAL()) calocells = (AliAODCaloCells*)aodEvent->GetEMCALCells();
           AliAODClusterreduced* redclust = new AliAODClusterreduced();
-          if(!redclust) continue;
-          redclust->InitfromCluster(clust);
+          if(!redclust) continue;          
+          redclust->InitfromCluster(clust,calocells);
           ClusterObjArray->Add(redclust);
         }
 
@@ -6818,6 +6831,7 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
         fClustBeta = clustbeta;
         fClustNCells = aodCluster->GetNCells();
         fClustDisttoBC = aodCluster->GetDistanceToBadChannel();
+        for(Int_t iCell=0; iCell<20; iCell++){fCellsAbsId[iCell] = (Short_t)aodCluster->GetCellAbsId(iCell);}
         fPhotonDaughtMaxEta = MaxDaughtEta;
         fPhotonsMaxDeltaTheta = MaxDeltaTheta;
         fPhoton1CPA = v0_1->CosPointingAngle(primaryVtxPos);
@@ -6863,6 +6877,14 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
         fProtonNSigTOFPion = fPIDResponse->NumberOfSigmasTOF(prot,AliPID::kPion);
         fProtonNSigTOFKaon = fPIDResponse->NumberOfSigmasTOF(prot,AliPID::kKaon);
         fProtonNSigTOFElec = fPIDResponse->NumberOfSigmasTOF(prot,AliPID::kElectron);
+
+        fCaloPhotonELead = -999;
+        AliAODCaloCells* CaloCells;
+        if(fIsClusterPHOS) CaloCells = (AliAODCaloCells*)aodEvent->GetPHOSCells();
+        if(fIsClusterEMCAL) CaloCells = (AliAODCaloCells*)aodEvent->GetEMCALCells();
+        if(CaloCells){
+          for(Int_t iCell=0; iCell<fClustNCells; iCell++){double cellamp = CaloCells->GetCellAmplitude(fCellsAbsId[iCell]); if(cellamp>fCaloPhotonELead) fCaloPhotonELead = cellamp;}
+        }
 
         fEventhasSigmaCand = kTRUE;
         if(fSavePartCandPHOS) fSigmaPHOSCandTree->Fill();
@@ -7178,10 +7200,12 @@ void AliAnalysisTaskSigmaPlus::ReconstructParticlesPHOS() {
             fClustBeta = clustbeta;
             fClustNCells = mixCluster->GetNCells();
             fClustDisttoBC = mixCluster->GetDistanceToBadChannel();
+            for(Int_t iCell=0; iCell<20; iCell++){fCellsAbsId[iCell] = (Short_t)mixCluster->GetCellAbsId(iCell);}
             fInvPi0Mass = pi0mass; 
             fPi0Px = trackPi0.Px(); 
             fPi0Py = trackPi0.Py(); 
             fPi0Pz = trackPi0.Pz(); 
+            fCaloPhotonELead = mixCluster->ELead();
             fSigmaPHOSMEBkgTree->Fill();
   
           }//End of Mixed Cluster loop
