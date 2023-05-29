@@ -660,6 +660,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Float_t               fCaloPhotonPyMC;
         Float_t               fCaloPhotonPzMC;
         Float_t               fCaloPhotonE;
+        Float_t               fCaloPhotonELead;
         Float_t               fCaloPhotonEcorr;
         Float_t               fCaloPhotonEMC;
         Int_t                 fClustNLabels;
@@ -675,6 +676,7 @@ class AliAnalysisTaskSigmaPlus : public AliAnalysisTaskSE
         Float_t               fClustBeta;
         Int_t                 fClustNCells;
         Float_t               fClustDisttoBC;
+        Short_t               fCellsAbsId[20];
         //End of Extra Branches of "fSigmaPHOSCandTree"
 
         //Extra Branches of TTree "fSigmaPairTree"
@@ -914,15 +916,16 @@ class AliAODClusterreduced : public TObject
     public:
         //AliAODClusterreduced(){}
         AliAODClusterreduced() :
-        isEmcal(-999), isPhos(-999), Energy(-999), Dispersion(-999), M20(-999), M02(-999), 
+        isEmcal(-999), isPhos(-999), Energy(-999), EnergyLead(-999), Dispersion(-999), M20(-999), M02(-999), 
         NTracksMatched(-999), TrackDx(-999), TrackDz(-999), TOF(-999), NCells(-999), DisttoBC(-999)
         {
             for(Int_t i=0; i<3; i++){x[i]=-999;}            
+            for(Int_t i=0; i<20; i++){CellIds[i]=-999;}            
         }
         virtual ~AliAODClusterreduced() {}
 
         //Setter
-        void InitfromCluster(const AliAODCaloCluster *aodCluster) { 
+        void InitfromCluster(const AliAODCaloCluster *aodCluster, AliAODCaloCells *caloCells) { 
             if(!aodCluster) {std::cout << "WARNING: Input source 'AOD Cluster' does not exit!\n"; return;}            
             isEmcal        = aodCluster->IsEMCAL();
             isPhos         = aodCluster->IsPHOS();
@@ -937,6 +940,11 @@ class AliAODClusterreduced : public TObject
             NCells         = aodCluster->GetNCells();
             DisttoBC       = aodCluster->GetDistanceToBadChannel();
             aodCluster->GetPosition(x);
+            for(Int_t i=0; i<20; i++){CellIds[i] = (Short_t)aodCluster->GetCellAbsId(i);}
+            EnergyLead = -999;
+            if(caloCells){
+              for(Int_t iCell=0; iCell<NCells; iCell++){double cellamp = caloCells->GetCellAmplitude(CellIds[iCell]); if(cellamp>EnergyLead) EnergyLead = cellamp;}
+            }
             return;
         }
 
@@ -944,6 +952,7 @@ class AliAODClusterreduced : public TObject
         Bool_t   IsEMCAL() const { return isEmcal; }
         Bool_t   IsPHOS() const { return isPhos; }
         Float_t  E() const { return Energy; }
+        Float_t  ELead() const { return EnergyLead; }
         Float_t  GetDispersion() const { return Dispersion; }
         Float_t  GetM20() const { return M20; }
         Float_t  GetM02() const { return M02; }
@@ -956,11 +965,17 @@ class AliAODClusterreduced : public TObject
 
         void GetPosition(Float_t xx[3]) const { for(Int_t i=0; i<3; i++){xx[i]=x[i];} return; }
 
+        Short_t GetCellAbsId(Int_t i) const {  
+            if(i>=0&&i<20){ return CellIds[i]; }    
+            return -1;
+        }
+
     protected:
         Bool_t   isEmcal;
         Bool_t   isPhos;
         Float_t  x[3];
         Float_t  Energy;
+        Float_t  EnergyLead;
         Float_t  Dispersion;
         Float_t  M20;
         Float_t  M02;
@@ -970,6 +985,7 @@ class AliAODClusterreduced : public TObject
         Double_t TOF;
         Int_t    NCells;
         Float_t  DisttoBC;
+        Short_t  CellIds[20];
 
     ClassDef(AliAODClusterreduced, 1); // class required for event mixing
 };
