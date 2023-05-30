@@ -482,6 +482,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   short fDCATree_QualityFlag;                         //! Quality flag (categorie 1 - 6) of meson for DCA tree
   unsigned short fDCATree_JetPt;                      //! jet pt meson belongs to for DCA tree
   bool fDCATree_isTrueMeson;                          //! flag if meson is true meson or not
+  float fDCATree_EvtWeight;                           //! event weight for the tree in case of MC
 
  private:
   static constexpr bool fLocalDebugFlag = false;
