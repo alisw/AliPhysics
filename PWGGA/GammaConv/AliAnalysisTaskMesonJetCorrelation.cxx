@@ -270,7 +270,8 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fDCATree_DCAzGammaMax(0),
                                                                              fDCATree_QualityFlag(0),
                                                                              fDCATree_JetPt(0),
-                                                                             fDCATree_isTrueMeson(false)
+                                                                             fDCATree_isTrueMeson(false),
+                                                                             fDCATree_EvtWeight(1)
 {
 }
 
@@ -520,7 +521,8 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fDCATree_DCAzGammaMax(0),
                                                                                            fDCATree_QualityFlag(0),
                                                                                            fDCATree_JetPt(0),
-                                                                                           fDCATree_isTrueMeson(false)
+                                                                                           fDCATree_isTrueMeson(false),
+                                                                                           fDCATree_EvtWeight(1)
 {
   // Do not perform trigger selection in the AliEvent cuts but let the task do this before
   fAliEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kAny, true);
@@ -868,6 +870,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fDCATree[iCut]->Branch("JetPt",&fDCATree_JetPt);
       if(fIsMC){
         fDCATree[iCut]->Branch("trueMeson",&fDCATree_isTrueMeson);
+        fDCATree[iCut]->Branch("eventWeight",&fDCATree_EvtWeight);
       }
     }
 
@@ -3764,6 +3767,7 @@ void AliAnalysisTaskMesonJetCorrelation::FillMesonDCATree(AliAODConversionMother
   fDCATree_JetPt = static_cast<unsigned short>(10*fVectorJetPt[matchedJet]);
   if(fIsMC) {
     fDCATree_isTrueMeson = isTrueMeson;
+    fDCATree_EvtWeight = fWeightJetJetMC;
   }
   fDCATree[fiCut]->Fill();
 }
