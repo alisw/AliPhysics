@@ -14,7 +14,8 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
     Int_t AddPileUpCut=kFALSE, Int_t hadCutCase=2,  Bool_t FillEHCorrel=kTRUE,
     Bool_t  CalcHadronTrackEffi=kFALSE, Bool_t CalculateNonHFEEffi=kFALSE, Bool_t CalPi0EtaWeight=kFALSE,
     Bool_t applyEleEffi=kFALSE, Int_t nBins=32, Bool_t isMC=kFALSE, Bool_t removePileUpMCGen=kFALSE, Bool_t pPbpass2weight=kTRUE,
-    Bool_t IsPbPb2018 = kFALSE)
+    Bool_t IsPbPb2018 = kFALSE, 
+    Bool_t ClusOn = kFALSE, Bool_t HadInfoOn = kFALSE, Bool_t TracksOn = kFALSE)
 {
   //get the current analysis manager
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
@@ -44,7 +45,7 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
     
   Int_t PhysSel = AliVEvent::kINT7;
 
-  if(PhysSel == AliVEvent::kINT7){
+  if(!IsPbPb2018 && PhysSel == AliVEvent::kINT7){
     AliAnalysisTaskEHCorrel *taskHFEeh = new AliAnalysisTaskEHCorrel("eh");
     mgr->AddTask(taskHFEeh);
     taskHFEeh->SelectCollisionCandidates(AliVEvent::kINT7);
@@ -126,8 +127,8 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
         //Centrality trigger used in 2018
         AliAnalysisTaskEHCorrel *taskHFEehCent = new AliAnalysisTaskEHCorrel("ehCent");
         mgr->AddTask(taskHFEehCent);
-        if(centMin == 0) taskHFEehCent->SelectCollisionCandidates(AliVEvent::kCentral);
-        if(centMin == 30) taskHFEehCent->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+        if(centMin == 0 || PhysSel == AliVEvent::kINT7) taskHFEehCent->SelectCollisionCandidates(AliVEvent::kCentral);
+        if(centMin == 30 || PhysSel == AliVEvent::kINT7) taskHFEehCent->SelectCollisionCandidates(AliVEvent::kSemiCentral);
         taskHFEehCent->IsPbPb(isPbPb);
         taskHFEehCent->Ispp(ispp);
         taskHFEehCent->IsPASS2weight(pPbpass2weight);
