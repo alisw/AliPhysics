@@ -18,6 +18,8 @@ AliAnalysisTaskCorrPbPb *AddTaskCorrPbPb(Int_t fCentralityMin=0, Int_t fCentrali
   Int_t gCentMin = fCentralityMin;
   Int_t gCentMax = fCentralityMax;
 
+  TGrid::Connect("alien://");
+
   TString TaskMeanpt;
   TaskMeanpt.Form("gTaskMeanpt%d_%d_%s", gCentMin, gCentMax, " ");
   //gROOT->LoadMacro("AliAnalysisTaskResonanceVsMultiplicity.cxx++g");                                                           
@@ -54,7 +56,7 @@ AliAnalysisTaskCorrPbPb *AddTaskCorrPbPb(Int_t fCentralityMin=0, Int_t fCentrali
   
   // ///Event cuts:
   
-  task_Mpt->SetVzRangeMax(10.0);
+  task_Mpt->SetVzRangeMax(fVzMax);
        
   // //Track cuts:
   task_Mpt->SetTrackFilterBit(fFilterBit);
@@ -103,7 +105,7 @@ AliAnalysisTaskCorrPbPb *AddTaskCorrPbPb(Int_t fCentralityMin=0, Int_t fCentrali
   TString                  sMyOutName1;
   TString                  sMyOutName2;
   TString                  sMyOutName3;
-  sMyOutName1 += "SimpleTask_tree";
+  sMyOutName1 += "AnalysisMain_tree";
   sMyOutName1 += OutFileName;
   sMyOutName2 += "Histogram_TrackVariables";
   sMyOutName2 += OutFileName;
@@ -114,7 +116,7 @@ AliAnalysisTaskCorrPbPb *AddTaskCorrPbPb(Int_t fCentralityMin=0, Int_t fCentrali
   
   cOutPut1 = (AliAnalysisDataContainer *) mgr->CreateContainer(sMyOutName2,TList::Class(),AliAnalysisManager::kOutputContainer,list1OutName.Data());
   cOutPut2 = (AliAnalysisDataContainer *) mgr->CreateContainer(sMyOutName3,TList::Class(),AliAnalysisManager::kOutputContainer,list1OutName.Data());
-  cOutPut3 = (AliAnalysisDataContainer *) mgr->CreateContainer(sMyOutName1,TTree::Class(),AliAnalysisManager::kOutputContainer,list1OutName.Data());
+  cOutPut3 = (AliAnalysisDataContainer *) mgr->CreateContainer(sMyOutName1,TList::Class(),AliAnalysisManager::kOutputContainer,list1OutName.Data());
   
   mgr->ConnectOutput(task_Mpt, 1, cOutPut1);
   mgr->ConnectOutput(task_Mpt, 2, cOutPut2);

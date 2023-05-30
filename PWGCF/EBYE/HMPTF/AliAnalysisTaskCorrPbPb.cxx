@@ -88,6 +88,7 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb():
   fUtils(0),
   fOutputList(0),
   fQAList(0),
+  fTreeList(0),
   fTreeEvent(0),
   fESDtrackCuts(0),
   fESDtrackCuts_primary(0),
@@ -172,6 +173,7 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb(const char *name):
   fUtils(0),
   fOutputList(0),
   fQAList(0),
+  fTreeList(0),
   fTreeEvent(0),
   fESDtrackCuts(0),
   fESDtrackCuts_primary(0),
@@ -249,7 +251,7 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb(const char *name):
   DefineInput (0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
-  DefineOutput(3, TTree::Class());
+  DefineOutput(3, TList::Class());
 }
 //_____________________________________________________________________________________________________________________________________
 AliAnalysisTaskCorrPbPb::~AliAnalysisTaskCorrPbPb()  {
@@ -261,6 +263,10 @@ AliAnalysisTaskCorrPbPb::~AliAnalysisTaskCorrPbPb()  {
   if (fQAList){
     delete fQAList;
     fQAList = 0x0;
+  }
+  if (fTreeList){
+    delete fTreeList;
+    fTreeList = 0x0;
   }
   if (fTreeEvent){
     delete fTreeEvent;
@@ -279,8 +285,10 @@ void AliAnalysisTaskCorrPbPb::UserCreateOutputObjects()  {
     //Create Output List
     fOutputList = new TList();
     fQAList     = new TList();
+    fTreeList   = new TList();
     fOutputList -> SetOwner(kTRUE);
     fQAList     -> SetOwner(kTRUE);
+    fTreeList   -> SetOwner(kTRUE);
 
     OpenFile(1);
     OpenFile(2);
@@ -370,6 +378,8 @@ void AliAnalysisTaskCorrPbPb::UserCreateOutputObjects()  {
     fTreeEvent->Branch("fEffSqrFactrProtonPlus_ptmax3", &fEffSqrFactrProtonPlus_ptmax3, "fEffSqrFactrProtonPlus_ptmax3/F");
     fTreeEvent->Branch("fEffSqrFactrProtonMinus_ptmax3", &fEffSqrFactrProtonMinus_ptmax3, "fEffSqrFactrProtonMinus_ptmax3/F");
 
+    fTreeList->Add(fTreeEvent);
+
     
     /*
     
@@ -395,7 +405,7 @@ void AliAnalysisTaskCorrPbPb::UserCreateOutputObjects()  {
     
     PostData(1, fOutputList);
     PostData(2, fQAList);
-    PostData(3, fTreeEvent);
+    PostData(3, fTreeList);
 }
 //_____________________________________________________________________________________________________________________________________
 void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
@@ -477,7 +487,13 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
     Double_t BinCont = 0;
     Double_t EffWgt = 0;
 
-    if(fListTRKCorr) GetMCEffCorrectionHist();
+    if(fListTRKCorr) 
+      {
+	cout<<"## Got efficiency histograms..## "<<endl;
+	GetMCEffCorrectionHist();
+      }
+    else
+      cout<<"################ No histograms found ############### "<<endl;
 
     Int_t centrality_bin = 0;
     if(lV0M > 0.0 && lV0M < 5.0)
@@ -513,12 +529,11 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
 	if(!aodtrack)      continue;
 
 
-	//Track selectionL FilterBit 96
-	//if(!aodtrack->TestFilterBit(96))  continue;
+	//Track selectionL FilterBit : default is FB96
 	if(!aodtrack->TestFilterBit(fFBNo))  continue;
 
 	//cuts on TPCchi2perClstr and ITSchi2perClstr
-
+	
 	Double_t trkITSchi2 = aodtrack->GetITSchi2();
 	Int_t trkITSNcls = aodtrack->GetITSNcls();
 	Double_t trkITSchi2perNcls = trkITSchi2/trkITSNcls;
@@ -784,7 +799,7 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
  
     PostData(1, fOutputList);
     PostData(2, fQAList);
-    PostData(3, fTreeEvent);
+    PostData(3, fTreeList);
 }    
 //_____________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code written earlier 
@@ -803,7 +818,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
 	  AliWarning("ERROR: lAODevent not available from AODEvent() Aborting event!");
 	  PostData(1, fOutputList);
 	  PostData(2, fQAList);
-	  PostData(3, fTreeEvent);
+	  PostData(3, fTreeList);
 	  return kFALSE;
 	}
     }
@@ -814,7 +829,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       AliWarning("ERROR: fInputEvent (AliVEvent) not available \n");
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   
@@ -825,7 +840,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
   if (!fAODeventCuts.AcceptEvent(fInputEvent)) {
     PostData(1, fOutputList);
     PostData(2, fQAList);
-    PostData(3, fTreeEvent);
+    PostData(3, fTreeList);
     return kFALSE;
   }
   hNumberOfEvents -> Fill(1.5);
@@ -836,7 +851,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(2.5);
@@ -847,7 +862,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(3.5);
@@ -861,7 +876,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(4.5);
@@ -873,7 +888,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(5.5);
@@ -884,7 +899,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(6.5);
@@ -897,7 +912,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(7.5);
@@ -907,7 +922,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(8.5);
@@ -918,7 +933,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(9.5);
@@ -933,7 +948,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(10.5);
@@ -944,17 +959,17 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(11.5);
 
     //Primary Vertex Selection
-    if ( vertex_tracks->GetZ() < -fVertexZMax || vertex_tracks->GetZ() > +fVertexZMax)
+    if ( vertex_tracks->GetZ() < -1.0*fVertexZMax || vertex_tracks->GetZ() > +1.0*fVertexZMax)
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(12.5);
@@ -965,7 +980,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       } 
     hNumberOfEvents -> Fill(13.5);
@@ -976,7 +991,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(14.5);
