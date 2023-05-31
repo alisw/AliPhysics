@@ -327,10 +327,10 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     p->SetDistToBad(itr);
   }
 
-  TVector3 vertex(vtx5);
-
   Int_t inPHOS = 0, inSignal = 0;
   TVector3 localPos;
+
+  double vtx0[3] = { 0., 0., 0. };
 
   TClonesArray* signal = static_cast<TClonesArray*>(fEvent->FindListObject("SignalCaloClusters"));
   int multSignal = signal->GetEntriesFast();
@@ -347,6 +347,8 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     Int_t relId[4];
     fPHOSGeo->GlobalPos2RelId(global, relId);
     Int_t mod = relId[0];
+    Int_t cellX = relId[2];
+    Int_t cellZ = relId[3];
     TVector3 local;
     fPHOSGeo->Global2Local(local, global, mod);
 
@@ -360,7 +362,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
       continue;
 
     TLorentzVector pv1;
-    clu->GetMomentum(pv1, vtx5);
+    clu->GetMomentum(pv1, vtx0);
 
     if (inSignal >= fSignalEvent->GetSize()) {
       fSignalEvent->Expand(inSignal + 20);
@@ -384,6 +386,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     ph->SetEMCz(local.Z());
     ph->SetLambdas(clu->GetM20(), clu->GetM02());
     ph->SetUnfolded(clu->GetNExMax() < 2); // Remember, if it is unfolded
+    ph->SetDistToBad(cellX);
   }
 
   for (Int_t i = 0; i < multClust; i++) {
