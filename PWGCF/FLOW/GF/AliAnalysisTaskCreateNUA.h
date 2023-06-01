@@ -37,6 +37,9 @@ class AliAnalysisTaskCreateNUA : public AliAnalysisTaskSE
         std::vector<int>        RunNumber_LHC16;//!
         std::vector<int>        RunNumber_LHC17;//!
         std::vector<int>        RunNumber_LHC18;//!
+        std::vector<TString>    Period_LHC16;//!
+        std::vector<TString>    Period_LHC17;//!
+        std::vector<TString>    Period_LHC18;//!
         std::vector<int>        RunNumber_LHC15o;//!
         std::vector<int>        RunNumber_LHC15opass2;//!
         std::vector<int>        RunNumber_LHC18qrpass3;//!
