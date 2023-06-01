@@ -50,6 +50,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         virtual void            Fill2DHist(Double_t DPhi, Double_t DEta, TH2F* hist);
         virtual void            FillDPhiHist(Double_t DPhi, TH2F* hist, Double_t fWeight);
         virtual void            Fill2DHistMCTruth(Double_t DPhi, Double_t DEta, TH2F* hist);
+        virtual void            Fill3DHist(Double_t DPhi, Double_t DEta, Double_t PVz, TH3F* hist);
         AliEventCuts            fEventCuts; // event cuts
 
         void                    SetMCRead(Bool_t flag) {fAnalysisMC = flag;}
@@ -84,8 +85,9 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
 
        TH1F*                   fVtx;            //! dummy histogram
        TH1F*                   fClusters;       //! dummy histogram
+       TH1F*                   fHistPVz;        //! dummy histogram
        TH1F*                   fHistNEvents;    //! dummy histogram
-       TH1F*                   fHistNV0;       //! dummy histogram
+       TH1F*                   fHistNV0;        //! dummy histogram
        TH1F*                   fHistEta;        //! dummy histogram
        TH1F*                   fHistDEta;       //! dummy histogram
        TH1F*                   fHistPhi;        //! dummy histogram
@@ -102,8 +104,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fHistK0Phi;     //! dummy histogram 
        TH1F*                   fHistKpPhi;     //! dummy histogram 
        TH1F*                   fHistKnPhi;     //! dummy histogram 
-       TH1F*                   fHistPPionPhi;   //! dummy histogram
-       TH1F*                   fHistNPionPhi;   //! dummy histogram
+       TH1F*                   fHistPPionPhi;  //! dummy histogram
+       TH1F*                   fHistNPionPhi;  //! dummy histogram
        
        TH2F*                   f2DHistK0Phi;      //! dummy histogram
        TH2F*                   f2DHistK0Eta;      //! dummy histogram
@@ -126,13 +128,17 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH2F*                   fHistKChKChPhi;   //! dummy histogram
        TH2F*                   fHistKPosKNegPhi; //! dummy histogram
        TH2F*                   fHistCF;          //! dummy histogram
-       TH2F*                   fHistKChKCh;       //! dummy histogram
+       TH3F*                   fHistCFz;         //! dummy histogram
+       TH2F*                   fHistKChKCh;      //! dummy histogram
        TH2F*                   fHistKPosKNeg;    //! dummy histogram
+       TH3F*                   fHistKPosKNegz;   //! dummy histogram
 
        TH1F*                   hPt;
        TH1F*                   hPt_kPos;
        TH2F*                   fHistCF_Bg;
        TH2F*                   fHistCF_KpKn_Bg;
+       TH3F*                   fHistCF_Bgz;
+       TH3F*                   fHistCF_KpKn_Bgz;
 
        AliMCEvent*             fmcEvent;
        THnSparse*              fMCK0;
