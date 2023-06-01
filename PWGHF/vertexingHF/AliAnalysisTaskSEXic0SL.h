@@ -168,7 +168,6 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		//Tree variables for MC truth
 		Int_t     fMCNum;
 		Int_t*    fMCLabel; //[fMCNum]
-		Int_t*    fMCNDau;  //[fMCNum]
 		Int_t*    fMCOrig;  //[fMCNum]
 		Int_t*    fMCPDG;   //[fMCNum]
 		Double_t* fMCPt;    //[fMCNum]
@@ -177,6 +176,8 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Double_t* fMCEleY;  //[fMCNum]
 		Double_t* fMCXiPt;  //[fMCNum]
 		Double_t* fMCXiY;   //[fMCNum]
+		Int_t*    fMCXiMomLabel; //[fMCNum]
+		Int_t*    fMCXiMomPDG;   //[fMCNum]
 
 		//Tree variables for tracks
 		Int_t     fEleNum;
@@ -241,7 +242,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Int_t* fCascMomLabel; //[fCascNum]
 		Int_t* fCascMomPDG;   //[fCascNum]
 
-		ClassDef(AliAnalysisTaskSEXic0SL, 1);
+		ClassDef(AliAnalysisTaskSEXic0SL, 3);
 };
 
 #endif //AliAnalysisTaskSEXic0SL_H

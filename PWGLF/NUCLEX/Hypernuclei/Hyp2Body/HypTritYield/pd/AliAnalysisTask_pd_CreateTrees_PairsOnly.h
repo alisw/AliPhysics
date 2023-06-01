@@ -19,7 +19,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
   public:
 
     AliAnalysisTask_pd_CreateTrees_PairsOnly();
-    AliAnalysisTask_pd_CreateTrees_PairsOnly(const char *name,int CollisionSystem, bool UseOpenCuts, bool IsMC);
+    AliAnalysisTask_pd_CreateTrees_PairsOnly(const char *name,int CollisionSystem, bool UseOpenCuts, bool IsMC, bool SaveOnlyPairs);
     AliAnalysisTask_pd_CreateTrees_PairsOnly& operator = (const AliAnalysisTask_pd_CreateTrees_PairsOnly &task);
     AliAnalysisTask_pd_CreateTrees_PairsOnly(const AliAnalysisTask_pd_CreateTrees_PairsOnly &task);
     virtual ~AliAnalysisTask_pd_CreateTrees_PairsOnly();
@@ -30,9 +30,11 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     double CalculateBetaTOF(AliAODTrack &track); 
     double CalculateMassSquareTOF(AliAODTrack &track);
     double CalculateSigmaMassSquareTOF(double pT, double massSq, int ParticleSpecies, int RunNumber);
-    bool CheckProtonCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, bool UseOpenCuts);
-    bool CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber, bool UseOpenCuts);
+    bool CheckProtonCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
+    bool CheckDeuteronCuts(AliAODTrack &Track,AliPIDResponse &fPIDResponse, bool isMatter, int RunNumber);
     double CalculateSigmadEdxITS(AliAODTrack &Track, int ParticleSpecies, int RunNumber);
+    double CalculateSigmadEdxTPC(AliAODTrack &Track, int ParticleSpecies, int RunNumber);
+    bool RejectInjectedMonteCarloHyperNuclei(int PDG);
 
   private:
 
@@ -45,6 +47,7 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
     int			  fCollisionSystem;
     bool		  fUseOpenCuts;
     bool		  fIsMC;
+    bool		  fSaveOnlyPairs;
 
     TTree     *fSaveTree_Proton;
     float     fProton_px;
@@ -197,16 +200,9 @@ class AliAnalysisTask_pd_CreateTrees_PairsOnly : public AliAnalysisTaskSE
 
 
 
-
-
-
     ClassDef(AliAnalysisTask_pd_CreateTrees_PairsOnly,1);
 
 };
-
-
-
-
 
 
 #endif

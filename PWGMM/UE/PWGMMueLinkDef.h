@@ -32,4 +32,5 @@
 #pragma link C++ class AliAnalysisTaskMCCorrections+;
 #pragma link C++ class AliAnalysisTaskOnlyFlatenicity+;
 #pragma link C++ class AliAnalysisTaskSystematicsV0M+;
+#pragma link C++ class AliAnalysisTaskFlatenicityMCclosure+;
 #endif

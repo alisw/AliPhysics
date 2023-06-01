@@ -2960,6 +2960,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC17g8a :
     case kLHC17d2a :
     case kLHC17d2b :
+    case kLHC20f11c :
     // pPb 8 TeV
     case kLHC16r :
     case kLHC16s :
@@ -8755,6 +8756,10 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC17d2b") == 0 || periodName.CompareTo("LHC17d2b_fast") == 0 || periodName.CompareTo("LHC17d2b_cent") == 0 ){
     fPeriodEnum = kLHC17d2b;
     fEnergyEnum = kpPb5TeVR2;
+  } else if (periodName.Contains("LHC20f11c")) {
+    fPeriodEnum = kLHC20f11c;
+    fEnergyEnum = kpPb5TeVR2;
+
     // LHC16r anchored MCs
   } else if (periodName.CompareTo("LHC17a3a") == 0      || periodName.CompareTo("LHC17a3a_fast") == 0 ||
              periodName.CompareTo("LHC17a3a_cent") == 0 || periodName.CompareTo("LHC17a3a_cent_woSDD") == 0){

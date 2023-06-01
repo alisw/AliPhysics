@@ -51,8 +51,8 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
   bool bQATPC                  = true;
   bool bQAVZERO                = true;
   bool bQAZDC                  = false;
-  bool bNarrowDcaCuts768       = true;
-  bool bProtonCustomizedDCACut = true;
+  bool bNarrowDcaCuts768       = (filterBit == 768);
+  bool bProtonCustomizedDCACut = (filterBit == 768);
   bool bUsePionRejection       = false;
   bool bCalculateLambdaProtonFromDecay = false;
   bool bCalculateLambdaProtonFromDecayFoundInTrackLoops = false;
@@ -147,11 +147,21 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
       fListNUA = dynamic_cast<TList*>(fNUAFile->Get("15oListNUA"));
     }
     if (period.EqualTo("LHC18q")) {
-      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
+      if (filterBit == 96)  fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/WgtsNUAChargeAndPion_LHC18qPass3_FB96_AlexPU_DeftMode_Oct2021.root", "READ");
+      else if (uniqueID.EqualTo("Nhits60")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_Nhits60.root");
+      else if (uniqueID.EqualTo("Nhits80")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_Nhits80.root");
+      else if (uniqueID.EqualTo("ChiMax2")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_ChiHg2.root");
+	    else if (uniqueID.EqualTo("ChiMax2p5")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_ChiHg2d5.root");
+      else fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
       fListNUA = dynamic_cast<TList*>(fNUAFile->Get("fNUA_ChPosChNeg"));
     }
     if (period.EqualTo("LHC18r")) {
-      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/WgtsNUAChargeAndPion_LHC18rPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
+      if(filterBit == 96)  fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/WgtsNUAChargeAndPion_LHC18rPass3_FB96_AlexPU_DeftMode_Oct2021.root", "READ");
+      else if (uniqueID.EqualTo("Nhits60")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_Nhits60.root");
+      else if (uniqueID.EqualTo("Nhits80")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_Nhits80.root");
+      else if (uniqueID.EqualTo("ChiMax2")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_ChiHg2.root");
+	    else if (uniqueID.EqualTo("ChiMax2p5")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_ChiHg2d5.root");
+      else fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/WgtsNUAChargeAndPion_LHC18rPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
       fListNUA = dynamic_cast<TList*>(fNUAFile->Get("fNUA_ChPosChNeg"));
     }
     if (fListNUA) {

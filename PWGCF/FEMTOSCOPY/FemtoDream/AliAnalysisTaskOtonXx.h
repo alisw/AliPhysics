@@ -35,12 +35,8 @@ class AliAnalysisTaskOtonXx : public AliAnalysisTaskSE {
   void SetEventCuts(AliFemtoDreamEventCuts *evtCuts) {fEventCuts = evtCuts;};
   void SetTrackCutsKaon(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsKaon = trkCuts;};
   void SetTrackCutsAntiKaon(AliFemtoDreamTrackCuts *trkCuts) {fTrackCutsAntiKaon = trkCuts;};
-  void SetXiCuts(AliFemtoDreamCascadeCuts* cascCuts) {
-    fCutsXi = cascCuts;
-  }
-  void SetAntiXiCuts(AliFemtoDreamCascadeCuts* cascCuts) {
-    fCutsAntiXi = cascCuts;
-  }
+  void SetXiCuts(AliFemtoDreamCascadeCuts* cascCuts) { fCutsXi = cascCuts; }
+  void SetAntiXiCuts(AliFemtoDreamCascadeCuts* cascCuts) { fCutsAntiXi = cascCuts;}
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {fConfig = config;};
   void SetRunTaskLightWeight(bool light) {
     fisLightWeight = light;
@@ -147,6 +143,7 @@ class AliAnalysisTaskOtonXx : public AliAnalysisTaskSE {
   Int_t fTKaonPDG[300];
   Int_t fTKaonMotherWeak[300];
   Short_t fTKaonOrigin[300];
+  Int_t fTKaonMotherID[300];
 
   const Int_t MAXXiS = 10;
   Int_t fTnXi;
@@ -180,6 +177,7 @@ class AliAnalysisTaskOtonXx : public AliAnalysisTaskSE {
   Bool_t fTXiTrackSPDtime[10][3];
   Bool_t fTXiTrackITStime[10][3];
   Bool_t fTXiTrackTOFtime[10][3];
+  Int_t fTXiMotherID[10];
 
   // ClassDef 6 ????
   ClassDef(AliAnalysisTaskOtonXx, 6)

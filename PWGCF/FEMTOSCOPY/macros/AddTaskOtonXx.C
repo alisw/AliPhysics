@@ -4,12 +4,19 @@
 AliAnalysisTaskSE* AddTaskOtonXx(int isMCint = 0,
     int KaonCut = 0,
     int XiCut = 0,
-    int ProtonCut = 0,
+    int OpenMass = 0,
     int DoFDpairing = 0
     ) {
 
 
-bool isMC = false;
+//MC and ancestors
+    // 0 data
+    // 1 MC
+    // 2 MC and do Ancestors
+    bool isMC = false;
+    if(isMCint>0)isMC=true;
+    bool DoAncestors = false;        // for common or uncommon ancestors
+    if(isMCint>1) DoAncestors=true;
 
 //do pions:
   // KaonCut = 0 // Kaons
@@ -22,6 +29,14 @@ bool isMC = false;
   // XiCut = 1 // Omega
   bool isOmega = false;
   if(XiCut==1) isOmega = true;
+  //Mass Cascade Open:
+  bool massopen = false;
+  if(OpenMass>0) massopen=true;
+
+
+//FDpairing
+bool doFD = false;
+if(DoFDpairing>0)doFD=true;
 
 
   const char fullBlastQA = true; //moved from arguments
@@ -216,8 +231,12 @@ bool isMC = false;
    AntiCascadeXiCuts->SetCutXiTransverseRadius(0.8, 200);
    CascadeXiCuts->SetCutv0TransverseRadius(1.4, 200);
    AntiCascadeXiCuts->SetCutv0TransverseRadius(1.4, 200);
-   CascadeXiCuts->SetXiMassRange(1.322, 0.020);      // mass is open!!!
-   AntiCascadeXiCuts->SetXiMassRange(1.322, 0.020);  // mass is open!!!
+   CascadeXiCuts->SetXiMassRange(1.322, 0.005);  
+   AntiCascadeXiCuts->SetXiMassRange(1.322, 0.005); 
+   if(massopen){
+    CascadeXiCuts->SetXiMassRange(1.322, 0.025);  
+    AntiCascadeXiCuts->SetXiMassRange(1.322, 0.025); 
+   }
 
   }else{
 Float_t XiDaughterDCA = .8; //std
@@ -238,7 +257,8 @@ Float_t RejectXis = 0.008; //std
 Float_t PtRangeXi = 0.000001; //std, no cut (cut in Vertexer?)
 bool PionCheckPileUp = false; //std
 
-  CascadeXiCuts->SetXiMassRange(1.67245, 0.015);                      // mass is open !!!
+  CascadeXiCuts->SetXiMassRange(1.67245, 0.005);                    
+    if(massopen) CascadeXiCuts->SetXiMassRange(1.67245, 0.025);                    
   CascadeXiCuts->SetCutXiDaughterDCA(XiDaughterDCA);
   CascadeXiCuts->SetCutv0MaxDaughterDCA(v0MaxDaughterDCA);
   CascadeXiCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
@@ -263,7 +283,8 @@ bool PionCheckPileUp = false; //std
   CascadeXiCuts->SetPtRangeXi(PtRangeXi, 999.9);
   XiNegCuts->SetCheckPileUp(PionCheckPileUp);
 
-  AntiCascadeXiCuts->SetXiMassRange(1.67245, 0.015);                      // mass is open !!!
+  AntiCascadeXiCuts->SetXiMassRange(1.67245, 0.005);                     
+  if(massopen)   AntiCascadeXiCuts->SetXiMassRange(1.67245, 0.025);                     
   AntiCascadeXiCuts->SetCutXiDaughterDCA(XiDaughterDCA);
   AntiCascadeXiCuts->SetCutv0MaxDaughterDCA(v0MaxDaughterDCA);
   AntiCascadeXiCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
@@ -331,20 +352,33 @@ bool PionCheckPileUp = false; //std
   for (int i = 0; i < nPairs; ++i) {
     closeRejection.push_back(false);
     pairQA.push_back(0);
-    if (suffix == "0") {
       NBins.push_back(1500);
       kMin.push_back(0.);
       kMax.push_back(6.);
-    } else {
-      NBins.push_back(250);
-      kMin.push_back(0.);
-      kMax.push_back(1.);
-    }
   }
 
-//  closeRejection[0] = true;  // k k
+  //so I guess here you write the number of tracks
+  pairQA[0] = 11;  // k k
+  pairQA[1] = 11;  // k k
+  pairQA[2] = 13;  // k Xi
+  pairQA[3] = 13;  // k Xi
+  pairQA[4] = 11;  // k k
+  pairQA[5] = 13;  // k Xi
+  pairQA[6] = 13;  // k Xi
+  pairQA[7] = 33;  // Xi Xi
+  pairQA[8] = 33;  // Xi Xi
+  pairQA[9] = 33;  // Xi Xi
 
-//  pairQA[0] = 13;  // k k
+
+
+  //close pair rejection for the meson track vs the Xi tracks (forget for the moment Yperon-Yperon)
+  closeRejection[0] = true;  // K+ K+
+  closeRejection[2] = true;  // K+ xi
+  closeRejection[3] = true;  // K+ xi+
+  closeRejection[4] = true;  // K- K-
+  closeRejection[5] = true;  // K- Xi-
+  closeRejection[6] = true;  // K- Xi+
+
 
   //We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
@@ -382,32 +416,43 @@ bool PionCheckPileUp = false; //std
   MultBins.push_back(72);
   MultBins.push_back(76);
   MultBins.push_back(80);
+  MultBins.push_back(84);
+  MultBins.push_back(88);
+  MultBins.push_back(92);
+  MultBins.push_back(96);
+  MultBins.push_back(100);
 
   AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto", false);
-  config->SetZBins(ZVtxBins);
-  config->SetMultBins(MultBins);
-  config->SetMultBinning(true);
-  config->SetPDGCodes(PDGParticles);
-  config->SetNBinsHist(NBins);
-  config->SetMinKRel(kMin);
-  config->SetMaxKRel(kMax);
-  config->SetClosePairRejection(closeRejection);
-  config->SetExtendedQAPairs(pairQA);
-  config->SetDeltaEtaMax(0.017); // and here you set the actual values
-  config->SetDeltaPhiMax(0.017); // and here you set the actual values
-  config->SetMixingDepth(10);
-  //config->SetmTBins(mTBins);
-  //config->SetDomTMultBinning(true);
-  //config->SetmTBinning(true);
-  config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+    config->SetExtendedQAPairs(pairQA);  //(commented for systematics)
+    config->SetMultiplicityEstimator(AliFemtoDreamEvent::kRef08);
+    config->SetMultBinning(true);
+    config->SetZBins(ZVtxBins);     /// only the ones with same z and multiplicity will be compared
+    config->SetMultBins(MultBins);  // the event will be put in the correspondent multiplicity bin
+    config->SetPDGCodes(PDGParticles);
+    config->SetNBinsHist(NBins);
+    config->SetPhiEtaBinnign(true);
+    config->SetDeltaEtaMax(0.012);
+    config->SetDeltaPhiMax(0.012);
+    config->SetClosePairRejection(closeRejection);
+    config->SetMinKRel(kMin);
+    config->SetMaxKRel(kMax);
+    config->SetUseEventMixing(true);
+    config->SetMixingDepth(10);  /// how many events i want to mix. 10 is usually okay
+
 
   if (isMC) {
     config->SetMomentumResolution(true);
+    if(DoAncestors){
+        config->SetAncestors(true);
+        config->GetDoAncestorsPlots();
+    }
   }
   if (fullBlastQA) {
    // config->SetkTBinning(true);
     config->SetPtQA(true);
   }
+
+
 
   if (!fullBlastQA) {
     evtCuts->SetMinimalBooking(true);
@@ -421,7 +466,8 @@ bool PionCheckPileUp = false; //std
 
   //Define here the analysis task
   AliAnalysisTaskOtonXx *task =
-   new AliAnalysisTaskOtonXx("ThisNameApparentlyStillUseless", false,false,false,isOmega,isPi);
+   new AliAnalysisTaskOtonXx("ThisNameApparentlyStillUseless", doFD,isMC,false,isOmega,isPi);
+//                                                            doFDpairing,isMC,isMCtruth,isomega,ispi
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);

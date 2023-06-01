@@ -81,32 +81,16 @@ using std::endl;
 
 #include "AliAnalysisTaskSpectraFlatenicity.h"
 
-const Int_t nPtbinsFlatSpecFlatSpec = 56;
+const Int_t nPtbinsFlatSpecFlatSpec = 60;
 Double_t PtbinsFlatSpec[nPtbinsFlatSpecFlatSpec+1] = {
-    0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65, 0.7, 
-    0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1 , 1.2, 1.3, 1.4, 
-    1.5 , 1.6, 1.7 , 1.8, 1.9 , 2.0, 2.2 , 2.4, 2.6, 2.8, 
-    3.0 , 3.2, 3.4 , 3.6, 3.8 , 4.0, 4.5 , 5.0, 5.5, 6.0, 
-    6.5 , 7.0, 8.0 , 9.0, 10.0, 11.0,12.0,13.0,14.0,15.0, 
-    16.0,18.0, 20.0,22.0, 24.0, 26.0,30.0};     
+    0.0,  0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 
+    0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 
+    1.1 , 1.2, 1.3,  1.4, 1.5 , 1.6, 1.7 , 1.8, 1.9 , 2.0, 
+    2.2 , 2.4, 2.6,  2.8, 3.0 , 3.2, 3.4 , 3.6, 3.8 , 4.0, 
+    4.5 , 5.0, 5.5,  6.0, 6.5 , 7.0, 8.0 , 9.0, 10.0,11.0,
+    12.0,13.0,14.0, 15.0, 16.0, 18.0,20.0, 22.0,24.0,26.0,
+    30.0};     
      
-     
-const Int_t DCAxyNBins = 121;
-Double_t DCAxyBins[DCAxyNBins + 1] = {
-    -3.025, -2.975, -2.925, -2.875, -2.825, -2.775, -2.725, -2.675, -2.625, -2.575, 
-    -2.525, -2.475, -2.425, -2.375, -2.325, -2.275, -2.225, -2.175, -2.125, -2.075, 
-    -2.025, -1.975, -1.925, -1.875, -1.825, -1.775, -1.725, -1.675, -1.625, -1.575, 
-    -1.525, -1.475, -1.425, -1.375, -1.325, -1.275, -1.225, -1.175, -1.125, -1.075, 
-    -1.025, -0.975, -0.925, -0.875, -0.825, -0.775, -0.725, -0.675, -0.625, -0.575, 
-    -0.525, -0.475, -0.425, -0.375, -0.325, -0.275, -0.225, -0.175, -0.125, -0.075, 
-    -0.025,  0.025,  0.075,  0.125,  0.175,  0.225,  0.275,  0.325,  0.375,  0.425,  
-     0.475,  0.525,  0.575,  0.625,  0.675,  0.725,  0.775,  0.825,  0.875,  0.925,  
-     0.975,  1.025,  1.075,  1.125,  1.175,  1.225,  1.275,  1.325,  1.375,  1.425,
-     1.475,  1.525,  1.575,  1.625,  1.675,  1.725,  1.775,  1.825,  1.875,  1.925,  
-     1.975,  2.025,  2.075,  2.125,  2.175,  2.225,  2.275,  2.325,  2.375,  2.425,  
-     2.475,  2.525,  2.575,  2.625,  2.675,  2.725,  2.775,  2.825,  2.875,  2.925,  
-     2.975,  3.025};
-
 const Int_t nCent = 9;
 Double_t centClassFlatSpec[nCent + 1] = {0.0, 1.0, 5.0, 10.0, 20.0, 30.0, 40.0, 50.0, 70.0, 100.0};
 
@@ -192,7 +176,8 @@ ClassImp(AliAnalysisTaskSpectraFlatenicity) // classimp: necessary for root
     hFlatVsV0M(0), 
     hEta(0), 
     hEtamc(0), 
-    hCounter(0)
+    hCounter(0),
+    hV0MBad(0)
 {
     for (Int_t i_c = 0; i_c < nCent; ++i_c) {
         hFlatVsPtV0M[i_c] = 0;
@@ -283,7 +268,8 @@ AliAnalysisTaskSpectraFlatenicity::AliAnalysisTaskSpectraFlatenicity(const char 
     hFlatVsV0M(0), 
     hEta(0), 
     hEtamc(0), 
-    hCounter(0)
+    hCounter(0),
+    hV0MBad(0)
 {
     for (Int_t i_c = 0; i_c < nCent; ++i_c) {
         hFlatVsPtV0M[i_c] = 0;
@@ -552,19 +538,19 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
     
   }
 
-  hPtVsDCAData = new TH2D("hPtVsDCAData","; #it{p}_{T} (GeV/#it{c}); DCA_{xy} data",nPtbinsFlatSpecFlatSpec,PtbinsFlatSpec,DCAxyNBins, DCAxyBins);
+  hPtVsDCAData = new TH2D("hPtVsDCAData","; #it{p}_{T} (GeV/#it{c}); DCA_{xy} data",nPtbinsFlatSpecFlatSpec,PtbinsFlatSpec, 560, -3.5, 3.5);
   fOutputList->Add(hPtVsDCAData);    
   
-  hPtVsDCAPrim = new TH2D("hPtVsDCAPrim", "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} primaries", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec, DCAxyNBins, DCAxyBins);
+  hPtVsDCAPrim = new TH2D("hPtVsDCAPrim", "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} primaries", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec, 560, -3.5, 3.5);
   fOutputList->Add(hPtVsDCAPrim);
 
-  hPtVsDCADec = new TH2D("hPtVsDCADec", "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} decays", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec, DCAxyNBins, DCAxyBins);
+  hPtVsDCADec = new TH2D("hPtVsDCADec", "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} decays", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec, 560, -3.5, 3.5);
   fOutputList->Add(hPtVsDCADec);
 
-  hPtVsDCAMat = new TH2D("hPtVsDCAMat", "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} material", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec, DCAxyNBins, DCAxyBins);
+  hPtVsDCAMat = new TH2D("hPtVsDCAMat", "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} material", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec, 560, -3.5, 3.5);
   fOutputList->Add(hPtVsDCAMat);
 
-  hPtVsDCAAll = new TH2D("hPtVsDCAAll", "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} all", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec, DCAxyNBins, DCAxyBins);
+  hPtVsDCAAll = new TH2D("hPtVsDCAAll", "; #it{p}_{T} (GeV/#it{c}); DCA_{xy} all", nPtbinsFlatSpecFlatSpec, PtbinsFlatSpec, 560, -3.5, 3.5);
   fOutputList->Add(hPtVsDCAAll);
   
   hFlatVsNch = new TH2D("hFlatVsNch", "; rec flat; rec Nch", 1020, -0.01, 1.01, 100, -0.5, 99.5);
@@ -587,6 +573,9 @@ void AliAnalysisTaskSpectraFlatenicity::UserCreateOutputObjects() {
   
   hCounter = new TH1D("hCounter", "counter", 10, -0.5, 9.5);
   fOutputList->Add(hCounter);
+  
+  hV0MBad = new TH1D("hV0MBad", "hV0MBad", 1000, -0.5, 999.5);
+  fOutputList->Add(hV0MBad);  
 
   fEventCuts.AddQAplotsToList(fOutputList);
   PostData(1, fOutputList); // postdata will notify the analysis manager of
@@ -625,7 +614,7 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
     if (genHeader) {
       genHeader->PrimaryVertex(vtxMC);
     }
-    if (TMath::Abs(vtxMC[2]) <= 15.)
+    if (TMath::Abs(vtxMC[2]) <= 5.)
       isGoodVtxPosMC = kTRUE;
 
     fnGen = FillArrayMC(ptMc, idMc);
@@ -673,6 +662,7 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
     cout << "------- No AliMultSelection Object Found --------" << fMultSelection << endl;
   fv0mpercentile = fMultSelection->GetMultiplicityPercentile("V0M");
   hCounter->Fill(1);
+  float v0mult = fMultSelection->GetEstimator("V0M")->GetValue();
 
   for (Int_t i_c = 0; i_c < nCent; ++i_c) {
     if (fv0mpercentile >= centClassFlatSpec[i_c] && fv0mpercentile < centClassFlatSpec[i_c + 1]) {
@@ -695,8 +685,12 @@ void AliAnalysisTaskSpectraFlatenicity::UserExec(Option_t *) {
   if (fFlat >= 0) {
     hFlatenicity->Fill(fFlat);
     if (fV0Mindex >= 0) {
-      hFlatVsV0M->Fill(fv0mpercentile, fFlat);
-      MakeDataanalysis();
+        if ((fV0Mindex == nCent - 1) && (v0mult > 400.)) { // to reject 70-100% multiplicity class events that have large V0M amplitude
+            hV0MBad->Fill(v0mult);
+        } else {
+            hFlatVsV0M->Fill(fv0mpercentile, fFlat);
+            MakeDataanalysis();
+        }
     }
   }
 

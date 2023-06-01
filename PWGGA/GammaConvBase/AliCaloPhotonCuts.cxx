@@ -5145,6 +5145,18 @@ Bool_t AliCaloPhotonCuts::SetMinEtaCut(Int_t minEta)
     if (!fUseEtaCut) fUseEtaCut=1;
     fMinEtaCut=0.;
     break;
+  case 11:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMinEtaCut=-0.143;
+    break;
+  case 12:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMinEtaCut=-0.15;
+    break;
+  case 13:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMinEtaCut=-0.1;
+    break;
   default:
     AliError(Form("MinEta Cut not defined %d",minEta));
     return kFALSE;
@@ -5202,6 +5214,18 @@ Bool_t AliCaloPhotonCuts::SetMaxEtaCut(Int_t maxEta)
   case 10:
     if (!fUseEtaCut) fUseEtaCut=1;
     fMaxEtaCut=0.0;
+    break;
+  case 11:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMaxEtaCut=0.15;
+    break;
+   case 12:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMaxEtaCut=0.143;
+    break;
+  case 13:
+    if (!fUseEtaCut) fUseEtaCut=1;
+    fMaxEtaCut=0.1;
     break;
   default:
     AliError(Form("MaxEta Cut not defined %d",maxEta));
@@ -7310,8 +7334,8 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
           }
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2_NoScale(energy);
-          if (fCurrentMC == k13pPb5023GeV) energy *= 0.978;
-          else if (fCurrentMC == k16pPb5023GeV) energy *= 0.994;
+//           if (fCurrentMC == k13pPb5023GeV) energy *= 0.978;
+//           else if (fCurrentMC == k16pPb5023GeV) energy *= 0.994;
         }
 
       } else if ( fClusterType == 2 ){
@@ -7349,7 +7373,7 @@ void AliCaloPhotonCuts::ApplyNonLinearity(AliVCluster* cluster, Int_t isMC, AliV
         } else {
           energy /= FunctionNL_OfficialTB_100MeV_Data_V2(energy);
           // needed to calibrate pi0 masses to same position in 2016 & 2013 (2013 has still old temp calib)
-          if (fCurrentMC == k13pPb5023GeV) energy *= 0.978;
+//           if (fCurrentMC == k13pPb5023GeV) energy *= 0.978;
         }
       }
       break;
@@ -9525,7 +9549,8 @@ AliCaloPhotonCuts::MCSet AliCaloPhotonCuts::FindEnumForMCSet(TString namePeriod)
   else if ( namePeriod.CompareTo("LHC17i3a1") == 0 )    return k17i3a1;
 
   // pPb 5 TeV 2016 MB MC
-  else if ( namePeriod.CompareTo("LHC17f2a") == 0  )    return kPPb5T16EPOS;
+  else if ( namePeriod.CompareTo("LHC17f2a") == 0 ||
+            namePeriod.CompareTo("LHC20f11c") == 0 )    return kPPb5T16EPOS;
   else if ( namePeriod.CompareTo("LHC17f2b") == 0 ||
             namePeriod.CompareTo("LHC18f3")  == 0 )     return kPPb5T16DPMJet;
   // pPb 5 TeV 2016 JJ MC

@@ -78,7 +78,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
 
   // MC functions
   void ProcessAODMCParticles(int isCurrentEventSelected = 0);
-  void ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton* TruePhotonCandidate);
+  void ProcessTrueClusterCandidatesAOD(AliAODConversionPhoton* TruePhotonCandidate, const int matchedJet = -1);
   void ProcessTruePhotonCandidatesAOD(AliAODConversionPhoton* TruePhotonCandidate);
   bool MCParticleIsSelected(AliAODMCParticle* particle1, AliAODMCParticle* particle2, bool checkConversion);
   bool MCParticleIsSelected(AliAODMCParticle* particle, bool isConv, bool checkConversion);
@@ -89,6 +89,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   // void IsTrueParticle(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, Bool_t matched);
   bool CheckAcceptance(AliAODMCParticle* gamma0, AliAODMCParticle* gamma1);
   bool IsParticleFromPartonFrag(AliAODMCParticle* particle, int idParton);
+  void UnselectStablePi0(AliAODMCParticle* part); // Rleabel Pi0, eta etc. tounstable in case they were labeled stable by the jet framework
 
   // Jet functions
   void ProcessJets();
@@ -120,6 +121,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void SetFillMesonDCATree(bool tmp) { fFillDCATree = tmp; }
   void SetDoUseCentralEvtSelection(bool tmp) { fUseCentralEventSelection = tmp; }
   void SetUsePtForCalcZ(bool tmp) { fUsePtForZCalc = tmp; }
+  void SetForcePi0Unstable(bool tmp) { fUnsetStablePi0 = tmp; }
 
   void SetEventCutList(int nCuts,
                        TList* CutArray)
@@ -226,6 +228,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool fFillDCATree;                                    // flag if DCA tree should be filled or not
   bool fUseCentralEventSelection;                       // flag if central event selection (AliEventSelection.cxx) should be used
   bool fUsePtForZCalc;                                  // flag if z = pt_meson/pt_jet or if its z = (P_{meson}*P_{jet})/|P_{Jet}^{2}|
+  bool fUnsetStablePi0;                                 // flag to decide if pi0 need to be reset to Unstable particles
   //-------------------------------
   // conversions
   //-------------------------------
@@ -326,6 +329,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
 
   std::vector<TH1F*> fHistoClusterPtInJet; //! vector of histos with number of clusters as function of pt inside of jets
   std::vector<TH1F*> fHistoClusterEInJet;  //! vector of histos with number of clusters as function of E inside of jets
+  std::vector<TH3F*> fHistoClusterPtResolutionInJet;  //! vector of histos with number of clusters as function of E inside of jets
 
   std::vector<TH2F*> fHistoClusterPtVsJetPtInJet; //! vector of histos with number of clusters as function of pt vs. jet pt inside of jets
 
@@ -402,6 +406,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoTrueMesonInTrueJet_JetPtVsTruePt;                     //! vector of histos true meson pt vs true jet pt inside true jets
   std::vector<TH2F*> fHistoTrueMesonInTrueJet_JetPtVsTrueZ;                      //! vector of histos true meson z vs true jet pt inside true jets
   std::vector<TH2F*> fHistoMesonResponse;                                        //! vector of histos with meson response matrix
+  std::vector<TH3F*> fHistoMesonResolutionJetPt;                                 //! vector of histos with meson resolution as function of jet momentum
 
   //-------------------------------
   // Meson double counting
@@ -477,13 +482,14 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   short fDCATree_QualityFlag;                         //! Quality flag (categorie 1 - 6) of meson for DCA tree
   unsigned short fDCATree_JetPt;                      //! jet pt meson belongs to for DCA tree
   bool fDCATree_isTrueMeson;                          //! flag if meson is true meson or not
+  float fDCATree_EvtWeight;                           //! event weight for the tree in case of MC
 
  private:
   static constexpr bool fLocalDebugFlag = false;
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 13);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 15);
 };
 
 #endif

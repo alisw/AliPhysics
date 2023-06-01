@@ -1098,6 +1098,10 @@ void AliAnalysisTaskSELcTopK0sCorrelations::UserExec(Option_t */*option*/)
         if(ptbin==-1) {fNentries->Fill(17); continue;} //out of bounds
 
         fIsSelectedCandidate=fCutsLambdac->IsSelected(d,AliRDHFCuts::kAll,aod); //Lambdac selected
+        if (fIsSelectedCandidate % 2 == 0){
+          continue; // v0s: only K0s hypothesis (remove Lambda)
+        }
+
         AliAODv0 *v0part = dynamic_cast<AliAODv0*>(dynamic_cast<AliAODRecoCascadeHF *>(d)->Getv0());
 
         if (v0part->GetOnFlyStatus()) {

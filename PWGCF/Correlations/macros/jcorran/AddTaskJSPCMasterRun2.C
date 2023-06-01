@@ -19,7 +19,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
   int debug = 0;
   const int maxNrComb = 12;
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
+ 
   //Explanation: 
   //doSPC   0: 2SPC, 4SPC and 5SPC
   //        1: 3SPC
@@ -60,6 +60,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
   // Loading of the correction map.
   TString MAPfileNames[Nsets];
   TString MAPdirName = "alien:///alice/cern.ch/user/a/aonnerst/legotrain/NUAError/";
+  // TString MAPdirName = "/home/maxim/Documents/Work/SPC/MAP_comparison/PhiWeights_LHC18q_Rebin3_default.root"
   AliJCorrectionMapTask *cMapTask = new AliJCorrectionMapTask ("JCorrectionMapTask");
 
   enum { lhc15o = 0, lhc18q = 1, lhc18r = 2 };
@@ -128,6 +129,10 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
     case 6:   // 6: 15o, hybridBaseDCAcuts
       MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_s_%s.root", MAPdirName.Data(), sCorrection[period].Data(),
        configNames[i].Data());
+      break;
+    case 7:
+      // MAPfileNames[i] = "/home/maxim/Documents/Work/SPC/MAP_comparison/PhiWeights_LHC18q_Rebin3_default.root";
+      MAPfileNames[i] = "/home/maxim/Downloads/PhiWeights_LHC18q_pt02_hybridBaseDCA_s_hybridBaseDCA.root";
       break;
     default:
       std::cout << "ERROR: Invalid configuration index. Skipping this element."

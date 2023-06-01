@@ -49,13 +49,32 @@
 
 ClassImp(AliPHOSEmbedggHBT)
 
-  //________________________________________________________________________
-  AliPHOSEmbedggHBT::AliPHOSEmbedggHBT(const char* name)
+//________________________________________________________________________
+AliPHOSEmbedggHBT::AliPHOSEmbedggHBT(const char* name)
   : AliAnalysisTaskEtaPhigg(name), fSignalEvent(nullptr), fSignalEvents(nullptr)
 {
   // Constructor
 }
-
+//________________________________________________________________________
+AliPHOSEmbedggHBT::~AliPHOSEmbedggHBT(){
+  //Note that histograms are stored in fOutputContainer and should not be deleted explicitely  
+  if(fMCEvents){
+    delete fMCEvents;
+    fMCEvents=nullptr;
+  }
+  if(fMCEvents){
+    delete fMCEvents;  
+    fMCEvents = nullptr;
+  }
+  if(fSignalEvent){
+    delete fSignalEvent;
+    fSignalEvent = nullptr;
+  }
+  if(fSignalEvents){
+    delete fSignalEvents;
+    fSignalEvents = nullptr;
+  }
+}
 //________________________________________________________________________
 void AliPHOSEmbedggHBT::UserCreateOutputObjects()
 {
@@ -161,6 +180,7 @@ void AliPHOSEmbedggHBT::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliPHOSEmbedggHBT::UserExec(Option_t*)
 {
+  printf(" %s: Start event %d\n", GetName(), fEventCounter);
   // Main loop, called for each event
   FillHistogram("hTotSelEvents", 0.5);
 
@@ -197,7 +217,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   FillHistogram("hTotSelEvents", 2.5);
 
   // Vtx class z-bin
-  Int_t zvtx = (Int_t)((vtx5[2] + 10.) / 2.);
+  Int_t zvtx = (Int_t)((vtx5[2] + 10.) / 1.);
   if (zvtx < 0)
     zvtx = 0;
   if (zvtx >= kVtxBins)
@@ -213,7 +233,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   }
   FillHistogram("hCentrality", fCentrality);
 
-  if (fCentrality <= 0. || fCentrality > 80.) {
+  if (fCentrality < 0. || fCentrality > 80.) {
     PostData(1, fOutputContainer);
     return;
   }
@@ -286,6 +306,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   const double dyCPV = -2.;           // V3: 5. V2: -2;  V1:18
   const double dzCPV = 4.9;           // V3: 4.6
   const double slopeZCPV = -0.034745; // tilt of module
+
   for (Int_t j = 0; j < multClust; j++) {
     AliAODCaloCluster* cluCPV = static_cast<AliAODCaloCluster*>(embedded->At(j));
     if (cluCPV->GetType() != AliVCluster::kPHOSCharged)
@@ -306,10 +327,10 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     p->SetDistToBad(itr);
   }
 
-  TVector3 vertex(vtx5);
-
   Int_t inPHOS = 0, inSignal = 0;
   TVector3 localPos;
+
+  double vtx0[3] = { 0., 0., 0. };
 
   TClonesArray* signal = static_cast<TClonesArray*>(fEvent->FindListObject("SignalCaloClusters"));
   int multSignal = signal->GetEntriesFast();
@@ -326,6 +347,8 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     Int_t relId[4];
     fPHOSGeo->GlobalPos2RelId(global, relId);
     Int_t mod = relId[0];
+    Int_t cellX = relId[2];
+    Int_t cellZ = relId[3];
     TVector3 local;
     fPHOSGeo->Global2Local(local, global, mod);
 
@@ -339,7 +362,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
       continue;
 
     TLorentzVector pv1;
-    clu->GetMomentum(pv1, vtx5);
+    clu->GetMomentum(pv1, vtx0);
 
     if (inSignal >= fSignalEvent->GetSize()) {
       fSignalEvent->Expand(inSignal + 20);
@@ -363,6 +386,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     ph->SetEMCz(local.Z());
     ph->SetLambdas(clu->GetM20(), clu->GetM02());
     ph->SetUnfolded(clu->GetNExMax() < 2); // Remember, if it is unfolded
+    ph->SetDistToBad(cellX);
   }
 
   for (Int_t i = 0; i < multClust; i++) {
@@ -387,7 +411,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     fPHOSGeo->Global2Local(local, global, mod);
 
     FillHistogram(Form("hTofM%d", mod), clu->E(), clu->GetTOF());
-    if ((clu->GetTOF() > 100.e-9) || (clu->GetTOF() < -100.e-7))
+    if ((clu->GetTOF() > 150.e-9) || (clu->GetTOF() < -150.e-7))
       continue;
 
     if (clu->GetNCells() < 2)
@@ -424,6 +448,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
 
     ph->SetEMCx(local.X());
     ph->SetEMCz(local.Z());
+    ph->SetDistToBad(cellX);
     ph->SetLambdas(clu->GetM20(), clu->GetM02());
     ph->SetUnfolded(clu->GetNExMax() < 2); // Remember, if it is unfolded
   }
@@ -503,8 +528,6 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
 
     for (Int_t i2 = i1 + 1; i2 < inSignal; i2++) {
       AliCaloPhoton* ph2 = (AliCaloPhoton*)fSignalEvent->At(i2);
-      if (ph1->Module() != ph2->Module())
-        continue;
 
       TLorentzVector sum = *ph1 + *ph2;
       TVector3 gammaBeta(sum.BoostVector());
@@ -527,21 +550,16 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   }
   for (Int_t i1 = 0; i1 < inPHOS - 1; i1++) {
     AliCaloPhoton* ph1 = (AliCaloPhoton*)fPHOSEvent->At(i1);
-
     for (Int_t i2 = i1 + 1; i2 < inPHOS; i2++) {
       AliCaloPhoton* ph2 = (AliCaloPhoton*)fPHOSEvent->At(i2);
-      if (ph1->Module() != ph2->Module())
-        continue;
-
-      TLorentzVector sum = *ph1 + *ph2;
+      TLorentzVector sum(*ph1 + *ph2);
+      double qinv = sum.M();
+      double kT = 0.5 * sum.Pt();
       TVector3 gammaBeta(sum.BoostVector());
       gammaBeta.SetXYZ(0, 0, gammaBeta.Z());
       TLorentzVector gammaCMq(*ph1 - *ph2);
       gammaCMq.Boost(-gammaBeta);
       double q = gammaCMq.Vect().Mag();
-
-      double qinv = sum.M();
-      double kT = 0.5 * sum.Pt();
 
       for (Int_t iCut = 0; iCut < kCuts; iCut++) {
         if (!PairCut(ph1, ph2, iCut)) {
@@ -629,9 +647,6 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
       TClonesArray* mixSignal = static_cast<TClonesArray*>(fSignalEvents->At(ev));
       for (Int_t i2 = 0; i2 < mixSignal->GetEntriesFast(); i2++) {
         AliCaloPhoton* ph2 = (AliCaloPhoton*)mixSignal->At(i2);
-        if (ph1->Module() != ph2->Module()) {
-          continue;
-        }
 
         TLorentzVector sum = *ph1 + *ph2;
         TVector3 gammaBeta(sum.BoostVector());
@@ -656,24 +671,18 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   // Embedded
   for (Int_t i1 = 0; i1 < inPHOS; i1++) {
     AliCaloPhoton* ph1 = (AliCaloPhoton*)fPHOSEvent->At(i1);
-
     for (Int_t ev = 0; ev < prevPHOS->GetSize(); ev++) {
       TClonesArray* mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
       for (Int_t i2 = 0; i2 < mixPHOS->GetEntriesFast(); i2++) {
         AliCaloPhoton* ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
-        if (ph1->Module() != ph2->Module()) {
-          continue;
-        }
-
-        TLorentzVector sum = *ph1 + *ph2;
+        TLorentzVector sum(*ph1 + *ph2);
+        double qinv = sum.M();
+        double kT = 0.5 * sum.Pt();
         TVector3 gammaBeta(sum.BoostVector());
         gammaBeta.SetXYZ(0, 0, gammaBeta.Z());
         TLorentzVector gammaCMq(*ph1 - *ph2);
         gammaCMq.Boost(-gammaBeta);
         double q = gammaCMq.Vect().Mag();
-
-        double qinv = sum.M();
-        double kT = 0.5 * sum.Pt();
 
         for (Int_t iCut = 0; iCut < kCuts; iCut++) {
           if (!PairCut(ph1, ph2, iCut)) {

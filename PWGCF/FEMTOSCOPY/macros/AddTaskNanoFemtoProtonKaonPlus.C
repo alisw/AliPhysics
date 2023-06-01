@@ -45,40 +45,69 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   AliFemtoDreamTrackCuts *TrackPosKaonCuts =
       AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
   TrackPosKaonCuts->SetCutCharge(1);
-  TrackPosKaonCuts->SetFilterBit(filterBit);
   if (!UseRamonaCut)
   {
     TrackPosKaonCuts->SetPIDkd(); // Oton
   }
   else
   {
+    TrackPosKaonCuts->SetFilterBit(filterBit);
     TrackPosKaonCuts->SetPIDkd(true, true); // Ramona
+    TrackPosKaonCuts->SetDCAVtxZ(1.0);
+    TrackPosKaonCuts->SetDCAVtxXY(1.0);
+    TrackPosKaonCuts->SetCutTPCCrossedRows(false, 0, 0);
+    TrackPosKaonCuts->SetCutSharedCls(false);
+    TrackPosKaonCuts->SetCutSmallestSig(false);
+    TrackPosKaonCuts->SetRejLowPtPionsTOF(false);
   }
 
   AliFemtoDreamTrackCuts *TrackNegKaonCuts =
       AliFemtoDreamTrackCuts::PrimKaonCuts(isMC, true, false, false);
   TrackNegKaonCuts->SetCutCharge(-1);
-  TrackNegKaonCuts->SetFilterBit(filterBit);
   if (!UseRamonaCut)
   {
     TrackNegKaonCuts->SetPIDkd(); // Oton
   }
   else
   {
+    TrackNegKaonCuts->SetFilterBit(filterBit);
     TrackNegKaonCuts->SetPIDkd(true, true); // Ramona
+    TrackNegKaonCuts->SetDCAVtxZ(1.0);
+    TrackNegKaonCuts->SetDCAVtxXY(1.0);
+    TrackNegKaonCuts->SetCutTPCCrossedRows(false, 0, 0);
+    TrackNegKaonCuts->SetCutSharedCls(false);
+    TrackNegKaonCuts->SetCutSmallestSig(false);
+    TrackNegKaonCuts->SetRejLowPtPionsTOF(false);
   }
 
   //Proton and AntiProton cuts
   AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, false, false);
-  TrackCutsProton->SetFilterBit(128);
   TrackCutsProton->SetCutCharge(1);
+  if(UseRamonaCut){
+    TrackCutsProton->SetDCAVtxZ(1.0);
+    TrackCutsProton->SetDCAVtxXY(1.0);
+    TrackCutsProton->SetPtRange(0.4, 3.0);
+    TrackCutsProton->SetCutTPCCrossedRows(false, 0, 0);
+    TrackCutsProton->SetCutSharedCls(false);
+    TrackCutsProton->SetCutSmallestSig(false);
+    TrackCutsProton->SetRejLowPtPionsTOF(false);
+
+  }
 
   AliFemtoDreamTrackCuts *TrackCutsAntiProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, false, false);
-  TrackCutsAntiProton->SetFilterBit(128);
   TrackCutsAntiProton->SetCutCharge(-1);
+  if(UseRamonaCut){
+    TrackCutsAntiProton->SetDCAVtxZ(1.0);
+    TrackCutsAntiProton->SetDCAVtxXY(1.0);
+    TrackCutsAntiProton->SetPtRange(0.4, 3.0);
+    TrackCutsAntiProton->SetCutTPCCrossedRows(false, 0, 0);
+    TrackCutsAntiProton->SetCutSharedCls(false);
+    TrackCutsAntiProton->SetCutSmallestSig(false);
+    TrackCutsAntiProton->SetRejLowPtPionsTOF(false);
 
+  }
 
   //Set-up output ------------------------------------------------------------------------
   std::vector<int> PDGParticles;

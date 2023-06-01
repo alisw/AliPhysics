@@ -50,11 +50,13 @@ class AliAnalysisTaskGammaPythia : public AliAnalysisTaskSE {
 
     // MC functions
     void SetIsMC(Int_t isMC){fIsMC=isMC;}
-    void ProcessMCParticles();
     void ProcessMultiplicity();
     bool IsInV0Acceptance(AliVParticle* part) const;
 
     // additional functions
+    void SetMaxY(Double_t Ymax){fMaxY = Ymax;}
+    void SetMinNch(Double_t Nch_min){fNch_min = Nch_min;}
+    void SetMaxNch(Double_t Nch_max){fNch_max = Nch_max;}
     void SetMaxPt(Double_t pTmax){fMaxpT = pTmax;}
     void SetDoMultStudies(Int_t tmp){fDoMultStudies = tmp;}
 
@@ -62,32 +64,40 @@ class AliAnalysisTaskGammaPythia : public AliAnalysisTaskSE {
     TList*                fOutputContainer;           //! Output container
     // histograms events
     TH1F*                 fHistNEvents;               //! number of events histo
+    TH1F*                 fHistNEventsHM;             //! number of events histo
     TH1D*                 fHistXSection;              //! xSection
     TH1F*                 fHistPtHard;                //! ptHard
 
-    // histograms gammas
+    TH1I*                 fHistParticlePDG;           //! histo for Gammas
+    TH1I*                 fHistMotherParticlePDG;     //! histo for Gammas
+    TH1I*                 fHistGrandMotherParticlePDG;//! histo for Gammas
+    TH2I*                 fHistParticlevsMother;      //! histo for Gammas
+
+  // histograms gammas
     TH1F*                 fHistPtGamma;                //! histo for Gammas
     TH2F*                 fHistPtYGamma;               //! histo for Gammas
-    TH1F*                 fHistPtGammaClassI;          //! histo for Gammas
-    TH1F*                 fHistPtGammaClassII;         //! histo for Gammas
-    TH1F*                 fHistPtGammaClassIII;        //! histo for Gammas
-    TH2F*                 fHistPtYGammaClassI;         //! histo for Gammas
-    TH2F*                 fHistPtYGammaClassII;        //! histo for Gammas
-    TH2F*                 fHistPtYGammaClassIII;       //! histo for Gammas
+    TH2F*                 fHistPtMultGamma;            //! histo for Gammas
 
-    TH1D*                 fHistV0Mult;                        //! histo for Pi0 pt vs V0 multiplicity
+    TH1D*                 fHistMult;                   //! histo for Pi0 pt vs multiplicity
+    TH1D*                 fHistV0Mult;                 //! histo for Pi0 pt vs V0 multiplicity
+    TH1D*                 fHistV0MultHM;                 //! histo for Pi0 pt vs V0 multiplicity
 
     Int_t                 fIsMC;            // MC flag
+    Double_t              fMaxY;            // Max y flag
+    Int_t                 fNch_min;          // Min Nch flag
+    Int_t                 fNch_max;          // Max Nch flag
     Double_t              fMaxpT;           // Max pT flag
     Int_t                 fDoMultStudies;   // enable multiplicity dependent studies (0 -> No mult studies, 1 -> Mult estimation with V0, 2 -> Mult estimation with V0 and INEL>0 criterium for multiplicity)
+    Int_t                 fNTracks;  // number of tracks
     Int_t                 fNTracksInV0Acc;  // number of tracks in V0A+C acceptance for multiplicity studies
+    Int_t                 fNTracksInV0AccHM;  // number of tracks in V0A+C acceptance for multiplicity studies
     Bool_t                fIsEvtINELgtZERO; // flag if event is INEL>0
 
   private:
     AliAnalysisTaskGammaPythia(const AliAnalysisTaskGammaPythia&); // Prevent copy-construction
     AliAnalysisTaskGammaPythia &operator=(const AliAnalysisTaskGammaPythia&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaPythia, 1);
+    ClassDef(AliAnalysisTaskGammaPythia, 3);
 };
 
 #endif

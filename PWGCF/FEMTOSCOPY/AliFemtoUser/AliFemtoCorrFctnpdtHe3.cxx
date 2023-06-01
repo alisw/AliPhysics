@@ -70,7 +70,8 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     fUsePairCutEtaPhi(0),
     fPairCut_eta(0.017),
     fPairCut_phi(0.017),
-    fPassAllPair(0)
+    fPassAllPair(0),
+    fUseGobalVelGate(0)
 {
     
     fNumerator      = new TH1D(TString::Format("Num%s", fTitle.Data()), "fNumerator", nbins, KStarLo, KStarHi);
@@ -129,7 +130,8 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     fUsePairCutEtaPhi(aCorrFctn.fUsePairCutEtaPhi),
     fPairCut_eta(aCorrFctn.fPairCut_eta),
     fPairCut_phi(aCorrFctn.fPairCut_phi),
-    fPassAllPair(aCorrFctn.fPassAllPair)
+    fPassAllPair(aCorrFctn.fPassAllPair),
+    fUseGobalVelGate(aCorrFctn.fUseGobalVelGate)
 {
     
 
@@ -383,6 +385,16 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
 	}
 
     double tKStar = fabs(fPair->KStar());
+
+    if(fUseGobalVelGate){
+	int VelLabel = ReVelocityGate(fPair);
+	if(fUseGobalVelGate == VelLabel){
+	}
+	else{
+		return;
+	}
+
+    }
     fNumerator->Fill(tKStar);
 
     if(fHighCF){
@@ -470,6 +482,16 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
 	    }
 	}
     double tKStar = fabs(fPair->KStar());
+   if(fUseGobalVelGate){
+        int VelLabel = ReVelocityGate(fPair);
+        if(fUseGobalVelGate == VelLabel){
+        }
+        else{
+                return;
+        }
+
+    }
+
     fDenominator->Fill(tKStar);
     if(fHighCF){
 	float FillMom1 = 0.;
@@ -570,7 +592,6 @@ int AliFemtoCorrFctnpdtHe3::ReVelocityGate(AliFemtoPair* aPair){
     if(P1velocity < P2velocity){
         ReLabel = 2;
     }
-
     return ReLabel;
 }
 float AliFemtoCorrFctnpdtHe3::ReAvgDphi(AliFemtoPair* aPair){
@@ -929,5 +950,8 @@ bool AliFemtoCorrFctnpdtHe3::PairEtaPhiSelect(AliFemtoPair* aPair){
 }
 void AliFemtoCorrFctnpdtHe3::SetPassAllPair(int aUse){
 	fPassAllPair = aUse;
+}
+void AliFemtoCorrFctnpdtHe3::SetGobalVelGate(int aUse){
+	fUseGobalVelGate = aUse;
 }
 

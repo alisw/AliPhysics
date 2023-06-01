@@ -3013,12 +3013,6 @@ void AddTask_GammaConvV1_PbPb(
     cuts.AddCutPCM("13530a13","10200009f9730000dge0400000","0143103100000000"); //
     cuts.AddCutPCM("15910a13","10200009f9730000dge0400000","0143103100000000"); //
 
-  } else if ( trainConfig == 673){ // Jet analysis PbPb 5 TeV 2017
-    cuts.AddCutPCM("10130e03","0dm00009f9730000dge0404000","2143103100000000"); //
-    cuts.AddCutPCM("11310e03","0dm00009f9730000dge0404000","2143103100000000"); //
-    cuts.AddCutPCM("13530e03","0dm00009f9730000dge0404000","2143103100000000"); //
-    cuts.AddCutPCM("15910e03","0dm00009f9730000dge0404000","2143103100000000"); //
-
   // continuation LHC18qr_pass3
   } else if (trainConfig == 680){ // == 668
     cuts.AddCutPCM("13430d23","0dm00009f9730b00dge0404000","0143103100000000"); //
