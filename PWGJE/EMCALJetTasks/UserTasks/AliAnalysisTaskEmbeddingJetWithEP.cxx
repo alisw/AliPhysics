@@ -782,6 +782,22 @@ void AliAnalysisTaskEmbeddingJetWithEP::AllocateMatchedJetHistograms()
         histname = branchName + "hEmbDeltaPt";
         title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#it{p}_{T,corr}^{det} - #it{p}_{T}^{truth}";
         fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, 200, -50., 50.);
+
+        histname = branchName + "hJESshiftHybDet";
+        title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#frac{#it{p}_{T,corr}^{det} - #it{p}_{T}^{truth}}{#it{p}_{T}^{truth}}";
+        fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, 200, -1., 1.);
+        
+        histname = branchName + "hEmbDeltaPtHybDet";
+        title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#it{p}_{T,corr}^{det} - #it{p}_{T}^{truth}";
+        fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, 200, -50., 50.);
+
+                histname = branchName + "hJESshiftDetPar";
+        title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#frac{#it{p}_{T,corr}^{det} - #it{p}_{T}^{truth}}{#it{p}_{T}^{truth}}";
+        fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, 200, -1., 1.);
+        
+        histname = branchName + "hEmbDeltaPtDetPar";
+        title = histname + ";Centrality (%);#it{p}_{T}^{truth} (GeV/#it{c});#it{p}_{T,corr}^{det} - #it{p}_{T}^{truth}";
+        fHistManager.CreateTH3(histname.Data(), title.Data(), nbinsx, minx, maxx, nbinsy, miny, maxy, 200, -50., 50.);
         
         // NEF of det-level matched jets, (centrality, pT-truth, NEF)
         nbinsx = 20; minx = 0; maxx = 100;
@@ -1665,6 +1681,7 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
     
     TString jetKindName[3] = {"hybridRawJet", "detectorRawJet", "particleRawJet"};
 
+    
     // for (auto jet : fDetJetContainer->accepted()) {
     for (auto jet : hybJetsCont->accepted()) {
         Double_t jetEPAngle = jet->Phi() - psi2V0[0];
@@ -1675,6 +1692,15 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
         } else if((jetEPAngle>TMath::Pi()/2)&&(jetEPAngle<TMath::Pi())){
             jetEPAngle = TMath::TwoPi() - jetEPAngle;
         }
+
+        if (hybJetsCont->GetRhoParameter()) {
+            rhoVal = hybJetsCont->GetRhoVal();
+            localRhoVal = fLocalRho->GetLocalVal(jet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
+            // localRhoValScaled = localRhoVal * jetCont->GetRhoVal() / p0;
+            localRhoValScaled = fLocalRho->GetLocalVal(\
+                jet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
+        }
+
         if(fRhoLocalSubType) detJetPtCorr = jet->Pt() - localRhoValScaled * jet->Area();
         else detJetPtCorr = jet->Pt() - rhoVal * jet->Area();
 
@@ -1683,14 +1709,7 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
         
         deltaPhiJetEP = jet->Phi() - psi2V0[0];
         if (jet->Phi() - psi2V0[0] < 0.0) deltaPhiJetEP += TMath::TwoPi();
-        if (hybJetsCont->GetRhoParameter()) {
-            rhoVal = hybJetsCont->GetRhoVal();
-            localRhoVal = fLocalRho->GetLocalVal(jet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
-            // localRhoValScaled = localRhoVal * jetCont->GetRhoVal() / p0;
-            localRhoValScaled = fLocalRho->GetLocalVal(\
-                jet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
-        }
-        
+
         // Get the matched part-level jet
         groupName = "";
         const AliEmcalJet* matchedPartLvJet = GetMatchedPartLevelJet(jet, detJetPtCorr, groupName);
@@ -1717,7 +1736,6 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
                 fHistManager.FillTHnSparse(histName, xForV2);
             }
             
-
             Double_t xForV3[5] = {truthPt, detJetPtCorr, angleTruJetVsEP3, angleDetJetVsEP3, fCent};
             if(f2DRMwithEP3){
                 histName = TString::Format("%s/hRMWithEP3Angle", groupName.Data());
@@ -1868,6 +1886,8 @@ void AliAnalysisTaskEmbeddingJetWithEP::DoJetMatching(){
         }
 
     } //jet loop
+
+    CaclJetEnergyScaleShift();
 }
 
 
@@ -2037,7 +2057,7 @@ const AliEmcalJet* AliAnalysisTaskEmbeddingJetWithEP::GetMatchedPartLevelJet(con
             if (matchedJetDistance > fJetMatchingR) returnValue = false;
             else  fHistManager.FillTH1(histNameQA, "jetDistancePPdet");
             
-        // Check the matching distance between the combined and pp truth-level jets
+            // Check the matching distance between the combined and pp truth-level jets
             if (partLevelJet) {
                 Double_t deltaR = detJet->DeltaR(partLevelJet);
                 if (deltaR > fJetMatchingR) returnValue = false;
@@ -2060,6 +2080,234 @@ const AliEmcalJet* AliAnalysisTaskEmbeddingJetWithEP::GetMatchedPartLevelJet(con
         if (returnValue) return partLevelJet; 
     }
     return 0;
+}
+
+const AliEmcalJet* AliAnalysisTaskEmbeddingJetWithEP::GetMatchedJet(const AliEmcalJet* detJet, Double_t detJetPt, TString groupName) {
+    TString histName = "";
+    // Track in histogram how many matches pass each distinct matching criteria
+    TString histNameQA = TString::Format("%s/fHistJetMatchingQA", groupName.Data());
+    
+    // Geometrical matching case (pp, p-Pb)
+    if (fDoJetMatchingGeometrical) {
+        
+        bool returnValue = false;
+        const AliEmcalJet* matchedJet = detJet->ClosestJet();
+        if (matchedJet) {
+            returnValue = true;
+            
+            // Check if match is unique
+            if (matchedJet->ClosestJet() != detJet) returnValue = false;
+
+            // Check if the matching distance cut is passed
+            double matchedJetDistance = detJet->ClosestJetDistance();
+            if (matchedJetDistance > fJetMatchingR) returnValue = false;
+        }
+        else returnValue = false;
+        
+        if (returnValue) return matchedJet;
+    }
+    // Shared MC fraction matching case (Pb-Pb)
+    else if (fDoJetMatchingMCFraction) { // This function is essentially copied from 
+        bool returnValue = false;
+        const AliEmcalJet* matchedJet = nullptr;
+        
+        // First, check if combined jet has a pp det-level match assigned
+        if (detJet->ClosestJet()) {
+            returnValue = true;
+            
+            // Check shared momentum fraction.
+            double sharedFraction = fDetJetContainer->GetFractionSharedPt(detJet, nullptr);
+            if (sharedFraction < fMinSharedMomentumFraction) returnValue = false;
+        
+            // Check that the combined jet has a particle-level match
+            AliEmcalJet * detLevelJetPP = detJet->ClosestJet();
+            matchedJet = detLevelJetPP->ClosestJet();
+            if (!matchedJet) returnValue = false;
+            
+            // Check the matching distance between the combined and pp det-level jets
+            double matchedJetDistance = detJet->ClosestJetDistance();
+            if (matchedJetDistance > fJetMatchingR) returnValue = false;
+            
+            // Check the matching distance between the combined and pp truth-level jets
+            if (matchedJet) {
+                Double_t deltaR = detJet->DeltaR(matchedJet);
+                if (deltaR > fJetMatchingR) returnValue = false;
+            }
+        }
+        else returnValue = false;
+        
+        if (returnValue) return matchedJet; 
+    }
+    return 0;
+}
+
+void AliAnalysisTaskEmbeddingJetWithEP::CaclJetEnergyScaleShift(){
+    TString aBranchName[2] ={"",""};
+    if(fSepEP){
+        aBranchName[0] = "MatchedJetHisto_OutOfPlane/";
+        aBranchName[1] = "MatchedJetHisto_InPlane/";
+    }else aBranchName[0] = "MatchedJetHisto_Inclusive/";
+    TString histName;
+    TString groupName;
+
+    Double_t rhoVal = 0.0;
+    Double_t localRhoVal = 0.0;
+    Double_t localRhoValScaled = 0.0;
+    Double_t detJetPtCorr = 0.0;
+    Double_t deltaPhiJetEP = -999.0;
+
+    AliJetContainer * hybJetsCont = GetJetContainer(0); // hybrid   level
+    AliJetContainer * detJetsCont = GetJetContainer(1); // detector level
+    AliJetContainer * parJetsCont = GetJetContainer(2); // particle level
+
+    for(auto hybJet : hybJetsCont->all()) hybJet->ResetMatching();
+    for(auto detJet : detJetsCont->all()) detJet->ResetMatching();
+    PerformGeometricalJetMatching(*hybJetsCont, *detJetsCont, fJetMatchingR);
+
+    // for (auto jet : fDetJetContainer->accepted()) {
+    for (auto jet : hybJetsCont->accepted()) {
+        Double_t jetEPAngle = jet->Phi() - psi2V0[0];
+        if((jetEPAngle>TMath::Pi()/2)&&(jetEPAngle<TMath::Pi())){
+            jetEPAngle = TMath::Pi() - jetEPAngle;
+        } else if((jetEPAngle>TMath::Pi()/2)&&(jetEPAngle<TMath::Pi())){
+            jetEPAngle = jetEPAngle - TMath::Pi();
+        } else if((jetEPAngle>TMath::Pi()/2)&&(jetEPAngle<TMath::Pi())){
+            jetEPAngle = TMath::TwoPi() - jetEPAngle;
+        }
+
+        if (hybJetsCont->GetRhoParameter()) {
+            rhoVal = hybJetsCont->GetRhoVal();
+            localRhoVal = fLocalRho->GetLocalVal(jet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
+            // localRhoValScaled = localRhoVal * jetCont->GetRhoVal() / p0;
+            localRhoValScaled = fLocalRho->GetLocalVal(\
+                jet->Phi(), GetJetContainer()->GetJetRadius(), fLocalRho->GetVal());
+        }
+
+        if(fRhoLocalSubType) detJetPtCorr = jet->Pt() - localRhoValScaled * jet->Area();
+        else detJetPtCorr = jet->Pt() - rhoVal * jet->Area();
+
+        Int_t v0Angle = (Int_t) jet->Phi() / (TMath::Pi()/4);
+        Double_t tempV0Mult = V0MultForAngle[v0Angle];
+        
+        deltaPhiJetEP = jet->Phi() - psi2V0[0];
+        if (jet->Phi() - psi2V0[0] < 0.0) deltaPhiJetEP += TMath::TwoPi();
+        
+        // Get the matched part-level jet
+        groupName = "";
+        const AliEmcalJet* matchedDetLvJet = GetMatchedJet(jet, detJetPtCorr, groupName);
+        if (!matchedDetLvJet) continue;
+        Float_t truthPt = matchedDetLvJet->Pt();
+
+        if(fSepEP){
+            if ((deltaPhiJetEP < TMath::Pi()/4) || (deltaPhiJetEP >= 7*TMath::Pi()/4)\
+                || (deltaPhiJetEP >= 3*TMath::Pi()/4 && deltaPhiJetEP < 5*TMath::Pi()/4)) {
+                // == In plane  ==================
+                groupName = "MatchedJetHisto_InPlane";
+                // Fill JES shift (centrality, pT-truth, (pT-det - pT-truth) / pT-truth)
+                histName = TString::Format("%s/hJESshiftHybDet", groupName.Data());
+                fHistManager.FillTH3(histName, fCent, truthPt, (detJetPtCorr-truthPt)/truthPt );
+                
+                histName = TString::Format("%s/hEmbDeltaPtHybDet", groupName.Data());
+                fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorr-truthPt );
+            }
+            else {
+                // == Out Of Plane  ==================
+                groupName = "MatchedJetHisto_OutOfPlane";
+                // Fill JES shift (centrality, pT-truth, (pT-det - pT-truth) / pT-truth)
+                histName = TString::Format("%s/hJESshiftHybDet", groupName.Data());
+                fHistManager.FillTH3(histName, fCent, truthPt, (detJetPtCorr-truthPt)/truthPt );
+                
+                histName = TString::Format("%s/hEmbDeltaPtHybDet", groupName.Data());
+                fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorr-truthPt );
+            }
+        }else{
+            // == Inclusive  ==================
+            groupName = "MatchedJetHisto_Inclusive";
+
+            // Get the matched part-level jet
+            const AliEmcalJet* matchedDetLvJet = GetMatchedPartLevelJet(jet, detJetPtCorr, groupName);
+            if (!matchedDetLvJet) continue;
+            Float_t truthPt = matchedDetLvJet->Pt();
+
+            // Fill JES shift (centrality, pT-truth, (pT-det - pT-truth) / pT-truth)
+            histName = TString::Format("%s/hJESshiftHybDet", groupName.Data());
+            fHistManager.FillTH3(histName, fCent, truthPt, (detJetPtCorr-truthPt)/truthPt );
+            
+            histName = TString::Format("%s/hEmbDeltaPtHybDet", groupName.Data());
+            fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorr-truthPt );
+        }
+    }
+
+    for(auto detJet : detJetsCont->all()) detJet->ResetMatching();
+    for(auto parJet : parJetsCont->all()) parJet->ResetMatching();
+    PerformGeometricalJetMatching(*detJetsCont, *parJetsCont, fJetMatchingR);
+
+    for (auto jet : detJetsCont->accepted()) {
+        Double_t jetEPAngle = jet->Phi() - psi2V0[0];
+        if((jetEPAngle>TMath::Pi()/2)&&(jetEPAngle<TMath::Pi())){
+            jetEPAngle = TMath::Pi() - jetEPAngle;
+        } else if((jetEPAngle>TMath::Pi()/2)&&(jetEPAngle<TMath::Pi())){
+            jetEPAngle = jetEPAngle - TMath::Pi();
+        } else if((jetEPAngle>TMath::Pi()/2)&&(jetEPAngle<TMath::Pi())){
+            jetEPAngle = TMath::TwoPi() - jetEPAngle;
+        }
+
+        if(fRhoLocalSubType) detJetPtCorr = jet->Pt() - localRhoValScaled * jet->Area();
+        else detJetPtCorr = jet->Pt() - rhoVal * jet->Area();
+
+        Int_t v0Angle = (Int_t) jet->Phi() / (TMath::Pi()/4);
+        Double_t tempV0Mult = V0MultForAngle[v0Angle];
+        
+        deltaPhiJetEP = jet->Phi() - psi2V0[0];
+        if (jet->Phi() - psi2V0[0] < 0.0) deltaPhiJetEP += TMath::TwoPi();
+        
+        // Get the matched part-level jet
+        groupName = "";
+        const AliEmcalJet* matchedDetLvJet = GetMatchedJet(jet, detJetPtCorr, groupName);
+        if (!matchedDetLvJet) continue;
+        Float_t truthPt = matchedDetLvJet->Pt();
+
+        if(fSepEP){
+            if ((deltaPhiJetEP < TMath::Pi()/4) || (deltaPhiJetEP >= 7*TMath::Pi()/4)\
+                || (deltaPhiJetEP >= 3*TMath::Pi()/4 && deltaPhiJetEP < 5*TMath::Pi()/4)) {
+                // == In plane  ==================
+                groupName = "MatchedJetHisto_InPlane";
+                // Fill JES shift (centrality, pT-truth, (pT-det - pT-truth) / pT-truth)
+                histName = TString::Format("%s/hJESshiftDetPar", groupName.Data());
+                fHistManager.FillTH3(histName, fCent, truthPt, (detJetPtCorr-truthPt)/truthPt );
+                
+                histName = TString::Format("%s/hEmbDeltaPtDetPar", groupName.Data());
+                fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorr-truthPt );
+            }
+            else {
+                // == Out Of Plane  ==================
+                groupName = "MatchedJetHisto_OutOfPlane";
+                // Fill JES shift (centrality, pT-truth, (pT-det - pT-truth) / pT-truth)
+                histName = TString::Format("%s/hJESshiftDetPar", groupName.Data());
+                fHistManager.FillTH3(histName, fCent, truthPt, (detJetPtCorr-truthPt)/truthPt );
+                
+                histName = TString::Format("%s/hEmbDeltaPtDetPar", groupName.Data());
+                fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorr-truthPt );
+            }
+        }else{
+            // == Inclusive  ==================
+            groupName = "MatchedJetHisto_Inclusive";
+
+            // Get the matched part-level jet
+            const AliEmcalJet* matchedDetLvJet = GetMatchedPartLevelJet(jet, detJetPtCorr, groupName);
+            if (!matchedDetLvJet) continue;
+            Float_t truthPt = matchedDetLvJet->Pt();
+
+            // Fill JES shift (centrality, pT-truth, (pT-det - pT-truth) / pT-truth)
+            histName = TString::Format("%s/hJESshiftDetPar", groupName.Data());
+            fHistManager.FillTH3(histName, fCent, truthPt, (detJetPtCorr-truthPt)/truthPt );
+            
+            histName = TString::Format("%s/hEmbDeltaPtDetPar", groupName.Data());
+            fHistManager.FillTH3(histName, fCent, truthPt, detJetPtCorr-truthPt );
+        }
+    }
+
+    return;
 }
 
 /*
