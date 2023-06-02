@@ -146,8 +146,6 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	int fUseStavinskyMethod;
 	TH1F *fStaSkyBkg;
 	
-        int fUse2DpTvsKStar;
-	TH2F *f2DpTvsKStar;
 
 	int fUsePairCutEtaPhi;
 	float fPairCut_eta;
@@ -156,6 +154,11 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	int fPassAllPair;
 
 	int fUseGobalVelGate;
+
+	int fUse2DpTvsKStar;
+	//int IsSameParticlePair;
+	TH2F *KStarVspT_P1Hist;
+	TH2F *KStarVspT_P2Hist;
 };
 
 
