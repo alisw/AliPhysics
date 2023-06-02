@@ -1,5 +1,5 @@
 AliAnalysisTaskJetPlanarFlow* AddTasJetPlanarFlow(
-                    const char * njet1,
+                    const char * njets1,
                     const char * ntracks1,
 								    const char * njets2,
                     const char * ntracks2,
@@ -93,7 +93,7 @@ AliAnalysisTaskJetPlanarFlow* AddTasJetPlanarFlow(
   }
 
   if (jetAnalysisType == AliAnalysisTaskJetPlanarFlow::kEmb) {
-    JetCont3 = task->AddJetContainer(JetCont3, strType, R);
+    JetCont3 = task->AddJetContainer(njets3, strType, R);
     if (JetCont3) {
       JetCont3->SetRhoName(nrhoBase);
       JetCont3->ConnectParticleContainer(trackCont3);
