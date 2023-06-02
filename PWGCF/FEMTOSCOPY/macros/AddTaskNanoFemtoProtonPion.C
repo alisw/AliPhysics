@@ -107,19 +107,31 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
      mTBins.push_back(3.0); 
     } 
     mTBins.push_back(4.0); 
-  } else { //new Binning
+  } else if (mTBinningChoice == 1) { //new Binning
     //{0.53, 0.75, 0.95, 1.2, 1.5, 2.0, 2.5, 4.0}
     mTBins.push_back(0.53); 
     mTBins.push_back(0.75); 
     mTBins.push_back(0.95); 
     mTBins.push_back(1.2); 
     mTBins.push_back(1.5); 
-    if(DoFinemTBinning){
-     mTBins.push_back(2.0); 
-    } 
+    mTBins.push_back(2.0); 
     mTBins.push_back(2.5);
     mTBins.push_back(4.0); 
-  } 
+  } else {
+    mTBins.push_back(0.53); 
+    mTBins.push_back(0.75); 
+    mTBins.push_back(0.85); 
+    mTBins.push_back(0.95); 
+    mTBins.push_back(1.05); 
+    mTBins.push_back(1.2); 
+    mTBins.push_back(1.35); 
+    mTBins.push_back(1.5); 
+    mTBins.push_back(1.75); 
+    mTBins.push_back(2.0); 
+    mTBins.push_back(2.25);
+    mTBins.push_back(2.5);
+    mTBins.push_back(4.0); 
+  }
   
   std::vector<int> pairQA;
   //pairs: 
@@ -251,7 +263,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
    Float_t Proton_Eta_VarLow = 0.77;
    Float_t Proton_Eta_VarHigh = 0.85;
    Float_t Proton_Clusters_VarLow = 70.;
-   Float_t Proton_Clusters_VarHigh = 80.;
+   Float_t Proton_Clusters_VarHigh = 90.;
    Float_t Proton_Sigma_VarLow = 2.5;
    Float_t Proton_Sigma_VarHigh = 3.5;
 
