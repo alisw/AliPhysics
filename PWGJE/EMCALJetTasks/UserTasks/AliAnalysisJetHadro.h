@@ -1,5 +1,5 @@
-#ifndef ALIANALYSISEBYERATIOS_H
-#define ALIANALYSISEBYERATIOS_H
+#ifndef ALIANALYSISJETHADRO_H
+#define ALIANALYSISJETHADRO_H
 
 //////////////////////////////////////////////////////////////////////////////////
 //                                                                              //
@@ -38,15 +38,12 @@ class AliAnalysisTaskRho;
 #include "AliAnalysisTaskEmcalJet.h"
 #include "AliPIDCombined.h"
 #include "AliTPCdEdxInfo.h"
-#include "AliESDv0KineCuts.h"
-#include "AliESDv0.h"
 #include "THnSparse.h"
 #include "TClonesArray.h"
 #include "THn.h"
 #include "TVectorF.h"
 #include "TCutG.h"
 #include "TTreeStream.h"
-#include "AliESDv0Cuts.h"
 #include "AliEventCuts.h"
 #include "TRandom3.h"
 
@@ -62,23 +59,6 @@ public:
   AliAnalysisJetHadro(const char *name);
   AliAnalysisJetHadro();
   virtual ~AliAnalysisJetHadro();
-
-  enum momentType {kPi=0,kKa=1,kPr=2,kPiPi=3,kKaKa=4,kPrPr=5,kPiKa=6,kPiPr=7,kKaPr=8,kLa=9,kLaLa=10,kCh=11,kChCh=12,kBa=13,kBaBa=14};
-
-  enum momentTypeUnlike {
-    kPiPosPiNeg=0,
-    kKaPosKaNeg=1,
-    kPrPosPrNeg=2,
-    kPiPosKaNeg=3,
-    kPiPosPrNeg=4,
-    kKaPosPiNeg=5,
-    kKaPosPrNeg=6,
-    kPrPosPiNeg=7,
-    kPrPosKaNeg=8,
-    kLaPosLaNeg=9,
-    kChPosChNeg=10,
-    kBaPosBaNeg=11,
-  };
 
   enum trackCutBit {
     kNCrossedRowsTPC70=0,
@@ -108,8 +88,8 @@ public:
     kSharedCls=25,
     kSharedClsLoose=26,
     kFindableCls=27,
-    kFindableClsLoose=28,
-    kFindableClsLoosest=29,
+    kFindableClsTight=28,
+    kFindableClsLoose=29,
     kBFieldPos=30,
     kBFieldNeg=31
   };
@@ -125,8 +105,8 @@ public:
     kCutVertexZSmall=7,
     kCutEventVertexZLarge=8,
     kCutSharedCls=9,
-    kCutFindableClsLoose=10,
-    kCutFindableClsLoosest=11,
+    kCutFindableClsTight=10,
+    kCutFindableClsLoose=11,
     kCutPileupLoose=12,
     kCutBFieldPos=13,
     kCutBFieldNeg=14,
@@ -149,53 +129,6 @@ public:
     kPDGmu=13,
     kPDGla=3122,
   };
-
-  enum kNetMoments{
-    kA=0,
-    kB=1,
-    kAA=2,
-    kBB=3,
-    kAB=4,
-    kAAA=5,
-    kBBB=6,
-    kAAB=7,
-    kBBA=8,
-    kABBB=9,
-    kAABB=10,
-    kAAAB=11,
-    kAAAA=12,
-    kBBBB=13,
-  };
-
-  /*
-  kV0M=0,           // Centrality from V0A+V0C
-  kCL0=1,           // Centrality from Clusters in layer 0
-  kCL1=2,           // Centrality from Clusters in layer 1
-  kTRK=3,           // Centrality from tracks
-  kTKL=4,           // Centrality from tracklets
-  kV0MvsFMD=5,      // Centrality from V0 vs FMD
-  kTKLvsV0M=6,      // Centrality from tracklets vs V0
-  kZEMvsZDC=7,      // Centrality from ZEM vs ZDC
-  kV0A=8,           // Centrality from V0A
-  kV0C=9,           // Centrality from V0C
-  kZNA=10,          // Centrality from ZNA
-  kZNC=11,          // Centrality from ZNC
-  kZPA=12,          // Centrality from ZPA
-  kZPC=13,          // Centrality from ZPC
-  kCND=14,          // Centrality from tracks (candle condition)
-  kFMD=15,          // Centrality from FMD
-  kNPA=16,          // Centrality from Npart (MC)
-  kV0A0=17,         // Centrality from V0A0
-  kV0A123=18,       // Centrality from V0A123
-  kV0A23=19,        // Centrality from V0A23
-  kV0C01=20,        // Centrality from V0C01
-  kV0S=21,          // Centrality from V0S
-  kV0MEq=22,        // Centrality from V0A+V0C equalized channel
-  kV0AEq=23,        // Centrality from V0A equalized channel
-  kV0CEq=24,        // Centrality from V0C equalized channel
-  kSPDClusters=25,  // Centrality from SPD Clusters
-  kSPDTracklets=26, // Centrality from SPD Tracklets
-  */
   //
   // ---------------------------------------------------------------------------------
   //                                    Methods
@@ -219,41 +152,36 @@ public:
   // Some boolian settings
   void   SetRunOnGrid(const Bool_t ifRunOnGrid = kTRUE)               {fRunOnGrid           = ifRunOnGrid;}
   void   SetIncludeITScuts(const Bool_t ifITSCuts = kTRUE)            {fIncludeITS          = ifITSCuts;}
-  void   SetFillArmPodTree(const Bool_t ifArmpodTree = kTRUE)         {fFillArmPodTree      = ifArmpodTree;}
-  void   SetFillBGJetsFJTree(const Bool_t ifBGJetsFJTree = kTRUE)     {fFillBGJetsFJTree    = ifBGJetsFJTree;}
+  void   SetFilljetsFJBGTree(const Bool_t ifjetsFJBGTree = kTRUE)     {fFilljetsFJBGTree    = ifjetsFJBGTree;}
+  void   SetFillJetsFJBGConst(const Bool_t ifJetsFJBGConst = kTRUE)     {fFillJetsFJBGConst     = ifJetsFJBGConst;}
   void   SetFilldscaledTree(const Bool_t ifdscaledTree = kTRUE)       {fFilldscaledTree     = ifdscaledTree;}
   void   SetFillFastJet(const Bool_t ifFastJet = kTRUE)               {fFillFastJet         = ifFastJet;}
-  void   SetFillIncTracks(const Bool_t ifIncTracks = kTRUE)           {fFillIncTracks       = ifIncTracks;}
-  void   SetFillJetEMCConst(const Bool_t ifJetEMCConst = kTRUE)       {fFillJetEMCConst     = ifJetEMCConst;}
-  void   SetJetMinPtSub(const Double_t jetminptsub = -1000.0)            {fjetMinPtSub         = jetminptsub;}
+  void   SetFillEMCJet(const Bool_t ifEMCJet = kTRUE)               {fFillEMCJet         = ifEMCJet;}
+  void   SetFillJetsEMCConst(const Bool_t ifJetsEMCConst = kTRUE)     {fFillJetsEMCConst     = ifJetsEMCConst;}
+  void   SetFillJetsFJConst(const Bool_t ifJetsFJConst = kTRUE)     {fFillJetsFJConst     = ifJetsFJConst;}
+  void   SetFillJetsEMCBG(const Bool_t ifJetsEMCBG = kTRUE)     {fFillJetsEMCBG     = ifJetsEMCBG;}
+  void   SetFillJetsEMCBGConst(const Bool_t ifJetsEMCBGConst = kTRUE)     {fFillJetsEMCBGConst     = ifJetsEMCBGConst;}
+  void   SetJetMinPtSub(const Double_t jetminptsub = -1000.0)         {fjetMinPtSub         = jetminptsub;}
 
   void   SetDeDxCheck(const Bool_t ifDeDxCheck = kFALSE)              {fDEdxCheck           = ifDeDxCheck;}
-  void   SetEffMatrix(const Bool_t ifEffMatrix = kFALSE)              {fEffMatrix           = ifEffMatrix;}
-  void   SetFillAllCutVariables(const Bool_t ifAllCuts = kFALSE)      {fFillTracks          = ifAllCuts;}
   void   SetFillOnlyHists(const Bool_t ifFillOnlyHists = kFALSE)      {fFillOnlyHists       = ifFillOnlyHists;}
   void   SetFillEffLookUpTable(const Bool_t ifEffLookUpTable = kFALSE){fFillEffLookUpTable  = ifEffLookUpTable;}
-  void   SetFillHigherMomentsMCclosure(const Bool_t ifHigherMomentsMCclosure = kFALSE){fFillHigherMomentsMCclosure  = ifHigherMomentsMCclosure;}
   void   SetRunFastSimulation(const Bool_t ifFastSimul = kFALSE)      {fRunFastSimulation   = ifFastSimul;}
-  void   SetRunFastHighMomentCal(const Bool_t ifFastHighMom = kFALSE) {fRunFastHighMomentCal= ifFastHighMom;}
-  void   SetFillDistributions(const Bool_t ifGenDistributions = kFALSE) {fFillDistributions= ifGenDistributions;}
   void   SetFillTreeMC(const Bool_t ifTreeMC = kFALSE)                {fFillTreeMC= ifTreeMC;}
+  void   SetFillIncTracks(const Bool_t ifIncTracks = kTRUE)           {fFillIncTracks       = ifIncTracks;}
 
   void   SetDefaultTrackCuts(const Bool_t ifDefaultTrackCuts = kFALSE){fDefaultTrackCuts= ifDefaultTrackCuts;}
   void   SetDefaultEventCuts(const Bool_t ifDefaultEventCuts = kFALSE){fDefaultEventCuts= ifDefaultEventCuts;}
-  void   SetFillNudynFastGen(const Bool_t ifNudynFastGen = kFALSE)    {fFillNudynFastGen= ifNudynFastGen;}
   void   SetCorrectForMissCl(const Int_t ifCorrectForMissCl = kFALSE)    {fCorrectForMissCl= ifCorrectForMissCl;}
   void   SetUsePtCut(const Int_t ifUsePtCut = 1)                      {fUsePtCut            = ifUsePtCut;}
   void   SetMCTrackOriginType(const Int_t ifTrackOriginOnlyPrimary = 0) {fTrackOriginOnlyPrimary     = ifTrackOriginOnlyPrimary;}
   void   SetRapidityType(const Int_t ifRapidityType = 0)              {fRapidityType        = ifRapidityType;}
   void   SetSisterCheck(const Int_t ifSisterCheck = 0)                {fSisterCheck         = ifSisterCheck;}
-  void   SetFillDnchDeta(const Bool_t ifDnchDetaCal = kFALSE)         {fFillDnchDeta        = ifDnchDetaCal;}
   void   SetIncludeTOF(const Bool_t ifIncludeTOF = kFALSE)            {fIncludeTOF          = ifIncludeTOF;}
   void   SetUseCouts(const Bool_t ifUseCouts = kFALSE)                {fUseCouts            = ifUseCouts;}
-  void   SetWeakAndMaterial(const Bool_t ifWeakAndMaterial = kFALSE)  {fWeakAndMaterial     = ifWeakAndMaterial;}
   void   SetFillEventInfo(const Bool_t ifEventInfo = kFALSE)          {fEventInfo           = ifEventInfo;}
   void   SetPercentageOfEvents(const Int_t nPercentageOfEvents = 0)   {fPercentageOfEvents = nPercentageOfEvents;}
   void   SetNSettings(const Int_t nSettings = 22)                     {fNSettings = nSettings;}
-  void   SetV0InvMassHists(const Bool_t ifV0InvMassHists = kFALSE)    {fV0InvMassHists      = ifV0InvMassHists;}
   void   SetRunNumberForExpecteds(const Int_t ifRunNumberForExpecteds = 0)    {fRunNumberForExpecteds = ifRunNumberForExpecteds;}
 
   //
@@ -277,11 +205,6 @@ public:
   void   SetNGenprotonBins(const Int_t nGenprotonBins = 100)      {fGenprotonBins       = nGenprotonBins;}
   //function to add jet task
   void   AddJet(AliJetContainer* jet = 0)                         {fJetContainer        = jet; }
-
-  void   SetEffMatrixMomBins(const std::vector<Double_t> nEffMatrixMomBins) {fEffMatrixMomBins = nEffMatrixMomBins;}
-  void   SetEffMatrixCentBins(const std::vector<Double_t> nEffMatrixCentBins) {fEffMatrixCentBins = nEffMatrixCentBins;}
-  void   SetEffMatrixEtaBins(const std::vector<Double_t> nEffMatrixEtaBins) {fEffMatrixEtaBins = nEffMatrixEtaBins;}
-  void   SetEffMatrixNSigmasTOF(const Double_t nEffMatrixNSigmasTOF) {fEffMatrixNSigmasTOF = nEffMatrixNSigmasTOF;}
 
   // Set the binning of centrality
   void SetCentralityBinning(const Int_t tmpCentbins, Float_t tmpfxCentBins[])
@@ -347,169 +270,6 @@ public:
     }
   }
 
-  void SetLookUpTableFirstMoments(TTree *lookUpTree, Int_t partType, Float_t pArr[],Float_t centArr[],Float_t etaArr[],const Int_t tmpMomBinsMC, const Int_t tmpCentbins, const Int_t tmpEtaBinsMC)
-  {
-    // set MC eta values to scan
-    std::cout << " Info::siweyhmi: !!!!!! SetLookUpTableFirstMoments is being set !!!!!!!   " << std::endl;
-    //
-    // fill arrays from lookup table
-    TH1D *h=NULL, *h1=NULL;
-    for (Int_t imom=0; imom<tmpMomBinsMC; imom++){
-      for (Int_t icent=0; icent<tmpCentbins; icent++){
-        for (Int_t ieta=0; ieta<tmpEtaBinsMC; ieta++){
-          //
-          // with resonances
-          lookUpTree->Draw(Form("momentPos.fElements[%d]-momentNeg.fElements[%d]",partType,partType),Form("abs(etaUp-%f)<0.01&&abs(pDown-%f)<0.01&&abs(centDown-%f)<0.01",etaArr[ieta],pArr[imom],centArr[icent]),"goff");
-          h= (TH1D*)lookUpTree->GetHistogram()->Clone(); h-> SetName("Res");
-          if (partType==0)  fNetPiFirstMoments[0][imom][icent][ieta] = h->GetMean();
-          if (partType==1)  fNetKaFirstMoments[0][imom][icent][ieta] = h->GetMean();
-          if (partType==2)  fNetPrFirstMoments[0][imom][icent][ieta] = h->GetMean();
-          if (partType==9)  fNetLaFirstMoments[0][imom][icent][ieta] = h->GetMean();
-          if (partType==11) fNetChFirstMoments[0][imom][icent][ieta] = h->GetMean();
-          delete h;
-          //
-          // without resonances
-          lookUpTree->Draw(Form("noResmomentPos.fElements[%d]-noResmomentNeg.fElements[%d]",partType,partType),Form("abs(etaUp-%f)<0.01&&abs(pDown-%f)<0.01&&abs(centDown-%f)<0.01",etaArr[ieta],pArr[imom],centArr[icent]),"goff");
-          h1= (TH1D*)lookUpTree->GetHistogram()->Clone(); h1-> SetName("noRes");
-          if (partType==0)  fNetPiFirstMoments[1][imom][icent][ieta] = h1->GetMean();
-          if (partType==1)  fNetKaFirstMoments[1][imom][icent][ieta] = h1->GetMean();
-          if (partType==2)  fNetPrFirstMoments[1][imom][icent][ieta] = h1->GetMean();
-          if (partType==9)  fNetLaFirstMoments[1][imom][icent][ieta] = h1->GetMean();
-          if (partType==11) fNetChFirstMoments[1][imom][icent][ieta] = h1->GetMean();
-          delete h1;
-
-        }
-      }
-    }
-
-  }
-
-  void SetLookUpTableEfficiencyCorrection(TTree *lookUpTree, Int_t partType, Float_t pDownArr[], Float_t pUpArr[], Float_t centArr[],Float_t etaArr[],const Int_t tmpMomBinsMC, const Int_t tmpCentbins, const Int_t tmpEtaBinsMC)
-  {
-    // set MC eta values to scan
-    std::cout << " Info::siweyhmi: !!!!!! SetLookUpTableEfficiencyCorrection is being set !!!!!!!   " << std::endl;
-    //
-    // fill arrays from lookup table
-    TH1D *hGenNet=NULL,   *hRecNet=NULL;
-    TH1D *hGenCross=NULL, *hRecCross=NULL;
-    TH1D *hGenPos=NULL,   *hRecPos=NULL;
-    TH1D *hGenNeg=NULL,   *hRecNeg=NULL;
-    for (Int_t imom=0; imom<tmpMomBinsMC; imom++){
-      for (Int_t ieta=0; ieta<tmpEtaBinsMC; ieta++){
-        for (Int_t icent=0; icent<tmpCentbins; icent++){
-          //
-          // ----------------------------
-          // NET Particle cumulants
-          // ----------------------------
-          //
-          TString etaMomCentCut = Form("abs(etaUp-%f)<0.01 && abs(pDown-%f)<0.01 && abs(pUp-%f)<0.01 && abs(centDown-%f)<0.01",etaArr[ieta],pDownArr[imom],pUpArr[imom],centArr[icent]);
-          // generated net particles
-          TString genStr = Form("momentPosGen.fElements[%d]-momentNegGen.fElements[%d]",partType,partType);
-          lookUpTree->Draw(genStr,etaMomCentCut,"goff");
-          hGenNet = (TH1D*)lookUpTree->GetHistogram()->Clone(); hGenNet-> SetName("netProtonGen");
-          if (partType==0)  fNetPiFirstMomentsGen[imom][icent][ieta] = hGenNet->GetMean();
-          if (partType==1)  fNetKaFirstMomentsGen[imom][icent][ieta] = hGenNet->GetMean();
-          if (partType==2)  fNetPrFirstMomentsGen[imom][icent][ieta] = hGenNet->GetMean();
-          //
-          // reconstructed net particles
-          TString recStr = Form("momentPosRec.fElements[%d]-momentNegRec.fElements[%d]",partType,partType);
-          lookUpTree->Draw(recStr,etaMomCentCut,"goff");
-          hRecNet= (TH1D*)lookUpTree->GetHistogram()->Clone(); hRecNet-> SetName("netProtonRec");
-          if (partType==0)  fNetPiFirstMomentsRec[imom][icent][ieta] = hRecNet->GetMean();
-          if (partType==1)  fNetKaFirstMomentsRec[imom][icent][ieta] = hRecNet->GetMean();
-          if (partType==2)  fNetPrFirstMomentsRec[imom][icent][ieta] = hRecNet->GetMean();
-          //
-          // ----------------------------
-          // Cross cumulants
-          // ----------------------------
-          //
-          // generated net particles
-          TString momentCrossGenStr = Form("momentCrossGen.fElements[%d]",partType);
-          lookUpTree->Draw(momentCrossGenStr,etaMomCentCut,"goff");
-          hGenCross = (TH1D*)lookUpTree->GetHistogram()->Clone(); hGenCross-> SetName("crossProtonGen");
-          if (partType==0)  fCrossPiFirstMomentsGen[imom][icent][ieta] = hGenCross->GetMean();
-          if (partType==1)  fCrossKaFirstMomentsGen[imom][icent][ieta] = hGenCross->GetMean();
-          if (partType==2)  fCrossPrFirstMomentsGen[imom][icent][ieta] = hGenCross->GetMean();
-          //
-          // reconstructed net particles
-          TString momentCrossRecStr = Form("momentCrossRec.fElements[%d]",partType);
-          lookUpTree->Draw(momentCrossRecStr,etaMomCentCut,"goff");
-          hRecCross= (TH1D*)lookUpTree->GetHistogram()->Clone(); hRecCross-> SetName("crossProtonRec");
-          if (partType==0)  fCrossPiFirstMomentsRec[imom][icent][ieta] = hRecCross->GetMean();
-          if (partType==1)  fCrossKaFirstMomentsRec[imom][icent][ieta] = hRecCross->GetMean();
-          if (partType==2)  fCrossPrFirstMomentsRec[imom][icent][ieta] = hRecCross->GetMean();
-          //
-          // ----------------------------
-          // Single  Particle cumulants
-          // ----------------------------
-          //
-          // generated particles
-          TString momentPosGenStr = Form("momentPosGen.fElements[%d]",partType);
-          lookUpTree->Draw(momentPosGenStr,etaMomCentCut,"goff");
-          hGenPos = (TH1D*)lookUpTree->GetHistogram()->Clone(); hGenPos-> SetName("protonPosGen");
-          if (partType==0)  fPiFirstMomentsGen[0][imom][icent][ieta] = hGenPos->GetMean();
-          if (partType==1)  fKaFirstMomentsGen[0][imom][icent][ieta] = hGenPos->GetMean();
-          if (partType==2)  fPrFirstMomentsGen[0][imom][icent][ieta] = hGenPos->GetMean();
-          //
-          TString momentNegGenStr = Form("momentNegGen.fElements[%d]",partType);
-          lookUpTree->Draw(momentNegGenStr,etaMomCentCut,"goff");
-          hGenNeg = (TH1D*)lookUpTree->GetHistogram()->Clone(); hGenNeg-> SetName("protonNegGen");
-          if (partType==0)  fPiFirstMomentsGen[1][imom][icent][ieta] = hGenNeg->GetMean();
-          if (partType==1)  fKaFirstMomentsGen[1][imom][icent][ieta] = hGenNeg->GetMean();
-          if (partType==2)  fPrFirstMomentsGen[1][imom][icent][ieta] = hGenNeg->GetMean();
-          //
-          // reconstruced particles
-          TString momentPosRecStr = Form("momentPosRec.fElements[%d]",partType);
-          lookUpTree->Draw(momentPosRecStr,etaMomCentCut,"goff");
-          hRecPos = (TH1D*)lookUpTree->GetHistogram()->Clone(); hRecPos-> SetName("protonPosRec");
-          if (partType==0)  fPiFirstMomentsRec[0][imom][icent][ieta] = hRecPos->GetMean();
-          if (partType==1)  fKaFirstMomentsRec[0][imom][icent][ieta] = hRecPos->GetMean();
-          if (partType==2)  fPrFirstMomentsRec[0][imom][icent][ieta] = hRecPos->GetMean();
-          //
-          // reconstruced negative particles
-          TString momentNegRecStr = Form("momentNegRec.fElements[%d]",partType);
-          lookUpTree->Draw(momentNegRecStr,etaMomCentCut,"goff");
-          hRecNeg = (TH1D*)lookUpTree->GetHistogram()->Clone(); hRecNeg-> SetName("protonNegRec");
-          if (partType==0)  fPiFirstMomentsRec[1][imom][icent][ieta] = hRecNeg->GetMean();
-          if (partType==1)  fKaFirstMomentsRec[1][imom][icent][ieta] = hRecNeg->GetMean();
-          if (partType==2)  fPrFirstMomentsRec[1][imom][icent][ieta] = hRecNeg->GetMean();
-          //
-          // delete pointers to tmp histograms
-          delete hGenNet;
-          delete hRecNet;
-          delete hGenPos;
-          delete hGenNeg;
-          delete hRecPos;
-          delete hRecNeg;
-          delete hGenCross;
-          delete hRecCross;
-
-
-          //
-
-        }
-      }
-    }
-
-  }
-
-  void SetLookUpTable_MissCl(TClonesArray *lookUpArray)
-  {
-    // set MC eta values to scan
-    std::cout << " Info::siweyhmi: !!!!!! SetLookUpTable_MissCl is being set !!!!!!!   " << std::endl;
-    //
-    const Int_t nParticles=4;
-    const Int_t nMultBins=16;
-    for (Int_t ipart=0; ipart<nParticles; ipart++){
-      for (Int_t icent=0; icent<nMultBins; icent++){
-        TString objname = Form("hDiffMissCl_part_%d_cent_%d",ipart,icent);
-        fH2MissCl[ipart][icent] = *((TH2F*)(lookUpArray->FindObject(objname))->Clone());
-        std::cout << fH2MissCl[ipart][icent].GetName() << std::endl;
-      }
-    }
-
-  }
-
 private:
 
   AliAnalysisJetHadro(const AliAnalysisJetHadro&);
@@ -522,39 +282,19 @@ private:
   void FindJetsEMC();                          // Find and Fill Jets with EMCAL framework
   void FindJetsFJ();                          // Find and Fill Jets with FJ framework
   void FillTPCdEdxReal();                   // Main function to fill all info + TIden
-  void FillTrackVariables(AliESDtrack *track);
-  void FillTPCdEdxCheck();                  // Quick check for the TPC dEdx
-  void FillMCFull_piKpr();                     // Fill all info + TIdenMC from MC to do MC closure test
-  void FillMCFull_NetParticles();
   void FillTreeMC();
   void FastGen();                           // Run over galice.root for Fastgen 2nd moments
-  void FastGen_NetParticles();              // Run over galice.root for Fastgen higher moments
-  void FastGenHigherMoments();     // Run over galice.root for Fastgen and calculate higher moments
-  void MCclosureHigherMoments();   // Calculate higher moments for REC and GEN
-  void WeakAndMaterial();                   // Look full acceptance, weak decay and material
-  void FillDnchDeta();                      // Fill dnch/deta values for each cent and eta bin
-  void FillEffMatrix();                     // Prepare efficiency matrix
-  void FillCleanSamples();                    // Fill Clean Pions
-  void SelectCleanSamplesFromV0s(AliESDv0 *v0, AliESDtrack *track0, AliESDtrack *track1);
-  void SetSpecialV0Cuts(AliESDv0KineCuts* cuts);
-  void BinLogAxis(TH1 *h);
-  void CalculateEventInfo();
-  void DumpDownScaledTree();
   void GetExpecteds(AliESDtrack *track, Double_t closestPar[3]);
-  void CreateEventInfoTree();
-  void FillGenDistributions();
-  void FindJetsFJGen();
   void FillEventTree();
 
   //
   Int_t CountEmptyEvents(Int_t counterBin);  // Just count if there is empty events
   Int_t CacheTPCEventInformation();
-  UInt_t SetCutBitsAndSomeTrackVariables(AliESDtrack *track, Int_t particleType);
+  UInt_t SetCutBitsAndSomeTrackVariables(AliESDtrack *track);
   Bool_t CheckIfFromResonance(Int_t mcType, AliMCParticle *trackMCgen, Int_t trackIndex, Bool_t parInterest, Double_t ptot, Double_t eta, Double_t cent, Bool_t fillTree);
   Bool_t CheckIfFromAnyResonance(AliMCParticle *trackMCgen, Float_t etaLow, Float_t etaUp, Float_t pDown, Float_t pUp);
   Bool_t ApplyDCAcutIfNoITSPixel(AliESDtrack *track);
   Bool_t GetSystematicClassIndex(UInt_t cut,Int_t syst);
-  Bool_t CheckPsiPair(const AliESDv0* v0);
   // ---------------------------------------------------------------------------------
   //                                   Members
   // ---------------------------------------------------------------------------------
@@ -567,13 +307,10 @@ private:
   AliESDtrackCuts  * fESDtrackCuts_Bit128;    //! basic cut variables
   AliESDtrackCuts  * fESDtrackCuts_Bit768;    //! basic cut variables
   AliESDtrackCuts  * fESDtrackCutsLoose;      //! basic cut variables for debugging
-  AliESDv0Cuts     * fESDtrackCutsV0;         //! basic cut variables for V0
   AliESDtrackCuts  * fESDtrackCutsCleanSamp;  //! basic cut variables for clean pion and electron form V0s
   AliPIDCombined   * fPIDCombined;            //! combined PID object
   AliTPCdEdxInfo   * fTPCdEdxInfo;            //! detailed dEdx info
   AliStack         * fMCStack;                //! stack object to get Mc info
-  AliESDv0KineCuts * fV0OpenCuts;             // v0 strong filter for tagged V0s
-  AliESDv0KineCuts * fV0StrongCuts;           // v0 strong filter for tagged V0s
   AliAnalysisCuts  * fK0sPionCuts;            // filter for pions from K0s
   AliAnalysisCuts  * fLambdaProtonCuts;       // filter for protons from Lambda
   AliAnalysisCuts  * fLambdaPionCuts;         // filter for pions from Lambda
@@ -581,27 +318,19 @@ private:
   const AliESDVertex * fVertex;               // primary vertex
 //  AliESDtools      * fESDtool;                 // tools to calculate derived variables from the ESD
 
-  TTree            * fArmPodTree;             // Tree for clean pion and proton selection
   TTreeSRedirector * fTreeSRedirector;        /// temp tree to dump output
-  TTree            * fTreejetsEMCconst;       // tree for EMCal signal jet constituents
-  TTree            * fTreeMCFull;             // tree for reconstructed moments
-  TTree            * fTreeMCgen;              // tree for reconstructed moments
-  TTree            * fTreeDnchDeta;           // tree for dnch/deta calculation
   TTree            * fTreeMC;                 // tree for mc samples
-  TTree            * fTreejetsFJ;             // tree for fastjet signal jets
-  TTree            * fTreeBGjetsFJ;           // tree for fastjet background jets
-  TTree            * fTreedEdxCheck;          // tree to check dEdx performance for a small data sample
   TTree            * fTreeCuts;               // tree to save all variables for control plots
-  TTree            * fTreeMCFullAcc;          // tree with full acceptance filled with MC            // tree to save all variables for control plots
+  TTree            * fTreejetsEMCconst;       // tree for EMCal signal jet constituents
+  TTree            * fTreejetsEMCBGconst;       // tree for EMCal background jet constituents
+  TTree            * fTreejetsFJ;             // tree for fastjet signal jets
+  TTree            * fTreejetsFJBG;           // tree for fastjet background jets
   TTree            * fTreejetsFJconst;          // tree for fastjet signal jet constituents
-  TTree            * fTreeResonance;          // tree with full acceptance filled with MC
-  TTree            * fTreeMCgenMoms;          // tree with higher moment calculations
-  TTree            * fTreeEvents;
-  TTree            * fTreeDScaled;
-  TTree            * fTreejetsFJGen;
-  TTree            * fTreejetEMC;            // tree for EMCal signal jets
-  TTree            * fTreeMCEffCorr;
-  TTree            * fTreeExpecteds;          // tree with expected dE/dx
+  TTree            * fTreejetsFJBGconst;          // tree for fastjet signal jet constituents
+  TTree            * fTreejetResonance;          // tree with full acceptance filled with MC
+  TTree            * fTreejetEvents;
+  TTree            * fTreejetsEMC;            // tree for EMCal signal jets
+  TTree            * fTreejetsEMCBG;            // tree for EMCal background jets
   TRandom3         fRandom;
 
 
@@ -611,23 +340,6 @@ private:
   UInt_t             fPileUpBit;
   TH1F             * fHistCent;               // helper histogram for TIdentity tree
   TH1F             * fHistPhi;
-  TH1F             * fHistGenMult;
-  TH2F             * fHistRapDistFullAccPr;
-  TH2F             * fHistRapDistFullAccAPr;
-  TH1F             * fHistInvK0s;             // helper histogram for TIdentity tree
-  TH1F             * fHistInvLambda;          // helper histogram for TIdentity tree
-  TH1F             * fHistInvAntiLambda;      // helper histogram for TIdentity tree
-  TH1F             * fHistInvPhoton;          // helper histogram for TIdentity tree
-  //
-  TH1F             * fHistPhiTPCcounterA;     // helper histogram for TIdentity tree
-  TH1F             * fHistPhiTPCcounterC;     // helper histogram for TIdentity tree
-  TH1F             * fHistPhiTPCcounterAITS;  // helper histogram for TIdentity tree
-  TH1F             * fHistPhiTPCcounterCITS;  // helper histogram for TIdentity tree
-  TH1F             * fHistPhiITScounterA;     // helper histogram for TIdentity tree
-  TH1F             * fHistPhiITScounterC;     // helper histogram for TIdentity tree
-
-  TH2F              fH2MissCl[4][16];          // histogram which hold all PIDresponse info
-
   TString           fChunkName;
 
   UInt_t            fTrackCutBits;           // integer which hold all cut variations as bits
@@ -640,39 +352,36 @@ private:
   Bool_t            fRunOnGrid;              // flag if real data or MC is processed
   Bool_t            fMCtrue;                 // flag if real data or MC is processed
   Bool_t            fEventInfo;              // flag if event info and downscaled track tree is filled
-  Bool_t            fWeakAndMaterial;        // flag for the Weak and Material analysis
-  Bool_t            fEffMatrix;              // flag for efficiency matrix filling
   Bool_t            fDEdxCheck;              // flag to check only the dEdx performance
   Bool_t            fIncludeITS;             // decide whether to use ITS or not
-  Bool_t            fFillTracks;             // switch whether to fill all cut variables
+  Bool_t            fFillIncTracks;          // switch whether to fill tracks tree
   Bool_t            fFillOnlyHists;          //
   Bool_t            fFillEffLookUpTable;     //
-  Bool_t            fFillHigherMomentsMCclosure;
   Bool_t            fFillArmPodTree;         // switch whether to fill clean sample tree
-  Bool_t            fFillBGJetsFJTree;         // switch whether to fill BG Jets FJ tree
+  Bool_t            fFilljetsFJBGTree;         // switch whether to fill BG Jets FJ tree
+  Bool_t            fFillJetsFJBGConst;        // switch whether to fill jetsEMCBG constituent tree
   Bool_t            fFilldscaledTree;         // switch whether to fill dscaled tree
   Bool_t            fFillFastJet;         // switch whether to fill FJ tree
-  Bool_t            fFillIncTracks;          // switch whether to fill tracks tree
-  Bool_t            fFillJetEMCConst;        // switch whether to fill jetEMC constituent tree
+  Bool_t            fFillEMCJet;         // switch whether to fill EMC tree
+  Bool_t            fFillJetsEMCConst;        // switch whether to fill jetsEMC constituent tree
+  Bool_t            fFillJetsFJConst;        // switch whether to fill jetsFJ constituent tree
+  Bool_t            fFillJetsEMCBG;        // switch whether to fill jetsEMCBG tree
+  Bool_t            fFillJetsEMCBGConst;        // switch whether to fill jetsEMCBG constituent tree
   Double_t          fjetMinPtSub;            // minimium jet pt after subtraction to keep jet
 
   Bool_t            fRunFastSimulation;      // when running over galice.root do not fill other objects
-  Bool_t            fRunFastHighMomentCal;   // when running over galice.root do not fill other objects
   Bool_t            fFillDistributions;   // when running over galice.root do not fill other objects
   Bool_t            fFillTreeMC;
   Bool_t            fDefaultTrackCuts;
   Bool_t            fDefaultEventCuts;
-  Bool_t            fFillNudynFastGen;
   Int_t             fCorrectForMissCl;       // 0; defaults crows, 1; ncls used wo correction, 2; ncls used with correction
   Int_t             fUsePtCut;
   Int_t             fTrackOriginOnlyPrimary;
   Int_t             fRapidityType;
   Int_t             fSisterCheck;           // 0: reject the mother anyways, 1: if both girls are in acceptance rejet mother
 
-  Bool_t            fFillDnchDeta;         // switch on calculation of the dncdeta for fastgens
   Bool_t            fIncludeTOF;             // Include TOF information to investigate the efficiency loss effects on observable
   Bool_t            fUseCouts;               // for debugging
-  Bool_t            fV0InvMassHists;         // V0 invariant mass for QA
   Int_t             fRunNumberForExpecteds;  // Run number in which to fill the expecteds tree
   Bool_t            fFillExpecteds;
 
@@ -792,10 +501,6 @@ private:
   Int_t              fNCentBinsMC;
   Int_t              fGenprotonBins;
 
-  std::vector<Double_t> fEffMatrixMomBins;
-  std::vector<Double_t> fEffMatrixCentBins;
-  std::vector<Double_t> fEffMatrixEtaBins;
-  Double_t           fEffMatrixNSigmasTOF;
 
   Int_t              fNResModeMC;
   Int_t              fNCentbinsData;
@@ -810,6 +515,7 @@ private:
   Bool_t             fIsMCPileup;
 
   AliJetContainer*   fJetContainer;
+  AliJetContainer*   fbgJetContainer;
   Double_t           fJetPt;
   Double_t           fJetEta;
   Double_t           fJetPhi;
@@ -860,7 +566,6 @@ private:
   Bool_t             fCleanProton1FromLambda;
   Bool_t             fHasTrack0FirstITSlayer;
   Bool_t             fHasTrack1FirstITSlayer;
-  Bool_t             fHasV0FirstITSlayer;
 
   //  Variables for systematic uncertainty checks
   //  B field configurations -->  use default settings and analyse the following set of runs
@@ -869,33 +574,6 @@ private:
   //  Field (--)  --> run interval is [138364, 139510]
   //  ------------------------------------------------
   Int_t              fSystCentEstimatetor;   // 0 --> "V0M"   ||| -1 -->  "TRK" ||| +1 --> "CL1"
-  Float_t            fNetPiFirstMoments[2][4][10][8];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetKaFirstMoments[2][4][10][8];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetPrFirstMoments[2][4][10][8];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetLaFirstMoments[2][4][10][8];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetChFirstMoments[2][4][10][8];    //[fNResModeMC][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-
-  Float_t            fNetPiFirstMomentsRec[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetKaFirstMomentsRec[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetPrFirstMomentsRec[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetPiFirstMomentsGen[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetKaFirstMomentsGen[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fNetPrFirstMomentsGen[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-
-  Float_t            fCrossPiFirstMomentsRec[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fCrossKaFirstMomentsRec[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fCrossPrFirstMomentsRec[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fCrossPiFirstMomentsGen[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fCrossKaFirstMomentsGen[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fCrossPrFirstMomentsGen[4][10][8];    //[fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-
-  Float_t            fPiFirstMomentsGen[2][4][10][8];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fKaFirstMomentsGen[2][4][10][8];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fPrFirstMomentsGen[2][4][10][8];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fPiFirstMomentsRec[2][4][10][8];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fKaFirstMomentsRec[2][4][10][8];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-  Float_t            fPrFirstMomentsRec[2][4][10][8];    //[2][fNMomBinsMC][fNCentBinsMC][fNEtaWinBinsMC]
-
 
   std::vector<float>  fetaDownArr;
   std::vector<float>  fetaUpArr;
@@ -910,44 +588,23 @@ private:
   // control and QA histograms
   //
   //
-  THnF             * fHistPosEffMatrixRec;       // histogram efficiency matrix --> reconstructed traks
-  THnF             * fHistNegEffMatrixRec;       // histogram efficiency matrix --> generated traks
-  THnF             * fHistPosEffMatrixGen;       // histogram efficiency matrix --> reconstructed pions
-  THnF             * fHistNegEffMatrixGen;       // histogram efficiency matrix --> generated pions
-  THnF             * fHistPosEffMatrixScanRec;   // histogram efficiency matrix --> reconstructed traks
-  THnF             * fHistNegEffMatrixScanRec;   // histogram efficiency matrix --> generated traks
-  THnF             * fHistPosEffMatrixScanGen;   // histogram efficiency matrix --> reconstructed pions
-  THnF             * fHistNegEffMatrixScanGen;   // histogram efficiency matrix --> generated pions
   TH1F             * fHistEmptyEvent;            // control histogram for empty event
   TH1F             * fHistCentrality;            // control histogram for centrality
   TH1F             * fHistCentralityImpPar;      // control histogram for centrality
   TH1F             * fHistImpParam;              // control histogram for impact parameter
   TH1F             * fHistVertex;                // control histogram for vertexZ
-  TH2F             * fHistArmPod;                // control histogram for Armanteros Podolanski plot
   //
   // Counters for Marian
   //
-  TVectorF         * fEventInfo_PhiTPCdcarA;  // track counter
-  TVectorF         * fEventInfo_PhiTPCdcarC; // dedx info counter
-  TVectorF         * fEventInfo_CacheTrackCounters;  // track counter
-  TVectorF         * fEventInfo_CacheTrackdEdxRatio; // dedx info counter
-  TVectorF         * fEventInfo_CacheTrackNcl;       // ncl counter
-  TVectorF         * fEventInfo_CacheTrackChi2;      // chi2 counter
-  TVectorF         * fEventInfo_CacheTrackMatchEff;  // matchEff counter
   TVectorF         * fEventInfo_CentralityEstimates;
   TGraph           * fEventInfo_LumiGraph;           // grap for the interaction rate info for a run
-  TH1F             * fEventInfo_HisTPCVertexA;
-  TH1F             * fEventInfo_HisTPCVertexC;
-  TH1F             * fEventInfo_HisTPCVertexACut;
-  TH1F             * fEventInfo_HisTPCVertexCCut;
-  TH1F             * fEventInfo_HisTPCVertex;
-  TVectorF         * fEventInfo_CacheTrackTPCCountersZ; // track counter with DCA z cut
   static const char*  fEventInfo_centEstStr[];              //!centrality types
 
   AliEventCuts* fPileUpTightnessCut4;
   AliEventCuts* fPileUpTightnessCut3;
   AliEventCuts* fPileUpTightnessCut2;
   AliEventCuts* fPileUpTightnessCut1;
+  Double_t fEffMatrixNSigmasTOF;
 
   ClassDef(AliAnalysisJetHadro, 7);
 
