@@ -61,6 +61,7 @@ set(SRCS
   FlatenicityPiKp/AliAnalysisTaskMCCorrections.cxx
   FlatenicityPiKp/AliAnalysisTaskOnlyFlatenicity.cxx
   FlatenicityPiKp/AliAnalysisTaskSystematicsV0M.cxx
+  FlatenicityPiKp/AliAnalysisTaskFlatenicityMCclosure.cxx
   )
 
 # Headers from sources
