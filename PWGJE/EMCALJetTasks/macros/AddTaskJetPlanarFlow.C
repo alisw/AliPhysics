@@ -1,4 +1,4 @@
-AliAnalysisTaskJetPlanarFlow* AddTasJetPlanarFlow(
+AliAnalysisTaskJetPlanarFlow* AddTaskJetPlanarFlow(
                     const char * njets1,
                     const char * ntracks1,
 								    const char * njets2,

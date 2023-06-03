@@ -109,7 +109,7 @@ class AliAnalysisTaskJetPlanarFlow : public AliAnalysisTaskEmcalJet
 
 
 
-AliAnalysisTaskJetPlanarFlow* AddTasJetPlanarFlow(
+AliAnalysisTaskJetPlanarFlow* AddTaskJetPlanarFlow(
                     const char * njet1,
                     const char * ntracks1,
 								    const char * njets2,
