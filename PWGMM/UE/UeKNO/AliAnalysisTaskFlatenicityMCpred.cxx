@@ -352,9 +352,9 @@ void AliAnalysisTaskFlatenicityMCpred::UserExec(Option_t *) {
   fnchAll = FillMCarray(ptMC, yMC, etaMC, idMC);
   if (isGoodVtxPosMC) {
     if (fmultV0A_t > 0 && fmultV0C_t > 0) {
-      hMultVsFlat->Fill(fmultV0A_t + fmultV0C_t, flatenicity_t);       // add
-      hflatVsNchV0->Fill(fmultV0A_t + fmultV0C_t, 1. - flatenicity_t); // add
-      FillHistos(fnchAll, ptMC, yMC, etaMC, idMC);
+      //hMultVsFlat->Fill(fmultV0A_t + fmultV0C_t, flatenicity_t);       // add
+      //hflatVsNchV0->Fill(fmultV0A_t + fmultV0C_t, 1. - flatenicity_t); // add
+      //FillHistos(fnchAll, ptMC, yMC, etaMC, idMC);
     }
   }
 
