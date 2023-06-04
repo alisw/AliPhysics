@@ -515,11 +515,11 @@ Bool_t AliAnalysisTaskfn::IsPion(AliVTrack *vtrack) //code taken from Spin Align
   AliESDtrack *esdtrack  = dynamic_cast<AliESDtrack*>(vtrack);
   Double_t nsigmatpcpion=TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdtrack, AliPID::kPion));
   Double_t nsigmatofpion=TMath::Abs(fPIDResponse->NumberOfSigmasTOF(esdtrack, AliPID::kPion));
-  Bool_t TOFHIT=kFALSE;
+  Bool_t TOFHIT=kTRUE;
   
   
-  if ((vtrack->GetStatus() & AliESDtrack::kTOFout)) TOFHIT=kTRUE;
-  if ((vtrack->GetStatus() & AliESDtrack::kTIME  )) TOFHIT=kTRUE;
+  if (!(vtrack->GetStatus() & AliESDtrack::kTOFout)) TOFHIT=kFALSE;
+  if (!(vtrack->GetStatus() & AliESDtrack::kTIME  )) TOFHIT=kFALSE;
 
   if(!TOFHIT)
     {
@@ -542,11 +542,11 @@ Bool_t AliAnalysisTaskfn::IsKaon(AliVTrack *vtrack)
   AliESDtrack *esdtrack  = dynamic_cast<AliESDtrack*>(vtrack);
   Double_t nsigmatpckaon=TMath::Abs(fPIDResponse->NumberOfSigmasTPC(esdtrack, AliPID::kKaon));
   Double_t nsigmatofkaon=TMath::Abs(fPIDResponse->NumberOfSigmasTOF(esdtrack, AliPID::kKaon));
-  Bool_t TOFHIT=kFALSE;
+  Bool_t TOFHIT=kTRUE;
 
   
-  if ((vtrack->GetStatus() & AliESDtrack::kTOFout)) TOFHIT=kTRUE;
-  if ((vtrack->GetStatus() & AliESDtrack::kTIME  )) TOFHIT=kTRUE;
+  if (!(vtrack->GetStatus() & AliESDtrack::kTOFout)) TOFHIT=kFALSE;
+  if (!(vtrack->GetStatus() & AliESDtrack::kTIME  )) TOFHIT=kFALSE;
 
   if(!TOFHIT)
     {
