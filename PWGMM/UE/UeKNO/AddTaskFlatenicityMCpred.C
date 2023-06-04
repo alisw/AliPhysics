@@ -6,7 +6,7 @@
 class AliAnalysisDataContainer;
 
 AliAnalysisTaskFlatenicityMCpred *
-AddTaskFlatenicityMCpred(const char *taskname = "Flat")
+AddTaskFlatenicityMCpred(const char *taskname = "Flat", bool isV0Malice = false, int nbins=600)
 
 {
   // get the manager via the static access member. since it's static, you don't
@@ -27,6 +27,8 @@ AddTaskFlatenicityMCpred(const char *taskname = "Flat")
       new AliAnalysisTaskFlatenicityMCpred("taskFlat");
   if (!taskFlat)
     return 0x0;
+  taskFlat->SetAnaModeV0Malice(isV0Malice);
+taskFlat->SetNbinsNch(nbins);
   mgr->AddTask(taskFlat);
 
   mgr->ConnectInput(taskFlat, 0, mgr->GetCommonInputContainer());
