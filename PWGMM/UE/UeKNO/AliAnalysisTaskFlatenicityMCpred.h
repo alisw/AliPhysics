@@ -8,8 +8,8 @@ class AliESDtrackCuts;
 class AliESDEvent;
 class AliESDAD;
 class TList;
-class TH1F;
-class TH2F;
+class TH1D;
+class TH2D;
 class TH1I;
 class TProfile;
 
@@ -35,6 +35,8 @@ public:
   double GetFlatenicityMC();
   void ExtractMultiplicities();
   void ExtractMultiplicitiesMC();
+  void SetNbinsNch(int nbins = 600) { fNchBin = nbins; }
+  void SetAnaModeV0Malice(bool isV0Malice = false) { fisV0Malice = isV0Malice; }
 
   bool HasRecVertex();
   void FillHistos(Int_t multGen, const std::vector<double> &ptGen,
@@ -56,6 +58,8 @@ private:
   AliStack *fMCStack; //! MC stack
   AliMCEvent *fMC;    //! MC Event
   double fVtxz;
+  bool fisV0Malice;
+  int fNchBin;
   int fV0Mindex;
   double fv0multalice;
   double flatenicity_m;
@@ -70,24 +74,24 @@ private:
   double fEtaCut;
   double fv0mpercentile;
   AliMultSelection *fMultSelection;
-  TH1F *hCounter;
-  TH1F *hV0MBadruns;
+  TH1D *hCounter;
+  TH1D *hV0MBadruns;
 
-  TH2F *hMultVsFlat;
-  TH2F *hflatVsNchV0;
-  TH2F *hMultVsFlat1;
-  TH2F *hflatVsNchV01;
+  TH2D *hMultVsFlat;
+  TH2D *hflatVsNchV0;
+  TH2D *hMultVsFlat1;
+  TH2D *hflatVsNchV01;
 
-  TH3F *hMultVsFlatVsPt[4];
-  TH2F *hFlatVsPt[4];
+  TH3D *hMultVsFlatVsPt[4];
+  TH2D *hFlatVsPt[4];
 
-  TH3F *hMultVsFlatVsPt1[4];
-  TH2F *hFlatVsPt1[4];
+  TH3D *hMultVsFlatVsPt1[4];
+  TH2D *hFlatVsPt1[4];
 
-  TH1F *hMultV0MPerc[9];
-  TH1F *hFlatV0MPerc[9];
+  TH1D *hMultV0MPerc[9];
+  TH1D *hFlatV0MPerc[9];
 
-  TH2F *hFlatVsPt1V0MPerc[4][9];
+  TH2D *hFlatVsPt1V0MPerc[4][9];
 
   AliAnalysisTaskFlatenicityMCpred(
       const AliAnalysisTaskFlatenicityMCpred &); // not implemented
