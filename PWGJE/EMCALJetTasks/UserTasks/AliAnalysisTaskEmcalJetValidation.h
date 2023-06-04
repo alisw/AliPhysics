@@ -38,7 +38,6 @@ class AliOADBContainer;
 class AliESDtrackCuts;
 
 class AliAnalysisTaskEmcalJetValidation : public AliAnalysisTaskSE
-//class AliAnalysisTaskEmcalJetValidation : public AliAnalysisTaskEmcalJet
 {
 public:
                             AliAnalysisTaskEmcalJetValidation();
@@ -49,7 +48,7 @@ public:
     virtual void            UserExec(Option_t* option);
     virtual void            Terminate(Option_t* option);
 
-    static AliAnalysisTaskEmcalJetValidation* AddTask(TString suffix = "", UInt_t trigger= AliVEvent::kINT7, TString jsonconfigfile="", Bool_t readMC=kFALSE);
+    static AliAnalysisTaskEmcalJetValidation* AddTask(TString suffix = "", TString jsonconfigfile="", Bool_t readMC=kFALSE);
 
     void                    ExecOnceLocal();
     void                    SetJetR(Double_t jr){  fJetR = jr; };                                //sets jet radius
@@ -88,10 +87,12 @@ private:
 
     AliESDtrackCuts*        fTrackCuts;  //! track cuts
 
-    Bool_t fInitializedLocal;       //!  flag which marks the first access to  ExecOnceLocal()
+    Bool_t fInitializedLocal;       //! flag which marks the first access to  ExecOnceLocal()
     Double_t fMinPt;                //  minimum track/jet pt
     Double_t fJetEtaRange;          //  fiducial cut on jets
     Double_t fJetR;                 //  fiducial cut on jets
+
+
 
     AliJetContainer::EJetAlgo_t fJetAlgo;   //  antikt/kt
     Double_t fGhostArea;                    //  ghost area
@@ -101,7 +102,7 @@ private:
     AliAnalysisTaskEmcalJetValidation(const AliAnalysisTaskEmcalJetValidation&); // not implemented
     AliAnalysisTaskEmcalJetValidation& operator=(const AliAnalysisTaskEmcalJetValidation&); // not implemented
 
-    ClassDef(AliAnalysisTaskEmcalJetValidation, 18);
+    ClassDef(AliAnalysisTaskEmcalJetValidation, 23);
 };
 
 #endif
