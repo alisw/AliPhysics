@@ -411,6 +411,7 @@ class AliHFSystErr : public TNamed
   // data-driven non-prompt analyses
   void InitNonPromptDzerotoKpi2017pp5TeVML();
   void InitNonPromptDzerotoKpi20161718pp13TeVML();
+  void InitNonPromptDzerotoKpi20161718pp13TeVMLFineBins();
   void InitNonPromptDzerotoKpi2018PbPb5TeV010ML();
   void InitNonPromptDzerotoKpi2018PbPb5TeV3050ML();
   void InitNonPromptDplustoKpipi2017pp5TeVML();
