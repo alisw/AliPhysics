@@ -1039,11 +1039,11 @@ void AliAnalysisTaskV0sInJetsEmcal::UserCreateOutputObjects()
 	  "rec. method"/*2*/, 
 	  "tracks TPC"/*3*/, 
 	  "track pt"/*4*/, 
-	  "DCA prim v"/*5*/, 
-	  "DCA daughters"/*6*/,
-	  "DCA bach PV"/*7*/, 
-	  "DCA bach V0"/*8*/, 
-	  "DCA bach PV"/*9*/, 
+      "DCA to PV"/*5*/, 
+	  "DCA V0 daughters"/*6*/,
+	  "DCA bach to PV"/*7*/, 
+	  "DCA V0 PV"/*8*/, 
+	  "DCA bach to V0"/*9*/,
 	  "CPA V0"/*10*/, 
 	  "CPA Casc"/*11*/, 
 	  "volume V0"/*12*/, 
@@ -2262,8 +2262,8 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   Double_t dMassPDGXiMinus = TDatabasePDG::Instance()->GetParticle(kXiMinus)->Mass();  
   //Double_t dMassPDGXiPlus = TDatabasePDG::Instance()->GetParticle(kXiPlus)->Mass();  
   // PDG codes of used particles
-  //  Int_t iPdgCodeXiMinus = 3312;
-  //  Int_t iPdgCodeXiPlus = -3312;
+  Int_t iPdgCodeXi = 3312;
+  //Int_t iPdgCodeXiPlus = -3312;
 //------------------------------------------------------------------------------------------ 
   
   Double_t dCutEtaJetMax = fdCutEtaV0Max - fdDistanceV0JetMax; // max jet |pseudorapidity|, to make sure that V0s can appear in the entire jet area
@@ -3578,9 +3578,9 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
         fh1V0AXiPtMCGen[iCentIndex]->Fill(particleMC->Pt());
       }
       // Skip not interesting particles
-      if((iPdgCodeParticleMC != iPdgCodeK0s) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeLambda))
+      if((iPdgCodeParticleMC != iPdgCodeK0s) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeLambda) && (TMath::Abs(iPdgCodeParticleMC) != iPdgCodeXi))
         continue;
-
+ 
       // Check identity of the MC V0 particle
       // Is MC V0 particle K0S?
       Bool_t bV0MCIsK0s = (iPdgCodeParticleMC == iPdgCodeK0s);
@@ -3588,6 +3588,11 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
       Bool_t bV0MCIsLambda = (iPdgCodeParticleMC == +iPdgCodeLambda);
       // Is MC V0 particle anti-Lambda?
       Bool_t bV0MCIsALambda = (iPdgCodeParticleMC == -iPdgCodeLambda);
+      // Check identity of the MC  Cascade particle
+      // Is MC  Cascade particle XiMinus?
+      Bool_t bCascadeMCIsXiMinus = (iPdgCodeParticleMC == +iPdgCodeXi);
+      // Is MC  Cascade particleXiPlus?
+      Bool_t bCascadeMCIsXiPlus = (iPdgCodeParticleMC == -iPdgCodeXi);
 
       Double_t dPtV0Gen = particleMC->Pt();
       Double_t dRapV0Gen = particleMC->Y();
@@ -3699,6 +3704,31 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
           fh2V0ALambdaInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
           Double_t valueEtaALInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
           fh3V0ALambdaInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaALInGen);
+        }
+      }
+      
+      // XiMinus
+      if(bCascadeMCIsXiMinus) // well reconstructed candidates
+      {
+        fh1CascadeXiMinusPtMCGen[iCentIndex]->Fill(dPtV0Gen);
+        fh2CascadeXiMinusEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
+        if(bIsMCV0InJet)
+        {
+          fh2CascadeXiMinusInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
+          Double_t valueEtaXiMinusInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
+          fh3CascadeXiMinusInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaXiMinusInGen);
+        }
+      }
+      // XiPlus
+      if(bCascadeMCIsXiPlus) // well reconstructed candidates
+      {
+        fh1CascadeXiPlusPtMCGen[iCentIndex]->Fill(dPtV0Gen);
+        fh2CascadeXiPlusEtaPtMCGen[iCentIndex]->Fill(dPtV0Gen, dEtaV0Gen);
+        if(bIsMCV0InJet)
+        {
+          fh2CascadeXiPlusInJetPtMCGen[iCentIndex]->Fill(dPtV0Gen, jetMC->Pt());
+          Double_t valueEtaXiPlusInGen[4] = {dPtV0Gen, dEtaV0Gen, jetMC->Pt(), dEtaV0Gen - jetMC->Eta()};
+          fh3CascadeXiPlusInJetEtaPtMCGen[iCentIndex]->Fill(valueEtaXiPlusInGen);
         }
       }
     }
@@ -4246,12 +4276,170 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
     //===== End of filling Cascade spectra =====
 
     //===== Association of reconstructed Cascade candidates with MC particles =====
-   /* TODO! */
-   
-   
+   if(fbMCAnalysis)
+    {
+      // Associate selected candidates only
+      if(!(bIsCandidateXiMinus) && !(bIsCandidateXiPlus)) // chosen candidates with any mass
+        continue;
+
+      // Get MC labels of reconstructed daughter tracks
+      Int_t iLabelPos  = TMath::Abs(trackPos->GetLabel());
+      Int_t iLabelNeg  = TMath::Abs(trackNeg->GetLabel());
+      Int_t iLabelBach = TMath::Abs(trackBach->GetLabel());
+
+      // Make sure MC daughters are in the array range
+      if((iLabelNeg < 0) || (iLabelNeg >= iNTracksMC) || (iLabelPos < 0) || (iLabelPos >= iNTracksMC) || (iLabelBach < 0) || (iLabelBach >= iNTracksMC))
+        continue;
+
+      // Get MC particles corresponding to reconstructed daughter tracks
+      AliAODMCParticle* particleMCDaughterNeg  = (AliAODMCParticle*)arrayMC->At(iLabelNeg);
+      AliAODMCParticle* particleMCDaughterPos  = (AliAODMCParticle*)arrayMC->At(iLabelPos);
+      AliAODMCParticle* particleMCDaughterBach = (AliAODMCParticle*)arrayMC->At(iLabelBach);
+      if(!particleMCDaughterNeg || !particleMCDaughterPos || !particleMCDaughterBach)
+        continue;
+
+      // Make sure MC daughter particles are not physical primary
+      if((particleMCDaughterNeg->IsPhysicalPrimary()) || (particleMCDaughterPos->IsPhysicalPrimary()) || (particleMCDaughterBach->IsPhysicalPrimary()))
+        continue;
+
+      // Get identities of MC daughter particles
+      Int_t iPdgCodeDaughterPos  = particleMCDaughterPos->GetPdgCode();
+      Int_t iPdgCodeDaughterNeg  = particleMCDaughterNeg->GetPdgCode();
+      Int_t iPdgCodeDaughterBach = particleMCDaughterBach->GetPdgCode();
+
+      // Get index of the mother particle for each MC daughter particle
+      Int_t iIndexMotherPos = particleMCDaughterPos->GetMother();
+      Int_t iIndexMotherNeg = particleMCDaughterNeg->GetMother();
+      Int_t iIndexMotherBach = particleMCDaughterBach->GetMother();
+
+      if((iIndexMotherNeg < 0) || (iIndexMotherNeg >= iNTracksMC) || (iIndexMotherPos < 0) || (iIndexMotherPos >= iNTracksMC) || (iIndexMotherBach < 0) || (iIndexMotherBach >= iNTracksMC))
+        continue;
+
+      // Check whether MC daughter particles have the same mother
+      if(iIndexMotherNeg != iIndexMotherPos)
+        continue;
+
+      // Get the MC mother particle of both MC daughter particles
+      AliAODMCParticle* particleMCMotherLambda = (AliAODMCParticle*)arrayMC->At(iIndexMotherPos);
+      if(!particleMCMotherLambda)
+        continue;
+        
+      // Get the MC mother particle of bachelor particle
+      AliAODMCParticle* particleMCMother = (AliAODMCParticle*)arrayMC->At(iIndexMotherBach);
+      if(!particleMCMother)
+        continue;  
+        
+
+      // Get identity of the MC mother particle
+      Int_t iPdgCodeMotherLambda = particleMCMotherLambda->GetPdgCode();
+      // Get identity of the MC mother particle of bachelor
+      Int_t iPdgCodeMother = particleMCMother->GetPdgCode(); // identity of the primaty mother particle (Xi)
+
+      // Skip not interesting particles
+      if((TMath::Abs(iPdgCodeMotherLambda) != iPdgCodeLambda) && (TMath::Abs(iPdgCodeMother) != iPdgCodeXi) )  
+        continue;
+
+      // Check identity of the MC mother particle and the decay channel
+      // Is MC mother particle XiMinus?
+      Bool_t bCascadeMCIsXiMinus = ((iPdgCodeMother == +iPdgCodeXi) && (iPdgCodeDaughterBach == -iPdgCodePion) && (iPdgCodeMotherLambda == +iPdgCodeLambda) && (iPdgCodeDaughterPos == +iPdgCodeProton) && (iPdgCodeDaughterNeg == -iPdgCodePion));
+      // Is MC mother particle XiPlus?
+      Bool_t bCascadeMCIsXiPlus = ((iPdgCodeMother == -iPdgCodeXi) && (iPdgCodeDaughterBach == +iPdgCodePion) && (iPdgCodeMotherLambda == -iPdgCodeLambda) && (iPdgCodeDaughterPos == +iPdgCodePion) && (iPdgCodeDaughterNeg == -iPdgCodeProton));
+
+      Double_t dPtCascadeGen = particleMCMother->Pt();
+      Double_t dRapCascadeGen = particleMCMother->Y();
+      Double_t dEtaCascadeGen = particleMCMother->Eta();      
+      
+      
+      // Cascade pseudorapidity cut applied on generated particles
+      if(fdCutEtaV0Max > 0.)
+      {
+        if(bPrintCuts) printf("Rec->Gen: Applying cut: Cascade |eta|: < %g\n", fdCutEtaV0Max);
+        if((TMath::Abs(dEtaCascadeGen) > fdCutEtaV0Max))
+          continue;
+      }
+      // Cascade rapidity cut applied on generated particles
+      if(fdCutRapV0Max > 0.)
+      {
+        if(bPrintCuts) printf("Rec->Gen: Applying cut: Cascade |y|: < %g\n", fdCutRapV0Max);
+        if((TMath::Abs(dRapCascadeGen) > fdCutRapV0Max))
+          continue;
+      }
+
+      // Select only particles from a specific generator
+      if(!IsFromGoodGenerator(iIndexMotherBach))
+        continue;
+
+      // Get the distance between production point of the MC mother particle and the primary vertex
+      Double_t dx = dPrimVtxMCX - particleMCMother->Xv();
+      Double_t dy = dPrimVtxMCY - particleMCMother->Yv();
+      Double_t dz = dPrimVtxMCZ - particleMCMother->Zv();
+      Double_t dDistPrimary = TMath::Sqrt(dx * dx + dy * dy + dz * dz);
+      Bool_t bCascadeMCIsPrimaryDist = (dDistPrimary < dDistPrimaryMax); // Is close enough to be considered primary-like?
+
+      //XiMinus
+      if(bIsCandidateXiMinus) // selected candidates with any mass
+      {
+        if(bCascadeMCIsXiMinus && bCascadeMCIsPrimaryDist) // well reconstructed candidates
+        {
+          fh2CascadeXiMinusPtMassMCRec[iCentIndex]->Fill(dPtCascadeGen, dMassCascadeXi);
+          Double_t valueEtaXiMinus[3] = {dMassCascadeXi, dPtCascadeGen, dEtaCascadeGen};
+          fh3CascadeXiMinusEtaPtMassMCRec[iCentIndex]->Fill(valueEtaXiMinus);
+
+          Double_t valueEtaDXiMinusNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
+          fhnCascadeXiMinusInclDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDXiMinusNeg);
+          Double_t valueEtaDXiMinusPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
+          fhnCascadeXiMinusInclDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDXiMinusPos);
+
+          fh2CascadeXiMinusMCResolMPt[iCentIndex]->Fill(dMassCascadeXi - dMassPDGXiMinus, dPtCascade);
+          fh2CascadeXiMinusMCPtGenPtRec[iCentIndex]->Fill(dPtCascadeGen, dPtCascade);
+          if(bIsInConeJet) // true V0 associated to a reconstructed candidate in jet
+          {
+            Double_t valueXiMinusInJCMC[4] = {dMassCascadeXi, dPtCascadeGen, dEtaCascadeGen, jet->Pt()};
+            fh3CascadeXiMinusInJetPtMassMCRec[iCentIndex]->Fill(valueXiMinusInJCMC);
+            Double_t valueEtaXiMinusIn[5] = {dMassCascadeXi, dPtCascadeGen, dEtaCascadeGen, jet->Pt(), dEtaCascadeGen - jet->Eta()};
+            fh4CascadeXiMinusInJetEtaPtMassMCRec[iCentIndex]->Fill(valueEtaXiMinusIn);
+
+            Double_t valueEtaDXiMinusJCNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaCascadeGen, dPtCascadeGen, jet->Pt()};
+            fhnCascadeXiMinusInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDXiMinusJCNeg);
+            Double_t valueEtaDXiMinusJCPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaCascadeGen, dPtCascadeGen, jet->Pt()};
+            fhnCascadeXiMinusInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDXiMinusJCPos);
+          }
+        }
+      } 
+      //XiPlus
+      if(bIsCandidateXiPlus) // selected candidates with any mass
+      {
+        if(bCascadeMCIsXiPlus && bCascadeMCIsPrimaryDist) // well reconstructed candidates
+        {
+          fh2CascadeXiPlusPtMassMCRec[iCentIndex]->Fill(dPtCascadeGen, dMassCascadeXi);
+          Double_t valueEtaXiPlus[3] = {dMassCascadeXi, dPtCascadeGen, dEtaCascadeGen};
+          fh3CascadeXiPlusEtaPtMassMCRec[iCentIndex]->Fill(valueEtaXiPlus);
+
+          Double_t valueEtaDXiPlusNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
+          fhnCascadeXiPlusInclDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDXiPlusNeg);
+          Double_t valueEtaDXiPlusPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaCascadeGen, dPtCascadeGen, 0};
+          fhnCascadeXiPlusInclDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDXiPlusPos);
+
+          fh2CascadeXiPlusMCResolMPt[iCentIndex]->Fill(dMassCascadeXi - dMassPDGXiMinus, dPtCascade);
+          fh2CascadeXiPlusMCPtGenPtRec[iCentIndex]->Fill(dPtCascadeGen, dPtCascade);
+          if(bIsInConeJet) // true V0 associated to a reconstructed candidate in jet
+          {
+            Double_t valueXiPlusInJCMC[4] = {dMassCascadeXi, dPtCascadeGen, dEtaCascadeGen, jet->Pt()};
+            fh3CascadeXiPlusInJetPtMassMCRec[iCentIndex]->Fill(valueXiPlusInJCMC);
+            Double_t valueEtaXiPlusIn[5] = {dMassCascadeXi, dPtCascadeGen, dEtaCascadeGen, jet->Pt(), dEtaCascadeGen - jet->Eta()};
+            fh4CascadeXiPlusInJetEtaPtMassMCRec[iCentIndex]->Fill(valueEtaXiPlusIn);
+
+            Double_t valueEtaDXiPlusJCNeg[6] = {0, particleMCDaughterNeg->Eta(), particleMCDaughterNeg->Pt(), dEtaCascadeGen, dPtCascadeGen, jet->Pt()};
+            fhnCascadeXiPlusInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDXiPlusJCNeg);
+            Double_t valueEtaDXiPlusJCPos[6] = {1, particleMCDaughterPos->Eta(), particleMCDaughterPos->Pt(), dEtaCascadeGen, dPtCascadeGen, jet->Pt()};
+            fhnCascadeXiPlusInJetsDaughterEtaPtPtMCRec[iCentIndex]->Fill(valueEtaDXiPlusJCPos);
+          }
+        }
+      }               
+    }
     //===== End Association of reconstructed Cascade candidates with MC particles =====  
   }
-  //===== End of VCascade loop =====
+  //===== End of Cascade loop =====
 
   fh1CascadeCandPerEvent->Fill(iNCascadeCandTot);
   fh1CascadeCandPerEventCentXiMinus[iCentIndex]->Fill(iNCascadeCandXiMinus);
@@ -4260,12 +4448,6 @@ Bool_t AliAnalysisTaskV0sInJetsEmcal::FillHistograms()
   if(fDebug > 2) printf("TaskV0sInJets: End of Cascade loop\n");
 //-------------------------------------------------------------------------------------------
 
-
-//MC part for Xi candidates
-//------------------------------------------------------------------------------------------
-  /* TODO! */
-
-//-------------------------------------------------------------------------------------------
   arrayJetSel->Delete();
   delete arrayJetSel;
   arrayJetPerp->Delete();

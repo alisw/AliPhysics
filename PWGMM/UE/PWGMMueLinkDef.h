@@ -23,6 +23,7 @@
 #pragma link C++ class AliAnalysisTaskGenMcKno+;
 #pragma link C++ class AliAnalysisTaskGenUeNchTS+;
 #pragma link C++ class AliAnalysisTaskFlatenicity+;
+#pragma link C++ class AliAnalysisTaskFlatenicityMCpred+;
 #pragma link C++ class AliAnalysisTaskMpiUE+;
 #pragma link C++ class AliAnalysisTaskSpectraFlatenicity+;
 #pragma link C++ class AliAnalysisTaskFlatenicityPiKp+;

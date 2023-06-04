@@ -118,6 +118,7 @@ void AliPHOSEmbeddingRun2::Init()
 
   int nEvents =
     ((AliAODHandler*)((AliAnalysisManager::GetAnalysisManager())->GetInputEventHandler()))->GetTree()->GetEntriesFast();
+  nEvents *= fSelEventsPart; // Only 20% of events will be useful
   RunSignalSimulation(nEvents);
   // Connect simulated signal
   TChain* chainAOD = new TChain("aodTree");
@@ -340,6 +341,8 @@ void AliPHOSEmbeddingRun2::UserExec(Option_t*)
   // If necesary method checks if AOD event is good to embed
   // e.g. there are PHOS clusters etc.
   if (!GetNextSignalEvent()) {
+    AliError("ERROR: Could not retrieve signal event");
+    PostData(0, fTreeOut);
     return;
   }
 
@@ -438,7 +441,6 @@ void AliPHOSEmbeddingRun2::CopyRecalibrateSignal()
     // double ecross = EvalEcross(&cluPHOS);
     // clu->SetMCEnergyFraction(ecross) ;
   }
-  AliInfo(Form("Copied %d signal clusters of %d", fSignalClusters->GetEntriesFast(), multClust));
 }
 //______________________________________________________________________________
 void AliPHOSEmbeddingRun2::CopyRecalibrateBackground()
@@ -579,7 +581,6 @@ void AliPHOSEmbeddingRun2::MakeEmbedding()
 
   // create digits
   MakeDigits(bgevent, fSignal);
-
   // clusterize and make tracking
   fPHOSReconstructor->Reconstruct(fDigitsTree, fClustersTree);
   ConvertEmbeddedClusters();
@@ -605,7 +606,6 @@ bool AliPHOSEmbeddingRun2::GetNextSignalEvent()
 void AliPHOSEmbeddingRun2::ConvertEmbeddedClusters()
 {
   // Copy PHOS clusters and cells after embedding
-
   TBranch* emcbranch = fClustersTree->GetBranch("PHOSEmcRP");
   if (!emcbranch) {
     AliError("can't get the branch with the PHOS EMC clusters !");
@@ -767,7 +767,6 @@ void AliPHOSEmbeddingRun2::ConvertMCParticles()
     AliAODMCParticle* aodpart = (AliAODMCParticle*)mcArray->At(i);
     new ((*fmcparticles)[i]) AliAODMCParticle(*aodpart);
   }
-  AliInfo(Form("Copied %d mc particles", fmcparticles->GetEntriesFast()));
 }
 //__________________________________________________________________________________
 void AliPHOSEmbeddingRun2::MakeDigits(const AliAODEvent* bg, const AliAODEvent* signal)

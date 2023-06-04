@@ -69,6 +69,7 @@ public:
   void     SetDetLevelJetsOn(Bool_t t)            { fStoreDetLevelJets = t; }
   void     SetDoSubJetStudy(Bool_t t)             { fDoSubJet = t; }
   void     SetDoFlow(Bool_t t)                    { fDoFlow = t; }
+  void     SetDoTime(Bool_t t)                    { fDoTime= t; }
   void     SetRejectTPCPileup(Bool_t t)           { fRejectTPCPileup = t;}
   void     SetSaveKtg(Bool_t t)                   { fSaveKtg = t;}
   void     SetSaveNg(Bool_t t)                    { fSaveNg = t;}
@@ -92,10 +93,10 @@ protected:
                             fastjet::PseudoJet *sub2,std::vector<fastjet::PseudoJet>* const1, std::vector<fastjet::PseudoJet>* const2);
   void     IterativeParentsAreaBased(AliEmcalJet *fJet, AliJetContainer *fJetCont);
   void     IterativeParentsMCAverage(AliEmcalJet *fJet, Int_t km, Double_t &aver1,
-                            Double_t &aver2, Double_t &aver3, Double_t &aver4, fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2,
+                            Double_t &aver2, Double_t &aver3, Double_t &aver4, Double_t &aver5, fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2,
                             std::vector<fastjet::PseudoJet>* const1, std::vector<fastjet::PseudoJet>* const2);
   void     IterativeParentsMCAveragePP(AliEmcalJet *fJet, Int_t km, Double_t &aver1,
-                            Double_t &aver2, Double_t &aver3, Double_t &aver4, fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2, 
+                            Double_t &aver2, Double_t &aver3, Double_t &aver4, Double_t &aver5, fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2, 
                             std::vector<fastjet::PseudoJet>* const1, std::vector<fastjet::PseudoJet>* const2);
   void     CheckSubjetResolution(AliEmcalJet *fJet, AliJetContainer *fJetCont,
                             AliEmcalJet *fJetM, AliJetContainer *fJetContM);
@@ -111,7 +112,7 @@ protected:
   JetShapeType                  fJetShapeType;              ///< jet type to be used
   JetShapeSub                   fJetShapeSub;               ///< jet subtraction to be used
   JetSelectionType              fJetSelection;              ///< Jet selection: inclusive/recoil jet
-  Float_t                       fShapesVar[23];             ///< jet shapes used for the tagging
+  Float_t                       fShapesVar[26];             ///< jet shapes used for the tagging
   Float_t                       fPtThreshold;               ///<
   Float_t                       fRMatching;                 ///<
 
@@ -136,6 +137,7 @@ protected:
   Bool_t                        fStoreDetLevelJets;         ///< store the detector level jet quantities
   Bool_t                        fDoSubJet;                  ///< store the detector level jet quantities
   Bool_t                        fDoFlow;                    ///< store the event plane
+  Bool_t                        fDoTime;                    ///< store the formation time
   AliAnalysisTaskJetQnVectors*  fQVectorReader;             ///< Reader for the Qn vector
   Double_t                      fEPangleV0M;                ///< event-plane angle V0M
   Bool_t                        fRejectTPCPileup;           ///< TPC pileup rejection
@@ -163,6 +165,6 @@ private:
   AliAnalysisTaskNewJetSubstructure &
   operator=(const AliAnalysisTaskNewJetSubstructure &); // not implemented
 
-  ClassDef(AliAnalysisTaskNewJetSubstructure, 19)
+  ClassDef(AliAnalysisTaskNewJetSubstructure, 20)
 };
 #endif

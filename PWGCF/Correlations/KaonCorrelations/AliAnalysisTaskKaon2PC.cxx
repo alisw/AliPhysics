@@ -96,6 +96,7 @@ fHistTOFKch(0),
 //track and event observables
 fVtx(0), 
 fClusters(0),
+fHistPVz(0),
 fHistNEvents(0),
 fHistNV0(0),  
 fHistEta(0), 
@@ -138,8 +139,10 @@ fHistCFEta(0),
 fHistKChKChPhi(0),
 fHistKPosKNegPhi(0),    
 fHistCF(0),
+fHistCFz(0),
 fHistKChKCh(0),
-fHistKPosKNeg(0), 
+fHistKPosKNeg(0),
+fHistKPosKNegz(0), 
 //mixing
 fSelectedKCh(0),
 fSelectedK0s(0),
@@ -149,7 +152,7 @@ fPoolMgr(0x0),
 fPoolMaxNEvents(1000),
 fPoolMinNTracks(5000),
 fMinEventsToMix(10),
-fNzVtxBins(10),
+fNzVtxBins(20),
 fNCentBins(15),
 fKpKnCorr(kTRUE),
 fK0KchCorr(kTRUE),
@@ -161,6 +164,8 @@ hPt(0),
 hPt_kPos(0),
 fHistCF_Bg(0),
 fHistCF_KpKn_Bg(0),
+fHistCF_Bgz(0),
+fHistCF_KpKn_Bgz(0),
 //MC Truth
 fMCK0(0),
 fMCKpos(0),
@@ -220,6 +225,7 @@ fHistTOFKch(0),
 //track and event observables
 fVtx(0), 
 fClusters(0),
+fHistPVz(0),
 fHistNEvents(0),
 fHistNV0(0),  
 fHistEta(0), 
@@ -262,8 +268,10 @@ fHistCFEta(0),
 fHistKChKChPhi(0),
 fHistKPosKNegPhi(0),    
 fHistCF(0),
+fHistCFz(0),
 fHistKChKCh(0),
-fHistKPosKNeg(0), 
+fHistKPosKNeg(0),
+fHistKPosKNegz(0), 
 //mixing
 fSelectedKCh(0),
 fSelectedK0s(0),
@@ -273,7 +281,7 @@ fPoolMgr(0x0),
 fPoolMaxNEvents(1000),
 fPoolMinNTracks(5000),
 fMinEventsToMix(10),
-fNzVtxBins(10),
+fNzVtxBins(20),
 fNCentBins(15),
 fKpKnCorr(kTRUE),
 fK0KchCorr(kTRUE),
@@ -285,6 +293,8 @@ hPt(0),
 hPt_kPos(0),
 fHistCF_Bg(0),
 fHistCF_KpKn_Bg(0),
+fHistCF_Bgz(0),
+fHistCF_KpKn_Bgz(0),
 //MC Truth
 fMCK0(0),
 fMCKpos(0),
@@ -322,7 +332,8 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     // the histograms are in this case added to a tlist, this list is in the end saved
     // to an output file.
 
-    fzVtxBins = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0}; // 10 bins
+    //fzVtxBins = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0}; // 10 bins
+    fzVtxBins = {-10.0,-9.0,-8.0,-7.0,-6.0,-5.0,-4.0,-3.0,-2.0,-1.0,0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,10.0}; // 20 bins
     //fCentBins = {0,5,10,15,20,25,30,35,40,45,50,60,70,80,90,100};
     fCentBins = { 0, 1, 2, 3, 4, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100.1 }; // 15 bins
     //fsampleBins = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
@@ -396,6 +407,7 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     //track and event observables
     fVtx = new TH1F("fVtx", "PV_{z} distribution of Tracks", 100, -13, 13);
     fClusters = new TH1F("fClusters", "TPCClusters distribution", 500, 1, 170);
+    fHistPVz = new TH1F("fHistPVz", "PVz Distribution", 20, -10, 10);
     fHistNEvents = new TH1F("fHistNEvents", "fHistNEvents", 1, 0, 1);
     fHistNV0 = new TH1F("fHistNV0","Number of V0s",100, 0, 5000);
     fHistEta = new TH1F("fHistEta", "fHistEta", 100, -5, 5);
@@ -504,15 +516,23 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fHistKChKChPhi = new TH2F("fHistKChKChPhi", "C(#Delta#phi) of Kch-Kch ",32,-0.5*Pi,1.5*Pi,100,0,100);
     fHistKChKChPhi->SetOption("SURF1"); 
 
-    fHistCF = new TH2F("fHistCF","Number of pairs of K^{+/-} and K^{0}",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6 );
+    fHistCF = new TH2F("fHistCF","Number of pairs of K^{+/-} and K^{0}",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
     fHistCF->GetXaxis()->SetTitle("#Delta#phi ");
     fHistCF->GetYaxis()->SetTitle("#Delta#eta");
     fHistCF->SetOption("SURF1");
 
-    fHistKPosKNeg = new TH2F("fHistKPosKNeg","K^{+}-K^{-} Correlation",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6 );
+    fHistCFz = new TH3F("fHistCFz","Number of pairs of K^{+/-} and K^{0}: PVz",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6, 20,-10,10);
+    fHistCFz->GetXaxis()->SetTitle("#Delta#phi ");
+    fHistCFz->GetYaxis()->SetTitle("#Delta#eta");
+
+    fHistKPosKNeg = new TH2F("fHistKPosKNeg","K^{+}-K^{-} Correlation",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
     fHistKPosKNeg->GetXaxis()->SetTitle("#Delta#phi ");
     fHistKPosKNeg->GetYaxis()->SetTitle("#Delta#eta");
     fHistKPosKNeg->SetOption("SURF1");
+
+    fHistKPosKNegz = new TH3F("fHistKPosKNegz","K^{+}-K^{-} Correlation: PVz",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6,20,-10,10);
+    fHistKPosKNegz->GetXaxis()->SetTitle("#Delta#phi ");
+    fHistKPosKNegz->GetYaxis()->SetTitle("#Delta#eta");
 
     fHistKChKCh = new TH2F("fHistKChKCh","Kch-Kch Correlation",32,-0.5*Pi,1.5*Pi,32,-1.6, 1.6);
     fHistKChKCh->GetXaxis()->SetTitle("#Delta#phi ");
@@ -527,6 +547,12 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
 
     fHistCF_KpKn_Bg = new TH2F("fHistCF_KpKn_Bg","Background for CF of K^{+} and K^{-}",32,-0.5*Pi,1.5*Pi,32,-1.6,1.6);
     fHistCF_KpKn_Bg->SetOption("SURF1");
+
+    fHistCF_Bgz = new TH3F("fHistCF_Bgz","Background for CF of K^{+/-} and K^{0}: pVz",32,-0.5*Pi,1.5*Pi,32,-1.6,1.6,20,-10,10);
+    fHistCF_Bgz->SetOption("SURF1");
+
+    fHistCF_KpKn_Bgz = new TH3F("fHistCF_KpKn_Bgz","Background for CF of K^{+} and K^{-}: PVz",32,-0.5*Pi,1.5*Pi,32,-1.6,1.6,20,-10,10);
+    fHistCF_KpKn_Bgz->SetOption("SURF1");
 
     hPt = new TH1F("hPt", "Track pT distribution", 100, 0, 2);
     hPt_kPos = new TH1F("hPt_kPos", "Track pT distribution", 100, 0, 2);
@@ -585,6 +611,7 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
 
     fOutputList->Add(fVtx);
     fOutputList->Add(fClusters);
+    fOutputList->Add(fHistPVz);
     fOutputList->Add(fHistNEvents);
     fOutputList->Add(fHistNV0);
     fOutputList->Add(fHistEta);
@@ -627,13 +654,17 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
     fOutputList->Add(fHistKChKChPhi);
     fOutputList->Add(fHistKPosKNegPhi);
     fOutputList->Add(fHistCF);
+    fOutputList->Add(fHistCFz);
     fOutputList->Add(fHistKChKCh);
     fOutputList->Add(fHistKPosKNeg);
+    fOutputList->Add(fHistKPosKNegz);
     fOutputList->Add(hPt);
     fOutputList->Add(hPt_kPos);
 
     fOutputList->Add(fHistCF_Bg);
     fOutputList->Add(fHistCF_KpKn_Bg);
+    fOutputList->Add(fHistCF_Bgz);
+    fOutputList->Add(fHistCF_KpKn_Bgz);
 
     fOutputList->Add(fMCK0);
     fOutputList->Add(fMCKpos);
@@ -935,7 +966,7 @@ for(Int_t i=0; i < iTracks; i++) {
     Double_t trackPt = track->Pt();
     Double_t nSigmaTOFkaon = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
     //cout << "TOFsignal is" << TOFsignal << endl;
-    fNsigmaTPCTOFK->Fill(trackPt, nSigmaTOFkaon);
+    fNsigmaTPCTOFK->Fill(track->Pt(), nSigmaTOFkaon);
     fHistTOFKch->Fill(trackPt, beta);
     fSelectedKCh->Add((AliAODTrack*)track);
 
@@ -1062,6 +1093,8 @@ Int_t nSelectedK0s = fSelectedK0s->GetEntries();
 
             FillDPhiHist(DPhiPN,fHistKPosKNegPhi,CentV0M);
             Fill2DHist(DPhiPN,DEtaPN,fHistKPosKNeg);
+            Fill3DHist(DPhiPN,DEtaPN,PVz,fHistKPosKNegz); 
+
         }
     }
 
@@ -1119,7 +1152,8 @@ Int_t nSelectedK0s = fSelectedK0s->GetEntries();
         fHistCFPhi->Fill(2*Pi-(deltaPhi),-deltaEta);
         }
 
-        Fill2DHist(deltaPhi,deltaEta,fHistCF); 
+        Fill2DHist(deltaPhi,deltaEta,fHistCF);
+        Fill3DHist(deltaPhi,deltaEta,PVz,fHistCFz); 
 
         if (deltaPhi > Pi) deltaPhi = Pi-(deltaPhi-Pi);
         fHistDPhi->Fill(deltaPhi);                     
@@ -1134,7 +1168,7 @@ Int_t nSelectedK0s = fSelectedK0s->GetEntries();
         }  // iTrk kch loop ends  
     }      // ik0s loop ends
 //=====================================================
-
+fHistPVz->Fill(PVz);
 fHistNEvents->Fill(1);
 fHistMult->Fill(iTracks);
 fHistCent->Fill(CentV0M); 
@@ -1165,19 +1199,8 @@ Int_t nMix = pool->GetCurrentNEvents();
             Double_t DPhiMix = fabs(K0Trig->Phi() - KChAssoc->Phi());
             Double_t DEtaMix = fabs(K0Trig->Eta() - KChAssoc->Eta());
 
-            if (DPhiMix > Pi) DPhiMix = Pi-(DPhiMix-Pi);
-
-            fHistCF_Bg->Fill(DPhiMix, DEtaMix);
-            fHistCF_Bg->Fill(DPhiMix, -DEtaMix);
-
-            if (DPhiMix < 0.5*Pi ) {
-            fHistCF_Bg->Fill(-DPhiMix, DEtaMix);
-            fHistCF_Bg->Fill(-DPhiMix,-DEtaMix); 
-            }
-            else {
-            fHistCF_Bg->Fill(2*Pi-(DPhiMix), DEtaMix);
-            fHistCF_Bg->Fill(2*Pi-(DPhiMix),-DEtaMix);
-            }
+            Fill2DHist(DPhiMix,DEtaMix,fHistCF_Bg);
+            Fill3DHist(DPhiMix,DEtaMix,PVz,fHistCF_Bgz);
 
             } //end of kch loop end
 
@@ -1212,19 +1235,8 @@ Int_t nMix = pool->GetCurrentNEvents();
             Double_t DPhiMix = fabs(KaonTrig->Phi() - KaonAssoc->Phi());
             Double_t DEtaMix = fabs(KaonTrig->Eta() - KaonAssoc->Eta());
 
-            if (DPhiMix > Pi) DPhiMix = Pi-(DPhiMix-Pi);
-
-            fHistCF_KpKn_Bg->Fill(DPhiMix, DEtaMix);
-            fHistCF_KpKn_Bg->Fill(DPhiMix, -DEtaMix);
-
-            if (DPhiMix < 0.5*Pi ) {
-            fHistCF_KpKn_Bg->Fill(-DPhiMix, DEtaMix);
-            fHistCF_KpKn_Bg->Fill(-DPhiMix,-DEtaMix); 
-            }
-            else {
-            fHistCF_KpKn_Bg->Fill(2*Pi-(DPhiMix), DEtaMix);
-            fHistCF_KpKn_Bg->Fill(2*Pi-(DPhiMix),-DEtaMix);
-            }
+            Fill2DHist(DPhiMix,DEtaMix,fHistCF_KpKn_Bg);
+            Fill3DHist(DPhiMix,DEtaMix,PVz,fHistCF_KpKn_Bgz);
 
             } //end of k- loop end
 
@@ -1371,6 +1383,8 @@ for (Int_t i = 0; i < nMCTracks; i++){
 void AliAnalysisTaskKaon2PC::UserExec(Option_t *)
 {
     if (!fAnalysisMC) { RunData(); }
+    if (fAnalysisMC) { RunMC(); }
+
 
     // deleting TObjArrays
     //fSelectedK0s->Clear();
@@ -1394,6 +1408,22 @@ void AliAnalysisTaskKaon2PC::Fill2DHist(Double_t DPhi, Double_t DEta, TH2F* hist
     else {
         hist->Fill(2*Pi-(DPhi), DEta);
         hist->Fill(2*Pi-(DPhi),-DEta);
+    }
+}
+
+void AliAnalysisTaskKaon2PC::Fill3DHist(Double_t DPhi, Double_t DEta, Double_t PVz, TH3F* hist){
+    DPhi = fabs(DPhi);
+    DEta = fabs(DEta);
+    if (DPhi > Pi) DPhi = Pi-(DPhi-Pi);
+    hist->Fill(DPhi,DEta, PVz);
+    hist->Fill(DPhi,-DEta, PVz);
+    if (DPhi < 0.5*Pi ) {
+        hist->Fill(-DPhi, DEta, PVz);
+        hist->Fill(-DPhi,-DEta, PVz); 
+    }
+    else {
+        hist->Fill(2*Pi-(DPhi), DEta, PVz);
+        hist->Fill(2*Pi-(DPhi),-DEta, PVz);
     }
 }
 

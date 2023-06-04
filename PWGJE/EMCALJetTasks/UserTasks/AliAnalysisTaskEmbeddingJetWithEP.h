@@ -265,8 +265,10 @@ private:
     void       DoJetMatching();
     Bool_t     PerformGeometricalJetMatching(AliJetContainer& contBase, AliJetContainer& contTag, Double_t maxDist);
     const AliEmcalJet* GetMatchedPartLevelJet(const AliEmcalJet* detJet, Double_t detJetPt, TString groupName);
+    const AliEmcalJet* GetMatchedJet(const AliEmcalJet* detJet, Double_t detJetPt, TString groupName);
     Double_t GetAngularity(const AliEmcalJet* jet);
     Double_t GetRelativePhi(Double_t mphi, Double_t vphi);
+    void     CaclJetEnergyScaleShift();
 
     void       DoTrackLoop();
     
