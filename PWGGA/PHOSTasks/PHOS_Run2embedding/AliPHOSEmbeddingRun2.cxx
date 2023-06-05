@@ -337,6 +337,13 @@ void AliPHOSEmbeddingRun2::UserExec(Option_t*)
     event->AddObject(fEmbeddedClusters);
   }
 
+  //Check if run number changed. If changed, do nothing, PHOS reconstruction will fail
+  if(fRunNumber != event->GetRunNumber()){
+    PostData(0, fTreeOut);
+    return;
+  }
+
+
   // Read next AOD event
   // If necesary method checks if AOD event is good to embed
   // e.g. there are PHOS clusters etc.
