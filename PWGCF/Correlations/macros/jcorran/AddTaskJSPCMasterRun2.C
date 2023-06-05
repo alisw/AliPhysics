@@ -10,7 +10,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
                                   int whichNUAmap = 3, double ptMin = 0.2, double ptMax = 5.0, Bool_t saveCatalystQA = kFALSE,
                                   bool cutESDpileup = true, double ESDintercept = 15000,
                                   bool cutTPCpileup = false, bool saveQA_TPCpileup = false,
-                                  Bool_t ComputeEtaGap = kFALSE, Float_t EtaGap = 0.8,
+                                  Bool_t ComputeEtaGap = kFALSE, Float_t EtaMin = -0.8, Float_t EtaMax = 0.8,
                                   Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE,
                                   Int_t doSPC = 0)
 {
@@ -132,7 +132,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
       break;
     case 7:
       // MAPfileNames[i] = "/home/maxim/Documents/Work/SPC/MAP_comparison/PhiWeights_LHC18q_Rebin3_default.root";
-      MAPfileNames[i] = "/home/maxim/Downloads/PhiWeights_LHC18q_pt02_hybridBaseDCA_s_hybridBaseDCA.root";
+      MAPfileNames[i] = "/home/maxim/Documents/Work/SPC/MAP_comparison/PhiWeights_mingrui_18q.root";
       break;
     default:
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
@@ -243,7 +243,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
 
     /// Kinematic cuts and last fine tuning.
     fJCatalyst[i]->SetPtRange(ptMin, ptMax);
-    fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
+    fJCatalyst[i]->SetEtaRange(EtaMin, EtaMax);
     fJCatalyst[i]->SetPhiCorrectionIndex(i);
     fJCatalyst[i]->SetRemoveBadArea(removeBadArea);
     fJCatalyst[i]->SetTightCuts(useTightCuts);
@@ -351,7 +351,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
     myTask[i]->AliSPCRun2SetSaveAllQA(kTRUE);
     myTask[i]->AliSPCRun2SetMinNuPar(14.);
     myTask[i]->AliSPCRun2SetUseWeights(useWeightsNUE, useWeightsNUA);
-    myTask[i]->AliSPCRun2SetEtaGaps(ComputeEtaGap, EtaGap);
+    myTask[i]->AliSPCRun2SetEtaGaps(ComputeEtaGap, EtaMax);
 
     for (int k = 0; k<maxNrComb; k++){
       myTask[i]->AliSPCRun2SetCorrSet(k,harmonicArray[k]);
