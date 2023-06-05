@@ -36,13 +36,10 @@ public:
   void ExtractMultiplicities();
   void ExtractMultiplicitiesMC();
   void SetNbinsNch(int nbins = 600) { fNchBin = nbins; }
-  void SetAnaModeV0Malice(bool isV0Malice = false) { fisV0Malice = isV0Malice; }
+  void SetMinFlat(double rhomin = 0.) { fminrho = rhomin; }
+  void SetMaxFlat(double rhomax = 0.) { fmaxrho = rhomax; }
 
   bool HasRecVertex();
-  void FillHistos(Int_t multGen, const std::vector<double> &ptGen,
-                  const std::vector<double> &yGen,
-                  const std::vector<double> &etaGen,
-                  const std::vector<int> &idGen);
   void FillHistos1(Int_t multGen, const std::vector<double> &ptGen,
                    const std::vector<double> &yGen,
                    const std::vector<double> &etaGen,
@@ -58,7 +55,8 @@ private:
   AliStack *fMCStack; //! MC stack
   AliMCEvent *fMC;    //! MC Event
   double fVtxz;
-  bool fisV0Malice;
+  double fminrho;
+  double fmaxrho;
   int fNchBin;
   int fV0Mindex;
   double fv0multalice;
@@ -77,13 +75,8 @@ private:
   TH1D *hCounter;
   TH1D *hV0MBadruns;
 
-  TH2D *hMultVsFlat;
-  TH2D *hflatVsNchV0;
   TH2D *hMultVsFlat1;
   TH2D *hflatVsNchV01;
-
-  TH3D *hMultVsFlatVsPt[4];
-  TH2D *hFlatVsPt[4];
 
   TH3D *hMultVsFlatVsPt1[4];
   TH2D *hFlatVsPt1[4];
