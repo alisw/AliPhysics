@@ -97,7 +97,7 @@ class AliAnalysisTaskJetPlanarFlow : public AliAnalysisTaskEmcalJet
  };
 
  enum TreeSize {
-   nVar = 10,
+   nVar = 12,
    nVar_Particles =10
   };
 
@@ -152,6 +152,9 @@ void SetCentralityMin(Float_t CentralityMin)                              {fCent
 Float_t GetCentralityMin()                                           {return fCentralityMin;}
 void SetCentralityMax(Float_t CentralityMax)                              {fCentralityMax = CentralityMax;}
 Float_t GetCentralityMax()                                           {return fCentralityMax;}
+void SetFillNsubjettiness(Bool_t FillNsubjettiness)                              {fFillNsubjettiness = FillNsubjettiness;}
+void SetFillDeltaR(Bool_t FillDeltaR)                              {fFillDeltaR = FillDeltaR;}
+
  
  
 
@@ -179,11 +182,13 @@ Float_t GetCentralityMax()                                           {return fCe
  Bool_t                           fCentralitySelection    ;
  Float_t                           fCentralityMin         ;
  Float_t                           fCentralityMax         ;
+ Bool_t                            fFillNsubjettiness     ;
+ Bool_t                            fFillDeltaR            ;
  Float_t                           fShapesVar[nVar]       ;
 
  TRandom3                          fRandom                ;
 
-
+ std::vector<Int_t>               fJetConstituentLabels    ;
  std::vector<Float_t>             fShapesVar_Particles_E;
  std::vector<Float_t>             fShapesVar_Particles_E_Truth;
  std::vector<Float_t>             fShapesVar_Particles_pT;

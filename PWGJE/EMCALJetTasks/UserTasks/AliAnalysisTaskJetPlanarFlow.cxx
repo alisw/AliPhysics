@@ -96,7 +96,10 @@ ClassImp(AliAnalysisTaskJetPlanarFlow)
       fCentralitySelection(kFALSE),
       fCentralityMin(0.0),
       fCentralityMax(10.0),
+      fFillNsubjettiness(kTRUE),
+      fFillDeltaR(kTRUE),
       fRandom(0),
+      fJetConstituentLabels(0),
       fShapesVar_Particles_E(0),
       fShapesVar_Particles_E_Truth(0),
       fShapesVar_Particles_pT(0),
@@ -136,7 +139,10 @@ AliAnalysisTaskJetPlanarFlow::AliAnalysisTaskJetPlanarFlow(const char* name)
       fCentralitySelection(kFALSE),
       fCentralityMin(0.0),
       fCentralityMax(10.0),
+      fFillNsubjettiness(kTRUE),
+      fFillDeltaR(kTRUE),
       fRandom(0),
+      fJetConstituentLabels(0),
       fShapesVar_Particles_E(0),
       fShapesVar_Particles_E_Truth(0),
       fShapesVar_Particles_pT(0),
@@ -189,6 +195,8 @@ void AliAnalysisTaskJetPlanarFlow::UserCreateOutputObjects() {
   fShapesVarNames[7] = "DeltaR_Jet_Truth";
   fShapesVarNames[8] = "Tau2to1";
   fShapesVarNames[9] = "Tau2to1_Jet_Truth";
+  fShapesVarNames[10] = "PlanarFlow_Jet";
+  fShapesVarNames[11] = "PlanarFlow_Jet_Truth";
 
   for (Int_t ivar = 0; ivar < nVar; ivar++) {
     cout << "looping over variables" << endl;
@@ -237,34 +245,45 @@ Bool_t AliAnalysisTaskJetPlanarFlow::Run() {
 
 void AliAnalysisTaskJetPlanarFlow::SetTree(AliEmcalJet *jet, AliJetContainer *jetContainer, AliTrackContainer *trackContainer, Float_t jetPt, Int_t level) {
   AliVParticle *jetConstituent = NULL;
+  fJetConstituentLabels.clear();
   Float_t jetMass = TMath::Sqrt((jet->E() * jet->E()) - (jet->Pt() * jet->Pt()) - (jet->Pz() * jet->Pz()));
 
-  AliEmcalJetFinder JetFinderNSub1("NSubjettiness1");
-  JetFinderNSub1.SetJetMaxEta(0.9 - fJetRadius);
-  JetFinderNSub1.SetRadius(fJetRadius);
-  JetFinderNSub1.SetJetAlgorithm(0);
-  JetFinderNSub1.SetRecombSheme(0);
-  JetFinderNSub1.SetJetMinPt(jet->Pt());
+  Float_t Result_NSub1=10.0;
+  Float_t Result_NSub2=-100.0;
+  Float_t deltaR = -10.0;
+  if (fFillNsubjettiness) {
+    AliEmcalJetFinder JetFinderNSub1("NSubjettiness1");
+    JetFinderNSub1.SetJetMaxEta(0.9 - fJetRadius);
+    JetFinderNSub1.SetRadius(fJetRadius);
+    JetFinderNSub1.SetJetAlgorithm(0);
+    JetFinderNSub1.SetRecombSheme(0);
+    JetFinderNSub1.SetJetMinPt(jet->Pt());
 
-  AliEmcalJetFinder JetFinderNSub2("NSubjettiness2");
-  JetFinderNSub2.SetJetMaxEta(0.9 - fJetRadius);
-  JetFinderNSub2.SetRadius(fJetRadius);
-  JetFinderNSub2.SetJetAlgorithm(0);
-  JetFinderNSub2.SetRecombSheme(0);
-  JetFinderNSub2.SetJetMinPt(jet->Pt());
+    Double_t dVtxNSub1[3] = {1, 1, 1};
+    Result_NSub1 = JetFinderNSub1.Nsubjettiness(jet, jetContainer, dVtxNSub1, 1, 0, fJetRadius, 0.0, 0, 0, 0.0, 0.1, 1);
 
-  AliEmcalJetFinder JetFinderNSubdR("NSubjettinessdR");
-  JetFinderNSubdR.SetJetMaxEta(0.9 - fJetRadius);
-  JetFinderNSubdR.SetRadius(fJetRadius);
-  JetFinderNSubdR.SetJetAlgorithm(0);
-  JetFinderNSubdR.SetRecombSheme(0);
-  JetFinderNSubdR.SetJetMinPt(jet->Pt());
-  Double_t dVtxNSub1[3] = {1, 1, 1};
-  Double_t dVtxNSub2[3] = {1, 1, 1};
-  Double_t dVtxNSubdR[3] = {1, 1, 1};
-  Float_t Result_NSub1 = JetFinderNSub1.Nsubjettiness(jet, jetContainer, dVtxNSub1, 1, 0, fJetRadius, 0.0, 0, 0, 0.0, 0.1, 1);
-  Float_t Result_NSub2 = JetFinderNSub2.Nsubjettiness(jet, jetContainer, dVtxNSub2, 2, 0, fJetRadius, 0.0, 0, 0, 0.0, 0.1, 1);
-  Float_t deltaR = JetFinderNSubdR.Nsubjettiness(jet, jetContainer, dVtxNSubdR, 2, 0, fJetRadius, 0.0, 2, 0, 0.0, 0.1, 1);
+    AliEmcalJetFinder JetFinderNSub2("NSubjettiness2");
+    JetFinderNSub2.SetJetMaxEta(0.9 - fJetRadius);
+    JetFinderNSub2.SetRadius(fJetRadius);
+    JetFinderNSub2.SetJetAlgorithm(0);
+    JetFinderNSub2.SetRecombSheme(0);
+    JetFinderNSub2.SetJetMinPt(jet->Pt());
+
+    Double_t dVtxNSub2[3] = {1, 1, 1};
+    Result_NSub2 = JetFinderNSub2.Nsubjettiness(jet, jetContainer, dVtxNSub2, 2, 0, fJetRadius, 0.0, 0, 0, 0.0, 0.1, 1);
+  }
+  if (fFillDeltaR) {
+    AliEmcalJetFinder JetFinderNSubdR("NSubjettinessdR");
+    JetFinderNSubdR.SetJetMaxEta(0.9 - fJetRadius);
+    JetFinderNSubdR.SetRadius(fJetRadius);
+    JetFinderNSubdR.SetJetAlgorithm(0);
+    JetFinderNSubdR.SetRecombSheme(0);
+    JetFinderNSubdR.SetJetMinPt(jet->Pt());
+
+    Double_t dVtxNSubdR[3] = {1, 1, 1};
+    deltaR = JetFinderNSubdR.Nsubjettiness(jet, jetContainer, dVtxNSubdR, 2, 0, fJetRadius, 0.0, 2, 0, 0.0, 0.1, 1);
+  }
+
   Float_t tau2to1 = Result_NSub2 / Result_NSub1;
 
   fShapesVar[0 + level] = jetPt;
@@ -273,7 +292,7 @@ void AliAnalysisTaskJetPlanarFlow::SetTree(AliEmcalJet *jet, AliJetContainer *je
   fShapesVar[6 + level] = deltaR;
   fShapesVar[8 + level] = tau2to1;
 
-  Float_t jetUnitVector[3] = {TMath::Cos(jet->Phi()) / TMath::CosH(jet->Eta()), TMath::Sin(jet->Phi()) / TMath::CosH(jet->Eta()), TMath::SinH(jet->Eta()) / TMath::CosH(jet->Eta())};
+  Float_t jetUnitVector[3] = {Float_t(TMath::Cos(jet->Phi()) / TMath::CosH(jet->Eta())), Float_t(TMath::Sin(jet->Phi()) / TMath::CosH(jet->Eta())), Float_t(TMath::SinH(jet->Eta()) / TMath::CosH(jet->Eta()))};
   Float_t magPt = TMath::Sqrt((jetUnitVector[0] * jetUnitVector[0]) + (jetUnitVector[1] * jetUnitVector[1]));
   Float_t rotationMatrix[3][3];
   Float_t cosTheta = jetUnitVector[2];
@@ -300,8 +319,11 @@ void AliAnalysisTaskJetPlanarFlow::SetTree(AliEmcalJet *jet, AliJetContainer *je
 
   for (Int_t iConstituent = 0; iConstituent < jet->GetNumberOfTracks(); iConstituent++) {
     jetConstituent = static_cast<AliVParticle *>(jet->TrackAt(iConstituent, jetContainer->GetParticleContainer()->GetArray()));
+    fJetConstituentLabels.push_back(jetConstituent->GetLabel());
     if (jetConstituent->Pt() < fMinJetConstiteuntPAPt || jetConstituent->Pt() >= fMaxJetConstiteuntPAPt) continue;
-    if (fRandom.Rndm() > fTrackingEfficiency) continue;
+    if (fTrackingEfficiency != 1.0) {
+      if (fRandom.Rndm() > fTrackingEfficiency) continue;
+    }
 
     double normalisation_factor = (1.0 / (jetConstituent->E() * jetMass));
     Float_t pxRotated = (rotationMatrix[0][0] * jetConstituent->Px()) + (rotationMatrix[0][1] * jetConstituent->Py()) + (rotationMatrix[0][2] * jetConstituent->Pz());
@@ -319,7 +341,7 @@ void AliAnalysisTaskJetPlanarFlow::SetTree(AliEmcalJet *jet, AliJetContainer *je
   Float_t eigenValue1 = 0.5 * (principleMatrixTrace + TMath::Sqrt(principleMatrixTrace * principleMatrixTrace - 4 * PrinciplMatrixDeterminant));
   Float_t eigenValue2 = 0.5 * (principleMatrixTrace - TMath::Sqrt(principleMatrixTrace * principleMatrixTrace - 4 * PrinciplMatrixDeterminant));
 
-  Float_t planarFlow = (4.0 * PrinciplMatrixDeterminant) / (principleMatrixTrace * principleMatrixTrace);
+  fShapesVar[10 + level] = (4.0 * PrinciplMatrixDeterminant) / (principleMatrixTrace * principleMatrixTrace);
 
   Float_t eigenVector1[2];
   Float_t eigenVector2[2];
@@ -351,15 +373,16 @@ void AliAnalysisTaskJetPlanarFlow::SetTree(AliEmcalJet *jet, AliJetContainer *je
   Float_t pxRotatedPrincipleAxis = 0.0;
   Float_t pyRotatedPrincipleAxis = 0.0;
 
+  int trackLabel = -1.0;
   for (Int_t iTrack = 0; iTrack < trackContainer->GetNTracks(); iTrack++) {
     AliAODTrack *track = static_cast<AliAODTrack *>(trackContainer->GetAcceptParticle(iTrack));
     if (!track) continue;
     if (TMath::Abs(track->Eta()) > 0.9) continue;
+    trackLabel = track->GetLabel();
 
     bool isInJet = kFALSE;
-    for (Int_t iConstituent = 0; iConstituent < jet->GetNumberOfTracks(); iConstituent++) {
-      jetConstituent = static_cast<AliVParticle *>(jet->TrackAt(iConstituent, jetContainer->GetParticleContainer()->GetArray()));
-      if (jetConstituent->GetLabel() == track->GetLabel()) {  // Is this correct?
+    for (Int_t iConstituent = 0; iConstituent < fJetConstituentLabels.size(); iConstituent++) {
+      if (fJetConstituentLabels[iConstituent] == trackLabel) {  // Is this correct?
         isInJet = kTRUE;
         break;
       }
@@ -425,7 +448,7 @@ Bool_t AliAnalysisTaskJetPlanarFlow::FillHistograms() {
 
     // Jet Loop
     Float_t jetpT = 0.0;
-    while (jet = jetContainer->GetNextAcceptJet()) {
+    while ((jet = jetContainer->GetNextAcceptJet())) {
       if (!jet) continue;
       if (fJetSubType == kAreaSub)
         jetpT = jet->Pt() - GetRhoVal(0) * jet->Area();
