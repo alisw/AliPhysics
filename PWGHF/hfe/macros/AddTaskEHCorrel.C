@@ -127,8 +127,8 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
         //Centrality trigger used in 2018
         AliAnalysisTaskEHCorrel *taskHFEehCent = new AliAnalysisTaskEHCorrel("ehCent");
         mgr->AddTask(taskHFEehCent);
-        if(centMin == 0 || PhysSel == AliVEvent::kINT7) taskHFEehCent->SelectCollisionCandidates(AliVEvent::kCentral);
-        if(centMin == 30 || PhysSel == AliVEvent::kINT7) taskHFEehCent->SelectCollisionCandidates(AliVEvent::kSemiCentral);
+        if(centMin == 0) taskHFEehCent->SelectCollisionCandidates(AliVEvent::kCentral); 
+        if(centMin == 30) taskHFEehCent->SelectCollisionCandidates(AliVEvent::kSemiCentral);
         taskHFEehCent->IsPbPb(isPbPb);
         taskHFEehCent->Ispp(ispp);
         taskHFEehCent->IsPASS2weight(pPbpass2weight);
