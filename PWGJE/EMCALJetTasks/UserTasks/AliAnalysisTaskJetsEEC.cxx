@@ -527,7 +527,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
             {
                 if(s==j) continue; //if s=j this would be 0
                 
-                double eee_jss_2 =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
+                double eee_jss_2 =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                 double deltaR_jss_2 = fConstituents[j].delta_R(fConstituents[s]);
                 double delta_logR_jss_2 = log(deltaR_jss_2);
                 
@@ -579,7 +579,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
             {
                 if(s==j) continue; //This ensures I don't get stuff like (000) for (jss)
                 
-                double eee_jss =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
+                double eee_jss =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                 double deltaR_jss = fConstituents[j].delta_R(fConstituents[s]);
                 double delta_logR_jss = log(deltaR_jss);
                 
@@ -678,7 +678,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
              
              if(s==j) continue; //if s=j this would be 0
                 
-                double eee_jss_2_tru =((fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[s].pt())/(pow(jet_pt_tru,3)));
+                double eee_jss_2_tru =((3*fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[s].pt())/(pow(jet_pt_tru,3)));
                 double deltaR_jss_2_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                 double delta_logR_jss_2_tru = log(deltaR_jss_2_tru);
                 
@@ -723,7 +723,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
             {
                 if(s==j) continue; //This ensures I don't get stuff like (000) for (jss)
                 
-                double eee_jss_tru =((fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[s].pt())/(pow(jet_pt_tru,3)));
+                double eee_jss_tru =((3*fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[s].pt())/(pow(jet_pt_tru,3)));
                 double deltaR_jss_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                 double delta_logR_jss_tru = log(deltaR_jss_tru);
                 
@@ -863,7 +863,7 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
             {
                 if(s==j) continue; //this ensure i dont get 000
                 
-                double eee_jss_2 =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
+                double eee_jss_2 =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                 double deltaR_jss_2 = fConstituents[j].delta_R(fConstituents[s]);
                 double delta_logR_jss_2 = log(deltaR_jss_2);
                 
@@ -911,7 +911,7 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 if(s==j) continue; //This ensures I don't get stuff like (000) for (jss)
 //                if (fConstituents[j].pt() < 1.0 || fConstituents[s].pt() < 1.0) continue;
                 
-                double eee_jss =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
+                double eee_jss =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                 double deltaR_jss = fConstituents[j].delta_R(fConstituents[s]);
                 double delta_logR_jss = log(deltaR_jss);
                 

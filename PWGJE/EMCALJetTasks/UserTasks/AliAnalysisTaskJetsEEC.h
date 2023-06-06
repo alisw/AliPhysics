@@ -79,7 +79,7 @@ protected:
   
   int GetConstituentID(int constituentIndex, const AliVParticle* part, AliEmcalJet * jet);
   Double_t GetDownscaleWeight(string tstring);
-  void ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJetCont);
+  void ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJetCont); 
   
   void ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJetCont, AliEmcalJet *fJet_tru, Int_t km); //MC and det correlations
   
@@ -124,60 +124,62 @@ Bool_t fDoFillEncMC;      ///< to fill the matched mc plane
  
   Bool_t fStoreTrig; ///<storing the trigger class
 //  Bool_t fMatch; ///< do the matching in the task
+
+
+//Histograms 
+  TH1D *jet_pt_hist; //!<! initializing histogram with jet pt
   
-  TH1D *jet_pt_hist; //initializing histogram with jet pt
+  TH1D *EEC_hist; //!<! initializing histogram with correlators
+  TH2D *EEC_pt_hist; //!<! initializing 2D histogram with correlators and jet pt
+  TH2D *EEC_pt_hist_log; //!<! initializing 2D histogram with correlators and jet pt on a log scale
   
-  TH1D *EEC_hist; //initializing histogram with correlators
-  TH2D *EEC_pt_hist; //initializing 2D histogram with correlators and jet pt
-  TH2D *EEC_pt_hist_log; //initializing 2D histogram with correlators and jet pt on a log scale
-  
-  TH1D *E3C_hist; //initializing histogram with correlators
-  TH2D *E3C_pt_hist; //initializing 2D histogram with correlators and jet pt
-  TH2D *E3C_pt_hist_log; //initializing 2D histogram with correlators and jet pt on a log scale
+  TH1D *E3C_hist; //!<! initializing histogram with correlators
+  TH2D *E3C_pt_hist; //!<! initializing 2D histogram with correlators and jet pt
+  TH2D *E3C_pt_hist_log; //!<! initializing 2D histogram with correlators and jet pt on a log scale
 
 
 //For corrections
-  TH3D *EEC_det_pt_hist_3d;
-  TH3D *EEC_tru_pt_hist_3d;
+  TH3D *EEC_det_pt_hist_3d; //!<! initializing 3d histogram with det level EEC and det and true jet pt
+  TH3D *EEC_tru_pt_hist_3d; //!<! initializing 3d histogram with tru level EEC and det and true jet pt
   
-  TH3D *EEC_det_pt_hist_log_3d;
-  TH3D *EEC_tru_pt_hist_log_3d;
+  TH3D *EEC_det_pt_hist_log_3d; //!<! initializing 3d histogram with det level EEC and det and true jet pt - log scale
+  TH3D *EEC_tru_pt_hist_log_3d; //!<! initializing 3d histogram with tru level EEC and det and true jet pt - log scale
   
-  TH3D *E3C_det_pt_hist_3d; //all det level
-  TH3D *E3C_tru_pt_hist_3d; //all true level
+  TH3D *E3C_det_pt_hist_3d; //!<! initializing 3d histogram with det level E3C and det and true jet pt
+  TH3D *E3C_tru_pt_hist_3d; //!<! initializing 3d histogram with tru level E3C and det and true jet pt
   
-  TH3D *E3C_det_pt_hist_log_3d;
-  TH3D *E3C_tru_pt_hist_log_3d;
+  TH3D *E3C_det_pt_hist_log_3d; //!<! initializing 3d histogram with det level E3C and det and true jet pt - log scale
+  TH3D *E3C_tru_pt_hist_log_3d; //!<! initializing 3d histogram with tru level E3C and det and true jet pt - log scale
 
-  TH3D *N2_det_pt_hist_3d;
-  TH3D *N2_tru_pt_hist_3d;
+  TH3D *N2_det_pt_hist_3d; //!<! initializing 3d histogram with det level EEC num pairs and det and true jet pt
+  TH3D *N2_tru_pt_hist_3d; //!<! initializing 3d histogram with tru level EEC num pairs and det and true jet pt
   
-  TH3D *N2_det_pt_hist_log_3d;
-  TH3D *N2_tru_pt_hist_log_3d;
+  TH3D *N2_det_pt_hist_log_3d; //!<! initializing 3d histogram with det level EEC num pairs and det and true jet pt - log scale
+  TH3D *N2_tru_pt_hist_log_3d; //!<! initializing 3d histogram with tru level EEC num pairs and det and true jet pt - log scale
   
-  TH3D *N3_det_pt_hist_3d;
-  TH3D *N3_tru_pt_hist_3d;
+  TH3D *N3_det_pt_hist_3d;  //!<! initializing 3d histogram with det level E3C num pairs and det and true jet pt
+  TH3D *N3_tru_pt_hist_3d; //!<! initializing 3d histogram with tru level E3C num pairs and det and true jet pt
   
-  TH2D *EEC_det_match_pt_det;
-  TH2D *EEC_tru_match_pt_tru;
+  TH2D *EEC_det_match_pt_det; //!<! initializing 2D histogram of det level EEC and det jet pt
+  TH2D *EEC_tru_match_pt_tru; //!<! initializing 2D histogram of tru level EEC and tru jet pt
   
-  TH2D *E3C_det_match_pt_det;
-  TH2D *E3C_tru_match_pt_tru;
+  TH2D *E3C_det_match_pt_det; //!<! initializing 2D histogram of det level E3C and det jet pt
+  TH2D *E3C_tru_match_pt_tru; //!<! initializing 2D histogram of tru level E3C and tru jet pt
   
-  TH2D *EEC_det_match_pt_det_log;
-  TH2D *EEC_tru_match_pt_tru_log;
+  TH2D *EEC_det_match_pt_det_log; //!<! initializing 2D histogram of det level EEC and det jet pt - log scale
+  TH2D *EEC_tru_match_pt_tru_log; //!<! initializing 2D histogram of tru level EEC and tru jet pt - log scale
   
-  TH2D *E3C_det_match_pt_det_log;
-  TH2D *E3C_tru_match_pt_tru_log;
+  TH2D *E3C_det_match_pt_det_log; //!<! initializing 2D histogram of det level E3C and det jet pt - log scale
+  TH2D *E3C_tru_match_pt_tru_log; //!<! initializing 2D histogram of tru level E3C and tru jet pt - log scale
   
-  TH1D *pt_tru; //all tru level
-  TH1D *pt_tru_match; //tru level matched
-  TH1D *pt_det; //all det level
-  TH1D *pt_det_match; //det level matched
+  TH1D *pt_tru; //!<! all tru level
+  TH1D *pt_tru_match; //!<! tru level matched
+  TH1D *pt_det; //!<! all det level
+  TH1D *pt_det_match; //!<! det level matched
   
-  TH1D *test_hist; //test histogram
+  TH1D *test_hist; //!<! test histogram
   
-  TH2D *R_matrix;
+  TH2D *R_matrix; //!<! response matrix for jet pt
 
 private:
   AliAnalysisTaskJetsEEC(
@@ -185,6 +187,6 @@ private:
   AliAnalysisTaskJetsEEC &
   operator=(const AliAnalysisTaskJetsEEC &); // not implemented
 
-  ClassDef(AliAnalysisTaskJetsEEC, 29) //change this to 29
+  ClassDef(AliAnalysisTaskJetsEEC, 30) //change this to 30
 };
 #endif
