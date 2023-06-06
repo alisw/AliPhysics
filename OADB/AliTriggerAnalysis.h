@@ -13,19 +13,23 @@
 //-------------------------------------------------------------------------
 
 #include "AliOADBTriggerAnalysis.h"
+#include "TBits.h"
 #include "TBrowser.h"
-class AliVEvent;
 class AliESDEvent;
+class AliTOFGeometry;
+class AliVEvent;
+class TCollection;
+class TH1D;
 class TH1F;
 class TH2F;
-class TCollection;
 class TList;
 class TMap;
+class TRandom;
 
 class AliTriggerAnalysis : public AliOADBTriggerAnalysis{
 public:
-  enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0OR, kV0AND, 
-    kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kZNA, kZNC, kZNABG, kZNCBG, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime, 
+  enum Trigger { kAcceptAll = 1, kMB1 = 2, kMB2, kMB3, kSPDGFO, kSPDGFOBits, kV0A, kV0C, kV0OR, kV0AND,
+    kV0ABG, kV0CBG, kZDC, kZDCA, kZDCC, kZNA, kZNC, kZNABG, kZNCBG, kFMDA, kFMDC, kFPANY, kNSD1, kMB1Prime,
     kSPDGFOL0, kSPDGFOL1, kZDCTDCA, kZDCTDCC, kZDCTime, kCTPV0A, kCTPV0C, kTPCLaserWarmUp, kSPDClsVsTrkBG,
     kCentral,kSemiCentral, kT0, kT0BG, kT0Pileup, kTPCHVdip,
     kTRDHCO, kTRDHJT, kTRDHSE, kTRDHQU, kTRDHEE, kEMCAL,
@@ -34,6 +38,7 @@ public:
     kV0MOnVsOfPileup,kSPDOnVsOfPileup,kV0PFPileup,kSPDVtxPileup,kV0Casym,kV0C012vsTklBG,
     kVHM,kV0M,kSH1,kSH2,kTKL,
     kADA, kADC, kADABG, kADCBG,
+    kOM2, kOMU, kSTG, kSTGCF,
     kStartOfFlags = 0x0100, kOfflineFlag = 0x8000, kOneParticle = 0x10000, kOneTrack = 0x20000}; // MB1, MB2, MB3 definition from ALICE-INT-2005-025
   enum AliceSide { kASide = 1, kCSide, kCentralBarrel };
   enum ADDecision { kADInvalid = -1, kADEmpty = 0, kADBB, kADBG, kADFake };
@@ -52,7 +57,7 @@ public:
   Int_t EvaluateTrigger(const AliVEvent* event, Trigger trigger);
   Bool_t IsTriggerBitFired(const AliVEvent* event, ULong64_t tclass) const;
   Bool_t IsOfflineTriggerFired(const AliVEvent* event, Trigger trigger);
-  
+
   // some "raw" trigger functions
   ADDecision ADTrigger           (const AliVEvent* event, AliceSide side, Bool_t online, Int_t fillHists = 0);
   V0Decision V0Trigger           (const AliVEvent* event, AliceSide side, Bool_t online, Int_t fillHists = 0);
@@ -82,13 +87,16 @@ public:
   Bool_t EMCALTrigger            (const AliVEvent* event, Trigger trigger);
   Bool_t EMCALCellsTrigger       (const AliVEvent* event);
   Bool_t FMDTrigger              (const AliVEvent* event, AliceSide side);
-  
+  void TOFTrigger                (const AliVEvent* event, Bool_t& isOM2, Bool_t& isOMU);
+  void SPDTrigger                (const AliVEvent* event, Bool_t& isSTG, Bool_t& isSTGCF);
+
   void FillHistograms(const AliVEvent* event, Bool_t onlineDecision, Bool_t offlineDecision);
   void FillTriggerClasses(const AliVEvent* event);
-  
-  void SetSPDGFOEfficiency(TH1F* hist) { fSPDGFOEfficiency = hist; }
+
+  void SetSPDGFOEfficiency(TH1D* hist) { fSPDGFOEfficiency = hist; }
+  void SetTOFMaxipadEfficiency(TH2F* hist) { fTOFMaxipadEfficiency = hist; }
   void SetDoFMD(Bool_t flag = kTRUE) {fDoFMD = flag;}
-  
+
   TObject* GetHistogram(const char* histName);
   TList* GetHistList() { return fHistList; }
   TMap * GetTriggerClasses() const { return fTriggerClasses;}
@@ -99,13 +107,28 @@ public:
 
 protected:
   Int_t FMDHitCombinations(const AliESDEvent* aEsd, AliceSide side, Int_t fillHists = 0);
-  
-  TH1F* fSPDGFOEfficiency;   //! FO efficiency applied in SPDFiredChips. function of chip number (bin 1..400: first layer; 401..1200: second layer)
-  
+
+  // TOF trigger helpers
+  void GetTOFFiredMaxipads(const AliVEvent* event, TBits& maxipads);
+  void ApplyTOFefficiency(TBits& fired);
+  Bool_t IsOM2fired(TBits maxipads) { return maxipads.CountBits() >= 2; }
+  Bool_t IsOMUfired(TBits maxipads);
+
+  // SPD trigger helpers
+  void GetSPDFiredChips(const AliVEvent* event, TBits& chips);
+  void ApplySPDefficiency(TBits& fired);
+  Int_t GetChipId(Int_t index, Int_t &chipId2);
+  TBits SetCrossed(Int_t spd[4][2]);
+  Bool_t IsSTGFired(const TBits& bits, Int_t dphiMin = 4, Int_t dphiMax = 10, Bool_t tolerance = true);
+  Bool_t IsSTGCrossedAndFired(const AliVEvent *event, const TBits& bits, Int_t dphiMin = 4, Int_t dphiMax = 10, Bool_t tolerance = true);
+
+  TH1D* fSPDGFOEfficiency{nullptr};     //! FO efficiency applied in SPDFiredChips. function of chip number (bin 1..400: first layer; 401..1200: second layer)
+  TH2F* fTOFMaxipadEfficiency{nullptr}; //! TOF trigger efficiency map for maxipads
+
   Bool_t fDoFMD;             // If false, skips the FMD (physics selection runs much faster)
   Bool_t fMC;                // flag if MC is analyzed
   Bool_t fPileupCutsEnabled; // flag to enable/disable cuts sensitive to in/out-of-bunch pileup
-  
+
   TList* fHistList;          //
   TH1F* fHistStat;           //!
   TH1F* fHistFiredBitsSPD;   //! fired hardware bits
@@ -165,8 +188,8 @@ protected:
   TH2F* fHistV0MOnVsOfAcc;   //! V0M online vs V0M offline distribution for threshold efficiency studies
 
   TMap* fTriggerClasses;     // counts the active trigger classes (uses the full string)
-  
-  ClassDef(AliTriggerAnalysis, 35)
+
+  ClassDef(AliTriggerAnalysis, 36)
 private:
   AliTriggerAnalysis(const AliTriggerAnalysis&);
   AliTriggerAnalysis& operator=(const AliTriggerAnalysis&);

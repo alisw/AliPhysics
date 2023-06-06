@@ -1,5 +1,5 @@
 
-AliAnalysisTaskCorrPbPb *AddTaskCorrPbPb(Int_t fCentralityMin=0, Int_t fCentralityMax=90,/* TString sTrigger="kINT7"*/ Double_t fVzMax=10, Double_t fdcaxy=0.1, Double_t fdcaz=1, Double_t fchi2tpc=2.5, Double_t fchi2its=36, Double_t fnCrossedRows=70, TString OutFileName = "_default", Double_t fEta=0.8, TString sMCfilePath ="/home/swati/SWATI_Laptop_Ubutu_Backup_3rdJune2022/Two_new_Analysis/NetParticleFluctuation/AOD/MC_fresh_LHC20j6a/CentralityWise_efficiency/EfficiencyHijingPbPb.root")
+AliAnalysisTaskCorrPbPb *AddTaskCorrPbPb(Int_t fCentralityMin=0, Int_t fCentralityMax=90, Double_t fVzMax=10, Int_t fFilterBit=96, Double_t fchi2tpc=4, Double_t fchi2its=36, Double_t fpidnSigma=2.0, TString OutFileName = "_default", TString sMCfilePath ="alien:///alice/cern.ch/user/s/swati/EfficiencyPbPbLHC20j6a/CentralitywiseEff/EfficiencyHijingPbPb.root")
 {
   // standard with task
   printf("===================================================================================\n");
@@ -17,6 +17,8 @@ AliAnalysisTaskCorrPbPb *AddTaskCorrPbPb(Int_t fCentralityMin=0, Int_t fCentrali
 
   Int_t gCentMin = fCentralityMin;
   Int_t gCentMax = fCentralityMax;
+
+  TGrid::Connect("alien://");
 
   TString TaskMeanpt;
   TaskMeanpt.Form("gTaskMeanpt%d_%d_%s", gCentMin, gCentMax, " ");
@@ -53,19 +55,16 @@ AliAnalysisTaskCorrPbPb *AddTaskCorrPbPb(Int_t fCentralityMin=0, Int_t fCentrali
   // task_Mpt->SetVzRangeMin(fVzMin);
   
   // ///Event cuts:
-  /*
-  task_Mpt->SetVzRangeMax(10.0);
+  
+  task_Mpt->SetVzRangeMax(fVzMax);
        
-
   // //Track cuts:
-  task_Mpt->SetDCAXYRangeMax(fdcaxy);
-  task_Mpt->SetDCAZRangeMax(fdcaz);
+  task_Mpt->SetTrackFilterBit(fFilterBit);
   task_Mpt->SetMaxChi2PerTPCClusterRange(fchi2tpc);
   task_Mpt->SetMaxChi2PerITSClusterRange(fchi2its);
-  task_Mpt->SetMinNCrossedRowsTPCRange(fnCrossedRows);
-  task_Mpt->SetEtaCut(fEta);
+  task_Mpt->SetPIDnSigmaCut(fpidnSigma);
   
-
+  /*
   TString OutTreeName;
   OutTreeName = "fTreeEvent";
   OutTreeName += OutFileName;
@@ -106,7 +105,7 @@ AliAnalysisTaskCorrPbPb *AddTaskCorrPbPb(Int_t fCentralityMin=0, Int_t fCentrali
   TString                  sMyOutName1;
   TString                  sMyOutName2;
   TString                  sMyOutName3;
-  sMyOutName1 += "SimpleTask_tree";
+  sMyOutName1 += "AnalysisMain_tree";
   sMyOutName1 += OutFileName;
   sMyOutName2 += "Histogram_TrackVariables";
   sMyOutName2 += OutFileName;
@@ -117,7 +116,7 @@ AliAnalysisTaskCorrPbPb *AddTaskCorrPbPb(Int_t fCentralityMin=0, Int_t fCentrali
   
   cOutPut1 = (AliAnalysisDataContainer *) mgr->CreateContainer(sMyOutName2,TList::Class(),AliAnalysisManager::kOutputContainer,list1OutName.Data());
   cOutPut2 = (AliAnalysisDataContainer *) mgr->CreateContainer(sMyOutName3,TList::Class(),AliAnalysisManager::kOutputContainer,list1OutName.Data());
-  cOutPut3 = (AliAnalysisDataContainer *) mgr->CreateContainer(sMyOutName1,TTree::Class(),AliAnalysisManager::kOutputContainer,list1OutName.Data());
+  cOutPut3 = (AliAnalysisDataContainer *) mgr->CreateContainer(sMyOutName1,TList::Class(),AliAnalysisManager::kOutputContainer,list1OutName.Data());
   
   mgr->ConnectOutput(task_Mpt, 1, cOutPut1);
   mgr->ConnectOutput(task_Mpt, 2, cOutPut2);

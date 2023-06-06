@@ -33,6 +33,8 @@ AddTaskMCCorrections(const Char_t *taskname = "V0_Calibrated", TString detForFla
 	taskFlat->SetUseMC(true);
 	taskFlat->SetDeltaV0(kTRUE); 				//@ Set DeltaV0 scaling
 	taskFlat->SetRemoveTrivialScaling(woTrivialscaling);	//@ Trivial Nch scaling
+	taskFlat->SetDataPeriod("16k");
+	taskFlat->SetSystVarTrkCuts(1);
 	taskFlat->SetPtMin(0.15);
 	taskFlat->SetNcl(70);
 	mgr->AddTask(taskFlat);

@@ -80,6 +80,7 @@ bool isSelectedSignal(const double mass, const double pt, const int pdg) {
       fDmesonPDGs{},
       fLightPDG(0),
       fUseFDPairCleaner(true),
+      fDoPreClean(true),
       fUseLFFromEvtsWithPairs(false),
       fGTI(nullptr),
       fColsToSave({
@@ -198,6 +199,7 @@ AliAnalysisTaskCharmingFemto::AliAnalysisTaskCharmingFemto(const char *name,
       fDmesonPDGs{},
       fLightPDG(0),
       fUseFDPairCleaner(true),
+      fDoPreClean(true),
       fUseLFFromEvtsWithPairs(false),
       fGTI(nullptr),
       fColsToSave({
@@ -536,7 +538,10 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     
     int protonMotherPdg = 0;
     int protonPdg = 0;
-    if (fIsMC && (fTrackCutsPartProton->isSelected(fProtonTrack) || fTrackCutsPartAntiProton->isSelected(fProtonTrack))){
+    bool isProtonSelected = fTrackCutsPartProton->isSelected(fProtonTrack);
+    bool isAntiProtonSelected = fTrackCutsPartAntiProton->isSelected(fProtonTrack);
+
+    if (fIsMC && (isProtonSelected || isAntiProtonSelected)){
       mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
       if(mcPart){
         mcpdg = mcPart->GetPdgCode();
@@ -547,7 +552,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
     }
     
-    if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
+    if (isProtonSelected) {
       if (fUseMCTruthReco && (mcpdg == fTrackCutsPartProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)){
         fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
         fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
@@ -557,6 +562,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         fProtonTrack->SetPDGCode(mcpdg);
+        fProtonTrack->SetParticleOrigin(AliFemtoDreamBasePart::PartOrigin(GetBuddyOrigin(mcPart)));
+        fProtonTrack->SetIsPrim(IsPrimaryCustom(fArrayMCAOD, mcPart));
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         protons.push_back(*fProtonTrack);
       }
@@ -569,12 +576,14 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         fProtonTrack->SetPDGCode(mcpdg);
+        fProtonTrack->SetParticleOrigin(AliFemtoDreamBasePart::PartOrigin(GetBuddyOrigin(mcPart)));
+        fProtonTrack->SetIsPrim(IsPrimaryCustom(fArrayMCAOD, mcPart));
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         protons.push_back(*fProtonTrack);
         fHistBuddyplusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }
     }
-    if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
+    if (isAntiProtonSelected) {
       if(fUseMCTruthReco && (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)) {
         fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
         fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
@@ -584,6 +593,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         fProtonTrack->SetPDGCode(mcpdg);
+        fProtonTrack->SetParticleOrigin(AliFemtoDreamBasePart::PartOrigin(GetBuddyOrigin(mcPart)));
+        fProtonTrack->SetIsPrim(IsPrimaryCustom(fArrayMCAOD, mcPart));
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         antiprotons.push_back(*fProtonTrack);
       }
@@ -596,6 +607,8 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetNSigTOF(fProtonTrack->GetnSigmaTOF(buddyParticle));
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         fProtonTrack->SetPDGCode(mcpdg);
+        fProtonTrack->SetParticleOrigin(AliFemtoDreamBasePart::PartOrigin(GetBuddyOrigin(mcPart)));
+        fProtonTrack->SetIsPrim(IsPrimaryCustom(fArrayMCAOD, mcPart));
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         antiprotons.push_back(*fProtonTrack);
         fHistBuddyminusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
@@ -1091,6 +1104,21 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   // PAIR CLEANING AND FEMTO
 
   if (fUseTree) {
+    if (fDoPreClean) {
+      auto Clean = [](std::vector<AliFemtoDreamBasePart>particles) {
+        std::vector<AliFemtoDreamBasePart> cleaned = {};
+        for (const auto &particle : particles)
+          if (particle.UseParticle())
+            cleaned.push_back(particle);
+        return cleaned;
+      };
+
+      protons = Clean(protons);
+      antiprotons = Clean(antiprotons);
+      dplus = Clean(dplus);
+      dminus = Clean(dminus);
+    }
+
     // flag pair removed by old pair clenaer
     fPairCleaner->CleanTrackAndDecay(&protons, &dplus, 0, false);
     fPairCleaner->CleanTrackAndDecay(&protons, &dminus, 1, false);
@@ -1310,6 +1338,8 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       if(saveCol("light_dcaxy")) tree.second->Branch("light_dcaxy", &dummyfloat);
       if(saveCol("light_label")) tree.second->Branch("light_label", &dummyint);
       if(fIsMC && saveCol("light_pdg")) tree.second->Branch("light_pdg", &dummyint);
+      if(fIsMC && saveCol("light_origin")) tree.second->Branch("light_origin", &dummyint);
+      if(fIsMC && saveCol("light_isprim")) tree.second->Branch("light_isprim", &dummybool);
       if(fIsMC && saveCol("light_motherpdg")) tree.second->Branch("light_motherpdg", &dummyint);
     }
 
@@ -1354,6 +1384,8 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       if(saveCol("light_dcaxy")) tree.second->Branch("light_dcaxy", &dummyfloat);
       if(saveCol("light_label")) tree.second->Branch("light_label", &dummyint);
       if(fIsMC && saveCol("light_pdg")) tree.second->Branch("light_pdg", &dummyint);
+      if(fIsMC && saveCol("light_origin")) tree.second->Branch("light_origin", &dummyint);
+      if(fIsMC && saveCol("light_isprim")) tree.second->Branch("light_isprim", &dummybool);
       if(fIsMC && saveCol("light_motherpdg")) tree.second->Branch("light_motherpdg", &dummyint);
     }
   }

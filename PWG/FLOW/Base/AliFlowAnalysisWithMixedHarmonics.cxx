@@ -103,6 +103,15 @@ f3pPOICorrelatorVsM(NULL),
 f3pCorrelatorVsZPA(NULL),  
 f3pCorrelatorVsZPC(NULL),  
 f3pCorrelatorVsZP(NULL),  
+f3pCorrelatorVsZNA(NULL),  
+f3pCorrelatorVsZNC(NULL),  
+f3pCorrelatorVsZN(NULL),  
+f2pCorrelatorVsZPA(NULL),  
+f2pCorrelatorVsZPC(NULL),  
+f2pCorrelatorVsZP(NULL),  
+f2pCorrelatorVsZNA(NULL),  
+f2pCorrelatorVsZNC(NULL),  
+f2pCorrelatorVsZN(NULL),  
 fNonIsotropicTermsVsMPro(NULL),
 fNonIsotropicTermsList(NULL),
 f2pCorrelatorCosPsiDiffPtDiff(NULL),
@@ -239,6 +248,10 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
  Double_t gZPC = anEvent->GetZPCEnergy()/1000;
  Double_t gZP = (anEvent->GetZPAEnergy() + anEvent->GetZPCEnergy())/1000;
 
+ Double_t gZNA = anEvent->GetZNAEnergy()/1000;
+ Double_t gZNC = anEvent->GetZNCEnergy()/1000;
+ Double_t gZN = (anEvent->GetZNAEnergy() + anEvent->GetZNCEnergy())/1000;
+
  // Start loop over data:
  for(Int_t i=0;i<nPrim;i++) 
  { 
@@ -346,6 +359,18 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
        f2pCorrelatorSinPsiSumEtaSum->Fill((dEta1+dEta2)/2.,TMath::Sin(n*(dPsi1+dPsi2)));
        //=========================================================//
        
+       //ZDC analysis
+       if(fCalculateVsZDC) {
+	 //2particle correlator vs ZDC-P energy  
+	 f2pCorrelatorVsZPA->Fill(gZPA,TMath::Cos(fHarmonic*(dPsi1-dPsi2)));
+	 f2pCorrelatorVsZPC->Fill(gZPC,TMath::Cos(fHarmonic*(dPsi1-dPsi2)));
+	 f2pCorrelatorVsZP->Fill(gZP,TMath::Cos(fHarmonic*(dPsi1-dPsi2)));
+	 
+	 f2pCorrelatorVsZNA->Fill(gZNA,TMath::Cos(fHarmonic*(dPsi1-dPsi2)));
+	 f2pCorrelatorVsZNC->Fill(gZNC,TMath::Cos(fHarmonic*(dPsi1-dPsi2)));
+	 f2pCorrelatorVsZN->Fill(gZN,TMath::Cos(fHarmonic*(dPsi1-dPsi2)));
+       }
+
        // non-isotropic terms, 1st POI:
        fReNITEBE[0][0][0]->Fill((dPt1+dPt2)/2.,TMath::Cos(n*(dPsi1)),1.);
        fReNITEBE[0][0][1]->Fill(TMath::Abs(dPt1-dPt2),TMath::Cos(n*(dPsi1)),1.);
@@ -440,11 +465,16 @@ void AliFlowAnalysisWithMixedHarmonics::Make(AliFlowEventSimple* anEvent)
    if(fCalculateVsM)
      f3pPOICorrelatorVsM->Fill(nRefMult,gIntegrated3pCorrelator);
 
-   //3particle correlator vs ZDC-P energy
+   //ZDC analysis
    if(fCalculateVsZDC) {
+     //3particle correlator vs ZDC-P energy  
      f3pCorrelatorVsZPA->Fill(gZPA,gIntegrated3pCorrelator);
      f3pCorrelatorVsZPC->Fill(gZPC,gIntegrated3pCorrelator);
      f3pCorrelatorVsZP->Fill(gZP,gIntegrated3pCorrelator);
+
+     f3pCorrelatorVsZNA->Fill(gZNA,gIntegrated3pCorrelator);
+     f3pCorrelatorVsZNC->Fill(gZNC,gIntegrated3pCorrelator);
+     f3pCorrelatorVsZN->Fill(gZN,gIntegrated3pCorrelator);
    }
  }
  
@@ -1014,6 +1044,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
   
  this->BookDefault();
  if(fCalculateVsM){this->BookVsM();}
+ if(fCalculateVsZDC){this->BookVsZDC();}
  if(fEvaluateDifferential3pCorrelator){this->BookDifferential();}  
    
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookAllAllEventQuantities()
@@ -1284,11 +1315,11 @@ void AliFlowAnalysisWithMixedHarmonics::BookVsM()
 
 void AliFlowAnalysisWithMixedHarmonics::BookVsZDC()
 {
-  // Book histos and profiles holding results vs ZDC-P energy deposition
+  // Book histos and profiles holding results vs ZDC-P and ZDC-N energy deposition
   
-  // a) 3-p correlator <<cos[n*(phi1+phi2-2phi3)]>> for all events (not corrected for detector effects) vs ZDC:
+  // a) 3-p correlator <<cos[n*(phi1+phi2-2phi3)]>> for all events (not corrected for detector effects) vs ZDC-P:
   TString s3pCorrelatorVsZPAName = "f3pCorrelatorVsZPA";
-  f3pCorrelatorVsZPA = new TProfile(s3pCorrelatorVsZPAName.Data(),"",301,-0.5,300.5);
+  f3pCorrelatorVsZPA = new TProfile(s3pCorrelatorVsZPAName.Data(),"",300,-0.5,299.5);
   f3pCorrelatorVsZPA->SetStats(kFALSE); 
   if(fHarmonic == 1) {
     f3pCorrelatorVsZPA->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZPA");
@@ -1301,7 +1332,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookVsZDC()
   f3pCorrelatorVsZPA->GetXaxis()->SetTitle("ZPA (#times 10^{3}) [a.u.]");
 
   TString s3pCorrelatorVsZPCName = "f3pCorrelatorVsZPC";
-  f3pCorrelatorVsZPC = new TProfile(s3pCorrelatorVsZPCName.Data(),"",301,-0.5,300.5);
+  f3pCorrelatorVsZPC = new TProfile(s3pCorrelatorVsZPCName.Data(),"",300,-0.5,299.5);
   f3pCorrelatorVsZPC->SetStats(kFALSE); 
   if(fHarmonic == 1) {
     f3pCorrelatorVsZPC->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZPC");
@@ -1314,7 +1345,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookVsZDC()
   f3pCorrelatorVsZPC->GetXaxis()->SetTitle("ZPC (#times 10^{3}) [a.u.]");
 
   TString s3pCorrelatorVsZPName = "f3pCorrelatorVsZP";
-  f3pCorrelatorVsZP = new TProfile(s3pCorrelatorVsZPName.Data(),"",601,-0.5,600.5);
+  f3pCorrelatorVsZP = new TProfile(s3pCorrelatorVsZPName.Data(),"",600,-0.5,599.5);
   f3pCorrelatorVsZP->SetStats(kFALSE); 
   if(fHarmonic == 1) {
     f3pCorrelatorVsZP->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZP");
@@ -1329,7 +1360,138 @@ void AliFlowAnalysisWithMixedHarmonics::BookVsZDC()
   fProfileList->Add(f3pCorrelatorVsZPA); 
   fProfileList->Add(f3pCorrelatorVsZPC); 
   fProfileList->Add(f3pCorrelatorVsZP); 
- 
+
+  // b) 3-p correlator <<cos[n*(phi1+phi2-2phi3)]>> for all events (not corrected for detector effects) vs ZDC-N:
+  TString s3pCorrelatorVsZNAName = "f3pCorrelatorVsZNA";
+  f3pCorrelatorVsZNA = new TProfile(s3pCorrelatorVsZNAName.Data(),"",300,-0.5,299.5);
+  f3pCorrelatorVsZNA->SetStats(kFALSE); 
+  if(fHarmonic == 1) {
+    f3pCorrelatorVsZNA->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZNA");
+    f3pCorrelatorVsZNA->GetYaxis()->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZNA");
+  }
+  else {
+    f3pCorrelatorVsZNA->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZNA",fHarmonic)); 
+    f3pCorrelatorVsZNA->GetYaxis()->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZNA",fHarmonic)); 
+  }
+  f3pCorrelatorVsZNA->GetXaxis()->SetTitle("ZNA (#times 10^{3}) [a.u.]");
+
+  TString s3pCorrelatorVsZNCName = "f3pCorrelatorVsZNC";
+  f3pCorrelatorVsZNC = new TProfile(s3pCorrelatorVsZNCName.Data(),"",300,-0.5,299.5);
+  f3pCorrelatorVsZNC->SetStats(kFALSE); 
+  if(fHarmonic == 1) {
+    f3pCorrelatorVsZNC->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZNC");
+    f3pCorrelatorVsZNC->GetYaxis()->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZNC");
+  }
+  else {
+    f3pCorrelatorVsZNC->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZNC",fHarmonic)); 
+    f3pCorrelatorVsZNC->GetYaxis()->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZNC",fHarmonic)); 
+  }
+  f3pCorrelatorVsZNC->GetXaxis()->SetTitle("ZNC (#times 10^{3}) [a.u.]");
+
+  TString s3pCorrelatorVsZNName = "f3pCorrelatorVsZN";
+  f3pCorrelatorVsZN = new TProfile(s3pCorrelatorVsZNName.Data(),"",600,-0.5,599.5);
+  f3pCorrelatorVsZN->SetStats(kFALSE); 
+  if(fHarmonic == 1) {
+    f3pCorrelatorVsZN->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZN");
+    f3pCorrelatorVsZN->GetYaxis()->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZN");
+  }
+  else {
+    f3pCorrelatorVsZN->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZN",fHarmonic)); 
+    f3pCorrelatorVsZN->GetYaxis()->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZN",fHarmonic)); 
+  }
+  f3pCorrelatorVsZN->GetXaxis()->SetTitle("ZN (#times 10^{3}) [a.u.]");
+
+  fProfileList->Add(f3pCorrelatorVsZNA); 
+  fProfileList->Add(f3pCorrelatorVsZNC); 
+  fProfileList->Add(f3pCorrelatorVsZN);  
+
+  // c) 2-p correlator <<cos[n*(phi1-phi2)]>> for all events (not corrected for detector effects) vs ZDC-P:
+  TString s2pCorrelatorVsZPAName = "f2pCorrelatorVsZPA";
+  f2pCorrelatorVsZPA = new TProfile(s2pCorrelatorVsZPAName.Data(),"",300,-0.5,299.5);
+  f2pCorrelatorVsZPA->SetStats(kFALSE); 
+  if(fHarmonic == 1) {
+    f2pCorrelatorVsZPA->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} ZPA");
+    f2pCorrelatorVsZPA->GetYaxis()->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} ZPA");
+  }
+  else {
+    f2pCorrelatorVsZPA->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZPA",fHarmonic)); 
+    f2pCorrelatorVsZPA->GetYaxis()->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZPA",fHarmonic)); 
+  }
+  f2pCorrelatorVsZPA->GetXaxis()->SetTitle("ZPA (#times 10^{3}) [a.u.]");
+
+  TString s2pCorrelatorVsZPCName = "f2pCorrelatorVsZPC";
+  f2pCorrelatorVsZPC = new TProfile(s2pCorrelatorVsZPCName.Data(),"",300,-0.5,299.5);
+  f2pCorrelatorVsZPC->SetStats(kFALSE); 
+  if(fHarmonic == 1) {
+    f2pCorrelatorVsZPC->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} ZPC");
+    f2pCorrelatorVsZPC->GetYaxis()->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} ZPC");
+  }
+  else {
+    f2pCorrelatorVsZPC->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZPC",fHarmonic)); 
+    f2pCorrelatorVsZPC->GetYaxis()->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZPC",fHarmonic)); 
+  }
+  f2pCorrelatorVsZPC->GetXaxis()->SetTitle("ZPC (#times 10^{3}) [a.u.]");
+
+  TString s2pCorrelatorVsZPName = "f2pCorrelatorVsZP";
+  f2pCorrelatorVsZP = new TProfile(s2pCorrelatorVsZPName.Data(),"",600,-0.5,599.5);
+  f2pCorrelatorVsZP->SetStats(kFALSE); 
+  if(fHarmonic == 1) {
+    f2pCorrelatorVsZP->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} ZP");
+    f2pCorrelatorVsZP->GetYaxis()->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} ZP");
+  }
+  else {
+    f2pCorrelatorVsZP->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZP",fHarmonic)); 
+    f2pCorrelatorVsZP->GetYaxis()->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZP",fHarmonic)); 
+  }
+  f2pCorrelatorVsZP->GetXaxis()->SetTitle("ZP (#times 10^{3}) [a.u.]");
+
+  fProfileList->Add(f2pCorrelatorVsZPA); 
+  fProfileList->Add(f2pCorrelatorVsZPC); 
+  fProfileList->Add(f2pCorrelatorVsZP); 
+
+  // d) 2-p correlator <<cos[n*(phi1-phi2)]>> for all events (not corrected for detector effects) vs ZDC-N:
+  TString s2pCorrelatorVsZNAName = "f2pCorrelatorVsZNA";
+  f2pCorrelatorVsZNA = new TProfile(s2pCorrelatorVsZNAName.Data(),"",300,-0.5,299.5);
+  f2pCorrelatorVsZNA->SetStats(kFALSE); 
+  if(fHarmonic == 1) {
+    f2pCorrelatorVsZNA->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} ZNA");
+    f2pCorrelatorVsZNA->GetYaxis()->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} ZNA");
+  }
+  else {
+    f2pCorrelatorVsZNA->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZNA",fHarmonic)); 
+    f2pCorrelatorVsZNA->GetYaxis()->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZNA",fHarmonic)); 
+  }
+  f2pCorrelatorVsZNA->GetXaxis()->SetTitle("ZNA (#times 10^{3}) [a.u.]");
+
+  TString s2pCorrelatorVsZNCName = "f2pCorrelatorVsZNC";
+  f2pCorrelatorVsZNC = new TProfile(s2pCorrelatorVsZNCName.Data(),"",300,-0.5,299.5);
+  f2pCorrelatorVsZNC->SetStats(kFALSE); 
+  if(fHarmonic == 1) {
+    f2pCorrelatorVsZNC->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} ZNC");
+    f2pCorrelatorVsZNC->GetYaxis()->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} ZNC");
+  }
+  else {
+    f2pCorrelatorVsZNC->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZNC",fHarmonic)); 
+    f2pCorrelatorVsZNC->GetYaxis()->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZNC",fHarmonic)); 
+  }
+  f2pCorrelatorVsZNC->GetXaxis()->SetTitle("ZNC (#times 10^{3}) [a.u.]");
+
+  TString s2pCorrelatorVsZNName = "f2pCorrelatorVsZN";
+  f2pCorrelatorVsZN = new TProfile(s2pCorrelatorVsZNName.Data(),"",600,-0.5,599.5);
+  f2pCorrelatorVsZN->SetStats(kFALSE); 
+  if(fHarmonic == 1) {
+    f2pCorrelatorVsZN->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} ZN");
+    f2pCorrelatorVsZN->GetYaxis()->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} ZN");
+  }
+  else {
+    f2pCorrelatorVsZN->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZN",fHarmonic)); 
+    f2pCorrelatorVsZN->GetYaxis()->SetTitle(Form("#LT#LTcos[%d(#psi_{1}+#psi_{2}-2#phi_{3})]#GT#GT #font[72]{vs} ZN",fHarmonic)); 
+  }
+  f2pCorrelatorVsZN->GetXaxis()->SetTitle("ZN (#times 10^{3}) [a.u.]");
+
+  fProfileList->Add(f2pCorrelatorVsZNA); 
+  fProfileList->Add(f2pCorrelatorVsZNC); 
+  fProfileList->Add(f2pCorrelatorVsZN);  
 } // end of void AliFlowAnalysisWithMixedHarmonics::BookVsZDC()
       
 //================================================================================================================

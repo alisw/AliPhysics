@@ -80,6 +80,7 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void SetPairCutEtaPhi(float aEtaCut,float aPhiCut);
 	
 	void SetPassAllPair(int aUse);
+	void SetGobalVelGate(int aUse);
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -145,15 +146,21 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	int fUseStavinskyMethod;
 	TH1F *fStaSkyBkg;
 	
-        int fUse2DpTvsKStar;
-	TH2F *f2DpTvsKStar;
 
 	int fUsePairCutEtaPhi;
 	float fPairCut_eta;
 	float fPairCut_phi;
 	
 	int fPassAllPair;
+
+	int fUseGobalVelGate;
+
+	int fUse2DpTvsKStar;
+	//int IsSameParticlePair;
+	TH2F *KStarVspT_P1Hist;
+	TH2F *KStarVspT_P2Hist;
 };
+
 
 #endif
 

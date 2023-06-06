@@ -125,7 +125,10 @@ set(SRCS
   AliAnalysisTaskThreeBodyFemtoMixedCharge.cxx;
   AliAnalysisTaskNanoBenchmark.cxx
   AliAnalysisTaskNanoFemtoProtonPion.cxx
+  AliAnalysisTaskFemtoProtonPion.cxx
   AliAnalysisTaskNanoXiPi.cxx
+  AliAnalysisTaskOtonXx.cxx
+  AliAnalysisTaskNanoFemtoProtonKaonPlus.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
@@ -134,7 +137,8 @@ set(SRCS
     AliAnalysisTaskCharmingFemto.cxx
     AliEasyFemto.cxx
     AliAnalysisTaskPionDeuteronMC.cxx
-    AliAnalysisTaskPionDeuteron.cxx)
+    AliAnalysisTaskPionDeuteron.cxx
+    AliAnalysisTaskCharmingFemto_og.cxx)
 endif()
 
 # Headers from sources

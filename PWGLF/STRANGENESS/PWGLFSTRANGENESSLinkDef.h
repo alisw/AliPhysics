@@ -106,6 +106,8 @@
 #pragma link C++ class AliAnalysisTaskKaonXiCorrelation+;
 #pragma link C++ class MiniCascade+;
 #pragma link C++ class MiniCascadeMC+;
+#pragma link C++ class MiniCascadeTrain+;
+#pragma link C++ class MiniCascadeTrainMC+;
 #pragma link C++ class MiniLambda+;
 #pragma link C++ class MiniLambdaMC+;
 #pragma link C++ class MiniK0s+;
@@ -116,6 +118,7 @@
 #pragma link C++ class MiniXiMC+;
 #pragma link C++ class MiniKaon+;
 #pragma link C++ class MiniKaonMC+;
+#pragma link C++ class XiDaughter+;
 #pragma link C++ class std::vector<MiniXi>+;
 #pragma link C++ class std::vector<MiniXiMC>+;
 #pragma link C++ class std::vector<MiniKaon>+;

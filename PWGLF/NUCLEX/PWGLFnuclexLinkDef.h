@@ -124,6 +124,8 @@
 #pragma link C++ class AliAnalysisTask_pdLd+;
 #pragma link C++ class AliAnalysisTask_pd+;
 #pragma link C++ class AliAnalysisTask_pd_CreateTrees_PairsOnly+;
+#pragma link C++ class AliAnalysisTask_Ld_CreateTrees_PairsOnly+;
+#pragma link C++ class AliAnalysisTask_pp_CreateTrees_PairsOnly+;
 #pragma link C++ class AliAODTrackTiny+;
 #pragma link C++ class AliAnalysisTaskHypV0s+;
 #pragma link C++ class AliAnalysisTaskReducedTreeHypertritonBindingEnergy+;
@@ -187,6 +189,7 @@
 
 // * DoubleHypNuc
 #pragma link C++ class AliAnalysisTaskDoubleHypNucTree+;
+#pragma link C++ class AliAnalysisTaskDoubleHypNucTreeLS+;
 
 /// Utils
 /// * CODEX
@@ -202,3 +205,4 @@
 #pragma link C++ class AliAnalysisTaskFilterHe3+;
 
 #endif
+

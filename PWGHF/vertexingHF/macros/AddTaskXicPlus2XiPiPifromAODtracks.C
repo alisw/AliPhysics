@@ -64,7 +64,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks *AddTaskXicPlus2XiPiPifromAODtracks
   task->UseTrig_kINT7();	//jcho
   if (HMTrigOn){
 	task->UseTrig_kHMV0();	//jcho, HM Trigger
-	task->UseTrig_kHMSPD();  //jcho, HM Trigger
+	//task->UseTrig_kHMSPD();  //jcho, HM Trigger
 	}
 
   // Create and connect containers for input/output  

@@ -28,7 +28,7 @@ class AliESDAD; // AD
 // class AliMCEventHandler;
 // class AliMCEvent;
 // class AliStack;
-
+class AliPIDResponse;
 class AliESDVertex;
 class AliAODVertex;
 class AliESDv0;
@@ -97,7 +97,7 @@ using namespace std;
 ClassImp(AliAnalysisTaskFlatenicityLambdaK0s)
 
     AliAnalysisTaskFlatenicityLambdaK0s::AliAnalysisTaskFlatenicityLambdaK0s()
-    : AliAnalysisTaskSE(), fEventCuts(0), fESD(0), fOutputList(0),
+    : AliAnalysisTaskSE(), fEventCuts(0), fESDtrackCuts(0), fESD(0), fOutputList(0),
       hinvmassK0s(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0),
       hflat(0), fESDpid(0x0), treeK0s(0), treeLambda(0), treeAntiLambda(0),
       invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0),
@@ -111,7 +111,7 @@ ClassImp(AliAnalysisTaskFlatenicityLambdaK0s)
 //_____________________________________________________________________________
 AliAnalysisTaskFlatenicityLambdaK0s::AliAnalysisTaskFlatenicityLambdaK0s(
     const char *name)
-    : AliAnalysisTaskSE(name), fEventCuts(0), fESD(0), fOutputList(0),
+    : AliAnalysisTaskSE(name), fEventCuts(0), fESDtrackCuts(0), fESD(0), fOutputList(0),
       hinvmassK0s(0), fPIDResponse(0), hinvmassLambda(0), hinvmassAntiLambda(0),
       hflat(0), fESDpid(0x0), treeK0s(0), treeLambda(0), treeAntiLambda(0),
       invmK0s(0), invpK0s(0), invptK0s(0), invyK0s(0), invmLambda(0),
@@ -178,11 +178,12 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserCreateOutputObjects()
   fOutputList->Add(treeK0s);
   fOutputList->Add(treeLambda);
   fOutputList->Add(treeAntiLambda);
-  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
-  AliInputEventHandler *inputHandler =
-      (AliInputEventHandler *)(man->GetInputEventHandler());
-  fPIDResponse = inputHandler->GetPIDResponse();
-  inputHandler->SetNeedField();
+
+  // AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  // AliInputEventHandler *inputHandler =
+  //     (AliInputEventHandler *)(man->GetInputEventHandler());
+  // fPIDResponse = inputHandler->GetPIDResponse();
+
   fEventCuts.SetManualMode(); // Enable manual mode
   fEventCuts.fRequireTrackVertex = true;
   fEventCuts.fMinVtz = -10.f;
@@ -193,11 +194,35 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserCreateOutputObjects()
   fEventCuts.fRejectDAQincomplete = true;
   fEventCuts.fSPDpileupMinContributors = 3;
   fEventCuts.fSPDpileupMinZdist = 0.8;
-  fEventCuts.fSPDpileupNsigmaZdist = 3.;
-  fEventCuts.fSPDpileupNsigmaDiamXY = 2.;
-  fEventCuts.fSPDpileupNsigmaDiamZ = 5.;
+  // fEventCuts.fSPDpileupNsigmaZdist = 3.;
+  // fEventCuts.fSPDpileupNsigmaDiamXY = 2.;
+  // fEventCuts.fSPDpileupNsigmaDiamZ = 5.;
   fEventCuts.fTrackletBGcut = true;
   fEventCuts.AddQAplotsToList(fOutputList);
+
+  // // create track filters
+  // fTrackFilter = new AliAnalysisFilter("trackFilter");
+  // AliESDtrackCuts *fCuts = new AliESDtrackCuts();
+  // fCuts->SetAcceptKinkDaughters(kFALSE);
+  // fCuts->SetRequireTPCRefit(kTRUE);
+  // fCuts->SetRequireITSRefit(kTRUE);
+  // fCuts->SetClusterRequirementITS(AliESDtrackCuts::kSPD, AliESDtrackCuts::kAny);
+  // fCuts->SetDCAToVertex2D(kFALSE);
+  // fCuts->SetRequireSigmaToVertex(kFALSE);
+  // fCuts->SetEtaRange(-0.8, 0.8);
+  // fCuts->SetMinNCrossedRowsTPC(70);
+  // fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  // fCuts->SetMaxChi2PerClusterTPC(4);
+  // fCuts->SetMaxDCAToVertexZ(2);
+  // fCuts->SetCutGeoNcrNcl(3., 130., 1.5, 0.85, 0.7);
+  // fCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
+  // fCuts->SetMaxChi2PerClusterTPC(4);
+  // fCuts->SetMaxDCAToVertexZ(2);
+  // fCuts->SetMaxChi2PerClusterITS(36);
+  // fCuts->SetMaxDCAToVertexXYPtDep("0.0105+0.0350/pt^1.1");
+  // fCuts->SetMaxChi2PerClusterITS(36);
+  // fTrackFilter->AddCuts(fCuts);
+
   PostData(1, fOutputList);
 }
 //_____________________________________________________________________________
@@ -234,14 +259,11 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
   }
   if (lESDevent->IsIncompleteDAQ())
     return;
-
   AliAnalysisUtils *fUtils = new AliAnalysisUtils();
   if (fUtils->IsSPDClusterVsTrackletBG(lESDevent))
     return;
-
   if (lESDevent->IsPileupFromSPD(3))
     return;
-
   //    Bool_t maskIsSelected =
   //    ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
   //     Bool_t isSelected = 0;
@@ -254,7 +276,14 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
   //     if ( ! isSelected ) {
   //         return;
   //     }
-
+  AliAnalysisManager *man = AliAnalysisManager::GetAnalysisManager();
+  if (man)
+  {
+    AliInputEventHandler *inputHandler = (AliInputEventHandler *)(man->GetInputEventHandler());
+    if (inputHandler)
+      fPIDResponse = inputHandler->GetPIDResponse();
+    inputHandler->SetNeedField();
+  }
   //------------------------------------------------
   // Step 3:  Primary Vertex quality selection
   //------------------------------------------------
@@ -302,6 +331,13 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
   }
   Double_t lMagneticField = -10;
 
+  Int_t lMultiplicity = -100;
+  lMultiplicity = fESDtrackCuts->GetReferenceMultiplicity(lESDevent, AliESDtrackCuts::kTrackletsITSTPC, 0.8);
+  if (!(lMultiplicity >= 1))
+  {
+    return;
+  }
+
   lMagneticField = lESDevent->GetMagneticField();
   Double_t flat = GetFlatenicityV0();
   ((TH1D *)(fOutputList->FindObject("hflat")))->Fill(1.0 - flat);
@@ -329,16 +365,20 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
     if (!v0)
       continue;
 
-    CheckChargeV0(v0);
-    // Remove like-sign (will not affect offline V0 candidates!)
-    if (v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() > 0)
-    {
+    // CheckChargeV0(v0);
+    // // Remove like-sign (will not affect offline V0 candidates!)
+    // if (v0->GetParamN()->Charge() > 0 && v0->GetParamP()->Charge() > 0)
+    // {
+    //   continue;
+    // }
+    // if (v0->GetParamN()->Charge() < 0 && v0->GetParamP()->Charge() < 0)
+    // {
+    //   continue;
+    // }
+
+    lOnFlyStatus = v0->GetOnFlyStatus();
+    if (lOnFlyStatus)
       continue;
-    }
-    if (v0->GetParamN()->Charge() < 0 && v0->GetParamP()->Charge() < 0)
-    {
-      continue;
-    }
 
     Double_t tDecayVertexV0[3];
     v0->GetXYZ(tDecayVertexV0[0], tDecayVertexV0[1], tDecayVertexV0[2]);
@@ -423,14 +463,10 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
     // Daughter Eta for Eta selection, afterwards
     Float_t fTreeVariableNegEta = nTrack->Eta();
     Float_t fTreeVariablePosEta = pTrack->Eta();
-    Bool_t fkExtraCleanup = kTRUE;
 
-    if (fkExtraCleanup)
-    {
-      if (TMath::Abs(fTreeVariableNegEta) > 0.8 ||
-          TMath::Abs(fTreeVariableNegEta) > 0.8)
-        continue;
-    }
+    if (TMath::Abs(fTreeVariableNegEta) > 0.8 ||
+        TMath::Abs(fTreeVariableNegEta) > 0.8)
+      continue;
 
     // Filter like-sign V0 (next: add counter and distribution)
     if (pTrack->GetSign() == nTrack->GetSign())
@@ -525,7 +561,7 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
 
     if ((((pTrack->GetTPCClusterInfo(2, 1)) < 70) ||
          ((nTrack->GetTPCClusterInfo(2, 1)) < 70)) &&
-        lSmallestTrackLength < 80 && fkExtraCleanup)
+        lSmallestTrackLength < 80)
       continue;
 
     // End track Quality Cuts
@@ -540,7 +576,6 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
     if (lDcaPosToPrimVertex < 0.06 || lDcaNegToPrimVertex < 0.06)
       continue;
 
-    lOnFlyStatus = v0->GetOnFlyStatus();
     lChi2V0 = v0->GetChi2V0();
     lDcaV0Daughters = v0->GetDcaV0Daughters();
     if (lDcaV0Daughters > 1)
@@ -567,92 +602,121 @@ void AliAnalysisTaskFlatenicityLambdaK0s::UserExec(Option_t *)
     // lAlphaV0 = v0->AlphaV0();
     // lPtArmV0 = v0->PtArmV0();
 
+    // Official means of acquiring N-sigmas
+    Float_t NSigmasPosProton = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kProton);
+    Float_t NSigmasPosPion = fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion);
+    Float_t NSigmasNegProton = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kProton);
+    Float_t NSigmasNegPion = fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion);
+
+    // K0Short: Enough to parametrize peak broadening with linear function.
+    Double_t lUpperLimitK0Short = (5.63707e-01) + (1.14979e-02) * lPt;
+    Double_t lLowerLimitK0Short = (4.30006e-01) - (1.10029e-02) * lPt;
+    // Lambda: Linear (for higher pt) plus exponential (for low-pt broadening)
+    //[0]+[1]*x+[2]*TMath::Exp(-[3]*x)
+    Double_t lUpperLimitLambda = (1.13688e+00) + (5.27838e-03) * lPt + (8.42220e-02) * TMath::Exp(-(3.80595e+00) * lPt);
+    Double_t lLowerLimitLambda = (1.09501e+00) - (5.23272e-03) * lPt - (7.52690e-02) * TMath::Exp(-(3.46339e+00) * lPt);
+
     v0->ChangeMassHypothesis(310);
     lInvMassK0s = v0->GetEffMass();
-    if (TMath::Abs(lInvMassK0s - 0.497611) < 0.1)
+    if (lInvMassK0s < lUpperLimitK0Short && lInvMassK0s > lLowerLimitK0Short)
     {
-      if (lV0CosineOfPointingAngle < 0.97)
-        continue;
-      Float_t lPtK0s = v0->Pt();
-      Float_t lPzK0s = v0->Pz();
-      if (lPtK0s == 0)
-        continue;
-      Float_t lRapK0s = v0->Y(310);
-      if (TMath::Abs(lRapK0s) > 0.5)
-        continue;
-
-      Float_t ctauK0s = lV0DecayLength * lInvMassK0s / v0->P();
-      if (ctauK0s > 20)
-        continue;
-      ((TH1F *)(fOutputList->FindObject("hinvmassK0s")))->Fill(lInvMassK0s);
-      invmK0s = v0->GetEffMass();
-      invpK0s = v0->P();
-      invptK0s = v0->Pt();
-      invyK0s = lRapK0s;
-      flatenicityK0s = 1.0 - flat;
-      ((TTree *)(fOutputList->FindObject("treeK0s")))->Fill();
+      if (lV0CosineOfPointingAngle > 0.97)
+      {
+        Float_t lPtK0s = v0->Pt();
+        Float_t lPzK0s = v0->Pz();
+        if (lPtK0s != 0)
+        {
+          Float_t lRapK0s = v0->Y(310);
+          if (TMath::Abs(lRapK0s) < 0.5)
+          {
+            Float_t ctauK0s = lV0DecayLength * lInvMassK0s / v0->P();
+            if (ctauK0s < 20)
+            {
+              if (TMath::Abs(NSigmasPosPion) < 5.0 && TMath::Abs(NSigmasNegPion) < 5.0)
+              {
+                ((TH1F *)(fOutputList->FindObject("hinvmassK0s")))->Fill(lInvMassK0s);
+                invmK0s = v0->GetEffMass();
+                invpK0s = v0->P();
+                invptK0s = v0->Pt();
+                invyK0s = lRapK0s;
+                flatenicityK0s = 1.0 - flat;
+                ((TTree *)(fOutputList->FindObject("treeK0s")))->Fill();
+              }
+            }
+          }
+        }
+      }
     }
+
     Float_t massLambda = 1.11568;
 
     v0->ChangeMassHypothesis(3122);
     lInvMassLambda = v0->GetEffMass();
-    if (TMath::Abs(lInvMassLambda - massLambda) < 0.1)
+    if (lInvMassLambda < lUpperLimitLambda && lInvMassLambda > lLowerLimitLambda)
     {
-      if (lV0CosineOfPointingAngle < 0.995)
-        continue;
+      if (lV0CosineOfPointingAngle > 0.995)
+      {
+        Float_t lPtLambda = v0->Pt();
+        Float_t lPzLambda = v0->Pz();
+        if (lPtLambda != 0)
+        {
+          Float_t lRapLambda = v0->Y(3122);
+          if (TMath::Abs(lRapLambda) < 0.5)
+          {
+            Float_t ctauLambda = lV0DecayLength * lInvMassLambda / v0->P();
+            if (ctauLambda < 30)
+            {
+              if (TMath::Abs(NSigmasPosProton) < 5.0 && TMath::Abs(NSigmasNegPion) < 5.0)
+              {
+                invmLambda = v0->GetEffMass();
+                invpLambda = v0->P();
+                invptLambda = v0->Pt();
+                invyLambda = lRapLambda;
+                flatenicityLambda = 1.0 - flat;
 
-      Float_t lPtLambda = v0->Pt();
-      Float_t lPzLambda = v0->Pz();
-      if (lPtLambda == 0)
-        continue;
-      Float_t lRapLambda = v0->Y(3122);
-      if (TMath::Abs(lRapLambda) > 0.5)
-        continue;
-      Float_t ctauLambda = lV0DecayLength * lInvMassLambda / v0->P();
-      if (ctauLambda > 30)
-        continue;
-
-      invmLambda = v0->GetEffMass();
-      invpLambda = v0->P();
-      invptLambda = v0->Pt();
-      invyLambda = lRapLambda;
-      flatenicityLambda = 1.0 - flat;
-
-      ((TTree *)(fOutputList->FindObject("treeLambda")))->Fill();
-      ((TH1F *)(fOutputList->FindObject("hinvmassLambda")))
-          ->Fill(lInvMassLambda);
+                ((TTree *)(fOutputList->FindObject("treeLambda")))->Fill();
+                ((TH1F *)(fOutputList->FindObject("hinvmassLambda")))->Fill(lInvMassLambda);
+              }
+            }
+          }
+        }
+      }
     }
 
     v0->ChangeMassHypothesis(-3122);
 
     lInvMassAntiLambda = v0->GetEffMass();
 
-    if (TMath::Abs(lInvMassAntiLambda - massLambda) < 0.1)
+    if (lInvMassAntiLambda < lUpperLimitLambda && lInvMassAntiLambda > lLowerLimitLambda)
     {
-      if (lV0CosineOfPointingAngle < 0.995)
-        continue;
+      if (lV0CosineOfPointingAngle > 0.995)
+      {
+        Float_t lPtAntiLambda = v0->Pt();
+        Float_t lPzAntiLambda = v0->Pz();
 
-      Float_t lPtAntiLambda = v0->Pt();
-      Float_t lPzAntiLambda = v0->Pz();
+        if (lPtAntiLambda != 0)
+        {
+          Float_t lRapAntiLambda = v0->Y(-3122);
+          if (TMath::Abs(lRapAntiLambda) < 0.5)
+          {
+            Float_t ctauAntiLambda = lV0DecayLength * lInvMassAntiLambda / v0->P();
+            if (ctauAntiLambda < 30)
+            {
+              if (TMath::Abs(NSigmasNegProton) < 5.0 && TMath::Abs(NSigmasPosPion) < 5.0)
+              {
+                invmAntiLambda = v0->GetEffMass();
+                invpAntiLambda = v0->P();
+                invptAntiLambda = v0->Pt();
+                invyAntiLambda = lRapAntiLambda;
+                flatenicityAntiLambda = 1.0 - flat;
 
-      if (lPtAntiLambda == 0)
-        continue;
-      Float_t lRapAntiLambda = v0->Y(-3122);
-      if (TMath::Abs(lRapAntiLambda) > 0.5)
-        continue;
-      Float_t ctauAntiLambda = lV0DecayLength * lInvMassAntiLambda / v0->P();
-      if (ctauAntiLambda > 30)
-        continue;
-
-      invmAntiLambda = v0->GetEffMass();
-      invpAntiLambda = v0->P();
-      invptAntiLambda = v0->Pt();
-      invyAntiLambda = lRapAntiLambda;
-      flatenicityAntiLambda = 1.0 - flat;
-
-      ((TTree *)(fOutputList->FindObject("treeAntiLambda")))->Fill();
-      ((TH1F *)(fOutputList->FindObject("hinvmassAntiLambda")))
-          ->Fill(lInvMassAntiLambda);
+                ((TTree *)(fOutputList->FindObject("treeAntiLambda")))->Fill();
+                ((TH1F *)(fOutputList->FindObject("hinvmassAntiLambda")))->Fill(lInvMassAntiLambda);
+              }
+            }
+          }
+        }
+      }
     }
   }
 

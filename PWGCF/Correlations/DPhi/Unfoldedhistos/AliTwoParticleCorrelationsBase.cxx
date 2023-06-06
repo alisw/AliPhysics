@@ -56,6 +56,7 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase()
     fPt(nullptr),
     fEta(nullptr),
     fPhi(nullptr),
+    fPID(nullptr),
     /* correction weights */
     fCorrectionWeights{},
     /* efficiency correction */
@@ -82,6 +83,7 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase()
     fMin_phi(0.0),
     fMax_phi(TMath::Pi() * 2.0),
     fWidth_phi(TMath::Pi() * 2.0 / 72.0),
+    fExcludeTOFHole(false),
     /* eta bins */
     fNBins_eta(20),
     fMin_eta(-1.0),
@@ -91,10 +93,10 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase()
     fNBins_etaPhiPt(25920),
     fNBins_zEtaPhiPt(1036800),
     /* accumulated values */
-    fN1{0.0},
-    fNnw1{0.0},
-    fSum1Pt{0.0},
-    fSum1Ptnw{0.0},
+    fN1{},
+    fNnw1{},
+    fSum1Pt{},
+    fSum1Ptnw{},
     /* histograms */
     fhN1_vsPt{},
     fhN1_vsEtaPhi{},
@@ -107,6 +109,8 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase()
     fhN1nw_vsC{},
     fhSum1Ptnw_vsC{},
     fSpeciesNames{},
+    fPreRejectResonances(false),
+    fPostRejectResonances(false),
     fhResonanceRoughMasses(NULL),
     fhResonanceMasses(NULL),
     fhDiscardedResonanceMasses(NULL)
@@ -133,6 +137,7 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase(const char* name)
     fPt(nullptr),
     fEta(nullptr),
     fPhi(nullptr),
+    fPID(nullptr),
     /* correction weights */
     fCorrectionWeights{},
     /* efficiency correction */
@@ -159,6 +164,7 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase(const char* name)
     fMin_phi(0.0),
     fMax_phi(TMath::Pi() * 2.0),
     fWidth_phi(TMath::Pi() * 2.0 / 72.0),
+    fExcludeTOFHole(false),
     /* eta bins */
     fNBins_eta(20),
     fMin_eta(-1.0),
@@ -168,10 +174,10 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase(const char* name)
     fNBins_etaPhiPt(25920),
     fNBins_zEtaPhiPt(1036800),
     /* accumulated values */
-    fN1{0.0},
-    fNnw1{0.0},
-    fSum1Pt{0.0},
-    fSum1Ptnw{0.0},
+    fN1{},
+    fNnw1{},
+    fSum1Pt{},
+    fSum1Ptnw{},
     /* histograms */
     fhN1_vsPt{},
     fhN1_vsEtaPhi{},
@@ -184,6 +190,8 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase(const char* name)
     fhN1nw_vsC{},
     fhSum1Ptnw_vsC{},
     fSpeciesNames{},
+    fPreRejectResonances(false),
+    fPostRejectResonances(false),
     fhResonanceRoughMasses(NULL),
     fhResonanceMasses(NULL),
     fhDiscardedResonanceMasses(NULL)
@@ -200,6 +208,7 @@ AliTwoParticleCorrelationsBase::~AliTwoParticleCorrelationsBase() {
   delete[] fPt;
   delete[] fEta;
   delete[] fPhi;
+  delete[] fPID;
 
   if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
       delete fOutput;
@@ -220,8 +229,17 @@ Bool_t AliTwoParticleCorrelationsBase::ConfigureBinning(const char *confstring) 
 
   TObjArray *a = stritem.Tokenize(",");
   if (a->GetEntries() != DPTDPTCORRBINCONFIGPAR) {
-    delete a;
-    return false;
+    if (a->GetEntries() != DPTDPTCORRBINCONFIGPAR+1) {
+      delete a;
+      return false;
+    } else {
+      if (TString(a->At(DPTDPTCORRBINCONFIGPAR)->GetName()).EqualTo("TOF")) {
+        fExcludeTOFHole = true;
+      } else {
+        delete a;
+        return false;
+      }
+    }
   }
   sscanf(stritem, "%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%lf,%d",
       &fMin_vertexZ, &fMax_vertexZ, &fWidth_vertexZ,
@@ -244,14 +262,34 @@ Bool_t AliTwoParticleCorrelationsBase::ConfigureBinning(const char *confstring) 
 /// Basically one digit per supported resonance and the digit is the factor in one fourth
 /// of the modulus around the resonance mass
 void AliTwoParticleCorrelationsBase::ConfigureResonances(const char *confstring) {
+  AliInfo(TString::Format("Resonances code string: %s", confstring));
 
   /* few sanity checks */
   TString str = confstring;
   if (!str.Contains("resonances:"))
     return;
+  if (str.Length() > 45) {
+    AliFatal(TString::Format("Resonances string suspisciouslly large %d: %s", str.Length(), str.Data()).Data());
+  }
+  if (!str.Contains(" ")) {
+    AliFatal(TString::Format("Resonances string with old format: %s", str.Data()).Data());
+  }
 
   Int_t rescode;
-  sscanf(str.Data(), "resonances:%d", &rescode);
+  char prepost[32] = "";
+  sscanf(str.Data(), "resonances:%s %d", prepost, &rescode);
+
+  if (TString(prepost).Contains("pre")) {
+    fPreRejectResonances = true;
+  }
+  if (TString(prepost).Contains("post")) {
+    fPostRejectResonances = true;
+  }
+  if (TString(prepost).Contains("none")) {
+    fPreRejectResonances = false;
+    fPostRejectResonances = false;
+  }
+
   Int_t mult = 1;
   for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
     fThresholdMult[ires] = Int_t(rescode / mult) % 10;
@@ -266,16 +304,28 @@ void AliTwoParticleCorrelationsBase::ConfigureResonances(const char *confstring)
 /// \return the configuration string corresponding to the current configuration
 TString AliTwoParticleCorrelationsBase::GetBinningConfigurationString() const
 {
-  return TString::Format("%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%d",
+  return TString::Format("%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%d%s",
                          fMin_vertexZ, fMax_vertexZ, fWidth_vertexZ,
                          fMin_pt, fMax_pt, fWidth_pt,
-                         fMin_eta, fMax_eta, fWidth_eta, fNBins_phi);
+                         fMin_eta, fMax_eta, fWidth_eta, fNBins_phi,
+                         fExcludeTOFHole ? ",TOF" : "");
 }
 
 /// \brief Build the resonances rejection configuration string
 /// \return the configuration string corresponding to the current resonance rejection configuration
 TString AliTwoParticleCorrelationsBase::GetResonancesConfigurationString() const {
   TString str = "resonances:";
+  if (fPreRejectResonances) {
+    str += "pre";
+  }
+  if (fPostRejectResonances) {
+    str += "post";
+  }
+  if (!fPreRejectResonances && !fPostRejectResonances) {
+    str += "none";
+  }
+
+  str += " ";
 
   for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
     str += TString::Format("%01d",fThresholdMult[fgkNoOfResonances - 1 - ires]);
@@ -287,6 +337,13 @@ void AliTwoParticleCorrelationsBase::SetSpeciesNames(std::vector<std::string> na
 {
   fSpeciesNames.clear();
   fSpeciesNames.assign(names.begin(), names.end());
+
+  for (auto s : fSpeciesNames) {
+    fN1.push_back(0.0);
+    fSum1Pt.push_back(0.0);
+    fNnw1.push_back(0.0);
+    fSum1Ptnw.push_back(0.0);
+  }
 }
 
 /// \brief Initializes the member data structures
@@ -322,6 +379,8 @@ void AliTwoParticleCorrelationsBase::Initialize()
   fOutput->Add(new TParameter<Double_t>("MaxEta", fMax_eta, 'f'));
   fOutput->Add(new TParameter<Double_t>("MinPhi", fMin_phi, 'f'));
   fOutput->Add(new TParameter<Double_t>("MaxPhi", fMax_phi, 'f'));
+  fOutput->Add(new TParameter<Double_t>("NoBinsPhiShift", fNBinsPhiShift, 'f'));
+  fOutput->Add(new TParameter<bool>("ExcludeTOFHole", fExcludeTOFHole, 'f'));
 
   /* incorporate the resonance rejection configuration parameter */
   Int_t rescode = 0;
@@ -341,6 +400,7 @@ void AliTwoParticleCorrelationsBase::Initialize()
   fPt = new Float_t[fArraySize];
   fEta = new Float_t[fArraySize];
   fPhi = new Float_t[fArraySize];
+  fPID = new int[fArraySize];
 
   if (fSinglesOnly)  {
     for (uint i = 0; i < fSpeciesNames.size(); ++i) {
@@ -391,6 +451,12 @@ void AliTwoParticleCorrelationsBase::Initialize()
     }
   }
   TH1::AddDirectory(oldstatus);
+
+  /* after histogram creation the proper phi upper limit is set according to inclusion or not of the TOF hole */
+  if (fExcludeTOFHole) {
+    const int nPhiBinsTOFHole = 25;
+    fMax_phi = fMax_phi - fWidth_phi * nPhiBinsTOFHole;
+  }
 }
 
 /// \brief Stores the correction weights for the different track species
@@ -641,48 +707,116 @@ Bool_t AliTwoParticleCorrelationsBase::StartEvent(Float_t centrality, Float_t ve
   return kTRUE;
 }
 
+/// \brief check if the track is accepted according to the correlations cuts
+///
+/// \param trk the passed track
+/// \return kTRUE if the track is accepted kFALSE otherwise
+bool AliTwoParticleCorrelationsBase::IsTrackAccepted(AliVTrack* trk)
+{
+  return IsTrackAccepted(float(trk->Pt()), float(trk->Eta()), float(trk->Phi()));
+}
+
+/// \brief check if the true particle is accepted according to the correlations cuts
+///
+/// \param part the passed particle
+/// \return kTRUE if the particle is properly handled kFALSE otherwise
+bool AliTwoParticleCorrelationsBase::IsTrackAccepted(AliVParticle* part)
+{
+  if (part->Charge() != 0) {
+    return IsTrackAccepted(float(part->Pt()), float(part->Eta()), float(part->Phi()));
+  }
+  else {
+    return kFALSE;
+  }
+}
+
+/// \brief checks if the track is accepted according to the configured cuts 
+/// \param pT the track \f$ p_T \f$
+/// \param eta the track \f$ \eta \f$
+/// \param phi the track \f$ \phi \f$
+/// \return kTRUE if the track is accepted
+/// This is a pre-check so for the time being the pT cut is not checked
+/// to allow PID information depending on momentum
+bool AliTwoParticleCorrelationsBase::IsTrackAccepted(float, float eta, float ophi)
+{
+  /* consider a potential phi origin shift */
+  float phi = ophi;
+  if (!(phi < fMax_phi))
+    phi = phi - 2 * TMath::Pi();
+  if (phi < fMin_phi) {
+    return kFALSE;
+  }
+  float ixPhi = int((phi - fMin_phi) / fWidth_phi);
+  if (ixPhi < 0 || !(ixPhi < fNBins_phi)) {
+    return kFALSE;
+  }
+
+  if (eta < fMin_eta || fMax_eta < eta) {
+    return kFALSE;
+  }
+
+  int ixEta = int((eta - fMin_eta) / fWidth_eta);
+  if (ixEta < 0 || !(ixEta < fNBins_eta)) {
+    return kFALSE;
+  }
+  return kTRUE;
+}
+
+
 /// \brief process a track and store its parameters if feasible
 ///
 /// If simulation is ordered the actual track is discarded and a new one with the
 /// same charge is produced out of the corresponding track pdf
-/// \param trkId the external track Id
+/// \param pid the external track Id
 /// \param trk the passed track
 /// \return kTRUE if the track is properly handled kFALSE otherwise
 bool AliTwoParticleCorrelationsBase::ProcessTrack(int pid, AliVTrack* trk)
 {
 
   if (fUseSimulation) {
-    double pT;
-    double eta;
-    double phi;
+    if (pid > 1) {
+      AliFatal("Simulation still not prepared for PID");
+      return false;
+    } else {
+      double pT;
+      double eta;
+      double phi;
 
-    fTrackCurrentPdf[pid]->GetRandom3(eta, phi, pT);
+      fTrackCurrentPdf[pid]->GetRandom3(eta, phi, pT);
 
-    return ProcessTrack((trk->Charge() > 0) ? 0 : 1, pT, eta, phi);
+      return ProcessTrack((trk->Charge() > 0) ? 0 : 1, pT, eta, phi);
+    }
+  } else {
+    if (trk->Charge() > 0) {
+      return ProcessTrack(2*pid, float(trk->Pt()), float(trk->Eta()), float(trk->Phi()));
+    } else if (trk->Charge() < 0) {
+      return ProcessTrack(2*pid+1, float(trk->Pt()), float(trk->Eta()), float(trk->Phi()));
+    } else {
+      return kFALSE;
+    }
   }
-  else
-    return ProcessTrack((trk->Charge() > 0) ? 0 : 1, float(trk->Pt()), float(trk->Eta()), float(trk->Phi()));
 }
 
 /// \brief process a true particle and store its parameters if feasible
 ///
 /// If simulation is orderd the track is discarded and kFALSE is returned
-/// \param trkId the external particle Id
+/// \param pid the external particle Id
 /// \param part the passed particle
 /// \return kTRUE if the particle is properly handled kFALSE otherwise
-bool AliTwoParticleCorrelationsBase::ProcessTrack(int, AliVParticle* part)
+bool AliTwoParticleCorrelationsBase::ProcessTrack(int pid, AliVParticle* part)
 {
 
   if (fUseSimulation) {
     return kFALSE;
-  }
-  else
-    if (part->Charge() != 0) {
-    return ProcessTrack((part->Charge() > 0) ? 0 : 1, float(part->Pt()), float(part->Eta()), float(part->Phi()));
-    }
-    else {
+  } else {
+    if (part->Charge() > 0) {
+      return ProcessTrack(2*pid, float(part->Pt()), float(part->Eta()), float(part->Phi()));
+    } else if (part->Charge() < 0) {
+      return ProcessTrack(2*pid+1, float(part->Pt()), float(part->Eta()), float(part->Phi()));
+    } else {
       return kFALSE;
     }
+  }
 }
 
 /// \brief Flag the potential products of conversions and / or resonances
@@ -692,14 +826,16 @@ void AliTwoParticleCorrelationsBase::FlagConversionsAndResonances() {
   for (Int_t ix1 = 0; ix1 < fNoOfTracks; ix1++) {
       for (Int_t ix2 = ix1 + 1; ix2 < fNoOfTracks; ix2++) {
 
-      for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
-        if (fThresholdMult[ires] != 0) {
-          Float_t mass = checkIfResonance(ires, kTRUE, ix1, ix2);
+      if (fPID[ix1] != fPID[ix2]) {
+        for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
+          if (fThresholdMult[ires] != 0) {
+            Float_t mass = checkIfResonance(ires, kTRUE, fPt[ix1], fEta[ix1], fPhi[ix1], fPt[ix2], fEta[ix2], fPhi[ix2]);
 
-          if (0 < mass) {
-            fFlags[ix1] |= (0x1 << ires);
-            fFlags[ix2] |= (0x1 << ires);
-            fhResonanceMasses->Fill(ires,TMath::Sqrt(mass));
+            if (0 < mass) {
+              fFlags[ix1] |= (0x1 << ires);
+              fFlags[ix2] |= (0x1 << ires);
+              fhResonanceMasses->Fill(ires, TMath::Sqrt(mass));
+            }
           }
         }
       }

@@ -3117,7 +3117,7 @@ void AliHFSystErr::InitNonPromptLctopK0s20161718pp13TeVML() {
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",16,0,16);
   fTrackingEff->SetBinContent(1,1.00);
   fTrackingEff->SetBinContent(2,1.00);
-  for(Int_t i=3;i<=12;i++) fTrackingEff->SetBinContent(i,0.04);
+  for(Int_t i=3;i<=12;i++) fTrackingEff->SetBinContent(i,TMath::Sqrt(0.04*0.04 + 0.05*0.05)); // 4%: trk, 5%: mat. budg. 
   for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,1);
 
   // Raw yield extraction

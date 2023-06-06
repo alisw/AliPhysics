@@ -1,0 +1,60 @@
+configurationName: "EMCal MC Correction Cluster V2 Run2, cross talk emulation off"
+pass: "pass1"
+CellEnergy:
+    enabled: false
+    createHistos: false
+CellBadChannel:
+    enabled: true
+    createHistos: true
+CellTimeCalib:
+    enabled: false
+    createHistos: false
+Clusterizer:
+    enabled: true
+    clusterizer: kClusterizerv3
+    cellE: 0.1
+    seedE: 0.5
+    cellTimeMin: -500e-6
+    cellTimeMax:  500e-6
+    clusterTimeLength: 1e6
+    createHistos: true
+    recalDistToBadChannels: true
+    recalShowerShape: false
+    remapMcAod: true
+    setCellMCLabelFromCluster: 0   # use 2 if V1 and E cell 50 MeV
+    enableFracEMCRecalc: true
+ClusterExotics:
+    enabled: true
+    createHistos: true
+ClusterNonLinearity:
+    enabled: true
+    setForceClusterE: true
+    createHistos: true
+    nonLinFunct: kTestBeamFinalMC 
+ClusterNonLinearityMCAfterburner:
+    enabled: true
+    afterburnerVersion: kPCM_EMCal
+    setForceClusterE: true
+    createHistos: true
+    setMCPeriod: "kTestBeamFinalMCRun2"
+ClusterTrackMatcher:
+    enabled: true
+    createHistos: true
+CellEmulateCrosstalk:                               # Component to emulate crosstalk
+    enabled: false                                   # Whether to enable the task
+    createHistos: false                              # Whether the task should create output histograms
+    printConfiguration: false                        # Print the configuration after initialization
+
+#executionOrder:
+#    - CellEmulateCrosstalk
+#    - CellEnergy
+#    - CellBadChannel
+#    - CellTimeCalib
+#    - CellCombineCollections
+#    - Clusterizer
+#    - ClusterExotics
+#    - ClusterNonLinearity
+#    - ClusterTrackMatcher
+#    - ClusterHadronicCorrection
+#    - PHOSCorrections
+

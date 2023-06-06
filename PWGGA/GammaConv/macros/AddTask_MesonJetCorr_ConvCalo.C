@@ -59,6 +59,8 @@ void AddTask_MesonJetCorr_ConvCalo(
   Double_t smearPar = 0.,                // conv photon smearing params
   Double_t smearParConst = 0.,           // conv photon smearing params
   Bool_t doPrimaryTrackMatching = kTRUE, // enable basic track matching for all primary tracks to cluster
+  bool useCentralEvtSelection = true,
+  bool setPi0Unstable = false,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig
 )
@@ -77,6 +79,7 @@ void AddTask_MesonJetCorr_ConvCalo(
   TString fileNameMultWeights = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FMUW:");
   TString fileNamedEdxPostCalib = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FEPC:");
   TString fileNameCustomTriggerMimicOADB = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FTRM:");
+  TString fileNameMatBudWeights = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FMAW:");
 
   TString corrTaskSetting = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "CF", "", addTaskName);
   if (corrTaskSetting.CompareTo(""))
@@ -188,38 +191,57 @@ void AddTask_MesonJetCorr_ConvCalo(
   //---------------------------------------
   // configs for pi0 meson pp 13 TeV
   //---------------------------------------
+  // configs without NonLinearity as the NonLin is already applied in the CF
   if (trainConfig == 1) {
-    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790109fe30230000", "0r63103100000010"); // test config
+    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790009fe30230000", "0r63103100000010"); // test config
   } else if (trainConfig == 2) {
-    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2s63103400000010"); // in-Jet, mass cut pi0: 0.1-0.15, rotation back
+    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s63103400000010"); // in-Jet, mass cut pi0: 0.1-0.15, rotation back
   } else if (trainConfig == 3) {
-    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2163103400000010"); // in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
+    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2163103400000010"); // in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
   } else if (trainConfig == 4) {
-    cuts.AddCutPCMCalo("0008e103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2s63103400000010"); // EG2 in-Jet, mass cut pi0: 0.1-0.15, rotation back
+    cuts.AddCutPCMCalo("0008e103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s63103400000010"); // EG2 in-Jet, mass cut pi0: 0.1-0.15, rotation back
   } else if (trainConfig == 5) {
-    cuts.AddCutPCMCalo("0008d103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2s63103400000010"); // EG1 in-Jet, mass cut pi0: 0.1-0.15, rotation back
+    cuts.AddCutPCMCalo("0008d103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s63103400000010"); // EG1 in-Jet, mass cut pi0: 0.1-0.15, rotation back
   } else if (trainConfig == 6) {
-    cuts.AddCutPCMCalo("0009c103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2s63103400000010"); // Jet low trigg in-Jet, mass cut pi0: 0.1-0.15, rotation back
+    cuts.AddCutPCMCalo("0009c103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s63103400000010"); // Jet low trigg in-Jet, mass cut pi0: 0.1-0.15, rotation back
   } else if (trainConfig == 7) {
-    cuts.AddCutPCMCalo("0009b103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2s63103400000010"); // Jet high trigg in-Jet, mass cut pi0: 0.1-0.15, rotation back
+    cuts.AddCutPCMCalo("0009b103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s63103400000010"); // Jet high trigg in-Jet, mass cut pi0: 0.1-0.15, rotation back
 
 
   } else if (trainConfig == 14) { // same as 4 but with jet mixing back
-    cuts.AddCutPCMCalo("0008e103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2163103400000010"); // EG2 in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
+    cuts.AddCutPCMCalo("0008e103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2163103400000010"); // EG2 in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
   } else if (trainConfig == 15) { // same as 5 but with jet mixing back
-    cuts.AddCutPCMCalo("0008d103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2163103400000010"); // EG1 in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
+    cuts.AddCutPCMCalo("0008d103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2163103400000010"); // EG1 in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
   } else if (trainConfig == 16) { // same as 6 but with jet mixing back
-    cuts.AddCutPCMCalo("0009c103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2163103400000010"); // Jet low trigg in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
+    cuts.AddCutPCMCalo("0009c103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2163103400000010"); // Jet low trigg in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
   } else if (trainConfig == 17) { // same as 7 but with jet mixing back
-    cuts.AddCutPCMCalo("0009b103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2163103400000010"); // Jet high trigg in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
+    cuts.AddCutPCMCalo("0009b103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2163103400000010"); // Jet high trigg in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
   
+
+  // configs with NonLinearity 
+  } else if (trainConfig == 21) {
+    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790109fe30230000", "0r63103100000010"); // test config
+  } else if (trainConfig == 22) {
+    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2s63103400000010"); // in-Jet, mass cut pi0: 0.1-0.15, rotation back
+  } else if (trainConfig == 23) {
+    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2163103400000010"); // in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
+  } else if (trainConfig == 24) {
+    cuts.AddCutPCMCalo("0008e103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2s63103400000010"); // EG2 in-Jet, mass cut pi0: 0.1-0.15, rotation back
+  } else if (trainConfig == 25) {
+    cuts.AddCutPCMCalo("0008d103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2s63103400000010"); // EG1 in-Jet, mass cut pi0: 0.1-0.15, rotation back
+  } else if (trainConfig == 26) {
+    cuts.AddCutPCMCalo("0009c103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2s63103400000010"); // Jet low trigg in-Jet, mass cut pi0: 0.1-0.15, rotation back
+  } else if (trainConfig == 27) {
+    cuts.AddCutPCMCalo("0009b103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2s63103400000010"); // Jet high trigg in-Jet, mass cut pi0: 0.1-0.15, rotation back
+
+
     //---------------------------------------
     // configs for eta meson pp 13 TeV
     //---------------------------------------
   } else if (trainConfig == 1002) {
-    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2r63103l00000010"); // in-Jet, mass cut eta: 0.5-0.6, rotation back
+    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2r63103l00000010"); // in-Jet, mass cut eta: 0.5-0.6, rotation back
   } else if (trainConfig == 1003) {
-    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2163103l00000010"); // in-Jet, mass cut eta: 0.5-0.6, mixed jet back
+    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2163103l00000010"); // in-Jet, mass cut eta: 0.5-0.6, mixed jet back
   } else {
     Error(Form("MesonJetCorrelation_ConvCalo_%i", trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
@@ -314,14 +336,16 @@ void AddTask_MesonJetCorr_ConvCalo(
     //---------------------------------------------------------//
     analysisConvCuts[i] = new AliConversionPhotonCuts();
 
-    // if (enableMatBudWeightsPi0 > 0){
-    //   if (isMC > 0){
-    // if (analysisConvCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
-    //   initializedMatBudWeigths_existing = kTRUE;}
-    // else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
-    //   }
-    //   else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
-    // }
+    if (enableMatBudWeightsPi0 > 0){
+      if (isMC > 0){
+        if (!analysisConvCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
+          cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;
+          enableMatBudWeightsPi0 = false;
+        }
+      } else {
+        cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;
+      }
+    }
 
     analysisConvCuts[i]->SetV0ReaderName(V0ReaderName);
     if (enableElecDeDxPostCalibration) {
@@ -373,11 +397,13 @@ void AddTask_MesonJetCorr_ConvCalo(
   task->SetCaloCutList(numberOfCuts, ClusterCutList);
   task->SetMesonCutList(numberOfCuts, MesonCutList);
   task->SetConversionCutList(numberOfCuts, ConvCutList);
-  //   task->SetDoMesonAnalysis(kTRUE); // I think we dont need that!
+  if(enableMatBudWeightsPi0) task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(true);
   task->SetCorrectionTaskSetting(corrTaskSetting);
   task->SetDoMesonQA(enableQAMesonTask); //Attention new switch for Pi0 QA
                                          //   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetUseTHnSparseForResponse(enableTHnSparse);
+  task->SetDoUseCentralEvtSelection(useCentralEvtSelection);
+  task->SetForcePi0Unstable(setPi0Unstable);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_ConvCalo_%i_%i%s%s", meson, trainConfig, corrTaskSetting.EqualTo("") == true ? "" : Form("_%s", corrTaskSetting.Data()), nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );

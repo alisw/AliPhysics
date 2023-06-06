@@ -351,6 +351,7 @@ AliConvEventCuts::AliConvEventCuts(const AliConvEventCuts &ref) :
   fMinFacPtHard(ref.fMinFacPtHard),
   fMaxFacPtHard(ref.fMaxFacPtHard),
   fMaxFacPtHardSingleParticle(ref.fMaxFacPtHardSingleParticle),
+  fMimicTrigger(ref.fMimicTrigger),
   fINELgtZEROTrigger(ref.fINELgtZEROTrigger),
   fPathTriggerMimicSpecialInput(ref.fPathTriggerMimicSpecialInput),
   fRejectTriggerOverlap(ref.fRejectTriggerOverlap),
@@ -2959,6 +2960,7 @@ Bool_t AliConvEventCuts::GetUseNewMultiplicityFramework(){
     case kLHC17g8a :
     case kLHC17d2a :
     case kLHC17d2b :
+    case kLHC20f11c :
     // pPb 8 TeV
     case kLHC16r :
     case kLHC16s :
@@ -5862,6 +5864,7 @@ Bool_t AliConvEventCuts::IsEventINELgtZERO(AliVEvent *event)
     }
     return MultSelectionTask->GetThisEventINELgtZERO();
   }
+  return kFALSE;
 }
 
 //________________________________________________________________________
@@ -6467,7 +6470,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
   fIsSDDFired = !(fInputHandler->IsEventSelected() & AliVEvent::kFastOnly);
 
   Bool_t mimickedTrigger = kTRUE;
-  if (fMimicTrigger)
+  if (fMimicTrigger){
     if(isMC){
       mimickedTrigger = MimicTrigger(event, isMC);
     } else {
@@ -6476,7 +6479,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
       if(isSelected) mimickedTrigger = MimicTrigger(event, isMC);
     }
   // cout << "mimicked decision \t" << mimickedTrigger << "expect decision? "<< fMimicTrigger<< endl;
-
+  }
   Bool_t isINELgtZERO = kFALSE;
   if(fINELgtZEROTrigger) isINELgtZERO = IsEventINELgtZERO(event);
 
@@ -8753,6 +8756,10 @@ void AliConvEventCuts::SetPeriodEnum (TString periodName){
   } else if (periodName.CompareTo("LHC17d2b") == 0 || periodName.CompareTo("LHC17d2b_fast") == 0 || periodName.CompareTo("LHC17d2b_cent") == 0 ){
     fPeriodEnum = kLHC17d2b;
     fEnergyEnum = kpPb5TeVR2;
+  } else if (periodName.Contains("LHC20f11c")) {
+    fPeriodEnum = kLHC20f11c;
+    fEnergyEnum = kpPb5TeVR2;
+
     // LHC16r anchored MCs
   } else if (periodName.CompareTo("LHC17a3a") == 0      || periodName.CompareTo("LHC17a3a_fast") == 0 ||
              periodName.CompareTo("LHC17a3a_cent") == 0 || periodName.CompareTo("LHC17a3a_cent_woSDD") == 0){

@@ -58,6 +58,7 @@ fUseLeadingPtUEFactor(0), fLeadingPtUEFactor(10000),
 fUseMaxPtUE(0),      fMaxPtUE(1000),
 fJetRhoTaskName(""),
 fDebug(0),           fMomentum(),                   fTrackVector(),
+fDMCEtaGap(-1),      fDMCPhiMin(-1),                fDMCPhiMax(-1),
 fEMCEtaSize(-1),     fEMCPhiMin(-1),                fEMCPhiMax(-1),
 fTPCEtaSize(-1),     fTPCPhiSize(-1),
 // Histograms
@@ -67,7 +68,9 @@ fhPtClusterInCone(0),                       fhPtTrackInCone(0),
 fhPtInConeCent(0),
 fhPtClusterInConeCent(0),                   fhPtTrackInConeCent(0),
 fhConeSumPt(0),      
-fhConeSumPtCluster(0),                      fhConeSumPtTrack(0),
+fhConeSumPtCluster(0),                      fhConeSumPtClusterMatched(0),
+fhConeSumPtClusterMatchedFraction(0),       fhConeSumPtClusterMatchedFraction3D(0),
+fhConeSumPtTrack(0),
 fhConeSumPtClustervsTrack(0),               fhConeSumPtClusterTrackFrac(0),            
 fhConeSumPtTrigEtaPhi(0),
 fhConeSumPtTrackTrigEtaPhi(0),              fhConeSumPtClusterTrigEtaPhi(0),
@@ -266,7 +269,7 @@ void AliIsolationCut::CalculateCaloSignalInCone
   // Get the clusters in the cone
   //
   //printf("Loop calo\n");
-
+  Float_t coneptsumClusterMatched = 0;
   for(Int_t ipr = 0;ipr < plNe->GetEntries() ; ipr ++ )
   {
     AliVCluster * calo = dynamic_cast<AliVCluster *>(plNe->At(ipr)) ;
@@ -281,16 +284,6 @@ void AliIsolationCut::CalculateCaloSignalInCone
       // Do not count the candidate (photon or pi0) or the daughters of the candidate
       if ( calo->GetID() == pCandidate->GetCaloLabel(0) ||
            calo->GetID() == pCandidate->GetCaloLabel(1)   ) continue ;
-      
-      // Skip matched clusters with tracks in case of neutral+charged analysis
-      if ( fIsTMClusterInConeRejected )
-      {
-        Bool_t bRes = kFALSE, bEoP = kFALSE;
-        Bool_t matched = pid->IsTrackMatched(calo, reader->GetCaloUtils(), 
-                                             reader->GetInputEvent(),
-                                             bEoP,bRes);
-        if ( fPartInCone == kNeutralAndCharged && matched ) continue ;
-      }
       
       // Assume that come from vertex in straight line
       calo->GetMomentum(fMomentum,reader->GetVertex(evtIndex)) ;
@@ -369,6 +362,29 @@ void AliIsolationCut::CalculateCaloSignalInCone
     
     AliDebug(2,"Inside candidate cone");
     
+    // Skip matched clusters with tracks in case of neutral+charged analysis
+    if ( calo )
+    {
+      Bool_t bRes = kFALSE, bEoP = kFALSE;
+      Bool_t matched = pid->IsTrackMatched(calo, reader->GetCaloUtils(),
+                                           reader->GetInputEvent(),
+                                           bEoP,bRes);
+
+      Float_t dPhi = calo->GetTrackDx();
+
+      AliVTrack *track = reader->GetCaloUtils()->GetMatchedTrack(calo, reader->GetInputEvent());
+
+      if ( TMath::Abs(dPhi) < 999 && track )
+      {
+        Float_t ptTrack = track->Pt();
+        //printf("MATCHED track pt %2.2f, cluster pt %2.2f, min %2.2f, max %2.2f\n",
+        //       ptTrack,pt, reader->GetCTSPtMin(), reader->GetCTSPtMax() );
+        if ( reader->GetCTSPtMin()  < ptTrack && reader->GetCTSPtMax()  > ptTrack )
+          coneptsumClusterMatched+=pt;
+      }
+      if ( fIsTMClusterInConeRejected && fPartInCone == kNeutralAndCharged && matched ) continue ;
+    }
+
     if ( bFillAOD )
     {
       nclusterrefs++;
@@ -591,7 +607,15 @@ void AliIsolationCut::CalculateCaloSignalInCone
       }
       else
       {
-        fhConeSumPtCluster ->Fill(ptC, coneptsumCluster , histoWeight);
+        fhConeSumPtCluster ->Fill(ptC, coneptsumCluster, histoWeight);
+        fhConeSumPtClusterMatched->Fill(ptC, coneptsumClusterMatched, histoWeight);
+        if ( coneptsumCluster > 0 )
+        {
+          //printf("pt %f, Sum pt %2.2f, matched %2.2f\n", ptC, coneptsumCluster, coneptsumClusterMatched);
+          Float_t matchFraction = coneptsumClusterMatched / (coneptsumClusterMatched+coneptsumCluster);
+          fhConeSumPtClusterMatchedFraction  ->Fill(ptC, matchFraction, histoWeight);
+          fhConeSumPtClusterMatchedFraction3D->Fill(ptC, coneptsumCluster, matchFraction, histoWeight);
+        }
         
         if ( fFillEtaPhiHistograms && ptC > fEtaPhiHistogramsMinPt )
           fhConeSumPtClusterTrigEtaPhi ->Fill(etaC, phiC, coneptsumCluster , histoWeight);
@@ -1220,7 +1244,8 @@ void AliIsolationCut::CalculateTrackSignalInCone
 /// Get normalization of cluster background band.
 //_________________________________________________________________________________________________________________________________
 void AliIsolationCut::CalculateUEBandClusterNormalization
-( 
+(
+ Int_t     calorimeter,
  Float_t   etaC,                  Float_t   phiC,
  Float_t   excessEta,             Float_t   excessPhi,         
  Float_t   excessAreaEta,         Float_t   excessAreaPhi,         
@@ -1237,6 +1262,11 @@ void AliIsolationCut::CalculateUEBandClusterNormalization
   if ( fDistMinToTrigger > 0 ) coneAreaGap -= fDistMinToTrigger*fDistMinToTrigger*TMath::Pi();
 
   Float_t fEMCPhiSize = fEMCPhiMax-fEMCPhiMin;
+  // DCal?
+  if ( (phiC > 260*TMath::DegToRad() && phiC < 327*TMath::DegToRad()) &&  calorimeter != AliFiducialCut::kPHOS )
+  {
+    fEMCPhiSize = fDMCPhiMax-fDMCPhiMin;
+  }
   
   Float_t excessEtaGap = excessEta,  excessPhiGap = excessPhi;
   Float_t excessAreaEtaGap = excessAreaEta,  excessAreaPhiGap = excessAreaPhi;
@@ -1397,7 +1427,8 @@ void AliIsolationCut::CalculateExcessAreaFractionForChargedAndNeutral
   excessTrkEta = 0;
   excessClsEta = 0;
   excessClsPhi = 0;
-  
+  Float_t excessClsEta0 = 0;
+
   if ( fPartInCone != kOnlyNeutral )
   {
     if ( TMath::Abs(etaC)+fConeSize > fTPCEtaSize/2. )
@@ -1409,22 +1440,43 @@ void AliIsolationCut::CalculateExcessAreaFractionForChargedAndNeutral
     excessAreaTrkEta = CalculateExcessAreaFraction(excessTrkEta);
   }
 
-  if ( fPartInCone != kOnlyCharged && det == AliCaloTrackReader::kEMCAL )
+  if ( fPartInCone != kOnlyCharged &&
+      (det == AliCaloTrackReader::kEMCAL || det == AliCaloTrackReader::kDCAL || det == AliCaloTrackReader::kPHOS )  )
   {
     if ( TMath::Abs(etaC)+fConeSize > fEMCEtaSize/2. )
       excessClsEta = TMath::Abs(etaC) + fConeSize - fEMCEtaSize/2.;
 
-    if     ( TMath::Abs(phiC)+fConeSize > fEMCPhiMax )
-      excessClsPhi = (TMath::Abs(phiC) + fConeSize) - fEMCPhiMax;
-    else if( TMath::Abs(phiC)-fConeSize < fEMCPhiMin )
-      excessClsPhi = fEMCPhiMin - (TMath::Abs(phiC) - fConeSize) ;
+    if ( phiC < 260*TMath::DegToRad() ) // EMCal
+    {
+      if     ( TMath::Abs(phiC)+fConeSize > fEMCPhiMax )
+        excessClsPhi = (TMath::Abs(phiC) + fConeSize) - fEMCPhiMax;
+      else if( TMath::Abs(phiC)-fConeSize < fEMCPhiMin )
+        excessClsPhi = fEMCPhiMin - (TMath::Abs(phiC) - fConeSize) ;
+    }
+    else if ( TMath::Abs(etaC) >= fDMCEtaGap )// DCal
+    {
+      if ( TMath::Abs(etaC)-fDMCEtaGap < fConeSize )
+        excessClsEta0 = fConeSize - (TMath::Abs(etaC)-fDMCEtaGap);
+      //printf("DCal Eta C %f - R %f, excess %f\n",etaC, fConeSize, excessClsEta0);
+      //printf("PhiC %f, MinPhi %f, MaxPhi %f\n",phiC,fDMCPhiMin,fDMCPhiMax);
 
-    if ( excessClsEta < 0 || excessClsPhi < 0 )
-      AliInfo(Form("Fix negative excess: cls eta %f, cls phi %f",
-                   excessClsEta,excessClsPhi));
+      if     ( TMath::Abs(phiC)+fConeSize > fDMCPhiMax )
+        excessClsPhi = (TMath::Abs(phiC) + fConeSize) - fDMCPhiMax;
+      else if( TMath::Abs(phiC)-fConeSize < fDMCPhiMin )
+        excessClsPhi = fDMCPhiMin - (TMath::Abs(phiC) - fConeSize) ;
+    }
 
-    excessAreaClsEta = CalculateExcessAreaFraction(excessClsEta);
-    excessAreaClsPhi = CalculateExcessAreaFraction(excessClsPhi);
+    if ( excessClsEta < 0 || excessClsEta0 < 0 || excessClsPhi < 0 )
+      AliInfo(Form("Fix negative excess: cls eta %f, eta0 %f, cls phi %f",
+                   excessClsEta, excessClsEta0, excessClsPhi));
+
+    Float_t excessAreaClsEta0 = CalculateExcessAreaFraction(excessClsEta0);
+    //printf("excessAreaClsEta0 %f\n",excessAreaClsEta0);
+    excessAreaClsEta  = CalculateExcessAreaFraction(excessClsEta);
+    //printf("excessAreaClsEta %f\n",excessAreaClsEta);
+    excessAreaClsEta  *= excessAreaClsEta0;
+    excessAreaClsPhi  = CalculateExcessAreaFraction(excessClsPhi);
+    //printf("excessAreaClsPhi %f\n",excessAreaClsPhi);
   }
 }
 
@@ -1441,28 +1493,47 @@ void AliIsolationCut::GetDetectorAngleLimits ( AliCaloTrackReader * reader, Int_
                 reader->GetFiducialCut()->GetEMCALFidCutMinEtaArray()->At(0) ;
   fEMCPhiMin  = reader->GetFiducialCut()->GetEMCALFidCutMinPhiArray()->At(0) ;
   fEMCPhiMax  = reader->GetFiducialCut()->GetEMCALFidCutMaxPhiArray()->At(0) ;
-  
+  if ( fEMCPhiMax > 187 )
+    fEMCPhiMax = 185.8; // Hack!
+//  fDMCEtaGap  = TMath::Abs(reader->GetFiducialCut()->GetDCALFidCutMinEtaArray()->At(0));
+//  fDMCPhiMin  = reader->GetFiducialCut()->GetDCALFidCutMinPhiArray()->At(0) ;
+//  fDMCPhiMax  = reader->GetFiducialCut()->GetDCALFidCutMaxPhiArray()->At(0) ;
+
   if ( calorimeter == AliFiducialCut::kPHOS)
   {
     fEMCEtaSize = reader->GetFiducialCut()->GetPHOSFidCutMaxEtaArray()->At(0) -
                   reader->GetFiducialCut()->GetPHOSFidCutMinEtaArray()->At(0) ;
     fEMCPhiMin  = reader->GetFiducialCut()->GetPHOSFidCutMinPhiArray()->At(0) ;
     fEMCPhiMax  = reader->GetFiducialCut()->GetPHOSFidCutMaxPhiArray()->At(0) ;
+
+    fDMCEtaGap  = 0;
+    fDMCPhiMin  = 0;
+    fDMCPhiMax  = 0;
   }
   
   // Info stored in degrees, put them on radians
   fEMCPhiMin *= TMath::DegToRad();
   fEMCPhiMax *= TMath::DegToRad();
-  
+  fDMCPhiMin *= TMath::DegToRad();
+  fDMCPhiMax *= TMath::DegToRad();
+
   // Get the cut used for the TPC tracks in the reader, +-0.8, +-0.9 ...
   // Only valid in simple fidutial cut case and if the cut is applied, careful!
   fTPCEtaSize = reader->GetFiducialCut()->GetCTSFidCutMaxEtaArray()->At(0) -
                 reader->GetFiducialCut()->GetCTSFidCutMinEtaArray()->At(0) ;
   fTPCPhiSize = TMath::Pi(); // Half TPC tracks with respect trigger candidate inspected
 
-  AliDebug(1,Form("TPC: Deta %2.2f; Dphi %2.2f; Calo: Deta %2.2f, phi min %2.2f, max %2.2f",
+  AliDebug(1,Form("TPC: Deta %2.2f; Dphi %2.2f; Calo: Deta %2.2f, phi min %2.2f, max %2.2f, DCal eta gap %2.2f,  phi min %2.2f, max %2.2f",
                   fTPCEtaSize,fTPCPhiSize,fEMCEtaSize,
-                  fEMCPhiMin*TMath::RadToDeg(),fEMCPhiMax*TMath::RadToDeg()));
+                  fEMCPhiMin*TMath::RadToDeg(),fEMCPhiMax*TMath::RadToDeg(),
+                  fDMCEtaGap,
+                  fDMCPhiMin*TMath::RadToDeg(),fDMCPhiMax*TMath::RadToDeg()));
+
+//  printf("TPC: Deta %2.2f; Dphi %2.2f; Calo: Deta %2.2f, phi min %2.2f, max %2.2f, DCal eta gap %2.2f,  phi min %2.2f, max %2.2f\n",
+//         fTPCEtaSize,fTPCPhiSize,fEMCEtaSize,
+//         fEMCPhiMin*TMath::RadToDeg(),fEMCPhiMax*TMath::RadToDeg(),
+//         fDMCEtaGap,
+//         fDMCPhiMin*TMath::RadToDeg(),fDMCPhiMax*TMath::RadToDeg());
 }
 
 //_________________________________________________________________________________
@@ -1703,13 +1774,13 @@ TList * AliIsolationCut::GetCreateOutputObjects()
 
   TCustomBinning excBinning;
   excBinning.SetMinimum(0.0);
-  excBinning.AddStep(2, 0.1);
+  excBinning.AddStep(2, 0.05);
   TArrayD excBinsArray;
   excBinning.CreateBinEdges(excBinsArray);
 
   TCustomBinning exc2Binning;
   exc2Binning.SetMinimum(0.0);
-  exc2Binning.AddStep(4, 0.1);
+  exc2Binning.AddStep(4, 0.05);
   TArrayD exc2BinsArray;
   exc2Binning.CreateBinEdges(exc2BinsArray);
   
@@ -1825,6 +1896,31 @@ TList * AliIsolationCut::GetCreateOutputObjects()
       fhConeSumPtCluster->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
       fhConeSumPtCluster->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
       outputContainer->Add(fhConeSumPtCluster) ;
+
+      fhConeSumPtClusterMatched  = new TH2F
+      ("hConePtSumClusterMatched",
+       Form("CPV Cluster #Sigma #it{p}_{T}, #it{R}=%2.2f",fConeSize),
+       nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax);
+      fhConeSumPtClusterMatched->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+      fhConeSumPtClusterMatched->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+      outputContainer->Add(fhConeSumPtClusterMatched) ;
+
+      fhConeSumPtClusterMatchedFraction  = new TH2F
+      ("hConePtSumClusterMatchedFraction",
+       Form("CPV Cluster #Sigma #it{p}_{T} fraction to total, #it{R}=%2.2f",fConeSize),
+       nptbins,ptmin,ptmax,200,0,1);
+      fhConeSumPtClusterMatchedFraction->SetYTitle("Fraction");
+      fhConeSumPtClusterMatchedFraction->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+      outputContainer->Add(fhConeSumPtClusterMatchedFraction) ;
+
+      fhConeSumPtClusterMatchedFraction3D  = new TH3F
+      ("hConePtSumClusterMatchedFraction3D",
+       Form("CPV Cluster #Sigma #it{p}_{T} fraction to total, #it{R}=%2.2f",fConeSize),
+       nptbins,ptmin,ptmax,nptsumbins,ptsummin,ptsummax,200,0,1);
+      fhConeSumPtClusterMatchedFraction3D->SetZTitle("Fraction");
+      fhConeSumPtClusterMatchedFraction3D->SetYTitle("#Sigma #it{p}_{T} (GeV/#it{c})");
+      fhConeSumPtClusterMatchedFraction3D->SetXTitle("#it{p}_{T, trigger} (GeV/#it{c})");
+      outputContainer->Add(fhConeSumPtClusterMatchedFraction3D) ;
 
       if ( fFillEtaPhiHistograms )
       {
@@ -4531,19 +4627,22 @@ void  AliIsolationCut::MakeIsolationCut
       
       if ( fPartInCone != kOnlyCharged && checkClustersBand )
       {
-        CalculateUEBandClusterNormalization(etaC                   , phiC                  ,
+        CalculateUEBandClusterNormalization(calorimeter            ,
+                                            etaC                   , phiC                  ,
                                             excessClsEta           , excessClsPhi          ,
                                             excessAreaClsEta       , excessAreaClsPhi      ,
                                             etaBandPtSumCluster    , phiBandPtSumCluster   ,
                                             etaBandPtSumClusterNorm, phiBandPtSumClusterNorm);
         
-        CalculateUEBandClusterNormalization(etaC                   , phiC                  ,
+        CalculateUEBandClusterNormalization(calorimeter            ,
+                                            etaC                   , phiC                  ,
                                             excessClsEta           , excessClsPhi          ,
                                             excessAreaClsEta       , excessAreaClsPhi      ,
                                             etaBandPtSumClusterCutMax    , phiBandPtSumClusterCutMax   ,
                                             etaBandPtSumClusterCutMaxNorm, phiBandPtSumClusterCutMaxNorm);
 
-        CalculateUEBandClusterNormalization(etaC                   , phiC                  ,
+        CalculateUEBandClusterNormalization(calorimeter            ,
+                                            etaC                   , phiC                  ,
                                             excessClsEta           , excessClsPhi          ,
                                             excessAreaClsEta       , excessAreaClsPhi      ,
                                             etaBandPtSumClusterCutLeadFactor    , phiBandPtSumClusterCutLeadFactor,

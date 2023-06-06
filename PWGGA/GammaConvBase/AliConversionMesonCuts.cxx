@@ -3394,6 +3394,10 @@ Bool_t AliConversionMesonCuts::SetRapidityMesonCut(Int_t RapidityMesonCut){
     fRapidityCutMesonMax   = 0.0;
     fRapidityCutMesonMin   = -1.0;
     break;
+  case 16:  // g
+    fRapidityCutMesonMax   = 0.13;
+    fRapidityCutMesonMin   = -0.13;
+    break;
   default:
     cout<<"Warning: RapidityMesonCut not defined "<<RapidityMesonCut<<endl;
     return kFALSE;

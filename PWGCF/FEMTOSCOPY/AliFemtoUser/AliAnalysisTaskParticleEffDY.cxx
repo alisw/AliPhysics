@@ -107,6 +107,7 @@ AliAnalysisTaskParticleEffDY::AliAnalysisTaskParticleEffDY(TString name, int pid
     if(i<4) fHistEv[i] = NULL;
     fHistQA[i] = NULL;
     if(i<3) fHistQA2D[i] = NULL;
+    if(i<4) fHistP[i]=NULL;
   }
 
   /* init track cuts */
@@ -425,7 +426,7 @@ void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
     hname+= i;
     
 
-    fHistEvCuts[i] = new TH1F(hname,Form("Event Cuts M%d",i) , 7, 0, 8);
+    fHistEvCuts[i] = new TH1F(hname,Form("Event Cuts M%d",i) , 10, 0, 11);
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(1,"All");
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(2,"NoVertex");
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(3,"PileUp");
@@ -433,6 +434,9 @@ void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(5,"eventspions");
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(6,"eventskaons");
     fHistEvCuts[i]->GetXaxis()->SetBinLabel(7,"eventsprotons");
+    fHistEvCuts[i]->GetXaxis()->SetBinLabel(8,"eventspions T");
+    fHistEvCuts[i]->GetXaxis()->SetBinLabel(9,"eventskaons T");
+    fHistEvCuts[i]->GetXaxis()->SetBinLabel(10,"eventsprotons T");
     fHistoList->Add(fHistEvCuts[i]);
 
     for(Int_t chg=0;chg<2;chg++){
@@ -460,7 +464,7 @@ void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
   fHistQA[7] = new TH1F("fHistPhi", "Phi distribution" , 100, -TMath::Pi(), TMath::Pi());
   fHistQA[8] = new TH1F("fHistY", "Y distribution" , 100, -2, 2);
  
-  fHistQA[9] = new TH1F("fHistEventCuts", "Event Cuts" , 7, 0, 8);
+  fHistQA[9] = new TH1F("fHistEventCuts", "Event Cuts" , 10, 0, 11);
   fHistQA[9]->GetXaxis()->SetBinLabel(1,"All");
   fHistQA[9]->GetXaxis()->SetBinLabel(2,"NoVertex");
   fHistQA[9]->GetXaxis()->SetBinLabel(3,"PileUp");
@@ -468,7 +472,9 @@ void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
   fHistQA[9]->GetXaxis()->SetBinLabel(5,"eventspions");
   fHistQA[9]->GetXaxis()->SetBinLabel(6,"eventskaons");
   fHistQA[9]->GetXaxis()->SetBinLabel(7,"eventsprotons");
-
+  fHistQA[9]->GetXaxis()->SetBinLabel(8,"eventspions T");
+  fHistQA[9]->GetXaxis()->SetBinLabel(9,"eventskaons T");
+  fHistQA[9]->GetXaxis()->SetBinLabel(10,"eventsprotons T");
 
 
   fHistQA[10] = new TH1F("fHistTrackCuts", "Track Cuts" , 7, 0.5, 7.5);
@@ -479,6 +485,20 @@ void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
   fHistQA[10]->GetXaxis()->SetBinLabel(5,"Pt");
   fHistQA[10]->GetXaxis()->SetBinLabel(6,"DCA");
   fHistQA[10]->GetXaxis()->SetBinLabel(7,"Electron Rejection");
+
+  for(Int_t i = 0; i < 4; i++)  {
+   hname = "fHistParticleCounterM";
+   hname+= i;
+    
+  fHistP[i] = new TH1F(hname,Form("fHistParticleCounterM%d",i), 7, 0, 8);
+  fHistP[i]->GetXaxis()->SetBinLabel(1,"pions R");
+  fHistP[i]->GetXaxis()->SetBinLabel(2,"kaons R");
+  fHistP[i]->GetXaxis()->SetBinLabel(3,"protons R");
+  fHistP[i]->GetXaxis()->SetBinLabel(4,"pions T");
+  fHistP[i]->GetXaxis()->SetBinLabel(5,"kaons T");
+  fHistP[i]->GetXaxis()->SetBinLabel(6,"protons T");
+  fHistoList->Add(fHistP[i]);
+}
 
   fHistQA2D[0] = new TH2F("dcaHistDcaXY","DCA XY",50, 0, 5,210, -2.1, 2.1);
   fHistQA2D[1] = new TH2F("dcaHistDcaZ","DCA Z", 50, 0, 5, 210, -2.1, 2.1);
@@ -512,7 +532,9 @@ void AliAnalysisTaskParticleEffDY::UserCreateOutputObjects()
   for ( Int_t i = 0; i < 11; i++)
     {
       fHistoList->Add(fHistQA[i]);
+      if(i<4) fHistoList->Add(fHistP[i]);
       if(i<3) fHistoList->Add(fHistQA2D[i]);
+      
       if(i<5) {
 	for(Int_t j = 0 ; j<PARTTYPES; j++)
 	  for(int chg=0;chg<2;chg++)
@@ -875,6 +897,7 @@ int fcent2=0;
   else if(mult >= 20 && mult <=40) fcent2 = 1;
   else if(mult >= 40 && mult <=70) fcent2 = 2;
   else if(mult >= 70 && mult <=100) fcent2 = 3;
+  //if(fcent2!=3) return; // check this
  // else return;
 
   if(fcent2==10)fHistEvCuts[0]->Fill(1);
@@ -988,20 +1011,42 @@ int fcent2=0;
 
   bool evpass=true;  	
   bool collect[3] = {false,false,false};  	
-  	
+ 
+  int hmPionsR=0, hmKaonsR=0, hmProtonsR=0;
+
+
   fHistQA[10]->Fill(1,aodEvent->GetNumberOfTracks());
   //loop over AOD tracks 
   for (Int_t iTracks = 0; iTracks < aodEvent->GetNumberOfTracks(); iTracks++) {
   	AliAODTrack *track = (AliAODTrack*)aodEvent->GetTrack(iTracks); 
 	if (!track)continue;
-  
+	if(track->Y() < -0.5 || track->Y() > 0.5)
+      		continue; 
+      	
+	
 	UInt_t filterBit = fFB;
 	if(!track->TestFilterBit(filterBit))continue;		
         
 	bool isPionNsigma = 0;
 	bool isKaonNsigma = 0;
 	bool isProtonNsigma  = 0;
-    
+
+    	if (isPionNsigma){
+		if (track->Pt() > 0.2 || track->Pt() < 2.5){
+		continue;
+		}
+	}
+	if (isKaonNsigma){
+     		if (track->Pt() > 0.5 || track->Pt() < 2.5){
+     		continue;
+     		}
+        }
+     	if (isProtonNsigma){
+     		if (track->Pt() > 0.5 || track->Pt() < 2.5){
+     		continue;
+     		}
+        }
+        
 	AliAODTrack* aodtrackpid;
 		
 	if(filterBit==(1 << (7)))
@@ -1027,12 +1072,27 @@ int fcent2=0;
    
    
    
-   	if (isPionNsigma)
+   	if (isPionNsigma){
 	collect[0]=true; 
-	else if (isKaonNsigma)
+	if(fcent2==10)fHistP[0]->Fill(1);
+	else if(fcent2==1)fHistP[1]->Fill(1);
+	else if(fcent2==2)fHistP[2]->Fill(1);
+	else if(fcent2==3)fHistP[3]->Fill(1);
+	}
+  	if (isKaonNsigma){
 	collect[1]=true; 
-	else if (isProtonNsigma)
-	collect[2]=true;	
+	if(fcent2==10)fHistP[0]->Fill(2);
+	else if(fcent2==1)fHistP[1]->Fill(2);
+	else if(fcent2==2)fHistP[2]->Fill(2);
+	else if(fcent2==3)fHistP[3]->Fill(2);
+	}
+	if (isProtonNsigma){
+	collect[2]=true;
+	if(fcent2==10)fHistP[0]->Fill(3);
+	else if(fcent2==1)fHistP[1]->Fill(3);
+	else if(fcent2==2)fHistP[2]->Fill(3);
+	else if(fcent2==3)fHistP[3]->Fill(3);
+	}	
   	}
 
 
@@ -1884,10 +1944,97 @@ if(collect[2]==true){
     return;
   }
 
+  bool evpassT=true;  	
+  bool collectT[3] = {false,false,false};  	
+  	
   // loop over MC stack 
+  int hmPionsT=0, hmKaonsT=0, hmProtonsT=0;
   for (Int_t ipart = 0; ipart < arrayMC->GetEntries(); ipart++) {
-    //std::cout<<"Entered MC loop"<<std::endl;
+    AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
+
+    if (!MCtrk) continue;
     
+	if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5){
+	continue; }
+	
+      if(MCtrk->GetPdgCode() == 211){
+      	if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+      }
+      if(MCtrk->GetPdgCode() == 321){
+      	if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+       }
+       if(MCtrk->GetPdgCode() == 3122){
+      	if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+       }
+      
+      // check physical primary 
+
+      if(MCtrk->IsPhysicalPrimary()) // Not from weak decay!
+	{
+    
+    Int_t PDGcode = TMath::Abs(MCtrk->GetPdgCode()); 
+
+   	if (PDGcode==211){
+	collectT[0]=true; 
+	if(fcent2==10)fHistP[0]->Fill(4);
+	else if(fcent2==1)fHistP[1]->Fill(4);
+	else if(fcent2==2)fHistP[2]->Fill(4);
+	else if(fcent2==3)fHistP[3]->Fill(4);
+	}
+  	if (PDGcode==321){
+	collectT[1]=true; 
+	if(fcent2==10)fHistP[0]->Fill(5);
+	else if(fcent2==1)fHistP[1]->Fill(5);
+	else if(fcent2==2)fHistP[2]->Fill(5);
+	else if(fcent2==3)fHistP[3]->Fill(5);
+	}
+	if (PDGcode==2212){
+	collectT[2]=true;
+	if(fcent2==10)fHistP[0]->Fill(6);
+	else if(fcent2==1)fHistP[1]->Fill(6);
+	else if(fcent2==2)fHistP[2]->Fill(6);
+	else if(fcent2==3)fHistP[3]->Fill(6);
+	}
+	}
+   }
+  	
+
+        if(collectT[0]==true){
+        	fHistQA[9]->Fill(8);
+		if(fcent2==10)fHistEvCuts[0]->Fill(8);
+		else if(fcent2==1)fHistEvCuts[1]->Fill(8);
+		else if(fcent2==2)fHistEvCuts[2]->Fill(8);
+		else if(fcent2==3)fHistEvCuts[3]->Fill(8);
+        }
+
+	if(collectT[1]==true){
+		fHistQA[9]->Fill(9);
+		if(fcent2==10)fHistEvCuts[0]->Fill(9);
+		else if(fcent2==1)fHistEvCuts[1]->Fill(9);
+		else if(fcent2==2)fHistEvCuts[2]->Fill(9);
+		else if(fcent2==3)fHistEvCuts[3]->Fill(9);
+	}
+
+
+	if(collectT[2]==true){
+		fHistQA[9]->Fill(10);
+		if(fcent2==10)fHistEvCuts[0]->Fill(10);
+		else if(fcent2==1)fHistEvCuts[1]->Fill(10);
+		else if(fcent2==2)fHistEvCuts[2]->Fill(10);
+		else if(fcent2==3)fHistEvCuts[3]->Fill(10);
+
+	}
+  
+  
+  
+  
+      for (Int_t ipart = 0; ipart < arrayMC->GetEntries(); ipart++) {
     AliAODMCParticle *MCtrk = (AliAODMCParticle*)arrayMC->At(ipart);
 
     if (!MCtrk) continue;
@@ -1917,8 +2064,21 @@ if(collect[2]==true){
       if(MCtrk->Y() < -0.5 || MCtrk->Y() > 0.5){
 	continue; }
 	
-      if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5){
-	continue;}
+      if(MCtrk->GetPdgCode() == 211){
+      	if (MCtrk->Pt() < 0.2 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+      }
+      if(MCtrk->GetPdgCode() == 321){
+      	if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+       }
+       if(MCtrk->GetPdgCode() == 3122){
+      	if (MCtrk->Pt() < 0.5 || MCtrk->Pt() > 2.5){
+	continue;
+	}
+       }
 
 
       

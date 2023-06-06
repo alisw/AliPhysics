@@ -29,9 +29,7 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
                                                        Bool_t unweightS0=kFALSE,
                                                        Bool_t S0spline=kFALSE,
                                                        TString filSpline="",
-                                                       TString splname="",
-                                                       Int_t nmult=0,
-                                                       std::vector<Float_t> multspl={0.}
+                                                       TString splname=""
                                                        )
 {
     //
@@ -103,19 +101,14 @@ AliAnalysisTaskSEDvsEventShapes *AddTaskDvsEventShapes(Int_t system=0,
     dEvtShapeTask->SetMultiplicityEstimator(recoEstimator);
     dEvtShapeTask->SetMCPrimariesEstimator(MCEstimator);
     dEvtShapeTask->SetMCOption(MCOption); 
-    TList* contspli[20];
+    TList* contspli;
     if(S0spline==kTRUE){
         TFile * spline = TFile::Open(filSpline.Data(), "READ");
         if(spline){
-            for(int mult = 0; mult<=nmult; mult++){
-                if(mult==nmult)
-                    contspli[mult] = (TList*)spline->Get(Form("%s%0.f-%0.f",splname.Data(),multspl[0],multspl[mult]-1));
-                else
-                    contspli[mult] = (TList*)spline->Get(Form("%s%0.f-%0.f",splname.Data(),multspl[mult],multspl[mult+1]-1));   
-                Printf("Printing content of List from Splines file\n");    
-                contspli[mult]->Print();     
-            }
-            dEvtShapeTask->SetIsS0Spline(S0spline, contspli, splname.Data(), nmult, multspl);
+            contspli = (TList*)spline->Get(Form("%s",splname.Data()));   
+            Printf("Printing content of List from Splines file\n");    
+            contspli->Print();     
+            dEvtShapeTask->SetIsS0Spline(S0spline, contspli, splname.Data());
             spline->Close();
         }
         else{

@@ -28,14 +28,16 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   virtual void UserExec(Option_t *option);
   void ResetGlobalTrackReference();
   void StoreGlobalTrackReference(AliVTrack *track);
+
+  void FillMTDistributionsTriplet(TLorentzVector &PartOne, TLorentzVector &PartTwo, TLorentzVector &PartThree, float m1, float m2, float m3, TH2F* pair, TH2F* triplet, float Q3);
   
-  void FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* Res, TH2F* ResAll, bool isMC );//, TH2F* InvMassSame);
+  void FillTripletDistribution(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* Res, TH2F* ResAll, bool isMC, TH2F* pairMT, TH2F* tripletMT);//, TH2F* InvMassSame);
   void FillTripletDistributionPPL(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, int firstSpecies,int secondSpecies,int thirdSpecies, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMassSame, TH2F* InvMassDET,TH2F* InvMassPDG);
 
   void FillPairDistributionPL(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, TH1F* sameEventDistributionPL, int mult, TH2F* hist2d);
   void FillPairDistributionPP(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, TH1F* sameEventDistributionPP, TH2F **fEventTripletPhiThetaArray,  AliFemtoDreamCollConfig Config);
   void SetMixedEvent(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> *fPartContainer);
-  void FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* Res, TH2F* ResAll , bool isMC); //, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed);
+  void FillTripletDistributionME(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* Res, TH2F* ResAll , bool isMC, TH2F* pairMT, TH2F* tripletMT); //, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed, TH2F*  Q3VskDistribution23Mixed);
   void FillTripletDistributionMEPPL(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>  &fPartContainer, int speciesSE, int speciesME1, int speciesME2, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* InvMassMixed, TH2F* Q3VskDistribution12Mixed,TH2F* InvMassDET,TH2F* InvMassPDG);
 
 // test different mixing
@@ -46,7 +48,7 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   void SetMixedEventOnlyPPLambdaTEST(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>*fPartContainer);
   void SetMixedEventOnlyPPPTEST(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer>*fPartContainer);
   // Create triplets like (pp)l (lp)p
-  void FillTripletDistributionSE2ME1(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE1, int speciesSE2, int speciesME, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config); //,TH2F* Q3VskDistribution12, TH2F* Q3VskDistribution23);
+  void FillTripletDistributionSE2ME1(std::vector<std::vector<AliFemtoDreamBasePart>> &ParticleVector, std::vector<AliFemtoDreamPartContainer> &fPartContainer, int speciesSE1, int speciesSE2, int speciesME, TH1F* hist, std::vector<int> PDGCodes, int mult, TH2F* hist2d, TH2F **fEventTripletPhiThetaArray, int phiEtaHistNo, AliFemtoDreamCollConfig Config, TH2F* pairMT, TH2F* tripletMT); //,TH2F* Q3VskDistribution12, TH2F* Q3VskDistribution23);
   // Add the close pair cut
   bool DeltaEtaDeltaPhi(AliFemtoDreamBasePart &part1,AliFemtoDreamBasePart &part2, bool SEorME,  unsigned int DoThisPair, TH2F* beforeHist,TH2F* afterHist, AliFemtoDreamCollConfig Config, double Q3);
   bool DeltaEtaDeltaPhi(AliFemtoDreamBasePart &part1,AliFemtoDreamBasePart &part2, bool SEorME,  unsigned int DoThisPair, TH2F* beforeHist,TH2F* afterHist, AliFemtoDreamCollConfig Config);
@@ -175,6 +177,12 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   TList *fQ3Vskq23;//!
   TList *fQ3Vskq23Mixed;//!
   TList *fOtherHistos;//!
+  TList *fQ3VsPairmTListSE;//!
+  TList *fQ3VsPairmTListME;//!
+  TList *fQ3VsPairmTList2SE1ME;//!
+  TList *fQ3VsTripletmTListSE;//!
+  TList *fQ3VsTripletmTListME;//!
+  TList *fQ3VsTripletmTList2SE1ME;//!
   TList *fInvMassTripletSame;//!
   TList *fInvMassTripletMixed;//!
 
@@ -237,13 +245,22 @@ class AliAnalysisTaskThreeBodyFemto : public AliAnalysisTaskSE {
   TH2F *fTripletInvMassDetMixedAnti;//!
   TH2F *fTripletInvMassPDGMixedAnti;//!
 
+  //mT scalling
+
+  TH2F **fQ3VskmTPairSE;
+  TH2F **fQ3VskmTPairME;
+  TH2F **fQ3VskmTPair2SEME1;
+  TH2F **fQ3VskmTTripletSE;
+  TH2F **fQ3VskmTTripletME;
+  TH2F **fQ3VskmTTriplet2SEME1;
+
   TList *fResultsQA;//!
   AliFemtoDreamControlSample *fSample;   //!
   TList *fResultsSample;//!
   TList *fResultsSampleQA;//!
   int fTrackBufferSize;//
   AliVTrack **fGTI;  //!
-  ClassDef(AliAnalysisTaskThreeBodyFemto,3)
+  ClassDef(AliAnalysisTaskThreeBodyFemto,4)
 };
 
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKTHREEBODYFEMTO_H_ */

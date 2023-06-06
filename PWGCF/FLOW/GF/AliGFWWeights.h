@@ -19,6 +19,7 @@ class AliGFWWeights: public TNamed
 {
  public:
   AliGFWWeights();
+  AliGFWWeights(const AliGFWWeights&);
   ~AliGFWWeights();
   void Init(Bool_t AddData=kTRUE, Bool_t AddM=kTRUE);
   void Fill(Double_t phi, Double_t eta, Double_t vz, Double_t pt, Double_t cent, Int_t htype, Double_t weight=1); //htype: 0 for data, 1 for mc rec, 2 for mc gen

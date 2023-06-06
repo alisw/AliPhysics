@@ -294,6 +294,7 @@ if(FASTJET_FOUND)
 	    UserTasks/AliAnalysisTaskJetPull.cxx
 	    UserTasks/AliAnalysisTaskJetQnVectors.cxx
 	    UserTasks/AliAnalysisTaskLundPlane.cxx
+            UserTasks/AliAnalysisTaskJetsEEC.cxx
 	    UserTasks/AliAnalysisTaskJetDynamicalGrooming.cxx
 	    UserTasks/AliAnalysisTaskJetHardestKt.cxx
 	    UserTasks/AliAnalysisTaskHardestBranch.cxx
@@ -312,6 +313,7 @@ if(FASTJET_FOUND)
         UserTasks/AliAnalysisTaskEA.cxx
         UserTasks/AliAnalysisTaskRevEA.cxx
         UserTasks/AliAnalysisEmcalJetHelperEA.cxx
+        UserTasks/AliAnalysisTaskJetPlanarFlow.cxx
         UserTasks/AliAnalysisTaskPythiaBranchEA.cxx
         UserTasks/AliAnalysisTaskSubJetFraction.cxx
 	    UserTasks/AliAnalysisTaskRecoilJetYield.cxx

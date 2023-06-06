@@ -77,6 +77,8 @@ set(SRCS
   Hypernuclei/Hyp2Body/HypTritYield/pdLd/AliAnalysisTask_pdLd.cxx
   Hypernuclei/Hyp2Body/HypTritYield/pd/AliAnalysisTask_pd.cxx
   Hypernuclei/Hyp2Body/HypTritYield/pd/AliAnalysisTask_pd_CreateTrees_PairsOnly.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/pp/AliAnalysisTask_pp_CreateTrees_PairsOnly.cxx
+  Hypernuclei/Hyp2Body/HypTritYield/Ld/AliAnalysisTask_Ld_CreateTrees_PairsOnly.cxx
   Hypernuclei/Hyp2Body/AliReducedHypTritEvent.cxx
   Hypernuclei/Hyp2Body/AliAnalysisTaskHypTritEventTree.cxx
   Hypernuclei/Hyp2Body/HypTritYield/AliAnalysisTaskHe3TriTree.cxx
@@ -85,6 +87,7 @@ set(SRCS
   Hypernuclei/Vertexer3Body/AliVertexerHyperTriton3Body.cxx
   Hypernuclei/KFHypertriton/AliAnalysisTaskHypertritonKFTree.cxx
   Hypernuclei/DoubleHypNuc/AliAnalysisTaskDoubleHypNucTree.cxx
+  Hypernuclei/DoubleHypNuc/AliAnalysisTaskDoubleHypNucTreeLS.cxx
   Nuclei/Absorption/AliAnalysisTaskDeuteronAbsorption.cxx
   Nuclei/AbsorptionRatios/AliAnalysisTaskLightN.cxx
   Nuclei/AbsorptionRatios/AliLightNEventHist.cxx
@@ -235,3 +238,4 @@ install(FILES ${HDRS} DESTINATION include)
 
 # install macros
 install(DIRECTORY . DESTINATION PWGLF/NUCLEX FILES_MATCHING PATTERN "*.C")
+

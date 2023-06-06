@@ -51,6 +51,8 @@ void AddTask_MesonJetCorr_Conv(
   // special settings
   Bool_t enableChargedPrimary = kFALSE,
   bool doFillMesonDCATree = false, // swith to enable filling the meson DCA tree for pile-up estimation
+  bool useCentralEvtSelection = true,
+  bool setPi0Unstable = false,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig + special settings
 )
@@ -69,6 +71,7 @@ void AddTask_MesonJetCorr_Conv(
   TString fileNameMultWeights = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FMUW:");
   TString fileNamedEdxPostCalib = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FEPC:");
   TString fileNameCustomTriggerMimicOADB = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FTRM:");
+  TString fileNameMatBudWeights = cuts.GetSpecialFileNameFromString(fileNameExternalInputs, "FMAW:");
 
   Int_t trackMatcherRunningMode = 0; // CaloTrackMatcher running mode
   TString strTrackMatcherRunningMode = cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "TM", "", addTaskName);
@@ -178,7 +181,7 @@ void AddTask_MesonJetCorr_Conv(
   if (trainConfig == 1) {
     cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "0152103500000000"); // config without jet requirement
   } else if (trainConfig == 2) {
-    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "2r52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "2s52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
   } else if (trainConfig == 3) {
     cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "2152103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
   } else if (trainConfig == 6) {
@@ -260,14 +263,16 @@ void AddTask_MesonJetCorr_Conv(
     //---------------------------------------------------------//
     analysisConvCuts[i] = new AliConversionPhotonCuts();
 
-    // if (enableMatBudWeightsPi0 > 0){
-    //   if (isMC > 0){
-    // if (analysisConvCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
-    //   initializedMatBudWeigths_existing = kTRUE;}
-    // else {cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;}
-    //   }
-    //   else {cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;}
-    // }
+    if (enableMatBudWeightsPi0 > 0){
+      if (isMC > 0){
+        if (!analysisConvCuts[i]->InitializeMaterialBudgetWeights(enableMatBudWeightsPi0,fileNameMatBudWeights)){
+          cout << "ERROR The initialization of the materialBudgetWeights did not work out." << endl;
+          enableMatBudWeightsPi0 = false;
+        }
+      } else {
+        cout << "ERROR 'enableMatBudWeightsPi0'-flag was set > 0 even though this is not a MC task. It was automatically reset to 0." << endl;
+      }
+    }
 
     analysisConvCuts[i]->SetV0ReaderName(V0ReaderName);
     if (enableElecDeDxPostCalibration) {
@@ -315,7 +320,10 @@ void AddTask_MesonJetCorr_Conv(
   task->SetConversionCutList(numberOfCuts, ConvCutList);
   task->SetDoMesonQA(enableQAMesonTask); 
   task->SetUseTHnSparseForResponse(enableTHnSparse);
+  if(enableMatBudWeightsPi0) task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(true);
   if(doFillMesonDCATree) task->SetFillMesonDCATree(true);
+  task->SetDoUseCentralEvtSelection(useCentralEvtSelection);
+  task->SetForcePi0Unstable(setPi0Unstable);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_Conv_%i_%i%s", meson, trainConfig, nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );

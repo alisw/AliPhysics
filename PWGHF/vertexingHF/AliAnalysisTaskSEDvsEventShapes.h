@@ -58,16 +58,12 @@ public:
     
     void SetReadMC(Bool_t readMC=kTRUE){fReadMC=readMC;}
     void SetS0unweight(Bool_t S0unweight=kFALSE){fS0unweight=S0unweight;}
-    void SetIsS0Spline(Bool_t IsS0Spline=kFALSE, TList* S0SplList[]=0, TString S0SplName="", Int_t nSplmult=0, std::vector<Float_t> splMult = {0.}){
+    void SetIsS0Spline(Bool_t IsS0Spline=kFALSE, TList* S0SplList=nullptr, TString S0SplName=""){
         fIsS0Spline=IsS0Spline;
         fS0SplName=S0SplName;
-        fnSplmult=nSplmult;
-        Printf("Printing content of Spline Lists for Spherocity percentages\n");
-        for(int a=0; a <= fnSplmult; a++){
-          fS0SplList[a] = S0SplList[a];
-          fsplMult[a] = splMult[a];
-          fS0SplList[a]->Print();
-        }
+        Printf("Printing content of Spline List for Spherocity percentages\n");
+        fS0SplList = S0SplList;
+        fS0SplList->Print();
     }
     void SetMCOption(Int_t option=0){ fMCOption = option; }
     void SetIsPPbData(Bool_t flag=kTRUE){
@@ -375,6 +371,7 @@ private:
     TH3F *fHistSpheroAxisDeltaGenPhi;  //!<! hist. of Invariant mass, pt vs. deltaPhi of generated spherocity axis w.r.t. D-meson direction
 
     THnSparseD *fSparseEvtShape;//! THnSparse histograms for Spherocity
+    THnSparseD *fTotalSparseEvtShape; //! THnSparse histograms vs spherocity for all particles
     THnSparseD *fSparseEvtShapewithNoPid;//! THnSparse histograms for D0 vs. Spherocity
     THnSparseD *fSparseEvtShapePrompt;//! THnSparse histograms for Prompt D0 vs. Spherocity
     THnSparseD *fSparseEvtShapeFeeddown;//! THnSparse histograms for feeddown D0 vs. Spherocity
@@ -391,13 +388,13 @@ private:
     THnSparseD *fMCRecoBothPromptFDSpheri; //! histo for StepMCReco for D meson Both Prompt Feeddown for Sphericity
 
     //Spline Spherocity Percentiles Histograms
-    THnSparseD *fSparseEvtShapeSpline[20]; //! THnSparse for D meson for Splined Spherocity percentiles
-    THnSparseD *fSparseEvtShapePromptSpline[20]; //! THnSparse histograms for feeddown D mesons for Splined Spherocity percentiles
-    THnSparseD *fSparseEvtShapeFeeddownSpline[20]; //! THnSparse for D meson feeddown for Splined Spherocity percentiles
-    THnSparseD *fMCAccGenPromptSpline[20]; //! histo for StepMCGenAcc for D meson prompt for Splined Spherocity percentiles
-    THnSparseD *fMCRecoPromptSpline[20]; //! histo for StepMCReco for D meson prompt for Splined Spherocity percentiles
-    THnSparseD *fMCAccGenFeeddownSpline[20]; //! histo for StepMCGenAcc for D meson feedown for Splined Spherocity percentiles
-    THnSparseD *fMCRecoFeeddownSpline[20]; //! histo for StepMCReco for D meson feeddown for Splined Spherocity percentiles
+    THnSparseD *fSparseEvtShapeSpline; //! THnSparse for D meson for Splined Spherocity percentiles
+    THnSparseD *fSparseEvtShapePromptSpline; //! THnSparse histograms for feeddown D mesons for Splined Spherocity percentiles
+    THnSparseD *fSparseEvtShapeFeeddownSpline; //! THnSparse for D meson feeddown for Splined Spherocity percentiles
+    THnSparseD *fMCAccGenPromptSpline; //! histo for StepMCGenAcc for D meson prompt for Splined Spherocity percentiles
+    THnSparseD *fMCRecoPromptSpline; //! histo for StepMCReco for D meson prompt for Splined Spherocity percentiles
+    THnSparseD *fMCAccGenFeeddownSpline; //! histo for StepMCGenAcc for D meson feedown for Splined Spherocity percentiles
+    THnSparseD *fMCRecoFeeddownSpline; //! histo for StepMCReco for D meson feeddown for Splined Spherocity percentiles
     
     THnSparseD *fMCAccGenPromptEvSel; //! histo for StepMCGenAcc for D meson prompt with Vertex selection (IsEvSel = kTRUE)
     THnSparseD *fMCAccGenFeeddownEvSel; //! histo for StepMCGenAcc for D meson feeddown with Vertex selection (IsEvSel = kTRUE)
@@ -421,10 +418,8 @@ private:
     Bool_t fReadMC;    //flag for access to MC
     Bool_t fS0unweight;   //flag for unweighted definition of Spherocity
     Bool_t fIsS0Spline;   //flag to include splicing possibility
-    TList* fS0SplList[20];   //splines containers vs multiplicity
+    TList* fS0SplList;   //splines containers vs multiplicity
     TString fS0SplName;   //spline basename
-    Int_t fnSplmult;      //number of multiplicity intervals for spherocity splicing
-    Float_t fsplMult[20];    //array to multiplicity intervals
     Int_t  fMCOption;  // 0=keep all cand, 1=keep only signal, 2= keep only back
     Bool_t fisPPbData; // flag to run on pPb data (differen histogram bining)
     Bool_t fUseBit;    // flag to use bitmask

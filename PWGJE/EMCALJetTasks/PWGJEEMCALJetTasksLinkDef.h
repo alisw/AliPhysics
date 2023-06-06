@@ -287,6 +287,7 @@
 #pragma link C++ class AliAnalysisTaskJetQnVectors+;
 #pragma link C++ class AliAnalysisTaskJetPull+;
 #pragma link C++ class AliAnalysisTaskLundPlane+;
+#pragma link C++ class AliAnalysisTaskJetsEEC+;
 #pragma link C++ class AliAnalysisTaskJetCharge+;
 #pragma link C++ class AliAnalysisTaskJetChargeFlavourTemplates+;
 #pragma link C++ class AliAnalysisTaskJetChargeFlavourPb+;
@@ -325,6 +326,7 @@
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskEA+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskRevEA+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisEmcalJetHelperEA+;
+#pragma link C++ class AliAnalysisTaskJetPlanarFlow+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisTaskPythiaBranchEA+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliLundPlaneHelper+;
 #pragma link C++ class PWGJE::EMCALJetTasks::AliAnalysisEmcalSoftdropHelper+;

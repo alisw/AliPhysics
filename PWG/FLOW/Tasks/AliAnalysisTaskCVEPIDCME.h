@@ -43,15 +43,27 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void IfQATPC(bool bQATPC) { this->isQATPC = bQATPC; }
   void IfQAVZERO(bool bQAVZERO) { this->isQAVZERO = bQAVZERO; }
   void IfQAZDC(bool bQAZDC) { this->isQAZDC = bQAZDC; }
+  void IfNarrowDcaCuts768(bool bNarrowDcaCuts768) { this->isNarrowDcaCuts768 = bNarrowDcaCuts768; }
+  void IfProtonCustomizedDCACut(bool bProtonCustomizedDCACut) { this->isProtonCustomizedDCACut = bProtonCustomizedDCACut; }
+  void IfUsePionRejection(bool bUsePionRejection) { this->isUsePionRejection = bUsePionRejection; }
+
+  void IfTightPileUp(bool bTightPileUp) { this->isTightPileUp = bTightPileUp; }
+
   void IfCalculatePIDFlow(bool bCalculatePIDFlow) { this->isCalculatePIDFlow = bCalculatePIDFlow; }
-  void IfCalculateDeltaGamma(bool bCalculateDeltaGamma) { this->isCalculateDeltaGamma = bCalculateDeltaGamma; }
   void IfCalculateDiffResult(bool bCalculateDiffResult) { this->isCalculateDiffResult = bCalculateDiffResult; }
   void IfCalculateDeltaPhiSumPhi(bool bCalculateDeltaPhiSumPhi) { this->isCalculateDeltaPhiSumPhi = bCalculateDeltaPhiSumPhi; }
+
+  void IfCalculateLambdaProton(bool bCalculateLambdaProton) {this->isCalculateLambdaProton = bCalculateLambdaProton; }
+  void IfCalculateLambdaHadron(bool bCalculateLambdaHadron) {this->isCalculateLambdaHadron = bCalculateLambdaHadron; }
   void IfCalculateLambdaLambda(bool bCalculateLambdaLambda) {this->isCalculateLambdaLambda = bCalculateLambdaLambda; }
   void IfCalculateProtonProton(bool bCalculateProtonProton) {this->isCalculateProtonProton = bCalculateProtonProton; }
+  void IfCalculateProtonHadron(bool bCalculateProtonHadron) {this->isCalculateProtonHadron = bCalculateProtonHadron; }
   void IfCalculateHadronHadron(bool bCalculateHadronHadron) {this->isCalculateHadronHadron = bCalculateHadronHadron; }
-  void IfNarrowDcaCuts768(bool bNarrowDcaCuts768) { this->isNarrowDcaCuts768 = bNarrowDcaCuts768; }
-  void IfStrictestProtonCut(bool bStrictestProtonCut) { this->isStrictestProtonCut = bStrictestProtonCut; }
+  
+  void IfCheckLambdaProtonFromDecay(bool bCheckLambdaProtonFromDecay) {this->isCheckLambdaProtonFromDecay = bCheckLambdaProtonFromDecay; }
+  void IfCheckLambdaProtonFromDecayFoundInTrackLoops(bool bCheckLambdaProtonFromDecayFoundInTrackLoops) {this->isCheckLambdaProtonFromDecayFoundInTrackLoops = bCheckLambdaProtonFromDecayFoundInTrackLoops; }
+
+  void IfUseOneSideTPCPlane(bool bUseOneSideTPCPlane) { this->isUseOneSideTPCPlane = bUseOneSideTPCPlane; }
 
   // read in
   void SetListForNUE(TList* flist) { this->fListNUE = (TList*)flist->Clone(); }
@@ -83,15 +95,13 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void SetDedxCut(float dedxCut) { this->fDedxCut = dedxCut; }
   void SetProtonPtMin(double protonPtMin) { this->fProtonPtMin = protonPtMin; }
   void SetProtonPtMax(double protonPtMax) { this->fProtonPtMax = protonPtMax; }
-  void SetAntiProtonPtMin(double protonPtMin) { this->fProtonPtMin = protonPtMin; }
-  void SetAntiProtonPtMax(double protonPtMax) { this->fProtonPtMax = protonPtMax; }
+  void SetAntiProtonPtMin(double antiprotonPtMin) { this->fAntiProtonPtMin = antiprotonPtMin; }
+  void SetAntiProtonPtMax(double antiprotonPtMax) { this->fAntiProtonPtMax = antiprotonPtMax; }
   // PID
   void SetNSigmaTPCCut(double nSigmaTPC) { this->fNSigmaTPCCut = nSigmaTPC; }
   void SetNSigmaTOFCut(double nSigmaTOF) { this->fNSigmaTOFCut = nSigmaTOF; }
   // V0
-  void SetV0PtMin(double v0PtMin) { this->fV0PtMin = v0PtMin; }
   void SetV0CPAMin(double v0CPAMin) { this->fV0CPAMin = v0CPAMin; }
-  void SetV0RapidityMax(double v0RapidityMax) { this->fV0RapidityMax = v0RapidityMax; }
   void SetV0DecayLengthMax(double v0DecayLengthMax) { this->fV0DecayLengthMax = v0DecayLengthMax; }
   void SetV0DecayLengthMin(double v0DecayLengthMin) { this->fV0DecayLengthMin = v0DecayLengthMin; }
   void SetV0DCAToPrimVtxMax(double v0DCAToPrimVtxMax) { this->fV0DCAToPrimVtxMax = v0DCAToPrimVtxMax; }
@@ -101,6 +111,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void SetDaughtersEtaMax(double daughtersEtaMax) { this->fDaughtersEtaMax = daughtersEtaMax; }
   void SetDaughtersTPCNclsMin(double daughtersTPCNclsMin) { this->fDaughtersTPCNclsMin = daughtersTPCNclsMin; }
   void SetDaughtersDCAToPrimVtxMin(double daughtersDCAToPrimVtxMin) { this->fDaughtersDCAToPrimVtxMin = daughtersDCAToPrimVtxMin; }
+  void SetRatioCrossedRowsFindable(double ratioCrossedRowsFindable) { this->fRatioCrossedRowsFindable = ratioCrossedRowsFindable; }
   void SetPosProtonTPCNsigma(float V0PosProtonTPCNsigma) { this->fV0PosProtonTPCNsigma = V0PosProtonTPCNsigma; }
   void SetNegPionTPCNsigma(float V0NegPionTPCNsigma) { this->fV0NegPionTPCNsigma = V0NegPionTPCNsigma; }
   void SetNegProtonTPCNsigma(float V0NegProtonTPCNsigma) { this->fV0NegProtonTPCNsigma = V0NegProtonTPCNsigma; }
@@ -109,11 +120,18 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void SetNegPionTOFNsigma(float V0NegPionTOFNsigma) { this->fV0NegPionTOFNsigma = V0NegPionTOFNsigma; }
   void SetNegProtonTOFNsigma(float V0NegProtonTOFNsigma) { this->fV0NegProtonTOFNsigma = V0NegProtonTOFNsigma; }
   void SetPosPionTOFNsigma(float V0PosPionTOFNsigma) { this->fV0PosPionTOFNsigma = V0PosPionTOFNsigma; }
-  // Lambda Mass Cut
+  // Lambda Cut
+  void SetLambdaPtMin(double lambdaPtMin) { this->fLambdaPtMin = lambdaPtMin; }
+  void SetLambdaPtMax(double lambdaPtMax) { this->fLambdaPtMax = lambdaPtMax; }
+  void SetAntiLambdaPtMin(double antiLambdaPtMin) { this->fAntiLambdaPtMin = antiLambdaPtMin; }
+  void SetAntiLambdaPtMax(double antiLambdaPtMax) { this->fAntiLambdaPtMax = antiLambdaPtMax; }
   void SetLambdaMassLeftCut(double lambdaMassRightCut) { this->fLambdaMassRightCut = lambdaMassRightCut; }
   void SetLambdaMassRightCut(double lambdaMassLeftCut) { this->fLambdaMassLeftCut = lambdaMassLeftCut; }
   void SetAntiLambdaMassLeftCut(double antiLambdaMassRightCut) { this->fAntiLambdaMassRightCut = antiLambdaMassRightCut; }
   void SetAntiLambdaMassRightCut(double antiLambdaMassLeftCut) { this->fAntiLambdaMassLeftCut = antiLambdaMassLeftCut; }
+  // ESE Qn
+  void SetNQ2Bins(int nQ2Bins) { this->fNQ2Bins = nQ2Bins; }
+  void SetNMassBins(int nMassBins) { this->fNMassBins = nMassBins; }
 
  private:
   ////////////////////////
@@ -153,10 +171,15 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   bool IsGoodDaughterTrack(const AliAODTrack* track);
   int GetLambdaCode(const AliAODTrack* pTrack, const AliAODTrack* ntrack);
   // Plane
-  double GetTPCPlaneNoAutoCorr(int id_0, int id_1, int id_2, int id_3);
+  std::array<double,2> GetOneSideTPCPlaneNoAutoCorr(std::vector<int> vec_id);
+  double GetTPCPlaneNoAutoCorr(std::vector<int> vec_id);
   inline double GetEventPlane(double qx, double qy, double harmonic);
   // Range phi
   inline double RangeDPhi(double dphi);
+  // Get DCA
+  bool GetDCA(double &dcaxy, double &dcaz, AliAODTrack* track);
+  // Get q2 Bin
+  double GetQ2Bin(double q2);
 
   //////////////////////
   // Switch           //
@@ -170,15 +193,26 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   bool isQATPC;
   bool isQAVZERO; // flag for V0 qn QA
   bool isQAZDC;
+  bool isNarrowDcaCuts768;
+  bool isProtonCustomizedDCACut;
+  bool isUsePionRejection;
+
   bool isCalculatePIDFlow;        // if fill PID Flow
-  bool isCalculateDeltaGamma;     // if fill γ and δ
   bool isCalculateDiffResult;     // if fill Diff Reslut
   bool isCalculateDeltaPhiSumPhi; // if fill C(delta_phi)
+
+  bool isCalculateLambdaProton;
+  bool isCalculateLambdaHadron;
   bool isCalculateLambdaLambda;
   bool isCalculateProtonProton;
+  bool isCalculateProtonHadron;
   bool isCalculateHadronHadron;
-  bool isNarrowDcaCuts768;
-  bool isStrictestProtonCut;
+  
+  bool isCheckLambdaProtonFromDecay;
+  bool isCheckLambdaProtonFromDecayFoundInTrackLoops;
+  bool isUseOneSideTPCPlane;
+
+  bool isTightPileUp;
 
   //////////////////////
   // Cuts and options //
@@ -213,9 +247,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   float fNSigmaTPCCut;
   float fNSigmaTOFCut;
   // V0
-  double fV0PtMin;                  //
   double fV0CPAMin;                 //
-  double fV0RapidityMax;            //
   double fV0DecayLengthMin;         //
   double fV0DecayLengthMax;         //
   double fV0DCAToPrimVtxMax;        //
@@ -225,6 +257,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   double fDaughtersEtaMax;          //
   double fDaughtersTPCNclsMin;      //
   double fDaughtersDCAToPrimVtxMin; //
+  double fRatioCrossedRowsFindable; //
   float fV0PosProtonTPCNsigma;      //
   float fV0NegPionTPCNsigma;        //
   float fV0NegProtonTPCNsigma;      //
@@ -233,12 +266,22 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   float fV0NegPionTOFNsigma;        //
   float fV0NegProtonTOFNsigma;      //
   float fV0PosPionTOFNsigma;        //
-  // Lambda Mass Cut
-  double fLambdaMassMean;
-  double fLambdaMassRightCut;     //
-  double fLambdaMassLeftCut;      //
-  double fAntiLambdaMassRightCut; //
-  double fAntiLambdaMassLeftCut;  //
+  // Lambda Cut
+  double fLambdaPtMin;              //
+  double fLambdaPtMax;              //
+  double fAntiLambdaPtMin;          //
+  double fAntiLambdaPtMax;          //
+  double fLambdaRapidityMax;        //
+  double fAntiLambdaRapidityMax;    //
+  double fLambdaMassRightCut;       //
+  double fLambdaMassLeftCut;        //
+  double fAntiLambdaMassRightCut;   //
+  double fAntiLambdaMassLeftCut;    //
+  double fLambdaMassMean;           //
+  // Number of Qn Bins for ESE 
+  int fNQ2Bins;                     //
+  // Number of Mass Bins
+  int fNMassBins;
 
   ///////////////////The following files are from the data//////////////////////////////////
   /////////////
@@ -270,6 +313,9 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   double fSumQ2xTPCNeg;
   double fSumQ2yTPCNeg;
   double fWgtMultTPCNeg;
+  double fSumQ2xTPC;
+  double fSumQ2yTPC;
+  double fWgtMultTPC;
   // Plane
   double fPsi2TPCPos;
   double fPsi2TPCNeg;
@@ -277,7 +323,9 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   double fPsi2V0A;
   double fPsi1ZNC;
   double fPsi1ZNA;
-  // Are we get the right plane?
+  double fPsi2TPC;
+  double fQ2Bin;
+  // Do we get the right plane?
   bool isRightTPCPlane;
   bool isRightVZEROPlane;
   bool isRightZDCPlane;
@@ -285,6 +333,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   // Plane tracks Map key:id value:(phi,weight)
   std::unordered_map<int, std::vector<double>> mapTPCPosTrksIDPhiWgt;
   std::unordered_map<int, std::vector<double>> mapTPCNegTrksIDPhiWgt;
+  std::unordered_map<int, std::vector<double>> mapTPCTrksIDPhiWgt;
   
   // Vector for particles from Tracks [pt,eta,phi,id,pdgcode,weight]
   std::vector<std::array<double,6>> vecParticle;
@@ -292,6 +341,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   std::vector<std::array<double,9>> vecParticleV0;
   // Vector for daughter particles [pt,eta,phi,id,pdgcode,weight]
   std::vector<std::array<double,6>> vecParticleFromDecay;
+  // Vector for daughter particles found in the track loop [pt,eta,phi,id,pdgcode,weight]
+  std::vector<std::array<double,6>> vecParticleFromFoundInTrackLoops;
 
   ///////////////////The following files are read from external sources////////////////////
   ////////////////////////
@@ -336,8 +387,11 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   AliOADBContainer* contQynam;
   TH1D* hQx2mV0[2];
   TH1D* hQy2mV0[2];
-  // 18q
+  TSpline3* splQ2c[90];
+
+  // 18q/r
   TH2F* fHCorrectV0ChWeghts;
+  TH2D* hQnPercentile;
   ////////////////////////
   // ZDC
   ////////////////////////
@@ -388,7 +442,6 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TH1D* fHistDcaXY;
   TH1D* fHistDcaZ;
   TH1D* fHistPhi[2];
-  TH2D* fHist2EtaPhi[2];
   // Psi QA
   // V0C [0]GE [1]RC
   TProfile* fProfileV0CQxCent[2];
@@ -439,23 +492,29 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TH1D* fHistV0DcatoPrimVertex; // !Raw V0s' DcatoPV
   TH1D* fHistV0CPA;             // !Raw V0s' CPA(cosine pointing angle)
   TH1D* fHistV0DecayLength;     // !Raw V0s' DecayLength
+  TH1D* fHistV0NegDaughterDca;  // !Raw V0s' NegDaughterDca
+  TH1D* fHistV0PosDaughterDca;  // !Raw V0s' PosDaughterDca
   // Lambda QA
   //[0]:Before the Mass Cut [1]:After the Mass Cut
   TH1D* fHistLambdaPt[2];                  //
   TH1D* fHistLambdaEta[2];                 //
   TH1D* fHistLambdaPhi[2];                 //
   TH1D* fHistLambdaDcaToPrimVertex[2];     //
+  TH1D* fHistLambdaNegDaugtherDca[2];      //
+  TH1D* fHistLambdaPosDaugtherDca[2];      //
   TH1D* fHistLambdaCPA[2];                 //
   TH1D* fHistLambdaDecayLength[2];         //
-  TH1D* fHistLambdaMass[2];                //
+  TH3D* fHist3LambdaCentPtMass[2];         //
   TH2D* fHist2LambdaMassPtY[2];            //
   TH1D* fHistAntiLambdaPt[2];              //
   TH1D* fHistAntiLambdaEta[2];             //
   TH1D* fHistAntiLambdaPhi[2];             //
   TH1D* fHistAntiLambdaDcaToPrimVertex[2]; //
+  TH1D* fHistAntiLambdaNegDaugtherDca[2];  //
+  TH1D* fHistAntiLambdaPosDaugtherDca[2];  //
   TH1D* fHistAntiLambdaCPA[2];             //
   TH1D* fHistAntiLambdaDecayLength[2];     //
-  TH1D* fHistAntiLambdaMass[2];            //
+  TH3D* fHist3AntiLambdaCentPtMass[2];     //
   TH2D* fHist2AntiLambdaMassPtY[2];        //
 
 
@@ -470,6 +529,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TH2D* fHist2Psi2V0ACent;
   TH2D* fHist2Psi1ZNCCent;
   TH2D* fHist2Psi1ZNACent;
+  TH2D* fHist2Psi2TPCCent;
 
   // Res
   TProfile* fProfileTPCPsi2Correlation;       // TPCPos-TPCNeg
@@ -480,6 +540,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TProfile* fProfileV0ATPCPosPsi2Correlation; // V0A-TPCNeg
   TProfile* fProfileV0CTPCNegPsi2Correlation; // V0C-TPCNeg
   TProfile* fProfileV0ATPCNegPsi2Correlation; // V0A-TPCNeg
+  TProfile* fProfileV0CTPCPsi2Correlation;    // V0C-TPC
+  TProfile* fProfileV0ATPCPsi2Correlation;    // V0A-TPC
 
   // Flow
   // [0]TPC [1]V0C [2]V0A [3]ZNC [4]ZNA
@@ -487,18 +549,23 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TProfile2D* fProfile2RawFlowPtCentHadron[5][2];
   TProfile2D* fProfile2RawFlowPtCentProton[5][2];
   TProfile2D* fProfile2RawFlowPtCentLambda[5][2];
+  TProfile2D* fProfile2RawFlowHadronQ2;
+  TProfile2D* fProfile2RawFlowProtonQ2;
+  TProfile2D* fProfile2RawFlowLambdaQ2;
 
   // δ
   TProfile* fProfileDeltaLambdaProton[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
   TProfile* fProfileDeltaLambdaHadron[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
   TProfile* fProfileDeltaLambdaLambda[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
   TProfile* fProfileDeltaProtonProton[4]; //![0]:p-p  [1]:p-pbar [2]:pbar-p  [3]:pbar-pbar
+  TProfile* fProfileDeltaProtonHadron[4]; //![0]:p-h+ [1]:p-h-   [2]:pbar-h+ [3]:pbar-h-
   TProfile* fProfileDeltaHadronHadron[4]; //![0]:h+-h+[1]:h--h-  [2]:h--h+   [3]:h--h-
   // γ [5]:plane type [4]:pair type
   TProfile* fProfileGammaLambdaProton[5][4];
   TProfile* fProfileGammaLambdaHadron[5][4];
   TProfile* fProfileGammaLambdaLambda[5][4];
   TProfile* fProfileGammaProtonProton[5][4];
+  TProfile* fProfileGammaProtonHadron[5][4];
   TProfile* fProfileGammaHadronHadron[5][4];
 
   // Diff δ(ΔpT)
@@ -506,34 +573,77 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TProfile2D* fProfile2DiffDeltaLambdaHadronDPt[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
   TProfile2D* fProfile2DiffDeltaLambdaLambdaDPt[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
   TProfile2D* fProfile2DiffDeltaProtonProtonDPt[4]; //![0]:p-p  [1]:p-pbar [2]:pbar-p  [3]:pbar-pbar
+  TProfile2D* fProfile2DiffDeltaProtonHadronDPt[4]; //![0]:p-h+ [1]:p-h-   [2]:pbar-h+ [3]:pbar-h-
   TProfile2D* fProfile2DiffDeltaHadronHadronDPt[4]; //![0]:h+-h+[1]:h--h-  [2]:h--h+   [3]:h--h-
+  // Diff δ(SpT)
+  TProfile2D* fProfile2DiffDeltaLambdaProtonSPt[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  TProfile2D* fProfile2DiffDeltaLambdaHadronSPt[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
+  TProfile2D* fProfile2DiffDeltaLambdaLambdaSPt[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
+  TProfile2D* fProfile2DiffDeltaProtonProtonSPt[4]; //![0]:p-p  [1]:p-pbar [2]:pbar-p  [3]:pbar-pbar
+  TProfile2D* fProfile2DiffDeltaProtonHadronSPt[4]; //![0]:p-h+ [1]:p-h-   [2]:pbar-h+ [3]:pbar-h-
+  TProfile2D* fProfile2DiffDeltaHadronHadronSPt[4]; //![0]:h+-h+[1]:h--h-  [2]:h--h+   [3]:h--h-
+  // // Diff δ(SpT, M)
+  // TProfile3D* fProfile3DiffDeltaLambdaProtonSPtMass[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  // TProfile3D* fProfile3DiffDeltaLambdaHadronSPtMass[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
+  // TProfile3D* fProfile3DiffDeltaLambdaLambdaSPtMass[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
   // Diff δ(Δη)
   TProfile2D* fProfile2DiffDeltaLambdaProtonDEta[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
   TProfile2D* fProfile2DiffDeltaLambdaHadronDEta[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
   TProfile2D* fProfile2DiffDeltaLambdaLambdaDEta[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
   TProfile2D* fProfile2DiffDeltaProtonProtonDEta[4]; //![0]:p-p  [1]:p-pbar [2]:pbar-p  [3]:pbar-pbar
+  TProfile2D* fProfile2DiffDeltaProtonHadronDEta[4]; //![0]:p-h+ [1]:p-h-   [2]:pbar-h+ [3]:pbar-h-
   TProfile2D* fProfile2DiffDeltaHadronHadronDEta[4]; //![0]:h+-h+[1]:h--h-  [2]:h--h+   [3]:h--h-
   // Diff δ(mass)
   TProfile2D* fProfile2DiffDeltaLambdaProtonMass[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
   TProfile2D* fProfile2DiffDeltaLambdaHadronMass[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
-  TProfile2D* fProfile2DiffDeltaLambdaLambdaMass[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
+  TProfile3D* fProfile3DiffDeltaLambdaLambdaMassMass[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
+  // Diff δ(q2);
+  TProfile2D* fProfile2DiffDeltaLambdaProtonQ2[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  TProfile2D* fProfile2DiffDeltaLambdaHadronQ2[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
+  TProfile2D* fProfile2DiffDeltaLambdaLambdaQ2[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
+  TProfile2D* fProfile2DiffDeltaProtonProtonQ2[4]; //![0]:p-p  [1]:p-pbar [2]:pbar-p  [3]:pbar-pbar
+  TProfile2D* fProfile2DiffDeltaProtonHadronQ2[4]; //![0]:p-h+ [1]:p-h-   [2]:pbar-h+ [3]:pbar-h-
+  TProfile2D* fProfile2DiffDeltaHadronHadronQ2[4]; //![0]:h+-h+[1]:h--h-  [2]:h--h+   [3]:h--h-
 
   // Diff γ(ΔpT)(only TPC Plane)
   TProfile2D* fProfile2DiffGammaLambdaProtonDPt[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
   TProfile2D* fProfile2DiffGammaLambdaHadronDPt[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
   TProfile2D* fProfile2DiffGammaLambdaLambdaDPt[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
   TProfile2D* fProfile2DiffGammaProtonProtonDPt[4]; //![0]:p-p  [1]:p-pbar [2]:pbar-p  [3]:pbar-pbar
+  TProfile2D* fProfile2DiffGammaProtonHadronDPt[4]; //![0]:p-h+ [1]:p-h-   [2]:pbar-h+ [3]:pbar-h-
   TProfile2D* fProfile2DiffGammaHadronHadronDPt[4]; //![0]:h+-h+[1]:h--h-  [2]:h--h+   [3]:h--h-
+  // Diff γ(SpT)(only TPC Plane)
+  TProfile2D* fProfile2DiffGammaLambdaProtonSPt[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  TProfile2D* fProfile2DiffGammaLambdaHadronSPt[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
+  TProfile2D* fProfile2DiffGammaLambdaLambdaSPt[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
+  TProfile2D* fProfile2DiffGammaProtonProtonSPt[4]; //![0]:p-p  [1]:p-pbar [2]:pbar-p  [3]:pbar-pbar
+  TProfile2D* fProfile2DiffGammaProtonHadronSPt[4]; //![0]:p-h+ [1]:p-h-   [2]:pbar-h+ [3]:pbar-h-
+  TProfile2D* fProfile2DiffGammaHadronHadronSPt[4]; //![0]:h+-h+[1]:h--h-  [2]:h--h+   [3]:h--h-
   // Diff γ(Δη)
   TProfile2D* fProfile2DiffGammaLambdaProtonDEta[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
   TProfile2D* fProfile2DiffGammaLambdaHadronDEta[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
   TProfile2D* fProfile2DiffGammaLambdaLambdaDEta[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
   TProfile2D* fProfile2DiffGammaProtonProtonDEta[4]; //![0]:p-p  [1]:p-pbar [2]:pbar-p  [3]:pbar-pbar
+  TProfile2D* fProfile2DiffGammaProtonHadronDEta[4]; //![0]:p-h+ [1]:p-h-   [2]:pbar-h+ [3]:pbar-h-
   TProfile2D* fProfile2DiffGammaHadronHadronDEta[4]; //![0]:h+-h+[1]:h--h-  [2]:h--h+   [3]:h--h-
-  // Diff δ(mass)
-  TProfile2D* fProfile2DiffGammaLambdaProtonMass[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
-  TProfile2D* fProfile2DiffGammaLambdaHadronMass[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
-  TProfile2D* fProfile2DiffGammaLambdaLambdaMass[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
+  // Diff γ(mass)
+  TProfile2D* fProfile2DiffGammaTPCLambdaProtonMass[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  TProfile2D* fProfile2DiffGammaTPCLambdaHadronMass[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
+  TProfile3D* fProfile3DiffGammaTPCLambdaLambdaMassMass[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
+  TProfile2D* fProfile2DiffGammaV0CLambdaProtonMass[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  TProfile2D* fProfile2DiffGammaV0CLambdaHadronMass[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
+  TProfile3D* fProfile3DiffGammaV0CLambdaLambdaMassMass[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
+  TProfile2D* fProfile2DiffGammaV0ALambdaProtonMass[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  TProfile2D* fProfile2DiffGammaV0ALambdaHadronMass[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
+  TProfile3D* fProfile3DiffGammaV0ALambdaLambdaMassMass[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
+
+  // Diff γ(q2)
+  TProfile2D* fProfile2DiffGammaLambdaProtonQ2[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  TProfile2D* fProfile2DiffGammaLambdaHadronQ2[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
+  TProfile2D* fProfile2DiffGammaLambdaLambdaQ2[4]; //![0]:Λ-Λ  [1]:Λ-Λbar [2]:Λbar-Λ  [3]:Λbar-Λbar
+  TProfile2D* fProfile2DiffGammaProtonProtonQ2[4]; //![0]:p-p  [1]:p-pbar [2]:pbar-p  [3]:pbar-pbar
+  TProfile2D* fProfile2DiffGammaProtonHadronQ2[4]; //![0]:p-h+ [1]:p-h-   [2]:pbar-h+ [3]:pbar-h-
+  TProfile2D* fProfile2DiffGammaHadronHadronQ2[4]; //![0]:h+-h+[1]:h--h-  [2]:h--h+   [3]:h--h-
 
 
   // C(Δη,Δφ) [cent][pair type]
@@ -541,6 +651,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TH2D* fHist2DEtaDPhiLambdaHadron[8][4];
   TH2D* fHist2DEtaDPhiLambdaLambda[8][4];
   TH2D* fHist2DEtaDPhiProtonProton[8][4];
+  TH2D* fHist2DEtaDPhiProtonHadron[8][4];
   TH2D* fHist2DEtaDPhiHadronHadron[8][4];
 
   // C(Δη,sφ) [cent][pair type] only TPC Plane
@@ -548,6 +659,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TH2D* fHist2DEtaSPhiLambdaHadron[8][4];
   TH2D* fHist2DEtaSPhiLambdaLambda[8][4];
   TH2D* fHist2DEtaSPhiProtonProton[8][4];
+  TH2D* fHist2DEtaSPhiProtonHadron[8][4];
   TH2D* fHist2DEtaSPhiHadronHadron[8][4];
 
   // δ Λ - daughter
@@ -556,6 +668,12 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   // γ Λ - daughter(only TPC)
   TProfile* fProfileGammaLambdaProtonDecay[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
   TProfile* fProfileGammaLambdaPionDecay[4];   //![0]:Λ-pi+  [1]:Λ-pi- [2]:Λbar-pi+ [3]:Λbar-pi-
+  // δ Λ - daughter (this daughter is found in track loops)
+  TProfile* fProfileDeltaLambdaProtonFoundInTrackLoops[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  TProfile* fProfileDeltaLambdaPionFoundInTrackLoops[4];   //![0]:Λ-pi+  [1]:Λ-pi- [2]:Λbar-pi+ [3]:Λbar-pi-
+  // γ Λ - daughter(only TPC)
+  TProfile* fProfileGammaLambdaProtonFoundInTrackLoops[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  TProfile* fProfileGammaLambdaPionFoundInTrackLoops[4];   //![0]:Λ-pi+  [1]:Λ-pi- [2]:Λbar-pi+ [3]:Λbar-pi-
 
 
   AliAnalysisTaskCVEPIDCME(const AliAnalysisTaskCVEPIDCME&);

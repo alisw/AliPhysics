@@ -1,2186 +1,1672 @@
+#include "AliAnalysisTaskEtaPhigg.h"
+
+#include "AliAODCaloCells.h"
+#include "AliAODEvent.h"
+#include "AliAODTrack.h"
+#include "AliAODVertex.h"
+#include "AliAnalysisManager.h"
+#include "AliAnalysisTaskSE.h"
+#include "AliCaloPhoton.h"
+#include "AliConvEventCuts.h"
+#include "AliConversionPhotonCuts.h"
+#include "AliEMCALGeometry.h"
+#include "AliEPFlattener.h"
+#include "AliEventplane.h"
+#include "AliFemtoPair.h"
+#include "AliFemtoThreeVector.h"
+#include "AliFemtoTrack.h"
+#include "AliLog.h"
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
+#include "AliMagF.h"
+#include "AliMultSelection.h"
+#include "AliOADBContainer.h"
+#include "AliPHOSCalibData.h"
+#include "AliPHOSEsdCluster.h"
+#include "AliPHOSGeometry.h"
+#include "AliV0ReaderV1.h"
+#include "TCanvas.h"
 #include "TChain.h"
-#include "TTree.h"
-#include "TObjArray.h"
 #include "TF1.h"
 #include "TFile.h"
+#include "TGeoGlobalMagField.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH2I.h"
 #include "TH3F.h"
-#include "TParticle.h"
-#include "TCanvas.h"
-#include "TStyle.h"
-#include "TRandom.h"
-#include "TROOT.h"
 #include "THashList.h"
-#include "TGeoGlobalMagField.h"
-
-#include "AliAnalysisTaskSE.h"
-#include "AliAnalysisTaskEtaPhigg.h"
-#include "AliFemtoTrack.h"
-#include "AliFemtoThreeVector.h"
-#include "AliFemtoPair.h"
-#include "AliAODTrack.h"
-#include "AliAnalysisManager.h"
-#include "AliMCEventHandler.h"
-#include "AliMCEvent.h"
-#include "AliCaloPhoton.h"
-#include "AliPHOSGeometry.h"
-#include "AliPHOSEsdCluster.h"
-#include "AliPHOSCalibData.h"
-#include "AliAODEvent.h"
-#include "AliAODCaloCells.h"
-#include "AliAODVertex.h"
-#include "AliLog.h"
-#include "AliCentrality.h" 
-#include "AliEventplane.h"
+#include "TObjArray.h"
+#include "TParticle.h"
 #include "TProfile.h"
-#include "AliOADBContainer.h"
-#include "AliMagF.h"
-#include "AliAODMCParticle.h"
-#include "AliEPFlattener.h"
+#include "TROOT.h"
+#include "TRandom.h"
+#include "TStyle.h"
+#include "TTree.h"
 
-#include "AliConvEventCuts.h"
-#include "AliV0ReaderV1.h"
-#include "AliConvEventCuts.h"
-#include "AliConversionPhotonCuts.h"
-#include "AliEMCALGeometry.h"
-
-
-// Analysis task to fill histograms with PHOS ESD clusters and cells
+// Task for ggHBT analysis in PHOS
 // Authors: Dmitri Peressounko
-// Date   : 28.05.2011
+// Date   : 01.01.2023
 
 ClassImp(AliAnalysisTaskEtaPhigg)
 
-//________________________________________________________________________
-AliAnalysisTaskEtaPhigg::AliAnalysisTaskEtaPhigg(const char *name) 
-: AliAnalysisTaskSE(name),
- // fStack(0x0),
-  fOutputContainer(0x0),
-  fEvent(0x0),
-  fPHOSEvent(0x0),
-  fEMCALEvent(0x0),
-  fPCMEvent(0x0),
-  fV0AFlat(0x0),
-  fV0CFlat(0x0),
-  fRunNumber(0),
-  fRP(0.),
-  fCentrality(0.),
-  fCenBin(0),
-  fPHOSGeo(0x0),
-  fEMCALgeo(0x0),
-  fEventCounter(0),
-  fV0Reader(0x0),
-  fIsFromMBHeader(kFALSE),
-  fDoMesonAnalysis(kFALSE),
-  fDoMesonQA(0),
-  fDoPhotonQA(0),
-  fnCuts(0),
-  fiCut(0),
-  fIsHeavyIon(0),
-  fPtGamma(0.),
-  fDCAzPhoton(0.),
-  fRConvPhoton(0.),
-  fEtaPhoton(0.),
-  fiCatPhoton(0),
-  fiPhotonMCInfo(0),
-  fMinMass(-1),
-  fMaxMass(10),
-  fMinKappa(-1),
-  fMaxKappa(100),
-  fEventCutArray(0x0),
-  fEventCuts(0x0),
-  fCutArray(0x0),
-  fConversionCuts(0x0),
-  fGammaCandidates(0x0),
-  fCutFolder(0x0)
+  //________________________________________________________________________
+  AliAnalysisTaskEtaPhigg::AliAnalysisTaskEtaPhigg(const char* name)
+  : AliAnalysisTaskSE(name),
+    // fStack(0x0),
+    fOutputContainer(nullptr),
+    fEvent(nullptr),
+    fPHOSEvent(nullptr),
+    fCPVEvent(nullptr),
+    fV0AFlat(nullptr),
+    fV0CFlat(nullptr),
+    fRP(0.),
+    fMF(0),
+    fRunNumber(0),
+    fCentrality(0.),
+    fCenBin(0),
+    fPHOSGeo(nullptr),
+    fEventCounter(0),
+    fBadMap(nullptr)
 {
   // Constructor
-  for(Int_t i=0;i<10;i++){
-    for(Int_t j=0;j<10;j++)
-      for(Int_t k=0;k<10;k++){ //no RP bins
-	fPHOSEvents[i][j][k]=0 ;
-	fEMCALEvents[i][j][k]=0 ;
-	fPCMEvents[i][j][k]=0 ;
+  for (Int_t i = 0; i < kVtxBins; i++) {
+    for (Int_t j = 0; j < kCentBins; j++) {
+      for (Int_t k = 0; k < kPRBins; k++) { // no RP bins
+        fPHOSEvents[i][j][k] = nullptr;
       }
+    }
   }
-  
+
   // Output slots #0 write into a TH1 container
-  DefineOutput(1,TList::Class());
-
-  // Initialize the PHOS geometry
-  fPHOSGeo = AliPHOSGeometry::GetInstance("IHEP") ;
-
-  //We have to apply re-calibration for pass1 LCH10h
-  // Initialize decalibration factors in the form of the OCDB object
-
-
+  DefineOutput(1, TList::Class());
 }
-
 //________________________________________________________________________
 void AliAnalysisTaskEtaPhigg::UserCreateOutputObjects()
 {
-
   // Create histograms
   // Called once
-  const Int_t nRuns=200 ;
-  
+  const Int_t nRuns = 200;
+
   // ESD histograms
-  if(fOutputContainer != NULL){
+  if (fOutputContainer != NULL) {
     delete fOutputContainer;
   }
   fOutputContainer = new THashList();
   fOutputContainer->SetOwner(kTRUE);
-  
+
   //========QA histograms=======
 
-  //Event selection
-  fOutputContainer->Add(new TH2F("hSelEvents","Event selection", 10,0.,10.,nRuns,0.,float(nRuns))) ;
-  fOutputContainer->Add(new TH1F("hTotSelEvents","Event selection", 10,0.,10.)) ;
- 
-  fOutputContainer->Add(new TH2F("phiRP","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
-  fOutputContainer->Add(new TH2F("phiRPV0A","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
-  fOutputContainer->Add(new TH2F("phiRPV0Aflat","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
-  fOutputContainer->Add(new TH2F("phiRPV0C","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
-  fOutputContainer->Add(new TH2F("phiRPV0Cflat","Event plane", 100,0.,TMath::Pi(),100,0.,100.)) ;
-  fOutputContainer->Add(new TH2F("phiRPV0AC","Event plane", 100,0.,TMath::Pi(),100,0.,TMath::Pi())) ;
-  fOutputContainer->Add(new TH2F("phiRPV0ACflat","Event plane", 100,0.,TMath::Pi(),100,0.,TMath::Pi())) ;
-  fOutputContainer->Add(new TH2F("phiRPvsV0A","Event plane", 100,0.,TMath::Pi(),100,0.,TMath::Pi())) ;
-  fOutputContainer->Add(new TH2F("phiRPvsV0C","Event plane", 100,0.,TMath::Pi(),100,0.,TMath::Pi())) ;
+  // Event selection
+  fOutputContainer->Add(new TH2F("hSelEvents", "Event selection", 10, 0., 10., nRuns, 0., float(nRuns)));
+  fOutputContainer->Add(new TH1F("hTotSelEvents", "Event selection", 10, 0., 10.));
 
-  //vertex distribution
-  fOutputContainer->Add(new TH2F("hZvertex","Z vertex position", 50,-25.,25.,nRuns,0.,float(nRuns))) ;
-  
-  //Centrality
-  fOutputContainer->Add(new TH2F("hCentrality","Event centrality", 100,0.,100.,nRuns,0.,float(nRuns))) ;
-  fOutputContainer->Add(new TH2F("hCenPHOS","Centrality vs PHOSclusters", 100,0.,100.,200,0.,200.)) ;
-  fOutputContainer->Add(new TH2F("hCenPHOSCells","Centrality vs PHOS cells", 100,0.,100.,100,0.,1000.)) ;
-  fOutputContainer->Add(new TH2F("hCenTrack","Centrality vs tracks", 100,0.,100.,100,0.,15000.)) ;  
-  fOutputContainer->Add(new TH2F("hCenTOF","Centrality vs PHOS TOF", 100,0.,100.,600,-6.e-6,6.e-6)) ;
+  fOutputContainer->Add(new TH2F("phiRP", "Event plane", 100, 0., TMath::Pi(), 100, 0., 100.));
+  fOutputContainer->Add(new TH2F("phiRPV0A", "Event plane", 100, 0., TMath::Pi(), 100, 0., 100.));
+  fOutputContainer->Add(new TH2F("phiRPV0Aflat", "Event plane", 100, 0., TMath::Pi(), 100, 0., 100.));
+  fOutputContainer->Add(new TH2F("phiRPV0C", "Event plane", 100, 0., TMath::Pi(), 100, 0., 100.));
+  fOutputContainer->Add(new TH2F("phiRPV0Cflat", "Event plane", 100, 0., TMath::Pi(), 100, 0., 100.));
+  fOutputContainer->Add(new TH2F("phiRPV0AC", "Event plane", 100, 0., TMath::Pi(), 100, 0., TMath::Pi()));
+  fOutputContainer->Add(new TH2F("phiRPV0ACflat", "Event plane", 100, 0., TMath::Pi(), 100, 0., TMath::Pi()));
+  fOutputContainer->Add(new TH2F("phiRPvsV0A", "Event plane", 100, 0., TMath::Pi(), 100, 0., TMath::Pi()));
+  fOutputContainer->Add(new TH2F("phiRPvsV0C", "Event plane", 100, 0., TMath::Pi(), 100, 0., TMath::Pi()));
 
-  fOutputContainer->Add(new TH2F("hCenPCM","Centrality vs PCM photons", 100,0.,100.,200,0.,200.)) ;
-  
-  fOutputContainer->Add(new TH2F("hCenEMCAL","Centrality vs EMCAL photons", 100,0.,100.,200,0.,1000.)) ;
+  // vertex distribution
+  fOutputContainer->Add(new TH2F("hZvertex", "Z vertex position", 50, -25., 25., nRuns, 0., float(nRuns)));
 
-  fOutputContainer->Add(new TH2F("hPHOSvsEMCAL","PHOS vs EMCAL photons", 100,0.,100.,200,0.,1000.)) ;
+  // Centrality
+  fOutputContainer->Add(new TH2F("hCentrality", "Event centrality", 100, 0., 100., nRuns, 0., float(nRuns)));
+  fOutputContainer->Add(new TH2F("hCenPHOS", "Centrality vs PHOSclusters", 100, 0., 100., 200, 0., 200.));
+  fOutputContainer->Add(new TH2F("hCenPHOSm1", "Centrality vs PHOSclusters in mod1 ", 100, 0., 100., 100, 0., 100.));
+  fOutputContainer->Add(new TH2F("hCenPHOSm2", "Centrality vs PHOSclusters in mod2 ", 100, 0., 100., 100, 0., 100.));
+  fOutputContainer->Add(new TH2F("hCenPHOSm3", "Centrality vs PHOSclusters in mod3 ", 100, 0., 100., 100, 0., 100.));
+  fOutputContainer->Add(new TH2F("hCenPHOSm4", "Centrality vs PHOSclusters in mod4 ", 100, 0., 100., 100, 0., 100.));
+  fOutputContainer->Add(new TH2F("hCenPHOSCells", "Centrality vs PHOS cells", 100, 0., 100., 100, 0., 1000.));
+  fOutputContainer->Add(new TH1F("hPHOSBadMod", "Number of bad event due to module", 10, 0., 10.));
 
-  
-  //PHOS QA 			
-  
-  //Bad Map
-  fOutputContainer->Add(new TH2F("hCluLowM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluLowM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluLowM3","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCenCPV", "Centrality vs CPVclusters", 100, 0., 100., 2000, 0., 2000.));
 
-  fOutputContainer->Add(new TH2F("hCluHighM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluHighM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluHighM3","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
-  
-  fOutputContainer->Add(new TH2F("hCluVetoM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluVetoM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluVetoM3","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
+  fOutputContainer->Add(new TH2F("hCenTrack", "Centrality vs tracks", 100, 0., 100., 100, 0., 15000.));
+  fOutputContainer->Add(new TH2F("hCenTOF", "Centrality vs PHOS TOF", 100, 0., 100., 200, -400.e-9, 400.e-9));
 
-  fOutputContainer->Add(new TH2F("hCluDispM1","Cell (X,Z), M1" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluDispM2","Cell (X,Z), M2" ,64,0.5,64.5, 56,0.5,56.5));
-  fOutputContainer->Add(new TH2F("hCluDispM3","Cell (X,Z), M3" ,64,0.5,64.5, 56,0.5,56.5));
+  //   fOutputContainer->Add(new TH2F("hCenEMCAL","Centrality vs EMCAL photons", 100,0.,100.,200,0.,1000.)) ;
+  //
+  //   fOutputContainer->Add(new TH2F("hPHOSvsEMCAL","PHOS vs EMCAL photons", 100,0.,100.,200,0.,1000.)) ;
 
-  fOutputContainer->Add(new TH2F("hTofM1","TOF in M1" ,100,0.,20.,400,-4.e-6,4.e-6));
-  fOutputContainer->Add(new TH2F("hTofM2","TOF in M2" ,100,0.,20.,400,-4.e-6,4.e-6));
-  fOutputContainer->Add(new TH2F("hTofM3","TOF in M3" ,100,0.,20.,400,-4.e-6,4.e-6));
-  
-  //EMCAL QA
-  for(Int_t mod=0; mod<12; mod++){
-    fOutputContainer->Add(new TH2F(Form("hEMCALmod%d",mod),"EMCAL (x,z)" ,24,0.,24., 48,0.,48.));  
-  }
-  
-  fOutputContainer->Add(new TH2F("hPHOSsp","Spectrum in PHOS" ,100,0.,10.,100,-TMath::Pi(),TMath::Pi()));  
-  fOutputContainer->Add(new TH2F("hPCMsp","Spectrum in PHOS" ,100,0.,10.,100,-TMath::Pi(),TMath::Pi()));
-  fOutputContainer->Add(new TH2F("hEMCALsp","Spectrum in PHOS" ,100,0.,10.,100,-TMath::Pi(),TMath::Pi()));
-    
-  char kTbins[7][20] ;
-  sprintf(kTbins[0],"Kt01-02") ;
-  sprintf(kTbins[1],"Kt02-04") ;
-  sprintf(kTbins[2],"Kt04-07") ;
-  sprintf(kTbins[3],"Kt07-10") ;
-  sprintf(kTbins[4],"Kt10-13") ;
-  sprintf(kTbins[5],"Kt13-20") ;
-  sprintf(kTbins[6],"Kt20-30") ;
+  // PHOS QA
 
-  const Int_t nCuts=7 ;
-  char cut[7][20] ;
-  sprintf(cut[0],"All") ;
-  sprintf(cut[1],"Disp") ;
-  sprintf(cut[2],"CPV") ;
-  sprintf(cut[3],"Both") ;
-  sprintf(cut[4],"Disp2") ;
-  sprintf(cut[5],"CPV2") ;
-  sprintf(cut[6],"Both2") ;
+  // Bad Map
+  fOutputContainer->Add(new TH2F("hCluLowM1", "Cell (X,Z), M1", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hCluLowM2", "Cell (X,Z), M2", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hCluLowM3", "Cell (X,Z), M3", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hCluLowM4", "Cell (X,Z), M4", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hDisp", "Cell (X,Z), M3", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hTrackVeto", "Cell (X,Z), M3", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hDispTrackVeto", "Cell (X,Z), M3", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hCPVVeto", "Cell (X,Z), M3", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hDispCPVVeto", "Cell (X,Z), M3", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hBothVeto", "Cell (X,Z) ", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hDispBothVeto", "Cell (X,Z)", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hNotCPVVeto", "Cell (X,Z)", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hDispNotCPVVeto", "Cell (X,Z)", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hNotTrackVeto", "Cell (X,Z)", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hDispNotTrackVeto", "Cell (X,Z)", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hNotBothVeto", "Cell (X,Z)", 64, 0.5, 64.5, 56, 0.5, 56.5));
+  fOutputContainer->Add(new TH2F("hDispNotBothVeto", "Cell (X,Z)", 64, 0.5, 64.5, 56, 0.5, 56.5));
 
-  
-  for(Int_t iCut=0; iCut<nCuts; iCut++){
+  fOutputContainer->Add(new TH2F("hTofM1", "TOF in M3", 100, 0., 20., 400, -4.e-6, 4.e-6));
+  fOutputContainer->Add(new TH2F("hTofM2", "TOF in M3", 100, 0., 20., 400, -4.e-6, 4.e-6));
+  fOutputContainer->Add(new TH2F("hTofM3", "TOF in M3", 100, 0., 20., 400, -4.e-6, 4.e-6));
+  fOutputContainer->Add(new TH2F("hTofM4", "TOF in M3", 100, 0., 20., 400, -4.e-6, 4.e-6));
 
-    fOutputContainer->Add(new TH3F(Form("hdPhiPhi_%s",cut[iCut]),"dPhi vs Phi",100,-TMath::Pi()/2,TMath::Pi()/2.,100,-TMath::Pi(),TMath::Pi(),100,0.,2.));
-    fOutputContainer->Add(new TH3F(Form("hmidPhiPhi_%s",cut[iCut]),"dPhi vs Phi",100,-TMath::Pi()/2,TMath::Pi()/2.,100,-TMath::Pi(),TMath::Pi(),100,0.,2.));
-    
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiPHOS_%s",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi(),TMath::Pi(),100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiPHOS_%s",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi(),TMath::Pi(),100,0.,5.));
+  fOutputContainer->Add(new TH2F("hAllSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+  fOutputContainer->Add(new TH2F("hMod3Sp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+  fOutputContainer->Add(new TH2F("hDispSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+  fOutputContainer->Add(new TH2F("hTrackVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+  fOutputContainer->Add(new TH2F("hDispTrackVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+  fOutputContainer->Add(new TH2F("hCPVVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+  fOutputContainer->Add(new TH2F("hDispCPVVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+  fOutputContainer->Add(new TH2F("hBothVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+  fOutputContainer->Add(new TH2F("hDispBothVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+  fOutputContainer->Add(new TH2F("hNotCPVVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+  fOutputContainer->Add(new TH2F("hDispNotCPVVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+  fOutputContainer->Add(new TH2F("hNotTrackVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+  fOutputContainer->Add(new TH2F("hDispNotTrackVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+  fOutputContainer->Add(new TH2F("hNotBothVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
+  fOutputContainer->Add(new TH2F("hDispNotBothVetoSp", "Spectrum in PHOS", 100, 0., 10., 20, 0., 100.));
 
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiPHOS_%s_mod1",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiPHOS_%s_mod1",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,100,0.,5.));
-
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiPHOS_%s_mod2",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiPHOS_%s_mod2",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,100,0.,5.));
-
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiPHOS_%s_mod3",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiPHOS_%s_mod3",cut[iCut]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/6.,TMath::Pi()/6.,100,0.,5.));
-
-    //PHOS-PCM
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiPHOSPCM_%s_mod1",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiPHOSPCM_%s_mod1",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiPHOSPCM_%s_mod2",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,3*TMath::Pi()/2.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiPHOSPCM_%s_mod2",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiPHOSPCM_%s_mod3",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiPHOSPCM_%s_mod3",cut[iCut]),"Eta-phi-E correlations",100,-1.2,1.2,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));  
-    
-  }
-  //Asymmetry  
-  for(Int_t ikT=0; ikT<7; ikT++){       
-    for(Int_t iCut=0; iCut<nCuts; iCut++){
-      fOutputContainer->Add(new TH3F(Form("hEtaPhiPHOS_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,-1.,1.));
-      fOutputContainer->Add(new TH3F(Form("hmiEtaPhiPHOS_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,-1.,1.));
-      //PHOS-PCM
-      fOutputContainer->Add(new TH3F(Form("hEtaPhiPHOSPCM_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,-1.,1.));
-      fOutputContainer->Add(new TH3F(Form("hmiEtaPhiPHOSPCM_%s_%s",cut[iCut],kTbins[ikT]),"Eta-phi-E correlations",100,-0.25,0.25,100,-TMath::Pi()/2.,TMath::Pi()/2.,20,-1.,1.));
-    }        
-  }
-  //PHOS vs Reaction Plane
-  for(Int_t iCut=0; iCut<nCuts; iCut++){
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiPHOSRP_%s",cut[iCut]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,TMath::Pi()/2.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiPHOSRP_%s",cut[iCut]),"Eta-phi-E correlations",10,0.,TMath::Pi(),100,-TMath::Pi()/2.,TMath::Pi()/2.,100,0.,5.));       
+  SetCutNames();
+  // HBT part
+  for (Int_t cen = 0; cen < kCentBins; cen++) {
+    for (Int_t iCut = 0; iCut < kCuts; iCut++) {
+      fhReQinv[cen][iCut] =
+        new TH2F(Form("hReQinv_%s_cen%d", fcut[iCut], cen), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+      fOutputContainer->Add(fhReQinv[cen][iCut]);
+      fhMiQinv[cen][iCut] =
+        new TH2F(Form("hMiQinv_%s_cen%d", fcut[iCut], cen), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+      fOutputContainer->Add(fhMiQinv[cen][iCut]);
+      fhReq[cen][iCut] =
+        new TH2F(Form("hReq_%s_cen%d", fcut[iCut], cen), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+      fOutputContainer->Add(fhReq[cen][iCut]);
+      fhMiq[cen][iCut] =
+        new TH2F(Form("hMiq_%s_cen%d", fcut[iCut], cen), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+      fOutputContainer->Add(fhMiq[cen][iCut]);
+    }
   }
 
-  //----EMCAL----
-  for(Int_t iCut=0; iCut<4; iCut++){
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiEMCAL_%s",cut[iCut]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiEMCAL_%s",cut[iCut]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiEMCAL_%s_etaBand1",cut[iCut]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiEMCAL_%s_etaBand1",cut[iCut]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiEMCAL_%s_etaBand2",cut[iCut]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiEMCAL_%s_etaBand2",cut[iCut]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiEMCAL_%s_etaBand3",cut[iCut]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiEMCAL_%s_etaBand3",cut[iCut]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-    
+  // 3D part
+  Int_t nQ = 120;
+  Double_t qMax = 0.3;
+  for (Int_t cen = 0; cen < kCentBins; cen++) {
+    for (Int_t ikT = 0; ikT < kKtbins; ikT++) {
+      fhReOSL[cen][ikT] = new TH3F(Form("hReOSL_DzCr_Kt%3.1f-%3.1f_cen%d", fKtBins[ikT], fKtBins[ikT + 1], cen),
+                                   "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ, -qMax, qMax);
+      fOutputContainer->Add(fhReOSL[cen][ikT]);
+      fhMiOSL[cen][ikT] = new TH3F(Form("hMiOSL_DzCr_Kt%3.1f-%3.1f_cen%d", fKtBins[ikT], fKtBins[ikT + 1], cen),
+                                   "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ, -qMax, qMax);
+      fOutputContainer->Add(fhMiOSL[cen][ikT]);
+      fhReOSLCTS[cen][ikT] = new TH3F(Form("hReOSL_DzCTS_Kt%3.1f-%3.1f_cen%d", fKtBins[ikT], fKtBins[ikT + 1], cen),
+                                      "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ, -qMax, qMax);
+      fOutputContainer->Add(fhReOSLCTS[cen][ikT]);
+      fhMiOSLCTS[cen][ikT] = new TH3F(Form("hMiOSL_DzCTS_Kt%3.1f-%3.1f_cen%d", fKtBins[ikT], fKtBins[ikT + 1], cen),
+                                      "real Out-Side-Long", nQ, -qMax, qMax, nQ, -qMax, qMax, nQ, -qMax, qMax);
+      fOutputContainer->Add(fhMiOSLCTS[cen][ikT]);
+    }
   }
-  for(Int_t mod=0; mod<12; mod++){
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiEMCAL_mod%d",mod),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiEMCAL_mod%d",mod),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-  }  
-  
-  //PHOS-EMCAL
-  for(Int_t iCut=0; iCut<4; iCut++){
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiPHOSEMCAL_%s",cut[iCut]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiPHOSEMCAL_%s",cut[iCut]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-  }
-  
-  //EMCAL-PCM
-  for(Int_t iCut=0; iCut<4; iCut++){
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiEMCALPCM_%s",cut[iCut]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiEMCALPCM_%s",cut[iCut]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-  }
-
-  
-  //------PCM---
-  for(Int_t ikT=0; ikT<7; ikT++){       
-    fOutputContainer->Add(new TH3F(Form("hEtaPhiPCM_%s",kTbins[ikT]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,20,-1.,1.));
-    fOutputContainer->Add(new TH3F(Form("hmiEtaPhiPCM_%s",kTbins[ikT]),"Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,20,-1.,1.));
-  }
-  fOutputContainer->Add(new TH3F("hEtaPhiPCM","Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-  fOutputContainer->Add(new TH3F("hmiEtaPhiPCM","Eta-phi-E correlations",100,-2.,2.,100,-TMath::Pi()/2.,3.*TMath::Pi()/2.,100,0.,5.));
-  
-  
-  
-  
-  //---PID cuts
-	// Array of current cut's gammas
-	fCutFolder = new TList*[fnCuts];
-
-
-	fV0Reader=(AliV0ReaderV1*)AliAnalysisManager::GetAnalysisManager()->GetTask("V0ReaderV1");
-	if(!fV0Reader){printf("Error: No V0 Reader");return;} // GetV0Reader
-/*	
-	if(fV0Reader)
-		if((AliConvEventCuts*)fV0Reader->GetEventCuts())
-			if(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms())
-				fOutputContainer->Add(((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetCutHistograms());
-	
-	if(fV0Reader)
-		if((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())
-			if(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms())
-				fOutputContainer->Add(((AliConversionPhotonCuts*)fV0Reader->GetConversionCuts())->GetCutHistograms());
-	
-	for(Int_t iCut = 0; iCut<fnCuts;iCut++){
-		if(!((AliConvEventCuts*)fEventCutArray->At(iCut))) continue;
-		if(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutHistograms()){
-			fCutFolder[iCut]->Add(((AliConvEventCuts*)fEventCutArray->At(iCut))->GetCutHistograms());
-		}
-		if(!((AliConversionPhotonCuts*)fCutArray->At(iCut))) continue;
-		if(((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutHistograms()){
-			fCutFolder[iCut]->Add(((AliConversionPhotonCuts*)fCutArray->At(iCut))->GetCutHistograms());
-		}
-		if(fDoMesonAnalysis){
-			if(!((AliConversionMesonCuts*)fMesonCutArray->At(iCut))) continue;
-			if(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutHistograms()){
-				fCutFolder[iCut]->Add(((AliConversionMesonCuts*)fMesonCutArray->At(iCut))->GetCutHistograms());
-			}
-		}
-	}
-*/
-
-
-  PostData(1, fOutputContainer);
-
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEtaPhigg::UserExec(Option_t *) 
+void AliAnalysisTaskEtaPhigg::UserExec(Option_t*)
 {
   // Main loop, called for each event
-  // Analyze ESD/AOD
-    
-  FillHistogram("hTotSelEvents",0.5) ;
-  
- 
-//   Int_t eventQuality = ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEventQuality();
-//   if(eventQuality == 2 || eventQuality == 3){// Event Not Accepted due to MC event missing or wrong trigger for V0ReaderV1
-// 	return;
-//   }
+  FillHistogram("hTotSelEvents", 0.5);
 
-  //No PCM particles
-//  if(!fV0Reader->IsEventSelected()){
-//    PostData(1, fOutputContainer);
-//    return;  
-//  }
-    
   fEvent = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!fEvent) {
-    Printf("ERROR: Could not retrieve event");
-    PostData(1, fOutputContainer);
+    Printf("ERROR: AliAnalysisTaskEtaPhigg::UserExec Could not retrieve event");
     return;
   }
 
-  fRunNumber=ConvertRunNumber(fEvent->GetRunNumber()) ;
-  FillHistogram("hSelEvents",1.5,fRunNumber-0.5) ;
-  FillHistogram("hTotSelEvents",1.5) ;
-  
- 
-  if(fEventCounter == 0) {
-    //Get Event Plane flattening
-    Int_t run = fEvent->GetRunNumber() ;
-    AliOADBContainer flatContainer("phosFlat");
-    flatContainer.InitFromFile("$ALICE_PHYSICS/OADB/PHOS/PHOSflat.root","phosFlat");
-    TObjArray *arr = (TObjArray*)flatContainer.GetObject(run,"phosFlat");
-    if(!arr){
-      AliError(Form("Can not read Flattening for run %d. \n From file $ALICE_PHYSICS/OADB/PHOS/PHOSflat.root",run)) ;    
-      arr = (TObjArray*)flatContainer.GetObject(170593,"phosFlat"); //default
-    }
-        
-    AliInfo(Form("Setting PHOS flattening with name %s \n",arr->GetName())) ;
-//    AliEPFlattener * h = (AliEPFlattener*)arr->At(0) ;  
-//      if(fTPCFlat) delete fTPCFlat ;
-//      fTPCFlat = new AliEPFlattener() ;
-//      fTPCFlat = h ;
-    AliEPFlattener * h = (AliEPFlattener*)arr->At(1) ;  
-    if(fV0AFlat) delete fV0AFlat ;
-    fV0AFlat = new AliEPFlattener() ;
-    fV0AFlat = h ;
-    h = (AliEPFlattener*)arr->At(2) ;  
-    if(fV0CFlat) delete fV0CFlat ;
-    fV0CFlat = new AliEPFlattener() ;
-    fV0CFlat = h ;
-   
-    
-    fEMCALgeo = AliEMCALGeometry::GetInstance();
-    
-    
-    fEventCounter++ ;
+  fRunNumber = ConvertRunNumber(fEvent->GetRunNumber());
+  FillHistogram("hSelEvents", 1.5, fRunNumber - 0.5);
+  FillHistogram("hTotSelEvents", 1.5);
+
+  if (!fPHOSGeo) {
+    fPHOSGeo = AliPHOSGeometry::GetInstance();
+    fMF = fEvent->GetMagneticField();
   }
 
-  
   // Checks if we have a primary vertex
   // Get primary vertices form AOD
-  const AliAODVertex *esdVertex5 = fEvent->GetPrimaryVertex();
+  const AliAODVertex* esdVertex5 = fEvent->GetPrimaryVertex();
 
-  Double_t vtx5[3] ={0.,0.,0.};
-  
+  double vtx5[3] = { 0., 0., 0. };
+
   vtx5[0] = esdVertex5->GetX();
   vtx5[1] = esdVertex5->GetY();
   vtx5[2] = esdVertex5->GetZ();
-  
-  
-  FillHistogram("hZvertex",esdVertex5->GetZ(),fRunNumber-0.5);
-  if (TMath::Abs(esdVertex5->GetZ()) > 10. ){
+
+  FillHistogram("hZvertex", esdVertex5->GetZ(), fRunNumber - 0.5);
+  if (TMath::Abs(esdVertex5->GetZ()) > 10.) {
     PostData(1, fOutputContainer);
     return;
   }
-  FillHistogram("hSelEvents",2.5,fRunNumber-0.5) ;
-  FillHistogram("hTotSelEvents",2.5) ;
+  FillHistogram("hSelEvents", 2.5, fRunNumber - 0.5);
+  FillHistogram("hTotSelEvents", 2.5);
 
-/*  
-  if(fEvent->IsPileupFromSPD()){
+  if (fEvent->IsPileupFromSPD()) {
     PostData(1, fOutputContainer);
     return;
-  } 
-*/
-  FillHistogram("hSelEvents",3.5,fRunNumber-0.5) ;
-  FillHistogram("hTotSelEvents",3.5) ;  
-  
-  
-  
-  //Vtx class z-bin
-  Int_t zvtx = (Int_t)((vtx5[2]+10.)/2.) ;
-  if(zvtx<0)zvtx=0 ;
-  if(zvtx>9)zvtx=9 ;
-  
+  }
+  // Vtx class z-bin
+  Int_t zvtx = (Int_t)((vtx5[2] + 10.) / 1.);
+  if (zvtx < 0)
+    zvtx = 0;
+  if (zvtx >= kVtxBins)
+    zvtx = kVtxBins - 1;
 
-  AliCentrality *centrality = fEvent->GetCentrality(); 
-  fCentrality=centrality->GetCentralityPercentile("V0M");
+  FillHistogram("hSelEvents", 3.5, fRunNumber - 0.5);
+  FillHistogram("hTotSelEvents", 3.5);
 
-  if( fCentrality <= 0. || fCentrality>80. ){
+  fCentrality = 300;
+  AliMultSelection* MultSelection = (AliMultSelection*)fEvent->FindListObject("MultSelection");
+  if (!MultSelection) {
+    AliWarning("AliMultSelection object not found!");
+  } else {
+    fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+  }
+
+  if (fCentrality < 0. || fCentrality > 80.) {
     PostData(1, fOutputContainer);
     return;
   }
 
-  FillHistogram("hSelEvents",4.5,fRunNumber-0.5) ;
-  FillHistogram("hTotSelEvents",4.5) ;
+  FillHistogram("hSelEvents", 4.5, fRunNumber - 0.5);
+  FillHistogram("hTotSelEvents", 4.5);
 
-  if(fCentrality<5.)
-    fCenBin=0 ;
-  else if(fCentrality<10.)
-    fCenBin=1 ;
-  else if(fCentrality<20.)
-    fCenBin=2 ;
-  else if(fCentrality<40.)
-    fCenBin=3 ;
-  else 
-    fCenBin=4 ;
+  if (fCentrality < 5.)
+    fCenBin = 0;
+  else if (fCentrality < 10.)
+    fCenBin = 1;
+  else if (fCentrality < 20.)
+    fCenBin = 2;
+  else if (fCentrality < 30.)
+    fCenBin = 3;
+  else if (fCentrality < 40.)
+    fCenBin = 4;
+  else if (fCentrality < 50.)
+    fCenBin = 5;
+  else if (fCentrality < 80.)
+    fCenBin = 6;
 
-  
-  FillHistogram("hSelEvents",5.5,fRunNumber-0.5) ;
-  FillHistogram("hTotSelEvents",5.5) ;
-  
-  
-  if(TestPHOSEvent(fEvent)){
+  FillHistogram("hSelEvents", 5.5, fRunNumber - 0.5);
+  FillHistogram("hTotSelEvents", 5.5);
+
+  FillHistogram("hSelEvents", 6.5, fRunNumber - 0.5);
+  FillHistogram("hTotSelEvents", 6.5);
+
+  // reaction plane
+  AliEventplane* eventPlane = fEvent->GetEventplane();
+  if (!eventPlane) { // Event has no event plane
     PostData(1, fOutputContainer);
     return;
   }
-  
-  FillHistogram("hSelEvents",6.5,fRunNumber-0.5) ;
-  FillHistogram("hTotSelEvents",6.5) ;
-  
+  // V0A
+  const Int_t harmonics = 2;
+  double qx = 0., qy = 0.;
+  double rpV0A = eventPlane->CalculateVZEROEventPlane(fEvent, 8, harmonics, qx, qy);
+  // V0C
+  double rpV0C = eventPlane->CalculateVZEROEventPlane(fEvent, 9, harmonics, qx, qy);
 
-  //reaction plane
-  AliEventplane *eventPlane = fEvent->GetEventplane();
-  if( ! eventPlane ) { //Event has no event plane
-    PostData(1, fOutputContainer);
-    return;
-  }
-  //V0A
-  const Int_t harmonics = 2; 
-  Double_t qx=0., qy=0.;  
-  Double_t rpV0A = eventPlane->CalculateVZEROEventPlane(fEvent,8, harmonics,qx,qy);
-  //V0C
-  Double_t rpV0C = eventPlane->CalculateVZEROEventPlane(fEvent,9, harmonics,qx,qy);
+  // Whole V0
+  fRP = eventPlane->CalculateVZEROEventPlane(fEvent, 10, harmonics, qx, qy);
 
-  //Whole V0
-  fRP = eventPlane->CalculateVZEROEventPlane(fEvent,10, harmonics,qx,qy);
+  while (rpV0A < 0)
+    rpV0A += TMath::TwoPi() / harmonics;
+  while (rpV0A > TMath::TwoPi() / harmonics)
+    rpV0A -= TMath::TwoPi() / harmonics;
 
-  while(rpV0A<0)rpV0A+=TMath::TwoPi()/harmonics ;
-  while(rpV0A>TMath::TwoPi()/harmonics)rpV0A-=TMath::TwoPi()/harmonics ;
-  
-  while(rpV0C<0)rpV0C+=TMath::TwoPi()/harmonics ;
-  while(rpV0C>TMath::TwoPi()/harmonics)rpV0C-=TMath::TwoPi()/harmonics ;
+  while (rpV0C < 0)
+    rpV0C += TMath::TwoPi() / harmonics;
+  while (rpV0C > TMath::TwoPi() / harmonics)
+    rpV0C -= TMath::TwoPi() / harmonics;
 
-  while(fRP<0)fRP+=TMath::TwoPi()/harmonics ;
-  while(fRP>TMath::TwoPi()/harmonics)fRP-=TMath::TwoPi()/harmonics ;
-  
-  
-  FillHistogram("phiRP",fRP,fCentrality) ;  
-  FillHistogram("phiRPV0A",rpV0A,fCentrality) ;  
-  FillHistogram("phiRPV0C",rpV0C,fCentrality) ;  
-  FillHistogram("phiRPV0AC",rpV0A,rpV0C) ;  
+  while (fRP < 0)
+    fRP += TMath::TwoPi() / harmonics;
+  while (fRP > TMath::TwoPi() / harmonics)
+    fRP -= TMath::TwoPi() / harmonics;
 
-  rpV0A = fV0AFlat->MakeFlat(rpV0A,fCentrality) ;
-  rpV0C = fV0CFlat->MakeFlat(rpV0C,fCentrality) ;
-  FillHistogram("phiRPV0Aflat",rpV0A,fCentrality) ;  
-  FillHistogram("phiRPV0Cflat",rpV0C,fCentrality) ;  
-  FillHistogram("phiRPV0ACflat",rpV0A,rpV0C) ;  
-  
-  FillHistogram("phiRPvsV0A",fRP,rpV0A) ;  
-  FillHistogram("phiRPvsV0C",fRP,rpV0C) ;  
-  
- 
-  FillHistogram("hSelEvents",7.5,fRunNumber-0.5) ;
-  FillHistogram("hTotSelEvents",7.5) ;
-  //All event selections done
-  FillHistogram("hCentrality",fCentrality,fRunNumber-0.5) ;
-  //Reaction plane is defined in the range (0;pi)
-  //We have 10 bins
-    
-  
-  Int_t irp=Int_t(10.*(fRP)/TMath::Pi());
-  if(irp>9)irp=9 ;
+  FillHistogram("phiRP", fRP, fCentrality);
+  FillHistogram("phiRPV0A", rpV0A, fCentrality);
+  FillHistogram("phiRPV0C", rpV0C, fCentrality);
+  FillHistogram("phiRPV0AC", rpV0A, rpV0C);
 
-  if(!fPHOSEvents[zvtx][fCenBin][irp]) 
-    fPHOSEvents[zvtx][fCenBin][irp]=new TList() ;
-  TList * prevPHOS = fPHOSEvents[zvtx][fCenBin][irp] ;
-  if(!fEMCALEvents[zvtx][fCenBin][irp]) 
-    fEMCALEvents[zvtx][fCenBin][irp]=new TList() ;
-  TList * prevEMCAL = fEMCALEvents[zvtx][fCenBin][irp] ;
-  if(!fPCMEvents[zvtx][fCenBin][irp]) 
-    fPCMEvents[zvtx][fCenBin][irp]=new TList() ;
-  TList * prevPCM =  fPCMEvents[zvtx][fCenBin][irp] ;
+  //   rpV0A = fV0AFlat->MakeFlat(rpV0A,fCentrality) ;
+  //   rpV0C = fV0CFlat->MakeFlat(rpV0C,fCentrality) ;
+  //   FillHistogram("phiRPV0Aflat",rpV0A,fCentrality) ;
+  //   FillHistogram("phiRPV0Cflat",rpV0C,fCentrality) ;
+  //   FillHistogram("phiRPV0ACflat",rpV0A,rpV0C) ;
 
-//  printf("prevHadrEvent=%p, nPrevHadr=%d \n",prevHadrEvent,nPrevHadr) ;
-  
-  if(fPHOSEvent)
-    fPHOSEvent->Clear() ;
+  FillHistogram("phiRPvsV0A", fRP, rpV0A);
+  FillHistogram("phiRPvsV0C", fRP, rpV0C);
+
+  FillHistogram("hSelEvents", 7.5, fRunNumber - 0.5);
+  FillHistogram("hTotSelEvents", 7.5);
+  // All event selections done
+  FillHistogram("hCentrality", fCentrality, fRunNumber - 0.5);
+  // Reaction plane is defined in the range (0;pi)
+  // We have 10 bins
+
+  Int_t irp = Int_t(kPRBins * (fRP) / TMath::Pi());
+  if (irp < 0)
+    irp = 0;
+  if (irp >= kPRBins)
+    irp = kPRBins - 1;
+
+  if (!fPHOSEvents[zvtx][fCenBin][irp])
+    fPHOSEvents[zvtx][fCenBin][irp] = new TList();
+  TList* prevPHOS = fPHOSEvents[zvtx][fCenBin][irp];
+
+  if (fPHOSEvent)
+    fPHOSEvent->Clear();
   else
-    fPHOSEvent = new TClonesArray("AliCaloPhoton",100) ;
+    fPHOSEvent = new TClonesArray("AliCaloPhoton", 100);
 
-  if(fEMCALEvent)
-    fEMCALEvent->Clear() ;
+  if (fCPVEvent)
+    fCPVEvent->Clear();
   else
-    fEMCALEvent = new TClonesArray("AliCaloPhoton",100) ;
-  
-  if(fGammaCandidates)
-    fGammaCandidates->Clear() ;
-  else
-    fGammaCandidates = new TClonesArray("AliAODConversionPhoton",20) ;
-  
-  
+    fCPVEvent = new TClonesArray("AliCaloPhoton", 100);
+
   TVector3 vertex(vtx5);
-  
+
   Int_t multClust = fEvent->GetNumberOfCaloClusters();
-  Int_t inPHOS=0; 
+  Int_t inPHOS = 0;
 
-  AliAODCaloCells * cells = fEvent->GetPHOSCells() ;
-  FillHistogram("hCenPHOSCells",fCentrality,cells->GetNumberOfCells()) ;
-  FillHistogram("hCenTrack",fCentrality,fEvent->GetNumberOfTracks()) ;
-  
-  TVector3 localPos ;
-  for (Int_t i=0; i<multClust; i++) {
-    AliAODCaloCluster *clu = fEvent->GetCaloCluster(i);
-    if ( !clu->IsPHOS() || clu->E()<0.1) continue;
-    
-//    if(clu->GetDistanceToBadChannel()<2.5)
-//      continue ;
- 
-    Float_t  position[3];
+  AliAODCaloCells* cells = fEvent->GetPHOSCells();
+  FillHistogram("hCenPHOSCells", fCentrality, cells->GetNumberOfCells());
+  FillHistogram("hCenTrack", fCentrality, fEvent->GetNumberOfTracks());
+
+  // CPV clusters
+  Float_t position[3];
+  int inCPV = 0;
+  const double dxCPV = 0.9;
+  const double dyCPV = -2.;           // V3: 5. V2: -2;  V1:18
+  const double dzCPV = 4.9;           // V3: 4.6
+  const double slopeZCPV = -0.034745; // tilt of module
+  for (Int_t j = 0; j < multClust; j++) {
+    AliAODCaloCluster* cluCPV = fEvent->GetCaloCluster(j);
+    if (cluCPV->GetType() != AliVCluster::kPHOSCharged)
+      continue;
+    if (cluCPV->E() < 100.)
+      continue;
+    cluCPV->GetPosition(position);
+    position[0] -= dxCPV;
+    position[1] -= dyCPV;
+    position[2] -= dzCPV + slopeZCPV * position[2];
+    TVector3 globalCPV(position);
+    Float_t dxMin, dzMin;
+    AliCaloPhoton* p =
+      new ((*fCPVEvent)[inCPV]) AliCaloPhoton(globalCPV.Px(), globalCPV.Py(), globalCPV.Pz(), globalCPV.Mag());
+    inCPV++;
+    int itr = FindTrackMatching(0, globalCPV, 3, dxMin, dzMin);
+    p->SetLambdas(dxMin, dzMin);
+    p->SetDistToBad(itr);
+  }
+
+  TVector3 localPos;
+  for (Int_t i = 0; i < multClust; i++) {
+    AliAODCaloCluster* clu = fEvent->GetCaloCluster(i);
+    if (clu->GetType() != AliVCluster::kPHOSNeutral)
+      continue;
+    if (clu->E() < 0.1)
+      continue;
+
+    Float_t position[3];
     clu->GetPosition(position);
-    TVector3 global(position) ;
-    Int_t relId[4] ;
-    fPHOSGeo->GlobalPos2RelId(global,relId) ;
-    Int_t mod  = relId[0] ;
+    TVector3 global(position);
+    Int_t relId[4];
+    fPHOSGeo->GlobalPos2RelId(global, relId);
+    Int_t mod = relId[0];
     Int_t cellX = relId[2];
-    Int_t cellZ = relId[3] ;
-    TVector3 local ;
-    fPHOSGeo->Global2Local(local,global,mod);
-    
-    //Remove 6 noisy channels in run 139036
-    if(fEvent->GetRunNumber()==139036 && mod==1 && 
-       (cellX==9||cellX==10||cellX==11) && (cellZ==45 || cellZ==46))
-      continue ;
-    
+    Int_t cellZ = relId[3];
 
-    FillHistogram(Form("hTofM%d",mod),clu->E(),clu->GetTOF()) ;
-    if(clu->E()>1.)
-      FillHistogram("hCenTOF",fCentrality,clu->GetTOF()) ;
-    if((clu->GetTOF()>1.5e-7) || (clu->GetTOF() <-2.5e-7) )
-      continue ;
-    
-    if(clu->E()>0.2){
-      if(clu->GetNCells()<3) continue ;
-      if(clu->GetM02()<0.2)   continue ;    
-      if(clu->GetMCEnergyFraction()>0.98) //Ecross cut, should be filled with Tender
-        continue ;    
-    }
-    
-    TLorentzVector pv1 ;
-    clu->GetMomentum(pv1 ,vtx5);
-    
-    FillHistogram(Form("hCluLowM%d",mod),cellX,cellZ,1.);
-    if(clu->E()>1.5){
-      FillHistogram(Form("hCluHighM%d",mod),cellX,cellZ,1.);
-    }
-    
-    if(inPHOS>=fPHOSEvent->GetSize()){
-      fPHOSEvent->Expand(inPHOS+20) ;
-    }
-    new((*fPHOSEvent)[inPHOS]) AliCaloPhoton(pv1.X(),pv1.Py(),pv1.Z(),pv1.E()) ;
-    AliCaloPhoton * ph = (AliCaloPhoton*)fPHOSEvent->At(inPHOS) ;
-    ph->SetModule(mod) ;
-    pv1*= clu->GetCoreEnergy()/pv1.E() ;
-    ph->SetMomV2(&pv1) ;
-    ph->SetNCells(clu->GetNCells());    
-    ph->SetDispBit(clu->Chi2()<2.5*2.5) ;
-    ph->SetDisp2Bit(clu->Chi2()<1.5*1.5) ;
+    TVector3 local;
+    fPHOSGeo->Global2Local(local, global, mod);
 
-//    Double_t distBC=clu->GetDistanceToBadChannel();
-    if(ph->IsDispOK()){
-      FillHistogram(Form("hCluDispM%d",mod),cellX,cellZ,1.);
+    FillHistogram(Form("hTofM%d", mod), clu->E(), clu->GetTOF());
+    if (clu->E() > 1.)
+      FillHistogram("hCenTOF", fCentrality, clu->GetTOF());
+    if ((clu->GetTOF() > 150.e-9) || (clu->GetTOF() < -150.e-7))
+      continue;
+    // if((clu->GetTOF()>100.e-9) || (clu->GetTOF() <-100.e-7) )
+    //   continue ;
+
+    if (clu->GetNCells() < 2)
+      continue;
+    if (clu->GetM02() < 0.2)
+      continue;
+
+    TLorentzVector pv1;
+    clu->GetMomentum(pv1, vtx5);
+
+    FillHistogram(Form("hCluLowM%d", mod), cellX, cellZ, 1.);
+
+    FillHistogram("hAllSp", clu->E(), fCentrality);
+    bool disp = clu->Chi2() < 2.5 * 2.5;
+    if (disp) {
+      FillHistogram("hDisp", cellX, cellZ, 1.);
+      FillHistogram("hDispSp", clu->E(), fCentrality);
     }
-    ph->SetCPVBit(clu->GetEmcCpvDistance()>2.5) ;
-    if(ph->IsCPVOK()){
-      FillHistogram(Form("hCluVetoM%d",mod),cellX,cellZ,1.);
+
+    float dxMin, dzMin;
+    int itr = FindTrackMatching(1, global, mod, dxMin, dzMin);
+
+    // Set veto bits, true: neutral
+    int cpvBits = TestCPV(mod, clu->E(), local.X(), local.Z(), dxMin, dzMin, itr);
+
+    if (inPHOS >= fPHOSEvent->GetSize()) {
+      fPHOSEvent->Expand(inPHOS + 20);
     }
-    ph->SetCPV2Bit(clu->GetEmcCpvDistance()>4.) ;
-    
-    //some QA
-    if(ph->IsDispOK() && ph->IsCPVOK())
-      FillHistogram("hPHOSsp",ph->Pt(),ph->Phi()) ;
-    
-    ph->SetPrimary(clu->GetLabelAt(0)) ;
-    ph->SetEMCx(local.X()) ;
-    ph->SetEMCz(local.Z()) ;
-    ph->SetLambdas(clu->GetM20(),clu->GetM02()) ;
-    ph->SetUnfolded(clu->GetNExMax()<2); // Remember, if it is unfolded          
-    inPHOS++ ;
-  }
-  
-  FillHistogram("hCenPHOS",fCentrality,inPHOS) ;
-  if(inPHOS==0){
-    PostData(1, fOutputContainer);
-    fEventCounter++;
-    return ; 
+    AliCaloPhoton* ph = new ((*fPHOSEvent)[inPHOS]) AliCaloPhoton(pv1.X(), pv1.Py(), pv1.Z(), pv1.E());
+    ph->SetModule(mod);
+    pv1 *= clu->GetCoreEnergy() / pv1.E();
+    ph->SetMomV2(&pv1);
+    ph->SetNCells(clu->GetNCells());
+    ph->SetDispBit(disp);
+
+    ph->SetTagInfo(cpvBits);
+
+    ph->SetEMCx(local.X());
+    ph->SetEMCz(local.Z());
+    ph->SetDistToBad(cellX);
+    ph->SetLambdas(clu->GetM20(), clu->GetM02());
+    ph->SetUnfolded(clu->GetNExMax() < 2); // Remember, if it is unfolded
+    inPHOS++;
   }
 
-  //EMCAL
-  Int_t inEMCAL=0; 
-  for (Int_t i=0; i<multClust; i++) {
-    AliAODCaloCluster *clu = fEvent->GetCaloCluster(i);
-    if ( !clu->IsEMCAL())continue;
-    if(clu->E()<0.1) continue;
-    
-    Float_t  position[3];
-    clu->GetPosition(position);
-        
-    
-//    TVector3 global(position) ;
-//    Int_t relId[4] ;
-//   fPHOSGeo->GlobalPos2RelId(global,relId) ;
-//    Int_t mod  = relId[0] ;
-//    Int_t cellX = relId[2];
-//    Int_t cellZ = relId[3] ;
-//    TVector3 local ;
-//    fPHOSGeo->Global2Local(local,global,mod);
+  // Real
+  // PHOS-PHOS
+  for (Int_t i1 = 0; i1 < inPHOS - 1; i1++) {
+    AliCaloPhoton* ph1 = (AliCaloPhoton*)fPHOSEvent->At(i1);
+    for (Int_t i2 = i1 + 1; i2 < inPHOS; i2++) {
+      AliCaloPhoton* ph2 = (AliCaloPhoton*)fPHOSEvent->At(i2);
+      TLorentzVector sum(*ph1 + *ph2);
+      double qinv = sum.M();
+      double kT = 0.5 * sum.Pt();
+      TVector3 gammaBeta(sum.BoostVector());
+      gammaBeta.SetXYZ(0, 0, gammaBeta.Z());
+      TLorentzVector gammaCMq(*ph1 - *ph2);
+      gammaCMq.Boost(-gammaBeta);
+      double q = gammaCMq.Vect().Mag();
 
-    if(clu->GetNCells()<2) continue ;
-    if(clu->GetM02()<0.1 ) continue ; 
-    if (clu->GetDistanceToBadChannel()<2) continue;
-           
-    Int_t idmax   = clu->GetCellAbsId(0);
-    Int_t iSupMod = -1;
-    Int_t iTower  = -1;
-    Int_t iIphi   = -1;
-    Int_t iIeta   = -1;
-    Int_t iphi    = -1;
-    Int_t ieta    = -1;
-    Int_t iphis   = -1;
-    Int_t ietas   = -1;
-
-    fEMCALgeo->GetCellIndex(idmax,iSupMod,iTower,iIphi,iIeta);
-    fEMCALgeo->GetCellPhiEtaIndexInSModule(iSupMod,iTower,iIphi, iIeta,iphis,ietas);
-        
-        
-    TLorentzVector pv1 ;
-    clu->GetMomentum(pv1 ,vtx5);
-
-    if(pv1.E()>0.5)
-      FillHistogram(Form("hEMCALmod%d",iSupMod),iphis,ietas,1.);    
-        
-    if(inEMCAL>=fEMCALEvent->GetSize()){
-      fEMCALEvent->Expand(inEMCAL+50) ;
-    }
-    new((*fEMCALEvent)[inEMCAL]) AliCaloPhoton(pv1.X(),pv1.Py(),pv1.Z(),pv1.E()) ;
-    AliCaloPhoton * ph = (AliCaloPhoton*)fEMCALEvent->At(inEMCAL) ;
-    ph->SetModule(iSupMod) ;
-
-    ph->SetCPVBit(TMath::Abs(clu->GetTrackDx())>0.05 || TMath::Abs(clu->GetTrackDz())>0.05) ;
-    ph->SetDispBit(clu->GetM02()<0.27) ; 
-    //some QA
-    if(ph->IsDispOK() && ph->IsCPVOK()){
-      Double_t phi=ph->Phi() ;
-      if(phi>TMath::Pi())phi-=TMath::TwoPi() ;
-      FillHistogram("hEMCALsp",ph->Pt(),phi) ;
-    }
-    inEMCAL++ ;
-  }
-  FillHistogram("hCenEMCAL",fCentrality,inEMCAL) ;
-  FillHistogram("hPHOSvsEMCAL",inPHOS,inEMCAL) ;
-  
-  
-  
-  
-  //PCM  
-  fPCMEvent = fV0Reader->GetReconstructedGammas(); // Gammas from default Cut
-  ProcessPCMPhotonCandidates(); 
-  Int_t inPCM=fGammaCandidates->GetEntriesFast() ;
-  FillHistogram("hCenPCM",fCentrality,inPCM) ;
-  for(Int_t i=0; i<inPCM; i++){
-    AliAODConversionPhoton * ph=(AliAODConversionPhoton*)fGammaCandidates->At(i) ;
-    //some QA
-    Double_t phi=ph->Phi() ;
-    if(phi>TMath::Pi())phi-=TMath::TwoPi() ;
-    FillHistogram("hPCMsp",ph->Pt(),phi) ;    
-  }
-
-  
-  //Cuts
-  const Double_t kEtaHBTcut=0.02; //Minimal eta gap to exclude HBT correlations
-  const Double_t kEtaPCMcut=0.05; //Minimal eta gap to exclude HBT correlations
-  const Double_t distCut1=5. ;    //First (minimal) distance cut
-  const Double_t distCut2=10. ;    //Second (medium) distance cut
-  const Double_t distCut3=20. ;    //Third (strongest) distance cut
-  const Double_t asymCut=0.2 ;    //Asymetry cut
-  
-    
-  const Double_t kgMass=0. ;
-	
-  const Int_t nCuts=7 ;
-  char cut[7][20] ;
-  sprintf(cut[0],"All") ;
-  sprintf(cut[1],"Disp") ;
-  sprintf(cut[2],"CPV") ;
-  sprintf(cut[3],"Both") ;
-  sprintf(cut[4],"Disp2") ;
-  sprintf(cut[5],"CPV2") ;
-  sprintf(cut[6],"Both2") ;
-
-  //Real
-  //PHOS-PHOS
-  for (Int_t i1=0; i1<inPHOS-1; i1++) {
-    AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
-    for (Int_t i2=i1+1; i2<inPHOS; i2++) {
-      AliCaloPhoton * ph2=(AliCaloPhoton*)fPHOSEvent->At(i2) ;
-      Double_t e1=ph1->E() ;
-      Double_t e2=ph2->E() ;
-      //AliCaloPhoton deireved from TLorentzVector and returns phi in the range -pi...pi
-      Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-      Double_t avPhi=0.5*(ph1->Phi()+ph2->Phi()) ;
-      if(avPhi<-TMath::Pi())avPhi+=TMath::TwoPi() ;
-      if(avPhi> TMath::Pi())avPhi-=TMath::TwoPi() ;
-      Double_t dEta=ph1->Eta()-ph2->Eta() ;
-      Double_t asym=(ph1->E()-ph2->E())/(ph1->E()+ph2->E()) ;
-      Double_t dPsi=avPhi-fRP ;
-      while(dPsi<0)dPsi+=TMath::Pi() ;
-      while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
-      
-//       Double_t dist=999. ; //distance between clusters in PHOS
-//       if(ph1->Module()==ph2->Module()){
-// 	dist=TMath::Sqrt(TMath::Power(ph1->EMCx()-ph2->EMCx(),2)+TMath::Power(ph1->EMCz()-ph2->EMCz(),2)) ;
-//       }
-      
-      if(gRandom->Uniform()>0.5){
-	dPhi=-dPhi ;
-	dEta=-dEta ;
-	asym=-asym ;
-	e2=e1; 
-	e1=ph2->E() ;
+      for (Int_t iCut = 0; iCut < kCuts; iCut++) {
+        if (!PairCut(ph1, ph2, iCut)) {
+          continue;
+        }
+        fhReQinv[fCenBin][iCut]->Fill(qinv, kT);
+        fhReq[fCenBin][iCut]->Fill(q, kT);
       }
-      TString kTbin("") ;
-      if( 0.1 < e1 < 0.2){
-       if(0.1 < e2 < 0.2) kTbin="Kt01-02";
-      }
-      else{
-	if( 0.2 < e1 < 0.4){
-	 if(0.2 < e2 < 0.4) kTbin="Kt02-04";
-	}
-	else{
-	  if( 0.4 < e1 < 0.7){
-	   if(0.4 < e2 < 0.7) kTbin="Kt04-07";
-	  }
-	  else{
-	    if( 0.7 < e1 < 1.0){
-	     if(0.7 < e2 < 1.0) kTbin="Kt07-10";
-	    }
-	    else{
-	      if( 1.0 < e1 < 1.3){
-	       if(1.0 < e2 < 1.3 ) kTbin="Kt10-13";
-	      }
-	      else{
-                if( 1.3 < e1 < 2.0){
-		 if(1.3 < e2 < 2.0) kTbin="Kt13-20";
-		}
-		else{
-                  if( 2.0 < e1 < 3.0){
-		   if(2.0 < e2 < 3.0) kTbin="Kt20-30";
-		  }
-		}
-	      }
-	    }
-	  }
-	}
-      }
-      for(Int_t iCut=0; iCut<7; iCut++){
-   	if(!PairCut(ph1,ph2,iCut))
-	    continue ;
-	
- 	FillHistogram(Form("hdPhiPhi_%s",cut[iCut]),dPhi,avPhi,0.5*(e1+e2)) ;
-	
-        if(TMath::Abs(asym)<asymCut){
-          FillHistogram(Form("hEtaPhiPHOS_%s",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	  if(ph1->Module()==ph2->Module())
-            FillHistogram(Form("hEtaPhiPHOS_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
-	}
-	
-	if(kTbin.Length()) 
- 	  FillHistogram(Form("hEtaPhiPHOS_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
-	  
-	  	      
- 	if(TMath::Abs(dEta)>kEtaHBTcut && TMath::Abs(asym)<asymCut)
- 	  FillHistogram(Form("hEtaPhiPHOSRP_%s",cut[iCut]),dPsi,dPhi,0.5*(e1+e2));
-      }
-    }
-  }
-  
-  //PHOS-PCM
- for (Int_t i1=0; i1<inPHOS; i1++) {
-    AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
-        
-    for (Int_t i2=0; i2<inPCM; i2++) {
-      AliAODConversionPhoton * ph2=(AliAODConversionPhoton*)fGammaCandidates->At(i2) ;
-  
-      Double_t e1=ph1->E() ;
-      Double_t e2=ph2->E() ;
-      Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-      while(dPhi<-TMath::Pi()/2.)dPhi+=TMath::TwoPi() ;
-      while(dPhi>3.*TMath::Pi()/2.)dPhi-=TMath::TwoPi() ;      
-      Double_t dEta=ph1->Eta()-ph2->Eta() ;
-      Double_t asym=(ph1->E()-ph2->E())/(ph1->E()+ph2->E()) ;
+      if (kT > fKtBins[0] && kT < fKtBins[kKtbins]) {
+        int iKt = 0;
+        while (kT > fKtBins[iKt + 1]) {
+          iKt++;
+        }
+        double qo = 0.5 * (sum.Px() * gammaCMq.Px() + sum.Py() * gammaCMq.Py()) / kT;
+        double qs = (ph1->Px() * ph2->Py() - ph2->Px() * ph1->Py()) / kT;
+        double ql = gammaCMq.Pz();
+        if (gRandom->Uniform() < 0.5) { // remove ordering during reconstruction
+          qo = -qo;
+          qs = -qs;
+          ql = -ql;
+        }
 
-      TString kTbin("") ;
-      if(0.1<e1<0.2 && 0.1<e2<0.2) kTbin="Kt01-02";
-      else if(0.2<e1<0.4 && 0.2<e2<0.4) kTbin="Kt02-04";
-      else if(0.4<e1<0.7 && 0.4<e2<0.7) kTbin="Kt04-07";
-      else if(0.7<e1<1.0 && 0.7<e2<1.0) kTbin="Kt07-10";
-      else if(1.0<e1<1.3 && 1.0<e2<1.3) kTbin="Kt10-13";
-      else if(1.3<e1<2.0 && 1.3<e2<2.0) kTbin="Kt13-20";
-      else if(2.0<e1<3.0 && 2.0<e2<3.0) kTbin="Kt20-30";
-      
-      for(Int_t iCut=0; iCut<7; iCut++){
-   	if(!PHOSCut(ph1,iCut))
-	    continue ;
-	
- 	if(TMath::Abs(asym)<asymCut)
-	  FillHistogram(Form("hEtaPhiPHOSPCM_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
-
-        if(kTbin.Length())	
-	  FillHistogram(Form("hEtaPhiPHOSPCM_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
-      }
-    }
-  }
-
-  //EMCAL-EMCAL
-  for (Int_t i1=0; i1<inEMCAL-1; i1++) {
-    AliCaloPhoton * ph1=(AliCaloPhoton*)fEMCALEvent->At(i1) ;
-    for (Int_t i2=i1+1; i2<inEMCAL; i2++) {
-      AliCaloPhoton * ph2=(AliCaloPhoton*)fEMCALEvent->At(i2) ;
-      Double_t e1=ph1->E() ;
-      Double_t e2=ph2->E() ;
-      //AliCaloPhoton deireved from TLorentzVector and returns phi in the range -pi...pi
-      Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-      Double_t avPhi=0.5*(ph1->Phi()+ph2->Phi()) ;
-      if(avPhi<-TMath::Pi())avPhi+=TMath::TwoPi() ;
-      if(avPhi> TMath::Pi())avPhi-=TMath::TwoPi() ;
-      Double_t eta1=ph1->Eta() ;
-      Double_t eta2=ph2->Eta() ;
-      Double_t dEta=eta1-eta2 ;
-      Double_t asym=(e1-e2)/(e1+e2) ;
-//       Double_t dPsi=avPhi-fRP ;
-//       while(dPsi<0)dPsi+=TMath::Pi() ;
-//       while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
-            
-      if(gRandom->Uniform()>0.5){
-	dPhi=-dPhi ;
-	dEta=-dEta ;
-	asym=-asym ;
-	e2=e1; 
-	e1=ph2->E() ;
-      }
-
-      if(ph1->Module()==ph2->Module()){
-        if(TMath::Abs(asym)<asymCut)
-          FillHistogram(Form("hEtaPhiEMCAL_mod%d",ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
-      }	
-      
-      for(Int_t iCut=0; iCut<4; iCut++){
-   	if(!PairCut(ph1,ph2,iCut))
-	    continue ;	
-        if(TMath::Abs(asym)<asymCut){
-          FillHistogram(Form("hEtaPhiEMCAL_%s",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	  if(TMath::Abs(eta1)<0.1 && TMath::Abs(eta2)<0.1)
-            FillHistogram(Form("hEtaPhiEMCAL_%s_etaBand1",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	  else
-	    if(TMath::Abs(eta1)>0.1 && TMath::Abs(eta1)<0.2 && TMath::Abs(eta2)>0.1 && TMath::Abs(eta2)<0.2)
-              FillHistogram(Form("hEtaPhiEMCAL_%s_etaBand2",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	    else
-	      if(TMath::Abs(eta1)>0.2 && TMath::Abs(eta1)<0.5 && TMath::Abs(eta2)>0.2 && TMath::Abs(eta2)<0.5)
-                FillHistogram(Form("hEtaPhiEMCAL_%s_etaBand3",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	}
-      }	
-    }
-  }
-  
-  //PHOS-EMCAL
-  for (Int_t i1=0; i1<inPHOS; i1++) {
-    AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
-    for (Int_t i2=0; i2<inEMCAL; i2++) {
-      AliCaloPhoton * ph2=(AliCaloPhoton*)fEMCALEvent->At(i2) ;
-      Double_t e1=ph1->E() ;
-      Double_t e2=ph2->E() ;
-      //AliCaloPhoton deireved from TLorentzVector and returns phi in the range -pi...pi
-      Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-//       Double_t avPhi=0.5*(ph1->Phi()+ph2->Phi()) ;
-//       if(avPhi<-TMath::Pi())avPhi+=TMath::TwoPi() ;
-//       if(avPhi> TMath::Pi())avPhi-=TMath::TwoPi() ;
-      Double_t dEta=ph1->Eta()-ph2->Eta() ;
-      Double_t asym=(ph1->E()-ph2->E())/(ph1->E()+ph2->E()) ;
-//       Double_t dPsi=avPhi-fRP ;
-//       while(dPsi<0)dPsi+=TMath::Pi() ;
-//       while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
-            
-      if(gRandom->Uniform()>0.5){
-	dPhi=-dPhi ;
-	dEta=-dEta ;
-	asym=-asym ;
-	e2=e1; 
-	e1=ph2->E() ;
-      }
-		
-      if(TMath::Abs(asym)<asymCut){
-        for(Int_t iCut=0; iCut<4; iCut++){
-   	  if(!PairCut(ph1,ph2,iCut))
-	    continue ;	
-          FillHistogram(Form("hEtaPhiPHOSEMCAL_%s",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	}
-      }	
-    }
-  }
-  
-  //EMCAL-PCM
- for (Int_t i1=0; i1<inEMCAL; i1++) {
-    AliCaloPhoton * ph1=(AliCaloPhoton*)fEMCALEvent->At(i1) ;
-        
-    for (Int_t i2=0; i2<inPCM; i2++) {
-      AliAODConversionPhoton * ph2=(AliAODConversionPhoton*)fGammaCandidates->At(i2) ;
-  
-      Double_t e1=ph1->E() ;
-      Double_t e2=ph2->E() ;
-      Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-      while(dPhi<-TMath::Pi()/2.)dPhi+=TMath::TwoPi() ;
-      while(dPhi>3.*TMath::Pi()/2.)dPhi-=TMath::TwoPi() ;      
-//       Double_t dPhi2=dPhi ; //for V2
-//       while(dPhi2>TMath::Pi()/2.)dPhi2-=TMath::Pi() ;      
-      Double_t dEta=ph1->Eta()-ph2->Eta() ;
-      Double_t asym=(ph1->E()-ph2->E())/(ph1->E()+ph2->E()) ;
-//       Double_t kT=0.5*(*ph1 + *ph2).Pt() ;
-//       Double_t dPsi=0.5*(ph1->Phi()+ph2->Phi()-2.*fRP) ;
-//       while(dPsi<0)dPsi+=TMath::Pi() ;
-//       while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
-            
-      if(TMath::Abs(asym)<asymCut){
-        for(Int_t iCut=0; iCut<4; iCut++){
-   	  if(!PHOSCut(ph1,iCut))
-	    continue ;	
-          FillHistogram(Form("hEtaPhiEMCALPCM_%s",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;	
-	}
-      }
-    }
-  }
-  
-  
-  //PCM-PCM
- for (Int_t i1=0; i1<inPCM-1; i1++) {
-    AliAODConversionPhoton * ph1=(AliAODConversionPhoton*)fGammaCandidates->At(i1) ;        
-    for (Int_t i2=i1+1; i2<inPCM; i2++) {
-      AliAODConversionPhoton * ph2=(AliAODConversionPhoton*)fGammaCandidates->At(i2) ;
-  
-      Double_t e1=ph1->E() ;
-      Double_t e2=ph2->E() ;
-      Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-      while(dPhi<-TMath::Pi()/2.)dPhi+=TMath::TwoPi() ;
-      while(dPhi>3.*TMath::Pi()/2.)dPhi-=TMath::TwoPi() ;      
-      Double_t dEta=ph1->Eta()-ph2->Eta() ;
-      Double_t asym=(ph1->E()-ph2->E())/(ph1->E()+ph2->E()) ;
-//       Double_t dPsi=0.5*(ph1->Phi()+ph2->Phi()-2.*fRP) ;
-//       while(dPsi<0)dPsi+=TMath::Pi() ;
-//       while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
-
-      TString kTbin("") ;
-      if(0.1<e1<0.2 && 0.1<e2<0.2) kTbin="Kt01-02";
-      else if(0.2<e1<0.4 && 0.2<e2<0.4) kTbin="Kt02-04";
-      else if(0.4<e1<0.7 && 0.4<e2<0.7) kTbin="Kt04-07";
-      else if(0.7<e1<1.0 && 0.7<e2<1.0) kTbin="Kt07-10";
-      else if(1.0<e1<1.3 && 1.0<e2<1.3) kTbin="Kt10-13";
-      else if(1.3<e1<2.0 && 1.3<e2<2.0) kTbin="Kt13-20";
-      else if(2.0<e1<3.0 && 2.0<e2<3.0) kTbin="Kt20-30";
-      
-      if(TMath::Abs(asym)<asymCut)
-	FillHistogram("hEtaPhiPCM",dEta,dPhi,0.5*(e1+e2)) ;
-      if(kTbin.Length())
-	FillHistogram(Form("hEtaPhiPCM_%s",kTbin.Data()),dEta,dPhi,asym) ;     
-    }
-  }
-  
-   
-  //now mixed
-  //mixed-PHOS-PHOS
-  for (Int_t i1=0; i1<inPHOS; i1++) {
-    AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
-    for(Int_t ev=0; ev<prevPHOS->GetSize();ev++){
-      TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
-      for(Int_t i2=0; i2<mixPHOS->GetEntriesFast();i2++){
-        AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
-        Double_t e1=ph1->E() ;
-        Double_t e2=ph2->E() ;
-        Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-        Double_t avPhi=0.5*(ph1->Phi()+ph2->Phi()) ;
-        if(avPhi<-TMath::Pi())avPhi+=TMath::TwoPi() ;
-        if(avPhi> TMath::Pi())avPhi-=TMath::TwoPi() ;
-        Double_t dEta=ph1->Eta()-ph2->Eta() ;
-        Double_t asym=(ph1->E()-ph2->E())/(ph1->E()+ph2->E()) ;
-        Double_t dPsi=avPhi-fRP ;
-        while(dPsi<0)dPsi+=TMath::Pi() ;
-        while(dPsi>TMath::Pi())dPsi-=TMath::Pi() ;
-
-        TString kTbin("") ;
-        if(0.1<e1<0.2 && 0.1<e2<0.2) kTbin="Kt01-02";
-        else if(0.2<e1<0.4 && 0.2<e2<0.4) kTbin="Kt02-04";
-        else if(0.4<e1<0.7 && 0.4<e2<0.7) kTbin="Kt04-07";
-        else if(0.7<e1<1.0 && 0.7<e2<1.0) kTbin="Kt07-10";
-        else if(1.0<e1<1.3 && 1.0<e2<1.3) kTbin="Kt10-13";
-        else if(1.3<e1<2.0 && 1.3<e2<2.0) kTbin="Kt13-20";
-        else if(2.0<e1<3.0 && 2.0<e2<3.0) kTbin="Kt20-30";
-	
-	for(Int_t iCut=0; iCut<7; iCut++){
-   	  if(!PairCut(ph1,ph2,iCut))
-	    continue ;
-
- 	  FillHistogram(Form("hmidPhiPhi_%s",cut[iCut]),dPhi,avPhi,0.5*(e1+e2)) ;
-	  	  
-          if(TMath::Abs(asym)<asymCut){
-            FillHistogram(Form("hmiEtaPhiPHOS_%s",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	    if(ph1->Module()==ph2->Module())
-              FillHistogram(Form("hmiEtaPhiPHOS_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
- 	    if(TMath::Abs(dEta)>kEtaHBTcut)
- 	      FillHistogram(Form("hmiEtaPhiPHOSRP_%s",cut[iCut]),dPsi,dPhi,0.5*(e1+e2));
-	  }
-	  
-	  if(kTbin.Length())  
- 	    FillHistogram(Form("hmiEtaPhiPHOS_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;	  
-	}
-      }
-    }
-  }
- 
-  //mixed-PHOS-PCM-1  
-  for (Int_t i1=0; i1<inPHOS; i1++) {
-    AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
-    
-    for(Int_t ev=0; ev<prevPCM->GetSize();ev++){
-      TClonesArray * mixPCM = static_cast<TClonesArray*>(prevPCM->At(ev)) ;
-      for(Int_t i2=0; i2<mixPCM->GetEntriesFast();i2++){
-        AliAODConversionPhoton * ph2=(AliAODConversionPhoton*)mixPCM->At(i2) ;
-	
-        Double_t e1=ph1->E() ;
-        Double_t e2=ph2->E() ;
-        Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-        while(dPhi<-TMath::Pi()/2.)dPhi+=TMath::TwoPi() ;
-        while(dPhi>3.*TMath::Pi()/2.)dPhi-=TMath::TwoPi() ;
-	
-        Double_t dEta=ph1->Eta()-ph2->Eta() ;
-        Double_t asym=(ph1->E()-ph2->E())/(ph1->E()+ph2->E()) ;
-
-	TString kTbin("") ;
-        if(0.1<e1<0.2 && 0.1<e2<0.2) kTbin="Kt01-02";
-        else if(0.2<e1<0.4 && 0.2<e2<0.4) kTbin="Kt02-04";
-        else if(0.4<e1<0.7 && 0.4<e2<0.7) kTbin="Kt04-07";
-        else if(0.7<e1<1.0 && 0.7<e2<1.0) kTbin="Kt07-10";
-        else if(1.0<e1<1.3 && 1.0<e2<1.3) kTbin="Kt10-13";
-        else if(1.3<e1<2.0 && 1.3<e2<2.0) kTbin="Kt13-20";
-        else if(2.0<e1<3.0 && 2.0<e2<3.0) kTbin="Kt20-30";
-	
-        for(Int_t iCut=0; iCut<7; iCut++){
-   	  if(!PHOSCut(ph1,iCut))
-	    continue ;
-	
-          if(TMath::Abs(asym)<asymCut)
-            FillHistogram(Form("hmiEtaPhiPHOSPCM_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
-          if(kTbin.Length())	
- 	    FillHistogram(Form("hmiEtaPhiPHOSPCM_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
-	}
-      } // end of loop i2
-    }
-  } // end of loop i1
-  
-
-  //mixed-PHOS-PCM-2    
-  for (Int_t i1=0; i1<inPCM; i1++) {
-    AliAODConversionPhoton * ph2=(AliAODConversionPhoton*)fGammaCandidates->At(i1) ;    
-    for(Int_t ev=0; ev<prevPHOS->GetSize();ev++){
-      TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
-      for(Int_t i2=0; i2<mixPHOS->GetEntriesFast();i2++){
-        AliCaloPhoton * ph1=(AliCaloPhoton*)mixPHOS->At(i2) ;
-	
-        Double_t e1=ph1->E() ;
-        Double_t e2=ph2->E() ;
-        Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-        while(dPhi<-TMath::Pi()/2.)dPhi+=TMath::TwoPi() ;
-        while(dPhi>3.*TMath::Pi()/2.)dPhi-=TMath::TwoPi() ;
-	
-        Double_t dEta=ph1->Eta()-ph2->Eta() ;
-        Double_t asym=(ph2->E()-ph1->E())/(ph1->E()+ph2->E()) ;
-
-	TString kTbin("") ;
-        if(0.1<e1<0.2 && 0.1<e2<0.2) kTbin="Kt01-02";
-        else if(0.2<e1<0.4 && 0.2<e2<0.4) kTbin="Kt02-04";
-        else if(0.4<e1<0.7 && 0.4<e2<0.7) kTbin="Kt04-07";
-        else if(0.7<e1<1.0 && 0.7<e2<1.0) kTbin="Kt07-10";
-        else if(1.0<e1<1.3 && 1.0<e2<1.3) kTbin="Kt10-13";
-        else if(1.3<e1<2.0 && 1.3<e2<2.0) kTbin="Kt13-20";
-        else if(2.0<e1<3.0 && 2.0<e2<3.0) kTbin="Kt20-30";
-	
-        for(Int_t iCut=0; iCut<7; iCut++){
-   	  if(!PHOSCut(ph1,iCut))
-	    continue ;
-	
-          if(TMath::Abs(asym)<asymCut)
-            FillHistogram(Form("hmiEtaPhiPHOSPCM_%s_mod%d",cut[iCut],ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
-          if(kTbin.Length())	
- 	    FillHistogram(Form("hmiEtaPhiPHOSPCM_%s_%s",cut[iCut],kTbin.Data()),dEta,dPhi,asym) ;
-	}
-      } // end of loop i2
-    }
-  } // end of loop i1
-  
-  
-  //mixed-PHOS-EMCAL-1
-  for (Int_t i1=0; i1<inPHOS; i1++) {
-    AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
-    for(Int_t ev=0; ev<prevEMCAL->GetSize();ev++){
-      TClonesArray * mixEMCAL = static_cast<TClonesArray*>(prevEMCAL->At(ev)) ;
-      for(Int_t i2=0; i2<mixEMCAL->GetEntriesFast();i2++){
-        AliCaloPhoton * ph2=(AliCaloPhoton*)mixEMCAL->At(i2) ;
-        Double_t e1=ph1->E() ;
-        Double_t e2=ph2->E() ;
-        //AliCaloPhoton deireved from TLorentzVector and returns phi in the range -pi...pi
-        Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-        Double_t dEta=ph1->Eta()-ph2->Eta() ;
-        Double_t asym=(ph1->E()-ph2->E())/(ph1->E()+ph2->E()) ;            
-
-        if(TMath::Abs(asym)<asymCut){
-	  for(Int_t iCut=0; iCut<4; iCut++){
-   	    if(!PairCut(ph1,ph2,iCut))
-	      continue ;	
-            FillHistogram(Form("hmiEtaPhiPHOSEMCAL_%s",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	  }
+        if (PairCut(ph1, ph2, 170)) {
+          fhReOSLCTS[fCenBin][iKt]->Fill(qo, qs, ql);
+        }
+        if (PairCut(ph1, ph2, 175)) {
+          fhReOSL[fCenBin][iKt]->Fill(qo, qs, ql);
         }
       }
     }
   }
-  
-  //mixed-PHOS-EMCAL-2
-  for (Int_t i1=0; i1<inEMCAL; i1++) {
-    AliCaloPhoton * ph1=(AliCaloPhoton*)fEMCALEvent->At(i1) ;
-    for(Int_t ev=0; ev<prevPHOS->GetSize();ev++){
-      TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
-      for(Int_t i2=0; i2<mixPHOS->GetEntriesFast();i2++){
-        AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
-        Double_t e1=ph1->E() ;
-        Double_t e2=ph2->E() ;
-        //AliCaloPhoton deireved from TLorentzVector and returns phi in the range -pi...pi
-        Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-        Double_t dEta=ph1->Eta()-ph2->Eta() ;
-        Double_t asym=(ph1->E()-ph2->E())/(ph1->E()+ph2->E()) ;            
 
-        if(TMath::Abs(asym)<asymCut){
-	  for(Int_t iCut=0; iCut<4; iCut++){
-   	    if(!PairCut(ph1,ph2,iCut))
-	      continue ;	
-            FillHistogram(Form("hmiEtaPhiPHOSEMCAL_%s",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	  }
+  // now mixed
+  // mixed-PHOS-PHOS
+  for (Int_t i1 = 0; i1 < inPHOS; i1++) {
+    AliCaloPhoton* ph1 = (AliCaloPhoton*)fPHOSEvent->At(i1);
+    for (Int_t ev = 0; ev < prevPHOS->GetSize(); ev++) {
+      TClonesArray* mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
+      for (Int_t i2 = 0; i2 < mixPHOS->GetEntriesFast(); i2++) {
+        AliCaloPhoton* ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
+        TLorentzVector sum(*ph1 + *ph2);
+        double qinv = sum.M();
+        double kT = 0.5 * sum.Pt();
+        TVector3 gammaBeta(sum.BoostVector());
+        gammaBeta.SetXYZ(0, 0, gammaBeta.Z());
+        TLorentzVector gammaCMq(*ph1 - *ph2);
+        gammaCMq.Boost(-gammaBeta);
+        double q = gammaCMq.Vect().Mag();
+
+        for (Int_t iCut = 0; iCut < kCuts; iCut++) {
+          if (!PairCut(ph1, ph2, iCut)) {
+            continue;
+          }
+          fhMiQinv[fCenBin][iCut]->Fill(qinv, kT);
+          fhMiq[fCenBin][iCut]->Fill(q, kT);
+        }
+        if (kT > fKtBins[0] && kT < fKtBins[kKtbins]) {
+          int iKt = 0;
+          while (kT > fKtBins[iKt + 1]) {
+            iKt++;
+          }
+
+          double qo = 0.5 * (sum.Px() * gammaCMq.Px() + sum.Py() * gammaCMq.Py()) / kT;
+          double qs = (ph1->Px() * ph2->Py() - ph2->Px() * ph1->Py()) / kT;
+          double ql = gammaCMq.Pz();
+
+          if (PairCut(ph1, ph2, 170)) {
+            fhMiOSLCTS[fCenBin][iKt]->Fill(qo, qs, ql);
+          }
+          if (PairCut(ph1, ph2, 175)) {
+            fhMiOSL[fCenBin][iKt]->Fill(qo, qs, ql);
+          }
         }
       }
     }
   }
-  
-  //mixed- EMCAL-EMCAL
-  for (Int_t i1=0; i1<inEMCAL; i1++) {
-    AliCaloPhoton * ph1=(AliCaloPhoton*)fEMCALEvent->At(i1) ;
-    for(Int_t ev=0; ev<prevEMCAL->GetSize();ev++){
-      TClonesArray * mixEMCAL = static_cast<TClonesArray*>(prevEMCAL->At(ev)) ;
-      for(Int_t i2=0; i2<mixEMCAL->GetEntriesFast();i2++){
-        AliCaloPhoton * ph2=(AliCaloPhoton*)mixEMCAL->At(i2) ;
-        Double_t e1=ph1->E() ;
-        Double_t e2=ph2->E() ;
-        //AliCaloPhoton deireved from TLorentzVector and returns phi in the range -pi...pi
-        Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-        Double_t eta1=ph1->Eta() ;
-        Double_t eta2=ph2->Eta() ;
-        Double_t dEta=eta1-eta2 ;
-        Double_t asym=(e1-e2)/(e1+e2) ;
-		
-        if(TMath::Abs(asym)<asymCut){
-          if(ph1->Module()==ph2->Module())
-            FillHistogram(Form("hmiEtaPhiEMCAL_mod%d",ph1->Module()),dEta,dPhi,0.5*(e1+e2)) ;
-	  for(Int_t iCut=0; iCut<4; iCut++){
-   	    if(!PairCut(ph1,ph2,iCut))
-	      continue ;	
-            FillHistogram(Form("hmiEtaPhiEMCAL_%s",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	    
-	    if(TMath::Abs(eta1)<0.1 && TMath::Abs(eta2)<0.1)
-              FillHistogram(Form("hmiEtaPhiEMCAL_%s_etaBand1",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	    else
-	      if(TMath::Abs(eta1)>0.1 && TMath::Abs(eta1)<0.2 && TMath::Abs(eta2)>0.1 && TMath::Abs(eta2)<0.2)
-                FillHistogram(Form("hmiEtaPhiEMCAL_%s_etaBand2",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	      else
-	        if(TMath::Abs(eta1)>0.2 && TMath::Abs(eta1)<0.5 && TMath::Abs(eta2)>0.2 && TMath::Abs(eta2)<0.5)
-                  FillHistogram(Form("hmiEtaPhiEMCAL_%s_etaBand3",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	  }
-        }
-      }
-    }
-  }
-  
-   //mixed-EMCAL-PCM-1  
-  for (Int_t i1=0; i1<inEMCAL; i1++) {
-    AliCaloPhoton * ph1=(AliCaloPhoton*)fEMCALEvent->At(i1) ;
-    
-    for(Int_t ev=0; ev<prevPCM->GetSize();ev++){
-      TClonesArray * mixPCM = static_cast<TClonesArray*>(prevPCM->At(ev)) ;
-      for(Int_t i2=0; i2<mixPCM->GetEntriesFast();i2++){
-        AliAODConversionPhoton * ph2=(AliAODConversionPhoton*)mixPCM->At(i2) ;
-	
-        Double_t e1=ph1->E() ;
-        Double_t e2=ph2->E() ;
-        Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-        while(dPhi<-TMath::Pi()/2.)dPhi+=TMath::TwoPi() ;
-        while(dPhi>3.*TMath::Pi()/2.)dPhi-=TMath::TwoPi() ;
-	
-        Double_t dEta=ph1->Eta()-ph2->Eta() ;
-        Double_t asym=(ph1->E()-ph2->E())/(ph1->E()+ph2->E()) ;
-	
-        if(TMath::Abs(asym)<asymCut){
-	  for(Int_t iCut=0; iCut<4; iCut++){
-   	    if(!PHOSCut(ph1,iCut))
-	      continue ;	
-            FillHistogram(Form("hmiEtaPhiEMCALPCM_%s",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	  }
-	}
-      } // end of loop i2
-    }
-  } // end of loop i1
-  
 
-  //mixed-EMCAL-PCM-2    
-  for (Int_t i1=0; i1<inPCM; i1++) {
-    AliAODConversionPhoton * ph2=(AliAODConversionPhoton*)fGammaCandidates->At(i1) ;    
-    for(Int_t ev=0; ev<prevEMCAL->GetSize();ev++){
-      TClonesArray * mixEMCAL = static_cast<TClonesArray*>(prevEMCAL->At(ev)) ;
-      for(Int_t i2=0; i2<mixEMCAL->GetEntriesFast();i2++){
-        AliCaloPhoton * ph1=(AliCaloPhoton*)mixEMCAL->At(i2) ;
-	
-        Double_t e1=ph1->E() ;
-        Double_t e2=ph2->E() ;
-        Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-        while(dPhi<-TMath::Pi()/2.)dPhi+=TMath::TwoPi() ;
-        while(dPhi>3.*TMath::Pi()/2.)dPhi-=TMath::TwoPi() ;
-	
-        Double_t dEta=ph1->Eta()-ph2->Eta() ;
-        Double_t asym=(ph2->E()-ph1->E())/(ph1->E()+ph2->E()) ;
+  // Now we either add current events to stack or remove
+  // If no photons in current event - no need to add it to mixed
+  const Int_t kMixEvents[kCentBins] = { 20, 20, 20, 30, 30, 40, 40 };
+  if (fPHOSEvent->GetEntriesFast() > 0) {
+    fPHOSEvent->Expand(fPHOSEvent->GetEntriesFast());
+    prevPHOS->AddFirst(fPHOSEvent);
+    fPHOSEvent = 0;
+    if (prevPHOS->GetSize() > kMixEvents[fCenBin]) { // Remove redundant events
+      TClonesArray* tmp = static_cast<TClonesArray*>(prevPHOS->Last());
+      prevPHOS->RemoveLast();
+      delete tmp;
+    }
+  }
 
-        if(TMath::Abs(asym)<asymCut){
-	  for(Int_t iCut=0; iCut<4; iCut++){
-   	    if(!PHOSCut(ph1,iCut))
-	      continue ;	
-            FillHistogram(Form("hmiEtaPhiEMCALPCM_%s",cut[iCut]),dEta,dPhi,0.5*(e1+e2)) ;
-	  }
-	}	  
-      } // end of loop i2
-    }
-  } // end of loop i1
-  
-  
-  //mixed-PCM-PCM
-  for(Int_t i1=0; i1<inPCM; i1++){
-    AliAODConversionPhoton * ph1=(AliAODConversionPhoton*)fGammaCandidates->At(i1) ;    
-    for(Int_t ev=0; ev<prevPCM->GetSize();ev++){
-      TClonesArray * mixPCM = static_cast<TClonesArray*>(prevPCM->At(ev)) ;
-      for(Int_t i2=0; i2<mixPCM->GetEntriesFast();i2++){
-        AliAODConversionPhoton * ph2=(AliAODConversionPhoton*)mixPCM->At(i2) ;
-	
-        Double_t e1=ph1->E() ;
-        Double_t e2=ph2->E() ;
-        Double_t dPhi=ph1->Phi()-ph2->Phi() ;
-        while(dPhi<-TMath::Pi()/2.)dPhi+=TMath::TwoPi() ;
-        while(dPhi>3.*TMath::Pi()/2.)dPhi-=TMath::TwoPi() ;
-        Double_t dEta=ph1->Eta()-ph2->Eta() ;
-        Double_t asym=(ph1->E()-ph2->E())/(ph1->E()+ph2->E()) ;
-
-	TString kTbin("") ;
-        if(0.1<e1<0.2 && 0.1<e2<0.2) kTbin="Kt01-02";
-        else if(0.2<e1<0.4 && 0.2<e2<0.4) kTbin="Kt02-04";
-        else if(0.4<e1<0.7 && 0.4<e2<0.7) kTbin="Kt04-07";
-        else if(0.7<e1<1.0 && 0.7<e2<1.0) kTbin="Kt07-10";
-        else if(1.0<e1<1.3 && 1.0<e2<1.3) kTbin="Kt10-13";
-        else if(1.3<e1<2.0 && 1.3<e2<2.0) kTbin="Kt13-20";
-        else if(2.0<e1<3.0 && 2.0<e2<3.0) kTbin="Kt20-30";
-		
-        if(TMath::Abs(asym)<asymCut)
-	   FillHistogram("hmiEtaPhiPCM",dEta,dPhi,0.5*(e1+e2)) ;
-	if(kTbin.Length())
-	   FillHistogram(Form("hmiEtaPhiPCM_%s",kTbin.Data()),dEta,dPhi,asym) ;	  
-      } // end of loop i2
-    }
-  } // end of loop i1
-  
-  //Now we either add current events to stack or remove
-  //If no photons in current event - no need to add it to mixed
-  const Int_t kMixEvents[6]={5,5,5,10,10,30} ;
-  if(fPHOSEvent->GetEntriesFast()>0){
-    prevPHOS->AddFirst(fPHOSEvent) ;
-    fPHOSEvent=0;
-    if(prevPHOS->GetSize()>kMixEvents[fCenBin]){//Remove redundant events
-      TClonesArray * tmp = static_cast<TClonesArray*>(prevPHOS->Last()) ;
-      prevPHOS->RemoveLast() ;
-      delete tmp ;
-    }
-  }
-  if(fEMCALEvent->GetEntriesFast()>0){
-    prevEMCAL->AddFirst(fEMCALEvent) ;
-    fEMCALEvent=0;
-    if(prevEMCAL->GetSize()>2){//Remove redundant events
-      TClonesArray * tmp = static_cast<TClonesArray*>(prevEMCAL->Last()) ;
-      prevEMCAL->RemoveLast() ;
-      delete tmp ;
-    }
-  }
-  if(fGammaCandidates->GetEntriesFast()>0){
-    prevPCM->AddFirst(fGammaCandidates) ;
-    fGammaCandidates=0;
-    if(prevPCM->GetSize()>kMixEvents[fCenBin]){//Remove redundant events
-      TClonesArray * tmp = static_cast<TClonesArray*>(prevPCM->Last()) ;
-      prevPCM->RemoveLast() ;
-      delete tmp ;
-    }
-  }
-    
   // Post output data.
   PostData(1, fOutputContainer);
   fEventCounter++;
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskEtaPhigg::Terminate(Option_t *)
+void AliAnalysisTaskEtaPhigg::Terminate(Option_t*) {}
+//_____________________________________________________________________________
+void AliAnalysisTaskEtaPhigg::FillHistogram(const char* key, double x) const
 {
-  // Draw result to the screen
-  // Called once at the end of the query
-  
+  // FillHistogram
+  TObject* tmp = fOutputContainer->FindObject(key);
+  if (!tmp) {
+    AliInfo(Form("can not find histogram <%s> ", key));
+    return;
+  }
+  if (tmp->IsA() == TClass::GetClass("TH1I")) {
+    ((TH1I*)tmp)->Fill(x);
+    return;
+  }
+  if (tmp->IsA() == TClass::GetClass("TH1F")) {
+    ((TH1F*)tmp)->Fill(x);
+    return;
+  }
+  if (tmp->IsA() == TClass::GetClass("TH1D")) {
+    ((TH1D*)tmp)->Fill(x);
+    return;
+  }
+  AliInfo(Form("can not find 1D histogram <%s> ", key));
+}
+//_____________________________________________________________________________
+void AliAnalysisTaskEtaPhigg::FillHistogram(const char* key, double x, double y) const
+{
+  // FillHistogram
+  TObject* tmp = fOutputContainer->FindObject(key);
+  if (!tmp) {
+    AliInfo(Form("can not find histogram <%s> ", key));
+    return;
+  }
+  if (tmp->IsA() == TClass::GetClass("TH1F")) {
+    ((TH1F*)tmp)->Fill(x, y);
+    return;
+  }
+  if (tmp->IsA() == TClass::GetClass("TH2F")) {
+    ((TH2F*)tmp)->Fill(x, y);
+    return;
+  }
+  AliError(Form("Calling FillHistogram with 2 parameters for histo <%s> of type %s", key, tmp->IsA()->GetName()));
 }
 
 //_____________________________________________________________________________
-void AliAnalysisTaskEtaPhigg::FillHistogram(const char * key,Double_t x)const{
-  //FillHistogram
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
+void AliAnalysisTaskEtaPhigg::FillHistogram(const char* key, double x, double y, double z) const
+{
+  // Fills 1D histograms with Form(
+  TObject* tmp = fOutputContainer->FindObject(key);
+  if (!tmp) {
+    AliInfo(Form("can not find histogram <%s> ", key));
+    return;
   }
-  if(tmp->IsA() == TClass::GetClass("TH1I")){
-    ((TH1I*)tmp)->Fill(x) ;
-    return ;
+  if (tmp->IsA() == TClass::GetClass("TH2F")) {
+    ((TH2F*)tmp)->Fill(x, y, z);
+    return;
   }
-  if(tmp->IsA() == TClass::GetClass("TH1F")){
-    ((TH1F*)tmp)->Fill(x) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH1D")){
-    ((TH1D*)tmp)->Fill(x) ;
-    return ;
-  }  
-  AliInfo(Form("can not find 1D histogram <%s> ",key)) ;
-}
-//_____________________________________________________________________________
-void AliAnalysisTaskEtaPhigg::FillHistogram(const char * key,Double_t x,Double_t y)const{
-  //FillHistogram
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH1F")){
-    ((TH1F*)tmp)->Fill(x,y) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH2F")){
-    ((TH2F*)tmp)->Fill(x,y) ;
-    return ;
-  }
-  AliError(Form("Calling FillHistogram with 2 parameters for histo <%s> of type %s",key,tmp->IsA()->GetName())) ;
-}
-
-//_____________________________________________________________________________
-void AliAnalysisTaskEtaPhigg::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z) const{
-  //Fills 1D histograms with Form(
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH2F")){
-    ((TH2F*)tmp)->Fill(x,y,z) ;
-    return ;
-  }
-  if(tmp->IsA() == TClass::GetClass("TH3F")){
-    ((TH3F*)tmp)->Fill(x,y,z) ;
-    return ;
+  if (tmp->IsA() == TClass::GetClass("TH3F")) {
+    ((TH3F*)tmp)->Fill(x, y, z);
+    return;
   }
 }
 //_____________________________________________________________________________
-void AliAnalysisTaskEtaPhigg::FillHistogram(const char * key,Double_t x,Double_t y, Double_t z, Double_t w) const{
-  //Fills 1D histograms with Form(
-  TObject * tmp = fOutputContainer->FindObject(key) ;
-  if(!tmp){
-    AliInfo(Form("can not find histogram <%s> ",key)) ;
-    return ;
+void AliAnalysisTaskEtaPhigg::FillHistogram(const char* key, double x, double y, double z, double w) const
+{
+  // Fills 1D histograms with Form(
+  TObject* tmp = fOutputContainer->FindObject(key);
+  if (!tmp) {
+    AliInfo(Form("can not find histogram <%s> ", key));
+    return;
   }
-  if(tmp->IsA() == TClass::GetClass("TH3F")){
-    ((TH3F*)tmp)->Fill(x,y,z,w) ;
-    return ;
+  if (tmp->IsA() == TClass::GetClass("TH3F")) {
+    ((TH3F*)tmp)->Fill(x, y, z, w);
+    return;
   }
 }
 
 //___________________________________________________________________________
-Int_t AliAnalysisTaskEtaPhigg::ConvertRunNumber(Int_t run){
-
-  switch(run){	
-    //LHC11h
-    case  170593 : return 179 ;
-    case  170572 : return 178 ;
-    case  170556 : return 177 ;
-    case  170552 : return 176 ;
-    case  170546 : return 175 ;
-    case  170390 : return 174 ;
-    case  170389 : return 173 ;
-    case  170388 : return 172 ;
-    case  170387 : return 171 ;
-    case  170315 : return 170 ;
-    case  170313 : return 169 ;
-    case  170312 : return 168 ;
-    case  170311 : return 167 ;
-    case  170309 : return 166 ;
-    case  170308 : return 165 ;
-    case  170306 : return 164 ;
-    case  170270 : return 163 ;
-    case  170269 : return 162 ;
-    case  170268 : return 161 ;
-    case  170267 : return 160 ;
-    case  170264 : return 159 ;
-    case  170230 : return 158 ;
-    case  170228 : return 157 ;
-    case  170208 : return 156 ;
-    case  170207 : return 155 ;
-    case  170205 : return 154 ;
-    case  170204 : return 153 ;
-    case  170203 : return 152 ;
-    case  170195 : return 151 ;
-    case  170193 : return 150 ;
-    case  170163 : return 149 ;
-    case  170162 : return 148 ;
-    case  170159 : return 147 ;
-    case  170155 : return 146 ;
-    case  170152 : return 145 ;
-    case  170091 : return 144 ;
-    case  170089 : return 143 ;
-    case  170088 : return 142 ;
-    case  170085 : return 141 ;
-    case  170084 : return 140 ;
-    case  170083 : return 139 ;
-    case  170081 : return 138 ;
-    case  170040 : return 137 ;
-    case  170038 : return 136 ;
-    case  170036 : return 135 ;
-    case  170027 : return 134 ;
-    case  169981 : return 133 ;
-    case  169975 : return 132 ;
-    case  169969 : return 131 ;
-    case  169965 : return 130 ;
-    case  169961 : return 129 ;
-    case  169956 : return 128 ;
-    case  169926 : return 127 ;
-    case  169924 : return 126 ;
-    case  169923 : return 125 ;
-    case  169922 : return 124 ;
-    case  169919 : return 123 ;
-    case  169918 : return 122 ;
-    case  169914 : return 121 ;
-    case  169859 : return 120 ;
-    case  169858 : return 119 ;
-    case  169855 : return 118 ;
-    case  169846 : return 117 ;
-    case  169838 : return 116 ;
-    case  169837 : return 115 ;
-    case  169835 : return 114 ;
-    case  169683 : return 113 ;
-    case  169628 : return 112 ;
-    case  169591 : return 111 ;
-    case  169590 : return 110 ;
-    case  169588 : return 109 ;
-    case  169587 : return 108 ;
-    case  169586 : return 107 ;
-    case  169584 : return 106 ;
-    case  169557 : return 105 ;
-    case  169555 : return 104 ;
-    case  169554 : return 103 ;
-    case  169553 : return 102 ;
-    case  169550 : return 101 ;
-    case  169515 : return 100 ;
-    case  169512 : return 99 ;
-    case  169506 : return 98 ;
-    case  169504 : return 97 ;
-    case  169498 : return 96 ;
-    case  169475 : return 95 ;
-    case  169420 : return 94 ;
-    case  169419 : return 93 ;
-    case  169418 : return 92 ;
-    case  169417 : return 91 ;
-    case  169415 : return 90 ;
-    case  169411 : return 89 ;
-    case  169238 : return 88 ;
-    case  169236 : return 87 ;
-    case  169167 : return 86 ;
-    case  169160 : return 85 ;
-    case  169156 : return 84 ;
-    case  169148 : return 83 ;
-    case  169145 : return 82 ;
-    case  169144 : return 81 ;
-    case  169143 : return 80 ;
-    case  169138 : return 79 ;
-    case  169099 : return 78 ;
-    case  169094 : return 77 ;
-    case  169091 : return 76 ;
-    case  169045 : return 75 ;
-    case  169044 : return 74 ;
-    case  169040 : return 73 ;
-    case  169035 : return 72 ;
-    case  168992 : return 71 ;
-    case  168988 : return 70 ;
-    case  168984 : return 69 ;
-    case  168826 : return 68 ;
-    case  168777 : return 67 ;
-    case  168514 : return 66 ;
-    case  168512 : return 65 ;
-    case  168511 : return 64 ;
-    case  168467 : return 63 ;
-    case  168464 : return 62 ;
-    case  168461 : return 61 ;
-    case  168460 : return 60 ;
-    case  168458 : return 59 ;
-    case  168362 : return 58 ;
-    case  168361 : return 57 ;
-    case  168356 : return 56 ;
-    case  168342 : return 55 ;
-    case  168341 : return 54 ;
-    case  168325 : return 53 ;
-    case  168322 : return 52 ;
-    case  168318 : return 51 ;
-    case  168311 : return 50 ;
-    case  168310 : return 49 ;
-    case  168213 : return 48 ;
-    case  168212 : return 47 ;
-    case  168208 : return 46 ;
-    case  168207 : return 45 ;
-    case  168206 : return 44 ;
-    case  168205 : return 43 ;
-    case  168204 : return 42 ;
-    case  168203 : return 41 ;
-    case  168181 : return 40 ;
-    case  168177 : return 39 ;
-    case  168175 : return 38 ;
-    case  168173 : return 37 ;
-    case  168172 : return 36 ;
-    case  168171 : return 35 ;
-    case  168115 : return 34 ;
-    case  168108 : return 33 ;
-    case  168107 : return 32 ;
-    case  168105 : return 31 ;
-    case  168104 : return 30 ;
-    case  168103 : return 29 ;
-    case  168076 : return 28 ;
-    case  168069 : return 27 ;
-    case  168068 : return 26 ;
-    case  168066 : return 25 ;
-    case  167988 : return 24 ;
-    case  167987 : return 23 ;
-    case  167986 : return 22 ;
-    case  167985 : return 21 ;
-    case  167921 : return 20 ;
-    case  167920 : return 19 ;
-    case  167915 : return 18 ;
-    case  167909 : return 17 ;
-    case  167903 : return 16 ;
-    case  167902 : return 15 ;
-    case  167818 : return 14 ;
-    case  167814 : return 13 ;
-    case  167813 : return 12 ;
-    case  167808 : return 11 ;
-    case  167807 : return 10 ;
-    case  167806 : return 9 ;
-    case  167713 : return 8 ;
-    case  167712 : return 7 ;
-    case  167711 : return 6 ;
-    case  167706 : return 5 ;
-    case  167693 : return 4 ;
-    case  166532 : return 3 ;
-    case  166530 : return 2 ;
-    case  166529 : return 1 ;
-    
-    
-  //LHC10h  
-  case  139517 : return 137; 
-  case  139514 : return 136; 
-  case  139513 : return 135; 
-  case  139511 : return 134; 
-  case  139510 : return 133; 
-  case  139507 : return 132; 
-  case  139505 : return 131; 
-  case  139504 : return 130; 
-  case  139503 : return 129; 
-  case  139470 : return 128; 
-  case  139467 : return 127; 
-  case  139466 : return 126; 
-  case  139465 : return 125; 
-  case  139440 : return 124; 
-  case  139439 : return 123; 
-  case  139438 : return 122; 
-  case  139437 : return 121; 
-  case  139360 : return 120; 
-  case  139329 : return 119; 
-  case  139328 : return 118; 
-  case  139314 : return 117; 
-  case  139311 : return 116; 
-  case  139310 : return 115; 
-  case  139309 : return 114; 
-  case  139308 : return 113; 
-  case  139173 : return 112; 
-  case  139172 : return 111; 
-  case  139110 : return 110; 
-  case  139107 : return 109; 
-  case  139105 : return 108; 
-  case  139104 : return 107; 
-  case  139042 : return 106; 
-  case  139038 : return 105; 
-  case  139037 : return 104; 
-  case  139036 : return 103; 
-  case  139029 : return 102; 
-  case  139028 : return 101; 
-  case  138983 : return 100; 
-  case  138982 : return 99; 
-  case  138980 : return 98; 
-  case  138979 : return 97; 
-  case  138978 : return 96; 
-  case  138977 : return 95; 
-  case  138976 : return 94; 
-  case  138973 : return 93; 
-  case  138972 : return 92; 
-  case  138965 : return 91; 
-  case  138924 : return 90; 
-  case  138872 : return 89; 
-  case  138871 : return 88; 
-  case  138870 : return 87; 
-  case  138837 : return 86; 
-  case  138830 : return 85; 
-  case  138828 : return 84; 
-  case  138826 : return 83; 
-  case  138796 : return 82; 
-  case  138795 : return 81; 
-  case  138742 : return 80; 
-  case  138732 : return 79; 
-  case  138730 : return 78; 
-  case  138666 : return 77; 
-  case  138662 : return 76; 
-  case  138653 : return 75; 
-  case  138652 : return 74; 
-  case  138638 : return 73; 
-  case  138624 : return 72; 
-  case  138621 : return 71; 
-  case  138583 : return 70; 
-  case  138582 : return 69; 
-  case  138579 : return 68; 
-  case  138578 : return 67; 
-  case  138534 : return 66; 
-  case  138469 : return 65; 
-  case  138442 : return 64; 
-  case  138439 : return 63; 
-  case  138438 : return 62; 
-  case  138396 : return 61; 
-  case  138364 : return 60; 
-  case  138359 : return 59; 
-  case  138275 : return 58; 
-  case  138225 : return 57; 
-  case  138201 : return 56; 
-  case  138200 : return 55; 
-  case  138197 : return 54; 
-  case  138192 : return 53; 
-  case  138190 : return 52; 
-  case  138154 : return 51; 
-  case  138153 : return 50; 
-  case  138151 : return 49; 
-  case  138150 : return 48; 
-  case  138126 : return 47; 
-  case  138125 : return 46; 
-  case  137848 : return 45; 
-  case  137847 : return 44; 
-  case  137844 : return 43; 
-  case  137843 : return 42; 
-  case  137752 : return 41; 
-  case  137751 : return 40; 
-  case  137748 : return 39; 
-  case  137724 : return 38; 
-  case  137722 : return 37; 
-  case  137718 : return 36; 
-  case  137704 : return 35; 
-  case  137693 : return 34; 
-  case  137692 : return 33; 
-  case  137691 : return 32; 
-  case  137689 : return 31; 
-  case  137686 : return 30; 
-  case  137685 : return 29; 
-  case  137639 : return 28; 
-  case  137638 : return 27; 
-  case  137608 : return 26; 
-  case  137595 : return 25; 
-  case  137549 : return 24; 
-  case  137546 : return 23; 
-  case  137544 : return 22; 
-  case  137541 : return 21; 
-  case  137539 : return 20; 
-  case  137531 : return 19; 
-  case  137530 : return 18; 
-  case  137443 : return 17; 
-  case  137441 : return 16; 
-  case  137440 : return 15; 
-  case  137439 : return 14; 
-  case  137434 : return 13; 
-  case  137432 : return 12; 
-  case  137431 : return 11; 
-  case  137430 : return 10; 
-  case  137366 : return 9; 
-  case  137243 : return 8; 
-  case  137236 : return 7; 
-  case  137235 : return 6; 
-  case  137232 : return 5; 
-  case  137231 : return 4; 
-  case  137165 : return 3; 
-  case  137162 : return 2; 
-  case  137161 : return 1;
-  default : return 199;
-  } 
-
+Int_t AliAnalysisTaskEtaPhigg::ConvertRunNumber(Int_t run)
+{
+  switch (run) {
+    default:
+      return 199;
+  }
 }
 
 //___________________________________________________________________________
-Bool_t AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2, Int_t cut) const{
-  
- // if(cut==kDefault){
-  if(cut==0){
-    return kTRUE ;
+bool AliAnalysisTaskEtaPhigg::PairCut(const AliCaloPhoton* ph1, const AliCaloPhoton* ph2, Int_t cut) const
+{
+  // First distance cut based on non-overlapping CPV cuts
+  //  if(ph1->Module()!=ph2->Module()){
+  //    return false ;
+  //  }
+  double r = ph1->Angle(ph2->Vect());
+  const double r1cut = TMath::ATan2(5., 460.);
+  const double r2cut = TMath::ATan2(10., 460.);
+  const double r3cut = TMath::ATan2(15., 460.);
+  const double r4cut = TMath::ATan2(20., 460.);
+  const double r5cut = TMath::ATan2(25., 460.);
+
+  int cpvBits1 = ph1->GetTagInfo();
+  bool track1CPV = cpvBits1 & (1 << 1);
+  bool track1CPV2 = cpvBits1 & (1 << 2);
+  bool cpv1CPV = cpvBits1 & (1 << 3);
+  bool cpv1CPV2 = cpvBits1 & (1 << 4);
+  bool cpvAndTrack1 = cpvBits1 & (1 << 5);
+  int cpvBits2 = ph2->GetTagInfo();
+  bool track2CPV = cpvBits2 & (1 << 1);
+  bool track2CPV2 = cpvBits2 & (1 << 2);
+  bool cpv2CPV = cpvBits2 & (1 << 3);
+  bool cpv2CPV2 = cpvBits2 & (1 << 4);
+  bool cpvAndTrack2 = cpvBits2 & (1 << 5);
+  // Cuts without cross-talks
+  bool badPair = false;
+  if (ph1->Module() == 1 && ph2->Module() == 1) { // noisy regions 49,50
+    badPair =
+      ((ph1->DistToBad() == 49) || (ph1->DistToBad() == 50)) && ((ph2->DistToBad() == 49) || (ph2->DistToBad() == 50));
   }
-  if(cut==1){
-    return ph1->IsDispOK()&& ph2->IsDispOK() ;  
+  if (ph1->Module() == 2 && ph2->Module() == 2) { // noisy regions 6,7,  18, 34,37,38, 63
+    badPair =
+      (((ph1->DistToBad() == 6) || (ph1->DistToBad() == 7)) && ((ph2->DistToBad() == 6) || (ph2->DistToBad() == 7))) ||
+      (((ph1->DistToBad() == 34) || (ph1->DistToBad() == 37) || (ph1->DistToBad() == 38)) &&
+       ((ph2->DistToBad() == 34) || (ph2->DistToBad() == 37) || (ph2->DistToBad() == 38)));
   }
-  if(cut==2){
-    return ph1->IsCPVOK() && ph2->IsCPVOK()  ;  
+  if (ph1->Module() == 3 && ph2->Module() == 3) { // noisy regions 6,  18,21,22,  33,34,37,38,  49,50,63
+    badPair =
+      (((ph1->DistToBad() == 18) || (ph1->DistToBad() == 21) || (ph1->DistToBad() == 22)) &&
+       ((ph2->DistToBad() == 18) || (ph2->DistToBad() == 21) || (ph2->DistToBad() == 22))) ||
+      (((ph1->DistToBad() == 33) || (ph1->DistToBad() == 34) || (ph1->DistToBad() == 37) || (ph1->DistToBad() == 38)) &&
+       ((ph2->DistToBad() == 33) || (ph2->DistToBad() == 34) || (ph2->DistToBad() == 37) ||
+        (ph2->DistToBad() == 38))) ||
+      (((ph1->DistToBad() == 49) || (ph1->DistToBad() == 50) || (ph1->DistToBad() == 63)) &&
+       ((ph2->DistToBad() == 49) || (ph2->DistToBad() == 50) || (ph2->DistToBad() == 63)));
   }
-  if(cut==3){
-    return ph1->IsDispOK()  && ph1->IsCPVOK() && ph2->IsDispOK()  && ph2->IsCPVOK() ;  
+  if (ph1->Module() == 4 && ph2->Module() == 4) { // noisy regions 34, 49,50
+    badPair = (((ph1->DistToBad() == 49) || (ph1->DistToBad() == 50)) &&
+               ((ph2->DistToBad() == 49) || (ph2->DistToBad() == 50)));
   }
-  if(cut==4){
-    return ph1->IsDisp2OK() && ph2->IsDisp2OK()  ;  
+
+  switch (cut) {
+    case 0:
+      return kTRUE;
+    case 1:
+      return r > r1cut;
+    case 2:
+      return r > r1cut && ph1->IsDispOK() && ph2->IsDispOK();
+    case 3:
+      return r > r1cut && track1CPV && track2CPV;
+    case 4:
+      return r > r1cut && track1CPV && ph1->IsDispOK() && track2CPV && ph2->IsDispOK();
+    case 5:
+      return r > r1cut && ph1->Module() == 3 && ph2->Module() == 3;
+    case 6:
+      return r > r1cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV;
+    case 7:
+      return r > r1cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 8:
+      return r > r1cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2;
+    case 9:
+      return r > r1cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 10:
+      return r > r1cut && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+    // D10
+    case 11:
+      return r > r2cut && !badPair;
+    case 12:
+      return r > r2cut && !badPair && ph1->IsDispOK() && ph2->IsDispOK();
+    case 13:
+      return r > r2cut && !badPair && track1CPV && track2CPV;
+    case 14:
+      return r > r2cut && !badPair && track1CPV2 && track2CPV2;
+    case 15:
+      return r > r2cut && !badPair && track1CPV && track2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 16:
+      return r > r2cut && !badPair && track1CPV2 && track2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 17:
+      return r > r2cut && !badPair && ph1->Module() == 3 && ph2->Module() == 3;
+    case 18:
+      return r > r2cut && !badPair && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV;
+    case 19:
+      return r > r2cut && !badPair && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2;
+    case 20:
+      return r > r2cut && !badPair && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV &&
+             ph1->IsDispOK() && ph2->IsDispOK();
+    case 21:
+      return r > r2cut && !badPair && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 &&
+             ph1->IsDispOK() && ph2->IsDispOK();
+    case 22:
+      return r > r2cut && !badPair && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+    // D10 Emin 0.2
+    case 23:
+      return r > r2cut && !badPair && ph1->E() > 0.2 && ph2->E() > 0.2;
+    case 24:
+      return r > r2cut && !badPair && ph1->E() > 0.2 && ph2->E() > 0.2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 25:
+      return r > r2cut && !badPair && ph1->E() > 0.2 && ph2->E() > 0.2 && track1CPV && track2CPV;
+    case 26:
+      return r > r2cut && !badPair && ph1->E() > 0.2 && ph2->E() > 0.2 && track1CPV2 && track2CPV2;
+    case 27:
+      return r > r2cut && !badPair && ph1->E() > 0.2 && ph2->E() > 0.2 && track1CPV && track2CPV && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 28:
+      return r > r2cut && !badPair && ph1->E() > 0.2 && ph2->E() > 0.2 && track1CPV2 && track2CPV2 && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 29:
+      return r > r2cut && !badPair && ph1->E() > 0.2 && ph2->E() > 0.2 && ph1->Module() == 3 && ph2->Module() == 3;
+    case 30:
+      return r > r2cut && !badPair && ph1->E() > 0.2 && ph2->E() > 0.2 && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV && cpv2CPV;
+    case 31:
+      return r > r2cut && !badPair && ph1->E() > 0.2 && ph2->E() > 0.2 && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV2 && cpv2CPV2;
+    case 32:
+      return r > r2cut && !badPair && ph1->E() > 0.2 && ph2->E() > 0.2 && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV && cpv2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 33:
+      return r > r2cut && !badPair && ph1->E() > 0.2 && ph2->E() > 0.2 && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 34:
+      return r > r2cut && !badPair && ph1->E() > 0.2 && ph2->E() > 0.2 && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpvAndTrack1 && cpvAndTrack2;
+    // D10 Emin 0.3
+    case 35:
+      return r > r2cut && !badPair && ph1->E() > 0.3 && ph2->E() > 0.3;
+    case 36:
+      return r > r2cut && !badPair && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 37:
+      return r > r2cut && !badPair && ph1->E() > 0.3 && ph2->E() > 0.3 && track1CPV && track2CPV;
+    case 38:
+      return r > r2cut && !badPair && ph1->E() > 0.3 && ph2->E() > 0.3 && track1CPV2 && track2CPV2;
+    case 39:
+      return r > r2cut && !badPair && ph1->E() > 0.3 && ph2->E() > 0.3 && track1CPV && track2CPV && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 40:
+      return r > r2cut && !badPair && ph1->E() > 0.3 && ph2->E() > 0.3 && track1CPV2 && track2CPV2 && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 41:
+      return r > r2cut && !badPair && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3;
+    case 42:
+      return r > r2cut && !badPair && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV && cpv2CPV;
+    case 43:
+      return r > r2cut && !badPair && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV2 && cpv2CPV2;
+    case 44:
+      return r > r2cut && !badPair && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV && cpv2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 45:
+      return r > r2cut && !badPair && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 46:
+      return r > r2cut && !badPair && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpvAndTrack1 && cpvAndTrack2;
+    // D15
+    case 47:
+      return r > r3cut;
+    case 48:
+      return r > r3cut && ph1->IsDispOK() && ph2->IsDispOK();
+    case 49:
+      return r > r3cut && track1CPV && track2CPV;
+    case 50:
+      return r > r3cut && track1CPV2 && track2CPV2;
+    case 51:
+      return r > r3cut && track1CPV && track2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 52:
+      return r > r3cut && track1CPV2 && track2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 53:
+      return r > r3cut && ph1->Module() == 3 && ph2->Module() == 3;
+    case 54:
+      return r > r3cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV;
+    case 55:
+      return r > r3cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2;
+    case 56:
+      return r > r3cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 57:
+      return r > r3cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 58:
+      return r > r3cut && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+    // D15 Emin 0.2
+    case 59:
+      return r > r3cut && ph1->E() > 0.2 && ph2->E() > 0.2;
+    case 60:
+      return r > r3cut && ph1->E() > 0.2 && ph2->E() > 0.2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 61:
+      return r > r3cut && ph1->E() > 0.2 && ph2->E() > 0.2 && track1CPV && track2CPV;
+    case 62:
+      return r > r3cut && ph1->E() > 0.2 && ph2->E() > 0.2 && track1CPV2 && track2CPV2;
+    case 63:
+      return r > r3cut && ph1->E() > 0.2 && ph2->E() > 0.2 && track1CPV && track2CPV && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 64:
+      return r > r3cut && ph1->E() > 0.2 && ph2->E() > 0.2 && track1CPV2 && track2CPV2 && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 65:
+      return r > r3cut && ph1->E() > 0.2 && ph2->E() > 0.2 && ph1->Module() == 3 && ph2->Module() == 3;
+    case 66:
+      return r > r3cut && ph1->E() > 0.2 && ph2->E() > 0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV &&
+             cpv2CPV;
+    case 67:
+      return r > r3cut && ph1->E() > 0.2 && ph2->E() > 0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 &&
+             cpv2CPV2;
+    case 68:
+      return r > r3cut && ph1->E() > 0.2 && ph2->E() > 0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV &&
+             cpv2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 69:
+      return r > r3cut && ph1->E() > 0.2 && ph2->E() > 0.2 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 &&
+             cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 70:
+      return r > r3cut && ph1->E() > 0.2 && ph2->E() > 0.2 && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpvAndTrack1 && cpvAndTrack2;
+    // D15 Emin 0.3
+    case 71:
+      return r > r3cut && ph1->E() > 0.3 && ph2->E() > 0.3;
+    case 72:
+      return r > r3cut && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 73:
+      return r > r3cut && ph1->E() > 0.3 && ph2->E() > 0.3 && track1CPV && track2CPV;
+    case 74:
+      return r > r3cut && ph1->E() > 0.3 && ph2->E() > 0.3 && track1CPV2 && track2CPV2;
+    case 75:
+      return r > r3cut && ph1->E() > 0.3 && ph2->E() > 0.3 && track1CPV && track2CPV && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 76:
+      return r > r3cut && ph1->E() > 0.3 && ph2->E() > 0.3 && track1CPV2 && track2CPV2 && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 77:
+      return r > r3cut && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3;
+    case 78:
+      return r > r3cut && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV &&
+             cpv2CPV;
+    case 79:
+      return r > r3cut && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 &&
+             cpv2CPV2;
+    case 80:
+      return r > r3cut && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV &&
+             cpv2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 81:
+      return r > r3cut && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 &&
+             cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 82:
+      return r > r3cut && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpvAndTrack1 && cpvAndTrack2;
+    // D20
+    case 83:
+      return r > r4cut;
+    case 84:
+      return r > r4cut && ph1->IsDispOK() && ph2->IsDispOK();
+    case 85:
+      return r > r4cut && track1CPV && track2CPV;
+    case 86:
+      return r > r4cut && track1CPV2 && track2CPV2;
+    case 87:
+      return r > r4cut && track1CPV && track2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 88:
+      return r > r4cut && track1CPV2 && track2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 89:
+      return r > r4cut && ph1->Module() == 3 && ph2->Module() == 3;
+    case 90:
+      return r > r4cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV;
+    case 91:
+      return r > r4cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2;
+    case 92:
+      return r > r4cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 93:
+      return r > r4cut && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 94:
+      return r > r4cut && ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+    // Dz Emin 0.2
+    case 95:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.2 && ph2->E() > 0.2;
+    case 96:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.2 && ph2->E() > 0.2 &&
+             ph1->IsDispOK() && ph2->IsDispOK();
+    case 97:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.2 && ph2->E() > 0.2 &&
+             track1CPV && track2CPV;
+    case 98:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.2 && ph2->E() > 0.2 &&
+             track1CPV2 && track2CPV2;
+    case 99:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.2 && ph2->E() > 0.2 &&
+             track1CPV && track2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 100:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.2 && ph2->E() > 0.2 &&
+             track1CPV2 && track2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 101:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.2 && ph2->E() > 0.2 &&
+             ph1->Module() == 3 && ph2->Module() == 3;
+    case 102:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.2 && ph2->E() > 0.2 &&
+             ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV;
+    case 103:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.2 && ph2->E() > 0.2 &&
+             ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2;
+    case 104:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.2 && ph2->E() > 0.2 &&
+             ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 105:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.2 && ph2->E() > 0.2 &&
+             ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 106:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.2 && ph2->E() > 0.2 &&
+             ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+    // Dz Emin 0.3
+    case 107:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.3 && ph2->E() > 0.3;
+    case 108:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.3 && ph2->E() > 0.3 &&
+             ph1->IsDispOK() && ph2->IsDispOK();
+    case 109:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.3 && ph2->E() > 0.3 &&
+             track1CPV && track2CPV;
+    case 110:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.3 && ph2->E() > 0.3 &&
+             track1CPV2 && track2CPV2;
+    case 111:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.3 && ph2->E() > 0.3 &&
+             track1CPV && track2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 112:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.3 && ph2->E() > 0.3 &&
+             track1CPV2 && track2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 113:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.3 && ph2->E() > 0.3 &&
+             ph1->Module() == 3 && ph2->Module() == 3;
+    case 114:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.3 && ph2->E() > 0.3 &&
+             ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV;
+    case 115:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.3 && ph2->E() > 0.3 &&
+             ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2;
+    case 116:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.3 && ph2->E() > 0.3 &&
+             ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 117:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.3 && ph2->E() > 0.3 &&
+             ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 118:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->E() > 0.3 && ph2->E() > 0.3 &&
+             ph1->Module() == 3 && ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+    // D25
+    case 119:
+      return r > r5cut && ph1->E() > 0.3 && ph2->E() > 0.3;
+    case 120:
+      return r > r5cut && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 121:
+      return r > r5cut && ph1->E() > 0.3 && ph2->E() > 0.3 && track1CPV && track2CPV;
+    case 122:
+      return r > r5cut && ph1->E() > 0.3 && ph2->E() > 0.3 && track1CPV2 && track2CPV2;
+    case 123:
+      return r > r5cut && ph1->E() > 0.3 && ph2->E() > 0.3 && track1CPV && track2CPV && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 124:
+      return r > r5cut && ph1->E() > 0.3 && ph2->E() > 0.3 && track1CPV2 && track2CPV2 && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 125:
+      return r > r5cut && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3;
+    case 126:
+      return r > r5cut && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV &&
+             cpv2CPV;
+    case 127:
+      return r > r5cut && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 &&
+             cpv2CPV2;
+    case 128:
+      return r > r5cut && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV &&
+             cpv2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 129:
+      return r > r5cut && ph1->E() > 0.3 && ph2->E() > 0.3 && ph1->Module() == 3 && ph2->Module() == 3 && cpv1CPV2 &&
+             cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    // NExMax
+    // D10
+    case 130:
+      return r > r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded();
+    case 131:
+      return r > r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->IsDispOK() && ph2->IsDispOK();
+    case 132:
+      return r > r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && track1CPV && track2CPV;
+    case 133:
+      return r > r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && track1CPV2 && track2CPV2;
+    case 134:
+      return r > r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && track1CPV && track2CPV && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 135:
+      return r > r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && track1CPV2 && track2CPV2 && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 136:
+      return r > r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && ph2->Module() == 3;
+    case 137:
+      return r > r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV && cpv2CPV;
+    case 138:
+      return r > r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV2 && cpv2CPV2;
+    case 139:
+      return r > r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV && cpv2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 140:
+      return r > r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 141:
+      return r > r2cut && ph1->IsntUnfolded() && ph2->IsntUnfolded() && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpvAndTrack1 && cpvAndTrack2;
+    // DZ
+    case 142:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.);
+    case 143:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->IsDispOK() && ph2->IsDispOK();
+    case 144:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && track1CPV && track2CPV;
+    case 145:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && track1CPV2 && track2CPV2;
+    case 146:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && track1CPV && track2CPV && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 147:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && track1CPV2 && track2CPV2 && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 148:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->Module() == 3 && ph2->Module() == 3;
+    case 149:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV && cpv2CPV;
+    case 150:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV2 && cpv2CPV2;
+    case 151:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV && cpv2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 152:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 153:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpvAndTrack1 && cpvAndTrack2;
+    // DZ2
+    case 154:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.);
+    case 155:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && ph1->IsDispOK() && ph2->IsDispOK();
+    case 156:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && track1CPV && track2CPV;
+    case 157:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && track1CPV2 && track2CPV2;
+    case 158:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && track1CPV && track2CPV && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 159:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && track1CPV2 && track2CPV2 && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 160:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && ph1->Module() == 3 && ph2->Module() == 3;
+    case 161:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV && cpv2CPV;
+    case 162:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV2 && cpv2CPV2;
+    case 163:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV && cpv2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 164:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 165:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && ph1->Module() == 3 && ph2->Module() == 3 &&
+             cpvAndTrack1 && cpvAndTrack2;
+    // CrDZ
+    case 166:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && !badPair;
+    case 167:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && !badPair && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 168:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && !badPair && track1CPV && track2CPV;
+    case 169:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && !badPair && track1CPV2 && track2CPV2;
+    case 170:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && !badPair && track1CPV && track2CPV &&
+             ph1->IsDispOK() && ph2->IsDispOK();
+    case 171:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && !badPair && track1CPV2 && track2CPV2 &&
+             ph1->IsDispOK() && ph2->IsDispOK();
+    case 172:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && !badPair && ph1->Module() == 3 &&
+             ph2->Module() == 3;
+    case 173:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && !badPair && ph1->Module() == 3 &&
+             ph2->Module() == 3 && cpv1CPV && cpv2CPV;
+    case 174:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && !badPair && ph1->Module() == 3 &&
+             ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2;
+    case 175:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && !badPair && ph1->Module() == 3 &&
+             ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 176:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && !badPair && ph1->Module() == 3 &&
+             ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 177:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(6., 460.) && !badPair && ph1->Module() == 3 &&
+             ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+    // CrDZ2
+    case 178:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && !badPair;
+    case 179:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && !badPair && ph1->IsDispOK() &&
+             ph2->IsDispOK();
+    case 180:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && !badPair && track1CPV && track2CPV;
+    case 181:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && !badPair && track1CPV2 && track2CPV2;
+    case 182:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && !badPair && track1CPV && track2CPV &&
+             ph1->IsDispOK() && ph2->IsDispOK();
+    case 183:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && !badPair && track1CPV2 && track2CPV2 &&
+             ph1->IsDispOK() && ph2->IsDispOK();
+    case 184:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && !badPair && ph1->Module() == 3 &&
+             ph2->Module() == 3;
+    case 185:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && !badPair && ph1->Module() == 3 &&
+             ph2->Module() == 3 && cpv1CPV && cpv2CPV;
+    case 186:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && !badPair && ph1->Module() == 3 &&
+             ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2;
+    case 187:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && !badPair && ph1->Module() == 3 &&
+             ph2->Module() == 3 && cpv1CPV && cpv2CPV && ph1->IsDispOK() && ph2->IsDispOK();
+    case 188:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && !badPair && ph1->Module() == 3 &&
+             ph2->Module() == 3 && cpv1CPV2 && cpv2CPV2 && ph1->IsDispOK() && ph2->IsDispOK();
+    case 189:
+      return abs(ph1->Theta() - ph2->Theta()) > TMath::ATan2(9., 460.) && !badPair && ph1->Module() == 3 &&
+             ph2->Module() == 3 && cpvAndTrack1 && cpvAndTrack2;
+
+    default:
+      return false;
   }
-  if(cut==5){
-    return ph1->IsCPV2OK() && ph2->IsCPV2OK() ;  
-  }
-  if(cut==6){
-    return ph1->IsDisp2OK()&& ph1->IsCPV2OK() && ph2->IsDisp2OK()&& ph2->IsCPV2OK() ;  
-  }
-    
-  return kTRUE ;
-  
 }
-//___________________________________________________________________________
-Bool_t AliAnalysisTaskEtaPhigg::PHOSCut(const AliCaloPhoton * ph1, Int_t cut) const{
-  
- // if(cut==kDefault){
-  if(cut==0){
-    return kTRUE ;
-  }
-  if(cut==1){
-    return ph1->IsDispOK()  ;  
-  }
-  if(cut==2){
-    return ph1->IsCPVOK()  ;  
-  }
-  if(cut==3){
-    return ph1->IsDispOK()  && ph1->IsCPVOK()  ;  
-  }
-  if(cut==4){
-    return ph1->IsDisp2OK()  ;  
-  }
-  if(cut==5){
-    return ph1->IsCPV2OK()  ;  
-  }
-  if(cut==6){
-    return ph1->IsDisp2OK()&& ph1->IsCPV2OK()  ;  
-  }
-    
-  return kTRUE ;
-  
+//_________________________________________________________________________
+void AliAnalysisTaskEtaPhigg::SetCutNames()
+{
+  // Set names corresponding to cut index
+  snprintf(fcut[0], 20, "All");
+  snprintf(fcut[1], 20, "D5All");
+  snprintf(fcut[2], 20, "D5Disp");
+  snprintf(fcut[3], 20, "D5CTS");
+  snprintf(fcut[4], 20, "D5Both");
+  snprintf(fcut[5], 20, "D5Mod3");
+  snprintf(fcut[6], 20, "D5CPV");
+  snprintf(fcut[7], 20, "D5CPVDisp");
+  snprintf(fcut[8], 20, "D5CPV2");
+  snprintf(fcut[9], 20, "D5CPV2Disp");
+  snprintf(fcut[10], 20, "D5CPVCTS");
+  // D10
+  snprintf(fcut[11], 20, "D10All");
+  snprintf(fcut[12], 20, "D10Disp");
+  snprintf(fcut[13], 20, "D10CTS");
+  snprintf(fcut[14], 20, "D10CTS2");
+  snprintf(fcut[15], 20, "D10CTSDisp");
+  snprintf(fcut[16], 20, "D10CTS2Disp");
+  snprintf(fcut[17], 20, "D10Mod3");
+  snprintf(fcut[18], 20, "D10CPV");
+  snprintf(fcut[19], 20, "D10CPV2");
+  snprintf(fcut[20], 20, "D10CPVDisp");
+  snprintf(fcut[21], 20, "D10CPV2Disp");
+  snprintf(fcut[22], 20, "D10CPVCTS");
+  // D10 Emin 0.2
+  snprintf(fcut[23], 20, "D10E2All");
+  snprintf(fcut[24], 20, "D10E2Disp");
+  snprintf(fcut[25], 20, "D10E2CTS");
+  snprintf(fcut[26], 20, "D10E2CTS2");
+  snprintf(fcut[27], 20, "D10E2CTSDisp");
+  snprintf(fcut[28], 20, "D10E2CTS2Disp");
+  snprintf(fcut[29], 20, "D10E2Mod3");
+  snprintf(fcut[30], 20, "D10E2CPV");
+  snprintf(fcut[31], 20, "D10E2CPV2");
+  snprintf(fcut[32], 20, "D10E2CPVDisp");
+  snprintf(fcut[33], 20, "D10E2CPV2Disp");
+  snprintf(fcut[34], 20, "D10E2CPVCTS");
+  // D10 Emin 0.3
+  snprintf(fcut[35], 20, "D10E3All");
+  snprintf(fcut[36], 20, "D10E3Disp");
+  snprintf(fcut[37], 20, "D10E3CTS");
+  snprintf(fcut[38], 20, "D10E3CTS2");
+  snprintf(fcut[39], 20, "D10E3CTSDisp");
+  snprintf(fcut[40], 20, "D10E3CTS2Disp");
+  snprintf(fcut[41], 20, "D10E3Mod3");
+  snprintf(fcut[42], 20, "D10E3CPV");
+  snprintf(fcut[43], 20, "D10E3CPV2");
+  snprintf(fcut[44], 20, "D10E3CPVDisp");
+  snprintf(fcut[45], 20, "D10E3CPV2Disp");
+  snprintf(fcut[46], 20, "D10E3CPVCTS");
+  // D15
+  snprintf(fcut[47], 20, "D15All");
+  snprintf(fcut[48], 20, "D15Disp");
+  snprintf(fcut[49], 20, "D15CTS");
+  snprintf(fcut[50], 20, "D15CTS2");
+  snprintf(fcut[51], 20, "D15CTSDisp");
+  snprintf(fcut[52], 20, "D15CTS2Disp");
+  snprintf(fcut[53], 20, "D15Mod3");
+  snprintf(fcut[54], 20, "D15CPV");
+  snprintf(fcut[55], 20, "D15CPV2");
+  snprintf(fcut[56], 20, "D15CPVDisp");
+  snprintf(fcut[57], 20, "D15CPV2Disp");
+  snprintf(fcut[58], 20, "D15CPVCTS");
+  // D15 Emin 0.2
+  snprintf(fcut[59], 20, "D15E2All");
+  snprintf(fcut[60], 20, "D15E2Disp");
+  snprintf(fcut[61], 20, "D15E2CTS");
+  snprintf(fcut[62], 20, "D15E2CTS2");
+  snprintf(fcut[63], 20, "D15E2CTSDisp");
+  snprintf(fcut[64], 20, "D15E2CTS2Disp");
+  snprintf(fcut[65], 20, "D15E2Mod3");
+  snprintf(fcut[66], 20, "D15E2CPV");
+  snprintf(fcut[67], 20, "D15E2CPV2");
+  snprintf(fcut[68], 20, "D15E2CPVDisp");
+  snprintf(fcut[69], 20, "D15E2CPV2Disp");
+  snprintf(fcut[70], 20, "D15E2CPVCTS");
+  // D15 Emin 0.3
+  snprintf(fcut[71], 20, "D15E3All");
+  snprintf(fcut[72], 20, "D15E3Disp");
+  snprintf(fcut[73], 20, "D15E3CTS");
+  snprintf(fcut[74], 20, "D15E3CTS2");
+  snprintf(fcut[75], 20, "D15E3CTSDisp");
+  snprintf(fcut[76], 20, "D15E3CTS2Disp");
+  snprintf(fcut[77], 20, "D15E3Mod3");
+  snprintf(fcut[78], 20, "D15E3CPV");
+  snprintf(fcut[79], 20, "D15E3CPV2");
+  snprintf(fcut[80], 20, "D15E3CPVDisp");
+  snprintf(fcut[81], 20, "D15E3CPV2Disp");
+  snprintf(fcut[82], 20, "D15E3CPVCTS");
+  // D20
+  snprintf(fcut[83], 20, "D20All");
+  snprintf(fcut[84], 20, "D20Disp");
+  snprintf(fcut[85], 20, "D20CTS");
+  snprintf(fcut[86], 20, "D20CTS2");
+  snprintf(fcut[87], 20, "D20CTSDisp");
+  snprintf(fcut[88], 20, "D20CTS2Disp");
+  snprintf(fcut[89], 20, "D20Mod3");
+  snprintf(fcut[90], 20, "D20CPV");
+  snprintf(fcut[91], 20, "D20CPV2");
+  snprintf(fcut[92], 20, "D20CPVDisp");
+  snprintf(fcut[93], 20, "D20CPV2Disp");
+  snprintf(fcut[94], 20, "D20CPVCTS");
+  // D20 Emin 0.2
+  snprintf(fcut[95], 20, "DzE2All");
+  snprintf(fcut[96], 20, "DzE2Disp");
+  snprintf(fcut[97], 20, "DzE2CTS");
+  snprintf(fcut[98], 20, "DzE2CTS2");
+  snprintf(fcut[99], 20, "DzE2CTSDisp");
+  snprintf(fcut[100], 20, "DzE2CTS2Disp");
+  snprintf(fcut[101], 20, "DzE2Mod3");
+  snprintf(fcut[102], 20, "DzE2CPV");
+  snprintf(fcut[103], 20, "DzE2CPV2");
+  snprintf(fcut[104], 20, "DzE2CPVDisp");
+  snprintf(fcut[105], 20, "DzE2CPV2Disp");
+  snprintf(fcut[106], 20, "DzE2CPVCTS");
+  // D20 Emin 0.3
+  snprintf(fcut[107], 20, "DzE3All");
+  snprintf(fcut[108], 20, "DzE3Disp");
+  snprintf(fcut[109], 20, "DzE3CTS");
+  snprintf(fcut[110], 20, "DzE3CTS2");
+  snprintf(fcut[111], 20, "DzE3CTSDisp");
+  snprintf(fcut[112], 20, "DzE3CTS2Disp");
+  snprintf(fcut[113], 20, "DzE3Mod3");
+  snprintf(fcut[114], 20, "DzE3CPV");
+  snprintf(fcut[115], 20, "DzE3CPV2");
+  snprintf(fcut[116], 20, "DzE3CPVDisp");
+  snprintf(fcut[117], 20, "DzE3CPV2Disp");
+  snprintf(fcut[118], 20, "DzE3CPVCTS");
+  // D25
+  snprintf(fcut[119], 20, "D25E3All");
+  snprintf(fcut[120], 20, "D25E3Disp");
+  snprintf(fcut[121], 20, "D25E3CTS");
+  snprintf(fcut[122], 20, "D25E3CTS2");
+  snprintf(fcut[123], 20, "D25E3CTSDisp");
+  snprintf(fcut[124], 20, "D25E3CTS2Disp");
+  snprintf(fcut[125], 20, "D25E3Mod3");
+  snprintf(fcut[126], 20, "D25E3CPV");
+  snprintf(fcut[127], 20, "D25E3CPV2");
+  snprintf(fcut[128], 20, "D25E3CPVDisp");
+  snprintf(fcut[129], 20, "D25E3CPV2Disp");
+  // ExMax
+  snprintf(fcut[130], 20, "D10NoUnfAll");
+  snprintf(fcut[131], 20, "D10NoUnfDisp");
+  snprintf(fcut[132], 20, "D10NoUnfCTS");
+  snprintf(fcut[133], 20, "D10NoUnfCTS2");
+  snprintf(fcut[134], 20, "D10NoUnfCTSDisp");
+  snprintf(fcut[135], 20, "D10NoUnfCTS2Disp");
+  snprintf(fcut[136], 20, "D10NoUnfMod3");
+  snprintf(fcut[137], 20, "D10NoUnfCPV");
+  snprintf(fcut[138], 20, "D10NoUnfCPV2");
+  snprintf(fcut[139], 20, "D10NoUnfCPVDisp");
+  snprintf(fcut[140], 20, "D10NoUnfCPV2Disp");
+  snprintf(fcut[141], 20, "D10NoUnfCPVCTS");
+  // Dz
+  snprintf(fcut[142], 20, "DzAll");
+  snprintf(fcut[143], 20, "DzDisp");
+  snprintf(fcut[144], 20, "DzCTS");
+  snprintf(fcut[145], 20, "DzCTS2");
+  snprintf(fcut[146], 20, "DzCTSDisp");
+  snprintf(fcut[147], 20, "DzCTS2Disp");
+  snprintf(fcut[148], 20, "DzMod3");
+  snprintf(fcut[149], 20, "DzCPV");
+  snprintf(fcut[150], 20, "DzCPV2");
+  snprintf(fcut[151], 20, "DzCPVDisp");
+  snprintf(fcut[152], 20, "DzCPV2Disp");
+  snprintf(fcut[153], 20, "DzCPVCTS");
+  // Dz2
+  snprintf(fcut[154], 20, "Dz2All");
+  snprintf(fcut[155], 20, "Dz2Disp");
+  snprintf(fcut[156], 20, "Dz2CTS");
+  snprintf(fcut[157], 20, "Dz2CTS2");
+  snprintf(fcut[158], 20, "Dz2CTSDisp");
+  snprintf(fcut[159], 20, "Dz2CTS2Disp");
+  snprintf(fcut[160], 20, "Dz2Mod3");
+  snprintf(fcut[161], 20, "Dz2CPV");
+  snprintf(fcut[162], 20, "Dz2CPV2");
+  snprintf(fcut[163], 20, "Dz2CPVDisp");
+  snprintf(fcut[164], 20, "Dz2CPV2Disp");
+  snprintf(fcut[165], 20, "Dz2CPVCTS");
+  // CrDZ
+  snprintf(fcut[166], 20, "CrDzAll");
+  snprintf(fcut[167], 20, "CrDzDisp");
+  snprintf(fcut[168], 20, "CrDzCTS");
+  snprintf(fcut[169], 20, "CrDzCTS2");
+  snprintf(fcut[170], 20, "CrDzCTSDisp");
+  snprintf(fcut[171], 20, "CrDzCTS2Disp");
+  snprintf(fcut[172], 20, "CrDzMod3");
+  snprintf(fcut[173], 20, "CrDzCPV");
+  snprintf(fcut[174], 20, "CrDzCPV2");
+  snprintf(fcut[175], 20, "CrDzCPVDisp");
+  snprintf(fcut[176], 20, "CrDzCPV2Disp");
+  snprintf(fcut[177], 20, "CrDzCPVCTS");
+  // CrDZ2
+  snprintf(fcut[178], 20, "CrDz2All");
+  snprintf(fcut[179], 20, "CrDz2Disp");
+  snprintf(fcut[180], 20, "CrDz2CTS");
+  snprintf(fcut[181], 20, "CrDz2CTS2");
+  snprintf(fcut[182], 20, "CrDz2CTSDisp");
+  snprintf(fcut[183], 20, "CrDz2CTS2Disp");
+  snprintf(fcut[184], 20, "CrDz2Mod3");
+  snprintf(fcut[185], 20, "CrDz2CPV");
+  snprintf(fcut[186], 20, "CrDz2CPV2");
+  snprintf(fcut[187], 20, "CrDz2CPVDisp");
+  snprintf(fcut[188], 20, "CrDz2CPV2Disp");
+  snprintf(fcut[189], 20, "CrDz2CPVCTS");
 }
-//___________________________________________________________________________
-Bool_t AliAnalysisTaskEtaPhigg::SecondaryPi0Cut(const AliCaloPhoton * ph1, const AliCaloPhoton * ph2)const {
- 
-/*  
-  //Test if this pair can be related to charged track
-  const Double_t kmPi0=0.135;
-  const Double_t kAlpha0=330./180.*TMath::Pi() ; //First PHOS module angular direction
-  const Double_t kAlpha= 20./180.*TMath::Pi() ; //PHOS module angular size
-  
-  Int_t iCommonParent=-1 ;
-  if(fStack){//Check if photons have common parent
-    Int_t prim1 = ph1->GetPrimary();
-    while((prim1!=-1)&&(iCommonParent==-1)){ 
-      Int_t prim2 = ph2->GetPrimary();  
-      while(prim2!=-1){       
-        if(prim1==prim2){
-	  iCommonParent=prim1 ;
-	  break ;
-        }
-        prim2=((AliAODMCParticle*)fStack->At(prim2))->GetMother() ;
-      }
-      prim1=((AliAODMCParticle*)fStack->At(prim1))->GetMother() ;
+
+//_________________________________________________________________________
+int AliAnalysisTaskEtaPhigg::TestCPV(int mod, double e, double xPHOS, double zPHOS, double dxPHOS, double dzPHOS,
+                                     int itr)
+{
+  // Return true if neutral
+  // CTS
+  bool trackCPV = true, trackCPV2 = true;
+  AliAODTrack* tr = nullptr;
+  double pt = 0;
+  if (itr >= 0) {
+    tr = (AliAODTrack*)fEvent->GetTrack(itr);
+    pt = tr->Pt();
+    double sx = TMath::Min(5.2, 1.111 + 0.56 * TMath::Exp(-0.031 * pt * pt) + 4.8 / TMath::Power(pt + 0.61, 3));
+    double sz = TMath::Min(3.3, 1.12 + 0.35 * TMath::Exp(-0.032 * pt * pt) + 0.75 / TMath::Power(pt + 0.24, 3));
+    double meanX = 0, meanZ = 0.102;
+    if (fMF < 0.) { // field --
+      if (tr->Charge() > 0)
+        meanX = TMath::Min(5.8, 0.42 + 0.70 * TMath::Exp(-0.015 * pt * pt) + 35.8 / TMath::Power(pt + 1.41, 3));
+      else
+        meanX = -TMath::Min(5.8, 0.17 + 0.64 * TMath::Exp(-0.019 * pt * pt) + 26.1 / TMath::Power(pt + 1.21, 3));
+    } else { // Field ++
+      if (tr->Charge() > 0)
+        meanX = -TMath::Min(5.8, 0.58 + 0.68 * TMath::Exp(-0.027 * pt * pt) + 28.0 / TMath::Power(pt + 1.28, 3));
+      else
+        meanX = TMath::Min(5.8, 0.11 + 0.67 * TMath::Exp(-0.015 * pt * pt) + 29.9 / TMath::Power(pt + 1.29, 3));
     }
-  }  
-  
-  
-  const Double_t xPh1[3]={ph1->EMCx(),ph1->EMCy(),ph1->EMCz()} ;
-  const Double_t xPh2[3]={ph2->EMCx(),ph2->EMCy(),ph2->EMCz()} ;
-  
-  Double_t mgg = (*ph1 + *ph2).M() ;
-  if(mgg>kmPi0)
-    return kFALSE ; 
-  //Use Linear extrapolation of creation vertex:
-  Double_t r = (kmPi0-mgg)/kmPi0*460. ;
-  
-  //Choose rotation angle toward PHOS module
-  Int_t mod = ph1->Module() ;
-  if(ph2->E()>ph1->E()) mod = ph2->Module() ;
-  Double_t phiMod=kAlpha0-kAlpha*mod ;
-  
+    double r2 = pow((dzPHOS - meanZ) / sz, 2) + pow((dxPHOS - meanX) / sx, 2);
+    trackCPV = (r2 > 1.);
+    trackCPV2 = (r2 > 4.);
+  }
+
+  bool cpvCPV = true, cpvCPV2 = true, cpvAndTrack = true;
+  if (mod == 3) {
+    // test CPV cuts //find closest CPV cluster
+    double dMin = 999999.;
+    double dxCPV = 99999., dzCPV = 9999.;
+    int icpvTr = -2;
+    for (Int_t j = 0; j < fCPVEvent->GetEntriesFast(); j++) {
+      AliCaloPhoton* cpv = (AliCaloPhoton*)fCPVEvent->At(j);
+      double ax = cpv->X() - xPHOS; // huck only for mod 3
+      double az = cpv->Z() - zPHOS;
+      double d = ax * ax + az * az;
+      if (dMin > d) {
+        dMin = d;
+        dxCPV = ax;
+        dzCPV = az;
+        icpvTr = cpv->DistToBad(); // track ID stored in this field
+      }
+    }
+    // CPV bit
+    if (dxCPV * dxCPV + dzCPV * dzCPV < 25.) {
+      double dxMax = 3.36783 / e - 11.5189 / TMath::Sqrt(e) + 3.08283;
+      double dxMin = -4.01590 / e + 13.2841 / TMath::Sqrt(e) - 4.31161;
+      dxMax = dxCPV - dxMax;
+      dxMin = dxCPV - dxMin;
+      double sigmaX = TMath::Max(1.5, -2.07124 / e + 6.69554 / TMath::Sqrt(e) - 1.70062);
+      double sigmaZ = 1.24859122035152259;
+      if (e > 0.4)
+        sigmaZ = 5.58984e-01 * TMath::Exp(-e * e / 2.20543 / 2.20543) + 7.07696e-01;
+      double r1 = dxMax * dxMax / sigmaX / sigmaX + dzCPV * dzCPV / sigmaZ / sigmaZ;
+      double r2 = dxMin * dxMin / sigmaX / sigmaX + dzCPV * dzCPV / sigmaZ / sigmaZ;
+      cpvCPV = (r1 > 2.5 * 2.5) && (r2 > 2.5 * 2.5);
+    }
+
+    // account conversion
+    double mX = -1.07550e+01 * TMath::Exp(-e / 1.75354) + 4.16349e-01;
+    double wX = 2.94202e+00 * TMath::Exp(-e / 5.52975) + 2.18075e+00;
+    double mZ = 0.2;
+    double wZ = 6.32082e-01 * TMath::Exp(-e / 1.04274e+00) + 1.71270e+00;
+
+    cpvCPV2 = ((dxCPV - mX) * (dxCPV - mX) / (2. * wX * wX) + (dzCPV - mZ) * (dzCPV - mZ) / (2. * wZ * wZ) > 9.) &&
+              ((dxCPV + mX) * (dxCPV + mX) / (2. * wX * wX) + (dzCPV - mZ) * (dzCPV - mZ) / (2. * wZ * wZ) > 9.);
+
+    // correlated CPV-PHOS vs track
+    if (itr == icpvTr) {
+      // true if neutral
+      float sx = 1.5;
+      float sz = 1.2;
+      cpvAndTrack =
+        (dxPHOS - dxCPV) * (dxPHOS - dxCPV) / (sx * sx) + (dzPHOS - dzCPV) * (dzPHOS - dzCPV) / (sz * sz) > 9.;
+    }
+    cpvAndTrack &= cpvCPV2; // no conversion and strong track deviations
+  }
+
+  // CPV cuts
+  int cpvBits = 0;
+  cpvBits |= (trackCPV << 1);    // Bit 1: CTS 1 sigma
+  cpvBits |= (trackCPV2 << 2);   // Bit 2: CTS 2 sigma
+  cpvBits |= (cpvCPV << 3);      // Bit 3: CTS 2 sigma
+  cpvBits |= (cpvCPV2 << 4);     // Bit 4: CTS 2 sigma + conversion
+  cpvBits |= (cpvAndTrack << 5); // Bit 5: correlated CTS + cvp c
+
+  return cpvBits;
+}
+//_________________________________________________________________________
+bool AliAnalysisTaskEtaPhigg::IsGoodChannel(Int_t cellX, Int_t cellZ)
+{
+  if (fBadMap)
+    if (fBadMap->GetBinContent(cellX, cellZ) == 1)
+      return kFALSE;
+
+  return kTRUE;
+}
+//___________________________________________________________________________________________________
+Int_t AliAnalysisTaskEtaPhigg::FindTrackMatching(int det, TVector3& locPHOS, int mod, float& dxMin, float& dzMin)
+{
+  // Find closest CPV
+  if (det == 0) {
+    mod = 3;
+  }
+
+  dxMin = 999.;
+  dzMin = 999.;
+  float dMin = 999.;
+
+  // Find track with closest extrapolation to cluster
+  Double_t magF = fEvent->GetMagneticField();
+
+  Double_t magSign = 1.0;
+  if (magF < 0)
+    magSign = -1.0;
+
+  if (!TGeoGlobalMagField::Instance()->GetField()) {
+    AliError("Margnetic filed was not initialized, use default");
+    AliMagF* field = new AliMagF("Maps", "Maps", magSign, magSign, AliMagF::k5kG);
+    TGeoGlobalMagField::Instance()->SetField(field);
+  }
 
   // *** Start the matching
   Int_t nt = fEvent->GetNumberOfTracks();
 
-  Double_t gposTrack[3] ; 
-  Double_t p[3];
+  // Calculate actual distance to PHOS module
+  const Double_t r = TMath::Abs(locPHOS.Y());         // Distance to center of  PHOS/CPV module
+  const Double_t kYmax = 72. + 30.;                   // Size of the module (with some reserve) in phi direction
+  const Double_t kZmax = 64. + 30.;                   // Size of the module (with some reserve) in z direction
+  const Double_t kAlpha0 = 330. / 180. * TMath::Pi(); // First PHOS module angular direction
+  const Double_t kAlpha = 20. / 180. * TMath::Pi();   // PHOS module angular size
+
+  Double_t gposTrack[3];
 
   Double_t bz = ((AliMagF*)TGeoGlobalMagField::Instance()->GetField())->SolenoidField();
-  bz = TMath::Sign(0.5*kAlmost0Field,bz) + bz;
+  bz = TMath::Sign(0.5 * kAlmost0Field, bz) + bz;
 
-  Double_t b[3]; 
-  for (Int_t i=0; i<nt; i++) {
-     AliAODTrack *aodTrack=static_cast<AliAODTrack*>(fEvent->GetTrack(i));
+  Double_t b[3];
+  Int_t itr = -1;
+  AliAODTrack* aodTrack = 0x0;
+  Double_t xyz[3] = { 0 }, pxpypz[3] = { 0 }, cv[21] = { 0 };
 
-     // Skip the tracks having "wrong" status (has to be checked/tuned)
-//     ULong_t status = esdTrack->GetStatus();
-//     if ((status & AliESDtrack::kTPCout)   == 0) continue;
-    if(!aodTrack->IsHybridGlobalConstrainedGlobal())
-      continue ;    
-     
-     //Continue extrapolation from TPC outer surface     
-     AliExternalTrackParam t(aodTrack);
-     t.GetBxByBz(b) ;
-     //Direction to the current PHOS module
-     if(!t.Rotate(phiMod))
-        continue ;
-    
-     Double_t y;                       // Some tracks do not reach radius
-     if (!t.GetYAt(r,bz,y)) continue; //    because of the bending
-      
-     t.PropagateToBxByBz(r,b);        // Propagate to the radius
-        //t.CorrectForMaterial(...); // Correct for the TOF material, if needed
-     //Position 
-     t.GetXYZ(gposTrack) ;
-     //and momentum  of the track at radius r
-     t.GetPxPyPz(p) ;  
-     TVector3 vp(p) ;
-     TVector3 vph1(xPh1[0]-gposTrack[0],xPh1[1]-gposTrack[1],xPh1[2]-gposTrack[2]) ;
-     TVector3 vph2(xPh2[0]-gposTrack[0],xPh2[1]-gposTrack[1],xPh2[2]-gposTrack[2]) ;
-     
-     //momentum of pi0
-     vph1=ph1->E()*vph1.Unit() + ph2->E()*vph2.Unit() ;
-     
-     //Compare momenta
-     FillHistogram("hConvPi0",vp.Mag(),vph1.Mag(),vp.Angle(vph1)) ;
-     if(vp.Mag()>0.9*vph1.Mag() && vp.Mag()<1.1*vph1.Mag())
-       FillHistogram("hConvPi0Angle",vp.Angle(vph1)) ;
-       
-     //Fill similar for trueMC
-     if(iCommonParent!=-1){//Two photons have common parent
-       Int_t prim1 = iCommonParent;
-       while(prim1!=-1){ 
-         Int_t prim2 = TMath::Abs(aodTrack->GetLabel());  
-         while(prim2!=-1){       
-           if(prim1==prim2){ //track is parent of photons, fill histograms
-//	     ((AliAODMCParticle*)fStack->At(prim2))->Print() ;
-//	     ((AliAODMCParticle*)fStack->At(iCommonParent))->Print() ;
-	     
-	     switch(((AliAODMCParticle*)fStack->At(iCommonParent))->GetPdgCode()){
-	       case 111:	
-	       {
-		 AliAODMCParticle * pPi0 = (AliAODMCParticle*)fStack->At(iCommonParent) ;
-		 TVector3 vPi0(pPi0->Px(),pPi0->Py(),pPi0->Pz()) ;
-		 TVector3 vtxPi0(pPi0->Xv(),pPi0->Yv(),pPi0->Zv()) ;
-		 TVector3 vtxTr(gposTrack) ;
-		 FillHistogram("hVtxR",vtxPi0.Mag()-vtxTr.Mag(),vtxPi0.Mag()) ;
-		 FillHistogram("hVtxPhi",vtxPi0.Phi()-vtxTr.Phi(),vtxPi0.Phi()) ;
-		 FillHistogram("hVtxTheta",vtxPi0.Theta()-vtxTr.Theta(),vtxPi0.Theta()) ;
-		 FillHistogram("hVtxRPhi",vtxPi0.Mag()-vtxTr.Mag(),vtxPi0.Phi()-vtxTr.Phi()) ;
-		 FillHistogram("hVtxRTheta",vtxPi0.Mag()-vtxTr.Mag(),vtxPi0.Theta()-vtxTr.Theta()) ;
-		 
-		 
-                 FillHistogram("hMCConvPi0True",vPi0.Mag(),vph1.Mag(),vPi0.Angle(vph1)) ;
-                 FillHistogram("hMCConvPi0",vp.Mag(),vph1.Mag(),vp.Angle(vph1)) ;
-                 if(vp.Mag()>0.9*vph1.Mag() && vp.Mag()<1.1*vph1.Mag())
-                   FillHistogram("hMCConvPi0Angle",vp.Angle(vph1)) ;
-		 break ;
-	       }
-	       case  211:
-	       case -211:
-	       case  321:
-	       case -321:
-	       case 11:
-	       case -11:
-	       case  2212: //proton 
-	       case -2212: //antiproton 
-                 FillHistogram("hMCChConvPi0",vp.Mag(),vph1.Mag(),vp.Angle(vph1)) ;
-                 if(vp.Mag()>0.9*vph1.Mag() && vp.Mag()<1.1*vph1.Mag())
-                   FillHistogram("hMCChConvPi0Angle",vp.Angle(vph1)) ;
-	       default: ;
-	     }
-	     
-	     return kTRUE ;
-           }
-           prim2=((AliAODMCParticle*)fStack->At(prim2))->GetMother() ;
-         }
-         prim1=((AliAODMCParticle*)fStack->At(prim1))->GetMother() ;
+  //  TPC only tracks: filter bit 128 (1<<7)  - all other bits are reset
+  //  Global hybrid tracks: filter bit 256 (1<<8)   - all other bits are reset
+  //  Complementary hybrid tracks: filter bit 512 (1<<9) - all other bits are reset
+  int filterbits[3] = { 128, 256, 512 };
+
+  for (Int_t i = 0; i < nt; i++) {
+    aodTrack = (AliAODTrack*)fEvent->GetTrack(i);
+    if (!aodTrack->TestFilterBit(filterbits[0]) && !aodTrack->TestFilterBit(filterbits[1]) &&
+        !aodTrack->TestFilterBit(filterbits[2]))
+      continue;
+
+    // Continue extrapolation from TPC outer surface
+    AliExternalTrackParam outerParam;
+    aodTrack->GetPxPyPz(pxpypz);
+    aodTrack->GetXYZ(xyz);
+    aodTrack->GetCovarianceXYZPxPyPz(cv);
+
+    outerParam.Set(xyz, pxpypz, cv, aodTrack->Charge());
+
+    Double_t z;
+    if (!outerParam.GetZAt(r, bz, z)) {
+      continue;
+    }
+    if (TMath::Abs(z) > kZmax) {
+      continue; // Some tracks miss the PHOS in Z
+    }
+    // Direction to the current PHOS module
+    Double_t phiMod = kAlpha0 - kAlpha * mod;
+    if (!outerParam.RotateParamOnly(phiMod))
+      continue; // RS use faster rotation if errors are not needed
+
+    Double_t y; // Some tracks do not reach the PHOS
+    if (!outerParam.GetYAt(r, bz, y))
+      continue; //    because of the bending
+
+    if (TMath::Abs(y) < kYmax) {
+      outerParam.GetBxByBz(b);
+      outerParam.PropagateToBxByBz(r, b); // Propagate to the matching module
+      // outerParam.CorrectForMaterial(...); // Correct for the TOF material, if needed
+      outerParam.GetXYZ(gposTrack);
+      TVector3 globalPositionTr(gposTrack);
+      TVector3 localPositionTr;
+      fPHOSGeo->Global2Local(localPositionTr, globalPositionTr, mod);
+      Double_t ddx = locPHOS.X() - localPositionTr.X();
+      Double_t ddz = locPHOS.Z() - localPositionTr.Z();
+
+      float x = TMath::Max(0.6, aodTrack->Pt());
+      float mean = 0;
+      if (aodTrack->Charge() > 0) { // Pos
+        if (det == 1) {             // PHOS
+          mean = 2.85224e-02 - exp(-(x * x - 4.57197 * x - 3.63253e+01) / (7.48345 + x * 8.14244));
+        } else { // cpv
+          mean = -2.93946e-01 - exp(-(x * x + 1.15256e+07 * x - 1.77233e+07) / (6.18025e+06 + x * 1.45154e+06));
+        }
+      } else { // Neg
+        if (det == 1) {
+          mean = 2.77034e+00 + exp(-(x * x + 2.83814e+07 * x - 1.03977e+08) / (2.80232e+07 + x * 3.80026e+06));
+        } else { // cpv
+          mean = 4.38793e-02 - exp(-(x * x + 2.34803e+01 * x - 4.88497e+01) / (1.24926e+01 + x * 1.23229e+01));
+        }
+      }
+      ddx -= mean;
+      float d = ddx * ddx + ddz * ddz;
+      if (d < dMin) {
+        dxMin = ddx;
+        dzMin = ddz;
+        dMin = d;
+        itr = i;
       }
     }
-
-    
-  }//Scanned all tracks
-  
-  
-  //TODO: define cut and apply
-*/  
-  return kTRUE ;
-  
-  
+  } // Scanned all tracks
+  return itr;
 }
-//________________________________________________________________________
-void AliAnalysisTaskEtaPhigg::ProcessPCMPhotonCandidates()
-{
-    Int_t nV0 = 0;
-    TList *GammaCandidatesStepOne = new TList();
-    TList *GammaCandidatesStepTwo = new TList();
-    Int_t iPCM=0; 
-    // Loop over Photon Candidates allocated by ReaderV1
-    for(Int_t i = 0; i < fPCMEvent->GetEntriesFast(); i++){
-        AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) fPCMEvent->At(i);
-        if(!PhotonCandidate) continue;
-        fIsFromMBHeader = kTRUE;
-        
-//        hKappaTPC[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
-        if (PhotonCandidate->GetInvMassPair() < fMinMass || PhotonCandidate->GetInvMassPair() > fMaxMass) continue;
-        if (((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent) < fMinKappa || ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent) > fMaxKappa) continue;
-        if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->PhotonIsSelected(PhotonCandidate,fInputEvent)) continue;
-        if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->InPlaneOutOfPlaneCut(PhotonCandidate->GetPhotonPhi(),fRP)) continue;
-        if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut() &&
-           !((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){
-	  
-	    if(fGammaCandidates->GetSize()<=iPCM)fGammaCandidates->Expand(20+iPCM) ;
-            new((*fGammaCandidates)[iPCM])AliAODConversionPhoton(PhotonCandidate); // if no second loop is required add to events good gammas
-	    iPCM++ ;
-            
-//             if(fIsFromMBHeader){
-//                 hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
-//                 hInvMassPair[fiCut]->Fill(PhotonCandidate->GetInvMassPair(),PhotonCandidate->Pt());
-//                 hKappaTPC_after[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
-//                 if (fDoPhotonQA > 0){
-//                     hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
-//                     hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
-//                 }
-//             }
-
-            
-            if (fIsFromMBHeader && fDoPhotonQA == 2){
-                if (fIsHeavyIon == 1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
-                    fPtGamma = PhotonCandidate->Pt();
-                    fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
-                    fRConvPhoton = PhotonCandidate->GetConversionRadius();
-                    fEtaPhoton = PhotonCandidate->GetPhotonEta();
-                    fiCatPhoton = PhotonCandidate->GetPhotonQuality();
-                   // tESDConvGammaPtDcazCat[fiCut]->Fill();
-                } else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 16.){
-                    fPtGamma = PhotonCandidate->Pt();
-                    fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
-                    fRConvPhoton = PhotonCandidate->GetConversionRadius();
-                    fEtaPhoton = PhotonCandidate->GetPhotonEta();
-                    fiCatPhoton = PhotonCandidate->GetPhotonQuality();
-                  //  tESDConvGammaPtDcazCat[fiCut]->Fill();
-                }
-            }
-        } else if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut()){ // if Shared Electron cut is enabled, Fill array, add to step one
-            ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->FillElectonLabelArray(PhotonCandidate,nV0);
-            nV0++;
-            GammaCandidatesStepOne->Add(PhotonCandidate);
-        } else if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut() &&
-                  ((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){ // shared electron is disabled, step one not needed -> step two
-            GammaCandidatesStepTwo->Add(PhotonCandidate);
-        }
-    }
-    
-        
-    if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseElecSharingCut()){
-        for(Int_t i = 0;i<GammaCandidatesStepOne->GetEntries();i++){
-            AliAODConversionPhoton *PhotonCandidate= (AliAODConversionPhoton*) GammaCandidatesStepOne->At(i);
-            if(!PhotonCandidate) continue;
-            fIsFromMBHeader = kTRUE;
-
-            if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->RejectSharedElectronV0s(PhotonCandidate,i,GammaCandidatesStepOne->GetEntries())) continue;
-            if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){ // To Colse v0s cut diabled, step two not needed
-            new((*fGammaCandidates)[iPCM])AliAODConversionPhoton(PhotonCandidate); // if no second loop is required add to events good gammas
-	    iPCM++ ;
-//                 if(fIsFromMBHeader){
-//                     hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
-//                     hInvMassPair[fiCut]->Fill(PhotonCandidate->GetInvMassPair(),PhotonCandidate->Pt());
-//                     hKappaTPC_after[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
-//                     if (fDoPhotonQA > 0){
-//                         hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
-//                         hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
-//                     }
-//                 }
-            }
-
-                
-                GammaCandidatesStepTwo->Add(PhotonCandidate); // Close v0s cut enabled -> add to list two
-            
-            if (fIsFromMBHeader && fDoPhotonQA == 2){
-                if (fIsHeavyIon ==1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
-                    fPtGamma = PhotonCandidate->Pt();
-                    fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
-                    fRConvPhoton = PhotonCandidate->GetConversionRadius();
-                    fEtaPhoton = PhotonCandidate->GetPhotonEta();
-                    fiCatPhoton = PhotonCandidate->GetPhotonQuality();
-                //    tESDConvGammaPtDcazCat[fiCut]->Fill();
-                } else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 16.){
-                    fPtGamma = PhotonCandidate->Pt();
-                    fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
-                    fRConvPhoton = PhotonCandidate->GetConversionRadius();
-                    fEtaPhoton = PhotonCandidate->GetPhotonEta();
-                    fiCatPhoton = PhotonCandidate->GetPhotonQuality();
-                //    tESDConvGammaPtDcazCat[fiCut]->Fill();
-                }
-            }
-        }
-    }
-    
-    if(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->UseToCloseV0sCut()){
-        for(Int_t i = 0;i<GammaCandidatesStepTwo->GetEntries();i++){
-            AliAODConversionPhoton* PhotonCandidate = (AliAODConversionPhoton*) GammaCandidatesStepTwo->At(i);
-            if(!PhotonCandidate) continue;
-            fIsFromMBHeader = kTRUE;
-
-            if(!((AliConversionPhotonCuts*)fCutArray->At(fiCut))->RejectToCloseV0s(PhotonCandidate,GammaCandidatesStepTwo,i)) continue;
-            new((*fGammaCandidates)[iPCM])AliAODConversionPhoton(PhotonCandidate); // if no second loop is required add to events good gammas
-	    iPCM++ ;
-//             if(fIsFromMBHeader){
-//                 hESDConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt());
-//                 hInvMassPair[fiCut]->Fill(PhotonCandidate->GetInvMassPair(),PhotonCandidate->Pt());
-//                 hKappaTPC_after[fiCut]->Fill(((AliConversionPhotonCuts*)fCutArray->At(fiCut))->GetKappaTPC(PhotonCandidate,fInputEvent),PhotonCandidate->Pt());
-//                 if (fDoPhotonQA > 0){
-//                     hESDConvGammaR[fiCut]->Fill(PhotonCandidate->GetConversionRadius());
-//                     hESDConvGammaEta[fiCut]->Fill(PhotonCandidate->Eta());
-//                 }
-//             }
-
-            if (fIsFromMBHeader){
-                if (fIsHeavyIon == 1 && PhotonCandidate->Pt() > 0.399 && PhotonCandidate->Pt() < 12.){
-                    fPtGamma = PhotonCandidate->Pt();
-                    fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
-                    fRConvPhoton = PhotonCandidate->GetConversionRadius();
-                    fEtaPhoton = PhotonCandidate->GetPhotonEta();
-                    fiCatPhoton = PhotonCandidate->GetPhotonQuality();
-               //     tESDConvGammaPtDcazCat[fiCut]->Fill();
-                } else if ( PhotonCandidate->Pt() > 0.299 && PhotonCandidate->Pt() < 16.){
-                    fPtGamma = PhotonCandidate->Pt();
-                    fDCAzPhoton = PhotonCandidate->GetDCAzToPrimVtx();
-                    fRConvPhoton = PhotonCandidate->GetConversionRadius();
-                    fEtaPhoton = PhotonCandidate->GetPhotonEta();
-                    fiCatPhoton = PhotonCandidate->GetPhotonQuality();
-                  //  tESDConvGammaPtDcazCat[fiCut]->Fill();
-                }
-            }
-        }
-    }
-    
-    delete GammaCandidatesStepOne;
-    GammaCandidatesStepOne = 0x0;
-    delete GammaCandidatesStepTwo;
-    GammaCandidatesStepTwo = 0x0;
- 
-    
-}
-//_________________________________________________________________________
-Bool_t AliAnalysisTaskEtaPhigg::TestPHOSEvent(AliAODEvent * event){
-  //Check if event is complete
-  AliAODCaloCells * cells = event->GetPHOSCells() ;
-  Int_t a[10]={0} ; //left
-  Int_t nCells=cells->GetNumberOfCells();
-  for (Int_t iCell=0; iCell<nCells; iCell++) {
-    Int_t cellAbsId = cells->GetCellNumber(iCell);
-    Int_t relId[4] ;
-    fPHOSGeo->AbsToRelNumbering(cellAbsId,relId);
-    Int_t mod  = relId[0];
-    Int_t cellX= relId[2];
-    if(cellX<29)
-      a[2*mod]++ ;
-    else
-      a[2*mod+1]++ ;
-  }
-  Bool_t bad=kFALSE ;
-  for(Int_t mod=2; mod<8; mod++){
-    if(a[mod]==0){
-      bad=kTRUE;
-//      FillHistogram("hBadMod",float(mod)) ;
-    }
-  }
-  
-  return bad ;
-}
-
-

@@ -65,12 +65,15 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     fDumDPhiDEtaAvgQA(nullptr),
     fUseStavinskyMethod(0),
     fStaSkyBkg(nullptr),
-    fUse2DpTvsKStar(0),
-    f2DpTvsKStar(nullptr),
     fUsePairCutEtaPhi(0),
     fPairCut_eta(0.017),
     fPairCut_phi(0.017),
-    fPassAllPair(0)
+    fPassAllPair(0),
+    fUseGobalVelGate(0),
+    fUse2DpTvsKStar(0),
+    KStarVspT_P1Hist(nullptr),
+    KStarVspT_P2Hist(nullptr)
+ 
 {
     
     fNumerator      = new TH1D(TString::Format("Num%s", fTitle.Data()), "fNumerator", nbins, KStarLo, KStarHi);
@@ -79,8 +82,7 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     fNumerator->Sumw2();
     fDenominator->Sumw2();
 
-
-
+	
 }
 AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCorrFctn):
     AliFemtoCorrFctn(aCorrFctn),
@@ -124,12 +126,15 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     fDumDPhiDEtaAvgQA(aCorrFctn.fDumDPhiDEtaAvgQA),
     fUseStavinskyMethod(aCorrFctn.fUseStavinskyMethod),
     fStaSkyBkg(aCorrFctn.fStaSkyBkg),
-    fUse2DpTvsKStar(aCorrFctn.fUse2DpTvsKStar),
-    f2DpTvsKStar(aCorrFctn.f2DpTvsKStar),
     fUsePairCutEtaPhi(aCorrFctn.fUsePairCutEtaPhi),
     fPairCut_eta(aCorrFctn.fPairCut_eta),
     fPairCut_phi(aCorrFctn.fPairCut_phi),
-    fPassAllPair(aCorrFctn.fPassAllPair)
+    fPassAllPair(aCorrFctn.fPassAllPair),
+    fUseGobalVelGate(aCorrFctn.fUseGobalVelGate),
+    fUse2DpTvsKStar(aCorrFctn.fUse2DpTvsKStar),
+    KStarVspT_P1Hist(aCorrFctn.KStarVspT_P1Hist),
+    KStarVspT_P2Hist(aCorrFctn.KStarVspT_P2Hist)
+
 {
     
 
@@ -172,8 +177,9 @@ AliFemtoCorrFctnpdtHe3::~AliFemtoCorrFctnpdtHe3()
     delete fDumDPhiDEtaAvgQA;
 
     delete fStaSkyBkg;
-    delete f2DpTvsKStar;
- 
+
+    delete KStarVspT_P1Hist;
+    delete KStarVspT_P2Hist;
 
 }
 AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctnpdtHe3& aCorrFctn)
@@ -259,8 +265,12 @@ AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctn
     if(fUseStavinskyMethod) delete fStaSkyBkg;
 		fStaSkyBkg = new TH1F(*aCorrFctn.fStaSkyBkg);
 
-    if(fUse2DpTvsKStar) delete f2DpTvsKStar;
-		f2DpTvsKStar = new TH2F(*aCorrFctn.f2DpTvsKStar);
+
+     if(KStarVspT_P1Hist) delete KStarVspT_P1Hist;
+		KStarVspT_P1Hist = new TH2F(*aCorrFctn.KStarVspT_P1Hist);
+
+	if(KStarVspT_P2Hist) delete KStarVspT_P2Hist;
+                KStarVspT_P2Hist = new TH2F(*aCorrFctn.KStarVspT_P2Hist);
 
     return *this;
 
@@ -312,8 +322,12 @@ TList* AliFemtoCorrFctnpdtHe3::GetOutputList()
 
     }
     if(fUseStavinskyMethod) tOutputList->Add(fStaSkyBkg);
-    if(fUse2DpTvsKStar) tOutputList->Add(f2DpTvsKStar);
-		 
+    
+   if(fUse2DpTvsKStar)
+	{
+	tOutputList->Add(KStarVspT_P1Hist);
+	tOutputList->Add(KStarVspT_P2Hist);
+	} 
     return tOutputList;
 }
 void AliFemtoCorrFctnpdtHe3::Finish()
@@ -356,7 +370,11 @@ void AliFemtoCorrFctnpdtHe3::Write()
 		  fDumDPhiDEtaAvgQA->Write();
 	}
         if(fUseStavinskyMethod) fStaSkyBkg->Write();
-	if(fUse2DpTvsKStar) f2DpTvsKStar->Write();
+	if(fUse2DpTvsKStar){
+	  KStarVspT_P1Hist->Write();
+          KStarVspT_P2Hist->Write();
+
+	}
 
 }
 void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
@@ -383,6 +401,16 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
 	}
 
     double tKStar = fabs(fPair->KStar());
+
+    if(fUseGobalVelGate){
+	int VelLabel = ReVelocityGate(fPair);
+	if(fUseGobalVelGate == VelLabel){
+	}
+	else{
+		return;
+	}
+
+    }
     fNumerator->Fill(tKStar);
 
     if(fHighCF){
@@ -441,7 +469,9 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
 		}
 	}
 	if(fUse2DpTvsKStar){
-		f2DpTvsKStar->Fill(tKStar,fPair->Track2()->Track()->Pt());
+          KStarVspT_P1Hist->Fill(tKStar,fPair->Track1()->Track()->Pt());
+          KStarVspT_P2Hist->Fill(tKStar,fPair->Track2()->Track()->Pt());
+
 	}
 	return;
     
@@ -470,6 +500,16 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
 	    }
 	}
     double tKStar = fabs(fPair->KStar());
+   if(fUseGobalVelGate){
+        int VelLabel = ReVelocityGate(fPair);
+        if(fUseGobalVelGate == VelLabel){
+        }
+        else{
+                return;
+        }
+
+    }
+
     fDenominator->Fill(tKStar);
     if(fHighCF){
 	float FillMom1 = 0.;
@@ -549,14 +589,18 @@ int AliFemtoCorrFctnpdtHe3::ReVelocityGate(AliFemtoPair* aPair){
     AliFemtoLorentzVector tFourMom1 = AliFemtoLorentzVector(tPart1->FourMomentum());
     float TotalP = tFourMom1.px() * tFourMom1.px() + tFourMom1.py() * tFourMom1.py() + tFourMom1.pz() * tFourMom1.pz();
     float TotalE = TMath::Sqrt( fP1Mass * fP1Mass + TotalP);
+    TotalP = TMath::Sqrt( TotalP);
     float P1velocity = TotalP/TotalE;
 
     //
-    
+   TotalP = 0.;
+    TotalE = 0.;   
+ 
     AliFemtoParticle *tPart2 = new AliFemtoParticle(*aPair->Track2());
     AliFemtoLorentzVector tFourMom2 = AliFemtoLorentzVector(tPart2->FourMomentum());
     TotalP = tFourMom2.px() * tFourMom2.px() + tFourMom2.py() * tFourMom2.py() + tFourMom2.pz() * tFourMom2.pz();
     TotalE = TMath::Sqrt( fP2Mass * fP2Mass + TotalP);
+    TotalP = TMath::Sqrt( TotalP);
     float P2velocity = TotalP/TotalE;
 
     int ReLabel = 3;
@@ -566,7 +610,6 @@ int AliFemtoCorrFctnpdtHe3::ReVelocityGate(AliFemtoPair* aPair){
     if(P1velocity < P2velocity){
         ReLabel = 2;
     }
-
     return ReLabel;
 }
 float AliFemtoCorrFctnpdtHe3::ReAvgDphi(AliFemtoPair* aPair){
@@ -862,8 +905,8 @@ void AliFemtoCorrFctnpdtHe3::SetUse2DpTvsKStar(int aUse){
 	fUse2DpTvsKStar = aUse;
 }
 void AliFemtoCorrFctnpdtHe3::Set2DpTvsKStarInit(bool aInit){
-	f2DpTvsKStar = new TH2F(TString::Format("f2DpTvsKStar%s", fTitle.Data()), "f2DpTvsKStar", 200,0,1.0,100,0,5);
-	f2DpTvsKStar->Sumw2();
+	KStarVspT_P1Hist = new TH2F(TString::Format("KStarVspT_P1Hist%s", fTitle.Data())," ",400,0,2.0,100,0,5);	
+	KStarVspT_P2Hist = new TH2F(TString::Format("KStarVspT_P2Hist%s", fTitle.Data())," ",400,0,2.0,100,0,5); 
 }
 
 void AliFemtoCorrFctnpdtHe3::SetUsePairCutEtaPhi(int aUsePairCutEtaPhi){
@@ -925,5 +968,8 @@ bool AliFemtoCorrFctnpdtHe3::PairEtaPhiSelect(AliFemtoPair* aPair){
 }
 void AliFemtoCorrFctnpdtHe3::SetPassAllPair(int aUse){
 	fPassAllPair = aUse;
+}
+void AliFemtoCorrFctnpdtHe3::SetGobalVelGate(int aUse){
+	fUseGobalVelGate = aUse;
 }
 

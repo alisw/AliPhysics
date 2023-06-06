@@ -1224,7 +1224,6 @@ void AliAnalysisTaskXi1820BH::FillK0sV0()
   v0list k0sMixingPool;
   if (fSetMixing)
   {
-    std::cout << "Mixing pool size: " << fEMpoolK0s[fCentBin][fZbin].size() << std::endl;
     // K0s track pool
     v0pool &ep = fEMpoolK0s[fCentBin][fZbin];
     if ((int)ep.size() < (int)fnMix)

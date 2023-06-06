@@ -140,7 +140,11 @@ public:
 
     void SetMultiplicityWeights(TH1F* hMultWeights) {
         fApplyMultWeights = true;
-        fHistMultWeights = (TH1F*)hMultWeights->Clone("fHistMultWeights");
+        for (int iBin{1}; iBin<=hMultWeights->GetNbinsX(); ++iBin) {
+            fMultWeights.push_back(hMultWeights->GetBinContent(iBin));
+            fMultWeightBinLimits.push_back(hMultWeights->GetBinLowEdge(iBin));
+        }
+        fMultWeightBinLimits.push_back(hMultWeights->GetXaxis()->GetBinUpEdge(hMultWeights->GetNbinsX()));
     }
 
     // Implementation of interface methods
@@ -190,7 +194,9 @@ private:
     AliRDHFCuts *fRDCuts = nullptr;                                                       /// Cuts for Analysis
 
     bool fApplyMultWeights{false};                                                        /// Flag to apply multiplicity weights to V0 and D efficiencies
-    TH1F* fHistMultWeights = nullptr;                                                     //-> Histogram with multiplicity weights
+    TH1F* fHistMultWeights = nullptr;                                                     //!<! Histogram with multiplicity weights
+    std::vector<float> fMultWeights{};                                                    /// Multiplicity weights from input file
+    std::vector<float> fMultWeightBinLimits{};                                            /// Bin limits for multiplicity weights from input file
 
     double fCentMin = -1.;                                                                /// minimum centrality (percentile)
     double fCentMax = 101.;                                                               /// maximum centrality (percentile)
@@ -232,7 +238,7 @@ private:
     std::vector<float> fInvMassResoLaMax{1.5};                                            /// minimum invariant mass values for HF resonance (in case of lambda combination)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 15); /// AliAnalysisTaskSE for production of HF resonance trees
+    ClassDef(AliAnalysisTaskSEHFResonanceBuilder, 16); /// AliAnalysisTaskSE for production of HF resonance trees
                                                /// \endcond
 };
 

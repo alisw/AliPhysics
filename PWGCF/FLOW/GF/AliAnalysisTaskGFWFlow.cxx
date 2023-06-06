@@ -39,11 +39,9 @@ ClassImp(AliAnalysisTaskGFWFlow);
 
 AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
   AliAnalysisTaskSE(),
-  debugpar(0),
   fTriggerType(AliVEvent::kINT7),
   fProduceWeights(kTRUE),
   fWeightList(0),
-  fWeightFile(0),
   fCentMap(0),
   fWeights(0),
   fFC(0),
@@ -68,11 +66,9 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow():
 };
 AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceWeights, Bool_t IsMC, Bool_t IsTrain):
   AliAnalysisTaskSE(name),
-  debugpar(0),
   fTriggerType(AliVEvent::kINT7),
   fProduceWeights(ProduceWeights),
   fWeightList(0),
-  fWeightFile(0),
   fCentMap(0),
   fWeights(0),
   fFC(0),
@@ -95,7 +91,7 @@ AliAnalysisTaskGFWFlow::AliAnalysisTaskGFWFlow(const char *name, Bool_t ProduceW
 {
   if(!fProduceWeights) {
     if(fIsTrain) DefineInput(1,TH1D::Class());
-    else DefineInput(1,TFile::Class());
+    else DefineInput(1,TList::Class());
   }
   DefineOutput(1,(fProduceWeights?TList::Class():AliGFWFlowContainer::Class()));
   DefineOutput(2,TH1D::Class());
@@ -286,8 +282,8 @@ void AliAnalysisTaskGFWFlow::UserCreateOutputObjects(){
       fCentMap = (TH1D*) GetInputData(1);
       if(!fCentMap) AliFatal("Could not fetch centrality map!\n");
     } else {
-      fWeightFile = (TFile*) GetInputData(1);
-      if(!fWeightFile) { AliFatal("Could not retrieve weight list!\n"); return; };
+      fWeightList = (TList*) GetInputData(1);
+      if(!fWeightList) { AliFatal("Could not retrieve weight list!\n"); return; };
     };
     CreateCorrConfigs();
   };
@@ -306,7 +302,7 @@ AliMCEvent *AliAnalysisTaskGFWFlow::FetchMCEvent(Double_t &impactParameter) {
   return ev;*/
 
   //The old implementation
-  if(!fIsTrain) { AliFatal("Snap, Jim! Ain't no train here!\n"); return 0; }
+  if(!fIsTrain) { AliFatal("Snap, Jim! Ain't no train here! :(\n"); return 0; }
   AliMCEvent* ev = dynamic_cast<AliMCEvent*>(MCEvent());
   if(!ev) { AliFatal("MC event not found!"); return 0; }
   if(fOverrideCentrality>=0) return ev;
@@ -491,9 +487,11 @@ Bool_t AliAnalysisTaskGFWFlow::CheckTriggerVsCentrality(Double_t l_cent) {
   return kTRUE;
 }
 Bool_t AliAnalysisTaskGFWFlow::LoadWeights(Int_t runno) { //Cannot be used when running on the trains
-  if(fWeightFile) {
-    fWeights = (AliGFWWeights*)fWeightFile->Get(Form("w%i%s",runno,GetSystPF(BitIndex(fEvNomFlag), BitIndex(fTrNomFlag)).Data()));
+  TString wName=Form("w%i%s",runno,GetSystPF(BitIndex(fEvNomFlag), BitIndex(fTrNomFlag)).Data());
+  if(fWeightList) {
+    fWeights = (AliGFWWeights*)fWeightList->FindObject(wName.Data());
     if(!fWeights) {
+      fWeightList->ls();
       AliFatal("Weights could not be found in the list!\n");
       return kFALSE;
     };
@@ -513,21 +511,21 @@ void AliAnalysisTaskGFWFlow::NotifyRun() {
 }
 Bool_t AliAnalysisTaskGFWFlow::FillFCs(AliGFW::CorrConfig corconf, Double_t cent, Double_t rndmn, Bool_t DisableOverlap) {
   Double_t dnx, val;
-  dnx = fGFW->Calculate(corconf,0,kTRUE).Re();
+  dnx = fGFW->Calculate(corconf,0,kTRUE).real();
   if(dnx==0) return kFALSE;
   if(!corconf.pTDif) {
-    val = fGFW->Calculate(corconf,0,kFALSE).Re()/dnx;
+    val = fGFW->Calculate(corconf,0,kFALSE).real()/dnx;
     if(TMath::Abs(val)<1)
-      fFC->FillProfile(corconf.Head.Data(),cent,val,dnx,rndmn);
+      fFC->FillProfile(corconf.Head.c_str(),cent,val,dnx,rndmn);
     return kTRUE;
   };
   Bool_t NeedToDisable=kFALSE;
   for(Int_t i=1;i<=fPtAxis->GetNbins();i++) {
-    dnx = fGFW->Calculate(corconf,i-1,kTRUE,NeedToDisable).Re();
+    dnx = fGFW->Calculate(corconf,i-1,kTRUE,NeedToDisable).real();
     if(dnx==0) continue;
-    val = fGFW->Calculate(corconf,i-1,kFALSE,NeedToDisable).Re()/dnx;
+    val = fGFW->Calculate(corconf,i-1,kFALSE,NeedToDisable).real()/dnx;
     if(TMath::Abs(val)<1)
-      fFC->FillProfile(Form("%s_pt_%i",corconf.Head.Data(),i),cent,val,dnx,rndmn);
+      fFC->FillProfile(Form("%s_pt_%i",corconf.Head.c_str(),i),cent,val,dnx,rndmn);
   };
   return kTRUE;
 };
@@ -606,80 +604,87 @@ void AliAnalysisTaskGFWFlow::CreateCorrConfigs() {
   corrconfigs.push_back(GetConf("MidGapPV52","poiGapPos refGapPos | olGapPos {5} refGapNeg {-5}", kTRUE));
 }
 void AliAnalysisTaskGFWFlow::SetupFlagsByIndex(Int_t ind) {
-  fEvNomFlag=1<<kNominal;
-  fTrNomFlag=1<<kFB96;
+  SetupFlagsByIndex(ind,fEvNomFlag,fTrNomFlag);
+}
+void AliAnalysisTaskGFWFlow::SetupFlagsByIndex(const Int_t &ind, UInt_t &l_EvFlag, UInt_t &l_TrFlag) {
+  l_EvFlag=1<<kNominal;
+  l_TrFlag=1<<kFB96;
   switch(ind) {
     default: // also 0
       break;
     //Event flags:
     case 1:
-      fEvNomFlag = 1<<kVtx9;
+      l_EvFlag = 1<<kVtx9;
       break;
     case 2:
-      fEvNomFlag = 1<<kVtx7;
+      l_EvFlag = 1<<kVtx7;
       break;
     case 3:
-      fEvNomFlag = 1<<kVtx5;
+      l_EvFlag = 1<<kVtx5;
       break;
     //Track flags:
     case 4:
-      fTrNomFlag = 1<<kFB768;
+      l_TrFlag = 1<<kFB768;
       break;
     case 5:
-      fTrNomFlag = 1<<kDCAz10;
+      l_TrFlag = 1<<kDCAz10;
       break;
     case 6:
-      fTrNomFlag = 1<<kDCAz05;
+      l_TrFlag = 1<<kDCAz05;
       break;
     case 7:
-      fTrNomFlag = 1<<kDCA4Sigma;
+      l_TrFlag = 1<<kDCA4Sigma;
       break;
     case 8:
-      fTrNomFlag = 1<<kDCA10Sigma;
+      l_TrFlag = 1<<kDCA10Sigma;
       break;
     case 9:
-      fTrNomFlag = 1<<kChiSq2;
+      l_TrFlag = 1<<kChiSq2;
       break;
     case 10:
-      fTrNomFlag = 1<<kChiSq3;
+      l_TrFlag = 1<<kChiSq3;
       break;
     case 11:
-      fTrNomFlag = 1<<kNTPC80;
+      l_TrFlag = 1<<kNTPC80;
       break;
     case 12:
-      fTrNomFlag = 1<<kNTPC90;
+      l_TrFlag = 1<<kNTPC90;
       break;
     case 13:
-      fTrNomFlag = 1<<kNTPC100;
+      l_TrFlag = 1<<kNTPC100;
       break;
     case 14:
-      fTrNomFlag = 1<<kFB768Tuned;
+      l_TrFlag = 1<<kFB768Tuned;
       break;
     case 15:
-      fTrNomFlag = 1<<kFB96Tuned;
+      l_TrFlag = 1<<kFB96Tuned;
       break;
     case 16:
-      fTrNomFlag = 1<<kFB768DCAz;
+      l_TrFlag = 1<<kFB768DCAz;
       break;
     case 17:
-      fTrNomFlag = 1<<kFB768DCAxyLow;
+      l_TrFlag = 1<<kFB768DCAxyLow;
       break;
     case 18:
-      fTrNomFlag = 1<<kFB768DCAxyHigh;
+      l_TrFlag = 1<<kFB768DCAxyHigh;
       break;
     case 19:
-      fTrNomFlag = 1<<kFB768ChiSq2;
+      l_TrFlag = 1<<kFB768ChiSq2;
       break;
     case 20:
-      fTrNomFlag = 1<<kFB768ChiSq3;
+      l_TrFlag = 1<<kFB768ChiSq3;
       break;
     case 21:
-      fTrNomFlag = 1<<kFB768nTPC;
+      l_TrFlag = 1<<kFB768nTPC;
       break;
     case 22:
-      fTrNomFlag = 1<<kFB96MergedDCA;
-    case 23:
-      fTrNomFlag = 1<<kChiSq25;
+      l_TrFlag = 1<<kFB96MergedDCA;
+      break;
+    case 23: //This will now be used for rebinned NUA test
+      l_TrFlag = 1<<kChiSq25;
+      break;
+    case 24:
+      l_TrFlag = 1<<kRebinnedNUA;
       break;
   }
 }

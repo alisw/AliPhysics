@@ -146,6 +146,14 @@ AliAnalysisTaskSEHFTreeCreator *AddTaskHFTreeCreator(Bool_t readMC=kFALSE,
     }
     //task->SetDebugLevel(4);
 
+    if (fillParticleTree)
+      {
+        AliTrackContainer *tracks(nullptr);
+        // task->AddTrackContainer(dataType == kAOD ? "tracks" : "Tracks");
+        tracks = task->AddTrackContainer("tracks");
+        // tracks->SetMinPt(0.15);
+      }
+
     mgr->AddTask(task);
 
     // Create containers for input/output

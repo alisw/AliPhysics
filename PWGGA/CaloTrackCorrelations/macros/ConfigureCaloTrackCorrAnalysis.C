@@ -770,7 +770,13 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     ana->SetMaxEnergy(1000);
     ana->SetMinDistanceToBadChannel(2, 4, 5); // could have been already applied at reader level
     if ( kAnaCaloTrackCorr.Contains("DistToBadOff") )
+    {
       ana->SetMinDistanceToBadChannel(0, 2, 4);
+
+      // Bad map open in reader, closed in analysis
+      if ( kAnaCutsString.Contains("DistToBadOn") )
+        ana->SetMinDistanceToBadChannel(2, 4, 6);
+    }
 
     ana->SetTimeCut(-1e10,1e10); // open cut
   }
@@ -782,8 +788,21 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
     ana->SetTimeCut(-1e10,1e10); // open cut, usual time window of [425-825] ns if time recalibration is off
                                  // restrict to less than 100 ns when time calibration is on
     ana->SetMinDistanceToBadChannel(2, 4, 6); // could have been already applied at reader level
+
     if ( kAnaCaloTrackCorr.Contains("DistToBadOff") )
+    {
       ana->SetMinDistanceToBadChannel(0, 2, 4);
+
+      // Bad map open in reader, closed in analysis
+      if ( kAnaCaloTrackCorr.Contains("DistToBadOff") )
+      {
+        ana->SetMinDistanceToBadChannel(0, 2, 4);
+
+        // Bad map open in reader, closed in analysis
+        if ( kAnaCutsString.Contains("DistToBadOn") )
+          ana->SetMinDistanceToBadChannel(2, 4, 6);
+      }
+    }
 
     if ( kAnaCutsString.Contains("ExoCut") )
     {
@@ -835,7 +854,9 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   if ( tm > 1 ) caloPID->SwitchOnEMCTrackPtDepResMatching();
   
   // Branch AOD settings
-  ana->SetOutputAODName(Form("PhotonTrigger_%s",kAnaCaloTrackCorr.Data()));
+  TString refName = Form("PhotonTrigger_%s",kAnaCaloTrackCorr.Data());
+  printf("RefName photon %s\n",refName.Data());
+  ana->SetOutputAODName(refName);
   ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   
   //Set Histograms name tag, bins and ranges
@@ -1410,7 +1431,7 @@ void ConfigureIsolationCut(AliIsolationCut * ic,
     ic->SwitchOffConeExcessCorrection();
   
   ic->SetConeSizeBandGap(0.0);
-  if ( thresType >= AliIsolationCut::kSumBkgSubIC )
+  if ( thresType == AliIsolationCut::kSumBkgSubEtaBandIC ||  thresType == AliIsolationCut::kSumBkgSubPhiBandIC )
   {
     // do not count UE particles near the cone limit > R+x
 
@@ -1643,6 +1664,12 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     refName += Form("_R%1.2f",ic->GetConeSize());
   if ( kAnaCutsString.Contains("MultiIsoR") &&  kAnaCutsString.Contains("AndGap"))
     refName += Form("_Rmin%1.2f_UEGap%1.2f",ic->GetMinDistToTrigger(),ic->GetConeSizeBandGap());
+
+  if ( histoString.Contains("_UEAreas") )
+        refName += Form("_UEAreas_Meth%d",thresType);
+  if ( bTrackCutUE )
+    refName +="_UEPtCut";
+  //printf("RefName: %s\n",refName.Data());
   ana->SetAODObjArrayName(refName);
   //
 
@@ -2359,8 +2386,26 @@ void ConfigureCaloTrackCorrAnalysis
   if ( analysisString.Contains("DistToBadOff") && !kAnaCaloTrackCorr.Contains("DistToBadOff") )
     kAnaCaloTrackCorr+= "_DistToBadOff";
 
-  if ( analysisString.Contains("ExoCut") )
-    kAnaCaloTrackCorr+= "_ExoCut";
+  if ( analysisString.Contains("DistToBadOn") && kAnaCaloTrackCorr.Contains("DistToBadOff") )
+    kAnaCaloTrackCorr+= "_DistToBadOn";
+
+  if ( analysisString.Contains("ExoCut0.92") )
+    kAnaCaloTrackCorr+= "_ExoCut0.92";
+  if ( analysisString.Contains("ExoCut0.90") )
+      kAnaCaloTrackCorr+= "_ExoCut0.90";
+  if ( analysisString.Contains("ExoCut0.95") )
+    kAnaCaloTrackCorr+= "_ExoCut0.95";
+  if ( analysisString.Contains("ExoCut0.96") )
+    kAnaCaloTrackCorr+= "_ExoCut0.96";
+  if ( analysisString.Contains("ExoCut0.97") )
+    kAnaCaloTrackCorr+= "_ExoCut0.97";
+  if ( analysisString.Contains("ExoCut0.94") )
+    kAnaCaloTrackCorr+= "_ExoCut0.94";
+  if ( analysisString.Contains("ExoCut0.93") )
+    kAnaCaloTrackCorr+= "_ExoCut0.93";
+
+  if ( analysisString.Contains("UESubMethods") )
+    kAnaCaloTrackCorr+= "_UESubMethods";
 
   if ( analysisString.Contains("NLMCut3" ) ) kAnaCaloTrackCorr+= "_NLMCut3";
   if ( analysisString.Contains("NLMCut4" ) ) kAnaCaloTrackCorr+= "_NLMCut4";
@@ -2506,7 +2551,7 @@ void ConfigureCaloTrackCorrAnalysis
                         isoCone,isoConeMin,-1,isoPtTh,0,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
 
-        if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+        if ( analysisString.Contains("UESubMethodsAndJetMedian") )
         {
           anaList->AddAt(ConfigureIsolationAnalysis
                          ("Photon", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,
@@ -2519,7 +2564,7 @@ void ConfigureCaloTrackCorrAnalysis
         //printf("**** MultiIsoRUESub ****\n");
         for(Int_t isize = 0; isize < nsizes; isize++)
         {
-          if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+          if ( analysisString.Contains("UESubMethodsAndJetMedian") )
           {
             anaList->AddAt(ConfigureIsolationAnalysis
                            ("Photon",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,
@@ -2846,7 +2891,7 @@ void ConfigureCaloTrackCorrAnalysis
                        ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubIC,
                         isoCone,isoConeMin,-1,isoPtTh,0,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
-        if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+        if ( analysisString.Contains("UESubMethodsAndJetMedian") )
         {
           anaList->AddAt(ConfigureIsolationAnalysis
                          ("Random", leading, AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,
@@ -2881,7 +2926,7 @@ void ConfigureCaloTrackCorrAnalysis
                           conesize[isize],isoConeMin,-1,isoPtTh,0,
                           col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
 
-          if ( isoMethod == AliIsolationCut::kSumBkgSubJetRhoIC )
+          if ( analysisString.Contains("UESubMethodsAndJetMedian") )
           {
             anaList->AddAt(ConfigureIsolationAnalysis
                            ("Random",leading,AliIsolationCut::kOnlyCharged, AliIsolationCut::kSumBkgSubJetRhoIC,

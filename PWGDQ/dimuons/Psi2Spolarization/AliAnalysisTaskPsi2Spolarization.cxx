@@ -174,7 +174,7 @@ void AliAnalysisTaskPsi2Spolarization::UserExec(Option_t *)
   UInt_t fSelectMask= fInputHandler->IsEventSelected();
   Bool_t isINT7selected = fSelectMask& AliVEvent::kINT7;
 
-    if (isINT7selected) return;
+    if (!isINT7selected) return;
     
   AliVVertex* vertex = NULL;
   AliAODVertex* vertexSPD = NULL;
@@ -235,12 +235,12 @@ void AliAnalysisTaskPsi2Spolarization::UserExec(Option_t *)
 		    Float_t rap2=Rap(er2,pzr2);
 		    Float_t Rabs2=AliAnalysisMuonUtility::GetRabs(track2);
 
-		    // if(Rabs1 <= 17.6 || Rabs1 >= 89.5) continue;
-		    // if(Rabs2 <= 17.6 || Rabs2 >= 89.5) continue;
-		    // if(matchmu1<1 || matchmu2<1) continue;
-		    // if(eta1 > -2.5 || eta1 < -4.0) continue;
-		    // if(eta2 > -2.5 || eta2 < -4.0) continue;
-		    //    if( TMath::Abs( zVertex ) > 10 ) continue;
+		     if(Rabs1 <= 17.6 || Rabs1 >= 89.5) continue;
+		     if(Rabs2 <= 17.6 || Rabs2 >= 89.5) continue;
+		     if(matchmu1<1 || matchmu2<1) continue;
+		     if(eta1 > -2.5 || eta1 < -4.0) continue;
+		     if(eta2 > -2.5 || eta2 < -4.0) continue;
+		        if( TMath::Abs( zVertex ) > 10 ) continue;
 
             Float_t ptdimu = TMath::Sqrt((pxr1+pxr2)*(pxr1+pxr2)+(pyr1+pyr2)*(pyr1+pyr2));
             Float_t raprec = Rap((er1+er2),(pzr1+pzr2));
@@ -250,7 +250,7 @@ void AliAnalysisTaskPsi2Spolarization::UserExec(Option_t *)
             Double_t phiCSdimu = PhiCS(track, track2);
             Double_t phiHEdimu = PhiHE(track, track2);
               
-	    //  if(raprec> -2.5 || raprec < -4.0) continue;
+	     if(raprec> -2.5 || raprec < -4.0) continue;
 
             fVertexZ->Fill(zVertex);
             fHistPtDimu->Fill(ptdimu);

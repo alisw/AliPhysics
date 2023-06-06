@@ -35,15 +35,17 @@ class AliPHOSEmbeddingRun2 : public AliAnalysisTaskSE
     fPathPrivateOADBMC = path;
   } // simply copy from AliPhysics which you want to use for analysis is enough.
   void SetSignalCalibration(double corr) { fSignalECorrection = corr; }
+  void SetSelectedEvProp(float p = 0.2) { fSelEventsPart = p; } // proportion of events which will pass Ev.Selection
 
  private:
   AliPHOSEmbeddingRun2(const AliPHOSEmbeddingRun2&);            // not implemented
   AliPHOSEmbeddingRun2& operator=(const AliPHOSEmbeddingRun2&); // not implemented
 
+  void RunSignalSimulation(int nevents);
   void Init();
   void InitMF(); // Mag.Field initialization for track matching
 
-  void GetNextSignalEvent(void);
+  bool GetNextSignalEvent(void); // returns true is successfully read
 
   void CopyRecalibrateSignal();
   void CopyRecalibrateBackground();
@@ -75,46 +77,46 @@ class AliPHOSEmbeddingRun2 : public AliAnalysisTaskSE
   bool fAddNoiseMC = false;
   float fNoiseMC = 0.001;
   float fZScut = 0.;
+  float fSelEventsPart = 0.2; // only fSelEventsPart will pass selection, simulate smaller number of events
 
-  TChain* fAODChain; // Signal
-
+  TChain* fAODChain;    //! Signal
   AliAODEvent* fSignal; //!
 
   TTree* fDigitsTree;       //! Digits
   TTree* fClustersTree;     //! Clusters
-  TTree* fTreeOut;          // Output AOD
+  TTree* fTreeOut;          //! Output AOD
   TClonesArray* fDigitsArr; //!
 
-  TClonesArray* fmcparticles;
+  TClonesArray* fmcparticles;      //!
   TClonesArray* fSignalClusters;   //!
   TClonesArray* fEmbeddedClusters; //!
   AliAODCaloCells* fEmbeddedCells; //!
   AliAODCaloCells* fCellsPHOS;     //! Old PHOS cells
-  TObjArray* fEmcRecPoints;
-  TObjArray* fCpvRecPoints;
+  TObjArray* fEmcRecPoints;        //!
+  TObjArray* fCpvRecPoints;        //!
 
-  AliPHOSGeometry* fPHOSGeo;
+  AliPHOSGeometry* fPHOSGeo;                //!
   AliPHOSClusterizerv1* fClusterizer;       //!
   AliPHOSReconstructor* fPHOSReconstructor; //!
 
-  TH2I* fPHOSBadMap[6];   // Bad channels map
+  TH2I* fPHOSBadMap[6];   //! Bad channels map
   float fRunByRunCorr[5]; // Per module run-by-run correction
   int fL1phase[15];       // L1phases for PHOS DDLs (run2 only)
 
-  TH2F* fOldPHOSCalibration[5];           //! Calibration coeff. used in Bg production
-  AliPHOSCalibData* fCalibMC = nullptr;   //! Calibration of signal
-  AliPHOSCalibData* fCalibData = nullptr; //! Calibration of Data
-  AliPHOSCalibData* fgCalibData = nullptr;
-  TString fPathPrivateOADBMC; // path to private OADB.
-  double fSignalECorrection;  //! Correction for the Signal clibration
-  int fNSignal;               // Number of signal evetns processed
-  int fNCaloClustersOld;      // Number of CaloClusters already in Bg
-  int fRunNumber;             // Current run
-  int fMF;                    // Magnetic field
-  bool fInitialized;          //!
-  TVector3 fVtx;              // vertex in current event
+  TH2F* fOldPHOSCalibration[5];            //! Calibration coeff. used in Bg production
+  AliPHOSCalibData* fCalibMC = nullptr;    //! Calibration of signal
+  AliPHOSCalibData* fCalibData = nullptr;  //! Calibration of Data
+  AliPHOSCalibData* fgCalibData = nullptr; //!
+  TString fPathPrivateOADBMC;              // path to private OADB.
+  double fSignalECorrection;               // Correction for the Signal clibration
+  int fNSignal;                            //! Number of signal evetns processed
+  int fNCaloClustersOld;                   //! Number of CaloClusters already in Bg
+  int fRunNumber;                          //! Current run
+  int fMF;                                 //! Magnetic field
+  bool fInitialized;                       //!
+  TVector3 fVtx;                           //! vertex in current event
 
-  ClassDef(AliPHOSEmbeddingRun2, 5); // PHOS analysis task
+  ClassDef(AliPHOSEmbeddingRun2, 7); // PHOS analysis task
 };
 
 #endif

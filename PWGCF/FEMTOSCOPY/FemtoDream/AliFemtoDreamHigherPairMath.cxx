@@ -17,6 +17,7 @@ AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
       fBField(-99.),
       fRejPairs(conf->GetClosePairRej()),
       fDoDeltaEtaDeltaPhiCut(conf->GetDoDeltaEtaDeltaPhiCut()),
+      fRejectMotherDaughter(conf->GetRejectMotherDaughter()),
       fDeltaPhiSqMax(conf->GetDeltaPhiMax() * conf->GetDeltaPhiMax()),
       fDeltaEtaSqMax(conf->GetDeltaEtaMax() * conf->GetDeltaEtaMax()),
       fDeltaPhiEtaMax(conf->GetSqDeltaPhiEtaMax()),
@@ -38,6 +39,7 @@ AliFemtoDreamHigherPairMath::AliFemtoDreamHigherPairMath(
       fBField(-99.),
       fRejPairs(samp.fRejPairs),
       fDoDeltaEtaDeltaPhiCut(samp.fDoDeltaEtaDeltaPhiCut),
+      fRejectMotherDaughter(samp.fRejectMotherDaughter),
       fDeltaPhiSqMax(samp.fDeltaPhiSqMax),
       fDeltaEtaSqMax(samp.fDeltaEtaSqMax),
       fDeltaPhiEtaMax(samp.fDeltaPhiEtaMax),
@@ -55,6 +57,7 @@ AliFemtoDreamHigherPairMath& AliFemtoDreamHigherPairMath::operator=(
   fBField = math.fBField;
   fRejPairs = math.fRejPairs;
   fDoDeltaEtaDeltaPhiCut = math.fDoDeltaEtaDeltaPhiCut;
+  fRejectMotherDaughter = math.fRejectMotherDaughter;
   fDeltaPhiSqMax = math.fDeltaPhiSqMax;
   fDeltaEtaSqMax = math.fDeltaEtaSqMax; 
   fDeltaPhiEtaMax = math.fDeltaPhiEtaMax;
@@ -82,6 +85,27 @@ bool AliFemtoDreamHigherPairMath::PassesPairSelection(
   }
   return pass;
 }
+
+bool AliFemtoDreamHigherPairMath::PassesMDPairSelection(
+    AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2) {
+
+  bool pass = true;
+
+  if(fRejectMotherDaughter){
+    std::vector<int> IDTrack = part1.GetIDTracks();
+    std::vector<int> IDDaug = part2.GetIDTracks();
+    for (const auto &idt : IDTrack) {
+      for (const auto &idd : IDDaug) {
+        if (idt == idd){
+          std::cout<<"LALALAL"<<std::endl;
+          pass=false;
+        } 
+      }
+    }
+  }
+  return pass;
+}
+
 
 bool AliFemtoDreamHigherPairMath::CommonAncestors(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2) {
     bool IsCommon = false;

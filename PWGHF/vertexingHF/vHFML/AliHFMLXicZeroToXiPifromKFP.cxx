@@ -87,6 +87,7 @@ AliHFMLXicZeroToXiPifromKFP::AliHFMLXicZeroToXiPifromKFP() :
   fIsPbPb(kTRUE),
   fIsAnaOmegac0(kFALSE),
   fIsStoreOnlyMLoutput(kTRUE),
+  fIsStoreLS(kFALSE),
   fPID(0),
   fAnaCuts(0),
   fpVtx(0),
@@ -97,8 +98,6 @@ AliHFMLXicZeroToXiPifromKFP::AliHFMLXicZeroToXiPifromKFP() :
   fAodTrackInd(0),
   fOutputList(0),
   fListCuts(0),
-  fTree_Event(0),
-  fVar_Event(0),
   fTree_Xic0(0),
   fVar_Xic0(0),
   fTree_Xic0MCGen(0),
@@ -176,6 +175,12 @@ AliHFMLXicZeroToXiPifromKFP::AliHFMLXicZeroToXiPifromKFP() :
   f2DHistMassPULLvsRadius_Lambda(0),
   f2DHistMassPULLvsRadius_AntiLambda(0),
   f2DHistArmenterosPodolanski(0),
+  f2DHistNsigmaTPCTOF_PiFromXic0(0),
+  f2DHistNsigmaTPCTOF_PiFromOmegac0(0),
+  f2DHistNsigmaTPCTOF_PiFromXi(0),
+  f2DHistNsigmaTPCTOF_KaFromOmega(0),
+  f2DHistNsigmaTPCTOF_PiFromLam(0),
+  f2DHistNsigmaTPCTOF_PrFromLam(0),
   f2DHistChargeDaughters(0),
   f2DHistV0XY_OnFly(0),
   f2DHistV0XY_Offline(0),
@@ -410,6 +415,7 @@ AliHFMLXicZeroToXiPifromKFP::AliHFMLXicZeroToXiPifromKFP(const char* name, AliRD
   fIsPbPb(kTRUE),
   fIsAnaOmegac0(kFALSE),
   fIsStoreOnlyMLoutput(kTRUE),
+  fIsStoreLS(kFALSE),
   fPID(0),
   fAnaCuts(cuts),
   fpVtx(0),
@@ -420,8 +426,6 @@ AliHFMLXicZeroToXiPifromKFP::AliHFMLXicZeroToXiPifromKFP(const char* name, AliRD
   fAodTrackInd(0),
   fOutputList(0),
   fListCuts(0),
-  fTree_Event(0),
-  fVar_Event(0),
   fTree_Xic0(0),
   fVar_Xic0(0),
   fTree_Xic0MCGen(0),
@@ -501,6 +505,12 @@ AliHFMLXicZeroToXiPifromKFP::AliHFMLXicZeroToXiPifromKFP(const char* name, AliRD
   fHistEvents(0),
   fHTrigger(0),
   f2DHistArmenterosPodolanski(0),
+  f2DHistNsigmaTPCTOF_PiFromXic0(0),
+  f2DHistNsigmaTPCTOF_PiFromOmegac0(0),
+  f2DHistNsigmaTPCTOF_PiFromXi(0),
+  f2DHistNsigmaTPCTOF_KaFromOmega(0),
+  f2DHistNsigmaTPCTOF_PiFromLam(0),
+  f2DHistNsigmaTPCTOF_PrFromLam(0),
   f2DHistChargeDaughters(0),
   f2DHistV0XY_OnFly(0),
   f2DHistV0XY_Offline(0),
@@ -732,11 +742,10 @@ AliHFMLXicZeroToXiPifromKFP::AliHFMLXicZeroToXiPifromKFP(const char* name, AliRD
                                         // if you add more output objects, make sure to call PostData for all of them, and to
                                         // make changes to your AddTask macro!
   DefineOutput(2, AliNormalizationCounter::Class());
-  DefineOutput(3, TTree::Class()); // event
-  DefineOutput(4, TTree::Class()); // Xic0
-  DefineOutput(5, TTree::Class()); // Xic0 MCGen
-  DefineOutput(6, TList::Class()); // Omega hist
-  DefineOutput(7, TTree::Class()); // ML output for PbPb
+  DefineOutput(3, TTree::Class()); // Xic0
+  DefineOutput(4, TTree::Class()); // Xic0 MCGen
+  DefineOutput(5, TList::Class()); // Omega hist
+  DefineOutput(6, TTree::Class()); // ML output for PbPb
 
 }
 //_____________________________________________________________________________
@@ -756,16 +765,6 @@ AliHFMLXicZeroToXiPifromKFP::~AliHFMLXicZeroToXiPifromKFP()
     if (fAnaCuts) {
       delete fAnaCuts;
       fAnaCuts = 0;
-    }
-
-    if (fTree_Event) {
-      delete fTree_Event;
-      fTree_Event = 0;
-    }
-
-    if (fVar_Event) {
-      delete fVar_Event;
-      fVar_Event = 0;
     }
 
     if (fTree_Xic0) {
@@ -1100,6 +1099,17 @@ void AliHFMLXicZeroToXiPifromKFP::UserCreateOutputObjects()
   f2DHistXiPlusXY_DV = new TH2F("f2DHistXiPlusXY_DV", "f2DHistXiPlusXY_DV", 1000, -10., 10., 1000, -10., 10.);
   f2DHistXiPlusXY_PV = new TH2F("f2DHistXiPlusXY_PV", "f2DHistXiPlusXY_PV", 1000, -10., 10., 1000, -10., 10.);
 
+  if (!fIsAnaOmegac0) {
+    f2DHistNsigmaTPCTOF_PiFromXic0 = new TH2F("f2DHistNsigmaTPCTOF_PiFromXic0", "f2DHistNsigmaTPCTOF_PiFromXic0", 4000, -1000., 1000., 4000, -1000., 1000.);
+    f2DHistNsigmaTPCTOF_PiFromXi = new TH2F("f2DHistNsigmaTPCTOF_PiFromXi", "f2DHistNsigmaTPCTOF_PiFromXi", 4000, -1000., 1000., 4000, -1000., 1000.);
+  }
+  if (fIsAnaOmegac0) {
+    f2DHistNsigmaTPCTOF_PiFromOmegac0 = new TH2F("f2DHistNsigmaTPCTOF_PiFromOmegac0", "f2DHistNsigmaTPCTOF_PiFromOmegac0", 4000, -1000., 1000., 4000, -1000., 1000.);
+    f2DHistNsigmaTPCTOF_KaFromOmega = new TH2F("f2DHistNsigmaTPCTOF_KaFromOmega", "f2DHistNsigmaTPCTOF_KaFromOmega", 4000, -1000., 1000., 4000, -1000., 1000.);
+  }
+  f2DHistNsigmaTPCTOF_PiFromLam = new TH2F("f2DHistNsigmaTPCTOF_PiFromLam", "f2DHistNsigmaTPCTOF_PiFromLam", 4000, -1000., 1000., 4000, -1000., 1000.);
+  f2DHistNsigmaTPCTOF_PrFromLam = new TH2F("f2DHistNsigmaTPCTOF_PrFromLam", "f2DHistNsigmaTPCTOF_PrFromLam", 4000, -1000., 1000., 4000, -1000., 1000.);
+
   fHistChargeV0 = new TH1F("fHistChargeV0", "fHistChargeV0", 11, -5.5, 5.5);
   fHistOnFlyStatus = new TH1F("fHistOnFlyStatus"," fHistOnFlyStatus", 3, -1.5, 1.5);
   fHistOnFlyStatus_FirstDaugPos = new TH1F("fHistOnFlyStatus__FirstDaugPos"," fHistOnFlyStatus__FirstDaugPos", 3, -1.5, 1.5);
@@ -1295,12 +1305,20 @@ void AliHFMLXicZeroToXiPifromKFP::UserCreateOutputObjects()
 
   fOutputList->Add(fHistEvents); // don't forget to add it to the list! the list will be written to file, so if you want
   fOutputList->Add(f2DHistArmenterosPodolanski);
+  if (!fIsAnaOmegac0) {
+    fOutputList->Add(f2DHistNsigmaTPCTOF_PiFromXic0);
+    fOutputList->Add(f2DHistNsigmaTPCTOF_PiFromXi);
+  }
   if (fIsAnaOmegac0) {
+    fOutputList->Add(f2DHistNsigmaTPCTOF_PiFromOmegac0);
+    fOutputList->Add(f2DHistNsigmaTPCTOF_KaFromOmega);
     fOutputList->Add(fHistPt_OmegaNotFromOmegac0_Rec);
     fOutputList->Add(fHistPt_OmegaNotFromOmegac0_Gen);
     fOutputList->Add(f2DHist_YvsPt_OmegaNotFromOmegac0_Rec);
     fOutputList->Add(f2DHist_YvsPt_OmegaNotFromOmegac0_Gen);
   }
+  fOutputList->Add(f2DHistNsigmaTPCTOF_PiFromLam);
+  fOutputList->Add(f2DHistNsigmaTPCTOF_PrFromLam);
   /*
   fOutputList->Add(fHTrigger);
   fOutputList->Add(fCounterGen_Cuts_Lambda);
@@ -1604,19 +1622,18 @@ void AliHFMLXicZeroToXiPifromKFP::UserCreateOutputObjects()
   fCounter = new AliNormalizationCounter(normName.Data());
   fCounter->Init();
   PostData(2, fCounter);
-  DefineEvent();
-  PostData(3, fTree_Event);  // postdata will notify the analysis manager of changes / updates to the 
+//  DefineEvent();
 
   DefineTreeRecXic0();
-  PostData(4, fTree_Xic0);
+  PostData(3, fTree_Xic0);
 
   DefineTreeGenXic0();
-  PostData(5, fTree_Xic0MCGen);
-  PostData(6, fOutputList);
+  PostData(4, fTree_Xic0MCGen);
+  PostData(5, fOutputList);
   
   if (fIsPbPb) {
     DefineTreeMLoutput();
-    PostData(7, fTree_MLoutput);
+    PostData(6, fTree_MLoutput);
   }
 
   return;
@@ -1775,8 +1792,6 @@ void AliHFMLXicZeroToXiPifromKFP::UserExec(Option_t *)
 
   if(!fAnaCuts) return;
 
-  FillEventROOTObjects();
-
 /*
     //--------------------------------------------------------------------------------------------------------
     // create a translation table: fAodTrackInd(mcTrackIndex) = aodTrackIndex, or = -1 if there is no aodTrack
@@ -1832,13 +1847,10 @@ void AliHFMLXicZeroToXiPifromKFP::UserExec(Option_t *)
   MakeAnaXicZeroFromCasc(AODEvent, mcArray, PV);
 
   PostData(2, fCounter);
-  PostData(3, fTree_Event);                           // stream the results the analysis of this event to
-                                                        // the output manager which will take care of writing
-                                                        // it to a file
-  PostData(4, fTree_Xic0);
-  PostData(5, fTree_Xic0MCGen);
-  PostData(6, fOutputList);
-  if (fIsPbPb) PostData(7, fTree_MLoutput);
+  PostData(3, fTree_Xic0);
+  PostData(4, fTree_Xic0MCGen);
+  PostData(5, fOutputList);
+  if (fIsPbPb) PostData(6, fTree_MLoutput);
 
   return;
 }
@@ -2008,7 +2020,7 @@ Bool_t AliHFMLXicZeroToXiPifromKFP::MakeMCAnalysis(TClonesArray *mcArray)
       if ( pifromOmegac0_flag && Omega_flag && kafromOmega_flag && Lam_flag && pifromLam_flag && prfromLam_flag ) {
         AliAODMCParticle *mcdau_0 = (AliAODMCParticle*) mcArray->At(mcpart->GetDaughterFirst());
         Double_t MLoverP = sqrt( pow(mcpart->Xv()-mcdau_0->Xv(),2.)+pow(mcpart->Yv()-mcdau_0->Yv(),2.)+pow(mcpart->Zv()-mcdau_0->Zv(),2.) ) * mcpart->M() / mcpart->P()*1.e4; // c*(proper lifetime) in um
-        Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
+        Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kFALSE);
         FillTreeGenXic0(mcpart, CheckOrigin, MLoverP);
       }
     }
@@ -2052,7 +2064,7 @@ Bool_t AliHFMLXicZeroToXiPifromKFP::MakeMCAnalysis(TClonesArray *mcArray)
       if ( pifromXic0_flag && Xi_flag && pifromXi_flag && Lam_flag && pifromLam_flag && prfromLam_flag ) {
         AliAODMCParticle *mcdau_0 = (AliAODMCParticle*) mcArray->At(mcpart->GetDaughterFirst());
         Double_t MLoverP = sqrt( pow(mcpart->Xv()-mcdau_0->Xv(),2.)+pow(mcpart->Yv()-mcdau_0->Yv(),2.)+pow(mcpart->Zv()-mcdau_0->Zv(),2.) ) * mcpart->M() / mcpart->P()*1.e4; // c*(proper lifetime) in um
-        Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
+        Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kFALSE);
         FillTreeGenXic0(mcpart, CheckOrigin, MLoverP);
       }
     } // for Xic0
@@ -2210,7 +2222,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeGenXic0(AliAODMCParticle *mcpart, Int_
 {
   // Fill histograms or tree depending
 
-  for(Int_t i=0;i<9;i++){
+  for(Int_t i=0;i<6;i++){
     fVar_Xic0MCGen[i] = -9999.;
   }
 
@@ -2218,11 +2230,8 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeGenXic0(AliAODMCParticle *mcpart, Int_
   fVar_Xic0MCGen[1] = mcpart->Pt();
   fVar_Xic0MCGen[2] = CheckOrigin;
   fVar_Xic0MCGen[3] = mcpart->GetPdgCode();
-  fVar_Xic0MCGen[4] = (fAnaCuts->GetWeightFunction())->Eval(mcpart->Pt());
-  fVar_Xic0MCGen[5] = (fAnaCuts->GetWeightFunctionUp())->Eval(mcpart->Pt());;
-  fVar_Xic0MCGen[6] = (fAnaCuts->GetWeightFunctionDw())->Eval(mcpart->Pt());;
-  fVar_Xic0MCGen[7] = MLoverP;
-  fVar_Xic0MCGen[8] = fNtracklets;
+  fVar_Xic0MCGen[4] = MLoverP;
+  fVar_Xic0MCGen[5] = fNtracklets;
 
   if (fWriteXic0MCGenTree) fTree_Xic0MCGen->Fill();
 
@@ -3940,33 +3949,35 @@ void AliHFMLXicZeroToXiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *AODEvent, 
          kfpBP.Clear();
       } // Loop for first bachelor pion+
       // ----------------- Like-sign pairs -----------------
-      for (Int_t itrkBP_LS=0; itrkBP_LS<flag_trkN; itrkBP_LS++) {
-        if ( trackN[itrkBP_LS]->GetID()==ntrack->GetID() || trackN[itrkBP_LS]->GetID()==btrack->GetID() ) continue;
-        if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackN[itrkBP_LS]) ) continue;
-        KFParticle kfpBP_LS = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackN[itrkBP_LS], -211);
-        // reconstruct Xic0 bkg (Like-sign pairs)
-        KFParticle kfpXic0_LS;
-        const KFParticle *vXic0Ds_LS[2] = {&kfpBP_LS, &kfpXiMinus_m};
-        kfpXic0_LS.Construct(vXic0Ds_LS, NDaughters);
-        // chi2>0 && NDF>0
-        if ( kfpXic0_LS.GetNDF()<=0 || kfpXic0_LS.GetChi2()<=0 ) continue;
-        // Prefilter
-        if ( kfpXic0_LS.GetChi2()/kfpXic0_LS.GetNDF() >= fAnaCuts->GetKFPXic0_Chi2geoMax() ) continue;
-        if ( kfpXic0_LS.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
-        // check rapidity of Xic0
-        if ( TMath::Abs(kfpXic0_LS.GetE())<=TMath::Abs(kfpXic0_LS.GetPz()) ) continue;
-        // check covariance matrix
-        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXic0_LS) ) continue;
-        // err_massXic0 > 0
-        Float_t massXic0_LS_Rec, err_massXic0_LS;
-        kfpXic0_LS.GetMass(massXic0_LS_Rec, err_massXic0_LS);
-        if ( err_massXic0_LS<=0 ) continue;
-        if (fWriteXic0Tree) {
-          Int_t lab_Xic0_LS = -9999;
-          FillTreeRecXic0FromCasc(0, kfpXic0_LS, trackN[itrkBP_LS], kfpBP_LS, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0_LS);
+      if (fIsStoreLS) {
+        for (Int_t itrkBP_LS=0; itrkBP_LS<flag_trkN; itrkBP_LS++) {
+          if ( trackN[itrkBP_LS]->GetID()==ntrack->GetID() || trackN[itrkBP_LS]->GetID()==btrack->GetID() ) continue;
+          if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackN[itrkBP_LS]) ) continue;
+          KFParticle kfpBP_LS = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackN[itrkBP_LS], -211);
+          // reconstruct Xic0 bkg (Like-sign pairs)
+          KFParticle kfpXic0_LS;
+          const KFParticle *vXic0Ds_LS[2] = {&kfpBP_LS, &kfpXiMinus_m};
+          kfpXic0_LS.Construct(vXic0Ds_LS, NDaughters);
+          // chi2>0 && NDF>0
+          if ( kfpXic0_LS.GetNDF()<=0 || kfpXic0_LS.GetChi2()<=0 ) continue;
+          // Prefilter
+          if ( kfpXic0_LS.GetChi2()/kfpXic0_LS.GetNDF() >= fAnaCuts->GetKFPXic0_Chi2geoMax() ) continue;
+          if ( kfpXic0_LS.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
+          // check rapidity of Xic0
+          if ( TMath::Abs(kfpXic0_LS.GetE())<=TMath::Abs(kfpXic0_LS.GetPz()) ) continue;
+          // check covariance matrix
+          if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpXic0_LS) ) continue;
+          // err_massXic0 > 0
+          Float_t massXic0_LS_Rec, err_massXic0_LS;
+          kfpXic0_LS.GetMass(massXic0_LS_Rec, err_massXic0_LS);
+          if ( err_massXic0_LS<=0 ) continue;
+          if (fWriteXic0Tree) {
+            Int_t lab_Xic0_LS = -9999;
+            FillTreeRecXic0FromCasc(0, kfpXic0_LS, trackN[itrkBP_LS], kfpBP_LS, kfpXiMinus, kfpXiMinus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, lab_Xic0_LS);
+          }
+          kfpXic0_LS.Clear();
+          kfpBP_LS.Clear();
         }
-        kfpXic0_LS.Clear();
-        kfpBP_LS.Clear();
       }
       kfpXiMinus_m.Clear();
       kfpXiMinus.Clear();
@@ -4101,33 +4112,35 @@ void AliHFMLXicZeroToXiPifromKFP::MakeAnaXicZeroFromCasc(AliAODEvent *AODEvent, 
         kfpBP.Clear();
       } // Loop for first bachelor pion-
       // ----------------- Like-sign pairs -----------------
-      for (Int_t itrkBP_LS=0; itrkBP_LS<flag_trkP; itrkBP_LS++) {
-        if ( trackP[itrkBP_LS]->GetID()==ptrack->GetID() || trackP[itrkBP_LS]->GetID()==btrack->GetID() ) continue;
-        if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackP[itrkBP_LS]) ) continue;
-        KFParticle kfpBP_LS = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackP[itrkBP_LS], 211);
-        // reconstruct Anti-Xic0 bkg (Like-sign pairs)
-        KFParticle kfpAntiXic0_LS;
-        const KFParticle *vAntiXic0Ds_LS[2] = {&kfpBP_LS, &kfpXiPlus_m};
-        kfpAntiXic0_LS.Construct(vAntiXic0Ds_LS, NDaughters);
-        // chi2>0 && NDF>0
-        if ( kfpAntiXic0_LS.GetNDF()<=0 || kfpAntiXic0_LS.GetChi2()<=0 ) continue;
-        // Prefilter
-        if ( kfpAntiXic0_LS.GetChi2()/kfpAntiXic0_LS.GetNDF() >= fAnaCuts->GetKFPXic0_Chi2geoMax() ) continue;
-        if ( kfpAntiXic0_LS.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
-        // check rapidity of Xic0
-        if ( TMath::Abs(kfpAntiXic0_LS.GetE())<=TMath::Abs(kfpAntiXic0_LS.GetPz()) ) continue;
-        // check covariance matrix
-        if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiXic0_LS) ) continue;
-        // err_massXic0 > 0
-        Float_t massAntiXic0_LS_Rec, err_massAntiXic0_LS;
-        kfpAntiXic0_LS.GetMass(massAntiXic0_LS_Rec, err_massAntiXic0_LS);
-        if ( err_massAntiXic0_LS<=0 ) continue;
-        if (fWriteXic0Tree) {
-          Int_t lab_AntiXic0_LS = -9999;
-          FillTreeRecXic0FromCasc(0, kfpAntiXic0_LS, trackP[itrkBP_LS], kfpBP_LS, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0_LS);
+      if (fIsStoreLS) {
+        for (Int_t itrkBP_LS=0; itrkBP_LS<flag_trkP; itrkBP_LS++) {
+          if ( trackP[itrkBP_LS]->GetID()==ptrack->GetID() || trackP[itrkBP_LS]->GetID()==btrack->GetID() ) continue;
+          if ( !fAnaCuts->PassedTrackQualityCuts_PrimaryPion(trackP[itrkBP_LS]) ) continue;
+          KFParticle kfpBP_LS = AliVertexingHFUtils::CreateKFParticleFromAODtrack(trackP[itrkBP_LS], 211);
+          // reconstruct Anti-Xic0 bkg (Like-sign pairs)
+          KFParticle kfpAntiXic0_LS;
+          const KFParticle *vAntiXic0Ds_LS[2] = {&kfpBP_LS, &kfpXiPlus_m};
+          kfpAntiXic0_LS.Construct(vAntiXic0Ds_LS, NDaughters);
+          // chi2>0 && NDF>0
+          if ( kfpAntiXic0_LS.GetNDF()<=0 || kfpAntiXic0_LS.GetChi2()<=0 ) continue;
+          // Prefilter
+          if ( kfpAntiXic0_LS.GetChi2()/kfpAntiXic0_LS.GetNDF() >= fAnaCuts->GetKFPXic0_Chi2geoMax() ) continue;
+          if ( kfpAntiXic0_LS.GetPt() < fAnaCuts->GetPtMinXic0() ) continue;
+          // check rapidity of Xic0
+          if ( TMath::Abs(kfpAntiXic0_LS.GetE())<=TMath::Abs(kfpAntiXic0_LS.GetPz()) ) continue;
+          // check covariance matrix
+          if ( !AliVertexingHFUtils::CheckKFParticleCov(kfpAntiXic0_LS) ) continue;
+          // err_massXic0 > 0
+          Float_t massAntiXic0_LS_Rec, err_massAntiXic0_LS;
+          kfpAntiXic0_LS.GetMass(massAntiXic0_LS_Rec, err_massAntiXic0_LS);
+          if ( err_massAntiXic0_LS<=0 ) continue;
+          if (fWriteXic0Tree) {
+            Int_t lab_AntiXic0_LS = -9999;
+            FillTreeRecXic0FromCasc(0, kfpAntiXic0_LS, trackP[itrkBP_LS], kfpBP_LS, kfpXiPlus, kfpXiPlus_m, kfpPionOrKaon, btrack, casc, kfpK0Short, kfpGamma, kfpAntiLambda, kfpAntiLambda_m, ntrack, ptrack, PV, mcArray, lab_AntiXic0_LS);
+          }
+          kfpAntiXic0_LS.Clear();
+          kfpBP_LS.Clear();
         }
-        kfpAntiXic0_LS.Clear();
-        kfpBP_LS.Clear();
       }
       kfpXiPlus_m.Clear();
       kfpXiPlus.Clear();
@@ -4197,7 +4210,7 @@ Int_t AliHFMLXicZeroToXiPifromKFP::MatchToMCXic0(AliAODTrack *trackProton, AliAO
 //  if ( mcMother->IsSecondaryFromMaterial() ) return 4;
 //  if ( mcMother->IsFromSubsidiaryEvent() ) return 5;
 
-  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kTRUE);
+  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kFALSE);
   return CheckOrigin;
 }
 
@@ -4250,7 +4263,7 @@ Int_t AliHFMLXicZeroToXiPifromKFP::MatchToMCAntiXic0(AliAODTrack *trackAntiProto
 //  if ( mcMother->IsSecondaryFromMaterial() ) return 4;
 //  if ( mcMother->IsFromSubsidiaryEvent() ) return 5;
 
-  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kTRUE);
+  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kFALSE);
   return CheckOrigin;
 }
 
@@ -4304,7 +4317,7 @@ Int_t AliHFMLXicZeroToXiPifromKFP::MatchToMCOmegac0(AliAODTrack *trackProton, Al
 //  if ( mcMother->IsSecondaryFromMaterial() ) return 4;
 //  if ( mcMother->IsFromSubsidiaryEvent() ) return 5;
 
-  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kTRUE);
+  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kFALSE);
   return CheckOrigin;
 }
 
@@ -4357,7 +4370,7 @@ Int_t AliHFMLXicZeroToXiPifromKFP::MatchToMCAntiOmegac0(AliAODTrack *trackAntiPr
 //  if ( mcMother->IsSecondaryFromMaterial() ) return 4;
 //  if ( mcMother->IsFromSubsidiaryEvent() ) return 5;
 
-  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kTRUE);
+  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kFALSE);
   return CheckOrigin;
 }
 
@@ -4777,41 +4790,14 @@ Int_t AliHFMLXicZeroToXiPifromKFP::MatchToXicZeroMC(TClonesArray *mcArray, Int_t
 }
 
 //_____________________________________________________________________________
-void AliHFMLXicZeroToXiPifromKFP::DefineEvent()
-{
-  // This is to define tree variables
-
-  const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
-  fTree_Event = new TTree(nameoutput, "Event");
-  Int_t nVar = 7;
-  fVar_Event = new Float_t[nVar];
-  TString *fVarNames = new TString[nVar];
-
-  fVarNames[0]  = "centrality";
-  fVarNames[1]  = "z_vtx_reco";
-  fVarNames[2]  = "n_vtx_contributors";
-  fVarNames[3]  = "n_tracks";
-  fVarNames[4]  = "is_ev_rej";
-  fVarNames[5]  = "run_number";
-  fVarNames[6]  = "ev_id";
-
-  for (Int_t ivar=0; ivar<nVar; ivar++) {
-    fTree_Event->Branch(fVarNames[ivar].Data(), &fVar_Event[ivar], Form("%s/F", fVarNames[ivar].Data()));
-  }
-
-  return;
-
-}
-
-//_____________________________________________________________________________
 void AliHFMLXicZeroToXiPifromKFP::DefineTreeRecXic0()
 {
   // This is to define tree variables
 
-  const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
+  const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0 = new TTree(nameoutput, "Xic0 variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0 = new TTree(nameoutput, "Omegac0 variables tree");
-  Int_t nVar = 53;
+  Int_t nVar = 51;
   fVar_Xic0 = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -4844,7 +4830,7 @@ void AliHFMLXicZeroToXiPifromKFP::DefineTreeRecXic0()
   fVarNames[19] = "mass_Lam"; // mass of Lambda (without mass const.)
   fVarNames[20] = "mass_Xi"; // mass of Xi (without mass const.)
   fVarNames[21] = "pt_PiFromXic0"; // pt of pion coming from Xic0
-  fVarNames[22] = "pt_Xic0"; // pt of Xic0
+  fVarNames[22] = "pt_Xic0"; // pt of Xic0 at rec. level
   fVarNames[23] = "rap_Xic0"; // rapidity of Xic0
   fVarNames[24] = "mass_Xic0"; // mass of Xic0
   fVarNames[25] = "CosThetaStar_PiFromXic0"; // CosThetaStar of pion coming from Xic0
@@ -4871,6 +4857,7 @@ void AliHFMLXicZeroToXiPifromKFP::DefineTreeRecXic0()
   fVarNames[45] = "nSigmaTOF_PiFromLam"; // TOF nsigma for pion coming from Lambda
   fVarNames[46] = "nSigmaTOF_PrFromLam"; // TOF nsigma for proton coming from Lambda
   fVarNames[47] = "armenteros"; // Armenteros-Podolanski plot (qT/|alpha|)
+  fVarNames[48] = "pt_Xic0_gen"; // pt of Xic0 at gen. level
   }
 
   if (fIsAnaOmegac0) {
@@ -4900,7 +4887,7 @@ void AliHFMLXicZeroToXiPifromKFP::DefineTreeRecXic0()
     fVarNames[19] = "mass_Lam"; // mass of Lambda (without mass const.)
     fVarNames[20] = "mass_Omega"; // mass of Omega (without mass const.)
     fVarNames[21] = "pt_PiFromOmegac0"; // pt of pion coming from Omegac0
-    fVarNames[22] = "pt_Omegac0"; // pt of Omegac0
+    fVarNames[22] = "pt_Omegac0"; // pt of Omegac0 at rec. level
     fVarNames[23] = "rap_Omegac0"; // rapidity of Omegac0
     fVarNames[24] = "mass_Omegac0"; // mass of Omegac0
     fVarNames[25] = "CosThetaStar_PiFromOmegac0"; // CosThetaStar of pion coming from Omegac0
@@ -4927,13 +4914,11 @@ void AliHFMLXicZeroToXiPifromKFP::DefineTreeRecXic0()
     fVarNames[45] = "nSigmaTOF_PiFromLam"; // TOF nsigma for pion coming from Lambda
     fVarNames[46] = "nSigmaTOF_PrFromLam"; // TOF nsigma for proton coming from Lambda
     fVarNames[47] = "armenteros"; // Armenteros-Podolanski plot (qT/|alpha|)
+    fVarNames[48] = "pt_Omegac0_gen"; // pt of Omegac0 at gen. level
   }
-  fVarNames[48] = "weight";
-  fVarNames[49] = "weight_up";
-  fVarNames[50] = "weight_dw";
 
-  fVarNames[51] = "fCentrality";
-  fVarNames[52] = "fNtracklets";
+  fVarNames[49] = "fCentrality";
+  fVarNames[50] = "fNtracklets";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Xic0->Branch(fVarNames[ivar].Data(), &fVar_Xic0[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -4997,10 +4982,10 @@ void AliHFMLXicZeroToXiPifromKFP::DefineVarTreePiMinus()
 //_____________________________________________________________________________
 void AliHFMLXicZeroToXiPifromKFP::DefineTreeGenXic0()
 {
-  const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
+  const char* nameoutput = GetOutputSlot(4)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0MCGen = new TTree(nameoutput,"Xic0 MC variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0MCGen = new TTree(nameoutput,"Omegac0 MC variables tree");
-  Int_t nVar = 9;
+  Int_t nVar = 6;
   fVar_Xic0MCGen = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
   
@@ -5009,21 +4994,16 @@ void AliHFMLXicZeroToXiPifromKFP::DefineTreeGenXic0()
     fVarNames[1] = "pt_Xic0";
     fVarNames[2] = "Source_Xic0";
     fVarNames[3] = "PDG_Xic0";
-    fVarNames[4] = "weight";
-    fVarNames[5] = "weight_up";
-    fVarNames[6] = "weight_dw";
-    fVarNames[7] = "MLoverP"; // c*(proper lifetime)
-    fVarNames[8] = "fNtracklets";
+    fVarNames[4] = "MLoverP"; // c*(proper lifetime)
+    fVarNames[5] = "fNtracklets";
   }
   if (fIsAnaOmegac0) {
     fVarNames[0] = "rap_Omegac0";
     fVarNames[1] = "pt_Omegac0";
     fVarNames[2] = "Source_Omegac0";
     fVarNames[3] = "PDG_Omegac0";
-    fVarNames[4] = "weight";
-    fVarNames[5] = "weight_up";
-    fVarNames[6] = "weight_dw";
-    fVarNames[7] = "MLoverP"; // c*(proper lifetime)
+    fVarNames[4] = "MLoverP"; // c*(proper lifetime)
+    fVarNames[5] = "fNtracklets";
   }
 
   /*
@@ -5178,25 +5158,6 @@ void AliHFMLXicZeroToXiPifromKFP::FillPiMinusROOTObjects(AliAODTrack *track, TCl
 */
 
 //_____________________________________________________________________________
-void AliHFMLXicZeroToXiPifromKFP::FillEventROOTObjects()
-{
-
-  for (Int_t i=0; i<7; i++) {
-    fVar_Event[i] = 0.;
-  }
-
-  Double_t pos[3];
-  fpVtx->GetXYZ(pos);
-
-  fVar_Event[1] = pos[2];
-
-  fTree_Event->Fill();
-
-  return;
-
-}
-
-//_____________________________________________________________________________
 void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODv0 *v0, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0)
 {
   
@@ -5204,17 +5165,15 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpXic0, AliA
     fVar_Xic0[i] = -9999.;
   }
 
-//  Float_t nSigmaTOF_PiFromXic0 = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackPiFromXic0,AliPID::kPion);
-//  Float_t nSigmaTOF_PiFromXi   = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackPiFromXi,AliPID::kPion);
+  Double_t nSigmaTOF_PiFromXic0 = -999., nSigmaTOF_PiFromXi = -999.;                                                                                                                                               
+  AliAODPidHF *Pid_HF = fAnaCuts->GetPidHF();
+  if (Pid_HF) {
+    Pid_HF->GetnSigmaTOF(trackPiFromXic0, AliPID::kPion, nSigmaTOF_PiFromXic0);
+    Pid_HF->GetnSigmaTOF(trackPiFromXi, AliPID::kPion, nSigmaTOF_PiFromXi);
+  }
 
-//  Float_t nSigmaTPC_PiFromXic0 = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackPiFromXic0,AliPID::kPion);
-//  Float_t nSigmaTPC_PiFromXi   = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackPiFromXi,AliPID::kPion);
-//  Float_t nSigmaTPC_PrFromLam  = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkProton,AliPID::kProton);
-//  Float_t nSigmaTPC_PiFromLam  = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkPion,AliPID::kPion);
-
-
-  Float_t nSigmaTOF_PiFromXic0 = fPID->NumberOfSigmasTOF(trackPiFromXic0,AliPID::kPion);
-  Float_t nSigmaTOF_PiFromXi   = fPID->NumberOfSigmasTOF(trackPiFromXi,AliPID::kPion);
+//  Float_t nSigmaTOF_PiFromXic0 = fPID->NumberOfSigmasTOF(trackPiFromXic0,AliPID::kPion);
+//  Float_t nSigmaTOF_PiFromXi   = fPID->NumberOfSigmasTOF(trackPiFromXi,AliPID::kPion);
   Float_t nSigmaTPC_PiFromXic0 = fPID->NumberOfSigmasTPC(trackPiFromXic0,AliPID::kPion);
   Float_t nSigmaTPC_PiFromXi   = fPID->NumberOfSigmasTPC(trackPiFromXi,AliPID::kPion);
   Float_t nSigmaTPC_PrFromLam  = fPID->NumberOfSigmasTPC(trkProton,AliPID::kProton);
@@ -5425,33 +5384,35 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpXic0, AliA
 void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0)
 {
 
-  for (Int_t i=0; i<53; i++) {
+  for (Int_t i=0; i<51; i++) {
     fVar_Xic0[i] = -9999.;
   }
 
-//  Float_t nSigmaTOF_PiFromXic0 = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackPiFromXic0,AliPID::kPion);
-//  Float_t nSigmaTOF_PiFromXi   = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTOF(trackPiFromXi,AliPID::kPion);
+  Double_t nSigmaTOF_PiFromXic0 = -999., nSigmaTOF_PiFromXi = -999., nSigmaTOF_PrFromLam = -999., nSigmaTOF_PiFromLam = -999.;
+  AliAODPidHF *Pid_HF = fAnaCuts->GetPidHF();
+  if (Pid_HF) {
+    Pid_HF->GetnSigmaTOF(trackPiFromXic0, AliPID::kPion, nSigmaTOF_PiFromXic0);
+    Pid_HF->GetnSigmaTOF(trkProton, AliPID::kProton, nSigmaTOF_PrFromLam);
+    Pid_HF->GetnSigmaTOF(trkPion, AliPID::kPion, nSigmaTOF_PiFromLam);
+  }
 
-//  Float_t nSigmaTPC_PiFromXic0 = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackPiFromXic0,AliPID::kPion);
-//  Float_t nSigmaTPC_PiFromXi   = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trackPiFromXi,AliPID::kPion);
-//  Float_t nSigmaTPC_PrFromLam  = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkProton,AliPID::kProton);
-//  Float_t nSigmaTPC_PiFromLam  = fAnaCuts->GetPidHF()->GetPidResponse()->NumberOfSigmasTPC(trkPion,AliPID::kPion);
-
-  Float_t nSigmaTOF_PiFromXic0 = fPID->NumberOfSigmasTOF(trackPiFromXic0,AliPID::kPion);
+//  Float_t nSigmaTOF_PiFromXic0 = fPID->NumberOfSigmasTOF(trackPiFromXic0,AliPID::kPion);
   Float_t nSigmaTPC_PiFromXic0 = fPID->NumberOfSigmasTPC(trackPiFromXic0,AliPID::kPion);
   Float_t nSigmaTPC_PrFromLam  = fPID->NumberOfSigmasTPC(trkProton,AliPID::kProton);
   Float_t nSigmaTPC_PiFromLam  = fPID->NumberOfSigmasTPC(trkPion,AliPID::kPion);
-  Float_t nSigmaTOF_PrFromLam  = fPID->NumberOfSigmasTOF(trkProton,AliPID::kProton);
-  Float_t nSigmaTOF_PiFromLam  = fPID->NumberOfSigmasTOF(trkPion,AliPID::kPion);
+//  Float_t nSigmaTOF_PrFromLam  = fPID->NumberOfSigmasTOF(trkProton,AliPID::kProton);
+//  Float_t nSigmaTOF_PiFromLam  = fPID->NumberOfSigmasTOF(trkPion,AliPID::kPion);
 
-  Float_t nSigmaTPC_PiFromXi = -9999., nSigmaTOF_PiFromXi = -9999.;
+  Float_t nSigmaTPC_PiFromXi = -9999.;
   if (!fIsAnaOmegac0) {
     nSigmaTPC_PiFromXi = fPID->NumberOfSigmasTPC(trackPiFromXiOrKaonFromOmega,AliPID::kPion);
-    nSigmaTOF_PiFromXi = fPID->NumberOfSigmasTOF(trackPiFromXiOrKaonFromOmega,AliPID::kPion);
+    if (Pid_HF) {Pid_HF->GetnSigmaTOF(trackPiFromXiOrKaonFromOmega, AliPID::kPion, nSigmaTOF_PiFromXi);}
+//    nSigmaTOF_PiFromXi = fPID->NumberOfSigmasTOF(trackPiFromXiOrKaonFromOmega,AliPID::kPion);
   }
   if (fIsAnaOmegac0) {
     nSigmaTPC_PiFromXi = fPID->NumberOfSigmasTPC(trackPiFromXiOrKaonFromOmega,AliPID::kKaon);
-    nSigmaTOF_PiFromXi = fPID->NumberOfSigmasTOF(trackPiFromXiOrKaonFromOmega,AliPID::kKaon);
+    if (Pid_HF) {Pid_HF->GetnSigmaTOF(trackPiFromXiOrKaonFromOmega, AliPID::kKaon, nSigmaTOF_PiFromXi);}
+//    nSigmaTOF_PiFromXi = fPID->NumberOfSigmasTOF(trackPiFromXiOrKaonFromOmega,AliPID::kKaon);
   }
 
   // PID selections
@@ -5634,9 +5595,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
       AliAODMCParticle *mcPiFromXic0 = static_cast<AliAODMCParticle*>(mcArray->At(labelPiFromXic0));
       Int_t IndexXic0 = mcPiFromXic0->GetMother();
       AliAODMCParticle *mcXic0 = static_cast<AliAODMCParticle*>(mcArray->At(IndexXic0));
-      fVar_Xic0[48] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
-      fVar_Xic0[49] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
-      fVar_Xic0[50] = (fAnaCuts->GetWeightFunction())->Eval(mcXic0->Pt());
+      fVar_Xic0[48] = mcXic0->Pt();
     }
   }
 
@@ -5661,8 +5620,8 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
 
   fVar_Xic0[44] = flagUSorLS; // flag of unlike sign or like sign pair
 
-  fVar_Xic0[51] = fCentrality;
-  fVar_Xic0[52] = fNtracklets; 
+  fVar_Xic0[49] = fCentrality;
+  fVar_Xic0[50] = fNtracklets; 
   if (!fIsStoreOnlyMLoutput && fabs(fVar_Xic0[23])<0.8) fTree_Xic0->Fill();
 
   if (fIsPbPb) {
@@ -5671,67 +5630,145 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
     }
     
     if (!fIsAnaOmegac0) {
-      fVars_MLmap["pt_Xic0"] = fVar_Xic0[22]; // pt of Xic0
-      fVars_MLmap["rap_Xic0"] = fVar_Xic0[23]; // rapidity of Xic0
+      fVars_MLmap["pt_Xic0"]   = fVar_Xic0[22]; // pt of Xic0
       fVars_MLmap["mass_Xic0"] = fVar_Xic0[24]; // mass of Xic0
-      fVars_MLmap["nSigmaTPC_PiFromXic0"] = fVar_Xic0[0]; // TPC nsigma for pion coming from Xic0
-      fVars_MLmap["nSigmaTOF_PiFromXic0"] = fVar_Xic0[1]; // TOF nsigma for pion coming from Xic0
-      fVars_MLmap["nSigmaTPC_PiFromXi"] = fVar_Xic0[2]; // TPC nsigma for pion coming from Xi
-      fVars_MLmap["nSigmaTOF_PiFromXi"] = fVar_Xic0[3]; // TOF nsigma for pion coming from Xi
-      fVars_MLmap["nSigmaTPC_PiFromLam"] = fVar_Xic0[4]; // TPC nsigma for pion coming from Lambda
-      fVars_MLmap["nSigmaTPC_PrFromLam"] = fVar_Xic0[5]; // TPC nsigma for proton coming from Lambda
-      fVars_MLmap["DCA_XiDau"] = fVar_Xic0[6]; // DCA of Xi's daughters (calculated from AOD cascade)
-      fVars_MLmap["chi2geo_Xi"] = fVar_Xic0[10]; // chi2_geometry of Xi (with Lambda mass const.)
-      fVars_MLmap["chi2topo_LamToPV"] = fVar_Xic0[9]; // chi2_topo of Lambda to PV
-      fVars_MLmap["chi2topo_XiToPV"] = fVar_Xic0[12]; // chi2_topo of Xi to PV
-      fVars_MLmap["ldl_Xi"] = fVar_Xic0[11]; // l/dl of Xi (with Lambda mass const.)
-      fVars_MLmap["PA_XiToPV"] = fVar_Xic0[18]; // pointing angle of Xi (pointing back to PV)
-      fVars_MLmap["mass_Lam"] = fVar_Xic0[19]; // mass of Lambda (without mass const.)
-      fVars_MLmap["mass_Xi"] = fVar_Xic0[20]; // mass of Xi (without mass const.)
-      fVars_MLmap["chi2geo_Xic0"] = fVar_Xic0[34]; // chi2_geometry of Xic0
+      // PID
+      fVars_MLmap["nSigmaTPC_PiFromXic0"] = fVar_Xic0[0];  // TPC nsigma for pion coming from Xic0
+      fVars_MLmap["nSigmaTOF_PiFromXic0"] = fVar_Xic0[1];  // TOF nsigma for pion coming from Xic0
+      fVars_MLmap["nSigmaTPC_PiFromXi"]   = fVar_Xic0[2];  // TPC nsigma for pion coming from Xi
+      fVars_MLmap["nSigmaTOF_PiFromXi"]   = fVar_Xic0[3];  // TOF nsigma for pion coming from Xi
+      fVars_MLmap["nSigmaTPC_PiFromLam"]  = fVar_Xic0[4];  // TPC nsigma for pion coming from Lambda
+      fVars_MLmap["nSigmaTOF_PiFromLam"]  = fVar_Xic0[45]; // TOF nsigma for pion coming from Lambda
+      fVars_MLmap["nSigmaTPC_PrFromLam"]  = fVar_Xic0[5];  // TPC nsigma for proton coming from Lambda
+      fVars_MLmap["nSigmaTOF_PrFromLam"]  = fVar_Xic0[46]; // TOF nsigma for proton coming from Lambda
+      fVars_MLmap["nSigmaComb_PiFromXic0"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[0], fVar_Xic0[1]); // Combined TPC and TOF nsigma for pion coming from Xic0
+      fVars_MLmap["nSigmaComb_PiFromXi"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[2], fVar_Xic0[3]); // Combined TPC and TOF nsigma for pion coming from Xi
+      fVars_MLmap["nSigmaComb_PiFromLam"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[4], fVar_Xic0[45]); // Combined TPC and TOF nsigma for pion coming from Lambda
+      fVars_MLmap["nSigmaComb_PrFromLam"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[5], fVar_Xic0[46]); // Combined TPC and TOF nsigma for proton coming from Lambda
+      // Xic0
+      fVars_MLmap["DecayLxy_Xic0"]     = fVar_Xic0[33]; // decay length of Xic0 in x-y plane
+      fVars_MLmap["chi2geo_Xic0"]      = fVar_Xic0[34]; // chi2_geometry of Xic0
+      fVars_MLmap["DCA_Xic0Dau_KF"]    = fVar_Xic0[37]; // DCA of Xic0's daughters (calculated from KF after Xi mass constraint)
+      fVars_MLmap["chi2topo_Xic0ToPV"] = fVar_Xic0[40]; // chi2_topo of Xic0 to PV
+      fVars_MLmap["ldl_Xic0"]          = fVar_Xic0[42]; // l/dl of Xic0
+      fVars_MLmap["ct_Xic0"]           = fVar_Xic0[43]; // lifetime of Xic0
+      // pion (from Xic0)
       fVars_MLmap["chi2prim_PiFromXic0"] = fVar_Xic0[26]; // chi2_topo of pion to PV
       fVars_MLmap["DCAxy_PiFromXic0_KF"] = fVar_Xic0[27]; // DCA of pion coming from Xic0 in x-y plane
-      fVars_MLmap["DCAxy_XiToPV_KF"] = fVar_Xic0[38]; // DCA of Xi to PV in x-y plane (calculated from KF after Xi mass constraint)
-      fVars_MLmap["mass_K0S"] = fVar_Xic0[29]; // mass of Ks0
-      fVars_MLmap["mass_Omega"] = fVar_Xic0[39]; // mass of Omega
+      // Xi
+      fVars_MLmap["DCA_XiDau"]         = fVar_Xic0[6];  // DCA of Xi's daughters (calculated from AOD cascade)
+      fVars_MLmap["chi2geo_Xi"]        = fVar_Xic0[10]; // chi2_geometry of Xi (with Lambda mass const.)
+      fVars_MLmap["ldl_Xi"]            = fVar_Xic0[11]; // l/dl of Xi (with Lambda mass const.)
+      fVars_MLmap["chi2topo_XiToPV"]   = fVar_Xic0[12]; // chi2_topo of Xi to PV
+      fVars_MLmap["DecayLxy_Xi"]       = fVar_Xic0[14]; // decay length of Xi in x-y plane
+      fVars_MLmap["PA_XiToXic0"]       = fVar_Xic0[17]; // pointing angle of Xi (pointing back to Xic0)
+      fVars_MLmap["PA_XiToPV"]         = fVar_Xic0[18]; // pointing angle of Xi (pointing back to PV)
+      fVars_MLmap["mass_Xi"]           = fVar_Xic0[20]; // mass of Xi (without mass const.)
+      fVars_MLmap["chi2topo_XiToXic0"] = fVar_Xic0[32]; // chi2_topo of Xi to Xic0
+      fVars_MLmap["DCAxy_XiToPV_KF"]   = fVar_Xic0[38]; // DCA of Xi to PV in x-y plane (calculated from KF after Xi mass constraint)
+      fVars_MLmap["mass_Omega"]        = fVar_Xic0[39]; // mass of Omega (without mass const.)
+      // Xi daughters
+      fVars_MLmap["chi2geo_Lam"]      = fVar_Xic0[7];  // chi2_geometry of Lambda
+      fVars_MLmap["ldl_Lam"]          = fVar_Xic0[8];  // l/dl of Lambda
+      fVars_MLmap["chi2topo_LamToPV"] = fVar_Xic0[9];  // chi2_topo of Lambda to PV
+      fVars_MLmap["DecayLxy_Lam"]     = fVar_Xic0[13]; // decay length of Lambda in x-y plane
+      fVars_MLmap["PA_LamToXi"]       = fVar_Xic0[15]; // pointing angle of Lmabda (pointing back to Xi)
+      fVars_MLmap["PA_LamToPV"]       = fVar_Xic0[16]; // pointing angle of Lambda (pointing back to PV)
+      fVars_MLmap["chi2topo_LamToXi"] = fVar_Xic0[31]; // chi2_topo of Lambda to Xi
+      fVars_MLmap["DCA_LamDau"]       = fVar_Xic0[35]; // DCA of Lambda's daughters (calculated from AOD cascade)
+      fVars_MLmap["mass_Lam"]         = fVar_Xic0[19]; // mass of Lambda (without mass const.)
     }
     if (fIsAnaOmegac0) {
-      fVars_MLmap["pt_Omegac0"] = fVar_Xic0[22]; // pt of Omegac0
-      fVars_MLmap["rap_Omegac0"] = fVar_Xic0[23]; // rapidity of Omegac0
+      fVars_MLmap["pt_Omegac0"]   = fVar_Xic0[22]; // pt of Omegac0
       fVars_MLmap["mass_Omegac0"] = fVar_Xic0[24]; // mass of Omegac0
-      fVars_MLmap["nSigmaTPC_PiFromOmegac0"] = fVar_Xic0[0]; // TPC nsigma for pion coming from Omegac0
-      fVars_MLmap["nSigmaTOF_PiFromOmegac0"] = fVar_Xic0[1]; // TOF nsigma for pion coming from Omegac0
-      fVars_MLmap["nSigmaTPC_KaFromOmega"] = fVar_Xic0[2]; // TPC nsigma for kaon coming from Omega
-      fVars_MLmap["nSigmaTOF_KaFromOmega"] = fVar_Xic0[3]; // TOF nsigma for kaon coming from Omega
-      fVars_MLmap["nSigmaTPC_PiFromLam"] = fVar_Xic0[4]; // TPC nsigma for pion coming from Lambda
-      fVars_MLmap["nSigmaTPC_PrFromLam"] = fVar_Xic0[5]; // TPC nsigma for proton coming from Lambda
-      fVars_MLmap["DCA_OmegaDau"] = fVar_Xic0[6]; // DCA of Omega's daughters (calculated from AOD cascade)
-      fVars_MLmap["chi2geo_Omega"] = fVar_Xic0[10]; // chi2_geometry of Omega (with Lambda mass const.)
-      fVars_MLmap["chi2topo_LamToPV"] = fVar_Xic0[9]; // chi2_topo of Lambda to PV
-      fVars_MLmap["chi2topo_OmegaToPV"] = fVar_Xic0[12]; // chi2_topo of Omega to PV
-      fVars_MLmap["ldl_Omega"] = fVar_Xic0[11]; // l/dl of Omega (with Lambda mass const.)
-      fVars_MLmap["PA_OmegaToPV"] = fVar_Xic0[18]; // pointing angle of Omega (pointing back to PV)
-      fVars_MLmap["mass_Lam"] = fVar_Xic0[19]; // mass of Lambda (without mass const.)
-      fVars_MLmap["mass_Omega"] = fVar_Xic0[20]; // mass of Omega (without mass const.)
-      fVars_MLmap["chi2geo_Omegac0"] = fVar_Xic0[34]; // chi2_geometry of Omegac0
+      // PID
+      fVars_MLmap["nSigmaTPC_PiFromOmegac0"] = fVar_Xic0[0];  // TPC nsigma for pion coming from Omegac0
+      fVars_MLmap["nSigmaTOF_PiFromOmegac0"] = fVar_Xic0[1];  // TOF nsigma for pion coming from Omegac0
+      fVars_MLmap["nSigmaTPC_KaFromOmega"]   = fVar_Xic0[2];  // TPC nsigma for kaon coming from Omega
+      fVars_MLmap["nSigmaTOF_KaFromOmega"]   = fVar_Xic0[3];  // TOF nsigma for kaon coming from Omega
+      fVars_MLmap["nSigmaTPC_PiFromLam"]     = fVar_Xic0[4];  // TPC nsigma for pion coming from Lambda
+      fVars_MLmap["nSigmaTOF_PiFromLam"]     = fVar_Xic0[45]; // TOF nsigma for pion coming from Lambda
+      fVars_MLmap["nSigmaTPC_PrFromLam"]     = fVar_Xic0[5];  // TPC nsigma for proton coming from Lambda
+      fVars_MLmap["nSigmaTOF_PrFromLam"]     = fVar_Xic0[46]; // TOF nsigma for proton coming from Lambda
+      fVars_MLmap["nSigmaComb_PiFromOmegac0"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[0], fVar_Xic0[1]); // Combined TPC and TOF nsigma for pion coming from Omegac0
+      fVars_MLmap["nSigmaComb_KaFromOmega"]   = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[2], fVar_Xic0[3]); // Combined TPC and TOF nsigma for kaon coming from Omega
+      fVars_MLmap["nSigmaComb_PiFromLam"]     = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[4], fVar_Xic0[45]); // Combined TPC and TOF nsigma for pion coming from Lambda
+      fVars_MLmap["nSigmaComb_PrFromLam"]     = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[5], fVar_Xic0[46]); // Combined TPC and TOF nsigma for proton coming from Lambda
+      // Omegac0
+      fVars_MLmap["DecayLxy_Omegac0"]     = fVar_Xic0[33]; // decay length of Omegac0 in x-y plane
+      fVars_MLmap["chi2geo_Omegac0"]      = fVar_Xic0[34]; // chi2_geometry of Omegac0
+      fVars_MLmap["DCA_Omegac0Dau_KF"]    = fVar_Xic0[37]; // DCA of Omegac0's daughters (calculated from KF after Xi mass constraint)
+      fVars_MLmap["chi2topo_Omegac0ToPV"] = fVar_Xic0[40]; // chi2_topo of Omegac0 to PV
+      fVars_MLmap["ldl_Omegac0"]          = fVar_Xic0[42]; // l/dl of Omegac0
+      fVars_MLmap["ct_Omegac0"]           = fVar_Xic0[43]; // lifetime of Omegac0
+      // pion (from Omegac0)
       fVars_MLmap["chi2prim_PiFromOmegac0"] = fVar_Xic0[26]; // chi2_topo of pion to PV
       fVars_MLmap["DCAxy_PiFromOmegac0_KF"] = fVar_Xic0[27]; // DCA of pion coming from Omegac0 in x-y plane
-      fVars_MLmap["DCAxy_OmegaToPV_KF"] = fVar_Xic0[38]; // DCA of Omega to PV in x-y plane (calculated from KF after Omega mass constraint)
-      fVars_MLmap["mass_K0S"] = fVar_Xic0[29]; // mass of Ks0
-      fVars_MLmap["mass_Xi"] = fVar_Xic0[39]; // mass of Xi
+      // Omega
+      fVars_MLmap["DCA_OmegaDau"]            = fVar_Xic0[6]; // DCA of Omega's daughters (calculated from AOD cascade)
+      fVars_MLmap["chi2geo_Omega"]           = fVar_Xic0[10]; // chi2_geometry of Omega (with Lambda mass const.)
+      fVars_MLmap["ldl_Omega"]               = fVar_Xic0[11]; // l/dl of Omega (with Lambda mass const.)
+      fVars_MLmap["chi2topo_OmegaToPV"]      = fVar_Xic0[12]; // chi2_topo of Omega to PV
+      fVars_MLmap["DecayLxy_Omega"]          = fVar_Xic0[14]; // decay length of Omega in x-y plane
+      fVars_MLmap["PA_OmegaToOmegac0"]       = fVar_Xic0[17]; // pointing angle of Omega (pointing back to Omegac0)
+      fVars_MLmap["PA_OmegaToPV"]            = fVar_Xic0[18]; // pointing angle of Omega (pointing back to PV)
+      fVars_MLmap["mass_Omega"]              = fVar_Xic0[20]; // mass of Omega (without mass const.)
+      fVars_MLmap["chi2topo_OmegaToOmegac0"] = fVar_Xic0[32]; // chi2_topo of Omega to Omegac0
+      fVars_MLmap["DCAxy_OmegaToPV_KF"]      = fVar_Xic0[38]; // DCA of Omega to PV in x-y plane (calculated from KF after Omega mass constraint)
+      fVars_MLmap["mass_Xi"]                 = fVar_Xic0[39]; // mass of Xi (without mass const.)
+      // Omega daughters
+      fVars_MLmap["chi2geo_Lam"]         = fVar_Xic0[7];  // chi2_geometry of Lambda
+      fVars_MLmap["ldl_Lam"]             = fVar_Xic0[8];  // l/dl of Lambda
+      fVars_MLmap["chi2topo_LamToPV"]    = fVar_Xic0[9];  // chi2_topo of Lambda to PV
+      fVars_MLmap["DecayLxy_Lam"]        = fVar_Xic0[13]; // decay length of Lambda in x-y plane
+      fVars_MLmap["PA_LamToOmega"]       = fVar_Xic0[15]; // pointing angle of Lmabda (pointing back to Omega)
+      fVars_MLmap["PA_LamToPV"]          = fVar_Xic0[16]; // pointing angle of Lambda (pointing back to PV)
+      fVars_MLmap["chi2topo_LamToOmega"] = fVar_Xic0[31]; // chi2_topo of Lambda to Omega
+      fVars_MLmap["DCA_LamDau"]          = fVar_Xic0[35]; // DCA of Lambda's daughters (calculated from AOD cascade)
+      fVars_MLmap["mass_Lam"]            = fVar_Xic0[19]; // mass of Lambda (without mass const.)
     }
     
     Bool_t isSelectedML = kFALSE;
     Float_t modelPred = -1.;
-    if (fabs(fVar_Xic0[23])<0.8 && // rapidity of Xic0 or Omegac0 selection
+    // === Pre-selections ===
+    if (
+        // Xic0 cuts
+        fabs(fVar_Xic0[23])<0.8 && // rapidity of Xic0 or Omegac0
         fVar_Xic0[44]==1. && // unlike-sign selection
-        fVar_Xic0[6]<1.4 && // DCA_XiDau selection
-        fVar_Xic0[10]<20. && fVar_Xic0[10]>0. && // chi2geo_Xi selection
-        fVar_Xic0[12]<20. && fVar_Xic0[12]>0. && // chi2topo_XiToPV selection
-        fVar_Xic0[18]<0.1 && // PA_XiToPV selection
-        fVar_Xic0[34]<20. && fVar_Xic0[34]>0. && // chi2geo_Xic0 selection
-        fVar_Xic0[26]<20. && fVar_Xic0[26]>0. && // chi2prim_PiFromXic0 selection
-        fVar_Xic0[7]>0. // chi2geo_Lam selection
+        fVar_Xic0[33]>-0.5 && fVar_Xic0[33]<0.5 && // DecayLxy_Xic0
+        fVar_Xic0[34]<10. && fVar_Xic0[34]>0. && // chi2geo_Xic0
+        fVar_Xic0[37]<0.5 && fVar_Xic0[37]>0. && // DCA_Xic0Dau_KF
+        fVar_Xic0[40]<10. && fVar_Xic0[40]>0. && // chi2topo_Xic0ToPV
+        fVar_Xic0[42]<5. && fVar_Xic0[42]>0. && // ldl_Xic0
+        fVar_Xic0[43]>-0.4 && fVar_Xic0[43]<0.4 && // ct_Xic0
+        
+        // pion (from Xic0) cuts
+        fVar_Xic0[21]>fAnaCuts->GetPtMinPiFromXic0ForML() && // pt_PiFromXic0
+        fVar_Xic0[25]>-1. && fVar_Xic0[25]<1. && // CosThetaStar_PiFromXic0
+        fVar_Xic0[26]<10. && fVar_Xic0[26]>0. && // chi2prim_PiFromXic0
+        fVar_Xic0[27]>-0.03 && fVar_Xic0[27]<0.03 && // DCAxy_PiFromXic0_KF
+
+        // Xi cuts
+        fVar_Xic0[6]<1.4 && fVar_Xic0[6]>0. && // DCA_XiDau
+        fVar_Xic0[10]<10. && fVar_Xic0[10]>0. && // chi2geo_Xi
+        fVar_Xic0[11]>1. && // ldl_Xi
+        fVar_Xic0[12]<10. && fVar_Xic0[12]>0. && // chi2topo_XiToPV
+        fVar_Xic0[14]>1. && // DecayLxy_Xi
+        fVar_Xic0[17]<0.1 && fVar_Xic0[17]>0. && // PA_XiToXic0
+        fVar_Xic0[18]<0.1 && fVar_Xic0[18]>0. && // PA_XiToPV
+        fVar_Xic0[32]<10. && fVar_Xic0[32]>0. && // chi2topo_XiToXic0
+        fVar_Xic0[38]>-0.4 && fVar_Xic0[38]<0.4 && // DCAxy_XiToPV_KF
+
+        // Xi daughter cuts
+        fVar_Xic0[7]<10. && fVar_Xic0[7]>0. && // chi2geo_Lam
+        fVar_Xic0[8]>3. && // ldl_Lam
+        fVar_Xic0[9]>0.2 && // chi2topo_LamToPV
+        fVar_Xic0[13]>0. && // DecayLxy_Lam
+        fVar_Xic0[15]<0.1 && fVar_Xic0[15]>0. && // PA_LamToXi
+        fVar_Xic0[16]<0.2 && fVar_Xic0[16]>0. && // PA_LamToPV
+        fVar_Xic0[31]<10. && fVar_Xic0[31]>0. && // chi2topo_LamToXi
+        fVar_Xic0[35]<1.4 && fVar_Xic0[35]>0. // DCA_LamDau
+        //
        ) {
       if (fMLResponse) isSelectedML = fMLResponse->IsSelected(fVar_Xic0[22], fVars_MLmap, modelPred);
       if (isSelectedML) { // ML score selection
@@ -5745,6 +5782,16 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
   }
 
   f2DHistArmenterosPodolanski->Fill(casc->AlphaV0(), casc->PtArmV0());
+  if (!fIsAnaOmegac0) {
+    f2DHistNsigmaTPCTOF_PiFromXic0->Fill(fVar_Xic0[0], fVar_Xic0[1]);
+    f2DHistNsigmaTPCTOF_PiFromXi->Fill(fVar_Xic0[2], fVar_Xic0[3]);
+  }
+  if (fIsAnaOmegac0) {
+    f2DHistNsigmaTPCTOF_PiFromOmegac0->Fill(fVar_Xic0[0], fVar_Xic0[1]);
+    f2DHistNsigmaTPCTOF_KaFromOmega->Fill(fVar_Xic0[2], fVar_Xic0[3]);
+  }
+  f2DHistNsigmaTPCTOF_PiFromLam->Fill(fVar_Xic0[4], fVar_Xic0[45]);
+  f2DHistNsigmaTPCTOF_PrFromLam->Fill(fVar_Xic0[5], fVar_Xic0[46]);
 
     /*
     Float_t ptGen_Xic0 = -99.;
@@ -5841,7 +5888,7 @@ void AliHFMLXicZeroToXiPifromKFP::DefineTreeMLoutput()
 {
   // This is to define tree variables
 
-  const char* nameoutput = GetOutputSlot(7)->GetContainer()->GetName();
+  const char* nameoutput = GetOutputSlot(6)->GetContainer()->GetName();
   fTree_MLoutput = new TTree(nameoutput, "ML output tree");
   Int_t nVar = 4;
   fVar_MLoutput = new Float_t[nVar];

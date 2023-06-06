@@ -90,7 +90,7 @@ public:
    void                SetEventQAHist(TString type,TH1 *histo);
    void                UseBigOutput(Bool_t b=kTRUE) { fBigOutput = b; }
    Int_t               GetNumberOfTrackCuts() { return fTrackCuts.GetEntries(); }
-
+  void                 SetTrackInSpherocity(Int_t gSphTrack=10){fSpherocityTrack=gSphTrack;}
    virtual void        UserCreateOutputObjects();
    virtual void        UserExec(Option_t *);
    virtual void        Terminate(Option_t *);
@@ -147,6 +147,7 @@ private:
    TH1F                *fHAEventsVsMulti; //!<! histogram of event statistics
    TH1F                *fHAEventsVsTracklets; //!<! histogram of event statistics
    TH2F                *fHAEventVzCent;       ///< histogram of vertex-z vs. multiplicity/centrality
+   TH1F                 *fHAPhiSpherocity; ///< phi distributions of tracks used in spherocity analysis
    TH2F                *fHAEventSpherocityCent; ///< histogram of spherocity vs. multiplicity/centrality
    TH2F                *fHAEventMultiCent;    ///< histogram of multiplicity vs. centrality
    TH2F                *fHAEventRefMultiCent; //!<! histogram of reference multiplicity vs. centrality
@@ -181,7 +182,7 @@ private:
    AliAnalysisFilter   *fTrackFilter;       //!<! track filter for spherocity estimator 
    Double_t             fSpherocity;        ///< stores value of spherocity
    TObjArray            fResonanceFinders;  ///< list of AliRsnMiniResonanceFinder objects
-
+  Int_t                fSpherocityTrack;   //no. of track used to compute spherocity
 /// \cond CLASSIMP
    ClassDef(AliRsnMiniAnalysisTask, 22);     
 /// \endcond

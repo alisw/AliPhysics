@@ -49,7 +49,8 @@ public:
   void SetRemoveTrivialScaling(Bool_t flat_flag = kFALSE) { fRemoveTrivialScaling = flat_flag; }
   void SetCutsFilterWoDCA(AliESDtrackCuts *name);
   bool HasRecVertex();
-
+  void SetSysVarTrkCuts(const int SysVar=9) { fSysVarTrkCuts = SysVar; }
+  
 protected:
     //
 private:
@@ -67,6 +68,7 @@ private:
   Float_t fmultV0Cmc;
   Float_t fmultTPCmc;
   Bool_t fRemoveTrivialScaling;
+  Int_t fSysVarTrkCuts;
   Int_t fnGen;
   Int_t fnRec;
   Int_t fnRecWoDCA;
@@ -130,6 +132,7 @@ private:
   TH1D *hEta;
   TH1D *hEtamc;
   TH1D *hCounter;
+  TH1D *hV0MBad;  
   TH2D *hFlatVsPtV0M[9];
   TH2D *hFlatVsPtV0MMC[9];
   TH2D *hFlatVsNchTPCV0M[9];  

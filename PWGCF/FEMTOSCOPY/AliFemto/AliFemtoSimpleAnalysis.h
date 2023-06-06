@@ -99,6 +99,9 @@ public:
   void SetEnablePairMonitors(Bool_t aEnable);
   Bool_t EnablePairMonitors();
 
+  void SetEnablePairMonitorsMixEv(Bool_t aEnable);
+  Bool_t EnablePairMonitorsMixEv();
+  
   unsigned int NumEventsToMix() const;
   void SetNumEventsToMix(const unsigned int& NumberOfEventsToMix);
   AliFemtoPicoEvent* CurrentPicoEvent();
@@ -179,9 +182,8 @@ protected:
   Bool_t fVerbose;
   Bool_t fPerformSharedDaughterCut;
   Bool_t fEnablePairMonitors;
-  
-  Bool_t freverseParticleVariables;                  ////set true if you want reverse z,y,z. This additional variable is just for some trains. After that it will be deleted. By default is false so, nothing change in other analyis, Wioleta Rzęsa wrzesa@cern.ch
-
+  Bool_t fEnablePairMonitorsMixEv;                    //to use also mixing events -- to fill pair monitors (by default is false)
+    
 #ifdef __ROOT__
   /// \cond CLASSIMP
   ClassDef(AliFemtoSimpleAnalysis, 0);
@@ -246,6 +248,10 @@ inline bool AliFemtoSimpleAnalysis::EnablePairMonitors()
   return fEnablePairMonitors;
 }
 
+inline bool AliFemtoSimpleAnalysis::EnablePairMonitorsMixEv()
+{
+  return fEnablePairMonitorsMixEv;
+}
 // Sets
 inline void AliFemtoSimpleAnalysis::SetPairCut(AliFemtoPairCut* x)
 {
@@ -309,9 +315,9 @@ inline void AliFemtoSimpleAnalysis::SetEnablePairMonitors(Bool_t aEnable)
   fEnablePairMonitors = aEnable;
 }
 
-inline void AliFemtoSimpleAnalysis::SetReverseParticleVariables(Bool_t value)
+inline void AliFemtoSimpleAnalysis::SetEnablePairMonitorsMixEv(Bool_t aEnable)
 {
-  freverseParticleVariables=value;
+  fEnablePairMonitorsMixEv = aEnable;
 }
 #endif
 

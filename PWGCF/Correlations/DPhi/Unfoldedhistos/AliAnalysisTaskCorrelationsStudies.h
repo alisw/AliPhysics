@@ -64,6 +64,7 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     Bool_t                      BuildEfficiencyProfiles();
     void                        BuildTrueRecRelation();
     void                        BuildTrueRecAccRelation();
+    void FlagPreRejectionConditions();
     Int_t                       GetNoOfTruePrimaries();
     Int_t                       GetNoOfTrueParticles();
     Int_t                       GetNoOfMCRecTracks();
@@ -150,6 +151,8 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     UInt_t                     *fMCRecFlags;                  //!<! the flags which qualify MC reconstructed tracks
     UInt_t                     *fMCTruePrimaryFlags;          //!<! the flags which qualify MC primary true tracks
     Int_t                       fMCFlagsStorageSize;          ///< the size of the MC flags storage
+    unsigned int *fRecoTrackPairFlags; ///< the pair track flags storage, decay involvement for instance
+    int fRecoTrackPairFlagsSize;                              ///< the size of the pair track flags, decay involvement for instance
 
     TH2F                       *fhOnTrueEfficiencyProfile_1;  ///< the histogram for the efficiency profile on true data for track one
     TH2F                       *fhOnTrueEfficiencyProfile_2;  ///< the histogram for the efficiency profile on true data for track two
@@ -217,7 +220,7 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     AliAnalysisTaskCorrelationsStudies& operator=(const AliAnalysisTaskCorrelationsStudies&); // not implemented
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskCorrelationsStudies, 6);
+    ClassDef(AliAnalysisTaskCorrelationsStudies, 7);
     /// \endcond
 };
 

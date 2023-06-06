@@ -49,6 +49,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
 
         void                    SetMC(Bool_t IsMC) {fIsMC=IsMC;}
         void                    SetAnaOmegac0(Bool_t IsAnaOmegac0) {fIsAnaOmegac0=IsAnaOmegac0;}
+        void                    SetStoreLikeSign(Bool_t IsStoreLS) {fIsStoreLS=IsStoreLS;}
         void                    SelectTrack(AliVEvent *event, Int_t trkEntries, Int_t &nSeleTrks, Bool_t *seleFlags);
         Bool_t                  MakeMCAnalysis(TClonesArray *mcArray);
         void                    MakeAnaXicZeroFromV0(AliAODEvent *AODEvent, TClonesArray *mcArray, KFParticle PV);
@@ -108,6 +109,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
 
         Bool_t                  fIsMC; ///< Flag of MC analysis
         Bool_t                  fIsAnaOmegac0; ///< Flag of Omegac0 analysis
+        Bool_t                  fIsStoreLS; ///< Flag to store like-sign pairs
 
         Double_t                fCentrality; //!<! V0M percentile 
         Int_t                   fNtracklets; //!<! SPD tracklet
@@ -411,7 +413,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSEXicZero2XiPifromKFP(const AliAnalysisTaskSEXicZero2XiPifromKFP &source); // not implemented
         AliAnalysisTaskSEXicZero2XiPifromKFP& operator=(const AliAnalysisTaskSEXicZero2XiPifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 11);
+        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 12);
 };
 
 #endif

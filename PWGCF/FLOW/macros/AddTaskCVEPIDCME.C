@@ -7,16 +7,17 @@
 #include "AliAnalysisTaskCVEPIDCME.h"
 
 AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
-  TString trigger               = "kINT7+kCentral+kSemiCentral",
+  TString trigger               = "kINT7+kSemiCentral",
   TString period                = "LHC18r",
-  int  filterBit                = 768,
-  bool bDoNUA                   = true,
-  bool bCalculatePIDFlow        = true,
-  bool bCalculateDeltaGamma     = true,
-  bool bCalculateDiffResult     = true,
-  bool bCalculateDeltaPhiSumPhi = true,
+  int filterBit                 = 768,
+  bool bCalculatePIDFlow        = false,
+  bool bCalculateDiffResult     = false,
+  bool bCalculateDeltaPhiSumPhi = false,
+  bool bCalculateLambdaProton   = false,
+  bool bCalculateLambdaHadron   = false,
   bool bCalculateLambdaLambda   = false,
   bool bCalculateProtonProton   = false,
+  bool bCalculateProtonHadron   = false,
   bool bCalculateHadronHadron   = false,
   TString uniqueID              = "")
 {
@@ -39,39 +40,59 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
     return NULL;
   }
 
-  bool bDebug            = false;
-  bool bUseTPCPlane      = true;
-  bool bUseVZEROPlane    = true;
-  bool bUseZDCPlane      = false;
-  bool bDoNUE            = false;
-  bool bV0DaughterUseTOF = false;
-  bool bQATPC            = true;
-  bool bQAVZERO          = true;
-  bool bQAZDC            = false;
+
+  bool bDebug                  = false;
+  bool bUseTPCPlane            = true;
+  bool bUseVZEROPlane          = true;
+  bool bUseZDCPlane            = false;
+  bool bDoNUE                  = false;
+  bool bDoNUA                  = true;
+  bool bV0DaughterUseTOF       = false;
+  bool bQATPC                  = true;
+  bool bQAVZERO                = true;
+  bool bQAZDC                  = false;
+  bool bNarrowDcaCuts768       = (filterBit == 768);
+  bool bProtonCustomizedDCACut = (filterBit == 768);
+  bool bUsePionRejection       = false;
+  bool bCalculateLambdaProtonFromDecay = false;
+  bool bCalculateLambdaProtonFromDecayFoundInTrackLoops = false;
+  bool bUseOneSideTPCPlane     = false;
   // --- instantiate analysis task
   AliAnalysisTaskCVEPIDCME* task = new AliAnalysisTaskCVEPIDCME("TaskCVEPIDCME");
+  task->SetTrigger(trigger);
+  task->SetPeriod(period);
+  task->SetFilterBit(filterBit);
+
   task->IfDebug(bDebug);
   task->IfUseTPCPlane(bUseTPCPlane);
   task->IfUseVZEROPlane(bUseVZEROPlane);
   task->IfUseZDCPlane(bUseZDCPlane);
   task->IfDoNUE(bDoNUE);
+  task->IfDoNUA(bDoNUA);
   task->IfV0DaughterUseTOF(bV0DaughterUseTOF);
   task->IfQATPC(bQATPC);
   task->IfQAVZERO(bQAVZERO);
   task->IfQAZDC(bQAZDC);
+  task->IfNarrowDcaCuts768(bNarrowDcaCuts768);
+  task->IfProtonCustomizedDCACut(bProtonCustomizedDCACut);
+  task->IfUsePionRejection(bUsePionRejection);
 
-
-  task->SetPeriod(period);
-  task->SetTrigger(trigger);
-  task->SetFilterBit(filterBit);
-  task->IfDoNUA(bDoNUA);
   task->IfCalculatePIDFlow(bCalculatePIDFlow);
-  task->IfCalculateDeltaGamma(bCalculateDeltaGamma);
   task->IfCalculateDiffResult(bCalculateDiffResult);
   task->IfCalculateDeltaPhiSumPhi(bCalculateDeltaPhiSumPhi);
+
+  task->IfCalculateLambdaProton(bCalculateLambdaProton);
+  task->IfCalculateLambdaHadron(bCalculateLambdaHadron);
   task->IfCalculateLambdaLambda(bCalculateLambdaLambda);
   task->IfCalculateProtonProton(bCalculateProtonProton);
+  task->IfCalculateProtonHadron(bCalculateProtonHadron);
   task->IfCalculateHadronHadron(bCalculateHadronHadron);
+  
+  task->IfCheckLambdaProtonFromDecay(bCalculateLambdaProtonFromDecay);
+  task->IfCheckLambdaProtonFromDecayFoundInTrackLoops(bCalculateLambdaProtonFromDecayFoundInTrackLoops);
+
+  task->IfUseOneSideTPCPlane(bUseOneSideTPCPlane);
+
 
   //=========================================================================
   // Read in Files
@@ -126,11 +147,21 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
       fListNUA = dynamic_cast<TList*>(fNUAFile->Get("15oListNUA"));
     }
     if (period.EqualTo("LHC18q")) {
-      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
+      if (filterBit == 96)  fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/WgtsNUAChargeAndPion_LHC18qPass3_FB96_AlexPU_DeftMode_Oct2021.root", "READ");
+      else if (uniqueID.EqualTo("Nhits60")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_Nhits60.root");
+      else if (uniqueID.EqualTo("Nhits80")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_Nhits80.root");
+      else if (uniqueID.EqualTo("ChiMax2")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_ChiHg2.root");
+	    else if (uniqueID.EqualTo("ChiMax2p5")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_ChiHg2d5.root");
+      else fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
       fListNUA = dynamic_cast<TList*>(fNUAFile->Get("fNUA_ChPosChNeg"));
     }
     if (period.EqualTo("LHC18r")) {
-      fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/WgtsNUAChargeAndPion_LHC18rPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
+      if(filterBit == 96)  fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/WgtsNUAChargeAndPion_LHC18rPass3_FB96_AlexPU_DeftMode_Oct2021.root", "READ");
+      else if (uniqueID.EqualTo("Nhits60")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_Nhits60.root");
+      else if (uniqueID.EqualTo("Nhits80")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_Nhits80.root");
+      else if (uniqueID.EqualTo("ChiMax2")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_ChiHg2.root");
+	    else if (uniqueID.EqualTo("ChiMax2p5")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_ChiHg2d5.root");
+      else fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/WgtsNUAChargeAndPion_LHC18rPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
       fListNUA = dynamic_cast<TList*>(fNUAFile->Get("fNUA_ChPosChNeg"));
     }
     if (fListNUA) {
@@ -146,16 +177,16 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
       fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("10hlistqncalib"));
     }
     if (period.EqualTo("LHC15o")) {
-      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/VZEROCalibFile.root", "READ");
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC15o/VZEROCalibFile15o.root", "READ");
       fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("VZEROCalibList"));
     }
     if (period.EqualTo("LHC18q")) {
-      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/calibSpq2V0C18qP3.root", "READ");
-      fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("fWgtsV0ZDC"));
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/calibq2V0C18qP3.root", "READ");
+      fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("18qlistspPerc"));
     }
     if (period.EqualTo("LHC18r")) {
-      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/calibSpq2V0C18rP3.root", "READ");
-      fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("fWgtsV0ZDC"));
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/calibq2V0C18rP3.root", "READ");
+      fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("18rlistspPerc"));
     }
     if (fVZEROCalibList) {
       task->SetListForVZEROCalib(fVZEROCalibList);

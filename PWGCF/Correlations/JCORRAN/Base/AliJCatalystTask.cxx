@@ -97,9 +97,11 @@ AliJCatalystTask::AliJCatalystTask():
   fChi2perNDF_max(4.0), // TBC: Same here, this is old 2010 value.
   fDCAxy_max(2.4),  // TBC: Shall we keep 2010 default?
   fDCAz_max(3.2), // TBC: Shall we keep 2010 default?
+  bDCABaseCut(false), // DCABaseCut for FB 768
   fUseITSMinClusters(false),
   fITSMinClusters(2),
   fUseTightCuts(false),
+  bUseDCAbaseCut(false),
   fAddESDpileupCuts(false),
   fESDpileup_slope(3.38), fESDpileup_inter(15000),
   fSaveESDpileupQA(false),
@@ -157,9 +159,11 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
   fChi2perNDF_max(4.0), // TBC: Same here, this is old 2010 value.
   fDCAxy_max(2.4),  // TBC: Shall we keep 2010 default?
   fDCAz_max(3.2), // TBC: Shall we keep 2010 default?
+  bDCABaseCut(false),
   fUseITSMinClusters(false),
   fITSMinClusters(2),
   fUseTightCuts(false),
+  bUseDCAbaseCut(false),
   fAddESDpileupCuts(false),
   fESDpileup_slope(3.38), fESDpileup_inter(15000),
   fSaveESDpileupQA(false),
@@ -203,8 +207,10 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
   fcent_0(ap.fcent_0), fcent_1(ap.fcent_1), fcent_2(ap.fcent_2), fcent_3(ap.fcent_3), fcent_4(ap.fcent_4), fcent_5(ap.fcent_5), fcent_6(ap.fcent_6), fcent_7(ap.fcent_7), fcent_8(ap.fcent_8), fcent_9(ap.fcent_9), fcent_10(ap.fcent_10), fcent_11(ap.fcent_11), fcent_12(ap.fcent_12), fcent_13(ap.fcent_13), fcent_14(ap.fcent_14), fcent_15(ap.fcent_15), fcent_16(ap.fcent_16),
   fChi2perNDF_min(ap.fChi2perNDF_min), fChi2perNDF_max(ap.fChi2perNDF_max),
   fDCAxy_max(ap.fDCAxy_max), fDCAz_max(ap.fDCAz_max),
+  bDCABaseCut(ap.bDCABaseCut),
   fUseITSMinClusters(ap.fUseITSMinClusters),fITSMinClusters(ap.fITSMinClusters),
-  fUseTightCuts(ap.fUseTightCuts), fAddESDpileupCuts(ap.fAddESDpileupCuts),
+  fUseTightCuts(ap.fUseTightCuts), bUseDCAbaseCut(ap.bUseDCAbaseCut),
+  fAddESDpileupCuts(ap.fAddESDpileupCuts),
   fESDpileup_slope(ap.fESDpileup_slope), fESDpileup_inter(ap.fESDpileup_inter),
   fSaveESDpileupQA(ap.fSaveESDpileupQA),
   fAddTPCpileupCuts(ap.fAddTPCpileupCuts),
@@ -561,10 +567,14 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
         // Redefine the max for DCAxy as a function of pT.
         fDCAxy_max = 0.0105 + 0.0350/(TMath::Power(track->Pt(), 1.1));
       }
+      if (bUseDCAbaseCut) {
+        bDCABaseCut = TMath::Abs(DCAxy)<0.0208+0.04/TMath::Power(track->Pt(),1.01);
+      }
 
       // New: Apply the cuts on the DCA values of the track.
       if(TMath::Abs(DCAxy) > fDCAxy_max) {continue;}
       if(TMath::Abs(DCAz) > fDCAz_max) {continue;}
+      if((bUseDCAbaseCut) && (!bDCABaseCut)) {continue;}
 
       // New: Apply the cut on the chi2 per ndf for the TPC tracks.
       Double_t chi2NDF = track->Chi2perNDF(); // TBC: is this 100% the right one?
@@ -637,6 +647,9 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
         }
         itrack->SetWeight(phi_module_corr);
 
+        // Uncommentable for local test
+        // if(phi_module_corr<0.5){printf("Track info: %.4f \t %.4f \t %.4f \t %.4f \t %d \n", itrack->Phi(), itrack->Eta(), fZvert, phi_module_corr, fRunNum);}
+
         // Adding centrality weight for a LHC15o track, and given centrality.
         float cent_weight = 1.0;
         if (bUseAlternativeWeights && fperiod == AliJRunTable::kLHC15o) {
@@ -666,6 +679,7 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
 Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event, Int_t thisCent){
   //event selection here!
   //check vertex
+
   AliVVertex *vtx = event->GetPrimaryVertex();
   if(!vtx || vtx->GetNContributors() <= 0)
     return kFALSE;
@@ -1243,7 +1257,10 @@ void AliJCatalystTask::FillControlHistograms(AliAODTrack *thisTrack, Int_t which
   fTPCClustersHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetTPCNcls());
   fITSClustersHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetITSNcls());
   fChiSquareTPCHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Chi2perNDF());
-  fChiSquareITSHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetITSchi2()/(float)thisTrack->GetITSNcls());
+  
+  if (!thisTrack->GetITSNcls()==0) { // If check needed to avoid floating point exception for some cases.
+    fChiSquareITSHistogram[CentralityBin][whichHisto]->Fill(thisTrack->GetITSchi2()/(float)thisTrack->GetITSNcls());
+  }
   fDCAzHistogram[CentralityBin][whichHisto]->Fill(ValueDCAz);
   fDCAxyHistogram[CentralityBin][whichHisto]->Fill(ValueDCAxy);
   fChargeHistogram[CentralityBin][whichHisto]->Fill(thisTrack->Charge());

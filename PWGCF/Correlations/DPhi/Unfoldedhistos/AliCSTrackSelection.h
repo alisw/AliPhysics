@@ -68,6 +68,7 @@ class AliCSTrackSelection : public TNamed {
   static Bool_t IsTruePrimary(AliVTrack* trk);
   Bool_t                             IsFromMCInjectedSignal(Int_t itrk);
   static poiIds poiid(AliPID::EParticleType sp);
+  static std::vector<std::string> getPoiNames() { return std::vector<std::string>({"Ha","Pi","Ka","Pr"}); }
 
  private:
   void DefineHistograms();

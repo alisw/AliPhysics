@@ -46,6 +46,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   Bool_t V0CutsForTreeAOD(AliAODv0* v0, Double_t* vt);
   Bool_t V0CutsForTreeESD(AliESDv0* v0, Double_t* vt, AliExternalTrackParam* ptrk, AliExternalTrackParam* ntrk, Double_t b);
   Int_t IsGenLambda(Int_t poslabel, Int_t neglabel, Float_t pt, Float_t &mpt, Float_t &meta, Float_t &cascpt, Float_t &casceta);
+  Int_t IsGenCascade(Int_t Poslabel, Int_t Neglabel, Int_t Bachlabel);
   Double_t GetDCAV0Dau( AliExternalTrackParam *pt, AliExternalTrackParam *nt, Double_t &xp, Double_t &xn, Double_t b, Double_t lNegMassForTracking, Double_t lPosMassForTracking);
   void GetHelixCenter(const AliExternalTrackParam *track,Double_t center[2], Double_t b);
   void Evaluate(const Double_t *h, Double_t t, Double_t r[3], Double_t g[3], Double_t gg[3]);
@@ -187,7 +188,7 @@ class AliAnalysisTaskNetLambdaIdent : public AliAnalysisTaskSE {
   //AliMCEvent*              fMcEvent;    //! MC event
   //AliInputEventHandler*    fMcHandler;  //! MCEventHandler 
  
-  ClassDef(AliAnalysisTaskNetLambdaIdent,16);
+  ClassDef(AliAnalysisTaskNetLambdaIdent,17);
 };
 
 //_____________________________________________________________________________

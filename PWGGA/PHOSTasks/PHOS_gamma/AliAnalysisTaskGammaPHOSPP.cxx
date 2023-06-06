@@ -691,21 +691,49 @@ void AliAnalysisTaskGammaPHOSPP::FillOnePhotonHistograms(AliCaloPhoton *ph)
    Double_t weight = ph->GetWeight();
    Int_t pdg = 0;
    Int_t pdg_naive = 0;
+
    if (fMCArray) {
      pdg = ((AliAODMCParticle*)fMCArray->At(ph->GetPrimaryAtVertex())) -> GetPdgCode();
      pdg_naive = ((AliAODMCParticle*)fMCArray->At(ph->GetPrimary())) -> GetPdgCode(); //
 
      Double_t enMC   = ((AliAODMCParticle*)fMCArray->At(ph->GetPrimary()))->E();
      Double_t enMeas = ph->E();
-
-     FillHistogram("hEnergyResolution", enMC, enMeas - enMC);
-   }
+     if (pdg_naive == 22 || pdg_naive == 11) 
+       FillHistogram("hEnergyResolution_EM", enMC, enMeas - enMC);
+     else
+       FillHistogram("hEnergyResolution_other", enMC, enMeas - enMC);
+  }
    
    Int_t sm1 = ph->Module();
 
    Double_t pt   = p11.Pt();
    Double_t ptMC = TestGammaPt(ph);
 
+   std::vector<TString> passed_cuts = {"all"};
+   Bool_t CPVBit  =  ph->IsCPVOK();
+   Bool_t DispBit =  ph->IsDispOK();
+   if (CPVBit)  passed_cuts.emplace_back("cpv");
+   if (DispBit) passed_cuts.emplace_back("disp");
+   if (CPVBit && DispBit) passed_cuts.emplace_back("both");
+
+   for (auto cut : passed_cuts) {
+     if (pdg == 22) {
+        FillHistogram(Form("hMatrixEff_%s", cut.Data()), pt, ptMC);   
+        if (pdg_naive == 22)     
+          FillHistogram(Form("hMatrixEff_gamma_%s", cut.Data()), pt, ptMC); 
+        if (TMath::Abs(pdg_naive) == 11)     
+          FillHistogram(Form("hMatrixEff_beta_%s", cut.Data()), pt, ptMC); 
+     } 
+
+     FillHistogram(Form("hCaloPhotonPt_%s", cut.Data()), pt, weight);
+     FillHistogram(Form("hCaloPhotonPdgvsPt_%s", cut.Data()), pt, pdg, weight);
+     FillHistogram(Form("hCaloPhotonPdgvsPt_%s_naive", cut.Data()),  pt, pdg_naive, weight);
+
+     FillHistogram(Form("hCaloPhotonPtvsNcl_%s", cut.Data()), pt, ph->GetNCells() + 0.5);
+     FillHistogram(Form("hCentralityvsClustPt_%s", cut.Data()), pt, fEventCentrality + 0.5);	
+     FillHistogram(Form("hCaloPhotonPt_%s_M%d", cut.Data(), sm1),  pt, weight);
+   }
+/*
    if (pdg == 22) {
       FillHistogram("hMatrixEff_all", pt, ptMC);   
       if (pdg_naive == 22)     
@@ -774,6 +802,7 @@ void AliAnalysisTaskGammaPHOSPP::FillOnePhotonHistograms(AliCaloPhoton *ph)
          FillHistogram("hMatrixEff_beta_both", pt, ptMC, weight);  
      }      
    }
+  */ 
 }
 
 //____________________________________________________________________________
@@ -784,84 +813,43 @@ void AliAnalysisTaskGammaPHOSPP::FillTwoPhotonHistograms()
   for (Int_t i1 = 0; i1 < fInPHOS-1; i1 ++ ) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
     if (fLHCRunN == 1 && ph1->GetBC() != 0 ) continue; //Run 1
+    pv1 = *(ph1->GetMomV2());
+    Double_t P1 = pv1.P();
+    Double_t pt1 = ph1->Pt();
+    Int_t sm1 = ph1->Module();
+
     for (Int_t i2 = i1+1; i2 < fInPHOS; i2++) {
       AliCaloPhoton * ph2=(AliCaloPhoton*)fPHOSEvent->At(i2) ;
       if (fLHCRunN == 1 && ph2->GetBC() != 0 ) continue; //Run 1
-      pv1 = *(ph1->GetMomV2());
       pv2 = *(ph2->GetMomV2());
-      Double_t P1 = pv1.P();
       Double_t P2 = pv2.P();
+      Double_t pt2 = ph2->Pt();
+      Int_t sm2 = ph2->Module();
+
       Double_t asym = TMath::Abs((P1-P2)/(P1+P2));
       FillHistogram("hAsym", asym);
       p12  = *ph1  + *ph2;
       pv12 = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
       Double_t ma12 = pv12.M();
       Double_t pt12 = pv12.Pt();
-      Int_t sm1 = ph1->Module();
-      Int_t sm2 = ph2->Module();
 
-      FillHistogram("hMassPt_all", ma12 , pt12 );
-      FillHistogram("hMassPt_asym_all", ma12, pt12, asym);
-      if (sm1 == sm2) FillHistogram(Form("hMassPt_all_M%d", sm1), ma12, pt12);
+      std::vector<TString> passed_cuts = {"all"};
+      Bool_t CPVBit = ph1->IsCPVOK() && ph2->IsCPVOK();
+      Bool_t DispBit = ph1->IsDispOK() && ph2->IsDispOK();
+      if (CPVBit) passed_cuts.emplace_back("cpv");
+      if (DispBit) passed_cuts.emplace_back("disp");
+      if (CPVBit && DispBit) passed_cuts.emplace_back("both");
 
-      if (ph1->IsCPVOK() && ph2->IsCPVOK()) {
-         FillHistogram("hMassPt_cpv", ma12, pt12);
-         FillHistogram("hMassPt_asym_cpv", ma12, pt12, asym);
-         if (sm1 ==sm2) FillHistogram(Form("hMassPt_cpv_M%d", sm1), ma12, pt12);
-      }
-
-      if (ph1->IsDispOK() && ph2->IsDispOK() ) {
-         FillHistogram("hMassPt_disp", ma12, pt12);
-         FillHistogram("hMassPt_asym_disp", ma12, pt12, asym);
-         if (sm1 ==sm2) FillHistogram(Form("hMassPt_disp_M%d", sm1), ma12, pt12);
-         if (ph1->IsCPVOK() && ph2->IsCPVOK() ) {
-            FillHistogram("hMassPt_both", ma12, pt12);
-            FillHistogram("hMassPt_asym_both", ma12, pt12, asym);
-            if (sm1 ==sm2) FillHistogram(Form("hMassPt_both_M%d", sm1), ma12, pt12);
-            if (sm1 ==sm2 && asym < 0.1) FillHistogram(Form("hMassPt_both_M%d", sm1), ma12, pt12);
-         }
-      }
-
-      FillHistogram("hMassSingle_all", ma12, ph1->Pt()) ;
-      FillHistogram("hMassSingle_all", ma12, ph2->Pt()) ;
-      FillHistogram("hMassSingle_asym_all", ma12, ph1->Pt(), asym);
-      FillHistogram("hMassSingle_asym_all", ma12, ph2->Pt(), asym);
-
-      FillHistogram(Form("hMassSingle_all_M%d", sm1), ma12, ph1->Pt());
-      FillHistogram(Form("hMassSingle_all_M%d", sm2), ma12, ph2->Pt());
-
-      if (ph1->IsCPVOK()) {
-        FillHistogram("hMassSingle_cpv",ma12,ph1->Pt()) ;
-        FillHistogram(Form("hMassSingle_cpv_M%d", sm1), ma12, ph1->Pt());
-        FillHistogram("hMassSingle_asym_cpv", ma12, ph1->Pt(), asym);
-      }
-
-      if (ph2->IsCPVOK()) {
-        FillHistogram("hMassSingle_cpv",ma12,ph2->Pt()) ;
-        FillHistogram(Form("hMassSingle_cpv_M%d", sm2), ma12, ph2->Pt());
-        FillHistogram("hMassSingle_asym_cpv", ma12, ph2->Pt(), asym);
-      }
-
-      if (ph1->IsDispOK()) {
-        FillHistogram("hMassSingle_disp",ma12,ph1->Pt()) ;   
-        FillHistogram(Form("hMassSingle_disp_M%d", sm1), ma12, ph1->Pt());
-        FillHistogram("hMassSingle_asym_disp", ma12, ph1->Pt(), asym);
-      }
-      if (ph2->IsDispOK()) {
-        FillHistogram("hMassSingle_disp", ma12, ph2->Pt()) ;
-        FillHistogram(Form("hMassSingle_disp_M%d", sm2), ma12, ph2->Pt());
-        FillHistogram("hMassSingle_asym_disp", ma12, ph2->Pt(), asym);
-      }
-
-      if (ph1->IsCPVOK() && ph1->IsDispOK()) {
-        FillHistogram("hMassSingle_both", ma12, ph1->Pt()) ;
-        FillHistogram(Form("hMassSingle_both_M%d", sm1), ma12, ph1->Pt());
-        FillHistogram("hMassSingle_asym_both", ma12, ph1->Pt(), asym);
-      }   
-      if (ph2->IsCPVOK() && ph2->IsDispOK()) {
-        FillHistogram("hMassSingle_both",ma12,ph2->Pt()) ;
-        FillHistogram(Form("hMassSingle_both_M%d", sm2), ma12, ph2->Pt());
-        FillHistogram("hMassSingle_asym_both", ma12, ph2->Pt(), asym);
+      for (auto cut : passed_cuts) {
+        FillHistogram(Form("hMassPt_%s", cut.Data()), ma12 , pt12 );
+        FillHistogram(Form("hMassPt_asym_%s", cut.Data()), ma12, pt12, asym);
+        if (sm1 == sm2) FillHistogram(Form("hMassPt_%s_M%d", cut.Data(), sm1), ma12, pt12);
+        FillHistogram(Form("hMassSingle_%s", cut.Data()), ma12, pt1) ;
+        FillHistogram(Form("hMassSingle_%s", cut.Data()), ma12, pt2) ;
+        FillHistogram(Form("hMassSingle_asym_%s", cut.Data()), ma12, pt1, asym);
+        FillHistogram(Form("hMassSingle_asym_%s", cut.Data()), ma12, pt2, asym);
+        FillHistogram(Form("hMassSingle_%s_M%d", cut.Data(), sm1), ma12, pt1);
+        FillHistogram(Form("hMassSingle_%s_M%d", cut.Data(), sm2), ma12, pt2);
       }
   } //end of loop  i2 
  } //end of loop   i1
@@ -881,94 +869,63 @@ void AliAnalysisTaskGammaPHOSPP::MixPhotons()
   
   TList * prevPHOS = fPHOSEvents[zvtx][centr] ;
 
-  for (Int_t i1 = 0; i1 < fInPHOS; i1++) {
+  for (Int_t i1 = 0; i1 < fInPHOS-1; i1 ++ ) {
     AliCaloPhoton * ph1=(AliCaloPhoton*)fPHOSEvent->At(i1) ;
     if (fLHCRunN == 1 && ph1->GetBC() != 0 ) continue; //Run 1
+    pv1 = *(ph1->GetMomV2());
+    Double_t P1 = pv1.P();
+    Double_t pt1 = ph1->Pt();
+    Int_t sm1 = ph1->Module();
+
     for (Int_t ev = 0; ev < prevPHOS->GetSize(); ev ++) {
       TClonesArray * mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev)) ;
-      for (Int_t i2=0; i2 < mixPHOS->GetEntriesFast();i2++) {
+
+      for (Int_t i2 = 0; i2 < mixPHOS->GetEntriesFast(); i2 ++) {
         AliCaloPhoton * ph2=(AliCaloPhoton*)mixPHOS->At(i2) ;
         if (fLHCRunN == 1 && ph2->GetBC() != 0 ) continue; //Run 1
-        pv1 = *(ph1->GetMomV2());
         pv2 = *(ph2->GetMomV2());
-        Double_t P1 = pv1.P();
         Double_t P2 = pv2.P();
+        Double_t pt2 = ph2->Pt();
+        Int_t sm2 = ph2->Module();
+
         Double_t asym = TMath::Abs((P1-P2)/(P1+P2));
-        FillHistogram("hAsym_mix", asym);
+        FillHistogram("hAsym", asym);
         p12  = *ph1  + *ph2;
         pv12 = *(ph1->GetMomV2()) + *(ph2->GetMomV2());
         Double_t ma12 = pv12.M();
         Double_t pt12 = pv12.Pt();
-        Int_t sm1 = ph1->Module();
-        Int_t sm2 = ph2->Module();
 
-        if (fLHCRunN == 1 || (fLHCRunN == 2 && !fMCArray)) {
-           if (ph1->GetNCells() < 3 || ph2->GetNCells() < 3) return;      
+        std::vector<TString> passed_cuts = {"all"};
+        Bool_t cpvBit1 = ph1->IsCPVOK(), cpvBit2 = ph1->IsCPVOK();
+        Bool_t dispBit1  = ph1->IsDispOK(), dispBit2 = ph2->IsDispOK();
+        if (cpvBit1 && cpvBit2) passed_cuts.emplace_back("cpv");
+        if (dispBit1 && dispBit2) passed_cuts.emplace_back("disp");
+        if ((cpvBit1 && cpvBit2) && (dispBit1 && dispBit2)) passed_cuts.emplace_back("both");
+        
+        if (cpvBit1 || cpvBit2) passed_cuts.emplace_back("all_cpv");
+        if (dispBit1 || dispBit2) passed_cuts.emplace_back("all_disp");
+
+        if (!cpvBit1 || !cpvBit2) passed_cuts.emplace_back("all_anticpv");
+        if (!dispBit1 || !dispBit2) passed_cuts.emplace_back("all_antidisp");
+
+        if ((cpvBit1 && !dispBit2) || (!dispBit1 && cpvBit2)) passed_cuts.emplace_back("cpv_antidisp");
+        if ((!cpvBit1 && dispBit2) || (dispBit1 && !cpvBit2)) passed_cuts.emplace_back("anticpv_disp");
+
+        for (auto cut : passed_cuts) {
+          FillHistogram(Form("hMiMassPt_%s", cut.Data()), ma12 , pt12 );
+          FillHistogram(Form("hMiMassPt_asym_%s", cut.Data()), ma12, pt12, asym);
+          if (sm1 == sm2) FillHistogram(Form("hMiMassPt_%s_M%d", cut.Data(), sm1), ma12, pt12);
+          FillHistogram(Form("hMiMassSingle_%s", cut.Data()), ma12, pt1) ;
+          FillHistogram(Form("hMiMassSingle_%s", cut.Data()), ma12, pt2) ;
+          FillHistogram(Form("hMiMassSingle_asym_%s", cut.Data()), ma12, pt1, asym);
+          FillHistogram(Form("hMiMassSingle_asym_%s", cut.Data()), ma12, pt2, asym);
+          FillHistogram(Form("hMiMassSingle_%s_M%d", cut.Data(), sm1), ma12, pt1);
+          FillHistogram(Form("hMiMassSingle_%s_M%d", cut.Data(), sm2), ma12, pt2);
         }
-
-      FillHistogram("hMiMassPt_all", ma12 , pt12 );
-      if (sm1 == sm2) FillHistogram(Form("hMiMassPt_all_M%d", sm1), ma12, pt12);
-
-      if (ph1->IsCPVOK() && ph2->IsCPVOK()) {
-         FillHistogram("hMiMassPt_cpv", ma12, pt12);
-         if (sm1 ==sm2) FillHistogram(Form("hMiMassPt_cpv_M%d", sm1), ma12, pt12);
       }
+    }
+  }  
 
-      if (ph1->IsDispOK() && ph2->IsDispOK() ) {
-         FillHistogram("hMiMassPt_disp", ma12, pt12);
-         if (sm1 ==sm2) FillHistogram(Form("hMiMassPt_disp_M%d", sm1), ma12, pt12);
-         if (ph1->IsCPVOK() && ph2->IsCPVOK() ) {
-            FillHistogram("hMiMassPt_both", ma12, pt12);
-            if (sm1 ==sm2) FillHistogram(Form("hMiMassPt_both_M%d", sm1), ma12, pt12);
-            if (sm1 ==sm2 && asym < 0.1) FillHistogram(Form("hMiMassPt_both_M%d", sm1), ma12, pt12);
-         }
-      }
-
-      FillHistogram("hMiMassSingle_all", ma12, ph1->Pt()) ;
-      FillHistogram("hMiMassSingle_all", ma12, ph2->Pt()) ;
-      FillHistogram("hMiMassSingle_asym_all", ma12, ph1->Pt(), asym);
-      FillHistogram("hMiMassSingle_asym_all", ma12, ph2->Pt(), asym);
-
-      FillHistogram(Form("hMiMassSingle_all_M%d", sm1), ma12, ph1->Pt());
-      FillHistogram(Form("hMiMassSingle_all_M%d", sm2), ma12, ph2->Pt());
-
-      if (ph1->IsCPVOK()) {
-        FillHistogram("hMiMassSingle_cpv",ma12,ph1->Pt()) ;
-        FillHistogram(Form("hMiMassSingle_cpv_M%d", sm1), ma12, ph1->Pt());
-        FillHistogram("hMiMassSingle_asym_cpv", ma12, ph1->Pt(), asym);
-      }
-
-      if (ph2->IsCPVOK()) {
-        FillHistogram("hMiMassSingle_cpv",ma12,ph2->Pt()) ;
-        FillHistogram(Form("hMiMassSingle_cpv_M%d", sm2), ma12, ph2->Pt());
-        FillHistogram("hMiMassSingle_asym_cpv", ma12, ph2->Pt(), asym);
-      }
-
-      if (ph1->IsDispOK()) {
-        FillHistogram("hMiMassSingle_disp",ma12,ph1->Pt()) ;   
-        FillHistogram(Form("hMiMassSingle_disp_M%d", sm1), ma12, ph1->Pt());
-        FillHistogram("hMiMassSingle_asym_disp", ma12, ph1->Pt(), asym);
-      }
-      if (ph2->IsDispOK()) {
-        FillHistogram("hMiMassSingle_disp", ma12, ph2->Pt()) ;
-        FillHistogram(Form("hMiMassSingle_disp_M%d", sm2), ma12, ph2->Pt());
-        FillHistogram("hMiMassSingle_asym_disp", ma12, ph2->Pt(), asym);
-      }
-
-      if (ph1->IsCPVOK() && ph1->IsDispOK()) {
-        FillHistogram("hMiMassSingle_both", ma12, ph1->Pt()) ;
-        FillHistogram(Form("hMiMassSingle_both_M%d", sm1), ma12, ph1->Pt());
-        FillHistogram("hMiMassSingle_asym_both", ma12, ph1->Pt(), asym);
-      }   
-      if (ph2->IsCPVOK() && ph2->IsDispOK()) {
-        FillHistogram("hMiMassSingle_both",ma12,ph2->Pt()) ;
-        FillHistogram(Form("hMiMassSingle_both_M%d", sm2), ma12, ph2->Pt());
-        FillHistogram("hMiMassSingle_asym_both", ma12, ph2->Pt(), asym);
-      }
-    } // end of loop i2
-  }
- } // end of loop i1
- 
   if (fPHOSEvent->GetEntriesFast() > 0) {
     prevPHOS->AddFirst(fPHOSEvent) ;
     fPHOSEvent=0;
@@ -979,7 +936,6 @@ void AliAnalysisTaskGammaPHOSPP::MixPhotons()
     }
   }
 }
-
 //_____________________________________________________________________________
 Int_t AliAnalysisTaskGammaPHOSPP::GetPrimaryLabelAtVertex(AliVCluster *clu) //Returns label at vertex
 {
@@ -1626,15 +1582,18 @@ void AliAnalysisTaskGammaPHOSPP::AddTwoPhotonHistograms()
   fOutputContainer->Add(new TH1F("hAsym_mix", "Asymmetry, abs((p1-p2)/(p1+p2));asym", 100, 0, 1));
 
   for (auto cut : fPidCuts) {
-    fOutputContainer->Add(new TH2F(Form("hMassPt_%s", cut.first.Data()) ,"(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{1T}+p_{2T}, GeV/c"   ,nM, mMin, mMax, nPt, ptMin, ptMax));
-    fOutputContainer->Add(new TH2F(Form("hMiMassPt_%s", cut.first.Data()) ,   "(M,p_{T})_{#gamma#gamma}(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{1T}+p_{2T}, GeV/c"   ,nM, mMin, mMax, nPt, ptMin, ptMax));
-    fOutputContainer->Add(new TH3F(Form("hMassPt_asym_%s", cut.first.Data()), "(M,p_{T})_{#gamma#gamma}(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{1T}+p_{2T}, GeV/c;asym" ,nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
-    fOutputContainer->Add(new TH3F(Form("hMiMassPt_asym_%s", cut.first.Data()), "(M,p_{T})_{#gamma#gamma}(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{1T}+p_{2T}, GeV/c, asym" ,nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
-
-    fOutputContainer->Add(new TH2F(Form("hMassSingle_%s", cut.first.Data()),  "(M,p_{T})_{#gamma#gamma}(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{T}, GeV/c" ,nM, mMin, mMax, nPt, ptMin, ptMax));
-    fOutputContainer->Add(new TH2F(Form("hMiMassSingle_%s", cut.first.Data()),  "(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{T}, GeV/c" ,nM, mMin, mMax, nPt, ptMin, ptMax));
-    fOutputContainer->Add(new TH3F(Form("hMassSingle_asym_%s", cut.first.Data()), "(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{T}, GeV/c" ,nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
-    fOutputContainer->Add(new TH3F(Form("hMiMassSingle_asym_%s", cut.first.Data()), "(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{T}, GeV/c;asym" ,nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
+    TString histTitle = "(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{1T}+p_{2T}, GeV/c";
+    fOutputContainer->Add(new TH2F(Form("hMassPt_%s",   cut.first.Data()),  histTitle  ,nM, mMin, mMax, nPt, ptMin, ptMax));
+    fOutputContainer->Add(new TH2F(Form("hMiMassPt_%s", cut.first.Data()),  histTitle  ,nM, mMin, mMax, nPt, ptMin, ptMax));
+    histTitle = "(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{1T}+p_{2T}, GeV/c;asym";
+    fOutputContainer->Add(new TH3F(Form("hMassPt_asym_%s",  cut.first.Data()),  histTitle ,nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
+    fOutputContainer->Add(new TH3F(Form("hMiMassPt_asym_%s", cut.first.Data()), histTitle ,nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
+    histTitle = "(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{T}, GeV/c";
+    fOutputContainer->Add(new TH2F(Form("hMassSingle_%s", cut.first.Data()),    histTitle , nM, mMin, mMax, nPt, ptMin, ptMax));
+    fOutputContainer->Add(new TH2F(Form("hMiMassSingle_%s", cut.first.Data()),  histTitle,  nM, mMin, mMax, nPt, ptMin, ptMax));
+    histTitle = "(M,p_{T})_{#gamma#gamma};M^{#gamma#gamma}_{inv};p_{T}, GeV/c;asym";
+    fOutputContainer->Add(new TH3F(Form("hMassSingle_asym_%s",   cut.first.Data()), histTitle, nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
+    fOutputContainer->Add(new TH3F(Form("hMiMassSingle_asym_%s", cut.first.Data()), histTitle, nM, mMin, mMax, nPt, ptMin, ptMax, 10, 0., 1.));
 
     for (Int_t iMod = 1; iMod < 5; iMod ++) {  
       fOutputContainer->Add(new TH2F(Form("hMassPt_%s_M%d",       cut.first.Data(), iMod), Form("(M,p_{T})_{#gamma#gamma}, M%d",  iMod), nM, mMin, mMax, nPt, ptMin, ptMax));
@@ -1817,7 +1776,8 @@ void AliAnalysisTaskGammaPHOSPP::AddQAHistograms()
   fOutputContainer->Add(new TH1F("hCellEnergy"  ,"Cell energy"            ,5000, 0.,50.));
   fOutputContainer->Add(new TH1F("hClusterEnergy"  ,"Cluster energy"      ,5000, 0.,50.));
 
-  fOutputContainer->Add(new TH2F("hEnergyResolution", "Energy resolution;E_{MC};E_{meas}-E_{MC}", 400, 0, 40, 320, -1.6, 1.6));
+  fOutputContainer->Add(new TH2F("hEnergyResolution_EM", "Energy resolution;E_{MC};E_{meas}-E_{MC}, EM probes", 400, 0, 40, 320, -1.6, 1.6));
+  fOutputContainer->Add(new TH2F("hEnergyResolution_other", "Energy resolution;E_{MC};E_{meas}-E_{MC}, other probes", 400, 0, 40, 320, -1.6, 1.6));
 
   for (Int_t imod = 1; imod < 5; imod ++) {
     fOutputContainer->Add(new TH1I(Form("hCellMultEventM%d", imod),Form("PHOS cell multiplicity per event, M%id", imod), 2000, 0, 2000));

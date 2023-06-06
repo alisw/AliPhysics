@@ -8,6 +8,7 @@
 #pragma link C++ class AliAnalysisTaskCorrForFlow+;
 #pragma link C++ class AliAnalysisTaskCorrForFlowFMD+;
 #pragma link C++ class AliAnalysisTaskCorrForFlowMaster+;
+#pragma link C++ class AliAnalysisTaskCorrForFlowEta+;
 #pragma link C++ class AliAnalysisTaskDeform+;
 #pragma link C++ class AliAnalysisTaskGFWPIDFlow+;
 #pragma link C++ class AliAnalysisTaskFlowExample+;
@@ -41,28 +42,35 @@
 
 #pragma link C++ class AliAnalysisTaskCreateNUA+;
 #pragma link C++ class AliAnalysisTaskCreatePeriodNUA+;
+#pragma link C++ class AliAnalysisTaskCreateNUE+;
 #pragma link C++ class AliAnalysisTaskEffFDExample+;
 #pragma link C++ class AliAnalysisTaskFlowPPTask+;
+#pragma link C++ class AliAnalysisTaskFlowOnTheFly+;
 #pragma link C++ class AliAnalysisTaskGFWFlow+;
 #pragma link C++ class AliGFWFlags+;
+#pragma link C++ defined_in AliGFWFilter;
 #pragma link C++ class AliGFWFilter+;
 #pragma link C++ class AliGFWFilterTask+;
 #pragma link C++ class AliAnalysisTaskJetQ+;
 #pragma link C++ class AliAnalysisTaskMeanPtV2Corr+;
+#pragma link C++ class AliAnalysisTaskXDeptFlow+;
 #pragma link C++ class AliAnalysisTaskNonlinearFlow+;
 #pragma link C++ class AliAnalysisTaskCorrForNonlinearFlow+;
 #pragma link C++ class AliAnalysisTaskAcceptanceCorr+;
 #pragma link C++ class AliEffFDContainer+;
 #pragma link C++ class CorrelationCalculator+;
 #pragma link C++ class AliGFWNFCuts+;
+#pragma link C++ class AliGFWMCuts+;
 #pragma link C++ class AliGFWXXCuts+;
 #pragma link C++ class AliGFWPbpass23Cuts+;
 #pragma link C++ class PhysicsProfile+;
 #pragma link C++ class PhysicsProfilePPTask+;
+#pragma link C++ class PhysicsProfileFlowOnTheFly+;
 #pragma link C++ class AliLWTPCTrack+;
 #pragma link C++ class AliLWFMDTrack+;
 #pragma link C++ class AliLWEvent+;
 #pragma link C++ class AliAnalysisTaskLWTree+;
-
+#pragma link C++ namespace GFWFlags;
+#pragma link C++ defined_in GFWFlags;
 
 #endif
