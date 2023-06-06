@@ -55,7 +55,7 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0), E3C_hist(0), E3C_pt_hist(0), E3C_pt_hist_log(0), EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), EEC_det_pt_hist_log_3d(0), EEC_tru_pt_hist_log_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), E3C_det_pt_hist_log_3d(0), E3C_tru_pt_hist_log_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N2_det_pt_hist_log_3d(0), N2_tru_pt_hist_log_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), EEC_det_match_pt_det_log(0), EEC_tru_match_pt_tru_log(0), E3C_det_match_pt_det_log(0), E3C_tru_match_pt_tru_log(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0)
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0), E3C_hist(0), E3C_pt_hist(0), E3C_pt_hist_log(0), EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), EEC_det_pt_hist_log_3d(0), EEC_tru_pt_hist_log_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), E3C_det_pt_hist_log_3d(0), E3C_tru_pt_hist_log_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N2_det_pt_hist_log_3d(0), N2_tru_pt_hist_log_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), EEC_det_match_pt_det_log(0), EEC_tru_match_pt_tru_log(0), E3C_det_match_pt_det_log(0), E3C_tru_match_pt_tru_log(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -71,7 +71,7 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0), E3C_hist(0), E3C_pt_hist(0), E3C_pt_hist_log(0), EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), EEC_det_pt_hist_log_3d(0), EEC_tru_pt_hist_log_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), E3C_det_pt_hist_log_3d(0),E3C_tru_pt_hist_log_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N2_det_pt_hist_log_3d(0), N2_tru_pt_hist_log_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), EEC_det_match_pt_det_log(0), EEC_tru_match_pt_tru_log(0), E3C_det_match_pt_det_log(0), E3C_tru_match_pt_tru_log(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0)
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0), E3C_hist(0), E3C_pt_hist(0), E3C_pt_hist_log(0), EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), EEC_det_pt_hist_log_3d(0), EEC_tru_pt_hist_log_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), E3C_det_pt_hist_log_3d(0),E3C_tru_pt_hist_log_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N2_det_pt_hist_log_3d(0), N2_tru_pt_hist_log_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), EEC_det_match_pt_det_log(0), EEC_tru_match_pt_tru_log(0), E3C_det_match_pt_det_log(0), E3C_tru_match_pt_tru_log(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0)
 
 {
   SetMakeGeneralHistograms(kTRUE);
@@ -172,7 +172,7 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     E3C_tru_match_pt_tru_log = new TH2D("E3C_pt_tru_match_hist_log", "E3C and pT for tru matched jets",100, -10,10,210, 15, 120);
     fOutput->Add(E3C_tru_match_pt_tru_log);
     
-    pt_tru = new TH1D("jet_pt_tru_hist", "Jet Pt tru", 210, 15, 120);
+    pt_tru = new TH1D("jet_pt_tru_hist", "Jet Pt", 210, 15, 120);
     fOutput->Add(pt_tru);
     
 //    pt_tru_match = new TH1D("jet_pt_tru_match_hist", "Jet Pt tru matched", 70, 15,50);
@@ -192,6 +192,9 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     
     test_hist = new TH1D("test_hist", "test R EEC", 100, 0, 1);
     fOutput->Add(test_hist);
+    
+    R_matrix = new TH2D("Response matrix", "Jet pT response matrix", 210, 15, 120,210, 15, 120);
+    fOutput->Add(R_matrix);
     
   PostData(1, fOutput);
 
@@ -488,9 +491,11 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
     double jet_pt = fJet->Pt();
     jet_pt_hist->Fill(jet_pt); //filling histogram with momentum of jets
     
+    
     double jet_pt_tru = fJet_tru->Pt();
     pt_tru->Fill(jet_pt_tru); //filling histogram with momentum of jets
     
+    R_matrix->Fill(jet_pt_tru,jet_pt); //Filling the response matrix
 //Det level
     //Initializing objects
     std::vector<Double_t> delta_Rvec;
@@ -518,9 +523,9 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
         for(int j=0; j<int(fConstituents.size()); j++)  //looping over constituents of the fConstituents object
         {
             //For 3 point correlator
-            for(int s=0; s<j ; s++)
+            for(int s=0; s<int(fConstituents.size()) ; s++)
             {
-//                 cout<<fConstituents[s].pt()<<endl;
+                if(s==j) continue; //if s=j this would be 0
                 
                 double eee_jss_2 =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                 double deltaR_jss_2 = fConstituents[j].delta_R(fConstituents[s]);
@@ -546,7 +551,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
 
                 double delta_R_js_2 = fConstituents[j].delta_R(fConstituents[s]);
                 double log_delta_R_js_2 = log(delta_R_js_2);
-                double ee_js_2 = (fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
+                double ee_js_2 = (2*fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
                 
                 //Filling the vectors
                 delta_Rvec.push_back(delta_R_js_2);
@@ -573,7 +578,6 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
             for(int s=0; s<int(fConstituents.size()) ; s++)
             {
                 if(s==j) continue; //This ensures I don't get stuff like (000) for (jss)
-//                if (fConstituents[j].pt() < 1.0 || fConstituents[s].pt() < 1.0) continue;
                 
                 double eee_jss =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                 double deltaR_jss = fConstituents[j].delta_R(fConstituents[s]);
@@ -597,8 +601,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 {
                     if(s>j) continue;
 
-                    
-                    double eee_jsm = ((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt())/(pow(jet_pt,3)));
+                    double eee_jsm = ((6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt())/(pow(jet_pt,3)));
                     double deltaR_js = fConstituents[j].delta_R(fConstituents[s]);
                     double delta_logR_js = log(deltaR_js);
                     
@@ -640,10 +643,10 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
             //For loop for EEC
             for(int s=0; s<j ; s++)
             {
-
+                
                 double delta_R_js = fConstituents[j].delta_R(fConstituents[s]);
                 double log_delta_R_js = log(delta_R_js);
-                double ee_js = (fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
+                double ee_js = (2*fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
                 
                 //Filling the vectors
                 delta_Rvec.push_back(delta_R_js);
@@ -670,10 +673,10 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
         for(int j=0; j<int(fConstituents_tru.size()); j++)  //looping over constituents of the fConstituents_tru object
         {
             //For 3 point correlator
-            for(int s=0; s<j ; s++)
+            for(int s=0; s<int(fConstituents_tru.size()); s++)
             {
-                
-//                if (fConstituents_tru[j].pt() < 1.0 || fConstituents_tru[s].pt() < 1.0) continue;
+             
+             if(s==j) continue; //if s=j this would be 0
                 
                 double eee_jss_2_tru =((fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[s].pt())/(pow(jet_pt_tru,3)));
                 double deltaR_jss_2_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
@@ -691,12 +694,10 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
             //For 2 point correlator
             for(int s=0; s<j ; s++)
             {
-            
-//                if (fConstituents_tru[j].pt() < 1.0 || fConstituents_tru[s].pt() < 1.0) continue;
                 
                 double delta_R_js_2_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                 double log_delta_R_js_2_tru = log(delta_R_js_2_tru);
-                double ee_js_2_tru = (fConstituents_tru[j].pt()*fConstituents_tru[s].pt())/(pow((jet_pt_tru),2));
+                double ee_js_2_tru = (2*fConstituents_tru[j].pt()*fConstituents_tru[s].pt())/(pow((jet_pt_tru),2));
                 
                 //Filling the vectors
                 delta_Rvec_part.push_back(delta_R_js_2_tru);
@@ -742,7 +743,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 {
                     if(s>j) continue;
                     
-                    double eee_jsm_tru = ((fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[m].pt())/(pow(jet_pt_tru,3)));
+                    double eee_jsm_tru = ((6*fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[m].pt())/(pow(jet_pt_tru,3)));
                     double deltaR_js_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                     double delta_logR_js_tru = log(deltaR_js_tru);
                     
@@ -786,7 +787,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 
                 double delta_R_js_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                 double log_delta_R_js_tru = log(delta_R_js_tru);
-                double ee_js_tru = (fConstituents_tru[j].pt()*fConstituents_tru[s].pt())/(pow((jet_pt_tru),2));
+                double ee_js_tru = (2*fConstituents_tru[j].pt()*fConstituents_tru[s].pt())/(pow((jet_pt_tru),2));
                 
                 //Filling the vectors
                 delta_Rvec_part.push_back(delta_R_js_tru);
@@ -803,8 +804,6 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
             }//close s loop for the 2 point correlator
         } //close j loop
     }//close else loop
-
-
 
 
 //catch (fastjet::Error)
@@ -862,7 +861,7 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
             //For 3 point correlator
             for(int s=0; s<j ; s++)
             {
-//                if (fConstituents[j].pt() < 1.0 || fConstituents[s].pt() < 1.0) continue;
+                if(s==j) continue; //this ensure i dont get 000
                 
                 double eee_jss_2 =((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                 double deltaR_jss_2 = fConstituents[j].delta_R(fConstituents[s]);
@@ -886,7 +885,7 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 
                 double delta_R_js_2 = fConstituents[j].delta_R(fConstituents[s]);
                 double log_delta_R_js_2 = log(delta_R_js_2);
-                double ee_js_2 = (fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
+                double ee_js_2 = (2*fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
                 
                 //Filling the vectors
                 delta_Rvec.push_back(delta_R_js_2);
@@ -896,8 +895,7 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 EEC_pt_hist->Fill(delta_R_js_2,jet_pt,ee_js_2);
                 EEC_pt_hist_log->Fill(log_delta_R_js_2,jet_pt,ee_js_2);
 
-                
-                ////                fTreeEEC->Fill();
+
             }//close s loop for eec
         }//close j loop
     }//close if loop
@@ -932,7 +930,7 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                     if(s>j) continue;
 //                    if (fConstituents[j].pt() < 1.0 || fConstituents[s].pt() < 1.0 || fConstituents[m].pt() < 1.0) continue;
                     
-                    double eee_jsm = ((fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt())/(pow(jet_pt,3)));
+                    double eee_jsm = ((6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt())/(pow(jet_pt,3)));
                     double deltaR_js = fConstituents[j].delta_R(fConstituents[s]);
                     double delta_logR_js = log(deltaR_js);
                     
@@ -969,11 +967,10 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
             //For loop for EEC
             for(int s=0; s<j ; s++)
             {
-//                if (fConstituents[j].pt() < 1.0 || fConstituents[s].pt() < 1.0) continue;
                 
                 double delta_R_js = fConstituents[j].delta_R(fConstituents[s]);
                 double log_delta_R_js = log(delta_R_js);
-                double ee_js = (fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
+                double ee_js = (2*fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
                 
                 //Filling the vectors
                 delta_Rvec.push_back(delta_R_js);
@@ -983,7 +980,6 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 EEC_pt_hist->Fill(delta_R_js,jet_pt,ee_js);
                 EEC_pt_hist_log->Fill(log_delta_R_js,jet_pt,ee_js);
                 
-                ////                fTreeEEC->Fill();
             }//close s loop for the 2 point correlator
         } //close j loop
     }//close else loop

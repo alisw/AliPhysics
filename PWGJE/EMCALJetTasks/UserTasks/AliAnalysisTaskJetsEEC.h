@@ -177,6 +177,7 @@ Bool_t fDoFillEncMC;      ///< to fill the matched mc plane
   
   TH1D *test_hist; //test histogram
   
+  TH2D *R_matrix;
 
 private:
   AliAnalysisTaskJetsEEC(
@@ -184,6 +185,6 @@ private:
   AliAnalysisTaskJetsEEC &
   operator=(const AliAnalysisTaskJetsEEC &); // not implemented
 
-  ClassDef(AliAnalysisTaskJetsEEC, 28) //change this to 28
+  ClassDef(AliAnalysisTaskJetsEEC, 29) //change this to 29
 };
 #endif
