@@ -2108,18 +2108,33 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
     if (fCurrSystFlag == 19) EvFlag = 3, TrFlag = 0;
 
 
-  fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_Ev%d_Tr%d",fAOD->GetRunNumber(),EvFlag,TrFlag));
-  if(!fWeightsSystematics)
-  {
-    printf("Weights could not be found in list!\n");
-    return kFALSE;
-  }
-  fWeightsSystematics->CreateNUA();
+    fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_Ev%d_Tr%d",fAOD->GetRunNumber(),EvFlag,TrFlag));
+    if(!fWeightsSystematics)
+      {
+        printf("Weights could not be found in list!\n");
+        return kFALSE;
+      }
+    fWeightsSystematics->CreateNUA();
   }
   return kTRUE;
 }
 
 Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
+
+  if (fPeriod.EqualTo("LHC15o_simp") || fPeriod.EqualTo("LHC18q_simp") || fPeriod.EqualTo("LHC18r_simp") ||
+      fPeriod.EqualTo("LHC16qt_simp") ) {
+    if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("Default"));
+    else fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("Sys%i", fCurrSystFlag));
+
+    if(!fPtWeightsSystematics)
+      {
+        printf("PtWeights could not be found in list!\n");
+        return kFALSE;
+      }
+
+    return kTRUE;
+  }
+
   int EvFlag = 0, TrFlag = 0;
 
   // If the period is **NOT** pPb LHC16qt
@@ -2127,8 +2142,8 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
        !fPeriod.EqualTo("LHC16") && !fPeriod.EqualTo("LHC17") && !fPeriod.EqualTo("LHC18") &&
        !fPeriod.EqualTo("LHC16Preview") && !fPeriod.EqualTo("LHC17Preview") && !fPeriod.EqualTo("LHC18Preview")
 		  ) {
-    if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0"));
-    else fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0_SystFlag%i_", fCurrSystFlag));
+      if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0"));
+      else fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0_SystFlag%i_", fCurrSystFlag));
     if(!fPtWeightsSystematics)
     {
       printf("PtWeights could not be found in list!\n");
@@ -2745,7 +2760,11 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
   if (fPeriod.EqualTo("LHC15o") ||
       fPeriod.EqualTo("LHC15o_pass2") ||
       fPeriod.EqualTo("LHC18qr_pass3") ||
+      fPeriod.EqualTo("LHC15o_simp") ||
+      fPeriod.EqualTo("LHC18q_simp") ||
+      fPeriod.EqualTo("LHC18r_simp") ||
       fPeriod.EqualTo("LHC16qt") ||
+      fPeriod.EqualTo("LHC16qt_simp") ||
       fPeriod.EqualTo("LHC17n") ||
       fPeriod.EqualTo("LHC15oKatarina")) {
     // return false;
