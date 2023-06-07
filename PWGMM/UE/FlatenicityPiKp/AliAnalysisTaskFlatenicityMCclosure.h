@@ -45,6 +45,7 @@ class AliAnalysisTaskFlatenicityMCclosure : public AliAnalysisTaskSE {
 		void MakeMCanalysis();
 		void MakeDataanalysis();
 		void GetMCchargedTrueDists();
+		int GetPidCode(int pdgCode);
 		bool HasRecVertex();
 
 		void SetPtMin(Double_t val) { fPtMin = val; }
@@ -126,6 +127,8 @@ class AliAnalysisTaskFlatenicityMCclosure : public AliAnalysisTaskSE {
 		TH1D *hPtAll;
 		TH1D *hPtPrimaries;
 		TH1D *hPtSecondaries;
+		TH2F *hAmpV0AV0CalicevsFlat;
+		TH3F *hAmpV0AV0CalicevsFlatvspT; 
 		TH2D *hComponentsMult[4];
 		TH2D *hCombinedMult[3];
 		TH2D *hComponentsMultmc[4];
@@ -133,6 +136,12 @@ class AliAnalysisTaskFlatenicityMCclosure : public AliAnalysisTaskSE {
 		TH2D *hRmCombinedMult[3];
 		TH2D *hMultMCmVsFlat[9];
 		TH2D *hMultmVsFlat[9];
+		TH3F *hAmpV0AV0CvsFlatvspT_pi; 
+		TH3F *hAmpV0AV0CvsFlatvspT_k; 
+		TH3F *hAmpV0AV0CvsFlatvspT_p; 
+		TH3F *hMultV0AV0CvsFlatvspT_pi_BFTrigSel;
+		TH3F *hMultV0AV0CvsFlatvspT_k_BFTrigSel;
+		TH3F *hMultV0AV0CvsFlatvspT_p_BFTrigSel;
 
 		AliAnalysisTaskFlatenicityMCclosure(
 				const AliAnalysisTaskFlatenicityMCclosure &); // not implemented

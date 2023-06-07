@@ -655,7 +655,7 @@ AliFlowEventCuts *createFlowEventCutObject(Int_t gCentralityMin = -1,
       }
       else if(whichData!=2011){
 	cutsEvent->SetLHC11h(kFALSE);
-	if(whichData==2015){ 
+	if((whichData==2015)||(whichData==2018)) { 
 	  cutsEvent->SetCentralityPercentileRange(gCentralityMin,gCentralityMax,kTRUE);
         //cutsEvent->SetCheckPileup(bPileup); //
 	}

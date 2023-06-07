@@ -198,15 +198,28 @@ class AliAnalysisTaskCharmingFemto : public AliAnalysisTaskSE {
     fBuddyOrigin = origin;
   }
 
+  /*
+    Returns true if the particle is primary according to MC truth. Namely,
+    it returns false if the particle has mother with positive index
+    and the unsigned PDG code of the mother is smaller than the one of the pion
+    (lightest hadron). Returns true otherwise.
+  */
+  bool IsPrimaryCustom(TClonesArray* arrayMC, AliAODMCParticle *mcPart) {
+    if (int motherIdx = mcPart->GetMother(); motherIdx >= 0) {
+      AliAODMCParticle *mcMother = (AliAODMCParticle *)arrayMC->At(motherIdx);
+      return std::abs(mcMother->GetPdgCode()) < 111;
+    }
+    return true;
+  }
+
   // follow the convention of AliFemtoDreamBaseParticle 
   int GetBuddyOrigin(AliAODMCParticle *mcPart) {
     bool isPhysPrim = mcPart->IsPhysicalPrimary();
     bool isSec = mcPart->IsSecondaryFromWeakDecay();
     bool isMat = mcPart->IsSecondaryFromMaterial();
 
-    if(isPhysPrim + isSec + isMat >= 2) {
-      AliWarning(Form("Particle has multiple origins! phys. prim: %d, weak: %d, mat. %d\n", 
-                      isPhysPrim, isSec, isMat ));
+    if(isPhysPrim + isSec + isMat > 1) {
+      AliWarning(Form("Particle has multiple origins! phys. prim: %d, weak: %d, mat. %d\n", isPhysPrim , isSec, isMat));
       return AliFemtoDreamBasePart::PartOrigin::kUnknown;
     }
 

@@ -78,8 +78,6 @@ void AddTask_GammaConvV1_pp(
   if(additionalTrainConfig.Contains("TM"))
     trackMatcherRunningMode = strTrackMatcherRunningMode.Atoi();
 
-  TString nameJetFinder = (additionalTrainConfig.Contains("JET") == true) ? cuts.GetSpecialSettingFromAddConfig(additionalTrainConfig, "JET", "", addTaskName) : "";
-
   TObjArray *rmaxFacPtHardSetting = settingMaxFacPtHard.Tokenize("_");
   if(rmaxFacPtHardSetting->GetEntries()<1){cout << "ERROR: AddTask_GammaConvV1_pp during parsing of settingMaxFacPtHard String '" << settingMaxFacPtHard.Data() << "'" << endl; return;}
   Bool_t fMinPtHardSet        = kFALSE;
@@ -1128,24 +1126,7 @@ void AddTask_GammaConvV1_pp(
     cuts.AddCutPCM("00010213", "00200009f9730000dge0400000", "0152103500000000"); //same as std + maximum past future rejection
     cuts.AddCutPCM("00010513", "00200009f9730000dge0400000", "0152103500000000"); //same as std + medium past future rejection
 
-
-  //----------------------------- configuration for Jet analysis ----------------------------------------------------
-  } else if ( trainConfig == 500){ // Jet analysis pp 5 TeV 2017, updated 2022 02 12
-    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","2152103500000000"); //
-  } else if ( trainConfig == 501){
-    cuts.AddCutPCM("00010113","00200009327000008250400000","3152103500000000"); // Jet QA
-
-  } else if ( trainConfig == 550){ // Jet analysis pp 13TeV
-    cuts.AddCutPCM("00010113","00200009227300008250404000","2152103500000000"); // standard cut Gamma Pi0 Eta pp 13TeV, V0AND
-    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","2l52103500000000"); // MB
-//  cuts.AddCutPCM("00061113","0dm00009f9730000dge0404000","2152103500000000"); // PHI1
-//  cuts.AddCutPCM("00062113","0dm00009f9730000dge0404000","2152103500000000"); // PHI7 
-  } else if ( trainConfig == 551){
-    cuts.AddCutPCM("00010113","0dm00009f9730000dge0404000","3152103500000000"); // MB
-//  cuts.AddCutPCM("00061113","0dm00009f9730000dge0404000","3152103500000000"); // PHI1
-//  cuts.AddCutPCM("00062113","0dm00009f9730000dge0404000","3152103500000000"); // PHI7 
    //----------------------Cuts by A. Marin for 13 TeV-----------------
-
  // Low B Field
   } else if (trainConfig == 600) {
     cuts.AddCutPCM("00010113", "00200089227302001280004000", "0152103500000000"); // Min Bias
@@ -2902,7 +2883,6 @@ if(!cuts.AreValid()){
   if (initializedMatBudWeigths_existing) {
       task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
   }
-  if(additionalTrainConfig.Contains("JET")){task->SetJetContainerAddName(nameJetFinder);}
 
   //connect containers
   AliAnalysisDataContainer *coutput =

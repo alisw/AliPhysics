@@ -1095,7 +1095,8 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   fPtCont->FillRecursive(wpPt,0);
   fPtCont->FillRecursive(wpPtSubP,1);
   fPtCont->FillRecursive(wpPtSubN,2);
-  fPtCont->FillRecursiveProfiles(l_Multi,l_Random);
+  if(fUseExoticPtCorr) fPtCont->FillExotic(4,wpPt);
+  fPtCont->FillRecursiveProfiles(l_Multi,l_Random,fUseExoticPtCorr?kTRUE:kFALSE);
   fPtCont->FillCk(wpPt,l_Multi,l_Random);
   fPtCont->FillSkew(wpPt,l_Multi,l_Random);
   fPtCont->FillKurtosis(wpPt,l_Multi,l_Random);
@@ -1134,7 +1135,7 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   vector<double> pt4corr = fPtCont->getEventCorrelation(4,0);
   if(pt2corr[1]!=0) {
     double pt2ev = pt2corr[0]/pt2corr[1];
-    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(2,1,wpPt)/pt2corr[1]:mptev;
+    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(2,1)/pt2corr[1]:mptev;
     FillCovariance(fCovariance[10],corrconfigs.at(0),l_Multi,pt2ev,pt2corr[1],l_Random); //v2-pt^2
     FillCovariance(fCovariance[11],corrconfigs.at(0),l_Multi,ptev,pt2corr[1],l_Random);
     FillCovariance(fCovariance[12],corrconfigs.at(0),l_Multi,1,pt2corr[1],l_Random);
@@ -1144,8 +1145,8 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   }
   if(pt3corr[1]!=0 && pt2corr[1]!=0) {
     double pt3ev = pt3corr[0]/pt3corr[1];
-    double pt2ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(3,2,wpPt)/pt3corr[1]:pt2corr[0]/pt2corr[1];
-    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(3,1,wpPt)/pt3corr[1]:mptev;
+    double pt2ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(3,2)/pt3corr[1]:pt2corr[0]/pt2corr[1];
+    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(3,1)/pt3corr[1]:mptev;
     FillCovariance(fCovariance[13],corrconfigs.at(0),l_Multi,pt3ev,pt3corr[1],l_Random); //v2-pt^3
     FillCovariance(fCovariance[14],corrconfigs.at(0),l_Multi,pt2ev,pt3corr[1],l_Random);
     FillCovariance(fCovariance[15],corrconfigs.at(0),l_Multi,ptev,pt3corr[1],l_Random);
@@ -1154,9 +1155,9 @@ void AliAnalysisTaskDeform::VnMpt(AliAODEvent *fAOD, const Double_t &vz, const D
   
   if(pt4corr[1]!=0 && pt3corr[1]!=0 && pt2corr[1]!=0) {
     double pt4ev = pt4corr[0]/pt4corr[1];
-    double pt3ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,3,wpPt)/pt4corr[1]:pt3corr[0]/pt3corr[1];
-    double pt2ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,2,wpPt)/pt4corr[1]:pt2corr[0]/pt2corr[1];
-    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,1,wpPt)/pt4corr[1]:mptev;
+    double pt3ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,3)/pt4corr[1]:pt3corr[0]/pt3corr[1];
+    double pt2ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,2)/pt4corr[1]:pt2corr[0]/pt2corr[1];
+    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,1)/pt4corr[1]:mptev;
     FillCovariance(fCovariance[17],corrconfigs.at(0),l_Multi,pt4ev,pt4corr[1],l_Random); //v2-pt^4
     FillCovariance(fCovariance[18],corrconfigs.at(0),l_Multi,pt3ev,pt4corr[1],l_Random);
     FillCovariance(fCovariance[19],corrconfigs.at(0),l_Multi,pt2ev,pt4corr[1],l_Random);
@@ -1220,7 +1221,8 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   fPtCont->FillRecursive(wpPt);
   fPtCont->FillRecursive(wpPtSubP,1);
   fPtCont->FillRecursive(wpPtSubN,2);
-  fPtCont->FillRecursiveProfiles(l_Cent,l_Random);
+  if(fUseExoticPtCorr) fPtCont->FillExotic(4,wpPt);
+  fPtCont->FillRecursiveProfiles(l_Cent,l_Random,fUseExoticPtCorr?kTRUE:kFALSE);
   fPtCont->FillCk(wpPt,l_Cent,l_Random);
   fPtCont->FillSkew(wpPt,l_Cent,l_Random);
   fPtCont->FillKurtosis(wpPt,l_Cent,l_Random);
@@ -1258,7 +1260,7 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   vector<double> pt4corr = fPtCont->getEventCorrelation(4,0);
   if(pt2corr[1]!=0) {
     double pt2ev = pt2corr[0]/pt2corr[1];
-    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(2,1,wpPt)/pt2corr[1]:mptev;
+    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(2,1)/pt2corr[1]:mptev;
     FillCovariance(fCovariance[10],corrconfigs.at(0),l_Cent,pt2ev,pt2corr[1],l_Random); //v2-pt^2
     FillCovariance(fCovariance[11],corrconfigs.at(0),l_Cent,ptev,pt2corr[1],l_Random);
     FillCovariance(fCovariance[12],corrconfigs.at(0),l_Cent,1,pt2corr[1],l_Random);
@@ -1268,8 +1270,8 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   }
   if(pt3corr[1]!=0 && pt2corr[1]!=0) {
     double pt3ev = pt3corr[0]/pt3corr[1];
-    double pt2ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(3,2,wpPt)/pt3corr[1]:pt2corr[0]/pt2corr[1];
-    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(3,1,wpPt)/pt3corr[1]:mptev;
+    double pt2ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(3,2)/pt3corr[1]:pt2corr[0]/pt2corr[1];
+    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(3,1)/pt3corr[1]:mptev;
     FillCovariance(fCovariance[13],corrconfigs.at(0),l_Cent,pt3ev,pt3corr[1],l_Random); //v2-pt^3
     FillCovariance(fCovariance[14],corrconfigs.at(0),l_Cent,pt2ev,pt3corr[1],l_Random);
     FillCovariance(fCovariance[15],corrconfigs.at(0),l_Cent,ptev,pt3corr[1],l_Random);
@@ -1278,9 +1280,9 @@ void AliAnalysisTaskDeform::ProcessOnTheFly() {
   
   if(pt4corr[1]!=0 && pt3corr[1]!=0 && pt2corr[1]!=0) {
     double pt4ev = pt4corr[0]/pt4corr[1];
-    double pt3ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,3,wpPt)/pt4corr[1]:pt3corr[0]/pt3corr[1];
-    double pt2ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,2,wpPt)/pt4corr[1]:pt2corr[0]/pt2corr[1];
-    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,1,wpPt)/pt4corr[1]:mptev;
+    double pt3ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,3)/pt4corr[1]:pt3corr[0]/pt3corr[1];
+    double pt2ev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,2)/pt4corr[1]:pt2corr[0]/pt2corr[1];
+    double ptev = (fUseExoticPtCorr)?fPtCont->getExoticEventCorrelation(4,1)/pt4corr[1]:mptev;
     FillCovariance(fCovariance[17],corrconfigs.at(0),l_Cent,pt4ev,pt4corr[1],l_Random); //v2-pt^4
     FillCovariance(fCovariance[18],corrconfigs.at(0),l_Cent,pt3ev,pt4corr[1],l_Random);
     FillCovariance(fCovariance[19],corrconfigs.at(0),l_Cent,pt2ev,pt4corr[1],l_Random);

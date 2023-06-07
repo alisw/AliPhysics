@@ -86,7 +86,13 @@ public:
   virtual void ProcessEventData() = 0;
   virtual void FinalizeProcess() = 0;
 
-  float checkIfResonance(Int_t ires, Bool_t fill, int ix1, int ix2);
+  /// \brief has the pre particle selection resonance rejection been configured
+  /// \return true if the pre rejection has been configured otherwise false
+  bool preRejectResonances() { return fPreRejectResonances; }
+  /// \brief gets the index of the photon conversion pair rejection structures
+  /// \return the index of the photon conversion (0)
+  static int getPhotonConversionIndex() { return 0; }
+  float checkIfResonance(Int_t ires, Bool_t fill, float pt1, float eta1, float phi1, float pt2, float eta2, float phi2);
 
 protected:
   void FlagConversionsAndResonances();
@@ -105,10 +111,11 @@ protected:
   /* the arrays with tracks information */
   int fArraySize;  ///< the size of the array to collect accepted track information
   int fNoOfTracks; ///< the number of stored tracks
-  UInt_t *fFlags;  //!<! the array of track flags
-  float *fPt;      //!<! the array of track \f$p_T\f$
-  float *fEta;     //!<! the array of track \f$\eta\f$
-  float *fPhi;     //!<! the array of track \f$\varphi\f$
+  UInt_t* fFlags;    //!<! the array of track flags
+  float* fPt;      //!<! the array of track \f$p_T\f$
+  float* fEta;     //!<! the array of track \f$\eta\f$
+  float* fPhi;     //!<! the array of track \f$\varphi\f$
+  int* fPID;       //!<! the array of track Ids
 
   std::vector<float *> fCorrectionWeights;                ///< structure with the track correction weights
   std::vector<float *> fEfficiencyCorrection;             ///< structure with the track efficiency correction weights
@@ -158,18 +165,21 @@ protected:
   std::vector<TProfile *> fhN1nw_vsC;     ///< un-weighted single particle distribution vs event centrality/multiplicity per species
   std::vector<TProfile *> fhSum1Ptnw_vsC; ///< accumulated sum of un-weighted \f$p_T\f$ vs event centrality/multiplicity per species
 
+ protected:
+  std::vector<std::string> fSpeciesNames;                   ///< the name of the species to consider
+  static Int_t fgkNoOfResonances;                           ///< the number of resonances conversions to consider
+  Int_t                       fThresholdMult[16];           ///< the threshold multiplier, in 1/4 modulus units (i.e, four is one modulus, zero disable it)
+  bool fPreRejectResonances;                                ///< flag if the resonances have to be prerejected before PID
+  bool fPostRejectResonances;                               ///< flag if the resonances have to be rejected after PID once reached to the correlations engine, this one
+ private:
+  static Double_t             fgkMass[16];                  ///< the masses of resonances conversions to consider
+  static Double_t             fgkChildMass[2][16];          ///< the masses of the resonances / conversions products
+  static Double_t             fgkMassThreshold[16];         ///< the resonance / conversion mass threshold modulus
+  TH2F                       *fhResonanceRoughMasses;       ///< the resonance approximate invariant mass histogram
+  TH2F                       *fhResonanceMasses;            ///< the resonance invariant mass histogram
 protected:
-  std::vector<std::string> fSpeciesNames; ///< the name of the species to consider
-  static Int_t fgkNoOfResonances;         ///< the number of resonances conversions to consider
-  Int_t fThresholdMult[16];               ///< the threshold multiplier, in 1/4 modulus units (i.e, four is one modulus, zero disable it)
-private:
-  static Double_t fgkMass[16];          ///< the masses of resonances conversions to consider
-  static Double_t fgkChildMass[2][16];  ///< the masses of the resonances / conversions products
-  static Double_t fgkMassThreshold[16]; ///< the resonance / conversion mass threshold modulus
-  TH2F *fhResonanceRoughMasses;         ///< the resonance approximate invariant mass histogram
-  TH2F *fhResonanceMasses;              ///< the resonance invariant mass histogram
-protected:
-  TH2F *fhDiscardedResonanceMasses; ///< the discarded resonance invariant mass histogram
+  TH2F                       *fhDiscardedResonanceMasses;   ///< the discarded resonance invariant mass histogram
+
 
 private:
   /// Copy constructor
@@ -181,7 +191,7 @@ private:
   AliTwoParticleCorrelationsBase &operator=(const AliTwoParticleCorrelationsBase &);
 
   /// \cond CLASSIMP
-  ClassDef(AliTwoParticleCorrelationsBase, 4);
+  ClassDef(AliTwoParticleCorrelationsBase, 5);
   /// \endcond
 };
 
@@ -270,7 +280,7 @@ inline Float_t GetSquaredInvMassCheap(Float_t pt1, Float_t eta1, Float_t phi1, F
   return mass2;
 }
 
-inline Float_t AliTwoParticleCorrelationsBase::checkIfResonance(Int_t ires, Bool_t fill, int ix1, int ix2)
+inline Float_t AliTwoParticleCorrelationsBase::checkIfResonance(Int_t ires, Bool_t fill, float pt1, float eta1, float phi1, float pt2, float eta2, float phi2)
 {
   /* inspired on */
   /* $Id: AliUEHistograms.h 20164 2007-08-14 15:31:50Z morsch $ */
@@ -278,51 +288,42 @@ inline Float_t AliTwoParticleCorrelationsBase::checkIfResonance(Int_t ires, Bool
   // Author: Jan Fiete Grosse-Oetringhaus, Sara Vallero
 
   Bool_t itcouldbe = kFALSE;
-  Float_t mass = GetSquaredInvMassCheap(fPt[ix1], fEta[ix1], fPhi[ix1], fPt[ix2], fEta[ix2], fPhi[ix2], fgkChildMass[0][ires], fgkChildMass[1][ires]);
+  Float_t mass = GetSquaredInvMassCheap(pt1, eta1, phi1, pt2, eta2, phi2, fgkChildMass[0][ires], fgkChildMass[1][ires]);
 
-  if (TMath::Abs(mass - fgkMass[ires] * fgkMass[ires]) < 5 * fgkMassThreshold[ires])
-  {
+  if (TMath::Abs(mass - fgkMass[ires] * fgkMass[ires]) < 5 * fgkMassThreshold[ires]) {
     if (fill)
       fhResonanceRoughMasses->Fill(ires, TMath::Sqrt(mass));
-    mass = GetSquaredInvMass(fPt[ix1], fEta[ix1], fPhi[ix1], fPt[ix2], fEta[ix2], fPhi[ix2], fgkChildMass[0][ires], fgkChildMass[1][ires]);
+    mass = GetSquaredInvMass(pt1, eta1, phi1, pt2, eta2, phi2, fgkChildMass[0][ires], fgkChildMass[1][ires]);
 
     Float_t low = ((fgkMass[ires] != 0.0) ? (fgkMass[ires] - fThresholdMult[ires] * 0.5) * (fgkMass[ires] - fgkMassThreshold[ires] * 0.5) : 0.0);
     Float_t high = (fgkMass[ires] + fgkMassThreshold[ires] * 0.5) * (fgkMass[ires] + fgkMassThreshold[ires] * 0.5);
 
-    if ((low < mass) && (mass < high))
-    {
+    if ((low < mass) && (mass < high)) {
       itcouldbe = kTRUE;
-    }
-    else if (fgkChildMass[0][ires] != fgkChildMass[1][ires])
-    {
+    } else if (fgkChildMass[0][ires] != fgkChildMass[1][ires]) {
       /* switch masses hypothesis */
-      mass = GetSquaredInvMass(fPt[ix1], fEta[ix1], fPhi[ix1], fPt[ix2], fEta[ix2], fPhi[ix2], fgkChildMass[1][ires], fgkChildMass[0][ires]);
+      mass = GetSquaredInvMass(pt1, eta1, phi1, pt2, eta2, phi2, fgkChildMass[1][ires], fgkChildMass[0][ires]);
 
       Float_t low = ((fgkMass[ires] != 0.0) ? (fgkMass[ires] - fThresholdMult[ires] * 0.5) * (fgkMass[ires] - fgkMassThreshold[ires] * 0.5) : 0.0);
       Float_t high = (fgkMass[ires] + fgkMassThreshold[ires] * 0.5) * (fgkMass[ires] + fgkMassThreshold[ires] * 0.5);
 
-      if ((low < mass) && (mass < high))
-      {
+      if ((low < mass) && (mass < high)) {
         itcouldbe = kTRUE;
       }
     }
-  }
-  else if (fgkChildMass[0][ires] != fgkChildMass[1][ires])
-  {
+  } else if (fgkChildMass[0][ires] != fgkChildMass[1][ires]) {
     /* switch masses hypothesis */
-    mass = GetSquaredInvMassCheap(fPt[ix1], fEta[ix1], fPhi[ix1], fPt[ix2], fEta[ix2], fPhi[ix2], fgkChildMass[1][ires], fgkChildMass[0][ires]);
+    mass = GetSquaredInvMassCheap(pt1, eta1, phi1, pt2, eta2, phi2, fgkChildMass[1][ires], fgkChildMass[0][ires]);
 
-    if (TMath::Abs(mass - fgkMass[ires] * fgkMass[ires]) < 5 * fgkMassThreshold[ires])
-    {
+    if (TMath::Abs(mass - fgkMass[ires] * fgkMass[ires]) < 5 * fgkMassThreshold[ires]) {
       if (fill)
         fhResonanceRoughMasses->Fill(ires, TMath::Sqrt(mass));
-      mass = GetSquaredInvMass(fPt[ix1], fEta[ix1], fPhi[ix1], fPt[ix2], fEta[ix2], fPhi[ix2], fgkChildMass[1][ires], fgkChildMass[0][ires]);
+      mass = GetSquaredInvMass(pt1, eta1, phi1, pt2, eta2, phi2, fgkChildMass[1][ires], fgkChildMass[0][ires]);
 
       Float_t low = ((fgkMass[ires] != 0.0) ? (fgkMass[ires] - fThresholdMult[ires] * 0.5) * (fgkMass[ires] - fgkMassThreshold[ires] * 0.5) : 0.0);
       Float_t high = (fgkMass[ires] + fgkMassThreshold[ires] * 0.5) * (fgkMass[ires] + fgkMassThreshold[ires] * 0.5);
 
-      if ((low < mass) && (mass < high))
-      {
+      if ((low < mass) && (mass < high)) {
         itcouldbe = kTRUE;
       }
     }

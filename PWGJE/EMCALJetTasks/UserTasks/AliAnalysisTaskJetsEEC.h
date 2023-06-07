@@ -52,6 +52,7 @@ public:
   void SetCheckTracksOn(Bool_t t) { fTrackCheckPlots = t; }
   void SetCheckResolution(Bool_t t) { fCheckResolution = t; }
   void SetMinPtConst(Float_t t) { fMinPtConst = t;}
+  void SetMinTrackPtEncs(Float_t t) { fMinENCtrackPt = t;}
   void SetHardCutoff(Float_t t) { fHardCutoff = t; }
   void SetDoTwoTrack(Bool_t t) { fDoTwoTrack = t; }
   void SetCutDoubleCounts(Bool_t t) {fCutDoubleCounts = t;}
@@ -63,6 +64,8 @@ public:
   void SetDetLevelJetsOn(Bool_t t) { fStoreDetLevelJets = t; }
 //  void SetMatchRadius(Float_t t) { fMatchR = t; } //MIGHT NEED
   void SetStoreTrig(Bool_t t) {fStoreTrig = t;}
+  
+  void SetFillEncMC(Bool_t t) { fDoFillEncMC = t; } //For MC
   
 
 protected:
@@ -77,6 +80,9 @@ protected:
   int GetConstituentID(int constituentIndex, const AliVParticle* part, AliEmcalJet * jet);
   Double_t GetDownscaleWeight(string tstring);
   void ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJetCont);
+  
+  void ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJetCont, AliEmcalJet *fJet_tru, Int_t km); //MC and det correlations
+  
   void RunChanged(Int_t nr);
   Int_t fContainer; ///< jets to be analyzed 0 for Base, 1 for subtracted.
   Float_t fMinFractionShared; ///< only fill histos for jets if shared fraction
@@ -85,6 +91,7 @@ protected:
   JetShapeSub fJetShapeSub;   ///< jet subtraction to be used //MIGHT NOT NEED THIS
   JetSelectionType fJetSelection; ///< Jet selection: inclusive/recoil jet
   Float_t fPtThreshold; ///<
+  Float_t fMinENCtrackPt; ///< min track pT for the EECs
 
 
 Bool_t fCentSelectOn;      ///< switch on/off centrality selection
@@ -108,7 +115,7 @@ Bool_t fStoreDetLevelJets; ///< store the detector level jet quantities
 
 
 ///MIGHT NEED MIGHT NEED MIGHT NEED
-//Bool_t fDoFillMC_EEC;      ///< to fill the matched mc plane
+Bool_t fDoFillEncMC;      ///< to fill the matched mc plane
 //  Float_t fRMatching; ///<
 
 
@@ -118,19 +125,59 @@ Bool_t fStoreDetLevelJets; ///< store the detector level jet quantities
   Bool_t fStoreTrig; ///<storing the trigger class
 //  Bool_t fMatch; ///< do the matching in the task
   
-  TH1D *EEC_hist; //initializing histogram with correlators
   TH1D *jet_pt_hist; //initializing histogram with jet pt
+  
+  TH1D *EEC_hist; //initializing histogram with correlators
   TH2D *EEC_pt_hist; //initializing 2D histogram with correlators and jet pt
   TH2D *EEC_pt_hist_log; //initializing 2D histogram with correlators and jet pt on a log scale
   
-  TH1D *EEEC_hist; //initializing histogram with correlators
-//  TH1D *jet_pt_hist; //initializing histogram with jet pt
-  TH2D *EEEC_pt_hist; //initializing 2D histogram with correlators and jet pt
-  TH2D *EEEC_pt_hist_log; //initializing 2D histogram with correlators and jet pt on a log scale
+  TH1D *E3C_hist; //initializing histogram with correlators
+  TH2D *E3C_pt_hist; //initializing 2D histogram with correlators and jet pt
+  TH2D *E3C_pt_hist_log; //initializing 2D histogram with correlators and jet pt on a log scale
+
+
+//For corrections
+  TH3D *EEC_det_pt_hist_3d;
+  TH3D *EEC_tru_pt_hist_3d;
   
-//MIGHT NEED MIGHT NEED
-//  TH1D *fHtrueAll1D;      ///<  histogram of all truth level jets
-//  TH1D *fHtrueMatch1D;      ///<  histogram of matched truth level jets
+  TH3D *EEC_det_pt_hist_log_3d;
+  TH3D *EEC_tru_pt_hist_log_3d;
+  
+  TH3D *E3C_det_pt_hist_3d; //all det level
+  TH3D *E3C_tru_pt_hist_3d; //all true level
+  
+  TH3D *E3C_det_pt_hist_log_3d;
+  TH3D *E3C_tru_pt_hist_log_3d;
+
+  TH3D *N2_det_pt_hist_3d;
+  TH3D *N2_tru_pt_hist_3d;
+  
+  TH3D *N2_det_pt_hist_log_3d;
+  TH3D *N2_tru_pt_hist_log_3d;
+  
+  TH3D *N3_det_pt_hist_3d;
+  TH3D *N3_tru_pt_hist_3d;
+  
+  TH2D *EEC_det_match_pt_det;
+  TH2D *EEC_tru_match_pt_tru;
+  
+  TH2D *E3C_det_match_pt_det;
+  TH2D *E3C_tru_match_pt_tru;
+  
+  TH2D *EEC_det_match_pt_det_log;
+  TH2D *EEC_tru_match_pt_tru_log;
+  
+  TH2D *E3C_det_match_pt_det_log;
+  TH2D *E3C_tru_match_pt_tru_log;
+  
+  TH1D *pt_tru; //all tru level
+  TH1D *pt_tru_match; //tru level matched
+  TH1D *pt_det; //all det level
+  TH1D *pt_det_match; //det level matched
+  
+  TH1D *test_hist; //test histogram
+  
+  TH2D *R_matrix;
 
 private:
   AliAnalysisTaskJetsEEC(
@@ -138,6 +185,6 @@ private:
   AliAnalysisTaskJetsEEC &
   operator=(const AliAnalysisTaskJetsEEC &); // not implemented
 
-  ClassDef(AliAnalysisTaskJetsEEC, 22)
+  ClassDef(AliAnalysisTaskJetsEEC, 29) //change this to 29
 };
 #endif

@@ -7,7 +7,7 @@
 #include "TRandom.h"
 #include "AliJetContainer.h"
 
-AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString configFileName = "Config_siweyhmi_JetHadro.C",Int_t settingType = 0,Int_t year = 2018, TString periodName="18q", Int_t passIndex = 3, Int_t lookUpTableIndex = 0, const char* suffix = "", Int_t containerNameMode=0)
+AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString configFileName = "Config_siweyhmi_JetHadro.C",Int_t settingType = 0,Int_t year = 2018, TString periodName="18q", Int_t passIndex = 3, const char* suffix = "", Int_t containerNameMode=0)
 {
   gSystem->Load("libANALYSIS");
   gSystem->Load("libANALYSISalice");
@@ -28,9 +28,8 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
   Parameter 2: configFileName   --> config file which should exist both in alicen and hera
   Parameter 3: settingType      --> an integer to decide which setting to use
   Parameter 4: year             --> year
-  Parameter 5: lookUpTableIndex --> an integer to decide which lookup table to use
-  Parameter 6: suffix           --> used for naming conflicts in lego train --> each wagon has a different suffix
-  Parameter 7: containerNameMode--> decide either dump output files in a TDirectoryFile or not. 0 without 1 and 2 with TDirectoryFile,
+  Parameter 5: suffix           --> used for naming conflicts in lego train --> each wagon has a different suffix
+  Parameter 6: containerNameMode--> decide either dump output files in a TDirectoryFile or not. 0 without 1 and 2 with TDirectoryFile,
   =================================================================================================
   */
   std::cout << " Info::siweyhmi: ===== In the AddTask_siweyhmi_JetHadro ===== " << std::endl;
@@ -68,15 +67,13 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
     // MC closure for higher moments
     // settingType = 64;   // 1 for Real data 50 for full MC
     // year   = 2; periodName="15o"; passIndex=2  // 1 for 10h, 2 for 15o, 3 for 18[q,r]
-    lookUpTableIndex =0;
     suffix = "test";
     containerNameMode=0;
   }
   TString combinedName;
   combinedName.Form("siweyhmi_%s", suffix);
   TString configFilePath(configBasePath+configFileName);
-  std::cout << " Info::siweyhmi: Configpath:  " << configFilePath << " year = " << year << " --- period name = " << periodName << " --- pass = " << passIndex << " --- lookUpTableIndex = " << lookUpTableIndex << " --- settingType = " << settingType << std::endl;
-  //
+  std::cout << " Info::siweyhmi: Configpath:  " << configFilePath << " year = " << year << " --- period name = " << periodName << " --- pass = " << passIndex << " --- settingType = " << settingType << std::endl;
 
   AliAnalysisJetHadro* task(0x0);
   #ifdef __CLING__
@@ -87,7 +84,6 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
       triggermakeradd << year << ", ";
       triggermakeradd << "\"" << periodName.Data() << "\"" << ", ";
       triggermakeradd << passIndex << ", ";
-      triggermakeradd << lookUpTableIndex << ", ";
       triggermakeradd << "\"" << combinedName.Data() << "\"";
       triggermakeradd << ")";
       std::string triggermakeraddstring = triggermakeradd.str();
@@ -95,12 +91,12 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
       task = (AliAnalysisJetHadro*)gROOT->ProcessLine(triggermakeraddstring.c_str());
   #else
       gROOT->LoadMacro(configFilePath.Data());
-      task = Config_siweyhmi_JetHadro(getFromAlien,settingType,year,periodName,passIndex,lookUpTableIndex,combinedName);
+      task = Config_siweyhmi_JetHadro(getFromAlien,settingType,year,periodName,passIndex,combinedName);
   #endif
 
   Bool_t hasMC = (AliAnalysisManager::GetAnalysisManager()->GetMCtruthEventHandler()!=0x0);
   task->SetIsMCtrue(hasMC);
-  task->SetUseCouts(kTRUE);
+//  task->SetUseCouts(kTRUE);
   printf(" ========================= MC info %d ========================= \n",hasMC);
   mgr->AddTask(task);
   // mgr->Dump(); task->Dump();
@@ -124,7 +120,7 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
   //define output containers, please use 'username'_'somename'
   AliAnalysisDataContainer *cinput, *coutput1, *coutput2, *coutput3, *coutput4;
   AliAnalysisDataContainer *coutput5, *coutput6, *coutput7, *coutput8, *coutput9;
-  AliAnalysisDataContainer *coutput10, *coutput11, *coutput12, *coutput13;
+  AliAnalysisDataContainer *coutput10, *coutput11, *coutput12, *coutput13,*coutput14;
   //
   //  find and connect input container // Output files --> File opening order is important
   cinput  = mgr->GetCommonInputContainer();
@@ -137,31 +133,31 @@ AliAnalysisTask *AddTask_siweyhmi_JetHadro(Bool_t getFromAlien=kTRUE, TString co
   TString listName = "";
   if (containerNameMode==0){
     fileDirStructure = Form("%s", outputFileName);  // TDirectoryFile name to put all containers; AnalysisResults.root --> trees and hists
-    listName = "cleanHists";
+    listName = "jetHadroHists";
   } else if (containerNameMode==1){
-    dirName = "PWGCF_marsland";                     // TDirectoryFile name to put all containers; AnalysisResults.root --> PWGCF_marsland --> trees and hists
+    dirName = "PWGJE_siweyhmi";                     // TDirectoryFile name to put all containers; AnalysisResults.root --> PWGJE_siweyhmi --> trees and hists
     fileDirStructure = Form("%s:%s", outputFileName, dirName.Data());
-    listName = combinedName+"_cleanHists";
+    listName = combinedName+"_jetHadroHists";
   } else if (containerNameMode==2){
-    dirName = Form("PWGCF_marsland_%s",suffix);     // TDirectoryFile name to put all containers; AnalysisResults.root --> PWGCF_marsland_<setting> --> trees and hists
+    dirName = Form("PWGJE_siweyhmi_%s",suffix);     // TDirectoryFile name to put all containers; AnalysisResults.root --> PWGJE_siweyhmi_<setting> --> trees and hists
     fileDirStructure = Form("%s:%s", outputFileName, dirName.Data());
-    listName = combinedName+"_cleanHists";
+    listName = combinedName+"_jetHadroHists";
   }
   //
   // Output containers
   coutput1  = mgr->CreateContainer(listName,                      TList::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput2  = mgr->CreateContainer(combinedName+"_armPodTree",    TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput3  = mgr->CreateContainer(combinedName+"_jetsEMCconst",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput4  = mgr->CreateContainer(combinedName+"_fTreeMC",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput5  = mgr->CreateContainer(combinedName+"_jetsFJ",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput6  = mgr->CreateContainer(combinedName+"_BGjetsFJ",      TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput7  = mgr->CreateContainer(combinedName+"_tracks",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput8 = mgr->CreateContainer(combinedName+"_jetsFJconst",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput9 = mgr->CreateContainer(combinedName+"_resonance",     TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput10 = mgr->CreateContainer(combinedName+"_eventInfo",     TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput11 = mgr->CreateContainer(combinedName+"_dscaled",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput12 = mgr->CreateContainer(combinedName+"_jetsFJGen",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
-  coutput13 = mgr->CreateContainer(combinedName+"_jetEMC",          TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput2  = mgr->CreateContainer(combinedName+"_jetsEMCconst",  TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput3  = mgr->CreateContainer(combinedName+"_jetsEMCBGconst",  TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput4  = mgr->CreateContainer(combinedName+"_jetsFJ",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput5  = mgr->CreateContainer(combinedName+"_jetsFJBG",      TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput6 = mgr->CreateContainer(combinedName+"_jetsFJconst",    TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput7 = mgr->CreateContainer(combinedName+"_jetsFJBGconst",    TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput8 = mgr->CreateContainer(combinedName+"_jetResonance",   TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput9 = mgr->CreateContainer(combinedName+"_jeteventInfo",   TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput10 = mgr->CreateContainer(combinedName+"_jetsEMC",         TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput11 = mgr->CreateContainer(combinedName+"_jetsEMCBG",         TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput12  = mgr->CreateContainer(combinedName+"_fTreeMC",       TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
+  coutput13  = mgr->CreateContainer(combinedName+"_tracks",        TTree::Class(), AliAnalysisManager::kOutputContainer, fileDirStructure);
 
   mgr->ConnectOutput (task,  1, coutput1);
   mgr->ConnectOutput (task,  2, coutput2);

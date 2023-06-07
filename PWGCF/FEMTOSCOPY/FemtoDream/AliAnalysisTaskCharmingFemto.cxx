@@ -563,6 +563,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         fProtonTrack->SetPDGCode(mcpdg);
         fProtonTrack->SetParticleOrigin(AliFemtoDreamBasePart::PartOrigin(GetBuddyOrigin(mcPart)));
+        fProtonTrack->SetIsPrim(IsPrimaryCustom(fArrayMCAOD, mcPart));
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         protons.push_back(*fProtonTrack);
       }
@@ -576,6 +577,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         fProtonTrack->SetPDGCode(mcpdg);
         fProtonTrack->SetParticleOrigin(AliFemtoDreamBasePart::PartOrigin(GetBuddyOrigin(mcPart)));
+        fProtonTrack->SetIsPrim(IsPrimaryCustom(fArrayMCAOD, mcPart));
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         protons.push_back(*fProtonTrack);
         fHistBuddyplusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
@@ -592,6 +594,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         fProtonTrack->SetPDGCode(mcpdg);
         fProtonTrack->SetParticleOrigin(AliFemtoDreamBasePart::PartOrigin(GetBuddyOrigin(mcPart)));
+        fProtonTrack->SetIsPrim(IsPrimaryCustom(fArrayMCAOD, mcPart));
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         antiprotons.push_back(*fProtonTrack);
       }
@@ -605,6 +608,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fProtonTrack->SetID(fProtonTrack->GetIDTracks()[0]);
         fProtonTrack->SetPDGCode(mcpdg);
         fProtonTrack->SetParticleOrigin(AliFemtoDreamBasePart::PartOrigin(GetBuddyOrigin(mcPart)));
+        fProtonTrack->SetIsPrim(IsPrimaryCustom(fArrayMCAOD, mcPart));
         fProtonTrack->SetMotherPDG(protonMotherPdg);
         antiprotons.push_back(*fProtonTrack);
         fHistBuddyminusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
@@ -1335,6 +1339,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       if(saveCol("light_label")) tree.second->Branch("light_label", &dummyint);
       if(fIsMC && saveCol("light_pdg")) tree.second->Branch("light_pdg", &dummyint);
       if(fIsMC && saveCol("light_origin")) tree.second->Branch("light_origin", &dummyint);
+      if(fIsMC && saveCol("light_isprim")) tree.second->Branch("light_isprim", &dummybool);
       if(fIsMC && saveCol("light_motherpdg")) tree.second->Branch("light_motherpdg", &dummyint);
     }
 
@@ -1380,6 +1385,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
       if(saveCol("light_label")) tree.second->Branch("light_label", &dummyint);
       if(fIsMC && saveCol("light_pdg")) tree.second->Branch("light_pdg", &dummyint);
       if(fIsMC && saveCol("light_origin")) tree.second->Branch("light_origin", &dummyint);
+      if(fIsMC && saveCol("light_isprim")) tree.second->Branch("light_isprim", &dummybool);
       if(fIsMC && saveCol("light_motherpdg")) tree.second->Branch("light_motherpdg", &dummyint);
     }
   }

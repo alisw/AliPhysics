@@ -104,6 +104,7 @@ void AliFemtoDreamCascade::SetCascade(AliAODEvent *evt, AliAODcascade *casc) {
   fNegDaug->SetTrack(nTrackXi);
   fPosDaug->SetTrack(pTrackXi);
   fBach->SetTrack(bachTrackXi);
+
   fNegDaug->SetMomentum(0, casc->MomNegX(), casc->MomNegY(), casc->MomNegZ());
   fPosDaug->SetMomentum(0, casc->MomPosX(), casc->MomPosY(), casc->MomPosZ());
   fBach->SetMomentum(0, casc->MomBachX(), casc->MomBachY(), casc->MomBachZ());
@@ -240,6 +241,12 @@ void AliFemtoDreamCascade::SetCascade(AliVEvent *evt, AliAODcascade *casc) {
   AliVTrack *pTrackXi = dynamic_cast<AliVTrack*>(casc->GetDaughter(0));
   AliVTrack *bachTrackXi = dynamic_cast<AliVTrack*>(casc->GetDecayVertexXi()
       ->GetDaughter(0));
+
+  // RE-SET THE TRACKS !!! Somehow, otherwise the MC info is not there. Oton 19/5/2023
+  fNegDaug->SetUseMCInfo(fIsMC);
+  fPosDaug->SetUseMCInfo(fIsMC);
+  fBach->SetUseMCInfo(fIsMC);
+
   fNegDaug->SetTrack(nTrackXi,evt);
   fPosDaug->SetTrack(pTrackXi,evt);
   fBach->SetTrack(bachTrackXi,evt);
@@ -594,6 +601,8 @@ void AliFemtoDreamCascade::SetMCMotherInfo(AliVEvent *evt,
 void AliFemtoDreamCascade::SetMCMotherInfo(TClonesArray *mcarray,
                                            AliAODcascade *casc) {
   if (fBach->IsSet() && fPosDaug->IsSet() && fNegDaug->IsSet()) {
+    //initalize to -1 (since 0 is an actual partice (parton?) in the MC stack). Oton 19/5/2023
+    this->SetMotherID(-1);
     //look if the bachelor is from a weak decay and find the label of the
     //mother
     int labelBachMother = -1;
@@ -675,6 +684,26 @@ void AliFemtoDreamCascade::SetMCMotherInfo(TClonesArray *mcarray,
                     this->SetParticleOrigin(AliFemtoDreamBasePart::kUnknown);
 //                    std::cout << "An Unknown \n";
                   }
+
+
+                  //set mother ID as for v0 (Oton. 19/5/2023) 
+                   int motherID = mcPart->GetMother();
+                   int lastMother = motherID;
+                   AliAODMCParticle *mcMother = nullptr;
+                   while (motherID != -1) {
+                     lastMother = motherID;
+                     mcMother = (AliAODMCParticle *) mcarray->At(motherID);
+                     motherID = mcMother->GetMother();
+                   }
+                   if (lastMother!=-1) {
+                     mcMother = (AliAODMCParticle *) mcarray->At(lastMother);
+                   }
+                   if (mcMother) {
+                     this->SetMotherPDG(mcMother->GetPdgCode());
+                     this->SetMotherID(lastMother);
+                   }
+                 //----
+
                 } else {
                   //combinatorial background
                   this->SetParticleOrigin(AliFemtoDreamBasePart::kFake);

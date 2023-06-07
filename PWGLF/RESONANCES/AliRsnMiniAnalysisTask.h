@@ -147,6 +147,7 @@ private:
    TH1F                *fHAEventsVsMulti; //!<! histogram of event statistics
    TH1F                *fHAEventsVsTracklets; //!<! histogram of event statistics
    TH2F                *fHAEventVzCent;       ///< histogram of vertex-z vs. multiplicity/centrality
+   TH1F                 *fHAPhiSpherocity; ///< phi distributions of tracks used in spherocity analysis
    TH2F                *fHAEventSpherocityCent; ///< histogram of spherocity vs. multiplicity/centrality
    TH2F                *fHAEventMultiCent;    ///< histogram of multiplicity vs. centrality
    TH2F                *fHAEventRefMultiCent; //!<! histogram of reference multiplicity vs. centrality

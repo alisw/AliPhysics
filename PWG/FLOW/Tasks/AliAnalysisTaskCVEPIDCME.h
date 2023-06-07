@@ -38,6 +38,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void IfUseVZEROPlane(bool bUseVZEROPlane) { this->isUseVZEROPlane = bUseVZEROPlane; }
   void IfUseZDCPlane(bool bUseZDCPlane) { this->isUseZDCPlane = bUseZDCPlane; }
   void IfDoNUE(bool bDoNUE) { this->isDoNUE = bDoNUE; }
+  void IfDoLambdaNUE(bool bDoLambdaNUE) { this->isDoLambdaNUE = bDoLambdaNUE; }
   void IfDoNUA(bool bDoNUA) { this->isDoNUA = bDoNUA; }
   void IfV0DaughterUseTOF(bool bV0DaughterUseTOF) { this->isV0DaughterUseTOF = bV0DaughterUseTOF; }
   void IfQATPC(bool bQATPC) { this->isQATPC = bQATPC; }
@@ -46,6 +47,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void IfNarrowDcaCuts768(bool bNarrowDcaCuts768) { this->isNarrowDcaCuts768 = bNarrowDcaCuts768; }
   void IfProtonCustomizedDCACut(bool bProtonCustomizedDCACut) { this->isProtonCustomizedDCACut = bProtonCustomizedDCACut; }
   void IfUsePionRejection(bool bUsePionRejection) { this->isUsePionRejection = bUsePionRejection; }
+
+  void IfTightPileUp(bool bTightPileUp) { this->isTightPileUp = bTightPileUp; }
 
   void IfCalculatePIDFlow(bool bCalculatePIDFlow) { this->isCalculatePIDFlow = bCalculatePIDFlow; }
   void IfCalculateDiffResult(bool bCalculateDiffResult) { this->isCalculateDiffResult = bCalculateDiffResult; }
@@ -65,6 +68,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
 
   // read in
   void SetListForNUE(TList* flist) { this->fListNUE = (TList*)flist->Clone(); }
+  void SetListForLambdaNUE(TList* flist) { this->fListLambdaNUE = (TList*)flist->Clone(); }
   void SetListForNUA(TList* flist) { this->fListNUA = (TList*)flist->Clone(); }
   void SetListForVZEROCalib(TList* flist) { this->fListVZEROCalib = (TList*)flist->Clone(); }
   void SetListForZDCCalib(TList* flist) { this->fListZDCCalib = (TList*)flist->Clone(); }
@@ -163,6 +167,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   bool AcceptAODTrack(AliAODTrack* track);
   bool CheckPIDofParticle(AliAODTrack* ftrack, int pidToCheck);
   double GetNUECor(int charge, double pt);
+  double GetPIDNUECor(int pdgcode, double pt);
+  double GetLambdaNUECor(int baryon_num, double pT);
   double GetNUACor(int charge, double phi, double eta, double vz);
   // V0
   bool IsGoodV0(AliAODv0* aodV0);
@@ -186,6 +192,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   bool isUseVZEROPlane;
   bool isUseZDCPlane;
   bool isDoNUE;
+  bool isDoLambdaNUE; 
   bool isDoNUA;
   bool isV0DaughterUseTOF;
   bool isQATPC;
@@ -209,6 +216,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   bool isCheckLambdaProtonFromDecay;
   bool isCheckLambdaProtonFromDecayFoundInTrackLoops;
   bool isUseOneSideTPCPlane;
+
+  bool isTightPileUp;
 
   //////////////////////
   // Cuts and options //
@@ -331,8 +340,8 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   std::unordered_map<int, std::vector<double>> mapTPCNegTrksIDPhiWgt;
   std::unordered_map<int, std::vector<double>> mapTPCTrksIDPhiWgt;
   
-  // Vector for particles from Tracks [pt,eta,phi,id,pdgcode,weight]
-  std::vector<std::array<double,6>> vecParticle;
+  // Vector for particles from Tracks [pt,eta,phi,id,pdgcode,weight,pidweight]
+  std::vector<std::array<double,7>> vecParticle;
   // Vector for V0s [pt,eta,phi,id,pdgcode,weight,mass,id1,id2]
   std::vector<std::array<double,9>> vecParticleV0;
   // Vector for daughter particles [pt,eta,phi,id,pdgcode,weight]
@@ -356,6 +365,9 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   TList* fListNUE; // read list for NUE
   TH1D* hNUEweightPlus;
   TH1D* hNUEweightMinus;
+  TList* fListLambdaNUE;
+  TH1D* heffL[8];
+  TH1D* heffA[8];
   ////////////////////////
   // NUA
   ////////////////////////

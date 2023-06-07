@@ -170,7 +170,7 @@ Bool_t ConfigureLstarpp_sp
 
     // axis X: invmass (or resolution)
     if (useIM[i]) 
-      out->AddAxis(imID, 240, 1.4, 2.0);
+      out->AddAxis(imID, 120, 1.4, 2.0);
     else
       out->AddAxis(resID, 200, -0.02, 0.02);
     

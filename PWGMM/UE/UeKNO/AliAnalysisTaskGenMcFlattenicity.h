@@ -75,6 +75,8 @@ protected:
   double fFlattV0;
   TH1D *hFlatt;
   TH2D *hflatVsNchV0;
+  TH2D *hMultVsFlat;
+  TH3D *hMultVsFlatVsPt[4];
   TH2D *hFlatVsPt[4];
   TList *fOutputList; //!<! Output list of objects
 

@@ -1345,7 +1345,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookVsZDC()
   f3pCorrelatorVsZPC->GetXaxis()->SetTitle("ZPC (#times 10^{3}) [a.u.]");
 
   TString s3pCorrelatorVsZPName = "f3pCorrelatorVsZP";
-  f3pCorrelatorVsZP = new TProfile(s3pCorrelatorVsZPName.Data(),"",601,-0.5,600.5);
+  f3pCorrelatorVsZP = new TProfile(s3pCorrelatorVsZPName.Data(),"",600,-0.5,599.5);
   f3pCorrelatorVsZP->SetStats(kFALSE); 
   if(fHarmonic == 1) {
     f3pCorrelatorVsZP->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZP");
@@ -1389,7 +1389,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookVsZDC()
   f3pCorrelatorVsZNC->GetXaxis()->SetTitle("ZNC (#times 10^{3}) [a.u.]");
 
   TString s3pCorrelatorVsZNName = "f3pCorrelatorVsZN";
-  f3pCorrelatorVsZN = new TProfile(s3pCorrelatorVsZNName.Data(),"",601,-0.5,600.5);
+  f3pCorrelatorVsZN = new TProfile(s3pCorrelatorVsZNName.Data(),"",600,-0.5,599.5);
   f3pCorrelatorVsZN->SetStats(kFALSE); 
   if(fHarmonic == 1) {
     f3pCorrelatorVsZN->SetTitle("#LT#LTcos(#psi_{1}+#psi_{2}-2#phi_{3})#GT#GT #font[72]{vs} ZN");
@@ -1433,7 +1433,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookVsZDC()
   f2pCorrelatorVsZPC->GetXaxis()->SetTitle("ZPC (#times 10^{3}) [a.u.]");
 
   TString s2pCorrelatorVsZPName = "f2pCorrelatorVsZP";
-  f2pCorrelatorVsZP = new TProfile(s2pCorrelatorVsZPName.Data(),"",601,-0.5,600.5);
+  f2pCorrelatorVsZP = new TProfile(s2pCorrelatorVsZPName.Data(),"",600,-0.5,599.5);
   f2pCorrelatorVsZP->SetStats(kFALSE); 
   if(fHarmonic == 1) {
     f2pCorrelatorVsZP->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} ZP");
@@ -1477,7 +1477,7 @@ void AliFlowAnalysisWithMixedHarmonics::BookVsZDC()
   f2pCorrelatorVsZNC->GetXaxis()->SetTitle("ZNC (#times 10^{3}) [a.u.]");
 
   TString s2pCorrelatorVsZNName = "f2pCorrelatorVsZN";
-  f2pCorrelatorVsZN = new TProfile(s2pCorrelatorVsZNName.Data(),"",601,-0.5,600.5);
+  f2pCorrelatorVsZN = new TProfile(s2pCorrelatorVsZNName.Data(),"",600,-0.5,599.5);
   f2pCorrelatorVsZN->SetStats(kFALSE); 
   if(fHarmonic == 1) {
     f2pCorrelatorVsZN->SetTitle("#LT#LTcos(#psi_{1}-#psi_{2})#GT#GT #font[72]{vs} ZN");

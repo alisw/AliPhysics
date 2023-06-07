@@ -32,7 +32,8 @@ AliAnalysisTask *AddTaskJSPCMasterClosureRun2(TString taskName = "JSPCMaster", d
         MAPfilenames[i] = Form("%sPhiWeights_LHC10h_tpconly_pt%02d_9904.root", MAPdirname.Data(), Int_t (ptMin * 10));  // Azimuthal correction.  
       }
       else {  
-        MAPfilenames[i] = Form("%sPhiWeights_LHC17i2a_Error_pt02_s_global.root", MAPdirname.Data());
+        MAPfilenames[i] = Form("%sPhiWeights_LHC17i2_default_s_default.root", MAPdirname.Data());
+        // MAPfilenames[i] = Form("/home/maxim/Downloads/PhiWeights_LHC17i2_default.root");
       }      
     }
     else {
@@ -227,6 +228,11 @@ AliAnalysisTask *AddTaskJSPCMasterClosureRun2(TString taskName = "JSPCMaster", d
       myTask[i][0]->AliSPCRun2SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
       myTask[i][0]->AliSPCRun2SetSaveAllQA(kTRUE);
       myTask[i][0]->AliSPCRun2SetMinNuPar(14.);
+        if(i==1){
+          myTask[i][0]->AliSPCRun2SetUseWeights(kTRUE, kTRUE);
+        } else {
+          myTask[i][0]->AliSPCRun2SetUseWeights(kTRUE, kFALSE);
+        }
 
       Int_t harmonicArray2[maxNrComb][8] = {
                                       {4, 3,-4,-4, 5, 0, 0,0},

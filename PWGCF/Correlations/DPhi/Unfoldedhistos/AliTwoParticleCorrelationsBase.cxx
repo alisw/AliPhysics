@@ -56,6 +56,7 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase()
     fPt(nullptr),
     fEta(nullptr),
     fPhi(nullptr),
+    fPID(nullptr),
     /* correction weights */
     fCorrectionWeights{},
     /* efficiency correction */
@@ -108,6 +109,8 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase()
     fhN1nw_vsC{},
     fhSum1Ptnw_vsC{},
     fSpeciesNames{},
+    fPreRejectResonances(false),
+    fPostRejectResonances(false),
     fhResonanceRoughMasses(NULL),
     fhResonanceMasses(NULL),
     fhDiscardedResonanceMasses(NULL)
@@ -134,6 +137,7 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase(const char* name)
     fPt(nullptr),
     fEta(nullptr),
     fPhi(nullptr),
+    fPID(nullptr),
     /* correction weights */
     fCorrectionWeights{},
     /* efficiency correction */
@@ -186,6 +190,8 @@ AliTwoParticleCorrelationsBase::AliTwoParticleCorrelationsBase(const char* name)
     fhN1nw_vsC{},
     fhSum1Ptnw_vsC{},
     fSpeciesNames{},
+    fPreRejectResonances(false),
+    fPostRejectResonances(false),
     fhResonanceRoughMasses(NULL),
     fhResonanceMasses(NULL),
     fhDiscardedResonanceMasses(NULL)
@@ -202,6 +208,7 @@ AliTwoParticleCorrelationsBase::~AliTwoParticleCorrelationsBase() {
   delete[] fPt;
   delete[] fEta;
   delete[] fPhi;
+  delete[] fPID;
 
   if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
       delete fOutput;
@@ -255,14 +262,34 @@ Bool_t AliTwoParticleCorrelationsBase::ConfigureBinning(const char *confstring) 
 /// Basically one digit per supported resonance and the digit is the factor in one fourth
 /// of the modulus around the resonance mass
 void AliTwoParticleCorrelationsBase::ConfigureResonances(const char *confstring) {
+  AliInfo(TString::Format("Resonances code string: %s", confstring));
 
   /* few sanity checks */
   TString str = confstring;
   if (!str.Contains("resonances:"))
     return;
+  if (str.Length() > 45) {
+    AliFatal(TString::Format("Resonances string suspisciouslly large %d: %s", str.Length(), str.Data()).Data());
+  }
+  if (!str.Contains(" ")) {
+    AliFatal(TString::Format("Resonances string with old format: %s", str.Data()).Data());
+  }
 
   Int_t rescode;
-  sscanf(str.Data(), "resonances:%d", &rescode);
+  char prepost[32] = "";
+  sscanf(str.Data(), "resonances:%s %d", prepost, &rescode);
+
+  if (TString(prepost).Contains("pre")) {
+    fPreRejectResonances = true;
+  }
+  if (TString(prepost).Contains("post")) {
+    fPostRejectResonances = true;
+  }
+  if (TString(prepost).Contains("none")) {
+    fPreRejectResonances = false;
+    fPostRejectResonances = false;
+  }
+
   Int_t mult = 1;
   for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
     fThresholdMult[ires] = Int_t(rescode / mult) % 10;
@@ -288,6 +315,17 @@ TString AliTwoParticleCorrelationsBase::GetBinningConfigurationString() const
 /// \return the configuration string corresponding to the current resonance rejection configuration
 TString AliTwoParticleCorrelationsBase::GetResonancesConfigurationString() const {
   TString str = "resonances:";
+  if (fPreRejectResonances) {
+    str += "pre";
+  }
+  if (fPostRejectResonances) {
+    str += "post";
+  }
+  if (!fPreRejectResonances && !fPostRejectResonances) {
+    str += "none";
+  }
+
+  str += " ";
 
   for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
     str += TString::Format("%01d",fThresholdMult[fgkNoOfResonances - 1 - ires]);
@@ -362,6 +400,7 @@ void AliTwoParticleCorrelationsBase::Initialize()
   fPt = new Float_t[fArraySize];
   fEta = new Float_t[fArraySize];
   fPhi = new Float_t[fArraySize];
+  fPID = new int[fArraySize];
 
   if (fSinglesOnly)  {
     for (uint i = 0; i < fSpeciesNames.size(); ++i) {
@@ -787,14 +826,16 @@ void AliTwoParticleCorrelationsBase::FlagConversionsAndResonances() {
   for (Int_t ix1 = 0; ix1 < fNoOfTracks; ix1++) {
       for (Int_t ix2 = ix1 + 1; ix2 < fNoOfTracks; ix2++) {
 
-      for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
-        if (fThresholdMult[ires] != 0) {
-          Float_t mass = checkIfResonance(ires, kTRUE, ix1, ix2);
+      if (fPID[ix1] != fPID[ix2]) {
+        for (Int_t ires = 0; ires < fgkNoOfResonances; ires++) {
+          if (fThresholdMult[ires] != 0) {
+            Float_t mass = checkIfResonance(ires, kTRUE, fPt[ix1], fEta[ix1], fPhi[ix1], fPt[ix2], fEta[ix2], fPhi[ix2]);
 
-          if (0 < mass) {
-            fFlags[ix1] |= (0x1 << ires);
-            fFlags[ix2] |= (0x1 << ires);
-            fhResonanceMasses->Fill(ires,TMath::Sqrt(mass));
+            if (0 < mass) {
+              fFlags[ix1] |= (0x1 << ires);
+              fFlags[ix2] |= (0x1 << ires);
+              fhResonanceMasses->Fill(ires, TMath::Sqrt(mass));
+            }
           }
         }
       }
