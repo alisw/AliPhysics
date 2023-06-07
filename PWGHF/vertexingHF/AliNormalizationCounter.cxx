@@ -649,9 +649,8 @@ void AliNormalizationCounter::FillCounters(TString name, Int_t runNumber, Int_t 
     if(sphToInteger == 100) sphToInteger += -1;
     fCounters.Count(Form("Event:%s/Run:%d/Multiplicity:%d/SpherocityQuant:%d",name.Data(),runNumber,multiplicity,sphToInteger));
   }
-  else if(fMultiplicity  && !fSpherocity){
+  else if(fMultiplicity  && !fSpherocity)
     fCounters.Count(Form("Event:%s/Run:%d/Multiplicity:%d",name.Data(),runNumber,multiplicity));
-  }
   else if(fMultiplicity  && fSpherocity)
     fCounters.Count(Form("Event:%s/Run:%d/Multiplicity:%d/Spherocity:%d",name.Data(),runNumber,multiplicity,sphToInteger));
   else if(!fMultiplicity  && fSpherocity) 
