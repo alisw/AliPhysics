@@ -351,6 +351,10 @@ void AliAnalysisTaskfn::UserExec(Option_t *)
             continue;
 
 	  motherf1 = pion.particle + kks0.particle;
+
+	  if (TMath::Abs(motherf1.Rapidity())>0.5)                                                                                         
+          continue;       
+
 	  if (motherf1.M() > 2.0)
             continue;
 
@@ -410,6 +414,10 @@ void AliAnalysisTaskfn::UserExec(Option_t *)
 
 		 pionmixenergy = TMath::Sqrt(pionmass * pionmass + piontrackmix->Px() * piontrackmix->Px() + piontrackmix->Py() * piontrackmix->Py() + piontrackmix->Pz() * piontrackmix->Pz());
 		 motherf1mix.SetPxPyPzE(piontrackmix->Px()+kks0.particle.Px(), piontrackmix->Py()+kks0.particle.Py(), piontrackmix->Pz()+kks0.particle.Pz(), pionmixenergy+kks0.particle.E());
+
+		 if (TMath::Abs(motherf1mix.Rapidity())>0.5)                                         
+		   continue;
+		 
 		 if (motherf1mix.M() > 2.0)
 		   continue;
 
