@@ -188,7 +188,14 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
               } else {
                 inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/weights_LHC18_periods.root");
               }
+            } else if (fPeriod.EqualTo("LHC16_simp")) {
+              inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/SimpleWeight_LHC16.root");
+            } else if (fPeriod.EqualTo("LHC17_simp")) {
+              inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/SimpleWeight_LHC17.root");
+            } else if (fPeriod.EqualTo("LHC18_simp")) {
+              inNUA = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUA/SimpleWeight_LHC18.root");
             }
+
 
             TList* weight_list = NULL;
             if (fPeriod.EqualTo("LHC15oKatarina")) {
@@ -252,6 +259,8 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
                   fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview")
                   ) {
                 inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/pp_HM.root");
+              } else if (fPeriod.EqualTo("LHC16_simp") || fPeriod.EqualTo("LHC17_simp") || fPeriod.EqualTo("LHC18_simp")) {
+                inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/simpleEff_pp.root");
               } else { // pp, using Zuzana's previous weight
                 inNUE = TFile::Open("alien:///alice/cern.ch/user/m/mzhao/Weights/NUE/LHC17d20a1_WithModEff_Syst.root");
               }
@@ -268,7 +277,9 @@ AliAnalysisTaskNonlinearFlow* AddTaskNonlinearFlow(
               weight_list = dynamic_cast<TList*>(inNUE->Get("weightList"));
               cin_NUE->SetData(weight_list);
             } else if (fPeriod.EqualTo("LHC15o_simp") || fPeriod.EqualTo("LHC18q_simp") || fPeriod.EqualTo("LHC18r_simp")
-                       || fPeriod.EqualTo("LHC16qt_simp")) {
+                       || fPeriod.EqualTo("LHC16qt_simp")
+                       || fPeriod.EqualTo("LHC16_simp") || fPeriod.EqualTo("LHC17_simp") || fPeriod.EqualTo("LHC18_simp")
+                       ) {
               weight_list = dynamic_cast<TList*>(inNUE->Get("WeightList"));
               cin_NUE->SetData(weight_list);
             } else if (fPeriod.EqualTo("LHC16qt")) {

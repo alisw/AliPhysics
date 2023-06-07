@@ -2056,9 +2056,12 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
   // If the period is not pPb LHC16qt
   if (!fPeriod.EqualTo("LHC16qt")) {
     // Only if it is the new LHC16,17,18, We need the period NUA
-    if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18")) {
+    if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
+        fPeriod.EqualTo("LHC16_simp") || fPeriod.EqualTo("LHC17_simp") || fPeriod.EqualTo("LHC18_simp")
+        ) {
       std::string ppperiod = ReturnPPperiod(fAOD->GetRunNumber());
       if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s", ppperiod.c_str()));
+      else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s_SystFlag%i_", ppperiod.c_str(), fCurrSystFlag));
       if(!fWeightsSystematics)
       {
         printf("Weights could not be found in list!\n");
@@ -2122,7 +2125,8 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
 Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
 
   if (fPeriod.EqualTo("LHC15o_simp") || fPeriod.EqualTo("LHC18q_simp") || fPeriod.EqualTo("LHC18r_simp") ||
-      fPeriod.EqualTo("LHC16qt_simp") ) {
+      fPeriod.EqualTo("LHC16qt_simp") ||
+      fPeriod.EqualTo("LHC16_simp") || fPeriod.EqualTo("LHC17_simp") || fPeriod.EqualTo("LHC18_simp")) {
     if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("Default"));
     else fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("Sys%i", fCurrSystFlag));
 
@@ -2717,6 +2721,9 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
       fPeriod.EqualTo("LHC16") ||
       fPeriod.EqualTo("LHC17") ||
       fPeriod.EqualTo("LHC18") || 
+      fPeriod.EqualTo("LHC16_simp") ||
+      fPeriod.EqualTo("LHC17_simp") ||
+      fPeriod.EqualTo("LHC18_simp") || 
       fPeriod.EqualTo("LHC16ZM") ||
       fPeriod.EqualTo("LHC17ZM") ||
       fPeriod.EqualTo("LHC18ZM") ) {
