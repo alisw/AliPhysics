@@ -678,7 +678,7 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     Double_t xmintotSoSpline[3]={0., firstMultBin, 0.};
     Double_t xmaxtotSoSpline[3]={1., lastMultBin, 100.};
 
-    Int_t nbinstotMCSoSpline[5]={1000, nMultBins, 1000, 1000, 100};
+    Int_t nbinstotMCSoSpline[5]={1000, nMultBins, 1000, 100, 100};
     Double_t xmintotMCSoSpline[5]={0., firstMultBin, 0., 0., 0.};
     Double_t xmaxtotMCSoSpline[5]={1., lastMultBin, 1., 100., 100.};
 
