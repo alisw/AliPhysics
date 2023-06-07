@@ -108,7 +108,7 @@ class AliNormalizationCounter : public TNamed
   TH1F *fHistRecoVertexZ;      /// histo of reconstructed z vertex
 
   /// \cond CLASSIMP    
-  ClassDef(AliNormalizationCounter,8);
+  ClassDef(AliNormalizationCounter,9);
   /// \endcond
 };
 #endif
