@@ -1337,9 +1337,9 @@ void AliAnalysisTaskSEXic0SL::SetConstants(void)
 	TrigStore.clear();
 
 	//Constants
-	MaxNTruth      = 20; //max. # of generated particle w/ eXi pair per event (MC truth)
-	MaxNEle        = 20; //max. # of electrons per event, for both MC truth and reco
-	MaxNCasc       = 20; //max. # of Xi per event, for both MC truth and reco
+	MaxNTruth      = 200; //max. # of generated particle w/ eXi pair per event (MC truth)
+	MaxNEle        = 200; //max. # of electrons per event, for both MC truth and reco
+	MaxNCasc       = 200; //max. # of Xi per event, for both MC truth and reco
 	PDGCode_e      = 11;
 	PDGCode_Lambda = 3122; //Lambda0, 1115.683 +- 0.006 (MeV)
 	PDGCode_Omega  = 3334; //Omega-, 1672.45 +- 0.29 (MeV)
