@@ -1477,6 +1477,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	  }
 	}
 
+	/*
 	if (isItPion==kTRUE && isItKaon==kTRUE)
 	  {
 	    isItPion=kFALSE;
@@ -1494,6 +1495,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	    isItKaon=kFALSE;
 	    isItProt=kFALSE;
 	  }
+	*/
 
     	//-------- PID selection is done ---------
 
