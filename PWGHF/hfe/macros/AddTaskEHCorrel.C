@@ -85,6 +85,9 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
     taskHFEeh->SwitchHadTrackEffi(CalcHadronTrackEffi);
     taskHFEeh->SwitchFillEHCorrel(FillEHCorrel);
     taskHFEeh->SetWeightCal(CalPi0EtaWeight);
+    taskHFEeh->IsClustersOn(ClusOn);
+    taskHFEeh->IsHadInfoOn(HadInfoOn);
+    taskHFEeh->IsTracksOn(TracksOn);
     taskHFEeh->SetNonHFEEffi(CalculateNonHFEEffi);
     taskHFEeh->SetNDeltaPhiBins(nBins);
     taskHFEeh->IsMC(isMC);
@@ -165,6 +168,9 @@ AliAnalysisTask *AddTaskEHCorrel(TString ContNameExt = "", Bool_t isPbPb=kFALSE,
         taskHFEehCent->SwitchHadTrackEffi(CalcHadronTrackEffi);
         taskHFEehCent->SwitchFillEHCorrel(FillEHCorrel);
         taskHFEehCent->SetWeightCal(CalPi0EtaWeight);
+        taskHFEehCent->IsClustersOn(ClusOn);
+        taskHFEehCent->IsHadInfoOn(HadInfoOn);
+        taskHFEehCent->IsTracksOn(TracksOn);
         taskHFEehCent->SetNonHFEEffi(CalculateNonHFEEffi);
         taskHFEehCent->SetNDeltaPhiBins(nBins);
         taskHFEehCent->IsMC(isMC);
