@@ -49,28 +49,29 @@
 
 ClassImp(AliPHOSEmbedggHBT)
 
-//________________________________________________________________________
-AliPHOSEmbedggHBT::AliPHOSEmbedggHBT(const char* name)
+  //________________________________________________________________________
+  AliPHOSEmbedggHBT::AliPHOSEmbedggHBT(const char* name)
   : AliAnalysisTaskEtaPhigg(name), fSignalEvent(nullptr), fSignalEvents(nullptr)
 {
   // Constructor
 }
 //________________________________________________________________________
-AliPHOSEmbedggHBT::~AliPHOSEmbedggHBT(){
-  //Note that histograms are stored in fOutputContainer and should not be deleted explicitely  
-  if(fMCEvents){
+AliPHOSEmbedggHBT::~AliPHOSEmbedggHBT()
+{
+  // Note that histograms are stored in fOutputContainer and should not be deleted explicitely
+  if (fMCEvents) {
     delete fMCEvents;
-    fMCEvents=nullptr;
-  }
-  if(fMCEvents){
-    delete fMCEvents;  
     fMCEvents = nullptr;
   }
-  if(fSignalEvent){
+  if (fMCEvents) {
+    delete fMCEvents;
+    fMCEvents = nullptr;
+  }
+  if (fSignalEvent) {
     delete fSignalEvent;
     fSignalEvent = nullptr;
   }
-  if(fSignalEvents){
+  if (fSignalEvents) {
     delete fSignalEvents;
     fSignalEvents = nullptr;
   }
@@ -147,11 +148,17 @@ void AliPHOSEmbedggHBT::UserCreateOutputObjects()
     fhReQinvSignal[iCut] =
       new TH2F(Form("hReQinv_signal_%s", fcut[iCut]), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
     fOutputContainer->Add(fhReQinvSignal[iCut]);
+    fhReQinvSignalConv[iCut] =
+      new TH2F(Form("hReQinv_signalConv_%s", fcut[iCut]), "Qinv distribution, conv", 100, 0., 0.25, 40, 0., 2.);
+    fOutputContainer->Add(fhReQinvSignalConv[iCut]);
     fhMiQinvSignal[iCut] =
       new TH2F(Form("hMiQinv_signal_%s", fcut[iCut]), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
     fOutputContainer->Add(fhMiQinvSignal[iCut]);
     fhReqSignal[iCut] = new TH2F(Form("hReq_signal_%s", fcut[iCut]), "q distribution", 100, 0., 0.25, 40, 0., 2.);
     fOutputContainer->Add(fhReqSignal[iCut]);
+    fhReqSignalConv[iCut] =
+      new TH2F(Form("hReq_signalConv_%s", fcut[iCut]), "q distribution", 100, 0., 0.25, 40, 0., 2.);
+    fOutputContainer->Add(fhReqSignalConv[iCut]);
     fhMiqSignal[iCut] = new TH2F(Form("hMiq_signal_%s", fcut[iCut]), "q distribution", 100, 0., 0.25, 40, 0., 2.);
     fOutputContainer->Add(fhMiqSignal[iCut]);
   }
@@ -162,11 +169,17 @@ void AliPHOSEmbedggHBT::UserCreateOutputObjects()
       fhReQinv[cen][iCut] =
         new TH2F(Form("hReQinv_%s_cen%d", fcut[iCut], cen), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
       fOutputContainer->Add(fhReQinv[cen][iCut]);
+      fhReQinvConv[cen][iCut] =
+        new TH2F(Form("hReQinvConv_%s_cen%d", fcut[iCut], cen), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+      fOutputContainer->Add(fhReQinvConv[cen][iCut]);
       fhMiQinv[cen][iCut] =
         new TH2F(Form("hMiQinv_%s_cen%d", fcut[iCut], cen), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
       fOutputContainer->Add(fhMiQinv[cen][iCut]);
       fhReq[cen][iCut] = new TH2F(Form("hReq_%s_cen%d", fcut[iCut], cen), "q distribution", 100, 0., 0.25, 40, 0., 2.);
       fOutputContainer->Add(fhReq[cen][iCut]);
+      fhReqConv[cen][iCut] =
+        new TH2F(Form("hReqConv_%s_cen%d", fcut[iCut], cen), "q distribution", 100, 0., 0.25, 40, 0., 2.);
+      fOutputContainer->Add(fhReqConv[cen][iCut]);
       fhMiq[cen][iCut] = new TH2F(Form("hMiq_%s_cen%d", fcut[iCut], cen), "q distribution", 100, 0., 0.25, 40, 0., 2.);
       fOutputContainer->Add(fhMiq[cen][iCut]);
     }
@@ -387,6 +400,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     ph->SetLambdas(clu->GetM20(), clu->GetM02());
     ph->SetUnfolded(clu->GetNExMax() < 2); // Remember, if it is unfolded
     ph->SetDistToBad(cellX);
+    ph->SetPrimary(clu->GetLabelAt(0));
   }
 
   for (Int_t i = 0; i < multClust; i++) {
@@ -539,12 +553,17 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
       double qinv = sum.M();
       double kT = 0.5 * sum.Pt();
 
+      bool commonParent = (CommonParent(ph1, ph2) != -1);
       for (Int_t iCut = 0; iCut < kCuts; iCut++) {
         if (!PairCut(ph1, ph2, iCut)) {
           continue;
         }
         fhReQinvSignal[iCut]->Fill(qinv, kT);
         fhReqSignal[iCut]->Fill(q, kT);
+        if (commonParent) {
+          fhReQinvSignalConv[iCut]->Fill(qinv, kT);
+          fhReqSignalConv[iCut]->Fill(q, kT);
+        }
       }
     }
   }
@@ -561,12 +580,17 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
       gammaCMq.Boost(-gammaBeta);
       double q = gammaCMq.Vect().Mag();
 
+      bool commonParent = (CommonParent(ph1, ph2) != -1);
       for (Int_t iCut = 0; iCut < kCuts; iCut++) {
         if (!PairCut(ph1, ph2, iCut)) {
           continue;
         }
         fhReQinv[fCenBin][iCut]->Fill(qinv, kT);
         fhReq[fCenBin][iCut]->Fill(q, kT);
+        if (commonParent) {
+          fhReQinvConv[fCenBin][iCut]->Fill(qinv, kT);
+          fhReqConv[fCenBin][iCut]->Fill(q, kT);
+        }
       }
     }
   }
@@ -913,4 +937,27 @@ bool AliPHOSEmbedggHBT::IsGoodChannel(Int_t cellX, Int_t cellZ)
       return kFALSE;
 
   return kTRUE;
+}
+//_________________________________________________________________________
+int AliPHOSEmbedggHBT::CommonParent(const AliCaloPhoton* p1, const AliCaloPhoton* p2) const
+{
+  // Looks through parents and finds if there was commont pi0 among ancestors
+  TClonesArray* fStack = static_cast<TClonesArray*>(fEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+
+  if (!fStack) {
+    return -1; // can not say anything
+  }
+  Int_t prim1 = p1->GetPrimary();
+  while (prim1 != -1) {
+    Int_t prim2 = p2->GetPrimary();
+
+    while (prim2 != -1) {
+      if (prim1 == prim2) {
+        return prim1;
+      }
+      prim2 = ((AliAODMCParticle*)fStack->At(prim2))->GetMother();
+    }
+    prim1 = ((AliAODMCParticle*)fStack->At(prim1))->GetMother();
+  }
+  return -1;
 }

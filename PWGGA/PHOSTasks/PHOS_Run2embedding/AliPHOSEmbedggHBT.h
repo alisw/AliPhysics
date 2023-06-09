@@ -36,24 +36,29 @@ class AliPHOSEmbedggHBT : public AliAnalysisTaskEtaPhigg
   Int_t JetRejection(Int_t module) const;
   Bool_t IsGoodChannel(Int_t ix, Int_t iz); // for CPV in Mod3
   void ReclusterizeCPV();
+  int CommonParent(const AliCaloPhoton* p1, const AliCaloPhoton* p2) const;
 
  protected:
   TList* fMCEvents = nullptr;           //! PHOS photons in current event
   TClonesArray* fSignalEvent = nullptr; //! PHOS photons in current event
   TList* fSignalEvents = nullptr;       //!
 
-  TH2F* fhReQinvMCprim = nullptr; //!
-  TH2F* fhReQinvMC = nullptr;     //!
-  TH2F* fhMiQinvMCprim = nullptr; //!
-  TH2F* fhMiQinvMC = nullptr;     //!
-  TH2F* fhReqMCprim = nullptr;    //!
-  TH2F* fhReqMC = nullptr;        //!
-  TH2F* fhMiqMCprim = nullptr;    //!
-  TH2F* fhMiqMC = nullptr;        //!
-  TH2F* fhReQinvSignal[kCuts];    //!
-  TH2F* fhMiQinvSignal[kCuts];    //!
-  TH2F* fhReqSignal[kCuts];       //!
-  TH2F* fhMiqSignal[kCuts];       //!
+  TH2F* fhReQinvMCprim = nullptr;       //!
+  TH2F* fhReQinvMC = nullptr;           //!
+  TH2F* fhMiQinvMCprim = nullptr;       //!
+  TH2F* fhMiQinvMC = nullptr;           //!
+  TH2F* fhReqMCprim = nullptr;          //!
+  TH2F* fhReqMC = nullptr;              //!
+  TH2F* fhMiqMCprim = nullptr;          //!
+  TH2F* fhMiqMC = nullptr;              //!
+  TH2F* fhReQinvConv[kCentBins][kCuts]; //!
+  TH2F* fhReqConv[kCentBins][kCuts];    //!
+  TH2F* fhReQinvSignal[kCuts];          //!
+  TH2F* fhReQinvSignalConv[kCuts];      //!
+  TH2F* fhMiQinvSignal[kCuts];          //!
+  TH2F* fhReqSignal[kCuts];             //!
+  TH2F* fhReqSignalConv[kCuts];         //!
+  TH2F* fhMiqSignal[kCuts];             //!
 
   ClassDef(AliPHOSEmbedggHBT, 1);
 };
