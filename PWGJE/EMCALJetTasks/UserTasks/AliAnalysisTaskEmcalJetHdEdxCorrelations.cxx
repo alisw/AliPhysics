@@ -684,7 +684,7 @@ namespace PWGJE
 
           } // jet pt cut
         }   // jet loop
-
+      }
         // Prepare to do event mixing
 
         // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
@@ -843,8 +843,7 @@ namespace PWGJE
 
         return kTRUE;
       }
-      return kFALSE;
-    }
+
     /**
      * Determine if a jet passes the track or cluster bias and is therefore a "biased" jet.
      *
