@@ -66,6 +66,13 @@ AliAnalysisTaskSEDstarPolarization::~AliAnalysisTaskSEDstarPolarization()
         delete fEsdTrackCutsSoftPi;
     if(fTrkFilterSoftPi)
         delete fTrkFilterSoftPi;
+    if (fApplyTrackCutVariations) {
+        for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
+            if (fRDCutsTrackVariations[iTrkCut]) {
+                delete fRDCutsTrackVariations[iTrkCut];
+            }
+        }
+    }
 }
 
 //________________________________________________________________________
@@ -189,6 +196,16 @@ void AliAnalysisTaskSEDstarPolarization::UserCreateOutputObjects()
     }
 
     PostData(1, fOutput);
+
+    if (fApplyTrackCutVariations && fDecChannel == kDstartoD0pi) {
+        for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
+            fRDCutsTrackVariations[iTrkCut] = new AliRDHFCutsDStartoKpipi(*(static_cast<AliRDHFCutsDStartoKpipi *>(fRDCuts)));
+        }
+        fRDCutsTrackVariations[0]->GetTrackCuts()->SetMinRatioCrossedRowsOverFindableClustersTPC();
+        fRDCutsTrackVariations[1]->SetMinCrossedRowsTPCPtDep("120-(5/pt)");
+        fRDCutsTrackVariations[2]->SetMinRatioClsOverCrossRowsTPC(0.65);
+        fRDCutsTrackVariations[3]->GetTrackCutsSoftPi()->SetMinNClustersITS(4);
+    }
 
     return;
 }
@@ -427,8 +444,9 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         bool recVtx = false;
         AliAODVertex *origOwnVtx = nullptr;
 
+        int trackCutFlags[4] = {0, 0, 0, 0};
         std::vector<double> scores{}, scoresSecond{};
-        int isSelected = IsCandidateSelected(dMeson, dZeroDau, &vHF, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand], scoresFromMLSelectorSecond[iCand], scores, scoresSecond);
+        int isSelected = IsCandidateSelected(dMeson, dZeroDau, &vHF, unsetVtx, recVtx, origOwnVtx, scoresFromMLSelector[iCand], scoresFromMLSelectorSecond[iCand], scores, scoresSecond, trackCutFlags);
         if (!isSelected)
         {
             if (fDecChannel == kDstartoD0pi) {
@@ -510,6 +528,11 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
             double deltaPhi = fReadMC ? GetPhiInRange(dMeson->Phi() - phiRandom) : GetPhiInRange(dMeson->Phi() - PsinFullV0);
 
             std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scores[0], scores[1], scores[2]};
+            if (fApplyTrackCutVariations) {
+                for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
+                    var4nSparse.push_back((double)trackCutFlags[iTrkCut]);
+                }
+            }
             std::vector<double> var4nSparseThetaPhiStar = {mass, ptCand, thetaStarBeam, phiStarBeam};
 
             if (!fReadMC) {
@@ -572,6 +595,11 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                 double deltaPhi = fReadMC ? GetPhiInRange(dMeson->Phi() - phiRandom) : GetPhiInRange(dMeson->Phi() - PsinFullV0);
 
                 std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scores[0], scores[1], scores[2]};
+                if (fApplyTrackCutVariations) {
+                    for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
+                        var4nSparse.push_back((double)trackCutFlags[iTrkCut]);
+                    }
+                }
                 std::vector<double> var4nSparseThetaPhiStar = {mass, ptCand, thetaStarBeam, phiStarBeam};
 
                 if (!fReadMC) {
@@ -635,6 +663,11 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                 double deltaPhi = fReadMC ? GetPhiInRange(dMeson->Phi() - phiRandom) : GetPhiInRange(dMeson->Phi() - PsinFullV0);
 
                 std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scoresSecond[0], scoresSecond[1], scoresSecond[2]};
+                if (fApplyTrackCutVariations) {
+                    for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
+                        var4nSparse.push_back((double)trackCutFlags[iTrkCut]);
+                    }
+                }
                 std::vector<double> var4nSparseThetaPhiStar = {mass, ptCand, thetaStarBeam, phiStarBeam};
 
                 if (!fReadMC) {
@@ -694,7 +727,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
 }
 
 //________________________________________________________________________
-int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&d, AliAODRecoDecayHF2Prong *&dZeroDau, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scoresFromMLSelector, std::vector<double> scoresFromMLSelectorSecond, std::vector<double> &scores, std::vector<double> &scoresSecond)
+int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&d, AliAODRecoDecayHF2Prong *&dZeroDau, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origOwnVtx, std::vector<double> scoresFromMLSelector, std::vector<double> scoresFromMLSelectorSecond, std::vector<double> &scores, std::vector<double> &scoresSecond, int trackCutFlags[4])
 {
     if (!d || (!dZeroDau && fDecChannel == kDstartoD0pi) || !vHF)
         return 0;
@@ -804,6 +837,16 @@ int AliAnalysisTaskSEDstarPolarization::IsCandidateSelected(AliAODRecoDecayHF *&
                 recVtx = true;
             else
                 fRDCuts->CleanOwnPrimaryVtx(d, fAOD, origOwnVtx);
+        }
+    }
+
+    if (fApplyTrackCutVariations) {
+        for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
+            if (fRDCutsTrackVariations[iTrkCut]->IsSelected(dStar, AliRDHFCuts::kAll, fAOD)) {
+                trackCutFlags[iTrkCut] = 1;
+            } else {
+                trackCutFlags[iTrkCut] = 0;
+            }
         }
     }
 
@@ -1062,9 +1105,9 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
 
     int nCosThetaBins = 5;
 
-    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 100, nCosThetaBins, nCosThetaBins, nCosThetaBins, nCosThetaBins, nCosThetaBins, 180, 100, fNBinsML[0], fNBinsML[1], fNBinsML[2]};
-    double xminReco[knVarForSparseReco] = {massMin, 0., -1., 0., 0., 0., 0., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2]};
-    double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 1., 1., 1., 1., 1., 1., TMath::Pi(), 100., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2]};
+    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 100, nCosThetaBins, nCosThetaBins, nCosThetaBins, nCosThetaBins, nCosThetaBins, 180, 100, fNBinsML[0], fNBinsML[1], fNBinsML[2], 2, 2, 2, 2};
+    double xminReco[knVarForSparseReco] = {massMin, 0., -1., 0., 0., 0., 0., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2], -0.5, -0.5, -0.5, -0.5};
+    double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 1., 1., 1., 1., 1., 1., TMath::Pi(), 100., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2], 1.5, 1.5, 1.5, 1.5};
 
     int nBinsThetaPhiReco[4] = {nMassBins, nPtBins, 100, 100};
     double xminThetaPhiReco[4] = {massMin, 0., 0., 0.};
@@ -1073,8 +1116,9 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
     TString label[4] = {"all", "fromC", "fromB", "bkg"};
     for (int iHist = 0; iHist < 4; iHist++)
     {
+        int nVars = (fApplyTrackCutVariations) ? knVarForSparseReco : knVarForSparseReco - 4;
         TString titleSparse = Form("Reco nSparse - %s", label[iHist].Data());
-        fnSparseReco[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist].Data()), titleSparse.Data(), knVarForSparseReco, nBinsReco, xminReco, xmaxReco);
+        fnSparseReco[iHist] = new THnSparseF(Form("fnSparseReco_%s", label[iHist].Data()), titleSparse.Data(), nVars, nBinsReco, xminReco, xmaxReco);
         fnSparseReco[iHist]->GetAxis(0)->SetTitle(Form("%s (GeV/#it{c}^{2})", massTitle.Data()));
         fnSparseReco[iHist]->GetAxis(1)->SetTitle("#it{p}_{T} (GeV/#it{c})");
         fnSparseReco[iHist]->GetAxis(2)->SetTitle("#it{y}");
@@ -1091,6 +1135,11 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
         fnSparseReco[iHist]->GetAxis(10)->SetTitle("ML bkg output score");
         fnSparseReco[iHist]->GetAxis(11)->SetTitle("ML prompt output score");
         fnSparseReco[iHist]->GetAxis(12)->SetTitle("ML non-prompt output score");
+        if (fApplyTrackCutVariations) {
+            for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
+                fnSparseReco[iHist]->GetAxis(13 + iTrkCut)->SetTitle(Form("track cut %d", iTrkCut));
+            }
+        }
         fOutput->Add(fnSparseReco[iHist]);
 
         fnSparseRecoThetaPhiStar[iHist] = new THnSparseF(Form("fnSparseRecoThetaPhiStar_%s", label[iHist].Data()), titleSparse.Data(), 4, nBinsThetaPhiReco, xminThetaPhiReco, xmaxThetaPhiReco);

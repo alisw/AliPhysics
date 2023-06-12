@@ -74,6 +74,8 @@ public:
         fMLOutputMax = maxs;
     }
 
+    void EnableTrackCutVariation(bool flag = true)                                                              {fApplyTrackCutVariations = flag;}
+
     // method to set Qn-vector calculation
     void SetComputeQnVector(bool flag = true)                                                                   {fComputeQnVectors = flag;}
     void SetQnVecTaskName(std::string name)                                                                     {fTenderTaskName = name;}
@@ -88,7 +90,7 @@ private:
     enum
     {
         knVarForSparseAcc    = 9,
-        knVarForSparseReco   = 13,
+        knVarForSparseReco   = 17,
     };
 
     AliAnalysisTaskSEDstarPolarization(const AliAnalysisTaskSEDstarPolarization &source);
@@ -99,7 +101,7 @@ private:
     bool SelectInvMassAndPtDstarD0pi(double *px, double *py, double *pz);
 
     int IsCandidateSelected(AliAODRecoDecayHF *&d, AliAODRecoDecayHF2Prong *&dZeroDau, AliAnalysisVertexingHF *vHF, bool &unsetVtx, bool &recVtx, AliAODVertex *&origownvtx,
-                            std::vector<double> scoresFromMLSelector, std::vector<double> scoresFromMLSelectorSecond, std::vector<double> &scores, std::vector<double> &scoresSecond);
+                            std::vector<double> scoresFromMLSelector, std::vector<double> scoresFromMLSelectorSecond, std::vector<double> &scores, std::vector<double> &scoresSecond, int trackCutFlags[4]);
     void FillMCGenAccHistos(TClonesArray *arrayMC, AliAODMCHeader *mcHeader, double centrality);
     bool CheckDaugAcc(TClonesArray *arrayMC, int nProng, int *labDau);
     void CreateEffSparses();
@@ -156,13 +158,16 @@ private:
     bool fRecomputeDstarCombinatorial = false;                                      /// flag to recompute D* combinatorial (D*->D0pi)
     double fBzkG = 0.;                                                              /// z componenent of field in kG
 
+    bool fApplyTrackCutVariations = false;                                          /// flag to enable track-cut variation to be stored in ThnSparse
+    AliRDHFCuts *fRDCutsTrackVariations[4] = {nullptr, nullptr, nullptr, nullptr};  /// Cuts for Analysis with alternative track selections
+
     AliESDtrackCuts *fEsdTrackCutsSoftPi = nullptr;                                 /// ESD track cuts for soft pion in case of combinatoric recomputation
     AliAnalysisFilter *fTrkFilterSoftPi = nullptr;                                  /// track filter for soft pion in case of combinatoric recomputation
 
     // event-plane calculation
     bool fComputeQnVectors = false;                                                 /// flag to enable computation of Qn-vectors
     std::string fTenderTaskName = "HFTenderQnVectors";                              /// name of tender task needed to get the calibrated Qn vectors
-    std::string fQnCalibFileName = "";                                                 /// AODB file name for calibrations (if Qn-framework not used)
+    std::string fQnCalibFileName = "";                                              /// AODB file name for calibrations (if Qn-framework not used)
 
     /// \cond CLASSIMP
     ClassDef(AliAnalysisTaskSEDstarPolarization, 11); /// AliAnalysisTaskSE for production of D-meson trees
