@@ -105,6 +105,7 @@ private:
     void CreateEffSparses();
     void CreateRecoSparses();
     double GetPhiInRange(double phi);
+    double GetDeltaPsiSubInRange(double psi1, double psi2);
 
     AliAODEvent* fAOD = nullptr;                                                    /// AOD event
 
@@ -129,7 +130,8 @@ private:
     THnSparseF* fnSparseReco[4] = {nullptr, nullptr, nullptr, nullptr};             //!<! THnSparse for reco candidates
     THnSparseF* fnSparseRecoThetaPhiStar[4] = {nullptr, nullptr, nullptr, nullptr}; //!<! THnSparse for reco candidates
 
-    TH1F* fHistEvPlane[3] = {nullptr, nullptr, nullptr};                            //!<! Histogram with event plane angle
+    TH1F* fHistEvPlane[3] = {nullptr, nullptr, nullptr};                            //!<! Histograms with event plane angle
+    TH2F* fHistEvPlaneResol[3] = {nullptr, nullptr, nullptr};                        //!<! Histograms for event plane resolution estimation
 
     bool fApplyML = false;                                                          /// flag to enable ML application
     std::string fConfigPath = "";                                                   /// path to ML config file
@@ -163,7 +165,7 @@ private:
     std::string fQnCalibFileName = "";                                                 /// AODB file name for calibrations (if Qn-framework not used)
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskSEDstarPolarization, 10); /// AliAnalysisTaskSE for production of D-meson trees
+    ClassDef(AliAnalysisTaskSEDstarPolarization, 11); /// AliAnalysisTaskSE for production of D-meson trees
                                                /// \endcond
 };
 

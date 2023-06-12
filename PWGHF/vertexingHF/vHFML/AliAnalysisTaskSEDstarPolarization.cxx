@@ -124,6 +124,13 @@ void AliAnalysisTaskSEDstarPolarization::UserCreateOutputObjects()
     fOutput->Add(fHistEvPlane[1]);
     fOutput->Add(fHistEvPlane[2]);
 
+    fHistEvPlaneResol[0] = new TH2F("fHistEvPlaneResolV0MTPCpos", ";centrality;cos2(#psi_{V0M}-#psi_{TPCpos})", 100, 0., 100., 220, -1.1, 1.1);
+    fHistEvPlaneResol[1] = new TH2F("fHistEvPlaneResolV0MTPCneg", ";centrality;cos2(#psi_{V0M}-#psi_{TPCneg})", 100, 0., 100., 220, -1.1, 1.1);
+    fHistEvPlaneResol[2] = new TH2F("fHistEvPlaneResolTPCposTPCneg", ";centrality;cos2(#psi_{TPCpos}-#psi_{TPCneg})", 100, 0., 100., 220, -1.1, 1.1);
+    fOutput->Add(fHistEvPlaneResol[0]);
+    fOutput->Add(fHistEvPlaneResol[1]);
+    fOutput->Add(fHistEvPlaneResol[2]);
+
     // Sparses for efficiencies (only gen)
     if (fReadMC)
         CreateEffSparses();
@@ -314,6 +321,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
     AliHFQnVectorHandler *HFQnVectorHandler = nullptr;
     double QnFullV0[2], QnV0A[2], QnV0C[2];
     double PsinFullV0 = -1., PsinV0A = -1., PsinV0C = -1.;
+    double PsinFullTPC = -1., PsinPosTPC = -1., PsinNegTPC = -1.;
 
     if (fComputeQnVectors && !fReadMC) {
         bool isFromTender = false;
@@ -340,9 +348,15 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         //get the unnormalised Qn-vectors --> normalisation can be done in the task
         HFQnVectorHandler->GetQnVecV0(QnFullV0, QnV0A, QnV0C);
         HFQnVectorHandler->GetEventPlaneAngleV0(PsinFullV0, PsinV0A, PsinV0C);
+        HFQnVectorHandler->GetEventPlaneAngleTPC(PsinFullTPC, PsinPosTPC, PsinNegTPC);
+
         fHistEvPlane[0]->Fill(PsinFullV0);
         fHistEvPlane[1]->Fill(PsinV0A);
         fHistEvPlane[2]->Fill(PsinV0C);
+
+        fHistEvPlaneResol[0]->Fill(centrality, TMath::Cos(2*GetDeltaPsiSubInRange(PsinFullV0, PsinPosTPC)));
+        fHistEvPlaneResol[1]->Fill(centrality, TMath::Cos(2*GetDeltaPsiSubInRange(PsinFullV0, PsinNegTPC)));
+        fHistEvPlaneResol[2]->Fill(centrality, TMath::Cos(2*GetDeltaPsiSubInRange(PsinPosTPC, PsinNegTPC)));
 
         if (!isFromTender)
             delete HFQnVectorHandler;
@@ -1279,4 +1293,18 @@ double AliAnalysisTaskSEDstarPolarization::GetPhiInRange(double phi)
         result = result - 2. * TMath::Pi() / 2;
     }
     return result;
+}
+
+//________________________________________________________________________
+double AliAnalysisTaskSEDstarPolarization::GetDeltaPsiSubInRange(double psi1, double psi2)
+{
+    // difference of subevents reaction plane angle cannot be bigger than pi / n
+
+    double delta = psi1 - psi2;
+    if(TMath::Abs(delta) > TMath::Pi() / 2) {
+        if(delta>0.) delta -= 2.*TMath::Pi() / 2;
+        else delta += 2.*TMath::Pi() / 2;
+    }
+
+    return delta;
 }
