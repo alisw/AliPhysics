@@ -5,7 +5,8 @@ AliAnalysisTaskSE* AddTaskOtonXx(int isMCint = 0,
     int KaonCut = 0,
     int XiCut = 0,
     int OpenMass = 0,
-    int DoFDpairing = 0
+    int DoFDpairing = 0,
+    int FillOnlyXi = 0
     ) {
 
 
@@ -37,6 +38,13 @@ AliAnalysisTaskSE* AddTaskOtonXx(int isMCint = 0,
 //FDpairing
 bool doFD = false;
 if(DoFDpairing>0)doFD=true;
+
+//fill only Xi's (but require Xi-pi event) for optimization
+bool OnlyXi = false;
+if(FillOnlyXi>0) OnlyXi = true;
+//open xi also?:
+bool XiOpen = false;
+if(FillOnlyXi>1) XiOpen = true;
 
 
   const char fullBlastQA = true; //moved from arguments
@@ -216,29 +224,89 @@ if(DoFDpairing>0)doFD=true;
 
 
   if(!isOmega){
-   //Set the Xi cuts: // THIS ARE SUPPOSED TO BE GEORGIOS L-Xi CUTS
-   CascadeXiCuts->SetCutXiDaughterDCA(1.5);
-   AntiCascadeXiCuts->SetCutXiDaughterDCA(1.5);
-   CascadeXiCuts->SetCutXiMinDistBachToPrimVtx(0.05);
-   AntiCascadeXiCuts->SetCutXiMinDistBachToPrimVtx(0.05);
-   CascadeXiCuts->SetCutv0MinDistToPrimVtx(0.07);
-   AntiCascadeXiCuts->SetCutv0MinDistToPrimVtx(0.07);
-   CascadeXiCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
-   AntiCascadeXiCuts->SetCutv0MinDaugDistToPrimVtx(0.05);
-   CascadeXiCuts->SetCutXiCPA(0.97);
-   AntiCascadeXiCuts->SetCutXiCPA(0.97);
-   CascadeXiCuts->SetCutXiTransverseRadius(0.8, 200);
-   AntiCascadeXiCuts->SetCutXiTransverseRadius(0.8, 200);
-   CascadeXiCuts->SetCutv0TransverseRadius(1.4, 200);
-   AntiCascadeXiCuts->SetCutv0TransverseRadius(1.4, 200);
+   //Set the Xi cuts: // THESE ARE SUPPOSED TO BE GEORGIOS L-Xi CUTS
+//in ttree: XiDaughtersDCA
+Float_t XiDaughterDCA = 1.5; //std Georgios
+   CascadeXiCuts->SetCutXiDaughterDCA(XiDaughterDCA);
+   AntiCascadeXiCuts->SetCutXiDaughterDCA(XiDaughterDCA);
+//in ttree: XiTrackDCA
+Float_t XiMinDistBachToPrimVtx = 0.05; //std Georgios
+if(XiOpen) XiMinDistBachToPrimVtx = 0.03;
+   CascadeXiCuts->SetCutXiMinDistBachToPrimVtx(XiMinDistBachToPrimVtx);
+   AntiCascadeXiCuts->SetCutXiMinDistBachToPrimVtx(XiMinDistBachToPrimVtx);
+//in ttree: XiTrackDCA
+Float_t v0MinDaugDistToPrimVtx = 0.05; //std Georgios
+if(XiOpen) v0MinDaugDistToPrimVtx = 0.03; //
+   CascadeXiCuts->SetCutv0MinDaugDistToPrimVtx(v0MinDaugDistToPrimVtx);
+   AntiCascadeXiCuts->SetCutv0MinDaugDistToPrimVtx(v0MinDaugDistToPrimVtx);
+//in ttree: XiLambdaDCA
+Float_t v0MinDistToPrimVtx = 0.07; //std Georgios
+if(XiOpen) v0MinDistToPrimVtx = 0.05; 
+   CascadeXiCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
+   AntiCascadeXiCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
+//in ttree: XiPA
+Float_t XiCPA = 0.98; //std Georgios
+   CascadeXiCuts->SetCutXiCPA(XiCPA);
+   AntiCascadeXiCuts->SetCutXiCPA(XiCPA);
+//in ttree: XiVr
+Float_t XiTransverseRadius = 0.8; //std Georgios
+if(XiOpen) XiTransverseRadius = .000001; //no cut (cut in Vertexer?)
+   CascadeXiCuts->SetCutXiTransverseRadius(XiTransverseRadius, 200);
+   AntiCascadeXiCuts->SetCutXiTransverseRadius(XiTransverseRadius, 200);
+//in ttree: XiLambdaVr
+Float_t v0TransverseRadius = 1.4; //std Georgios
+if(XiOpen) v0TransverseRadius = .000001; //no cut (cut in Vertexer?)
+   CascadeXiCuts->SetCutv0TransverseRadius(v0TransverseRadius, 200);
+   AntiCascadeXiCuts->SetCutv0TransverseRadius(v0TransverseRadius, 200);
+//in ttree: XiMass
    CascadeXiCuts->SetXiMassRange(1.322, 0.005);  
    AntiCascadeXiCuts->SetXiMassRange(1.322, 0.005); 
    if(massopen){
     CascadeXiCuts->SetXiMassRange(1.322, 0.025);  
     AntiCascadeXiCuts->SetXiMassRange(1.322, 0.025); 
    }
+//in ttree: 
+Float_t v0MaxDaughterDCA = 1.5; //std FD
+  CascadeXiCuts->SetCutv0MaxDaughterDCA(v0MaxDaughterDCA);
+  AntiCascadeXiCuts->SetCutv0MaxDaughterDCA(v0MaxDaughterDCA);
+//in ttree:
+Float_t v0CPA = 0.97; //std FD
+  CascadeXiCuts->SetCutv0CPA(v0CPA);
+  AntiCascadeXiCuts->SetCutv0CPA(v0CPA);
+//in ttree:
+Float_t v0MassRange = 0.006; //std FD
+  CascadeXiCuts->Setv0MassRange(1.116, v0MassRange);
+  AntiCascadeXiCuts->Setv0MassRange(1.116, v0MassRange);
+//in ttree:
+Float_t RejectOmegas = 0.005; //std FD
+  CascadeXiCuts->SetRejectOmegas(1.672, RejectOmegas);
+  AntiCascadeXiCuts->SetRejectOmegas(1.672, RejectOmegas);
+//in ttree:
+Float_t PtRangeXi = 0.3; // std FD
+if(XiOpen) PtRangeXi = 0.000001; //no cut (cut in Vertexer?)
+  CascadeXiCuts->SetPtRangeXi(PtRangeXi, 999.9);
+  AntiCascadeXiCuts->SetPtRangeXi(PtRangeXi, 999.9);
+//in ttree:
+//std seems to see, for proton TIME is req, for pion(from lambda) it is not, and for bachelor it is
+bool BachCheckPileUp = true; //std 
+if(XiOpen) BachCheckPileUp = false;
+  XiBachCuts->SetCheckPileUp(BachCheckPileUp);
+  AntiXiBachCuts->SetCheckPileUp(BachCheckPileUp);
+//in ttree:
+Float_t nSigma = 4.; //std 
+if(XiOpen) nSigma = 6.; 
+  XiPosCuts->SetPID(AliPID::kProton, 999., nSigma);
+  XiNegCuts->SetPID(AliPID::kPion, 999., nSigma);
+  XiBachCuts->SetPID(AliPID::kPion, 999., nSigma);
+  AntiXiPosCuts->SetPID(AliPID::kPion, 999., nSigma);
+  AntiXiNegCuts->SetPID(AliPID::kProton, 999., nSigma);
+  AntiXiBachCuts->SetPID(AliPID::kPion, 999., nSigma);
+//remember to FIX K0 MASS in ttree !!!!
+
+
 
   }else{
+//from p-Omega
 Float_t XiDaughterDCA = .8; //std
 Float_t v0MaxDaughterDCA = 1.2; //std
 Float_t v0MinDistToPrimVtx = 0.06; //std
@@ -258,7 +326,7 @@ Float_t PtRangeXi = 0.000001; //std, no cut (cut in Vertexer?)
 bool PionCheckPileUp = false; //std
 
   CascadeXiCuts->SetXiMassRange(1.67245, 0.005);                    
-    if(massopen) CascadeXiCuts->SetXiMassRange(1.67245, 0.025);                    
+  if(massopen) CascadeXiCuts->SetXiMassRange(1.67245, 0.025);                    
   CascadeXiCuts->SetCutXiDaughterDCA(XiDaughterDCA);
   CascadeXiCuts->SetCutv0MaxDaughterDCA(v0MaxDaughterDCA);
   CascadeXiCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
@@ -466,8 +534,8 @@ bool PionCheckPileUp = false; //std
 
   //Define here the analysis task
   AliAnalysisTaskOtonXx *task =
-   new AliAnalysisTaskOtonXx("ThisNameApparentlyStillUseless", doFD,isMC,false,isOmega,isPi);
-//                                                            doFDpairing,isMC,isMCtruth,isomega,ispi
+   new AliAnalysisTaskOtonXx("ThisNameApparentlyStillUseless", doFD,isMC,false,isOmega,isPi,OnlyXi);
+//                                                            doFDpairing,isMC,isMCtruth,isomega,ispi,FillOnlyXi
   task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
   if (!fullBlastQA) {
     task->SetRunTaskLightWeight(true);

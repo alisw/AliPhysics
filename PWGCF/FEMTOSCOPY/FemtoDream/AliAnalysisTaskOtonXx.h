@@ -26,7 +26,7 @@
 class AliAnalysisTaskOtonXx : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskOtonXx();
-  AliAnalysisTaskOtonXx(const char *name, bool doFDpairing, bool isMC, bool isMCtruth, bool isOmega, bool isPi);
+  AliAnalysisTaskOtonXx(const char *name, bool doFDpairing, bool isMC, bool isMCtruth, bool isOmega, bool isPi, bool OnlyXi);
   virtual ~AliAnalysisTaskOtonXx();
   void InitHistograms(AliFemtoDreamTrackCuts *trkCuts, TString trkCutsName, TString MCName);
   virtual void UserCreateOutputObjects();
@@ -60,6 +60,7 @@ class AliAnalysisTaskOtonXx : public AliAnalysisTaskSE {
   bool fdoFDpairing;                               //
   bool fisOmega;                               //
   bool fisPi;                               //
+  bool fOnlyXi;                               //
   AliFemtoDreamEvent *fEvent;               //!
   AliFemtoDreamTrack *fTrack;               //!
   AliFemtoDreamEventCuts *fEventCuts;       //
