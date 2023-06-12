@@ -278,16 +278,16 @@ namespace PWGJE
       UInt_t cifras = 0; // bit coded, see GetDimParams() below
       if (fDoLessSparseAxes)
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1<<8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
       }
       else
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
         ;
       }
       if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
       }
       fhnJH = NewTHnSparseF("fhnJH", cifras);
       fhnJH->Sumw2();
@@ -300,7 +300,7 @@ namespace PWGJE
         // analysis if so desired.
         if (fDoLessSparseAxes)
         {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7;
+          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 <<8 ;
         }
         else
         {
@@ -308,7 +308,7 @@ namespace PWGJE
         }
         if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
         {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4;
+          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 8;
         }
         fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
         fhnMixedEvents->Sumw2();
@@ -316,10 +316,10 @@ namespace PWGJE
       }
 
       // Trigger THnSparse
-      cifras = 1 << 0 | 1 << 1 | 1 << 7;
+      cifras = 1 << 0 | 1 << 1 | 1 << 7 | 1<< 8;
       if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
       {
-        cifras = 1 << 0 | 1 << 1;
+        cifras = 1 << 0 | 1 << 1 | 1 << 8;
       }
       fhnTrigger = NewTHnSparseF("fhnTrigger", cifras);
       fhnTrigger->Sumw2();
@@ -470,6 +470,11 @@ namespace PWGJE
 
       // Get z vertex
       Double_t zVertex = fVertex[2];
+      if(zVertex < -10 || zVertex > 10)
+      {
+        AliError(Form("%s: Rejecting event because zVertex = %f is out of range!", GetName(), zVertex));
+        return kFALSE;
+      }
       // Flags
       Bool_t isBiasedJet = kFALSE;
       Bool_t leadJet = kFALSE;
