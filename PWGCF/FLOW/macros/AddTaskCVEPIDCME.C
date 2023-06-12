@@ -127,12 +127,12 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
       fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fMcEffiHij"));
     }
     if (period.EqualTo("LHC18q")) {
-      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/efficiencyBothpol18qnew.root", "READ");
-      fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fMcEffiHij"));
+      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/efficiency18q.root", "READ");
+      fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fListNUE"));
     }
     if (period.EqualTo("LHC18r")) {
-      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/efficiencyBothpol18r.root", "READ");
-      fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fMcEffiHij"));
+      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/efficiency18r.root", "READ");
+      fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fListNUE"));
     }
     if (fListNUE) {
       task->SetListForNUE(fListNUE);
@@ -143,7 +143,7 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
 
   if(bDoLambdaNUE) {
     fLambdaNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/LambdaEff.root", "READ");
-    fListLambdaNUE = dynamic_cast<TList*>(fLambdaNUEFile->Get("LambdaEffieiency"));
+    fListLambdaNUE = dynamic_cast<TList*>(fLambdaNUEFile->Get("LambdaEfficiency"));
     if (fListLambdaNUE) {
       task->SetListForLambdaNUE(fListLambdaNUE);
       std::cout << "================  Lambda NUE List Set =================" << std::endl;

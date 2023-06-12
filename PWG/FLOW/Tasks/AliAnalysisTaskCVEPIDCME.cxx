@@ -2407,13 +2407,13 @@ bool AliAnalysisTaskCVEPIDCME::LoopTracks()
 
     double weight = 1.;
     if (isDoNUE) {
-      double wEffi = GetNUECor(charge, pt);
-      if (wEffi<0) continue;
-      else weight *= wEffi;
+      double wEff = GetNUECor(charge, pt);
+      if (wEff < 0) continue;
+      else weight *= wEff;
     }
     if (isDoNUA) {
       double wAcc = GetNUACor(charge, phi, eta, fVertex[2]);
-      if (wAcc<0) continue;
+      if (wAcc < 0) continue;
       else weight *= wAcc;
       fHistPhi[1]->Fill(phi, wAcc);
     }
@@ -3824,9 +3824,13 @@ double AliAnalysisTaskCVEPIDCME::GetNUECor(int charge, double pt)
   if (fPeriod.EqualTo("LHC10h")) {
     histName = (charge > 0) ? Form("effVsPt_cent%iPlus", fCentBin) : Form("effVsPt_cent%iMinus", fCentBin);
   }
-  else if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
+  else if (fPeriod.EqualTo("LHC15o")) {
     histName = (charge > 0) ? "trkEfficiencyChrgPos" : "trkEfficiencyChrgNeg";
-  } else return -1;
+  } else if(fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
+    histName = (charge > 0) ? "h_eff_pos_hadron" : "h_eff_neg_hadron";
+  }
+  else return -1;
+
 
   TH1D* efficiencyHist = (TH1D*)fListNUE->FindObject(histName);
   if (!efficiencyHist) return -1;
@@ -3838,7 +3842,7 @@ double AliAnalysisTaskCVEPIDCME::GetNUECor(int charge, double pt)
   
   if (binContent > 1.e6) {
     return 1.0 / binContent;
-  } else return 1;
+  } else return -1;
 }
 
 
@@ -3851,7 +3855,7 @@ double AliAnalysisTaskCVEPIDCME::GetPIDNUECor(int pdgcode, double pt)
     std::cout<< "No PID NUE correction for LHC10h" << std::endl;
     return -1;
   }
-  else if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
+  else if (fPeriod.EqualTo("LHC15o")) {
     if (pdgcode == 211) histName = "trkEfficiencyPionPos";
     else if (pdgcode == 321) histName = "trkEfficiencyKaonPos";
     else if (pdgcode == 2212) histName = "trkEfficiencyProtPos";
@@ -3859,7 +3863,12 @@ double AliAnalysisTaskCVEPIDCME::GetPIDNUECor(int pdgcode, double pt)
     else if (pdgcode == -321) histName = "trkEfficiencyKaonNeg";
     else if (pdgcode == -2212) histName = "trkEfficiencyProtNeg";
     else return -1;
-  } else return -1;
+  } 
+  else if (fPeriod.EqualTo("LHC18q") || fPeriod.EqualTo("LHC18r")) {
+    if (pdgcode == 2212)       histName = "h_eff_pos_proton";
+    else if (pdgcode == -2212) histName = "h_eff_neg_proton";
+    else return -1;
+  } 
 
   TH1D* efficiencyHist = (TH1D*)fListNUE->FindObject(histName);
   if (!efficiencyHist) return -1;
@@ -3869,29 +3878,27 @@ double AliAnalysisTaskCVEPIDCME::GetPIDNUECor(int pdgcode, double pt)
   delete efficiencyHist;
   efficiencyHist = nullptr;
   
-  if (binContent > 1.e6) {
+  if (binContent > 1.e5) {
     return 1.0 / binContent;
-  } else return 1;
+  } else return -1;
 }
 
 //---------------------------------------------------
 
 double AliAnalysisTaskCVEPIDCME::GetLambdaNUECor(int baryon_num, double pT) {
-  double weightNUE = 1.;
   int pTbin = heffL[fCentBin]->GetXaxis()->FindBin(pT);
   if(baryon_num > 0) {
     double binContent = heffL[fCentBin]->GetBinContent(pTbin);
-    if(binContent > 1.e6) {
-      weightNUE = 1./binContent;
-    }
+    if(binContent > 1.e5) {
+      return 1.0/binContent;
+    } else return -1;
   }
   if(baryon_num < 0) {
     double binContent = heffA[fCentBin]->GetBinContent(pTbin);
-    if(binContent > 1.e6) {
-      weightNUE = 1./binContent;
-    }
+    if(binContent > 1.e5) {
+      return 1.0 / binContent;
+    } else return -1;
   }
-  return weightNUE;
 }
 
 //---------------------------------------------------
