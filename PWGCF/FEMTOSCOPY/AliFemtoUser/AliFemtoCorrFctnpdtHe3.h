@@ -81,6 +81,16 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	
 	void SetPassAllPair(int aUse);
 	void SetGobalVelGate(int aUse);
+
+	void SetIsSameParticlePair(int aUse);
+	float CalcMt(const AliFemtoPair* aPair);
+	void SetUse3DkTvsKStarvsmT(int aUse);
+	void Set3DkTvsKStarvsmTInit(bool aInit,
+		int nbinskT,float lowkT,float upkT,
+		int nbinsks,float lowks,float upks,
+		int nbinsmT,float lowmT,float upmT);
+
+
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -156,9 +166,15 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	int fUseGobalVelGate;
 
 	int fUse2DpTvsKStar;
-	//int IsSameParticlePair;
+	int IsSameParticlePair;
 	TH2F *KStarVspT_P1Hist;
 	TH2F *KStarVspT_P2Hist;
+
+	int fUse3DkTvsKStarvsmT;
+	TH3F *fNum3DkTvsKStarvsmT;
+	TH3F *fDum3DkTvsKStarvsmT;
+	
+	
 };
 
 
