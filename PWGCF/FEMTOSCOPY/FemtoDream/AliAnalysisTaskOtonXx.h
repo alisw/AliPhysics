@@ -179,6 +179,10 @@ class AliAnalysisTaskOtonXx : public AliAnalysisTaskSE {
   Bool_t fTXiTrackITStime[10][3];
   Bool_t fTXiTrackTOFtime[10][3];
   Int_t fTXiMotherID[10];
+   Int_t fTXiPDG[10];
+   Int_t fTXiMotherPDG[10];
+   Int_t fTXiMotherWeak[10];
+   Int_t fTXiOrigin[10];
 
   // ClassDef 6 ????
   ClassDef(AliAnalysisTaskOtonXx, 6)
