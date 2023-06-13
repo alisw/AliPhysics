@@ -333,6 +333,10 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
   fTree->Branch("XiTrackTOFtime",&fTXiTrackTOFtime,"fTXiTrackTOFtime[fTnXi][3]/O");
   fTree->Branch("XiTrackID",&fTXiTrackID,"fTXiTrackID[fTnXi][3]/I");
   if(fIsMC||fIsMCtruth) fTree->Branch("XiMotherID",&fTXiMotherID,"fTXiMotherID[fTnXi]/I");
+  if(fIsMC||fIsMCtruth) fTree->Branch("XiPDG",&fTXiPDG,"fTXiPDG[fTnXi]/I");
+  if(fIsMC||fIsMCtruth) fTree->Branch("XiMotherPDG",&fTXiMotherPDG,"fTXiMotherPDG[fTnXi]/I");
+  if(fIsMC||fIsMCtruth) fTree->Branch("XiMotherWeak",&fTXiMotherWeak,"fTXiMotherWeak[fTnXi]/I");
+  if(fIsMC||fIsMCtruth) fTree->Branch("XiOrigin",&fTXiOrigin,"fTXiOrigin[fTnXi]/I");
 
   PostData(1, fEvtList);
   PostData(2, fKaonList);
@@ -529,6 +533,10 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
     fTXiTrackTOFtime[ii][jj]=false;
    }
    fTXiMotherID[ii]=-1;
+   fTXiPDG[ii]=-1;
+   fTXiMotherPDG[ii]=-1;
+   fTXiMotherWeak[ii]=-1;
+   fTXiOrigin[ii]=-1;
   }
   fTnXi=0;
  
@@ -822,6 +830,12 @@ Bool_t AliAnalysisTaskOtonXx::FillXi(AliFemtoDreamCascade *TheCasc, bool isomega
  }
 
  fTXiMotherID[fTnXi] = TheCasc->GetMotherID();
+
+  fTXiPDG[fTnXi] = TheCasc->GetMCPDGCode();
+  fTXiMotherPDG[fTnXi] = TheCasc->GetMotherPDG();
+  fTXiMotherWeak[fTnXi] = TheCasc->GetMotherWeak();
+  fTXiOrigin[fTnXi] =  TheCasc->GetParticleOrigin();
+
  fTnXi++;
  Filled = kTRUE;
  return Filled;
