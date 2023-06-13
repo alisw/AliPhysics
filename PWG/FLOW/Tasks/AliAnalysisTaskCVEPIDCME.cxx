@@ -206,6 +206,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME() :
   fListNUE(nullptr),
   hNUEweightPlus(nullptr),
   hNUEweightMinus(nullptr),
+  fListLambdaNUE(nullptr),
   fListNUA(nullptr),
   hNUAweightPlus(nullptr),
   hNUAweightMinus(nullptr),
@@ -574,6 +575,7 @@ AliAnalysisTaskCVEPIDCME::AliAnalysisTaskCVEPIDCME(const char *name) :
   fListNUE(nullptr),
   hNUEweightPlus(nullptr),
   hNUEweightMinus(nullptr),
+  fListLambdaNUE(nullptr),
   fListNUA(nullptr),
   hNUAweightPlus(nullptr),
   hNUAweightMinus(nullptr),
@@ -903,8 +905,8 @@ void AliAnalysisTaskCVEPIDCME::UserCreateOutputObjects()
       return;
     }
     for (int iCent = 0; iCent < 8; iCent++) {
-      heffL[iCent] = (TH1D*)fListLambdaNUE->FindObject(Form("heffL_%d",iCent));
-      heffA[iCent] = (TH1D*)fListLambdaNUE->FindObject(Form("heffA_%d",iCent));
+      heffL[iCent] = (TH1D*)fListLambdaNUE->FindObject(Form("heffL_%i",iCent));
+      heffA[iCent] = (TH1D*)fListLambdaNUE->FindObject(Form("heffA_%i",iCent));
     }
   }
   ////////////////////////
@@ -3837,10 +3839,7 @@ double AliAnalysisTaskCVEPIDCME::GetNUECor(int charge, double pt)
   int ptBin = efficiencyHist->GetXaxis()->FindBin(pt);
   double binContent = efficiencyHist->GetBinContent(ptBin);
 
-  delete efficiencyHist;
-  efficiencyHist = nullptr;
-  
-  if (binContent > 1.e6) {
+  if (binContent > 1.e-5) {
     return 1.0 / binContent;
   } else return -1;
 }
@@ -3868,17 +3867,14 @@ double AliAnalysisTaskCVEPIDCME::GetPIDNUECor(int pdgcode, double pt)
     if (pdgcode == 2212)       histName = "h_eff_pos_proton";
     else if (pdgcode == -2212) histName = "h_eff_neg_proton";
     else return -1;
-  } 
+  }
 
   TH1D* efficiencyHist = (TH1D*)fListNUE->FindObject(histName);
   if (!efficiencyHist) return -1;
   int ptBin = efficiencyHist->GetXaxis()->FindBin(pt);
   double binContent = efficiencyHist->GetBinContent(ptBin);
 
-  delete efficiencyHist;
-  efficiencyHist = nullptr;
-  
-  if (binContent > 1.e5) {
+  if (binContent > 1.e-5) {
     return 1.0 / binContent;
   } else return -1;
 }
@@ -3889,13 +3885,13 @@ double AliAnalysisTaskCVEPIDCME::GetLambdaNUECor(int baryon_num, double pT) {
   int pTbin = heffL[fCentBin]->GetXaxis()->FindBin(pT);
   if(baryon_num > 0) {
     double binContent = heffL[fCentBin]->GetBinContent(pTbin);
-    if(binContent > 1.e5) {
+    if(binContent > 1.e-5) {
       return 1.0/binContent;
     } else return -1;
   }
   if(baryon_num < 0) {
     double binContent = heffA[fCentBin]->GetBinContent(pTbin);
-    if(binContent > 1.e5) {
+    if(binContent > 1.e-5) {
       return 1.0 / binContent;
     } else return -1;
   }

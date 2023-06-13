@@ -44,7 +44,7 @@ AliAnalysisTaskCVEPIDCME* AddTaskCVEPIDCME(
   bool bDoLambdaNUE = false;
   if (uniqueID.EqualTo("Effi")) bDoNUE = true;
   if (uniqueID.EqualTo("EffiLambda")) bDoLambdaNUE = true;
-
+  if (uniqueID.EqualTo("EffiAll")) bDoNUE = true, bDoLambdaNUE = true;
 
   bool bDebug                  = false;
   bool bUseTPCPlane            = true;
