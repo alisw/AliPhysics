@@ -85,7 +85,6 @@ AliAnalysisTaskJetsEEC::~AliAnalysisTaskJetsEEC() {
   // Destructor.
 }
 
-
 //________________________________________________________________________
 void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
 
@@ -98,14 +97,38 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     
     const char *nameoutput = GetOutputSlot(2)->GetContainer()->GetName(); //What does this line do? Can i comment it out
     
+    Double_t from = -4;
+    Double_t to = 0;
+    Int_t bins = 100;
+    Double_t width = (to-from)/bins;
+    Double_t new_bins[101] = {};
+    for (int i = 0; i <= bins; i++)
+    {
+        new_bins[i] = TMath::Power(10.0, from + i * width);
+    }
+
+    Double_t from_const = 15;
+    Double_t to_const = 120;
+    Int_t bins_const = 210;
+    Double_t width_const = (to-from)/bins;
+    Double_t new_bins_const[211] = {};
+    for (int i = 0; i <= bins_const; i++)
+    {
+        new_bins_const[i] = (from_const + i * width_const);
+    }
+
+    
     jet_pt_hist = new TH1D("jet_pt_hist", "Jet Pt", 210, 15, 120);
     fOutput->Add(jet_pt_hist);
     
     //EEC (data or det level)
-    EEC_hist = new TH1D("EEC_hist","EEC", 100, 0,1);//for now this is the binning
+    EEC_hist = new TH1D("EEC_hist","EEC", 100, new_bins);//for now this is the binning
     fOutput->Add(EEC_hist);
     
-    EEC_pt_hist = new TH2D("EEC_pt_hist", "EEC and jet_pt 2D", 100, 0,1, 210, 15, 120);
+//    EEC_pt_hist = new TH2D("EEC_pt_hist", "EEC and jet_pt 2D", 100, 0,1, 210, 15, 120);
+//    fOutput->Add(EEC_pt_hist);
+    
+    EEC_pt_hist = new TH2D("EEC_pt_hist", "EEC and jet_pt 2D", 100, new_bins, 210, 15, 120);
     fOutput->Add(EEC_pt_hist);
     
     EEC_pt_hist_log = new TH2D("EEC_pt_hist_log", "EEC and jet_pt 2D", 100, -10,10,210, 15, 120);
@@ -115,55 +138,55 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     E3C_hist = new TH1D("E3C_hist","E3C", 100, 0,1);//for now this is the binning
     fOutput->Add(E3C_hist);
     
-    E3C_pt_hist = new TH2D("E3C_pt_hist", "EEEC and jet_pt 2D", 100, 0,1,210, 15, 120);
+    E3C_pt_hist = new TH2D("E3C_pt_hist", "EEEC and jet_pt 2D", 100, new_bins, 210, 15, 120);
     fOutput->Add(E3C_pt_hist);
     
     E3C_pt_hist_log = new TH2D("E3C_pt_hist_log", "EEEC and jet_pt 2D", 100, -10,10,210, 15, 120);
     fOutput->Add(E3C_pt_hist_log);
     
     //MC true and det level histograms 3d (det level fills through the data loop)
-    EEC_det_pt_hist_3d = new TH3D("EEC_det_pt_hist", "EEC det and jet_pt 3D", 100, 0,1,210, 15, 120,210, 15, 120);
+    EEC_det_pt_hist_3d = new TH3D("EEC_det_pt_hist", "EEC det and jet_pt 3D", 100, new_bins, 210, new_bins_const, 210, new_bins_const);
     fOutput->Add(EEC_det_pt_hist_3d);
     
-    EEC_tru_pt_hist_3d = new TH3D("EEC_tru_pt_hist", "EEC tru and jet_pt 3d)", 100, 0,1, 210, 15, 120,210, 15, 120);
+    EEC_tru_pt_hist_3d = new TH3D("EEC_tru_pt_hist", "EEC tru and jet_pt 3d", 100, new_bins, 210, new_bins_const, 210, new_bins_const);
     fOutput->Add(EEC_tru_pt_hist_3d);
     
-    EEC_det_pt_hist_log_3d = new TH3D("EEC_det_pt_hist_log", "EEC det and jet_pt 3d)",100, -10,10, 210, 15, 120,210, 15, 120);
+    EEC_det_pt_hist_log_3d = new TH3D("EEC_det_pt_hist_log", "EEC det and jet_pt 3d",100, -10,10, 210, 15, 120,210, 15, 120);
     fOutput->Add(EEC_det_pt_hist_log_3d);
     
-    EEC_tru_pt_hist_log_3d = new TH3D("EEC_tru_pt_hist_log", "EEC tru and jet_pt 3d)",100, -10,10, 210, 15, 120,210, 15, 120);
+    EEC_tru_pt_hist_log_3d = new TH3D("EEC_tru_pt_hist_log", "EEC tru and jet_pt 3d",100, -10,10, 210, 15, 120,210, 15, 120);
     fOutput->Add(EEC_tru_pt_hist_log_3d);
     
-    E3C_det_pt_hist_3d = new TH3D("E3C_det_pt_hist", "E3C det and jet_pt 3D", 100, 0,1,210, 15, 120,210, 15, 120);
+    E3C_det_pt_hist_3d = new TH3D("E3C_det_pt_hist", "E3C det and jet_pt 3D", 100, new_bins, 210, new_bins_const, 210, new_bins_const);
     fOutput->Add(E3C_det_pt_hist_3d);
     
-    E3C_tru_pt_hist_3d = new TH3D("E3C_tru_pt_hist", "E3C tru and jet_pt 3d)", 100, 0,1, 210, 15, 120,210, 15, 120);
+    E3C_tru_pt_hist_3d = new TH3D("E3C_tru_pt_hist", "E3C tru and jet_pt 3d)", 100, new_bins, 210, new_bins_const, 210, new_bins_const);
     fOutput->Add(E3C_tru_pt_hist_3d);
     
-    E3C_det_pt_hist_log_3d = new TH3D("E3C_det_pt_hist_log", "E3C det and jet_pt 3d)",100, -10,10,210, 15, 120,210, 15, 120);
+    E3C_det_pt_hist_log_3d = new TH3D("E3C_det_pt_hist_log", "E3C det and jet_pt 3d",100, -10,10,210, 15, 120,210, 15, 120);
     fOutput->Add(E3C_det_pt_hist_log_3d);
     
-    E3C_tru_pt_hist_log_3d = new TH3D("E3C_tru_pt_hist_log", "E3C tru and jet_pt 3d)",100, -10,10,210, 15, 120,210, 15, 120);
+    E3C_tru_pt_hist_log_3d = new TH3D("E3C_tru_pt_hist_log", "E3C tru and jet_pt 3d",100, -10,10,210, 15, 120,210, 15, 120);
     fOutput->Add(E3C_tru_pt_hist_log_3d);
     
     //Num of pairs at det and true level with det pt and tru pt
-    N2_det_pt_hist_3d = new TH3D("N2_det_pt_hist", "Num pairs det and jet_pt 3d)",100, 0,1, 210, 15, 120,210, 15, 120);
+    N2_det_pt_hist_3d = new TH3D("N2_det_pt_hist", "Num pairs det and jet_pt 3d",100, new_bins, 210, new_bins_const, 210, new_bins_const);
     fOutput->Add(N2_det_pt_hist_3d);
     
-    N2_tru_pt_hist_3d = new TH3D("N2_tru_pt_hist", "Num pairs tru and jet_pt 3d)",100, 0,1, 210, 15, 120,210, 15, 120);
+    N2_tru_pt_hist_3d = new TH3D("N2_tru_pt_hist", "Num pairs tru and jet_pt 3d",100, new_bins, 210, new_bins_const, 210, new_bins_const);
     fOutput->Add(N2_tru_pt_hist_3d);
     
-    N3_det_pt_hist_3d = new TH3D("N3_det_pt_hist", "Num pairs det and jet_pt 3d)",100, 0,1,210, 15, 120,210, 15, 120);
+    N3_det_pt_hist_3d = new TH3D("N3_det_pt_hist", "Num pairs det and jet_pt 3d",100, new_bins, 210, new_bins_const, 210, new_bins_const);
     fOutput->Add(N3_det_pt_hist_3d);
     
-    N3_tru_pt_hist_3d = new TH3D("N3_tru_pt_hist", "Num pairs tru and jet_pt 3d)",100, 0,1, 210, 15, 120,210, 15, 120);
+    N3_tru_pt_hist_3d = new TH3D("N3_tru_pt_hist", "Num pairs tru and jet_pt 3d",100, new_bins, 210, new_bins_const, 210, new_bins_const);
     fOutput->Add(N3_tru_pt_hist_3d);
     
     //MC true level histograms (detector level goes through the data loop so don't need det level histograms)
-    EEC_tru_match_pt_tru = new TH2D("EEC_pt_tru_match_hist", "EEC and pT for tru matched jets",100, 0,1, 210, 15, 120);
+    EEC_tru_match_pt_tru = new TH2D("EEC_pt_tru_match_hist", "EEC and pT for tru matched jets", 100, new_bins, 210, 15, 120);
     fOutput->Add(EEC_tru_match_pt_tru);
     
-    E3C_tru_match_pt_tru = new TH2D("E3C_pt_tru_match_hist", "E3C and pT for tru matched jets",100, 0,1, 210, 15, 120);
+    E3C_tru_match_pt_tru = new TH2D("E3C_pt_tru_match_hist", "E3C and pT for tru matched jets", 100, new_bins, 210, 15, 120);
     fOutput->Add(E3C_tru_match_pt_tru);
 
     EEC_tru_match_pt_tru_log = new TH2D("EEC_pt_tru_match_hist_log", "EEC and pT for tru matched jets",100, -10,10, 210, 15, 120);
@@ -193,13 +216,14 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     test_hist = new TH1D("test_hist", "test R EEC", 100, 0, 1);
     fOutput->Add(test_hist);
     
-    R_matrix = new TH2D("Response matrix", "Jet pT response matrix", 210, 15, 120,210, 15, 120);
+    R_matrix = new TH2D("Response matrix", "Jet pT response matrix", 210, 15, 120, 210, 15, 120);
     fOutput->Add(R_matrix);
     
   PostData(1, fOutput);
 
 
 }
+
 
 //________________________________________________________________________
 Bool_t AliAnalysisTaskJetsEEC::Run() {
@@ -557,6 +581,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 delta_Rvec.push_back(delta_R_js_2);
                 energy_pairs_vec.push_back(ee_js_2);
                 
+//                BinLogX(EEC_pt_hist);
                 EEC_hist->Fill(delta_R_js_2,ee_js_2);
                 EEC_pt_hist->Fill(delta_R_js_2,jet_pt,ee_js_2);
                 EEC_pt_hist_log->Fill(log_delta_R_js_2,jet_pt,ee_js_2);
