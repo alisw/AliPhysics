@@ -462,9 +462,10 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
 
     ph->SetEMCx(local.X());
     ph->SetEMCz(local.Z());
-    ph->SetDistToBad(cellX);
     ph->SetLambdas(clu->GetM20(), clu->GetM02());
     ph->SetUnfolded(clu->GetNExMax() < 2); // Remember, if it is unfolded
+    ph->SetDistToBad(cellX);
+    ph->SetPrimary(clu->GetLabelAt(0));
   }
 
   // Real
