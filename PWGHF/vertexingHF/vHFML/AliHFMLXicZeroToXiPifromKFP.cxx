@@ -1680,6 +1680,10 @@ void AliHFMLXicZeroToXiPifromKFP::UserExec(Option_t *)
   TClonesArray *mcArray = 0;
   AliAODMCHeader *mcHeader = 0;
 
+  fNtracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
+  AliMultSelection *MultSelection = dynamic_cast<AliMultSelection*>(AODEvent->FindListObject("MultSelection"));
+  if(MultSelection) fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+
   if (fIsMC) {
     fMCEvent = MCEvent(); // get the corresponding MC event fMCEvent
     if (!fMCEvent) {
@@ -1751,10 +1755,6 @@ void AliHFMLXicZeroToXiPifromKFP::UserExec(Option_t *)
   if(IsINT7&&IsEMC7) fHTrigger->Fill(12);
   if(fIsHMV0) fHTrigger->Fill(13);
   if(fIsHMSPD) fHTrigger->Fill(14); 
-
-  fNtracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
-  AliMultSelection *MultSelection = dynamic_cast<AliMultSelection*>(AODEvent->FindListObject("MultSelection"));
-  if(MultSelection)fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
 
   //------------------------------------------------
   // Check if the event has v0 candidate
