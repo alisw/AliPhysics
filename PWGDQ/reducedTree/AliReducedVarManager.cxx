@@ -66,7 +66,6 @@ const Float_t AliReducedVarManager::fgkPairMass[AliReducedPairInfo::kNMaxCandida
    1.11568, //ALambda
    1.019455, // Phi
    3.09691599, //Jpsi
-   5.27925, // B+-
    3.686097,   // psi(2S)
    9.460300, //Upsilon
    1.86962, // D+-
@@ -77,7 +76,8 @@ const Float_t AliReducedVarManager::fgkPairMass[AliReducedPairInfo::kNMaxCandida
    1.86962, // D+-
    1.86484, // D0
    1.86962, // D+-
-   1.96850 // Ds
+   1.96850, // Ds
+   5.27925 // B+-
 };
 
 const Char_t* AliReducedVarManager::fgkTrackingStatusNames[AliReducedVarManager::kNTrackingStatus] = {
