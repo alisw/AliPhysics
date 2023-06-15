@@ -102,7 +102,8 @@ AliAnalysisTaskJetPlanarFlow* AddTaskJetPlanarFlow(
       JetCont3->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
     }
   }
-
+  AliClusterContainer *clusterCont = task->AddClusterContainer(nclusters);
+  task->SetCaloTriggerPatchInfoName("");
   task->SetCentralityEstimator(CentEst);
   task->SelectCollisionCandidates(pSel);
   task->SetUseAliAnaUtils(kFALSE);
