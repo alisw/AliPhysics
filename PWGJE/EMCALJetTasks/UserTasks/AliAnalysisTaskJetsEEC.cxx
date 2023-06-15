@@ -110,11 +110,11 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     Double_t from_const = 15;
     Double_t to_const = 120;
     Int_t bins_const = 210;
-    Double_t width_const = (to-from)/bins;
+    Double_t width_const = (to_const-from_const)/bins_const;
     Double_t new_bins_const[211] = {};
     for (int i = 0; i <= bins_const; i++)
     {
-        new_bins_const[i] = (from_const + i * width_const);
+    new_bins_const[i] = (from_const + i * width_const);
     }
 
     
@@ -135,7 +135,7 @@ void AliAnalysisTaskJetsEEC::UserCreateOutputObjects() {
     fOutput->Add(EEC_pt_hist_log);
     
     //EEEC histograms (data or det level)
-    E3C_hist = new TH1D("E3C_hist","E3C", 100, 0,1);//for now this is the binning
+    E3C_hist = new TH1D("E3C_hist","E3C", new_bins, 0,1);//for now this is the binning
     fOutput->Add(E3C_hist);
     
     E3C_pt_hist = new TH2D("E3C_pt_hist", "EEEC and jet_pt 2D", 100, new_bins, 210, 15, 120);
