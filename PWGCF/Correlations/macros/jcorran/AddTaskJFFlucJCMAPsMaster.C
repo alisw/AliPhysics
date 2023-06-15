@@ -18,12 +18,22 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
   double slope = 3.38; bool saveQA_ESDpileup = false;
   
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
-
+  AliJCorrectionMapTask *cMapTask = new AliJCorrectionMapTask ("JCorrectionMapTask");
   // Prepare the configuration of the wagons.
   enum { lhc15o = 0, lhc18q = 1, lhc18r = 2 };
   TString speriod[3] = { "15o", "18q", "18r" };   // Needed to load correct map config.
   std::cout << "AddTaskJFFlucJCMAPsMaster:: period =" << period << "\t pT range = ("
     << ptMin << "," << ptMax << ")." << std::endl;
+
+  if (period == lhc18q || period == lhc18r) {   // 2018 PbPb datasets.
+    cMapTask->EnableCentFlattening(Form(
+      "alien:///alice/cern.ch/user/j/jparkkil/legotrain/Cent/CentWeights_LHC%s_pass13.root",
+      speriod[period].Data() ));
+    cMapTask->EnableEffCorrection(Form(
+      "alien:///alice/cern.ch/user/d/djkim/legotrain/efficieny/data/Eff--LHC%s-LHC18l8-0-Lists.root",
+      speriod[period].Data() ));
+  }
+
 
   int iConfig = -1;
   int iOldConfig = -2;
@@ -184,7 +194,9 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
       fJCatalyst[i]->SetTPCpileupCuts(TPCpileup, saveQA_TPCpileup); // Reject the TPC pileup.
     }
  
-    //if (period == lhc18q || period == lhc18r) {fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CENT_FLATTENING);}    
+    if (period == lhc18q || period == lhc18r) {
+      printf("Using the cent flattening!\n"); 
+      fJCatalyst[i]->AddFlags(AliJCatalystTask::FLUC_CENT_FLATTENING);}    
 
     if (strcmp(configNames[i].Data(), "zvtx9") == 0) {    
       fJCatalyst[i]->SetZVertexCut(9.0);
