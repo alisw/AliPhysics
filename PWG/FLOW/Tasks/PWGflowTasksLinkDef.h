@@ -93,6 +93,7 @@
 #pragma link C++ class AliAnalysisTaskGammaNonIsotropicCorr+;
 #pragma link C++ class AliAnalysisTaskGammaNonIsotropicCorrUsingWeights+;
 #pragma link C++ class AliAnalysisTaskCVEPIDCME+;
+#pragma link C++ class AliAnalysisTaskCVEPIDCMEDiff+;
 #pragma link C++ class AliAnalysisTaskCVEVZEROCalib+;
 #endif
 

@@ -121,6 +121,7 @@ set(SRCS
   AliAnalysisTaskGammaNonIsotropicCorr.cxx
   AliAnalysisTaskGammaNonIsotropicCorrUsingWeights.cxx
   AliAnalysisTaskCVEPIDCME.cxx
+  AliAnalysisTaskCVEPIDCMEDiff.cxx
   AliAnalysisTaskCVEVZEROCalib.cxx
 )
 
