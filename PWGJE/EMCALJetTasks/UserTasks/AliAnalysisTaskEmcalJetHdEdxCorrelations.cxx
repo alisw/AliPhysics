@@ -599,12 +599,12 @@ namespace PWGJE
 
           if (fBeamType != kpp)
           {
-            const double triggerInfo[] = {eventActivity, jetPt, epAngle};
+            const double triggerInfo[] = {eventActivity, jetPt, epAngle, zVertex};
             fhnTrigger->Fill(triggerInfo);
           }
           else
           {
-            const double triggerInfo[] = {eventActivity, jetPt};
+            const double triggerInfo[] = {eventActivity, jetPt, zVertex};
             fhnTrigger->Fill(triggerInfo);
           }
         }
