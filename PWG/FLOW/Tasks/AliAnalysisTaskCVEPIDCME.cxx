@@ -3091,6 +3091,9 @@ bool AliAnalysisTaskCVEPIDCME::PairV0V0()
     double mass_a   = lambda_a[6];
     int    id_a_daughter_1 = (int)lambda_a[7];
     int    id_a_daughter_2 = (int)lambda_a[8];
+    
+    bool isInNarrowMass = ((mass_a > (fLambdaMassMean - fNarrowLambdaMassCut)) && (mass_a < (fLambdaMassMean + fNarrowLambdaMassCut)));
+    if (!isInNarrowMass) continue;
 
     for (auto lambda_b : vecParticleV0) {
       double pt_b     = lambda_b[0];
@@ -3103,14 +3106,14 @@ bool AliAnalysisTaskCVEPIDCME::PairV0V0()
       int    id_b_daughter_1 = (int)lambda_b[7];
       int    id_b_daughter_2 = (int)lambda_b[8];
 
+      isInNarrowMass = isInNarrowMass && ((mass_b > (fLambdaMassMean - fNarrowLambdaMassCut)) && (mass_b < (fLambdaMassMean + fNarrowLambdaMassCut)));
+      if (!isInNarrowMass) continue;
+
       bool b_nice_pair = (id_a_daughter_1 != id_b_daughter_1);
       b_nice_pair = b_nice_pair && (id_a_daughter_1 != id_b_daughter_2);
       b_nice_pair = b_nice_pair && (id_a_daughter_2 != id_b_daughter_1);
       b_nice_pair = b_nice_pair && (id_a_daughter_2 != id_b_daughter_2);
       if(!b_nice_pair) continue;
-
-      bool isInNarrowMass = ((mass_a > (fLambdaMassMean - fNarrowLambdaMassCut)) && (mass_a < (fLambdaMassMean + fNarrowLambdaMassCut)));
-      isInNarrowMass = isInNarrowMass && ((mass_b > (fLambdaMassMean - fNarrowLambdaMassCut)) && (mass_b < (fLambdaMassMean + fNarrowLambdaMassCut)));
 
       // Get TPC Plane for this pair
       std::array<double, 2> arrOneSidePsi2TPCNoAuto = {nan(""), nan("")};
@@ -3152,20 +3155,18 @@ bool AliAnalysisTaskCVEPIDCME::PairV0V0()
             fProfileGammaLambdaLambda[4][iBits] -> Fill(fCent, gamma[4], weight_all);
           }
           if (isCalculateDiffResult) {
-            if(isInNarrowMass) {
-              fProfile2DiffDeltaLambdaLambdaDPt[iBits]   -> Fill(fCent,   pt_a - pt_b, delta, weight_all);
-              fProfile2DiffDeltaLambdaLambdaSPt[iBits]   -> Fill(fCent,   pt_a + pt_b, delta, weight_all);
-              fProfile2DiffDeltaLambdaLambdaDEta[iBits]  -> Fill(fCent, eta_a - eta_b, delta, weight_all);
-              fProfile3DiffDeltaLambdaLambdaMassMass[iBits] -> Fill(fCent, mass_a, mass_b, delta, weight_all);
-              fProfile2DiffDeltaLambdaLambdaQ2[iBits]   -> Fill(fCent,         fQ2Bin, delta, weight_all);
-              fProfile2DiffGammaLambdaLambdaDPt[iBits]   -> Fill(fCent,   pt_a - pt_b, gamma[0], weight_all);
-              fProfile2DiffGammaLambdaLambdaSPt[iBits]   -> Fill(fCent,   pt_a + pt_b, gamma[0], weight_all);
-              fProfile2DiffGammaLambdaLambdaDEta[iBits]  -> Fill(fCent, eta_a - eta_b, gamma[0], weight_all);
-              fProfile3DiffGammaTPCLambdaLambdaMassMass[iBits] -> Fill(fCent,  mass_a,mass_b, gamma[0], weight_all);
-              fProfile3DiffGammaV0CLambdaLambdaMassMass[iBits] -> Fill(fCent,  mass_a,mass_b, gamma[1], weight_all);
-              fProfile3DiffGammaV0ALambdaLambdaMassMass[iBits] -> Fill(fCent,  mass_a,mass_b, gamma[2], weight_all);
-              fProfile2DiffGammaLambdaLambdaQ2[iBits]   -> Fill(fCent,         fQ2Bin, gamma[0], weight_all);
-            }
+            fProfile2DiffDeltaLambdaLambdaDPt[iBits]   -> Fill(fCent,   pt_a - pt_b, delta, weight_all);
+            fProfile2DiffDeltaLambdaLambdaSPt[iBits]   -> Fill(fCent,   pt_a + pt_b, delta, weight_all);
+            fProfile2DiffDeltaLambdaLambdaDEta[iBits]  -> Fill(fCent, eta_a - eta_b, delta, weight_all);
+            fProfile3DiffDeltaLambdaLambdaMassMass[iBits] -> Fill(fCent, mass_a, mass_b, delta, weight_all);
+            fProfile2DiffDeltaLambdaLambdaQ2[iBits]   -> Fill(fCent,         fQ2Bin, delta, weight_all);
+            fProfile2DiffGammaLambdaLambdaDPt[iBits]   -> Fill(fCent,   pt_a - pt_b, gamma[0], weight_all);
+            fProfile2DiffGammaLambdaLambdaSPt[iBits]   -> Fill(fCent,   pt_a + pt_b, gamma[0], weight_all);
+            fProfile2DiffGammaLambdaLambdaDEta[iBits]  -> Fill(fCent, eta_a - eta_b, gamma[0], weight_all);
+            fProfile3DiffGammaTPCLambdaLambdaMassMass[iBits] -> Fill(fCent,  mass_a,mass_b, gamma[0], weight_all);
+            fProfile3DiffGammaV0CLambdaLambdaMassMass[iBits] -> Fill(fCent,  mass_a,mass_b, gamma[1], weight_all);
+            fProfile3DiffGammaV0ALambdaLambdaMassMass[iBits] -> Fill(fCent,  mass_a,mass_b, gamma[2], weight_all);
+            fProfile2DiffGammaLambdaLambdaQ2[iBits]   -> Fill(fCent,         fQ2Bin, gamma[0], weight_all);
           }
           if (isCalculateDeltaPhiSumPhi) {
             double dphi_ranged = RangeDPhi(phi_a - phi_b);
