@@ -1107,7 +1107,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       // Xi- and bachelor properties
       aodcasc->GetDecayVertexXi()->GetXYZ(AODXiVertexXYZ);
       Charge = aodcasc->ChargeXi();
-      if(Charge > 0) { InvMassXi = -1*(aodcasc->MassXi()); } // Incorporate the charge in the particle mass
+      if(Charge > 0) { InvMassXi = -1*(InvMassXi); } // Incorporate the charge in the particle mass
       PtXi = TMath::Sqrt(aodcasc->Pt2Xi());
       PtBach = TMath::Sqrt(TMath::Power(aodcasc->MomBachX(), 2) + TMath::Power(aodcasc->MomBachY(), 2));
       EtaXi = TMath::ATanH((aodcasc->MomXiZ())/(TMath::Sqrt(aodcasc->Ptot2Xi())));
@@ -1124,7 +1124,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       // Secondary V0 properties
       PtV0 = TMath::Sqrt(aodcasc->Pt2V0());
       EtaV0 = aodcasc->PseudoRapV0();
-      if(Charge < 0) { InvMassV0 = aodcasc->MassLambda(); }
+      if(Charge <= 0) { InvMassV0 = aodcasc->MassLambda(); }
       else if(Charge > 0) { InvMassV0 = -1*(aodcasc->MassAntiLambda()); } // Incorporate the charge in the particle mass
       InvMassK0S = aodcasc->MassK0Short();
       InvMassGamma = aodcasc->InvMass2Prongs(0,1,11,11);
@@ -1172,7 +1172,7 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
 	CosPABachBar = GetCosPA(esdcascv0postrack, esdcascbachtrack, b, fVtx);
       }
       else if(Charge > 0) {
-	InvMassXi = -1*(esdcasc->M()); // Incorporate the charge in the particle mass
+	InvMassXi = -1*(InvMassXi); // Incorporate the charge in the particle mass
 	CosPABachBar = GetCosPA(esdcascbachtrack, esdcascv0negtrack, b, fVtx);
       } 
       CosPAXi = esdcasc->GetCascadeCosineOfPointingAngle(fVtx[0], fVtx[1], fVtx[2]);    
@@ -1188,10 +1188,10 @@ void AliAnalysisTaskNetLambdaIdent::UserExec(Option_t *){
       // Secondary V0 properties
       PtV0 = esdcasc->AliESDv0::Pt();
       EtaV0 = esdcasc->AliESDv0::Eta();
-      if(Charge < 0) { InvMassV0 = esdcasc->GetEffMass(4, 2); }
-      else if(Charge > 0) { InvMassV0 = -1*(esdcasc->GetEffMass(2, 4)); } // Incorporate the charge in the particle mass
-      InvMassK0S = esdcasc->GetEffMass(2, 2);
-      InvMassGamma = esdcasc->GetEffMass(0, 0);
+      if(Charge <= 0) { InvMassV0 = esdcasc->AliESDv0::M(); }
+      else if(Charge > 0) { InvMassV0 = -1*(esdcasc->AliESDv0::M()); } // Incorporate the charge in the particle mass
+      //InvMassK0S = esdcasc->GetEffMass(2, 2);
+      //InvMassGamma = esdcasc->GetEffMass(0, 0);     
       CosPAV0 = esdcasc->GetV0CosineOfPointingAngle(esdcasc->Xv(), esdcasc->Yv(), esdcasc->Zv());
       DecayRV0 = TMath::Sqrt(TMath::Power(esdcasc->AliESDv0::Xv(), 2) +
 			     TMath::Power(esdcasc->AliESDv0::Yv(), 2));
@@ -1865,7 +1865,7 @@ Int_t AliAnalysisTaskNetLambdaIdent::IsGenCascade(Int_t Poslabel, Int_t Neglabel
     AliMCParticle *esdTestMotherPos = (AliMCParticle*)fMCEvent->GetTrack(mPos);
     AliMCParticle *esdTestMotherNeg = (AliMCParticle*)fMCEvent->GetTrack(mNeg);
     AliMCParticle *esdTestMotherBach = (AliMCParticle*)fMCEvent->GetTrack(mBach);
-    if(!esdGenTrackPos || !esdGenTrackNeg || !esdGenTrackBach) { return 0; }
+    if(!esdTestMotherPos || !esdTestMotherNeg || !esdTestMotherBach) { return 0; }
     gmLambda = esdTestMotherPos->GetMother();
 
     if(mPos == mNeg && gmLambda >= 0 && gmLambda == mBach) {
