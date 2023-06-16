@@ -664,7 +664,7 @@ namespace PWGJE
                 {
                   if (fDoLessSparseAxes)
                   { // check if we want all dimensions
-                    double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma};
+                    double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, zVertex, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma};
                     FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
                   }
                   else
@@ -675,7 +675,7 @@ namespace PWGJE
                 }
                 else
                 {
-                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma};
+                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ zVertex, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma};
                   FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
                 }
               }
@@ -815,7 +815,7 @@ namespace PWGJE
                     {
                       if (fDoLessSparseAxes)
                       { // check if we want all the axis filled
-                        double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, epAngle};
+                        double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, epAngle, zVertex};
                         FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
                       }
                       else
@@ -826,7 +826,7 @@ namespace PWGJE
                     }
                     else
                     {
-                      double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi};
+                      double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, zVertex};
                       FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
                     }
                   }
