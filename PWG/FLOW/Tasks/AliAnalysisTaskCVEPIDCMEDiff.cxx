@@ -741,7 +741,7 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects()
     fHist3LambdaProtonMassSPt[iType]  = new TH3D(Form("fHist3LambdaProtonMassSPt_%i",iType),  Form("fHist3LambdaProtonMassSPt_%i",iType), 7,0,70, 10, 0, 10, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
     fHist3LambdaProtonMassDEta[iType] = new TH3D(Form("fHist3LambdaProtonMassDEta_%i",iType),Form("fHist3LambdaProtonMassDEta_%i",iType), 7,0,70, 16, -1.6, 1.6, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
     fResultsList->Add(fHist3LambdaProtonMassSPt[iType]);
-    fResultsList->Add(fHist3LambdaHadronMassSPt[iType]);
+    fResultsList->Add(fHist3LambdaProtonMassDEta[iType]);
     // Diff δ(ΔpT)
     fProfile3DDiffDeltaLambdaProtonMassSPt[iType] = new TProfile3D(Form("fProfile3DDiffDeltaLambdaProtonMassSPt_%i",iType), Form("fProfile3DDiffDeltaLambdaProtonMassSPt_%i",iType), 7, 0, 70, 10, 0, 10, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
     // Diff δ(Δη)
@@ -758,7 +758,7 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects()
     if(isCalculateLambdaHadron) {
       fHist3LambdaHadronMassSPt[iType]  = new TH3D(Form("fHist3LambdaHadronMassSPt_%i",iType),  Form("fHist3LambdaHadronMassSPt_%i",iType), 7,0,70, 10, 0, 10, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
       fHist3LambdaHadronMassDEta[iType] = new TH3D(Form("fHist3LambdaHadronMassDEta_%i",iType),Form("fHist3LambdaHadronMassDEta_%i",iType), 7,0,70, 16, -1.6, 1.6, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
-      fResultsList->Add(fHist3LambdaProtonMassDEta[iType]);
+      fResultsList->Add(fHist3LambdaHadronMassSPt[iType]);
       fResultsList->Add(fHist3LambdaHadronMassDEta[iType]);
       fProfile3DDiffDeltaLambdaHadronMassSPt[iType] = new TProfile3D(Form("fProfile3DDiffDeltaLambdaHadronMassSPt_%i",iType), Form("fProfile3DDiffDeltaLambdaHadronMassSPt_%i",iType), 7, 0, 70, 10, 0, 10, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
       fProfile3DDiffDeltaLambdaHadronMassDEta[iType] = new TProfile3D(Form("fProfile3DDiffDeltaLambdaHadronMassDEta_%i",iType), Form("fProfile3DDiffDeltaLambdaHadronMassDEta_%i",iType), 7, 0, 70, 16, -1.6, 1.6, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
