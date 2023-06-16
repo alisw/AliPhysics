@@ -1539,6 +1539,8 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
     AliAODTrack *atrackHad = dynamic_cast<AliAODTrack*>(VtrackHad);
     if(!atrackHad) continue;
 
+    if(!PassHadronCuts(atrackHad)) continue; //apply hadron cuts;
+
     ptHad = trackHad->Pt();
     ptEle = track->Pt();
     phiEle = track->Phi();
@@ -1546,7 +1548,6 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
     etaEle = track->Eta();
     etaHad = trackHad->Eta();
 
-    if(!PassHadronCuts(atrackHad)) continue; //apply hadron cuts;
     if(fTrigElePtCut && (ptHad > ptEle)) continue; //select only pTe > pTh is requested
 
     Dphi = phiEle - phiHad;
@@ -1688,10 +1689,13 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
 {
   //apply hadron cuts
 
+  Double_t DCAxyCut = 0.5, DCAzCut = 1;
+  Double_t d0z0[2]={-999,-999}, cov[3];
+
+  if(HadTrack->Pt() < 0.75) return kFALSE;
+
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
-  Double_t d0z0[2]={-999,-999}, cov[3];
-  Double_t DCAxyCut = 0.5, DCAzCut = 1;
 
   if(fHadCutCase == 1)
   {
@@ -1723,7 +1727,6 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
   if(RatioCrossedRowsOverFindableClustersh <   fRatioTPCNCrossRHad) return kFALSE;
 
   if(HadTrack->Eta()< fEtaCutHadMin || HadTrack->Eta()> fEtaCutHadMax) return kFALSE;
-  if(HadTrack->Pt() < 0.3) return kFALSE;
   if(HadTrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
     if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
 
