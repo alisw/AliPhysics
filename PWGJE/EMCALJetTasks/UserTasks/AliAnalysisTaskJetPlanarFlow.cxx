@@ -98,6 +98,7 @@ ClassImp(AliAnalysisTaskJetPlanarFlow)
       fCentralityMax(10.0),
       fFillNsubjettiness(kTRUE),
       fFillDeltaR(kTRUE),
+      fDoRotations(kTRUE),
       fRandom(0),
       fJetConstituentLabels(0),
       fShapesVar_Particles_E(0),
@@ -141,6 +142,7 @@ AliAnalysisTaskJetPlanarFlow::AliAnalysisTaskJetPlanarFlow(const char* name)
       fCentralityMax(10.0),
       fFillNsubjettiness(kTRUE),
       fFillDeltaR(kTRUE),
+      fDoRotations(kTRUE),
       fRandom(0),
       fJetConstituentLabels(0),
       fShapesVar_Particles_E(0),
@@ -248,8 +250,8 @@ void AliAnalysisTaskJetPlanarFlow::SetTree(AliEmcalJet *jet, AliJetContainer *je
   fJetConstituentLabels.clear();
   Float_t jetMass = TMath::Sqrt((jet->E() * jet->E()) - (jet->Pt() * jet->Pt()) - (jet->Pz() * jet->Pz()));
 
-  Float_t Result_NSub1=10.0;
-  Float_t Result_NSub2=-100.0;
+  Float_t Result_NSub1 = 10.0;
+  Float_t Result_NSub2 = -100.0;
   Float_t deltaR = -10.0;
   if (fFillNsubjettiness) {
     AliEmcalJetFinder JetFinderNSub1("NSubjettiness1");
@@ -292,86 +294,88 @@ void AliAnalysisTaskJetPlanarFlow::SetTree(AliEmcalJet *jet, AliJetContainer *je
   fShapesVar[6 + level] = deltaR;
   fShapesVar[8 + level] = tau2to1;
 
-  Float_t jetUnitVector[3] = {Float_t(TMath::Cos(jet->Phi()) / TMath::CosH(jet->Eta())), Float_t(TMath::Sin(jet->Phi()) / TMath::CosH(jet->Eta())), Float_t(TMath::SinH(jet->Eta()) / TMath::CosH(jet->Eta()))};
-  Float_t magPt = TMath::Sqrt((jetUnitVector[0] * jetUnitVector[0]) + (jetUnitVector[1] * jetUnitVector[1]));
+  Float_t thetaTrack = -1.0;
+  Float_t phiTrack = -1.0;
   Float_t rotationMatrix[3][3];
-  Float_t cosTheta = jetUnitVector[2];
-  Float_t sinTheta = magPt;
-  Float_t cosPhi = TMath::Cos(jet->Phi());
-  Float_t sinPhi = TMath::Sin(jet->Phi());
-
-  rotationMatrix[0][0] = -1.0 * cosTheta * cosPhi;
-  rotationMatrix[0][1] = -1.0 * cosTheta * sinPhi;
-  rotationMatrix[0][2] = sinTheta;
-  rotationMatrix[1][0] = sinPhi;
-  rotationMatrix[1][1] = -1.0 * cosPhi;
-  rotationMatrix[1][2] = 0.;
-  rotationMatrix[2][0] = sinTheta * cosPhi;
-  rotationMatrix[2][1] = sinTheta * sinPhi;
-  rotationMatrix[2][2] = cosTheta;
-
-  Float_t principleMatrix[2][2];
-  for (int i = 0; i < 2; i++) {
-    for (int j = 0; j < 2; j++) {
-      principleMatrix[i][j] = 0.0;
-    }
-  }
-
-  for (Int_t iConstituent = 0; iConstituent < jet->GetNumberOfTracks(); iConstituent++) {
-    jetConstituent = static_cast<AliVParticle *>(jet->TrackAt(iConstituent, jetContainer->GetParticleContainer()->GetArray()));
-    fJetConstituentLabels.push_back(jetConstituent->GetLabel());
-    if (jetConstituent->Pt() < fMinJetConstiteuntPAPt || jetConstituent->Pt() >= fMaxJetConstiteuntPAPt) continue;
-    if (fTrackingEfficiency != 1.0) {
-      if (fRandom.Rndm() > fTrackingEfficiency) continue;
-    }
-
-    double normalisation_factor = (1.0 / (jetConstituent->E() * jetMass));
-    Float_t pxRotated = (rotationMatrix[0][0] * jetConstituent->Px()) + (rotationMatrix[0][1] * jetConstituent->Py()) + (rotationMatrix[0][2] * jetConstituent->Pz());
-    Float_t pyRotated = (rotationMatrix[1][0] * jetConstituent->Px()) + (rotationMatrix[1][1] * jetConstituent->Py()) + (rotationMatrix[1][2] * jetConstituent->Pz());
-    Float_t pzRotated = (rotationMatrix[2][0] * jetConstituent->Px()) + (rotationMatrix[2][1] * jetConstituent->Py()) + (rotationMatrix[2][2] * jetConstituent->Pz());
-
-    principleMatrix[0][0] += normalisation_factor * pxRotated * pxRotated;
-    principleMatrix[0][1] += normalisation_factor * pxRotated * pyRotated;
-    principleMatrix[1][0] += normalisation_factor * pyRotated * pxRotated;
-    principleMatrix[1][1] += normalisation_factor * pyRotated * pyRotated;
-  }
-
-  Float_t principleMatrixTrace = principleMatrix[0][0] + principleMatrix[1][1];
-  Float_t PrinciplMatrixDeterminant = (principleMatrix[0][0] * principleMatrix[1][1]) - (principleMatrix[0][1] * principleMatrix[1][0]);
-  Float_t eigenValue1 = 0.5 * (principleMatrixTrace + TMath::Sqrt(principleMatrixTrace * principleMatrixTrace - 4 * PrinciplMatrixDeterminant));
-  Float_t eigenValue2 = 0.5 * (principleMatrixTrace - TMath::Sqrt(principleMatrixTrace * principleMatrixTrace - 4 * PrinciplMatrixDeterminant));
-
-  fShapesVar[10 + level] = (4.0 * PrinciplMatrixDeterminant) / (principleMatrixTrace * principleMatrixTrace);
-
-  Float_t eigenVector1[2];
-  Float_t eigenVector2[2];
-  if (principleMatrix[1][0] == 0.0 || principleMatrix[0][1] == 0.0) {
-    eigenVector1[0] = principleMatrix[0][0];
-    eigenVector1[1] = principleMatrix[1][1];
-    eigenVector2[0] = principleMatrix[0][0];
-    eigenVector2[1] = principleMatrix[1][1];
-  }
-  else {
-    eigenVector1[0] = eigenValue1 - principleMatrix[1][1];
-    eigenVector1[1] = principleMatrix[1][0];
-    eigenVector2[0] = principleMatrix[0][1];
-    eigenVector2[1] = eigenValue2 - principleMatrix[0][0];
-  }
-  if (eigenValue1 < eigenValue2) {
-    eigenVector1[0] = eigenVector2[0];
-    eigenVector1[1] = eigenVector2[1];
-  }
-
-  Float_t theta = TMath::ATan(eigenVector1[1] / eigenVector1[0]);
-  if (theta < 0) theta += TMath::Pi();
   Float_t rotationMatrix2D[2][2];
-  rotationMatrix2D[0][0] = TMath::Cos(theta);
-  rotationMatrix2D[0][1] = TMath::Sin(theta);
-  rotationMatrix2D[1][0] = -TMath::Sin(theta);
-  rotationMatrix2D[1][1] = TMath::Cos(theta);
 
-  Float_t pxRotatedPrincipleAxis = 0.0;
-  Float_t pyRotatedPrincipleAxis = 0.0;
+  if (fDoRotations) {
+    Float_t jetUnitVector[3] = {Float_t(TMath::Cos(jet->Phi()) / TMath::CosH(jet->Eta())), Float_t(TMath::Sin(jet->Phi()) / TMath::CosH(jet->Eta())), Float_t(TMath::SinH(jet->Eta()) / TMath::CosH(jet->Eta()))};
+    Float_t magPt = TMath::Sqrt((jetUnitVector[0] * jetUnitVector[0]) + (jetUnitVector[1] * jetUnitVector[1]));
+    Float_t cosTheta = jetUnitVector[2];
+    Float_t sinTheta = magPt;
+    Float_t cosPhi = TMath::Cos(jet->Phi());
+    Float_t sinPhi = TMath::Sin(jet->Phi());
+
+    rotationMatrix[0][0] = -1.0 * cosTheta * cosPhi;
+    rotationMatrix[0][1] = -1.0 * cosTheta * sinPhi;
+    rotationMatrix[0][2] = sinTheta;
+    rotationMatrix[1][0] = sinPhi;
+    rotationMatrix[1][1] = -1.0 * cosPhi;
+    rotationMatrix[1][2] = 0.;
+    rotationMatrix[2][0] = sinTheta * cosPhi;
+    rotationMatrix[2][1] = sinTheta * sinPhi;
+    rotationMatrix[2][2] = cosTheta;
+
+    Float_t principleMatrix[2][2];
+    for (int i = 0; i < 2; i++) {
+      for (int j = 0; j < 2; j++) {
+        principleMatrix[i][j] = 0.0;
+      }
+    }
+
+    for (Int_t iConstituent = 0; iConstituent < jet->GetNumberOfTracks(); iConstituent++) {
+      jetConstituent = static_cast<AliVParticle *>(jet->TrackAt(iConstituent, jetContainer->GetParticleContainer()->GetArray()));
+      fJetConstituentLabels.push_back(jetConstituent->GetLabel());
+      if (jetConstituent->Pt() < fMinJetConstiteuntPAPt || jetConstituent->Pt() >= fMaxJetConstiteuntPAPt) continue;
+      if (fTrackingEfficiency != 1.0) {
+        if (fRandom.Rndm() > fTrackingEfficiency) continue;
+      }
+
+      double normalisation_factor = (1.0 / (jetConstituent->E() * jetMass));
+      Float_t pxRotated = (rotationMatrix[0][0] * jetConstituent->Px()) + (rotationMatrix[0][1] * jetConstituent->Py()) + (rotationMatrix[0][2] * jetConstituent->Pz());
+      Float_t pyRotated = (rotationMatrix[1][0] * jetConstituent->Px()) + (rotationMatrix[1][1] * jetConstituent->Py()) + (rotationMatrix[1][2] * jetConstituent->Pz());
+      Float_t pzRotated = (rotationMatrix[2][0] * jetConstituent->Px()) + (rotationMatrix[2][1] * jetConstituent->Py()) + (rotationMatrix[2][2] * jetConstituent->Pz());
+
+      principleMatrix[0][0] += normalisation_factor * pxRotated * pxRotated;
+      principleMatrix[0][1] += normalisation_factor * pxRotated * pyRotated;
+      principleMatrix[1][0] += normalisation_factor * pyRotated * pxRotated;
+      principleMatrix[1][1] += normalisation_factor * pyRotated * pyRotated;
+    }
+
+    Float_t principleMatrixTrace = principleMatrix[0][0] + principleMatrix[1][1];
+    Float_t PrinciplMatrixDeterminant = (principleMatrix[0][0] * principleMatrix[1][1]) - (principleMatrix[0][1] * principleMatrix[1][0]);
+    Float_t eigenValue1 = 0.5 * (principleMatrixTrace + TMath::Sqrt(principleMatrixTrace * principleMatrixTrace - 4 * PrinciplMatrixDeterminant));
+    Float_t eigenValue2 = 0.5 * (principleMatrixTrace - TMath::Sqrt(principleMatrixTrace * principleMatrixTrace - 4 * PrinciplMatrixDeterminant));
+
+    fShapesVar[10 + level] = (4.0 * PrinciplMatrixDeterminant) / (principleMatrixTrace * principleMatrixTrace);
+
+    Float_t eigenVector1[2];
+    Float_t eigenVector2[2];
+    if (principleMatrix[1][0] == 0.0 || principleMatrix[0][1] == 0.0) {
+      eigenVector1[0] = principleMatrix[0][0];
+      eigenVector1[1] = principleMatrix[1][1];
+      eigenVector2[0] = principleMatrix[0][0];
+      eigenVector2[1] = principleMatrix[1][1];
+    }
+    else {
+      eigenVector1[0] = eigenValue1 - principleMatrix[1][1];
+      eigenVector1[1] = principleMatrix[1][0];
+      eigenVector2[0] = principleMatrix[0][1];
+      eigenVector2[1] = eigenValue2 - principleMatrix[0][0];
+    }
+    if (eigenValue1 < eigenValue2) {
+      eigenVector1[0] = eigenVector2[0];
+      eigenVector1[1] = eigenVector2[1];
+    }
+
+    Float_t theta = TMath::ATan(eigenVector1[1] / eigenVector1[0]);
+    if (theta < 0) theta += TMath::Pi();
+    rotationMatrix2D[0][0] = TMath::Cos(theta);
+    rotationMatrix2D[0][1] = TMath::Sin(theta);
+    rotationMatrix2D[1][0] = -TMath::Sin(theta);
+    rotationMatrix2D[1][1] = TMath::Cos(theta);
+  }
 
   int trackLabel = -1.0;
   for (Int_t iTrack = 0; iTrack < trackContainer->GetNTracks(); iTrack++) {
@@ -387,14 +391,22 @@ void AliAnalysisTaskJetPlanarFlow::SetTree(AliEmcalJet *jet, AliJetContainer *je
         break;
       }
     }
-    Float_t pxRotated = (rotationMatrix[0][0] * track->Px()) + (rotationMatrix[0][1] * track->Py()) + (rotationMatrix[0][2] * track->Pz());
-    Float_t pyRotated = (rotationMatrix[1][0] * track->Px()) + (rotationMatrix[1][1] * track->Py()) + (rotationMatrix[1][2] * track->Pz());
-    Float_t pzRotated = (rotationMatrix[2][0] * track->Px()) + (rotationMatrix[2][1] * track->Py()) + (rotationMatrix[2][2] * track->Pz());
+    Float_t pxRotatedPrincipleAxis = 0.0;
+    Float_t pyRotatedPrincipleAxis = 0.0;
+    if (fDoRotations) {
+      Float_t pxRotated = (rotationMatrix[0][0] * track->Px()) + (rotationMatrix[0][1] * track->Py()) + (rotationMatrix[0][2] * track->Pz());
+      Float_t pyRotated = (rotationMatrix[1][0] * track->Px()) + (rotationMatrix[1][1] * track->Py()) + (rotationMatrix[1][2] * track->Pz());
+      Float_t pzRotated = (rotationMatrix[2][0] * track->Px()) + (rotationMatrix[2][1] * track->Py()) + (rotationMatrix[2][2] * track->Pz());
 
-    pxRotatedPrincipleAxis = (rotationMatrix2D[0][0] * pxRotated) + (rotationMatrix2D[0][1] * pyRotated);
-    pyRotatedPrincipleAxis = (rotationMatrix2D[1][0] * pxRotated) + (rotationMatrix2D[1][1] * pyRotated);
-    Float_t thetaTrack = TMath::ACos(pzRotated / TMath::Sqrt((pxRotated * pxRotated) + (pyRotated * pyRotated) + (pzRotated * pzRotated)));
-    Float_t phiTrack = TMath::ATan2(pyRotatedPrincipleAxis, pxRotatedPrincipleAxis);
+      pxRotatedPrincipleAxis = (rotationMatrix2D[0][0] * pxRotated) + (rotationMatrix2D[0][1] * pyRotated);
+      pyRotatedPrincipleAxis = (rotationMatrix2D[1][0] * pxRotated) + (rotationMatrix2D[1][1] * pyRotated);
+      thetaTrack = TMath::ACos(pzRotated / TMath::Sqrt((pxRotated * pxRotated) + (pyRotated * pyRotated) + (pzRotated * pzRotated)));
+      phiTrack = TMath::ATan2(pyRotatedPrincipleAxis, pxRotatedPrincipleAxis);
+    }
+    else {
+      thetaTrack = track->Eta();
+      phiTrack = track->Phi();
+    }
 
     if (level == 0) {
       fShapesVar_Particles_E.push_back(track->E());
@@ -445,7 +457,6 @@ Bool_t AliAnalysisTaskJetPlanarFlow::FillHistograms() {
 
   if (jetContainer) {
     jetContainer->ResetCurrentID();  //??
-
     // Jet Loop
     Float_t jetpT = 0.0;
     while ((jet = jetContainer->GetNextAcceptJet())) {
@@ -455,7 +466,6 @@ Bool_t AliAnalysisTaskJetPlanarFlow::FillHistograms() {
       else
         jetpT = jet->Pt();
       if (jetpT < fMinJetPt || jetpT >= fMaxJetPt) continue;
-
       if (fJetAnalysisType == kTrueDet) {
         jetTrue = jet->ClosestJet();
         if (!jetTrue) continue;
