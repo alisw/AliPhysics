@@ -111,6 +111,8 @@ ClassImp(AliAnalysisTaskJetPlanarFlow)
       fShapesVar_Particles_Theta_Truth(0),
       fShapesVar_Particles_InJet(0),
       fShapesVar_Particles_InJet_Truth(0),
+      fShapesVar_Particles_DeltaR(0),
+      fShapesVar_Particles_DeltaR_Truth(0),
       fTreeJet(0),
       fTreeParticles(0),
       fhEvent(0x0)
@@ -155,6 +157,8 @@ AliAnalysisTaskJetPlanarFlow::AliAnalysisTaskJetPlanarFlow(const char* name)
       fShapesVar_Particles_Theta_Truth(0),
       fShapesVar_Particles_InJet(0),
       fShapesVar_Particles_InJet_Truth(0),
+      fShapesVar_Particles_DeltaR(0),
+      fShapesVar_Particles_DeltaR_Truth(0),
       fTreeJet(0),
       fTreeParticles(0),
       fhEvent(0x0) {
@@ -195,7 +199,7 @@ void AliAnalysisTaskJetPlanarFlow::UserCreateOutputObjects() {
   fShapesVarNames[5] = "Eta_Jet_Truth";
   fShapesVarNames[6] = "DeltaR_Jet";
   fShapesVarNames[7] = "DeltaR_Jet_Truth";
-  fShapesVarNames[8] = "Tau2to1";
+  fShapesVarNames[8] = "Tau2to1_Jet";
   fShapesVarNames[9] = "Tau2to1_Jet_Truth";
   fShapesVarNames[10] = "PlanarFlow_Jet";
   fShapesVarNames[11] = "PlanarFlow_Jet_Truth";
@@ -218,6 +222,8 @@ void AliAnalysisTaskJetPlanarFlow::UserCreateOutputObjects() {
   fShapesVarNames_Particles[7] = "Theta_Truth";
   fShapesVarNames_Particles[8] = "InJet";
   fShapesVarNames_Particles[9] = "InJet_Truth";
+  fShapesVarNames_Particles[10] = "DeltaR";
+  fShapesVarNames_Particles[11] = "DeltaR_Truth";
   fTreeParticles->Branch(fShapesVarNames_Particles[0].Data(), &fShapesVar_Particles_E, 0, 1);
   fTreeParticles->Branch(fShapesVarNames_Particles[1].Data(), &fShapesVar_Particles_E_Truth, 0, 1);
   fTreeParticles->Branch(fShapesVarNames_Particles[2].Data(), &fShapesVar_Particles_pT, 0, 1);
@@ -228,6 +234,8 @@ void AliAnalysisTaskJetPlanarFlow::UserCreateOutputObjects() {
   fTreeParticles->Branch(fShapesVarNames_Particles[7].Data(), &fShapesVar_Particles_Theta_Truth, 0, 1);
   fTreeParticles->Branch(fShapesVarNames_Particles[8].Data(), &fShapesVar_Particles_InJet, 0, 1);
   fTreeParticles->Branch(fShapesVarNames_Particles[9].Data(), &fShapesVar_Particles_InJet_Truth, 0, 1);
+  fTreeParticles->Branch(fShapesVarNames_Particles[10].Data(), &fShapesVar_Particles_DeltaR, 0, 1);
+  fTreeParticles->Branch(fShapesVarNames_Particles[11].Data(), &fShapesVar_Particles_DeltaR_Truth, 0, 1);
 
   fhEvent = new TH1D("fhEvent", "fhEvent", 40, -0.5, 39.5);
   fOutput->Add(fhEvent);
@@ -244,6 +252,30 @@ Bool_t AliAnalysisTaskJetPlanarFlow::Run() {
 
   return kTRUE;
 }
+
+Float_t RelativePhi(Float_t mphi, Float_t vphi) {
+  if (mphi < -TMath::Pi()){
+    mphi += TMath::TwoPi();
+  }
+  else if (mphi > TMath::Pi()){
+    mphi -= TMath::TwoPi();
+  }
+  if (vphi < -TMath::Pi()){
+    vphi += TMath::TwoPi();
+  }
+  else if (vphi > TMath::Pi()){
+    vphi -= TMath::TwoPi();
+  }
+  Float_t dphi = mphi - vphi;
+  if (dphi < -TMath::Pi()){
+    dphi += TMath::TwoPi();
+  }
+  else if (dphi > TMath::Pi()){
+    dphi -= TMath::TwoPi();
+  }
+  return dphi;  // returns them in the range [-pi,pi]
+}
+
 
 void AliAnalysisTaskJetPlanarFlow::SetTree(AliEmcalJet *jet, AliJetContainer *jetContainer, AliTrackContainer *trackContainer, Float_t jetPt, Int_t level) {
   AliVParticle *jetConstituent = NULL;
@@ -408,12 +440,15 @@ void AliAnalysisTaskJetPlanarFlow::SetTree(AliEmcalJet *jet, AliJetContainer *je
       phiTrack = track->Phi();
     }
 
+    Float_t particleDeltaR = TMath::Sqrt(TMath::Power(RelativePhi(track->Phi(),jet->Phi()),2)+TMath::Power((track->Eta()-jet->Eta()),2));
+
     if (level == 0) {
       fShapesVar_Particles_E.push_back(track->E());
       fShapesVar_Particles_pT.push_back(track->Pt());
       fShapesVar_Particles_Phi.push_back(phiTrack);
       fShapesVar_Particles_Theta.push_back(thetaTrack);
       fShapesVar_Particles_InJet.push_back(isInJet);
+      fShapesVar_Particles_DeltaR.push_back(particleDeltaR);
     }
 
     if (level == 1) {
@@ -422,6 +457,7 @@ void AliAnalysisTaskJetPlanarFlow::SetTree(AliEmcalJet *jet, AliJetContainer *je
       fShapesVar_Particles_Phi_Truth.push_back(phiTrack);
       fShapesVar_Particles_Theta_Truth.push_back(thetaTrack);
       fShapesVar_Particles_InJet_Truth.push_back(isInJet);
+      fShapesVar_Particles_DeltaR.push_back(particleDeltaR);
     }
   }
 }
