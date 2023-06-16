@@ -154,6 +154,7 @@ void SetCentralityMax(Float_t CentralityMax)                              {fCent
 Float_t GetCentralityMax()                                           {return fCentralityMax;}
 void SetFillNsubjettiness(Bool_t FillNsubjettiness)                              {fFillNsubjettiness = FillNsubjettiness;}
 void SetFillDeltaR(Bool_t FillDeltaR)                              {fFillDeltaR = FillDeltaR;}
+void SetWithoutRotations(Bool_t DoRotations)                              {fDoRotations = DoRotations;}
 
  
  
@@ -184,7 +185,8 @@ void SetFillDeltaR(Bool_t FillDeltaR)                              {fFillDeltaR 
  Float_t                           fCentralityMax         ;
  Bool_t                            fFillNsubjettiness     ;
  Bool_t                            fFillDeltaR            ;
- Float_t                           fShapesVar[nVar]       ;
+ Bool_t                            fDoRotations;
+ Float_t                           fShapesVar[nVar];
 
  TRandom3                          fRandom                ;
 
