@@ -416,10 +416,10 @@ void AliAnalysisTaskJetPlanarFlow::SetTree(AliEmcalJet *jet, AliJetContainer *je
     if (TMath::Abs(track->Eta()) > 0.9) continue;
     trackLabel = track->GetLabel();
 
-    bool isInJet = kFALSE;
+    Float_t isInJet = 0.0;
     for (Int_t iConstituent = 0; iConstituent < fJetConstituentLabels.size(); iConstituent++) {
       if (fJetConstituentLabels[iConstituent] == trackLabel) {  // Is this correct?
-        isInJet = kTRUE;
+        isInJet = 1.0;
         break;
       }
     }
