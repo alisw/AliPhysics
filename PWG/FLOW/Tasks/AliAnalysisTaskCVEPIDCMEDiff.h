@@ -105,7 +105,6 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   void SetLambdaMassRightCut(double lambdaMassLeftCut) { this->fLambdaMassLeftCut = lambdaMassLeftCut; }
   void SetAntiLambdaMassLeftCut(double antiLambdaMassRightCut) { this->fAntiLambdaMassRightCut = antiLambdaMassRightCut; }
   void SetAntiLambdaMassRightCut(double antiLambdaMassLeftCut) { this->fAntiLambdaMassLeftCut = antiLambdaMassLeftCut; }
-  // ESE Qn
   void SetNMassBins(int nMassBins) { this->fNMassBins = nMassBins; }
 
  private:
@@ -141,6 +140,9 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   inline double GetEventPlane(double qx, double qy, double harmonic);
   // Get DCA
   bool GetDCA(double &dcaxy, double &dcaz, AliAODTrack* track);
+  // Sum pT bin, Delta eta bin
+  inline double GetSumPtBin(double sumPt);
+  inline double GetDeltaEtaBin(double deltaEta);
 
   //////////////////////
   // Switch           //

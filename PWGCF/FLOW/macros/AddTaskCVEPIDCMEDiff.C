@@ -32,12 +32,8 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
     return NULL;
   }
 
-  bool bDoNUE = false;
-  bool bDoLambdaNUE = false;
-  if (uniqueID.EqualTo("Effi")) bDoNUE = true;
-  if (uniqueID.EqualTo("EffiLambda")) bDoLambdaNUE = true;
-  if (uniqueID.EqualTo("EffiAll")) bDoNUE = true, bDoLambdaNUE = true;
-
+  bool bDoNUE                  = true;
+  bool bDoLambdaNUE            = true;
   bool bDebug                  = false;
   bool bDoNUA                  = true;
   bool bV0DaughterUseTOF       = false;

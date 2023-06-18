@@ -738,32 +738,32 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects()
 
   for (int iType = 0; iType < 4; iType++) {
     // Inv Mass 
-    fHist3LambdaProtonMassSPt[iType]  = new TH3D(Form("fHist3LambdaProtonMassSPt_%i",iType),  Form("fHist3LambdaProtonMassSPt_%i",iType), 7,0,70, 10, 0, 10, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
-    fHist3LambdaProtonMassDEta[iType] = new TH3D(Form("fHist3LambdaProtonMassDEta_%i",iType),Form("fHist3LambdaProtonMassDEta_%i",iType), 7,0,70, 16, -1.6, 1.6, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
+    fHist3LambdaProtonMassSPt[iType]  = new TH3D(Form("fHist3LambdaProtonMassSPt_%i",iType),  Form("fHist3LambdaProtonMassSPt_%i",iType), 7, 0, 70, 3, 0, 3, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
+    fHist3LambdaProtonMassDEta[iType] = new TH3D(Form("fHist3LambdaProtonMassDEta_%i",iType),Form("fHist3LambdaProtonMassDEta_%i",iType), 7, 0, 70, 2, 0, 2, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
     fResultsList->Add(fHist3LambdaProtonMassSPt[iType]);
     fResultsList->Add(fHist3LambdaProtonMassDEta[iType]);
     // Diff δ(ΔpT)
-    fProfile3DDiffDeltaLambdaProtonMassSPt[iType] = new TProfile3D(Form("fProfile3DDiffDeltaLambdaProtonMassSPt_%i",iType), Form("fProfile3DDiffDeltaLambdaProtonMassSPt_%i",iType), 7, 0, 70, 10, 0, 10, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
+    fProfile3DDiffDeltaLambdaProtonMassSPt[iType] = new TProfile3D(Form("fProfile3DDiffDeltaLambdaProtonMassSPt_%i",iType), Form("fProfile3DDiffDeltaLambdaProtonMassSPt_%i",iType), 7, 0, 70, 3, 0, 3, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
     // Diff δ(Δη)
-    fProfile3DDiffDeltaLambdaProtonMassDEta[iType] = new TProfile3D(Form("fProfile3DDiffDeltaLambdaProtonMassDEta_%i",iType), Form("fProfile3DDiffDeltaLambdaProtonMassDEta_%i",iType), 7, 0, 70, 16, -1.6, 1.6, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
+    fProfile3DDiffDeltaLambdaProtonMassDEta[iType] = new TProfile3D(Form("fProfile3DDiffDeltaLambdaProtonMassDEta_%i",iType), Form("fProfile3DDiffDeltaLambdaProtonMassDEta_%i",iType), 7, 0, 70, 2, 0, 2, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
     // Diff γ(SpT)(only TPC Plane)
-    fProfile3DDiffGammaLambdaProtonMassSPt[iType] = new TProfile3D(Form("fProfile3DDiffGammaLambdaProtonMassSPt_%i",iType), Form("fProfile3DDiffGammaLambdaProtonMassSPt_%i",iType), 7, 0, 70, 10, 0, 10, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
+    fProfile3DDiffGammaLambdaProtonMassSPt[iType] = new TProfile3D(Form("fProfile3DDiffGammaLambdaProtonMassSPt_%i",iType), Form("fProfile3DDiffGammaLambdaProtonMassSPt_%i",iType), 7, 0, 70, 3, 0, 3, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
     // Diff γ(Δη)(only TPC Plane)
-    fProfile3DDiffGammaLambdaProtonMassDEta[iType] = new TProfile3D(Form("fProfile3DDiffGammaLambdaProtonMassDEta_%i",iType), Form("fProfile3DDiffGammaLambdaProtonMassDEta_%i",iType), 7, 0, 70, 16, -1.6, 1.6, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
+    fProfile3DDiffGammaLambdaProtonMassDEta[iType] = new TProfile3D(Form("fProfile3DDiffGammaLambdaProtonMassDEta_%i",iType), Form("fProfile3DDiffGammaLambdaProtonMassDEta_%i",iType), 7, 0, 70, 2, 0, 2, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
     fResultsList->Add(fProfile3DDiffDeltaLambdaProtonMassSPt[iType]);
     fResultsList->Add(fProfile3DDiffDeltaLambdaProtonMassDEta[iType]);
     fResultsList->Add(fProfile3DDiffGammaLambdaProtonMassSPt[iType]);
     fResultsList->Add(fProfile3DDiffGammaLambdaProtonMassDEta[iType]);
 
     if(isCalculateLambdaHadron) {
-      fHist3LambdaHadronMassSPt[iType]  = new TH3D(Form("fHist3LambdaHadronMassSPt_%i",iType),  Form("fHist3LambdaHadronMassSPt_%i",iType), 7,0,70, 10, 0, 10, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
-      fHist3LambdaHadronMassDEta[iType] = new TH3D(Form("fHist3LambdaHadronMassDEta_%i",iType),Form("fHist3LambdaHadronMassDEta_%i",iType), 7,0,70, 16, -1.6, 1.6, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
+      fHist3LambdaHadronMassSPt[iType]  = new TH3D(Form("fHist3LambdaHadronMassSPt_%i",iType),  Form("fHist3LambdaHadronMassSPt_%i",iType), 7, 0, 70, 3, 0, 3, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
+      fHist3LambdaHadronMassDEta[iType] = new TH3D(Form("fHist3LambdaHadronMassDEta_%i",iType),Form("fHist3LambdaHadronMassDEta_%i",iType), 7, 0, 70, 2, 0, 2, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
       fResultsList->Add(fHist3LambdaHadronMassSPt[iType]);
       fResultsList->Add(fHist3LambdaHadronMassDEta[iType]);
-      fProfile3DDiffDeltaLambdaHadronMassSPt[iType] = new TProfile3D(Form("fProfile3DDiffDeltaLambdaHadronMassSPt_%i",iType), Form("fProfile3DDiffDeltaLambdaHadronMassSPt_%i",iType), 7, 0, 70, 10, 0, 10, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
-      fProfile3DDiffDeltaLambdaHadronMassDEta[iType] = new TProfile3D(Form("fProfile3DDiffDeltaLambdaHadronMassDEta_%i",iType), Form("fProfile3DDiffDeltaLambdaHadronMassDEta_%i",iType), 7, 0, 70, 16, -1.6, 1.6, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
-      fProfile3DDiffGammaLambdaHadronMassSPt[iType] = new TProfile3D(Form("fProfile3DDiffGammaLambdaHadronMassSPt_%i",iType), Form("fProfile3DDiffGammaLambdaHadronMassSPt_%i",iType), 7, 0, 70, 10, 0, 10, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
-      fProfile3DDiffGammaLambdaHadronMassDEta[iType] = new TProfile3D(Form("fProfile3DDiffGammaLambdaHadronMassDEta_%i",iType), Form("fProfile3DDiffGammaLambdaHadronMassDEta_%i",iType), 7, 0, 70, 16, -1.6, 1.6, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
+      fProfile3DDiffDeltaLambdaHadronMassSPt[iType] = new TProfile3D(Form("fProfile3DDiffDeltaLambdaHadronMassSPt_%i",iType), Form("fProfile3DDiffDeltaLambdaHadronMassSPt_%i",iType), 7, 0, 70, 3, 0, 3, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
+      fProfile3DDiffDeltaLambdaHadronMassDEta[iType] = new TProfile3D(Form("fProfile3DDiffDeltaLambdaHadronMassDEta_%i",iType), Form("fProfile3DDiffDeltaLambdaHadronMassDEta_%i",iType), 7, 0, 70, 2, 0, 2, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
+      fProfile3DDiffGammaLambdaHadronMassSPt[iType] = new TProfile3D(Form("fProfile3DDiffGammaLambdaHadronMassSPt_%i",iType), Form("fProfile3DDiffGammaLambdaHadronMassSPt_%i",iType), 7, 0, 70, 3, 0, 3, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
+      fProfile3DDiffGammaLambdaHadronMassDEta[iType] = new TProfile3D(Form("fProfile3DDiffGammaLambdaHadronMassDEta_%i",iType), Form("fProfile3DDiffGammaLambdaHadronMassDEta_%i",iType), 7, 0, 70, 2, 0, 2, fNMassBins, fLambdaMassMean - fLambdaMassLeftCut, fLambdaMassMean + fLambdaMassRightCut);
       fResultsList->Add(fProfile3DDiffDeltaLambdaHadronMassSPt[iType]);
       fResultsList->Add(fProfile3DDiffDeltaLambdaHadronMassDEta[iType]);
       fResultsList->Add(fProfile3DDiffGammaLambdaHadronMassSPt[iType]);
@@ -1266,15 +1266,19 @@ bool AliAnalysisTaskCVEPIDCMEDiff::PairV0Trk()
       bitsLambdaProtonPair.SetBitNumber(2, code_lambda == -3122 && code ==  2212);
       bitsLambdaProtonPair.SetBitNumber(3, code_lambda == -3122 && code == -2212);
 
+      double sumPtBin = GetSumPtBin(pt_lambda + pt);
+      double deltaEtaBin = GetDeltaEtaBin(TMath::Abs(eta_lambda - eta));
+
       for (int iBits = 0; iBits < nBits; iBits++) {
         double weight_all = weight_lambda * pidweight;
          if (bitsLambdaProtonPair.TestBitNumber(iBits)) {
-          fHist3LambdaProtonMassSPt[iBits]  -> Fill(fCent,   pt_lambda + pt, mass_lambda);
-          fHist3LambdaProtonMassDEta[iBits] -> Fill(fCent, eta_lambda - eta, mass_lambda);
-          fProfile3DDiffDeltaLambdaProtonMassSPt[iBits]  -> Fill(fCent,  pt_lambda +  pt, mass_lambda, delta, weight_all);
-          fProfile3DDiffDeltaLambdaProtonMassDEta[iBits] -> Fill(fCent, eta_lambda - eta, mass_lambda, delta, weight_all);
-          fProfile3DDiffGammaLambdaProtonMassSPt[iBits]  -> Fill(fCent,  pt_lambda +  pt, mass_lambda, gamma, weight_all);
-          fProfile3DDiffGammaLambdaProtonMassDEta[iBits] -> Fill(fCent, eta_lambda - eta, mass_lambda, gamma, weight_all);
+          fHist3LambdaProtonMassSPt[iBits]               -> Fill(fCent,    sumPtBin, mass_lambda);
+          fProfile3DDiffDeltaLambdaProtonMassSPt[iBits]  -> Fill(fCent,    sumPtBin, mass_lambda, delta, weight_all);
+          fProfile3DDiffGammaLambdaProtonMassSPt[iBits]  -> Fill(fCent,    sumPtBin, mass_lambda, gamma, weight_all);
+
+          fHist3LambdaProtonMassDEta[iBits]              -> Fill(fCent, deltaEtaBin, mass_lambda);
+          fProfile3DDiffDeltaLambdaProtonMassDEta[iBits] -> Fill(fCent, deltaEtaBin, mass_lambda, delta, weight_all);
+          fProfile3DDiffGammaLambdaProtonMassDEta[iBits] -> Fill(fCent, deltaEtaBin, mass_lambda, gamma, weight_all);
         }
       }
 
@@ -1287,12 +1291,13 @@ bool AliAnalysisTaskCVEPIDCMEDiff::PairV0Trk()
         for (int iBits = 0; iBits < nBits; iBits++) {
           double weight_all = weight_lambda * weight;
           if (bitsLambdaHadronPair.TestBitNumber(iBits)) {
-            fHist3LambdaHadronMassSPt[iBits]  -> Fill(fCent,  pt_lambda +  pt, mass_lambda);
-            fHist3LambdaHadronMassDEta[iBits] -> Fill(fCent, eta_lambda - eta, mass_lambda);
-            fProfile3DDiffDeltaLambdaHadronMassSPt[iBits]  -> Fill(fCent,  pt_lambda +  pt, mass_lambda, delta, weight_all);
-            fProfile3DDiffDeltaLambdaHadronMassDEta[iBits] -> Fill(fCent, eta_lambda - eta, mass_lambda, delta, weight_all);
-            fProfile3DDiffGammaLambdaHadronMassSPt[iBits]  -> Fill(fCent,  pt_lambda +  pt, mass_lambda, gamma, weight_all);
-            fProfile3DDiffGammaLambdaHadronMassDEta[iBits] -> Fill(fCent, eta_lambda - eta, mass_lambda, gamma, weight_all);
+            fHist3LambdaHadronMassSPt[iBits]               -> Fill(fCent,    sumPtBin, mass_lambda);
+            fProfile3DDiffDeltaLambdaHadronMassSPt[iBits]  -> Fill(fCent,    sumPtBin, mass_lambda, delta, weight_all);
+            fProfile3DDiffGammaLambdaHadronMassSPt[iBits]  -> Fill(fCent,    sumPtBin, mass_lambda, gamma, weight_all);
+
+            fHist3LambdaHadronMassDEta[iBits]              -> Fill(fCent, deltaEtaBin, mass_lambda);
+            fProfile3DDiffDeltaLambdaHadronMassDEta[iBits] -> Fill(fCent, deltaEtaBin, mass_lambda, delta, weight_all);
+            fProfile3DDiffGammaLambdaHadronMassDEta[iBits] -> Fill(fCent, deltaEtaBin, mass_lambda, gamma, weight_all);
           }
         }
       }
@@ -1707,5 +1712,26 @@ bool AliAnalysisTaskCVEPIDCMEDiff::GetDCA(double &dcaxy, double &dcaz, AliAODTra
   return true;
 }
 
+//---------------------------------------------------
+inline double GetSumPtBin(double sumPt) {
+  //1~3 GeV return 0.5
+  //3~5 GeV return 1.5
+  //5~8 GeV return 2.5
+  //else return -1
+  if (sumPt > 1. && sumPt < 3.) return 0.5;
+  else if (sumPt > 3. && sumPt < 5.) return 1.5;
+  else if (sumPt > 5. && sumPt < 8.) return 2.5;
+  else return -1.;
+}
+
+//---------------------------------------------------
+inline double GetDeltaEtaBin(double deltaEta) {
+  //-0.5 ~ 0.5 return 0.5
+  //-1.6 ~ -0.5 & 0.5 ~ 1.6 return 1.5
+  //else return -1
+  if (deltaEta > -0.5 && deltaEta < 0.5) return 0.5;
+  else if ((deltaEta > -1.6 && deltaEta < -0.5) || (deltaEta > 0.5 && deltaEta < 1.6)) return 1.5;
+  else return -1.;
+}
 //---------------------------------------------------
 
