@@ -48,6 +48,7 @@
 
 class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
 {
+  
  public:
   AliAnalysisTaskMesonJetCorrelation();
   AliAnalysisTaskMesonJetCorrelation(const char* name);
@@ -66,7 +67,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void CalculateBackgroundSwapp();
   void CalculateBackgroundMix();
   void UpdateEventMixData();
-  void FillInvMassBackHistograms(AliAODConversionMother* backgroundCandidate);
+  void FillInvMassBackHistograms(AliAODConversionMother* backgroundCandidate, const bool isRotBack = true);
   std::array<std::unique_ptr<AliAODConversionPhoton>, 2> GetGammasSwapped(AliAODConversionPhoton* currentEventGoodV0Temp1, AliAODConversionPhoton* currentEventGoodV0Temp2);
   void FillMesonHistograms(AliAODConversionPhoton* gamma0, AliAODConversionPhoton* gamma1, int firstGammaIndex, int secondGammaIndex);
   void ProcessTrueBackgroundCandidatesAOD(AliAODConversionMother* Pi0Candidate, AliAODConversionPhoton* TrueGammaCandidate0, AliAODConversionPhoton* TrueGammaCandidate1, const int matchedJet, const float RJetPi0Cand);
@@ -122,6 +123,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void SetDoUseCentralEvtSelection(bool tmp) { fUseCentralEventSelection = tmp; }
   void SetUsePtForCalcZ(bool tmp) { fUsePtForZCalc = tmp; }
   void SetForcePi0Unstable(bool tmp) { fUnsetStablePi0 = tmp; }
+  void SetUseMixedBackAdd(bool tmp) { fUseMixedBackAdd = tmp; }
+  void SetDoRadiusDependence(bool tmp) { fDoRadiusDep = tmp; }
 
   void SetEventCutList(int nCuts,
                        TList* CutArray)
@@ -229,6 +232,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool fUseCentralEventSelection;                       // flag if central event selection (AliEventSelection.cxx) should be used
   bool fUsePtForZCalc;                                  // flag if z = pt_meson/pt_jet or if its z = (P_{meson}*P_{jet})/|P_{Jet}^{2}|
   bool fUnsetStablePi0;                                 // flag to decide if pi0 need to be reset to Unstable particles
+  bool fUseMixedBackAdd;                                // flag to enable a histogram for the mixed jet background in addition to the rotation background. This is to save memory and CPU (As otherwise a completely new wagon would be needed)
+  bool fDoRadiusDep;                                    // flag to enable radius dependent histograms
   //-------------------------------
   // conversions
   //-------------------------------
@@ -274,6 +279,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   vector<double> fTrueVectorJetPz;       //! Vector of True JetPz
   vector<double> fTrueVectorJetEta;      //! Vector of True JetEta
   vector<double> fTrueVectorJetPhi;      //! Vector of True JetPhi
+  vector<double> fTrueVectorJetNPart;    //! Vector of True number of particles in jet
   vector<int> fTrueVectorJetPartonID;    //! Vector of parton id matched to true jet
   vector<double> fTrueVectorJetPartonPt; //! Vector of parton pt matched to true jet
   vector<double> fTrueVectorJetPartonPx; //! Vector of parton pt matched to true jet
@@ -295,6 +301,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonInvMassVsZ;         //! Response matrix for meson inv. mass and meson z for each jet pt true vs. rec. bin
   std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonBackInvMassVsZ;     //! Response matrix for meson inv. mass and meson z for background candidates (mixed evt/rotation) for each jet pt true vs. rec. bin
   std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonBackInvMassVsPt;    //! Response matrix for meson inv. mass and meson pT for background candidates (mixed evt/rotation) for each jet pt true vs. rec. bin
+  std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonBackAddInvMassVsZ;  //! Response matrix for meson inv. mass and meson z for background candidates (mixed evt) for each jet pt true vs. rec. bin
+  std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonBackAddInvMassVsPt; //! Response matrix for meson inv. mass and meson pT for background candidates (mixed evt) for each jet pt true vs. rec. bin
   std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonInvMassPerpCone;    //! Same as fRespMatrixHandlerMesonInvMass but in perpendicular cone
   std::vector<MatrixHandler4D*> fRespMatrixHandlerMesonInvMassVsZPerpCone; //! Same as fRespMatrixHandlerMesonInvMassVsZ but in perpendicular cone
 
@@ -381,6 +389,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoNEFVsPtJet;                //! vector of histos with pt of jets vs neutral energy fraction
   std::vector<TH2F*> fHistoNchVsPtJet;                //! vector of histos with pt of jets vs number of charged tracks in jet
   std::vector<TH2F*> fHistoNclusVsPtJet;              //! vector of histos with pt of jets vs neutral clusters in jet
+  std::vector<TH2F*> fHistoNPartInTrueJetVsJetPt;     //! vector of histos with pt jet vs number of true jet particles
   
   //-------------------------------
   // True meson histograms
@@ -489,7 +498,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 15);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 16);
 };
 
 #endif
