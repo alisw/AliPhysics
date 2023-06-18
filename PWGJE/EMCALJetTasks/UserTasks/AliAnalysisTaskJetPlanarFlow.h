@@ -98,7 +98,7 @@ class AliAnalysisTaskJetPlanarFlow : public AliAnalysisTaskEmcalJet
 
  enum TreeSize {
    nVar = 12,
-   nVar_Particles =12
+   nVar_Particles =16
   };
 
 
@@ -108,7 +108,7 @@ class AliAnalysisTaskJetPlanarFlow : public AliAnalysisTaskEmcalJet
 
 
 
-
+/*
 AliAnalysisTaskJetPlanarFlow* AddTaskJetPlanarFlow(
                     const char * njet1,
                     const char * ntracks1,
@@ -123,6 +123,7 @@ AliAnalysisTaskJetPlanarFlow* AddTaskJetPlanarFlow(
 								    Int_t       pSel,
 								    AliAnalysisTaskJetPlanarFlow::JetAnalysisType jetAnalysisType = AliAnalysisTaskJetPlanarFlow::kData,
 								    AliAnalysisTaskJetPlanarFlow::JetSubType jetSubType = AliAnalysisTaskJetPlanarFlow::kNoSub);
+                    */
 
 Float_t RelativePhi(Float_t mphi, Float_t vphi);
 void SetTree(AliEmcalJet *jet, AliJetContainer *jetContainer, AliTrackContainer *trackContainer, Float_t jetPt, Int_t level);
@@ -204,6 +205,10 @@ void SetWithoutRotations(Bool_t DoRotations)                              {fDoRo
  std::vector<Float_t>             fShapesVar_Particles_InJet_Truth;
  std::vector<Float_t>             fShapesVar_Particles_DeltaR;
  std::vector<Float_t>             fShapesVar_Particles_DeltaR_Truth;
+ std::vector<Float_t>             fShapesVar_Particles_NRPhi;
+ std::vector<Float_t>             fShapesVar_Particles_NRPhi_Truth;
+ std::vector<Float_t>             fShapesVar_Particles_Eta;
+ std::vector<Float_t>             fShapesVar_Particles_Eta_Truth;
  TTree                            *fTreeJet;
  TTree                            *fTreeParticles;
 
@@ -221,7 +226,7 @@ void SetWithoutRotations(Bool_t DoRotations)                              {fDoRo
  AliAnalysisTaskJetPlanarFlow(const AliAnalysisTaskJetPlanarFlow&);            
  AliAnalysisTaskJetPlanarFlow &operator=(const AliAnalysisTaskJetPlanarFlow&); 
 
- ClassDef(AliAnalysisTaskJetPlanarFlow, 1)
+ ClassDef(AliAnalysisTaskJetPlanarFlow, 2)
     
    };
 
