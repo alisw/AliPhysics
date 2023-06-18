@@ -50,9 +50,11 @@ void AddTask_MesonJetCorr_Conv(
   Bool_t enableElecDeDxPostCalibration = kFALSE,
   // special settings
   Bool_t enableChargedPrimary = kFALSE,
-  bool doFillMesonDCATree = false, // swith to enable filling the meson DCA tree for pile-up estimation
+  bool doFillMesonDCATree = false, // switch to enable filling the meson DCA tree for pile-up estimation
   bool useCentralEvtSelection = true,
   bool setPi0Unstable = false,
+  bool enableAddBackground = false,
+  bool enableRadiusDep = false,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig + special settings
 )
@@ -324,6 +326,8 @@ void AddTask_MesonJetCorr_Conv(
   if(doFillMesonDCATree) task->SetFillMesonDCATree(true);
   task->SetDoUseCentralEvtSelection(useCentralEvtSelection);
   task->SetForcePi0Unstable(setPi0Unstable);
+  task->SetUseMixedBackAdd(enableAddBackground);
+  task->SetDoRadiusDependence(enableRadiusDep);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_Conv_%i_%i%s", meson, trainConfig, nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );

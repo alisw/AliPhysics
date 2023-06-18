@@ -51,6 +51,8 @@ void AddTask_MesonJetCorr_Calo(
   Bool_t enableSortingMCLabels = kTRUE, // enable sorting for MC cluster labels
   bool useCentralEvtSelection = true,
   bool setPi0Unstable = false,
+  bool enableAddBackground = false,
+  bool enableRadiusDep = false,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig
 
@@ -386,6 +388,8 @@ void AddTask_MesonJetCorr_Calo(
   task->SetUseTHnSparseForResponse(enableTHnSparse);
   task->SetDoUseCentralEvtSelection(useCentralEvtSelection);
   task->SetForcePi0Unstable(setPi0Unstable);
+  task->SetUseMixedBackAdd(enableAddBackground);
+  task->SetDoRadiusDependence(enableRadiusDep);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_Calo_%i_%i%s%s", meson, trainConfig, corrTaskSetting.EqualTo("") == true ? "" : Form("_%s", corrTaskSetting.Data()), nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );

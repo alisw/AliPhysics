@@ -61,6 +61,8 @@ void AddTask_MesonJetCorr_ConvCalo(
   Bool_t doPrimaryTrackMatching = kTRUE, // enable basic track matching for all primary tracks to cluster
   bool useCentralEvtSelection = true,
   bool setPi0Unstable = false,
+  bool enableAddBackground = false,
+  bool enableRadiusDep = false,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig
 )
@@ -404,6 +406,8 @@ void AddTask_MesonJetCorr_ConvCalo(
   task->SetUseTHnSparseForResponse(enableTHnSparse);
   task->SetDoUseCentralEvtSelection(useCentralEvtSelection);
   task->SetForcePi0Unstable(setPi0Unstable);
+  task->SetUseMixedBackAdd(enableAddBackground);
+  task->SetDoRadiusDependence(enableRadiusDep);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_ConvCalo_%i_%i%s%s", meson, trainConfig, corrTaskSetting.EqualTo("") == true ? "" : Form("_%s", corrTaskSetting.Data()), nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );
