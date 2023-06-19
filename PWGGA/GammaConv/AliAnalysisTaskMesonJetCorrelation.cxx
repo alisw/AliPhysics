@@ -2117,7 +2117,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
     if(fLocalDebugFlag) {printf("CalculateBackground\n");}
     CalculateBackground();
 
-    if (!((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) {
+    if( (fUseMixedBackAdd && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()) || !((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoGammaSwappForBg()){
       if(fLocalDebugFlag) {printf("UpdateEventMixData\n");}
       UpdateEventMixData();
     }
@@ -2990,12 +2990,10 @@ void AliAnalysisTaskMesonJetCorrelation::FillInvMassBackHistograms(AliAODConvers
     return;
   }
 
-
   //_______ Calculate z and get jet pt _______________
   float ptJet = (matchedJet < 0) ? 0 : fVectorJetPt[matchedJet];
   float z = GetFrag(backgroundCandidate, matchedJet, false);
   
-
   // For filling as function of radius
   std::vector<double> vecFillInvMassPtR = {backgroundCandidate->M(), backgroundCandidate->Pt(), RJetPi0Cand};
   std::vector<double> vecFillJetPt = {ptJet, 0.5, 0.5};
