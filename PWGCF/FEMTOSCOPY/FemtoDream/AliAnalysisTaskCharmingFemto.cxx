@@ -538,10 +538,19 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     
     int protonMotherPdg = 0;
     int protonPdg = 0;
-    bool isProtonSelected = fTrackCutsPartProton->isSelected(fProtonTrack);
-    bool isAntiProtonSelected = fTrackCutsPartAntiProton->isSelected(fProtonTrack);
 
-    if (fIsMC && (isProtonSelected || isAntiProtonSelected)){
+    /*
+    Do not put the value of isSelected condition in a variable because this function changes the fUse flag. Calling
+    isSelected on different track cuts in a sequence changes the behavior of the code.
+    e.g.
+    
+      bool isProtonSelected = fTrackCutsPartProton->isSelected(fProtonTrack);
+      bool isAntiProtonSelected = fTrackCutsPartAntiProton->isSelected(fProtonTrack);
+
+    will never select protons because if fProtonTrack == proton => fTrackCutsPartAntiProton->isSelected(fProtonTrack)
+    sets fUse = false
+    */
+    if (fIsMC && (fTrackCutsPartProton->isSelected(fProtonTrack) || fTrackCutsPartAntiProton->isSelected(fProtonTrack))){
       mcPart = (AliAODMCParticle *)fArrayMCAOD->At(track->GetLabel());
       if(mcPart){
         mcpdg = mcPart->GetPdgCode();
@@ -552,7 +561,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
       }
     }
     
-    if (isProtonSelected) {
+    if (fTrackCutsPartProton->isSelected(fProtonTrack)) {
       if (fUseMCTruthReco && (mcpdg == fTrackCutsPartProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)){
         fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
         fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
@@ -583,7 +592,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
         fHistBuddyplusEtaVsp->Fill(fProtonTrack->GetMomentum().Mag(), fProtonTrack->GetEta()[0]);
       }
     }
-    if (isAntiProtonSelected) {
+    if (fTrackCutsPartAntiProton->isSelected(fProtonTrack)) {
       if(fUseMCTruthReco && (mcpdg == fTrackCutsPartAntiProton->GetPDGCode()) && mcPart && SelectBuddyOrigin(mcPart)) {
         fProtonTrack->SetDCAXY(fProtonTrack->GetDCAXYProp());
         fProtonTrack->SetDCAZ(fProtonTrack->GetDCAZProp());
