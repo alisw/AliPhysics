@@ -91,6 +91,22 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     void FillMultipleCountMap(map<Int_t,Int_t> &ma, Int_t tobechecked);
     void FillMultipleCountHistoAndClear(map<Int_t,Int_t> &ma, TH1F* hist);
     Double_t GetOriginalInvMass(const AliConversionPhotonBase * photon, AliVEvent * event) const;
+    UInt_t IsTruePhotonESD          ( AliAODConversionPhoton *TruePhotonCandidate );
+    UInt_t IsTruePhotonAOD          ( AliAODConversionPhoton *TruePhotonCandidate );
+
+    //ML functions
+    void SetDoTreeForPhotonML(Int_t flag)         { fDoTreeForPhotonML                  = flag    ;}
+//    void SetDoTreeForMesonML(Int_t flag)          { fDoTreeForMesonML                   = flag    ;}         
+
+    void SetDoTreeForMesonML(Int_t flag, Float_t m1_left, Float_t m1_right, Float_t m2_left, Float_t m2_right)          
+    {
+      fDoTreeForMesonML                  = flag    ;
+      pion_mass_left                     = m1_left;
+      pion_mass_right                    = m1_right;
+      eta_mass_left                      = m2_left; 
+      eta_mass_right                     = m2_right;
+    }
+
 
   protected:
     AliV0ReaderV1*                    fV0Reader;                                  //
@@ -351,6 +367,91 @@ class AliAnalysisTaskGammaConvV1 : public AliAnalysisTaskSE {
     TH1F*                             fAddressChanges;                                //! count if addresses of aod mc tracks arrays ever change            
 
     AliConversionPhotonCuts::TMapPhotonBool fMapPhotonHeaders;                   // map to remember if the photon tracks are from selected headers
+
+    Int_t                             fDoTreeForPhotonML;     //ML Variables    
+    Float_t                           pion_mass_left;
+    Float_t                           pion_mass_right;
+    Float_t                           eta_mass_left;
+    Float_t                           eta_mass_right;
+    
+    Int_t                             fKind;                    
+    Int_t                             fKind_Gamma0;                    
+    Int_t                             fKind_Gamma1;                    
+
+    TTree**                           TreeForPhotonMLData;             
+
+    Float_t                           fInvMass_PhotonML;                          
+    Float_t                           fPt_PhotonML;                               
+    Float_t                           fAlpha_PhotonML;
+    Float_t                           fQt_PhotonML;
+    Float_t                           fPsiPair_PhotonML;
+    Float_t                           fEta_PhotonML;                              
+    Float_t                           fPhi_PhotonML;                              
+    Float_t                           fR_PhotonML;                              
+
+    Float_t                           fDeDx_ITS_ENeg_PhotonML;  
+    Float_t                           fDeDx_TPC_ENeg_PhotonML;  
+    Float_t                           fTOF_ENeg_PhotonML;  
+    Float_t                           fAlpha_ENeg_PhotonML;  
+    Float_t                           fPt_ENeg_PhotonML;  
+    Float_t                           fEta_ENeg_PhotonML;
+  
+    Float_t                           fDeDx_ITS_EPos_PhotonML;  
+    Float_t                           fDeDx_TPC_EPos_PhotonML;  
+    Float_t                           fTOF_EPos_PhotonML;  
+    Float_t                           fAlpha_EPos_PhotonML;  
+    Float_t                           fPt_EPos_PhotonML;  
+    Float_t                           fEta_EPos_PhotonML;  
+    Float_t                           fPAsymmetry_EPos_PhotonML;  
+
+    Int_t                             fDoTreeForMesonML;                             
+    TTree**                           TreeForMesonMLData;  
+
+    Float_t                           fInvMass_MesonML;                          
+    Float_t                           fPt_MesonML;                               
+    Float_t                           fAlpha_MesonML;   
+    Float_t                           fRapidity_MesonML;                          
+    Float_t                           fPhi_MesonML;    
+
+    Float_t                           fPt_Gamma0_MesonML;  
+    Float_t                           fAlpha_Gamma0_MesonML;  
+    Float_t                           fQt_Gamma0_MesonML;  
+    Float_t                           fPsiPair_Gamma0_MesonML;  
+    Float_t                           fEta_Gamma0_MesonML;  
+    Float_t                           fR_Gamma0_MesonML; 
+
+    Float_t                           fPt_Gamma1_MesonML;  
+    Float_t                           fAlpha_Gamma1_MesonML;  
+    Float_t                           fQt_Gamma1_MesonML;  
+    Float_t                           fPsiPair_Gamma1_MesonML;  
+    Float_t                           fEta_Gamma1_MesonML;  
+    Float_t                           fR_Gamma1_MesonML; 
+
+    Float_t                           fDeDx_ITS_ENeg_Gamma0_MesonML;  
+    Float_t                           fDeDx_TPC_ENeg_Gamma0_MesonML;  
+    Float_t                           fTOF_ENeg_Gamma0_MesonML;  
+    Float_t                           fPt_ENeg_Gamma0_MesonML;  
+    Float_t                           fEta_ENeg_Gamma0_MesonML; 
+    Float_t                           fDeDx_ITS_EPos_Gamma0_MesonML;  
+    Float_t                           fDeDx_TPC_EPos_Gamma0_MesonML;  
+    Float_t                           fTOF_EPos_Gamma0_MesonML;  
+    Float_t                           fPt_EPos_Gamma0_MesonML;  
+    Float_t                           fPAsymmetry_EPos_Gamma0_MesonML;  
+    Float_t                           fEta_EPos_Gamma0_MesonML;  
+    Float_t                           fDeDx_ITS_ENeg_Gamma1_MesonML;  
+    Float_t                           fDeDx_TPC_ENeg_Gamma1_MesonML;  
+    Float_t                           fTOF_ENeg_Gamma1_MesonML;  
+    Float_t                           fPt_ENeg_Gamma1_MesonML;  
+    Float_t                           fEta_ENeg_Gamma1_MesonML;  
+    Float_t                           fDeDx_ITS_EPos_Gamma1_MesonML;  
+    Float_t                           fDeDx_TPC_EPos_Gamma1_MesonML;  
+    Float_t                           fTOF_EPos_Gamma1_MesonML;  
+    Float_t                           fPt_EPos_Gamma1_MesonML;  
+    Float_t                           fPAsymmetry_EPos_Gamma1_MesonML;  
+    Float_t                           fEta_EPos_Gamma1_MesonML;  
+
+    TList**                           fMLFolder;                                  //End ML Variables
+
 
   private:
 

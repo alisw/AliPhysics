@@ -53,8 +53,18 @@ void AddTask_GammaConvV1_PbPb(
   Bool_t    enablePlotVsCentrality        = kFALSE,
   Bool_t    processAODcheckForV0s         = kFALSE,   // flag for AOD check if V0s contained in AliAODs.root and AliAODGammaConversion.root
   // subwagon config
-  TString   additionalTrainConfig         = "0"       // additional counter for trainconfig + special settings
-)  {
+  TString   additionalTrainConfig         = "0",       // additional counter for trainconfig + special settings
+  
+  // ML parameters
+  Bool_t    enablePhotonTree      =  kTRUE,
+  Bool_t    enableMesonTree       =  kTRUE,
+  Float_t   meson_m1_range_left = 0.1, 
+  Float_t   meson_m1_range_right = 0.2, 
+  Float_t   meson_m2_range_left = 0.4, 
+  Float_t   meson_m2_range_right = 0.7)  
+  
+  {
+
 
 
   AliCutHandlerPCM cuts;
@@ -4595,6 +4605,9 @@ void AddTask_GammaConvV1_PbPb(
   task->SetDoPlotVsCentrality(kTRUE);
   task->SetDoTHnSparse(enableTHnSparse);
   task->SetDoCentFlattening(enableFlattening);
+  task->SetDoTreeForPhotonML(enablePhotonTree);
+  //task->SetDoTreeForMesonML(enableMesonTree);
+  task->SetDoTreeForMesonML(enableMesonTree,meson_m1_range_left,meson_m1_range_right,meson_m2_range_left,meson_m2_range_right);
   if (initializedMatBudWeigths_existing) {
       task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(kTRUE);
   }
@@ -4623,6 +4636,14 @@ void AddTask_GammaConvV1_PbPb(
       }else{
 	mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("%s_%s_%s Meson DCA tree",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
       }
+      nContainer++;
+    }
+    if(enablePhotonTree){
+	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("TreeForPhotonMLData_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
+      nContainer++;
+    }
+    if(enableMesonTree){
+	    mgr->ConnectOutput(task,nContainer,mgr->CreateContainer(Form("TreeForMesonMLData_%s_%s_%s",(cuts.GetEventCut(i)).Data(),(cuts.GetPhotonCut(i)).Data(),(cuts.GetMesonCut(i)).Data()), TTree::Class(), AliAnalysisManager::kOutputContainer, Form("GammaConvV1_%i.root",trainConfig)) );
       nContainer++;
     }
   }
