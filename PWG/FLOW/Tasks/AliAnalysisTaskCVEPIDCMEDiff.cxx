@@ -1713,7 +1713,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::GetDCA(double &dcaxy, double &dcaz, AliAODTra
 }
 
 //---------------------------------------------------
-inline double GetSumPtBin(double sumPt) {
+inline double AliAnalysisTaskCVEPIDCMEDiff::GetSumPtBin(double sumPt) {
   //1~3 GeV return 0.5
   //3~5 GeV return 1.5
   //5~8 GeV return 2.5
@@ -1725,7 +1725,7 @@ inline double GetSumPtBin(double sumPt) {
 }
 
 //---------------------------------------------------
-inline double GetDeltaEtaBin(double deltaEta) {
+inline double AliAnalysisTaskCVEPIDCMEDiff::GetDeltaEtaBin(double deltaEta) {
   //-0.5 ~ 0.5 return 0.5
   //-1.6 ~ -0.5 & 0.5 ~ 1.6 return 1.5
   //else return -1
