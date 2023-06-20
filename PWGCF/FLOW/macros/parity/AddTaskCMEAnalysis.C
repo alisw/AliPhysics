@@ -49,7 +49,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 			Int_t whichData = 2010,
 			Bool_t isData = kTRUE,
 			Bool_t checkPileup = kTRUE,
-			AliFlowEventCuts::refMultMethod gCentralityEstimator = AliFlowEventCuts::kTPConly,
+			AliFlowEventCuts::refMultMethod gCentralityEstimator = AliFlowEventCuts::kVZERO,
 			TString qVector = "Qa",
 			Double_t gEtaGap = 0.0,
 			Bool_t isVZERO = kFALSE,
@@ -64,18 +64,20 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
 			Int_t harmonicMH = 1,
 			Int_t vnHarmonic = 2,
 			Bool_t kZDCStudy = kTRUE,
-			TString sLabel = "FB768") {
+                        Bool_t kUseGainEqualisationMap = kTRUE,
+  			const char* lhcPeriod = "LHC10h",
+                        const char* fileForZDCGainMap = "gainZDC.LHC10h.root",
+  			TString sLabel = "FB768") {
   //Macro to be used for studies of CME for charged particles
   //The macro uses as an input a configuration macro that
   //creates the AliFlowEventCuts and AliFlowTrackCuts objects
   //Author:Panos.Christakoglou@nikhef.nl
   //=============================================//
-
   //Define trigger class based on year
   UInt_t triggerSelectionString = AliVEvent::kINT7;
   if(isPbPb) {
     switch(whichData) {
-    case 2010:
+    case 2010: 
       triggerSelectionString = AliVEvent::kMB;
       break;
     case 2011:
@@ -108,6 +110,37 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
   for(Int_t i = 2; i < 10; i++)
     gCentrality[i] = (i - 1)*10;
     
+  //=================ZDC calibration====================//
+  TH3F *gHistZNChannel = 0x0;
+  TH3F *gHistZPChannel = 0x0;
+  if(kUseGainEqualisationMap) {
+    //============Get the equilization map============//
+    TFile *calibrationFile = TFile::Open(fileForZDCGainMap);
+    if((!calibrationFile)||(!calibrationFile->IsOpen())) {
+      cout<<"No calibration file found!!!"<<endl;
+      return;
+    }
+
+    TList *list = dynamic_cast<TList *>(calibrationFile->Get(lhcPeriod));
+    if(!list) {
+      cout<<"Calibration TList not found!!!"<<endl;
+      return;
+    }
+
+    //Get the objects from the list
+    gHistZNChannel = dynamic_cast<TH3F *>(list->FindObject("gHistZNChannelGainEqualizationMap"));
+    if(!gHistZNChannel) {
+      cout<<"ZN channel calibration object not found!!!"<<endl;
+      return;
+    }
+
+    TH3F *gHistZPChannel = dynamic_cast<TH3F *>(list->FindObject("gHistZPChannelGainEqualizationMap"));
+    if(!gHistZPChannel) {
+      cout<<"ZP channel calibration object not found!!!"<<endl;
+      return;
+    }
+  }//Use gain equalisation map                   
+
   //======================================================================//
   // FLOW cut objects config
   AliFlowEventCuts* cutsEvent_wQA[nCentralities];//with QA on
@@ -120,7 +153,6 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
   AliFlowTrackCuts* cutsPOI_PN[nCentralities];
   AliFlowTrackCuts* cutsPOI_All[nCentralities];
   AliFlowTrackCuts* cutsPOI_PNwQA[nCentralities]; //with QA on
-
 
   TString suffixNamePP[nCentralities];
   TString suffixNameNN[nCentralities];
@@ -266,7 +298,7 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     
     taskFE_All[iCentralityBin] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",suffixNameAll[iCentralityBin].Data()),"",kFALSE);
     taskFE_All[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
-    
+
     //Sub events
     Double_t minA = -0.8;//
     Double_t maxA = -0.5*gEtaGap;//
@@ -279,6 +311,15 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
       taskFE_All[iCentralityBin]->SetSubeventEtaRange(-5,-1.5,+1.5,5);
     mgr->AddTask(taskFE_All[iCentralityBin]);
     
+    //Add the gain map top the task                                               
+    if(kUseGainEqualisationMap) {
+      if(gHistZNChannel)
+	taskFE_All[iCentralityBin]->SetZNChannelGainEqualizationMap(gHistZNChannel);
+      if(gHistZPChannel)
+	taskFE_All[iCentralityBin]->SetZPChannelGainEqualizationMap(gHistZPChannel);    
+      cout<<"(Panos All)"<<endl;
+    }
+
     // Pass cuts for RPs and POIs to the task:
     taskFE_All[iCentralityBin]->SetCutsEvent(cutsEvent[iCentralityBin]);
     taskFE_All[iCentralityBin]->SetCutsRP(cutsRP[iCentralityBin]);
@@ -375,7 +416,15 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     
     taskFE_PP[iCentralityBin] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",suffixNamePP[iCentralityBin].Data()),"",kFALSE);
     taskFE_PP[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
-    
+    //Add the gain map top the task                                               
+    if(kUseGainEqualisationMap) {
+      if(gHistZNChannel)
+	taskFE_PP[iCentralityBin]->SetZNChannelGainEqualizationMap(gHistZNChannel);
+      if(gHistZPChannel)
+	taskFE_PP[iCentralityBin]->SetZPChannelGainEqualizationMap(gHistZPChannel);    
+      cout<<"(Panos PP)"<<endl;
+    }
+
     if(!isVZERO)
       taskFE_PP[iCentralityBin]->SetSubeventEtaRange(minA, maxA, minB, maxB);
     if(isVZERO)
@@ -465,7 +514,15 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     
     taskFE_NN[iCentralityBin] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",suffixNameNN[iCentralityBin].Data()),"",kFALSE);
     taskFE_NN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
-    
+    //Add the gain map top the task                                               
+    if(kUseGainEqualisationMap) {
+      if(gHistZNChannel)
+	taskFE_NN[iCentralityBin]->SetZNChannelGainEqualizationMap(gHistZNChannel);
+      if(gHistZPChannel)
+	taskFE_NN[iCentralityBin]->SetZPChannelGainEqualizationMap(gHistZPChannel);    
+      cout<<"(Panos NN)"<<endl;
+    }
+
     if(!isVZERO)
       taskFE_NN[iCentralityBin]->SetSubeventEtaRange(minA, maxA, minB, maxB);
     if(isVZERO)
@@ -554,7 +611,15 @@ void AddTaskCMEAnalysis(Bool_t isPbPb = kTRUE,
     
     taskFE_PN[iCentralityBin] = new AliAnalysisTaskFlowEvent(Form("TaskFlowEvent_%s",suffixNamePN[iCentralityBin].Data()),"",kFALSE);
     taskFE_PN[iCentralityBin]->SelectCollisionCandidates(triggerSelectionString);
-    
+    //Add the gain map top the task                                               
+    if(kUseGainEqualisationMap) {
+      if(gHistZNChannel)
+	taskFE_PN[iCentralityBin]->SetZNChannelGainEqualizationMap(gHistZNChannel);
+      if(gHistZPChannel)
+	taskFE_PN[iCentralityBin]->SetZPChannelGainEqualizationMap(gHistZPChannel);    
+      cout<<"(Panos PN)"<<endl;
+    }
+
     if(!isVZERO)
       taskFE_PN[iCentralityBin]->SetSubeventEtaRange(minA, maxA, minB, maxB);
     if(isVZERO)
