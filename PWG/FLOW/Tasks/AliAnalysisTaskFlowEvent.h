@@ -117,7 +117,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
   //ZDC filler
   void FillZDCInfo(AliAODEvent* myAOD);
   
-  //Calibration                                                                                                                                           
+  //Calibration
   void SetZNChannelGainEqualizationMap(TH3F *gHist) {
     kUseGainEqualizationMap = kTRUE;
     fHistZNChannelGainEqualizationMap = gHist;}
@@ -205,7 +205,7 @@ class AliAnalysisTaskFlowEvent : public AliAnalysisTaskSE {
 
   //ZDC
   Bool_t kUseGainEqualizationMap; //use equalisation map
-  TH3F *fHistZNChannelGainEqualizationMap; //ZN calibration map                                                                                           
+  TH3F *fHistZNChannelGainEqualizationMap; //ZN calibration map                                      
   TH3F *fHistZPChannelGainEqualizationMap; //ZN calibration map    
 
   AliFlowEvent* fFlowEvent; //flowevent

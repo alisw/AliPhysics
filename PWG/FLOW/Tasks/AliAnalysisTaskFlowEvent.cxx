@@ -204,6 +204,9 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fV4(0.),
   fV5(0.),
   fDifferentialV2(0),
+  kUseGainEqualizationMap(kFALSE),
+  fHistZNChannelGainEqualizationMap(NULL),
+  fHistZPChannelGainEqualizationMap(NULL),
   fFlowEvent(NULL),
   fShuffleTracks(kFALSE),
   fMyTRandom3(NULL)
@@ -632,7 +635,7 @@ void AliAnalysisTaskFlowEvent::FillZDCInfo(AliAODEvent *myAOD) {
   Double_t gZPATowerCalibrated[5] = {0.,0.,0.,0.,0.};
   Double_t gZPCTowerCalibrated[5] = {0.,0.,0.,0.,0.};
 
-  //Get the gain factor                                                                                                                         
+  //Get the gain factor
   Double_t gFactorZN = 1.0, gFactorZP = 1.0;
 
   //Get centrality
@@ -645,16 +648,16 @@ void AliAnalysisTaskFlowEvent::FillZDCInfo(AliAODEvent *myAOD) {
     gZPATowerRaw[iChannel] = gZPATowerRawAOD[iChannel];
     gZPCTowerRaw[iChannel] = gZPCTowerRawAOD[iChannel];
 
-    //Get equalization factors                                                                                                                  
+    //Get equalization factors
     if(kUseGainEqualizationMap) {
-      //ZN detectors                                                                                                                            
+      //ZN detectors
       gFactorZN = GetZNChannelEqualizationFactor(gRunNumber,iChannel,gCentralityV0M);
       if(gFactorZN != 0) {
 	gZNATowerCalibrated[iChannel] = gZNATowerRaw[iChannel]/gFactorZN;
 	gZNCTowerCalibrated[iChannel] = gZNCTowerRaw[iChannel]/gFactorZN;
       }
 
-      //ZP detectors                                                                                                                            
+      //ZP detectors
       gFactorZP = GetZPChannelEqualizationFactor(gRunNumber,iChannel,gCentralityV0M);
       if(gFactorZP != 0) {
 	gZPATowerCalibrated[iChannel] = gZPATowerRaw[iChannel]/gFactorZP;
