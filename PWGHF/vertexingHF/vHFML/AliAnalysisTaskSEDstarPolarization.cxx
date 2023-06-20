@@ -496,7 +496,8 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
         double phiRandom = gRandom->Uniform(0., 2*TMath::Pi());
         double thetaRandom = gRandom->Uniform(0., TMath::Pi());
         ROOT::Math::XYZVector randomVec = ROOT::Math::XYZVector(TMath::Sin(thetaRandom) * TMath::Cos(phiRandom), TMath::Sin(thetaRandom) * TMath::Sin(phiRandom), TMath::Cos(thetaRandom));
-        ROOT::Math::XYZVector randomVecXY = ROOT::Math::XYZVector(TMath::Cos(phiRandom), TMath::Sin(phiRandom), 0.);
+        ROOT::Math::XYZVector randomVecXY = ROOT::Math::XYZVector(-TMath::Sin(phiRandom), TMath::Cos(phiRandom), 0.);
+        ROOT::Math::XYZVector randomVecX = ROOT::Math::XYZVector(TMath::Cos(phiRandom), TMath::Sin(phiRandom), 0.);
 
         if (fDecChannel == kDstartoD0pi) {
             AliAODTrack* dauPi = dynamic_cast<AliAODTrack *>(dStar->GetBachelor());
@@ -514,12 +515,15 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
             ROOT::Math::XYZVector Q2Vec = ROOT::Math::XYZVector(QnFullV0[1], -QnFullV0[0], 0.);
 
             ROOT::Math::XYZVector threeVecPiCM = fourVecPiCM.Vect();
+            ROOT::Math::XYZVector threeVecPiCMXY = ROOT::Math::XYZVector(threeVecPiCM.X(), threeVecPiCM.Y(), 0.);
 
             double cosThetaStarProd = TMath::Abs(normalVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
             double cosThetaStarHelicity = TMath::Abs(helicityVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
             double cosThetaStarBeam = TMath::Abs(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
             double cosThetaStarRandom = TMath::Abs(randomVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
             double cosThetaStarEvPlane = fReadMC ? TMath::Abs(randomVecXY.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+            double cosThetaQvector = fReadMC ? TMath::Abs(randomVecX.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+            double cosPhiStar = fReadMC ? TMath::Abs(randomVecX.Dot(threeVecPiCMXY) / TMath::Sqrt(threeVecPiCMXY.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCMXY) / TMath::Sqrt(threeVecPiCMXY.Mag2()));
             double thetaStarBeam = TMath::ACos(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
             double phiStarBeam = TMath::ATan2(threeVecPiCM.Y(), threeVecPiCM.X());
 
@@ -527,7 +531,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
 
             double deltaPhi = fReadMC ? GetPhiInRange(dMeson->Phi() - phiRandom) : GetPhiInRange(dMeson->Phi() - PsinFullV0);
 
-            std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scores[0], scores[1], scores[2]};
+            std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scores[0], scores[1], scores[2], cosThetaQvector, cosPhiStar};
             if (fApplyTrackCutVariations) {
                 for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
                     var4nSparse.push_back((double)trackCutFlags[iTrkCut]);
@@ -581,11 +585,14 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                 ROOT::Math::XYZVector Q2Vec = ROOT::Math::XYZVector(QnFullV0[1], -QnFullV0[0], 0.);
 
                 ROOT::Math::XYZVector threeVecPiCM = fourVecPiCM.Vect();
+                ROOT::Math::XYZVector threeVecPiCMXY = ROOT::Math::XYZVector(threeVecPiCM.X(), threeVecPiCM.Y(), 0.);
 
                 double cosThetaStarProd = TMath::Abs(normalVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                 double cosThetaStarHelicity = TMath::Abs(helicityVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                 double cosThetaStarBeam = TMath::Abs(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                 double cosThetaStarEvPlane = fReadMC ? TMath::Abs(randomVecXY.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+                double cosThetaQvector = fReadMC ? TMath::Abs(randomVecX.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+                double cosPhiStar = fReadMC ? TMath::Abs(randomVecX.Dot(threeVecPiCMXY) / TMath::Sqrt(threeVecPiCMXY.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCMXY) / TMath::Sqrt(threeVecPiCMXY.Mag2()));
                 double cosThetaStarRandom = TMath::Abs(randomVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                 double thetaStarBeam = TMath::ACos(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                 double phiStarBeam = TMath::ATan2(threeVecPiCM.Y(), threeVecPiCM.X());
@@ -594,7 +601,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
 
                 double deltaPhi = fReadMC ? GetPhiInRange(dMeson->Phi() - phiRandom) : GetPhiInRange(dMeson->Phi() - PsinFullV0);
 
-                std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scores[0], scores[1], scores[2]};
+                std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scores[0], scores[1], scores[2], cosThetaQvector, cosPhiStar};
                 if (fApplyTrackCutVariations) {
                     for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
                         var4nSparse.push_back((double)trackCutFlags[iTrkCut]);
@@ -646,23 +653,27 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                 ROOT::Math::XYZVector normalVec = ROOT::Math::XYZVector(dMeson->Py() / ptCand, -dMeson->Px() / ptCand, 0.);
                 ROOT::Math::XYZVector helicityVec = ROOT::Math::XYZVector(dMeson->Px() / pCand, dMeson->Py() / pCand, dMeson->Pz() / pCand);
                 ROOT::Math::XYZVector beamVec = ROOT::Math::XYZVector(0., 0., 1.);
-                ROOT::Math::XYZVector Q2Vec = ROOT::Math::XYZVector(QnFullV0[1], -QnFullV0[0], 0.);
+                ROOT::Math::XYZVector Q2VecNorm = ROOT::Math::XYZVector(QnFullV0[1], -QnFullV0[0], 0.);
+                ROOT::Math::XYZVector Q2Vec = ROOT::Math::XYZVector(QnFullV0[0], QnFullV0[1], 0.);
 
                 ROOT::Math::XYZVector threeVecPiCM = fourVecPiCM.Vect();
+                ROOT::Math::XYZVector threeVecPiCMXY = ROOT::Math::XYZVector(threeVecPiCM.X(), threeVecPiCM.Y(), 0.);
 
                 double cosThetaStarProd = TMath::Abs(normalVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                 double cosThetaStarHelicity = TMath::Abs(helicityVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                 double cosThetaStarBeam = TMath::Abs(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                 double cosThetaStarRandom = TMath::Abs(randomVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+                double cosThetaStarEvPlane = fReadMC ? TMath::Abs(randomVecXY.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2())) : TMath::Abs(Q2VecNorm.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+                double cosThetaQvector = fReadMC ? TMath::Abs(randomVecX.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+                double cosPhiStar = fReadMC ? TMath::Abs(randomVecX.Dot(threeVecPiCMXY) / TMath::Sqrt(threeVecPiCMXY.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCMXY) / TMath::Sqrt(threeVecPiCMXY.Mag2()));
                 double thetaStarBeam = TMath::ACos(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
-                double cosThetaStarEvPlane = fReadMC ? TMath::Abs(randomVecXY.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                 double phiStarBeam = TMath::ATan2(threeVecPiCM.Y(), threeVecPiCM.X());
 
                 double mass = dynamic_cast<AliAODRecoDecayHF2Prong *>(dMeson)->InvMassD0bar();
 
                 double deltaPhi = fReadMC ? GetPhiInRange(dMeson->Phi() - phiRandom) : GetPhiInRange(dMeson->Phi() - PsinFullV0);
 
-                std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scoresSecond[0], scoresSecond[1], scoresSecond[2]};
+                std::vector<double> var4nSparse = {mass, ptCand, yCand, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarEvPlane, cosThetaStarRandom, deltaPhi, centrality, scoresSecond[0], scoresSecond[1], scoresSecond[2], cosThetaQvector, cosPhiStar};
                 if (fApplyTrackCutVariations) {
                     for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
                         var4nSparse.push_back((double)trackCutFlags[iTrkCut]);
@@ -979,17 +990,21 @@ void AliAnalysisTaskSEDstarPolarization::FillMCGenAccHistos(TClonesArray *arrayM
                         ROOT::Math::XYZVector beamVec = ROOT::Math::XYZVector(0., 0., 1.);
 
                         ROOT::Math::XYZVector threeVecPiCM = fourVecPiCM.Vect();
+                        ROOT::Math::XYZVector threeVecPiCMXY = ROOT::Math::XYZVector(threeVecPiCM.X(), threeVecPiCM.Y(), 0.);
 
                         double phiRandom = gRandom->Uniform(0., 2*TMath::Pi());
                         double thetaRandom = gRandom->Uniform(0., TMath::Pi());
                         ROOT::Math::XYZVector randomVec = ROOT::Math::XYZVector(TMath::Sin(thetaRandom) * TMath::Cos(phiRandom), TMath::Sin(thetaRandom) * TMath::Sin(phiRandom), TMath::Cos(thetaRandom));
-                        ROOT::Math::XYZVector randomVecXY = ROOT::Math::XYZVector(TMath::Cos(phiRandom), TMath::Sin(phiRandom), 0.);
+                        ROOT::Math::XYZVector randomVecXY = ROOT::Math::XYZVector(-TMath::Sin(phiRandom), TMath::Cos(phiRandom), 0.);
+                        ROOT::Math::XYZVector randomVecX = ROOT::Math::XYZVector(TMath::Cos(phiRandom), TMath::Sin(phiRandom), 0.);
 
                         double cosThetaStarProd = TMath::Abs(normalVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                         double cosThetaStarHelicity = TMath::Abs(helicityVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                         double cosThetaStarBeam = TMath::Abs(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                         double cosThetaStarRandom = TMath::Abs(randomVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                         double cosThetaStarRandomXY = TMath::Abs(randomVecXY.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+                        double cosThetaQvector = TMath::Abs(randomVecX.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+                        double cosPhiStar = TMath::Abs(randomVecX.Dot(threeVecPiCMXY) / TMath::Sqrt(threeVecPiCMXY.Mag2()));
                         double thetaStarBeam = TMath::ACos(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                         double phiStarBeam = TMath::ATan2(threeVecPiCM.Y(), threeVecPiCM.X());
 
@@ -997,14 +1012,14 @@ void AliAnalysisTaskSEDstarPolarization::FillMCGenAccHistos(TClonesArray *arrayM
 
                         if (orig == 4 && !isParticleFromOutOfBunchPileUpEvent)
                         {
-                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandomXY, cosThetaStarRandom, deltaPhi, centrality};
+                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandomXY, cosThetaStarRandom, deltaPhi, centrality, cosThetaQvector, cosPhiStar};
                             double var4nSparseAccThetaPhiStar[3] = {pt, thetaStarBeam, phiStarBeam};
                             fnSparseMC[0]->Fill(var4nSparseAcc);
                             fnSparseMCThetaPhiStar[0]->Fill(var4nSparseAccThetaPhiStar);
                         }
                         else if (orig == 5 && !isParticleFromOutOfBunchPileUpEvent)
                         {
-                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandomXY, cosThetaStarRandom, deltaPhi, centrality};
+                            double var4nSparseAcc[knVarForSparseAcc] = {pt, rapid, cosThetaStarBeam, cosThetaStarProd, cosThetaStarHelicity, cosThetaStarRandomXY, cosThetaStarRandom, deltaPhi, centrality, cosThetaQvector, cosPhiStar};
                             double var4nSparseAccThetaPhiStar[3] = {pt, thetaStarBeam, phiStarBeam};
                             fnSparseMC[1]->Fill(var4nSparseAcc);
                             fnSparseMCThetaPhiStar[1]->Fill(var4nSparseAccThetaPhiStar);
@@ -1053,9 +1068,9 @@ void AliAnalysisTaskSEDstarPolarization::CreateEffSparses()
     if (fUseFinPtBinsForSparse)
         nPtBins = nPtBins * 10;
 
-    int nBinsAcc[knVarForSparseAcc] = {nPtBins, 100, 5, 5, 5, 5, 5, 180, 100};
-    double xminAcc[knVarForSparseAcc] = {0., -1., 0., 0., 0., 0., 0., 0., 0.};
-    double xmaxAcc[knVarForSparseAcc] = {ptLims[nPtBinsCutObj], 1., 1., 1., 1., 1., 1., TMath::Pi(), 100.};
+    int nBinsAcc[knVarForSparseAcc] = {nPtBins, 20, 5, 5, 5, 5, 5, 90, 100, 5, 5};
+    double xminAcc[knVarForSparseAcc] = {0., -1., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
+    double xmaxAcc[knVarForSparseAcc] = {ptLims[nPtBinsCutObj], 1., 1., 1., 1., 1., 1., TMath::Pi(), 100., 1., 1.};
 
     int nBinsThetaPhiAcc[3] = {nPtBins, 100, 100};
     double xminThetaPhiAcc[3] = {0., 0., 0.};
@@ -1075,6 +1090,8 @@ void AliAnalysisTaskSEDstarPolarization::CreateEffSparses()
         fnSparseMC[iHist]->GetAxis(6)->SetTitle("|cos(#theta*)| (random)");
         fnSparseMC[iHist]->GetAxis(7)->SetTitle("#varphi - #psi_{2}");
         fnSparseMC[iHist]->GetAxis(8)->SetTitle("centrality");
+        fnSparseMC[iHist]->GetAxis(9)->SetTitle("|cos(#theta_{Q-vector})|");
+        fnSparseMC[iHist]->GetAxis(10)->SetTitle("|cos(#varphi*)|");
         fOutput->Add(fnSparseMC[iHist]);
 
         fnSparseMCThetaPhiStar[iHist] = new THnSparseF(Form("fnSparseMCThetaPhiStar_%s", label[iHist].Data()), titleSparse.Data(), 3, nBinsThetaPhiAcc, xminThetaPhiAcc, xmaxThetaPhiAcc);
@@ -1105,9 +1122,9 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
 
     int nCosThetaBins = 5;
 
-    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 100, nCosThetaBins, nCosThetaBins, nCosThetaBins, nCosThetaBins, nCosThetaBins, 180, 100, fNBinsML[0], fNBinsML[1], fNBinsML[2], 2, 2, 2, 2};
-    double xminReco[knVarForSparseReco] = {massMin, 0., -1., 0., 0., 0., 0., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2], -0.5, -0.5, -0.5, -0.5};
-    double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 1., 1., 1., 1., 1., 1., TMath::Pi(), 100., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2], 1.5, 1.5, 1.5, 1.5};
+    int nBinsReco[knVarForSparseReco] = {nMassBins, nPtBins, 20, nCosThetaBins, nCosThetaBins, nCosThetaBins, nCosThetaBins, nCosThetaBins, 90, 100, fNBinsML[0], fNBinsML[1], fNBinsML[2], 5, 5, 2, 2, 2, 2};
+    double xminReco[knVarForSparseReco] = {massMin, 0., -1., 0., 0., 0., 0., 0., 0., 0., fMLOutputMin[0], fMLOutputMin[1], fMLOutputMin[2], 0., 0., -0.5, -0.5, -0.5, -0.5};
+    double xmaxReco[knVarForSparseReco] = {massMax, ptLims[nPtBinsCutObj], 1., 1., 1., 1., 1., 1., TMath::Pi(), 100., fMLOutputMax[0], fMLOutputMax[1], fMLOutputMax[2], 1., 1., 1.5, 1.5, 1.5, 1.5};
 
     int nBinsThetaPhiReco[4] = {nMassBins, nPtBins, 100, 100};
     double xminThetaPhiReco[4] = {massMin, 0., 0., 0.};
@@ -1135,9 +1152,11 @@ void AliAnalysisTaskSEDstarPolarization::CreateRecoSparses()
         fnSparseReco[iHist]->GetAxis(10)->SetTitle("ML bkg output score");
         fnSparseReco[iHist]->GetAxis(11)->SetTitle("ML prompt output score");
         fnSparseReco[iHist]->GetAxis(12)->SetTitle("ML non-prompt output score");
+        fnSparseReco[iHist]->GetAxis(13)->SetTitle("|cos(#theta_{Q-vector})|");
+        fnSparseReco[iHist]->GetAxis(14)->SetTitle("|cos(#varphi*)|");
         if (fApplyTrackCutVariations) {
             for (int iTrkCut{0}; iTrkCut<4; ++iTrkCut) {
-                fnSparseReco[iHist]->GetAxis(13 + iTrkCut)->SetTitle(Form("track cut %d", iTrkCut));
+                fnSparseReco[iHist]->GetAxis(15 + iTrkCut)->SetTitle(Form("track cut %d", iTrkCut));
             }
         }
         fOutput->Add(fnSparseReco[iHist]);
