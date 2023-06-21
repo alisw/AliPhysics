@@ -65,6 +65,9 @@ AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(
   AliAnalysisDataContainer* coutput2 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "QA"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", outputFile.Data(), taskName.Data()));
   AliAnalysisDataContainer* coutput3 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "Cuts"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", outputFile.Data(), taskName.Data()));
   AliAnalysisDataContainer* coutput4 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "MC"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", outputFile.Data(), taskName.Data()));
+  AliAnalysisDataContainer* coutput5 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "StdCascade"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", outputFile.Data(), taskName.Data()));
+  AliAnalysisDataContainer* coutput6 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "QACascade"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", outputFile.Data(), taskName.Data()));
+  AliAnalysisDataContainer* coutput7 = mgr->CreateContainer(Form("%s_%s", containerName.Data(), "MCCascade"), TList::Class(), AliAnalysisManager::kOutputContainer, Form("%s:%s", outputFile.Data(), taskName.Data()));
 
   // Connect input/output
   mgr->ConnectInput(mytask, 0, cinput0);
@@ -72,6 +75,9 @@ AliAnalysisTaskV0sInJetsEmcal* AddTaskV0sInJetsEmcal(
   mgr->ConnectOutput(mytask, 2, coutput2);
   mgr->ConnectOutput(mytask, 3, coutput3);
   mgr->ConnectOutput(mytask, 4, coutput4);
+  mgr->ConnectOutput(mytask, 5, coutput5);
+  mgr->ConnectOutput(mytask, 6, coutput6);
+  mgr->ConnectOutput(mytask, 7, coutput7);
 
   return mytask;
 }
