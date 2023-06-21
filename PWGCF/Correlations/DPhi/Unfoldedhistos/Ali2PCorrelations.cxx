@@ -193,9 +193,25 @@ void Ali2PCorrelations::Initialize()
   fAvgPt = new float[fArraySize];
   fCorrection = new Float_t[fArraySize];
 
-  if (!fSinglesOnly)  {
-    /* histograms for track pairs */
+  if (!fSinglesOnly) {
+    /* initialize the accumlators */
+    fN2_12 = std::vector<std::vector<double>>(fSpeciesNames.size(),
+                                              std::vector<double>(fSpeciesNames.size(), 0.0));
+    fSum2PtPt_12 = std::vector<std::vector<double>>(fSpeciesNames.size(),
+                                                    std::vector<double>(fSpeciesNames.size(), 0.0));
+    fSum2DptDpt_12 = std::vector<std::vector<double>>(fSpeciesNames.size(),
+                                                      std::vector<double>(fSpeciesNames.size(),
+                                                                          0.0));
+    fNnw2_12 = std::vector<std::vector<double>>(fSpeciesNames.size(),
+                                                std::vector<double>(fSpeciesNames.size(), 0.0));
+    fSum2PtPtnw_12 = std::vector<std::vector<double>>(fSpeciesNames.size(),
+                                                      std::vector<double>(fSpeciesNames.size(),
+                                                                          0.0));
+    fSum2DptDptnw_12 = std::vector<std::vector<double>>(fSpeciesNames.size(),
+                                                        std::vector<double>(fSpeciesNames.size(),
+                                                                            0.0));
 
+    /* histograms for track pairs */
     for (uint pidx = 0; pidx < fSpeciesNames.size(); ++pidx) {
       fhN2_12_vsDEtaDPhi.resize(fSpeciesNames.size());
       fhN2_12_vsDEtaDPhi_na.resize(fSpeciesNames.size());
@@ -401,12 +417,16 @@ void Ali2PCorrelations::ProcessPairs()
   }
 
   /* reset pair counters */
-  std::vector<std::vector<double>> fN2_12(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
-  std::vector<std::vector<double>> fSum2PtPt_12(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
-  std::vector<std::vector<double>> fSum2DptDpt_12(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
-  std::vector<std::vector<double>> fNnw2_12(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
-  std::vector<std::vector<double>> fSum2PtPtnw_12(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
-  std::vector<std::vector<double>> fSum2DptDptnw_12(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
+  for (unsigned int icx = 0; icx < fSpeciesNames.size(); ++icx) {
+    for (unsigned int icy = 0; icy < fSpeciesNames.size(); ++icy) {
+      fN2_12[icx][icy] = 0;
+      fSum2PtPt_12[icx][icy] = 0;
+      fSum2DptDpt_12[icx][icy] = 0;
+      fNnw2_12[icx][icy] = 0;
+      fSum2PtPtnw_12[icx][icy] = 0;
+      fSum2DptDptnw_12[icx][icy] = 0;
+    }
+  }
 
   for (int ix1 = 0; ix1 < fNoOfTracks; ++ix1) {
     for (int ix2 = ix1 + 1; ix2 < fNoOfTracks; ++ix2) {
