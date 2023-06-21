@@ -12,7 +12,7 @@ AliAnalysisTaskNFactorialMoments *AddTaskNFactorialMoments(
     double fVzMax = 10.0, bool fRejectElectrons = kFALSE,
     double fDCAXYRangeMax = 0.0, double fDCAZRangeMax = 0.0,
     double fITSClusterCut = 0.0, double fTPCClusterCut = 0.0,
-    double fnTPCrossedrows = 0.0, bool fIsMC = kTRUE) {
+    double fnTPCrossedrows = 0.0, double fSharedCls = 0.0, double fSharedRows = 0.0, double fFindableCls = 0.0, int Mmax = 123, bool fIsMC = kTRUE) {
 
   // year = "2010" or "2015"
   // fSelfAffAnalysis for self-affine analysis
@@ -27,7 +27,10 @@ AliAnalysisTaskNFactorialMoments *AddTaskNFactorialMoments(
   int Mbinsarr[40];
   int Nbinsarr[40]; // used in case of selfaffine analysis
   for (size_t nMB = 0; nMB < 40; nMB++) {
+    if (Mmax == 123)
     Mbinsarr[nMB] = 3 * (nMB + 2);
+    if (Mmax == 82)
+    Mbinsarr[nMB] = 2 * (nMB + 2);
   }
   if (fSelfAffAnalysis) {
     for (int nMB = 0; nMB < 40; nMB++) {
@@ -52,7 +55,7 @@ AliAnalysisTaskNFactorialMoments *AddTaskNFactorialMoments(
 
   tasknfms->SetIsMC(fIsMC, "Hijing");
   tasknfms->SetYear(year);
-  tasknfms->SetPSbinning(Mbins, Nbins);
+  tasknfms->SetPSbinning(Mbins, Nbins, Mmax);
   tasknfms->SetRejectPileup(kTRUE);
   tasknfms->SetEta(fEtaMin, fEtaMax);
   tasknfms->SetCentLim(fCentMin, fCentMax);
@@ -68,6 +71,7 @@ AliAnalysisTaskNFactorialMoments *AddTaskNFactorialMoments(
   tasknfms->SetTPCClusterCut(fTPCClusterCut);   // chi2 per TPC 4
   tasknfms->SetnTPCrossedrows(fnTPCrossedrows); // 70
   tasknfms->SetSelfAffine(fSelfAffAnalysis);
+  tasknfms->SetSharedCls(fSharedCls, fSharedRows, fFindableCls);
 
   // add your tasknfms to the manager
   mgr->AddTask(tasknfms);

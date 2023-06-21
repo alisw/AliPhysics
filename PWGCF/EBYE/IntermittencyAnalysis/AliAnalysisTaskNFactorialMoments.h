@@ -60,9 +60,10 @@ public:
   }
   void Setfbit(int fb) { this->filterBit = fb; }
   void SetYear(TString year) { this->fYear = year; }
-  void SetPSbinning(TArrayI MB, TArrayI NB) {
+  void SetPSbinning(TArrayI MB, TArrayI NB, int Mm) {
     this->Mbins = MB;
     this->Nbins = NB;
+    this->Mmax = Mm;
   }
   void SetPtArray(TArrayD f_ptArray) { this->ptarray = f_ptArray; }
   void SetRejectElectrons(bool fRejectElectron) {
@@ -75,6 +76,11 @@ public:
   void SetTPCClusterCut(double tpccut) { this->fTPCCls = tpccut; }
   void SetnTPCrossedrows(double tpcrowcut) { this->fTPCRows = tpcrowcut; }
   void SetSelfAffine(bool selfaffine) { this->fSelfAffine = selfaffine; }
+  void SetSharedCls(double fSharedCls, double fSharedrows, double fFindable) {
+    this->fSharedClsMax = fSharedCls;
+    this->fSharedRowsMax = fSharedrows;
+    this->fFindableClsMin = fFindable;
+  }
 
 protected:
   AliEventCuts fEventCuts;
@@ -145,7 +151,9 @@ private:
 
   // Variables for analysis
   double fVxMax, fVyMax, fVzMax, minCent, maxCent, minEta, maxEta;
+  double fSharedClsMax, fSharedRowsMax, fFindableClsMin;  
   float fDCAxyMax, fDCAzMax;
+  int Mmax;
   int ptbin1, ptbin2, ptbin3, ptbin4;
   TArrayD ptarray;
   TArrayI Mbins, Nbins;
@@ -170,6 +178,12 @@ private:
   TH1F *fHistnchi2TPCcls;
   TH1F *fHistDCAxy;
   TH1F *fHistDCAz;
+  TH2F *fHistDCAxypT;
+  TH2F *fHistDCAzpT;
+  TH1F* fHistnsharedcls[2];
+  TH2F* fHistnshclsfra[2];
+  TH2F* fHistnfoundcls[2];
+  TH1F* fHistnfcls[2];
   // For Data and also for Generated MC (if fismc = true)
   TH1F *fHistPtBin[4];   //! Pt spectrum
   TH1F *fEtaBin[4];      //! Eta spectrum
@@ -194,6 +208,7 @@ private:
   TH1F *fHistQAVy;      //!
   TH1F *fHistQAVz;      //!
   TH1D *fEventCounter;  //! Histogram to track events etc
+  TH1D *fTrackCounter;  //! Histogram to track tracks etc
   TH1F *fHistQACent;    //! Histogram for centrality Distribution
   TH1F *fHistQAEta[2];  //!
   TH1F *fHistQAPhi[2];  //!

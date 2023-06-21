@@ -46,7 +46,7 @@ ClassImp(AliAnalysisTaskNFactorialMoments)
       fHistafterHBT{nullptr}, fHistQAPID{nullptr}, fHistPDG{nullptr},
       fHistDCAxy{nullptr}, fHistDCAz{nullptr}, fHistnITScls{nullptr},
       fHistnTPCcls{nullptr}, fHistnTPCcrossedrows{nullptr},
-      fHistnchi2ITScls{nullptr}, fHistnchi2TPCcls{nullptr}, fEventCounter(0),
+      fHistnchi2ITScls{nullptr}, fHistnchi2TPCcls{nullptr},fHistDCAxypT{ nullptr }, fHistDCAzpT{ nullptr }, fHistnsharedcls{ nullptr }, fHistnshclsfra{ nullptr }, fHistnfoundcls{ nullptr }, fHistnfcls{ nullptr }, fEventCounter(0), fTrackCounter(0),
       fHistQACent(0), ptbin1(0), ptbin2(0), ptbin3(0), ptbin4(0), mfield(0) {}
 AliAnalysisTaskNFactorialMoments::AliAnalysisTaskNFactorialMoments(
     const char *name)
@@ -64,7 +64,7 @@ AliAnalysisTaskNFactorialMoments::AliAnalysisTaskNFactorialMoments(
       fHistafterHBT{nullptr}, fHistQAPID{nullptr}, fHistPDG{nullptr},
       fHistDCAxy{nullptr}, fHistDCAz{nullptr}, fHistnITScls{nullptr},
       fHistnTPCcls{nullptr}, fHistnTPCcrossedrows{nullptr},
-      fHistnchi2ITScls{nullptr}, fHistnchi2TPCcls{nullptr}, fEventCounter(0),
+      fHistnchi2ITScls{nullptr}, fHistnchi2TPCcls{nullptr}, fHistDCAxypT{ nullptr }, fHistDCAzpT{ nullptr }, fHistnsharedcls{ nullptr }, fHistnshclsfra{ nullptr }, fHistnfoundcls{ nullptr }, fHistnfcls{ nullptr }, fEventCounter(0), fTrackCounter(0),
       fHistQACent(0), ptbin1(0), ptbin2(0), ptbin3(0), ptbin4(0), mfield(0) {
   // Constructor
   Info("AliAnalysisTaskNFactorialMoments", "Specific Constructor");
@@ -199,12 +199,31 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects() {
   fEventCounter =
       new TH1D("fEventCounter", "histo to keep track", 10, 0.5, 10.5);
   fEventCounter->GetXaxis()->SetBinLabel(1, "Events before cuts");
-  fEventCounter->GetXaxis()->SetBinLabel(2, "After pileup cut");
-  fEventCounter->GetXaxis()->SetBinLabel(2, "After Phy. Sel. cut");
-  fEventCounter->GetXaxis()->SetBinLabel(3, "Events with a proper vertex");
+  fEventCounter->GetXaxis()->SetBinLabel(2, "Pileup cut");
+  fEventCounter->GetXaxis()->SetBinLabel(3, "Phy. Sel. cut");
+  fEventCounter->GetXaxis()->SetBinLabel(4, "Events with a proper vertex");
   fEventCounter->GetXaxis()->SetBinLabel(5, "Events with 0-5% Centrality");
   fEventCounter->GetXaxis()->SetBinLabel(6, "Events Analyzed");
   fOutHList->Add(fEventCounter);
+
+    // Trackcounter hist defined
+  fTrackCounter =
+    new TH1D("fTrackCounter", "histo to keep track of tracks", 19, 0.5, 19.5);
+  fTrackCounter->GetXaxis()->SetBinLabel(1, "Total tracks");
+  fTrackCounter->GetXaxis()->SetBinLabel(2, "FilterBit");
+  fTrackCounter->GetXaxis()->SetBinLabel(3, "Rej PIDs");
+  fTrackCounter->GetXaxis()->SetBinLabel(4, "Loose cuts");
+  fTrackCounter->GetXaxis()->SetBinLabel(5, "Systematic cuts");
+  fTrackCounter->GetXaxis()->SetBinLabel(6, "DCAs");
+  fTrackCounter->GetXaxis()->SetBinLabel(7, "nSharedCls/nCls");
+  fTrackCounter->GetXaxis()->SetBinLabel(8, "nSharedCls/nCrRows");
+  fTrackCounter->GetXaxis()->SetBinLabel(9, "nCrRows/nFindableCls");
+  fTrackCounter->GetXaxis()->SetBinLabel(10, "TwoTracks");
+  fTrackCounter->GetXaxis()->SetBinLabel(11, "ptbin1");
+  fTrackCounter->GetXaxis()->SetBinLabel(12, "ptbin2");
+  fTrackCounter->GetXaxis()->SetBinLabel(13, "ptbin3");
+  fTrackCounter->GetXaxis()->SetBinLabel(14, "ptbin4");
+  fOutHList->Add(fTrackCounter);
 
   // Hists defined
   fHistQACent = new TH1F("fHistQACent", "Centrality Distribution", 10,
@@ -293,6 +312,12 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects() {
   fHistDCAz = new TH1F("fHistDCAz", "DCAz distribution", 900, -4.5, 4.5);
   fOutHList->Add(fHistDCAxy);
   fOutHList->Add(fHistDCAz);
+    fHistDCAxypT = new TH2F("fHistDCAxypT", "DCAxy vs pT;p_{T};dca_{xy}", 50, 0, 5.5, 40,
+                          -0.4, 0.4);
+  fHistDCAzpT = new TH2F("fHistDCAzpT", "DCAz vs pT;p_{T};dca_{z}", 50, 0, 5.5, 50, -0.5,
+                         0.5);
+  fOutHList->Add(fHistDCAxypT);
+  fOutHList->Add(fHistDCAzpT);
   fHistnITScls =
       new TH1F("fHistnITScls", "ITS cluster distribution", 10, -0.5, 10.5);
   fOutHList->Add(fHistnITScls);
@@ -309,6 +334,26 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects() {
                                   "TPC crossed rows distribution", 200, 0, 200);
   fOutHList->Add(fHistnTPCcrossedrows);
 
+  TString name1;
+  for (int i = 0; i<2; ++i) {
+    if (i == 0)
+      name1 = "before";
+    else
+      name1 = "after";
+  fHistnsharedcls[i] = new TH1F(Form("fHistnsharedcls%s", name1.Data()),
+                             Form("TPC shared cluster distribution %s", name1.Data()), 200, 0, 200);
+  fOutHList->Add(fHistnsharedcls[i]);
+  fHistnshclsfra[i] = new TH2F(Form("fHistnshclsfra%s",name1.Data()),
+                            Form("TPC shared cluster fraction %s;sharedcls/ncls;sharedcls/ncrrows", name1.Data()), 10, 0,
+                            1.0, 100, 0, 1.0);
+  fOutHList->Add(fHistnshclsfra[i]);
+  fHistnfoundcls[i] = new TH2F(Form("fHistnfoundcls%s", name1.Data()),
+                            Form("TPC found cluster fraction %s;sharedcls/ncls;ncrrows/findablecls", name1.Data()), 20, 0, 2,
+                            20, 0, 2);
+  fOutHList->Add(fHistnfoundcls[i]);
+  fHistnfcls[i] = new TH1F(Form("fHistnfcls%s", name1.Data()), Form("TPC findable cluster distribution %s;ncrrows/findablecls;counts", name1.Data()), 40, 0, 4);
+  fOutHList->Add(fHistnfcls[i]);
+  }
   for (int nOfHist(1); nOfHist < M + 1; nOfHist++) {
     if (fismc) {
       name = Form("fHistEtaPhiBin1Re_%d", (nOfHist));
@@ -573,9 +618,11 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
   // Track Loop:
   for (int i(0); i < nTracks; i++) {
     AliAODTrack *track = static_cast<AliAODTrack *>(fAOD->GetTrack(i));
+    fTrackCounter->Fill(1);
     if (!(track) || !(track->TestFilterBit(filterBit)))
       continue;
     counter++;
+    fTrackCounter->Fill(2);
 
     float pt = track->Pt();
     float eta = track->Eta();
@@ -585,27 +632,30 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
 
     if (GetParticleID(track, kTRUE))
       continue;
-
+      fTrackCounter->Fill(3);
+    
     if ((fabs(eta) > 0.8) || (fabs(pt) < 0.2) || charge == 0)
       continue;
     GetPtBin(pt);
+    fTrackCounter->Fill(4);
+
     bool skiptracks = kFALSE;
     bool sharedtracks = kFALSE;
+    float nSharedCls = track->GetTPCnclsS();
+    float nCls = track->GetTPCNcls();
+    float nCrossedRows = track->GetTPCCrossedRows();
+    float nFindableCls = track->GetTPCNclsF();
 
-    if (fITSCls > 0.0) {
-      if ((track->GetITSchi2() / track->GetITSNcls()) > fITSCls)
+    if ((fITSCls > 0.0) && ((track->GetITSchi2() / track->GetITSNcls()) > fITSCls))
         continue;
-    }
 
-    if (fTPCCls > 0.0) {
-      if ((track->GetTPCchi2() / track->GetTPCNcls()) > fTPCCls)
+    if ((fTPCCls > 0.0) && ((track->GetTPCchi2() / track->GetTPCNcls()) > fTPCCls))
         continue;
-    }
 
-    if (fTPCRows > 0.0) {
-      if (track->GetTPCNCrossedRows() < fTPCRows)
+    if ((fTPCRows > 0.0) && (track->GetTPCNCrossedRows() < fTPCRows))
         continue;
-    }
+    
+    fTrackCounter->Fill(5);
 
     fHistnITScls->Fill(track->GetITSNcls());
     fHistnTPCcls->Fill(track->GetTPCNcls());
@@ -614,14 +664,37 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
     fHistnTPCcrossedrows->Fill(track->GetTPCNCrossedRows());
 
     track->GetImpactParameters(dcaXY, dcaZ);
-    fHistDCAxy->Fill(dcaXY);
+
+    if ((fDCAxyMax > 0.0) && (fabs(dcaXY) > fDCAxyMax))
+        continue;
+    if ((fDCAzMax > 0.0) && (fabs(dcaZ) > fDCAzMax))
+        continue;
+        fHistDCAxy->Fill(dcaXY);
     fHistDCAz->Fill(dcaZ);
-    if (fDCAxyMax > 0.0)
-      if (fabs(dcaXY) > fDCAxyMax)
+        fHistDCAxypT->Fill(pt, dcaXY);
+    fHistDCAzpT->Fill(pt, dcaZ);
+    fTrackCounter->Fill(6);
+            fHistnsharedcls[0]->Fill(nSharedCls);
+    fHistnfcls[0]->Fill(nCrossedRows / nFindableCls);
+    fHistnshclsfra[0]->Fill(nSharedCls / nCls, nSharedCls / nCrossedRows);
+    fHistnfoundcls[0]->Fill(nSharedCls / nCls, nCrossedRows / nFindableCls);   
+
+    if ((fSharedClsMax > 0) && ((nSharedCls / nCls) > fSharedClsMax))
         continue;
-    if (fDCAzMax > 0.0)
-      if (fabs(dcaZ) > fDCAzMax)
+    fTrackCounter->Fill(7);
+
+    if ((fSharedRowsMax > 0) && ((nSharedCls / nCrossedRows) > fSharedRowsMax))
         continue;
+    fTrackCounter->Fill(8);
+
+    if ((fFindableClsMin > 0) && ((nCrossedRows / nFindableCls) < fFindableClsMin))
+        continue;
+    fTrackCounter->Fill(9);
+
+                fHistnsharedcls[1]->Fill(nSharedCls);
+    fHistnfcls[1]->Fill(nCrossedRows / nFindableCls);
+    fHistnshclsfra[1]->Fill(nSharedCls / nCls, nSharedCls / nCrossedRows);
+    fHistnfoundcls[1]->Fill(nSharedCls / nCls, nCrossedRows / nFindableCls); 
 
     if (fsharity || ftwotrack) {
 
@@ -630,7 +703,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
 
       for (int j(0); j < nTracks; j++) {
         AliAODTrack *track2 = static_cast<AliAODTrack *>(fAOD->GetTrack(j));
-        if (!(track2->TestFilterBit(128)))
+        if (!(track2->TestFilterBit(filterBit)))
           continue;
 
         int charge2 = track2->Charge();
@@ -684,11 +757,13 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
       continue;
     }
     trackafter++;
+    fTrackCounter->Fill(10);
 
     fHistQAEta[0]->Fill(eta);
     fHistQAPhi[0]->Fill(phi);
 
     if (ptbin[0]) {
+      fTrackCounter->Fill(11);
       counterEtacutBin1++;
       fHistPtBin[0]->Fill(pt);
       fEtaBin[0]->Fill(eta);
@@ -697,6 +772,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
         fHEtaPhiBin1[k]->Fill(eta, phi);
     }
     if (ptbin[1]) {
+      fTrackCounter->Fill(12);
       counterEtacutBin2++;
       fHistPtBin[1]->Fill(pt);
       fEtaBin[1]->Fill(eta);
@@ -705,6 +781,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
         fHEtaPhiBin2[k]->Fill(eta, phi);
     }
     if (ptbin[2]) {
+      fTrackCounter->Fill(13);
       counterEtacutBin3++;
       fHistPtBin[2]->Fill(pt);
       fEtaBin[2]->Fill(eta);
@@ -713,6 +790,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
         fHEtaPhiBin3[k]->Fill(eta, phi);
     }
     if (ptbin[3]) {
+      fTrackCounter->Fill(14);
       counterEtacutBin4++;
       fHistPtBin[3]->Fill(pt);
       fEtaBin[3]->Fill(eta);
@@ -1036,7 +1114,10 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D *h1[M], TH2D *h2[M],
     for (int binset = 0; binset < M; binset++) {
 
       double NoOfBins, MSquare;
+      if (Mmax == 123)
       NoOfBins = 3 * (binset + 2);
+      if (Mmax == 82)
+      NoOfBins = 2 * (binset + 2);
       if (fSelfAffine)
         NoOfBins = Mbins[binset] * Nbins[binset];
       MSquare = TMath::Power(NoOfBins, D);
