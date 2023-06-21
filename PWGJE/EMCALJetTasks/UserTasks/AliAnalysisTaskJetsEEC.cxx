@@ -563,9 +563,10 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 E3C_hist->Fill(deltaR_jss_2,eee_jss_2);
                 E3C_pt_hist->Fill(deltaR_jss_2,jet_pt,eee_jss_2);
                 E3C_pt_hist_log->Fill(delta_logR_jss_2,jet_pt,eee_jss_2);
+                
                 N3_det_pt_hist_3d->Fill(deltaR_jss_2, jet_pt, jet_pt_tru);
-                E3C_det_pt_hist_3d->Fill(deltaR_jss_2, jet_pt, jet_pt_tru,eee_jss_2);
-                E3C_det_pt_hist_log_3d->Fill(delta_logR_jss_2, jet_pt, jet_pt_tru,eee_jss_2);
+                E3C_det_pt_hist_3d->Fill(deltaR_jss_2, jet_pt, jet_pt_tru, eee_jss_2);
+                E3C_det_pt_hist_log_3d->Fill(delta_logR_jss_2, jet_pt, jet_pt_tru, eee_jss_2);
                 
                 
             }//close s loop for the 3 point correlator
@@ -581,14 +582,13 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 delta_Rvec.push_back(delta_R_js_2);
                 energy_pairs_vec.push_back(ee_js_2);
                 
-//                BinLogX(EEC_pt_hist);
                 EEC_hist->Fill(delta_R_js_2,ee_js_2);
                 EEC_pt_hist->Fill(delta_R_js_2,jet_pt,ee_js_2);
                 EEC_pt_hist_log->Fill(log_delta_R_js_2,jet_pt,ee_js_2);
                 
                 N2_det_pt_hist_3d->Fill(delta_R_js_2, jet_pt, jet_pt_tru);
-                EEC_det_pt_hist_3d->Fill(delta_R_js_2,jet_pt,jet_pt_tru,ee_js_2);
-                EEC_det_pt_hist_log_3d->Fill(log_delta_R_js_2,jet_pt,jet_pt_tru,ee_js_2);
+                EEC_det_pt_hist_3d->Fill(delta_R_js_2, jet_pt, jet_pt_tru, ee_js_2);
+                EEC_det_pt_hist_log_3d->Fill(log_delta_R_js_2, jet_pt, jet_pt_tru, ee_js_2);
                 
             }//close s loop for eec
         }//close j loop
@@ -612,14 +612,13 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 max_R_distvec.push_back(deltaR_jss);
                 max_logR_distvec.push_back(delta_logR_jss);
                 
-                //            EEEC_hist->Fill(deltaR_jss,eee_jss);
                 E3C_hist->Fill(deltaR_jss,eee_jss);
                 E3C_pt_hist->Fill(deltaR_jss,jet_pt,eee_jss);
                 E3C_pt_hist_log->Fill(delta_logR_jss,jet_pt,eee_jss);
                 
                 N3_det_pt_hist_3d->Fill(deltaR_jss, jet_pt, jet_pt_tru);
-                E3C_det_pt_hist_3d->Fill(deltaR_jss, jet_pt, jet_pt_tru);
-                E3C_det_pt_hist_log_3d->Fill(delta_logR_jss, jet_pt, jet_pt_tru,eee_jss);
+                E3C_det_pt_hist_3d->Fill(deltaR_jss, jet_pt, jet_pt_tru, eee_jss);
+                E3C_det_pt_hist_log_3d->Fill(delta_logR_jss, jet_pt, jet_pt_tru, eee_jss);
                 
                 //For 3 point correlator
                 for( int m=0; m!=j && m!=s; m++)
@@ -657,8 +656,8 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                     E3C_pt_hist_log->Fill(logR_dist[max_R],jet_pt,eee_jsm);
                     
                     N3_det_pt_hist_3d->Fill(R_dist[max_R], jet_pt, jet_pt_tru);
-                    E3C_det_pt_hist_3d->Fill(R_dist[max_R], jet_pt, jet_pt_tru,eee_jsm);
-                    E3C_det_pt_hist_log_3d->Fill(logR_dist[max_R], jet_pt, jet_pt_tru,eee_jsm);
+                    E3C_det_pt_hist_3d->Fill(R_dist[max_R], jet_pt, jet_pt_tru, eee_jsm);
+                    E3C_det_pt_hist_log_3d->Fill(logR_dist[max_R], jet_pt, jet_pt_tru, eee_jsm);
                     
                     
                     R_dist.clear();
@@ -682,7 +681,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 EEC_pt_hist_log->Fill(log_delta_R_js,jet_pt,ee_js);
                 
                 N2_det_pt_hist_3d->Fill(delta_R_js, jet_pt, jet_pt_tru);
-                EEC_det_pt_hist_3d->Fill(delta_R_js,jet_pt,jet_pt_tru,ee_js);
+                EEC_det_pt_hist_3d->Fill(delta_R_js, jet_pt, jet_pt_tru, ee_js);
                 EEC_det_pt_hist_log_3d->Fill(log_delta_R_js, jet_pt, jet_pt_tru, ee_js);
                 
         
@@ -711,9 +710,12 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 max_R_distvec_part.push_back(deltaR_jss_2_tru);
                 max_logR_distvec_part.push_back(delta_logR_jss_2_tru);
 
-                E3C_tru_match_pt_tru->Fill(deltaR_jss_2_tru,jet_pt_tru,eee_jss_2_tru);
-                E3C_tru_match_pt_tru_log->Fill(delta_logR_jss_2_tru,jet_pt_tru,eee_jss_2_tru);
-                N3_tru_pt_hist_3d->Fill(deltaR_jss_2_tru,jet_pt_tru,jet_pt);
+                E3C_tru_match_pt_tru->Fill(deltaR_jss_2_tru, jet_pt_tru, eee_jss_2_tru);
+                E3C_tru_match_pt_tru_log->Fill(delta_logR_jss_2_tru, jet_pt_tru, eee_jss_2_tru);
+                
+                N3_tru_pt_hist_3d->Fill(deltaR_jss_2_tru, jet_pt_tru, jet_pt);
+                E3C_tru_pt_hist_3d->Fill(deltaR_jss_2_tru, jet_pt_tru, jet_pt, eee_jss_2_tru);
+                E3C_tru_pt_hist_log_3d->Fill(delta_logR_jss_2_tru, jet_pt_tru, jet_pt, eee_jss_2_tru);
                 
             }//close s loop for the 3 point correlator
             //For 2 point correlator
@@ -728,12 +730,12 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 delta_Rvec_part.push_back(delta_R_js_2_tru);
                 energy_pairs_vec_part.push_back(ee_js_2_tru);
 
-                EEC_tru_match_pt_tru->Fill(delta_R_js_2_tru,jet_pt_tru,ee_js_2_tru);
-                EEC_tru_match_pt_tru_log->Fill(log_delta_R_js_2_tru,jet_pt_tru,ee_js_2_tru);
+                EEC_tru_match_pt_tru->Fill(delta_R_js_2_tru, jet_pt_tru, ee_js_2_tru);
+                EEC_tru_match_pt_tru_log->Fill(log_delta_R_js_2_tru, jet_pt_tru, ee_js_2_tru);
                 
-                N2_tru_pt_hist_3d->Fill(delta_R_js_2_tru,jet_pt_tru,jet_pt);
-                EEC_tru_pt_hist_3d->Fill(delta_R_js_2_tru, jet_pt_tru,jet_pt, ee_js_2_tru);
-                EEC_tru_pt_hist_log_3d->Fill(log_delta_R_js_2_tru, jet_pt_tru,jet_pt, ee_js_2_tru);
+                N2_tru_pt_hist_3d->Fill(delta_R_js_2_tru, jet_pt_tru, jet_pt);
+                EEC_tru_pt_hist_3d->Fill(delta_R_js_2_tru, jet_pt_tru, jet_pt, ee_js_2_tru);
+                EEC_tru_pt_hist_log_3d->Fill(log_delta_R_js_2_tru, jet_pt_tru, jet_pt, ee_js_2_tru);
                 
             }//close s loop for eec
         }//close j loop
@@ -756,11 +758,11 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 max_R_distvec_part.push_back(deltaR_jss_tru);
                 max_logR_distvec_part.push_back(delta_logR_jss_tru);
                 
-                E3C_tru_match_pt_tru->Fill(deltaR_jss_tru,jet_pt_tru,eee_jss_tru);
-                E3C_tru_match_pt_tru_log->Fill(delta_logR_jss_tru,jet_pt_tru,eee_jss_tru);
+                E3C_tru_match_pt_tru->Fill(deltaR_jss_tru,jet_pt_tru, eee_jss_tru);
+                E3C_tru_match_pt_tru_log->Fill(delta_logR_jss_tru,jet_pt_tru ,eee_jss_tru);
                 
-                N3_tru_pt_hist_3d->Fill(deltaR_jss_tru, jet_pt_tru,jet_pt);
-                E3C_tru_pt_hist_3d->Fill(deltaR_jss_tru, jet_pt_tru,jet_pt, eee_jss_tru);
+                N3_tru_pt_hist_3d->Fill(deltaR_jss_tru, jet_pt_tru, jet_pt);
+                E3C_tru_pt_hist_3d->Fill(deltaR_jss_tru, jet_pt_tru, jet_pt, eee_jss_tru);
                 E3C_tru_pt_hist_log_3d->Fill(delta_logR_jss_tru, jet_pt_tru, jet_pt, eee_jss_tru);
                 
                 //For 3 point correlator
@@ -794,12 +796,11 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                     max_R_distvec_part.push_back(R_dist_part[max_R_tru]);
                     max_logR_distvec_part.push_back(logR_dist_part[max_R_tru]);
                     
-                    //                EEEC_hist->Fill(R_dist[max_R_tru],eee_jsm_tru);
-                    E3C_tru_match_pt_tru->Fill(R_dist_part[max_R_tru],jet_pt_tru,eee_jsm_tru);
-                    E3C_tru_match_pt_tru_log->Fill(logR_dist_part[max_R_tru],jet_pt_tru,eee_jsm_tru);
+                    E3C_tru_match_pt_tru->Fill(R_dist_part[max_R_tru], jet_pt_tru, eee_jsm_tru);
+                    E3C_tru_match_pt_tru_log->Fill(logR_dist_part[max_R_tru], jet_pt_tru, eee_jsm_tru);
                     
-                    N3_tru_pt_hist_3d->Fill(R_dist_part[max_R_tru],jet_pt_tru,jet_pt);
-                    E3C_tru_pt_hist_3d->Fill(R_dist_part[max_R_tru],jet_pt_tru,jet_pt, eee_jsm_tru);
+                    N3_tru_pt_hist_3d->Fill(R_dist_part[max_R_tru], jet_pt_tru, jet_pt);
+                    E3C_tru_pt_hist_3d->Fill(R_dist_part[max_R_tru], jet_pt_tru, jet_pt, eee_jsm_tru);
                     E3C_tru_pt_hist_log_3d->Fill(logR_dist_part[max_R_tru], jet_pt_tru, jet_pt, eee_jsm_tru);
                     
                     R_dist_part.clear();
@@ -822,7 +823,7 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 EEC_tru_match_pt_tru->Fill(delta_R_js_tru,jet_pt_tru,ee_js_tru);
                 EEC_tru_match_pt_tru_log->Fill(log_delta_R_js_tru,jet_pt_tru,ee_js_tru);
                 
-                N2_tru_pt_hist_3d->Fill(delta_R_js_tru,jet_pt_tru,jet_pt);
+                N2_tru_pt_hist_3d->Fill(delta_R_js_tru, jet_pt_tru, jet_pt);
                 EEC_tru_pt_hist_3d->Fill(delta_R_js_tru, jet_pt_tru, jet_pt, ee_js_tru);
                 EEC_tru_pt_hist_log_3d->Fill(log_delta_R_js_tru, jet_pt_tru, jet_pt, ee_js_tru);
      
@@ -896,7 +897,7 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 max_R_distvec.push_back(deltaR_jss_2);
                 max_logR_distvec.push_back(delta_logR_jss_2);
                 
-                //            EEEC_hist->Fill(deltaR_jss_2,eee_jss_2);
+                
                 E3C_hist->Fill(deltaR_jss_2,eee_jss_2);
                 E3C_pt_hist->Fill(deltaR_jss_2,jet_pt,eee_jss_2);
                 E3C_pt_hist_log->Fill(delta_logR_jss_2,jet_pt,eee_jss_2);
@@ -906,7 +907,6 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
             //For 2 point correlator
             for(int s=0; s<j ; s++)
             {
-//                if (fConstituents[j].pt() < 1.0 || fConstituents[s].pt() < 1.0) continue;
                 
                 double delta_R_js_2 = fConstituents[j].delta_R(fConstituents[s]);
                 double log_delta_R_js_2 = log(delta_R_js_2);
@@ -934,7 +934,7 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
             for(int s=0; s<int(fConstituents.size()) ; s++)
             {
                 if(s==j) continue; //This ensures I don't get stuff like (000) for (jss)
-//                if (fConstituents[j].pt() < 1.0 || fConstituents[s].pt() < 1.0) continue;
+
                 
                 double eee_jss =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                 double deltaR_jss = fConstituents[j].delta_R(fConstituents[s]);
@@ -944,7 +944,7 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 max_R_distvec.push_back(deltaR_jss);
                 max_logR_distvec.push_back(delta_logR_jss);
                 
-                //            EEEC_hist->Fill(deltaR_jss,eee_jss);
+
                 E3C_hist->Fill(deltaR_jss,eee_jss);
                 E3C_pt_hist->Fill(deltaR_jss,jet_pt,eee_jss);
                 E3C_pt_hist_log->Fill(delta_logR_jss,jet_pt,eee_jss);
@@ -953,8 +953,7 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 for( int m=0; m!=j && m!=s; m++)
                 {
                     if(s>j) continue;
-//                    if (fConstituents[j].pt() < 1.0 || fConstituents[s].pt() < 1.0 || fConstituents[m].pt() < 1.0) continue;
-                    
+
                     double eee_jsm = ((6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt())/(pow(jet_pt,3)));
                     double deltaR_js = fConstituents[j].delta_R(fConstituents[s]);
                     double delta_logR_js = log(deltaR_js);
