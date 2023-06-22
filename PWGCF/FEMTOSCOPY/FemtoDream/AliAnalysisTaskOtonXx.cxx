@@ -305,17 +305,17 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
   //Xis:
   fTree->Branch("nXi",&fTnXi,"fTnXi/I");
   fTree->Branch("XiCharge",&fTXiCharge,"fTXiCharge[fTnXi]/S");
-  if(fOnlyXi) fTree->Branch("XiDCA",&fTXiDCA,"fTXiDCA[fTnXi]/F");
-  if(fOnlyXi) fTree->Branch("XiDaughtersDCA",&fTXiDaughtersDCA,"fTXiDaughtersDCA[fTnXi]/F");
+  fTree->Branch("XiDCA",&fTXiDCA,"fTXiDCA[fTnXi]/F");
+  fTree->Branch("XiDaughtersDCA",&fTXiDaughtersDCA,"fTXiDaughtersDCA[fTnXi]/F");
   fTree->Branch("XiMass",&fTXiMass,"fTXiMass[fTnXi]/F");
   if(fOnlyXi) fTree->Branch("XiOmegaMass",&fTXiOmegaMass,"fTXiOmegaMass[fTnXi]/F");
   if(fOnlyXi) fTree->Branch("XiVr",&fTXiVr,"fTXiVr[fTnXi]/F");
-  if(fOnlyXi) fTree->Branch("XiPA",&fTXiPA,"fTXiPA[fTnXi]/F");
+  fTree->Branch("XiPA",&fTXiPA,"fTXiPA[fTnXi]/F");
   if(fOnlyXi) fTree->Branch("XiLambdaDCA",&fTXiLambdaDCA,"fTXiLambdaDCA[fTnXi]/F");
   if(fOnlyXi) fTree->Branch("XiLambdaDaughtersDCA",&fTXiLambdaDaughtersDCA,"fTXiLambdaDaughtersDCA[fTnXi]/F");
   fTree->Branch("XiLambdaMass",&fTXiLambdaMass,"fTXiLambdaMass[fTnXi]/F");
   if(fOnlyXi) fTree->Branch("XiLambdaK0Mass",&fTXiLambdaK0Mass,"fTXiLambdaK0Mass[fTnXi]/F");
-  if(fOnlyXi) fTree->Branch("XiLambdaVr",&fTXiLambdaVr,"fTXiLambdaVr[fTnXi]/F");
+  fTree->Branch("XiLambdaVr",&fTXiLambdaVr,"fTXiLambdaVr[fTnXi]/F");
   if(fOnlyXi) fTree->Branch("XiLambdaPA",&fTXiLambdaPA,"fTXiLambdaPA[fTnXi]/F");
   fTree->Branch("XiTrackCharge",&fTXiTrackCharge,"fTXiTrackCharge[fTnXi][3]/S");
   fTree->Branch("XiTrackPx",&fTXiTrackPx,"fTXiTrackPx[fTnXi][3]/F");
