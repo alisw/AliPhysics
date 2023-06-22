@@ -245,7 +245,8 @@ if(XiOpen) v0MinDistToPrimVtx = 0.05;
    CascadeXiCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
    AntiCascadeXiCuts->SetCutv0MinDistToPrimVtx(v0MinDistToPrimVtx);
 //in ttree: XiPA
-Float_t XiCPA = 0.98; //std Georgios
+//Float_t XiCPA = 0.98; //std Georgios
+Float_t XiCPA = 0.995; // NEW STD
    CascadeXiCuts->SetCutXiCPA(XiCPA);
    AntiCascadeXiCuts->SetCutXiCPA(XiCPA);
 //in ttree: XiVr
