@@ -246,6 +246,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistClusterEnergyvsNCellsBeforeQA(NULL),
   fHistClusterEnergyvsNCellsAfterQA(NULL),
   fHistCellEnergyvsCellID(NULL),
+  fHistClusterEnergyvsCellID(NULL),
   fHistCellEnergyLG(NULL),
   fHistCellEnergyHG(NULL),
   fHistCellTimevsCellID(NULL),
@@ -488,6 +489,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterEnergyvsNCellsBeforeQA(NULL),
   fHistClusterEnergyvsNCellsAfterQA(NULL),
   fHistCellEnergyvsCellID(NULL),
+  fHistClusterEnergyvsCellID(NULL),
   fHistCellEnergyLG(NULL),
   fHistCellEnergyHG(NULL),
   fHistCellTimevsCellID(NULL),
@@ -1271,6 +1273,12 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistCellEnergyvsCellID->GetYaxis()->SetTitle("Cell ID");
         fHistExtQA->Add(fHistCellEnergyvsCellID);
 
+        fHistClusterEnergyvsCellID         = new TH2F(Form("ClusterEnergyVsCellID %s",GetCutNumber().Data()),"ClusterEnergyVsCellID", nBinsClusterECellCoarse,  arrClusEBinningCoarse,
+                                                   nMaxCellsPHOS,0,nMaxCellsPHOS);
+        fHistClusterEnergyvsCellID->GetXaxis()->SetTitle("E_{Cluster} (GeV)");
+        fHistClusterEnergyvsCellID->GetYaxis()->SetTitle("Cell ID");
+        fHistExtQA->Add(fHistClusterEnergyvsCellID);
+
         fHistCellEnergyLG                 = new TH1F(Form("CellEnergyLG %s",GetCutNumber().Data()),"CellEnergyLG",nBinsClusterECellCoarse,  arrClusEBinningCoarse);
         fHistCellEnergyLG->GetXaxis()->SetTitle("E_{cell} (GeV)");
         fHistCellEnergyLG->GetYaxis()->SetTitle("counts");
@@ -1514,6 +1522,8 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
         fHistCellEnergyvsCellID->GetXaxis()->SetTitle("E_{cell} (GeV)");
         fHistCellEnergyvsCellID->GetYaxis()->SetTitle("Cell ID");
         fHistExtQA->Add(fHistCellEnergyvsCellID);
+
+      
 
         fHistCellEnergyLG                 = new TH1F(Form("CellEnergyLG %s",GetCutNumber().Data()),"CellEnergyLG",nBinsClusterECellCoarse,  arrClusEBinningCoarse);
         fHistCellEnergyLG->GetXaxis()->SetTitle("E_{cell} (GeV)");
@@ -3284,6 +3294,10 @@ void AliCaloPhotonCuts::FillHistogramsExtendedQA(AliVEvent *event, Int_t isMC)
     if(largestCellID==-1) AliFatal("FillHistogramsExtendedQA: FindLargestCellInCluster found cluster with NCells<1?");
     Int_t largestCelliMod = GetModuleNumberAndCellPosition(largestCellID, largestCellicol, largestCellirow);
     if(largestCelliMod < 0) AliFatal("FillHistogramsExtendedQA: GetModuleNumberAndCellPosition found SM with ID<0?");
+
+    if( fExtendedMatchAndQA > 3 && fClusterType == 2){ 
+          fHistClusterEnergyvsCellID->Fill( cluster->E(), largestCellID); 
+    }
 
     // Fill Low gain and high gain time vs. E histos
     if( fExtendedMatchAndQA == 3 ){
