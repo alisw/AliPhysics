@@ -219,6 +219,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
       kPP13T17P1JJ,
       kPP13T17P1JJTrigger,
       kLHC21j8a,
+      kPP13T17HERJJ,
       // pp 13 TeV 2018
       kPP13T18P1JJ,
       kPP13T18P1JJTrigger,
