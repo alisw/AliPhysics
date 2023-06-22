@@ -90,18 +90,18 @@ const std::vector<std::string> kParticleNames{"#pi^{+}", "#pi^{-}", "K^{+}", "K^
 constexpr double Sq(double x) { return x * x; }
 
 double Dist(const double a[3], const double b[3]) { return std::sqrt(Sq(a[0] - b[0]) + Sq(a[1] - b[1]) + Sq(a[2] - b[2])); }
+double Dist2(const double a[2], const double b[2]) { return std::sqrt(Sq(a[0] - b[0]) + Sq(a[1] - b[1])); }
 
-double ComputeHe3Ct(AliVParticle *he3Part, AliVParticle *dauPart)
+
+void AliAnalysisTaskNucleiYield::ComputeHe3AbsoInfo(AliVParticle *he3Part, AliVParticle *dauPart)
 {
     double primVertex[3];
     double secVertex[3];
     he3Part->XvYvZv(primVertex);
     dauPart->XvYvZv(secVertex);
-    double decLength = Dist(secVertex, primVertex);
-    // std::cout<<kHe3Mass * decLength / he3Part->P()<<std::endl;
-    return kHe3Mass * decLength / he3Part->P();
-}
-
+    fAbsorptionRad = Dist2(secVertex, primVertex);
+    fAbsorptionCt = kHe3Mass *Dist(secVertex, primVertex) / he3Part->P();
+    fAbsorptionDauPDG = dauPart->PdgCode();
 }
 
 bool AliAnalysisTaskNucleiYield::IsInTRD(float pt, float phi, float sign) {
@@ -630,6 +630,8 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
       if (fIsMC) fProduction->Fill(mult * part->P());
       if (fSaveTrees) {
         fAbsorptionCt = -1;
+        fAbsorptionRad = -1;
+        fAbsorptionDauPDG = -1;
         if(part->GetNDaughters()>0){
           for (int c = part->GetDaughterFirst(); c <= part->GetDaughterLast(); ++c)
           {
@@ -637,7 +639,7 @@ void AliAnalysisTaskNucleiYield::UserExec(Option_t *){
             int dPartPDG = std::abs(dPart->PdgCode());
             if (dPartPDG != 22 && dPartPDG != 11)
             {
-              fAbsorptionCt = ComputeHe3Ct(part, dPart);
+              ComputeHe3AbsoInfo(part, dPart);
               break;
             }
           }
