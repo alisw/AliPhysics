@@ -76,7 +76,10 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     KStarVspT_P2Hist(nullptr),
     fUse3DkTvsKStarvsmT(0),
     fNum3DkTvsKStarvsmT(nullptr),
-    fDum3DkTvsKStarvsmT(nullptr)
+    fDum3DkTvsKStarvsmT(nullptr), 
+    fUse2DkStarVsmT(0),
+    fNum2DkStarVsmT(nullptr),
+    fDum2DkStarVsmT(nullptr)
  
 {
     
@@ -141,7 +144,10 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     KStarVspT_P2Hist(aCorrFctn.KStarVspT_P2Hist),
     fUse3DkTvsKStarvsmT(aCorrFctn.fUse3DkTvsKStarvsmT),
     fNum3DkTvsKStarvsmT(aCorrFctn.fNum3DkTvsKStarvsmT),
-    fDum3DkTvsKStarvsmT(aCorrFctn.fDum3DkTvsKStarvsmT)
+    fDum3DkTvsKStarvsmT(aCorrFctn.fDum3DkTvsKStarvsmT),
+    fUse2DkStarVsmT(aCorrFctn.fUse2DkStarVsmT),
+    fNum2DkStarVsmT(aCorrFctn.fNum2DkStarVsmT),
+    fDum2DkStarVsmT(aCorrFctn.fDum2DkStarVsmT)
 
 
 {
@@ -193,6 +199,8 @@ AliFemtoCorrFctnpdtHe3::~AliFemtoCorrFctnpdtHe3()
     delete fNum3DkTvsKStarvsmT;
     delete fDum3DkTvsKStarvsmT;
 
+    delete fNum2DkStarVsmT;
+    delete fDum2DkStarVsmT;
 
 }
 AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctnpdtHe3& aCorrFctn)
@@ -291,6 +299,12 @@ AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctn
 	if(fDum3DkTvsKStarvsmT) delete fDum3DkTvsKStarvsmT;
                 fDum3DkTvsKStarvsmT = new TH3F(*aCorrFctn.fDum3DkTvsKStarvsmT);
 
+if(fNum2DkStarVsmT) delete fNum2DkStarVsmT;
+        fNum2DkStarVsmT = new TH2F(*aCorrFctn.fNum2DkStarVsmT);
+
+if(fDum2DkStarVsmT) delete fDum2DkStarVsmT;
+        fDum2DkStarVsmT = new TH2F(*aCorrFctn.fDum2DkStarVsmT);
+
 
     return *this;
 
@@ -353,6 +367,11 @@ TList* AliFemtoCorrFctnpdtHe3::GetOutputList()
 		tOutputList->Add(fNum3DkTvsKStarvsmT);
 		tOutputList->Add(fDum3DkTvsKStarvsmT);
 	}
+
+if(fUse2DkStarVsmT){
+	tOutputList->Add(fNum2DkStarVsmT);
+tOutputList->Add(fDum2DkStarVsmT);
+}
  
     return tOutputList;
 }
@@ -406,6 +425,11 @@ void AliFemtoCorrFctnpdtHe3::Write()
                 fNum3DkTvsKStarvsmT->Write();
                 fDum3DkTvsKStarvsmT->Write();
         }
+if(fUse2DkStarVsmT){
+        fNum2DkStarVsmT->Write();
+	fDum2DkStarVsmT->Write();
+}
+
 
 }
 void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
@@ -507,6 +531,9 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
      	if(fUse3DkTvsKStarvsmT){
                 fNum3DkTvsKStarvsmT->Fill(fPair->KT(),tKStar,CalcMt(fPair));
         }
+if(fUse2DkStarVsmT){
+        fNum2DkStarVsmT->Fill(tKStar,CalcMt(fPair));
+}
 
 	return;
     
@@ -588,7 +615,9 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
 	if(fUse3DkTvsKStarvsmT){
                 fDum3DkTvsKStarvsmT->Fill(fPair->KT(),tKStar,CalcMt(fPair));
 	 }
-
+if(fUse2DkStarVsmT){
+fDum2DkStarVsmT->Fill(tKStar,CalcMt(fPair));
+}
 	return;
     
 
@@ -1034,5 +1063,20 @@ fNum3DkTvsKStarvsmT = new TH3F(TString::Format("fNum3DkTvsKStarvsmT%s", fTitle.D
 fDum3DkTvsKStarvsmT = new TH3F(TString::Format("fDum3DkTvsKStarvsmT%s", fTitle.Data())," ",nbinskT,lowkT,upkT,nbinsks,lowks,upks,nbinsmT,lowmT,upmT);
 
 
+
+}
+void AliFemtoCorrFctnpdtHe3::Set2DKstarVsmT(int aUse){
+
+fUse2DkStarVsmT = aUse;
+}
+void AliFemtoCorrFctnpdtHe3::Set2DkStarVsmTInit(bool aInit,
+                int nbinsks,float lowks,float upks,
+                int nbinsmT,float lowmT,float upmT){
+
+
+fNum2DkStarVsmT = new TH2F(TString::Format("fNum2DkStarVsmT%s", fTitle.Data())," ",nbinsks,lowks,upks,nbinsmT,lowmT,upmT);
+
+
+fDum2DkStarVsmT = new TH2F(TString::Format("fDum2DkStarVsmT%s", fTitle.Data())," ",nbinsks,lowks,upks,nbinsmT,lowmT,upmT);
 
 }
