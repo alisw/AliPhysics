@@ -858,15 +858,17 @@ void AliCSEventCuts::SetActualSystemType() {
   case kLHC15n:
   case kLHC16k:
   case kLHC16l:
+  case kLHC17pq:
   case kLHC18bp:
       system = kpp;
       AliInfo("SYSTEM: p-p");
       break;
   case kLHC13bc:
   case kLHC13de:
-    system = kpPb;
-    AliInfo("SYSTEM: p-Pb");
-    break;
+  case kLHC16qt:
+      system = kpPb;
+      AliInfo("SYSTEM: p-Pb");
+      break;
   case kLHC13f:
     system = kPbp;
     AliInfo("SYSTEM: Pb-p");
@@ -2340,18 +2342,30 @@ void AliCSEventCuts::SetActualFilterTracksCuts() {
     system = "Pb-Pb";
     period = "2015o";
     break;
+  case kLHC16qt:
+    baseSystem = k2011based;
+    basename = "2011";
+    system = "p-Pb";
+    period = "2016qt";
+    break;
   case kLHC17n:
     baseSystem = k2011based;
     basename = "2011";
     system = "Xe-Xe";
     period = "2017n";
     break;
+  case kLHC17pq:
+    baseSystem = k2011based;
+    basename = "2011";
+    system = "p-p";
+    period = "LHC17pq";
+    break;
   case kLHC18bp:
-      baseSystem = k2011based;
-      basename = "2011";
-      system = "p-p";
-      period = "2018bp";
-      break;
+    baseSystem = k2011based;
+    basename = "2011";
+    system = "p-p";
+    period = "2018bp";
+    break;
   case kLHC18q:
       baseSystem = k2011based;
       basename = "2011";
