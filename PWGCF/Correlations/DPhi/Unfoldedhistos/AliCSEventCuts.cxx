@@ -1071,7 +1071,9 @@ Bool_t AliCSEventCuts::UseNewMultiplicityFramework() const{
   case kLHC10bg:
   case kLHC15oLIR:
   case kLHC15oHIR:
+  case kLHC16qt:
   case kLHC17n:
+  case kLHC17pq:
   case kLHC18bp:
   case kLHC18q:
   case kLHC18r:
@@ -1533,7 +1535,9 @@ void AliCSEventCuts::SetActualActiveTrigger()
     case kLHC15oHIR:
     case kLHC16k:
     case kLHC16l:
+    case kLHC16qt:
     case kLHC17n:
+    case kLHC17pq:
       fOfflineTriggerMask = AliVEvent::kINT7;
       AliInfo("Using AliVEvent::kINT7 as MB trigger");
       break;
