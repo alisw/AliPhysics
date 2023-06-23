@@ -14,6 +14,7 @@
 #include "THnSparse.h"
 #include "TString.h"
 #include "AliEventCuts.h"
+#include "AliPIDCombined.h"
 //#include "AliMCSpectraWeights.h"
 
 class TList;
@@ -29,6 +30,7 @@ class AliAODv0;
 class THnSparse;
 class AliAODcascade;
 class AliAODVertex;
+//class AliPIDCombined;
 
 
 //#ifndef ALIANALYSISTASKSEH
@@ -53,6 +55,7 @@ public:
   virtual void SetAnalysisMode(TString mode) { fAnaMode = mode; }
   virtual void SetAssociatedTrack(TString mode) { fasso = mode; }
   virtual void SetPID(Bool_t mode) { fPID = mode; }
+  virtual void SetPIDBaye(Bool_t mode) { fbayesian = mode; }
   virtual void SetDatatype(Bool_t mode) { fDataType = mode; }
   virtual void SetCentCalib(Bool_t mode) { fcentcalib= mode; }
   virtual void SetRunType(Bool_t mode) { frun2 = mode; }
@@ -64,6 +67,7 @@ public:
   virtual void SetPtMax(Float_t mode){fPtMax=mode;}
   virtual void SetPtMin(Float_t mode){fPtMin=mode;}
   virtual void SetBoost(Bool_t mode){fboost=mode;}
+  virtual void SetOnthefly(Bool_t mode){fOnthefly=mode;}
   
   virtual void Setacceptancehole(Bool_t mode){fmakehole=mode;}
   virtual void SetAnalysisCent(TString mode) { fCentType = mode; }
@@ -107,7 +111,8 @@ private:
   void DefineVZEROOutput();
   void DefineCorrOutput();
   void DefinedQAHistos();
-
+  Bool_t    HasTrackPIDTPC(const AliAODTrack* track) const; // is TPC PID OK for this track ?                                                                                                                                                                                                             
+  Bool_t   HasTrackPIDTOF(const AliAODTrack* track) const; // is TOF PID OK for this track ?   Bool_t                  HasTrackPIDTPC(const AliAODTrack* track) const; // is TPC PID OK for this track ?                                                                                                        
   TObjArray *GetAcceptedTracksLeading(AliAODEvent *faod,Bool_t leading,TObjArray*tracks);
   TObjArray *GetAcceptedTracksPID(AliAODEvent *faod);
   TObjArray *GetAcceptedV0Tracks(const AliAODEvent *faod);
@@ -129,8 +134,8 @@ private:
   Double_t RangePhi_FMD(Double_t DPhi);
   Double_t RangePhi2(Double_t DPhi);
   Int_t      ConvertRunNumber(Int_t run);
-  Double_t Transboost(const AliAODMCParticle*fTrack);
-  
+  Double_t Transboost(const AliMCParticle*fTrack);
+  AliMCEvent *getMCEvent();
   /*
   void FillCorrelationTracksCentralForward(Double_t MultipOrCent, TObjArray *triggerArray,
                              TObjArray *selectedTrackArray, AliTHn *triggerHist,
@@ -159,6 +164,7 @@ private:
   Bool_t fDataType;
   Bool_t fcentcalib;
   Bool_t fboost;
+  Bool_t fOnthefly;
   Bool_t frun2;
   Bool_t fQA;
   Bool_t fMCclosure;
@@ -186,8 +192,9 @@ private:
   TList *fOutputList2; // Output list
 
   AliPIDResponse *fPIDResponse; // PID Response
+  AliPIDCombined*         fPIDCombined; //! AliPIDCombined container
   TH2D* fhcorreffi[10];
-
+  Bool_t  fbayesian;
   Int_t ffilterbit;
   Double_t fPtMin;
   Double_t fPtMax;
@@ -240,7 +247,7 @@ private:
   AliEventCuts fEventCuts; 
   AliAnalysisUtils* fUtils;
   AliAODEvent *fEvent; //  AOD Event
-  AliMCEvent* mcEvent;
+  AliMCEvent* fmcEvent;
   AliAODVertex *lPrimaryBestVtx;
   Double_t tPrimaryVtxPosition[3];
   Double_t fPrimaryZVtx;
