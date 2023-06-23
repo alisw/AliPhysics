@@ -44,6 +44,7 @@ AddTaskFemtoSubtrainDowang(
   TString configMacroName = "alien:///alice/cern.ch/user/d/dowang/2021Pass2/"+rootName+".root";
   //TString configMacroName = "ConfigFemtoAnalysis.C";
   TString configFunName = "ConfigFemtoAnalysis";
+configMacroParameters = subtrain; 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskFemto", "No analysis manager to connect to.");
