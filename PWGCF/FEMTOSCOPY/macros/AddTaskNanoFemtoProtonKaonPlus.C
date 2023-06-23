@@ -312,7 +312,6 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
     addon += "HM";
   }
 
-  suffix = ""; 
   TString file = AliAnalysisManager::GetCommonFileName();
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
   mgr->ConnectInput(task, 0, cinput);
