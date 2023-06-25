@@ -195,6 +195,12 @@ void AddTask_MesonJetCorr_Conv(
   } else if (trainConfig == 17) { // same as 7 but with mixed jet back
     cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
   
+  } else if (trainConfig == 20) {
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "es52103500000000"); // decay daughters inside jet
+  } else if (trainConfig == 21) {
+    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "es52103500000000"); // decay daughters inside jet
+    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "es52103500000000"); // decay daughters inside jet
+    
   // configs without TRD/ITS conversion requirement
   } else if (trainConfig == 22) {
     cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
