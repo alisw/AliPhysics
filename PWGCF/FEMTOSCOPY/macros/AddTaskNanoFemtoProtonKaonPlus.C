@@ -18,7 +18,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
     bool DoAncestors = false, //9
     float kaonDCAxy = 0.1, //10
     float kaonDCAz = 0.2, //11
-    const char *cutVariation = "0" //12
+    bool doDCA = false, //12
+    const char *cutVariation = "0" //13
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -49,6 +50,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   TrackPosKaonCuts->SetCutCharge(1);
   if(isMC){
     TrackPosKaonCuts->SetPlotDCADist(true);
+  }
+  if(doDCA){
     TrackPosKaonCuts->SetPtRange(0.0, 5.0);
   }
   if (!UseRamonaCut)
@@ -73,6 +76,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   TrackNegKaonCuts->SetCutCharge(-1);
   if(isMC){
     TrackNegKaonCuts->SetPlotDCADist(true);
+  }
+  if(doDCA){
     TrackNegKaonCuts->SetPtRange(0.0, 5.0);
   }
   if (!UseRamonaCut)
