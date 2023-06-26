@@ -151,6 +151,7 @@ public:
   void   SetPassIndex(const Int_t ifPassIndex = 0)                    {fPassIndex           = ifPassIndex;}
   // Some boolian settings
   void   SetRunOnGrid(const Bool_t ifRunOnGrid = kTRUE)               {fRunOnGrid           = ifRunOnGrid;}
+  void   SetSmallOut(const Bool_t ifSmallOut = kTRUE)               {fSmallOut           = ifSmallOut;}
   void   SetIncludeITScuts(const Bool_t ifITSCuts = kTRUE)            {fIncludeITS          = ifITSCuts;}
   void   SetFilljetsFJBGTree(const Bool_t ifjetsFJBGTree = kTRUE)     {fFilljetsFJBGTree    = ifjetsFJBGTree;}
   void   SetFillJetsFJBGConst(const Bool_t ifJetsFJBGConst = kTRUE)     {fFillJetsFJBGConst     = ifJetsFJBGConst;}
@@ -162,6 +163,7 @@ public:
   void   SetFillJetsEMCBG(const Bool_t ifJetsEMCBG = kTRUE)     {fFillJetsEMCBG     = ifJetsEMCBG;}
   void   SetFillJetsEMCBGConst(const Bool_t ifJetsEMCBGConst = kTRUE)     {fFillJetsEMCBGConst     = ifJetsEMCBGConst;}
   void   SetJetMinPtSub(const Double_t jetminptsub = -1000.0)         {fjetMinPtSub         = jetminptsub;}
+  void   SetJetMinArea(const Double_t jetminarea = -1000.0)         {fjetMinArea         = jetminarea;}
 
   void   SetDeDxCheck(const Bool_t ifDeDxCheck = kFALSE)              {fDEdxCheck           = ifDeDxCheck;}
   void   SetFillOnlyHists(const Bool_t ifFillOnlyHists = kFALSE)      {fFillOnlyHists       = ifFillOnlyHists;}
@@ -350,6 +352,7 @@ private:
   Int_t             fPercentageOfEvents;     // when only a fPercentageOfEvents is enough
 
   Bool_t            fRunOnGrid;              // flag if real data or MC is processed
+  Bool_t            fSmallOut;              // flag for small output
   Bool_t            fMCtrue;                 // flag if real data or MC is processed
   Bool_t            fEventInfo;              // flag if event info and downscaled track tree is filled
   Bool_t            fDEdxCheck;              // flag to check only the dEdx performance
@@ -368,6 +371,7 @@ private:
   Bool_t            fFillJetsEMCBG;        // switch whether to fill jetsEMCBG tree
   Bool_t            fFillJetsEMCBGConst;        // switch whether to fill jetsEMCBG constituent tree
   Double_t          fjetMinPtSub;            // minimium jet pt after subtraction to keep jet
+  Double_t          fjetMinArea;            // minimium jet pt after subtraction to keep jet
 
   Bool_t            fRunFastSimulation;      // when running over galice.root do not fill other objects
   Bool_t            fFillDistributions;   // when running over galice.root do not fill other objects

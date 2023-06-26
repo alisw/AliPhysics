@@ -163,6 +163,7 @@ fEtaUp(0),
 fNEtaBins(0),
 fPercentageOfEvents(0),
 fRunOnGrid(kFALSE),
+fSmallOut(kFALSE),
 fMCtrue(kFALSE),
 fEventInfo(kFALSE),
 fDEdxCheck(kFALSE),
@@ -178,6 +179,7 @@ fFillIncTracks(kTRUE),
 fFillJetsEMCConst(kTRUE),
 fFillJetsEMCBGConst(kTRUE),
 fjetMinPtSub(-1000.0),
+fjetMinArea(-1000.0),
 fRunFastSimulation(kFALSE),
 fFillDistributions(kFALSE),
 fFillTreeMC(kFALSE),
@@ -428,6 +430,7 @@ fEtaUp(0),
 fNEtaBins(0),
 fPercentageOfEvents(0),
 fRunOnGrid(kFALSE),
+fSmallOut(kFALSE),
 fMCtrue(kFALSE),
 fEventInfo(kFALSE),
 fDEdxCheck(kFALSE),
@@ -443,6 +446,7 @@ fFillJetsEMCConst(kTRUE),
 fFillJetsEMCBGConst(kTRUE),
 fFillIncTracks(kTRUE),
 fjetMinPtSub(-1000.0),
+fjetMinArea(-1000.0),
 fRunFastSimulation(kFALSE),
 fFillDistributions(kFALSE),
 fFillTreeMC(kFALSE),
@@ -940,8 +944,6 @@ Bool_t AliAnalysisJetHadro::Run()
   //
   // main event loop
   //
-  if (fRunOnGrid) fUseCouts=kFALSE; // for security
-  fUseCouts=kTRUE; //CHNAGE
   if (fUseCouts) std::cout << " Info::siweyhmi: ===== In the UserExec ===== " << std::endl;
   //
   // Check Monte Carlo information and other access first:
@@ -997,7 +999,7 @@ Bool_t AliAnalysisJetHadro::Run()
         if (fPileUpTightnessCut3->AcceptEvent(fESD)) { fPileUpBit |= 1 << 2; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
         if (fPileUpTightnessCut2->AcceptEvent(fESD)) { fPileUpBit |= 1 << 1; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
         if (fPileUpTightnessCut1->AcceptEvent(fESD)) { fPileUpBit |= 1 << 0; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
-        fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,0); // do not apply any pile cut
+        fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1); // standard
         if (!fEventCuts.AcceptEvent(fESD)) {cout<< "pileup event " << endl; return kFALSE;}
       }
     }
@@ -1176,7 +1178,7 @@ Bool_t AliAnalysisJetHadro::Run()
       fSPDvZ = vertexSPD->GetZ();
       fVz    = fVertex->GetZ();
       TString vertexType = fVertex->GetTitle();    // ??? Put condition Abs(vertex-vertexTPC) as a bool_t into ttree
-      if ( vertexType.Contains("vertexer: Z") && (fVertex->GetDispersion() > 0.04 || fVertex->GetZRes() > 0.25) ) isVertexOk = kFALSE; // TODO
+      //if ( vertexType.Contains("vertexer: Z") && (fVertex->GetDispersion() > 0.04 || fVertex->GetZRes() > 0.25) ) isVertexOk = kFALSE; // TODO
     }
     fMultiplicity    = fVertex->GetNContributors();    // fMultiplicity = fESD -> GetNumberOfTracks();
     fNContributors   = fVertex->GetNContributors();
@@ -1186,8 +1188,8 @@ Bool_t AliAnalysisJetHadro::Run()
     // ------- event vertex cut along Z ---------------
     // ------------------------------------------------
     //
-    // if (fMCtrue && TMath::Abs(fVz) > 15) return;   // For MC put fixed cut
-    if (TMath::Abs(fVz)>15) return kFALSE;
+    // if (fMCtrue && TMath::Abs(fVz) > 10) return;   // For MC put fixed cut
+    if (TMath::Abs(fVz)>10) return kFALSE;
     //
     if (fVertex && isVertexOk) fHistVertex->Fill(fVz);
     else return kFALSE;
@@ -1333,7 +1335,7 @@ void AliAnalysisJetHadro::FindJetsEMC()
     Double_t jetMCPt = jet->MCPt();
     Double_t jetptsub = jet->PtSub(fjetRhoVal, kFALSE); //bg sub pt
 
-    if (jetptsub > pT_sub_min)
+    if (jetptsub > pT_sub_min && JetAreaPt > fjetMinArea)
     {
       fhasRealEMCjet = 1;
     }
@@ -1341,7 +1343,6 @@ void AliAnalysisJetHadro::FindJetsEMC()
     if(!fTreeSRedirector) return;
     (*fTreeSRedirector)<<"jetsEMC"<<
     "gid="       << fEventGID << //  global event ID
-    "jetRadius=" << jetRadius << // jet Radius
     "NAcceptedjets=" << NAcceptedjets << // Number of accepted jets in event
     "jetRhoVal=" << fjetRhoVal <<
     "jetpt="     << fJetPt    << // jetPt
@@ -1354,7 +1355,7 @@ void AliAnalysisJetHadro::FindJetsEMC()
     "cent="      << fCentrality  <<  //  centrality
     "\n";
 
-    if (jetptsub <= pT_sub_min) continue;
+    if (jetptsub <= pT_sub_min || JetAreaPt <= fjetMinArea) continue;
 
     Int_t tpcClusterMultiplicity   = fESD->GetNumberOfTPCClusters();
     const AliMultiplicity *multObj = fESD->GetMultiplicity();
@@ -1427,7 +1428,7 @@ void AliAnalysisJetHadro::FindJetsEMC()
         "dEdxMeanPr="  << fDEdxPr              <<
         "dEdxSigmaPr=" << fSigmaPr            <<
         "cent="      << fCentrality;
-        if (!fRunOnGrid){
+        if (!fSmallOut){
           (*fTreeSRedirector)<<"jetsEMCconst"<<
           "intrate="   << fIntRate              <<  // interaction rate
           "run="       << fRunNo <<                  // run Number
@@ -1585,7 +1586,7 @@ void AliAnalysisJetHadro::FindJetsEMC()
         "dEdxMeanPr="  << fDEdxPr              <<
         "dEdxSigmaPr=" << fSigmaPr            <<
         "cent="      << fCentrality;
-        if (!fRunOnGrid){
+        if (!fSmallOut){
           (*fTreeSRedirector)<<"jetsEMCBGconst"<<
           "intrate="   << fIntRate              <<  // interaction rate
           "run="       << fRunNo <<                  // run Number
@@ -1785,7 +1786,7 @@ void AliAnalysisJetHadro::FindJetsFJ()
         Float_t jetptsub = jetpt - frhoFJ*jetArea;
         Int_t jetNum = jets.size();
 
-        if (jetptsub > pT_sub_min)
+        if (jetptsub > pT_sub_min && jetArea > fjetMinArea)
         {
           fhasRealFJjet = 1;
         }
@@ -1797,8 +1798,6 @@ void AliAnalysisJetHadro::FindJetsFJ()
         (*fTreeSRedirector)<<"jetsFJ"<<
         "gid="          << fEventGID << //  global event ID
         "syst="         << iset << //  syst setting
-        "jetRadius="    << fJetRadius[iJetRadius] << // jet Radius
-        "jetAbsEtaCut=" << jetAbsEtaCut << //abs eta cut for jet
         "jetNum="       << jetNum <<    //  number of jets
         "jetpt="        << jetpt <<
         "jetphi="       << jetphi <<
@@ -1810,7 +1809,7 @@ void AliAnalysisJetHadro::FindJetsFJ()
         "jetArea="      << jetArea << //jet area
         "\n";
 
-        if (jetptsub <= pT_sub_min) continue;
+        if (jetptsub <= pT_sub_min || jetArea <= fjetMinArea) continue;
         for(Int_t i = 0; i < nConstituents; i++)
         {
           fastjet::PseudoJet &constituent = constituents[i];
@@ -1845,11 +1844,12 @@ void AliAnalysisJetHadro::FindJetsFJ()
           AliVMultiplicity *multiObj = fESD->GetMultiplicity();
           for(Int_t j=2;j<6;j++) nITSClusters += multiObj->GetNumberOfITSClusters(j);
 
+          if (fFillJetsFJConst){
+
           (*fTreeSRedirector)<<"jetsFJconst"<<
           "gid="       << fEventGID << //  global event ID
           "syst="      << iset << //  syst setting
           "jetRadius=" << fJetRadius[iJetRadius] << // jet Radius
-          "jetAbsEtaCut=" << jetAbsEtaCut << //abs eta cut for jet
           "jetNum="    << jetNum <<    //  number of jets
           "jetpt="     << jetpt <<     //  global event ID
           "jetphi="    << jetphi <<    //  global event ID
@@ -1861,22 +1861,8 @@ void AliAnalysisJetHadro::FindJetsFJ()
           "jetArea="   << jetArea << //jet area
 
           "defCut="    << ifDefaultCuts <<  // default cuts tuned by hand
-          "bit96="     << fBit96_base <<    // tight cuts of 2011 tuned data
-          "bit128="    << fBit128 <<        // TPC only tracks cuts
-          "bit768="    << fBit768 <<        // Hybrid track cuts
-          "pixCut="    << ifDCAcutIfNoITSPixel <<    // cut: apply a DCAcut If No ITS Pixel
-          "run="       << fRunNo <<                  // run Number
-          "bField="    << fBField <<                 // magnetic filed
-          "pileupbit=" << fPileUpBit <<              // flag for pileup selection
-          "primMult="  << fNContributors <<          //  #prim tracks
-          //
-          "tpcmult="   << fTPCMult <<                //  TPC track multiplicity
-          "itsclmult=" << nITSClusters <<    // ITS multiplicity
-          "tpcclmult=" << nTPCClusters <<    // ITS multiplicity
-          //
-          "eventtime=" << fTimeStamp            <<  // event timeStamp
-          "intrate="   << fIntRate              <<  // interaction rate
           "cutBit="    << fTrackCutBits         <<  //  Systematic Cuts
+
           "dEdx="      << fTPCSignal            <<  //  dEdx of the track
           "sign="      << fSign                 <<  //  charge
           "ptot="      << fPtot                 <<  //  TPC momentum
@@ -1884,26 +1870,7 @@ void AliAnalysisJetHadro::FindJetsFJ()
           "pT="        << fPt                   <<  // transverse momentum
           "eta="       << fEta                  <<  //  eta
           "cent="      << fCentrality           <<  //  centrality
-          //
           "phi="       << fPhi                  <<  //  phi
-          "dcaxy="     << fTrackDCAxy           <<  // dca cut on xy plane
-          "dcaz="      << fTrackDCAz            <<  // dca cut along z
-          "ncltpc="    << fNcl                  <<  // number of clusters
-          "cRows="     << fTrackTPCCrossedRows  <<  // crossed Rows in TPC
-          "chi2tpc="   << fTrackChi2TPC         <<  // TPC chi2
-          "missCl="    << fMissingCl            <<  // fraction of missing clusters
-
-          "eltpcpid="  << fNSigmasElTPC         <<  // nsigma TPC for electrons
-          "pitpcpid="  << fNSigmasPiTPC         <<
-          "katpcpid="  << fNSigmasKaTPC         <<
-          "prtpcpid="  << fNSigmasPrTPC         <<
-          "detpcpid="  << fNSigmasDeTPC         <<
-
-          "eltofpid="  << fNSigmasElTOF         <<  // nsigma TPC for electrons
-          "pitofpid="  << fNSigmasPiTOF         <<
-          "katofpid="  << fNSigmasKaTOF         <<
-          "prtofpid="  << fNSigmasPrTOF         <<
-          "detofpid="  << fNSigmasDeTOF         <<
 
           "dEdxMeanEl=" << fDEdxEl              << //mean dEdx for electrons
           "dEdxSigmaEl=" << fSigmaEl            << //sigma dEdx for electrons
@@ -1914,13 +1881,51 @@ void AliAnalysisJetHadro::FindJetsFJ()
           "dEdxMeanPr=" << fDEdxPr              <<
           "dEdxSigmaPr=" << fSigmaPr            <<
           "dEdxMeanDe=" << fDEdxDe              <<
-          "dEdxSigmaDe=" << fSigmaDe            <<
+          "dEdxSigmaDe=" << fSigmaDe;
 
-          "closestTPCPIDtype=" << closestPar[1]         << //particle type
-          "closestTPCPIDmass=" << closestPar[2]         << //particle mass
-          "\n";
+          if (!fSmallOut){
+            (*fTreeSRedirector)<<"jetsFJconst"<<
+            "bit96="     << fBit96_base <<    // tight cuts of 2011 tuned data
+            "bit128="    << fBit128 <<        // TPC only tracks cuts
+            "bit768="    << fBit768 <<        // Hybrid track cuts
+            "pixCut="    << ifDCAcutIfNoITSPixel <<    // cut: apply a DCAcut If No ITS Pixel
+            "run="       << fRunNo <<                  // run Number
+            "bField="    << fBField <<                 // magnetic filed
+            "pileupbit=" << fPileUpBit <<              // flag for pileup selection
+            "primMult="  << fNContributors <<          //  #prim tracks
+            //
+            "tpcmult="   << fTPCMult <<                //  TPC track multiplicity
+            "itsclmult=" << nITSClusters <<    // ITS multiplicity
+            "tpcclmult=" << nTPCClusters <<    // ITS multiplicity
+            //
+            "eventtime=" << fTimeStamp            <<  // event timeStamp
+            "intrate="   << fIntRate              <<  // interaction rate
+
+            "dcaxy="     << fTrackDCAxy           <<  // dca cut on xy plane
+            "dcaz="      << fTrackDCAz            <<  // dca cut along z
+            "ncltpc="    << fNcl                  <<  // number of clusters
+            "cRows="     << fTrackTPCCrossedRows  <<  // crossed Rows in TPC
+            "chi2tpc="   << fTrackChi2TPC         <<  // TPC chi2
+            "missCl="    << fMissingCl            <<  // fraction of missing clusters
+
+            "eltpcpid="  << fNSigmasElTPC         <<  // nsigma TPC for electrons
+            "pitpcpid="  << fNSigmasPiTPC         <<
+            "katpcpid="  << fNSigmasKaTPC         <<
+            "prtpcpid="  << fNSigmasPrTPC         <<
+            "detpcpid="  << fNSigmasDeTPC         <<
+
+            "eltofpid="  << fNSigmasElTOF         <<  // nsigma TPC for electrons
+            "pitofpid="  << fNSigmasPiTOF         <<
+            "katofpid="  << fNSigmasKaTOF         <<
+            "prtofpid="  << fNSigmasPrTOF         <<
+            "detofpid="  << fNSigmasDeTOF         <<
+
+            "closestTPCPIDtype=" << closestPar[1]         << //particle type
+            "closestTPCPIDmass=" << closestPar[2];
+          }
+        (*fTreeSRedirector)<<"jetsFJconst"<<"\n";
         }
-
+        }
       } // end of jet loop
 
     }
@@ -2034,7 +2039,7 @@ void AliAnalysisJetHadro::FillTPCdEdxReal()
       "dEdxMeanPr=" << fDEdxPr              <<
       "dEdxSigmaPr=" << fSigmaPr            <<
       "cent="      << fCentrality;
-      if (!fRunOnGrid){
+      if (!fSmallOut){
         (*fTreeSRedirector)<<"tracks"<<
         "intrate="   << fIntRate              <<  // interaction rate
         "eventtime=" << fTimeStamp            <<  // event timeStamp
@@ -2430,7 +2435,7 @@ Bool_t AliAnalysisJetHadro::CheckIfFromResonance(Int_t mcType, AliMCParticle *tr
   // dump resonance info
   Int_t pdg = trackMCgen->Particle()->GetPdgCode();
   TObjString parName(trackMCgen->Particle()->GetName());
-  if(fEventCountInFile==2 && !fRunOnGrid && fillTree) {
+  if(fEventCountInFile==2 && !fRunOnGrid && !fSmallOut && fillTree) {
     if(!fTreeSRedirector) return kFALSE;
     (*fTreeSRedirector)<<"jetResonance"<<
     "acceptRes="   << acceptRes   <<
