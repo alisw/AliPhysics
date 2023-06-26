@@ -592,7 +592,7 @@ Bool_t AliAnalysisTaskNewJetSubstructure::FillHistograms() {
 
         ptMatch = jet3->Pt();
         leadTrackMatch = jet3->MaxTrackPt();
-        EPMatch = RelativePhi(jet3->Phi(),fQVectorReader->GetEPangleV0M()); 
+        if(fDoFlow) EPMatch = 0; // EP angle not meaningful for pp RelativePhi(jet3->Phi(),fQVectorReader->GetEPangleV0M()); 
         IterativeParentsMCAveragePP(jet3, kMatched, aver1, aver2, aver3, aver4, aver5, sub1Det, sub2Det, const1Det, const2Det);
         ktgMatch = aver1;
         nsdMatch = aver2;
