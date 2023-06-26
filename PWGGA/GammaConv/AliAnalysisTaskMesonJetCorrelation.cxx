@@ -192,6 +192,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoMatchedPtJet({}),
                                                                              fHistoUnMatchedPtJet({}),
                                                                              fHistoTruePtJet({}),
+                                                                             fHistoTruePtJetNotTriggered({}),
                                                                              fHistoTrueMatchedPtJet({}),
                                                                              fHistoTrueUnMatchedPtJet({}),
                                                                              fHistoNEFVsPtJet({}),
@@ -449,6 +450,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoMatchedPtJet({}),
                                                                                            fHistoUnMatchedPtJet({}),
                                                                                            fHistoTruePtJet({}),
+                                                                                           fHistoTruePtJetNotTriggered({}),
                                                                                            fHistoTrueMatchedPtJet({}),
                                                                                            fHistoTrueUnMatchedPtJet({}),
                                                                                            fHistoNEFVsPtJet({}),
@@ -733,6 +735,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoMatchedPtJet.resize(fnCuts);
     fHistoUnMatchedPtJet.resize(fnCuts);
     fHistoTruePtJet.resize(fnCuts);
+    fHistoTruePtJetNotTriggered.resize(fnCuts);
     fHistoTrueMatchedPtJet.resize(fnCuts);
     fHistoTrueUnMatchedPtJet.resize(fnCuts);
   }
@@ -1256,6 +1259,8 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fTrueJetList[iCut]->Add(fHistoUnMatchedPtJet[iCut]);
       fHistoTruePtJet[iCut] = new TH1F("TrueJetPt", "TrueJetPt", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
       fTrueJetList[iCut]->Add(fHistoTruePtJet[iCut]);
+      fHistoTruePtJetNotTriggered[iCut] = new TH1F("TrueJetPtNotTriggered", "TrueJetPtNotTriggered", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+      fTrueJetList[iCut]->Add(fHistoTruePtJetNotTriggered[iCut]);
       fHistoTrueMatchedPtJet[iCut] = new TH1F("TrueJetPt_MatchedToRec", "TrueJetPt_MatchedToRec", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
       fTrueJetList[iCut]->Add(fHistoTrueMatchedPtJet[iCut]);
       fHistoTrueUnMatchedPtJet[iCut] = new TH1F("TrueJetPt_NotMatchedToRec", "TrueJetPt_NotMatchedToRec", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
@@ -1862,8 +1867,21 @@ void AliAnalysisTaskMesonJetCorrelation::InitJets()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskMesonJetCorrelation::ProcessJets()
+void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
 {
+
+  // special case where the trigger has not fired etc.
+  // Still have to fill the histograms for true jets in order for the efficiency to be correct
+  if(isCurrentEventSelected > 0){
+    for (int i = 0; i < fConvJetReader->GetTrueNJets(); i++) {
+      fHistoTruePtJet[fiCut]->Fill(fTrueVectorJetPt.at(i), fWeightJetJetMC);
+      fHistoTruePtJetNotTriggered[fiCut]->Fill(fTrueVectorJetPt.at(i), fWeightJetJetMC);
+      if(!fDoLightOutput){
+        fHistoNPartInTrueJetVsJetPt[fiCut]->Fill(fTrueVectorJetNPart.at(i), fTrueVectorJetPt.at(i));
+      }
+    }
+    return;
+  }
 
   // clear map before next event
   MapRecJetsTrueJets.clear();
@@ -2065,8 +2083,10 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
       if (fIsMC > 0) {
         if (eventNotAccepted == 3) { // Event rejected due to wrong trigger, MC particles still have to be processed
           ProcessAODMCParticles(1);
+          ProcessJets(1);
         } else if (eventNotAccepted != 1) { // exclude centrality/multiplicity selection from MC particles processing
           ProcessAODMCParticles(2);
+          ProcessJets(2);
         }
       }
       continue;
@@ -2080,6 +2100,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
       if (fIsMC > 0) {
         if (eventQuality != 4) { // 4 = event outside of +-10cm, we dont want to count these events
           ProcessAODMCParticles(2);
+          ProcessJets(2);
         }
       }
       continue;
@@ -2101,7 +2122,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
     }
 
     if(fLocalDebugFlag) {printf("ProcessJets\n");}
-    ProcessJets();
+    ProcessJets(0);
     if (fIsConvCalo || fIsCalo) {
       if(fLocalDebugFlag) {printf("ProcessClusters\n");}
       ProcessClusters(); // process calo clusters
