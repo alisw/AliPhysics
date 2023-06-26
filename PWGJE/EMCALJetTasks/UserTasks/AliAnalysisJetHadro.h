@@ -610,7 +610,7 @@ private:
   AliEventCuts* fPileUpTightnessCut1;
   Double_t fEffMatrixNSigmasTOF;
 
-  ClassDef(AliAnalysisJetHadro, 7);
+  ClassDef(AliAnalysisJetHadro, 8);
 
 };
 
