@@ -98,6 +98,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fTPCchi2perCluster(4.0),
     fUseAdditionalDCACut(false),
     fUseDefaultWeight(false),
+    fExtendV0MAcceptance(false),
     fV0MRatioCut(0),
     fEtaGap3Sub1(0.4),
     fEtaGap3Sub2(0.4),
@@ -189,6 +190,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fTPCchi2perCluster(4.0),
   fUseAdditionalDCACut(false),
   fUseDefaultWeight(false),
+  fExtendV0MAcceptance(false),
   fV0MRatioCut(0),
   fEtaGap3Sub1(0.4),
   fEtaGap3Sub2(0.4),
@@ -308,6 +310,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fTPCchi2perCluster(4.0),
   fUseAdditionalDCACut(false),
   fUseDefaultWeight(false),
+  fExtendV0MAcceptance(false),
   fV0MRatioCut(0),
   fEtaGap3Sub1(0.4),
   fEtaGap3Sub2(0.4),
@@ -432,6 +435,12 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
     fEventCuts.fMaxResolutionSPDvertex = 0.25f;
     // Distance between track and SPD vertex < 0.2 cm
     fEventCuts.fPileUpCutMV = true;
+  }
+
+  if (fExtendV0MAcceptance) {
+    fEventCuts.OverrideCentralityFramework(1);
+    fEventCuts.SetCentralityEstimators("V0M", "CL0");
+    fEventCuts.SetCentralityRange(0.f,101.f);
   }
 
   if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1 and LHC17n
