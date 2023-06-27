@@ -512,7 +512,8 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
             ROOT::Math::XYZVector normalVec = ROOT::Math::XYZVector(dStar->Py() / ptCand, -dStar->Px() / ptCand, 0.);
             ROOT::Math::XYZVector helicityVec = ROOT::Math::XYZVector(dStar->Px() / pCand, dStar->Py() / pCand, dStar->Pz() / pCand);
             ROOT::Math::XYZVector beamVec = ROOT::Math::XYZVector(0., 0., 1.);
-            ROOT::Math::XYZVector Q2Vec = ROOT::Math::XYZVector(QnFullV0[1], -QnFullV0[0], 0.);
+            ROOT::Math::XYZVector Q2VecNorm = ROOT::Math::XYZVector(QnFullV0[1], -QnFullV0[0], 0.);
+            ROOT::Math::XYZVector Q2Vec = ROOT::Math::XYZVector(QnFullV0[0], QnFullV0[1], 0.);
 
             ROOT::Math::XYZVector threeVecPiCM = fourVecPiCM.Vect();
             ROOT::Math::XYZVector threeVecPiCMXY = ROOT::Math::XYZVector(threeVecPiCM.X(), threeVecPiCM.Y(), 0.);
@@ -521,7 +522,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
             double cosThetaStarHelicity = TMath::Abs(helicityVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
             double cosThetaStarBeam = TMath::Abs(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
             double cosThetaStarRandom = TMath::Abs(randomVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
-            double cosThetaStarEvPlane = fReadMC ? TMath::Abs(randomVecXY.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+            double cosThetaStarEvPlane = fReadMC ? TMath::Abs(randomVecXY.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2())) : TMath::Abs(Q2VecNorm.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
             double cosThetaQvector = fReadMC ? TMath::Abs(randomVecX.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
             double cosPhiStar = fReadMC ? TMath::Abs(randomVecX.Dot(threeVecPiCMXY) / TMath::Sqrt(threeVecPiCMXY.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCMXY) / TMath::Sqrt(threeVecPiCMXY.Mag2()));
             double thetaStarBeam = TMath::ACos(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
@@ -582,7 +583,8 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                 ROOT::Math::XYZVector normalVec = ROOT::Math::XYZVector(dMeson->Py() / ptCand, -dMeson->Px() / ptCand, 0.);
                 ROOT::Math::XYZVector helicityVec = ROOT::Math::XYZVector(dMeson->Px() / pCand, dMeson->Py() / pCand, dMeson->Pz() / pCand);
                 ROOT::Math::XYZVector beamVec = ROOT::Math::XYZVector(0., 0., 1.);
-                ROOT::Math::XYZVector Q2Vec = ROOT::Math::XYZVector(QnFullV0[1], -QnFullV0[0], 0.);
+                ROOT::Math::XYZVector Q2VecNorm = ROOT::Math::XYZVector(QnFullV0[1], -QnFullV0[0], 0.);
+                ROOT::Math::XYZVector Q2Vec = ROOT::Math::XYZVector(QnFullV0[0], QnFullV0[1], 0.);
 
                 ROOT::Math::XYZVector threeVecPiCM = fourVecPiCM.Vect();
                 ROOT::Math::XYZVector threeVecPiCMXY = ROOT::Math::XYZVector(threeVecPiCM.X(), threeVecPiCM.Y(), 0.);
@@ -590,7 +592,7 @@ void AliAnalysisTaskSEDstarPolarization::UserExec(Option_t * /*option*/)
                 double cosThetaStarProd = TMath::Abs(normalVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                 double cosThetaStarHelicity = TMath::Abs(helicityVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                 double cosThetaStarBeam = TMath::Abs(beamVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
-                double cosThetaStarEvPlane = fReadMC ? TMath::Abs(randomVecXY.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
+                double cosThetaStarEvPlane = fReadMC ? TMath::Abs(randomVecXY.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2())) : TMath::Abs(Q2VecNorm.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                 double cosThetaQvector = fReadMC ? TMath::Abs(randomVecX.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
                 double cosPhiStar = fReadMC ? TMath::Abs(randomVecX.Dot(threeVecPiCMXY) / TMath::Sqrt(threeVecPiCMXY.Mag2())) : TMath::Abs(Q2Vec.Dot(threeVecPiCMXY) / TMath::Sqrt(threeVecPiCMXY.Mag2()));
                 double cosThetaStarRandom = TMath::Abs(randomVec.Dot(threeVecPiCM) / TMath::Sqrt(threeVecPiCM.Mag2()));
