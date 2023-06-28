@@ -1119,7 +1119,7 @@ TObjArray* AliAnalysisTaskSEDvsRT::GetMinMaxRegion(TList *transv1, TList *transv
   return regionParticles;
 }
 
-void AliAnalysisTaskSEDvsRT2::FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t fPhiLeading, Double_t rtval,Double_t nchWeight)
+void AliAnalysisTaskSEDvsRT::FillMCMassHistos(TClonesArray *arrayMC, Int_t labD, Double_t fPhiLeading, Double_t rtval,Double_t nchWeight)
 {
   //
   /// Function to fill the true MC signal
