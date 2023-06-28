@@ -29,6 +29,8 @@ class AliSPDppAnalysisTaskSim : public AliAnalysisTaskSE
         virtual void            ProcessMCParticles();
         virtual void            ProcessData();
     
+        void                    UsekINT1(bool use_int1) { fUseINT1 = use_int1; }
+    
 
     private:
         
@@ -45,6 +47,12 @@ class AliSPDppAnalysisTaskSim : public AliAnalysisTaskSE
         AliEventCuts            fEventCuts;
         AliAODVZERO             *fAODV0;
     
+        bool fUseINT1;
+    
+        TList                   *fQAList;       //!
+    
+        TList                   *fQAList;       //!
+        
         Int_t eventcount1 = 0;
     
         AliSPDppAnalysisTaskSim(const AliSPDppAnalysisTaskSim&); // not implemented

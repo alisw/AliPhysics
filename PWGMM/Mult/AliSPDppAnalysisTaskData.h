@@ -18,6 +18,7 @@ class AliSPDppAnalysisTaskData : public AliAnalysisTaskSE
         virtual void            UserCreateOutputObjects();
         virtual void            UserExec(Option_t* option);
         virtual void            Terminate(Option_t* option);
+        void                    UsekINT1(bool use_int1) { fUseINT1 = use_int1; }
     
 
     private:
@@ -31,6 +32,10 @@ class AliSPDppAnalysisTaskData : public AliAnalysisTaskSE
         AliVMultiplicity*       fMultiplicity=nullptr;
     
         AliAODVZERO                 *fAODV0;
+    
+        bool fUseINT1;
+    
+        TList                   *fQAList;       //!
     
     
         AliSPDppAnalysisTaskData(const AliSPDppAnalysisTaskData&); // not implemented

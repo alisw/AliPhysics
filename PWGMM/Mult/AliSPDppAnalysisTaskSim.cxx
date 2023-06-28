@@ -45,14 +45,14 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliSPDppAnalysisTaskSim) // classimp: necessary for root
 
 AliSPDppAnalysisTaskSim::AliSPDppAnalysisTaskSim() : AliAnalysisTaskSE(), 
-    fAOD(0), fOutputList(0), MultDist05(0), fMCEvent(0), responseMatrix(0), RecMultDist05(0), fEventCuts(0), fAODV0(0), eventcount1(0)
+    fAOD(0), fOutputList(0), MultDist05(0), fMCEvent(0), responseMatrix(0), RecMultDist05(0), fEventCuts(0), fAODV0(0), eventcount1(0), fUseINT1(true)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
 AliSPDppAnalysisTaskSim::AliSPDppAnalysisTaskSim(const char* name) : AliAnalysisTaskSE(name),
-    fAOD(0), fOutputList(0), MultDist05(0), fMCEvent(0), responseMatrix(0), RecMultDist05(0), fEventCuts(0), fAODV0(0), eventcount1(0)
+    fAOD(0), fOutputList(0), MultDist05(0), fMCEvent(0), responseMatrix(0), RecMultDist05(0), fEventCuts(0), fAODV0(0), eventcount1(0), fUseINT1(true)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -87,7 +87,12 @@ void AliSPDppAnalysisTaskSim::UserCreateOutputObjects()
                                         // to the output file
     fOutputList->SetOwner(kTRUE);       // memory stuff: the list is owner of all objects it contains and will delete them
                                         // if requested (dont worry about this now)
-
+    fQAList = new TList();
+    fQAList -> SetOwner();
+    
+    if (fUseINT1) { fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kINT1,true); }
+    
+    
     // example of a histogram
     RecMultDist05 = new TH1F("RecMultDist05", "RecMultDist05", 51, -.5, 50.5);
     MultDist05 = new TH1F("MultDist05", "MultDist05", 51, -.5, 50.5);       // create your histogra
@@ -97,7 +102,7 @@ void AliSPDppAnalysisTaskSim::UserCreateOutputObjects()
     fOutputList->Add(RecMultDist05);
     fOutputList->Add(MultDist05);          // don't forget to add it to the list! the list will be written to file, so if you want
                                         // your histogram in the output file, add it to the list!
-    
+    fEventCuts.AddQAplotsToList(fOutputList);
     PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
                                         // fOutputList object. the manager will in the end take care of writing your output to file
                                         // so it needs to know what's in the output
@@ -115,7 +120,7 @@ void AliSPDppAnalysisTaskSim::UserExec(Option_t *)
     if(fMCEvent) ProcessMCParticles();
     if(!fMCEvent) ProcessData();
     
-    //if (!fEventCuts.AcceptEvent(fAOD)) { return; }
+    if (!fEventCuts.AcceptEvent(fAOD)) { return; }
     
     PostData(1, fOutputList);                           // stream the results the analysis of this event to
                                                         // the output manager which will take care of writing
@@ -124,28 +129,28 @@ void AliSPDppAnalysisTaskSim::UserExec(Option_t *)
 
 void AliSPDppAnalysisTaskSim::ProcessMCParticles(){
     
-    fAODV0 = fAOD->GetVZEROData();
-    float fV0Amult = fAODV0->GetMTotV0A(); //returns total multiplicity in V0A
-    float fV0Cmult = fAODV0->GetMTotV0C(); //returns total multiplicity in V0C
+//    fAODV0 = fAOD->GetVZEROData();
+//    float fV0Amult = fAODV0->GetMTotV0A(); //returns total multiplicity in V0A
+//    float fV0Cmult = fAODV0->GetMTotV0C(); //returns total multiplicity in V0C
     
     const AliAODVertex *spdVtx = fAOD->GetPrimaryVertexSPD();
     if(!spdVtx) return;
     Double_t number = spdVtx->GetNContributors();
     float spdVtxZ = spdVtx->GetZ();
-    if(TMath::Abs(spdVtxZ) > 10) return;
+    //if(TMath::Abs(spdVtxZ) > 10) return;
     
-    if (fV0Amult == 0 && fV0Cmult == 0 && number == 0) return;
+    //if (fV0Amult == 0 && fV0Cmult == 0 && number == 0) return;
 
     TClonesArray *stack = nullptr;
     TList *lst = fAOD->GetList();
     stack = (TClonesArray*)lst->FindObject(AliAODMCParticle::StdBranchName());
     if (!stack) { return; }
 
-    AliAnalysisUtils util;
-    util.SetMinPlpContribMV(5);
-    util.SetMaxPlpChi2MV(5);
-    util.SetMinWDistMV(15);
-    util.SetCheckPlpFromDifferentBCMV(kFALSE);
+//    AliAnalysisUtils util;
+//    util.SetMinPlpContribMV(5);
+//    util.SetMaxPlpChi2MV(5);
+//    util.SetMinWDistMV(15);
+//    util.SetCheckPlpFromDifferentBCMV(kFALSE);
     
     fMultiplicity = fAOD -> GetMultiplicity();
     Int_t nTracklets = fMultiplicity->GetNumberOfTracklets();
