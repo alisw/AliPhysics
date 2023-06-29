@@ -1640,7 +1640,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 			fHistMatchE -> Fill(clE);
                         fHistoTimeEMC->Fill(clE,tof);
 			if(tof>-20.0 && tof<15.0)fHistMatchE_time -> Fill(clE);
-			if(tof<-20.0 || tof>15.0)continue; // vAN2023_0608
+			if(!fMCarray)
+                          {
+                           if(tof<-20.0 || tof>15.0)continue; // vAN2023_0608
+                          } // timing cut only data
+
 			if(TrkP>0)eop= clE/TrkP;
 
 			fM02->Fill(TrkPt,m02);
