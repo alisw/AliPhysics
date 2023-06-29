@@ -520,7 +520,13 @@ namespace PWGJE
           return 0;
         } // GetQnVectorReader
         EP_angle_from_calib = fqnVectorReader->GetEPangleV0C();
-        fHistEPAngle->Fill(EP_angle_from_calib);
+        // At this point we need to apply the flattening to the EP angle
+        // This is done by getting the flattening  coefficients from epAngleCorrections.yaml
+        // and applying them to the EP angle
+        // The formula for the correction to the n=2 event plane is:
+        // EP_angle_corrected = EP_angle + 1/2*(2*(-sin_average)*cos(2*EP_angle) + 2*(cos_average)*sin(2*EP_angle)+(-sin_average)*cos(4*EP_angle)+(-cos_average)*sin(4*EP_angle))
+        Double_t flattenedEPangle = GetFlattenedEPAngle(EP_angle_from_calib);
+        fHistEPAngle->Fill(flattenedEPangle);
       }
 
       AliDebugStream(5) << "Beginning main processing. Number of jets: " << jets->GetNJets() << ", accepted jets: " << jets->GetNAcceptedJets() << "\n";
@@ -1494,6 +1500,45 @@ namespace PWGJE
       // Successful
       return kTRUE;
     }
+
+  Double_t AliAnalysisTaskEmcalJetHdEdxCorrelations::GetFlattenedEPAngle(Double_t uncorrectedAngle){
+     if (!gGrid)
+      {
+        TGrid::Connect("alien://");
+      }
+        // Open the ROOT file in read mode
+      TFile file("alien:///alice/cern.ch/user/p/psteffan/epCorrections.root", "READ");
+
+      // Read the TTree from the ROOT file
+      TTree *tree = dynamic_cast<TTree *>(file.Get("V0C"));
+
+      if (tree)
+      {
+        // Declare variables to hold the data
+        Double_t cos_ave_i1_v0c = 0;
+        Double_t cos_ave_i2_v0c = 0;
+        Double_t sin_ave_i1_v0c = 0;
+        Double_t sin_ave_i2_v0c = 0;
+
+        // Set branch addresses to access the data
+        tree->SetBranchAddress("cos_ave_i1_v0c", &cos_ave_i1_v0c);
+        tree->SetBranchAddress("cos_ave_i2_v0c", &cos_ave_i2_v0c);
+        tree->SetBranchAddress("sin_ave_i1_v0c", &sin_ave_i1_v0c);
+        tree->SetBranchAddress("sin_ave_i2_v0c", &sin_ave_i2_v0c);
+
+        // Loop over the entries and retrieve the values
+        tree->GetEntry(0);
+        Double_t flatEPangle = uncorrectedAngle +1/2*(2*(-sin_ave_i1_v0c*TMath::Cos(2*uncorrectedAngle) + cos_ave_i1_v0c*TMath::Sin(2*uncorrectedAngle)) + (-sin_ave_i2_v0c*TMath::Cos(4*uncorrectedAngle) + cos_ave_i2_v0c*TMath::Sin(4*uncorrectedAngle)));
+        return flatEPangle;
+        }
+        else
+        {
+          std::cerr << "Failed to read TTree from the ROOT file." << std::endl;
+        }
+
+        // Close the ROOT file
+        file.Close();
+  }
 
     /**
      * AddTask for the jet-hadron task. We benefit for actually having compiled code, as opposed to
