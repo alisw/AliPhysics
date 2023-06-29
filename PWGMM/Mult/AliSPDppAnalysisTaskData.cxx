@@ -58,14 +58,14 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliSPDppAnalysisTaskData) // classimp: necessary for root
 
 AliSPDppAnalysisTaskData::AliSPDppAnalysisTaskData() : AliAnalysisTaskSE(), 
-    fAOD(0), fOutputList(0), MultDist05(0), fEventCuts(), fAODV0(0), fUseINT1(true)
+    fAOD(0), fOutputList(0), MultDist05(0), fEventCuts(), fAODV0(0), fUseINT1(true), MultDist05Inelgr0(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
 AliSPDppAnalysisTaskData::AliSPDppAnalysisTaskData(const char* name) : AliAnalysisTaskSE(name),
-    fAOD(0), fOutputList(0), MultDist05(0), fEventCuts(), fAODV0(0), fUseINT1(true)
+    fAOD(0), fOutputList(0), MultDist05(0), fEventCuts(), fAODV0(0), fUseINT1(true), MultDist05Inelgr0(0)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -107,7 +107,9 @@ void AliSPDppAnalysisTaskData::UserCreateOutputObjects()
 
     // example of a histogram
     MultDist05 = new TH1F("MultDist05", "MultDist05", 51, -.5, 50.5);       // create your histogra
+    MultDist05Inelgr0 = new TH1F("MultDist05Inelgr0", "MultDist05Inelgr0", 51, -.5, 50.5);
     fOutputList->Add(MultDist05);          // don't forget to add it to the list! the list will be written to file, so if you want
+    fOutputList->Add(MultDist05Inelgr0);
                                         // your histogram in the output file, add it to the list!
     fEventCuts.AddQAplotsToList(fOutputList);
     PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
@@ -159,11 +161,20 @@ void AliSPDppAnalysisTaskData::UserExec(Option_t *)
     
     //tracklet loop
     Int_t Tracklets05 = 0;
+    Int_t Tracklets1 = 0;
     for (auto it = 0; it<nTracklets; it++) {
         
         Double_t eta = fMultiplicity->GetEta(it);
-        if (TMath::Abs(eta) > .5) continue; //removes tracklets outside |eta|<.5
-        Tracklets05++;
+        if (TMath::Abs(eta) < .5){ //removes tracklets outside |eta|<.5
+            Tracklets05++;
+        }
+        if (TMath::Abs(eta) < 1){
+            Tracklets1++;
+        }
+    }
+    
+    if (Tracklets1 != 0){
+        MultDist05Inelgr0->Fill(Tracklets05);
     }
     
     

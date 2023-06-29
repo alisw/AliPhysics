@@ -39,7 +39,11 @@ class AliSPDppAnalysisTaskSim : public AliAnalysisTaskSE
         TH1F*                   MultDist05;     //! multiplicity distribution histogram for eta<.5>
         TH1F*                   RecMultDist05;     //! multiplicity distribution histogram for eta<.5>
         TH2F*                   responseMatrix;  //!
-        
+        TH1F*                   MultDist05inelgr0;     //! multiplicity distribution histogram for eta<.5>
+        TH1F*                   RecMultDist05inelgr0;     //! multiplicity distribution histogram for eta<.5>
+        TH2F*                   responseMatrixinelgr0;  //!
+    
+    
         AliVMultiplicity*       fMultiplicity=nullptr;
     
         AliMCEvent*             fMCEvent;       //! corresponding MC event
@@ -50,8 +54,7 @@ class AliSPDppAnalysisTaskSim : public AliAnalysisTaskSE
         bool fUseINT1;
     
         TList                   *fQAList;       //!
-    
-        TList                   *fQAList;       //!
+
         
         Int_t eventcount1 = 0;
     

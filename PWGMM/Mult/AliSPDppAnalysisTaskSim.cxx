@@ -45,14 +45,14 @@ using namespace std;            // std namespace: so you can do things like 'cou
 ClassImp(AliSPDppAnalysisTaskSim) // classimp: necessary for root
 
 AliSPDppAnalysisTaskSim::AliSPDppAnalysisTaskSim() : AliAnalysisTaskSE(), 
-    fAOD(0), fOutputList(0), MultDist05(0), fMCEvent(0), responseMatrix(0), RecMultDist05(0), fEventCuts(0), fAODV0(0), eventcount1(0), fUseINT1(true)
+    fAOD(0), fOutputList(0), MultDist05(0), fMCEvent(0), responseMatrix(0), RecMultDist05(0), fEventCuts(0), fAODV0(0), eventcount1(0), fUseINT1(true), MultDist05inelgr0(0), responseMatrixinelgr0(0), RecMultDist05inelgr0(0)
 {
     // default constructor, don't allocate memory here!
     // this is used by root for IO purposes, it needs to remain empty
 }
 //_____________________________________________________________________________
 AliSPDppAnalysisTaskSim::AliSPDppAnalysisTaskSim(const char* name) : AliAnalysisTaskSE(name),
-    fAOD(0), fOutputList(0), MultDist05(0), fMCEvent(0), responseMatrix(0), RecMultDist05(0), fEventCuts(0), fAODV0(0), eventcount1(0), fUseINT1(true)
+    fAOD(0), fOutputList(0), MultDist05(0), fMCEvent(0), responseMatrix(0), RecMultDist05(0), fEventCuts(0), fAODV0(0), eventcount1(0), fUseINT1(true), MultDist05inelgr0(0), responseMatrixinelgr0(0), RecMultDist05inelgr0(0)
 {
     // constructor
     DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
@@ -98,9 +98,16 @@ void AliSPDppAnalysisTaskSim::UserCreateOutputObjects()
     MultDist05 = new TH1F("MultDist05", "MultDist05", 51, -.5, 50.5);       // create your histogra
     responseMatrix = new TH2F("responseMatrix", "Response Matrix;Generated Multiplicity;Reconstructed Multiplicity", 51, -0.5, 50.5, 51, -0.5, 50.5);
     
+    RecMultDist05inelgr0 = new TH1F("RecMultDist05inelgr0", "RecMultDist05inelgr0", 51, -.5, 50.5);
+    MultDist05inelgr0 = new TH1F("MultDist05inelgr0", "MultDist05inelgr0", 51, -.5, 50.5);       // create your histogra
+    responseMatrixinelgr0 = new TH2F("responseMatrixinelgr0", "Response Matrix;Generated Multiplicity;Reconstructed Multiplicity", 51, -0.5, 50.5, 51, -0.5, 50.5);
+    
     fOutputList->Add(responseMatrix);
     fOutputList->Add(RecMultDist05);
     fOutputList->Add(MultDist05);          // don't forget to add it to the list! the list will be written to file, so if you want
+    fOutputList->Add(responseMatrixinelgr0);
+    fOutputList->Add(RecMultDist05inelgr0);
+    fOutputList->Add(MultDist05inelgr0);
                                         // your histogram in the output file, add it to the list!
     fEventCuts.AddQAplotsToList(fOutputList);
     PostData(1, fOutputList);           // postdata will notify the analysis manager of changes / updates to the 
@@ -157,11 +164,16 @@ void AliSPDppAnalysisTaskSim::ProcessMCParticles(){
     
     //tracklet loop
     Int_t reconstructedMultiplicity = 0;
+    Int_t reconstructedMultiplicity1 = 0;
     for (auto it = 0; it<nTracklets; it++) {
         
         Double_t eta = fMultiplicity->GetEta(it);
-        if (TMath::Abs(eta) > .5) continue; //removes tracklets outside |eta|<.5
-        reconstructedMultiplicity++;
+        if (TMath::Abs(eta) < .5){ //removes tracklets outside |eta|<.5
+            reconstructedMultiplicity++;
+        }
+        if (TMath::Abs(eta) < 1){
+            reconstructedMultiplicity1++;
+        }
     }
     
 
@@ -222,6 +234,7 @@ void AliSPDppAnalysisTaskSim::ProcessMCParticles(){
     
     
     Int_t TrueMCParticles = 0;
+    Int_t TrueMCParticles1 = 0;
     for (Int_t mcTrack = 0;  mcTrack < (fMCEvent->GetNumberOfTracks()); mcTrack++){
         
         AliMCParticle *particle = (AliMCParticle*)fMCEvent->GetTrack(mcTrack);
@@ -241,11 +254,15 @@ void AliSPDppAnalysisTaskSim::ProcessMCParticles(){
         //if(pt>5)continue;
         //cout<<pt<<endl;
         Double_t trueMCeta = particle->Eta();
-        if(TMath::Abs(trueMCeta) > 0.5)continue;
         Double_t trueMCcharge = particle->Charge();
         if(trueMCcharge == 0)continue;
         
-        TrueMCParticles++;
+        if(TMath::Abs(trueMCeta) < 0.5){
+            TrueMCParticles++;
+        }
+        if(TMath::Abs(trueMCeta) < 1){
+            TrueMCParticles1++;
+        }
     }
 
     
@@ -254,12 +271,22 @@ void AliSPDppAnalysisTaskSim::ProcessMCParticles(){
     // Fill the response matrix for the first half of the events
     if (eventcount1 % 2 == 0) {
         responseMatrix->Fill(reconstructedMultiplicity, TrueMCParticles);
+        if(TrueMCParticles1 != 0){
+            responseMatrixinelgr0->Fill(reconstructedMultiplicity, TrueMCParticles);
+        }
         //cout<<eventcount1<<endl;
     }
     // Fill the new multiplicity matrix for the other half of the events
     else {
         RecMultDist05->Fill(reconstructedMultiplicity);
+        if(reconstructedMultiplicity1 != 0){
+            RecMultDist05inelgr0->Fill(reconstructedMultiplicity);
+        }
         MultDist05->Fill(TrueMCParticles);
+        if(TrueMCParticles1 != 0){
+            MultDist05inelgr0->Fill(TrueMCParticles);
+        }
+        
     }
     eventcount1++;
     

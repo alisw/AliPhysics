@@ -26,7 +26,7 @@ class AliSPDppAnalysisTaskData : public AliAnalysisTaskSE
         AliAODEvent*            fAOD;           //! input event
         TList*                  fOutputList;    //! output list
         TH1F*                   MultDist05;     //! multiplicity distribution histogram for eta<.5>
-    
+        TH1F*                   MultDist05Inelgr0;     //! multiplicity distribution histogram for eta<1>
         AliEventCuts            fEventCuts;     //!
     
         AliVMultiplicity*       fMultiplicity=nullptr;
