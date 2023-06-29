@@ -34,18 +34,20 @@ TString configFunName = "ConfigFemtoAnalysis")
 //
 AliAnalysisTaskFemto*
 AddTaskFemtoSubtrainDowang(
-//TString configMacroName,
-                      TString rootName = "UncerSys_testforpp",
+TString configMacroName="ConfigFemtoAnalysis.C",
+                      //TString rootName = "UncerSys_testforpp",
                       TString containerName="femtolist",
                       TString configMacroParameters="0",
                       TString userName = "alitrain",
-                      TString subtrain="0"
+                      const char *cutVariation = "0"
+                      //TString subtrain="0"
                       )
 {
-  TString configMacroName = "alien:///alice/cern.ch/user/d/dowang/2021Pass2/"+rootName+".root";
+   TString subtrain = TString::Format("%s", cutVariation);
+  //TString configMacroName = "alien:///alice/cern.ch/user/d/dowang/2021Pass2/"+rootName+".root";
   //TString configMacroName = "ConfigFemtoAnalysis.C";
   TString configFunName = "ConfigFemtoAnalysis";
-configMacroParameters = subtrain; 
+  configMacroParameters = subtrain; 
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
   if (!mgr) {
     ::Error("AddTaskFemto", "No analysis manager to connect to.");
@@ -62,38 +64,34 @@ configMacroParameters = subtrain;
     gProof->Load(configMacroName);
   }
 
-  // forward subtrain identifier to the macro
-//  if (!subtrain.IsWhitespace()) {
-  //   configMacroParameters += ", \"" + subtrain + "\"";
-// }
+    // forward subtrain identifier to the macro
+  //  if (!subtrain.IsWhitespace()) {
+    //   configMacroParameters += ", \"" + subtrain + "\"";
+  // }
 
- AliAnalysisTaskFemto *taskfemto;
+  AliAnalysisTaskFemto *taskfemto;
 
-  TString TaskFemtoStr = "TaskFemto";
-  if (!subtrain.IsWhitespace()) {
-    TaskFemtoStr +=  subtrain;
-  }
+  TString TaskFemtoStr = "TaskFemto" + subtrain;
+  // if (!subtrain.IsWhitespace()) {
+  //   TaskFemtoStr += subtrain;
+  // }
 
 
   taskfemto = new AliAnalysisTaskFemto(TaskFemtoStr,configMacroName,configMacroParameters,kFALSE,kTRUE,userName, configFunName);
   //taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE);
-
-
+  taskfemto->SelectCollisionCandidates(AliVEvent::kINT7|AliVEvent::kCentral|AliVEvent::kSemiCentral);
 
   mgr->AddTask(taskfemto);
 
   // Get and connect other common input/output containers via the manager
-  if (!subtrain.IsWhitespace()) {
-    containerName +=   subtrain;
-  }
+  containerName += subtrain;
+  // if (!subtrain.IsWhitespace()) {
+  //   containerName += subtrain;
+  // }
 
  TString outputfile = AliAnalysisManager::GetCommonFileName();;
-// outputfile += ":PWG2FEMTO";
-//
-//
-// TString subtrain = "11";
-outputfile += ":PWG2FEMTO"  + subtrain;
-//
+  outputfile += ":PWG2FEMTO" + subtrain;
+
 
  AliAnalysisDataContainer *cout_femto
     = mgr->CreateContainer(containerName,
@@ -106,3 +104,5 @@ outputfile += ":PWG2FEMTO"  + subtrain;
 
    return taskfemto;
 }
+
+
