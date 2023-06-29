@@ -75,7 +75,7 @@ configMacroParameters = subtrain;
   }
 
 
-  //taskfemto = new AliAnalysisTaskFemto(TaskFemtoStr,configMacroName,configMacroParameters,kFALSE,kTRUE,userName, configFunName);
+  taskfemto = new AliAnalysisTaskFemto(TaskFemtoStr,configMacroName,configMacroParameters,kFALSE,kTRUE,userName, configFunName);
   //taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE);
 
 
