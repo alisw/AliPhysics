@@ -34,6 +34,7 @@ TString configFunName = "ConfigFemtoAnalysis")
 //
 AliAnalysisTaskFemto*
 AddTaskFemtoSubtrainDowang(
+//TString configMacroName,
                       TString rootName = "UncerSys_testforpp",
                       TString containerName="femtolist",
                       TString configMacroParameters="0",
@@ -62,19 +63,19 @@ configMacroParameters = subtrain;
   }
 
   // forward subtrain identifier to the macro
-//   if (!subtrain.IsWhitespace()) {
-//     configMacroParameters += ", \"" + subtrain + "\"";
-//   }
+//  if (!subtrain.IsWhitespace()) {
+  //   configMacroParameters += ", \"" + subtrain + "\"";
+// }
 
  AliAnalysisTaskFemto *taskfemto;
 
   TString TaskFemtoStr = "TaskFemto";
   if (!subtrain.IsWhitespace()) {
-    TaskFemtoStr += "_" + subtrain;
+    TaskFemtoStr +=  subtrain;
   }
 
 
-  taskfemto = new AliAnalysisTaskFemto(TaskFemtoStr,configMacroName,configMacroParameters,kFALSE,kTRUE,userName, configFunName);
+  //taskfemto = new AliAnalysisTaskFemto(TaskFemtoStr,configMacroName,configMacroParameters,kFALSE,kTRUE,userName, configFunName);
   //taskfemto = new AliAnalysisTaskFemto("TaskFemto",configMacroName,configMacroParameters,kFALSE);
 
 
@@ -83,13 +84,18 @@ configMacroParameters = subtrain;
 
   // Get and connect other common input/output containers via the manager
   if (!subtrain.IsWhitespace()) {
-    containerName += "_" + subtrain;
+    containerName +=   subtrain;
   }
 
-  TString outputfile = AliAnalysisManager::GetCommonFileName();
-  outputfile += ":PWG2FEMTO";
+ TString outputfile = AliAnalysisManager::GetCommonFileName();;
+// outputfile += ":PWG2FEMTO";
+//
+//
+// TString subtrain = "11";
+outputfile += ":PWG2FEMTO"  + subtrain;
+//
 
-  AliAnalysisDataContainer *cout_femto
+ AliAnalysisDataContainer *cout_femto
     = mgr->CreateContainer(containerName,
                            TList::Class(),
                            AliAnalysisManager::kOutputContainer,
