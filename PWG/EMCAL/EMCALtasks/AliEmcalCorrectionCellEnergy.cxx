@@ -31,13 +31,13 @@ AliEmcalCorrectionCellEnergy::AliEmcalCorrectionCellEnergy() :
   ,fDisableTempCalib(0)
   ,fUseShaperCorrection(0)
   ,fUseDetermineLowGain(0)
-  ,fUseAdditionalScale(kFALSE)
-  ,fUseAdditionalScaleEtaDep(kFALSE)
-  ,fAdditionalScaleSM(0)
+  ,fUseAdditionalScale(0)
+  ,fAdditionalScaleMode(1)
+  ,fAdditionalScaleSM({})
   ,fCustomRecalibFilePath("")
   ,fLoad1DRecalibFactors(0)
 {
-  for(unsigned int i = 0; i < 3; ++i){
+  for(unsigned int i = 0; i < 4; ++i){
     fAdditionalScaleSM.push_back(1); // set default values to 1
   }
 
@@ -74,12 +74,12 @@ Bool_t AliEmcalCorrectionCellEnergy::Initialize()
   // check the YAML configuration if custom determination of LG/HG is requested (default is false)
   GetProperty("enableLGDetermination",fUseDetermineLowGain);
 
-  // check the YAML configuration if an additional cell correction scale is requested (default is 1 -> no scale shift)
+  // check the YAML configuration if an additional cell correction scale is requested
   GetProperty("enableAdditionalScale",fUseAdditionalScale);
-
-  // check the YAML configuration if an additional cell correction scale is requested (default is 1 -> no scale shift)
-  GetProperty("enableAdditionalScaleEtaDep",fUseAdditionalScaleEtaDep);
   
+  // check the YAML configuration which version of the additional scale should be used (default is 1)
+  GetProperty("additionalScaleMode", fAdditionalScaleMode);
+
   // check the YAML configuration for values for additional scale (default is 1 for each SM category )
   GetProperty("additionalScaleValuesSM",fAdditionalScaleSM);
 
@@ -543,12 +543,8 @@ Bool_t AliEmcalCorrectionCellEnergy::CheckIfRunChanged()
 
   if(fUseAdditionalScale)
   {
-    fRecoUtils->SetUseTowerAdditionalScaleCorrection(kTRUE);
-    if(fUseAdditionalScaleEtaDep)
-    {
-      fRecoUtils->SetUseTowerAdditionalScaleCorrectionEtaDep(kTRUE);
-    }
-    for(int i = 0; i < 3; ++i){
+    fRecoUtils->SetUseTowerAdditionalScaleCorrection(fAdditionalScaleMode);
+    for(int i = 0; i < 4; ++i){
       fRecoUtils->SetTowerAdditionalScaleCorrection(i, fAdditionalScaleSM[i]);
     }
   }

@@ -874,8 +874,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	int LabelMother = TMath::Abs(MCParticle->GetMother());
 	AliMCParticle *MCParticleMother = (AliMCParticle*) fMCEvent->GetTrack(LabelMother);
 	MotherPDG = MCParticleMother->PdgCode();
-	bool IsHyperNuclei = RejectInjectedMonteCarloHyperNuclei(MotherPDG);
-	if(IsHyperNuclei == true) continue;
 
       }	
 
@@ -1057,8 +1055,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	int LabelMother = TMath::Abs(MCParticle->GetMother());
 	AliMCParticle *MCParticleMother = (AliMCParticle*) fMCEvent->GetTrack(LabelMother);
 	MotherPDG = MCParticleMother->PdgCode();
-	bool IsHyperNuclei = RejectInjectedMonteCarloHyperNuclei(MotherPDG);
-	if(IsHyperNuclei == true) continue;
 
       }	
 
@@ -1456,8 +1452,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	int LabelMother = TMath::Abs(MCParticle->GetMother());
 	AliMCParticle *MCParticleMother = (AliMCParticle*) fMCEvent->GetTrack(LabelMother);
 	MotherPDG = MCParticleMother->PdgCode();
-	bool IsHyperNuclei = RejectInjectedMonteCarloHyperNuclei(MotherPDG);
-	if(IsHyperNuclei == true) continue;
 
       }	
 
@@ -1642,8 +1636,6 @@ void AliAnalysisTask_pd_CreateTrees_PairsOnly::UserExec(Option_t*)
 	int LabelMother = TMath::Abs(MCParticle->GetMother());
 	AliMCParticle *MCParticleMother = (AliMCParticle*) fMCEvent->GetTrack(LabelMother);
 	MotherPDG = MCParticleMother->PdgCode();
-	bool IsHyperNuclei = RejectInjectedMonteCarloHyperNuclei(MotherPDG);
-	if(IsHyperNuclei == true) continue;
 
       }	
 
@@ -3199,7 +3191,15 @@ double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmadEdxTPC(AliAODTra
 
   }
 
+  if((LHC20g7b == true) && (isAntiDeuteron == true)){
 
+    Mean->FixParameter(0,0.548468);
+    Mean->FixParameter(1,76.6155);
+    Mean->FixParameter(2,2.39353);
+    Mean->FixParameter(3,2.11981);
+    Mean->FixParameter(4,12.934);
+
+  }
 
   // LHC22f3 (pass2) -> Anchored to MetaLHC16, MetaLHC17 and MetaLHC18 (pass2)
   if((LHC22f3 == true) && (isProton == true)){
@@ -3512,22 +3512,6 @@ double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmadEdxITS(AliAODTra
 } // end of CalculateSigmadEdxITS
 
 
-
-bool AliAnalysisTask_pd_CreateTrees_PairsOnly::RejectInjectedMonteCarloHyperNuclei(int PDG){
-
-  bool Reject = false;
-
-  const int PDG_HyperTriton   = 1010010030;
-  const int PDG_HyperHydrogen = 1010010040;
-  const int PDG_HyperHelium4  = 1010020040;
-
-  if(PDG_HyperTriton == TMath::Abs(PDG))    Reject = true;
-  if(PDG_HyperHydrogen == TMath::Abs(PDG))  Reject = true;
-  if(PDG_HyperHelium4 == TMath::Abs(PDG))   Reject = true;
-
-  return Reject;
-
-} // end of RejectInjectedMonteCarloHyperNuclei
 
 
 

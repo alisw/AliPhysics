@@ -51,6 +51,8 @@ void AddTask_MesonJetCorr_Calo(
   Bool_t enableSortingMCLabels = kTRUE, // enable sorting for MC cluster labels
   bool useCentralEvtSelection = true,
   bool setPi0Unstable = false,
+  bool enableAddBackground = false,
+  bool enableRadiusDep = false,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig
 
@@ -206,10 +208,13 @@ void AddTask_MesonJetCorr_Calo(
   } else if (trainConfig == 17) {// same as 7 but with mixed jet back
     cuts.AddCutCalo("0009b103", "411790009fe30230000", "21631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, mixed jet back
 
+  } else if (trainConfig == 20) {
+    cuts.AddCutCalo("00010103", "411790009fe30230000", "es631034000000d0"); // decay daughters also inside jet
+  } else if (trainConfig == 21) {
+    cuts.AddCutCalo("0009c103", "411790009fe30230000", "es631034000000d0"); // decay daughters also inside jet
+    cuts.AddCutCalo("0009b103", "411790009fe30230000", "es631034000000d0"); // decay daughters also inside jet
 
   // configs with NonLinearity 
-  } else if (trainConfig == 21) {
-    cuts.AddCutCalo("00010103", "411790109fe30230000", "0s631031000000d0"); // test config without in-jet selection
   } else if (trainConfig == 22) {
     cuts.AddCutCalo("00010103", "411790109fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
   } else if (trainConfig == 23) {
@@ -386,6 +391,8 @@ void AddTask_MesonJetCorr_Calo(
   task->SetUseTHnSparseForResponse(enableTHnSparse);
   task->SetDoUseCentralEvtSelection(useCentralEvtSelection);
   task->SetForcePi0Unstable(setPi0Unstable);
+  task->SetUseMixedBackAdd(enableAddBackground);
+  task->SetDoRadiusDependence(enableRadiusDep);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_Calo_%i_%i%s%s", meson, trainConfig, corrTaskSetting.EqualTo("") == true ? "" : Form("_%s", corrTaskSetting.Data()), nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );

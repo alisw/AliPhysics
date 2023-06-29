@@ -98,7 +98,7 @@ class AliAnalysisTaskJetPlanarFlow : public AliAnalysisTaskEmcalJet
 
  enum TreeSize {
    nVar = 12,
-   nVar_Particles =10
+   nVar_Particles =16
   };
 
 
@@ -108,7 +108,7 @@ class AliAnalysisTaskJetPlanarFlow : public AliAnalysisTaskEmcalJet
 
 
 
-
+/*
 AliAnalysisTaskJetPlanarFlow* AddTaskJetPlanarFlow(
                     const char * njet1,
                     const char * ntracks1,
@@ -123,7 +123,9 @@ AliAnalysisTaskJetPlanarFlow* AddTaskJetPlanarFlow(
 								    Int_t       pSel,
 								    AliAnalysisTaskJetPlanarFlow::JetAnalysisType jetAnalysisType = AliAnalysisTaskJetPlanarFlow::kData,
 								    AliAnalysisTaskJetPlanarFlow::JetSubType jetSubType = AliAnalysisTaskJetPlanarFlow::kNoSub);
+                    */
 
+Float_t RelativePhi(Float_t mphi, Float_t vphi);
 void SetTree(AliEmcalJet *jet, AliJetContainer *jetContainer, AliTrackContainer *trackContainer, Float_t jetPt, Int_t level);
 
 void UserCreateOutputObjects();
@@ -154,6 +156,7 @@ void SetCentralityMax(Float_t CentralityMax)                              {fCent
 Float_t GetCentralityMax()                                           {return fCentralityMax;}
 void SetFillNsubjettiness(Bool_t FillNsubjettiness)                              {fFillNsubjettiness = FillNsubjettiness;}
 void SetFillDeltaR(Bool_t FillDeltaR)                              {fFillDeltaR = FillDeltaR;}
+void SetWithoutRotations(Bool_t DoRotations)                              {fDoRotations = DoRotations;}
 
  
  
@@ -184,7 +187,8 @@ void SetFillDeltaR(Bool_t FillDeltaR)                              {fFillDeltaR 
  Float_t                           fCentralityMax         ;
  Bool_t                            fFillNsubjettiness     ;
  Bool_t                            fFillDeltaR            ;
- Float_t                           fShapesVar[nVar]       ;
+ Bool_t                            fDoRotations;
+ Float_t                           fShapesVar[nVar];
 
  TRandom3                          fRandom                ;
 
@@ -199,6 +203,12 @@ void SetFillDeltaR(Bool_t FillDeltaR)                              {fFillDeltaR 
  std::vector<Float_t>             fShapesVar_Particles_Theta_Truth;
  std::vector<Float_t>             fShapesVar_Particles_InJet;
  std::vector<Float_t>             fShapesVar_Particles_InJet_Truth;
+ std::vector<Float_t>             fShapesVar_Particles_DeltaR;
+ std::vector<Float_t>             fShapesVar_Particles_DeltaR_Truth;
+ std::vector<Float_t>             fShapesVar_Particles_NRPhi;
+ std::vector<Float_t>             fShapesVar_Particles_NRPhi_Truth;
+ std::vector<Float_t>             fShapesVar_Particles_Eta;
+ std::vector<Float_t>             fShapesVar_Particles_Eta_Truth;
  TTree                            *fTreeJet;
  TTree                            *fTreeParticles;
 
@@ -216,7 +226,7 @@ void SetFillDeltaR(Bool_t FillDeltaR)                              {fFillDeltaR 
  AliAnalysisTaskJetPlanarFlow(const AliAnalysisTaskJetPlanarFlow&);            
  AliAnalysisTaskJetPlanarFlow &operator=(const AliAnalysisTaskJetPlanarFlow&); 
 
- ClassDef(AliAnalysisTaskJetPlanarFlow, 1)
+ ClassDef(AliAnalysisTaskJetPlanarFlow, 2)
     
    };
 

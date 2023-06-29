@@ -31,41 +31,12 @@ class AliAnalysisTaskNFactorialMoments;
 using namespace std;
 
 ClassImp(AliAnalysisTaskNFactorialMoments)
-    AliAnalysisTaskNFactorialMoments::AliAnalysisTaskNFactorialMoments()
-    : AliAnalysisTaskSE(), fAOD(0), fMCEvent(0), fOutHList(0), fQAList(0),
-      fQAList2(0), fEventCuts(0), fPIDResponse(0), mcHeader{nullptr},
-      fNtupleListBin1(0), fNtupleListBin2(0), fNtupleListBin3(0),
-      fNtupleListBin4(0), fNtupleListBin{nullptr}, fNtupleListBin1Gen(0),
-      fNtupleListBin2Gen(0), fNtupleListBin3Gen(0),
-      fNtupleListBin4Gen(0), fHistQAEta{nullptr}, fHistQAPhi{nullptr},
-      fHistQAVx(0), fHistdEta{nullptr}, fHistdPhi{nullptr}, fHistQAVy(0),
-      counter(0),
-      fHistQAVz(0), fHistPtBin{nullptr}, fEtaBin{nullptr}, fPhiBin{nullptr},
-      fHistMulBin{nullptr}, fHistPtBinGen{nullptr}, fEtaBinGen{nullptr},
-      fPhiBinGen{nullptr}, fHistMulBinGen{nullptr}, fHistbeforeHBT{nullptr},
-      fHistafterHBT{nullptr}, fHistQAPID{nullptr}, fHistPDG{nullptr},
-      fHistDCAxy{nullptr}, fHistDCAz{nullptr}, fHistnITScls{nullptr},
-      fHistnTPCcls{nullptr}, fHistnTPCcrossedrows{nullptr},
-      fHistnchi2ITScls{nullptr}, fHistnchi2TPCcls{nullptr}, fEventCounter(0),
-      fHistQACent(0), ptbin1(0), ptbin2(0), ptbin3(0), ptbin4(0), mfield(0) {}
+  AliAnalysisTaskNFactorialMoments::AliAnalysisTaskNFactorialMoments()
+  : AliAnalysisTaskSE(), fAOD(0), fMCEvent(0), fOutHList(0), fQAList(0), fQAList2(0), fEventCuts(0), fPIDResponse(0), mcHeader{ nullptr }, fNtupleListBin1(0), fNtupleListBin2(0), fNtupleListBin3(0), fNtupleListBin4(0), fNtupleListBin{ nullptr }, fNtupleListBin1Gen(0), fNtupleListBin2Gen(0), fNtupleListBin3Gen(0), fNtupleListBin4Gen(0), fHistQAEta{ nullptr }, fHistQAPhi{ nullptr }, fHistQAVx(0), fHistdEta{ nullptr }, fHistdPhi{ nullptr }, fHistQAVy(0), counter(0), fHistQAVz(0), fHistPtBin{ nullptr }, fEtaBin{ nullptr }, fPhiBin{ nullptr }, fHistMulBin{ nullptr }, fHistPtBinGen{ nullptr }, fEtaBinGen{ nullptr }, fPhiBinGen{ nullptr }, fHistMulBinGen{ nullptr }, fHistbeforeHBT{ nullptr }, fHistafterHBT{ nullptr }, fHistQAPID{ nullptr }, fHistPDG{ nullptr }, fHistDCAxy{ nullptr }, fHistDCAz{ nullptr }, fHistnITScls{ nullptr }, fHistnTPCcls{ nullptr }, fHistnTPCcrossedrows{ nullptr }, fHistnchi2ITScls{ nullptr }, fHistnchi2TPCcls{ nullptr }, fHistDCAxypT{ nullptr }, fHistDCAzpT{ nullptr }, fHistnsharedcls{ nullptr }, fHistnshclsfra{ nullptr }, fHistnfoundcls{ nullptr }, fHistnfcls{ nullptr }, fEventCounter(0), fTrackCounter(0), fHistQACent(0), ptbin1(0), ptbin2(0), ptbin3(0), ptbin4(0), mfield(0) {}
 AliAnalysisTaskNFactorialMoments::AliAnalysisTaskNFactorialMoments(
-    const char *name)
-    : AliAnalysisTaskSE(name), fAOD(0), fMCEvent(0), fOutHList(0), fQAList(0),
-      fQAList2(0), fEventCuts(0), fPIDResponse(0), mcHeader{nullptr},
-      fNtupleListBin1(0), fNtupleListBin2(0), fNtupleListBin3(0),
-      fNtupleListBin4(0), fNtupleListBin{nullptr}, fNtupleListBin1Gen(0),
-      fNtupleListBin2Gen(0), fNtupleListBin3Gen(0),
-      fNtupleListBin4Gen(0), fHistQAEta{nullptr}, fHistQAPhi{nullptr},
-      fHistQAVx(0), fHistdEta{nullptr}, fHistdPhi{nullptr}, fHistQAVy(0),
-      counter(0),
-      fHistQAVz(0), fHistPtBin{nullptr}, fEtaBin{nullptr}, fPhiBin{nullptr},
-      fHistMulBin{nullptr}, fHistPtBinGen{nullptr}, fEtaBinGen{nullptr},
-      fPhiBinGen{nullptr}, fHistMulBinGen{nullptr}, fHistbeforeHBT{nullptr},
-      fHistafterHBT{nullptr}, fHistQAPID{nullptr}, fHistPDG{nullptr},
-      fHistDCAxy{nullptr}, fHistDCAz{nullptr}, fHistnITScls{nullptr},
-      fHistnTPCcls{nullptr}, fHistnTPCcrossedrows{nullptr},
-      fHistnchi2ITScls{nullptr}, fHistnchi2TPCcls{nullptr}, fEventCounter(0),
-      fHistQACent(0), ptbin1(0), ptbin2(0), ptbin3(0), ptbin4(0), mfield(0) {
+  const char* name)
+  : AliAnalysisTaskSE(name), fAOD(0), fMCEvent(0), fOutHList(0), fQAList(0), fQAList2(0), fEventCuts(0), fPIDResponse(0), mcHeader{ nullptr }, fNtupleListBin1(0), fNtupleListBin2(0), fNtupleListBin3(0), fNtupleListBin4(0), fNtupleListBin{ nullptr }, fNtupleListBin1Gen(0), fNtupleListBin2Gen(0), fNtupleListBin3Gen(0), fNtupleListBin4Gen(0), fHistQAEta{ nullptr }, fHistQAPhi{ nullptr }, fHistQAVx(0), fHistdEta{ nullptr }, fHistdPhi{ nullptr }, fHistQAVy(0), counter(0), fHistQAVz(0), fHistPtBin{ nullptr }, fEtaBin{ nullptr }, fPhiBin{ nullptr }, fHistMulBin{ nullptr }, fHistPtBinGen{ nullptr }, fEtaBinGen{ nullptr }, fPhiBinGen{ nullptr }, fHistMulBinGen{ nullptr }, fHistbeforeHBT{ nullptr }, fHistafterHBT{ nullptr }, fHistQAPID{ nullptr }, fHistPDG{ nullptr }, fHistDCAxy{ nullptr }, fHistDCAz{ nullptr }, fHistnITScls{ nullptr }, fHistnTPCcls{ nullptr }, fHistnTPCcrossedrows{ nullptr }, fHistnchi2ITScls{ nullptr }, fHistnchi2TPCcls{ nullptr }, fHistDCAxypT{ nullptr }, fHistDCAzpT{ nullptr }, fHistnsharedcls{ nullptr }, fHistnshclsfra{ nullptr }, fHistnfoundcls{ nullptr }, fHistnfcls{ nullptr }, fEventCounter(0), fTrackCounter(0), fHistQACent(0), ptbin1(0), ptbin2(0), ptbin3(0), ptbin4(0), mfield(0)
+{
   // Constructor
   Info("AliAnalysisTaskNFactorialMoments", "Specific Constructor");
   for (int j = 0; j < M; j++) {
@@ -111,7 +82,8 @@ AliAnalysisTaskNFactorialMoments::AliAnalysisTaskNFactorialMoments(
   }
 }
 
-AliAnalysisTaskNFactorialMoments::~AliAnalysisTaskNFactorialMoments() {
+AliAnalysisTaskNFactorialMoments::~AliAnalysisTaskNFactorialMoments()
+{
   // destructor
   if (fOutHList) {
     delete fOutHList;
@@ -125,7 +97,8 @@ AliAnalysisTaskNFactorialMoments::~AliAnalysisTaskNFactorialMoments() {
   }
 }
 
-void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects() {
+void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects()
+{
   fOutHList = new TList();
   fQAList2 = new TList();
   fNtupleListBin1 = new TList();
@@ -164,13 +137,13 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects() {
   for (int i = 1; i < 5; i++) {
     name = Form("fdetadphibefore_ptbin%d", i);
     fHistbeforeHBT[i - 1] =
-        new TH2D(name, name, 50, -1.6, 1.6, 50, -TMath::Pi(), TMath::Pi());
+      new TH2D(name, name, 50, -1.6, 1.6, 50, -TMath::Pi(), TMath::Pi());
     fQAList2->Add(fHistbeforeHBT[i - 1]);
   }
   for (int i = 1; i < 5; i++) {
     name_ = Form("fdetadphiafter_ptbin%d", i);
     fHistafterHBT[i - 1] =
-        new TH2D(name_, name_, 50, -1.6, 1.6, 50, -TMath::Pi(), TMath::Pi());
+      new TH2D(name_, name_, 50, -1.6, 1.6, 50, -TMath::Pi(), TMath::Pi());
     fQAList2->Add(fHistafterHBT[i - 1]);
   }
 
@@ -197,14 +170,33 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects() {
 
   // Eventcounter hist defined
   fEventCounter =
-      new TH1D("fEventCounter", "histo to keep track", 10, 0.5, 10.5);
+    new TH1D("fEventCounter", "histo to keep track", 10, 0.5, 10.5);
   fEventCounter->GetXaxis()->SetBinLabel(1, "Events before cuts");
-  fEventCounter->GetXaxis()->SetBinLabel(2, "After pileup cut");
-  fEventCounter->GetXaxis()->SetBinLabel(2, "After Phy. Sel. cut");
-  fEventCounter->GetXaxis()->SetBinLabel(3, "Events with a proper vertex");
+  fEventCounter->GetXaxis()->SetBinLabel(2, "Pileup cut");
+  fEventCounter->GetXaxis()->SetBinLabel(3, "Phy. Sel. cut");
+  fEventCounter->GetXaxis()->SetBinLabel(4, "Events with a proper vertex");
   fEventCounter->GetXaxis()->SetBinLabel(5, "Events with 0-5% Centrality");
   fEventCounter->GetXaxis()->SetBinLabel(6, "Events Analyzed");
   fOutHList->Add(fEventCounter);
+
+  // Trackcounter hist defined
+  fTrackCounter =
+    new TH1D("fTrackCounter", "histo to keep track of tracks", 19, 0.5, 19.5);
+  fTrackCounter->GetXaxis()->SetBinLabel(1, "Total tracks");
+  fTrackCounter->GetXaxis()->SetBinLabel(2, "FilterBit");
+  fTrackCounter->GetXaxis()->SetBinLabel(3, "Rej PIDs");
+  fTrackCounter->GetXaxis()->SetBinLabel(4, "Loose cuts");
+  fTrackCounter->GetXaxis()->SetBinLabel(5, "Systematic cuts");
+  fTrackCounter->GetXaxis()->SetBinLabel(6, "DCAs");
+  fTrackCounter->GetXaxis()->SetBinLabel(7, "nSharedCls/nCls");
+  fTrackCounter->GetXaxis()->SetBinLabel(8, "nSharedCls/nCrRows");
+  fTrackCounter->GetXaxis()->SetBinLabel(9, "nCrRows/nFindableCls");
+  fTrackCounter->GetXaxis()->SetBinLabel(10, "TwoTracks");
+  fTrackCounter->GetXaxis()->SetBinLabel(11, "ptbin1");
+  fTrackCounter->GetXaxis()->SetBinLabel(12, "ptbin2");
+  fTrackCounter->GetXaxis()->SetBinLabel(13, "ptbin3");
+  fTrackCounter->GetXaxis()->SetBinLabel(14, "ptbin4");
+  fOutHList->Add(fTrackCounter);
 
   // Hists defined
   fHistQACent = new TH1F("fHistQACent", "Centrality Distribution", 10,
@@ -212,14 +204,14 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects() {
   fOutHList->Add(fHistQACent);
 
   fHistQAVx =
-      new TH1F("fHistQAVx", "Primary vertex distribution -x coordinate;V_{x}",
-               1500, -0.3, 0.3);
+    new TH1F("fHistQAVx", "Primary vertex distribution -x coordinate;V_{x}",
+             1500, -0.3, 0.3);
   fHistQAVy =
-      new TH1F("fHistQAVy", "Primary vertex distribution -y coordinate;V_{y}",
-               1500, -0.3, 0.3);
+    new TH1F("fHistQAVy", "Primary vertex distribution -y coordinate;V_{y}",
+             1500, -0.3, 0.3);
   fHistQAVz =
-      new TH1F("fHistQAVz", "Primary vertex distribution -z coordinate;V_{z}",
-               1500, -20.0, 20.0);
+    new TH1F("fHistQAVz", "Primary vertex distribution -z coordinate;V_{z}",
+             1500, -20.0, 20.0);
   fOutHList->Add(fHistQAVx);
   fOutHList->Add(fHistQAVy);
   fOutHList->Add(fHistQAVz);
@@ -252,7 +244,7 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects() {
       name = Form("fHPtBinRe%d", nOfptbins);
       name_ = Form("fHPtBinGen%d", nOfptbins);
       fHistPtBinGen[nOfptbins - 1] =
-          new TH1F(name_, "p_{T}dist", 1000, 0.1, 5.5);
+        new TH1F(name_, "p_{T}dist", 1000, 0.1, 5.5);
       fOutHList->Add(fHistPtBinGen[nOfptbins - 1]);
     } else
       name = Form("fHPtBin%d", nOfptbins);
@@ -261,7 +253,7 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects() {
       name = Form("fEtaBinRe%d", nOfptbins);
       name_ = Form("fEtaBinGen%d", nOfptbins);
       fEtaBinGen[nOfptbins - 1] =
-          new TH1F(name_, "#eta dist", 1000, minEta, maxEta);
+        new TH1F(name_, "#eta dist", 1000, minEta, maxEta);
       fOutHList->Add(fEtaBinGen[nOfptbins - 1]);
     } else
       name = Form("fEtaBin%d", nOfptbins);
@@ -278,7 +270,7 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects() {
       name = Form("fHMultBinRe%d", nOfptbins);
       name_ = Form("fHMultBinGen%d", nOfptbins);
       fHistMulBinGen[nOfptbins - 1] =
-          new TH1F(name_, "Mult dist", 2000, 0.0, 9200.0);
+        new TH1F(name_, "Mult dist", 2000, 0.0, 9200.0);
       fOutHList->Add(fHistMulBinGen[nOfptbins - 1]);
     } else
       name = Form("fHMultBin%d", nOfptbins);
@@ -293,103 +285,129 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects() {
   fHistDCAz = new TH1F("fHistDCAz", "DCAz distribution", 900, -4.5, 4.5);
   fOutHList->Add(fHistDCAxy);
   fOutHList->Add(fHistDCAz);
+  fHistDCAxypT = new TH2F("fHistDCAxypT", "DCAxy vs pT;p_{T};dca_{xy}", 50, 0, 5.5, 40,
+                          -0.4, 0.4);
+  fHistDCAzpT = new TH2F("fHistDCAzpT", "DCAz vs pT;p_{T};dca_{z}", 50, 0, 5.5, 50, -0.5,
+                         0.5);
+  fOutHList->Add(fHistDCAxypT);
+  fOutHList->Add(fHistDCAzpT);
   fHistnITScls =
-      new TH1F("fHistnITScls", "ITS cluster distribution", 10, -0.5, 10.5);
+    new TH1F("fHistnITScls", "ITS cluster distribution", 10, -0.5, 10.5);
   fOutHList->Add(fHistnITScls);
   fHistnTPCcls =
-      new TH1F("fHistnTPCcls", "TPC cluster distribution", 200, 0, 200);
+    new TH1F("fHistnTPCcls", "TPC cluster distribution", 200, 0, 200);
   fOutHList->Add(fHistnTPCcls);
   fHistnchi2ITScls = new TH1F("fHistnchi2ITScls",
                               "ITSchi2 cluster distribution", 100, -0.5, 100.5);
   fOutHList->Add(fHistnchi2ITScls);
   fHistnchi2TPCcls =
-      new TH1F("fHistnchi2TPCcls", "TPCchi2 cluster distribution", 50, 0, 50);
+    new TH1F("fHistnchi2TPCcls", "TPCchi2 cluster distribution", 50, 0, 50);
   fOutHList->Add(fHistnchi2TPCcls);
   fHistnTPCcrossedrows = new TH1F("fHistnTPCcrossedrows",
                                   "TPC crossed rows distribution", 200, 0, 200);
   fOutHList->Add(fHistnTPCcrossedrows);
 
+  TString name1;
+  for (int i = 0; i < 2; ++i) {
+    if (i == 0)
+      name1 = "before";
+    else
+      name1 = "after";
+    fHistnsharedcls[i] = new TH1F(Form("fHistnsharedcls%s", name1.Data()),
+                                  Form("TPC shared cluster distribution %s", name1.Data()), 200, 0, 200);
+    fOutHList->Add(fHistnsharedcls[i]);
+    fHistnshclsfra[i] = new TH2F(Form("fHistnshclsfra%s", name1.Data()),
+                                 Form("TPC shared cluster fraction %s;sharedcls/ncls;sharedcls/ncrrows", name1.Data()), 10, 0,
+                                 1.0, 100, 0, 1.0);
+    fOutHList->Add(fHistnshclsfra[i]);
+    fHistnfoundcls[i] = new TH2F(Form("fHistnfoundcls%s", name1.Data()),
+                                 Form("TPC found cluster fraction %s;sharedcls/ncls;ncrrows/findablecls", name1.Data()), 20, 0, 2,
+                                 20, 0, 2);
+    fOutHList->Add(fHistnfoundcls[i]);
+    fHistnfcls[i] = new TH1F(Form("fHistnfcls%s", name1.Data()), Form("TPC findable cluster distribution %s;ncrrows/findablecls;counts", name1.Data()), 40, 0, 4);
+    fOutHList->Add(fHistnfcls[i]);
+  }
   for (int nOfHist(1); nOfHist < M + 1; nOfHist++) {
     if (fismc) {
       name = Form("fHistEtaPhiBin1Re_%d", (nOfHist));
       name_ = Form("fHistEtaPhiBin1Gen_%d", (nOfHist));
       fHEtaPhiBin1Gen[nOfHist - 1] = new TH2D(
-          name_, Form("PtCut1 (#eta) and (#phi) M%d Binning", (nOfHist)),
-          Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
+        name_, Form("PtCut1 (#eta) and (#phi) M%d Binning", (nOfHist)),
+        Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
       if (fSelfAffine)
         fHEtaPhiBin1Gen[nOfHist - 1] = new TH2D(
-            name_, Form("PtCut1 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
-            Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
+          name_, Form("PtCut1 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
+          Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
       fOutHList->Add(fHEtaPhiBin1Gen[nOfHist - 1]);
     } else
       name = Form("fHistEtaPhiBin1_%d", (nOfHist));
     fHEtaPhiBin1[nOfHist - 1] = new TH2D(
-        name, Form("PtCut1 (#eta) and (#phi) M%d Binning", (nOfHist)),
-        Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
+      name, Form("PtCut1 (#eta) and (#phi) M%d Binning", (nOfHist)),
+      Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
     if (fSelfAffine)
       fHEtaPhiBin1[nOfHist - 1] = new TH2D(
-          name, Form("PtCut1 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
-          Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
+        name, Form("PtCut1 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
+        Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
     if (fismc) {
       name = Form("fHistEtaPhiBin2Re_%d", (nOfHist));
       name_ = Form("fHistEtaPhiBin2Gen_%d", (nOfHist));
       fHEtaPhiBin2Gen[nOfHist - 1] = new TH2D(
-          name_, Form("PtCut2 (#eta) and (#phi) M%d Binning", (nOfHist)),
-          Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
+        name_, Form("PtCut2 (#eta) and (#phi) M%d Binning", (nOfHist)),
+        Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
       if (fSelfAffine)
         fHEtaPhiBin2Gen[nOfHist - 1] = new TH2D(
-            name_, Form("PtCut2 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
-            Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
+          name_, Form("PtCut2 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
+          Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
       fOutHList->Add(fHEtaPhiBin2Gen[nOfHist - 1]);
     } else
       name = Form("fHistEtaPhiBin2_%d", (nOfHist));
     fHEtaPhiBin2[nOfHist - 1] = new TH2D(
-        name, Form("PtCut2 (#eta) and (#phi) M%d Binning", (nOfHist)),
-        Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
+      name, Form("PtCut2 (#eta) and (#phi) M%d Binning", (nOfHist)),
+      Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
     if (fSelfAffine)
       fHEtaPhiBin2[nOfHist - 1] = new TH2D(
-          name, Form("PtCut2 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
-          Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
+        name, Form("PtCut2 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
+        Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
     if (fismc) {
       name = Form("fHistEtaPhiBin3Re_%d", (nOfHist));
       name_ = Form("fHistEtaPhiBin3Gen_%d", (nOfHist));
       fHEtaPhiBin3Gen[nOfHist - 1] = new TH2D(
-          name_, Form("PtCut3 (#eta) and (#phi) M%d Binning", (nOfHist)),
-          Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
+        name_, Form("PtCut3 (#eta) and (#phi) M%d Binning", (nOfHist)),
+        Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
       if (fSelfAffine)
         fHEtaPhiBin3Gen[nOfHist - 1] = new TH2D(
-            name_, Form("PtCut3 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
-            Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
+          name_, Form("PtCut3 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
+          Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
       fOutHList->Add(fHEtaPhiBin3Gen[nOfHist - 1]);
     } else
       name = Form("fHistEtaPhiBin3_%d", (nOfHist));
     fHEtaPhiBin3[nOfHist - 1] = new TH2D(
-        name, Form("PtCut3 (#eta) and (#phi) M%d Binning", (nOfHist)),
-        Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
+      name, Form("PtCut3 (#eta) and (#phi) M%d Binning", (nOfHist)),
+      Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
     if (fSelfAffine)
       fHEtaPhiBin3[nOfHist - 1] = new TH2D(
-          name, Form("PtCut3 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
-          Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
+        name, Form("PtCut3 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
+        Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
     if (fismc) {
       name = Form("fHistEtaPhiBin4Re_%d", (nOfHist));
       name_ = Form("fHistEtaPhiBin4Gen_%d", (nOfHist));
       fHEtaPhiBin4Gen[nOfHist - 1] = new TH2D(
-          name_, Form("PtCut4 (#eta) and (#phi) M%d Binning", (nOfHist)),
-          Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
+        name_, Form("PtCut4 (#eta) and (#phi) M%d Binning", (nOfHist)),
+        Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
       if (fSelfAffine)
         fHEtaPhiBin4Gen[nOfHist - 1] = new TH2D(
-            name_, Form("PtCut4 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
-            Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
+          name_, Form("PtCut4 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
+          Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
       fOutHList->Add(fHEtaPhiBin4Gen[nOfHist - 1]);
     } else
       name = Form("fHistEtaPhiBin4_%d", (nOfHist));
     fHEtaPhiBin4[nOfHist - 1] = new TH2D(
-        name, Form("PtCut4 (#eta) and (#phi) M%d Binning", (nOfHist)),
-        Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
+      name, Form("PtCut4 (#eta) and (#phi) M%d Binning", (nOfHist)),
+      Mbins[nOfHist - 1], minEta, maxEta, Mbins[nOfHist - 1], 0.0, 6.30);
     if (fSelfAffine)
       fHEtaPhiBin4[nOfHist - 1] = new TH2D(
-          name, Form("PtCut4 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
-          Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
+        name, Form("PtCut4 (#eta) and (#phi) MxN %d Binning", (nOfHist)),
+        Mbins[nOfHist - 1], minEta, maxEta, Nbins[nOfHist - 1], 0.0, 6.30);
     fOutHList->Add(fHEtaPhiBin1[nOfHist - 1]);
     fOutHList->Add(fHEtaPhiBin2[nOfHist - 1]);
     fOutHList->Add(fHEtaPhiBin3[nOfHist - 1]);
@@ -400,43 +418,43 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects() {
     if (fismc) {
       name = Form("fntpMBin1Gen_%d", (nOfTuple));
       fntpMBin1Gen[nOfTuple - 1] = new TNtuple(
-          name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
+        name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
       fNtupleListBin1Gen->Add(fntpMBin1Gen[nOfTuple - 1]);
       name = Form("fntpMBin1Re_%d", (nOfTuple));
     } else
       name = Form("fntpMBin1%d", (nOfTuple));
     fntpMBin1[nOfTuple - 1] = new TNtuple(
-        name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
+      name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
     if (fismc) {
       name = Form("fntpMBin2Gen_%d", (nOfTuple));
       fntpMBin2Gen[nOfTuple - 1] = new TNtuple(
-          name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
+        name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
       fNtupleListBin2Gen->Add(fntpMBin2Gen[nOfTuple - 1]);
       name = Form("fntpMBin2Re_%d", (nOfTuple));
     } else
       name = Form("fntpMBin2%d", (nOfTuple));
     fntpMBin2[nOfTuple - 1] = new TNtuple(
-        name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
+      name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
     if (fismc) {
       name = Form("fntpMBin3Gen_%d", (nOfTuple));
       fntpMBin3Gen[nOfTuple - 1] = new TNtuple(
-          name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
+        name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
       fNtupleListBin3Gen->Add(fntpMBin3Gen[nOfTuple - 1]);
       name = Form("fntpMBin3Re_%d", (nOfTuple));
     } else
       name = Form("fntpMBin3%d", (nOfTuple));
     fntpMBin3[nOfTuple - 1] = new TNtuple(
-        name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
+      name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
     if (fismc) {
       name = Form("fntpMBin4Gen_%d", (nOfTuple));
       fntpMBin4Gen[nOfTuple - 1] = new TNtuple(
-          name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
+        name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
       fNtupleListBin4Gen->Add(fntpMBin4Gen[nOfTuple - 1]);
       name = Form("fntpMBin4Re_%d", (nOfTuple));
     } else
       name = Form("fntpMBin4%d", (nOfTuple));
     fntpMBin4[nOfTuple - 1] = new TNtuple(
-        name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
+      name, name_, "Mbins:Av_bincontent:Fq2e:Fq3e:Fq4e:Fq5e:Fq6e:Fq7e");
     fNtupleListBin1->Add(fntpMBin1[nOfTuple - 1]);
     fNtupleListBin2->Add(fntpMBin2[nOfTuple - 1]);
     fNtupleListBin3->Add(fntpMBin3[nOfTuple - 1]);
@@ -447,17 +465,18 @@ void AliAnalysisTaskNFactorialMoments::UserCreateOutputObjects() {
 }
 
 // Execution - called per event:
-void AliAnalysisTaskNFactorialMoments::UserExec(Option_t *) {
+void AliAnalysisTaskNFactorialMoments::UserExec(Option_t*)
+{
   fEventCounter->Fill(1);
-  AliAODInputHandler *eventHandler = dynamic_cast<AliAODInputHandler *>(
-      AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+  AliAODInputHandler* eventHandler = dynamic_cast<AliAODInputHandler*>(
+    AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
 
   fPIDResponse =
-      dynamic_cast<AliAODInputHandler *>(
-          AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())
-          ->GetPIDResponse();
+    dynamic_cast<AliAODInputHandler*>(
+      AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler())
+      ->GetPIDResponse();
 
-  fAOD = dynamic_cast<AliAODEvent *>(InputEvent());
+  fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   if (!fAOD)
     ::Fatal("AliAnalysisTaskNFactorialMoments::UserExec",
             "No AOD event found!");
@@ -467,8 +486,8 @@ void AliAnalysisTaskNFactorialMoments::UserExec(Option_t *) {
     if (!fMCEvent)
       ::Fatal("AliAnalysisTaskNFactorialMoments::UserExec",
               "No MC event found!");
-    mcHeader = (AliAODMCHeader *)fAOD->GetList()->FindObject(
-        AliAODMCHeader::StdBranchName());
+    mcHeader = (AliAODMCHeader*)fAOD->GetList()->FindObject(
+      AliAODMCHeader::StdBranchName());
     if (!mcHeader)
       ::Fatal("AliAnalysisTaskNFactorialMoments::UserExec",
               "No MC header found!");
@@ -487,7 +506,7 @@ void AliAnalysisTaskNFactorialMoments::UserExec(Option_t *) {
         return;
     } else if (fpileup && fismc) {
       bool isPileupinGenEvent =
-          AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, fGenName);
+        AliAnalysisUtils::IsPileupInGeneratedEvent(mcHeader, fGenName);
       if (isPileupinGenEvent)
         return;
     }
@@ -508,7 +527,7 @@ void AliAnalysisTaskNFactorialMoments::UserExec(Option_t *) {
 
   fEventCounter->Fill(3);
 
-  AliAODVertex *vertex = fAOD->GetPrimaryVertex();
+  AliAODVertex* vertex = fAOD->GetPrimaryVertex();
   if (vertex->GetNContributors() < 1)
     return;
   float lvx = (float)vertex->GetX();
@@ -527,11 +546,11 @@ void AliAnalysisTaskNFactorialMoments::UserExec(Option_t *) {
   double lMultiPercentile = -1;
   if (fYear == "2015") {
     // Centrality slecetion for LHC15o
-    AliMultSelection *MultSelection =
-        (AliMultSelection *)fAOD->FindListObject("MultSelection");
+    AliMultSelection* MultSelection =
+      (AliMultSelection*)fAOD->FindListObject("MultSelection");
     lMultiPercentile = MultSelection->GetMultiplicityPercentile("V0M");
   } else if (fYear == "2010") {
-    AliCentrality *centrality = fAOD->GetCentrality();
+    AliCentrality* centrality = fAOD->GetCentrality();
     lMultiPercentile = centrality->GetCentralityPercentile("V0M");
   }
   if (lMultiPercentile < minCent || lMultiPercentile >= maxCent)
@@ -561,7 +580,8 @@ void AliAnalysisTaskNFactorialMoments::UserExec(Option_t *) {
       Fill Track Information for NFM Calculation (Main Track Loop)
 ________________________________________________________________________*/
 
-void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
+void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
+{
   int counterEtacutBin1 = 0, counterEtacutBin2 = 0, counterEtacutBin3 = 0,
       counterEtacutBin4 = 0;
   int nTracks(fAOD->GetNumberOfTracks());
@@ -572,10 +592,12 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
 
   // Track Loop:
   for (int i(0); i < nTracks; i++) {
-    AliAODTrack *track = static_cast<AliAODTrack *>(fAOD->GetTrack(i));
+    AliAODTrack* track = static_cast<AliAODTrack*>(fAOD->GetTrack(i));
+    fTrackCounter->Fill(1);
     if (!(track) || !(track->TestFilterBit(filterBit)))
       continue;
     counter++;
+    fTrackCounter->Fill(2);
 
     float pt = track->Pt();
     float eta = track->Eta();
@@ -585,27 +607,30 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
 
     if (GetParticleID(track, kTRUE))
       continue;
+    fTrackCounter->Fill(3);
 
     if ((fabs(eta) > 0.8) || (fabs(pt) < 0.2) || charge == 0)
       continue;
     GetPtBin(pt);
+    fTrackCounter->Fill(4);
+
     bool skiptracks = kFALSE;
     bool sharedtracks = kFALSE;
+    float nSharedCls = track->GetTPCnclsS();
+    float nCls = track->GetTPCNcls();
+    float nCrossedRows = track->GetTPCCrossedRows();
+    float nFindableCls = track->GetTPCNclsF();
 
-    if (fITSCls > 0.0) {
-      if ((track->GetITSchi2() / track->GetITSNcls()) > fITSCls)
-        continue;
-    }
+    if ((fITSCls > 0.0) && ((track->GetITSchi2() / track->GetITSNcls()) > fITSCls))
+      continue;
 
-    if (fTPCCls > 0.0) {
-      if ((track->GetTPCchi2() / track->GetTPCNcls()) > fTPCCls)
-        continue;
-    }
+    if ((fTPCCls > 0.0) && ((track->GetTPCchi2() / track->GetTPCNcls()) > fTPCCls))
+      continue;
 
-    if (fTPCRows > 0.0) {
-      if (track->GetTPCNCrossedRows() < fTPCRows)
-        continue;
-    }
+    if ((fTPCRows > 0.0) && (track->GetTPCNCrossedRows() < fTPCRows))
+      continue;
+
+    fTrackCounter->Fill(5);
 
     fHistnITScls->Fill(track->GetITSNcls());
     fHistnTPCcls->Fill(track->GetTPCNcls());
@@ -614,14 +639,37 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
     fHistnTPCcrossedrows->Fill(track->GetTPCNCrossedRows());
 
     track->GetImpactParameters(dcaXY, dcaZ);
+
+    if ((fDCAxyMax > 0.0) && (fabs(dcaXY) > fDCAxyMax))
+      continue;
+    if ((fDCAzMax > 0.0) && (fabs(dcaZ) > fDCAzMax))
+      continue;
     fHistDCAxy->Fill(dcaXY);
     fHistDCAz->Fill(dcaZ);
-    if (fDCAxyMax > 0.0)
-      if (fabs(dcaXY) > fDCAxyMax)
-        continue;
-    if (fDCAzMax > 0.0)
-      if (fabs(dcaZ) > fDCAzMax)
-        continue;
+    fHistDCAxypT->Fill(pt, dcaXY);
+    fHistDCAzpT->Fill(pt, dcaZ);
+    fTrackCounter->Fill(6);
+    fHistnsharedcls[0]->Fill(nSharedCls);
+    fHistnfcls[0]->Fill(nCrossedRows / nFindableCls);
+    fHistnshclsfra[0]->Fill(nSharedCls / nCls, nSharedCls / nCrossedRows);
+    fHistnfoundcls[0]->Fill(nSharedCls / nCls, nCrossedRows / nFindableCls);
+
+    if ((fSharedClsMax > 0) && ((nSharedCls / nCls) > fSharedClsMax))
+      continue;
+    fTrackCounter->Fill(7);
+
+    if ((fSharedRowsMax > 0) && ((nSharedCls / nCrossedRows) > fSharedRowsMax))
+      continue;
+    fTrackCounter->Fill(8);
+
+    if ((fFindableClsMin > 0) && ((nCrossedRows / nFindableCls) < fFindableClsMin))
+      continue;
+    fTrackCounter->Fill(9);
+
+    fHistnsharedcls[1]->Fill(nSharedCls);
+    fHistnfcls[1]->Fill(nCrossedRows / nFindableCls);
+    fHistnshclsfra[1]->Fill(nSharedCls / nCls, nSharedCls / nCrossedRows);
+    fHistnfoundcls[1]->Fill(nSharedCls / nCls, nCrossedRows / nFindableCls);
 
     if (fsharity || ftwotrack) {
 
@@ -629,8 +677,8 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
       TBits sharedmap = track->GetTPCSharedMap();
 
       for (int j(0); j < nTracks; j++) {
-        AliAODTrack *track2 = static_cast<AliAODTrack *>(fAOD->GetTrack(j));
-        if (!(track2->TestFilterBit(128)))
+        AliAODTrack* track2 = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
+        if (!(track2->TestFilterBit(filterBit)))
           continue;
 
         int charge2 = track2->Charge();
@@ -649,7 +697,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
           TBits clusmap2 = track2->GetTPCClusterMap();
           TBits sharedmap2 = track2->GetTPCSharedMap();
           float sharity =
-              SharedClusterFraction(clusmap, clusmap2, sharedmap, sharedmap2);
+            SharedClusterFraction(clusmap, clusmap2, sharedmap, sharedmap2);
           if (sharity > fSharedFraction) {
             sharedtracks = kTRUE;
             twotrackscount++;
@@ -684,11 +732,13 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
       continue;
     }
     trackafter++;
+    fTrackCounter->Fill(10);
 
     fHistQAEta[0]->Fill(eta);
     fHistQAPhi[0]->Fill(phi);
 
     if (ptbin[0]) {
+      fTrackCounter->Fill(11);
       counterEtacutBin1++;
       fHistPtBin[0]->Fill(pt);
       fEtaBin[0]->Fill(eta);
@@ -697,6 +747,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
         fHEtaPhiBin1[k]->Fill(eta, phi);
     }
     if (ptbin[1]) {
+      fTrackCounter->Fill(12);
       counterEtacutBin2++;
       fHistPtBin[1]->Fill(pt);
       fEtaBin[1]->Fill(eta);
@@ -705,6 +756,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
         fHEtaPhiBin2[k]->Fill(eta, phi);
     }
     if (ptbin[2]) {
+      fTrackCounter->Fill(13);
       counterEtacutBin3++;
       fHistPtBin[2]->Fill(pt);
       fEtaBin[2]->Fill(eta);
@@ -713,6 +765,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
         fHEtaPhiBin3[k]->Fill(eta, phi);
     }
     if (ptbin[3]) {
+      fTrackCounter->Fill(14);
       counterEtacutBin4++;
       fHistPtBin[3]->Fill(pt);
       fEtaBin[3]->Fill(eta);
@@ -732,7 +785,8 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo() {
           Resetting Histograms after each event
 ________________________________________________________________________*/
 
-void AliAnalysisTaskNFactorialMoments::ResetHistograms() {
+void AliAnalysisTaskNFactorialMoments::ResetHistograms()
+{
   for (Int_t i = 0; i < M; i++) {
     if (fHEtaPhiBin1[i])
       fHEtaPhiBin1[i]->Reset();
@@ -759,19 +813,20 @@ void AliAnalysisTaskNFactorialMoments::ResetHistograms() {
           Fill Track Information for NFM Calculation (Generated Level MC)
 ________________________________________________________________________*/
 
-void AliAnalysisTaskNFactorialMoments::FillMCTrackInfo() {
+void AliAnalysisTaskNFactorialMoments::FillMCTrackInfo()
+{
   int counterEtacutBin1 = 0, counterEtacutBin2 = 0, counterEtacutBin3 = 0,
       counterEtacutBin4 = 0;
   for (int i_MCtrk = 0; i_MCtrk < fMCEvent->GetNumberOfTracks(); i_MCtrk++) {
-    AliVParticle *lPart = (AliAODMCParticle *)fMCEvent->GetTrack(i_MCtrk);
-    TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray *>(
-        fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    AliVParticle* lPart = (AliAODMCParticle*)fMCEvent->GetTrack(i_MCtrk);
+    TClonesArray* AODMCTrackArray = dynamic_cast<TClonesArray*>(
+      fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     if (AODMCTrackArray == NULL)
       return;
     bool isoobPileup = kFALSE;
     if (fpileup)
       isoobPileup = AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(
-          i_MCtrk, mcHeader, AODMCTrackArray);
+        i_MCtrk, mcHeader, AODMCTrackArray);
     float lpt = lPart->Pt();
     float leta = lPart->Eta();
     float lphi = lPart->Phi();
@@ -835,7 +890,8 @@ void AliAnalysisTaskNFactorialMoments::FillMCTrackInfo() {
           Return the Pt Bin for the given Pt
 ________________________________________________________________________*/
 
-void AliAnalysisTaskNFactorialMoments::GetPtBin(double pt) {
+void AliAnalysisTaskNFactorialMoments::GetPtBin(double pt)
+{
   ptbin.clear();
   for (int i = 0; i < ptarray.GetSize() - 1; i += 2) {
     if (pt >= ptarray[i] && pt <= ptarray[i + 1])
@@ -849,14 +905,15 @@ void AliAnalysisTaskNFactorialMoments::GetPtBin(double pt) {
                   PID Information (only TPC for now)
 ________________________________________________________________________*/
 
-bool AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack *trk,
-                                                     bool fQA) {
+bool AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack* trk,
+                                                     bool fQA)
+{
 
   if (!fismc) {
     float dEdx = trk->GetTPCsignal();
     for (int isp(0); isp < AliPID::kSPECIES; isp++) {
       nsigmaTPC[isp] =
-          fPIDResponse->NumberOfSigmasTPC(trk, (AliPID::EParticleType)isp);
+        fPIDResponse->NumberOfSigmasTPC(trk, (AliPID::EParticleType)isp);
     }
     if ((fQA) && TMath::Abs(nsigmaTPC[0]) < 1) {
       fHistQAPID[0]->Fill(trk->Pt(), dEdx);
@@ -869,12 +926,12 @@ bool AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack *trk,
         return kTRUE;
     }
   } else {
-    TClonesArray *AODMCTrackArray = dynamic_cast<TClonesArray *>(
-        fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+    TClonesArray* AODMCTrackArray = dynamic_cast<TClonesArray*>(
+      fInputEvent->FindListObject(AliAODMCParticle::StdBranchName()));
     if (AODMCTrackArray == NULL)
       return kTRUE;
-    AliAODMCParticle *particle =
-        (AliAODMCParticle *)AODMCTrackArray->At(TMath::Abs(trk->GetLabel()));
+    AliAODMCParticle* particle =
+      (AliAODMCParticle*)AODMCTrackArray->At(TMath::Abs(trk->GetLabel()));
     if (!particle)
       return kTRUE;
     if (!particle->IsPhysicalPrimary())
@@ -900,8 +957,9 @@ bool AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack *trk,
 ________________________________________________________________________*/
 
 float AliAnalysisTaskNFactorialMoments::dphistarcalculation(
-    float phi1, float eta1, float pt1, int charge1, float phi2, float eta2,
-    float pt2, int charge2, float bSign) {
+  float phi1, float eta1, float pt1, int charge1, float phi2, float eta2,
+  float pt2, int charge2, float bSign)
+{
   float radius = 0;
   float dphistartemp = 0;
   float dphistar = 999;
@@ -915,9 +973,9 @@ float AliAnalysisTaskNFactorialMoments::dphistarcalculation(
   if (abs(eta1 - eta2) < fdeta * 2.5 * 3) {
     // check first boundaries to see if is worth to loop and find the minimum
     float dphistar1 =
-        GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 0.8, bSign);
+      GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 0.8, bSign);
     float dphistar2 =
-        GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 2.5, bSign);
+      GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, 2.5, bSign);
 
     if (fabs(dphistar1) < kLimit || fabs(dphistar2) < kLimit ||
         (dphistar1 * dphistar2) < 0) {
@@ -925,7 +983,7 @@ float AliAnalysisTaskNFactorialMoments::dphistarcalculation(
       for (int rad(80); rad < 251; rad++) {
         radius = rad * 0.01;
         dphistartemp =
-            GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, radius, bSign);
+          GetDPhiStar(phi1, pt1, charge1, phi2, pt2, charge2, radius, bSign);
         if (rad == 80)
           dphistar = dphistartemp;
         if (dphistartemp < dphistar)
@@ -963,10 +1021,11 @@ float AliAnalysisTaskNFactorialMoments::dphistarcalculation(
           Shared Cluster Fraction Calculation
 ________________________________________________________________________*/
 
-float AliAnalysisTaskNFactorialMoments::SharedClusterFraction(TBits &cl1,
-                                                              TBits &cl2,
-                                                              TBits &sh1,
-                                                              TBits &sh2) {
+float AliAnalysisTaskNFactorialMoments::SharedClusterFraction(TBits& cl1,
+                                                              TBits& cl2,
+                                                              TBits& sh1,
+                                                              TBits& sh2)
+{
   int ncl1 = cl1.GetNbits();
   int ncl2 = cl2.GetNbits();
   int sumCls = 0;
@@ -1002,7 +1061,8 @@ ________________________________________________________________________*/
 float AliAnalysisTaskNFactorialMoments::GetDPhiStar(float phi1, float pt1,
                                                     float charge1, float phi2,
                                                     float pt2, float charge2,
-                                                    float radius, float bSign) {
+                                                    float radius, float bSign)
+{
   double kPi = TMath::Pi();
   double deltaPhi = phi2 - phi1;
   if (deltaPhi < -0.5 * TMath::Pi())
@@ -1029,14 +1089,18 @@ float AliAnalysisTaskNFactorialMoments::GetDPhiStar(float phi1, float pt1,
           Calculation of the Normalized Fq Moments
 ________________________________________________________________________*/
 
-void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D *h1[M], TH2D *h2[M],
-                                                     TH2D *h3[M], TH2D *h4[M],
-                                                     bool mcGen) {
+void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[M], TH2D* h2[M],
+                                                     TH2D* h3[M], TH2D* h4[M],
+                                                     bool mcGen)
+{
   for (int fptbins = 0; fptbins < 4; fptbins++) {
     for (int binset = 0; binset < M; binset++) {
 
       double NoOfBins, MSquare;
-      NoOfBins = 3 * (binset + 2);
+      if (Mmax == 123)
+        NoOfBins = 3 * (binset + 2);
+      if (Mmax == 82)
+        NoOfBins = 2 * (binset + 2);
       if (fSelfAffine)
         NoOfBins = Mbins[binset] * Nbins[binset];
       MSquare = TMath::Power(NoOfBins, D);
@@ -1152,7 +1216,8 @@ void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D *h1[M], TH2D *h2[M],
           Post data to the output slot(s)
 ________________________________________________________________________*/
 
-void AliAnalysisTaskNFactorialMoments::DataPosting() {
+void AliAnalysisTaskNFactorialMoments::DataPosting()
+{
   PostData(1, fOutHList);
   PostData(2, fNtupleListBin1);
   PostData(3, fNtupleListBin2);
@@ -1174,7 +1239,8 @@ void AliAnalysisTaskNFactorialMoments::DataPosting() {
 /*________________________________________________________________________
                                 Terminate
 ________________________________________________________________________*/
-void AliAnalysisTaskNFactorialMoments::Terminate(Option_t *) {
+void AliAnalysisTaskNFactorialMoments::Terminate(Option_t*)
+{
   Info("AliAnalysisTaskNFactorialMoments", "Task Successfully finished");
   // terminate
   // called at the END of the analysis (when all events are processed)

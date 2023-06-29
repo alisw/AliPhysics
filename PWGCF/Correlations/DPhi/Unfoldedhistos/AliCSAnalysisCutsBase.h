@@ -187,13 +187,15 @@ public:
       /// \name 2016
       /// \brief 2016 periods
       ///@{
-      kLHC16k, ///< pp 13 TeV
-      kLHC16l, ///< pp 13 TeV
+      kLHC16k,  ///< pp 13 TeV
+      kLHC16l,  ///< pp 13 TeV
+      kLHC16qt, ///< pPb 5.02 TeV
       ///@}
       /// \name 2017
       /// \brief 2017 periods
       ///@{
-      kLHC17n, ///< XeXe 5.44 TeV
+      kLHC17n,  ///< XeXe 5.44 TeV
+      kLHC17pq, ///< pp 5.02 TeV
       ///@}
       /// \name 2017MC
       /// \brief MC's corresponding to 2017 data

@@ -631,30 +631,6 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     Double_t xmintotMCSo[3]={0., firstMultBin, 0.};
     Double_t xmaxtotMCSo[3]={1., lastMultBin, 1.};
 
-    Int_t nbinstotSoSpheri[3]={1000, nMultBins, 1000};
-    Double_t xmintotSoSpheri[3]={0., firstMultBin, 0.};
-    Double_t xmaxtotSoSpheri[3]={1., lastMultBin, 1.};
-
-    Int_t nbinstotMCSoSpheri[4]={1000, nMultBins, 1000, 1000};
-    Double_t xmintotMCSoSpheri[4]={0., firstMultBin, 0., 0.};
-    Double_t xmaxtotMCSoSpheri[4]={1., lastMultBin, 1., 1.};
-
-    Int_t nbinstotSowithMultUncorr[3]={1000, nMultBins, nMultBins};
-    Double_t xmintotSowithMultUncorr[3]={0., firstMultBin, firstMultBin};
-    Double_t xmaxtotSowithMultUncorr[3]={1., lastMultBin, lastMultBin};
-    
-    Int_t nbinstotMCSowithMultUncorr[4]={1000, nMultBins, nMultBins, 1000};
-    Double_t xmintotMCSowithMultUncorr[4]={0., firstMultBin, firstMultBin, 0.};
-    Double_t xmaxtotMCSowithMultUncorr[4]={1., lastMultBin, lastMultBin, 1.};
-
-    Int_t nbinstotSoSpheriwithMultUncorr[4]={1000, nMultBins, nMultBins, 1000};
-    Double_t xmintotSoSpheriwithMultUncorr[4]={0., firstMultBin, firstMultBin, 0.};
-    Double_t xmaxtotSoSpheriwithMultUncorr[4]={1., lastMultBin, lastMultBin, 1.};
-
-    Int_t nbinstotMCSoSpheriwithMultUncorr[5]={1000, nMultBins, nMultBins, 1000, 1000};
-    Double_t xmintotMCSoSpheriwithMultUncorr[5]={0., firstMultBin, firstMultBin, 0., 0.};
-    Double_t xmaxtotMCSoSpheriwithMultUncorr[5]={1., lastMultBin, lastMultBin, 1., 1.};
-
 
     //Spline 
 
@@ -674,37 +650,13 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     Double_t xminSoSpheriwithMultUncorrSpl[7]={0., fLowmasslimit,0., firstMultBin, firstMultBin, 0., 0.};
     Double_t xmaxSoSpheriwithMultUncorrSpl[7]={24., fUpmasslimit, 1., lastMultBin, lastMultBin, 1., 100.};
 
-    Int_t nbinstotSoSpline[3]={1000, nMultBins, 100};
-    Double_t xmintotSoSpline[3]={0., firstMultBin, 0.};
-    Double_t xmaxtotSoSpline[3]={1., lastMultBin, 100.};
+    Int_t nbinstotSoSpline[2]={nMultBins, 100};
+    Double_t xmintotSoSpline[2]={firstMultBin, 0.};
+    Double_t xmaxtotSoSpline[2]={lastMultBin, 100.};
 
-    Int_t nbinstotMCSoSpline[5]={1000, nMultBins, 1000, 100, 100};
-    Double_t xmintotMCSoSpline[5]={0., firstMultBin, 0., 0., 0.};
-    Double_t xmaxtotMCSoSpline[5]={1., lastMultBin, 1., 100., 100.};
-
-    Int_t nbinstotSoSpheriSpline[4]={1000, nMultBins, 1000, 100};
-    Double_t xmintotSoSpheriSpline[4]={0., firstMultBin, 0., 0.};
-    Double_t xmaxtotSoSpheriSpline[4]={1., lastMultBin, 1., 100.};
-
-    Int_t nbinstotMCSoSpheriSpline[6]={1000, nMultBins, 1000, 1000, 100, 100};
-    Double_t xmintotMCSoSpheriSpline[6]={0., firstMultBin, 0., 0., 0., 0.};
-    Double_t xmaxtotMCSoSpheriSpline[6]={1., lastMultBin, 1., 1., 100., 100.};
-
-    Int_t nbinstotSowithMultUncorrSpline[4]={1000, nMultBins, nMultBins, 100};
-    Double_t xmintotSowithMultUncorrSpline[4]={0., firstMultBin, firstMultBin, 0.};
-    Double_t xmaxtotSowithMultUncorrSpline[4]={1., lastMultBin, lastMultBin, 100.};
-    
-    Int_t nbinstotMCSowithMultUncorrSpline[6]={1000, nMultBins, nMultBins, 1000, 100, 100};
-    Double_t xmintotMCSowithMultUncorrSpline[6]={0., firstMultBin, firstMultBin, 0., 0., 0.};
-    Double_t xmaxtotMCSowithMultUncorrSpline[6]={1., lastMultBin, lastMultBin, 1., 100., 100.};
-
-    Int_t nbinstotSoSpheriwithMultUncorrSpline[5]={1000, nMultBins, nMultBins, 1000, 100};
-    Double_t xmintotSoSpheriwithMultUncorrSpline[5]={0., firstMultBin, firstMultBin, 0., 0.};
-    Double_t xmaxtotSoSpheriwithMultUncorrSpline[5]={1., lastMultBin, lastMultBin, 1., 100.};
-
-    Int_t nbinstotMCSoSpheriwithMultUncorrSpline[7]={1000, nMultBins, nMultBins, 1000, 1000, 100, 100};
-    Double_t xmintotMCSoSpheriwithMultUncorrSpline[7]={0., firstMultBin, firstMultBin, 0., 0., 0., 0.};
-    Double_t xmaxtotMCSoSpheriwithMultUncorrSpline[7]={1., lastMultBin, lastMultBin, 1., 1., 100., 100.};
+    Int_t nbinstotMCSoSpline[3]={nMultBins, 100, 100};
+    Double_t xmintotMCSoSpline[3]={firstMultBin, 0., 0.};
+    Double_t xmaxtotMCSoSpline[3]={lastMultBin, 100., 100.};
 
     
     TString histoName = "hSparseEvtShape";
@@ -730,71 +682,39 @@ void AliAnalysisTaskSEDvsEventShapes::UserCreateOutputObjects()
     
     if(fIsS0Spline){
         if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
-            if(fCalculateSphericity) {
+            if(fCalculateSphericity) 
                 fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; MultiplicityUncorr; %s;", parNameSo.Data(), parNameSpheri.Data()), 6 , nbinsSoSpheriwithMultUncorr, xminSoSpheriwithMultUncorr, xmaxSoSpheriwithMultUncorr);
-                if(fReadMC)
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; MultiplicityUncorr; %s; %s; QuantSpherocity; GenQuantSpherocity;", parNameSo.Data(), parNameSpheri.Data(), parNameSoGen.Data()), 7 , nbinstotMCSoSpheriwithMultUncorrSpline, xmintotMCSoSpheriwithMultUncorrSpline, xmaxtotMCSoSpheriwithMultUncorrSpline);
-                else    
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; MultiplicityUncorr; %s; QuantSpherocity;", parNameSo.Data(), parNameSpheri.Data()), 5, nbinstotSoSpheriwithMultUncorrSpline, xmintotSoSpheriwithMultUncorrSpline, xmaxtotSoSpheriwithMultUncorrSpline);
-            }
-            else{
+            else
                 fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; MultiplicityUncorr;", parNameSo.Data()), 5 , nbinsSowithMultUncorr, xminSowithMultUncorr, xmaxSowithMultUncorr);
-                if(fReadMC)
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; MultiplicityUncorr; %s; QuantSpherocity; GenQuantSpherocity;", parNameSo.Data(), parNameSoGen.Data()), 6 , nbinstotMCSowithMultUncorrSpline, xmintotMCSowithMultUncorrSpline, xmaxtotMCSowithMultUncorrSpline);
-                else    
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; MultiplicityUncorr; QuantSpherocity;", parNameSo.Data()), 4 , nbinstotSowithMultUncorrSpline, xmintotSowithMultUncorrSpline, xmaxtotSowithMultUncorrSpline);        
-            }
         }
         else{
-            if(fCalculateSphericity) {
+            if(fCalculateSphericity) 
                 fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; %s;", parNameSo.Data(), parNameSpheri.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
-                if(fReadMC)
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; %s; %s; QuantSpherocity; GenQuantSpherocity;", parNameSo.Data(), parNameSpheri.Data(), parNameSoGen.Data()), 6, nbinstotMCSoSpheriSpline, xmintotMCSoSpheriSpline, xmaxtotMCSoSpheriSpline);
-                else    
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; %s; QuantSpherocity;", parNameSo.Data(), parNameSpheri.Data()), 4, nbinstotSoSpheriSpline, xmintotSoSpheriSpline, xmaxtotSoSpheriSpline);
-            }
-            else{
+            else
                 fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
-                if(fReadMC)
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; %s; QuantSpherocity; GenQuantSpherocity;", parNameSo.Data(), parNameSoGen.Data()), 5 , nbinstotMCSoSpline, xmintotMCSoSpline, xmaxtotMCSoSpline);
-                else    
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; QuantSpherocity;", parNameSo.Data()), 3, nbinstotSoSpline, xmintotSoSpline, xmaxtotSoSpline);
-            }
         }
+        if(fReadMC)
+            fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), "Events:; Multiplicity; QuantSpherocity; GenQuantSpherocity;", 3 , nbinstotMCSoSpline, xmintotMCSoSpline, xmaxtotMCSoSpline);
+        else    
+            fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), "Events:; Multiplicity; QuantSpherocity;", 2, nbinstotSoSpline, xmintotSoSpline, xmaxtotSoSpline);
     }
     else{
         if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
-            if(fCalculateSphericity) {
+            if(fCalculateSphericity) 
                 fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; MultiplicityUncorr; %s;", parNameSo.Data(), parNameSpheri.Data()), 6 , nbinsSoSpheriwithMultUncorr, xminSoSpheriwithMultUncorr, xmaxSoSpheriwithMultUncorr);
-                if(fReadMC)
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; MultiplicityUncorr; %s; %s;", parNameSo.Data(), parNameSpheri.Data(), parNameSoGen.Data()), 5 , nbinstotMCSoSpheriwithMultUncorr, xmintotMCSoSpheriwithMultUncorr, xmaxtotMCSoSpheriwithMultUncorr);
-                else    
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; MultiplicityUncorr; %s;", parNameSo.Data(), parNameSpheri.Data()), 4 , nbinstotSoSpheriwithMultUncorr, xmintotSoSpheriwithMultUncorr, xmaxtotSoSpheriwithMultUncorr);
-            }
-            else{
+            else
                 fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; MultiplicityUncorr;", parNameSo.Data()), 5 , nbinsSowithMultUncorr, xminSowithMultUncorr, xmaxSowithMultUncorr);
-                if(fReadMC)
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; MultiplicityUncorr; %s;", parNameSo.Data(), parNameSoGen.Data()), 4 , nbinstotMCSowithMultUncorr, xmintotMCSowithMultUncorr, xmaxtotMCSowithMultUncorr);
-                else    
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; MultiplicityUncorr;", parNameSo.Data()), 3 , nbinstotSowithMultUncorr, xmintotSowithMultUncorr, xmaxtotSowithMultUncorr);        
-            }
         }
         else{
-            if(fCalculateSphericity) {
+            if(fCalculateSphericity) 
                 fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity; %s;", parNameSo.Data(), parNameSpheri.Data()), 5 , nbinsSoSpheri, xminSoSpheri, xmaxSoSpheri);
-                if(fReadMC)
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; %s; %s;", parNameSo.Data(), parNameSpheri.Data(), parNameSoGen.Data()), 4, nbinstotMCSoSpheri, xmintotMCSoSpheri, xmaxtotMCSoSpheri);
-                else    
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; %s;", parNameSo.Data(), parNameSpheri.Data()), 3, nbinstotSoSpheri, xmintotSoSpheri, xmaxtotSoSpheri);
-            }
-            else{
+            else
                 fSparseEvtShape = new THnSparseD(histoName.Data(), Form("D candidates:; p_{T} [GeV/c]; InvMass [GeV/c^{2}]; %s; Multiplicity;", parNameSo.Data()), 4 , nbinsSo, xminSo, xmaxSo);
-                if(fReadMC)
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; %s;", parNameSo.Data(), parNameSoGen.Data()), 3 , nbinstotMCSo, xmintotMCSo, xmaxtotMCSo);
-                else    
-                    fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity;", parNameSo.Data()), 2 , nbinstotSo, xmintotSo, xmaxtotSo);
-            }
         }
+        if(fReadMC)
+            fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity; %s;", parNameSo.Data(), parNameSoGen.Data()), 3 , nbinstotMCSo, xmintotMCSo, xmaxtotMCSo);
+        else    
+            fTotalSparseEvtShape = new THnSparseD(histoTotalName.Data(), Form("Events:; %s; Multiplicity;", parNameSo.Data()), 2 , nbinstotSo, xmintotSo, xmaxtotSo);
     }
     
     if(fFillSoSparseChecks == 2|| fFillSoSparseChecks == 3) {
@@ -1335,94 +1255,22 @@ void AliAnalysisTaskSEDvsEventShapes::UserExec(Option_t */*option*/)
 
     if(fIsS0Spline){
         if(fReadMC){
-            if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
-                if(fCalculateSphericity){
-                    Double_t arrayForSparseSowithMultUnncorr[7]={spherocity, countCorr, (Double_t)countTreta1, sphericity, genspherocity, ShapeSpline->Eval(spherocity), GenSpline->Eval(genspherocity)};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSowithMultUnncorr, fWeight);
-                }
-                else{
-                    Double_t arrayForSparseSowithMultUnncorr[6]={spherocity, countCorr, (Double_t)countTreta1, genspherocity, ShapeSpline->Eval(spherocity), GenSpline->Eval(genspherocity)};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSowithMultUnncorr, fWeight);
-                }
-            }
-            else{
-                if(fCalculateSphericity){
-                    Double_t arrayForSparseSo[6]={spherocity, countCorr, sphericity, genspherocity, ShapeSpline->Eval(spherocity), GenSpline->Eval(genspherocity)};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
-                }
-                else{
-                    Double_t arrayForSparseSo[5]={spherocity, countCorr, genspherocity, ShapeSpline->Eval(spherocity), GenSpline->Eval(genspherocity)};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
-                }
-            }
+            Double_t arrayForSparseSo[3]={countCorr, ShapeSpline->Eval(spherocity), GenSpline->Eval(genspherocity)};
+            fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
         }
         else{
-            if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
-                if(fCalculateSphericity){
-                    Double_t arrayForSparseSowithMultUnncorr[5]={spherocity, countCorr, (Double_t)countTreta1, sphericity, ShapeSpline->Eval(spherocity)};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSowithMultUnncorr, fWeight);
-                }
-                else{
-                    Double_t arrayForSparseSowithMultUnncorr[4]={spherocity, countCorr, (Double_t)countTreta1, ShapeSpline->Eval(spherocity)};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSowithMultUnncorr, fWeight);
-                }
-            }
-            else{
-                if(fCalculateSphericity){
-                    Double_t arrayForSparseSo[4]={spherocity, countCorr, sphericity, ShapeSpline->Eval(spherocity)};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
-                }
-                else{
-                    Double_t arrayForSparseSo[3]={spherocity, countCorr, ShapeSpline->Eval(spherocity)};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
-                }
-            }
+            Double_t arrayForSparseSo[2]={countCorr, ShapeSpline->Eval(spherocity)};
+            fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
         }
     }
     else{
         if(fReadMC){
-            if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
-                if(fCalculateSphericity){
-                    Double_t arrayForSparseSowithMultUnncorr[5]={spherocity, countCorr, (Double_t)countTreta1, sphericity, genspherocity};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSowithMultUnncorr, fWeight);
-                }
-                else{
-                    Double_t arrayForSparseSowithMultUnncorr[4]={spherocity, countCorr, (Double_t)countTreta1, genspherocity};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSowithMultUnncorr, fWeight);
-                }
-            }
-            else{
-                if(fCalculateSphericity){
-                    Double_t arrayForSparseSo[4]={spherocity, countCorr, sphericity, genspherocity};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
-                }
-                else{
-                    Double_t arrayForSparseSo[3]={spherocity, countCorr, genspherocity};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
-                }
-            }
+            Double_t arrayForSparseSo[3]={spherocity, countCorr, genspherocity};
+            fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
         }
         else{
-            if(fFillSoSparseChecks == 1 || fFillSoSparseChecks == 3){
-                if(fCalculateSphericity){
-                    Double_t arrayForSparseSowithMultUnncorr[4]={spherocity, countCorr, (Double_t)countTreta1, sphericity};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSowithMultUnncorr, fWeight);
-                }
-                else{
-                    Double_t arrayForSparseSowithMultUnncorr[3]={spherocity, countCorr, (Double_t)countTreta1};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSowithMultUnncorr, fWeight);
-                }
-            }
-            else{
-                if(fCalculateSphericity){
-                    Double_t arrayForSparseSo[3]={spherocity, countCorr, sphericity};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
-                }
-                else{
-                    Double_t arrayForSparseSo[2]={spherocity, countCorr};
-                    fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
-                }
-            }
+            Double_t arrayForSparseSo[2]={spherocity, countCorr};
+            fTotalSparseEvtShape->Fill(arrayForSparseSo, fWeight);
         }
     }
     

@@ -35,7 +35,7 @@ AliAnalysisTaskJetPlanarFlow* AddTaskJetPlanarFlow(
   wagonName3 = Form("AliAnalysisTaskJetPlanarFlow_%s_ParticlTree", njets1);
 
   // Configure jet tagger task
-  AliAnalysisTaskJetPlanarFlow *task = new AliAnalysisTaskJetPlanarFlow(wagonName1);
+  AliAnalysisTaskJetPlanarFlow *task = new AliAnalysisTaskJetPlanarFlow(wagonName1.Data());
 
   //  task->SetNCentBins(4);
   task->SetJetAnalysisType(jetAnalysisType);
@@ -70,12 +70,14 @@ AliAnalysisTaskJetPlanarFlow* AddTaskJetPlanarFlow(
   AliJetContainer *JetCont2 = 0x0;
   AliJetContainer *JetCont3 = 0x0;
 
+  AliClusterContainer *clusterCont = task->AddClusterContainer("");
   TString strType(type);
 
   JetCont1 = task->AddJetContainer(njets1, strType, R);
   if (JetCont1) {
     JetCont1->SetRhoName(nrhoBase);
     JetCont1->ConnectParticleContainer(trackCont1);
+    JetCont1->ConnectClusterContainer(clusterCont);
     JetCont1->SetPercAreaCut(0.6);
     JetCont1->SetJetRadius(R);
     JetCont1->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
@@ -86,6 +88,7 @@ AliAnalysisTaskJetPlanarFlow* AddTaskJetPlanarFlow(
     if (JetCont2) {
       JetCont2->SetRhoName(nrhoBase);
       JetCont2->ConnectParticleContainer(trackCont2);
+      JetCont2->ConnectClusterContainer(clusterCont);
       JetCont2->SetPercAreaCut(0.6);
       JetCont2->SetJetRadius(R);
       JetCont2->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
@@ -97,12 +100,14 @@ AliAnalysisTaskJetPlanarFlow* AddTaskJetPlanarFlow(
     if (JetCont3) {
       JetCont3->SetRhoName(nrhoBase);
       JetCont3->ConnectParticleContainer(trackCont3);
+      JetCont3->ConnectClusterContainer(clusterCont);
       JetCont3->SetPercAreaCut(0.6);
       JetCont3->SetJetRadius(R);
       JetCont3->SetJetAcceptanceType(AliEmcalJet::kTPCfid);
     }
   }
 
+  task->SetCaloTriggerPatchInfoName("");
   task->SetCentralityEstimator(CentEst);
   task->SelectCollisionCandidates(pSel);
   task->SetUseAliAnaUtils(kFALSE);

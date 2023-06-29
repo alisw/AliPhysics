@@ -597,12 +597,12 @@ void AliPtContainer::CalculateRecursive(bool normalized) {
         fCumulantList = new TList();
         fCumulantList->SetOwner();
     }
-    ((AliProfileBS*)fCorrList->At(0))->PresetWeights((AliProfileBS*)fCorrList->At(mpar-1));
+    ((AliProfileBS*)fCorrList->At(0))->PresetWeights((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar%s",mpar,(mpar>4)?"":Form("_%ipc",mpar))));
     for(int i=-1;i<((AliProfileBS*)fCorrList->At(0))->getNSubs();++i) {
         vector<TH1*> hTs;
-        for(int j=0;j<mpar;++j) {
-            ((AliProfileBS*)fCorrList->At(j))->SetErrorOption("g");
-            hTs.push_back(((AliProfileBS*)fCorrList->At(j))->getHist(i));
+        for(int j=1;j<=mpar;++j) {
+            ((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar%s",j,(j>4)?"":Form("_%ipc",j))))->SetErrorOption("g");
+            hTs.push_back(((AliProfileBS*)fCorrList->FindObject(Form("corr_%ipar%s",j,(j>4)?"":Form("_%ipc",j))))->getHist(i));
         }
         CalculateCumulantHists(hTs,i,normalized);
     }

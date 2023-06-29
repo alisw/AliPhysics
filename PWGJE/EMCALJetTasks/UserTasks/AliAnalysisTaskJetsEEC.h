@@ -66,7 +66,6 @@ public:
   void SetStoreTrig(Bool_t t) {fStoreTrig = t;}
   
   void SetFillEncMC(Bool_t t) { fDoFillEncMC = t; } //For MC
-  
 
 protected:
   Bool_t RetrieveEventObjects();
@@ -187,6 +186,6 @@ private:
   AliAnalysisTaskJetsEEC &
   operator=(const AliAnalysisTaskJetsEEC &); // not implemented
 
-  ClassDef(AliAnalysisTaskJetsEEC, 30) //change this to 30
+  ClassDef(AliAnalysisTaskJetsEEC, 32) //change this to 32
 };
 #endif

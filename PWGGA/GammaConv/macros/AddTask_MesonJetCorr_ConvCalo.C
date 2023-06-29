@@ -61,6 +61,8 @@ void AddTask_MesonJetCorr_ConvCalo(
   Bool_t doPrimaryTrackMatching = kTRUE, // enable basic track matching for all primary tracks to cluster
   bool useCentralEvtSelection = true,
   bool setPi0Unstable = false,
+  bool enableAddBackground = false,
+  bool enableRadiusDep = false,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig
 )
@@ -207,7 +209,6 @@ void AddTask_MesonJetCorr_ConvCalo(
   } else if (trainConfig == 7) {
     cuts.AddCutPCMCalo("0009b103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s63103400000010"); // Jet high trigg in-Jet, mass cut pi0: 0.1-0.15, rotation back
 
-
   } else if (trainConfig == 14) { // same as 4 but with jet mixing back
     cuts.AddCutPCMCalo("0008e103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2163103400000010"); // EG2 in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
   } else if (trainConfig == 15) { // same as 5 but with jet mixing back
@@ -218,9 +219,14 @@ void AddTask_MesonJetCorr_ConvCalo(
     cuts.AddCutPCMCalo("0009b103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2163103400000010"); // Jet high trigg in-Jet, mass cut pi0: 0.1-0.15, mixed jet back
   
 
-  // configs with NonLinearity 
+  } else if (trainConfig == 20) {
+    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790009fe30230000", "es63103400000010"); // decay daughters also inside jet
   } else if (trainConfig == 21) {
-    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790109fe30230000", "0r63103100000010"); // test config
+    cuts.AddCutPCMCalo("0009c103", "0dm00009f9730000dge0404000", "411790009fe30230000", "es63103400000010"); // decay daughters also inside jet
+    cuts.AddCutPCMCalo("0009b103", "0dm00009f9730000dge0404000", "411790009fe30230000", "es63103400000010"); // decay daughters also inside jet
+
+
+  // configs with NonLinearity 
   } else if (trainConfig == 22) {
     cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790109fe30230000", "2s63103400000010"); // in-Jet, mass cut pi0: 0.1-0.15, rotation back
   } else if (trainConfig == 23) {
@@ -404,6 +410,8 @@ void AddTask_MesonJetCorr_ConvCalo(
   task->SetUseTHnSparseForResponse(enableTHnSparse);
   task->SetDoUseCentralEvtSelection(useCentralEvtSelection);
   task->SetForcePi0Unstable(setPi0Unstable);
+  task->SetUseMixedBackAdd(enableAddBackground);
+  task->SetDoRadiusDependence(enableRadiusDep);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_ConvCalo_%i_%i%s%s", meson, trainConfig, corrTaskSetting.EqualTo("") == true ? "" : Form("_%s", corrTaskSetting.Data()), nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );

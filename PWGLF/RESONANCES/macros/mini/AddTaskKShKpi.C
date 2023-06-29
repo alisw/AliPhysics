@@ -198,12 +198,17 @@ Bool_t       k0sSwitch=0,
 
     AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
     cutEventUtils->SetCheckAcceptedMultSelection();    
-
+    cutEventUtils->SetCheckIncompleteDAQ();
+    cutEventUtils->SetCheckSPDClusterVsTrackletBG();
+    
+    
    //AliRsnCutPrimaryVertex *cutVertex = 0;
    //cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
    AliRsnCutPrimaryVertex *cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
    cutVertex->GetCheckGeneratedVertexZ();
-
+   cutVertex->SetCheckZResolutionSPD();
+   cutVertex->SetCheckDispersionSPD();
+   cutVertex->SetCheckZDifferenceSPDTrack();
 
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
    eventCuts->AddCut(cutEventUtils);
@@ -223,7 +228,7 @@ Bool_t       k0sSwitch=0,
     Int_t multID=task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
     AliRsnMiniOutput* outMult=task->CreateOutput("eventMult","HIST","EVENT");
     if(isPP)
-    outMult->AddAxis(multID,400,0.5,400.5);
+    outMult->AddAxis(multID,400,0.0,400.0);
     else outMult->AddAxis(multID,100,0.,100.);
     
     TH2F* hvz=new TH2F("hVzVsCent","",100,0.,100., 240,-12.0,12.0);

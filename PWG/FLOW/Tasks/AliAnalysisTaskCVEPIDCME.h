@@ -131,6 +131,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   void SetLambdaMassRightCut(double lambdaMassLeftCut) { this->fLambdaMassLeftCut = lambdaMassLeftCut; }
   void SetAntiLambdaMassLeftCut(double antiLambdaMassRightCut) { this->fAntiLambdaMassRightCut = antiLambdaMassRightCut; }
   void SetAntiLambdaMassRightCut(double antiLambdaMassLeftCut) { this->fAntiLambdaMassLeftCut = antiLambdaMassLeftCut; }
+  void SetNarrowLambdaMassCut(double narrowLambdaMassCut) { this->fNarrowLambdaMassCut = narrowLambdaMassCut; }
   // ESE Qn
   void SetNQ2Bins(int nQ2Bins) { this->fNQ2Bins = nQ2Bins; }
   void SetNMassBins(int nMassBins) { this->fNMassBins = nMassBins; }
@@ -283,6 +284,7 @@ class AliAnalysisTaskCVEPIDCME : public AliAnalysisTaskSE
   double fAntiLambdaMassRightCut;   //
   double fAntiLambdaMassLeftCut;    //
   double fLambdaMassMean;           //
+  double fNarrowLambdaMassCut;      //
   // Number of Qn Bins for ESE 
   int fNQ2Bins;                     //
   // Number of Mass Bins
