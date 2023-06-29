@@ -29,6 +29,8 @@ class AliSPDppAnalysisTaskSim : public AliAnalysisTaskSE
         virtual void            ProcessMCParticles();
         virtual void            ProcessData();
     
+        void                    UsekINT1(bool use_int1) { fUseINT1 = use_int1; }
+    
 
     private:
         
@@ -37,7 +39,11 @@ class AliSPDppAnalysisTaskSim : public AliAnalysisTaskSE
         TH1F*                   MultDist05;     //! multiplicity distribution histogram for eta<.5>
         TH1F*                   RecMultDist05;     //! multiplicity distribution histogram for eta<.5>
         TH2F*                   responseMatrix;  //!
-        
+        TH1F*                   MultDist05inelgr0;     //! multiplicity distribution histogram for eta<.5>
+        TH1F*                   RecMultDist05inelgr0;     //! multiplicity distribution histogram for eta<.5>
+        TH2F*                   responseMatrixinelgr0;  //!
+    
+    
         AliVMultiplicity*       fMultiplicity=nullptr;
     
         AliMCEvent*             fMCEvent;       //! corresponding MC event
@@ -45,6 +51,11 @@ class AliSPDppAnalysisTaskSim : public AliAnalysisTaskSE
         AliEventCuts            fEventCuts;
         AliAODVZERO             *fAODV0;
     
+        bool fUseINT1;
+    
+        TList                   *fQAList;       //!
+
+        
         Int_t eventcount1 = 0;
     
         AliSPDppAnalysisTaskSim(const AliSPDppAnalysisTaskSim&); // not implemented

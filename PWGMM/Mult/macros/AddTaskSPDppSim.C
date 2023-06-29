@@ -1,4 +1,4 @@
-AliSPDppAnalysisTaskSim* AddMyTask(TString name = "name")
+AliSPDppAnalysisTaskSim* AddTaskSPDppSim(TString name = "name", const char* suffix = "")
 {
     // get the manager via the static access member. since it's static, you don't need
     // to create an instance of the class here to call the function
@@ -18,13 +18,14 @@ AliSPDppAnalysisTaskSim* AddMyTask(TString name = "name")
     // now we create an instance of your task
     AliSPDppAnalysisTaskSim* task = new AliSPDppAnalysisTaskSim(name.Data());   
     if(!task) return 0x0;
-    task->SelectCollisionCandidates(AliVEvent::kAnyINT);
+    //task->SelectCollisionCandidates(AliVEvent::kINT1);
+    task->UsekINT1(true);
     // add your task to the manager
     mgr->AddTask(task);
     // your task needs input: here we connect the manager to your task
     mgr->ConnectInput(task,0,mgr->GetCommonInputContainer());
     // same for the output
-    mgr->ConnectOutput(task,1,mgr->CreateContainer("MyOutputContainer", TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
+    mgr->ConnectOutput(task,1,mgr->CreateContainer(Form("MyOutputContainer_%s",suffix), TList::Class(), AliAnalysisManager::kOutputContainer, fileName.Data()));
     // in the end, this macro returns a pointer to your task. this will be convenient later on
     // when you will run your analysis in an analysis train on grid
     return task;
