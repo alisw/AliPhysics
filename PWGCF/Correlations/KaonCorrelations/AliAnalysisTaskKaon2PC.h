@@ -24,6 +24,7 @@ class TH2F;
 class TH3F;
 class AliPIDResponse;
 class AliMCParticle;
+class AliGenEventHeader;
 class THnSparse;
 class AliAODv0;
 class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
@@ -53,8 +54,11 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         virtual void            Fill3DHist(Double_t DPhi, Double_t DEta, Double_t PVz, TH3F* hist);
         AliEventCuts            fEventCuts; // event cuts
 
-        void                    SetMCRead(Bool_t flag) {fAnalysisMC = flag;}
+        void                    SetData(Bool_t flagdata) {fData = flagdata;}
+        void                    SetMCTruth(Bool_t flagGen) {fMCTruth = flagGen; }
+        void                    SetMCReconstructed(Bool_t flag) {fMCReconstructed = flag;}
         void                    SetFilterBit(Int_t filterbit) {fBit = filterbit;}
+        void                    SetVertexCut(Double_t pvzvalue) {fPVzCut = pvzvalue;}
         void                    SetCentLimit(Double_t CentMin, Double_t CentMax) {fCentMin = CentMin; fCentMax = CentMax; }
         void                    SetPtLimits(Double_t ptmin, Double_t ptmax) { fLpTCut = ptmin; fUpTCut=ptmax; }
         //void                  SetEtaLimit(Double_t etalimit) { fEta = etalimit; }
@@ -64,7 +68,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         
     private:
        void RunData();
-       void RunMC();
+       void RunMCTruth();
+       void RunMCReconstructed();
 
        AliAODEvent*            fAOD;           //! input event
        TList*                  fOutputList;    //! output list
@@ -99,25 +104,26 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fHistMK0;       //! dummy histogram
        TH1F*                   fHistMK0Cuts;   //! dummy histogram
        TH1F*                   fHistKChPt;     //! dummy histogram
+       TH1F*                   fHistKChPtMix;  //! dummy histogram
        TH1F*                   fHistK0Pt;      //! dummy histogram
        TH1F*                   fHistKChPhi;    //! dummy histogram
-       TH1F*                   fHistK0Phi;     //! dummy histogram 
+       TH1F*                   fHistK0Phii;     //! dummy histogram 
        TH1F*                   fHistKpPhi;     //! dummy histogram 
        TH1F*                   fHistKnPhi;     //! dummy histogram 
        TH1F*                   fHistPPionPhi;  //! dummy histogram
        TH1F*                   fHistNPionPhi;  //! dummy histogram
        
-       TH2F*                   f2DHistK0Phi;      //! dummy histogram
-       TH2F*                   f2DHistK0Eta;      //! dummy histogram
-       TH2F*                   f2DHistChPhi;      //! dummy histogram
-       TH2F*                   f2DHistChEta;      //! dummy histogram
-       TH2F*                   f2DHistChRap;      //! dummy histogram
-       TH2F*                   f2DHistPosPhi;     //! dummy histogram
-       TH2F*                   f2DHistPosEta;     //! dummy histogram
-       TH2F*                   f2DHistPosRap;     //! dummy histogram
-       TH2F*                   f2DHistNegPhi;     //! dummy histogram
-       TH2F*                   f2DHistNegEta;     //! dummy histogram
-       TH2F*                   f2DHistNegRap;     //! dummy histogram
+       TH1F*                   fHistK0Phi;      //! dummy histogram
+       TH1F*                   fHistK0Eta;      //! dummy histogram
+       TH1F*                   fHistChPhi;      //! dummy histogram
+       TH1F*                   fHistChEta;      //! dummy histogram
+       TH1F*                   fHistChRap;      //! dummy histogram
+       TH1F*                   fHistPosPhi;     //! dummy histogram
+       TH1F*                   fHistPosEta;     //! dummy histogram
+       TH1F*                   fHistPosRap;     //! dummy histogram
+       TH1F*                   fHistNegPhi;     //! dummy histogram
+       TH1F*                   fHistNegEta;     //! dummy histogram
+       TH1F*                   fHistNegRap;     //! dummy histogram
 
        TH2F*                   fHistK0PhiEta;    //! dummy histogram
        TH2F*                   fHistPosPhiEta;   //! dummy histogram
@@ -130,13 +136,17 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH2F*                   fHistCF;          //! dummy histogram
        TH3F*                   fHistCFz;         //! dummy histogram
        TH2F*                   fHistKChKCh;      //! dummy histogram
+       TH2F*                   fHistKPosKPos;    //! dummy histogram
        TH2F*                   fHistKPosKNeg;    //! dummy histogram
+       TH2F*                   fHistKNegKNeg;    //! dummy histogram
        TH3F*                   fHistKPosKNegz;   //! dummy histogram
 
        TH1F*                   hPt;
        TH1F*                   hPt_kPos;
        TH2F*                   fHistCF_Bg;
        TH2F*                   fHistCF_KpKn_Bg;
+       TH2F*                   fHistCF_KpKp_Bg;
+       TH2F*                   fHistCF_KnKn_Bg;
        TH3F*                   fHistCF_Bgz;
        TH3F*                   fHistCF_KpKn_Bgz;
 
@@ -150,15 +160,20 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
 
        Double_t        fPV[3];
 
-       Bool_t                  fAnalysisMC; // enable MC study
+       Bool_t                  fData; 
+       Bool_t                  fMCTruth; // enable MC Generated study
+       Bool_t                  fMCReconstructed; // enable MC reconstructed study
        Bool_t                  fRejectEventPileUp; // enable to use Pile-up cuts
        Bool_t                  fKpKnCorr;
        Bool_t                  fK0KchCorr;
+       Bool_t                  fKpKpCorr;
+       Bool_t                  fKnKnCorr;
 
        Double_t        PVx;
        Double_t        PVy;
        Double_t        PVz;
        Double_t        fBit;
+       Double_t        fPVzCut;
        Double_t        fCentMin;
        Double_t        fCentMax;
        Double_t        fLpTCut;        //not a pointer???
