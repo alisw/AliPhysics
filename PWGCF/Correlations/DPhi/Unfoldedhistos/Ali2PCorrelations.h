@@ -45,7 +45,6 @@ public:
   std::vector<const TH2*> fhPtAverage; //!<! corrected avg pT for each of the species
 
   /* the arrays with track information */
-  int* fPID;          //!<! the array of track PIDs
   int* fIxEta;        //!<! the array of track eta bin index
   int* fIxPhi;        //!<! the array of track phi bin index
   int* fIxPt;         //!<! the array of track pT bin index
@@ -75,9 +74,18 @@ public:
   std::vector<std::vector<TProfile*>> fhSum2DptDpt_12_vsC;   ///< weighted accumulated \f$\sum ({p_T}_1- <{p_T}_1>) ({p_T}_2 - <{p_T}_2>) \f$ distribution vs event centrality/multiplicity
   std::vector<std::vector<TProfile*>> fhN2nw_12_vsC;         ///< un-weighted accumulated two particle distribution vs event centrality/multiplicity
   std::vector<std::vector<TProfile*>> fhSum2PtPtnw_12_vsC;   ///< un-weighted accumulated \f${p_T}_1 {p_T}_2\f$ distribution vs event centrality/multiplicity
-  std::vector<std::vector<TProfile*>> fhSum2DptDptnw_12_vsC; ///< un-weighted accumulated \f$\sum ({p_T}_1- <{p_T}_1>) ({p_T}_2 - <{p_T}_2>) \f$ distribution vs \f$\Delta\eta,\;\Delta\phi\f$ distribution vs event centrality/multiplicity
+  std::vector<std::vector<TProfile *>>
+      fhSum2DptDptnw_12_vsC; ///< un-weighted accumulated \f$\sum ({p_T}_1- <{p_T}_1>) ({p_T}_2 - <{p_T}_2>) \f$ distribution vs \f$\Delta\eta,\;\Delta\phi\f$ distribution vs event centrality/multiplicity
 
- private:
+  /* have the acumulators allocated from the beginning */
+  std::vector<std::vector<double>> fN2_12;
+  std::vector<std::vector<double>> fSum2PtPt_12;
+  std::vector<std::vector<double>> fSum2DptDpt_12;
+  std::vector<std::vector<double>> fNnw2_12;
+  std::vector<std::vector<double>> fSum2PtPtnw_12;
+  std::vector<std::vector<double>> fSum2DptDptnw_12;
+
+  private:
   /// Copy constructor
   /// Not allowed. Forced private.
   Ali2PCorrelations(const Ali2PCorrelations&);
@@ -87,7 +95,7 @@ public:
   Ali2PCorrelations& operator=(const Ali2PCorrelations&);
 
   /// \cond CLASSIMP
-  ClassDef(Ali2PCorrelations, 4);
+  ClassDef(Ali2PCorrelations, 6);
   /// \endcond
 };
 

@@ -260,11 +260,14 @@ AliRsnMiniAnalysisTask * AddTaskLstarpp_sp
 
  
   TH2F* hmc=new TH2F("MultiVsCent","", nmult,multbins, 101,-0.5,100.5);
-    hmc->GetYaxis()->SetTitle("QUALITY");
-    task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
+  hmc->GetYaxis()->SetTitle("QUALITY");
+  task->SetEventQAHist("multicent",hmc);//plugs this histogram into the fHAEventMultiCent data member
 
-      TH2F* hsp=new TH2F("hSpherocityVsCent","",nmult,multbins,spBin,0.0,1.0);
-       task->SetEventQAHist("spherocitycent",hsp);//plugs this histogram into the fHASpherocityCent data member
+  TH2F* hsp=new TH2F("hSpherocityVsCent","",nmult,multbins,spBin,0.0,1.0);
+  task->SetEventQAHist("spherocitycent",hsp);//plugs this histogram into the fHASpherocityCent data member
+
+  TH1F* hphiSpherocity=new TH1F("hphiSpherocity","",100,-0.5,6.5);
+  task->SetEventQAHist("spherocityphi",hphiSpherocity);
   // -- PAIR CUTS (common to all resonances) ------------------------------------------------------
 
   AliRsnCutMiniPair* cutY=new AliRsnCutMiniPair("cutRapidity",AliRsnCutMiniPair::kRapidityRange);

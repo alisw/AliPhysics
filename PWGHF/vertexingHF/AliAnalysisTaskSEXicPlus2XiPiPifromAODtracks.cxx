@@ -137,23 +137,8 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHistoXicMass(0x0),
   fSparseXicMass(0x0),
   fHistoMCSpectrumAccXic(0),
-/*  fHistoMCSpectrum_1(0), //jcho
-  fHistoMCSpectrum_2(0), //jcho
-  fHistoMCSpectrum_3(0), //jcho
-  fHistoMCSpectrum_4(0), //jcho
-  fHistoMCSpectrum_5(0), //jcho
-  fHistoMCSpectrum_6(0), //jcho
-  fHistoMCSpectrum_7(0), //jcho
-  fHistoMCSpectrum_8(0), //jcho
-  fHistoMCSpectrum_9(0), //jcho
-  fHistoMCSpectrum_10(0), //jcho
-  fHistoMCSpectrum_11(0), //jcho
-  fHistoMCSpectrum_12(0), //jcho
-  fHistoMCSpectrum_13(0), //jcho
-  fHistoMCSpectrum_14(0), //jcho
-  fHistoMCSpectrum_15(0), //jcho
-  fHistoMCSpectrum_16(0), //jcho */
-  fHistoMCSpectrumAccXic_HM(0), //jcho
+  fHistoMCSpectrumAccXic_0p1to30(0), //jcho
+  fHistoMCSpectrumAccXic_30to100(0), //jcho
   fHistoDcaPi1Pi2(0),
   fHistoDcaPi1Casc(0),
   fHistoDcaPi2Casc(0),
@@ -256,23 +241,8 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHistoXicMass(0x0),
   fSparseXicMass(0x0),
   fHistoMCSpectrumAccXic(0),
-/*  fHistoMCSpectrum_1(0), //jcho
-  fHistoMCSpectrum_2(0), //jcho
-  fHistoMCSpectrum_3(0), //jcho
-  fHistoMCSpectrum_4(0), //jcho
-  fHistoMCSpectrum_5(0), //jcho
-  fHistoMCSpectrum_6(0), //jcho
-  fHistoMCSpectrum_7(0), //jcho
-  fHistoMCSpectrum_8(0), //jcho
-  fHistoMCSpectrum_9(0), //jcho
-  fHistoMCSpectrum_10(0), //jcho
-  fHistoMCSpectrum_11(0), //jcho
-  fHistoMCSpectrum_12(0), //jcho
-  fHistoMCSpectrum_13(0), //jcho
-  fHistoMCSpectrum_14(0), //jcho
-  fHistoMCSpectrum_15(0), //jcho
-  fHistoMCSpectrum_16(0), //jcho */
-  fHistoMCSpectrumAccXic_HM(0), //jcho 
+  fHistoMCSpectrumAccXic_0p1to30(0), //jcho 
+  fHistoMCSpectrumAccXic_30to100(0), //jcho
   fHistoDcaPi1Pi2(0),
   fHistoDcaPi1Casc(0),
   fHistoDcaPi2Casc(0),
@@ -402,7 +372,8 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::~AliAnalysisTaskSEXicPlus2XiPiPifr
   if(fSparseXicMass) delete fSparseXicMass;
 
   if(fHistoMCSpectrumAccXic) delete fHistoMCSpectrumAccXic;
-  if(fHistoMCSpectrumAccXic_HM) delete fHistoMCSpectrumAccXic_HM; 
+  if(fHistoMCSpectrumAccXic_0p1to30) delete fHistoMCSpectrumAccXic_0p1to30; 
+  if(fHistoMCSpectrumAccXic_30to100) delete fHistoMCSpectrumAccXic_30to100;
 
 /*  if(fHistoMCSpectrum_1) delete fHistoMCSpectrum_1;	//jcho
   if(fHistoMCSpectrum_2) delete fHistoMCSpectrum_2;	//jcho
@@ -508,11 +479,11 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
   if(!fIsTriggerNotOK) fCEvents->Fill(3);
   fIsEventSelected = fAnalCuts->IsEventSelected(aodEvent); 
 
-/*  if(!fIsEventSelected) {
+  if(!fIsEventSelected) {
     //cout<<"Why: "<<fAnalCuts->GetWhyRejection()<<endl;
     delete fV1;
     return;
-  } */ // jcho, Comment out this part to take the HM triggered events into account
+  }  // jcho
   
   //cout<<fabs(aodEvent->GetPrimaryVertex()->GetZ()-aodEvent->GetPrimaryVertexSPD()->GetZ())<<endl;
   
@@ -1168,37 +1139,62 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::MakeAnalysis
 		//}
 		if(isInAcc){
 		  fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kReco,checkOrigin);
-		  //if(fHMTrigOn==true) fHistoMCSpectrum_11->Fill(mcxic->Pt());
-		  if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(mcxic->Pt(),kReco,checkOrigin);	
+
+		  if(fHMTrigOn==true) {
+				if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(mcxic->Pt(),kReco,checkOrigin);	
+				if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(mcxic->Pt(),kReco,checkOrigin); 
+			}
+
 		  isXic=kTRUE;
 		  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
 		    fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kRecoPID,checkOrigin);
-			//if(fHMTrigOn==true) fHistoMCSpectrum_12->Fill(mcxic->Pt());
-			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(mcxic->Pt(),kRecoPID,checkOrigin);
+
+			if(fHMTrigOn==true) {
+				if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(mcxic->Pt(),kRecoPID,checkOrigin);
+				if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(mcxic->Pt(),kRecoPID,checkOrigin);
+			}
 		  }
+
 		  fAnalCuts->SetUsePID(kFALSE);
 		  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
 		    fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kRecoCuts,checkOrigin);
-			//if(fHMTrigOn==true) fHistoMCSpectrum_13->Fill(mcxic->Pt());
-			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(mcxic->Pt(),kRecoCuts,checkOrigin);
+
+			if(fHMTrigOn==true) {
+				if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(mcxic->Pt(),kRecoCuts,checkOrigin);
+				if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(mcxic->Pt(),kRecoCuts,checkOrigin);
+			}
 		  }
+
 		  fAnalCuts->SetUsePID(kTRUE);
-		}
+		}	//isInAcc
+
 		if(TMath::Abs(mcxic->Y())<0.8){
 		  fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kReco08,checkOrigin);
-		  //if(fHMTrigOn==true) fHistoMCSpectrum_14->Fill(mcxic->Pt());
-		  if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(mcxic->Pt(),kReco08,checkOrigin);
+
+		  if(fHMTrigOn==true) {
+				if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(mcxic->Pt(),kReco08,checkOrigin);
+				if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(mcxic->Pt(),kReco08,checkOrigin);
+			}
+
 		  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
 		    fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kRecoPID08,checkOrigin);
-		    //if(fHMTrigOn==true) fHistoMCSpectrum_15->Fill(mcxic->Pt());
-			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(mcxic->Pt(),kRecoPID08,checkOrigin);
+
+			if(fHMTrigOn==true) {
+				if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(mcxic->Pt(),kRecoPID08,checkOrigin);
+				if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(mcxic->Pt(),kRecoPID08,checkOrigin);
+			}
 		  }
+
 		  fAnalCuts->SetUsePID(kFALSE);
 		  if(fAnalCuts->IsSelected(xicobj,AliRDHFCuts::kCandidate)){
 		    fHistoMCSpectrumAccXic->Fill(mcxic->Pt(),kRecoCuts08,checkOrigin);
-			//if(fHMTrigOn==true) fHistoMCSpectrum_16->Fill(mcxic->Pt());
-			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(mcxic->Pt(),kRecoCuts08,checkOrigin);
+
+			if(fHMTrigOn==true) {
+				if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(mcxic->Pt(),kRecoCuts08,checkOrigin);
+				if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(mcxic->Pt(),kRecoCuts08,checkOrigin);
+			}
 		  }
+
 		  fAnalCuts->SetUsePID(kTRUE);
 		}
 	      }
@@ -1771,44 +1767,13 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
     fHistoMCSpectrumAccXic=new TH3F("fHistoMCSpectrumAccXic","fHistoMCSpectrumAccXic",250,0,50,26,-0.5,12.5,4,3.5,7.5);
     fOutput->Add(fHistoMCSpectrumAccXic);
 
-	  if(fHMTrigOn==true) {		// jcho, to store the pT spectrum of generated Xic pT 
-		fHistoMCSpectrumAccXic_HM=new TH3F("fHistoMCSpectrumAccXic_HM","fHistoMCSpectrumAccXic_HM",250,0,50,26,-0.5,12.5,4,3.5,7.5);
+	  if(fHMTrigOn==true) {		// jcho 
+		fHistoMCSpectrumAccXic_0p1to30=new TH3F("fHistoMCSpectrumAccXic_0p1to30","fHistoMCSpectrumAccXic_0p1to30",250,0,50,26,-0.5,12.5,4,3.5,7.5);
+		fHistoMCSpectrumAccXic_30to100=new TH3F("fHistoMCSpectrumAccXic_30to100","fHistoMCSpectrumAccXic_30to100",250,0,50,26,-0.5,12.5,4,3.5,7.5);
 
-/*		fHistoMCSpectrum_1 = new TH1F("MCspec1","MCspec1",250,0,50);
-		fHistoMCSpectrum_2 = new TH1F("MCspec2","MCspec2",250,0,50);
-		fHistoMCSpectrum_3 = new TH1F("MCspec3","MCspec3",250,0,50);
-		fHistoMCSpectrum_4 = new TH1F("MCspec4","MCspec4",250,0,50);
-		fHistoMCSpectrum_5 = new TH1F("MCspec5","MCspec5",250,0,50);
-		fHistoMCSpectrum_6 = new TH1F("MCspec6","MCspec6",250,0,50);
-		fHistoMCSpectrum_7 = new TH1F("MCspec7","MCspec7",250,0,50);
-		fHistoMCSpectrum_8 = new TH1F("MCspec8","MCspec8",250,0,50);
-		fHistoMCSpectrum_9 = new TH1F("MCspec9","MCspec9",250,0,50);
-		fHistoMCSpectrum_10 = new TH1F("MCspec10","MCspec10",250,0,50);
-		fHistoMCSpectrum_11 = new TH1F("MCspec11","MCspec11",250,0,50);
-		fHistoMCSpectrum_12 = new TH1F("MCspec12","MCspec12",250,0,50);
-		fHistoMCSpectrum_13 = new TH1F("MCspec13","MCspec13",250,0,50);
-		fHistoMCSpectrum_14	= new TH1F("MCspec14","MCspec14",250,0,50);
-		fHistoMCSpectrum_15 = new TH1F("MCspec15","MCspec15",250,0,50);
-		fHistoMCSpectrum_16 = new TH1F("MCspec16","MCspec16",250,0,50);	*/
+		fOutput->Add(fHistoMCSpectrumAccXic_0p1to30);
+		fOutput->Add(fHistoMCSpectrumAccXic_30to100);
 
-		fOutput->Add(fHistoMCSpectrumAccXic_HM);
-
-/*		fOutput->Add(fHistoMCSpectrum_1);
-		fOutput->Add(fHistoMCSpectrum_2);
-        fOutput->Add(fHistoMCSpectrum_3);
-        fOutput->Add(fHistoMCSpectrum_4);
-        fOutput->Add(fHistoMCSpectrum_5);
-        fOutput->Add(fHistoMCSpectrum_6);
-        fOutput->Add(fHistoMCSpectrum_7);
-        fOutput->Add(fHistoMCSpectrum_8);
-        fOutput->Add(fHistoMCSpectrum_9);
-        fOutput->Add(fHistoMCSpectrum_10);
-        fOutput->Add(fHistoMCSpectrum_11);
-        fOutput->Add(fHistoMCSpectrum_12);
-        fOutput->Add(fHistoMCSpectrum_13);
-        fOutput->Add(fHistoMCSpectrum_14);
-		fOutput->Add(fHistoMCSpectrum_15);
-		fOutput->Add(fHistoMCSpectrum_16);	*/
 	  } // HMTrigOn 
 
   } // fUseMCInfo
@@ -2432,13 +2397,17 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	if(TMath::Abs(ypart)<0.5){ // ypart < 0.5
 	  if (checkXic2XiPiPi==1) { 
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin);
-			//if(fHMTrigOn==true) fHistoMCSpectrum_1->Fill(ptpart);
-			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenLimAcc,checkOrigin); 
+			if(fHMTrigOn==true) {
+				if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(ptpart,kGenLimAcc,checkOrigin); 
+				if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(ptpart,kGenLimAcc,checkOrigin);
+			}
 	  } // checkXic 1
 	  else if (checkXic2XiPiPi==2) {
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin+2);
-			//if(fHMTrigOn==true) fHistoMCSpectrum_2->Fill(ptpart);
-			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenLimAcc,checkOrigin+2);
+			if(fHMTrigOn==true) {
+				if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(ptpart,kGenLimAcc,checkOrigin+2);
+				if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(ptpart,kGenLimAcc,checkOrigin+2);
+			}
 	  } // checkXic 2
 	} // ypart < 0.5
 	Bool_t isInAcc=kTRUE;
@@ -2453,13 +2422,17 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	if (TMath::Abs(ypart)<0.8) {
 	  if (checkXic2XiPiPi==1) { 
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin);
-			//if(fHMTrigOn==true) fHistoMCSpectrum_3->Fill(ptpart);			
-			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAccMother08,checkOrigin);
+			if(fHMTrigOn==true) {
+				if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(ptpart,kGenAccMother08,checkOrigin);
+				if(fCentrality>=30 && fCentrality<=100)  fHistoMCSpectrumAccXic_30to100->Fill(ptpart,kGenAccMother08,checkOrigin);
+			}
 	  } // checkXic 1
 	  else if (checkXic2XiPiPi==2) { 
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin+2);
-			//if(fHMTrigOn==true) fHistoMCSpectrum_4->Fill(ptpart);
-			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAccMother08,checkOrigin+2);
+			if(fHMTrigOn==true) {
+				if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(ptpart,kGenAccMother08,checkOrigin+2);
+				if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(ptpart,kGenAccMother08,checkOrigin+2);
+			}
 	  } // checkXic 2
 	  Bool_t istrackIn08=kTRUE;
 	  for(Int_t k=0;k<5;k++){
@@ -2469,13 +2442,18 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	  if(istrackIn08) {
 	    if (checkXic2XiPiPi==1)  {
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin);
-			//if(fHMTrigOn==true) fHistoMCSpectrum_5->Fill(ptpart);
-			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAcc08,checkOrigin);
+
+			if(fHMTrigOn==true) {
+					if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(ptpart,kGenAcc08,checkOrigin);
+					if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(ptpart,kGenAcc08,checkOrigin);
+			}
 		} // checkXic 1
 	    else if (checkXic2XiPiPi==2) { 
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin+2);
-			//if(fHMTrigOn==true) fHistoMCSpectrum_6->Fill(ptpart);
-			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAcc08,checkOrigin+2);
+			if(fHMTrigOn==true) {
+					if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(ptpart,kGenAcc08,checkOrigin+2);
+					if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(ptpart,kGenAcc08,checkOrigin+2);
+			}
 		} // checkXic 2
 	  }
 	}
@@ -2483,13 +2461,17 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	if(isInAcc){
 	  if (checkXic2XiPiPi==1) { 
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin);
-			//if(fHMTrigOn==true) fHistoMCSpectrum_7->Fill(ptpart);
-			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAccMother,checkOrigin);
+			if(fHMTrigOn==true) {
+					if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(ptpart,kGenAccMother,checkOrigin);
+					if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(ptpart,kGenAccMother,checkOrigin);
+			}
 	  } // checkXic 1
 	  else if (checkXic2XiPiPi==2) {
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother,checkOrigin+2);
-			//if(fHMTrigOn==true) fHistoMCSpectrum_8->Fill(ptpart);
-			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAccMother,checkOrigin+2);
+			if(fHMTrigOn==true) {
+					if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(ptpart,kGenAccMother,checkOrigin+2);
+					if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(ptpart,kGenAccMother,checkOrigin+2);
+			}
 	  } // checkXic 2
 	  for(Int_t k=0;k<5;k++){
 	    AliAODMCParticle *mcpartdau=(AliAODMCParticle*)mcArray->At(arrayDauLab[k]);
@@ -2499,13 +2481,17 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	if(isInAcc) {
 	  if (checkXic2XiPiPi==1) {
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin);
-			//if(fHMTrigOn==true) fHistoMCSpectrum_9->Fill(ptpart);
-			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAcc,checkOrigin);
+			if(fHMTrigOn==true) {
+					if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(ptpart,kGenAcc,checkOrigin);
+					if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(ptpart,kGenAcc,checkOrigin);
+			}
 	  } // checkXic 1
 	  else if (checkXic2XiPiPi==2) {
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin+2);
-			//if(fHMTrigOn==true) fHistoMCSpectrum_10->Fill(ptpart);
-			if(fHMTrigOn==true && fIsHMV0) fHistoMCSpectrumAccXic_HM->Fill(ptpart,kGenAcc,checkOrigin+2);
+			if(fHMTrigOn==true) {
+					if(fCentrality>=0.1 && fCentrality<=30) fHistoMCSpectrumAccXic_0p1to30->Fill(ptpart,kGenAcc,checkOrigin+2);
+					if(fCentrality>=30 && fCentrality<=100) fHistoMCSpectrumAccXic_30to100->Fill(ptpart,kGenAcc,checkOrigin+2);
+			}
 	  } // checkXic 2
 	}
       } //else continue;//CheckXic2XiPiPi

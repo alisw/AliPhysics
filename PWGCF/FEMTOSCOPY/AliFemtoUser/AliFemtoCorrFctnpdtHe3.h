@@ -80,6 +80,22 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void SetPairCutEtaPhi(float aEtaCut,float aPhiCut);
 	
 	void SetPassAllPair(int aUse);
+	void SetGobalVelGate(int aUse);
+
+	void SetIsSameParticlePair(int aUse);
+	float CalcMt(const AliFemtoPair* aPair);
+	void SetUse3DkTvsKStarvsmT(int aUse);
+	void Set3DkTvsKStarvsmTInit(bool aInit,
+		int nbinskT,float lowkT,float upkT,
+		int nbinsks,float lowks,float upks,
+		int nbinsmT,float lowmT,float upmT);
+
+
+	void Set2DKstarVsmT(int aUse);
+	void Set2DkStarVsmTInit(bool aInit,
+		int nbinsks,float lowks,float upks,
+                int nbinsmT,float lowmT,float upmT);
+
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -145,15 +161,29 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	int fUseStavinskyMethod;
 	TH1F *fStaSkyBkg;
 	
-        int fUse2DpTvsKStar;
-	TH2F *f2DpTvsKStar;
 
 	int fUsePairCutEtaPhi;
 	float fPairCut_eta;
 	float fPairCut_phi;
 	
 	int fPassAllPair;
+
+	int fUseGobalVelGate;
+
+	int fUse2DpTvsKStar;
+	int IsSameParticlePair;
+	TH2F *KStarVspT_P1Hist;
+	TH2F *KStarVspT_P2Hist;
+
+	int fUse3DkTvsKStarvsmT;
+	TH3F *fNum3DkTvsKStarvsmT;
+	TH3F *fDum3DkTvsKStarvsmT;
+	
+	int fUse2DkStarVsmT;
+	TH2F *fNum2DkStarVsmT;
+	TH2F *fDum2DkStarVsmT;	
 };
+
 
 #endif
 

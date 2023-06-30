@@ -1596,7 +1596,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 			if(Matchphi <0){Matchphi += 2*TMath::Pi();}
 
 
-			if(TMath::Abs(etadiff)>0.05 || TMath::Abs(phidiff)>0.05) continue;
+			//if(TMath::Abs(etadiff)>0.05 || TMath::Abs(phidiff)>0.05) continue;
+			if(TMath::Abs(etadiff)>0.025 || TMath::Abs(phidiff)>0.025) continue; // vAN2023_0608
 			if(Matchphi>1.39 && Matchphi < 3.265) fClsTypeEMC = kTRUE; //EMCAL : 80 < phi < 187     
 			if(Matchphi>4.53 && Matchphi < 5.708) fClsTypeDCAL = kTRUE;//DCAL  : 260 < phi < 327
                         /*
@@ -1639,6 +1640,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 			fHistMatchE -> Fill(clE);
                         fHistoTimeEMC->Fill(clE,tof);
 			if(tof>-20.0 && tof<15.0)fHistMatchE_time -> Fill(clE);
+			if(tof<-20.0 || tof>15.0)continue; // vAN2023_0608
 			if(TrkP>0)eop= clE/TrkP;
 
 			fM02->Fill(TrkPt,m02);

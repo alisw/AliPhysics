@@ -90,6 +90,7 @@ AliAnalysisTaskCorrPbPbMC::AliAnalysisTaskCorrPbPbMC():
   fUtils(0),
   fOutputList(0),
   fQAList(0),
+  fTreeList(0),
   fTreeEvent(0),
   fESDtrackCuts(0),
   fESDtrackCuts_primary(0),
@@ -128,6 +129,30 @@ AliAnalysisTaskCorrPbPbMC::AliAnalysisTaskCorrPbPbMC():
   fNoProtonMinus_ptmax2(0),
   fNoProtonPlus_ptmax3(0),
   fNoProtonMinus_ptmax3(0),
+  fCorrectedNoKaonPlus_ptmax2(0),
+  fCorrectedNoKaonMinus_ptmax2(0),
+  fCorrectedNoKaonPlus_ptmax3(0),
+  fCorrectedNoKaonMinus_ptmax3(0),
+  fCorrectedNoPionPlus_ptmax2(0),
+  fCorrectedNoPionMinus_ptmax2(0),
+  fCorrectedNoPionPlus_ptmax3(0),
+  fCorrectedNoPionMinus_ptmax3(0),
+  fCorrectedNoProtonPlus_ptmax2(0),
+  fCorrectedNoProtonMinus_ptmax2(0),
+  fCorrectedNoProtonPlus_ptmax3(0),
+  fCorrectedNoProtonMinus_ptmax3(0),
+  fEffSqrFactrPionMinus_ptmax2(0),
+  fEffSqrFactrPionPlus_ptmax2(0),
+  fEffSqrFactrProtonMinus_ptmax2(0),
+  fEffSqrFactrProtonPlus_ptmax2(0),
+  fEffSqrFactrKaonMinus_ptmax2(0),
+  fEffSqrFactrKaonPlus_ptmax2(0),
+  fEffSqrFactrPionMinus_ptmax3(0),
+  fEffSqrFactrPionPlus_ptmax3(0),
+  fEffSqrFactrProtonMinus_ptmax3(0),
+  fEffSqrFactrProtonPlus_ptmax3(0),
+  fEffSqrFactrKaonMinus_ptmax3(0),
+  fEffSqrFactrKaonPlus_ptmax3(0),
   hist_KaonPlusWithoutPdg(0),
   hist_KaonPlusWithPdg(0),
   hist_KaonMinusWithoutPdg(0),
@@ -145,8 +170,42 @@ AliAnalysisTaskCorrPbPbMC::AliAnalysisTaskCorrPbPbMC():
   hist_GenProtonPlus(0),
   hist_GenProtonMinus(0),
   hist_GenPionPlus(0),
-  hist_GenPionMinus(0)
-{}
+  hist_GenPionMinus(0),
+  f2Dhist_GenKaonPlus(0),
+  f2Dhist_GenKaonMinus(0),
+  f2Dhist_GenProtonPlus(0),
+  f2Dhist_GenProtonMinus(0),
+  f2Dhist_GenPionPlus(0),
+  f2Dhist_GenPionMinus(0),
+  f2Dhist_RecKaonPlus(0),
+  f2Dhist_RecKaonMinus(0),
+  f2Dhist_RecProtonPlus(0),
+  f2Dhist_RecProtonMinus(0),
+  f2Dhist_RecPionPlus(0),
+  f2Dhist_RecPionMinus(0),
+  fVertexZMax(0),
+  fFBNo(0),
+  fChi2TPC(0),
+  fChi2ITS(0),
+  fPIDnSigmaCut(0),
+  fListTRKCorr(0), 
+  fHistMCEffKaonPlus(0),
+  fHistMCEffKaonMinus(0),
+  fHistMCEffPionPlus(0),
+  fHistMCEffPionMinus(0),
+  fHistMCEffProtonPlus(0),
+  fHistMCEffProtonMinus(0)
+{
+  for(int i=0; i<9; i++)
+    {
+      fEffProtonPlus[i] = NULL;
+      fEffProtonMinus[i] = NULL;
+      fEffPionPlus[i] = NULL;
+      fEffPionMinus[i] = NULL;
+      fEffKaonPlus[i] = NULL;
+      fEffKaonMinus[i] = NULL;
+    }
+}
 //_____________________________________________________________________________________________________________________________________
 AliAnalysisTaskCorrPbPbMC::AliAnalysisTaskCorrPbPbMC(const char *name):
   AliAnalysisTaskSE(name),
@@ -160,6 +219,7 @@ AliAnalysisTaskCorrPbPbMC::AliAnalysisTaskCorrPbPbMC(const char *name):
   fUtils(0),
   fOutputList(0),
   fQAList(0),
+  fTreeList(0),
   fTreeEvent(0),
   fESDtrackCuts(0),
   fESDtrackCuts_primary(0),
@@ -198,6 +258,30 @@ AliAnalysisTaskCorrPbPbMC::AliAnalysisTaskCorrPbPbMC(const char *name):
   fNoProtonMinus_ptmax2(0),
   fNoProtonPlus_ptmax3(0),
   fNoProtonMinus_ptmax3(0),
+  fCorrectedNoKaonPlus_ptmax2(0),
+  fCorrectedNoKaonMinus_ptmax2(0),
+  fCorrectedNoKaonPlus_ptmax3(0),
+  fCorrectedNoKaonMinus_ptmax3(0),
+  fCorrectedNoPionPlus_ptmax2(0),
+  fCorrectedNoPionMinus_ptmax2(0),
+  fCorrectedNoPionPlus_ptmax3(0),
+  fCorrectedNoPionMinus_ptmax3(0),
+  fCorrectedNoProtonPlus_ptmax2(0),
+  fCorrectedNoProtonMinus_ptmax2(0),
+  fCorrectedNoProtonPlus_ptmax3(0),
+  fCorrectedNoProtonMinus_ptmax3(0),
+  fEffSqrFactrPionMinus_ptmax2(0),
+  fEffSqrFactrPionPlus_ptmax2(0),
+  fEffSqrFactrProtonMinus_ptmax2(0),
+  fEffSqrFactrProtonPlus_ptmax2(0),
+  fEffSqrFactrKaonMinus_ptmax2(0),
+  fEffSqrFactrKaonPlus_ptmax2(0),
+  fEffSqrFactrPionMinus_ptmax3(0),
+  fEffSqrFactrPionPlus_ptmax3(0),
+  fEffSqrFactrProtonMinus_ptmax3(0),
+  fEffSqrFactrProtonPlus_ptmax3(0),
+  fEffSqrFactrKaonMinus_ptmax3(0),
+  fEffSqrFactrKaonPlus_ptmax3(0),
   hist_KaonPlusWithoutPdg(0),
   hist_KaonPlusWithPdg(0),
   hist_KaonMinusWithoutPdg(0),
@@ -215,13 +299,47 @@ AliAnalysisTaskCorrPbPbMC::AliAnalysisTaskCorrPbPbMC(const char *name):
   hist_GenProtonPlus(0),
   hist_GenProtonMinus(0),
   hist_GenPionPlus(0),
-  hist_GenPionMinus(0)
+  hist_GenPionMinus(0),
+  f2Dhist_GenKaonPlus(0),
+  f2Dhist_GenKaonMinus(0),
+  f2Dhist_GenProtonPlus(0),
+  f2Dhist_GenProtonMinus(0),
+  f2Dhist_GenPionPlus(0),
+  f2Dhist_GenPionMinus(0),
+  f2Dhist_RecKaonPlus(0),
+  f2Dhist_RecKaonMinus(0),
+  f2Dhist_RecProtonPlus(0),
+  f2Dhist_RecProtonMinus(0),
+  f2Dhist_RecPionPlus(0),
+  f2Dhist_RecPionMinus(0),
+  fVertexZMax(0),
+  fFBNo(0),
+  fChi2TPC(0),
+  fChi2ITS(0),
+  fPIDnSigmaCut(0),
+  fListTRKCorr(0), 
+  fHistMCEffKaonPlus(0),
+  fHistMCEffKaonMinus(0),
+  fHistMCEffPionPlus(0),
+  fHistMCEffPionMinus(0),
+  fHistMCEffProtonPlus(0),
+  fHistMCEffProtonMinus(0)
 {
+  for(int i=0; i<9; i++)
+    {
+      fEffProtonPlus[i] = NULL;
+      fEffProtonMinus[i] = NULL;
+      fEffPionPlus[i] = NULL;
+      fEffPionMinus[i] = NULL;
+      fEffKaonPlus[i] = NULL;
+      fEffKaonMinus[i] = NULL;
+    }
+  
   fUtils = new AliAnalysisUtils();
   DefineInput (0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
-  DefineOutput(3, TTree::Class());
+  DefineOutput(3, TList::Class());
 }
 //_____________________________________________________________________________________________________________________________________
 AliAnalysisTaskCorrPbPbMC::~AliAnalysisTaskCorrPbPbMC()  {
@@ -233,6 +351,10 @@ AliAnalysisTaskCorrPbPbMC::~AliAnalysisTaskCorrPbPbMC()  {
   if (fQAList){
     delete fQAList;
     fQAList = 0x0;
+  }
+  if (fTreeList){
+    delete fTreeList;
+    fTreeList = 0x0;
   }
   if (fTreeEvent){
     delete fTreeEvent;
@@ -251,18 +373,20 @@ void AliAnalysisTaskCorrPbPbMC::UserCreateOutputObjects()  {
     //Create Output List
     fOutputList = new TList();
     fQAList     = new TList();
+    fTreeList   = new TList();
     fOutputList -> SetOwner(kTRUE);
     fQAList     -> SetOwner(kTRUE);
+    fTreeList   -> SetOwner(kTRUE);
 
     OpenFile(1);
     OpenFile(2);
     OpenFile(3);
 
-    /*
+    
     //QA Plots of Event Selection
-    fESDeventCuts.AddQAplotsToList(fQAList,kTRUE);
-    fESDeventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
-    */
+    fAODeventCuts.AddQAplotsToList(fQAList,kTRUE);
+    fAODeventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+    
     
     //Event Counter
     hNumberOfEvents = new TH1D ("hNumberOfEvents","",20,0,20);
@@ -338,6 +462,34 @@ void AliAnalysisTaskCorrPbPbMC::UserCreateOutputObjects()  {
     fOutputList->Add(hist_GenPionMinus);
     fOutputList->Add(hist_GenProtonPlus);
     fOutputList->Add(hist_GenProtonMinus);
+
+    //2dhist
+    f2Dhist_GenKaonPlus = new TH2D("f2Dhist_GenKaonPlus"," f2Dhist_GenKaonPlus",100,0,100,300,0,3.0);
+    f2Dhist_GenKaonMinus = new TH2D("f2Dhist_GenKaonMinus"," f2Dhist_GenKaonMinus",100,0,100,300,0,3.0);
+    f2Dhist_GenPionPlus = new TH2D("f2Dhist_GenPionPlus"," f2Dhist_GenPionPlus",100,0,100,300,0,3.0);
+    f2Dhist_GenPionMinus = new TH2D("f2Dhist_GenPionMinus"," f2Dhist_GenPionMinus",100,0,100,300,0,3.0);
+    f2Dhist_GenProtonPlus = new TH2D("f2Dhist_GenProtonPlus"," f2Dhist_GenProtonPlus",100,0,100,300,0,3.0);
+    f2Dhist_GenProtonMinus = new TH2D("f2Dhist_GenProtonMinus"," f2Dhist_GenProtonMinus",100,0,100,300,0,3.0);
+    fOutputList->Add(f2Dhist_GenKaonPlus);
+    fOutputList->Add(f2Dhist_GenKaonMinus);
+    fOutputList->Add(f2Dhist_GenPionPlus);
+    fOutputList->Add(f2Dhist_GenPionMinus);
+    fOutputList->Add(f2Dhist_GenProtonPlus);
+    fOutputList->Add(f2Dhist_GenProtonMinus);
+
+    f2Dhist_RecKaonPlus = new TH2D("f2Dhist_RecKaonPlus"," f2Dhist_RecKaonPlus",100,0,100,300,0,3.0);
+    f2Dhist_RecKaonMinus = new TH2D("f2Dhist_RecKaonMinus"," f2Dhist_RecKaonMinus",100,0,100,300,0,3.0);
+    f2Dhist_RecPionPlus = new TH2D("f2Dhist_RecPionPlus"," f2Dhist_RecPionPlus",100,0,100,300,0,3.0);
+    f2Dhist_RecPionMinus = new TH2D("f2Dhist_RecPionMinus"," f2Dhist_RecPionMinus",100,0,100,300,0,3.0);
+    f2Dhist_RecProtonPlus = new TH2D("f2Dhist_RecProtonPlus"," f2Dhist_RecProtonPlus",100,0,100,300,0,3.0);
+    f2Dhist_RecProtonMinus = new TH2D("f2Dhist_RecProtonMinus"," f2Dhist_RecProtonMinus",100,0,100,300,0,3.0);
+    fOutputList->Add(f2Dhist_RecKaonPlus);
+    fOutputList->Add(f2Dhist_RecKaonMinus);
+    fOutputList->Add(f2Dhist_RecPionPlus);
+    fOutputList->Add(f2Dhist_RecPionMinus);
+    fOutputList->Add(f2Dhist_RecProtonPlus);
+    fOutputList->Add(f2Dhist_RecProtonMinus);
+    
   
     //TTree object to store variables
     fTreeEvent = new TTree("fTreeEvent","Event Tree");
@@ -371,6 +523,38 @@ void AliAnalysisTaskCorrPbPbMC::UserCreateOutputObjects()  {
     fTreeEvent->Branch("fNoPionMinus_ptmax3", &fNoPionMinus_ptmax3, "fNoPionMinus_ptmax3/F");
     fTreeEvent->Branch("fNoProtonPlus_ptmax3", &fNoProtonPlus_ptmax3, "fNoProtonPlus_ptmax3/F");
     fTreeEvent->Branch("fNoProtonMinus_ptmax3", &fNoProtonMinus_ptmax3, "fNoProtonMinus_ptmax3/F");
+
+
+    //Reconstred tracks corrected
+    fTreeEvent->Branch("fCorrectedNoKaonPlus_ptmax2", &fCorrectedNoKaonPlus_ptmax2, "fCorrectedNoKaonPlus_ptmax2/F");
+    fTreeEvent->Branch("fCorrectedNoKaonMinus_ptmax2", &fCorrectedNoKaonMinus_ptmax2, "fCorrectedNoKaonMinus_ptmax2/F");
+    fTreeEvent->Branch("fCorrectedNoPionPlus_ptmax2", &fCorrectedNoPionPlus_ptmax2, "fCorrectedNoPionPlus_ptmax2/F");
+    fTreeEvent->Branch("fCorrectedNoPionMinus_ptmax2", &fCorrectedNoPionMinus_ptmax2, "fCorrectedNoPionMinus_ptmax2/F");
+    fTreeEvent->Branch("fCorrectedNoProtonPlus_ptmax2", &fCorrectedNoProtonPlus_ptmax2, "fCorrectedNoProtonPlus_ptmax2/F");
+    fTreeEvent->Branch("fCorrectedNoProtonMinus_ptmax2", &fCorrectedNoProtonMinus_ptmax2, "fCorrectedNoProtonMinus_ptmax2/F");
+
+    fTreeEvent->Branch("fCorrectedNoKaonPlus_ptmax3", &fCorrectedNoKaonPlus_ptmax3, "fCorrectedNoKaonPlus_ptmax3/F");
+    fTreeEvent->Branch("fCorrectedNoKaonMinus_ptmax3", &fCorrectedNoKaonMinus_ptmax3, "fCorrectedNoKaonMinus_ptmax3/F");
+    fTreeEvent->Branch("fCorrectedNoPionPlus_ptmax3", &fCorrectedNoPionPlus_ptmax3, "fCorrectedNoPionPlus_ptmax3/F");
+    fTreeEvent->Branch("fCorrectedNoPionMinus_ptmax3", &fCorrectedNoPionMinus_ptmax3, "fCorrectedNoPionMinus_ptmax3/F");
+    fTreeEvent->Branch("fCorrectedNoProtonPlus_ptmax3", &fCorrectedNoProtonPlus_ptmax3, "fCorrectedNoProtonPlus_ptmax3/F");
+    fTreeEvent->Branch("fCorrectedNoProtonMinus_ptmax3", &fCorrectedNoProtonMinus_ptmax3, "fCorrectedNoProtonMinus_ptmax3/F");
+
+    fTreeEvent->Branch("fEffSqrFactrKaonPlus_ptmax2", &fEffSqrFactrKaonPlus_ptmax2, "fEffSqrFactrKaonPlus_ptmax2/F");
+    fTreeEvent->Branch("fEffSqrFactrKaonMinus_ptmax2", &fEffSqrFactrKaonMinus_ptmax2, "fEffSqrFactrKaonMinus_ptmax2/F");
+    fTreeEvent->Branch("fEffSqrFactrPionPlus_ptmax2", &fEffSqrFactrPionPlus_ptmax2, "fEffSqrFactrPionPlus_ptmax2/F");
+    fTreeEvent->Branch("fEffSqrFactrPionMinus_ptmax2", &fEffSqrFactrPionMinus_ptmax2, "fEffSqrFactrPionMinus_ptmax2/F");
+    fTreeEvent->Branch("fEffSqrFactrProtonPlus_ptmax2", &fEffSqrFactrProtonPlus_ptmax2, "fEffSqrFactrProtonPlus_ptmax2/F");
+    fTreeEvent->Branch("fEffSqrFactrProtonMinus_ptmax2", &fEffSqrFactrProtonMinus_ptmax2, "fEffSqrFactrProtonMinus_ptmax2/F");
+    
+    fTreeEvent->Branch("fEffSqrFactrKaonPlus_ptmax3", &fEffSqrFactrKaonPlus_ptmax3, "fEffSqrFactrKaonPlus_ptmax3/F");
+    fTreeEvent->Branch("fEffSqrFactrKaonMinus_ptmax3", &fEffSqrFactrKaonMinus_ptmax3, "fEffSqrFactrKaonMinus_ptmax3/F");
+    fTreeEvent->Branch("fEffSqrFactrPionPlus_ptmax3", &fEffSqrFactrPionPlus_ptmax3, "fEffSqrFactrPionPlus_ptmax3/F");
+    fTreeEvent->Branch("fEffSqrFactrPionMinus_ptmax3", &fEffSqrFactrPionMinus_ptmax3, "fEffSqrFactrPionMinus_ptmax3/F");
+    fTreeEvent->Branch("fEffSqrFactrProtonPlus_ptmax3", &fEffSqrFactrProtonPlus_ptmax3, "fEffSqrFactrProtonPlus_ptmax3/F");
+    fTreeEvent->Branch("fEffSqrFactrProtonMinus_ptmax3", &fEffSqrFactrProtonMinus_ptmax3, "fEffSqrFactrProtonMinus_ptmax3/F");
+    fTreeList->Add(fTreeEvent);
+    
    
     /*
     
@@ -396,14 +580,14 @@ void AliAnalysisTaskCorrPbPbMC::UserCreateOutputObjects()  {
     
     PostData(1, fOutputList);
     PostData(2, fQAList);
-    PostData(3, fTreeEvent);
+    PostData(3, fTreeList);
 }
 //_____________________________________________________________________________________________________________________________________
 void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
   
     //Get Input Event
     if ( !GetEvent ()) return;
-    cout<<"*********************** Found AOD event !!! ******************************"<<endl;
+    //cout<<"*********************** Found AOD event !!! ******************************"<<endl;
 
     
     //Get multiplicity percentile
@@ -416,7 +600,7 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
     else
       {
 	lV0M = MultSelection->GetMultiplicityPercentile("V0M");
-	cout<<"V0M: "<<lV0M<<endl;
+	//cout<<"V0M: "<<lV0M<<endl;
       }
 
     fMCevent = dynamic_cast<AliMCEvent *>(MCEvent());
@@ -425,7 +609,7 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
       cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return;
     }
   
@@ -435,11 +619,11 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
     //   cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
     //   PostData(1, fOutputList);
     //   PostData(2, fQAList);
-    //   PostData(3, fTreeEvent);
+    //   PostData(3, fTreeList);
     //   return;
     // }
 
-    cout<<"*********************** Found MC event !!! ******************************"<<endl;
+    //cout<<"*********************** Found MC event !!! ******************************"<<endl;
 
 
     //"fTreeEvent" Tree Variable
@@ -447,24 +631,24 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 
     
     //Initialize generated number 0f K+, K-, pi+, pi-, p and p-bar per event
-    Int_t no_GenKaonPlus_perevent = 0;
-    Int_t no_GenKaonMinus_perevent = 0;
-    Int_t no_GenProtonPlus_perevent = 0;
-    Int_t no_GenProtonMinus_perevent = 0;
-    Int_t no_GenPionPlus_perevent = 0;
-    Int_t no_GenPionMinus_perevent = 0;
+    Float_t no_GenKaonPlus_perevent = 0;
+    Float_t no_GenKaonMinus_perevent = 0;
+    Float_t no_GenProtonPlus_perevent = 0;
+    Float_t no_GenProtonMinus_perevent = 0;
+    Float_t no_GenPionPlus_perevent = 0;
+    Float_t no_GenPionMinus_perevent = 0;
 
-    Int_t no_GenKaonPlus_perevent_ptmax2 = 0;
-    Int_t no_GenKaonMinus_perevent_ptmax2 = 0;
-    Int_t no_GenProtonPlus_perevent_ptmax2 = 0;
-    Int_t no_GenProtonMinus_perevent_ptmax2 = 0;
-    Int_t no_GenPionPlus_perevent_ptmax2 = 0;
-    Int_t no_GenPionMinus_perevent_ptmax2 = 0;
+    Float_t no_GenKaonPlus_perevent_ptmax2 = 0;
+    Float_t no_GenKaonMinus_perevent_ptmax2 = 0;
+    Float_t no_GenProtonPlus_perevent_ptmax2 = 0;
+    Float_t no_GenProtonMinus_perevent_ptmax2 = 0;
+    Float_t no_GenPionPlus_perevent_ptmax2 = 0;
+    Float_t no_GenPionMinus_perevent_ptmax2 = 0;
 
     
     //Loop on generated MC tracks
     Int_t noGenMCtracks = fMCevent->GetNumberOfTracks();
-    cout<<"No of generated MC tracks: "<<noGenMCtracks<<endl;
+    //cout<<"No of generated MC tracks: "<<noGenMCtracks<<endl;
     for(Int_t itr_mcgen=0; itr_mcgen < noGenMCtracks; itr_mcgen++)
       {
 	AliAODMCParticle *mcGenTrack = (AliAODMCParticle*) fMCevent->GetTrack(itr_mcgen);
@@ -478,18 +662,21 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	//Out of bunch pileup event removal
 	if(AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(itr_mcgen,fMCevent))
 	  {
-	    cout<<"Track belongs to out of bunch pileup events. Removed !!!!"<<endl;
+	    //cout<<"Track belongs to out of bunch pileup events. Removed !!!!"<<endl;
 	    continue;
 	  }
-      
-
-	if(!mcGenTrack->IsPhysicalPrimary())
-	  continue;
-
+  
 	Double_t TrackGen_eta = mcGenTrack->Eta();
 	Double_t TrackGen_pt = mcGenTrack->Pt();
 	Double_t TrackGen_charge = mcGenTrack->Charge();
 	Double_t TrackGen_PID = mcGenTrack->GetPdgCode();
+	Double_t Track_MotherLabel = mcGenTrack->GetMother();
+
+
+	if(!mcGenTrack->IsPhysicalPrimary())
+	  continue;
+
+	if(Track_MotherLabel > 0) continue;
 
 	if (!TrackGen_PID) continue;
 	if (TrackGen_pt < 0.2) continue;
@@ -501,17 +688,21 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	  {
 	    if(TrackGen_charge > 0)  //K+
 	      {
-		no_GenKaonPlus_perevent += 1;
+		if(TrackGen_pt > 0.4 && TrackGen_pt < 1.6)
+		  no_GenKaonPlus_perevent += 1;
 		if(TrackGen_pt < 2.0)
 		  no_GenKaonPlus_perevent_ptmax2 += 1;
 		hist_GenKaonPlus->Fill(TrackGen_pt);
+		f2Dhist_GenKaonPlus->Fill(lV0M,TrackGen_pt);
 	      }
 	    if(TrackGen_charge < 0)  //K-
 	      {
-		no_GenKaonMinus_perevent += 1;
+		if(TrackGen_pt > 0.4 && TrackGen_pt < 1.6)
+		  no_GenKaonMinus_perevent += 1;
 		if(TrackGen_pt < 2.0)
 		  no_GenKaonMinus_perevent_ptmax2 += 1;
 		hist_GenKaonMinus->Fill(TrackGen_pt);
+		f2Dhist_GenKaonMinus->Fill(lV0M,TrackGen_pt);
 	      }
 	  }
 
@@ -520,17 +711,27 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	  {
 	    if(TrackGen_charge > 0)  //p
 	      {
-		no_GenProtonPlus_perevent += 1;
-		if(TrackGen_pt < 2.0)
-		  no_GenProtonPlus_perevent_ptmax2 += 1;
+		if(TrackGen_pt > 0.4)
+		  {
+		    if(TrackGen_pt > 0.4 && TrackGen_pt < 1.6)
+		      no_GenProtonPlus_perevent += 1;
+		    if(TrackGen_pt < 2.0)
+		      no_GenProtonPlus_perevent_ptmax2 += 1;
+		  }
 		hist_GenProtonPlus->Fill(TrackGen_pt);
+		f2Dhist_GenProtonPlus->Fill(lV0M,TrackGen_pt);
 	      }
 	    if(TrackGen_charge < 0)  //pbar
 	      {
-		no_GenProtonMinus_perevent += 1;
-		if(TrackGen_pt < 2.0)
-		  no_GenProtonMinus_perevent_ptmax2 += 1;
+		if(TrackGen_pt > 0.4)
+		  {
+		    if(TrackGen_pt > 0.4 && TrackGen_pt < 1.6)
+		      no_GenProtonMinus_perevent += 1;
+		    if(TrackGen_pt < 2.0)
+		      no_GenProtonMinus_perevent_ptmax2 += 1;
+		  }
 		hist_GenProtonMinus->Fill(TrackGen_pt);
+		f2Dhist_GenProtonMinus->Fill(lV0M,TrackGen_pt);
 	      }
 	  }
 
@@ -539,41 +740,99 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	  {
 	    if(TrackGen_charge > 0)  //pi+
 	      {
-		no_GenPionPlus_perevent += 1;
+		if(TrackGen_pt > 0.4 && TrackGen_pt < 1.6)
+		  no_GenPionPlus_perevent += 1;
 		if(TrackGen_pt < 2.0)
 		  no_GenPionPlus_perevent_ptmax2 += 1;
 		hist_GenPionPlus->Fill(TrackGen_pt);
+		f2Dhist_GenPionPlus->Fill(lV0M,TrackGen_pt);
 	      }
 	    if(TrackGen_charge < 0)  //pi-
 	      {
-		no_GenPionMinus_perevent += 1;
+		if(TrackGen_pt > 0.4 && TrackGen_pt < 1.6)
+		  no_GenPionMinus_perevent += 1;
 		if(TrackGen_pt < 2.0)
 		  no_GenPionMinus_perevent_ptmax2 += 1;
 		hist_GenPionMinus->Fill(TrackGen_pt);
+		f2Dhist_GenPionMinus->Fill(lV0M,TrackGen_pt);
 	      }
 	  }
       }
     //end generated track loop
 
     //Initialize number 0f K+, K-, pi+, pi-, p and p-bar per event
-    Int_t no_KaonPlus_perevent = 0;
-    Int_t no_KaonMinus_perevent = 0;
-    Int_t no_ProtonPlus_perevent = 0;
-    Int_t no_ProtonMinus_perevent = 0;
-    Int_t no_PionPlus_perevent = 0;
-    Int_t no_PionMinus_perevent = 0;
+    Float_t no_KaonPlus_perevent = 0;
+    Float_t no_KaonMinus_perevent = 0;
+    Float_t no_ProtonPlus_perevent = 0;
+    Float_t no_ProtonMinus_perevent = 0;
+    Float_t no_PionPlus_perevent = 0;
+    Float_t no_PionMinus_perevent = 0;
 
-    Int_t no_KaonPlus_perevent_ptmax2 = 0;
-    Int_t no_KaonMinus_perevent_ptmax2 = 0;
-    Int_t no_ProtonPlus_perevent_ptmax2 = 0;
-    Int_t no_ProtonMinus_perevent_ptmax2 = 0;
-    Int_t no_PionPlus_perevent_ptmax2 = 0;
-    Int_t no_PionMinus_perevent_ptmax2 = 0;
+    Float_t no_KaonPlus_perevent_ptmax2 = 0;
+    Float_t no_KaonMinus_perevent_ptmax2 = 0;
+    Float_t no_ProtonPlus_perevent_ptmax2 = 0;
+    Float_t no_ProtonMinus_perevent_ptmax2 = 0;
+    Float_t no_PionPlus_perevent_ptmax2 = 0;
+    Float_t no_PionMinus_perevent_ptmax2 = 0;
+
+    Float_t no_KaonPlus_perevent_corrected = 0;
+    Float_t no_KaonMinus_perevent_corrected = 0;
+    Float_t no_ProtonPlus_perevent_corrected = 0;
+    Float_t no_ProtonMinus_perevent_corrected = 0;
+    Float_t no_PionPlus_perevent_corrected = 0;
+    Float_t no_PionMinus_perevent_corrected = 0;
+
+    Float_t no_KaonPlus_perevent_ptmax2_corrected = 0;
+    Float_t no_KaonMinus_perevent_ptmax2_corrected = 0;
+    Float_t no_ProtonPlus_perevent_ptmax2_corrected = 0;
+    Float_t no_ProtonMinus_perevent_ptmax2_corrected = 0;
+    Float_t no_PionPlus_perevent_ptmax2_corrected = 0;
+    Float_t no_PionMinus_perevent_ptmax2_corrected = 0;
+
+    Float_t noByEffSquare_KaonPlus_perevent_corrected = 0;
+    Float_t noByEffSquare_KaonMinus_perevent_corrected = 0;
+    Float_t noByEffSquare_ProtonPlus_perevent_corrected = 0;
+    Float_t noByEffSquare_ProtonMinus_perevent_corrected = 0;
+    Float_t noByEffSquare_PionPlus_perevent_corrected = 0;
+    Float_t noByEffSquare_PionMinus_perevent_corrected = 0;
+
+    Float_t noByEffSquare_KaonPlus_perevent_ptmax2_corrected = 0;
+    Float_t noByEffSquare_KaonMinus_perevent_ptmax2_corrected = 0;
+    Float_t noByEffSquare_ProtonPlus_perevent_ptmax2_corrected = 0;
+    Float_t noByEffSquare_ProtonMinus_perevent_ptmax2_corrected = 0;
+    Float_t noByEffSquare_PionPlus_perevent_ptmax2_corrected = 0;
+    Float_t noByEffSquare_PionMinus_perevent_ptmax2_corrected = 0;
+
+    Int_t ptBinNo = 0;
+    Double_t BinCont = 0;
+    Double_t EffWgt = 0;
+
+    if(fListTRKCorr) GetMCEffCorrectionHist();
+
+    Int_t centrality_bin = 0;
+    if(lV0M > 0.0 && lV0M < 5.0)
+      centrality_bin = 0;
+    else if (lV0M > 5.0 && lV0M < 10.0)
+      centrality_bin = 1;
+    else if (lV0M > 10.0 && lV0M < 20.0)
+      centrality_bin = 2;
+    else if (lV0M > 20.0 && lV0M < 30.0)
+      centrality_bin = 3;
+    else if (lV0M > 30.0 && lV0M < 40.0)
+      centrality_bin = 4;
+    else if (lV0M > 40.0 && lV0M < 50.0)
+      centrality_bin = 5;
+    else if (lV0M > 50.0 && lV0M < 60.0)
+      centrality_bin = 6;
+    else if (lV0M > 60.0 && lV0M < 70.0)
+      centrality_bin = 7;
+    else if (lV0M > 70.0 && lV0M < 80.0)
+      centrality_bin = 8;
 
 
     //Loop on reconstructed MC tracks
     Int_t noRecMCtracks = fAODevent->GetNumberOfTracks();
-    cout<<"No of reconstructed MC tracks: "<<noRecMCtracks<<endl;
+    //cout<<"No of reconstructed MC tracks: "<<noRecMCtracks<<endl;
     for(Int_t itr_mcrec=0; itr_mcrec < noRecMCtracks; itr_mcrec++)
       {
 	
@@ -589,25 +848,44 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	    cout<<"Could not find MC generted track for the AODtrack Label !!!"<<endl;
 	    continue;
 	  }
-	cout<<"Found reconstructed MC track (matched with generated) !!"<<endl;
+	//cout<<"Found reconstructed MC track (matched with generated) !!"<<endl;
 
-	if(!mcRecTrack->IsPhysicalPrimary())
-	  continue;
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//Track quality cuts as in data
+	//Filterbit
+	if(!aodtrack->TestFilterBit(fFBNo))  continue;
+	//if(!aodtrack->TestFilterBit(96))  continue;
 
-	if(!aodtrack->TestFilterBit(96))  continue;
-
+	//cuts on TPCchi2perClstr and ITSchi2perClstr
+	
+	Double_t trkITSchi2 = aodtrack->GetITSchi2();
+	Int_t trkITSNcls = aodtrack->GetITSNcls();
+	Double_t trkITSchi2perNcls = trkITSchi2/trkITSNcls;
+	Double_t trkTPCchi2perNcls = aodtrack->GetTPCchi2perCluster();
+	if (trkTPCchi2perNcls > fChi2TPC) continue;
+	if (trkITSchi2perNcls > fChi2ITS) continue;
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	
+	
 	Double_t Track_pt = mcRecTrack->Pt();
 	Double_t Track_charge = mcRecTrack->Charge();
 	Double_t Track_PID = mcRecTrack->GetPdgCode();
 	Double_t Track_eta = mcRecTrack->Eta();
+	Double_t Track_MotherLabel = mcRecTrack->GetMother();
 
+	if(!mcRecTrack->IsPhysicalPrimary())
+	  continue;
+
+	if(Track_MotherLabel > 0) continue;
+
+	if (!Track_PID) continue;
 	if (Track_pt < 0.2) continue;
 	if (Track_pt > 3.0) continue;
 	if (TMath::Abs(Track_eta) > 0.8) continue;
 
-	Bool_t IsKaon = KaonSelector(track);
-	Bool_t IsPion = PionSelector(track);
-	Bool_t IsProton = ProtonSelector(track);
+	Bool_t IsKaon = KaonSelector(track, fPIDnSigmaCut);
+	Bool_t IsPion = PionSelector(track, fPIDnSigmaCut);
+	Bool_t IsProton = ProtonSelector(track, fPIDnSigmaCut);
 	if (!IsKaon && !IsPion && !IsProton) continue;
 
 	
@@ -615,17 +893,35 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	if(IsKaon) flag+=1;
 	if(IsPion) flag+=1;
 	if(IsProton) flag+=1;
-	cout<<"Particle identified as more than on PID: flag= "<<flag<<endl;
+	//cout<<"Particle identified as more than on PID: flag= "<<flag<<endl;
 	if(flag>1) continue;
-	
-	
+
 
 	if (Track_charge > 0 && IsKaon)   //K+
 	  {
-	    no_KaonPlus_perevent += 1;
-	    if(Track_pt < 2.0)
-	      no_KaonPlus_perevent_ptmax2 += 1;
-
+	    if (fEffKaonPlus[centrality_bin])
+	    //if (fHistMCEffKaonPlus)
+	      {
+		ptBinNo = fEffKaonPlus[centrality_bin]->FindBin(Track_pt);
+		BinCont = fEffKaonPlus[centrality_bin]->GetBinContent(ptBinNo);
+		if(BinCont!=0) EffWgt = 1.0/BinCont;
+	      
+		if(Track_pt > 0.4 && Track_pt < 1.6)
+		  {
+		    no_KaonPlus_perevent += 1.0;
+		    no_KaonPlus_perevent_corrected += EffWgt;
+		    noByEffSquare_KaonPlus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+		  }
+		if(Track_pt < 2.0)
+		  {
+		    no_KaonPlus_perevent_ptmax2 += 1.0;
+		    no_KaonPlus_perevent_ptmax2_corrected += EffWgt;
+		    noByEffSquare_KaonPlus_perevent_ptmax2_corrected += TMath::Power(EffWgt, 2.0);
+	    
+		  }
+	      }
+	    //Histograms for purity
+	    f2Dhist_RecKaonPlus->Fill(lV0M,Track_pt);
 	    hist_KaonPlusWithoutPdg->Fill(Track_pt);
 	    if (TMath::Abs(Track_PID) == 321)
 	      hist_KaonPlusWithPdg->Fill(Track_pt);
@@ -634,10 +930,28 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 
 	if (Track_charge < 0 && IsKaon)   //K-
 	  {
-	    no_KaonMinus_perevent += 1;
-	    if(Track_pt < 2.0)
-	      no_KaonMinus_perevent_ptmax2 += 1;
+	    if (fEffKaonMinus[centrality_bin])
+	      {
+		ptBinNo = fEffKaonMinus[centrality_bin]->FindBin(Track_pt);
+		BinCont = fEffKaonMinus[centrality_bin]->GetBinContent(ptBinNo);
+		if(BinCont!=0) EffWgt = 1.0/BinCont;
+	      
+		if(Track_pt > 0.4 && Track_pt < 1.6)
+		  {
+		    no_KaonMinus_perevent += 1.0;
+		    no_KaonMinus_perevent_corrected += EffWgt;
+		    noByEffSquare_KaonMinus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+		  }
 
+		if(Track_pt < 2.0)
+		  {
+		    no_KaonMinus_perevent_ptmax2 += 1.0;
+		    no_KaonMinus_perevent_ptmax2_corrected += EffWgt;
+		    noByEffSquare_KaonMinus_perevent_ptmax2_corrected += TMath::Power(EffWgt, 2.0);
+		  }
+	      }
+	    //Histograms for purity
+	    f2Dhist_RecKaonMinus->Fill(lV0M,Track_pt);
 	    hist_KaonMinusWithoutPdg->Fill(Track_pt);
 	    if (TMath::Abs(Track_PID) == 321)
 	      hist_KaonMinusWithPdg->Fill(Track_pt);
@@ -645,10 +959,31 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 
 	if (Track_charge > 0 && IsProton)   //proton
 	  {
-	    no_ProtonPlus_perevent += 1;
-	    if(Track_pt < 2.0)
-	      no_ProtonPlus_perevent_ptmax2 += 1;
+	    if (Track_pt > 0.4) // cut for removing protons coming from beam pipe
+	      {
+		if (fEffProtonPlus[centrality_bin])
+		  {
+		    ptBinNo = fEffProtonPlus[centrality_bin]->FindBin(Track_pt);
+		    BinCont = fEffProtonPlus[centrality_bin]->GetBinContent(ptBinNo);
+		    if(BinCont!=0) EffWgt = 1.0/BinCont;
+		  
+		    if(Track_pt > 0.4 && Track_pt < 1.6)
+		      {
+			no_ProtonPlus_perevent += 1.0;
+			no_ProtonPlus_perevent_corrected += EffWgt;
+			noByEffSquare_ProtonPlus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+		      }
+		    if(Track_pt < 2.0)
+		      {
+			no_ProtonPlus_perevent_ptmax2 += 1.0;
+			no_ProtonPlus_perevent_ptmax2_corrected += EffWgt;
+			noByEffSquare_ProtonPlus_perevent_ptmax2_corrected += TMath::Power(EffWgt, 2.0);
+		      }
+		  }
+	      }
 
+	    //Histograms for purity
+	    f2Dhist_RecProtonPlus->Fill(lV0M,Track_pt);
 	    hist_ProtonPlusWithoutPdg->Fill(Track_pt);
 	    if (TMath::Abs(Track_PID) == 2212)
 	      hist_ProtonPlusWithPdg->Fill(Track_pt);
@@ -657,10 +992,31 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 
 	if (Track_charge < 0 && IsProton)   //anti-proton
 	  {
-	    no_ProtonMinus_perevent += 1;
-	    if(Track_pt < 2.0)
-	      no_ProtonMinus_perevent_ptmax2 += 1;
+	    if (Track_pt > 0.4) // cut for removing protons coming from beam pipe
+	      {
+		if (fEffProtonMinus[centrality_bin])
+		  {
+		    ptBinNo = fEffProtonMinus[centrality_bin]->FindBin(Track_pt);
+		    BinCont = fEffProtonMinus[centrality_bin]->GetBinContent(ptBinNo);
+		    if(BinCont!=0) EffWgt = 1.0/BinCont;
+		  
+		    if(Track_pt > 0.4 && Track_pt < 1.6)
+		      {
+			no_ProtonMinus_perevent += 1.0;
+			no_ProtonMinus_perevent_corrected += EffWgt;
+			noByEffSquare_ProtonMinus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+		      }
+		    if(Track_pt < 2.0)
+		      {
+			no_ProtonMinus_perevent_ptmax2 += 1.0;
+			no_ProtonMinus_perevent_ptmax2_corrected += EffWgt;
+			noByEffSquare_ProtonMinus_perevent_ptmax2_corrected += TMath::Power(EffWgt, 2.0);
+		      }
+		  }
+	      }
 
+	    //Histograms for purity
+	    f2Dhist_RecProtonMinus->Fill(lV0M,Track_pt);
 	    hist_ProtonMinusWithoutPdg->Fill(Track_pt);
 	    if (TMath::Abs(Track_PID) == 2212)
 	      hist_ProtonMinusWithPdg->Fill(Track_pt);
@@ -668,10 +1024,27 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 
 	if (Track_charge > 0 && IsPion)   //pi+
 	  {
-	    no_PionPlus_perevent += 1;
-	    if(Track_pt < 2.0)
-	      no_PionPlus_perevent_ptmax2 += 1;
-
+	    if (fEffPionPlus[centrality_bin])
+	      {
+		ptBinNo = fEffPionPlus[centrality_bin]->FindBin(Track_pt);
+		BinCont = fEffPionPlus[centrality_bin]->GetBinContent(ptBinNo);
+		if(BinCont!=0) EffWgt = 1.0/BinCont;
+	      
+		if(Track_pt > 0.4 && Track_pt < 1.6)
+		  {
+		    no_PionPlus_perevent += 1.0;
+		    no_PionPlus_perevent_corrected += EffWgt;
+		    noByEffSquare_PionPlus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+		  }
+		if(Track_pt < 2.0)
+		  {
+		    no_PionPlus_perevent_ptmax2 += 1.0;
+		    no_PionPlus_perevent_ptmax2_corrected += EffWgt;
+		    noByEffSquare_PionPlus_perevent_ptmax2_corrected += TMath::Power(EffWgt, 2.0);
+		  }
+	      }
+	    //Histograms for purity
+	    f2Dhist_RecPionPlus->Fill(lV0M,Track_pt);
 	    hist_PionPlusWithoutPdg->Fill(Track_pt);
 	    if (TMath::Abs(Track_PID) == 211)
 	      hist_PionPlusWithPdg->Fill(Track_pt);
@@ -680,15 +1053,32 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 
 	if (Track_charge < 0 && IsPion)   //pi-
 	  {
-	    no_PionMinus_perevent += 1;
-	    if(Track_pt < 2.0)
-	      no_PionMinus_perevent_ptmax2 += 1;
-
+	    if (fEffPionMinus[centrality_bin])
+	      {
+		ptBinNo = fEffPionMinus[centrality_bin]->FindBin(Track_pt);
+		BinCont = fEffPionMinus[centrality_bin]->GetBinContent(ptBinNo);
+		if(BinCont!=0) EffWgt = 1.0/BinCont;
+	      
+		if(Track_pt > 0.4 && Track_pt < 1.6)
+		  {
+		    no_PionMinus_perevent += 1.0;
+		    no_PionMinus_perevent_corrected += EffWgt;
+		    noByEffSquare_PionMinus_perevent_corrected += TMath::Power(EffWgt, 2.0);
+		  }
+		if(Track_pt < 2.0)
+		  {
+		    no_PionMinus_perevent_ptmax2 += 1.0;
+		    no_PionMinus_perevent_ptmax2_corrected += EffWgt;
+		    noByEffSquare_PionMinus_perevent_ptmax2_corrected += TMath::Power(EffWgt, 2.0);
+		  }
+	      }
+	    //Histograms for purity
+	    f2Dhist_RecPionMinus->Fill(lV0M,Track_pt);
 	    hist_PionMinusWithoutPdg->Fill(Track_pt);
 	    if (TMath::Abs(Track_PID) == 211)
 	      hist_PionMinusWithPdg->Fill(Track_pt);
 	  }
-     }
+      }
     //end reconstructed track loop
     
 
@@ -737,12 +1127,48 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
     fNoProtonMinus_ptmax2 = no_ProtonMinus_perevent_ptmax2;
     fNoProtonPlus_ptmax3 = no_ProtonPlus_perevent;
     fNoProtonMinus_ptmax3 = no_ProtonMinus_perevent;
+    //++++++++++++++++++++++++++++++++++++++++++++
+    //Corrected from Reconstructed
+    //Kaon
+    fCorrectedNoKaonPlus_ptmax2 = no_KaonPlus_perevent_ptmax2_corrected;
+    fCorrectedNoKaonMinus_ptmax2 = no_KaonMinus_perevent_ptmax2_corrected;
+    fCorrectedNoKaonPlus_ptmax3 = no_KaonPlus_perevent_corrected;
+    fCorrectedNoKaonMinus_ptmax3 = no_KaonMinus_perevent_corrected;
+    //Pion
+    fCorrectedNoPionPlus_ptmax2 = no_PionPlus_perevent_ptmax2_corrected;
+    fCorrectedNoPionMinus_ptmax2 = no_PionMinus_perevent_ptmax2_corrected;
+    fCorrectedNoPionPlus_ptmax3 = no_PionPlus_perevent_corrected;
+    fCorrectedNoPionMinus_ptmax3 = no_PionMinus_perevent_corrected;
+    //Proton
+    fCorrectedNoProtonPlus_ptmax2 = no_ProtonPlus_perevent_ptmax2_corrected;
+    fCorrectedNoProtonMinus_ptmax2 = no_ProtonMinus_perevent_ptmax2_corrected;
+    fCorrectedNoProtonPlus_ptmax3 = no_ProtonPlus_perevent_corrected;
+    fCorrectedNoProtonMinus_ptmax3 = no_ProtonMinus_perevent_corrected;
+
+
+    //Eff Square factor
+
+    fEffSqrFactrPionMinus_ptmax2 = noByEffSquare_PionMinus_perevent_ptmax2_corrected;
+    fEffSqrFactrPionPlus_ptmax2 = noByEffSquare_PionPlus_perevent_ptmax2_corrected;
+    fEffSqrFactrProtonMinus_ptmax2 = noByEffSquare_ProtonMinus_perevent_ptmax2_corrected;
+    fEffSqrFactrProtonPlus_ptmax2 = noByEffSquare_ProtonPlus_perevent_ptmax2_corrected;
+    fEffSqrFactrKaonMinus_ptmax2 = noByEffSquare_KaonMinus_perevent_ptmax2_corrected;
+    fEffSqrFactrKaonPlus_ptmax2 = noByEffSquare_KaonPlus_perevent_ptmax2_corrected;
+
+    fEffSqrFactrPionMinus_ptmax3 = noByEffSquare_PionMinus_perevent_corrected;
+    fEffSqrFactrPionPlus_ptmax3 = noByEffSquare_PionPlus_perevent_corrected;
+    fEffSqrFactrProtonMinus_ptmax3 = noByEffSquare_ProtonMinus_perevent_corrected;
+    fEffSqrFactrProtonPlus_ptmax3 = noByEffSquare_ProtonPlus_perevent_corrected;
+    fEffSqrFactrKaonMinus_ptmax3 = noByEffSquare_KaonMinus_perevent_corrected;
+    fEffSqrFactrKaonPlus_ptmax3 = noByEffSquare_KaonPlus_perevent_corrected;
+
+
     fTreeEvent->Fill();
     
     
     PostData(1, fOutputList);
     PostData(2, fQAList);
-    PostData(3, fTreeEvent);
+    PostData(3, fTreeList);
 }    
 //_____________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code written earlier 
@@ -761,7 +1187,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
 	  AliWarning("ERROR: lAODevent not available from AODEvent() Aborting event!");
 	  PostData(1, fOutputList);
 	  PostData(2, fQAList);
-	  PostData(3, fTreeEvent);
+	  PostData(3, fTreeList);
 	  return kFALSE;
 	}
     }
@@ -772,7 +1198,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
       AliWarning("ERROR: fInputEvent (AliVEvent) not available \n");
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   
@@ -783,7 +1209,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
   if (!fAODeventCuts.AcceptEvent(fInputEvent)) {
     PostData(1, fOutputList);
     PostData(2, fQAList);
-    PostData(3, fTreeEvent);
+    PostData(3, fTreeList);
     return kFALSE;
   }
   hNumberOfEvents -> Fill(1.5);
@@ -794,7 +1220,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(2.5);
@@ -805,7 +1231,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(3.5);
@@ -819,7 +1245,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(4.5);
@@ -831,7 +1257,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(5.5);
@@ -842,7 +1268,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(6.5);
@@ -855,7 +1281,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(7.5);
@@ -865,7 +1291,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(8.5);
@@ -876,7 +1302,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(9.5);
@@ -891,7 +1317,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(10.5);
@@ -902,17 +1328,17 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(11.5);
 
     //Primary Vertex Selection
-    if ( vertex_tracks->GetZ() < -10.0 || vertex_tracks->GetZ() > +10.0)
+    if ( vertex_tracks->GetZ() < -1.0*fVertexZMax || vertex_tracks->GetZ() > +1.0*fVertexZMax)
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(12.5);
@@ -923,7 +1349,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       } 
     hNumberOfEvents -> Fill(13.5);
@@ -934,7 +1360,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::GetEvent ()  //event cuts copied from my code 
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(14.5);
@@ -991,7 +1417,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::PassedTrackQualityCuts (AliAODTrack *track)  {
     return passedTrkSelection;
 }
  //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track,  Double_t nSigmaCut)  {
  
   Double_t p[3];
   track->PxPyPz(p);
@@ -1040,7 +1466,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track)  {
       */
       
       //acception
-      if(TMath::Abs(fTPCnSigmaKaon) < 2.0)
+      if(TMath::Abs(fTPCnSigmaKaon) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1064,7 +1490,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track)  {
       if (fTPCplusTOFnSigmaKaon > fTPCplusTOFnSigmaPion) return kFALSE;
 
       //acception
-      if (fTPCplusTOFnSigmaKaon < 2.0)
+      if (fTPCplusTOFnSigmaKaon < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1075,7 +1501,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track)  {
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track,  Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1128,7 +1554,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track)  {
       
       //acception
       
-      if(TMath::Abs(fTPCnSigmaPion) < 2.0)
+      if(TMath::Abs(fTPCnSigmaPion) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1154,7 +1580,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track)  {
 
       //acception
       
-      if (fTPCplusTOFnSigmaPion < 2.0)
+      if (fTPCplusTOFnSigmaPion < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1163,7 +1589,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track)  {
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPbMC::ProtonSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPbMC::ProtonSelector(AliVTrack *track,  Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1214,7 +1640,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::ProtonSelector(AliVTrack *track)  {
       
       //acception
 
-      if(TMath::Abs(fTPCnSigmaProton) < 2.0)
+      if(TMath::Abs(fTPCnSigmaProton) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1242,7 +1668,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::ProtonSelector(AliVTrack *track)  {
 
       //acception
       
-      if (fTPCplusTOFnSigmaProton < 2.0)
+      if (fTPCplusTOFnSigmaProton < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1272,6 +1698,33 @@ Bool_t AliAnalysisTaskCorrPbPbMC::PassedSingleParticlePileUpCuts(AliAODTrack *tr
   if (!(track->HasPointOnITSLayer(1)) && !(track->HasPointOnITSLayer(4)) && !(track->HasPointOnITSLayer(5)) && !(track->GetTOFBunchCrossing() == 0))
     passedTrackPileupCut = (kFALSE);
   return passedTrackPileupCut;
+}
+ //_____________________________________________________________________________________________________________________________________
+void AliAnalysisTaskCorrPbPbMC::GetMCEffCorrectionHist()
+{
+  if(fListTRKCorr)
+    {
+      fHistMCEffKaonPlus = (TH1D*) fListTRKCorr->FindObject("histKaonPlusEff");
+      fHistMCEffKaonMinus = (TH1D*) fListTRKCorr->FindObject("histKaonMinusEff");
+
+      fHistMCEffPionPlus = (TH1D*) fListTRKCorr->FindObject("histPionPlusEff");
+      fHistMCEffPionMinus = (TH1D*) fListTRKCorr->FindObject("histPionMinusEff");
+
+      fHistMCEffProtonPlus = (TH1D*) fListTRKCorr->FindObject("histProtonPlusEff");
+      fHistMCEffProtonMinus = (TH1D*) fListTRKCorr->FindObject("histProtonMinusEff");
+
+      for(int i=0; i<9; i++)
+	{
+	  fEffProtonPlus[i] = (TH1D*)fListTRKCorr->FindObject(Form("EffProtonPlus%d",i));
+	  fEffProtonMinus[i] = (TH1D*)fListTRKCorr->FindObject(Form("EffProtonMinus%d",i));
+	  fEffPionPlus[i] = (TH1D*)fListTRKCorr->FindObject(Form("EffPionPlus%d",i));
+	  fEffPionMinus[i] = (TH1D*)fListTRKCorr->FindObject(Form("EffPionMinus%d",i));
+	  fEffKaonPlus[i] = (TH1D*)fListTRKCorr->FindObject(Form("EffKaonPlus%d",i));
+	  fEffKaonMinus[i] = (TH1D*)fListTRKCorr->FindObject(Form("EffKaonMinus%d",i));
+
+	}
+    }
+
 }
  //_____________________________________________________________________________________________________________________________________
 void AliAnalysisTaskCorrPbPbMC::Terminate(Option_t *)  {

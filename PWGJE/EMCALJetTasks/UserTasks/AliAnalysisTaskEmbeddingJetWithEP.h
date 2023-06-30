@@ -53,9 +53,6 @@ public:
   void Terminate(Option_t *option);
 
   static AliAnalysisTaskEmbeddingJetWithEP* AddTaskEmbeddingJetWithEP(
-      TString EPCailbType = "JeHand",
-      TString EPCalibJEHandRefFileName = "alien:///alice/cern.ch/user/t/tkumaoka/calibV0TPCRun2Vtx10P118qPass3.root",
-      TString EPCalibOrigRefFileName = "alien:///alice/cern.ch/user/t/tkumaoka/CalibV0GainCorrectionLHC18q_Oct2021.root",
       const char *ntracks            = "usedefault",
       const char *nclusters          = "usedefault",
       const char* ncells             = "usedefault",
@@ -103,9 +100,12 @@ public:
   void SetTrackHistQA(Bool_t bTrackQA){fTrackQA = bTrackQA;}
   void SetBkgHistQA(Bool_t bBkgQA){fBkgQA = bBkgQA;}
   void SetJetHistQA(Bool_t bJetQA){fJetQA = bJetQA;}
-
+  void Set2DRMwithEP2(Bool_t b2DRMwithEP2){f2DRMwithEP2 = b2DRMwithEP2;}
+  void Set2DRMwithEP3(Bool_t b2DRMwithEP3){f2DRMwithEP3 = b2DRMwithEP3;}
+  
   void SetJetHistWEP(Bool_t bSepEP){fSepEP = bSepEP;}
   void SetModulationFitType(fitModulationType type) {fFitModulationType = type; }
+  void SetRhoLocalSubType(Bool_t bRhoLocalSubType){fRhoLocalSubType = bRhoLocalSubType;}
 
   // == s == Setter Embedding Parameters ==================
   void SetDoJetMatchingGeometrical(Bool_t b)                { fDoJetMatchingGeometrical = b; }
@@ -113,7 +113,7 @@ public:
   void SetDoJetMatchingMCFraction(Bool_t b)                 { fDoJetMatchingMCFraction = b; }
   void SetRequireMatchedJetAccepted(Bool_t b)               { fRequireMatchedJetAccepted = b; }
   void SetJetMatchingR(Double_t r)                          { fJetMatchingR = r; }
-  void SetMinimumSharedMomentumFraction(double d)           { fMinSharedMomentumFraction = d; }
+  void SetMinimumSharedMomentumFraction(Double_t d)         { fMinSharedMomentumFraction = d; }
   void SetMCJetMinMatchingPt(Double_t min)                  { fMCJetMinMatchingPt = min; }
   void SetDetJetMinMatchingPt(Double_t min)                 { fDetJetMinMatchingPt = min; }
   void SetPlotJetMatchCandThresh(Double_t r)                { fPlotJetMatchCandThresh = r; }
@@ -206,6 +206,8 @@ private:
     Bool_t  fTrackQA = kFALSE;        ///<
     Bool_t  fBkgQA = kFALSE;          ///<
     Bool_t  fJetQA = kFALSE;          ///<
+    Bool_t  f2DRMwithEP2 = kFALSE;    ///<
+    Bool_t  f2DRMwithEP3 = kFALSE;    ///<
 
     Bool_t  fSepEP = kFALSE;          ///<
     
@@ -214,6 +216,7 @@ private:
     Int_t         fV0KindForBkg = 0;        ///< 0:V0M, 1:V0C, 2:V0A
     Bool_t        fV0Combin = kFALSE;       ///<
     int           fQaEventNum = -1;         ///<
+    Bool_t        fRhoLocalSubType;         ///<
     
     std::string   fRunListFileName;         ///< Run list file Name
     TString       fCalibRefFileName;        ///< Calibration input file name
@@ -262,8 +265,10 @@ private:
     void       DoJetMatching();
     Bool_t     PerformGeometricalJetMatching(AliJetContainer& contBase, AliJetContainer& contTag, Double_t maxDist);
     const AliEmcalJet* GetMatchedPartLevelJet(const AliEmcalJet* detJet, Double_t detJetPt, TString groupName);
+    const AliEmcalJet* GetMatchedJet(const AliEmcalJet* detJet, Double_t detJetPt, TString groupName);
     Double_t GetAngularity(const AliEmcalJet* jet);
     Double_t GetRelativePhi(Double_t mphi, Double_t vphi);
+    void     CaclJetEnergyScaleShift();
 
     void       DoTrackLoop();
     
@@ -364,6 +369,10 @@ private:
 
     Double_t fV2ResoV0;     ///<  V2 resolution value
     Double_t fV3ResoV0;     ///<  V3 resolution value
+
+    Double_t fMinShareFraction;
+    Double_t fMaxDeltaR;
+
 
     TList     *fCalibRefObjList;   ///<
     TH2F      *fHCorrV0ChWeghts;   //!<!
@@ -479,7 +488,7 @@ private:
     AliAnalysisTaskEmbeddingJetWithEP(const AliAnalysisTaskEmbeddingJetWithEP&); // not implemented
     AliAnalysisTaskEmbeddingJetWithEP &operator=(const AliAnalysisTaskEmbeddingJetWithEP&);
 
-    ClassDef(AliAnalysisTaskEmbeddingJetWithEP, 131);
+    ClassDef(AliAnalysisTaskEmbeddingJetWithEP, 133);
 };
 
 #endif

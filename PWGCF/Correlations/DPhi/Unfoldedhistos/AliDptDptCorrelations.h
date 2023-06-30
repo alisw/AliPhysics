@@ -83,7 +83,6 @@ public:
   Int_t                       fRequestedCharge_2;           ///< requested charge sign for the second particle
 
   /* the arrays with tracks 1 and 2 information */
-  int* fPID;          //!<! the array of track Ids
   int* fIxEtaPhi;     //!<! the array of track combined eta phi bin index
   int* fIxPt;         //!<! the array of track pT bin index
   float* fCorrection; //!<! the array of the correction to apply to track
@@ -135,7 +134,7 @@ private:
   AliDptDptCorrelations& operator=(const AliDptDptCorrelations&);
 
   /// \cond CLASSIMP
-  ClassDef(AliDptDptCorrelations,4);
+  ClassDef(AliDptDptCorrelations, 5);
   /// \endcond
 };
 

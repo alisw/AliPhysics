@@ -3,8 +3,6 @@
  *                                                                        *
  * Author: Baldo Sahlmueller, Friederike Bock                             *
  * Version 1.0                                                            *
- * Photon specific study                                                  *
- *                                                                        *
  * Permission to use, copy, modify and distribute this software and its   *
  * documentation strictly for non-commercial purposes is hereby granted   *
  * without fee, provided that the above copyright notice appears in all   *
@@ -13,6 +11,11 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+
+// Photon specific study by Hikari Murakami                               
+// Purpose: (1)calculate Nch based on V0 multiplicity (ALICE acceptance)
+//          (2)define multiplicity class
+//          (3)get photon distribution based on the multiplicity class
 
 //////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------
@@ -56,21 +59,28 @@ ClassImp(AliAnalysisTaskGammaPythia)
 AliAnalysisTaskGammaPythia::AliAnalysisTaskGammaPythia(): AliAnalysisTaskSE(),
   fOutputContainer(nullptr),
   fHistNEvents(nullptr),
+  fHistNEventsHM(nullptr),
   fHistXSection(nullptr),
   fHistPtHard(nullptr),
+  fHistParticlePDG(nullptr),
+  fHistMotherParticlePDG(nullptr),
+  fHistGrandMotherParticlePDG(nullptr),
+  fHistParticlevsMother(nullptr),
   fHistPtGamma(nullptr),
   fHistPtYGamma(nullptr),
-  fHistPtGammaClassI(nullptr),
-  fHistPtGammaClassII(nullptr),
-  fHistPtGammaClassIII(nullptr),
-  fHistPtYGammaClassI(nullptr),
-  fHistPtYGammaClassII(nullptr),
-  fHistPtYGammaClassIII(nullptr),
+  fHistPtMultGamma(nullptr),
+  fHistMult(nullptr),
   fHistV0Mult(nullptr),
+  fHistV0MultHM(nullptr),
   fIsMC(1),
+  fMaxY(2),
+  fNch_min(0),
+  fNch_max(30),
   fMaxpT(100),
   fDoMultStudies(0),
+  fNTracks(0),
   fNTracksInV0Acc(0),
+  fNTracksInV0AccHM(0),
   fIsEvtINELgtZERO(0)
 {
 
@@ -81,21 +91,28 @@ AliAnalysisTaskGammaPythia::AliAnalysisTaskGammaPythia(const char *name):
   AliAnalysisTaskSE(name),
   fOutputContainer(nullptr),
   fHistNEvents(nullptr),
+  fHistNEventsHM(nullptr),
   fHistXSection(nullptr),
   fHistPtHard(nullptr),
+  fHistParticlePDG(nullptr),
+  fHistMotherParticlePDG(nullptr),
+  fHistGrandMotherParticlePDG(nullptr),
+  fHistParticlevsMother(nullptr),
   fHistPtGamma(nullptr),
   fHistPtYGamma(nullptr),
-  fHistPtGammaClassI(nullptr),
-  fHistPtGammaClassII(nullptr),
-  fHistPtGammaClassIII(nullptr),
-  fHistPtYGammaClassI(nullptr),
-  fHistPtYGammaClassII(nullptr),
-  fHistPtYGammaClassIII(nullptr),
+  fHistPtMultGamma(nullptr),
+  fHistMult(nullptr),
   fHistV0Mult(nullptr),
+  fHistV0MultHM(nullptr),
   fIsMC(1),
+  fMaxY(2),
+  fNch_min(0),
+  fNch_max(30),
   fMaxpT(100),
   fDoMultStudies(0),
+  fNTracks(0),
   fNTracksInV0Acc(0),
+  fNTracksInV0AccHM(0),
   fIsEvtINELgtZERO(0)
 {
   // Define output slots here
@@ -124,6 +141,10 @@ void AliAnalysisTaskGammaPythia::UserCreateOutputObjects(){
   fHistNEvents->Sumw2();
   fOutputContainer->Add(fHistNEvents);
 
+  fHistNEventsHM                		= new TH1F("NEventsHM", "", 3, -0.5, 2.5);
+  fHistNEventsHM->Sumw2();
+  fOutputContainer->Add(fHistNEventsHM);
+ 
   fHistXSection               		= new TH1D("XSection", "", 1000000, 0, 1e4);  
   fHistXSection->Sumw2();
   fOutputContainer->Add(fHistXSection);
@@ -132,41 +153,41 @@ void AliAnalysisTaskGammaPythia::UserCreateOutputObjects(){
   fHistPtHard->Sumw2();
   fOutputContainer->Add(fHistPtHard);
 
+  fHistParticlePDG                 = new TH1I("ParticlePDG", "", 5000, 0, 5000);
+  fOutputContainer->Add(fHistParticlePDG);
+
+  fHistMotherParticlePDG                 = new TH1I("MotherParticlePDG", "", 5000, 0, 5000);
+  fOutputContainer->Add(fHistMotherParticlePDG);
+
+  fHistGrandMotherParticlePDG                 = new TH1I("GrandMotherParticlePDG", "", 5000, 0, 5000);
+  fOutputContainer->Add(fHistGrandMotherParticlePDG);
+
+  fHistParticlevsMother                 = new TH2I("ParticlevsMother", "", 5000, 0, 5000, 5000, 0, 5000);
+  fOutputContainer->Add(fHistParticlevsMother);
+
   fHistPtGamma                		= new TH1F("Pt_Gamma","", fMaxpT*10, 0, fMaxpT);
   fHistPtGamma->Sumw2();
   fOutputContainer->Add(fHistPtGamma);
-
-  fHistPtGammaClassI                        = new TH1F("Pt_GammaClassI","", fMaxpT*10, 0, fMaxpT);
-  fHistPtGammaClassI->Sumw2();
-  fOutputContainer->Add(fHistPtGammaClassI);
-
-  fHistPtGammaClassII                        = new TH1F("Pt_GammaClassII","", fMaxpT*10, 0, fMaxpT);
-  fHistPtGammaClassII->Sumw2();
-  fOutputContainer->Add(fHistPtGammaClassII);
-
-  fHistPtGammaClassIII                        = new TH1F("Pt_GammaClassIII","", fMaxpT*10, 0, fMaxpT);
-  fHistPtGammaClassIII->Sumw2();
-  fOutputContainer->Add(fHistPtGammaClassIII);
 
   fHistPtYGamma                		= new TH2F("Pt_Y_Gamma","", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
   fHistPtYGamma->Sumw2();
   fOutputContainer->Add(fHistPtYGamma);
 
-  fHistPtYGammaClassI                	= new TH2F("Pt_Y_GammaClassI","", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
-  fHistPtYGammaClassI->Sumw2();
-  fOutputContainer->Add(fHistPtYGammaClassI);
+  fHistPtMultGamma                		= new TH2F("Pt_Mult_Gamma","", fMaxpT*10, 0, fMaxpT, 1000, -0.5, 1000 - 0.5);
+  fHistPtMultGamma->Sumw2();
+  fOutputContainer->Add(fHistPtMultGamma);
 
-  fHistPtYGammaClassII                	= new TH2F("Pt_Y_GammaClassII","", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
-  fHistPtYGammaClassII->Sumw2();
-  fOutputContainer->Add(fHistPtYGammaClassII);
-
-  fHistPtYGammaClassIII                	= new TH2F("Pt_Y_GammaClassIII","", fMaxpT*10, 0, fMaxpT, 200, -1.0, 1.0);
-  fHistPtYGammaClassIII->Sumw2();
-  fOutputContainer->Add(fHistPtYGammaClassIII);
+  fHistMult = new TH1D("Multiplicity", "", 1000, -0.5, 1000 - 0.5);
+  fHistMult->Sumw2();
+  fOutputContainer->Add(fHistMult);
 
   fHistV0Mult = new TH1D("V0Multiplicity", "", 1000, -0.5, 1000 - 0.5);
   fHistV0Mult->Sumw2();
   fOutputContainer->Add(fHistV0Mult);
+
+  fHistV0MultHM = new TH1D("V0MultiplicityHM", "", 1000, -0.5, 1000 - 0.5);
+  fHistV0MultHM->Sumw2();
+  fOutputContainer->Add(fHistV0MultHM);
 
   PostData(1, fOutputContainer);
 }
@@ -176,27 +197,27 @@ void AliAnalysisTaskGammaPythia::UserExec(Option_t *)
 {
 
   fInputEvent = InputEvent();
-  //   cout << "I found an Event" << endl;
 
   fMCEvent = MCEvent();
   if(fMCEvent == nullptr) fIsMC = 0;
-  if (fIsMC==0) return;
-  //   cout << "I found an MC header" << endl;
-
+  if (fIsMC==0){
+    //    printf("UserExec()   fMCEvent=NULL \n");	
+    return;
+  }			
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
   Double_t mcProdVtxZ   = primVtxMC->GetZ();
-
+  
   if (TMath::Abs(mcProdVtxZ) < 10 ){
     fHistNEvents->Fill(0);
   } else {
     fHistNEvents->Fill(1);
   }
-
+  
   AliGenEventHeader* mcEH = fMCEvent->GenEventHeader();
   AliGenPythiaEventHeader *pyH  = dynamic_cast<AliGenPythiaEventHeader*>(mcEH);
   AliGenHijingEventHeader *hiH  = 0;
   AliGenDPMjetEventHeader *dpmH = 0;
-
+  
   // it can be only one save some casts
   // assuming PYTHIA and HIJING are the most likely ones...
   if(!pyH){
@@ -222,109 +243,131 @@ void AliAnalysisTaskGammaPythia::UserExec(Option_t *)
       }
     }
   }
-
+  
   // take the trials from the p+p event
   if(hiH)ntrials = hiH->Trials();
   if(dpmH)ntrials = dpmH->Trials();
   if(pyH)ntrials = pyH->Trials();
   if(ntrials)fHistNEvents->Fill(2,ntrials);
-
+  
   Double_t xSection = 0;
   Double_t ptHard = 0;
   if (pyH) xSection = pyH->GetXsection();
   if (pyH) ptHard = pyH->GetPtHard();
   if (xSection) fHistXSection->Fill(xSection);
   if (ptHard) fHistPtHard->Fill(ptHard);
-
+  
   ProcessMultiplicity();
-  ProcessMCParticles();
+
+  if((fNch_min <= fNTracksInV0Acc) && (fNTracksInV0Acc < fNch_max) ){
+    fHistNEventsHM->Fill(0);
+    fHistV0MultHM->Fill(fNTracksInV0Acc);
+    // Loop over all primary MC particle
+    for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
+      // fill primary histograms
+      AliVParticle* particle     = nullptr;
+      particle                    = (AliVParticle *)fMCEvent->GetTrack(i);
+      //    printf("%d",particle->PdgCode());
+      fHistParticlePDG->Fill(TMath::Abs(particle->PdgCode()));
+      if (!particle) continue;
+      Bool_t hasMother            = kFALSE;
+      Bool_t particleIsPrimary    = kTRUE;
+
+      if (particle->GetMother()>-1){
+	hasMother         = kTRUE;
+	particleIsPrimary = kFALSE;
+      }
+      AliVParticle*  motherParticle   = nullptr;
+      if (hasMother){
+	//      printf("%d",motherParticle->PdgCode());
+	motherParticle  = (AliVParticle*)fMCEvent->GetTrack(particle->GetMother());
+	fHistMotherParticlePDG->Fill(TMath::Abs(motherParticle->PdgCode()));
+      }
+      if (motherParticle) hasMother   = kTRUE;
+      else                hasMother   = kFALSE;
+
+      Bool_t motherIsPrimary                                = kFALSE;
+      if(hasMother){
+	if(motherParticle->GetMother()>-1) motherIsPrimary = kFALSE;
+	else                                motherIsPrimary = kTRUE;
+      }
+
+      AliVParticle* grandMotherParticle  = nullptr;
+      Bool_t hasGrandMother          = kFALSE;
+      if (hasMother && !motherIsPrimary) {
+	grandMotherParticle           = (AliVParticle*)fMCEvent->GetTrack(motherParticle->GetMother());
+	hasGrandMother               = kTRUE;
+	fHistGrandMotherParticlePDG->Fill(TMath::Abs(grandMotherParticle->PdgCode()));
+      }
+
+      Bool_t grandMotherIsPrimary                                     = kFALSE;
+      if (hasGrandMother) {
+	if(grandMotherParticle->GetMother()>-1)  grandMotherIsPrimary = kFALSE;
+	else                                     grandMotherIsPrimary = kTRUE;
+      }
+      
+      if (!(TMath::Abs(particle->E()-particle->Pz())>0.)) continue;
+      Double_t yPre = (particle->E()+particle->Pz())/(particle->E()-particle->Pz());
+      if( yPre <= 0 ) continue;
+      
+      Double_t y = 0.5*TMath::Log(yPre);
+      
+      Int_t PdgAnalyzedParticle = 22;
+      // gamma from source
+      if(TMath::Abs(particle->PdgCode())==PdgAnalyzedParticle){
+	if(hasMother==kTRUE){
+	  fHistParticlevsMother->Fill(TMath::Abs(motherParticle->PdgCode()),TMath::Abs(particle->PdgCode()));
+	  if(hasGrandMother==kFALSE){
+	    if (TMath::Abs(y) > fMaxY) continue;
+	    fHistPtGamma->Fill(particle->Pt());
+	    fHistPtYGamma->Fill(particle->Pt(), particle->Y());
+	    fHistPtMultGamma->Fill(particle->Pt(), fNTracksInV0Acc);
+	  }
+	}
+      }
+
+    }//End of loop over all primary MC particle
+  }
 
   PostData(1, fOutputContainer);
 }
 
+
 void AliAnalysisTaskGammaPythia::ProcessMultiplicity()
 {
+  // set number of tracks to 0
+  fNTracks = 0;
   // set number of tracks in V0 acceptance to 0
   fNTracksInV0Acc = 0;
   // set INEL>0 to false
   fIsEvtINELgtZERO = false;
-  // Loop over all primary MC particle
-  for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++){
-    AliVParticle* particle = nullptr;
-    particle               = (AliVParticle *)fMCEvent->GetTrack(i);
-    if (!particle) continue;
-    // selected charged primary particles in V0 acceptance
-    if(particle->IsPhysicalPrimary() && particle->Charge() != 0){
-      if(IsInV0Acceptance(particle)){
-	fNTracksInV0Acc++;
-      }
-    }
-  }
-  fHistV0Mult->Fill(fNTracksInV0Acc);
-}
 
-//________________________________________________________________________
-void AliAnalysisTaskGammaPythia::ProcessMCParticles()
-{
-  
   // Loop over all primary MC particle
   for(Long_t i = 0; i < fMCEvent->GetNumberOfTracks(); i++) {
-    // fill primary histograms
     AliVParticle* particle     = nullptr;
     particle                    = (AliVParticle *)fMCEvent->GetTrack(i);
     if (!particle) continue;
-    Bool_t hasMother            = kFALSE;
-    //     cout << i << "\t"<< particle->GetMother() << endl;
-    if (particle->GetMother()>-1)
-      hasMother                 = kTRUE;
-    AliVParticle* motherParticle   = nullptr;
-    if( hasMother )
-      motherParticle            = (AliVParticle *)fMCEvent->GetTrack(particle->GetMother());
-    if (motherParticle)
-      hasMother                 = kTRUE;
-    else
-      hasMother                 = kFALSE;
+    fNTracks++;
+    // selected charged primary particles in V0 acceptance
+    if(particle->IsPhysicalPrimary() && particle->Charge() != 0){
+      if(IsInV0Acceptance(particle)){
+        fNTracksInV0Acc++;
+      }
+      // check if event is INEL>0
+      if(!fIsEvtINELgtZERO){
+        if(std::abs(particle->Eta()) < 1){
+          fIsEvtINELgtZERO = true;
+        }
+      }
+    }
+  }
 
-    //    const std::array<int, 1> kAcceptPdgCodes = {kPdgGamma};
-    //    if(std::find(kAcceptPdgCodes.begin(), kAcceptPdgCodes.end(), TMath::Abs(particle->PdgCode())) ==  kAcceptPdgCodes.end()) continue;  // species not supported
+  fHistMult->Fill(fNTracks);
+  fHistV0Mult->Fill(fNTracksInV0Acc);
 
-    if (!(TMath::Abs(particle->E()-particle->Pz())>0.)) continue;
-    Double_t yPre = (particle->E()+particle->Pz())/(particle->E()-particle->Pz());
-    //     cout << i << "\t"<< particle->GetPdgCode() << "\t"<< particle->Pz() << "\t" << particle->Energy()<< "\t" << particle->Energy()-particle->Pz() << "\t"<< yPre << endl;
-    if( yPre <= 0 ) continue;
+}
 
-    Double_t y = 0.5*TMath::Log(yPre);
 
-    if (y > 1.000) continue;
-    if(particle->PdgCode()==22){
-
-      //whatever you require hasMother or not, both histogram are filled  (2023/04/13 v5)
-      // if (!hasMother){//Primary
-      // }else{//Secondary
-      // 	fHistPtGammaHM->Fill(particle->Pt());	
-      // 	fHistPtYGammaHM->Fill(particle->Pt(), particle->Y());
-      // }
-      if(std::abs(particle->Y()) <= 0.8){
-	//MB case 
-	fHistPtGamma->Fill(particle->Pt());	
-	fHistPtYGamma->Fill(particle->Pt(), particle->Y());		  
-	if(fNTracksInV0Acc < 7.0){
-	  //Low multiplicity < 7.0 
-	  fHistPtGammaClassI->Fill(particle->Pt());	
-	  fHistPtYGammaClassI->Fill(particle->Pt(), particle->Y());		   
-	}else if( (fNTracksInV0Acc < 30) && (7.0 <= fNTracksInV0Acc) ){
-	  //7.0 <= Nch < 30.0
-	  fHistPtGammaClassII->Fill(particle->Pt());	
-	  fHistPtYGammaClassII->Fill(particle->Pt(), particle->Y());		   
-	}else if( 30.0 <= fNTracksInV0Acc ){
-	  //high multiplicity 30 <= Nch
-	  fHistPtGammaClassIII->Fill(particle->Pt());	
-	  fHistPtYGammaClassIII->Fill(particle->Pt(), particle->Y());		   
-	}
-      }	
-    }//if particle is photon 
-  }//Number of Tracks
-}//ProcessMCParticles
 //________________________________________________________________________
 bool AliAnalysisTaskGammaPythia::IsInV0Acceptance(AliVParticle* part) const {
   const Double_t kBoundaryEtaMinV0A = 2.8;
@@ -344,3 +387,4 @@ void AliAnalysisTaskGammaPythia::Terminate(const Option_t *)
 
   //fOutputContainer->Print(); // Will crash on GRID
 }
+

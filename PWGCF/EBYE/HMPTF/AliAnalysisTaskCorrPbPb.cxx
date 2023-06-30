@@ -88,6 +88,7 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb():
   fUtils(0),
   fOutputList(0),
   fQAList(0),
+  fTreeList(0),
   fTreeEvent(0),
   fESDtrackCuts(0),
   fESDtrackCuts_primary(0),
@@ -144,7 +145,12 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb():
   fHistMCEffPionPlus(0),
   fHistMCEffPionMinus(0),
   fHistMCEffProtonPlus(0),
-  fHistMCEffProtonMinus(0)
+  fHistMCEffProtonMinus(0),
+  fVertexZMax(0),
+  fFBNo(0),
+  fChi2TPC(0),
+  fChi2ITS(0),
+  fPIDnSigmaCut(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -167,6 +173,7 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb(const char *name):
   fUtils(0),
   fOutputList(0),
   fQAList(0),
+  fTreeList(0),
   fTreeEvent(0),
   fESDtrackCuts(0),
   fESDtrackCuts_primary(0),
@@ -223,7 +230,12 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb(const char *name):
   fHistMCEffPionPlus(0),
   fHistMCEffPionMinus(0),
   fHistMCEffProtonPlus(0),
-  fHistMCEffProtonMinus(0)
+  fHistMCEffProtonMinus(0),
+  fVertexZMax(0),
+  fFBNo(0),
+  fChi2TPC(0),
+  fChi2ITS(0),
+  fPIDnSigmaCut(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -239,7 +251,7 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb(const char *name):
   DefineInput (0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
-  DefineOutput(3, TTree::Class());
+  DefineOutput(3, TList::Class());
 }
 //_____________________________________________________________________________________________________________________________________
 AliAnalysisTaskCorrPbPb::~AliAnalysisTaskCorrPbPb()  {
@@ -251,6 +263,10 @@ AliAnalysisTaskCorrPbPb::~AliAnalysisTaskCorrPbPb()  {
   if (fQAList){
     delete fQAList;
     fQAList = 0x0;
+  }
+  if (fTreeList){
+    delete fTreeList;
+    fTreeList = 0x0;
   }
   if (fTreeEvent){
     delete fTreeEvent;
@@ -269,8 +285,10 @@ void AliAnalysisTaskCorrPbPb::UserCreateOutputObjects()  {
     //Create Output List
     fOutputList = new TList();
     fQAList     = new TList();
+    fTreeList   = new TList();
     fOutputList -> SetOwner(kTRUE);
     fQAList     -> SetOwner(kTRUE);
+    fTreeList   -> SetOwner(kTRUE);
 
     OpenFile(1);
     OpenFile(2);
@@ -360,6 +378,8 @@ void AliAnalysisTaskCorrPbPb::UserCreateOutputObjects()  {
     fTreeEvent->Branch("fEffSqrFactrProtonPlus_ptmax3", &fEffSqrFactrProtonPlus_ptmax3, "fEffSqrFactrProtonPlus_ptmax3/F");
     fTreeEvent->Branch("fEffSqrFactrProtonMinus_ptmax3", &fEffSqrFactrProtonMinus_ptmax3, "fEffSqrFactrProtonMinus_ptmax3/F");
 
+    fTreeList->Add(fTreeEvent);
+
     
     /*
     
@@ -385,7 +405,7 @@ void AliAnalysisTaskCorrPbPb::UserCreateOutputObjects()  {
     
     PostData(1, fOutputList);
     PostData(2, fQAList);
-    PostData(3, fTreeEvent);
+    PostData(3, fTreeList);
 }
 //_____________________________________________________________________________________________________________________________________
 void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
@@ -467,7 +487,13 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
     Double_t BinCont = 0;
     Double_t EffWgt = 0;
 
-    if(fListTRKCorr) GetMCEffCorrectionHist();
+    if(fListTRKCorr) 
+      {
+	cout<<"## Got efficiency histograms..## "<<endl;
+	GetMCEffCorrectionHist();
+      }
+    else
+      cout<<"################ No histograms found ############### "<<endl;
 
     Int_t centrality_bin = 0;
     if(lV0M > 0.0 && lV0M < 5.0)
@@ -503,8 +529,18 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
 	if(!aodtrack)      continue;
 
 
-	//Track selectionL FilterBit 96
-	if(!aodtrack->TestFilterBit(96))  continue;
+	//Track selectionL FilterBit : default is FB96
+	if(!aodtrack->TestFilterBit(fFBNo))  continue;
+
+	//cuts on TPCchi2perClstr and ITSchi2perClstr
+	
+	Double_t trkITSchi2 = aodtrack->GetITSchi2();
+	Int_t trkITSNcls = aodtrack->GetITSNcls();
+	Double_t trkITSchi2perNcls = trkITSchi2/trkITSNcls;
+	Double_t trkTPCchi2perNcls = aodtrack->GetTPCchi2perCluster();
+	if (trkTPCchi2perNcls > fChi2TPC) continue;
+	if (trkITSchi2perNcls > fChi2ITS) continue;
+	
 
 	Double_t trkPt = aodtrack->Pt();
 	Double_t trkPhi = aodtrack->Phi();
@@ -521,9 +557,9 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
 	if (trkPt > 3.0) continue;
 
 	//PID selection
-	Bool_t IsKaon = KaonSelector(track);
-	Bool_t IsPion = PionSelector(track);
-	Bool_t IsProton = ProtonSelector(track);
+	Bool_t IsKaon = KaonSelector(track, fPIDnSigmaCut);
+	Bool_t IsPion = PionSelector(track, fPIDnSigmaCut);
+	Bool_t IsProton = ProtonSelector(track, fPIDnSigmaCut);
 	if (!IsKaon && !IsPion && !IsProton) continue;
 
 	//Check if a particle is selected as more than one type
@@ -763,7 +799,7 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
  
     PostData(1, fOutputList);
     PostData(2, fQAList);
-    PostData(3, fTreeEvent);
+    PostData(3, fTreeList);
 }    
 //_____________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code written earlier 
@@ -782,7 +818,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
 	  AliWarning("ERROR: lAODevent not available from AODEvent() Aborting event!");
 	  PostData(1, fOutputList);
 	  PostData(2, fQAList);
-	  PostData(3, fTreeEvent);
+	  PostData(3, fTreeList);
 	  return kFALSE;
 	}
     }
@@ -793,7 +829,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       AliWarning("ERROR: fInputEvent (AliVEvent) not available \n");
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   
@@ -804,7 +840,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
   if (!fAODeventCuts.AcceptEvent(fInputEvent)) {
     PostData(1, fOutputList);
     PostData(2, fQAList);
-    PostData(3, fTreeEvent);
+    PostData(3, fTreeList);
     return kFALSE;
   }
   hNumberOfEvents -> Fill(1.5);
@@ -815,7 +851,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(2.5);
@@ -826,7 +862,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(3.5);
@@ -840,7 +876,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(4.5);
@@ -852,7 +888,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(5.5);
@@ -863,7 +899,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(6.5);
@@ -876,7 +912,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(7.5);
@@ -886,7 +922,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(8.5);
@@ -897,7 +933,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(9.5);
@@ -912,7 +948,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(10.5);
@@ -923,17 +959,17 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(11.5);
 
     //Primary Vertex Selection
-    if ( vertex_tracks->GetZ() < -10.0 || vertex_tracks->GetZ() > +10.0)
+    if ( vertex_tracks->GetZ() < -1.0*fVertexZMax || vertex_tracks->GetZ() > +1.0*fVertexZMax)
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(12.5);
@@ -944,7 +980,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       } 
     hNumberOfEvents -> Fill(13.5);
@@ -955,7 +991,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(14.5);
@@ -1012,7 +1048,7 @@ Bool_t AliAnalysisTaskCorrPbPb::PassedTrackQualityCuts (AliAODTrack *track)  {
     return passedTrkSelection;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track, Double_t nSigmaCut)  {
  
   Double_t p[3];
   track->PxPyPz(p);
@@ -1061,7 +1097,7 @@ Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track)  {
       */
       
       //acception
-      if(TMath::Abs(fTPCnSigmaKaon) < 2.0)
+      if(TMath::Abs(fTPCnSigmaKaon) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1085,7 +1121,7 @@ Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track)  {
       if (fTPCplusTOFnSigmaKaon > fTPCplusTOFnSigmaPion) return kFALSE;
 
       //acception
-      if (fTPCplusTOFnSigmaKaon < 2.0)
+      if (fTPCplusTOFnSigmaKaon < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1096,7 +1132,7 @@ Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track)  {
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track, Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1149,7 +1185,7 @@ Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track)  {
       
       //acception
       
-      if(TMath::Abs(fTPCnSigmaPion) < 2.0)
+      if(TMath::Abs(fTPCnSigmaPion) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1175,7 +1211,7 @@ Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track)  {
 
       //acception
       
-      if (fTPCplusTOFnSigmaPion < 2.0)
+      if (fTPCplusTOFnSigmaPion < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1184,7 +1220,7 @@ Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track)  {
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb::ProtonSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPb::ProtonSelector(AliVTrack *track, Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1235,7 +1271,7 @@ Bool_t AliAnalysisTaskCorrPbPb::ProtonSelector(AliVTrack *track)  {
       
       //acception
 
-      if(TMath::Abs(fTPCnSigmaProton) < 2.0)
+      if(TMath::Abs(fTPCnSigmaProton) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1263,7 +1299,7 @@ Bool_t AliAnalysisTaskCorrPbPb::ProtonSelector(AliVTrack *track)  {
 
       //acception
       
-      if (fTPCplusTOFnSigmaProton < 2.0)
+      if (fTPCplusTOFnSigmaProton < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;

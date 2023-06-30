@@ -60,6 +60,9 @@ void AddTask_MesonJetCorr_ConvCalo(
   Double_t smearParConst = 0.,           // conv photon smearing params
   Bool_t doPrimaryTrackMatching = kTRUE, // enable basic track matching for all primary tracks to cluster
   bool useCentralEvtSelection = true,
+  bool setPi0Unstable = false,
+  bool enableAddBackground = false,
+  bool enableRadiusDep = false,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig
 )
@@ -402,6 +405,10 @@ void AddTask_MesonJetCorr_ConvCalo(
                                          //   task->SetDoClusterQA(enableQAClusterTask);  //Attention new switch small for Cluster QA
   task->SetUseTHnSparseForResponse(enableTHnSparse);
   task->SetDoUseCentralEvtSelection(useCentralEvtSelection);
+  task->SetForcePi0Unstable(setPi0Unstable);
+  task->SetUseMixedBackAdd(enableAddBackground);
+  task->SetDoRadiusDependence(enableRadiusDep);
+
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_ConvCalo_%i_%i%s%s", meson, trainConfig, corrTaskSetting.EqualTo("") == true ? "" : Form("_%s", corrTaskSetting.Data()), nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );
   AliAnalysisDataContainer* coutput = mgr->CreateContainer(nameContainer, TList::Class(), AliAnalysisManager::kOutputContainer, Form("MesonJetCorrelation_ConvCalo_%i_%i.root", meson, trainConfig));

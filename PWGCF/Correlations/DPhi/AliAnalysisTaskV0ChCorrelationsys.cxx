@@ -190,7 +190,8 @@ AliAnalysisTaskV0ChCorrelationsys::AliAnalysisTaskV0ChCorrelationsys()
      fHistEffEtaPtK0s(0),
      fHistEffEtaPtLambda(0),
      fHistEffEtaPtAntiLambda(0),
-     fHistEffEtaPtTrack(0)
+     fHistEffEtaPtTrack(0),
+     fHistSecContfactor(0)
 {
   fMassMean[0] = 0.497614; fMassMean[1] = 1.115683; 
   fMassRes[0] = 0.005; fMassRes[1] = 0.0025; 
@@ -334,7 +335,8 @@ AliAnalysisTaskV0ChCorrelationsys::AliAnalysisTaskV0ChCorrelationsys(const char 
      fHistEffEtaPtK0s(0),
      fHistEffEtaPtLambda(0),
      fHistEffEtaPtAntiLambda(0),
-     fHistEffEtaPtTrack(0)
+     fHistEffEtaPtTrack(0),
+     fHistSecContfactor(0)
 {
    // Constructor
    // Define input and outPut slots here (never in the dummy constructor)
@@ -429,8 +431,8 @@ void AliAnalysisTaskV0ChCorrelationsys::UserCreateOutputObjects()
       fHistEffEtaPtLambda = (TH2F*)fEffList->FindObject("fHistEffEtaPtLambdaCent0_10All");
       fHistEffEtaPtAntiLambda = (TH2F*)fEffList->FindObject("fHistEffEtaPtAntiLambdaCent0_10All");
       fHistEffEtaPtTrack = (TH2F*)fEffList->FindObject("fHistEffEtaPtTrackCent0_10All");
-
-      if(!fHistEffEtaPtK0s || !fHistEffEtaPtLambda || !fHistEffEtaPtAntiLambda || !fHistEffEtaPtTrack){
+      fHistSecContfactor = (TH1F*)fEffList->FindObject("fHistSecConta");
+      if(!fHistEffEtaPtK0s || !fHistEffEtaPtLambda || !fHistEffEtaPtAntiLambda || !fHistEffEtaPtTrack || !fHistSecContfactor){
         std::cout<<"Efficiency histograms are not available!"<<std::endl;
       }
     }
@@ -664,13 +666,11 @@ void AliAnalysisTaskV0ChCorrelationsys::UserCreateOutputObjects()
 
    //-----------------------------------------------------------
    // Settings for event mixing 
-   const Int_t nCentralityBins  = 9;
-   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 5;
+   Double_t centBins[] = {0., 10.,30.,50.,60.,90.};
    const Double_t* centralityBins = centBins;
    
-  // const Int_t nZvtxBins  = 7;
-  // Double_t vertexBins[] = {-7.,-5.,-3.,-1.,1.,3.,5.,7.};
-  // const Double_t* zvtxBins = vertexBins;
+  
 
 const Int_t nZvtxBins  =  fNumOfVzBins;//fNumOfVzBins;
     Double_t vertexBins[nZvtxBins+1];
@@ -708,8 +708,8 @@ const Int_t nZvtxBins  =  fNumOfVzBins;//fNumOfVzBins;
   tQAEvent->SetOwner();
   tQAEvent->SetName("EventInput");
   
-   const Int_t nCentralityBins  = 9;
-   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 5;
+   Double_t centBins[] = {0., 10.,30.,50.,60.,90.};
    const Double_t* centralityBins = centBins;
 
   
@@ -769,8 +769,8 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQATrackCandidates()
    tQATrack->SetName("Track");
 
    // defining bins for centrality
-   const Int_t nCentralityBins  = 9;
-   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 5;
+   Double_t centBins[] = {0., 10.,30.,50.,60.,90.};
    const Double_t* centralityBins = centBins;
    
 
@@ -795,15 +795,12 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQATrackCandidates()
         }
     }
 
-const Int_t nPtBinsV0Xi = 1;
-const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+const Int_t nPtBinsV0Xi = 5;
+const Double_t PtBinsV0Xi[6] = {3, 4, 6,10, 16, 25};
    
 
 const Int_t nPtBins = 6;
-const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0};
-
-
-
+const Double_t PtBins[7] = {1, 2, 3, 4, 6, 8, 10};
 
      
    //defining bins of Eta distribution
@@ -1112,8 +1109,8 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQAAnalysisK0s()
    tQAK0s->SetName("K0s");
    
    // defining bins for centrality
-   const Int_t nCentralityBins  = 9;
-   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 5;
+   Double_t centBins[] = {0., 10.,30.,50.,60.,90.};
    const Double_t* centralityBins = centBins;
    
   
@@ -1136,16 +1133,14 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQAAnalysisK0s()
         }
     }
 
-const Int_t nPtBinsV0Xi = 1;
-const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+const Int_t nPtBinsV0Xi = 5;
+const Double_t PtBinsV0Xi[6] = {3, 4, 6,10, 16, 25};
    
 
 const Int_t nPtBins = 6;
-const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0};
+const Double_t PtBins[7] = {1, 2, 3, 4, 6, 8, 10};
 
-
-
-  
+ 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
    const Int_t nTrigC = 3;
    const Double_t TrigC[4] = {0.5, 1.5, 2.5, 3.5};
@@ -1314,8 +1309,8 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQAAnalysisLambda()
    tQALambda->SetName("Lambda");
    
    // defining bins for centrality
-   const Int_t nCentralityBins  = 9;
-   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+  const Int_t nCentralityBins  = 5;
+   Double_t centBins[] = {0., 10.,30.,50.,60.,90.};
    const Double_t* centralityBins = centBins;
   
    
@@ -1338,14 +1333,12 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQAAnalysisLambda()
             vertexBins[i]=vertexBins[i-1]+binstep;
         }
     }
-
-const Int_t nPtBinsV0Xi = 1;
-const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+const Int_t nPtBinsV0Xi = 5;
+const Double_t PtBinsV0Xi[6] = {3, 4, 6,10, 16, 25};
    
 
 const Int_t nPtBins = 6;
-const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0};
-
+const Double_t PtBins[7] = {1, 2, 3, 4, 6, 8, 10};
 
 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
@@ -1525,8 +1518,8 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQAAnalysisAntiLambda()
    tQAAntiLambda->SetName("AntiLambda");
    
    // defining bins for centrality
-   const Int_t nCentralityBins  = 9;
-   Double_t centBins[] = {0., 10.,20.,30.,40.,50.,60.,70.,80.,90.};
+   const Int_t nCentralityBins  = 5;
+   Double_t centBins[] = {0., 10.,30.,50.,60.,90.};
    const Double_t* centralityBins = centBins;
    
       
@@ -1548,15 +1541,12 @@ void AliAnalysisTaskV0ChCorrelationsys::AddQAAnalysisAntiLambda()
             vertexBins[i]=vertexBins[i-1]+binstep;
         }
     }
-
-const Int_t nPtBinsV0Xi = 1;
-const Double_t PtBinsV0Xi[2] = {8.0,16.0}; 
+const Int_t nPtBinsV0Xi = 5;
+const Double_t PtBinsV0Xi[6] = {3, 4, 6,10, 16, 25};
    
 
 const Int_t nPtBins = 6;
-const Double_t PtBins[7] = {1.0,2.0,3.0,4.0,6.0,8.0,10.0};
-
-
+const Double_t PtBins[7] = {1, 2, 3, 4, 6, 8, 10};
 
 
    // cascade trigger class: 1 - signal (mass peak region), 2 - left mass sideband, 3 - right mass sideband
@@ -1761,24 +1751,7 @@ void AliAnalysisTaskV0ChCorrelationsys::UserExec(Option_t *)
 
     // physics selection
     UInt_t maskIsSelected= inEvMain->IsEventSelected();
-   // Bool_t isINT7selected = maskIsSelected & AliVEvent::kINT7;
-   // if (!isINT7selected) return;
-
-/*
- if(!fData2018){if(!(maskIsSelected & (AliVEvent::kINT7))) { return;}}
-
- if(fData2018){
- if(!(maskIsSelected & (AliVEvent::kCentral |AliVEvent::kINT7))) {
-  return; }
-
-else{
-    {if(!(maskIsSelected & (AliVEvent::kINT7))) { return;}}
-   }
-  }
-
-*/
-
-
+   
     AliAODEvent* fAOD = dynamic_cast<AliAODEvent*>(inEvMain->GetEvent());
   
 
@@ -1791,8 +1764,7 @@ else{
 
   //================================================================
 
-   // ((TH1F*)((TList*)fOutput->FindObject("EventInput"))->FindObject("fHistMultiMain"))->Fill(fAOD->GetNumberOfTracks());
-    ((TH1F*)((TList*)fOutput->FindObject("EventInput"))->FindObject("fHistMultiMain"))->Fill(1.5);;
+      ((TH1F*)((TList*)fOutput->FindObject("EventInput"))->FindObject("fHistMultiMain"))->Fill(1.5);;
 
     //====================================Pile Up================================================= 
     
@@ -1855,7 +1827,7 @@ if( !MultSelection) {
     mcArray->SetOwner(kTRUE);
 
 
-    //======================================processing MC data==========================================
+    //======================================processing MC data==============================
 
     Int_t iMC = 0;
     if(fAnalysisMC){
@@ -2320,7 +2292,7 @@ if ((tPt >fV0PtMin)&&(tPt < fV0PtMax)) {
       Double_t spTrack[4] = {tPt, tEta, lCent, lPVz};
 
       if(fEffCorr){
-          Double_t weight = fHistEffEtaPtTrack->Interpolate(tr->Eta(), tr->Pt());
+          Double_t weight = fHistEffEtaPtTrack->Interpolate(tr->Eta(), tr->Pt())/(1.- fHistSecContfactor->Interpolate(tr->Pt()));
           if(weight == 0){
             continue;
           }
@@ -2650,7 +2622,7 @@ if(fhh){
         //Filling correlation histograms and histograms for triggers counting
         if(fEffCorr){
 
-          Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt());
+          Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt())/(1.- fHistSecContfactor->Interpolate(atr->Pt()));
           Double_t weight = weightTrack;
           if(weight == 0){
           continue;
@@ -2761,7 +2733,7 @@ else{if (massK0s > fMassLowK0s[1] && massK0s < fMassHighK0s[1]){
         //Filling correlation histograms and histograms for triggers counting
         if(fEffCorr){
           Double_t weightK0s = fHistEffEtaPtK0s->Interpolate(v0->Eta(), v0->Pt());
-          Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt());
+          Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt())/(1.- fHistSecContfactor->Interpolate(atr->Pt()));
           Double_t weight = weightK0s * weightTrack;
           if(weight == 0){
             continue;
@@ -2897,7 +2869,7 @@ if (massLambda > fMassLowLambda[1] && massLambda < fMassHighLambda[1]){
         
         if(fEffCorr){
           Double_t weightLambda = fHistEffEtaPtLambda->Interpolate(v0->Eta(), v0->Pt());
-          Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt());
+         Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt())/(1.- fHistSecContfactor->Interpolate(atr->Pt()));
           Double_t weight = weightLambda * weightTrack;
           if(weight == 0){
             continue;
@@ -3031,7 +3003,7 @@ if(massAntiLambda > fMassLowAntiLambda[1] && massAntiLambda < fMassHighAntiLambd
 
          if(fEffCorr){
           Double_t weightAntiLambda = fHistEffEtaPtAntiLambda->Interpolate(v0->Eta(), v0->Pt());
-          Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt());
+          Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt())/(1.- fHistSecContfactor->Interpolate(atr->Pt()));
           Double_t weight = weightAntiLambda * weightTrack;
           if(weight == 0){
             continue;
@@ -3125,7 +3097,7 @@ if(massAntiLambda > fMassLowAntiLambda[1] && massAntiLambda < fMassHighAntiLambd
  
 if(fEffCorr){
 
-                Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt());
+                Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt())/(1.- fHistSecContfactor->Interpolate(atr->Pt()));
                 Double_t weight = weightTrack;
                 if(weight == 0){
                   continue;
@@ -3195,7 +3167,7 @@ if(fAnalysisMC){
  
 if(fEffCorr){
                 Double_t weightK0s = fHistEffEtaPtK0s->Interpolate(trig->Eta(),trig->Pt());
-                Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt());
+               Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt())/(1.- fHistSecContfactor->Interpolate(atr->Pt()));
                 Double_t weight = weightK0s * weightTrack;
                 if(weight == 0){
                   continue;
@@ -3272,7 +3244,7 @@ if(fAnalysisMC){
 
               if(fEffCorr){
                 Double_t weightLambda = fHistEffEtaPtLambda->Interpolate(trig->Eta(),trig->Pt());
-                Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt());
+                 Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt())/(1.- fHistSecContfactor->Interpolate(atr->Pt()));
                 Double_t weight = weightLambda * weightTrack;
                 if(weight == 0){
                   continue;
@@ -3339,7 +3311,7 @@ if(fAnalysisMC){
 
               if(fEffCorr){
                 Double_t weightAntiLambda = fHistEffEtaPtAntiLambda->Interpolate(trig->Eta(),trig->Pt());
-                Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt());
+                Double_t weightTrack = fHistEffEtaPtTrack->Interpolate(atr->Eta(), atr->Pt())/(1.- fHistSecContfactor->Interpolate(atr->Pt()));
                 Double_t weight = weightAntiLambda * weightTrack;
                 if(weight == 0){
                   continue;

@@ -87,8 +87,8 @@ class MatrixHandlerNDim
  public:
   MatrixHandlerNDim() = default;
   MatrixHandlerNDim(std::vector<std::vector<double>> arrBinsX, std::vector<std::vector<double>> arrBinsY, bool useTHN = false);
-  MatrixHandlerNDim(std::vector<std::vector<double>> arrBinsX, std::vector<std::vector<double>> arrBinsY, THnSparse* h = nullptr);
-  MatrixHandlerNDim(std::vector<std::vector<double>> arrBinsX, std::vector<std::vector<double>> arrBinsY, TH2F* h = nullptr);
+  MatrixHandlerNDim(std::vector<std::vector<double>> arrX, std::vector<std::vector<double>> arrY, THnSparse* h = nullptr);
+  MatrixHandlerNDim(std::vector<std::vector<double>> arrX, std::vector<std::vector<double>> arrY, TH2F* h = nullptr);
   MatrixHandlerNDim(const MatrixHandlerNDim&) = delete;            // copy ctor
   MatrixHandlerNDim(MatrixHandlerNDim&&) = delete;                 // move ctor
   MatrixHandlerNDim& operator=(const MatrixHandlerNDim&) = delete; // copy assignment
@@ -102,10 +102,14 @@ class MatrixHandlerNDim
 
   unsigned int getIndex(std::vector<double> vecVal, bool isXAxis);
 
-  double getValueForBinIndexMesonX(const int index) const;
-  double getValueForBinIndexJetX(const int index) const;
-  double getValueForBinIndexMesonY(const int index) const;
-  double getValueForBinIndexJetY(const int index) const;
+  // double getValueForBinIndexMesonX(const int index) const;
+  // double getValueForBinIndexJetX(const int index) const;
+  // double getValueForBinIndexMesonY(const int index) const;
+  // double getValueForBinIndexJetY(const int index) const;
+
+  TH2F* GetResponseMatrix(std::vector<int> binsX, std::vector<int> binsY, const char* name);
+
+  std::vector<double> getValueForBinIndex(const unsigned int index, bool isXAxis);
 
   void Fill(double valJetX, double valJetY, double valMesonX, double valMesonY, double val = 1);
   void Fill(std::vector<double> valRec, std::vector<double> valTrue, double val = 1);
@@ -120,8 +124,7 @@ class MatrixHandlerNDim
   THnSparseF* GetTHnSparse(const char* name = "");
 
   TH2F* GetTH2(const char* name = "hSparseResponse_Clone");
-  TH2F* GetResponseMatrix(int binX, int binY, const char* name = "dummy");
-  TH2F* GetResponseMatrix(std::vector<double> vecBins, const char* name = "dummy");
+  TH2F* GetResponseMatrix(std::vector<double> binsX, std::vector<double> binsY, const char* name = "dummy");
 
  private:
   bool useTHNSparese = false;

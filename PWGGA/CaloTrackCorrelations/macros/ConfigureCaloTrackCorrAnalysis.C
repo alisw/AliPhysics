@@ -854,7 +854,9 @@ AliAnaPhoton* ConfigurePhotonAnalysis(TString col,           Bool_t simulation,
   if ( tm > 1 ) caloPID->SwitchOnEMCTrackPtDepResMatching();
   
   // Branch AOD settings
-  ana->SetOutputAODName(Form("PhotonTrigger_%s",kAnaCaloTrackCorr.Data()));
+  TString refName = Form("PhotonTrigger_%s",kAnaCaloTrackCorr.Data());
+  printf("RefName photon %s\n",refName.Data());
+  ana->SetOutputAODName(refName);
   ana->SetOutputAODClassName("AliCaloTrackParticleCorrelation");
   
   //Set Histograms name tag, bins and ranges
@@ -1662,6 +1664,12 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
     refName += Form("_R%1.2f",ic->GetConeSize());
   if ( kAnaCutsString.Contains("MultiIsoR") &&  kAnaCutsString.Contains("AndGap"))
     refName += Form("_Rmin%1.2f_UEGap%1.2f",ic->GetMinDistToTrigger(),ic->GetConeSizeBandGap());
+
+  if ( histoString.Contains("_UEAreas") )
+        refName += Form("_UEAreas_Meth%d",thresType);
+  if ( bTrackCutUE )
+    refName +="_UEPtCut";
+  //printf("RefName: %s\n",refName.Data());
   ana->SetAODObjArrayName(refName);
   //
 
@@ -2381,8 +2389,23 @@ void ConfigureCaloTrackCorrAnalysis
   if ( analysisString.Contains("DistToBadOn") && kAnaCaloTrackCorr.Contains("DistToBadOff") )
     kAnaCaloTrackCorr+= "_DistToBadOn";
 
-  if ( analysisString.Contains("ExoCut") )
-    kAnaCaloTrackCorr+= "_ExoCut";
+  if ( analysisString.Contains("ExoCut0.92") )
+    kAnaCaloTrackCorr+= "_ExoCut0.92";
+  if ( analysisString.Contains("ExoCut0.90") )
+      kAnaCaloTrackCorr+= "_ExoCut0.90";
+  if ( analysisString.Contains("ExoCut0.95") )
+    kAnaCaloTrackCorr+= "_ExoCut0.95";
+  if ( analysisString.Contains("ExoCut0.96") )
+    kAnaCaloTrackCorr+= "_ExoCut0.96";
+  if ( analysisString.Contains("ExoCut0.97") )
+    kAnaCaloTrackCorr+= "_ExoCut0.97";
+  if ( analysisString.Contains("ExoCut0.94") )
+    kAnaCaloTrackCorr+= "_ExoCut0.94";
+  if ( analysisString.Contains("ExoCut0.93") )
+    kAnaCaloTrackCorr+= "_ExoCut0.93";
+
+  if ( analysisString.Contains("UESubMethods") )
+    kAnaCaloTrackCorr+= "_UESubMethods";
 
   if ( analysisString.Contains("NLMCut3" ) ) kAnaCaloTrackCorr+= "_NLMCut3";
   if ( analysisString.Contains("NLMCut4" ) ) kAnaCaloTrackCorr+= "_NLMCut4";

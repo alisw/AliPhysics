@@ -206,22 +206,24 @@ void AddTask_GammaConvCalo_pPb(
   // 9 "MinEnergy", 10 "MinNCells", 11 "MinM02", 12 "MaxM02", 13 "MinMaxM20", 14 "RecConv", 15 "MaximumDispersion", 16 "NLM"
 
   //************************************************ PCM- EDC analysis 5 TeV pPb *********************************************
-  if (trainConfig == 1){ // EMC  INT7 run1 & run2
-    cout << "Line: " << __LINE__ << endl;
-    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut
-    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut    
-  } else if (trainConfig == 2){ // EMC  INT7 run1 & run2
-    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","411790109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut
-    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut    
-  } else if (trainConfig == 3){ // EMC EMC triggers
-    cout << "Line: " << __LINE__ << endl;
-    cuts.AddCutPCMCalo("80052113","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut EMC7
-    cuts.AddCutPCMCalo("80085113","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut EG2
-    cuts.AddCutPCMCalo("80083113","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut EG1
-  } else if (trainConfig == 4){ // EMC EMC triggers MC rejected
-    cuts.AddCutPCMCalo("80052123","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut EMC7
-    cuts.AddCutPCMCalo("80085123","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut EG2
-    cuts.AddCutPCMCalo("80083123","0dm00009f9730000dge0404000","111110109fe30220000","0r63103100000010"); // 0-100% latest 13TeV cut EG1
+  if (trainConfig == 1){ // EMC  INT7 run1 & run2 external NL
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","411790009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut    
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","411790009fe30220000","0h63103100000010"); // 0-100% latest 13TeV cut mixing
+    cuts.AddCutPCMCalo("80010113","0dm00009f9730000dge0404000","111110009fe30220000","0h63103100000010"); // 0-100% latest 13TeV cut mixing
+  } else if (trainConfig == 2){ // EMC  INT7 run1 & run2 external NL
+    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","411790009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut
+    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut    
+    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","411790009fe30220000","0h63103100000010"); // 0-100% latest 13TeV cut mixing
+    cuts.AddCutPCMCalo("80010123","0dm00009f9730000dge0404000","111110009fe30220000","0h63103100000010"); // 0-100% latest 13TeV cut mixing
+  } else if (trainConfig == 3){ // EMC EMC triggers external NL
+    cuts.AddCutPCMCalo("80052113","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut EMC7
+    cuts.AddCutPCMCalo("80085113","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut EG2
+    cuts.AddCutPCMCalo("80083113","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut EG1
+  } else if (trainConfig == 4){ // EMC EMC triggers MC rejected external NL
+    cuts.AddCutPCMCalo("80052123","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut EMC7
+    cuts.AddCutPCMCalo("80085123","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut EG2
+    cuts.AddCutPCMCalo("80083123","0dm00009f9730000dge0404000","111110009fe30220000","0s63103100000010"); // 0-100% latest 13TeV cut EG1
 
   //************************************************ PCM- EDC analysis 5 TeV pPb INT7 sys *********************************
   } else if (trainConfig == 10) { // PCM variations

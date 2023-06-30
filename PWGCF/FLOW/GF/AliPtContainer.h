@@ -33,13 +33,15 @@ class AliPtContainer: public TNamed {
         void FillSkew(const vector<vector<Double_t>> &inarr, const Double_t &lMult, const Double_t &rn);
         void FillKurtosis(const vector<vector<Double_t>> &inarr, const Double_t &lMult, const Double_t &rn);
         void FillRecursive(const vector<vector<Double_t>> &inarr, Int_t subIndex = 0);
-        void FillRecursiveProfiles(const Double_t &lMult, const Double_t &rn);
+        void FillRecursiveProfiles(const Double_t &lMult, const Double_t &rn, bool exotic = kFALSE);
         vector<Double_t> getEventCorrelation(Int_t mOrder, Int_t subIndex = 0);
-        double getExoticEventCorrelation(int wOrder, int pOrder, const vector<vector<double>> &inarr);
+        double getExoticEventCorrelation(int w, int p);
+        void FillExotic(int mMax, const vector<vector<double>> &inarr);
         TList* GetCkList() { return fCkTermList; }
         TList* GetSkewList() { return fSkewTermList; }
         TList* GetKurtosisList() { return fKurtosisTermList; }
         TList* GetCorrList() { return fCorrList; }
+        TList* GetSubList() { return fSubList; }
         void SetEventWeight(const unsigned int &lWeight) { fEventWeight = lWeight; };
         void CalculateCorrelation();
         TH1* getCkHist(Int_t ind);
@@ -52,7 +54,6 @@ class AliPtContainer: public TNamed {
         vector<Double_t> getSubeventCorrelation(Int_t mOrder);
         Int_t getMpar() { return mpar;}
         Long64_t Merge(TCollection *collist);
-    protected:
         TList* fCkTermList;
         TList* fSkewTermList;
         TList* fKurtosisTermList;
@@ -68,7 +69,8 @@ class AliPtContainer: public TNamed {
         Bool_t fSubevent;
         vector<vector<Double_t>> fCorr; 
         vector<vector<Double_t>> fSumw; 
-        Double_t OrderedAddition(vector<Double_t> vec, Int_t size);
+        vector<vector<Double_t>> fExoticCorr; 
+        Double_t OrderedAddition(vector<Double_t> vec);
         TH1* getPowerHist(TH1* inh, Double_t p);
         void CalculateCk();
         void CalculateSkew();
@@ -83,7 +85,8 @@ class AliPtContainer: public TNamed {
 
       private:
         static Double_t           fFactorial[9];
-        static int              fSign[9];
+        static Int_t              fSign[9];
+        static Double_t           fCoeff[5][5][5][5];
         void MergeBSLists(TList *source, TList *target);
     ClassDef(AliPtContainer,1);
 };

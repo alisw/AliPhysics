@@ -202,21 +202,15 @@ printf("========AAAAAA========\n") ;
    //double yPHOSmax[3]={-0.042, 0.042, 0.125} ;
    //double phiPHOSmin[14]={250.,255.,260.,265.,270.,275.,280.,285.,290.,295.,300.,305.,310.,315.} ;
    //double phiPHOSmax[14]={255.,260.,265.,270.,275.,280.,285.,290.,295.,300.,305.,310.,315.,320.} ;
-   double phiPHOSmin[4]={240.,260.,280.,300.} ;
-   double phiPHOSmax[4]={260.,280.,300.,320.} ;
+   //double phiPHOSmin[4]={240.,260.,280.,300.} ;
+   //double phiPHOSmax[4]={260.,280.,300.,320.} ;
 
-   for(int iphi=0; iphi<4; iphi++){
-        // AliGenParam *genPHOS = new AliGenParam(1,new AliGenPHOSlib(),AliGenPHOSlib::kPi0,"");
-        AliGenParam *genPHOS = new AliGenParam(10,1,mpl->GetPt(1),mpl->GetY(1),mpl->GetV2(1),mpl->GetIp(1));
-        //AliGenBox *genPHOS = new AliGenBox(2) ;
-        genPHOS->SetPhiRange(phiPHOSmin[iphi],phiPHOSmax[iphi]) ;
-        //genPHOS->SetYRange(yPHOSmin[iy],yPHOSmax[iy]) ;
+        AliGenParam *genPHOS = new AliGenParam(35,1,mpl->GetPt(1),mpl->GetY(1),mpl->GetV2(1),mpl->GetIp(1));
+        genPHOS->SetPhiRange(240.,320.);
         genPHOS->SetYRange(-0.125,0.125) ;
         genPHOS->SetPtRange(0.1,3.) ; 
-//        genPHOS->SetPart(22) ; 
         genPHOS->SetForceDecay(kNoDecay);
-        gener->AddGenerator(genPHOS,Form("PHOS%d",iphi),1.) ;
-   }
+        gener->AddGenerator(genPHOS,"PHOS",1.) ;
 
   // Longitudinal
   Float_t sigmaz  = 5.4 / TMath::Sqrt(2.); // [cm]

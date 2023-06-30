@@ -98,9 +98,6 @@ public:
   void Terminate(Option_t *option);
 
   static AliAnalysisTaskRawJetWithEP* AddTaskRawJetWithEP(
-      TString EPCailbType = "JeHand",
-      TString EPCalibJEHandRefFileName = "alien:///alice/cern.ch/user/t/tkumaoka/calibV0TPCRun2Vtx10P118qPass3.root",
-      TString EPCalibOrigRefFileName = "alien:///alice/cern.ch/user/t/tkumaoka/CalibV0GainCorrectionLHC18q_Oct2021.root",
       const char *ntracks            = "usedefault",
       const char *nclusters          = "usedefault",
       const char* ncells             = "usedefault",

@@ -50,8 +50,11 @@ void AddTask_MesonJetCorr_Conv(
   Bool_t enableElecDeDxPostCalibration = kFALSE,
   // special settings
   Bool_t enableChargedPrimary = kFALSE,
-  bool doFillMesonDCATree = false, // swith to enable filling the meson DCA tree for pile-up estimation
+  bool doFillMesonDCATree = false, // switch to enable filling the meson DCA tree for pile-up estimation
   bool useCentralEvtSelection = true,
+  bool setPi0Unstable = false,
+  bool enableAddBackground = false,
+  bool enableRadiusDep = false,
   // subwagon config
   TString additionalTrainConfig = "0" // additional counter for trainconfig + special settings
 )
@@ -191,7 +194,21 @@ void AddTask_MesonJetCorr_Conv(
     cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
   } else if (trainConfig == 17) { // same as 7 but with mixed jet back
     cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
-   
+  
+  // configs without TRD/ITS conversion requirement
+  } else if (trainConfig == 22) {
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
+  } else if (trainConfig == 23) {
+    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0404000", "2s52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
+  } else if (trainConfig == 24) {
+    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0404000", "2s52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
+  
+  // qt cut variations
+  } else if (trainConfig == 25) {
+    cuts.AddCutPCM("00010103", "0dm00009f97300003ge0404000", "2s52103500000000"); // qT max 0.05 1D
+    cuts.AddCutPCM("00010103", "0dm00009f97300002ge0404000", "2s52103500000000"); // qT max 0.06 2D
+    cuts.AddCutPCM("00010103", "0dm00009f97300009ge0404000", "2s52103500000000"); // qT max 0.03 2D
+  
     //---------------------------------------
     // configs for eta meson pp 13 TeV
     //---------------------------------------
@@ -322,6 +339,9 @@ void AddTask_MesonJetCorr_Conv(
   if(enableMatBudWeightsPi0) task->SetDoMaterialBudgetWeightingOfGammasForTrueMesons(true);
   if(doFillMesonDCATree) task->SetFillMesonDCATree(true);
   task->SetDoUseCentralEvtSelection(useCentralEvtSelection);
+  task->SetForcePi0Unstable(setPi0Unstable);
+  task->SetUseMixedBackAdd(enableAddBackground);
+  task->SetDoRadiusDependence(enableRadiusDep);
 
   //connect containers
   TString nameContainer = Form("MesonJetCorrelation_Conv_%i_%i%s", meson, trainConfig, nameJetFinder.EqualTo("") == true ? "" : Form("_%s", nameJetFinder.Data()) );

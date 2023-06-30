@@ -5,7 +5,8 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
   int CollisionSystem = 1,
   const char *Variation = "0",
   bool UseOpenCuts = true,
-  bool IsMC = false) {
+  bool IsMC = false,
+  bool SaveOnlyPairs = true) {
 
   bool DebugAddTask = true;
 
@@ -45,14 +46,13 @@ AliAnalysisTask_pd_CreateTrees_PairsOnly* AddTask_pd_CreateTrees_PairsOnly(
 
 
 
-  AliAnalysisTask_pd_CreateTrees_PairsOnly* task = new AliAnalysisTask_pd_CreateTrees_PairsOnly(Name.Data(),CollisionSystem,UseOpenCuts,IsMC);   
+  AliAnalysisTask_pd_CreateTrees_PairsOnly* task = new AliAnalysisTask_pd_CreateTrees_PairsOnly(Name.Data(),CollisionSystem,UseOpenCuts,IsMC,SaveOnlyPairs);
   if(!task)
   {
     std::cout << "AddTask_pd_CreateTrees_PairsOnly: x-x-x-x-> No AliAnalysisTask found" << std::endl;
     return nullptr;
   }
   if(DebugAddTask) std::cout << "AddTask_pd_CreateTrees_PairsOnly: AliAnalysisTask created" << std::endl;
-
 
 
   // add the task to the manager

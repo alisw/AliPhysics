@@ -61,6 +61,7 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fTrueVectorJetEta(0),
                                                    fTrueVectorJetPhi(0),
                                                    fTrueVectorJetR(0),
+                                                   fTrueVectorJetNPart(0),
                                                    fTrueVectorJetParton(0),
                                                    fTrueVectorJetPartonPt(0),
                                                    fTrueVectorJetPartonPx(0),
@@ -88,6 +89,7 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fTrueVectorJetEta(0),
                                                                    fTrueVectorJetPhi(0),
                                                                    fTrueVectorJetR(0),
+                                                                   fTrueVectorJetNPart(0),
                                                                    fTrueVectorJetParton(0),
                                                                    fTrueVectorJetPartonPt(0),
                                                                    fTrueVectorJetPartonPx(0),
@@ -137,7 +139,7 @@ void AliAnalysisTaskConvJet::DoJetLoop()
     TString JetName = jetCont->GetTitle();
     TObjArray* arr = JetName.Tokenize("__");
     TObjString* testObjString = (TObjString*)arr->At(2);
-    if (testObjString->GetString() != "mcparticles") {
+    if (!(static_cast<TString>(testObjString->GetString())).Contains("mcparticles")) {
       UInt_t count = 0;
       fNJets = 0;
       fVectorJetPt.clear();
@@ -177,6 +179,7 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       fTrueVectorJetEta.clear();
       fTrueVectorJetPhi.clear();
       fTrueVectorJetR.clear();
+      fTrueVectorJetNPart.clear();
       for (auto const& jet : jetCont->accepted()) {
         if (!jet)
           continue;
@@ -188,6 +191,7 @@ void AliAnalysisTaskConvJet::DoJetLoop()
         fTrueVectorJetEta.push_back(jet->Eta());
         fTrueVectorJetPhi.push_back(jet->Phi());
         fTrueVectorJetR.push_back(jet->Area());
+        fTrueVectorJetNPart.push_back(jet->N());
       }
       fTrueNJets = count;
     }

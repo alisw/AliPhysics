@@ -175,6 +175,12 @@ AliHFMLXicZeroToXiPifromKFP::AliHFMLXicZeroToXiPifromKFP() :
   f2DHistMassPULLvsRadius_Lambda(0),
   f2DHistMassPULLvsRadius_AntiLambda(0),
   f2DHistArmenterosPodolanski(0),
+  f2DHistNsigmaTPCTOF_PiFromXic0(0),
+  f2DHistNsigmaTPCTOF_PiFromOmegac0(0),
+  f2DHistNsigmaTPCTOF_PiFromXi(0),
+  f2DHistNsigmaTPCTOF_KaFromOmega(0),
+  f2DHistNsigmaTPCTOF_PiFromLam(0),
+  f2DHistNsigmaTPCTOF_PrFromLam(0),
   f2DHistChargeDaughters(0),
   f2DHistV0XY_OnFly(0),
   f2DHistV0XY_Offline(0),
@@ -499,6 +505,12 @@ AliHFMLXicZeroToXiPifromKFP::AliHFMLXicZeroToXiPifromKFP(const char* name, AliRD
   fHistEvents(0),
   fHTrigger(0),
   f2DHistArmenterosPodolanski(0),
+  f2DHistNsigmaTPCTOF_PiFromXic0(0),
+  f2DHistNsigmaTPCTOF_PiFromOmegac0(0),
+  f2DHistNsigmaTPCTOF_PiFromXi(0),
+  f2DHistNsigmaTPCTOF_KaFromOmega(0),
+  f2DHistNsigmaTPCTOF_PiFromLam(0),
+  f2DHistNsigmaTPCTOF_PrFromLam(0),
   f2DHistChargeDaughters(0),
   f2DHistV0XY_OnFly(0),
   f2DHistV0XY_Offline(0),
@@ -1087,6 +1099,17 @@ void AliHFMLXicZeroToXiPifromKFP::UserCreateOutputObjects()
   f2DHistXiPlusXY_DV = new TH2F("f2DHistXiPlusXY_DV", "f2DHistXiPlusXY_DV", 1000, -10., 10., 1000, -10., 10.);
   f2DHistXiPlusXY_PV = new TH2F("f2DHistXiPlusXY_PV", "f2DHistXiPlusXY_PV", 1000, -10., 10., 1000, -10., 10.);
 
+  if (!fIsAnaOmegac0) {
+    f2DHistNsigmaTPCTOF_PiFromXic0 = new TH2F("f2DHistNsigmaTPCTOF_PiFromXic0", "f2DHistNsigmaTPCTOF_PiFromXic0", 4000, -1000., 1000., 4000, -1000., 1000.);
+    f2DHistNsigmaTPCTOF_PiFromXi = new TH2F("f2DHistNsigmaTPCTOF_PiFromXi", "f2DHistNsigmaTPCTOF_PiFromXi", 4000, -1000., 1000., 4000, -1000., 1000.);
+  }
+  if (fIsAnaOmegac0) {
+    f2DHistNsigmaTPCTOF_PiFromOmegac0 = new TH2F("f2DHistNsigmaTPCTOF_PiFromOmegac0", "f2DHistNsigmaTPCTOF_PiFromOmegac0", 4000, -1000., 1000., 4000, -1000., 1000.);
+    f2DHistNsigmaTPCTOF_KaFromOmega = new TH2F("f2DHistNsigmaTPCTOF_KaFromOmega", "f2DHistNsigmaTPCTOF_KaFromOmega", 4000, -1000., 1000., 4000, -1000., 1000.);
+  }
+  f2DHistNsigmaTPCTOF_PiFromLam = new TH2F("f2DHistNsigmaTPCTOF_PiFromLam", "f2DHistNsigmaTPCTOF_PiFromLam", 4000, -1000., 1000., 4000, -1000., 1000.);
+  f2DHistNsigmaTPCTOF_PrFromLam = new TH2F("f2DHistNsigmaTPCTOF_PrFromLam", "f2DHistNsigmaTPCTOF_PrFromLam", 4000, -1000., 1000., 4000, -1000., 1000.);
+
   fHistChargeV0 = new TH1F("fHistChargeV0", "fHistChargeV0", 11, -5.5, 5.5);
   fHistOnFlyStatus = new TH1F("fHistOnFlyStatus"," fHistOnFlyStatus", 3, -1.5, 1.5);
   fHistOnFlyStatus_FirstDaugPos = new TH1F("fHistOnFlyStatus__FirstDaugPos"," fHistOnFlyStatus__FirstDaugPos", 3, -1.5, 1.5);
@@ -1282,12 +1305,20 @@ void AliHFMLXicZeroToXiPifromKFP::UserCreateOutputObjects()
 
   fOutputList->Add(fHistEvents); // don't forget to add it to the list! the list will be written to file, so if you want
   fOutputList->Add(f2DHistArmenterosPodolanski);
+  if (!fIsAnaOmegac0) {
+    fOutputList->Add(f2DHistNsigmaTPCTOF_PiFromXic0);
+    fOutputList->Add(f2DHistNsigmaTPCTOF_PiFromXi);
+  }
   if (fIsAnaOmegac0) {
+    fOutputList->Add(f2DHistNsigmaTPCTOF_PiFromOmegac0);
+    fOutputList->Add(f2DHistNsigmaTPCTOF_KaFromOmega);
     fOutputList->Add(fHistPt_OmegaNotFromOmegac0_Rec);
     fOutputList->Add(fHistPt_OmegaNotFromOmegac0_Gen);
     fOutputList->Add(f2DHist_YvsPt_OmegaNotFromOmegac0_Rec);
     fOutputList->Add(f2DHist_YvsPt_OmegaNotFromOmegac0_Gen);
   }
+  fOutputList->Add(f2DHistNsigmaTPCTOF_PiFromLam);
+  fOutputList->Add(f2DHistNsigmaTPCTOF_PrFromLam);
   /*
   fOutputList->Add(fHTrigger);
   fOutputList->Add(fCounterGen_Cuts_Lambda);
@@ -1649,6 +1680,10 @@ void AliHFMLXicZeroToXiPifromKFP::UserExec(Option_t *)
   TClonesArray *mcArray = 0;
   AliAODMCHeader *mcHeader = 0;
 
+  fNtracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
+  AliMultSelection *MultSelection = dynamic_cast<AliMultSelection*>(AODEvent->FindListObject("MultSelection"));
+  if(MultSelection) fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
+
   if (fIsMC) {
     fMCEvent = MCEvent(); // get the corresponding MC event fMCEvent
     if (!fMCEvent) {
@@ -1720,10 +1755,6 @@ void AliHFMLXicZeroToXiPifromKFP::UserExec(Option_t *)
   if(IsINT7&&IsEMC7) fHTrigger->Fill(12);
   if(fIsHMV0) fHTrigger->Fill(13);
   if(fIsHMSPD) fHTrigger->Fill(14); 
-
-  fNtracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(AODEvent, -1., 1.);
-  AliMultSelection *MultSelection = dynamic_cast<AliMultSelection*>(AODEvent->FindListObject("MultSelection"));
-  if(MultSelection)fCentrality = MultSelection->GetMultiplicityPercentile("V0M");
 
   //------------------------------------------------
   // Check if the event has v0 candidate
@@ -1989,7 +2020,7 @@ Bool_t AliHFMLXicZeroToXiPifromKFP::MakeMCAnalysis(TClonesArray *mcArray)
       if ( pifromOmegac0_flag && Omega_flag && kafromOmega_flag && Lam_flag && pifromLam_flag && prfromLam_flag ) {
         AliAODMCParticle *mcdau_0 = (AliAODMCParticle*) mcArray->At(mcpart->GetDaughterFirst());
         Double_t MLoverP = sqrt( pow(mcpart->Xv()-mcdau_0->Xv(),2.)+pow(mcpart->Yv()-mcdau_0->Yv(),2.)+pow(mcpart->Zv()-mcdau_0->Zv(),2.) ) * mcpart->M() / mcpart->P()*1.e4; // c*(proper lifetime) in um
-        Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
+        Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kFALSE);
         FillTreeGenXic0(mcpart, CheckOrigin, MLoverP);
       }
     }
@@ -2033,7 +2064,7 @@ Bool_t AliHFMLXicZeroToXiPifromKFP::MakeMCAnalysis(TClonesArray *mcArray)
       if ( pifromXic0_flag && Xi_flag && pifromXi_flag && Lam_flag && pifromLam_flag && prfromLam_flag ) {
         AliAODMCParticle *mcdau_0 = (AliAODMCParticle*) mcArray->At(mcpart->GetDaughterFirst());
         Double_t MLoverP = sqrt( pow(mcpart->Xv()-mcdau_0->Xv(),2.)+pow(mcpart->Yv()-mcdau_0->Yv(),2.)+pow(mcpart->Zv()-mcdau_0->Zv(),2.) ) * mcpart->M() / mcpart->P()*1.e4; // c*(proper lifetime) in um
-        Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kTRUE);
+        Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcpart,kFALSE);
         FillTreeGenXic0(mcpart, CheckOrigin, MLoverP);
       }
     } // for Xic0
@@ -4179,7 +4210,7 @@ Int_t AliHFMLXicZeroToXiPifromKFP::MatchToMCXic0(AliAODTrack *trackProton, AliAO
 //  if ( mcMother->IsSecondaryFromMaterial() ) return 4;
 //  if ( mcMother->IsFromSubsidiaryEvent() ) return 5;
 
-  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kTRUE);
+  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kFALSE);
   return CheckOrigin;
 }
 
@@ -4232,7 +4263,7 @@ Int_t AliHFMLXicZeroToXiPifromKFP::MatchToMCAntiXic0(AliAODTrack *trackAntiProto
 //  if ( mcMother->IsSecondaryFromMaterial() ) return 4;
 //  if ( mcMother->IsFromSubsidiaryEvent() ) return 5;
 
-  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kTRUE);
+  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kFALSE);
   return CheckOrigin;
 }
 
@@ -4286,7 +4317,7 @@ Int_t AliHFMLXicZeroToXiPifromKFP::MatchToMCOmegac0(AliAODTrack *trackProton, Al
 //  if ( mcMother->IsSecondaryFromMaterial() ) return 4;
 //  if ( mcMother->IsFromSubsidiaryEvent() ) return 5;
 
-  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kTRUE);
+  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kFALSE);
   return CheckOrigin;
 }
 
@@ -4339,7 +4370,7 @@ Int_t AliHFMLXicZeroToXiPifromKFP::MatchToMCAntiOmegac0(AliAODTrack *trackAntiPr
 //  if ( mcMother->IsSecondaryFromMaterial() ) return 4;
 //  if ( mcMother->IsFromSubsidiaryEvent() ) return 5;
 
-  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kTRUE);
+  Int_t CheckOrigin = AliVertexingHFUtils::CheckOrigin(mcArray,mcMother,kFALSE);
   return CheckOrigin;
 }
 
@@ -5610,6 +5641,10 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
       fVars_MLmap["nSigmaTOF_PiFromLam"]  = fVar_Xic0[45]; // TOF nsigma for pion coming from Lambda
       fVars_MLmap["nSigmaTPC_PrFromLam"]  = fVar_Xic0[5];  // TPC nsigma for proton coming from Lambda
       fVars_MLmap["nSigmaTOF_PrFromLam"]  = fVar_Xic0[46]; // TOF nsigma for proton coming from Lambda
+      fVars_MLmap["nSigmaComb_PiFromXic0"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[0], fVar_Xic0[1]); // Combined TPC and TOF nsigma for pion coming from Xic0
+      fVars_MLmap["nSigmaComb_PiFromXi"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[2], fVar_Xic0[3]); // Combined TPC and TOF nsigma for pion coming from Xi
+      fVars_MLmap["nSigmaComb_PiFromLam"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[4], fVar_Xic0[45]); // Combined TPC and TOF nsigma for pion coming from Lambda
+      fVars_MLmap["nSigmaComb_PrFromLam"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[5], fVar_Xic0[46]); // Combined TPC and TOF nsigma for proton coming from Lambda
       // Xic0
       fVars_MLmap["DecayLxy_Xic0"]     = fVar_Xic0[33]; // decay length of Xic0 in x-y plane
       fVars_MLmap["chi2geo_Xic0"]      = fVar_Xic0[34]; // chi2_geometry of Xic0
@@ -5655,6 +5690,10 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
       fVars_MLmap["nSigmaTOF_PiFromLam"]     = fVar_Xic0[45]; // TOF nsigma for pion coming from Lambda
       fVars_MLmap["nSigmaTPC_PrFromLam"]     = fVar_Xic0[5];  // TPC nsigma for proton coming from Lambda
       fVars_MLmap["nSigmaTOF_PrFromLam"]     = fVar_Xic0[46]; // TOF nsigma for proton coming from Lambda
+      fVars_MLmap["nSigmaComb_PiFromOmegac0"] = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[0], fVar_Xic0[1]); // Combined TPC and TOF nsigma for pion coming from Omegac0
+      fVars_MLmap["nSigmaComb_KaFromOmega"]   = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[2], fVar_Xic0[3]); // Combined TPC and TOF nsigma for kaon coming from Omega
+      fVars_MLmap["nSigmaComb_PiFromLam"]     = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[4], fVar_Xic0[45]); // Combined TPC and TOF nsigma for pion coming from Lambda
+      fVars_MLmap["nSigmaComb_PrFromLam"]     = AliVertexingHFUtils::CombineNsigmaTPCTOF(fVar_Xic0[5], fVar_Xic0[46]); // Combined TPC and TOF nsigma for proton coming from Lambda
       // Omegac0
       fVars_MLmap["DecayLxy_Omegac0"]     = fVar_Xic0[33]; // decay length of Omegac0 in x-y plane
       fVars_MLmap["chi2geo_Omegac0"]      = fVar_Xic0[34]; // chi2_geometry of Omegac0
@@ -5743,6 +5782,16 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
   }
 
   f2DHistArmenterosPodolanski->Fill(casc->AlphaV0(), casc->PtArmV0());
+  if (!fIsAnaOmegac0) {
+    f2DHistNsigmaTPCTOF_PiFromXic0->Fill(fVar_Xic0[0], fVar_Xic0[1]);
+    f2DHistNsigmaTPCTOF_PiFromXi->Fill(fVar_Xic0[2], fVar_Xic0[3]);
+  }
+  if (fIsAnaOmegac0) {
+    f2DHistNsigmaTPCTOF_PiFromOmegac0->Fill(fVar_Xic0[0], fVar_Xic0[1]);
+    f2DHistNsigmaTPCTOF_KaFromOmega->Fill(fVar_Xic0[2], fVar_Xic0[3]);
+  }
+  f2DHistNsigmaTPCTOF_PiFromLam->Fill(fVar_Xic0[4], fVar_Xic0[45]);
+  f2DHistNsigmaTPCTOF_PrFromLam->Fill(fVar_Xic0[5], fVar_Xic0[46]);
 
     /*
     Float_t ptGen_Xic0 = -99.;
