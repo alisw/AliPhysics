@@ -1505,7 +1505,7 @@ namespace PWGJE
 
   Double_t AliAnalysisTaskEmcalJetHdEdxCorrelations::GetFlattenedEPAngle(Double_t uncorrectedAngle){
       // Read the TTree from the ROOT file
-      TTree *tree = dynamic_cast<TTree *>(fEPcorrectionFile.Get("V0C"));
+      TTree *tree = dynamic_cast<TTree *>(fEPcorrectionFile->Get("V0C"));
 
       if (tree)
       {
@@ -1630,14 +1630,14 @@ namespace PWGJE
 
       TString *epCorrectionsFilenameTstr = new TString(epCorrectionsFilename);
 
-      if (epCorrectionsFilenameTstr.Contains("alien://") && !gGrid)
+      if (epCorrectionsFilenameTstr->Contains("alien://") && !gGrid)
       {
         TGrid::Connect("alien://");
       }
         // Open the ROOT file in read mode
-      TFile file(epCorrectionsFilenameTstr.Data(), "READ");
+      TFile *file = new TFile(epCorrectionsFilenameTstr->Data(), "READ");
 
-      fEPcorrectionFile = file;
+      correlationTask->fEPcorrectionFile = file;
 
       //-------------------------------------------------------
       // Final settings, pass to manager and set the containers
