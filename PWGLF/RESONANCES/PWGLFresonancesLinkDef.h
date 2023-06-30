@@ -93,6 +93,8 @@
 #pragma link C++ class AliAnalysisTaskXi1820BH+;
 
 #pragma link C++ class AliAnalysisTaskfn+;
+#pragma link C++ class AliAnalysisTaskfnAOD+;
 #pragma link C++ class AliCompactTrack+;
+#pragma link C++ class AliReducedTrack+;
 
 #endif
