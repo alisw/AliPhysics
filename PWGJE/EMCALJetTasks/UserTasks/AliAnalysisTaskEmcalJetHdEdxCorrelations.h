@@ -67,7 +67,13 @@ namespace PWGJE
 
       AliAnalysisTaskEmcalJetHdEdxCorrelations();
       AliAnalysisTaskEmcalJetHdEdxCorrelations(const char *name);
-      virtual ~AliAnalysisTaskEmcalJetHdEdxCorrelations() {}
+      virtual ~AliAnalysisTaskEmcalJetHdEdxCorrelations() {
+        //Make sure we close epCorrectionsFile if it is open
+        if (fEPcorrectionFile) {
+          fEPcorrectionFile->Close();
+          delete fEPcorrectionFile;
+        }
+      }
 
       Double_t GetTrackBias() const { return fTrackBias; }
       Double_t GetClusterBias() const { return fClusterBias; }
@@ -111,10 +117,10 @@ namespace PWGJE
       // Setup JES correction
       void SetJESCorrectionHist(TH2D *hist) { fJESCorrectionHist = hist; }
       void SetNoMixedEventJESCorrection(Bool_t b) { fNoMixedEventJESCorrection = b; }
-
       Bool_t RetrieveAndInitializeJESCorrectionHist(TString filename, TString histName, Double_t trackBias = AliAnalysisTaskEmcalJetHdEdxCorrelations::kDisableBias, Double_t clusterBias = AliAnalysisTaskEmcalJetHdEdxCorrelations::kDisableBias);
 
       virtual void UserCreateOutputObjects();
+      Double_t GetFlattenedEPAngle(Double_t uncorrectedAngle);
 
       // AddTask
       static AliAnalysisTaskEmcalJetHdEdxCorrelations *AddTaskEmcalJetHdEdxCorrelations(
@@ -137,7 +143,8 @@ namespace PWGJE
           const Bool_t JESCorrection = kFALSE,
           const char *JESCorrectionFilename = "alien:///alice/cern.ch/user/r/rehlersi/JESCorrection.root",
           const char *JESCorrectionHistName = "JESCorrection",
-          const char *suffix = "biased");
+          const char *epCorrectionsFilename = "alien:///alice/cern.ch/user/p/psteffan/epCorrections.root",
+           const char *suffix = "biased");
 
       bool ConfigureForStandardAnalysis(std::string trackName = "usedefault",
                                         std::string clusName = "usedefault",
@@ -244,6 +251,7 @@ namespace PWGJE
       Double_t fMinSharedMomentumFraction;    ///< Minimum shared momentum with matched jet
       bool fRequireMatchedPartLevelJet;       ///< True if matched jets are required to be matched to a particle level jet
       Double_t fMaxMatchedJetDistance;        ///< Maximum distance between two matched jets
+      TFile *fEPcorrectionFile;               //!<! File containing the EP corrections
 
       // Histograms
       THistManager fHistManager; ///<  Histogram manager

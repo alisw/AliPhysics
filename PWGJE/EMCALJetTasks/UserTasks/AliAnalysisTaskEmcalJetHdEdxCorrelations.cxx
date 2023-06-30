@@ -66,6 +66,7 @@ namespace PWGJE
                                                                                            fMinSharedMomentumFraction(0.),
                                                                                            fRequireMatchedPartLevelJet(false),
                                                                                            fMaxMatchedJetDistance(-1),
+                                                                                           fEPcorrectionFile(nullptr),
                                                                                            fHistManager(),
                                                                                            fHistJetHTrackPt(nullptr),
                                                                                            fHistEPAngle(nullptr),
@@ -103,6 +104,7 @@ namespace PWGJE
                                                                                                            fMinSharedMomentumFraction(0.),
                                                                                                            fRequireMatchedPartLevelJet(false),
                                                                                                            fMaxMatchedJetDistance(-1),
+                                                                                                           fEPcorrectionFile(nullptr),
                                                                                                            fHistManager(name),
                                                                                                            fHistJetHTrackPt(nullptr),
                                                                                                            fHistEPAngle(nullptr),
@@ -1502,15 +1504,8 @@ namespace PWGJE
     }
 
   Double_t AliAnalysisTaskEmcalJetHdEdxCorrelations::GetFlattenedEPAngle(Double_t uncorrectedAngle){
-     if (!gGrid)
-      {
-        TGrid::Connect("alien://");
-      }
-        // Open the ROOT file in read mode
-      TFile file("alien:///alice/cern.ch/user/p/psteffan/epCorrections.root", "READ");
-
       // Read the TTree from the ROOT file
-      TTree *tree = dynamic_cast<TTree *>(file.Get("V0C"));
+      TTree *tree = dynamic_cast<TTree *>(fEPcorrectionFile.Get("V0C"));
 
       if (tree)
       {
@@ -1535,9 +1530,6 @@ namespace PWGJE
         {
           std::cerr << "Failed to read TTree from the ROOT file." << std::endl;
         }
-
-        // Close the ROOT file
-        file.Close();
   }
 
     /**
@@ -1565,6 +1557,7 @@ namespace PWGJE
         const Bool_t JESCorrection,
         const char *JESCorrectionFilename,
         const char *JESCorrectionHistName,
+        const char *epCorrectionsFilename,
         const char *suffix)
     {
       // Get the pointer to the existing analysis manager via the static access method.
@@ -1634,6 +1627,17 @@ namespace PWGJE
           AliErrorClass("Failed to successfully retrieve and initialize the JES correction! Task initialization continuing without JES correction (can be set manually later).");
         }
       }
+
+      TString *epCorrectionsFilenameTstr = new TString(epCorrectionsFilename);
+
+      if (epCorrectionsFilenameTstr.Contains("alien://") && !gGrid)
+      {
+        TGrid::Connect("alien://");
+      }
+        // Open the ROOT file in read mode
+      TFile file(epCorrectionsFilenameTstr.Data(), "READ");
+
+      fEPcorrectionFile = file;
 
       //-------------------------------------------------------
       // Final settings, pass to manager and set the containers
