@@ -57,7 +57,7 @@ using std::cout;
 using std::endl;
 
 ClassImp(AliAnalysisTaskfnAOD)
-ClassImp(AliCompactTrack)
+ClassImp(AliReducedTrack)
 
 AliAnalysisTaskfnAOD::AliAnalysisTaskfnAOD(): 
 AliAnalysisTaskSE(), 
@@ -333,7 +333,7 @@ void AliAnalysisTaskfnAOD::UserExec(Option_t *)
 
       if(IsPion(track))
 	{
-	  selectedpiontracks->Add(new AliCompactTrack(track->Px(),track->Py(),track->Pz(),aodtrack->Charge()));
+	  selectedpiontracks->Add(new AliReducedTrack(track->Px(),track->Py(),track->Pz(),aodtrack->Charge()));
 	  pion.charge=aodtrack->Charge();
 	  pion.trkid=itr;
 	  pion.particle.SetXYZM(track->Px(), track->Py(), track->Pz(), pionmass);
@@ -407,7 +407,7 @@ void AliAnalysisTaskfnAOD::UserExec(Option_t *)
 
 	 for (const auto& bgTrack : *bgTracks)
 	   {
-	     AliCompactTrack* piontrackmix = dynamic_cast<AliCompactTrack*>(bgTrack);
+	     AliReducedTrack* piontrackmix = dynamic_cast<AliReducedTrack*>(bgTrack);
 	     if (!piontrackmix)
 	       {
 		 AliFatal(Form("ERROR: Could not receive mix pool track %d\n", bgTrack->GetUniqueID()));

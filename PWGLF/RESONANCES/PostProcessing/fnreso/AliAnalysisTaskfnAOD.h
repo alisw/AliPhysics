@@ -110,29 +110,29 @@ class AliAnalysisTaskfnAOD : public AliAnalysisTaskSE {
 };
 
 //taken from https://github.com/alisw/AliPhysics/blob/master/PWGCF/Correlations/DPhi/PidPid/AliAnalysisTaskPidPidCorrelations.h
-class AliCompactTrack : public TObject
+class AliReducedTrack : public TObject
 {
  public:
-  AliCompactTrack(Double_t px, Double_t py, Double_t pz, Short_t charge)
-    : fPxCompact(px), fPyCompact(py), fPzCompact(pz), fChargeCompact(charge)
+  AliReducedTrack(Double_t px, Double_t py, Double_t pz, Short_t charge)
+    : fPxReduced(px), fPyReduced(py), fPzReduced(pz), fChargeReduced(charge)
   {
   }
-  ~AliCompactTrack() {}
+  ~AliReducedTrack() {}
    
 
-  virtual Double_t Px() const { return fPxCompact; }
-  virtual Double_t Py() const { return fPyCompact; }
-  virtual Double_t Pz() const { return fPzCompact; }
-  virtual Short_t Charge() const{ return fChargeCompact; }
+  virtual Double_t Px() const { return fPxReduced; }
+  virtual Double_t Py() const { return fPyReduced; }
+  virtual Double_t Pz() const { return fPzReduced; }
+  virtual Short_t Charge() const{ return fChargeReduced; }
     
  private:
     
-  Double_t fPxCompact;    
-  Double_t fPyCompact;    
-  Double_t fPzCompact;    
-  Short_t fChargeCompact; 
+  Double_t fPxReduced;    
+  Double_t fPyReduced;    
+  Double_t fPzReduced;    
+  Short_t fChargeReduced; 
 
-  ClassDef(AliCompactTrack, 1);
+  ClassDef(AliReducedTrack, 1);
 };
 
 #endif
