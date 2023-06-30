@@ -26,6 +26,8 @@
 #include "AliAnalysisManager.h"
 #include "AliAnalysisTaskConvJet.h"
 #include "AliAnalysisTaskJetOutlierRemoval.h"
+#include "AliGenHepMCEventHeader.h"
+#include "AliAODMCHeader.h"
 #include "AliAnalysisTaskSE.h"
 #include "AliCaloPhotonCuts.h"
 #include "AliConvEventCuts.h"
