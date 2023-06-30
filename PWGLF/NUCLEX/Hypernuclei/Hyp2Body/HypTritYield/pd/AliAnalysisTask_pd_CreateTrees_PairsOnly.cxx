@@ -3191,7 +3191,15 @@ double AliAnalysisTask_pd_CreateTrees_PairsOnly::CalculateSigmadEdxTPC(AliAODTra
 
   }
 
+  if((LHC20g7b == true) && (isAntiDeuteron == true)){
 
+    Mean->FixParameter(0,0.548468);
+    Mean->FixParameter(1,76.6155);
+    Mean->FixParameter(2,2.39353);
+    Mean->FixParameter(3,2.11981);
+    Mean->FixParameter(4,12.934);
+
+  }
 
   // LHC22f3 (pass2) -> Anchored to MetaLHC16, MetaLHC17 and MetaLHC18 (pass2)
   if((LHC22f3 == true) && (isProton == true)){

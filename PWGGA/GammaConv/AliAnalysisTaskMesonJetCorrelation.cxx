@@ -192,6 +192,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              fHistoMatchedPtJet({}),
                                                                              fHistoUnMatchedPtJet({}),
                                                                              fHistoTruePtJet({}),
+                                                                             fHistoTruePtJetNotTriggered({}),
                                                                              fHistoTrueMatchedPtJet({}),
                                                                              fHistoTrueUnMatchedPtJet({}),
                                                                              fHistoNEFVsPtJet({}),
@@ -449,6 +450,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            fHistoMatchedPtJet({}),
                                                                                            fHistoUnMatchedPtJet({}),
                                                                                            fHistoTruePtJet({}),
+                                                                                           fHistoTruePtJetNotTriggered({}),
                                                                                            fHistoTrueMatchedPtJet({}),
                                                                                            fHistoTrueUnMatchedPtJet({}),
                                                                                            fHistoNEFVsPtJet({}),
@@ -733,6 +735,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
     fHistoMatchedPtJet.resize(fnCuts);
     fHistoUnMatchedPtJet.resize(fnCuts);
     fHistoTruePtJet.resize(fnCuts);
+    fHistoTruePtJetNotTriggered.resize(fnCuts);
     fHistoTrueMatchedPtJet.resize(fnCuts);
     fHistoTrueUnMatchedPtJet.resize(fnCuts);
   }
@@ -1256,6 +1259,8 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
       fTrueJetList[iCut]->Add(fHistoUnMatchedPtJet[iCut]);
       fHistoTruePtJet[iCut] = new TH1F("TrueJetPt", "TrueJetPt", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
       fTrueJetList[iCut]->Add(fHistoTruePtJet[iCut]);
+      fHistoTruePtJetNotTriggered[iCut] = new TH1F("TrueJetPtNotTriggered", "TrueJetPtNotTriggered", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
+      fTrueJetList[iCut]->Add(fHistoTruePtJetNotTriggered[iCut]);
       fHistoTrueMatchedPtJet[iCut] = new TH1F("TrueJetPt_MatchedToRec", "TrueJetPt_MatchedToRec", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
       fTrueJetList[iCut]->Add(fHistoTrueMatchedPtJet[iCut]);
       fHistoTrueUnMatchedPtJet[iCut] = new TH1F("TrueJetPt_NotMatchedToRec", "TrueJetPt_NotMatchedToRec", fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
@@ -1862,8 +1867,21 @@ void AliAnalysisTaskMesonJetCorrelation::InitJets()
 }
 
 //________________________________________________________________________
-void AliAnalysisTaskMesonJetCorrelation::ProcessJets()
+void AliAnalysisTaskMesonJetCorrelation::ProcessJets(int isCurrentEventSelected)
 {
+
+  // special case where the trigger has not fired etc.
+  // Still have to fill the histograms for true jets in order for the efficiency to be correct
+  if(isCurrentEventSelected > 0){
+    for (int i = 0; i < fConvJetReader->GetTrueNJets(); i++) {
+      fHistoTruePtJet[fiCut]->Fill(fTrueVectorJetPt.at(i), fWeightJetJetMC);
+      fHistoTruePtJetNotTriggered[fiCut]->Fill(fTrueVectorJetPt.at(i), fWeightJetJetMC);
+      if(!fDoLightOutput){
+        fHistoNPartInTrueJetVsJetPt[fiCut]->Fill(fTrueVectorJetNPart.at(i), fTrueVectorJetPt.at(i));
+      }
+    }
+    return;
+  }
 
   // clear map before next event
   MapRecJetsTrueJets.clear();
@@ -2053,6 +2071,23 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
     if(fLocalDebugFlag) {printf("InitJets\n");}
     InitJets();
 
+    // Additional outlier rejection for herwig
+    // CHeck if a MC true jet has more than 1.5 times the pt hard of the collision
+    if(fIsMC>1){
+      AliGenEventHeader * eventHeader = fMCEvent->GenEventHeader();
+      TString eventHeaderName     = eventHeader->ClassName();
+      if(eventHeaderName.EqualTo("AliGenHepMCEventHeader")) {
+        float ptHard = dynamic_cast<AliGenHepMCEventHeader*>(eventHeader)->pthard();
+        for(const auto & jetPt : fTrueVectorJetPt){
+          if(jetPt > ptHard*1.5){
+            fHistoNEvents[iCut]->Fill(10, fWeightJetJetMC);
+            fHistoNEventsWOWeight[iCut]->Fill(10);
+            continue;
+          }
+        }
+      }
+    }
+
     // reset double counting vector
     fMesonDoubleCount.clear();
 
@@ -2065,8 +2100,10 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
       if (fIsMC > 0) {
         if (eventNotAccepted == 3) { // Event rejected due to wrong trigger, MC particles still have to be processed
           ProcessAODMCParticles(1);
+          ProcessJets(1);
         } else if (eventNotAccepted != 1) { // exclude centrality/multiplicity selection from MC particles processing
           ProcessAODMCParticles(2);
+          ProcessJets(2);
         }
       }
       continue;
@@ -2080,6 +2117,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
       if (fIsMC > 0) {
         if (eventQuality != 4) { // 4 = event outside of +-10cm, we dont want to count these events
           ProcessAODMCParticles(2);
+          ProcessJets(2);
         }
       }
       continue;
@@ -2101,7 +2139,7 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
     }
 
     if(fLocalDebugFlag) {printf("ProcessJets\n");}
-    ProcessJets();
+    ProcessJets(0);
     if (fIsConvCalo || fIsCalo) {
       if(fLocalDebugFlag) {printf("ProcessClusters\n");}
       ProcessClusters(); // process calo clusters
@@ -2189,6 +2227,34 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
       }
     }
 
+    float clusPos[3] = {0, 0, 0};
+    clus->GetPosition(clusPos);
+    TVector3 clusterVectorJets(clusPos[0], clusPos[1], clusPos[2]);
+    double etaCluster = clusterVectorJets.Eta();
+    double phiCluster = clusterVectorJets.Phi();
+
+    // check if cluster is in jet
+    bool isInJet = false;
+    bool isInPerpCone = false;
+    int matchedJet = -1;
+    if (fConvJetReader->GetNJets() > 0) {
+      double RJetPi0Cand;
+      if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), etaCluster, phiCluster, matchedJet, RJetPi0Cand)) {
+        isInJet = true;
+      }
+
+      double RJetPi0CandPerp = 0;
+      int matchedJetPerp = -1;
+      if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhiPerp, fConvJetReader->Get_Jet_Radius(), etaCluster, phiCluster, matchedJetPerp, RJetPi0CandPerp)) {
+        isInPerpCone = true;
+      }
+    }
+
+    // check if decay daughters need to be inside of jet
+    if(!isInJet && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoOutOfJet() == 5){
+      continue;
+    }
+
     // apply cluster cuts
     if (!((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->ClusterIsSelected(clus, fInputEvent, fMCEvent, fIsMC, tempClusterWeight, i)) {
       // if (((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetIsAcceptedForBasicCounting())fNCurrentClusterBasic++;
@@ -2206,7 +2272,7 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
 
     TLorentzVector* tmpvec = new TLorentzVector();
     tmpvec->SetPxPyPzE(clusterVector.Px(), clusterVector.Py(), clusterVector.Pz(), clusterVector.E());
-
+    
     // convert to AODConversionPhoton
     AliAODConversionPhoton* PhotonCandidate = new AliAODConversionPhoton(tmpvec);
     if (!PhotonCandidate) {
@@ -2233,16 +2299,11 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
     fHistoClusterPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
     fHistoClusterE[fiCut]->Fill(PhotonCandidate->E(), fWeightJetJetMC);
 
-    float clusPos[3] = {0, 0, 0};
-    clus->GetPosition(clusPos);
-    TVector3 clusterVectorJets(clusPos[0], clusPos[1], clusPos[2]);
-    double etaCluster = clusterVectorJets.Eta();
-    double phiCluster = clusterVectorJets.Phi();
 
-    int matchedJet = -1;
-    if (fConvJetReader->GetNJets() > 0) {
-      double RJetPi0Cand;
-      if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), etaCluster, phiCluster, matchedJet, RJetPi0Cand)) {
+    // int matchedJet = -1;
+    // if (fConvJetReader->GetNJets() > 0) {
+    //   double RJetPi0Cand;
+      if (isInJet) {
         NClusinJets++;
         // fClusterEtaPhiJets[fiCut]->Fill(phiCluster, etaCluster);
         fHistoClusterPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
@@ -2250,12 +2311,12 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessClusters()
         fHistoClusterPtVsJetPtInJet[fiCut]->Fill(PhotonCandidate->E(), fVectorJetPt[matchedJet], fWeightJetJetMC);
       }
 
-      double RJetPi0CandPerp = 0;
-      int matchedJetPerp = -1;
-      if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhiPerp, fConvJetReader->Get_Jet_Radius(), etaCluster, phiCluster, matchedJetPerp, RJetPi0CandPerp)) {
+      // double RJetPi0CandPerp = 0;
+      // int matchedJetPerp = -1;
+      if (isInPerpCone) {
         fHistoClusterPtPerpCone[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC);
       }
-    }
+    // }
 
     fIsFromDesiredHeader = true;
     // bool fIsOverlappingWithOtherHeader = false;
@@ -2326,6 +2387,27 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessPhotonCandidates()
     //   if( (isNegFromMBHeader+isPosFromMBHeader) != 4) fIsFromDesiredHeader = false;
     // }
 
+    bool isInJet = false;
+    bool isInPerpCone = false;
+    int matchedJet = -1;
+    int matchedJetPerp = -1;
+    if (fConvJetReader->GetNJets() > 0) {
+      double RJetPi0Cand;
+      if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJet, RJetPi0Cand)) {
+        isInJet = true;
+      }
+      double RJetPi0CandPerp = 0;
+      if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhiPerp, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJetPerp, RJetPi0CandPerp)) {
+        isInPerpCone = true;
+      }
+    }
+    
+
+    // in case all photons need to be inside the jet cone
+    if (!isInJet && ((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->DoOutOfJet() == 5){
+      continue;
+    }
+
     if (!((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->PhotonIsSelected(PhotonCandidate, fInputEvent))
       continue;
     if (!((AliConversionPhotonCuts*)fConvCutArray->At(fiCut))->InPlaneOutOfPlaneCut(PhotonCandidate->GetPhotonPhi(), fEventPlaneAngle))
@@ -2337,15 +2419,11 @@ void AliAnalysisTaskMesonJetCorrelation::ProcessPhotonCandidates()
       if (fIsFromDesiredHeader) {
         fHistoConvGammaPt[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC * weightMatBudgetGamma);
         if (fConvJetReader->GetNJets() > 0) {
-          double RJetPi0Cand;
-          int matchedJet = -1;
-          if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhi, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJet, RJetPi0Cand)) {
+          if (isInJet) {
             fHistoConvGammaPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC * weightMatBudgetGamma);
             fHistoConvGammaPtVsJetPtInJet[fiCut]->Fill(PhotonCandidate->Pt(), fVectorJetPt[matchedJet], fWeightJetJetMC * weightMatBudgetGamma);
           }
-          double RJetPi0CandPerp = 0;
-          int matchedJetPerp = -1;
-          if (((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->IsParticleInJet(fVectorJetEta, fVectorJetPhiPerp, fConvJetReader->Get_Jet_Radius(), PhotonCandidate->Eta(), PhotonCandidate->Phi(), matchedJetPerp, RJetPi0CandPerp)) {
+          if (isInPerpCone) {
             fHistoConvGammaPtPerpCone[fiCut]->Fill(PhotonCandidate->Pt(), fWeightJetJetMC*weightMatBudgetGamma);
           }
         }
@@ -2550,10 +2628,13 @@ void AliAnalysisTaskMesonJetCorrelation::FillMesonHistograms(AliAODConversionPho
   AliAODConversionMother* pi0cand = new AliAODConversionMother(gamma0, gamma1);
   pi0cand->SetLabels(firstGammaIndex, secondGammaIndex);
 
+  // To speed up things, mesons with a mass larger than 1 GeV are rejected as they will never enter the analysis
+  if(pi0cand->M() > 1.5) return;
+
   if ((((AliConversionMesonCuts*)fMesonCutArray->At(fiCut))->MesonIsSelected(pi0cand, true, ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetEtaShift(), gamma0->GetLeadingCellID(), gamma1->GetLeadingCellID(), gamma0->GetIsCaloPhoton(), gamma1->GetIsCaloPhoton()))) {
 
     double weightMatBudget = 1.;
-    if(fDoMaterialBudgetWeightingOfGammasForTrueMesons){
+    if(fDoMaterialBudgetWeightingOfGammasForTrueMesons && vecWeightsMatWeightsGammas.size() > 0){
       if(fIsConv){
         weightMatBudget = vecWeightsMatWeightsGammas[firstGammaIndex]*vecWeightsMatWeightsGammas[secondGammaIndex];
       } else if(fIsConvCalo){
@@ -2983,6 +3064,9 @@ void AliAnalysisTaskMesonJetCorrelation::CalculateBackgroundSwapp()
 /// \param backgroundCandidate particle reconstructed from two photons containing the mass, pT etc.
 void AliAnalysisTaskMesonJetCorrelation::FillInvMassBackHistograms(AliAODConversionMother* backgroundCandidate, const bool isRotBack)
 {
+
+  // To speed up things, mesons with a mass larger than 1 GeV are rejected as they will never enter the analysis
+  if(backgroundCandidate->M() > 1.5) return;
 
   int matchedJet = -1;
   double RJetPi0Cand = 0;

@@ -1640,7 +1640,11 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 			fHistMatchE -> Fill(clE);
                         fHistoTimeEMC->Fill(clE,tof);
 			if(tof>-20.0 && tof<15.0)fHistMatchE_time -> Fill(clE);
-			if(tof<-20.0 || tof>15.0)continue; // vAN2023_0608
+			if(!fMCarray)
+                          {
+                           if(tof<-20.0 || tof>15.0)continue; // vAN2023_0608
+                          } // timing cut only data
+
 			if(TrkP>0)eop= clE/TrkP;
 
 			fM02->Fill(TrkPt,m02);
@@ -2035,7 +2039,8 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 
 		//if(mass<0.1 && fFlagULS && !flagPhotonicElec)
 		if(mass<CutmassMin && fFlagULS && !flagPhotonicElec)flagPhotonicElec = kTRUE; //Tag Non-HFE (random mass cut, not optimised) 
-		if(mass>75.0 && mass<100 && iIsocut && fFlagULS)fFlagZdecay = kTRUE; //Tag Zee 
+                //if(mass>75.0 && mass<100 && iIsocut && fFlagULS)fFlagZdecay = kTRUE; //Tag Zee 
+		if(mass>60.0 && mass<108 && iIsocut && fFlagULS)fFlagZdecay = kTRUE; //Tag Zee 
 	}
 	fFlagPhotonicElec = flagPhotonicElec;
 }

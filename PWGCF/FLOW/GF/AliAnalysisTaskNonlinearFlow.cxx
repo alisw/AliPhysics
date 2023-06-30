@@ -92,12 +92,13 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fAddTPCPileupCuts(false),
     fESDvsTPConlyLinearCut(15000.),
     fUseCorrectedNTracks(false),
-	  fCentralityCut(100),
+	  fCentralityCut(101.1),
     fUseNarrowBin(false),
     fExtremeEfficiency(0),
     fTPCchi2perCluster(4.0),
     fUseAdditionalDCACut(false),
     fUseDefaultWeight(false),
+    fExtendV0MAcceptance(false),
     fV0MRatioCut(0),
     fEtaGap3Sub1(0.4),
     fEtaGap3Sub2(0.4),
@@ -183,12 +184,13 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fAddTPCPileupCuts(false),
   fESDvsTPConlyLinearCut(15000.),
   fUseCorrectedNTracks(false),
-	fCentralityCut(100),
+	fCentralityCut(101.1),
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
   fTPCchi2perCluster(4.0),
   fUseAdditionalDCACut(false),
   fUseDefaultWeight(false),
+  fExtendV0MAcceptance(false),
   fV0MRatioCut(0),
   fEtaGap3Sub1(0.4),
   fEtaGap3Sub2(0.4),
@@ -302,12 +304,13 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fAddTPCPileupCuts(false),
   fESDvsTPConlyLinearCut(15000.),
   fUseCorrectedNTracks(false),
-	fCentralityCut(100),
+	fCentralityCut(101.1),
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
   fTPCchi2perCluster(4.0),
   fUseAdditionalDCACut(false),
   fUseDefaultWeight(false),
+  fExtendV0MAcceptance(false),
   fV0MRatioCut(0),
   fEtaGap3Sub1(0.4),
   fEtaGap3Sub2(0.4),
@@ -432,6 +435,12 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
     fEventCuts.fMaxResolutionSPDvertex = 0.25f;
     // Distance between track and SPD vertex < 0.2 cm
     fEventCuts.fPileUpCutMV = true;
+  }
+
+  if (fExtendV0MAcceptance) {
+    fEventCuts.OverrideCentralityFramework(1);
+    fEventCuts.SetCentralityEstimators("V0M", "CL0");
+    fEventCuts.SetCentralityRange(0.f,101.f);
   }
 
   if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1 and LHC17n
@@ -2110,6 +2119,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
     if (fCurrSystFlag == 18) EvFlag = 2, TrFlag = 0;
     if (fCurrSystFlag == 19) EvFlag = 3, TrFlag = 0;
 
+    if (fUseDefaultWeight) EvFlag = 0, TrFlag = 0;
 
     fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_Ev%d_Tr%d",fAOD->GetRunNumber(),EvFlag,TrFlag));
     if(!fWeightsSystematics)

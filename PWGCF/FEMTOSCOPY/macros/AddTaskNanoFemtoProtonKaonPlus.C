@@ -16,9 +16,10 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
     int filterBit = 128, //7
     bool DoPairCleaning = false, //8
     bool DoAncestors = false, //9
-    float kaonDCAxy = 0.1, //10
-    float kaonDCAz = 0.2, //11
-    const char *cutVariation = "0" //12
+    float DCAxy = 0.1, //10
+    float DCAz = 0.2, //11
+    bool doDCA = false, //12
+    const char *cutVariation = "0" //13
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -49,7 +50,9 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   TrackPosKaonCuts->SetCutCharge(1);
   if(isMC){
     TrackPosKaonCuts->SetPlotDCADist(true);
-    TrackPosKaonCuts->SetPtRange(0.0, 5.0);
+  }
+  if(doDCA){
+    TrackPosKaonCuts->SetPtRange(0.15, 5.0);
   }
   if (!UseRamonaCut)
   {
@@ -60,8 +63,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   {
     TrackPosKaonCuts->SetFilterBit(filterBit);
     TrackPosKaonCuts->SetPIDkd(true, true); // Ramona
-    TrackPosKaonCuts->SetDCAVtxZ(kaonDCAz);
-    TrackPosKaonCuts->SetDCAVtxXY(kaonDCAxy);
+    TrackPosKaonCuts->SetDCAVtxZ(DCAz);
+    TrackPosKaonCuts->SetDCAVtxXY(DCAxy);
     TrackPosKaonCuts->SetCutTPCCrossedRows(false, 0, 0);
     TrackPosKaonCuts->SetCutSharedCls(false);
     TrackPosKaonCuts->SetCutSmallestSig(false);
@@ -73,7 +76,9 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   TrackNegKaonCuts->SetCutCharge(-1);
   if(isMC){
     TrackNegKaonCuts->SetPlotDCADist(true);
-    TrackNegKaonCuts->SetPtRange(0.0, 5.0);
+  }
+  if(doDCA){
+    TrackNegKaonCuts->SetPtRange(0.15, 5.0);
   }
   if (!UseRamonaCut)
   {
@@ -84,8 +89,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   {
     TrackNegKaonCuts->SetFilterBit(filterBit);
     TrackNegKaonCuts->SetPIDkd(true, true); // Ramona
-    TrackNegKaonCuts->SetDCAVtxZ(kaonDCAz);
-    TrackNegKaonCuts->SetDCAVtxXY(kaonDCAxy);
+    TrackNegKaonCuts->SetDCAVtxZ(DCAz);
+    TrackNegKaonCuts->SetDCAVtxXY(DCAxy);
     TrackNegKaonCuts->SetCutTPCCrossedRows(false, 0, 0);
     TrackNegKaonCuts->SetCutSharedCls(false);
     TrackNegKaonCuts->SetCutSmallestSig(false);
@@ -97,8 +102,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
         isMC, true, false, false);
   TrackCutsProton->SetCutCharge(1);
   if(UseRamonaCut){
-    TrackCutsProton->SetDCAVtxZ(1.0);
-    TrackCutsProton->SetDCAVtxXY(1.0);
+    TrackCutsProton->SetDCAVtxZ(DCAz);
+    TrackCutsProton->SetDCAVtxXY(DCAxy);
     TrackCutsProton->SetPtRange(0.4, 3.0);
     TrackCutsProton->SetCutTPCCrossedRows(false, 0, 0);
     TrackCutsProton->SetCutSharedCls(false);
@@ -111,8 +116,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
         isMC, true, false, false);
   TrackCutsAntiProton->SetCutCharge(-1);
   if(UseRamonaCut){
-    TrackCutsAntiProton->SetDCAVtxZ(1.0);
-    TrackCutsAntiProton->SetDCAVtxXY(1.0);
+    TrackCutsAntiProton->SetDCAVtxZ(DCAz);
+    TrackCutsAntiProton->SetDCAVtxXY(DCAxy);
     TrackCutsAntiProton->SetPtRange(0.4, 3.0);
     TrackCutsAntiProton->SetCutTPCCrossedRows(false, 0, 0);
     TrackCutsAntiProton->SetCutSharedCls(false);
