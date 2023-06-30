@@ -2119,6 +2119,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
     if (fCurrSystFlag == 18) EvFlag = 2, TrFlag = 0;
     if (fCurrSystFlag == 19) EvFlag = 3, TrFlag = 0;
 
+    if (fUseDefaultWeight) EvFlag = 0, TrFlag = 0;
 
     fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_Ev%d_Tr%d",fAOD->GetRunNumber(),EvFlag,TrFlag));
     if(!fWeightsSystematics)
