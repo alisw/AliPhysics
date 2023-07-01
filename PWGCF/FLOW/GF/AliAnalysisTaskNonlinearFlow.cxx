@@ -568,10 +568,10 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   fVtxAfterCuts->Sumw2();
   fListOfObjects->Add(fVtxAfterCuts);
 
-  fCentralityDis = new TH1F("fCentralityDis", "centrality distribution; centrality; Counts", 100, 0, 100);
+  fCentralityDis = new TH1F("fCentralityDis", "centrality distribution; centrality; Counts", 101, 0, 101);
   fListOfObjects->Add(fCentralityDis);
 
-  fV0CentralityDis = new TH1F("fV0CentralityDis", "centrality V0/<V0> distribution; centrality; Counts", 100, 0, 100);
+  fV0CentralityDis = new TH1F("fV0CentralityDis", "centrality V0/<V0> distribution; centrality; Counts", 101, 0, 101);
   fListOfObjects->Add(fV0CentralityDis);
 
   fV0CentralityDisNarrow = new TH1F("fV0CentralityDisNarrow", "centrality V0/<V0> distribution; centrality; Counts", 1000, 0, 10);
