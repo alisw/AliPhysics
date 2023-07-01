@@ -1013,7 +1013,7 @@ const char *AliAnalysisTaskCorrelationsStudies::ProduceConfigurationString()
 /// \param pattern string pattern for the weigths or particle density files
 /// \param szContainerPrefix for placing the prefix of the particle and action combination
 /// \return kTRUE if everything went OK kFALSE otherwise
-Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *confstring, const char *pattern, TString &szContainerPrefix)
+Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char* confstring, const char* pattern, TString& szContainerPrefix)
 {
   TString sztmp = confstring;
   TString szTrack1;
@@ -1030,67 +1030,49 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
 
   TObjArray *tokens = sztmp.Tokenize(",");
   if ((tokens->GetEntries() == 4) || (tokens->GetEntries() == 5)) {
-    auto configureProcesses = [&](int ch_1, int ch_2, bool all, bool  id = false) {
-      auto configureProcess = [](auto process, int ch_1, int ch_2, bool all, bool  id) {
-        bool same = ch_1 == ch_2;
-        process->SetSameSign(same);
-        process->SetAllCombinations(all);
-        process->SetRequestedCharge_1(ch_1);
-        process->SetRequestedCharge_2(ch_2);
-      };
-      auto configureTracks = [&](int ch_1, int ch_2, bool all, bool  id) {
-        bool same = ch_1 == ch_2;
-        if (same) {
-          if (ch_1 > 0) {
-            /* both track positives */
-            szTrack1 = "p1";
-            szTrack2 = "p2";
-            szContainerPrefix = "PP";
-          } else {
-            /* both track negatives */
-            szTrack1 = "m1";
-            szTrack2 = "m2";
-            szContainerPrefix = "MM";
-          }
-        } else {
-          if (ch_1 > 0) {
-            /* track 1 positive track 2 negative and, perhaps, all tracks */
-            szTrack1 = "p1";
-            szTrack2 = "m2";
-            if (all) {
-              szContainerPrefix = "AA";
+    auto configureProcesses = [&](int ch_1, int ch_2, bool all) {
+        auto configureProcess = [](auto process, int ch_1, int ch_2, bool all) {
+            bool same = ch_1 == ch_2;
+            process->SetSameSign(same);
+            process->SetAllCombinations(all);
+            process->SetRequestedCharge_1(ch_1);
+            process->SetRequestedCharge_2(ch_2);
+        };
+        auto configureTracks = [&](int ch_1, int ch_2, bool all) {
+            bool same = ch_1 == ch_2;
+            if (same) {
+                if (ch_1 > 0) {
+                    /* both track positives */
+                    szTrack1 = "p1";
+                    szTrack2 = "p2";
+                    szContainerPrefix = "PP";
+                } else {
+                    /* both track negatives */
+                    szTrack1 = "m1";
+                    szTrack2 = "m2";
+                    szContainerPrefix = "MM";
+                }
             } else {
-              szContainerPrefix = "PM";
+                if (ch_1 > 0) {
+                    /* track 1 positive track 2 negative and, perhaps, all tracks */
+                    szTrack1 = "p1";
+                    szTrack2 = "m2";
+                    if (all) {
+                        szContainerPrefix = "AA";
+                    } else {
+                        szContainerPrefix = "PM";
+                    }
+                } else {
+                    szTrack1 = "m1";
+                    szTrack2 = "p2";
+                    szContainerPrefix = "MP";
+                }
             }
-          } else {
-            szTrack1 = "m1";
-            szTrack2 = "p2";
-            szContainerPrefix = "MP";
-          }
-        }
-        std::vector<std::string> species;
-        if (fTaskActivitiesString.Contains("diffcorr")) {
-          if (id) {
-            for (auto s : AliCSTrackSelection::getPoiNames()) {
-              species.push_back(s+"P");
-              species.push_back(s+"M");
-            }
-          } else {
-            species.push_back("O");
-            species.push_back("T");
-          }
-        } else {
-          species.push_back("1");
-          species.push_back("2");
-        }
-        fProcessCorrelations->SetSpeciesNames(species);
-        fProcessMCRecCorrelationsWithOptions->SetSpeciesNames(species);
-        fProcessTrueCorrelations->SetSpeciesNames(species);
-      };
-      configureProcess(fProcessCorrelations, ch_1, ch_2, all, id);
-      configureProcess(fProcessMCRecCorrelationsWithOptions, ch_1, ch_2, all, id);
-      configureProcess(fProcessTrueCorrelations, ch_1, ch_2, all, id);
-      configureTracks(ch_1, ch_2, all, id);
+        };
+        configureProcess(fProcessCorrelations, ch_1, ch_2, all);
+        configureProcess(fProcessMCRecCorrelationsWithOptions, ch_1, ch_2, all);
+        configureProcess(fProcessTrueCorrelations, ch_1, ch_2, all);
+        configureTracks(ch_1, ch_2, all);
     };
     /* track polarities */
     if (((TObjString*) tokens->At(0))->String().EqualTo("--")) {
@@ -1104,7 +1086,7 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char *con
     } else if (((TObjString*)tokens->At(0))->String().EqualTo("**") || ((TObjString*)tokens->At(0))->String().EqualTo("ch")) {
       configureProcesses(1, -1, true);
     } else if (((TObjString*)tokens->At(0))->String().EqualTo("idch")) {
-      configureProcesses(1, -1, true, true);
+      configureProcesses(1, -1, true);
     } else {
       AliFatal("Requested track polarities string not properly configured.ABORTING!!!");
       return kFALSE;
@@ -1427,23 +1409,34 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
   fTrackSelectionCuts->SetQALevelOutput(AliCSAnalysisCutsBase::kQALevelHeavy);
   fTrackSelectionCuts->InitCuts();
   fOutput->Add(fTrackSelectionCuts->GetHistogramsList());
+  /* get the particles of interest out of the track selection */
+  AliInfo("Preparing the analysis for the particles of interest");
+  std::vector<std::string> pois{};
+  for (auto s : fTrackSelectionCuts->getPoiNames()) {
+    AliInfo(TString::Format("=====: %s", s.c_str()));
+    pois.push_back(s + "P");
+    pois.push_back(s + "M");
+  }
 
   /* now initialize the processing correlations instance */
   if (fDoProcessCorrelations) {
+    fProcessCorrelations->SetSpeciesNames(pois);
+    fProcessMCRecCorrelationsWithOptions->SetSpeciesNames(pois);
+    fProcessTrueCorrelations->SetSpeciesNames(pois);
     fProcessCorrelations->Initialize();
     fProcessMCRecCorrelationsWithOptions->Initialize();
     fProcessTrueCorrelations->Initialize();
-    fProcessCorrelations->SetWeigths(std::vector<const TH3*>{AliCSTrackSelection::getPoiNames().size()*2, nullptr});
-    fProcessCorrelations->SetPtAvg(std::vector<const TH2*>{AliCSTrackSelection::getPoiNames().size()*2, nullptr});
-    fProcessCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{AliCSTrackSelection::getPoiNames().size()*2, nullptr});
-    fProcessCorrelations->SetPairEfficiencyCorrection(std::vector<std::vector<const THn*>>{AliCSTrackSelection::getPoiNames().size()*2, {AliCSTrackSelection::getPoiNames().size()*2, nullptr}});
-    fProcessCorrelations->SetSimultationPdfs(std::vector<const TObjArray*>{AliCSTrackSelection::getPoiNames().size()*2, nullptr});
+    fProcessCorrelations->SetWeigths(std::vector<const TH3*>{pois.size(), nullptr});
+    fProcessCorrelations->SetPtAvg(std::vector<const TH2*>{pois.size(), nullptr});
+    fProcessCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{pois.size(), nullptr});
+    fProcessCorrelations->SetPairEfficiencyCorrection(std::vector<std::vector<const THn*>>{pois.size(), {pois.size(), nullptr}});
+    fProcessCorrelations->SetSimultationPdfs(std::vector<const TObjArray*>{pois.size(), nullptr});
     /* not clear how we will do it with MC rec with options */
-    fProcessTrueCorrelations->SetWeigths(std::vector<const TH3*>{AliCSTrackSelection::getPoiNames().size()*2, nullptr});
-    fProcessTrueCorrelations->SetPtAvg(std::vector<const TH2*>{AliCSTrackSelection::getPoiNames().size()*2, nullptr});
-    fProcessTrueCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{AliCSTrackSelection::getPoiNames().size()*2, nullptr});
-    fProcessTrueCorrelations->SetPairEfficiencyCorrection(std::vector<std::vector<const THn*>>{AliCSTrackSelection::getPoiNames().size()*2, {AliCSTrackSelection::getPoiNames().size()*2, nullptr}});
-    fProcessTrueCorrelations->SetSimultationPdfs(std::vector<const TObjArray*>{AliCSTrackSelection::getPoiNames().size()*2, nullptr});
+    fProcessTrueCorrelations->SetWeigths(std::vector<const TH3*>{pois.size(), nullptr});
+    fProcessTrueCorrelations->SetPtAvg(std::vector<const TH2*>{pois.size(), nullptr});
+    fProcessTrueCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{pois.size(), nullptr});
+    fProcessTrueCorrelations->SetPairEfficiencyCorrection(std::vector<std::vector<const THn*>>{pois.size(), {pois.size(), nullptr}});
+    fProcessTrueCorrelations->SetSimultationPdfs(std::vector<const TObjArray*>{pois.size(), nullptr});
   }
 
   /* now initialize the pair analysis instance */

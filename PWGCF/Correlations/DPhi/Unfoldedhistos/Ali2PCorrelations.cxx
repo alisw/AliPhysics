@@ -195,21 +195,12 @@ void Ali2PCorrelations::Initialize()
 
   if (!fSinglesOnly) {
     /* initialize the accumlators */
-    fN2_12 = std::vector<std::vector<double>>(fSpeciesNames.size(),
-                                              std::vector<double>(fSpeciesNames.size(), 0.0));
-    fSum2PtPt_12 = std::vector<std::vector<double>>(fSpeciesNames.size(),
-                                                    std::vector<double>(fSpeciesNames.size(), 0.0));
-    fSum2DptDpt_12 = std::vector<std::vector<double>>(fSpeciesNames.size(),
-                                                      std::vector<double>(fSpeciesNames.size(),
-                                                                          0.0));
-    fNnw2_12 = std::vector<std::vector<double>>(fSpeciesNames.size(),
-                                                std::vector<double>(fSpeciesNames.size(), 0.0));
-    fSum2PtPtnw_12 = std::vector<std::vector<double>>(fSpeciesNames.size(),
-                                                      std::vector<double>(fSpeciesNames.size(),
-                                                                          0.0));
-    fSum2DptDptnw_12 = std::vector<std::vector<double>>(fSpeciesNames.size(),
-                                                        std::vector<double>(fSpeciesNames.size(),
-                                                                            0.0));
+    fN2_12 = std::vector<std::vector<double>>(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
+    fSum2PtPt_12 = std::vector<std::vector<double>>(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
+    fSum2DptDpt_12 = std::vector<std::vector<double>>(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
+    fNnw2_12 = std::vector<std::vector<double>>(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
+    fSum2PtPtnw_12 = std::vector<std::vector<double>>(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
+    fSum2DptDptnw_12 = std::vector<std::vector<double>>(fSpeciesNames.size(), std::vector<double>(fSpeciesNames.size(), 0.0));
 
     /* histograms for track pairs */
     for (uint pidx = 0; pidx < fSpeciesNames.size(); ++pidx) {
