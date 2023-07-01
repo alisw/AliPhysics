@@ -68,53 +68,56 @@ class AliCSTrackSelection : public TNamed {
   static Bool_t IsTruePrimary(AliVTrack* trk);
   Bool_t                             IsFromMCInjectedSignal(Int_t itrk);
   static poiIds poiid(AliPID::EParticleType sp);
-  static std::vector<std::string> getPoiNames() { return std::vector<std::string>({"Ha","Pi","Ka","Pr"}); }
+  std::vector<std::string> getPoiNames() { return fPoiNames; }
 
  private:
   void DefineHistograms();
 
  private:
-  poiIds fTrackId;                                                       ///< the track PID encoded as POI Id
-  poiIds fParticleId;                                                    ///< the particle PID encoded as POI Id
-  AliCSAnalysisCutsBase::QALevel fQALevel;                               ///< the level of the QA histograms output
-  TObjArray                          fInclusiveTrackCuts;                ///< the set of inclusive track cuts
-  TObjArray                          fInclusivePIDCuts;                  ///< the set of inclusive PID track cuts
-  TObjArray                          fInclusiveCutsStrings;              ///< the strings to configure the inclusive track cuts
-  TObjArray                          fInclusivePidCutsStrings;           ///< the strings to configure the PID inclusive cuts
-  TObjArray                          fExclusiveCuts;                     ///< the set of exclusive track cuts
-  TObjArray                          fExclusiveCutsStrings;              ///< the strings to configure the exclusive track cuts
-  TObjArray                          fExclusivePidCutsStrings;           ///< the strings to configure the PID exclusive cuts
-  TBits                             *fCutsActivatedMask;                 ///< the mask of cut activated for the ongoing event
-  TString                            fCutsString;                        ///< the string that configures the set of cuts
+  std::vector<std::string> fPoiNames;             ///< the names of the particles of interest, i.e. {"Ha"."Pi","Ka","Pr"}
+  poiIds fTrackId;                                ///< the track PID encoded as POI Id
+  poiIds fParticleId;                             ///< the particle PID encoded as POI Id
+  AliCSAnalysisCutsBase::QALevel fQALevel;        ///< the level of the QA histograms output
+  TObjArray fInclusiveTrackCuts;                  ///< the set of inclusive track cuts
+  TObjArray fInclusivePIDCuts;                    ///< the set of inclusive PID track cuts
+  TObjArray fInclusiveCutsStrings;                ///< the strings to configure the inclusive track cuts
+  TObjArray fInclusivePidCutsStrings;             ///< the strings to configure the PID inclusive cuts
+  TObjArray fExclusiveCuts;                       ///< the set of exclusive track cuts
+  TObjArray fExclusiveCutsStrings;                ///< the strings to configure the exclusive track cuts
+  TObjArray fExclusivePidCutsStrings;             ///< the strings to configure the PID exclusive cuts
+  TBits* fCutsActivatedMask;                      ///< the mask of cut activated for the ongoing event
+  TString fCutsString;                            ///< the string that configures the set of cuts
 
-  AliCSAnalysisCutsBase::ProdPeriods fDataPeriod;                        ///< the current period under analysis
-  Int_t                              fHighestPrimaryLabel;               ///< the highest primary label accepted when MC signals are injected
-  AliPIDResponse                    *fPIDResponse;                       ///< the PID response instance
+  AliCSAnalysisCutsBase::ProdPeriods fDataPeriod; ///< the current period under analysis
+  Int_t fHighestPrimaryLabel;                     ///< the highest primary label accepted when MC signals are injected
+  AliPIDResponse* fPIDResponse;                   ///< the PID response instance
 
   /* histograms with two indices: before (0) / after (1) applying the cut */
-  TH1F                              *fhCutsStatistics;                   ///< the cuts statistics
-  TH2F                              *fhCutsCorrelation;                  ///< cuts correlation
-  TH2F                              *fhPtVsDCAxy[2];                     ///< \f$ p_{T} \f$ vs \f$ \mbox{DCA}_{XY} \f$ (b/a)
-  TH2F                              *fhPtVsDCAz[2];                      ///< \f$ p_{T} \f$ vs \f$ \mbox{DCA}_{Z} \f$ (b/a)
-  TH2F                              *fhPtVsTPCCls[2];                    ///< \f$ p_{T} \f$ vs TPC clusters (b/a)
-  TH2F* fhPtVsTPCRows[2];                                                ///< \f$ p_{T} \f$ vs TPC crossed rows (b/a)
-  TH2F                              *fhPtVsTPCRowOverFindCls[2];         ///< \f$ p_{T} \f$ vs TPC crossed rows findable clusters ratio (b/a)
-  TH2F                              *fhEtaVsPhi[2];                      ///< \f$ p_{T} \f$ vs \f$ \eta \f$ (b/a)
-  TH2F                              *fhPtVsEta[2];                       ///< \f$ p_{T} \f$ vs \f$ \eta \f$ (b/a)
-  TH2F                              *fhITSdEdxSignalVsP[2];              ///< ITS dE/dx signal vs P (b/a)
-  TH2F                              *fhTPCdEdxSignalVsP[2];              ///< TPC dE/dx signal vs P(b/a)
-  TH2F* fhTPCdEdxSelSignalVsP[3];                                        ///< TPC dE/dx signal vs P for the different selected species
-  TH2F                              *fhTOFSignalVsP[2];                  ///< TOF signal vs P(b/a)
-  TH2F* fhTOFSelSignalVsP[3];                                            ///< TOF signal vs P for the different selected species
-  TH3F* fhTPCTOFSigmaVsP[3][2];                                          ///< TOF n sigmas vs TPC n sigmas vs P  to the pi, k, p lines (b/a)
-  TH2F* fhTPCdEdxSignalDiffVsP[3][2];                                    ///< TPC dE/dx signal difference to the pi, k, p lines vs P (b/a)
-  TH2F* fhTOFSignalDiffVsP[3][2];                                        ///< TOF signal difference to the pi, k, p lines vs P (b/a)
-  TH2F* fhTPCdEdxSelSignalDiffVsP[3][3];                                 ///< TPC dE/dx signal difference to the pi, k, p lines vs P  for the different selected species
-  TH2F* fhTOFSelSignalDiffVsP[3][3];                                     ///< TOF signal difference to the pi, k, p lines vs P  for the different selected species
-  TH2F* fhPvsTOFMassSq[2];                                               ///< momentum vs TOF estimated squared mass (b/a)
-  TH2F* fhSelPvsTOFMassSq[3];                                            ///< momentum vs TOF estimated squared mass for the different selected species
+  TH1F* fhCutsStatistics;             ///< the cuts statistics
+  TH2F* fhCutsCorrelation;            ///< cuts correlation
+  TH2F* fhPtVsDCAxy[2];               ///< \f$ p_{T} \f$ vs \f$ \mbox{DCA}_{XY} \f$ (b/a)
+  TH2F* fhPtVsDCAz[2];                ///< \f$ p_{T} \f$ vs \f$ \mbox{DCA}_{Z} \f$ (b/a)
+  TH2F* fhPtVsTPCCls[2];              ///< \f$ p_{T} \f$ vs TPC clusters (b/a)
+  TH2F* fhPtVsTPCRows[2];             ///< \f$ p_{T} \f$ vs TPC crossed rows (b/a)
+  TH2F* fhPtVsTPCRowOverFindCls[2];   ///< \f$ p_{T} \f$ vs TPC crossed rows findable clusters ratio (b/a)
+  TH2F* fhEtaVsPhi[2];                ///< \f$ p_{T} \f$ vs \f$ \eta \f$ (b/a)
+  TH2F* fhPtVsEta[2];                 ///< \f$ p_{T} \f$ vs \f$ \eta \f$ (b/a)
+  TH2F* fhITSdEdxSignalVsP[2];        ///< ITS dE/dx signal vs P (b/a)
+  TH2F* fhTPCdEdxSignalVsP[2];        ///< TPC dE/dx signal vs P(b/a)
+  TH2F* fhTPCdEdxSelSignalVsP[3];     ///< TPC dE/dx signal vs P for the different selected species
+  TH2F* fhTOFSignalVsP[2];            ///< TOF signal vs P(b/a)
+  TH2F* fhTOFSelSignalVsP[3];         ///< TOF signal vs P for the different selected species
+  TH3F* fhTPCTOFSigmaVsP[3][2];       ///< TOF n sigmas vs TPC n sigmas vs P  to the pi, k, p lines (b/a)
+  TH2F* fhTPCdEdxSignalDiffVsP[3][2]; ///< TPC dE/dx signal difference to the pi, k, p lines vs P (b/a)
+  TH2F* fhTOFSignalDiffVsP[3][2];     ///< TOF signal difference to the pi, k, p lines vs P (b/a)
+  TH2F* fhTPCdEdxSelSignalDiffVsP
+    [3][3];                           ///< TPC dE/dx signal difference to the pi, k, p lines vs P  for the different selected species
+  TH2F* fhTOFSelSignalDiffVsP
+    [3][3];                           ///< TOF signal difference to the pi, k, p lines vs P  for the different selected species
+  TH2F* fhPvsTOFMassSq[2];            ///< momentum vs TOF estimated squared mass (b/a)
+  TH2F* fhSelPvsTOFMassSq[3];         ///< momentum vs TOF estimated squared mass for the different selected species
 
-  TList                             *fHistogramsList;                    ///< the list of histograms used
+  TList* fHistogramsList;             ///< the list of histograms used
 
   /// Copy constructor
   /// Not allowed. Forced private.
@@ -125,7 +128,7 @@ class AliCSTrackSelection : public TNamed {
   AliCSTrackSelection& operator=(const AliCSTrackSelection&);
 
   /// \cond CLASSIMP
-  ClassDef(AliCSTrackSelection,1);
+  ClassDef(AliCSTrackSelection, 1);
   /// \endcond
 };
 
