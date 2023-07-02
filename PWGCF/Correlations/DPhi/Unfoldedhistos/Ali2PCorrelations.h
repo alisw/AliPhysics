@@ -38,6 +38,7 @@ public:
   void FinalizeProcess();
 
  private:
+  template<bool chargedhadrons>
   void ProcessPairs();
 
  private:
