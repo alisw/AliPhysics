@@ -2749,7 +2749,7 @@ float AliAnalysisTaskMesonJetCorrelation::GetFrag(AliAODConversionMother* Pi0Can
       arrJetP = {static_cast<float>(fVectorJetPx[matchedJet]), static_cast<float>(fVectorJetPy[matchedJet]), static_cast<float>(fVectorJetPz[matchedJet])};
     }
 
-    float scalarProd = std::abs(Pi0Candidate->Px()*arrJetP[0] + Pi0Candidate->Py()*arrJetP[1] + Pi0Candidate->Pz()*arrJetP[1]);
+    float scalarProd = std::abs(Pi0Candidate->Px()*arrJetP[0] + Pi0Candidate->Py()*arrJetP[1] + Pi0Candidate->Pz()*arrJetP[2]);
     float JetP2 = arrJetP[0]*arrJetP[0] + arrJetP[1]*arrJetP[1] + arrJetP[2]*arrJetP[2];
     z = (JetP2 == 0) ? 0 : scalarProd/JetP2;
   }
@@ -2788,7 +2788,7 @@ float AliAnalysisTaskMesonJetCorrelation::GetFrag(AliAODMCParticle* Pi0Candidate
       arrJetP = {static_cast<float>(fVectorJetPx[matchedJet]), static_cast<float>(fVectorJetPy[matchedJet]), static_cast<float>(fVectorJetPz[matchedJet])};
     }
 
-    float scalarProd = std::abs(Pi0Candidate->Px()*arrJetP[0] + Pi0Candidate->Py()*arrJetP[1] + Pi0Candidate->Pz()*arrJetP[1]);
+    float scalarProd = std::abs(Pi0Candidate->Px()*arrJetP[0] + Pi0Candidate->Py()*arrJetP[1] + Pi0Candidate->Pz()*arrJetP[2]);
     float JetP2 = arrJetP[0]*arrJetP[0] + arrJetP[1]*arrJetP[1] + arrJetP[2]*arrJetP[2];
     z = (JetP2 == 0) ? 0 : scalarProd/JetP2;
   }
