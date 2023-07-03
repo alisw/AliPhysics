@@ -251,7 +251,7 @@ namespace PWGJE
       Double_t fMinSharedMomentumFraction;    ///< Minimum shared momentum with matched jet
       bool fRequireMatchedPartLevelJet;       ///< True if matched jets are required to be matched to a particle level jet
       Double_t fMaxMatchedJetDistance;        ///< Maximum distance between two matched jets
-      TFile *fEPcorrectionFile;               //!<! File containing the EP corrections
+      TFile *fEPcorrectionFile;               ///< File containing the EP corrections
 
       // Histograms
       THistManager fHistManager; ///<  Histogram manager
@@ -271,7 +271,7 @@ namespace PWGJE
       AliAnalysisTaskEmcalJetHdEdxCorrelations(const AliAnalysisTaskEmcalJetHdEdxCorrelations &);            // not implemented
       AliAnalysisTaskEmcalJetHdEdxCorrelations &operator=(const AliAnalysisTaskEmcalJetHdEdxCorrelations &); // not implemented
 
-      ClassDef(AliAnalysisTaskEmcalJetHdEdxCorrelations, 20);
+      ClassDef(AliAnalysisTaskEmcalJetHdEdxCorrelations, 21);
     };
 
   } /* namespace EMCALJetTasks */
