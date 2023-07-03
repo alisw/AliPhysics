@@ -420,6 +420,11 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoMesonResponse;                                        //! vector of histos with meson response matrix
   std::vector<TH3F*> fHistoMesonResolutionJetPt;                                 //! vector of histos with meson resolution as function of jet momentum
 
+  std::vector<TH2F*> fHistoTrueMesonBothDaughtersInJet;                          //! vector of histos with meson pt vs. jet pt for number of mesons with both decay daughters inside jet cone
+  std::vector<TH2F*> fHistoTrueMesonOneDaughtersInJet;                           //! vector of histos with meson pt vs. jet pt for number of mesons with only one decay daughters inside jet cone
+  std::vector<TH2F*> fHistoTrueMesonNoDaughtersInJet;                            //! vector of histos with meson pt vs. jet pt for number of mesons with no decay daughters inside jet cone
+  std::vector<TH2F*> fHistoTrueMesonDaughtersInOtherJet;                         //! vector of histos with meson pt vs. jet pt for number of mesons with decay photons in jet but not in same as pi0
+  
   //-------------------------------
   // Meson double counting
   //-------------------------------
@@ -501,7 +506,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 17);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 18);
 };
 
 #endif
