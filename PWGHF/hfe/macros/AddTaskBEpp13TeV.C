@@ -1,6 +1,10 @@
 AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
 	TString	taskName = "beauty",
 	bool	isMC = false,
+
+    //TString estimatorFileName = "fileEstimatorAvg.root",
+    //double  multRef = 11.7,
+
 	int		minTPCnCrossedRow = 70,
 	int		minTPCnClsPID = 80,
 	double	maxTPCchi2 = 4,
@@ -49,6 +53,33 @@ AliAnalysisTaskBEpp13TeV* AddTaskBEpp13TeV(
   task->SetMinITSNcls(minITSnCls);
   task->SetITSlayer(itsLayer);
   task->SetPIDCuts(tpcPIDlow, tpcPIDhigh, tofPID);
+
+  // Multiplicity
+  double multRef = 11.7;
+  TString estimatorFileName = "fileEstimatorAvg.root";
+  if(estimatorFileName.EqualTo("")){
+    printf("Estimator file not provided, multiplcity corrected histograms will not be filled\n");
+  }else{
+    TString alienpath = "alien:///alice/cern.ch/user/j/jonghan/be_pp13TeV/";
+    TString path_file = alienpath + estimatorFileName;
+    //TFile* fileEstimator = TFile::Open(estimatorFileName.Data());
+    TFile* fileEstimator = TFile::Open(path_file.Data());
+    if(!fileEstimator){
+      printf("File with multiplicity estimator not found\n");
+      return 0x0;
+    }
+    task->SetMultReference(multRef);
+
+    TProfile *multEstimatorAvg = (TProfile*)fileEstimator->Get("fNtrAvg_pp_pass1_all");
+    if(!multEstimatorAvg) {
+      printf("Multiplicity estimator not found! Please check your estimator file\n");
+      return 0x0;
+    }
+
+    task->SetEstimatorAvg(multEstimatorAvg);
+    //task->SetEstimatorHistogram(period);
+  }
+  
   
   if(isMC){
 	task->SetMCanalysis();
