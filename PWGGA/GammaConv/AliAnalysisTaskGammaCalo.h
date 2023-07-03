@@ -357,6 +357,8 @@ class AliAnalysisTaskGammaCalo : public AliAnalysisTaskSE {
     TH1F**                fHistoTrueClusSubLeadingPt;                           //! array of histos with pi0/eta/eta_prime in subleading contribution
     TH1F**                fHistoTrueClusNParticles;                             //! array of histos with number of different particles (pi0/eta/eta_prime) contributing to cluster
     TH1F**                fHistoTrueClusEMNonLeadingPt;                         //! array of histos with cluster with largest energy by hadron
+    TH2F**                fHistoTrueClusGammaEResPt;                            //! array of histos with photon (validated and conversions) energy resolution ((E_rec-E_true)/E_true) as function of pT_rec
+    TH2F**                fHistoTrueClusPhotonGammaEResPt;                      //! array of histos with validated photon energy resolution ((E_rec-E_true)/E_true) as function of pT_rec
     TH1F**                fHistoTrueNLabelsInClus;                              //! array of histos with number of labels in cluster
     TH1F**                fHistoTruePrimaryClusGammaPt;                         //! array of histos with validated primary photon cluster, pt
     TH2F**                fHistoTruePrimaryClusGammaESDPtMCPt;                  //! array of histos with validated primary photon cluster, rec Pt, MC pt
