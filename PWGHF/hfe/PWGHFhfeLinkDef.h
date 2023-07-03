@@ -138,4 +138,5 @@
 #pragma link C++ class  AliAnalysisHFEppEMCalBeauty+;
 #pragma link C++ class  AliAnalysisTaskIPResolBeautyppCal+;
 #pragma link C++ class  AliAnalysisTaskBEpp13TeV+;
+#pragma link C++ class  AliAnalysisTaskWHMult+;
 #endif

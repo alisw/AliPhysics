@@ -1,7 +1,7 @@
 /* Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. */
 /* See cxx source for full Copyright notice */
 /* $Id$ */
-// test
+
 #ifndef AliAnalysisTaskBEpp13TeV_H
 #define AliAnalysisTaskBEpp13TeV_H
 
@@ -87,6 +87,12 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	void SetITSlayer(int itsLayer) { fITSlayer = itsLayer; }
 	void SetPIDCuts(double tpcPIDlow, double tpcPIDhigh, double tofPID) { fTPCnsigmaLow = tpcPIDlow;fTPCnsigmaHigh = tpcPIDhigh; fTOFnsigma = tofPID; }
 
+    void SetMultReference(double multRef) { fMultRef = multRef; }
+    void SetEstimatorAvg(TProfile *profile){
+      if(fMultEstimatorAvg) delete fMultEstimatorAvg;
+      fMultEstimatorAvg = new TProfile(*profile);
+    }
+
 	// Setter for B corr
 	void SetBcorrCentLow(TF1* BcorrFcentL) { fBmesonCorrCentLow = BcorrFcentL; }
 	void SetBcorrCentHigh(TF1* BcorrFcentH) { fBmesonCorrCentHigh = BcorrFcentH; }
@@ -107,10 +113,15 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 
 	bool PassEventCuts(AliAODEvent *event);
 	bool PassPileUpEvent(AliAODEvent *event);
-	bool PassTrackCuts(AliAODTrack *track);
+	
+    TProfile *GetEstimatorHistogram();
+    double GetCorrectedNtracklets(TProfile *estimatorAvg, double rawNtr, double vtxz, double refmult);
+
+    bool PassTrackCuts(AliAODTrack *track);
 	int GetElecSource(const AliAODMCParticle * const mcpart, double &mpt, int &mpdg);
 	int GetElecSource(const AliAODMCParticle * const mcpart, bool isElec, double &mpt, int &mpdg) const;
 	int GetHeavyFlavours(const AliAODMCParticle * const mcpart, double &hfpt, double &hfeta);
+
 
 	bool		fIsMC;
 	int			fMinTPCnCrossedRow;
@@ -122,6 +133,7 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
 	double		fTPCnsigmaLow;
 	double		fTPCnsigmaHigh;
 	double		fTOFnsigma;
+    double		fMultRef;
 
     AliAODEvent				*fAOD;           //! input event
     TList					*fOutputList;    //! output list
@@ -139,6 +151,10 @@ class AliAnalysisTaskBEpp13TeV : public AliAnalysisTaskSE
     // multiplicity
     TH1F		*hSPDtracklet;
     TH2F		*hNtr_vtxZ;
+    TProfile	*hMultEstimatorAvg;
+    TH1F		*hSPDtracklet_Corr;
+    TH2F		*hNtr_vtxZ_Corr;
+    TProfile	*hMultEstimatorAvg_Corr;
     TProfile	*fMultEstimatorAvg;
 	
 	// track cut QA

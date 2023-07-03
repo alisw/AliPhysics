@@ -597,6 +597,10 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
 
   Int_t nCentralityBinsPbPb = 6;
   Double_t CentralityBinsPbPb[7];
+
+  Int_t nCentralityBinsPbPb_Change = 4;
+  Double_t CentralityBinsPbPb_Change[5];
+
   Int_t nCentralityBinspPb = 4;
   Double_t CentralityBinspPb[5];
 
@@ -644,6 +648,13 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
         CentralityBinsPbPb[5] = 7.5;
         CentralityBinsPbPb[6] = 10.01;
       }
+      if(fFlagMEBinChange){
+        CentralityBinsPbPb_Change[0] = 0;
+        CentralityBinsPbPb_Change[1] = 2.5;
+        CentralityBinsPbPb_Change[2] = 5;
+        CentralityBinsPbPb_Change[3] = 7.5;
+        CentralityBinsPbPb_Change[4] = 10.01; 
+      }
     }
     if(fCentralityMin==30 && fCentralityMax == 50){
       if(!fFlagMEBinChange){
@@ -655,6 +666,13 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
           CentralityBinsPbPb[5] = 45;
           CentralityBinsPbPb[6] = 50.01;
         }
+      if(fFlagMEBinChange){
+          CentralityBinsPbPb_Change[0] = 30;
+          CentralityBinsPbPb_Change[1] = 34;
+          CentralityBinsPbPb_Change[2] = 39;
+          CentralityBinsPbPb_Change[3] = 44;
+          CentralityBinsPbPb_Change[4] = 50.01;
+      }
     }
     if(fCentralityMin==0 && fCentralityMax == 20)
     {
@@ -768,8 +786,15 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   }
 
 if(fFlagFillMECorr){
-  if(fIsPbPb)
-    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsPbPb, (Double_t*) CentralityBinsPbPb, nZvtxBins, (Double_t*) vertexBins);
+  if(fIsPbPb){
+      if(!fFlagMEBinChange){
+            fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsPbPb, (Double_t*) CentralityBinsPbPb, nZvtxBins, (Double_t*) vertexBins);
+      }
+
+      if(fFlagMEBinChange){
+            fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsPbPb_Change, (Double_t*) CentralityBinsPbPb_Change, nZvtxBins, (Double_t*) vertexBins);
+      }
+  }
 
   if(fIspPb)
     fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinspPb, (Double_t*) CentralityBinspPb, nZvtxBins, (Double_t*) vertexBins);
@@ -970,11 +995,21 @@ if(fFlagFillMECorr){
     EventBins[i] = i;
 
   if(fIsPbPb){
-    fMixStatCent = new TH2F("fMixStatCent","Mix event stats for centrality binning;Nevent in pool;Centrality",nEventBins,EventBins,nCentralityBinsPbPb,CentralityBinsPbPb);
-    fOutputList->Add(fMixStatCent);
+    if(!fFlagMEBinChange){
+        fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Vtx_{z};Centrality",nZvtxBins,vertexBins,nCentralityBinsPbPb,CentralityBinsPbPb);
+        fOutputList->Add(fMixStatCentVtxz);
 
-    fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Vtx_{z};Centrality",nZvtxBins,vertexBins,nCentralityBinsPbPb,CentralityBinsPbPb);
-    fOutputList->Add(fMixStatCentVtxz);
+        fMixStatCent = new TH2F("fMixStatCent","Mix event stats for centrality binning;Nevent in pool;Centrality",nEventBins,EventBins,nCentralityBinsPbPb,CentralityBinsPbPb);
+        fOutputList->Add(fMixStatCent);
+    }
+
+    if(fFlagMEBinChange){
+        fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Vtx_{z};Centrality",nZvtxBins,vertexBins,nCentralityBinsPbPb_Change,CentralityBinsPbPb_Change);
+        fOutputList->Add(fMixStatCentVtxz);
+
+        fMixStatCent = new TH2F("fMixStatCent","Mix event stats for centrality binning;Nevent in pool;Centrality",nEventBins,EventBins,nCentralityBinsPbPb_Change,CentralityBinsPbPb_Change);
+        fOutputList->Add(fMixStatCent);
+    }
 
     fMixStatVtxZ = new TH2F("fMixStatVtxZ","Mix event stats for Zvtx binning;Nevent in pool;Vtx_{z}",nEventBins,EventBins,nZvtxBins,vertexBins);
     fOutputList->Add(fMixStatVtxZ);

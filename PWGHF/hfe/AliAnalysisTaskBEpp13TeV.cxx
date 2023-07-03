@@ -12,7 +12,7 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
-// test
+
 
 #include "TChain.h"
 #include "TH1F.h"
@@ -60,6 +60,7 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV()
 ,fTPCnsigmaLow(-1)
 ,fTPCnsigmaHigh(3)
 ,fTOFnsigma(3)
+,fMultRef(11.7)
 
 ,hVtxZbeforCut(0)
 ,hVtxZafterCut(0)
@@ -67,6 +68,10 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV()
 
 ,hSPDtracklet(0)
 ,hNtr_vtxZ(0)
+,hMultEstimatorAvg(0)
+,hSPDtracklet_Corr(0)
+,hNtr_vtxZ_Corr(0)
+,hMultEstimatorAvg_Corr(0)
 ,fMultEstimatorAvg(0)
 
 ,hFilterMask(0)
@@ -200,6 +205,7 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char* name)
 ,fTPCnsigmaLow(-1)
 ,fTPCnsigmaHigh(3)
 ,fTOFnsigma(3)
+,fMultRef(11.7)
 
 ,hVtxZbeforCut(0)
 ,hVtxZafterCut(0)
@@ -207,6 +213,10 @@ AliAnalysisTaskBEpp13TeV::AliAnalysisTaskBEpp13TeV(const char* name)
 
 ,hSPDtracklet(0)
 ,hNtr_vtxZ(0)
+,hMultEstimatorAvg(0)
+,hSPDtracklet_Corr(0)
+,hNtr_vtxZ_Corr(0)
+,hMultEstimatorAvg_Corr(0)
 ,fMultEstimatorAvg(0)
 
 ,hFilterMask(0)
@@ -395,8 +405,17 @@ void AliAnalysisTaskBEpp13TeV::UserCreateOutputObjects()
   hNtr_vtxZ = new TH2F("hNtr_vtxZ", "", 300, -15., 15., 300, 0, 300);
   fOutputList->Add(hNtr_vtxZ);
 
-  fMultEstimatorAvg = new TProfile("fMultEstimatorAvg", "", 300, -15., 15.);
-  fOutputList->Add(fMultEstimatorAvg);
+  hMultEstimatorAvg = new TProfile("hMultEstimatorAvg", "", 300, -15., 15.);
+  fOutputList->Add(hMultEstimatorAvg);
+  
+  hSPDtracklet_Corr = new TH1F("hSPDtracklet_Corr", "SPD tracklet distribution", 300, 0, 300);
+  fOutputList->Add(hSPDtracklet_Corr);
+
+  hNtr_vtxZ_Corr = new TH2F("hNtr_vtxZ_Corr", "", 300, -15., 15., 300, 0, 300);
+  fOutputList->Add(hNtr_vtxZ_Corr);
+
+  hMultEstimatorAvg_Corr = new TProfile("hMultEstimatorAvg_Corr", "", 300, -15., 15.);
+  fOutputList->Add(hMultEstimatorAvg_Corr);
   
   hFilterMask = new TH1F("hFilterMask", "", 2, 0., 2.);
   fOutputList->Add(hFilterMask);
@@ -693,13 +712,18 @@ void AliAnalysisTaskBEpp13TeV::UserExec(Option_t *){
   }
   hSPDtracklet->Fill(nAcceta);
   hNtr_vtxZ->Fill(vtxZ, nAcceta);
-  fMultEstimatorAvg->Fill(vtxZ, nAcceta);
+  hMultEstimatorAvg->Fill(vtxZ, nAcceta);
 
-  double countetaCorr = nAcceta;
-  double N_corr_tr_eta = nAcceta;
-  double fRefMult_min = 9.016;
+  double Corrected_Ntr = nAcceta;
 
-  //TProfile *estimatorAvg = GetEstimatorHistogram(fAOD);
+  TProfile *estimatorAvg = GetEstimatorHistogram();
+  if(estimatorAvg)
+    Corrected_Ntr = static_cast<int>(GetCorrectedNtracklets(estimatorAvg, nAcceta, vtxZ, fMultRef));
+
+  hSPDtracklet_Corr->Fill(Corrected_Ntr);
+  hNtr_vtxZ_Corr->Fill(vtxZ, Corrected_Ntr);
+  hMultEstimatorAvg_Corr->Fill(vtxZ, Corrected_Ntr);
+
 
   // generated MC loop
   if(fIsMC){
@@ -984,6 +1008,16 @@ bool AliAnalysisTaskBEpp13TeV::PassPileUpEvent(AliAODEvent *event){
   utils.SetCheckPlpFromDifferentBCMV(false);
   bool isPileupFromMV = utils.IsPileUpMV(event);
   return isPileupFromMV;
+}
+//_________________________________________________________________
+double AliAnalysisTaskBEpp13TeV::GetCorrectedNtracklets(TProfile *estimatorAvg, double rawNtr, double vtxz, double refmult){
+  if(TMath::Abs(vtxz)>10) return rawNtr;
+  if(!estimatorAvg) return rawNtr;
+  double Ntr_mean = estimatorAvg->GetBinContent(estimatorAvg->FindBin(vtxz));
+  double deltaN = rawNtr*(refmult/Ntr_mean - 1);
+  double correctedNtr = rawNtr + (deltaN>0 ? 1: -1)*gRandom->Poisson(TMath::Abs(deltaN));
+
+  return correctedNtr;
 }
 //_________________________________________________________________
 bool AliAnalysisTaskBEpp13TeV::PassTrackCuts(AliAODTrack *track){
@@ -1675,3 +1709,6 @@ int AliAnalysisTaskBEpp13TeV::GetElecSource(const AliAODMCParticle * const mcpar
   return origin;
 }
 
+TProfile *AliAnalysisTaskBEpp13TeV::GetEstimatorHistogram(){
+  return fMultEstimatorAvg;
+}
