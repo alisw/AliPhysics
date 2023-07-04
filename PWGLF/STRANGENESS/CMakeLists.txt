@@ -108,6 +108,7 @@ set(SRCS
   Cascades/Run2/AliAnalysisTaskWeakDecayVertexer.cxx
   Cascades/Run2/AliAnalysisTaskStrEffStudy.cxx
   Cascades/Run2/AliAnalysisTaskMCPredictions.cxx
+  Cascades/Run2/AliAnalysisTaskMCPredictions2pc.cxx
   Cascades/Run2/AliAnalysisTaskMCPredictionsEE.cxx
   Cascades/Run2/AliAnalysisTaskMCPredictionsStrgVsMultVsZDC.cxx
   Cascades/Run2/AliAnalysisTaskStrangeCascadesDiscrete.cxx
