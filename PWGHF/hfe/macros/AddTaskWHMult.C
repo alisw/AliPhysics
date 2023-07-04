@@ -1,10 +1,13 @@
-// include the header of your analysis task here! for classes already compiled by aliBuild,
-// precompiled header files (with extension pcm) are available, so that you do not need to
-// specify includes for those. for your own task however, you (probably) have not generated a
-// pcm file, so we need to include it explicitly
-#include "AliAnalysisTaskMyTask.h"
+///////////////////////////////////////////////////////////////////
+//
+// AddTaskWHMult                                                               //            
+// Author: T. Kawagichi Univ. of Tsukuba                            //
+//                                                               //
+///////////////////////////////////////////////////////////////////
 
-void AddTaskWHMult(
+class AliAnalysisDataContainer;
+
+AliAnalysisTaskWHMult* AddTaskWHMult(
    TString name = "name",
    Bool_t flagEG1 = kTRUE
   )
