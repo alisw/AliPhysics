@@ -9,7 +9,8 @@
 AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
   TString trigger               = "kINT7+kSemiCentral",
   TString period                = "LHC18r",
-  int filterBit                 = 768,
+  TString plane                 = "TPC",
+  UInt_t filterBit              = 768,
   bool bCalculateLambdaHadron   = false,
   TString uniqueID              = "")
 {
@@ -50,11 +51,11 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
   task->IfDebug(bDebug);
   task->IfDoNUE(bDoNUE);
   task->IfDoLambdaNUE(bDoLambdaNUE);
-  task->IfDoNUA(bDoNUA);
   task->IfV0DaughterUseTOF(bV0DaughterUseTOF);
   task->IfNarrowDcaCuts768(bNarrowDcaCuts768);
   task->IfProtonCustomizedDCACut(bProtonCustomizedDCACut);
   task->IfUsePionRejection(bUsePionRejection);
+  task->SetPlaneEstimator(plane);
 
   //=========================================================================
   // Read in Files
@@ -62,15 +63,13 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
   TFile* fLambdaNUEFile = nullptr;
   TFile* fNUAFile = nullptr;
   TFile* fVZEROCalibFile = nullptr;
-  TFile* fZDCCalibFile = nullptr;
 
   TList* fListNUE = nullptr;
   TList* fListLambdaNUE = nullptr;
   TList* fListNUA = nullptr;
   TList* fVZEROCalibList = nullptr;
-  TList* fZDCCalibList = nullptr;
 
-  bool isNeedLoadAlienFile = bDoNUA || bDoNUE;
+  bool isNeedLoadAlienFile = bDoNUE;
 
   if (isNeedLoadAlienFile && !gGrid) TGrid::Connect("alien://");
   if (bDoNUE) {
@@ -99,30 +98,46 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
       std::cout << "!!!!!!!!!!!!!!!Lambda NUE List not Found!!!!!!!!!!!!!!!" << std::endl;
   }
 
-  if (bDoNUA) {
+  if (plane.EqualTo("TPC")) {
+    TString fileNameNUA = "";
     if (period.EqualTo("LHC18q")) {
-      if (uniqueID.EqualTo("FB96")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/WgtsNUAChargeAndPion_LHC18qPass3_FB96_AlexPU_DeftMode_Oct2021.root", "READ");
-      else if (uniqueID.EqualTo("Nhits60")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_Nhits60.root");
-      else if (uniqueID.EqualTo("Nhits80")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_Nhits80.root");
-      else if (uniqueID.EqualTo("ChiMax2")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_ChiHg2.root");
-	    else if (uniqueID.EqualTo("ChiMax2p5")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_ChiHg2d5.root");
-      else fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
-      fListNUA = dynamic_cast<TList*>(fNUAFile->Get("fNUA_ChPosChNeg"));
+      if (uniqueID.EqualTo("Nhits60"))        fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_Nhits60.root");
+      else if (uniqueID.EqualTo("Nhits80"))   fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_Nhits80.root");
+      else if (uniqueID.EqualTo("ChiMax2"))   fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_ChiHg2.root");
+      else if (uniqueID.EqualTo("ChiMax2p5")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18q/LHC18q_pass3_NUA_ChiHg2d5.root");
+      else fileNameNUA = "alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/WgtsNUAChargeAndPion_LHC18qPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root"; 
+    } else if (period.EqualTo("LHC18r")) {
+      if (uniqueID.EqualTo("Nhits60"))        fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_Nhits60.root");
+      else if (uniqueID.EqualTo("Nhits80"))   fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_Nhits80.root");
+      else if (uniqueID.EqualTo("ChiMax2"))   fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_ChiHg2.root");
+      else if (uniqueID.EqualTo("ChiMax2p5")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_ChiHg2d5.root");
+      else fileNameNUA = "alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/WgtsNUAChargeAndPion_LHC18rPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root";
     }
-    if (period.EqualTo("LHC18r")) {
-      if (uniqueID.EqualTo("FB96")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/WgtsNUAChargeAndPion_LHC18rPass3_FB96_AlexPU_DeftMode_Oct2021.root", "READ");
-      else if (uniqueID.EqualTo("Nhits60")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_Nhits60.root");
-      else if (uniqueID.EqualTo("Nhits80")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_Nhits80.root");
-      else if (uniqueID.EqualTo("ChiMax2")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_ChiHg2.root");
-	    else if (uniqueID.EqualTo("ChiMax2p5")) fNUAFile = TFile::Open("alien:///alice/cern.ch/user/w/wenya/refData/reflhc18r/LHC18r_pass3_NUA_ChiHg2d5.root");
-      else fNUAFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/WgtsNUAChargeAndPion_LHC18rPass3_FB768_AlexPU_DeftMode_Sept2021NoAvgQ.root", "READ");
-      fListNUA = dynamic_cast<TList*>(fNUAFile->Get("fNUA_ChPosChNeg"));
-    }
+
+    fNUAFile = TFile::Open(fileNameNUA, "READ");
+    fListNUA = dynamic_cast<TList*>(fNUAFile->Get("fNUA_ChPosChNeg"));
+
     if (fListNUA) {
       task->SetListForNUA(fListNUA);
       std::cout << "================  NUA List Set =================" << std::endl;
     } else
       std::cout << "!!!!!!!!!!!!!!!NUA List not Found!!!!!!!!!!!!!!!" << std::endl;
+  }
+
+  if (plane.EqualTo("V0C")) {
+    if (period.EqualTo("LHC18q")) {
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/calibq2V0C18qP3.root", "READ");
+      fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("18qlistspPerc"));
+    }
+    if (period.EqualTo("LHC18r")) {
+      fVZEROCalibFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/calibq2V0C18rP3.root", "READ");
+      fVZEROCalibList = dynamic_cast<TList*>(fVZEROCalibFile->Get("18rlistspPerc"));
+    }
+    if (fVZEROCalibList) {
+      task->SetListForVZEROCalib(fVZEROCalibList);
+      std::cout << "================  VZERO List Set =================" << std::endl;
+    } else
+      std::cout << "!!!!!!!!!!!!!!!VZERO List not Found!!!!!!!!!!!!!!!" << std::endl;
   }
 
   //======================================================================
