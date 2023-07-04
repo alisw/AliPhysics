@@ -37,7 +37,6 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   void IfDebug(bool bDebug) { this->fDebug = bDebug; }
   void IfDoNUE(bool bDoNUE) { this->isDoNUE = bDoNUE; }
   void IfDoLambdaNUE(bool bDoLambdaNUE) { this->isDoLambdaNUE = bDoLambdaNUE; }
-  void IfDoNUA(bool bDoNUA) { this->isDoNUA = bDoNUA; }
   void IfV0DaughterUseTOF(bool bV0DaughterUseTOF) { this->isV0DaughterUseTOF = bV0DaughterUseTOF; }
   void IfNarrowDcaCuts768(bool bNarrowDcaCuts768) { this->isNarrowDcaCuts768 = bNarrowDcaCuts768; }
   void IfProtonCustomizedDCACut(bool bProtonCustomizedDCACut) { this->isProtonCustomizedDCACut = bProtonCustomizedDCACut; }
@@ -48,6 +47,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   void SetListForNUE(TList* flist) { this->fListNUE = (TList*)flist->Clone(); }
   void SetListForLambdaNUE(TList* flist) { this->fListLambdaNUE = (TList*)flist->Clone(); }
   void SetListForNUA(TList* flist) { this->fListNUA = (TList*)flist->Clone(); }
+  void SetListForVZEROCalib(TList* flist) { this->fListVZEROCalib = (TList*)flist->Clone(); }
 
   // Global
   void SetTrigger(TString trigger) { this->fTrigger = trigger; }
@@ -56,6 +56,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   void SetVzCut(double vzCut) { this->fVzCut = vzCut; }
   void SetCentCut(float centDiffCut) { this->fCentDiffCut = centDiffCut; }
   // Plane
+  void SetPlaneEstimator(TString planeEstimator) { this->fPlaneEstimator = planeEstimator; }
   void SetPlanePtMin(float planePtMin) { this->fPlanePtMin = planePtMin; }
   void SetPlanePtMax(float planePtMax) { this->fPlanePtMax = planePtMax; }
   // Track
@@ -111,7 +112,8 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   ////////////////////////
   // Procedural function
   ////////////////////////
-  bool GetTPCPlane();
+  double GetTPCPlane();
+  double GetV0CPlane();
   void ResetVectors();
   bool LoopTracks();
   bool LoopV0s();
@@ -149,8 +151,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   //////////////////////
   bool isCalculateLambdaHadron;
   bool isDoNUE;
-  bool isDoLambdaNUE; 
-  bool isDoNUA;
+  bool isDoLambdaNUE;
   bool isV0DaughterUseTOF;
   bool isNarrowDcaCuts768;
   bool isProtonCustomizedDCACut;
@@ -167,6 +168,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   double fVzCut;      // vz cut
   float fCentDiffCut; // centrality restriction for V0M and TRK
   // Plane
+  TString fPlaneEstimator; // TPC or V0C
   float fPlanePtMin;
   float fPlanePtMax;
   // Track
@@ -250,9 +252,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   double fSumQ2yTPC;
   double fWgtMultTPC;
   // Plane
-  double fPsi2TPC;
-  // Do we get the right plane?
-  bool isRightTPCPlane;
+  double fPsi2;
 
   // Plane tracks Map key:id value:(phi,weight)
   std::unordered_map<int, std::vector<double>> mapTPCTrksIDPhiWgt;
@@ -286,6 +286,18 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   TList* fListNUA; // read lists for NUA
   TH3F* hCorrectNUAPos;
   TH3F* hCorrectNUANeg;
+  ////////////////////////
+  // VZERO
+  ////////////////////////
+  TList* fListVZEROCalib; // read list for V0 Calib
+  //for recenter
+  AliOADBContainer* contQxncm;
+  AliOADBContainer* contQyncm;
+  TH1D* hQx2mV0C;
+  TH1D* hQy2mV0C;
+  // for gain equalization
+  TH2F* fHCorrectV0ChWeghts;
+
 
   ///////////////////The following files will be saved//////////////////////////////////
   //////////////
@@ -365,9 +377,10 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   /////////////
   TList* fResultsList;
   // Plane
-  TH2D* fHist2Psi2TPCCent;
+  TH2D* fHist2Psi2;
 
   // Inv Mass 
+  TH2D* fHist2LambdaMass[4];           //![0]:Λ    [1]:Λ      [2]:Λbar    [3]:Λbar
   TH3D* fHist3LambdaProtonMassSPt[4];  //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
   TH3D* fHist3LambdaHadronMassSPt[4];  //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
   TH3D* fHist3LambdaProtonMassDEta[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
