@@ -187,6 +187,8 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Float_t*  fEleMinMassUS; //[fEleNum]
 		Float_t*  fEleNSigmaTOF; //[fEleNum]
 		Float_t*  fEleNSigmaTPC; //[fEleNum]
+		Double_t* fEleDCAd;      //[fEleNum]
+		Double_t* fEleDCAz;      //[fEleNum]
 		Double_t* fEleEta;       //[fEleNum]
 		Double_t* fElePhi;       //[fEleNum]
 		Double_t* fElePt;        //[fEleNum]

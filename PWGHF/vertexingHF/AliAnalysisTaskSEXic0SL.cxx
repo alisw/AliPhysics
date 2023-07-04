@@ -77,7 +77,7 @@ AliAnalysisTaskSEXic0SL::AliAnalysisTaskSEXic0SL():
 	fMCNum(0), fMCLabel(0), fMCOrig(0), fMCPDG(0), fMCPt(0), fMCY(0),
 	fMCElePt(0), fMCEleY(0), fMCXiPt(0), fMCXiY(0), fMCXiMomLabel(0), fMCXiMomPDG(0),
 	fEleNum(0), fEleChg(0), fEleITSNcls(0), fEleMinMassLS(0), fEleMinMassUS(0),
-	fEleNSigmaTOF(0), fEleNSigmaTPC(0), fEleEta(0), fElePhi(0), fElePt(0),
+	fEleNSigmaTOF(0), fEleNSigmaTPC(0), fEleDCAd(0), fEleDCAz(0), fEleEta(0), fElePhi(0), fElePt(0),
 	fElePx(0), fElePy(0), fElePz(0), fEleY(0), fEleTPCNsig(0), fEleTPCNxedR(0),
 	fEleTPCNclsF(0), fEleLabel(0), fElePDG(0), fEleMomLabel(0), fEleMomPDG(0),
 	fCascNum(0), fCascChgXi(0), fCascCosPAXi(0), fCascCosPAV0(0), fCascDcaBachToPV(0), fCascDcaV0ToPV(0),
@@ -123,7 +123,7 @@ AliAnalysisTaskSEXic0SL::AliAnalysisTaskSEXic0SL(const char* name, const char* o
 	fMCElePt(0), fMCEleY(0), fMCXiPt(0), fMCXiY(0), fMCXiMomLabel(0), fMCXiMomPDG(0),
 	//
 	fEleNum(0), fEleChg(0), fEleITSNcls(0), fEleMinMassLS(0), fEleMinMassUS(0),
-	fEleNSigmaTOF(0), fEleNSigmaTPC(0), fEleEta(0), fElePhi(0), fElePt(0),
+	fEleNSigmaTOF(0), fEleNSigmaTPC(0), fEleDCAd(0), fEleDCAz(0), fEleEta(0), fElePhi(0), fElePt(0),
 	fElePx(0), fElePy(0), fElePz(0), fEleY(0), fEleTPCNsig(0), fEleTPCNxedR(0),
 	fEleTPCNclsF(0), fEleLabel(0), fElePDG(0), fEleMomLabel(0), fEleMomPDG(0),
 	//
@@ -621,6 +621,11 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 		fEleNSigmaTPC[nEle] = fPID->NumberOfSigmasTPC(fTrk, AliPID::kElectron);
 
 		fEleChg[nEle] = fTrk->Charge();
+		Float_t b[2];
+		Float_t bCov[3];
+		fTrk->GetImpactParameters(b, bCov);
+		fEleDCAd[nEle] = b[0];
+		fEleDCAz[nEle] = b[1];
 		fEleEta[nEle] = fTrk->Eta();
 		fElePhi[nEle] = fTrk->Phi();
 		fElePt [nEle] = fTrk->Pt();
@@ -1011,7 +1016,8 @@ void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOn
 	{
 		TString strEle = "eN/I:e_charge[eN]/I:e_itsNcls[eN]/I";
 		strEle += ":e_minMassLS[eN]/F:e_minMassUS[eN]/F:e_nSigmaTOF[eN]/F:e_nSigmaTPC[eN]/F";
-		strEle += ":e_eta[eN]/D:e_phi[eN]/D:e_pT[eN]/D:e_px[eN]/D:e_py[eN]/D:e_pz[eN]/D:e_Y[eN]/D";
+		strEle += ":e_dcad[eN]/D:e_dcaz[eN]/D:e_eta[eN]/D:e_phi[eN]/D";
+		strEle += ":e_pT[eN]/D:e_px[eN]/D:e_py[eN]/D:e_pz[eN]/D:e_Y[eN]/D";
 		strEle += ":e_tpcNsig[eN]/s:e_tpcNxedR[eN]/s:e_tpcNclsF[eN]/s";
 		if (IsMC) strEle += ":e_label[eN]/I:e_PDG[eN]/I:e_momLabel[eN]/I:e_momPDG[eN]/I";
 		T->Branch("Ele", 0, strEle.Data());
@@ -1023,6 +1029,8 @@ void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOn
 	fEleMinMassUS = new Float_t[fEleNum]; //Minimum mass of e+e- suspect from photon conversion, unlikesign
 	fEleNSigmaTOF = new Float_t[fEleNum];
 	fEleNSigmaTPC = new Float_t[fEleNum];
+	fEleDCAd      = new Double_t[fEleNum];
+	fEleDCAz      = new Double_t[fEleNum];
 	fEleEta       = new Double_t[fEleNum];
 	fElePhi       = new Double_t[fEleNum];
 	fElePt        = new Double_t[fEleNum];
@@ -1040,15 +1048,17 @@ void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOn
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMinMassUS[0]); iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNSigmaTOF[0]); iLeaf++; //5
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNSigmaTPC[0]); iLeaf++;
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleDCAd[0]);      iLeaf++;
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleDCAz[0]);      iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleEta[0]);       iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePhi[0]);       iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePt[0]);        iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePx[0]);        iLeaf++; //10
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePx[0]);        iLeaf++; //12
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePy[0]);        iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePz[0]);        iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleY[0]);         iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNsig[0]);   iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNxedR[0]);  iLeaf++; //15
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNxedR[0]);  iLeaf++; //17
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNclsF[0]);  iLeaf++;
 	fEleLabel    = new Int_t[fEleNum]; //MC only, electron candidate's label, to check if it's negative or not
 	fElePDG      = new Int_t[fEleNum]; //MC only, electron candidate's PDG code
@@ -1178,6 +1188,8 @@ void AliAnalysisTaskSEXic0SL::DeleteTreeVariables(void)
 	delete[] fEleMinMassUS;
 	delete[] fEleNSigmaTOF;
 	delete[] fEleNSigmaTPC;
+	delete[] fEleDCAd;
+	delete[] fEleDCAz;
 	delete[] fEleEta;
 	delete[] fElePhi;
 	delete[] fElePt;
@@ -1269,6 +1281,8 @@ void AliAnalysisTaskSEXic0SL::ResetTreeVariables(void)
 		fEleMinMassUS[a] = -999.;
 		fEleNSigmaTOF[a] = -999.;
 		fEleNSigmaTPC[a] = -999.;
+		fEleDCAd     [a] = -999.;
+		fEleDCAz     [a] = -999.;
 		fEleEta      [a] = -999.;
 		fElePhi      [a] = -999.;
 		fElePt       [a] = -999.;
