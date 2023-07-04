@@ -96,6 +96,13 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 		int nbinsks,float lowks,float upks,
                 int nbinsmT,float lowmT,float upmT);
 
+void SetdBumpCheck(int aUse);
+void SetdBumpCheckInit(bool aInit,
+ int nbinsks,float lowks,float upks,
+int nbinspT,float lowpT,float uppT,
+ int nbinsMass,float lowMass,float upMass);
+
+
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -181,7 +188,11 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	
 	int fUse2DkStarVsmT;
 	TH2F *fNum2DkStarVsmT;
-	TH2F *fDum2DkStarVsmT;	
+	TH2F *fDum2DkStarVsmT;
+
+	int fUseBumpC;
+	TH2F *f2DkSVspT;
+	TH2F *f2DkSVsMass;
 };
 
 

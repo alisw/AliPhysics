@@ -79,8 +79,10 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     fDum3DkTvsKStarvsmT(nullptr), 
     fUse2DkStarVsmT(0),
     fNum2DkStarVsmT(nullptr),
-    fDum2DkStarVsmT(nullptr)
- 
+    fDum2DkStarVsmT(nullptr),
+    fUseBumpC(0),
+    f2DkSVspT(nullptr),
+    f2DkSVsMass(nullptr)
 {
     
     fNumerator      = new TH1D(TString::Format("Num%s", fTitle.Data()), "fNumerator", nbins, KStarLo, KStarHi);
@@ -147,8 +149,10 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     fDum3DkTvsKStarvsmT(aCorrFctn.fDum3DkTvsKStarvsmT),
     fUse2DkStarVsmT(aCorrFctn.fUse2DkStarVsmT),
     fNum2DkStarVsmT(aCorrFctn.fNum2DkStarVsmT),
-    fDum2DkStarVsmT(aCorrFctn.fDum2DkStarVsmT)
-
+    fDum2DkStarVsmT(aCorrFctn.fDum2DkStarVsmT),
+    fUseBumpC(aCorrFctn.fUseBumpC),
+    f2DkSVspT(aCorrFctn.f2DkSVspT),
+    f2DkSVsMass(aCorrFctn.f2DkSVsMass)
 
 {
     
@@ -201,6 +205,9 @@ AliFemtoCorrFctnpdtHe3::~AliFemtoCorrFctnpdtHe3()
 
     delete fNum2DkStarVsmT;
     delete fDum2DkStarVsmT;
+
+    delete f2DkSVspT;
+    delete f2DkSVsMass;
 
 }
 AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctnpdtHe3& aCorrFctn)
@@ -305,6 +312,12 @@ if(fNum2DkStarVsmT) delete fNum2DkStarVsmT;
 if(fDum2DkStarVsmT) delete fDum2DkStarVsmT;
         fDum2DkStarVsmT = new TH2F(*aCorrFctn.fDum2DkStarVsmT);
 
+if(fUseBumpC){
+	delete f2DkSVspT;
+	f2DkSVspT = new TH2F(*aCorrFctn.f2DkSVspT);
+	delete f2DkSVsMass;
+	f2DkSVsMass = new TH2F(*aCorrFctn.f2DkSVsMass); 
+}
 
     return *this;
 
@@ -373,6 +386,11 @@ if(fUse2DkStarVsmT){
 tOutputList->Add(fDum2DkStarVsmT);
 }
  
+if(fUseBumpC){
+
+tOutputList->Add(f2DkSVspT);
+tOutputList->Add(f2DkSVsMass);
+}
     return tOutputList;
 }
 void AliFemtoCorrFctnpdtHe3::Finish()
@@ -430,6 +448,10 @@ if(fUse2DkStarVsmT){
 	fDum2DkStarVsmT->Write();
 }
 
+if(fUseBumpC){
+	f2DkSVspT->Write();
+	f2DkSVsMass->Write();
+}
 
 }
 void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
@@ -534,6 +556,19 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
 if(fUse2DkStarVsmT){
         fNum2DkStarVsmT->Fill(tKStar,CalcMt(fPair));
 }
+
+
+	if(fUseBumpC){
+		f2DkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt());
+ 	 float c = 1.;
+    	float beta = fPair->Track2()->Track()->VTOF();
+    	if(beta!=0){
+
+    		float tMom = fPair->Track2()->Track()->P().Mag();
+    		float massTOF = tMom*tMom/c/c*(1./(beta*beta)-1);
+        	f2DkSVsMass->Fill(tKStar,massTOF);
+	}
+ }
 
 	return;
     
@@ -1075,8 +1110,27 @@ void AliFemtoCorrFctnpdtHe3::Set2DkStarVsmTInit(bool aInit,
 
 
 fNum2DkStarVsmT = new TH2F(TString::Format("fNum2DkStarVsmT%s", fTitle.Data())," ",nbinsks,lowks,upks,nbinsmT,lowmT,upmT);
-
-
 fDum2DkStarVsmT = new TH2F(TString::Format("fDum2DkStarVsmT%s", fTitle.Data())," ",nbinsks,lowks,upks,nbinsmT,lowmT,upmT);
 
 }
+
+void AliFemtoCorrFctnpdtHe3::SetdBumpCheck(int aUse){
+	fUseBumpC = aUse;
+}
+
+void AliFemtoCorrFctnpdtHe3::SetdBumpCheckInit(bool aInit,
+ int nbinsks,float lowks,float upks,
+int nbinspT,float lowpT,float uppT,
+ int nbinsMass,float lowMass,float upMass
+
+){
+
+f2DkSVspT = new TH2F(TString::Format("f2DkSVspT%s", fTitle.Data())," ",nbinsks,lowks,upks,nbinspT,lowpT,uppT);
+f2DkSVsMass = new TH2F(TString::Format("f2DkSVsMass%s", fTitle.Data())," ",nbinsks,lowks,upks,nbinsMass,lowMass,upMass);
+
+
+
+}
+
+	
+
