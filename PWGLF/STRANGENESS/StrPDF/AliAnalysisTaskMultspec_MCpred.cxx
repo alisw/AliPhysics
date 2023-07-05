@@ -107,7 +107,6 @@ void AliAnalysisTaskMultspec_MCpred::UserExec(Option_t *)
   AliStack *lMCstack = lMCev->Stack();
   if (!lMCstack) {
     Printf("ERROR: Could not retrieve MC stack \n");
-    cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
     return;
   }
 

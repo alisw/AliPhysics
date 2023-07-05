@@ -141,6 +141,7 @@ set(SRCS
   Cascades/Run2/AliBDT.cxx
   Cascades/Run2/AliAnalysisTaskStrangenessML.cxx
   StrPDF/AliAnalysisTaskMultspec.cxx
+  StrPDF/AliAnalysisTaskMultspec_MCpred.cxx
   )
 
 if(ROOT_VERSION_MAJOR EQUAL 6)
