@@ -32,8 +32,8 @@ AliAnalysisTaskMCPredictions2pc *AddTaskMCPredictions2pc( Int_t lNSmallBinning =
                                                                  outputFileName );
   
     //Recommendation: Tree as a single output slot
-    mgr->ConnectInput (taskMCPred, 0, mgr->GetCommonInputContainer());
-    mgr->ConnectOutput(taskMCPred, 1, coutputList);
+    mgr->ConnectInput (taskMCPred2pc, 0, mgr->GetCommonInputContainer());
+    mgr->ConnectOutput(taskMCPred2pc, 1, coutputList);
     
-    return taskMCPred;
+    return taskMCPred2pc;
 }   
