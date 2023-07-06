@@ -45,7 +45,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		int CheckOrigin(AliMCEvent* MCEvt, AliAODMCParticle *MCPart); //<0:no_quark, 4:c, 5:b
 		int GetCascLabel(AliMCEvent* MCEvt, AliAODcascade* Casc, bool getLabelXic0); //true for Xic0, false for Xi
 
-		bool FilterTrack(AliAODTrack* Trk, const AliVVertex* Vtx);
+		bool FilterTrack(AliAODTrack* Trk, const AliVVertex* Vtx, float cutPt);
 		bool FilterTrackElectron(AliAODTrack* Trk, AliPIDResponse* PID);
 		bool FilterCascade(AliAODcascade* Casc, const AliVVertex* Vtx, AliPIDResponse* PID);
 
@@ -126,6 +126,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Int_t   cut_minNClustersITS;      //= 2;
 		Int_t   cut_TPCsignalN;           //= 50; //fSetProdTrackTPCNclsPID in old code
 		Float_t cut_maxChi2PerClusterITS; //= 36.;
+		Float_t cut_maxChi2PerClusterTPC; //= 4; //Updated July 6, 2023
 		Float_t cut_maxDCAToVertexXY;     //= 1.0;
 		Float_t cut_maxDCAToVertexZ;      //= 2.0;
 		Float_t cut_trkEta;               //= 0.8; //For daughter particles
@@ -187,6 +188,8 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Float_t*  fEleMinMassUS; //[fEleNum]
 		Float_t*  fEleNSigmaTOF; //[fEleNum]
 		Float_t*  fEleNSigmaTPC; //[fEleNum]
+		Double_t* fEleDCAd;      //[fEleNum]
+		Double_t* fEleDCAz;      //[fEleNum]
 		Double_t* fEleEta;       //[fEleNum]
 		Double_t* fElePhi;       //[fEleNum]
 		Double_t* fElePt;        //[fEleNum]
@@ -223,6 +226,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Double_t* fCascMassLmbAnti;   //[fCascNum]
 		Double_t* fCascMassOmega;     //[fCascNum]
 		Double_t* fCascMassXi;        //[fCascNum]
+		Double_t* fCascMassXi1530;    //[fCascNum]
 		Double_t* fCascPtXi;          //[fCascNum]
 		Double_t* fCascPxXi;          //[fCascNum]
 		Double_t* fCascPyXi;          //[fCascNum]
