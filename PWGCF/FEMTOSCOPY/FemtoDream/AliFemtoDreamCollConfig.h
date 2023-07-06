@@ -96,6 +96,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   void SetAncestors(bool doIt) {
     fAncestors = doIt;
   }
+  void SetpTOnepTTwokStarPlotsmT(bool doIt) {
+    fpTOnepTTwokStarPlotsmT = doIt;
+  }
   void SetDomTMultBinning(bool doIt) {
     fmTMultBinning = doIt; 
   };
@@ -194,6 +197,9 @@ class AliFemtoDreamCollConfig : public TNamed {
   ;
   bool GetDoAncestorsPlots() {
     return fAncestors;
+  }
+  bool GetDopTOnepTTwokStarPlotsmT() {
+    return fpTOnepTTwokStarPlotsmT;
   }
   ;
   AliFemtoDreamCollConfig::UncorrelatedMode GetControlMode() {
@@ -353,6 +359,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fmTMultBinning; //
   AliFemtoDreamEvent::MultEstimator fEst;  //
   bool fAncestors;              //
+  bool fpTOnepTTwokStarPlotsmT; //
   float fDeltaEtaMax;           //
   float fDeltaPhiMax;           //
   bool fDoDeltaEtaDeltaPhiCut;  //
@@ -360,7 +367,7 @@ class AliFemtoDreamCollConfig : public TNamed {
   bool fCoutVariables;
   float fSummedPtLimit1;
   float fSummedPtLimit2;
-  ClassDef(AliFemtoDreamCollConfig,19);
+  ClassDef(AliFemtoDreamCollConfig,20);
 };
 
 #endif /* ALIFEMTODREAMCOLLCONFIG_H_ */

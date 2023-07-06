@@ -11,6 +11,7 @@
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TList.h"
+#include "THnSparse.h"
 
 #include "AliFemtoDreamCollConfig.h"
 #include "AliFemtoDreamBasePart.h"
@@ -80,6 +81,9 @@ class AliFemtoDreamCorrHists {
   }
   bool GetDoAncestorsPlots() {
     return fAncestors;
+  }
+  bool GetDopTOnepTTwokStarPlotsmT() {
+    return fpTOnepTTwokStarPlotsmT;
   }
   void FillSameEventDist(int i, float RelK) {
     fSameEventDist[i]->Fill(RelK);
@@ -284,6 +288,9 @@ class AliFemtoDreamCorrHists {
       fMixedEventmTDist[i]->Fill(RelK, mT);
   }
   void FillMixedEventmTMultDist(int i, float mT, int iMult, float RelK);
+  void FillSameEventpTOnepTTwokStar(int iHist, float mT, float pTOne, float pTTwo, float RelK); 
+  void FillMixedEventpTOnepTTwokStar(int iHist, float mT, float pTOne, float pTTwo, float RelK);
+
   void FillPartnersSE(int hist, int nPart1, int nPart2) {
     if (!fMinimalBooking)
       fPairCounterSE[hist]->Fill(nPart1, nPart2);
@@ -480,7 +487,8 @@ class AliFemtoDreamCorrHists {
   TH2F **fSameEventmTDistCommon;
   TH2F **fSameEventmTDistNonCommon;
 
-
+  THnSparseF ***fSameEventpTOnepTTwokStar;
+  THnSparseF ***fMixedEventpTOnepTTwokStar;
 
 
   bool fDoMultBinning;
@@ -498,11 +506,12 @@ class AliFemtoDreamCorrHists {
   bool fPhiEtaPlotsSmallK;
   bool fmTDetaDPhi;
   bool fAncestors;
+  bool fpTOnepTTwokStarPlotsmT;
   std::vector<int> fPDGCode;
   std::vector<float> fmTBins;
   std::vector<unsigned int> fWhichPairs;
   std::vector<int> fCentBins;
-  ClassDef(AliFemtoDreamCorrHists,10);
+  ClassDef(AliFemtoDreamCorrHists,11);
 };
 
 #endif /* ALIFEMTODREAMCORRHISTS_H_ */
