@@ -2103,23 +2103,6 @@ void AliAnalysisTaskMesonJetCorrelation::UserExec(Option_t*)
     if(fLocalDebugFlag) {printf("InitJets\n");}
     InitJets();
 
-    // Additional outlier rejection for herwig
-    // CHeck if a MC true jet has more than 1.5 times the pt hard of the collision
-    if(fIsMC>1){
-      AliGenEventHeader * eventHeader = fMCEvent->GenEventHeader();
-      TString eventHeaderName     = eventHeader->ClassName();
-      if(eventHeaderName.EqualTo("AliGenHepMCEventHeader")) {
-        float ptHard = dynamic_cast<AliGenHepMCEventHeader*>(eventHeader)->pthard();
-        for(const auto & jetPt : fTrueVectorJetPt){
-          if(jetPt > ptHard*1.5){
-            fHistoNEvents[iCut]->Fill(10, fWeightJetJetMC);
-            fHistoNEventsWOWeight[iCut]->Fill(10);
-            continue;
-          }
-        }
-      }
-    }
-
     // reset double counting vector
     fMesonDoubleCount.clear();
 
