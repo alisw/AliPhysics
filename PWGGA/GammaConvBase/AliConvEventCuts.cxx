@@ -3840,11 +3840,10 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
           for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
             AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(i);
             if (!particle) continue;
-            // if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
-                if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard && TMath::Abs(particle->PdgCode()) > 21){
-                  eventAccepted= kFALSE;
-                }
-            // }
+            if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard && TMath::Abs(particle->PdgCode()) > 21){
+              eventAccepted= kFALSE;
+              break;
+            }
           }
         }
 
@@ -4458,6 +4457,17 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
 
         // int pthardbin = -1;
         float ptHard = dynamic_cast<AliGenHepMCEventHeader*>(gh)->pthard();
+        
+        if (mcEvent){
+          for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
+            AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(i);
+            if (!particle) continue;
+            if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard && TMath::Abs(particle->PdgCode()) > 21){
+              eventAccepted= kFALSE;
+              break;
+            }
+          }
+        }
 
         if ( fPeriodEnum == kLHC17HERJJ ) {
           double ptHardBinRanges[21]    = { 5,  7,  9, 12, 16,
@@ -4544,11 +4554,10 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
         for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
           AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(i);
           if (!particle) continue;
-          // if (TMath::Abs(particle->GetPdgCode()) == 111 || TMath::Abs(particle->GetPdgCode()) == 221){
-              if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard && TMath::Abs(particle->PdgCode()) > 21){
-                eventAccepted= kFALSE;
-              }
-          // }
+          if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard && TMath::Abs(particle->PdgCode()) > 21){
+            eventAccepted= kFALSE;
+            break;
+          }
         }
       }
       Int_t pthardbin = -1;
@@ -5317,6 +5326,16 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
     } else if(eventAccepted && isHerwig){
       // int pthardbin = -1;
       float ptHard = dynamic_cast<AliGenHepMCEventHeader*>(eventHeader)->pthard();
+
+      for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
+          AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(i);
+          if (!particle) continue;
+          if (particle->Pt() > fMaxFacPtHardSingleParticle*ptHard && TMath::Abs(particle->PdgCode()) > 21){
+            eventAccepted= kFALSE;
+            break;
+          }
+        }
+        
       if ( fPeriodEnum == kLHC17HERJJ ) {
         double ptHardBinRanges[21]    = { 5,  7,  9, 12, 16,
                                           21, 28, 36, 45, 57,
