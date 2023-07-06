@@ -4457,7 +4457,7 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
 
         // int pthardbin = -1;
         float ptHard = dynamic_cast<AliGenHepMCEventHeader*>(gh)->pthard();
-        
+
         if (mcEvent){
           for(Long_t i = 0; i < mcEvent->GetNumberOfPrimaries(); i++) {
             AliMCParticle* particle = (AliMCParticle*) mcEvent->GetTrack(i);
@@ -4475,10 +4475,10 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
                                             70, 85, 99, 115, 132,
                                             150, 169, 190, 212, 235,
                                             1000000};
-          double weightsBins[20]        = { 34.5555, 10.8543, 5.47517, 2.14854, 0.787182,
-                                            0.314308, 0.103274, 0.0378255, 0.016791, 0.00613707,
-                                            0.0025981, 0.00100638, 0.000529946, 0.000265937, 0.000139377,
-                                            7.6184e-05, 4.47883e-05, 2.53419e-05, 1.48096e-05, 2.41869e-05 };
+          double weightsBins[20]        = { 34.5215, 10.8299, 5.45749, 2.15544, 0.787659,
+                                            0.314511, 0.103209, 0.0377452, 0.0167926, 0.006128,
+                                            0.00260893, 0.00100489, 0.000530423, 0.000266684, 0.000139685,
+                                            7.6391e-05, 4.48111e-05, 2.53942e-05, 1.48344e-05, 2.41702e-05 };
           int bin = 0;
           while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
           if (bin < 20) weight = weightsBins[bin];
@@ -5342,10 +5342,11 @@ Bool_t AliConvEventCuts::IsJetJetMCEventAccepted(AliMCEvent *mcEvent, Double_t& 
                                           70, 85, 99, 115, 132,
                                           150, 169, 190, 212, 235,
                                           1000000};
-        double weightsBins[20]        = { 43.7553,  13.5848, 6.788, 2.67826, 0.975255,
-                                          0.39069, 0.127342, 0.0465597, 0.0206539, 0.00750243,
-                                          0.00319118, 0.00122291, 0.000641232, 0.000321437, 0.000168273,
-                                          9.17033e-05, 5.34755e-05, 3.01354e-05, 1.74518e-05, 2.8004e-05};
+        double weightsBins[20]        = { 34.5215, 10.8299, 5.45749, 2.15544, 0.787659,
+                                          0.314511, 0.103209, 0.0377452, 0.0167926, 0.006128,
+                                          0.00260893, 0.00100489, 0.000530423, 0.000266684, 0.000139685,
+                                          7.6391e-05, 4.48111e-05, 2.53942e-05, 1.48344e-05, 2.41702e-05
+                                        };
         int bin = 0;
         while (!((ptHard< ptHardBinRanges[bin+1] && ptHard > ptHardBinRanges[bin]) || (ptHard == ptHardBinRanges[bin]) ) )bin++;
         if (bin < 20) weight = weightsBins[bin];
