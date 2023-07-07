@@ -706,8 +706,8 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
     UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isTrigselected = false;
     if (fTrigger == 0) {
-      isTrigselected = fSelectMask&AliVEvent::kINT7;
-      fAliTrigger = AliVEvent::kINT7;
+      isTrigselected = fSelectMask&(AliVEvent::kINT7+AliVEvent::kMB);
+      fAliTrigger = AliVEvent::kINT7+AliVEvent::kMB;
     } else if (fTrigger == 1) {
       isTrigselected = fSelectMask&AliVEvent::kHighMultV0;
       fAliTrigger = AliVEvent::kHighMultV0;
