@@ -72,7 +72,7 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void SetStaSkyBkgInit(bool aInit);
 	AliFemtoPair *InversePair(AliFemtoPair* aPair);
 	void SetUse2DpTvsKStar(int aUse);
-        void Set2DpTvsKStarInit(bool aInit);
+        void Set2DpTvsKStarInit(bool aInit,int nbinsks,float lowks,float upks,int nbinspT,float lowpT,float uppT);
 
 	//\ 2022.9.27
 	bool PairEtaPhiSelect(AliFemtoPair* aPair);

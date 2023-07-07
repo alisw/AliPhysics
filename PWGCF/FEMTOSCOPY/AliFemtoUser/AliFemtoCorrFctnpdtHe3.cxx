@@ -1008,9 +1008,12 @@ AliFemtoPair * AliFemtoCorrFctnpdtHe3::InversePair(AliFemtoPair* aPair)
 void AliFemtoCorrFctnpdtHe3::SetUse2DpTvsKStar(int aUse){
 	fUse2DpTvsKStar = aUse;
 }
-void AliFemtoCorrFctnpdtHe3::Set2DpTvsKStarInit(bool aInit){
-	KStarVspT_P1Hist = new TH2F(TString::Format("KStarVspT_P1Hist%s", fTitle.Data())," ",400,0,2.0,100,0,5);	
-	if(IsSameParticlePair!=1) KStarVspT_P2Hist = new TH2F(TString::Format("KStarVspT_P2Hist%s", fTitle.Data())," ",400,0,2.0,100,0,5); 
+void AliFemtoCorrFctnpdtHe3::Set2DpTvsKStarInit(bool aInit,
+ int nbinsks,float lowks,float upks,
+int nbinspT,float lowpT,float uppT
+){
+	KStarVspT_P1Hist = new TH2F(TString::Format("KStarVspT_P1Hist%s", fTitle.Data())," ",nbinsks,lowks,upks, nbinspT,lowpT,uppT);	
+	if(IsSameParticlePair!=1) KStarVspT_P2Hist = new TH2F(TString::Format("KStarVspT_P2Hist%s", fTitle.Data())," ",nbinsks,lowks,upks, nbinspT,lowpT,uppT); 
 }
 
 void AliFemtoCorrFctnpdtHe3::SetUsePairCutEtaPhi(int aUsePairCutEtaPhi){
