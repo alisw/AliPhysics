@@ -381,15 +381,24 @@ void AliAnalysisTaskMultspec::UserExec(Option_t *)
       // invariant mass with different hypotheses
       if( fpart==kk0s_Mult ) {
           if ( v0->MassK0Short()<0.4||v0->MassK0Short()>0.6 ) continue;
-          else ffillV0->InvMass = v0->MassK0Short();
+          else {
+            ffillV0->InvMass = v0->MassK0Short();
+            ffillV0->CompMass = v0->MassLambda();
+          }
       }
       else if( fpart==klam_Mult ){
           if ( v0->MassLambda()<1.08||v0->MassLambda()>1.16 ) continue;
-          else ffillV0->InvMass = v0->MassLambda();
+          else {
+            ffillV0->InvMass = v0->MassLambda();
+            ffillV0->CompMass = v0->MassK0Short();
+          }
       }
       else if( fpart==kalam_Mult ){
           if ( v0->MassAntiLambda()<1.08||v0->MassAntiLambda()>1.16 ) continue;
-          else ffillV0->InvMass = v0->MassAntiLambda();
+          else {
+            ffillV0->InvMass = v0->MassAntiLambda();
+            ffillV0->CompMass = v0->MassK0Short();
+          }
       }
   
       //PID
@@ -418,6 +427,9 @@ void AliAnalysisTaskMultspec::UserExec(Option_t *)
       bool lNegITSmatching = ( !(nTrack->GetStatus() & AliESDtrack::kITSrefit) ? kFALSE : kTRUE );
       bool lPosITSmatching = ( !(pTrack->GetStatus() & AliESDtrack::kITSrefit) ? kFALSE : kTRUE );
       ffillV0->ITSmatch = (!lNegITSmatching && !lPosITSmatching) ? kFALSE : kTRUE;
+
+      //ITSTOFtwo
+      ffillV0->ITSTOFtwo = ( (lNegTOFmatching || lNegITSmatching) && (lPosTOFmatching || lPosITSmatching) ) ? kTRUE : kFALSE;
       
       if(fisMC) {
         int labMothPosDaught = ((AliMCParticle*) lMCev->GetTrack((int)TMath::Abs(pTrack->GetLabel())))->GetMother();
@@ -603,11 +615,17 @@ void AliAnalysisTaskMultspec::UserExec(Option_t *)
       //candidate's invariant mass
       if( fpart==kxi_Mult ) {
         if ( casc->MassXi()<1.26||casc->MassXi()>1.38 ) continue;
-        else ffillCasc->InvMass = casc->MassXi();
+        else {
+          ffillCasc->InvMass = casc->MassXi();
+          ffillCasc->CompMass = casc->MassOmega();
+        }
       }
       else if( fpart==kom_Mult ){
         if ( casc->MassOmega()<1.62||casc->MassOmega()>1.73 ) continue;
-        else ffillCasc->InvMass = casc->MassOmega();
+        else {
+          ffillCasc->InvMass = casc->MassOmega();
+          ffillCasc->CompMass = casc->MassXi();
+        }
       }
     
       //PID
@@ -639,6 +657,12 @@ void AliAnalysisTaskMultspec::UserExec(Option_t *)
       bool lBacITSmatching = !(bTrackCasc->GetStatus() & AliESDtrack::kITSrefit) ? kFALSE : kTRUE ;
       ffillCasc->ITSmatch = (!lNegITSmatching && !lPosITSmatching && !lBacITSmatching) ? kFALSE : kTRUE;
       
+      //ITSTOFtwo
+      bool negcond = (lNegTOFmatching || lNegITSmatching) ? kTRUE : kFALSE;
+      bool poscond = (lPosTOFmatching || lPosITSmatching) ? kTRUE : kFALSE;
+      bool baccond = (lBacTOFmatching || lBacITSmatching) ? kTRUE : kFALSE;
+      ffillV0->ITSTOFtwo = ( (negcond && poscond) || (negcond && baccond) || (poscond && baccond) ) ? kTRUE : kFALSE;
+
       //V0 daughter mass
       double_t imassla = 0.;
       (casc->ChargeXi()<0 ? imassla=casc->MassLambda() : imassla=casc->MassAntiLambda());
