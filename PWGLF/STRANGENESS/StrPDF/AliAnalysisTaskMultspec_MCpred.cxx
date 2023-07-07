@@ -10,6 +10,7 @@ class TParticle;
 #include "AliAnalysisManager.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+#include "TParticlePDG.h"
 
 #include "AliAnalysisTaskMultspec_MCpred.h"
 
@@ -127,9 +128,12 @@ void AliAnalysisTaskMultspec_MCpred::UserExec(Option_t *)
 
     TParticle *lPart = lMCstack->Particle(itrk);
     if(!lPart || !lMCstack->IsPhysicalPrimary(itrk)) continue;
+    double ch = ((TParticlePDG*)lPart->GetPDG())->Charge();
 
-    if(lPart->Eta()>-0.5 && lPart->Eta()<0.5) nch++;
-    else if((lPart->Eta()>2.8 && lPart->Eta()<5.1)||(lPart->Eta()>-3.7 && lPart->Eta()<-1.7)) nV0++;
+    if(!(TMath::Abs(ch)<1e-3)) {
+      if(lPart->Eta()>-0.5 && lPart->Eta()<0.5) nch++;
+      else if((lPart->Eta()>2.8 && lPart->Eta()<5.1)||(lPart->Eta()>-3.7 && lPart->Eta()<-1.7)) nV0++;
+    }
 
     double rap = Rap(lPart->Energy(),lPart->Pz());
     if(rap<-0.5||rap>0.5) continue;
