@@ -93,7 +93,7 @@ public:
   void SetMimicEJData(bool doMimic)                { fMimicEJData = doMimic; if(fMimicEJData) fUseTriggerSelectionForData = true; }
   void SetMakeClusterHistos1D(bool doMake)         { fMakeClusterHistos1D = doMake; }
   void SetEnergyDefinition(EnergyDefinition_t edef){ fEnergyDefinition = edef; }
-
+  void SetDoDifferentialDpT(bool doDiffDpT)        { fDoDifferentialDpT = doDiffDpT; }
 
   void SetDoBkgSubtraction(bool doBkg = true)             { fDoBkgSub = doBkg; }
   double GetDeltaPtRandomCone();
@@ -231,6 +231,8 @@ private:
   TArrayD                       fUserPtBinning;                 ///< User-defined pt-binning
   Bool_t                        fMakeClusterHistos1D;           ///< Make 1D emcal cluster energy histogram
   EnergyDefinition_t            fEnergyDefinition;              ///< Energy definition used for a given cluster
+  Bool_t                        fDoDifferentialDpT;             ///< Make pT differential rho vs. delta pT plot
+
 
 
   ClassDef(AliAnalysisTaskEmcalJetEnergySpectrum, 1);
