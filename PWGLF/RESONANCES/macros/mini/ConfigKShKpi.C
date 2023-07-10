@@ -313,7 +313,8 @@ Bool_t ConfigKShKpi
  Float_t                  lmultbin=0,
  Float_t                  hmultbin=0,
  UInt_t      triggerMask=AliVEvent::kINT7,
- Int_t                     nm=1
+ Float_t                     LE=0.97,
+ Float_t                     RE=1.04
 
  //UInt_t      triggerMask=AliVEvent::kINT7
  )
@@ -475,8 +476,8 @@ Bool_t ConfigKShKpi
     cutYRes->SetRangeD(-0.8,0.8);
     
 
-    Float_t LE=0.97;
-    Float_t RE=1.04;
+    //Float_t LE=0.97;
+    //Float_t RE=1.04;
 
     AliRsnCutMiniPair* cutMassKstar0=new AliRsnCutMiniPair("cutMassKstar0",AliRsnCutMiniPair::kMassRange);
     cutMassKstar0->SetRangeD(LE,RE);
