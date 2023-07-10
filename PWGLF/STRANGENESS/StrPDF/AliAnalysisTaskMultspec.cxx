@@ -661,7 +661,7 @@ void AliAnalysisTaskMultspec::UserExec(Option_t *)
       bool negcond = (lNegTOFmatching || lNegITSmatching) ? kTRUE : kFALSE;
       bool poscond = (lPosTOFmatching || lPosITSmatching) ? kTRUE : kFALSE;
       bool baccond = (lBacTOFmatching || lBacITSmatching) ? kTRUE : kFALSE;
-      ffillV0->ITSTOFtwo = ( (negcond && poscond) || (negcond && baccond) || (poscond && baccond) ) ? kTRUE : kFALSE;
+      ffillCasc->ITSTOFtwo = ( (negcond && poscond) || (negcond && baccond) || (poscond && baccond) ) ? kTRUE : kFALSE;
 
       //V0 daughter mass
       double_t imassla = 0.;
