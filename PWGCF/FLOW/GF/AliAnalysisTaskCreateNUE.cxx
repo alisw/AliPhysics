@@ -217,6 +217,7 @@ void AliAnalysisTaskCreateNUE::UserExec(Option_t *)
   const int nAODTracksMC = farray->GetEntries();
   for(Int_t nt = 0; nt < nAODTracksMC; nt++) {
 
+    if (AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(nt, fMCEvent)) continue;
     AliAODMCParticle *track = (AliAODMCParticle*) farray->At(TMath::Abs(nt));
 
     if (!track) {
