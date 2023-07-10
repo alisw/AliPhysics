@@ -212,6 +212,8 @@ private:
   void SetSLightNucleus(AliAODMCParticle* part, SLightNucleus& snucl);
 
   bool IsInTRD(float pt, float phi, float sign);
+  void ComputeHe3AbsoInfo(AliVParticle *he3Part, AliVParticle *dauPart);
+
 
   template <class track_t>
   bool   AcceptTrack(track_t *t, Float_t dca[2]);
@@ -230,7 +232,6 @@ private:
   Bool_t IsLongMCTrack(AliAODTrack *track);
   Bool_t IsLongMCTrack(AliNanoAODTrack *track) { return false; };
 
-  void ComputeHe3AbsoInfo(AliVParticle *he3Part, AliVParticle *dauPart);
 
   TString               fCurrentFileName;       ///<  Currently analysed file name
   TF1                  *fTOFfunction;           //!<! TOF signal function

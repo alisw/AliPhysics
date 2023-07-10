@@ -91,7 +91,7 @@ constexpr double Sq(double x) { return x * x; }
 
 double Dist(const double a[3], const double b[3]) { return std::sqrt(Sq(a[0] - b[0]) + Sq(a[1] - b[1]) + Sq(a[2] - b[2])); }
 double Dist2(const double a[2], const double b[2]) { return std::sqrt(Sq(a[0] - b[0]) + Sq(a[1] - b[1])); }
-
+}  // namespace
 
 void AliAnalysisTaskNucleiYield::ComputeHe3AbsoInfo(AliVParticle *he3Part, AliVParticle *dauPart)
 {
