@@ -45,7 +45,6 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
 
   // read in
   void SetListForNUE(TList* flist) { this->fListNUE = (TList*)flist->Clone(); }
-  void SetListForLambdaNUE(TList* flist) { this->fListLambdaNUE = (TList*)flist->Clone(); }
   void SetListForNUA(TList* flist) { this->fListNUA = (TList*)flist->Clone(); }
   void SetListForVZEROCalib(TList* flist) { this->fListVZEROCalib = (TList*)flist->Clone(); }
 
@@ -131,7 +130,6 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   bool CheckPIDofParticle(AliAODTrack* ftrack, int pidToCheck);
   double GetNUECor(int charge, double pt);
   double GetPIDNUECor(int pdgcode, double pt);
-  double GetLambdaNUECor(int baryon_num, double pT);
   double GetNUACor(int charge, double phi, double eta, double vz);
   // V0
   bool IsGoodV0(AliAODv0* aodV0);
@@ -277,9 +275,6 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   TList* fListNUE; // read list for NUE
   TH1D* hNUEweightPlus;
   TH1D* hNUEweightMinus;
-  TList* fListLambdaNUE;
-  TH1D* heffL[8];
-  TH1D* heffA[8];
   ////////////////////////
   // NUA
   ////////////////////////

@@ -96,7 +96,7 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff() :
   fPlanePtMax(2.0),
   fFilterBit(768),
   fNclsCut(70),
-  fChi2Max(4.0),
+  fChi2Max(2.5),
   fChi2Min(0.1),
   fDcaCutXY(2.4),
   fDcaCutZ(3.2),
@@ -169,7 +169,6 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff() :
   fListNUE(nullptr),
   hNUEweightPlus(nullptr),
   hNUEweightMinus(nullptr),
-  fListLambdaNUE(nullptr),
   fListNUA(nullptr),
   hCorrectNUAPos(nullptr),
   hCorrectNUANeg(nullptr),
@@ -214,8 +213,6 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff() :
   fHist2Psi2(nullptr)
 {
   for (int i = 0; i < 3; i++) fVertex[i] = -999;
-  for (int i = 0; i < 8; i++) heffL[i] = nullptr;
-  for (int i = 0; i < 8; i++) heffA[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistCent[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistVz[i] = nullptr;
   for (int i = 0; i < 8; i++) fHist2CentQA[i] = nullptr;
@@ -277,7 +274,7 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff(const char *name) :
   fPlanePtMax(2.0),
   fFilterBit(768),
   fNclsCut(70),
-  fChi2Max(4.0),
+  fChi2Max(2.5),
   fChi2Min(0.1),
   fDcaCutXY(2.4),
   fDcaCutZ(3.2),
@@ -350,7 +347,6 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff(const char *name) :
   fListNUE(nullptr),
   hNUEweightPlus(nullptr),
   hNUEweightMinus(nullptr),
-  fListLambdaNUE(nullptr),
   fListNUA(nullptr),
   hCorrectNUAPos(nullptr),
   hCorrectNUANeg(nullptr),
@@ -395,8 +391,6 @@ AliAnalysisTaskCVEPIDCMEDiff::AliAnalysisTaskCVEPIDCMEDiff(const char *name) :
   fHist2Psi2(nullptr)
 {
   for (int i = 0; i < 3; i++) fVertex[i] = -999;
-  for (int i = 0; i < 8; i++) heffL[i] = nullptr;
-  for (int i = 0; i < 8; i++) heffA[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistCent[i] = nullptr;
   for (int i = 0; i < 2; i++) fHistVz[i] = nullptr;
   for (int i = 0; i < 8; i++) fHist2CentQA[i] = nullptr;
@@ -496,16 +490,6 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects()
     if (!fListNUE) {
       std::cout<<("NUE list not found")<<std::endl;
       return;
-    }
-  }
-  if(isDoLambdaNUE) {
-    if (!fListLambdaNUE) {
-      std::cout<<("NUE list not found")<<std::endl;
-      return;
-    }
-    for (int iCent = 0; iCent < 8; iCent++) {
-      heffL[iCent] = (TH1D*)fListLambdaNUE->FindObject(Form("heffL_%i",iCent));
-      heffA[iCent] = (TH1D*)fListLambdaNUE->FindObject(Form("heffA_%i",iCent));
     }
   }
   ////////////////////////
@@ -620,8 +604,8 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects()
   fHist2CentQA[5] = new TH2D("fHist2CentQA_V0M_SPD0_AfCut", ";centV0M;centSPD0", 80, 0, 80., 80, 0, 80.);
   fHist2CentQA[6] = new TH2D("fHist2CentQA_SPD1_SPD0_BfCut", ";centSPD1;centSPD0", 80, 0, 80., 80, 0, 80.);
   fHist2CentQA[7] = new TH2D("fHist2CentQA_SPD1_SPD0_AfCut", ";centSPD1;centSPD0", 80, 0, 80., 80, 0, 80.);
-  fHist2MultCentQA[0] = new TH2D("fHist2MultCentQA_BfCut", ";centV0M;multFB32", 80, 0, 80., 20, 0, 5000.);
-  fHist2MultCentQA[1] = new TH2D("fHist2MultCentQA_AfCut", ";centV0M;multFB32", 80, 0, 80., 20, 0, 5000.);
+  fHist2MultCentQA[0] = new TH2D("fHist2MultCentQA_BfCut", ";centV0M;multFB32", 80, 0, 80., 50, 0, 5000.);
+  fHist2MultCentQA[1] = new TH2D("fHist2MultCentQA_AfCut", ";centV0M;multFB32", 80, 0, 80., 50, 0, 5000.);
   fQAList->Add(fHistCent[0]);
   fQAList->Add(fHistCent[1]);
   fQAList->Add(fHistVz[0]);
@@ -918,6 +902,14 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t *)
   fHist2CentQA[5]->Fill(fCentV0M,fCentSPD0);
   fHist2CentQA[7]->Fill(fCentSPD1,fCentSPD0);
   if (fCent < 0 || fCent >= 80) return;
+
+  //PF-Preview comment
+  if(fCent > 30 && fCent < 50) {
+    if (!(mask & (AliVEvent::kINT7 + AliVEvent::kSemiCentral))) return;
+  } else {
+    if (!(mask & AliVEvent::kINT7)) return;
+  }
+
   // cent bin
   fCentBin = (int)fCent/10;
   fHistCent[0]->Fill(fCent);
@@ -955,10 +947,7 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t *)
     std::cout<<"Wrong fPlaneEstimator!"<<std::endl;
     return;
   }
-  if (TMath::IsNaN(fPsi2)) {
-    std::cout<<"fPsi2 is NaN!"<<std::endl;
-    return;
-  }
+  if (TMath::IsNaN(fPsi2)) return;
   fEvtCount->Fill(18);
   if (fDebug) Printf("Get Plane done!");
   //----------------------------
@@ -1210,7 +1199,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopV0s()
 
         double weight = 1.;
         if(isDoLambdaNUE) {
-          double nue_eight = GetLambdaNUECor(1,pt);
+          double nue_eight = GetPIDNUECor(3122,pt);
           if (nue_eight > 0.) weight *= nue_eight;
         }
 
@@ -1258,7 +1247,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopV0s()
 
         double weight = 1.;
         if(isDoLambdaNUE) {
-          double nue_eight = GetLambdaNUECor(-1,pt);
+          double nue_eight = GetPIDNUECor(-3122,pt);
           if (nue_eight > 0.) weight *= nue_eight;
         }
 
@@ -1580,6 +1569,8 @@ double AliAnalysisTaskCVEPIDCMEDiff::GetPIDNUECor(int pdgcode, double pt)
 
   if (pdgcode == 2212)       histName = "h_eff_pos_proton";
   else if (pdgcode == -2212) histName = "h_eff_neg_proton";
+  if (pdgcode == 3122)       histName = "h_eff_lambda";
+  else if (pdgcode == -3122) histName = "h_eff_antilambda";
   else return -1;
 
   TH1D* efficiencyHist = (TH1D*)fListNUE->FindObject(histName);
@@ -1592,25 +1583,6 @@ double AliAnalysisTaskCVEPIDCMEDiff::GetPIDNUECor(int pdgcode, double pt)
   } else return -1;
 }
 
-//---------------------------------------------------
-
-double AliAnalysisTaskCVEPIDCMEDiff::GetLambdaNUECor(int baryon_num, double pT)
-{
-  int pTbin = heffL[fCentBin]->GetXaxis()->FindBin(pT);
-  if(baryon_num > 0) {
-    double binContent = heffL[fCentBin]->GetBinContent(pTbin);
-    if(binContent > 1.e-5) {
-      return 1.0/binContent;
-    } else return -1;
-  }
-  if(baryon_num < 0) {
-    double binContent = heffA[fCentBin]->GetBinContent(pTbin);
-    if(binContent > 1.e-5) {
-      return 1.0 / binContent;
-    } else return -1;
-  }
-  return -1;
-}
 
 //---------------------------------------------------
 
