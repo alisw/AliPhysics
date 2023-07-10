@@ -66,6 +66,7 @@ public:
   void SetStoreTrig(Bool_t t) {fStoreTrig = t;}
   
   void SetFillEncMC(Bool_t t) { fDoFillEncMC = t; } //For MC
+  void SetpTcorrect(Int_t c) {fpTcorr = c;}
 
 protected:
   Bool_t RetrieveEventObjects();
@@ -78,7 +79,7 @@ protected:
   
   int GetConstituentID(int constituentIndex, const AliVParticle* part, AliEmcalJet * jet);
   Double_t GetDownscaleWeight(string tstring);
-  void ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJetCont); 
+  void ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJetCont);
   
   void ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJetCont, AliEmcalJet *fJet_tru, Int_t km); //MC and det correlations
   
@@ -124,6 +125,7 @@ Bool_t fDoFillEncMC;      ///< to fill the matched mc plane
   Bool_t fStoreTrig; ///<storing the trigger class
 //  Bool_t fMatch; ///< do the matching in the task
 
+Int_t fpTcorr; ///<flag for pT migration checks
 
 //Histograms 
   TH1D *jet_pt_hist; //!<! initializing histogram with jet pt
@@ -180,12 +182,15 @@ Bool_t fDoFillEncMC;      ///< to fill the matched mc plane
   
   TH2D *R_matrix; //!<! response matrix for jet pt
 
+  TH2D *JES; //!<! jet energy scale
+  TH2D *JES_scaled; //!<! jet energy scale for scaled pt_det
+  TH2D *JER; //!<! jet energy resolution
 private:
   AliAnalysisTaskJetsEEC(
       const AliAnalysisTaskJetsEEC &); // not implemented
   AliAnalysisTaskJetsEEC &
   operator=(const AliAnalysisTaskJetsEEC &); // not implemented
 
-  ClassDef(AliAnalysisTaskJetsEEC, 32) //change this to 32
+  ClassDef(AliAnalysisTaskJetsEEC, 35) //change this to 35
 };
 #endif
