@@ -947,10 +947,7 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserExec(Option_t *)
     std::cout<<"Wrong fPlaneEstimator!"<<std::endl;
     return;
   }
-  if (TMath::IsNaN(fPsi2)) {
-    std::cout<<"fPsi2 is NaN!"<<std::endl;
-    return;
-  }
+  if (TMath::IsNaN(fPsi2)) return;
   fEvtCount->Fill(18);
   if (fDebug) Printf("Get Plane done!");
   //----------------------------
