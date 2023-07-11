@@ -52,6 +52,16 @@ void AliAnalysisTaskMultspec_MCpred::UserCreateOutputObjects()
   fHistos_misc = new THistManager("fHistos_misc");
   fHistos_misc->CreateTH1("hNevts", "", 1, 0, 1);  // #events histo
 
+  fHistos_misc->CreateTH1("hRapidity_all", "", 100, -10, 10);
+  fHistos_misc->CreateTH1("hRapidity_K0S", "", 100, -10, 10);
+  fHistos_misc->CreateTH1("hRapidity_Lam", "", 100, -10, 10);
+  fHistos_misc->CreateTH1("hRapidity_Xi" , "", 100, -10, 10);
+  fHistos_misc->CreateTH1("hRapidity_Om" , "", 100, -10, 10);
+  fHistos_misc->CreateTH1("hWrongDaught_K0S", "", 2, 0, 2);
+  fHistos_misc->CreateTH1("hWrongDaught_Lam", "", 2, 0, 2);
+  fHistos_misc->CreateTH1("hWrongDaught_Xi", "", 2, 0, 2);
+  fHistos_misc->CreateTH1("hWrongDaught_Om", "", 2, 0, 2);
+
   //histograms Gen_distrib VS mult
   fHistos_misc->CreateTH2("hmultspec_K0S_nch" , "", 100, 0, 100, 1000, 0, 1000, "s"); //vs nch
   fHistos_misc->CreateTH2("hmultspec_Lam_nch" , "", 100, 0, 100, 1000, 0, 1000, "s");
@@ -79,13 +89,10 @@ void AliAnalysisTaskMultspec_MCpred::UserCreateOutputObjects()
   fHistos_misc->CreateTH1("hmultprogr_AXi_nch" , "", 1000, 0, 1000, "s");
   fHistos_misc->CreateTH1("hmultprogr_Om_nch"  , "", 1000, 0, 1000, "s");
   fHistos_misc->CreateTH1("hmultprogr_AOm_nch" , "", 1000, 0, 1000, "s");
-  fHistos_misc->CreateTH1("hmultprogr_K0S_V0"  , "", 1000, 0, 1000, "s"); //vs V0
-  fHistos_misc->CreateTH1("hmultprogr_Lam_V0"  , "", 1000, 0, 1000, "s");
-  fHistos_misc->CreateTH1("hmultprogr_ALam_V0" , "", 1000, 0, 1000, "s");
-  fHistos_misc->CreateTH1("hmultprogr_Xi_V0"   , "", 1000, 0, 1000, "s");
-  fHistos_misc->CreateTH1("hmultprogr_AXi_V0"  , "", 1000, 0, 1000, "s");
-  fHistos_misc->CreateTH1("hmultprogr_Om_V0"   , "", 1000, 0, 1000, "s");
-  fHistos_misc->CreateTH1("hmultprogr_AOm_V0"  , "", 1000, 0, 1000, "s");
+
+  fHistos_misc->CreateTH1("hmultprogr_pi_V0"  , "", 1000, 0, 1000, "s"); //vs V0
+  fHistos_misc->CreateTH1("hmultprogr_k_V0"  , "", 1000, 0, 1000, "s");
+  fHistos_misc->CreateTH1("hmultprogr_p_V0" , "", 1000, 0, 1000, "s");
 
   //Output posting
   PostData(1, fHistos_misc->GetListOfHistograms());
@@ -124,6 +131,10 @@ void AliAnalysisTaskMultspec_MCpred::UserExec(Option_t *)
   int n_Om   = 0;
   int n_AOm  = 0;
 
+  int n_pi   = 0;
+  int n_k    = 0;
+  int n_p    = 0;
+
   for (int itrk = 0; itrk < lMCstack->GetNtrack(); itrk++){
 
     TParticle *lPart = lMCstack->Particle(itrk);
@@ -133,19 +144,79 @@ void AliAnalysisTaskMultspec_MCpred::UserExec(Option_t *)
     if(!(TMath::Abs(ch)<1e-3)) {
       if(lPart->Eta()>-0.5 && lPart->Eta()<0.5) nch++;
       else if((lPart->Eta()>2.8 && lPart->Eta()<5.1)||(lPart->Eta()>-3.7 && lPart->Eta()<-1.7)) nV0++;
+      fHistos_misc->FillTH1("hRapidity_all",lPart->Y());
     }
 
-    double rap = Rap(lPart->Energy(),lPart->Pz());
-    if(rap<-0.5||rap>0.5) continue;
+
+    if(TMath::Abs(lPart->Y())>0.5) continue;
 
     int pdg = (int)lPart->GetPdgCode();
-    if     (pdg==310  ) n_K0S++;
-    else if(pdg==3122 ) n_Lam++;
-    else if(pdg==-3122) n_ALam++;
-    else if(pdg==3312 ) n_Xi++;
-    else if(pdg==-3312) n_AXi++;
-    else if(pdg==3334 ) n_Om++;
-    else if(pdg==-3334) n_AOm++;
+    TParticle *firstdaught = lMCstack->Particle(lPart->GetFirstDaughter());
+    TParticle *lastdaught = lMCstack->Particle(lPart->GetLastDaughter());
+    int pdg_d1 = TMath::Abs((int)firstdaught->GetPdgCode());
+    int pdg_d2 = TMath::Abs((int)lastdaught->GetPdgCode());
+    if     (pdg==310  ) {
+      if(pdg_d1==111 || pdg_d2==111) {
+        fHistos_misc->FillTH1("hWrongDaught_K0S",1.5);
+        continue;
+      }
+      n_K0S++;
+      fHistos_misc->FillTH1("hRapidity_K0S",lPart->Y());
+      fHistos_misc->FillTH1("hWrongDaught_K0S",0.5);
+    }
+    else if(pdg==3122 ) {
+      if(pdg_d1==2112 || pdg_d2==2112) {
+        fHistos_misc->FillTH1("hWrongDaught_Lam",1.5);
+        continue;
+      }
+      n_Lam++;
+      fHistos_misc->FillTH1("hRapidity_Lam",lPart->Y());
+      fHistos_misc->FillTH1("hWrongDaught_Lam",0.5);
+    }
+    else if(pdg==-3122) {
+      if(pdg_d1==2112 || pdg_d2==2112) {
+        fHistos_misc->FillTH1("hWrongDaught_Lam",1.5);
+        continue;
+      }
+      n_ALam++;
+      fHistos_misc->FillTH1("hRapidity_Lam",lPart->Y());
+      fHistos_misc->FillTH1("hWrongDaught_Lam",0.5);
+    }
+    else if(pdg==3312 ) {
+      n_Xi++;
+      fHistos_misc->FillTH1("hRapidity_Xi",lPart->Y());
+    }
+    else if(pdg==-3312) {
+      n_AXi++;
+      fHistos_misc->FillTH1("hRapidity_Xi",lPart->Y());
+    }
+    else if(pdg==3334 ) {
+      if(pdg_d1==3322 || pdg_d2==3322 || pdg_d1==3312 || pdg_d2==3312) {
+        fHistos_misc->FillTH1("hWrongDaught_Om",1.5);
+        continue;
+      }
+      n_Om++;
+      fHistos_misc->FillTH1("hRapidity_Om",lPart->Y());
+      fHistos_misc->FillTH1("hWrongDaught_Xi",0.5);
+    }
+    else if(pdg==-3334) {
+      if(pdg_d1==3322 || pdg_d2==3322 || pdg_d1==3312 || pdg_d2==3312) {
+        fHistos_misc->FillTH1("hWrongDaught_Om",1.5);
+        continue;
+      }
+      n_AOm++;
+      fHistos_misc->FillTH1("hRapidity_Om",lPart->Y());
+      fHistos_misc->FillTH1("hWrongDaught_om",0.5);
+    }
+    else if(TMath::Abs(pdg)==211) {
+      n_pi++;
+    }
+    else if(TMath::Abs(pdg)==321) {
+      n_k++;
+    }
+    else if(TMath::Abs(pdg)==2212) {
+      n_p++;
+    }
 
   }
 
@@ -193,6 +264,15 @@ void AliAnalysisTaskMultspec_MCpred::UserExec(Option_t *)
   for(int i=0; i<n_AOm; i++) {
       fHistos_misc->FillTH1("hmultprogr_AOm_nch" ,nch);
       fHistos_misc->FillTH1("hmultprogr_AOm_V0"  ,nV0 );
+  }
+  for(int i=0; i<n_pi; i++) {
+      fHistos_misc->FillTH1("hmultprogr_pi_V0"  ,nV0 );
+  }
+  for(int i=0; i<n_k; i++) {
+      fHistos_misc->FillTH1("hmultprogr_k_V0"  ,nV0 );
+  }
+  for(int i=0; i<n_p; i++) {
+      fHistos_misc->FillTH1("hmultprogr_p_V0"  ,nV0 );
   }
 
   PostData(1, fHistos_misc->GetListOfHistograms());
