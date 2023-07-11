@@ -82,7 +82,9 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     fDum2DkStarVsmT(nullptr),
     fUseBumpC(0),
     f2DkSVspT(nullptr),
-    f2DkSVsMass(nullptr)
+    f2DkSVsMass(nullptr),
+    fUsemTCheck(0),
+    f3DmTDepkSVspT(nullptr)
 {
     
     fNumerator      = new TH1D(TString::Format("Num%s", fTitle.Data()), "fNumerator", nbins, KStarLo, KStarHi);
@@ -152,8 +154,9 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     fDum2DkStarVsmT(aCorrFctn.fDum2DkStarVsmT),
     fUseBumpC(aCorrFctn.fUseBumpC),
     f2DkSVspT(aCorrFctn.f2DkSVspT),
-    f2DkSVsMass(aCorrFctn.f2DkSVsMass)
-
+    f2DkSVsMass(aCorrFctn.f2DkSVsMass),
+    fUsemTCheck(aCorrFctn.fUsemTCheck),
+    f3DmTDepkSVspT(aCorrFctn.f3DmTDepkSVspT)
 {
     
 
@@ -209,6 +212,8 @@ AliFemtoCorrFctnpdtHe3::~AliFemtoCorrFctnpdtHe3()
     delete f2DkSVspT;
     delete f2DkSVsMass;
 
+
+    delete f3DmTDepkSVspT;
 }
 AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctnpdtHe3& aCorrFctn)
 {
@@ -319,6 +324,11 @@ if(fUseBumpC){
 	f2DkSVsMass = new TH2F(*aCorrFctn.f2DkSVsMass); 
 }
 
+if(fUsemTCheck){
+
+	delete f3DmTDepkSVspT;
+	f3DmTDepkSVspT = new TH3F(*aCorrFctn.f3DmTDepkSVspT);
+}
     return *this;
 
 }
@@ -391,6 +401,11 @@ if(fUseBumpC){
 tOutputList->Add(f2DkSVspT);
 tOutputList->Add(f2DkSVsMass);
 }
+
+
+if(fUsemTCheck){
+tOutputList->Add(f3DmTDepkSVspT);
+}
     return tOutputList;
 }
 void AliFemtoCorrFctnpdtHe3::Finish()
@@ -453,13 +468,20 @@ if(fUseBumpC){
 	f2DkSVsMass->Write();
 }
 
+
+if(fUsemTCheck){
+
+f3DmTDepkSVspT->Write();
 }
-void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
-{
+}
+void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
+
+     // change momentum of p2!
+          AliFemtoPair* fPair = new AliFemtoPair;
+     //
+	if(isHe3Pair){
     // change momentum of p2!
     AliFemtoPair* fPair = new AliFemtoPair;
-
-    if(isHe3Pair){
         fPair = ChangeP2Mom(aPair);
     }
     else{
@@ -544,11 +566,6 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair)
 			float InverseKStar = fabs(SSPair->KStar());
 			fStaSkyBkg->Fill(InverseKStar);
 		}
-	}
-	if(fUse2DpTvsKStar){
-          KStarVspT_P1Hist->Fill(tKStar,fPair->Track1()->Track()->Pt());
-          if(IsSameParticlePair!=1) KStarVspT_P2Hist->Fill(tKStar,fPair->Track2()->Track()->Pt());
-
 	}
      	if(fUse3DkTvsKStarvsmT){
                 fNum3DkTvsKStarvsmT->Fill(fPair->KT(),tKStar,CalcMt(fPair));
@@ -646,6 +663,10 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
 		return;
 	    }
 	}
+	if(fUse2DpTvsKStar){
+			KStarVspT_P1Hist->Fill(tKStar,fPair->Track1()->Track()->Pt());
+          		if(IsSameParticlePair!=1) KStarVspT_P2Hist->Fill(tKStar,fPair->Track2()->Track()->Pt());
+        }
 
 	if(fUse3DkTvsKStarvsmT){
                 fDum3DkTvsKStarvsmT->Fill(fPair->KT(),tKStar,CalcMt(fPair));
@@ -653,6 +674,11 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
 if(fUse2DkStarVsmT){
 fDum2DkStarVsmT->Fill(tKStar,CalcMt(fPair));
 }
+
+	if(fUsemTCheck){
+		
+		f3DmTDepkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt(),CalcMt(fPair));
+	}
 	return;
     
 
@@ -1134,6 +1160,19 @@ f2DkSVsMass = new TH2F(TString::Format("f2DkSVsMass%s", fTitle.Data())," ",nbins
 
 
 }
+void AliFemtoCorrFctnpdtHe3::SetmTLimitCheck(int aUse){
+	fUsemTCheck = aUse;
+}
+void AliFemtoCorrFctnpdtHe3::SetmTCheckInit(bool aInit,
+ int nbinsks,float lowks,float upks,
+int nbinspT,float lowpT,float uppT,
+int nbinsmT,float lowmT,float upmT
+){
 
-	
+// in mix
+// only for p-d pair 
+// 1.5 - 2.0 - 2.5 - 3.5
+f3DmTDepkSVspT = new TH3F(TString::Format("f3DmTDepkSVspT%s", fTitle.Data())," ",nbinsks,lowks,upks,nbinspT,lowpT,uppT,nbinsmT,lowmT,upmT);
+
+}
 

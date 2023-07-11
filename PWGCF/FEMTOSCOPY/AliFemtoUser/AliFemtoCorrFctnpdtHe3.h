@@ -103,6 +103,13 @@ int nbinspT,float lowpT,float uppT,
  int nbinsMass,float lowMass,float upMass);
 
 
+void SetmTLimitCheck(int aUse);
+
+void SetmTCheckInit(bool aInit,
+ int nbinsks,float lowks,float upks,
+int nbinspT,float lowpT,float uppT,
+int nbinsmT,float lowmT,float upmT);
+
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -193,8 +200,10 @@ int nbinspT,float lowpT,float uppT,
 	int fUseBumpC;
 	TH2F *f2DkSVspT;
 	TH2F *f2DkSVsMass;
+	
+	int fUsemTCheck;
+	TH3F *f3DmTDepkSVspT;
 };
-
 
 #endif
 
