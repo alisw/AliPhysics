@@ -54,6 +54,7 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult() : AliAnalysisTaskSE(),
   fMCarray(0),
   fMCparticle(0),
   fOutputList(0),
+  tree(0),
   fHistPt(0),
   pVertex(0),
   cutVer(0),
@@ -109,6 +110,7 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult(const char* name) : AliAnalysisTask
   fMCarray(0),
   fMCparticle(0),
   fOutputList(0),
+  tree(0),
   fHistPt(0),
   pVertex(0),
   cutVer(0),
@@ -358,13 +360,23 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
   if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
   if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
 
-
-
+  /*
   //=====reference objects file=====
   TFile* RefData=TFile::Open("alien:///alice/cern.ch/user/t/takawagu/Data.root");
   TTree* tree=(TTree*)RefData->Get("tree");
   //TTree* treee=(TTree*)RefData->Get("treee");
+  */
 
+  //=====reference objects file=====
+  if(!tree)
+    {
+     cout << "no tree for correcting mult" << endl; 
+     cout << "get from Grid" << endl; 
+     TFile* RefData=TFile::Open("alien:///alice/cern.ch/user/t/takawagu/Data.root");
+     tree=(TTree*)RefData->Get("tree");
+     //TTree* treee=(TTree*)RefData->Get("treee");
+    }
+ 
   Int_t iTracks(fAOD->GetNumberOfTracks());
 
   Int_t Nclust = fAOD->GetNumberOfCaloClusters();
