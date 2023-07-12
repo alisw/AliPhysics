@@ -71,6 +71,9 @@ class AliAnalysisTaskSESemileptonicOmegac0KFP : public AliAnalysisTaskSE
     void                    SetMC(Bool_t theMCon) {fUseMCInfo = theMCon;}
     Bool_t                  GetMC() const {return fUseMCInfo;}
     
+    void                    SetMCClosureTest(Bool_t theMCClosureTest){fMCClosureTest = theMCClosureTest;}
+    Bool_t                  GetMCClosureTest() const  {return fMCClosureTest;}
+    
     void                    SetWriteOmegac0Tree(Bool_t a) {fWriteOmegac0Tree = a;}
     Bool_t                  GetWriteOmegac0Tree() const {return fWriteOmegac0Tree;}
     
@@ -154,6 +157,7 @@ private:
     
     AliNormalizationCounter* fCounter; //!<! Counter for normalization
     Bool_t                  fUseMCInfo; ///< Flag of MC analysis
+    Bool_t                  fMCClosureTest; ///< Flag of MC closure test
     Bool_t                  fWriteOmegac0Tree;   ///< flag to decide whether to write Omegac0 tree
     Bool_t                  fWriteOmegac0QATree; ///< flag to decide whether to write Omegac0QA tree
     Bool_t                  fWriteOmegac0MCGenTree;  ///<flag to decide whether to write the MC candidate variables on a tree variables
