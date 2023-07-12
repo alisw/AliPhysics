@@ -201,6 +201,8 @@ fHist3d2pcMixedOmegaPlus(0x0)
   }
   fkIntervalMinEta[0] = -1.4;
   fkIntervalMaxEta[0] = +1.4;
+
+  DefineOutput(1, TList::Class()); // Event Counter Histo
 }
 
 
