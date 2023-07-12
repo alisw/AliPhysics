@@ -542,7 +542,7 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
     if(fSideBand){
 	FillSideBandNum(fPair);
 	}
-    if(fUseDPhiDEtaQA){
+    if(fUseDPhiDEtaQA && tKStar<0.2){
 
 	  double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
     	  double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
@@ -667,7 +667,7 @@ double tKStar = fabs(fPair->KStar());
     if(fSideBand){
 	FillSideBandDum(fPair);
 	}
-	if(fUseDPhiDEtaQA){
+	if(fUseDPhiDEtaQA && tKStar<0.2){
 
 	  double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
     	  double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
