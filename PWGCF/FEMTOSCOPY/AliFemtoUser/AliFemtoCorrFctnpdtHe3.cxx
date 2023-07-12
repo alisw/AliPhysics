@@ -59,8 +59,8 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const char* title,
     SignalAndSideCFDum(nullptr),
     fUsePt(0),
     fUseDPhiDEtaQA(0),
-    //fNumDPhiDEtaQA(nullptr),
-    //fDumDPhiDEtaQA(nullptr),
+    fNumDPhiDEtaQAFailCut(nullptr),
+    fDumDPhiDEtaQAFailCut(nullptr),
     fNumDPhiDEtaAvgQA(nullptr),
     fDumDPhiDEtaAvgQA(nullptr),
     fUseStavinskyMethod(0),
@@ -131,8 +131,8 @@ AliFemtoCorrFctnpdtHe3::AliFemtoCorrFctnpdtHe3(const AliFemtoCorrFctnpdtHe3& aCo
     SignalAndSideCFDum(aCorrFctn.SignalAndSideCFDum),
     fUsePt(aCorrFctn.fUsePt),
     fUseDPhiDEtaQA(aCorrFctn.fUseDPhiDEtaQA),
-    //fNumDPhiDEtaQA(aCorrFctn.fNumDPhiDEtaQA),
-   // fDumDPhiDEtaQA(aCorrFctn.fDumDPhiDEtaQA),
+    fNumDPhiDEtaQAFailCut(aCorrFctn.fNumDPhiDEtaQAFailCut),
+    fDumDPhiDEtaQAFailCut(aCorrFctn.fDumDPhiDEtaQAFailCut),
     fNumDPhiDEtaAvgQA(aCorrFctn.fNumDPhiDEtaAvgQA),
     fDumDPhiDEtaAvgQA(aCorrFctn.fDumDPhiDEtaAvgQA),
     fUseStavinskyMethod(aCorrFctn.fUseStavinskyMethod),
@@ -193,8 +193,8 @@ AliFemtoCorrFctnpdtHe3::~AliFemtoCorrFctnpdtHe3()
     delete A1A2SideBandDum;
     delete SignalAndSideCFDum;
     
-    //delete fNumDPhiDEtaQA;
-    //delete fDumDPhiDEtaQA;    
+    delete fNumDPhiDEtaQAFailCut;
+    delete fDumDPhiDEtaQAFailCut;    
     delete fNumDPhiDEtaAvgQA;
     delete fDumDPhiDEtaAvgQA;
 
@@ -286,12 +286,12 @@ AliFemtoCorrFctnpdtHe3& AliFemtoCorrFctnpdtHe3::operator=(const AliFemtoCorrFctn
 			SignalAndSideCFDum = new TH1D(*aCorrFctn.SignalAndSideCFDum);
     fUsePt = aCorrFctn.fUsePt;
     fUseDPhiDEtaQA = aCorrFctn.fUseDPhiDEtaQA;
-/* 
-   if(fNumDPhiDEtaQA) delete fNumDPhiDEtaQA;
-        		fNumDPhiDEtaQA = new TH2F(*aCorrFctn.fNumDPhiDEtaQA);
-    if(fDumDPhiDEtaQA) delete fDumDPhiDEtaQA;
-        		fDumDPhiDEtaQA = new TH2F(*aCorrFctn.fDumDPhiDEtaQA);
-*/
+ 
+   if(fNumDPhiDEtaQAFailCut) delete fNumDPhiDEtaQAFailCut;
+        		fNumDPhiDEtaQAFailCut = new TH2F(*aCorrFctn.fNumDPhiDEtaQAFailCut);
+    if(fDumDPhiDEtaQAFailCut) delete fDumDPhiDEtaQAFailCut;
+        		fDumDPhiDEtaQAFailCut = new TH2F(*aCorrFctn.fDumDPhiDEtaQAFailCut);
+
 	if(fNumDPhiDEtaAvgQA) delete fNumDPhiDEtaAvgQA;
         		fNumDPhiDEtaAvgQA = new TH2F(*aCorrFctn.fNumDPhiDEtaAvgQA);
     	if(fDumDPhiDEtaAvgQA) delete fDumDPhiDEtaAvgQA;
@@ -374,8 +374,8 @@ TList* AliFemtoCorrFctnpdtHe3::GetOutputList()
 	    tOutputList->Add(SignalAndSideCFDum);
     }
     if(fUseDPhiDEtaQA){
-            //tOutputList->Add(fNumDPhiDEtaQA);
-	    //tOutputList->Add(fDumDPhiDEtaQA);
+            tOutputList->Add(fNumDPhiDEtaQAFailCut);
+	    tOutputList->Add(fDumDPhiDEtaQAFailCut);
 	    tOutputList->Add(fNumDPhiDEtaAvgQA);
 	    tOutputList->Add(fDumDPhiDEtaAvgQA);
 
@@ -444,8 +444,8 @@ void AliFemtoCorrFctnpdtHe3::Write()
 	    
         }
         if(fUseDPhiDEtaQA){
-		  //fNumDPhiDEtaQA->Write();
-		  //fDumDPhiDEtaQA->Write();
+		  fNumDPhiDEtaQAFailCut->Write();
+		  fDumDPhiDEtaQAFailCut->Write();
 		  fNumDPhiDEtaAvgQA->Write();
 		  fDumDPhiDEtaAvgQA->Write();
 	}
@@ -491,8 +491,21 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
     }
     
     // add true pair
+ double tKStar = fabs(fPair->KStar());
+
 	if(fPassAllPair==0){
 	    if (fPairCut && !fPairCut->Pass(fPair)) {
+		if(fUseDPhiDEtaQA && tKStar<0.2){
+
+          double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
+          double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
+          float AvgDPhi = ReAvgDphi(fPair);
+          double deta = eta1 - eta2;
+
+          fNumDPhiDEtaQAFailCut->Fill(deta,AvgDPhi);
+
+        }
+
 		return;
 	    }
 	    
@@ -501,7 +514,6 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
 	    }
 	}
 
-    double tKStar = fabs(fPair->KStar());
 
     if(fUseGobalVelGate){
 	int VelLabel = ReVelocityGate(fPair);
@@ -607,15 +619,27 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
     }
 
     // add true pair
+double tKStar = fabs(fPair->KStar());
 	if(fPassAllPair==0){
 	    if (fPairCut && !fPairCut->Pass(fPair)) {
+
+	 if(fUseDPhiDEtaQA && tKStar<0.2){
+
+          double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
+          double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
+          float AvgDPhi = ReAvgDphi(fPair);
+          double deta = eta1 - eta2;
+
+          fDumDPhiDEtaQAFailCut->Fill(deta,AvgDPhi);
+
+        }
+
 		return;
 	    } 
 	    if(fUsePairCutEtaPhi){
 		if(!PairEtaPhiSelect(fPair)) return;
 	    }
 	}
-    double tKStar = fabs(fPair->KStar());
    if(fUseGobalVelGate){
         int VelLabel = ReVelocityGate(fPair);
         if(fUseGobalVelGate == VelLabel){
@@ -880,6 +904,9 @@ void AliFemtoCorrFctnpdtHe3::SetDPhiDEtaQAInit(bool aDPhiDEtaQA){
 	if(!aDPhiDEtaQA) return;
 //fNumDPhiDEtaQA= new TH2F(TString::Format("fNumDPhiDEtaQA%s", fTitle.Data()), " ",200,-2.0,2.0, 100, -TMath::Pi(), TMath::Pi());
 //fDumDPhiDEtaQA= new TH2F(TString::Format("fDumDPhiDEtaQA%s", fTitle.Data()), " ",200,-2.0,2.0, 100, -TMath::Pi(), TMath::Pi());
+
+fNumDPhiDEtaQAFailCut = new TH2F(TString::Format("fNumDPhiDEtaAvgQAFailCut%s", fTitle.Data()), " ",150, -0.15, 0.15, 150, -0.15, 0.15);
+fDumDPhiDEtaQAFailCut = new TH2F(TString::Format("fDumDPhiDEtaAvgQAFailCut%s", fTitle.Data()), " ",150, -0.15, 0.15, 150, -0.15, 0.15);
 fNumDPhiDEtaAvgQA = new TH2F(TString::Format("fNumDPhiDEtaAvgQA%s", fTitle.Data()), " ",150, -0.15, 0.15, 150, -0.15, 0.15);
 fDumDPhiDEtaAvgQA = new TH2F(TString::Format("fDumDPhiDEtaAvgQA%s", fTitle.Data()), " ",150, -0.15, 0.15, 150, -0.15, 0.15);
 		
