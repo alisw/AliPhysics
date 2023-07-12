@@ -890,6 +890,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   }
 
   // set common binning in pT for mesons and photons
+  double epsilon              = 1.e-6;
   Float_t binWidthPt          = 0.1;
   Int_t nBinsPt               = 250;
   Float_t minPt               = 0;
@@ -901,9 +902,12 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
   Float_t maxClusterPt        = 50;
   Int_t nBinsMinv             = 800;
   Float_t maxMinv             = 0.8;
+  float minRes                = -1.f;
+  float maxRes                = +5.f; 
   Double_t *arrPtBinning      = new Double_t[1200];
   Double_t *arrQAPtBinning    = new Double_t[1200];
   Double_t *arrClusPtBinning  = new Double_t[1200];
+  std::vector<double> arrResBinning;
   if( fDoPi0Only ){
     nBinsMinv                 = 150;
     maxMinv                  = 0.3;
@@ -945,6 +949,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       else if(i<310) arrClusPtBinning[i]      = 70.+2.5*(i-298);
       else arrClusPtBinning[i]                = maxClusterPt;
     }
+
   } else if ( ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeV ||
               ((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::k13TeVLowB ){
     if( fDoPi0Only ){
@@ -1090,6 +1095,21 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       else arrQAPtBinning[i]                  = maxQAPt;
     }
   }
+
+  // if (fDoClusterQA > 0 && !fDoLightOutput){
+    double valRes = minRes;
+    for (int i = 0; i < 1000; ++i) {
+      arrResBinning.push_back(valRes);
+      if (valRes < -0.5 - epsilon)
+        valRes += 0.05;
+      else if (valRes < 0.5 - epsilon)
+        valRes += 0.01;
+      else if (valRes < maxRes - epsilon)
+        valRes += 0.05;
+      else
+        break;
+    }
+  // }
 
   // Create histograms
   if(fOutputContainer != NULL){
@@ -2642,11 +2662,11 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
         fHistoTrueClusEMNonLeadingPt[iCut]          = new TH1F("TrueClusEMNonLeading_Pt", "TrueClusEMNonLeading_Pt", nBinsClusterPt, arrClusPtBinning);
         fHistoTrueClusEMNonLeadingPt[iCut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fTrueList[iCut]->Add(fHistoTrueClusEMNonLeadingPt[iCut]);
-        fHistoTrueClusGammaEResPt[iCut]          = new TH2F("TrueClusGammaERes_Pt", "TrueClusGammaERes_Pt", nBinsClusterPt, arrClusPtBinning, 100, -5., +5.);
+        fHistoTrueClusGammaEResPt[iCut]          = new TH2F("TrueClusGammaERes_Pt", "TrueClusGammaERes_Pt", nBinsClusterPt, arrClusPtBinning, arrResBinning.size()-1, arrResBinning.data());
         fHistoTrueClusGammaEResPt[iCut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fHistoTrueClusGammaEResPt[iCut]->SetYTitle("(#it{E}_{rec}-#it{E}_{true})/#it{E}_{true}");
         fTrueList[iCut]->Add(fHistoTrueClusGammaEResPt[iCut]);
-        fHistoTrueClusPhotonGammaEResPt[iCut]          = new TH2F("TrueClusPhotonGammaERes_Pt", "TrueClusPhotonGammaERes_Pt", nBinsClusterPt, arrClusPtBinning, 100, -5., +5.);
+        fHistoTrueClusPhotonGammaEResPt[iCut]          = new TH2F("TrueClusPhotonGammaERes_Pt", "TrueClusPhotonGammaERes_Pt", nBinsClusterPt, arrClusPtBinning, arrResBinning.size()-1, arrResBinning.data());
         fHistoTrueClusPhotonGammaEResPt[iCut]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
         fHistoTrueClusPhotonGammaEResPt[iCut]->SetYTitle("(#it{E}_{rec}-#it{E}_{true})/#it{E}_{true}");
         fTrueList[iCut]->Add(fHistoTrueClusPhotonGammaEResPt[iCut]);
