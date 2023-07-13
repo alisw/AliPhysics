@@ -37,6 +37,7 @@ class AliAODv0;
 
 #include <Riostream.h>
 #include "TList.h"
+#include "THn.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
@@ -98,7 +99,7 @@ fListHist(0),
 // relevant for task configuration
 fSmallMultRange(1000),
 fLargeMultRange(2000),
-fRebinFactor(1), 
+fRebinFactor(1),
 fkNIntervals(1),
 fkSelectINELgtZERO(kTRUE),
 fkMinimumMultiplicity(-1),
@@ -116,28 +117,41 @@ fHistEventCounter(0),
 fHistChargedEta(0),
 
 // 2pc histograms
-fHistEtaVsPtTrigger(0x0), 
+fHistEtaVsPtTrigger(0x0),
 
-fHist3d2pcK0Short(0x0),
-fHist3d2pcLambda(0x0),
-fHist3d2pcAntiLambda(0x0),
-fHist3d2pcXiMinus(0x0),
-fHist3d2pcXiPlus(0x0),
-fHist3d2pcOmegaMinus(0x0),
-fHist3d2pcOmegaPlus(0x0), 
+fHist4d2pcK0Short(0x0),
+fHist4d2pcLambda(0x0),
+fHist4d2pcAntiLambda(0x0),
+fHist4d2pcXiMinus(0x0),
+fHist4d2pcXiPlus(0x0),
+fHist4d2pcOmegaMinus(0x0),
+fHist4d2pcOmegaPlus(0x0),
 
-fHist3d2pcMixedK0Short(0x0),
-fHist3d2pcMixedLambda(0x0),
-fHist3d2pcMixedAntiLambda(0x0),
-fHist3d2pcMixedXiMinus(0x0),
-fHist3d2pcMixedXiPlus(0x0),
-fHist3d2pcMixedOmegaMinus(0x0),
-fHist3d2pcMixedOmegaPlus(0x0)
-
+fHist4d2pcMixedK0Short(0x0),
+fHist4d2pcMixedLambda(0x0),
+fHist4d2pcMixedAntiLambda(0x0),
+fHist4d2pcMixedXiMinus(0x0),
+fHist4d2pcMixedXiPlus(0x0),
+fHist4d2pcMixedOmegaMinus(0x0),
+fHist4d2pcMixedOmegaPlus(0x0),
+fNMultBins(0)
 {
+  for(Int_t ii=0; ii<100; ii++)
+    fMultBinBounds[ii] = 0.0;
+  for(Int_t ii=0; ii<20; ii++){
+    fEMBufferFull[ii]=kFALSE;
+  }
+  for(Int_t ii=0; ii<20; ii++){
+    fEMBufferCycle[ii]=0;
+  }
+  for(Int_t ii=0; ii<20; ii++){
+    fEMBufferSize[ii]=10;
+  }
   for(Int_t ii=0; ii<50; ii++){
-    fEMBufferEta[ii]=0;
-    fEMBufferPhi[ii]=0;
+    for(Int_t jj=0; jj<20; jj++){
+      fEMBufferEta[ii][jj]=0;
+      fEMBufferPhi[ii][jj]=0;
+    }
   }
   for(Int_t ii=0; ii<10; ii++){
     fkIntervalMinEta[ii]=0;
@@ -154,7 +168,7 @@ fListHist(0),
 // relevant for task configuration
 fSmallMultRange(1000),
 fLargeMultRange(2000),
-fRebinFactor(lRebinFactor), 
+fRebinFactor(lRebinFactor),
 fkNIntervals(1),
 fkSelectINELgtZERO(kTRUE),
 fkMinimumMultiplicity(-1),
@@ -172,28 +186,41 @@ fHistEventCounter(0),
 fHistChargedEta(0),
 
 // 2pc histograms
-fHistEtaVsPtTrigger(0x0), 
+fHistEtaVsPtTrigger(0x0),
 
-fHist3d2pcK0Short(0x0),
-fHist3d2pcLambda(0x0),
-fHist3d2pcAntiLambda(0x0),
-fHist3d2pcXiMinus(0x0),
-fHist3d2pcXiPlus(0x0),
-fHist3d2pcOmegaMinus(0x0),
-fHist3d2pcOmegaPlus(0x0), 
+fHist4d2pcK0Short(0x0),
+fHist4d2pcLambda(0x0),
+fHist4d2pcAntiLambda(0x0),
+fHist4d2pcXiMinus(0x0),
+fHist4d2pcXiPlus(0x0),
+fHist4d2pcOmegaMinus(0x0),
+fHist4d2pcOmegaPlus(0x0),
 
-fHist3d2pcMixedK0Short(0x0),
-fHist3d2pcMixedLambda(0x0),
-fHist3d2pcMixedAntiLambda(0x0),
-fHist3d2pcMixedXiMinus(0x0),
-fHist3d2pcMixedXiPlus(0x0),
-fHist3d2pcMixedOmegaMinus(0x0),
-fHist3d2pcMixedOmegaPlus(0x0)
-
+fHist4d2pcMixedK0Short(0x0),
+fHist4d2pcMixedLambda(0x0),
+fHist4d2pcMixedAntiLambda(0x0),
+fHist4d2pcMixedXiMinus(0x0),
+fHist4d2pcMixedXiPlus(0x0),
+fHist4d2pcMixedOmegaMinus(0x0),
+fHist4d2pcMixedOmegaPlus(0x0),
+fNMultBins(0)
 {
+  for(Int_t ii=0; ii<100; ii++)
+    fMultBinBounds[ii] = 0.0;
+  for(Int_t ii=0; ii<20; ii++){
+    fEMBufferFull[ii]=kFALSE;
+  }
+  for(Int_t ii=0; ii<20; ii++){
+    fEMBufferCycle[ii]=0;
+  }
+  for(Int_t ii=0; ii<20; ii++){
+    fEMBufferSize[ii]=10;
+  }
   for(Int_t ii=0; ii<50; ii++){
-    fEMBufferEta[ii]=0;
-    fEMBufferPhi[ii]=0;
+    for(Int_t jj=0; jj<20; jj++){
+      fEMBufferEta[ii][jj]=0;
+      fEMBufferPhi[ii][jj]=0;
+    }
   }
   for(Int_t ii=0; ii<10; ii++){
     fkIntervalMinEta[ii]=0;
@@ -246,9 +273,7 @@ void AliAnalysisTaskMCPredictions2pc::UserCreateOutputObjects()
   
   if(! fHistEventCounter ) {
     //Histogram Output: Event-by-Event
-    fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",1,0,1);
-    //Keeps track of some basics
-    fHistEventCounter->GetXaxis()->SetBinLabel(1, "Processed");
+    fHistEventCounter = new TH1D( "fHistEventCounter", ";Evt. Sel. Step;Count",fNMultBins, fMultBinBounds);
     fListHist->Add(fHistEventCounter);
   }
   //___________________________________________________
@@ -273,66 +298,70 @@ void AliAnalysisTaskMCPredictions2pc::UserCreateOutputObjects()
     fListHist->Add(fHistEtaVsPtTrigger);
   }
   //___________________________________________________
-  if(! fHist3d2pcK0Short ) {
-    fHist3d2pcK0Short = new TH3D("fHist3d2pcK0Short","",2*lNEtaBins,-2*lMaxAbsEta,+2*lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
-    fListHist->Add(fHist3d2pcK0Short);
+  const Int_t nDimensions = 4;
+  const Int_t nBins[nDimensions] = {2*lNEtaBins, 80, 20, lNNchBinsForward};
+  const Double_t minValues[nDimensions] = {-2*lMaxAbsEta, -0.5*TMath::Pi(), 0.0, lLowNchBoundForward};
+  const Double_t maxValues[nDimensions] = {+2*lMaxAbsEta,  1.5*TMath::Pi(), 10.0, lHighNchBoundForward};
+  if(! fHist4d2pcK0Short ) {
+    fHist4d2pcK0Short = new THnF("fHist4d2pcK0Short","",nDimensions, nBins, minValues, maxValues);
+    fListHist->Add(fHist4d2pcK0Short);
   }
-  if(! fHist3d2pcLambda ) {
-    fHist3d2pcLambda = new TH3D("fHist3d2pcLambda","",2*lNEtaBins,-2*lMaxAbsEta,+2*lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
-    fListHist->Add(fHist3d2pcLambda);
+  if(! fHist4d2pcLambda ) {
+    fHist4d2pcLambda = new THnF("fHist4d2pcLambda","",nDimensions, nBins, minValues, maxValues);
+    fListHist->Add(fHist4d2pcLambda);
   }
-  if(! fHist3d2pcAntiLambda ) {
-    fHist3d2pcAntiLambda = new TH3D("fHist3d2pcAntiLambda","",2*lNEtaBins,-2*lMaxAbsEta,+2*lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
-    fListHist->Add(fHist3d2pcAntiLambda);
+  if(! fHist4d2pcAntiLambda ) {
+    fHist4d2pcAntiLambda = new THnF("fHist4d2pcAntiLambda","",nDimensions, nBins, minValues, maxValues);
+    fListHist->Add(fHist4d2pcAntiLambda);
   }
-  if(! fHist3d2pcXiMinus ) {
-    fHist3d2pcXiMinus = new TH3D("fHist3d2pcXiMinus","",2*lNEtaBins,-2*lMaxAbsEta,+2*lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
-    fListHist->Add(fHist3d2pcXiMinus);
+  if(! fHist4d2pcXiMinus ) {
+    fHist4d2pcXiMinus = new THnF("fHist4d2pcXiMinus","",nDimensions, nBins, minValues, maxValues);
+    fListHist->Add(fHist4d2pcXiMinus);
   }
-  if(! fHist3d2pcXiPlus ) {
-    fHist3d2pcXiPlus = new TH3D("fHist3d2pcXiPlus","",2*lNEtaBins,-2*lMaxAbsEta,+2*lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
-    fListHist->Add(fHist3d2pcXiPlus);
+  if(! fHist4d2pcXiPlus ) {
+    fHist4d2pcXiPlus = new THnF("fHist4d2pcXiPlus","",nDimensions, nBins, minValues, maxValues);
+    fListHist->Add(fHist4d2pcXiPlus);
   }
-  if(! fHist3d2pcOmegaMinus ) {
-    fHist3d2pcOmegaMinus = new TH3D("fHist3d2pcOmegaMinus","",2*lNEtaBins,-2*lMaxAbsEta,+2*lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
-    fListHist->Add(fHist3d2pcOmegaMinus);
+  if(! fHist4d2pcOmegaMinus ) {
+    fHist4d2pcOmegaMinus = new THnF("fHist4d2pcOmegaMinus","",nDimensions, nBins, minValues, maxValues);
+    fListHist->Add(fHist4d2pcOmegaMinus);
   }
-  if(! fHist3d2pcOmegaPlus ) {
-    fHist3d2pcOmegaPlus = new TH3D("fHist3d2pcOmegaPlus","",2*lNEtaBins,-2*lMaxAbsEta,+2*lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
-    fListHist->Add(fHist3d2pcOmegaPlus);
+  if(! fHist4d2pcOmegaPlus ) {
+    fHist4d2pcOmegaPlus = new THnF("fHist4d2pcOmegaPlus","",nDimensions, nBins, minValues, maxValues);
+    fListHist->Add(fHist4d2pcOmegaPlus);
   }
   //___________________________________________________
-  if(! fHist3d2pcMixedK0Short ) {
-    fHist3d2pcMixedK0Short = new TH3D("fHist3d2pcMixedK0Short","",2*lNEtaBins,-2*lMaxAbsEta,+2*lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
-    fListHist->Add(fHist3d2pcMixedK0Short);
+  if(! fHist4d2pcMixedK0Short ) {
+    fHist4d2pcMixedK0Short = new THnF("fHist4d2pcMixedK0Short","",nDimensions, nBins, minValues, maxValues);
+    fListHist->Add(fHist4d2pcMixedK0Short);
   }
-  if(! fHist3d2pcMixedLambda ) {
-    fHist3d2pcMixedLambda = new TH3D("fHist3d2pcMixedLambda","",2*lNEtaBins,-2*lMaxAbsEta,+2*lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
-    fListHist->Add(fHist3d2pcMixedLambda);
+  if(! fHist4d2pcMixedLambda ) {
+    fHist4d2pcMixedLambda = new THnF("fHist4d2pcMixedLambda","",nDimensions, nBins, minValues, maxValues);
+    fListHist->Add(fHist4d2pcMixedLambda);
   }
-  if(! fHist3d2pcMixedAntiLambda ) {
-    fHist3d2pcMixedAntiLambda = new TH3D("fHist3d2pcMixedAntiLambda","",2*lNEtaBins,-2*lMaxAbsEta,+2*lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
-    fListHist->Add(fHist3d2pcMixedAntiLambda);
+  if(! fHist4d2pcMixedAntiLambda ) {
+    fHist4d2pcMixedAntiLambda = new THnF("fHist4d2pcMixedAntiLambda","",nDimensions, nBins, minValues, maxValues);
+    fListHist->Add(fHist4d2pcMixedAntiLambda);
   }
-  if(! fHist3d2pcMixedXiMinus ) {
-    fHist3d2pcMixedXiMinus = new TH3D("fHist3d2pcMixedXiMinus","",2*lNEtaBins,-2*lMaxAbsEta,+2*lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
-    fListHist->Add(fHist3d2pcMixedXiMinus);
+  if(! fHist4d2pcMixedXiMinus ) {
+    fHist4d2pcMixedXiMinus = new THnF("fHist4d2pcMixedXiMinus","",nDimensions, nBins, minValues, maxValues);
+    fListHist->Add(fHist4d2pcMixedXiMinus);
   }
-  if(! fHist3d2pcMixedXiPlus ) {
-    fHist3d2pcMixedXiPlus = new TH3D("fHist3d2pcMixedXiPlus","",2*lNEtaBins,-2*lMaxAbsEta,+2*lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
-    fListHist->Add(fHist3d2pcMixedXiPlus);
+  if(! fHist4d2pcMixedXiPlus ) {
+    fHist4d2pcMixedXiPlus = new THnF("fHist4d2pcMixedXiPlus","",nDimensions, nBins, minValues, maxValues);
+    fListHist->Add(fHist4d2pcMixedXiPlus);
   }
-  if(! fHist3d2pcMixedOmegaMinus ) {
-    fHist3d2pcMixedOmegaMinus = new TH3D("fHist3d2pcMixedOmegaMinus","",2*lNEtaBins,-2*lMaxAbsEta,+2*lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
-    fListHist->Add(fHist3d2pcMixedOmegaMinus);
+  if(! fHist4d2pcMixedOmegaMinus ) {
+    fHist4d2pcMixedOmegaMinus = new THnF("fHist4d2pcMixedOmegaMinus","",nDimensions, nBins, minValues, maxValues);
+    fListHist->Add(fHist4d2pcMixedOmegaMinus);
   }
-  if(! fHist3d2pcMixedOmegaPlus ) {
-    fHist3d2pcMixedOmegaPlus = new TH3D("fHist3d2pcMixedOmegaPlus","",2*lNEtaBins,-2*lMaxAbsEta,+2*lMaxAbsEta,80,-0.5*TMath::Pi(), 1.5*TMath::Pi(),20,0,10);
-    fListHist->Add(fHist3d2pcMixedOmegaPlus);
+  if(! fHist4d2pcMixedOmegaPlus ) {
+    fHist4d2pcMixedOmegaPlus = new THnF("fHist4d2pcMixedOmegaPlus","",nDimensions, nBins, minValues, maxValues);
+    fListHist->Add(fHist4d2pcMixedOmegaPlus);
   }
 
   //List of Histograms: Normal
-  PostData(1, fListHist);  
+  PostData(1, fListHist);
 }// end UserCreateOutputObjects
 
 
@@ -373,7 +402,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   Long_t lNchEta8   = 0;
   
   //this keeps multiplicity over a wide range
-  //(multiple intervals as configured by the fkInterval... vars) 
+  //(multiple intervals as configured by the fkInterval... vars)
   Double_t lNchForward  = 0;
   
   Bool_t lEvSel_INELgtZEROStackPrimaries=kFALSE;
@@ -396,7 +425,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
     if( TMath::Abs(geta) < 0.8 ) lNchEta8++;
     if( TMath::Abs(geta) < 1.0 ) lEvSel_INELgtZEROStackPrimaries = kTRUE;
     
-    //Special treatment: multiple intervals 
+    //Special treatment: multiple intervals
     for(Int_t ii = 0; ii<fkNIntervals; ii++ )
       if( fkIntervalMinEta[ii] < geta && geta < fkIntervalMaxEta[ii] ) lNchForward+=fkIntervalWeight[ii];
   }//End of loop on tracks
@@ -406,6 +435,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   if( !lEvSel_INELgtZEROStackPrimaries && fkSelectINELgtZERO ) return;
   
   if( lNchForward < fkMinimumMultiplicity+1e-10 ) return;
+  Int_t multiplicityIndex = fHistEventCounter->FindBin(lNchForward); //use variable binning
   
   //------------------------------------------------
   // Fill Event Counters
@@ -415,7 +445,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   if( !fHistEventCounter ) {
     Printf("ERROR: Could not retrieve fHistEventCounter! This will crash!\n");
   }
-  fHistEventCounter->Fill(0.5);
+  fHistEventCounter->Fill(lNchForward);
   
   if(fHistForwardMult)      fHistForwardMult        -> Fill ( lNchForward );
   if(fHistNchVsForwardMult) fHistNchVsForwardMult   -> Fill ( lNchForward, lNchEta5  );
@@ -451,14 +481,14 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
     Double_t gpt = lThisParticle -> Pt();
 
     // kick out stuff not at midrapidity
-    if( ( geta < fkMinEta || geta > fkMaxEta) ) continue; 
+    if( ( geta < fkMinEta || geta > fkMaxEta) ) continue;
     
     if(!lThisParticle->GetPDG()) continue;
     Double_t lThisCharge = lThisParticle->GetPDG()->Charge()/3.;
 
     // populate triggers with charged particles within desired pT window
     if (fkMinPtTrigger<gpt && gpt<fkMaxPtTrigger && TMath::Abs(lThisCharge)>0.001){
-      //valid trigger 
+      //valid trigger
       fHistEtaVsPtTrigger->Fill(gpt, geta);
       triggerIndices.emplace_back(iCurrentLabelStack);
     }
@@ -480,10 +510,10 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   associatedIndices.emplace_back(omegaMinusIndices);
   associatedIndices.emplace_back(omegaPlusIndices);
 
-  TH3D *h3dAssociated[7] = {fHist3d2pcK0Short, fHist3d2pcLambda, fHist3d2pcAntiLambda, fHist3d2pcXiMinus, fHist3d2pcXiPlus, fHist3d2pcOmegaMinus, fHist3d2pcOmegaPlus};
-  TH3D *h3dMixed[7] = {fHist3d2pcMixedK0Short, fHist3d2pcMixedLambda, fHist3d2pcMixedAntiLambda, fHist3d2pcMixedXiMinus, fHist3d2pcMixedXiPlus, fHist3d2pcMixedOmegaMinus, fHist3d2pcMixedOmegaPlus};
+  THnF *h4dAssociated[7] = {fHist4d2pcK0Short, fHist4d2pcLambda, fHist4d2pcAntiLambda, fHist4d2pcXiMinus, fHist4d2pcXiPlus, fHist4d2pcOmegaMinus, fHist4d2pcOmegaPlus};
+  THnF *h4dMixed[7] = {fHist4d2pcMixedK0Short, fHist4d2pcMixedLambda, fHist4d2pcMixedAntiLambda, fHist4d2pcMixedXiMinus, fHist4d2pcMixedXiPlus, fHist4d2pcMixedOmegaMinus, fHist4d2pcMixedOmegaPlus};
 
-  //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+  //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   //  Actually correlate stuff with stuff
   for (Int_t iTrigger = 0;  iTrigger < triggerIndices.size(); iTrigger++){   // trigger loop
     TParticle* lTriggerParticle = lMCstack->Particle(triggerIndices[iTrigger]);
@@ -502,16 +532,16 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
         Double_t geta2 = lAssociatedParticle -> Eta();
         Double_t gphi2 = lAssociatedParticle -> Phi();
         Double_t lThisPt    = lAssociatedParticle->Pt();
-        h3dAssociated[iassocSpecies]->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt);
+        h4dAssociated[iassocSpecies]->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt,lNchForward);
       }
     }
   }
-  //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+ 
+  //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   //Event mixing loop
-  if( fEMBufferFull ){ //require also that a trigger exists
-    for (Int_t iTrigger = 0;  iTrigger < fEMBufferSize; iTrigger++){   // trigger loop
-      Double_t geta = fEMBufferEta[iTrigger]; //from previous events
-      Double_t gphi = fEMBufferPhi[iTrigger]; //from previous events
+  if( fEMBufferFull[multiplicityIndex] ){ //require also that a trigger exists
+    for (Int_t iTrigger = 0;  iTrigger < fEMBufferSize[multiplicityIndex]; iTrigger++){   // trigger loop
+      Double_t geta = fEMBufferEta[iTrigger][multiplicityIndex]; //from previous events
+      Double_t gphi = fEMBufferPhi[iTrigger][multiplicityIndex]; //from previous events
 
       for (Int_t iassocSpecies = 0;  iassocSpecies < associatedIndices.size(); iassocSpecies++){   // associated loop
         for (Int_t iassoc = 0;  iassoc < associatedIndices[iassocSpecies].size(); iassoc++){   // associated loop
@@ -524,25 +554,26 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
           Double_t geta2 = lAssociatedParticle -> Eta();
           Double_t gphi2 = lAssociatedParticle -> Phi();
           Double_t lThisPt    = lAssociatedParticle->Pt();
-          h3dMixed[iassocSpecies]->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt);
+          h4dMixed[iassocSpecies]->Fill(geta2-geta, ComputeDeltaPhi(gphi,gphi2), lThisPt,lNchForward);
         }
       }
     }
   }
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   // fill EM buffer
-  if( fEMBufferSize > 0 ){
+  if( fEMBufferSize[multiplicityIndex] > 0 ){
     for (Int_t iTrigger = 0;  iTrigger < triggerIndices.size(); iTrigger++){   // trigger loop
       TParticle* lThisParticle = lMCstack->Particle(triggerIndices[iTrigger]);
       AliMCParticle* lMCPart = (AliMCParticle*)lMCevent->GetTrack(triggerIndices[iTrigger]);
       if(!lThisParticle) continue;
 
       //Add to buffer
-      fEMBufferEta[ fEMBufferCycle ] = lThisParticle->Eta();
-      fEMBufferPhi[ fEMBufferCycle ] = lThisParticle->Phi();
-      fEMBufferCycle++;
-      if(fEMBufferCycle>=fEMBufferSize) fEMBufferFull = kTRUE;
-      fEMBufferCycle = fEMBufferCycle%fEMBufferSize;
+      
+      fEMBufferEta[fEMBufferCycle[multiplicityIndex]][multiplicityIndex] = lThisParticle->Eta();
+      fEMBufferPhi[fEMBufferCycle[multiplicityIndex]][multiplicityIndex] = lThisParticle->Phi();
+      fEMBufferCycle[multiplicityIndex]++;
+      if(fEMBufferCycle[multiplicityIndex]>=fEMBufferSize[multiplicityIndex]) fEMBufferFull[multiplicityIndex] = kTRUE;
+      fEMBufferCycle[multiplicityIndex] = fEMBufferCycle[multiplicityIndex]%fEMBufferSize[multiplicityIndex];
     }
   }
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

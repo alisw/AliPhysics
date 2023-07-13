@@ -24,7 +24,7 @@
 
 #ifndef AliAnalysisTaskMCPredictions2pc_H
 #define AliAnalysisTaskMCPredictions2pc_H
-
+#include "THn.h"
 class TTree;
 class TList;
 class TH1F;
@@ -32,6 +32,7 @@ class TH2F;
 class TH3F;
 class TVector3;
 class THnSparse;
+class THn;
 
 class AliESDpid;
 class AliESDtrackCuts;
@@ -63,6 +64,12 @@ public:
   void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; }
   void SetMinimumMultiplicity ( Long_t lMinMult ) { fkMinimumMultiplicity = lMinMult; } ;
   
+  void SetMultiplicityBinning( Int_t lNbins, Float_t *lNbinbounds ) {
+    fNMultBins = lNbins; 
+    for(Int_t ii=0; ii<lNbins+1; ii++)
+      fMultBinBounds[ii]=lNbinbounds[ii];
+  } ;
+
   //configure intervals
   void ClearEtaIntervals() { fkNIntervals = 0; };
   void AddEtaInterval( Float_t lMin, Float_t lMax, Float_t lWeight = 1.0 ) {
@@ -109,28 +116,31 @@ private:
   Int_t fkNEtaBins;
   TH2D *fHistEtaVsPtTrigger; //!
   
-  TH3D *fHist3d2pcK0Short; //!
-  TH3D *fHist3d2pcLambda; //!
-  TH3D *fHist3d2pcAntiLambda; //!
-  TH3D *fHist3d2pcXiMinus; //!
-  TH3D *fHist3d2pcXiPlus; //!
-  TH3D *fHist3d2pcOmegaMinus; //!
-  TH3D *fHist3d2pcOmegaPlus; //!
+  THnF *fHist4d2pcK0Short; //!
+  THnF *fHist4d2pcLambda; //!
+  THnF *fHist4d2pcAntiLambda; //!
+  THnF *fHist4d2pcXiMinus; //!
+  THnF *fHist4d2pcXiPlus; //!
+  THnF *fHist4d2pcOmegaMinus; //!
+  THnF *fHist4d2pcOmegaPlus; //!
 
-  TH3D *fHist3d2pcMixedK0Short; //!
-  TH3D *fHist3d2pcMixedLambda; //!
-  TH3D *fHist3d2pcMixedAntiLambda; //!
-  TH3D *fHist3d2pcMixedXiMinus; //!
-  TH3D *fHist3d2pcMixedXiPlus; //!
-  TH3D *fHist3d2pcMixedOmegaMinus; //!
-  TH3D *fHist3d2pcMixedOmegaPlus; //!
+  THnF *fHist4d2pcMixedK0Short; //!
+  THnF *fHist4d2pcMixedLambda; //!
+  THnF *fHist4d2pcMixedAntiLambda; //!
+  THnF *fHist4d2pcMixedXiMinus; //!
+  THnF *fHist4d2pcMixedXiPlus; //!
+  THnF *fHist4d2pcMixedOmegaMinus; //!
+  THnF *fHist4d2pcMixedOmegaPlus; //!
+  
+  Int_t fNMultBins; 
+  Float_t fMultBinBounds[100]; 
 
   //for event mixing
-  Bool_t fEMBufferFull;
-  Int_t fEMBufferCycle;
-  Int_t fEMBufferSize;
-  Float_t fEMBufferEta[50];
-  Float_t fEMBufferPhi[50];
+  Bool_t fEMBufferFull[20];
+  Int_t fEMBufferCycle[20];
+  Int_t fEMBufferSize[20];
+  Float_t fEMBufferEta[50][20];
+  Float_t fEMBufferPhi[50][20];
   
   AliAnalysisTaskMCPredictions2pc(const AliAnalysisTaskMCPredictions2pc&);            // not implemented
   AliAnalysisTaskMCPredictions2pc& operator=(const AliAnalysisTaskMCPredictions2pc&); // not implemented
