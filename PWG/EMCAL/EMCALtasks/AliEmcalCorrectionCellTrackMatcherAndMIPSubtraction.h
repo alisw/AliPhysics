@@ -38,6 +38,7 @@ class AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction : public AliEmcalCorre
 protected:
 
   Bool_t        IsTrackInEmcalAcceptance(AliVTrack* part, Double_t edges=0.9) const;
+  Bool_t        FindAndSubtractNextCell(Int_t absID, AliVTrack* track, double restEnergy) const;
 
   Double_t               fEmipData;            ///< Energy of MIP used to subtract from cell, in case of data
   Double_t               fEmipMC;              ///< Energy of MIP used to subtract from cell, in case of MC
@@ -45,6 +46,7 @@ protected:
   Bool_t                 fDoPropagation;      ///< Bool to switch propagation on/off
   Bool_t                 fDoMatchPrimaryOnly; ///< Bool to switch if secndaries/conversions (r>fMaxDistToVtxPrim cm) will be matched
   Double_t               fMaxDistToVtxPrim;   ///< Maximum DCA in XY direction for a track to be counted as primary
+  Bool_t                 fSubtractMultiple;   ///< Bool to switch if more than one cell should get the energy subtracted if the MIP energy is larger than the cell energy
 
   //#if !(defined(__CINT__) || defined(__MAKECINT__))
   // Handle mapping between index and containers
@@ -67,7 +69,7 @@ protected:
   static RegisterCorrectionComponent<AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction> reg;
 
   /// \cond CLASSIMP
-  ClassDef(AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction, 4); // EMCal cell track matcher
+  ClassDef(AliEmcalCorrectionCellTrackMatcherAndMIPSubtraction, 5); // EMCal cell track matcher
   /// \endcond
 };
 
