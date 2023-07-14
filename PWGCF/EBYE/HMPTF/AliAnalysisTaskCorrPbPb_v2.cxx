@@ -89,56 +89,124 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2():
   fOutputList(0),
   fQAList(0),
   fTreeList(0),
-  fTreeEvent(0),
+  //fTreeEvent(0),
   fESDtrackCuts(0),
   fESDtrackCuts_primary(0),
   //fTrigger(AliVEvent::kINT7),
   fMultLow(0),
   fMultHigh(100),
   hNumberOfEvents(0),
-  // hNumberOfKaonPlus(0),
-  // hNumberOfKaonMinus(0),
-  // hNumberOfPionPlus(0),
-  // hNumberOfPionMinus(0),
-  // hNumberOfProtonPlus(0),
-  // hNumberOfProtonMinus(0),
-  fTreeVariableCentrality(0),
-  fNoKaonPlus_ptmax2(0),
-  fNoKaonMinus_ptmax2(0),
-  fNoKaonPlus_ptmax3(0),
-  fNoKaonMinus_ptmax3(0),
-  fNoPionPlus_ptmax2(0),
-  fNoPionMinus_ptmax2(0),
-  fNoPionPlus_ptmax3(0),
-  fNoPionMinus_ptmax3(0),
-  fNoProtonPlus_ptmax2(0),
-  fNoProtonMinus_ptmax2(0),
-  fNoProtonPlus_ptmax3(0),
-  fNoProtonMinus_ptmax3(0),
-  fCorrectedNoKaonPlus_ptmax2(0),
-  fCorrectedNoKaonMinus_ptmax2(0),
-  fCorrectedNoKaonPlus_ptmax3(0),
-  fCorrectedNoKaonMinus_ptmax3(0),
-  fCorrectedNoPionPlus_ptmax2(0),
-  fCorrectedNoPionMinus_ptmax2(0),
-  fCorrectedNoPionPlus_ptmax3(0),
-  fCorrectedNoPionMinus_ptmax3(0),
-  fCorrectedNoProtonPlus_ptmax2(0),
-  fCorrectedNoProtonMinus_ptmax2(0),
-  fCorrectedNoProtonPlus_ptmax3(0),
-  fCorrectedNoProtonMinus_ptmax3(0),
-  fEffSqrFactrPionMinus_ptmax2(0),
-  fEffSqrFactrPionPlus_ptmax2(0),
-  fEffSqrFactrProtonMinus_ptmax2(0),
-  fEffSqrFactrProtonPlus_ptmax2(0),
-  fEffSqrFactrKaonMinus_ptmax2(0),
-  fEffSqrFactrKaonPlus_ptmax2(0),
-  fEffSqrFactrPionMinus_ptmax3(0),
-  fEffSqrFactrPionPlus_ptmax3(0),
-  fEffSqrFactrProtonMinus_ptmax3(0),
-  fEffSqrFactrProtonPlus_ptmax3(0),
-  fEffSqrFactrKaonMinus_ptmax3(0),
-  fEffSqrFactrKaonPlus_ptmax3(0),
+  hNumberOfKaonPlus(0),
+  hNumberOfKaonMinus(0),
+  hNumberOfPionPlus(0),
+  hNumberOfPionMinus(0),
+  hNumberOfProtonPlus(0),
+  hNumberOfProtonMinus(0),
+  // fTreeVariableCentrality(0),
+  // fNoKaonPlus_ptmax2(0),
+  // fNoKaonMinus_ptmax2(0),
+  // fNoKaonPlus_ptmax3(0),
+  // fNoKaonMinus_ptmax3(0),
+  // fNoPionPlus_ptmax2(0),
+  // fNoPionMinus_ptmax2(0),
+  // fNoPionPlus_ptmax3(0),
+  // fNoPionMinus_ptmax3(0),
+  // fNoProtonPlus_ptmax2(0),
+  // fNoProtonMinus_ptmax2(0),
+  // fNoProtonPlus_ptmax3(0),
+  // fNoProtonMinus_ptmax3(0),
+  // fCorrectedNoKaonPlus_ptmax2(0),
+  // fCorrectedNoKaonMinus_ptmax2(0),
+  // fCorrectedNoKaonPlus_ptmax3(0),
+  // fCorrectedNoKaonMinus_ptmax3(0),
+  // fCorrectedNoPionPlus_ptmax2(0),
+  // fCorrectedNoPionMinus_ptmax2(0),
+  // fCorrectedNoPionPlus_ptmax3(0),
+  // fCorrectedNoPionMinus_ptmax3(0),
+  // fCorrectedNoProtonPlus_ptmax2(0),
+  // fCorrectedNoProtonMinus_ptmax2(0),
+  // fCorrectedNoProtonPlus_ptmax3(0),
+  // fCorrectedNoProtonMinus_ptmax3(0),
+  // fEffSqrFactrPionMinus_ptmax2(0),
+  // fEffSqrFactrPionPlus_ptmax2(0),
+  // fEffSqrFactrProtonMinus_ptmax2(0),
+  // fEffSqrFactrProtonPlus_ptmax2(0),
+  // fEffSqrFactrKaonMinus_ptmax2(0),
+  // fEffSqrFactrKaonPlus_ptmax2(0),
+  // fEffSqrFactrPionMinus_ptmax3(0),
+  // fEffSqrFactrPionPlus_ptmax3(0),
+  // fEffSqrFactrProtonMinus_ptmax3(0),
+  // fEffSqrFactrProtonPlus_ptmax3(0),
+  // fEffSqrFactrKaonMinus_ptmax3(0),
+  // fEffSqrFactrKaonPlus_ptmax3(0),
+  Profile_ptmax2_RecNetKaon(0),
+  Profile_ptmax2_RecNetProton(0),
+  Profile_ptmax2_RecNetCharge(0),
+  Profile_ptmax2_RecNetChargeNetKaon(0),
+  Profile_ptmax2_RecNetChargeNetProton(0),
+  Profile_ptmax2_RecNetKaonNetProton(0),
+  Profile_ptmax2_Term1C2RecNetKaon(0),
+  Profile_ptmax2_Term2C2RecNetKaon(0),
+  Profile_ptmax2_Term1C2RecNetCharge(0),
+  Profile_ptmax2_Term2C2RecNetCharge(0),
+  Profile_ptmax2_Term1C2RecNetProton(0),
+  Profile_ptmax2_Term2C2RecNetProton(0),
+  Profile_ptSTAR_RecNetKaon(0),
+  Profile_ptSTAR_RecNetProton(0),
+  Profile_ptSTAR_RecNetCharge(0),
+  Profile_ptSTAR_RecNetChargeNetKaon(0),
+  Profile_ptSTAR_RecNetChargeNetProton(0),
+  Profile_ptSTAR_RecNetKaonNetProton(0),
+  Profile_ptSTAR_Term1C2RecNetKaon(0),
+  Profile_ptSTAR_Term2C2RecNetKaon(0),
+  Profile_ptSTAR_Term1C2RecNetCharge(0),
+  Profile_ptSTAR_Term2C2RecNetCharge(0),
+  Profile_ptSTAR_Term1C2RecNetProton(0),
+  Profile_ptSTAR_Term2C2RecNetProton(0),
+  Profile_ptmax2_CorrectedNetKaon(0),
+  Profile_ptmax2_CorrectedNetProton(0),
+  Profile_ptmax2_CorrectedNetCharge(0),
+  Profile_ptmax2_CorrectedNetChargeNetKaon_term1(0),
+  Profile_ptmax2_CorrectedNetChargeNetKaon_term2(0),
+  Profile_ptmax2_CorrectedNetChargeNetKaon_term3(0),
+  Profile_ptmax2_CorrectedNetChargeNetProton_term1(0),
+  Profile_ptmax2_CorrectedNetChargeNetProton_term2(0),
+  Profile_ptmax2_CorrectedNetChargeNetProton_term3(0),
+  Profile_ptmax2_CorrectedNetKaonNetProton(0),
+  Profile_ptmax2_Term1C2CorrectedNetKaon(0),
+  Profile_ptmax2_Term2C2CorrectedNetKaon(0),
+  Profile_ptmax2_Term3C2CorrectedNetKaon(0),
+  Profile_ptmax2_Term4C2CorrectedNetKaon(0),
+  Profile_ptmax2_Term1C2CorrectedNetCharge(0),
+  Profile_ptmax2_Term2C2CorrectedNetCharge(0),
+  Profile_ptmax2_Term3C2CorrectedNetCharge(0),
+  Profile_ptmax2_Term4C2CorrectedNetCharge(0),
+  Profile_ptmax2_Term1C2CorrectedNetProton(0),
+  Profile_ptmax2_Term2C2CorrectedNetProton(0),
+  Profile_ptmax2_Term3C2CorrectedNetProton(0),
+  Profile_ptmax2_Term4C2CorrectedNetProton(0),
+  Profile_ptSTAR_CorrectedNetKaon(0),
+  Profile_ptSTAR_CorrectedNetProton(0),
+  Profile_ptSTAR_CorrectedNetCharge(0),
+  Profile_ptSTAR_CorrectedNetChargeNetKaon_term1(0),
+  Profile_ptSTAR_CorrectedNetChargeNetKaon_term2(0),
+  Profile_ptSTAR_CorrectedNetChargeNetKaon_term3(0),
+  Profile_ptSTAR_CorrectedNetChargeNetProton_term1(0),
+  Profile_ptSTAR_CorrectedNetChargeNetProton_term2(0),
+  Profile_ptSTAR_CorrectedNetChargeNetProton_term3(0),
+  Profile_ptSTAR_CorrectedNetKaonNetProton(0),
+  Profile_ptSTAR_Term1C2CorrectedNetKaon(0),
+  Profile_ptSTAR_Term2C2CorrectedNetKaon(0),
+  Profile_ptSTAR_Term3C2CorrectedNetKaon(0),
+  Profile_ptSTAR_Term4C2CorrectedNetKaon(0),
+  Profile_ptSTAR_Term1C2CorrectedNetCharge(0),
+  Profile_ptSTAR_Term2C2CorrectedNetCharge(0),
+  Profile_ptSTAR_Term3C2CorrectedNetCharge(0),
+  Profile_ptSTAR_Term4C2CorrectedNetCharge(0),
+  Profile_ptSTAR_Term1C2CorrectedNetProton(0),
+  Profile_ptSTAR_Term2C2CorrectedNetProton(0),
+  Profile_ptSTAR_Term3C2CorrectedNetProton(0),
+  Profile_ptSTAR_Term4C2CorrectedNetProton(0),
   fListTRKCorr(0), 
   fHistMCEffKaonPlus(0),
   fHistMCEffKaonMinus(0),
@@ -155,28 +223,28 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2():
   fPIDnSigmaProtonCut(0),
   fTPCcrossedrows(0),
   fPileupCutVal(0),
-  fCentralityEstimator_flag(0)
-  // f2Dhist_nSigmaTPC_pion(0),
-  // f2Dhist_nSigmaTPC_kaon(0),
-  // f2Dhist_nSigmaTPC_proton(0),
-  // f2Dhist_nSigmaTOF_pion(0),
-  // f2Dhist_nSigmaTOF_kaon(0),
-  // f2Dhist_nSigmaTOF_proton(0),
-  // f2Dhist_nSigmaTPCplusTOF_pion(0),
-  // f2Dhist_nSigmaTPCplusTOF_kaon(0),
-  // f2Dhist_nSigmaTPCplusTOF_proton(0),
-  // hist_beforeCut_DCAxy(0),
-  // hist_beforeCut_DCAz(0),
-  // hist_beforeCut_eta(0),
-  // hist_beforeCut_chi2perTPCclstr(0),
-  // hist_beforeCut_chi2perITSclstr(0),
-  // hist_beforeCut_TPCncrossedrows(0),
-  // hist_afterCut_DCAxy(0),
-  // hist_afterCut_DCAz(0),
-  // hist_afterCut_eta(0),
-  // hist_afterCut_chi2perTPCclstr(0),
-  // hist_afterCut_chi2perITSclstr(0),
-  // hist_afterCut_TPCncrossedrows(0)
+  fCentralityEstimator_flag(0),
+  f2Dhist_nSigmaTPC_pion(0),
+  f2Dhist_nSigmaTPC_kaon(0),
+  f2Dhist_nSigmaTPC_proton(0),
+  f2Dhist_nSigmaTOF_pion(0),
+  f2Dhist_nSigmaTOF_kaon(0),
+  f2Dhist_nSigmaTOF_proton(0),
+  f2Dhist_nSigmaTPCplusTOF_pion(0),
+  f2Dhist_nSigmaTPCplusTOF_kaon(0),
+  f2Dhist_nSigmaTPCplusTOF_proton(0),
+  hist_beforeCut_DCAxy(0),
+  hist_beforeCut_DCAz(0),
+  hist_beforeCut_eta(0),
+  hist_beforeCut_chi2perTPCclstr(0),
+  hist_beforeCut_chi2perITSclstr(0),
+  hist_beforeCut_TPCncrossedrows(0),
+  hist_afterCut_DCAxy(0),
+  hist_afterCut_DCAz(0),
+  hist_afterCut_eta(0),
+  hist_afterCut_chi2perTPCclstr(0),
+  hist_afterCut_chi2perITSclstr(0),
+  hist_afterCut_TPCncrossedrows(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -200,56 +268,124 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2(const char *name):
   fOutputList(0),
   fQAList(0),
   fTreeList(0),
-  fTreeEvent(0),
+  //fTreeEvent(0),
   fESDtrackCuts(0),
   fESDtrackCuts_primary(0),
   //fTrigger(AliVEvent::kINT7),
   fMultLow(0),
   fMultHigh(100),
   hNumberOfEvents(0),
-  // hNumberOfKaonPlus(0),
-  // hNumberOfKaonMinus(0),
-  // hNumberOfPionPlus(0),
-  // hNumberOfPionMinus(0),
-  // hNumberOfProtonPlus(0),
-  // hNumberOfProtonMinus(0),
-  fTreeVariableCentrality(0),
-  fNoKaonPlus_ptmax2(0),
-  fNoKaonMinus_ptmax2(0),
-  fNoKaonPlus_ptmax3(0),
-  fNoKaonMinus_ptmax3(0),
-  fNoPionPlus_ptmax2(0),
-  fNoPionMinus_ptmax2(0),
-  fNoPionPlus_ptmax3(0),
-  fNoPionMinus_ptmax3(0),
-  fNoProtonPlus_ptmax2(0),
-  fNoProtonMinus_ptmax2(0),
-  fNoProtonPlus_ptmax3(0),
-  fNoProtonMinus_ptmax3(0),
-  fCorrectedNoKaonPlus_ptmax2(0),
-  fCorrectedNoKaonMinus_ptmax2(0),
-  fCorrectedNoKaonPlus_ptmax3(0),
-  fCorrectedNoKaonMinus_ptmax3(0),
-  fCorrectedNoPionPlus_ptmax2(0),
-  fCorrectedNoPionMinus_ptmax2(0),
-  fCorrectedNoPionPlus_ptmax3(0),
-  fCorrectedNoPionMinus_ptmax3(0),
-  fCorrectedNoProtonPlus_ptmax2(0),
-  fCorrectedNoProtonMinus_ptmax2(0),
-  fCorrectedNoProtonPlus_ptmax3(0),
-  fCorrectedNoProtonMinus_ptmax3(0),
-  fEffSqrFactrPionMinus_ptmax2(0),
-  fEffSqrFactrPionPlus_ptmax2(0),
-  fEffSqrFactrProtonMinus_ptmax2(0),
-  fEffSqrFactrProtonPlus_ptmax2(0),
-  fEffSqrFactrKaonMinus_ptmax2(0),
-  fEffSqrFactrKaonPlus_ptmax2(0),
-  fEffSqrFactrPionMinus_ptmax3(0),
-  fEffSqrFactrPionPlus_ptmax3(0),
-  fEffSqrFactrProtonMinus_ptmax3(0),
-  fEffSqrFactrProtonPlus_ptmax3(0),
-  fEffSqrFactrKaonMinus_ptmax3(0),
-  fEffSqrFactrKaonPlus_ptmax3(0),
+  hNumberOfKaonPlus(0),
+  hNumberOfKaonMinus(0),
+  hNumberOfPionPlus(0),
+  hNumberOfPionMinus(0),
+  hNumberOfProtonPlus(0),
+  hNumberOfProtonMinus(0),
+  // fTreeVariableCentrality(0),
+  // fNoKaonPlus_ptmax2(0),
+  // fNoKaonMinus_ptmax2(0),
+  // fNoKaonPlus_ptmax3(0),
+  // fNoKaonMinus_ptmax3(0),
+  // fNoPionPlus_ptmax2(0),
+  // fNoPionMinus_ptmax2(0),
+  // fNoPionPlus_ptmax3(0),
+  // fNoPionMinus_ptmax3(0),
+  // fNoProtonPlus_ptmax2(0),
+  // fNoProtonMinus_ptmax2(0),
+  // fNoProtonPlus_ptmax3(0),
+  // fNoProtonMinus_ptmax3(0),
+  // fCorrectedNoKaonPlus_ptmax2(0),
+  // fCorrectedNoKaonMinus_ptmax2(0),
+  // fCorrectedNoKaonPlus_ptmax3(0),
+  // fCorrectedNoKaonMinus_ptmax3(0),
+  // fCorrectedNoPionPlus_ptmax2(0),
+  // fCorrectedNoPionMinus_ptmax2(0),
+  // fCorrectedNoPionPlus_ptmax3(0),
+  // fCorrectedNoPionMinus_ptmax3(0),
+  // fCorrectedNoProtonPlus_ptmax2(0),
+  // fCorrectedNoProtonMinus_ptmax2(0),
+  // fCorrectedNoProtonPlus_ptmax3(0),
+  // fCorrectedNoProtonMinus_ptmax3(0),
+  // fEffSqrFactrPionMinus_ptmax2(0),
+  // fEffSqrFactrPionPlus_ptmax2(0),
+  // fEffSqrFactrProtonMinus_ptmax2(0),
+  // fEffSqrFactrProtonPlus_ptmax2(0),
+  // fEffSqrFactrKaonMinus_ptmax2(0),
+  // fEffSqrFactrKaonPlus_ptmax2(0),
+  // fEffSqrFactrPionMinus_ptmax3(0),
+  // fEffSqrFactrPionPlus_ptmax3(0),
+  // fEffSqrFactrProtonMinus_ptmax3(0),
+  // fEffSqrFactrProtonPlus_ptmax3(0),
+  // fEffSqrFactrKaonMinus_ptmax3(0),
+  // fEffSqrFactrKaonPlus_ptmax3(0),
+  Profile_ptmax2_RecNetKaon(0),
+  Profile_ptmax2_RecNetProton(0),
+  Profile_ptmax2_RecNetCharge(0),
+  Profile_ptmax2_RecNetChargeNetKaon(0),
+  Profile_ptmax2_RecNetChargeNetProton(0),
+  Profile_ptmax2_RecNetKaonNetProton(0),
+  Profile_ptmax2_Term1C2RecNetKaon(0),
+  Profile_ptmax2_Term2C2RecNetKaon(0),
+  Profile_ptmax2_Term1C2RecNetCharge(0),
+  Profile_ptmax2_Term2C2RecNetCharge(0),
+  Profile_ptmax2_Term1C2RecNetProton(0),
+  Profile_ptmax2_Term2C2RecNetProton(0),
+  Profile_ptSTAR_RecNetKaon(0),
+  Profile_ptSTAR_RecNetProton(0),
+  Profile_ptSTAR_RecNetCharge(0),
+  Profile_ptSTAR_RecNetChargeNetKaon(0),
+  Profile_ptSTAR_RecNetChargeNetProton(0),
+  Profile_ptSTAR_RecNetKaonNetProton(0),
+  Profile_ptSTAR_Term1C2RecNetKaon(0),
+  Profile_ptSTAR_Term2C2RecNetKaon(0),
+  Profile_ptSTAR_Term1C2RecNetCharge(0),
+  Profile_ptSTAR_Term2C2RecNetCharge(0),
+  Profile_ptSTAR_Term1C2RecNetProton(0),
+  Profile_ptSTAR_Term2C2RecNetProton(0),
+  Profile_ptmax2_CorrectedNetKaon(0),
+  Profile_ptmax2_CorrectedNetProton(0),
+  Profile_ptmax2_CorrectedNetCharge(0),
+  Profile_ptmax2_CorrectedNetChargeNetKaon_term1(0),
+  Profile_ptmax2_CorrectedNetChargeNetKaon_term2(0),
+  Profile_ptmax2_CorrectedNetChargeNetKaon_term3(0),
+  Profile_ptmax2_CorrectedNetChargeNetProton_term1(0),
+  Profile_ptmax2_CorrectedNetChargeNetProton_term2(0),
+  Profile_ptmax2_CorrectedNetChargeNetProton_term3(0),
+  Profile_ptmax2_CorrectedNetKaonNetProton(0),
+  Profile_ptmax2_Term1C2CorrectedNetKaon(0),
+  Profile_ptmax2_Term2C2CorrectedNetKaon(0),
+  Profile_ptmax2_Term3C2CorrectedNetKaon(0),
+  Profile_ptmax2_Term4C2CorrectedNetKaon(0),
+  Profile_ptmax2_Term1C2CorrectedNetCharge(0),
+  Profile_ptmax2_Term2C2CorrectedNetCharge(0),
+  Profile_ptmax2_Term3C2CorrectedNetCharge(0),
+  Profile_ptmax2_Term4C2CorrectedNetCharge(0),
+  Profile_ptmax2_Term1C2CorrectedNetProton(0),
+  Profile_ptmax2_Term2C2CorrectedNetProton(0),
+  Profile_ptmax2_Term3C2CorrectedNetProton(0),
+  Profile_ptmax2_Term4C2CorrectedNetProton(0),
+  Profile_ptSTAR_CorrectedNetKaon(0),
+  Profile_ptSTAR_CorrectedNetProton(0),
+  Profile_ptSTAR_CorrectedNetCharge(0),
+  Profile_ptSTAR_CorrectedNetChargeNetKaon_term1(0),
+  Profile_ptSTAR_CorrectedNetChargeNetKaon_term2(0),
+  Profile_ptSTAR_CorrectedNetChargeNetKaon_term3(0),
+  Profile_ptSTAR_CorrectedNetChargeNetProton_term1(0),
+  Profile_ptSTAR_CorrectedNetChargeNetProton_term2(0),
+  Profile_ptSTAR_CorrectedNetChargeNetProton_term3(0),
+  Profile_ptSTAR_CorrectedNetKaonNetProton(0),
+  Profile_ptSTAR_Term1C2CorrectedNetKaon(0),
+  Profile_ptSTAR_Term2C2CorrectedNetKaon(0),
+  Profile_ptSTAR_Term3C2CorrectedNetKaon(0),
+  Profile_ptSTAR_Term4C2CorrectedNetKaon(0),
+  Profile_ptSTAR_Term1C2CorrectedNetCharge(0),
+  Profile_ptSTAR_Term2C2CorrectedNetCharge(0),
+  Profile_ptSTAR_Term3C2CorrectedNetCharge(0),
+  Profile_ptSTAR_Term4C2CorrectedNetCharge(0),
+  Profile_ptSTAR_Term1C2CorrectedNetProton(0),
+  Profile_ptSTAR_Term2C2CorrectedNetProton(0),
+  Profile_ptSTAR_Term3C2CorrectedNetProton(0),
+  Profile_ptSTAR_Term4C2CorrectedNetProton(0),
   fListTRKCorr(0), 
   fHistMCEffKaonPlus(0),
   fHistMCEffKaonMinus(0),
@@ -266,28 +402,28 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2(const char *name):
   fPIDnSigmaProtonCut(0),
   fTPCcrossedrows(0),
   fPileupCutVal(0),
-  fCentralityEstimator_flag(0)
-  // f2Dhist_nSigmaTPC_pion(0),
-  // f2Dhist_nSigmaTPC_kaon(0),
-  // f2Dhist_nSigmaTPC_proton(0),
-  // f2Dhist_nSigmaTOF_pion(0),
-  // f2Dhist_nSigmaTOF_kaon(0),
-  // f2Dhist_nSigmaTOF_proton(0),
-  // f2Dhist_nSigmaTPCplusTOF_pion(0),
-  // f2Dhist_nSigmaTPCplusTOF_kaon(0),
-  // f2Dhist_nSigmaTPCplusTOF_proton(0),
-  // hist_beforeCut_DCAxy(0),
-  // hist_beforeCut_DCAz(0),
-  // hist_beforeCut_eta(0),
-  // hist_beforeCut_chi2perTPCclstr(0),
-  // hist_beforeCut_chi2perITSclstr(0),
-  // hist_beforeCut_TPCncrossedrows(0),
-  // hist_afterCut_DCAxy(0),
-  // hist_afterCut_DCAz(0),
-  // hist_afterCut_eta(0),
-  // hist_afterCut_chi2perTPCclstr(0),
-  // hist_afterCut_chi2perITSclstr(0),
-  // hist_afterCut_TPCncrossedrows(0)
+  fCentralityEstimator_flag(0),
+  f2Dhist_nSigmaTPC_pion(0),
+  f2Dhist_nSigmaTPC_kaon(0),
+  f2Dhist_nSigmaTPC_proton(0),
+  f2Dhist_nSigmaTOF_pion(0),
+  f2Dhist_nSigmaTOF_kaon(0),
+  f2Dhist_nSigmaTOF_proton(0),
+  f2Dhist_nSigmaTPCplusTOF_pion(0),
+  f2Dhist_nSigmaTPCplusTOF_kaon(0),
+  f2Dhist_nSigmaTPCplusTOF_proton(0),
+  hist_beforeCut_DCAxy(0),
+  hist_beforeCut_DCAz(0),
+  hist_beforeCut_eta(0),
+  hist_beforeCut_chi2perTPCclstr(0),
+  hist_beforeCut_chi2perITSclstr(0),
+  hist_beforeCut_TPCncrossedrows(0),
+  hist_afterCut_DCAxy(0),
+  hist_afterCut_DCAz(0),
+  hist_afterCut_eta(0),
+  hist_afterCut_chi2perTPCclstr(0),
+  hist_afterCut_chi2perITSclstr(0),
+  hist_afterCut_TPCncrossedrows(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -320,10 +456,12 @@ AliAnalysisTaskCorrPbPb_v2::~AliAnalysisTaskCorrPbPb_v2()  {
     delete fTreeList;
     fTreeList = 0x0;
   }
+  /*
   if (fTreeEvent){
     delete fTreeEvent;
     fTreeEvent = 0x0;
   }
+  */
   if(fESDtrackCuts) {
     delete fESDtrackCuts;
     fESDtrackCuts=0x0;
@@ -348,7 +486,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
 
     
     //QA Plots of Event Selection
-    //fAODeventCuts.AddQAplotsToList(fQAList,kTRUE);
+    fAODeventCuts.AddQAplotsToList(fQAList,kTRUE);
     fAODeventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE, fPileupCutVal);
     
     
@@ -356,7 +494,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
     hNumberOfEvents = new TH1D ("hNumberOfEvents","",20,0,20);
     // hNumberOfEvents -> Sumw2();
     fOutputList -> Add(hNumberOfEvents);
-    /*
+    
 
     //Number of Kaon finally getting selected with specified cuts event wise
     hNumberOfKaonPlus     = new TH1D ("hNumberOfKaonPlus","",3000,0,3000);
@@ -395,7 +533,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
     f2Dhist_nSigmaTOF_kaon = new TH2D("f2Dhist_nSigmaTOF_kaon", "f2Dhist_nSigmaTOF_kaon", 2000, -10, +10, 500, 0, 5);
     f2Dhist_nSigmaTOF_proton = new TH2D("f2Dhist_nSigmaTOF_proton", "f2Dhist_nSigmaTOF_proton", 2000, -10, +10, 500, 0, 5);
 
-    f2Dhist_nSigmaTPCplusTOF_pion = new TH2D("f2Dhist_nSigmaTPCplusTOF_pion", "f2Dhist_nSigmaTPCplusTOF_pion", 2000, -10, +10, 500, 0, 5);
+     f2Dhist_nSigmaTPCplusTOF_pion = new TH2D("f2Dhist_nSigmaTPCplusTOF_pion", "f2Dhist_nSigmaTPCplusTOF_pion", 2000, -10, +10, 500, 0, 5);
     f2Dhist_nSigmaTPCplusTOF_kaon = new TH2D("f2Dhist_nSigmaTPCplusTOF_kaon", "f2Dhist_nSigmaTPCplusTOF_kaon", 2000, -10, +10, 500, 0, 5);
     f2Dhist_nSigmaTPCplusTOF_proton = new TH2D("f2Dhist_nSigmaTPCplusTOF_proton", "f2Dhist_nSigmaTPCplusTOF_proton", 2000, -10, +10, 500, 0, 5);
     fOutputList->Add(f2Dhist_nSigmaTPC_pion);
@@ -441,11 +579,179 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
     fOutputList->Add(hist_afterCut_TPCncrossedrows);
 
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    // Profiles for analysis
 
-    */
+    //Reconstructed
+    
+    Profile_ptmax2_RecNetKaon = new TProfile ("Profile_ptmax2_RecNetKaon", "Profile_ptmax2_RecNetKaon", 20, 0, 100);
+    Profile_ptmax2_RecNetProton = new TProfile ("Profile_ptmax2_RecNetProton", "Profile_ptmax2_RecNetProton", 20, 0, 100);
+    Profile_ptmax2_RecNetCharge = new TProfile ("Profile_ptmax2_RecNetCharge", "Profile_ptmax2_RecNetCharge", 20, 0, 100);
+    Profile_ptmax2_RecNetChargeNetKaon = new TProfile ("Profile_ptmax2_RecNetChargeNetKaon", "Profile_ptmax2_RecNetChargeNetKaon", 20, 0, 100);
+    Profile_ptmax2_RecNetChargeNetProton = new TProfile ("Profile_ptmax2_RecNetChargeNetProton", "Profile_ptmax2_RecNetChargeNetProton", 20, 0, 100);
+    Profile_ptmax2_RecNetKaonNetProton = new TProfile ("Profile_ptmax2_RecNetKaonNetProton", "Profile_ptmax2_RecNetKaonNetProton", 20, 0, 100);
+    Profile_ptmax2_Term1C2RecNetKaon = new TProfile ("Profile_ptmax2_Term1C2RecNetKaon", "Profile_ptmax2_Term1C2RecNetKaon", 20, 0, 100);
+    Profile_ptmax2_Term1C2RecNetCharge = new TProfile ("Profile_ptmax2_Term1C2RecNetCharge", "Profile_ptmax2_Term1C2RecNetCharge", 20, 0, 100);
+    Profile_ptmax2_Term1C2RecNetProton = new TProfile ("Profile_ptmax2_Term1C2RecNetProton", "Profile_ptmax2_Term1C2RecNetProton", 20, 0, 100);
+    Profile_ptmax2_Term2C2RecNetKaon = new TProfile ("Profile_ptmax2_Term2C2RecNetKaon", "Profile_ptmax2_Term2C2RecNetKaon", 20, 0, 100);
+    Profile_ptmax2_Term2C2RecNetCharge = new TProfile ("Profile_ptmax2_Term2C2RecNetCharge", "Profile_ptmax2_Term2C2RecNetCharge", 20, 0, 100);
+    Profile_ptmax2_Term2C2RecNetProton = new TProfile ("Profile_ptmax2_Term2C2RecNetProton", "Profile_ptmax2_Term2C2RecNetProton", 20, 0, 100);
+
+    Profile_ptSTAR_RecNetKaon = new TProfile ("Profile_ptSTAR_RecNetKaon", "Profile_ptSTAR_RecNetKaon", 20, 0, 100);
+    Profile_ptSTAR_RecNetProton = new TProfile ("Profile_ptSTAR_RecNetProton", "Profile_ptSTAR_RecNetProton", 20, 0, 100);
+    Profile_ptSTAR_RecNetCharge = new TProfile ("Profile_ptSTAR_RecNetCharge", "Profile_ptSTAR_RecNetCharge", 20, 0, 100);
+    Profile_ptSTAR_RecNetChargeNetKaon = new TProfile ("Profile_ptSTAR_RecNetChargeNetKaon", "Profile_ptSTAR_RecNetChargeNetKaon", 20, 0, 100);
+    Profile_ptSTAR_RecNetChargeNetProton = new TProfile ("Profile_ptSTAR_RecNetChargeNetProton", "Profile_ptSTAR_RecNetChargeNetProton", 20, 0, 100);
+    Profile_ptSTAR_RecNetKaonNetProton = new TProfile ("Profile_ptSTAR_RecNetKaonNetProton", "Profile_ptSTAR_RecNetKaonNetProton", 20, 0, 100);
+    Profile_ptSTAR_Term1C2RecNetKaon = new TProfile ("Profile_ptSTAR_Term1C2RecNetKaon", "Profile_ptSTAR_Term1C2RecNetKaon", 20, 0, 100);
+    Profile_ptSTAR_Term1C2RecNetCharge = new TProfile ("Profile_ptSTAR_Term1C2RecNetCharge", "Profile_ptSTAR_Term1C2RecNetCharge", 20, 0, 100);
+    Profile_ptSTAR_Term1C2RecNetProton = new TProfile ("Profile_ptSTAR_Term1C2RecNetProton", "Profile_ptSTAR_Term1C2RecNetProton", 20, 0, 100);
+    Profile_ptSTAR_Term2C2RecNetKaon = new TProfile ("Profile_ptSTAR_Term2C2RecNetKaon", "Profile_ptSTAR_Term2C2RecNetKaon", 20, 0, 100);
+    Profile_ptSTAR_Term2C2RecNetCharge = new TProfile ("Profile_ptSTAR_Term2C2RecNetCharge", "Profile_ptSTAR_Term2C2RecNetCharge", 20, 0, 100);
+    Profile_ptSTAR_Term2C2RecNetProton = new TProfile ("Profile_ptSTAR_Term2C2RecNetProton", "Profile_ptSTAR_Term2C2RecNetProton", 20, 0, 100);
+
+    fTreeList->Add(Profile_ptmax2_RecNetKaon);
+    fTreeList->Add(Profile_ptmax2_RecNetProton);
+    fTreeList->Add(Profile_ptmax2_RecNetCharge);
+    fTreeList->Add(Profile_ptmax2_RecNetChargeNetKaon);
+    fTreeList->Add(Profile_ptmax2_RecNetChargeNetProton);
+    fTreeList->Add(Profile_ptmax2_RecNetKaonNetProton);
+    fTreeList->Add(Profile_ptmax2_Term1C2RecNetKaon);
+    fTreeList->Add(Profile_ptmax2_Term2C2RecNetKaon);
+    fTreeList->Add(Profile_ptmax2_Term1C2RecNetCharge);
+    fTreeList->Add(Profile_ptmax2_Term2C2RecNetCharge);
+    fTreeList->Add(Profile_ptmax2_Term1C2RecNetProton);
+    fTreeList->Add(Profile_ptmax2_Term2C2RecNetProton);
+
+    fTreeList->Add(Profile_ptSTAR_RecNetKaon);
+    fTreeList->Add(Profile_ptSTAR_RecNetProton);
+    fTreeList->Add(Profile_ptSTAR_RecNetCharge);
+    fTreeList->Add(Profile_ptSTAR_RecNetChargeNetKaon);
+    fTreeList->Add(Profile_ptSTAR_RecNetChargeNetProton);
+    fTreeList->Add(Profile_ptSTAR_RecNetKaonNetProton);
+    fTreeList->Add(Profile_ptSTAR_Term1C2RecNetKaon);
+    fTreeList->Add(Profile_ptSTAR_Term2C2RecNetKaon);
+    fTreeList->Add(Profile_ptSTAR_Term1C2RecNetCharge);
+    fTreeList->Add(Profile_ptSTAR_Term2C2RecNetCharge);
+    fTreeList->Add(Profile_ptSTAR_Term1C2RecNetProton);
+    fTreeList->Add(Profile_ptSTAR_Term2C2RecNetProton);
+   
+    
+    //Corrected
+
+    //0.2 < pT < 2.0
+    
+    Profile_ptmax2_CorrectedNetKaon = new TProfile ("Profile_ptmax2_CorrectedNetKaon", "Profile_ptmax2_CorrectedNetKaon", 20, 0, 100);
+    Profile_ptmax2_CorrectedNetProton = new TProfile ("Profile_ptmax2_CorrectedNetProton", "Profile_ptmax2_CorrectedNetProton", 20, 0, 100);
+    Profile_ptmax2_CorrectedNetCharge = new TProfile ("Profile_ptmax2_CorrectedNetCharge", "Profile_ptmax2_CorrectedNetCharge", 20, 0, 100);
+
+    Profile_ptmax2_CorrectedNetChargeNetKaon_term1 = new TProfile ("Profile_ptmax2_CorrectedNetChargeNetKaon_term1", "Profile_ptmax2_CorrectedNetChargeNetKaon_term1", 20, 0, 100);
+    Profile_ptmax2_CorrectedNetChargeNetKaon_term2 = new TProfile ("Profile_ptmax2_CorrectedNetChargeNetKaon_term2", "Profile_ptmax2_CorrectedNetChargeNetKaon_term2", 20, 0, 100);
+    Profile_ptmax2_CorrectedNetChargeNetKaon_term3 = new TProfile ("Profile_ptmax2_CorrectedNetChargeNetKaon_term3", "Profile_ptmax2_CorrectedNetChargeNetKaon_term3", 20, 0, 100);
+
+    Profile_ptmax2_CorrectedNetChargeNetProton_term1 = new TProfile ("Profile_ptmax2_CorrectedNetChargeNetProton_term1", "Profile_ptmax2_CorrectedNetChargeNetProton_term1", 20, 0, 100);
+    Profile_ptmax2_CorrectedNetChargeNetProton_term2 = new TProfile ("Profile_ptmax2_CorrectedNetChargeNetProton_term2", "Profile_ptmax2_CorrectedNetChargeNetProton_term2", 20, 0, 100);
+    Profile_ptmax2_CorrectedNetChargeNetProton_term3 = new TProfile ("Profile_ptmax2_CorrectedNetChargeNetProton_term3", "Profile_ptmax2_CorrectedNetChargeNetProton_term3", 20, 0, 100);
+
+    Profile_ptmax2_CorrectedNetKaonNetProton = new TProfile ("Profile_ptmax2_CorrectedNetKaonNetProton", "Profile_ptmax2_CorrectedNetKaonNetProton", 20, 0, 100);
+
+    Profile_ptmax2_Term1C2CorrectedNetCharge = new TProfile ("Profile_ptmax2_Term1C2CorrectedNetCharge", "Profile_ptmax2_Term1C2CorrectedNetCharge", 20, 0, 100);
+    Profile_ptmax2_Term2C2CorrectedNetCharge = new TProfile ("Profile_ptmax2_Term2C2CorrectedNetCharge", "Profile_ptmax2_Term2C2CorrectedNetCharge", 20, 0, 100);
+    Profile_ptmax2_Term3C2CorrectedNetCharge = new TProfile ("Profile_ptmax2_Term3C2CorrectedNetCharge", "Profile_ptmax2_Term3C2CorrectedNetCharge", 20, 0, 100);
+    Profile_ptmax2_Term4C2CorrectedNetCharge = new TProfile ("Profile_ptmax2_Term4C2CorrectedNetCharge", "Profile_ptmax2_Term4C2CorrectedNetCharge", 20, 0, 100);
+
+    Profile_ptmax2_Term1C2CorrectedNetKaon = new TProfile ("Profile_ptmax2_Term1C2CorrectedNetKaon", "Profile_ptmax2_Term1C2CorrectedNetKaon", 20, 0, 100);
+    Profile_ptmax2_Term2C2CorrectedNetKaon = new TProfile ("Profile_ptmax2_Term2C2CorrectedNetKaon", "Profile_ptmax2_Term2C2CorrectedNetKaon", 20, 0, 100);
+    Profile_ptmax2_Term3C2CorrectedNetKaon = new TProfile ("Profile_ptmax2_Term3C2CorrectedNetKaon", "Profile_ptmax2_Term3C2CorrectedNetKaon", 20, 0, 100);
+    Profile_ptmax2_Term4C2CorrectedNetKaon = new TProfile ("Profile_ptmax2_Term4C2CorrectedNetKaon", "Profile_ptmax2_Term4C2CorrectedNetKaon", 20, 0, 100);
+
+    Profile_ptmax2_Term1C2CorrectedNetProton = new TProfile ("Profile_ptmax2_Term1C2CorrectedNetProton", "Profile_ptmax2_Term1C2CorrectedNetProton", 20, 0, 100);
+    Profile_ptmax2_Term2C2CorrectedNetProton = new TProfile ("Profile_ptmax2_Term2C2CorrectedNetProton", "Profile_ptmax2_Term2C2CorrectedNetProton", 20, 0, 100);
+    Profile_ptmax2_Term3C2CorrectedNetProton = new TProfile ("Profile_ptmax2_Term3C2CorrectedNetProton", "Profile_ptmax2_Term3C2CorrectedNetProton", 20, 0, 100);
+    Profile_ptmax2_Term4C2CorrectedNetProton = new TProfile ("Profile_ptmax2_Term4C2CorrectedNetProton", "Profile_ptmax2_Term4C2CorrectedNetProton", 20, 0, 100);
+
+    fTreeList->Add(Profile_ptmax2_CorrectedNetKaon);
+    fTreeList->Add(Profile_ptmax2_CorrectedNetProton);
+    fTreeList->Add(Profile_ptmax2_CorrectedNetCharge);
+    fTreeList->Add(Profile_ptmax2_CorrectedNetChargeNetKaon_term1);
+    fTreeList->Add(Profile_ptmax2_CorrectedNetChargeNetKaon_term2);
+    fTreeList->Add(Profile_ptmax2_CorrectedNetChargeNetKaon_term3);
+    fTreeList->Add(Profile_ptmax2_CorrectedNetChargeNetProton_term1);
+    fTreeList->Add(Profile_ptmax2_CorrectedNetChargeNetProton_term2);
+    fTreeList->Add(Profile_ptmax2_CorrectedNetChargeNetProton_term3);
+    fTreeList->Add(Profile_ptmax2_CorrectedNetKaonNetProton);
+    fTreeList->Add(Profile_ptmax2_Term1C2CorrectedNetKaon);
+    fTreeList->Add(Profile_ptmax2_Term2C2CorrectedNetKaon);
+    fTreeList->Add(Profile_ptmax2_Term3C2CorrectedNetKaon);
+    fTreeList->Add(Profile_ptmax2_Term4C2CorrectedNetKaon);
+    fTreeList->Add(Profile_ptmax2_Term1C2CorrectedNetCharge);
+    fTreeList->Add(Profile_ptmax2_Term2C2CorrectedNetCharge);
+    fTreeList->Add(Profile_ptmax2_Term3C2CorrectedNetCharge);
+    fTreeList->Add(Profile_ptmax2_Term4C2CorrectedNetCharge);
+    fTreeList->Add(Profile_ptmax2_Term1C2CorrectedNetProton);
+    fTreeList->Add(Profile_ptmax2_Term2C2CorrectedNetProton);
+    fTreeList->Add(Profile_ptmax2_Term3C2CorrectedNetProton);
+    fTreeList->Add(Profile_ptmax2_Term4C2CorrectedNetProton);
+
+
+    //pt STAR cut
+    
+    Profile_ptSTAR_CorrectedNetKaon = new TProfile ("Profile_ptSTAR_CorrectedNetKaon", "Profile_ptSTAR_CorrectedNetKaon", 20, 0, 100);
+    Profile_ptSTAR_CorrectedNetProton = new TProfile ("Profile_ptSTAR_CorrectedNetProton", "Profile_ptSTAR_CorrectedNetProton", 20, 0, 100);
+    Profile_ptSTAR_CorrectedNetCharge = new TProfile ("Profile_ptSTAR_CorrectedNetCharge", "Profile_ptSTAR_CorrectedNetCharge", 20, 0, 100);
+
+    Profile_ptSTAR_CorrectedNetChargeNetKaon_term1 = new TProfile ("Profile_ptSTAR_CorrectedNetChargeNetKaon_term1", "Profile_ptSTAR_CorrectedNetChargeNetKaon_term1", 20, 0, 100);
+    Profile_ptSTAR_CorrectedNetChargeNetKaon_term2 = new TProfile ("Profile_ptSTAR_CorrectedNetChargeNetKaon_term2", "Profile_ptSTAR_CorrectedNetChargeNetKaon_term2", 20, 0, 100);
+    Profile_ptSTAR_CorrectedNetChargeNetKaon_term3 = new TProfile ("Profile_ptSTAR_CorrectedNetChargeNetKaon_term3", "Profile_ptSTAR_CorrectedNetChargeNetKaon_term3", 20, 0, 100);
+
+    Profile_ptSTAR_CorrectedNetChargeNetProton_term1 = new TProfile ("Profile_ptSTAR_CorrectedNetChargeNetProton_term1", "Profile_ptSTAR_CorrectedNetChargeNetProton_term1", 20, 0, 100);
+    Profile_ptSTAR_CorrectedNetChargeNetProton_term2 = new TProfile ("Profile_ptSTAR_CorrectedNetChargeNetProton_term2", "Profile_ptSTAR_CorrectedNetChargeNetProton_term2", 20, 0, 100);
+    Profile_ptSTAR_CorrectedNetChargeNetProton_term3 = new TProfile ("Profile_ptSTAR_CorrectedNetChargeNetProton_term3", "Profile_ptSTAR_CorrectedNetChargeNetProton_term3", 20, 0, 100);
+
+    Profile_ptSTAR_CorrectedNetKaonNetProton = new TProfile ("Profile_ptSTAR_CorrectedNetKaonNetProton", "Profile_ptSTAR_CorrectedNetKaonNetProton", 20, 0, 100);
+
+    Profile_ptSTAR_Term1C2CorrectedNetCharge = new TProfile ("Profile_ptSTAR_Term1C2CorrectedNetCharge", "Profile_ptSTAR_Term1C2CorrectedNetCharge", 20, 0, 100);
+    Profile_ptSTAR_Term2C2CorrectedNetCharge = new TProfile ("Profile_ptSTAR_Term2C2CorrectedNetCharge", "Profile_ptSTAR_Term2C2CorrectedNetCharge", 20, 0, 100);
+    Profile_ptSTAR_Term3C2CorrectedNetCharge = new TProfile ("Profile_ptSTAR_Term3C2CorrectedNetCharge", "Profile_ptSTAR_Term3C2CorrectedNetCharge", 20, 0, 100);
+    Profile_ptSTAR_Term4C2CorrectedNetCharge = new TProfile ("Profile_ptSTAR_Term4C2CorrectedNetCharge", "Profile_ptSTAR_Term4C2CorrectedNetCharge", 20, 0, 100);
+
+    Profile_ptSTAR_Term1C2CorrectedNetKaon = new TProfile ("Profile_ptSTAR_Term1C2CorrectedNetKaon", "Profile_ptSTAR_Term1C2CorrectedNetKaon", 20, 0, 100);
+    Profile_ptSTAR_Term2C2CorrectedNetKaon = new TProfile ("Profile_ptSTAR_Term2C2CorrectedNetKaon", "Profile_ptSTAR_Term2C2CorrectedNetKaon", 20, 0, 100);
+    Profile_ptSTAR_Term3C2CorrectedNetKaon = new TProfile ("Profile_ptSTAR_Term3C2CorrectedNetKaon", "Profile_ptSTAR_Term3C2CorrectedNetKaon", 20, 0, 100);
+    Profile_ptSTAR_Term4C2CorrectedNetKaon = new TProfile ("Profile_ptSTAR_Term4C2CorrectedNetKaon", "Profile_ptSTAR_Term4C2CorrectedNetKaon", 20, 0, 100);
+
+    Profile_ptSTAR_Term1C2CorrectedNetProton = new TProfile ("Profile_ptSTAR_Term1C2CorrectedNetProton", "Profile_ptSTAR_Term1C2CorrectedNetProton", 20, 0, 100);
+    Profile_ptSTAR_Term2C2CorrectedNetProton = new TProfile ("Profile_ptSTAR_Term2C2CorrectedNetProton", "Profile_ptSTAR_Term2C2CorrectedNetProton", 20, 0, 100);
+    Profile_ptSTAR_Term3C2CorrectedNetProton = new TProfile ("Profile_ptSTAR_Term3C2CorrectedNetProton", "Profile_ptSTAR_Term3C2CorrectedNetProton", 20, 0, 100);
+    Profile_ptSTAR_Term4C2CorrectedNetProton = new TProfile ("Profile_ptSTAR_Term4C2CorrectedNetProton", "Profile_ptSTAR_Term4C2CorrectedNetProton", 20, 0, 100);
+
+    fTreeList->Add(Profile_ptSTAR_CorrectedNetKaon);
+    fTreeList->Add(Profile_ptSTAR_CorrectedNetProton);
+    fTreeList->Add(Profile_ptSTAR_CorrectedNetCharge);
+    fTreeList->Add(Profile_ptSTAR_CorrectedNetChargeNetKaon_term1);
+    fTreeList->Add(Profile_ptSTAR_CorrectedNetChargeNetKaon_term2);
+    fTreeList->Add(Profile_ptSTAR_CorrectedNetChargeNetKaon_term3);
+    fTreeList->Add(Profile_ptSTAR_CorrectedNetChargeNetProton_term1);
+    fTreeList->Add(Profile_ptSTAR_CorrectedNetChargeNetProton_term2);
+    fTreeList->Add(Profile_ptSTAR_CorrectedNetChargeNetProton_term3);
+    fTreeList->Add(Profile_ptSTAR_CorrectedNetKaonNetProton);
+    fTreeList->Add(Profile_ptSTAR_Term1C2CorrectedNetKaon);
+    fTreeList->Add(Profile_ptSTAR_Term2C2CorrectedNetKaon);
+    fTreeList->Add(Profile_ptSTAR_Term3C2CorrectedNetKaon);
+    fTreeList->Add(Profile_ptSTAR_Term4C2CorrectedNetKaon);
+    fTreeList->Add(Profile_ptSTAR_Term1C2CorrectedNetCharge);
+    fTreeList->Add(Profile_ptSTAR_Term2C2CorrectedNetCharge);
+    fTreeList->Add(Profile_ptSTAR_Term3C2CorrectedNetCharge);
+    fTreeList->Add(Profile_ptSTAR_Term4C2CorrectedNetCharge);
+    fTreeList->Add(Profile_ptSTAR_Term1C2CorrectedNetProton);
+    fTreeList->Add(Profile_ptSTAR_Term2C2CorrectedNetProton);
+    fTreeList->Add(Profile_ptSTAR_Term3C2CorrectedNetProton);
+    fTreeList->Add(Profile_ptSTAR_Term4C2CorrectedNetProton);
+
+
+    
     
     //TTree object to store variables
-    
+    /*
     fTreeEvent = new TTree("fTreeEvent","Event Tree");
     fTreeEvent->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
     //reconstructed
@@ -493,7 +799,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserCreateOutputObjects()  {
     fTreeEvent->Branch("fEffSqrFactrProtonMinus_ptmax3", &fEffSqrFactrProtonMinus_ptmax3, "fEffSqrFactrProtonMinus_ptmax3/F");
 
     fTreeList->Add(fTreeEvent);
-
+    */
     
     /*
     
@@ -552,7 +858,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
 
     
     //"fTreeEvent" Tree Variable
-    fTreeVariableCentrality = lV0M;
+    //fTreeVariableCentrality = lV0M;
 
     
     
@@ -667,7 +973,6 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
 	Double_t trkTPCchi2perNcls = aodtrack->GetTPCchi2perCluster();
 	Double_t trkTPCcrossedrows = aodtrack->GetTPCCrossedRows();
 
-	/*
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	//Histograms filled befor applying track cut
 	hist_beforeCut_DCAxy->Fill(trkDCAxy);
@@ -677,7 +982,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
 	hist_beforeCut_chi2perITSclstr->Fill(trkITSchi2perNcls);
 	hist_beforeCut_TPCncrossedrows->Fill(trkTPCcrossedrows);
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	*/
+	
 	//All track cuts
 	
 	//Track selectionL FilterBit : default is FB96
@@ -688,7 +993,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
 	if (trkTPCchi2perNcls > fChi2TPC) continue;
 	if (trkITSchi2perNcls > fChi2ITS) continue;
 
-	/*
+
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	//PID nSigma histograms
 
@@ -720,7 +1025,6 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
 	f2Dhist_nSigmaTOF_pion->Fill(fTOFnSigma_Pion, trkPt);
 	f2Dhist_nSigmaTOF_kaon->Fill(fTOFnSigma_Kaon, trkPt);
 	f2Dhist_nSigmaTOF_proton->Fill(fTOFnSigma_Proton, trkPt);
-	
 
 	Int_t flaggg = 0;
 	if(trkPt >= 0.5 )
@@ -741,7 +1045,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
 	f2Dhist_nSigmaTPCplusTOF_kaon->Fill(fTPCplusTOFnSigma_Kaon, trkPt);
 	f2Dhist_nSigmaTPCplusTOF_proton->Fill(fTPCplusTOFnSigma_Proton, trkPt);
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	*/
+
 
 
 	//Kinematic cuts on pT and Eta
@@ -749,7 +1053,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
 	if (trkPt < 0.2) continue;
 	if (trkPt > 3.0) continue;
 
-	/*
+
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	//Histograms filled after applying track cut
 	hist_afterCut_DCAxy->Fill(trkDCAxy);
@@ -759,7 +1063,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
 	hist_afterCut_chi2perITSclstr->Fill(trkITSchi2perNcls);
 	hist_afterCut_TPCncrossedrows->Fill(trkTPCcrossedrows);
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	*/
+
 
 
 	//PID selection
@@ -937,7 +1241,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
     //end reconstructed track loop
     
 
-    /*
+    
     //Kaon
     hNumberOfKaonPlus->Fill(no_KaonPlus_perevent_ptmax2);
     hNumberOfKaonMinus->Fill(no_KaonMinus_perevent_ptmax2);
@@ -947,11 +1251,11 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
     //Proton
     hNumberOfProtonPlus->Fill(no_ProtonPlus_perevent_ptmax2);
     hNumberOfProtonMinus->Fill(no_ProtonMinus_perevent_ptmax2);
-    */
-
 
     //++++++++++++++++++++++++++++++++++++++++++++
     //Reconstructed
+
+    /*
     //Kaon
     fNoKaonPlus_ptmax2 = no_KaonPlus_perevent_ptmax2;
     fNoKaonMinus_ptmax2 = no_KaonMinus_perevent_ptmax2;
@@ -967,9 +1271,70 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
     fNoProtonMinus_ptmax2 = no_ProtonMinus_perevent_ptmax2;
     fNoProtonPlus_ptmax3 = no_ProtonPlus_perevent;
     fNoProtonMinus_ptmax3 = no_ProtonMinus_perevent;
+    */
+
+    Double_t netKaon_rec_ptmax2 = no_KaonPlus_perevent_ptmax2 - no_KaonMinus_perevent_ptmax2;
+    Double_t netCharge_rec_ptmax2 = no_PionPlus_perevent_ptmax2 - no_PionMinus_perevent_ptmax2 + no_KaonPlus_perevent_ptmax2 - no_KaonMinus_perevent_ptmax2 + no_ProtonPlus_perevent_ptmax2 - no_ProtonMinus_perevent_ptmax2;
+    Double_t netProton_rec_ptmax2 = no_ProtonPlus_perevent_ptmax2 - no_ProtonMinus_perevent_ptmax2;
+
+    Double_t netKaon_rec_ptSTAR = no_KaonPlus_perevent - no_KaonMinus_perevent;
+    Double_t netCharge_rec_ptSTAR = no_PionPlus_perevent - no_PionMinus_perevent + no_KaonPlus_perevent - no_KaonMinus_perevent + no_ProtonPlus_perevent - no_ProtonMinus_perevent;
+    Double_t netProton_rec_ptSTAR = no_ProtonPlus_perevent - no_ProtonMinus_perevent;
+
+    Double_t term1_netKaon_rec_ptmax2 = TMath::Power(netKaon_rec_ptmax2, 2.0);
+    Double_t term1_netCharge_rec_ptmax2 = TMath::Power(netCharge_rec_ptmax2, 2.0);
+    Double_t term1_netProton_rec_ptmax2 = TMath::Power(netProton_rec_ptmax2, 2.0);
+    Double_t term2_netKaon_rec_ptmax2 = TMath::Power(netKaon_rec_ptmax2, 1.0);
+    Double_t term2_netCharge_rec_ptmax2 = TMath::Power(netCharge_rec_ptmax2, 1.0);
+    Double_t term2_netProton_rec_ptmax2 = TMath::Power(netProton_rec_ptmax2, 1.0);
+
+    Double_t term1_netKaon_rec_ptSTAR = TMath::Power(netKaon_rec_ptSTAR, 2.0);
+    Double_t term1_netCharge_rec_ptSTAR = TMath::Power(netCharge_rec_ptSTAR, 2.0);
+    Double_t term1_netProton_rec_ptSTAR = TMath::Power(netProton_rec_ptSTAR, 2.0);
+    Double_t term2_netKaon_rec_ptSTAR = TMath::Power(netKaon_rec_ptSTAR, 1.0);
+    Double_t term2_netCharge_rec_ptSTAR = TMath::Power(netCharge_rec_ptSTAR, 1.0);
+    Double_t term2_netProton_rec_ptSTAR = TMath::Power(netProton_rec_ptSTAR, 1.0);
+
     
+    
+    Profile_ptmax2_RecNetKaon->Fill(lV0M,netKaon_rec_ptmax2);
+    Profile_ptmax2_RecNetCharge->Fill(lV0M,netCharge_rec_ptmax2);
+    Profile_ptmax2_RecNetProton->Fill(lV0M,netProton_rec_ptmax2);
+    Profile_ptmax2_RecNetChargeNetKaon->Fill(lV0M,netCharge_rec_ptmax2*netKaon_rec_ptmax2);
+    Profile_ptmax2_RecNetChargeNetProton->Fill(lV0M,netCharge_rec_ptmax2*netProton_rec_ptmax2);
+    Profile_ptmax2_RecNetKaonNetProton->Fill(lV0M,netKaon_rec_ptmax2*netProton_rec_ptmax2);
+
+    Profile_ptmax2_Term1C2RecNetKaon->Fill(lV0M, term1_netKaon_rec_ptmax2);
+    Profile_ptmax2_Term1C2RecNetCharge->Fill(lV0M, term1_netCharge_rec_ptmax2);
+    Profile_ptmax2_Term1C2RecNetProton->Fill(lV0M, term1_netProton_rec_ptmax2);
+    Profile_ptmax2_Term2C2RecNetKaon->Fill(lV0M, term2_netKaon_rec_ptmax2);
+    Profile_ptmax2_Term2C2RecNetCharge->Fill(lV0M, term2_netCharge_rec_ptmax2);
+    Profile_ptmax2_Term2C2RecNetProton->Fill(lV0M, term2_netProton_rec_ptmax2);
+
+   
+
+    Profile_ptSTAR_RecNetKaon->Fill(lV0M,netKaon_rec_ptSTAR);
+    Profile_ptSTAR_RecNetCharge->Fill(lV0M,netCharge_rec_ptSTAR);
+    Profile_ptSTAR_RecNetProton->Fill(lV0M,netProton_rec_ptSTAR);
+    Profile_ptSTAR_RecNetChargeNetKaon->Fill(lV0M,netCharge_rec_ptSTAR*netKaon_rec_ptSTAR);
+    Profile_ptSTAR_RecNetChargeNetProton->Fill(lV0M,netCharge_rec_ptSTAR*netProton_rec_ptSTAR);
+    Profile_ptSTAR_RecNetKaonNetProton->Fill(lV0M,netKaon_rec_ptSTAR*netProton_rec_ptSTAR);
+
+    Profile_ptSTAR_Term1C2RecNetKaon->Fill(lV0M, term1_netKaon_rec_ptSTAR);
+    Profile_ptSTAR_Term1C2RecNetCharge->Fill(lV0M, term1_netCharge_rec_ptSTAR);
+    Profile_ptSTAR_Term1C2RecNetProton->Fill(lV0M, term1_netProton_rec_ptSTAR);
+    Profile_ptSTAR_Term2C2RecNetKaon->Fill(lV0M, term2_netKaon_rec_ptSTAR);
+    Profile_ptSTAR_Term2C2RecNetCharge->Fill(lV0M, term2_netCharge_rec_ptSTAR);
+    Profile_ptSTAR_Term2C2RecNetProton->Fill(lV0M, term2_netProton_rec_ptSTAR);
+
+    
+     
     //++++++++++++++++++++++++++++++++++++++++++++
     //Corrected from Reconstructed
+    //++++++++++++++++++++++++++++++++++++++++++++
+    
+    /*
+
     //Kaon
     fCorrectedNoKaonPlus_ptmax2 = no_KaonPlus_perevent_ptmax2_corrected;
     fCorrectedNoKaonMinus_ptmax2 = no_KaonMinus_perevent_ptmax2_corrected;
@@ -1002,7 +1367,128 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
     fEffSqrFactrKaonMinus_ptmax3 = noByEffSquare_KaonMinus_perevent_corrected;
     fEffSqrFactrKaonPlus_ptmax3 = noByEffSquare_KaonPlus_perevent_corrected;
 
-    fTreeEvent->Fill();
+    */
+
+    Double_t netKaon_corr_ptmax2 = no_KaonPlus_perevent_ptmax2_corrected - no_KaonMinus_perevent_ptmax2_corrected;
+    Double_t netCharge_corr_ptmax2 = no_PionPlus_perevent_ptmax2_corrected - no_PionMinus_perevent_ptmax2_corrected + no_KaonPlus_perevent_ptmax2_corrected - no_KaonMinus_perevent_ptmax2_corrected + no_ProtonPlus_perevent_ptmax2_corrected - no_ProtonMinus_perevent_ptmax2_corrected;
+    Double_t netProton_corr_ptmax2 = no_ProtonPlus_perevent_ptmax2_corrected - no_ProtonMinus_perevent_ptmax2_corrected;
+
+    Double_t netKaon_corr_ptSTAR = no_KaonPlus_perevent_corrected - no_KaonMinus_perevent_corrected;
+    Double_t netCharge_corr_ptSTAR = no_PionPlus_perevent_corrected - no_PionMinus_perevent_corrected + no_KaonPlus_perevent_corrected - no_KaonMinus_perevent_corrected + no_ProtonPlus_perevent_corrected - no_ProtonMinus_perevent_corrected;
+    Double_t netProton_corr_ptSTAR = no_ProtonPlus_perevent_corrected - no_ProtonMinus_perevent_corrected;
+
+    Profile_ptmax2_CorrectedNetKaon->Fill(lV0M,netKaon_corr_ptmax2);
+    Profile_ptmax2_CorrectedNetCharge->Fill(lV0M,netCharge_corr_ptmax2);
+    Profile_ptmax2_CorrectedNetProton->Fill(lV0M,netProton_corr_ptmax2);
+    Profile_ptSTAR_CorrectedNetKaon->Fill(lV0M,netKaon_corr_ptSTAR);
+    Profile_ptSTAR_CorrectedNetCharge->Fill(lV0M,netCharge_corr_ptSTAR);
+    Profile_ptSTAR_CorrectedNetProton->Fill(lV0M,netProton_corr_ptSTAR);
+
+    Double_t term1, term2, term3, term4;
+
+    //net-proton - net-kaon correlation (BS correlation --> <BS>)
+    //----------------------------------------------------------------------------------
+    term1 = netProton_corr_ptmax2*netKaon_corr_ptmax2;
+    Profile_ptmax2_CorrectedNetKaonNetProton->Fill(lV0M, term1);
+
+    term1 = netProton_corr_ptSTAR*netKaon_corr_ptSTAR;
+    Profile_ptSTAR_CorrectedNetKaonNetProton->Fill(lV0M, term1);
+
+    //net-proton - net-pion correlation (BQ correlation --> <BQ>)
+    //----------------------------------------------------------------------------------
+    term1 = netProton_corr_ptmax2*netCharge_corr_ptmax2;
+    term2 = no_ProtonPlus_perevent_ptmax2_corrected + no_ProtonMinus_perevent_ptmax2_corrected;
+    term3 = noByEffSquare_ProtonPlus_perevent_ptmax2_corrected + noByEffSquare_ProtonMinus_perevent_ptmax2_corrected;
+    Profile_ptmax2_CorrectedNetChargeNetProton_term1->Fill(lV0M, term1);
+    Profile_ptmax2_CorrectedNetChargeNetProton_term2->Fill(lV0M, term2);
+    Profile_ptmax2_CorrectedNetChargeNetProton_term3->Fill(lV0M, term3);
+
+    term1 = netProton_corr_ptSTAR*netCharge_corr_ptSTAR;
+    term2 = no_ProtonPlus_perevent_corrected + no_ProtonMinus_perevent_corrected;
+    term3 = noByEffSquare_ProtonPlus_perevent_corrected + noByEffSquare_ProtonMinus_perevent_corrected;
+    Profile_ptSTAR_CorrectedNetChargeNetProton_term1->Fill(lV0M, term1);
+    Profile_ptSTAR_CorrectedNetChargeNetProton_term2->Fill(lV0M, term2);
+    Profile_ptSTAR_CorrectedNetChargeNetProton_term3->Fill(lV0M, term3);
+
+    //net-kaon - net-charge correlation (QS correlation --> <QS>)
+    //----------------------------------------------------------------------------------
+    term1 = netKaon_corr_ptmax2*netCharge_corr_ptmax2;
+    term2 = no_KaonPlus_perevent_ptmax2_corrected + no_KaonMinus_perevent_ptmax2_corrected;
+    term3 = noByEffSquare_KaonPlus_perevent_ptmax2_corrected + noByEffSquare_KaonMinus_perevent_ptmax2_corrected;
+    Profile_ptmax2_CorrectedNetChargeNetKaon_term1->Fill(lV0M, term1);
+    Profile_ptmax2_CorrectedNetChargeNetKaon_term2->Fill(lV0M, term2);
+    Profile_ptmax2_CorrectedNetChargeNetKaon_term3->Fill(lV0M, term3);
+
+    term1 = netKaon_corr_ptSTAR*netCharge_corr_ptSTAR;
+    term2 = no_KaonPlus_perevent_corrected + no_KaonMinus_perevent_corrected;
+    term3 = noByEffSquare_KaonPlus_perevent_corrected + noByEffSquare_KaonMinus_perevent_corrected;
+    Profile_ptSTAR_CorrectedNetChargeNetKaon_term1->Fill(lV0M, term1);
+    Profile_ptSTAR_CorrectedNetChargeNetKaon_term2->Fill(lV0M, term2);
+    Profile_ptSTAR_CorrectedNetChargeNetKaon_term3->Fill(lV0M, term3);
+
+    //C2 charge
+    //----------------------------------------------------------------------------------
+    term1 = TMath::Power(netCharge_corr_ptmax2, 2.0);
+    term2 = netCharge_corr_ptmax2;
+    term3 = no_PionPlus_perevent_ptmax2_corrected + no_PionMinus_perevent_ptmax2_corrected + no_KaonPlus_perevent_ptmax2_corrected + no_KaonMinus_perevent_ptmax2_corrected + no_ProtonPlus_perevent_ptmax2_corrected + no_ProtonMinus_perevent_ptmax2_corrected;
+    term4 = noByEffSquare_ProtonPlus_perevent_ptmax2_corrected + noByEffSquare_ProtonMinus_perevent_ptmax2_corrected + noByEffSquare_PionPlus_perevent_ptmax2_corrected + noByEffSquare_PionMinus_perevent_ptmax2_corrected + noByEffSquare_KaonPlus_perevent_ptmax2_corrected + noByEffSquare_KaonMinus_perevent_ptmax2_corrected;
+    Profile_ptmax2_Term1C2CorrectedNetCharge->Fill(lV0M, term1);
+    Profile_ptmax2_Term2C2CorrectedNetCharge->Fill(lV0M, term2);
+    Profile_ptmax2_Term3C2CorrectedNetCharge->Fill(lV0M, term3);
+    Profile_ptmax2_Term4C2CorrectedNetCharge->Fill(lV0M, term4);
+
+    term1 = TMath::Power(netCharge_corr_ptSTAR, 2.0);
+    term2 = netCharge_corr_ptSTAR;
+    term3 = no_PionPlus_perevent_corrected + no_PionMinus_perevent_corrected + no_KaonPlus_perevent_corrected + no_KaonMinus_perevent_corrected + no_ProtonPlus_perevent_corrected + no_ProtonMinus_perevent_corrected;
+    term4 = noByEffSquare_ProtonPlus_perevent_corrected + noByEffSquare_ProtonMinus_perevent_corrected + noByEffSquare_PionPlus_perevent_corrected + noByEffSquare_PionMinus_perevent_corrected + noByEffSquare_KaonPlus_perevent_corrected + noByEffSquare_KaonMinus_perevent_corrected;
+    Profile_ptSTAR_Term1C2CorrectedNetCharge->Fill(lV0M, term1);
+    Profile_ptSTAR_Term2C2CorrectedNetCharge->Fill(lV0M, term2);
+    Profile_ptSTAR_Term3C2CorrectedNetCharge->Fill(lV0M, term3);
+    Profile_ptSTAR_Term4C2CorrectedNetCharge->Fill(lV0M, term4);
+
+
+    //C2 proton
+    //----------------------------------------------------------------------------------
+    term1 = TMath::Power(netProton_corr_ptmax2, 2.0);
+    term2 = netProton_corr_ptmax2;
+    term3 = no_ProtonPlus_perevent_ptmax2_corrected + no_ProtonMinus_perevent_ptmax2_corrected;
+    term4 = noByEffSquare_ProtonPlus_perevent_ptmax2_corrected + noByEffSquare_ProtonMinus_perevent_ptmax2_corrected;
+    Profile_ptmax2_Term1C2CorrectedNetProton->Fill(lV0M, term1);
+    Profile_ptmax2_Term2C2CorrectedNetProton->Fill(lV0M, term2);
+    Profile_ptmax2_Term3C2CorrectedNetProton->Fill(lV0M, term3);
+    Profile_ptmax2_Term4C2CorrectedNetProton->Fill(lV0M, term4);
+
+    term1 = TMath::Power(netProton_corr_ptSTAR, 2.0);
+    term2 = netProton_corr_ptSTAR;
+    term3 = no_ProtonPlus_perevent_corrected + no_ProtonMinus_perevent_corrected;
+    term4 = noByEffSquare_ProtonPlus_perevent_corrected + noByEffSquare_ProtonMinus_perevent_corrected;
+    Profile_ptSTAR_Term1C2CorrectedNetProton->Fill(lV0M, term1);
+    Profile_ptSTAR_Term2C2CorrectedNetProton->Fill(lV0M, term2);
+    Profile_ptSTAR_Term3C2CorrectedNetProton->Fill(lV0M, term3);
+    Profile_ptSTAR_Term4C2CorrectedNetProton->Fill(lV0M, term4);
+
+    //C2 kaon
+    //----------------------------------------------------------------------------------
+    term1 = TMath::Power(netKaon_corr_ptmax2, 2.0);
+    term2 = netKaon_corr_ptmax2;
+    term3 = no_KaonPlus_perevent_ptmax2_corrected + no_KaonMinus_perevent_ptmax2_corrected;
+    term4 = noByEffSquare_KaonPlus_perevent_ptmax2_corrected + noByEffSquare_KaonMinus_perevent_ptmax2_corrected;
+    Profile_ptmax2_Term1C2CorrectedNetKaon->Fill(lV0M, term1);
+    Profile_ptmax2_Term2C2CorrectedNetKaon->Fill(lV0M, term2);
+    Profile_ptmax2_Term3C2CorrectedNetKaon->Fill(lV0M, term3);
+    Profile_ptmax2_Term4C2CorrectedNetKaon->Fill(lV0M, term4);
+
+    term1 = TMath::Power(netKaon_corr_ptSTAR, 2.0);
+    term2 = netKaon_corr_ptSTAR;
+    term3 = no_KaonPlus_perevent_corrected + no_KaonMinus_perevent_corrected;
+    term4 = noByEffSquare_KaonPlus_perevent_corrected + noByEffSquare_KaonMinus_perevent_corrected;
+    Profile_ptSTAR_Term1C2CorrectedNetKaon->Fill(lV0M, term1);
+    Profile_ptSTAR_Term2C2CorrectedNetKaon->Fill(lV0M, term2);
+    Profile_ptSTAR_Term3C2CorrectedNetKaon->Fill(lV0M, term3);
+    Profile_ptSTAR_Term4C2CorrectedNetKaon->Fill(lV0M, term4);
+
+
+    //fTreeEvent->Fill();
 
  
     PostData(1, fOutputList);
