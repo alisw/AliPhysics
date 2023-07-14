@@ -109,7 +109,7 @@ AliAnalysisTaskCorrPbPb_v2 *AddTaskCorrPbPb_v2(Int_t fCentralityMin=0, Int_t fCe
   TString                  sMyOutName1;
   TString                  sMyOutName2;
   TString                  sMyOutName3;
-  sMyOutName1 += "AnalysisMain_tree";
+  sMyOutName1 += "AnalysisMain_profiles";
   sMyOutName1 += OutFileName;
   sMyOutName2 += "Histogram_TrackVariables";
   sMyOutName2 += OutFileName;

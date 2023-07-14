@@ -138,13 +138,14 @@ class AliAnalysisTaskCorrPbPb_v2 : public AliAnalysisTaskSE {
   Double_t fMultLow;
   Double_t fMultHigh;
   TH1D *hNumberOfEvents;
-  /* TH1D *hNumberOfKaonPlus; */
-  /* TH1D *hNumberOfKaonMinus; */
-  /* TH1D *hNumberOfPionPlus; */
-  /* TH1D *hNumberOfPionMinus; */
-  /* TH1D *hNumberOfProtonPlus; */
-  /* TH1D *hNumberOfProtonMinus; */
+  TH1D *hNumberOfKaonPlus;
+  TH1D *hNumberOfKaonMinus;
+  TH1D *hNumberOfPionPlus;
+  TH1D *hNumberOfPionMinus;
+  TH1D *hNumberOfProtonPlus;
+  TH1D *hNumberOfProtonMinus;
 
+  /*
   //ftreeEvent object variables
   TTree *fTreeEvent;
   Float_t fTreeVariableCentrality;
@@ -187,6 +188,76 @@ class AliAnalysisTaskCorrPbPb_v2 : public AliAnalysisTaskSE {
   Float_t fEffSqrFactrProtonPlus_ptmax3;
   Float_t fEffSqrFactrKaonMinus_ptmax3;
   Float_t fEffSqrFactrKaonPlus_ptmax3;
+  */
+  TProfile *Profile_ptmax2_RecNetKaon;
+  TProfile *Profile_ptmax2_RecNetProton;
+  TProfile *Profile_ptmax2_RecNetCharge;
+  TProfile *Profile_ptmax2_RecNetChargeNetKaon;
+  TProfile *Profile_ptmax2_RecNetChargeNetProton;
+  TProfile *Profile_ptmax2_RecNetKaonNetProton;
+  TProfile *Profile_ptmax2_Term1C2RecNetKaon;
+  TProfile *Profile_ptmax2_Term2C2RecNetKaon;
+  TProfile *Profile_ptmax2_Term1C2RecNetCharge;
+  TProfile *Profile_ptmax2_Term2C2RecNetCharge;
+  TProfile *Profile_ptmax2_Term1C2RecNetProton;
+  TProfile *Profile_ptmax2_Term2C2RecNetProton;
+  TProfile *Profile_ptSTAR_RecNetKaon;
+  TProfile *Profile_ptSTAR_RecNetProton;
+  TProfile *Profile_ptSTAR_RecNetCharge;
+  TProfile *Profile_ptSTAR_RecNetChargeNetKaon;
+  TProfile *Profile_ptSTAR_RecNetChargeNetProton;
+  TProfile *Profile_ptSTAR_RecNetKaonNetProton;
+  TProfile *Profile_ptSTAR_Term1C2RecNetKaon;
+  TProfile *Profile_ptSTAR_Term2C2RecNetKaon;
+  TProfile *Profile_ptSTAR_Term1C2RecNetCharge;
+  TProfile *Profile_ptSTAR_Term2C2RecNetCharge;
+  TProfile *Profile_ptSTAR_Term1C2RecNetProton;
+  TProfile *Profile_ptSTAR_Term2C2RecNetProton;
+  TProfile *Profile_ptmax2_CorrectedNetKaon;
+  TProfile *Profile_ptmax2_CorrectedNetProton;
+  TProfile *Profile_ptmax2_CorrectedNetCharge;
+  TProfile *Profile_ptmax2_CorrectedNetChargeNetKaon_term1;
+  TProfile *Profile_ptmax2_CorrectedNetChargeNetKaon_term2;
+  TProfile *Profile_ptmax2_CorrectedNetChargeNetKaon_term3;
+  TProfile *Profile_ptmax2_CorrectedNetChargeNetProton_term1;
+  TProfile *Profile_ptmax2_CorrectedNetChargeNetProton_term2;
+  TProfile *Profile_ptmax2_CorrectedNetChargeNetProton_term3;
+  TProfile *Profile_ptmax2_CorrectedNetKaonNetProton;
+  TProfile *Profile_ptmax2_Term1C2CorrectedNetKaon;
+  TProfile *Profile_ptmax2_Term2C2CorrectedNetKaon;
+  TProfile *Profile_ptmax2_Term3C2CorrectedNetKaon;
+  TProfile *Profile_ptmax2_Term4C2CorrectedNetKaon;
+  TProfile *Profile_ptmax2_Term1C2CorrectedNetCharge;
+  TProfile *Profile_ptmax2_Term2C2CorrectedNetCharge;
+  TProfile *Profile_ptmax2_Term3C2CorrectedNetCharge;
+  TProfile *Profile_ptmax2_Term4C2CorrectedNetCharge;
+  TProfile *Profile_ptmax2_Term1C2CorrectedNetProton;
+  TProfile *Profile_ptmax2_Term2C2CorrectedNetProton;
+  TProfile *Profile_ptmax2_Term3C2CorrectedNetProton;
+  TProfile *Profile_ptmax2_Term4C2CorrectedNetProton;
+  TProfile *Profile_ptSTAR_CorrectedNetKaon;
+  TProfile *Profile_ptSTAR_CorrectedNetProton;
+  TProfile *Profile_ptSTAR_CorrectedNetCharge;
+  TProfile *Profile_ptSTAR_CorrectedNetChargeNetKaon_term1;
+  TProfile *Profile_ptSTAR_CorrectedNetChargeNetKaon_term2;
+  TProfile *Profile_ptSTAR_CorrectedNetChargeNetKaon_term3;
+  TProfile *Profile_ptSTAR_CorrectedNetChargeNetProton_term1;
+  TProfile *Profile_ptSTAR_CorrectedNetChargeNetProton_term2;
+  TProfile *Profile_ptSTAR_CorrectedNetChargeNetProton_term3;
+  TProfile *Profile_ptSTAR_CorrectedNetKaonNetProton;
+  TProfile *Profile_ptSTAR_Term1C2CorrectedNetKaon;
+  TProfile *Profile_ptSTAR_Term2C2CorrectedNetKaon;
+  TProfile *Profile_ptSTAR_Term3C2CorrectedNetKaon;
+  TProfile *Profile_ptSTAR_Term4C2CorrectedNetKaon;
+  TProfile *Profile_ptSTAR_Term1C2CorrectedNetCharge;
+  TProfile *Profile_ptSTAR_Term2C2CorrectedNetCharge;
+  TProfile *Profile_ptSTAR_Term3C2CorrectedNetCharge;
+  TProfile *Profile_ptSTAR_Term4C2CorrectedNetCharge;
+  TProfile *Profile_ptSTAR_Term1C2CorrectedNetProton;
+  TProfile *Profile_ptSTAR_Term2C2CorrectedNetProton;
+  TProfile *Profile_ptSTAR_Term3C2CorrectedNetProton;
+  TProfile *Profile_ptSTAR_Term4C2CorrectedNetProton;
+  
 
   //Efficiency list of histograms
   TList *fListTRKCorr; 
@@ -213,7 +284,6 @@ class AliAnalysisTaskCorrPbPb_v2 : public AliAnalysisTaskSE {
   //Flag to select which centrality estimator
   Int_t fCentralityEstimator_flag;
   
-  /*
   //TPC, TOF, TPC+TOF nSigma histograms
   TH2D *f2Dhist_nSigmaTPC_pion;
   TH2D *f2Dhist_nSigmaTPC_kaon;
@@ -238,7 +308,7 @@ class AliAnalysisTaskCorrPbPb_v2 : public AliAnalysisTaskSE {
   TH1D *hist_afterCut_chi2perTPCclstr;
   TH1D *hist_afterCut_chi2perITSclstr;
   TH1D *hist_afterCut_TPCncrossedrows;
-  */
+
  
   //Efficiency hist per centralities
   TH1D *fEffPionPlus[9];
@@ -248,27 +318,7 @@ class AliAnalysisTaskCorrPbPb_v2 : public AliAnalysisTaskSE {
   TH1D *fEffKaonMinus[9];
   TH1D *fEffProtonMinus[9];
 
-  /*
-  //Custom Functions:
-  TF1 *fCenCutLowPU;
-  TF1 *fCenCutHighPU;
-  TF1 *fSPDCutPU;
-  TF1 *fV0CutPU;
-  TF1 *fMultCutPU;
 
-  //Argument variables
-  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  TString fTreeName;
-  Double_t fEtaMax;
-  Double_t fVertexZMax;
-  Double_t fDCAxyMax;
-  Double_t fDCAzMax;
-  Double_t fChi2TPC;
-  Double_t fChi2ITS;
-  Double_t fNCrossedRowsTPC;
-  //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-  */
- 
   
   AliAnalysisTaskCorrPbPb_v2(const AliAnalysisTaskCorrPbPb_v2&);
   AliAnalysisTaskCorrPbPb_v2& operator=(const AliAnalysisTaskCorrPbPb_v2&);  
