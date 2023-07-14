@@ -1634,7 +1634,12 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
     vzeroMultC = static_cast<Int_t>(vzeroAOD->GetMTotV0C());
     vzeroMult  = vzeroMultA + vzeroMultC;
   }
-  fCounter->StoreEvent(AODEvent,fAnaCuts,fIsMC,vzeroMult); // Fill "AliNormalizationCounter" with V0A+V0C multiplicity
+
+	fIsINEL = false;
+	if (fIsMC==false && AliPPVsMultUtils::IsINELgtZERO(AODEvent)==true) fIsINEL = true;
+  if (fIsINEL) {
+    fCounter->StoreEvent(AODEvent,fAnaCuts,fIsMC,vzeroMult); // Fill "AliNormalizationCounter" with V0A+V0C multiplicity
+  }
 
   //------------------------------------------------
   // MC analysis setting                                                                    
