@@ -45,6 +45,7 @@
 
 #include "AliMultSelection.h"
 #include "AliAODMCParticle.h"
+#include "AliPPVsMultUtils.h"
 
 // includes added to play with KFParticle
 #ifndef HomogeneousField
@@ -107,16 +108,12 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP() :
   fCounter(0),
   fCentrality(0),
   fNtracklets(0),
+  fCounter_INEL(0),
   fHistMCGen_Lambda_Pt(0),
   fHistMCGen_AntiLambda_Pt(0),
   fHistMCGen_Lambda_Pt_wYcut(0),
   fHistMCGen_AntiLambda_Pt_wYcut(0),
   fCounterGen_Cuts_Lambda(0),
-  fCounterGen_Cuts_AntiLambda(0),
-  fCounterRecMC_Cuts_Lambda(0),
-  fCounterRecMC_Cuts_AntiLambda(0),
-  fCounterRec_Cuts_Lambda(0),
-  fCounterRec_Cuts_AntiLambda(0),
   fHistMCGen_XiMinus_Pt(0),
   fHistMCGen_XiPlus_Pt(0),
   fHistMCGen_XiMinus_Pt_wYcut(0),
@@ -428,6 +425,7 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   fCounter(0),
   fCentrality(0),
   fNtracklets(0),
+  fCounter_INEL(0),
   fHistMCGen_Lambda_Pt(0),
   fHistMCGen_AntiLambda_Pt(0),
   fHistMCGen_Lambda_Pt_wYcut(0),
@@ -734,6 +732,7 @@ AliAnalysisTaskSEXicZero2XiPifromKFP::AliAnalysisTaskSEXicZero2XiPifromKFP(const
   DefineOutput(4, TTree::Class()); // Xic0
   DefineOutput(5, TTree::Class()); // Xic0 MCGen
   DefineOutput(6, TList::Class()); // Omega hist
+  DefineOutput(7,AliNormalizationCounter::Class()); fCounter_INEL = 0; //For INEl>0
 
 }
 //_____________________________________________________________________________
@@ -1580,6 +1579,13 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
   fCounter = new AliNormalizationCounter(normName.Data());
   fCounter->SetStudyMultiplicity(kTRUE,1.);
   fCounter->Init();
+
+  TString normName1="NormalizationCounter_INEL";
+  AliAnalysisDataContainer *cont1 = GetOutputSlot(7)->GetContainer();
+  if(cont1) normName1 = (TString)cont1->GetName();
+  fCounter_INEL = new AliNormalizationCounter(normName1.Data());
+  fCounter_INEL->Init();
+
   PostData(2, fCounter);
 
   DefineEvent();
@@ -1591,6 +1597,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserCreateOutputObjects()
   DefineTreeGenXic0();
   PostData(5, fTree_Xic0MCGen);
   PostData(6, fOutputList);
+
+  PostData(7, fCounter_INEL);
 
   return;
                                         // fOutputList object. the manager will in the end take care of writing your output to file
@@ -1634,11 +1642,12 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
     vzeroMultC = static_cast<Int_t>(vzeroAOD->GetMTotV0C());
     vzeroMult  = vzeroMultA + vzeroMultC;
   }
-
+  fCounter->StoreEvent(AODEvent,fAnaCuts,fIsMC,vzeroMult); // Fill "AliNormalizationCounter" with V0A+V0C multiplicity
+	
   fIsINEL = false;
-  if (fIsMC==false && AliPPVsMultUtils::IsINELgtZERO(AODEvent)==true) fIsINEL = true;
+	if (fIsMC==false && AliPPVsMultUtils::IsINELgtZERO(AODEvent)==true) fIsINEL = true;
   if (fIsINEL) {
-    fCounter->StoreEvent(AODEvent,fAnaCuts,fIsMC,vzeroMult); // Fill "AliNormalizationCounter" with V0A+V0C multiplicity
+    fCounter_INEL->StoreEvent(AODEvent,fAnaCuts,fIsMC,vzeroMult);
   }
 
   //------------------------------------------------
@@ -1823,6 +1832,8 @@ void AliAnalysisTaskSEXicZero2XiPifromKFP::UserExec(Option_t *)
   PostData(4, fTree_Xic0);
   PostData(5, fTree_Xic0MCGen);
   PostData(6, fOutputList);
+
+  PostData(7, fCounter_INEL);
 
   return;
 }

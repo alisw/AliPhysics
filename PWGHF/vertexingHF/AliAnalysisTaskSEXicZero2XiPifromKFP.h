@@ -109,13 +109,14 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
 
         Bool_t                  fIsMC; ///< Flag of MC analysis
         Bool_t                  fIsAnaOmegac0; ///< Flag of Omegac0 analysis
-        Bool_t                  fIsINEL; ///< Flag of multplicity analysis
+        Bool_t                  fIsINEL; ///< Flag of INEL
         Bool_t                  fIsStoreLS; ///< Flag to store like-sign pairs
 
         Double_t                fCentrality; //!<! V0M percentile 
         Int_t                   fNtracklets; //!<! SPD tracklet
 
         AliNormalizationCounter* fCounter; //!<! Counter for normalization
+        AliNormalizationCounter* fCounter_INEL; //!<! Counter normalization of INEL
         TH1F*                   fHistMCGen_Lambda_Pt; //!<! Pt distribution of lambda at gen. level
         TH1F*                   fHistMCGen_AntiLambda_Pt; //!<! Pt distribution of lambda at gen. level
         TH1F*                   fHistMCGen_Lambda_Pt_wYcut; //!<! Pt distribution of lambda at gen. level
@@ -414,7 +415,7 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
         AliAnalysisTaskSEXicZero2XiPifromKFP(const AliAnalysisTaskSEXicZero2XiPifromKFP &source); // not implemented
         AliAnalysisTaskSEXicZero2XiPifromKFP& operator=(const AliAnalysisTaskSEXicZero2XiPifromKFP& source); // not implemented
 
-        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 12);
+        ClassDef(AliAnalysisTaskSEXicZero2XiPifromKFP, 13);
 };
 
 #endif
