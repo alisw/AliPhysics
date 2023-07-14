@@ -78,8 +78,8 @@ kstarLike(0),
 kstarposLike(0),
 kstarnegLike(0),
 kstarMix(0),
-fHistpionpt(0),
-fHistkaonpt(0),
+//fHistpionpt(0),
+//fHistkaonpt(0),
 /*fHistnsigtpcpion(0),
 fHistnsigtpckaon(0),
 fHistnsigtofpion(0),
@@ -116,8 +116,8 @@ kstarLike(0),
 kstarposLike(0),
 kstarnegLike(0),
 kstarMix(0),
-fHistpionpt(0),
-fHistkaonpt(0),
+//fHistpionpt(0),
+//fHistkaonpt(0),
 /*fHistnsigtpcpion(0),
 fHistnsigtpckaon(0),
 fHistnsigtofpion(0),
@@ -220,8 +220,8 @@ void AliAnalysisTaskSA::UserCreateOutputObjects()
   kstarnegLike = new THnSparseD("kstarnegLike", "Neg Like histogram", 3, bins, xmin, xmax);
   kstarMix = new THnSparseD("kstarMix", "Mix histogram", 3, bins, xmin, xmax);
 
-  fHistpionpt = new TH1D("pionpt", "pionpt", 200, 0.0, 20.0);
-  fHistkaonpt = new TH1D("kaonpt", "kaonpt", 200, 0.0, 20.0);
+  //fHistpionpt = new TH1D("pionpt", "pionpt", 200, 0.0, 20.0);
+  //fHistkaonpt = new TH1D("kaonpt", "kaonpt", 200, 0.0, 20.0);
   /*fHistnsigtpcpion = new TH1D ("nsigmatpcpion","nsigmatpcpion",100,-5.0,5.0);
   fHistnsigtofpion = new TH1D ("nsigmatofpion","nsigmatofpion",100,-5.0,5.0);
   fHistnsigtpckaon = new TH1D ("nsigmatpckaon","nsigmatpckaon",100,-5.0,5.0);
@@ -233,8 +233,8 @@ void AliAnalysisTaskSA::UserCreateOutputObjects()
   kstarposLike->Sumw2();
   kstarnegLike->Sumw2();
   kstarMix->Sumw2();
-  fHistpionpt->Sumw2();
-  fHistkaonpt->Sumw2();
+  //fHistpionpt->Sumw2();
+  //fHistkaonpt->Sumw2();
   /*fHistnsigtpcpion->Sumw2();
   fHistnsigtpckaon->Sumw2();
   fHistnsigtofpion->Sumw2();
@@ -277,8 +277,8 @@ void AliAnalysisTaskSA::UserCreateOutputObjects()
   fOutput->Add(kstarposLike);
   fOutput->Add(kstarnegLike);
   fOutput->Add(kstarMix);
-  fOutput->Add(fHistpionpt);
-  fOutput->Add(fHistkaonpt);
+  //fOutput->Add(fHistpionpt);
+  //fOutput->Add(fHistkaonpt);
   /*fOutput->Add(fHistnsigtpcpion);
   fOutput->Add(fHistnsigtpckaon);
   fOutput->Add(fHistnsigtofpion);
@@ -410,7 +410,7 @@ void AliAnalysisTaskSA::UserExec(Option_t *)
       AliAODTrack *aodtrack  = dynamic_cast<AliAODTrack*>(track);
       if(!aodtrack)      continue;
       //if(!fESDtrackCuts->AcceptTrack(esdtrack))  continue;
-      if(!aodtrack->TestFilterBit(768))  continue;
+      if(!aodtrack->TestFilterBit(32))  continue;
       trkPt=aodtrack->Pt();
       trkEta=aodtrack->Eta();
       if (trkPt < 0.15) continue;
@@ -427,7 +427,7 @@ void AliAnalysisTaskSA::UserExec(Option_t *)
 	  kaonCandidates.push_back(kaon);
 	  nkaon=nkaon+1;
 	  fHisteventmult->Fill(0.5);
-	  fHistkaonpt->Fill(trkPt);	  
+	  //fHistkaonpt->Fill(trkPt);	  
 	}
       
 
@@ -442,7 +442,7 @@ void AliAnalysisTaskSA::UserExec(Option_t *)
 	  pionCandidates.push_back(pion);
 	  npion=npion+1;
 	  fHisteventmult->Fill(1.5);	  
-	  fHistpionpt->Fill(trkPt);
+	  //fHistpionpt->Fill(trkPt);
 
 	}
  
@@ -680,16 +680,16 @@ Bool_t AliAnalysisTaskSA::IsPion(AliVTrack *vtrack)
   Double_t nsigmacircularcut=TMath::Abs(sqrt(nsigmatpcpion*nsigmatpcpion + nsigmatofpion*nsigmatofpion));
   Double_t tofsig=0.0;
 
-  if (trkPt<0.5)
-    {
+  //if (trkPt<0.5)
+  //{
       if(nsigmatpcpion>3.0) return kFALSE;
-    }
+      /*}
   else
     {
       if(nsigmacircularcut>3.0) return kFALSE;
       //if(nsigmatofpion>3.0) return kFALSE;                                                                                                  
     }
-
+      */
   return kTRUE;
 }
 
@@ -726,16 +726,16 @@ Bool_t AliAnalysisTaskSA::IsKaon(AliVTrack *vtrack)
   Double_t nsigmacircularcut=TMath::Abs(sqrt(nsigmatpckaon*nsigmatpckaon + nsigmatofkaon*nsigmatofkaon));
   Double_t tofsig=0.0;
 
-  if (trkPt<0.45)
-    {
+  //if (trkPt<0.45)
+  //{
       if(nsigmatpckaon>3.0) return kFALSE;
-    }
+      /*}
   else
     {
       if(nsigmacircularcut>3.0) return kFALSE;
       //if(nsigmatofkaon>3.0) return kFALSE;                                                                                                  
     }
-
+      */
     
   return kTRUE;
 }
