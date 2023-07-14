@@ -115,8 +115,8 @@ class AliAnalysisTaskSA : public AliAnalysisTaskSE {
   THnSparseD    *kstarposLike;//!
   THnSparseD    *kstarnegLike;//!
   THnSparseD    *kstarMix;//!
-  TH1D    *fHistpionpt;//!
-  TH1D    *fHistkaonpt;//!
+  //TH1D    *fHistpionpt;//!
+  //TH1D    *fHistkaonpt;//!
   /*TH1D    *fHistnsigtpcpion;
   TH1D    *fHistnsigtpckaon;
   TH1D    *fHistnsigtofpion;
