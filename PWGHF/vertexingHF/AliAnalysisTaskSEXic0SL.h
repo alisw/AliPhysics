@@ -247,7 +247,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Int_t* fCascMomLabel; //[fCascNum]
 		Int_t* fCascMomPDG;   //[fCascNum]
 
-		ClassDef(AliAnalysisTaskSEXic0SL, 3);
+		ClassDef(AliAnalysisTaskSEXic0SL, 4);
 };
 
 #endif //AliAnalysisTaskSEXic0SL_H
