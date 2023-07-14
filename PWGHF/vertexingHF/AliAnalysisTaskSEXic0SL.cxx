@@ -73,7 +73,8 @@ AliAnalysisTaskSEXic0SL::AliAnalysisTaskSEXic0SL():
 	cutCasc_minDecayLenXi(0), cutCasc_minDecayLenV0(0), cutCasc_minDcaBachToPV(0), cutCasc_minDcaV0ToPV(0),
 	cutCasc_maxDcaXiDau(0), cutCasc_maxDcaV0Dau(0), cutCasc_minDcaV0PosToPV(0), cutCasc_minDcaV0NegToPV(0),
 	cutCasc_minCosPAngleXi(0), cutCasc_minCosPAngleV0(0),
-	fEvtID(0), fEvtTrig(0), fEvtRunNo(0), fEvtMult(0), fEvtVtxZ(0), fEvtGoodMB(0), fEvtGoodHMV0(0), fEvtINELLgt0(0),
+	fEvtID(0), fEvtTrig(0), fEvtRunNo(0), fEvtMult(0), fEvtNSPDtl(0),
+	fEvtVtxZ(0), fEvtGoodMB(0), fEvtGoodHMV0(0), fEvtINELLgt0(0),
 	fMCNum(0), fMCLabel(0), fMCOrig(0), fMCPDG(0), fMCPt(0), fMCY(0),
 	fMCElePt(0), fMCEleY(0), fMCXiPt(0), fMCXiY(0), fMCXiMomLabel(0), fMCXiMomPDG(0),
 	fEleNum(0), fEleChg(0), fEleITSNcls(0), fEleMinMassLS(0), fEleMinMassUS(0),
@@ -117,7 +118,8 @@ AliAnalysisTaskSEXic0SL::AliAnalysisTaskSEXic0SL(const char* name, const char* o
 	cutCasc_maxDcaXiDau(0), cutCasc_maxDcaV0Dau(0), cutCasc_minDcaV0PosToPV(0), cutCasc_minDcaV0NegToPV(0),
 	cutCasc_minCosPAngleXi(0), cutCasc_minCosPAngleV0(0),
 	//
-	fEvtID(0), fEvtTrig(0), fEvtRunNo(0), fEvtMult(0), fEvtVtxZ(0), fEvtGoodMB(0), fEvtGoodHMV0(0), fEvtINELLgt0(0),
+	fEvtID(0), fEvtTrig(0), fEvtRunNo(0), fEvtMult(0), fEvtNSPDtl(0),
+	fEvtVtxZ(0), fEvtGoodMB(0), fEvtGoodHMV0(0), fEvtINELLgt0(0),
 	//
 	fMCNum(0), fMCLabel(0), fMCOrig(0), fMCPDG(0), fMCPt(0), fMCY(0),
 	fMCElePt(0), fMCEleY(0), fMCXiPt(0), fMCXiY(0), fMCXiMomLabel(0), fMCXiMomPDG(0),
@@ -290,7 +292,11 @@ void AliAnalysisTaskSEXic0SL::UserExec(Option_t *)
 
 	//Check multiplicity selection is available
 	fMultSel = (AliMultSelection*)fEvt->FindListObject("MultSelection");
-	if (fMultSel) fEvtMult = fMultSel->GetMultiplicityPercentile(IsPA?"V0A":"V0M");
+	if (fMultSel)
+	{
+		fEvtMult   = fMultSel->GetMultiplicityPercentile(IsPA?"V0A":"V0M");
+		fEvtNSPDtl = fMultSel->GetEstimator("SPDTracklets")->GetValue(); //Jul 14, 2023
+	}
 	else AliFatal("ERROR: MultSelection"); //Return 3
 	fHisto->FillTH1("EvtCut", "Mult", 1); //@
 
@@ -1015,15 +1021,16 @@ void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOn
 	int iLeaf = 0;
 	if (!readOnly)
 	{
-		TString strEvt = "evtID/i:trig/i:runNo/I:mult/F:vtxZ/D:goodMB/O:goodHMV0/O:INEL0/O";
+		TString strEvt = "evtID/i:trig/i:runNo/I:mult/F:nSPDtl/F:vtxZ/D:goodMB/O:goodHMV0/O:INEL0/O";
 		T->Branch("Event", 0, strEvt);
 	}
-	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtID);       iLeaf++; //0
+	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtID);       iLeaf++;
 	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtTrig);     iLeaf++;
 	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtRunNo);    iLeaf++;
 	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtMult);     iLeaf++;
+	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtNSPDtl);   iLeaf++;
 	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtVtxZ);     iLeaf++;
-	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtGoodMB);   iLeaf++; //5
+	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtGoodMB);   iLeaf++;
 	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtGoodHMV0); iLeaf++;
 	((TLeaf*)T->GetBranch("Event")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEvtINELLgt0); iLeaf++;
 
@@ -1052,11 +1059,11 @@ void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOn
 			strMCTruth += ":mc_XiMomLabel/I:mc_XiMomPDG/I";
 			T->Branch("MCTruth", 0, strMCTruth.Data());
 		}
-		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCNum);      iLeaf++; //0
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCNum);      iLeaf++;
 		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCLabel[0]); iLeaf++;
 		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCOrig[0]);  iLeaf++;
 		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCPDG[0]);   iLeaf++;
-		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCPt[0]);    iLeaf++; //5
+		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCPt[0]);    iLeaf++;
 		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCY[0]);     iLeaf++;
 		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCElePt[0]); iLeaf++;
 		((TLeaf*)T->GetBranch("MCTruth")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fMCEleY[0]);  iLeaf++;
@@ -1099,24 +1106,24 @@ void AliAnalysisTaskSEXic0SL::ControlOutputTree(TTree* T, bool isMC, bool readOn
 	fEleTPCNsig   = new UShort_t[fEleNum]; //Previous notation: TPCPID
 	fEleTPCNxedR  = new UShort_t[fEleNum]; //Previous notation: e_crossedrows
 	fEleTPCNclsF  = new UShort_t[fEleNum];
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNum);          iLeaf++; //0
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNum);          iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleChg[0]);       iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleITSNcls[0]);   iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMinMassLS[0]); iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleMinMassUS[0]); iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNSigmaTOF[0]); iLeaf++; //5
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNSigmaTOF[0]); iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleNSigmaTPC[0]); iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleDCAd[0]);      iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleDCAz[0]);      iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleEta[0]);       iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePhi[0]);       iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePt[0]);        iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePx[0]);        iLeaf++; //12
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePx[0]);        iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePy[0]);        iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fElePz[0]);        iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleY[0]);         iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNsig[0]);   iLeaf++;
-	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNxedR[0]);  iLeaf++; //17
+	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNxedR[0]);  iLeaf++;
 	((TLeaf*)T->GetBranch("Ele")->GetListOfLeaves()->At(iLeaf))->SetAddress(&fEleTPCNclsF[0]);  iLeaf++;
 	fEleLabel    = new Int_t[fEleNum]; //MC only, electron candidate's label, to check if it's negative or not
 	fElePDG      = new Int_t[fEleNum]; //MC only, electron candidate's PDG code
@@ -1308,6 +1315,7 @@ void AliAnalysisTaskSEXic0SL::ResetTreeVariables(void)
 	fEvtTrig     = -999;
 	fEvtRunNo    = -999;
 	fEvtMult     = -999.;
+	fEvtNSPDtl   = -999.;
 	fEvtVtxZ     = -999.;
 	fEvtGoodMB   = false;
 	fEvtGoodHMV0 = false;

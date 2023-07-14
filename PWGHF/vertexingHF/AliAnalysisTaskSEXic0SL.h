@@ -161,6 +161,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		UInt_t   fEvtTrig;
 		Int_t    fEvtRunNo;
 		Float_t  fEvtMult;
+		Float_t  fEvtNSPDtl; //NSPDTracklets, July 14 (2023)
 		Double_t fEvtVtxZ;
 		Bool_t   fEvtGoodMB;
 		Bool_t   fEvtGoodHMV0;
@@ -246,7 +247,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Int_t* fCascMomLabel; //[fCascNum]
 		Int_t* fCascMomPDG;   //[fCascNum]
 
-		ClassDef(AliAnalysisTaskSEXic0SL, 3);
+		ClassDef(AliAnalysisTaskSEXic0SL, 4);
 };
 
 #endif //AliAnalysisTaskSEXic0SL_H
