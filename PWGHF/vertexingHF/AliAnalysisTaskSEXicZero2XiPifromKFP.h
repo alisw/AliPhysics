@@ -107,9 +107,9 @@ class AliAnalysisTaskSEXicZero2XiPifromKFP : public AliAnalysisTaskSE
 //        Float_t*                fVar_AntiXicZero;         //!<! variables of Anti-Xic0 to be written to the tree
         TList*                  fListCuts;           //!<! User output slot 3 // Cuts 
 
-        Bool_t                  fIsINEL;
         Bool_t                  fIsMC; ///< Flag of MC analysis
         Bool_t                  fIsAnaOmegac0; ///< Flag of Omegac0 analysis
+        Bool_t                  fIsINEL; ///< Flag of multplicity analysis
         Bool_t                  fIsStoreLS; ///< Flag to store like-sign pairs
 
         Double_t                fCentrality; //!<! V0M percentile 
