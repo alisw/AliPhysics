@@ -377,22 +377,20 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   // Inv Mass 
   TH2D* fHist2LambdaMass[4];           //![0]:Λ    [1]:Λ      [2]:Λbar    [3]:Λbar
   TH3D* fHist3LambdaProtonMassSPt[4];  //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
-  TH3D* fHist3LambdaHadronMassSPt[4];  //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
   TH3D* fHist3LambdaProtonMassDEta[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
-  TH3D* fHist3LambdaHadronMassDEta[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
 
   // Diff δ(ΔpT)
   TProfile3D* fProfile3DDiffDeltaLambdaProtonMassSPt[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
-  TProfile3D* fProfile3DDiffDeltaLambdaHadronMassSPt[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
   // Diff δ(Δη)
   TProfile3D* fProfile3DDiffDeltaLambdaProtonMassDEta[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
-  TProfile3D* fProfile3DDiffDeltaLambdaHadronMassDEta[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
-  // Diff γ(SpT)(only TPC Plane)
+  // Diff γ(SpT)
   TProfile3D* fProfile3DDiffGammaLambdaProtonMassSPt[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
-  TProfile3D* fProfile3DDiffGammaLambdaHadronMassSPt[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
-  // Diff γ(Δη)(only TPC Plane)
+  // Diff γ(Δη)
   TProfile3D* fProfile3DDiffGammaLambdaProtonMassDEta[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
-  TProfile3D* fProfile3DDiffGammaLambdaHadronMassDEta[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
+
+  TProfile2D* fProfile2DDeltaLambdaHadronMass[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
+  TProfile2D* fProfile2DGammaLambdaHadronMass[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
+
 
 
   AliAnalysisTaskCVEPIDCMEDiff(const AliAnalysisTaskCVEPIDCMEDiff&);
