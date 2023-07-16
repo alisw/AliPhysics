@@ -396,14 +396,14 @@ void AliTwoParticleCorrelationsBase::Initialize()
   fMin_phi = fMin_phi - fWidth_phi * fNBinsPhiShift;
 
   /* track 1 storage */
-  fFlags = new UInt_t[fArraySize];
+  fFlags = new unsigned int[fArraySize];
   fPt = new Float_t[fArraySize];
   fEta = new Float_t[fArraySize];
   fPhi = new Float_t[fArraySize];
   fPID = new int[fArraySize];
 
   if (fSinglesOnly)  {
-    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+    for (unsigned int i = 0; i < fSpeciesNames.size(); ++i) {
       fhN1_vsPt.push_back(new TH1F(Form("n1_%s_vsPt", fSpeciesNames[i].c_str()), "#LT n_{1} #GT;p_{T} (GeV/c);#LT n_{1} #GT", fNBins_pt, fMin_pt, fMax_pt));
       fhN1_vsZEtaPhiPt.push_back(new TH3F(Form("n1_%s_vsZ_vsEtaPhi_vsPt", fSpeciesNames[i].c_str()), "#LT n_{1} #GT;vtx_{z};#eta#times#varphi;p_{T} (GeV/c)",
                                           fNBins_vertexZ, fMin_vertexZ, fMax_vertexZ, fNBins_etaPhi, 0.0, double(fNBins_etaPhi), fNBins_pt, fMin_pt, fMax_pt));
@@ -414,7 +414,7 @@ void AliTwoParticleCorrelationsBase::Initialize()
       fhSum1Pt_vsEtaPhi.push_back(new TH2F(Form("sumPt_%s_vsEtaPhi", fSpeciesNames[i].c_str()), "#LT #Sigma p_{T} #GT;#eta;#varphi (radian);#LT #Sigma p_{T} #GT (GeV/c)",
                                            fNBins_eta, fMin_eta, fMax_eta, fNBins_phi, fMin_phi, fMax_phi));
     }
-    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+    for (unsigned int i = 0; i < fSpeciesNames.size(); ++i) {
       fOutput->Add(fhN1_vsPt[i]);
       fOutput->Add(fhN1_vsZEtaPhiPt[i]);
       fOutput->Add(fhSum1Pt_vsZEtaPhiPt[i]);
@@ -430,7 +430,7 @@ void AliTwoParticleCorrelationsBase::Initialize()
     fOutput->Add(fhResonanceMasses);
     fOutput->Add(fhDiscardedResonanceMasses);
 
-    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+    for (unsigned int i = 0; i < fSpeciesNames.size(); ++i) {
       fhN1_vsEtaPhi.push_back(new TH2F(Form("n1_%s_vsEtaPhi", fSpeciesNames[i].c_str()), "#LT n_{1} #GT;#eta;#varphi (radian);#LT n_{1} #GT",
                                        fNBins_eta, fMin_eta, fMax_eta, fNBins_phi, fMin_phi, fMax_phi));
       fhSum1Pt_vsEtaPhi.push_back(new TH2F(Form("sumPt_%s_vsEtaPhi", fSpeciesNames[i].c_str()), "#LT #Sigma p_{T} #GT;#eta;#varphi (radian);#LT #Sigma p_{T} #GT (GeV/c)",
@@ -441,7 +441,7 @@ void AliTwoParticleCorrelationsBase::Initialize()
       fhSum1Ptnw_vsC.push_back(new TProfile(Form("sumPtNw_%s_vsM", fSpeciesNames[i].c_str()), "#LT #Sigma p_{T} #GT;Centrality (%);#LT #Sigma p_{T} #GT (GeV/c)", 100, 0.0, 100.0));
     }
 
-    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+    for (unsigned int i = 0; i < fSpeciesNames.size(); ++i) {
       fOutput->Add(fhN1_vsEtaPhi[i]);
       fOutput->Add(fhSum1Pt_vsEtaPhi[i]);
       fOutput->Add(fhN1_vsC[i]);
@@ -459,16 +459,27 @@ void AliTwoParticleCorrelationsBase::Initialize()
   }
 }
 
-/// \brief Stores the correction weights for the different track species
+/// \brief Stores the correction weights
+/// Have in mind that there are several situations
+/// In the usual case of not identified analysis only weights
+/// for HaP and HaM weill be received (different than nullptr)
+/// and they miight or might not inccorporate the efficiency correction
+/// For identified analyses the received weights are ususally
+/// for HaP and HaM as well but they will not incorporate
+/// the species efficiency correction
+/// Optionally there could be weights for the identified species
+/// as that case is also supported
 /// \param h3 vector with the weights histograms
 /// \return kTRUE if correctly done kFALSE otherwise
 Bool_t AliTwoParticleCorrelationsBase::SetWeigths(std::vector<const TH3*> h3)
 {
   Bool_t done = kTRUE;
 
+  fCorrectionWeights.reserve(fSpeciesNames.size());
   if (fUseWeights){
     if (h3.size() > 0) {
-      for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+      bool storedweights = false;
+      for (unsigned int i = 0; i < fSpeciesNames.size(); ++i) {
         if (h3[i] != nullptr) {
           /* allocate memory for each track species weights */
           float* buffer = new float[fNBins_vertexZ * fNBins_etaPhi * fNBins_pt];
@@ -483,18 +494,20 @@ Bool_t AliTwoParticleCorrelationsBase::SetWeigths(std::vector<const TH3*> h3)
               }
             }
           }
-        } else {
-          AliFatal(TString::Format("The weights histogram for species %s is a null pointer. ABORTING!!!", fSpeciesNames[i].c_str()));
-          done = kFALSE;
+          storedweights = true;
         }
+      }
+      if (!storedweights) {
+        AliFatal(TString::Format("The weights histogram are not there. ABORTING!!!"));
+        done = false;
       }
     } else {
       AliFatal("The weights histograms for different species are not there. ABORTING!!!");
       done = kFALSE;
     }
   } else {
-    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
-      fCorrectionWeights.push_back(nullptr);
+    for (unsigned int isp = 0; isp < fSpeciesNames.size(); ++isp) {
+      fCorrectionWeights[isp] = nullptr;
     }
     AliError("Setting weights for a not use weights instance. Ignoring it");
     done = kFALSE;
@@ -502,65 +515,67 @@ Bool_t AliTwoParticleCorrelationsBase::SetWeigths(std::vector<const TH3*> h3)
   return done;
 }
 
-/// \brief Stores the efficiency correction for the different track species
+/// \brief Stores the efficiency/contamination correction for the different track species
 /// If the efficiency correction histograms are not present a efficiency correction value 1.0 is stored.
-/// The correction value are always the inverse of the efficiency ones
-///
-/// Usually the efficiency is incorporated in the weights but this method provides
-/// an additional way to incorporate pT dependent efficiency.
+/// The correction values are always the stored in the corresponding histograms
+/// For identified analysis the weight are separated from the efficiency and only the identified efficiencies
+/// are stored. Have in mind that the species names always include the hadrons as first two species
+/// The order for the particle species is HaP, HaM, PiP, PiM, KaP, KaM, PrP, PrM
+/// For unidentified analysis (only hadrons) the efficiency might be incorporated in the weights
 /// \param h1 vector with the efficiency histograms
 /// \return kTRUE if everything went ok otherwise kFALSE
 Bool_t AliTwoParticleCorrelationsBase::SetEfficiencyCorrection(std::vector<const TH1*> h1)
 {
-  bool done = true;
-
   bool allnull = true;
-  for (uint pid = 0; pid < h1.size(); ++pid) {
+  for (unsigned int pid = 0; pid < fSpeciesNames.size(); ++pid) {
     if (h1[pid] != nullptr) {
       allnull = false;
     }
   }
 
+  /* pre-allocate the number of entries */
+  fEfficiencyCorrection.reserve(fSpeciesNames.size());
+
   if (!allnull) {
-    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
-      if (i < h1.size() && h1[i] != nullptr) {
+    /* setting the efficiency correction for the different species */
+    for (unsigned int isp = 0; isp < fSpeciesNames.size(); ++isp) {
+      if (h1[isp] != nullptr) {
         /* allocate memory for each species efficiency correction */
         float* buffer = new float[fNBins_pt];
-        fEfficiencyCorrection.push_back(buffer);
+        fEfficiencyCorrection[isp] = buffer;
         for (int ixPt = 0; ixPt < fNBins_pt; ixPt++) {
-          int bin = h1[i]->GetXaxis()->FindBin(fMin_pt + fWidth_pt / 2.0 + ixPt * fWidth_pt);
-          buffer[ixPt] = 1.0 / h1[i]->GetBinContent(bin);
+          int bin = h1[isp]->GetXaxis()->FindBin(fMin_pt + fWidth_pt / 2.0 + ixPt * fWidth_pt);
+          buffer[ixPt] = h1[isp]->GetBinContent(bin);
         }
       } else {
-        AliFatal(TString::Format("The efficiency correction histogram for species %s is a null pointer. ABORTING!!!", fSpeciesNames[i].c_str()));
-        done = kFALSE;
+        float* buffer = new float[fNBins_pt];
+        fEfficiencyCorrection[isp] = buffer;
+        for (int ixPt = 0; ixPt < fNBins_pt; ixPt++) {
+          buffer[ixPt] = 1.0;
+        }
       }
     }
   } else {
     AliInfo("Setting efficiency correction equal to one for all species");
-    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
-
+    for (unsigned int isp = 0; isp < fSpeciesNames.size(); ++isp) {
       float* buffer = new float[fNBins_pt];
-      fEfficiencyCorrection.push_back(buffer);
+      fEfficiencyCorrection[isp] = buffer;
       for (int ixPt = 0; ixPt < fNBins_pt; ixPt++) {
         buffer[ixPt] = 1.0;
       }
     }
-    done = kTRUE;
   }
-  if (done) {
-    AliInfo(Form("Configured efficiency correcton on %s", GetName()));
-    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
-      printf("Species %s:\n", fSpeciesNames[i].c_str());
-      for (int bin = 0; bin < fNBins_pt; bin++) {
-        printf("%f, ", fEfficiencyCorrection[i][bin]);
-        if ((bin + 1) % 8 == 0)
-          printf("\n");
-      }
-      printf("\n");
+  AliInfo(Form("Configured efficiency correcton on %s", GetName()));
+  for (unsigned int i = 0; i < fSpeciesNames.size(); ++i) {
+    printf("Species %s:\n", fSpeciesNames[i].c_str());
+    for (int bin = 0; bin < fNBins_pt; bin++) {
+      printf("%f, ", fEfficiencyCorrection[i][bin]);
+      if ((bin + 1) % 8 == 0)
+        printf("\n");
     }
+    printf("\n");
   }
-  return done;
+  return true;
 }
 
 /// \brief Stores the pairs efficiency correction for track species combinations
@@ -580,12 +595,12 @@ Bool_t AliTwoParticleCorrelationsBase::SetPairEfficiencyCorrection(std::vector<s
     if (hn.size() != fSpeciesNames.size()) {
       abort = true;
     } else {
-      for (uint i = 0 && allnull; i < fSpeciesNames.size(); ++i) {
+      for (unsigned int i = 0 && allnull; i < fSpeciesNames.size(); ++i) {
         if (hn[i].size() != fSpeciesNames.size()) {
           abort = true;
           break;
         } else {
-          for (uint j = 0; j < fSpeciesNames.size(); ++j) {
+          for (unsigned int j = 0; j < fSpeciesNames.size(); ++j) {
             if (hn[i][j] != nullptr) {
               allnull = false;
               break;
@@ -595,9 +610,9 @@ Bool_t AliTwoParticleCorrelationsBase::SetPairEfficiencyCorrection(std::vector<s
       }
     }
     if (!abort) {
-      for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+      for (unsigned int i = 0; i < fSpeciesNames.size(); ++i) {
         std::vector<const THn*> row;
-        for (uint j = 0; j < fSpeciesNames.size(); ++j) {
+        for (unsigned int j = 0; j < fSpeciesNames.size(); ++j) {
           if (!allnull) {
             if (hn[i][j] != nullptr) {
               if (hn[i][j]->GetNdimensions() != 4) {
@@ -637,7 +652,7 @@ Bool_t AliTwoParticleCorrelationsBase::SetSimultationPdfs(std::vector<const TObj
   bool done = true;
   bool allnull = true;
 
-  for (uint pid = 0; pid < pdf.size(); ++pid) {
+  for (unsigned int pid = 0; pid < pdf.size(); ++pid) {
     if (pdf[pid] != nullptr) {
       allnull = false;
       break;
@@ -646,7 +661,7 @@ Bool_t AliTwoParticleCorrelationsBase::SetSimultationPdfs(std::vector<const TObj
 
   if (fUseSimulation) {
     if (!allnull) {
-      for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+      for (unsigned int i = 0; i < fSpeciesNames.size(); ++i) {
         if (i < pdf.size() && pdf[i] != nullptr) {
           if (pdf[i]->GetEntriesFast() == fNBins_vertexZ) {
             fTrackPdfs.push_back(pdf[i]);
@@ -692,7 +707,7 @@ Bool_t AliTwoParticleCorrelationsBase::StartEvent(Float_t centrality, Float_t ve
   }
 
   if (fUseSimulation) {
-    for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+    for (unsigned int i = 0; i < fSpeciesNames.size(); ++i) {
       fTrackCurrentPdf.push_back((TH3F*)fTrackPdfs[i]->At(fIxVertexZ));
     }
   }
@@ -700,7 +715,7 @@ Bool_t AliTwoParticleCorrelationsBase::StartEvent(Float_t centrality, Float_t ve
   fNoOfTracks = 0;
 
   /* reset single counters */
-  for (uint i = 0; i < fSpeciesNames.size(); ++i) {
+  for (unsigned int i = 0; i < fSpeciesNames.size(); ++i) {
     fN1[i] = fSum1Pt[i] = fNnw1[i] = fSum1Ptnw[i] = 0;
   }
 

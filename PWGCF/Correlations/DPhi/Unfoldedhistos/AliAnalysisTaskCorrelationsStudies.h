@@ -102,6 +102,9 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
       kOnlyReconstructed  = 2                                 ///< only consider true tracks which have been reconstructed
     };
 
+    /* the track names for pT averages and effciency/purity corrections */
+    static std::vector<std::string> tracknames;
+
     TList                      *fOutput;                      ///< Output histograms list
     TString                     fTaskConfigurationString;     ///< the task configuration string
     TString                     fOnTheFlyProduction;          ///< the on the fly MC production
@@ -132,15 +135,11 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     const TH1                  *fhV0MCentMult;                ///< the V0M centrality / multiplicity estimation histogram
     const TH1                  *fhCL1MCentMult;               ///< the CL1M centrality / multiplicity estimation histogram
     const TH1                  *fhCL1EtaGapMCentMult;         ///< the CL1M with an eta gap centrality / multiplicity estimation histogram
-    TH3F                       *fhWeightsTrack_1;             ///< the weights histogram for track one
-    TH3F                       *fhWeightsTrack_2;             ///< the weights histogram for track two
-    const TH2                  *fhPtAverageTrack_1;           ///< the track one \f$ \langle p_{T>} \rangle \f$
-    const TH2                  *fhPtAverageTrack_2;           ///< the track two \f$ \langle p_{T>} \rangle \f$
-    const TH2                  *fhTruePtAverageTrack_1;       ///< the true track one \f$ \langle p_{T>} \rangle \f$
-    const TH2                  *fhTruePtAverageTrack_2;       ///< the true track two \f$ \langle p_{T>} \rangle \f$
-    TH1F                       *fhEffCorrTrack_1;             ///< the efficiency correction for track one
-    TH1F                       *fhEffCorrTrack_2;             ///< the efficiency correction for track two
-    THn                        *fhPairEfficiency_PP;          ///< the plus plus pair efficiency
+    std::vector<const TH3*> fhWeightsTrack;                   ///< the species weights histogram
+    std::vector<const TH2*> fhPtAverageTrack;                 ///< the track species \f$ \langle p_{T>} \rangle \f$
+    std::vector<const TH2*> fhTruePtAverageTrack;             ///< the true track species \f$ \langle p_{T>} \rangle \f$
+    std::vector<const TH1*> fhEffCorrTrack;                   ///< the track species efficiency/purity correction
+    THn* fhPairEfficiency_PP;                                 ///< the plus plus pair efficiency
     THn                        *fhPairEfficiency_PM;          ///< the plus minus pair efficiency
     THn                        *fhPairEfficiency_MM;          ///< the minus minus pair efficiency
     THn                        *fhPairEfficiency_MP;          ///< the minus plus pair efficiency
@@ -220,7 +219,7 @@ class AliAnalysisTaskCorrelationsStudies : public AliAnalysisTaskSE {
     AliAnalysisTaskCorrelationsStudies& operator=(const AliAnalysisTaskCorrelationsStudies&); // not implemented
 
     /// \cond CLASSIMP
-    ClassDef(AliAnalysisTaskCorrelationsStudies, 7);
+    ClassDef(AliAnalysisTaskCorrelationsStudies, 8);
     /// \endcond
 };
 
