@@ -680,16 +680,16 @@ Bool_t AliAnalysisTaskSA::IsPion(AliVTrack *vtrack)
   Double_t nsigmacircularcut=TMath::Abs(sqrt(nsigmatpcpion*nsigmatpcpion + nsigmatofpion*nsigmatofpion));
   Double_t tofsig=0.0;
 
-  //if (trkPt<0.5)
-  //{
+  if (trkPt<0.5)
+    {
       if(nsigmatpcpion>3.0) return kFALSE;
-      /*}
+    }
   else
     {
-      if(nsigmacircularcut>3.0) return kFALSE;
-      //if(nsigmatofpion>3.0) return kFALSE;                                                                                                  
+      //if(nsigmacircularcut>3.0) return kFALSE;
+      if(nsigmatofpion>3.0) return kFALSE;                                                                                                  
     }
-      */
+      
   return kTRUE;
 }
 
@@ -726,16 +726,16 @@ Bool_t AliAnalysisTaskSA::IsKaon(AliVTrack *vtrack)
   Double_t nsigmacircularcut=TMath::Abs(sqrt(nsigmatpckaon*nsigmatpckaon + nsigmatofkaon*nsigmatofkaon));
   Double_t tofsig=0.0;
 
-  //if (trkPt<0.45)
-  //{
-      if(nsigmatpckaon>3.0) return kFALSE;
-      /*}
+  if (trkPt<0.45)
+  {
+    if(nsigmatpckaon>3.0) return kFALSE;
+      }
   else
     {
-      if(nsigmacircularcut>3.0) return kFALSE;
-      //if(nsigmatofkaon>3.0) return kFALSE;                                                                                                  
+      //if(nsigmacircularcut>3.0) return kFALSE;
+      if(nsigmatofkaon>3.0) return kFALSE;                                                                                                  
     }
-      */
+      
     
   return kTRUE;
 }
