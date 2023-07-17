@@ -67,6 +67,7 @@ class AliAnalysisTaskSA : public AliAnalysisTaskSE {
 //---------------------------------------------------------------------------------------
   Bool_t      IsPion(AliVTrack *aodtrack);
   Bool_t      IsKaon(AliVTrack *aodtrack);
+  Bool_t      HasTOF(AliAODTrack *track);
   Double_t CosThetaStar(TLorentzVector mother, TLorentzVector daughter0, TLorentzVector daughter1);
   Double_t CosThetaStarHel(TLorentzVector mother, TLorentzVector daughter0, TLorentzVector daughter1);
   
