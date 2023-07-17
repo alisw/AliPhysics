@@ -653,29 +653,22 @@ Bool_t AliAnalysisTaskSA::IsPion(AliVTrack *vtrack)
   Double_t nsigmatpcpion=TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodtrack, AliPID::kPion));
   Double_t nsigmatofpion=TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodtrack, AliPID::kPion));
   Bool_t TOFHIT=kFALSE;
-  /*
-  if(aodtrack->GetStatus() & AliVTrack::kTOFpid){ TOFHIT=kTRUE; }
-  else
-    TOFHIT=kFALSE;
 
+  TOFHIT = HasTOF(aodtrack);
+
+  
   if(!TOFHIT)
     {
-      if(nsigmatpcpion>3.0)return kFALSE;
+      if(nsigmatpcpion>2.0)return kFALSE;
     }
 
-  if(TOFHIT)
+  else
     {
       if(nsigmatofpion>3.0)return kFALSE;
     }
 
-  Double_t nsigmatpcpionfill=(fPIDResponse->NumberOfSigmasTPC(aodtrack, AliPID::kPion));
-  Double_t nsigmatofpionfill=(fPIDResponse->NumberOfSigmasTOF(aodtrack, AliPID::kPion));
 
-  fHistnsigtpcpion->Fill(nsigmatpcpionfill);
-  fHistnsigtofpion->Fill(nsigmatofpionfill);
-  */
-
-
+  /*
   Double_t trkPt=aodtrack->Pt();
   Double_t nsigmacircularcut=TMath::Abs(sqrt(nsigmatpcpion*nsigmatpcpion + nsigmatofpion*nsigmatofpion));
   Double_t tofsig=0.0;
@@ -689,7 +682,7 @@ Bool_t AliAnalysisTaskSA::IsPion(AliVTrack *vtrack)
       //if(nsigmacircularcut>3.0) return kFALSE;
       if(nsigmatofpion>3.0) return kFALSE;                                                                                                  
     }
-      
+  */  
   return kTRUE;
 }
 
@@ -700,28 +693,19 @@ Bool_t AliAnalysisTaskSA::IsKaon(AliVTrack *vtrack)
   Double_t nsigmatpckaon=TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodtrack, AliPID::kKaon));
   Double_t nsigmatofkaon=TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodtrack, AliPID::kKaon));
   Bool_t TOFHIT=kFALSE;
-  /*
-  if(aodtrack->GetStatus() & AliVTrack::kTOFpid){ TOFHIT=kTRUE; }
-  else
-    TOFHIT=kFALSE;
+
+  TOFHIT = HasTOF(aodtrack);
 
   if(!TOFHIT)
     {
-      if(nsigmatpckaon>3.0)return kFALSE;
+      if(nsigmatpckaon>2.0)return kFALSE;
     }
-
-  if(TOFHIT)
+  else
     {
       if(nsigmatofkaon>3.0)return kFALSE;
     }
 
-  Double_t nsigmatpckaonfill=(fPIDResponse->NumberOfSigmasTPC(aodtrack, AliPID::kKaon));
-  Double_t nsigmatofkaonfill=(fPIDResponse->NumberOfSigmasTOF(aodtrack, AliPID::kKaon));
-
-  fHistnsigtpckaon->Fill(nsigmatpckaonfill);
-  fHistnsigtofkaon->Fill(nsigmatofkaonfill);
-  */
-
+  /*
   Double_t trkPt=aodtrack->Pt();
   Double_t nsigmacircularcut=TMath::Abs(sqrt(nsigmatpckaon*nsigmatpckaon + nsigmatofkaon*nsigmatofkaon));
   Double_t tofsig=0.0;
@@ -735,10 +719,21 @@ Bool_t AliAnalysisTaskSA::IsKaon(AliVTrack *vtrack)
       //if(nsigmacircularcut>3.0) return kFALSE;
       if(nsigmatofkaon>3.0) return kFALSE;                                                                                                  
     }
-      
+  */  
     
   return kTRUE;
 }
+
+
+Bool_t AliAnalysisTaskSA::HasTOF(AliAODTrack *track)
+{
+  bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
+  bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
+  const float len = track->GetIntegratedLength();
+  bool hasTOF = hasTOFout && hasTOFtime && (len > 350.);
+  return hasTOF;
+}
+
 
 
 //_________________________________________________________________________________________________
