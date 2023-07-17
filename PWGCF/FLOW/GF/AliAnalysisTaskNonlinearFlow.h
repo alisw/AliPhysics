@@ -238,6 +238,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetLowMultiplicityMode(bool flag = true) {fLowMultiplicityMode = flag;}
 		virtual void   SetAdditionalTPCPileupCuts(bool flag = true) {fAddTPCPileupCuts = flag;}
 		virtual void   SetESDvsTPConlyLinearCut(double cut = 15000) {fESDvsTPConlyLinearCut = cut;}
+    virtual void   SetUseOutOfBunchPileupCut(double flag = true) {fUseOutOfBunchPileupCut = cut;}
 		virtual void   SetUseCorrectedNTracks(bool flag = true) {fUseCorrectedNTracks = flag;}
 		virtual void   SetUseNarrowBin(bool flag = true) {fUseNarrowBin = flag;}
 		virtual void   SetExtremeEfficiency(int flag = 0) {fExtremeEfficiency = flag;}
@@ -310,10 +311,11 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Bool_t                  fSpringMode;                            // The mode with spring cuts.
 		Bool_t                  fLowMultiplicityMode;                   // The mode to consider low-multiplicity region 
 		Bool_t                  fAddTPCPileupCuts;                      // Additional TPC pileup cuts
-                Double_t                fESDvsTPConlyLinearCut;                 // ESDvsTPConlyLinearCut : default = 15000
+    Double_t                fESDvsTPConlyLinearCut;                 // ESDvsTPConlyLinearCut : default = 15000
+    Bool_t                  fUseOutOfBunchPileupCut;                // Out of bunch pileup cut
 		Bool_t                  fUseCorrectedNTracks;                   // Use corrected Ntracks in the filling of xbins;
-		Double_t                  fCentralityCut;                         // Apply an extra centrality cut.
-                Bool_t                  fUseNarrowBin;                          // Use Narrow bin
+		Double_t                fCentralityCut;                         // Apply an extra centrality cut.
+    Bool_t                  fUseNarrowBin;                          // Use Narrow bin
 		Int_t                   fExtremeEfficiency;                     // The flag to set extreme efficiency
 		Double_t                fTPCchi2perCluster;                     // Additional cuts for TPC chi2 / cluster
 		Bool_t                  fUseAdditionalDCACut;                   // Additianal cuts for dca: < 1 cm
@@ -486,7 +488,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 24);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 25);    //Analysis task
 };
 
 #endif
