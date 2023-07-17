@@ -166,9 +166,8 @@ int nbinsmT,float lowmT,float upmT);
 
 	int fUsePt;
 	int fUseDPhiDEtaQA;
-	
-	TH2F *fNumDPhiDEtaQAFailCut;
-	TH2F *fDumDPhiDEtaQAFailCut;
+	//TH2F *fNumDPhiDEtaQAFailCut;
+	//TH2F *fDumDPhiDEtaQAFailCut;
 	TH2F *fNumDPhiDEtaAvgQA;
 	TH2F *fDumDPhiDEtaAvgQA;
 		
