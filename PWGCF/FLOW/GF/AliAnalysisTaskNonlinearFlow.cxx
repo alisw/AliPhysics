@@ -149,16 +149,6 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     rand(32213)
 {
   for (int i = 0; i < 30; i++) fListOfProfiles[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap0P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap0M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap10P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap10M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap14P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap14M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subL[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subM[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subR[i] = NULL;
 }
 //______________________________________________________________________________
 AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int _fNUA, int _fNUE, TString _fPeriod):
@@ -240,17 +230,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   rand(32213) {
 
   for (int i = 0; i < 30; i++) fListOfProfiles[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap0P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap0M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap10P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap10M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap14P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap14M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subL[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subM[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subR[i] = NULL;
-
+  
   // Output slot #1 writes into a TList
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -363,17 +343,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   rand(32213) {
 
   for (int i = 0; i < 30; i++) fListOfProfiles[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap0P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap0M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap10P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap10M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap14P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap14M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subL[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subM[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subR[i] = NULL;
-
+  
   // Output slot #1 writes into a TList
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -399,17 +369,7 @@ AliAnalysisTaskNonlinearFlow::~AliAnalysisTaskNonlinearFlow()
   for (int i = 0; i < 30; i++) {
     if (fListOfProfiles[i]) delete fListOfProfiles[i];
   }
-  for (int i = 0; i < 10; i++) if (QDis[i]) delete QDis[i];
-  for (int i = 0; i < 10; i++) if (QDisGap0P[i]) delete QDisGap0P[i];
-  for (int i = 0; i < 10; i++) if (QDisGap0M[i]) delete QDisGap0M[i];
-  for (int i = 0; i < 10; i++) if (QDisGap10P[i]) delete QDisGap10P[i];
-  for (int i = 0; i < 10; i++) if (QDisGap10M[i]) delete QDisGap10M[i];
-  for (int i = 0; i < 10; i++) if (QDisGap14P[i]) delete QDisGap14P[i];
-  for (int i = 0; i < 10; i++) if (QDisGap14M[i]) delete QDisGap14M[i];
-  for (int i = 0; i < 10; i++) if (QDis3subL[i]) delete QDis3subL[i];
-  for (int i = 0; i < 10; i++) if (QDis3subM[i]) delete QDis3subM[i];
-  for (int i = 0; i < 10; i++) if (QDis3subR[i]) delete QDis3subR[i];
-
+  
   if (fGFWSelection) delete fGFWSelection;
   if (fGFWSelection15o) delete fGFWSelection15o;
 }
@@ -647,28 +607,6 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   }
 
   // Create Q Distribution
-  for (int h = 0; h < 6; h++) {
-    QDis[h] = new TH2D(Form("Q%dDis", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDisGap0P[h] = new TH2D(Form("Q%dDisGap0P", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDisGap0M[h] = new TH2D(Form("Q%dDisGap0M", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDisGap10P[h] = new TH2D(Form("Q%dDisGap10P", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDisGap10M[h] = new TH2D(Form("Q%dDisGap10M", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDisGap14P[h] = new TH2D(Form("Q%dDisGap14P", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDisGap14M[h] = new TH2D(Form("Q%dDisGap14M", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDis3subL[h] = new TH2D(Form("Q%dDis3subL", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDis3subM[h] = new TH2D(Form("Q%dDis3subM", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDis3subR[h] = new TH2D(Form("Q%dDis3subR", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    fListOfObjects->Add(QDis[h]);
-    fListOfObjects->Add(QDisGap0P[h]);
-    fListOfObjects->Add(QDisGap0M[h]);
-    fListOfObjects->Add(QDisGap10P[h]);
-    fListOfObjects->Add(QDisGap10M[h]);
-    fListOfObjects->Add(QDisGap14P[h]);
-    fListOfObjects->Add(QDisGap14M[h]);
-    fListOfObjects->Add(QDis3subL[h]);
-    fListOfObjects->Add(QDis3subM[h]);
-    fListOfObjects->Add(QDis3subR[h]);
-  }
 
   // Physics profiles
   //	NL response
@@ -1310,20 +1248,6 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight);
     correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
   }
-
-  for (int h = 0; h < 6; h++) {
-    QDis[h]->Fill(correlator.Q(h+2,1).Re(), correlator.Q(h+2,1).Im());
-    QDisGap0P[h]->Fill(correlator.QGap0P(h+2,1).Re(), correlator.QGap0P(h+2,1).Im());
-    QDisGap0M[h]->Fill(correlator.QGap0M(h+2,1).Re(), correlator.QGap0M(h+2,1).Im());
-    QDisGap10P[h]->Fill(correlator.QGap10P(h+2,1).Re(), correlator.QGap10P(h+2,1).Im());
-    QDisGap10M[h]->Fill(correlator.QGap10M(h+2,1).Re(), correlator.QGap10M(h+2,1).Im());
-    QDisGap14P[h]->Fill(correlator.QGap14P(h+2,1).Re(), correlator.QGap14P(h+2,1).Im());
-    QDisGap14M[h]->Fill(correlator.QGap14M(h+2,1).Re(), correlator.QGap14M(h+2,1).Im());
-    QDis3subL[h]->Fill(correlator.QsubLeft(h+2,1).Re(), correlator.QsubLeft(h+2,1).Im());
-    QDis3subM[h]->Fill(correlator.QsubMiddle(h+2,1).Re(), correlator.QsubMiddle(h+2,1).Im());
-    QDis3subR[h]->Fill(correlator.QsubRight(h+2,1).Re(), correlator.QsubRight(h+2,1).Im());
-  }
-
 
   if (fNtrksName == "Mult") {
     CalculateProfile(multProfile, NtrksCounter);
