@@ -1993,7 +1993,9 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
         fPeriod.EqualTo("LHC16_simp") || fPeriod.EqualTo("LHC17_simp") || fPeriod.EqualTo("LHC18_simp")
         ) {
       std::string ppperiod = ReturnPPperiod(fAOD->GetRunNumber());
-      if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s", ppperiod.c_str()));
+      // Old code: change to new one is because DCAxy < 10 is almost no cut
+      // if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s", ppperiod.c_str()));
+      if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s_SystFlag2_", ppperiod.c_str()));
       else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s_SystFlag%i_", ppperiod.c_str(), fCurrSystFlag));
       if(!fWeightsSystematics)
       {
@@ -2003,7 +2005,9 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
       fWeightsSystematics->CreateNUA();
     } else if (fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview")) {
 
-      if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+      // Old code: change to new one becuase DCAxy < 10 is almost no cut
+      // if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+      if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag2_",fAOD->GetRunNumber()));
       else if (fCurrSystFlag >= 17)
            fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag-7));
       else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
@@ -2015,7 +2019,8 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
         }
       fWeightsSystematics->CreateNUA();
     } else {
-      if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+      // if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+      if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag2_",fAOD->GetRunNumber()));
       else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
       if(!fWeightsSystematics)
       {
@@ -2029,7 +2034,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
   // If it is the pPb LHC16qt
   else {
     int EvFlag = 0, TrFlag = 0;
-    if (fCurrSystFlag == 0) EvFlag = 0, TrFlag = 0;
+    if (fCurrSystFlag == 0) EvFlag = 0, TrFlag = 2; // 0->2, because in the NUA file, DCAxy=10 is no cut
     if (fCurrSystFlag == 1) EvFlag = 0, TrFlag = 1;
     if (fCurrSystFlag == 2) EvFlag = 0, TrFlag = 5;
     if (fCurrSystFlag == 3) EvFlag = 0, TrFlag = 0; // Abandoned
@@ -2745,10 +2750,11 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *
   // Additional cut for TPCchi2perCluster
   if (mtr->GetTPCchi2perCluster()>fTPCchi2perCluster) return kFALSE;
 
+  // Disable check DCAxy because we want to use the cut in FB96
   if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
-    return fGFWSelection15o->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+    return fGFWSelection15o->AcceptTrack(mtr,ltrackXYZ,0, fCurrSystFlag ? kFALSE : kTRUE);
   } else {
-    return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+    return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0, fCurrSystFlag ? kFALSE : kTRUE);
   }
 }
 
