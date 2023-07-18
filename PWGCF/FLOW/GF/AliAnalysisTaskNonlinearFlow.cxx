@@ -1992,15 +1992,16 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
 Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
 
   // If the period is not pPb LHC16qt
-  if (!fPeriod.EqualTo("LHC16qt")) {
+  if (! (fPeriod.EqualTo("LHC16qt") || fPeriod.EqualTo("LHC16qt_Closure")) ) {
     // Only if it is the new LHC16,17,18, We need the period NUA
     if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
-        fPeriod.EqualTo("LHC16_simp") || fPeriod.EqualTo("LHC17_simp") || fPeriod.EqualTo("LHC18_simp")
+        fPeriod.EqualTo("LHC16_simp") || fPeriod.EqualTo("LHC17_simp") || fPeriod.EqualTo("LHC18_simp") || 
+        fPeriod.EqualTo("LHC16_Closure") || fPeriod.EqualTo("LHC17_Closure") || fPeriod.EqualTo("LHC18_Closure")
         ) {
       std::string ppperiod = ReturnPPperiod(fAOD->GetRunNumber());
       // Old code: change to new one is because DCAxy < 10 is almost no cut
-      // if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s", ppperiod.c_str()));
-      if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s_SystFlag2_", ppperiod.c_str()));
+      // if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s_SystFlag2_", ppperiod.c_str()));
+      if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s", ppperiod.c_str()));
       else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s_SystFlag%i_", ppperiod.c_str(), fCurrSystFlag));
       if(!fWeightsSystematics)
       {
@@ -2070,7 +2071,9 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
 
   if (fPeriod.EqualTo("LHC15o_simp") || fPeriod.EqualTo("LHC18q_simp") || fPeriod.EqualTo("LHC18r_simp") ||
       fPeriod.EqualTo("LHC16qt_simp") ||
-      fPeriod.EqualTo("LHC16_simp") || fPeriod.EqualTo("LHC17_simp") || fPeriod.EqualTo("LHC18_simp")) {
+      fPeriod.EqualTo("LHC16_simp") || fPeriod.EqualTo("LHC17_simp") || fPeriod.EqualTo("LHC18_simp") ||
+      fPeriod.Contains("Closure")
+      ) {
     if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("Default"));
     else fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("Sys%i", fCurrSystFlag));
 
@@ -2665,6 +2668,9 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
       fPeriod.EqualTo("LHC16") ||
       fPeriod.EqualTo("LHC17") ||
       fPeriod.EqualTo("LHC18") || 
+      fPeriod.EqualTo("LHC16_Closure") ||
+      fPeriod.EqualTo("LHC17_Closure") ||
+      fPeriod.EqualTo("LHC18_Closure") || 
       fPeriod.EqualTo("LHC16_simp") ||
       fPeriod.EqualTo("LHC17_simp") ||
       fPeriod.EqualTo("LHC18_simp") || 
@@ -2678,7 +2684,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
     if (v0Est->GetValue()/v0Est->GetMean() < fV0MRatioCut) return kFALSE;
   }
 
-  if (fPeriod.EqualTo("LHC15o_pass2")) {
+  if (fPeriod.EqualTo("LHC15o_pass2") || fPeriod.EqualTo("LHC15o_pass2_Closure")) {
 	int currentRun = fAOD->GetRunNumber();
 	if (currentRun == 245729 ||
 		currentRun == 245731 ||
@@ -2711,10 +2717,13 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
   if (fPeriod.EqualTo("LHC15o") ||
       fPeriod.EqualTo("LHC15o_pass2") ||
       fPeriod.EqualTo("LHC18qr_pass3") ||
+      fPeriod.EqualTo("LHC15o_pass2_Closure") ||
+      fPeriod.EqualTo("LHC18qr_pass3_Closure") ||
       fPeriod.EqualTo("LHC15o_simp") ||
       fPeriod.EqualTo("LHC18q_simp") ||
       fPeriod.EqualTo("LHC18r_simp") ||
       fPeriod.EqualTo("LHC16qt") ||
+      fPeriod.EqualTo("LHC16qt_Closure") ||
       fPeriod.EqualTo("LHC16qt_simp") ||
       fPeriod.EqualTo("LHC17n") ||
       fPeriod.EqualTo("LHC15oKatarina")) {
