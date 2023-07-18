@@ -66,7 +66,7 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
     this->maxEta = f_maxEta;
   }
   void Setfbit(int fb) { this->filterBit = fb; }
-  void SetYear(TString year) { this->fYear = year; }
+  void SetYear(TString year) { this->fYear = year; }  
   void SetPSbinning(TArrayI MB, TArrayI NB, int Mm)
   {
     this->Mbins = MB;
@@ -79,17 +79,19 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
     this->fRejectEls = fRejectElectron;
   }
   void SetRejectPileup(bool RejectPileup) { this->fpileup = RejectPileup; }
+  void SetBfield(int bf) { this->fBfield = bf; }
   void SetDCAXYRangeMax(double dcaxy) { this->fDCAxyMax = dcaxy; }
   void SetDCAZRangeMax(double dcaz) { this->fDCAzMax = dcaz; }
   void SetITSClusterCut(double itscut) { this->fITSCls = itscut; }
   void SetTPCClusterCut(double tpccut) { this->fTPCCls = tpccut; }
   void SetnTPCrossedrows(double tpcrowcut) { this->fTPCRows = tpcrowcut; }
   void SetSelfAffine(bool selfaffine) { this->fSelfAffine = selfaffine; }
-  void SetSharedCls(double fSharedCls, double fSharedrows, double fFindable)
+  void SetSharedCls(double fSharedCls, double fSharedrows, double fFindable, bool fSharedMean)
   {
     this->fSharedClsMax = fSharedCls;
     this->fSharedRowsMax = fSharedrows;
     this->fFindableClsMin = fFindable;
+    this->fSharedFrMean = fSharedMean;
   }
 
  protected:
@@ -125,6 +127,8 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   bool fRejectEls;
   bool fSelfAffine;
   double fITSCls, fTPCCls, fTPCRows;
+  bool fSharedFrMean;
+  int fBfield;
   // int fPt;              // Number of pt bins
 
   // Output lists
@@ -192,6 +196,7 @@ class AliAnalysisTaskNFactorialMoments : public AliAnalysisTaskSE
   TH2F* fHistDCAzpT;
   TH1F* fHistnsharedcls[2];
   TH2F* fHistnshclsfra[2];
+  TH2F* fHistnshclsfravspt[5];
   TH2F* fHistnfoundcls[2];
   TH1F* fHistnfcls[2];
   // For Data and also for Generated MC (if fismc = true)
