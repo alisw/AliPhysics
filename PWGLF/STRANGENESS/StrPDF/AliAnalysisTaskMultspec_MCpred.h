@@ -7,6 +7,7 @@
 
 
 class AliAnalysisTaskMultspec_MCpred : public AliAnalysisTaskSE {
+
   public:
     AliAnalysisTaskMultspec_MCpred();
     AliAnalysisTaskMultspec_MCpred(const char *name, TString lExtraOptions = "");
@@ -15,8 +16,6 @@ class AliAnalysisTaskMultspec_MCpred : public AliAnalysisTaskSE {
     virtual void UserCreateOutputObjects();
     virtual void UserExec(Option_t *option);
     virtual void Terminate(Option_t *);
-
-    double Rap(double pz, double E) const;
 
   private:
 
