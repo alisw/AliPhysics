@@ -109,6 +109,7 @@ fkMaxPtTrigger(4.0),
 fkMinEta(-0.8),
 fkMaxEta(+0.8),
 fkNEtaBins(80),
+fkVerboseMode(kFALSE),
 
 // Histograms
 fHistForwardMult(0),
@@ -178,6 +179,7 @@ fkMaxPtTrigger(4.0),
 fkMinEta(-0.8),
 fkMaxEta(+0.8),
 fkNEtaBins(lNEtaBins),
+fkVerboseMode(kFALSE),
 
 // Histograms
 fHistForwardMult(0),
@@ -510,11 +512,24 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   associatedIndices.emplace_back(omegaMinusIndices);
   associatedIndices.emplace_back(omegaPlusIndices);
 
+  if(fkVerboseMode){
+    Printf("Trigger index array size.....: %d \n", triggerIndices.size() );
+    Printf("K0Short index array size.....: %d \n", k0ShortIndices.size() );
+    Printf("Lambda index array size......: %d \n", lambdaIndices.size() );
+    Printf("AntiLambda index array size..: %d \n", antiLambdaIndices.size() );
+    Printf("XiMinus index array size.....: %d \n", xiMinusIndices.size() );
+    Printf("XiPlus index array size......: %d \n", xiPlusIndices.size() );
+    Printf("OmegaMinus index array size..: %d \n", omegaMinusIndices.size() );
+    Printf("OmegaPlus index array size...: %d \n", omegaPlusIndices.size() );
+  }
+
   THnF *h4dAssociated[7] = {fHist4d2pcK0Short, fHist4d2pcLambda, fHist4d2pcAntiLambda, fHist4d2pcXiMinus, fHist4d2pcXiPlus, fHist4d2pcOmegaMinus, fHist4d2pcOmegaPlus};
   THnF *h4dMixed[7] = {fHist4d2pcMixedK0Short, fHist4d2pcMixedLambda, fHist4d2pcMixedAntiLambda, fHist4d2pcMixedXiMinus, fHist4d2pcMixedXiPlus, fHist4d2pcMixedOmegaMinus, fHist4d2pcMixedOmegaPlus};
 
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   //  Actually correlate stuff with stuff
+  if(fkVerboseMode)
+    Printf("Correlation loop starting now... \n");
   for (Int_t iTrigger = 0;  iTrigger < triggerIndices.size(); iTrigger++){   // trigger loop
     TParticle* lTriggerParticle = lMCstack->Particle(triggerIndices[iTrigger]);
     
@@ -538,6 +553,8 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   }
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   //Event mixing loop
+  if(fkVerboseMode)
+    Printf("Event mixing loop starting now... \n");
   if( fEMBufferFull[multiplicityIndex] ){ //require also that a trigger exists
     for (Int_t iTrigger = 0;  iTrigger < fEMBufferSize[multiplicityIndex]; iTrigger++){   // trigger loop
       Double_t geta = fEMBufferEta[iTrigger][multiplicityIndex]; //from previous events
@@ -561,6 +578,8 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   }
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   // fill EM buffer
+  if(fkVerboseMode)
+    Printf("Event mixing buffer processing starting now... \n");
   if( fEMBufferSize[multiplicityIndex] > 0 ){
     for (Int_t iTrigger = 0;  iTrigger < triggerIndices.size(); iTrigger++){   // trigger loop
       TParticle* lThisParticle = lMCstack->Particle(triggerIndices[iTrigger]);
@@ -578,6 +597,9 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   }
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   
+  if(fkVerboseMode)
+    Printf("Finished UserExec \n");
+
   // Post output data.
   PostData(1, fListHist);
 }

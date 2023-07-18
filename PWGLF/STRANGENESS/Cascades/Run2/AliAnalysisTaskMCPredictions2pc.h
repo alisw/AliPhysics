@@ -63,6 +63,11 @@ public:
   void SetPtTrigger( Float_t l1, Float_t l2 ) { fkMinPtTrigger = l1; fkMaxPtTrigger = l2; }
   void SetSelectINELgtZERO ( Bool_t lOpt ) { fkSelectINELgtZERO = lOpt; }
   void SetMinimumMultiplicity ( Long_t lMinMult ) { fkMinimumMultiplicity = lMinMult; } ;
+  void SetVerboseMode( Bool_t lOpt = kTRUE ) { fkVerboseMode = lOpt; }
+  void SetEMBufferSize ( Long_t lEMBufferSize ) { 
+    for(Int_t ii=0; ii<20; ii++)
+      fEMBufferSize[ii]=lEMBufferSize;
+   } ;
   
   void SetMultiplicityBinning( Int_t lNbins, Float_t *lNbinbounds ) {
     fNMultBins = lNbins; 
@@ -114,8 +119,9 @@ private:
   Float_t fkMinEta;
   Float_t fkMaxEta;
   Int_t fkNEtaBins;
+  Bool_t fkVerboseMode; 
+
   TH2D *fHistEtaVsPtTrigger; //!
-  
   THnF *fHist4d2pcK0Short; //!
   THnF *fHist4d2pcLambda; //!
   THnF *fHist4d2pcAntiLambda; //!
