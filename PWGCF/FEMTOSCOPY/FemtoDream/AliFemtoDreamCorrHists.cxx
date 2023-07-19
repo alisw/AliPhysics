@@ -993,9 +993,9 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
         fSameEventpTOnepTTwokStar[Counter] = new TH2F*[nmTBins];
         fMixedEventpTOnepTTwokStar[Counter] = new TH2F*[nmTBins]; 
 
-        Int_t bins[2] = {200,200}; 
-        Double_t xmin[2] =  {0.,0.}; 
-        Double_t xmax[2] = {5.0,5.0}; 
+        //Int_t bins[2] = {200,200}; 
+        //Double_t xmin[2] =  {0.,0.}; 
+        //Double_t xmax[2] = {5.0,5.0}; 
 
         for (unsigned int imT = 0; imT < nmTBins; ++imT) {
           TString SameEventName =
