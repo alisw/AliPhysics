@@ -75,6 +75,6 @@ class AliAnalysisTaskFemtoProtonKaonPlus : public AliAnalysisTaskSE {
   TList *fResults;                          //!
   TList *fResultsQA;                        //!
 
-  ClassDef(AliAnalysisTaskFemtoProtonKaonPlus, 1) 
+  ClassDef(AliAnalysisTaskFemtoProtonKaonPlus, 2) 
 };
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKFEMTOPROTONKAONPLUS_H_ */
