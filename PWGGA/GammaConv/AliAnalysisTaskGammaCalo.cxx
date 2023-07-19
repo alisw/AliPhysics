@@ -1096,7 +1096,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
     }
   }
 
-  // if (fDoClusterQA > 0 && !fDoLightOutput){
+  if (fDoClusterQA > 0 && !fDoLightOutput){
     double valRes = minRes;
     for (int i = 0; i < 1000; ++i) {
       arrResBinning.push_back(valRes);
@@ -1109,7 +1109,7 @@ void AliAnalysisTaskGammaCalo::UserCreateOutputObjects(){
       else
         break;
     }
-  // }
+  }
 
   // Create histograms
   if(fOutputContainer != NULL){
