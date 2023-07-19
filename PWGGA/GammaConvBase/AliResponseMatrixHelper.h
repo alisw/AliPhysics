@@ -27,6 +27,8 @@
 #include <vector>
 #include "TH1.h"
 #include "TH2.h"
+#include "TF1.h"
+#include "TF2.h"
 #include "THnSparse.h"
 
 class MatrixHandler4D
@@ -64,6 +66,9 @@ class MatrixHandler4D
   TH2F* GetTH2(const char* name = "hSparseResponse_Clone");
   TH2F* GetResponseMatrix(int binX, int binY, const char* name = "dummy");
 
+  void WeightResponseMatrix(TF1* funcMeson = nullptr, TF1* funcJet = nullptr);
+  void WeightResponseMatrix(TF2* func);
+
  private:
   bool useTHNSparese = false;
   int nBinsJet = 0;
@@ -76,7 +81,7 @@ class MatrixHandler4D
   TH1F* h1dMeson = nullptr;
   THnSparseF* hSparseResponse = nullptr;
 
-  ClassDef(MatrixHandler4D, 3)
+  ClassDef(MatrixHandler4D, 4)
 };
 
 

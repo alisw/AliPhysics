@@ -214,6 +214,11 @@ void AddTask_MesonJetCorr_Conv(
     cuts.AddCutPCM("00010103", "0dm00009f97300003ge0404000", "2s52103500000000"); // qT max 0.05 1D
     cuts.AddCutPCM("00010103", "0dm00009f97300002ge0404000", "2s52103500000000"); // qT max 0.06 2D
     cuts.AddCutPCM("00010103", "0dm00009f97300009ge0404000", "2s52103500000000"); // qT max 0.03 2D
+
+
+  // configs with eta < 0.5
+  } else if (trainConfig == 30) {
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52403500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
   
 
   //--- Systamtic variations for INT7 trigger
