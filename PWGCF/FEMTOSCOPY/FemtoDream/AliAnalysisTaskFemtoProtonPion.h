@@ -151,6 +151,6 @@ class AliAnalysisTaskFemtoProtonPion : public AliAnalysisTaskSE {
   TH2F *fResonanceLorentzFactor; 
   TH2F *fInvMassResonancesMCTruth; 
 
-  ClassDef(AliAnalysisTaskFemtoProtonPion, 2) 
+  ClassDef(AliAnalysisTaskFemtoProtonPion, 3) 
 };
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKFEMTOPROTONPION_H_ */

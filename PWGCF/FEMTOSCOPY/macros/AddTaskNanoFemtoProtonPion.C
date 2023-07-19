@@ -25,7 +25,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     bool DoFinemTBinning = false, //14
     int mTBinningChoice = 1, //15
     bool DoFunWithPhaseSpace = false, //16
-    const char *cutVariation = "0" //17
+    float pTOnepTTwokStarCutOff = 3., //17
+    const char *cutVariation = "0" //18
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -260,9 +261,9 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   }
 
   if(DoFunWithPhaseSpace){
-    config->SetpTOnepTTwokStarPlotsmT(true);
+    config->SetpTOnepTTwokStarPlotsmT(true, pTOnepTTwokStarCutOff);
   } else {
-    config->SetpTOnepTTwokStarPlotsmT(false);
+    config->SetpTOnepTTwokStarPlotsmT(false, pTOnepTTwokStarCutOff);
   }
 
   //============================================================================================================= Systematics

@@ -487,8 +487,8 @@ class AliFemtoDreamCorrHists {
   TH2F **fSameEventmTDistCommon;
   TH2F **fSameEventmTDistNonCommon;
 
-  THnSparseF ***fSameEventpTOnepTTwokStar;
-  THnSparseF ***fMixedEventpTOnepTTwokStar;
+  TH2F ***fSameEventpTOnepTTwokStar; //to-do: change back to THnSparseF for more dimensions
+  TH2F ***fMixedEventpTOnepTTwokStar;
 
 
   bool fDoMultBinning;
@@ -507,11 +507,12 @@ class AliFemtoDreamCorrHists {
   bool fmTDetaDPhi;
   bool fAncestors;
   bool fpTOnepTTwokStarPlotsmT;
+  double fpTOnepTTwokStarCutOff;
   std::vector<int> fPDGCode;
   std::vector<float> fmTBins;
   std::vector<unsigned int> fWhichPairs;
   std::vector<int> fCentBins;
-  ClassDef(AliFemtoDreamCorrHists,11);
+  ClassDef(AliFemtoDreamCorrHists,12);
 };
 
 #endif /* ALIFEMTODREAMCORRHISTS_H_ */
