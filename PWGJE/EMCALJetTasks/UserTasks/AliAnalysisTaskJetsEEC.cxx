@@ -55,7 +55,7 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0), E3C_hist(0), E3C_pt_hist(0), E3C_pt_hist_log(0), EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), EEC_det_pt_hist_log_3d(0), EEC_tru_pt_hist_log_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), E3C_det_pt_hist_log_3d(0), E3C_tru_pt_hist_log_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N2_det_pt_hist_log_3d(0), N2_tru_pt_hist_log_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), EEC_det_match_pt_det_log(0), EEC_tru_match_pt_tru_log(0), E3C_det_match_pt_det_log(0), E3C_tru_match_pt_tru_log(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0)
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0), E3C_hist(0), E3C_pt_hist(0), E3C_pt_hist_log(0), EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), EEC_det_pt_hist_log_3d(0), EEC_tru_pt_hist_log_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), E3C_det_pt_hist_log_3d(0), E3C_tru_pt_hist_log_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N2_det_pt_hist_log_3d(0), N2_tru_pt_hist_log_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), EEC_det_match_pt_det_log(0), EEC_tru_match_pt_tru_log(0), E3C_det_match_pt_det_log(0), E3C_tru_match_pt_tru_log(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -71,7 +71,7 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0), E3C_hist(0), E3C_pt_hist(0), E3C_pt_hist_log(0), EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), EEC_det_pt_hist_log_3d(0), EEC_tru_pt_hist_log_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), E3C_det_pt_hist_log_3d(0),E3C_tru_pt_hist_log_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N2_det_pt_hist_log_3d(0), N2_tru_pt_hist_log_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), EEC_det_match_pt_det_log(0), EEC_tru_match_pt_tru_log(0), E3C_det_match_pt_det_log(0), E3C_tru_match_pt_tru_log(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JER(0)
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0), E3C_hist(0), E3C_pt_hist(0), E3C_pt_hist_log(0), EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), EEC_det_pt_hist_log_3d(0), EEC_tru_pt_hist_log_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), E3C_det_pt_hist_log_3d(0),E3C_tru_pt_hist_log_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N2_det_pt_hist_log_3d(0), N2_tru_pt_hist_log_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), EEC_det_match_pt_det_log(0), EEC_tru_match_pt_tru_log(0), E3C_det_match_pt_det_log(0), E3C_tru_match_pt_tru_log(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0)
 
 {
   SetMakeGeneralHistograms(kTRUE);
@@ -557,7 +557,10 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 {
                     if(s==j) continue; //if s=j this would be 0
                   
-                    
+                    double j_eta_3pt_2_det = fConstituents[j].eta();
+                    double s_eta_3pt_2_det = fConstituents[s].eta();
+                    double del_js_eta_3pt_2_det = abs(j_eta_3pt_2_det-s_eta_3pt_2_det);
+                    if (del_js_eta_3pt_2_det < 0.008) continue;
                     double eee_jss_2 =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                     double deltaR_jss_2 = fConstituents[j].delta_R(fConstituents[s]);
                     double delta_logR_jss_2 = log(deltaR_jss_2);
@@ -580,7 +583,11 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 //For 2 point correlator
                 for(int s=0; s<j ; s++)
                 {
-                    
+                 //Pair cut
+                    double j_eta_2pt_2_det = fConstituents[j].eta();
+                    double s_eta_2pt_2_det = fConstituents[s].eta();
+                    double del_js_eta_2pt_2_det = abs(j_eta_2pt_2_det-s_eta_2pt_2_det);
+                    if (del_js_eta_2pt_2_det < 0.008) continue;
                     double delta_R_js_2 = fConstituents[j].delta_R(fConstituents[s]);
                     double log_delta_R_js_2 = log(delta_R_js_2);
                     double ee_js_2 = (2*fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
@@ -611,7 +618,11 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 {
                     if(s==j) continue; //This ensures I don't get stuff like (000) for (jss)
                     
-                    
+                    //Pair cut
+                    double j_eta_3pt_det = fConstituents[j].eta();
+                    double s_eta_3pt_det = fConstituents[s].eta();
+                    double del_js_eta_3pt_det = abs(j_eta_3pt_det-s_eta_3pt_det);
+                    if (del_js_eta_3pt_det < 0.008) continue;
                     double eee_jss =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                     double deltaR_jss = fConstituents[j].delta_R(fConstituents[s]);
                     double delta_logR_jss = log(deltaR_jss);
@@ -633,6 +644,12 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                     {
                         if(s>j) continue;
                         
+                        //Pair cut
+                        double m_eta_3pt_det = fConstituents[j].eta();
+                        double s_eta_3pt_det = fConstituents[s].eta();
+                        double del_jm_eta_3pt_det = abs(j_eta_3pt_det-m_eta_3pt_det);
+                        double del_sm_eta_3pt_det = abs(s_eta_3pt_det-m_eta_3pt_det);
+                        if (del_jm_eta_3pt_det < 0.008 || del_sm_eta_3pt_det < 0.008 ) continue;
                         
                         double eee_jsm = ((6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt())/(pow(jet_pt,3)));
                         double deltaR_js = fConstituents[j].delta_R(fConstituents[s]);
@@ -676,7 +693,11 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 //For loop for EEC
                 for(int s=0; s<j ; s++)
                 {
-                    
+                //Pair cut
+                    double j_eta_2pt_det = fConstituents[j].eta();
+                    double s_eta_2pt_det = fConstituents[s].eta();
+                    double del_js_eta_2pt_det = abs(j_eta_2pt_det-s_eta_2pt_det);
+                    if (del_js_eta_2pt_det < 0.008) continue;
                     double delta_R_js = fConstituents[j].delta_R(fConstituents[s]);
                     double log_delta_R_js = log(delta_R_js);
                     double ee_js = (2*fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
@@ -711,6 +732,11 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                     
                     if(s==j) continue; //if s=j this would be 0
                     
+                    //Pair cut
+                    double j_eta_3pt_2_tru = fConstituents[j].eta();
+                    double s_eta_3pt_2_tru = fConstituents[s].eta();
+                    double del_js_eta_3pt_2_tru = abs(j_eta_3pt_2_tru-s_eta_3pt_2_tru);
+                    if (del_js_eta_3pt_2_tru < 0.008) continue;
                     double eee_jss_2_tru =((3*fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[s].pt())/(pow(jet_pt_tru,3)));
                     double deltaR_jss_2_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                     double delta_logR_jss_2_tru = log(deltaR_jss_2_tru);
@@ -730,6 +756,11 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 //For 2 point correlator
                 for(int s=0; s<j ; s++)
                 {
+                    //Pair cut
+                    double j_eta_2pt_2_tru = fConstituents[j].eta();
+                    double s_eta_2pt_2_tru = fConstituents[s].eta();
+                    double del_js_eta_2pt_2_tru = abs(j_eta_2pt_2_tru-s_eta_2pt_2_tru);
+                    if (del_js_eta_2pt_2_tru < 0.008) continue;
                     
                     double delta_R_js_2_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                     double log_delta_R_js_2_tru = log(delta_R_js_2_tru);
@@ -759,6 +790,11 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 {
                     if(s==j) continue; //This ensures I don't get stuff like (000) for (jss)
                     
+                    //Pair cut
+                    double j_eta_3pt_tru = fConstituents[j].eta();
+                    double s_eta_3pt_tru = fConstituents[s].eta();
+                    double del_js_eta_3pt_tru = abs(j_eta_3pt_tru-s_eta_3pt_tru);
+                    if (del_js_eta_3pt_tru < 0.008) continue;
                     double eee_jss_tru =((3*fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[s].pt())/(pow(jet_pt_tru,3)));
                     double deltaR_jss_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                     double delta_logR_jss_tru = log(deltaR_jss_tru);
@@ -779,6 +815,12 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                     {
                         if(s>j) continue;
                         
+                        //Pair cut
+                        double m_eta_3pt_tru = fConstituents[j].eta();
+                        double s_eta_3pt_tru = fConstituents[s].eta();
+                        double del_jm_eta_3pt_tru = abs(j_eta_3pt_tru-m_eta_3pt_tru);
+                        double del_sm_eta_3pt_tru = abs(s_eta_3pt_tru-m_eta_3pt_tru);
+                        if (del_jm_eta_3pt_tru < 0.008 || del_sm_eta_3pt_tru < 0.008 ) continue;
                         double eee_jsm_tru = ((6*fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[m].pt())/(pow(jet_pt_tru,3)));
                         double deltaR_js_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                         double delta_logR_js_tru = log(deltaR_js_tru);
@@ -819,6 +861,11 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 //For loop for EEC
                 for(int s=0; s<j ; s++)
                 {
+                    //Pair cut
+                    double j_eta_2pt_tru = fConstituents[j].eta();
+                    double s_eta_2pt_tru = fConstituents[s].eta();
+                    double del_js_eta_2pt_tru = abs(j_eta_2pt_tru-s_eta_2pt_tru);
+                    if (del_js_eta_2pt_tru < 0.008) continue;
                     
                     double delta_R_js_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                     double log_delta_R_js_tru = log(delta_R_js_tru);
@@ -908,6 +955,11 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 {
                     if(s==j) continue; //this ensure i dont get 000
                     
+                    //Pair cut
+                    double j_eta_3pt_2 = fConstituents[j].eta();
+                    double s_eta_3pt_2 = fConstituents[s].eta();
+                    double del_js_eta_3pt_2 = abs(j_eta_3pt_2 -s_eta_3pt_2);
+                    if (del_js_eta_3pt_2 < 0.008) continue;
                     double eee_jss_2 =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                     double deltaR_jss_2 = fConstituents[j].delta_R(fConstituents[s]);
                     double delta_logR_jss_2 = log(deltaR_jss_2);
@@ -926,6 +978,11 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 //For 2 point correlator
                 for(int s=0; s<j ; s++)
                 {
+                    //Pair cut
+                    double j_eta_2pt_2 = fConstituents[j].eta();
+                    double s_eta_2pt_2 = fConstituents[s].eta();
+                    double del_js_eta_2pt_2 = abs(j_eta_2pt_2-s_eta_2pt_2);
+                    if (del_js_eta_2pt_2 < 0.008) continue;
                     
                     double delta_R_js_2 = fConstituents[j].delta_R(fConstituents[s]);
                     double log_delta_R_js_2 = log(delta_R_js_2);
@@ -954,6 +1011,11 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 {
                     if(s==j) continue; //This ensures I don't get stuff like (000) for (jss)
                     
+                    //Pair cut
+                    double j_eta_3pt = fConstituents[j].eta();
+                    double s_eta_3pt = fConstituents[s].eta();
+                    double del_js_eta_3pt = abs(j_eta_3pt-s_eta_3pt);
+                    if (del_js_eta_3pt < 0.008) continue;
                     
                     double eee_jss =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                     double deltaR_jss = fConstituents[j].delta_R(fConstituents[s]);
@@ -973,6 +1035,12 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                     {
                         if(s>j) continue;
                         
+                        //Pair cut
+                        double m_eta_3pt = fConstituents[j].eta();
+                        double s_eta_3pt = fConstituents[s].eta();
+                        double del_jm_eta_3pt = abs(j_eta_3pt-m_eta_3pt);
+                        double del_sm_eta_3pt = abs(s_eta_3pt-m_eta_3pt);
+                        if (del_jm_eta_3pt < 0.008 || del_sm_eta_3pt < 0.008 ) continue;
                         double eee_jsm = ((6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt())/(pow(jet_pt,3)));
                         double deltaR_js = fConstituents[j].delta_R(fConstituents[s]);
                         double delta_logR_js = log(deltaR_js);
@@ -1010,6 +1078,11 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 //For loop for EEC
                 for(int s=0; s<j ; s++)
                 {
+                    //Pair cut
+                    double j_eta_2pt = fConstituents[j].eta();
+                    double s_eta_2pt = fConstituents[s].eta();
+                    double del_js_eta_2pt = abs(j_eta_2pt-s_eta_2pt);
+                    if (del_js_eta_2pt < 0.008) continue;
                     
                     double delta_R_js = fConstituents[j].delta_R(fConstituents[s]);
                     double log_delta_R_js = log(delta_R_js);

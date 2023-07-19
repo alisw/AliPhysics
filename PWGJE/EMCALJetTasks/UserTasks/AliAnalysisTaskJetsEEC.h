@@ -185,13 +185,20 @@ Int_t fpTcorr; ///<flag for pT migration checks
   TH2D *JES; //!<! jet energy scale
   TH2D *JES_scaled; //!<! jet energy scale for scaled pt_det
   TH2D *JER; //!<! jet energy resolution
+
+  TH3D *pair_det_EEC;//!<! histogram for computing pair efficiency at det level
+  TH3D *pair_tru_EEC;//!<! histogram for computing pair efficiency at truth level
+   
+  TH3D *pair_det_E3C;//!<! histogram for computing pair efficiency at det level
+  TH3D *pair_tru_E3C;//!<! histogram for computing pair efficiency at truth level
+  
 private:
   AliAnalysisTaskJetsEEC(
       const AliAnalysisTaskJetsEEC &); // not implemented
   AliAnalysisTaskJetsEEC &
   operator=(const AliAnalysisTaskJetsEEC &); // not implemented
 
-  ClassDef(AliAnalysisTaskJetsEEC, 35) //change this to 35
+  ClassDef(AliAnalysisTaskJetsEEC, 36) //change this to 36
 };
 #endif
 
