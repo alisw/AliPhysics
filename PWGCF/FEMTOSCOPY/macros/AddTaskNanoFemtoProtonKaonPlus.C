@@ -20,7 +20,10 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
     float DCAxy = 0.1, //11
     float DCAz = 0.2, //12
     bool doDCA = false, //13
-    const char *cutVariation = "0" //14
+    bool DopTOnepTTwo = false, //14
+    float pTOnepTTwokStarCutOff = 3.0, //15
+    int whichmTbinning = 1, //16
+    const char *cutVariation = "0" //17
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -138,13 +141,26 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   //BRELOOM Will have to enter mT bins
   std::vector<bool> closeRejection;
   std::vector<float> mTBins;
-  mTBins.push_back(0.71); 
-  mTBins.push_back(1.); 
-  mTBins.push_back(1.2); 
-  mTBins.push_back(1.4); 
-  mTBins.push_back(1.7); 
-  mTBins.push_back(1.9); 
-  mTBins.push_back(10.0); 
+  //BRELOOM correct mT bins
+  if(whichmTbinning == 1){//new binning
+    mTBins.push_back(0.7);
+    mTBins.push_back(1.0);
+    mTBins.push_back(1.2);
+    mTBins.push_back(1.4);
+    mTBins.push_back(1.5);
+    mTBins.push_back(1.8);
+    mTBins.push_back(2.0);
+    mTBins.push_back(100.0);
+  } else if(whichmTbinning == 2){//old binning
+    mTBins.push_back(0.71); 
+    mTBins.push_back(1.); 
+    mTBins.push_back(1.2); 
+    mTBins.push_back(1.4); 
+    mTBins.push_back(1.7); 
+    mTBins.push_back(1.9); 
+    mTBins.push_back(10.0); 
+  }
+
   std::vector<int> pairQA;
   //pairs: 
   // pp             0
@@ -270,6 +286,12 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
     TrackNegKaonCuts->SetMinimalBooking(true);
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
+  }
+
+  if(DopTOnepTTwo){
+    config->SetpTOnepTTwokStarPlotsmT(true, pTOnepTTwokStarCutOff);
+  } else {
+    config->SetpTOnepTTwokStarPlotsmT(false, pTOnepTTwokStarCutOff);
   }
 
   //---------------------------------------------------- Config of Output Containers
