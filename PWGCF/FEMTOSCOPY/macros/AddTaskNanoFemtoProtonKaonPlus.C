@@ -150,6 +150,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
     mTBins.push_back(1.5);
     mTBins.push_back(1.8);
     mTBins.push_back(2.0);
+    mTBins.push_back(100.0);
   } else if(whichmTbinning == 2){//old binning
     mTBins.push_back(0.71); 
     mTBins.push_back(1.); 
