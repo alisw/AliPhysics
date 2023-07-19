@@ -292,7 +292,7 @@ void AliAnalysisTaskMCPredictions2pc::UserCreateOutputObjects()
   //Double_t lMaxPt = 25.0;
   
   Int_t lNEtaBins = fkNEtaBins;
-  Double_t lMaxAbsEta = 4;
+  Double_t lMaxAbsEta = fkMaxEta;
   
   //Settings for charged particle counters (integers!)
   Int_t lNNchBins = fSmallMultRange/fRebinFactor;
