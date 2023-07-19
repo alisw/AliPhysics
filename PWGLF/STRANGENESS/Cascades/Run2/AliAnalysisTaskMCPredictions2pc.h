@@ -65,6 +65,10 @@ public:
   void SetMinimumMultiplicity ( Long_t lMinMult ) { fkMinimumMultiplicity = lMinMult; } ;
   void SetVerboseMode( Bool_t lOpt = kTRUE ) { fkVerboseMode = lOpt; }
   void SetDoEventMixing( Bool_t lOpt = kTRUE ) { fkDoEventMixing = lOpt; }
+  void SetEtaWindow( Float_t lOpt = 0.8 ) { 
+    fkMinEta = -lOpt;
+    fkMaxEta = +lOpt;
+  }
   void SetEMBufferSize ( Long_t lEMBufferSize ) { 
     for(Int_t ii=0; ii<20; ii++)
       fEMBufferSize[ii]=lEMBufferSize;
@@ -129,7 +133,6 @@ private:
   Bool_t fkVerboseMode;
   Bool_t fkDoEventMixing;
 
-  TH2D *fHistEtaVsPtTrigger; //!
   TH3D *fHist3dTrigger; //!
   TH3D *fHist3dAssoPions; //!
   TH3D *fHist3dAssoK0Short; //!
