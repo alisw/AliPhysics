@@ -12,7 +12,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
   double fVzMax = 10.0, bool fRejectElectrons = kFALSE,
   double fDCAXYRangeMax = 0.0, double fDCAZRangeMax = 0.0,
   double fITSClusterCut = 0.0, double fTPCClusterCut = 0.0,
-  double fnTPCrossedrows = 0.0, double fSharedCls = 0.0, double fSharedRows = 0.0, double fFindableCls = 0.0, bool defSharedFrac = kTRUE, int bField = 0, int Mmax = 123, bool fIsMC = kFALSE)
+  double fnTPCrossedrows = 0.0, double fSharedCls = 0.0, double fSharedRows = 0.0, double fFindableCls = 0.0, bool defSharedFrac = kTRUE, int bField = 0, int Mmax = 123, bool fIsMC = kFALSE, const char* suffix = "")
 {
 
   // year = "2010" or "2015"
@@ -49,8 +49,10 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
   }
 
   // creating an instance for tasknfms
+  TString combinedName;
+  combinedName.Form("taskNFMs%s", suffix);
   AliAnalysisTaskNFactorialMoments* tasknfms =
-    new AliAnalysisTaskNFactorialMoments("tasknfms");
+    new AliAnalysisTaskNFactorialMoments(combinedName);
   if (!tasknfms)
     return 0x0;
 
