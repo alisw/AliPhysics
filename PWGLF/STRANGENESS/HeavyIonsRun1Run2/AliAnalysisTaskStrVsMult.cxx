@@ -327,7 +327,6 @@ void AliAnalysisTaskStrVsMult::UserCreateOutputObjects()
       fHistos_K0S->CreateTH2("h2_gen", "", fnptbins[kK0s], fptbinning[kK0s], fncentbins, fcentbinning);
     }
     fHistos_K0S->CreateTH3("h3_ptmasscent_def", "", fnptbins[kK0s], fptbinning[kK0s], fnmassbins[kK0s], fmassbinning[kK0s], fncentbins, fcentbinning);
-    fHistos_K0S->CreateTH3("h3_armptarmalphapt_central", "", 300, 0., 0.3, 200, -1., 1., fnptbins[kK0s], fptbinning[kK0s][0], fptbinning[kK0s][fnptbins[kK0s]]);
   }
   if (fParticleAnalysisStatus[klam]) {
     fHistos_Lam = new THistManager("histos_Lam");
@@ -1345,7 +1344,7 @@ bool AliAnalysisTaskStrVsMult::ApplyCuts(int part) {
     // TPC refit, should be already verified for Offline V0s
     if (!(fV0_PosTrackStatus & AliESDtrack::kTPCrefit) || !(fV0_NegTrackStatus & AliESDtrack::kTPCrefit)) return kFALSE;
     // Armenteros-Podolanski selection (box cut) 
-    if (fV0_pTArm<cutval_V0[kV0_ArmenterosK0s]) return kFALSE;
+    if ((part==kk0s) && fV0_pTArm<cutval_V0[kV0_ArmenterosK0s]) return kFALSE;
     // check that none of daughters is a kink
     if (fV0_kinkidx>0) return kFALSE;
 
@@ -1492,7 +1491,6 @@ void AliAnalysisTaskStrVsMult::FillHistCutVariations(bool iscasc, double perc, b
             SetCutVal(kFALSE, kFALSE, i_cut, varlowcut_V0[i_cut]+i_var*(varhighcut_V0[i_cut]-varlowcut_V0[i_cut])/(nvarcut_V0[i_cut]-1));
             if (phypri && associFlag[kk0s] && ApplyCuts(kk0s)) {
               fHistos_K0S->FillTH3(Form("h3_ptmasscent[%d][%d]", i_cut, i_var), fV0_Pt, fV0_InvMassK0s, perc);
-              if (i_cut==kV0_ArmenterosK0s && i_var==0 && perc>0. && perc<10.) fHistos_K0S->FillTH3("h3_armptarmalphapt_central", fV0_pTArm, fV0_AlphaArm, fV0_Pt);
             }
           }
         }
