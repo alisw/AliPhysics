@@ -309,29 +309,31 @@ void AliAnalysisTaskMCPredictions2pc::UserCreateOutputObjects()
   std::vector<double> edgesPtTrigger;
   std::vector<double> edgesMult;
   Double_t etaBoundary,phiBoundary = 0.0;
-  for (int i=0; i<2*lNEtaBins+1; i++)
+  for (int i=0; i<lNEtaBins+1; i++)
     {
-        Double_t etaBinWidth = 2*lMaxAbsEta/lNEtaBins;
-        etaBoundary = -2*lMaxAbsEta+i*etaBinWidth;
-        edgesDeltaEta.emplace_back(etaBoundary);
+      Double_t etaBinWidth = 4*lMaxAbsEta/lNEtaBins;
+      etaBoundary = -2*lMaxAbsEta+static_cast<float>(i)*etaBinWidth;
+      edgesDeltaEta.emplace_back(etaBoundary);
     }
   for (int i=0; i<fkNPhiBins+1; i++)
     {
-        Double_t phiBinWidth = 2*TMath::Pi()/fkNPhiBins;
-        phiBoundary = -0.5*TMath::Pi()+i*phiBinWidth;
-        edgesDeltaPhi.emplace_back(phiBoundary);
+      Double_t phiBinWidth = 2.0*TMath::Pi()/fkNPhiBins;
+      phiBoundary = -0.5*TMath::Pi()+static_cast<float>(i)*phiBinWidth;
+      edgesDeltaPhi.emplace_back(phiBoundary);
     }
   for (int i=0; i<fNPtBins+1; i++)
     {
-        if( fPtBinBounds[i]== 0 && i!= 0) continue;
-        else edgesPtTrigger.emplace_back(fPtBinBounds[i]);
+      edgesPtTrigger.emplace_back(fPtBinBounds[i]);
     }
   for (int i=0; i<fNMultBins+1; i++)
     {
-        if( fMultBinBounds[i]== 0 && i!= 0) continue;
-        else edgesMult.emplace_back(fMultBinBounds[i]);
+      edgesMult.emplace_back(fMultBinBounds[i]);
     }
-  const Int_t nBins[4] = {2*lNEtaBins, fkNPhiBins, fNPtBins, fNMultBins};
+  const Int_t nBins[4] = {lNEtaBins, fkNPhiBins, fNPtBins, fNMultBins};
+  expandedAxes.emplace_back(edgesDeltaEta);
+  expandedAxes.emplace_back(edgesDeltaPhi);
+  expandedAxes.emplace_back(edgesPtTrigger);
+  expandedAxes.emplace_back(edgesMult);
   
   if(! fHistEventCounter ) {
     //Histogram Output: Event-by-Event
@@ -356,55 +358,55 @@ void AliAnalysisTaskMCPredictions2pc::UserCreateOutputObjects()
   //___________________________________________________
     if(! fHist3dTrigger ) {
     //Histogram Output: Event-by-Event
-    fHist3dTrigger = new TH3D( "fHist3dTrigger", " ",2*lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dTrigger = new TH3D( "fHist3dTrigger", " ",lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dTrigger);
   }
   //___________________________________________________
     if(! fHist3dAssoPions ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoPions = new TH3D( "fHist3dAssoPions", " ",2*lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoPions = new TH3D( "fHist3dAssoPions", " ",lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoPions);
   }
   //___________________________________________________
       if(! fHist3dAssoK0Short ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoK0Short = new TH3D( "fHist3dAssoK0Short", " ",2*lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoK0Short = new TH3D( "fHist3dAssoK0Short", " ",lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoK0Short);
   }
   //___________________________________________________
       if(! fHist3dAssoLambda ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoLambda = new TH3D( "fHist3dAssoLambda", " ",2*lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoLambda = new TH3D( "fHist3dAssoLambda", " ",lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoLambda);
   }
   //___________________________________________________
       if(! fHist3dAssoAntiLambda ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoAntiLambda = new TH3D( "fHist3dAssoAntiLambda", " ",2*lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoAntiLambda = new TH3D( "fHist3dAssoAntiLambda", " ",lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoAntiLambda);
   }
   //___________________________________________________
       if(! fHist3dAssoXiMinus ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoXiMinus = new TH3D( "fHist3dAssoXiMinus", " ",2*lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoXiMinus = new TH3D( "fHist3dAssoXiMinus", " ",lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoXiMinus);
   }
   //___________________________________________________
       if(! fHist3dAssoXiPlus ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoXiPlus = new TH3D( "fHist3dAssoXiPlus", " ",2*lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoXiPlus = new TH3D( "fHist3dAssoXiPlus", " ",lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoXiPlus);
   }
   //___________________________________________________
       if(! fHist3dAssoOmegaMinus ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoOmegaMinus = new TH3D( "fHist3dAssoOmegaMinus", " ",2*lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoOmegaMinus = new TH3D( "fHist3dAssoOmegaMinus", " ",lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoOmegaMinus);
   }
   //___________________________________________________
       if(! fHist3dAssoOmegaPlus ) {
     //Histogram Output: Event-by-Event
-    fHist3dAssoOmegaPlus = new TH3D( "fHist3dAssoOmegaPlus", " ",2*lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
+    fHist3dAssoOmegaPlus = new TH3D( "fHist3dAssoOmegaPlus", " ",lNEtaBins,edgesDeltaPhi.data(), fNPtBins, edgesPtTrigger.data(),fNMultBins,edgesMult.data());
     fListHist->Add(fHist3dAssoOmegaPlus);
   }
   //___________________________________________________
