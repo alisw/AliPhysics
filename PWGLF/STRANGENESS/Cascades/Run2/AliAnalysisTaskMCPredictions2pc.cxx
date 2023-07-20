@@ -528,10 +528,9 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   //----- Loop on Stack ----------------------------------------------------------------
   for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++)
   {   // This is the begining of the loop on tracks
-    TParticle* particleOne = lMCstack->Particle(iCurrentLabelStack);
+    AliMCParticle* particleOne = (AliMCParticle*)lMCevent->GetTrack(iCurrentLabelStack);
     if(!particleOne) continue;
-    if(!particleOne->GetPDG()) continue;
-    Double_t lThisCharge = particleOne->GetPDG()->Charge()/3.;
+    Double_t lThisCharge = particleOne->Charge();
     if(TMath::Abs(lThisCharge)<0.001) continue;
     if(! (lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
     
@@ -552,7 +551,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   if( !lEvSel_INELgtZEROStackPrimaries && fkSelectINELgtZERO ) return;
   
   if( lNchForward < fkMinimumMultiplicity+1e-10 ) return;
-  Int_t multiplicityIndex = fHistEventCounter->FindBin(lNchForward); //use variable binning
+  Int_t multiplicityIndex = fHistEventCounter->FindBin(lNchForward)-1; //use variable binning
   
   //------------------------------------------------
   // Fill Event Counters
@@ -591,8 +590,8 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   {
     // Determine if within acceptance, otherwise fully reject from list
     // done such that this check is done O(N) and not O(N^2)
-    TParticle* lThisParticle = lMCstack->Particle(iCurrentLabelStack);
-    AliMCParticle* lMCPart = (AliMCParticle*)lMCevent->GetTrack(iCurrentLabelStack);
+    // TParticle* lThisParticle = lMCstack->Particle(iCurrentLabelStack);
+    AliMCParticle* lThisParticle = (AliMCParticle*)lMCevent->GetTrack(iCurrentLabelStack);
     if(!lThisParticle) continue;
     Bool_t lIsPhysicalPrimary = lMCstack->IsPhysicalPrimary(iCurrentLabelStack);
     Double_t geta = lThisParticle -> Eta();
@@ -601,8 +600,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
     // kick out stuff not at midrapidity
     if( ( geta < fkMinEta || geta > fkMaxEta) ) continue;
     
-    if(!lThisParticle->GetPDG()) continue;
-    Double_t lThisCharge = lThisParticle->GetPDG()->Charge()/3.;
+    Double_t lThisCharge = lThisParticle->Charge();
 
     // populate triggers with charged particles within desired pT window
     if (fkMinPtTrigger<gpt && gpt<fkMaxPtTrigger && TMath::Abs(lThisCharge)>0.001){
@@ -611,35 +609,35 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
       triggerIndices.emplace_back(iCurrentLabelStack);
     }
 
-    if ( TMath::Abs(lThisParticle->GetPdgCode()) ==  211 ){
+    if ( TMath::Abs(lThisParticle->PdgCode()) ==  211 ){
       piIndices.emplace_back(iCurrentLabelStack);
       fHist3dAssoPions->Fill(geta, gpt,lNchForward);
     }
-    if ( lThisParticle->GetPdgCode() ==  310 ){
+    if ( lThisParticle->PdgCode() ==  310 ){
       k0ShortIndices.emplace_back(iCurrentLabelStack);
       fHist3dAssoK0Short->Fill(geta, gpt,lNchForward);
     }
-    if ( lThisParticle->GetPdgCode() ==  3122 ){
+    if ( lThisParticle->PdgCode() ==  3122 ){
       lambdaIndices.emplace_back(iCurrentLabelStack);
       fHist3dAssoLambda->Fill(geta, gpt,lNchForward);
     }
-    if ( lThisParticle->GetPdgCode() == -3122 ){
+    if ( lThisParticle->PdgCode() == -3122 ){
       antiLambdaIndices.emplace_back(iCurrentLabelStack);
       fHist3dAssoAntiLambda->Fill(geta, gpt,lNchForward);
     }
-    if ( lThisParticle->GetPdgCode() ==  3312 ){
+    if ( lThisParticle->PdgCode() ==  3312 ){
       xiMinusIndices.emplace_back(iCurrentLabelStack);
       fHist3dAssoXiMinus->Fill(geta, gpt,lNchForward);
     }
-    if ( lThisParticle->GetPdgCode() == -3312 ){
+    if ( lThisParticle->PdgCode() == -3312 ){
       xiPlusIndices.emplace_back(iCurrentLabelStack);
       fHist3dAssoXiPlus->Fill(geta, gpt,lNchForward);
     }
-    if ( lThisParticle->GetPdgCode() ==  3334 ){
+    if ( lThisParticle->PdgCode() ==  3334 ){
       omegaMinusIndices.emplace_back(iCurrentLabelStack);
       fHist3dAssoOmegaMinus->Fill(geta, gpt,lNchForward);
     }
-    if ( lThisParticle->GetPdgCode() == -3334 ){
+    if ( lThisParticle->PdgCode() == -3334 ){
       omegaPlusIndices.emplace_back(iCurrentLabelStack);
       fHist3dAssoOmegaPlus->Fill(geta, gpt,lNchForward);
     }
@@ -660,15 +658,16 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   //  Actually correlate stuff with stuff
   for (Int_t iTrigger = 0;  iTrigger < triggerIndices.size(); iTrigger++){   // trigger loop
-    TParticle* lTriggerParticle = lMCstack->Particle(triggerIndices[iTrigger]);
+    //TParticle* lTriggerParticle = lMCstack->Particle(triggerIndices[iTrigger]);
+    AliMCParticle* lTriggerParticle = (AliMCParticle*)lMCevent->GetTrack(triggerIndices[iTrigger]);
     
     Double_t geta = lTriggerParticle -> Eta();
     Double_t gphi = lTriggerParticle -> Phi();
 
     for (Int_t iassocSpecies = 0;  iassocSpecies < associatedIndices.size(); iassocSpecies++){   // associated loop
       for (Int_t iassoc = 0;  iassoc < associatedIndices[iassocSpecies].size(); iassoc++){   // associated loop
-        TParticle* lAssociatedParticle = 0x0;
-        lAssociatedParticle = lMCstack->Particle( associatedIndices[iassocSpecies][iassoc] );
+        //lAssociatedParticle = lMCstack->Particle( associatedIndices[iassocSpecies][iassoc] );
+        AliMCParticle* lAssociatedParticle = (AliMCParticle*)lMCevent->GetTrack( associatedIndices[iassocSpecies][iassoc] );
         if(!lAssociatedParticle) {
           Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iassoc );
           continue;
@@ -689,8 +688,8 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
 
       for (Int_t iassocSpecies = 0;  iassocSpecies < associatedIndices.size(); iassocSpecies++){   // associated loop
         for (Int_t iassoc = 0;  iassoc < associatedIndices[iassocSpecies].size(); iassoc++){   // associated loop
-          TParticle* lAssociatedParticle = 0x0;
-          lAssociatedParticle = lMCstack->Particle( associatedIndices[iassocSpecies][iassoc] );
+          //lAssociatedParticle = lMCstack->Particle( associatedIndices[iassocSpecies][iassoc] );
+          AliMCParticle* lAssociatedParticle = (AliMCParticle*)lMCevent->GetTrack(associatedIndices[iassocSpecies][iassoc] );
           if(!lAssociatedParticle) {
             Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iassoc );
             continue;
@@ -707,8 +706,8 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   // fill EM buffer
   if( fEMBufferSize[multiplicityIndex] > 0 && fkDoEventMixing){
     for (Int_t iTrigger = 0;  iTrigger < triggerIndices.size(); iTrigger++){   // trigger loop
-      TParticle* lThisParticle = lMCstack->Particle(triggerIndices[iTrigger]);
-      AliMCParticle* lMCPart = (AliMCParticle*)lMCevent->GetTrack(triggerIndices[iTrigger]);
+      //TParticle* lThisParticle = lMCstack->Particle(triggerIndices[iTrigger]);
+      AliMCParticle* lThisParticle = (AliMCParticle*)lMCevent->GetTrack(triggerIndices[iTrigger]);
       if(!lThisParticle) continue;
 
       //Add to buffer
