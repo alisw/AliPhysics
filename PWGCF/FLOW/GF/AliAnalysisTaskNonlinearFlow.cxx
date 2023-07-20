@@ -99,6 +99,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fTPCchi2perCluster(4.0),
     fUseAdditionalDCACut(false),
     fUseDefaultWeight(false),
+    bUseLikeSign(false),
+    iSign(0),
     fExtendV0MAcceptance(false),
     fV0MRatioCut(0),
     fEtaGap3Sub1(0.4),
@@ -182,6 +184,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fTPCchi2perCluster(4.0),
   fUseAdditionalDCACut(false),
   fUseDefaultWeight(false),
+  bUseLikeSign(false),
+  iSign(0),
   fExtendV0MAcceptance(false),
   fV0MRatioCut(0),
   fEtaGap3Sub1(0.4),
@@ -293,6 +297,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fTPCchi2perCluster(4.0),
   fUseAdditionalDCACut(false),
   fUseDefaultWeight(false),
+  bUseLikeSign(false),
+  iSign(0),
   fExtendV0MAcceptance(false),
   fV0MRatioCut(0),
   fEtaGap3Sub1(0.4),
@@ -995,6 +1001,10 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     if (fUseAdditionalDCACut) {
        if (dcaXY > 1) continue;
        if (dcaZ > 1) continue;
+    }
+    if(bUseLikeSign)
+    {
+      if(!(aodTrk->Charge() == iSign)) continue;
     }
 
 	  hDCAxy->Fill(dcaXY, aodTrk->Pt());
