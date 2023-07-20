@@ -776,6 +776,7 @@ Bool_t ConfigKShKpieff
       out->SetMotherMass(0.497);
       out->SetPairCuts(cutSetK0sM);
       out->AddAxis(ptID,200,0.0,20.0);
+      out->AddAxis(etaID, 20,-1.0,1.0);
 
 
       out = task->CreateOutput("K0sreconstructed", "HIST", "TRUE");
@@ -789,6 +790,7 @@ Bool_t ConfigKShKpieff
       //out->SetCutID(1, iCutPi);
       out->SetPairCuts(cutSetK0sM);
       out->AddAxis(ptID,200,0.0,20.0);
+      out->AddAxis(etaID,20,-1.0,1.0);
 
 
       ////////
@@ -800,6 +802,7 @@ Bool_t ConfigKShKpieff
       out->SetMotherMass(0.493);
       out->SetPairCuts(cutsPairK);
       out->AddAxis(ptID,200,0.0,20.0);
+      out->AddAxis(etaID,20,-1.0,1.0);
 
 
       out = task->CreateOutput("Kneggenerated", "HIST", "SINGLE");
@@ -809,6 +812,7 @@ Bool_t ConfigKShKpieff
       out->SetMotherMass(0.493);
       out->SetPairCuts(cutsPairK);
       out->AddAxis(ptID,200,0.0,20.0);
+      out->AddAxis(etaID,20,-1.0,1.0);
 
 
       out = task->CreateOutput("Kposreconstructed", "HIST", "SINGLEREC");
@@ -820,6 +824,7 @@ Bool_t ConfigKShKpieff
       //out->SetCutID(1, iCutK);
       out->SetPairCuts(cutsPairK);
       out->AddAxis(ptID,200,0.0,20.0);
+      out->AddAxis(etaID,20,-1.0,1.0);
 
       out = task->CreateOutput("Knegreconstructed", "HIST", "SINGLEREC");
       out->SetDaughter(0, AliRsnDaughter::kUnknown);
@@ -830,6 +835,7 @@ Bool_t ConfigKShKpieff
       //out->SetCutID(1, iCutK);
       out->SetPairCuts(cutsPairK);
       out->AddAxis(ptID,200,0.0,20.0);
+      out->AddAxis(etaID,20,-1.0,1.0);
 
 
       out = task->CreateOutput("Pionposgenerated", "HIST", "SINGLE");
@@ -839,6 +845,7 @@ Bool_t ConfigKShKpieff
       out->SetMotherMass(0.139);
       out->SetPairCuts(cutsPairK);
       out->AddAxis(ptID,200,0.0,20.0);
+      out->AddAxis(etaID,20,-1.0,1.0);
 
       out = task->CreateOutput("Pionneggenerated", "HIST", "SINGLE");
       out->SetDaughter(0, AliRsnDaughter::kUnknown);
@@ -847,6 +854,7 @@ Bool_t ConfigKShKpieff
       out->SetMotherMass(0.139);
       out->SetPairCuts(cutsPairK);
       out->AddAxis(ptID,200,0.0,20.0);
+      out->AddAxis(etaID,20,-1.0,1.0);
 
 
 
@@ -859,6 +867,7 @@ Bool_t ConfigKShKpieff
       //out->SetCutID(1, iCutPi);
       out->SetPairCuts(cutsPairK);
       out->AddAxis(ptID,200,0.0,20.0);
+      out->AddAxis(etaID,20,-1.0,1.0);
 
 
       out = task->CreateOutput("Pionnegreconstructed", "HIST", "SINGLEREC");
@@ -870,6 +879,7 @@ Bool_t ConfigKShKpieff
       //out->SetCutID(1, iCutPi);
       out->SetPairCuts(cutsPairK);
       out->AddAxis(ptID,200,0.0,20.0);
+      out->AddAxis(etaID,20,-1.0,1.0);
 
                 
 
