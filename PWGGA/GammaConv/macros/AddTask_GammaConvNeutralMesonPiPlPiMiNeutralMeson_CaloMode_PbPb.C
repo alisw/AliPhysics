@@ -177,6 +177,11 @@ void AddTask_GammaConvNeutralMesonPiPlPiMiNeutralMeson_CaloMode_PbPb(
     cuts.AddCutHeavyMesonCalo("11310a13","411790105fe30220000","32c51079a","0000003100000000","0400503000000000"); // 10-30% MB
     cuts.AddCutHeavyMesonCalo("13530a13","411790105fe30220000","32c51079a","0000003100000000","0400503000000000"); // 30-50% Triggeres
     cuts.AddCutHeavyMesonCalo("15910a13","411790105fe30220000","32c51079a","0000003100000000","0400503000000000"); // 50-90% MB
+
+  }else if (trainConfig == 102){ // Standard 5 TeV omega INT7 cutstring in pPb -> Semicentral
+    cuts.AddCutHeavyMesonCalo("12410a13","411790105fe30220000","32c51079a","0000003100000000","0400503000000000"); // 20-40% 
+  }else if (trainConfig == 103){ // Standard 5 TeV omega INT7 cutstring in pPb -> Peripheral
+    cuts.AddCutHeavyMesonCalo("16810a13","411790105fe30220000","32c51079a","0000003100000000","0400503000000000"); // 60-80% 
  
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
