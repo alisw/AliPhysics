@@ -588,7 +588,10 @@ if(fUse2DkStarVsmT){
 }
 
 
-	if(fUseBumpC){
+	if(fUseBumpC && 
+	tKStar>0.18 && tKStar<0.25 &&
+	CalcMt(fPair) > 2.0 && CalcMt(fPair)<3.5
+	){
 		f2DkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt());
  	 float c = 1.;
     	float beta = fPair->Track2()->Track()->VTOF();
