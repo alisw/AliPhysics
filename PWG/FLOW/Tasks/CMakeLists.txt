@@ -123,6 +123,7 @@ set(SRCS
   AliAnalysisTaskCVEPIDCME.cxx
   AliAnalysisTaskCVEPIDCMEDiff.cxx
   AliAnalysisTaskCVEVZEROCalib.cxx
+  AliAnalysisTaskChargeV1.cxx
 )
 
 # Headers from sources

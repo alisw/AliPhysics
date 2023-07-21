@@ -46,6 +46,8 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig()
       fmTMultBinning(false),
       fEst(AliFemtoDreamEvent::kSPD),
       fAncestors(false),
+      fpTOnepTTwokStarPlotsmT(false),
+      fpTOnepTTwokStarCut(3.),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false),
@@ -96,6 +98,8 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(
       fmTMultBinning(config.fmTMultBinning),
       fEst(config.fEst),
       fAncestors(config.fAncestors),
+      fpTOnepTTwokStarPlotsmT(config.fpTOnepTTwokStarPlotsmT),
+      fpTOnepTTwokStarCut(config.fpTOnepTTwokStarCut),
       fDeltaEtaMax(config.fDeltaEtaMax),
       fDeltaPhiMax(config.fDeltaPhiMax),
       fDoDeltaEtaDeltaPhiCut(config.fDoDeltaEtaDeltaPhiCut),
@@ -146,6 +150,8 @@ AliFemtoDreamCollConfig::AliFemtoDreamCollConfig(const char *name,
       fmTMultBinning(false),
       fEst(AliFemtoDreamEvent::kSPD),
       fAncestors(false),
+      fpTOnepTTwokStarPlotsmT(false),
+      fpTOnepTTwokStarCut(3.),
       fDeltaEtaMax(0.f),
       fDeltaPhiMax(0.f),
       fDoDeltaEtaDeltaPhiCut(false),
@@ -195,6 +201,8 @@ AliFemtoDreamCollConfig& AliFemtoDreamCollConfig::operator=(
     this->fmTMultBinning = config.fmTMultBinning; 
     this->fEst = config.fEst;
     this->fAncestors = config.fAncestors;
+    this->fpTOnepTTwokStarPlotsmT = config.fpTOnepTTwokStarPlotsmT;
+    this->fpTOnepTTwokStarCut = config.fpTOnepTTwokStarCut;
     this->fDeltaEtaMax = config.fDeltaEtaMax;
     this->fDeltaPhiMax = config.fDeltaPhiMax;
     this->fDoDeltaEtaDeltaPhiCut = config.fDoDeltaEtaDeltaPhiCut;

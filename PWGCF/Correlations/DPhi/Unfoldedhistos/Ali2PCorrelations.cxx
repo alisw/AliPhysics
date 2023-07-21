@@ -324,8 +324,9 @@ bool Ali2PCorrelations::ProcessTrack(int pid, float pT, float eta, float ophi)
 
   float effcorr = fEfficiencyCorrection[pid][ixPt];
   float corr;
-  if (fCorrectionWeights[pid] != nullptr)
-    corr = fCorrectionWeights[pid][ixZEtaPhiPt];
+  /* for the time being the weights are only applied at the hadron level */
+  if (fCorrectionWeights[pid % 2] != nullptr)
+    corr = fCorrectionWeights[pid % 2][ixZEtaPhiPt];
   else
     corr = 1.0;
 

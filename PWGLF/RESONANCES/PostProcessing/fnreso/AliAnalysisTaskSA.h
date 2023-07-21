@@ -67,6 +67,7 @@ class AliAnalysisTaskSA : public AliAnalysisTaskSE {
 //---------------------------------------------------------------------------------------
   Bool_t      IsPion(AliVTrack *aodtrack);
   Bool_t      IsKaon(AliVTrack *aodtrack);
+  Bool_t      HasTOF(AliAODTrack *track);
   Double_t CosThetaStar(TLorentzVector mother, TLorentzVector daughter0, TLorentzVector daughter1);
   Double_t CosThetaStarHel(TLorentzVector mother, TLorentzVector daughter0, TLorentzVector daughter1);
   
@@ -112,9 +113,11 @@ class AliAnalysisTaskSA : public AliAnalysisTaskSE {
   TH1F    *fHisteventmult;//!
   THnSparseD    *kstarUnlike;//!
   THnSparseD    *kstarLike;//!
+  THnSparseD    *kstarposLike;//!
+  THnSparseD    *kstarnegLike;//!
   THnSparseD    *kstarMix;//!
-  TH1D    *fHistpionpt;//!
-  TH1D    *fHistkaonpt;//!
+  //TH1D    *fHistpionpt;//!
+  //TH1D    *fHistkaonpt;//!
   /*TH1D    *fHistnsigtpcpion;
   TH1D    *fHistnsigtpckaon;
   TH1D    *fHistnsigtofpion;

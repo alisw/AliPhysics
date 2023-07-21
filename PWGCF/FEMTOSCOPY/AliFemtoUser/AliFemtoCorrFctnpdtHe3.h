@@ -72,7 +72,7 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void SetStaSkyBkgInit(bool aInit);
 	AliFemtoPair *InversePair(AliFemtoPair* aPair);
 	void SetUse2DpTvsKStar(int aUse);
-        void Set2DpTvsKStarInit(bool aInit);
+        void Set2DpTvsKStarInit(bool aInit,int nbinsks,float lowks,float upks,int nbinspT,float lowpT,float uppT);
 
 	//\ 2022.9.27
 	bool PairEtaPhiSelect(AliFemtoPair* aPair);
@@ -102,6 +102,13 @@ void SetdBumpCheckInit(bool aInit,
 int nbinspT,float lowpT,float uppT,
  int nbinsMass,float lowMass,float upMass);
 
+
+void SetmTLimitCheck(int aUse);
+
+void SetmTCheckInit(bool aInit,
+ int nbinsks,float lowks,float upks,
+int nbinspT,float lowpT,float uppT,
+int nbinsmT,float lowmT,float upmT);
 
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
@@ -159,9 +166,8 @@ int nbinspT,float lowpT,float uppT,
 
 	int fUsePt;
 	int fUseDPhiDEtaQA;
-	
-	TH2F *fNumDPhiDEtaQA;
-	TH2F *fDumDPhiDEtaQA;
+	//TH2F *fNumDPhiDEtaQAFailCut;
+	//TH2F *fDumDPhiDEtaQAFailCut;
 	TH2F *fNumDPhiDEtaAvgQA;
 	TH2F *fDumDPhiDEtaAvgQA;
 		
@@ -193,8 +199,10 @@ int nbinspT,float lowpT,float uppT,
 	int fUseBumpC;
 	TH2F *f2DkSVspT;
 	TH2F *f2DkSVsMass;
+	
+	int fUsemTCheck;
+	TH3F *f3DmTDepkSVspT;
 };
-
 
 #endif
 
