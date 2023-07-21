@@ -218,6 +218,7 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
       for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
         fhPtDecayMC[iso][ibit][imc]    = 0;
     }
+    fhPtM02SumPtConeDecayTag[ibit] = 0;
   }
   
   for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
@@ -560,7 +561,7 @@ void AliAnaParticleIsolation::FillShowerShapeControlHistograms
 
   // Candidates tagged as decay in another analysis (AliAnaPi0EbE)
   //
-  if ( fFillTaggedDecayHistograms )
+  if ( fFillTaggedDecayHistograms && !fFillOnlyTH3Histo )
   {
     Int_t decayTag = pCandidate->DecayTag();
     if(decayTag < 0) decayTag = 0;
@@ -1374,7 +1375,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
     }
     
     // Histograms for tagged candidates as decay
-    if ( fFillTaggedDecayHistograms )
+    if ( fFillTaggedDecayHistograms && !fFillOnlyTH3Histo )
     {
       for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
       {        
@@ -1447,6 +1448,23 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
       fhPtM02SumPtCone->SetYTitle("#sigma_{long}^{2}");
       fhPtM02SumPtCone->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
       outputContainer->Add(fhPtM02SumPtCone) ;
+
+      if ( fFillTaggedDecayHistograms )
+      {
+        for(Int_t ibit =0; ibit < AliNeutralMesonSelection::fgkMaxNDecayBits; ibit++)
+        {
+          fhPtM02SumPtConeDecayTag[ibit] = new TH3F
+          (Form("hPtM02SumPtCone_DecayBit%d", fDecayBits[ibit]),
+           Form("%s, decay bit %d", parTitleR.Data(), fDecayBits[ibit]),
+            ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+            ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+           sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+          fhPtM02SumPtConeDecayTag[ibit]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+          fhPtM02SumPtConeDecayTag[ibit]->SetYTitle("#sigma_{long}^{2}");
+          fhPtM02SumPtConeDecayTag[ibit]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+          outputContainer->Add(fhPtM02SumPtConeDecayTag[ibit]) ;
+        }
+      }
 
       if ( GetReader()->IsEventSpherocityCalculated()  )
       {
@@ -4996,6 +5014,19 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
       {
         fhPtM02SumPtCone->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
 
+        if ( fFillTaggedDecayHistograms )
+        {
+          Int_t decayTag = aod->DecayTag();
+          if(decayTag < 0) decayTag = 0;
+
+          for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
+          {
+            if(!GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit])) continue;
+
+            fhPtM02SumPtConeDecayTag[ibit]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+          }
+        }
+
         if ( GetReader()->IsEventSpherocityCalculated() && pt >= 10 )
         {
           fhSpherocityM02SumPtCone->Fill(GetReader()->GetEventSpherocity(), m02, coneptsum, GetEventWeight()*weightTrig);
@@ -5671,7 +5702,7 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
     Float_t etaBandPtSumCh  = 0. ;
     Float_t phiBandPtSumCh  = 0. ;
     Float_t perpBandPtSumCh = 0. ;
-    Float_t perpBandPtSumNe = 0. ;
+    //Float_t perpBandPtSumNe = 0. ;
     Float_t perpConePtSumCh = 0. ;
     Float_t perpConePtSumNe = 0. ;
 
@@ -5996,8 +6027,8 @@ void AliAnaParticleIsolation::FillAcceptanceHistograms()
           {
             if ( partInConeCharge > 0 )
               perpBandPtSumCh += partInConePt;
-            else
-              perpBandPtSumNe += partInConePt;
+            //else
+            //  perpBandPtSumNe += partInConePt;
           } // perp eta band
 
           // Phi band
@@ -7449,8 +7480,8 @@ void AliAnaParticleIsolation::StudyClustersUEInCone(AliCaloTrackParticleCorrelat
   Float_t etaTrig   = pCandidate->Eta();
   Float_t weightTrig= pCandidate->GetWeight();
   
-  Float_t phiBandPtSumCluster = 0;
-  Float_t etaBandPtSumCluster = 0;
+  //Float_t phiBandPtSumCluster = 0;
+  //Float_t etaBandPtSumCluster = 0;
   
   for(Int_t icalo=0; icalo < caloList->GetEntriesFast(); icalo++)
    {
@@ -7504,7 +7535,7 @@ void AliAnaParticleIsolation::StudyClustersUEInCone(AliCaloTrackParticleCorrelat
       // Within eta cone size
       if ( TMath::Abs(dEta) < conesize+conesizegap &&  takeIt ) 
       {
-        phiBandPtSumCluster += ptCluster;
+        //phiBandPtSumCluster += ptCluster;
         //printf("cluster %d, pT %f in phi band\n",icalo,ptCluster);
 
         if ( fStudyPtCutInCone )
@@ -7527,7 +7558,7 @@ void AliAnaParticleIsolation::StudyClustersUEInCone(AliCaloTrackParticleCorrelat
       // Within phi cone size
       if ( TMath::Abs(dPhi) < conesize+conesizegap )// && takeIt )
       {
-        etaBandPtSumCluster += ptCluster;
+        //etaBandPtSumCluster += ptCluster;
         //printf("cluster %d, pT %f in phi band\n",icalo,ptCluster);
 
         if ( fStudyPtCutInCone )
