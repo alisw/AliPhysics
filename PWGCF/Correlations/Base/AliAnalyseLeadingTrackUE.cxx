@@ -66,6 +66,7 @@ AliAnalyseLeadingTrackUE::AliAnalyseLeadingTrackUE() :
   fTrackPtMin(0),
   fEventSelection(AliVEvent::kMB|AliVEvent::kUserDefined),
   fDCAXYCut(0),
+  fDCAZCut(0),
   fSharedClusterCut(-1),
   fCrossedRowsCut(-1),
   fFoundFractionCut(-1),
@@ -759,7 +760,7 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 	if (fTrackStatus != 0 && !CheckTrack(part)) return 0;
 	
 	// DCA XY
-	if (fDCAXYCut)
+	if (fDCAXYCut || fDCAZCut)
 	{
 	  const AliVVertex* vertex = aodEvent->GetPrimaryVertex();
 	  if (!vertex)
@@ -775,7 +776,8 @@ AliVParticle*  AliAnalyseLeadingTrackUE::ParticleWithCuts(TObject* obj, Int_t ip
 
 // 	  Printf("%f", ((AliAODTrack*)part)->DCA());
 // 	  Printf("%f", pos[0]);
-	  if (TMath::Abs(pos[0]) > fDCAXYCut->Eval(part->Pt()))
+	  if ((fDCAXYCut && TMath::Abs(pos[0]) > fDCAXYCut->Eval(part->Pt()))
+		|| (fDCAZCut && TMath::Abs(pos[1]) > fDCAZCut->Eval(part->Pt())))
 	    return 0;
 	}
 	
