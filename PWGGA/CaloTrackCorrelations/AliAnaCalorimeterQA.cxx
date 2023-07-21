@@ -409,7 +409,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
   Int_t ncells = cells->GetNumberOfCells();
 
   Int_t   ncellsCut = 0;
-  Float_t ecellsCut = 0;
+//  Float_t ecellsCut = 0;
   Int_t   ncellsSel = 0;
   
   AliDebug(1,Form("%s cell entries %d", GetCalorimeterString().Data(), ncells));
@@ -552,7 +552,7 @@ void AliAnaCalorimeterQA::CellHistograms(AliVCaloCells *cells)
     if(amp > 0.05)
     {
       fhCellECross->Fill(amp, 1-GetCaloUtils()->GetECross(id,cells,bc)/amp, GetEventWeight());
-      ecellsCut+=amp ;
+      //ecellsCut+=amp ;
     }
     
     if ( amp > fCellAmpMin )
