@@ -246,6 +246,7 @@ private:
   TH2F         * fhMassPt  ;                                //!<! Pair mass vs pT, for all pairs
   TH2F         * fhMassPtMaxPair  ;                         //!<! Pair mass vs pT max of the pair, for all pairs
   TH2F         * fhMassPtMinPair  ;                         //!<! Pair mass vs pT min of the pair, for all pairs
+  TH2F         * fhMassPtIsolated  ;                        //!<! Pair mass vs pT of isolated of the pair, for all pairs
   TH2F         * fhMassSplitPt  ;                           //!<! Pair mass vs pT (split), for all pairs
   TH2F         * fhSelectedMass  ;                          //!<! Pair mass vs E, for selected pairs
   TH2F         * fhSelectedMassPt  ;                        //!<! Pair mass vs pT, for selected pairs
@@ -253,7 +254,8 @@ private:
   
   TH2F         * fhMassPtIsoRCut  ;                         //!<! Pair mass vs pT, for all pairs when opening angle not larger than iso cone radius
   TH2F         * fhMassPtIsoRCutPtMaxPair  ;                //!<! Pair mass vs pT of highest, for all pairs when opening angle not larger than iso cone radius
-  TH2F         * fhMassPtIsoRCutPtMinPair  ;                //!<! Pair mass vs pT od lowest, for all pairs when opening angle not larger than iso cone radius
+  TH2F         * fhMassPtIsoRCutPtMinPair  ;                //!<! Pair mass vs pT of lowest, for all pairs when opening angle not larger than iso cone radius
+  TH2F         * fhMassPtIsolatedRCut  ;                    //!<! Pair mass vs pT of isolated pair, for all pairs when opening angle not larger than iso cone radius
 
   TH2F         * fhMassPtLocMax[3] ;                        //!<! Pair mass vs pT, for all pairs, for each NLM case
   TH2F         * fhSelectedMassPtLocMax[3] ;                //!<! Pair mass vs pT, for selected pairs, for each NLM case
