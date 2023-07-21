@@ -68,9 +68,11 @@ fhPtCentrality(),                   fhPtEventPlane(0),                  fhMCPtCe
 fhPtReject(0),                      fhEReject(0),
 fhPtEtaReject(0),                   fhPtPhiReject(0),                   fhEtaPhiReject(0),
 fhMass(0),                          fhMassPt(0),                        
-fhMassPtMaxPair(0),                 fhMassPtMinPair(0),                 fhMassSplitPt(0),
+fhMassPtMaxPair(0),                 fhMassPtMinPair(0),                 fhMassPtIsolated(0),
+fhMassSplitPt(0),
 fhSelectedMass(0),                  fhSelectedMassPt(0),                fhSelectedMassSplitPt(0),
-fhMassPtIsoRCut(0),
+fhMassPtIsoRCut(0),                 fhMassPtIsoRCutPtMaxPair(0),        fhMassPtIsoRCutPtMinPair(0),
+fhMassPtIsolatedRCut (0),
 fhMassNoOverlap(0),                 fhMassPtNoOverlap(0),               fhMassSplitPtNoOverlap(0),
 fhSelectedMassNoOverlap(0),         fhSelectedMassPtNoOverlap(0),       fhSelectedMassSplitPtNoOverlap(0),
 fhMCPi0PtRecoPtPrim(0),                       fhMCEtaPtRecoPtPrim(0),
@@ -1153,23 +1155,55 @@ TList *  AliAnaPi0EbE::GetCreateOutputObjects()
   fhMassPtMinPair  = new TH2F
   ("hMassPtMinPair","all pairs #it{M}: #it{p}_{T}^{min} vs #it{M}",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
   fhMassPtMinPair->SetYTitle("#it{M} (GeV/#it{c}^{2})");
-  fhMassPtMinPair->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+  fhMassPtMinPair->SetXTitle("#it{p}_{T}^{min} (GeV/#it{c})");
   outputContainer->Add(fhMassPtMinPair) ;
   
+  if(fSelectIsolatedDecay)
+  {
+    fhMassPtIsolated  = new TH2F
+    ("hMassPtIsolated","all pairs #it{M}: #it{p}_{T}^{iso partner} vs #it{M}",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+    fhMassPtIsolated->SetYTitle("#it{M} (GeV/#it{c}^{2})");
+    fhMassPtIsolated->SetXTitle("#it{p}_{T}^{iso partner} (GeV/#it{c})");
+    outputContainer->Add(fhMassPtIsolated) ;
+  }
+
   fhSelectedMassPt  = new TH2F
   ("hSelectedMassPt","Selected #pi^{0} (#eta) pairs #it{M}: #it{p}_{T} vs #it{M}",nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
   fhSelectedMassPt->SetYTitle("#it{M} (GeV/#it{c}^{2})");
   fhSelectedMassPt->SetXTitle("#it{p}_{T} (GeV/#it{c})");
   outputContainer->Add(fhSelectedMassPt) ;
   
-  if(fAnaType != kSSCalo && fSelectPairInIsoCone)
+  if ( fAnaType != kSSCalo && fSelectPairInIsoCone )
   {
     fhMassPtIsoRCut  = new TH2F
-    ("hMassPtIsoRCut",Form("#it{M}: #it{p}_{T} vs #it{M}, for R = %1.1f, #it{p}_{T,1} < %2.2f",fR,fIsoCandMinPt),
+    ("hMassPtIsoRCut",Form("#it{M}: #it{p}_{T} vs #it{M}, for R = %1.1f",fR),
      nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
     fhMassPtIsoRCut->SetYTitle("#it{M} (GeV/#it{c}^{2})");
     fhMassPtIsoRCut->SetXTitle("#it{p}_{T} (GeV/#it{c})");
     outputContainer->Add(fhMassPtIsoRCut) ;
+
+    fhMassPtIsoRCutPtMaxPair  = new TH2F
+    ("hMassPtIsoRCutPtMaxPair",Form("#it{M}: #it{p}_{T}^{max} vs #it{M}, for R = %1.1f",fR),
+     nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+    fhMassPtIsoRCutPtMaxPair->SetYTitle("#it{M} (GeV/#it{c}^{2})");
+    fhMassPtIsoRCutPtMaxPair->SetXTitle("#it{p}_{T}^{max} (GeV/#it{c})");
+    outputContainer->Add(fhMassPtIsoRCutPtMaxPair) ;
+
+    fhMassPtIsoRCutPtMinPair  = new TH2F
+    ("hMassPtIsoRCutPtMinPair",Form("#it{M}: #it{p}_{T}^{min} vs #it{M}, for R = %1.1f",fR),
+     nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+    fhMassPtIsoRCutPtMinPair->SetYTitle("#it{M} (GeV/#it{c}^{2})");
+    fhMassPtIsoRCutPtMinPair->SetXTitle("#it{p}_{T}^{min} (GeV/#it{c})");
+    outputContainer->Add(fhMassPtIsoRCutPtMinPair) ;
+
+    if ( fSelectIsolatedDecay )
+    {
+      fhMassPtIsolatedRCut  = new TH2F
+      ("hMassPtIsolatedRCut",Form("#it{M}: #it{p}_{T}^{iso partner} vs #it{M}, for R = %1.1f",fR),nptbins,ptmin,ptmax, nmassbins,massmin,massmax);
+      fhMassPtIsolatedRCut->SetYTitle("#it{M} (GeV/#it{c}^{2})");
+      fhMassPtIsolatedRCut->SetXTitle("#it{p}_{T}^{iso partner} (GeV/#it{c})");
+      outputContainer->Add(fhMassPtIsolatedRCut) ;
+    }
   }
   
   if(fAnaType == kSSCalo)
@@ -3012,21 +3046,40 @@ void  AliAnaPi0EbE::MakeInvMassInCalorimeter()
       if(photon1->Pt() >= photon2->Pt())
       {
         fhMassPtMaxPair->Fill(photon1->Pt(), mass, GetEventWeight());
-        fhMassPtMinPair->Fill(photon2->Pt(), mass, GetEventWeight());
       }
       else
       {
-        fhMassPtMaxPair->Fill(photon2->Pt(), mass, GetEventWeight());
         fhMassPtMinPair->Fill(photon1->Pt(), mass, GetEventWeight());
       }
       
+      if ( fSelectIsolatedDecay && isolated1 )
+      {
+         fhMassPtIsolated->Fill(photon1->Pt(), mass, GetEventWeight());
+      }
+
       if(IsDataMC() && mcIndex < 2) fhMCMassPt[mcIndex]->Fill(ptpair, mass, GetEventWeight());
       
-      if(fSelectPairInIsoCone && fMomentum1.Pt() > fIsoCandMinPt)
+      if ( fSelectPairInIsoCone )
       {
         Double_t radius   = GetIsolationCut()->Radius(fMomentum1.Eta(),fMomentum1.Phi(),fMomentum2.Eta(),fMomentum2.Phi());
         
-        if(radius < fR) fhMassPtIsoRCut->Fill(ptpair, mass, GetEventWeight());
+        if(radius < fR)
+        {
+          fhMassPtIsoRCut->Fill(ptpair, mass, GetEventWeight());
+          if(photon1->Pt() >= photon2->Pt())
+          {
+            fhMassPtIsoRCutPtMaxPair->Fill(photon1->Pt(), mass, GetEventWeight());
+          }
+          else
+          {
+            fhMassPtIsoRCutPtMinPair->Fill(photon1->Pt(), mass, GetEventWeight());
+          }
+
+          if ( fSelectIsolatedDecay && isolated1 )
+          {
+            fhMassPtIsolatedRCut->Fill(photon1->Pt(), mass, GetEventWeight());
+          }
+        }
                     
 //        printf("pT pair (%f, %f), opening angle %f, radius %f; fR %1.1f, MinPt1 %2.2f\n",fMomentum1.Pt(),fMomentum2.Pt(),angleOp,radius,fR,fIsoCandMinPt);
       }

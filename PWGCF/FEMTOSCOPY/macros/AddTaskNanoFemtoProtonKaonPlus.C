@@ -7,19 +7,23 @@
 #include "AliAnalysisTaskNanoFemtoProtonKaonPlus.h"
 
 AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
-    bool isMC = false, //1
-    TString trigger = "kHM", //2
-    bool fullBlastQA = true,//3
-    bool UseSphericityCut = true,//4
-    float SphericityMinPt = 0.5, //5
-    bool UseRamonaCut = false, //6
-    int filterBit = 128, //7
-    bool DoPairCleaning = false, //8
-    bool DoAncestors = false, //9
-    float DCAxy = 0.1, //10
-    float DCAz = 0.2, //11
-    bool doDCA = false, //12
-    const char *cutVariation = "0" //13
+    bool isNano = true, //1
+    bool isMC = false, //2
+    TString trigger = "kHM", //3
+    bool fullBlastQA = true,//4
+    bool UseSphericityCut = true,//5
+    float SphericityMinPt = 0.5, //6
+    bool UseRamonaCut = false, //7
+    int filterBit = 128, //8
+    bool DoPairCleaning = false, //9
+    bool DoAncestors = false, //10
+    float DCAxy = 0.1, //11
+    float DCAz = 0.2, //12
+    bool doDCA = false, //13
+    bool DopTOnepTTwo = false, //14
+    float pTOnepTTwokStarCutOff = 3.0, //15
+    int whichmTbinning = 1, //16
+    const char *cutVariation = "0" //17
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -137,13 +141,26 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   //BRELOOM Will have to enter mT bins
   std::vector<bool> closeRejection;
   std::vector<float> mTBins;
-  mTBins.push_back(0.71); 
-  mTBins.push_back(1.); 
-  mTBins.push_back(1.2); 
-  mTBins.push_back(1.4); 
-  mTBins.push_back(1.7); 
-  mTBins.push_back(1.9); 
-  mTBins.push_back(10.0); 
+  //BRELOOM correct mT bins
+  if(whichmTbinning == 1){//new binning
+    mTBins.push_back(0.7);
+    mTBins.push_back(1.0);
+    mTBins.push_back(1.2);
+    mTBins.push_back(1.4);
+    mTBins.push_back(1.5);
+    mTBins.push_back(1.8);
+    mTBins.push_back(2.0);
+    mTBins.push_back(100.0);
+  } else if(whichmTbinning == 2){//old binning
+    mTBins.push_back(0.71); 
+    mTBins.push_back(1.); 
+    mTBins.push_back(1.2); 
+    mTBins.push_back(1.4); 
+    mTBins.push_back(1.7); 
+    mTBins.push_back(1.9); 
+    mTBins.push_back(10.0); 
+  }
+
   std::vector<int> pairQA;
   //pairs: 
   // pp             0
@@ -271,43 +288,13 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
     config->SetMinimalBookingSample(true);
   }
 
-  AliAnalysisTaskNanoFemtoProtonKaonPlus *task =
-  new AliAnalysisTaskNanoFemtoProtonKaonPlus("FemtoDreamDefault", isMC);
-  if (trigger == "kINT7") {
-    task->SelectCollisionCandidates(AliVEvent::kINT7);
-    std::cout << "Added kINT7 Trigger \n";
-  } else if (trigger == "kHM") {
-    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
-    std::cout << "Added kHighMult Trigger \n";
+  if(DopTOnepTTwo){
+    config->SetpTOnepTTwokStarPlotsmT(true, pTOnepTTwokStarCutOff);
   } else {
-    std::cout
-        << "====================================================================="
-        << std::endl;
-    std::cout
-        << "====================================================================="
-        << std::endl;
-    std::cout
-        << "Centrality Estimator not set, fix it else your Results will be empty!"
-        << std::endl;
-    std::cout
-        << "====================================================================="
-        << std::endl;
-    std::cout
-        << "====================================================================="
-        << std::endl;
+    config->SetpTOnepTTwokStarPlotsmT(false, pTOnepTTwokStarCutOff);
   }
-  if (!fullBlastQA) {
-    task->SetRunTaskLightWeight(true);
-  }
-  task->SetEventCuts(evtCuts);
-  task->SetTrackCutsKaon(TrackPosKaonCuts);
-  task->SetTrackCutsAntiKaon(TrackNegKaonCuts);
-  task->SetTrackCutsProton(TrackCutsProton);
-  task->SetTrackCutsAntiProton(TrackCutsAntiProton);
-  task->SetCollectionConfig(config);
-  task->SetDoPairCleaning(DoPairCleaning);
 
-  mgr->AddTask(task);
+  //---------------------------------------------------- Config of Output Containers
 
   TString addon = "";
 
@@ -319,49 +306,41 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
 
   TString file = AliAnalysisManager::GetCommonFileName();
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer();
-  mgr->ConnectInput(task, 0, cinput);
 
   TString EvtCutsName = Form("%s_EvtCuts_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputEvtCuts = mgr->CreateContainer(
         EvtCutsName.Data(), TList::Class(), AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), EvtCutsName.Data()));
-  mgr->ConnectOutput(task, 1, coutputEvtCuts);
 
   TString TrackCutsName = Form("%s_TrackProton_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputTrkCuts = mgr->CreateContainer(
         TrackCutsName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrackCutsName.Data()));
-  mgr->ConnectOutput(task, 2, coutputTrkCuts);
 
   TString AntiTrackCutsName = Form("%s_AntiTrackProton_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntiTrkCuts = mgr->CreateContainer(
         AntiTrackCutsName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrackCutsName.Data()));
-  mgr->ConnectOutput(task, 3, coutputAntiTrkCuts);
 
-//BRELOOM change to kaon
   TString TrackCutsKaonName = Form("%s_TrackKaon_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputTrkCutsKaon = mgr->CreateContainer(
         TrackCutsKaonName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), TrackCutsKaonName.Data()));
-  mgr->ConnectOutput(task, 4, coutputTrkCutsKaon);
 
   TString AntiTrackCutsKaonName = Form("%s_AntiTrackKaon_%s", addon.Data(), suffix.Data());
   AliAnalysisDataContainer *coutputAntiTrkCutsKaon = mgr->CreateContainer(
         AntiTrackCutsKaonName.Data(), TList::Class(),
         AliAnalysisManager::kOutputContainer,
         Form("%s:%s", file.Data(), AntiTrackCutsKaonName.Data()));
-  mgr->ConnectOutput(task, 5, coutputAntiTrkCutsKaon);
 
   AliAnalysisDataContainer *coutputResults;
   TString ResultsName = Form("%s_Results_%s", addon.Data(), suffix.Data());
   coutputResults = mgr->CreateContainer(ResultsName.Data(),
                      TList::Class(), AliAnalysisManager::kOutputContainer,
                      Form("%s:%s", file.Data(), ResultsName.Data()));
-  mgr->ConnectOutput(task, 6, coutputResults);
 
   AliAnalysisDataContainer *coutputResultsQA;
   TString ResultsQAName = Form("%s_ResultsQA_%s", addon.Data(), suffix.Data());
@@ -371,19 +350,20 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
                        TList::Class(),
                        AliAnalysisManager::kOutputContainer,
                        Form("%s:%s", file.Data(), ResultsQAName.Data()));
-  mgr->ConnectOutput(task, 7, coutputResultsQA);
+
+  AliAnalysisDataContainer *coutputTrkCutsMC;
+  AliAnalysisDataContainer *coutputAntiTrkCutsMC;
+  AliAnalysisDataContainer *coutputv0CutsMC;
+  AliAnalysisDataContainer *coutputAntiv0CutsMC;
 
   if (isMC) {
-    AliAnalysisDataContainer *coutputTrkCutsMC;
     TString TrkCutsMCName = Form("%s_ProtonMC_%s", addon.Data(), suffix.Data());
     coutputTrkCutsMC = mgr->CreateContainer(
                          TrkCutsMCName.Data(),
                          TList::Class(),
                          AliAnalysisManager::kOutputContainer,
                          Form("%s:%s", file.Data(), TrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 8, coutputTrkCutsMC);
 
-    AliAnalysisDataContainer *coutputAntiTrkCutsMC;
     TString AntiTrkCutsMCName = Form("%s_AntiProtonMC_%s", addon.Data(),
                                      suffix.Data());
     coutputAntiTrkCutsMC = mgr->CreateContainer(
@@ -392,9 +372,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
                              TList::Class(),
                              AliAnalysisManager::kOutputContainer,
                              Form("%s:%s", file.Data(), AntiTrkCutsMCName.Data()));
-    mgr->ConnectOutput(task, 9, coutputAntiTrkCutsMC);
 
-    AliAnalysisDataContainer *coutputv0CutsMC;
     TString v0CutsMCName = Form("%s_KaonMC_%s", addon.Data(), suffix.Data());
     coutputv0CutsMC = mgr->CreateContainer(
                         //@suppress("Invalid arguments") it works ffs
@@ -402,9 +380,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
                         TList::Class(),
                         AliAnalysisManager::kOutputContainer,
                         Form("%s:%s", file.Data(), v0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 10, coutputv0CutsMC);
 
-    AliAnalysisDataContainer *coutputAntiv0CutsMC;
     TString Antiv0CutsMCName = Form("%s_AntiKaonMC_%s", addon.Data(),
                                     suffix.Data());
     coutputAntiv0CutsMC = mgr->CreateContainer(
@@ -413,8 +389,115 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
                             TList::Class(),
                             AliAnalysisManager::kOutputContainer,
                             Form("%s:%s", file.Data(), Antiv0CutsMCName.Data()));
-    mgr->ConnectOutput(task, 11, coutputAntiv0CutsMC);
   }
-  return task;
+
+ //-----------------------------------------------------------------------------
+
+ AliAnalysisTaskNanoFemtoProtonKaonPlus *taskNano;
+ AliAnalysisTaskFemtoProtonKaonPlus *taskAOD;
+
+  if(isNano){
+    taskNano = new AliAnalysisTaskNanoFemtoProtonKaonPlus("FemtoDreamDefault", isMC);
+    
+    if (trigger == "kINT7") {
+      taskNano->SelectCollisionCandidates(AliVEvent::kINT7);
+      std::cout << "Added kINT7 Trigger \n";
+    } else if (trigger == "kHM") {
+      taskNano->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+      std::cout << "Added kHighMult Trigger \n";
+    } else {
+      std::cout
+        << "====================================================================="
+        << std::endl;
+      std::cout
+        << "====================================================================="
+        << std::endl;
+      std::cout
+        << "Centrality Estimator not set, fix it else your Results will be empty!"
+        << std::endl;
+      std::cout
+        << "====================================================================="
+        << std::endl;
+      std::cout
+        << "====================================================================="
+        << std::endl;
+    }
+    if (!fullBlastQA) {
+      taskNano->SetRunTaskLightWeight(true);
+    }
+    taskNano->SetEventCuts(evtCuts);
+    taskNano->SetTrackCutsKaon(TrackPosKaonCuts);
+    taskNano->SetTrackCutsAntiKaon(TrackNegKaonCuts);
+    taskNano->SetTrackCutsProton(TrackCutsProton);
+    taskNano->SetTrackCutsAntiProton(TrackCutsAntiProton);
+    taskNano->SetCollectionConfig(config);
+    taskNano->SetDoPairCleaning(DoPairCleaning);
+
+    mgr->AddTask(taskNano);
+
+    mgr->ConnectInput(taskNano, 0, cinput);
+    mgr->ConnectOutput(taskNano, 1, coutputEvtCuts);
+    mgr->ConnectOutput(taskNano, 2, coutputTrkCuts);
+    mgr->ConnectOutput(taskNano, 3, coutputAntiTrkCuts);
+    mgr->ConnectOutput(taskNano, 4, coutputTrkCutsKaon);
+    mgr->ConnectOutput(taskNano, 5, coutputAntiTrkCutsKaon);
+    mgr->ConnectOutput(taskNano, 6, coutputResults);
+    mgr->ConnectOutput(taskNano, 7, coutputResultsQA);
+    if(isMC){
+      mgr->ConnectOutput(taskNano, 8, coutputTrkCutsMC);
+      mgr->ConnectOutput(taskNano, 9, coutputAntiTrkCutsMC);
+      mgr->ConnectOutput(taskNano, 10, coutputv0CutsMC);
+      mgr->ConnectOutput(taskNano, 11, coutputAntiv0CutsMC);
+    }
+  } else {
+    taskAOD = new AliAnalysisTaskFemtoProtonKaonPlus("FemtoDreamDefault", isMC);
+    
+    if (trigger == "kINT7") {
+      taskAOD->SelectCollisionCandidates(AliVEvent::kINT7);
+      std::cout << "Added kINT7 Trigger \n";
+    } else if (trigger == "kHM") {
+      taskAOD->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+      std::cout << "Added kHighMult Trigger \n";
+    } else {
+      std::cout << "=====================================================================" << std::endl;
+      std::cout << "=====================================================================" << std::endl;
+      std::cout << "Centrality Estimator not set, fix it else your Results will be empty!" << std::endl;
+      std::cout << "=====================================================================" << std::endl;
+      std::cout << "=====================================================================" << std::endl;
+    }
+        if (!fullBlastQA) {
+      taskAOD->SetRunTaskLightWeight(true);
+    }
+    taskAOD->SetEventCuts(evtCuts);
+    taskAOD->SetTrackCutsKaon(TrackPosKaonCuts);
+    taskAOD->SetTrackCutsAntiKaon(TrackNegKaonCuts);
+    taskAOD->SetTrackCutsProton(TrackCutsProton);
+    taskAOD->SetTrackCutsAntiProton(TrackCutsAntiProton);
+    taskAOD->SetCollectionConfig(config);
+    taskAOD->SetDoPairCleaning(DoPairCleaning);
+
+    mgr->AddTask(taskAOD);
+
+    mgr->ConnectInput(taskAOD, 0, cinput);
+    mgr->ConnectOutput(taskAOD, 1, coutputEvtCuts);
+    mgr->ConnectOutput(taskAOD, 2, coutputTrkCuts);
+    mgr->ConnectOutput(taskAOD, 3, coutputAntiTrkCuts);
+    mgr->ConnectOutput(taskAOD, 4, coutputTrkCutsKaon);
+    mgr->ConnectOutput(taskAOD, 5, coutputAntiTrkCutsKaon);
+    mgr->ConnectOutput(taskAOD, 6, coutputResults);
+    mgr->ConnectOutput(taskAOD, 7, coutputResultsQA);
+    if(isMC){
+      mgr->ConnectOutput(taskAOD, 8, coutputTrkCutsMC);
+      mgr->ConnectOutput(taskAOD, 9, coutputAntiTrkCutsMC);
+      mgr->ConnectOutput(taskAOD, 10, coutputv0CutsMC);
+      mgr->ConnectOutput(taskAOD, 11, coutputAntiv0CutsMC);
+    }
+  }
+
+  if (isNano) {
+    return taskNano;
+  } else {
+    return taskAOD;
+  }
 }
 

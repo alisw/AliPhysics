@@ -238,12 +238,14 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetLowMultiplicityMode(bool flag = true) {fLowMultiplicityMode = flag;}
 		virtual void   SetAdditionalTPCPileupCuts(bool flag = true) {fAddTPCPileupCuts = flag;}
 		virtual void   SetESDvsTPConlyLinearCut(double cut = 15000) {fESDvsTPConlyLinearCut = cut;}
+    virtual void   SetUseOutOfBunchPileupCut(double flag = true) {fUseOutOfBunchPileupCut = flag;}
 		virtual void   SetUseCorrectedNTracks(bool flag = true) {fUseCorrectedNTracks = flag;}
 		virtual void   SetUseNarrowBin(bool flag = true) {fUseNarrowBin = flag;}
 		virtual void   SetExtremeEfficiency(int flag = 0) {fExtremeEfficiency = flag;}
 		virtual void   SetTPCchi2perCluster(double fchi2 = 4) {fTPCchi2perCluster = fchi2;}
 		virtual void   SetUseAdditionalDCACut(double flag = true) {fUseAdditionalDCACut = flag;}
 		virtual void   SetUseDefaultWeight(double flag = true) {fUseDefaultWeight = flag;}
+    virtual void   SetUseLikeSign(int sign = 0) {bUseLikeSign = sign; iSign = sign;}
     virtual void   SetExtendV0MAcceptance(double flag = true) {fExtendV0MAcceptance = flag;}
     virtual void   SetV0MRatioCut(double ratio=5) {fV0MRatioCut = ratio;}
     virtual void   SetEtaGap3Sub(Double_t feta1 = 0.4, Double_t feta2 = 0.4) {fEtaGap3Sub1 = feta1; fEtaGap3Sub2 = feta2;}
@@ -310,14 +312,17 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Bool_t                  fSpringMode;                            // The mode with spring cuts.
 		Bool_t                  fLowMultiplicityMode;                   // The mode to consider low-multiplicity region 
 		Bool_t                  fAddTPCPileupCuts;                      // Additional TPC pileup cuts
-                Double_t                fESDvsTPConlyLinearCut;                 // ESDvsTPConlyLinearCut : default = 15000
+    Double_t                fESDvsTPConlyLinearCut;                 // ESDvsTPConlyLinearCut : default = 15000
+    Bool_t                  fUseOutOfBunchPileupCut;                // Out of bunch pileup cut
 		Bool_t                  fUseCorrectedNTracks;                   // Use corrected Ntracks in the filling of xbins;
-		Double_t                  fCentralityCut;                         // Apply an extra centrality cut.
-                Bool_t                  fUseNarrowBin;                          // Use Narrow bin
+		Double_t                fCentralityCut;                         // Apply an extra centrality cut.
+    Bool_t                  fUseNarrowBin;                          // Use Narrow bin
 		Int_t                   fExtremeEfficiency;                     // The flag to set extreme efficiency
 		Double_t                fTPCchi2perCluster;                     // Additional cuts for TPC chi2 / cluster
 		Bool_t                  fUseAdditionalDCACut;                   // Additianal cuts for dca: < 1 cm
 		Bool_t                  fUseDefaultWeight;                      // Force to use the default weight 
+    Bool_t                  bUseLikeSign;                           // Flag to use like sign tracks
+    Int_t                   iSign;                                  // Sign of selected tracks
     Bool_t                  fExtendV0MAcceptance;                   // Use V0M centrality cut 0-100%
     Double_t                fV0MRatioCut;                           // Cut on V0M / <V0M>
 		Double_t                fEtaGap3Sub1;                           // The Eta Gap for 3 sub sample (Left most gap), the default is 0.4
@@ -381,16 +386,16 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH2D*                           hTracksCorrection2d;    //! Corrected Tracks - v.s. uncorrected tracks
 		TProfile*                       hnCorrectedTracks;      //! Averaged number of corrected tracks in a specific bin;
 
-		TH2D* QDis[10];        // QDistribution for No gap
-		TH2D* QDisGap0P[10];        // QDistribution for gap 0
-		TH2D* QDisGap0M[10];        // QDistribution for gap 0
-		TH2D* QDisGap10P[10];        // QDistribution for gap 10
-		TH2D* QDisGap10M[10];        // QDistribution for gap 10
-		TH2D* QDisGap14P[10];        // QDistribution for gap 14
-		TH2D* QDisGap14M[10];        // QDistribution for gap 14
-		TH2D* QDis3subL[10];        // QDistribution for 3sub
-		TH2D* QDis3subM[10];        // QDistribution for 3sub
-		TH2D* QDis3subR[10];        // QDistribution for 3sub
+    // TH2D* QDis[10];        // QDistribution for No gap
+    // TH2D* QDisGap0P[10];        // QDistribution for gap 0
+    // TH2D* QDisGap0M[10];        // QDistribution for gap 0
+    // TH2D* QDisGap10P[10];        // QDistribution for gap 10
+    // TH2D* QDisGap10M[10];        // QDistribution for gap 10
+    // TH2D* QDisGap14P[10];        // QDistribution for gap 14
+    // TH2D* QDisGap14M[10];        // QDistribution for gap 14
+    // TH2D* QDis3subL[10];        // QDistribution for 3sub
+    // TH2D* QDis3subM[10];        // QDistribution for 3sub
+    // TH2D* QDis3subR[10];        // QDistribution for 3sub
 
     AliMCEvent *fMCEvent;           //! MC event
 
@@ -486,7 +491,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 24);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 26);    //Analysis task
 };
 
 #endif

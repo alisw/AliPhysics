@@ -347,6 +347,7 @@ CellTrackMatcherAndMIPSubtraction:                  # Cell energy shift correcti
     DoPropagation: false                            # Whether track propagation should be performed. In case of AODs its not recommended to enable it
     MatchOnlyPrimaries: false                       # Whether only primary tracks (r < MaxDistToVtxPrimcm) should be matched. Needed as clusters from conversion electrons should be track matched
     MaxDistToVtxPrim: 5                             # Maximum DCA in XY for which a track is considered primary
+    SubtractMultiple: false                         # Subtract rest MIP energy from next cell if first cell has less energy than the MIP energy
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     trackContainersNames:                           # Names of the track input objects which should be attached to the correection

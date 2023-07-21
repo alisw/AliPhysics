@@ -981,7 +981,7 @@ AliAnaElectron* ConfigureElectronAnalysis(TString col,           Bool_t simulati
 /// \param histoString : String to add to histo name in case multiple configurations are considered. Very important!!!!
 ///
 AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
-                                      Bool_t useSSIso,       Bool_t useAsy,
+                                      Bool_t  useSSIso,      Float_t isoCone,     Bool_t useAsy,
                                       TString col,           Bool_t simulation,
                                       TString calorimeter,   Int_t  year,  Int_t tm,
                                       Bool_t  printSettings, Int_t debug, 
@@ -1042,15 +1042,18 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     ana->SetM02CutForInvMass(0.1,0.35); // Loose SS cut
     
     ana->SwitchOffSelectPairInIsolationCone();
-    ana->SetR(0.4);
-    ana->SetIsolationCandidateMinPt(5);
     
     if(useSSIso)
     {
+      ana->SetR(isoCone);
+      ana->SetIsolationCandidateMinPt(5);
+
       ana->SwitchOnSelectIsolatedDecay();
+      ana->SwitchOnSelectPairInIsolationCone();
+
       //ana->AddToHistogramsName(Form("Ana%s%sEbEIsoDecay_TM%d_",particle.Data(),opt.Data(),tm));
-      ana->AddToHistogramsName(Form("Ana%s%sEbEIsoDecay_",particle.Data(),opt.Data()));
-      ana->SetOutputAODName(Form("%s%sIsoDecayTrigger_%s",particle.Data(), opt.Data(), kAnaCaloTrackCorr.Data()));
+      ana->AddToHistogramsName(Form("Ana%s%sEbEIsoDecay_R%1.2f_",particle.Data(), opt.Data(), isoCone));
+      ana->SetOutputAODName(Form("%s%sIsoDecayTrigger_%s_R%1.2f",particle.Data(), opt.Data(), kAnaCaloTrackCorr.Data(), isoCone));
     }
     
     if ( calorimeter.Contains("CAL") && !simulation ) ana->SetPairTimeCut(100);
@@ -1543,7 +1546,7 @@ AliAnaParticleIsolation* ConfigureIsolationAnalysis(TString particle,      Int_t
 
     if(kAnaCutsString.Contains("Decay"))
     {
-      ana->SwitchOffDecayTaggedHistoFill() ;
+      ana->SwitchOnDecayTaggedHistoFill() ;
       ana->SetNDecayBits(5);
     }
   }
@@ -2467,22 +2470,22 @@ void ConfigureCaloTrackCorrAnalysis
     {
       // Pi0 event by event selection, invariant mass and photon tagging from decay
       anaList->AddAt(ConfigurePi0EbEAnalysis
-                     ("Pi0"        , AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
+                     ("Pi0"        , AliAnaPi0EbE::kIMCalo,kFALSE,isoCone,kFALSE,
                       col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       
       // Eta event by event selection, invariant mass and photon tagging from decay
       anaList->AddAt(ConfigurePi0EbEAnalysis
-                     ("Eta"        , AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
+                     ("Eta"        , AliAnaPi0EbE::kIMCalo,kFALSE,isoCone,kFALSE,
                       col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       
       // Pi0 out of peak event by event selection, and photon tagging from decay
       anaList->AddAt(ConfigurePi0EbEAnalysis
-                     ("Pi0SideBand", AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
+                     ("Pi0SideBand", AliAnaPi0EbE::kIMCalo,kFALSE,isoCone,kFALSE,
                       col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
       
       // Eta out of peak event by event selection, and photon tagging from decay
       anaList->AddAt(ConfigurePi0EbEAnalysis
-                     ("EtaSideBand", AliAnaPi0EbE::kIMCalo,kFALSE,kFALSE,
+                     ("EtaSideBand", AliAnaPi0EbE::kIMCalo,kFALSE,isoCone,kFALSE,
                       col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
     }
     
@@ -2654,7 +2657,31 @@ void ConfigureCaloTrackCorrAnalysis
           anaList->AddAt(ConfigureIsolationAnalysis
                          ("Photon",leading,isoContent,isoMethod,
                           conesize[isize],isoConeMin,-1,isoPtTh,0,
-                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          if ( analysisString.Contains("DecayPi0") )
+          {
+            printf("Activate Iso of Pi0EbE icone %d\n",isize);
+            // Pi0 event by event selection, invariant mass and photon tagging from decay
+            anaList->AddAt(ConfigurePi0EbEAnalysis
+                           ("Pi0"        , AliAnaPi0EbE::kIMCalo,kTRUE,conesize[isize],kFALSE,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+            // Eta event by event selection, invariant mass and photon tagging from decay
+            anaList->AddAt(ConfigurePi0EbEAnalysis
+                           ("Eta"        , AliAnaPi0EbE::kIMCalo,kTRUE,conesize[isize],kFALSE,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+            // Pi0 out of peak event by event selection, and photon tagging from decay
+            anaList->AddAt(ConfigurePi0EbEAnalysis
+                           ("Pi0SideBand", AliAnaPi0EbE::kIMCalo,kTRUE,conesize[isize],kFALSE,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+            // Eta out of peak event by event selection, and photon tagging from decay
+            anaList->AddAt(ConfigurePi0EbEAnalysis
+                           ("EtaSideBand", AliAnaPi0EbE::kIMCalo,kTRUE,conesize[isize],kFALSE,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+          }
         }
       }
       else // normal case
@@ -2662,6 +2689,30 @@ void ConfigureCaloTrackCorrAnalysis
         anaList->AddAt(ConfigureIsolationAnalysis
                        ("Photon", leading, isoContent,isoMethod,isoCone,isoConeMin,-1,isoPtTh,0,
                         col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+        if ( analysisString.Contains("DecayPi0") )
+        {
+          printf("Activate Iso of Pi0EbE\n");
+          // Pi0 event by event selection, invariant mass and photon tagging from decay
+          anaList->AddAt(ConfigurePi0EbEAnalysis
+                         ("Pi0"        , AliAnaPi0EbE::kIMCalo,kTRUE,isoCone,kFALSE,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          // Eta event by event selection, invariant mass and photon tagging from decay
+          anaList->AddAt(ConfigurePi0EbEAnalysis
+                         ("Eta"        , AliAnaPi0EbE::kIMCalo,kTRUE,isoCone,kFALSE,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          // Pi0 out of peak event by event selection, and photon tagging from decay
+          anaList->AddAt(ConfigurePi0EbEAnalysis
+                         ("Pi0SideBand", AliAnaPi0EbE::kIMCalo,kTRUE,isoCone,kFALSE,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+
+          // Eta out of peak event by event selection, and photon tagging from decay
+          anaList->AddAt(ConfigurePi0EbEAnalysis
+                         ("EtaSideBand", AliAnaPi0EbE::kIMCalo,kTRUE,isoCone,kFALSE,
+                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+        }
       }
       
     }
@@ -2686,10 +2737,10 @@ void ConfigureCaloTrackCorrAnalysis
           if ( analysisString.Contains("MultiBkgBoth")  )
           {
             printf("*** MULTI BKG NO ISOLATION ON\n");
-  //          anaList->AddAt(ConfigureHadronCorrelationAnalysis
-  //                         ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.35, 2,
-  //                          isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-  //                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.35, 1,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
                            ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.4, 2,
@@ -2747,10 +2798,10 @@ void ConfigureCaloTrackCorrAnalysis
           if ( analysisString.Contains("MultiBkg")  )
           {
             printf("*** MULTI BKG ISOLATION ON\n");
-  //          anaList->AddAt(ConfigureHadronCorrelationAnalysis
-  //                         ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.35, 2,
-  //                          isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-  //                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.35, 1.,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
                            ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.4, 2,
@@ -2824,7 +2875,7 @@ void ConfigureCaloTrackCorrAnalysis
     // Pi0 event by event selection, cluster splitting
     //
     anaList->AddAt(ConfigurePi0EbEAnalysis
-                   ("Pi0", AliAnaPi0EbE::kSSCalo,kTRUE,kTRUE,
+                   ("Pi0", AliAnaPi0EbE::kSSCalo,kTRUE,isoCone,kTRUE,
                     col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++); 
     
     // Merged pi0 isolation

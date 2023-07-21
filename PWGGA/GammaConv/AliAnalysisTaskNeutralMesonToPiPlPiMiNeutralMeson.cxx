@@ -9245,11 +9245,18 @@ AliAODConversionPhoton* AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::Retur
     AliGAKFParticle negPionCandidateKF( *negPionCandidate, 211 );
     AliKFConversionPhoton* virtualPhoton = new AliKFConversionPhoton(negPionCandidateKF,posPionCandidatefromHNMKF);
     vParticle = new AliAODConversionPhoton(virtualPhoton);
+    if(virtualPhoton) delete virtualPhoton;
+    virtualPhoton=0x0;
     vParticle->SetPxPyPzE(posPionCandidatefromHNMKF.Px() + negPionCandidateKF.Px(),posPionCandidatefromHNMKF.Py() + negPionCandidateKF.Py(),posPionCandidatefromHNMKF.Pz() + negPionCandidateKF.Pz(),posPionCandidatefromHNMKF.E() + negPionCandidateKF.E());
     if(!vParticleClosestToRhoMass) vParticleClosestToRhoMass = vParticle;
     if(fabs(vParticle->M()-0.77) < fabs(vParticleClosestToRhoMass->M()-0.77))
       vParticleClosestToRhoMass = vParticle;
+    if(vParticle) delete vParticle;
+    vParticle=0x0;
   }
+
+
+
 
   // Then loop through all pos pions combined with the fixed neg pion i
   AliVTrack* negPionCandidatefromHNM = dynamic_cast<AliVTrack*>(fInputEvent->GetTrack(lGoodNegPionIndexPrev[i]));
@@ -9260,11 +9267,17 @@ AliAODConversionPhoton* AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::Retur
     AliGAKFParticle posPionCandidateKF( *posPionCandidate, 211 );
     AliKFConversionPhoton* virtualPhoton = new AliKFConversionPhoton(posPionCandidateKF,negPionCandidatefromHNMKF);
     vParticle = new AliAODConversionPhoton(virtualPhoton);
+    if(virtualPhoton) delete virtualPhoton;
+    virtualPhoton=0x0;
     vParticle->SetPxPyPzE(negPionCandidatefromHNMKF.Px() + posPionCandidateKF.Px(),negPionCandidatefromHNMKF.Py() + posPionCandidateKF.Py(),negPionCandidatefromHNMKF.Pz() + posPionCandidateKF.Pz(),negPionCandidatefromHNMKF.E() + posPionCandidateKF.E());
     if(!vParticleClosestToRhoMass) vParticleClosestToRhoMass = vParticle;
     if(fabs(vParticle->M()-0.77) < fabs(vParticleClosestToRhoMass->M()-0.77))
       vParticleClosestToRhoMass = vParticle;
+    if(vParticle) delete vParticle;
+    vParticle=0x0;
   }
+
+
 
   return vParticleClosestToRhoMass;
 }

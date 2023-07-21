@@ -10,6 +10,7 @@ class TParticle;
 #include "AliAnalysisManager.h"
 #include "AliMCEvent.h"
 #include "AliStack.h"
+#include "TParticlePDG.h"
 
 #include "AliAnalysisTaskMultspec_MCpred.h"
 
@@ -78,13 +79,17 @@ void AliAnalysisTaskMultspec_MCpred::UserCreateOutputObjects()
   fHistos_misc->CreateTH1("hmultprogr_AXi_nch" , "", 1000, 0, 1000, "s");
   fHistos_misc->CreateTH1("hmultprogr_Om_nch"  , "", 1000, 0, 1000, "s");
   fHistos_misc->CreateTH1("hmultprogr_AOm_nch" , "", 1000, 0, 1000, "s");
-  fHistos_misc->CreateTH1("hmultprogr_K0S_V0"  , "", 1000, 0, 1000, "s"); //vs V0
-  fHistos_misc->CreateTH1("hmultprogr_Lam_V0"  , "", 1000, 0, 1000, "s");
-  fHistos_misc->CreateTH1("hmultprogr_ALam_V0" , "", 1000, 0, 1000, "s");
-  fHistos_misc->CreateTH1("hmultprogr_Xi_V0"   , "", 1000, 0, 1000, "s");
-  fHistos_misc->CreateTH1("hmultprogr_AXi_V0"  , "", 1000, 0, 1000, "s");
-  fHistos_misc->CreateTH1("hmultprogr_Om_V0"   , "", 1000, 0, 1000, "s");
-  fHistos_misc->CreateTH1("hmultprogr_AOm_V0"  , "", 1000, 0, 1000, "s");
+  fHistos_misc->CreateTH1("hmultprogr_K0S_V0" , "", 1000, 0, 1000, "s"); //vs V0
+  fHistos_misc->CreateTH1("hmultprogr_Lam_V0" , "", 1000, 0, 1000, "s");
+  fHistos_misc->CreateTH1("hmultprogr_ALam_V0", "", 1000, 0, 1000, "s");
+  fHistos_misc->CreateTH1("hmultprogr_Xi_V0"  , "", 1000, 0, 1000, "s");
+  fHistos_misc->CreateTH1("hmultprogr_AXi_V0" , "", 1000, 0, 1000, "s");
+  fHistos_misc->CreateTH1("hmultprogr_Om_V0"  , "", 1000, 0, 1000, "s");
+  fHistos_misc->CreateTH1("hmultprogr_AOm_V0" , "", 1000, 0, 1000, "s");
+
+  fHistos_misc->CreateTH1("hmultprogr_pi_V0"  , "", 1000, 0, 1000, "s"); //vs V0
+  fHistos_misc->CreateTH1("hmultprogr_k_V0"  , "", 1000, 0, 1000, "s");
+  fHistos_misc->CreateTH1("hmultprogr_p_V0" , "", 1000, 0, 1000, "s");
 
   //Output posting
   PostData(1, fHistos_misc->GetListOfHistograms());
@@ -107,7 +112,6 @@ void AliAnalysisTaskMultspec_MCpred::UserExec(Option_t *)
   AliStack *lMCstack = lMCev->Stack();
   if (!lMCstack) {
     Printf("ERROR: Could not retrieve MC stack \n");
-    cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
     return;
   }
 
@@ -124,16 +128,22 @@ void AliAnalysisTaskMultspec_MCpred::UserExec(Option_t *)
   int n_Om   = 0;
   int n_AOm  = 0;
 
+  int n_pi   = 0;
+  int n_k    = 0;
+  int n_p    = 0;
+
   for (int itrk = 0; itrk < lMCstack->GetNtrack(); itrk++){
 
     TParticle *lPart = lMCstack->Particle(itrk);
     if(!lPart || !lMCstack->IsPhysicalPrimary(itrk)) continue;
+    double ch = ((TParticlePDG*)lPart->GetPDG())->Charge();
 
-    if(lPart->Eta()>-0.5 && lPart->Eta()<0.5) nch++;
-    else if((lPart->Eta()>2.8 && lPart->Eta()<5.1)||(lPart->Eta()>-3.7 && lPart->Eta()<-1.7)) nV0++;
+    if(!(TMath::Abs(ch)<1e-3)) {
+      if(lPart->Eta()>-0.5 && lPart->Eta()<0.5) nch++;
+      else if((lPart->Eta()>2.8 && lPart->Eta()<5.1)||(lPart->Eta()>-3.7 && lPart->Eta()<-1.7)) nV0++;
+    }
 
-    double rap = Rap(lPart->Energy(),lPart->Pz());
-    if(rap<-0.5||rap>0.5) continue;
+    if(TMath::Abs(lPart->Y())>0.5) continue;
 
     int pdg = (int)lPart->GetPdgCode();
     if     (pdg==310  ) n_K0S++;
@@ -143,6 +153,9 @@ void AliAnalysisTaskMultspec_MCpred::UserExec(Option_t *)
     else if(pdg==-3312) n_AXi++;
     else if(pdg==3334 ) n_Om++;
     else if(pdg==-3334) n_AOm++;
+    else if(TMath::Abs(pdg)==211)  n_pi++;
+    else if(TMath::Abs(pdg)==321)  n_k++;
+    else if(TMath::Abs(pdg)==2212) n_p++;
 
   }
 
@@ -191,20 +204,19 @@ void AliAnalysisTaskMultspec_MCpred::UserExec(Option_t *)
       fHistos_misc->FillTH1("hmultprogr_AOm_nch" ,nch);
       fHistos_misc->FillTH1("hmultprogr_AOm_V0"  ,nV0 );
   }
+  for(int i=0; i<n_pi; i++) {
+      fHistos_misc->FillTH1("hmultprogr_pi_V0"  ,nV0 );
+  }
+  for(int i=0; i<n_k; i++) {
+      fHistos_misc->FillTH1("hmultprogr_k_V0"  ,nV0 );
+  }
+  for(int i=0; i<n_p; i++) {
+      fHistos_misc->FillTH1("hmultprogr_p_V0"  ,nV0 );
+  }
 
   PostData(1, fHistos_misc->GetListOfHistograms());
 
 }
-
-//______________________________________________________________________
-double AliAnalysisTaskMultspec_MCpred::Rap(double pz, double E) const
-{
-    if((E-pz+1.e-12)!=0 && (E+pz)!=0){
-        return 0.5*TMath::Log((E+pz)/(E-pz+1.e-12));
-    }
-    else return -666.;
-}
-
 
 //________________________________________________________________________
 void AliAnalysisTaskMultspec_MCpred::Terminate(Option_t *)

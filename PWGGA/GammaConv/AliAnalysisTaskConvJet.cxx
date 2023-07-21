@@ -66,7 +66,9 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet() : AliAnalysisTaskEmcalJet(),
                                                    fTrueVectorJetPartonPt(0),
                                                    fTrueVectorJetPartonPx(0),
                                                    fTrueVectorJetPartonPy(0),
-                                                   fTrueVectorJetPartonPz(0)
+                                                   fTrueVectorJetPartonPz(0),
+                                                   fAccType(0),
+                                                   fAccTypeMC(0)
 {
 }
 
@@ -94,7 +96,9 @@ AliAnalysisTaskConvJet::AliAnalysisTaskConvJet(const char* name) : AliAnalysisTa
                                                                    fTrueVectorJetPartonPt(0),
                                                                    fTrueVectorJetPartonPx(0),
                                                                    fTrueVectorJetPartonPy(0),
-                                                                   fTrueVectorJetPartonPz(0)
+                                                                   fTrueVectorJetPartonPz(0),
+                                                                   fAccType(0),
+                                                                   fAccTypeMC(0)
 {
   SetMakeGeneralHistograms(kTRUE);
 }
@@ -140,6 +144,7 @@ void AliAnalysisTaskConvJet::DoJetLoop()
     TObjArray* arr = JetName.Tokenize("__");
     TObjString* testObjString = (TObjString*)arr->At(2);
     if (!(static_cast<TString>(testObjString->GetString())).Contains("mcparticles")) {
+      fAccType = jetCont->GetAcceptanceType();
       UInt_t count = 0;
       fNJets = 0;
       fVectorJetPt.clear();
@@ -170,6 +175,7 @@ void AliAnalysisTaskConvJet::DoJetLoop()
       }
       fNJets = count;
     } else {
+      fAccTypeMC = jetCont->GetAcceptanceType();
       UInt_t count = 0;
       fTrueNJets = 0;
       fTrueVectorJetPt.clear();

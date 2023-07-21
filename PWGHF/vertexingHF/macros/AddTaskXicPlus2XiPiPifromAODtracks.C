@@ -104,9 +104,26 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks *AddTaskXicPlus2XiPiPifromAODtracks
   AliAnalysisDataContainer *coutputXic9 = mgr->CreateContainer(Form("HMV0_0to100%s",outputFileName.Data()),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   mgr->ConnectOutput(task,9,coutputXic9);
 
-  if(EvtInfo) {
-  AliAnalysisDataContainer *coutputXic10 = mgr->CreateContainer(Form("XicPlusEventvariables%s",outputFileName.Data()),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());    //jcho, Event variables tree
+  //
+  AliAnalysisDataContainer *coutputXic10 = mgr->CreateContainer(Form("MB_0to100_INEL%s",outputFileName.Data()),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
   mgr->ConnectOutput(task,10,coutputXic10);
+  AliAnalysisDataContainer *coutputXic11 = mgr->CreateContainer(Form("MB_0point1to30_INEL%s",outputFileName.Data()),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  mgr->ConnectOutput(task,11,coutputXic11);
+  AliAnalysisDataContainer *coutputXic12 = mgr->CreateContainer(Form("MB_30to100_INEL%s",outputFileName.Data()),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  mgr->ConnectOutput(task,12,coutputXic12);
+  AliAnalysisDataContainer *coutputXic13 = mgr->CreateContainer(Form("HMV0_0to100_INEL%s",outputFileName.Data()),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  mgr->ConnectOutput(task,13,coutputXic13);
+  AliAnalysisDataContainer *coutputXic14 = mgr->CreateContainer(Form("HMV0_0to0point1_INEL%s",outputFileName.Data()),AliNormalizationCounter::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  mgr->ConnectOutput(task,14,coutputXic14);
+
+  if(theMCon){ 
+  AliAnalysisDataContainer *coutputXic15 = mgr->CreateContainer(Form("MCGenVariables%s",outputFileName.Data()),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());
+  mgr->ConnectOutput(task,15,coutputXic15);
+  }
+
+  if(EvtInfo) {
+  AliAnalysisDataContainer *coutputXic16 = mgr->CreateContainer(Form("XicPlusEventvariables%s",outputFileName.Data()),TTree::Class(),AliAnalysisManager::kOutputContainer,outputfile.Data());    //jcho, Event variables tree
+  mgr->ConnectOutput(task,16,coutputXic16);
   }
 
   return task;

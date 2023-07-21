@@ -107,6 +107,7 @@ public:
   void SetPtMin(Double_t val) { fPtMin = val; }
   void SetFilterBit(UInt_t val) { fFilterBit = val;  }
   void SetDCAXYCut(TFormula* value) { fDCAXYCut = value; }
+  void SetDCAZCut(TFormula* value) { fDCAZCut = value; }
   void SetSharedClusterCut(Float_t value) { fSharedClusterCut = value; }
   void SetCrossedRowsCut(Int_t value) { fCrossedRowsCut = value; }
   void SetFoundFractionCut(Double_t value) { fFoundFractionCut = value; }
@@ -281,6 +282,7 @@ private:
   Int_t               fOnlyOneAssocEtaSide;  // decides that only associated particle from one eta side are considered (0 = all; -1 = negative, 1 = positive)
   Double_t            fPtMin;                // Min pT to start correlations
   TFormula*           fDCAXYCut;             // additional pt dependent cut on DCA XY (only for AOD)
+  TFormula*           fDCAZCut;              // additional pt dependent cut on DCA Z (only for AOD)
   Double_t            fSharedClusterCut;     // cut on shared clusters (only for AOD)
   Int_t               fCrossedRowsCut;       // cut on crossed rows (only for AOD)
   Double_t            fFoundFractionCut;     // cut on crossed rows/findable clusters (only for AOD)
@@ -355,7 +357,7 @@ private:
   Bool_t fUsePtBinnedEventPool;                   // uses event pool in pt bins
   Bool_t fCheckEventNumberInMixedEvent;           // check event number before correlation in mixed event
 
-  ClassDef(AliAnalysisTaskPhiCorrelations, 66); // Analysis task for delta phi correlations
+  ClassDef(AliAnalysisTaskPhiCorrelations, 67); // Analysis task for delta phi correlations
 };
 
 #endif

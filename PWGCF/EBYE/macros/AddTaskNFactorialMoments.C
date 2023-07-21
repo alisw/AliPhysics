@@ -4,15 +4,15 @@
 AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
   TString year = "2015", bool fSelfAffAnalysis = kFALSE, double pt1 = 0.4,
   double pt2 = 0.6, double pt3 = 0.4, double pt4 = 1.0, double pt5 = 0.6,
-  double pt6 = 0.8, double pt7 = 0.6, double pt8 = 0.9, bool fPileup = kFALSE,
+  double pt6 = 0.8, double pt7 = 0.6, double pt8 = 2.0, bool fPileup = kFALSE,
   double fEtaMin = -0.8, double fEtaMax = 0.8, int fCentMin = 0,
-  int fCentMax = 10, int fBit = 128, double fDeta = 0.02, double fDphi = 0.02,
+  int fCentMax = 5, int fBit = 768, double fDeta = 0.02, double fDphi = 0.02,
   bool fTwoTrack = kFALSE, double fSharedFraction = 0.05,
   bool fSharity = kFALSE, double fVxMax = 0.3, double fVyMax = 0.4,
   double fVzMax = 10.0, bool fRejectElectrons = kFALSE,
   double fDCAXYRangeMax = 0.0, double fDCAZRangeMax = 0.0,
   double fITSClusterCut = 0.0, double fTPCClusterCut = 0.0,
-  double fnTPCrossedrows = 0.0, double fSharedCls = 0.0, double fSharedRows = 0.0, double fFindableCls = 0.0, int Mmax = 123, bool fIsMC = kTRUE)
+  double fnTPCrossedrows = 0.0, double fSharedCls = 0.0, double fSharedRows = 0.0, double fFindableCls = 0.0, bool defSharedFrac = kTRUE, int bField = 0, int Mmax = 123, bool fIsMC = kFALSE, const char* suffix = "")
 {
 
   // year = "2010" or "2015"
@@ -49,8 +49,10 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
   }
 
   // creating an instance for tasknfms
+  TString combinedName;
+  combinedName.Form("taskNFMs%s", suffix);
   AliAnalysisTaskNFactorialMoments* tasknfms =
-    new AliAnalysisTaskNFactorialMoments("tasknfms");
+    new AliAnalysisTaskNFactorialMoments(combinedName);
   if (!tasknfms)
     return 0x0;
 
@@ -62,6 +64,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
   tasknfms->SetCentLim(fCentMin, fCentMax);
   tasknfms->SetPtArray(ptarrD);
   tasknfms->Setfbit(fBit);
+  tasknfms->SetBfield(bField);
   tasknfms->SetTwoTrackCuts(fDeta, fDphi, fTwoTrack);
   tasknfms->SetSharingFraction(fSharedFraction, fSharity);
   tasknfms->SetVtxCut(fVxMax, fVyMax, fVzMax);
@@ -72,7 +75,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
   tasknfms->SetTPCClusterCut(fTPCClusterCut);   // chi2 per TPC 4
   tasknfms->SetnTPCrossedrows(fnTPCrossedrows); // 70
   tasknfms->SetSelfAffine(fSelfAffAnalysis);
-  tasknfms->SetSharedCls(fSharedCls, fSharedRows, fFindableCls);
+  tasknfms->SetSharedCls(fSharedCls, fSharedRows, fFindableCls, defSharedFrac);
 
   // add your tasknfms to the manager
   mgr->AddTask(tasknfms);

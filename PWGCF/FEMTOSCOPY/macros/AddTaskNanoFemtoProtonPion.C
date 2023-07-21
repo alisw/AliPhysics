@@ -5,6 +5,7 @@
 #include "AliFemtoDreamTrackCuts.h"
 #include "AliFemtoDreamCollConfig.h"
 #include "AliAnalysisTaskNanoFemtoProtonPion.h"
+#include "AliAnalysisTaskFemtoProtonPion.h"
 
 AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     bool isNano = true, //0
@@ -23,7 +24,9 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     bool DoResonanceLorentzFactor = false, //13
     bool DoFinemTBinning = false, //14
     int mTBinningChoice = 1, //15
-    const char *cutVariation = "0" //16
+    bool DoFunWithPhaseSpace = false, //16
+    float pTOnepTTwokStarCutOff = 3., //17
+    const char *cutVariation = "0" //18
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -255,6 +258,12 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     TrackCutsAntiPion->SetMinimalBooking(true);
     config->SetMinimalBookingME(true);
     config->SetMinimalBookingSample(true);
+  }
+
+  if(DoFunWithPhaseSpace){
+    config->SetpTOnepTTwokStarPlotsmT(true, pTOnepTTwokStarCutOff);
+  } else {
+    config->SetpTOnepTTwokStarPlotsmT(false, pTOnepTTwokStarCutOff);
   }
 
   //============================================================================================================= Systematics
