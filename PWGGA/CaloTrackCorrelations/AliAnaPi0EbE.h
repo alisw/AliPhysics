@@ -252,7 +252,9 @@ private:
   TH2F         * fhSelectedMassSplitPt  ;                   //!<! Pair mass vs pT (split), for selected pairs
   
   TH2F         * fhMassPtIsoRCut  ;                         //!<! Pair mass vs pT, for all pairs when opening angle not larger than iso cone radius
-  
+  TH2F         * fhMassPtIsoRCutPtMaxPair  ;                //!<! Pair mass vs pT of highest, for all pairs when opening angle not larger than iso cone radius
+  TH2F         * fhMassPtIsoRCutPtMinPair  ;                //!<! Pair mass vs pT od lowest, for all pairs when opening angle not larger than iso cone radius
+
   TH2F         * fhMassPtLocMax[3] ;                        //!<! Pair mass vs pT, for all pairs, for each NLM case
   TH2F         * fhSelectedMassPtLocMax[3] ;                //!<! Pair mass vs pT, for selected pairs, for each NLM case
   TH2F         * fhSelectedMassPtLocMaxSM[3][22];           //!<! Pair mass vs pT, for selected pairs, for each NLM case, for each SM
@@ -474,7 +476,7 @@ private:
   AliAnaPi0EbE & operator = (const AliAnaPi0EbE & pi0ebe) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaPi0EbE,42) ;
+  ClassDef(AliAnaPi0EbE,43) ;
   /// \endcond
 
 } ;
