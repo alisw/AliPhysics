@@ -500,13 +500,6 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
     return;
   }
   
-  lMCstack = lMCevent->Stack();
-  if (!lMCstack) {
-    Printf("ERROR: Could not retrieve MC stack \n");
-    cout << "Name of the file with pb :" <<  fInputHandler->GetTree()->GetCurrentFile()->GetName() << endl;
-    return;
-  }
-  
   //------------------------------------------------
   // Multiplicity Information Acquistion
   //------------------------------------------------
@@ -521,18 +514,24 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   //this keeps multiplicity over a wide range
   //(multiple intervals as configured by the fkInterval... vars)
   Double_t lNchForward  = 0;
-  
+  Long_t Nall = 0; 
+  Long_t Ncharged = 0; 
+  Long_t Nprimary = 0;
+
   Bool_t lEvSel_INELgtZEROStackPrimaries=kFALSE;
   
   
   //----- Loop on Stack ----------------------------------------------------------------
-  for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++)
+  for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCevent->GetNumberOfTracks()); iCurrentLabelStack++)
   {   // This is the begining of the loop on tracks
     AliMCParticle* particleOne = (AliMCParticle*)lMCevent->GetTrack(iCurrentLabelStack);
     if(!particleOne) continue;
+    Nall++; 
     Double_t lThisCharge = particleOne->Charge();
     if(TMath::Abs(lThisCharge)<0.001) continue;
-    if(! (lMCstack->IsPhysicalPrimary(iCurrentLabelStack)) ) continue;
+    Ncharged++; 
+    if(! (particleOne->IsPhysicalPrimary()) ) continue;
+    Nprimary++;
     
     Double_t gpt = particleOne -> Pt();
     Double_t geta = particleOne -> Eta();
@@ -543,10 +542,15 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
     
     //Special treatment: multiple intervals
     for(Int_t ii = 0; ii<fkNIntervals; ii++ )
-      if( fkIntervalMinEta[ii] < geta && geta < fkIntervalMaxEta[ii] ) lNchForward+=fkIntervalWeight[ii];
+      if( fkIntervalMinEta[ii] < geta && geta < fkIntervalMaxEta[ii] ) lNchForward++;
   }//End of loop on tracks
   //----- End Loop on Stack ------------------------------------------------------------
-  
+
+  if( fkVerboseMode ){ 
+    Printf("Particle counters - all = %li, charged = %li, primary = %li", Nall, Ncharged, Nprimary); 
+    Printf("Particle counters - |eta|<0.5: %li; |eta|<0.8: %li; custom counter: %f", lNchEta5, lNchEta8, lNchForward); 
+  }
+
   //Reject non-INEL>0 if requested
   if( !lEvSel_INELgtZEROStackPrimaries && fkSelectINELgtZERO ) return;
   
@@ -586,19 +590,20 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   std::vector<uint32_t> omegaMinusIndices;
   std::vector<uint32_t> omegaPlusIndices;
 
-  for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCstack->GetNtrack()); iCurrentLabelStack++)
+  for (Int_t iCurrentLabelStack = 0;  iCurrentLabelStack < (lMCevent->GetNumberOfTracks()); iCurrentLabelStack++)
   {
     // Determine if within acceptance, otherwise fully reject from list
     // done such that this check is done O(N) and not O(N^2)
     // TParticle* lThisParticle = lMCstack->Particle(iCurrentLabelStack);
     AliMCParticle* lThisParticle = (AliMCParticle*)lMCevent->GetTrack(iCurrentLabelStack);
     if(!lThisParticle) continue;
-    Bool_t lIsPhysicalPrimary = lMCstack->IsPhysicalPrimary(iCurrentLabelStack);
+    Bool_t lIsPhysicalPrimary = lThisParticle->IsPhysicalPrimary();
     Double_t geta = lThisParticle -> Eta();
     Double_t gpt = lThisParticle -> Pt();
 
     // kick out stuff not at midrapidity
     if( ( geta < fkMinEta || geta > fkMaxEta) ) continue;
+    if( !( lIsPhysicalPrimary ) ) continue;
     
     Double_t lThisCharge = lThisParticle->Charge();
 
