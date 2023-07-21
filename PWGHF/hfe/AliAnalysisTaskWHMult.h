@@ -42,6 +42,7 @@ class AliAnalysisTaskWHMult : public AliAnalysisTaskSE
 	TClonesArray*		fMCarray;		//! MC array
 	AliAODMCParticle*	fMCparticle;		//! MC particle
         TList*                  fOutputList;    	//! output list								//Object List Number//
+        TTree*                  tree;                   // ref. for mult correction
         TH1F*                   fHistPt;        	//! dummy histogram								//0
 	TH1F*                   pVertex;        	//! additional histgram in Step3						//1
 	TH1F*                   cutVer;         	//! accepting within 10 cm							//2

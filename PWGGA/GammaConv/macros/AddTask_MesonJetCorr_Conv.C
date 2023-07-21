@@ -181,40 +181,98 @@ void AddTask_MesonJetCorr_Conv(
   // configs for pi0 meson pp 13 TeV
   //---------------------------------------
   if (trainConfig == 1) {
-    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "0152103500000000"); // config without jet requirement
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "0152103500000000"); // config without jet requirement
   } else if (trainConfig == 2) {
-    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "2s52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
   } else if (trainConfig == 3) {
-    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "2152103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2152103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
   } else if (trainConfig == 6) {
-    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "2s52103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, rotation back
+    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0404000", "2s52103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, rotation back
   } else if (trainConfig == 7) {
-    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2s52103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, rotation back
+    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0404000", "2s52103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, rotation back
   } else if (trainConfig == 16) { // same as 6 but with mixed jet back
-    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
+    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0404000", "2152103500000000"); // Jet-low trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
   } else if (trainConfig == 17) { // same as 7 but with mixed jet back
-    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2152103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
+    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0404000", "2152103500000000"); // Jet-high trigg in-Jet mass cut around pi0: 0.1-0.15, mixed jet back
   
   } else if (trainConfig == 20) {
-    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "es52103500000000"); // decay daughters inside jet
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "es52103500000000"); // decay daughters inside jet
   } else if (trainConfig == 21) {
-    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "es52103500000000"); // decay daughters inside jet
-    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "es52103500000000"); // decay daughters inside jet
+    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0404000", "es52103500000000"); // decay daughters inside jet
+    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0404000", "es52103500000000"); // decay daughters inside jet
     
-  // configs without TRD/ITS conversion requirement
+  // configs with TRD/ITS conversion requirement
   } else if (trainConfig == 22) {
-    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "2s52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
   } else if (trainConfig == 23) {
-    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0404000", "2s52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
+    cuts.AddCutPCM("0009c103", "0dm00009f9730000dge0474000", "2s52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
   } else if (trainConfig == 24) {
-    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0404000", "2s52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
+    cuts.AddCutPCM("0009b103", "0dm00009f9730000dge0474000", "2s52103500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
   
   // qt cut variations
   } else if (trainConfig == 25) {
     cuts.AddCutPCM("00010103", "0dm00009f97300003ge0404000", "2s52103500000000"); // qT max 0.05 1D
     cuts.AddCutPCM("00010103", "0dm00009f97300002ge0404000", "2s52103500000000"); // qT max 0.06 2D
     cuts.AddCutPCM("00010103", "0dm00009f97300009ge0404000", "2s52103500000000"); // qT max 0.03 2D
+
+
+  // configs with eta < 0.5
+  } else if (trainConfig == 30) {
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52403500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
   
+
+  //--- Systamtic variations for INT7 trigger
+  } else if (trainConfig == 100) { // standard cut
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52103500000000"); 
+  } else if (trainConfig == 101) { // background variation
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52103500000000");  // mixed back
+  } else if (trainConfig == 102) { // alpha cut variation
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52105500000000"); // alpha cut 0-0.75
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52108500000000"); // alpha cut 0-0.65
+  } else if (trainConfig == 103) { // opening angle var.
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s63103400000000"); // no opening angle cut
+
+  //-- PCM variations
+  } else if (trainConfig == 111) { // min pt electron variation
+    cuts.AddCutPCM("00010103", "0dm00069f9730000dge0404000", "2s52103500000000"); // min pT 40 MeV
+    cuts.AddCutPCM("00010103", "0dm00049f9730000dge0404000", "2s52103500000000"); // min pT 50 MeV
+    cuts.AddCutPCM("00010103", "0dm00019f9730000dge0404000", "2s52103500000000"); // min pT 100 MeV
+  } else if (trainConfig == 112) { // min pt electron variation
+    cuts.AddCutPCM("00010103", "0dm00008f9730000dge0404000", "2s52103500000000"); // TPC cluster 35%
+    cuts.AddCutPCM("00010103", "0dm00006f9730000dge0404000", "2s52103500000000"); // TPC cluster 70%
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0604000", "2s52103500000000"); // cosPA 0.9
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0304000", "2s52103500000000"); // cosPA 0.75
+  } else if (trainConfig == 113) {
+    cuts.AddCutPCM("00010103", "0dm0000939730000dge0404000", "2s52103500000000"); // nsig electron   -4,5
+    cuts.AddCutPCM("00010103", "0dm0000969730000dge0404000", "2s52103500000000"); // nsig electron -2.5,4
+    cuts.AddCutPCM("00010103", "0dm00009f5730000dge0404000", "2s52103500000000"); // nsig pion 2,-10
+    cuts.AddCutPCM("00010103", "0dm00009f1730000dge0404000", "2s52103500000000"); // nsig pion 0,-10
+  } else if (trainConfig == 114) {
+    cuts.AddCutPCM("00010103", "0dm00009f9030000dge0404000", "2s52103500000000"); // pion nsig min mom 0.50 GeV/c
+    cuts.AddCutPCM("00010103", "0dm00009f9630000dge0404000", "2s52103500000000"); // pion nsig min mom 0.25 GeV/c
+    cuts.AddCutPCM("00010103", "0dm00009f9760000dge0404000", "2s52103500000000"); // pion nsig max mom 2.00 GeV/c
+    cuts.AddCutPCM("00010103", "0dm00009f9710000dge0404000", "2s52103500000000"); // pion nsig max mom 5.00 GeV/c
+  } else if (trainConfig == 115) {
+    cuts.AddCutPCM("00010103", "0dm00009f97300008ge0404000", "2s52103500000000"); // qT max 0.05 1D
+    cuts.AddCutPCM("00010103", "0dm00009f97300003ge0404000", "2s52103500000000"); // qT max 0.05 1D
+    cuts.AddCutPCM("00010103", "0dm00009f97300002ge0404000", "2s52103500000000"); // qT max 0.06 1D
+    cuts.AddCutPCM("00010103", "0dm00009f97300009ge0404000", "2s52103500000000"); // qT max 0.03 1D
+  } else if (trainConfig == 116) {
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dg50404000", "2s52103500000000"); // Psi pair 0.1  1D
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dg10404000", "2s52103500000000"); // Psi pair 0.1  1D
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dg60404000", "2s52103500000000"); // Psi pair 0.05  1D
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dg80404000", "2s52103500000000"); // Psi pair 0.2  1D
+  } else if (trainConfig == 117) {
+    cuts.AddCutPCM("00010103", "0dm00009f9730000c259404000", "2s52103500000000"); // qT<0.110pT (2D) alpha<0.99
+    cuts.AddCutPCM("00010103", "0dm00009f9730000a259404000", "2s52103500000000"); // qT<0.125pT (2D) alpha<0.99
+    cuts.AddCutPCM("00010103", "0dm00009f9730000e259404000", "2s52103500000000"); // qT<0.130pT (2D) alpha<0.99
+  } else if (trainConfig == 118) {
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52103500000000"); // PsiPair<0.15exp(-0.065chi2)
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52103500000000"); // PsiPair<0.18exp(-0.055chi2)
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52103500000000"); // PsiPair<0.20exp(-0.050chi2)
+  } else if (trainConfig == 119) {
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0474000", "2s52103500000000"); // config with ITS+TRDrequirement for electron tracks
+
     //---------------------------------------
     // configs for eta meson pp 13 TeV
     //---------------------------------------

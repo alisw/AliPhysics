@@ -97,6 +97,9 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   // Jet functions
   void ProcessJets(int isCurrentEventSelected = 0);
   void InitJets();
+  bool IsJetInAcc(unsigned int accType, double r, double eta, double phi);
+  bool IsInEMCalAcc(double r, double eta, double phi);
+  bool IsInDCalAcc(double r, double eta, double phi);
 
   // Helper functions
   void MakeBinning();
@@ -386,6 +389,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoMatchedPtJet;              //! vector of histos with pt of jets for jets that got matched with a true jet
   std::vector<TH1F*> fHistoUnMatchedPtJet;            //! vector of histos with pt of jets for jets that did not get matched with a true jet
   std::vector<TH1F*> fHistoTruePtJet;                 //! vector of histos with pt of true jets
+  std::vector<TH1F*> fHistoTruePtJetInAcc;            //! vector of histos with pt of true jets for generated jets in rec. acceptance
   std::vector<TH1F*> fHistoTruePtJetNotTriggered;     //! vector of histos with pt of true jets for events that did not trigger
   std::vector<TH1F*> fHistoTrueMatchedPtJet;          //! vector of histos with pt of true jets that are matched to a rec jet
   std::vector<TH1F*> fHistoTrueUnMatchedPtJet;        //! vector of histos with pt of jets that are not matched to a rec jet
@@ -420,6 +424,11 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH2F*> fHistoMesonResponse;                                        //! vector of histos with meson response matrix
   std::vector<TH3F*> fHistoMesonResolutionJetPt;                                 //! vector of histos with meson resolution as function of jet momentum
 
+  std::vector<TH2F*> fHistoTrueMesonBothDaughtersInJet;                          //! vector of histos with meson pt vs. jet pt for number of mesons with both decay daughters inside jet cone
+  std::vector<TH2F*> fHistoTrueMesonOneDaughtersInJet;                           //! vector of histos with meson pt vs. jet pt for number of mesons with only one decay daughters inside jet cone
+  std::vector<TH2F*> fHistoTrueMesonNoDaughtersInJet;                            //! vector of histos with meson pt vs. jet pt for number of mesons with no decay daughters inside jet cone
+  std::vector<TH2F*> fHistoTrueMesonDaughtersInOtherJet;                         //! vector of histos with meson pt vs. jet pt for number of mesons with decay photons in jet but not in same as pi0
+  
   //-------------------------------
   // Meson double counting
   //-------------------------------
@@ -501,7 +510,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 17);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 19);
 };
 
 #endif

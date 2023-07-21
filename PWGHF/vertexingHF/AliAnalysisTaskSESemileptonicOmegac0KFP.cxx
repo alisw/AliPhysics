@@ -98,6 +98,7 @@ fTree_Electron(0),
 fVar_Electron(0),
 fListCuts(0),
 fUseMCInfo(kFALSE),
+fMCClosureTest(kFALSE),
 fCounter(0),
 fHistEvents(0),
 fHTrigger(0),
@@ -155,6 +156,7 @@ fTree_Electron(0),
 fVar_Electron(0),
 fListCuts(0),
 fUseMCInfo(kFALSE),
+fMCClosureTest(kFALSE),
 fCounter(0),
 fHistEvents(0),
 fHTrigger(0),
@@ -1043,7 +1045,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
         
         if (fWriteOmegac0Tree){
           Int_t lab_Omegac0 = -9999.;
-          if(fUseMCInfo){
+          if(fUseMCInfo && !fMCClosureTest){
             if(btrack->Charge()<0){
               lab_Omegac0 = MatchToMCOmegac0(ptrack,ntrack,btrack,trkBE,mcArray);
               if(lab_Omegac0>=0 || decaytype == 0) FillTreeRecOmegac0FromCasc(kfpOmegac0, kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpOmegaMinus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short,  kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
@@ -1052,6 +1054,17 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
               if(lab_Omegac0>=0 || decaytype == 0) FillTreeRecOmegac0FromCasc(kfpOmegac0, kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpOmegaMinus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short,  kfpLambda, kfpLambda_m, ntrack, ptrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
             }
           } //fUseMCInfo
+            
+         ///---------------------------   used for MC closure test: do bkg subtraction in MC
+         if(fUseMCInfo && fMCClosureTest){
+            if(btrack->Charge()<0){
+                FillTreeRecOmegac0FromCasc(kfpOmegac0, kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpOmegaMinus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short,  kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
+            }else {
+                FillTreeRecOmegac0FromCasc(kfpOmegac0, kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpOmegaMinus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short,  kfpLambda, kfpLambda_m, ntrack, ptrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
+                }
+          }
+          ////---------------------------
+            
           if(!fUseMCInfo){
               if(btrack->Charge()<0){
                   FillTreeRecOmegac0FromCasc(kfpOmegac0, kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpOmegaMinus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);

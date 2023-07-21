@@ -59,6 +59,7 @@
 #pragma link C++ class AliAnalysisTaskWeakDecayVertexer+;
 #pragma link C++ class AliAnalysisTaskStrEffStudy+;
 #pragma link C++ class AliAnalysisTaskMCPredictions+;
+#pragma link C++ class AliAnalysisTaskMCPredictions2pc+;
 #pragma link C++ class AliAnalysisTaskMCPredictionsEE+;
 #pragma link C++ class AliAnalysisTaskMCPredictionsStrgVsMultVsZDC+;
 #pragma link C++ class AliAnalysisCorrelationEventCollection+;
@@ -95,6 +96,7 @@
 #pragma link C++ class AliBDT+;
 #pragma link C++ class AliAnalysisTaskStrangenessML+;
 #pragma link C++ class AliAnalysisTaskMultspec+;
+#pragma link C++ class AliAnalysisTaskMultspec_MCpred+;
 //#pragma link C++ class AliRunningCascadeEvent+;
 //#pragma link C++ class AliRunningCascadeTrack+;
 #endif

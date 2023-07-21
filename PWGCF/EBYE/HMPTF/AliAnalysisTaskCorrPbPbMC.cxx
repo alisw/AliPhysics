@@ -187,14 +187,40 @@ AliAnalysisTaskCorrPbPbMC::AliAnalysisTaskCorrPbPbMC():
   fFBNo(0),
   fChi2TPC(0),
   fChi2ITS(0),
-  fPIDnSigmaCut(0),
+  fPIDnSigmaPionCut(0),
+  fPIDnSigmaKaonCut(0),
+  fPIDnSigmaProtonCut(0),
+  fTPCcrossedrows(0),
   fListTRKCorr(0), 
   fHistMCEffKaonPlus(0),
   fHistMCEffKaonMinus(0),
   fHistMCEffPionPlus(0),
   fHistMCEffPionMinus(0),
   fHistMCEffProtonPlus(0),
-  fHistMCEffProtonMinus(0)
+  fHistMCEffProtonMinus(0),
+  hist_beforeCut_DCAxy(0),
+  hist_beforeCut_DCAz(0),
+  hist_beforeCut_eta(0),
+  hist_beforeCut_chi2perTPCclstr(0),
+  hist_beforeCut_chi2perITSclstr(0),
+  hist_beforeCut_TPCncrossedrows(0),
+  hist_afterCut_DCAxy(0),
+  hist_afterCut_DCAz(0),
+  hist_afterCut_eta(0),
+  hist_afterCut_chi2perTPCclstr(0),
+  hist_afterCut_chi2perITSclstr(0),
+  hist_afterCut_TPCncrossedrows(0),
+  f2Dhist_nSigmaTPC_pion(0),
+  f2Dhist_nSigmaTPC_kaon(0),
+  f2Dhist_nSigmaTPC_proton(0),
+  f2Dhist_nSigmaTOF_pion(0),
+  f2Dhist_nSigmaTOF_kaon(0),
+  f2Dhist_nSigmaTOF_proton(0),
+  f2Dhist_nSigmaTPCplusTOF_pion(0),
+  f2Dhist_nSigmaTPCplusTOF_kaon(0),
+  f2Dhist_nSigmaTPCplusTOF_proton(0),
+  fPileupCutVal(0),
+  fCentralityEstimator_flag(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -316,14 +342,40 @@ AliAnalysisTaskCorrPbPbMC::AliAnalysisTaskCorrPbPbMC(const char *name):
   fFBNo(0),
   fChi2TPC(0),
   fChi2ITS(0),
-  fPIDnSigmaCut(0),
+  fPIDnSigmaPionCut(0),
+  fPIDnSigmaKaonCut(0),
+  fPIDnSigmaProtonCut(0),
+  fTPCcrossedrows(0),
   fListTRKCorr(0), 
   fHistMCEffKaonPlus(0),
   fHistMCEffKaonMinus(0),
   fHistMCEffPionPlus(0),
   fHistMCEffPionMinus(0),
   fHistMCEffProtonPlus(0),
-  fHistMCEffProtonMinus(0)
+  fHistMCEffProtonMinus(0),
+  hist_beforeCut_DCAxy(0),
+  hist_beforeCut_DCAz(0),
+  hist_beforeCut_eta(0),
+  hist_beforeCut_chi2perTPCclstr(0),
+  hist_beforeCut_chi2perITSclstr(0),
+  hist_beforeCut_TPCncrossedrows(0),
+  hist_afterCut_DCAxy(0),
+  hist_afterCut_DCAz(0),
+  hist_afterCut_eta(0),
+  hist_afterCut_chi2perTPCclstr(0),
+  hist_afterCut_chi2perITSclstr(0),
+  hist_afterCut_TPCncrossedrows(0),
+  f2Dhist_nSigmaTPC_pion(0),
+  f2Dhist_nSigmaTPC_kaon(0),
+  f2Dhist_nSigmaTPC_proton(0),
+  f2Dhist_nSigmaTOF_pion(0),
+  f2Dhist_nSigmaTOF_kaon(0),
+  f2Dhist_nSigmaTOF_proton(0),
+  f2Dhist_nSigmaTPCplusTOF_pion(0),
+  f2Dhist_nSigmaTPCplusTOF_kaon(0),
+  f2Dhist_nSigmaTPCplusTOF_proton(0),
+  fPileupCutVal(0),
+  fCentralityEstimator_flag(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -385,7 +437,7 @@ void AliAnalysisTaskCorrPbPbMC::UserCreateOutputObjects()  {
     
     //QA Plots of Event Selection
     fAODeventCuts.AddQAplotsToList(fQAList,kTRUE);
-    fAODeventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+    fAODeventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE, fPileupCutVal);
     
     
     //Event Counter
@@ -489,8 +541,66 @@ void AliAnalysisTaskCorrPbPbMC::UserCreateOutputObjects()  {
     fOutputList->Add(f2Dhist_RecPionMinus);
     fOutputList->Add(f2Dhist_RecProtonPlus);
     fOutputList->Add(f2Dhist_RecProtonMinus);
+
+    //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //Histograms for track variables
+
+    //before track cut
+    hist_beforeCut_DCAxy = new TH1D("hist_beforeCut_DCAxy","hist_beforeCut_DCAxy", 1000, -5, +5);
+    hist_beforeCut_DCAz = new TH1D("hist_beforeCut_DCAz","hist_beforeCut_DCAz", 1000, -5, +5);
+    hist_beforeCut_eta = new TH1D ("hist_beforeCut_eta","hist_beforeCut_eta", 20, -1, +1);
+    hist_beforeCut_chi2perTPCclstr = new TH1D ("hist_beforeCut_chi2perTPCclstr", "hist_beforeCut_chi2perTPCclstr",100, 0, 5);
+    hist_beforeCut_chi2perITSclstr = new TH1D ("hist_beforeCut_chi2perITSclstr", "hist_beforeCut_chi2perITSclstr",100, 0, 50);
+    hist_beforeCut_TPCncrossedrows = new TH1D ("hist_beforeCut_TPCncrossedrows", "hist_beforeCut_TPCncrossedrows",200, 0, 200);
+    fOutputList->Add(hist_beforeCut_DCAxy);
+    fOutputList->Add(hist_beforeCut_DCAz);
+    fOutputList->Add(hist_beforeCut_eta);
+    fOutputList->Add(hist_beforeCut_chi2perTPCclstr);
+    fOutputList->Add(hist_beforeCut_chi2perITSclstr);
+    fOutputList->Add(hist_beforeCut_TPCncrossedrows);
+
+    //after track cut
+    hist_afterCut_DCAxy = new TH1D("hist_afterCut_DCAxy","hist_afterCut_DCAxy", 1000, -5, +5);
+    hist_afterCut_DCAz = new TH1D("hist_afterCut_DCAz","hist_afterCut_DCAz", 1000, -5, +5);
+    hist_afterCut_eta = new TH1D ("hist_afterCut_eta","hist_afterCut_eta", 20, -1, +1);
+    hist_afterCut_chi2perTPCclstr = new TH1D ("hist_afterCut_chi2perTPCclstr", "hist_afterCut_chi2perTPCclstr",100, 0, 5);
+    hist_afterCut_chi2perITSclstr = new TH1D ("hist_afterCut_chi2perITSclstr", "hist_afterCut_chi2perITSclstr",100, 0, 50);
+    hist_afterCut_TPCncrossedrows = new TH1D ("hist_afterCut_TPCncrossedrows", "hist_afterCut_TPCncrossedrows",200, 0, 200);
+    fOutputList->Add(hist_afterCut_DCAxy);
+    fOutputList->Add(hist_afterCut_DCAz);
+    fOutputList->Add(hist_afterCut_eta);
+    fOutputList->Add(hist_afterCut_chi2perTPCclstr);
+    fOutputList->Add(hist_afterCut_chi2perITSclstr);
+    fOutputList->Add(hist_afterCut_TPCncrossedrows);
+
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    //PID nSigma Histograms 2d
+
+    f2Dhist_nSigmaTPC_pion = new TH2D("f2Dhist_nSigmaTPC_pion", "f2Dhist_nSigmaTPC_pion", 2000, -10, +10, 500, 0, 5);
+    f2Dhist_nSigmaTPC_kaon = new TH2D("f2Dhist_nSigmaTPC_kaon", "f2Dhist_nSigmaTPC_kaon", 2000, -10, +10, 500, 0, 5);
+    f2Dhist_nSigmaTPC_proton = new TH2D("f2Dhist_nSigmaTPC_proton", "f2Dhist_nSigmaTPC_proton", 2000, -10, +10, 500, 0, 5);
+
+    f2Dhist_nSigmaTOF_pion = new TH2D("f2Dhist_nSigmaTOF_pion", "f2Dhist_nSigmaTOF_pion", 2000, -10, +10, 500, 0, 5);
+    f2Dhist_nSigmaTOF_kaon = new TH2D("f2Dhist_nSigmaTOF_kaon", "f2Dhist_nSigmaTOF_kaon", 2000, -10, +10, 500, 0, 5);
+    f2Dhist_nSigmaTOF_proton = new TH2D("f2Dhist_nSigmaTOF_proton", "f2Dhist_nSigmaTOF_proton", 2000, -10, +10, 500, 0, 5);
+
+     f2Dhist_nSigmaTPCplusTOF_pion = new TH2D("f2Dhist_nSigmaTPCplusTOF_pion", "f2Dhist_nSigmaTPCplusTOF_pion", 2000, -10, +10, 500, 0, 5);
+    f2Dhist_nSigmaTPCplusTOF_kaon = new TH2D("f2Dhist_nSigmaTPCplusTOF_kaon", "f2Dhist_nSigmaTPCplusTOF_kaon", 2000, -10, +10, 500, 0, 5);
+    f2Dhist_nSigmaTPCplusTOF_proton = new TH2D("f2Dhist_nSigmaTPCplusTOF_proton", "f2Dhist_nSigmaTPCplusTOF_proton", 2000, -10, +10, 500, 0, 5);
+    fOutputList->Add(f2Dhist_nSigmaTPC_pion);
+    fOutputList->Add(f2Dhist_nSigmaTPC_kaon);
+    fOutputList->Add(f2Dhist_nSigmaTPC_proton);
+    fOutputList->Add(f2Dhist_nSigmaTOF_pion);
+    fOutputList->Add(f2Dhist_nSigmaTOF_kaon);
+    fOutputList->Add(f2Dhist_nSigmaTOF_proton);
+    fOutputList->Add(f2Dhist_nSigmaTPCplusTOF_pion);
+    fOutputList->Add(f2Dhist_nSigmaTPCplusTOF_kaon);
+    fOutputList->Add(f2Dhist_nSigmaTPCplusTOF_proton);
+
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
     
-  
     //TTree object to store variables
     fTreeEvent = new TTree("fTreeEvent","Event Tree");
     fTreeEvent->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
@@ -599,7 +709,15 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
       }
     else
       {
-	lV0M = MultSelection->GetMultiplicityPercentile("V0M");
+	if (fCentralityEstimator_flag == 0)
+	  lV0M = MultSelection->GetMultiplicityPercentile("V0M");
+	else if (fCentralityEstimator_flag == 1)
+	  lV0M = MultSelection->GetMultiplicityPercentile("CL0");
+	else if (fCentralityEstimator_flag == 2)
+	  lV0M = MultSelection->GetMultiplicityPercentile("CL1");
+	else if (fCentralityEstimator_flag == 3)
+	  lV0M = MultSelection->GetMultiplicityPercentile("CL2");
+
 	//cout<<"V0M: "<<lV0M<<endl;
       }
 
@@ -673,10 +791,10 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	Double_t Track_MotherLabel = mcGenTrack->GetMother();
 
 
-	if(!mcGenTrack->IsPhysicalPrimary())
+	if(!mcGenTrack->IsPhysicalPrimary())  /* removed IsPhysicalPrimary() condition */
 	  continue;
 
-	if(Track_MotherLabel > 0) continue;
+	if(Track_MotherLabel > 0) continue;   /* removed MotherLabel condition */
 
 	if (!TrackGen_PID) continue;
 	if (TrackGen_pt < 0.2) continue;
@@ -851,27 +969,60 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	//cout<<"Found reconstructed MC track (matched with generated) !!"<<endl;
 
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	//Track quality cuts as in data
-	//Filterbit
-	if(!aodtrack->TestFilterBit(fFBNo))  continue;
-	//if(!aodtrack->TestFilterBit(96))  continue;
 
-	//cuts on TPCchi2perClstr and ITSchi2perClstr
-	
-	Double_t trkITSchi2 = aodtrack->GetITSchi2();
-	Int_t trkITSNcls = aodtrack->GetITSNcls();
-	Double_t trkITSchi2perNcls = trkITSchi2/trkITSNcls;
-	Double_t trkTPCchi2perNcls = aodtrack->GetTPCchi2perCluster();
-	if (trkTPCchi2perNcls > fChi2TPC) continue;
-	if (trkITSchi2perNcls > fChi2ITS) continue;
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	
-	
 	Double_t Track_pt = mcRecTrack->Pt();
 	Double_t Track_charge = mcRecTrack->Charge();
 	Double_t Track_PID = mcRecTrack->GetPdgCode();
 	Double_t Track_eta = mcRecTrack->Eta();
 	Double_t Track_MotherLabel = mcRecTrack->GetMother();
+	Double_t trkITSchi2 = aodtrack->GetITSchi2();
+	Int_t trkITSNcls = aodtrack->GetITSNcls();
+	Double_t trkITSchi2perNcls = trkITSchi2/trkITSNcls;
+	Double_t trkTPCchi2perNcls = aodtrack->GetTPCchi2perCluster();
+	Double_t trkTPCcrossedrows = aodtrack->GetTPCCrossedRows();
+	
+
+	//DCAxy and DCAz
+	/*
+	Double_t trkDCAxy= aodtrack->DCA();
+	Double_t trkDCAz= aodtrack->ZAtDCA();
+	if ((TMath::Abs(trkDCAxy)==999)||(TMath::Abs(trkDCAz)==999))
+	  {
+	    Double_t bval[2] = {-99., -99.};
+	    Double_t bCov[3] = {-99., -99., -99.};
+	    AliAODTrack copy(*aodtrack);
+	    copy.PropagateToDCA(fAODevent->GetPrimaryVertex(), fAODevent->GetMagneticField(), 100., bval, bCov);
+	    trkDCAz = bval[1];
+	    trkDCAxy = bval[0];
+	  }
+	*/
+	Float_t trkDCAxy;
+	Float_t trkDCAz;
+	aodtrack->GetImpactParameters(trkDCAxy, trkDCAz);
+	
+	
+	
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//Histograms filled befor applying track cut
+	hist_beforeCut_DCAxy->Fill(trkDCAxy);
+	hist_beforeCut_DCAz->Fill(trkDCAz);
+	hist_beforeCut_eta->Fill(Track_eta);
+	hist_beforeCut_chi2perTPCclstr->Fill(trkTPCchi2perNcls);
+	hist_beforeCut_chi2perITSclstr->Fill(trkITSchi2perNcls);
+	hist_beforeCut_TPCncrossedrows->Fill(trkTPCcrossedrows);
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+	//Track quality cuts as in data
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//Filterbit
+	if(!aodtrack->TestFilterBit(fFBNo))  continue; /*default: 96, systematics: 768*/
+
+	//cuts on TPCchi2perClstr and ITSchi2perClstr and TPCnCrossedRows
+	if (trkTPCcrossedrows < fTPCcrossedrows) continue;
+	if (trkTPCchi2perNcls > fChi2TPC) continue;
+	if (trkITSchi2perNcls > fChi2ITS) continue;
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	
 
 	if(!mcRecTrack->IsPhysicalPrimary())
 	  continue;
@@ -879,15 +1030,64 @@ void AliAnalysisTaskCorrPbPbMC::UserExec(Option_t *)  {
 	if(Track_MotherLabel > 0) continue;
 
 	if (!Track_PID) continue;
+
+
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//PID nSigma histograms
+
+	Double_t fTPCnSigma_Pion = 0.0;
+	Double_t fTPCnSigma_Proton = 0.0;
+	Double_t fTPCnSigma_Kaon = 0.0;
+	Double_t fTOFnSigma_Pion = 0.0;
+	Double_t fTOFnSigma_Proton = 0.0;
+	Double_t fTOFnSigma_Kaon = 0.0;
+
+	//TPC nsigma
+	fTPCnSigma_Pion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+	fTPCnSigma_Proton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+	fTPCnSigma_Kaon = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+	//TOF nsigma
+	fTOFnSigma_Pion = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
+	fTOFnSigma_Proton = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+	fTOFnSigma_Kaon = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
+
+	Double_t fTPCplusTOFnSigma_Pion = sqrt(TMath::Power(fTPCnSigma_Pion, 2.0) + TMath::Power(fTOFnSigma_Pion, 2.0));
+	Double_t fTPCplusTOFnSigma_Kaon = sqrt(TMath::Power(fTPCnSigma_Kaon, 2.0) + TMath::Power(fTOFnSigma_Kaon, 2.0));
+	Double_t fTPCplusTOFnSigma_Proton = sqrt(TMath::Power(fTPCnSigma_Proton, 2.0) + TMath::Power(fTOFnSigma_Proton, 2.0));
+
+	//TPC
+	f2Dhist_nSigmaTPC_pion->Fill(fTPCnSigma_Pion, Track_pt);
+	f2Dhist_nSigmaTPC_kaon->Fill(fTPCnSigma_Kaon, Track_pt);
+	f2Dhist_nSigmaTPC_proton->Fill(fTPCnSigma_Proton, Track_pt);
+	//TOF
+	f2Dhist_nSigmaTOF_pion->Fill(fTOFnSigma_Pion, Track_pt);
+	f2Dhist_nSigmaTOF_kaon->Fill(fTOFnSigma_Kaon, Track_pt);
+	f2Dhist_nSigmaTOF_proton->Fill(fTOFnSigma_Proton, Track_pt);
+	//TPC+TOF
+	f2Dhist_nSigmaTPCplusTOF_pion->Fill(fTPCplusTOFnSigma_Pion, Track_pt);
+	f2Dhist_nSigmaTPCplusTOF_kaon->Fill(fTPCplusTOFnSigma_Kaon, Track_pt);
+	f2Dhist_nSigmaTPCplusTOF_proton->Fill(fTPCplusTOFnSigma_Proton, Track_pt);
+
+	//Kinematic acceptance cut for analysis
 	if (Track_pt < 0.2) continue;
 	if (Track_pt > 3.0) continue;
 	if (TMath::Abs(Track_eta) > 0.8) continue;
 
-	Bool_t IsKaon = KaonSelector(track, fPIDnSigmaCut);
-	Bool_t IsPion = PionSelector(track, fPIDnSigmaCut);
-	Bool_t IsProton = ProtonSelector(track, fPIDnSigmaCut);
-	if (!IsKaon && !IsPion && !IsProton) continue;
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//Histograms filled after applying track cut
+	hist_afterCut_DCAxy->Fill(trkDCAxy);
+	hist_afterCut_DCAz->Fill(trkDCAz);
+	hist_afterCut_eta->Fill(Track_eta);
+	hist_afterCut_chi2perTPCclstr->Fill(trkTPCchi2perNcls);
+	hist_afterCut_chi2perITSclstr->Fill(trkITSchi2perNcls);
+	hist_afterCut_TPCncrossedrows->Fill(trkTPCcrossedrows);
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+	//PID selection
+	Bool_t IsKaon = KaonSelector(track, fPIDnSigmaKaonCut);
+	Bool_t IsPion = PionSelector(track, fPIDnSigmaPionCut);
+	Bool_t IsProton = ProtonSelector(track, fPIDnSigmaProtonCut);
+	if (!IsKaon && !IsPion && !IsProton) continue;
 	
 	Int_t flag = 0;
 	if(IsKaon) flag+=1;
@@ -1417,7 +1617,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::PassedTrackQualityCuts (AliAODTrack *track)  {
     return passedTrkSelection;
 }
  //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track,  Double_t nSigmaCut)  {
+Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track,  Double_t nSigmaKaonCut)  {
  
   Double_t p[3];
   track->PxPyPz(p);
@@ -1466,7 +1666,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track,  Double_t nSigm
       */
       
       //acception
-      if(TMath::Abs(fTPCnSigmaKaon) < nSigmaCut)
+      if(TMath::Abs(fTPCnSigmaKaon) < nSigmaKaonCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1490,7 +1690,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track,  Double_t nSigm
       if (fTPCplusTOFnSigmaKaon > fTPCplusTOFnSigmaPion) return kFALSE;
 
       //acception
-      if (fTPCplusTOFnSigmaKaon < nSigmaCut)
+      if (fTPCplusTOFnSigmaKaon < nSigmaKaonCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1501,7 +1701,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::KaonSelector(AliVTrack *track,  Double_t nSigm
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track,  Double_t nSigmaCut)  {
+Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track,  Double_t nSigmaPionCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1554,7 +1754,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track,  Double_t nSigm
       
       //acception
       
-      if(TMath::Abs(fTPCnSigmaPion) < nSigmaCut)
+      if(TMath::Abs(fTPCnSigmaPion) < nSigmaPionCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1580,7 +1780,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track,  Double_t nSigm
 
       //acception
       
-      if (fTPCplusTOFnSigmaPion < nSigmaCut)
+      if (fTPCplusTOFnSigmaPion < nSigmaPionCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1589,7 +1789,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::PionSelector(AliVTrack *track,  Double_t nSigm
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPbMC::ProtonSelector(AliVTrack *track,  Double_t nSigmaCut)  {
+Bool_t AliAnalysisTaskCorrPbPbMC::ProtonSelector(AliVTrack *track,  Double_t nSigmaProtonCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1640,7 +1840,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::ProtonSelector(AliVTrack *track,  Double_t nSi
       
       //acception
 
-      if(TMath::Abs(fTPCnSigmaProton) < nSigmaCut)
+      if(TMath::Abs(fTPCnSigmaProton) < nSigmaProtonCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1668,7 +1868,7 @@ Bool_t AliAnalysisTaskCorrPbPbMC::ProtonSelector(AliVTrack *track,  Double_t nSi
 
       //acception
       
-      if (fTPCplusTOFnSigmaProton < nSigmaCut)
+      if (fTPCplusTOFnSigmaProton < nSigmaProtonCut)
 	return kTRUE;
       else
 	return kFALSE;

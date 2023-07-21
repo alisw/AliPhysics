@@ -199,6 +199,21 @@ void AddTask_MesonJetCorr_Calo(
   } else if (trainConfig == 7) {
     cuts.AddCutCalo("0009b103", "411790009fe30230000", "2s631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
 
+  // EJ1 and EJ2 only EMCal triggers
+  } else if (trainConfig == 8) {
+    cuts.AddCutCalo("00095103", "411790009fe30230000", "2s631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 9) {
+    cuts.AddCutCalo("00093103", "411790009fe30230000", "2s631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+
+  // configs with Mesons only in EMCal, EMCal triggers only
+  } else if (trainConfig == 10) {
+    cuts.AddCutCalo("00010103", "111110009fe30230000", "2s631034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 11) {
+    cuts.AddCutCalo("00095103", "111110009fe30230000", "2s631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 12) {
+    cuts.AddCutCalo("00093103", "111110009fe30230000", "2s631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+
+
   } else if (trainConfig == 14) { // same as 4 but with mixed jet back
     cuts.AddCutCalo("0008e103", "411790009fe30230000", "21631034000000d0"); // EG2 in-jet, pi0 mass: 0.1-0.15, mixed jet back
   } else if (trainConfig == 15) {// same as 5 but with mixed jet back
@@ -227,6 +242,27 @@ void AddTask_MesonJetCorr_Calo(
     cuts.AddCutCalo("0009c103", "411790109fe30230000", "2s631034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, rotation back
   } else if (trainConfig == 27) {
     cuts.AddCutCalo("0009b103", "411790109fe30230000", "2s631034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+
+
+  // configs with eta < 0.5
+  } else if (trainConfig == 30) {
+    cuts.AddCutCalo("00010103", "411790009fe30230000", "2s634034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 31) {
+    cuts.AddCutCalo("0009c103", "411790009fe30230000", "2s634034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 32) {
+    cuts.AddCutCalo("0009b103", "411790009fe30230000", "2s634034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+
+  // configs with eta < 0.5, only EMCal triggers (not DCal)
+  } else if (trainConfig == 33) {
+    cuts.AddCutCalo("00095103", "411790009fe30230000", "2s634034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 34) {
+    cuts.AddCutCalo("00093103", "411790009fe30230000", "2s634034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+
+  // configs with eta < 0.5, only EMCal triggers (not DCal), Mesons only with EMCal
+  } else if (trainConfig == 35) {
+    cuts.AddCutCalo("00095103", "111110009fe30230000", "2s634034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 36) {
+    cuts.AddCutCalo("00093103", "111110009fe30230000", "2s634034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
 
 
   //---------------------------------------

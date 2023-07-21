@@ -654,6 +654,13 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
       }
     } 
 
+    if (fTrackCutsProton->isSelected(fTrack) && fTrackCutsPion->isSelected(fTrack)){
+      continue;
+    }
+    if (fTrackCutsAntiProton->isSelected(fTrack) && fTrackCutsAntiPion->isSelected(fTrack)){
+      continue;
+    }
+
     if (fTrackCutsProton->isSelected(fTrack)) {
       SelectedProtons.push_back(*fTrack);
     }

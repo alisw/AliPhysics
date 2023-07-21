@@ -64,7 +64,9 @@
 
 ClassImp(AliAnalysisTaskCorrelationsStudies)
 
-const Int_t AliAnalysisTaskCorrelationsStudies::kgTHnDimension = 4;
+  const Int_t AliAnalysisTaskCorrelationsStudies::kgTHnDimension = 4;
+/* the track names for pT averages, weights  and effciency/purity corrections */
+std::vector<std::string> AliAnalysisTaskCorrelationsStudies::tracknames = {"HaP", "HaM", "PiP", "PiM", "KaP", "KaM", "PrP", "PrM"};
 
 AliCSTrackMaps aodTrackMaps("AODtrackMaps", "The AOD tracks id maps"); ///< the id track maps for AOD tracks
 
@@ -99,14 +101,10 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies() // All 
     fhV0MCentMult(nullptr),
     fhCL1MCentMult(nullptr),
     fhCL1EtaGapMCentMult(nullptr),
-    fhWeightsTrack_1(NULL),
-    fhWeightsTrack_2(NULL),
-    fhPtAverageTrack_1(nullptr),
-    fhPtAverageTrack_2(nullptr),
-    fhTruePtAverageTrack_1(nullptr),
-    fhTruePtAverageTrack_2(nullptr),
-    fhEffCorrTrack_1(NULL),
-    fhEffCorrTrack_2(NULL),
+    fhWeightsTrack{tracknames.size(), nullptr},
+    fhPtAverageTrack{tracknames.size(), nullptr},
+    fhTruePtAverageTrack{tracknames.size(), nullptr},
+    fhEffCorrTrack{tracknames.size(), nullptr},
     fhPairEfficiency_PP(NULL),
     fhPairEfficiency_PM(NULL),
     fhPairEfficiency_MM(NULL),
@@ -209,14 +207,10 @@ AliAnalysisTaskCorrelationsStudies::AliAnalysisTaskCorrelationsStudies(const cha
     fhV0MCentMult(nullptr),
     fhCL1MCentMult(nullptr),
     fhCL1EtaGapMCentMult(nullptr),
-    fhWeightsTrack_1(NULL),
-    fhWeightsTrack_2(NULL),
-    fhPtAverageTrack_1(nullptr),
-    fhPtAverageTrack_2(nullptr),
-    fhTruePtAverageTrack_1(nullptr),
-    fhTruePtAverageTrack_2(nullptr),
-    fhEffCorrTrack_1(NULL),
-    fhEffCorrTrack_2(NULL),
+    fhWeightsTrack{tracknames.size(), nullptr},
+    fhPtAverageTrack{tracknames.size(), nullptr},
+    fhTruePtAverageTrack{tracknames.size(), nullptr},
+    fhEffCorrTrack{tracknames.size(), nullptr},
     fhPairEfficiency_PP(NULL),
     fhPairEfficiency_PM(NULL),
     fhPairEfficiency_MM(NULL),
@@ -301,10 +295,16 @@ AliAnalysisTaskCorrelationsStudies::~AliAnalysisTaskCorrelationsStudies()
     if (fOutput && !AliAnalysisManager::GetAnalysisManager()->IsProofMode()) {
         delete fOutput;
     }
-    if (fhWeightsTrack_1 != NULL) delete fhWeightsTrack_1;
-    if (fhWeightsTrack_2 != NULL) delete fhWeightsTrack_2;
-    if (fhEffCorrTrack_1 != NULL) delete fhEffCorrTrack_1;
-    if (fhEffCorrTrack_2 != NULL) delete fhEffCorrTrack_2;
+    for (auto h : fhWeightsTrack) {
+        if (h != nullptr) {
+          delete h;
+        }
+    }
+    for (auto h : fhEffCorrTrack) {
+        if (h != nullptr) {
+          delete h;
+        }
+    }
     if (fPositiveTrackPdf != NULL) delete fPositiveTrackPdf;
     if (fNegativeTrackPdf != NULL) delete fNegativeTrackPdf;
     if (fTrueToRec != NULL) delete fTrueToRec;
@@ -355,7 +355,7 @@ Bool_t AliAnalysisTaskCorrelationsStudies::BuildEfficiencyProfiles()
 
     ffEfficiencyProfile = new TF1("EfficiencyProfile",fEfficiencyProfileToEnforce.Data(),ptlow,ptup);
     fRandomGenerator = new TRandom3();
-    AliInfo(Form("Configured efficiency profile enforcement with formula: %s", ffEfficiencyProfile->GetExpFormula().ReplaceAll("x","pT").Data()));
+    AliInfo(TString::Format("Configured efficiency profile enforcement with formula: %s", ffEfficiencyProfile->GetExpFormula().ReplaceAll("x", "pT").Data()));
   }
 
   /* let's build the efficiency profile for true data if required */
@@ -490,20 +490,20 @@ Bool_t AliAnalysisTaskCorrelationsStudies::BuildEfficiencyProfiles()
       }
       else {
         /* true will not apply any efficiency correction */
-        fProcessTrueCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{});
+        fProcessTrueCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{tracknames.size(), nullptr});
       }
     }
   }
   else {
     if (fDoProcessCorrelations) {
       /* true will not apply any efficiency correction */
-      fProcessTrueCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{});
+      fProcessTrueCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{tracknames.size(), nullptr});
     }
   }
 
   if (fDoProcessCorrelations) {
     /* for the time being, rec with true will never apply efficiency correction */
-    fProcessMCRecCorrelationsWithOptions->SetEfficiencyCorrection(std::vector<const TH1*>{});
+    fProcessMCRecCorrelationsWithOptions->SetEfficiencyCorrection(std::vector<const TH1*>{tracknames.size(), nullptr});
   }
 
   return done;
@@ -1142,20 +1142,18 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char* con
         if (inputandweights != NULL && inputandweights->IsOpen()) {
           /* the pT average histograms  */
           if (fTaskActivitiesString.Contains("diffcorr")) {
-            sprintf(localbuffer,"%sp",TString(pattern).ReplaceAll("correction","ptavgetaphi").Data());
-            fhPtAverageTrack_1 = (TH2*) inputandweights->Get(localbuffer);
-            sprintf(localbuffer,"%sm",TString(pattern).ReplaceAll("correction","ptavgetaphi").Data());
-            fhPtAverageTrack_2 = (TH2*) inputandweights->Get(localbuffer);
-            sprintf(localbuffer,"%sp",TString(pattern).ReplaceAll("correction","trueptavgetaphi").Data());
-            fhTruePtAverageTrack_1 = (TH2*) inputandweights->Get(localbuffer);
-            sprintf(localbuffer,"%sm",TString(pattern).ReplaceAll("correction","trueptavgetaphi").Data());
-            fhTruePtAverageTrack_2 = (TH2*) inputandweights->Get(localbuffer);
+            for (unsigned int isp = 0; isp < tracknames.size(); ++isp) {
+              sprintf(localbuffer, "%s%s", TString(pattern).ReplaceAll("correction", "ptavgetaphi").Data(), tracknames[isp].c_str());
+              fhPtAverageTrack[isp] = (TH2*)inputandweights->Get(localbuffer);
+              sprintf(localbuffer, "%s%s", TString(pattern).ReplaceAll("correction", "trueptavgetaphi").Data(), tracknames[isp].c_str());
+              fhTruePtAverageTrack[isp] = (TH2*)inputandweights->Get(localbuffer);
 
-            if ((fhPtAverageTrack_1 == nullptr) or (fhPtAverageTrack_2 == nullptr)) {
-              AliError("Differential correlations ordered but average pT histograms for reconstructed tracks not present");
-            }
-            if ((fhTruePtAverageTrack_1 == nullptr) or (fhTruePtAverageTrack_2 == nullptr)) {
-              AliError("Differential correlations ordered but average pT histograms for generated tracks not present");
+              if (fhPtAverageTrack[isp] == nullptr) {
+                AliError(TString::Format("Differential correlations ordered but average pT histograms for reconstructed %s tracks not present", tracknames[isp].c_str()));
+              }
+              if (fhTruePtAverageTrack[isp] == nullptr) {
+                AliError(TString::Format("Differential correlations ordered but average pT histograms for %s generated tracks not present", tracknames[isp].c_str()));
+              }
             }
           }
           /* the centrality / multiplicity estimation histograms */
@@ -1172,40 +1170,45 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char* con
           if (((TObjString*) tokens->At(3))->String().EqualTo("weights") ||
               ((TObjString*) tokens->At(3))->String().EqualTo("weightseffcorr") ||
               ((TObjString*) tokens->At(3))->String().EqualTo("weightspairseff")) {
-            sprintf(localbuffer,"%s%s", pattern,szTrack1.Data());
-            fhWeightsTrack_1 = (TH3F*) inputandweights->Get(localbuffer);
-            sprintf(localbuffer,"%s%s", pattern,szTrack2.Data());
-            fhWeightsTrack_2 = (TH3F*) inputandweights->Get(localbuffer);
-            if ((fhWeightsTrack_1 != NULL) && (fhWeightsTrack_2 != NULL)) {
-              fProcessCorrelations->SetUseWeights(kTRUE);
-              AliInfo("===========STORED CORRECTION WEIGHTS====================");
-              AliInfo(Form("Track 1: %c charge, weights histogram: %s", ((TObjString*) tokens->At(0))->String()[0],fhWeightsTrack_1->GetName()));
-              AliInfo(Form("Track 2: %c charge, weights histogram: %s", ((TObjString*) tokens->At(0))->String()[1],fhWeightsTrack_2->GetName()));
-              AliInfo("===========END STORED CORRECTION WEIGHTS================");
-              szContainerPrefix += "W";
+            /* for the time being we use a single weights collection for all particle independently of their identity */
+            AliInfo("===========STORED CORRECTION WEIGHTS====================");
+            bool storedweights = false;
+            for (unsigned int isp = 0; isp < tracknames.size(); ++isp) {
+              sprintf(localbuffer, "%s%s", pattern, tracknames[isp].c_str());
+              fhWeightsTrack[isp] = (TH3F*)inputandweights->Get(localbuffer);
+              if ((fhWeightsTrack[isp] != nullptr)) {
+                fProcessCorrelations->SetUseWeights(kTRUE);
+                AliInfo(Form("Track %s weights histogram: %s", tracknames[isp].c_str(), fhWeightsTrack[isp]->GetName()));
+                storedweights = true;
+              }
             }
-            else {
-              AliFatal(Form("Not able to find weights histograms %s in file %s. ABORTING!!!",localbuffer, ((TObjString*) tokens->At(3))->String().Data()));
-              return kFALSE;
+            AliInfo("===========END STORED CORRECTION WEIGHTS================");
+            if (storedweights) {
+              szContainerPrefix += "W";
+            } else {
+              AliFatal(Form("Not able to find weights histograms %s in file %s. ABORTING!!!", localbuffer, ((TObjString*)tokens->At(3))->String().Data()));
+              return false;
             }
           }
           /* the singles efficiency correction histograms */
           if (((TObjString*) tokens->At(3))->String().EqualTo("effcorr") ||
               ((TObjString*) tokens->At(3))->String().EqualTo("weightseffcorr") ) {
-            /* the efficiency correction */
-            sprintf(localbuffer,"%seff_%s", pattern,szTrack1.Data());
-            fhEffCorrTrack_1 = (TH1F*) inputandweights->Get(localbuffer);
-            sprintf(localbuffer,"%seff_%s", pattern,szTrack2.Data());
-            fhEffCorrTrack_2 = (TH1F*) inputandweights->Get(localbuffer);
-            if ((fhEffCorrTrack_1 != NULL) && (fhEffCorrTrack_2 != NULL)) {
-              AliInfo("===========STORED EFFICIENCY CORRECTION====================");
-              AliInfo(Form("Track 1: %c charge, efficiency correction histogram: %s", ((TObjString*) tokens->At(0))->String()[0],fhEffCorrTrack_1->GetName()));
-              AliInfo(Form("Track 2: %c charge, efficiency correction histogram: %s", ((TObjString*) tokens->At(0))->String()[1],fhEffCorrTrack_2->GetName()));
-              AliInfo("===========END STORED EFFICIENCY CORRECTION================");
-              szContainerPrefix += "E";
+            /* the efficiency correction for each species supported*/
+            bool storedefficiencies = false;
+            AliInfo("===========STORED EFFICIENCY CORRECTION====================");
+            for (unsigned int isp = 0; isp < tracknames.size(); ++isp) {
+              sprintf(localbuffer, "%seff_%s", pattern, tracknames[isp].c_str());
+              fhEffCorrTrack[isp] = (TH1F*)inputandweights->Get(localbuffer);
+              if (fhEffCorrTrack[isp] != nullptr) {
+                AliInfo(Form("Track %s, efficiency correction histogram: %s", tracknames[isp].c_str(), fhEffCorrTrack[isp]->GetName()));
+                storedefficiencies = true;
+              }
             }
-            else {
-              AliFatal(Form("Not able to find efficiency correction histograms %s in file %s. ABORTING!!!", localbuffer, ((TObjString*) tokens->At(3))->String().Data()));
+            AliInfo("===========END STORED EFFICIENCY CORRECTION================");
+            if (storedefficiencies) {
+              szContainerPrefix += "E";
+            } else {
+              AliFatal(Form("Not able to find efficiency correction histograms %s in file %s. ABORTING!!!", localbuffer, ((TObjString*)tokens->At(3))->String().Data()));
               return kFALSE;
             }
           }
@@ -1241,10 +1244,6 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelations(const char* con
           return kFALSE;
         }
       } else if (tokens->GetEntries() == 4 && fTaskActivitiesString.Contains("diffcorr") && ((TObjString*)tokens->At(3))->String().EqualTo("noweights")) {
-        fhPtAverageTrack_1 = nullptr;
-        fhPtAverageTrack_2 = nullptr;
-        fhTruePtAverageTrack_1 = nullptr;
-        fhTruePtAverageTrack_2 = nullptr;
         fProcessCorrelations->SetUseWeights(kFALSE);
         szContainerPrefix += "NW";
       } else {
@@ -1357,8 +1356,6 @@ Bool_t AliAnalysisTaskCorrelationsStudies::ConfigureCorrelationsBinning(const ch
 {
 
   TString sztmp = confstring;
-  TString szTrack1;
-  TString szTrack2;
 
   /* the correlation configuration */
   if (sztmp.BeginsWith("Binning:")) {
@@ -1426,14 +1423,14 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
     fProcessCorrelations->Initialize();
     fProcessMCRecCorrelationsWithOptions->Initialize();
     fProcessTrueCorrelations->Initialize();
-    fProcessCorrelations->SetWeigths(std::vector<const TH3*>{pois.size(), nullptr});
-    fProcessCorrelations->SetPtAvg(std::vector<const TH2*>{pois.size(), nullptr});
-    fProcessCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{pois.size(), nullptr});
+    fProcessCorrelations->SetWeigths(fhWeightsTrack);
+    fProcessCorrelations->SetPtAvg(fhPtAverageTrack);
+    fProcessCorrelations->SetEfficiencyCorrection(fhEffCorrTrack);
     fProcessCorrelations->SetPairEfficiencyCorrection(std::vector<std::vector<const THn*>>{pois.size(), {pois.size(), nullptr}});
     fProcessCorrelations->SetSimultationPdfs(std::vector<const TObjArray*>{pois.size(), nullptr});
     /* not clear how we will do it with MC rec with options */
     fProcessTrueCorrelations->SetWeigths(std::vector<const TH3*>{pois.size(), nullptr});
-    fProcessTrueCorrelations->SetPtAvg(std::vector<const TH2*>{pois.size(), nullptr});
+    fProcessTrueCorrelations->SetPtAvg(fhTruePtAverageTrack);
     fProcessTrueCorrelations->SetEfficiencyCorrection(std::vector<const TH1*>{pois.size(), nullptr});
     fProcessTrueCorrelations->SetPairEfficiencyCorrection(std::vector<std::vector<const THn*>>{pois.size(), {pois.size(), nullptr}});
     fProcessTrueCorrelations->SetSimultationPdfs(std::vector<const TObjArray*>{pois.size(), nullptr});
@@ -1444,7 +1441,7 @@ void AliAnalysisTaskCorrelationsStudies::UserCreateOutputObjects()
     fProcessPairAnalysis.Initialize();
     fProcessTruePairAnalysis.Initialize();
     /* we use the weights, they should contain NUA x NUE in four dimensions vtxz, eta, phi and pT */
-    fProcessPairAnalysis.SetSinglesEfficiency(fhWeightsTrack_1, fhWeightsTrack_2);
+    fProcessPairAnalysis.SetSinglesEfficiency(nullptr, nullptr);
     fProcessPairAnalysis.SetPairEfficiency(fhPairEfficiency_PP, fhPairEfficiency_PM, fhPairEfficiency_MM, fhPairEfficiency_MP);
     /* and incorporate its histograms to the output list */
     /* now initialize the pair analysis instance */

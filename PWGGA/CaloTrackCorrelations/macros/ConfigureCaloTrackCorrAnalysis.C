@@ -2686,10 +2686,10 @@ void ConfigureCaloTrackCorrAnalysis
           if ( analysisString.Contains("MultiBkgBoth")  )
           {
             printf("*** MULTI BKG NO ISOLATION ON\n");
-  //          anaList->AddAt(ConfigureHadronCorrelationAnalysis
-  //                         ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.35, 2,
-  //                          isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-  //                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.35, 1,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
                            ("Photon", leading, cen[icen],cen[icen+1], kFALSE, 0.4, 2,
@@ -2747,10 +2747,10 @@ void ConfigureCaloTrackCorrAnalysis
           if ( analysisString.Contains("MultiBkg")  )
           {
             printf("*** MULTI BKG ISOLATION ON\n");
-  //          anaList->AddAt(ConfigureHadronCorrelationAnalysis
-  //                         ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.35, 2,
-  //                          isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
-  //                          col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
+            anaList->AddAt(ConfigureHadronCorrelationAnalysis
+                           ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.35, 1.,
+                            isoContent,isoMethod,isoCone,isoConeMin,isoPtTh, mixOn,
+                            col,simulation,calorimeter,year,tm,printSettings,debug,histoString), n++);
             
             anaList->AddAt(ConfigureHadronCorrelationAnalysis
                            ("Photon", leading, cen[icen],cen[icen+1], kTRUE, 0.4, 2,

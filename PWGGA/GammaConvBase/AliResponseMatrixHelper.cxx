@@ -329,6 +329,80 @@ TH2F* MatrixHandler4D::GetResponseMatrix(int binX, int binY, const char* name)
   return hMesonResp;
 }
 
+//____________________________________________________________________________________________________________________________
+void MatrixHandler4D::WeightResponseMatrix(TF1* funcMeson, TF1* funcJet)
+{
+
+  for(unsigned int jx = 0; jx < vecBinsJetX.size()-1; ++jx){
+    for(unsigned int jy = 0; jy < vecBinsJetY.size()-1; ++jy){
+      for(unsigned int mx = 0; mx < vecBinsMesonX.size()-1; ++mx){
+        for(unsigned int my = 0; my < vecBinsMesonY.size()-1; ++my){
+          const double valJet = 0.5*(vecBinsJetY[jy] + vecBinsJetY[jy+1]);
+          const double valMeson = 0.5*(vecBinsMesonY[my] + vecBinsMesonY[my+1]);
+          const double weightMeson = (funcMeson == nullptr) ? 1 : funcMeson->Eval(valMeson);
+          const double weightJet = (funcJet == nullptr) ? 1 : funcJet->Eval(valJet);
+          const double weight = weightMeson*weightJet;
+          
+          if (useTHNSparese) {
+            std::array<double, 2> arrFill;
+            arrFill[0] = jx * (vecBinsMesonX.size() - 1) + mx + 1 - 0.5; // -0.5 due to the fact that this is not the bin but the bin center
+            arrFill[1] = jy * (vecBinsMesonY.size() - 1) + my + 1 - 0.5;
+            const double val = hSparseResponse->GetBinContent(hSparseResponse->GetBin(arrFill.data()));
+            const double err = hSparseResponse->GetBinError(hSparseResponse->GetBin(arrFill.data()));
+            hSparseResponse->SetBinContent(hSparseResponse->GetBin(arrFill.data()), val*weight);
+            hSparseResponse->SetBinError(hSparseResponse->GetBin(arrFill.data()), err*weight);
+          } else {
+            std::array<int, 2> arrFill;
+            arrFill[0] = jx * (vecBinsMesonX.size() - 1) + mx + 1;
+            arrFill[1] = jy * (vecBinsMesonY.size() - 1) + my + 1;
+            const double val = h2d->GetBinContent(arrFill[0], arrFill[1]);
+            const double err = h2d->GetBinError(arrFill[0], arrFill[1]);
+            h2d->SetBinContent(arrFill[0], arrFill[1], val*weight);
+            h2d->SetBinError(arrFill[0], arrFill[1], err*weight);
+          }
+        }
+      }
+    }
+  }
+}
+
+//____________________________________________________________________________________________________________________________
+void MatrixHandler4D::WeightResponseMatrix(TF2* func)
+{
+
+  for(unsigned int jx = 0; jx < vecBinsJetX.size()-1; ++jx){
+    for(unsigned int jy = 0; jy < vecBinsJetY.size()-1; ++jy){
+      for(unsigned int mx = 0; mx < vecBinsMesonX.size()-1; ++mx){
+        for(unsigned int my = 0; my < vecBinsMesonY.size()-1; ++my){
+          const double valJet = 0.5*(vecBinsJetY[jy] + vecBinsJetY[jy+1]);
+          const double valMeson = 0.5*(vecBinsMesonY[my] + vecBinsMesonY[my+1]);
+          const double weight = func->Eval(valJet, valMeson);
+          
+          if (useTHNSparese) {
+            std::array<double, 2> arrFill;
+            arrFill[0] = jx * (vecBinsMesonX.size() - 1) + mx + 1 - 0.5; // -0.5 due to the fact that this is not the bin but the bin center
+            arrFill[1] = jy * (vecBinsMesonY.size() - 1) + my + 1 - 0.5;
+            const double val = hSparseResponse->GetBinContent(hSparseResponse->GetBin(arrFill.data()));
+            const double err = hSparseResponse->GetBinError(hSparseResponse->GetBin(arrFill.data()));
+            hSparseResponse->SetBinContent(hSparseResponse->GetBin(arrFill.data()), val*weight);
+            hSparseResponse->SetBinError(hSparseResponse->GetBin(arrFill.data()), err*weight);
+            
+          } else {
+            std::array<int, 2> arrFill;
+            arrFill[0] = jx * (vecBinsMesonX.size() - 1) + mx + 1;
+            arrFill[1] = jy * (vecBinsMesonY.size() - 1) + my + 1;
+            const double val = h2d->GetBinContent(arrFill[0], arrFill[1]);
+            const double err = h2d->GetBinError(arrFill[0], arrFill[1]);
+            h2d->SetBinContent(arrFill[0], arrFill[1], val*weight);
+            h2d->SetBinError(arrFill[0], arrFill[1], err*weight);
+          }
+            
+        }
+      }
+    }
+  }
+}
+
 
 
 
