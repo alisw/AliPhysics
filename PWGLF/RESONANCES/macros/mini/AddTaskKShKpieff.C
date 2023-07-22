@@ -89,7 +89,8 @@ Bool_t       k0sSwitch=0,
  Int_t       Sys= 0,
  UInt_t      triggerMask=AliVEvent::kINT7,
  Int_t       nmix=10,
- Int_t        nNKS=3,
+ //Int_t        nNKS=3,
+ Int_t aodFilterBit=0,
  Int_t       imbin=90,
  Float_t     limbin=0.6,
  Float_t     himbin=1.5,
@@ -114,7 +115,7 @@ Bool_t       k0sSwitch=0,
   //Bool_t      isPP=1;
   Float_t     v0rapidity= 0.5;
   Float_t     rowsbycluster = 0.8;
-  Int_t aodFilterBit=0;
+  
   Float_t     ArmentousParameter = 0.2; 
  
  
@@ -271,7 +272,7 @@ Bool_t       k0sSwitch=0,
     } else
        Printf("========================== DATA analysis - PID cuts used");
     
-     if(!ConfigKShKpieff(task, isMC, piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, enableMonitor, monitorOpt.Data(), UseTolCut, ArmentousParameter, k0sSwitch, massTol, tol_switch, tol_sigma, pLife, radiuslow, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", DCAxy, enableSys, crossedRows, rowsbycluster, Sys, nNKS, imbin, limbin, himbin, ptbin, lptbin, hptbin, multbin, lmultbin, hmultbin, triggerMask, LE, RE)) return 0x0;
+     if(!ConfigKShKpieff(task, isMC, piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, enableMonitor, monitorOpt.Data(), UseTolCut, ArmentousParameter, k0sSwitch, massTol, tol_switch, tol_sigma, pLife, radiuslow, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", DCAxy, enableSys, crossedRows, rowsbycluster, Sys, aodFilterBit, imbin, limbin, himbin, ptbin, lptbin, hptbin, multbin, lmultbin, hmultbin, triggerMask, LE, RE)) return 0x0;
 
     
      //
