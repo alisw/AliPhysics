@@ -339,7 +339,8 @@ Bool_t ConfigKShKpieff
  Float_t                 crossedRows=0,
  Float_t                rowsbycluster=0,
  Int_t                   Sys=0,
- Int_t                  nNKS=0,
+ Int_t                   aodFilterBit=0,
+ //Int_t                  nNKS=0,
  Int_t                    imbin=0,
  Float_t                  limbin=0,
  Float_t                  himbin=0,
@@ -361,7 +362,7 @@ Bool_t ConfigKShKpieff
   if (strlen(suffix) > 0) suffix = Form("_%s", suffix);
  
   Bool_t isRotate=0;
-  Int_t aodFilterBit=0; 
+  //Int_t aodFilterBit=0; 
   Float_t  v0rapidity=0.5;
   Float_t massNKS=0.895;
   Float_t sigNKS=0.047;
@@ -384,7 +385,7 @@ Bool_t ConfigKShKpieff
   
   AliRsnCutTrackQuality* trkQualityCut= new AliRsnCutTrackQuality("myQualityCut");
 
-  cout<<"Value of custom quality--------------------"<<customQualityCutsID<<endl;
+  cout<<"Value of custom quality--------------------"<<customQualityCutsID<<" "<<aodFilterBit<<endl;
   
   if(SetCustomQualityCut(trkQualityCut,customQualityCutsID,aodFilterBit)){
     /*
@@ -580,7 +581,7 @@ Bool_t ConfigKShKpieff
         //AddMonitorOutput(isMC, cutPi->GetMonitorOutput(), monitorOpt.Data());
         //AddMonitorOutput(isMC, cutQ->GetMonitorOutput(), monitorOpt.Data());
         //AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput(), monitorOpt.Data());
-        //AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
+        AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
 	//AddMonitorOutput(isMC, cutSetK->GetMonitorOutput(), monitorOpt.Data());
 	//AddMonitorOutput(isMC, cutSetK0s->GetMonitorOutput(), monitorOpt.Data());
     }
@@ -665,11 +666,11 @@ Bool_t ConfigKShKpieff
         
     }
     
-   
+    
 
-    AddMonitorOutput_KPt(cutSetK->GetMonitorOutput());
+    //AddMonitorOutput_KPt(cutSetK->GetMonitorOutput());
     AddMonitorOutput_PiPt(cutSetPi->GetMonitorOutput());
-    AddMonitorOutput_K0sPt(cutSetK0s->GetMonitorOutput());
+    //AddMonitorOutput_K0sPt(cutSetK0s->GetMonitorOutput());
     
 
     
@@ -691,17 +692,7 @@ Bool_t ConfigKShKpieff
 
 
 
-    Double_t multbins[200];
-    int j,nmult=0;
-    if(triggerMask==AliVEvent::kHighMultV0){
-      for(j=0;j<10;j++){multbins[nmult]=0.001*j; nmult++;}
-      for(j=1;j<10;j++){multbins[nmult]=0.01*j; nmult++;}
-      for(j=1;j<=10;j++){multbins[nmult]=0.1*j; nmult++;}
-    }else{
-      for(j=0;j<10;j++){multbins[nmult]=0.1*j; nmult++;}
-      for(j=1;j<=100;j++){multbins[nmult]=j; nmult++;}
-    }
-
+    
 
 
     for (Int_t i = 0; i < 10; i++) {
@@ -742,8 +733,8 @@ Bool_t ConfigKShKpieff
       
       
     }
-    */
     
+    */
 
 
     
@@ -760,34 +751,39 @@ Bool_t ConfigKShKpieff
       cutEtaV0->SetRangeD(-0.8,0.8);
 
       AliRsnCutSet *cutSetK0sM = new AliRsnCutSet("setK0sM", AliRsnTarget::kMother);
+      //AliRsnCutSet *cutSetK0sM = new AliRsnCutSet("setK0sM", AliRsnTarget::kDaughter);
       cutSetK0sM->AddCut(cutK0s); //cutK0s has the pseudorapidity cut in it but it doesn't get apply on generated so i have to apply the eta cut
+      //cutSetK0sM->AddCut(cutV0); //cutK0s has the pseudorapidity cut in it but it doesn't get apply on generated so i have to apply the eta cut
       cutSetK0sM->AddCut(cutEtaV0);
       //cutSetK0sM->SetCutScheme(cutK0s->GetName());
       //cutSetK0sM->SetCutScheme(cutEtaV0->GetName());
       cutSetK0sM->SetCutScheme(TString::Format("%s&%s",cutK0s->GetName(),cutEtaV0->GetName()).Data());
-
+      //cutSetK0sM->SetCutScheme(TString::Format("%s&(!%s)",cutEtaV0->GetName(),cutV0->GetName()).Data());
+      //cutSetK0sM->SetCutScheme(TString::Format("(!%s)",cutV0->GetName()).Data());
 
 
 
       AliRsnMiniOutput *out = task->CreateOutput("K0sgenerated", "HIST", "MOTHER");
+      //AliRsnMiniOutput *out = task->CreateOutput("K0sgenerated", "HIST", "SINGLE");
       out->SetDaughter(0, AliRsnDaughter::kPion);
       out->SetDaughter(1, AliRsnDaughter::kPion);
+      //out->SetDaughter(0, AliRsnDaughter::kKaon0);
       out->SetMotherPDG(310);
       out->SetMotherMass(0.497);
       out->SetPairCuts(cutSetK0sM);
       out->AddAxis(ptID,200,0.0,20.0);
-      out->AddAxis(etaID, 20,-1.0,1.0);
+      out->AddAxis(etaID,20,-1.0,1.0);
 
 
-      out = task->CreateOutput("K0sreconstructed", "HIST", "TRUE");
-      out->SetDaughter(0, AliRsnDaughter::kPion);
-      out->SetDaughter(1, AliRsnDaughter::kPion);
+      //out = task->CreateOutput("K0sreconstructed", "HIST", "TRUE");
+      out = task->CreateOutput("K0sreconstructed", "HIST", "SINGLEREC");
+      //out->SetDaughter(0, AliRsnDaughter::kPion);
+      //out->SetDaughter(1, AliRsnDaughter::kPion);
+      out->SetDaughter(0, AliRsnDaughter::kKaon0);
+      //out->SetDaughter(0, AliRsnDaughter::kUnknown);
       out->SetMotherPDG(310);
       out->SetMotherMass(0.497);
-      //out->SetCharge(0, '-');
-      //out->SetCharge(1, '+');
-      //out->SetCutID(0, iCutPi);
-      //out->SetCutID(1, iCutPi);
+      out->SetCutID(0, iCutK0s);
       out->SetPairCuts(cutSetK0sM);
       out->AddAxis(ptID,200,0.0,20.0);
       out->AddAxis(etaID,20,-1.0,1.0);
@@ -909,6 +905,8 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
         Printf(Form("::::: SetCustomQualityCut:: using standard 2011 track quality cuts"));
 
         if(!customFilterBit){//ESD
+	  Printf(Form("::::: I am inside ESD loop condition"));
+	  cout<<"Value of custom cut is:"<<customQualityCutsID<<endl;
             if(customQualityCutsID==3){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.0150+0.0500/pt^1.1");}
             else if(customQualityCutsID==4){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexXYPtDep("0.006+0.0200/pt^1.1");}
             else if(customQualityCutsID==5){trkQualityCut->GetESDtrackCuts()->SetMaxDCAToVertexZ(5.);}
@@ -929,6 +927,8 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality * trkQualityCut, Int_t customQu
             else if(customQualityCutsID==60){trkQualityCut->GetESDtrackCuts()->SetMinNCrossedRowsTPC(80);}
             else if(customQualityCutsID==64){trkQualityCut->GetESDtrackCuts()->SetMaxChi2PerClusterITS(25.);}
         }else{//AOD
+	  Printf(Form("::::: I am inside AOD loop condition"));
+	  cout<<"Value of custom cut is:"<<customQualityCutsID<<endl;
             trkQualityCut->SetCheckOnlyFilterBit(kFALSE);
             if(customQualityCutsID==4){trkQualityCut->SetDCARPtFormula("0.006+0.0200/pt^1.1");}
             else if(customQualityCutsID==6){trkQualityCut->SetDCAZmax(0.2);}
