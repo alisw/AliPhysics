@@ -770,7 +770,7 @@ void AliAnalysisTaskNFactorialMoments::FillTrackInfo()
       double profileVal1[16] = {0.35707, 0.357014, 0.356723, 0.356252, 0.355931, 0.355681, 0.35584, 0.356167, 0.356138, 0.356158, 0.356624, 0.357092, 0.357543, 0.357907, 0.35816, 0.358379};
      std::copy(profileVal1, profileVal1 + 16, profileVal);
      }
-    else if (minCent == 20 && maxCent == 40) {
+    else if (minCent == 40 && maxCent == 80) {
       double profileVal1[16] = {0.35707, 0.357014, 0.356723, 0.356252, 0.355931, 0.355681, 0.35584, 0.356167, 0.356138, 0.356158, 0.356624, 0.357092, 0.357543, 0.357907, 0.35816, 0.358379};
      std::copy(profileVal1, profileVal1 + 16, profileVal);
      }
