@@ -1506,6 +1506,48 @@ namespace PWGJE
   Double_t AliAnalysisTaskEmcalJetHdEdxCorrelations::GetFlattenedEPAngle(Double_t uncorrectedAngle){
       // Read the TTree from the ROOT file
       TTree *tree = dynamic_cast<TTree *>(fEPcorrectionFile->Get("V0C"));
+      TString centrality_string=TString("");
+      if(fCent<10)
+      {
+        centrality_string = TString("0_10");
+      }
+      else if(fCent<20)
+      {
+        centrality_string = TString("10_20");
+      }
+      else if(fCent<30)
+      {
+        centrality_string = TString("20_30");
+      }
+      else if(fCent<40)
+      {
+        centrality_string = TString("30_40");
+      }
+      else if(fCent<50)
+      {
+        centrality_string = TString("40_50");
+      }
+      else if(fCent<60)
+      {
+        centrality_string = TString("50_60");
+      }
+      else if(fCent<70)
+      {
+        centrality_string = TString("60_70");
+      }
+      else if(fCent<80)
+      {
+        centrality_string = TString("70_80");
+      }
+      else if(fCent<90)
+      {
+        centrality_string = TString("80_90");
+      }
+      else
+      {
+        centrality_string = TString("90_100");
+      }
+      
 
       if (tree)
       {
@@ -1516,10 +1558,10 @@ namespace PWGJE
         Double_t sin_ave_i2_v0c = 0;
 
         // Set branch addresses to access the data
-        tree->SetBranchAddress("cos_ave_i1_v0c", &cos_ave_i1_v0c);
-        tree->SetBranchAddress("cos_ave_i2_v0c", &cos_ave_i2_v0c);
-        tree->SetBranchAddress("sin_ave_i1_v0c", &sin_ave_i1_v0c);
-        tree->SetBranchAddress("sin_ave_i2_v0c", &sin_ave_i2_v0c);
+        tree->SetBranchAddress(Form("cos_ave_i1_V0C_%s", centrality_string.Data()), &cos_ave_i1_v0c);
+        tree->SetBranchAddress(Form("cos_ave_i2_V0C_%s", centrality_string.Data()), &cos_ave_i2_v0c);
+        tree->SetBranchAddress(Form("sin_ave_i1_V0C_%s", centrality_string.Data()), &sin_ave_i1_v0c);
+        tree->SetBranchAddress(Form("sin_ave_i2_V0C_%s", centrality_string.Data()), &sin_ave_i2_v0c);
 
         // Loop over the entries and retrieve the values
         tree->GetEntry(0);
