@@ -15,6 +15,13 @@
 #include "AliAODVertex.h"
 #include "AliAnalysisTaskPIDResponse.h"
 #include "TMacro.h"
+#include "AliAnalysisUtils.h"
+#include "AliGenEventHeader.h"
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
+#include "AliMCParticle.h"
+#include "AliVParticle.h"
+#include <AliAODMCParticle.h>
 #include "AliEventPoolManager.h" //required in the header
 
 class AliAODEvent;
@@ -27,6 +34,8 @@ class AliMCParticle;
 class AliGenEventHeader;
 class THnSparse;
 class AliAODv0;
+//class AliV0ChParticle;
+//class AliV0ChParticle : public AliVParticle
 class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
 {
     public:
@@ -42,6 +51,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         Bool_t AcceptNegTrack(const AliAODTrack* Trk);
         Double_t Beta(const AliAODTrack *track);
         Bool_t AcceptV0(const AliAODv0 *v0, Double_t *vertex);
+        Bool_t IsMyGoodDaughterTrack(const AliAODTrack *t);
+        Bool_t IsKaonNSigma3(float mom, float nSigmakaon, float nSigmaTOFkaon);
         Bool_t SelectK0TracksMC(AliMCParticle *mcTrack);
         Bool_t SelectKPosTracksMC(AliMCParticle *mcTrack);
         Bool_t SelectKNegTracksMC(AliMCParticle *mcTrack);
@@ -92,6 +103,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fClusters;       //! dummy histogram
        TH1F*                   fHistPVz;        //! dummy histogram
        TH1F*                   fHistNEvents;    //! dummy histogram
+       TH1F*                   fMCEvents;       //! dummy histogram
+       TH1F*                   fMCEvents_pileup;   //! dummy histogram
        TH1F*                   fHistNV0;        //! dummy histogram
        TH1F*                   fHistEta;        //! dummy histogram
        TH1F*                   fHistDEta;       //! dummy histogram
@@ -154,9 +167,17 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        THnSparse*              fMCK0;
        THnSparse*              fMCKpos;
        THnSparse*              fMCKneg;
+       THnSparse*              fMCKch;
        TH2F*                   fHistKpKnMC;
        TH2F*                   fHistK0KchMC;
+       TH2F*                   fHistKpKpMC;
+       TH2F*                   fHistKnKnMC;
+       TH2F*                   fHistKpKnMC_Bg;
+       TH2F*                   fHistK0KchMC_Bg;
+       TH2F*                   fHistKpKpMC_Bg;
+       TH2F*                   fHistKnKnMC_Bg;
        TH1D*                   fHistGenMultiplicity;
+       TClonesArray     *fMCArray;//! MC array for AOD
 
        Double_t        fPV[3];
 
@@ -164,6 +185,10 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        Bool_t                  fMCTruth; // enable MC Generated study
        Bool_t                  fMCReconstructed; // enable MC reconstructed study
        Bool_t                  fRejectEventPileUp; // enable to use Pile-up cuts
+       Bool_t                  fPidpTDependentMethod; // to enable pT dependent PID
+       Bool_t                  fMinBias;
+       Bool_t                  fCentral;
+       Bool_t                  fSemiCentral;
        Bool_t                  fKpKnCorr;
        Bool_t                  fK0KchCorr;
        Bool_t                  fKpKpCorr;
@@ -191,6 +216,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        Double_t        fCosPACut;
        Double_t        fSigPosv0Cut;
        Double_t        fSigNegv0Cut;
+       Double_t        fnumOfTPCcrossedRows;
+       Double_t        fTPCrowsFindableRatio;
 
 
        // mixing
@@ -199,6 +226,11 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         TObjArray*              fSelectedK0s; //!
         TObjArray*              fSelectedKpos; //!
         TObjArray*              fSelectedKneg; //!
+        TObjArray*              fMCSelectedKCh; //!
+        TObjArray*              fMCSelectedK0s; //!
+        TObjArray*              fMCSelectedKpos; //!
+        TObjArray*              fMCSelectedKneg; //!
+
         AliEventPoolManager*    fPoolMgr;  //!  event pool manager for Event Mixing
         // Int_t                   fNOfSamples;
         // std::vector<Double_t>   fsampleBins; //sampling
