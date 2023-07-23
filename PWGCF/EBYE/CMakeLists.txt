@@ -143,6 +143,7 @@ set(SRCS
   HMPTF/AliAnalysisTaskCorrPP.cxx
   HMPTF/AliAnalysisTaskCorrPbPb.cxx
   HMPTF/AliAnalysisTaskCorrPbPb_v2.cxx
+  HMPTF/AliAnalysisTaskCorrPbPb_treemerge.cxx
   HMPTF/AliAnalysisTaskCorrPPHM.cxx
   HMPTF/AliAnalysisTaskCorrPbPbMC.cxx
   HMPTF/AliAnalysisTaskCorrPPMC.cxx
