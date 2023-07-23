@@ -19,6 +19,7 @@ Bool_t SetCustomQualityCut(AliRsnCutTrackQuality* trkQualityCut,
 #ifdef __CLING__
 R__ADD_INCLUDE_PATH($ALICE_PHYSICS)
 #include <PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C>
+#include <PWGLF/RESONANCES/macros/mini/qa/AddMonitorOutputV0.C>
 #endif
 
 
@@ -581,9 +582,9 @@ Bool_t ConfigKShKpieff
         //AddMonitorOutput(isMC, cutPi->GetMonitorOutput(), monitorOpt.Data());
         //AddMonitorOutput(isMC, cutQ->GetMonitorOutput(), monitorOpt.Data());
         //AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput(), monitorOpt.Data());
-        AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
+        //AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
 	//AddMonitorOutput(isMC, cutSetK->GetMonitorOutput(), monitorOpt.Data());
-	//AddMonitorOutput(isMC, cutSetK0s->GetMonitorOutput(), monitorOpt.Data());
+	AddMonitorOutputV0(isMC, cutSetK0s->GetMonitorOutput(), monitorOpt.Data());
     }
 
     //
@@ -771,10 +772,10 @@ Bool_t ConfigKShKpieff
       out->SetMotherPDG(310);
       out->SetMotherMass(0.497);
       out->SetPairCuts(cutSetK0sM);
-      out->AddAxis(ptID,200,0.0,20.0);
+      out->AddAxis(ptID,1000,0.0,10.0);
       out->AddAxis(etaID,20,-1.0,1.0);
 
-
+      /*
       //out = task->CreateOutput("K0sreconstructed", "HIST", "TRUE");
       out = task->CreateOutput("K0sreconstructed", "HIST", "SINGLEREC");
       //out->SetDaughter(0, AliRsnDaughter::kPion);
@@ -787,7 +788,7 @@ Bool_t ConfigKShKpieff
       out->SetPairCuts(cutSetK0sM);
       out->AddAxis(ptID,200,0.0,20.0);
       out->AddAxis(etaID,20,-1.0,1.0);
-
+      */
 
       ////////
 
