@@ -1655,7 +1655,7 @@ if (fRejectEventPileUp){
     if (!fEventCuts.AcceptEvent(fAOD)) return;
 }
 Double_t CentV0M = fEventCuts.GetCentrality(); //centrality for MC
-//if ((CentV0M < fCentMin)||(CentV0M > fCentMax)) return;
+if ((CentV0M < fCentMin)||(CentV0M > fCentMax)) return;
 cout << "centrality values for MC gen are" << CentV0M << endl;
 
 Int_t nAcceptedParticles =0;
@@ -2075,7 +2075,7 @@ void AliAnalysisTaskKaon2PC::RunMCReconstructed() {
     fVtx->Fill(PVz);
 
     Double_t CentV0M = fEventCuts.GetCentrality(); //centrality
-    //if ((CentV0M < fCentMin)||(CentV0M > fCentMax)) return;
+    if ((CentV0M < fCentMin)||(CentV0M > fCentMax)) return;
 
     cout << "pvz values from reconstructed are" << PVz << endl;
 
