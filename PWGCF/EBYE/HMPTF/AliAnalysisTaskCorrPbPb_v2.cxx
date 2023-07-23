@@ -940,7 +940,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
       centrality_bin = 6;
     else if (lV0M > 60.0 && lV0M < 70.0)
       centrality_bin = 7;
-    else if (lV0M > 70.0 && lV0M < 80.0)
+    else if (lV0M > 70.0 && lV0M < 90.0)
       centrality_bin = 8;
 
 
