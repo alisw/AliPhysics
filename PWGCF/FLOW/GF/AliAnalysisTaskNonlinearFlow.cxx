@@ -1571,7 +1571,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
     correlator.FillQVector(correlator.Qvector0M, QcosGap0M, QsinGap0M);
     correlator.FillQVector(correlator.Qvector0P, QcosGap0P, QsinGap0P);
   }
-  if (fuQGapScan) {
+  if (fuQGapScan || fgVnPtCorr) {
     correlator.FillQVector(correlator.Qvector2M, QcosGap2M, QsinGap2M);
     correlator.FillQVector(correlator.Qvector2P, QcosGap2P, QsinGap2P);
     correlator.FillQVector(correlator.Qvector4M, QcosGap4M, QsinGap4M);
@@ -1587,7 +1587,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
     correlator.FillQVector(correlator.Qvector14M, QcosGap14M, QsinGap14M);
     correlator.FillQVector(correlator.Qvector14P, QcosGap14P, QsinGap14P);
   }
-  if (fuQThreeSub) {
+  if (fuQThreeSub || fgVnPtCorr) {
     correlator.FillQVector(correlator.QvectorSubLeft, QcosSubLeft, QsinSubLeft);
     correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight);
     correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
