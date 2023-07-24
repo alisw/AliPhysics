@@ -37,6 +37,7 @@ using namespace std;
 
 class TH1D;
 class TH2D;
+class TH3D;
 class TList;
 class TTree;
 class AliMCEvent;
@@ -201,7 +202,7 @@ private:
 	bool fIsGoodEvent; //
 	AliJCorrectionMapTask *fJCorMapTask; // Correction Map task
 	TString fJCorMapTaskName; //
-	TH1 *pPhiWeights;
+	TH3D *pPhiWeights;
 	TGraphErrors *grEffCor; // for one cent
 	TAxis *fCentBinEff; // for different cent bin for MC eff
 	UInt_t phiMapIndex; //

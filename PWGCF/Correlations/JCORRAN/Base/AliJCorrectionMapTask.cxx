@@ -199,14 +199,14 @@ void AliJCorrectionMapTask::EnableEffCorrection2(const TString &fname){
 	};
 }
 
-TH1 * AliJCorrectionMapTask::GetCorrectionMap(UInt_t it, UInt_t run, UInt_t cbin){ // mapID, run#, cent
+TH3D * AliJCorrectionMapTask::GetCorrectionMap(UInt_t it, UInt_t run, UInt_t cbin){ // mapID, run#, cent
 	if(cbin>8) cbin = 8; // Temp fix since >60% centrality is missing in the map
 	auto m = PhiWeightMap[it][cbin].find(run);
 	if(m == PhiWeightMap[it][cbin].end()){
 		TList *plist = (TList*)GetInputData(phiInputIndex[it]);
 		if(!plist)
 			return 0;
-		TH1 *pmap = (TH1*)plist->FindObject(Form("PhiWeights_%u_%02u",run,cbin));
+		TH3D *pmap = (TH3D*)plist->FindObject(Form("PhiWeights_%u_%02u",run,cbin));
 		if(!pmap)
 			return 0;
 		PhiWeightMap[it][cbin][run] = pmap;
