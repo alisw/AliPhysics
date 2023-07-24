@@ -6,7 +6,7 @@
 #include "AliAnalysisDataContainer.h"
 #include "AliAnalysisTaskChargeV1.h"
 
-AliAnalysisTaskChargeV1* AddMyTask(
+AliAnalysisTaskChargeV1* AddTaskChargeV1(
     bool           doNUE=true,
     bool           doNUA=true,
     bool          ZDCcali=true
