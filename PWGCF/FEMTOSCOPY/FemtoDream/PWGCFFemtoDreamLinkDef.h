@@ -41,6 +41,7 @@
 #pragma link C++ class AliAnalysisTaskDeuteronProtonEfficiency+;
 #pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamPhi+;
 #pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamLambdaPhi + ;
+#pragma link C++ class AliAnalysisTaskFemtoDreamRho+;
 #pragma link C++ class AliAnalysisTaskFemtoDreamSigPi+;
 #pragma link C++ class AliAnalysisTaskNanoAODFemtoDreamSigPi+;
 #pragma link C++ class AliAnalysisTaskFemtoDreamPion+;
