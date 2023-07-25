@@ -130,6 +130,14 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   void SetForcePi0Unstable(bool tmp) { fUnsetStablePi0 = tmp; }
   void SetUseMixedBackAdd(bool tmp) { fUseMixedBackAdd = tmp; }
   void SetDoRadiusDependence(bool tmp) { fDoRadiusDep = tmp; }
+  void SetMesonZPt(int tmp)
+  {
+    if(tmp == 1){
+      fDoAnalysisZ = false;
+    } else if(tmp == 2){
+      fDoAnalysisPt = false;
+    }
+  }
 
   void SetEventCutList(int nCuts,
                        TList* CutArray)
@@ -239,6 +247,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   bool fUnsetStablePi0;                                 // flag to decide if pi0 need to be reset to Unstable particles
   bool fUseMixedBackAdd;                                // flag to enable a histogram for the mixed jet background in addition to the rotation background. This is to save memory and CPU (As otherwise a completely new wagon would be needed)
   bool fDoRadiusDep;                                    // flag to enable radius dependent histograms
+  bool fDoAnalysisPt;                                   // flag to enable filling of pt dependent histograms
+  bool fDoAnalysisZ;                                    // flag to enable filling of z dependent histograms
   //-------------------------------
   // conversions
   //-------------------------------
@@ -510,7 +520,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 19);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 20);
 };
 
 #endif
