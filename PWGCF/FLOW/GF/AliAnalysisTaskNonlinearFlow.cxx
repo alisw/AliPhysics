@@ -93,6 +93,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fESDvsTPConlyLinearCut(15000.),
     fUseOutOfBunchPileupCut(false),
     fUseCorrectedNTracks(false),
+    binning_factor(1),
 	  fCentralityCut(101.1),
     fUseNarrowBin(false),
     fExtremeEfficiency(0),
@@ -178,6 +179,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fESDvsTPConlyLinearCut(15000.),
   fUseOutOfBunchPileupCut(false),
   fUseCorrectedNTracks(false),
+  binning_factor(1),
 	fCentralityCut(101.1),
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
@@ -291,6 +293,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fESDvsTPConlyLinearCut(15000.),
   fUseOutOfBunchPileupCut(false),
   fUseCorrectedNTracks(false),
+  binning_factor(1),
 	fCentralityCut(101.1),
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
@@ -431,10 +434,10 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
         nn = 200 + 56;
         // 56 = (3000-200)/50
         for (int i = 0; i <= 200; i++) {
-          xbins[i] = i + 0.5;
+          xbins[i] = (i + 0.5)*binning_factor;
         }
         for (int i = 1; i <= 56; i++) {
-          xbins[200+i] = 50*i + 200 + 0.5;
+          xbins[200+i] = (50*i + 200 + 0.5)*binning_factor;
         } 
       } else {
         nn = 3000;

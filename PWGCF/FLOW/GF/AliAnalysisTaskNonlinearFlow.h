@@ -240,6 +240,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetESDvsTPConlyLinearCut(double cut = 15000) {fESDvsTPConlyLinearCut = cut;}
     virtual void   SetUseOutOfBunchPileupCut(double flag = true) {fUseOutOfBunchPileupCut = flag;}
 		virtual void   SetUseCorrectedNTracks(bool flag = true) {fUseCorrectedNTracks = flag;}
+    virtual void   SetBinningFactor(double factor = 1.0) {binning_factor = factor;}
 		virtual void   SetUseNarrowBin(bool flag = true) {fUseNarrowBin = flag;}
 		virtual void   SetExtremeEfficiency(int flag = 0) {fExtremeEfficiency = flag;}
 		virtual void   SetTPCchi2perCluster(double fchi2 = 4) {fTPCchi2perCluster = fchi2;}
@@ -315,6 +316,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     Double_t                fESDvsTPConlyLinearCut;                 // ESDvsTPConlyLinearCut : default = 15000
     Bool_t                  fUseOutOfBunchPileupCut;                // Out of bunch pileup cut
 		Bool_t                  fUseCorrectedNTracks;                   // Use corrected Ntracks in the filling of xbins;
+    Double_t                binning_factor;                         // A factor to account efficiency corrected binning
 		Double_t                fCentralityCut;                         // Apply an extra centrality cut.
     Bool_t                  fUseNarrowBin;                          // Use Narrow bin
 		Int_t                   fExtremeEfficiency;                     // The flag to set extreme efficiency
@@ -491,7 +493,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 26);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 27);    //Analysis task
 };
 
 #endif
