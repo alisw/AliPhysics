@@ -4823,7 +4823,7 @@ void AliHFMLXicZeroToXiPifromKFP::DefineTreeRecXic0()
   const char* nameoutput = GetOutputSlot(3)->GetContainer()->GetName();
   if (!fIsAnaOmegac0) fTree_Xic0 = new TTree(nameoutput, "Xic0 variables tree");
   if (fIsAnaOmegac0)  fTree_Xic0 = new TTree(nameoutput, "Omegac0 variables tree");
-  Int_t nVar = 51;
+  Int_t nVar = 53;
   fVar_Xic0 = new Float_t[nVar];
   TString *fVarNames = new TString[nVar];
 
@@ -4884,6 +4884,8 @@ void AliHFMLXicZeroToXiPifromKFP::DefineTreeRecXic0()
   fVarNames[46] = "nSigmaTOF_PrFromLam"; // TOF nsigma for proton coming from Lambda
   fVarNames[47] = "armenteros"; // Armenteros-Podolanski plot (qT/|alpha|)
   fVarNames[48] = "pt_Xic0_gen"; // pt of Xic0 at gen. level
+  fVarNames[49] = "pt_Xic0Mom_gen"; // pt of Xic0 mom at gen. level
+  fVarNames[50] = "PDG_Xic0Mom_gen"; // PDG of Xic0 mom at gen. level
   }
 
   if (fIsAnaOmegac0) {
@@ -4941,10 +4943,12 @@ void AliHFMLXicZeroToXiPifromKFP::DefineTreeRecXic0()
     fVarNames[46] = "nSigmaTOF_PrFromLam"; // TOF nsigma for proton coming from Lambda
     fVarNames[47] = "armenteros"; // Armenteros-Podolanski plot (qT/|alpha|)
     fVarNames[48] = "pt_Omegac0_gen"; // pt of Omegac0 at gen. level
+    fVarNames[49] = "pt_Omegac0Mom_gen"; // pt of Omegac0 mom at gen. level
+    fVarNames[50] = "PDG_Omegac0Mom_gen"; // PDG of Omegac0 mom at gen. level
   }
 
-  fVarNames[49] = "fCentrality";
-  fVarNames[50] = "fNtracklets";
+  fVarNames[51] = "fCentrality";
+  fVarNames[52] = "fNtracklets";
 
   for (Int_t ivar=0; ivar<nVar; ivar++) {
     fTree_Xic0->Branch(fVarNames[ivar].Data(), &fVar_Xic0[ivar], Form("%s/F", fVarNames[ivar].Data()));
@@ -5428,7 +5432,7 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromV0(KFParticle kfpXic0, AliA
 void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0)
 {
 
-  for (Int_t i=0; i<51; i++) {
+  for (Int_t i=0; i<53; i++) {
     fVar_Xic0[i] = -9999.;
   }
 
@@ -5640,6 +5644,15 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
       Int_t IndexXic0 = mcPiFromXic0->GetMother();
       AliAODMCParticle *mcXic0 = static_cast<AliAODMCParticle*>(mcArray->At(IndexXic0));
       fVar_Xic0[48] = mcXic0->Pt();
+      Int_t mom = mcXic0->GetMother();
+      while (mom>=0) {
+        AliAODMCParticle* mcMom = static_cast<AliAODMCParticle*>(mcArray->At(mom));
+        if ( (fabs(mcMom->GetPdgCode())>500 && fabs(mcMom->GetPdgCode())<600) || (fabs(mcMom->GetPdgCode())>5000 && fabs(mcMom->GetPdgCode())<6000) ) {
+          fVar_Xic0[49] = mcMom->Pt();
+          fVar_Xic0[50] = mcMom->GetPdgCode();
+        }
+        mom = mcMom->GetMother();
+      }
     }
   }
 
@@ -5664,8 +5677,8 @@ void AliHFMLXicZeroToXiPifromKFP::FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFPa
 
   fVar_Xic0[44] = flagUSorLS; // flag of unlike sign or like sign pair
 
-  fVar_Xic0[49] = fCentrality;
-  fVar_Xic0[50] = fNtracklets; 
+  fVar_Xic0[51] = fCentrality;
+  fVar_Xic0[52] = fNtracklets; 
   if (!fIsStoreOnlyMLoutput && fabs(fVar_Xic0[23])<0.8) fTree_Xic0->Fill();
 
   if (fIsPbPb) {
