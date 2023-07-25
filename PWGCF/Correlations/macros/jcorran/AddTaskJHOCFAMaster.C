@@ -14,8 +14,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     bool useEtaGap = true, float etaGap = 1.0,
     bool useWeightsNUE = true, bool useWeightsNUA = false,
     bool useWeightsCent = false,
-    bool getSC = true, bool getLower = true,
-    bool Aside = false, bool Cside = false, bool saveQCNUA = false)
+    bool getSC = true, bool getLower = true)
 {
   // Configuration of the analysis.
   double ESDslope = 3.38; bool saveQA_ESDpileup = false;
@@ -121,9 +120,6 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     case 26 :
       configNames.push_back("NTPC65");
       break; 
-    case 27 :    // Syst: |zVtx < 8| changed to |zVtx < 4|. In order to check if the tracking quality make a difference to our measurements
-      configNames.push_back("zvtx4");
-      break;
     default :
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
         << std::endl;
@@ -234,7 +230,6 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       taskName.Data(), configNames[i].Data()));
     std::cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << std::endl;
     fJCatalyst[i]->SetSaveAllQA(saveFullQA);
-    fJCatalyst[i]->SetSaveQCNUA(saveQCNUA);
 
     // Set the correct flags to use.
     if (strcmp(configNames[i].Data(), "noPileup") != 0) {     // Set flag only if we cut on pileup.
@@ -268,8 +263,6 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       fJCatalyst[i]->SetZVertexCut(6.0);
     } else if (strcmp(configNames[i].Data(), "zvtx7") == 0) {
       fJCatalyst[i]->SetZVertexCut(7.0);
-    } else if (strcmp(configNames[i].Data(), "zvtx4") == 0) {
-      fJCatalyst[i]->SetZVertexCut(4.0);
     } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetZVertexCut(8.0);
     }
@@ -333,13 +326,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
 
     /// Kinematic cuts and last fine tuning.
     fJCatalyst[i]->SetPtRange(ptMin, ptMax);
-    if (Aside){
-      fJCatalyst[i]->SetEtaRange(0.0,0.8);
-    } else if (Cside){
-      fJCatalyst[i]->SetEtaRange(-0.8,0.0);
-    } else {
-      fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
-    }
+    fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
     fJCatalyst[i]->SetPhiCorrectionIndex(i);
     fJCatalyst[i]->SetRemoveBadArea(removeBadArea);
     fJCatalyst[i]->SetTightCuts(useTightCuts);

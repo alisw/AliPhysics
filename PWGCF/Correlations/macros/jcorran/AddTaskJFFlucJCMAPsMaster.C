@@ -9,8 +9,7 @@
 AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_pass2", UInt_t period = 0,
   double ptMin = 0.2, double ptMax = 5.0, std::string configArray = "0 1 2 4 5 8 11 13",
   bool saveQA = kFALSE, bool ESDpileup = false, double intercept = 15000,
-  bool TPCpileup = false, bool saveQA_TPCpileup = false,
-  bool Aside = false, bool Cside = false, bool saveQCNUA = false)
+  bool TPCpileup = false, bool saveQA_TPCpileup = false)
 {
   // Less essential global variables.
   bool removeBadArea = kFALSE;
@@ -129,9 +128,6 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     case 26 :
       configNames.push_back("NTPC65");
       break;
-    case 27 :    // Syst: |zVtx < 8| changed to |zVtx < 4|. In order to check if the tracking quality make a difference to our measurements
-      configNames.push_back("zvtx4");
-      break;
     default :
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
         << std::endl;
@@ -176,8 +172,7 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s", taskName.Data(), configNames[i].Data()));
     std::cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << std::endl;
     fJCatalyst[i]->SetSaveAllQA(saveQA);
-    fJCatalyst[i]->SetSaveQCNUA(saveQCNUA);
-    
+
     /// Trigger and centrality selection.
     fJCatalyst[i]->SelectCollisionCandidates(selEvt);
     fJCatalyst[i]->SetCentrality(0.,5.,10.,20.,30.,40.,50.,60.,70.,80.,-10.,-10.,-10.,-10.,-10.,-10.,-10.);
@@ -209,9 +204,7 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
       fJCatalyst[i]->SetZVertexCut(6.0);
     } else if (strcmp(configNames[i].Data(), "zvtx7") == 0) {
       fJCatalyst[i]->SetZVertexCut(7.0);
-    } else if (strcmp(configNames[i].Data(), "zvtx4") == 0) {
-      fJCatalyst[i]->SetZVertexCut(4.0);
-    }  else {  // Default value for JCorran analyses in Run 2.
+    } else {  // Default value for JCorran analyses in Run 2.
       fJCatalyst[i]->SetZVertexCut(8.0);
     }
 
@@ -275,13 +268,7 @@ AliAnalysisTask *AddTaskJFFlucJCMAPsMaster(TString taskName = "JFFlucJCMAP_Run2_
     // TBA: subA systematics.
 
     fJCatalyst[i]->SetPtRange(ptMin, ptMax);
-    if (Aside){
-      fJCatalyst[i]->SetEtaRange(0.0,0.8);
-    } else if (Cside){
-      fJCatalyst[i]->SetEtaRange(-0.8,0.0);
-    } else {
-      fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
-    }
+    fJCatalyst[i]->SetEtaRange(-0.8, 0.8);
     fJCatalyst[i]->SetPhiCorrectionIndex(i);
     fJCatalyst[i]->SetRemoveBadArea(removeBadArea);
     fJCatalyst[i]->SetTightCuts(useTightCuts);
