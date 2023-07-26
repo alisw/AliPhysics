@@ -208,9 +208,9 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
 {
   InitParameters();
   
-  for(Int_t ibit =0; ibit < AliNeutralMesonSelection::fgkMaxNDecayBits; ibit++)
+  for(Int_t ibit = 0; ibit < AliNeutralMesonSelection::fgkMaxNDecayBits; ibit++)
   {
-    for(Int_t iso =0; iso < 2; iso++)
+    for(Int_t iso = 0; iso < 2; iso++)
     {
       fhPtDecay       [iso][ibit] = 0;
       fhEtaPhiDecay   [iso][ibit] = 0;
@@ -218,7 +218,13 @@ fhPerpConeSumPtTOFBC0ITSRefitOnSPDOn (0), fhPtInPerpConeTOFBC0ITSRefitOnSPDOn (0
       for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
         fhPtDecayMC[iso][ibit][imc]    = 0;
     }
+
     fhPtM02SumPtConeDecayTag[ibit] = 0;
+
+    for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
+    {
+      fhPtM02SumPtConeMCDecayTag[imc][ibit] = 0;
+    }
   }
   
   for(Int_t imc = 0; imc < fgkNmcTypes; imc++)
@@ -1457,7 +1463,7 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
 
       if ( fFillTaggedDecayHistograms )
       {
-        for(Int_t ibit =0; ibit < AliNeutralMesonSelection::fgkMaxNDecayBits; ibit++)
+        for(Int_t ibit =0; ibit < fNDecayBits; ibit++)
         {
           fhPtM02SumPtConeDecayTag[ibit] = new TH3F
           (Form("hPtM02SumPtCone_DecayBit%d", fDecayBits[ibit]),
@@ -1685,6 +1691,23 @@ TList *  AliAnaParticleIsolation::GetCreateOutputObjects()
         fhPtM02SumPtConeMC[imc]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
         outputContainer->Add(fhPtM02SumPtConeMC[imc]) ;
         
+        if ( fFillTaggedDecayHistograms )
+        {
+          for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
+          {
+            fhPtM02SumPtConeMCDecayTag[imc][ibit] = new TH3F
+            (Form("hPtM02SumPtCone_DecayBit%d_MC%s", fDecayBits[ibit], mcPartName[imc].Data()),
+             Form("%s, MC %s, decay bit %d", parTitleR.Data(), mcPartType[imc].Data(), fDecayBits[ibit]),
+             ptBinsArray.GetSize() - 1,  ptBinsArray.GetArray(),
+             ssBinsArray.GetSize() - 1,  ssBinsArray.GetArray(),
+             sumBinsArray.GetSize() - 1, sumBinsArray.GetArray());
+            fhPtM02SumPtConeMCDecayTag[imc][ibit]->SetXTitle("#it{p}_{T} (GeV/#it{c})");
+            fhPtM02SumPtConeMCDecayTag[imc][ibit]->SetYTitle("#sigma_{long}^{2}");
+            fhPtM02SumPtConeMCDecayTag[imc][ibit]->SetZTitle("#it{p}_{T}^{iso} (GeV/#it{c})");
+            outputContainer->Add(fhPtM02SumPtConeMCDecayTag[imc][ibit]) ;
+          }
+        }
+
         if ( particle == AliIsolationCut::kNeutralAndCharged )
         {
           fhPtM02SumPtConeChargedMC[imc] = new TH3F
@@ -5118,6 +5141,24 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
         {
           fhPtM02SumPtConeMC[mcIndex]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
           
+          if ( fFillTaggedDecayHistograms )
+          {
+            Int_t decayTag = aod->DecayTag();
+            if(decayTag < 0) decayTag = 0;
+            for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
+            {
+              if ( !GetNeutralMesonSelection()->CheckDecayBit(decayTag, fDecayBits[ibit]) ) continue;
+
+              // Avoid rare (?) double counting
+              if ( fDecayBits[ibit] == AliNeutralMesonSelection::kEta )
+              {
+                if ( GetNeutralMesonSelection()->CheckDecayBit(decayTag, AliNeutralMesonSelection::kPi0) ) continue;
+              }
+
+              fhPtM02SumPtConeMCDecayTag[mcIndex][ibit]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
+            }
+          }
+
           if ( GetMCAnalysisUtils()->CheckTagBit(mcTag,AliMCAnalysisUtils::kMCPhoton) )
             fhPtM02SumPtConeMC[kmcPhoton]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
           
