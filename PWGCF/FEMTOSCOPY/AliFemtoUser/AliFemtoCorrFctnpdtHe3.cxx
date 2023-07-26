@@ -491,7 +491,26 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
     
     // add true pair
  double tKStar = fabs(fPair->KStar());
+ if (fPairCut && !fPairCut->Pass(fPair)) {
+       // failed pair QA
+        if(fUseDPhiDEtaQA>1 && tKStar<0.2){
 
+          double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
+          double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
+          float AvgDPhi = ReAvgDphi(fPair);
+          double deta = eta1 - eta2;
+
+          fDumDPhiDEtaAvgQA->Fill(deta,AvgDPhi);
+
+        }
+
+ 
+        return;
+    }
+   if(fUsePairCutEtaPhi){
+		    if(!PairEtaPhiSelect(fPair)) return;
+	}
+/*
 	if(fPassAllPair==0){
 	    if (fPairCut && !fPairCut->Pass(fPair)) {
 		if(fUseDPhiDEtaQA==2 && tKStar<0.2){
@@ -513,7 +532,7 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
 	    }
 	}
 
-
+*/
     if(fUseGobalVelGate){
 	int VelLabel = ReVelocityGate(fPair);
 	if(fUseGobalVelGate == VelLabel){
@@ -541,8 +560,8 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
     if(fSideBand){
 	FillSideBandNum(fPair);
 	}
-    if(fUseDPhiDEtaQA==1 && tKStar<0.2){
-
+ 
+   if(fUseDPhiDEtaQA>0 && tKStar<0.2){
 	  double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
     	  double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
     	  float AvgDPhi = ReAvgDphi(fPair);
@@ -552,6 +571,7 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
 	  fNumDPhiDEtaAvgQA->Fill(deta,AvgDPhi);
 	
 	}
+
 	if(fUseVelGate){
 	    int VelLabel = ReVelocityGate(fPair);
 	    if(VelLabel == 1){
@@ -622,27 +642,17 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
 
     // add true pair
 double tKStar = fabs(fPair->KStar());
-	if(fPassAllPair==0){
-	    if (fPairCut && !fPairCut->Pass(fPair)) {
 
-	 if(fUseDPhiDEtaQA==2 && tKStar<0.2){
+   if (fPairCut && !fPairCut->Pass(fPair)) {
 
-          double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
-          double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
-          float AvgDPhi = ReAvgDphi(fPair);
-          double deta = eta1 - eta2;
-
-          fDumDPhiDEtaAvgQA->Fill(deta,AvgDPhi);
-
-        }
-
-		return;
-	    } 
-	    if(fUsePairCutEtaPhi){
-		if(!PairEtaPhiSelect(fPair)) return;
-	    }
+        return;
+    }
+    if(fUsePairCutEtaPhi){
+		    if(!PairEtaPhiSelect(fPair)) return;
 	}
-   if(fUseGobalVelGate){
+ 
+
+if(fUseGobalVelGate){
         int VelLabel = ReVelocityGate(fPair);
         if(fUseGobalVelGate == VelLabel){
         }
@@ -668,16 +678,6 @@ double tKStar = fabs(fPair->KStar());
     }
     if(fSideBand){
 	FillSideBandDum(fPair);
-	}
-	if(fUseDPhiDEtaQA==1 && tKStar<0.2){
-
-	  double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
-    	  double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
-    	  float AvgDPhi = ReAvgDphi(fPair);
-	  double deta = eta1 - eta2;
-
- 	  //fDumDPhiDEtaQA->Fill(deta,AvgDPhi);
-	  fDumDPhiDEtaAvgQA->Fill(deta,AvgDPhi);
 	}
 	if(fUseVelGate){
 	    int VelLabel = ReVelocityGate(fPair);
