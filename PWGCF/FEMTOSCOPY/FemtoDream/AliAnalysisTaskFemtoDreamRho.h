@@ -36,12 +36,14 @@ class AliAnalysisTaskFemtoDreamRho : public AliAnalysisTaskSE {
     fNegPionCuts = trkCuts;
   }
   void SetProtonCuts(AliFemtoDreamTrackCuts *trkCuts) {
-    fPosPionCuts = trkCuts;
+    fPosProtonCuts = trkCuts;
   }
   void SetAntiProtonCuts(AliFemtoDreamTrackCuts *trkCuts) {
-    fNegPionCuts = trkCuts;
+    fNegProtonCuts = trkCuts;
   }
-  void SetRhoCuts(AliFemtoDreamv0Cuts *rhoCuts) { fRhoCuts = rhoCuts; }
+  void SetRhoCuts(AliFemtoDreamv0Cuts *rhoCuts) { 
+    fRhoCuts = rhoCuts; 
+  }
   void SetCollectionConfig(AliFemtoDreamCollConfig *config) {
     fConfig = config;
   }
