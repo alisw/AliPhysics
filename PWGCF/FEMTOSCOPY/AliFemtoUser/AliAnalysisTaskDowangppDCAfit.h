@@ -22,6 +22,59 @@
 #include "AliAODMCHeader.h"
 #include "AliAODpidUtil.h"
 #include "AliAODInputHandler.h"
+
+#include <iostream>
+#include <ctime>
+#include <sys/time.h>
+#include<vector> 
+
+#include "AliESDtrackCuts.h"
+using namespace std;
+using std::cout;
+using std::endl;
+typedef struct
+{
+    // int track_id;
+    // int label;
+    
+    TLorentzVector kin_info;
+    TLorentzVector MCture_info;
+    int MCTruthTrackLabel;
+    // float phi;
+    float charge;
+    
+    // // AliFemtoPairCutAntiGamma.cxx pass need
+
+    // float rigidity;    
+
+    float mag;
+    // float TPC_signal;
+    // float TPC_NSigma;
+    // float TOF_NSigma;
+    float TPC_Entrance[9][3];
+    
+    TBits fClusters;
+    TBits fShared;
+}p_info;
+
+typedef struct{
+    float vz;
+    float cent;
+    float mag;
+    vector<vector<p_info>> alltrack;
+    //vector<vector<TLorentzVector>> PIDandTrueTrack;
+   
+}event_info;
+
+typedef struct{
+    int pool_index = 0;
+    vector<event_info> Event_in_poolBin;
+}pool_bin;
+
+
+
+
+
 class AliAnalysisTaskDowangppDCAfit : public AliAnalysisTaskSE {
  public:
   AliAnalysisTaskDowangppDCAfit();
@@ -68,9 +121,59 @@ class AliAnalysisTaskDowangppDCAfit : public AliAnalysisTaskSE {
     bool IsDeuteronTPCdEdx(float mom, float dEdx);
     bool WiolaRejectPion(float mom,float nsigmaTPCpi,float nsigmaTOFpi);
     double re_kstar(TLorentzVector &Particle1, TLorentzVector &Particle2);
+
+    //for mix
+    void Save_p_info(p_info &tmp_info,AliAODTrack *track, TLorentzVector RecoInfo, TLorentzVector ParticleTure,float MagneticField, int MCtureLabel);
+    int where_pool(float &vz,int iCent,float Multi);
+    float re_mass(int PDGCode);
+    bool Pass(p_info &first_p_info, p_info &sec_p_info,AliAODInputHandler *aodH);
+
+    bool CheckMergedFraction(int &fMagSign,p_info &first_p_info, p_info &sec_p_info,AliAODInputHandler *aodH);
+    bool CheckAntiGamma(p_info &first_p_info, p_info &sec_p_info);
+    bool CheckShareQuality(p_info &first_p_info, p_info &sec_p_info);
+    bool TpcPointIsUnset(p_info & info,int i);
+    float TpcPointSep(p_info &first_p_info, p_info &sec_p_info,int i);
+    void GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track, float bfield, float globalPositionsAtRadii[9][3]);
+    float ReAvgDphi(p_info &first_p_info, p_info &sec_p_info);
+
  private:
+
+ // variables
+        static const int numOfChTypes = 2;
+        static const int numOfpairTypes = 2;
+       
+        static const int numOfVertexZBins = 10;
+        static const int Vz_low = -10;
+        static const int Vz_up = 10;
+        static const int Vz_step = 2;
+
+        static const int numOfCent = 5;
+        static const int numOfMultBins = 4;
+
+        const float fRadiusMin = 0.8;
+        const float fRadiusMax = 2.5;
+        const float fMergedFractionLimit = 0.05;
+        const float fDistanceMax = 0.03;
+        const float fDEtaMax = 0.01;
+        int fMagSign = 1;
+    
+        const float Mass_e = 0.000511;
+        const float fMaxEEMinv = 0.002;
+        const float fMaxDTheta = 0.008;
+    
+        const float fDTPCMin = 0.;
+        const float fMinAvgsep = 0.;
+        //const float fShareFractionMax = 1.0;
+        //const float fShareQualityMax = 0.05;
+        const float fShareFractionMax = 0.05;
+        const float fShareQualityMax =1.0;
+
+     static const int maxNumEventsToMix = 10;
+
+
+
     virtual Float_t GetVertex(AliAODEvent* aod) const;
-    virtual void Analyze(AliAODEvent* aod,Float_t v0Centr);
+    virtual void Analyze(AliAODEvent* aod,Float_t v0Centr,float zvtx);
     Short_t GetPidCode(Int_t pdgCode) const;
     int GetImostByPDGCode(Int_t pdgCode);
     float AODEventCut(AliAODEvent* fAOD);
@@ -88,7 +191,7 @@ class AliAnalysisTaskDowangppDCAfit : public AliAnalysisTaskSE {
     AliAnalysisUtils* fAnalysisUtil;   ///< Event selection
     AliAODpidUtil  *fAODpidUtil;
     AliPIDResponse *fPIDResponse;
-
+    AliAODInputHandler *aodH;
     //
     // Cuts and options
     //
@@ -104,7 +207,7 @@ class AliAnalysisTaskDowangppDCAfit : public AliAnalysisTaskSE {
     // Output objects
     //
     TList*     fListOfObjects;     //! Output list of objects
-    TH1F *     EventDis;// ddd
+    TH2F *     EventDis;// ddd
 
     // TH2F * DCAxy_noCut[8][3][5];
     // TH2F * DCAz_noCut[8][3][5];
@@ -134,17 +237,32 @@ class AliAnalysisTaskDowangppDCAfit : public AliAnalysisTaskSE {
 
     TH2F * DCAxy_pDetailFrac[2][8][5];// ddd
     TH2F * MomSmearing[2][5];// ddd
+    TH2F * MomSmearing_mix[2][5];// ddd
 
     TH1F * pTdisReco[2][5];// ddd
     //TH1F * pTdisTrue[2][5];
     TH1F * pTdisRecoWhenPrimary[2][5];// ddd
     TH1F * pTdisRecoIDAsP[2][5];// ddd
 
+
+    TH2F * fNumDPhiDEtaAvgQA[2][5]; 
+    TH2F * fDumDPhiDEtaAvgQA[2][5];
+    
+    TH2F * fNumDPhiDEtaAvgQA_afterPairCut[2][5]; 
+    TH2F * fDumDPhiDEtaAvgQA_afterPairCut[2][5];
+
+    TH2F * kStarVskT2DinMixPID[2][5]; 
+    TH2F * kStarVskT2DinMixTrue[2][5]; 
+
+    
+    vector<pool_bin> All_Event_pool;
+
     ClassDef(AliAnalysisTaskDowangppDCAfit, 1);    //Analysis task for high pt analysis
     
 };
 
 #endif
+
 
 
 
