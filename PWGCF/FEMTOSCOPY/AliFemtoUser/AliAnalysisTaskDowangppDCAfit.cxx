@@ -50,6 +50,14 @@ using namespace std;
 using std::cout;
 using std::endl;
 const float MassP = 0.938272013;
+
+#define PIH 1.57079632679489656
+#define PIT 6.28318530717958623
+#define fphiL -1.4137167	//default 20bin for phi&eta
+#define fphiT 4.8694686
+static float TPCradii[9] = { 0.85, 1.05, 1.25, 1.45, 1.65, 1.85, 2.05, 2.25, 2.45 };
+
+
 ClassImp(AliAnalysisTaskDowangppDCAfit)
 //_____________________________________________________________________________
 AliAnalysisTaskDowangppDCAfit::AliAnalysisTaskDowangppDCAfit():
@@ -61,6 +69,7 @@ AliAnalysisTaskDowangppDCAfit::AliAnalysisTaskDowangppDCAfit():
   fAnalysisUtil(0),
   fAODpidUtil(0),
   fPIDResponse(0),
+  aodH(0),
   fVtxCut(10.0),  
   fFilterbit(128),
   fEtaCut(0.8),
@@ -122,21 +131,46 @@ if(ic!=0) continue;
     }
     //ddd
     for(int ic=0;ic<5;ic++){
-       //if(ic > 0) continue;
         for(int ichg=0;ichg<2;ichg++){
             MomSmearing[ichg][ic] = nullptr;
+            MomSmearing_mix[ichg][ic] = nullptr;
         }
     }
 
     // ddd
     for(int ic=0;ic<5;ic++){
-        //if(ic > 0) continue;
         for(int ichg=0;ichg<2;ichg++){
             pTdisReco[ichg][ic] = nullptr;
             //pTdisTrue[ichg][ic] = nullptr;
             pTdisRecoWhenPrimary[ichg][ic] = nullptr;
             pTdisRecoIDAsP[ichg][ic] = nullptr;
         }
+    }
+
+    for(int ic=0;ic<5;ic++){
+        for(int ichg=0;ichg<2;ichg++){
+            fNumDPhiDEtaAvgQA[ichg][ic] = nullptr;
+            fDumDPhiDEtaAvgQA[ichg][ic] = nullptr;
+
+            fNumDPhiDEtaAvgQA_afterPairCut[ichg][ic] = nullptr;
+            fDumDPhiDEtaAvgQA_afterPairCut[ichg][ic] = nullptr;
+
+        }
+    }
+
+    for(int ic=0;ic<5;ic++){
+        for(int ichg=0;ichg<2;ichg++){
+            kStarVskT2DinMixPID[ichg][ic] = nullptr;
+            kStarVskT2DinMixTrue[ichg][ic] = nullptr;
+        }
+    }
+
+
+    // mix pool
+    pool_bin empty_pool;
+
+    for (int ip=0;ip<numOfVertexZBins*numOfCent*numOfMultBins;ip++) {
+        All_Event_pool.push_back(empty_pool);
     }
 
 }
@@ -150,6 +184,7 @@ fMCheader(0),
 fAnalysisUtil(0),
 fAODpidUtil(0),
 fPIDResponse(0),
+aodH(0),
 fVtxCut(10.0),
 fFilterbit(128),
 fEtaCut(0.8),
@@ -216,6 +251,7 @@ fListOfObjects(0)
        //if(ic > 0) continue;
         for(int ichg=0;ichg<2;ichg++){
             MomSmearing[ichg][ic] = nullptr;
+            MomSmearing_mix[ichg][ic] = nullptr;
         }
     }
 
@@ -229,6 +265,34 @@ fListOfObjects(0)
             pTdisRecoIDAsP[ichg][ic] = nullptr;
         }
     }
+
+        for(int ic=0;ic<5;ic++){
+        //if(ic > 0) continue;
+        for(int ichg=0;ichg<2;ichg++){
+            fNumDPhiDEtaAvgQA[ichg][ic] = nullptr;
+            fDumDPhiDEtaAvgQA[ichg][ic] = nullptr;
+
+            fNumDPhiDEtaAvgQA_afterPairCut[ichg][ic] = nullptr;
+            fDumDPhiDEtaAvgQA_afterPairCut[ichg][ic] = nullptr;
+
+        }
+    }
+    for(int ic=0;ic<5;ic++){
+        //if(ic > 0) continue;
+        for(int ichg=0;ichg<2;ichg++){
+            kStarVskT2DinMixPID[ichg][ic] = nullptr;
+            kStarVskT2DinMixTrue[ichg][ic] = nullptr;
+        }
+    }
+
+    // 默认每个事件都至少有2个p,2anti-p
+    pool_bin empty_pool;
+    for (int ip=0;ip<numOfVertexZBins*numOfCent*numOfMultBins;ip++) {
+        All_Event_pool.push_back(empty_pool);
+    }
+
+        
+
 
     DefineOutput(1, TList::Class());
 }
@@ -259,7 +323,7 @@ void AliAnalysisTaskDowangppDCAfit::UserCreateOutputObjects()
     fListOfObjects = new TList();
     fListOfObjects->SetOwner();
 
-    EventDis =new TH1F("fHistEventDis"," ",100,0,100);
+    EventDis =new TH2F("fHistEventDis"," ",100,0,100,10,0,10);
     fListOfObjects->Add(EventDis);
 
 
@@ -386,6 +450,12 @@ void AliAnalysisTaskDowangppDCAfit::UserCreateOutputObjects()
             filename.Form("MomSmearing%d%d",ichg,ic);
             MomSmearing[ichg][ic] = new TH2F(filename," ",1000, 0.0, 1.0, 1000,0.0,1.0);
             fListOfObjects->Add(MomSmearing[ichg][ic]);
+
+            filename.Form("MomSmearing_mix%d%d",ichg,ic);
+            MomSmearing_mix[ichg][ic] = new TH2F(filename," ",1000, 0.0, 1.0, 1000,0.0,1.0);
+            fListOfObjects->Add(MomSmearing_mix[ichg][ic]);
+
+
         }
     }
     for(int ic=0;ic<5;ic++){
@@ -411,8 +481,45 @@ void AliAnalysisTaskDowangppDCAfit::UserCreateOutputObjects()
         }
     }
 
+    for(int ic=0;ic<5;ic++){
+       
+        for(int ichg=0;ichg<2;ichg++){
+            filename.Form("fNumDPhiDEtaAvgQA%d%d",ichg,ic);
+            fNumDPhiDEtaAvgQA[ichg][ic] = new TH2F(filename,"",300, -0.15, 0.15, 400, -0.2, 0.2);
+            filename.Form("fDumDPhiDEtaAvgQA%d%d",ichg,ic);
+            fDumDPhiDEtaAvgQA[ichg][ic] = new TH2F(filename,"",300, -0.15, 0.15, 400, -0.2, 0.2);
+
+            fListOfObjects->Add(fNumDPhiDEtaAvgQA[ichg][ic]);
+            fListOfObjects->Add(fDumDPhiDEtaAvgQA[ichg][ic]);
+
+            filename.Form("fNumDPhiDEtaAvgQA_afterPairCut%d%d",ichg,ic);
+            fNumDPhiDEtaAvgQA_afterPairCut[ichg][ic] = new TH2F(filename,"",300, -0.15, 0.15, 400, -0.2, 0.2);
+            filename.Form("fDumDPhiDEtaAvgQA_afterPairCut%d%d",ichg,ic);
+            fDumDPhiDEtaAvgQA_afterPairCut[ichg][ic] = new TH2F(filename,"",300, -0.15, 0.15, 400, -0.2, 0.2);
+
+            fListOfObjects->Add(fNumDPhiDEtaAvgQA_afterPairCut[ichg][ic]);
+            fListOfObjects->Add(fDumDPhiDEtaAvgQA_afterPairCut[ichg][ic]);
+
+
+            
+        }
+    }
+    for(int ic=0;ic<5;ic++){
+      
+        for(int ichg=0;ichg<2;ichg++){
+            filename.Form("kStarVskT2DinMixPID%d%d",ichg,ic);
+            kStarVskT2DinMixPID[ichg][ic] = new TH2F(filename," ",1000, 0.0, 1.0,100,0,5);
+            filename.Form("kStarVskT2DinMixTrue%d%d",ichg,ic);
+            kStarVskT2DinMixTrue[ichg][ic] = new TH2F(filename," ",1000, 0.0, 1.0,100,0,5);
+
+            fListOfObjects->Add(kStarVskT2DinMixPID[ichg][ic]);
+            fListOfObjects->Add(kStarVskT2DinMixTrue[ichg][ic]);
+        }
+    }
+
+
     
-    AliAODInputHandler *aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    aodH = dynamic_cast<AliAODInputHandler *>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
     fAODpidUtil = aodH->GetAODpidUtil();
 
     // Post output data.
@@ -423,7 +530,7 @@ void AliAnalysisTaskDowangppDCAfit::UserCreateOutputObjects()
 void AliAnalysisTaskDowangppDCAfit::UserExec(Option_t *) 
 {
     float CentMax = 50.;
-    float CentMin = 10.;
+    float CentMin = -1.;
     //cout<<" Main loop"<<endl; 
     // Main loop
     // Called for each event
@@ -473,22 +580,21 @@ void AliAnalysisTaskDowangppDCAfit::UserExec(Option_t *)
     v0Centr = mult_selection->GetMultiplicityPercentile("V0M");
     if( v0Centr < CentMin || v0Centr >  CentMax) return;
 	//if( v0Centr < 0 ||v0Centr >50) return;
-   // fHistQA_Event->Fill(1);
+    // fHistQA_Event->Fill(1);
 
     Float_t zvtx = AODEventCut(fAOD);
     if (TMath::Abs(zvtx) > 10.) return;
- //   fHistQA_Event->Fill(4);
+    //   fHistQA_Event->Fill(4);
 
     int centrCode = -10;
     centrCode = ReCentrCode(v0Centr);
     if (centrCode < 0)
         return;
 	
-   // if(centrCode!=0) return;
+    // if(centrCode!=0) return;
 
     EventDis->Fill(v0Centr,centrCode);
-    Analyze(fAOD,v0Centr);
-
+	Analyze(fAOD,v0Centr,zvtx);
     PostData(1, fListOfObjects);
     // Post output data.
     
@@ -507,13 +613,16 @@ float AliAnalysisTaskDowangppDCAfit::AODEventCut(AliAODEvent* fAOD){
     return vtxz;
 }
 //________________________________________________________________________
-void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr)
+void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr,float zvtx)
 {
 
 
+    float Vz_pos = zvtx;
     int centrCode = -10;
     centrCode = ReCentrCode(v0Centr);
     int iCent = centrCode;
+    float mag = aod->GetMagneticField();
+
 
     // loose DCAxy
     float DCAxyMax[8] = {
@@ -570,12 +679,17 @@ void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr)
 
     int nMCprimaries = mcEvent->GetNumberOfPrimaries();
     //===== MC track loop ====
-    int IsThisEventHaveMCP[8] = {0};
-    int IsThisEventHaveRealP[8] = {0};
+    //int IsThisEventHaveMCP[8] = {0};
+    //int IsThisEventHaveRealP[8] = {0};
 //cout<<"howmany "<<nMCtracks<<endl;
 
-    vector<TLorentzVector> RecoTrackLabelV[2];
-    vector<TLorentzVector> TureTrackLabelV[2];
+    //vector<TLorentzVector> RecoTrackLabelV[2];
+    //vector<TLorentzVector> TureTrackLabelV[2];
+
+    vector<vector<p_info>> track_info(numOfChTypes);
+    //vector<vector<TLorentzVector>> True_info(numOfChTypes);
+
+
     for (int itrack = 0; itrack < fAOD->GetNumberOfTracks(); itrack++){
     //            cout<<"sss "<<endl;
         float pTPC = 0.f;
@@ -658,6 +772,8 @@ void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr)
             imost = 1;
             if(WiolaRejectPion(trackP,nSigmaTPCpion, nSigmaTOFpion) ) imost = 0;
         }
+
+        // 如果不是鉴别为p/pbar 就过
         if(imost==0) continue;
         // int pLabel = -999;
         
@@ -680,35 +796,37 @@ void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr)
             ThisTrackPDGCode = -2212;
             ChargeLabel = 1;
         }
-        
-        if(ChargeLabel==-999 || ThisTrackPDGCode==-999) continue;
-  // cout<<"dddd "<<endl;  
-      float tmp_DCAxyCut = 0.0105 + 0.0350 * TMath::Power(trackPt,-1.1);
+        // 筛除 track->Charge() == 0
+        // 但是应该没有
 
-        if(abs(DCAxy) < tmp_DCAxyCut){
-            pTdisReco[ChargeLabel][iCent]->Fill(track->Pt());
-        }
+        if(ChargeLabel==-999 || ThisTrackPDGCode==-999) continue;
+        // cout<<"dddd "<<endl;  
+        float tmp_DCAxyCut = 0.0105 + 0.0350 * TMath::Power(trackPt,-1.1);
+
+       
         //vector<int> RecoTrackLabelV[2];
         //vector<int> TureTrackLabelV[2];
         const Int_t label = TMath::Abs(track->GetLabel());
         // AliAODMCParticle *mcTrack = (AliAODMCParticle *)mcEvent->GetTrack(iMCtrack);   
         //AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(fMCarray->At(label));
         AliAODMCParticle* mcTrack = dynamic_cast<AliAODMCParticle*>(fMCarray->At(label));
+
         Int_t pdgCode = 0;
+        // 只要有对应的MC track : primaryFlag 就会 > 0
+        // 如果没有对应, primaryFlag = 0, ghost track
+        // primaryFlat == 1: Primary + 是p/pbar
+        // primaryFlat == 2: sec Lambda + 是p/pbar
+        // primaryFlat == 3: sec Sigma+ + 是p/pbar
+        // primaryFlat == 4: 其他 sec + 是p/pbar
+        // primaryFlat == 5: 不存在
+        // primaryFlat == 6: 不存在
+        // primaryFlat == 7: 来自材料
+        // primaryFlat == 8: 不是 p/pbar
         if (mcTrack){
 
             Int_t MClabel = mcTrack->Label();
-
-            if(abs(DCAxy) < tmp_DCAxyCut){
-                TLorentzVector ParticleReco;
-                ParticleReco.SetPtEtaPhiM(track->Pt(),track->Eta(),track->Phi(),MassP);
-                TLorentzVector ParticleTure;
-                ParticleTure.SetPtEtaPhiM(mcTrack->Pt(),mcTrack->Eta(),mcTrack->Phi(),MassP);
-                RecoTrackLabelV[ChargeLabel].push_back(ParticleReco);
-                TureTrackLabelV[ChargeLabel].push_back(ParticleTure);
-            }
             pdgCode = mcTrack->GetPdgCode();
-		
+            
             if(ThisTrackPDGCode == pdgCode){
                 if (mcTrack->IsPhysicalPrimary() && MClabel>=0 &&  MClabel<=nMCprimaries){
                     primaryFlag = 1;
@@ -747,35 +865,155 @@ void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr)
             } 
            
         }// switch  primaryFlag
+        if(primaryFlag==0) continue;
+        // DCA cut for get same track as inn real data
+        if(abs(DCAxy) < tmp_DCAxyCut){
+
+                pTdisReco[ChargeLabel][iCent]->Fill(track->Pt());
+                TLorentzVector ParticleReco;
+                ParticleReco.SetPtEtaPhiM(track->Pt(),track->Eta(),track->Phi(),MassP);
+                TLorentzVector ParticleTure;
+                ParticleTure.SetPtEtaPhiM(mcTrack->Pt(),mcTrack->Eta(),mcTrack->Phi(),MassP);
+                // 只要鉴别为p or anti-p 都存了
+                p_info tmp_info;
+                //Save_p_info(tmp_info,track,ParticleReco,AODeventMagneticF); //same!
+                Save_p_info(tmp_info,track,ParticleReco,ParticleTure,mag,primaryFlag);
+                track_info[ChargeLabel].push_back(tmp_info);
+
+                // 不是ghost 而且不是fake
+                if(primaryFlag!=0 && primaryFlag!=8) pTdisRecoIDAsP[ChargeLabel][iCent]->Fill(trackPt);
+        }
+
+        // 只看纯P的部分
         if(primaryFlag > 0){
             //cout<<"here "<<primaryFlag<<endl;
             DCAxy_pDetailFrac[ChargeLabel][primaryFlag-1][iCent]->Fill(DCAxy,trackPt);
             if(primaryFlag==1 && abs(DCAxy) < tmp_DCAxyCut && pdgCode==ThisTrackPDGCode){
                 pTdisRecoWhenPrimary[ChargeLabel][iCent]->Fill(trackPt);
             }
-            if(abs(DCAxy) < tmp_DCAxyCut && pdgCode==ThisTrackPDGCode){
-                pTdisRecoIDAsP[ChargeLabel][iCent]->Fill(trackPt);
-            }
+ 
         }
 
     }// end event loop
 
+ // same event loop
+    int fir_index = 0;
+    int sec_index = 0;
+    bool pair_exsit[numOfpairTypes] = {false};
+
+
     for(int ichg=0;ichg<2;ichg++){
-        for(int ip1=0;ip1<RecoTrackLabelV[ichg].size();ip1++){
-            TLorentzVector Particle1_Reco = RecoTrackLabelV[ichg][ip1];
-            TLorentzVector Particle1_True = TureTrackLabelV[ichg][ip1];
+        int HowmanyTrack = track_info[ichg].size();
 
-            for(int ip2=ip1+1;ip2<RecoTrackLabelV[ichg].size();ip2++){
-                TLorentzVector Particle2_Reco = RecoTrackLabelV[ichg][ip2];
-                TLorentzVector Particle2_True = TureTrackLabelV[ichg][ip2];
+        for(int ip1=0;ip1<HowmanyTrack;ip1++){
+            TLorentzVector Particle1_Reco = track_info[ichg][ip1].kin_info;
+            TLorentzVector Particle1_True = track_info[ichg][ip1].MCture_info;
+            for(int ip2=ip1+1;ip2<HowmanyTrack;ip2++){
+                TLorentzVector Particle2_Reco = track_info[ichg][ip2].kin_info;
+                TLorentzVector Particle2_True = track_info[ichg][ip2].MCture_info;
 
-                float kStar_Reco = re_kstar(Particle1_Reco,Particle2_Reco);
-                float kStar_True = re_kstar(Particle1_True,Particle2_True);
-                //cout<<"ddd "<<kStar_Reco<<" "<<kStar_True<<endl;
-                MomSmearing[ichg][iCent]->Fill(kStar_True,kStar_Reco);
+                float AvgDPhi = ReAvgDphi(track_info[ichg][ip1],track_info[ichg][ip2]);
+	            double deta = Particle1_Reco.Eta() - Particle2_Reco.Eta();
+                fNumDPhiDEtaAvgQA[ichg][iCent]->Fill(deta,AvgDPhi);
+
+                if(Pass(track_info[ichg][ip1],track_info[ichg][ip2],aodH)){
+                    float kStar_Reco = re_kstar(Particle1_Reco,Particle2_Reco);
+                    float kStar_True = re_kstar(Particle1_True,Particle2_True);
+                    //cout<<"ddd "<<kStar_Reco<<" "<<kStar_True<<endl;
+                    MomSmearing[ichg][iCent]->Fill(kStar_True,kStar_Reco);
+                    fNumDPhiDEtaAvgQA_afterPairCut[ichg][iCent]->Fill(deta,AvgDPhi);
+                 
+                }
             }
         }
     }
+
+    // save mix event
+    int event_inpool_index = 0;
+    
+    // input vz, cent index
+    event_inpool_index = where_pool(Vz_pos,iCent,v0Centr);
+    //cout<<"event_inpool_index "<<event_inpool_index<<" "<<zvtx<<" "<<iCent<<" "<<v0Centr<<endl;
+    //aodH
+    int first_p_index[numOfpairTypes] = {0,1};
+    int second_p_index[numOfpairTypes] = {0,1};
+
+
+    //\ begin mix
+    int this_pair_pool_index = All_Event_pool[event_inpool_index].pool_index;
+    if(this_pair_pool_index != 0){
+        // p1 from mix and p2 current event!
+        int HowManyEventInPool = this_pair_pool_index;
+        for(int iE=0;iE<HowManyEventInPool;iE++){
+            for(int ichg=0;ichg<2;ichg++){
+                int p1MixSize = All_Event_pool[event_inpool_index].Event_in_poolBin[iE].alltrack[ichg].size();
+                
+
+                // PID track mix
+                for(int ip1=0;ip1<p1MixSize;ip1++){
+                    p_info mix_p1 = All_Event_pool[event_inpool_index].Event_in_poolBin[iE].alltrack[ichg][ip1];
+                    TLorentzVector Particle1_Reco = mix_p1.kin_info;
+                    TLorentzVector Particle1_True = mix_p1.MCture_info;
+                    int Particle1_MCTruthTrackLabel = mix_p1.MCTruthTrackLabel;
+
+                    for(int ip2=0;ip2<track_info[ichg].size();ip2++){
+
+                            TLorentzVector Particle2_Reco = track_info[ichg][ip2].kin_info;
+                            TLorentzVector Particle2_True = track_info[ichg][ip2].MCture_info;
+                            int Particle2_MCTruthTrackLabel = track_info[ichg][ip2].MCTruthTrackLabel;
+
+                            float kStar_Reco = re_kstar(Particle1_Reco,Particle2_Reco);
+                            float kStar_True = re_kstar(Particle1_True,Particle2_True);
+
+                            TLorentzVector tmp_pair = Particle1_Reco + Particle2_Reco;
+                            float kT_tmp = 0.5 * tmp_pair.Pt();
+                            
+
+                            float AvgDPhi = ReAvgDphi(mix_p1,track_info[ichg][ip2]);
+                            double deta = Particle1_Reco.Eta() - Particle2_Reco.Eta();
+                            fDumDPhiDEtaAvgQA[ichg][iCent]->Fill(deta,AvgDPhi);
+                            if(Pass(mix_p1,track_info[ichg][ip2],aodH)){
+                                //cout<<"ddd "<<kStar_Reco<<" "<<kStar_True<<endl;
+                                MomSmearing_mix[ichg][iCent]->Fill(kStar_True,kStar_Reco);
+                                fDumDPhiDEtaAvgQA_afterPairCut[ichg][iCent]->Fill(deta,AvgDPhi);
+                                kStarVskT2DinMixPID[ichg][iCent]->Fill(kStar_Reco,kT_tmp);
+                                // 这两条track 都不能是fake
+                                if(Particle1_MCTruthTrackLabel!=8 && Particle2_MCTruthTrackLabel!=8){
+                                    kStarVskT2DinMixTrue[ichg][iCent]->Fill(kStar_Reco,kT_tmp);
+                                }
+                                
+                            }
+
+                    }
+                }// end PID track mix
+
+
+            }
+        }
+    }
+    // begin fill pool
+    event_info this_event_info;
+    this_event_info.vz = Vz_pos;
+    this_event_info.cent = iCent;
+    this_event_info.mag = mag;
+    //this_event_info.alltrack = track_info;
+    for(int is=0;is<numOfChTypes;is++){
+        this_event_info.alltrack.push_back(track_info[is]);
+        //this_event_info.PIDandTrueTrack.push_back(True_info[is]);
+    }
+    if (All_Event_pool[event_inpool_index].pool_index==maxNumEventsToMix) {
+        // cout<<"mixing buffer is full "<<" "<<ipair<<endl;
+        vector<event_info>::iterator pos;
+        pos = All_Event_pool[event_inpool_index].Event_in_poolBin.begin();
+        All_Event_pool[event_inpool_index].Event_in_poolBin.erase(pos);
+        All_Event_pool[event_inpool_index].Event_in_poolBin.push_back(this_event_info);
+    }
+    else{
+        All_Event_pool[event_inpool_index].Event_in_poolBin.push_back(this_event_info);
+        All_Event_pool[event_inpool_index].pool_index++;
+    }
+
+
 /*
     // MC ture paricle loop
     for (int iMCtrack = 0; iMCtrack < nMCtracks; iMCtrack++)
@@ -1336,4 +1574,394 @@ double AliAnalysisTaskDowangppDCAfit::re_kstar(TLorentzVector &Particle1, TLoren
     
     return fKStarCalc;
 }
-
+void AliAnalysisTaskDowangppDCAfit::Save_p_info(p_info &tmp_info,AliAODTrack *track, TLorentzVector RecoInfo, TLorentzVector ParticleTure, float MagneticField, int MCtureLabel){
+    tmp_info.kin_info = RecoInfo;
+    tmp_info.MCture_info = ParticleTure;
+    float t_mag = MagneticField;
+    tmp_info.mag = t_mag;
+
+    tmp_info.MCTruthTrackLabel = MCtureLabel;
+
+    tmp_info.charge = track->Charge();
+
+
+    float globalPositionsAtRadii[9][3];
+    GetGlobalPositionAtGlobalRadiiThroughTPC(track, t_mag, globalPositionsAtRadii);
+    for (int i=0;i<9;i++) {
+        tmp_info.TPC_Entrance[i][0] = globalPositionsAtRadii[i][0];
+        tmp_info.TPC_Entrance[i][1] = globalPositionsAtRadii[i][1];
+        tmp_info.TPC_Entrance[i][2] = globalPositionsAtRadii[i][2];
+    }
+
+    tmp_info.fClusters = track->GetTPCClusterMap();
+    tmp_info.fShared = track->GetTPCSharedMap();
+
+}
+float AliAnalysisTaskDowangppDCAfit::re_mass(int PDGCode){
+    switch(abs(PDGCode)){
+        case 2212:
+        return 0.9382720;
+    
+        case 1000010020:
+        return 1.8756;
+    
+        case 1000010030:
+        return 2.8089;
+    
+        case 1000020030:
+        return 2.8084;
+    }
+}
+
+int AliAnalysisTaskDowangppDCAfit::where_pool(float &vz,int iCent,float Multi){
+    
+    int ix = 0;
+    int iy = iCent * numOfMultBins;
+    
+    float tmp_thisCent = Multi - float(iCent) * 10.;    //
+    float CentBinWidth = 10./float(numOfMultBins);// 固定是2.5%
+    int app_iy = (int)floor(tmp_thisCent/CentBinWidth);
+    //cout<<"app_iy "<<app_iy<<endl;
+    iy += app_iy;
+
+    ix = (int)floor( (vz - Vz_low)/Vz_step );
+    int bin = ix + numOfVertexZBins * iy;
+    
+    return bin;
+}
+bool AliAnalysisTaskDowangppDCAfit::Pass(p_info &first_p_info, p_info &sec_p_info,AliAODInputHandler *aodH){
+
+    bool pair_pass = true;
+    // AliFemtoPairCutMergedFraction::Pass
+    // Prepare variables:
+    pair_pass = CheckMergedFraction(fMagSign,first_p_info,sec_p_info,aodH);
+    return pair_pass;
+    
+}
+bool AliAnalysisTaskDowangppDCAfit::CheckMergedFraction(int &fMagSign,p_info &first_p_info, p_info &sec_p_info,AliAODInputHandler *aodH){
+    //AliFemtoPairCutMergedFraction.cxx
+    float phi1 = first_p_info.kin_info.Phi();
+    float phi2 = sec_p_info.kin_info.Phi();
+    float chg1 = first_p_info.charge;
+    float chg2 = sec_p_info.charge;
+    float pt1 = first_p_info.kin_info.Pt();
+    float pt2 = sec_p_info.kin_info.Pt();
+    float eta1 = first_p_info.kin_info.Eta();
+    float eta2 = sec_p_info.kin_info.Eta();
+    
+    
+    double magsign = 0.;
+    
+    if (!aodH) {
+        return false;
+    }
+    else {
+        AliAODEvent *fAOD;
+        fAOD = aodH->GetEvent();
+        magsign = fAOD->GetMagneticField();
+    }
+    
+    //float magsign = this_event_mag;//first_p_info.mag;
+    if (magsign > 1)
+        fMagSign = 1;
+    else if ( magsign < 1)
+        fMagSign = -1;
+    else
+        fMagSign = magsign;
+    
+   // cout<<"CheckMergedFraction "<<fMagSign<<endl;
+    
+    float deta = eta2 - eta1;
+    //else return false;
+    if (TMath::Abs(deta) > TMath::Abs(fDEtaMax)) return true;
+    //if(first_p_info.track_id==-4755 && sec_p_info.track_id==-170) cout<<"enter pass TTTTTTTTTTTTTT"<<endl;
+    bool pair_pass = true;
+    float badpoints = 0.;
+    float allpoints = 0.;
+
+    for (float irad = fRadiusMin; irad < fRadiusMax; irad += 0.01) {
+        
+        // Calculate radius:
+        float rad = irad;
+        
+        // Calculate dPhiStar:
+        double afsi0b = -0.15*abs(magsign)*chg1*fMagSign*rad/pt1;
+        double afsi1b = -0.15*abs(magsign)*chg2*fMagSign*rad/pt2;
+        Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
+        dphistar = TVector2::Phi_mpi_pi(dphistar); // returns phi angle in the interval [-PI,PI)
+        
+        // Calculate distance:
+        //double distance = TMath::Sqrt(rad * rad * (2 - 2 * TMath::Cos(dphistar)));
+        double distance = 2 * TMath::Sin(TMath::Abs(dphistar) * 0.5) * rad;
+        
+        // Check if pair parameters meet the requirements:
+        if (distance < fDistanceMax) {
+            badpoints += 1.0;
+        }
+        allpoints += 1.0;
+    }
+     //cout<<chg1<<" "<<chg2<<" "<<badpoints<<" "<<allpoints<<endl;
+    if (allpoints != 0.0) {
+        // Calculate fraction:
+        Double_t fraction = badpoints / allpoints;
+        // Remove pair if the fraction is above limit:
+        if(fraction > fMergedFractionLimit) {
+            pair_pass = false;
+        }
+    }
+    else {
+        pair_pass = true;
+    }
+    if (pair_pass){
+        pair_pass = CheckAntiGamma(first_p_info,sec_p_info);
+    }
+    return pair_pass;
+
+}
+bool AliAnalysisTaskDowangppDCAfit::CheckAntiGamma(p_info &first_p_info, p_info &sec_p_info){
+    //AliFemtoPairCutAntiGamma.cxx
+    bool temp = true;
+    float chg1 = first_p_info.charge;
+    float chg2 = sec_p_info.charge;
+    if (chg1 * chg2 <0.) {
+        float theta1 = first_p_info.kin_info.Theta();
+        float theta2 = sec_p_info.kin_info.Theta();
+        float dtheta = TMath::Abs(theta1 - theta2);
+
+        float p1 = first_p_info.kin_info.P();
+        float p2 = sec_p_info.kin_info.P();
+
+        float px1 = first_p_info.kin_info.Px();
+        float px2 = sec_p_info.kin_info.Px();
+        float py1 = first_p_info.kin_info.Py();
+        float py2 = sec_p_info.kin_info.Py();
+        float pz1 = first_p_info.kin_info.Pz();
+        float pz2 = sec_p_info.kin_info.Pz();
+
+        float E1 = TMath::Sqrt(Mass_e*Mass_e + p1*p1);
+        float E2 = TMath::Sqrt(Mass_e*Mass_e + p2*p2);
+    
+        float minv = 2.* Mass_e*Mass_e + 2.*(E1 * E2 - px1*px2 - py1*py2 - pz1*pz2);
+        if ((minv < fMaxEEMinv) && (dtheta < fMaxDTheta)) temp = false;
+    }
+    
+    // check separation at TPC entrance
+    bool tempTPCEntrance = true;
+    
+    float tpc_x1 = first_p_info.TPC_Entrance[0][0];
+    float tpc_x2 = sec_p_info.TPC_Entrance[0][0];
+    
+    float tpc_y1 = first_p_info.TPC_Entrance[0][1];
+    float tpc_y2 = sec_p_info.TPC_Entrance[0][1];
+    
+    float tpc_z1 = first_p_info.TPC_Entrance[0][2];
+    float tpc_z2 = sec_p_info.TPC_Entrance[0][2];
+    
+    float dist = sqrt(TMath::Power(tpc_x1-tpc_x2,2) + TMath::Power(tpc_y1-tpc_y2,2) + TMath::Power(tpc_z1-tpc_z2,2));
+    tempTPCEntrance = dist > fDTPCMin;
+    
+    // check average separation
+    bool avgsepCheck = true;
+    float avgSep = 0.;
+    int p_count = 0;
+    for (int i = 0; i < 8; i++) {
+        if (TpcPointIsUnset(first_p_info,i) || TpcPointIsUnset(sec_p_info,i)) break;
+        avgSep += TpcPointSep(first_p_info,sec_p_info,i);
+        p_count++;
+    }
+    
+    // this maybe wrong?
+    avgSep /= p_count;
+    avgsepCheck = avgSep > fMinAvgsep;
+    
+    if (temp && tempTPCEntrance && avgsepCheck) {
+        temp = CheckShareQuality(first_p_info,sec_p_info);
+        return temp;
+        
+    }
+    else return false;
+}
+bool AliAnalysisTaskDowangppDCAfit::CheckShareQuality(p_info &first_p_info, p_info &sec_p_info){
+    // AliFemtoShareQualityPairCut.cxx
+    bool share_pass = true;
+    if (share_pass && (fShareFractionMax < 1.0 || fShareQualityMax < 1.0)) {
+        
+        int nh = 0;
+        int an = 0;
+        int ns = 0;
+        
+        unsigned int n_bits = first_p_info.fClusters.GetNbits();
+        
+        auto &tpc_clusters_1 = first_p_info.fClusters,
+        &tpc_clusters_2 = sec_p_info.fClusters;
+        
+        auto &tpc_sharing_1 = first_p_info.fShared,
+        &tpc_sharing_2 = sec_p_info.fShared;
+        
+        for (unsigned int imap = 0; imap < n_bits; imap++) {
+                const bool  cluster_bit_1 = tpc_clusters_1.TestBitNumber(imap),
+                            cluster_bit_2 = tpc_clusters_2.TestBitNumber(imap);
+                // If both have clusters in the same row
+                if (cluster_bit_1 && cluster_bit_2) {
+                    // Do they share it ?
+                    if (tpc_sharing_1.TestBitNumber(imap) && tpc_sharing_2.TestBitNumber(imap)){
+                        an++;
+                        nh+=2;
+                        ns+=2;
+                    }
+                    // Different hits on the same padrow
+                    else {
+                        an--;
+                        nh+=2;
+                    }
+                }
+                else if (cluster_bit_1 || cluster_bit_2) {
+                    // One track has a hit, the other does not
+                    an++;
+                    nh++;
+                }
+        }
+        float hsmval = 0.;
+        float hsfval = 0.;
+        if (nh > 0) {
+            hsmval = an*1.0/nh;
+            hsfval = ns*1.0/nh;
+        }
+        
+        
+        if (fShareQualityMax < 1.0) {
+            share_pass &= (hsmval < fShareQualityMax);
+        }
+        if (fShareFractionMax < 1.0) {
+            share_pass &= (hsfval < fShareFractionMax);
+        }
+        
+    }
+    return share_pass;
+    
+}
+bool AliAnalysisTaskDowangppDCAfit::TpcPointIsUnset(p_info & info,int i){
+    
+ return info.TPC_Entrance[i][0] < -9000. || info.TPC_Entrance[i][1] < -9000. || info.TPC_Entrance[i][2] < -9000.;
+}
+
+float AliAnalysisTaskDowangppDCAfit::TpcPointSep(p_info &first_p_info, p_info &sec_p_info,int i){
+    
+    float tpc_sepx1 = first_p_info.TPC_Entrance[i][0];
+    float tpc_sepx2 = sec_p_info.TPC_Entrance[i][0];
+    
+    float tpc_sepy1 = first_p_info.TPC_Entrance[i][1];
+    float tpc_sepy2 = sec_p_info.TPC_Entrance[i][1];
+    
+    float tpc_sepz1 = first_p_info.TPC_Entrance[i][2];
+    float tpc_sepz2 = sec_p_info.TPC_Entrance[i][2];
+    
+    float sep = 0.;
+    
+    sep = sqrt( TMath::Power(tpc_sepx1-tpc_sepx2,2) + TMath::Power(tpc_sepy1-tpc_sepy2,2) + TMath::Power(tpc_sepz1-tpc_sepz2,2) );
+    
+    return sep;
+}
+void AliAnalysisTaskDowangppDCAfit::GetGlobalPositionAtGlobalRadiiThroughTPC(AliAODTrack *track, float bfield, float globalPositionsAtRadii[9][3]){
+    // Gets the global position of the track at nine different radii in the TPC
+    // params:
+    //   track - the track to propagate
+    //   bfield - magnetic field of event
+    //   globalPositionsAtRadii - Output array of global positions in the radii and xyz
+    const Float_t DEFAULT_VALUE = -9999.0;
+    
+    // The radii at which we get the global positions
+    // IROC (OROC) from 84.1 cm to 132.1 cm (134.6 cm to 246.6 cm)
+    const Float_t Rwanted[9] = {85., 105., 125., 145., 165., 185., 205., 225., 245.};
+    
+    // Make a copy of the track to not change parameters of the track
+    AliExternalTrackParam etp;
+    etp.CopyFromVTrack(track);
+    
+    // index of global position we are filling
+    //  - first we use AliExternalTrackParam, then just default value
+    Int_t radius_index = 0;
+    
+    // loop over the array of radii
+    for (; radius_index < 9; radius_index++) {
+        
+        // extracted radius
+        const Float_t radius = Rwanted[radius_index];
+        // buffer to store position
+        Double_t pos_buffer[3] = {0.,0.,0.};
+        
+        //AliFemtoThreeVector(pos_buffer).Perp()
+        
+        // get the global position of the track at this radial location
+        bool good = etp.GetXYZatR(radius, bfield, pos_buffer, NULL);
+        float t_r = sqrt(pos_buffer[0]*pos_buffer[0] + pos_buffer[1]*pos_buffer[1]);
+        // if value is not good, break loading loop
+        if (!good || fabs(t_r - radius) > 0.5) {
+            radius_index--; // decrement to fill current location with default value
+            break;
+        }
+        
+        // store the global position
+        globalPositionsAtRadii[radius_index][0] = pos_buffer[0];
+        globalPositionsAtRadii[radius_index][1] = pos_buffer[1];
+        globalPositionsAtRadii[radius_index][2] = pos_buffer[2];
+    }
+    
+    // Fill any remaining positions with the default value
+    for (; radius_index < 9; radius_index++) {
+        std::fill_n(globalPositionsAtRadii[radius_index], 3, DEFAULT_VALUE);
+    }
+}
+float AliAnalysisTaskDowangppDCAfit::ReAvgDphi(p_info &first_p_info, p_info &sec_p_info){
+	
+    float phi1 = first_p_info.kin_info.Phi();
+    float phi2 = sec_p_info.kin_info.Phi();
+    float chg1 = first_p_info.charge;
+    float chg2 = sec_p_info.charge;
+    float pt1 = first_p_info.kin_info.Pt();
+    float pt2 = sec_p_info.kin_info.Pt();
+    float eta1 = first_p_info.kin_info.Eta();
+    float eta2 = sec_p_info.kin_info.Eta();
+    
+    
+    double magsign = 0.;
+    
+    if (!aodH) {
+        return false;
+    }
+    else {
+        AliAODEvent *fAOD;
+        fAOD = aodH->GetEvent();
+        magsign = fAOD->GetMagneticField();
+    }
+    
+    //float magsign = this_event_mag;//first_p_info.mag;
+    if (magsign > 1)
+        fMagSign = 1;
+    else if ( magsign < 1)
+        fMagSign = -1;
+    else
+        fMagSign = magsign;
+    
+   // cout<<"CheckMergedFraction "<<fMagSign<<endl;
+
+    float magval = 0.5;
+    float dphiAvg = 0.;
+
+    for(int i=0;i<9;i++){
+        Double_t rad = TPCradii[i];
+        // Calculate dPhiStar:
+        //double afsi0b = -0.07510020733*chg1*fMagSign*rad/pt1;
+        //double afsi1b = -0.07510020733*chg2*fMagSign*rad/pt2;
+        double afsi0b = -0.15*magval*chg1*fMagSign*rad/pt1;
+        double afsi1b = -0.15*magval*chg2*fMagSign*rad/pt2;
+        Double_t dphistar =  phi2 - phi1 + TMath::ASin(afsi1b) - TMath::ASin(afsi0b);
+        dphistar = TVector2::Phi_mpi_pi(dphistar); // returns phi angle in the interval [-PI,PI)
+        dphiAvg += dphistar;
+    }
+    dphiAvg = dphiAvg/9.;
+    return dphiAvg; 
+}
+
+
+
