@@ -175,6 +175,7 @@ ClassImp(AliAnalysisTaskMesonJetCorrelation)
                                                                              // inv mass Histograms
                                                                              fHistoInvMassVsPt({}),
                                                                              fHistoInvMassVsPt_Incl({}),
+                                                                             fHistoInvMassVsZ({}),
                                                                              fHistoJetPtVsFrag({}),
                                                                              fHistoInvMassVsPtMassCut({}),
                                                                              fHistoInvMassVsPtMassCutSB({}),
@@ -440,6 +441,7 @@ AliAnalysisTaskMesonJetCorrelation::AliAnalysisTaskMesonJetCorrelation(const cha
                                                                                            // inv mass Histograms
                                                                                            fHistoInvMassVsPt({}),
                                                                                            fHistoInvMassVsPt_Incl({}),
+                                                                                           fHistoInvMassVsZ({}),
                                                                                            fHistoJetPtVsFrag({}),
                                                                                            fHistoInvMassVsPtMassCut({}),
                                                                                            fHistoInvMassVsPtMassCutSB({}),
@@ -797,6 +799,8 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
   //----------------------
   if(fDoAnalysisZ){
     fHistoJetPtVsFrag.resize(fnCuts);
+
+    fHistoInvMassVsZ.resize(fnCuts);
 
     // perpendicular cone
     fHistoJetPtVsFragPerpCone.resize(fnCuts);
@@ -1569,6 +1573,13 @@ void AliAnalysisTaskMesonJetCorrelation::UserCreateOutputObjects()
 
 
     if(fDoAnalysisZ){
+
+      // inv mass histograms
+      fHistoInvMassVsZ[iCut] = new TH2F("ESD_Mother_InvMass_Z", "ESD_Mother_InvMass_Z", fVecBinsMesonInvMass.size() - 1, fVecBinsMesonInvMass.data(), fVecBinsFragment.size() - 1, fVecBinsFragment.data());
+      fHistoInvMassVsZ[iCut]->SetXTitle("M_{#gamma#gamma} (GeV/c^{2})");
+      fHistoInvMassVsZ[iCut]->SetYTitle("z");
+      fESDList[iCut]->Add(fHistoInvMassVsZ[iCut]);
+
       fHistoJetPtVsFrag[iCut] = new TH2F("ESD_Frag_JetPt", "ESD_Frag_JetPt", fVecBinsFragment.size() - 1, fVecBinsFragment.data(), fVecBinsJetPt.size() - 1, fVecBinsJetPt.data());
       fHistoJetPtVsFrag[iCut]->SetXTitle("z");
       fHistoJetPtVsFrag[iCut]->SetYTitle("p_{T, Jet} (GeV/c)");
@@ -2795,6 +2806,7 @@ void AliAnalysisTaskMesonJetCorrelation::FillMesonHistograms(AliAODConversionPho
       // Fill Z histograms
       float z = GetFrag(pi0cand, matchedJet, false);
       if(fDoAnalysisZ){
+        fHistoInvMassVsZ[fiCut]->Fill(pi0cand->M(), z, fWeightJetJetMC*weightMatBudget);
         fRespMatrixHandlerMesonInvMassVsZ[fiCut]->Fill(ptJet, 0.5, pi0cand->M(), z, fWeightJetJetMC*weightMatBudget);     // Inv Mass vs. Z in Jet Pt_rec bins. Needed to subtract background in the Z-distribution
       }
 

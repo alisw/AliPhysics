@@ -375,6 +375,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   //-------------------------------
   std::vector<TH2F*> fHistoInvMassVsPt;          //! vector of histos with inv. mass vs pt
   std::vector<TH2F*> fHistoInvMassVsPt_Incl;     //! vector of histos with inv. mass vs pt for all mesons (no in-jet criterium)
+  std::vector<TH2F*> fHistoInvMassVsZ;           //! vector of histos with inv. mass vs z
   std::vector<TH2F*> fHistoJetPtVsFrag;          //! vector of histos for jet pt vs meson-z
   std::vector<TH2F*> fHistoInvMassVsPtMassCut;   //! vector of histos with inv. mass vs. pT after cut
   std::vector<TH2F*> fHistoInvMassVsPtMassCutSB; //! vector of histos with inv. mass vs. pT after cut in Sideband
@@ -520,7 +521,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   AliAnalysisTaskMesonJetCorrelation(const AliAnalysisTaskMesonJetCorrelation&);            // Prevent copy-construction
   AliAnalysisTaskMesonJetCorrelation& operator=(const AliAnalysisTaskMesonJetCorrelation&); // Prevent assignment
 
-  ClassDef(AliAnalysisTaskMesonJetCorrelation, 20);
+  ClassDef(AliAnalysisTaskMesonJetCorrelation, 21);
 };
 
 #endif
