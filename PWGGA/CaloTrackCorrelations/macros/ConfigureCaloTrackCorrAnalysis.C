@@ -1039,8 +1039,9 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
   {
     ana->SetInputAODName(Form("PhotonTrigger_%s",kAnaCaloTrackCorr.Data()));
     
-    ana->SetM02CutForInvMass(0.1,0.35); // Loose SS cut
-    
+    //ana->SetM02CutForInvMass(0.1,0.35); // Loose SS cut
+    ana->SetM02CutForInvMass(0.1,0.7); // Looser SS cut
+
     ana->SwitchOffSelectPairInIsolationCone();
     
     if(useSSIso)
@@ -1056,18 +1057,18 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
       ana->SetOutputAODName(Form("%s%sIsoDecayTrigger_%s_R%1.2f",particle.Data(), opt.Data(), kAnaCaloTrackCorr.Data(), isoCone));
     }
     
-    if ( calorimeter.Contains("CAL") && !simulation ) ana->SetPairTimeCut(100);
+    //if ( calorimeter.Contains("CAL") && !simulation ) ana->SetPairTimeCut(100);
     
     AliNeutralMesonSelection *nms = ana->GetNeutralMesonSelection();
     nms->SetParticle(particle);
     
     //****
     nms->SetInvMassCutMaxParameters(0,0,0); // Overrule the setting in SetParticle for Pi0 option
-                                            //****
+    //****
     
     // Tighten a bit mass cut with respect to default window
-    if(particle=="Pi0") nms->SetInvMassCutRange(0.110,0.160);
-    if(particle=="Eta") nms->SetInvMassCutRange(0.520,0.580);
+    if(particle=="Pi0") nms->SetInvMassCutRange(0.110,0.165);
+    if(particle=="Eta") nms->SetInvMassCutRange(0.510,0.610);
     
     //if(!particle.Contains("SideBand")) nms->SwitchOnAngleSelection();
     //else nms->SwitchOnAngleSelection();
@@ -1075,10 +1076,10 @@ AliAnaPi0EbE* ConfigurePi0EbEAnalysis(TString particle,      Int_t  analysis,
     nms->SwitchOffAngleSelection();
     
     if(particle.Contains("Pi0SideBand")) // For pi0, do not consider left band
-      nms->SetSideBandCutRanges(-1,0,0.190,0.240);
+      nms->SetSideBandCutRanges(-1,0,0.20,0.30);
     
     if(particle.Contains("EtaSideBand")) // For pi0, do not consider left band
-      nms->SetSideBandCutRanges(0.410,0.470,0.620,0.680);
+      nms->SetSideBandCutRanges(0.400,0.470,0.630,0.700);
     
     nms->KeepNeutralMesonSelectionHistos(kTRUE);
     //nms->SetAngleMaxParam(2,0.2);

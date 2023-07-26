@@ -570,6 +570,12 @@ void AliAnaParticleIsolation::FillShowerShapeControlHistograms
     {
       if(!GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit])) continue;
       
+      // Avoid rare (?) double counting
+      if ( fDecayBits[ibit] == AliNeutralMesonSelection::kEta )
+      {
+        if ( GetNeutralMesonSelection()->CheckDecayBit(decayTag,AliNeutralMesonSelection::kPi0) ) continue;
+      }
+
       if ( fFillSSHisto ) fhPtLambda0Decay[isolated][ibit]->Fill(pt, m02, GetEventWeight()*weightTrig);
       
       // In case it was not done on the trigger selection task
@@ -5021,7 +5027,13 @@ void  AliAnaParticleIsolation::MakeAnalysisFillHistograms()
 
           for(Int_t ibit = 0; ibit < fNDecayBits; ibit++)
           {
-            if(!GetNeutralMesonSelection()->CheckDecayBit(decayTag,fDecayBits[ibit])) continue;
+            if ( !GetNeutralMesonSelection()->CheckDecayBit(decayTag, fDecayBits[ibit]) ) continue;
+
+            // Avoid rare (?) double counting
+            if ( fDecayBits[ibit] == AliNeutralMesonSelection::kEta )
+            {
+              if ( GetNeutralMesonSelection()->CheckDecayBit(decayTag, AliNeutralMesonSelection::kPi0) ) continue;
+            }
 
             fhPtM02SumPtConeDecayTag[ibit]->Fill(pt, m02, coneptsum, GetEventWeight()*weightTrig);
           }
