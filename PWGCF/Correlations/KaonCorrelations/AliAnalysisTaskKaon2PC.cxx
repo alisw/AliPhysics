@@ -1501,10 +1501,9 @@ Int_t nMix = pool->GetCurrentNEvents();
             if(!K0Trig) continue;
 
             for (Int_t iAss(0); iAss < bgTracks->GetEntries(); iAss++){
-            //AliVParticle* KChAssoc = dynamic_cast<AliVParticle*> (bgTracks->At(iAss));
-            AliAODTrack* KChAssoc = dynamic_cast<AliAODTrack*> (bgTracks->At(iAss));
+            AliVParticle* KChAssoc = dynamic_cast<AliVParticle*> (bgTracks->At(iAss));
+            //AliAODTrack* KChAssoc = dynamic_cast<AliAODTrack*> (bgTracks->At(iAss));
             if (!KChAssoc) continue;
-            if (!AcceptTrack(KChAssoc)) continue;
             if ((jMix==0) && (iTrig==0)) {fHistKChPtMix->Fill(KChAssoc->Pt());}
 
             Double_t DPhiMix = fabs(K0Trig->Phi() - KChAssoc->Phi());
