@@ -70,7 +70,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         void                    SetMCReconstructed(Bool_t flag) {fMCReconstructed = flag;}
         void                    SetMinBias(Bool_t minbiasflag) {fMinBias = minbiasflag; }
         void                    SetCentral(Bool_t centralflag) {fCentral = centralflag; }
-        void                    SetSemiCentral(Bool_t semicentralflag) {fCentral = semicentralflag; }
+        void                    SetSemiCentral(Bool_t semicentralflag) {fSemiCentral = semicentralflag; }
         void                    SetFilterBit(Int_t filterbit) {fBit = filterbit;}
         void                    SetVertexCut(Double_t pvzvalue) {fPVzCut = pvzvalue;}
         void                    SetCentLimit(Double_t CentMin, Double_t CentMax) {fCentMin = CentMin; fCentMax = CentMax; }
