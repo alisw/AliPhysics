@@ -87,6 +87,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists()
       fSameEventMultDistNonCommon(nullptr),
       fSameEventmTDistCommon(nullptr),
       fSameEventmTDistNonCommon(nullptr),
+      fSameEventmTMultDistCommon(nullptr),
+      fSameEventmTMultDistNonCommon(nullptr),
       fSameEventpTOnepTTwokStar(nullptr),
       fMixedEventpTOnepTTwokStar(nullptr),
       fDoMultBinning(false),
@@ -188,6 +190,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(
       fSameEventMultDistNonCommon(hists.fSameEventMultDistNonCommon),
       fSameEventmTDistCommon(hists.fSameEventmTDistCommon),
       fSameEventmTDistNonCommon(hists.fSameEventmTDistNonCommon),
+      fSameEventmTMultDistCommon(hists.fSameEventmTMultDistCommon),
+      fSameEventmTMultDistNonCommon(hists.fSameEventmTMultDistNonCommon),
       fSameEventpTOnepTTwokStar(hists.fSameEventpTOnepTTwokStar),
       fMixedEventpTOnepTTwokStar(hists.fMixedEventpTOnepTTwokStar),
       fDoMultBinning(hists.fDoMultBinning),
@@ -289,6 +293,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fSameEventMultDistNonCommon(nullptr),
       fSameEventmTDistCommon(nullptr),
       fSameEventmTDistNonCommon(nullptr),
+      fSameEventmTMultDistCommon(nullptr),
+      fSameEventmTMultDistNonCommon(nullptr),
       fSameEventpTOnepTTwokStar(nullptr),
       fMixedEventpTOnepTTwokStar(nullptr),
       fDoMultBinning(false),
@@ -602,6 +608,10 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
       fSameEventmTDistCommon = new TH2F*[nHists];
       fSameEventmTDistNonCommon = new TH2F*[nHists];
     }
+    if(fmTMultPlots){
+      fSameEventmTMultDistCommon = new TH2F**[nHists]; 
+      fSameEventmTMultDistNonCommon = new TH2F**[nHists];
+    }
   } else {
     fSameEventDistCommon = nullptr;
     fSameEventDistNonCommon = nullptr;
@@ -611,6 +621,8 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
     fSameEventMultDistNonCommon = nullptr;
     fSameEventmTDistCommon = nullptr;
     fSameEventmTDistNonCommon = nullptr;
+    fSameEventmTMultDistCommon = nullptr; 
+    fSameEventmTMultDistNonCommon = nullptr;
   }
 
   if(fpTOnepTTwokStarPlotsmT){
@@ -986,6 +998,28 @@ AliFemtoDreamCorrHists::AliFemtoDreamCorrHists(AliFemtoDreamCollConfig *conf,
            fdEtadPhiSENonCommon[Counter]->GetYaxis()->SetTitle("#Delta#phi");
            fPairs[Counter]->Add(fdEtadPhiSENonCommon[Counter]);
            }
+          if (fmTMultPlots) {
+            fSameEventmTMultDistCommon[Counter] = new TH2F*[nmTBins];
+            fSameEventmTMultDistNonCommon[Counter] = new TH2F*[nmTBins];
+        
+            for (unsigned int imT = 0; imT < nmTBins; ++imT) {
+              TString SameEventmTMultNameCommon =
+                TString::Format("SEmTMultCommon_%d_Particle%d_Particle%d", imT, iPar1, iPar2);
+              fSameEventmTMultDistCommon[Counter][imT] = new TH2F(SameEventmTMultNameCommon.Data(),
+                                                        SameEventmTMultNameCommon.Data(),
+                                                        *itNBins, *itKMin, *itKMax,
+                                                        multbins, 1, multbins + 1); 
+              fPairs[Counter]->Add(fSameEventmTMultDistCommon[Counter][imT]);
+
+              TString SameEventmTMultNameNonCommon =
+                TString::Format("SEmTMultNonCommon_%d_Particle%d_Particle%d", imT, iPar1, iPar2);
+              fSameEventmTMultDistNonCommon[Counter][imT] = new TH2F(SameEventmTMultNameNonCommon.Data(),
+                                                        SameEventmTMultNameNonCommon.Data(),
+                                                        *itNBins, *itKMin, *itKMax,
+                                                        multbins, 1, multbins + 1); 
+              fPairs[Counter]->Add(fSameEventmTMultDistNonCommon[Counter][imT]);
+	        }
+        } 
        }
 
       if(fillHists && fpTOnepTTwokStarPlotsmT){ 
@@ -1529,6 +1563,10 @@ AliFemtoDreamCorrHists &AliFemtoDreamCorrHists::operator=(
     this->fdEtadPhiSENonCommon = hists.fdEtadPhiSENonCommon;
     this->fSameEventMultDistCommon = hists.fSameEventMultDistCommon;
     this->fSameEventMultDistNonCommon = hists.fSameEventMultDistNonCommon;
+    this->fSameEventmTDistCommon = hists.fSameEventmTDistCommon;
+    this->fSameEventmTDistNonCommon = hists.fSameEventmTDistNonCommon;
+    this->fSameEventmTMultDistCommon = hists.fSameEventmTMultDistCommon;
+    this->fSameEventmTMultDistNonCommon = hists.fSameEventmTMultDistNonCommon;
     this->fDoMultBinning = hists.fDoMultBinning;
     this->fDoCentBinning = hists.fDoCentBinning;
     this->fDokTBinning = hists.fDokTBinning;
@@ -1843,6 +1881,44 @@ void AliFemtoDreamCorrHists::FillMixedEventpTOnepTTwokStar(int iHist, float mT, 
       if(RelK <= fpTOnepTTwokStarCutOff){
        fMixedEventpTOnepTTwokStar[iHist][pos]->Fill(pTOne, pTTwo);
       }   
+    }
+  } 
+}
+
+void AliFemtoDreamCorrHists::FillSameEventmTMultDistCommon(int iHist, float mT, int iMult, float RelK) {
+  if (fmTMultPlots) {
+    unsigned int pos = 0;
+    for (auto it : fmTBins) {
+      if (it > TMath::Abs(mT)) {
+        break;
+      } else {
+        pos++;
+      }
+    }
+    if (pos >= fmTBins.size()) {
+      TString WarnMe = TString::Format("mT Bin for %.2f not found", mT);
+      AliWarning(WarnMe.Data());
+    } else {
+      fSameEventmTMultDistCommon[iHist][pos]->Fill(RelK, iMult); 
+    }
+  } 
+}
+
+void AliFemtoDreamCorrHists::FillSameEventmTMultDistNonCommon(int iHist, float mT, int iMult, float RelK) {
+  if (fmTMultPlots) {
+    unsigned int pos = 0;
+    for (auto it : fmTBins) {
+      if (it > TMath::Abs(mT)) {
+        break;
+      } else {
+        pos++;
+      }
+    }
+    if (pos >= fmTBins.size()) {
+      TString WarnMe = TString::Format("mT Bin for %.2f not found", mT);
+      AliWarning(WarnMe.Data());
+    } else {
+      fSameEventmTMultDistNonCommon[iHist][pos]->Fill(RelK, iMult); 
     }
   } 
 }
