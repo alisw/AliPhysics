@@ -1544,6 +1544,12 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
         }
       }
       if(track->Eta() >= -fEtaGap3Sub2 && track->Eta() <= fEtaGap3Sub2) {//..middle part
+        sumPtw+=weightPt*track->Pt();
+        sumPtw2+=weightPt*weightPt*track->Pt();
+        sumPt2w2 += weightPt*weightPt*track->Pt()*track->Pt();
+        sumWeight += weightPt;
+        sumWeight2 += weightPt*weightPt;
+
         NtrksAfter3subM += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1880,6 +1886,12 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
         }
       }
       if(track->Eta() >= -fEtaGap3Sub2 && track->Eta() <= fEtaGap3Sub2) {//..middle part
+        sumPtw+=weightPt*track->Pt();
+        sumPtw2+=weightPt*weightPt*track->Pt();
+        sumPt2w2 += weightPt*weightPt*track->Pt()*track->Pt();
+        sumWeight += weightPt;
+        sumWeight2 += weightPt*weightPt;
+
         NtrksAfter3subM += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
