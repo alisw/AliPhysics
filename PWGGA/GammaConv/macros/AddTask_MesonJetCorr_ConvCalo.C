@@ -276,6 +276,14 @@ void AddTask_MesonJetCorr_ConvCalo(
   } else if (trainConfig == 36) {
     cuts.AddCutPCMCalo("000f3103", "0dm00009f9730000dge0404000", "111110009fe30230000", "2s634034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
 
+   // configs with eta < 1.35
+  } else if (trainConfig == 40) {
+    cuts.AddCutPCMCalo("00010103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s630034000000d0"); // in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 41) {
+    cuts.AddCutPCMCalo("000fc103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s630034000000d0"); // Jet-low trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+  } else if (trainConfig == 42) {
+    cuts.AddCutPCMCalo("000fb103", "0dm00009f9730000dge0404000", "411790009fe30230000", "2s630034000000d0"); // Jet-high trigg in-jet, pi0 mass: 0.1-0.15, rotation back
+
 
 
   // ------ cut variations
