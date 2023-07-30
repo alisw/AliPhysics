@@ -1544,9 +1544,9 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
         }
       }
       if(track->Eta() >= -fEtaGap3Sub2 && track->Eta() <= fEtaGap3Sub2) {//..middle part
-        sumPtw+=weightPt*aodTrk->Pt();
-        sumPtw2+=weightPt*weightPt*aodTrk->Pt();
-        sumPt2w2 += weightPt*weightPt*aodTrk->Pt()*aodTrk->Pt();
+        sumPtw+=weightPt*track->Pt();
+        sumPtw2+=weightPt*weightPt*track->Pt();
+        sumPt2w2 += weightPt*weightPt*track->Pt()*track->Pt();
         sumWeight += weightPt;
         sumWeight2 += weightPt*weightPt;
 
@@ -1886,9 +1886,9 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
         }
       }
       if(track->Eta() >= -fEtaGap3Sub2 && track->Eta() <= fEtaGap3Sub2) {//..middle part
-        sumPtw+=weightPt*aodTrk->Pt();
-        sumPtw2+=weightPt*weightPt*aodTrk->Pt();
-        sumPt2w2 += weightPt*weightPt*aodTrk->Pt()*aodTrk->Pt();
+        sumPtw+=weightPt*track->Pt();
+        sumPtw2+=weightPt*weightPt*track->Pt();
+        sumPt2w2 += weightPt*weightPt*track->Pt()*track->Pt();
         sumWeight += weightPt;
         sumWeight2 += weightPt*weightPt;
 
