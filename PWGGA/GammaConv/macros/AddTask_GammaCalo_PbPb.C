@@ -1349,6 +1349,29 @@ void AddTask_GammaCalo_PbPb(
     cuts.AddCutCalo("13530e03","24466810ha082200000","0133103100000010"); // 30-50%
     cuts.AddCutCalo("15910e03","24466810ha082200000","0133103100000010"); // 50-90%
 
+  // **********************************************************************************************************
+  // ****************************** EMCal+DCal configurations PbPb run 2 2018 *********************************
+  // ********************************** only use clusters with matched track **********************************
+  // **********************************************************************************************************
+  } else if (trainConfig == 955){ // EMCAL+DCal clusters - cent
+    cuts.AddCutCalo("10110013","411790105qe30220000","0s631031000000d0"); // 00-10%
+    cuts.AddCutCalo("30110013","411790105qe30220000","0s631031000000d0"); // 00-05%
+    cuts.AddCutCalo("31210013","411790105qe30220000","0s631031000000d0"); // 05-10%
+  } else if (trainConfig == 956){ // EMCAL+DCal clusters - semi-central
+    cuts.AddCutCalo("11210013","411790105qe30220000","0s631031000000d0"); // 10-20%
+    cuts.AddCutCalo("12310013","411790105qe30220000","0s631031000000d0"); // 20-30%
+    cuts.AddCutCalo("13410013","411790105qe30220000","0s631031000000d0"); // 30-40%
+    cuts.AddCutCalo("12410013","411790105qe30220000","0s631031000000d0"); // 20-40%
+  } else if (trainConfig == 957){ // EMCAL+DCal clusters - semi peripheral
+    cuts.AddCutCalo("14510013","411790105qe30220000","0s631031000000d0"); // 40-50%
+    cuts.AddCutCalo("14610013","411790105qe30220000","0s631031000000d0"); // 40-60%
+    cuts.AddCutCalo("15610013","411790105qe30220000","0s631031000000d0"); // 50-60%
+  } else if (trainConfig == 958){ // EMCAL+DCal clusters - peripheral
+    cuts.AddCutCalo("16710013","411790105qe30220000","0s631031000000d0"); // 60-70%
+    cuts.AddCutCalo("17810013","411790105qe30220000","0s631031000000d0"); // 70-80%
+    cuts.AddCutCalo("18910013","411790105qe30220000","0s631031000000d0"); // 80-90%
+    cuts.AddCutCalo("16810013","411790105qe30220000","0s631031000000d0"); // 60-80%
+
   } else {
     Error(Form("GammaConvCalo_%i",trainConfig), "wrong trainConfig variable no cuts have been specified for the configuration");
     return;
