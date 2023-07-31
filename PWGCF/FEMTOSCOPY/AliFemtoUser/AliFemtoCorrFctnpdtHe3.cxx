@@ -704,7 +704,10 @@ fDum2DkStarVsmT->Fill(tKStar,CalcMt(fPair));
 }
 
 	if(fUsemTCheck){
-		if(fUsemTCheck==1) f3DmTDepkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt(),CalcMt(fPair));
+		if(fUsemTCheck==1){
+			 f3DmTDepkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt(),CalcMt(fPair));
+			f3DmTDepkSVspT->Fill(tKStar,fPair->Track1()->Track()->Pt(),CalcMt(fPair));
+		}
 		if(fUsemTCheck==2){
 			f3DmTDepkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt(),fPair->KT());
 			f3DmTDepkSVspT->Fill(tKStar,fPair->Track1()->Track()->Pt(),fPair->KT());
