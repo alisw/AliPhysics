@@ -704,8 +704,11 @@ fDum2DkStarVsmT->Fill(tKStar,CalcMt(fPair));
 }
 
 	if(fUsemTCheck){
-		
-		f3DmTDepkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt(),CalcMt(fPair));
+		if(fUsemTCheck==1) f3DmTDepkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt(),CalcMt(fPair));
+		if(fUsemTCheck==2){
+			f3DmTDepkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt(),fPair->KT());
+			f3DmTDepkSVspT->Fill(tKStar,fPair->Track1()->Track()->Pt(),fPair->KT());
+		}
 	}
 	return;
     
@@ -1201,8 +1204,9 @@ int nbinsmT,float lowmT,float upmT
 ){
 
 // in mix
-// only for p-d pair 
-// 1.5 - 2.0 - 2.5 - 3.5
+
+//fUsemTCheck = 1: mT vs pT
+//fUsemTCheck = 2 : kT vs pT 
 f3DmTDepkSVspT = new TH3F(TString::Format("f3DmTDepkSVspT%s", fTitle.Data())," ",nbinsks,lowks,upks,nbinspT,lowpT,uppT,nbinsmT,lowmT,upmT);
 
 }
