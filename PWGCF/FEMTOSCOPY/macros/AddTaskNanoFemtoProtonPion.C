@@ -1088,7 +1088,6 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   } else if (trigger == "kHM") {
     addon += "HM";
   }
-  //suffix = ""; //GANESHA delete?
 
   TString file = AliAnalysisManager::GetCommonFileName();
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer(); 

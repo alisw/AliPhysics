@@ -715,7 +715,7 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
         AliFatal("No Standard NanoAOD");
         return;
       }
-      StoreGlobalTrackReference(track); //GANESHA: does not work for MC True particles
+      StoreGlobalTrackReference(track);
     }
 
     fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
