@@ -435,7 +435,7 @@ void AliAnalysisTaskMultspec_evbased::UserExec(Option_t *)
       //V0 daughter mass
       double_t imassla = 0.;
       (casc->ChargeXi()<0 ? imassla=casc->MassLambda() : imassla=casc->MassAntiLambda());
-      if (TMath::Abs(imassla-1.115683)<0.008) ffillCasc->GoodInvMassLam = kTRUE;
+      if (TMath::Abs(imassla-1.115683)</*0.008*/0.0035) ffillCasc->GoodInvMassLam = kTRUE;
       else ffillCasc->GoodInvMassLam = kFALSE;
     
       //calculate DCA Bachelor-Baryon to remove "bump" structure in InvMass
@@ -464,15 +464,15 @@ bool AliAnalysisTaskMultspec_evbased::ApplyCut(int parttype){
   if(parttype==kk0s_Mult){
      if(((ffillV0->DcaV0Daught)<0.3) && ((ffillV0->DcaPosToPV)>0.13) && ((ffillV0->DcaNegToPV)>0.13) && ((ffillV0->V0CosPA)>0.999) && ((ffillV0->DistOverTotP)<(15./0.498115)) && ((ffillV0->V0Rad)>0.7) && ((ffillV0->LeastCRawsOvF)>=0.9) && ((ffillV0->NSigPos)>-1) && ((ffillV0->NSigPos)<1) && ((ffillV0->NSigNeg)>-1) && ((ffillV0->NSigNeg)<1) && ((ffillV0->ITSmatch)==kTRUE || (ffillV0->TOFmatch)==kTRUE)) passcut = kTRUE;
    }
-  else if(parttype==klam_Mult){
+  else if(parttype==klam_Mult || parttype==kalam_Mult){
      if(((ffillV0->DcaV0Daught)<0.5) && ((ffillV0->DcaPosToPV)>0.13) && ((ffillV0->DcaNegToPV)>0.13) && ((ffillV0->V0CosPA)>0.999) && ((ffillV0->DistOverTotP)<(20./1.11603)) && ((ffillV0->V0Rad)>1.05) && ((ffillV0->LeastCRawsOvF)>=0.9) && ((ffillV0->NSigPos)>-1) && ((ffillV0->NSigPos)<1) && ((ffillV0->NSigNeg)>-1) && ((ffillV0->NSigNeg)<1) && ((ffillV0->ITSmatch)==kTRUE || (ffillV0->TOFmatch)==kTRUE)) passcut = kTRUE;
   }
   else if(parttype==kxi_Mult){
-     if(((ffillCasc->CascRad)>1) && ((ffillCasc->V0Rad)>2.5) && ((ffillCasc->DcaNegToPV)>0.45) && ((ffillCasc->DcaPosToPV)>0.45) && ((ffillCasc->DcaV0Daught)<0.5) && ((ffillCasc->DcaBachToPV)>0.18) && ((ffillCasc->DcaV0ToPV)>0.135) && ((ffillCasc->DcaCascDaught)<0.065) && ((ffillCasc->V0CosPA)>0.99) && ((ffillCasc->CascCosPA)>0.999) && ((ffillCasc->NSigPos)>-1) && ((ffillCasc->NSigPos)<1) && ((ffillCasc->NSigNeg)>-1) && ((ffillCasc->NSigNeg)<1) && ((ffillCasc->NSigBac)>-1) && ((ffillCasc->NSigBac)<1) && ((ffillCasc->DistOverTotP)<(10.5/1.32171)) && ((ffillCasc->LeastCRaws)>77)  && ((ffillCasc->GoodInvMassLam)==0.0031) && ((ffillCasc->ITSmatch)==kTRUE || (ffillCasc->TOFmatch)==kTRUE)) passcut = kTRUE;
+     if(((ffillCasc->CascRad)>1) && ((ffillCasc->V0Rad)>2.5) && ((ffillCasc->DcaNegToPV)>0.45) && ((ffillCasc->DcaPosToPV)>0.45) && ((ffillCasc->DcaV0Daught)<0.5) && ((ffillCasc->DcaBachToPV)>0.18) && ((ffillCasc->DcaV0ToPV)>0.135) && ((ffillCasc->DcaCascDaught)<0.065) && ((ffillCasc->V0CosPA)>0.99) && ((ffillCasc->CascCosPA)>0.999) && ((ffillCasc->NSigPos)>-1) && ((ffillCasc->NSigPos)<1) && ((ffillCasc->NSigNeg)>-1) && ((ffillCasc->NSigNeg)<1) && ((ffillCasc->NSigBac)>-1) && ((ffillCasc->NSigBac)<1) && ((ffillCasc->DistOverTotP)<(10.5/1.32171)) && ((ffillCasc->LeastCRaws)>77)  && ((ffillCasc->ITSmatch)==kTRUE || (ffillCasc->TOFmatch)==kTRUE)) passcut = kTRUE;
 
   }
   else if(parttype==kom_Mult){
-     if(((ffillCasc->CascRad)>0.9) && ((ffillCasc->V0Rad)>2.9) && ((ffillCasc->DcaNegToPV)>0.38) && ((ffillCasc->DcaPosToPV)>0.38) && ((ffillCasc->DcaV0Daught)<0.5) && ((ffillCasc->DcaBachToPV)>0.09) && ((ffillCasc->DcaV0ToPV)>0.122) && ((ffillCasc->DcaCascDaught)<0.4) && ((ffillCasc->V0CosPA)>0.99) && ((ffillCasc->CascCosPA)>0.999) && ((ffillCasc->NSigPos)>-1) && ((ffillCasc->NSigPos)<1) && ((ffillCasc->NSigNeg)>-1) && ((ffillCasc->NSigNeg)<1) && ((ffillCasc->NSigBac)>-1) && ((ffillCasc->NSigBac)<1) && ((ffillCasc->DistOverTotP)<(5.5/1.67245)) && ((ffillCasc->LeastCRaws)>81)  && ((ffillCasc->GoodInvMassLam)==0.0035) && ((ffillCasc->ITSmatch)==kTRUE || (ffillCasc->TOFmatch)==kTRUE)) passcut = kTRUE;
+     if(((ffillCasc->CascRad)>0.9) && ((ffillCasc->V0Rad)>2.9) && ((ffillCasc->DcaNegToPV)>0.38) && ((ffillCasc->DcaPosToPV)>0.38) && ((ffillCasc->DcaV0Daught)<0.5) && ((ffillCasc->DcaBachToPV)>0.09) && ((ffillCasc->DcaV0ToPV)>0.122) && ((ffillCasc->DcaCascDaught)<0.4) && ((ffillCasc->V0CosPA)>0.99) && ((ffillCasc->CascCosPA)>0.999) && ((ffillCasc->NSigPos)>-1) && ((ffillCasc->NSigPos)<1) && ((ffillCasc->NSigNeg)>-1) && ((ffillCasc->NSigNeg)<1) && ((ffillCasc->NSigBac)>-1) && ((ffillCasc->NSigBac)<1) && ((ffillCasc->DistOverTotP)<(5.5/1.67245)) && ((ffillCasc->LeastCRaws)>81)  && ((ffillCasc->ITSmatch)==kTRUE || (ffillCasc->TOFmatch)==kTRUE)) passcut = kTRUE;
   }
 
   return passcut;
