@@ -22,8 +22,10 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
     bool doDCA = false, //13
     bool DopTOnepTTwo = false, //14
     float pTOnepTTwokStarCutOff = 3.0, //15
-    int whichmTbinning = 1, //16
-    const char *cutVariation = "0" //17
+    float pThighK = 999.0, //16
+    float pTlowp = 0.4, //17
+    int whichmTbinning = 1, //18
+    const char *cutVariation = "0" //19
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -62,6 +64,8 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   {
     TrackPosKaonCuts->SetPIDkd(); // Oton
     TrackPosKaonCuts->SetFilterBit(filterBit);
+    TrackPosKaonCuts->SetPtRange(0.15, pThighK);
+    //Default: 0.15 to 999 for Oton and Ramona
   }
   else
   {
@@ -73,6 +77,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
     TrackPosKaonCuts->SetCutSharedCls(false);
     TrackPosKaonCuts->SetCutSmallestSig(false);
     TrackPosKaonCuts->SetRejLowPtPionsTOF(false);
+    TrackPosKaonCuts->SetPtRange(0.15, pThighK);
   }
 
   AliFemtoDreamTrackCuts *TrackNegKaonCuts =
@@ -88,6 +93,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   {
     TrackNegKaonCuts->SetPIDkd(); // Oton
     TrackNegKaonCuts->SetFilterBit(filterBit);
+    TrackNegKaonCuts->SetPtRange(0.15, pThighK);
   }
   else
   {
@@ -99,12 +105,14 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
     TrackNegKaonCuts->SetCutSharedCls(false);
     TrackNegKaonCuts->SetCutSmallestSig(false);
     TrackNegKaonCuts->SetRejLowPtPionsTOF(false);
+    TrackNegKaonCuts->SetPtRange(0.15, pThighK);
   }
 
   //Proton and AntiProton cuts
   AliFemtoDreamTrackCuts *TrackCutsProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, false, false);
   TrackCutsProton->SetCutCharge(1);
+  TrackCutsProton->SetPtRange(pTlowp, 4.05);
   if(UseRamonaCut){
     TrackCutsProton->SetDCAVtxZ(DCAz);
     TrackCutsProton->SetDCAVtxXY(DCAxy);
@@ -113,12 +121,14 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
     TrackCutsProton->SetCutSharedCls(false);
     TrackCutsProton->SetCutSmallestSig(false);
     TrackCutsProton->SetRejLowPtPionsTOF(false);
-
+    TrackCutsProton->SetPtRange(pTlowp, 3.0);
+    //Default: 0.4 to 3.0 for Ramona, 0.5 to 4.05 for Oton
   }
 
   AliFemtoDreamTrackCuts *TrackCutsAntiProton = AliFemtoDreamTrackCuts::PrimProtonCuts(
         isMC, true, false, false);
   TrackCutsAntiProton->SetCutCharge(-1);
+  TrackCutsAntiProton->SetPtRange(pTlowp, 4.05);
   if(UseRamonaCut){
     TrackCutsAntiProton->SetDCAVtxZ(DCAz);
     TrackCutsAntiProton->SetDCAVtxXY(DCAxy);
@@ -127,7 +137,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
     TrackCutsAntiProton->SetCutSharedCls(false);
     TrackCutsAntiProton->SetCutSmallestSig(false);
     TrackCutsAntiProton->SetRejLowPtPionsTOF(false);
-
+    TrackCutsAntiProton->SetPtRange(pTlowp, 3.0);
   }
 
   //Set-up output ------------------------------------------------------------------------
