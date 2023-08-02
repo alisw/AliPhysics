@@ -666,6 +666,14 @@ public:
   void ConfigureMCPPB8TeV2016();
 
   /**
+   * @brief Trigger configuration for MC anchored to run2 pPb 8 TeV with high L0 threshold(2016)
+   * 
+   * Same L1 settings as in ConfigureMCPPB8TeV2016(), but L0 threshold set to 3.5 GeV instead
+   * of 2.5 GeV
+   */
+  void ConfigureMCPPB8TeV2016HighL0Threshold();
+
+  /**
    * @brief Trigger configuration for run2 pp 5TeV (2017) - data mode
    *
    * Configuration is representing all Level1 triggers available in the
@@ -964,6 +972,7 @@ protected:
   Bool_t Is2016MCPPB5TeV(const char *dataset) const;
   Bool_t Is2016PPB8TeV(const char *dataset) const;
   Bool_t Is2016MCPPB8TeV(const char *dataset) const;
+  Bool_t Is2016MCPPB8TeVHighL0Threshold(const char *dataset) const;
   Bool_t Is2016PP(const char *dataset) const;
   Bool_t Is2016MCPP(const char *dataset) const;
   Bool_t Is2017PP5TeV(const char *dataset) const;
