@@ -30,6 +30,7 @@
 #include <iosfwd>
 #include <TObject.h>
 #include <TList.h>
+#include "AliEmcalStringView.h"
 
 // operator<< has to be forward declared carefully to stay in the global namespace so that it works with CINT.
 // For generally how to keep the operator in the global namespace, See: https://stackoverflow.com/a/38801633
@@ -69,7 +70,7 @@ public:
    * @brief Constructor, creates a new trigger alias from a list of trigger names
    * @param triggernames List of the trigger classes handled by the alias, separated by ";"
    */
-  AliEmcalTriggerAlias(const char *triggernames);
+  AliEmcalTriggerAlias(EMCAL_STRINGVIEW triggernames);
 
 
   /**
@@ -88,13 +89,13 @@ public:
    * @param triggername Name of the trigger class to be checked
    * @return True if the trigger class is handled, false otherwise
    */
-  Bool_t HasTriggerClass(const char *triggername) const;
+  Bool_t HasTriggerClass(EMCAL_STRINGVIEW triggername) const;
 
   /**
    * @brief Set the trigger classes handled by the trigger alias
    * @param triggernames List of the trigger classes handled by the alias, separated by ";"
    */
-  void SetTriggerClasses(const char *triggernames);
+  void SetTriggerClasses(EMCAL_STRINGVIEW triggernames);
 
   /**
    * @brief Set the trigger classes handled by the trigger alias
@@ -121,7 +122,7 @@ private:
    * decoding the trigger classes handled by the trigger alias from
    * a string. Trigger classes are separated by ";"
    */
-  void DecodeTriggerClasses(const char *triggernames);
+  void DecodeTriggerClasses(EMCAL_STRINGVIEW triggernames);
 
   TList    fTriggerClasses;       ///< List of trigger classes handled by Alias
 
