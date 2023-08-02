@@ -73,9 +73,11 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         void                    SetSemiCentral(Bool_t semicentralflag) {fSemiCentral = semicentralflag; }
         void                    SetFilterBit(Int_t filterbit) {fBit = filterbit;}
         void                    SetVertexCut(Double_t pvzvalue) {fPVzCut = pvzvalue;}
+        void                    SetNsigmaCut(Double_t nsigmacut) { fSigCut = nsigmacut; }
         void                    SetCentLimit(Double_t CentMin, Double_t CentMax) {fCentMin = CentMin; fCentMax = CentMax; }
         void                    SetPtLimits(Double_t ptmin, Double_t ptmax) { fLpTCut = ptmin; fUpTCut=ptmax; }
-        //void                  SetEtaLimit(Double_t etalimit) { fEta = etalimit; }
+        void                    SetEtaLimit(Double_t etalimit) { fEtaCut = etalimit; }
+
         //mixing
         //void                  SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
@@ -107,6 +109,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fHistPVz;        //! dummy histogram
        TH1F*                   fHistNEvents;    //! dummy histogram
        TH1F*                   fMCEvents;       //! dummy histogram
+       TH1F*                   fTracksCounter;  //! dummy histogram
        TH1F*                   fMCEvents_pileup;   //! dummy histogram
        TH1F*                   fHistNV0;        //! dummy histogram
        TH1F*                   fHistEta;        //! dummy histogram
@@ -115,6 +118,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fHistDPhi;       //! dummy histogram
        TH1F*                   fHistMult;       //! dummy histogram
        TH1F*                   fHistCent;       //! dummy histogram
+       TH1F*                   fHistCent_mcgen;       //! dummy histogram
        TH2F*                   fHistTPCTracksVsClusters; //! dummy histogram
 
        TH1F*                   fHistMK0;       //! dummy histogram
