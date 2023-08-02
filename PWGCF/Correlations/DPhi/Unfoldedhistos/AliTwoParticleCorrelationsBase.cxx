@@ -483,7 +483,7 @@ Bool_t AliTwoParticleCorrelationsBase::SetWeigths(std::vector<const TH3*> h3)
         if (h3[i] != nullptr) {
           /* allocate memory for each track species weights */
           float* buffer = new float[fNBins_vertexZ * fNBins_etaPhi * fNBins_pt];
-          fCorrectionWeights.push_back(buffer);
+          fCorrectionWeights[i] = buffer;
 
           for (int ixZ = 0; ixZ < fNBins_vertexZ; ixZ++) {
             double zval = fMin_vertexZ + fWidth_vertexZ * (ixZ + 0.5);
