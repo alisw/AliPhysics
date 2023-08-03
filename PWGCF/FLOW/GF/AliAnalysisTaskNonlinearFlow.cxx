@@ -1042,7 +1042,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     // Calculate the values upto v7
     if (fuQStandard) {
       for(int iharm=0; iharm<8; iharm++) {
-        for(int ipow=0; ipow<6; ipow++) {
+        for(int ipow=0; ipow<9; ipow++) {
           Qcos[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
           Qsin[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
         }
@@ -1303,6 +1303,14 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
   NtrksAfter3subM = 0;
   NtrksAfter3subR = 0;
 
+  sumPtw = 0;
+  sumPtw2 = 0;
+  sumPt2w2 = 0;
+  sumWeight = 0;
+  sumWeight2 = 0;
+  eventWeight  = 0;
+  eventWeight2 = 0;
+
 
   //..for DCA
   // double pos[3], vz, vx, vy;
@@ -1380,7 +1388,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
     // Calculate the values upto v7
     if (fuQStandard) {
       for(int iharm=0; iharm<8; iharm++) {
-        for(int ipow=0; ipow<6; ipow++) {
+        for(int ipow=0; ipow<9; ipow++) {
           Qcos[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
           Qsin[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
         }
