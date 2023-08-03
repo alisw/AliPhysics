@@ -76,10 +76,13 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         void                    SetNsigmaCut(Double_t nsigmacut) { fSigCut = nsigmacut; }
         void                    SetCentLimit(Double_t CentMin, Double_t CentMax) {fCentMin = CentMin; fCentMax = CentMax; }
         void                    SetPtLimits(Double_t ptmin, Double_t ptmax) { fLpTCut = ptmin; fUpTCut=ptmax; }
+        void                    SetV0PtLimits(Double_t v0ptmin, Double_t v0ptmax) { fLpTv0Cut = v0ptmin; fUpTv0Cut=v0ptmax; }
         void                    SetEtaLimit(Double_t etalimit) { fEtaCut = etalimit; }
+        void                    SetPIDCombined(Bool_t pidflag) {fPidpTDependentMethod = pidflag; }
+        void                    SetPileUp(Bool_t pileupflag) {fRejectEventPileUp = pileupflag; }                    
 
         //mixing
-        //void                  SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
+        //void                    SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
         
     private:
@@ -124,8 +127,14 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fHistMK0;       //! dummy histogram
        TH1F*                   fHistMK0Cuts;   //! dummy histogram
        TH1F*                   fHistKChPt;     //! dummy histogram
+       TH1F*                   fHistKChPtfullRange;     //! dummy histogram
        TH1F*                   fHistKChPtMix;  //! dummy histogram
        TH1F*                   fHistK0Pt;      //! dummy histogram
+       TH1F*                   fHistK0PtfullRange;      //! dummy histogram
+       TH1F*                   fHistKPlusPt;     //! dummy histogram
+       TH1F*                   fHistKPlusPtfullRange;     //! dummy histogram
+       TH1F*                   fHistKMinusPt;     //! dummy histogram
+       TH1F*                   fHistKMinusPtfullRange;     //! dummy histogram
        TH1F*                   fHistKChPhi;    //! dummy histogram
        TH1F*                   fHistK0Phii;     //! dummy histogram 
        TH1F*                   fHistKpPhi;     //! dummy histogram 
@@ -175,6 +184,12 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        THnSparse*              fMCKpos;
        THnSparse*              fMCKneg;
        THnSparse*              fMCKch;
+       TH1F*                   fMCK0Pt;
+       TH1F*                   fMCK0PtfullRange;
+       TH1F*                   fMCKPlusPt;
+       TH1F*                   fMCKPlusPtfullRange;
+       TH1F*                   fMCKMinusPt;
+       TH1F*                   fMCKMinusPtfullRange;
        TH2F*                   fHistKpKnMC;
        TH2F*                   fHistK0KchMC;
        TH2F*                   fHistKpKpMC;
@@ -200,6 +215,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        Bool_t                  fK0KchCorr;
        Bool_t                  fKpKpCorr;
        Bool_t                  fKnKnCorr;
+       Bool_t                  pidflag;
+       Bool_t                  pileupflag;
 
        Double_t        PVx;
        Double_t        PVy;
