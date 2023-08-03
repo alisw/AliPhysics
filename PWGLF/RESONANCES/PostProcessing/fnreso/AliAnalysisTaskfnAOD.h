@@ -66,7 +66,27 @@ class AliAnalysisTaskfnAOD : public AliAnalysisTaskSE {
 //---------------------------------------------------------------------------------------
   Bool_t      IsPion(AliVTrack *aodtrack);
   Bool_t      IsKaon(AliVTrack *aodtrack);
+  Bool_t      HasTOF(AliAODTrack *track);
   Bool_t      IsV0(AliAODv0 *v1, AliAODEvent *esd);
+
+
+  void SetFilterBit(Int_t fb)                    {this->fFilterBit   =  fb;}
+  void Setkkshmasscut(Double_t mc)               {this->kkshmasscut = mc;}
+  void SetPIDnsigtpcpion(Double_t nsigtpcpi)      {this->nsigtpcpion = nsigtpcpi;}
+  void SetPIDnsigtofpion(Double_t nsigtofpi)      {this->nsigtofpion = nsigtofpi;}
+  void SetPIDnsigtpckaon(Double_t nsigtpcka)      {this->nsigtpckaon = nsigtpcka;}
+  void SetPIDnsigtofkaon(Double_t nsigtofka)      {this->nsigtofkaon = nsigtofka;}
+  void Setdcaxyposneg(Double_t xypos, Double_t xyneg) {this->dcaxypos=xypos; this->dcaxyneg=xyneg;}
+  void Setdcav0daugh (Double_t dca1)             {this->dcav0daugh = dca1;}
+  void Setdcav0pv(Double_t dca2)             {this->dcav0pv = dca2;}
+  void SetCosPA(Double_t cosPA)              {this->cospa = cosPA;}
+  void SetLowradius(Double_t lr)              {this->lowrad = lr;}
+  void SetLT(Double_t lt)              {this->lifetime = lt;}
+  void SetPIDpion(Double_t pidpi)              {this->pidpion = pidpi;}
+
+
+
+
 
   struct AlikkshPair{
     Int_t charge;
@@ -100,9 +120,30 @@ class AliAnalysisTaskfnAOD : public AliAnalysisTaskSE {
   THnSparseD    *f1Unlike;//!
   THnSparseD    *f1Like;//!
   THnSparseD    *f1Mix;//!
+  TH1D            *hist1;
+  TH1D            *hist2;
+  TH1D            *hist3;
+  TH1D            *hist4;
+  TH1D            *hist5;
+  TH1D            *hist6;
+  TH1D            *hist7;
 
 
-
+  //variables
+  Int_t fFilterBit;
+  Double_t kkshmasscut;
+  Double_t nsigtpcpion;
+  Double_t nsigtofpion;
+  Double_t nsigtpckaon;
+  Double_t nsigtofkaon;
+  Double_t dcaxypos;
+  Double_t dcaxyneg;
+  Double_t dcav0daugh;
+  Double_t dcav0pv;
+  Double_t cospa;
+  Double_t lowrad;
+  Double_t lifetime;
+  Double_t pidpion;
 
   AliAnalysisTaskfnAOD(const AliAnalysisTaskfnAOD&);
   AliAnalysisTaskfnAOD& operator=(const AliAnalysisTaskfnAOD&);  

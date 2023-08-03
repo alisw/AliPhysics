@@ -1,5 +1,5 @@
 
-void AddTaskfnAOD(const char *suffix = "CMWchrg")
+void AddTaskfnAOD(const char *suffix = "CMWchrg", Double_t fFilterBit = 32, Double_t kkshmasscut = 1.04, Double_t nsigtpcpion=2.0, Double_t nsigtofpion=3.0, Double_t nsigtpckaon=2.0, Double_t nsigtofkaon=3.0, Double_t dcaxypos=0.06, Double_t dcaxyneg=0.06, Double_t dcav0daugh=1.0, Double_t dcav0pv=0.3, Double_t cospa=0.97, Double_t lowrad=0.5, Double_t lifetime=15, Double_t pidpion=4)
 
 {
   // standard with task
@@ -25,8 +25,21 @@ void AddTaskfnAOD(const char *suffix = "CMWchrg")
 
   AliAnalysisTaskfnAOD *task_CMW = new AliAnalysisTaskfnAOD(TaskCMWPID);
 
-  //task_CMW->SelectCollisionCandidates(AliVEvent::kINT7);      // default is kINT7
-  //printf("\n =========> AddTaskCMW::Info() Trigger = kINT7 \n");
+
+  task_CMW->SetFilterBit(fFilterBit);
+  task_CMW->Setkkshmasscut(kkshmasscut);
+  task_CMW->SetPIDnsigtpcpion(nsigtpcpion);
+  task_CMW->SetPIDnsigtofpion(nsigtofpion);
+  task_CMW->SetPIDnsigtpckaon(nsigtpckaon);
+  task_CMW->SetPIDnsigtofkaon(nsigtofkaon);
+  task_CMW->Setdcaxyposneg(dcaxypos, dcaxyneg);
+  task_CMW->Setdcav0daugh(dcav0daugh);
+  task_CMW->Setdcav0pv(dcav0pv);
+  task_CMW->SetCosPA(cospa);
+  task_CMW->SetLowradius(lowrad);
+  task_CMW->SetLT(lifetime);
+  task_CMW->SetPIDpion(pidpion);
+
 
 
   ///---> Now Pass data and containers to Analysis Object ----
