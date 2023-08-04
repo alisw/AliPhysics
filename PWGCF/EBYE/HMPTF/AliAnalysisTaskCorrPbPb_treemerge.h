@@ -66,6 +66,14 @@ class AliAnalysisTaskCorrPbPb_treemerge : public AliAnalysisTaskSE {
   {
     this->fVertexZMax = VzMax;
   }
+   void SetPileupCutValue (Int_t cutval)
+  {
+    this->fPileupCutVal = cutval;
+  }
+  void SetCentralityEstimator (Int_t val)
+  {
+    this->fCentralityEstimator_flag = val;
+  }
   void SetTrackFilterBit(Int_t FBno)
   {
     this->fFBNo = FBno;
@@ -78,16 +86,25 @@ class AliAnalysisTaskCorrPbPb_treemerge : public AliAnalysisTaskSE {
   {
     this->fChi2ITS = chi2its;
   }
-  void SetPIDnSigmaCut(Double_t PIDnSigmaCut)
+  void SetPIDnSigmaCut(Double_t PIDnSigmaCut_pion, Double_t PIDnSigmaCut_kaon, Double_t PIDnSigmaCut_proton)
   {
-    this->fPIDnSigmaCut = PIDnSigmaCut;
+    this->fPIDnSigmaPionCut = PIDnSigmaCut_pion;
+    this->fPIDnSigmaKaonCut = PIDnSigmaCut_kaon;
+    this->fPIDnSigmaProtonCut = PIDnSigmaCut_proton;
+  }
+  void SetMinNoTPCCrossedRows(Double_t tpccrossedrows)
+  {
+    this->fTPCcrossedrows = tpccrossedrows;
   }
   void SetEtaCut(Double_t eta_max)
   {
     this->fEtaMax = eta_max;
   
   }
-  
+  void SetTreeName(TString TreeName)
+  {
+    fTreeName = TreeName;
+  }
   /*
   void SetDCAXYRangeMax(Double_t dcaxy)          
   {
@@ -101,10 +118,7 @@ class AliAnalysisTaskCorrPbPb_treemerge : public AliAnalysisTaskSE {
   {
     fNCrossedRowsTPC = nCrossedRow;
   }
-  void SetTreeName(TString TreeName)
-  {
-    fTreeName = TreeName;
-  }
+  
 
   void SetEtaCut(Double_t EtaMax)
   {
@@ -198,8 +212,18 @@ class AliAnalysisTaskCorrPbPb_treemerge : public AliAnalysisTaskSE {
   Int_t fFBNo;
   Double_t fChi2TPC;
   Double_t fChi2ITS;
-  Double_t fPIDnSigmaCut;
+  Double_t fPIDnSigmaPionCut;
+  Double_t fPIDnSigmaKaonCut;
+  Double_t fPIDnSigmaProtonCut;
+  Double_t fTPCcrossedrows;
   Double_t fEtaMax;
+  TString fTreeName;
+
+  //Pileup cut val
+  Int_t fPileupCutVal;
+  
+  //Flag to select which centrality estimator
+  Int_t fCentralityEstimator_flag;
   
 
   /*
