@@ -1,4 +1,4 @@
-AliAnalysisTaskCorrPbPb_treemerge *AddTaskCorrPbPb_treemerge(Int_t fCentralityMin=0, Int_t fCentralityMax=90, Double_t fVzMax=10, Int_t fFilterBit=96, Double_t fchi2tpc=4, Double_t fchi2its=36, Double_t fpidnSigma=2.0, TString OutFileName = "_default", TString sMCfilePath ="alien:///alice/cern.ch/user/s/swati/EfficiencyPbPbLHC20j6a/CentralitywiseEff/EfficiencyHijingPbPb.root")
+AliAnalysisTaskCorrPbPb_treemerge *AddTaskCorrPbPb_treemerge(Int_t fCentralityMin=0, Int_t fCentralityMax=90, Double_t fVzMax=10, Int_t fFilterBit=96, Double_t fchi2tpc=4, Double_t fchi2its=36, Double_t fpidnSigma=2.0, TString OutFileName = "_default", TString sMCfilePath ="alien:///alice/cern.ch/user/s/swati/EfficiencyPbPbLHC20j6a/CentralitywiseEff/EfficiencyHijingPbPb.root", Double_t fetacut=0.8)
 {
   // standard with task
   printf("===================================================================================\n");
@@ -62,6 +62,7 @@ AliAnalysisTaskCorrPbPb_treemerge *AddTaskCorrPbPb_treemerge(Int_t fCentralityMi
   task_Mpt->SetMaxChi2PerTPCClusterRange(fchi2tpc);
   task_Mpt->SetMaxChi2PerITSClusterRange(fchi2its);
   task_Mpt->SetPIDnSigmaCut(fpidnSigma);
+  task_Mpt->SetEtaCut(fetacut);
   
   /*
   TString OutTreeName;
