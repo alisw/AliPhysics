@@ -15,7 +15,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     bool useWeightsNUE = true, bool useWeightsNUA = false,
     bool useWeightsCent = false,
     bool getSC = true, bool getLower = true,
-    bool Aside = false, bool Cside = false, bool saveQCNUA = false, bool frmBadArea18q = kFALSE)
+    bool Aside = false, bool Cside = false, bool saveQCNUA = false, bool frmBadArea18q = kFALSE,float eta = 0.8)
 {
   // Configuration of the analysis.
   double ESDslope = 3.38; bool saveQA_ESDpileup = false;
@@ -336,11 +336,11 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     /// Kinematic cuts and last fine tuning.
     fJCatalyst[i]->SetPtRange(ptMin, ptMax);
     if (Aside){
-      fJCatalyst[i]->SetEtaRange(0.0,etaGap);
+      fJCatalyst[i]->SetEtaRange(0.0,eta);
     } else if (Cside){
-      fJCatalyst[i]->SetEtaRange(-etaGap,0.0);
+      fJCatalyst[i]->SetEtaRange(-eta,0.0);
     } else {
-      fJCatalyst[i]->SetEtaRange(-etaGap, etaGap);
+      fJCatalyst[i]->SetEtaRange(-eta, eta);
     }
     fJCatalyst[i]->SetPhiCorrectionIndex(i);
     fJCatalyst[i]->SetRemoveBadArea(removeBadArea);
