@@ -574,7 +574,7 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
   AliCentrality* alicent= aodEvent->GetCentrality(); //in PbPb and pPb
   AliMultSelection *mult_selection = (AliMultSelection*)aodEvent->FindListObject("MultSelection");
   Double_t  centper = alicent->GetCentralityPercentile("V0M");
-  if(mult_selection->GetMultiplicityPercentile("V0M") < 0.001 || mult_selection->GetMultiplicityPercentile("V0M") >  10) return;
+  if(mult_selection->GetMultiplicityPercentile("V0M") < 10 || mult_selection->GetMultiplicityPercentile("V0M") >  30) return;
   fHistEv->Fill(centper);
 
   // EVENT SELECTION ********************
@@ -784,9 +784,9 @@ void AliAnalysisTaskParticleEffWRZ::UserExec(Option_t *)
 
     isPionNsigma = (IsPionNSigma(track->P(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2]) && !IsKaonNSigmaReal(track->P(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma(track->P(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4]) && !IsDeuteronNSigma(track->P(), nSigmaTPCD,nSigmaTOFD));
     isKaonNsigma = (!IsPionNSigma(track->P(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && IsKaonNSigmaReal(track->P(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma(track->P(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4])  && !IsDeuteronNSigma(track->P(), nSigmaTPCD,nSigmaTOFD));
-    isProtonNsigma = (!IsPionNSigma(track->P(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmaReal(track->P(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigma(track->P(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4])  && !IsDeuteronNSigma(track->P(), nSigmaTPCD,nSigmaTOFD));
+    isProtonNsigma = (track->Pt() > 0.5 && track->Pt() < 1.5 && !IsPionNSigma(track->P(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmaReal(track->P(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && IsProtonNSigma(track->P(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4])  && !IsDeuteronNSigma(track->P(), nSigmaTPCD,nSigmaTOFD));
    // isDeuteronNsigma = (track->Pt() < 2.2 && !IsPionNSigma(track->Pt(),nSigmaTPCPi, nSigmaTOFPi, tTofSig-pidTime[2])  && !IsKaonNSigmaReal(track->Pt(),nSigmaTPCK, nSigmaTOFK, tTofSig-pidTime[3]) && !IsProtonNSigma(track->Pt(),nSigmaTPCP, nSigmaTOFP, tTofSig-pidTime[4])  && IsDeuteronNSigma(track->Pt(),track->P(),nSigmaTPCD,nSigmaTOFD,1.5));
-    isDeuteronNsigma = (track->Pt() < 2.0 && IsDeuteronNSigma(track->P(), nSigmaTPCD, nSigmaTOFD));
+    isDeuteronNsigma = (track->Pt() > 0.8 && track->Pt() < 2.0 && IsDeuteronNSigma(track->P(), nSigmaTPCD, nSigmaTOFD));
      if(isDeuteronNsigma)
       if(track->P() < 2.2)
     	if(!(IsDeuteronTPCdEdx(track->P(), tdEdx, 2.2)))
