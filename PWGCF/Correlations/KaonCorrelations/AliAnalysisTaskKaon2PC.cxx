@@ -922,9 +922,9 @@ Bool_t AliAnalysisTaskKaon2PC::AcceptTrack(const AliAODTrack *Trk) {
     Double_t nSigmaTOFelectron = fPIDResponse->NumberOfSigmasTOF(Trk, AliPID::kElectron);
     Double_t nSigmaTOFpion = fPIDResponse->NumberOfSigmasTOF(Trk, AliPID::kPion);
 
-    if (fabs(nSigmaelectron) < 2.0) return kFALSE;  // excluding electrons via TPC
-    if (fabs(nSigmapion) < 2.0) return kFALSE;      // excluding pions via TPC
-    if (fabs(nSigmaproton) < 2.0) return kFALSE;      // excluding pions via TPC
+    //if (fabs(nSigmaelectron) < 2.0) return kFALSE;  // excluding electrons via TPC
+    //if (fabs(nSigmapion) < 2.0) return kFALSE;      // excluding pions via TPC
+    //if (fabs(nSigmaproton) < 2.0) return kFALSE;      // excluding pions via TPC
     //if (fabs(nSigmakaon < 3.0) && (nSigmapion < 3.0)) return kFALSE;
     //if (fabs(nSigmakaon < 3.0) && (nSigmaproton < 3.0)) return kFALSE;
     //if (fabs(nSigmakaon < 3.0) && (nSigmaelectron < 3.0)) return kFALSE;
@@ -1133,8 +1133,8 @@ void AliAnalysisTaskKaon2PC::RunData() {
     fHistNEvents->Fill(3.5);
 
     //Multiplicity selection
-    AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
-    if(!MultSelection) return;
+    //AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+    //if(!MultSelection) return;
     
     //centrality
     //double CentV0M = MultSelection->GetMultiplicityPercentile("V0M"); //centrality
@@ -2230,8 +2230,8 @@ void AliAnalysisTaskKaon2PC::RunMCReconstructed() {
     fHistNEvents->Fill(3.5);
 
     //Multiplicity selection
-    AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
-    if(!MultSelection) return;
+    //AliMultSelection *MultSelection = (AliMultSelection*)fAOD->FindListObject("MultSelection");
+    //if(!MultSelection) return;
     
     //centrality
     //double CentV0M = MultSelection->GetMultiplicityPercentile("V0M"); //centrality
@@ -2275,7 +2275,6 @@ void AliAnalysisTaskKaon2PC::RunMCReconstructed() {
         if (fabs(nSigmaelectron) < 2.0) continue;          // excluding electrons via TPC
         if (fabs(nSigmapion) < 2.0) continue;              // excluding pions via TPC
         if (fabs(nSigmaproton) < 2.0) continue;              // excluding protons via TPC
-        if (fabs(nSigmakaon)<3.0) {fPIDKaon->Fill(track->Pt(),track->GetTPCsignal());}
         if (fabs(nSigmakaon)<2.0) {
             fPIDK->Fill(track->Pt(),track->GetTPCsignal());
             fNsigmaKaon->Fill(track->Pt(), nSigmakaon);
@@ -2410,7 +2409,7 @@ for(Int_t i=0; i < iTracks; i++) {
     Double_t trackPhi = track->Phi();
     Double_t trackEta = track->Eta();
     Double_t trackPt = track->Pt();
-
+    fPIDKaon->Fill(track->Pt(),track->GetTPCsignal());
     fNsigmaTPCTOFK->Fill(track->Pt(), nSigmaTOFkaon);
     fHistTOFKch->Fill(trackPt, beta);
     fHistKChPtfullRange->Fill(trackPt);
