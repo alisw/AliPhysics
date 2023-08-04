@@ -155,7 +155,7 @@ fNPtBins(0)
     fPtBinBounds[ii] = 0.0;
   }
   for(Int_t ii=0; ii<20; ii++){
-    fEMBufferFull[ii]=kFALSE;
+    fEMBufferFull[ii]=0;
   }
   for(Int_t ii=0; ii<20; ii++){
     fEMBufferCycle[ii]=0;
@@ -240,7 +240,7 @@ fNPtBins(0)
     fPtBinBounds[ii] = 0.0;
   }
   for(Int_t ii=0; ii<20; ii++){
-    fEMBufferFull[ii]=kFALSE;
+    fEMBufferFull[ii]=0;
   }
   for(Int_t ii=0; ii<20; ii++){
     fEMBufferCycle[ii]=0;
@@ -616,9 +616,17 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
 
     // populate triggers with charged particles within desired pT window
     if (fkMinPtTrigger<gpt && gpt<fkMaxPtTrigger && TMath::Abs(lThisCharge)>0.001){
-      //valid trigger
-      fHist3dTrigger->Fill(geta, gpt,lNchForward);
-      triggerIndices.emplace_back(iCurrentLabelStack);
+      //valid trigger -- select also on PDG species 
+
+      if( TMath::Abs(lThisParticle->PdgCode()) ==  211 ||
+          TMath::Abs(lThisParticle->PdgCode()) ==  321 ||
+          TMath::Abs(lThisParticle->PdgCode()) == 2212 || 
+          TMath::Abs(lThisParticle->PdgCode()) ==   11 ||
+          TMath::Abs(lThisParticle->PdgCode()) ==   13 )
+      {
+        fHist3dTrigger->Fill(geta, gpt,lNchForward);
+        triggerIndices.emplace_back(iCurrentLabelStack);
+      }
     }
 
     if ( TMath::Abs(lThisParticle->PdgCode()) ==  211 ){
@@ -678,7 +686,7 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
 
     for (Int_t iassocSpecies = 0;  iassocSpecies < associatedIndices.size(); iassocSpecies++){   // associated loop
       for (Int_t iassoc = 0;  iassoc < associatedIndices[iassocSpecies].size(); iassoc++){   // associated loop
-        //lAssociatedParticle = lMCstack->Particle( associatedIndices[iassocSpecies][iassoc] );
+        if( triggerIndices[iTrigger] == associatedIndices[iassocSpecies][iassoc] ) continue; // avoid self
         AliMCParticle* lAssociatedParticle = (AliMCParticle*)lMCevent->GetTrack( associatedIndices[iassocSpecies][iassoc] );
         if(!lAssociatedParticle) {
           Printf("Generated loop %d - MC TParticle pointer to current stack particle = 0x0 ! Skip ...\n", iassoc );
@@ -693,8 +701,8 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
   }
   //+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
   //Event mixing loop
-  if( fEMBufferFull[multiplicityIndex] && fkDoEventMixing ){ //require also that a trigger exists
-    for (Int_t iTrigger = 0;  iTrigger < fEMBufferSize[multiplicityIndex]; iTrigger++){   // trigger loop
+  if( fkDoEventMixing ){ //require also that a trigger exists
+    for (Int_t iTrigger = 0;  iTrigger < TMath::Min(fEMBufferSize[multiplicityIndex], fEMBufferFull[multiplicityIndex]); iTrigger++){   // trigger loop
       Double_t geta = fEMBufferEta[iTrigger][multiplicityIndex]; //from previous events
       Double_t gphi = fEMBufferPhi[iTrigger][multiplicityIndex]; //from previous events
 
@@ -723,11 +731,11 @@ void AliAnalysisTaskMCPredictions2pc::UserExec(Option_t *)
       if(!lThisParticle) continue;
 
       //Add to buffer
-      
       fEMBufferEta[fEMBufferCycle[multiplicityIndex]][multiplicityIndex] = lThisParticle->Eta();
       fEMBufferPhi[fEMBufferCycle[multiplicityIndex]][multiplicityIndex] = lThisParticle->Phi();
       fEMBufferCycle[multiplicityIndex]++;
-      if(fEMBufferCycle[multiplicityIndex]>=fEMBufferSize[multiplicityIndex]) fEMBufferFull[multiplicityIndex] = kTRUE;
+      fEMBufferFull[multiplicityIndex]++;
+      if(fEMBufferFull[multiplicityIndex]>fEMBufferSize[multiplicityIndex]) fEMBufferFull[multiplicityIndex] = fEMBufferSize[multiplicityIndex];
       fEMBufferCycle[multiplicityIndex] = fEMBufferCycle[multiplicityIndex]%fEMBufferSize[multiplicityIndex];
     }
   }

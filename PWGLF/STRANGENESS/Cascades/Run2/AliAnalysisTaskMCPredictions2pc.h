@@ -171,7 +171,7 @@ private:
   Float_t fPtBinBounds[100];
 
   //for event mixing
-  Bool_t fEMBufferFull[20];
+  Int_t fEMBufferFull[20];
   Int_t fEMBufferCycle[20];
   Int_t fEMBufferSize[20];
   Float_t fEMBufferEta[50][20];
