@@ -82,6 +82,11 @@ class AliAnalysisTaskCorrPbPb_treemerge : public AliAnalysisTaskSE {
   {
     this->fPIDnSigmaCut = PIDnSigmaCut;
   }
+  void SetEtaCut(Double_t eta_max)
+  {
+    this->fEtaMax = eta_max;
+  
+  }
   
   /*
   void SetDCAXYRangeMax(Double_t dcaxy)          
@@ -194,6 +199,7 @@ class AliAnalysisTaskCorrPbPb_treemerge : public AliAnalysisTaskSE {
   Double_t fChi2TPC;
   Double_t fChi2ITS;
   Double_t fPIDnSigmaCut;
+  Double_t fEtaMax;
   
 
   /*

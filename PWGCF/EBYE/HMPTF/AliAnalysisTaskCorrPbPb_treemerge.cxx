@@ -149,7 +149,8 @@ AliAnalysisTaskCorrPbPb_treemerge::AliAnalysisTaskCorrPbPb_treemerge():
   fFBNo(0),
   fChi2TPC(0),
   fChi2ITS(0),
-  fPIDnSigmaCut(0)
+  fPIDnSigmaCut(0),
+  fEtaMax(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -233,7 +234,8 @@ AliAnalysisTaskCorrPbPb_treemerge::AliAnalysisTaskCorrPbPb_treemerge(const char 
   fFBNo(0),
   fChi2TPC(0),
   fChi2ITS(0),
-  fPIDnSigmaCut(0)
+  fPIDnSigmaCut(0),
+  fEtaMax(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -537,7 +539,7 @@ void AliAnalysisTaskCorrPbPb_treemerge::UserExec(Option_t *)  {
 	Double_t trkChi2PerNDF = aodtrack->Chi2perNDF();
 
 	//Kinematic cuts on pT and Eta
-	if (TMath::Abs(trkEta) > 0.8) continue;
+	if (TMath::Abs(trkEta) > fEtaMax) continue;
 	if (trkPt < 0.2) continue;
 	if (trkPt > 3.0) continue;
 
