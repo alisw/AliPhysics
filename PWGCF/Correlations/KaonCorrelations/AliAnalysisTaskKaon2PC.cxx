@@ -1178,7 +1178,6 @@ void AliAnalysisTaskKaon2PC::RunData() {
         if (fabs(nSigmaelectron) < 2.0) continue;          // excluding electrons via TPC
         if (fabs(nSigmapion) < 2.0) continue;              // excluding pions via TPC
         if (fabs(nSigmaproton) < 2.0) continue;              // excluding protons via TPC
-        if (fabs(nSigmakaon)<3.0) {fPIDKaon->Fill(track->Pt(),track->GetTPCsignal());}
         if (fabs(nSigmakaon)<2.0) {
             fPIDK->Fill(track->Pt(),track->GetTPCsignal());
             fNsigmaKaon->Fill(track->Pt(), nSigmakaon);
@@ -1243,6 +1242,7 @@ for(Int_t i=0; i < iTracks; i++) {
     if (!(fabs(nSigmakaon)<fSigCut)) continue;
     if (!(fabs(nSigmaTOFkaon)<fSigCut)) continue;
 
+    fPIDKaon->Fill(track->Pt(),track->GetTPCsignal());
     fNsigmaTPCTOFK->Fill(track->Pt(), nSigmaTOFkaon);
     fHistTOFKch->Fill(trackPt, beta);
     fHistKChPtfullRange->Fill(trackPt);
@@ -1314,6 +1314,7 @@ for(Int_t i=0; i < iTracks; i++) {
     Double_t trackEta = track->Eta();
     Double_t trackPt = track->Pt();
 
+    fPIDKaon->Fill(track->Pt(),track->GetTPCsignal());
     fNsigmaTPCTOFK->Fill(track->Pt(), nSigmaTOFkaon);
     fHistTOFKch->Fill(trackPt, beta);
     fHistKChPtfullRange->Fill(trackPt);
@@ -2339,6 +2340,7 @@ for(Int_t i=0; i < iTracks; i++) {
     if (!(fabs(nSigmakaon)<fSigCut)) continue;
     if (!(fabs(nSigmaTOFkaon)<fSigCut)) continue;
 
+    fPIDKaon->Fill(track->Pt(),track->GetTPCsignal());
     fNsigmaTPCTOFK->Fill(track->Pt(), nSigmaTOFkaon);
     fHistTOFKch->Fill(trackPt, beta);
     fHistKChPtfullRange->Fill(trackPt);
