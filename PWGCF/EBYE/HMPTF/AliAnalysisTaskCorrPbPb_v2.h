@@ -95,6 +95,10 @@ class AliAnalysisTaskCorrPbPb_v2 : public AliAnalysisTaskSE {
   {
     this->fTPCcrossedrows = tpccrossedrows;
   }
+  void SetEtaCut(Double_t etamax)
+  {
+    this->fEtaMax = etamax;
+  }
   
   /*
   void SetDCAXYRangeMax(Double_t dcaxy)          
@@ -277,6 +281,7 @@ class AliAnalysisTaskCorrPbPb_v2 : public AliAnalysisTaskSE {
   Double_t fPIDnSigmaKaonCut;
   Double_t fPIDnSigmaProtonCut;
   Double_t fTPCcrossedrows;
+  Double_t fEtaMax;
   
   //Pileup cut val
   Int_t fPileupCutVal;
