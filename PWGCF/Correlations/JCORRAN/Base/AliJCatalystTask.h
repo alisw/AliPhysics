@@ -104,6 +104,8 @@ public:
 		cout << "setting z vertex cut = " << fzvtxCut << endl;}
   void SetRemoveBadArea( Bool_t shallweremove ){ fremovebadarea = shallweremove;
 		cout << "setting RemoveBadArea = " << fremovebadarea << endl;}
+  void SetRemoveBadArea18q( Bool_t shallweremove ){ fremovebadarea18q = shallweremove;
+		cout << "setting RemoveBadArea18q = " << fremovebadarea18q << endl;}
 	inline double GetZVertexCut() const{return fzvtxCut;}
 	void SetParticleCharge( int charge ){ fPcharge = charge;
 		cout << "setting particle charge = " << charge << endl;}
@@ -198,6 +200,7 @@ private:
 	double fPt_max; //
 	double fzvtxCut; //
 	Bool_t fremovebadarea; //
+	Bool_t fremovebadarea18q; //
 
 	UInt_t flags; //
 	Int_t fJCatalystEntry; //
