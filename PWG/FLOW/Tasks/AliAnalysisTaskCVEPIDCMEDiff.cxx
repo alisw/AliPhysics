@@ -623,8 +623,8 @@ void AliAnalysisTaskCVEPIDCMEDiff::UserCreateOutputObjects()
   fHistEta = new TH1D("fHistEta", ";#eta", 100, -2., 2.);
   fHistNhits = new TH1D("fHistNhits", ";nhits", 200, 0., 200.);
   fHist2PDedx = new TH2D("fHist2PDedx", ";pdedx", 400, -10., 10., 400, 0, 1000);
-  fHistDcaXY = new TH1D("fHistDcaXY", ";DcaXY", 500, 0., 5);
-  fHistDcaZ  = new TH1D("fHistDcaZ",  ";DcaZ", 500, 0., 5);
+  fHistDcaXY = new TH1D("fHistDcaXY", ";DcaXY", 500, 0., 1);
+  fHistDcaZ  = new TH1D("fHistDcaZ",  ";DcaZ", 500, 0., 1);
   fHistPhi[0] = new TH1D("fHistPhi", ";#phi", 100, 0, TMath::TwoPi());
   fHistPhi[1] = new TH1D("fHistPhi_afterNUA", ";#phi", 100, 0, TMath::TwoPi());
   fQAList->Add(fHistPt);
@@ -1027,16 +1027,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks()
     //DCA Cut
     double dcaxy = -999, dcaz = -999;
     if(!GetDCA(dcaxy,dcaz,track)) continue;
-
-    // if FB = 1, we need to cut dca for the plane
-    if (fFilterBit == 1) {
-      if (fabs(dcaz) > fDcaCutZ) continue;
-      if (fabs(dcaxy) > fDcaCutXY) continue;
-    }
-    // if FB = 96 or 768, we don't need cut dca for the plane
-
-    fHistDcaXY->Fill(fabs(dcaxy));
-    fHistDcaZ->Fill(fabs(dcaz));
+    // if FB = 96 or 768, we don't need special DCA cut
 
     if (pt > fPlanePtMin && pt < fPlanePtMax) {
       //Do we need to set pT as weight for Better resolution?
@@ -1051,7 +1042,12 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks()
       }
     }
 
-    // but we need to set the dca cut for 768 when we start to choose the paiticle for pair(just for NarrowDCACut Set)
+    // but we need to set the dca cut for 768 when we start to choose the paiticle for pair
+    if (fabs(dcaxy) > fDcaCutXY) continue;
+    if (fabs(dcaz) > fDcaCutZ) continue;
+    
+    fHistDcaXY->Fill(fabs(dcaxy));
+    fHistDcaZ->Fill(fabs(dcaz));
     if (fFilterBit == 768 && isNarrowDcaCuts768) { 
       if (fabs(dcaz) > 2.0) continue;
       if (fabs(dcaxy) > 7.0 * (0.0026 + 0.005/TMath::Power(pt, 1.01))) continue;
@@ -1106,7 +1102,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::LoopTracks()
       }
     }
 
-    vecParticle.emplace_back(std::array<double,8>{pt,eta,phi,(double)id,(double)code,weight,pid_weight,dcaxy});
+    vecParticle.emplace_back(std::array<double,8>{pt,eta,phi,(double)id,(double)code,weight,pid_weight,dcaz});
   }
 
   if(fabs(fSumQ2xTPC)<1.e-6 || fabs(fSumQ2yTPC)<1.e-6 || fWgtMultTPC < 1.e-5) return false;
@@ -1298,7 +1294,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::PairV0Trk()
       int    code   = (int)particle[4];
       double weight = particle[5];
       double pidweight = particle[6];
-      double  dcaxy  = particle[7];
+      double  dcaz  = particle[7];
       if (id == id_daughter_1 || id == id_daughter_2) continue;
 
       double psi2_forThisPair = nan("");
@@ -1325,7 +1321,7 @@ bool AliAnalysisTaskCVEPIDCMEDiff::PairV0Trk()
 
         double sumPtBin = GetSumPtBin(pt_lambda + pt);
         double deltaEtaBin = GetDeltaEtaBin(TMath::Abs(eta_lambda - eta));
-        double dcaBin = GetDCABin(dcaxy);
+        double dcaBin = GetDCABin(dcaz);
 
         for (int iBits = 0; iBits < nBits; iBits++) {
           double weight_all = weight_lambda * pidweight;
@@ -1557,13 +1553,25 @@ double AliAnalysisTaskCVEPIDCMEDiff::GetNUECor(int charge, double pt)
 {
   if(!fListNUE) return -1;
   if(charge == 0) return -1;
-  TString histName = (charge > 0) ? "h_eff_pos_hadron" : "h_eff_neg_hadron";
-  TH1D* efficiencyHist = (TH1D*)fListNUE->FindObject(histName);
-  if (!efficiencyHist) return -1;
-  int ptBin = efficiencyHist->GetXaxis()->FindBin(pt);
-  double binContent = efficiencyHist->GetBinContent(ptBin);
+  // TString histName = (charge > 0) ? "h_eff_pos_hadron" : "h_eff_neg_hadron";
+  // TH1D* efficiencyHist = (TH1D*)fListNUE->FindObject(histName);
+  // if (!efficiencyHist) return -1;
+  // int ptBin = efficiencyHist->GetXaxis()->FindBin(pt);
+  // double binContent = efficiencyHist->GetBinContent(ptBin);
 
-  if (binContent > 1.e-5) {
+  // if (binContent > 1.e-5) {
+  //   return 1.0 / binContent;
+  // } else return -1;
+  double binContent = -1;
+  TString histName = (charge > 0) ? "h2_eff_pos_hadron_dcazcut" : "h2_eff_neg_hadron_dcazcut";
+  TH2D* h2_eff = (TH2D*)fListNUE->FindObject(histName);
+  if (!h2_eff) return -1;
+  double dcazcut = fDcaCutZ;
+  if (dcazcut > 1.0) dcazcut = 1.0;
+  dcazcut = dcazcut - 1.e-6;
+  binContent = h2_eff->GetBinContent(h2_eff->FindBin(dcazcut, pt));
+
+  if (binContent > 1.e-6) {
     return 1.0 / binContent;
   } else return -1;
 }
@@ -1575,19 +1583,39 @@ double AliAnalysisTaskCVEPIDCMEDiff::GetPIDNUECor(int pdgcode, double pt)
   if(!fListNUE) return -1;
   TString histName;
 
-  if (pdgcode == 2212)       histName = "h_eff_pos_proton";
-  else if (pdgcode == -2212) histName = "h_eff_neg_proton";
-  if (pdgcode == 3122)       histName = "h_eff_lambda";
-  else if (pdgcode == -3122) histName = "h_eff_antilambda";
-  else return -1;
+  // if (pdgcode == 2212)       histName = "h_eff_pos_proton";
+  // else if (pdgcode == -2212) histName = "h_eff_neg_proton";
+  // if (pdgcode == 3122)       histName = "h_eff_lambda";
+  // else if (pdgcode == -3122) histName = "h_eff_antilambda";
+  // else return -1;
 
-  TH1D* efficiencyHist = (TH1D*)fListNUE->FindObject(histName);
-  if (!efficiencyHist) return -1;
-  int ptBin = efficiencyHist->GetXaxis()->FindBin(pt);
-  double binContent = efficiencyHist->GetBinContent(ptBin);
+  // TH1D* efficiencyHist = (TH1D*)fListNUE->FindObject(histName);
+  // if (!efficiencyHist) return -1;
+  // int ptBin = efficiencyHist->GetXaxis()->FindBin(pt);
+  // double binContent = efficiencyHist->GetBinContent(ptBin);
 
-  if (binContent > 1.e-5) {
-    return 1.0 / binContent;
+  // if (binContent > 1.e-5) {
+  //   return 1.0 / binContent;
+  // } else return -1;
+
+  double binContent = -1;
+  if(abs(pdgcode) == 2212) {
+    pdgcode == 2212 ? histName = "h2_eff_pos_proton_dcazcut" : "h2_eff_neg_proton_dcazcut";
+    TH2D* h2_eff = (TH2D*)fListNUE->FindObject(histName);
+    if (!h2_eff) return -1;
+    double dcazcut = fDcaCutZ;
+    if (dcazcut > 1.0) dcazcut = 1.0;
+    dcazcut = dcazcut - 1.e-6;
+    binContent = h2_eff->GetBinContent(h2_eff->FindBin(dcazcut, pt));
+  } else if (abs(pdgcode == 3122)) {
+    pdgcode == 3122 ? histName = "h_eff_lambda" : "h_eff_antilambda";
+    TH1D* h_eff = (TH1D*)fListNUE->FindObject(histName);
+    if (!h_eff) return -1;
+    binContent = h_eff->GetBinContent(h_eff->FindBin(pt));
+  } else return -1;
+
+  if (binContent > 1.e-6) {
+  return 1.0 / binContent;
   } else return -1;
 }
 
@@ -1797,10 +1825,10 @@ inline double AliAnalysisTaskCVEPIDCMEDiff::GetDCABin(double dca)
 {
   dca = abs(dca);
   //0, 0.002 0.005 0.01
-  if (dca > 0. && dca < 0.002) return 0.5;
-  else if (dca > 0.002 && dca < 0.005) return 1.5;
-  else if (dca > 0.005 && dca < 0.01)  return 2.5;
-  else if (dca > 0.01) return 3.5;
+  if (dca > 0. && dca < 0.005) return 0.5;
+  else if (dca > 0.005 && dca < 0.01) return 1.5;
+  else if (dca > 0.01 && dca < 0.1)  return 2.5;
+  else if (dca > 0.1) return 3.5;
   else return -1.;
 }
 
