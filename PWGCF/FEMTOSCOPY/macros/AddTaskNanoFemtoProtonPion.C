@@ -305,7 +305,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
    Float_t Pion_Sigma_VarHigh = 3.3;
 
    Float_t DPhi_VarLow = 0.035;
-   Float_t DPhi_VarHigh = 0.45;
+   Float_t DPhi_VarHigh = 0.045;
    Float_t DEta_VarLow = 0.015;
    Float_t DEta_VarHigh = 0.019;
 
