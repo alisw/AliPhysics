@@ -1002,7 +1002,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB8TeV2016() {
   emc7cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   emc7cuts->SetUseSimpleOfflinePatches(true);
   emc7cuts->SetThreshold(2.5);
-  this->AddTriggerSelection(new AliEmcalTriggerSelection("EMCL0", emc7cuts));
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EMCL0", emc7cuts, new AliEmcalTriggerAlias("EMCL0;EMC7")));
 
   AliEmcalTriggerSelectionCuts *dmc7cuts = new AliEmcalTriggerSelectionCuts;
   dmc7cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kDCALAcceptance);
@@ -1010,7 +1010,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB8TeV2016() {
   dmc7cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   dmc7cuts->SetUseSimpleOfflinePatches(true);
   dmc7cuts->SetThreshold(2.5);
-  this->AddTriggerSelection(new AliEmcalTriggerSelection("DMCL0", dmc7cuts));
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("DMCL0", dmc7cuts, new AliEmcalTriggerAlias("DMCL0;DMC7")));
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB8TeV2016HighL0Threshold() {
@@ -1085,7 +1085,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB8TeV2016HighL0Threshold
   emc7cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   emc7cuts->SetUseSimpleOfflinePatches(true);
   emc7cuts->SetThreshold(3.5);
-  this->AddTriggerSelection(new AliEmcalTriggerSelection("EMCL0", emc7cuts));
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("EMCL0", emc7cuts, new AliEmcalTriggerAlias("EMCL0;EMC7")));
 
   AliEmcalTriggerSelectionCuts *dmc7cuts = new AliEmcalTriggerSelectionCuts;
   dmc7cuts->SetAcceptanceType(AliEmcalTriggerSelectionCuts::kDCALAcceptance);
@@ -1093,7 +1093,7 @@ void AliAnalysisTaskEmcalTriggerSelection::ConfigureMCPPB8TeV2016HighL0Threshold
   dmc7cuts->SetSelectionMethod(AliEmcalTriggerSelectionCuts::kEnergyOfflineSmeared);
   dmc7cuts->SetUseSimpleOfflinePatches(true);
   dmc7cuts->SetThreshold(3.5);
-  this->AddTriggerSelection(new AliEmcalTriggerSelection("DMCL0", dmc7cuts));
+  this->AddTriggerSelection(new AliEmcalTriggerSelection("DMCL0", dmc7cuts, new AliEmcalTriggerAlias("DMCL0;DMC7")));
 }
 
 void AliAnalysisTaskEmcalTriggerSelection::ConfigurePP5TeV2017(){
