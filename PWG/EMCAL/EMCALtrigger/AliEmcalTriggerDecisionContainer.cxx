@@ -107,7 +107,7 @@ bool AliEmcalTriggerDecisionContainer::IsEventSelected(EMCAL_STRINGVIEW name)  c
         // All classes required - event rejection if one class is not present
         selectionStatus = false;
       } else if((mode == SeparatorMode::kSetCombine) && triggerClassResult) {
-        // Any class required - event selected if 
+        // Any class required - event selected if at least one class is present
         selectionStatus = true;
       }
     }
