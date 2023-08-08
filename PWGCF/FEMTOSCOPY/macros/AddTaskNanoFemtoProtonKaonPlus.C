@@ -116,7 +116,6 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   if(UseRamonaCut){
     TrackCutsProton->SetDCAVtxZ(DCAz);
     TrackCutsProton->SetDCAVtxXY(DCAxy);
-    TrackCutsProton->SetPtRange(0.4, 3.0);
     TrackCutsProton->SetCutTPCCrossedRows(false, 0, 0);
     TrackCutsProton->SetCutSharedCls(false);
     TrackCutsProton->SetCutSmallestSig(false);
@@ -132,7 +131,6 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
   if(UseRamonaCut){
     TrackCutsAntiProton->SetDCAVtxZ(DCAz);
     TrackCutsAntiProton->SetDCAVtxXY(DCAxy);
-    TrackCutsAntiProton->SetPtRange(0.4, 3.0);
     TrackCutsAntiProton->SetCutTPCCrossedRows(false, 0, 0);
     TrackCutsAntiProton->SetCutSharedCls(false);
     TrackCutsAntiProton->SetCutSmallestSig(false);
@@ -302,6 +300,846 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonKaonPlus(
     config->SetpTOnepTTwokStarPlotsmT(true, pTOnepTTwokStarCutOff);
   } else {
     config->SetpTOnepTTwokStarPlotsmT(false, pTOnepTTwokStarCutOff);
+  }
+
+  //---------------------------------------------------- Systematics
+  Float_t Proton_pT_VarLow = 0.4;
+  Float_t Proton_pT_VarHigh = 0.6;
+  Float_t Proton_Eta_VarLow = 0.77;
+  Float_t Proton_Eta_VarHigh = 0.83;
+  Float_t Proton_Clusters_VarLow = 70.;
+  Float_t Proton_Clusters_VarHigh = 80.;
+  Float_t Proton_Sigma_VarLow = 2.5;
+  Float_t Proton_Sigma_VarHigh = 3.5;
+
+  Float_t Kaon_pT_VarLow = 0.1;
+  Float_t Kaon_pT_VarHigh = 0.2;
+  Float_t Kaon_Eta_VarLow = 0.75;
+  Float_t Kaon_Eta_VarHigh = 0.85;
+  Float_t Kaon_Clusters_VarLow = 70;
+  Float_t Kaon_Clusters_VarHigh = 90;
+
+  Float_t Kaon_SigmaTPC_Default = 3.; 
+  Float_t Kaon_SigmaTPC_VarLow = 2.7;
+  Float_t Kaon_SigmaTPC_VarHigh = 3.3;
+
+  Float_t Kaon_SigmaCombined_Default = 3.; 
+  Float_t Kaon_SigmaCombined_VarLow = 2.7;
+  Float_t Kaon_SigmaCombined_VarHigh = 3.3;
+
+  Float_t Kaon_SigmaExclusion_Default = 3.; 
+  Float_t Kaon_SigmaExclusion_VarLow = 3.3;
+  Float_t Kaon_SigmaExclusion_VarHigh = 2.7;
+  
+  Float_t DPhi_VarLow = 0.035; 
+  Float_t DPhi_VarHigh = 0.045;
+  Float_t DEta_VarLow = 0.015;
+  Float_t DEta_VarHigh = 0.019;
+
+ if (suffix == "1"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_Default);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_Default);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+ 
+ 
+  } else if (suffix == "2"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+ 
+    config->SetDeltaEtaMax(DEta_VarHigh);
+ 
+  } else if (suffix == "3"){
+ 
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+ 
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "4"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+ 
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "5"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "6"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+ 
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "7"){
+ 
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaEtaMax(DEta_VarHigh);
+ 
+  } else if (suffix == "8"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_Default);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_Default);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+ 
+  } else if (suffix == "9"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_Default);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_Default);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "10"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+    config->SetDeltaEtaMax(DEta_VarHigh);
+ 
+  } else if (suffix == "11"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarHigh);
+ 
+ 
+  } else if (suffix == "12"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaPhiMax(DPhi_VarHigh);
+ 
+  } else if (suffix == "13"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+ 
+    config->SetDeltaPhiMax(DPhi_VarHigh);
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "14"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+ 
+  } else if (suffix == "15"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+ 
+    config->SetDeltaPhiMax(DPhi_VarHigh);
+ 
+  } else if (suffix == "16"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+ 
+    config->SetDeltaPhiMax(DPhi_VarHigh);
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "17"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+ 
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "18"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+    config->SetDeltaEtaMax(DEta_VarHigh);
+ 
+  } else if (suffix == "19"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_Default);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_Default);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+ 
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "20"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+ 
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "21"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+ 
+  } else if (suffix == "22"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+ 
+    config->SetDeltaPhiMax(DPhi_VarHigh);
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "23"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaEtaMax(DEta_VarHigh);
+ 
+  } else if (suffix == "24"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "25"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+ 
+  } else if (suffix == "26"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "27"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+ 
+  } else if (suffix == "28"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+ 
+    config->SetDeltaPhiMax(DPhi_VarHigh);
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "29"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_Default);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_Default);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "30"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+    config->SetDeltaEtaMax(DEta_VarHigh);
+ 
+  } else if (suffix == "31"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_Default);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_Default);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+    config->SetDeltaEtaMax(DEta_VarHigh);
+ 
+  } else if (suffix == "32"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_Default, Kaon_SigmaExclusion_VarHigh);
+ 
+    config->SetDeltaPhiMax(DPhi_VarHigh);
+    config->SetDeltaEtaMax(DEta_VarHigh);
+ 
+  } else if (suffix == "33"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaPhiMax(DPhi_VarHigh);
+ 
+  } else if (suffix == "34"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+ 
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "35"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "36"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+ 
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "37"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+ 
+  } else if (suffix == "38"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "39"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarLow);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarLow);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+    config->SetDeltaEtaMax(DEta_VarHigh);
+ 
+  } else if (suffix == "40"){
+ 
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetPtRange(Proton_pT_VarLow,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarLow,4.05);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_Default);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_Default);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "41"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarHigh,Proton_Eta_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarHigh);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarLow, Kaon_SigmaExclusion_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+ 
+    config->SetDeltaPhiMax(DPhi_VarHigh);
+    config->SetDeltaEtaMax(DEta_VarLow);
+ 
+  } else if (suffix == "42"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarHigh);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarHigh);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_Default, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_VarLow);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarLow,Kaon_Eta_VarLow);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+ 
+  } else if (suffix == "43"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsAntiProton->SetEtaRange(-Proton_Eta_VarLow,Proton_Eta_VarLow);
+    TrackCutsProton->SetNClsTPC(Proton_Clusters_VarLow);
+    TrackCutsAntiProton->SetNClsTPC(Proton_Clusters_VarLow);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_Default);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarHigh, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_Default);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarLow,pThighK);
+    TrackPosKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+    TrackNegKaonCuts->SetNClsTPC(Kaon_Clusters_VarHigh);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+    config->SetDeltaEtaMax(DEta_VarHigh);
+ 
+  } else if (suffix == "44"){
+ 
+    TrackCutsProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsAntiProton->SetPID(AliPID::kProton, 0.75,Proton_Sigma_VarHigh);
+    TrackCutsProton->SetPtRange(Proton_pT_VarHigh,4.05);
+    TrackCutsAntiProton->SetPtRange(Proton_pT_VarHigh,4.05);
+ 
+    TrackPosKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_Default);
+    TrackNegKaonCuts->SetPIDkd(true, UseRamonaCut,Kaon_SigmaCombined_VarLow, Kaon_SigmaTPC_VarHigh, Kaon_SigmaExclusion_Default);
+    TrackPosKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackNegKaonCuts->SetEtaRange(-Kaon_Eta_VarHigh,Kaon_Eta_VarHigh);
+    TrackPosKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+    TrackNegKaonCuts->SetPtRange(Kaon_pT_VarHigh,pThighK);
+ 
+    config->SetDeltaPhiMax(DPhi_VarLow);
+ 
   }
 
   //---------------------------------------------------- Config of Output Containers
