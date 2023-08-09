@@ -165,7 +165,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
 
     AliV0ReaderV1*                    fV0Reader;                                          //!<! V0Reader for basic conversion photon selection
     TString                           fV0ReaderName;                                      ///< Name of the V0 reader
-    TString                           fCorrTaskSetting;
+    TString                           fCorrTaskSetting;                                   ///< Name of the correction framework setting used (if any)
     AliPrimaryPionSelector*           fPionSelector;                                      //!<! primary charged pion selector, basic selection of pi+,pi-
     TString                           fPionSelectorName;                                  ///< Name of the PionSelector
     AliGammaConversionAODBGHandler**  fBGHandlerPiPl;                                     //!<! BG handler Pos Pion
@@ -686,7 +686,7 @@ private:
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
     AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& operator=( const AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson& ); // Not implemented
 
-  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 34);
+  ClassDef(AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson, 35);
 };
 
 #endif // AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson_H
