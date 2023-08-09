@@ -239,6 +239,9 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
       if (fHists->GetDomTBinning()) {
 	fHists->FillSameEventmTDistCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
       }
+      if (fHists->GetDomTMultPlots()) {
+	fHists->FillSameEventmTMultDistCommon(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, RelativeK);
+      }
     } else {
       fHists->FillSameEventDistNonCommon(iHC, RelativeK);
       if (fHists->GetDoMultBinning()) {
@@ -246,6 +249,9 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
       }
       if (fHists->GetDomTBinning()) {
 	fHists->FillSameEventmTDistNonCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
+      }
+      if (fHists->GetDomTMultPlots()) {
+	fHists->FillSameEventmTMultDistNonCommon(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, RelativeK);
       }
     }
   }

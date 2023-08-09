@@ -55,7 +55,7 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0), E3C_hist(0), E3C_pt_hist(0), E3C_pt_hist_log(0), EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), EEC_det_pt_hist_log_3d(0), EEC_tru_pt_hist_log_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), E3C_det_pt_hist_log_3d(0), E3C_tru_pt_hist_log_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N2_det_pt_hist_log_3d(0), N2_tru_pt_hist_log_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), EEC_det_match_pt_det_log(0), EEC_tru_match_pt_tru_log(0), E3C_det_match_pt_det_log(0), E3C_tru_match_pt_tru_log(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0)
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0), E3C_hist(0), E3C_pt_hist(0), E3C_pt_hist_log(0), EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), EEC_det_pt_hist_log_3d(0), EEC_tru_pt_hist_log_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), E3C_det_pt_hist_log_3d(0), E3C_tru_pt_hist_log_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N2_det_pt_hist_log_3d(0), N2_tru_pt_hist_log_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), EEC_det_match_pt_det_log(0), EEC_tru_match_pt_tru_log(0), E3C_det_match_pt_det_log(0), E3C_tru_match_pt_tru_log(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JES_scaled(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0)
 {
   SetMakeGeneralHistograms(kTRUE);
   DefineOutput(1, TList::Class());
@@ -71,7 +71,7 @@ fOneConstSelectOn(kFALSE), fTrackCheckPlots(kFALSE), fCheckResolution(kFALSE),
 fMinPtConst(1), fHardCutoff(0), fDoTwoTrack(kFALSE), fCutDoubleCounts(kTRUE),
 fPowerAlgo(1), fPhiCutValue(0.02),
 fEtaCutValue(0.02), fDerivSubtrOrder(0),
-fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0), E3C_hist(0), E3C_pt_hist(0), E3C_pt_hist_log(0), EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), EEC_det_pt_hist_log_3d(0), EEC_tru_pt_hist_log_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), E3C_det_pt_hist_log_3d(0),E3C_tru_pt_hist_log_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N2_det_pt_hist_log_3d(0), N2_tru_pt_hist_log_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), EEC_det_match_pt_det_log(0), EEC_tru_match_pt_tru_log(0), E3C_det_match_pt_det_log(0), E3C_tru_match_pt_tru_log(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0)
+fStoreDetLevelJets(0), fDoFillEncMC(kFALSE), fStoreTrig(kFALSE), fpTcorr(0), fpaircut(0), jet_pt_hist(0), EEC_hist(0), EEC_pt_hist(0), EEC_pt_hist_log(0), E3C_hist(0), E3C_pt_hist(0), E3C_pt_hist_log(0), EEC_det_pt_hist_3d(0), EEC_tru_pt_hist_3d(0), EEC_det_pt_hist_log_3d(0), EEC_tru_pt_hist_log_3d(0), E3C_det_pt_hist_3d(0), E3C_tru_pt_hist_3d(0), E3C_det_pt_hist_log_3d(0),E3C_tru_pt_hist_log_3d(0), N2_det_pt_hist_3d(0), N2_tru_pt_hist_3d(0), N2_det_pt_hist_log_3d(0), N2_tru_pt_hist_log_3d(0), N3_det_pt_hist_3d(0), N3_tru_pt_hist_3d(0), EEC_det_match_pt_det(0), EEC_tru_match_pt_tru(0), E3C_det_match_pt_det(0), E3C_tru_match_pt_tru(0), EEC_det_match_pt_det_log(0), EEC_tru_match_pt_tru_log(0), E3C_det_match_pt_det_log(0), E3C_tru_match_pt_tru_log(0), pt_tru(0), pt_tru_match(0), pt_det(0), pt_det_match(0), test_hist(0), R_matrix(0), JES(0), JER(0), pair_det_EEC(0), pair_tru_EEC(0), pair_det_E3C(0), pair_tru_E3C(0)
 
 {
   SetMakeGeneralHistograms(kTRUE);
@@ -556,54 +556,92 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 for(int s=0; s<int(fConstituents.size()) ; s++)
                 {
                     if(s==j) continue; //if s=j this would be 0
-                  
-                    double j_eta_3pt_2_det = fConstituents[j].eta();
-                    double s_eta_3pt_2_det = fConstituents[s].eta();
-                    double del_js_eta_3pt_2_det = abs(j_eta_3pt_2_det-s_eta_3pt_2_det);
-                    if (del_js_eta_3pt_2_det < 0.008) continue;
                     double eee_jss_2 =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                     double deltaR_jss_2 = fConstituents[j].delta_R(fConstituents[s]);
                     double delta_logR_jss_2 = log(deltaR_jss_2);
                     
-                    energy_pairs_tri.push_back(eee_jss_2);
-                    max_R_distvec.push_back(deltaR_jss_2);
-                    max_logR_distvec.push_back(delta_logR_jss_2);
-                    
-                    //            EEEC_hist->Fill(deltaR_jss_2,eee_jss_2);
-                    E3C_hist->Fill(deltaR_jss_2,eee_jss_2);
-                    E3C_pt_hist->Fill(deltaR_jss_2,jet_pt,eee_jss_2);
-                    E3C_pt_hist_log->Fill(delta_logR_jss_2,jet_pt,eee_jss_2);
-                    
-                    N3_det_pt_hist_3d->Fill(deltaR_jss_2, jet_pt, jet_pt_tru);
-                    E3C_det_pt_hist_3d->Fill(deltaR_jss_2, jet_pt, jet_pt_tru, eee_jss_2);
-                    E3C_det_pt_hist_log_3d->Fill(delta_logR_jss_2, jet_pt, jet_pt_tru, eee_jss_2);
-                    
+                    if(fpaircut == 1)
+                    {
+                        double j_eta_3pt_2_det = fConstituents[j].eta();
+                        double s_eta_3pt_2_det = fConstituents[s].eta();
+                        double del_js_eta_3pt_2_det = abs(j_eta_3pt_2_det-s_eta_3pt_2_det);
+                        if (del_js_eta_3pt_2_det < 0.008) continue;
+                        else
+                        {
+                            energy_pairs_tri.push_back(eee_jss_2);
+                            max_R_distvec.push_back(deltaR_jss_2);
+                            max_logR_distvec.push_back(delta_logR_jss_2);
+                            
+                            //            EEEC_hist->Fill(deltaR_jss_2,eee_jss_2);
+                            E3C_hist->Fill(deltaR_jss_2,eee_jss_2);
+                            E3C_pt_hist->Fill(deltaR_jss_2,jet_pt,eee_jss_2);
+                            E3C_pt_hist_log->Fill(delta_logR_jss_2,jet_pt,eee_jss_2);
+                            
+                            N3_det_pt_hist_3d->Fill(deltaR_jss_2, jet_pt, jet_pt_tru);
+                            E3C_det_pt_hist_3d->Fill(deltaR_jss_2, jet_pt, jet_pt_tru, eee_jss_2);
+                            E3C_det_pt_hist_log_3d->Fill(delta_logR_jss_2, jet_pt, jet_pt_tru, eee_jss_2);
+                        }
+                    }
+                    else
+                    {
+                        energy_pairs_tri.push_back(eee_jss_2);
+                        max_R_distvec.push_back(deltaR_jss_2);
+                        max_logR_distvec.push_back(delta_logR_jss_2);
+                        
+                        //            EEEC_hist->Fill(deltaR_jss_2,eee_jss_2);
+                        E3C_hist->Fill(deltaR_jss_2,eee_jss_2);
+                        E3C_pt_hist->Fill(deltaR_jss_2,jet_pt,eee_jss_2);
+                        E3C_pt_hist_log->Fill(delta_logR_jss_2,jet_pt,eee_jss_2);
+                        
+                        N3_det_pt_hist_3d->Fill(deltaR_jss_2, jet_pt, jet_pt_tru);
+                        E3C_det_pt_hist_3d->Fill(deltaR_jss_2, jet_pt, jet_pt_tru, eee_jss_2);
+                        E3C_det_pt_hist_log_3d->Fill(delta_logR_jss_2, jet_pt, jet_pt_tru, eee_jss_2);
+                    }
                     
                 }//close s loop for the 3 point correlator
                 //For 2 point correlator
                 for(int s=0; s<j ; s++)
                 {
-                 //Pair cut
-                    double j_eta_2pt_2_det = fConstituents[j].eta();
-                    double s_eta_2pt_2_det = fConstituents[s].eta();
-                    double del_js_eta_2pt_2_det = abs(j_eta_2pt_2_det-s_eta_2pt_2_det);
-                    if (del_js_eta_2pt_2_det < 0.008) continue;
                     double delta_R_js_2 = fConstituents[j].delta_R(fConstituents[s]);
                     double log_delta_R_js_2 = log(delta_R_js_2);
                     double ee_js_2 = (2*fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
                     
-                    //Filling the vectors
-                    delta_Rvec.push_back(delta_R_js_2);
-                    energy_pairs_vec.push_back(ee_js_2);
-                    
-                    EEC_hist->Fill(delta_R_js_2,ee_js_2);
-                    EEC_pt_hist->Fill(delta_R_js_2,jet_pt,ee_js_2);
-                    EEC_pt_hist_log->Fill(log_delta_R_js_2,jet_pt,ee_js_2);
-                    
-                    N2_det_pt_hist_3d->Fill(delta_R_js_2, jet_pt, jet_pt_tru);
-                    EEC_det_pt_hist_3d->Fill(delta_R_js_2, jet_pt, jet_pt_tru, ee_js_2);
-                    EEC_det_pt_hist_log_3d->Fill(log_delta_R_js_2, jet_pt, jet_pt_tru, ee_js_2);
-                    
+                    //Pair cut
+                    if(fpaircut == 1)
+                    {
+                        double j_eta_2pt_2_det = fConstituents[j].eta();
+                        double s_eta_2pt_2_det = fConstituents[s].eta();
+                        double del_js_eta_2pt_2_det = abs(j_eta_2pt_2_det-s_eta_2pt_2_det);
+                        if (del_js_eta_2pt_2_det < 0.008) continue;
+                        else
+                        {
+                            //Filling the vectors
+                            delta_Rvec.push_back(delta_R_js_2);
+                            energy_pairs_vec.push_back(ee_js_2);
+                            
+                            EEC_hist->Fill(delta_R_js_2,ee_js_2);
+                            EEC_pt_hist->Fill(delta_R_js_2,jet_pt,ee_js_2);
+                            EEC_pt_hist_log->Fill(log_delta_R_js_2,jet_pt,ee_js_2);
+                            
+                            N2_det_pt_hist_3d->Fill(delta_R_js_2, jet_pt, jet_pt_tru);
+                            EEC_det_pt_hist_3d->Fill(delta_R_js_2, jet_pt, jet_pt_tru, ee_js_2);
+                            EEC_det_pt_hist_log_3d->Fill(log_delta_R_js_2, jet_pt, jet_pt_tru, ee_js_2);
+                        }
+                    }
+                    else
+                    {
+                        //Filling the vectors
+                        delta_Rvec.push_back(delta_R_js_2);
+                        energy_pairs_vec.push_back(ee_js_2);
+                        
+                        EEC_hist->Fill(delta_R_js_2,ee_js_2);
+                        EEC_pt_hist->Fill(delta_R_js_2,jet_pt,ee_js_2);
+                        EEC_pt_hist_log->Fill(log_delta_R_js_2,jet_pt,ee_js_2);
+                        
+                        N2_det_pt_hist_3d->Fill(delta_R_js_2, jet_pt, jet_pt_tru);
+                        EEC_det_pt_hist_3d->Fill(delta_R_js_2, jet_pt, jet_pt_tru, ee_js_2);
+                        EEC_det_pt_hist_log_3d->Fill(log_delta_R_js_2, jet_pt, jet_pt_tru, ee_js_2);
+                    }
                 }//close s loop for eec
             }//close j loop
         }//close if loop
@@ -618,38 +656,50 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 {
                     if(s==j) continue; //This ensures I don't get stuff like (000) for (jss)
                     
-                    //Pair cut
-                    double j_eta_3pt_det = fConstituents[j].eta();
-                    double s_eta_3pt_det = fConstituents[s].eta();
-                    double del_js_eta_3pt_det = abs(j_eta_3pt_det-s_eta_3pt_det);
-                    if (del_js_eta_3pt_det < 0.008) continue;
                     double eee_jss =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                     double deltaR_jss = fConstituents[j].delta_R(fConstituents[s]);
                     double delta_logR_jss = log(deltaR_jss);
                     
-                    energy_pairs_tri.push_back(eee_jss);
-                    max_R_distvec.push_back(deltaR_jss);
-                    max_logR_distvec.push_back(delta_logR_jss);
-                    
-                    E3C_hist->Fill(deltaR_jss,eee_jss);
-                    E3C_pt_hist->Fill(deltaR_jss,jet_pt,eee_jss);
-                    E3C_pt_hist_log->Fill(delta_logR_jss,jet_pt,eee_jss);
-                    
-                    N3_det_pt_hist_3d->Fill(deltaR_jss, jet_pt, jet_pt_tru);
-                    E3C_det_pt_hist_3d->Fill(deltaR_jss, jet_pt, jet_pt_tru, eee_jss);
-                    E3C_det_pt_hist_log_3d->Fill(delta_logR_jss, jet_pt, jet_pt_tru, eee_jss);
-                    
+                    //Pair cut
+                    if(fpaircut == 1)
+                    {
+                        double j_eta_3pt_det = fConstituents[j].eta();
+                        double s_eta_3pt_det = fConstituents[s].eta();
+                        double del_js_eta_3pt_det = abs(j_eta_3pt_det-s_eta_3pt_det);
+                        if (del_js_eta_3pt_det < 0.008) continue;
+                        else
+                        {
+                            energy_pairs_tri.push_back(eee_jss);
+                            max_R_distvec.push_back(deltaR_jss);
+                            max_logR_distvec.push_back(delta_logR_jss);
+                            
+                            E3C_hist->Fill(deltaR_jss,eee_jss);
+                            E3C_pt_hist->Fill(deltaR_jss,jet_pt,eee_jss);
+                            E3C_pt_hist_log->Fill(delta_logR_jss,jet_pt,eee_jss);
+                            
+                            N3_det_pt_hist_3d->Fill(deltaR_jss, jet_pt, jet_pt_tru);
+                            E3C_det_pt_hist_3d->Fill(deltaR_jss, jet_pt, jet_pt_tru, eee_jss);
+                            E3C_det_pt_hist_log_3d->Fill(delta_logR_jss, jet_pt, jet_pt_tru, eee_jss);
+                        }
+                    }
+                    else
+                    {
+                        energy_pairs_tri.push_back(eee_jss);
+                        max_R_distvec.push_back(deltaR_jss);
+                        max_logR_distvec.push_back(delta_logR_jss);
+                        
+                        E3C_hist->Fill(deltaR_jss,eee_jss);
+                        E3C_pt_hist->Fill(deltaR_jss,jet_pt,eee_jss);
+                        E3C_pt_hist_log->Fill(delta_logR_jss,jet_pt,eee_jss);
+                        
+                        N3_det_pt_hist_3d->Fill(deltaR_jss, jet_pt, jet_pt_tru);
+                        E3C_det_pt_hist_3d->Fill(deltaR_jss, jet_pt, jet_pt_tru, eee_jss);
+                        E3C_det_pt_hist_log_3d->Fill(delta_logR_jss, jet_pt, jet_pt_tru, eee_jss);
+                    }
                     //For 3 point correlator
                     for( int m=0; m!=j && m!=s; m++)
                     {
                         if(s>j) continue;
-                        
-                        //Pair cut
-                        double m_eta_3pt_det = fConstituents[j].eta();
-                        double s_eta_3pt_det = fConstituents[s].eta();
-                        double del_jm_eta_3pt_det = abs(j_eta_3pt_det-m_eta_3pt_det);
-                        double del_sm_eta_3pt_det = abs(s_eta_3pt_det-m_eta_3pt_det);
-                        if (del_jm_eta_3pt_det < 0.008 || del_sm_eta_3pt_det < 0.008 ) continue;
                         
                         double eee_jsm = ((6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt())/(pow(jet_pt,3)));
                         double deltaR_js = fConstituents[j].delta_R(fConstituents[s]);
@@ -661,59 +711,123 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                         double deltaR_sm = fConstituents[s].delta_R(fConstituents[m]);
                         double delta_logR_sm = log(deltaR_sm);
                         
-                        energy_pairs_tri.push_back(eee_jsm);
-                        //                jetE.push_back(jet_pt);
-                        
-                        R_dist.push_back(deltaR_js);
-                        R_dist.push_back(deltaR_jm);
-                        R_dist.push_back(deltaR_sm);
-                        
-                        logR_dist.push_back(delta_logR_js);
-                        logR_dist.push_back(delta_logR_jm);
-                        logR_dist.push_back(delta_logR_sm);
-                        
-                        int max_R = distance(R_dist.begin(), max_element(R_dist.begin(), R_dist.end()));//pick the longest side to compute the correlators with
-                        
-                        max_R_distvec.push_back(R_dist[max_R]);
-                        max_logR_distvec.push_back(logR_dist[max_R]);
-                        
-                        E3C_hist->Fill(R_dist[max_R],eee_jsm);
-                        E3C_pt_hist->Fill(R_dist[max_R],jet_pt,eee_jsm);
-                        E3C_pt_hist_log->Fill(logR_dist[max_R],jet_pt,eee_jsm);
-                        
-                        N3_det_pt_hist_3d->Fill(R_dist[max_R], jet_pt, jet_pt_tru);
-                        E3C_det_pt_hist_3d->Fill(R_dist[max_R], jet_pt, jet_pt_tru, eee_jsm);
-                        E3C_det_pt_hist_log_3d->Fill(logR_dist[max_R], jet_pt, jet_pt_tru, eee_jsm);
-                        
-                        
-                        R_dist.clear();
-                        logR_dist.clear();
+                          //Pair cut
+                        if(fpaircut == 1)
+                        {
+                            double j_eta_3pt_det = fConstituents[j].eta();
+                            double m_eta_3pt_det = fConstituents[m].eta();
+                            double s_eta_3pt_det = fConstituents[s].eta();
+                            double del_jm_eta_3pt_det = abs(j_eta_3pt_det-m_eta_3pt_det);
+                            double del_sm_eta_3pt_det = abs(s_eta_3pt_det-m_eta_3pt_det);
+                            double del_js_eta_3pt_det = abs(j_eta_3pt_det-s_eta_3pt_det);
+                            if (del_jm_eta_3pt_det < 0.008 || del_sm_eta_3pt_det < 0.008 || del_js_eta_3pt_det < 0.008) continue;
+                            else
+                            {
+                                energy_pairs_tri.push_back(eee_jsm);
+                                //                jetE.push_back(jet_pt);
+                                
+                                R_dist.push_back(deltaR_js);
+                                R_dist.push_back(deltaR_jm);
+                                R_dist.push_back(deltaR_sm);
+                                
+                                logR_dist.push_back(delta_logR_js);
+                                logR_dist.push_back(delta_logR_jm);
+                                logR_dist.push_back(delta_logR_sm);
+                                
+                                int max_R = distance(R_dist.begin(), max_element(R_dist.begin(), R_dist.end()));//pick the longest side to compute the correlators with
+                                
+                                max_R_distvec.push_back(R_dist[max_R]);
+                                max_logR_distvec.push_back(logR_dist[max_R]);
+                                
+                                E3C_hist->Fill(R_dist[max_R],eee_jsm);
+                                E3C_pt_hist->Fill(R_dist[max_R],jet_pt,eee_jsm);
+                                E3C_pt_hist_log->Fill(logR_dist[max_R],jet_pt,eee_jsm);
+                                
+                                N3_det_pt_hist_3d->Fill(R_dist[max_R], jet_pt, jet_pt_tru);
+                                E3C_det_pt_hist_3d->Fill(R_dist[max_R], jet_pt, jet_pt_tru, eee_jsm);
+                                E3C_det_pt_hist_log_3d->Fill(logR_dist[max_R], jet_pt, jet_pt_tru, eee_jsm);
+                                
+                                
+                                R_dist.clear();
+                                logR_dist.clear();
+                            }
+                        }
+                        else
+                        {
+                            energy_pairs_tri.push_back(eee_jsm);
+                            //                jetE.push_back(jet_pt);
+                            
+                            R_dist.push_back(deltaR_js);
+                            R_dist.push_back(deltaR_jm);
+                            R_dist.push_back(deltaR_sm);
+                            
+                            logR_dist.push_back(delta_logR_js);
+                            logR_dist.push_back(delta_logR_jm);
+                            logR_dist.push_back(delta_logR_sm);
+                            
+                            int max_R = distance(R_dist.begin(), max_element(R_dist.begin(), R_dist.end()));//pick the longest side to compute the correlators with
+                            
+                            max_R_distvec.push_back(R_dist[max_R]);
+                            max_logR_distvec.push_back(logR_dist[max_R]);
+                            
+                            E3C_hist->Fill(R_dist[max_R],eee_jsm);
+                            E3C_pt_hist->Fill(R_dist[max_R],jet_pt,eee_jsm);
+                            E3C_pt_hist_log->Fill(logR_dist[max_R],jet_pt,eee_jsm);
+                            
+                            N3_det_pt_hist_3d->Fill(R_dist[max_R], jet_pt, jet_pt_tru);
+                            E3C_det_pt_hist_3d->Fill(R_dist[max_R], jet_pt, jet_pt_tru, eee_jsm);
+                            E3C_det_pt_hist_log_3d->Fill(logR_dist[max_R], jet_pt, jet_pt_tru, eee_jsm);
+                            
+                            
+                            R_dist.clear();
+                            logR_dist.clear();
+                        }
                     }//close m loop
                 }//close s loop for the 3 point correlator
                 //For loop for EEC
                 for(int s=0; s<j ; s++)
                 {
-                //Pair cut
-                    double j_eta_2pt_det = fConstituents[j].eta();
-                    double s_eta_2pt_det = fConstituents[s].eta();
-                    double del_js_eta_2pt_det = abs(j_eta_2pt_det-s_eta_2pt_det);
-                    if (del_js_eta_2pt_det < 0.008) continue;
+                
                     double delta_R_js = fConstituents[j].delta_R(fConstituents[s]);
                     double log_delta_R_js = log(delta_R_js);
                     double ee_js = (2*fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
                     
-                    //Filling the vectors
-                    delta_Rvec.push_back(delta_R_js);
-                    energy_pairs_vec.push_back(ee_js);
-                    
-                    EEC_hist->Fill(delta_R_js,ee_js);
-                    EEC_pt_hist->Fill(delta_R_js,jet_pt,ee_js);
-                    EEC_pt_hist_log->Fill(log_delta_R_js,jet_pt,ee_js);
-                    
-                    N2_det_pt_hist_3d->Fill(delta_R_js, jet_pt, jet_pt_tru);
-                    EEC_det_pt_hist_3d->Fill(delta_R_js, jet_pt, jet_pt_tru, ee_js);
-                    EEC_det_pt_hist_log_3d->Fill(log_delta_R_js, jet_pt, jet_pt_tru, ee_js);
-                    
+                    //Pair cut
+                    if(fpaircut == 1)
+                    {
+                        double j_eta_2pt_det = fConstituents[j].eta();
+                        double s_eta_2pt_det = fConstituents[s].eta();
+                        double del_js_eta_2pt_det = abs(j_eta_2pt_det-s_eta_2pt_det);
+                        if (del_js_eta_2pt_det < 0.008) continue;
+                        else
+                        {
+                            //Filling the vectors
+                            delta_Rvec.push_back(delta_R_js);
+                            energy_pairs_vec.push_back(ee_js);
+                            
+                            EEC_hist->Fill(delta_R_js,ee_js);
+                            EEC_pt_hist->Fill(delta_R_js,jet_pt,ee_js);
+                            EEC_pt_hist_log->Fill(log_delta_R_js,jet_pt,ee_js);
+                            
+                            N2_det_pt_hist_3d->Fill(delta_R_js, jet_pt, jet_pt_tru);
+                            EEC_det_pt_hist_3d->Fill(delta_R_js, jet_pt, jet_pt_tru, ee_js);
+                            EEC_det_pt_hist_log_3d->Fill(log_delta_R_js, jet_pt, jet_pt_tru, ee_js);
+                        }
+                    }
+                    else
+                    {
+                        //Filling the vectors
+                        delta_Rvec.push_back(delta_R_js);
+                        energy_pairs_vec.push_back(ee_js);
+                        
+                        EEC_hist->Fill(delta_R_js,ee_js);
+                        EEC_pt_hist->Fill(delta_R_js,jet_pt,ee_js);
+                        EEC_pt_hist_log->Fill(log_delta_R_js,jet_pt,ee_js);
+                        
+                        N2_det_pt_hist_3d->Fill(delta_R_js, jet_pt, jet_pt_tru);
+                        EEC_det_pt_hist_3d->Fill(delta_R_js, jet_pt, jet_pt_tru, ee_js);
+                        EEC_det_pt_hist_log_3d->Fill(log_delta_R_js, jet_pt, jet_pt_tru, ee_js);
+                    }
                     
                 }//close s loop for the 2 point correlator
             } //close j loop
@@ -732,51 +846,87 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                     
                     if(s==j) continue; //if s=j this would be 0
                     
-                    //Pair cut
-                    double j_eta_3pt_2_tru = fConstituents[j].eta();
-                    double s_eta_3pt_2_tru = fConstituents[s].eta();
-                    double del_js_eta_3pt_2_tru = abs(j_eta_3pt_2_tru-s_eta_3pt_2_tru);
-                    if (del_js_eta_3pt_2_tru < 0.008) continue;
                     double eee_jss_2_tru =((3*fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[s].pt())/(pow(jet_pt_tru,3)));
                     double deltaR_jss_2_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                     double delta_logR_jss_2_tru = log(deltaR_jss_2_tru);
                     
-                    energy_pairs_tri_part.push_back(eee_jss_2_tru);
-                    max_R_distvec_part.push_back(deltaR_jss_2_tru);
-                    max_logR_distvec_part.push_back(delta_logR_jss_2_tru);
-                    
-                    E3C_tru_match_pt_tru->Fill(deltaR_jss_2_tru, jet_pt_tru, eee_jss_2_tru);
-                    E3C_tru_match_pt_tru_log->Fill(delta_logR_jss_2_tru, jet_pt_tru, eee_jss_2_tru);
-                    
-                    N3_tru_pt_hist_3d->Fill(deltaR_jss_2_tru, jet_pt_tru, jet_pt);
-                    E3C_tru_pt_hist_3d->Fill(deltaR_jss_2_tru, jet_pt_tru, jet_pt, eee_jss_2_tru);
-                    E3C_tru_pt_hist_log_3d->Fill(delta_logR_jss_2_tru, jet_pt_tru, jet_pt, eee_jss_2_tru);
-                    
+                      //Pair cut
+                    if(fpaircut == 1)
+                    {
+                        double j_eta_3pt_2_tru = fConstituents[j].eta();
+                        double s_eta_3pt_2_tru = fConstituents[s].eta();
+                        double del_js_eta_3pt_2_tru = abs(j_eta_3pt_2_tru-s_eta_3pt_2_tru);
+                        if (del_js_eta_3pt_2_tru < 0.008) continue;
+                        else
+                        {
+                            energy_pairs_tri_part.push_back(eee_jss_2_tru);
+                            max_R_distvec_part.push_back(deltaR_jss_2_tru);
+                            max_logR_distvec_part.push_back(delta_logR_jss_2_tru);
+                            
+                            E3C_tru_match_pt_tru->Fill(deltaR_jss_2_tru, jet_pt_tru, eee_jss_2_tru);
+                            E3C_tru_match_pt_tru_log->Fill(delta_logR_jss_2_tru, jet_pt_tru, eee_jss_2_tru);
+                            
+                            N3_tru_pt_hist_3d->Fill(deltaR_jss_2_tru, jet_pt_tru, jet_pt);
+                            E3C_tru_pt_hist_3d->Fill(deltaR_jss_2_tru, jet_pt_tru, jet_pt, eee_jss_2_tru);
+                            E3C_tru_pt_hist_log_3d->Fill(delta_logR_jss_2_tru, jet_pt_tru, jet_pt, eee_jss_2_tru);
+                        }
+                    }
+                    else
+                    {
+                        energy_pairs_tri_part.push_back(eee_jss_2_tru);
+                        max_R_distvec_part.push_back(deltaR_jss_2_tru);
+                        max_logR_distvec_part.push_back(delta_logR_jss_2_tru);
+                        
+                        E3C_tru_match_pt_tru->Fill(deltaR_jss_2_tru, jet_pt_tru, eee_jss_2_tru);
+                        E3C_tru_match_pt_tru_log->Fill(delta_logR_jss_2_tru, jet_pt_tru, eee_jss_2_tru);
+                        
+                        N3_tru_pt_hist_3d->Fill(deltaR_jss_2_tru, jet_pt_tru, jet_pt);
+                        E3C_tru_pt_hist_3d->Fill(deltaR_jss_2_tru, jet_pt_tru, jet_pt, eee_jss_2_tru);
+                        E3C_tru_pt_hist_log_3d->Fill(delta_logR_jss_2_tru, jet_pt_tru, jet_pt, eee_jss_2_tru);
+                    }
                 }//close s loop for the 3 point correlator
                 //For 2 point correlator
                 for(int s=0; s<j ; s++)
                 {
-                    //Pair cut
-                    double j_eta_2pt_2_tru = fConstituents[j].eta();
-                    double s_eta_2pt_2_tru = fConstituents[s].eta();
-                    double del_js_eta_2pt_2_tru = abs(j_eta_2pt_2_tru-s_eta_2pt_2_tru);
-                    if (del_js_eta_2pt_2_tru < 0.008) continue;
                     
                     double delta_R_js_2_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                     double log_delta_R_js_2_tru = log(delta_R_js_2_tru);
                     double ee_js_2_tru = (2*fConstituents_tru[j].pt()*fConstituents_tru[s].pt())/(pow((jet_pt_tru),2));
                     
-                    //Filling the vectors
-                    delta_Rvec_part.push_back(delta_R_js_2_tru);
-                    energy_pairs_vec_part.push_back(ee_js_2_tru);
-                    
-                    EEC_tru_match_pt_tru->Fill(delta_R_js_2_tru, jet_pt_tru, ee_js_2_tru);
-                    EEC_tru_match_pt_tru_log->Fill(log_delta_R_js_2_tru, jet_pt_tru, ee_js_2_tru);
-                    
-                    N2_tru_pt_hist_3d->Fill(delta_R_js_2_tru, jet_pt_tru, jet_pt);
-                    EEC_tru_pt_hist_3d->Fill(delta_R_js_2_tru, jet_pt_tru, jet_pt, ee_js_2_tru);
-                    EEC_tru_pt_hist_log_3d->Fill(log_delta_R_js_2_tru, jet_pt_tru, jet_pt, ee_js_2_tru);
-                    
+                    //Pair cut
+                    if(fpaircut == 1)
+                    {
+                        double j_eta_2pt_2_tru = fConstituents[j].eta();
+                        double s_eta_2pt_2_tru = fConstituents[s].eta();
+                        double del_js_eta_2pt_2_tru = abs(j_eta_2pt_2_tru-s_eta_2pt_2_tru);
+                        if (del_js_eta_2pt_2_tru < 0.008) continue;
+                        else
+                        {
+                            //Filling the vectors
+                            delta_Rvec_part.push_back(delta_R_js_2_tru);
+                            energy_pairs_vec_part.push_back(ee_js_2_tru);
+                            
+                            EEC_tru_match_pt_tru->Fill(delta_R_js_2_tru, jet_pt_tru, ee_js_2_tru);
+                            EEC_tru_match_pt_tru_log->Fill(log_delta_R_js_2_tru, jet_pt_tru, ee_js_2_tru);
+                            
+                            N2_tru_pt_hist_3d->Fill(delta_R_js_2_tru, jet_pt_tru, jet_pt);
+                            EEC_tru_pt_hist_3d->Fill(delta_R_js_2_tru, jet_pt_tru, jet_pt, ee_js_2_tru);
+                            EEC_tru_pt_hist_log_3d->Fill(log_delta_R_js_2_tru, jet_pt_tru, jet_pt, ee_js_2_tru);
+                        }
+                    }
+                    else
+                    {
+                        //Filling the vectors
+                        delta_Rvec_part.push_back(delta_R_js_2_tru);
+                        energy_pairs_vec_part.push_back(ee_js_2_tru);
+                        
+                        EEC_tru_match_pt_tru->Fill(delta_R_js_2_tru, jet_pt_tru, ee_js_2_tru);
+                        EEC_tru_match_pt_tru_log->Fill(log_delta_R_js_2_tru, jet_pt_tru, ee_js_2_tru);
+                        
+                        N2_tru_pt_hist_3d->Fill(delta_R_js_2_tru, jet_pt_tru, jet_pt);
+                        EEC_tru_pt_hist_3d->Fill(delta_R_js_2_tru, jet_pt_tru, jet_pt, ee_js_2_tru);
+                        EEC_tru_pt_hist_log_3d->Fill(log_delta_R_js_2_tru, jet_pt_tru, jet_pt, ee_js_2_tru);
+                    }
                 }//close s loop for eec
             }//close j loop
         }//close if loop
@@ -790,37 +940,49 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                 {
                     if(s==j) continue; //This ensures I don't get stuff like (000) for (jss)
                     
-                    //Pair cut
-                    double j_eta_3pt_tru = fConstituents[j].eta();
-                    double s_eta_3pt_tru = fConstituents[s].eta();
-                    double del_js_eta_3pt_tru = abs(j_eta_3pt_tru-s_eta_3pt_tru);
-                    if (del_js_eta_3pt_tru < 0.008) continue;
                     double eee_jss_tru =((3*fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[s].pt())/(pow(jet_pt_tru,3)));
                     double deltaR_jss_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                     double delta_logR_jss_tru = log(deltaR_jss_tru);
                     
-                    energy_pairs_tri_part.push_back(eee_jss_tru);
-                    max_R_distvec_part.push_back(deltaR_jss_tru);
-                    max_logR_distvec_part.push_back(delta_logR_jss_tru);
-                    
-                    E3C_tru_match_pt_tru->Fill(deltaR_jss_tru,jet_pt_tru, eee_jss_tru);
-                    E3C_tru_match_pt_tru_log->Fill(delta_logR_jss_tru,jet_pt_tru ,eee_jss_tru);
-                    
-                    N3_tru_pt_hist_3d->Fill(deltaR_jss_tru, jet_pt_tru, jet_pt);
-                    E3C_tru_pt_hist_3d->Fill(deltaR_jss_tru, jet_pt_tru, jet_pt, eee_jss_tru);
-                    E3C_tru_pt_hist_log_3d->Fill(delta_logR_jss_tru, jet_pt_tru, jet_pt, eee_jss_tru);
-                    
+                     //Pair cut
+                    if(fpaircut == 1)
+                    {
+                        double j_eta_3pt_tru = fConstituents[j].eta();
+                        double s_eta_3pt_tru = fConstituents[s].eta();
+                        double del_js_eta_3pt_tru = abs(j_eta_3pt_tru-s_eta_3pt_tru);
+                        if (del_js_eta_3pt_tru < 0.008) continue;
+                        else
+                        {
+                            energy_pairs_tri_part.push_back(eee_jss_tru);
+                            max_R_distvec_part.push_back(deltaR_jss_tru);
+                            max_logR_distvec_part.push_back(delta_logR_jss_tru);
+                            
+                            E3C_tru_match_pt_tru->Fill(deltaR_jss_tru,jet_pt_tru, eee_jss_tru);
+                            E3C_tru_match_pt_tru_log->Fill(delta_logR_jss_tru,jet_pt_tru ,eee_jss_tru);
+                            
+                            N3_tru_pt_hist_3d->Fill(deltaR_jss_tru, jet_pt_tru, jet_pt);
+                            E3C_tru_pt_hist_3d->Fill(deltaR_jss_tru, jet_pt_tru, jet_pt, eee_jss_tru);
+                            E3C_tru_pt_hist_log_3d->Fill(delta_logR_jss_tru, jet_pt_tru, jet_pt, eee_jss_tru);
+                        }
+                    }
+                    else
+                    {
+                        energy_pairs_tri_part.push_back(eee_jss_tru);
+                        max_R_distvec_part.push_back(deltaR_jss_tru);
+                        max_logR_distvec_part.push_back(delta_logR_jss_tru);
+                        
+                        E3C_tru_match_pt_tru->Fill(deltaR_jss_tru,jet_pt_tru, eee_jss_tru);
+                        E3C_tru_match_pt_tru_log->Fill(delta_logR_jss_tru,jet_pt_tru ,eee_jss_tru);
+                        
+                        N3_tru_pt_hist_3d->Fill(deltaR_jss_tru, jet_pt_tru, jet_pt);
+                        E3C_tru_pt_hist_3d->Fill(deltaR_jss_tru, jet_pt_tru, jet_pt, eee_jss_tru);
+                        E3C_tru_pt_hist_log_3d->Fill(delta_logR_jss_tru, jet_pt_tru, jet_pt, eee_jss_tru);
+                    }
                     //For 3 point correlator
                     for( int m=0; m!=j && m!=s; m++)
                     {
                         if(s>j) continue;
                         
-                        //Pair cut
-                        double m_eta_3pt_tru = fConstituents[j].eta();
-                        double s_eta_3pt_tru = fConstituents[s].eta();
-                        double del_jm_eta_3pt_tru = abs(j_eta_3pt_tru-m_eta_3pt_tru);
-                        double del_sm_eta_3pt_tru = abs(s_eta_3pt_tru-m_eta_3pt_tru);
-                        if (del_jm_eta_3pt_tru < 0.008 || del_sm_eta_3pt_tru < 0.008 ) continue;
                         double eee_jsm_tru = ((6*fConstituents_tru[j].pt()*fConstituents_tru[s].pt()*fConstituents_tru[m].pt())/(pow(jet_pt_tru,3)));
                         double deltaR_js_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                         double delta_logR_js_tru = log(deltaR_js_tru);
@@ -844,45 +1006,91 @@ void AliAnalysisTaskJetsEEC::ComputeEncMC(AliEmcalJet *fJet, AliJetContainer *fJ
                         
                         int max_R_tru = distance(R_dist_part.begin(), max_element(R_dist_part.begin(), R_dist_part.end()));//pick the longest side to compute the correlators with
                         
-                        max_R_distvec_part.push_back(R_dist_part[max_R_tru]);
-                        max_logR_distvec_part.push_back(logR_dist_part[max_R_tru]);
-                        
-                        E3C_tru_match_pt_tru->Fill(R_dist_part[max_R_tru], jet_pt_tru, eee_jsm_tru);
-                        E3C_tru_match_pt_tru_log->Fill(logR_dist_part[max_R_tru], jet_pt_tru, eee_jsm_tru);
-                        
-                        N3_tru_pt_hist_3d->Fill(R_dist_part[max_R_tru], jet_pt_tru, jet_pt);
-                        E3C_tru_pt_hist_3d->Fill(R_dist_part[max_R_tru], jet_pt_tru, jet_pt, eee_jsm_tru);
-                        E3C_tru_pt_hist_log_3d->Fill(logR_dist_part[max_R_tru], jet_pt_tru, jet_pt, eee_jsm_tru);
-                        
-                        R_dist_part.clear();
-                        logR_dist_part.clear();
+                        //Pair cut
+                        if(fpaircut == 1)
+                        {
+                            double j_eta_3pt_tru = fConstituents[j].eta();
+                            double m_eta_3pt_tru = fConstituents[m].eta();
+                            double s_eta_3pt_tru = fConstituents[s].eta();
+                            double del_jm_eta_3pt_tru = abs(j_eta_3pt_tru-m_eta_3pt_tru);
+                            double del_sm_eta_3pt_tru = abs(s_eta_3pt_tru-m_eta_3pt_tru);
+                            double del_js_eta_3pt_tru = abs(j_eta_3pt_tru-s_eta_3pt_tru);
+                            if (del_jm_eta_3pt_tru < 0.008 || del_sm_eta_3pt_tru < 0.008 || del_js_eta_3pt_tru < 0.008) continue;
+                            else
+                            {
+                                max_R_distvec_part.push_back(R_dist_part[max_R_tru]);
+                                max_logR_distvec_part.push_back(logR_dist_part[max_R_tru]);
+                                
+                                E3C_tru_match_pt_tru->Fill(R_dist_part[max_R_tru], jet_pt_tru, eee_jsm_tru);
+                                E3C_tru_match_pt_tru_log->Fill(logR_dist_part[max_R_tru], jet_pt_tru, eee_jsm_tru);
+                                
+                                N3_tru_pt_hist_3d->Fill(R_dist_part[max_R_tru], jet_pt_tru, jet_pt);
+                                E3C_tru_pt_hist_3d->Fill(R_dist_part[max_R_tru], jet_pt_tru, jet_pt, eee_jsm_tru);
+                                E3C_tru_pt_hist_log_3d->Fill(logR_dist_part[max_R_tru], jet_pt_tru, jet_pt, eee_jsm_tru);
+                                
+                                R_dist_part.clear();
+                                logR_dist_part.clear();
+                            }
+                        }
+                        else
+                        {
+                            max_R_distvec_part.push_back(R_dist_part[max_R_tru]);
+                            max_logR_distvec_part.push_back(logR_dist_part[max_R_tru]);
+                            
+                            E3C_tru_match_pt_tru->Fill(R_dist_part[max_R_tru], jet_pt_tru, eee_jsm_tru);
+                            E3C_tru_match_pt_tru_log->Fill(logR_dist_part[max_R_tru], jet_pt_tru, eee_jsm_tru);
+                            
+                            N3_tru_pt_hist_3d->Fill(R_dist_part[max_R_tru], jet_pt_tru, jet_pt);
+                            E3C_tru_pt_hist_3d->Fill(R_dist_part[max_R_tru], jet_pt_tru, jet_pt, eee_jsm_tru);
+                            E3C_tru_pt_hist_log_3d->Fill(logR_dist_part[max_R_tru], jet_pt_tru, jet_pt, eee_jsm_tru);
+                            
+                            R_dist_part.clear();
+                            logR_dist_part.clear();
+                        }
                     }//close m loop
                 }//close s loop for the 3 point correlator
                 //For loop for EEC
                 for(int s=0; s<j ; s++)
                 {
-                    //Pair cut
-                    double j_eta_2pt_tru = fConstituents[j].eta();
-                    double s_eta_2pt_tru = fConstituents[s].eta();
-                    double del_js_eta_2pt_tru = abs(j_eta_2pt_tru-s_eta_2pt_tru);
-                    if (del_js_eta_2pt_tru < 0.008) continue;
-                    
                     double delta_R_js_tru = fConstituents_tru[j].delta_R(fConstituents_tru[s]);
                     double log_delta_R_js_tru = log(delta_R_js_tru);
                     double ee_js_tru = (2*fConstituents_tru[j].pt()*fConstituents_tru[s].pt())/(pow((jet_pt_tru),2));
                     
-                    //Filling the vectors
-                    delta_Rvec_part.push_back(delta_R_js_tru);
-                    energy_pairs_vec_part.push_back(ee_js_tru);
-                    
-                    //            EEC_hist->Fill(delta_R_js,ee_js);
-                    EEC_tru_match_pt_tru->Fill(delta_R_js_tru,jet_pt_tru,ee_js_tru);
-                    EEC_tru_match_pt_tru_log->Fill(log_delta_R_js_tru,jet_pt_tru,ee_js_tru);
-                    
-                    N2_tru_pt_hist_3d->Fill(delta_R_js_tru, jet_pt_tru, jet_pt);
-                    EEC_tru_pt_hist_3d->Fill(delta_R_js_tru, jet_pt_tru, jet_pt, ee_js_tru);
-                    EEC_tru_pt_hist_log_3d->Fill(log_delta_R_js_tru, jet_pt_tru, jet_pt, ee_js_tru);
-                    
+                    //Pair cut
+                    if(fpaircut == 1)
+                    {
+                        double j_eta_2pt_tru = fConstituents[j].eta();
+                        double s_eta_2pt_tru = fConstituents[s].eta();
+                        double del_js_eta_2pt_tru = abs(j_eta_2pt_tru-s_eta_2pt_tru);
+                        if (del_js_eta_2pt_tru < 0.008) continue;
+                        else{
+                            //Filling the vectors
+                            delta_Rvec_part.push_back(delta_R_js_tru);
+                            energy_pairs_vec_part.push_back(ee_js_tru);
+                            
+                            //            EEC_hist->Fill(delta_R_js,ee_js);
+                            EEC_tru_match_pt_tru->Fill(delta_R_js_tru,jet_pt_tru,ee_js_tru);
+                            EEC_tru_match_pt_tru_log->Fill(log_delta_R_js_tru,jet_pt_tru,ee_js_tru);
+                            
+                            N2_tru_pt_hist_3d->Fill(delta_R_js_tru, jet_pt_tru, jet_pt);
+                            EEC_tru_pt_hist_3d->Fill(delta_R_js_tru, jet_pt_tru, jet_pt, ee_js_tru);
+                            EEC_tru_pt_hist_log_3d->Fill(log_delta_R_js_tru, jet_pt_tru, jet_pt, ee_js_tru);
+                        }
+                    }
+                    else
+                    {
+                        //Filling the vectors
+                        delta_Rvec_part.push_back(delta_R_js_tru);
+                        energy_pairs_vec_part.push_back(ee_js_tru);
+                        
+                        //            EEC_hist->Fill(delta_R_js,ee_js);
+                        EEC_tru_match_pt_tru->Fill(delta_R_js_tru,jet_pt_tru,ee_js_tru);
+                        EEC_tru_match_pt_tru_log->Fill(log_delta_R_js_tru,jet_pt_tru,ee_js_tru);
+                        
+                        N2_tru_pt_hist_3d->Fill(delta_R_js_tru, jet_pt_tru, jet_pt);
+                        EEC_tru_pt_hist_3d->Fill(delta_R_js_tru, jet_pt_tru, jet_pt, ee_js_tru);
+                        EEC_tru_pt_hist_log_3d->Fill(log_delta_R_js_tru, jet_pt_tru, jet_pt, ee_js_tru);
+                    }
                 }//close s loop for the 2 point correlator
             } //close j loop
         }//close else loop
@@ -955,47 +1163,74 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 {
                     if(s==j) continue; //this ensure i dont get 000
                     
-                    //Pair cut
-                    double j_eta_3pt_2 = fConstituents[j].eta();
-                    double s_eta_3pt_2 = fConstituents[s].eta();
-                    double del_js_eta_3pt_2 = abs(j_eta_3pt_2 -s_eta_3pt_2);
-                    if (del_js_eta_3pt_2 < 0.008) continue;
                     double eee_jss_2 =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                     double deltaR_jss_2 = fConstituents[j].delta_R(fConstituents[s]);
                     double delta_logR_jss_2 = log(deltaR_jss_2);
                     
-                    energy_pairs_tri.push_back(eee_jss_2);
-                    max_R_distvec.push_back(deltaR_jss_2);
-                    max_logR_distvec.push_back(delta_logR_jss_2);
-                    
-                    
-                    E3C_hist->Fill(deltaR_jss_2,eee_jss_2);
-                    E3C_pt_hist->Fill(deltaR_jss_2,jet_pt,eee_jss_2);
-                    E3C_pt_hist_log->Fill(delta_logR_jss_2,jet_pt,eee_jss_2);
-                    
-                    
+                    //Pair cut
+                    if(fpaircut == 1)
+                    {
+                        double j_eta_3pt_2 = fConstituents[j].eta();
+                        double s_eta_3pt_2 = fConstituents[s].eta();
+                        double del_js_eta_3pt_2 = abs(j_eta_3pt_2-s_eta_3pt_2);
+                        if (del_js_eta_3pt_2 < 0.008) continue;
+                        else
+                        {
+                            energy_pairs_tri.push_back(eee_jss_2);
+                            max_R_distvec.push_back(deltaR_jss_2);
+                            max_logR_distvec.push_back(delta_logR_jss_2);
+                            
+                            E3C_hist->Fill(deltaR_jss_2,eee_jss_2);
+                            E3C_pt_hist->Fill(deltaR_jss_2,jet_pt,eee_jss_2);
+                            E3C_pt_hist_log->Fill(delta_logR_jss_2,jet_pt,eee_jss_2);
+                        }
+                    }
+                    else
+                    {
+                        energy_pairs_tri.push_back(eee_jss_2);
+                        max_R_distvec.push_back(deltaR_jss_2);
+                        max_logR_distvec.push_back(delta_logR_jss_2);
+                        
+                        E3C_hist->Fill(deltaR_jss_2,eee_jss_2);
+                        E3C_pt_hist->Fill(deltaR_jss_2,jet_pt,eee_jss_2);
+                        E3C_pt_hist_log->Fill(delta_logR_jss_2,jet_pt,eee_jss_2);
+                    }
                 }//close s loop for the 3 point correlator
                 //For 2 point correlator
                 for(int s=0; s<j ; s++)
                 {
-                    //Pair cut
-                    double j_eta_2pt_2 = fConstituents[j].eta();
-                    double s_eta_2pt_2 = fConstituents[s].eta();
-                    double del_js_eta_2pt_2 = abs(j_eta_2pt_2-s_eta_2pt_2);
-                    if (del_js_eta_2pt_2 < 0.008) continue;
                     
                     double delta_R_js_2 = fConstituents[j].delta_R(fConstituents[s]);
                     double log_delta_R_js_2 = log(delta_R_js_2);
                     double ee_js_2 = (2*fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
-                    
-                    //Filling the vectors
-                    delta_Rvec.push_back(delta_R_js_2);
-                    energy_pairs_vec.push_back(ee_js_2);
-                    
-                    EEC_hist->Fill(delta_R_js_2,ee_js_2);
-                    EEC_pt_hist->Fill(delta_R_js_2,jet_pt,ee_js_2);
-                    EEC_pt_hist_log->Fill(log_delta_R_js_2,jet_pt,ee_js_2);
-                    
+                    //Pair cut
+                    if(fpaircut == 1)
+                    {
+                        double j_eta_2pt_2 = fConstituents[j].eta();
+                        double s_eta_2pt_2 = fConstituents[s].eta();
+                        double del_js_eta_2pt_2 = abs(j_eta_2pt_2-s_eta_2pt_2);
+                        if (del_js_eta_2pt_2 < 0.008) continue;
+                        else
+                        {
+                            //Filling the vectors
+                            delta_Rvec.push_back(delta_R_js_2);
+                            energy_pairs_vec.push_back(ee_js_2);
+                            
+                            EEC_hist->Fill(delta_R_js_2,ee_js_2);
+                            EEC_pt_hist->Fill(delta_R_js_2,jet_pt,ee_js_2);
+                            EEC_pt_hist_log->Fill(log_delta_R_js_2,jet_pt,ee_js_2);
+                        }
+                    }
+                    else
+                    {
+                        //Filling the vectors
+                        delta_Rvec.push_back(delta_R_js_2);
+                        energy_pairs_vec.push_back(ee_js_2);
+                        
+                        EEC_hist->Fill(delta_R_js_2,ee_js_2);
+                        EEC_pt_hist->Fill(delta_R_js_2,jet_pt,ee_js_2);
+                        EEC_pt_hist_log->Fill(log_delta_R_js_2,jet_pt,ee_js_2);
+                    }
                     
                 }//close s loop for eec
             }//close j loop
@@ -1011,91 +1246,139 @@ void AliAnalysisTaskJetsEEC::ComputeEEC(AliEmcalJet *fJet, AliJetContainer *fJet
                 {
                     if(s==j) continue; //This ensures I don't get stuff like (000) for (jss)
                     
-                    //Pair cut
-                    double j_eta_3pt = fConstituents[j].eta();
-                    double s_eta_3pt = fConstituents[s].eta();
-                    double del_js_eta_3pt = abs(j_eta_3pt-s_eta_3pt);
-                    if (del_js_eta_3pt < 0.008) continue;
-                    
                     double eee_jss =((3*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[s].pt())/(pow(jet_pt,3)));
                     double deltaR_jss = fConstituents[j].delta_R(fConstituents[s]);
                     double delta_logR_jss = log(deltaR_jss);
                     
-                    energy_pairs_tri.push_back(eee_jss);
-                    max_R_distvec.push_back(deltaR_jss);
-                    max_logR_distvec.push_back(delta_logR_jss);
-                    
-                    
-                    E3C_hist->Fill(deltaR_jss,eee_jss);
-                    E3C_pt_hist->Fill(deltaR_jss,jet_pt,eee_jss);
-                    E3C_pt_hist_log->Fill(delta_logR_jss,jet_pt,eee_jss);
-                    
+                    //Pair cut
+                    if(fpaircut == 1)
+                    {
+                        double j_eta_3pt = fConstituents[j].eta();
+                        double s_eta_3pt = fConstituents[s].eta();
+                        double del_js_eta_3pt = abs(j_eta_3pt-s_eta_3pt);
+                        if (del_js_eta_3pt < 0.008) continue;
+                        else
+                        {
+                            energy_pairs_tri.push_back(eee_jss);
+                            max_R_distvec.push_back(deltaR_jss);
+                            max_logR_distvec.push_back(delta_logR_jss);
+                            
+                            E3C_hist->Fill(deltaR_jss,eee_jss);
+                            E3C_pt_hist->Fill(deltaR_jss,jet_pt,eee_jss);
+                            E3C_pt_hist_log->Fill(delta_logR_jss,jet_pt,eee_jss);
+                        }
+                    }
+                    else
+                    {
+                        energy_pairs_tri.push_back(eee_jss);
+                        max_R_distvec.push_back(deltaR_jss);
+                        max_logR_distvec.push_back(delta_logR_jss);
+                        
+                        E3C_hist->Fill(deltaR_jss,eee_jss);
+                        E3C_pt_hist->Fill(deltaR_jss,jet_pt,eee_jss);
+                        E3C_pt_hist_log->Fill(delta_logR_jss,jet_pt,eee_jss);
+                    }
                     //For 3 point correlator
                     for( int m=0; m!=j && m!=s; m++)
                     {
                         if(s>j) continue;
                         
-                        //Pair cut
-                        double m_eta_3pt = fConstituents[j].eta();
-                        double s_eta_3pt = fConstituents[s].eta();
-                        double del_jm_eta_3pt = abs(j_eta_3pt-m_eta_3pt);
-                        double del_sm_eta_3pt = abs(s_eta_3pt-m_eta_3pt);
-                        if (del_jm_eta_3pt < 0.008 || del_sm_eta_3pt < 0.008 ) continue;
-                        double eee_jsm = ((6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt())/(pow(jet_pt,3)));
-                        double deltaR_js = fConstituents[j].delta_R(fConstituents[s]);
-                        double delta_logR_js = log(deltaR_js);
-                        
-                        double deltaR_jm = fConstituents[j].delta_R(fConstituents[m]);
-                        double delta_logR_jm = log(deltaR_jm);
-                        
-                        double deltaR_sm = fConstituents[s].delta_R(fConstituents[m]);
-                        double delta_logR_sm = log(deltaR_sm);
-                        
-                        energy_pairs_tri.push_back(eee_jsm);
-                        //                jetE.push_back(jet_pt);
-                        
-                        R_dist.push_back(deltaR_js);
-                        R_dist.push_back(deltaR_jm);
-                        R_dist.push_back(deltaR_sm);
-                        
-                        logR_dist.push_back(delta_logR_js);
-                        logR_dist.push_back(delta_logR_jm);
-                        logR_dist.push_back(delta_logR_sm);
-                        
-                        int max_R = distance(R_dist.begin(), max_element(R_dist.begin(), R_dist.end()));//pick the longest side to compute the correlators with
-                        
-                        max_R_distvec.push_back(R_dist[max_R]);
-                        max_logR_distvec.push_back(logR_dist[max_R]);
-                        
-                        E3C_hist->Fill(R_dist[max_R],eee_jsm);
-                        E3C_pt_hist->Fill(R_dist[max_R],jet_pt,eee_jsm);
-                        E3C_pt_hist_log->Fill(logR_dist[max_R],jet_pt,eee_jsm);
-                        
-                        R_dist.clear();
-                        logR_dist.clear();
+                            double eee_jsm = ((6*fConstituents[j].pt()*fConstituents[s].pt()*fConstituents[m].pt())/(pow(jet_pt,3)));
+                            double deltaR_js = fConstituents[j].delta_R(fConstituents[s]);
+                            double delta_logR_js = log(deltaR_js);
+                            
+                            double deltaR_jm = fConstituents[j].delta_R(fConstituents[m]);
+                            double delta_logR_jm = log(deltaR_jm);
+                            
+                            double deltaR_sm = fConstituents[s].delta_R(fConstituents[m]);
+                            double delta_logR_sm = log(deltaR_sm);
+                            
+                            energy_pairs_tri.push_back(eee_jsm);
+                            //                jetE.push_back(jet_pt);
+                            
+                            R_dist.push_back(deltaR_js);
+                            R_dist.push_back(deltaR_jm);
+                            R_dist.push_back(deltaR_sm);
+                            
+                            logR_dist.push_back(delta_logR_js);
+                            logR_dist.push_back(delta_logR_jm);
+                            logR_dist.push_back(delta_logR_sm);
+                            
+                            int max_R = distance(R_dist.begin(), max_element(R_dist.begin(), R_dist.end()));//pick the longest side to compute the correlators with
+                            
+                            if(fpaircut==1)
+                            {
+                                //Pair cut
+                                double j_eta_3pt = fConstituents[j].eta();
+                                double m_eta_3pt = fConstituents[m].eta();
+                                double s_eta_3pt = fConstituents[s].eta();
+                                double del_jm_eta_3pt = abs(j_eta_3pt-m_eta_3pt);
+                                double del_sm_eta_3pt = abs(s_eta_3pt-m_eta_3pt);
+                                double del_js_eta_3pt = abs(j_eta_3pt-s_eta_3pt);
+                                if (del_jm_eta_3pt < 0.008 || del_sm_eta_3pt < 0.008 || del_js_eta_3pt < 0.008) continue;
+                                else
+                                {
+                                    max_R_distvec.push_back(R_dist[max_R]);
+                                    max_logR_distvec.push_back(logR_dist[max_R]);
+                                    
+                                    E3C_hist->Fill(R_dist[max_R],eee_jsm);
+                                    E3C_pt_hist->Fill(R_dist[max_R],jet_pt,eee_jsm);
+                                    E3C_pt_hist_log->Fill(logR_dist[max_R],jet_pt,eee_jsm);
+                                    
+                                    R_dist.clear();
+                                    logR_dist.clear();
+                                }
+                            }
+                            else
+                            {
+                                max_R_distvec.push_back(R_dist[max_R]);
+                                max_logR_distvec.push_back(logR_dist[max_R]);
+                                
+                                E3C_hist->Fill(R_dist[max_R],eee_jsm);
+                                E3C_pt_hist->Fill(R_dist[max_R],jet_pt,eee_jsm);
+                                E3C_pt_hist_log->Fill(logR_dist[max_R],jet_pt,eee_jsm);
+                                
+                                R_dist.clear();
+                                logR_dist.clear();
+                            }
+
                     }//close m loop
                 }//close s loop for the 3 point correlator
                 //For loop for EEC
                 for(int s=0; s<j ; s++)
                 {
-                    //Pair cut
-                    double j_eta_2pt = fConstituents[j].eta();
-                    double s_eta_2pt = fConstituents[s].eta();
-                    double del_js_eta_2pt = abs(j_eta_2pt-s_eta_2pt);
-                    if (del_js_eta_2pt < 0.008) continue;
                     
                     double delta_R_js = fConstituents[j].delta_R(fConstituents[s]);
                     double log_delta_R_js = log(delta_R_js);
                     double ee_js = (2*fConstituents[j].pt()*fConstituents[s].pt())/(pow((jet_pt),2));
                     
-                    //Filling the vectors
-                    delta_Rvec.push_back(delta_R_js);
-                    energy_pairs_vec.push_back(ee_js);
-                    
-                    EEC_hist->Fill(delta_R_js,ee_js);
-                    EEC_pt_hist->Fill(delta_R_js,jet_pt,ee_js);
-                    EEC_pt_hist_log->Fill(log_delta_R_js,jet_pt,ee_js);
-                    
+                    //Pair cut
+                    if(fpaircut == 1)
+                    {
+                        double j_eta_2pt = fConstituents[j].eta();
+                        double s_eta_2pt = fConstituents[s].eta();
+                        double del_js_eta_2pt = abs(j_eta_2pt-s_eta_2pt);
+                        if (del_js_eta_2pt < 0.008) continue;
+                        else
+                        {
+                            delta_Rvec.push_back(delta_R_js);
+                            energy_pairs_vec.push_back(ee_js);
+                            
+                            EEC_hist->Fill(delta_R_js,ee_js);
+                            EEC_pt_hist->Fill(delta_R_js,jet_pt,ee_js);
+                            EEC_pt_hist_log->Fill(log_delta_R_js,jet_pt,ee_js);
+                        }
+                    }
+                    else
+                    {
+                        //Filling the vectors
+                        delta_Rvec.push_back(delta_R_js);
+                        energy_pairs_vec.push_back(ee_js);
+                        
+                        EEC_hist->Fill(delta_R_js,ee_js);
+                        EEC_pt_hist->Fill(delta_R_js,jet_pt,ee_js);
+                        EEC_pt_hist_log->Fill(log_delta_R_js,jet_pt,ee_js);
+                    }
                 }//close s loop for the 2 point correlator
             } //close j loop
         }//close else loop

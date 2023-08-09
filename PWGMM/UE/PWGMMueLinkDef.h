@@ -34,4 +34,6 @@
 #pragma link C++ class AliAnalysisTaskOnlyFlatenicity+;
 #pragma link C++ class AliAnalysisTaskSystematicsV0M+;
 #pragma link C++ class AliAnalysisTaskFlatenicityMCclosure+;
+// study on fluctuations
+#pragma link C++ class AliAnalysisTaskDeutFlucpp+;
 #endif

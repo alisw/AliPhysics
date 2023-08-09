@@ -240,11 +240,13 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetESDvsTPConlyLinearCut(double cut = 15000) {fESDvsTPConlyLinearCut = cut;}
     virtual void   SetUseOutOfBunchPileupCut(double flag = true) {fUseOutOfBunchPileupCut = flag;}
 		virtual void   SetUseCorrectedNTracks(bool flag = true) {fUseCorrectedNTracks = flag;}
+    virtual void   SetBinningFactor(double factor = 1.0) {binning_factor = factor;}
 		virtual void   SetUseNarrowBin(bool flag = true) {fUseNarrowBin = flag;}
 		virtual void   SetExtremeEfficiency(int flag = 0) {fExtremeEfficiency = flag;}
 		virtual void   SetTPCchi2perCluster(double fchi2 = 4) {fTPCchi2perCluster = fchi2;}
 		virtual void   SetUseAdditionalDCACut(double flag = true) {fUseAdditionalDCACut = flag;}
 		virtual void   SetUseDefaultWeight(double flag = true) {fUseDefaultWeight = flag;}
+    virtual void   SetUseLikeSign(int sign = 0) {bUseLikeSign = sign; iSign = sign;}
     virtual void   SetExtendV0MAcceptance(double flag = true) {fExtendV0MAcceptance = flag;}
     virtual void   SetV0MRatioCut(double ratio=5) {fV0MRatioCut = ratio;}
     virtual void   SetEtaGap3Sub(Double_t feta1 = 0.4, Double_t feta2 = 0.4) {fEtaGap3Sub1 = feta1; fEtaGap3Sub2 = feta2;}
@@ -314,12 +316,15 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
     Double_t                fESDvsTPConlyLinearCut;                 // ESDvsTPConlyLinearCut : default = 15000
     Bool_t                  fUseOutOfBunchPileupCut;                // Out of bunch pileup cut
 		Bool_t                  fUseCorrectedNTracks;                   // Use corrected Ntracks in the filling of xbins;
+    Double_t                binning_factor;                         // A factor to account efficiency corrected binning
 		Double_t                fCentralityCut;                         // Apply an extra centrality cut.
     Bool_t                  fUseNarrowBin;                          // Use Narrow bin
 		Int_t                   fExtremeEfficiency;                     // The flag to set extreme efficiency
 		Double_t                fTPCchi2perCluster;                     // Additional cuts for TPC chi2 / cluster
 		Bool_t                  fUseAdditionalDCACut;                   // Additianal cuts for dca: < 1 cm
 		Bool_t                  fUseDefaultWeight;                      // Force to use the default weight 
+    Bool_t                  bUseLikeSign;                           // Flag to use like sign tracks
+    Int_t                   iSign;                                  // Sign of selected tracks
     Bool_t                  fExtendV0MAcceptance;                   // Use V0M centrality cut 0-100%
     Double_t                fV0MRatioCut;                           // Cut on V0M / <V0M>
 		Double_t                fEtaGap3Sub1;                           // The Eta Gap for 3 sub sample (Left most gap), the default is 0.4
@@ -488,7 +493,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 25);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 27);    //Analysis task
 };
 
 #endif

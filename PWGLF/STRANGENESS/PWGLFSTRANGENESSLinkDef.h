@@ -97,6 +97,7 @@
 #pragma link C++ class AliAnalysisTaskStrangenessML+;
 #pragma link C++ class AliAnalysisTaskMultspec+;
 #pragma link C++ class AliAnalysisTaskMultspec_MCpred+;
+#pragma link C++ class AliAnalysisTaskMultspec_evbased+;
 //#pragma link C++ class AliRunningCascadeEvent+;
 //#pragma link C++ class AliRunningCascadeTrack+;
 #endif

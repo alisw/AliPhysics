@@ -176,6 +176,9 @@ public:
   void   SetRunFastSimulation(const Bool_t ifFastSimul = kFALSE)      {fRunFastSimulation   = ifFastSimul;}
   void   SetFillTreeMC(const Bool_t ifTreeMC = kFALSE)                {fFillTreeMC= ifTreeMC;}
   void   SetFillIncTracks(const Bool_t ifIncTracks = kTRUE)           {fFillIncTracks       = ifIncTracks;}
+  void   SetFillpTPC(const Bool_t ifpTPC = kTRUE)           {fFillpTPC       = ifpTPC;}
+  void   SetFillp(const Bool_t ifp = kTRUE)           {fFillp       = ifp;}
+  void   SetFillpT(const Bool_t ifpT = kTRUE)           {fFillpT       = ifpT;}
 
   void   SetDefaultTrackCuts(const Bool_t ifDefaultTrackCuts = kFALSE){fDefaultTrackCuts= ifDefaultTrackCuts;}
   void   SetDefaultEventCuts(const Bool_t ifDefaultEventCuts = kFALSE){fDefaultEventCuts= ifDefaultEventCuts;}
@@ -199,9 +202,9 @@ public:
 
   // Setters for the eta momentum dEdx and centrality bins
   void   SetSampleDeDxUpperEdge(const Float_t dEdxCleanUp = 200.) {fDEdxCleanUp         = dEdxCleanUp;}
-  void   SetDeDxBinWidth(const Float_t dEdxBinWidth = 2.5)        {fDEdxBinWidth        = dEdxBinWidth;}
-  void   SetDeDxLowerEdge(const Float_t dEdxLowerEdge = 20.)      {fDEdxDown            = dEdxLowerEdge;}
-  void   SetDeDxUpperEdge(const Float_t dEdxUpperEdge = 1020.)    {fDEdxUp              = dEdxUpperEdge;}
+  void   SetNDeDxBins(const Float_t ndEdxBins = 2000)              {fNdEdxBins        = ndEdxBins;}
+  void   SetDeDxLowerEdge(const Float_t dEdxLowerEdge = 0.)      {fDEdxDown            = dEdxLowerEdge;}
+  void   SetDeDxUpperEdge(const Float_t dEdxUpperEdge = 2000.)    {fDEdxUp              = dEdxUpperEdge;}
 
   void   SetEtaLowerEdge(const Float_t etaLowerEdge = -0.8)      {fEtaDown             = etaLowerEdge;}
   void   SetEtaUpperEdge(const Float_t etaUpperEdge = 0.8)       {fEtaUp               = etaUpperEdge;}
@@ -372,6 +375,9 @@ private:
   Bool_t            fDEdxCheck;              // flag to check only the dEdx performance
   Bool_t            fIncludeITS;             // decide whether to use ITS or not
   Bool_t            fFillIncTracks;          // switch whether to fill tracks tree
+  Bool_t            fFillpTPC;               // switch whether to fill histos with pTPC
+  Bool_t            fFillp;               // switch whether to fill histos with p
+  Bool_t            fFillpT;               // switch whether to fill histos with pT
   Bool_t            fFillOnlyHists;          //
   Bool_t            fFillEffLookUpTable;     //
   Bool_t            fFillArmPodTree;         // switch whether to fill clean sample tree
@@ -411,7 +417,7 @@ private:
   Int_t             fNMomBins;               // number of mombins --> for 20MeV slice 150 and 10MeV 300
   Float_t           fMomDown;                // bottom limit for the momentum range (default 0.2)
   Float_t           fMomUp;                  // uppper limit for the momentum range (default 3.2)
-  Float_t           fDEdxBinWidth;           // bin width for the dEdx histograms (default 2.5)
+  Float_t           fNdEdxBins;           // bin width for the dEdx histograms (default 2.5)
   Float_t           fDEdxUp;                 // bottom limit for dEdx histogram (default 20)
   Float_t           fDEdxDown;               // upper limit for dEdx histogram (default 1020)
   Float_t           fDEdxCleanUp;            // upper limit for dEdx histogram of clean kaons and electrons (default 140)
@@ -628,14 +634,20 @@ private:
   TH1F             * fHistCentralityImpPar;      // control histogram for centrality
   TH1F             * fHistImpParam;              // control histogram for impact parameter
   TH1F             * fHistVertex;                // control histogram for vertexZ
-  TH3D             * fHistIncTracks_dEdx;        // histogram for inclusive tracks dEdx all eta
-  TH3D             * fHistIncTracks_moms;        // histogram for inclusive tracks momentum comparisons
-  TH3D             * fHistIncTracks_kin;        // histogram for inclusive tracks dEdx all eta
+  TH3F             * fHistIncTracks_dEdx;        // histogram for inclusive tracks dEdx all eta v ptpc
+  TH3F             * fHistIncTracks_dEdx_p;      // histogram for inclusive tracks dEdx all eta v p
+  TH3F             * fHistIncTracks_dEdx_pT;     // histogram for inclusive tracks dEdx all eta v pT
+  TH2F             * fHistIncTracks_moms;        // histogram for inclusive tracks ptpc to pT
+  TH2F             * fHistIncTracks_moms_p;        // histogram for inclusive tracks p to pT
+  TH3F             * fHistIncTracks_kin;        // histogram for inclusive tracks dEdx all eta
 
-  TH3D             * fHistJetTracks_dEdx;        // histogram for jet tracks dEdx all eta
-  TH3D             * fHistJetTracks_moms;        // histogram for jet tracks momentum comparisons
-  TH3D             * fHistJetTracks_kin;         // histogram for jet tracks dEdx all eta
-
+  TH3F             * fHistJetTracks_dEdx;        // histogram for jet tracks dEdx all eta v ptpc
+  TH3F             * fHistJetTracks_dEdx_p;        // histogram for jet tracks dEdx all eta v p
+  TH3F             * fHistJetTracks_dEdx_pT;        // histogram for jet tracks dEdx all eta v pt
+  TH2F             * fHistJetTracks_moms;        // histogram for jet tracks ptpc to pT
+  TH2F             * fHistJetTracks_moms_p;        // histogram for jet tracks p to Pt
+  TH3F             * fHistJetTracks_kin;         // histogram for jet tracks dEdx all eta
+/*
   TH2D             * fHistIncTracks_mpi_small;        // histogram for inclusive tracks dEdx expected pion mean
   TH2D             * fHistIncTracks_spi_small;        // histogram for inclusive tracks dEdx expected pion sigma
   TH2D             * fHistIncTracks_mel_small;        // histogram for inclusive tracks dEdx expected electron mean
@@ -644,19 +656,19 @@ private:
   TH2D             * fHistIncTracks_ska_small;        // histogram for inclusive tracks dEdx expected kaon sigma
   TH2D             * fHistIncTracks_mpr_small;        // histogram for inclusive tracks dEdx expected proton mean
   TH2D             * fHistIncTracks_spr_small;        // histogram for inclusive tracks dEdx expected proton sigma
+*/
+  TH3F             * fHistIncTracks_mpi;        // intermediate histogram for inclusive tracks dEdx expected pion mean
+  TH3F             * fHistIncTracks_spi;        // intermediate histogram for inclusive tracks dEdx expected pion sigma
+  TH3F             * fHistIncTracks_mel;        // intermediate histogram for inclusive tracks dEdx expected electron mean
+  TH3F             * fHistIncTracks_sel;        // intermediate histogram for inclusive tracks dEdx expected electron sigma
+  TH3F             * fHistIncTracks_mka;        // intermediate histogram for inclusive tracks dEdx expected kaon mean
+  TH3F             * fHistIncTracks_ska;        // intermediate histogram for inclusive tracks dEdx expected kaon sigma
+  TH3F             * fHistIncTracks_mpr;        // intermediate histogram for inclusive tracks dEdx expected proton mean
+  TH3F             * fHistIncTracks_spr;        // intermediate histogram for inclusive tracks dEdx expected proton sigma
 
-  TH3D             * fHistIncTracks_mpi;        // intermediate histogram for inclusive tracks dEdx expected pion mean
-  TH3D             * fHistIncTracks_spi;        // intermediate histogram for inclusive tracks dEdx expected pion sigma
-  TH3D             * fHistIncTracks_mel;        // intermediate histogram for inclusive tracks dEdx expected electron mean
-  TH3D             * fHistIncTracks_sel;        // intermediate histogram for inclusive tracks dEdx expected electron sigma
-  TH3D             * fHistIncTracks_mka;        // intermediate histogram for inclusive tracks dEdx expected kaon mean
-  TH3D             * fHistIncTracks_ska;        // intermediate histogram for inclusive tracks dEdx expected kaon sigma
-  TH3D             * fHistIncTracks_mpr;        // intermediate histogram for inclusive tracks dEdx expected proton mean
-  TH3D             * fHistIncTracks_spr;        // intermediate histogram for inclusive tracks dEdx expected proton sigma
-
-  TH2D             * fHistJet_ptsub_v_area;     // histogram for before any cuts, jet pt after bg subtraction vs jet area
-  TH3D             * fHistJet_kin;     // histogram for before any cuts, jet pt after bg subtraction vs jet area
-  TH2D             * fHistJet_moms;     // histogram for before any cuts, jet pt after bg subtraction vs jet area
+  TH2F             * fHistJet_ptsub_v_area;     // histogram for before any cuts, jet pt after bg subtraction vs jet area
+  TH3F             * fHistJet_kin;     // histogram for jet ptsub, eta, phi after area cut
+  TH2F             * fHistJet_moms;     // histogram for jet pt v jet ptsub after area cut
   //
   // Counters for Marian
   //
@@ -670,7 +682,7 @@ private:
   AliEventCuts* fPileUpTightnessCut1;
   Double_t fEffMatrixNSigmasTOF;
 
-  ClassDef(AliAnalysisJetHadro, 9);
+  ClassDef(AliAnalysisJetHadro, 11);
 
 };
 

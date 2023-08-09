@@ -52,6 +52,7 @@ set(SRCS
   UeKNO/AliAnalysisTaskGenUeNchTS.cxx
   UeKNO/AliAnalysisTaskFlatenicity.cxx
   UeKNO/AliAnalysisTaskFlatenicityMCpred.cxx
+  UeKNO/AliAnalysisTaskDeutFlucpp.cxx
   UeMpi/AliAnalysisTaskMpiUE.cxx
   Flatenicity/AliAnalysisTaskSpectraFlatenicity.cxx
   FlatenicityPiKp/AliAnalysisTaskFlatenicityPiKp.cxx

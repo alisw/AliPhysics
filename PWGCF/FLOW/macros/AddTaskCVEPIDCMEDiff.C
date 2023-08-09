@@ -67,11 +67,11 @@ AliAnalysisTaskCVEPIDCMEDiff* AddTaskCVEPIDCMEDiff(
   if (!gGrid) TGrid::Connect("alien://");
   if (bDoNUE) {
     if (period.EqualTo("LHC18q")) {
-      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/efficiency18q.root", "READ");
+      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18q/efficiency18q_FB768PL_dcazcut.root", "READ");
       fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fListNUE"));
     }
     if (period.EqualTo("LHC18r")) {
-      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/efficiency18r.root", "READ");
+      fNUEFile = TFile::Open("alien:///alice/cern.ch/user/c/chunzhen/CalibFiles/LHC18r/efficiency18r_FB768PL_dcazcut.root", "READ");
       fListNUE = dynamic_cast<TList*>(fNUEFile->Get("fListNUE"));
     }
     if (fListNUE) {

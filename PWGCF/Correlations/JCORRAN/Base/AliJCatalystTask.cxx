@@ -75,6 +75,7 @@ AliJCatalystTask::AliJCatalystTask():
   fPt_max(5.0),
   fzvtxCut(10.0),
   fremovebadarea(kFALSE),
+  fremovebadarea18q(kFALSE),
   flags(0),
   fJCatalystEntry(0),
   fIsGoodEvent(false),
@@ -90,6 +91,7 @@ AliJCatalystTask::AliJCatalystTask():
   fMainList(NULL),
   bSaveAllQA(kFALSE),
   bSaveHMOhist(kFALSE),
+  bSaveQCNUA(kFALSE),
   fCentralityBins(16),
   fcent_0(0.), fcent_1(0.), fcent_2(0.), fcent_3(0.), fcent_4(0.), fcent_5(0.), fcent_6(0.), fcent_7(0.), fcent_8(0.), fcent_9(0.), 
   fcent_10(0.), fcent_11(0.), fcent_12(0.), fcent_13(0.), fcent_14(0.), fcent_15(0.), fcent_16(0.),
@@ -106,7 +108,8 @@ AliJCatalystTask::AliJCatalystTask():
   fESDpileup_slope(3.38), fESDpileup_inter(15000),
   fSaveESDpileupQA(false),
   fAddTPCpileupCuts(false),
-  fSaveTPCpileupQA(false)
+  fSaveTPCpileupQA(false),
+  fControlProfileList(NULL)
 {
   InitializeArrays(); //
 }
@@ -137,6 +140,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
   fPt_max(5.0),
   fzvtxCut(10.0),
   fremovebadarea(kFALSE),
+  fremovebadarea18q(kFALSE),
   flags(0),
   fJCatalystEntry(0),
   fIsGoodEvent(false),
@@ -152,6 +156,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
   fMainList(NULL),
   bSaveAllQA(kFALSE),
   bSaveHMOhist(kFALSE),
+  bSaveQCNUA(kFALSE),
   fCentralityBins(16),
   fcent_0(0.), fcent_1(0.), fcent_2(0.), fcent_3(0.), fcent_4(0.), fcent_5(0.), fcent_6(0.), fcent_7(0.), fcent_8(0.), fcent_9(0.), 
   fcent_10(0.), fcent_11(0.), fcent_12(0.), fcent_13(0.), fcent_14(0.), fcent_15(0.), fcent_16(0.),
@@ -168,7 +173,8 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
   fESDpileup_slope(3.38), fESDpileup_inter(15000),
   fSaveESDpileupQA(false),
   fAddTPCpileupCuts(false),
-  fSaveTPCpileupQA(false)
+  fSaveTPCpileupQA(false),
+  fControlProfileList(NULL)
 {
 // Main list to save the output of the QA.
   fMainList = new TList();
@@ -203,6 +209,7 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
   fMainList(ap.fMainList),
   bSaveAllQA(ap.bSaveAllQA),
   bSaveHMOhist(ap.bSaveHMOhist),
+  bSaveQCNUA(ap.bSaveQCNUA),
   fCentralityBins(ap.fCentralityBins),
   fcent_0(ap.fcent_0), fcent_1(ap.fcent_1), fcent_2(ap.fcent_2), fcent_3(ap.fcent_3), fcent_4(ap.fcent_4), fcent_5(ap.fcent_5), fcent_6(ap.fcent_6), fcent_7(ap.fcent_7), fcent_8(ap.fcent_8), fcent_9(ap.fcent_9), fcent_10(ap.fcent_10), fcent_11(ap.fcent_11), fcent_12(ap.fcent_12), fcent_13(ap.fcent_13), fcent_14(ap.fcent_14), fcent_15(ap.fcent_15), fcent_16(ap.fcent_16),
   fChi2perNDF_min(ap.fChi2perNDF_min), fChi2perNDF_max(ap.fChi2perNDF_max),
@@ -214,7 +221,8 @@ AliJCatalystTask::AliJCatalystTask(const AliJCatalystTask& ap) :
   fESDpileup_slope(ap.fESDpileup_slope), fESDpileup_inter(ap.fESDpileup_inter),
   fSaveESDpileupQA(ap.fSaveESDpileupQA),
   fAddTPCpileupCuts(ap.fAddTPCpileupCuts),
-  fSaveTPCpileupQA(ap.fSaveTPCpileupQA)
+  fSaveTPCpileupQA(ap.fSaveTPCpileupQA),
+  fControlProfileList(ap.fControlProfileList)
 {
   AliInfo("----DEBUG AliJCatalystTask COPY ----");
 }
@@ -601,9 +609,10 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
         if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
                 // Removal of bad area, now only with eta symmetric
         Bool_t isBadArea = TMath::Abs(track->Eta()) > 0.6;
-        if(fremovebadarea) {
-          if(isBadArea) continue;
-        } 
+        Bool_t isBadArea18q = track->Eta() < -(fZvert+8.)/17.5;
+        if(fremovebadarea && isBadArea) continue;
+
+        if (fremovebadarea18q && isBadArea18q) continue;
         
         if (bSaveAllQA) {FillControlHistograms(track, 1, fcent, PV);} // Fill the QA histograms after the track selection.
 
@@ -667,13 +676,33 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
           fPhiHistogram[GetCentralityBin(fcent)][2]->Fill(track->Phi(), 1./phi_module_corr);
           fPTHistogram[GetCentralityBin(fcent)][2]->Fill(itrack->Pt(), 1./effCorr);
         }
+
+        if (bSaveQCNUA){
+          
+          f2DEtaPhiHistogram[GetCentralityBin(fcent)][0]->Fill(itrack->Phi(),itrack->Eta());                    //Before NUA correction
+          f2DEtaPhiHistogram[GetCentralityBin(fcent)][1]->Fill(itrack->Phi(),itrack->Eta(),1./phi_module_corr); //After NUA correction
+          //cout << "I'm in the QCNUA boolean" << endl;
+          for( int ih=0; ih<7; ih++){ //loop over 2-8th harmonic
+            //cout << "Entering harmonic loop: " << ih << ", with centrality: " << fcent << ", and Cos: " << TMath::Cos(ih+2*itrack->Phi()) << endl;
+            Float_t profcent = GetCentralityBin(fcent)+0.5 ;
+            //cout <<"fcent: " << fcent << "centrality bin: " << profcent << endl;
+            Double_t arg_phi = (ih+2)*itrack->Phi();
+            fProfileCosVSCent[ih]->Fill(fcent,TMath::Cos(arg_phi),1./phi_module_corr);
+            fProfileSinVSCent[ih]->Fill(fcent,TMath::Sin(arg_phi),1./phi_module_corr);
+          }
+        }
       } // End: if(track->TestFilterBit( fFilterBit ))
     }
 
   } //read aod reco track done.
   if(fDebugLevel>1) cout << "Tracks: " << TrackList->GetEntriesFast() << endl;
   if (bSaveAllQA) {fMultHistogram[GetCentralityBin(fcent)][1]->Fill(TrackList->GetEntriesFast());}
-    
+  if (bSaveQCNUA){
+     for (int ih=0; ih<7; ih++){
+      fControlProfileList->Add(fProfileCosVSCent[ih]);
+      fControlProfileList->Add(fProfileSinVSCent[ih]);
+     }
+   } 
 }
 //______________________________________________________________________________
 Bool_t AliJCatalystTask::IsGoodEvent( AliAODEvent *event, Int_t thisCent){
@@ -1037,6 +1066,7 @@ void AliJCatalystTask::InitializeArrays() {
       fHMOsHistogram[icent][i] = NULL;
       fESDpileupHistogram[icent][i] = NULL;
       fTPCpileupHistogram[icent][i] = NULL;
+      f2DEtaPhiHistogram[icent][i] = NULL;
     }
       fPTHistogram[icent][2] = NULL;
       fPhiHistogram[icent][2] = NULL;
@@ -1046,10 +1076,19 @@ void AliJCatalystTask::InitializeArrays() {
     for(int iRun = 0; iRun < 90; iRun++) {fHistoPhiWeight[icent][iRun] = NULL;}
   }
   for (int iR = 0; iR < 138; iR++) {fHistoCentWeight[iR] = NULL;}
+  for (int ih=0; ih<7; ih++){    //loop over the harmonics 2-8
+    fProfileCosVSCent[ih] = NULL;
+    fProfileSinVSCent[ih] = NULL;
+  }
 }
 
 //______________________________________________________________________________
 void AliJCatalystTask::BookControlHistograms(){
+
+fControlProfileList = new TList();
+fControlProfileList->SetName("ControlProfiles");
+fControlProfileList->SetOwner(kTRUE);
+if(bSaveQCNUA){ fMainList->Add(fControlProfileList); }
 
 for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bins
 {
@@ -1064,6 +1103,12 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
   fControlHistogramsList[icent]->SetName(Form("ControlHistograms_%.1f-%.1f", fcentralityArray[icent], fcentralityArray[icent+1]));
   fControlHistogramsList[icent]->SetOwner(kTRUE);
   if(bSaveAllQA){ fMainList->Add(fControlHistogramsList[icent]); }
+
+  fControl2DNUAList[icent] = new TList();
+  fControl2DNUAList[icent]->SetName(Form("Control2DNUAHistograms_%.1f-%.1f", fcentralityArray[icent], fcentralityArray[icent+1]));
+  fControl2DNUAList[icent]->SetOwner(kTRUE);
+  if(bSaveQCNUA){ fMainList->Add(fControl2DNUAList[icent]); }
+
 
    // a) Book histogram to hold pt spectra:
    fPTHistogram[icent][0] = new TH1F("fPTHist_BeforeTrackSelection","Pt Distribution",1000,0.,10.);
@@ -1209,11 +1254,44 @@ for(Int_t icent=0; icent<fCentralityBins; icent++) //loop over all centrality bi
    fHMOsHistogram[icent][1]->GetYaxis()->SetTitle("M_{TPC}");
    if (bSaveHMOhist) {fControlHistogramsList[icent]->Add(fHMOsHistogram[icent][1]);}
 
+   // q) Book histogram to hold 2D eta-phi spectra
+   f2DEtaPhiHistogram[icent][0] = new TH2F("f2DEtaPhiHist_BeforeCorrection","eta-phi; #phi (rad); #eta",50,0.,TMath::TwoPi(),16,-0.8,0.8); 
+   f2DEtaPhiHistogram[icent][0]->GetXaxis()->SetTitle("#phi");
+   f2DEtaPhiHistogram[icent][0]->GetYaxis()->SetTitle("#eta");
+   if (bSaveQCNUA) {fControl2DNUAList[icent]->Add(f2DEtaPhiHistogram[icent][0]);}
+
+   f2DEtaPhiHistogram[icent][1] = new TH2F("f2DEtaPhiHist_AfterCorrection","eta-phi; #phi (rad); #eta",50,0.,TMath::TwoPi(),16,-0.8,0.8); 
+   f2DEtaPhiHistogram[icent][1]->GetXaxis()->SetTitle("#phi");
+   f2DEtaPhiHistogram[icent][1]->GetYaxis()->SetTitle("#eta");
+   if (bSaveQCNUA) {fControl2DNUAList[icent]->Add(f2DEtaPhiHistogram[icent][0]);}
+
+
    // TProfile for the weights to apply.
    fProfileWeights[icent] = new TProfile("fProfileWeights","Phi Weights",1000,-TMath::Pi(),TMath::Pi()); //centrality dependent output
    fProfileWeights[icent]->GetXaxis()->SetTitle("#varphi");
    fProfileWeights[icent]->GetYaxis()->SetTitle("weight");
    fControlHistogramsList[icent]->Add(fProfileWeights[icent]);
+
+   //Control TProfiles requested by pag;  <cos(nphi)>  and <sin(nphi)>  vs centrality
+   fProfileCosVSCent[0] = new TProfile("fProfileCosVSCent_n2","<cos(2phi)> vs Cent",12,0,60); 
+   fProfileCosVSCent[1] = new TProfile("fProfileCosVSCent_n3","<cos(3phi)> vs Cent",12,0,60); 
+   fProfileCosVSCent[2] = new TProfile("fProfileCosVSCent_n4","<cos(4phi)> vs Cent",12,0,60); 
+   fProfileCosVSCent[3] = new TProfile("fProfileCosVSCent_n5","<cos(5phi)> vs Cent",12,0,60); 
+   fProfileCosVSCent[4] = new TProfile("fProfileCosVSCent_n6","<cos(6phi)> vs Cent",12,0,60); 
+   fProfileCosVSCent[5] = new TProfile("fProfileCosVSCent_n7","<cos(7phi)> vs Cent",12,0,60); 
+   fProfileCosVSCent[6] = new TProfile("fProfileCosVSCent_n8","<cos(8phi)> vs Cent",12,0,60); 
+
+   fProfileSinVSCent[0] = new TProfile("fProfileSinVSCent_n2","<sin(2phi)> vs Cent",12,0,60); 
+   fProfileSinVSCent[1] = new TProfile("fProfileSinVSCent_n3","<sin(3phi)> vs Cent",12,0,60); 
+   fProfileSinVSCent[2] = new TProfile("fProfileSinVSCent_n4","<sin(4phi)> vs Cent",12,0,60); 
+   fProfileSinVSCent[3] = new TProfile("fProfileSinVSCent_n5","<sin(5phi)> vs Cent",12,0,60); 
+   fProfileSinVSCent[4] = new TProfile("fProfileSinVSCent_n6","<sin(6phi)> vs Cent",12,0,60); 
+   fProfileSinVSCent[5] = new TProfile("fProfileSinVSCent_n7","<sin(7phi)> vs Cent",12,0,60); 
+   fProfileSinVSCent[6] = new TProfile("fProfileSinVSCent_n8","<sin(8phi)> vs Cent",12,0,60);
+   
+   
+
+
 
    // Save the TH2D for the ESD-TPC pileup cut in Run2.
     fESDpileupHistogram[icent][0] = new TH2D("fESDpileupHistogram_Before","Correlations before ESD-TPC cut", 1200, 0., 6000., 7000, 0., 35000.);

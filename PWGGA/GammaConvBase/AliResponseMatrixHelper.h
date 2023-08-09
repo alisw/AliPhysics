@@ -55,6 +55,12 @@ class MatrixHandler4D
   double getValueForBinIndexMesonY(const int index) const;
   double getValueForBinIndexJetY(const int index) const;
 
+
+  std::vector<double> getBinsMesonX() const { return vecBinsMesonX; }
+  std::vector<double> getBinsMesonY() const { return vecBinsMesonY; }
+  std::vector<double> getBinsJetX() const { return vecBinsJetX; }
+  std::vector<double> getBinsJetY() const { return vecBinsJetY; }
+
   void Fill(double valJetX, double valJetY, double valMesonX, double valMesonY, double val = 1);
 
   void AddBinContent(double valJetX, double valJetY, double valMesonX, double valMesonY, double val = 1, double err = 1);
@@ -68,6 +74,8 @@ class MatrixHandler4D
 
   void WeightResponseMatrix(TF1* funcMeson = nullptr, TF1* funcJet = nullptr);
   void WeightResponseMatrix(TF2* func);
+
+
 
  private:
   bool useTHNSparese = false;

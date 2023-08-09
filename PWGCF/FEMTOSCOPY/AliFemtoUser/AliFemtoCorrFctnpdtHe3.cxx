@@ -491,7 +491,26 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
     
     // add true pair
  double tKStar = fabs(fPair->KStar());
+ if (fPairCut && !fPairCut->Pass(fPair)) {
+       // failed pair QA
+        if(fUseDPhiDEtaQA>1 && tKStar<0.2){
 
+          double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
+          double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
+          float AvgDPhi = ReAvgDphi(fPair);
+          double deta = eta1 - eta2;
+
+          fDumDPhiDEtaAvgQA->Fill(deta,AvgDPhi);
+
+        }
+
+ 
+        return;
+    }
+   if(fUsePairCutEtaPhi){
+		    if(!PairEtaPhiSelect(fPair)) return;
+	}
+/*
 	if(fPassAllPair==0){
 	    if (fPairCut && !fPairCut->Pass(fPair)) {
 		if(fUseDPhiDEtaQA==2 && tKStar<0.2){
@@ -513,7 +532,7 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
 	    }
 	}
 
-
+*/
     if(fUseGobalVelGate){
 	int VelLabel = ReVelocityGate(fPair);
 	if(fUseGobalVelGate == VelLabel){
@@ -541,8 +560,8 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
     if(fSideBand){
 	FillSideBandNum(fPair);
 	}
-    if(fUseDPhiDEtaQA==1 && tKStar<0.2){
-
+ 
+   if(fUseDPhiDEtaQA>0 && tKStar<0.2){
 	  double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
     	  double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
     	  float AvgDPhi = ReAvgDphi(fPair);
@@ -552,6 +571,7 @@ void AliFemtoCorrFctnpdtHe3::AddRealPair(AliFemtoPair* aPair){
 	  fNumDPhiDEtaAvgQA->Fill(deta,AvgDPhi);
 	
 	}
+
 	if(fUseVelGate){
 	    int VelLabel = ReVelocityGate(fPair);
 	    if(VelLabel == 1){
@@ -588,7 +608,10 @@ if(fUse2DkStarVsmT){
 }
 
 
-	if(fUseBumpC){
+	if(fUseBumpC && 
+	tKStar>0.18 && tKStar<0.25 &&
+	CalcMt(fPair) > 2.0 && CalcMt(fPair)<3.5
+	){
 		f2DkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt());
  	 float c = 1.;
     	float beta = fPair->Track2()->Track()->VTOF();
@@ -619,27 +642,17 @@ void AliFemtoCorrFctnpdtHe3::AddMixedPair(AliFemtoPair* aPair)
 
     // add true pair
 double tKStar = fabs(fPair->KStar());
-	if(fPassAllPair==0){
-	    if (fPairCut && !fPairCut->Pass(fPair)) {
 
-	 if(fUseDPhiDEtaQA==2 && tKStar<0.2){
+   if (fPairCut && !fPairCut->Pass(fPair)) {
 
-          double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
-          double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
-          float AvgDPhi = ReAvgDphi(fPair);
-          double deta = eta1 - eta2;
-
-          fDumDPhiDEtaAvgQA->Fill(deta,AvgDPhi);
-
-        }
-
-		return;
-	    } 
-	    if(fUsePairCutEtaPhi){
-		if(!PairEtaPhiSelect(fPair)) return;
-	    }
+        return;
+    }
+    if(fUsePairCutEtaPhi){
+		    if(!PairEtaPhiSelect(fPair)) return;
 	}
-   if(fUseGobalVelGate){
+ 
+
+if(fUseGobalVelGate){
         int VelLabel = ReVelocityGate(fPair);
         if(fUseGobalVelGate == VelLabel){
         }
@@ -666,16 +679,6 @@ double tKStar = fabs(fPair->KStar());
     if(fSideBand){
 	FillSideBandDum(fPair);
 	}
-	if(fUseDPhiDEtaQA==1 && tKStar<0.2){
-
-	  double eta1 = fPair->Track1()->FourMomentum().PseudoRapidity();
-    	  double eta2 = fPair->Track2()->FourMomentum().PseudoRapidity();
-    	  float AvgDPhi = ReAvgDphi(fPair);
-	  double deta = eta1 - eta2;
-
- 	  //fDumDPhiDEtaQA->Fill(deta,AvgDPhi);
-	  fDumDPhiDEtaAvgQA->Fill(deta,AvgDPhi);
-	}
 	if(fUseVelGate){
 	    int VelLabel = ReVelocityGate(fPair);
 	    if(VelLabel == 1){
@@ -701,8 +704,14 @@ fDum2DkStarVsmT->Fill(tKStar,CalcMt(fPair));
 }
 
 	if(fUsemTCheck){
-		
-		f3DmTDepkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt(),CalcMt(fPair));
+		if(fUsemTCheck==1){
+			 f3DmTDepkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt(),CalcMt(fPair));
+			f3DmTDepkSVspT->Fill(tKStar,fPair->Track1()->Track()->Pt(),CalcMt(fPair));
+		}
+		if(fUsemTCheck==2){
+			f3DmTDepkSVspT->Fill(tKStar,fPair->Track2()->Track()->Pt(),fPair->KT());
+			f3DmTDepkSVspT->Fill(tKStar,fPair->Track1()->Track()->Pt(),fPair->KT());
+		}
 	}
 	return;
     
@@ -1198,8 +1207,9 @@ int nbinsmT,float lowmT,float upmT
 ){
 
 // in mix
-// only for p-d pair 
-// 1.5 - 2.0 - 2.5 - 3.5
+
+//fUsemTCheck = 1: mT vs pT
+//fUsemTCheck = 2 : kT vs pT 
 f3DmTDepkSVspT = new TH3F(TString::Format("f3DmTDepkSVspT%s", fTitle.Data())," ",nbinsks,lowks,upks,nbinspT,lowpT,uppT,nbinsmT,lowmT,upmT);
 
 }

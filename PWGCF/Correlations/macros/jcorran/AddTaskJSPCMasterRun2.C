@@ -12,7 +12,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
                                   bool cutTPCpileup = false, bool saveQA_TPCpileup = false,
                                   Bool_t ComputeEtaGap = kFALSE, Float_t EtaMin = -0.8, Float_t EtaMax = 0.8,
                                   Bool_t useWeightsNUE = kTRUE, Bool_t useWeightsNUA = kFALSE,
-                                  Int_t doSPC = 0)
+                                  Int_t doSPC = 0, Bool_t frmBadArea18q = kFALSE)
 {
   double ESDslope = 3.38; bool saveQA_ESDpileup = false;
   bool removeBadArea = kFALSE; bool useTightCuts = kFALSE;
@@ -132,7 +132,7 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
       break;
     case 7:
       // MAPfileNames[i] = "/home/maxim/Documents/Work/SPC/MAP_comparison/PhiWeights_LHC18q_Rebin3_default.root";
-      MAPfileNames[i] = "/home/maxim/Documents/Work/SPC/MAP_comparison/PhiWeights_mingrui_18q.root";
+      MAPfileNames[i] = "/home/maxim/Documents/Work/SPC/3Dhisto/PhiWeights_18q.root";
       break;
     default:
       std::cout << "ERROR: Invalid configuration index. Skipping this element."
@@ -161,6 +161,8 @@ AliAnalysisTask *AddTaskJSPCMasterRun2(TString taskName = "JSPCMaster", UInt_t p
   for (Int_t i = 0; i < PassedVariations; i++) {
     fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_%s_%s", taskName.Data(), configNames[i].Data(), SPC[doSPC].Data()));
     cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << endl;
+
+    if ((period == lhc18q || period == lhc18r ) && frmBadArea18q ) fJCatalyst[i]->SetRemoveBadArea18q(frmBadArea18q);
 
     // Set the correct flags to use.
     if (strcmp(configNames[i].Data(), "noPileup") != 0) {     // Set flag only if we cut on pileup.

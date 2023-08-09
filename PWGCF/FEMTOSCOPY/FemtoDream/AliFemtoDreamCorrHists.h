@@ -288,6 +288,10 @@ class AliFemtoDreamCorrHists {
       fMixedEventmTDist[i]->Fill(RelK, mT);
   }
   void FillMixedEventmTMultDist(int i, float mT, int iMult, float RelK);
+
+  void FillSameEventmTMultDistCommon(int i, float mT, int iMult, float RelK);
+  void FillSameEventmTMultDistNonCommon(int i, float mT, int iMult, float RelK);
+
   void FillSameEventpTOnepTTwokStar(int iHist, float mT, float pTOne, float pTTwo, float RelK); 
   void FillMixedEventpTOnepTTwokStar(int iHist, float mT, float pTOne, float pTTwo, float RelK);
 
@@ -486,6 +490,8 @@ class AliFemtoDreamCorrHists {
   TH2F **fSameEventMultDistNonCommon;
   TH2F **fSameEventmTDistCommon;
   TH2F **fSameEventmTDistNonCommon;
+  TH2F ***fSameEventmTMultDistCommon;
+  TH2F ***fSameEventmTMultDistNonCommon;
 
   TH2F ***fSameEventpTOnepTTwokStar; //to-do: change back to THnSparseF for more dimensions
   TH2F ***fMixedEventpTOnepTTwokStar;
@@ -512,7 +518,7 @@ class AliFemtoDreamCorrHists {
   std::vector<float> fmTBins;
   std::vector<unsigned int> fWhichPairs;
   std::vector<int> fCentBins;
-  ClassDef(AliFemtoDreamCorrHists,12);
+  ClassDef(AliFemtoDreamCorrHists,13);
 };
 
 #endif /* ALIFEMTODREAMCORRHISTS_H_ */

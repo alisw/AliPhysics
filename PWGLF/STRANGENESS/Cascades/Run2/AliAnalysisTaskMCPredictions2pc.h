@@ -76,13 +76,17 @@ public:
   
   void SetMultiplicityBinning( Int_t lNbins, Float_t *lNbinbounds ) {
     fNMultBins = lNbins; 
-    for(Int_t ii=0; ii<lNbins+1; ii++)
+    for(Int_t ii=0; ii<lNbins+1; ii++){
+      Printf("Multiplicity bin %i lower boundary: %.1f set", ii, lNbinbounds[ii]);
       fMultBinBounds[ii]=lNbinbounds[ii];
+    }
   } ;
   void SetPtBinning( Int_t lNbins, Float_t *lNbinbounds ) {
     fNPtBins = lNbins; 
-    for(Int_t ii=0; ii<lNbins+1; ii++)
+    for(Int_t ii=0; ii<lNbins+1; ii++){
+      Printf("Pt bin %i lower boundary: %.1f set", ii, lNbinbounds[ii]);
       fPtBinBounds[ii]=lNbinbounds[ii];
+    }
   } ;
 
   //configure intervals
@@ -167,7 +171,7 @@ private:
   Float_t fPtBinBounds[100];
 
   //for event mixing
-  Bool_t fEMBufferFull[20];
+  Int_t fEMBufferFull[20];
   Int_t fEMBufferCycle[20];
   Int_t fEMBufferSize[20];
   Float_t fEMBufferEta[50][20];

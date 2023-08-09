@@ -15,6 +15,13 @@
 #include "AliAODVertex.h"
 #include "AliAnalysisTaskPIDResponse.h"
 #include "TMacro.h"
+#include "AliAnalysisUtils.h"
+#include "AliGenEventHeader.h"
+#include "AliMCEvent.h"
+#include "AliMCEventHandler.h"
+#include "AliMCParticle.h"
+#include "AliVParticle.h"
+#include <AliAODMCParticle.h>
 #include "AliEventPoolManager.h" //required in the header
 
 class AliAODEvent;
@@ -27,6 +34,8 @@ class AliMCParticle;
 class AliGenEventHeader;
 class THnSparse;
 class AliAODv0;
+//class AliV0ChParticle;
+//class AliV0ChParticle : public AliVParticle
 class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
 {
     public:
@@ -42,6 +51,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         Bool_t AcceptNegTrack(const AliAODTrack* Trk);
         Double_t Beta(const AliAODTrack *track);
         Bool_t AcceptV0(const AliAODv0 *v0, Double_t *vertex);
+        Bool_t IsMyGoodDaughterTrack(const AliAODTrack *t);
+        Bool_t IsKaonNSigma3(float mom, float nSigmakaon, float nSigmaTOFkaon);
         Bool_t SelectK0TracksMC(AliMCParticle *mcTrack);
         Bool_t SelectKPosTracksMC(AliMCParticle *mcTrack);
         Bool_t SelectKNegTracksMC(AliMCParticle *mcTrack);
@@ -57,13 +68,21 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         void                    SetData(Bool_t flagdata) {fData = flagdata;}
         void                    SetMCTruth(Bool_t flagGen) {fMCTruth = flagGen; }
         void                    SetMCReconstructed(Bool_t flag) {fMCReconstructed = flag;}
+        void                    SetMinBias(Bool_t minbiasflag) {fMinBias = minbiasflag; }
+        void                    SetCentral(Bool_t centralflag) {fCentral = centralflag; }
+        void                    SetSemiCentral(Bool_t semicentralflag) {fSemiCentral = semicentralflag; }
         void                    SetFilterBit(Int_t filterbit) {fBit = filterbit;}
         void                    SetVertexCut(Double_t pvzvalue) {fPVzCut = pvzvalue;}
+        void                    SetNsigmaCut(Double_t nsigmacut) { fSigCut = nsigmacut; }
         void                    SetCentLimit(Double_t CentMin, Double_t CentMax) {fCentMin = CentMin; fCentMax = CentMax; }
         void                    SetPtLimits(Double_t ptmin, Double_t ptmax) { fLpTCut = ptmin; fUpTCut=ptmax; }
-        //void                  SetEtaLimit(Double_t etalimit) { fEta = etalimit; }
+        void                    SetV0PtLimits(Double_t v0ptmin, Double_t v0ptmax) { fLpTv0Cut = v0ptmin; fUpTv0Cut=v0ptmax; }
+        void                    SetEtaLimit(Double_t etalimit) { fEtaCut = etalimit; }
+        void                    SetPIDCombined(Bool_t pidflag) {fPidpTDependentMethod = pidflag; }
+        void                    SetPileUp(Bool_t pileupflag) {fRejectEventPileUp = pileupflag; }                    
+
         //mixing
-        //void                  SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
+        //void                    SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
         void                    SetCentBinsForMixing(Int_t nofBins, std::vector<Double_t> bins) { fNCentBins = nofBins; fCentBins = bins; }
         
     private:
@@ -92,6 +111,9 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fClusters;       //! dummy histogram
        TH1F*                   fHistPVz;        //! dummy histogram
        TH1F*                   fHistNEvents;    //! dummy histogram
+       TH1F*                   fMCEvents;       //! dummy histogram
+       TH1F*                   fTracksCounter;  //! dummy histogram
+       TH1F*                   fMCEvents_pileup;   //! dummy histogram
        TH1F*                   fHistNV0;        //! dummy histogram
        TH1F*                   fHistEta;        //! dummy histogram
        TH1F*                   fHistDEta;       //! dummy histogram
@@ -99,13 +121,20 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fHistDPhi;       //! dummy histogram
        TH1F*                   fHistMult;       //! dummy histogram
        TH1F*                   fHistCent;       //! dummy histogram
+       TH1F*                   fHistCent_mcgen;       //! dummy histogram
        TH2F*                   fHistTPCTracksVsClusters; //! dummy histogram
 
        TH1F*                   fHistMK0;       //! dummy histogram
        TH1F*                   fHistMK0Cuts;   //! dummy histogram
        TH1F*                   fHistKChPt;     //! dummy histogram
+       TH1F*                   fHistKChPtfullRange;     //! dummy histogram
        TH1F*                   fHistKChPtMix;  //! dummy histogram
        TH1F*                   fHistK0Pt;      //! dummy histogram
+       TH1F*                   fHistK0PtfullRange;      //! dummy histogram
+       TH1F*                   fHistKPlusPt;     //! dummy histogram
+       TH1F*                   fHistKPlusPtfullRange;     //! dummy histogram
+       TH1F*                   fHistKMinusPt;     //! dummy histogram
+       TH1F*                   fHistKMinusPtfullRange;     //! dummy histogram
        TH1F*                   fHistKChPhi;    //! dummy histogram
        TH1F*                   fHistK0Phii;     //! dummy histogram 
        TH1F*                   fHistKpPhi;     //! dummy histogram 
@@ -154,9 +183,23 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        THnSparse*              fMCK0;
        THnSparse*              fMCKpos;
        THnSparse*              fMCKneg;
+       THnSparse*              fMCKch;
+       TH1F*                   fMCK0Pt;
+       TH1F*                   fMCK0PtfullRange;
+       TH1F*                   fMCKPlusPt;
+       TH1F*                   fMCKPlusPtfullRange;
+       TH1F*                   fMCKMinusPt;
+       TH1F*                   fMCKMinusPtfullRange;
        TH2F*                   fHistKpKnMC;
        TH2F*                   fHistK0KchMC;
+       TH2F*                   fHistKpKpMC;
+       TH2F*                   fHistKnKnMC;
+       TH2F*                   fHistKpKnMC_Bg;
+       TH2F*                   fHistK0KchMC_Bg;
+       TH2F*                   fHistKpKpMC_Bg;
+       TH2F*                   fHistKnKnMC_Bg;
        TH1D*                   fHistGenMultiplicity;
+       TClonesArray     *fMCArray;//! MC array for AOD
 
        Double_t        fPV[3];
 
@@ -164,10 +207,16 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        Bool_t                  fMCTruth; // enable MC Generated study
        Bool_t                  fMCReconstructed; // enable MC reconstructed study
        Bool_t                  fRejectEventPileUp; // enable to use Pile-up cuts
+       Bool_t                  fPidpTDependentMethod; // to enable pT dependent PID
+       Bool_t                  fMinBias;
+       Bool_t                  fCentral;
+       Bool_t                  fSemiCentral;
        Bool_t                  fKpKnCorr;
        Bool_t                  fK0KchCorr;
        Bool_t                  fKpKpCorr;
        Bool_t                  fKnKnCorr;
+       Bool_t                  pidflag;
+       Bool_t                  pileupflag;
 
        Double_t        PVx;
        Double_t        PVy;
@@ -191,6 +240,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        Double_t        fCosPACut;
        Double_t        fSigPosv0Cut;
        Double_t        fSigNegv0Cut;
+       Double_t        fnumOfTPCcrossedRows;
+       Double_t        fTPCrowsFindableRatio;
 
 
        // mixing
@@ -199,6 +250,11 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         TObjArray*              fSelectedK0s; //!
         TObjArray*              fSelectedKpos; //!
         TObjArray*              fSelectedKneg; //!
+        TObjArray*              fMCSelectedKCh; //!
+        TObjArray*              fMCSelectedK0s; //!
+        TObjArray*              fMCSelectedKpos; //!
+        TObjArray*              fMCSelectedKneg; //!
+
         AliEventPoolManager*    fPoolMgr;  //!  event pool manager for Event Mixing
         // Int_t                   fNOfSamples;
         // std::vector<Double_t>   fsampleBins; //sampling
