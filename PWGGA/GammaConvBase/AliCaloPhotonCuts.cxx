@@ -304,6 +304,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(Int_t isMC, const char *name,const char *ti
   fHistClusterEvsTrackEGammaSubCharged(NULL),
   fHistClusterEvsTrackEConv(NULL),
   fHistClusterENMatchesNeutral(NULL),
+  fHistClusterENMatchesConv(NULL),
   fHistClusterENMatchesCharged(NULL),
   fHistClusterEvsTrackEPrimaryButNoElec(NULL),
   fHistClusterEvsTrackSumEPrimaryButNoElec(NULL),
@@ -547,6 +548,7 @@ AliCaloPhotonCuts::AliCaloPhotonCuts(const AliCaloPhotonCuts &ref) :
   fHistClusterEvsTrackEGammaSubCharged(NULL),
   fHistClusterEvsTrackEConv(NULL),
   fHistClusterENMatchesNeutral(NULL),
+  fHistClusterENMatchesConv(NULL),
   fHistClusterENMatchesCharged(NULL),
   fHistClusterEvsTrackEPrimaryButNoElec(NULL),
   fHistClusterEvsTrackSumEPrimaryButNoElec(NULL),
@@ -1850,6 +1852,11 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
     fHistClusterENMatchesNeutral->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
     fHistClusterENMatchesNeutral->GetYaxis()->SetTitle("#it{N}_{matches}");
     fHistograms->Add(fHistClusterENMatchesNeutral);
+    fHistClusterENMatchesConv                     = new TH2F(Form("ClusterE_NMatches_ConversionCluster %s",GetCutNumber().Data()),"ClusterE NMatches ConversionCluster",
+                                                             nBinsClusterE, arrClusEBinning, 20, -0.5, 19.5);
+    fHistClusterENMatchesConv->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
+    fHistClusterENMatchesConv->GetYaxis()->SetTitle("#it{N}_{matches}");
+    fHistograms->Add(fHistClusterENMatchesConv);
     fHistClusterENMatchesCharged                  = new TH2F(Form("ClusterE_NMatches_ChargedCluster %s",GetCutNumber().Data()),"ClusterE NMatches ChargedCluster",
                                                              nBinsClusterE, arrClusEBinning, 20, -0.5, 19.5);
     fHistClusterENMatchesCharged->GetXaxis()->SetTitle("#it{E}_{cl} (GeV)");
@@ -1901,6 +1908,7 @@ void AliCaloPhotonCuts::InitCutHistograms(TString name){
       fHistClusterEvsTrackEGammaSubCharged->Sumw2();
       fHistClusterEvsTrackEConv->Sumw2();
       fHistClusterENMatchesNeutral->Sumw2();
+      fHistClusterENMatchesConv->Sumw2();
       fHistClusterENMatchesCharged->Sumw2();
       fHistClusterEvsTrackEPrimaryButNoElec->Sumw2();
       fHistClusterEvsTrackSumEPrimaryButNoElec->Sumw2();
@@ -2893,10 +2901,13 @@ Bool_t AliCaloPhotonCuts::ClusterQualityCuts(AliVCluster* cluster, AliVEvent *ev
     else if (fUsePtDepTrackToCluster == 1)
       nlabelsMatchedTracks          = fCaloTrackMatcher->GetNMatchedTrackIDsForCluster(event, cluster->GetID(), fFuncPtDepEta, fFuncPtDepPhi);
 
-    if (classification < 4 && classification > -1)
+    if (classification < 4 && classification > -1) {
       fHistClusterENMatchesNeutral->Fill(cluster->E(), nlabelsMatchedTracks);
-    else
+    } else if (classification == 4 || classification == 5) {
+      fHistClusterENMatchesConv->Fill(cluster->E(), nlabelsMatchedTracks); 
+    } else {
       fHistClusterENMatchesCharged->Fill(cluster->E(), nlabelsMatchedTracks);
+    }
 
     // plot electrons that survived the track matching
     if (!CheckClusterForTrackMatch(cluster) && classification == 7){ // electrons that survived the matching

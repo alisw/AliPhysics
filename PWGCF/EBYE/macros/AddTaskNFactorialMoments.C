@@ -12,7 +12,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
   double fVzMax = 10.0, bool fRejectElectrons = kFALSE,
   double fDCAXYRangeMax = 0.0, double fDCAZRangeMax = 0.0,
   double fITSClusterCut = 0.0, double fTPCClusterCut = 0.0,
-  double fnTPCrossedrows = 0.0, double fSharedCls = 0.0, double fSharedRows = 0.0, double fFindableCls = 0.0, bool defSharedFrac = kTRUE, int bField = 0, int Mmax = 123, bool fIsMC = kFALSE)
+  double fnTPCrossedrows = 0.0, double fSharedCls = 0.0, double fSharedRows = 0.0, double fFindableCls = 0.0, bool defSharedFrac = kTRUE, int bField = 0, int Mmax = 123, bool fIsMC = kFALSE, const char* suffix = "")
 {
 
   // year = "2010" or "2015"
@@ -50,7 +50,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
 
   // creating an instance for tasknfms
   AliAnalysisTaskNFactorialMoments* tasknfms =
-    new AliAnalysisTaskNFactorialMoments("tasknfms");
+    new AliAnalysisTaskNFactorialMoments(suffix);
   if (!tasknfms)
     return 0x0;
 
@@ -83,7 +83,7 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
   AliAnalysisDataContainer* coutputlist[nout];
 
   coutputlist[0] = mgr->CreateContainer(
-    "outputlist", TList::Class(), AliAnalysisManager::kOutputContainer,
+    Form("outputlist%s", suffix), TList::Class(), AliAnalysisManager::kOutputContainer,
     AliAnalysisManager::GetCommonFileName());
 
   char* name = "ntplist";
@@ -91,21 +91,21 @@ AliAnalysisTaskNFactorialMoments* AddTaskNFactorialMoments(
     name = "ntplistRe";
   for (int nbins = 0; nbins < fNumberofPtBins; nbins++) {
     coutputlist[nbins + 1] =
-      mgr->CreateContainer(Form("%s%d", name, nbins + 1), TList::Class(),
+      mgr->CreateContainer(Form("%s%d%s", name, nbins + 1, suffix), TList::Class(),
                            AliAnalysisManager::kOutputContainer,
                            AliAnalysisManager::GetCommonFileName());
     if (fIsMC)
       coutputlist[nbins + fNumberofPtBins + 1] =
-        mgr->CreateContainer(Form("ntplistGen%d", nbins + 1), TList::Class(),
+        mgr->CreateContainer(Form("ntplistGen%d%s", nbins + 1, suffix), TList::Class(),
                              AliAnalysisManager::kOutputContainer,
                              AliAnalysisManager::GetCommonFileName());
   }
   if (!fIsMC)
     coutputlist[nout - 2] = mgr->CreateContainer(
-      "QAlist", TList::Class(), AliAnalysisManager::kOutputContainer,
+      Form("QAlist%s", suffix), TList::Class(), AliAnalysisManager::kOutputContainer,
       AliAnalysisManager::GetCommonFileName());
   coutputlist[nout - 1] = mgr->CreateContainer(
-    "QAlist2", TList::Class(), AliAnalysisManager::kOutputContainer,
+    Form("QAlist2%s", suffix), TList::Class(), AliAnalysisManager::kOutputContainer,
     AliAnalysisManager::GetCommonFileName());
 
   mgr->ConnectInput(tasknfms, 0, mgr->GetCommonInputContainer());

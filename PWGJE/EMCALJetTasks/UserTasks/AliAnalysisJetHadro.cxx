@@ -181,6 +181,9 @@ fDoEMCJet(kTRUE),
 fFillFastJet(kTRUE),
 fFillEMCJet(kTRUE),
 fFillIncTracks(kTRUE),
+fFillpTPC(kTRUE),
+fFillp(kTRUE),
+fFillpT(kTRUE),
 fFillJetsEMCConst(kTRUE),
 fFillJetsEMCBGConst(kTRUE),
 fcent_min(0.0),
@@ -211,9 +214,9 @@ fMomExpec_High(20.0),
 fEtaExpec_NBins(9),
 fEtaExpec_Low(0.0),
 fEtaExpec_High(0.9),
-fDEdxBinWidth(0),
-fDEdxUp(0),
-fDEdxDown(0),
+fNdEdxBins(2000),
+fDEdxUp(0.0),
+fDEdxDown(20.0),
 fDEdxCleanUp(0),
 fArmPodTPCSignal(0),
 fArmPodptot(0),
@@ -386,12 +389,19 @@ fHistCentralityImpPar(0),
 fHistImpParam(0),
 fHistVertex(0),
 fHistIncTracks_dEdx(0),
+fHistIncTracks_dEdx_p(0),
+fHistIncTracks_dEdx_pT(0),
 fHistIncTracks_moms(0),
+fHistIncTracks_moms_p(0),
 fHistIncTracks_kin(0),
 fHistJetTracks_dEdx(0),
+fHistJetTracks_dEdx_p(0),
+fHistJetTracks_dEdx_pT(0),
 fHistJetTracks_moms(0),
+fHistJetTracks_moms_p(0),
 fHistJetTracks_kin(0),
 fHistIncTracks_mpi(0),
+/*
 fHistIncTracks_mpi_small(0),
 fHistIncTracks_spi_small(0),
 fHistIncTracks_mel_small(0),
@@ -400,6 +410,7 @@ fHistIncTracks_mka_small(0),
 fHistIncTracks_ska_small(0),
 fHistIncTracks_mpr_small(0),
 fHistIncTracks_spr_small(0),
+*/
 fHistIncTracks_spi(0),
 fHistIncTracks_mel(0),
 fHistIncTracks_sel(0),
@@ -491,6 +502,9 @@ fFillEMCJet(kTRUE),
 fFillJetsEMCConst(kTRUE),
 fFillJetsEMCBGConst(kTRUE),
 fFillIncTracks(kTRUE),
+fFillpTPC(kTRUE),
+fFillp(kTRUE),
+fFillpT(kTRUE),
 fcent_min(0.0),
 fcent_max(0.0),
 fjetMinPtSub(-1000.0),
@@ -519,9 +533,9 @@ fMomExpec_High(20.0),
 fEtaExpec_NBins(9),
 fEtaExpec_Low(0.0),
 fEtaExpec_High(0.9),
-fDEdxBinWidth(0),
-fDEdxUp(0),
-fDEdxDown(0),
+fNdEdxBins(2000),
+fDEdxUp(0.0),
+fDEdxDown(20.0),
 fDEdxCleanUp(0),
 fArmPodTPCSignal(0),
 fArmPodptot(0),
@@ -694,12 +708,19 @@ fHistCentralityImpPar(0),
 fHistImpParam(0),
 fHistVertex(0),
 fHistIncTracks_dEdx(0),
+fHistIncTracks_dEdx_p(0),
+fHistIncTracks_dEdx_pT(0),
 fHistIncTracks_moms(0),
+fHistIncTracks_moms_p(0),
 fHistIncTracks_kin(0),
 fHistJetTracks_dEdx(0),
+fHistJetTracks_dEdx_p(0),
+fHistJetTracks_dEdx_pT(0),
 fHistJetTracks_moms(0),
+fHistJetTracks_moms_p(0),
 fHistJetTracks_kin(0),
 fHistIncTracks_mpi(0),
+/*
 fHistIncTracks_mpi_small(0),
 fHistIncTracks_spi_small(0),
 fHistIncTracks_mel_small(0),
@@ -708,6 +729,7 @@ fHistIncTracks_mka_small(0),
 fHistIncTracks_ska_small(0),
 fHistIncTracks_mpr_small(0),
 fHistIncTracks_spr_small(0),
+*/
 fHistIncTracks_spi(0),
 fHistIncTracks_mel(0),
 fHistIncTracks_sel(0),
@@ -781,11 +803,18 @@ AliAnalysisJetHadro::~AliAnalysisJetHadro()
   if (fHistImpParam)        delete fHistImpParam;
   if (fHistVertex)          delete fHistVertex;
   if (fHistIncTracks_dEdx)          delete fHistIncTracks_dEdx;
+  if (fHistIncTracks_dEdx_p)          delete fHistIncTracks_dEdx_p;
+  if (fHistIncTracks_dEdx_pT)          delete fHistIncTracks_dEdx_pT;
   if (fHistIncTracks_moms)          delete fHistIncTracks_moms;
+  if (fHistIncTracks_moms_p)          delete fHistIncTracks_moms_p;
   if (fHistIncTracks_kin)          delete fHistIncTracks_kin;
   if (fHistJetTracks_dEdx)          delete fHistJetTracks_dEdx;
+  if (fHistJetTracks_dEdx_p)          delete fHistJetTracks_dEdx_p;
+  if (fHistJetTracks_dEdx_pT)          delete fHistJetTracks_dEdx_pT;
   if (fHistJetTracks_moms)          delete fHistJetTracks_moms;
+  if (fHistJetTracks_moms_p)          delete fHistJetTracks_moms_p;
   if (fHistJetTracks_kin)          delete fHistJetTracks_kin;
+  /*
   if (fHistIncTracks_mpi_small)          delete fHistIncTracks_mpi_small;
   if (fHistIncTracks_spi_small)          delete fHistIncTracks_spi_small;
   if (fHistIncTracks_mel_small)          delete fHistIncTracks_mel_small;
@@ -794,6 +823,7 @@ AliAnalysisJetHadro::~AliAnalysisJetHadro()
   if (fHistIncTracks_ska_small)          delete fHistIncTracks_ska_small;
   if (fHistIncTracks_mpr_small)          delete fHistIncTracks_mpr_small;
   if (fHistIncTracks_spr_small)          delete fHistIncTracks_spr_small;
+  */
   if (fHistIncTracks_mpi)          delete fHistIncTracks_mpi;
   if (fHistIncTracks_spi)          delete fHistIncTracks_spi;
   if (fHistIncTracks_mel)          delete fHistIncTracks_mel;
@@ -998,19 +1028,31 @@ void AliAnalysisJetHadro::UserCreateOutputObjects()
   //   Event histograms
   // ************************************************************************
   //
-  fHistEmptyEvent        = new TH1F("hEmptyEvent",           "control histogram to count empty events"    , 10,  0., 10.);
+  //fHistEmptyEvent        = new TH1F("hEmptyEvent",           "control histogram to count empty events"    , 10,  0., 10.);
   fHistCentrality        = new TH1F("hCentrality",           "control histogram for centrality"           , 10,  0., 100.);
-  fHistCentralityImpPar  = new TH1F("hCentralityImpPar",     "control histogram for centrality imppar"    , 10,  0., 100.);
-  fHistImpParam          = new TH1F("hImpParam",             "control histogram for impact parameter"     , 200, 0., 20.);
+  //fHistCentralityImpPar  = new TH1F("hCentralityImpPar",     "control histogram for centrality imppar"    , 10,  0., 100.);
+  //fHistImpParam          = new TH1F("hImpParam",             "control histogram for impact parameter"     , 200, 0., 20.);
   fHistVertex            = new TH1F("hVertex",               "control histogram for vertex Z position"    , 200, -20., 20.);
-  fHistIncTracks_dEdx    = new TH3D("fHistIncTracks_dEdx",   "dEdx histogram for inclusive tracks"        , 2000, 0., 20., 400, 0., 2000., 9, 0.0, 0.9);
-  fHistIncTracks_moms    = new TH3D("fHistIncTracks_moms",   "All mom types for inclusive tracks"         , 200, 0., 20., 290, 0., 29.0, 290, 0., 29.0);
-  fHistIncTracks_kin    = new TH3D("fHistIncTracks_kin",     "Kinematics histogram for inclusive tracks"  , 200, 0., 20., 9, 0.0, 0.9, 64, -3.2, 3.2);
 
-  fHistJetTracks_dEdx    = new TH3D("fHistJetTracks_dEdx",   "dEdx histogram for Jet tracks"        , 2000, 0., 20., 400, 0., 2000., 9, 0.0, 0.9);
-  fHistJetTracks_moms    = new TH3D("fHistJetTracks_moms",   "All mom types for Jet tracks"         , 200, 0., 20., 290, 0., 29.0, 290, 0., 29.0);
-  fHistJetTracks_kin    = new TH3D("fHistJetTracks_kin",     "Kinematics histogram for Jet tracks"  , 200, 0., 20., 9, 0.0, 0.9, 64, -3.2, 3.2);
+  if (fFillpTPC) fHistIncTracks_dEdx    = new TH3F("fHistIncTracks_dEdx",   "dEdx histogram for inclusive tracks"        , fMomExpec_NBins,fMomExpec_Low, fMomExpec_High,   fNdEdxBins,fDEdxUp,fDEdxDown, fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
+  if (fFillp) fHistIncTracks_dEdx_p    = new TH3F("fHistIncTracks_dEdx_p",   "dEdx histogram for inclusive tracks"        ,fMomExpec_NBins,fMomExpec_Low, fMomExpec_High,   fNdEdxBins,fDEdxUp,fDEdxDown, fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
+  if (fFillpT) fHistIncTracks_dEdx_pT    = new TH3F("fHistIncTracks_dEdx_pT",   "dEdx histogram for inclusive tracks"        ,fMomExpec_NBins,fMomExpec_Low, fMomExpec_High,   fNdEdxBins,fDEdxUp,fDEdxDown, fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
 
+  if (fFillpTPC) fHistIncTracks_moms    = new TH2F("fHistIncTracks_moms",   "All mom types for inclusive tracks"         ,fMomExpec_NBins,fMomExpec_Low, fMomExpec_High,fMomExpec_NBins,fMomExpec_Low, fMomExpec_High);
+  if (fFillp) fHistIncTracks_moms_p    = new TH2F("fHistIncTracks_moms_p",   "All mom types for inclusive tracks"         ,fMomExpec_NBins,fMomExpec_Low, fMomExpec_High,fMomExpec_NBins,fMomExpec_Low, fMomExpec_High);
+
+  fHistIncTracks_kin    = new TH3F("fHistIncTracks_kin",     "Kinematics histogram for inclusive tracks"  , 200, 0., 20., 9, 0.0, 0.9, 64, -3.2, 3.2);
+
+  if (fFillpTPC) fHistJetTracks_dEdx    = new TH3F("fHistJetTracks_dEdx",   "dEdx histogram for Jet tracks"        ,fMomExpec_NBins,fMomExpec_Low, fMomExpec_High,   fNdEdxBins,fDEdxUp,fDEdxDown, fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
+  if (fFillp) fHistJetTracks_dEdx_p    = new TH3F("fHistJetTracks_dEdx_p",   "dEdx histogram for Jet tracks"        ,fMomExpec_NBins,fMomExpec_Low, fMomExpec_High,   fNdEdxBins,fDEdxUp,fDEdxDown, fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
+  if (fFillpT) fHistJetTracks_dEdx_pT    = new TH3F("fHistJetTracks_dEdx_pT",   "dEdx histogram for Jet tracks"        ,fMomExpec_NBins,fMomExpec_Low, fMomExpec_High,   fNdEdxBins,fDEdxUp,fDEdxDown, fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
+
+  if (fFillpTPC) fHistJetTracks_moms    = new TH2F("fHistJetTracks_moms",   "All mom types for Jet tracks"         ,fMomExpec_NBins,fMomExpec_Low, fMomExpec_High,fMomExpec_NBins,fMomExpec_Low, fMomExpec_High);
+  if (fFillp) fHistJetTracks_moms_p    = new TH2F("fHistJetTracks_moms_p",   "All mom types for Jet tracks"         ,fMomExpec_NBins,fMomExpec_Low, fMomExpec_High,fMomExpec_NBins,fMomExpec_Low, fMomExpec_High);
+
+  fHistJetTracks_kin    = new TH3F("fHistJetTracks_kin",     "Kinematics histogram for Jet tracks"  , 200, 0., 20., 9, 0.0, 0.9, 64, -3.2, 3.2);
+
+  /*
   fHistIncTracks_mpi_small  = new TH2D("fHistIncTracks_mpi_small",     "Expected mean pion histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
   fHistIncTracks_spi_small  = new TH2D("fHistIncTracks_spi_small",     "Expected sigma pion histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
 
@@ -1022,39 +1064,47 @@ void AliAnalysisJetHadro::UserCreateOutputObjects()
 
   fHistIncTracks_mpr_small  = new TH2D("fHistIncTracks_mpr_small",     "Expected mean proton histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
   fHistIncTracks_spr_small  = new TH2D("fHistIncTracks_spr_small",     "Expected sigma proton histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
+  */
 
-  fHistIncTracks_mpi  = new TH3D("fHistIncTracks_mpi",     "Expected mean pion histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 1000, 0., 1000., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
-  fHistIncTracks_spi  = new TH3D("fHistIncTracks_spi",     "Expected sigma pion histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 500, 0., 50., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
+  fHistIncTracks_mpi  = new TH3F("fHistIncTracks_mpi",     "Expected mean pion histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 1000, 0., 1000., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
+  fHistIncTracks_spi  = new TH3F("fHistIncTracks_spi",     "Expected sigma pion histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 500, 0., 50., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
 
-  fHistIncTracks_mel  = new TH3D("fHistIncTracks_mel",     "Expected mean electron histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 1000, 0., 1000., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
-  fHistIncTracks_sel  = new TH3D("fHistIncTracks_sel",     "Expected sigma electron histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 500, 0., 50., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
+  fHistIncTracks_mel  = new TH3F("fHistIncTracks_mel",     "Expected mean electron histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 1000, 0., 1000., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
+  fHistIncTracks_sel  = new TH3F("fHistIncTracks_sel",     "Expected sigma electron histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 500, 0., 50., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
 
-  fHistIncTracks_mka  = new TH3D("fHistIncTracks_mka",     "Expected mean kaon histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 1000, 0., 1000., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
-  fHistIncTracks_ska  = new TH3D("fHistIncTracks_ska",     "Expected sigma kaon histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 500, 0., 50., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
+  fHistIncTracks_mka  = new TH3F("fHistIncTracks_mka",     "Expected mean kaon histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 1000, 0., 1000., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
+  fHistIncTracks_ska  = new TH3F("fHistIncTracks_ska",     "Expected sigma kaon histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 500, 0., 50., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
 
-  fHistIncTracks_mpr  = new TH3D("fHistIncTracks_mpr",     "Expected mean proton histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 1000, 0., 1000., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
-  fHistIncTracks_spr  = new TH3D("fHistIncTracks_spr",     "Expected sigma proton histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 500, 0., 50., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
+  fHistIncTracks_mpr  = new TH3F("fHistIncTracks_mpr",     "Expected mean proton histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 1000, 0., 1000., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
+  fHistIncTracks_spr  = new TH3F("fHistIncTracks_spr",     "Expected sigma proton histogram for inclusive tracks"  , fMomExpec_NBins, fMomExpec_Low, fMomExpec_High, 500, 0., 50., fEtaExpec_NBins, fEtaExpec_Low, fEtaExpec_High);
 
-  fHistJet_ptsub_v_area  = new TH2D("fHistJet_ptsub_v_area", "Before cuts, Jet pt after subtraction vs jet area"  , 100, 0., 1., 300, 0., 300.);
-  fHistJet_kin  = new TH3D("fHistJet_kin", "Kinematics histogram for Jets"  , 300, 0., 300., 48, -0.6, 0.6, 130, 0., 6.5);
-  fHistJet_moms  = new TH2D("fHistJet_moms", "All mom types for jets"  , 300, 0., 300., 600, 0., 600.);
+  fHistJet_ptsub_v_area  = new TH2F("fHistJet_ptsub_v_area", "Before cuts, Jet pt after subtraction vs jet area"  , 100, 0., 1., 300, 0., 300.);
+  fHistJet_kin  = new TH3F("fHistJet_kin", "Kinematics histogram for Jets"  , 300, 0., 300., 48, -0.6, 0.6, 130, 0., 6.5);
+  fHistJet_moms  = new TH2F("fHistJet_moms", "All mom types for jets"  , 300, 0., 300., 600, 0., 600.);
 
   //fListHist->Add(fHistEmptyEvent);
-  //fListHist->Add(fHistCentrality);
+  fListHist->Add(fHistCentrality);
   if (fMCtrue) {
     //fListHist->Add(fHistCentralityImpPar);
     //fListHist->Add(fHistImpParam);
   }
-  //fListHist->Add(fHistVertex);
+  fListHist->Add(fHistVertex);
 
-  fListHist->Add(fHistIncTracks_dEdx);
-  fListHist->Add(fHistIncTracks_moms);
+  if (fFillpTPC) fListHist->Add(fHistIncTracks_dEdx);
+  if (fFillp) fListHist->Add(fHistIncTracks_dEdx_p);
+  if (fFillpT) fListHist->Add(fHistIncTracks_dEdx_pT);
+  if (fFillpTPC) fListHist->Add(fHistIncTracks_moms);
+  if (fFillp) fListHist->Add(fHistIncTracks_moms_p);
   fListHist->Add(fHistIncTracks_kin);
 
-  fListHist->Add(fHistJetTracks_dEdx);
-  fListHist->Add(fHistJetTracks_moms);
+  if (fFillpTPC) fListHist->Add(fHistJetTracks_dEdx);
+  if (fFillp) fListHist->Add(fHistJetTracks_dEdx_p);
+  if (fFillpT) fListHist->Add(fHistJetTracks_dEdx_pT);
+  if (fFillpTPC) fListHist->Add(fHistJetTracks_moms);
+  if (fFillp) fListHist->Add(fHistJetTracks_moms_p);
   fListHist->Add(fHistJetTracks_kin);
 
+/*
   fListHist->Add(fHistIncTracks_mpi_small);
   fListHist->Add(fHistIncTracks_spi_small);
 
@@ -1066,12 +1116,12 @@ void AliAnalysisJetHadro::UserCreateOutputObjects()
 
   fListHist->Add(fHistIncTracks_mpr_small);
   fListHist->Add(fHistIncTracks_spr_small);
+*/
 
   fListHist->Add(fHistJet_ptsub_v_area);
   fListHist->Add(fHistJet_kin);
   fListHist->Add(fHistJet_moms);
 
-  /*
   fListHist->Add(fHistIncTracks_mpi);
   fListHist->Add(fHistIncTracks_spi);
 
@@ -1083,7 +1133,6 @@ void AliAnalysisJetHadro::UserCreateOutputObjects()
 
   fListHist->Add(fHistIncTracks_mpr);
   fListHist->Add(fHistIncTracks_spr);
-  */
 
   fEventInfo_CentralityEstimates  = new TVectorF(3);
   for (Int_t i=0;i<3;i++) (*fEventInfo_CentralityEstimates)[i]=-10.;
@@ -1190,6 +1239,7 @@ Bool_t AliAnalysisJetHadro::Run()
         if (fPileUpTightnessCut2->AcceptEvent(fESD)) { fPileUpBit |= 1 << 1; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
         if (fPileUpTightnessCut1->AcceptEvent(fESD)) { fPileUpBit |= 1 << 0; if (fUseCouts) std::cout << "pileupbit: " << std::bitset<4>(fPileUpBit) << std::endl;}
         fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE,1); // standard
+        if (fUseCouts) std::cout << " aaaaa " << std::endl; //CHANGE
         if (!fEventCuts.AcceptEvent(fESD)) {cout<< "pileup event " << endl; return kFALSE;}
       }
     }
@@ -1246,6 +1296,7 @@ Bool_t AliAnalysisJetHadro::Run()
     // fTimeStamp             = fESD->GetTimeStamp();
     // fEventGID              = TMath::Abs(Int_t(TString::Hash(&gid,sizeof(Int_t))));    // uniqe event id for real data
   }
+
   //
   // Get rid of "E-AliESDpid::GetTPCsignalTunedOnData: Tune On Data requested, but MC event not set. Call SetCurrentMCEvent before!" errors
   if (!fPIDResponse && !(fRunFastSimulation)) fPIDResponse = ((AliESDInputHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->GetESDpid();
@@ -1301,7 +1352,7 @@ Bool_t AliAnalysisJetHadro::Run()
         if (fMCImpactParameter>=impParArr[7] && fMCImpactParameter<impParArr[8]) fCentImpBin=65.;
         if (fMCImpactParameter>=impParArr[8] && fMCImpactParameter<impParArr[9]) fCentImpBin=75.;
         if (fMCImpactParameter<impParArr[0]  || fMCImpactParameter>impParArr[9]) fCentImpBin=-10.;
-        fHistCentralityImpPar->Fill(fCentImpBin);
+        //fHistCentralityImpPar->Fill(fCentImpBin);
       }
     } else if (!TMath::IsNaN(((AliGenHijingEventHeader*) genHeader)->ImpactParameter()) && fMCEvent){
       //
@@ -1327,7 +1378,7 @@ Bool_t AliAnalysisJetHadro::Run()
       if (fMCImpactParameter>=impParArr[7] && fMCImpactParameter<impParArr[8]) fCentImpBin=65.;
       if (fMCImpactParameter>=impParArr[8] && fMCImpactParameter<impParArr[9]) fCentImpBin=75.;
       if (fMCImpactParameter<impParArr[0]  || fMCImpactParameter>impParArr[9]) fCentImpBin=-10.;
-      fHistCentralityImpPar->Fill(fCentImpBin);
+      //fHistCentralityImpPar->Fill(fCentImpBin);
     }
     if (fCentrality<0) fCentrality=fCentImpBin;
     //
@@ -1349,6 +1400,7 @@ Bool_t AliAnalysisJetHadro::Run()
     //
     // ========================== Real =========================
     //
+    if (fUseCouts) std::cout << " bbbbb " << std::endl; //CHANGE
     if (!fESD)          { Printf(" Error::siweyhmi: fESD not available"); return kFALSE; }
     if (!fESDtrackCuts) { Printf(" Error::siweyhmi: fESDtrackCuts not available"); return kFALSE; }
     //
@@ -1379,6 +1431,7 @@ Bool_t AliAnalysisJetHadro::Run()
     // ------------------------------------------------
     //
     // if (fMCtrue && TMath::Abs(fVz) > 10) return;   // For MC put fixed cut
+    if (fUseCouts) std::cout << " ccccc " << std::endl; //CHANGE
     if (TMath::Abs(fVz)>10) return kFALSE;
     //
     if (fVertex && isVertexOk) fHistVertex->Fill(fVz);
@@ -1427,9 +1480,11 @@ Bool_t AliAnalysisJetHadro::Run()
   fHistCentrality->Fill(fCentrality);  // count events after physics and vertex selection
   //
   // in case small stat is enough
+  if (fUseCouts) std::cout << " dddd " << std::endl; //CHANGE
   if (fPercentageOfEvents>0 && (fEventCountInFile%fPercentageOfEvents)!=0) return kFALSE;
 
   // if centrality estimation failed
+  if (fUseCouts) std::cout << " eeee " << std::endl; //CHANGE
   if (fCentrality > 100.) return kFALSE;
   //
   // ======================================================================
@@ -2060,8 +2115,11 @@ void AliAnalysisJetHadro::FindJetsFJ()
           for(Int_t j=2;j<6;j++) nITSClusters += multiObj->GetNumberOfITSClusters(j);
 
           if (ifDefaultCuts == 1 && TMath::Abs(fEta) < 0.9){
-            fHistJetTracks_dEdx->Fill(fPtot,fTPCSignal,TMath::Abs(fEta));
-            fHistJetTracks_moms->Fill(fPt,fPVertex,fPtot);
+            if (fFillpTPC) fHistJetTracks_dEdx->Fill(fPtot,fTPCSignal,TMath::Abs(fEta));
+            if (fFillp) fHistJetTracks_dEdx_p->Fill(fPVertex,fTPCSignal,TMath::Abs(fEta));
+            if (fFillpT) fHistJetTracks_dEdx_pT->Fill(fPt,fTPCSignal,TMath::Abs(fEta));
+            if (fFillpTPC) fHistJetTracks_moms->Fill(fPt,fPtot);
+            if (fFillp) fHistJetTracks_moms_p->Fill(fPt,fPVertex);
             fHistJetTracks_kin->Fill(fPt,TMath::Abs(fEta),fPhi);
           }
 
@@ -2238,8 +2296,11 @@ void AliAnalysisJetHadro::FillTPCdEdxReal()
     if (fPt>100.0) continue; //So we can match the jets that we throw out w/ max track pT>100
 
     if (ifDefaultCuts == 1 && TMath::Abs(fEta) < 0.9){
-      fHistIncTracks_dEdx->Fill(fPtot,fTPCSignal,TMath::Abs(fEta));
-      fHistIncTracks_moms->Fill(fPt,fPVertex,fPtot);
+      if (fFillpTPC) fHistIncTracks_dEdx->Fill(fPtot,fTPCSignal,TMath::Abs(fEta));
+      if (fFillp) fHistIncTracks_dEdx_p->Fill(fPVertex,fTPCSignal,TMath::Abs(fEta));
+      if (fFillpT) fHistIncTracks_dEdx_pT->Fill(fPt,fTPCSignal,TMath::Abs(fEta));
+      if (fFillpTPC) fHistIncTracks_moms->Fill(fPt,fPtot);
+      if (fFillp) fHistIncTracks_moms_p->Fill(fPt,fPVertex);
       fHistIncTracks_kin->Fill(fPt,TMath::Abs(fEta),fPhi);
 
       fHistIncTracks_mpi->Fill(fPtot,fDEdxPi,TMath::Abs(fEta));
@@ -2547,7 +2608,7 @@ void AliAnalysisJetHadro::FillEventTree()
 {
   if (fUseCouts) std::cout << " Info::siweyhmi: ===== In the FillEventTree ===== " << std::endl;
   (*fTreeSRedirector)<<"jeteventInfo"<<
-  "gid="       << fEventGID << //  global event ID
+  //"gid="       << fEventGID << //  global event ID
   "rhoFJ="      << frhoFJ << //event rho
   "rhoEMC="  << fjetRhoVal <<
   "cent="      << fCentrality  <<  //  centrality
@@ -3169,7 +3230,7 @@ Int_t AliAnalysisJetHadro::CountEmptyEvents(Int_t counterBin)
   //
   // check if the event is empty
   if (emptyCount<1) {
-    fHistEmptyEvent->Fill(counterBin);
+    //fHistEmptyEvent->Fill(counterBin);
     std::cout << " Info::siweyhmi: Empty event in " << fChunkName << std::endl;
   }
   if (fUseCouts) std::cout << " Info::siweyhmi: ====== EVENT IS COOL GO AHEAD ======= " << std::endl;
@@ -3197,7 +3258,7 @@ void AliAnalysisJetHadro::Terminate(Option_t *)
   // Draw result to the screen
   // Called once at the end of the query
   std::cout << " Info::siweyhmi: ===== In the Terminate ===== " << std::endl;
-
+/*
   for (int i=0; i<fMomExpec_NBins; i++){
     for (int j=0; j<fEtaExpec_NBins; j++){
     TH1D *test_mpi = fHistIncTracks_mpi->ProjectionY("test_mpi",i+1,i+1,j+1,j+1,"e");
@@ -3223,6 +3284,7 @@ void AliAnalysisJetHadro::Terminate(Option_t *)
     fHistIncTracks_spr_small->Fill(binx,biny,test_spr->GetMean());
     }
   }
+*/
 
   std::cout << "The totalJetArea of all jets that pass our cuts is "   << ftotalJetArea << std::endl;
   std::cout << "The totalNumRealJets that pass our cuts is "   << ftotalNumRealJets << std::endl;

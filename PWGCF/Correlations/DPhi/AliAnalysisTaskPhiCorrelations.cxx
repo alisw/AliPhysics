@@ -154,6 +154,7 @@ fOnlyOneEtaSide(0),
 fOnlyOneAssocEtaSide(0),
 fPtMin(0.5),
 fDCAXYCut(0),
+fDCAZCut(0),
 fSharedClusterCut(-1),
 fCrossedRowsCut(-1),
 fFoundFractionCut(-1),
@@ -291,6 +292,7 @@ void  AliAnalysisTaskPhiCorrelations::CreateOutputObjects()
   fAnalyseUE = new AliAnalyseLeadingTrackUE();
   fAnalyseUE->SetParticleSelectionCriteria(fFilterBit, fUseChargeHadrons, fTrackEtaCut, fTrackEtaCutMin, fPtMin);
   fAnalyseUE->SetDCAXYCut(fDCAXYCut);
+  fAnalyseUE->SetDCAZCut(fDCAZCut);
   fAnalyseUE->SetSharedClusterCut(fSharedClusterCut);
   fAnalyseUE->SetCrossedRowsCut(fCrossedRowsCut);
   fAnalyseUE->SetFoundFractionCut(fFoundFractionCut);

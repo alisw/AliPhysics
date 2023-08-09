@@ -93,12 +93,15 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fESDvsTPConlyLinearCut(15000.),
     fUseOutOfBunchPileupCut(false),
     fUseCorrectedNTracks(false),
+    binning_factor(1),
 	  fCentralityCut(101.1),
     fUseNarrowBin(false),
     fExtremeEfficiency(0),
     fTPCchi2perCluster(4.0),
     fUseAdditionalDCACut(false),
     fUseDefaultWeight(false),
+    bUseLikeSign(false),
+    iSign(0),
     fExtendV0MAcceptance(false),
     fV0MRatioCut(0),
     fEtaGap3Sub1(0.4),
@@ -176,12 +179,15 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fESDvsTPConlyLinearCut(15000.),
   fUseOutOfBunchPileupCut(false),
   fUseCorrectedNTracks(false),
+  binning_factor(1),
 	fCentralityCut(101.1),
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
   fTPCchi2perCluster(4.0),
   fUseAdditionalDCACut(false),
   fUseDefaultWeight(false),
+  bUseLikeSign(false),
+  iSign(0),
   fExtendV0MAcceptance(false),
   fV0MRatioCut(0),
   fEtaGap3Sub1(0.4),
@@ -287,12 +293,15 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fESDvsTPConlyLinearCut(15000.),
   fUseOutOfBunchPileupCut(false),
   fUseCorrectedNTracks(false),
+  binning_factor(1),
 	fCentralityCut(101.1),
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
   fTPCchi2perCluster(4.0),
   fUseAdditionalDCACut(false),
   fUseDefaultWeight(false),
+  bUseLikeSign(false),
+  iSign(0),
   fExtendV0MAcceptance(false),
   fV0MRatioCut(0),
   fEtaGap3Sub1(0.4),
@@ -425,10 +434,10 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
         nn = 200 + 56;
         // 56 = (3000-200)/50
         for (int i = 0; i <= 200; i++) {
-          xbins[i] = i + 0.5;
+          xbins[i] = (i + 0.5)*binning_factor;
         }
         for (int i = 1; i <= 56; i++) {
-          xbins[200+i] = 50*i + 200 + 0.5;
+          xbins[200+i] = (50*i + 200 + 0.5)*binning_factor;
         } 
       } else {
         nn = 3000;
@@ -996,6 +1005,10 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
        if (dcaXY > 1) continue;
        if (dcaZ > 1) continue;
     }
+    if(bUseLikeSign)
+    {
+      if(!(aodTrk->Charge() == iSign)) continue;
+    }
 
 	  hDCAxy->Fill(dcaXY, aodTrk->Pt());
 	  hDCAz->Fill(dcaZ);
@@ -1029,7 +1042,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     // Calculate the values upto v7
     if (fuQStandard) {
       for(int iharm=0; iharm<8; iharm++) {
-        for(int ipow=0; ipow<6; ipow++) {
+        for(int ipow=0; ipow<9; ipow++) {
           Qcos[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
           Qsin[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
         }
@@ -1290,6 +1303,14 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
   NtrksAfter3subM = 0;
   NtrksAfter3subR = 0;
 
+  sumPtw = 0;
+  sumPtw2 = 0;
+  sumPt2w2 = 0;
+  sumWeight = 0;
+  sumWeight2 = 0;
+  eventWeight  = 0;
+  eventWeight2 = 0;
+
 
   //..for DCA
   // double pos[3], vz, vx, vy;
@@ -1367,7 +1388,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
     // Calculate the values upto v7
     if (fuQStandard) {
       for(int iharm=0; iharm<8; iharm++) {
-        for(int ipow=0; ipow<6; ipow++) {
+        for(int ipow=0; ipow<9; ipow++) {
           Qcos[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
           Qsin[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
         }
@@ -1531,6 +1552,12 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
         }
       }
       if(track->Eta() >= -fEtaGap3Sub2 && track->Eta() <= fEtaGap3Sub2) {//..middle part
+        sumPtw+=weightPt*track->Pt();
+        sumPtw2+=weightPt*weightPt*track->Pt();
+        sumPt2w2 += weightPt*weightPt*track->Pt()*track->Pt();
+        sumWeight += weightPt;
+        sumWeight2 += weightPt*weightPt;
+
         NtrksAfter3subM += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1561,7 +1588,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
     correlator.FillQVector(correlator.Qvector0M, QcosGap0M, QsinGap0M);
     correlator.FillQVector(correlator.Qvector0P, QcosGap0P, QsinGap0P);
   }
-  if (fuQGapScan) {
+  if (fuQGapScan || fgVnPtCorr) {
     correlator.FillQVector(correlator.Qvector2M, QcosGap2M, QsinGap2M);
     correlator.FillQVector(correlator.Qvector2P, QcosGap2P, QsinGap2P);
     correlator.FillQVector(correlator.Qvector4M, QcosGap4M, QsinGap4M);
@@ -1577,7 +1604,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
     correlator.FillQVector(correlator.Qvector14M, QcosGap14M, QsinGap14M);
     correlator.FillQVector(correlator.Qvector14P, QcosGap14P, QsinGap14P);
   }
-  if (fuQThreeSub) {
+  if (fuQThreeSub || fgVnPtCorr) {
     correlator.FillQVector(correlator.QvectorSubLeft, QcosSubLeft, QsinSubLeft);
     correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight);
     correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
@@ -1867,6 +1894,12 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
         }
       }
       if(track->Eta() >= -fEtaGap3Sub2 && track->Eta() <= fEtaGap3Sub2) {//..middle part
+        sumPtw+=weightPt*track->Pt();
+        sumPtw2+=weightPt*weightPt*track->Pt();
+        sumPt2w2 += weightPt*weightPt*track->Pt()*track->Pt();
+        sumWeight += weightPt;
+        sumWeight2 += weightPt*weightPt;
+
         NtrksAfter3subM += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {

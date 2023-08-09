@@ -81,7 +81,7 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         void SetWriteXic0Tree(Bool_t a) {fWriteXic0Tree = a;}
         Bool_t GetWriteXic0Tree() const {return fWriteXic0Tree;}
 
-        void FillTreeGenXic0(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLoverP);
+        void FillTreeGenXic0(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLoverP, TClonesArray *mcArray, AliAODMCParticle *mc_pifromXic0, AliAODMCParticle *mc_pifromXi, AliAODMCParticle *mc_pifromLam, AliAODMCParticle *mc_prfromLam, AliAODMCParticle *mc_Xi, AliAODMCParticle *mc_Lam);
         void FillTreeRecXic0FromV0(KFParticle kfpXicZero, AliAODTrack *trackPi, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODv0 *v0, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkP, AliAODTrack *trkN, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
         void FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
 

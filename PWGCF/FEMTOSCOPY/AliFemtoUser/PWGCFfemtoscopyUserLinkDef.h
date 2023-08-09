@@ -225,4 +225,6 @@
 // p-d/t/He3 track cut
 #pragma link C++ class AliFemtoTrackCutPdtHe3;
 #pragma link C++ class AliFemtoCorrFctnpdtHe3;
+#pragma link C++ class AliAnalysisTaskDowangppDCAfit+;
+
 

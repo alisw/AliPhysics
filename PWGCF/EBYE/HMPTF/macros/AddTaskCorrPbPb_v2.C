@@ -1,5 +1,5 @@
 
-AliAnalysisTaskCorrPbPb_v2 *AddTaskCorrPbPb_v2(Int_t fCentralityMin=0, Int_t fCentralityMax=90, Double_t fVzMax=10, Int_t fpileupcut = 1, Int_t fCentEstFlag = 0, Int_t fFilterBit=96, Double_t fchi2tpc=2.5, Double_t fchi2its=36,  Double_t fnotpccrossedrows=70, Double_t fpidnSigma_Pion=2.0, Double_t fpidnSigma_Kaon=2.0, Double_t fpidnSigma_Proton=2.0, TString OutFileName = "_default", TString sMCfilePath ="alien:///alice/cern.ch/user/s/swati/EfficiencyPbPbLHC20j6a/CentralitywiseEff/EfficiencyHijingPbPb.root")
+AliAnalysisTaskCorrPbPb_v2 *AddTaskCorrPbPb_v2(Int_t fCentralityMin=0, Int_t fCentralityMax=90, Double_t fVzMax=10, Int_t fpileupcut = 1, Int_t fCentEstFlag = 0, Int_t fFilterBit=96, Double_t fchi2tpc=2.5, Double_t fchi2its=36,  Double_t fnotpccrossedrows=70, Double_t fpidnSigma_Pion=2.0, Double_t fpidnSigma_Kaon=2.0, Double_t fpidnSigma_Proton=2.0, TString OutFileName = "_default", TString sMCfilePath ="alien:///alice/cern.ch/user/s/swati/EfficiencyPbPbLHC20j6a/CentralitywiseEff/EfficiencyHijingPbPb.root", Double_t fetacut = 0.8)
 {
   // standard with task
   printf("===================================================================================\n");
@@ -67,6 +67,7 @@ AliAnalysisTaskCorrPbPb_v2 *AddTaskCorrPbPb_v2(Int_t fCentralityMin=0, Int_t fCe
   task_Mpt->SetMaxChi2PerITSClusterRange(fchi2its);
   task_Mpt->SetPIDnSigmaCut( fpidnSigma_Pion, fpidnSigma_Kaon, fpidnSigma_Proton);
   task_Mpt->SetMinNoTPCCrossedRows(fnotpccrossedrows);
+  task_Mpt->SetEtaCut(fetacut);
   
   /*
   TString OutTreeName;
@@ -109,7 +110,7 @@ AliAnalysisTaskCorrPbPb_v2 *AddTaskCorrPbPb_v2(Int_t fCentralityMin=0, Int_t fCe
   TString                  sMyOutName1;
   TString                  sMyOutName2;
   TString                  sMyOutName3;
-  sMyOutName1 += "AnalysisMain_profiles";
+  sMyOutName1 += "AnalysisMain_tree";
   sMyOutName1 += OutFileName;
   sMyOutName2 += "Histogram_TrackVariables";
   sMyOutName2 += OutFileName;

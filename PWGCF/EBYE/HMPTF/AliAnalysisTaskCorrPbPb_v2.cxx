@@ -222,6 +222,7 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2():
   fPIDnSigmaKaonCut(0),
   fPIDnSigmaProtonCut(0),
   fTPCcrossedrows(0),
+  fEtaMax(0),
   fPileupCutVal(0),
   fCentralityEstimator_flag(0),
   f2Dhist_nSigmaTPC_pion(0),
@@ -401,6 +402,7 @@ AliAnalysisTaskCorrPbPb_v2::AliAnalysisTaskCorrPbPb_v2(const char *name):
   fPIDnSigmaKaonCut(0),
   fPIDnSigmaProtonCut(0),
   fTPCcrossedrows(0),
+  fEtaMax(0),
   fPileupCutVal(0),
   fCentralityEstimator_flag(0),
   f2Dhist_nSigmaTPC_pion(0),
@@ -940,7 +942,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
       centrality_bin = 6;
     else if (lV0M > 60.0 && lV0M < 70.0)
       centrality_bin = 7;
-    else if (lV0M > 70.0 && lV0M < 80.0)
+    else if (lV0M > 70.0 && lV0M < 90.0)
       centrality_bin = 8;
 
 
@@ -1049,7 +1051,7 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
 
 
 	//Kinematic cuts on pT and Eta
-	if (TMath::Abs(trkEta) > 0.8) continue;
+	if (TMath::Abs(trkEta) > fEtaMax) continue;
 	if (trkPt < 0.2) continue;
 	if (trkPt > 3.0) continue;
 
@@ -1304,21 +1306,19 @@ void AliAnalysisTaskCorrPbPb_v2::UserExec(Option_t *)  {
     Profile_ptmax2_RecNetChargeNetProton->Fill(lV0M,netCharge_rec_ptmax2*netProton_rec_ptmax2);
     Profile_ptmax2_RecNetKaonNetProton->Fill(lV0M,netKaon_rec_ptmax2*netProton_rec_ptmax2);
 
-    Profile_ptmax2_Term1C2RecNetKaon->Fill(lV0M, term1_netKaon_rec_ptmax2);
-    Profile_ptmax2_Term1C2RecNetCharge->Fill(lV0M, term1_netCharge_rec_ptmax2);
-    Profile_ptmax2_Term1C2RecNetProton->Fill(lV0M, term1_netProton_rec_ptmax2);
-    Profile_ptmax2_Term2C2RecNetKaon->Fill(lV0M, term2_netKaon_rec_ptmax2);
-    Profile_ptmax2_Term2C2RecNetCharge->Fill(lV0M, term2_netCharge_rec_ptmax2);
-    Profile_ptmax2_Term2C2RecNetProton->Fill(lV0M, term2_netProton_rec_ptmax2);
-
-   
-
     Profile_ptSTAR_RecNetKaon->Fill(lV0M,netKaon_rec_ptSTAR);
     Profile_ptSTAR_RecNetCharge->Fill(lV0M,netCharge_rec_ptSTAR);
     Profile_ptSTAR_RecNetProton->Fill(lV0M,netProton_rec_ptSTAR);
     Profile_ptSTAR_RecNetChargeNetKaon->Fill(lV0M,netCharge_rec_ptSTAR*netKaon_rec_ptSTAR);
     Profile_ptSTAR_RecNetChargeNetProton->Fill(lV0M,netCharge_rec_ptSTAR*netProton_rec_ptSTAR);
     Profile_ptSTAR_RecNetKaonNetProton->Fill(lV0M,netKaon_rec_ptSTAR*netProton_rec_ptSTAR);
+
+    Profile_ptmax2_Term1C2RecNetKaon->Fill(lV0M, term1_netKaon_rec_ptmax2);
+    Profile_ptmax2_Term1C2RecNetCharge->Fill(lV0M, term1_netCharge_rec_ptmax2);
+    Profile_ptmax2_Term1C2RecNetProton->Fill(lV0M, term1_netProton_rec_ptmax2);
+    Profile_ptmax2_Term2C2RecNetKaon->Fill(lV0M, term2_netKaon_rec_ptmax2);
+    Profile_ptmax2_Term2C2RecNetCharge->Fill(lV0M, term2_netCharge_rec_ptmax2);
+    Profile_ptmax2_Term2C2RecNetProton->Fill(lV0M, term2_netProton_rec_ptmax2);
 
     Profile_ptSTAR_Term1C2RecNetKaon->Fill(lV0M, term1_netKaon_rec_ptSTAR);
     Profile_ptSTAR_Term1C2RecNetCharge->Fill(lV0M, term1_netCharge_rec_ptSTAR);

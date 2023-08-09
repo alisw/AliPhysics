@@ -74,7 +74,32 @@ fHistCentrality(0),
 fHisteventsummary(0),
 f1Unlike(0),
 f1Like(0),
-f1Mix(0)
+f1Mix(0),
+hist1(0),
+hist2(0),
+hist3(0),
+hist4(0),
+hist5(0),
+hist6(0),
+hist7(0),
+fFilterBit(32),
+kkshmasscut(1.04),
+nsigtpcpion(2),
+nsigtofpion(3),
+nsigtpckaon(2),
+nsigtofkaon(3),
+dcaxypos(0.06),
+dcaxyneg(0.06),
+dcav0daugh(1.0),
+dcav0pv(0.3),
+cospa(0.97),
+lowrad(0.5),
+lifetime(15),
+pidpion(4),
+nCRcut(70.),
+ratiocrfccut(0.8),
+chi2globalcut(36.0),
+chi2cut(36.0)  
 {
 
 }
@@ -94,7 +119,32 @@ fHistCentrality(0),
 fHisteventsummary(0),
 f1Unlike(0),
 f1Like(0),
-f1Mix(0)
+f1Mix(0),
+hist1(0),
+hist2(0),
+hist3(0),
+hist4(0),
+hist5(0),
+hist6(0),
+hist7(0),
+fFilterBit(32),
+kkshmasscut(1.04),
+nsigtpcpion(2),
+nsigtofpion(3),
+nsigtpckaon(2),
+nsigtofkaon(3),
+dcaxypos(0.06),
+dcaxyneg(0.06),
+dcav0daugh(1.0),
+dcav0pv(0.3),
+cospa(0.97),
+lowrad(0.5),
+lifetime(15),
+pidpion(4),
+nCRcut(70.),
+ratiocrfccut(0.8),
+chi2globalcut(36.0),
+chi2cut(36.0)  
 {
   DefineInput(0, TChain::Class()); 
   DefineOutput(1, TList::Class()); 
@@ -167,6 +217,13 @@ void AliAnalysisTaskfnAOD::UserCreateOutputObjects()
   f1Unlike = new THnSparseD("f1Unlike", "Unlike histogram", 2, bins, xmin, xmax);
   f1Like = new THnSparseD("f1Like", "Like histogram", 2, bins, xmin, xmax);
   f1Mix = new THnSparseD("f1Mix", "Mix histogram", 2, bins, xmin, xmax);
+  hist1=new TH1D("hist1", "hist1", 85, 0, 170);
+  hist2=new TH1D("hist2", "hist2", 20, 0, 2);
+  hist3=new TH1D("hist3", "hist3", 10, 0, 10);
+  hist4=new TH1D("hist4", "hist4", 25, 0, 50);
+  hist5=new TH1D("hist5", "hist5", 50, -5, 5);
+  hist6=new TH1D("hist6", "hist6", 50, -5, 5);
+  hist7=new TH1D("hist7", "hist7", 25, 0, 50);
 
 
   f1Unlike->Sumw2();
@@ -180,6 +237,14 @@ void AliAnalysisTaskfnAOD::UserCreateOutputObjects()
   fOutput->Add(f1Unlike);
   fOutput->Add(f1Like);
   fOutput->Add(f1Mix);
+  fOutput->Add(hist1);
+  fOutput->Add(hist2);
+  fOutput->Add(hist3);
+  fOutput->Add(hist4);
+  fOutput->Add(hist5);
+  fOutput->Add(hist6);
+  fOutput->Add(hist7);
+
   PostData(1, fOutput);
 }
 
@@ -194,15 +259,8 @@ void AliAnalysisTaskfnAOD::UserExec(Option_t *)
   
 
 
-  lESDevent = dynamic_cast <AliESDEvent*> (InputEvent());
   lAODevent = dynamic_cast <AliAODEvent*> (InputEvent());
-  /*
-  if (!(lESDevent)) {
-    AliWarning("ERROR: event not available \n");
-    PostData(1, fOutput);
-    return;
-  }
-  */
+
   if (!(lAODevent)) {
     AliWarning("ERROR: AOD event not available \n");
     PostData(1, fOutput);
@@ -261,7 +319,8 @@ void AliAnalysisTaskfnAOD::UserExec(Option_t *)
   fHistCentrality->Fill(lV0M);
   fHisteventsummary->Fill(1.5);
   
-  
+
+
   std::vector<AlikkshPair> kks0Candidates;
   std::vector<Alipi> pionCandidates;
   AlikkshPair kks0;
@@ -288,8 +347,13 @@ void AliAnalysisTaskfnAOD::UserExec(Option_t *)
   Int_t nkks0pair=0;
   Int_t npion=0;
   int mult=0;
-  Double_t tV0mom[3] = {0.0, 0.0, 0.0};
   Double_t trkPt=0.0, trkEta=0.0;
+  Float_t nCrossedRowsTPC=0.0, ratiocrfindcls=0.0;
+  Int_t findablecls=0;
+  Double_t chi2perclsTPC=0.0, chi2perclsITS=0.0, chi2constglobal=0.0;
+  Float_t dca[2]{0., 0.};
+
+
 
   for(Int_t itr = 0; itr < ntracks; itr++)
     {
@@ -298,14 +362,41 @@ void AliAnalysisTaskfnAOD::UserExec(Option_t *)
       //AliAODTrack* aodtrack = dynamic_cast <AliAODTrack*> (fVevent->GetTrack(itr));
       AliAODTrack *aodtrack  = dynamic_cast<AliAODTrack*>(track);
       if(!aodtrack)      continue;
-      //if(!fESDtrackCuts->AcceptTrack(esdtrack))  continue;
-      if(!aodtrack->TestFilterBit(768))  continue;
+      if(!aodtrack->TestFilterBit(fFilterBit))  continue;
       trkPt=aodtrack->Pt();
       trkEta=aodtrack->Eta();
       if (trkPt < 0.15) continue;      
       if (TMath::Abs(trkEta) > 0.8) continue; 
       mult=mult+1;
 
+      //track cuts fill
+      nCrossedRowsTPC = aodtrack->GetTPCClusterInfo(2,1);
+      findablecls = aodtrack->GetTPCNclsF();
+      ratiocrfindcls = nCrossedRowsTPC/findablecls;
+      chi2perclsTPC = aodtrack->GetTPCchi2perCluster();
+      AliAODVertex *vertex = aodtrack->GetProdVertex();
+      if (vertex)
+        {
+          if (vertex->GetType() == AliAODVertex::kKink) continue;
+	}
+
+      if (!(aodtrack->GetStatus() & AliVTrack::kTPCrefit)) continue;
+      if (!(aodtrack->GetStatus() & AliVTrack::kITSrefit)) continue;
+      chi2constglobal = aodtrack->GetChi2TPCConstrainedVsGlobal();
+      aodtrack->GetImpactParameters(dca[0], dca[1]);
+      chi2perclsITS= aodtrack->GetITSchi2()/aodtrack->GetITSNcls();
+
+      if (nCrossedRowsTPC > nCRcut  && ratiocrfindcls > ratiocrfccut && chi2constglobal > chi2globalcut && chi2perclsITS > chi2cut)
+	{
+	
+      hist1->Fill(nCrossedRowsTPC);
+      hist2->Fill(ratiocrfindcls);
+      hist3->Fill(chi2perclsTPC);
+      hist4->Fill(chi2constglobal);
+      hist5->Fill(dca[0]);
+      hist6->Fill(dca[1]);
+      hist7->Fill(chi2perclsITS);
+      /////////////////////////
 
       if(IsKaon(track)){
 	kaon.SetXYZM(track->Px(), track->Py(), track->Pz(), kaonmass);
@@ -314,11 +405,9 @@ void AliAnalysisTaskfnAOD::UserExec(Option_t *)
 	  {
 	    AliAODv0 *v0=lAODevent->GetV0(itrv0);
 	    if(!v0) continue;
-	    v0->GetPxPyPz(tV0mom);
-	    //v0->GetPxPyPz(tV0mom[0],tV0mom[1],tV0mom[2] );
+	   
 	    if(!IsV0(v0, lAODevent)) continue;
-	    //v0->ChangeMassHypothesis(310);
-	    kshort.SetXYZM(tV0mom[0], tV0mom[1], tV0mom[2], 0.4976);
+	    kshort.SetXYZM(v0->Px(), v0->Py(), v0->Pz(), 0.4976);
 	    kaonkshort=kaon+kshort;
 	    kks0.charge=aodtrack->Charge();
 	    kks0.trkid=itr;
@@ -341,6 +430,8 @@ void AliAnalysisTaskfnAOD::UserExec(Option_t *)
 	  npion=npion+1;
 	}
       
+	}
+
     }
   
   Int_t piontracksize = pionCandidates.size();
@@ -358,7 +449,7 @@ void AliAnalysisTaskfnAOD::UserExec(Option_t *)
 
   for (const auto& kks0 : kks0Candidates)
     {
-      if (kks0.particle.M() > 1.04)
+      if (kks0.particle.M() > kkshmasscut)
 	continue;
       // Creating same event pair
       for (const auto& pion : pionCandidates)
@@ -398,7 +489,7 @@ void AliAnalysisTaskfnAOD::UserExec(Option_t *)
  AliEventPool* pool = fPoolMgr->GetEventPool(lV0M, zv);
  if (pool && pool->IsReady())
    {
-     Int_t nMix = 10; // Set the number of mixed events
+     Int_t nMix = 5; // Set the number of mixed events
 
      for (Int_t jMix = 0; jMix < nMix; jMix++)
        {
@@ -418,7 +509,7 @@ void AliAnalysisTaskfnAOD::UserExec(Option_t *)
 
 	     for (const auto& kks0 : kks0Candidates)
 	       {
-		 if (kks0.particle.M() > 1.04)
+		 if (kks0.particle.M() > kkshmasscut)
 		   continue;
 
 		 if (piontrackmix->Charge() * kks0.charge > 0)
@@ -522,8 +613,10 @@ Bool_t AliAnalysisTaskfnAOD::GoodEvent(const AliVVertex *vertex) //all cuts take
       return kFALSE;
     }
 
+    fEventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
 
-  return kTRUE;
+
+    return kTRUE;
 
 }
 //-----------------------------------------------
@@ -535,41 +628,19 @@ Bool_t AliAnalysisTaskfnAOD::IsPion(AliVTrack *vtrack)
   Double_t nsigmatpcpion=TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodtrack, AliPID::kPion));
   Double_t nsigmatofpion=TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodtrack, AliPID::kPion));
   Bool_t TOFHIT=kFALSE;
-  /*
-  if(aodtrack->GetStatus() & AliVTrack::kTOFpid){ TOFHIT=kTRUE; }
-  else 
-    TOFHIT=kFALSE;
-  */
-  /*
-  if ((vtrack->GetStatus() & AliESDtrack::kTOFout)) TOFHIT=kTRUE;
-  if ((vtrack->GetStatus() & AliESDtrack::kTIME  )) TOFHIT=kTRUE;
-  */
-  /*
+  
+  TOFHIT = HasTOF(aodtrack);
+
+  
   if(!TOFHIT)
     {
-      if(nsigmatpcpion>3.0)return kFALSE;
+      if(nsigmatpcpion>nsigtpcpion)return kFALSE;
     }
 
-  if(TOFHIT)
-    { 
-      if(nsigmatofpion>3.0)return kFALSE;
-    }
-  */
-  
-  Double_t trkPt=aodtrack->Pt();
-  Double_t nsigmacircularcut=sqrt(nsigmatpcpion*nsigmatpcpion + nsigmatofpion*nsigmatofpion);
-  Double_t tofsig=0.0;
-
-  if (trkPt<0.5)
+  else
     {
-      if(nsigmatpcpion>3.0) return kFALSE;      
+      if(nsigmatofpion>nsigtofpion)return kFALSE;
     }
-  else 
-    {
-      if(nsigmacircularcut>3.0) return kFALSE;
-      //if(nsigmatofpion>3.0) return kFALSE;    
-    }
-  
 
   return kTRUE;
 }
@@ -580,45 +651,35 @@ Bool_t AliAnalysisTaskfnAOD::IsKaon(AliVTrack *vtrack)
   AliAODTrack *aodtrack  = dynamic_cast<AliAODTrack*>(vtrack);
   Double_t nsigmatpckaon=TMath::Abs(fPIDResponse->NumberOfSigmasTPC(aodtrack, AliPID::kKaon));
   Double_t nsigmatofkaon=TMath::Abs(fPIDResponse->NumberOfSigmasTOF(aodtrack, AliPID::kKaon));
-  /*Bool_t TOFHIT=kFALSE;
+  Bool_t TOFHIT=kFALSE;
   
-  if(aodtrack->GetStatus() & AliVTrack::kTOFpid){ TOFHIT=kTRUE; }
-  else
-    TOFHIT=kFALSE;
-  */
+  
+  TOFHIT = HasTOF(aodtrack);
 
-  /*
-  if ((vtrack->GetStatus() & AliESDtrack::kTOFout)) TOFHIT=kTRUE;
-  if ((vtrack->GetStatus() & AliESDtrack::kTIME  )) TOFHIT=kTRUE;
-  */
-    /*
   if(!TOFHIT)
     {
-      if(nsigmatpckaon>3.0)return kFALSE;
-    }
-
-  if(TOFHIT)
-    { 
-      if(nsigmatofkaon>3.0)return kFALSE;
-    }
-    */
-  
-  Double_t trkPt=aodtrack->Pt();
-  Double_t nsigmacircularcut=sqrt(nsigmatpckaon*nsigmatpckaon + nsigmatofkaon*nsigmatofkaon);
-  Double_t tofsig=0.0;
-  
-  if (trkPt<0.45)
-    {
-      if(nsigmatpckaon>3.0) return kFALSE;      
+      if(nsigmatpckaon>nsigtpckaon)return kFALSE;
     }
   else
     {
-      if(nsigmacircularcut>3.0) return kFALSE;
-      //if(nsigmatofkaon>3.0) return kFALSE;
+      if(nsigmatofkaon>nsigtofkaon)return kFALSE;
     }
-  
+
     
   return kTRUE;
+}
+
+//--------------------------------------------
+
+
+Bool_t AliAnalysisTaskfnAOD::HasTOF(AliAODTrack *track)
+{
+  bool hasTOFout  = track->GetStatus() & AliVTrack::kTOFout;
+  bool hasTOFtime = track->GetStatus() & AliVTrack::kTIME;
+  //const float len = track->GetIntegratedLength();
+  //bool hasTOF = hasTOFout && hasTOFtime && (len > 350.);
+  bool hasTOF = hasTOFout && hasTOFtime;
+  return hasTOF;
 }
 
 
@@ -632,33 +693,13 @@ Bool_t AliAnalysisTaskfnAOD::IsV0(AliAODv0 *v0, AliAODEvent *lAODEvent)
     return kFALSE; 
   }
   
-  /* 
-  Double_t xPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetX();
-  Double_t yPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetY();
-  Double_t zPrimaryVertex = lESDEvent->GetPrimaryVertex()->GetZ();
-  */
-
   Double_t xPrimaryVertex = lAODEvent->GetPrimaryVertex()->GetX();
   Double_t yPrimaryVertex = lAODEvent->GetPrimaryVertex()->GetY();
   Double_t zPrimaryVertex = lAODEvent->GetPrimaryVertex()->GetZ();
   Double_t primVtx[3] = {xPrimaryVertex, yPrimaryVertex, zPrimaryVertex};
 
 
-  /*
-  // retrieve the V0 daughters                                                                                                               
-  UInt_t lIdxPos      = (UInt_t) TMath::Abs(v0->GetPindex());
-  UInt_t lIdxNeg      = (UInt_t) TMath::Abs(v0->GetNindex());
-  AliESDtrack *pTrack = lESDEvent->GetTrack(lIdxPos);
-  AliESDtrack *nTrack = lESDEvent->GetTrack(lIdxNeg);
-
- 
-
-  // filter like-sign V0
-  if ( TMath::Abs(((pTrack->GetSign()) - (nTrack->GetSign())) ) < 0.1) {
-    return kFALSE;
-  }
-  */
-
+  
   // retrieve the V0 daughters
   AliAODTrack *pTrack = (AliAODTrack *)(v0->GetSecondaryVtx()->GetDaughter(0));
   AliAODTrack *nTrack = (AliAODTrack *)(v0->GetSecondaryVtx()->GetDaughter(1));;
@@ -666,131 +707,24 @@ Bool_t AliAnalysisTaskfnAOD::IsV0(AliAODv0 *v0, AliAODEvent *lAODEvent)
 
 
   // filter like-sign V0
-  if ( TMath::Abs(((pTrack->GetSign()) - (nTrack->GetSign())) ) < 0.1) {
-    return kFALSE;
-  }
-  
-
-
-
-  /* 
-  AliESDtrackCuts *esdTrackCuts = new AliESDtrackCuts("qualityDaughterK0s");
-  esdTrackCuts->SetEtaRange(-0.8,0.8);
-  esdTrackCuts->SetPtRange(0.15,30);
-  esdTrackCuts->SetRequireTPCRefit();
-  esdTrackCuts->SetAcceptKinkDaughters(0); //                                                                                                 
-  esdTrackCuts->SetMinNCrossedRowsTPC(70);
-  esdTrackCuts->SetMinRatioCrossedRowsOverFindableClustersTPC(0.8);
-  esdTrackCuts->SetMaxChi2PerClusterTPC(4);
-  esdTrackCuts->SetMinDCAToVertexXY(0.06);
-  esdTrackCuts->SetMinDCAToVertexZ(0.06);
-
-  if (!esdTrackCuts->IsSelected(pTrack)) {
-    return kFALSE;
-  }
-
-  if (!esdTrackCuts->IsSelected(nTrack)) {
-    return kFALSE;
-  }
-  
-
-  
-  // topological checks
-  if (TMath::Abs(v0->GetDcaV0Daughters()) > 1.0) {
-    return kFALSE;
-  }
-
-  if (TMath::Abs(v0->GetD(xPrimaryVertex, yPrimaryVertex, zPrimaryVertex)) > 0.3) {
-    return kFALSE;
-  }
-
- 
-  Bool_t fCheckOOBPileup=kTRUE;
-  if (fCheckOOBPileup) {
-    Double_t bfield = lESDEvent->GetMagneticField();
-    if(!TrackPassesOOBPileupCut(pTrack, bfield) &&
-       !TrackPassesOOBPileupCut(nTrack, bfield)) return kFALSE;
-  }
-   
-  if ( (TMath::Abs(v0->GetV0CosineOfPointingAngle()) < 0.97) || (TMath::Abs(v0->GetV0CosineOfPointingAngle()) >= 1 ) ) {
-    return kFALSE;
-  }
-
-  
-  if (TMath::Abs(v0->Eta())> 0.8) {
-    return kFALSE;
-  }
-
-  if (TMath::Abs(v0->RapK0Short())>0.5){
+  if ( TMath::Abs(((pTrack->Charge()) - (nTrack->Charge())) ) < 0.1) {
     return kFALSE;
   }  
-
-  Double_t v0Position[3];
-  v0->GetXYZ(v0Position[0],v0Position[1],v0Position[2]);
-  Double_t radius = TMath::Sqrt(TMath::Power(v0Position[0],2) + TMath::Power(v0Position[1],2));
-  if ( ( radius < 0.5 ) || ( radius > 100 ) ) {
-    return kFALSE;
-  }
-
-  
-  Double_t tV0mom[3];
-  v0->GetPxPyPz( tV0mom[0],tV0mom[1],tV0mom[2] );
-  Double_t lV0TotalMomentum =  TMath::Sqrt(tV0mom[0]*tV0mom[0]+tV0mom[1]*tV0mom[1]+tV0mom[2]*tV0mom[2] );
-  Double_t fLength = TMath::Sqrt(TMath::Power(v0Position[0]- xPrimaryVertex,2) + TMath::Power(v0Position[1] - yPrimaryVertex,2)+ TMath::Power(v0Position[2]- zPrimaryVertex,2));
-  if( TMath::Abs(0.497*fLength/lV0TotalMomentum) > 15)
-    {
-      AliDebugClass(2, "Failed Lifetime Cut on positive track V0");
-      return kFALSE;
-    }
-  
-
-
-
-
-  
-  // Competing v0rejection for K0s vs Lambda
-  Double_t altmass=0.0;
-  Double_t fToleranceVeto=0.004;
-  //Double_t fToleranceVeto=0.01;
-  
-  v0->ChangeMassHypothesis(kLambda0);
-  if ((TMath::Abs(v0->GetEffMass() - 1.115683)) < fToleranceVeto) {
-    AliDebugClass(2, "Failed competing V0 rejection check");
-    return kFALSE;
-  }
-
-  v0->ChangeMassHypothesis(kK0Short);
-
-  // check PID
-  Double_t posnsTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion));
-  Double_t negnsTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion));
-  //if(((negnsTPC > 4) && (posnsTPC > 4))) {
-  if(! ((negnsTPC <= 4) && (posnsTPC <= 4)) ) {  
-  return kFALSE;
-  }
-
-
-  if(v0->GetEffMass()<0.48 || v0->GetEffMass()>0.51) {
-    return kFALSE;
-  }
-  */
 
   if (!AcceptAODtracks(pTrack, nTrack)) return kFALSE;
 
 
   // topological checks
-  if (TMath::Abs(v0->DcaPosToPrimVertex()) < 0.06) {
+  if (TMath::Abs(v0->DcaPosToPrimVertex()) < dcaxypos) {
     return kFALSE;
   }
-
-
-  if (TMath::Abs(v0->DcaNegToPrimVertex()) < 0.06) {
+  if (TMath::Abs(v0->DcaNegToPrimVertex()) < dcaxyneg) {
     return kFALSE;
   }
-  if (TMath::Abs(v0->DcaV0Daughters()) > 1.0 ) {
+  if (TMath::Abs(v0->DcaV0Daughters()) > dcav0daugh) {
     return kFALSE;
   }
-  if (TMath::Abs(v0->DcaV0ToPrimVertex()) > 0.3) {
+  if (TMath::Abs(v0->DcaV0ToPrimVertex()) > dcav0pv) {
     return kFALSE;
   }
 
@@ -803,36 +737,51 @@ Bool_t AliAnalysisTaskfnAOD::IsV0(AliAODv0 *v0, AliAODEvent *lAODEvent)
   }
 
    
-  if ((TMath::Abs(v0->CosPointingAngle(primVtx)) < 0.97) || (TMath::Abs(v0->CosPointingAngle(primVtx)) >= 1 ) ) {
+  if ((TMath::Abs(v0->CosPointingAngle(primVtx)) < cospa) || (TMath::Abs(v0->CosPointingAngle(primVtx)) >= 1 ) ) {
     return kFALSE;
   }
-  /*  
-  if (TMath::Abs(v0->RapK0Short()) > 0.5) {
-    return kFALSE;
-  }
-  */
-
+  
   if (TMath::Abs(v0->Eta())> 0.8) {
+    return kFALSE;
+  }
+
+  if (TMath::Abs(v0->RapK0Short()) > 0.8) {
+    AliDebugClass(2, "Failed check on V0 rapidity");
     return kFALSE;
   }
 
  
   Double_t radius = v0->RadiusV0();
-  if (( radius < 0.5 ) || ( radius > 200 ) ) {
+  if (( radius < lowrad ) || ( radius > 200 ) ) {
     return kFALSE;
   }
 
   Double_t lV0TotalMomentum  = TMath::Sqrt(v0->Ptot2V0());
-  Double_t fLength = v0->DecayLength(primVtx);
-  if( TMath::Abs(0.497*fLength/lV0TotalMomentum) > 20)
+  //Double_t fLength = v0->DecayLength(primVtx);
+  Double_t fLength = TMath::Sqrt(TMath::Power(v0->DecayVertexV0X() - xPrimaryVertex,2) +
+				 TMath::Power(v0->DecayVertexV0Y() - yPrimaryVertex,2) +
+				 TMath::Power(v0->DecayVertexV0Z() - zPrimaryVertex,2));
+
+  if( TMath::Abs(0.497*fLength/lV0TotalMomentum) > lifetime)
     {
       AliDebugClass(2, "Failed Lifetime Cut on positive track V0");
       return kFALSE;
     }
 
-  
-  // Competing v0rejection for K0s vs Lambda
+
   Double_t altmass=0.0;
+  Double_t fMass = 0.497614;
+  Double_t fTolerance = 0.03;
+  altmass = v0->MassK0Short();
+
+
+  if ((TMath::Abs(altmass - fMass)) > fTolerance) {
+    AliDebugClass(2,"V0 is not in the expected inv mass range  Mass");
+    return kFALSE;
+  }
+
+
+  // Competing v0rejection for K0s vs Lambda
   Double_t fToleranceVeto=0.004;
   
   altmass = v0->MassLambda();
@@ -852,20 +801,14 @@ Bool_t AliAnalysisTaskfnAOD::IsV0(AliAODv0 *v0, AliAODEvent *lAODEvent)
   // check PID
   Double_t posnsTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(pTrack, AliPID::kPion));
   Double_t negnsTPC   = TMath::Abs(fPIDResponse->NumberOfSigmasTPC(nTrack, AliPID::kPion));
-  if(! ((negnsTPC <= 4) && (posnsTPC <= 4)) ) {  
+  if(! ((negnsTPC <= pidpion) && (posnsTPC <= pidpion)) ) {  
     return kFALSE;
   }
 
-  
-  if(v0->MassK0Short()<0.482 || v0->MassK0Short()>0.512)
-    {
-      return kFALSE;
-    }
-  
-
-
   return kTRUE;
   
+  
+
   
 }
 
@@ -878,7 +821,7 @@ void AliAnalysisTaskfnAOD::EventMixing()
   ////////////////////////////
   const Int_t trackDepth = 10000;
   const Int_t poolsize = 100;
-  const Int_t nmix = 10;
+  const Int_t nmix = 5;
   Double_t centralityBins[] = {0.0,10.0,20.0,30.0,40.0,50.0,60.0,70.0,80.0,90.0,100.0};
   Double_t vertexBins[] = {-10.0,-8.0,-6.0,-4.0,-2.0,0.0,2.0,4.0,6.0,8.0,10.0};
   const Int_t nCentralityBins = 11;
@@ -888,14 +831,6 @@ void AliAnalysisTaskfnAOD::EventMixing()
 }
 //___________________________________________________________
 
-/*
-Bool_t AliAnalysisTaskfnAOD::TrackPassesOOBPileupCut(AliESDtrack* t, Double_t b){
-  if (!t) return true;
-  if ((t->GetStatus() & AliESDtrack::kITSrefit) == AliESDtrack::kITSrefit) return true;
-  if (t->GetTOFExpTDiff(b, true) + 2500 > 1e-6) return true;
-  return false;
-}
-*/
 
 Bool_t AliAnalysisTaskfnAOD::TrackPassesOOBPileupCut(AliAODTrack* t, Double_t b){
   if (!t) return true;
@@ -905,7 +840,7 @@ Bool_t AliAnalysisTaskfnAOD::TrackPassesOOBPileupCut(AliAODTrack* t, Double_t b)
 }
 
 
-
+//___________________________________________________________________
 
 Bool_t AliAnalysisTaskfnAOD::AcceptAODtracks(AliAODTrack *pTrack, AliAODTrack *nTrack)
 {
@@ -932,6 +867,10 @@ Bool_t AliAnalysisTaskfnAOD::AcceptAODtracks(AliAODTrack *pTrack, AliAODTrack *n
 
   if( !(pTrack->GetStatus() & AliAODTrack::kTPCrefit)) return kFALSE;
   if( !(nTrack->GetStatus() & AliAODTrack::kTPCrefit)) return kFALSE;
+
+  if (pTrack->GetTPCchi2perCluster()>100) return kFALSE;
+  if (nTrack->GetTPCchi2perCluster()>100) return kFALSE;
+
 
   Double_t nCrossedRowsTPCpos = pTrack->GetTPCClusterInfo(2,1);
   Double_t nCrossedRowsTPCneg = nTrack->GetTPCClusterInfo(2,1);

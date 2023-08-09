@@ -67,6 +67,7 @@ public:
   
   void SetFillEncMC(Bool_t t) { fDoFillEncMC = t; } //For MC
   void SetpTcorrect(Int_t c) {fpTcorr = c;}
+  void SetPairCut(Int_t c) {fpaircut = c;}
 
 protected:
   Bool_t RetrieveEventObjects();
@@ -126,6 +127,7 @@ Bool_t fDoFillEncMC;      ///< to fill the matched mc plane
 //  Bool_t fMatch; ///< do the matching in the task
 
 Int_t fpTcorr; ///<flag for pT migration checks
+Int_t fpaircut; ///<flag for pT pair cut
 
 //Histograms
   TH1D *jet_pt_hist; //!<! initializing histogram with jet pt
@@ -198,7 +200,7 @@ private:
   AliAnalysisTaskJetsEEC &
   operator=(const AliAnalysisTaskJetsEEC &); // not implemented
 
-  ClassDef(AliAnalysisTaskJetsEEC, 36) //change this to 36
+  ClassDef(AliAnalysisTaskJetsEEC, 37) //change this to 37
 };
 #endif
 

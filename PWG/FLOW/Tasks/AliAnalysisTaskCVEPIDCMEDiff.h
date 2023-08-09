@@ -143,6 +143,7 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   // Sum pT bin, Delta eta bin
   inline double GetSumPtBin(double sumPt);
   inline double GetDeltaEtaBin(double deltaEta);
+  inline double GetDCABin(double dca);
 
   //////////////////////
   // Switch           //
@@ -255,8 +256,8 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   // Plane tracks Map key:id value:(phi,weight)
   std::unordered_map<int, std::vector<double>> mapTPCTrksIDPhiWgt;
   
-  // Vector for particles from Tracks [pt,eta,phi,id,pdgcode,weight,pidweight]
-  std::vector<std::array<double,7>> vecParticle;
+  // Vector for particles from Tracks [pt,eta,phi,id,pdgcode,weight,pidweight,dcaxy]
+  std::vector<std::array<double,8>> vecParticle;
   // Vector for V0s [pt,eta,phi,id,pdgcode,weight,mass,id1,id2]
   std::vector<std::array<double,9>> vecParticleV0;
 
@@ -392,6 +393,11 @@ class AliAnalysisTaskCVEPIDCMEDiff : public AliAnalysisTaskSE
   TProfile2D* fProfile2DGammaLambdaHadronMass[4]; //![0]:Λ-h+ [1]:Λ-h-   [2]:Λbar-h+ [3]:Λbar-h-
 
 
+  TH3D* fHist3LambdaProtonMassDCA[4];
+  //Diff δ(dca)
+  TProfile3D* fProfile3DDiffDeltaLambdaProtonMassDCA[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
+  //Diff γ(dca)
+  TProfile3D* fProfile3DDiffGammaLambdaProtonMassDCA[4]; //![0]:Λ-p  [1]:Λ-pbar [2]:Λbar-p  [3]:Λbar-pbar
 
   AliAnalysisTaskCVEPIDCMEDiff(const AliAnalysisTaskCVEPIDCMEDiff&);
   AliAnalysisTaskCVEPIDCMEDiff& operator=(const AliAnalysisTaskCVEPIDCMEDiff&);

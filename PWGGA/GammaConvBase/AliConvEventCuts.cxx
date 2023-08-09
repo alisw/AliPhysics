@@ -639,7 +639,7 @@ void AliConvEventCuts::InitCutHistograms(TString name, Bool_t preCut){
     hTriggerClassSelected->GetXaxis()->SetBinLabel(36,"INEL>0");
     fHistograms->Add(hTriggerClassSelected);
 
-    if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 || fSpecialTrigger == 10){
+    if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 || fSpecialTrigger == 10 || fSpecialTrigger == 15){
       hTriggerClassesCorrelated= new TH1F(Form("TriggerCorrelations %s",GetCutNumber().Data()),"Triggers Correlated with EMCal triggers",21,-0.5,20.5);
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 1,"kMB");
       hTriggerClassesCorrelated->GetXaxis()->SetBinLabel( 2,"kINT7");
@@ -1602,6 +1602,14 @@ Bool_t AliConvEventCuts::SetSelectSpecialTrigger(Int_t selectSpecialTrigger)
     SETBIT(fTriggersEMCALSelected, kG2);
     fSpecialTriggerName="AliVEvent::kEMCEGA";
     break;
+  case 15: // f) basically the same as 9 but without overlap rejection for gamma triggers
+    fSpecialTrigger=15; // trigger alias kEMCEJE
+    fOfflineTriggerMask=AliVEvent::kEMCEJE;
+    fTriggerSelectedManually = kTRUE;
+    fTriggersEMCALSelected= 0;
+    SETBIT(fTriggersEMCALSelected, kJ2);
+    fSpecialTriggerName="AliVEvent::kEMCEJE";
+    break;
   default:
     AliError(Form("Warning: Special Trigger %d Not known",selectSpecialTrigger));
     return 0;
@@ -2556,6 +2564,103 @@ Bool_t AliConvEventCuts::SetSelectSubTriggerClass(Int_t selectSpecialSubTriggerC
     default:
       AliError(Form("Warning: Special Subtrigger Class %d Not known",selectSpecialSubTriggerClass));
       return 0;
+    }
+  } else if (fSpecialTrigger == 15){ // jet triggers without overlapp rejection for gamma triggers
+    switch(selectSpecialSubTriggerClass){
+      case 0: // all together
+        fSpecialSubTrigger=0;
+        fSpecialSubTriggerName="";
+        // AliInfo("Info: Nothing to be done");
+        break;
+      case 1: // 7EJE - CINT7 EJE
+        fSpecialSubTrigger=1;
+        fNSpecialSubTriggerOptions=1;
+        fSpecialSubTriggerName="7EJE";
+        fTriggersEMCALSelected= 0;
+        SETBIT(fTriggersEMCALSelected, kJ2);
+        break;
+      case 2: // 8EJE - CINT8 EJE
+        fSpecialSubTrigger=1;
+        fNSpecialSubTriggerOptions=1;
+        fSpecialSubTriggerName="8EJE";
+        fTriggersEMCALSelected= 0;
+        SETBIT(fTriggersEMCALSelected, kJ2);
+        break;
+      case 3: // 7EJ1 - CINT7 EJ1
+        fSpecialSubTrigger=1;
+        fNSpecialSubTriggerOptions=1;
+        fSpecialSubTriggerName="7EJ1";
+        fTriggersEMCALSelected= 0;
+        SETBIT(fTriggersEMCALSelected, kJ1);
+        break;
+      case 4: // 8EJ1 - CINT8 EJ1
+        fSpecialSubTrigger=1;
+        fNSpecialSubTriggerOptions=1;
+        fSpecialSubTriggerName="8EJ1";
+        fTriggersEMCALSelected= 0;
+        SETBIT(fTriggersEMCALSelected, kJ1);
+        break;
+      case 5: // 7EJ2 - CINT7 EJ2
+        fSpecialSubTrigger=1;
+        fNSpecialSubTriggerOptions=1;
+        fSpecialSubTriggerName="7EJ2";
+        fTriggersEMCALSelected= 0;
+        SETBIT(fTriggersEMCALSelected, kJ2);
+        break;
+      case 6: // 8EJ2 - CINT8 EJ2
+        fSpecialSubTrigger=1;
+        fNSpecialSubTriggerOptions=1;
+        fSpecialSubTriggerName="8EJ2";
+        fTriggersEMCALSelected= 0;
+        SETBIT(fTriggersEMCALSelected, kJ2);
+        break;
+      case 7: // 7DJ1 - CINT7 DJ1
+        fSpecialSubTrigger=1;
+        fNSpecialSubTriggerOptions=1;
+        fSpecialSubTriggerName="7DJ1";
+        fTriggersEMCALSelected= 0;
+        SETBIT(fTriggersEMCALSelected, kJ1);
+        break;
+      case 8: // 8DJ1 - CINT8 DJ1
+        fSpecialSubTrigger=1;
+        fNSpecialSubTriggerOptions=1;
+        fSpecialSubTriggerName="8DJ1";
+        fTriggersEMCALSelected= 0;
+        SETBIT(fTriggersEMCALSelected, kJ1);
+        break;
+      case 9: // 7DJ2 - CINT7 DJ2
+        fSpecialSubTrigger=1;
+        fNSpecialSubTriggerOptions=1;
+        fSpecialSubTriggerName="7DJ2";
+        fTriggersEMCALSelected= 0;
+        SETBIT(fTriggersEMCALSelected, kJ2);
+        break;
+      case 10: // 8DJ2 - CINT8 DJ2
+        fSpecialSubTrigger=1;
+        fNSpecialSubTriggerOptions=1;
+        fSpecialSubTriggerName="8DJ2";
+        fTriggersEMCALSelected= 0;
+        SETBIT(fTriggersEMCALSelected, kJ2);
+        break;
+      case 11: // high Jet trigger EMC+DMC
+        fSpecialSubTrigger=1;
+        fNSpecialSubTriggerOptions=2;
+        fSpecialSubTriggerName="7EJ1";
+        fSpecialSubTriggerNameAdditional="7DJ1";
+        fTriggersEMCALSelected= 0;
+        SETBIT(fTriggersEMCALSelected, kJ1);
+        break;
+      case 12: // low Jet trigger EMC+DMC
+        fSpecialSubTrigger=1;
+        fNSpecialSubTriggerOptions=2;
+        fSpecialSubTriggerName="7EJ2";
+        fSpecialSubTriggerNameAdditional="7DJ2";
+        fTriggersEMCALSelected= 0;
+        SETBIT(fTriggersEMCALSelected, kJ2);
+        break;
+      default:
+        AliError("Warning: Special Subtrigger Class Not known");
+        return 0;
     }
   }
   return 1;
@@ -5700,7 +5805,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
 
   // abort if mimicing not enabled
   if (!fMimicTrigger) return kTRUE;
-  if(!(fSpecialTrigger == 5 || fSpecialTrigger == 6 || fSpecialTrigger == 8 || fSpecialTrigger == 9 || fSpecialTrigger == 10 || fSpecialTrigger == 13  || fSpecialTrigger == 14 )) return kTRUE;   // not the correct trigger for mimcking
+  if(!(fSpecialTrigger == 5 || fSpecialTrigger == 6 || fSpecialTrigger == 8 || fSpecialTrigger == 9 || fSpecialTrigger == 10 || fSpecialTrigger == 13  || fSpecialTrigger == 14  || fSpecialTrigger == 15 )) return kTRUE;   // not the correct trigger for mimcking
 
   // Trigger mimicking based on decision by the AliAnalysisTaskEmcalTriggerSelection for L1 triggers
   // To get the correct values one has to select the correct dataset
@@ -5715,7 +5820,7 @@ Bool_t AliConvEventCuts::MimicTrigger(AliVEvent *event, Bool_t isMC ){
         if( (triggercont->IsEventSelected("EG1")) || (triggercont->IsEventSelected("DG1")) || (triggercont->IsEventSelected("EGA"))) return kTRUE;
       } else if( fSpecialTrigger == 5 || fSpecialTrigger == 10 ){
         if( triggercont->IsEventSelected("EMCL0") || triggercont->IsEventSelected("DMCL0") ) return kTRUE;
-      } else if( fSpecialTrigger == 9 ){
+      } else if( fSpecialTrigger == 9 || fSpecialTrigger == 15 ){
         if(fSpecialSubTriggerName.Contains("EJ2") || fSpecialSubTriggerName.Contains("DJ2") ){
           if( triggercont->IsEventSelected("EJ2") || triggercont->IsEventSelected("DJ2") ) return kTRUE;
         }
@@ -6434,9 +6539,97 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
                 }
               }
             }
+            // jet triggers -> overlap with gamma triggers allowed for jet analyses only
+            if (fSpecialTrigger == 15){
+              if(fNSpecialSubTriggerOptions==2){
+                // trigger rejection for EMC and DMC triggers together
+                if (fSpecialSubTriggerName.CompareTo("7EJ1") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DJ1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  else if (firedTrigClass.Contains("7DJ2"))  isSelected = 0;
+                  else if (firedTrigClass.Contains("7EJ2"))  isSelected = 0;
+                  else if( fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!(triggercont->IsEventSelected("DJ1") || triggercont->IsEventSelected("EJ1"))) isSelected = 0;
+                  }
+                } else if (fSpecialSubTriggerName.CompareTo("7EJ2") == 0 && fSpecialSubTriggerNameAdditional.CompareTo("7DJ2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  else if( fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!(triggercont->IsEventSelected("DJ2") || triggercont->IsEventSelected("EJ2"))) isSelected = 0;
+                  }
+                }
+              } else {
+                // separate rejection for EMC and DMC triggers
+                if( fSpecialSubTriggerName.CompareTo("7EJE") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  else if( fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("EJE")) isSelected = 0;
+                  }
+                } else if (fSpecialSubTriggerName.CompareTo("8EJE") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                  else if( fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("EJE")) isSelected = 0;
+                  }
+                } else if (fSpecialSubTriggerName.CompareTo("7EJ1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  else if (firedTrigClass.Contains("7EJ2"))  isSelected = 0;
+                  else if( fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("EJ1")) isSelected = 0;
+                  }
+                } else if (fSpecialSubTriggerName.CompareTo("8EJ1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                  else if (firedTrigClass.Contains("8EJ2"))  isSelected = 0;
+                  else if( fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("EJ2")) isSelected = 0;
+                  }
+                } else if (fSpecialSubTriggerName.CompareTo("7EJ2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  else if( fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("EJ2")) isSelected = 0;
+                  }
+                } else if (fSpecialSubTriggerName.CompareTo("8EJ2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                  else if( fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("EJ2")) isSelected = 0;
+                  }
+                } else if (fSpecialSubTriggerName.CompareTo("7DJ1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  else if (firedTrigClass.Contains("7DJ2"))  isSelected = 0;
+                  else if( fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("DJ1")) isSelected = 0;
+                  }
+                } else if (fSpecialSubTriggerName.CompareTo("8DJ1") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT8) isSelected = 0;
+                  else if (firedTrigClass.Contains("8DJ2"))  isSelected = 0;
+                  else if( fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("DJ1")) isSelected = 0;
+                  }
+                } else if (fSpecialSubTriggerName.CompareTo("7DJ2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  else if( fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("DJ2")) isSelected = 0;
+                  }
+                } else if (fSpecialSubTriggerName.CompareTo("8DJ2") == 0){
+                  if (fInputHandler->IsEventSelected() & AliVEvent::kINT7) isSelected = 0;
+                  else if( fMimicTrigger == 2){
+                    auto triggercont = static_cast<PWG::EMCAL::AliEmcalTriggerDecisionContainer *>(event->FindListObject("EmcalTriggerDecision"));
+                    if(!triggercont->IsEventSelected("DJ2")) isSelected = 0;
+                  }
+                }
+              }
+            }
           }
           if (isSelected != 0 ){
-            if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9 ){
+            if (fSpecialTrigger == 5 || fSpecialTrigger == 8 || fSpecialTrigger == 9  || fSpecialTrigger == 15 ){
               if (hTriggerClassesCorrelated){
                 if (fInputHandler->IsEventSelected() & AliVEvent::kMB)hTriggerClassesCorrelated->Fill(0);
                 if (fInputHandler->IsEventSelected() & AliVEvent::kINT7)hTriggerClassesCorrelated->Fill(1);
@@ -6504,7 +6697,7 @@ Bool_t AliConvEventCuts::IsTriggerSelected(AliVEvent *event, Bool_t isMC)
           }
 
         } else if (isMC){
-          if (fSpecialTrigger == 5 || fSpecialTrigger == 6 || fSpecialTrigger == 8 || fSpecialTrigger == 9){ // EMCAL triggers
+          if (fSpecialTrigger == 5 || fSpecialTrigger == 6 || fSpecialTrigger == 8 || fSpecialTrigger == 9 || fSpecialTrigger == 15 ){ // EMCAL triggers
             // isSelected = 0;
             // if (fTriggersEMCAL > 0)cout << "Special Trigger " << fSpecialTrigger << " triggers: " << fTriggersEMCAL << "    selected triggers: " << fTriggersEMCALSelected << " run number: " <<event->GetRunNumber()<<endl;
             // if (fTriggersEMCAL&fTriggersEMCALSelected){
