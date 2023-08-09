@@ -665,6 +665,8 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
     //}
     //int nMCPart = mcArray->GetEntriesFast();
 
+    const float bfield = fMC->GetMagneticField();
+
     for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
     //for (int iPart = 1; iPart < nMCPart; iPart++) {
       AliAODMCParticle *mcPart = (AliAODMCParticle*) fMC->GetTrack(iPart);
@@ -681,27 +683,42 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
         partMC.SetMCParticleRePart(mcPart);
         partMC.SetID(mcPart->GetLabel());
         partMC.SetMCParticle(mcPart,fMC);
-
+         
+        //Calculate PhiAtRadius, taken from AliFemtoDreamTrack
+        float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225., 245. };
+        float phi0 = partMC.GetPhi().at(0);
+        float pt = partMC.GetPt();
+        float chg = partMC.GetCharge().at(0);
+        std::vector<float> phiatRadius;
+        for (int radius = 0; radius < 9; radius++) {
+          //20-Feb-2022
+          //Avoid NAN in asin for low momentum particle (particularly for pions)
+          if(TMath::Abs(0.1*chg*bfield*0.3*TPCradii[radius]*0.01/(2.*pt))< 1.){
+              phiatRadius.push_back(phi0 - TMath::ASin(0.1 * chg * bfield * 0.3 * TPCradii[radius] * 0.01 / (2. * pt)));
+          }//safety check for asin
+         }
+        partMC.SetPhiAtRadius(phiatRadius);
+  
         if (mcPart->GetPdgCode() == fTrackCutsProton->GetPDGCode()) {
           SelectedProtons.push_back(partMC);
             fpTKineOrReco[0]->Fill(partMC.GetPt()); 
-            fEtaKineOrReco[0]->Fill(partMC.GetEta().back()); 
-            fPhiKineOrReco[0]->Fill(partMC.GetPhi().back()); 
+            fEtaKineOrReco[0]->Fill(partMC.GetEta().at(0)); 
+            fPhiKineOrReco[0]->Fill(partMC.GetPhi().at(0)); 
         } else if (mcPart->GetPdgCode() == fTrackCutsAntiProton->GetPDGCode()) {
           SelectedAntiProtons.push_back(partMC);   
             fpTKineOrReco[1]->Fill(partMC.GetPt()); 
-            fEtaKineOrReco[1]->Fill(partMC.GetEta().back()); 
-            fPhiKineOrReco[1]->Fill(partMC.GetPhi().back()); 
+            fEtaKineOrReco[1]->Fill(partMC.GetEta().at(0)); 
+            fPhiKineOrReco[1]->Fill(partMC.GetPhi().at(0)); 
         } else if (mcPart->GetPdgCode() == fTrackCutsPion->GetPDGCode()) {
           SelectedPions.push_back(partMC);
             fpTKineOrReco[2]->Fill(partMC.GetPt()); 
-            fEtaKineOrReco[2]->Fill(partMC.GetEta().back()); 
-            fPhiKineOrReco[2]->Fill(partMC.GetPhi().back()); 
+            fEtaKineOrReco[2]->Fill(partMC.GetEta().at(0)); 
+            fPhiKineOrReco[2]->Fill(partMC.GetPhi().at(0)); 
         } else if (mcPart->GetPdgCode() == fTrackCutsAntiPion->GetPDGCode()) {
           SelectedAntiPions.push_back(partMC);
             fpTKineOrReco[3]->Fill(partMC.GetPt()); 
-            fEtaKineOrReco[3]->Fill(partMC.GetEta().back()); 
-            fPhiKineOrReco[3]->Fill(partMC.GetPhi().back()); 
+            fEtaKineOrReco[3]->Fill(partMC.GetEta().at(0)); 
+            fPhiKineOrReco[3]->Fill(partMC.GetPhi().at(0)); 
         }
       } 
 
@@ -796,29 +813,29 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
             if (fTrackCutsProton->isSelected(fTrack)) {
              SelectedProtons.push_back(*fTrack);
                fpTKineOrReco[0]->Fill(fTrack->GetPt()); 
-               fEtaKineOrReco[0]->Fill(fTrack->GetEta().back()); 
-               fPhiKineOrReco[0]->Fill(fTrack->GetPhi().back());
+               fEtaKineOrReco[0]->Fill(fTrack->GetEta().at(0)); 
+               fPhiKineOrReco[0]->Fill(fTrack->GetPhi().at(0));
             }
           } else if (mcPart->GetPdgCode() == fTrackCutsAntiProton->GetPDGCode()) {
             if (fTrackCutsAntiProton->isSelected(fTrack)) {
               SelectedAntiProtons.push_back(*fTrack);
                 fpTKineOrReco[1]->Fill(fTrack->GetPt()); 
-                fEtaKineOrReco[1]->Fill(fTrack->GetEta().back()); 
-                fPhiKineOrReco[1]->Fill(fTrack->GetPhi().back());
+                fEtaKineOrReco[1]->Fill(fTrack->GetEta().at(0)); 
+                fPhiKineOrReco[1]->Fill(fTrack->GetPhi().at(0));
             }
           } else if (mcPart->GetPdgCode() == fTrackCutsPion->GetPDGCode()) {
             if (fTrackCutsPion->isSelected(fTrack)){ 
               SelectedPions.push_back(*fTrack);
                 fpTKineOrReco[2]->Fill(fTrack->GetPt()); 
-                fEtaKineOrReco[2]->Fill(fTrack->GetEta().back()); 
-                fPhiKineOrReco[2]->Fill(fTrack->GetPhi().back());
+                fEtaKineOrReco[2]->Fill(fTrack->GetEta().at(0)); 
+                fPhiKineOrReco[2]->Fill(fTrack->GetPhi().at(0));
             }   
           } else if (mcPart->GetPdgCode() == fTrackCutsAntiPion->GetPDGCode()) {
             if (fTrackCutsAntiPion->isSelected(fTrack)){
               SelectedAntiPions.push_back(*fTrack);
                 fpTKineOrReco[3]->Fill(fTrack->GetPt()); 
-                fEtaKineOrReco[3]->Fill(fTrack->GetEta().back()); 
-                fPhiKineOrReco[3]->Fill(fTrack->GetPhi().back());
+                fEtaKineOrReco[3]->Fill(fTrack->GetEta().at(0)); 
+                fPhiKineOrReco[3]->Fill(fTrack->GetPhi().at(0));
             }
           }
         } else {

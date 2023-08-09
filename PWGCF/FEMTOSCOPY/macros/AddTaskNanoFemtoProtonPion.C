@@ -172,7 +172,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   closeRejection[7] = true;  // pi+pi+
   closeRejection[9] = true;  // pi-pi-
 
-  if(DoKine){
+  /*if(DoKine){
     closeRejection[0] = false;  // pp
     closeRejection[2] = false;  // ppi+
     closeRejection[3] = false;  // ppi-
@@ -181,7 +181,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     closeRejection[6] = false;  // barp pi-
     closeRejection[7] = false;  // pi+pi+
     closeRejection[9] = false;  // pi-pi-
-  }
+  }*/
 
   pairQA[0] = 11;  // pp
   pairQA[2] = 11;  // ppi+
@@ -273,11 +273,11 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     config->SetMinimalBookingSample(true);
   }
 
-  if(DoKine){
+  /*if(DoKine){
     config->SetdPhidEtaPlots(false);
     config->SetdPhidEtaPlotsSmallK(false);
     config->SetPhiEtaBinnign(false);
-  }
+  }*/
 
   if(DoFunWithPhaseSpace){
     config->SetpTOnepTTwokStarPlotsmT(true, pTOnepTTwokStarCutOff);
