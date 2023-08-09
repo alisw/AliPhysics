@@ -87,6 +87,8 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
       fEnableBckgReductionStudy = kTRUE;
       fMLtreeCutOff = cutoff; }
 
+    // Function to set correction task setting
+    void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
 
   private:
 
@@ -163,6 +165,7 @@ class AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson: public AliAnalysisTaskS
 
     AliV0ReaderV1*                    fV0Reader;                                          //!<! V0Reader for basic conversion photon selection
     TString                           fV0ReaderName;                                      ///< Name of the V0 reader
+    TString                           fCorrTaskSetting;
     AliPrimaryPionSelector*           fPionSelector;                                      //!<! primary charged pion selector, basic selection of pi+,pi-
     TString                           fPionSelectorName;                                  ///< Name of the PionSelector
     AliGammaConversionAODBGHandler**  fBGHandlerPiPl;                                     //!<! BG handler Pos Pion
