@@ -590,11 +590,13 @@ Bool_t AliAnalysisTaskfnAOD::GoodEvent(const AliVVertex *vertex) //all cuts take
       PostData(1, fOutput);
       return kFALSE;
     }
+  /*  
   if(!inel0)
     {
       PostData(1, fOutput);
       return kFALSE;
     }
+  */
   if(!inconstspdvertex) 
     {
       PostData(1, fOutput);
