@@ -59,6 +59,7 @@ ClassImp( AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson )
 AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson():
   fV0Reader(nullptr),
   fV0ReaderName("V0ReaderV1"),
+  fCorrTaskSetting(""),
   fPionSelector(NULL),
   fPionSelectorName("PionSelector"),
   fBGHandlerPiPl(NULL),
@@ -492,6 +493,7 @@ AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::AliAnalysisTaskNeutralMesonTo
   AliAnalysisTaskSE(name),
   fV0Reader(nullptr),
   fV0ReaderName("V0ReaderV1"),
+  fCorrTaskSetting(""),
   fPionSelector(NULL),
   fPionSelectorName("PionSelector"),
   fBGHandlerPiPl(NULL),
@@ -1603,8 +1605,8 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
         fESDList[iCut]->Add(fHistoNumberClusterGamma[iCut]);
       }
     }
-    cout << "light output " << fDoLightOutput << endl;
-    cout << "!fDoLighOutput " << fDoLightOutput << endl;
+    // cout << "light output " << fDoLightOutput << endl;
+    // cout << "!fDoLighOutput " << fDoLightOutput << endl;
     if( !fDoLightOutput ){
       fProfileEtaShift[iCut]        = new TProfile("Eta Shift","Eta Shift",1, -0.5,0.5);
 
@@ -3286,7 +3288,12 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::UserCreateOutputObjects(
   }
 
   for(Int_t iMatcherTask = 0; iMatcherTask < 3; iMatcherTask++){
-    AliCaloTrackMatcher* temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
+    AliCaloTrackMatcher* temp = 0x0;
+    if(!fCorrTaskSetting.CompareTo("")){
+      temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i",iMatcherTask,fTrackMatcherRunningMode)));
+    } else {
+      temp = (AliCaloTrackMatcher*) (AliAnalysisManager::GetAnalysisManager()->GetTask(Form("CaloTrackMatcher_%i_%i_%s",iMatcherTask,fTrackMatcherRunningMode,fCorrTaskSetting.Data())));
+    }
     if(temp && (!fDoLightOutput)) {
       if (!(temp->GetLightOutput())){
         fOutputContainer->Add(temp->GetCaloTrackMatcherHistograms());
@@ -3704,7 +3711,16 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessCaloPhotonCandida
 {
 
   Int_t nclus = 0;
-  nclus = fInputEvent->GetNumberOfCaloClusters();
+  TClonesArray * arrClustersProcess = NULL;
+
+  if(!fCorrTaskSetting.CompareTo("")){
+    nclus = fInputEvent->GetNumberOfCaloClusters();
+  } else {
+    arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+    if(!arrClustersProcess)
+      AliFatal(Form("%sClustersBranch was not found in AliAnalysisTask! Check the correction framework settings!",fCorrTaskSetting.Data()));
+    nclus = arrClustersProcess->GetEntries();
+  }
 
   // 	cout << nclus << endl;
 
@@ -3726,10 +3742,20 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessCaloPhotonCandida
     Double_t tempPhotonWeight         = fWeightJetJetMC;
 
     std::unique_ptr<AliVCluster> clus;
-    if(fInputEvent->IsA()==AliESDEvent::Class()) clus = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i)));
-    else if(fInputEvent->IsA()==AliAODEvent::Class()) clus = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i)));
-
-    if (!clus) continue;
+    if(fInputEvent->IsA()==AliESDEvent::Class()){
+      if(arrClustersProcess){
+        clus = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(i)));
+      } else {
+        clus = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(i)));
+      }
+    } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+      if(arrClustersProcess) {
+        clus = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(i)));
+      } else {
+        clus = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(i)));
+      }
+    }
+    if(!clus) continue;
     // Set the jetjet weight to 1 in case the cluster orignated from the minimum bias header
     if (fIsMC>0 && ((AliConvEventCuts*)fEventCutArray->At(fiCut))->GetSignalRejection() == 4){
       if( ((AliConvEventCuts*)fEventCutArray->At(fiCut))->IsParticleFromBGEvent(clus->GetLabelAt(0), fMCEvent, fInputEvent) == 2)
@@ -4952,8 +4978,26 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessNeutralPionCandid
         AliAODConversionPhoton *gamma1=dynamic_cast<AliAODConversionPhoton*>(fClusterCandidates->At(secondGammaIndex));
         if (gamma1==nullptr) continue;
 
+        TClonesArray * arrClustersProcess = NULL;
+        if(fCorrTaskSetting.CompareTo("")){
+          arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+        }
+        AliVCluster* cluster = NULL;
+
         if (gamma1->GetIsCaloPhoton() > 0){
-          AliVCluster* cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+            if(fInputEvent->IsA()==AliESDEvent::Class()){
+              if(arrClustersProcess){
+                cluster = new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(gamma1->GetCaloClusterRef()));
+              }else{
+                cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+              }
+            } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+              if(arrClustersProcess){
+                cluster = new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(gamma1->GetCaloClusterRef()));
+              } else{
+                cluster = fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef());
+              }
+            }
           matched = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->MatchConvPhotonToCluster(gamma0,cluster, fInputEvent );
         }
 
@@ -7019,7 +7063,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::ProcessAODMCParticles(){
 void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates(AliAODConversionPhoton *vParticle){
 
   // Conversion Gammas
-
   if( fNeutralDecayParticleCandidates->GetEntries() > 0){
     for(Int_t mesonIndex=0; mesonIndex<fNeutralDecayParticleCandidates->GetEntries(); mesonIndex++){
       AliAODConversionMother *neutralDecayMeson= (AliAODConversionMother*) fNeutralDecayParticleCandidates->At(mesonIndex);
@@ -7129,15 +7172,33 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
               fBuffer_Gamma2_trueID   = static_cast<AliAODMCParticle*>(AODMCTrackArray->At( Gamma2->GetCaloPhotonMCLabel(0)))->PdgCode()==22 ? 1 : 0;
 
               Long_t clusRef1       = Gamma1->GetCaloClusterRef();
-              Long_t clusRef2       = Gamma2->GetCaloClusterRef();   
+              Long_t clusRef2       = Gamma2->GetCaloClusterRef();  
+
+              TClonesArray * arrClustersProcess = NULL;
+              if(fCorrTaskSetting.CompareTo("")){
+                arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+              }
 
               std::unique_ptr<AliVCluster> clus1;
-              if(fInputEvent->IsA()==AliESDEvent::Class())      clus1 = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(clusRef1)));
-              else if(fInputEvent->IsA()==AliAODEvent::Class()) clus1 = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(clusRef1)));    
-
               std::unique_ptr<AliVCluster> clus2;
-              if(fInputEvent->IsA()==AliESDEvent::Class())      clus2 = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(clusRef2)));
-              else if(fInputEvent->IsA()==AliAODEvent::Class()) clus2 = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(clusRef2)));   
+
+              if(fInputEvent->IsA()==AliESDEvent::Class()){
+                if(arrClustersProcess){
+                  clus1 = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(clusRef1)));
+                  clus2 = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(clusRef2)));
+                } else {
+                  clus1 = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(clusRef1)));
+                  clus2 = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(clusRef2)));
+                }
+              } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+                if(arrClustersProcess){
+                  clus1 = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(clusRef1)));
+                  clus2 = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(clusRef2)));
+                } else {
+                  clus1 = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(clusRef1)));  
+                  clus2 = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(clusRef2)));   
+                }
+              }
 
               if( !clus1 || !clus2 ) continue;
 
@@ -7250,11 +7311,28 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
               fBuffer_Gamma2_phi      = static_cast<UShort_t>(Gamma2->GetPhotonPhi()*1000);
               fBuffer_Gamma2_trueID   = static_cast<AliAODMCParticle*>(AODMCTrackArray->At( Gamma2->GetCaloPhotonMCLabel(0)))->PdgCode()==22 ? 1 : 0;
 
-              Long_t clusRef2       = Gamma2->GetCaloClusterRef();   
+              Long_t clusRef2       = Gamma2->GetCaloClusterRef(); 
+
+              TClonesArray * arrClustersProcess = NULL;
+              if(fCorrTaskSetting.CompareTo("")){
+                arrClustersProcess = dynamic_cast<TClonesArray*>(fInputEvent->FindListObject(Form("%sClustersBranch",fCorrTaskSetting.Data())));
+              }
 
               std::unique_ptr<AliVCluster> clus2;
-              if(fInputEvent->IsA()==AliESDEvent::Class())      clus2 = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(clusRef2)));
-              else if(fInputEvent->IsA()==AliAODEvent::Class()) clus2 = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(clusRef2)));   
+
+              if(fInputEvent->IsA()==AliESDEvent::Class()){
+                if(arrClustersProcess){
+                  clus2 = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)arrClustersProcess->At(clusRef2)));
+                } else {
+                  clus2 = std::unique_ptr<AliVCluster>(new AliESDCaloCluster(*(AliESDCaloCluster*)fInputEvent->GetCaloCluster(clusRef2)));
+                }
+              } else if(fInputEvent->IsA()==AliAODEvent::Class()){
+                if(arrClustersProcess){
+                  clus2 = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)arrClustersProcess->At(clusRef2)));
+                } else {
+                  clus2 = std::unique_ptr<AliVCluster>(new AliAODCaloCluster(*(AliAODCaloCluster*)fInputEvent->GetCaloCluster(clusRef2)));   
+                }
+              }
               if( !clus2 ) continue;
 
               fBuffer_Gamma2_M02  = static_cast<Short_t>(clus2->GetM02()*1000);
@@ -7314,7 +7392,6 @@ void AliAnalysisTaskNeutralMesonToPiPlPiMiNeutralMeson::CalculateMesonCandidates
                   fHistoAngleHNMesonPiPlPiMi[fiCut]->Fill(mesoncand->Pt(),vParticle->Angle(mesoncand->Vect()), fWeightJetJetMC);
                   fHistoAngleSum[fiCut]->Fill(mesoncand->Pt(),((PosPiontmp.Angle(mesoncand->Vect()))+(NegPiontmp.Angle(PosPiontmp.Vect()))+(PosPiontmp.Angle(neutralDecayMeson->Vect()))), fWeightJetJetMC);
                 }
-
 
 
                 AliAODConversionMother mesontmp(&NDMtmp,vParticle);
