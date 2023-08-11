@@ -139,6 +139,8 @@
 #pragma link C++ class AliAnalysisTaskCorrPPMC+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityROOT6_new+;
 
+#pragma link C++ class AliAnalysisTaskDiffPtFluc_PIDhadrons+;
+
 #pragma link C++ class AliAnalysisTaskNFactorialMoments+;
 
 #pragma link C++ class AliAnalysisHMMeanPt+;
