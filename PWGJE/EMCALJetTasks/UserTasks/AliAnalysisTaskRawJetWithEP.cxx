@@ -1572,7 +1572,7 @@ Bool_t AliAnalysisTaskRawJetWithEP::MeasureBkg(Double_t baseJetRho){
     switch (fFitModulationType)  {
         case kNoFit : { fFitModulation = new TF1("fix_kNoFit", "[0]", 0, TMath::TwoPi()); } break;
         case kV2 : {
-            fitFunction = "[0]*([1]+[2]*[3]*TMath::Cos([2]*(x-[4])))";
+            fitFunction = "[0]*(1.+2.*[1]*TMath::Cos(2.*(x-[2])))";
             fFitModulation = new TF1("fit_kV2", fitFunction, 0, TMath::TwoPi());
             fFitModulation->SetParameter(0, 0.);  // normalization
             fFitModulation->SetParameter(1, 0.2); // v2
