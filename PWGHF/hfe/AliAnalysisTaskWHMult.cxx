@@ -47,7 +47,6 @@ ClassImp(AliAnalysisTaskWHMult) // classimp: necessary for root
 
 AliAnalysisTaskWHMult::AliAnalysisTaskWHMult() : AliAnalysisTaskSE(), 
   fAOD(0),
-  //fMCEvent(0),
   fVevent(0),
   fPIDResponse(0),
   fMCTrackpart(0),
@@ -55,9 +54,10 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult() : AliAnalysisTaskSE(),
   fMCparticle(0),
   fOutputList(0),
   tree(0),
+  fNevents(0),
   fHistPt(0),
+  pVertex_all(0),
   pVertex(0),
-  cutVer(0),
   EtavsPhi(0),
   TPCSig(0),
   Cent(0),
@@ -79,22 +79,31 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult() : AliAnalysisTaskSE(),
   fHistMCClsLAE(0),
   fPtEoverPH(0),
   fPtEoverPHGeo(0),
-  fREisolation(0),
-  fREisoW(0),
-  fREisoHF(0),
-  fREisoWhpt(0),
-  fREisoHFhpt(0),
-  fREisoWvhpt(0),
-  fREisoHFvhpt(0),
-  EleTraDelPhi(0),
-  fHistPt_We(0),
-  fHistPt_HFe(0),
-  fPt_maxtrack_W(0),
-  fNtrkl_PtOfMaxTrk_W(0),
-  fHistPt_We_Ntrkl(0),
-  fW_true(0),
-  fW_false(0),
-  EleTraDelPhi_fullrange(0),
+  fREisolation(),
+  fREiso_MCW(0),
+  fREiso_MCHF(0),
+  fREiso_MCWhpt(0),
+  fREiso_MCHFhpt(0),
+  fREiso_MCWvhpt(0),
+  fREiso_MCHFvhpt(0),
+  fdPhi_trkW_Pt(),
+  fdPhi_trkHF_Pt(),
+  fdPhi_trkW_Pt_hpt(),
+  fdPhi_trkHF_Pt_hpt(),
+  fdPhi_trkW_ePt(),
+  fdPhi_trkHF_ePt(),
+  fHistPt_We(),
+  fHistPt_HFe(),
+  fPt_maxtrack_W(),
+  fPt_maxtrack_W_hpt(),
+  fNtrkl_PtOfMaxTrk_W(),
+  fNtrkl_PtOfMaxTrk_W_hpt(),
+  fHistPt_We_Ntrkl(),
+  fdPhi_trkW_full(),
+  fdPhi_trkHF_full(),
+  fdPhi_trkW_full_hpt(),
+  fdPhi_trkHF_full_hpt(),
+  fNtrkl_ClustE(0),
   fEMCEG1(kFALSE)
 {
   // default constructor, don't allocate memory here!
@@ -103,7 +112,6 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult() : AliAnalysisTaskSE(),
 //_____________________________________________________________________________
 AliAnalysisTaskWHMult::AliAnalysisTaskWHMult(const char* name) : AliAnalysisTaskSE(name),
   fAOD(0),
-  //fMCEvent(0),
   fVevent(0),
   fPIDResponse(0),
   fMCTrackpart(0),
@@ -111,9 +119,10 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult(const char* name) : AliAnalysisTask
   fMCparticle(0),
   fOutputList(0),
   tree(0),
+  fNevents(0),
   fHistPt(0),
+  pVertex_all(0),
   pVertex(0),
-  cutVer(0),
   EtavsPhi(0),
   TPCSig(0),
   Cent(0),
@@ -135,39 +144,44 @@ AliAnalysisTaskWHMult::AliAnalysisTaskWHMult(const char* name) : AliAnalysisTask
   fHistMCClsLAE(0),
   fPtEoverPH(0),
   fPtEoverPHGeo(0),
-  fREisolation(0),
-  fREisoW(0),
-  fREisoHF(0),
-  fREisoWhpt(0),
-  fREisoHFhpt(0),
-  fREisoWvhpt(0),
-  fREisoHFvhpt(0),
-  EleTraDelPhi(0),
-  fHistPt_We(0),
-  fHistPt_HFe(0),
-  fPt_maxtrack_W(0),
-  fNtrkl_PtOfMaxTrk_W(0),
-  fHistPt_We_Ntrkl(0),
-  fW_true(0),
-  fW_false(0),
-  EleTraDelPhi_fullrange(0),
+  fREisolation(),
+  fREiso_MCW(0),
+  fREiso_MCHF(0),
+  fREiso_MCWhpt(0),
+  fREiso_MCHFhpt(0),
+  fREiso_MCWvhpt(0),
+  fREiso_MCHFvhpt(0),
+  fdPhi_trkW_Pt(),
+  fdPhi_trkHF_Pt(),
+  fdPhi_trkW_Pt_hpt(),
+  fdPhi_trkHF_Pt_hpt(),
+  fdPhi_trkW_ePt(),
+  fdPhi_trkHF_ePt(),
+  fHistPt_We(),
+  fHistPt_HFe(),
+  fPt_maxtrack_W(),
+  fPt_maxtrack_W_hpt(),
+  fNtrkl_PtOfMaxTrk_W(),
+  fNtrkl_PtOfMaxTrk_W_hpt(),
+  fHistPt_We_Ntrkl(),
+  fdPhi_trkW_full(),
+  fdPhi_trkHF_full(),
+  fdPhi_trkW_full_hpt(),
+  fdPhi_trkHF_full_hpt(),
+  fNtrkl_ClustE(0),
   fEMCEG1(kFALSE)
 {
   // constructor
-  DefineInput(0, TChain::Class());    // define the input of the analysis: in this case we take a 'chain' of events
-                                      // this chain is created by the analysis manager, so no need to worry about it, 
-                                      // it does its work automatically
-  DefineOutput(1, TList::Class());    // define the ouptut of the analysis: in this case it's a list of histograms 
-                                      // you can add more output objects by calling DefineOutput(2, classname::Class())
-                                      // if you add more output objects, make sure to call PostData for all of them, and to
-                                      // make changes to your AddTask macro!
+  DefineInput(0, TChain::Class());
+
+  DefineOutput(1, TList::Class()); 
 }
 //_____________________________________________________________________________
 AliAnalysisTaskWHMult::~AliAnalysisTaskWHMult()
 {
   // destructor
   if(fOutputList) {
-    delete fOutputList;     // at the end of your task, it is deleted from memory by calling this function
+    delete fOutputList;
   }
 }
 //_____________________________________________________________________________
@@ -176,22 +190,24 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fOutputList = new TList();
   fOutputList->SetOwner(kTRUE);
 
+  fNevents = new TH1F("fNevents","Number of events",8,-0.5,7.5);
+
   fHistPt = new TH1F("fHistPt", "fHistPt", 200, 0, 200);
 
-  pVertex = new TH1F("pVertex", "pVertex", 100, -20, 20);       // my histgram
-  pVertex->GetXaxis()->SetTitle("vertex (collision point on z-axis)");
+  pVertex_all = new TH1F("pVertex_all", "pVertex_all", 100, -20, 20);
+  pVertex_all->GetXaxis()->SetTitle("Z vertex (collision point on z-axis)");
+  pVertex_all->GetYaxis()->SetTitle("events");
+
+  pVertex = new TH1F("pVertex", "pVertex", 100, -20, 20);
+  pVertex->GetXaxis()->SetTitle("Z vertex (collision point on z-axis)");
   pVertex->GetYaxis()->SetTitle("events");
 
-  cutVer = new TH1F("cutVer", "cutVer", 100, -20, 20);
-  cutVer->GetXaxis()->SetTitle("vertex (collision point on z-axis)");
-  cutVer->GetYaxis()->SetTitle("events");
-
-  EtavsPhi = new TH2F("EtavsPhi","#eta vs #phi", 1000, -1.5, 1.5, 1000, -1, 7);
+  EtavsPhi = new TH2F("EtavsPhi","#eta vs #phi", 500, -1.5, 1.5, 500, -1, 7);
   EtavsPhi->GetXaxis()->SetTitle("#eta");
   EtavsPhi->GetYaxis()->SetTitle("#phi (rad)");
 
   TPCSig = new TH2F("TPCSig","TPC signal", 5000, 0.1, 30, 10000, 0, 10000);
-  TPCSig->GetXaxis()->SetTitle("P (GeV/c)");
+  TPCSig->GetXaxis()->SetTitle("p (GeV/c)");
   TPCSig->GetYaxis()->SetTitle("dE/dx");
   TPCSig->SetMarkerStyle(7);
 
@@ -208,74 +224,123 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fFPDG = new TH1F("fFPDG","father pdg code",2000,-1000,1000);
 
   fHistClustE = new TH1F("fHistClustE","Cluster Energy ;E (GeV) ;Entries",100,0,100);
-  fHistClustEMatch = new TH1F("fHistClustEMatch","Cluster Energy after track matching (-1 < n#sigma < 3);E (GeV) ;Entries",2000,0,100);
+  fHistClustEMatch = new TH1F("fHistClustEMatch","Cluster Energy after track matching ;E (GeV) ;Entries",2000,0,100);
 
   fHistClustLongAxis = new TH1F("fHistClustLongAxis","Events in M02;M02;Entries",100,0,2);
-  fHistClustLongAxisE = new TH1F("fHistClustLongAxisE","Events in M02 (-1 < n#sigma < 3) (0.7 < E/P < 1.5) (P_{T} > 1.5);M02;Entries",100,0,2);
+  fHistClustLongAxisE = new TH1F("fHistClustLongAxisE","Events in M02 (-1 < n#sigma < 3) (0.7 < E/p < 1.5) (P_{T} > 1.5);M02;Entries",100,0,2);
 
-  fHistNsigmaP = new TH2F("fHistNsigmaP","n#sigma vs P ;P (GeV/c) ;n#sigma",1000,0,30,1000,-10,10);
-  fHistMCNsigmaP = new TH2F("fHistMCNsigmaP","MC n#sigma vs P ;P (GeV/c) ;n#sigma",1000,0,30,1000,-10,10);
+  fHistNsigmaP = new TH2F("fHistNsigmaP","n#sigma vs p ;p (GeV/c) ;n#sigma",1000,0,30,1000,-10,10);
+  fHistMCNsigmaP = new TH2F("fHistMCNsigmaP","MC n#sigma vs p ;p (GeV/c) ;n#sigma",1000,0,30,1000,-10,10);
 
-  fPtEoverPE = new TH2F("fPtvsEoverPE","P_{T} vs E/P (-1 < n#sigma < 3) ;P_{T} (GeV/c) ;E/P",1000,0,100,50,0,3);
-  fPtEoverPMCE = new TH2F("fPtEoverPMCE","MC Events P_{T} vs E/P (-1 < n#sigma < 3) ;P_{T} (GeV/c) ;E/P",1000,0,100,50,0,3);
-  fPtEoverPEGeo = new TH2F("fPtEoverPEGeo","P_{T} vs E/P (-1 < n#sigma < 3) (0.1 < M02 < 0.6) ;P_{T} (GeV/c) ;E/P",1000,0,100,50,0,3);
+  fPtEoverPE = new TH2F("fPtvsEoverPE","p_{T} vs E/p (-1 < n#sigma < 3) ;p_{T} (GeV/c) ;E/p",1000,0,100,100,0,3);
+  fPtEoverPMCE = new TH2F("fPtEoverPMCE","MC Events p_{T} vs E/p (-1 < n#sigma < 3) ;p_{T} (GeV/c) ;E/p",1000,0,100,100,0,3);
+  fPtEoverPEGeo = new TH2F("fPtEoverPEGeo","p_{T} vs E/p (-1 < n#sigma < 3) (0.1 < M02 < 0.6) ;p_{T} (GeV/c) ;E/p",1000,0,100,100,0,3);
   fHistMCClsLAE = new TH1F("fHistMCClsLAE","MC Events in M02 (-1 < n#sigma < 3);M02;Entries",100,0,2);
-  fPtEoverPH = new TH2F("fPtvsEoverPH","P_{T} vs E/P (n#sigma < -3) ;P_{T} (GeV/c) ;E/P",1000,0,100,50,0,3);
-  fPtEoverPHGeo = new TH2F("fPtEoverPHGeo","P_{T} vs E/P (n#sigma < -3) (0.1 < M02 < 0.6) ;P_{T} (GeV/c) ;E/P",1000,0,100,50,0,3);
+  fPtEoverPH = new TH2F("fPtvsEoverPH","p_{T} vs E/p (n#sigma < -3) ;p_{T} (GeV/c) ;E/p",1000,0,100,100,0,3);
+  fPtEoverPHGeo = new TH2F("fPtEoverPHGeo","p_{T} vs E/p (n#sigma < -3) (0.1 < M02 < 0.6) ;p_{T} (GeV/c) ;E/p",1000,0,100,100,0,3);
 
-  fREisolation = new TH1F("fREisolation","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}",100,0,1);
-  fREisolation->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
-  fREisolation->GetYaxis()->SetTitle("Entries");
+  for (Int_t isoR=0;isoR<3;isoR++) {
+    fREisolation[isoR] = new TH1F(Form("fREisolation_%d",isoR),Form("(#sum_{R<0.%d}E_{shower}-E_{electron})/E_{electron}",3+isoR),100,0,1);
+    fREisolation[isoR]->GetXaxis()->SetTitle(Form("(#sum_{R<0.%d}E_{shower}-E_{electron})/E_{electron}",3+isoR));
+    fREisolation[isoR]->GetYaxis()->SetTitle("Entries");
+  }
 
-  fREisoW = new TH1F("fREisoW","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (W #rightarrow e) (P_{T} > 10GeV)",100,0,1);
-  fREisoW->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
-  fREisoW->GetYaxis()->SetTitle("Entries");
-  fREisoHF = new TH1F("fREisoHF","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (b,c #rightarrow e) (P_{T} > 10GeV)",100,0,1);
-  fREisoHF->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
-  fREisoHF->GetYaxis()->SetTitle("Entries");
-  fREisoWhpt = new TH1F("fREisoWhpt","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (W #rightarrow e) (P_{T} > 20GeV)",100,0,1);
-  fREisoWhpt->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
-  fREisoWhpt->GetYaxis()->SetTitle("Entries");
-  fREisoHFhpt = new TH1F("fREisoHFhpt","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (b,c #rightarrow e) (P_{T} > 20GeV)",100,0,1);
-  fREisoHFhpt->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
-  fREisoHFhpt->GetYaxis()->SetTitle("Entries");
-  fREisoWvhpt = new TH1F("fREisoWvhpt","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (W #rightarrow e) (P_{T} > 30GeV)",100,0,1);
-  fREisoWvhpt->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
-  fREisoWvhpt->GetYaxis()->SetTitle("Entries");
-  fREisoHFvhpt = new TH1F("fREisoHFvhpt","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (b,c #rightarrow e) (P_{T} > 30GeV)",100,0,1);
-  fREisoHFvhpt->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
-  fREisoHFvhpt->GetYaxis()->SetTitle("Entries");
+  fREiso_MCW = new TH1F("fREiso_MCW","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (e #leftarrow W) (p_{T} > 10GeV)",100,0,1);
+  fREiso_MCW->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
+  fREiso_MCW->GetYaxis()->SetTitle("Entries");
+  fREiso_MCHF = new TH1F("fREiso_MCHF","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (e #leftarrow b,c) (p_{T} > 10GeV)",100,0,1);
+  fREiso_MCHF->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
+  fREiso_MCHF->GetYaxis()->SetTitle("Entries");
+  fREiso_MCWhpt = new TH1F("fREiso_MCWhpt","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (e #leftarrow W) (p_{T} > 20GeV)",100,0,1);
+  fREiso_MCWhpt->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
+  fREiso_MCWhpt->GetYaxis()->SetTitle("Entries");
+  fREiso_MCHFhpt = new TH1F("fREiso_MCHFhpt","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (e #leftarrow b,c) (p_{T} > 20GeV)",100,0,1);
+  fREiso_MCHFhpt->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
+  fREiso_MCHFhpt->GetYaxis()->SetTitle("Entries");
+  fREiso_MCWvhpt = new TH1F("fREiso_MCWvhpt","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (e #leftarrow W) (p_{T} > 30GeV)",100,0,1);
+  fREiso_MCWvhpt->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
+  fREiso_MCWvhpt->GetYaxis()->SetTitle("Entries");
+  fREiso_MCHFvhpt = new TH1F("fREiso_MCHFvhpt","(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron} (e #leftarrow b,c) (p_{T} > 30GeV)",100,0,1);
+  fREiso_MCHFvhpt->GetXaxis()->SetTitle("(#sum_{R<0.3}E_{shower}-E_{electron})/E_{electron}");
+  fREiso_MCHFvhpt->GetYaxis()->SetTitle("Entries");
 
-  EleTraDelPhi = new TH2F("EleTraDelPhi","#Delta #phi = #phi_{track} - #phi_{e #leftarrow W}",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
-  EleTraDelPhi->GetXaxis()->SetTitle("#Delta #phi (rad)");
-  EleTraDelPhi->GetYaxis()->SetTitle("track P_{T}(GeV/c)");
+  for (Int_t isoR=0;isoR<3;isoR++) {
+    fdPhi_trkW_Pt[isoR] = new TH2F(Form("fdPhi_trkW_Pt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
+    fdPhi_trkW_Pt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{can} (Eiso_{R<0.%d})",3+isoR));
+    fdPhi_trkW_Pt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
+    fdPhi_trkW_Pt[isoR]->GetYaxis()->SetTitle("p_{T,trk}(GeV/c)");
+    fdPhi_trkHF_Pt[isoR] = new TH2F(Form("fdPhi_trkHF_Pt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
+    fdPhi_trkHF_Pt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{HFcan} (Eiso_{R<0.%d})",3+isoR));
+    fdPhi_trkHF_Pt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
+    fdPhi_trkHF_Pt[isoR]->GetYaxis()->SetTitle("p_{T,trk}(GeV/c)");
+    fdPhi_trkW_Pt_hpt[isoR] = new TH2F(Form("fdPhi_trkW_Pt_hpt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
+    fdPhi_trkW_Pt_hpt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{can} (Eiso_{R<0.%d}) (p_{T,can}>30GeV/c)",3+isoR));
+    fdPhi_trkW_Pt_hpt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
+    fdPhi_trkW_Pt_hpt[isoR]->GetYaxis()->SetTitle("p_{T,trk}(GeV/c)");
+    fdPhi_trkHF_Pt_hpt[isoR] = new TH2F(Form("fdPhi_trkHF_Pt_hpt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
+    fdPhi_trkHF_Pt_hpt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{HFcan} (Eiso_{R<0.%d}) (p_{T,HFcan}>30GeV/c)",3+isoR));
+    fdPhi_trkHF_Pt_hpt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
+    fdPhi_trkHF_Pt_hpt[isoR]->GetYaxis()->SetTitle("p_{T,trk}(GeV/c)");
 
-  fHistPt_We = new TH1F("fHistPt_We","P_{T, e #leftarrow W}",200,0,200);
-  fHistPt_We->GetXaxis()->SetTitle("P_{T} (GeV/c)");
-  fHistPt_We->GetYaxis()->SetTitle("Counts");
-  fHistPt_HFe = new TH1F("fHistPt_HFe","P_{T, e #leftarrow b,c}",200,0,200);
-  fHistPt_HFe->GetXaxis()->SetTitle("P_{T} (GeV/c)");
-  fHistPt_HFe->GetYaxis()->SetTitle("Counts");
+    fdPhi_trkW_ePt[isoR] = new TH2F(Form("fdPhi_trkW_ePt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
+    fdPhi_trkW_ePt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{can} (Eiso_{R<0.%d})",3+isoR));
+    fdPhi_trkW_ePt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
+    fdPhi_trkW_ePt[isoR]->GetYaxis()->SetTitle("p_{T,can}(GeV/c)");
+    fdPhi_trkHF_ePt[isoR] = new TH2F(Form("fdPhi_trkHF_ePt_%d",isoR),"",50,-TMath::Pi()/3.,5.*TMath::Pi()/3.,1000,0,100);
+    fdPhi_trkHF_ePt[isoR]->SetTitle(Form("#Delta #phi = #phi_{trk}-#phi_{HFcan} (Eiso_{R<0.%d})",3+isoR));
+    fdPhi_trkHF_ePt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
+    fdPhi_trkHF_ePt[isoR]->GetYaxis()->SetTitle("p_{T,HFcan}(GeV/c)");
 
-  fPt_maxtrack_W = new TH1F("fPt_maxtrack_W","P_{T, trk} / P_{T, e #leftarrow W}", 200, 0, 2);
-  fPt_maxtrack_W->GetXaxis()->SetTitle("P_{T, trk} / P_{T, e #leftarrow W}");
-  fPt_maxtrack_W->GetYaxis()->SetTitle("Counts");
-  fNtrkl_PtOfMaxTrk_W = new TH2F("fNtrkl_PtOfMaxTrk_W","N_{tracklets} vs P_{T, trk} / P_{T, e #leftarrow W}", 200, 0, 200, 200, 0, 2);
-  fNtrkl_PtOfMaxTrk_W->GetXaxis()->SetTitle("N_{tracklets}");
-  fNtrkl_PtOfMaxTrk_W->GetYaxis()->SetTitle("P_{T, trk} / P_{T, e #leftarrow W}");
+    fHistPt_We[isoR] = new TH1F(Form("fHistPt_We_%d",isoR),Form("p_{T,can} (Eiso_{R<0.%d})",3+isoR),200,0,200);
+    fHistPt_We[isoR]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistPt_We[isoR]->GetYaxis()->SetTitle("Counts");
+    fHistPt_HFe[isoR] = new TH1F(Form("fHistPt_HFe_%d",isoR),Form("p_{T,HFcan} (Eiso_{R<0.%d})",3+isoR),200,0,200);
+    fHistPt_HFe[isoR]->GetXaxis()->SetTitle("p_{T} (GeV/c)");
+    fHistPt_HFe[isoR]->GetYaxis()->SetTitle("Counts");
 
-  fHistPt_We_Ntrkl = new TH2F("fHistPt_We_Ntrkl","P_{T,e#leftarrowW} vs N_{tracklets}",200,0,200,200,0,200);
-  fHistPt_We_Ntrkl->GetXaxis()->SetTitle("P_{T,e#leftarrowW} (GeV/c)");
-  fHistPt_We_Ntrkl->GetYaxis()->SetTitle("N_{tracklets}");
+    fPt_maxtrack_W[isoR] = new TH1F(Form("fPt_maxtrack_W_%d",isoR),Form("p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR),200,0,2);
+    fPt_maxtrack_W[isoR]->GetXaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fPt_maxtrack_W[isoR]->GetYaxis()->SetTitle("Counts");
+    fPt_maxtrack_W_hpt[isoR] = new TH1F(Form("fPt_maxtrack_W_hpt_%d",isoR),Form("p_{T,trk}/p_{T,can} (Eiso_{R<0.%d}) (p_{T,can}>30GeV/c)",3+isoR),200,0,2);
+    fPt_maxtrack_W_hpt[isoR]->GetXaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fPt_maxtrack_W_hpt[isoR]->GetYaxis()->SetTitle("Counts");
 
-  fW_true = new TH1F("fW_true","The true of e#leftarrowW; P_{T} (GeV/c); Entries",200,0,200);
-  fW_false = new TH1F("fW_false","The false of e#leftarrowW; P_{T} (GeV/c); Entries",200,0,200);
+    fNtrkl_PtOfMaxTrk_W[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} (Eiso_{R<0.%d})",3+isoR));
+    fNtrkl_PtOfMaxTrk_W[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
+    fNtrkl_PtOfMaxTrk_W_hpt[isoR] = new TH2F(Form("fNtrkl_PtOfMaxTrk_W_hpt_%d",isoR),"",200,0,200,200,0,2);
+    fNtrkl_PtOfMaxTrk_W_hpt[isoR]->SetTitle(Form("N_{tracklets} vs p_{T,trk}/p_{T,can} (Eiso_{R<0.%d}) (p_{T,can}>30GeV/c)",3+isoR));
+    fNtrkl_PtOfMaxTrk_W_hpt[isoR]->GetXaxis()->SetTitle("N_{tracklets}");
+    fNtrkl_PtOfMaxTrk_W_hpt[isoR]->GetYaxis()->SetTitle("p_{T,trk}/p_{T,can}");
 
-  EleTraDelPhi_fullrange = new TH1F("EleTraDelPhi_fullrange","#Delta #phi full range; #Delta #phi; track",200,-7,7);
+    fHistPt_We_Ntrkl[isoR] = new TH2F(Form("fHistPt_We_Ntrkl_%d",isoR),Form("p_{T,can} vs N_{tracklets} (Eiso_{R<0.%d})",3+isoR),200,0,200,200,0,200);
+    fHistPt_We_Ntrkl[isoR]->GetXaxis()->SetTitle("p_{T,can} (GeV/c)");
+    fHistPt_We_Ntrkl[isoR]->GetYaxis()->SetTitle("N_{tracklets}");
 
+    fdPhi_trkW_full[isoR] = new TH2F(Form("fdPhi_trkW_Pt_full_%d",isoR),Form("raw #Delta #phi (Eiso_{R<0.%d})",3+isoR),200,-7,7,200,0,200);
+    fdPhi_trkW_full[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
+    fdPhi_trkW_full[isoR]->GetYaxis()->SetTitle("p_{T,trk} (GeV/c)");
+    fdPhi_trkHF_full[isoR] = new TH2F(Form("fdPhi_trkHF_Pt_full_%d",isoR),Form("raw #Delta #phi (Eiso_{R<0.%d})",3+isoR),200,-7,7,200,0,200);
+    fdPhi_trkHF_full[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
+    fdPhi_trkHF_full[isoR]->GetYaxis()->SetTitle("p_{T,trk} (GeV/c)");
+    fdPhi_trkW_full_hpt[isoR] = new TH2F(Form("fdPhi_trkW_Pt_full_hpt_%d",isoR),"",200,-7,7,200,0,200);
+    fdPhi_trkW_full_hpt[isoR]->SetTitle(Form("raw #Delta #phi (Eiso_{R<0.%d}) (p_{T,can}>30GeV/c)",3+isoR));
+    fdPhi_trkW_full_hpt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
+    fdPhi_trkW_full_hpt[isoR]->GetYaxis()->SetTitle("p_{T,trk} (GeV/c)");
+    fdPhi_trkHF_full_hpt[isoR] = new TH2F(Form("fdPhi_trkHF_Pt_full_hpt_%d",isoR),"",200,-7,7,200,0,200);
+    fdPhi_trkHF_full_hpt[isoR]->SetTitle(Form("raw #Delta #phi (Eiso_{R<0.%d}) (p_{T,HFcan}>30GeV/c)",3+isoR));
+    fdPhi_trkHF_full_hpt[isoR]->GetXaxis()->SetTitle("#Delta #phi (rad)");
+    fdPhi_trkHF_full_hpt[isoR]->GetYaxis()->SetTitle("p_{T,trk} (GeV/c)");
+  }
+
+  fNtrkl_ClustE = new TH2F("fNtrkl_ClustE","N_{tracklets} vs cluster energy; N_{tracklets}; E (GeV)",200,0,200,100,0,50);
+
+
+  fOutputList->Add(fNevents);
   fOutputList->Add(fHistPt);
+  fOutputList->Add(pVertex_all);
   fOutputList->Add(pVertex);
-  fOutputList->Add(cutVer);
   fOutputList->Add(EtavsPhi);
   fOutputList->Add(TPCSig);
   fOutputList->Add(Cent);
@@ -285,12 +350,10 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fOutputList->Add(fPDG);
   fOutputList->Add(fMPDG);
   fOutputList->Add(fFPDG);
-
   fOutputList->Add(fHistClustE);
   fOutputList->Add(fHistClustEMatch);
   fOutputList->Add(fHistClustLongAxis);
   fOutputList->Add(fHistClustLongAxisE);
-
   fOutputList->Add(fHistNsigmaP);
   fOutputList->Add(fHistMCNsigmaP);
   fOutputList->Add(fPtEoverPE);
@@ -299,23 +362,67 @@ void AliAnalysisTaskWHMult::UserCreateOutputObjects()
   fOutputList->Add(fHistMCClsLAE);
   fOutputList->Add(fPtEoverPH);
   fOutputList->Add(fPtEoverPHGeo);
-  fOutputList->Add(fREisolation);
-  fOutputList->Add(fREisoW);
-  fOutputList->Add(fREisoHF);
-  fOutputList->Add(fREisoWhpt);
-  fOutputList->Add(fREisoHFhpt);
-  fOutputList->Add(fREisoWvhpt);
-  fOutputList->Add(fREisoHFvhpt);
-  fOutputList->Add(EleTraDelPhi);
-  fOutputList->Add(fHistPt_We);
-  fOutputList->Add(fHistPt_HFe);
-  fOutputList->Add(fPt_maxtrack_W);
-  fOutputList->Add(fNtrkl_PtOfMaxTrk_W);
-  fOutputList->Add(fHistPt_We_Ntrkl);
-  fOutputList->Add(fW_true);
-  fOutputList->Add(fW_false);
-
-  fOutputList->Add(EleTraDelPhi_fullrange);
+  fOutputList->Add(fREisolation[0]);
+  fOutputList->Add(fREisolation[1]);
+  fOutputList->Add(fREisolation[2]);
+  fOutputList->Add(fREiso_MCW);
+  fOutputList->Add(fREiso_MCHF);
+  fOutputList->Add(fREiso_MCWhpt);
+  fOutputList->Add(fREiso_MCHFhpt);
+  fOutputList->Add(fREiso_MCWvhpt);
+  fOutputList->Add(fREiso_MCHFvhpt);
+  fOutputList->Add(fdPhi_trkW_Pt[0]);
+  fOutputList->Add(fdPhi_trkW_Pt[1]);
+  fOutputList->Add(fdPhi_trkW_Pt[2]);
+  fOutputList->Add(fdPhi_trkHF_Pt[0]);
+  fOutputList->Add(fdPhi_trkHF_Pt[1]);
+  fOutputList->Add(fdPhi_trkHF_Pt[2]);
+  fOutputList->Add(fdPhi_trkW_Pt_hpt[0]);
+  fOutputList->Add(fdPhi_trkW_Pt_hpt[1]);
+  fOutputList->Add(fdPhi_trkW_Pt_hpt[2]);
+  fOutputList->Add(fdPhi_trkHF_Pt_hpt[0]);
+  fOutputList->Add(fdPhi_trkHF_Pt_hpt[1]);
+  fOutputList->Add(fdPhi_trkHF_Pt_hpt[2]);
+  fOutputList->Add(fdPhi_trkW_ePt[0]);
+  fOutputList->Add(fdPhi_trkW_ePt[1]);
+  fOutputList->Add(fdPhi_trkW_ePt[2]);
+  fOutputList->Add(fdPhi_trkHF_ePt[0]);
+  fOutputList->Add(fdPhi_trkHF_ePt[1]);
+  fOutputList->Add(fdPhi_trkHF_ePt[2]);
+  fOutputList->Add(fHistPt_We[0]);
+  fOutputList->Add(fHistPt_We[1]);
+  fOutputList->Add(fHistPt_We[2]);
+  fOutputList->Add(fHistPt_HFe[0]);
+  fOutputList->Add(fHistPt_HFe[1]);
+  fOutputList->Add(fHistPt_HFe[2]);
+  fOutputList->Add(fPt_maxtrack_W[0]);
+  fOutputList->Add(fPt_maxtrack_W[1]);
+  fOutputList->Add(fPt_maxtrack_W[2]);
+  fOutputList->Add(fPt_maxtrack_W_hpt[0]);
+  fOutputList->Add(fPt_maxtrack_W_hpt[1]);
+  fOutputList->Add(fPt_maxtrack_W_hpt[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W[2]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W_hpt[0]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W_hpt[1]);
+  fOutputList->Add(fNtrkl_PtOfMaxTrk_W_hpt[2]);
+  fOutputList->Add(fHistPt_We_Ntrkl[0]);
+  fOutputList->Add(fHistPt_We_Ntrkl[1]);
+  fOutputList->Add(fHistPt_We_Ntrkl[2]);
+  fOutputList->Add(fdPhi_trkW_full[0]);
+  fOutputList->Add(fdPhi_trkW_full[1]);
+  fOutputList->Add(fdPhi_trkW_full[2]);
+  fOutputList->Add(fdPhi_trkHF_full[0]);
+  fOutputList->Add(fdPhi_trkHF_full[1]);
+  fOutputList->Add(fdPhi_trkHF_full[2]);
+  fOutputList->Add(fdPhi_trkW_full_hpt[0]);
+  fOutputList->Add(fdPhi_trkW_full_hpt[1]);
+  fOutputList->Add(fdPhi_trkW_full_hpt[2]);
+  fOutputList->Add(fdPhi_trkHF_full_hpt[0]);
+  fOutputList->Add(fdPhi_trkHF_full_hpt[1]);
+  fOutputList->Add(fdPhi_trkHF_full_hpt[2]);
+  fOutputList->Add(fNtrkl_ClustE);
 
   PostData(1, fOutputList);
 }
@@ -344,28 +451,18 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
     if (inputHandler)   fPIDResponse = inputHandler->GetPIDResponse();
   }
 
-  //fMCEvent = MCEvent();
-
   if(!gGrid){
     cout << "no Grid connection, connecting to the Grid ..." << endl;
     TGrid::Connect("alien//");
   }
 
   //==== trigger selection ======
-
   TString firedTrigger;
   TString TriggerEG1("EG1");
 
   fVevent->GetFiredTriggerClasses();
   if(fAOD) firedTrigger = fAOD->GetFiredTriggerClasses();
   if(fEMCEG1){if(!firedTrigger.Contains(TriggerEG1))return;}
-
-  /*
-  //=====reference objects file=====
-  TFile* RefData=TFile::Open("alien:///alice/cern.ch/user/t/takawagu/Data.root");
-  TTree* tree=(TTree*)RefData->Get("tree");
-  //TTree* treee=(TTree*)RefData->Get("treee");
-  */
 
   //=====reference objects file=====
   if(!tree)
@@ -381,17 +478,46 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
 
   Int_t Nclust = fAOD->GetNumberOfCaloClusters();
 
-  Double_t vertexZ = fAOD->GetPrimaryVertex()->GetZ();
-  pVertex->Fill(vertexZ);
-  if(abs(vertexZ)<=10.){
-    cutVer->Fill(vertexZ);
-  }
-  const AliVVertex *pVtx = fAOD->GetPrimaryVertex();
+  //===== Global Vtx =====
+  const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
+  Double_t NcontV = pVtx->GetNContributors();
+  Double_t Zvertex = pVtx->GetZ();
+  pVertex_all->Fill(Zvertex);
+  //===== SPD Vtx =====
+  const AliVVertex *pVtxSPD = fVevent->GetPrimaryVertexSPD();
+  Double_t ZvertexSPD = pVtxSPD->GetZ();
+  Double_t NcontVSPD = pVtxSPD->GetNContributors();
+  Double_t cov[6] = {0};
+  pVtxSPD->GetCovarianceMatrix(cov);
 
   Float_t centrality(0);
   AliMultSelection *multSelection =static_cast<AliMultSelection*>(fAOD->FindListObject("MultSelection"));
   if(multSelection) centrality = multSelection->GetMultiplicityPercentile("V0M");	//get centrality
   Cent->Fill(centrality);
+
+    ////////////////////////
+    //  Event Selection   //
+    ////////////////////////
+  fNevents->Fill(0);
+  // ===== 1. remove pile up events =====
+  if (fVevent->IsPileupFromSPDInMultBins()) return;
+  fNevents->Fill(1);
+  // ===== 2. Global contributors cut =====
+  if (NcontV < 2) return;
+  fNevents->Fill(2);
+  // ===== 3. SPD contributors cut =====
+  if (NcontVSPD < 1) return;
+  fNevents->Fill(3);
+  // ===== 4. select events where SPD and primary vertex match =====
+  if (TMath::Abs(ZvertexSPD - Zvertex) > 0.5) return;
+  fNevents->Fill(4);
+  // ===== 5. SPD vertex resolution cut =====
+  if (TMath::Sqrt(cov[5]) > 0.25) return;
+  fNevents->Fill(5);
+  // ===== 6. Z vertex position cut =====
+  if (TMath::Abs(Zvertex) > 10.) return;
+  fNevents->Fill(6);
+  pVertex->Fill(Zvertex);
 
 //---------------SPD tracklets---------------
   Int_t nTracklets = 0;
@@ -406,19 +532,17 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
     Double_t trkleta = -TMath::Log(TMath::Tan(trkltheta/2.0));
     if (TMath::Abs(trkleta)<etaRange) nAcc++;
   }
-  fzvtx_Ntrkl->Fill(vertexZ,nAcc);
+  fzvtx_Ntrkl->Fill(Zvertex,nAcc);
 
   //=====vertex Z correction=====
-  if(abs(vertexZ)<=10.){
-    Int_t BinOfvertexZ = fzvtx_Ntrkl->GetXaxis()->FindBin(vertexZ);
-    corr_nAcc = GetCorrectedNtrackletsD(tree, nAcc, BinOfvertexZ);
-    fzvtx_Ntrkl_cal->Fill(vertexZ,corr_nAcc);
-  }
+  Int_t BinOfvertexZ = fzvtx_Ntrkl->GetXaxis()->FindBin(Zvertex);
+  corr_nAcc = GetCorrectedNtrackletsD(tree, nAcc, BinOfvertexZ, fAOD);
+  fzvtx_Ntrkl_cal->Fill(Zvertex,corr_nAcc);
 
   Int_t Nch = 0;
   if(fMCarray){
     Nch = CountNch();
-    if(abs(vertexZ)<=10.) fNtrklNch->Fill(corr_nAcc,Nch);
+    fNtrklNch->Fill(corr_nAcc,Nch);
   }
 
 //---------------track loop---------------
@@ -498,183 +622,216 @@ void AliAnalysisTaskWHMult::UserExec(Option_t *)
     if (track->GetTPCCrossedRows() < 100) continue;
 
 
-//---------------vertex within 10cm---------------> event selection
-    if(abs(vertexZ)<=10.)
-    {
-      double eta = -log(TMath::Tan((track->Theta())/2.));
-      EtavsPhi->Fill(eta,track->Phi());
+    double eta = -log(TMath::Tan((track->Theta())/2.));
+    EtavsPhi->Fill(eta,track->Phi());
 
-      TPCSig->Fill(track->P(), track->GetTPCsignal());
+    TPCSig->Fill(track->P(), track->GetTPCsignal());
 
-      Double_t fTPCnSigma = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
-      fHistNsigmaP->Fill(track->P(),fTPCnSigma);
-      if (pid_ele == 1.0) fHistMCNsigmaP->Fill(track->P(), fTPCnSigma);
+    Double_t fTPCnSigma = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kElectron);
+    fHistNsigmaP->Fill(track->P(),fTPCnSigma);
+    if (pid_ele == 1.0) fHistMCNsigmaP->Fill(track->P(), fTPCnSigma);
 
 //---------------track matching---------------
-      Int_t EMCalIndex = -1;
-      EMCalIndex = track->GetEMCALcluster();			//EMCal index of HIT tracks
-      if (track->Eta() > 0.6 || track->Eta() < -0.6) continue;	//For EMCal acceptance
-      AliVCluster*clustMatch = 0x0;
-      if (EMCalIndex >= 0)
-      {
-        clustMatch = (AliVCluster*)fAOD->GetCaloCluster(EMCalIndex);    //information of cluster matching with tracks
-        Double_t clustEmatch = clustMatch->E();				//information of cluster energy matching with tracks
-        fHistClustEMatch->Fill(clustEmatch);
+    Int_t EMCalIndex = -1;
+    EMCalIndex = track->GetEMCALcluster();
+    if (track->Eta() > 0.6 || track->Eta() < -0.6) continue;
+    AliVCluster*clustMatch = 0x0;
+    if (EMCalIndex >= 0)
+    {
+      clustMatch = (AliVCluster*)fAOD->GetCaloCluster(EMCalIndex);
+      Double_t clustEmatch = clustMatch->E();
+      fHistClustEMatch->Fill(clustEmatch);
+      fNtrkl_ClustE->Fill(corr_nAcc,clustEmatch);
 
-        Double_t clustLongE = clustMatch->GetM02();
-        fHistClustLongAxis->Fill(clustLongE);
+      Double_t clustLongE = clustMatch->GetM02();
+      fHistClustLongAxis->Fill(clustLongE);
 
-        Double_t EoverP = clustEmatch/track->P();
+      Double_t EoverP = clustEmatch/track->P();
 
 //---------------nsigma cut (electron)---------------
-        if (fTPCnSigma > -1. && fTPCnSigma < 3.)
+      if (fTPCnSigma > -1. && fTPCnSigma < 3.)
+      {
+        fPtEoverPE->Fill(track->Pt(),EoverP);
+        if (TMath::Abs(pdg) == 11) fPtEoverPMCE->Fill(track->Pt(),EoverP);
+
+        //to compare all tracks and electron M02
+        if (EoverP > 0.7 && EoverP < 1.5)
         {
-          fPtEoverPE->Fill(track->Pt(),EoverP);
-          if (TMath::Abs(pdg) == 11) fPtEoverPMCE->Fill(track->Pt(),EoverP);
+          if (TMath::Abs(pdg) == 11) fHistMCClsLAE->Fill(clustLongE);
+          fHistClustLongAxisE->Fill(clustLongE);
+        }
+
+//---------------M02 cut (electron)---------------
+        if (clustLongE > 0.1 && clustLongE < 0.6)
+        {
+          fPtEoverPEGeo->Fill(track->Pt(),EoverP);
 
 //---------------EoverP cut (electron)---------------
+          //////////////
+          // ELECTRON //
+          //////////////
           if (EoverP > 0.7 && EoverP < 1.5)
           {
-            if (TMath::Abs(pdg) == 11) fHistMCClsLAE->Fill(clustLongE);
-            fHistClustLongAxisE->Fill(clustLongE);
+            Float_t showerx[3];
+            clustMatch->GetPosition(showerx);
+            TVector3 Corepos(showerx[0],showerx[1],showerx[2]);
+            Double_t Corephi = Corepos.Phi();
+            Double_t Coreeta = Corepos.Eta();
+            Double_t eleE = clustMatch->E();
+            Double_t RsumE[3] = {0};
+//---------------EMCal Cluster loop for Isolation cut start---------------
+            for(Int_t icl=0;icl<Nclust;icl++){
+              AliVCluster*clust = 0x0;
+              clust = (AliVCluster*)fAOD->GetCaloCluster(icl);
+              if(clust && clust->IsEMCAL()){
+                Double_t clustE = clust->E();
+                fHistClustE->Fill(clustE);
+                Float_t aroclsx[3];
+                clust->GetPosition(aroclsx);
+                TVector3 aroClsPos(aroclsx[0],aroclsx[1],aroclsx[2]);
+                Double_t aroClsphi = aroClsPos.Phi();
+                Double_t aroClseta = aroClsPos.Eta();
+                Double_t R = sqrt(pow(Corephi - aroClsphi,2.0)+pow(Coreeta - aroClseta,2.0));
+                if (R < 0.3) RsumE[0] = RsumE[0] + clustE;
+                if (R < 0.4) RsumE[1] = RsumE[1] + clustE;
+                if (R < 0.5) RsumE[2] = RsumE[2] + clustE;
+              }
+            }
+            Double_t Eiso[3] = {0};
+            for (Int_t isoR=0;isoR<3;isoR++) {
+              Eiso[isoR] = (RsumE[isoR] - eleE)/eleE;
+              fREisolation[isoR]->Fill(Eiso[isoR]);
+            }
+            //=====MC Data=====
+            if (track->Pt() > 10.) {
+              if (pidW == 1) fREiso_MCW->Fill(Eiso[0]);
+              if (pidHF == 1) fREiso_MCHF->Fill(Eiso[0]);
+            }
+            if (track->Pt() > 20.) {
+              if (pidW == 1) fREiso_MCWhpt->Fill(Eiso[0]);
+              if (pidHF == 1) fREiso_MCHFhpt->Fill(Eiso[0]);
+            }
+            if (track->Pt() > 30.) {
+              if (pidW == 1) fREiso_MCWvhpt->Fill(Eiso[0]);
+              if (pidHF == 1) fREiso_MCHFvhpt->Fill(Eiso[0]);
+            }
+            //=================
+            for (Int_t isoR=0;isoR<3;isoR++) {
+              if (Eiso[isoR] >= 0.1) fHistPt_HFe[isoR]->Fill(track->Pt());
+              if (Eiso[isoR] <= 0.05) fHistPt_We[isoR]->Fill(track->Pt());
 
-//---------------M02 cut (electron)---------------THIS IS MOSTLY ELECTRON
-            if (clustLongE > 0.1 && clustLongE < 0.6)
-            {
-              fPtEoverPEGeo->Fill(track->Pt(),EoverP);
-              Float_t showerx[3];
-              clustMatch->GetPosition(showerx);
-              TVector3 Corepos(showerx[0],showerx[1],showerx[2]);
-              Double_t Corephi = Corepos.Phi();
-              Double_t Coreeta = Corepos.Eta();
-              Double_t eleE = clustMatch->E();
-              Double_t RsumE = 0;
-//---------------Isolation cut EMCal Cluster loop start---------------
-              for(Int_t icl=0;icl<Nclust;icl++){
-                AliVCluster*clust = 0x0;
-                clust = (AliVCluster*)fAOD->GetCaloCluster(icl);
-                if(clust && clust->IsEMCAL()){ 
-                  Double_t clustE = clust->E();
-                  fHistClustE->Fill(clustE);
-                  Float_t aroclsx[3];
-                  clust->GetPosition(aroclsx);
-                  TVector3 aroClsPos(aroclsx[0],aroclsx[1],aroclsx[2]);
-                  Double_t aroClsphi = aroClsPos.Phi();
-                  Double_t aroClseta = aroClsPos.Eta();
-                  Double_t R = sqrt(pow(Corephi - aroClsphi,2.0)+pow(Coreeta - aroClseta,2.0));
-                  if (R < 0.3) {
-                    RsumE = RsumE + clustE;
+//---------------1st Pt cut---------------
+              if (track->Pt() > 10.)
+              {
+//---------------another track loop start---------------
+                Int_t MaxPtTrackNum = 0;
+                if (MaxPtTrackNum == i) MaxPtTrackNum = 1;
+                for(Int_t j(0); j < iTracks; j++) {
+                  AliAODTrack* anotrack = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
+                  if(!anotrack || !anotrack->TestFilterBit(1)) continue;
+                  if (j == i) continue;     //reject e<-W candidate
+
+                  /////////////////////////
+                  //      track cut      //
+                  /////////////////////////
+                  //===== 1. TPC and ITS refit cut =====
+                  if (!(anotrack->GetStatus()&AliAODTrack::kITSrefit) || !(anotrack->GetStatus()&AliAODTrack::kTPCrefit)) continue;
+                  //===== 2. AOD filter bit required =====
+                  if (!anotrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
+                  //===== 3. TPC cluster cut =====
+                  if (anotrack->GetTPCNcls() < 80) continue;
+                  //===== 4. ITS cluster cut =====
+                  if (anotrack->GetITSNcls() < 2) continue;
+                  //===== 5. SPD hit cut =====
+                  if (!(anotrack->HasPointOnITSLayer(0) || anotrack->HasPointOnITSLayer(1))) continue;
+                  //===== 6. Eta cut =====
+                  if (anotrack->Eta() > 0.9 || anotrack->Eta() < -0.9) continue;
+                  //===== 7. DCA cut =====
+                  Double_t anoDCA[2] = {-999.,-999.}, anocovar[3];
+                  if (anotrack -> PropagateToDCA(pVtx,fAOD -> GetMagneticField(),20.,anoDCA,anocovar))
+                  {
+                    if (TMath::Abs(anoDCA[0]) > 2.4 || TMath::Abs(anoDCA[1]) > 3.2) continue;
                   }
-                }
-              }		//cluster loop end
-              Double_t Eiso = (RsumE - eleE)/eleE;
-              fREisolation->Fill(Eiso);
-              //=====MC Data=====
-              if (track->Pt() > 10.) {
-                if (pidW == 1) fREisoW->Fill(Eiso);
-                if (pidHF == 1) fREisoHF->Fill(Eiso);
-              }
-              if (track->Pt() > 20.) {
-                if (pidW == 1) fREisoWhpt->Fill(Eiso);
-                if (pidHF == 1) fREisoHFhpt->Fill(Eiso);
-              }
-              if (track->Pt() > 30.) {
-                if (pidW == 1) fREisoWvhpt->Fill(Eiso);
-                if (pidHF == 1) fREisoHFvhpt->Fill(Eiso);
-              }
-              //=================
-//---------------isolation cut-----------------------
-              if (Eiso >= 0.1) fHistPt_HFe->Fill(track->Pt());
-              if (Eiso >= 0. && Eiso <= 0.05) {
-                fHistPt_We->Fill(track->Pt());
-//---------------Pt cut---------------
-                if (track->Pt() > 10.)		//Pt identify W and HF
-                {
-                  if (pidW == 1) fW_true->Fill(track->Pt());
-                  if (pidW != 1) fW_false->Fill(track->Pt());
-                  //////////////////
-                  // e <- W EVENT //
-                  //////////////////
-//---------------another track loop start------------------
-                  Int_t MaxPtTrackNum = 0;
-                  if (MaxPtTrackNum == i) MaxPtTrackNum = 1;
-                  for(Int_t j(0); j < iTracks; j++) {
-                    AliAODTrack* anotrack = static_cast<AliAODTrack*>(fAOD->GetTrack(j));
-                    if(!anotrack || !anotrack->TestFilterBit(1)) continue;
-                    if (j == i) continue;	//reject e<-W candidate
-                    
-                    /////////////////////////
-                    //      track cut      //
-                    /////////////////////////
-                    //===== 1. TPC and ITS refit cut =====
-                    if (!(anotrack->GetStatus()&AliAODTrack::kITSrefit) || !(anotrack->GetStatus()&AliAODTrack::kTPCrefit)) continue;
-                    //===== 2. AOD filter bit required =====
-                    if (!anotrack->TestFilterMask(AliAODTrack::kTrkGlobalNoDCA)) continue;
-                    //===== 3. TPC cluster cut =====
-                    if (anotrack->GetTPCNcls() < 80) continue;
-                    //===== 4. ITS cluster cut =====
-                    if (anotrack->GetITSNcls() < 2) continue;
-                    //===== 5. SPD hit cut =====
-                    if (!(anotrack->HasPointOnITSLayer(0) || anotrack->HasPointOnITSLayer(1))) continue;
-                    //===== 6. Eta cut =====
-                    if (anotrack->Eta() > 0.9 || anotrack->Eta() < -0.9) continue;
-                    //===== 7. DCA cut =====
-                    Double_t anoDCA[2] = {-999.,-999.}, anocovar[3];
-                    if (anotrack -> PropagateToDCA(pVtx,fAOD -> GetMagneticField(),20.,anoDCA,anocovar))
-                    {
-                      if (TMath::Abs(anoDCA[0]) > 2.4 || TMath::Abs(anoDCA[1]) > 3.2) continue;
-                    }
-                    //===== 8. chi2 cut =====
-                    Double_t anoITSchi2 = anotrack->GetITSchi2();
-                    Double_t anoTPCchi2NDF = anotrack->GetTPCchi2perNDF();
-                    if ((anoITSchi2 >= 25) || (anoTPCchi2NDF >= 4)) continue;
-                    //===== 9. NCrossedRow cut =====
-                    if (anotrack->GetTPCCrossedRows() < 100) continue;
+                  //===== 8. chi2 cut =====
+                  Double_t anoITSchi2 = anotrack->GetITSchi2();
+                  Double_t anoTPCchi2NDF = anotrack->GetTPCchi2perNDF();
+                  if ((anoITSchi2 >= 25) || (anoTPCchi2NDF >= 4)) continue;
+                  //===== 9. NCrossedRow cut =====
+                  if (anotrack->GetTPCCrossedRows() < 100) continue;
 
-                    Double_t anoeta = -log(TMath::Tan((anotrack->Theta())/2.));
-                    Double_t DelPhi = (anotrack->Phi()) - (track->Phi());
-                    EleTraDelPhi_fullrange->Fill(DelPhi);
-                    if (DelPhi < -1.*TMath::Pi()/3.) DelPhi = DelPhi + 2.*TMath::Pi();
-                    if (DelPhi > 5.*TMath::Pi()/3.) DelPhi = DelPhi - 2.*TMath::Pi();
-                    EleTraDelPhi->Fill(DelPhi,anotrack->Pt());
+                  Double_t anoeta = -log(TMath::Tan((anotrack->Theta())/2.));
+                  Double_t dPhi = anotrack->Phi() - track->Phi();
 
-                    //=====Highest Pt Track=====
-                    if (DelPhi >= 5.*TMath::Pi()/6. && DelPhi <= 7.*TMath::Pi()/6.) {
-                      AliAODTrack* Maxtrack = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum));
-                      Double_t MaxDelPhi = (Maxtrack->Phi()) - (track->Phi());
-                      if (MaxDelPhi < -1.*TMath::Pi()/3.) MaxDelPhi = MaxDelPhi + 2.*TMath::Pi();
-                      if (MaxDelPhi > 5.*TMath::Pi()/3.) MaxDelPhi = MaxDelPhi - 2.*TMath::Pi();
-                      if (MaxDelPhi < 5.*TMath::Pi()/6. || MaxDelPhi > 7.*TMath::Pi()/6.) MaxPtTrackNum = j;
-                      if (anotrack->Pt() >= Maxtrack->Pt()) MaxPtTrackNum = j;
-                    }
-                  }	//other track loop end
+                  if (Eiso[isoR] >= 0.05) fdPhi_trkW_full[isoR]->Fill(dPhi,anotrack->Pt());
+                  if (Eiso[isoR] <= 0.1) fdPhi_trkHF_full[isoR]->Fill(dPhi,anotrack->Pt());
+                  if (track->Pt() > 30.) {
+                    if (Eiso[isoR] >= 0.05) fdPhi_trkW_full_hpt[isoR]->Fill(dPhi,anotrack->Pt());
+                    if (Eiso[isoR] <= 0.1) fdPhi_trkHF_full_hpt[isoR]->Fill(dPhi,anotrack->Pt());
+                  }
+                  //=== change dPhi range ===
+                  if (dPhi < -1.*TMath::Pi()/3.) dPhi = dPhi + 2.*TMath::Pi();
+                  if (dPhi > 5.*TMath::Pi()/3.) dPhi = dPhi - 2.*TMath::Pi();
 
-                  //=====Highest Pt Track / e<-W Pt Track
-                  AliAODTrack* MaxPtTrk = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum));
-                  fPt_maxtrack_W->Fill(MaxPtTrk->Pt()/track->Pt());
-                  fNtrkl_PtOfMaxTrk_W->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
+                  if (Eiso[isoR] <= 0.05) {
+                    fdPhi_trkW_Pt[isoR]->Fill(dPhi,anotrack->Pt());
+                    fdPhi_trkW_ePt[isoR]->Fill(dPhi,track->Pt());
+                    if (track->Pt() > 30.) fdPhi_trkW_Pt_hpt[isoR]->Fill(dPhi,anotrack->Pt());
+                  }
+                  if (Eiso[isoR] >= 0.1) {
+                    fdPhi_trkHF_Pt[isoR]->Fill(dPhi,anotrack->Pt());
+                    fdPhi_trkHF_ePt[isoR]->Fill(dPhi,track->Pt());
+                    if (track->Pt() > 30.) fdPhi_trkHF_Pt_hpt[isoR]->Fill(dPhi,anotrack->Pt());
+                  }
 
-                  fHistPt_We_Ntrkl->Fill(track->Pt(),corr_nAcc);
+                  //===== Highest Pt track selection =====
+                  if (dPhi >= 5.*TMath::Pi()/6. && dPhi <= 7.*TMath::Pi()/6.) {
+                    AliAODTrack* Maxtrack = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum));
+                    Double_t dPhiMaxTrk = (Maxtrack->Phi()) - (track->Phi());
+                    //=== change dPhi range ===
+                    if (dPhiMaxTrk < -1.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk + 2.*TMath::Pi();
+                    if (dPhiMaxTrk > 5.*TMath::Pi()/3.) dPhiMaxTrk = dPhiMaxTrk - 2.*TMath::Pi();
+                    //=== select back-to-back track ===
+                    if (dPhiMaxTrk < 5.*TMath::Pi()/6. || dPhiMaxTrk > 7.*TMath::Pi()/6.) MaxPtTrackNum = j;
+                    //=== higher Pt track ===
+                    if (anotrack->Pt() >= Maxtrack->Pt()) MaxPtTrackNum = j;
+                  }
+                }   //other track loop end
 
-////////still=== e <- W ===////////
-                }	//Pt cut
-              }		//isolation cut
-            }		//M02 cut
-          }		//EoverP cut
-        }		//nsigma cut
+                //===== Highest Pt Track / e<-W Pt Track =====
+                AliAODTrack* MaxPtTrk = static_cast<AliAODTrack*>(fAOD->GetTrack(MaxPtTrackNum));
+
+//---------------e<-W isolation cut---------------
+                //////////////////////
+                // e <- W candidate //
+                //////////////////////
+                if (Eiso[isoR] <= 0.05) {
+                  fPt_maxtrack_W[isoR]->Fill(MaxPtTrk->Pt()/track->Pt());
+                  fNtrkl_PtOfMaxTrk_W[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
+                  fHistPt_We_Ntrkl[isoR]->Fill(track->Pt(),corr_nAcc);
+//---------------2nd Pt cut----------
+                  if (track->Pt() > 30.) {
+                    fPt_maxtrack_W_hpt[isoR]->Fill(MaxPtTrk->Pt()/track->Pt());
+                    fNtrkl_PtOfMaxTrk_W_hpt[isoR]->Fill(corr_nAcc,MaxPtTrk->Pt()/track->Pt());
+                  }
+                }       //isolation cut end
+              }         //standard Pt cut end
+            }           //varied R of Eiso loop end
+          }             //M02 cut
+        }               //EoverP cut
+      }                 //nsigma cut
 
 //---------------nsigma cut (hadron)---------------
-        if (fTPCnSigma < -3.)
-        {
-          fPtEoverPH->Fill(track->Pt(),EoverP);
+      if (fTPCnSigma < -3.)
+      {
+        fPtEoverPH->Fill(track->Pt(),EoverP);
 //---------------M02 cut---------------
-          if (clustLongE > 0.1 && clustLongE < 0.6) fPtEoverPHGeo->Fill(track->Pt(),EoverP);
-        }	//hadron filter end
-      }		//track match end
-    }		//Zvertex cut end
+        if (clustLongE > 0.1 && clustLongE < 0.6) fPtEoverPHGeo->Fill(track->Pt(),EoverP);
+      }		//hadron filter end
+    }		//track match end
   }		//track loop end
 
   PostData(1, fOutputList);
+
 }
 //----------MC Mother's Particle Information----------
 void AliAnalysisTaskWHMult::FindMother(AliAODMCParticle* part, int &label, int &pid, double &ptmom)
@@ -701,18 +858,60 @@ void AliAnalysisTaskWHMult::FindFather(AliAODMCParticle* part, int &label, int &
   //cout << "Find Mother : label = " << label << " ; pid" << pid << endl;
 }
 //----------vertexZ correction for the number of tracklets----------
-Double_t AliAnalysisTaskWHMult::GetCorrectedNtrackletsD(TTree* tree, Double_t uncorrectedNacc, Int_t BinOfvertexZ)
+Double_t AliAnalysisTaskWHMult::GetCorrectedNtrackletsD(TTree* tree, Double_t uncorrectedNacc, Int_t BinOfvertexZ, AliAODEvent* fAOD)
 {
   //if(BinOfvertexZ<1 || BinOfvertexZ > 100) return uncorrectedNacc;
   if(!tree) return uncorrectedNacc;
 
   Int_t TreeEntry = BinOfvertexZ - 1;
-  Double_t clb_vZ_Ntl = 0.;
-  tree->SetBranchAddress("vertexZ_Ntrkl",&clb_vZ_Ntl);
+  Double_t corr_ZvNtl = 0.;
+  Double_t corr_ZvNtl_data_a = 0.;
+  Double_t corr_ZvNtl_data_b = 0.;
+  Double_t corr_ZvNtl_data_c = 0.;
+  Double_t corr_ZvNtl_MC_a = 0.;
+  Double_t corr_ZvNtl_MC_b = 0.;
+  Double_t corr_ZvNtl_MC_c = 0.;
+
+  Int_t runNo = fAOD->GetRunNumber();
+
+  if (!fMCarray) {
+    //===== data 2016 =====
+    if (runNo >= 256941 && runNo <= 264347) tree->SetBranchAddress("vertexZ_Ntrkl_data_a",&corr_ZvNtl_data_a);  //2016
+    //===== data 2017 =====
+    if (runNo >= 270581 && runNo <= 282704) tree->SetBranchAddress("vertexZ_Ntrkl_data_b",&corr_ZvNtl_data_b);  //2017
+    //===== data 2018 =====
+    if (runNo >= 285008 && runNo <= 294925) tree->SetBranchAddress("vertexZ_Ntrkl_data_c",&corr_ZvNtl_data_c);  //2018
+  }
+  if (fMCarray) {
+    //===== MC 2016 =====
+    if (runNo >= 256941 && runNo <= 264347) tree->SetBranchAddress("vertexZ_Ntrkl_MC_a",&corr_ZvNtl_MC_a);      //2016
+    //===== MC 2017 =====
+    if (runNo >= 270581 && runNo <= 282704) tree->SetBranchAddress("vertexZ_Ntrkl_MC_b",&corr_ZvNtl_MC_b);      //2017
+    //===== MC 2018 =====
+    if (runNo >= 285008 && runNo <= 294925) tree->SetBranchAddress("vertexZ_Ntrkl_MC_c",&corr_ZvNtl_MC_c);      //2018
+  }
+
   tree->GetEntry(TreeEntry);
 
+  if (!fMCarray) {
+    //===== data 2016 =====
+    if (runNo >= 256941 && runNo <= 264347) corr_ZvNtl = corr_ZvNtl_data_a;
+    //===== data 2017 =====
+    if (runNo >= 270581 && runNo <= 282704) corr_ZvNtl = corr_ZvNtl_data_b;
+    //===== data 2018 =====
+    if (runNo >= 285008 && runNo <= 294925) corr_ZvNtl = corr_ZvNtl_data_c;
+  }
+  if (fMCarray) {
+    //===== MC 2016 =====
+    if (runNo >= 256941 && runNo <= 264347) corr_ZvNtl = corr_ZvNtl_MC_a;
+    //===== MC 2017 =====
+    if (runNo >= 270581 && runNo <= 282704) corr_ZvNtl = corr_ZvNtl_MC_b;
+    //===== MC 2018 =====
+    if (runNo >= 285008 && runNo <= 294925) corr_ZvNtl = corr_ZvNtl_MC_c;
+  }
+
   Double_t deltaM = 0;
-  deltaM = uncorrectedNacc*(clb_vZ_Ntl - 1.);
+  deltaM = uncorrectedNacc*(corr_ZvNtl - 1.);
 
   Double_t correctedNacc = uncorrectedNacc + (deltaM>0 ? 1 : -1) * gRandom->PoissonD(TMath::Abs(deltaM));
   if (correctedNacc<0) correctedNacc = 0;
