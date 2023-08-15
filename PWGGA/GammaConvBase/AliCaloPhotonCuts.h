@@ -714,6 +714,7 @@ class AliCaloPhotonCuts : public AliAnalysisCuts {
     TH2F*     fHistClusterENMatchesCharged;             //
     TH2F*     fHistClusterEvsTrackEPrimaryButNoElec;    //
     TH2F*     fHistClusterEvsTrackSumEPrimaryButNoElec; //
+    TH1F*     fHistClusterNMatched;                     // Number of matched tracks per cluster
 
     TH1F*     fHistClusETruePi0_BeforeTM;               // for checking the false positives: how much true pi0s are matched away?
     TH1F*     fHistClusETruePi0_Matched;                //
