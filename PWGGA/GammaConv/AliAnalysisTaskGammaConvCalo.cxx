@@ -1773,7 +1773,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         }
       }
       if(fDoMesonQA == 2){
-        fHistoMotherInvMassECalibNMatchedPrim[iCut] = new TH3F("ESD_Mother_InvMass_E_Calib", "ESD_Mother_InvMass_E_Calib", arrInvMassBinning.size()-1, arrInvMassBinning.data(), nBinsPt, arrPtBinning, arrNMatchedTracks.size()-1, arrNMatchedTracks.data());
+        fHistoMotherInvMassECalibNMatchedPrim[iCut] = new TH3F("ESD_Mother_InvMass_E_Calib_NMatched", "ESD_Mother_InvMass_E_Calib_NMatched", arrInvMassBinning.size()-1, arrInvMassBinning.data(), nBinsPt, arrPtBinning, arrNMatchedTracks.size()-1, arrNMatchedTracks.data());
         fHistoMotherInvMassECalibNMatchedPrim[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
         fHistoMotherInvMassECalibNMatchedPrim[iCut]->SetYTitle("E_{cluster}(GeV)");
         fHistoMotherInvMassECalibNMatchedPrim[iCut]->SetZTitle("N_{matched primary tracks}");
@@ -5223,7 +5223,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
                 }
               }
             }
-            fHistoMotherInvMassECalibNMatchedPrim[fiCut]->Fill(fInvMass, gamma1->E(), NPrimaryMatched);
+            fHistoMotherInvMassECalibNMatchedPrim[fiCut]->Fill(fInvMass, gamma1->E(), NPrimaryMatched, fWeightJetJetMC);
             if (TMath::Abs(gamma0->GetDCAzToPrimVtx()) < TMath::Abs(gamma1->GetDCAzToPrimVtx())){
               fDCAzGammaMin = gamma0->GetDCAzToPrimVtx();
               fDCAzGammaMax = gamma1->GetDCAzToPrimVtx();
