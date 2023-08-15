@@ -469,8 +469,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusPi0EM02;                              //! array of histos with TruePi0s: cluster E vs M02
     TH2F**                  fHistoTruePi0InvMassECalib;                         //! array of histogram with pure pi0 signal inv Mass, energy of cluster
     TH2F**                  fHistoTruePi0PureGammaInvMassECalib;                //! array of histogram with pure pi0 signal (only pure gammas) inv Mass, energy of cluster
-    TH2F**                  fHistoTruePi0InvMassECalibPCM;                         //! array of histogram with pure pi0 signal inv Mass, energy of PCM
-
+    TH2F**                  fHistoTruePi0InvMassECalibPCM;                      //! array of histogram with pure pi0 signal inv Mass, energy of PCM
+    TH3F**                  fHistoMotherInvMassECalibNMatchedPrim;              //! array of histogram with pi0 mass, calo photon energy and the number of matched primary tracks
     // event histograms
     TH1F**                  fHistoNEvents;                                      //! array of histos with event information
     TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
