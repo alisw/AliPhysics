@@ -73,6 +73,7 @@ class AliAnalyseLeadingTrackUE : public TObject {
   void		 NextEvent() { fEventCounter++; }
   UInt_t	 GetEventCounter() { return fEventCounter; }
   void		 SetDCAXYCut(TFormula* value) { fDCAXYCut = value; }
+  void		 SetDCAZCut(TFormula* value) { fDCAZCut = value; }
   void		 SetSharedClusterCut(Double_t value) { fSharedClusterCut = value; }
   void		 SetCrossedRowsCut(Int_t value) { fCrossedRowsCut = value; }
   void		 SetFoundFractionCut(Double_t value) { fFoundFractionCut = value; }
@@ -95,6 +96,7 @@ private:
   Double_t       fTrackPtMin;        // pt limit for selecting particles
   UInt_t         fEventSelection;    // bit for physics selection
   TFormula*      fDCAXYCut;          // additional pt dependent cut on DCA XY (only for AOD)
+  TFormula*      fDCAZCut;           // additional pt dependent cut on DCA Z (only for AOD)
   Double_t       fSharedClusterCut;  // cut on shared clusters (only for AOD)
   Int_t		 fCrossedRowsCut;   // cut on crossed rows (only for AOD)
   Double_t	 fFoundFractionCut;     // cut on crossed rows/findable clusters (only for AOD)

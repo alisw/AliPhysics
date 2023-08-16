@@ -66,6 +66,7 @@ namespace PWGJE
                                                                                            fMinSharedMomentumFraction(0.),
                                                                                            fRequireMatchedPartLevelJet(false),
                                                                                            fMaxMatchedJetDistance(-1),
+                                                                                           fEPcorrectionFile(nullptr),
                                                                                            fHistManager(),
                                                                                            fHistJetHTrackPt(nullptr),
                                                                                            fHistEPAngle(nullptr),
@@ -103,6 +104,7 @@ namespace PWGJE
                                                                                                            fMinSharedMomentumFraction(0.),
                                                                                                            fRequireMatchedPartLevelJet(false),
                                                                                                            fMaxMatchedJetDistance(-1),
+                                                                                                           fEPcorrectionFile(nullptr),
                                                                                                            fHistManager(name),
                                                                                                            fHistJetHTrackPt(nullptr),
                                                                                                            fHistEPAngle(nullptr),
@@ -278,16 +280,16 @@ namespace PWGJE
       UInt_t cifras = 0; // bit coded, see GetDimParams() below
       if (fDoLessSparseAxes)
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1<<8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
       }
       else
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 << 8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
         ;
       }
       if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
       {
-        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
+        cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 8 | 1 << 11 | 1 << 12 | 1 << 13 | 1 << 14 | 1 << 15;
       }
       fhnJH = NewTHnSparseF("fhnJH", cifras);
       fhnJH->Sumw2();
@@ -300,7 +302,7 @@ namespace PWGJE
         // analysis if so desired.
         if (fDoLessSparseAxes)
         {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7;
+          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 7 | 1 <<8 ;
         }
         else
         {
@@ -308,7 +310,7 @@ namespace PWGJE
         }
         if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
         {
-          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4;
+          cifras = 1 << 0 | 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 8;
         }
         fhnMixedEvents = NewTHnSparseF("fhnMixedEvents", cifras);
         fhnMixedEvents->Sumw2();
@@ -316,10 +318,10 @@ namespace PWGJE
       }
 
       // Trigger THnSparse
-      cifras = 1 << 0 | 1 << 1 | 1 << 7;
+      cifras = 1 << 0 | 1 << 1 | 1 << 7 | 1<< 8;
       if (fForceBeamType == AliAnalysisTaskEmcal::kpp)
       {
-        cifras = 1 << 0 | 1 << 1;
+        cifras = 1 << 0 | 1 << 1 | 1 << 8;
       }
       fhnTrigger = NewTHnSparseF("fhnTrigger", cifras);
       fhnTrigger->Sumw2();
@@ -470,6 +472,11 @@ namespace PWGJE
 
       // Get z vertex
       Double_t zVertex = fVertex[2];
+      if(zVertex < -10 || zVertex > 10)
+      {
+        AliError(Form("%s: Rejecting event because zVertex = %f is out of range!", GetName(), zVertex));
+        return kFALSE;
+      }
       // Flags
       Bool_t isBiasedJet = kFALSE;
       Bool_t leadJet = kFALSE;
@@ -515,7 +522,13 @@ namespace PWGJE
           return 0;
         } // GetQnVectorReader
         EP_angle_from_calib = fqnVectorReader->GetEPangleV0C();
-        fHistEPAngle->Fill(EP_angle_from_calib);
+        // At this point we need to apply the flattening to the EP angle
+        // This is done by getting the flattening  coefficients from epAngleCorrections.yaml
+        // and applying them to the EP angle
+        // The formula for the correction to the n=2 event plane is:
+        // EP_angle_corrected = EP_angle + 1/2*(2*(-sin_average)*cos(2*EP_angle) + 2*(cos_average)*sin(2*EP_angle)+(-sin_average)*cos(4*EP_angle)+(-cos_average)*sin(4*EP_angle))
+        Double_t flattenedEPangle = GetFlattenedEPAngle(EP_angle_from_calib);
+        fHistEPAngle->Fill(flattenedEPangle);
       }
 
       AliDebugStream(5) << "Beginning main processing. Number of jets: " << jets->GetNJets() << ", accepted jets: " << jets->GetNAcceptedJets() << "\n";
@@ -594,12 +607,12 @@ namespace PWGJE
 
           if (fBeamType != kpp)
           {
-            const double triggerInfo[] = {eventActivity, jetPt, epAngle};
+            const double triggerInfo[] = {eventActivity, jetPt, epAngle, zVertex};
             fhnTrigger->Fill(triggerInfo);
           }
           else
           {
-            const double triggerInfo[] = {eventActivity, jetPt};
+            const double triggerInfo[] = {eventActivity, jetPt, zVertex};
             fhnTrigger->Fill(triggerInfo);
           }
         }
@@ -659,7 +672,7 @@ namespace PWGJE
                 {
                   if (fDoLessSparseAxes)
                   { // check if we want all dimensions
-                    double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma};
+                    double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ epAngle, zVertex, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma};
                     FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
                   }
                   else
@@ -670,7 +683,7 @@ namespace PWGJE
                 }
                 else
                 {
-                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma};
+                  double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, /*static_cast<Double_t>(leadJet),*/ zVertex, trackEta, pionTPCnSigma, pionTOFnSigma, protonTOFnSigma, kaonTOFnSigma};
                   FillHist(fhnJH, triggerEntries, 1.0 / efficiency);
                 }
               }
@@ -684,7 +697,7 @@ namespace PWGJE
 
           } // jet pt cut
         }   // jet loop
-
+      }
         // Prepare to do event mixing
 
         // create a list of reduced objects. This speeds up processing and reduces memory consumption for the event pool
@@ -810,7 +823,7 @@ namespace PWGJE
                     {
                       if (fDoLessSparseAxes)
                       { // check if we want all the axis filled
-                        double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, epAngle};
+                        double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, epAngle, zVertex};
                         FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
                       }
                       else
@@ -821,7 +834,7 @@ namespace PWGJE
                     }
                     else
                     {
-                      double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi};
+                      double triggerEntries[] = {eventActivity, jetPt, track.Pt(), deltaEta, deltaPhi, zVertex};
                       FillHist(fhnMixedEvents, triggerEntries, 1. / (nMix * efficiency), fNoMixedEventJESCorrection);
                     }
                   }
@@ -843,8 +856,7 @@ namespace PWGJE
 
         return kTRUE;
       }
-      return kFALSE;
-    }
+
     /**
      * Determine if a jet passes the track or cluster bias and is therefore a "biased" jet.
      *
@@ -1491,6 +1503,77 @@ namespace PWGJE
       return kTRUE;
     }
 
+  Double_t AliAnalysisTaskEmcalJetHdEdxCorrelations::GetFlattenedEPAngle(Double_t uncorrectedAngle){
+      // Read the TTree from the ROOT file
+      TTree *tree = dynamic_cast<TTree *>(fEPcorrectionFile->Get("V0C"));
+      TString centrality_string=TString("");
+      if(fCent<10)
+      {
+        centrality_string = TString("0_10");
+      }
+      else if(fCent<20)
+      {
+        centrality_string = TString("10_20");
+      }
+      else if(fCent<30)
+      {
+        centrality_string = TString("20_30");
+      }
+      else if(fCent<40)
+      {
+        centrality_string = TString("30_40");
+      }
+      else if(fCent<50)
+      {
+        centrality_string = TString("40_50");
+      }
+      else if(fCent<60)
+      {
+        centrality_string = TString("50_60");
+      }
+      else if(fCent<70)
+      {
+        centrality_string = TString("60_70");
+      }
+      else if(fCent<80)
+      {
+        centrality_string = TString("70_80");
+      }
+      else if(fCent<90)
+      {
+        centrality_string = TString("80_90");
+      }
+      else
+      {
+        centrality_string = TString("90_100");
+      }
+      
+
+      if (tree)
+      {
+        // Declare variables to hold the data
+        Double_t cos_ave_i1_v0c = 0;
+        Double_t cos_ave_i2_v0c = 0;
+        Double_t sin_ave_i1_v0c = 0;
+        Double_t sin_ave_i2_v0c = 0;
+
+        // Set branch addresses to access the data
+        tree->SetBranchAddress(Form("cos_ave_i1_V0C_%s", centrality_string.Data()), &cos_ave_i1_v0c);
+        tree->SetBranchAddress(Form("cos_ave_i2_V0C_%s", centrality_string.Data()), &cos_ave_i2_v0c);
+        tree->SetBranchAddress(Form("sin_ave_i1_V0C_%s", centrality_string.Data()), &sin_ave_i1_v0c);
+        tree->SetBranchAddress(Form("sin_ave_i2_V0C_%s", centrality_string.Data()), &sin_ave_i2_v0c);
+
+        // Loop over the entries and retrieve the values
+        tree->GetEntry(0);
+        Double_t flatEPangle = uncorrectedAngle +1/2*(2*(-sin_ave_i1_v0c*TMath::Cos(2*uncorrectedAngle) + cos_ave_i1_v0c*TMath::Sin(2*uncorrectedAngle)) + (-sin_ave_i2_v0c*TMath::Cos(4*uncorrectedAngle) + cos_ave_i2_v0c*TMath::Sin(4*uncorrectedAngle)));
+        return flatEPangle;
+        }
+        else
+        {
+          std::cerr << "Failed to read TTree from the ROOT file." << std::endl;
+        }
+  }
+
     /**
      * AddTask for the jet-hadron task. We benefit for actually having compiled code, as opposed to
      * struggling with CINT.
@@ -1516,6 +1599,7 @@ namespace PWGJE
         const Bool_t JESCorrection,
         const char *JESCorrectionFilename,
         const char *JESCorrectionHistName,
+        const char *epCorrectionsFilename,
         const char *suffix)
     {
       // Get the pointer to the existing analysis manager via the static access method.
@@ -1585,6 +1669,17 @@ namespace PWGJE
           AliErrorClass("Failed to successfully retrieve and initialize the JES correction! Task initialization continuing without JES correction (can be set manually later).");
         }
       }
+
+      TString *epCorrectionsFilenameTstr = new TString(epCorrectionsFilename);
+
+      if (epCorrectionsFilenameTstr->Contains("alien://") && !gGrid)
+      {
+        TGrid::Connect("alien://");
+      }
+        // Open the ROOT file in read mode
+      TFile *file = new TFile(epCorrectionsFilenameTstr->Data(), "READ");
+
+      correlationTask->fEPcorrectionFile = file;
 
       //-------------------------------------------------------
       // Final settings, pass to manager and set the containers

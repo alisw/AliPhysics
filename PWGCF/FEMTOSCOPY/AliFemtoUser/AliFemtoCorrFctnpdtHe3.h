@@ -72,7 +72,7 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void SetStaSkyBkgInit(bool aInit);
 	AliFemtoPair *InversePair(AliFemtoPair* aPair);
 	void SetUse2DpTvsKStar(int aUse);
-        void Set2DpTvsKStarInit(bool aInit);
+        void Set2DpTvsKStarInit(bool aInit,int nbinsks,float lowks,float upks,int nbinspT,float lowpT,float uppT);
 
 	//\ 2022.9.27
 	bool PairEtaPhiSelect(AliFemtoPair* aPair);
@@ -80,6 +80,36 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 	void SetPairCutEtaPhi(float aEtaCut,float aPhiCut);
 	
 	void SetPassAllPair(int aUse);
+	void SetGobalVelGate(int aUse);
+
+	void SetIsSameParticlePair(int aUse);
+	float CalcMt(const AliFemtoPair* aPair);
+	void SetUse3DkTvsKStarvsmT(int aUse);
+	void Set3DkTvsKStarvsmTInit(bool aInit,
+		int nbinskT,float lowkT,float upkT,
+		int nbinsks,float lowks,float upks,
+		int nbinsmT,float lowmT,float upmT);
+
+
+	void Set2DKstarVsmT(int aUse);
+	void Set2DkStarVsmTInit(bool aInit,
+		int nbinsks,float lowks,float upks,
+                int nbinsmT,float lowmT,float upmT);
+
+void SetdBumpCheck(int aUse);
+void SetdBumpCheckInit(bool aInit,
+ int nbinsks,float lowks,float upks,
+int nbinspT,float lowpT,float uppT,
+ int nbinsMass,float lowMass,float upMass);
+
+
+void SetmTLimitCheck(int aUse);
+
+void SetmTCheckInit(bool aInit,
+ int nbinsks,float lowks,float upks,
+int nbinspT,float lowpT,float uppT,
+int nbinsmT,float lowmT,float upmT);
+
         virtual AliFemtoCorrFctnpdtHe3* Clone() const  { return new AliFemtoCorrFctnpdtHe3(*this); }
     protected:
         int isHe3Pair;
@@ -136,23 +166,42 @@ class AliFemtoCorrFctnpdtHe3 : public AliFemtoCorrFctn {
 
 	int fUsePt;
 	int fUseDPhiDEtaQA;
-	
-	TH2F *fNumDPhiDEtaQA;
-	TH2F *fDumDPhiDEtaQA;
+	//TH2F *fNumDPhiDEtaQAFailCut;
+	//TH2F *fDumDPhiDEtaQAFailCut;
 	TH2F *fNumDPhiDEtaAvgQA;
 	TH2F *fDumDPhiDEtaAvgQA;
 		
 	int fUseStavinskyMethod;
 	TH1F *fStaSkyBkg;
 	
-        int fUse2DpTvsKStar;
-	TH2F *f2DpTvsKStar;
 
 	int fUsePairCutEtaPhi;
 	float fPairCut_eta;
 	float fPairCut_phi;
 	
 	int fPassAllPair;
+
+	int fUseGobalVelGate;
+
+	int fUse2DpTvsKStar;
+	int IsSameParticlePair;
+	TH2F *KStarVspT_P1Hist;
+	TH2F *KStarVspT_P2Hist;
+
+	int fUse3DkTvsKStarvsmT;
+	TH3F *fNum3DkTvsKStarvsmT;
+	TH3F *fDum3DkTvsKStarvsmT;
+	
+	int fUse2DkStarVsmT;
+	TH2F *fNum2DkStarVsmT;
+	TH2F *fDum2DkStarVsmT;
+
+	int fUseBumpC;
+	TH2F *f2DkSVspT;
+	TH2F *f2DkSVsMass;
+	
+	int fUsemTCheck;
+	TH3F *f3DmTDepkSVspT;
 };
 
 #endif

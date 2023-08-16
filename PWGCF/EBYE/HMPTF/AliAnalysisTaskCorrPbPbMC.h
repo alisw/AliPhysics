@@ -49,47 +49,53 @@ class AliAnalysisTaskCorrPbPbMC : public AliAnalysisTaskSE {
   virtual void   Terminate(Option_t *);
   Bool_t GetEvent();
   Bool_t PassedTrackQualityCuts (AliAODTrack *track);
-  Bool_t KaonSelector (AliVTrack *track); 
-  Bool_t ProtonSelector (AliVTrack *track); 
-  Bool_t PionSelector (AliVTrack *track); 
+  Bool_t KaonSelector (AliVTrack *track, Double_t nSigmaCut); 
+  Bool_t ProtonSelector (AliVTrack *track, Double_t nSigmaCut); 
+  Bool_t PionSelector (AliVTrack *track, Double_t nSigmaCut); 
   Bool_t PassedPIDSelection (AliAODTrack *track, AliPID::EParticleType type);
   Bool_t PassedSingleParticlePileUpCuts(AliAODTrack *track);
+  void GetMCEffCorrectionHist();
 
-  /*
+  void SetListForTrkCorr (TList *fList)
+  {
+ 	this->fListTRKCorr = (TList*) fList->Clone();
+  }
+  
   void SetVzRangeMax(Double_t VzMax)
   {
     this->fVertexZMax = VzMax;
   }
-  void SetDCAXYRangeMax(Double_t dcaxy)          
+  void SetPileupCutValue (Int_t cutval)
   {
-    fDCAxyMax = dcaxy;
+    this->fPileupCutVal = cutval;
   }
-  void SetDCAZRangeMax(Double_t dcaz)
+  void SetCentralityEstimator (Int_t val)
   {
-    fDCAzMax = dcaz;
+    this->fCentralityEstimator_flag = val;
+  }
+  void SetTrackFilterBit(Int_t FBno)
+  {
+    this->fFBNo = FBno;
   }
   void SetMaxChi2PerTPCClusterRange(Double_t chi2tpc)
   {
-    fChi2TPC = chi2tpc;
+    this->fChi2TPC = chi2tpc;
   }
   void SetMaxChi2PerITSClusterRange(Double_t chi2its)
   {
-    fChi2ITS = chi2its;
+    this->fChi2ITS = chi2its;
   }
-  void SetMinNCrossedRowsTPCRange(Double_t nCrossedRow)
+  void SetPIDnSigmaCut(Double_t PIDnSigmaCut_pion, Double_t PIDnSigmaCut_kaon, Double_t PIDnSigmaCut_proton)
   {
-    fNCrossedRowsTPC = nCrossedRow;
+    this->fPIDnSigmaPionCut = PIDnSigmaCut_pion;
+    this->fPIDnSigmaKaonCut = PIDnSigmaCut_kaon;
+    this->fPIDnSigmaProtonCut = PIDnSigmaCut_proton;
   }
-  void SetTreeName(TString TreeName)
+  void SetMinNoTPCCrossedRows(Double_t tpccrossedrows)
   {
-    fTreeName = TreeName;
+    this->fTPCcrossedrows = tpccrossedrows;
   }
-  void SetEtaCut(Double_t EtaMax)
-  {
-    fEtaMax=EtaMax;
-  }
-  */
-
+  
   
  private:
   
@@ -106,6 +112,7 @@ class AliAnalysisTaskCorrPbPbMC : public AliAnalysisTaskSE {
   AliEventCuts fAODeventCuts;
   TList *fOutputList;
   TList *fQAList;
+  TList *fTreeList;
   Double_t fMultLow;
   Double_t fMultHigh;
   TH1D *hNumberOfEvents;
@@ -145,8 +152,35 @@ class AliAnalysisTaskCorrPbPbMC : public AliAnalysisTaskSE {
   Float_t fNoProtonMinus_ptmax2;
   Float_t fNoProtonPlus_ptmax3;
   Float_t fNoProtonMinus_ptmax3;
+  //CORRECTED
+  Float_t fCorrectedNoKaonPlus_ptmax2;
+  Float_t fCorrectedNoKaonMinus_ptmax2;
+  Float_t fCorrectedNoKaonPlus_ptmax3;
+  Float_t fCorrectedNoKaonMinus_ptmax3;
+  Float_t fCorrectedNoPionPlus_ptmax2;
+  Float_t fCorrectedNoPionMinus_ptmax2;
+  Float_t fCorrectedNoPionPlus_ptmax3;
+  Float_t fCorrectedNoPionMinus_ptmax3;
+  Float_t fCorrectedNoProtonPlus_ptmax2;
+  Float_t fCorrectedNoProtonMinus_ptmax2;
+  Float_t fCorrectedNoProtonPlus_ptmax3;
+  Float_t fCorrectedNoProtonMinus_ptmax3;
+  //Eff.square factors
+  Float_t fEffSqrFactrPionMinus_ptmax2;
+  Float_t fEffSqrFactrPionPlus_ptmax2;
+  Float_t fEffSqrFactrProtonMinus_ptmax2;
+  Float_t fEffSqrFactrProtonPlus_ptmax2;
+  Float_t fEffSqrFactrKaonMinus_ptmax2;
+  Float_t fEffSqrFactrKaonPlus_ptmax2;
+  Float_t fEffSqrFactrPionMinus_ptmax3;
+  Float_t fEffSqrFactrPionPlus_ptmax3;
+  Float_t fEffSqrFactrProtonMinus_ptmax3;
+  Float_t fEffSqrFactrProtonPlus_ptmax3;
+  Float_t fEffSqrFactrKaonMinus_ptmax3;
+  Float_t fEffSqrFactrKaonPlus_ptmax3;
+  
 
-  //Hidtograms for purity check
+  //Histograms for purity check
   TH1F *hist_KaonPlusWithoutPdg;
   TH1F *hist_KaonPlusWithPdg;
   TH1F *hist_KaonMinusWithoutPdg;
@@ -167,6 +201,76 @@ class AliAnalysisTaskCorrPbPbMC : public AliAnalysisTaskSE {
   TH1F *hist_GenKaonMinus;
   TH1F *hist_GenProtonPlus;
   TH1F *hist_GenProtonMinus;
+
+  //Histograms for calculating centrality wise efficiency
+  TH2D *f2Dhist_GenPionPlus;
+  TH2D *f2Dhist_GenPionMinus;
+  TH2D *f2Dhist_GenKaonPlus;
+  TH2D *f2Dhist_GenKaonMinus;
+  TH2D *f2Dhist_GenProtonPlus;
+  TH2D *f2Dhist_GenProtonMinus;
+
+  TH2D *f2Dhist_RecPionPlus;
+  TH2D *f2Dhist_RecPionMinus;
+  TH2D *f2Dhist_RecKaonPlus;
+  TH2D *f2Dhist_RecKaonMinus;
+  TH2D *f2Dhist_RecProtonPlus;
+  TH2D *f2Dhist_RecProtonMinus;
+
+  Double_t fVertexZMax;
+  Int_t fFBNo;
+  Double_t fChi2TPC;
+  Double_t fChi2ITS;
+  Double_t fPIDnSigmaPionCut;
+  Double_t fPIDnSigmaKaonCut;
+  Double_t fPIDnSigmaProtonCut;
+  Double_t fTPCcrossedrows;
+  
+  //Efficiency list of histograms
+  TList *fListTRKCorr; 
+  TH1D *fHistMCEffKaonPlus;
+  TH1D *fHistMCEffKaonMinus;
+  TH1D *fHistMCEffPionPlus;
+  TH1D *fHistMCEffPionMinus;
+  TH1D *fHistMCEffProtonPlus;
+  TH1D *fHistMCEffProtonMinus;
+  TH1D *hist_beforeCut_DCAxy;
+  TH1D *hist_beforeCut_DCAz;
+  TH1D *hist_beforeCut_eta;
+  TH1D *hist_beforeCut_chi2perTPCclstr;
+  TH1D *hist_beforeCut_chi2perITSclstr;
+  TH1D *hist_beforeCut_TPCncrossedrows;
+  TH1D *hist_afterCut_DCAxy;
+  TH1D *hist_afterCut_DCAz;
+  TH1D *hist_afterCut_eta;
+  TH1D *hist_afterCut_chi2perTPCclstr;
+  TH1D *hist_afterCut_chi2perITSclstr;
+  TH1D *hist_afterCut_TPCncrossedrows;
+
+  //TPC, TOF, TPC+TOF nSigma histograms
+  TH2D *f2Dhist_nSigmaTPC_pion;
+  TH2D *f2Dhist_nSigmaTPC_kaon;
+  TH2D *f2Dhist_nSigmaTPC_proton;
+  TH2D *f2Dhist_nSigmaTOF_pion;
+  TH2D *f2Dhist_nSigmaTOF_kaon;
+  TH2D *f2Dhist_nSigmaTOF_proton;
+  TH2D *f2Dhist_nSigmaTPCplusTOF_pion;
+  TH2D *f2Dhist_nSigmaTPCplusTOF_kaon;
+  TH2D *f2Dhist_nSigmaTPCplusTOF_proton;
+
+  //Pileup cut val
+  Int_t fPileupCutVal;
+  
+  //Flag to select which centrality estimator
+  Int_t fCentralityEstimator_flag;
+ 
+  //Efficienc hist per centralities
+  TH1D *fEffPionPlus[9];
+  TH1D *fEffKaonPlus[9];
+  TH1D *fEffProtonPlus[9];
+  TH1D *fEffPionMinus[9];
+  TH1D *fEffKaonMinus[9];
+  TH1D *fEffProtonMinus[9];
   
 
   /*

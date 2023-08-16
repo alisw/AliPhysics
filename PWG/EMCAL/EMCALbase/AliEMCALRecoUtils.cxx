@@ -54,7 +54,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils():
   fW0(0),                                 fShowerShapeCellLocationType(0),
   fNonLinearityFunction(0),               fNonLinearThreshold(0),                 fUseShaperNonlin(kFALSE),
   fUseDetermineLowGain(kFALSE), fCalibData(0),
-  fUseAdditionalScale(kFALSE), fUseAdditionalScaleEtaDep(kFALSE),
+  fUseAdditionalScale(0),
   fSmearClusterEnergy(kFALSE),            fRandom(),
   fNCellEfficiencyFunction(0),
   fCellsRecalibrated(kFALSE),             fRecalibration(kFALSE),                 fUse1Drecalib(kFALSE),                  fEMCALRecalibrationFactors(),
@@ -113,7 +113,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   fUseShaperNonlin(reco.fUseShaperNonlin),
   fUseDetermineLowGain(reco.fUseDetermineLowGain), 
   fCalibData(reco.fCalibData),
-  fUseAdditionalScale(reco.fUseAdditionalScale), fUseAdditionalScaleEtaDep(reco.fUseAdditionalScaleEtaDep),
+  fUseAdditionalScale(reco.fUseAdditionalScale),
   fSmearClusterEnergy(reco.fSmearClusterEnergy),             fRandom(),
   fNCellEfficiencyFunction(reco.fNCellEfficiencyFunction),
   fCellsRecalibrated(reco.fCellsRecalibrated),
@@ -168,7 +168,7 @@ AliEMCALRecoUtils::AliEMCALRecoUtils(const AliEMCALRecoUtils & reco)
   for (Int_t i = 0; i < 10 ; i++) { fNCellEfficiencyParams[i] = reco.fNCellEfficiencyParams[i] ; }
   for (Int_t j = 0; j < 5  ; j++) { fMCGenerToAccept[j]       = reco.fMCGenerToAccept[j]       ; }
   for (Int_t j = 0; j < 4  ; j++) { fBadStatusSelection[j]    = reco.fBadStatusSelection[j]    ; }
-  for (Int_t j = 0; j < 3  ; j++) { fAdditionalScaleSM[j]     = reco.fAdditionalScaleSM[j]     ; }
+  for (Int_t j = 0; j < 4  ; j++) { fAdditionalScaleSM[j]     = reco.fAdditionalScaleSM[j]     ; }
 
   if(reco.fEMCALBadChannelMap) {
     // Copy constructor - not taking ownership over calibration histograms
@@ -226,8 +226,7 @@ AliEMCALRecoUtils & AliEMCALRecoUtils::operator = (const AliEMCALRecoUtils & rec
   fUseDetermineLowGain       = reco.fUseDetermineLowGain;
   fCalibData                 = reco.fCalibData;
   fUseAdditionalScale        = reco.fUseAdditionalScale;
-  fUseAdditionalScaleEtaDep  = reco.fUseAdditionalScaleEtaDep;
-  for (Int_t j = 0; j < 3; j++)
+  for (Int_t j = 0; j < 4; j++)
     fAdditionalScaleSM[j]         = reco.fAdditionalScaleSM[j];
   fSmearClusterEnergy        = reco.fSmearClusterEnergy;
   fNCellEfficiencyFunction   = reco.fNCellEfficiencyFunction;
@@ -459,26 +458,53 @@ Bool_t AliEMCALRecoUtils::AcceptCalibrateCell(Int_t absID, Int_t bc,
     }
 
     // apply an additional scale on cell level. Not to be used for standard analyses!
-    if(fUseAdditionalScale){
-      if(fUseAdditionalScaleEtaDep){ // eta dependent (with and without TRD support) 
-      // get cell collumn
-        Int_t iCol = ieta;
-        if( (imod > 11 && imod < 18) && imod%2) iCol+= 65;
-        else if (imod%2) iCol+=49;
+    //____________________________________
+    if(fUseAdditionalScale == 1){ // standard cell scale, not eta dependent, Full SM, 2/3 SM and 1/3 SM are scaled        
+      if( imod == 10 || imod == 11 || imod == 18 || imod == 19 ){ // 1/3 SM
+        amp *= fAdditionalScaleSM[2];
+      } else if( imod >= 12 && imod <=17 ){                       // 2/3 SM
+        amp *= fAdditionalScaleSM[1];
+      } else {                                                    // Full SM
+        amp *= fAdditionalScaleSM[0];
+      }
+    //____________________________________
+    } else if (fUseAdditionalScale == 2) { // eta dependent scale (with and without TRD support) 
+      Int_t iCol = ieta;
+      // select columns with TRD support in front
+      if( (imod > 11 && imod < 18) && imod%2) iCol+= 65;
+      else if (imod%2) iCol+=49;
 
-        if((iCol >= 5 && iCol <= 9) || (iCol >= 34 && iCol <= 38) || (iCol >= 59 && iCol <= 63) || (iCol >= 87 && iCol <= 91) ){
-          amp *= fAdditionalScaleSM[0]; // behind trd support
-        } else {
-          amp *= fAdditionalScaleSM[1]; // not behind trd support
-        }
-        
-      } else { // standard cell scale, not eta dependent
-        if( imod == 10 || imod == 11 || imod == 18 || imod == 19 ){ // 1/3 SM
-          amp *= fAdditionalScaleSM[2];
-        } else if( imod >= 12 && imod <=17 ){                       // 2/3 SM
-          amp *= fAdditionalScaleSM[1];
-        } else {                                                    // Full SM
+      if((iCol >= 5 && iCol <= 9) || (iCol >= 34 && iCol <= 38) || (iCol >= 59 && iCol <= 63) || (iCol >= 87 && iCol <= 91) ){
+        amp *= fAdditionalScaleSM[0]; // behind trd support
+      } else {
+        amp *= fAdditionalScaleSM[1]; // not behind trd support
+      }
+    //____________________________________
+    } else if (fUseAdditionalScale == 3) { // Run1 special values: SM with TRD in front and SM without TRD in front
+      if(imod > 3){ // with TRD in front
+        amp *= fAdditionalScaleSM[0];
+      } else { // no TRD modules in front
+        amp *= fAdditionalScaleSM[1];
+      }
+    //____________________________________
+    } else if (fUseAdditionalScale == 4) { // Run1 special values: SM with TRD in front (+ with/without Support structure) and SM without TRD in front (+ with/without Support structure)
+      Int_t iCol = ieta;
+      bool behindSupport = false;
+      // select columns with TRD support in front
+      if( (imod > 11 && imod < 18) && imod%2) iCol+= 65;
+      else if (imod%2) iCol+=49;
+
+      if((iCol >= 5 && iCol <= 9) || (iCol >= 34 && iCol <= 38) || (iCol >= 59 && iCol <= 63) || (iCol >= 87 && iCol <= 91) ){ // behind TRD support
+        if(imod > 3){ // with TRD in front
           amp *= fAdditionalScaleSM[0];
+        } else { // no TRD modules in front
+          amp *= fAdditionalScaleSM[1];
+        }
+      } else { // no TRD support
+        if(imod > 3){ // with TRD in front
+          amp *= fAdditionalScaleSM[2];
+        } else { // no TRD modules in front
+          amp *= fAdditionalScaleSM[3];
         }
       }
     }

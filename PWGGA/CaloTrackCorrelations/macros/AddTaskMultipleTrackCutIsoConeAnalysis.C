@@ -134,6 +134,12 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
   TList * anaList = task->GetAnalysisMaker()->GetListOfAnalysisContainers();
   printf("TList name: %s\n",anaList->GetName());
 
+  // Make sure exo cut not applied at reader
+  if ( exoCut < 1 )
+  {
+    analysisString+= Form("_ExoCut%1.2f",exoCut);
+  }
+
   // Test 2 track matching options (no track matching and open track matching with fix cuts)
   if ( tmFix > -1 )
   {
@@ -177,9 +183,12 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
   // Analysis with tighter and/or looser exoticity, fixed min cone distance and track match option
   if ( exoCut < 1 )
   {
+    TString histoStringExo = Form("_ExoCut%1.2f",exoCut);
+    analysisString.ReplaceAll(Form("_ExoCut%1.2f",exoCut),"");
+
     if ( exoCut < 0.97 )
     {
-      TString histoStringExo = Form("TM%d_ExoCut0.97",tmFix);
+      histoStringExo = Form("TM%d_ExoCut0.97",tmFix);
 
       ConfigureCaloTrackCorrAnalysis
       ( anaList, calorimeter, simulation, year, col, analysisString+"_ExoCut0.97", histoStringExo,
@@ -189,10 +198,10 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
 
     if ( exoCut > 0.955 || exoCut < 0.945 )
     {
-      TString histoStringExo = Form("TM%d_ExoCut0.95",tmFix);
+      histoStringExo = Form("TM%d_ExoCut0.95",tmFix);
 
       ConfigureCaloTrackCorrAnalysis
-      ( anaList, calorimeter, simulation, year, col, analysisString+"_ExoCut0.93", histoStringExo,
+      ( anaList, calorimeter, simulation, year, col, analysisString+"_ExoCut0.95", histoStringExo,
        shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
        leading, tmFix, mixOn, printSettings, debug);
     }
@@ -206,6 +215,12 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
        shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
        leading, tmFix, mixOn, printSettings, debug);
     }
+  }
+
+  // Add back ExoCut
+  if ( exoCut < 1 )
+  {
+    analysisString+= Form("_ExoCut%1.2f",exoCut);
   }
 
   // Analysis with looser nlm cut, fixed min cone distance and track match option
@@ -249,11 +264,12 @@ AliAnalysisTaskCaloTrackCorrelation * AddTaskMultipleTrackCutIsoConeAnalysis
   // Default cuts analysis but multi UE methods if specified
   if (  analysisString.Contains("MultiIso") && analysisString.Contains("UEAreas") )
   {
+    TString addAnaString ="UESubMethods";
     if(analysisString.Contains("UEAreasWithJet"))
-      isoPtTh = AliIsolationCut::kSumBkgSubJetRhoIC; // Make sure jet median output is checked
+      addAnaString = "UESubMethodsAndJetMedian";
 
     ConfigureCaloTrackCorrAnalysis
-    ( anaList, calorimeter, simulation, year, col, analysisString+"UESubMethods", histoString+"_UEAreas",
+    ( anaList, calorimeter, simulation, year, col, analysisString+addAnaString, histoString+"_UEAreas",
      shshMax, isoCone, rMinFix, isoPtTh, isoMethod, isoContent,
      leading, tmFix, mixOn, printSettings, debug);
   }

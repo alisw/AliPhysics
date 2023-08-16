@@ -12,7 +12,6 @@
 #include "AliConversionPhotonCuts.h"
 #include "AliConversionMesonCuts.h"
 #include "AliAnalysisManager.h"
-#include "AliAnalysisTaskConvJet.h"
 #include "AliAnalysisTaskJetOutlierRemoval.h"
 #include "TProfile2D.h"
 #include "TH3.h"
@@ -42,9 +41,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     // Function to set correction task setting
     void SetCorrectionTaskSetting(TString setting) {fCorrTaskSetting = setting;}
 
-    // Function to set name of Jet container
-    void SetJetContainerAddName(TString name) { fAddNameConvJet = name; }
-
     // base functions for selecting photon and meson candidates in reconstructed data
     void ProcessClusters();
     void ProcessPhotonCandidates();
@@ -71,8 +67,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
                                           Bool_t matched);
     void ProcessConversionPhotonsForMissingTags     ();
     void ProcessConversionPhotonsForMissingTagsAOD  ();
-    void ProcessJets();
-    void InitJets();
 
     // switches for additional analysis streams or outputs
     void SetDoPrimaryTrackMatching      ( Bool_t flag )                                     { fDoPrimaryTrackMatching = flag              ;}
@@ -88,7 +82,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void SetDoTreeConvGammaShowerShape  ( Bool_t flag )                                     { fDoConvGammaShowerShapeTree = flag          ;}
     void SetDoTreeInvMassShowerShape    ( Bool_t flag )                                     { fDoInvMassShowerShapeTree = flag            ;}
     void SetAllowOverlapHeaders         ( Bool_t allowOverlapHeader )                       { fAllowOverlapHeaders = allowOverlapHeader   ;}
-    void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag)                     { fDoMaterialBudgetWeightingOfGammasForTrueMesons = flag;}
+    void SetDoMaterialBudgetWeightingOfGammasForTrueMesons(Bool_t flag)                     { fDoMaterialWeightConv = flag;}
     void SetDoHBTHistoOutput            ( Bool_t flag )                                     { fDoHBTHistoOutput = flag                    ;}
 
     // Setting the cut lists for the conversion photons
@@ -186,15 +180,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TList*                              fCutArray;              // List with Conversion Cuts
     TList*                              fClusterCutArray;       // List with Cluster Cuts
     TList*                              fMesonCutArray;         // List with Meson Cuts
-    AliAnalysisTaskConvJet*             fConvJetReader;         //! JetReader
-    TString                             fAddNameConvJet;        // Additional Name of jet container
     AliAnalysisTaskJetOutlierRemoval*   fOutlierJetReader;      //! JetReader
-    Bool_t                              fDoJetAnalysis;         //! Bool to produce Jet Plots
-    Bool_t                              fDoJetQA;               //! Bool to produce Jet QA Plots
-    TList**                             fJetHistograms;         //! Jet Histograms
-    TList**                             fTrueJetHistograms;     //! True Jet Histograms
-    Int_t                               fMaxPtNearEMCalPlace;   //! Place in jet vector of highest pt jet that is near the EMCal
-    Bool_t                              fJetNearEMCal;          //! If a jet is near the EMCal in the current event
     TList*                              fTrueGammaCandidatesConv;   //! current list of true Conv photon candidates
     TList*                              fTrueGammaCandidatesCalo;   //! current list of true Calo photon candidates
     TList*                              fMCGammaCandidates;     //! current list of MC generated photon candidates
@@ -216,6 +202,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
                       // 4: secondary photon from k0s,
                       // 5: dalitz
                       // 6: primary gamma
+    Float_t                 fWeightConvPhoton;                  //! weight of conversion photon
     TTree**                 tESDGammaERM02;                     //! tree with E_gamma vs R_conv vs M02 vs M20
     Float_t                 tESDClusE;                          //! energy of conv gamma for tree
     Float_t                 tESDGammaConvR;                     //! conv R of conv gamma for tree
@@ -457,81 +444,6 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoBckTrueGammaQCMPt;                            //! array of histos for HBT analysis in LCMS frame, MC val ME
     TH2F**                  fHistoBckMCGammaHBTQCMPt;                           //! array of histos for HBT analysis in LCMS frame, MC gen ME
 
-    TH1F**                 fHistoPtJet;                                          //! Histogram of Jet Pt
-    TH1F**                 fHistoJetEta;                                         //! Histogram of Jet Eta
-    TH1F**                 fHistoJetPhi;                                         //! Histogram of Jet Phi
-    TH1F**                 fHistoJetArea;                                        //! Histogram of Jet Area
-    TH1F**                 fHistoNJets;                                          //! Histogram of number of jets
-    TH1F**                 fHistoEventwJets;                                     //! Histogram of number of events with jets > 0
-    TH1F**                 fHistoJetPi0PtRatio;                                  //! Histogram of PtPi0/PtJet
-    TH1F**                 fHistoDoubleCounting;                                 //! Histogram if NM candidates are defined within multiple jets
-    TH2F**                 fHistoJetMotherInvMassPt;                             //! Histogram of NM candidates with a jet in the event
-    TH2F**                 fHistoPi0InJetMotherInvMassPt;                        //! Histogram of NM candidates that are inside a jet
-    TH2F**                 fHistoMotherBackJetInvMassPt;                         //! Histogram of Backgrouns candidates that are involved with jets
-    TH2F**                 fHistoRJetPi0Cand;                                    //! Histogram of RJetPi0Cand vs Pt
-    TH2F**                 fHistoEtaPhiJetPi0Cand;                               //! Histogram of delta eta and delta phi distr between jet and NM candidates
-    TH2F**                 fHistoEtaPhiJetWithPi0Cand;                           //! Histogram of delta eta and delta phi distr when pi0 is inside a jet
-    TH2F**                 fHistoJetFragmFunc;                                   //! Histogram to determine fragmentation function
-    TH2F**                 fHistoJetFragmFuncZInvMass;                           //! Histogram of Inv Mass distribution with z
-    TH2F**                 fHistoTruevsRecJetPt;                                 //! Histogram of true jet pt vs reconstructed jet pt
-    TH2F**                 fHistoTruePi0JetMotherInvMassPt;                      //! Histogram of true pi0s in an event with a jet
-    TH2F**                 fHistoTruePi0InJetMotherInvMassPt;                    //! Histogram of true pi0s in a jet
-    TH2F**                 fHistoTruePrimaryPi0JetInvMassPt;                     //! Histogram of true primary pi0s in an event with a jet
-    TH2F**                 fHistoTruePrimaryPi0inJetInvMassPt;                   //! Histogram of true primary pi0s in a jet
-    TH2F**                 fHistoTruePrimaryPi0InJetInvMassTruePt;               //! Histogram of true primary pi0s in a jet with their true pt
-    TH1F**                 fHistoTrueDoubleCountingPi0Jet;                       //! Histogram of when a true pi0 is defined to be in multiple jets
-    TH2F**                 fHistoTrueEtaJetMotherInvMassPt;                      //! Histogram of true etas in an event with a jet
-    TH2F**                 fHistoTrueEtaInJetMotherInvMassPt;                    //! Histogram of true etas in a jet
-    TH2F**                 fHistoTruePrimaryEtaJetInvMassPt;                     //! Histogram of true primary etas in an event with a jet
-    TH2F**                 fHistoTruePrimaryEtainJetInvMassPt;                   //! Histogram of true primary etas in a jet
-    TH1F**                 fHistoTrueDoubleCountingEtaJet;                       //! Histogram of when a true eta is defined to be in multiple jets
-    TH2F**                 fHistoTruePi0JetFragmFunc;                            //! Histogram to determine true pi0 fragmentation function
-    TH2F**                 fHistoTruePi0JetFragmFuncZInvMass;                    //! Histogram to determine true pi0 Inv Mass distribution with z
-    TH2F**                 fHistoTrueEtaJetFragmFunc;                            //! Histogram to determine true eta fragmentation function
-    TH2F**                 fHistoTrueEtaJetFragmFuncZInvMass;                    //! Histogram to determine true eta Inv Mass distribution with z
-    TH1F**                 fHistoMCPi0JetInAccPt;                                //! Histogram with weighted pi0 in a jet event in acceptance, pT
-    TH1F**                 fHistoMCPi0inJetInAccPt;                              //! Histogram with weighted pi0 in a jet in acceptance, pT
-    TH1F**                 fHistoMCEtaJetInAccPt;                                //! Histogram with weighted eta in a jet event in acceptance, pT
-    TH1F**                 fHistoMCEtainJetInAccPt;                              //! Histogram with weighted eta in a jet in acceptance, pT
-    TH1F**                 fHistoMCPi0JetEventGenerated;                         //! Histogram with mesons in a jet event generated, pT
-    TH1F**                 fHistoMCPi0inJetGenerated;                            //! Histogram with mesons in a jet generated, pT
-    TH1F**                 fHistoMCEtaJetEventGenerated;                         //! Histogram with mesons in a jet event generated, pT
-    TH1F**                 fHistoMCEtainJetGenerated;                            //! Histogram with mesons in a jet generated, pT
-    TH2F**                 fHistoTrueSecondaryPi0FromK0sJetInvMassPt;            //! Histogram with validated secondary mothers from K0s in an event with a jet, invMass, pt
-    TH2F**                 fHistoTrueSecondaryPi0FromK0sinJetInvMassPt;          //! Histogram with validated secondary mothers from K0s in a jet, invMass, pt
-    TH2F**                 fHistoTrueSecondaryPi0FromLambdaJetInvMassPt;         //! Histogram with validated secondary mothers from lambda in an event with a jet, invMass, pt
-    TH2F**                 fHistoTrueSecondaryPi0FromLambdainJetInvMassPt;       //! Histogram with validated secondary mothers from lambda in a jet, invMass, pt
-    TH2F**                 fHistoTrueSecondaryPi0FromK0lJetInvMassPt;            //! Histogram with validated secondary mothers from K0l in an event with a jet, invMass, pt
-    TH2F**                 fHistoTrueSecondaryPi0FromK0linJetInvMassPt;          //! Histogram with validated secondary mothers from K0l in a jet, invMass, pt
-    TH2F**                 fHistoTrueSecondaryPi0InvJetMassPt;                   //! Histogram with validated secondary mothers in an event with a jet, invMass, pt
-    TH2F**                 fHistoTrueSecondaryPi0InvinJetMassPt;                 //! Histogram with validated secondary mothers in a jet, invMass, pt
-    TH2F**                 fHistoMotherPi0inJetPtY;                              //! Histogram with the rapidity of the validated pi0s in jets
-    TH2F**                 fHistoMotherEtainJetPtY;                              //! Histogram with the rapidity of the validated etas in jets
-    TH2F**                 fHistoMotherPi0inJetPtPhi;                            //! Histogram with the phi of the validated pi0s in jets
-    TH2F**                 fHistoMotherEtainJetPtPhi;                            //! Histogram with the phi of the validated etas in jets
-    TH2F**                 fHistoUnfoldingAsData;                                //! Histogram to use for jet pi0 unfolding
-    TH2F**                 fHistoUnfoldingMissed;                                //! Histogram to use for jet pi0 unfolding
-    TH2F**                 fHistoUnfoldingReject;                                //! Histogram to use for jet pi0 unfolding
-    TH2F**                 fHistoUnfoldingAsDataInvMassZ;                        //! Histogram to use for jet pi0 unfolding for z inmass
-    TH2F**                 fHistoUnfoldingMissedInvMassZ;                        //! Histogram to use for jet pi0 unfolding for z inmass
-    TH2F**                 fHistoUnfoldingRejectInvMassZ;                        //! Histogram to use for jet pi0 unfolding for z inmass
-
-    vector<Double_t>      fVectorJetPt;                                         //! Vector of JetPt
-    vector<Double_t>      fVectorJetPx;                                         //! Vector of JetPx
-    vector<Double_t>      fVectorJetPy;                                         //! Vector of JetPy
-    vector<Double_t>      fVectorJetPz;                                         //! Vector of JetPz
-    vector<Double_t>      fVectorJetEta;                                        //! Vector of JetEta
-    vector<Double_t>      fVectorJetPhi;                                        //! Vector of JetPhi
-    vector<Double_t>      fVectorJetArea;                                       //! Vector of JetArea
-    vector<Double_t>      fTrueVectorJetPt;                                     //! Vector of True JetPt
-    vector<Double_t>      fTrueVectorJetPx;                                     //! Vector of True JetPx
-    vector<Double_t>      fTrueVectorJetPy;                                     //! Vector of True JetPy
-    vector<Double_t>      fTrueVectorJetPz;                                     //! Vector of True JetPz
-    vector<Double_t>      fTrueVectorJetEta;                                    //! Vector of True JetEta
-    vector<Double_t>      fTrueVectorJetPhi;                                    //! Vector of True JetPhi
-
-    std::map<Int_t, Int_t> MapRecJetsTrueJets;                                  //! Map containing the reconstructed jet index in vector and mapping it to true Jet index
-
     // variable to keep track of multiple & missing reco
     vector<Int_t>           fVectorRecTruePi0s;                                 //! array of strings containing the stack position of the reconstructed validated pi0
     vector<Int_t>           fVectorRecTrueEtas;                                 //! array of strings containing the stack position of the reconstructed validated eta
@@ -557,8 +469,8 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoTrueClusPi0EM02;                              //! array of histos with TruePi0s: cluster E vs M02
     TH2F**                  fHistoTruePi0InvMassECalib;                         //! array of histogram with pure pi0 signal inv Mass, energy of cluster
     TH2F**                  fHistoTruePi0PureGammaInvMassECalib;                //! array of histogram with pure pi0 signal (only pure gammas) inv Mass, energy of cluster
-    TH2F**                  fHistoTruePi0InvMassECalibPCM;                         //! array of histogram with pure pi0 signal inv Mass, energy of PCM
-
+    TH2F**                  fHistoTruePi0InvMassECalibPCM;                      //! array of histogram with pure pi0 signal inv Mass, energy of PCM
+    TH3F**                  fHistoMotherInvMassECalibNMatchedPrim;              //! array of histogram with pi0 mass, calo photon energy and the number of matched primary tracks
     // event histograms
     TH1F**                  fHistoNEvents;                                      //! array of histos with event information
     TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
@@ -584,6 +496,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Float_t                 fDCAzGammaMax;                                      //!
     UChar_t                 iFlag;                                              //!
     UChar_t                 iMesonMCInfo;                                       //!
+    Float_t                 fWeightMeson;                                       //!
     TRandom3                fRandom;                                            //! random
     Int_t                   fNGammaCandidates;                                  //!
     Double_t*               fUnsmearedPx;                                       //!
@@ -615,7 +528,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     Bool_t                  fEnableSortForClusMC;                               // switch on sorting for MC labels in cluster
     Bool_t                  fDoPrimaryTrackMatching;                            // switch for basic track matching for primaries
     Bool_t                  fDoInvMassShowerShapeTree;                          // flag for producing tree tESDInvMassShowerShape
-    Bool_t                  fDoMaterialBudgetWeightingOfGammasForTrueMesons;    // flag to set the usage of material budget weights
+    Bool_t                  fDoMaterialWeightConv;    // flag to set the usage of material budget weights
     TTree*                  tBrokenFiles;                                       //! tree for keeping track of broken files
     TObjString*             fFileNameBroken;                                    //! string object for broken file name
     Bool_t                  fAllowOverlapHeaders;                               // enable overlapping headers for cluster selection
@@ -626,7 +539,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 73);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 74);
 };
 
 #endif

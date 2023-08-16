@@ -1,3 +1,4 @@
+
 /**************************************************************************
  * Copyright(c) 1998-1999, ALICE Experiment at CERN, All rights reserved. *
  *                                                                        *
@@ -22,6 +23,7 @@
 //                                                                    //
 //  Author: Deepa Thomas (University of Texas at Austin)              //
 //          Ravindra Singh (IIT Indore)                               //
+//          Amanda Flores (University of Texas at Austin)             //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -160,7 +162,10 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fEMCClsTimeCut(kFALSE),
   fMCarray(0),
   fMCHeader(0),
-  fIsMC(kFALSE),
+  fIsMC(kFALSE),//Insert new global switches here
+  fEMCalClusOn(kFALSE),
+  fHadronInfoOn(kFALSE),
+  fTracksOn(kFALSE),
   fApplyElectronEffi(kFALSE),
   fEffi(1.0),
   fWeight(1.0),
@@ -177,6 +182,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel(const char *name)
   fWeightEta(1),
   fNTotMCpart(0),
   fNpureMC(0),
+  fNembMCpileup(0),
   fNembMCpi0(0),
   fNembMCeta(0),
   fFuncPtDepEta(0),
@@ -361,6 +367,9 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fMCarray(0),
   fMCHeader(0),
   fIsMC(kFALSE),
+  fEMCalClusOn(kFALSE),
+  fHadronInfoOn(kFALSE),
+  fTracksOn(kFALSE),
   fApplyElectronEffi(kFALSE),
   fEffi(1.0),
   fWeight(1.0),
@@ -377,6 +386,7 @@ AliAnalysisTaskEHCorrel::AliAnalysisTaskEHCorrel()
   fWeightEta(1),
   fNTotMCpart(0),
   fNpureMC(0),
+  fNembMCpileup(0),
   fNembMCpi0(0),
   fNembMCeta(0),
   fFuncPtDepEta(0),
@@ -587,6 +597,10 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
 
   Int_t nCentralityBinsPbPb = 6;
   Double_t CentralityBinsPbPb[7];
+
+  Int_t nCentralityBinsPbPb_Change = 4;
+  Double_t CentralityBinsPbPb_Change[5];
+
   Int_t nCentralityBinspPb = 4;
   Double_t CentralityBinspPb[5];
 
@@ -634,6 +648,13 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
         CentralityBinsPbPb[5] = 7.5;
         CentralityBinsPbPb[6] = 10.01;
       }
+      if(fFlagMEBinChange){
+        CentralityBinsPbPb_Change[0] = 0;
+        CentralityBinsPbPb_Change[1] = 2.5;
+        CentralityBinsPbPb_Change[2] = 5;
+        CentralityBinsPbPb_Change[3] = 7.5;
+        CentralityBinsPbPb_Change[4] = 10.01; 
+      }
     }
     if(fCentralityMin==30 && fCentralityMax == 50){
       if(!fFlagMEBinChange){
@@ -645,6 +666,13 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
           CentralityBinsPbPb[5] = 45;
           CentralityBinsPbPb[6] = 50.01;
         }
+      if(fFlagMEBinChange){
+          CentralityBinsPbPb_Change[0] = 30;
+          CentralityBinsPbPb_Change[1] = 34;
+          CentralityBinsPbPb_Change[2] = 39;
+          CentralityBinsPbPb_Change[3] = 44;
+          CentralityBinsPbPb_Change[4] = 50.01;
+      }
     }
     if(fCentralityMin==0 && fCentralityMax == 20)
     {
@@ -758,8 +786,15 @@ void AliAnalysisTaskEHCorrel::UserCreateOutputObjects()
   }
 
 if(fFlagFillMECorr){
-  if(fIsPbPb)
-    fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsPbPb, (Double_t*) CentralityBinsPbPb, nZvtxBins, (Double_t*) vertexBins);
+  if(fIsPbPb){
+      if(!fFlagMEBinChange){
+            fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsPbPb, (Double_t*) CentralityBinsPbPb, nZvtxBins, (Double_t*) vertexBins);
+      }
+
+      if(fFlagMEBinChange){
+            fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinsPbPb_Change, (Double_t*) CentralityBinsPbPb_Change, nZvtxBins, (Double_t*) vertexBins);
+      }
+  }
 
   if(fIspPb)
     fPoolMgr = new AliEventPoolManager(poolsize, trackDepth, nCentralityBinspPb, (Double_t*) CentralityBinspPb, nZvtxBins, (Double_t*) vertexBins);
@@ -960,11 +995,21 @@ if(fFlagFillMECorr){
     EventBins[i] = i;
 
   if(fIsPbPb){
-    fMixStatCent = new TH2F("fMixStatCent","Mix event stats for centrality binning;Nevent in pool;Centrality",nEventBins,EventBins,nCentralityBinsPbPb,CentralityBinsPbPb);
-    fOutputList->Add(fMixStatCent);
+    if(!fFlagMEBinChange){
+        fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Vtx_{z};Centrality",nZvtxBins,vertexBins,nCentralityBinsPbPb,CentralityBinsPbPb);
+        fOutputList->Add(fMixStatCentVtxz);
 
-    fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Vtx_{z};Centrality",nZvtxBins,vertexBins,nCentralityBinsPbPb,CentralityBinsPbPb);
-    fOutputList->Add(fMixStatCentVtxz);
+        fMixStatCent = new TH2F("fMixStatCent","Mix event stats for centrality binning;Nevent in pool;Centrality",nEventBins,EventBins,nCentralityBinsPbPb,CentralityBinsPbPb);
+        fOutputList->Add(fMixStatCent);
+    }
+
+    if(fFlagMEBinChange){
+        fMixStatCentVtxz = new TH2F("fMixStatCentVtxz","Mix event stats Cent vs Zvtx binning;Vtx_{z};Centrality",nZvtxBins,vertexBins,nCentralityBinsPbPb_Change,CentralityBinsPbPb_Change);
+        fOutputList->Add(fMixStatCentVtxz);
+
+        fMixStatCent = new TH2F("fMixStatCent","Mix event stats for centrality binning;Nevent in pool;Centrality",nEventBins,EventBins,nCentralityBinsPbPb_Change,CentralityBinsPbPb_Change);
+        fOutputList->Add(fMixStatCent);
+    }
 
     fMixStatVtxZ = new TH2F("fMixStatVtxZ","Mix event stats for Zvtx binning;Nevent in pool;Vtx_{z}",nEventBins,EventBins,nZvtxBins,vertexBins);
     fOutputList->Add(fMixStatVtxZ);
@@ -1179,6 +1224,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
     return;
   }
     
+  
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   fpVtx = fVevent->GetPrimaryVertex();
 
@@ -1190,8 +1236,11 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
     //Get number of Gen particles //
     ////////////////////////////////
      ///Getting number of particles produced by the MC generator
-     if(fIsPbPb) GetNMCPartProducedPbPb2018();
-     else GetNMCPartProduced();
+    if (fCalPi0EtaWeight || fCalculateNonHFEEffi) {
+        if(fIsPbPb) GetNMCPartProducedPbPb2018();
+        else GetNMCPartProduced();
+    }
+     
   }
     
   /////Remove in bunch pileup events in MC////
@@ -1257,12 +1306,16 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   //////////////////////
   //EMcal cluster info//
   //////////////////////
-  EMCalClusterInfo();
-
+  if (fEMCalClusOn) {
+    EMCalClusterInfo();
+  }
+  
   /////////////////////
   //Hadron track info//
   /////////////////////
-  HadronInfo();
+  if (fHadronInfoOn) {
+    HadronInfo();
+  }
 
   ////////////////////////////////////////
   //Hadron tracking eff//
@@ -1279,6 +1332,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
   if(!fUseTender)ntracks = fVevent->GetNumberOfTracks();
   if(fUseTender) ntracks = fTracks_tender->GetEntries();
 
+  if (fTracksOn) {
   for (Int_t iTracks = 0; iTracks < ntracks; iTracks++) {
     AliVParticle* Vtrack = 0x0;
     if(!fUseTender) Vtrack  = fVevent->GetTrack(iTracks);
@@ -1463,6 +1517,7 @@ void AliAnalysisTaskEHCorrel::UserExec(Option_t*)
 
     }//EMCAL track match
   }//track loop
+  }
 
   fNElecInEvt->Fill(fNEle);
 
@@ -1519,6 +1574,8 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
     AliAODTrack *atrackHad = dynamic_cast<AliAODTrack*>(VtrackHad);
     if(!atrackHad) continue;
 
+    if(!PassHadronCuts(atrackHad)) continue; //apply hadron cuts;
+
     ptHad = trackHad->Pt();
     ptEle = track->Pt();
     phiEle = track->Phi();
@@ -1526,7 +1583,6 @@ void AliAnalysisTaskEHCorrel::ElectronHadCorrel(Int_t itrack, AliVTrack *track, 
     etaEle = track->Eta();
     etaHad = trackHad->Eta();
 
-    if(!PassHadronCuts(atrackHad)) continue; //apply hadron cuts;
     if(fTrigElePtCut && (ptHad > ptEle)) continue; //select only pTe > pTh is requested
 
     Dphi = phiEle - phiHad;
@@ -1668,10 +1724,13 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
 {
   //apply hadron cuts
 
+  Double_t DCAxyCut = 0.5, DCAzCut = 1;
+  Double_t d0z0[2]={-999,-999}, cov[3];
+
+  if(HadTrack->Pt() < 0.75) return kFALSE;
+
   fAOD = dynamic_cast<AliAODEvent*>(InputEvent());
   const AliVVertex *pVtx = fVevent->GetPrimaryVertex();
-  Double_t d0z0[2]={-999,-999}, cov[3];
-  Double_t DCAxyCut = 0.5, DCAzCut = 1;
 
   if(fHadCutCase == 1)
   {
@@ -1703,7 +1762,6 @@ Bool_t AliAnalysisTaskEHCorrel::PassHadronCuts(AliAODTrack *HadTrack)
   if(RatioCrossedRowsOverFindableClustersh <   fRatioTPCNCrossRHad) return kFALSE;
 
   if(HadTrack->Eta()< fEtaCutHadMin || HadTrack->Eta()> fEtaCutHadMax) return kFALSE;
-  if(HadTrack->Pt() < 0.3) return kFALSE;
   if(HadTrack->PropagateToDCA(pVtx, fVevent->GetMagneticField(), 20., d0z0, cov))
     if(TMath::Abs(d0z0[0]) > DCAxyCut || TMath::Abs(d0z0[1]) > DCAzCut) return kFALSE;
 
@@ -2264,7 +2322,7 @@ void AliAnalysisTaskEHCorrel::SelectNonHFElectron(Int_t itrack, AliVTrack *track
     if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
       flagPhotonicElec = kTRUE;
     }
-    if(mass<fInvmassCut && fFlagULS && !flagPhotonicElec){
+    if(mass<fInvmassCut && fFlagLS && !flagPhotonicElec){
       flagLSElec = kTRUE;
     }
   }
@@ -2604,7 +2662,7 @@ Bool_t AliAnalysisTaskEHCorrel::GetNonHFEEffiDenomPbPb2018(AliVTrack *track)
 
   //cases to consider: eta->e, eta->pi0->e, eta->gamma->e, eta->pi0->gamma->e, pi0->e, pi0->gamma->e
   if(MomPDG == 221){
-    if(iMCmom >= fNembMCeta && iMCmom < fNpureMC) { //from eta event
+    if(iMCmom >= fNembMCeta && iMCmom < fNembMCpileup) { //from eta event
       fIsFrmEmbEta = kTRUE; //eta->e
       fWeightEta = fEtaWeight->Eval(MCPartMom->Pt());
     }
@@ -2617,7 +2675,7 @@ Bool_t AliAnalysisTaskEHCorrel::GetNonHFEEffiDenomPbPb2018(AliVTrack *track)
     }
 
     if(GMomPDG == 221){
-      if(iMCgmom >= fNembMCeta && iMCgmom < fNpureMC) { //from eta event
+      if(iMCgmom >= fNembMCeta && iMCgmom < fNembMCpileup) { //from eta event
         fIsFrmEmbEta = kTRUE; //eta->pi0-> e
         fWeightEta = fEtaWeight->Eval(MCPartGMom->Pt());
       }
@@ -2626,7 +2684,7 @@ Bool_t AliAnalysisTaskEHCorrel::GetNonHFEEffiDenomPbPb2018(AliVTrack *track)
 
   if(MomPDG == 22){
     if(GMomPDG == 221){
-      if(iMCgmom >= fNembMCeta && iMCgmom < fNpureMC) { //from eta event
+      if(iMCgmom >= fNembMCeta && iMCgmom < fNembMCpileup) { //from eta event
         fIsFrmEmbEta = kTRUE; //eta->gamma-> e
         fWeightEta = fEtaWeight->Eval(MCPartGMom->Pt());
       }
@@ -2639,7 +2697,7 @@ Bool_t AliAnalysisTaskEHCorrel::GetNonHFEEffiDenomPbPb2018(AliVTrack *track)
       }
 
       if(GGMomPDG == 221){
-        if(iMCggmom >= fNembMCeta && iMCggmom < fNpureMC) { //from eta event
+        if(iMCggmom >= fNembMCeta && iMCggmom < fNembMCpileup) { //from eta event
           fIsFrmEmbEta = kTRUE; //eta->pi0->gamma-> e
           fWeightEta = fEtaWeight->Eval(MCPartGGMom->Pt());
         }
@@ -2733,9 +2791,12 @@ void AliAnalysisTaskEHCorrel::GetPi0EtaWeightPbPb2018(THnSparse *SparseWeight)
 
   Double_t fvalue[4] = {-999,-999,-999,-999};
 
-  for(int imc=0; imc< fNTotMCpart; imc++)
+  //cout << "value of fNTotMCpart before loop (weight function): " << fNTotMCpart << endl;
+  //cout << "Entries in MCarray (weight function): " << fMCarray->GetEntries() << endl;
+  for(int imc=0; imc< fNembMCpileup; imc++)
   {
 
+    //cout << "Value iterated through MC array: " << imc << endl;
     AliAODMCParticle *AODMCtrack = (AliAODMCParticle*)fMCarray->At(imc);
 
     if(TMath::Abs(AODMCtrack->Eta()) > 0.8) continue;
@@ -2836,6 +2897,7 @@ Bool_t AliAnalysisTaskEHCorrel::GetNMCPartProduced()
 
     MCgen =  gh->GetName();
 
+    //cout << "Current generator name: " << MCgen << endl;
     //Order of the generators added- MB, pi0, eta, cele or bele
     if(igene==0) fNpureMC = gh->NProduced();  // generated by HIJING
 
@@ -2855,11 +2917,13 @@ Bool_t AliAnalysisTaskEHCorrel::GetNMCPartProducedPbPb2018()
   fNTotMCpart = 0;
   fNembMCpi0 = 0;
   fNembMCeta = 0;
+  fNembMCpileup = 0;
   fNpureMC = 0;
 
   TString MCgen;
   TString embpi0("pi");
   TString embeta("eta");
+  TString embpileup("Pile");
   TString mb("Hijing");
 
   if(!lh){
@@ -2874,15 +2938,16 @@ Bool_t AliAnalysisTaskEHCorrel::GetNMCPartProducedPbPb2018()
 
     MCgen =  gh->GetName();
 
-    //Order of the generators added- cele or bele, pi0, eta, MB
     if(MCgen.Contains(embpi0))fNembMCpi0 = fNTotMCpart;
     if(MCgen.Contains(embeta))fNembMCeta = fNTotMCpart;
+    if(MCgen.Contains(embpileup))fNembMCpileup = fNTotMCpart;
     if(MCgen.Contains(mb))    fNpureMC = fNTotMCpart;
 
     fNTotMCpart += gh->NProduced();
   }
   return kTRUE;
 }
+
 //___________________________________________
 void AliAnalysisTaskEHCorrel::Terminate(Option_t *)
 {

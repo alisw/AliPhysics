@@ -216,6 +216,10 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
     fHists->FillSameEventmTMultDist(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, 
 				   RelativeK); 
   }   
+  if (fillHists && fHists->GetDopTOnepTTwokStarPlotsmT()) {
+    fHists->FillSameEventpTOnepTTwokStar(iHC, RelativePairmT(PartOne, PartTwo), Part1Momentum.Pt(), Part2Momentum.Pt(),
+				   RelativeK); 
+  }
   if (fillHists && fHists->GetDoPtQA()) {
     fHists->FillPtQADist(iHC, RelativeK, Part1Momentum.Pt(),
                          Part2Momentum.Pt());
@@ -235,6 +239,9 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
       if (fHists->GetDomTBinning()) {
 	fHists->FillSameEventmTDistCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
       }
+      if (fHists->GetDomTMultPlots()) {
+	fHists->FillSameEventmTMultDistCommon(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, RelativeK);
+      }
     } else {
       fHists->FillSameEventDistNonCommon(iHC, RelativeK);
       if (fHists->GetDoMultBinning()) {
@@ -242,6 +249,9 @@ float AliFemtoDreamHigherPairMath::FillSameEvent(int iHC, int Mult, float cent,
       }
       if (fHists->GetDomTBinning()) {
 	fHists->FillSameEventmTDistNonCommon(iHC, RelativePairmT(PartOne, PartTwo), RelativeK);
+      }
+      if (fHists->GetDomTMultPlots()) {
+	fHists->FillSameEventmTMultDistNonCommon(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, RelativeK);
       }
     }
   }
@@ -337,6 +347,10 @@ float AliFemtoDreamHigherPairMath::FillMixedEvent(
     fHists->FillMixedEventmTMultDist(iHC, RelativePairmT(PartOne, PartTwo), Mult + 1, 
 				   RelativeK); 
   }   
+  if (fillHists && fHists->GetDopTOnepTTwokStarPlotsmT()) {
+    fHists->FillMixedEventpTOnepTTwokStar(iHC, RelativePairmT(PartOne, PartTwo), Part1Momentum.Pt(), Part2Momentum.Pt(),
+				   RelativeK); 
+  }
   if (fillHists && fHists->GetDoPtQA()) {
     fHists->FillPtMEOneQADist(iHC, Part1Momentum.Pt(), Mult + 1);
     fHists->FillPtMETwoQADist(iHC, Part2Momentum.Pt(), Mult + 1);

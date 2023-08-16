@@ -69,8 +69,13 @@ public:
   void     SetDetLevelJetsOn(Bool_t t)            { fStoreDetLevelJets = t; }
   void     SetDoSubJetStudy(Bool_t t)             { fDoSubJet = t; }
   void     SetDoFlow(Bool_t t)                    { fDoFlow = t; }
-  void     SetRejectTPCPileup(Bool_t val)         { fRejectTPCPileup = val;}
-
+  void     SetDoTime(Bool_t t)                    { fDoTime= t; }
+  void     SetRejectTPCPileup(Bool_t t)           { fRejectTPCPileup = t;}
+  void     SetSaveKtg(Bool_t t)                   { fSaveKtg = t;}
+  void     SetSaveNg(Bool_t t)                    { fSaveNg = t;}
+  void     SetSaveZg(Bool_t t)                    { fSaveZg = t;}
+  void     SetSaveLund(Bool_t t)                  { fSaveLund = t;}
+  void     SetSaveKinematicEfficiency(Bool_t t)   { fSaveKinematicEfficiency = t;}
 
 protected:
   Bool_t   RetrieveEventObjects();
@@ -81,16 +86,17 @@ protected:
   Float_t  Angularity(AliEmcalJet *jet, Int_t jetContNb);
   Float_t  GetJetAngularity(AliEmcalJet *jet, Int_t jetContNb);
   Double_t RelativePhi(Double_t mphi, Double_t vphi);
+
   void     IterativeParents(AliEmcalJet *fJet, AliJetContainer *fJetCont,  fastjet::PseudoJet *sub1, 
                             fastjet::PseudoJet *sub2,std::vector<fastjet::PseudoJet>* const1, std::vector<fastjet::PseudoJet>* const2);
   void     IterativeParentsPP(AliEmcalJet *fJet, AliJetContainer *fJetCont,  fastjet::PseudoJet *sub1,
                             fastjet::PseudoJet *sub2,std::vector<fastjet::PseudoJet>* const1, std::vector<fastjet::PseudoJet>* const2);
   void     IterativeParentsAreaBased(AliEmcalJet *fJet, AliJetContainer *fJetCont);
   void     IterativeParentsMCAverage(AliEmcalJet *fJet, Int_t km, Double_t &aver1,
-                            Double_t &aver2, Double_t &aver3, Double_t &aver4, fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2,
+                            Double_t &aver2, Double_t &aver3, Double_t &aver4, Double_t &aver5, fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2,
                             std::vector<fastjet::PseudoJet>* const1, std::vector<fastjet::PseudoJet>* const2);
   void     IterativeParentsMCAveragePP(AliEmcalJet *fJet, Int_t km, Double_t &aver1,
-                            Double_t &aver2, Double_t &aver3, Double_t &aver4, fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2, 
+                            Double_t &aver2, Double_t &aver3, Double_t &aver4, Double_t &aver5, fastjet::PseudoJet *sub1, fastjet::PseudoJet *sub2, 
                             std::vector<fastjet::PseudoJet>* const1, std::vector<fastjet::PseudoJet>* const2);
   void     CheckSubjetResolution(AliEmcalJet *fJet, AliJetContainer *fJetCont,
                             AliEmcalJet *fJetM, AliJetContainer *fJetContM);
@@ -99,52 +105,59 @@ protected:
   Bool_t   CheckClosePartner(AliEmcalJet* jet, PWG::JETFW::AliEmcalParticleJetConstituent & part1);
   Bool_t   CompareSubjets(fastjet::PseudoJet *subDet, fastjet::PseudoJet *subHyb, std::vector<fastjet::PseudoJet> *constDet, 
                             std::vector<fastjet::PseudoJet>* constHyb);
-  Int_t                         fContainer;            ///< jets to be analyzed 0 for Base, 1 for subtracted.
-  Float_t                       fMinFractionShared;    ///< only fill histos for jets if shared fraction
-                                                       // larger than X
-  JetShapeType                  fJetShapeType;         ///< jet type to be used
-  JetShapeSub                   fJetShapeSub;          ///< jet subtraction to be used
-  JetSelectionType              fJetSelection;         ///< Jet selection: inclusive/recoil jet
-  Float_t                       fShapesVar[21];        ///< jet shapes used for the tagging
-  Float_t                       fPtThreshold;          ///<
-  Float_t                       fRMatching;            ///<
 
-  Bool_t                        fCentSelectOn;         ///< switch on/off centrality selection
-  Float_t                       fCentMin;              ///< min centrality value
-  Float_t                       fCentMax;              ///< max centrality value
-  Bool_t                        fOneConstSelectOn;     ///< switch on/off one constituent selection
-  Bool_t                        fTrackCheckPlots;      ///< switch on qa plots
-  Bool_t                        fDoFillMCLund;         ///< to fill the matched mc plane
-  Bool_t                        fCheckResolution;      ///< check subjet energy resolution
-  Float_t                       fSubjetCutoff;         ///< angular cutoff for subjets at det/gen level
-  Float_t                       fMinPtConst;           ///< constituent pt cutoff
-  Float_t                       fHardCutoff;           ///< hard cutoff in the iterative declustering
-  Bool_t                        fDoTwoTrack;           ///< switch to consider 2 track effects
-  Bool_t                        fCutDoubleCounts;      ///< turn off to avoid true-hybrid cuts to suppress double counting
-  Bool_t                        fDoAreaIterative;      ///<  subtract the area in the declustering
-  Float_t                       fPowerAlgo;            ///< power of the generickt algorithm
-  Float_t                       fPhiCutValue;          ///< cuts from HBT
-  Float_t                       fEtaCutValue;          ///< cuts from HBT
-  Float_t                       fMagFieldPolarity;     ///< polarity, to calculate phimin
-  Int_t                         fDerivSubtrOrder;      ///<
-  Bool_t                        fStoreDetLevelJets;    ///< store the detector level jet quantities
-  Bool_t                        fDoSubJet;             ///< store the detector level jet quantities
-  Bool_t                        fDoFlow;               ///< store the event plane
-  AliAnalysisTaskJetQnVectors*  fQVectorReader;        ///< Reader for the Qn vector
-  Double_t                      fEPangleV0M;           ///< event-plane angle V0M
-  Bool_t                        fRejectTPCPileup;      ///< TPC pileup rejection
+  Int_t                         fContainer;                 ///< jets to be analyzed 0 for Base, 1 for subtracted.
+  Float_t                       fMinFractionShared;         ///< only fill histos for jets if shared fraction
+                                                            //   larger than X
+  JetShapeType                  fJetShapeType;              ///< jet type to be used
+  JetShapeSub                   fJetShapeSub;               ///< jet subtraction to be used
+  JetSelectionType              fJetSelection;              ///< Jet selection: inclusive/recoil jet
+  Float_t                       fShapesVar[26];             ///< jet shapes used for the tagging
+  Float_t                       fPtThreshold;               ///<
+  Float_t                       fRMatching;                 ///<
 
-  TH1F *fPtJet;                                        ///<
+  Bool_t                        fCentSelectOn;              ///< switch on/off centrality selection
+  Float_t                       fCentMin;                   ///< min centrality value
+  Float_t                       fCentMax;                   ///< max centrality value
+  Bool_t                        fOneConstSelectOn;          ///< switch on/off one constituent selection
+  Bool_t                        fTrackCheckPlots;           ///< switch on qa plots
+  Bool_t                        fDoFillMCLund;              ///< to fill the matched mc plane
+  Bool_t                        fCheckResolution;           ///< check subjet energy resolution
+  Float_t                       fSubjetCutoff;              ///< angular cutoff for subjets at det/gen level
+  Float_t                       fMinPtConst;                ///< constituent pt cutoff
+  Float_t                       fHardCutoff;                ///< hard cutoff in the iterative declustering
+  Bool_t                        fDoTwoTrack;                ///< switch to consider 2 track effects
+  Bool_t                        fCutDoubleCounts;           ///< turn off to avoid true-hybrid cuts to suppress double counting
+  Bool_t                        fDoAreaIterative;           ///< subtract the area in the declustering
+  Float_t                       fPowerAlgo;                 ///< power of the generickt algorithm
+  Float_t                       fPhiCutValue;               ///< cuts from HBT
+  Float_t                       fEtaCutValue;               ///< cuts from HBT
+  Float_t                       fMagFieldPolarity;          ///< polarity, to calculate phimin
+  Int_t                         fDerivSubtrOrder;           ///<
+  Bool_t                        fStoreDetLevelJets;         ///< store the detector level jet quantities
+  Bool_t                        fDoSubJet;                  ///< store the detector level jet quantities
+  Bool_t                        fDoFlow;                    ///< store the event plane
+  Bool_t                        fDoTime;                    ///< store the formation time
+  AliAnalysisTaskJetQnVectors*  fQVectorReader;             ///< Reader for the Qn vector
+  Double_t                      fEPangleV0M;                ///< event-plane angle V0M
+  Bool_t                        fRejectTPCPileup;           ///< TPC pileup rejection
+  Bool_t                        fSaveKtg;                   ///< flag to save ktg
+  Bool_t                        fSaveNg;                    ///< flag to save ng
+  Bool_t                        fSaveZg;                    ///< flag to save zg
+  Bool_t                        fSaveLund;                  ///< flag to save Lund hists
+  Bool_t                        fSaveKinematicEfficiency;   ///< flag to save kinematic efficiency hists
 
-  THnSparse *fHLundIterative;                          ///< iterative declustering
-  THnSparse *fHLundIterativeMC;                        ///< iterative declustering
-  THnSparse *fHLundIterativeMCDet;                     ///< iterative declustering
-  THnSparse
-      *fHCheckResolutionSubjets;                       ///< to evaluate energy resolution of subjets
-                                                       ///< as function fo apperture angle
+  TH1F *                        fPtJet;                     ///<
+  THnSparse *                   fKinematicEfficNumerator;   ///< numerator hist for kinematic efficiency
+  TH3F *                        fKinematicEfficDenominator; ///< denominator hist for kinematic efficiency
+  THnSparse *                   fHLundIterative;            ///< iterative declustering
+  THnSparse *                   fHLundIterativeMC;          ///< iterative declustering
+  THnSparse *                   fHLundIterativeMCDet;       ///< iterative declustering
+  THnSparse *                   fHCheckResolutionSubjets;   ///< to evaluate energy resolution of subjets
+                                                            ///< as function fo apperture angle
 
-  TTree *fTreeSubstructure;                            ///< Tree with tagging variables subtracted MC or true
-                                                       // MC or raw
+  TTree *                       fTreeSubstructure;          ///< Tree with tagging variables subtracted MC or true
+                                                            // MC or raw
 
 private:
   AliAnalysisTaskNewJetSubstructure(
@@ -152,6 +165,6 @@ private:
   AliAnalysisTaskNewJetSubstructure &
   operator=(const AliAnalysisTaskNewJetSubstructure &); // not implemented
 
-  ClassDef(AliAnalysisTaskNewJetSubstructure, 13)
+  ClassDef(AliAnalysisTaskNewJetSubstructure, 20)
 };
 #endif

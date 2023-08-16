@@ -45,7 +45,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		int CheckOrigin(AliMCEvent* MCEvt, AliAODMCParticle *MCPart); //<0:no_quark, 4:c, 5:b
 		int GetCascLabel(AliMCEvent* MCEvt, AliAODcascade* Casc, bool getLabelXic0); //true for Xic0, false for Xi
 
-		bool FilterTrack(AliAODTrack* Trk, const AliVVertex* Vtx);
+		bool FilterTrack(AliAODTrack* Trk, const AliVVertex* Vtx, float cutPt);
 		bool FilterTrackElectron(AliAODTrack* Trk, AliPIDResponse* PID);
 		bool FilterCascade(AliAODcascade* Casc, const AliVVertex* Vtx, AliPIDResponse* PID);
 
@@ -126,6 +126,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Int_t   cut_minNClustersITS;      //= 2;
 		Int_t   cut_TPCsignalN;           //= 50; //fSetProdTrackTPCNclsPID in old code
 		Float_t cut_maxChi2PerClusterITS; //= 36.;
+		Float_t cut_maxChi2PerClusterTPC; //= 4; //Updated July 6, 2023
 		Float_t cut_maxDCAToVertexXY;     //= 1.0;
 		Float_t cut_maxDCAToVertexZ;      //= 2.0;
 		Float_t cut_trkEta;               //= 0.8; //For daughter particles
@@ -160,6 +161,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		UInt_t   fEvtTrig;
 		Int_t    fEvtRunNo;
 		Float_t  fEvtMult;
+		Float_t  fEvtNSPDtl; //NSPDTracklets, July 14 (2023)
 		Double_t fEvtVtxZ;
 		Bool_t   fEvtGoodMB;
 		Bool_t   fEvtGoodHMV0;
@@ -168,7 +170,6 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		//Tree variables for MC truth
 		Int_t     fMCNum;
 		Int_t*    fMCLabel; //[fMCNum]
-		Int_t*    fMCNDau;  //[fMCNum]
 		Int_t*    fMCOrig;  //[fMCNum]
 		Int_t*    fMCPDG;   //[fMCNum]
 		Double_t* fMCPt;    //[fMCNum]
@@ -177,6 +178,8 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Double_t* fMCEleY;  //[fMCNum]
 		Double_t* fMCXiPt;  //[fMCNum]
 		Double_t* fMCXiY;   //[fMCNum]
+		Int_t*    fMCXiMomLabel; //[fMCNum]
+		Int_t*    fMCXiMomPDG;   //[fMCNum]
 
 		//Tree variables for tracks
 		Int_t     fEleNum;
@@ -186,6 +189,8 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Float_t*  fEleMinMassUS; //[fEleNum]
 		Float_t*  fEleNSigmaTOF; //[fEleNum]
 		Float_t*  fEleNSigmaTPC; //[fEleNum]
+		Double_t* fEleDCAd;      //[fEleNum]
+		Double_t* fEleDCAz;      //[fEleNum]
 		Double_t* fEleEta;       //[fEleNum]
 		Double_t* fElePhi;       //[fEleNum]
 		Double_t* fElePt;        //[fEleNum]
@@ -222,6 +227,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Double_t* fCascMassLmbAnti;   //[fCascNum]
 		Double_t* fCascMassOmega;     //[fCascNum]
 		Double_t* fCascMassXi;        //[fCascNum]
+		Double_t* fCascMassXi1530;    //[fCascNum]
 		Double_t* fCascPtXi;          //[fCascNum]
 		Double_t* fCascPxXi;          //[fCascNum]
 		Double_t* fCascPyXi;          //[fCascNum]
@@ -241,7 +247,7 @@ class AliAnalysisTaskSEXic0SL : public AliAnalysisTaskSE
 		Int_t* fCascMomLabel; //[fCascNum]
 		Int_t* fCascMomPDG;   //[fCascNum]
 
-		ClassDef(AliAnalysisTaskSEXic0SL, 1);
+		ClassDef(AliAnalysisTaskSEXic0SL, 4);
 };
 
 #endif //AliAnalysisTaskSEXic0SL_H

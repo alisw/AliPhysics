@@ -55,7 +55,27 @@ ClassImp(AliPHOSEmbedggHBT)
 {
   // Constructor
 }
-
+//________________________________________________________________________
+AliPHOSEmbedggHBT::~AliPHOSEmbedggHBT()
+{
+  // Note that histograms are stored in fOutputContainer and should not be deleted explicitely
+  if (fMCEvents) {
+    delete fMCEvents;
+    fMCEvents = nullptr;
+  }
+  if (fMCEvents) {
+    delete fMCEvents;
+    fMCEvents = nullptr;
+  }
+  if (fSignalEvent) {
+    delete fSignalEvent;
+    fSignalEvent = nullptr;
+  }
+  if (fSignalEvents) {
+    delete fSignalEvents;
+    fSignalEvents = nullptr;
+  }
+}
 //________________________________________________________________________
 void AliPHOSEmbedggHBT::UserCreateOutputObjects()
 {
@@ -128,11 +148,17 @@ void AliPHOSEmbedggHBT::UserCreateOutputObjects()
     fhReQinvSignal[iCut] =
       new TH2F(Form("hReQinv_signal_%s", fcut[iCut]), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
     fOutputContainer->Add(fhReQinvSignal[iCut]);
+    fhReQinvSignalConv[iCut] =
+      new TH2F(Form("hReQinv_signalConv_%s", fcut[iCut]), "Qinv distribution, conv", 100, 0., 0.25, 40, 0., 2.);
+    fOutputContainer->Add(fhReQinvSignalConv[iCut]);
     fhMiQinvSignal[iCut] =
       new TH2F(Form("hMiQinv_signal_%s", fcut[iCut]), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
     fOutputContainer->Add(fhMiQinvSignal[iCut]);
     fhReqSignal[iCut] = new TH2F(Form("hReq_signal_%s", fcut[iCut]), "q distribution", 100, 0., 0.25, 40, 0., 2.);
     fOutputContainer->Add(fhReqSignal[iCut]);
+    fhReqSignalConv[iCut] =
+      new TH2F(Form("hReq_signalConv_%s", fcut[iCut]), "q distribution", 100, 0., 0.25, 40, 0., 2.);
+    fOutputContainer->Add(fhReqSignalConv[iCut]);
     fhMiqSignal[iCut] = new TH2F(Form("hMiq_signal_%s", fcut[iCut]), "q distribution", 100, 0., 0.25, 40, 0., 2.);
     fOutputContainer->Add(fhMiqSignal[iCut]);
   }
@@ -143,11 +169,17 @@ void AliPHOSEmbedggHBT::UserCreateOutputObjects()
       fhReQinv[cen][iCut] =
         new TH2F(Form("hReQinv_%s_cen%d", fcut[iCut], cen), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
       fOutputContainer->Add(fhReQinv[cen][iCut]);
+      fhReQinvConv[cen][iCut] =
+        new TH2F(Form("hReQinvConv_%s_cen%d", fcut[iCut], cen), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
+      fOutputContainer->Add(fhReQinvConv[cen][iCut]);
       fhMiQinv[cen][iCut] =
         new TH2F(Form("hMiQinv_%s_cen%d", fcut[iCut], cen), "Qinv distribution", 100, 0., 0.25, 40, 0., 2.);
       fOutputContainer->Add(fhMiQinv[cen][iCut]);
       fhReq[cen][iCut] = new TH2F(Form("hReq_%s_cen%d", fcut[iCut], cen), "q distribution", 100, 0., 0.25, 40, 0., 2.);
       fOutputContainer->Add(fhReq[cen][iCut]);
+      fhReqConv[cen][iCut] =
+        new TH2F(Form("hReqConv_%s_cen%d", fcut[iCut], cen), "q distribution", 100, 0., 0.25, 40, 0., 2.);
+      fOutputContainer->Add(fhReqConv[cen][iCut]);
       fhMiq[cen][iCut] = new TH2F(Form("hMiq_%s_cen%d", fcut[iCut], cen), "q distribution", 100, 0., 0.25, 40, 0., 2.);
       fOutputContainer->Add(fhMiq[cen][iCut]);
     }
@@ -161,6 +193,7 @@ void AliPHOSEmbedggHBT::UserCreateOutputObjects()
 //________________________________________________________________________
 void AliPHOSEmbedggHBT::UserExec(Option_t*)
 {
+  printf(" %s: Start event %d\n", GetName(), fEventCounter);
   // Main loop, called for each event
   FillHistogram("hTotSelEvents", 0.5);
 
@@ -197,7 +230,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   FillHistogram("hTotSelEvents", 2.5);
 
   // Vtx class z-bin
-  Int_t zvtx = (Int_t)((vtx5[2] + 10.) / 2.);
+  Int_t zvtx = (Int_t)((vtx5[2] + 10.) / 1.);
   if (zvtx < 0)
     zvtx = 0;
   if (zvtx >= kVtxBins)
@@ -213,7 +246,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   }
   FillHistogram("hCentrality", fCentrality);
 
-  if (fCentrality <= 0. || fCentrality > 80.) {
+  if (fCentrality < 0. || fCentrality > 80.) {
     PostData(1, fOutputContainer);
     return;
   }
@@ -286,6 +319,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   const double dyCPV = -2.;           // V3: 5. V2: -2;  V1:18
   const double dzCPV = 4.9;           // V3: 4.6
   const double slopeZCPV = -0.034745; // tilt of module
+
   for (Int_t j = 0; j < multClust; j++) {
     AliAODCaloCluster* cluCPV = static_cast<AliAODCaloCluster*>(embedded->At(j));
     if (cluCPV->GetType() != AliVCluster::kPHOSCharged)
@@ -306,10 +340,10 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     p->SetDistToBad(itr);
   }
 
-  TVector3 vertex(vtx5);
-
   Int_t inPHOS = 0, inSignal = 0;
   TVector3 localPos;
+
+  double vtx0[3] = { 0., 0., 0. };
 
   TClonesArray* signal = static_cast<TClonesArray*>(fEvent->FindListObject("SignalCaloClusters"));
   int multSignal = signal->GetEntriesFast();
@@ -326,6 +360,8 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     Int_t relId[4];
     fPHOSGeo->GlobalPos2RelId(global, relId);
     Int_t mod = relId[0];
+    Int_t cellX = relId[2];
+    Int_t cellZ = relId[3];
     TVector3 local;
     fPHOSGeo->Global2Local(local, global, mod);
 
@@ -339,7 +375,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
       continue;
 
     TLorentzVector pv1;
-    clu->GetMomentum(pv1, vtx5);
+    clu->GetMomentum(pv1, vtx0);
 
     if (inSignal >= fSignalEvent->GetSize()) {
       fSignalEvent->Expand(inSignal + 20);
@@ -363,6 +399,8 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     ph->SetEMCz(local.Z());
     ph->SetLambdas(clu->GetM20(), clu->GetM02());
     ph->SetUnfolded(clu->GetNExMax() < 2); // Remember, if it is unfolded
+    ph->SetDistToBad(cellX);
+    ph->SetPrimary(clu->GetLabelAt(0));
   }
 
   for (Int_t i = 0; i < multClust; i++) {
@@ -387,7 +425,7 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     fPHOSGeo->Global2Local(local, global, mod);
 
     FillHistogram(Form("hTofM%d", mod), clu->E(), clu->GetTOF());
-    if ((clu->GetTOF() > 100.e-9) || (clu->GetTOF() < -100.e-7))
+    if ((clu->GetTOF() > 150.e-9) || (clu->GetTOF() < -150.e-7))
       continue;
 
     if (clu->GetNCells() < 2)
@@ -426,6 +464,8 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
     ph->SetEMCz(local.Z());
     ph->SetLambdas(clu->GetM20(), clu->GetM02());
     ph->SetUnfolded(clu->GetNExMax() < 2); // Remember, if it is unfolded
+    ph->SetDistToBad(cellX);
+    ph->SetPrimary(clu->GetLabelAt(0));
   }
 
   // Real
@@ -503,8 +543,6 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
 
     for (Int_t i2 = i1 + 1; i2 < inSignal; i2++) {
       AliCaloPhoton* ph2 = (AliCaloPhoton*)fSignalEvent->At(i2);
-      if (ph1->Module() != ph2->Module())
-        continue;
 
       TLorentzVector sum = *ph1 + *ph2;
       TVector3 gammaBeta(sum.BoostVector());
@@ -516,39 +554,44 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
       double qinv = sum.M();
       double kT = 0.5 * sum.Pt();
 
+      bool commonParent = (CommonParent(ph1, ph2) != -1);
       for (Int_t iCut = 0; iCut < kCuts; iCut++) {
         if (!PairCut(ph1, ph2, iCut)) {
           continue;
         }
         fhReQinvSignal[iCut]->Fill(qinv, kT);
         fhReqSignal[iCut]->Fill(q, kT);
+        if (commonParent) {
+          fhReQinvSignalConv[iCut]->Fill(qinv, kT);
+          fhReqSignalConv[iCut]->Fill(q, kT);
+        }
       }
     }
   }
   for (Int_t i1 = 0; i1 < inPHOS - 1; i1++) {
     AliCaloPhoton* ph1 = (AliCaloPhoton*)fPHOSEvent->At(i1);
-
     for (Int_t i2 = i1 + 1; i2 < inPHOS; i2++) {
       AliCaloPhoton* ph2 = (AliCaloPhoton*)fPHOSEvent->At(i2);
-      if (ph1->Module() != ph2->Module())
-        continue;
-
-      TLorentzVector sum = *ph1 + *ph2;
+      TLorentzVector sum(*ph1 + *ph2);
+      double qinv = sum.M();
+      double kT = 0.5 * sum.Pt();
       TVector3 gammaBeta(sum.BoostVector());
       gammaBeta.SetXYZ(0, 0, gammaBeta.Z());
       TLorentzVector gammaCMq(*ph1 - *ph2);
       gammaCMq.Boost(-gammaBeta);
       double q = gammaCMq.Vect().Mag();
 
-      double qinv = sum.M();
-      double kT = 0.5 * sum.Pt();
-
+      bool commonParent = (CommonParent(ph1, ph2) != -1);
       for (Int_t iCut = 0; iCut < kCuts; iCut++) {
         if (!PairCut(ph1, ph2, iCut)) {
           continue;
         }
         fhReQinv[fCenBin][iCut]->Fill(qinv, kT);
         fhReq[fCenBin][iCut]->Fill(q, kT);
+        if (commonParent) {
+          fhReQinvConv[fCenBin][iCut]->Fill(qinv, kT);
+          fhReqConv[fCenBin][iCut]->Fill(q, kT);
+        }
       }
     }
   }
@@ -629,9 +672,6 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
       TClonesArray* mixSignal = static_cast<TClonesArray*>(fSignalEvents->At(ev));
       for (Int_t i2 = 0; i2 < mixSignal->GetEntriesFast(); i2++) {
         AliCaloPhoton* ph2 = (AliCaloPhoton*)mixSignal->At(i2);
-        if (ph1->Module() != ph2->Module()) {
-          continue;
-        }
 
         TLorentzVector sum = *ph1 + *ph2;
         TVector3 gammaBeta(sum.BoostVector());
@@ -656,24 +696,18 @@ void AliPHOSEmbedggHBT::UserExec(Option_t*)
   // Embedded
   for (Int_t i1 = 0; i1 < inPHOS; i1++) {
     AliCaloPhoton* ph1 = (AliCaloPhoton*)fPHOSEvent->At(i1);
-
     for (Int_t ev = 0; ev < prevPHOS->GetSize(); ev++) {
       TClonesArray* mixPHOS = static_cast<TClonesArray*>(prevPHOS->At(ev));
       for (Int_t i2 = 0; i2 < mixPHOS->GetEntriesFast(); i2++) {
         AliCaloPhoton* ph2 = (AliCaloPhoton*)mixPHOS->At(i2);
-        if (ph1->Module() != ph2->Module()) {
-          continue;
-        }
-
-        TLorentzVector sum = *ph1 + *ph2;
+        TLorentzVector sum(*ph1 + *ph2);
+        double qinv = sum.M();
+        double kT = 0.5 * sum.Pt();
         TVector3 gammaBeta(sum.BoostVector());
         gammaBeta.SetXYZ(0, 0, gammaBeta.Z());
         TLorentzVector gammaCMq(*ph1 - *ph2);
         gammaCMq.Boost(-gammaBeta);
         double q = gammaCMq.Vect().Mag();
-
-        double qinv = sum.M();
-        double kT = 0.5 * sum.Pt();
 
         for (Int_t iCut = 0; iCut < kCuts; iCut++) {
           if (!PairCut(ph1, ph2, iCut)) {
@@ -904,4 +938,27 @@ bool AliPHOSEmbedggHBT::IsGoodChannel(Int_t cellX, Int_t cellZ)
       return kFALSE;
 
   return kTRUE;
+}
+//_________________________________________________________________________
+int AliPHOSEmbedggHBT::CommonParent(const AliCaloPhoton* p1, const AliCaloPhoton* p2) const
+{
+  // Looks through parents and finds if there was commont pi0 among ancestors
+  TClonesArray* fStack = static_cast<TClonesArray*>(fEvent->FindListObject(AliAODMCParticle::StdBranchName()));
+
+  if (!fStack) {
+    return -1; // can not say anything
+  }
+  Int_t prim1 = p1->GetPrimary();
+  while (prim1 != -1) {
+    Int_t prim2 = p2->GetPrimary();
+
+    while (prim2 != -1) {
+      if (prim1 == prim2) {
+        return prim1;
+      }
+      prim2 = ((AliAODMCParticle*)fStack->At(prim2))->GetMother();
+    }
+    prim1 = ((AliAODMCParticle*)fStack->At(prim1))->GetMother();
+  }
+  return -1;
 }

@@ -115,12 +115,13 @@ class AliIsolationCut : public TObject {
   Float_t    CalculateExcessAreaFraction(Float_t excess, Float_t gap = 0) const ;
 
   void       CalculateExcessAreaFractionForChargedAndNeutral( Float_t etaC, Float_t phiC, Int_t det,
-                                                              Float_t & excessTrkEta, Float_t & excessAreaTrkEta, 
-                                                              Float_t & excessClsEta, Float_t & excessAreaClsEta, 
+                                                              Float_t & excessTrkEta, Float_t & excessAreaTrkEta,
+                                                              Float_t & excessClsEta, Float_t & excessAreaClsEta,
                                                               Float_t & excessClsPhi, Float_t & excessAreaClsPhi) const ;
   
   void       CalculateUEBandClusterNormalization
-  (Float_t   etaC,                  Float_t   phiC,
+  (Int_t     calorimeter,
+   Float_t   etaC,                  Float_t   phiC,
    Float_t   excessEta,             Float_t   excessPhi,
    Float_t   excessAreaEta,         Float_t   excessAreaPhi,
    Float_t   etaUEptsumCluster,     Float_t   phiUEptsumCluster,
@@ -172,11 +173,19 @@ class AliIsolationCut : public TObject {
 
   Float_t    GetTPCEtaSize()          const { return fTPCEtaSize     ; }
   Float_t    GetTPCPhiSize()          const { return fTPCPhiSize     ; }
+  Float_t    GetDMCEtaGap()           const { return fDMCEtaGap ; }
+  Float_t    GetDMCPhiSize()          const { return fDMCPhiMax-fDMCPhiMin ; }
+  Float_t    GetDMCPhiMin ()          const { return fDMCPhiMin ; }
+  Float_t    GetDMCPhiMax ()          const { return fDMCPhiMax ; }
   Float_t    GetEMCEtaSize()          const { return fEMCEtaSize     ; }
   Float_t    GetEMCPhiSize()          const { return fEMCPhiMax-fEMCPhiMin ; }
   Float_t    GetEMCPhiMin ()          const { return fEMCPhiMin ; }
   Float_t    GetEMCPhiMax ()          const { return fEMCPhiMax ; }
   
+  void       SetDMCEtaGap(Float_t gap)                         { fDMCEtaGap = gap ; }
+  void       SetDMCPhiMin(Float_t min)                         { fDMCPhiMin = min ; }
+  void       SetDMCPhiMax(Float_t max)                         { fDMCPhiMax = max ; }
+
   void       SetConeSize(Float_t r)                            { fConeSize          = r    ; }
   void       SetConeSizeBandGap(Float_t gap)                   { fConeSizeBandGap   = gap  ; }
   void       SetPtThreshold(Float_t pt)                        { fPtThreshold       = pt   ; }
@@ -290,6 +299,9 @@ class AliIsolationCut : public TObject {
 
   TVector3   fTrackVector;                             //!<! Track moment, temporal object.
   
+  Float_t    fDMCEtaGap;                               ///< Eta gap for DCal
+  Float_t    fDMCPhiMin;                               ///< Minimim Phi limit of DCal
+  Float_t    fDMCPhiMax;                               ///< Maximum Phi limit of DCal
   Float_t    fEMCEtaSize;                              ///< Eta size of Calo
   Float_t    fEMCPhiMin;                               ///< Minimim Phi limit of Calo
   Float_t    fEMCPhiMax;                               ///< Maximum Phi limit of Calo
@@ -311,6 +323,9 @@ class AliIsolationCut : public TObject {
 
   TH2F *   fhConeSumPt ;                               //!<! Cluster and tracks Sum Pt in the cone.
   TH2F *   fhConeSumPtCluster ;                        //!<! Clusters Sum Pt in the cone.
+  TH2F *   fhConeSumPtClusterMatched ;                 //!<! Matched Clusters Sum Pt in the cone.
+  TH2F *   fhConeSumPtClusterMatchedFraction ;         //!<! Matched Clusters Sum Pt  Fractionin the cone.
+  TH3F *   fhConeSumPtClusterMatchedFraction3D ;       //!<! Matched Clusters Sum Pt  Fractionin the cone.
   TH2F *   fhConeSumPtTrack ;                          //!<! Tracks Sum Pt in the cone.
   TH2F *   fhConeSumPtClustervsTrack ;                 //!<! Cluster vs tracks Sum Pt in the cone.
   TH2F *   fhConeSumPtClusterTrackFrac ;               //!<! Cluster / tracks Sum Pt in the cone.
@@ -579,7 +594,7 @@ class AliIsolationCut : public TObject {
   AliIsolationCut & operator = (const AliIsolationCut & g) ; 
 
   /// \cond CLASSIMP
-  ClassDef(AliIsolationCut,29) ;
+  ClassDef(AliIsolationCut,30) ;
   /// \endcond
 
 } ;

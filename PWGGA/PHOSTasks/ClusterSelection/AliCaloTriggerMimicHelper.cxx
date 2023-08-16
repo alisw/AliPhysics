@@ -144,7 +144,7 @@ void AliCaloTriggerMimicHelper::Terminate(Option_t *){
 void AliCaloTriggerMimicHelper::UserCreateOutputObjects(){
     //SetDebugOutput(6);
     if (fDoDebugOutput>=3){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserCreateOutputObjects Line: "<<__LINE__<<endl;}
-    fNMaxPHOSModules=4;
+    fNMaxPHOSModules=5;
     maxCellsModule = maxColumns*maxRows; //56*64=3584
     nMaxCellsPHOS = (fNMaxPHOSModules*maxCellsModule); //56*64=3584
     startDDLNumber = 6;
@@ -379,6 +379,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
     if(!fForceRun)
         fRunNumber=fInputEvent->GetRunNumber() ;
     AliInputEventHandler *fInputHandler=(AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+
     Bool_t isL0TriggerFlag;
     Bool_t isINT7TriggerFlag;
     if (fIsMC){
@@ -409,6 +410,7 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
             if (fdo_fHist_Event_Accepted){fHist_Event_Accepted->Fill(5);} //No INT7
             return;
         }
+    
         fEventFlagPassed=kTRUE;
         Int_t  relid[4];
         Int_t maxId=-1;
@@ -517,13 +519,13 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     CurrentTRU=WhichTRU(ix,iz);
                     if ((fdo_TRU_Channels)||(fdo_TRU_ChannelsXZ)){
                         CurrentTRUChannel=WhichTRUChannel(ix,iz, CurrentTRUChannelX, CurrentTRUChannelZ);
-                        if (fdo_TRU_Channels){fHist_TRU_Channels[mod-1]->Fill(CurrentTRUChannel);}
-                        if (fdo_TRU_ChannelsXZ){fHist_TRU_ChannelsXZ[mod-1]->Fill(CurrentTRUChannelX, CurrentTRUChannelZ);}
+                        if (fdo_TRU_Channels){fHist_TRU_Channels[mod]->Fill(CurrentTRUChannel);}
+                        if (fdo_TRU_ChannelsXZ){fHist_TRU_ChannelsXZ[mod]->Fill(CurrentTRUChannelX, CurrentTRUChannelZ);}
                     }
-                    if (fdo_TRU_Numbers){fHist_TRU_Numbers[mod-1]->Fill(CurrentTRU);}
+                    if (fdo_TRU_Numbers){fHist_TRU_Numbers[mod]->Fill(CurrentTRU);}
                     if (fdo_ClusEVsTiming_TRU){
                         if ((CurrentTRU>=startTRU_Number)&&(CurrentTRU<=endTRU_Number)&&(CurrentTRU!=-1)){
-                            fHist_ClusEVsTiming_TRU[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());
+                            fHist_ClusEVsTiming_TRU[mod][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());
                         }
                     }
                 }
@@ -556,7 +558,6 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     }
                 }
                 if (fCurrentClusterTriggeredTrigUtils>0){
-                    if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     fCurrentClusterTriggered=fCurrentClusterTriggeredTrigUtils;
                     fMapClusterIDToHaveTriggered[CurrentClusterID]=fCurrentClusterTriggered;
                     CurrentDDL=WhichDDL(mod,ix);
@@ -574,34 +575,30 @@ void AliCaloTriggerMimicHelper::UserExec(Option_t *){
                     }
                     if (fdo_fHist_GammaClusE){fHist_GammaClusE_Trig->Fill(clus->E());}
                     if (fdo_TriggeredClusters_ColumnVsRow_overThresh){
-                        if (clus->E()>=fEnergyThreshold_ColumnVsRow){fHist_TriggeredClusters_ColumnVsRow_overThresh[mod-1]->Fill(ix, iz, 1.);}
+                        if (clus->E()>=fEnergyThreshold_ColumnVsRow){fHist_TriggeredClusters_ColumnVsRow_overThresh[mod]->Fill(ix, iz, 1.);}
                     }
                     if (fdo_TriggeredClusters_ColumnVsRow_underThresh){
-                        if (clus->E()<fEnergyThreshold_ColumnVsRow){fHist_TriggeredClusters_ColumnVsRow_underThresh[mod-1]->Fill(ix, iz, 1.);}
+                        if (clus->E()<fEnergyThreshold_ColumnVsRow){fHist_TriggeredClusters_ColumnVsRow_underThresh[mod]->Fill(ix, iz, 1.);}
                     }
                     if (fdo_ClusEVsTiming_TRU_Trig){
                         if ((CurrentTRU>=startTRU_Number)&&(CurrentTRU<=endTRU_Number)&&(CurrentTRU!=-1)){
-                            fHist_ClusEVsTiming_TRU_Trig[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());
+                            fHist_ClusEVsTiming_TRU_Trig[mod][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());
                         }
                     }
                 } else {
-                    if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     if (fdo_fHist_GammaClusE){fHist_GammaClusE_notTrig->Fill(clus->E());}
                     if (fdo_ClusEVsTiming_TRU_notTrig){
                         if ((CurrentTRU>=startTRU_Number)&&(CurrentTRU<=endTRU_Number)&&(CurrentTRU!=-1)){
-                            fHist_ClusEVsTiming_TRU_notTrig[mod-1][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());
+                            fHist_ClusEVsTiming_TRU_notTrig[mod][CurrentTRU-startTRU_Number]->Fill(clus->E(), clus->GetTOF());
                         }
                     }
                 }
-                if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                 if (fCurrentClusterTriggeredTrigUtils){
                     if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(5);} //Triggered clusters
                 } else {
-                    if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                     if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(6);} //Not triggered clusters
                 }
             } else {
-                if (fDoDebugOutput>=6){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<endl;}
                 if (fdo_fHist_Cluster_Accepted){fHist_Cluster_Accepted->Fill(3);} //Cluster not good
                 if ((fDoDebugOutput>=3)&&(clus->E()>=minEnergy_Debug)){cout<<"Debug Output; AliCaloTriggerMimicHelper.C, UserExec, Line: "<<__LINE__<<"; !isClusterGood"<<endl;}
             }

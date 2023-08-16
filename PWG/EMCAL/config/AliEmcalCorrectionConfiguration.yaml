@@ -73,7 +73,7 @@ CellEnergy:                                         # Cell Energy correction com
     customRecalibFilePath: ""                       # Full path including .root file for custom recalibration object
     load1DRecalibFactors: false                     # Flag to load a 1D energy recalibration histogram
     enableAdditionalScale: false                    # Set an additional energy scale shift on cell level.
-    enableAdditionalScaleEtaDep: false              # Set an additional energy scale shift on cell with an eta dependence (behind trd support and not behind TRD support). HIGHLY EXPERIMENTAL and should not be used for standard analyses!
+    additionalScaleMode: 1                          # Set the mode for the additional scale: 1 = default (Scales for Full, 2/3 and 1/3 SM), 2 = diff. scales for regions behind TRD support, 3 = Run1 scales behind SM with TRD in front and without, 4 = Same as 3 but additionally values for with and without TRD support structures
     additionalScaleValuesSM: [1.0, 1.0, 1.0]        # Set values for additional scale on cell level for Full SM, 2/3 SM, and 1/3 SM
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
@@ -347,6 +347,7 @@ CellTrackMatcherAndMIPSubtraction:                  # Cell energy shift correcti
     DoPropagation: false                            # Whether track propagation should be performed. In case of AODs its not recommended to enable it
     MatchOnlyPrimaries: false                       # Whether only primary tracks (r < MaxDistToVtxPrimcm) should be matched. Needed as clusters from conversion electrons should be track matched
     MaxDistToVtxPrim: 5                             # Maximum DCA in XY for which a track is considered primary
+    SubtractMultiple: false                         # Subtract rest MIP energy from next cell if first cell has less energy than the MIP energy
     cellsNames:                                     # Names of the cells input objects which should be attached to the correction
         - defaultCells                              # This object is defined above in the cells section of the input objects
     trackContainersNames:                           # Names of the track input objects which should be attached to the correection

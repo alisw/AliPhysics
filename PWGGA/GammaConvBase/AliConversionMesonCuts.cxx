@@ -2035,6 +2035,11 @@ Bool_t AliConversionMesonCuts::SetMesonKind(Int_t mesonKind){
     fMesonKind = 0;
     fInLeadTrackDir = 4;
     break;
+  case 14: // e meson has to be inside of jet, decay particles also have to be inside of jet
+    fMesonKind = 0;
+    fDoJetAnalysis = kTRUE;
+    fDoOutOfJet = 5;
+    break;
   default:
     cout<<"Warning: Meson kind not defined"<<mesonKind<<endl;
     return kFALSE;
@@ -3393,6 +3398,10 @@ Bool_t AliConversionMesonCuts::SetRapidityMesonCut(Int_t RapidityMesonCut){
   case 15:  // f
     fRapidityCutMesonMax   = 0.0;
     fRapidityCutMesonMin   = -1.0;
+    break;
+  case 16:  // g
+    fRapidityCutMesonMax   = 0.13;
+    fRapidityCutMesonMin   = -0.13;
     break;
   default:
     cout<<"Warning: RapidityMesonCut not defined "<<RapidityMesonCut<<endl;
@@ -5043,7 +5052,7 @@ Bool_t AliConversionMesonCuts::IsParticleInJet(std::vector<Double_t> vectorJetEt
     }
     Double_t RJetPi0Cand_tmp = TMath::Sqrt(DeltaEta*DeltaEta+DeltaPhi*DeltaPhi);
     if(JetRadius > 0 ){
-      if(fDoOutOfJet == 0){ // in jet
+      if(fDoOutOfJet == 0 || fDoOutOfJet == 5){ // in jet
         if(RJetPi0Cand_tmp < JetRadius){
           // if the particle is in multiple Jet cones, take the nearest Jet
           if(RJetPi0Cand_tmp < RJetPi0Cand) RJetPi0Cand = RJetPi0Cand_tmp;

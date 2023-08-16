@@ -22,6 +22,7 @@ struct V0filler_Mult{
     unsigned char Mult;
     Double32_t Pt;
     Double32_t InvMass;
+    Double32_t CompMass;
     Double32_t DcaV0Daught;     //[0,2.54,8]
     Double32_t DcaPosToPV;      //[0,2.54,8]
     Double32_t DcaNegToPV;      //[0,2.54,8]
@@ -34,6 +35,7 @@ struct V0filler_Mult{
     int    LeastCRaws;          //[0,254,8]
     bool   TOFmatch;
     bool   ITSmatch;
+    bool   ITSTOFtwo;
     bool   IsNewEvt;
     //MC-related
     int    nGen;                   //[0,254,8]
@@ -47,7 +49,8 @@ struct Cascfiller_Mult{
     unsigned char Mult;
     Double32_t Pt;
     Double32_t InvMass;
-    Double32_t CascCosPA;          //[0.95,1,16]  
+    Double32_t CompMass;
+    Double32_t CascCosPA;          //[0.95,1,16]
     Double32_t V0CosPA;            //[0.95,1,16]    
     Double32_t CascRad;            //[0,25.4,8]  
     Double32_t V0Rad;              //[0,25.4,8]
@@ -68,6 +71,7 @@ struct Cascfiller_Mult{
     bool   charge; //kTRUE==negative, kFALSE==positive
     bool   TOFmatch;
     bool   ITSmatch;
+    bool   ITSTOFtwo;
     bool   GoodInvMassLam; //kTRUE if ( PDGmass-0.008 GeV/c2 <ImassLam< PDGmass+0.008 GeV/c2)
     //MC-related
     int    nGenP;                    //[0,254,8]

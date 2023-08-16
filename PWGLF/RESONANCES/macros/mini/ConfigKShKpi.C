@@ -313,7 +313,8 @@ Bool_t ConfigKShKpi
  Float_t                  lmultbin=0,
  Float_t                  hmultbin=0,
  UInt_t      triggerMask=AliVEvent::kINT7,
- Int_t                     nm=1
+ Float_t                     LE=0.97,
+ Float_t                     RE=1.04
 
  //UInt_t      triggerMask=AliVEvent::kINT7
  )
@@ -406,7 +407,8 @@ Bool_t ConfigKShKpi
     cutK0s->SetfLife(pLife);
     cutK0s->SetfLowRadius(radiuslow);
     cutK0s->SetfHighRadius(200);
-    cutK0s->SetMaxRapidity(v0rapidity);
+    //cutK0s->SetMaxRapidity(v0rapidity);
+    cutK0s->SetMaxPseudorapidity(0.8);
     //cutK0s->SetMinArmentousCut(ArmentousParameter);
     //cutK0s->SetMinArmentousCut(0.6);
     //if (UseTolCut)
@@ -474,17 +476,18 @@ Bool_t ConfigKShKpi
     cutYRes->SetRangeD(-0.8,0.8);
     
 
-    Float_t LE=0.97;
-    Float_t RE=1.04;
+    //Float_t LE=0.97;
+    //Float_t RE=1.04;
 
     AliRsnCutMiniPair* cutMassKstar0=new AliRsnCutMiniPair("cutMassKstar0",AliRsnCutMiniPair::kMassRange);
     cutMassKstar0->SetRangeD(LE,RE);
 
     AliRsnCutSet* cutsKstar=new AliRsnCutSet("PairCutsSame",AliRsnTarget::kMother);
     cutsKstar->AddCut(cutMassKstar0);   
-    cutsKstar->AddCut(cutYRes);
+    //cutsKstar->AddCut(cutYRes);
     cutsKstar->AddCut(cutV0);
-    cutsKstar->SetCutScheme(TString::Format("%s&%s&(!%s)",cutMassKstar0->GetName(),cutYRes->GetName(),cutV0->GetName()).Data());
+    //cutsKstar->SetCutScheme(TString::Format("%s&%s&(!%s)",cutMassKstar0->GetName(),cutYRes->GetName(),cutV0->GetName()).Data());
+    cutsKstar->SetCutScheme(TString::Format("%s&(!%s)",cutMassKstar0->GetName(),cutV0->GetName()).Data());
 
      
 
@@ -539,10 +542,10 @@ Bool_t ConfigKShKpi
         //gROOT->LoadMacro("$ALICE_PHYSICS/PWGLF/RESONANCES/macros/mini/AddMonitorOutput.C");
         //AddMonitorOutput(isMC, cutPi->GetMonitorOutput(), monitorOpt.Data());
         //AddMonitorOutput(isMC, cutQ->GetMonitorOutput(), monitorOpt.Data());
-        AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput(), monitorOpt.Data());
-        AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
-	AddMonitorOutput(isMC, cutSetK->GetMonitorOutput(), monitorOpt.Data());
-	AddMonitorOutput(isMC, cutSetK0s->GetMonitorOutput(), monitorOpt.Data());
+        //AddMonitorOutput(isMC, cutSetQ->GetMonitorOutput(), monitorOpt.Data());
+        //AddMonitorOutput(isMC, cutSetPi->GetMonitorOutput(), monitorOpt.Data());
+	//AddMonitorOutput(isMC, cutSetK->GetMonitorOutput(), monitorOpt.Data());
+	//AddMonitorOutput(isMC, cutSetK0s->GetMonitorOutput(), monitorOpt.Data());
     }
 
     //
@@ -639,7 +642,7 @@ Int_t   cutID2  [10] = { iCutPi      ,iCutPi           ,iCutPi            ,iCutP
       
       // axis W: Centrality                                                                                                                         
       //out->AddAxis(centID, multbin, lmultbin, hmultbin);
-      out->AddAxis(centID, nmult, multbins);
+      //out->AddAxis(centID, nmult, multbins);
 
       //out->AddAxis(fdpt, 200, 0.0, 20.0);
       //out->AddAxis(sdpt, 200, 0.0, 20.0);

@@ -6,22 +6,23 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
 								       Bool_t  fDataType       =kFALSE,//TRUE=real data, FALSE=MC
 								       Bool_t frun2            =kTRUE,
 								       Bool_t fFMDcut          =kFALSE,
-								       TString anamode         ="FMDFMD",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SEC
+								       TString anamode         ="TPCFMDC",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SEC
 								       //TString anamode         ="FMDFMDwide",//TPCTPC, TPCV0A, TPCV0C, V0AV0C,TPCFMD, TPCFMDC, FMDFMD, SEC
 								       TString anacent         ="V0A",
- 								       TString assomode        ="hadron",
+ 								       TString assomode        ="PID",
 								       Int_t ffilterbit        =32,
 								       Int_t fFMDcutpar        =7,
 								       Bool_t fmakehole        =kFALSE,
 								       Bool_t fprim            =kTRUE,
-								       Bool_t fcentcalib       =kTRUE,
+								       Bool_t fcentcalib       =kFALSE,
 								       Bool_t fptdiff          =kFALSE,
 								       Float_t fPtMin          =0.,
-								       Float_t fPtMax          =1000.,
+								       Float_t fPtMax          =3.,
 								       Bool_t fextractsec      =kFALSE,
 								       Bool_t ffillcorrelation =kTRUE,
 								       Bool_t fMCclosure=kFALSE,
-								       Bool_t fboost=kTRUE
+								       Bool_t fboost=kTRUE,
+								       Bool_t fOnthefly=kFALSE
 								       
 								       )
 {
@@ -92,6 +93,7 @@ AliAnalysisTaskSEpPbCorrelationsMCYS* AddTaskpPbCorrelationsMCYS(
   myTask->SetQAmode(kTRUE);
   myTask->SetExtractSec(fextractsec);
   myTask->SetBoost(fboost);
+  myTask->SetOnthefly(fOnthefly);
   
   //  if(fCollisiontype=="PP")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPP,cent_mult_binlimitsPP);
   //  if(fCollisiontype=="PbPb")myTask->SetPoolCentBinLimits(cent_mult_bin_numbPbPb,cent_mult_binlimitsPbPb);

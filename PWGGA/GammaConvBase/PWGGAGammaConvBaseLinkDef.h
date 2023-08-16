@@ -29,6 +29,7 @@
 #pragma link C++ class AliCaloTrackMatcher+;
 #pragma link C++ class AliPhotonIsolation+;
 #pragma link C++ class MatrixHandler4D+;
+#pragma link C++ class MatrixHandlerNDim+;
 
 
 // User tasks

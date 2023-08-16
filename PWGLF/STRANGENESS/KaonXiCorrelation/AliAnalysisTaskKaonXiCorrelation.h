@@ -53,6 +53,8 @@ struct MiniCollision {
   Double32_t fZ; //[-12.7,12.8,8]
   unsigned char fCent;
   unsigned char fTrigger;
+  unsigned short fNTrk;
+  unsigned short fV0MAmp;
 };
 
 struct XiDaughter {
@@ -250,7 +252,7 @@ private:
   float fCutMaxITSChi2 = 36.;
   float fCutDCA[3] = {0.05, 0.1, 0.5};
   int fCutTPCcls[3] = {80, 70, 60};
-  float fCutChi2[3] = {2, 2.5, 3};
+  float fCutChi2[3] = {1.5, 2., 2.5};
   double fCutKaonNsigmaTPC = 5.;
   double fCutKaonNsigmaTOF = 5.;
   double fCutKaonNsigmaITS = 5.;

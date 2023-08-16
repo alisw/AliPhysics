@@ -43,7 +43,7 @@ AliEmcalTriggerAlias::AliEmcalTriggerAlias():
 {
 }
 
-AliEmcalTriggerAlias::AliEmcalTriggerAlias(const char *triggernames):
+AliEmcalTriggerAlias::AliEmcalTriggerAlias(EMCAL_STRINGVIEW triggernames):
   TObject(),
   fTriggerClasses()
 {
@@ -63,7 +63,7 @@ AliEmcalTriggerAlias::AliEmcalTriggerAlias(const TList &triggernames):
   }
 }
 
-void AliEmcalTriggerAlias::SetTriggerClasses(const char *triggernames) {
+void AliEmcalTriggerAlias::SetTriggerClasses(EMCAL_STRINGVIEW triggernames) {
   fTriggerClasses.Clear();
   DecodeTriggerClasses(triggernames);
 }
@@ -77,7 +77,7 @@ void AliEmcalTriggerAlias::SetTriggerClasses(const TList &triggernames) {
   }
 }
 
-void AliEmcalTriggerAlias::DecodeTriggerClasses(const char *triggernames) {
+void AliEmcalTriggerAlias::DecodeTriggerClasses(EMCAL_STRINGVIEW triggernames) {
   TString tmpstring(triggernames);
   std::unique_ptr<TObjArray> separated(tmpstring.Tokenize(";"));
   TIter listiter(separated.get());
@@ -87,8 +87,8 @@ void AliEmcalTriggerAlias::DecodeTriggerClasses(const char *triggernames) {
   }
 }
 
-bool AliEmcalTriggerAlias::HasTriggerClass(const char *triggername) const {
-  auto found = fTriggerClasses.FindObject(triggername);
+bool AliEmcalTriggerAlias::HasTriggerClass(EMCAL_STRINGVIEW triggername) const {
+  auto found = fTriggerClasses.FindObject(triggername.data());
   return found != nullptr;
 }
 

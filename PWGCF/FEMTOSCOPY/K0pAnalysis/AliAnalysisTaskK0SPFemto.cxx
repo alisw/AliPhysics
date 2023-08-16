@@ -568,7 +568,14 @@ void AliAnalysisTaskK0SPFemto::UserExec(Option_t *) {
     lcentrality = centrality->GetMultiplicityPercentile("V0M"); //FIXME : Centrality in pp and pPb works the same???
     //hmult->Fill(lcentrality);
   }
-  
+  else if(fCollidingSystem == "pPb") {//FIXME : I think up AOD have only refmult as mult estimation
+    // lcentrality = ((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicityComb08(); //-->RIcambiare
+    //    lcentrality = ((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicity(); //run on phojet
+    lcentrality = centrality->GetMultiplicityPercentile("V0A"); //FIXME : Also for pp? Test on kd
+    //    cout<<"Centrality: "<<lcentrality<<endl;
+    //    hmult->Fill(lcentrality);
+    
+  }
   else if(fCollidingSystem == "pp") {//FIXME : I think up AOD have only refmult as mult estimation
     // lcentrality = ((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicityComb08(); //-->RIcambiare
     //    lcentrality = ((AliAODHeader * )fAODevent->GetHeader())->GetRefMultiplicity(); //run on phojet

@@ -292,6 +292,7 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC17f2b,            //!< anchored LHC16qt pass 1 - general purpose DPMJET
         kLHC18f3,             //!< anchored LHC16qt pass 1 - general purpose DPMJET
         kLHC17g8a,            //!< anchored LHC16qt pass 1 - jet-jet MC in EPOSLHC
+        kLHC20f11c,           //!< anchored LHC16qt pass 2 - general purpose EPOS
         kLHC17f3,             //!< anchored LHC16r pass 1 - general purpose
         kLHC17f3a,            //!< anchored LHC16r pass 1 - general purpose EPOSLHC
         kLHC17f3b,            //!< anchored LHC16r pass 1 - general purpose DPMJET
@@ -342,6 +343,8 @@ class AliConvEventCuts : public AliAnalysisCuts {
         kLHC18l6b2,           //!JJ MC anchored to LHC17 with decay photon > 3.5 GeV in DCal/PHOS acc.
         kLHC18l6c1,           //!JJ MC anchored to LHC17 with decay photon > 7 GeV in EMCal acc.
         kLHC18l6c2,           //!JJ MC anchored to LHC17 with decay photon > 7 GeV in DCal/PHOS acc.
+        kLHC17HERJJ,          //! Herwig JJ MC anchored to LHC17
+
         // 2018
         kLHC18NomB,           //!< pp 13 TeV nominal B field
         kLHC18LowB,           //!< pp 13 TeV low B field

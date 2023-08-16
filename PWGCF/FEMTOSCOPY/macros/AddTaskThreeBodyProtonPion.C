@@ -11,7 +11,36 @@
 #include "AliFemtoDreamCollConfig.h"
 #endif
 
-AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(bool fullBlastQA = true, bool isMC = false, bool isNano = true, TString taskName = "ThreeBodyProtonPion", bool UseSphericityCut = true, bool DoThreeBody = true, bool turnoffClosePairRejectionCompletely = false, bool ClosePairRejectionForAll = true, double PhiPP = 0.017, double EtaPP = 0.017, double PhiPPion = 0.03, double EtaPPion = 0.012, double PhiPAPion = 0.03, double EtaPAPion = 0.012, bool RunPlotPhiTheta = false, double Q3LimitForDeltaPhiDeltaEta = 0.4, bool StandardMixing = false, int MixingDepth = 10, const char *cutVariation = "0", bool RunPlotMult = false, bool RunPlotInvMass = false, bool RunPlotQ3Vsq = false, bool RunPlotOtherHistos = false, bool RunPlotPt = false, bool UseFemtoPionCuts = true, double Q3MinValue = 0., double Q3cutValue = 1.0 ){
+AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(
+  bool fullBlastQA = true, //1
+  bool isMC = false, //2
+  bool isNano = true, //3
+  TString taskName = "ThreeBodyProtonPion", //4
+  bool UseSphericityCut = true, //5
+  bool DoThreeBody = true, //6
+  bool turnoffClosePairRejectionCompletely = false, //7
+  bool ClosePairRejectionForAll = true, //8
+  double PhiPP = 0.017, //9
+  double EtaPP = 0.017, //10
+  double PhiPPion = 0.03, //11
+  double EtaPPion = 0.012, //12
+  double PhiPAPion = 0.03, //13
+  double EtaPAPion = 0.012, //14
+  bool RunPlotPhiTheta = false, //15
+  double Q3LimitForDeltaPhiDeltaEta = 0.4, //16
+  bool StandardMixing = false, //17
+  int MixingDepth = 10, //18
+  const char *cutVariation = "0", //19
+  bool RunPlotMult = false, //20
+  bool RunPlotInvMass = false, //21
+  bool RunPlotQ3Vsq = false, //22
+  bool RunPlotOtherHistos = false, //23
+  bool RunPlotPt = false, //24
+  bool UseFemtoPionCuts = true, //25
+  double Q3MinValue = 0., //26
+  double Q3cutValue = 1.0,//27
+  bool RunmTPlots = false //28
+  ){
 
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -396,6 +425,8 @@ AliAnalysisTaskSE *AddTaskThreeBodyProtonPion(bool fullBlastQA = true, bool isMC
     taskNano->SetQ3LimitForDeltaPhiDeltaEta(Q3LimitForDeltaPhiDeltaEta);
     taskNano->SetQ3cutValue(Q3cutValue); 
     taskNano->SetQ3MinValue(Q3MinValue);
+
+    taskNano->SetRunmTPlots(RunmTPlots);
     
     mgr->AddTask(taskNano);
 

@@ -7,7 +7,8 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliGFWWeights.h"
-#include "AliGFWCuts.h"
+#include "AliGFWMCuts.h"
+#include "AliGFWNFCuts.h"
 #include "AliEventCuts.h"
 #include <vector>
 
@@ -28,7 +29,6 @@ class AliAnalysisTaskCreateNUA : public AliAnalysisTaskSE
 		virtual void   SetMaxPt(Double_t maxPt){fMaxPt = maxPt;}
 		virtual void   SetUseHM(Bool_t useHM){fUseHM = useHM;}
 		virtual void   SetUseCuts(Bool_t useCuts){fUseCuts = useCuts;}
-		virtual void   SetPbPbDataset(Bool_t usePbPb){fPbPb = usePbPb;}
 
     private:
         AliAODEvent*            fAOD;           //! input event
@@ -37,7 +37,14 @@ class AliAnalysisTaskCreateNUA : public AliAnalysisTaskSE
         std::vector<int>        RunNumber_LHC16;//!
         std::vector<int>        RunNumber_LHC17;//!
         std::vector<int>        RunNumber_LHC18;//!
-        std::vector<int>        RunNumber_LHC15;//!
+        std::vector<TString>    Period_LHC16;//!
+        std::vector<TString>    Period_LHC17;//!
+        std::vector<TString>    Period_LHC18;//!
+        std::vector<int>        RunNumber_LHC15o;//!
+        std::vector<int>        RunNumber_LHC15opass2;//!
+        std::vector<int>        RunNumber_LHC18qrpass3;//!
+        std::vector<int>        RunNumber_LHC16qt;//!
+        std::vector<int>        RunNumber_LHC17n;//!
         Int_t                   Last_RunNumer;  //!
         Int_t                   Last_Position;  //!
 
@@ -50,7 +57,8 @@ class AliAnalysisTaskCreateNUA : public AliAnalysisTaskSE
 
         //Standard Cuts and Systematics
         AliEventCuts	fEventCuts;					// Event cuts
-		AliGFWCuts*     fGFWSelection;                                  //!
+		AliGFWMCuts*     fGFWSelection;                                  //!
+    AliGFWNFCuts*     fGFWSelection15o;                                  //!
 
 
         //cuts

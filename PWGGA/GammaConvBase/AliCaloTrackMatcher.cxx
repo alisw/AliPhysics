@@ -365,14 +365,16 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
       if (fClusterType == 1 || fClusterType == 3 || fClusterType == 4){
         if( TMath::Abs(aodt->GetTrackEtaOnEMCal()) > 0.75 ){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
 
+        double trackPhiEMC = aodt->GetTrackPhiOnEMCal();
+        if(trackPhiEMC < 0) trackPhiEMC+=2*TMath::Pi(); // phi should be between 0 and 2pi
         // conditions for run1
-        if( fClusterType == 1 && nModules < 13 && ( aodt->GetTrackPhiOnEMCal() < 70*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 190*TMath::DegToRad())){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
+        if( fClusterType == 1 && nModules < 13 && ( trackPhiEMC < 70*TMath::DegToRad() || trackPhiEMC > 190*TMath::DegToRad())){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
 
         // conditions for run2
         if( nModules > 12 ){
-          if( fClusterType == 3 && ( aodt->GetTrackPhiOnEMCal() < 250*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 340*TMath::DegToRad()) ){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
-          if( fClusterType == 1 && ( aodt->GetTrackPhiOnEMCal() < 70*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 190*TMath::DegToRad()) ){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
-          if( fClusterType == 4 && ( aodt->GetTrackPhiOnEMCal() < 70*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 190*TMath::DegToRad()) && ( aodt->GetTrackPhiOnEMCal() < 250*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 340*TMath::DegToRad()) ){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
+          if( fClusterType == 3 && ( trackPhiEMC < 250*TMath::DegToRad() || trackPhiEMC > 340*TMath::DegToRad()) ){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
+          if( fClusterType == 1 && ( trackPhiEMC < 70*TMath::DegToRad() || trackPhiEMC > 190*TMath::DegToRad()) ){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
+          if( fClusterType == 4 && ( trackPhiEMC < 70*TMath::DegToRad() || trackPhiEMC > 190*TMath::DegToRad()) && ( trackPhiEMC < 250*TMath::DegToRad() || trackPhiEMC > 340*TMath::DegToRad()) ){FillfHistControlMatches(1.,inTrack->Pt()); continue;}
         }
       }
       trackParam = new AliExternalTrackParam(xyz,pxpypz,cv,aodt->Charge());
@@ -433,7 +435,9 @@ void AliCaloTrackMatcher::ProcessEvent(AliVEvent *event){
           FillfHistControlMatches(3.,inTrack->Pt());
           continue;
         }
-        if (trkPosVec.Phi() < 230*TMath::DegToRad() || trkPosVec.Phi() > 350*TMath::DegToRad() ){
+        double trkPosPhi = trkPosVec.Phi();
+        if(trkPosPhi < 0) trkPosPhi+=2*TMath::Pi(); // to circumvent that phi has negative values
+        if (trkPosPhi < 230*TMath::DegToRad() || trkPosPhi > 350*TMath::DegToRad() ){
           delete trackParam;
           FillfHistControlMatches(3.,inTrack->Pt());
           continue;
@@ -612,25 +616,28 @@ Bool_t AliCaloTrackMatcher::PropagateV0TrackToClusterAndGetMatchingResidual(AliV
         fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
         return kFALSE;
       }
+      double trackPhiEMC = aodt->GetTrackPhiOnEMCal();
+      if(trackPhiEMC < 0) trackPhiEMC+=2*TMath::Pi(); // phi should be between 0 and 2pi
+
       if( nModules < 13 ){
-        if (( aodt->GetTrackPhiOnEMCal() < 60*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 200*TMath::DegToRad())){
+        if (( trackPhiEMC < 60*TMath::DegToRad() || trackPhiEMC > 200*TMath::DegToRad())){
           FillfSecHistControlMatches(1.,inSecTrack->Pt());
           fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
           return kFALSE;
         }
       } else if( nModules > 12 ){
-        if (fClusterType == 3 && ( aodt->GetTrackPhiOnEMCal() < 250*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 340*TMath::DegToRad())){
+        if (fClusterType == 3 && ( trackPhiEMC < 250*TMath::DegToRad() || trackPhiEMC > 340*TMath::DegToRad())){
           FillfSecHistControlMatches(1.,inSecTrack->Pt());
           fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
           return kFALSE;
         }
-        if( fClusterType == 1 && ( aodt->GetTrackPhiOnEMCal() < 60*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 200*TMath::DegToRad())){
+        if( fClusterType == 1 && ( trackPhiEMC < 60*TMath::DegToRad() || trackPhiEMC > 200*TMath::DegToRad())){
           FillfSecHistControlMatches(1.,inSecTrack->Pt());
           fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
           return kFALSE;
         }
-        if( fClusterType == 4 && ( aodt->GetTrackPhiOnEMCal() < 60*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 200*TMath::DegToRad())
-                              && ( aodt->GetTrackPhiOnEMCal() < 250*TMath::DegToRad() || aodt->GetTrackPhiOnEMCal() > 340*TMath::DegToRad()) ){
+        if( fClusterType == 4 && ( trackPhiEMC < 60*TMath::DegToRad() || trackPhiEMC > 200*TMath::DegToRad())
+                              && ( trackPhiEMC < 250*TMath::DegToRad() || trackPhiEMC > 340*TMath::DegToRad()) ){
           FillfSecHistControlMatches(1.,inSecTrack->Pt());
           fSecMap_TrID_ClID_AlreadyTried[make_pair(inSecTrack->GetID(),cluster->GetID())] = 1.;
           return kFALSE;

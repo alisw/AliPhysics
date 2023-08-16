@@ -87,7 +87,8 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum():
   fCentralityEstimator("V0M"),
   fUserPtBinning(),
   fMakeClusterHistos1D(false),
-  fEnergyDefinition(kDefaultEnergy)
+  fEnergyDefinition(kDefaultEnergy),
+  fDoDifferentialDpT(false)
 {
 }
 
@@ -123,7 +124,8 @@ AliAnalysisTaskEmcalJetEnergySpectrum::AliAnalysisTaskEmcalJetEnergySpectrum(EMC
   fCentralityEstimator("V0M"),
   fUserPtBinning(),
   fMakeClusterHistos1D(false),
-  fEnergyDefinition(kDefaultEnergy)
+  fEnergyDefinition(kDefaultEnergy),
+  fDoDifferentialDpT(false)
 {
   SetMakeGeneralHistograms(true);
 }
@@ -168,6 +170,7 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
 
   if(fDoBkgSub){
     fHistos->CreateTH2("hRhoVsDeltaPtRC", "Rho Vs Delta Pt RC;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)", 170, -20, 150, 30, 0, 30, "s");
+    if(fDoDifferentialDpT) fHistos->CreateTH3("hPtJetVsRhoVsDeltaPtRC", "Momentum Differential Rho Vs Delta Pt RC;p_{T}^{jet} (GeV/c);#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)", 70., 0., 350., 170, -20, 150, 30, 0, 30, "s");
     fHistos->CreateTH2("hRhoVsDeltaPtEmbed", "Rho Vs Delta Pt embedding;#delta P_{T}^{RC} (Gev/c);#rho (Gev/c)", 170, -20, 150, 30, 0, 30, "s");
 
     fFastJetWrapper = new AliFJWrapper("FJWrapper", "FJWrapper");
@@ -192,7 +195,7 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   }
 
   // A bit of QA stuff
-  fHistos->CreateTH2("hQANEFPt", "Neutral energy fraction; p_{t} (GeV/c); NEF", 350, 0., 350., 100, 0., 1.);
+  fHistos->CreateTH2("hQANEFPt", "Neutral energy fraction; p_{t} (GeV/c); NEF", 350, 0., 350., 105, 0., 1.05);
   fHistos->CreateTH2("hQAZchPt", "z_{ch,max}; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQAZnePt", "z_{ne,max}; p_{t} (GeV/c); z_{ne,max}", 350, 0., 350., 100, 0., 1.);
   fHistos->CreateTH2("hQAZchPtMax", "z_{ch,max}; p_{t} (GeV/c); z_{ch,max}", 350, 0., 350., 100, 0., 1.);
@@ -213,7 +216,7 @@ void AliAnalysisTaskEmcalJetEnergySpectrum::UserCreateOutputObjects(){
   fHistos->CreateTH2("hQADeltaRMaxCharged", "#DeltaR vs. p_{t,jet} of charged constituents; p_{t, jet} (GeV/c); #DeltaR", 350., 0., 350, 100, 0., 1.);
   fHistos->CreateTH2("hQADeltaRMaxNeutral", "#DeltaR vs. p_{t,jet} of neutral constituents; p_{t, jet} (GeV/c); #DeltaR", 350., 0., 350, 100, 0., 1);
   fHistos->CreateTH2("hQAJetAreaVsJetPt", "Jet area vs. jet pt at detector level; p_{t} (GeV/c); Area", 350, 0., 350., 200, 0., 2.);
-  fHistos->CreateTH2("hQAJetAreaVsNEF", "Jet area vs. NEF at detector level; NEF; Area", 100, 0., 1., 200, 0., 2.);
+  fHistos->CreateTH2("hQAJetAreaVsNEF", "Jet area vs. NEF at detector level; NEF; Area", 105, 0., 1.05, 200, 0., 2.);
   fHistos->CreateTH2("hQAJetAreaVsNConst", "Jet area vs. number of consituents at detector level; Number of constituents; Area", 101, -0.5, 100.5, 200, 0., 2.);
   fHistos->CreateTH1("hQAPosTrVsPt", "N_{tr}^{+} vs. p_{t,tr}", 350., 0., 350.);
   fHistos->CreateTH1("hQANegTrVsPt", "N_{tr}^{-} vs. p_{t,tr}", 350., 0., 350.);
@@ -358,6 +361,11 @@ bool AliAnalysisTaskEmcalJetEnergySpectrum::Run(){
         datapoint[5] = static_cast<double>(t);
         fHistos->FillTHnSparse("hJetTHnSparse", datapoint, weight);
       }
+    }
+
+    if(fDoBkgSub && datajets->GetRhoParameter() && fDoDifferentialDpT){
+        Double_t randomConePt = GetDeltaPtRandomCone();
+        fHistos->FillTH3("hPtJetVsRhoVsDeltaPtRC", ptjet, randomConePt, datajets->GetRhoVal());
     }
 
     // Fill QA plots - trigger cluster independent

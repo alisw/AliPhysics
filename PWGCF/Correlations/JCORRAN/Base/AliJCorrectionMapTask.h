@@ -25,6 +25,7 @@ using namespace std;
 class TFile;
 class TH1D;
 class TH2D;
+class TH3D;
 class TAxis;
 class TGraphErrors;
 class TList;
@@ -61,7 +62,7 @@ public:
 		EFF2_LABEL_HYBRID10,
 		EFF2_LABEL_COUNT,
 	};
-	TH1 * GetCorrectionMap(UInt_t, UInt_t, UInt_t);
+	TH3D * GetCorrectionMap(UInt_t, UInt_t, UInt_t);
 	TH1* GetEffCorrectionMap2(UInt_t, EFF2_LABEL, double &V0mean);
 	TH1 * GetEffCorrectionMap2(const TString &, EFF2_LABEL);
 	TH1 * GetCentCorrection();
@@ -77,7 +78,7 @@ public:
 	};
 private:
 	//TList *fOutputList;          //! output data container 
-	std::map<UInt_t, TH1 *> PhiWeightMap[8][20]; //! map for each run, index1: map id, index2: cent
+	std::map<UInt_t, TH3D *> PhiWeightMap[8][20]; //! map for each run, index1: map id, index2: cent
 	std::map<UInt_t, TGraphErrors *> EffWeightMap[20]; //!  cent
 
 	//std::map<UInt_t, TH1 *> //pp?
