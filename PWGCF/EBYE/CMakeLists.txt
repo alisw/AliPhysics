@@ -150,6 +150,7 @@ set(SRCS
   HMPTF/AliAnalysisTaskCorrPPMC.cxx
   HMPTF/AliAnalysisTaskResonanceVsMultiplicityROOT6_new.cxx
   DiffPTF/AliAnalysisTaskDiffPtFluc_PIDhadrons.cxx
+  DiffPTF/AliAnalysisTaskDiffPtFStrange.cxx
   IntermittencyAnalysis/AliAnalysisTaskNFactorialMoments.cxx
   )
 
