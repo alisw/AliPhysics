@@ -140,6 +140,8 @@
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityROOT6_new+;
 
 #pragma link C++ class AliAnalysisTaskDiffPtFluc_PIDhadrons+;
+#pragma link C++ class AliAnalysisTaskDiffPtFStrange+;
+
 
 #pragma link C++ class AliAnalysisTaskNFactorialMoments+;
 
