@@ -81,7 +81,7 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         void SetWriteXic0Tree(Bool_t a) {fWriteXic0Tree = a;}
         Bool_t GetWriteXic0Tree() const {return fWriteXic0Tree;}
 
-        void FillTreeGenXic0(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLoverP);
+        void FillTreeGenXic0(AliAODMCParticle *mcpart, Int_t CheckOrigin, Double_t MLoverP, TClonesArray *mcArray, AliAODMCParticle *mc_pifromXic0, AliAODMCParticle *mc_pifromXi, AliAODMCParticle *mc_pifromLam, AliAODMCParticle *mc_prfromLam, AliAODMCParticle *mc_Xi, AliAODMCParticle *mc_Lam);
         void FillTreeRecXic0FromV0(KFParticle kfpXicZero, AliAODTrack *trackPi, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, AliAODTrack *trackPiFromXi, AliAODv0 *v0, KFParticle kfpK0Short, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkP, AliAODTrack *trkN, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
         void FillTreeRecXic0FromCasc(Int_t flagUSorLS, KFParticle kfpXic0, AliAODTrack *trackPiFromXic0, KFParticle kfpBP, KFParticle kfpXiMinus, KFParticle kfpXiMinus_m, KFParticle kfpPionOrKaon, AliAODTrack *trackPiFromXiOrKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short, KFParticle kfpGamma, KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, Int_t lab_Xic0);
 
@@ -201,6 +201,12 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         TH2F*                   f2DHistXiMinusXY_PV; //!<! 2D Histogram of y vs. x of Xi- at production vertex
         TH2F*                   f2DHistXiPlusXY_DV; //!<! 2D Histogram of y vs. x of Xi+ at decay vertex
         TH2F*                   f2DHistXiPlusXY_PV; //!<! 2D Histogram of y vs. x of Xi+ at production vertex
+        TH2F*                   f2DHistNsigmaTPCTOF_PiFromXic0; //!<! 2D Histogram of Nsigma TPC and Nsigma TOF of pion from Xic0
+        TH2F*                   f2DHistNsigmaTPCTOF_PiFromOmegac0; //!<! 2D Histogram of Nsigma TPC and Nsigma TOF of pion from Omegac0
+        TH2F*                   f2DHistNsigmaTPCTOF_PiFromXi; //!<! 2D Histogram of Nsigma TPC and Nsigma TOF of pion from Xi
+        TH2F*                   f2DHistNsigmaTPCTOF_KaFromOmega; //!<! 2D Histogram of Nsigma TPC and Nsigma TOF of kaon from Omega
+        TH2F*                   f2DHistNsigmaTPCTOF_PiFromLam; //!<! 2D Histogram of Nsigma TPC and Nsigma TOF of pion from Lambda
+        TH2F*                   f2DHistNsigmaTPCTOF_PrFromLam; //!<! 2D Histogram of Nsigma TPC and Nsigma TOF of proton from Lambda
 
         TH1F*                   fHistEvents;          //!<! Histogram of selected events
         TH1F*                   fHTrigger;            //!<! Histogram of trigger
@@ -419,7 +425,7 @@ class AliHFMLXicZeroToXiPifromKFP : public AliAnalysisTaskSE
         AliHFMLXicZeroToXiPifromKFP(const AliHFMLXicZeroToXiPifromKFP &source); // not implemented
         AliHFMLXicZeroToXiPifromKFP& operator=(const AliHFMLXicZeroToXiPifromKFP& source); // not implemented
 
-        ClassDef(AliHFMLXicZeroToXiPifromKFP, 3);
+        ClassDef(AliHFMLXicZeroToXiPifromKFP, 4);
 };
 
 #endif

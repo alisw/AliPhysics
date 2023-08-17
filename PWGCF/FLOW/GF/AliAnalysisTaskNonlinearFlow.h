@@ -152,6 +152,15 @@ class PhysicsProfile : public TObject {
 		TProfile*        fChc532_3subRA;    //!
 		TProfile*        fChc532_3subRB;    //!
 
+    TProfile*  fMeanPt;         //! Average of Pt
+    TProfile*  fc22w;           //! vn^2 with event weight
+    TProfile*  fPcc;            //! v2^2-pt
+    TProfile*  fc22nw;           //! vn^2 without event weight
+    TProfile*  fc24nw;           //! vn^4 without event weight
+    TProfile*  fPtVariancea;                  //! for variance of pt
+    TProfile*  fPtVarianceb;                  //! for variance of pt
+    TProfile*  fPtVariancec;                  //! for variance of pt
+
 		TProfile*	 fChcn2[6]; 			//! <<2>> in unit bins of Ntrks
 		TProfile*    	 fChcn2_Gap0[6];  		//! <<2>> |#Delta#eta| > 0.0
 		TProfile*	 fChcn2_Gap2[6];  		//! <<2>> |#Delta#eta| > 0.2
@@ -187,7 +196,7 @@ class PhysicsProfile : public TObject {
 		TProfile*	 fChcn8_Gap0[6];  		//! <<8>> |#Delta#eta| > 0.0
 
 	private:
-		ClassDef(PhysicsProfile, 6);    //Analysis task
+		ClassDef(PhysicsProfile, 8);    //Analysis task
 };
 
 class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
@@ -229,13 +238,18 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void   SetLowMultiplicityMode(bool flag = true) {fLowMultiplicityMode = flag;}
 		virtual void   SetAdditionalTPCPileupCuts(bool flag = true) {fAddTPCPileupCuts = flag;}
 		virtual void   SetESDvsTPConlyLinearCut(double cut = 15000) {fESDvsTPConlyLinearCut = cut;}
+    virtual void   SetUseOutOfBunchPileupCut(double flag = true) {fUseOutOfBunchPileupCut = flag;}
 		virtual void   SetUseCorrectedNTracks(bool flag = true) {fUseCorrectedNTracks = flag;}
+    virtual void   SetBinningFactor(double factor = 1.0) {binning_factor = factor;}
 		virtual void   SetUseNarrowBin(bool flag = true) {fUseNarrowBin = flag;}
 		virtual void   SetExtremeEfficiency(int flag = 0) {fExtremeEfficiency = flag;}
 		virtual void   SetTPCchi2perCluster(double fchi2 = 4) {fTPCchi2perCluster = fchi2;}
 		virtual void   SetUseAdditionalDCACut(double flag = true) {fUseAdditionalDCACut = flag;}
 		virtual void   SetUseDefaultWeight(double flag = true) {fUseDefaultWeight = flag;}
-    virtual void   SetEtaGap3Sub(Double_t feta = 0.4) {fEtaGap3Sub = feta;}
+    virtual void   SetUseLikeSign(int sign = 0) {bUseLikeSign = sign; iSign = sign;}
+    virtual void   SetExtendV0MAcceptance(double flag = true) {fExtendV0MAcceptance = flag;}
+    virtual void   SetV0MRatioCut(double ratio=5) {fV0MRatioCut = ratio;}
+    virtual void   SetEtaGap3Sub(Double_t feta1 = 0.4, Double_t feta2 = 0.4) {fEtaGap3Sub1 = feta1; fEtaGap3Sub2 = feta2;}
 		virtual void   SetCentralityCut(Double_t cent = 100) {fCentralityCut = cent;}
     virtual void   SetOnTheFly(Bool_t flag=false) {fOnTheFly = flag;} 
 		// unsigned fgFlowHarmonics = 0;        calculate v2, v3, v4, v5
@@ -248,7 +262,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		virtual void SetCalculateFlowHarmonicsMult(unsigned flag)   { fgFlowHarmonicsMult = flag; }
 		virtual void SetCalculateNonlinearFlow(unsigned flag)       { fgNonlinearFlow = flag; }
 		virtual void SetCalculateSymmetricCumulants(unsigned flag)  { fgSymmetricCumulants = flag; }
-
+    virtual void SetCalculateVnPtCorr(unsigned flag)  { fgVnPtCorr = flag; }
 
 
 	private:
@@ -299,15 +313,22 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		Bool_t                  fSpringMode;                            // The mode with spring cuts.
 		Bool_t                  fLowMultiplicityMode;                   // The mode to consider low-multiplicity region 
 		Bool_t                  fAddTPCPileupCuts;                      // Additional TPC pileup cuts
-                Double_t                fESDvsTPConlyLinearCut;                 // ESDvsTPConlyLinearCut : default = 15000
+    Double_t                fESDvsTPConlyLinearCut;                 // ESDvsTPConlyLinearCut : default = 15000
+    Bool_t                  fUseOutOfBunchPileupCut;                // Out of bunch pileup cut
 		Bool_t                  fUseCorrectedNTracks;                   // Use corrected Ntracks in the filling of xbins;
-		Double_t                  fCentralityCut;                         // Apply an extra centrality cut.
-                Bool_t                  fUseNarrowBin;                          // Use Narrow bin
+    Double_t                binning_factor;                         // A factor to account efficiency corrected binning
+		Double_t                fCentralityCut;                         // Apply an extra centrality cut.
+    Bool_t                  fUseNarrowBin;                          // Use Narrow bin
 		Int_t                   fExtremeEfficiency;                     // The flag to set extreme efficiency
 		Double_t                fTPCchi2perCluster;                     // Additional cuts for TPC chi2 / cluster
 		Bool_t                  fUseAdditionalDCACut;                   // Additianal cuts for dca: < 1 cm
 		Bool_t                  fUseDefaultWeight;                      // Force to use the default weight 
-		Double_t                fEtaGap3Sub;                            // The Eta Gap for 3 sub sample, the default is 0.4
+    Bool_t                  bUseLikeSign;                           // Flag to use like sign tracks
+    Int_t                   iSign;                                  // Sign of selected tracks
+    Bool_t                  fExtendV0MAcceptance;                   // Use V0M centrality cut 0-100%
+    Double_t                fV0MRatioCut;                           // Cut on V0M / <V0M>
+		Double_t                fEtaGap3Sub1;                           // The Eta Gap for 3 sub sample (Left most gap), the default is 0.4
+    Double_t                fEtaGap3Sub2;                           // The Eta Gap for 3 sub sample (Middle gap), the default is 0.4
     Bool_t                  fOnTheFly;                              // flag to tune on on-the-fly
 
 		// Output objects
@@ -341,8 +362,10 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH1F*			hMult;				//! multiplicity distribution
 		TH1F*			fVtxAfterCuts;			//! Vertex z dist after cuts
 		TH1F*			fCentralityDis;			//! distribution of centrality percentile using V0M estimator
-		TH1F*			fV0CentralityDis;		//! distribution of V0M/<V0M>
-		TH1F*			fV0CentralityDisNarrow;	//! distribution of V0M/<V0M>
+    TH1F*			fV0CentralityDis;		//! distribution of centrality percentile using V0M estimator
+    TH1F*			fV0CentralityDisNarrow;	//! distribution centrality percentile using V0M estimator
+    TH1F*     fV0MMultiplicity;       //! V0M multiplicity
+    TH1F*     fV0MRatio;              //! V0M multiplicity ratio: V0M/<V0M>
 
 		// Track histograms
 		TH1D*				fPhiDis1D;		//! phi dis 1D
@@ -365,16 +388,16 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		TH2D*                           hTracksCorrection2d;    //! Corrected Tracks - v.s. uncorrected tracks
 		TProfile*                       hnCorrectedTracks;      //! Averaged number of corrected tracks in a specific bin;
 
-		TH2D* QDis[10];        // QDistribution for No gap
-		TH2D* QDisGap0P[10];        // QDistribution for gap 0
-		TH2D* QDisGap0M[10];        // QDistribution for gap 0
-		TH2D* QDisGap10P[10];        // QDistribution for gap 10
-		TH2D* QDisGap10M[10];        // QDistribution for gap 10
-		TH2D* QDisGap14P[10];        // QDistribution for gap 14
-		TH2D* QDisGap14M[10];        // QDistribution for gap 14
-		TH2D* QDis3subL[10];        // QDistribution for 3sub
-		TH2D* QDis3subM[10];        // QDistribution for 3sub
-		TH2D* QDis3subR[10];        // QDistribution for 3sub
+    // TH2D* QDis[10];        // QDistribution for No gap
+    // TH2D* QDisGap0P[10];        // QDistribution for gap 0
+    // TH2D* QDisGap0M[10];        // QDistribution for gap 0
+    // TH2D* QDisGap10P[10];        // QDistribution for gap 10
+    // TH2D* QDisGap10M[10];        // QDistribution for gap 10
+    // TH2D* QDisGap14P[10];        // QDistribution for gap 14
+    // TH2D* QDisGap14M[10];        // QDistribution for gap 14
+    // TH2D* QDis3subL[10];        // QDistribution for 3sub
+    // TH2D* QDis3subM[10];        // QDistribution for 3sub
+    // TH2D* QDis3subR[10];        // QDistribution for 3sub
 
     AliMCEvent *fMCEvent;           //! MC event
 
@@ -406,16 +429,24 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		PhysicsProfile multProfile;    //!
 		PhysicsProfile multProfile_bin[30]; //!
 
-		CorrelationCalculator correlator; //!
-		TRandom3 rand;         //!
-		Int_t bootstrap_value = -1; //!
+    CorrelationCalculator correlator; //!
+    Double_t sumPtw; //!
+    Double_t sumPtw2; //!
+    Double_t sumPt2w2; //!
+    Double_t sumWeight; //!
+    Double_t sumWeight2; //!
+    Double_t eventWeight; //!
+    Double_t eventWeight2; //!
+    TRandom3 rand;         //!
+    Int_t bootstrap_value = -1; //!
 
 
 		unsigned fgFlowHarmonics = 0;        // calculate v2, v3, v4, v5
 		unsigned fgFlowHarmonicsHigher = 0;  // calculate v6, v7, v8 ..
 		unsigned fgFlowHarmonicsMult = 0;    // calculate v2{4} // yet v2{6}, v2{8}
-                unsigned fgNonlinearFlow = 0;        // calculate v_4,22, v_5,32
+    unsigned fgNonlinearFlow = 0;        // calculate v_4,22, v_5,32
 		unsigned fgSymmetricCumulants = 0;   // calculate SC(3,2), SC(4,2)
+    unsigned fgVnPtCorr = 0;             // calculate <v2^2-[pt]>
 
 		unsigned fgTwoParticleCorrelation = 0;       //!
 		unsigned fgTwoParticleCorrelationHigher = 0; //!
@@ -462,7 +493,7 @@ class AliAnalysisTaskNonlinearFlow : public AliAnalysisTaskSE {
 		void CalculateProfile(PhysicsProfile& profile, double Ntrks);
 		void InitProfile(PhysicsProfile& profile, TString name, TList* listOfProfile);
 
-		ClassDef(AliAnalysisTaskNonlinearFlow, 19);    //Analysis task
+		ClassDef(AliAnalysisTaskNonlinearFlow, 27);    //Analysis task
 };
 
 #endif

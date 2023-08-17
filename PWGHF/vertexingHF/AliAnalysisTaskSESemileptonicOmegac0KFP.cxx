@@ -98,6 +98,7 @@ fTree_Electron(0),
 fVar_Electron(0),
 fListCuts(0),
 fUseMCInfo(kFALSE),
+fMCClosureTest(kFALSE),
 fCounter(0),
 fHistEvents(0),
 fHTrigger(0),
@@ -155,6 +156,7 @@ fTree_Electron(0),
 fVar_Electron(0),
 fListCuts(0),
 fUseMCInfo(kFALSE),
+fMCClosureTest(kFALSE),
 fCounter(0),
 fHistEvents(0),
 fHTrigger(0),
@@ -1043,7 +1045,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
         
         if (fWriteOmegac0Tree){
           Int_t lab_Omegac0 = -9999.;
-          if(fUseMCInfo){
+          if(fUseMCInfo && !fMCClosureTest){
             if(btrack->Charge()<0){
               lab_Omegac0 = MatchToMCOmegac0(ptrack,ntrack,btrack,trkBE,mcArray);
               if(lab_Omegac0>=0 || decaytype == 0) FillTreeRecOmegac0FromCasc(kfpOmegac0, kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpOmegaMinus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short,  kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
@@ -1052,6 +1054,17 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: MakeAnaOmegacZeroFromCasc(AliAOD
               if(lab_Omegac0>=0 || decaytype == 0) FillTreeRecOmegac0FromCasc(kfpOmegac0, kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpOmegaMinus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short,  kfpLambda, kfpLambda_m, ntrack, ptrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
             }
           } //fUseMCInfo
+            
+         ///---------------------------   used for MC closure test: do bkg subtraction in MC
+         if(fUseMCInfo && fMCClosureTest){
+            if(btrack->Charge()<0){
+                FillTreeRecOmegac0FromCasc(kfpOmegac0, kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpOmegaMinus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short,  kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
+            }else {
+                FillTreeRecOmegac0FromCasc(kfpOmegac0, kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpOmegaMinus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short,  kfpLambda, kfpLambda_m, ntrack, ptrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
+                }
+          }
+          ////---------------------------
+            
           if(!fUseMCInfo){
               if(btrack->Charge()<0){
                   FillTreeRecOmegac0FromCasc(kfpOmegac0, kfpOmegac0_woMassConst, trkBE, kfpBE, kfpOmegaMinus, kfpOmegaMinus_m, kfpOmegaMinus_woLMassConst, kfpKaon, btrack, casc, kfpK0Short, kfpLambda, kfpLambda_m, ptrack, ntrack, PV, mcArray, aodEvent, lab_Omegac0, decaytype);
@@ -1677,7 +1690,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: FillTreeElectron(AliAODTrack *tr
 void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFParticle kfpOmegac0, KFParticle kfpOmegac0_woMassConst, AliAODTrack *trackElectronFromOmegac0, KFParticle kfpBE, KFParticle kfpOmegaMinus, KFParticle kfpOmegaMinus_m, KFParticle kfpOmegaMinus_woLMassConst, KFParticle kfpKaon, AliAODTrack *trackKaonFromOmega, AliAODcascade *casc, KFParticle kfpK0Short,  KFParticle kfpLambda, KFParticle kfpLambda_m, AliAODTrack *trkProton, AliAODTrack *trkPion, KFParticle PV, TClonesArray *mcArray, AliAODEvent *aodEvent, Int_t lab_Omegac0, Int_t decaytype)
 {
     
-    for (Int_t i=0; i< 51 ; i++){
+    for (Int_t i=0; i< 63 ; i++){
         fVar_Omegac0[i] = -9999.;
     }
     
@@ -1958,6 +1971,30 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP ::FillTreeRecOmegac0FromCasc(KFPart
     Double_t DecayLength_Omega  = TMath::Sqrt(dx_Omega*dx_Omega + dy_Omega*dy_Omega);
     fVar_Omegac0[50] = DecayLength_Omega;
     
+    //------ Add TPC variables
+    fVar_Omegac0[51] = trackElectronFromOmegac0->GetTPCsignalN(); // TPCPID cluster
+    fVar_Omegac0[52] = trackElectronFromOmegac0->GetTPCNCrossedRows(); // Mim. of TPC Crossed Rows
+    if(trackElectronFromOmegac0->GetTPCNclsF() > 0){
+        fVar_Omegac0[53] = (Float_t)trackElectronFromOmegac0->GetTPCNCrossedRows()/(Float_t)trackElectronFromOmegac0->GetTPCNclsF(); // findable ratio
+    }
+    fVar_Omegac0[54] = trkPion->GetTPCsignalN();
+    fVar_Omegac0[55] = trkPion->GetTPCNCrossedRows();
+    if(trkPion->GetTPCNclsF() > 0){
+        fVar_Omegac0[56] = (Float_t)trkPion->GetTPCNCrossedRows()/(Float_t)trkPion->GetTPCNclsF();
+    }
+    
+    fVar_Omegac0[57] = trkProton->GetTPCsignalN();
+    fVar_Omegac0[58] = trkProton->GetTPCNCrossedRows();
+    if(trkProton->GetTPCNclsF() > 0){
+        fVar_Omegac0[59] = (Float_t)trkProton->GetTPCNCrossedRows()/(Float_t)trkProton->GetTPCNclsF();
+    }
+    
+    fVar_Omegac0[60] = trackKaonFromOmega->GetTPCsignalN();
+    fVar_Omegac0[61] = trackKaonFromOmega->GetTPCNCrossedRows();
+    if(trackKaonFromOmega->GetTPCNclsF() > 0){
+        fVar_Omegac0[62] = (Float_t)trackKaonFromOmega->GetTPCNCrossedRows()/(Float_t)trackKaonFromOmega->GetTPCNclsF();
+    }
+    
     if (fWriteOmegac0Tree)
     fTree_Omegac0 -> Fill();
     
@@ -2117,7 +2154,7 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     
     const char* nameoutput = GetOutputSlot(5)->GetContainer()->GetName();
     fTree_Omegac0 = new TTree(nameoutput, "Omegac0 variables tree");
-    Int_t nVar = 51;
+    Int_t nVar = 63;
     fVar_Omegac0 = new Float_t[nVar];
     TString *fVarNames = new TString[nVar];
     
@@ -2172,6 +2209,18 @@ void AliAnalysisTaskSESemileptonicOmegac0KFP :: DefineTreeRecoOmegac0()
     fVarNames[48] = "DCAofBachToPV_KFP";
     fVarNames[49] = "DecayLengthLambda_KFP";
     fVarNames[50] = "DecayLengthOmega_KFP";
+    fVarNames[51] = "Ele_TPCPIDCluster";
+    fVarNames[52] = "Ele_CrossedRows";
+    fVarNames[53] = "Ele_RatioCrossedRowsOverFindable";
+    fVarNames[54] = "Pion_TPCPIDCluster";
+    fVarNames[55] = "Pion_CrossedRows";
+    fVarNames[56] = "Pion_RatioCrossedRowsOverFindable";
+    fVarNames[57] = "Proton_TPCPIDCluster";
+    fVarNames[58] = "Proton_CrossedRows";
+    fVarNames[59] = "Proton_RatioCrossedRowsOverFindable";
+    fVarNames[60] = "Kaon_TPCPIDCluster";
+    fVarNames[61] = "Kaon_CrossedRows";
+    fVarNames[62] = "Kaon_RatioCrossedRowsOverFindable";
     
     for (Int_t ivar = 0; ivar<nVar ; ivar++){
      

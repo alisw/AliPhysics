@@ -61,6 +61,7 @@ class AliNormalizationCounter : public TNamed
   void SetStudyMultiplicity(Bool_t flag, Float_t etaRange){ fMultiplicity=flag; fMultiplicityEtaRange=etaRange; }
   void SetStudySpherocity(Bool_t flag, Double_t nsteps=100.){fSpherocity=flag;
     fSpherocitySteps=nsteps;}
+  void SetStudySpherocityQuant(Bool_t flag){fSpherocityQuant=flag;}  
   void StoreEvent(AliVEvent*,AliRDHFCuts *,Bool_t mc=kFALSE, Int_t multiplicity=-9999, Double_t spherocity=-99.);
   void StoreCandidates(AliVEvent*, Int_t nCand=0,Bool_t flagFilter=kTRUE);
   TH1D* DrawAgainstRuns(TString candle="candid(filter)",Bool_t drawHist=kTRUE);
@@ -77,6 +78,7 @@ class AliNormalizationCounter : public TNamed
   Double_t GetNEventsForNorm(Int_t minmultiplicity, Int_t maxmultiplicity);
   Double_t GetNEventsForNormSpheroOnly(Double_t minspherocity, Double_t maxspherocity);
   Double_t GetNEventsForNorm(Int_t minmultiplicity, Int_t maxmultiplicity, Double_t minspherocity, Double_t maxspherocity);
+  Double_t GetNEventsForNormSpheroQuant(Int_t minmultiplicity, Int_t maxmultiplicity, Int_t minspheroquant, Int_t maxspheroquant);
   TH1D* DrawNEventsForNorm(Bool_t drawRatio=kFALSE);
 
   TH1F* GetHistoGenVertexZ() const { return fHistGenVertexZ;}
@@ -96,6 +98,7 @@ class AliNormalizationCounter : public TNamed
   Float_t fMultiplicityEtaRange;
   Bool_t fSpherocity; // flag for spherocity
   Double_t fSpherocitySteps;  // binning in spherocity
+  Bool_t fSpherocityQuant; // flag for spherocity quantile
   TH2F *fHistTrackFilterEvMult; /// hist to store no of filter candidates vs no of tracks in the event
   TH2F *fHistTrackAnaEvMult;/// hist to store no of analysis candidates vs no of tracks in the event
   TH2F *fHistTrackFilterSpdMult; /// hist to store no of filter candidates vs  SPD multiplicity
@@ -105,7 +108,7 @@ class AliNormalizationCounter : public TNamed
   TH1F *fHistRecoVertexZ;      /// histo of reconstructed z vertex
 
   /// \cond CLASSIMP    
-  ClassDef(AliNormalizationCounter,8);
+  ClassDef(AliNormalizationCounter,9);
   /// \endcond
 };
 #endif

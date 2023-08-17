@@ -650,7 +650,8 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    {
     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
     {
-     fqvector[PTq][bin-1][h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi)); // wToPowerP is calculated above  
+     if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]){wToPowerP = pow(wPhi*wPt*wEta,wp);} 
+     fqvector[PTq][bin-1][h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi));
     } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
    } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
 
@@ -698,7 +699,8 @@ void AliAnalysisTaskMuPa::UserExec(Option_t *)
    {
     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
     {
-     fqvector[ETAq][bin-1][h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi)); // wToPowerP is calculated above  
+     if(fUseWeights[0]||fUseWeights[1]||fUseWeights[2]){wToPowerP = pow(wPhi*wPt*wEta,wp);}
+     fqvector[ETAq][bin-1][h][wp] += TComplex(wToPowerP*TMath::Cos(h*dPhi),wToPowerP*TMath::Sin(h*dPhi)); 
     } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
    } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
 
@@ -6914,7 +6916,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
    {
     for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
     {
-     fQvector[h][wp] += TComplex(TMath::Cos(h*dPhi),TMath::Sin(h*dPhi));    
+     fQvector[h][wp] += TComplex(TMath::Cos(h*dPhi),TMath::Sin(h*dPhi)); // no support for weights, deliberately in IV   
     } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
    } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
 
@@ -6959,7 +6961,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
     {
      for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
      {
-      fqvector[PTq][bin-1][h][wp] += TComplex(TMath::Cos(h*dPhi),TMath::Sin(h*dPhi)); // no weights
+      fqvector[PTq][bin-1][h][wp] += TComplex(TMath::Cos(h*dPhi),TMath::Sin(h*dPhi)); // no support for weights, deliberately in IV
      } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
     } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
 
@@ -7007,7 +7009,7 @@ void AliAnalysisTaskMuPa::InternalValidation()
     { 
      for(Int_t wp=0;wp<fMaxCorrelator+1;wp++) // weight power
      {
-      fqvector[ETAq][bin-1][h][wp] += TComplex(TMath::Cos(h*dPhi),TMath::Sin(h*dPhi)); // wToPowerP is calculated above  
+      fqvector[ETAq][bin-1][h][wp] += TComplex(TMath::Cos(h*dPhi),TMath::Sin(h*dPhi)); // no support for weights, deliberately in IV
      } // for(Int_t wp=0;wp<fMaxCorrelator+1;wp++)
     } // for(Int_t h=0;h<fMaxHarmonic*fMaxCorrelator+1;h++)   
 

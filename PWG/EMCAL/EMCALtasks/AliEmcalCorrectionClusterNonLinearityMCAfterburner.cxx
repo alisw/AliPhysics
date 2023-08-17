@@ -326,6 +326,8 @@ TString AliEmcalCorrectionClusterNonLinearityMCAfterburner::SummarizeMCProductio
   else if ( namePeriod.CompareTo("LHC17g8c") == 0  )    return "k17g8c";
   else if ( namePeriod.CompareTo("LHC18b9b") == 0  )    return "k18b9b";
   else if ( namePeriod.CompareTo("LHC18b9c") == 0  )    return "k18b9c";
+  else if ( namePeriod.CompareTo("LHC23d7a") == 0  )    return "k23d7a";
+  else if ( namePeriod.CompareTo("LHC23d7b") == 0  )    return "k23d7b";
   //...MC anchored to 2017 Data...
   //
   //pp 13 TeV LHC17

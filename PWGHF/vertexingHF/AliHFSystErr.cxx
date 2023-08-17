@@ -140,10 +140,12 @@ void AliHFSystErr::Init(Int_t decay){
         }
         else if(fRunNumber==20161718 || fRunNumber==161718){
           InitD0toKpi20161718pp13TeVFineBins();
+
           if(fIsDataDrivenFDAnalysis) {
               if(fStandardBins) InitNonPromptDzerotoKpi20161718pp13TeVML();
               else InitNonPromptDzerotoKpi20161718pp13TeVMLFineBins();
             }
+
         }
         else AliFatal("Not yet implemented");
       }
@@ -3120,7 +3122,7 @@ void AliHFSystErr::InitNonPromptLctopK0s20161718pp13TeVML() {
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",16,0,16);
   fTrackingEff->SetBinContent(1,1.00);
   fTrackingEff->SetBinContent(2,1.00);
-  for(Int_t i=3;i<=12;i++) fTrackingEff->SetBinContent(i,0.04);
+  for(Int_t i=3;i<=12;i++) fTrackingEff->SetBinContent(i,TMath::Sqrt(0.04*0.04 + 0.05*0.05)); // 4%: trk, 5%: mat. budg. 
   for(Int_t i=13;i<=16;i++) fTrackingEff->SetBinContent(i,1);
 
   // Raw yield extraction
@@ -3298,7 +3300,9 @@ void AliHFSystErr::InitNonPromptDzerotoKpi20161718pp13TeVMLFineBins() {
   SetNameTitle("AliHFSystErr","SystErrNonPromptDzerotoKpi20161718pp13TeVMLFineBins");
   // Normalization
   fNorm = new TH1F("fNorm","fNorm",24,0,24);
-  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.016); 
+
+  for(Int_t i=1;i<=24;i++) fNorm->SetBinContent(i,0.016);
+
 
   // Branching ratio
   fBR = new TH1F("fBR","fBR",24,0,24);
@@ -3306,9 +3310,11 @@ void AliHFSystErr::InitNonPromptDzerotoKpi20161718pp13TeVMLFineBins() {
 
   // Tracking efficiency
   fTrackingEff = new TH1F("fTrackingEff","fTrackingEff",24,0,24);
+
   for(Int_t i=1;i<=4 ;i++) fTrackingEff->SetBinContent(i,0.04);
   for(Int_t i=5;i<=16;i++) fTrackingEff->SetBinContent(i,0.05);
   for(Int_t i=17;i<=24;i++) fTrackingEff->SetBinContent(i,0.06);
+
 
   // Raw yield extraction
   fRawYield = new TH1F("fRawYield","fRawYield",24,0,24);
@@ -3348,6 +3354,7 @@ void AliHFSystErr::InitNonPromptDzerotoKpi20161718pp13TeVMLFineBins() {
 
   return;
 }
+
 //--------------------------------------------------------------------------
 void AliHFSystErr::InitDplustoKpipi2016pp13TeV(){
   //

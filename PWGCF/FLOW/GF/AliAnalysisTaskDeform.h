@@ -129,6 +129,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   void SetFillAdditionalTrackQAPlots(Bool_t newval) { fFillAdditionalQA = newval; }
   void SetPtMPar(int newval) { fPtMpar = newval; }
   void SetUseExoticPtCorr(bool newval) { fUseExoticPtCorr = newval; }
+  void SetEnableFB768DCAxy(bool newval) { fEnableFB768dcaxy = newval;}
  protected:
   AliEventCuts fEventCuts;
  private:
@@ -231,9 +232,8 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   TF1 *fCenCutLowPU; //Store these
   TF1 *fCenCutHighPU; //Store these
   TF1 *fMultCutPU; //Store these
-  TH1D** fPhi; //!
-  TH1D** fPt; //!
-  TH1D** fEta; //!
+  TH3D** fPhiEtaVz; //!
+  TH2D** fPt; //!
   TH2D** fDCAxy; //!
   TH2D** fDCAz; //!
   TH1D** fChi2TPCcls; //!
@@ -254,7 +254,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t AcceptAODTrack(AliAODTrack *lTr, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin=0.5, const Double_t &ptMax=2, Double_t *vtxp=0);
   Bool_t AcceptESDTrack(AliESDtrack *lTr, UInt_t&, Double_t*, const Double_t &ptMin, const Double_t &ptMax, Double_t *vtxp, Int_t &nTot);
-  void FillAdditionalTrackQAPlots(AliAODTrack &track, Double_t weff, Double_t wacc, Double_t* vtxp, Bool_t beforeCuts);
+  void FillAdditionalTrackQAPlots(AliAODTrack &track, const Double_t &cent, Double_t weff, Double_t wacc, const Double_t &vz, Double_t* vtxp, Bool_t beforeCuts);
   void SetupAxes();
   void CreateWeightOutputObjects();
   void CreateEfficiencyOutputObjects();
@@ -276,6 +276,7 @@ class AliAnalysisTaskDeform : public AliAnalysisTaskSE {
   Bool_t fFillMptPowers;
   Bool_t fUseMcParticleForEfficiency;
   Bool_t fUseExoticPtCorr;
+  Bool_t fEnableFB768dcaxy;
   Double_t *GetBinsFromAxis(TAxis *inax);
 
   ClassDef(AliAnalysisTaskDeform,1);

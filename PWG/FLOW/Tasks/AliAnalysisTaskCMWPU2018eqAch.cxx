@@ -775,7 +775,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
 
 
   //// PileUp Removal Functions: //mainly used for analysis
-  /*
+  
   fSPDCutPU = new TF1("fSPDCutPU", "400. + 4.*x", 0, 10000);
 
   Double_t parV0[8] = {43.8011, 0.822574, 8.49794e-02, 1.34217e+02, 7.09023e+00, 4.99720e-02, -4.99051e-04, 1.55864e-06};
@@ -791,8 +791,8 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
   fCenCutLowPU->SetParameters(parV0CL0);
   fCenCutHighPU = new TF1("fCenCutHighPU", "[0]+[1]*x + 5.5*([2]+[3]*x+[4]*x*x+[5]*x*x*x)", 0, 100);
   fCenCutHighPU->SetParameters(parV0CL0);
-  */
-
+  
+  /*
   if (bdataset==0)
     {
       fSPDCutPU = new TF1("fSPDCutPU", "480. + 3.95*x", 0, 50000);
@@ -832,7 +832,7 @@ void AliAnalysisTaskCMWPU2018eqAch::UserCreateOutputObjects()
       fMultCutPU->SetParameters(parFB32);
     }
 
-  
+  */
 
 
 
@@ -1476,6 +1476,27 @@ void AliAnalysisTaskCMWPU2018eqAch::UserExec(Option_t*) {
 	    isItProt = kTRUE;
 	  }
 	}
+
+	/*
+	if (isItPion==kTRUE && isItKaon==kTRUE)
+	  {
+	    isItPion=kFALSE;
+	    isItKaon=kFALSE;
+	  }
+
+	if (isItPion==kTRUE && isItProt==kTRUE)
+	  {
+	    isItPion=kFALSE;
+	    isItProt=kFALSE;
+	  }
+
+	if (isItKaon==kTRUE && isItProt==kTRUE)
+	  {
+	    isItKaon=kFALSE;
+	    isItProt=kFALSE;
+	  }
+	*/
+
     	//-------- PID selection is done ---------
 
 	ptWgtMC = 1.0;

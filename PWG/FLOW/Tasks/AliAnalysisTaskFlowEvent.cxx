@@ -139,6 +139,9 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent() :
   fV4(0.),
   fV5(0.),
   fDifferentialV2(0),
+  kUseGainEqualizationMap(kFALSE),
+  fHistZNChannelGainEqualizationMap(NULL),
+  fHistZPChannelGainEqualizationMap(NULL),
   fFlowEvent(NULL),
   fShuffleTracks(kFALSE),
   fMyTRandom3(NULL)
@@ -201,6 +204,9 @@ AliAnalysisTaskFlowEvent::AliAnalysisTaskFlowEvent(const char *name, TString RPt
   fV4(0.),
   fV5(0.),
   fDifferentialV2(0),
+  kUseGainEqualizationMap(kFALSE),
+  fHistZNChannelGainEqualizationMap(NULL),
+  fHistZPChannelGainEqualizationMap(NULL),
   fFlowEvent(NULL),
   fShuffleTracks(kFALSE),
   fMyTRandom3(NULL)
@@ -306,6 +312,10 @@ void AliAnalysisTaskFlowEvent::UserCreateOutputObjects()
     fQAList->Add(new TH1F("event plane angle","event plane angle;angle [rad];",100,0.,TMath::TwoPi())); //3
 
     fQAList->Add(new TH3F("fHistZPTowerSignal","fHistZPTowerSignal; Centrality (%); ZDC(P) tower; ZDC signal (a.u.) #times 10^{3}",100,0,100,10,0.5,10.5,601,-0.5,600.5));
+    fQAList->Add(new TH3F("fHistZNTowerSignal","fHistZNTowerSignal; Centrality (%); ZDC(N) tower; ZDC signal (a.u.) #times 10^{3}",100,0,100,10,0.5,10.5,601,-0.5,600.5));
+
+    fQAList->Add(new TH3F("fHistZPTowerSignalCalibrated","fHistZPTowerSignal; Centrality (%); ZDC(P) tower; ZDC signal (a.u.) #times 10^{3}",100,0,100,10,0.5,10.5,601,-0.5,600.5));
+    fQAList->Add(new TH3F("fHistZNTowerSignalCalibrated","fHistZNTowerSignal; Centrality (%); ZDC(N) tower; ZDC signal (a.u.) #times 10^{3}",100,0,100,10,0.5,10.5,601,-0.5,600.5));
 
     PostData(2,fQAList);
   }
@@ -608,21 +618,25 @@ void AliAnalysisTaskFlowEvent::FillZDCInfo(AliAODEvent *myAOD) {
   AliDebug(2,"AliAnalysisTaskFlowEvent::FillZDCInfo()");
   const static Int_t gNumberOfZDCChannels = 5;
 
+  Int_t gRunNumber = myAOD->GetRunNumber();
+
   AliAODZDC *aodZDC = myAOD->GetZDCData();
   const Double_t *gZNATowerRawAOD = aodZDC->GetZNATowerEnergy();
   const Double_t *gZNCTowerRawAOD = aodZDC->GetZNCTowerEnergy();
   const Double_t *gZPATowerRawAOD = aodZDC->GetZPATowerEnergy();
   const Double_t *gZPCTowerRawAOD = aodZDC->GetZPCTowerEnergy();
-
-  if(fFlowEvent) {
-    fFlowEvent->SetZPAEnergy(gZPATowerRawAOD[0]);
-    fFlowEvent->SetZPCEnergy(gZPCTowerRawAOD[0]);
-  }
   
   Double_t gZNATowerRaw[5] = {0.,0.,0.,0.,0.};
   Double_t gZNCTowerRaw[5] = {0.,0.,0.,0.,0.};
   Double_t gZPATowerRaw[5] = {0.,0.,0.,0.,0.};
   Double_t gZPCTowerRaw[5] = {0.,0.,0.,0.,0.};
+  Double_t gZNATowerCalibrated[5] = {0.,0.,0.,0.,0.};
+  Double_t gZNCTowerCalibrated[5] = {0.,0.,0.,0.,0.};
+  Double_t gZPATowerCalibrated[5] = {0.,0.,0.,0.,0.};
+  Double_t gZPCTowerCalibrated[5] = {0.,0.,0.,0.,0.};
+
+  //Get the gain factor
+  Double_t gFactorZN = 1.0, gFactorZP = 1.0;
 
   //Get centrality
   AliMultSelection *gMultSelection = (AliMultSelection*)myAOD->FindListObject("MultSelection");
@@ -634,11 +648,99 @@ void AliAnalysisTaskFlowEvent::FillZDCInfo(AliAODEvent *myAOD) {
     gZPATowerRaw[iChannel] = gZPATowerRawAOD[iChannel];
     gZPCTowerRaw[iChannel] = gZPCTowerRawAOD[iChannel];
 
+    //Get equalization factors
+    if(kUseGainEqualizationMap) {
+      //ZN detectors
+      gFactorZN = GetZNChannelEqualizationFactor(gRunNumber,iChannel,gCentralityV0M);
+      if(gFactorZN != 0) {
+	gZNATowerCalibrated[iChannel] = gZNATowerRaw[iChannel]/gFactorZN;
+	gZNCTowerCalibrated[iChannel] = gZNCTowerRaw[iChannel]/gFactorZN;
+      }
+
+      //ZP detectors
+      gFactorZP = GetZPChannelEqualizationFactor(gRunNumber,iChannel,gCentralityV0M);
+      if(gFactorZP != 0) {
+	gZPATowerCalibrated[iChannel] = gZPATowerRaw[iChannel]/gFactorZP;
+	gZPCTowerCalibrated[iChannel] = gZPCTowerRaw[iChannel]/gFactorZP;
+      }
+    }
+
     //QA
     if (fQAon) {
-      TH3* h3 = static_cast<TH3F*>(fQAList->FindObject("fHistZPTowerSignal"));
-      h3->Fill(gCentralityV0M,iChannel+1,gZPATowerRawAOD[iChannel]/1000);
-      h3->Fill(gCentralityV0M,5+iChannel+1,gZPCTowerRawAOD[iChannel]/1000);
+      TH3* h3ZP = static_cast<TH3F*>(fQAList->FindObject("fHistZPTowerSignal"));
+      h3ZP->Fill(gCentralityV0M,iChannel+1,gZPATowerRawAOD[iChannel]/1000);
+      h3ZP->Fill(gCentralityV0M,5+iChannel+1,gZPCTowerRawAOD[iChannel]/1000);
+
+      TH3* h3ZN = static_cast<TH3F*>(fQAList->FindObject("fHistZNTowerSignal"));
+      h3ZN->Fill(gCentralityV0M,iChannel+1,gZNATowerRawAOD[iChannel]/1000);
+      h3ZN->Fill(gCentralityV0M,5+iChannel+1,gZNCTowerRawAOD[iChannel]/1000);
+
+      TH3* h3ZPCalib = static_cast<TH3F*>(fQAList->FindObject("fHistZPTowerSignalCalibrated"));
+      h3ZPCalib->Fill(gCentralityV0M,iChannel+1,gZPATowerCalibrated[iChannel]/1000);
+      h3ZPCalib->Fill(gCentralityV0M,5+iChannel+1,gZPCTowerCalibrated[iChannel]/1000);
+
+      TH3* h3ZNCalib = static_cast<TH3F*>(fQAList->FindObject("fHistZNTowerSignalCalibrated"));
+      h3ZNCalib->Fill(gCentralityV0M,iChannel+1,gZNATowerCalibrated[iChannel]/1000);
+      h3ZNCalib->Fill(gCentralityV0M,5+iChannel+1,gZNCTowerCalibrated[iChannel]/1000);
     }
-  }
+  }//channel loop
+
+  if(fFlowEvent) {
+    if(!kUseGainEqualizationMap) {
+      fFlowEvent->SetZPAEnergy(gZPATowerRawAOD[0]);
+      fFlowEvent->SetZPCEnergy(gZPCTowerRawAOD[0]);
+      
+      fFlowEvent->SetZNAEnergy(gZNATowerRawAOD[0]);
+      fFlowEvent->SetZNCEnergy(gZNCTowerRawAOD[0]);
+    }
+    else {
+      fFlowEvent->SetZPAEnergy(gZPATowerCalibrated[0]);
+      fFlowEvent->SetZPCEnergy(gZPCTowerCalibrated[0]);
+      
+      fFlowEvent->SetZNAEnergy(gZNATowerCalibrated[0]);
+      fFlowEvent->SetZNCEnergy(gZNCTowerCalibrated[0]);
+    }
+ }
+}
+
+//________________________________________________________________________                                                                                
+Double_t  AliAnalysisTaskFlowEvent::GetZNChannelEqualizationFactor(Int_t run, Int_t channel, Double_t centrality) {
+  //Returns the correction factor per channel for each centrality and run                                                                                 
+  if(fHistZNChannelGainEqualizationMap) {
+    for(Int_t iRun = 1; iRun <= fHistZNChannelGainEqualizationMap->GetNbinsX(); iRun++) {
+      TString gLabel = fHistZNChannelGainEqualizationMap->GetXaxis()->GetBinLabel(iRun);
+      Int_t gRunNumber = gLabel.Atoi();
+      Int_t iCentrality = fHistZNChannelGainEqualizationMap->GetZaxis()->FindBin(centrality);
+      if(gRunNumber == run) {
+        /*cout<<"Getting the correction ZN factor for run "<<gRunNumber<<                                                                                 
+          " (bin "<<iRun<<") channel "<<channel<<" (bin "<<channel+1<<                                                                                    
+          ") centrality "<<centrality<<" (bin "<<iCentrality<<"): "<<                                                                                     
+          fHistZNChannelGainEqualizationMap->GetBinContent(iRun,channel+1,iCentrality)<<endl;*/
+        return fHistZNChannelGainEqualizationMap->GetBinContent(iRun,channel+1,iCentrality);
+      }
+    }//loop over runs                                                                                                                                     
+  }//map exists                                                                                                                                           
+
+  return -999.;
+}
+
+//________________________________________________________________________                                                                                
+Double_t  AliAnalysisTaskFlowEvent::GetZPChannelEqualizationFactor(Int_t run, Int_t channel, Double_t centrality) {
+  //Returns the correction factor per channel for each centrality and run                                                                                 
+  if(fHistZPChannelGainEqualizationMap) {
+    for(Int_t iRun = 1; iRun <= fHistZPChannelGainEqualizationMap->GetNbinsX(); iRun++) {
+      TString gLabel = fHistZPChannelGainEqualizationMap->GetXaxis()->GetBinLabel(iRun);
+      Int_t gRunNumber = gLabel.Atoi();
+      Int_t iCentrality = fHistZPChannelGainEqualizationMap->GetZaxis()->FindBin(centrality);
+      if(gRunNumber == run) {
+        /*cout<<"Getting the correction ZP factor for run "<<gRunNumber<<                                                                                 
+          " (bin "<<iRun<<") channel "<<channel<<" (bin "<<channel+1<<                                                                                    
+          ") centrality "<<centrality<<" (bin "<<iCentrality<<"): "<<                                                                                     
+          fHistZPChannelGainEqualizationMap->GetBinContent(iRun,channel+1,iCentrality)<<endl;*/
+        return fHistZPChannelGainEqualizationMap->GetBinContent(iRun,channel+1,iCentrality);
+      }
+    }//loop over runs                                                                                                                                     
+  }//map exists                                                                                                                                           
+
+  return -999.;
 }

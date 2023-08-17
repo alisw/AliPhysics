@@ -132,6 +132,7 @@ private:
   TH1D *hEta;
   TH1D *hEtamc;
   TH1D *hCounter;
+  TH1D *hV0MBad;  
   TH2D *hFlatVsPtV0M[9];
   TH2D *hFlatVsPtV0MMC[9];
   TH2D *hFlatVsNchTPCV0M[9];  

@@ -42,6 +42,7 @@ class AliAnalysisTaskdEdxCalibration : public AliAnalysisTaskSE {
 		virtual void Terminate(Option_t *option);
 		double EtaCalibration(const double&);
 		double EtaCalibrationEl(const double&);
+		double GetFlatenicityV0();
 		void dEdxMIP();
 		void AnalyzeV0s();
 		void SetPtMin(Double_t val) { fPtMin = val; } // Set pT cut for associated particles
@@ -77,16 +78,17 @@ class AliAnalysisTaskdEdxCalibration : public AliAnalysisTaskSE {
 		TF1* fcutDCAxy;
 		std::string fPeriod;
 		double fv0mpercentile;
+		double fFlat;
 		AliMultSelection *fMultSelection;
 
-		TH2F* hPionTPCDCAxyNegData;
-		TH2F* hPionTPCDCAxyPosData;
-		TH2F* hProtonTPCDCAxyNegData; 
-		TH2F* hProtonTPCDCAxyPosData;
-		TH2F* hPionTOFDCAxyNegData;
-		TH2F* hPionTOFDCAxyPosData;
-		TH2F* hProtonTOFDCAxyNegData; 
-		TH2F* hProtonTOFDCAxyPosData;
+		TH3F* hPionTPCDCAxyNegData;
+		TH3F* hPionTPCDCAxyPosData;
+		TH3F* hProtonTPCDCAxyNegData; 
+		TH3F* hProtonTPCDCAxyPosData;
+		TH3F* hPionTOFDCAxyNegData;
+		TH3F* hPionTOFDCAxyPosData;
+		TH3F* hProtonTOFDCAxyNegData; 
+		TH3F* hProtonTOFDCAxyPosData;
 
 		TH2F* hMIPVsEta;
 		TProfile* pMIPVsEta;

@@ -375,7 +375,9 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   
   TH3F *   fhPtM02SumPtCone;                           //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone
   TH3F *   fhPtM02SumPtConeMC[fgkNmcTypes];            //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, per MC particle
- 
+  TH3F *   fhPtM02SumPtConeDecayTag[AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, per decay tag bit
+  TH3F *   fhPtM02SumPtConeMCDecayTag[fgkNmcTypes][AliNeutralMesonSelection::fgkMaxNDecayBits]; //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, per decay tag bit, per MC particle
+
   TH3F *   fhPtM02SumPtConeCharged;                    //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, charged in cone
   TH3F *   fhPtM02SumPtConeChargedMC[fgkNmcTypes];     //!<! ABCD TH3F histogram Pt, Shower Shape and sum(ET)+sum(pT) cone, per MC particle, charged in cone
   
@@ -744,7 +746,7 @@ class AliAnaParticleIsolation : public AliAnaCaloTrackCorrBaseClass {
   AliAnaParticleIsolation & operator = (const AliAnaParticleIsolation & iso) ;
   
   /// \cond CLASSIMP
-  ClassDef(AliAnaParticleIsolation,55) ;
+  ClassDef(AliAnaParticleIsolation,56) ;
   /// \endcond
 
 } ;

@@ -99,9 +99,8 @@ Bool_t       k0sSwitch=0,
  Int_t       multbin=100,
  Float_t     lmultbin=0,
  Float_t     hmultbin=100,
- Int_t        nm=1,
- Bool_t      timeRangeCut      = kTRUE
-
+ Float_t      LE=0.97,
+ Float_t      RE=1.04
 
  )
 {
@@ -198,12 +197,17 @@ Bool_t       k0sSwitch=0,
 
     AliRsnCutEventUtils* cutEventUtils=new AliRsnCutEventUtils("cutEventUtils",kTRUE,rejectPileUp);
     cutEventUtils->SetCheckAcceptedMultSelection();    
-
+    cutEventUtils->SetCheckIncompleteDAQ();
+    cutEventUtils->SetCheckSPDClusterVsTrackletBG();
+    
+    
    //AliRsnCutPrimaryVertex *cutVertex = 0;
    //cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
    AliRsnCutPrimaryVertex *cutVertex=new AliRsnCutPrimaryVertex("cutVertex",vtxZcut,0,kFALSE);
    cutVertex->GetCheckGeneratedVertexZ();
-
+   cutVertex->SetCheckZResolutionSPD();
+   cutVertex->SetCheckDispersionSPD();
+   cutVertex->SetCheckZDifferenceSPDTrack();
 
    AliRsnCutSet *eventCuts = new AliRsnCutSet("eventCuts", AliRsnTarget::kEvent);
    eventCuts->AddCut(cutEventUtils);
@@ -223,7 +227,7 @@ Bool_t       k0sSwitch=0,
     Int_t multID=task->CreateValue(AliRsnMiniValue::kMult,kFALSE);
     AliRsnMiniOutput* outMult=task->CreateOutput("eventMult","HIST","EVENT");
     if(isPP)
-    outMult->AddAxis(multID,400,0.5,400.5);
+    outMult->AddAxis(multID,400,0.0,400.0);
     else outMult->AddAxis(multID,100,0.,100.);
     
     TH2F* hvz=new TH2F("hVzVsCent","",100,0.,100., 240,-12.0,12.0);
@@ -291,7 +295,7 @@ Bool_t       k0sSwitch=0,
     } else
        Printf("========================== DATA analysis - PID cuts used");
     
-     if(!ConfigKShKpi(task, isMC, piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, enableMonitor, monitorOpt.Data(), UseTolCut, ArmentousParameter, k0sSwitch, massTol, tol_switch, tol_sigma, pLife, radiuslow, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", DCAxy, enableSys, crossedRows, rowsbycluster, Sys, nNKS, imbin, limbin, himbin, ptbin, lptbin, hptbin, multbin, lmultbin, hmultbin, triggerMask, nm)) return 0x0;
+     if(!ConfigKShKpi(task, isMC, piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, enableMonitor, monitorOpt.Data(), UseTolCut, ArmentousParameter, k0sSwitch, massTol, tol_switch, tol_sigma, pLife, radiuslow, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", DCAxy, enableSys, crossedRows, rowsbycluster, Sys, nNKS, imbin, limbin, himbin, ptbin, lptbin, hptbin, multbin, lmultbin, hmultbin, triggerMask, LE, RE)) return 0x0;
 
      //if(!ConfigKStarPlusMinusPbPb2018arm(task, isMC, piPIDCut,nsigmaTOF,customQualityCutsID, cutPiCandidate, pi_k0s_PIDCut, enableMonitor, monitorOpt.Data(), UseTolCut, ArmentousParameter, massTol, tol_switch, tol_sigma, pLife, radiuslow, k0sDCA, k0sCosPoinAn, k0sDaughDCA, NTPCcluster, "", DCAxy, enableSys, crossedRows, rowsbycluster, Sys, imbin, limbin, himbin, ptbin, lptbin, hptbin, multbin, lmultbin, hmultbin)) return 0x0;
     

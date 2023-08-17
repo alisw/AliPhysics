@@ -91,14 +91,21 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fSpringMode(false),
     fAddTPCPileupCuts(false),
     fESDvsTPConlyLinearCut(15000.),
+    fUseOutOfBunchPileupCut(false),
     fUseCorrectedNTracks(false),
-	  fCentralityCut(100),
+    binning_factor(1),
+	  fCentralityCut(101.1),
     fUseNarrowBin(false),
     fExtremeEfficiency(0),
     fTPCchi2perCluster(4.0),
     fUseAdditionalDCACut(false),
     fUseDefaultWeight(false),
-    fEtaGap3Sub(0.4),
+    bUseLikeSign(false),
+    iSign(0),
+    fExtendV0MAcceptance(false),
+    fV0MRatioCut(0),
+    fEtaGap3Sub1(0.4),
+    fEtaGap3Sub2(0.4),
     fOnTheFly(false),
 
     fListOfObjects(0),
@@ -121,6 +128,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     fVtxAfterCuts(0),
     fCentralityDis(0),
     fV0CentralityDis(0),
+    fV0MMultiplicity(0),
+    fV0MRatio(0),
     
     fPhiDis1D(0),
     fPhiDis(0),
@@ -144,16 +153,6 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow():
     rand(32213)
 {
   for (int i = 0; i < 30; i++) fListOfProfiles[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap0P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap0M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap10P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap10M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap14P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap14M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subL[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subM[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subR[i] = NULL;
 }
 //______________________________________________________________________________
 AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int _fNUA, int _fNUE, TString _fPeriod):
@@ -178,14 +177,21 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fSpringMode(false),
   fAddTPCPileupCuts(false),
   fESDvsTPConlyLinearCut(15000.),
+  fUseOutOfBunchPileupCut(false),
   fUseCorrectedNTracks(false),
-	fCentralityCut(100),
+  binning_factor(1),
+	fCentralityCut(101.1),
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
   fTPCchi2perCluster(4.0),
   fUseAdditionalDCACut(false),
   fUseDefaultWeight(false),
-  fEtaGap3Sub(0.4),
+  bUseLikeSign(false),
+  iSign(0),
+  fExtendV0MAcceptance(false),
+  fV0MRatioCut(0),
+  fEtaGap3Sub1(0.4),
+  fEtaGap3Sub2(0.4),
   fOnTheFly(false),
 
   fListOfObjects(0),
@@ -207,6 +213,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   fVtxAfterCuts(0),
   fCentralityDis(0),
   fV0CentralityDis(0),
+  fV0MMultiplicity(0),
+  fV0MRatio(0),
   
   fPhiDis1D(0),
   fPhiDis(0),
@@ -230,17 +238,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name, int
   rand(32213) {
 
   for (int i = 0; i < 30; i++) fListOfProfiles[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap0P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap0M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap10P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap10M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap14P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap14M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subL[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subM[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subR[i] = NULL;
-
+  
   // Output slot #1 writes into a TList
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -293,14 +291,21 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fSpringMode(false),
   fAddTPCPileupCuts(false),
   fESDvsTPConlyLinearCut(15000.),
+  fUseOutOfBunchPileupCut(false),
   fUseCorrectedNTracks(false),
-	fCentralityCut(100),
+  binning_factor(1),
+	fCentralityCut(101.1),
   fUseNarrowBin(false),
   fExtremeEfficiency(0),
   fTPCchi2perCluster(4.0),
   fUseAdditionalDCACut(false),
   fUseDefaultWeight(false),
-  fEtaGap3Sub(0.4),
+  bUseLikeSign(false),
+  iSign(0),
+  fExtendV0MAcceptance(false),
+  fV0MRatioCut(0),
+  fEtaGap3Sub1(0.4),
+  fEtaGap3Sub2(0.4),
   fOnTheFly(false),
 
   fListOfObjects(0),
@@ -324,6 +329,8 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   fVtxAfterCuts(0),
   fCentralityDis(0),
   fV0CentralityDis(0),
+  fV0MMultiplicity(0),
+  fV0MRatio(0),
   
 
   fPhiDis1D(0),
@@ -348,17 +355,7 @@ AliAnalysisTaskNonlinearFlow::AliAnalysisTaskNonlinearFlow(const char *name):
   rand(32213) {
 
   for (int i = 0; i < 30; i++) fListOfProfiles[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap0P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap0M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap10P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap10M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap14P[i] = NULL;
-  for (int i = 0; i < 10; i++) QDisGap14M[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subL[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subM[i] = NULL;
-  for (int i = 0; i < 10; i++) QDis3subR[i] = NULL;
-
+  
   // Output slot #1 writes into a TList
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
@@ -384,17 +381,7 @@ AliAnalysisTaskNonlinearFlow::~AliAnalysisTaskNonlinearFlow()
   for (int i = 0; i < 30; i++) {
     if (fListOfProfiles[i]) delete fListOfProfiles[i];
   }
-  for (int i = 0; i < 10; i++) if (QDis[i]) delete QDis[i];
-  for (int i = 0; i < 10; i++) if (QDisGap0P[i]) delete QDisGap0P[i];
-  for (int i = 0; i < 10; i++) if (QDisGap0M[i]) delete QDisGap0M[i];
-  for (int i = 0; i < 10; i++) if (QDisGap10P[i]) delete QDisGap10P[i];
-  for (int i = 0; i < 10; i++) if (QDisGap10M[i]) delete QDisGap10M[i];
-  for (int i = 0; i < 10; i++) if (QDisGap14P[i]) delete QDisGap14P[i];
-  for (int i = 0; i < 10; i++) if (QDisGap14M[i]) delete QDisGap14M[i];
-  for (int i = 0; i < 10; i++) if (QDis3subL[i]) delete QDis3subL[i];
-  for (int i = 0; i < 10; i++) if (QDis3subM[i]) delete QDis3subM[i];
-  for (int i = 0; i < 10; i++) if (QDis3subR[i]) delete QDis3subR[i];
-
+  
   if (fGFWSelection) delete fGFWSelection;
   if (fGFWSelection15o) delete fGFWSelection15o;
 }
@@ -422,6 +409,12 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
     fEventCuts.fPileUpCutMV = true;
   }
 
+  if (fExtendV0MAcceptance) {
+    fEventCuts.OverrideCentralityFramework(1);
+    fEventCuts.SetCentralityEstimators("V0M", "CL0");
+    fEventCuts.SetCentralityRange(0.f,101.f);
+  }
+
   if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1 and LHC17n
     fGFWSelection15o = new AliGFWNFCuts();
     fGFWSelection15o->PrintSetup();
@@ -441,10 +434,10 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
         nn = 200 + 56;
         // 56 = (3000-200)/50
         for (int i = 0; i <= 200; i++) {
-          xbins[i] = i + 0.5;
+          xbins[i] = (i + 0.5)*binning_factor;
         }
         for (int i = 1; i <= 56; i++) {
-          xbins[200+i] = 50*i + 200 + 0.5;
+          xbins[200+i] = (50*i + 200 + 0.5)*binning_factor;
         } 
       } else {
         nn = 3000;
@@ -547,14 +540,21 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   fVtxAfterCuts->Sumw2();
   fListOfObjects->Add(fVtxAfterCuts);
 
-  fCentralityDis = new TH1F("fCentralityDis", "centrality distribution; centrality; Counts", 100, 0, 100);
+  fCentralityDis = new TH1F("fCentralityDis", "centrality distribution; centrality; Counts", 101, 0, 101);
   fListOfObjects->Add(fCentralityDis);
 
-  fV0CentralityDis = new TH1F("fV0CentralityDis", "centrality V0/<V0> distribution; centrality; Counts", 100, 0, 100);
+  fV0CentralityDis = new TH1F("fV0CentralityDis", "centrality V0/<V0> distribution; centrality; Counts", 101, 0, 101);
   fListOfObjects->Add(fV0CentralityDis);
 
   fV0CentralityDisNarrow = new TH1F("fV0CentralityDisNarrow", "centrality V0/<V0> distribution; centrality; Counts", 1000, 0, 10);
   fListOfObjects->Add(fV0CentralityDisNarrow);
+
+  fV0MMultiplicity = new TH1F("fV0MMultiplicity", "V0 Multiplicity distribution", 1000, 0, 1000);
+  fListOfObjects->Add(fV0MMultiplicity);
+
+  fV0MRatio = new TH1F("fV0MRatio", "V0M / <V0M> distribution", 100, 0, 10);
+  fListOfObjects->Add(fV0MRatio);
+
 
   fPhiDis1DBefore = new TH1D("hPhiDisBefore", "phi distribution before the weight correction", 60, 0, 2*3.1415926);
   fListOfObjects->Add(fPhiDis1DBefore);
@@ -619,28 +619,6 @@ void AliAnalysisTaskNonlinearFlow::UserCreateOutputObjects()
   }
 
   // Create Q Distribution
-  for (int h = 0; h < 6; h++) {
-    QDis[h] = new TH2D(Form("Q%dDis", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDisGap0P[h] = new TH2D(Form("Q%dDisGap0P", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDisGap0M[h] = new TH2D(Form("Q%dDisGap0M", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDisGap10P[h] = new TH2D(Form("Q%dDisGap10P", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDisGap10M[h] = new TH2D(Form("Q%dDisGap10M", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDisGap14P[h] = new TH2D(Form("Q%dDisGap14P", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDisGap14M[h] = new TH2D(Form("Q%dDisGap14M", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDis3subL[h] = new TH2D(Form("Q%dDis3subL", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDis3subM[h] = new TH2D(Form("Q%dDis3subM", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    QDis3subR[h] = new TH2D(Form("Q%dDis3subR", h+2), "Q distribution", 100, -1, 1, 100, -1, 1);
-    fListOfObjects->Add(QDis[h]);
-    fListOfObjects->Add(QDisGap0P[h]);
-    fListOfObjects->Add(QDisGap0M[h]);
-    fListOfObjects->Add(QDisGap10P[h]);
-    fListOfObjects->Add(QDisGap10M[h]);
-    fListOfObjects->Add(QDisGap14P[h]);
-    fListOfObjects->Add(QDisGap14M[h]);
-    fListOfObjects->Add(QDis3subL[h]);
-    fListOfObjects->Add(QDis3subM[h]);
-    fListOfObjects->Add(QDis3subR[h]);
-  }
 
   // Physics profiles
   //	NL response
@@ -678,8 +656,8 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
     UInt_t fSelectMask = ((AliInputEventHandler*)(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler()))->IsEventSelected();
     Bool_t isTrigselected = false;
     if (fTrigger == 0) {
-      isTrigselected = fSelectMask&AliVEvent::kINT7;
-      fAliTrigger = AliVEvent::kINT7;
+      isTrigselected = fSelectMask&(AliVEvent::kINT7+AliVEvent::kMB);
+      fAliTrigger = AliVEvent::kINT7+AliVEvent::kMB;
     } else if (fTrigger == 1) {
       isTrigselected = fSelectMask&AliVEvent::kHighMultV0;
       fAliTrigger = AliVEvent::kHighMultV0;
@@ -699,8 +677,23 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
   if (fOnTheFly) {
     hEventCount->Fill("after fEventCuts", 1.);
-    bootstrap_value = rand.Integer(30)-1;
+    // bootstrap_value = rand.Integer(30);
   } else {
+    //..standard event plots (cent. percentiles, mult-vs-percentile)
+    const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
+    const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
+    float centrV0 = dCentrality;
+    float cent = dCentrality;
+    float centSPD = 0;
+
+    fCentralityDis->Fill(cent);
+    fV0CentralityDis->Fill(centrV0);
+    fV0CentralityDisNarrow->Fill(centrV0);
+
+    const auto v0Est = pms->GetEstimator("V0M");
+    fV0MMultiplicity->Fill(v0Est->GetValue());
+    fV0MRatio->Fill(v0Est->GetValue()/v0Est->GetMean());
+
     // Check if it passed the standard AOD selection
     if (!AcceptAOD(fAOD) ) {
       PostData(1,fListOfObjects);
@@ -807,17 +800,7 @@ void AliAnalysisTaskNonlinearFlow::UserExec(Option_t *)
 
     hMult->Fill(NtrksCounter);
 
-    //..standard event plots (cent. percentiles, mult-vs-percentile)
-    const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
-    const auto dCentrality(pms->GetMultiplicityPercentile("V0M"));
-    float centrV0 = dCentrality;
-    float cent = dCentrality;
-    float centSPD = 0;
-
-    fCentralityDis->Fill(cent);
-    fV0CentralityDis->Fill(centrV0);
-    fV0CentralityDisNarrow->Fill(centrV0);
-
+    
     if (cent > fCentralityCut) {
       PostData(1,fListOfObjects);
       int outputslot = 2;
@@ -939,6 +922,13 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
   NtrksAfter3subM = 0;
   NtrksAfter3subR = 0;
 
+  sumPtw = 0;
+  sumPtw2 = 0;
+  sumPt2w2 = 0;
+  sumWeight = 0;
+  sumWeight2 = 0;
+  eventWeight  = 0;
+  eventWeight2 = 0;
 
   //..for DCA
   double pos[3], vz, vx, vy;
@@ -1015,6 +1005,10 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
        if (dcaXY > 1) continue;
        if (dcaZ > 1) continue;
     }
+    if(bUseLikeSign)
+    {
+      if(!(aodTrk->Charge() == iSign)) continue;
+    }
 
 	  hDCAxy->Fill(dcaXY, aodTrk->Pt());
 	  hDCAz->Fill(dcaZ);
@@ -1041,12 +1035,14 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     fEtaDis->Fill(aodTrk->Eta());
     fPhiDis1D->Fill(aodTrk->Phi(), weight*weightPt);
 
+
+
     //..calculate Q-vectors
     //..no eta gap
     // Calculate the values upto v7
     if (fuQStandard) {
       for(int iharm=0; iharm<8; iharm++) {
-        for(int ipow=0; ipow<6; ipow++) {
+        for(int ipow=0; ipow<9; ipow++) {
           Qcos[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*aodTrk->Phi());
           Qsin[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*aodTrk->Phi());
         }
@@ -1074,7 +1070,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
       }
     }
 
-    if (fuQGapScan) {
+    if (fuQGapScan || fgVnPtCorr) {
       //..Gap > 0.2
       if(aodTrk->Eta() < -0.1) {
         NtrksAfterGap2M++;
@@ -1198,9 +1194,9 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
       }
     }
 
-    if (fuQThreeSub) {
+    if (fuQThreeSub || fgVnPtCorr) {
       //..3-subevent method
-      if(aodTrk->Eta() < -fEtaGap3Sub) {//..left part
+      if(aodTrk->Eta() < -fEtaGap3Sub1) {//..left part
         NtrksAfter3subL += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1209,7 +1205,14 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
           }
         }
       }
-      if(aodTrk->Eta() >= -fEtaGap3Sub && aodTrk->Eta() <= fEtaGap3Sub) {//..middle part
+      if(aodTrk->Eta() >= -fEtaGap3Sub2 && aodTrk->Eta() <= fEtaGap3Sub2) {//..middle part
+        // eventWeight += weightPt;
+        sumPtw+=weightPt*aodTrk->Pt();
+        sumPtw2+=weightPt*weightPt*aodTrk->Pt();
+        sumPt2w2 += weightPt*weightPt*aodTrk->Pt()*aodTrk->Pt();
+        sumWeight += weightPt;
+        sumWeight2 += weightPt*weightPt;
+
         NtrksAfter3subM += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1218,7 +1221,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
           }
         }
       }
-      if(aodTrk->Eta() > fEtaGap3Sub) {//..right part
+      if(aodTrk->Eta() > fEtaGap3Sub1) {//..right part
         NtrksAfter3subR += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1240,7 +1243,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     correlator.FillQVector(correlator.Qvector0M, QcosGap0M, QsinGap0M);
     correlator.FillQVector(correlator.Qvector0P, QcosGap0P, QsinGap0P);
   }
-  if (fuQGapScan) {
+  if (fuQGapScan || fgVnPtCorr) {
     correlator.FillQVector(correlator.Qvector2M, QcosGap2M, QsinGap2M);
     correlator.FillQVector(correlator.Qvector2P, QcosGap2P, QsinGap2P);
     correlator.FillQVector(correlator.Qvector4M, QcosGap4M, QsinGap4M);
@@ -1256,25 +1259,11 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeAOD(AliVEvent* aod, float centrV0, flo
     correlator.FillQVector(correlator.Qvector14M, QcosGap14M, QsinGap14M);
     correlator.FillQVector(correlator.Qvector14P, QcosGap14P, QsinGap14P);
   }
-  if (fuQThreeSub) {
+  if (fuQThreeSub || fgVnPtCorr) {
     correlator.FillQVector(correlator.QvectorSubLeft, QcosSubLeft, QsinSubLeft);
     correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight);
     correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
   }
-
-  for (int h = 0; h < 6; h++) {
-    QDis[h]->Fill(correlator.Q(h+2,1).Re(), correlator.Q(h+2,1).Im());
-    QDisGap0P[h]->Fill(correlator.QGap0P(h+2,1).Re(), correlator.QGap0P(h+2,1).Im());
-    QDisGap0M[h]->Fill(correlator.QGap0M(h+2,1).Re(), correlator.QGap0M(h+2,1).Im());
-    QDisGap10P[h]->Fill(correlator.QGap10P(h+2,1).Re(), correlator.QGap10P(h+2,1).Im());
-    QDisGap10M[h]->Fill(correlator.QGap10M(h+2,1).Re(), correlator.QGap10M(h+2,1).Im());
-    QDisGap14P[h]->Fill(correlator.QGap14P(h+2,1).Re(), correlator.QGap14P(h+2,1).Im());
-    QDisGap14M[h]->Fill(correlator.QGap14M(h+2,1).Re(), correlator.QGap14M(h+2,1).Im());
-    QDis3subL[h]->Fill(correlator.QsubLeft(h+2,1).Re(), correlator.QsubLeft(h+2,1).Im());
-    QDis3subM[h]->Fill(correlator.QsubMiddle(h+2,1).Re(), correlator.QsubMiddle(h+2,1).Im());
-    QDis3subR[h]->Fill(correlator.QsubRight(h+2,1).Re(), correlator.QsubRight(h+2,1).Im());
-  }
-
 
   if (fNtrksName == "Mult") {
     CalculateProfile(multProfile, NtrksCounter);
@@ -1313,6 +1302,14 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
   NtrksAfter3subL = 0;
   NtrksAfter3subM = 0;
   NtrksAfter3subR = 0;
+
+  sumPtw = 0;
+  sumPtw2 = 0;
+  sumPt2w2 = 0;
+  sumWeight = 0;
+  sumWeight2 = 0;
+  eventWeight  = 0;
+  eventWeight2 = 0;
 
 
   //..for DCA
@@ -1375,8 +1372,10 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
       continue;
     }
 
+    if (fUseOutOfBunchPileupCut && AliAnalysisUtils::IsParticleFromOutOfBunchPileupCollision(nt, fMCEvent)) continue;
     // track->GetXYZ(pos);
     if (!AcceptMCTruthTrack(track)) continue;
+
 
     NtrksAfter += 1;
 
@@ -1389,7 +1388,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
     // Calculate the values upto v7
     if (fuQStandard) {
       for(int iharm=0; iharm<8; iharm++) {
-        for(int ipow=0; ipow<6; ipow++) {
+        for(int ipow=0; ipow<9; ipow++) {
           Qcos[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Cos(iharm*track->Phi());
           Qsin[iharm][ipow] += TMath::Power(weight*weightPt, ipow)*TMath::Sin(iharm*track->Phi());
         }
@@ -1417,7 +1416,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
       }
     }
 
-    if (fuQGapScan) {
+    if (fuQGapScan || fgVnPtCorr) {
       //..Gap > 0.2
       if(track->Eta() < -0.1) {
         NtrksAfterGap2M++;
@@ -1541,9 +1540,9 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
       }
     }
 
-    if (fuQThreeSub) {
+    if (fuQThreeSub || fgVnPtCorr) {
       //..3-subevent method
-      if(track->Eta() < -fEtaGap3Sub) {//..left part
+      if(track->Eta() < -fEtaGap3Sub1) {//..left part
         NtrksAfter3subL += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1552,7 +1551,13 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
           }
         }
       }
-      if(track->Eta() >= -fEtaGap3Sub && track->Eta() <= fEtaGap3Sub) {//..middle part
+      if(track->Eta() >= -fEtaGap3Sub2 && track->Eta() <= fEtaGap3Sub2) {//..middle part
+        sumPtw+=weightPt*track->Pt();
+        sumPtw2+=weightPt*weightPt*track->Pt();
+        sumPt2w2 += weightPt*weightPt*track->Pt()*track->Pt();
+        sumWeight += weightPt;
+        sumWeight2 += weightPt*weightPt;
+
         NtrksAfter3subM += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1561,7 +1566,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
           }
         }
       }
-      if(track->Eta() > fEtaGap3Sub) {//..right part
+      if(track->Eta() > fEtaGap3Sub1) {//..right part
         NtrksAfter3subR += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1583,7 +1588,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
     correlator.FillQVector(correlator.Qvector0M, QcosGap0M, QsinGap0M);
     correlator.FillQVector(correlator.Qvector0P, QcosGap0P, QsinGap0P);
   }
-  if (fuQGapScan) {
+  if (fuQGapScan || fgVnPtCorr) {
     correlator.FillQVector(correlator.Qvector2M, QcosGap2M, QsinGap2M);
     correlator.FillQVector(correlator.Qvector2P, QcosGap2P, QsinGap2P);
     correlator.FillQVector(correlator.Qvector4M, QcosGap4M, QsinGap4M);
@@ -1599,7 +1604,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCTruth(AliVEvent* aod, float centrV0,
     correlator.FillQVector(correlator.Qvector14M, QcosGap14M, QsinGap14M);
     correlator.FillQVector(correlator.Qvector14P, QcosGap14P, QsinGap14P);
   }
-  if (fuQThreeSub) {
+  if (fuQThreeSub || fgVnPtCorr) {
     correlator.FillQVector(correlator.QvectorSubLeft, QcosSubLeft, QsinSubLeft);
     correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight);
     correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
@@ -1621,6 +1626,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
 {
 
   NtrksCounter = fImpactParameterMC;
+  bootstrap_value = (((int)(NtrksCounter * 233)) % 30 + 30) % 30;
 
   // Init the number of tracks
   NtrksAfter = 0;
@@ -1709,6 +1715,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
     if(track->Pt() < fMinPt) continue;
     if(track->Pt() > fMaxPt) continue;
     if(TMath::Abs(track->Eta()) > fEtaCut) continue;
+    if (!(track->IsPhysicalPrimary())) continue;
     // if (!(track->IsPhysicalPrimary())) return kFALSE;
     if (track->Charge() == 0) continue;
 
@@ -1877,7 +1884,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
 
     if (fuQThreeSub) {
       //..3-subevent method
-      if(track->Eta() < -fEtaGap3Sub) {//..left part
+      if(track->Eta() < -fEtaGap3Sub1) {//..left part
         NtrksAfter3subL += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1886,7 +1893,13 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
           }
         }
       }
-      if(track->Eta() >= -fEtaGap3Sub && track->Eta() <= fEtaGap3Sub) {//..middle part
+      if(track->Eta() >= -fEtaGap3Sub2 && track->Eta() <= fEtaGap3Sub2) {//..middle part
+        sumPtw+=weightPt*track->Pt();
+        sumPtw2+=weightPt*weightPt*track->Pt();
+        sumPt2w2 += weightPt*weightPt*track->Pt()*track->Pt();
+        sumWeight += weightPt;
+        sumWeight2 += weightPt*weightPt;
+
         NtrksAfter3subM += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1895,7 +1908,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
           }
         }
       }
-      if(track->Eta() > fEtaGap3Sub) {//..right part
+      if(track->Eta() > fEtaGap3Sub1) {//..right part
         NtrksAfter3subR += 1;
         for(int iharm=0; iharm<8; iharm++) {
           for(int ipow=0; ipow<6; ipow++) {
@@ -1917,7 +1930,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
     correlator.FillQVector(correlator.Qvector0M, QcosGap0M, QsinGap0M);
     correlator.FillQVector(correlator.Qvector0P, QcosGap0P, QsinGap0P);
   }
-  if (fuQGapScan) {
+  if (fuQGapScan || fgVnPtCorr) {
     correlator.FillQVector(correlator.Qvector2M, QcosGap2M, QsinGap2M);
     correlator.FillQVector(correlator.Qvector2P, QcosGap2P, QsinGap2P);
     correlator.FillQVector(correlator.Qvector4M, QcosGap4M, QsinGap4M);
@@ -1933,7 +1946,7 @@ void AliAnalysisTaskNonlinearFlow::AnalyzeMCOnTheFly(AliMCEvent* aod)
     correlator.FillQVector(correlator.Qvector14M, QcosGap14M, QsinGap14M);
     correlator.FillQVector(correlator.Qvector14P, QcosGap14P, QsinGap14P);
   }
-  if (fuQThreeSub) {
+  if (fuQThreeSub || fgVnPtCorr) {
     correlator.FillQVector(correlator.QvectorSubLeft, QcosSubLeft, QsinSubLeft);
     correlator.FillQVector(correlator.QvectorSubRight, QcosSubRight, QsinSubRight);
     correlator.FillQVector(correlator.QvectorSubMiddle, QcosSubMiddle, QsinSubMiddle);
@@ -2012,11 +2025,17 @@ double AliAnalysisTaskNonlinearFlow::GetPtWeight(double pt, double eta, float vz
 Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
 
   // If the period is not pPb LHC16qt
-  if (!fPeriod.EqualTo("LHC16qt")) {
+  if (! (fPeriod.EqualTo("LHC16qt") || fPeriod.EqualTo("LHC16qt_Closure")) ) {
     // Only if it is the new LHC16,17,18, We need the period NUA
-    if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18")) {
+    if (fPeriod.EqualTo("LHC16") || fPeriod.EqualTo("LHC17") || fPeriod.EqualTo("LHC18") ||
+        fPeriod.EqualTo("LHC16_simp") || fPeriod.EqualTo("LHC17_simp") || fPeriod.EqualTo("LHC18_simp") || 
+        fPeriod.EqualTo("LHC16_Closure") || fPeriod.EqualTo("LHC17_Closure") || fPeriod.EqualTo("LHC18_Closure")
+        ) {
       std::string ppperiod = ReturnPPperiod(fAOD->GetRunNumber());
+      // Old code: change to new one is because DCAxy < 10 is almost no cut
+      // if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s_SystFlag2_", ppperiod.c_str()));
       if(fCurrSystFlag == 0) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s", ppperiod.c_str()));
+      else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%s_SystFlag%i_", ppperiod.c_str(), fCurrSystFlag));
       if(!fWeightsSystematics)
       {
         printf("Weights could not be found in list!\n");
@@ -2025,7 +2044,9 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
       fWeightsSystematics->CreateNUA();
     } else if (fPeriod.EqualTo("LHC16Preview") || fPeriod.EqualTo("LHC17Preview") || fPeriod.EqualTo("LHC18Preview")) {
 
-      if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+      // Old code: change to new one becuase DCAxy < 10 is almost no cut
+      // if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+      if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag2_",fAOD->GetRunNumber()));
       else if (fCurrSystFlag >= 17)
            fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag-7));
       else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
@@ -2037,7 +2058,8 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
         }
       fWeightsSystematics->CreateNUA();
     } else {
-      if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+      // if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i",fAOD->GetRunNumber()));
+      if(fCurrSystFlag == 0 || fUseDefaultWeight) fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag2_",fAOD->GetRunNumber()));
       else fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_SystFlag%i_",fAOD->GetRunNumber(), fCurrSystFlag));
       if(!fWeightsSystematics)
       {
@@ -2051,7 +2073,7 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
   // If it is the pPb LHC16qt
   else {
     int EvFlag = 0, TrFlag = 0;
-    if (fCurrSystFlag == 0) EvFlag = 0, TrFlag = 0;
+    if (fCurrSystFlag == 0) EvFlag = 0, TrFlag = 2; // 0->2, because in the NUA file, DCAxy=10 is no cut
     if (fCurrSystFlag == 1) EvFlag = 0, TrFlag = 1;
     if (fCurrSystFlag == 2) EvFlag = 0, TrFlag = 5;
     if (fCurrSystFlag == 3) EvFlag = 0, TrFlag = 0; // Abandoned
@@ -2065,19 +2087,38 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadWeightsSystematics() {
     if (fCurrSystFlag == 18) EvFlag = 2, TrFlag = 0;
     if (fCurrSystFlag == 19) EvFlag = 3, TrFlag = 0;
 
+    if (fUseDefaultWeight) EvFlag = 0, TrFlag = 0;
 
-  fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_Ev%d_Tr%d",fAOD->GetRunNumber(),EvFlag,TrFlag));
-  if(!fWeightsSystematics)
-  {
-    printf("Weights could not be found in list!\n");
-    return kFALSE;
-  }
-  fWeightsSystematics->CreateNUA();
+    fWeightsSystematics = (AliGFWWeights*)fFlowWeightsList->FindObject(Form("w%i_Ev%d_Tr%d",fAOD->GetRunNumber(),EvFlag,TrFlag));
+    if(!fWeightsSystematics)
+      {
+        printf("Weights could not be found in list!\n");
+        return kFALSE;
+      }
+    fWeightsSystematics->CreateNUA();
   }
   return kTRUE;
 }
 
 Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
+
+  if (fPeriod.EqualTo("LHC15o_simp") || fPeriod.EqualTo("LHC18q_simp") || fPeriod.EqualTo("LHC18r_simp") ||
+      fPeriod.EqualTo("LHC16qt_simp") ||
+      fPeriod.EqualTo("LHC16_simp") || fPeriod.EqualTo("LHC17_simp") || fPeriod.EqualTo("LHC18_simp") ||
+      fPeriod.Contains("Closure")
+      ) {
+    if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("Default"));
+    else fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("Sys%i", fCurrSystFlag));
+
+    if(!fPtWeightsSystematics)
+      {
+        printf("PtWeights could not be found in list!\n");
+        return kFALSE;
+      }
+
+    return kTRUE;
+  }
+
   int EvFlag = 0, TrFlag = 0;
 
   // If the period is **NOT** pPb LHC16qt
@@ -2085,8 +2126,8 @@ Bool_t AliAnalysisTaskNonlinearFlow::LoadPtWeights() {
        !fPeriod.EqualTo("LHC16") && !fPeriod.EqualTo("LHC17") && !fPeriod.EqualTo("LHC18") &&
        !fPeriod.EqualTo("LHC16Preview") && !fPeriod.EqualTo("LHC17Preview") && !fPeriod.EqualTo("LHC18Preview")
 		  ) {
-    if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0"));
-    else fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0_SystFlag%i_", fCurrSystFlag));
+      if(fCurrSystFlag == 0) fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0"));
+      else fPtWeightsSystematics = (TH1D*)fFlowPtWeightsList->FindObject(Form("EffRescaled_Cent0_SystFlag%i_", fCurrSystFlag));
     if(!fPtWeightsSystematics)
     {
       printf("PtWeights could not be found in list!\n");
@@ -2221,10 +2262,28 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
       listOfProfile->Add(multProfile.fChcn2_Gap10[h]);
     }
 
-    if (fuTwoParticleCorrelationLargeGap && h == 0) {
+    if (fuTwoParticleCorrelationLargeGap) {
       multProfile.fChcn2_Gap14[h] = new TProfile(Form("fChc%d{2}_Gap14%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
       multProfile.fChcn2_Gap14[h]->Sumw2();
       listOfProfile->Add(multProfile.fChcn2_Gap14[h]);
+    }
+
+    if (fuTwoParticleCorrelationGapScan) {
+      multProfile.fChcn2_Gap2[h] = new TProfile(Form("fChc%d{2}_Gap2%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
+      multProfile.fChcn2_Gap2[h]->Sumw2();
+      listOfProfile->Add(multProfile.fChcn2_Gap2[h]);
+
+      multProfile.fChcn2_Gap4[h] = new TProfile(Form("fChc%d{2}_Gap4%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
+      multProfile.fChcn2_Gap4[h]->Sumw2();
+      listOfProfile->Add(multProfile.fChcn2_Gap4[h]);
+
+      multProfile.fChcn2_Gap6[h] = new TProfile(Form("fChc%d{2}_Gap6%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
+      multProfile.fChcn2_Gap6[h]->Sumw2();
+      listOfProfile->Add(multProfile.fChcn2_Gap6[h]);
+
+      multProfile.fChcn2_Gap8[h] = new TProfile(Form("fChc%d{2}_Gap8%s", h+2, label.Data()), "<<2>> Re; # of tracks", nn, xbins);
+      multProfile.fChcn2_Gap8[h]->Sumw2();
+      listOfProfile->Add(multProfile.fChcn2_Gap8[h]);
     }
 
     if (fuTwoParticleCorrelationThreeSub) {
@@ -2596,6 +2655,40 @@ void AliAnalysisTaskNonlinearFlow::InitProfile(PhysicsProfile& multProfile, TStr
     multProfile.fChsc4242_3subRRMLB->Sumw2();
     listOfProfile->Add(multProfile.fChsc4242_3subRRMLB);
   }
+
+  if (fgVnPtCorr) {
+    multProfile.fMeanPt = new TProfile(Form("fPt%s", label.Data()), "Mean Pt", nn, xbins);
+    multProfile.fMeanPt->Sumw2();
+    listOfProfile->Add(multProfile.fMeanPt);
+
+    multProfile.fc22w = new TProfile(Form("fChc22w%s", label.Data()), "v2^2 with event weight", nn, xbins);
+    multProfile.fc22w->Sumw2();
+    listOfProfile->Add(multProfile.fc22w);
+
+    multProfile.fPcc = new TProfile(Form("fV2Pt%s", label.Data()), "v2-Pt correlation", nn, xbins);
+    multProfile.fPcc->Sumw2();
+    listOfProfile->Add(multProfile.fPcc);
+
+    multProfile.fc22nw = new TProfile(Form("fChc22nw%s", label.Data()), "v2^2 without event weight", nn, xbins);
+    multProfile.fc22nw->Sumw2();
+    listOfProfile->Add(multProfile.fc22nw);
+
+    multProfile.fc24nw = new TProfile(Form("fChc24nw%s", label.Data()), "v2^4 with event weight", nn, xbins);
+    multProfile.fc24nw->Sumw2();
+    listOfProfile->Add(multProfile.fc24nw);
+
+    multProfile.fPtVariancea = new TProfile(Form("fdPt2a%s", label.Data()), "Pt variance", nn, xbins);
+    multProfile.fPtVariancea->Sumw2();
+    listOfProfile->Add(multProfile.fPtVariancea);
+
+    multProfile.fPtVarianceb = new TProfile(Form("fdPt2b%s", label.Data()), "Pt variance", nn, xbins);
+    multProfile.fPtVarianceb->Sumw2();
+    listOfProfile->Add(multProfile.fPtVarianceb);
+
+    multProfile.fPtVariancec = new TProfile(Form("fdPt2c%s", label.Data()), "Pt variance", nn, xbins);
+    multProfile.fPtVariancec->Sumw2();
+    listOfProfile->Add(multProfile.fPtVariancec);
+  }
 }
 
 Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
@@ -2608,13 +2701,23 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
       fPeriod.EqualTo("LHC16") ||
       fPeriod.EqualTo("LHC17") ||
       fPeriod.EqualTo("LHC18") || 
+      fPeriod.EqualTo("LHC16_Closure") ||
+      fPeriod.EqualTo("LHC17_Closure") ||
+      fPeriod.EqualTo("LHC18_Closure") || 
+      fPeriod.EqualTo("LHC16_simp") ||
+      fPeriod.EqualTo("LHC17_simp") ||
+      fPeriod.EqualTo("LHC18_simp") || 
       fPeriod.EqualTo("LHC16ZM") ||
       fPeriod.EqualTo("LHC17ZM") ||
       fPeriod.EqualTo("LHC18ZM") ) {
     fEventCuts.OverrideAutomaticTriggerSelection(AliVEvent::kHighMultV0, true);
+
+    const auto pms(static_cast<AliMultSelection*>(InputEvent()->FindListObject("MultSelection")));
+    const auto v0Est = pms->GetEstimator("V0M");
+    if (v0Est->GetValue()/v0Est->GetMean() < fV0MRatioCut) return kFALSE;
   }
 
-  if (fPeriod.EqualTo("LHC15o_pass2")) {
+  if (fPeriod.EqualTo("LHC15o_pass2") || fPeriod.EqualTo("LHC15o_pass2_Closure")) {
 	int currentRun = fAOD->GetRunNumber();
 	if (currentRun == 245729 ||
 		currentRun == 245731 ||
@@ -2647,7 +2750,14 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAOD(AliAODEvent *inEv) {
   if (fPeriod.EqualTo("LHC15o") ||
       fPeriod.EqualTo("LHC15o_pass2") ||
       fPeriod.EqualTo("LHC18qr_pass3") ||
+      fPeriod.EqualTo("LHC15o_pass2_Closure") ||
+      fPeriod.EqualTo("LHC18qr_pass3_Closure") ||
+      fPeriod.EqualTo("LHC15o_simp") ||
+      fPeriod.EqualTo("LHC18q_simp") ||
+      fPeriod.EqualTo("LHC18r_simp") ||
       fPeriod.EqualTo("LHC16qt") ||
+      fPeriod.EqualTo("LHC16qt_Closure") ||
+      fPeriod.EqualTo("LHC16qt_simp") ||
       fPeriod.EqualTo("LHC17n") ||
       fPeriod.EqualTo("LHC15oKatarina")) {
     // return false;
@@ -2687,10 +2797,11 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptAODTrack(AliAODTrack *mtr, Double_t *
   // Additional cut for TPCchi2perCluster
   if (mtr->GetTPCchi2perCluster()>fTPCchi2perCluster) return kFALSE;
 
+  // Disable check DCAxy because we want to use the cut in FB96
   if (fPeriod.EqualTo("LHC15o") || fPeriod.EqualTo("LHC17n")) { // Only for LHC15o pass1
-    return fGFWSelection15o->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+    return fGFWSelection15o->AcceptTrack(mtr,ltrackXYZ,0, fCurrSystFlag ? kFALSE : kTRUE);
   } else {
-    return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0,kFALSE);
+    return fGFWSelection->AcceptTrack(mtr,ltrackXYZ,0, fCurrSystFlag ? kFALSE : kTRUE);
   }
 }
 
@@ -2708,9 +2819,40 @@ Bool_t AliAnalysisTaskNonlinearFlow::AcceptMCTruthTrack(AliAODMCParticle *mtrk) 
 
 
 void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, double Ntrks) {
+  //..calculate the PCC
+  if (fgVnPtCorr) {
+    double Dn2GapLR = correlator.TwoGap8(0, 0).Re();
+    double Dn4GapLR = correlator.FourGap8(0, 0, 0, 0).Re();
+    if(NtrksAfter3subL > 1 && NtrksAfter3subM > 1 && NtrksAfter3subR > 1
+       && Dn2GapLR != 0 && Dn4GapLR != 0)
+      {
+        eventWeight = sumWeight;
+        eventWeight2 = sumWeight*sumWeight - sumWeight2;
+        TComplex v22_3subLR = correlator.TwoGap8(2, -2);
+        double v22Re_3subLR = v22_3subLR.Re()/Dn2GapLR;
+
+        double meanPt = sumPtw/sumWeight;
+        profile.fc22w->Fill(Ntrks, v22Re_3subLR, Dn2GapLR*eventWeight);
+        profile.fPcc->Fill(Ntrks,  v22Re_3subLR*meanPt, Dn2GapLR*eventWeight);
+        profile.fMeanPt->Fill(Ntrks, meanPt, eventWeight);
+
+        // Variance of Pt
+        profile.fPtVariancea->Fill(Ntrks, (sumPtw*sumPtw-sumPt2w2)   / eventWeight2, eventWeight2);
+        profile.fPtVarianceb->Fill(Ntrks, (sumWeight*sumPtw-sumPtw2) / eventWeight2, eventWeight2);
+        profile.fPtVariancec->Fill(Ntrks, 1, eventWeight2);
+
+        // Variance of vn^2
+        profile.fc22nw->Fill(Ntrks, v22Re_3subLR, Dn2GapLR);
+        TComplex v24_3subLR = correlator.FourGap8(2, 2, -2, -2);
+        double v24Re_3subLR = v24_3subLR.Re()/Dn4GapLR;
+        profile.fc24nw->Fill(Ntrks, v24Re_3subLR, Dn4GapLR);
+      }
+  }
+
   //..calculate 2-particle correlations
   //..................................
   double Dn2 = 0, Dn2Gap0 = 0, Dn2Gap10 = 0, Dn2Gap14 = 0, Dn2_3subLM = 0, Dn2_3subRM = 0, Dn2_3subLR = 0;
+  double Dn2Gap2 = 0, Dn2Gap4 = 0, Dn2Gap6 = 0, Dn2Gap8 = 0;
   if (fuTwoParticleCorrelationStandard || fuTwoParticleCorrelationHigherStandard) {
     Dn2 = correlator.Two(0, 0).Re();
   }
@@ -2721,6 +2863,13 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
     Dn2Gap10 = correlator.TwoGap10(0, 0).Re();
     Dn2Gap14 = correlator.TwoGap14(0, 0).Re();
   }
+  if (fuTwoParticleCorrelationGapScan || fuTwoParticleCorrelationHigherGapScan) {
+    Dn2Gap2 = correlator.TwoGap2(0, 0).Re();
+    Dn2Gap4 = correlator.TwoGap4(0, 0).Re();
+    Dn2Gap6 = correlator.TwoGap6(0, 0).Re();
+    Dn2Gap8 = correlator.TwoGap8(0, 0).Re();
+  }
+
   if (fuTwoParticleCorrelationThreeSub || fuTwoParticleCorrelationThreeSub) {
     Dn2_3subLM = correlator.Two_3SubLM(0, 0).Re();
     Dn2_3subRM = correlator.Two_3SubRM(0, 0).Re();
@@ -2759,35 +2908,106 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
   if (fuTwoParticleCorrelation0Gap) {
     if(NtrksAfterGap0M > 0 && NtrksAfterGap0P > 0 && Dn2Gap0 != 0)
     {
-      //..v2{2} with eta Gap > 1.0
+      //..v2{2} with eta Gap > 0.0
       TComplex v22Gap0 = correlator.TwoGap0(2, -2);
       double v22ReGap0 = v22Gap0.Re()/Dn2Gap0;
       profile.fChcn2_Gap0[0]->Fill(Ntrks, v22ReGap0, Dn2Gap0);
 
-      //..v3{2} with eta Gap > 1.0
+      //..v3{2} with eta Gap > 0.0
       TComplex v32Gap0 = correlator.TwoGap0(3, -3);
       double v32ReGap0 = v32Gap0.Re()/Dn2Gap0;
       profile.fChcn2_Gap0[1]->Fill(Ntrks, v32ReGap0, Dn2Gap0);
 
-      //..v4{2} with eta Gap > 1.0
+      //..v4{2} with eta Gap > 0.0
       TComplex v42Gap0 = correlator.TwoGap0(4, -4);
       double v42ReGap0 = v42Gap0.Re()/Dn2Gap0;
       profile.fChcn2_Gap0[2]->Fill(Ntrks, v42ReGap0, Dn2Gap0);
 
-      //..v5{2} with eta Gap > 1.0
+      //..v5{2} with eta Gap > 0.0
       TComplex v52Gap0 = correlator.TwoGap0(5, -5);
       double v52ReGap0 = v52Gap0.Re()/Dn2Gap0;
       profile.fChcn2_Gap0[3]->Fill(Ntrks, v52ReGap0, Dn2Gap0);
 
-      //..v6{2} with eta Gap > 1.0
+      //..v6{2} with eta Gap > 0.0
       TComplex v62Gap0 = correlator.TwoGap0(6, -6);
       double v62ReGap0 = v62Gap0.Re()/Dn2Gap0;
       profile.fChcn2_Gap0[4]->Fill(Ntrks, v62ReGap0, Dn2Gap0);
     }
   }
 
+  if (fuTwoParticleCorrelationGapScan) {
+    if(NtrksAfterGap2M > 0 && NtrksAfterGap2P > 0 && Dn2Gap2 != 0)
+      {
+        //..v2{2} with eta Gap > 0.2
+        TComplex v22Gap2 = correlator.TwoGap2(2, -2);
+        double v22ReGap2 = v22Gap2.Re()/Dn2Gap2;
+        profile.fChcn2_Gap2[0]->Fill(Ntrks, v22ReGap2, Dn2Gap2);
+
+        //..v3{2} with eta Gap > 0.2
+        TComplex v32Gap2 = correlator.TwoGap2(3, -3);
+        double v32ReGap2 = v32Gap2.Re()/Dn2Gap2;
+        profile.fChcn2_Gap2[1]->Fill(Ntrks, v32ReGap2, Dn2Gap2);
+
+        //..v4{2} with eta Gap > 0.2
+        TComplex v42Gap2 = correlator.TwoGap2(4, -4);
+        double v42ReGap2 = v42Gap2.Re()/Dn2Gap2;
+        profile.fChcn2_Gap2[2]->Fill(Ntrks, v42ReGap2, Dn2Gap2);
+      }
+    if(NtrksAfterGap4M > 0 && NtrksAfterGap4P > 0 && Dn2Gap4 != 0)
+      {
+        //..v2{2} with eta Gap > 0.4
+        TComplex v22Gap4 = correlator.TwoGap4(2, -2);
+        double v22ReGap4 = v22Gap4.Re()/Dn2Gap4;
+        profile.fChcn2_Gap4[0]->Fill(Ntrks, v22ReGap4, Dn2Gap4);
+
+        //..v3{2} with eta Gap > 0.4
+        TComplex v32Gap4 = correlator.TwoGap4(3, -3);
+        double v32ReGap4 = v32Gap4.Re()/Dn2Gap4;
+        profile.fChcn2_Gap4[1]->Fill(Ntrks, v32ReGap4, Dn2Gap4);
+
+        //..v4{2} with eta Gap > 0.4
+        TComplex v42Gap4 = correlator.TwoGap4(4, -4);
+        double v42ReGap4 = v42Gap4.Re()/Dn2Gap4;
+        profile.fChcn2_Gap4[2]->Fill(Ntrks, v42ReGap4, Dn2Gap4);
+      }
+    if(NtrksAfterGap6M > 0 && NtrksAfterGap6P > 0 && Dn2Gap6 != 0)
+      {
+        //..v2{2} with eta Gap > 0.6
+        TComplex v22Gap6 = correlator.TwoGap6(2, -2);
+        double v22ReGap6 = v22Gap6.Re()/Dn2Gap6;
+        profile.fChcn2_Gap6[0]->Fill(Ntrks, v22ReGap6, Dn2Gap6);
+
+        //..v3{2} with eta Gap > 0.6
+        TComplex v32Gap6 = correlator.TwoGap6(3, -3);
+        double v32ReGap6 = v32Gap6.Re()/Dn2Gap6;
+        profile.fChcn2_Gap6[1]->Fill(Ntrks, v32ReGap6, Dn2Gap6);
+
+        //..v4{2} with eta Gap > 0.6
+        TComplex v42Gap6 = correlator.TwoGap6(4, -4);
+        double v42ReGap6 = v42Gap6.Re()/Dn2Gap6;
+        profile.fChcn2_Gap6[2]->Fill(Ntrks, v42ReGap6, Dn2Gap6);
+      }
+    if(NtrksAfterGap8M > 0 && NtrksAfterGap8P > 0 && Dn2Gap8 != 0)
+      {
+        //..v2{2} with eta Gap > 0.8
+        TComplex v22Gap8 = correlator.TwoGap8(2, -2);
+        double v22ReGap8 = v22Gap8.Re()/Dn2Gap8;
+        profile.fChcn2_Gap8[0]->Fill(Ntrks, v22ReGap8, Dn2Gap8);
+
+        //..v3{2} with eta Gap > 0.8
+        TComplex v32Gap8 = correlator.TwoGap8(3, -3);
+        double v32ReGap8 = v32Gap8.Re()/Dn2Gap8;
+        profile.fChcn2_Gap8[1]->Fill(Ntrks, v32ReGap8, Dn2Gap8);
+
+        //..v4{2} with eta Gap > 0.8
+        TComplex v42Gap8 = correlator.TwoGap8(4, -4);
+        double v42ReGap8 = v42Gap8.Re()/Dn2Gap8;
+        profile.fChcn2_Gap8[2]->Fill(Ntrks, v42ReGap8, Dn2Gap8);
+      }
+  }
+
   if (fuTwoParticleCorrelationLargeGap) {
-    if(NtrksAfterGap10M > 0 && NtrksAfterGap10P > 0 && Dn2Gap10 != 0)
+    if(NtrksAfterGap2M > 0 && NtrksAfterGap2P > 0 && Dn2Gap2 != 0)
     {
       //..v2{2} with eta Gap > 1.0
       TComplex v22Gap10 = correlator.TwoGap10(2, -2);
@@ -2821,6 +3041,16 @@ void AliAnalysisTaskNonlinearFlow::CalculateProfile(PhysicsProfile& profile, dou
       TComplex v22Gap14 = correlator.TwoGap14(2, -2);
       double v22ReGap14 = v22Gap14.Re()/Dn2Gap14;
       profile.fChcn2_Gap14[0]->Fill(Ntrks, v22ReGap14, Dn2Gap14);
+
+      //..v3{2} with eta Gap > 1.4
+      TComplex v32Gap14 = correlator.TwoGap14(3, -3);
+      double v32ReGap14 = v32Gap14.Re()/Dn2Gap14;
+      profile.fChcn2_Gap14[1]->Fill(Ntrks, v32ReGap14, Dn2Gap14);
+
+      //..v4{2} with eta Gap > 1.4
+      TComplex v42Gap14 = correlator.TwoGap14(4, -4);
+      double v42ReGap14 = v42Gap14.Re()/Dn2Gap14;
+      profile.fChcn2_Gap14[2]->Fill(Ntrks, v42ReGap14, Dn2Gap14);
     }
   }
 
@@ -3660,7 +3890,10 @@ PhysicsProfile::PhysicsProfile() :
   fChc532_3subMA(nullptr),
   fChc532_3subMB(nullptr),
   fChc532_3subRA(nullptr),
-  fChc532_3subRB(nullptr)
+  fChc532_3subRB(nullptr),
+  fMeanPt(nullptr),
+  fc22w(nullptr),
+  fPcc(nullptr)
 {
   memset(fChcn2, 0, sizeof(fChcn2));
   memset(fChcn2_Gap0, 0, sizeof(fChcn2_Gap0));
@@ -3766,7 +3999,15 @@ PhysicsProfile::PhysicsProfile(const PhysicsProfile& profile) :
   fChc532_3subMA(nullptr),
   fChc532_3subMB(nullptr),
   fChc532_3subRA(nullptr),
-  fChc532_3subRB(nullptr)
+  fChc532_3subRB(nullptr),
+  fMeanPt(nullptr),
+  fc22w(nullptr),
+  fPcc(nullptr),
+  fc22nw(nullptr),
+  fc24nw(nullptr),
+  fPtVariancea(nullptr),
+  fPtVarianceb(nullptr),
+  fPtVariancec(nullptr)
 {
   memset(fChcn2, 0, sizeof(fChcn2));
   memset(fChcn2_Gap0, 0, sizeof(fChcn2_Gap0));

@@ -28,6 +28,7 @@ AliAnalysisTaskOtonXx::AliAnalysisTaskOtonXx()
     fdoFDpairing(false),
     fisOmega(false),
     fisPi(false),
+    fOnlyXi(false),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -50,7 +51,7 @@ AliAnalysisTaskOtonXx::AliAnalysisTaskOtonXx()
       fTree(0) {
 }
 
-AliAnalysisTaskOtonXx::AliAnalysisTaskOtonXx(const char *name, bool doFDpairing, bool isMC, bool isMCtruth, bool isOmega, bool isPi)
+AliAnalysisTaskOtonXx::AliAnalysisTaskOtonXx(const char *name, bool doFDpairing, bool isMC, bool isMCtruth, bool isOmega, bool isPi, bool OnlyXi)
   : AliAnalysisTaskSE(name),
     fisLightWeight(false),
     fTrackBufferSize(2000),
@@ -59,6 +60,7 @@ AliAnalysisTaskOtonXx::AliAnalysisTaskOtonXx(const char *name, bool doFDpairing,
     fdoFDpairing(doFDpairing),
     fisOmega(isOmega),
     fisPi(isPi),
+    fOnlyXi(OnlyXi),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -163,19 +165,15 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
 
 
 // THIS SHOULD BE SET UP AT SOME POINT:
-// THIS SHOULD BE SET UP AT SOME POINT:
-// THIS SHOULD BE SET UP AT SOME POINT:
-// the 2,2 for pair cleaner ?????????????????? no idea ??????????????? 2,2 ????????
+//  pair cleaner config ??????????????
   if (!fConfig) {
     AliError("No Correlation Config \n");
   } else {
     fPartColl = new AliFemtoDreamPartCollection(fConfig,fConfig->GetMinimalBookingME());
-    fPairCleaner = new AliFemtoDreamPairCleaner(2, 2,fConfig->GetMinimalBookingME()); // ??? 2,2 ?????????????
+    //for now, following the same approach as p-Omega:
+    fPairCleaner = new AliFemtoDreamPairCleaner(2, 2,fConfig->GetMinimalBookingME()); //??????????????????
   }
 
-
-// THIS SHOULD BE SET UP AT SOME POINT:
-// THIS THOULD BE SET UP AT SOME POINT:   true ..... true ?????????????????????
 // THIS SHOULD BE SET UP AT SOME POINT:
   fEvent = new AliFemtoDreamEvent(true, !fisLightWeight,GetCollisionCandidates(), true);  // true...true ???????
   fEvent->SetMultiplicityEstimator(fConfig->GetMultiplicityEstimator());
@@ -185,7 +183,7 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
 
 
   fCascade = new AliFemtoDreamCascade();
-  fCascade->SetUseMCInfo(false);    // should I set isMC or isMCtruth here ?????   ??????  ????? 
+  fCascade->SetUseMCInfo(fIsMC); 
   //PDG Codes should be set assuming Xi- to also work for Xi+
   if(!fisOmega){
    fCascade->SetPDGCode(3312);
@@ -265,11 +263,12 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
   fTree->Branch("Spher",&fTSpher,"fTSpher/F");
   //Kaons:
   fTree->Branch("nKaon",&fTnKaon,"fTnKaon/I");
-  fTree->Branch("KaonPx",&fTKaonPx,"fTKaonPx[fTnKaon]/F");
-  fTree->Branch("KaonPy",&fTKaonPy,"fTKaonPy[fTnKaon]/F");
-  fTree->Branch("KaonPz",&fTKaonPz,"fTKaonPz[fTnKaon]/F");
+  if(!fOnlyXi){
+   fTree->Branch("KaonPx",&fTKaonPx,"fTKaonPx[fTnKaon]/F");
+   fTree->Branch("KaonPy",&fTKaonPy,"fTKaonPy[fTnKaon]/F");
+   fTree->Branch("KaonPz",&fTKaonPz,"fTKaonPz[fTnKaon]/F");
 //  if(!fIsMCtruth)fTree->Branch("KaonPTPC",&fTKaonPTPC,"fTKaonPTPC[fTnKaon]/F");
-  if(!fIsMCtruth)fTree->Branch("KaonCharge",&fTKaonCharge,"fTKaonCharge[fTnKaon]/S");
+   if(!fIsMCtruth)fTree->Branch("KaonCharge",&fTKaonCharge,"fTKaonCharge[fTnKaon]/S");
 //  fTree->Branch("KaonITSsigma_e",&fTKaonITSsigma_e,"fTKaonITSsigma_e[fTnKaon]/F");
 //  if(!fIsMCtruth)fTree->Branch("KaonTPCsigma_e",&fTKaonTPCsigma_e,"fTKaonTPCsigma_e[fTnKaon]/F");
 //  fTree->Branch("KaonTOFsigma_e",&fTKaonTOFsigma_e,"fTKaonTOFsigma_e[fTnKaon]/F");
@@ -287,51 +286,57 @@ void AliAnalysisTaskOtonXx::UserCreateOutputObjects() {
 //  fTree->Branch("KaonTOFsigma_d",&fTKaonTOFsigma_d,"fTKaonTOFsigma_d[fTnKaon]/F");
 //  if(!fIsMCtruth)fTree->Branch("KaonNcl",&fTKaonNcl,"fTKaonNcl[fTnKaon]/I");
 //  fTree->Branch("KaonPhi",&fTKaonPhi,"fTKaonPhi[fTnKaon]/F");
-  if(!fIsMCtruth)fTree->Branch("KaonDCA",&fTKaonDCA,"fTKaonDCA[fTnKaon]/F");
+   if(!fIsMCtruth)fTree->Branch("KaonDCA",&fTKaonDCA,"fTKaonDCA[fTnKaon]/F");
 //  if(!fIsMCtruth)fTree->Branch("KaonDCAz",&fTKaonDCAz,"fTKaonDCAz[fTnKaon]/F");
-  fTree->Branch("KaonID",&fTKaonID,"fTKaonID[fTnKaon]/I"); //used also in MCtruth
-  if(!fIsMCtruth)fTree->Branch("KaonSPDtime",&fTKaonSPDtime,"fTKaonSPDtime[fTnKaon]/O");
-  if(!fIsMCtruth)fTree->Branch("KaonITStime",&fTKaonITStime,"fTKaonITStime[fTnKaon]/O");
-  if(!fIsMCtruth)fTree->Branch("KaonTOFtime",&fTKaonTOFtime,"fTKaonTOFtime[fTnKaon]/O");
+   fTree->Branch("KaonID",&fTKaonID,"fTKaonID[fTnKaon]/I"); //used also in MCtruth
+   if(!fIsMCtruth)fTree->Branch("KaonSPDtime",&fTKaonSPDtime,"fTKaonSPDtime[fTnKaon]/O");
+   if(!fIsMCtruth)fTree->Branch("KaonITStime",&fTKaonITStime,"fTKaonITStime[fTnKaon]/O");
+   if(!fIsMCtruth)fTree->Branch("KaonTOFtime",&fTKaonTOFtime,"fTKaonTOFtime[fTnKaon]/O");
 //  fTree->Branch("KaonIs",&fTKaonIs,"fTKaonIs[fTnKaon]/O");
 //  fTree->Branch("KaonIsFD",&fTKaonIsFD,"fTKaonIsFD[fTnKaon]/O");
 //  fTree->Branch("KaonFilterBit",&fTKaonFilterBit,"fTKaonFilterBit[fTnKaon]/O");
-  if(fIsMC||fIsMCtruth)fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/I");
-  if(fIsMC||fIsMCtruth)fTree->Branch("KaonMotherWeak",&fTKaonMotherWeak,"fTKaonMotherWeak[fTnKaon]/I");
-  if(fIsMC||fIsMCtruth)fTree->Branch("KaonOrigin",&fTKaonOrigin,"fTKaonOrigin[fTnKaon]/I");
+//  if(fIsMC||fIsMCtruth)fTree->Branch("KaonPDG",&fTKaonPDG,"fTKaonPDG[fTnKaon]/I");
+//  if(fIsMC||fIsMCtruth)fTree->Branch("KaonMotherWeak",&fTKaonMotherWeak,"fTKaonMotherWeak[fTnKaon]/I");
+//  if(fIsMC||fIsMCtruth)fTree->Branch("KaonOrigin",&fTKaonOrigin,"fTKaonOrigin[fTnKaon]/I");
+   if(fIsMC||fIsMCtruth)fTree->Branch("KaonMotherID",&fTKaonMotherID,"fTKaonMotherID[fTnKaon]/I");
+  }
+
 
   //Xis:
   fTree->Branch("nXi",&fTnXi,"fTnXi/I");
   fTree->Branch("XiCharge",&fTXiCharge,"fTXiCharge[fTnXi]/S");
   fTree->Branch("XiDCA",&fTXiDCA,"fTXiDCA[fTnXi]/F");
-//  fTree->Branch("XiDaughtersDCA",&fTXiDaughtersDCA,"fTXiDaughtersDCA[fTnXi]/F");
+  fTree->Branch("XiDaughtersDCA",&fTXiDaughtersDCA,"fTXiDaughtersDCA[fTnXi]/F");
   fTree->Branch("XiMass",&fTXiMass,"fTXiMass[fTnXi]/F");
-//  fTree->Branch("XiXiMass",&fTXiXiMass,"fTXiXiMass[fTnXi]/F");
-//  fTree->Branch("XiOmegaMass",&fTXiOmegaMass,"fTXiOmegaMass[fTnXi]/F");
-//  fTree->Branch("XiVr",&fTXiVr,"fTXiVr[fTnXi]/F");
-//  fTree->Branch("XiPA",&fTXiPA,"fTXiPA[fTnXi]/F");
-//  fTree->Branch("XiLambdaDCA",&fTXiLambdaDCA,"fTXiLambdaDCA[fTnXi]/F");
-//  fTree->Branch("XiLambdaDaughtersDCA",&fTXiLambdaDaughtersDCA,"fTXiLambdaDaughtersDCA[fTnXi]/F");
+  if(fOnlyXi) fTree->Branch("XiOmegaMass",&fTXiOmegaMass,"fTXiOmegaMass[fTnXi]/F");
+  if(fOnlyXi) fTree->Branch("XiVr",&fTXiVr,"fTXiVr[fTnXi]/F");
+  fTree->Branch("XiPA",&fTXiPA,"fTXiPA[fTnXi]/F");
+  if(fOnlyXi) fTree->Branch("XiLambdaDCA",&fTXiLambdaDCA,"fTXiLambdaDCA[fTnXi]/F");
+  if(fOnlyXi) fTree->Branch("XiLambdaDaughtersDCA",&fTXiLambdaDaughtersDCA,"fTXiLambdaDaughtersDCA[fTnXi]/F");
   fTree->Branch("XiLambdaMass",&fTXiLambdaMass,"fTXiLambdaMass[fTnXi]/F");
-  fTree->Branch("XiLambdaK0Mass",&fTXiLambdaK0Mass,"fTXiLambdaK0Mass[fTnXi]/F");
-//  fTree->Branch("XiLambdaVr",&fTXiLambdaVr,"fTXiLambdaVr[fTnXi]/F");
-//  fTree->Branch("XiLambdaPA",&fTXiLambdaPA,"fTXiLambdaPA[fTnXi]/F");
+  if(fOnlyXi) fTree->Branch("XiLambdaK0Mass",&fTXiLambdaK0Mass,"fTXiLambdaK0Mass[fTnXi]/F");
+  fTree->Branch("XiLambdaVr",&fTXiLambdaVr,"fTXiLambdaVr[fTnXi]/F");
+  if(fOnlyXi) fTree->Branch("XiLambdaPA",&fTXiLambdaPA,"fTXiLambdaPA[fTnXi]/F");
   fTree->Branch("XiTrackCharge",&fTXiTrackCharge,"fTXiTrackCharge[fTnXi][3]/S");
   fTree->Branch("XiTrackPx",&fTXiTrackPx,"fTXiTrackPx[fTnXi][3]/F");
   fTree->Branch("XiTrackPy",&fTXiTrackPy,"fTXiTrackPy[fTnXi][3]/F");
   fTree->Branch("XiTrackPz",&fTXiTrackPz,"fTXiTrackPz[fTnXi][3]/F");
-//  fTree->Branch("XiTrackTPCmom",&fTXiTrackTPCmom,"fTXiTrackTPCmom[fTnXi][3]/F");
-//  fTree->Branch("XiTrackDCA",&fTXiTrackDCA,"fTXiTrackDCA[fTnXi][3]/F");
-//  fTree->Branch("XiTrackTPCsigma",&fTXiTrackTPCsigma,"fTXiTrackTPCsigma[fTnXi][3]/F");
-//  fTree->Branch("XiTrackTOFsigma",&fTXiTrackTOFsigma,"fTXiTrackTOFsigma[fTnXi][3]/F");
-//  fTree->Branch("XiTrackNcl",&fTXiTrackNcl,"fTXiTrackNcl[fTnXi][3]/I");
-// fTree->Branch("XiTrackCrR",&fTXiTrackCrR,"fTXiTrackCrR[fTnXi][3]/F");
-// fTree->Branch("XiTrackCrF",&fTXiTrackCrF,"fTXiTrackCrF[fTnXi][3]/F");
+  if(fOnlyXi) fTree->Branch("XiTrackTPCmom",&fTXiTrackTPCmom,"fTXiTrackTPCmom[fTnXi][3]/F");
+  if(fOnlyXi) fTree->Branch("XiTrackDCA",&fTXiTrackDCA,"fTXiTrackDCA[fTnXi][3]/F");
+  if(fOnlyXi) fTree->Branch("XiTrackTPCsigma",&fTXiTrackTPCsigma,"fTXiTrackTPCsigma[fTnXi][3]/F");
+  if(fOnlyXi) fTree->Branch("XiTrackTOFsigma",&fTXiTrackTOFsigma,"fTXiTrackTOFsigma[fTnXi][3]/F");
+  if(fOnlyXi) fTree->Branch("XiTrackNcl",&fTXiTrackNcl,"fTXiTrackNcl[fTnXi][3]/I");
+  if(fOnlyXi) fTree->Branch("XiTrackCrR",&fTXiTrackCrR,"fTXiTrackCrR[fTnXi][3]/F");
+  if(fOnlyXi) fTree->Branch("XiTrackCrF",&fTXiTrackCrF,"fTXiTrackCrF[fTnXi][3]/F");
   fTree->Branch("XiTrackSPDtime",&fTXiTrackSPDtime,"fTXiTrackSPDtime[fTnXi][3]/O");
   fTree->Branch("XiTrackITStime",&fTXiTrackITStime,"fTXiTrackITStime[fTnXi][3]/O");
   fTree->Branch("XiTrackTOFtime",&fTXiTrackTOFtime,"fTXiTrackTOFtime[fTnXi][3]/O");
   fTree->Branch("XiTrackID",&fTXiTrackID,"fTXiTrackID[fTnXi][3]/I");
-
+  if(fIsMC||fIsMCtruth) fTree->Branch("XiMotherID",&fTXiMotherID,"fTXiMotherID[fTnXi]/I");
+  if(fIsMC||fIsMCtruth) fTree->Branch("XiPDG",&fTXiPDG,"fTXiPDG[fTnXi]/I");
+  if(fIsMC||fIsMCtruth) fTree->Branch("XiMotherPDG",&fTXiMotherPDG,"fTXiMotherPDG[fTnXi]/I");
+  if(fIsMC||fIsMCtruth) fTree->Branch("XiMotherWeak",&fTXiMotherWeak,"fTXiMotherWeak[fTnXi]/I");
+  if(fIsMC||fIsMCtruth) fTree->Branch("XiOrigin",&fTXiOrigin,"fTXiOrigin[fTnXi]/I");
 
   PostData(1, fEvtList);
   PostData(2, fKaonList);
@@ -410,6 +415,7 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
    fTKaonPDG[ii]=0.;//sure Zero?
    fTKaonMotherWeak[ii]=0.;//sure Zero?
    fTKaonOrigin[ii]=-1;
+   fTKaonMotherID[ii]=-1;
   }
   fTnKaon=0;
 
@@ -526,6 +532,11 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
     fTXiTrackITStime[ii][jj]=false;
     fTXiTrackTOFtime[ii][jj]=false;
    }
+   fTXiMotherID[ii]=-1;
+   fTXiPDG[ii]=-1;
+   fTXiMotherPDG[ii]=-1;
+   fTXiMotherWeak[ii]=-1;
+   fTXiOrigin[ii]=-1;
   }
   fTnXi=0;
  
@@ -539,9 +550,11 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
   for (int iCasc = 0;iCasc< static_cast<TClonesArray *>(aodEvt->GetCascades())->GetEntriesFast();++iCasc) {
 
     Bool_t IsXi = kFALSE;
+    Bool_t IsAntiXi = kFALSE;
 
     AliAODcascade* casc = aodEvt->GetCascade(iCasc);
     fCascade->SetCascade(fInputEvent, casc);
+
 
     if (fCutsXi->isSelected(fCascade)) {
       Xis.push_back(*fCascade);
@@ -549,14 +562,13 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
     }
     if (fCutsAntiXi->isSelected(fCascade)) {
       AntiXis.push_back(*fCascade);
-      IsXi = kTRUE;
+      IsAntiXi = kTRUE;
     }
 
-        if(IsXi) FillXi(fCascade,fisOmega);
+    if(IsXi||IsAntiXi) FillXi(fCascade,fisOmega);
 
 
-    }//cascade loop
-
+  }//cascade loop
 
 
       //fill tree:
@@ -568,19 +580,18 @@ void AliAnalysisTaskOtonXx::UserExec(Option_t*) {
      if(fdoFDpairing) FemtoDreamPairing = true;
      if(FemtoDreamPairing){
 
-      // Femto Dream Pair Cleaner. NOT SURE ABOUT THE histcounter !!!!
-      // NOT sure about clean kaons vs Xi !!!!
-      // NOT sure about clean kaons vs Xi !!!!
-      // NOT sure about clean kaons vs Xi !!!!
+      // Femto Dream Pair Cleaner. NOT SURE ABOUT THE histcounter !!!! not sure about the config !!!!
+      // for now following the same approach as p-Omega
     
-      int histcounter=0;
-      fPairCleaner->CleanDecay(&Xis, histcounter); histcounter++;
-      fPairCleaner->CleanDecay(&AntiXis, histcounter); histcounter++;
-
-      fPairCleaner->CleanTrackAndDecay(&Kaons, &Xis, histcounter); histcounter++;// Shouldn't this be AntiKaon vs Xi ??????????????????????????????????????????????????????????????????????
-      fPairCleaner->CleanTrackAndDecay(&AntiKaons, &AntiXis, histcounter); histcounter++;// Shouldn't this be AntiKaon vs Xi ??????????????????????????????????????????????????????????????????????
-
       fPairCleaner->ResetArray();
+
+  fPairCleaner->CleanTrackAndDecay(&Kaons, &AntiXis, 0);
+  fPairCleaner->CleanTrackAndDecay(&AntiKaons, &Xis, 1);
+
+  fPairCleaner->CleanDecay(&Xis, 0);
+  fPairCleaner->CleanDecay(&AntiXis, 1);
+
+
       fPairCleaner->StoreParticle(Kaons);
       fPairCleaner->StoreParticle(AntiKaons);
       fPairCleaner->StoreParticle(Xis);
@@ -734,6 +745,7 @@ Bool_t AliAnalysisTaskOtonXx::FillKaon(AliFemtoDreamTrack *TheTrack) {
         fTKaonOrigin[fTnKaon] = 3;
         break;
      }
+ fTKaonMotherID[fTnKaon] = TheTrack->GetMotherID();
 
 
  fTnKaon++;
@@ -816,6 +828,14 @@ Bool_t AliAnalysisTaskOtonXx::FillXi(AliFemtoDreamCascade *TheCasc, bool isomega
   fTXiTrackITStime[fTnXi][jj] = TheTrack->GetHasITSHit();
   fTXiTrackTOFtime[fTnXi][jj] = TheTrack->GetTOFTimingReuqirement();
  }
+
+ fTXiMotherID[fTnXi] = TheCasc->GetMotherID();
+
+  fTXiPDG[fTnXi] = TheCasc->GetMCPDGCode();
+  fTXiMotherPDG[fTnXi] = TheCasc->GetMotherPDG();
+  fTXiMotherWeak[fTnXi] = TheCasc->GetMotherWeak();
+  fTXiOrigin[fTnXi] =  TheCasc->GetParticleOrigin();
+
  fTnXi++;
  Filled = kTRUE;
  return Filled;

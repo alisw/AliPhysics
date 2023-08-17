@@ -85,6 +85,8 @@ class AliHFCorrelator : public TNamed
 	{fD0cand = d; fhypD0 = D0hyp;}
 	void SetLcProperties(AliAODRecoDecayHF3Prong* d, Int_t Lchyp)
 	{fLccand = d; fhypLc = Lchyp;}
+	void SetLcpK0sProperties(AliAODRecoCascadeHF* d, Int_t Lchyp)
+	{fLcPK0scand = d; fhypLc = Lchyp;}
 	
 	void SetUseReco(Bool_t useReco) {fUseReco = useReco;}
 	void SetNMultBins(Int_t nMultBins){fnMultBins=nMultBins;}
@@ -144,6 +146,7 @@ class AliHFCorrelator : public TNamed
 	Int_t fhypD0; //hypothesis necessary for
 	Int_t fDCharge; // charge of a daughter of the D meson
 	AliAODRecoDecayHF3Prong* fLccand; //Lc candidate
+	AliAODRecoCascadeHF *fLcPK0scand; //Lc candidate to pK0s
 	Int_t fhypLc; //hypothesis necessary for
 	
 	

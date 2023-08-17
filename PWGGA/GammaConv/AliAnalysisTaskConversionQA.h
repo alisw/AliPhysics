@@ -45,10 +45,15 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
                                                                                           }
 
     void FillType                           ( Double_t fillTree,
-                                              Bool_t fillHistorams)                       {
-                                                                                            ffillTree = fillTree                ;
-                                                                                            ffillHistograms = fillHistorams     ;
-                                                                                          }
+                                              Double_t treeHighPt,
+                                              Bool_t fillHistorams){
+        ffillTree = fillTree                ;
+        fTreeHighPt = treeHighPt            ;
+        ffillHistograms = fillHistorams     ;
+        printf("AliAnalysisTaskConversionQA:: ffillTree = %.2f, fTreeHighPt = %.2f\n", 
+            ffillTree, 
+            fTreeHighPt);
+    }
     void SetIsMC                            ( Bool_t isMC )                               { fIsMC = isMC                        ; }
 
   private:
@@ -81,6 +86,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     TTree*                      fTreeQA;                    //
     Bool_t                      fIsHeavyIon;                //
     Double_t                    ffillTree;                  //
+    Double_t                    fTreeHighPt;                // up to this pt write only a fraction 1/fFillTree to the tree, above write all photons to the tree
     Bool_t                      ffillHistograms;            //
     TList*                      fOutputList;                //
     TList*                      fESDList;                   //
@@ -135,7 +141,7 @@ class AliAnalysisTaskConversionQA : public AliAnalysisTaskSE{
     Int_t*                      fMCStackPos;                //[fnGammaCandidates]
     Int_t*                      fMCStackNeg;                //[fnGammaCandidates]
     
-    ClassDef(AliAnalysisTaskConversionQA, 11);
+    ClassDef(AliAnalysisTaskConversionQA, 12);
 };
 
 #endif

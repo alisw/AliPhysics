@@ -14,6 +14,7 @@
 #pragma link C++ class AliAnalysisTaskMcKnoUe+;
 #pragma link C++ class AliAnalysisTaskMcKnoUeSystem+;
 #pragma link C++ class AliAnalysisTaskGenMcKnoUe+;
+#pragma link C++ class AliAnalysisTaskGenMcFlattenicity+;
 #pragma link C++ class AliAnalysisTaskGenUeVsMult+;
 #pragma link C++ class AliAnalysisTaskMcKnoUeSyst+;
 #pragma link C++ class AliAnalysisTaskMcKno+;
@@ -22,6 +23,7 @@
 #pragma link C++ class AliAnalysisTaskGenMcKno+;
 #pragma link C++ class AliAnalysisTaskGenUeNchTS+;
 #pragma link C++ class AliAnalysisTaskFlatenicity+;
+#pragma link C++ class AliAnalysisTaskFlatenicityMCpred+;
 #pragma link C++ class AliAnalysisTaskMpiUE+;
 #pragma link C++ class AliAnalysisTaskSpectraFlatenicity+;
 #pragma link C++ class AliAnalysisTaskFlatenicityPiKp+;
@@ -30,4 +32,8 @@
 #pragma link C++ class AliAnalysisTaskdEdxCalibration+;
 #pragma link C++ class AliAnalysisTaskMCCorrections+;
 #pragma link C++ class AliAnalysisTaskOnlyFlatenicity+;
+#pragma link C++ class AliAnalysisTaskSystematicsV0M+;
+#pragma link C++ class AliAnalysisTaskFlatenicityMCclosure+;
+// study on fluctuations
+#pragma link C++ class AliAnalysisTaskDeutFlucpp+;
 #endif

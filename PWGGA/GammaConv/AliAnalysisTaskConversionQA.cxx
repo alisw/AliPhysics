@@ -50,6 +50,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA() : AliAnalysisTaskSE()
   fTreeQA(NULL),
   fIsHeavyIon(kFALSE),
   ffillTree(-100),
+  fTreeHighPt(100.),
   ffillHistograms(kFALSE),
   fOutputList(NULL),
   fESDList(NULL),
@@ -140,6 +141,7 @@ AliAnalysisTaskConversionQA::AliAnalysisTaskConversionQA(const char *name) : Ali
   fTreeQA(NULL),
   fIsHeavyIon(kFALSE),
   ffillTree(-100),
+  fTreeHighPt(100.),
   ffillHistograms(kFALSE),
   fOutputList(NULL),
   fESDList(NULL),
@@ -417,7 +419,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
   }
 
   if(ffillTree>=1.0){
-    fTreeQA = new TTree(Form("PhotonQA_%s_%s",(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data()),Form("PhotonQA_%s_%s",(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data()));
+    fTreeQA = new TTree(Form("PhotonQA_%s_%s",(fEventCuts->GetCutNumber()).Data(),(fConversionCuts->GetCutNumber()).Data()), Form("filled with params: ffillTree = %.2f, fTreeHighPt = %.2f GeV", ffillTree, fTreeHighPt));
 
     fTreeQA->Branch("daughterProp",&fDaughterProp);
     fTreeQA->Branch("recCords",&fGammaConvCoord);
@@ -438,7 +440,7 @@ void AliAnalysisTaskConversionQA::UserCreateOutputObjects()
 
 
   PostData(1, fOutputList);
-  if(ffillTree>=1.0){
+  if(fTreeQA){
       OpenFile(2);
       PostData(2, fTreeQA);
   }
@@ -514,12 +516,12 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
 
   // reduce event statistics in the tree by a factor ffilltree
   Bool_t ffillTreeNew = kFALSE;
-  if(ffillTree>=1.0) {
+  if(fTreeQA) {
     ffillTreeNew = kTRUE;
     if (ffillTree>1.0) {
       gRandom->SetSeed(0);
       if(gRandom->Uniform(ffillTree)>1.0) {
-	ffillTreeNew = kFALSE;
+        ffillTreeNew = kFALSE;
       }
     }
   }
@@ -542,8 +544,12 @@ void AliAnalysisTaskConversionQA::UserExec(Option_t *){
     if(!fConversionCuts->PhotonIsSelected(gamma,fInputEvent)){
       continue;
     }
-
-    if(ffillTreeNew) ProcessQATree(gamma);
+    
+    if(fTreeQA){
+      if(ffillTreeNew || (gamma->GetPhotonPt() >= fTreeHighPt)){
+        ProcessQATree(gamma);
+      }
+    }
     if(ffillHistograms) ProcessQA(gamma);
   }
 

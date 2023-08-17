@@ -1,3 +1,4 @@
+
 #ifndef AliAnalysisTaskEHCorrel_h
 #define AliAnalysisTaskEHCorrel_h
 
@@ -9,6 +10,7 @@
 //                                                                    //
 //  Author: Deepa Thomas (University of Texas at Austin)              //
 //          Ravindra Singh (IIT Indore)                               //
+//          Amanda Flores (University of Texas at Austin)             //
 //                                                                    //
 ////////////////////////////////////////////////////////////////////////
 
@@ -118,6 +120,10 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     void    IsPASS2weight(Bool_t pPbpass2weight) {fpPbPASS2weight = pPbpass2weight;};
     void    IsMC(Bool_t isMC) {fIsMC = isMC;};
 
+    void    IsClustersOn(Bool_t fSwitch) {fEMCalClusOn = fSwitch;};
+    void    IsHadInfoOn(Bool_t fSwitch) {fHadronInfoOn = fSwitch;};
+    void    IsTracksOn(Bool_t fSwitch) {fTracksOn = fSwitch;};
+
     void    SwitchFillEHCorrel(Bool_t fSwitch){fFillEHCorrel = fSwitch;};
     void    SetNDeltaPhiBins(Int_t nbins){fNDelPhiBins = nbins;};
 
@@ -209,6 +215,9 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     TClonesArray        *fMCarray;//!
     AliAODMCHeader      *fMCHeader;//!
     Bool_t              fIsMC;// Is MC
+    Bool_t              fEMCalClusOn;//
+    Bool_t              fHadronInfoOn;//
+    Bool_t              fTracksOn;//
     Bool_t              fApplyElectronEffi;//
     Double_t            fEffi;//!
     Double_t            fWeight;//!
@@ -228,6 +237,7 @@ class AliAnalysisTaskEHCorrel : public AliAnalysisTaskSE {
     Int_t               fNpureMC;//! N of particles from main generator (Hijing/Pythia)
     Int_t               fNembMCpi0; //! N > fNembMCpi0 = particles from pi0 generator
     Int_t               fNembMCeta; //! N > fNembMCeta = particles from eta generator
+    Int_t               fNembMCpileup; //! N > fNembMCpileup = PileupNoGenTrig Cocktail Header
     
     TF1                 *fFuncPtDepEta;//!
     TF1                 *fFuncPtDepPhi;//!

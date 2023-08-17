@@ -251,6 +251,7 @@ private:
    TH2F             *fHistEffEtaPtLambda;//!
    TH2F             *fHistEffEtaPtAntiLambda; //!
    TH2F             *fHistEffEtaPtTrack;//!
+    TH1F             *fHistSecContfactor;//!
 
       //----------------------------------------------------------------------
    Double_t         fMassMean[2]; //mass mean for K0s, Lambda 

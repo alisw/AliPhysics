@@ -97,6 +97,9 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   void DefineGeneralHistograms();
   void DefineAnalysisHistograms();
 
+  void FillGenParticleTree();
+  void DefineGenParticleTree();
+
   AliAODVertex *CallPrimaryVertex(AliAODcascade *casc, AliAODTrack *trk1, AliAODTrack *trk2, AliAODEvent *evt);
   AliAODVertex* PrimaryVertex(const TObjArray *trkArray,AliVEvent *event);
   AliAODVertex* CallReconstructSecondaryVertex(AliAODTrack *trk1, AliAODTrack *trk2,Double_t &disp);
@@ -114,6 +117,15 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F *fHCentrality;         /// histogram to check centrality
   TH1F *fHCentralSPD;		  ///jcho
   TH1F *fHNSPDTracklets;	  ///jcho
+  TH1F *fHntracklet;
+
+  TTree    *fGenTree;		///!<! Tree for gen ptl.
+  Float_t *fVarGenTree;		//!<! generated ptl. tree
+  Float_t fGenpT;
+  Float_t fLevFlag;
+  Float_t foriginFlag;
+  Float_t fntracklet;
+  Float_t fGenNtracklet;
 
   AliRDHFCutsXicPlustoXiPiPifromAODtracks *fAnalCuts;      /// Cuts - sent to output slot 2
   AliRDHFCutsXicPlustoXiPiPifromAODtracks *fAnalCuts_HM;   //jcho
@@ -123,7 +135,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   Bool_t fHMTrigOn;					  /// jcho, flag for HM Trig check
   Bool_t fEvtInfo;					  /// jcho, flag for Event tree
   TTree    *fVariablesTree;           //!<! tree of the candidate variables after track selection on output slot 4
-  TTree	   *fEventTree;				// jcho, Event variables tree
+  TTree	   *fEventTree;				///!<! jcho, Event variables tree
   Bool_t fReconstructPrimVert;            /// Reconstruct primary vertex excluding candidate tracks
   Bool_t fIsMB;            /// Is MB event
   Bool_t fIsSemi;          /// is semi-central trigger event
@@ -131,11 +143,12 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   Bool_t fIsINT7;          /// is int7 trigger event
   Bool_t fIsEMC7;          /// is emc7 trigger event
 
+  Bool_t fIsINEL;
   Bool_t fIsHMV0;		   /// jcho
   Bool_t fIsHMSPD;		   /// jcho
 
   Float_t *fCandidateVariables;     //!<! variables to be written to the tree
-  Float_t *fEventTreeVariables;		//jcho, Event variables to be written to the (event variables) tree
+  Float_t *fEventTreeVariables;		//!<! jcho, Event variables to be written to the (event variables) tree
   AliAODVertex *fVtx1;              /// primary vertex
   AliESDVertex *fV1;                /// primary vertex
   Double_t fBzkG;                   /// magnetic field value [kG]
@@ -146,24 +159,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   THnSparse*  fSparseXicMass;       //!<! xic sparse to study cut variation
   
   TH3F*  fHistoMCSpectrumAccXic;    //!<! Spectrum of generated particles
-  TH3F*  fHistoMCSpectrumAccXic_HM;	//!<! jcho, Spectrum of generated particles only from the HM triggered events
-
-//  TH1F*  fHistoMCSpectrum_1;		// jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_2;		// jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_3;        // jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_4;        // jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_5;        // jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_6;        // jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_7;        // jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_8;        // jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_9;        // jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_10;        // jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_11;        // jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_12;        // jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_13;        // jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_14;        // jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_15;        // jcho, generated Xic pT spectrum
-//  TH1F*  fHistoMCSpectrum_16;        // jcho, generated Xic pT spectrum
+  TH1F* fdummy;
 
   TH1F*  fHistoDcaPi1Pi2;                    //!<!  DCA between pions
   TH1F*  fHistoDcaPi1Casc;                    //!<! DCA between pi and cascade
@@ -219,6 +215,13 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   AliNormalizationCounter *fCounter_MB_30to100 = nullptr;
   AliNormalizationCounter *fCounter_HMV0_0to0p1 = nullptr;
   AliNormalizationCounter *fCounter_HMV0_0to100 = nullptr;
+
+  AliNormalizationCounter *fCounter_MB_0to100_INEL = nullptr;
+  AliNormalizationCounter *fCounter_MB_0p1to30_INEL = nullptr;
+  AliNormalizationCounter *fCounter_MB_30to100_INEL = nullptr;
+  AliNormalizationCounter *fCounter_HMV0_0to100_INEL = nullptr;
+  AliNormalizationCounter *fCounter_HMV0_0to0p1_INEL = nullptr;
+
   Float_t fNewCentrality = 9999; 
   Float_t fCentralSPD = 9999;
   Float_t fNSPDTracklets = 9999;
@@ -233,7 +236,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F* fCentralityOfEvt; //jcho 
 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,18); /// class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,21); /// class for Xic->Xipipi
   /// \endcond
 };
 #endif

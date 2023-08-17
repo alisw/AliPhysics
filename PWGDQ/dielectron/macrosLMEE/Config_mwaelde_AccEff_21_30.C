@@ -29,7 +29,7 @@ Int_t GetNbinsDeltaPhi(){return NbinsDeltaPhi;}
 
 AliAnalysisCuts* SetupTrackCuts(Int_t cutDefinition);
 AliAnalysisCuts* SetupPIDcuts(Int_t cutDefinition);
-AliAnalysisFilter* Config_mwaelde_AccEff(Int_t cutDefinition);
+AliAnalysisFilter* Config_mwaelde_AccEff(Int_t cutDefinition, Int_t trackOrPID);
 AliAnalysisFilter* Config_mwaelde_AccEff_PID(Int_t cutDefinition);
 
 
@@ -37,18 +37,24 @@ AliAnalysisFilter* Config_mwaelde_AccEff_PID(Int_t cutDefinition);
 // #########################################################
 
 //________________________________________________________________
-AliAnalysisFilter* Config_mwaelde_AccEff(Int_t cutDefinition)
+AliAnalysisFilter* Config_mwaelde_AccEff(Int_t cutDefinition, Int_t trackOrPID)
 {
   std::cout << "SetupTrackCutsAndSettings()" <<std::endl;
-  
+
   Int_t cutDefinitionbis = cutDefinition;
   if(cutDefinition>0) cutDefinitionbis = cutDefinition+20;
   printf("CutDefinition %d and cutDefinitionbis %d\n",cutDefinition,cutDefinitionbis);
 
   AliAnalysisFilter *anaFilter = new AliAnalysisFilter(Form("anaFilter_Track_%d",cutDefinitionbis),Form("anaFilter_Track_%d",cutDefinitionbis)); // named constructor seems mandatory!
 
-  anaFilter->AddCuts( SetupTrackCuts(cutDefinitionbis) );
-  std::cout << "...Trackcuts added!" <<std::endl;
+  if(trackOrPID == 0){
+    anaFilter->AddCuts( SetupTrackCuts(cutDefinitionbis) );
+    std::cout << "...Trackcuts added!" <<std::endl;
+  }
+  if(trackOrPID == 1){
+    anaFilter->AddCuts( SetupPIDcuts(cutDefinitionbis) );
+    std::cout << "...PIDcuts added!" <<std::endl;
+  }
 
   return anaFilter;
 }
@@ -116,20 +122,20 @@ AliAnalysisCuts* SetupTrackCuts(Int_t cutDefinition)
    return fesdTrackCuts;
 
 }
-AliAnalysisFilter* Config_mwaelde_AccEff_PID(Int_t cutDefinition)
-{
-  std::cout << "SetupTrackCutsAndSettings()" <<std::endl;
-  Int_t cutDefinitionbis = cutDefinition;
-  if(cutDefinition>0) cutDefinitionbis = cutDefinition+20;
-  printf("CutDefinition %d and cutDefinitionbis %d\n",cutDefinition,cutDefinitionbis);
-
-  AliAnalysisFilter *anaFilter_PID = new AliAnalysisFilter(Form("anaFilter_PID_%d",cutDefinitionbis),Form("anaFilter_PID_%d",cutDefinitionbis)); // named constructor seems mandatory!
-
-  anaFilter_PID->AddCuts( SetupPIDcuts(cutDefinitionbis) );
-  std::cout << "...PIDcuts added!" <<std::endl;
-
-  return anaFilter_PID;
-}
+// AliAnalysisFilter* Config_mwaelde_AccEff_PID(Int_t cutDefinition)
+// {
+//   std::cout << "SetupTrackCutsAndSettings()" <<std::endl;
+//   Int_t cutDefinitionbis = cutDefinition;
+//   if(cutDefinition>0) cutDefinitionbis = cutDefinition+20;
+//   printf("CutDefinition %d and cutDefinitionbis %d\n",cutDefinition,cutDefinitionbis);
+//
+//   AliAnalysisFilter *anaFilter_PID = new AliAnalysisFilter(Form("anaFilter_PID_%d",cutDefinitionbis),Form("anaFilter_PID_%d",cutDefinitionbis)); // named constructor seems mandatory!
+//
+//   anaFilter_PID->AddCuts( SetupPIDcuts(cutDefinitionbis) );
+//   std::cout << "...PIDcuts added!" <<std::endl;
+//
+//   return anaFilter_PID;
+// }
 
 
 //________________________________________________________________

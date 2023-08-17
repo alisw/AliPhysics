@@ -42,6 +42,7 @@ class AliAnalysisTaskFemtoProtonPion : public AliAnalysisTaskSE {
   bool CommonAncestors(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2); //Stolen from AliFemtoDreamHigherPairMath
   bool CommonMotherResonance(AliFemtoDreamBasePart& part1, AliFemtoDreamBasePart& part2); //check if two particles are from a certain resonance 
   bool IsResonance(int PDG); 
+  bool PassedMCKineCuts(AliAODMCParticle *mcPart); 
 
   double GetQOutLCMS(const TLorentzVector Particle1, const TLorentzVector Particle2);
   double GetQSideLCMS(const TLorentzVector Particle1, const TLorentzVector Particle2);
@@ -67,6 +68,8 @@ class AliAnalysisTaskFemtoProtonPion : public AliAnalysisTaskSE {
   void SetRemoveMCResonances(bool RemoveMCResonances, bool RemoveMCResonanceDaughters){fRemoveMCResonances = RemoveMCResonances; fRemoveMCResonanceDaughters = RemoveMCResonanceDaughters;};
   void SetDoInvMassPlot(bool DoInvMassPlot){fDoInvMassPlot = DoInvMassPlot;};
   void SetDoResonanceLorentzFactor(bool DoResonanceLorentzFactor){fDoResonanceLorentzFactor = DoResonanceLorentzFactor;};
+  void SetDoReco(bool DoReco){fRecoDist = DoReco;}; 
+  void SetDoKine(bool DoKine){fKineDist = DoKine;}; 
 
   private:
   AliAnalysisTaskFemtoProtonPion(const AliAnalysisTaskFemtoProtonPion &task);
@@ -93,8 +96,12 @@ class AliAnalysisTaskFemtoProtonPion : public AliAnalysisTaskSE {
   bool fDoAncestors; //
   bool fRemoveMCResonances; //
   bool fRemoveMCResonanceDaughters; //
-  bool fDoInvMassPlot; 
-  bool fDoResonanceLorentzFactor; 
+  bool fDoInvMassPlot; //
+  bool fDoResonanceLorentzFactor; //
+
+  //For k* dependent efficiency 
+  bool fKineDist; //
+  bool fRecoDist; //
 
   AliFemtoDreamEvent *fEvent;               //!
   AliFemtoDreamTrack *fTrack;               //!
@@ -151,6 +158,10 @@ class AliAnalysisTaskFemtoProtonPion : public AliAnalysisTaskSE {
   TH2F *fResonanceLorentzFactor; 
   TH2F *fInvMassResonancesMCTruth; 
 
-  ClassDef(AliAnalysisTaskFemtoProtonPion, 1) 
+  TH1F **fpTKineOrReco; 
+  TH1F **fEtaKineOrReco;
+  TH1F **fPhiKineOrReco;
+
+  ClassDef(AliAnalysisTaskFemtoProtonPion, 4) 
 };
 #endif /* PWGCF_FEMTOSCOPY_FEMTODREAM_ALIANALYSISTASKFEMTOPROTONPION_H_ */

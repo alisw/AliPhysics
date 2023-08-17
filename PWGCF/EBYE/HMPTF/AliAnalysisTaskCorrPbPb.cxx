@@ -88,6 +88,7 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb():
   fUtils(0),
   fOutputList(0),
   fQAList(0),
+  fTreeList(0),
   fTreeEvent(0),
   fESDtrackCuts(0),
   fESDtrackCuts_primary(0),
@@ -144,7 +145,38 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb():
   fHistMCEffPionPlus(0),
   fHistMCEffPionMinus(0),
   fHistMCEffProtonPlus(0),
-  fHistMCEffProtonMinus(0)
+  fHistMCEffProtonMinus(0),
+  fVertexZMax(0),
+  fFBNo(0),
+  fChi2TPC(0),
+  fChi2ITS(0),
+  fPIDnSigmaPionCut(0),
+  fPIDnSigmaKaonCut(0),
+  fPIDnSigmaProtonCut(0),
+  fTPCcrossedrows(0),
+  fPileupCutVal(0),
+  fCentralityEstimator_flag(0),
+  f2Dhist_nSigmaTPC_pion(0),
+  f2Dhist_nSigmaTPC_kaon(0),
+  f2Dhist_nSigmaTPC_proton(0),
+  f2Dhist_nSigmaTOF_pion(0),
+  f2Dhist_nSigmaTOF_kaon(0),
+  f2Dhist_nSigmaTOF_proton(0),
+  f2Dhist_nSigmaTPCplusTOF_pion(0),
+  f2Dhist_nSigmaTPCplusTOF_kaon(0),
+  f2Dhist_nSigmaTPCplusTOF_proton(0),
+  hist_beforeCut_DCAxy(0),
+  hist_beforeCut_DCAz(0),
+  hist_beforeCut_eta(0),
+  hist_beforeCut_chi2perTPCclstr(0),
+  hist_beforeCut_chi2perITSclstr(0),
+  hist_beforeCut_TPCncrossedrows(0),
+  hist_afterCut_DCAxy(0),
+  hist_afterCut_DCAz(0),
+  hist_afterCut_eta(0),
+  hist_afterCut_chi2perTPCclstr(0),
+  hist_afterCut_chi2perITSclstr(0),
+  hist_afterCut_TPCncrossedrows(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -167,6 +199,7 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb(const char *name):
   fUtils(0),
   fOutputList(0),
   fQAList(0),
+  fTreeList(0),
   fTreeEvent(0),
   fESDtrackCuts(0),
   fESDtrackCuts_primary(0),
@@ -223,7 +256,38 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb(const char *name):
   fHistMCEffPionPlus(0),
   fHistMCEffPionMinus(0),
   fHistMCEffProtonPlus(0),
-  fHistMCEffProtonMinus(0)
+  fHistMCEffProtonMinus(0),
+  fVertexZMax(0),
+  fFBNo(0),
+  fChi2TPC(0),
+  fChi2ITS(0),
+  fPIDnSigmaPionCut(0),
+  fPIDnSigmaKaonCut(0),
+  fPIDnSigmaProtonCut(0),
+  fTPCcrossedrows(0),
+  fPileupCutVal(0),
+  fCentralityEstimator_flag(0),
+  f2Dhist_nSigmaTPC_pion(0),
+  f2Dhist_nSigmaTPC_kaon(0),
+  f2Dhist_nSigmaTPC_proton(0),
+  f2Dhist_nSigmaTOF_pion(0),
+  f2Dhist_nSigmaTOF_kaon(0),
+  f2Dhist_nSigmaTOF_proton(0),
+  f2Dhist_nSigmaTPCplusTOF_pion(0),
+  f2Dhist_nSigmaTPCplusTOF_kaon(0),
+  f2Dhist_nSigmaTPCplusTOF_proton(0),
+  hist_beforeCut_DCAxy(0),
+  hist_beforeCut_DCAz(0),
+  hist_beforeCut_eta(0),
+  hist_beforeCut_chi2perTPCclstr(0),
+  hist_beforeCut_chi2perITSclstr(0),
+  hist_beforeCut_TPCncrossedrows(0),
+  hist_afterCut_DCAxy(0),
+  hist_afterCut_DCAz(0),
+  hist_afterCut_eta(0),
+  hist_afterCut_chi2perTPCclstr(0),
+  hist_afterCut_chi2perITSclstr(0),
+  hist_afterCut_TPCncrossedrows(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -239,7 +303,7 @@ AliAnalysisTaskCorrPbPb::AliAnalysisTaskCorrPbPb(const char *name):
   DefineInput (0, TChain::Class());
   DefineOutput(1, TList::Class());
   DefineOutput(2, TList::Class());
-  DefineOutput(3, TTree::Class());
+  DefineOutput(3, TList::Class());
 }
 //_____________________________________________________________________________________________________________________________________
 AliAnalysisTaskCorrPbPb::~AliAnalysisTaskCorrPbPb()  {
@@ -251,6 +315,10 @@ AliAnalysisTaskCorrPbPb::~AliAnalysisTaskCorrPbPb()  {
   if (fQAList){
     delete fQAList;
     fQAList = 0x0;
+  }
+  if (fTreeList){
+    delete fTreeList;
+    fTreeList = 0x0;
   }
   if (fTreeEvent){
     delete fTreeEvent;
@@ -269,8 +337,10 @@ void AliAnalysisTaskCorrPbPb::UserCreateOutputObjects()  {
     //Create Output List
     fOutputList = new TList();
     fQAList     = new TList();
+    fTreeList   = new TList();
     fOutputList -> SetOwner(kTRUE);
     fQAList     -> SetOwner(kTRUE);
+    fTreeList   -> SetOwner(kTRUE);
 
     OpenFile(1);
     OpenFile(2);
@@ -279,7 +349,7 @@ void AliAnalysisTaskCorrPbPb::UserCreateOutputObjects()  {
     
     //QA Plots of Event Selection
     fAODeventCuts.AddQAplotsToList(fQAList,kTRUE);
-    fAODeventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+    fAODeventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE, fPileupCutVal);
     
     
     //Event Counter
@@ -312,8 +382,70 @@ void AliAnalysisTaskCorrPbPb::UserCreateOutputObjects()  {
     fOutputList -> Add(hNumberOfProtonPlus);
     fOutputList -> Add(hNumberOfProtonMinus);
 
+
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    //PID nSigma Histograms 2d
+
+    f2Dhist_nSigmaTPC_pion = new TH2D("f2Dhist_nSigmaTPC_pion", "f2Dhist_nSigmaTPC_pion", 2000, -10, +10, 500, 0, 5);
+    f2Dhist_nSigmaTPC_kaon = new TH2D("f2Dhist_nSigmaTPC_kaon", "f2Dhist_nSigmaTPC_kaon", 2000, -10, +10, 500, 0, 5);
+    f2Dhist_nSigmaTPC_proton = new TH2D("f2Dhist_nSigmaTPC_proton", "f2Dhist_nSigmaTPC_proton", 2000, -10, +10, 500, 0, 5);
+
+    f2Dhist_nSigmaTOF_pion = new TH2D("f2Dhist_nSigmaTOF_pion", "f2Dhist_nSigmaTOF_pion", 2000, -10, +10, 500, 0, 5);
+    f2Dhist_nSigmaTOF_kaon = new TH2D("f2Dhist_nSigmaTOF_kaon", "f2Dhist_nSigmaTOF_kaon", 2000, -10, +10, 500, 0, 5);
+    f2Dhist_nSigmaTOF_proton = new TH2D("f2Dhist_nSigmaTOF_proton", "f2Dhist_nSigmaTOF_proton", 2000, -10, +10, 500, 0, 5);
+
+     f2Dhist_nSigmaTPCplusTOF_pion = new TH2D("f2Dhist_nSigmaTPCplusTOF_pion", "f2Dhist_nSigmaTPCplusTOF_pion", 2000, -10, +10, 500, 0, 5);
+    f2Dhist_nSigmaTPCplusTOF_kaon = new TH2D("f2Dhist_nSigmaTPCplusTOF_kaon", "f2Dhist_nSigmaTPCplusTOF_kaon", 2000, -10, +10, 500, 0, 5);
+    f2Dhist_nSigmaTPCplusTOF_proton = new TH2D("f2Dhist_nSigmaTPCplusTOF_proton", "f2Dhist_nSigmaTPCplusTOF_proton", 2000, -10, +10, 500, 0, 5);
+    fOutputList->Add(f2Dhist_nSigmaTPC_pion);
+    fOutputList->Add(f2Dhist_nSigmaTPC_kaon);
+    fOutputList->Add(f2Dhist_nSigmaTPC_proton);
+    fOutputList->Add(f2Dhist_nSigmaTOF_pion);
+    fOutputList->Add(f2Dhist_nSigmaTOF_kaon);
+    fOutputList->Add(f2Dhist_nSigmaTOF_proton);
+    fOutputList->Add(f2Dhist_nSigmaTPCplusTOF_pion);
+    fOutputList->Add(f2Dhist_nSigmaTPCplusTOF_kaon);
+    fOutputList->Add(f2Dhist_nSigmaTPCplusTOF_proton);
+
+
+     //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    //Histograms for track variables
+
+    //before track cut
+    hist_beforeCut_DCAxy = new TH1D("hist_beforeCut_DCAxy","hist_beforeCut_DCAxy", 1000, -5, +5);
+    hist_beforeCut_DCAz = new TH1D("hist_beforeCut_DCAz","hist_beforeCut_DCAz", 1000, -5, +5);
+    hist_beforeCut_eta = new TH1D ("hist_beforeCut_eta","hist_beforeCut_eta", 20, -1, +1);
+    hist_beforeCut_chi2perTPCclstr = new TH1D ("hist_beforeCut_chi2perTPCclstr", "hist_beforeCut_chi2perTPCclstr",100, 0, 5);
+    hist_beforeCut_chi2perITSclstr = new TH1D ("hist_beforeCut_chi2perITSclstr", "hist_beforeCut_chi2perITSclstr",100, 0, 50);
+    hist_beforeCut_TPCncrossedrows = new TH1D ("hist_beforeCut_TPCncrossedrows", "hist_beforeCut_TPCncrossedrows",200, 0, 200);
+    fOutputList->Add(hist_beforeCut_DCAxy);
+    fOutputList->Add(hist_beforeCut_DCAz);
+    fOutputList->Add(hist_beforeCut_eta);
+    fOutputList->Add(hist_beforeCut_chi2perTPCclstr);
+    fOutputList->Add(hist_beforeCut_chi2perITSclstr);
+    fOutputList->Add(hist_beforeCut_TPCncrossedrows);
+
+    //after track cut
+    hist_afterCut_DCAxy = new TH1D("hist_afterCut_DCAxy","hist_afterCut_DCAxy", 1000, -5, +5);
+    hist_afterCut_DCAz = new TH1D("hist_afterCut_DCAz","hist_afterCut_DCAz", 1000, -5, +5);
+    hist_afterCut_eta = new TH1D ("hist_afterCut_eta","hist_afterCut_eta", 20, -1, +1);
+    hist_afterCut_chi2perTPCclstr = new TH1D ("hist_afterCut_chi2perTPCclstr", "hist_afterCut_chi2perTPCclstr",100, 0, 5);
+    hist_afterCut_chi2perITSclstr = new TH1D ("hist_afterCut_chi2perITSclstr", "hist_afterCut_chi2perITSclstr",100, 0, 50);
+    hist_afterCut_TPCncrossedrows = new TH1D ("hist_afterCut_TPCncrossedrows", "hist_afterCut_TPCncrossedrows",200, 0, 200);
+    fOutputList->Add(hist_afterCut_DCAxy);
+    fOutputList->Add(hist_afterCut_DCAz);
+    fOutputList->Add(hist_afterCut_eta);
+    fOutputList->Add(hist_afterCut_chi2perTPCclstr);
+    fOutputList->Add(hist_afterCut_chi2perITSclstr);
+    fOutputList->Add(hist_afterCut_TPCncrossedrows);
+
+    //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
     
     //TTree object to store variables
+    
     fTreeEvent = new TTree("fTreeEvent","Event Tree");
     fTreeEvent->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
     //reconstructed
@@ -360,6 +492,8 @@ void AliAnalysisTaskCorrPbPb::UserCreateOutputObjects()  {
     fTreeEvent->Branch("fEffSqrFactrProtonPlus_ptmax3", &fEffSqrFactrProtonPlus_ptmax3, "fEffSqrFactrProtonPlus_ptmax3/F");
     fTreeEvent->Branch("fEffSqrFactrProtonMinus_ptmax3", &fEffSqrFactrProtonMinus_ptmax3, "fEffSqrFactrProtonMinus_ptmax3/F");
 
+    fTreeList->Add(fTreeEvent);
+
     
     /*
     
@@ -385,7 +519,7 @@ void AliAnalysisTaskCorrPbPb::UserCreateOutputObjects()  {
     
     PostData(1, fOutputList);
     PostData(2, fQAList);
-    PostData(3, fTreeEvent);
+    PostData(3, fTreeList);
 }
 //_____________________________________________________________________________________________________________________________________
 void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
@@ -404,8 +538,16 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
       }
     else
       {
-	lV0M = MultSelection->GetMultiplicityPercentile("V0M");
-	cout<<"V0M: "<<lV0M<<endl;
+	if (fCentralityEstimator_flag == 0)
+	  lV0M = MultSelection->GetMultiplicityPercentile("V0M");
+	else if (fCentralityEstimator_flag == 1)
+	  lV0M = MultSelection->GetMultiplicityPercentile("CL0");
+	else if (fCentralityEstimator_flag == 2)
+	  lV0M = MultSelection->GetMultiplicityPercentile("CL1");
+	else if (fCentralityEstimator_flag == 3)
+	  lV0M = MultSelection->GetMultiplicityPercentile("CL2");
+	
+	//cout<<"V0M: "<<lV0M<<endl;
       }
 
     
@@ -467,7 +609,13 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
     Double_t BinCont = 0;
     Double_t EffWgt = 0;
 
-    if(fListTRKCorr) GetMCEffCorrectionHist();
+    if(fListTRKCorr) 
+      {
+	cout<<"## Got efficiency histograms..## "<<endl;
+	GetMCEffCorrectionHist();
+      }
+    else
+      cout<<"################ No histograms found ############### "<<endl;
 
     Int_t centrality_bin = 0;
     if(lV0M > 0.0 && lV0M < 5.0)
@@ -502,28 +650,120 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
 	AliAODTrack *aodtrack  = dynamic_cast<AliAODTrack*>(track);
 	if(!aodtrack)      continue;
 
-
-	//Track selectionL FilterBit 96
-	if(!aodtrack->TestFilterBit(96))  continue;
-
+	//getting all track variables
+	
 	Double_t trkPt = aodtrack->Pt();
 	Double_t trkPhi = aodtrack->Phi();
 	Double_t trkEta = aodtrack->Eta();
 	Double_t trkCharge = aodtrack->Charge();
-	Double_t trkDCAxy = aodtrack->DCA();
-	Double_t trkDCAz = aodtrack->ZAtDCA();
+	Float_t trkDCAxy;
+	Float_t trkDCAz;
+	aodtrack->GetImpactParameters(trkDCAxy, trkDCAz);
 	Double_t trkTPCNCls = aodtrack->GetTPCNcls();
 	Double_t trkChi2PerNDF = aodtrack->Chi2perNDF();
+	Double_t trkITSchi2 = aodtrack->GetITSchi2();
+	Int_t trkITSNcls = aodtrack->GetITSNcls();
+	Double_t trkITSchi2perNcls = trkITSchi2/trkITSNcls;
+	Double_t trkTPCchi2perNcls = aodtrack->GetTPCchi2perCluster();
+	Double_t trkTPCcrossedrows = aodtrack->GetTPCCrossedRows();
+
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//Histograms filled befor applying track cut
+	hist_beforeCut_DCAxy->Fill(trkDCAxy);
+	hist_beforeCut_DCAz->Fill(trkDCAz);
+	hist_beforeCut_eta->Fill(trkEta);
+	hist_beforeCut_chi2perTPCclstr->Fill(trkTPCchi2perNcls);
+	hist_beforeCut_chi2perITSclstr->Fill(trkITSchi2perNcls);
+	hist_beforeCut_TPCncrossedrows->Fill(trkTPCcrossedrows);
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	
+	//All track cuts
+	
+	//Track selectionL FilterBit : default is FB96
+	if(!aodtrack->TestFilterBit(fFBNo))  continue;
+
+	//cuts on TPCchi2perClstr and ITSchi2perClstr and TPC nCrossedRows
+	if (trkTPCcrossedrows < fTPCcrossedrows) continue;
+	if (trkTPCchi2perNcls > fChi2TPC) continue;
+	if (trkITSchi2perNcls > fChi2ITS) continue;
+
+
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//PID nSigma histograms
+
+	Double_t fTPCnSigma_Pion = 0.0;
+	Double_t fTPCnSigma_Proton = 0.0;
+	Double_t fTPCnSigma_Kaon = 0.0;
+	Double_t fTOFnSigma_Pion = 0.0;
+	Double_t fTOFnSigma_Proton = 0.0;
+	Double_t fTOFnSigma_Kaon = 0.0;
+
+	//TPC nsigma
+	fTPCnSigma_Pion = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kPion);
+	fTPCnSigma_Proton = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kProton);
+	fTPCnSigma_Kaon = fPIDResponse->NumberOfSigmasTPC(track, AliPID::kKaon);
+	//TOF nsigma
+	fTOFnSigma_Pion = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kPion);
+	fTOFnSigma_Proton = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kProton);
+	fTOFnSigma_Kaon = fPIDResponse->NumberOfSigmasTOF(track, AliPID::kKaon);
+
+	Double_t fTPCplusTOFnSigma_Pion = sqrt(TMath::Power(fTPCnSigma_Pion, 2.0) + TMath::Power(fTOFnSigma_Pion, 2.0));
+	Double_t fTPCplusTOFnSigma_Kaon = sqrt(TMath::Power(fTPCnSigma_Kaon, 2.0) + TMath::Power(fTOFnSigma_Kaon, 2.0));
+	Double_t fTPCplusTOFnSigma_Proton = sqrt(TMath::Power(fTPCnSigma_Proton, 2.0) + TMath::Power(fTOFnSigma_Proton, 2.0));
+
+	//TPC
+	f2Dhist_nSigmaTPC_pion->Fill(fTPCnSigma_Pion, trkPt);
+	f2Dhist_nSigmaTPC_kaon->Fill(fTPCnSigma_Kaon, trkPt);
+	f2Dhist_nSigmaTPC_proton->Fill(fTPCnSigma_Proton, trkPt);
+	//TOF
+	f2Dhist_nSigmaTOF_pion->Fill(fTOFnSigma_Pion, trkPt);
+	f2Dhist_nSigmaTOF_kaon->Fill(fTOFnSigma_Kaon, trkPt);
+	f2Dhist_nSigmaTOF_proton->Fill(fTOFnSigma_Proton, trkPt);
+
+	Int_t flaggg = 0;
+	if(trkPt >= 0.5 )
+	  {
+	    //rejection
+	    
+	    if (TMath::Abs(fTPCplusTOFnSigma_Pion) < 3.0)
+	      flaggg += 1;
+	    if (TMath::Abs(fTPCplusTOFnSigma_Proton) < 3.0)
+	      flaggg += 1;
+	    if (TMath::Abs(fTPCplusTOFnSigma_Kaon) < 3.0)
+	      flaggg += 1;
+	  }
+	if (flaggg > 1) continue;
+
+	//TPC+TOF
+	f2Dhist_nSigmaTPCplusTOF_pion->Fill(fTPCplusTOFnSigma_Pion, trkPt);
+	f2Dhist_nSigmaTPCplusTOF_kaon->Fill(fTPCplusTOFnSigma_Kaon, trkPt);
+	f2Dhist_nSigmaTPCplusTOF_proton->Fill(fTPCplusTOFnSigma_Proton, trkPt);
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 
 	//Kinematic cuts on pT and Eta
 	if (TMath::Abs(trkEta) > 0.8) continue;
 	if (trkPt < 0.2) continue;
 	if (trkPt > 3.0) continue;
 
+
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//Histograms filled after applying track cut
+	hist_afterCut_DCAxy->Fill(trkDCAxy);
+	hist_afterCut_DCAz->Fill(trkDCAz);
+	hist_afterCut_eta->Fill(trkEta);
+	hist_afterCut_chi2perTPCclstr->Fill(trkTPCchi2perNcls);
+	hist_afterCut_chi2perITSclstr->Fill(trkITSchi2perNcls);
+	hist_afterCut_TPCncrossedrows->Fill(trkTPCcrossedrows);
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+
 	//PID selection
-	Bool_t IsKaon = KaonSelector(track);
-	Bool_t IsPion = PionSelector(track);
-	Bool_t IsProton = ProtonSelector(track);
+	Bool_t IsKaon = KaonSelector(track, fPIDnSigmaKaonCut);
+	Bool_t IsPion = PionSelector(track, fPIDnSigmaPionCut);
+	Bool_t IsProton = ProtonSelector(track, fPIDnSigmaProtonCut);
 	if (!IsKaon && !IsPion && !IsProton) continue;
 
 	//Check if a particle is selected as more than one type
@@ -763,7 +1003,7 @@ void AliAnalysisTaskCorrPbPb::UserExec(Option_t *)  {
  
     PostData(1, fOutputList);
     PostData(2, fQAList);
-    PostData(3, fTreeEvent);
+    PostData(3, fTreeList);
 }    
 //_____________________________________________________________________________________________________________________________________
 Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code written earlier 
@@ -782,7 +1022,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
 	  AliWarning("ERROR: lAODevent not available from AODEvent() Aborting event!");
 	  PostData(1, fOutputList);
 	  PostData(2, fQAList);
-	  PostData(3, fTreeEvent);
+	  PostData(3, fTreeList);
 	  return kFALSE;
 	}
     }
@@ -793,7 +1033,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       AliWarning("ERROR: fInputEvent (AliVEvent) not available \n");
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   
@@ -804,7 +1044,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
   if (!fAODeventCuts.AcceptEvent(fInputEvent)) {
     PostData(1, fOutputList);
     PostData(2, fQAList);
-    PostData(3, fTreeEvent);
+    PostData(3, fTreeList);
     return kFALSE;
   }
   hNumberOfEvents -> Fill(1.5);
@@ -815,7 +1055,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(2.5);
@@ -826,7 +1066,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(3.5);
@@ -840,7 +1080,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(4.5);
@@ -852,7 +1092,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
     {
       PostData(1, fOutputList);
       PostData(2, fQAList);
-      PostData(3, fTreeEvent);
+      PostData(3, fTreeList);
       return kFALSE;
     }
   hNumberOfEvents -> Fill(5.5);
@@ -863,7 +1103,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(6.5);
@@ -876,7 +1116,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(7.5);
@@ -886,7 +1126,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(8.5);
@@ -897,7 +1137,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(9.5);
@@ -912,7 +1152,7 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(10.5);
@@ -923,17 +1163,17 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(11.5);
 
     //Primary Vertex Selection
-    if ( vertex_tracks->GetZ() < -10.0 || vertex_tracks->GetZ() > +10.0)
+    if ( vertex_tracks->GetZ() < -1.0*fVertexZMax || vertex_tracks->GetZ() > +1.0*fVertexZMax)
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(12.5);
@@ -944,18 +1184,18 @@ Bool_t AliAnalysisTaskCorrPbPb::GetEvent ()  //event cuts copied from my code wr
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       } 
     hNumberOfEvents -> Fill(13.5);
                 
     //Selection of Multiplicity Range
     Double_t mult_percentile = multiplicitySelection->GetMultiplicityPercentile("V0M");
-    if (mult_percentile < 0.0 || mult_percentile > 80.0)
+    if (mult_percentile < 0.0 || mult_percentile > 90.0)
       {
 	PostData(1, fOutputList);
 	PostData(2, fQAList);
-	PostData(3, fTreeEvent);
+	PostData(3, fTreeList);
 	return kFALSE;
       }
     hNumberOfEvents -> Fill(14.5);
@@ -1012,7 +1252,7 @@ Bool_t AliAnalysisTaskCorrPbPb::PassedTrackQualityCuts (AliAODTrack *track)  {
     return passedTrkSelection;
 }
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track, Double_t nSigmaCut)  {
  
   Double_t p[3];
   track->PxPyPz(p);
@@ -1061,7 +1301,7 @@ Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track)  {
       */
       
       //acception
-      if(TMath::Abs(fTPCnSigmaKaon) < 2.0)
+      if(TMath::Abs(fTPCnSigmaKaon) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1085,7 +1325,7 @@ Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track)  {
       if (fTPCplusTOFnSigmaKaon > fTPCplusTOFnSigmaPion) return kFALSE;
 
       //acception
-      if (fTPCplusTOFnSigmaKaon < 2.0)
+      if (fTPCplusTOFnSigmaKaon < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1096,7 +1336,7 @@ Bool_t AliAnalysisTaskCorrPbPb::KaonSelector(AliVTrack *track)  {
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track, Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1149,7 +1389,7 @@ Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track)  {
       
       //acception
       
-      if(TMath::Abs(fTPCnSigmaPion) < 2.0)
+      if(TMath::Abs(fTPCnSigmaPion) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1175,7 +1415,7 @@ Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track)  {
 
       //acception
       
-      if (fTPCplusTOFnSigmaPion < 2.0)
+      if (fTPCplusTOFnSigmaPion < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1184,7 +1424,7 @@ Bool_t AliAnalysisTaskCorrPbPb::PionSelector(AliVTrack *track)  {
 }
 
 //_____________________________________________________________________________________________________________________________________
-Bool_t AliAnalysisTaskCorrPbPb::ProtonSelector(AliVTrack *track)  {
+Bool_t AliAnalysisTaskCorrPbPb::ProtonSelector(AliVTrack *track, Double_t nSigmaCut)  {
   
   Double_t p[3];
   track->PxPyPz(p);
@@ -1235,7 +1475,7 @@ Bool_t AliAnalysisTaskCorrPbPb::ProtonSelector(AliVTrack *track)  {
       
       //acception
 
-      if(TMath::Abs(fTPCnSigmaProton) < 2.0)
+      if(TMath::Abs(fTPCnSigmaProton) < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;
@@ -1263,7 +1503,7 @@ Bool_t AliAnalysisTaskCorrPbPb::ProtonSelector(AliVTrack *track)  {
 
       //acception
       
-      if (fTPCplusTOFnSigmaProton < 2.0)
+      if (fTPCplusTOFnSigmaProton < nSigmaCut)
 	return kTRUE;
       else
 	return kFALSE;

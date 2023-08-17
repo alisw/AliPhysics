@@ -2,7 +2,8 @@
 #include <AliAODInputHandler.h>
 
 // cuts
-// TString names("TrackCut_1;TrackCut_2;TrackCut_3;TrackCut_4;TrackCut_5");
+// TString names("TrackCut_1;TrackCut_2");
+// TString names("TrackCut_1;TrackCut_2;TrackCut_3");
 TString names("TrackCut_1;TrackCut_2;TrackCut_3;TrackCut_4;TrackCut_5;TrackCut_6;TrackCut_7;TrackCut_8;TrackCut_9;TrackCut_10");
 TObjArray *arrNames=names.Tokenize(";");
 const Int_t nDie=arrNames->GetEntriesFast();

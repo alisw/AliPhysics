@@ -175,12 +175,12 @@ void AliGFWCuts::SetupTrackCuts(Int_t sysflag) {
     fRequiresExtraWeight=kTRUE;
     break;
   case 2:
-    fDCAxyCut=10;
+    fDCAxyCut=6;
     fRequiresExtraWeight=kTRUE;
     fPtDepXYCut->SetParameter(0,fDCAxyCut);
     break;
   case 3:
-    fDCAxyCut=7;
+    fDCAxyCut=4;
     fPtDepXYCut->SetParameter(0,fDCAxyCut);
     fRequiresExtraWeight=kTRUE;
     break;
@@ -201,7 +201,7 @@ void AliGFWCuts::SetupTrackCuts(Int_t sysflag) {
     fRequiresExtraWeight=kTRUE;
     break;
   case 8:
-    fTPCNcls=100;
+    fTPCNcls=65;
     fRequiresExtraWeight=kTRUE;
     break;
   case 9:
@@ -275,7 +275,7 @@ void AliGFWCuts::SetupTrackCuts(Int_t sysflag) {
 void AliGFWCuts::SetupEventCuts(Int_t sysflag) {
   switch(sysflag) {
   case 1:
-    fVtxZ = 5;
+    fVtxZ = 8;
     fRequiresExtraWeight=kTRUE;
     break;
   case 2:
