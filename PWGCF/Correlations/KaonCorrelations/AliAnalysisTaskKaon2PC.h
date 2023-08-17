@@ -79,7 +79,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         void                    SetV0PtLimits(Double_t v0ptmin, Double_t v0ptmax) { fLpTv0Cut = v0ptmin; fUpTv0Cut=v0ptmax; }
         void                    SetEtaLimit(Double_t etalimit) { fEtaCut = etalimit; }
         void                    SetPIDCombined(Bool_t pidflag) {fPidpTDependentMethod = pidflag; }
-        void                    SetPileUp(Bool_t pileupflag) {fRejectEventPileUp = pileupflag; }                    
+        void                    SetPileUp(Bool_t pileupflag) {fRejectEventPileUp = pileupflag; }
+        void                    SetRemoveResonance(Bool_t removePhiflag) {fRemoveResonance = removePhiflag }                    
 
         //mixing
         //void                    SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
@@ -113,6 +114,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fHistNEvents;    //! dummy histogram
        TH1F*                   fMCEvents;       //! dummy histogram
        TH1F*                   fTracksCounter;  //! dummy histogram
+       TH1F*                   fMCTracksCounter; //! dummy histogram
        TH1F*                   fMCEvents_pileup;   //! dummy histogram
        TH1F*                   fHistNV0;        //! dummy histogram
        TH1F*                   fHistEta;        //! dummy histogram
@@ -190,14 +192,22 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fMCKPlusPtfullRange;
        TH1F*                   fMCKMinusPt;
        TH1F*                   fMCKMinusPtfullRange;
-       TH2F*                   fHistKpKnMC;
        TH2F*                   fHistK0KchMC;
-       TH2F*                   fHistKpKpMC;
-       TH2F*                   fHistKnKnMC;
+       TH2F*                   fHistKpKnMC;
+       TH2F*                   fHistK0KpMC;
+       TH2F*                   fHistK0KnMC;
+       TH2F*                   fHistk0kch;
+       TH2F*                   fHistkpkn;
+       TH2F*                   fHistk0kp;
+       TH2F*                   fHistk0kn;
+       TH2F*                   fHistkpkn_Bg;
+       TH2F*                   fHistk0kch_Bg;
+       TH2F*                   fHistk0kp_Bg;
+       TH2F*                   fHistk0kn_Bg;
        TH2F*                   fHistKpKnMC_Bg;
        TH2F*                   fHistK0KchMC_Bg;
-       TH2F*                   fHistKpKpMC_Bg;
-       TH2F*                   fHistKnKnMC_Bg;
+       TH2F*                   fHistK0KpMC_Bg;
+       TH2F*                   fHistK0KnMC_Bg;
        TH1D*                   fHistGenMultiplicity;
        TClonesArray     *fMCArray;//! MC array for AOD
 
@@ -208,13 +218,14 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        Bool_t                  fMCReconstructed; // enable MC reconstructed study
        Bool_t                  fRejectEventPileUp; // enable to use Pile-up cuts
        Bool_t                  fPidpTDependentMethod; // to enable pT dependent PID
+       Bool_t                  fRemoveResonance; // flag to remove resonances in mc gen
        Bool_t                  fMinBias;
        Bool_t                  fCentral;
        Bool_t                  fSemiCentral;
        Bool_t                  fKpKnCorr;
        Bool_t                  fK0KchCorr;
-       Bool_t                  fKpKpCorr;
-       Bool_t                  fKnKnCorr;
+       Bool_t                  fK0KpCorr;
+       Bool_t                  fK0KnCorr;
        Bool_t                  pidflag;
        Bool_t                  pileupflag;
 
