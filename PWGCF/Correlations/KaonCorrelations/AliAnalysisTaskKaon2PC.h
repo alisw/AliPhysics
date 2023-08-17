@@ -80,7 +80,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         void                    SetEtaLimit(Double_t etalimit) { fEtaCut = etalimit; }
         void                    SetPIDCombined(Bool_t pidflag) {fPidpTDependentMethod = pidflag; }
         void                    SetPileUp(Bool_t pileupflag) {fRejectEventPileUp = pileupflag; }
-        void                    SetRemoveResonance(Bool_t removePhiflag) {fRemoveResonance = removePhiflag }                    
+        void                    SetRemoveResonance(Bool_t removePhiflag) {fRemoveResonance = removePhiflag; }                    
 
         //mixing
         //void                    SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
