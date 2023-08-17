@@ -211,7 +211,7 @@ void AliAnalysisTaskSA::UserCreateOutputObjects()
   Double_t xmin[4]={0.6, 0.0, 0.0, -1.0};
   Double_t xmax[4]={1.5, 90.0, 20.0, 1.0};
   */
-  Int_t bins[4]={90, 100, 200, 20};
+  Int_t bins[4]={90, 10, 200, 10};
   Double_t xmin[4]={0.6, 0.0, 0.0, -1.0};
   Double_t xmax[4]={1.5, 100.0, 20.0, 1.0};
   kstarUnlike = new THnSparseD("kstarUnlike", "Unlike histogram", 4, bins, xmin, xmax);
