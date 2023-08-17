@@ -162,8 +162,12 @@ if(ic!=0) continue;
         for(int ichg=0;ichg<2;ichg++){
             kStarVskT2DinMixPID[ichg][ic] = nullptr;
             kStarVskT2DinMixTrue[ichg][ic] = nullptr;
+            kStarVsmT2DinMixPID[ichg][ic] = nullptr;
+            kStarVsmT2DinMixTrue[ichg][ic] = nullptr;
+
         }
     }
+
 
 
     // mix pool
@@ -282,6 +286,8 @@ fListOfObjects(0)
         for(int ichg=0;ichg<2;ichg++){
             kStarVskT2DinMixPID[ichg][ic] = nullptr;
             kStarVskT2DinMixTrue[ichg][ic] = nullptr;
+            kStarVsmT2DinMixPID[ichg][ic] = nullptr;
+            kStarVsmT2DinMixTrue[ichg][ic] = nullptr;
         }
     }
 
@@ -514,6 +520,16 @@ void AliAnalysisTaskDowangppDCAfit::UserCreateOutputObjects()
 
             fListOfObjects->Add(kStarVskT2DinMixPID[ichg][ic]);
             fListOfObjects->Add(kStarVskT2DinMixTrue[ichg][ic]);
+
+            filename.Form("kStarVsmT2DinMixPID%d%d",ichg,ic);
+            kStarVsmT2DinMixPID[ichg][ic] = new TH2F(filename," ",1000, 0.0, 1.0,25,1,3.5);
+            filename.Form("kStarVsmT2DinMixTrue%d%d",ichg,ic);
+            kStarVsmT2DinMixTrue[ichg][ic] = new TH2F(filename," ",1000, 0.0, 1.0,25,1,3.5);
+
+            fListOfObjects->Add(kStarVsmT2DinMixPID[ichg][ic]);
+            fListOfObjects->Add(kStarVsmT2DinMixTrue[ichg][ic]);
+
+
         }
     }
 
@@ -967,7 +983,7 @@ void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr,flo
 
                             TLorentzVector tmp_pair = Particle1_Reco + Particle2_Reco;
                             float kT_tmp = 0.5 * tmp_pair.Pt();
-                            
+                            float mT_tmp = 0.5 * tmp_pair.Mt();
 
                             float AvgDPhi = ReAvgDphi(mix_p1,track_info[ichg][ip2]);
                             double deta = Particle1_Reco.Eta() - Particle2_Reco.Eta();
@@ -977,9 +993,11 @@ void AliAnalysisTaskDowangppDCAfit::Analyze(AliAODEvent* aod,Float_t v0Centr,flo
                                 MomSmearing_mix[ichg][iCent]->Fill(kStar_True,kStar_Reco);
                                 fDumDPhiDEtaAvgQA_afterPairCut[ichg][iCent]->Fill(deta,AvgDPhi);
                                 kStarVskT2DinMixPID[ichg][iCent]->Fill(kStar_Reco,kT_tmp);
+                                kStarVsmT2DinMixPID[ichg][iCent]->Fill(kStar_Reco,mT_tmp);
                                 // 这两条track 都不能是fake
                                 if(Particle1_MCTruthTrackLabel!=8 && Particle2_MCTruthTrackLabel!=8){
                                     kStarVskT2DinMixTrue[ichg][iCent]->Fill(kStar_Reco,kT_tmp);
+                                    kStarVsmT2DinMixTrue[ichg][iCent]->Fill(kStar_Reco,mT_tmp);
                                 }
                                 
                             }
@@ -1962,6 +1980,7 @@ float AliAnalysisTaskDowangppDCAfit::ReAvgDphi(p_info &first_p_info, p_info &sec
     dphiAvg = dphiAvg/9.;
     return dphiAvg; 
 }
+
 
 
 

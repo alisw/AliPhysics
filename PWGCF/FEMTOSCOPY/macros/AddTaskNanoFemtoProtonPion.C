@@ -26,7 +26,9 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     int mTBinningChoice = 1, //15
     bool DoFunWithPhaseSpace = false, //16
     float pTOnepTTwokStarCutOff = 3., //17
-    const char *cutVariation = "0" //18
+    bool DoKine = false, //18
+    bool DoReco = false, //19
+    const char *cutVariation = "0" //20
     ) {
 
   TString suffix = TString::Format("%s", cutVariation);
@@ -170,6 +172,17 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   closeRejection[7] = true;  // pi+pi+
   closeRejection[9] = true;  // pi-pi-
 
+  /*if(DoKine){
+    closeRejection[0] = false;  // pp
+    closeRejection[2] = false;  // ppi+
+    closeRejection[3] = false;  // ppi-
+    closeRejection[4] = false;  // barp barp
+    closeRejection[5] = false;  // barp pi+
+    closeRejection[6] = false;  // barp pi-
+    closeRejection[7] = false;  // pi+pi+
+    closeRejection[9] = false;  // pi-pi-
+  }*/
+
   pairQA[0] = 11;  // pp
   pairQA[2] = 11;  // ppi+
   pairQA[3] = 11;  // ppi-
@@ -260,6 +273,12 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     config->SetMinimalBookingSample(true);
   }
 
+  /*if(DoKine){
+    config->SetdPhidEtaPlots(false);
+    config->SetdPhidEtaPlotsSmallK(false);
+    config->SetPhiEtaBinnign(false);
+  }*/
+
   if(DoFunWithPhaseSpace){
     config->SetpTOnepTTwokStarPlotsmT(true, pTOnepTTwokStarCutOff);
   } else {
@@ -286,7 +305,7 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
    Float_t Pion_Sigma_VarHigh = 3.3;
 
    Float_t DPhi_VarLow = 0.035;
-   Float_t DPhi_VarHigh = 0.45;
+   Float_t DPhi_VarHigh = 0.045;
    Float_t DEta_VarLow = 0.015;
    Float_t DEta_VarHigh = 0.019;
 
@@ -1069,7 +1088,6 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
   } else if (trigger == "kHM") {
     addon += "HM";
   }
-  //suffix = ""; //GANESHA delete?
 
   TString file = AliAnalysisManager::GetCommonFileName();
   AliAnalysisDataContainer *cinput = mgr->GetCommonInputContainer(); 
@@ -1259,7 +1277,10 @@ AliAnalysisTaskSE* AddTaskNanoFemtoProtonPion(
     taskAOD->SetDoPairCleaning(DoPairCleaning);
     taskAOD->SetDoOfficialFemto(doOfficialFemto); 
     taskAOD->SetDoResonanceLorentzFactor(DoResonanceLorentzFactor);
-    
+
+    taskAOD->SetDoKine(DoKine); 
+    taskAOD->SetDoReco(DoReco);
+
     //Set-up for own looping & calculus -> needed for 3D studies
     //IMPORTANT: 0, 1, 2, 3 and the names has to correspond to the order given to the offical femto framework!!!!
     taskAOD->SetCombinationInput("00 11 02 13 03 12"); //p-p barp-barp p-pion barp-barpion p-barpion barp-pion

@@ -611,8 +611,8 @@ void AliAnalysisTaskCaloHFEpp::UserCreateOutputObjects()
 	fRiso_phidiff_LS_35 = new TH2F("fRiso_phidiff_LS_35","phi differnce vs riso ",80,-3.,5.,500,0.,0.5);
 
    
-        Int_t binsWh[5]=   { 50,  60,   80,  50, 200}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
-        Double_t xminWh[5]={ 20,   0, -2.0,   0,   0};
+        Int_t binsWh[5]=   { 60,  60,   80,  50, 200}; //pt, TPCnsig, E/p, M20, NTPC,nITS, particle pt
+        Double_t xminWh[5]={ 10,   0, -2.0,   0,   0};
         Double_t xmaxWh[5]={ 70,  60,  6.0, 0.5,   2};
 	fWh_phidiff = new THnSparseD("fWh_phidiff","pT vs. dphi differnce",5,binsWh, xminWh, xmaxWh);
 	fhad_phidiff = new THnSparseD("fhad_phidiff","pT vs. dphi differnce had",5,binsWh, xminWh, xmaxWh);
@@ -1744,7 +1744,7 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
                           }
 
                          // h-h correlation
-                         if(TrkPt>30.0 && fTPCnSigma<-3.0 && eop<0.7)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,0);
+                         if(TrkPt>10.0 && fTPCnSigma<-3.0 && eop<0.7)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,0);
 
 			//if(fTPCnSigma<6 && fTPCnSigma>-6 && eop < 1.2&& eop > 0.8 && m20>0.02 && m20<0.25){ //for MC
 			if(fTPCnSigma>CutNsigma[0] && fTPCnSigma<CutNsigma[1] && eop>CutEop[0] && eop<CutEop[1] && m02>CutM02[0] && m02<CutM02[1]){
@@ -1764,7 +1764,8 @@ void AliAnalysisTaskCaloHFEpp::UserExec(Option_t *)
 
                                      //////////// ---- W-h correlation /////////////
 
-                                     if(NtrackCone<=3 && TrkPt>30 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,1);
+                                     //if(NtrackCone<=3 && TrkPt>10 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,1);
+                                     if(NtrackCone<2.9 && TrkPt>10 && icaliso)CheckCorrelation(iTracks,track,TrkPt,IsoEnergy,fFlagNonHFE,1);
 
 				if(pid_eleP)
 				{
@@ -1919,8 +1920,8 @@ void AliAnalysisTaskCaloHFEpp::SelectPhotonicElectron(Int_t itrack, AliVTrack *t
 		//-------loose cut on partner electron
 		if(ptAsso <CutptAsso) continue;
 		//if(ptAsso <0.2) continue;
-		//if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;  //for maximize finding Zee eff. (till 07/27)
-		if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue; 
+		//if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue;  //applied the cut (vAN in 07/27 - 08/10)
+		//if(aAssotrack->Eta()<-0.9 || aAssotrack->Eta()>0.9) continue; 
 		if(nsigma < -3 || nsigma > 3) continue;
 		if(AssoTPCchi2perNDF >= 4) continue;
 		if(!(aAssotrack->GetStatus()&AliAODTrack::kITSrefit) || !(aAssotrack->GetStatus()&AliAODTrack::kTPCrefit)) continue;
@@ -2647,7 +2648,7 @@ void AliAnalysisTaskCaloHFEpp::CheckCorrelation(Int_t itrack, AliVTrack *track, 
 		//==== 4.ITS cluster cut ====
 		if(aWassotrack->GetITSNcls() < CutITSNClsW) continue;  
 		//==== 5.SPD hit cut ====
-		//if(!(aWassotrack -> HasPointOnITSLayer(0) || aWassotrack -> HasPointOnITSLayer(1))) continue;
+		if(!(aWassotrack -> HasPointOnITSLayer(0) || aWassotrack -> HasPointOnITSLayer(1))) continue;
 		//==== 6.Eta cut ====
 		if(etaWasso>CutTrackEtaW[1] || etaWasso<CutTrackEtaW[0]) continue; 
 		//==== 7.DCA cut ====

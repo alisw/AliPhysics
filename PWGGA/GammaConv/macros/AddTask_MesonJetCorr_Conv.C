@@ -220,6 +220,10 @@ void AddTask_MesonJetCorr_Conv(
   // configs with eta < 0.5
   } else if (trainConfig == 30) {
     cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52403500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
+
+    // configs with eta < 1.35
+  } else if (trainConfig == 40) {
+    cuts.AddCutPCM("00010103", "0dm00009f9730000dge0404000", "2s52003500000000"); // in-Jet mass cut around pi0: 0.1-0.15, rotation back
   
 
   //--- Systamtic variations for INT7 trigger

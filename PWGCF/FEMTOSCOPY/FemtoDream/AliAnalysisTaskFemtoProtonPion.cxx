@@ -37,6 +37,8 @@ AliAnalysisTaskFemtoProtonPion::AliAnalysisTaskFemtoProtonPion()
     fRemoveMCResonanceDaughters(true),
     fDoInvMassPlot(false), 
     fDoResonanceLorentzFactor(true),
+    fKineDist(false),
+    fRecoDist(false),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -82,7 +84,10 @@ AliAnalysisTaskFemtoProtonPion::AliAnalysisTaskFemtoProtonPion()
     fMixedEventDeltaEtaDeltaPhi_List(nullptr),
     fMixedEventPhiTheta(nullptr),
     fResonanceLorentzFactor(nullptr),
-    fInvMassResonancesMCTruth(nullptr){
+    fInvMassResonancesMCTruth(nullptr),
+    fpTKineOrReco(nullptr),
+    fEtaKineOrReco(nullptr),
+    fPhiKineOrReco(nullptr){
 }
 
 AliAnalysisTaskFemtoProtonPion::AliAnalysisTaskFemtoProtonPion(
@@ -105,6 +110,8 @@ AliAnalysisTaskFemtoProtonPion::AliAnalysisTaskFemtoProtonPion(
     fRemoveMCResonanceDaughters(true),
     fDoInvMassPlot(false), 
     fDoResonanceLorentzFactor(true),
+    fKineDist(false),
+    fRecoDist(false),
     fEvent(nullptr),
     fTrack(nullptr),
     fEventCuts(nullptr),
@@ -150,7 +157,10 @@ AliAnalysisTaskFemtoProtonPion::AliAnalysisTaskFemtoProtonPion(
     fMixedEventDeltaEtaDeltaPhi_List(nullptr),
     fMixedEventPhiTheta(nullptr),
     fResonanceLorentzFactor(nullptr),
-    fInvMassResonancesMCTruth(nullptr){
+    fInvMassResonancesMCTruth(nullptr),
+    fpTKineOrReco(nullptr),
+    fEtaKineOrReco(nullptr),
+    fPhiKineOrReco(nullptr){
   DefineOutput(1, TList::Class());  //Output for the Event Cuts
   DefineOutput(2, TList::Class());  //Output for the Proton Cuts
   DefineOutput(3, TList::Class());  //Output for the AntiProton Cuts
@@ -518,6 +528,38 @@ void AliAnalysisTaskFemtoProtonPion::UserCreateOutputObjects() {
     }
   } 
 
+  if(fKineDist && fRecoDist){
+    AliFatal("Cannot do kine and reco at the same time");
+  }
+
+  TString ParticleNames[4] = {"Proton", "AntiProton", "Pion", "AntiPion"}; 
+  TString RecoOrKineName = "Reco"; 
+
+  if(fKineDist){
+    RecoOrKineName = "Kine";
+  }
+
+  if(fIsMC && (fKineDist || fRecoDist)){
+    fpTKineOrReco = new TH1F*[4]; 
+    fEtaKineOrReco = new TH1F*[4];
+    fPhiKineOrReco = new TH1F*[4];
+
+    for(int iDist = 0; iDist < 4; iDist++){
+      fpTKineOrReco[iDist] = new TH1F(Form("pTDist_%s_%s", ParticleNames[iDist].Data(), RecoOrKineName.Data()), 
+                                      Form("pTDist_%s_%s", ParticleNames[iDist].Data(), RecoOrKineName.Data()),
+                                      500, 0., 5.);
+      fResults->Add(fpTKineOrReco[iDist]); 
+      fEtaKineOrReco[iDist] = new TH1F(Form("EtaDist_%s_%s", ParticleNames[iDist].Data(), RecoOrKineName.Data()), 
+                                      Form("EtaDist_%s_%s", ParticleNames[iDist].Data(), RecoOrKineName.Data()),
+                                      200, -1., 1.);
+      fResults->Add(fEtaKineOrReco[iDist]); 
+      fPhiKineOrReco[iDist] = new TH1F(Form("PhiDist_%s_%s", ParticleNames[iDist].Data(), RecoOrKineName.Data()), 
+                                      Form("PhiDist_%s_%s", ParticleNames[iDist].Data(), RecoOrKineName.Data()),
+                                      628, 0., TMath::TwoPi());
+      fResults->Add(fPhiKineOrReco[iDist]); 
+    }
+  }
+
   ////////////////////////////////////////////////////////////////////// 
 
   PostData(1, fEvtList);
@@ -542,7 +584,6 @@ void AliAnalysisTaskFemtoProtonPion::UserCreateOutputObjects() {
   if (fTrackCutsAntiPion->GetIsMonteCarlo()) {
     PostData(12, fAntiPionMCList);
   }
-
  
   // Mixed event distribution ------------------------------------------------------------------------------
   // Take care of the mixing PartContainer
@@ -569,6 +610,20 @@ void AliAnalysisTaskFemtoProtonPion::UserCreateOutputObjects() {
 //==================================================================================================================================================
 
 void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
+
+
+  if(fKineDist && fRecoDist){
+    AliFatal("Cannot do kine and reco at the same time");
+  }
+
+  if(!fIsMC && fRecoDist){
+    AliFatal("Cannot do reco with real data");
+  }
+
+  if(!fIsMC && fKineDist){
+    AliFatal("Cannot do kine with real data");
+  }
+
   AliAODEvent *Event = static_cast<AliAODEvent*>(InputEvent());
 
   if (!Event) {
@@ -582,16 +637,7 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
   }
 
   ResetGlobalTrackReference();
-  for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
-    AliAODTrack *track = static_cast<AliAODTrack*>(Event->GetTrack(iTrack));
-    if (!track) {
-      AliFatal("No Standard NanoAOD");
-      return;
-    }
-    StoreGlobalTrackReference(track);
-  }
 
-  fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
   static std::vector<AliFemtoDreamBasePart> SelectedPions; 
   SelectedPions.clear();
   static std::vector<AliFemtoDreamBasePart> SelectedAntiPions; 
@@ -601,87 +647,237 @@ void AliAnalysisTaskFemtoProtonPion::UserExec(Option_t*) {
   static std::vector<AliFemtoDreamBasePart> SelectedAntiProtons;
   SelectedAntiProtons.clear();
 
-  //Now we loop over all the tracks in the reconstructed event.
-  for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
-    AliAODTrack *track = static_cast<AliAODTrack*>(Event->GetTrack(iTrack));
-    if (!track) {
-      continue;
+  if(fIsMC && fKineDist){
+     AliAODInputHandler *eventHandler = dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
+    if(!eventHandler){
+      AliWarning("No eventHandler for kine Dist");
+      return;
+    }
+    AliMCEvent* fMC = eventHandler->MCEvent();
+    if(!fMC){
+      AliWarning("No fMC for kine Dist");
+      return;
     }
 
-    fTrack->SetTrack(track);
+    //TClonesArray *mcArray = dynamic_cast<TClonesArray *>(Event->FindListObject(AliAODMCParticle::StdBranchName()));
+    //if (!mcArray) {
+    //      AliError("SPTrack: MC Array not found");
+    //}
+    //int nMCPart = mcArray->GetEntriesFast();
 
-    if (fIsMC && fRemoveMCResonances) {
-      TClonesArray *mcarray = dynamic_cast<TClonesArray *>(Event->FindListObject(AliAODMCParticle::StdBranchName()));
-      if (!mcarray) {
-        AliError("SPTrack: MC Array not found");
+    const float bfield = fMC->GetMagneticField();
+
+    for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
+    //for (int iPart = 1; iPart < nMCPart; iPart++) {
+      AliAODMCParticle *mcPart = (AliAODMCParticle*) fMC->GetTrack(iPart);
+      //AliAODMCParticle *mcPart = (AliAODMCParticle *)mcArray->At(iPart);
+      if (!mcPart) {
+        continue;
       }
-      if (fTrack->GetID() >= 0) {
-        AliAODMCParticle *mcPart = (AliAODMCParticle *)mcarray->At(fTrack->GetID());
-        if (!(mcPart)) {
+      if (mcPart->GetLabel() < 0) {
+        continue;
+      }
+
+      if(PassedMCKineCuts(mcPart)){
+        AliFemtoDreamBasePart partMC;
+        partMC.SetMCParticleRePart(mcPart);
+        partMC.SetID(mcPart->GetLabel());
+        partMC.SetMCParticle(mcPart,fMC);
+         
+        //Calculate PhiAtRadius, taken from AliFemtoDreamTrack
+        float TPCradii[9] = { 85., 105., 125., 145., 165., 185., 205., 225., 245. };
+        float phi0 = partMC.GetPhi().at(0);
+        float pt = partMC.GetPt();
+        float chg = partMC.GetCharge().at(0);
+        std::vector<float> phiatRadius;
+        for (int radius = 0; radius < 9; radius++) {
+          //20-Feb-2022
+          //Avoid NAN in asin for low momentum particle (particularly for pions)
+          if(TMath::Abs(0.1*chg*bfield*0.3*TPCradii[radius]*0.01/(2.*pt))< 1.){
+              phiatRadius.push_back(phi0 - TMath::ASin(0.1 * chg * bfield * 0.3 * TPCradii[radius] * 0.01 / (2. * pt)));
+          }//safety check for asin
+         }
+        partMC.SetPhiAtRadius(phiatRadius);
+  
+        if (mcPart->GetPdgCode() == fTrackCutsProton->GetPDGCode()) {
+          SelectedProtons.push_back(partMC);
+            fpTKineOrReco[0]->Fill(partMC.GetPt()); 
+            fEtaKineOrReco[0]->Fill(partMC.GetEta().at(0)); 
+            fPhiKineOrReco[0]->Fill(partMC.GetPhi().at(0)); 
+        } else if (mcPart->GetPdgCode() == fTrackCutsAntiProton->GetPDGCode()) {
+          SelectedAntiProtons.push_back(partMC);   
+            fpTKineOrReco[1]->Fill(partMC.GetPt()); 
+            fEtaKineOrReco[1]->Fill(partMC.GetEta().at(0)); 
+            fPhiKineOrReco[1]->Fill(partMC.GetPhi().at(0)); 
+        } else if (mcPart->GetPdgCode() == fTrackCutsPion->GetPDGCode()) {
+          SelectedPions.push_back(partMC);
+            fpTKineOrReco[2]->Fill(partMC.GetPt()); 
+            fEtaKineOrReco[2]->Fill(partMC.GetEta().at(0)); 
+            fPhiKineOrReco[2]->Fill(partMC.GetPhi().at(0)); 
+        } else if (mcPart->GetPdgCode() == fTrackCutsAntiPion->GetPDGCode()) {
+          SelectedAntiPions.push_back(partMC);
+            fpTKineOrReco[3]->Fill(partMC.GetPt()); 
+            fEtaKineOrReco[3]->Fill(partMC.GetEta().at(0)); 
+            fPhiKineOrReco[3]->Fill(partMC.GetPhi().at(0)); 
+        }
+      } 
+
+    } //for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
+
+  } else { //Either normal analysis (MC or real data) or to obtain kine dist
+
+    for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
+      AliAODTrack *track = static_cast<AliAODTrack*>(Event->GetTrack(iTrack));
+      if (!track) {
+        AliFatal("No Standard NanoAOD");
+        return;
+      }
+      StoreGlobalTrackReference(track);
+    }
+
+    fTrack->SetGlobalTrackInfo(fGTI, fTrackBufferSize);
+
+    //Now we loop over all the tracks in the reconstructed event.
+    for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack) {
+      AliAODTrack *track = static_cast<AliAODTrack*>(Event->GetTrack(iTrack));
+      if (!track) {
+        continue;
+      }
+
+      fTrack->SetTrack(track);
+
+      if (fIsMC && fRemoveMCResonances) {
+        TClonesArray *mcarray = dynamic_cast<TClonesArray *>(Event->FindListObject(AliAODMCParticle::StdBranchName()));
+        if (!mcarray) {
+          AliError("SPTrack: MC Array not found");
+        }
+        if (fTrack->GetID() >= 0) {
+          AliAODMCParticle *mcPart = (AliAODMCParticle *)mcarray->At(fTrack->GetID());
+          if (!(mcPart)) {
+            continue;
+          }
+          if(IsResonance(mcPart->GetPdgCode())){
+             continue; 
+          }
+          int motherID = mcPart->GetMother();
+          int lastMother = motherID;
+          AliAODMCParticle *mcMother = nullptr;
+          bool RemoveTrack = false;
+          while (motherID != -1) {
+            lastMother = motherID;
+            mcMother = (AliAODMCParticle *)mcarray->At(motherID);
+            motherID = mcMother->GetMother();
+            if(IsResonance(mcMother->GetPdgCode())){
+               fTrack->SetMotherPDG(mcMother->GetPdgCode()); //Change the PDG of the mother so it is set to the resonance. The Mother ID keeps set to the original parton
+               RemoveTrack = true;
+            }
+          }
+          if ((lastMother != -1)) {
+            mcMother = (AliAODMCParticle *)mcarray->At(lastMother);
+          }
+          if (mcMother) {
+            int motherPDG = mcMother->GetPdgCode(); 
+            if(IsResonance(motherPDG)){
+              fTrack->SetMotherPDG(motherPDG); //Change the PDG of the mother so it is set to the resonance. The Mother ID keeps set to the original parton
+              RemoveTrack = true;
+            }
+          }
+          if (RemoveTrack && fRemoveMCResonanceDaughters){
+            continue; 
+          }
+        } else {
+          continue;  // if we don't have MC Information, don't use that track
+        }
+      } //if (fIsMC && fRemoveMCResonances)
+
+      //...........................
+
+      if(fIsMC && fRecoDist) { //Kine for MC Level
+
+        TClonesArray *mcarray = dynamic_cast<TClonesArray *>(Event->FindListObject(AliAODMCParticle::StdBranchName()));
+        if (!mcarray) {
+          AliError("SPTrack: MC Array not found");
+        }
+        if (fTrack->GetID() >= 0) {
+          AliAODMCParticle *mcPart = (AliAODMCParticle *)mcarray->At(fTrack->GetID());
+          if (!(mcPart)) {
+            continue;
+          }
+
+          if(!(mcPart->IsPhysicalPrimary())){
+            continue;
+          }
+
+          //only use the particle where we are sure about their PID -> Kine dist without impurities
+          if (mcPart->GetPdgCode() == fTrackCutsProton->GetPDGCode()) {
+            if (fTrackCutsProton->isSelected(fTrack)) {
+             SelectedProtons.push_back(*fTrack);
+               fpTKineOrReco[0]->Fill(fTrack->GetPt()); 
+               fEtaKineOrReco[0]->Fill(fTrack->GetEta().at(0)); 
+               fPhiKineOrReco[0]->Fill(fTrack->GetPhi().at(0));
+            }
+          } else if (mcPart->GetPdgCode() == fTrackCutsAntiProton->GetPDGCode()) {
+            if (fTrackCutsAntiProton->isSelected(fTrack)) {
+              SelectedAntiProtons.push_back(*fTrack);
+                fpTKineOrReco[1]->Fill(fTrack->GetPt()); 
+                fEtaKineOrReco[1]->Fill(fTrack->GetEta().at(0)); 
+                fPhiKineOrReco[1]->Fill(fTrack->GetPhi().at(0));
+            }
+          } else if (mcPart->GetPdgCode() == fTrackCutsPion->GetPDGCode()) {
+            if (fTrackCutsPion->isSelected(fTrack)){ 
+              SelectedPions.push_back(*fTrack);
+                fpTKineOrReco[2]->Fill(fTrack->GetPt()); 
+                fEtaKineOrReco[2]->Fill(fTrack->GetEta().at(0)); 
+                fPhiKineOrReco[2]->Fill(fTrack->GetPhi().at(0));
+            }   
+          } else if (mcPart->GetPdgCode() == fTrackCutsAntiPion->GetPDGCode()) {
+            if (fTrackCutsAntiPion->isSelected(fTrack)){
+              SelectedAntiPions.push_back(*fTrack);
+                fpTKineOrReco[3]->Fill(fTrack->GetPt()); 
+                fEtaKineOrReco[3]->Fill(fTrack->GetEta().at(0)); 
+                fPhiKineOrReco[3]->Fill(fTrack->GetPhi().at(0));
+            }
+          }
+        } else {
+          continue;  // if we don't have MC Information, don't use that track
+        } 
+
+      } else { //normal MC or real data
+        
+        if (fTrackCutsProton->isSelected(fTrack) && fTrackCutsPion->isSelected(fTrack)){
           continue;
         }
-        if(IsResonance(mcPart->GetPdgCode())){
-           continue; 
+        if (fTrackCutsAntiProton->isSelected(fTrack) && fTrackCutsAntiPion->isSelected(fTrack)){
+          continue;
         }
-        int motherID = mcPart->GetMother();
-        int lastMother = motherID;
-        AliAODMCParticle *mcMother = nullptr;
-        bool RemoveTrack = false;
-        while (motherID != -1) {
-          lastMother = motherID;
-          mcMother = (AliAODMCParticle *)mcarray->At(motherID);
-          motherID = mcMother->GetMother();
-          if(IsResonance(mcMother->GetPdgCode())){
-             fTrack->SetMotherPDG(mcMother->GetPdgCode()); //Change the PDG of the mother so it is set to the resonance. The Mother ID keeps set to the original parton
-             RemoveTrack = true;
-          }
-        }
-        if ((lastMother != -1)) {
-          mcMother = (AliAODMCParticle *)mcarray->At(lastMother);
-        }
-        if (mcMother) {
-          int motherPDG = mcMother->GetPdgCode(); 
-          if(IsResonance(motherPDG)){
-             fTrack->SetMotherPDG(motherPDG); //Change the PDG of the mother so it is set to the resonance. The Mother ID keeps set to the original parton
-             RemoveTrack = true;
-          }
-        }
-        if (RemoveTrack && fRemoveMCResonanceDaughters){
-           continue; 
-        }
-      } else {
-        continue;  // if we don't have MC Information, don't use that track
-      }
-    } 
 
-    if (fTrackCutsProton->isSelected(fTrack) && fTrackCutsPion->isSelected(fTrack)){
-      continue;
-    }
-    if (fTrackCutsAntiProton->isSelected(fTrack) && fTrackCutsAntiPion->isSelected(fTrack)){
-      continue;
-    }
+        if (fTrackCutsProton->isSelected(fTrack)) {
+          SelectedProtons.push_back(*fTrack);
+        }
+        if (fTrackCutsAntiProton->isSelected(fTrack)) {
+          SelectedAntiProtons.push_back(*fTrack);
+        }
+        if (fTrackCutsPion->isSelected(fTrack)){ 
+          SelectedPions.push_back(*fTrack);
+        }
+        if (fTrackCutsAntiPion->isSelected(fTrack)){
+          SelectedAntiPions.push_back(*fTrack);
+        }
+      } //else { //normal MC or real data
 
-    if (fTrackCutsProton->isSelected(fTrack)) {
-      SelectedProtons.push_back(*fTrack);
-    }
-    if (fTrackCutsAntiProton->isSelected(fTrack)) {
-      SelectedAntiProtons.push_back(*fTrack);
-    }
-    if (fTrackCutsPion->isSelected(fTrack)){ 
-      SelectedPions.push_back(*fTrack);
-    }
-    if (fTrackCutsAntiPion->isSelected(fTrack)){
-      SelectedAntiPions.push_back(*fTrack);
-    }
-  }
+    } //for (int iTrack = 0; iTrack < Event->GetNumberOfTracks(); ++iTrack)
+
+  } //else //Either normal analysis (MC or real data) or to obtain kine dist
+  
 
   //loop once over the MC stack to calculate Efficiency/Purity
-  if (fIsMC) {
+  if (fIsMC) { 
   AliAODInputHandler *eventHandler = dynamic_cast<AliAODInputHandler*>(AliAnalysisManager::GetAnalysisManager()->GetInputEventHandler());
   AliMCEvent* fMC = eventHandler->MCEvent();
 
   for (int iPart = 0; iPart < (fMC->GetNumberOfTracks()); iPart++) {
       AliAODMCParticle *mcPart = (AliAODMCParticle*) fMC->GetTrack(iPart);
+
       if (mcPart->IsPhysicalPrimary()) {
         if (mcPart->GetPdgCode() == fTrackCutsProton->GetPDGCode()) {
           fTrackCutsProton->FillGenerated(mcPart->Pt());
@@ -1274,6 +1470,38 @@ bool AliAnalysisTaskFemtoProtonPion::IsResonance(int PDG) {
     return false;
   }
 }
+
+bool AliAnalysisTaskFemtoProtonPion::PassedMCKineCuts(AliAODMCParticle *mcPart){
+
+  bool passed = true; 
+
+  if(!(mcPart->IsPhysicalPrimary())){
+    passed = false;
+  }
+
+  if (mcPart->GetPdgCode() == fTrackCutsProton->GetPDGCode() || mcPart->GetPdgCode() == fTrackCutsAntiProton->GetPDGCode()) { //Protons
+
+    if(mcPart->Pt() < 0.5 || mcPart->Pt() > 4.05){
+      passed = false;
+    }
+    if(mcPart->Eta() < -0.8 || mcPart->Eta() > 0.8){
+      passed = false;
+    }
+ 
+  } else if (mcPart->GetPdgCode() == fTrackCutsPion->GetPDGCode() || mcPart->GetPdgCode() == fTrackCutsAntiPion->GetPDGCode()) { //Pions
+    if(mcPart->Pt() < 0.14 || mcPart->Pt() > 4.0){
+      passed = false;
+    }
+    if(mcPart->Eta() < -0.8 || mcPart->Eta() > 0.8){
+      passed = false;
+    }   
+  } else {
+    passed = false; //it's neither a proton nor a pion
+  }
+
+  return passed; 
+}
+
 
 //==================================================================================================================================================
 

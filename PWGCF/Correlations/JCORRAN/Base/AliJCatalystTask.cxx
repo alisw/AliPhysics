@@ -75,6 +75,7 @@ AliJCatalystTask::AliJCatalystTask():
   fPt_max(5.0),
   fzvtxCut(10.0),
   fremovebadarea(kFALSE),
+  fremovebadarea18q(kFALSE),
   flags(0),
   fJCatalystEntry(0),
   fIsGoodEvent(false),
@@ -139,6 +140,7 @@ AliJCatalystTask::AliJCatalystTask(const char *name):
   fPt_max(5.0),
   fzvtxCut(10.0),
   fremovebadarea(kFALSE),
+  fremovebadarea18q(kFALSE),
   flags(0),
   fJCatalystEntry(0),
   fIsGoodEvent(false),
@@ -607,9 +609,10 @@ void AliJCatalystTask::ReadAODTracks(AliAODEvent *aod, TClonesArray *TrackList, 
         if(track->Eta() < fEta_min || track->Eta() > fEta_max) continue; // Need to check this here also
                 // Removal of bad area, now only with eta symmetric
         Bool_t isBadArea = TMath::Abs(track->Eta()) > 0.6;
-        if(fremovebadarea) {
-          if(isBadArea) continue;
-        } 
+        Bool_t isBadArea18q = track->Eta() < -(fZvert+8.)/17.5;
+        if(fremovebadarea && isBadArea) continue;
+
+        if (fremovebadarea18q && isBadArea18q) continue;
         
         if (bSaveAllQA) {FillControlHistograms(track, 1, fcent, PV);} // Fill the QA histograms after the track selection.
 

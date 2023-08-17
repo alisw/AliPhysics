@@ -93,6 +93,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
         void                    SetTrigger(AliVEvent::EOfflineTriggerTypes trigger) { fTrigger = trigger; }
         void                    SetPVZcut(Double_t cut) { fPVzCut = cut; }
         void                    SetUseNchRange(Bool_t range, Int_t min, Int_t max) { fUseNch = range; fNchMin = min; fNchMax = max; }
+	void                    SetUseNchfor_eventmixing(Bool_t range) { fUseNchfor_eventmixing = range; }
         void                    SetCentrality(TString cent, Double_t min = 0.0, Double_t max = 20.0) { fCentEstimator = cent; fCentMin = min; fCentMax = max; }
 
         //track selection (charged + PID + som global )
@@ -222,6 +223,7 @@ class AliAnalysisTaskCorrForFlowFMD : public AliAnalysisTaskSE
 	Bool_t                  fshiftphi_PHI; // [kFALSE]
         Bool_t                  fshiftrap_PHI; // [kFALSE]
         Bool_t                  fUseNch; // [kFALSE]
+	Bool_t                  fUseNchfor_eventmixing; // [kFALSE]
         Bool_t                  fUseEfficiency; // [kFALSE]
         Bool_t                  fUseFMDcut; // [kTRUE]
         Bool_t                  fUseOppositeSidesOnly; // [kFALSE]

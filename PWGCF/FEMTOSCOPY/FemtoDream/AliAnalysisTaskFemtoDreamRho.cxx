@@ -222,8 +222,7 @@ void AliAnalysisTaskFemtoDreamRho::UserExec(Option_t *) {
     }
   }
  
-  // For now no default pair cleaning but may change to CleanTrackandTrack of same charge pion and proton
-  
+  // For now no default pair cleaning but may change to CleanTrackandTrack of same charge pion and proton  
   if (fDoCleaning) {
     fPairCleaner->CleanTrackAndDecay(&Particles, &Protons, 0);
     fPairCleaner->CleanTrackAndDecay(&AntiParticles, &AntiProtons, 1);

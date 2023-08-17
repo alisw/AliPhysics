@@ -125,6 +125,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   Float_t fLevFlag;
   Float_t foriginFlag;
   Float_t fntracklet;
+  Float_t fGenNtracklet;
 
   AliRDHFCutsXicPlustoXiPiPifromAODtracks *fAnalCuts;      /// Cuts - sent to output slot 2
   AliRDHFCutsXicPlustoXiPiPifromAODtracks *fAnalCuts_HM;   //jcho
@@ -158,6 +159,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   THnSparse*  fSparseXicMass;       //!<! xic sparse to study cut variation
   
   TH3F*  fHistoMCSpectrumAccXic;    //!<! Spectrum of generated particles
+  TH1F* fdummy;
 
   TH1F*  fHistoDcaPi1Pi2;                    //!<!  DCA between pions
   TH1F*  fHistoDcaPi1Casc;                    //!<! DCA between pi and cascade
@@ -234,7 +236,7 @@ class AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks : public AliAnalysisTaskSE
   TH1F* fCentralityOfEvt; //jcho 
 
   /// \cond CLASSIMP    
-  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,20); /// class for Xic->Xipipi
+  ClassDef(AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks,21); /// class for Xic->Xipipi
   /// \endcond
 };
 #endif

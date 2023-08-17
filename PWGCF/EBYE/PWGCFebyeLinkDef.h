@@ -129,6 +129,7 @@
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityROOT6+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_v2+;
+#pragma link C++ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo+;
 #pragma link C++ class AliAnalysisTaskCorrPP+;
 #pragma link C++ class AliAnalysisTaskCorrPbPb+;
 #pragma link C++ class AliAnalysisTaskCorrPbPb_v2+;
@@ -137,6 +138,10 @@
 #pragma link C++ class AliAnalysisTaskCorrPbPbMC+;
 #pragma link C++ class AliAnalysisTaskCorrPPMC+;
 #pragma link C++ class AliAnalysisTaskResonanceVsMultiplicityROOT6_new+;
+
+#pragma link C++ class AliAnalysisTaskDiffPtFluc_PIDhadrons+;
+#pragma link C++ class AliAnalysisTaskDiffPtFStrange+;
+
 
 #pragma link C++ class AliAnalysisTaskNFactorialMoments+;
 

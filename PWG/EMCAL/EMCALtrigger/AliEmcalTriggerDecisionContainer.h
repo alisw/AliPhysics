@@ -26,9 +26,10 @@
  ************************************************************************************/
 #ifndef ALIEMCALTRIGGERDECISIONCONTAINER_H
 #define ALIEMCALTRIGGERDECISIONCONTAINER_H
-
+#include <vector>
 #include <TList.h>
 #include <TNamed.h>
+#include "AliEmcalStringView.h"
 
 namespace PWG{
 
@@ -171,7 +172,7 @@ public:
    * @param[in] decname Name of the EMCAL Level1 trigger class
    * @return the trigger decision (NULL if not found)
    */
-  const AliEmcalTriggerDecision *FindTriggerDecision(const char *name) const;
+  const AliEmcalTriggerDecision *FindTriggerDecision(EMCAL_STRINGVIEW name) const;
 
   /**
    * @brief Get container with trigger decision results
@@ -205,9 +206,17 @@ public:
    * @param[in] name Name of the EMCAL trigger
    * @return True if the event is selected, false otherwise
    */
-  bool IsEventSelected(const char *name)  const;
+  bool IsEventSelected(EMCAL_STRINGVIEW name)  const;
 
 protected:
+  /**
+   * @brief Separate selection string if set-combined or overlap is requested
+   * 
+   * @param selectionstring Trigger selection string
+   * @param separator string separator
+   * @return List of trigger classes
+   */
+  std::vector<std::string> parseSelectionString(EMCAL_STRINGVIEW selectionstring, char separator) const;  
   TList     fContainer;         ///< List of trigger decisions
 
   /// \cond CLASSIMP

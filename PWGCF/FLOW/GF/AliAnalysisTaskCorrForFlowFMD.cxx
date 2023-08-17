@@ -49,6 +49,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD() : AliAnalysisTask
     fshiftphi_PHI(kFALSE),
     fshiftrap_PHI(kFALSE),
     fUseNch(kFALSE),
+    fUseNchfor_eventmixing(kFALSE),
     fUseEfficiency(kFALSE),
     fUseFMDcut(kTRUE),
     fUseOppositeSidesOnly(kFALSE),
@@ -166,6 +167,7 @@ AliAnalysisTaskCorrForFlowFMD::AliAnalysisTaskCorrForFlowFMD(const char* name, B
     fshiftphi_PHI(kFALSE),
     fshiftrap_PHI(kFALSE),
     fUseNch(kFALSE),
+    fUseNchfor_eventmixing(kFALSE),
     fUseEfficiency(bUseEff),
     fUseFMDcut(kTRUE),
     fUseOppositeSidesOnly(kFALSE),
@@ -1256,8 +1258,11 @@ void AliAnalysisTaskCorrForFlowFMD::FillCorrelationsMixed(const Int_t spec)
 {
   if(!fTracksTrig[spec] || !fhTrigTracks[spec] || !fTracksAss) { AliError("Necessary inputs missing, terminating!"); return; }
 
-  AliEventPool *pool = fPoolMgr->GetEventPool(fCentrality, fPVz);
-  if(!pool) { AliError(Form("No pool found for centrality = %f, zVtx = %f", fCentrality,fPVz)); return; }
+  Double_t fpool_centrality_tracks = (Double_t) fCentrality;
+  if (fUseNchfor_eventmixing == kTRUE) fpool_centrality_tracks = (Double_t) fNofTracks;
+  
+  AliEventPool *pool = fPoolMgr->GetEventPool(fpool_centrality_tracks, fPVz);
+  if(!pool) { AliError(Form("No pool found for centrality_tracks = %f, zVtx = %f", fpool_centrality_tracks, fPVz)); return; }
 
   if(pool->IsReady() || pool->NTracksInPool() > fPoolMinNTracks ||  pool->GetCurrentNEvents() > fMinEventsToMix) {
     Int_t nMix = pool->GetCurrentNEvents();

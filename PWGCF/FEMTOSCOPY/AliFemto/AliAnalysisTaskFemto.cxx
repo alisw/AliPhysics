@@ -635,6 +635,7 @@ void AliAnalysisTaskFemto::CreateOutputObjects()
       printf("*** Connect to AliEn ***\n");
       TGrid::Connect("alien://");
       TFile *fileConfig = TFile::Open(fConfigMacro.Data());
+      if(fConfigTMacro) delete fConfigTMacro;
       fConfigTMacro = dynamic_cast<TMacro*>(fileConfig->Get(fconfigFunName.Data())->Clone());
       LoadMacro(fConfigTMacro);
       fileConfig->Close();

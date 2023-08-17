@@ -149,7 +149,14 @@ AliAnalysisTaskCorrPbPb_treemerge::AliAnalysisTaskCorrPbPb_treemerge():
   fFBNo(0),
   fChi2TPC(0),
   fChi2ITS(0),
-  fPIDnSigmaCut(0)
+  fPIDnSigmaPionCut(0),
+  fPIDnSigmaKaonCut(0),
+  fPIDnSigmaProtonCut(0),
+  fTPCcrossedrows(0),
+  fEtaMax(0),
+  fPileupCutVal(0),
+  fCentralityEstimator_flag(0),
+  fTreeName(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -233,7 +240,14 @@ AliAnalysisTaskCorrPbPb_treemerge::AliAnalysisTaskCorrPbPb_treemerge(const char 
   fFBNo(0),
   fChi2TPC(0),
   fChi2ITS(0),
-  fPIDnSigmaCut(0)
+  fPIDnSigmaPionCut(0),
+  fPIDnSigmaKaonCut(0),
+  fPIDnSigmaProtonCut(0),
+  fTPCcrossedrows(0),
+  fEtaMax(0),
+  fPileupCutVal(0),
+  fCentralityEstimator_flag(0),
+  fTreeName(0)
 {
   for(int i=0; i<9; i++)
     {
@@ -288,8 +302,8 @@ void AliAnalysisTaskCorrPbPb_treemerge::UserCreateOutputObjects()  {
 
     
     //QA Plots of Event Selection
-    fAODeventCuts.AddQAplotsToList(fQAList,kTRUE);
-    fAODeventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE);
+    //fAODeventCuts.AddQAplotsToList(fQAList,kTRUE);
+    fAODeventCuts.SetRejectTPCPileupWithITSTPCnCluCorr(kTRUE, fPileupCutVal);
     
     
     //Event Counter
@@ -299,24 +313,24 @@ void AliAnalysisTaskCorrPbPb_treemerge::UserCreateOutputObjects()  {
     
 
     //Number of Kaon finally getting selected with specified cuts event wise
-    hNumberOfKaonPlus     = new TH1D ("hNumberOfKaonPlus","",3000,0,3000);
-    hNumberOfKaonMinus = new TH1D ("hNumberOfKaonMinus","",3000,0,3000);
+    hNumberOfKaonPlus     = new TH1D ("hNumberOfKaonPlus","",300,0,300);
+    hNumberOfKaonMinus = new TH1D ("hNumberOfKaonMinus","",300,0,300);
     // hNumberOfKaonPlus     -> Sumw2();
     // hNumberOfKaonMinus -> Sumw2();
     fOutputList -> Add(hNumberOfKaonPlus);
     fOutputList -> Add(hNumberOfKaonMinus);
 
     //Number of Pion finally getting selected with specified cuts event wise
-    hNumberOfPionPlus     = new TH1D ("hNumberOfPionPlus","",3000,0,3000);
-    hNumberOfPionMinus = new TH1D ("hNumberOfPionMinus","",3000,0,3000);
+    hNumberOfPionPlus     = new TH1D ("hNumberOfPionPlus","",300,0,300);
+    hNumberOfPionMinus = new TH1D ("hNumberOfPionMinus","",300,0,300);
     // hNumberOfPionPlus     -> Sumw2();
     // hNumberOfPionMinus -> Sumw2();
     fOutputList -> Add(hNumberOfPionPlus);
     fOutputList -> Add(hNumberOfPionMinus);
 
     //Number of Proton finally getting selected with specified cuts event wise
-    hNumberOfProtonPlus     = new TH1D ("hNumberOfProtonPlus","",3000,0,3000);
-    hNumberOfProtonMinus = new TH1D ("hNumberOfProtonMinus","",3000,0,3000);
+    hNumberOfProtonPlus     = new TH1D ("hNumberOfProtonPlus","",300,0,300);
+    hNumberOfProtonMinus = new TH1D ("hNumberOfProtonMinus","",300,0,300);
     // hNumberOfProtonPlus     -> Sumw2();
     // hNumberOfProtonMinus -> Sumw2();
     fOutputList -> Add(hNumberOfProtonPlus);
@@ -324,7 +338,7 @@ void AliAnalysisTaskCorrPbPb_treemerge::UserCreateOutputObjects()  {
 
     
     //TTree object to store variables
-    fTreeEvent = new TTree("fTreeEvent","Event Tree");
+    fTreeEvent = new TTree(fTreeName,"Event Tree");
     fTreeEvent->Branch("fTreeVariableCentrality",&fTreeVariableCentrality,"fTreeVariableCentrality/F");
     //reconstructed
     fTreeEvent->Branch("fNoKaonPlus_ptmax2", &fNoKaonPlus_ptmax2, "fNoKaonPlus_ptmax2/F");
@@ -371,27 +385,7 @@ void AliAnalysisTaskCorrPbPb_treemerge::UserCreateOutputObjects()  {
     fTreeEvent->Branch("fEffSqrFactrProtonMinus_ptmax3", &fEffSqrFactrProtonMinus_ptmax3, "fEffSqrFactrProtonMinus_ptmax3/F");
 
     
-    /*
-    
-    //Track Cuts Objects
-    if(!fESDtrackCuts )
-      {
-	fESDtrackCuts = new AliESDtrackCuts();
-	fESDtrackCuts->SetMinNClustersTPC(70);
-	fESDtrackCuts->SetMaxChi2PerClusterTPC(4);
-	fESDtrackCuts->SetAcceptKinkDaughters(kFALSE);
-	fESDtrackCuts->SetRequireTPCRefit(kTRUE);
-	fESDtrackCuts->SetPtRange(0.15,1e10);
-	fESDtrackCuts->SetEtaRange(-0.8,0.8);
-      }
-    if(!fESDtrackCuts_primary)
-      {
-	fESDtrackCuts_primary = new AliESDtrackCuts();
-	fESDtrackCuts_primary = AliESDtrackCuts::GetStandardITSTPCTrackCuts2011(kTRUE, 1);
-	fESDtrackCuts_primary->SetPtRange(0.3,5.0);
-	fESDtrackCuts_primary->SetEtaRange(-0.8,+0.8);
-      }
-    */
+   
     
     PostData(1, fOutputList);
     PostData(2, fQAList);
@@ -414,8 +408,16 @@ void AliAnalysisTaskCorrPbPb_treemerge::UserExec(Option_t *)  {
       }
     else
       {
-	lV0M = MultSelection->GetMultiplicityPercentile("V0M");
-	cout<<"V0M: "<<lV0M<<endl;
+	if (fCentralityEstimator_flag == 0)
+	  lV0M = MultSelection->GetMultiplicityPercentile("V0M");
+	else if (fCentralityEstimator_flag == 1)
+	  lV0M = MultSelection->GetMultiplicityPercentile("CL0");
+	else if (fCentralityEstimator_flag == 2)
+	  lV0M = MultSelection->GetMultiplicityPercentile("CL1");
+	else if (fCentralityEstimator_flag == 3)
+	  lV0M = MultSelection->GetMultiplicityPercentile("CL2");
+
+	//cout<<"V0M: "<<lV0M<<endl;
       }
 
     
@@ -513,18 +515,7 @@ void AliAnalysisTaskCorrPbPb_treemerge::UserExec(Option_t *)  {
 	if(!aodtrack)      continue;
 
 
-	//Track selectionL FilterBit 96
-	//if(!aodtrack->TestFilterBit(96))  continue;
-	if(!aodtrack->TestFilterBit(fFBNo))  continue;
 
-	//cuts on TPCchi2perClstr and ITSchi2perClstr
-
-	Double_t trkITSchi2 = aodtrack->GetITSchi2();
-	Int_t trkITSNcls = aodtrack->GetITSNcls();
-	Double_t trkITSchi2perNcls = trkITSchi2/trkITSNcls;
-	Double_t trkTPCchi2perNcls = aodtrack->GetTPCchi2perCluster();
-	if (trkTPCchi2perNcls > fChi2TPC) continue;
-	if (trkITSchi2perNcls > fChi2ITS) continue;
 	
 
 	Double_t trkPt = aodtrack->Pt();
@@ -535,16 +526,32 @@ void AliAnalysisTaskCorrPbPb_treemerge::UserExec(Option_t *)  {
 	Double_t trkDCAz = aodtrack->ZAtDCA();
 	Double_t trkTPCNCls = aodtrack->GetTPCNcls();
 	Double_t trkChi2PerNDF = aodtrack->Chi2perNDF();
+	Double_t trkITSchi2 = aodtrack->GetITSchi2();
+	Int_t trkITSNcls = aodtrack->GetITSNcls();
+	Double_t trkITSchi2perNcls = trkITSchi2/trkITSNcls;
+	Double_t trkTPCchi2perNcls = aodtrack->GetTPCchi2perCluster();
+	Double_t trkTPCcrossedrows = aodtrack->GetTPCCrossedRows();
+
+
+	//Track selectionL FilterBit 96
+	//if(!aodtrack->TestFilterBit(96))  continue;
+	if(!aodtrack->TestFilterBit(fFBNo))  continue;
+
+	//cuts on TPCchi2perClstr and ITSchi2perClstr
+	if (trkTPCcrossedrows < fTPCcrossedrows) continue;
+	if (trkTPCchi2perNcls > fChi2TPC) continue;
+	if (trkITSchi2perNcls > fChi2ITS) continue;
+
 
 	//Kinematic cuts on pT and Eta
-	if (TMath::Abs(trkEta) > 0.8) continue;
+	if (TMath::Abs(trkEta) > fEtaMax) continue;
 	if (trkPt < 0.2) continue;
 	if (trkPt > 3.0) continue;
 
 	//PID selection
-	Bool_t IsKaon = KaonSelector(track, fPIDnSigmaCut);
-	Bool_t IsPion = PionSelector(track, fPIDnSigmaCut);
-	Bool_t IsProton = ProtonSelector(track, fPIDnSigmaCut);
+	Bool_t IsKaon = KaonSelector(track, fPIDnSigmaKaonCut);
+	Bool_t IsPion = PionSelector(track, fPIDnSigmaPionCut);
+	Bool_t IsProton = ProtonSelector(track, fPIDnSigmaProtonCut);
 	if (!IsKaon && !IsPion && !IsProton) continue;
 
 	//Check if a particle is selected as more than one type
