@@ -136,7 +136,7 @@ void AliHFSystErr::Init(Int_t decay){
         else if(fRunNumber ==18 || fRunNumber == 2018){
           InitD0toKpi20161718pp13TeVmb();
           if(fCentralityClass=="19")InitD0toKpi20161718pp13TeVlm();
-          //if(fCentralityClass=="3060")InitD0toKpi20161718pp13TeVhm();
+          if(fCentralityClass=="3060")InitD0toKpi20161718pp13TeVhm();
         }
         else if(fRunNumber==20161718 || fRunNumber==161718){
           InitD0toKpi20161718pp13TeVFineBins();
