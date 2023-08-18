@@ -71,7 +71,8 @@ fOutputList(0),
 fPIDResponse(0),
 fPidpTDependentMethod(kTRUE),
 fRejectEventPileUp(kTRUE),
-fRemoveResonance(kFALSE),
+fRemoveResonance(kTRUE),
+fRemoveResonancek0s(kFALSE),
 fMinBias(kTRUE),
 fCentral(kFALSE),
 fSemiCentral(kFALSE),
@@ -88,7 +89,7 @@ fSigCut(3.0),
 fBit(96),
 fPVzCut(8),
 fCentMin(0),
-fCentMax(90),
+fCentMax(10),
 //V0 cuts
 fDecayLv0Cut(8.05), 
 fLpTv0Cut(0.4), 
@@ -254,7 +255,8 @@ fOutputList(0),
 fPIDResponse(0),
 fPidpTDependentMethod(kTRUE),
 fRejectEventPileUp(kTRUE),
-fRemoveResonance(kFALSE),
+fRemoveResonance(kTRUE),
+fRemoveResonancek0s(kFALSE),
 fMinBias(kTRUE),
 fCentral(kFALSE),
 fSemiCentral(kFALSE),
@@ -271,7 +273,7 @@ fSigCut(3.0),
 fBit(96),
 fPVzCut(8),
 fCentMin(0),
-fCentMax(90),
+fCentMax(10),
 //V0 cuts
 fDecayLv0Cut(8.05), 
 fLpTv0Cut(0.4), 
@@ -1987,9 +1989,9 @@ for (Int_t i = 0; i < nMCTracks; i++){
     }
     if(SelectK0) fMCSelectedK0s->Add(mcTrack);
 
-    if (fRemoveResonance) {if (labMom > 0) continue ;}
+    //if (fRemoveResonance) {if (labMom > 0) continue ;}
 
-    nTracksResonancecut += 1;
+    //nTracksResonancecut += 1;
     
     if(SelectKpos) {
         fMCKpos->Fill(KaonVariables);
@@ -2026,6 +2028,13 @@ for (Int_t i = 0; i < fMCSelectedK0s->GetEntries(); i++){
     for (Int_t j = 0; j < fMCSelectedKCh->GetEntries(); j++){
         AliVParticle* mcTrack2 = dynamic_cast<AliVParticle*>(fMCSelectedKCh->At(j));
         if (!mcTrack2) continue;
+
+        Int_t labMom1 = mcTrack1->GetMother();
+        Int_t labMom2 = mcTrack2->GetMother();
+        
+        if (fRemoveResonancek0s) {
+            if (labMom1 >0 || labMom2 > 0) continue;
+        }
         Double_t phi2 = mcTrack2->Phi();
         Double_t eta2 = mcTrack2->Eta();
 
@@ -2050,7 +2059,13 @@ for (Int_t i = 0; i < fMCSelectedKpos->GetEntries(); i++){
     for (Int_t j = 0; j < fMCSelectedKneg->GetEntries(); j++){
         AliVParticle* mcTrack2 = dynamic_cast<AliVParticle*>(fMCSelectedKneg->At(j));
         if (!mcTrack2) continue;
-        Double_t trackPseudorap = mcTrack2->Eta();
+
+        Int_t labMom1 = mcTrack1->GetMother();
+        Int_t labMom2 = mcTrack2->GetMother();
+        
+        if (fRemoveResonance) {
+            if (labMom1 >0 || labMom2 > 0) continue;
+        }
         Double_t phi2 = mcTrack2->Phi();
         Double_t eta2 = mcTrack2->Eta();
         Double_t DEta = eta1 - eta2;
@@ -2075,6 +2090,13 @@ for (Int_t i = 0; i < fMCSelectedK0s->GetEntries(); i++){
     for (Int_t j = 0; j < fMCSelectedKpos->GetEntries(); j++){
         AliVParticle* mcTrack2 = dynamic_cast<AliVParticle*>(fMCSelectedKpos->At(j));
         if (!mcTrack2) continue;
+
+        Int_t labMom1 = mcTrack1->GetMother();
+        Int_t labMom2 = mcTrack2->GetMother();
+        
+        if (fRemoveResonancek0s) {
+            if (labMom1 >0 || labMom2 > 0) continue;
+        }
         Double_t phi2 = mcTrack2->Phi();
         Double_t eta2 = mcTrack2->Eta();
 
@@ -2100,6 +2122,13 @@ for (Int_t i = 0; i < fMCSelectedK0s->GetEntries(); i++){
     for (Int_t j = 0; j < fMCSelectedKneg->GetEntries(); j++){
         AliVParticle* mcTrack2 = dynamic_cast<AliVParticle*>(fMCSelectedKneg->At(j));
         if (!mcTrack2) continue;
+
+        Int_t labMom1 = mcTrack1->GetMother();
+        Int_t labMom2 = mcTrack2->GetMother();
+        
+        if (fRemoveResonancek0s) {
+            if (labMom1 >0 || labMom2 > 0) continue;
+        }
         Double_t phi2 = mcTrack2->Phi();
         Double_t eta2 = mcTrack2->Eta();
 
