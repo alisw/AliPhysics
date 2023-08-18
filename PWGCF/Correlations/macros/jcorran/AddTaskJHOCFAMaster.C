@@ -15,7 +15,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     bool useWeightsNUE = true, bool useWeightsNUA = false,
     bool useWeightsCent = false,
     bool getSC = true, bool getLower = true,
-    bool Aside = false, bool Cside = false, bool saveQCNUA = false, bool frmBadArea18q = kFALSE,float eta = 0.8)
+    bool Aside = false, bool Cside = false, bool saveQCNUA = false, bool frmBadArea18q = false, double eta = 0.8)
 {
   // Configuration of the analysis.
   double ESDslope = 3.38; bool saveQA_ESDpileup = false;
@@ -198,6 +198,9 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
       if ((strcmp(configNames[i].Data(), "chi2low23") == 0)) {
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_Chi2low23_s_chi2low23.root",
           MAPdirName.Data(), sCorrection[period].Data());
+      } else if ((strcmp(configNames[i].Data(), "zvtx4") == 0)) {
+        MAPfileNames[i] = Form("%sPhiWeights_LHC%s_fullPUcuts_s_zvtx8.root",
+          MAPdirName.Data(), sCorrection[period].Data());
       } else {
         MAPfileNames[i] = Form("%sPhiWeights_LHC%s_pt02_%s_s_%s.root",
           MAPdirName.Data(), sCorrection[period].Data(), configNames[i].Data(),configNames[i].Data());
@@ -228,8 +231,7 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     selEvt = AliVEvent::kINT7 | AliVEvent::kCentral | AliVEvent::kSemiCentral;
   }
 
-  if ((period == lhc18q || period == lhc18r ) && frmBadArea18q ) fJCatalyst[i]->SetRemoveBadArea18q(frmBadArea18q); 
-
+  
 
   for (int i = 0; i < Nsets; i++) {
     fJCatalyst[i] = new AliJCatalystTask(Form("JCatalystTask_%s_s_%s", 
@@ -237,6 +239,9 @@ AliAnalysisTask *AddTaskJHOCFAMaster(TString taskName = "JHOCFAMaster", UInt_t p
     std::cout << "Setting the catalyst: " << fJCatalyst[i]->GetJCatalystTaskName() << std::endl;
     fJCatalyst[i]->SetSaveAllQA(saveFullQA);
     fJCatalyst[i]->SetSaveQCNUA(saveQCNUA);
+
+    if ((period == lhc18q || period == lhc18r ) && frmBadArea18q ) fJCatalyst[i]->SetRemoveBadArea18q(frmBadArea18q); 
+
 
     // Set the correct flags to use.
     if (strcmp(configNames[i].Data(), "noPileup") != 0) {     // Set flag only if we cut on pileup.
