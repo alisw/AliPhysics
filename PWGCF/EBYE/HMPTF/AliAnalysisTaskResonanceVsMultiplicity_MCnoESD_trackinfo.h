@@ -89,7 +89,7 @@ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo : public AliAnaly
   Int_t fMCchoice;	
   Float_t fTreeTrackVariablePt[kMaxTrack];	
   Float_t fTreeTrackVariableEta[kMaxTrack];	
-  Float_t fTreeTrackVariablePdgCode[kMaxTrack];	
+  Int_t fTreeTrackVariablePdgCode[kMaxTrack];	
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //Float_t fvertex;
   //Float_t fQ1;

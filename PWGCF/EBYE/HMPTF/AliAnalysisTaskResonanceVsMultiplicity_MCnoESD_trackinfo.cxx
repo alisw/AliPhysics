@@ -138,7 +138,7 @@ void AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo::UserCreateOutputO
   fTreeEvent->Branch("fTreeEventNTrack",&fTreeEventNTrack,"fTreeEventNTrack/I");
   fTreeEvent->Branch("fTreeTrackVariablePt",&fTreeTrackVariablePt,"fTreeTrackVariablePt[fTreeEventNTrack]/F");
   fTreeEvent->Branch("fTreeTrackVariableEta",&fTreeTrackVariableEta,"fTreeTrackVariableEta[fTreeEventNTrack]/F");
-  fTreeEvent->Branch("fTreeTrackVariablePdgCode",&fTreeTrackVariablePdgCode,"fTreeTrackVariablePdgCode[fTreeEventNTrack]/F");
+  fTreeEvent->Branch("fTreeTrackVariablePdgCode",&fTreeTrackVariablePdgCode,"fTreeTrackVariablePdgCode[fTreeEventNTrack]/I");
   /*
   fTreeEvent->Branch("fvertex",&fvertex,"fvertex/F");
   fTreeEvent->Branch("fNch_eta0pt5",&fNch_eta0pt5,"fNch_eta0pt5/F");
