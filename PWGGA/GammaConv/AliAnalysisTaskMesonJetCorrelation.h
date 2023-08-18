@@ -402,6 +402,8 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoTruePtJet;                 //! vector of histos with pt of true jets
   std::vector<TH1F*> fHistoTruePtJetInAcc;            //! vector of histos with pt of true jets for generated jets in rec. acceptance
   std::vector<TH1F*> fHistoTruePtJetNotTriggered;     //! vector of histos with pt of true jets for events that did not trigger
+  std::vector<TH1F*> fHistoTrueJetEta;                //! vector of histos with eta of jets
+  std::vector<TH1F*> fHistoTrueJetPhi;                //! vector of histos with phi of jets
   std::vector<TH1F*> fHistoTrueMatchedPtJet;          //! vector of histos with pt of true jets that are matched to a rec jet
   std::vector<TH1F*> fHistoTrueUnMatchedPtJet;        //! vector of histos with pt of jets that are not matched to a rec jet
   std::vector<TH2F*> fHistoNEFVsPtJet;                //! vector of histos with pt of jets vs neutral energy fraction
@@ -477,6 +479,7 @@ class AliAnalysisTaskMesonJetCorrelation : public AliAnalysisTaskSE
   std::vector<TH1F*> fHistoMCMesonPtNoVertex;          //! vector of histos mesons which are in events that have no vertex
   std::vector<TH1F*> fHistoMCMesonPt;                  //! vector of histos meson pt
   std::vector<TH1F*> fHistoInclusiveMCMesonPt;         //! vector of histos meson pt for in+outside
+  std::vector<TH2F*> fHistoMCMesonPtVsEta;             //! vector of histos meson pt vs. rapidity
   std::vector<TH1F*> fHistoMCMesonWOEvtWeightPt;       //! vector of histos meson pt without event weights
   std::vector<TH1F*> fHistoMCMesonInAccPt;             //! vector of histos mesons in acceptance
   std::vector<TH1F*> fHistoMCMesonInAccPtNotTriggered; //! vector of histos mesons in acceptance which are in events that are not triggered

@@ -351,6 +351,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoTruePi0InvMassECalib(NULL),
   fHistoTruePi0PureGammaInvMassECalib(NULL),
   fHistoTruePi0InvMassECalibPCM(NULL),
+  fHistoMotherInvMassECalibNMatchedPrim(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
@@ -704,6 +705,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoTruePi0InvMassECalib(NULL),
   fHistoTruePi0PureGammaInvMassECalib(NULL),
   fHistoTruePi0InvMassECalibPCM(NULL),
+  fHistoMotherInvMassECalibNMatchedPrim(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
@@ -1032,6 +1034,7 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     }
     if(fDoMesonQA == 2){
       tESDMesonsInvMassPtDcazMinDcazMaxFlag = new TTree*[fnCuts];
+      fHistoMotherInvMassECalibNMatchedPrim = new TH3F*[fnCuts];
     }
   }
   if(fDoHBTHistoOutput){
@@ -1120,6 +1123,15 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
   Double_t *arrPtBinning      = new Double_t[1200];
   Double_t *arrQAPtBinning    = new Double_t[1200];
   Double_t *arrClusPtBinning  = new Double_t[1200];
+  std::vector<double> arrInvMassBinning(301,0.);
+  std::vector<double> arrNMatchedTracks(5,0.);
+
+  for(size_t iBin; iBin < arrInvMassBinning.size(); iBin++){
+    arrInvMassBinning.at(iBin) = (double) iBin * 0.001;
+  }
+  for (size_t iBin = 0; iBin < arrNMatchedTracks.size(); ++iBin) {
+      arrNMatchedTracks.at(iBin) = ( (double) iBin-0.5 );
+    }
 
   // Set special pt binning for pp 8TeV
   if (((AliConvEventCuts*)fV0Reader->GetEventCuts())->GetEnergyEnum() == AliConvEventCuts::kpPb5TeV ||
@@ -1760,6 +1772,16 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
           fHistoMotherEtaConvPhotonEtaPhi[iCut]->Sumw2();
         }
       }
+      if(fDoMesonQA == 2){
+        fHistoMotherInvMassECalibNMatchedPrim[iCut] = new TH3F("ESD_Mother_InvMass_E_Calib_NMatched", "ESD_Mother_InvMass_E_Calib_NMatched", arrInvMassBinning.size()-1, arrInvMassBinning.data(), nBinsPt, arrPtBinning, arrNMatchedTracks.size()-1, arrNMatchedTracks.data());
+        fHistoMotherInvMassECalibNMatchedPrim[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
+        fHistoMotherInvMassECalibNMatchedPrim[iCut]->SetYTitle("E_{cluster}(GeV)");
+        fHistoMotherInvMassECalibNMatchedPrim[iCut]->SetZTitle("N_{matched primary tracks}");
+        fESDList[iCut]->Add(fHistoMotherInvMassECalibNMatchedPrim[iCut]);
+        if (fIsMC > 1 || (fIsMC == 1 && fDoMaterialWeightConv)){
+          fHistoMotherInvMassECalibNMatchedPrim[iCut]->Sumw2();
+        }
+      }
     }
     if(fDoHBTHistoOutput){
       fHistoHBTOpeningAnglePt[iCut]                = new TH2F("ESD_OpeningAngle_Pt", "ESD_OpeningAngle_Pt", 700, 0, 3.5, nBinsPt, arrPtBinning);
@@ -1862,9 +1884,6 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
       fHistoTrueClusGammaEM02                         = new TH2F*[fnCuts];
       fHistoTrueClusPi0EM02                           = new TH2F*[fnCuts];
       fHistoTrueClusEMNonLeadingPt                    = new TH1F*[fnCuts];
-    }
-
-    if(!fDoLightOutput){
       fHistoTruePi0InvMassECalib                      = new TH2F*[fnCuts];
       fHistoTruePi0PureGammaInvMassECalib             = new TH2F*[fnCuts];
       fHistoTruePi0InvMassECalibPCM                   = new TH2F*[fnCuts];
@@ -5194,6 +5213,17 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
           if (fDoMesonQA == 2){
             fInvMass = pi0cand->M();
             fPt  = pi0cand->Pt();
+            std::vector<int> VMatchedTracks = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef()));
+            std::vector<int> VMatchedSecondaryTracks = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedSecTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef()));
+            int NPrimaryMatched = VMatchedTracks.size();
+            for (const int& num1 : VMatchedTracks) {
+              for (const int& num2 : VMatchedSecondaryTracks) {
+                if (num1 == num2) {
+                  NPrimaryMatched--;
+                }
+              }
+            }
+            fHistoMotherInvMassECalibNMatchedPrim[fiCut]->Fill(fInvMass, gamma1->E(), NPrimaryMatched, fWeightJetJetMC);
             if (TMath::Abs(gamma0->GetDCAzToPrimVtx()) < TMath::Abs(gamma1->GetDCAzToPrimVtx())){
               fDCAzGammaMin = gamma0->GetDCAzToPrimVtx();
               fDCAzGammaMax = gamma1->GetDCAzToPrimVtx();

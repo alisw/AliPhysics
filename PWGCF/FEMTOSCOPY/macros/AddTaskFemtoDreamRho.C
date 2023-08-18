@@ -1,12 +1,14 @@
-AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
+AliAnalysisTaskSE* AddTaskFemtoDreamRho(bool isMC = false,
                                         TString CentEst = "kHM",
-                                        const char *cutVariation = "0",
-                                        float fdPhidEta=0.01,
-                                        bool MCtemplatefit=false,
-                                        float fSpherDown=0.7,
-                                        bool doCleaning=false) {
+                                        float fdPhidEta = 0.01,
+                                        bool MCtemplatefit = false,
+                                        float fSpherDown = 0.7,
+                                        bool doCleaning = false,
+                                        bool rejectKaon = false,
+                                        const char* cutVariation = "0") {
+          
   TString suffix = TString::Format("%s", cutVariation);
-
+                                        
   AliAnalysisManager *mgr = AliAnalysisManager::GetAnalysisManager();
 
   if (!mgr) {
@@ -17,7 +19,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     printf("This task requires an input event handler!\n");
     return nullptr;
   }
-
+  
   AliFemtoDreamEventCuts *evtCuts = AliFemtoDreamEventCuts::StandardCutsRun2();
   evtCuts->CleanUpMult(false, false, false, true);
   evtCuts->SetSphericityCuts(0.0, 1);
@@ -25,9 +27,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   if (suffix == "1") {
     evtCuts->SetSphericityCuts(fSpherDown, 1.0, 0.5);
   }
-
+                                        
   AliFemtoDreamTrackCuts *TrackPosProtonCuts =
-      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, true, true);
   TrackPosProtonCuts->SetCutCharge(1);
   //MC Template treatment
   if ( !MCtemplatefit ) {
@@ -46,9 +48,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     //TrackPosProtonCuts->SetOriginMultiplicityHists(true);
     TrackPosProtonCuts->SetFillQALater(false); //Be careful about this flag! When the MinimalBooking is set
   }
-
+                                        
   AliFemtoDreamTrackCuts *TrackNegProtonCuts =
-      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, false, false);
+      AliFemtoDreamTrackCuts::PrimProtonCuts(isMC, true, true, true);
   TrackNegProtonCuts->SetCutCharge(-1);
   //MC Template treatment
   if ( !MCtemplatefit ) {
@@ -57,17 +59,16 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     TrackNegProtonCuts->SetDCAVtxXY(0.1);
   } else {
     TrackNegProtonCuts->SetFilterBit(128); // Filterbit 7 //Else the DCA is to tight
-    TrackPosProtonCuts->SetDCAVtxZ(3.0);
-    TrackPosProtonCuts->SetDCAVtxXY(3.0);
+    TrackNegProtonCuts->SetDCAVtxZ(3.0);
+    TrackNegProtonCuts->SetDCAVtxXY(3.0);
   }
   if ( isMC && MCtemplatefit ) {
     //TrackNegProtonCuts->SetPlotContrib(true);
     TrackNegProtonCuts->CheckParticleMothers(true);
     TrackNegProtonCuts->SetPlotDCADist(true);
-    //TrackPosProtonCuts->SetOriginMultiplicityHists(true);
+    //TrackNegProtonCuts->SetOriginMultiplicityHists(true);
     TrackNegProtonCuts->SetFillQALater(false); //Be careful about this flag! When the MinimalBooking is set
   }
-
 
   if (suffix != "0") {
       TrackPosProtonCuts->SetMinimalBooking(false);
@@ -75,7 +76,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   }
 
   AliFemtoDreamTrackCuts *TrackPosPionCuts =
-      AliFemtoDreamTrackCuts::PrimPionCuts(isMC);
+      AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, true, true);
   TrackPosPionCuts->SetCutCharge(1);
   //MC Template treatment
   if ( !MCtemplatefit ) {
@@ -94,9 +95,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     //TrackPosPionCuts->SetOriginMultiplicityHists(true);
     TrackPosPionCuts->SetFillQALater(false); //Be careful about this flag! When the MinimalBooking is set
   }
-
+                                        
   AliFemtoDreamTrackCuts *TrackNegPionCuts =
-      AliFemtoDreamTrackCuts::PrimPionCuts(isMC);
+      AliFemtoDreamTrackCuts::PrimPionCuts(isMC, true, true, true);
   TrackNegPionCuts->SetCutCharge(-1);
   //MC Template treatment
   if ( !MCtemplatefit ) {
@@ -121,7 +122,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     TrackPosPionCuts->SetMinimalBooking(false);
     TrackNegPionCuts->SetMinimalBooking(false);
   }
-
+                                        
   AliFemtoDreamv0Cuts *TrackCutsRho = new AliFemtoDreamv0Cuts();
   TrackCutsRho->SetIsMonteCarlo(isMC);
   TrackCutsRho->SetAxisInvMassPlots(5000, 0, 5);
@@ -135,44 +136,40 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   TrackCutsRho->SetPDGCodePosDaug(211);
   TrackCutsRho->SetPDGCodeNegDaug(211);
   TrackCutsRho->SetPDGCodev0(113);
-
-//  if (suffix != "0") {
-//    TrackCutsRho->SetMinimalBooking(true);
-//  }
-//  if (suffix == "1") {
-//    TrackCutsRho->SetCutWindow(0.987, 1.011); //Corresponds to different selections in M_inv
-//  }
-//  if (suffix == "2") {
-//    TrackCutsRho->SetCutWindow(1.027, 1.1);
-//  }
-//  if (suffix == "3") {
-//    TrackCutsRho->SetCutWindow(1.1, 1.2);
-//  }
-//  if (suffix == "4") {
-//    TrackCutsRho->SetCutWindow(1.2, 1.3);
-//  }
-//  if (suffix == "5") {
-//    TrackCutsRho->SetCutWindow(1.3, 1.4);
-//  }
-//  if (suffix == "6") {
-//    TrackCutsRho->SetCutWindow(1.4, 1.5);
-//  }
-//  if (suffix == "7") {
-//    TrackCutsRho->SetCutWindow(1.5, 1.6);
-//  }
-//  if (suffix == "8") {
-//    TrackCutsRho->SetCutWindow(1.6, 1.7);
-//  }
-//  if (suffix == "9") {
-//    TrackCutsRho->SetCutWindow(1.7, 1.8);
-//  }
-//  if (suffix == "10") {
-//    TrackCutsRho->SetCutWindow(1.8, 1.9);
-//  }
-//  if (suffix == "11") {
-//    TrackCutsRho->SetCutWindow(1.9, 2);
-//  }
-
+  //Reject Kaons present in the sample:
+  if (rejectKaon)TrackCutsRho->SetKaonRejection(0.4,0.6); //inv mass down and up
+  // now we create the task
+  AliAnalysisTaskFemtoDreamRho *task =
+      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doCleaning);
+  // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
+  // kINT7 == Minimum bias
+  // kHighMultV0 high multiplicity triggered by the V0 detector
+  if (CentEst == "kInt7") {
+    task->SetTrigger(AliVEvent::kINT7);
+    task->SelectCollisionCandidates(AliVEvent::kINT7);
+    std::cout << "Added kINT7 Trigger \n";
+  } else if (CentEst == "kHM") {
+    task->SetTrigger(AliVEvent::kHighMultV0);
+    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
+    std::cout << "Added kHighMultV0 Trigger \n";
+  } else {
+    std::cout << "============================================================="
+                 "========"
+              << std::endl;
+    std::cout << "============================================================="
+                 "========"
+              << std::endl;
+    std::cout << "Centrality Estimator not set, fix it else your Results will "
+                 "be empty!"
+              << std::endl;
+    std::cout << "============================================================="
+                 "========"
+              << std::endl;
+    std::cout << "============================================================="
+                 "========"
+              << std::endl;
+  }
+  
   // Now we define stuff we want for our Particle collection
   // Thanks, CINT - will not compile due to an illegal constructor
   // std::vector<int> PDGParticles ={2212,2212,3122,3122,3312,3312};
@@ -184,7 +181,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   PDGParticles.push_back(113);  // 2 //rho
   PDGParticles.push_back(2212); // 3 //proton+
   PDGParticles.push_back(2212); // 4 //proton-
-
+                                        
   // We need to set the ZVtx bins
   std::vector<float> ZVtxBins;
   ZVtxBins.push_back(-10);
@@ -236,35 +233,17 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   // Number of bins
   std::vector<int> NBins;
   //  NBins.push_back(750);
-  //  NBins.push_back(750);
-  //  NBins.push_back(750);
-  //  NBins.push_back(750);
-  //  NBins.push_back(750);
-  //  NBins.push_back(750);
-  std::vector<float> kMin;
+
   // minimum k* value
+  std::vector<float> kMin;
   //  kMin.push_back(0.);
-  //  kMin.push_back(0.);
-  //  kMin.push_back(0.);
-  //  kMin.push_back(0.);
-  //  kMin.push_back(0.);
-  //  kMin.push_back(0.);
+
   // maximum k* value
   std::vector<float> kMax;
-  //  kMax.push_back(3.);
-  //  kMax.push_back(3.);
-  //  kMax.push_back(3.);
-  //  kMax.push_back(3.);
-  //  kMax.push_back(3.);
   //  kMax.push_back(3.);
 
   std::vector<int> pairQA;
   //  pairQA.push_back(11);
-  //  pairQA.push_back(0);
-  //  pairQA.push_back(12);
-  //  pairQA.push_back(11);
-  //  pairQA.push_back(12);
-  //  pairQA.push_back(22);
 
   for (int i = 0; i < ( 5*(5+1)/2 ); i++) {
     NBins.push_back(750);
@@ -272,21 +251,39 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     kMax.push_back(3.);
     pairQA.push_back(0);
   }
-
+  
   pairQA[0] = 11;   // pp
-  pairQA[1] = 0;    // pap
-  pairQA[2] = 12;   // prho
-  pairQA[6] = 11;   // apap
-  pairQA[7] = 12;   // apphi
-  pairQA[11] = 22;  // phiphi
+  pairQA[1] = 11;   // pap
+  pairQA[2] = 11;   // prho
+  pairQA[3] = 11;   // apap
+  pairQA[4] = 11;   // apphi
+  pairQA[5] = 11;   // phiphi
+  pairQA[6] = 11;   // pp
+  pairQA[7] = 11;   // pap
+  pairQA[8] = 11;   // prho
+  pairQA[9] = 11;   // apap
+  pairQA[10] = 11;  // apphi
+  pairQA[11] = 11;  // phiphi
+  pairQA[12] = 11;  // pp
+  pairQA[13] = 11;  // pap
+  pairQA[14] = 11;  // prho
 
   if (isMC) {
-    pairQA[15] = 11;
-    pairQA[16] = 11;  // ptapt
-    pairQA[17] = 11;
-    pairQA[18] = 11;
-    pairQA[19] = 11;
-    pairQA[20] = 11;
+    pairQA[0] = 0;  // pp
+    pairQA[1] = 0;  // pap
+    pairQA[2] = 0;  // prho
+    pairQA[3] = 0;  // apap
+    pairQA[4] = 0;  // apphi
+    pairQA[5] = 0;  // phiphi
+    pairQA[6] = 0;  // pp
+    pairQA[7] = 0;  // pap
+    pairQA[8] = 0;  // prho
+    pairQA[9] = 0;  // apap
+    pairQA[10] = 0; // apphi
+    pairQA[11] = 0; // phiphi
+    pairQA[12] = 0; // pp
+    pairQA[13] = 0; // pap
+    pairQA[14] = 0; // prho
   }
 
   //pair rejection
@@ -306,7 +303,7 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   closeRejection.push_back(false);  // p-  rho
   closeRejection.push_back(false);  // p-  p
   closeRejection.push_back(true);   // p-  p-
-
+  
   if (suffix == "99") {
     //Deactivate the ClosePairRejection
     fdPhidEta=0.;
@@ -328,8 +325,8 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
     closeRejection.push_back(false);  // p-  p-
   }
 
-  AliFemtoDreamCollConfig *config =
-      new AliFemtoDreamCollConfig("Femto", "Femto");
+
+  AliFemtoDreamCollConfig *config = new AliFemtoDreamCollConfig("Femto", "Femto");
   config->SetPtQA(true);
   config->SetMassQA(true);
   config->SetZBins(ZVtxBins);
@@ -340,55 +337,23 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   config->SetMinKRel(kMin);
   config->SetMaxKRel(kMax);
   config->SetClosePairRejection(closeRejection);
-  config->SetDoCleaning(doCleaning);
   config->SetDeltaEtaMax(fdPhidEta); // https://alice-notes.web.cern.ch/system/files/notes/analysis/616/2018-08-10-NotepPb.pdf
   config->SetDeltaPhiMax(fdPhidEta);
-  config->SetMixingDepth(10);
+  config->SetMixingDepth(10); // AN
+  config->SetkTBinning(true);
+  config->SetmTBinning(true);
   config->SetExtendedQAPairs(pairQA);
-  config->SetUseEventMixing(true);
+  config->SetUseEventMixing(true); // Check this flag
   config->SetMinimalBookingME(false);
   config->SetdPhidEtaPlots(true);
   config->SetdPhidEtaPlotsSmallK(true);
-
+                                        
   if (isMC) {
     config->SetMomentumResolution(true);
     config->SetPhiEtaBinnign(true);
   } else {
     std::cout << "You are trying to request the Momentum Resolution without MC "
                  "Info; fix it wont work! \n";
-  }
-
-
-  // now we create the task
-  AliAnalysisTaskFemtoDreamRho *task =
-      new AliAnalysisTaskFemtoDreamRho("AliAnalysisTaskFemtoDreamRho", isMC, doCleaning);
-  // THIS IS VERY IMPORTANT ELSE YOU DONT PROCESS ANY EVENTS
-  // kINT7 == Minimum bias
-  // kHighMultV0 high multiplicity triggered by the V0 detector
-  if (CentEst == "kInt7") {
-    task->SetTrigger(AliVEvent::kINT7);
-    task->SelectCollisionCandidates(AliVEvent::kINT7);
-    std::cout << "Added kINT7 Trigger \n";
-  } else if (CentEst == "kHM") {
-    task->SetTrigger(AliVEvent::kHighMultV0);
-    task->SelectCollisionCandidates(AliVEvent::kHighMultV0);
-    std::cout << "Added kHighMultV0 Trigger \n";
-  } else {
-    std::cout << "============================================================="
-                 "========"
-              << std::endl;
-    std::cout << "============================================================="
-                 "========"
-              << std::endl;
-    std::cout << "Centrality Estimator not set, fix it else your Results will "
-                 "be empty!"
-              << std::endl;
-    std::cout << "============================================================="
-                 "========"
-              << std::endl;
-    std::cout << "============================================================="
-                 "========"
-              << std::endl;
   }
 
   // Throw all our settings to the task
@@ -399,8 +364,9 @@ AliAnalysisTaskSE *AddTaskFemtoDreamRho(bool isMC = false,
   task->SetPosPionCuts(TrackPosPionCuts);
   task->SetNegPionCuts(TrackNegPionCuts);
   task->SetCollectionConfig(config);
+  task->SetDoCleaning(doCleaning);
   task->SetIsMC(isMC);
-
+  
   mgr->AddTask(task);
 
   TString file = AliAnalysisManager::GetCommonFileName();

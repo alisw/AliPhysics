@@ -112,6 +112,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHNSPDTracklets(0), //jcho
   fHntracklet(0),
   fGenpT(0),
+  fGenNtracklet(0),
   fLevFlag(0),
   foriginFlag(0),
   fntracklet(0),
@@ -145,6 +146,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHistoXicMass(0x0),
   fSparseXicMass(0x0),
   fHistoMCSpectrumAccXic(0),
+  fdummy(0),
   fHistoDcaPi1Pi2(0),
   fHistoDcaPi1Casc(0),
   fHistoDcaPi2Casc(0),
@@ -227,6 +229,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHNSPDTracklets(0), //jcho
   fHntracklet(0),
   fGenpT(0),
+  fGenNtracklet(0),
   fLevFlag(0),
   foriginFlag(0),
   fntracklet(0),
@@ -260,6 +263,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::AliAnalysisTaskSEXicPlus2XiPiPifro
   fHistoXicMass(0x0),
   fSparseXicMass(0x0),
   fHistoMCSpectrumAccXic(0),
+  fdummy(0),
   fHistoDcaPi1Pi2(0),
   fHistoDcaPi1Casc(0),
   fHistoDcaPi2Casc(0),
@@ -413,6 +417,7 @@ AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::~AliAnalysisTaskSEXicPlus2XiPiPifr
   if(fSparseXicMass) delete fSparseXicMass;
 
   if(fHistoMCSpectrumAccXic) delete fHistoMCSpectrumAccXic;
+  if(fdummy) delete fdummy;
 
   if(fCounter){
     delete fCounter;
@@ -700,6 +705,8 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::UserExec(Option_t *)
       //DOUBT: isEventSelected before or after LoopOverGenParticles?
       
       LoopOverGenParticles(mcArray);
+	  FillGenParticleTree();
+
       fCEvents->Fill(17); // in case of MC events
     }
   }
@@ -1768,6 +1775,9 @@ void  AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::DefineGeneralHistograms() {
     fHistoMCSpectrumAccXic=new TH3F("fHistoMCSpectrumAccXic","fHistoMCSpectrumAccXic",250,0,50,26,-0.5,12.5,4,3.5,7.5);
     fOutput->Add(fHistoMCSpectrumAccXic);
 
+	fdummy = new TH1F("","",250,0,50);
+	fOutput->Add(fdummy);
+
   } // fUseMCInfo
 
   //---Multiplicity analysis histograms-----------------------// jcho
@@ -2389,15 +2399,9 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	if(TMath::Abs(ypart)<0.5){ // ypart < 0.5
 	  if (checkXic2XiPiPi==1) { 
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin);
-			foriginFlag=checkOrigin;
-			fLevFlag=kGenLimAcc; //kGenLimAcc
-			fGenpT=ptpart;
 	  } // checkXic 1
 	  else if (checkXic2XiPiPi==2) {
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenLimAcc,checkOrigin+2);
-			foriginFlag=checkOrigin+2;
-			fLevFlag=kGenLimAcc; //kGenLimAcc
-			fGenpT=ptpart;
 	  } // checkXic 2
 	} // ypart < 0.5
 	Bool_t isInAcc=kTRUE;
@@ -2415,12 +2419,14 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 			foriginFlag=checkOrigin;
 			fLevFlag=kGenAccMother08; //kGenAccMother08
 			fGenpT=ptpart;
+			fdummy->Fill(fGenpT);
 	  } // checkXic 1
 	  else if (checkXic2XiPiPi==2) { 
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAccMother08,checkOrigin+2);
 			foriginFlag=checkOrigin+2;
 			fLevFlag=kGenAccMother08; //kGenAccMother08
 			fGenpT=ptpart;
+			fGenNtracklet=fntracklet;
 	  } // checkXic 2
 	  Bool_t istrackIn08=kTRUE;
 	  for(Int_t k=0;k<5;k++){
@@ -2430,15 +2436,9 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	  if(istrackIn08) {
 	    if (checkXic2XiPiPi==1)  {
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin);
-			foriginFlag=checkOrigin;
-			fLevFlag=kGenAcc08; //kGenAcc08 
-			fGenpT=ptpart;
 		} // checkXic 1
 	    else if (checkXic2XiPiPi==2) { 
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc08,checkOrigin+2);
-			foriginFlag=checkOrigin+2;
-			fLevFlag=kGenAcc08; //kGenAcc08
-			fGenpT=ptpart;
 		} // checkXic 2
 	  }
 	}
@@ -2464,15 +2464,9 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
 	if(isInAcc) {
 	  if (checkXic2XiPiPi==1) {
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin);
-			foriginFlag=checkOrigin;
-			fLevFlag=kGenAcc;	//kGenAcc
-			fGenpT=ptpart;
 	  } // checkXic 1
 	  else if (checkXic2XiPiPi==2) {
 			fHistoMCSpectrumAccXic->Fill(ptpart,kGenAcc,checkOrigin+2);
-			foriginFlag=checkOrigin+2;
-			fLevFlag=kGenAcc; //kGenAcc
-			fGenpT=ptpart;
 	  } // checkXic 2
 	}
       } //else continue;//CheckXic2XiPiPi
@@ -2480,6 +2474,12 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::LoopOverGenParticles(TClonesA
   }//loop over particles
 
 	FillGenParticleTree();
+
+	foriginFlag=-999;
+	fLevFlag=-999;
+	fGenpT=-999;
+	fGenNtracklet=-999;
+	fNSPDTracklets=-999;
 
 }
 
@@ -2657,13 +2657,15 @@ void AliAnalysisTaskSEXicPlus2XiPiPifromAODtracks::FillGenParticleTree()
 
 	}
 
-	fVarGenTree[0] = fntracklet;
+	fVarGenTree[0] = fGenNtracklet;
 	fVarGenTree[1] = foriginFlag;
 	fVarGenTree[2] = fLevFlag;
 	fVarGenTree[3] = fGenpT;//mcpart->Pt(); // GenpT 
 	fVarGenTree[4] = fNSPDTracklets;
 
 	fGenTree->Fill();
+
+	return;
 
 }	//FillGenParticleTree, jcho  
 

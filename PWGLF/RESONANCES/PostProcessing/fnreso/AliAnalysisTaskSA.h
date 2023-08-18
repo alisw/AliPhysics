@@ -78,6 +78,9 @@ class AliAnalysisTaskSA : public AliAnalysisTaskSE {
   //void  GetMCCorrectionHist(Int_t run=0);
   void  GetMCCorrectionHist(Int_t run=0,Float_t centr=0);
 
+  //--------------------------------------------------------------------
+
+  void  Setframe(Int_t fr)      {this->frame = fr; }
 
 
 
@@ -113,8 +116,8 @@ class AliAnalysisTaskSA : public AliAnalysisTaskSE {
   TH1F    *fHisteventmult;//!
   THnSparseD    *kstarUnlike;//!
   THnSparseD    *kstarLike;//!
-  THnSparseD    *kstarposLike;//!
-  THnSparseD    *kstarnegLike;//!
+  //THnSparseD    *kstarposLike;//!
+  //THnSparseD    *kstarnegLike;//!
   THnSparseD    *kstarMix;//!
   //TH1D    *fHistpionpt;//!
   //TH1D    *fHistkaonpt;//!

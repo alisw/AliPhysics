@@ -1,4 +1,4 @@
-AliAnalysisTaskCorrPbPb_treemerge *AddTaskCorrPbPb_treemerge(Int_t fCentralityMin=0, Int_t fCentralityMax=90, Double_t fVzMax=10, Int_t fFilterBit=96, Double_t fchi2tpc=4, Double_t fchi2its=36, Double_t fpidnSigma=2.0, TString OutFileName = "_default", TString sMCfilePath ="alien:///alice/cern.ch/user/s/swati/EfficiencyPbPbLHC20j6a/CentralitywiseEff/EfficiencyHijingPbPb.root")
+AliAnalysisTaskCorrPbPb_treemerge *AddTaskCorrPbPb_treemerge(Int_t fCentralityMin=0, Int_t fCentralityMax=90, Double_t fVzMax=10, Int_t fpileupcut = 1, Int_t fCentEstFlag = 0, Int_t fFilterBit=96, Double_t fchi2tpc=4, Double_t fchi2its=36, Double_t fnotpccrossedrows=70, Double_t fpidnSigma_Pion=2.0, Double_t fpidnSigma_Kaon=2.0, Double_t fpidnSigma_Proton=2.0, TString OutFileName = "_default", TString sMCfilePath ="alien:///alice/cern.ch/user/s/swati/EfficiencyPbPbLHC20j6a/CentralitywiseEff/EfficiencyHijingPbPb.root", Double_t fetacut=0.8)
 {
   // standard with task
   printf("===================================================================================\n");
@@ -55,20 +55,24 @@ AliAnalysisTaskCorrPbPb_treemerge *AddTaskCorrPbPb_treemerge(Int_t fCentralityMi
   
   // ///Event cuts:
   
-  task_Mpt->SetVzRangeMax(10.0);
+  task_Mpt->SetVzRangeMax(fVzMax);
+  task_Mpt->SetPileupCutValue(fpileupcut); //default: 1; can vary 2, 3 or 4
+  task_Mpt->SetCentralityEstimator(fCentEstFlag); // 0 for V0M, 1 for CL0, 2 for CL1 and 3 for CL2
        
   // //Track cuts:
   task_Mpt->SetTrackFilterBit(fFilterBit);
   task_Mpt->SetMaxChi2PerTPCClusterRange(fchi2tpc);
   task_Mpt->SetMaxChi2PerITSClusterRange(fchi2its);
-  task_Mpt->SetPIDnSigmaCut(fpidnSigma);
+  task_Mpt->SetPIDnSigmaCut(fpidnSigma_Pion, fpidnSigma_Kaon, fpidnSigma_Proton);
+  task_Mpt->SetMinNoTPCCrossedRows(fnotpccrossedrows);
+  task_Mpt->SetEtaCut(fetacut);
   
-  /*
+  
   TString OutTreeName;
   OutTreeName = "fTreeEvent";
   OutTreeName += OutFileName;
   task_Mpt->SetTreeName(OutTreeName);
-  */
+  
 
   TFile *fMCFile = TFile::Open(sMCfilePath,"READ");
   TList *fListMC = NULL;
