@@ -88,6 +88,8 @@ class AliAnalysisTaskResonanceVsMultiplicity_MCnoESD_trackinfo : public AliAnaly
   TH2F *hist2D_pt_rec_centrality;
   Int_t fMCchoice;	
   Float_t fTreeTrackVariablePt[kMaxTrack];	
+  Float_t fTreeTrackVariableEta[kMaxTrack];	
+  Float_t fTreeTrackVariablePdgCode[kMaxTrack];	
   //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
   //Float_t fvertex;
   //Float_t fQ1;
