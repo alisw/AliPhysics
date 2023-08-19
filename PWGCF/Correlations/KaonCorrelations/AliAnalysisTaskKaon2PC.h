@@ -80,7 +80,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         void                    SetEtaLimit(Double_t etalimit) { fEtaCut = etalimit; }
         void                    SetPIDCombined(Bool_t pidflag) {fPidpTDependentMethod = pidflag; }
         void                    SetPileUp(Bool_t pileupflag) {fRejectEventPileUp = pileupflag; }
-        void                    SetRemoveResonance(Bool_t removePhiflag) {fRemoveResonance = removePhiflag; }                    
+        void                    SetRemoveResonance(Bool_t removePhiflag) {fRemoveResonance = removePhiflag; }
+        void                    SetRemoveResonancek0s(Bool_t resonanceflag) {fRemoveResonancek0s = resonanceflag; }                     
 
         //mixing
         //void                    SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
@@ -219,6 +220,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        Bool_t                  fRejectEventPileUp; // enable to use Pile-up cuts
        Bool_t                  fPidpTDependentMethod; // to enable pT dependent PID
        Bool_t                  fRemoveResonance; // flag to remove resonances in mc gen
+       Bool_t                  fRemoveResonancek0s; // flag to remove resonances in mc gen k0 correlation
        Bool_t                  fMinBias;
        Bool_t                  fCentral;
        Bool_t                  fSemiCentral;
@@ -226,8 +228,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        Bool_t                  fK0KchCorr;
        Bool_t                  fK0KpCorr;
        Bool_t                  fK0KnCorr;
-       Bool_t                  pidflag;
-       Bool_t                  pileupflag;
+       
 
        Double_t        PVx;
        Double_t        PVy;
