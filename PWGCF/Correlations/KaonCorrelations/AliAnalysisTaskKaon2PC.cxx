@@ -71,7 +71,8 @@ fOutputList(0),
 fPIDResponse(0),
 fPidpTDependentMethod(kTRUE),
 fRejectEventPileUp(kTRUE),
-fRemoveResonance(kFALSE),
+fRemoveResonance(kTRUE),
+fRemoveResonancek0s(kFALSE),
 fMinBias(kTRUE),
 fCentral(kFALSE),
 fSemiCentral(kFALSE),
@@ -88,7 +89,7 @@ fSigCut(3.0),
 fBit(96),
 fPVzCut(8),
 fCentMin(0),
-fCentMax(90),
+fCentMax(10),
 //V0 cuts
 fDecayLv0Cut(8.05), 
 fLpTv0Cut(0.4), 
@@ -254,7 +255,8 @@ fOutputList(0),
 fPIDResponse(0),
 fPidpTDependentMethod(kTRUE),
 fRejectEventPileUp(kTRUE),
-fRemoveResonance(kFALSE),
+fRemoveResonance(kTRUE),
+fRemoveResonancek0s(kFALSE),
 fMinBias(kTRUE),
 fCentral(kFALSE),
 fSemiCentral(kFALSE),
@@ -271,7 +273,7 @@ fSigCut(3.0),
 fBit(96),
 fPVzCut(8),
 fCentMin(0),
-fCentMax(90),
+fCentMax(10),
 //V0 cuts
 fDecayLv0Cut(8.05), 
 fLpTv0Cut(0.4), 
@@ -1846,7 +1848,7 @@ cout << "centrality values for MC gen are" << CentV0M << endl;
 Int_t nAcceptedParticles =0;
 Int_t nTrackswithoutMother =0;
 Int_t nTrackswithMother =0;
-Int_t nTracksResonancecut =0;
+
 AliMCParticle *mcTrack = 0x0;
 
 fmcEvent  = dynamic_cast<AliMCEvent*> (MCEvent());
@@ -1910,6 +1912,7 @@ fHistCent_mcgen->Fill(CentV0M);
 AliMCParticle *mcMotherParticle = 0x0;
 AliMCParticle* daughter0 = 0x0;
 AliMCParticle* daughter1 = 0x0;
+AliMCParticle* momTrack = 0x0;
 Bool_t SelectK0;
 Bool_t SelectKpos;
 Bool_t SelectKneg;
@@ -1987,9 +1990,9 @@ for (Int_t i = 0; i < nMCTracks; i++){
     }
     if(SelectK0) fMCSelectedK0s->Add(mcTrack);
 
-    if (fRemoveResonance) {if (labMom > 0) continue ;}
+    //if (fRemoveResonance) {if (labMom > 0) continue ;}
 
-    nTracksResonancecut += 1;
+    //nTracksResonancecut += 1;
     
     if(SelectKpos) {
         fMCKpos->Fill(KaonVariables);
@@ -2009,7 +2012,7 @@ for (Int_t i = 0; i < nMCTracks; i++){
 cout << "ntracks with mother is" << nTrackswithMother << endl;
 cout << "ntracks without mother is" << nTrackswithoutMother << endl;
 cout << "naccepted tracks is" << nAcceptedParticles << endl;
-cout << "naccepted tracks after resonance cut is " << nTracksResonancecut << endl;
+
 fHistGenMultiplicity->Fill(nAcceptedParticles);
 //Int_t nmck0 =  fMCSelectedK0s->GetEntries();
 //cout << "nmck0 is" << nmck0 << endl;
@@ -2026,6 +2029,26 @@ for (Int_t i = 0; i < fMCSelectedK0s->GetEntries(); i++){
     for (Int_t j = 0; j < fMCSelectedKCh->GetEntries(); j++){
         AliVParticle* mcTrack2 = dynamic_cast<AliVParticle*>(fMCSelectedKCh->At(j));
         if (!mcTrack2) continue;
+
+        Int_t labMom1 = mcTrack1->GetMother();
+        Int_t labMom2 = mcTrack2->GetMother();
+        Int_t pdgMom;
+        
+        if (fRemoveResonancek0s) {
+            if (labMom2 >= 0) {
+
+                momTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom2);
+                pdgMom = momTrack->PdgCode();
+
+                //cout << "labmom1 is " << labMom1 << "labmom2 is " << labMom2 << endl;
+                cout << "pdgcode is" << pdgMom << endl;
+
+                if (pdgMom == 333) {
+                    // Ignore pairs with particle ID 333 == Phi Meson
+                    continue;
+                }
+            }
+        }
         Double_t phi2 = mcTrack2->Phi();
         Double_t eta2 = mcTrack2->Eta();
 
@@ -2050,7 +2073,26 @@ for (Int_t i = 0; i < fMCSelectedKpos->GetEntries(); i++){
     for (Int_t j = 0; j < fMCSelectedKneg->GetEntries(); j++){
         AliVParticle* mcTrack2 = dynamic_cast<AliVParticle*>(fMCSelectedKneg->At(j));
         if (!mcTrack2) continue;
-        Double_t trackPseudorap = mcTrack2->Eta();
+
+        Int_t labMom1 = mcTrack1->GetMother();
+        Int_t labMom2 = mcTrack2->GetMother();
+        Int_t pdgMom;
+
+        if (fRemoveResonance) {
+            if (labMom1 == labMom2 && labMom1 >= 0) {
+
+                momTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom1);
+                pdgMom = momTrack->PdgCode();
+
+                //cout << "labmom1 is " << labMom1 << "labmom2 is " << labMom2 << endl;
+                cout << "pdgcode is" << pdgMom << endl;
+
+                if (pdgMom == 333) {
+                    // Ignore pairs with particle ID 333 == Phi Meson
+                    continue;
+                }
+            }
+        }
         Double_t phi2 = mcTrack2->Phi();
         Double_t eta2 = mcTrack2->Eta();
         Double_t DEta = eta1 - eta2;
@@ -2075,6 +2117,13 @@ for (Int_t i = 0; i < fMCSelectedK0s->GetEntries(); i++){
     for (Int_t j = 0; j < fMCSelectedKpos->GetEntries(); j++){
         AliVParticle* mcTrack2 = dynamic_cast<AliVParticle*>(fMCSelectedKpos->At(j));
         if (!mcTrack2) continue;
+
+        Int_t labMom1 = mcTrack1->GetMother();
+        Int_t labMom2 = mcTrack2->GetMother();
+        
+        if (fRemoveResonancek0s) {
+            if (labMom1 >0 || labMom2 > 0) continue;
+        }
         Double_t phi2 = mcTrack2->Phi();
         Double_t eta2 = mcTrack2->Eta();
 
@@ -2100,6 +2149,13 @@ for (Int_t i = 0; i < fMCSelectedK0s->GetEntries(); i++){
     for (Int_t j = 0; j < fMCSelectedKneg->GetEntries(); j++){
         AliVParticle* mcTrack2 = dynamic_cast<AliVParticle*>(fMCSelectedKneg->At(j));
         if (!mcTrack2) continue;
+
+        Int_t labMom1 = mcTrack1->GetMother();
+        Int_t labMom2 = mcTrack2->GetMother();
+        
+        if (fRemoveResonancek0s) {
+            if (labMom1 >0 || labMom2 > 0) continue;
+        }
         Double_t phi2 = mcTrack2->Phi();
         Double_t eta2 = mcTrack2->Eta();
 
