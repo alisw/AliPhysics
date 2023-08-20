@@ -82,7 +82,9 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         void                    SetPileUp(Bool_t pileupflag) {fRejectEventPileUp = pileupflag; }
         void                    SetRemoveResonance(Bool_t removePhiflag) {fRemoveResonance = removePhiflag; }
         void                    SetRemoveResonancek0s(Bool_t resonanceflag) {fRemoveResonancek0s = resonanceflag; }
-        void                    SetRemoveAnyResonance(Bool_t anyresonanceflag) {fRemoveAnyResonance = anyresonanceflag; }                        
+        void                    SetRemoveAnyResonance(Bool_t anyresonanceflag) {fRemoveAnyResonance = anyresonanceflag; }
+        void                    SetRemoveKchResonance(Bool_t kchresonanceflag) {fRemoveKchResonance = kchresonanceflag; }  
+        void                    SetRemovePhiResonance(Bool_t phiresonanceflag) {fRemovePhiResonance = phiresonanceflag; }                     
 
         //mixing
         //void                    SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
@@ -226,6 +228,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        Bool_t                  fRemoveResonance; // flag to remove resonances in mc gen
        Bool_t                  fRemoveResonancek0s; // flag to remove resonances in mc gen k0 correlation
        Bool_t                  fRemoveAnyResonance;
+       Bool_t                  fRemoveKchResonance;
+       Bool_t                  fRemovePhiResonance;
        Bool_t                  fMinBias;
        Bool_t                  fCentral;
        Bool_t                  fSemiCentral;
