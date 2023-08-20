@@ -5,6 +5,7 @@
 
 #include "AliFemtoCorrFctnNonIdDR.h"
 #include <TH1D.h>
+#include <TH2D.h>
 //#include "AliFemtoHisto.h"
 #include <cstdio>
 #include <TNtuple.h>
@@ -34,6 +35,7 @@ AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(const char* title,
   , fDenLongP(NULL)
   , fDenLongN(NULL)
   , fkTMonitor(NULL)
+  , fkTvsksMonitor(NULL)
   , mNtuple(NULL)
   , fParticleP(kFALSE)
 {
@@ -56,6 +58,7 @@ AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(const char* title,
   fDenLongN = new TH1D(TString("DenLongN") + title, title, nbins, QinvLo, QinvHi);
 
   fkTMonitor = new TH1D(TString("kTDep") + title, title, 250, 0.0, 5.0);
+  fkTvsksMonitor = new TH2D(TString("kTDepvsks") + title, title, 200, 0.0, 1.0, 250, 0.0, 5.0);
   mNtuple = new TNtuple(TString("pair") + title, "pair", "px1:py1:pz1:e1:px2:py2:pz2:e2");
 
   // to enable error bar calculation...
@@ -73,6 +76,7 @@ AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(const char* title,
   fDenLongN->Sumw2();
 
   fkTMonitor->Sumw2();
+  fkTvsksMonitor->Sumw2();
 }
 
 //____________________________
@@ -91,6 +95,7 @@ AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(const AliFemtoCorrFctnNonIdDR& 
   , fDenLongP(new TH1D(*aCorrFctn.fDenLongP))
   , fDenLongN(new TH1D(*aCorrFctn.fDenLongN))
   , fkTMonitor(new TH1D(*aCorrFctn.fkTMonitor))
+  , fkTvsksMonitor(new TH2D(*aCorrFctn.fkTvsksMonitor))
 {
   // copy constructor
   fNumOutP->Sumw2();
@@ -107,6 +112,7 @@ AliFemtoCorrFctnNonIdDR::AliFemtoCorrFctnNonIdDR(const AliFemtoCorrFctnNonIdDR& 
   fDenLongN->Sumw2();
 
   fkTMonitor->Sumw2();
+  fkTvsksMonitor->Sumw2();
 }
 
 //____________________________
@@ -125,6 +131,7 @@ AliFemtoCorrFctnNonIdDR::~AliFemtoCorrFctnNonIdDR()
   delete fDenLongP;
   delete fDenLongN;
   delete fkTMonitor;
+  delete fkTvsksMonitor;
   delete mNtuple;
 }
 
@@ -152,7 +159,8 @@ AliFemtoCorrFctnNonIdDR& AliFemtoCorrFctnNonIdDR::operator=(const AliFemtoCorrFc
   delete fDenLongP;
   delete fDenLongN;
   delete fkTMonitor;
-
+  delete fkTvsksMonitor;
+  
   fNumOutP = new TH1D(*aCorrFctn.fNumOutP);
   fNumOutN = new TH1D(*aCorrFctn.fNumOutN);
   fNumSideP = new TH1D(*aCorrFctn.fNumSideP);
@@ -168,7 +176,8 @@ AliFemtoCorrFctnNonIdDR& AliFemtoCorrFctnNonIdDR::operator=(const AliFemtoCorrFc
   fDenLongN = new TH1D(*aCorrFctn.fDenLongN);
 
   fkTMonitor = new TH1D(*aCorrFctn.fkTMonitor);
-
+  fkTvsksMonitor = new TH2D(*aCorrFctn.fkTvsksMonitor);
+  
   fNumOutP->Sumw2();
   fNumOutN->Sumw2();
   fNumSideP->Sumw2();
@@ -183,7 +192,8 @@ AliFemtoCorrFctnNonIdDR& AliFemtoCorrFctnNonIdDR::operator=(const AliFemtoCorrFc
   fDenLongN->Sumw2();
 
   fkTMonitor->Sumw2();
-
+  fkTvsksMonitor->Sumw2();
+  
   return *this;
 }
 
@@ -236,7 +246,7 @@ void AliFemtoCorrFctnNonIdDR::AddRealPair(AliFemtoPair* pair)
     fNumLongN->Fill(tKStar);
 
   fkTMonitor->Fill(pair->KT());
-
+  fkTvsksMonitor->Fill(tKStar, pair->KT());
 
 }
 //____________________________
@@ -262,7 +272,7 @@ void AliFemtoCorrFctnNonIdDR::AddMixedPair(AliFemtoPair* pair)
     fDenLongP->Fill(tKStar);
   else
     fDenLongN->Fill(tKStar);
-
+ 
 //Added by Ashutosh
   if(fParticleP){
   //1st particle
@@ -297,6 +307,7 @@ void AliFemtoCorrFctnNonIdDR::Write()
   fDenLongP->Write();
   fDenLongN->Write();
   fkTMonitor->Write();
+  fkTvsksMonitor->Write();
   if(fParticleP){
     mNtuple->Write();}
 
@@ -320,6 +331,7 @@ TList* AliFemtoCorrFctnNonIdDR::GetOutputList()
   tOutputList->Add(fDenLongP);
   tOutputList->Add(fDenLongN);
   tOutputList->Add(fkTMonitor);
+  tOutputList->Add(fkTvsksMonitor);
   if(fParticleP){  tOutputList->Add(mNtuple);}
 
   return tOutputList;
