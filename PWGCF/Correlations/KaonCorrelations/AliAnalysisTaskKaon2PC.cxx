@@ -73,7 +73,9 @@ fPidpTDependentMethod(kTRUE),
 fRejectEventPileUp(kTRUE),
 fRemoveResonance(kTRUE),
 fRemoveResonancek0s(kFALSE),
-fRemoveAnyResonance(kFALSE),
+fRemoveAnyResonance(kTRUE),
+fRemoveKchResonance(kFALSE),
+fRemovePhiResonance(kFALSE),
 fMinBias(kTRUE),
 fCentral(kFALSE),
 fSemiCentral(kFALSE),
@@ -261,7 +263,9 @@ fPidpTDependentMethod(kTRUE),
 fRejectEventPileUp(kTRUE),
 fRemoveResonance(kTRUE),
 fRemoveResonancek0s(kFALSE),
-fRemoveAnyResonance(kFALSE),
+fRemoveAnyResonance(kTRUE),
+fRemoveKchResonance(kFALSE),
+fRemovePhiResonance(kFALSE),
 fMinBias(kTRUE),
 fCentral(kFALSE),
 fSemiCentral(kFALSE),
@@ -2001,17 +2005,23 @@ for (Int_t i = 0; i < nMCTracks; i++){
 
     //if (labMom==-1) continue;
 
+
     if (labMom >= 0) {
     MotherTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom);
     pdgMother = MotherTrack->PdgCode();
     fpdgCode->Fill(pdgMother);
     cout << "pdgcode is" << pdgMother << endl; 
 
-    if (fRemoveAnyResonance) {
+    if (fRemoveKchResonance) {
         if (SelectKch){
         if (pdgMother != 0) continue;    // remove every kaon track from resonances
-        cout << "anjaly pdg mother" << pdgMother << endl;
+        //cout << " pdg mother of tracks remained" << pdgMother << endl;
         }
+    }
+
+    if (fRemoveAnyResonance) {
+        if (pdgMother != 0) continue;    // remove every kaon track from resonances
+        //cout << " pdg mother of tracks remained" << pdgMother << endl;
     }
 
     }
@@ -2113,7 +2123,7 @@ for (Int_t i = 0; i < fMCSelectedKpos->GetEntries(); i++){
         Int_t labMom2 = mcTrack2->GetMother();
         Int_t pdgMom;
 
-        if (fRemoveResonance) {
+        if (fRemovePhiResonance) {
             if (labMom1 == labMom2 && labMom1 >= 0) {
 
                 momTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom1);
@@ -2123,6 +2133,23 @@ for (Int_t i = 0; i < fMCSelectedKpos->GetEntries(); i++){
                 cout << "pdgcode is" << pdgMom << endl;
 
                 if (pdgMom == 333) {
+                    fpdgCodeaftercut->Fill(pdgMom);
+                    // Ignore pairs with particle ID 333 == Phi Meson
+                    continue;
+                }
+            }
+        }
+
+        if (fRemoveResonance) {
+            if (labMom1 == labMom2 && labMom1 >= 0) {
+
+                momTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom1);
+                pdgMom = momTrack->PdgCode();
+
+                //cout << "labmom1 is " << labMom1 << "labmom2 is " << labMom2 << endl;
+                cout << "pdgcode is" << pdgMom << endl;
+
+                if (pdgMom != 0) {
                     fpdgCodeaftercut->Fill(pdgMom);
                     // Ignore pairs with particle ID 333 == Phi Meson
                     continue;
