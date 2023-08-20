@@ -81,7 +81,8 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
         void                    SetPIDCombined(Bool_t pidflag) {fPidpTDependentMethod = pidflag; }
         void                    SetPileUp(Bool_t pileupflag) {fRejectEventPileUp = pileupflag; }
         void                    SetRemoveResonance(Bool_t removePhiflag) {fRemoveResonance = removePhiflag; }
-        void                    SetRemoveResonancek0s(Bool_t resonanceflag) {fRemoveResonancek0s = resonanceflag; }                     
+        void                    SetRemoveResonancek0s(Bool_t resonanceflag) {fRemoveResonancek0s = resonanceflag; }
+        void                    SetRemoveAnyResonance(Bool_t anyresonanceflag) {fRemoveAnyResonance = anyresonanceflag; }                        
 
         //mixing
         //void                    SetNofSamples(Int_t n) { fNOfSamples = n; } //sampling setter
@@ -156,6 +157,9 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        TH1F*                   fHistNegPhi;     //! dummy histogram
        TH1F*                   fHistNegEta;     //! dummy histogram
        TH1F*                   fHistNegRap;     //! dummy histogram
+       TH1F*                   fGetMom;         //! dummy histogram
+       TH1F*                   fpdgCode;        //! dummy histogram
+       TH1F*                   fpdgCodeaftercut; //! dummy histogram
 
        TH2F*                   fHistK0PhiEta;    //! dummy histogram
        TH2F*                   fHistPosPhiEta;   //! dummy histogram
@@ -221,6 +225,7 @@ class AliAnalysisTaskKaon2PC : public AliAnalysisTaskSE
        Bool_t                  fPidpTDependentMethod; // to enable pT dependent PID
        Bool_t                  fRemoveResonance; // flag to remove resonances in mc gen
        Bool_t                  fRemoveResonancek0s; // flag to remove resonances in mc gen k0 correlation
+       Bool_t                  fRemoveAnyResonance;
        Bool_t                  fMinBias;
        Bool_t                  fCentral;
        Bool_t                  fSemiCentral;

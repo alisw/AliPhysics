@@ -73,6 +73,7 @@ fPidpTDependentMethod(kTRUE),
 fRejectEventPileUp(kTRUE),
 fRemoveResonance(kTRUE),
 fRemoveResonancek0s(kFALSE),
+fRemoveAnyResonance(kFALSE),
 fMinBias(kTRUE),
 fCentral(kFALSE),
 fSemiCentral(kFALSE),
@@ -240,6 +241,9 @@ fHistKpKnMC_Bg(0),
 fHistK0KpMC_Bg(0),
 fHistK0KnMC_Bg(0),
 fHistGenMultiplicity(0),
+fGetMom(0),
+fpdgCode(0),
+fpdgCodeaftercut(0),
 //eventcuts
 fEventCuts(0)
 
@@ -257,6 +261,7 @@ fPidpTDependentMethod(kTRUE),
 fRejectEventPileUp(kTRUE),
 fRemoveResonance(kTRUE),
 fRemoveResonancek0s(kFALSE),
+fRemoveAnyResonance(kFALSE),
 fMinBias(kTRUE),
 fCentral(kFALSE),
 fSemiCentral(kFALSE),
@@ -425,6 +430,9 @@ fHistK0KpMC_Bg(0),
 fHistK0KnMC_Bg(0),
 fHistGenMultiplicity(0),
 //eventcuts
+fGetMom(0),
+fpdgCode(0),
+fpdgCodeaftercut(0),
 fEventCuts(0)
 
 
@@ -477,7 +485,11 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
 
     fPoolMgr = new AliEventPoolManager(fPoolMaxNEvents, fPoolMinNTracks, fNCentBins,fCentBins.data(), fNzVtxBins, fzVtxBins.data());
     if (!fPoolMgr) { AliError("Event Pool manager not created!"); return; }
-    fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);      
+    fPoolMgr->SetTargetValues(fPoolMinNTracks, 0.1, 5);
+
+    fGetMom = new TH1F("GetMother Index", "GetMother Index", 700, -200000, 200000);
+    fpdgCode = new TH1F("PDG of Mother Tracks", "PDG of Mother Tracks", 1000, -2500, 2500);
+    fpdgCodeaftercut = new TH1F("PDG of Mother Tracks after cut", "PDG of Mother Tracks after cut", 1000, -4000, 4000);
 
     //PID histograms
     fEnergy = new TH1F("fEnergy", "particle yield vs energy loss",800,0,200);
@@ -829,7 +841,9 @@ void AliAnalysisTaskKaon2PC::UserCreateOutputObjects()
 
     fHistGenMultiplicity = new TH1D ("fHistGenMultiplicity","fHistGenMultiplicity",500,0,500);
 
-
+    fOutputList->Add(fGetMom);
+    fOutputList->Add(fpdgCode);
+    fOutputList->Add(fpdgCodeaftercut);
     fOutputList->Add(fEnergy);
     fOutputList->Add(fEnergyCuts);
     fOutputList->Add(fPID);
@@ -1848,6 +1862,7 @@ cout << "centrality values for MC gen are" << CentV0M << endl;
 Int_t nAcceptedParticles =0;
 Int_t nTrackswithoutMother =0;
 Int_t nTrackswithMother =0;
+Int_t nTracksResonancecut=0;
 
 AliMCParticle *mcTrack = 0x0;
 
@@ -1913,10 +1928,13 @@ AliMCParticle *mcMotherParticle = 0x0;
 AliMCParticle* daughter0 = 0x0;
 AliMCParticle* daughter1 = 0x0;
 AliMCParticle* momTrack = 0x0;
+AliMCParticle* MotherTrack = 0x0;
+
 Bool_t SelectK0;
 Bool_t SelectKpos;
 Bool_t SelectKneg;
 Bool_t SelectKch;
+Int_t pdgMother = 0;
 
 fMCSelectedK0s = new TObjArray;
 fMCSelectedK0s->SetOwner(kTRUE);
@@ -1978,7 +1996,28 @@ for (Int_t i = 0; i < nMCTracks; i++){
     nAcceptedParticles += 1;
 
     Int_t labMom = mcTrack->GetMother();
+    fGetMom->Fill(labMom);
     //cout << "mother is" << labMom << endl;
+
+    //if (labMom==-1) continue;
+
+    if (labMom >= 0) {
+    MotherTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom);
+    pdgMother = MotherTrack->PdgCode();
+    fpdgCode->Fill(pdgMother);
+    cout << "pdgcode is" << pdgMother << endl; 
+
+    if (fRemoveAnyResonance) {
+        if (SelectKch){
+        if (pdgMother != 0) continue;    // remove every kaon track from resonances
+        cout << "anjaly pdg mother" << pdgMother << endl;
+        }
+    }
+
+    }
+
+    nTracksResonancecut += 1;
+    //cout << "nTracksResonancecut is" << nTracksResonancecut << endl;
 
     if (labMom > 0) nTrackswithMother += 1;
     if (labMom < 0) nTrackswithoutMother += 1;
@@ -1989,10 +2028,6 @@ for (Int_t i = 0; i < nMCTracks; i++){
         fMCK0Pt->Fill(TrackPt);
     }
     if(SelectK0) fMCSelectedK0s->Add(mcTrack);
-
-    //if (fRemoveResonance) {if (labMom > 0) continue ;}
-
-    //nTracksResonancecut += 1;
     
     if(SelectKpos) {
         fMCKpos->Fill(KaonVariables);
@@ -2009,8 +2044,8 @@ for (Int_t i = 0; i < nMCTracks; i++){
     if(SelectKneg) fMCSelectedKneg->Add(mcTrack);
 
 }
-cout << "ntracks with mother is" << nTrackswithMother << endl;
-cout << "ntracks without mother is" << nTrackswithoutMother << endl;
+//cout << "ntracks with mother is" << nTrackswithMother << endl;
+//cout << "ntracks without mother is" << nTrackswithoutMother << endl;
 cout << "naccepted tracks is" << nAcceptedParticles << endl;
 
 fHistGenMultiplicity->Fill(nAcceptedParticles);
@@ -2041,10 +2076,10 @@ for (Int_t i = 0; i < fMCSelectedK0s->GetEntries(); i++){
                 pdgMom = momTrack->PdgCode();
 
                 //cout << "labmom1 is " << labMom1 << "labmom2 is " << labMom2 << endl;
-                cout << "pdgcode is" << pdgMom << endl;
+                //cout << "pdgcode is" << pdgMom << endl;
 
-                if (pdgMom == 333) {
-                    // Ignore pairs with particle ID 333 == Phi Meson
+                if (pdgMom != 0) {
+                    // Ignore pairs with particle ID nonzero
                     continue;
                 }
             }
@@ -2088,6 +2123,7 @@ for (Int_t i = 0; i < fMCSelectedKpos->GetEntries(); i++){
                 cout << "pdgcode is" << pdgMom << endl;
 
                 if (pdgMom == 333) {
+                    fpdgCodeaftercut->Fill(pdgMom);
                     // Ignore pairs with particle ID 333 == Phi Meson
                     continue;
                 }
