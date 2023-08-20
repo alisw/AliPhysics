@@ -272,10 +272,7 @@ void AliFemtoCorrFctnNonIdDR::AddMixedPair(AliFemtoPair* pair)
     fDenLongP->Fill(tKStar);
   else
     fDenLongN->Fill(tKStar);
-
-  fkTMonitor->Fill(pair->KT());
-  fkTvsksMonitor->Fill(tKStar, pair->KT());
-  
+ 
 //Added by Ashutosh
   if(fParticleP){
   //1st particle
