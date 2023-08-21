@@ -1011,7 +1011,7 @@ void AliAnalysisTaskNFactorialMoments::FillMCTrackInfo()
       if (isElectron)
         continue;
     if (fProtonAnalysis)
-      if (isProton)
+      if (!isProton)
         continue;
     if (!lPart || !lPart->IsPhysicalPrimary() || isoobPileup || lpt < 0.2 ||
         fabs(leta) > 0.8 || lcharge == 0)
@@ -1081,7 +1081,7 @@ void AliAnalysisTaskNFactorialMoments::GetPtBin(double pt)
 ________________________________________________________________________*/
 
 bool AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack* trk,
-                                                         bool fQA)
+                                                     bool fQA)
 {
 
   if (!fismc) {
@@ -1127,15 +1127,16 @@ bool AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack* trk,
       fHistQAPID[5]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
 
       if (combSquare > nSigmaPrCut) {
+        fHistQAPID[6]->Fill(trk->P() * trk->Charge(), dEdx);
+        fHistQAPID[7]->Fill(trk->Pt(), nsigmaTPC[4]);
+        fHistQAPID[8]->Fill(trk->Pt(), nsigmaTOF[4]);
+        fHistQAPID[9]->Fill(trk->Pt(), combSquare);
+        fHistQAPID[10]->Fill(trk->Pt(), beta);
+        fHistQAPID[11]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
+        return kFALSE;
+      } else {
         return kTRUE;
       }
-
-      fHistQAPID[6]->Fill(trk->P() * trk->Charge(), dEdx);
-      fHistQAPID[7]->Fill(trk->Pt(), nsigmaTPC[4]);
-      fHistQAPID[8]->Fill(trk->Pt(), nsigmaTOF[4]);
-      fHistQAPID[9]->Fill(trk->Pt(), combSquare);
-      fHistQAPID[10]->Fill(trk->Pt(), beta);
-      fHistQAPID[11]->Fill(nsigmaTPC[4], nsigmaTOF[4]);
     }
 
     if (fRejectEls) {
@@ -1158,6 +1159,8 @@ bool AliAnalysisTaskNFactorialMoments::GetParticleID(AliAODTrack* trk,
     if (fProtonAnalysis) {
       if (TMath::Abs(particle->GetPdgCode()) == 2212) {
         fHistPDG[0]->Fill(particle->GetPdgCode());
+        return kFALSE;
+      } else {
         return kTRUE;
       }
     }
@@ -1247,9 +1250,9 @@ float AliAnalysisTaskNFactorialMoments::dphistarcalculation(
 ________________________________________________________________________*/
 
 float AliAnalysisTaskNFactorialMoments::SharedClusterFraction(TBits& cl1,
-                                                                  TBits& cl2,
-                                                                  TBits& sh1,
-                                                                  TBits& sh2)
+                                                              TBits& cl2,
+                                                              TBits& sh1,
+                                                              TBits& sh2)
 {
   int ncl1 = cl1.GetNbits();
   int ncl2 = cl2.GetNbits();
@@ -1284,9 +1287,9 @@ float AliAnalysisTaskNFactorialMoments::SharedClusterFraction(TBits& cl1,
 ________________________________________________________________________*/
 
 float AliAnalysisTaskNFactorialMoments::GetDPhiStar(float phi1, float pt1,
-                                                        float charge1, float phi2,
-                                                        float pt2, float charge2,
-                                                        float radius, float bSign)
+                                                    float charge1, float phi2,
+                                                    float pt2, float charge2,
+                                                    float radius, float bSign)
 {
   double kPi = TMath::Pi();
   double deltaPhi = phi2 - phi1;
@@ -1315,8 +1318,8 @@ float AliAnalysisTaskNFactorialMoments::GetDPhiStar(float phi1, float pt1,
 ________________________________________________________________________*/
 
 void AliAnalysisTaskNFactorialMoments::CalculateNFMs(TH2D* h1[M], TH2D* h2[M],
-                                                         TH2D* h3[M], TH2D* h4[M],
-                                                         bool mcGen)
+                                                     TH2D* h3[M], TH2D* h4[M],
+                                                     bool mcGen)
 {
   for (int fptbins = 0; fptbins < 4; fptbins++) {
     for (int binset = 0; binset < M; binset++) {
