@@ -9,6 +9,7 @@
 #include "AliInputEventHandler.h"
 #include "AliMultSelection.h"
 #include "AliPIDResponse.h"
+#include "AliVertexingHFUtils.h"
 #include "AliRDHFCutsDplustoKpipi.h"
 #include "AliRDHFCutsDStartoKpipi.h"
 #include "AliAODRecoDecayHF.h"
@@ -474,6 +475,18 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   fEvent->SetEvent(fInputEvent);
   if (!fEvtCuts->isSelected(fEvent))
     return;
+
+  // selected event
+  float centrality = -1.;
+  AliMultSelection *multSelection = (AliMultSelection*)fInputEvent->FindListObject("MultSelection");
+  if(!multSelection){
+    AliWarning("AliMultSelection could not be found in the aod event list of objects");
+  } else {
+    centrality = multSelection->GetMultiplicityPercentile("V0M");
+  }
+  int tracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod, -1., 1.);
+  fHistPercentileV0MAllEvents->Fill(centrality);
+  fHistNtrackletsAllEvents->Fill(tracklets);
 
   if(fCheckProtonSPDHit) { // force usage of global tracks since TPC only tracks have no ITS hits
     fTrackCutsPartProton->SetFilterBit(96);
@@ -1231,6 +1244,12 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
     fPartColl->SetEvent(fPairCleaner->GetCleanParticles(), fEvent);
   }
 
+  // we have at least a D-LF pair
+  if ((dplus.size() > 0 || dminus.size() > 0) && (protons.size() > 0 || antiprotons.size() > 0)) {
+    fHistPercentileV0MEventsWithD->Fill(centrality);
+    fHistNtrackletsEventsWithD->Fill(tracklets);
+  }
+
   // flush the data
   PostData(1, fQA);
   PostData(2, fEvtHistList);
@@ -1415,6 +1434,11 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   fQA->SetName("QA");
   fQA->SetOwner(kTRUE);
 
+  fHistPercentileV0MAllEvents = new TH1F("fHistPercentileV0MAllEvents", "all events; V0M percentile; counts", 10000, 0., 100.);
+  fHistPercentileV0MEventsWithD = new TH1F("fHistPercentileV0MEventsWithD", "events with D-LF pair; V0M percentile; counts", "", 10000, 0., 100.);
+  fHistNtrackletsAllEvents = new TH1F("fHistNtrackletsAllEvents", "all events; #it{N}_{tracklets}; counts", 300, -0.5, 299.5);
+  fHistNtrackletsEventsWithD = new TH1F("fHistNtrackletsEventsWithD", "events with D-LF pair; #it{N}_{tracklets}; counts",  300, -0.5, 299.5);
+
   if (fEvtCuts) {
     fEvtCuts->InitQA();
     if (fEvent->GetEvtCutList() && !fIsLightweight) {
@@ -1429,7 +1453,15 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
     }
   } else {
     AliWarning("Event cuts are missing! \n");
+    fEvtHistList = new TList();
+    fEvtHistList->SetName("EvtCuts");
+    fEvtHistList->SetOwner(true);
   }
+
+  fEvtHistList->Add(fHistPercentileV0MAllEvents);
+  fEvtHistList->Add(fHistPercentileV0MEventsWithD);
+  fEvtHistList->Add(fHistNtrackletsAllEvents);
+  fEvtHistList->Add(fHistNtrackletsEventsWithD);
 
   if (!fConfig->GetMinimalBookingME() && fPairCleaner
       && fPairCleaner->GetHistList()) {
