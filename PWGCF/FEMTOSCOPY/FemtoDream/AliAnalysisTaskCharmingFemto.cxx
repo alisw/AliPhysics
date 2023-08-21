@@ -1435,7 +1435,7 @@ void AliAnalysisTaskCharmingFemto::UserCreateOutputObjects() {
   fQA->SetOwner(kTRUE);
 
   fHistPercentileV0MAllEvents = new TH1F("fHistPercentileV0MAllEvents", "all events; V0M percentile; counts", 10000, 0., 100.);
-  fHistPercentileV0MEventsWithD = new TH1F("fHistPercentileV0MEventsWithD", "events with D-LF pair; V0M percentile; counts", "", 10000, 0., 100.);
+  fHistPercentileV0MEventsWithD = new TH1F("fHistPercentileV0MEventsWithD", "events with D-LF pair; V0M percentile; counts", 10000, 0., 100.);
   fHistNtrackletsAllEvents = new TH1F("fHistNtrackletsAllEvents", "all events; #it{N}_{tracklets}; counts", 300, -0.5, 299.5);
   fHistNtrackletsEventsWithD = new TH1F("fHistNtrackletsEventsWithD", "events with D-LF pair; #it{N}_{tracklets}; counts",  300, -0.5, 299.5);
 
