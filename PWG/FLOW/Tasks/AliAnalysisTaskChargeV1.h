@@ -181,21 +181,19 @@ private:
   TProfile *fProfileZDCQyAQxCCent[2];
   TProfile *fProfileZDCQyAQyCCent[2];
 
-
   double fPsi1ZNC;
   double fPsi1ZNA;
 
-  //PID QA
-  TH2D* fHistPIDPt;
-  TH2D* fHistPIDEta;
-  TH2D* fHistPIDPhi;
-  TH2D* fHist2ProtonSigTPC;
-  TH2D* fHist2ProtonSigTOF;
-  TH2D* fHist2PionSigTPC;
-  TH2D* fHist2PionSigTOF;
-  TH2D* fHist2KionSigTPC;
-  TH2D* fHist2KionSigTOF;
-
+  // PID QA
+  TH2D *fHistPIDPt;
+  TH2D *fHistPIDEta;
+  TH2D *fHistPIDPhi;
+  TH2D *fHist2ProtonSigTPC;
+  TH2D *fHist2ProtonSigTOF;
+  TH2D *fHist2PionSigTPC;
+  TH2D *fHist2PionSigTOF;
+  TH2D *fHist2KionSigTPC;
+  TH2D *fHist2KionSigTOF;
 
   // ZDC v1
   double Qtx;
@@ -206,7 +204,7 @@ private:
   TProfile2D **ZDCpx_T;
   TProfile2D **ZDCv1_t;
   TProfile2D **ZDCv1_p;
-  TProfile   *ZDCResQ;
+  TProfile *ZDCResQ;
   TProfile2D **ZDCcos_t;
   TProfile2D **ZDCcos_p;
 

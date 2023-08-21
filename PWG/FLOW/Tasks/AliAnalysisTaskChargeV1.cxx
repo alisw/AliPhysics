@@ -94,29 +94,29 @@ using namespace std; // std namespace: so you can do things like 'cout'
 ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
 
     AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1() : AliAnalysisTaskSE(),
-                                                     fAOD(nullptr),
-                                                     fOutputList(nullptr),
-                                                     fQAList(nullptr),
-                                                     fPID(nullptr),
-                                                     mHarmonic(1.),
-                                                     fFilterBit(768),
-                                                     fPtMin(0.2),
-                                                     fPtMax(5.),
-                                                     fEtaMax(0.8),
-                                                     fNhitsMin(70),
-                                                     fChi2Max(4.0),
-                                                     fDeDxMin(10),
-                                                     fNSigmaTPCCut(3),
-                                                     fNSigmaTOFCut(3),
-                                                     hYield(nullptr),
-                                                     pC2(nullptr),
-                                                     pC2QRe(nullptr),
-                                                     pC2QIm(nullptr),
-                                                     pD2pQStar(nullptr),
-                                                     pD2pRe(nullptr),
-                                                     pD2pIm(nullptr),
-                                                     v1p_qc(nullptr),
-                                                     v1t_qc(nullptr)
+                                                         fAOD(nullptr),
+                                                         fOutputList(nullptr),
+                                                         fQAList(nullptr),
+                                                         fPID(nullptr),
+                                                         mHarmonic(1.),
+                                                         fFilterBit(768),
+                                                         fPtMin(0.2),
+                                                         fPtMax(5.),
+                                                         fEtaMax(0.8),
+                                                         fNhitsMin(70),
+                                                         fChi2Max(4.0),
+                                                         fDeDxMin(10),
+                                                         fNSigmaTPCCut(3),
+                                                         fNSigmaTOFCut(3),
+                                                         hYield(nullptr),
+                                                         pC2(nullptr),
+                                                         pC2QRe(nullptr),
+                                                         pC2QIm(nullptr),
+                                                         pD2pQStar(nullptr),
+                                                         pD2pRe(nullptr),
+                                                         pD2pIm(nullptr),
+                                                         v1p_qc(nullptr),
+                                                         v1t_qc(nullptr)
 {
   runNum = -999;
   oldRunNum = -999;
@@ -267,29 +267,29 @@ ClassImp(AliAnalysisTaskChargeV1) // classimp: necessary for root
 }
 //_____________________________________________________________________________
 AliAnalysisTaskChargeV1::AliAnalysisTaskChargeV1(const char *name) : AliAnalysisTaskSE(name),
-                                                                 fAOD(nullptr),
-                                                                 fOutputList(nullptr),
-                                                                 fQAList(nullptr),
-                                                                 fPID(nullptr),
-                                                                 mHarmonic(1.),
-                                                                 fFilterBit(768),
-                                                                 fPtMin(0.2),
-                                                                 fPtMax(5.),
-                                                                 fEtaMax(0.8),
-                                                                 fNhitsMin(70),
-                                                                 fChi2Max(4.),
-                                                                 fDeDxMin(10),
-                                                                 fNSigmaTPCCut(3),
-                                                                 fNSigmaTOFCut(3),
-                                                                 hYield(nullptr),
-                                                                 pC2(nullptr),
-                                                                 pC2QRe(nullptr),
-                                                                 pC2QIm(nullptr),
-                                                                 pD2pQStar(nullptr),
-                                                                 pD2pRe(nullptr),
-                                                                 pD2pIm(nullptr),
-                                                                 v1p_qc(nullptr),
-                                                                 v1t_qc(nullptr)
+                                                                     fAOD(nullptr),
+                                                                     fOutputList(nullptr),
+                                                                     fQAList(nullptr),
+                                                                     fPID(nullptr),
+                                                                     mHarmonic(1.),
+                                                                     fFilterBit(768),
+                                                                     fPtMin(0.2),
+                                                                     fPtMax(5.),
+                                                                     fEtaMax(0.8),
+                                                                     fNhitsMin(70),
+                                                                     fChi2Max(4.),
+                                                                     fDeDxMin(10),
+                                                                     fNSigmaTPCCut(3),
+                                                                     fNSigmaTOFCut(3),
+                                                                     hYield(nullptr),
+                                                                     pC2(nullptr),
+                                                                     pC2QRe(nullptr),
+                                                                     pC2QIm(nullptr),
+                                                                     pD2pQStar(nullptr),
+                                                                     pD2pRe(nullptr),
+                                                                     pD2pIm(nullptr),
+                                                                     v1p_qc(nullptr),
+                                                                     v1t_qc(nullptr)
 {
   runNum = -999;
   oldRunNum = -999;
@@ -496,19 +496,19 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects()
   fOutputList->Add(hEvtCount);
 
   // 18q
-  TString runNumList[125] = {"296623","296622","296621","296619","296618","296616","296615","296594","296553","296552",
-    "296551","296550","296548","296547","296516","296512","296511","296510","296509","296472",
-    "296433","296424","296423","296420","296419","296415","296414","296383","296381","296380",
-    "296379","296378","296377","296376","296375","296312","296309","296304","296303","296280",
-    "296279","296273","296270","296269","296247","296246","296244","296243","296242","296241",
-    "296240","296198","296197","296196","296195","296194","296192","296191","296143","296142",
-    "296135","296134","296133","296132","296123","296074","296066","296065","296063","296062",
-    "296060","296016","295942","295941","295937","295936","295913","295910","295909","295861",
-    "295860","295859","295856","295855","295854","295853","295831","295829","295826","295825",
-    "295822","295819","295818","295816","295791","295788","295786","295763","295762","295759",
-    "295758","295755","295754","295725","295723","295721","295719","295718","295717","295714",
-    "295712","295676","295675","295673","295668","295667","295666","295615","295612","295611",
-    "295610","295589","295588","295586","295585"};
+  TString runNumList[125] = {"296623", "296622", "296621", "296619", "296618", "296616", "296615", "296594", "296553", "296552",
+                             "296551", "296550", "296548", "296547", "296516", "296512", "296511", "296510", "296509", "296472",
+                             "296433", "296424", "296423", "296420", "296419", "296415", "296414", "296383", "296381", "296380",
+                             "296379", "296378", "296377", "296376", "296375", "296312", "296309", "296304", "296303", "296280",
+                             "296279", "296273", "296270", "296269", "296247", "296246", "296244", "296243", "296242", "296241",
+                             "296240", "296198", "296197", "296196", "296195", "296194", "296192", "296191", "296143", "296142",
+                             "296135", "296134", "296133", "296132", "296123", "296074", "296066", "296065", "296063", "296062",
+                             "296060", "296016", "295942", "295941", "295937", "295936", "295913", "295910", "295909", "295861",
+                             "295860", "295859", "295856", "295855", "295854", "295853", "295831", "295829", "295826", "295825",
+                             "295822", "295819", "295818", "295816", "295791", "295788", "295786", "295763", "295762", "295759",
+                             "295758", "295755", "295754", "295725", "295723", "295721", "295719", "295718", "295717", "295714",
+                             "295712", "295676", "295675", "295673", "295668", "295667", "295666", "295615", "295612", "295611",
+                             "295610", "295589", "295588", "295586", "295585"};
   hRunNumBin = new TH1I("runNumBin", "", 130, 0, 130);
   for (int i = 0; i < 125; ++i)
   {
@@ -612,13 +612,14 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects()
   fOutputList->Add(neg1Plane);
   Res1Square = new TProfile("Res1Square_cent", "", 1, 0, 1);
   fOutputList->Add(Res1Square);
-  TPCcos_t = new TProfile2D*[nCentrality];
-  TPCcos_p = new TProfile2D*[nCentrality];
-  for(int i=0; i<nCentrality; ++i){
-  TPCcos_t[i] = new TProfile2D(Form("TPCcos_t%i",i), "", 8, 0, 8, 5, -0.8, 0.8);
-  TPCcos_p[i] = new TProfile2D(Form("TPCcos_p%i",i), "", 8, 0, 8, 5, -0.8, 0.8);
-  fOutputList->Add(TPCcos_t[i]);
-  fOutputList->Add(TPCcos_p[i]);
+  TPCcos_t = new TProfile2D *[nCentrality];
+  TPCcos_p = new TProfile2D *[nCentrality];
+  for (int i = 0; i < nCentrality; ++i)
+  {
+    TPCcos_t[i] = new TProfile2D(Form("TPCcos_t%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    TPCcos_p[i] = new TProfile2D(Form("TPCcos_p%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    fOutputList->Add(TPCcos_t[i]);
+    fOutputList->Add(TPCcos_p[i]);
   }
 
   hYield = new TH3D *[nCentrality];
@@ -669,19 +670,20 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects()
   }
 
   // scalar product method TPC
-  px_P = new TProfile2D*[nCentrality];
-  px_T = new TProfile2D*[nCentrality];
-  v1_t = new TProfile2D*[nCentrality];
-  v1_p = new TProfile2D*[nCentrality];
-  for(int i=0; i<nCentrality; ++i){
-  px_P[i] = new TProfile2D(Form("px_P%i",i), "", 8, 0, 8, 5, -0.8, 0.8);
-  px_T[i] = new TProfile2D(Form("px_T%i",i), "", 8, 0, 8, 5, -0.8, 0.8);
-  v1_t[i] = new TProfile2D(Form("v1_t%i",i), "", 8, 0, 8, 5, -0.8, 0.8);
-  v1_p[i] = new TProfile2D(Form("v1_p%i",i), "", 8, 0, 8, 5, -0.8, 0.8);
-  fOutputList->Add(px_P[i]);
-  fOutputList->Add(px_T[i]);
-  fOutputList->Add(v1_t[i]);
-  fOutputList->Add(v1_p[i]);
+  px_P = new TProfile2D *[nCentrality];
+  px_T = new TProfile2D *[nCentrality];
+  v1_t = new TProfile2D *[nCentrality];
+  v1_p = new TProfile2D *[nCentrality];
+  for (int i = 0; i < nCentrality; ++i)
+  {
+    px_P[i] = new TProfile2D(Form("px_P%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    px_T[i] = new TProfile2D(Form("px_T%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    v1_t[i] = new TProfile2D(Form("v1_t%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    v1_p[i] = new TProfile2D(Form("v1_p%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    fOutputList->Add(px_P[i]);
+    fOutputList->Add(px_T[i]);
+    fOutputList->Add(v1_t[i]);
+    fOutputList->Add(v1_p[i]);
   }
   ResQ = new TProfile("ResQ", "", 10, 0, 10);
   ptEta = new TProfile("ptEta", "", 5, -0.8, 0.8);
@@ -710,17 +712,18 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects()
     return;
   }
 
-  fProfileZDCPsi1Correlation = new TProfile("fProfileZDCPsi1Correlation", "fProfileZDCPsi1Correlation;centrality;Res",10, 0., 10);
-  fProfileZDCPsi2Correlation = new TProfile("fProfileZDCPsi2Correlation", "fProfileZDCPsi2Correlation;centrality;Res",10, 0., 10);
+  fProfileZDCPsi1Correlation = new TProfile("fProfileZDCPsi1Correlation", "fProfileZDCPsi1Correlation;centrality;Res", 10, 0., 10);
+  fProfileZDCPsi2Correlation = new TProfile("fProfileZDCPsi2Correlation", "fProfileZDCPsi2Correlation;centrality;Res", 10, 0., 10);
   fOutputList->Add(fProfileZDCPsi1Correlation);
   fOutputList->Add(fProfileZDCPsi2Correlation);
-  fHist2Psi1ZNCCent = new TH1D*[nCentrality];
-  fHist2Psi1ZNACent = new TH1D*[nCentrality];
-  for(int i=1; i<nCentrality; ++i){
-  fHist2Psi1ZNCCent[i] = new TH1D(Form("fHist2Psi1ZNCCent%i", i), "", 100, 0., TMath::TwoPi());
-  fHist2Psi1ZNACent[i] = new TH1D(Form("fHist2Psi1ZNACent%i", i), "", 100, 0., TMath::TwoPi());
-  fOutputList->Add(fHist2Psi1ZNCCent[i]);
-  fOutputList->Add(fHist2Psi1ZNACent[i]);
+  fHist2Psi1ZNCCent = new TH1D *[nCentrality];
+  fHist2Psi1ZNACent = new TH1D *[nCentrality];
+  for (int i = 0; i < nCentrality; ++i)
+  {
+    fHist2Psi1ZNCCent[i] = new TH1D(Form("fHist2Psi1ZNCCent%i", i), "", 100, 0., TMath::TwoPi());
+    fHist2Psi1ZNACent[i] = new TH1D(Form("fHist2Psi1ZNACent%i", i), "", 100, 0., TMath::TwoPi());
+    fOutputList->Add(fHist2Psi1ZNCCent[i]);
+    fOutputList->Add(fHist2Psi1ZNACent[i]);
   }
 
   // QA
@@ -769,7 +772,6 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects()
   fQAList->Add(fProfileZNATowerMeanEnegry[0]);
   fQAList->Add(fProfileZNATowerMeanEnegry[1]);
 
-
   // PID QA
   fHistPIDPt = new TH2D("fHistPIDPt", "fHistPIDPt;p_{T}", 8, 0, 8, 200, 0, 20);
   fHistPIDEta = new TH2D("fHistPIDEta", "fHistPIDEta;#eta", 8, 0, 8, 100, -1, 1);
@@ -791,25 +793,26 @@ void AliAnalysisTaskChargeV1::UserCreateOutputObjects()
   fQAList->Add(fHist2KionSigTOF);
 
   /// ZDC v1pt
-  ZDCpx_P = new TProfile2D*[nCentrality];
-  ZDCpx_T = new TProfile2D*[nCentrality];
-  ZDCv1_t = new TProfile2D*[nCentrality];
-  ZDCv1_p = new TProfile2D*[nCentrality];
-  ZDCcos_t = new TProfile2D*[nCentrality];
-  ZDCcos_p = new TProfile2D*[nCentrality];
-  for(int i=0; i<nCentrality; ++i){
-  ZDCpx_P[i] = new TProfile2D(Form("ZDCpx_P%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
-  ZDCpx_T[i] = new TProfile2D(Form("ZDCpx_T%i",i), "", 8, 0, 8, 5, -0.8, 0.8);
-  ZDCv1_t[i] = new TProfile2D(Form("ZDCv1_t%i",i), "", 8, 0, 8, 5, -0.8, 0.8);
-  ZDCv1_p[i] = new TProfile2D(Form("ZDCv1_p%i",i), "", 8, 0, 8, 5, -0.8, 0.8);
-  ZDCcos_t[i] = new TProfile2D(Form("ZDCcos_t%i",i), "", 8, 0, 8, 5, -0.8, 0.8);
-  ZDCcos_p[i] = new TProfile2D(Form("ZDCcos_p%i",i), "", 8, 0, 8, 5, -0.8, 0.8);
-  fOutputList->Add(ZDCpx_P[i]);
-  fOutputList->Add(ZDCpx_T[i]);
-  fOutputList->Add(ZDCv1_t[i]);
-  fOutputList->Add(ZDCv1_p[i]);
-  fOutputList->Add(ZDCcos_t[i]);
-  fOutputList->Add(ZDCcos_p[i]);
+  ZDCpx_P = new TProfile2D *[nCentrality];
+  ZDCpx_T = new TProfile2D *[nCentrality];
+  ZDCv1_t = new TProfile2D *[nCentrality];
+  ZDCv1_p = new TProfile2D *[nCentrality];
+  ZDCcos_t = new TProfile2D *[nCentrality];
+  ZDCcos_p = new TProfile2D *[nCentrality];
+  for (int i = 0; i < nCentrality; ++i)
+  {
+    ZDCpx_P[i] = new TProfile2D(Form("ZDCpx_P%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    ZDCpx_T[i] = new TProfile2D(Form("ZDCpx_T%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    ZDCv1_t[i] = new TProfile2D(Form("ZDCv1_t%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    ZDCv1_p[i] = new TProfile2D(Form("ZDCv1_p%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    ZDCcos_t[i] = new TProfile2D(Form("ZDCcos_t%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    ZDCcos_p[i] = new TProfile2D(Form("ZDCcos_p%i", i), "", 8, 0, 8, 5, -0.8, 0.8);
+    fOutputList->Add(ZDCpx_P[i]);
+    fOutputList->Add(ZDCpx_T[i]);
+    fOutputList->Add(ZDCv1_t[i]);
+    fOutputList->Add(ZDCv1_p[i]);
+    fOutputList->Add(ZDCcos_t[i]);
+    fOutputList->Add(ZDCcos_p[i]);
   }
   ZDCResQ = new TProfile("ZDCResQ", "", 10, 0, 10);
   fOutputList->Add(ZDCResQ);
@@ -883,7 +886,8 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
     oldRunNum = runNum;
   }
   runNumBin = GetRunNumBin(runNum);
-  if (runNumBin < 0) return;
+  if (runNumBin < 0)
+    return;
   hRunNumBin->Fill(runNumBin);
   hEvtCount->Fill(3);
 
@@ -930,9 +934,12 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
   if (cent < 0 || cent >= 60)
     return;
   hCentCorr[1]->Fill(cent, centSPD1);
-  if(cent>=0 && cent<5) centBin = 0;
-  else if(cent>=5 && cent<10) centBin = 1;
-  else centBin = (int)cent/10 +1;  //centbin
+  if (cent >= 0 && cent < 5)
+    centBin = 0;
+  else if (cent >= 5 && cent < 10)
+    centBin = 1;
+  else
+    centBin = (int)cent / 10 + 1; // centbin
   hCent->Fill(cent);
   hEvtCount->Fill(5);
 
@@ -1126,7 +1133,6 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
   Q1TPCNeg.Set(sumCosNeg, sumSinNeg);
   double psiNeg = Q1TPCNeg.Phi();
   neg1Plane->Fill(psiNeg);
-
   hEvtCount->Fill(17);
   TComplex negQ(sumCosNeg, sumSinNeg);
   TComplex negQStar = TComplex::Conjugate(negQ);
@@ -1135,18 +1141,16 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
   Psi_P->Fill(posQ.Theta());
   Psi_T->Fill(negQ.Theta());
   Psi_PT->Fill(posQ.Theta() - negQ.Theta());
-
   // Fill Resolution
   Res1Square->Fill(0.5, cos(psiPos - psiNeg));
-  fHist2Psi1ZNCCent[centBin]->Fill(fPsi1ZNC); 
+  fHist2Psi1ZNCCent[centBin]->Fill(fPsi1ZNC);
   fHist2Psi1ZNACent[centBin]->Fill(fPsi1ZNA);
-  fProfileZDCPsi1Correlation->Fill(centBin+0.5, TMath::Cos(1 * (fPsi1ZNC - fPsi1ZNA)));
-  fProfileZDCPsi2Correlation->Fill(centBin+0.5, TMath::Cos(2 * (fPsi1ZNC - fPsi1ZNA)));
+  fProfileZDCPsi1Correlation->Fill(centBin + 0.5, TMath::Cos(1 * (fPsi1ZNC - fPsi1ZNA)));
+  fProfileZDCPsi2Correlation->Fill(centBin + 0.5, TMath::Cos(2 * (fPsi1ZNC - fPsi1ZNA)));
   TComplex ZDCQt(Qtx, Qty);
   TComplex ZDCQp(Qpx, Qpy);
-  ZDCResQ->Fill(centBin+0.5, (ZDCQt * TComplex::Conjugate(ZDCQp)).Re());
-  ResQ->Fill(centBin+0.5, (negQ * posQStar).Re());
-
+  ZDCResQ->Fill(centBin + 0.5, (ZDCQt * TComplex::Conjugate(ZDCQp)).Re());
+  ResQ->Fill(centBin + 0.5, (negQ * posQStar).Re());
   for (vector<double>::size_type iTrk = 0; iTrk < vecPhi.size(); iTrk++)
   {
     double phi = vecPhi[iTrk];
@@ -1168,11 +1172,11 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
     if (eta > 0.)
     {
       px_P[centBin]->Fill(iTrkpoi, eta, pt * ((u * (TComplex::Conjugate(posQ - u))).Re()), weight);
-      px_T[centBin]->Fill(iTrkpoi, eta, pt * ((u * negQStar).Re())), weight;
+      px_T[centBin]->Fill(iTrkpoi, eta, pt * ((u * negQStar).Re()), weight);
       v1_p[centBin]->Fill(iTrkpoi, eta, (u * (TComplex::Conjugate(posQ - u))).Re(), weight);
       v1_t[centBin]->Fill(iTrkpoi, eta, (u * negQStar).Re(), weight);
       TPCcos_p[centBin]->Fill(iTrkpoi, eta, cos(phi - ((posQ - u).Theta())), weight);
-      TPCcos_t[centBin]->Fill(iTrkpoi, eta, cos(phi - (negQ.Theta()))), weight;
+      TPCcos_t[centBin]->Fill(iTrkpoi, eta, cos(phi - (negQ.Theta())), weight);
 
       if (charge > 0.)
       {
@@ -1222,8 +1226,6 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
       }
     }
 
-
-
     ZDCpx_P[centBin]->Fill(iTrkpoi, eta, pt * ((u * TComplex::Conjugate(ZDCQp)).Re()), weight);
     ZDCpx_T[centBin]->Fill(iTrkpoi, eta, pt * ((u * TComplex::Conjugate(ZDCQt)).Re()), weight);
     ZDCv1_p[centBin]->Fill(iTrkpoi, eta, (u * TComplex::Conjugate(ZDCQp)).Re(), weight);
@@ -1251,23 +1253,23 @@ void AliAnalysisTaskChargeV1::UserExec(Option_t *)
     }
 
     // qc
-    hMQ_thisEvt ->Fill(pt, eta, weight);
-    hReQ_thisEvt->Fill(pt, eta, weight*cos(phi));
-    hImQ_thisEvt->Fill(pt, eta, weight*sin(phi));
+    hMQ_thisEvt->Fill(pt, eta, weight);
+    hReQ_thisEvt->Fill(pt, eta, weight * cos(phi));
+    hImQ_thisEvt->Fill(pt, eta, weight * sin(phi));
     hMp_thisEvt->Fill(iTrkpoi, pt, eta, weight);
-    hRep_thisEvt->Fill(iTrkpoi, pt, eta, weight*cos(phi));
-    hImp_thisEvt->Fill(iTrkpoi, pt, eta, weight*sin(phi));
+    hRep_thisEvt->Fill(iTrkpoi, pt, eta, weight * cos(phi));
+    hImp_thisEvt->Fill(iTrkpoi, pt, eta, weight * sin(phi));
     if (charge > 0.)
     {
       hMp_thisEvt->Fill(6.5, pt, eta, weight);
-      hRep_thisEvt->Fill(6.5, pt, eta, weight*cos(phi));
-      hImp_thisEvt->Fill(6.5, pt, eta, weight*sin(phi));
+      hRep_thisEvt->Fill(6.5, pt, eta, weight * cos(phi));
+      hImp_thisEvt->Fill(6.5, pt, eta, weight * sin(phi));
     }
     else if (charge < 0.)
     {
       hMp_thisEvt->Fill(7.5, pt, eta, weight);
-      hRep_thisEvt->Fill(7.5, pt, eta, weight*cos(phi));
-      hImp_thisEvt->Fill(7.5, pt, eta, weight*sin(phi));
+      hRep_thisEvt->Fill(7.5, pt, eta, weight * cos(phi));
+      hImp_thisEvt->Fill(7.5, pt, eta, weight * sin(phi));
     }
   }
   // for d2
@@ -1295,19 +1297,19 @@ int AliAnalysisTaskChargeV1::GetRunNumBin(int runNum)
 {
   int runNumBin = -1;
   // 18q
-  int runNumList[125] = {296623,296622,296621,296619,296618,296616,296615,296594,296553,296552,
-    296551,296550,296548,296547,296516,296512,296511,296510,296509,296472,
-    296433,296424,296423,296420,296419,296415,296414,296383,296381,296380,
-    296379,296378,296377,296376,296375,296312,296309,296304,296303,296280,
-    296279,296273,296270,296269,296247,296246,296244,296243,296242,296241,
-    296240,296198,296197,296196,296195,296194,296192,296191,296143,296142,
-    296135,296134,296133,296132,296123,296074,296066,296065,296063,296062,
-    296060,296016,295942,295941,295937,295936,295913,295910,295909,295861,
-    295860,295859,295856,295855,295854,295853,295831,295829,295826,295825,
-    295822,295819,295818,295816,295791,295788,295786,295763,295762,295759,
-    295758,295755,295754,295725,295723,295721,295719,295718,295717,295714,
-    295712,295676,295675,295673,295668,295667,295666,295615,295612,295611,
-    295610,295589,295588,295586,295585};
+  int runNumList[125] = {296623, 296622, 296621, 296619, 296618, 296616, 296615, 296594, 296553, 296552,
+                         296551, 296550, 296548, 296547, 296516, 296512, 296511, 296510, 296509, 296472,
+                         296433, 296424, 296423, 296420, 296419, 296415, 296414, 296383, 296381, 296380,
+                         296379, 296378, 296377, 296376, 296375, 296312, 296309, 296304, 296303, 296280,
+                         296279, 296273, 296270, 296269, 296247, 296246, 296244, 296243, 296242, 296241,
+                         296240, 296198, 296197, 296196, 296195, 296194, 296192, 296191, 296143, 296142,
+                         296135, 296134, 296133, 296132, 296123, 296074, 296066, 296065, 296063, 296062,
+                         296060, 296016, 295942, 295941, 295937, 295936, 295913, 295910, 295909, 295861,
+                         295860, 295859, 295856, 295855, 295854, 295853, 295831, 295829, 295826, 295825,
+                         295822, 295819, 295818, 295816, 295791, 295788, 295786, 295763, 295762, 295759,
+                         295758, 295755, 295754, 295725, 295723, 295721, 295719, 295718, 295717, 295714,
+                         295712, 295676, 295675, 295673, 295668, 295667, 295666, 295615, 295612, 295611,
+                         295610, 295589, 295588, 295586, 295585};
   for (int i = 0; i < 125; ++i)
   {
     if (runNum == runNumList[i])
