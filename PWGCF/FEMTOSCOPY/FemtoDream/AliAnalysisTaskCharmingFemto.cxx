@@ -484,7 +484,7 @@ void AliAnalysisTaskCharmingFemto::UserExec(Option_t * /*option*/) {
   } else {
     centrality = multSelection->GetMultiplicityPercentile("V0M");
   }
-  int tracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(aod, -1., 1.);
+  int tracklets = AliVertexingHFUtils::GetNumberOfTrackletsInEtaRange(fInputEvent, -1., 1.);
   fHistPercentileV0MAllEvents->Fill(centrality);
   fHistNtrackletsAllEvents->Fill(tracklets);
 
