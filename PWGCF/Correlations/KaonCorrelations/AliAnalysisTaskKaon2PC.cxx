@@ -71,7 +71,7 @@ fOutputList(0),
 fPIDResponse(0),
 fPidpTDependentMethod(kTRUE),
 fRejectEventPileUp(kTRUE),
-fRemoveResonance(kTRUE),
+fRemoveResonance(kFALSE),
 fRemoveResonancek0s(kFALSE),
 fRemoveAnyResonance(kTRUE),
 fRemoveKchResonance(kFALSE),
@@ -261,7 +261,7 @@ fOutputList(0),
 fPIDResponse(0),
 fPidpTDependentMethod(kTRUE),
 fRejectEventPileUp(kTRUE),
-fRemoveResonance(kTRUE),
+fRemoveResonance(kFALSE),
 fRemoveResonancek0s(kFALSE),
 fRemoveAnyResonance(kTRUE),
 fRemoveKchResonance(kFALSE),
@@ -1861,7 +1861,7 @@ fMCEvents->Fill(2.5);
 
 Double_t CentV0M = fEventCuts.GetCentrality(); //centrality for MC
 if ((CentV0M < fCentMin)||(CentV0M > fCentMax)) return;
-cout << "centrality values for MC gen are" << CentV0M << endl;
+//cout << "centrality values for MC gen are" << CentV0M << endl;
 
 Int_t nAcceptedParticles =0;
 Int_t nTrackswithoutMother =0;
@@ -1893,7 +1893,7 @@ AliAODMCHeader *mcHeader = 0;
 AliVVertex * mcVertex = (AliVVertex*)fmcEvent->GetPrimaryVertex();
 Double_t vzMC = mcVertex->GetZ();
 if (TMath::Abs(vzMC) >= fPVzCut) return;
-cout << "pvz values from truth are" << vzMC << endl;
+//cout << "pvz values from truth are" << vzMC << endl;
 
 fMCEvents->Fill(3.5);
 
@@ -1907,7 +1907,7 @@ if(!fMCArray){
 //Int_t nMCTracks = fmcEvent->GetNumberOfTracks(); // MC Truth, Total number of tracks per event
 
 Int_t nMCAllTracks =fMCArray->GetEntriesFast();
-cout << "mc tracks without" << nMCAllTracks << endl;
+//cout << "mc tracks without" << nMCAllTracks << endl;
 // new tracks array - without injected signal
 TObjArray * mcTracks = new TObjArray;
 AliVTrack *genTrackMix = 0x0;
@@ -2010,7 +2010,7 @@ for (Int_t i = 0; i < nMCTracks; i++){
     MotherTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom);
     pdgMother = MotherTrack->PdgCode();
     fpdgCode->Fill(pdgMother);
-    cout << "pdgcode is" << pdgMother << endl; 
+    //cout << "pdgcode is" << pdgMother << endl; 
 
     if (fRemoveKchResonance) {
         if (SelectKch){
@@ -2020,8 +2020,10 @@ for (Int_t i = 0; i < nMCTracks; i++){
     }
 
     if (fRemoveAnyResonance) {
-        if (pdgMother != 0) continue;    // remove every kaon track from resonances
-        //cout << " pdg mother of tracks remained" << pdgMother << endl;
+        if (SelectKch){ if (pdgMother != 0) continue; }
+        if (SelectK0) { if (!(pdgMother == 311 || pdgMother == -311)) continue; }
+        //if (SelectK0) cout << " pdg mother of tracks remained" << pdgMother << endl;  
+    
     }
 
     }
@@ -2056,7 +2058,7 @@ for (Int_t i = 0; i < nMCTracks; i++){
 }
 //cout << "ntracks with mother is" << nTrackswithMother << endl;
 //cout << "ntracks without mother is" << nTrackswithoutMother << endl;
-cout << "naccepted tracks is" << nAcceptedParticles << endl;
+//cout << "naccepted tracks is" << nAcceptedParticles << endl;
 
 fHistGenMultiplicity->Fill(nAcceptedParticles);
 //Int_t nmck0 =  fMCSelectedK0s->GetEntries();
@@ -2084,9 +2086,6 @@ for (Int_t i = 0; i < fMCSelectedK0s->GetEntries(); i++){
 
                 momTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom2);
                 pdgMom = momTrack->PdgCode();
-
-                //cout << "labmom1 is " << labMom1 << "labmom2 is " << labMom2 << endl;
-                //cout << "pdgcode is" << pdgMom << endl;
 
                 if (pdgMom != 0) {
                     // Ignore pairs with particle ID nonzero
@@ -2130,7 +2129,7 @@ for (Int_t i = 0; i < fMCSelectedKpos->GetEntries(); i++){
                 pdgMom = momTrack->PdgCode();
 
                 //cout << "labmom1 is " << labMom1 << "labmom2 is " << labMom2 << endl;
-                cout << "pdgcode is" << pdgMom << endl;
+                //cout << "pdgcode is" << pdgMom << endl;
 
                 if (pdgMom == 333) {
                     fpdgCodeaftercut->Fill(pdgMom);
@@ -2145,9 +2144,6 @@ for (Int_t i = 0; i < fMCSelectedKpos->GetEntries(); i++){
 
                 momTrack = (AliMCParticle *)fmcEvent->GetTrack(labMom1);
                 pdgMom = momTrack->PdgCode();
-
-                //cout << "labmom1 is " << labMom1 << "labmom2 is " << labMom2 << endl;
-                cout << "pdgcode is" << pdgMom << endl;
 
                 if (pdgMom != 0) {
                     fpdgCodeaftercut->Fill(pdgMom);
