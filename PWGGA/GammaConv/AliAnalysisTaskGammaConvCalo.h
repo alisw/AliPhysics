@@ -60,11 +60,13 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     void ProcessTrueMesonCandidates     ( AliAODConversionMother *Pi0Candidate,
                                           AliAODConversionPhoton *TrueGammaCandidate0,
                                           AliAODConversionPhoton *TrueGammaCandidate1,
-                                          Bool_t matched);
+                                          Bool_t matched,
+                                          int NPrimaryMatched = 0);
     void ProcessTrueMesonCandidatesAOD  ( AliAODConversionMother *Pi0Candidate,
                                           AliAODConversionPhoton *TrueGammaCandidate0,
                                           AliAODConversionPhoton *TrueGammaCandidate1,
-                                          Bool_t matched);
+                                          Bool_t matched,
+                                          int NPrimaryMatched = 0);
     void ProcessConversionPhotonsForMissingTags     ();
     void ProcessConversionPhotonsForMissingTagsAOD  ();
 
@@ -471,6 +473,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     TH2F**                  fHistoTruePi0PureGammaInvMassECalib;                //! array of histogram with pure pi0 signal (only pure gammas) inv Mass, energy of cluster
     TH2F**                  fHistoTruePi0InvMassECalibPCM;                      //! array of histogram with pure pi0 signal inv Mass, energy of PCM
     TH3F**                  fHistoMotherInvMassECalibNMatchedPrim;              //! array of histogram with pi0 mass, calo photon energy and the number of matched primary tracks
+    TH3F**                  fHistoTruePi0InvMassECalibNMatchedPrim;             //! array of histogram with true pi0 mass, calo photon energy and the number of matched primary tracks
     // event histograms
     TH1F**                  fHistoNEvents;                                      //! array of histos with event information
     TH1F**                  fHistoNEventsWOWeight;                              //! array of histos with event information without event weights
@@ -539,7 +542,7 @@ class AliAnalysisTaskGammaConvCalo : public AliAnalysisTaskSE {
     AliAnalysisTaskGammaConvCalo(const AliAnalysisTaskGammaConvCalo&); // Prevent copy-construction
     AliAnalysisTaskGammaConvCalo &operator=(const AliAnalysisTaskGammaConvCalo&); // Prevent assignment
 
-    ClassDef(AliAnalysisTaskGammaConvCalo, 74);
+    ClassDef(AliAnalysisTaskGammaConvCalo, 75);
 };
 
 #endif
