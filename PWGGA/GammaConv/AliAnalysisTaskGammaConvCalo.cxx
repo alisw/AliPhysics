@@ -352,6 +352,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(): AliAnalysisTaskSE(
   fHistoTruePi0PureGammaInvMassECalib(NULL),
   fHistoTruePi0InvMassECalibPCM(NULL),
   fHistoMotherInvMassECalibNMatchedPrim(NULL),
+  fHistoTruePi0InvMassECalibNMatchedPrim(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
@@ -706,6 +707,7 @@ AliAnalysisTaskGammaConvCalo::AliAnalysisTaskGammaConvCalo(const char *name):
   fHistoTruePi0PureGammaInvMassECalib(NULL),
   fHistoTruePi0InvMassECalibPCM(NULL),
   fHistoMotherInvMassECalibNMatchedPrim(NULL),
+  fHistoTruePi0InvMassECalibNMatchedPrim(NULL),
   fHistoNEvents(NULL),
   fHistoNEventsWOWeight(NULL),
   fHistoNGoodESDTracks(NULL),
@@ -1035,6 +1037,9 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
     if(fDoMesonQA == 2){
       tESDMesonsInvMassPtDcazMinDcazMaxFlag = new TTree*[fnCuts];
       fHistoMotherInvMassECalibNMatchedPrim = new TH3F*[fnCuts];
+      if(fIsMC > 0){
+        fHistoTruePi0InvMassECalibNMatchedPrim = new TH3F*[fnCuts];
+      }
     }
   }
   if(fDoHBTHistoOutput){
@@ -1780,6 +1785,13 @@ void AliAnalysisTaskGammaConvCalo::UserCreateOutputObjects(){
         fESDList[iCut]->Add(fHistoMotherInvMassECalibNMatchedPrim[iCut]);
         if (fIsMC > 1 || (fIsMC == 1 && fDoMaterialWeightConv)){
           fHistoMotherInvMassECalibNMatchedPrim[iCut]->Sumw2();
+        }
+        if(fIsMC > 0 ){
+          fHistoTruePi0InvMassECalibNMatchedPrim[iCut] = new TH3F("ESD_True_InvMass_E_Calib_NMatched", "ESD_True_InvMass_E_Calib_NMatched", arrInvMassBinning.size()-1, arrInvMassBinning.data(), nBinsPt, arrPtBinning, arrNMatchedTracks.size()-1, arrNMatchedTracks.data());
+          fHistoTruePi0InvMassECalibNMatchedPrim[iCut]->SetXTitle("M_{inv} (GeV/c^{2})");
+          fHistoTruePi0InvMassECalibNMatchedPrim[iCut]->SetYTitle("E_{cluster}(GeV)");
+          fHistoTruePi0InvMassECalibNMatchedPrim[iCut]->SetZTitle("N_{matched primary tracks}");
+          fTrueList[iCut]->Add(fHistoTruePi0InvMassECalibNMatchedPrim[iCut]);
         }
       }
     }
@@ -5196,11 +5208,26 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
             }
           }
 
+          int NPrimaryMatched = 0;
+          if (fDoMesonQA == 2){
+            std::vector<int> VMatchedTracks = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef()));
+            std::vector<int> VMatchedSecondaryTracks = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedSecTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef()));
+            NPrimaryMatched = VMatchedTracks.size();
+            for (const int& num1 : VMatchedTracks) {
+              for (const int& num2 : VMatchedSecondaryTracks) {
+                if (num1 == num2) {
+                  NPrimaryMatched--;
+                  break;
+                }
+              }
+            }
+          }
+
           if(fIsMC>0){
             if(fInputEvent->IsA()==AliESDEvent::Class())
-              ProcessTrueMesonCandidates(pi0cand,gamma0,gamma1, matched);
+              ProcessTrueMesonCandidates(pi0cand,gamma0,gamma1, matched, NPrimaryMatched);
             if(fInputEvent->IsA()==AliAODEvent::Class())
-              ProcessTrueMesonCandidatesAOD(pi0cand,gamma0,gamma1, matched);
+              ProcessTrueMesonCandidatesAOD(pi0cand,gamma0,gamma1, matched, NPrimaryMatched);
           }
           if (!matched){
             if (!fDoLightOutput || fDoECalibOutput > 0){
@@ -5213,16 +5240,6 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
           if (fDoMesonQA == 2){
             fInvMass = pi0cand->M();
             fPt  = pi0cand->Pt();
-            std::vector<int> VMatchedTracks = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef()));
-            std::vector<int> VMatchedSecondaryTracks = ((AliCaloPhotonCuts*)fClusterCutArray->At(fiCut))->GetVectorMatchedSecTracksToCluster(fInputEvent, fInputEvent->GetCaloCluster(gamma1->GetCaloClusterRef()));
-            int NPrimaryMatched = VMatchedTracks.size();
-            for (const int& num1 : VMatchedTracks) {
-              for (const int& num2 : VMatchedSecondaryTracks) {
-                if (num1 == num2) {
-                  NPrimaryMatched--;
-                }
-              }
-            }
             fHistoMotherInvMassECalibNMatchedPrim[fiCut]->Fill(fInvMass, gamma1->E(), NPrimaryMatched, fWeightJetJetMC);
             if (TMath::Abs(gamma0->GetDCAzToPrimVtx()) < TMath::Abs(gamma1->GetDCAzToPrimVtx())){
               fDCAzGammaMin = gamma0->GetDCAzToPrimVtx();
@@ -5249,7 +5266,7 @@ void AliAnalysisTaskGammaConvCalo::CalculatePi0Candidates(){
   }
 }
 //______________________________________________________________________
-void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched)
+void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched, int NPrimaryMatched)
 {
 
   Double_t magField = fInputEvent->GetMagneticField();
@@ -5346,6 +5363,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 
     //For MC we fill now the histogram here with weights (true and reconstructed efficiency will be consistent)
     if(!matched) fHistoMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightMeson);
+
+    if (fDoMesonQA == 2){
+      fHistoTruePi0InvMassECalibNMatchedPrim[fiCut]->Fill(fInvMass, TrueGammaCandidate1->E(), NPrimaryMatched, fWeightJetJetMC);
+    }
 
     if(isTruePi0 || isTrueEta){// True Pion or Eta
       if (!matched){
@@ -5590,7 +5611,7 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidates(AliAODConversionMo
 }
 
 //______________________________________________________________________
-void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched)
+void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversionMother *Pi0Candidate, AliAODConversionPhoton *TrueGammaCandidate0, AliAODConversionPhoton *TrueGammaCandidate1, Bool_t matched, int NPrimaryMatched)
 {
   Double_t magField = fInputEvent->GetMagneticField();
   const AliVVertex* primVtxMC   = fMCEvent->GetPrimaryVertex();
@@ -5693,6 +5714,10 @@ void AliAnalysisTaskGammaConvCalo::ProcessTrueMesonCandidatesAOD(AliAODConversio
 
   //For MC we fill now the historgram here with weights (true and reconstructed efficiency will be consistent)
   if(!matched) fHistoMotherInvMassPt[fiCut]->Fill(Pi0Candidate->M(),Pi0Candidate->Pt(),fWeightMeson);
+
+  if (fDoMesonQA == 2){
+    fHistoTruePi0InvMassECalibNMatchedPrim[fiCut]->Fill(fInvMass, TrueGammaCandidate1->E(), NPrimaryMatched, fWeightJetJetMC);
+  }
 
   if(isTruePi0 || isTrueEta){// True Pion or Eta
 
